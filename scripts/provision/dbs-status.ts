@@ -753,7 +753,7 @@ export async function evaluateInvitationStatus(
 
 	let canonicalHash: string | null = null;
 	try {
-		const release = await buildNormalizedInvitationRelease({ slug });
+		const release = await buildNormalizedInvitationRelease({ slug, purpose: 'package' });
 		canonicalHash = serializeInvitationPackage(release).packageHash;
 	} catch {
 		// Canonical hash calculation unavailable; status falls back to provenance presence check.

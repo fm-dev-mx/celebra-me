@@ -185,6 +185,7 @@ export async function exportInvitationPackage(
 	const release = await buildNormalizedInvitationRelease({
 		slug: options.slug,
 		sourceDir: options.sourceDir,
+		purpose: 'package',
 	});
 	const packageData = serializeInvitationPackage(release);
 	const packagePath = options.dryRun

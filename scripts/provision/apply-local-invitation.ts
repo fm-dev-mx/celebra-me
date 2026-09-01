@@ -282,24 +282,10 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	});
 
 	const definition = getInvitationDefinition(slug);
-	const release = await buildNormalizedInvitationRelease({ slug, sourceDir });
-	const packageHash = serializeInvitationPackage(release).packageHash;
-	if (options.expectedSourceHash && release.sourceHash !== options.expectedSourceHash) {
-		throw new Error(
-			`PLAN_DRIFT: Local sourceHash ${release.sourceHash.slice(0, 12)}… does not match session package ${options.expectedSourceHash.slice(0, 12)}…. Refresh the release and replan.`,
-		);
-	}
-	if (options.expectedPackageHash && packageHash !== options.expectedPackageHash) {
-		throw new Error(
-			`PLAN_DRIFT: Local packageHash ${packageHash.slice(0, 12)}… does not match session package ${options.expectedPackageHash.slice(0, 12)}…. Refresh the release and replan.`,
-		);
-	}
 	const preset = findDemoPreset(definition.baseDemoId);
 	if (!preset || preset.themeId !== definition.themeId) {
 		throw new Error(`Demo preset "${definition.baseDemoId}" is invalid or theme mismatch.`);
 	}
-	const normalizedPhotos = release.assets.map((asset) => ({ ...asset, imageHash: asset.sha256 }));
-
 	// Check existing invitation — never infer identity from title/client_name.
 	let existingInv: Record<string, unknown> | null;
 	const rekeyFrom = options.rekeyFrom?.trim();
@@ -442,6 +428,30 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		} else {
 			existingInv = null;
 		}
+	}
+
+	const release = await buildNormalizedInvitationRelease({
+		slug,
+		sourceDir,
+		purpose: 'target',
+		identityPreflight: {
+			invitationId: existingInv?.id ? String(existingInv.id) : null,
+			managedIdentityId: existingInv?.managed_identity_id
+				? String(existingInv.managed_identity_id)
+				: null,
+		},
+	});
+	const normalizedPhotos = release.assets.map((asset) => ({ ...asset, imageHash: asset.sha256 }));
+	const packageHash = serializeInvitationPackage(release).packageHash;
+	if (options.expectedSourceHash && release.sourceHash !== options.expectedSourceHash) {
+		throw new Error(
+			`PLAN_DRIFT: Local sourceHash ${release.sourceHash.slice(0, 12)}… does not match session package ${options.expectedSourceHash.slice(0, 12)}…. Refresh the release and replan.`,
+		);
+	}
+	if (options.expectedPackageHash && packageHash !== options.expectedPackageHash) {
+		throw new Error(
+			`PLAN_DRIFT: Local packageHash ${packageHash.slice(0, 12)}… does not match session package ${options.expectedPackageHash.slice(0, 12)}…. Refresh the release and replan.`,
+		);
 	}
 
 	await verifySupabaseApiCredential({

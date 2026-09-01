@@ -266,20 +266,31 @@ export async function loadSourceAssetDigests(
 	sourceDir?: string,
 ): Promise<SourceAssetDigest[]> {
 	const effectiveSourceDir = sourceDir || getInvitationAssetSourceDir(definition);
-	const root = resolve(effectiveSourceDir);
+	const assets = await loadSourceAssets(definition, effectiveSourceDir);
+	return assets
+		.map(({ key, sha256 }) => ({ key, sha256 }))
+		.sort((left, right) => left.key.localeCompare(right.key));
+}
+
+async function loadSourceAssets(
+	definition: InvitationDefinition,
+	sourceDir: string,
+): Promise<NormalizedInvitationAsset[]> {
+	const root = resolve(sourceDir);
 	if (!existsSync(root) || !statSync(root).isDirectory()) {
-		throw new Error(`Invitation asset root does not exist: ${effectiveSourceDir}`);
+		throw new Error(`Invitation asset root does not exist: ${sourceDir}`);
 	}
-	const digests: SourceAssetDigest[] = [];
+	const assets: NormalizedInvitationAsset[] = [];
 	for (const asset of definition.assets) {
 		const source = resolve(root, asset.relativePath);
 		if (
 			!source.startsWith(`${root}${sep}`) ||
 			!existsSync(source) ||
 			!statSync(source).isFile()
-		) {
-			throw new Error(`Declared asset "${asset.key}" is missing or escapes the asset root.`);
-		}
+		)
+			throw new Error(
+				`Declared asset "${asset.key}" is missing or escapes the asset root.`,
+			);
 		const sourceBytes = readFileSync(source);
 		const declaredMime = detectFileMimeType(asset.relativePath, sourceBytes);
 		const normalized = await normalizeInvitationImage(
@@ -289,67 +300,67 @@ export async function loadSourceAssetDigests(
 		);
 		const raw = await extractBlobRawBytes(normalized.blob);
 		if (!raw) throw new Error('Could not extract bytes from Blob.');
-		digests.push({ key: asset.key, sha256: hash(raw) });
+		const bytes = raw;
+		assets.push({
+			key: asset.key,
+			displayName: asset.displayName,
+			alt: asset.alt,
+			focalPoint: asset.focalPoint,
+			bytes,
+			dataBase64: Buffer.from(bytes).toString('base64'),
+			sha256: hash(bytes),
+			mimeType: normalized.mimeType,
+			width: normalized.width,
+			height: normalized.height,
+			fileSize: normalized.fileSize,
+			validationVersion: normalized.validationVersion,
+			originalMimeType: normalized.originalMimeType,
+			originalFileSize: normalized.originalFileSize,
+		});
 	}
-	digests.sort((left, right) => left.key.localeCompare(right.key));
-	return digests;
+	return assets;
+}
+
+function assertTargetIdentityPreflight(
+	definition: InvitationDefinition,
+	purpose: 'package' | 'target',
+	preflight: {
+		invitationId: string | null;
+		managedIdentityId: string | null;
+	} | undefined,
+): void {
+	if (purpose !== 'target' || definition.managedIdentityProvenance !== 'owner-approved') return;
+	const isAbsent = preflight?.invitationId === null && preflight.managedIdentityId === null;
+	const isExisting =
+		Boolean(preflight?.invitationId) &&
+		(preflight?.managedIdentityId === null ||
+			preflight?.managedIdentityId === definition.managedIdentityId);
+	if (isAbsent || isExisting) return;
+	throw new Error(
+		`Invitation "${definition.slug}" requires a target identity preflight with an absent, null, or matching managed identity before building a target release.`,
+	);
 }
 
 export async function buildNormalizedInvitationRelease(options: {
 	slug: string;
 	sourceDir?: string;
+	/** `target` is used only after a target-aware identity preflight; `package` is read-only materialization. */
+	purpose: 'package' | 'target';
+	/** Evidence produced by a target-aware identity preflight. */
+	identityPreflight?: {
+		invitationId: string | null;
+		managedIdentityId: string | null;
+	};
 }): Promise<NormalizedInvitationRelease> {
 	const definition = getInvitationDefinition(options.slug);
-	if (definition.managedIdentityProvenance === 'owner-approved') {
-		throw new Error(
-			`Invitation "${definition.slug}" is owner-approved: verify its persisted managed identity in the target environment before building a release.`,
-		);
-	}
+	assertTargetIdentityPreflight(definition, options.purpose, options.identityPreflight);
 	let assets: NormalizedInvitationAsset[];
 
 	const effectiveSourceDir = options.sourceDir || getInvitationAssetSourceDir(definition);
 	const resolvedRoot = resolve(effectiveSourceDir);
 
 	if (existsSync(resolvedRoot) && statSync(resolvedRoot).isDirectory()) {
-		const root = resolvedRoot;
-		assets = [];
-		for (const asset of definition.assets) {
-			const source = resolve(root, asset.relativePath);
-			if (
-				!source.startsWith(`${root}${sep}`) ||
-				!existsSync(source) ||
-				!statSync(source).isFile()
-			)
-				throw new Error(
-					`Declared asset "${asset.key}" is missing or escapes the asset root.`,
-				);
-			const sourceBytes = readFileSync(source);
-			const declaredMime = detectFileMimeType(asset.relativePath, sourceBytes);
-			const normalized = await normalizeInvitationImage(
-				new Blob([sourceBytes], { type: declaredMime }),
-				declaredMime,
-				asset.optimizationRole,
-			);
-			const raw = await extractBlobRawBytes(normalized.blob);
-			if (!raw) throw new Error('Could not extract bytes from Blob.');
-			const bytes = raw;
-			assets.push({
-				key: asset.key,
-				displayName: asset.displayName,
-				alt: asset.alt,
-				focalPoint: asset.focalPoint,
-				bytes,
-				dataBase64: Buffer.from(bytes).toString('base64'),
-				sha256: hash(bytes),
-				mimeType: normalized.mimeType,
-				width: normalized.width,
-				height: normalized.height,
-				fileSize: normalized.fileSize,
-				validationVersion: normalized.validationVersion,
-				originalMimeType: normalized.originalMimeType,
-				originalFileSize: normalized.originalFileSize,
-			});
-		}
+		assets = await loadSourceAssets(definition, resolvedRoot);
 	} else if (options.sourceDir) {
 		throw new Error(`Invitation asset root does not exist: ${resolvedRoot}`);
 	} else {

@@ -28,7 +28,11 @@ async function createProductionRelease(slug = 'romina-rios-chaparro'): Promise<{
 		writeFileSync(join(tempDir, spec.relativePath), sampleJpeg);
 	}
 
-	const release = await buildNormalizedInvitationRelease({ slug, sourceDir: tempDir });
+	const release = await buildNormalizedInvitationRelease({
+		slug,
+		sourceDir: tempDir,
+		purpose: 'package',
+	});
 	return {
 		release,
 		cleanup: () => rmSync(tempDir, { recursive: true, force: true }),
@@ -36,10 +40,28 @@ async function createProductionRelease(slug = 'romina-rios-chaparro'): Promise<{
 }
 
 describe('normalized managed release semantics & roundtrip parity', () => {
-	it('blocks release generation before owner-approved identity verification', async () => {
+	it('blocks target release generation before owner-approved identity verification', async () => {
 		await expect(
-			buildNormalizedInvitationRelease({ slug: 'america-johana', sourceDir: 'unused' }),
-		).rejects.toThrow(/owner-approved.*persisted managed identity/i);
+			buildNormalizedInvitationRelease({
+				slug: 'america-johana',
+				sourceDir: 'unused',
+				purpose: 'target',
+			}),
+		).rejects.toThrow(/requires a target identity preflight/i);
+	});
+
+	it('rejects a managed identity preflight without a matching target row', async () => {
+		await expect(
+			buildNormalizedInvitationRelease({
+				slug: 'america-johana',
+				sourceDir: 'unused',
+				purpose: 'target',
+				identityPreflight: {
+					invitationId: null,
+					managedIdentityId: '11111111-1111-4111-8111-111111111111',
+				},
+			}),
+		).rejects.toThrow(/requires a target identity preflight/i);
 	});
 
 	it('uses declared semantic keys rather than environment UUIDs', () => {
