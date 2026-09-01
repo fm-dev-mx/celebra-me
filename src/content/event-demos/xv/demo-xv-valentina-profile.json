@@ -14,7 +14,6 @@
     "quote",
     "family",
     "countdown",
-    "itinerary",
     "location",
     "gallery",
     "gifts",
@@ -72,6 +71,7 @@
     "variant": "standard"
   },
   "location": {
+    "accessPolicy": { "visibility": "public" },
     "introEyebrow": "Edición especial",
     "introHeading": "Sábado, 25 de septiembre de 2027",
     "introLede": "La celebración tendrá dos escenas principales: ceremonia y recepción.",
@@ -146,9 +146,7 @@
   },
   "gallery": {
     "variant": "magazine-spread",
-    "presentationOptions": {
-      "mobileBrowse": "rail"
-    },
+    "variantOptions": { "mobileBrowse": "rail" },
     "eyebrow": "Galería",
     "title": "Galería editorial",
     "subtitle": "Una selección visual con retratos, detalles y escenas de celebración.",

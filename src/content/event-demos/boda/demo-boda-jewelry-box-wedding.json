@@ -34,6 +34,7 @@
     "variant": "standard"
   },
   "location": {
+    "accessPolicy": { "visibility": "public" },
     "introEyebrow": "Puebla de los Ángeles",
     "introHeading": "Sábado, 12 de diciembre de 2026",
     "introLede": "Sofía y Alejandro unirán sus vidas en una celebración íntima, pensada para compartir con las personas que han acompañado su historia.",

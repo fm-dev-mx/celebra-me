@@ -37,6 +37,7 @@
     "variant": "standard"
   },
   "location": {
+    "accessPolicy": { "visibility": "public" },
     "introEyebrow": "Ciudad de México",
     "introHeading": "Sábado, 28 de agosto de 2027",
     "introLede": "Aurora celebrará sus XV años en una noche de ceremonia, cena y baile preparada para recibir a sus invitados con especial cuidado.",

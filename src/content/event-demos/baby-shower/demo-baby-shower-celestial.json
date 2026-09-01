@@ -85,6 +85,7 @@
     "variant": "index-choreography"
   },
   "location": {
+    "accessPolicy": { "visibility": "public" },
     "introEyebrow": "Nos vemos para celebrar",
     "introHeading": "Sábado, 15 de agosto de 2026",
     "introLede": "A las 16:00 compartiremos una tarde tranquila para celebrar la llegada de Luna Celeste.",

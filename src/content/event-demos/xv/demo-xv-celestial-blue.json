@@ -35,6 +35,7 @@
     "variant": "standard"
   },
   "location": {
+    "accessPolicy": { "visibility": "public" },
     "indications": [
       {
         "iconName": "DressCode",

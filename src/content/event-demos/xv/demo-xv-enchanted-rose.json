@@ -40,6 +40,7 @@
     "variant": "standard"
   },
   "location": {
+    "accessPolicy": { "visibility": "public" },
     "introEyebrow": "Querétaro",
     "introHeading": "Ubicación",
     "introLede": "Isabella Rose celebrará sus XV años en una noche de ceremonia, cena y baile entre rosas, música y luz de velas.",

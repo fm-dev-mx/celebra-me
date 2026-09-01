@@ -30,6 +30,7 @@
     "variant": "standard"
   },
   "location": {
+    "accessPolicy": { "visibility": "public" },
     "indications": [
       {
         "iconName": "Crown",
@@ -159,12 +160,6 @@
     }
   },
   "interludes": [
-    {
-      "image": "gallery01",
-      "afterSection": "family",
-      "alt": "Galería de momentos especiales",
-      "height": "screen"
-    },
     {
       "image": "gallery02",
       "afterSection": "gallery",

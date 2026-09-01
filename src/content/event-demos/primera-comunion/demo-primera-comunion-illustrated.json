@@ -36,7 +36,7 @@
     "variant": "standard"
   },
   "location": {
-    "visibility": "public",
+    "accessPolicy": { "visibility": "public" },
     "indicationsHeading": "Indicaciones",
     "indications": [
       {

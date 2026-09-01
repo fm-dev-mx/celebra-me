@@ -35,6 +35,7 @@
     "variant": "standard"
   },
   "location": {
+    "accessPolicy": { "visibility": "public" },
     "introEyebrow": "Monterrey nos espera",
     "introHeading": "Sábado, 21 de noviembre de 2026",
     "introLede": "Con la bendición de su familia, Lucía celebrará una noche de luz, gratitud y recuerdos cuidadosamente guardados.",
