@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
 
+import { resolve } from 'node:path';
 import { getChangedFiles } from './shared-changed-files.mjs';
 
 const stylesheetFiles = getChangedFiles().filter((file) => /\.(css|scss)$/u.test(file));
+const STYLELINT_CLI = resolve(process.cwd(), 'node_modules/stylelint/bin/stylelint.mjs');
 
 if (stylesheetFiles.length === 0) {
 	console.log('No changed stylesheet files to lint.');
@@ -12,11 +14,11 @@ if (stylesheetFiles.length === 0) {
 
 console.log(`Linting changed stylesheet files:\n- ${stylesheetFiles.join('\n- ')}`);
 
-const result = spawnSync('pnpm', ['exec', 'stylelint', '--cache', ...stylesheetFiles], {
+const result = spawnSync(process.execPath, [STYLELINT_CLI, '--cache', ...stylesheetFiles], {
 	cwd: process.cwd(),
 	stdio: 'inherit',
 	env: process.env,
-	shell: process.platform === 'win32',
+	shell: false,
 	maxBuffer: 10 * 1024 * 1024,
 });
 

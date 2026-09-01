@@ -29,11 +29,14 @@ export type CanonicalVariantRegistryEntry = {
 	default: boolean;
 	prerequisites: readonly string[];
 	cssOwner: CanonicalVariantCssOwner;
-	/** Visual verification intentionally remains a Goal 2 concern. */
+	/** Null for defaults; otherwise records the unresolved baseline gate. */
 	unresolvedVisualVerification: string | null;
 	/** Required persisted-content operation before deployment. */
 	requiredPersistedContentTransformation: string;
 };
+
+const PENDING_VISUAL_BASELINE =
+	'Structural gate passed; accepted baseline pending authorized assets and human approval.';
 
 const noSpecialPrerequisites = ['Canonical section payload'] as const;
 
@@ -46,13 +49,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	{
 		section: 'hero', variant: 'editorial-cover', default: false,
 		prerequisites: ['hero.backgroundImage'], cssOwner: 'src/styles/themes/sections/hero/_editorial-cover.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set hero.variant to editorial-cover and remove legacy variant fields.',
 	},
 	{
 		section: 'hero', variant: 'split-cover', default: false,
 		prerequisites: ['hero.backgroundImage', 'hero.portrait'], cssOwner: 'src/styles/themes/sections/hero/_split-cover.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set hero.variant to split-cover and remove legacy variant fields.',
 	},
 	{
@@ -63,13 +66,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	{
 		section: 'family', variant: 'split-groups', default: false,
 		prerequisites: ['family.groups with at least two groups'], cssOwner: 'src/styles/themes/sections/family/_split-groups.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set family.variant to split-groups and persist family.groups.',
 	},
 	{
 		section: 'family', variant: 'asymmetric-groups', default: false,
 		prerequisites: ['family.groups with at least two groups'], cssOwner: 'src/styles/themes/sections/family/_asymmetric-groups.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set family.variant to asymmetric-groups and persist family.groups.',
 	},
 	{
@@ -80,13 +83,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	{
 		section: 'location', variant: 'split-map', default: false,
 		prerequisites: ['At least one visible venue with coordinates or image media'], cssOwner: 'src/styles/themes/sections/location/_split-map.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set location.variant to split-map and persist a compatible venue.',
 	},
 	{
 		section: 'location', variant: 'stacked-venue-plates', default: false,
 		prerequisites: ['At least two visible venues'], cssOwner: 'src/styles/themes/sections/location/_stacked-venue-plates.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set location.variant to stacked-venue-plates and persist two visible venues.',
 	},
 	{
@@ -97,19 +100,19 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	{
 		section: 'itinerary', variant: 'timeline-paper', default: false,
 		prerequisites: ['itinerary.items'], cssOwner: 'src/styles/themes/sections/itinerary/_timeline-paper.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set itinerary.variant to timeline-paper and remove legacy presentation aliases.',
 	},
 	{
 		section: 'itinerary', variant: 'editorial-ledger', default: false,
 		prerequisites: ['itinerary.items'], cssOwner: 'src/styles/themes/sections/itinerary/_editorial-ledger.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set itinerary.variant to editorial-ledger and remove legacy presentation aliases.',
 	},
 	{
 		section: 'itinerary', variant: 'editorial-program', default: false,
 		prerequisites: ['itinerary.items'], cssOwner: 'src/styles/themes/sections/itinerary/_editorial-program.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set itinerary.variant to editorial-program and remove legacy presentation aliases.',
 	},
 	{
@@ -120,43 +123,43 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	{
 		section: 'gallery', variant: 'editorial-mosaic', default: false,
 		prerequisites: ['gallery.items'], cssOwner: 'src/styles/themes/sections/gallery/_editorial-mosaic.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set gallery.variant to editorial-mosaic and persist gallery.items.',
 	},
 	{
 		section: 'gallery', variant: 'magazine-spread', default: false,
 		prerequisites: ['gallery.items'], cssOwner: 'src/styles/themes/sections/gallery/_magazine-spread.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set gallery.variant to magazine-spread and persist gallery.items.',
 	},
 	{
 		section: 'gallery', variant: 'feature-mosaic', default: false,
 		prerequisites: ['gallery.items'], cssOwner: 'src/styles/themes/sections/gallery/_feature-mosaic.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set gallery.variant to feature-mosaic and persist gallery.items.',
 	},
 	{
 		section: 'gallery', variant: 'feature-stack', default: false,
 		prerequisites: ['gallery.items with at least three items'], cssOwner: 'src/styles/themes/sections/gallery/_feature-stack.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set gallery.variant to feature-stack and persist at least three gallery.items.',
 	},
 	{
 		section: 'gallery', variant: 'paired-feature-band', default: false,
 		prerequisites: ['gallery.items with at least three items and one feature role'], cssOwner: 'src/styles/themes/sections/gallery/_paired-feature-band.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set gallery.variant to paired-feature-band and persist compatible item roles.',
 	},
 	{
 		section: 'gallery', variant: 'index-choreography', default: false,
 		prerequisites: ['gallery.items'], cssOwner: 'src/styles/themes/sections/gallery/_index-choreography.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set gallery.variant to index-choreography and persist gallery.items.',
 	},
 	{
 		section: 'gallery', variant: 'single-keepsake', default: false,
 		prerequisites: ['gallery.items with exactly one item'], cssOwner: 'src/styles/themes/sections/gallery/_single-keepsake.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set gallery.variant to single-keepsake and persist exactly one gallery item.',
 	},
 	{
@@ -167,7 +170,7 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	{
 		section: 'gifts', variant: 'editorial-catalog', default: false,
 		prerequisites: ['gifts.items or an explicit compatible presentation'], cssOwner: 'src/styles/themes/sections/gifts/_editorial-catalog.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set gifts.variant to editorial-catalog and remove legacy variant fields.',
 	},
 	{
@@ -178,13 +181,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	{
 		section: 'rsvp', variant: 'editorial-press-pass', default: false, prerequisites: ['rsvp.personalizedAccess'],
 		cssOwner: 'src/styles/themes/sections/rsvp/_editorial-press-pass.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set rsvp.variant to editorial-press-pass and remove legacy variant fields.',
 	},
 	{
 		section: 'rsvp', variant: 'formal-register', default: false, prerequisites: ['rsvp.personalizedAccess'],
 		cssOwner: 'src/styles/themes/sections/rsvp/_formal-register.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set rsvp.variant to formal-register and remove legacy variant fields.',
 	},
 	{
@@ -195,19 +198,19 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	{
 		section: 'personalizedAccess', variant: 'ornamented', default: false, prerequisites: ['rsvp.personalizedAccess'],
 		cssOwner: 'no-additional-css',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set rsvp.personalizedAccess.variant to ornamented and remove legacy variant fields.',
 	},
 	{
 		section: 'personalizedAccess', variant: 'editorial-pass', default: false, prerequisites: ['rsvp.personalizedAccess'],
 		cssOwner: 'src/styles/themes/sections/personalized-access/_editorial-pass.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set rsvp.personalizedAccess.variant to editorial-pass and remove legacy variant fields.',
 	},
 	{
 		section: 'personalizedAccess', variant: 'formal-pass', default: false, prerequisites: ['rsvp.personalizedAccess'],
 		cssOwner: 'src/styles/themes/sections/personalized-access/_formal-pass.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set rsvp.personalizedAccess.variant to formal-pass and remove legacy variant fields.',
 	},
 	{
@@ -218,13 +221,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	{
 		section: 'thankYou', variant: 'editorial-back-cover', default: false,
 		prerequisites: ['thankYou.message', 'thankYou.closingName'], cssOwner: 'src/styles/themes/sections/thank-you/_editorial-back-cover.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set thankYou.variant to editorial-back-cover and remove legacy variant fields.',
 	},
 	{
 		section: 'thankYou', variant: 'full-bleed-photo', default: false,
 		prerequisites: ['thankYou.image'], cssOwner: 'src/styles/themes/sections/thank-you/_full-bleed-photo.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set thankYou.variant to full-bleed-photo and persist thankYou.image.',
 	},
 	{
@@ -235,31 +238,31 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	{
 		section: 'countdown', variant: 'editorial-folio', default: false, prerequisites: ['countdown'],
 		cssOwner: 'src/styles/themes/sections/countdown/_editorial-folio.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set countdown.variant to editorial-folio and remove legacy variant fields.',
 	},
 	{
 		section: 'countdown', variant: 'magazine-folio', default: false, prerequisites: ['countdown'],
 		cssOwner: 'src/styles/themes/sections/countdown/_magazine-folio.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set countdown.variant to magazine-folio and remove legacy variant fields.',
 	},
 	{
 		section: 'countdown', variant: 'jeweled-panel', default: false, prerequisites: ['countdown'],
 		cssOwner: 'src/styles/themes/sections/countdown/_jeweled-panel.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set countdown.variant to jeweled-panel and remove legacy variant fields.',
 	},
 	{
 		section: 'countdown', variant: 'rose-ornament', default: false, prerequisites: ['countdown'],
 		cssOwner: 'src/styles/themes/sections/countdown/_rose-ornament.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set countdown.variant to rose-ornament and remove legacy variant fields.',
 	},
 	{
 		section: 'countdown', variant: 'hacienda-ornament', default: false, prerequisites: ['countdown'],
 		cssOwner: 'src/styles/themes/sections/countdown/_hacienda-ornament.scss',
-		unresolvedVisualVerification: 'Goal 2 visual verification required.',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set countdown.variant to hacienda-ornament and remove legacy variant fields.',
 	},
 ] as const satisfies readonly CanonicalVariantRegistryEntry[];

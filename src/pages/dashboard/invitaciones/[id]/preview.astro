@@ -196,10 +196,6 @@ const activeSectionCssPlan =
 const headLinks = buildInvitationStylesheetHeadLinks({
 	presetUrl: activePresetUrl,
 	plan: activeSectionCssPlan,
-	profileIdentity: {
-		visualProfileId: pageCtx?.viewModel.visualProfileId,
-		slug: invitationRecord?.slug ?? undefined,
-	},
 	forceBlocking: revealState !== 'closed' || !pageCtx?.wrapper.showEnvelope,
 });
 ---

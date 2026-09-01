@@ -4,16 +4,16 @@ import { tmpdir } from 'os';
 import { spawnSync } from 'child_process';
 
 function lintMessage(message: string): { status: number; stdout: string; stderr: string } {
+	const COMMITLINT_CLI = join(process.cwd(), 'node_modules/@commitlint/cli/cli.js');
 	const tempDir = mkdtempSync(join(tmpdir(), 'commitlint-contract-'));
 	const tempFile = join(tempDir, 'COMMIT_EDITMSG');
 	writeFileSync(tempFile, `${message.trim()}\n`, 'utf8');
 
 	try {
-		const executable = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
-		const result = spawnSync(executable, ['commitlint', '--edit', tempFile], {
+		const result = spawnSync(process.execPath, [COMMITLINT_CLI, '--edit', tempFile], {
 			cwd: process.cwd(),
 			encoding: 'utf8',
-			shell: process.platform === 'win32',
+			shell: false,
 			env: process.env,
 		});
 		return {

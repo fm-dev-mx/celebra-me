@@ -19,6 +19,7 @@ const reportPath = resolve(
 	process.cwd(),
 	'.tmp/observability/validation/regression-jest-report.json',
 );
+const jestCliPath = resolve(process.cwd(), 'node_modules/jest/bin/jest.js');
 
 mkdirSync(dirname(reportPath), { recursive: true });
 if (existsSync(reportPath)) {
@@ -26,10 +27,9 @@ if (existsSync(reportPath)) {
 }
 
 const result = spawnSync(
-	'pnpm',
+	process.execPath,
 	[
-		'exec',
-		'jest',
+		jestCliPath,
 		'--runTestsByPath',
 		'tests/provision/local-render-corpus-regression.test.ts',
 		'--json',
@@ -37,7 +37,7 @@ const result = spawnSync(
 	],
 	{
 		stdio: 'inherit',
-		shell: true,
+		shell: false,
 		env: process.env,
 	},
 );

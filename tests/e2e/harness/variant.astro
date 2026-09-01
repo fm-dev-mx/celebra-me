@@ -81,10 +81,6 @@ if (fullPage) {
 	fullPageHeadLinks = buildInvitationStylesheetHeadLinks({
 		presetUrl: activePresetUrl,
 		plan: activeSectionCssPlan,
-		profileIdentity: {
-			visualProfileId: builtPage.viewModel.visualProfileId,
-			slug,
-		},
 		forceBlocking: true,
 	});
 	page = builtPage;
@@ -116,10 +112,6 @@ const activeSectionCssPlan = resolveInvitationCssLoadPlan(
 	headLinks = buildInvitationStylesheetHeadLinks({
 	presetUrl: activePresetUrl,
 	plan: activeSectionCssPlan,
-	profileIdentity: {
-		visualProfileId: undefined,
-		slug: 'test-synthetic-variant',
-	},
 	forceBlocking: true,
 });
 }

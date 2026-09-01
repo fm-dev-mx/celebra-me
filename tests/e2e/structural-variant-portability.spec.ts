@@ -11,10 +11,7 @@ import {
 	CROSS_PRESET_REPRESENTATIVE_VARIANTS,
 	buildSyntheticVariantEvent,
 } from '../fixtures/structural-variants/synthetic-variant-fixtures';
-import {
-	hashVisualValue,
-	VISUAL_PARITY_RUNTIME,
-} from './harness/visual-parity-metadata';
+import { hashVisualValue, VISUAL_PARITY_RUNTIME } from './harness/visual-parity-metadata';
 
 const VIEWPORTS = [
 	{ name: 'mobile', width: 390, height: 844 },
@@ -162,6 +159,25 @@ async function runVariantVisualTest(
 ) {
 	const consoleErrors: string[] = [];
 	const pageErrors: string[] = [];
+	const externalRequests: string[] = [];
+	let documentOrigin: string | undefined;
+	await page.route('**/*', async (route) => {
+		const request = route.request();
+		const requestUrl = request.url();
+		if (request.isNavigationRequest() && request.frame() === page.mainFrame()) {
+			documentOrigin ??= new URL(requestUrl).origin;
+		}
+		if (
+			/^https?:/iu.test(requestUrl) &&
+			documentOrigin &&
+			new URL(requestUrl).origin !== documentOrigin
+		) {
+			externalRequests.push(requestUrl);
+			await route.abort();
+			return;
+		}
+		await route.continue();
+	});
 
 	page.on('console', (msg) => {
 		if (msg.type() === 'error') {
@@ -206,6 +222,10 @@ async function runVariantVisualTest(
 			),
 		);
 	});
+	expect(
+		externalRequests,
+		`External dependencies are forbidden for ${section}.${variant}.`,
+	).toEqual([]);
 
 	const hasVariant = await target.evaluate((el, v) => {
 		return (
@@ -599,8 +619,8 @@ function generateContactSheet(
   </header>
   <div class="grid">
     ${manifest.captures
-			.map(
-				(c) => `
+		.map(
+			(c) => `
       <div class="card">
         <div class="card-header">
           <span class="card-title">${c.section}.${c.variant}</span>
@@ -618,8 +638,8 @@ function generateContactSheet(
         <div class="digest">SHA-256: ${c.sha256}</div>
       </div>
     `,
-			)
-			.join('')}
+		)
+		.join('')}
   </div>
 </body>
 </html>`;

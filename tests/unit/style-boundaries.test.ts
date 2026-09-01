@@ -648,7 +648,8 @@ describe('Style boundary governance', () => {
 	it('romina profile reasserts split-cover title tokens and clears base gradient chrome', () => {
 		const romina = read('src/styles/invitation-profiles/romina-rios-chaparro.scss');
 		expect(romina).toContain(".invitation-hero[data-variant='split-cover']");
-		expect(romina).toContain('--hero-split-title-font: parisienne, cursive');
+		expect(romina).toContain("@use '@fontsource/parisienne/400.css'");
+		expect(romina).toContain("--hero-split-title-font: 'Parisienne', cursive");
 		expect(romina).toContain('-webkit-text-fill-color: var(--romina-ivory)');
 		expect(romina).toContain('background: none');
 	});

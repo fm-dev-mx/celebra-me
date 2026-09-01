@@ -5,8 +5,13 @@ import { resolvePlaywrightRuntimeEnvironment } from './scripts/playwright/previe
 // Intentionally does not load `.env.e2e.local`. That file is for Preview harness configs
 // (`playwright.preview*.config.ts`). Loading it here would redirect `pnpm test:e2e:ci` /
 // `pnpm run ci` at a protected Preview URL whenever the local Preview env file exists.
-const webServerCommand =
-	process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || 'pnpm dev --host 127.0.0.1 --port 4321 --force';
+const defaultWebServerCommand = [
+	JSON.stringify(process.execPath),
+	'node_modules/astro/bin/astro.mjs',
+	'dev',
+	'--host 127.0.0.1 --port 4321 --force',
+].join(' ');
+const webServerCommand = process.env.PLAYWRIGHT_WEB_SERVER_COMMAND || defaultWebServerCommand;
 const runtime = resolvePlaywrightRuntimeEnvironment();
 if (runtime.isVercelPreview) {
 	throw new Error(
@@ -18,9 +23,13 @@ if (runtime.isVercelPreview) {
 // Local Supabase identity, so supply deterministic Local URL stubs when the shell is unset.
 const localSupabaseUrl = process.env.SUPABASE_URL?.trim() || LOCAL_SUPABASE_URL;
 const localPublicSupabaseUrl = process.env.PUBLIC_SUPABASE_URL?.trim() || LOCAL_SUPABASE_URL;
-const visualParityMode = process.env.VISUAL_PARITY_MODE?.trim() || (process.env.CI ? 'compare' : 'diagnostic');
-const visualParitySnapshotRoot = process.env.VISUAL_PARITY_SNAPSHOT_ROOT?.trim() ||
-	(visualParityMode === 'compare' ? 'tests/e2e/visual-baselines' : '.tmp/visual-parity/candidate');
+const visualParityMode =
+	process.env.VISUAL_PARITY_MODE?.trim() || (process.env.CI ? 'compare' : 'diagnostic');
+const visualParitySnapshotRoot =
+	process.env.VISUAL_PARITY_SNAPSHOT_ROOT?.trim() ||
+	(visualParityMode === 'compare'
+		? 'tests/e2e/visual-baselines'
+		: '.tmp/visual-parity/candidate');
 
 export default defineConfig({
 	testDir: './tests/e2e',

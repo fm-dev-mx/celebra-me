@@ -1,9 +1,10 @@
 ---
 title: Canonical invitation parity — Goal 1 closure (current HEAD)
-status: active
+status: superseded
 created: 2026-08-20
-updated: 2026-08-20
+updated: 2026-08-31
 supersedes_evidence: .agent/plans/archived/canonical-invitation-parity-contract.md
+superseded_by: docs/domains/theme/corpus-bundle-inventory.md
 related_docs:
   - docs/core/content-parity-rsvp-isolation.md
   - docs/core/invitation-creation-contract.md

@@ -23,13 +23,31 @@ const MANAGED_INVITATION_RENDERING_SURFACES = [
 	/^tests\/provision\/(?:managed-invitation-regression|local-render-corpus-regression)\.test\.ts$/u,
 ];
 
+function resolveCommand(command, args) {
+	if (command !== 'pnpm') {
+		return { command, args, shell: process.platform === 'win32' };
+	}
+
+	const packageManagerCli = process.env.npm_execpath?.trim();
+	if (!packageManagerCli) {
+		return { command, args, shell: process.platform === 'win32' };
+	}
+
+	return {
+		command: process.execPath,
+		args: [packageManagerCli, ...args],
+		shell: false,
+	};
+}
+
 function runCommand(name, command, args) {
 	console.log(`\n→ ${name}`);
-	const result = spawnSync(command, args, {
+	const resolved = resolveCommand(command, args);
+	const result = spawnSync(resolved.command, resolved.args, {
 		cwd: REPO_ROOT,
 		stdio: 'inherit',
 		env: process.env,
-		shell: process.platform === 'win32',
+		shell: resolved.shell,
 		maxBuffer: 10 * 1024 * 1024,
 	});
 	if (result.error) throw result.error;

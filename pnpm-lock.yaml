@@ -47,6 +47,9 @@ importers:
       '@fontsource/allura':
         specifier: ^5.3.0
         version: 5.3.0
+      '@fontsource/parisienne':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource/pinyon-script':
         specifier: ^5.3.0
         version: 5.3.0
@@ -1179,6 +1182,9 @@ packages:
 
   '@fontsource/allura@5.3.0':
     resolution: {integrity: sha512-UqloNNVxl03+psvtIXCYuo7/v2mD9XmX2HGiczhK6NmDDwbFJJDjrbHZ5tpNuVXKsMEQPc46tZu3hewYN82/YA==}
+
+  '@fontsource/parisienne@5.3.0':
+    resolution: {integrity: sha512-YbfjZDYy7FMTVE0HRgejkGX3T5iFfgagOYtAAAymq9GklviFAZ1GqIdlyviNe23TiR20f2K7zxsL4AECtWnkEQ==}
 
   '@fontsource/pinyon-script@5.3.0':
     resolution: {integrity: sha512-ilhy4l5apzyDkfuKb7PZBUT5Sf6nfxucdXT5TQ0wQDyWtDPlouLy1lQq3lMEPk1lPsHHVrd11EkPnEG8FqDgUA==}
@@ -6830,6 +6836,8 @@ snapshots:
   '@fontsource-variable/playfair-display@5.3.0': {}
 
   '@fontsource/allura@5.3.0': {}
+
+  '@fontsource/parisienne@5.3.0': {}
 
   '@fontsource/pinyon-script@5.3.0': {}
 

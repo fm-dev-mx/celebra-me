@@ -22,6 +22,7 @@ const EXPECTED_CAPTURE_COUNT = EXPECTED_VARIANT_CAPTURES + EXPECTED_PAGE_CAPTURE
 const CANDIDATE_ROOT = resolve(ROOT, '.tmp/visual-parity/candidate');
 const COMPARE_ROOT = resolve(ROOT, '.tmp/visual-parity/compare');
 const ACCEPTED_ROOT = resolve(ROOT, 'tests/e2e/visual-baselines');
+const PLAYWRIGHT_CLI = resolve(ROOT, 'node_modules/@playwright/test/cli.js');
 const ACCEPTED_MANIFEST = join(ACCEPTED_ROOT, 'manifest.json');
 
 interface CaptureManifest {
@@ -46,22 +47,48 @@ interface CombinedManifest extends CaptureManifest {
 	variantManifest: CaptureManifest;
 	pageManifest: CaptureManifest;
 }
+function currentHead(): string {
+	return execFileSync('git', ['rev-parse', 'HEAD'], {
+		cwd: ROOT,
+		encoding: 'utf8',
+	}).trim();
+}
 
-function pnpmCommand(): string {
-	return process.env.PNPM_BIN?.trim() || (process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm');
+function assertCleanGitState(operation: 'candidate' | 'accept'): string {
+	const status = execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
+		cwd: ROOT,
+		encoding: 'utf8',
+	}).trim();
+	if (status) {
+		throw new Error(
+			`Visual parity ${operation} requires a clean index and working tree. Commit or restore the current changes first.`,
+		);
+	}
+	return currentHead();
+}
+
+function stampCandidateReference(referenceSha: string): void {
+	for (const manifestPath of [
+		join(CANDIDATE_ROOT, 'manifest.json'),
+		join(CANDIDATE_ROOT, 'pages-manifest.json'),
+	]) {
+		if (!existsSync(manifestPath)) {
+			throw new Error(`Missing visual manifest: ${relative(ROOT, manifestPath)}`);
+		}
+		const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as CaptureManifest;
+		writeFileSync(
+			manifestPath,
+			`${JSON.stringify({ ...manifest, referenceSha }, null, 2)}\n`,
+			'utf8',
+		);
+	}
 }
 
 function runPlaywright(mode: 'candidate' | 'compare'): void {
 	const outputRoot = mode === 'candidate' ? CANDIDATE_ROOT : COMPARE_ROOT;
 	const result = spawnSync(
-		pnpmCommand(),
-		[
-			'exec',
-			'playwright',
-			'test',
-			...SPECS,
-			...(mode === 'candidate' ? ['--update-snapshots'] : []),
-		],
+		process.execPath,
+		[PLAYWRIGHT_CLI, 'test', ...SPECS, ...(mode === 'candidate' ? ['--update-snapshots'] : [])],
 		{
 			cwd: ROOT,
 			stdio: 'inherit',
@@ -127,6 +154,7 @@ function readManifest(root: string): CombinedManifest {
 }
 
 function candidate(): void {
+	const referenceSha = assertCleanGitState('candidate');
 	const missingAssets = listLocalRenderCorpus()
 		.filter((entry) => entry.assetStatus !== 'ready')
 		.map((entry) => entry.slug);
@@ -134,6 +162,11 @@ function candidate(): void {
 		throw new Error(`VISUAL_BASELINE_ASSETS_INCOMPLETE: ${missingAssets.join(', ')}`);
 	}
 	runPlaywright('candidate');
+	if (assertCleanGitState('candidate') !== referenceSha) {
+		throw new Error('Visual parity candidate HEAD changed during capture.');
+	}
+	stampCandidateReference(referenceSha);
+
 	const manifest = readManifest(CANDIDATE_ROOT);
 	assertManifestIntegrity(manifest, CANDIDATE_ROOT);
 	console.log(
@@ -197,6 +230,7 @@ function listPngFiles(root: string): string[] {
 
 function accept(referenceSha: string): void {
 	if (process.env.CI) throw new Error('Baseline acceptance is unavailable in CI.');
+	const head = assertCleanGitState('accept');
 	if (!/^[0-9a-f]{40,64}$/i.test(referenceSha))
 		throw new Error('Pass --reference-sha with a commit SHA.');
 	let resolvedReferenceSha: string;
@@ -210,11 +244,21 @@ function accept(referenceSha: string): void {
 		throw new Error(`Reference SHA does not resolve to a local commit: ${referenceSha}`);
 	}
 	const candidateManifest = readManifest(CANDIDATE_ROOT);
+	if (resolvedReferenceSha !== head) {
+		throw new Error(`Reference SHA must equal the current clean HEAD (${head}).`);
+	}
+
 	if (candidateManifest.status !== 'CANDIDATE' || candidateManifest.mode !== 'candidate') {
 		throw new Error('Only a complete CANDIDATE manifest can be accepted.');
 	}
 	assertManifestIntegrity(candidateManifest, CANDIDATE_ROOT);
 	const files = listPngFiles(CANDIDATE_ROOT);
+	if (candidateManifest.referenceSha !== resolvedReferenceSha) {
+		throw new Error(
+			'Candidate reference SHA does not match the approved current HEAD. Regenerate the candidate.',
+		);
+	}
+
 	if (files.length !== EXPECTED_CAPTURE_COUNT)
 		throw new Error(
 			`Expected ${EXPECTED_CAPTURE_COUNT} candidate PNGs, found ${files.length}.`,
@@ -225,10 +269,6 @@ function accept(referenceSha: string): void {
 		mkdirSync(resolve(target, '..'), { recursive: true });
 		cpSync(source, target);
 	}
-	const commit = execFileSync('git', ['rev-parse', 'HEAD'], {
-		cwd: ROOT,
-		encoding: 'utf8',
-	}).trim();
 	writeFileSync(
 		ACCEPTED_MANIFEST,
 		JSON.stringify(
@@ -237,7 +277,7 @@ function accept(referenceSha: string): void {
 				status: 'ACCEPTED',
 				mode: 'accepted',
 				referenceSha: resolvedReferenceSha,
-				acceptedFromCommit: commit,
+				acceptedFromCommit: head,
 				acceptedAt: new Date().toISOString(),
 			},
 			null,
@@ -251,12 +291,15 @@ function accept(referenceSha: string): void {
 }
 
 function assertManifestIntegrity(manifest: CaptureManifest, root: string): void {
-	const declaredFiles = new Set(manifest.captures.map((capture) => capture.file.replaceAll('\\', '/')));
+	const declaredFiles = new Set(
+		manifest.captures.map((capture) => capture.file.replaceAll('\\', '/')),
+	);
 	const actualFiles = new Set(
 		listPngFiles(root).map((file) => relative(root, file).replaceAll('\\', '/')),
 	);
 	for (const file of actualFiles) {
-		if (!declaredFiles.has(file)) throw new Error(`Visual root contains an unlisted PNG: ${file}`);
+		if (!declaredFiles.has(file))
+			throw new Error(`Visual root contains an unlisted PNG: ${file}`);
 	}
 	for (const file of declaredFiles) {
 		if (!actualFiles.has(file)) throw new Error(`Visual manifest is missing a PNG: ${file}`);

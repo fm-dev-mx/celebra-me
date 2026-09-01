@@ -1,9 +1,11 @@
 // src/assets/images/events/ximena-meza-trasvina/index.ts
 
 import portrait from './portrait.webp';
+import hero from './hero.webp';
 import family from './family.webp';
 import thankYouPortrait from './thank-you-portrait.webp';
 import gallery02 from './gallery-02.webp';
+import gallery01 from './gallery-01.webp';
 import gallery03 from './gallery-03.webp';
 import gallery04 from './gallery-04.webp';
 import gallery05 from './gallery-05.webp';
@@ -13,14 +15,13 @@ import gallery10 from './gallery-10.webp';
 import gallery12 from './gallery-12.webp';
 import interlude01 from './ai/interlude-01.webp';
 import interlude04 from './interlude-04.webp';
-import heroBackground from './ai/hero-background.webp';
 
 export const assets = {
-	hero: heroBackground,
+	hero,
 	portrait,
 	family,
 	jardin: gallery03,
-	gallery01: portrait,
+	gallery01,
 	gallery02,
 	gallery03,
 	gallery04,

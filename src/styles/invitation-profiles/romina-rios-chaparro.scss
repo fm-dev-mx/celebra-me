@@ -1,5 +1,6 @@
 @use '../global/mixins' as mixins;
 @use '@fontsource-variable/cormorant-garamond/index.css' as cormorant-garamond;
+@use '@fontsource/parisienne/400.css' as parisienne;
 
 // Romina Rios Chaparro — contemporary botanical palette and vertical-cover art direction.
 // Loaded only through invitation-profiles/romina-rios-chaparro.scss.
@@ -66,7 +67,7 @@
 	--hero-split-overlay-mid: rgb(var(--romina-botanical-rgb) / 82%);
 	--hero-split-overlay-soft: rgb(var(--romina-botanical-rgb) / 18%);
 	--hero-split-title-offset-block: -4rem;
-	--hero-split-title-font: parisienne, cursive;
+	--hero-split-title-font: 'Parisienne', cursive;
 	--hero-split-title-style: normal;
 	--hero-split-title-weight: 400;
 	--hero-split-title-size: clamp(8rem, 8vw, 10rem);
@@ -166,7 +167,7 @@
 	// Split-cover paint must beat premiere editorial skin specificity
 	// (`.theme-preset--premiere-floral .invitation-hero[data-variant=split-cover] …`).
 	.invitation-hero[data-variant='split-cover'] {
-		--hero-split-title-font: parisienne, cursive;
+		--hero-split-title-font: 'Parisienne', cursive;
 		--hero-split-title-style: normal;
 		--hero-split-title-weight: 400;
 		--hero-split-title-size: clamp(3.5rem, 11vw, 5.5rem);

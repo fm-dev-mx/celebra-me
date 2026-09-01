@@ -1,7 +1,7 @@
 # CSS Visual Parity Gate
 
-**Status:** Required before profile LAYOUT deletion and canonical visual certification
-**Related:** [`architecture.md`](architecture.md#invitation-css-ownership-normative)
+**Status:** Blocked pending an owner-approved offline map source and an exact committed reference
+SHA **Related:** [`architecture.md`](architecture.md#invitation-css-ownership-normative)
 
 ## Rule
 
@@ -28,21 +28,41 @@ pnpm visual:parity:accept -- --reference-sha=<approved-commit-sha>
 
 `candidate` writes ignored files under `.tmp/visual-parity/candidate/`. `compare` never updates
 accepted files and fails when the accepted manifest is missing or a case differs. `accept` is a
-human-only operation and is rejected in CI. Accepted PNGs live under
-`tests/e2e/visual-baselines/` and use Git LFS. The manifest records the reference commit, runtime,
-viewport, case identity, and hashes. Baselines may not contain database payloads, guest
-personalization, cookies, credentials, signed URLs, or external requests.
+human-only operation and is rejected in CI. Accepted PNGs live under `tests/e2e/visual-baselines/`
+and use Git LFS. The manifest records the reference commit, runtime, viewport, case identity, and
+hashes. Baselines may not contain database payloads, guest personalization, cookies, credentials,
+signed URLs, or external requests.
 
-The registry-driven certification covers 158 deterministic comparisons on every CI run: 98
-variant captures (39 canonical variants plus 10 cross-preset representatives at 390x844 and
-1440x900) and 60 complete-page captures (17 managed invitations plus 13 demos at both viewports).
-Templates remain covered by schema and structural contracts only. The page matrix is discovered
-from the managed invitation registry and `src/content/event-demos`; no manual inventory is
-maintained.
+The registry-driven certification covers 158 deterministic comparisons on every CI run: 98 variant
+captures (39 canonical variants plus 10 cross-preset representatives at 390x844 and 1440x900) and 60
+complete-page captures (17 managed invitations plus 13 demos at both viewports). Templates remain
+covered by schema and structural contracts only. The page matrix is discovered from the managed
+invitation registry and `src/content/event-demos`; no manual inventory is maintained.
 
-Current repository status: the candidate gate is fail-closed until all declared invitation assets
-are present and authorized. No accepted 158-capture baseline exists until that condition is met and
-the resulting candidate is approved by a human.
+Current repository status: all declared invitation image assets resolve locally and Parisienne is
+bundled from `@fontsource/parisienne`. `GoogleMap.astro` still requests CARTO Voyager raster tiles,
+so the complete-page gate correctly fails on external network activity. CARTO's current basemap
+terms prohibit server-side tile caching and redistribution; do not vendor those tiles without a
+separate license. Select either licensed static map plates or a repository-owned schematic map
+before generating the first candidate. No accepted 158-capture baseline exists.
+
+Provider evidence:
+
+- [CARTO Basemap Terms](https://carto.com/legal/basemap-terms/) — server-side caching and tile
+  redistribution are prohibited; attributed static images are a separately permitted use.
+- [OpenStreetMap copyright and attribution](https://www.openstreetmap.org/copyright) — visible
+  attribution and ODbL notice are required for OSM-derived data.
+
+## Current asset evidence
+
+`buildNormalizedInvitationRelease` and the invitation package remain the only per-asset metadata
+contract: they derive dimensions, MIME type, file size, normalized SHA-256, `assetManifestHash`, and
+`sourceHash` from each registered definition. Do not maintain a second asset manifest.
+
+- Ximena's `hero.webp` and `gallery-01.webp` were restored from their exact historical Git objects.
+  SHA-256: `1e960bdc490b3daed64aa95ad5f6f1984e0c55c88f5106cb533d4e921a3a51ee` and
+  `7c183313fb79f5116eb4ce06005bebc9af9e92860919c3b5b124db7b346a2274`.
+- Ayrin's declared local set is byte-identical to the repository-owned enchanted-rose source set.
 
 ```bash
 # 1. Capture baseline (before LAYOUT deletion)
