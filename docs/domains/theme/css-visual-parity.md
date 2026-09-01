@@ -39,18 +39,15 @@ complete-page captures (17 managed invitations plus 13 demos at both viewports).
 covered by schema and structural contracts only. The page matrix is discovered from the managed
 invitation registry and `src/content/event-demos`; no manual inventory is maintained.
 
-Current repository status: all declared invitation image assets resolve locally and Parisienne is
-bundled from `@fontsource/parisienne`. `GoogleMap.astro` still requests CARTO Voyager raster tiles,
-so the complete-page gate correctly fails on external network activity. CARTO's current basemap
-terms prohibit server-side tile caching and redistribution; do not vendor those tiles without a
-separate license. Select either licensed static map plates or a repository-owned schematic map
-before generating the first candidate. No accepted 158-capture baseline exists.
+Current repository status: the map renderer is a repository-owned deterministic schematic and makes
+no render-time network request. Remote CARTO tiles are not used. Parisienne is not assumed to be
+available; typography must resolve through repository-owned or explicitly authorized local resources.
+No accepted 158-capture baseline exists until the post-cutover reference SHA is approved.
 
 Provider evidence:
 
-- [CARTO Basemap Terms](https://carto.com/legal/basemap-terms/) — server-side caching and tile
-  redistribution are prohibited; attributed static images are a separately permitted use.
-- [OpenStreetMap copyright and attribution](https://www.openstreetmap.org/copyright) — visible
+- Historical provider references (CARTO/OSM) are retained for provenance only; the current runtime uses `SchematicVenueMap` and makes no tile requests.
+- Historical [OpenStreetMap copyright and attribution](https://www.openstreetmap.org/copyright) — visible
   attribution and ODbL notice are required for OSM-derived data.
 
 ## Current asset evidence

@@ -113,7 +113,7 @@ reuse it without per-invitation comparison rules.
 | Definition vs live status          | `pnpm dbs` promotional fingerprint (`scripts/provision/promotional-fingerprint.ts`)                                      |
 | Cross-environment semantic compare | `pnpm invitation:content-parity` (`scripts/provision/content-parity.ts`)                                                 |
 | Semantic canonicalization          | `canonicalizeManagedInvitationContent` + `rewriteUploadedAssetReferences` in `scripts/provision/promotion-comparison.ts` |
-| Runtime variant fold               | `normalizeInvitationVariantInput` (same fold the renderer uses)                                                          |
+| Canonical variant fields             | `eventContentSchema` and the adapter consume only declared section variants; legacy aliases are ingress-only during cutover |
 | Publication projection             | `preparePublicationProjection` / `canonicalizePublicationValue`                                                          |
 
 `hashPublicationProjection` remains the publication optimistic-lock fingerprint. It is **not** the

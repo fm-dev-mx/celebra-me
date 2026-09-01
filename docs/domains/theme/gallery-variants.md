@@ -8,7 +8,7 @@
 Gallery separates reusable layout from visual skin:
 
 - `gallery.variant` is the required canonical layout authority.
-- `gallery.presentation`, `presentationOptions.mobileBrowse`, item order, focal points, captions,
+- `gallery.variant`, `gallery.variantOptions.mobileBrowse`, item order, focal points, captions,
   and item `layoutRole` are orthogonal typed capabilities.
 
 Theme preset, slug, profile identity, and asset identity never select Gallery structure.

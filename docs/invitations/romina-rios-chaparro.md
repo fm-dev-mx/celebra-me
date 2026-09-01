@@ -40,7 +40,7 @@ photograph (`IMG_3263.jpeg`) so each path meets its delivery-role budget.
   desktop sizes and assert no Romina profile stylesheet is loaded.
 - Reusable renderer/CSS governance scans reject client names, invitation slugs, historical theme
   identities, profile references, and invitation asset imports.
-- The obsolete Romina condition in `GoogleMap.astro` was removed after a zero-consumer source
+- The obsolete Romina condition in the legacy `GoogleMap.astro` wrapper is retained only as historical evidence; runtime uses `SchematicVenueMap`.
   search. Romina's maps retain the generic `premiere-floral` visual path; Location browser smoke
   remains a required verification because the shared primitive changed.
 
@@ -48,7 +48,7 @@ No database, Preview, Production, client copy, event facts, or photographic asse
 this encapsulation.
 ## Established mappings
 
-- Venue mapping: legacy `location.ceremony` / `location.reception` maps to canonical `location.venues[*]`.
+- Venue mapping: historical `location.ceremony` / `location.reception` data is folded at ingress to canonical `location.venues[*]`; no runtime renderer consumes the legacy shape.
 - Seal monogram: `RC`.
 - Hero image focals: `50% 42%` (mobile/tablet), `58% 46%` (desktop).
 - Ceremony coordinates `lat: 30.4137, lng: -107.9125` and reception coordinates `lat: 30.4280, lng: -107.9250` are marked inferred.

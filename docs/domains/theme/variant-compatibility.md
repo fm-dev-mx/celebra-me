@@ -29,10 +29,8 @@ verification, and required persisted-content transformations are listed in the
 [single cutover manifest](variant-cutover-manifest.md). The manifest is generated from
 `CANONICAL_VARIANT_CUTOVER_MANIFEST`; it is not a second runtime registry.
 
-Every non-default entry has an independent section stylesheet owner or the explicit
-`no-additional-css` declaration. The latter currently applies to `personalizedAccess.ornamented`:
-the renderer emits its ornaments and the shared personalized-access base owns their geometry, so no
-additional variant sheet is required.
+Every non-default entry has an exact independent section stylesheet owner. Defaults use
+`section-base:<section>`; no `no-additional-css` owner is valid.
 
 Repository-owned definitions, demos, templates, local render fixtures, and writer tests now author
 the canonical fields directly. The local non-origin corpus includes compatible fixtures for the

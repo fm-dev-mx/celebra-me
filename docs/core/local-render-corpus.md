@@ -27,8 +27,8 @@ pnpm invitation:local-corpus --apply --slug <slug>
 Every entry uses the definition and its declared delivery scope through `applyLocalInvitation`.
 The command rejects Preview and Production, never clones databases, and never imports Auth users,
 guests, RSVP responses, analytics, or tracking data. Apply remains a separately authorized write.
-Definitions with `managedIdentityProvenance: authoring-placeholder` remain render/schema inputs only;
-release/package generation fails closed until their persisted identity is verified.
+Definitions with `managedIdentityProvenance: owner-approved` remain render/schema inputs only;
+release/package generation fails closed until each target identity preflight is verified.
 
 ## Regression and visual gate
 

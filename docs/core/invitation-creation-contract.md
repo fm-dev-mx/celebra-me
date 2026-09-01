@@ -20,9 +20,9 @@ Every managed digital invitation must define:
 - **Managed Identity** (`managedIdentityId`): Immutable UUID v4 independent of slug, title, and
   client name. Never reuse across definitions; never change after first publication. Identity
   resolution and uniqueness use this value — never title or client name.
-  - A definition marked `managedIdentityProvenance: authoring-placeholder` is audit-only. It may
-    validate and render locally, but release/package generation is blocked until an owner-authorized
-    environment audit records the persisted identity and the definition is updated to `persisted`.
+  - A definition marked `managedIdentityProvenance: owner-approved` is migration-pending. It may
+    validate and render locally, but release requires a target-environment identity preflight; it is
+    allowed only when the target row is absent, has a null managed identity, or already matches.
 - **Previous Slugs** (`previousSlugs`, optional): Historical slugs for this managed identity. Used
   for alias diagnostics and fail-closed `REKEY_REQUIRED` protection. Creating a new row when a
   previous slug is still active is forbidden; operators must pass `--rekey-from <old-slug>`. Guarded

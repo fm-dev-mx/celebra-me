@@ -144,15 +144,14 @@ Storage mutations when content is unchanged.
 - **Single-File Definition:** `scripts/provision/invitations/abril-michelle-becerra-rea.ts`
 - **Registry Entry:** Registered in `scripts/provision/invitations/registry.ts`
 - **SCSS Theme Profile:** `src/styles/invitation-profiles/abril-michelle-becerra-rea.scss`
-- **Shared Components Used:** `Hero.astro`, `GoogleMap.astro`, `EnvelopeReveal.astro`,
+- **Shared Components Used:** `Hero.astro`, `SchematicVenueMap.astro`, `EnvelopeReveal.astro`,
   `Location.astro`, `Itinerary.astro`, `Gallery.astro`, `RSVP.astro`, `ThankYou.astro`
 - **Generic System Corrections:**
   - `apply-local-invitation.ts`: Post-RPC event lookup by slug avoids duplicate key errors on
     `events_slug_key`.
   - `invitation-update-plan.ts`: Guarded array recursion prevents stack overflow when comparing
     against `undefined` targets.
-  - `GoogleMap.astro`: Generic `isRustic` mapping uses `variant === 'premiere-floral'` without
-    hardcoded invitation slugs.
+  - `SchematicVenueMap.astro`: Deterministic venue map is derived from canonical coordinates without network requests.
 - **Media Provider Strategy:** Cloudinary for invitation images (shared server adapter). Music
   remains a content URL. Legacy Supabase binaries are pruned in a later managed step.
 

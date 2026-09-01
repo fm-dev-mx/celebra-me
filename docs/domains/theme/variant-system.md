@@ -75,10 +75,9 @@ canonical schema.
 ## SCSS ownership and isolation
 
 Semantic variant entrypoints live at `src/styles/themes/sections/<section>/_<semantic-variant>.scss`
-when the registry assigns a section stylesheet. The registry may assign a shared theme bundle when
-that bundle owns the geometry. A variant may instead declare `no-additional-css` when its renderer
-and shared section base already own the complete presentation; that declaration is explicit and is
-not a runtime fallback. The section CSS resolver derives its maps from the canonical registry and
+when the registry assigns a section stylesheet. The registry assigns `section-base:<section>` to defaults and an exact canonical stylesheet path
+to every non-default variant. Presets provide atmosphere tokens only; they never own semantic section
+geometry. The section CSS resolver derives its maps from the canonical registry and
 never from invitation identity.
 
 Theme presets may supply palette, typography, crop, decoration, motion timing, and documented custom
