@@ -81,7 +81,7 @@ describe('Valentina Hernández managed definition', () => {
 		expect(parsed.hero.variant).toBe('editorial-cover');
 		expect(parsed.countdown?.variant).toBe('magazine-folio');
 		expect(parsed.gallery?.variant).toBe('magazine-spread');
-		expect(parsed.gallery?.presentationOptions?.mobileBrowse).toBe('rail');
+		expect(parsed.gallery?.variantOptions?.mobileBrowse).toBe('rail');
 		expect(parsed.itinerary?.variant).toBe('editorial-program');
 		expect(parsed.gifts?.variant).toBe('editorial-catalog');
 		expect(parsed.rsvp?.variant).toBe('editorial-press-pass');

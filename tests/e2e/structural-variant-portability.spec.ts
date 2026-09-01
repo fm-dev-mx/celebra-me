@@ -2,25 +2,15 @@ import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import {
-	CANONICAL_VARIANT_REGISTRY,
-	type CanonicalVariantSection,
-	type CanonicalVariantCssOwner,
-} from '../../src/lib/invitation/section-variants';
-import {
-	CROSS_PRESET_REPRESENTATIVE_VARIANTS,
-	buildSyntheticVariantEvent,
-} from '../fixtures/structural-variants/synthetic-variant-fixtures';
+import { CANONICAL_VARIANT_REGISTRY, type CanonicalVariantSection, type CanonicalVariantCssOwner } from '../../src/lib/invitation/section-variants';
+import { buildSyntheticVariantEvent } from '../fixtures/structural-variants/synthetic-variant-fixtures';
+import { CROSS_PRESET_REPRESENTATIVE_VARIANTS, VISUAL_VIEWPORTS } from '../../scripts/screenshot/visual-coverage-contract';
 import { hashVisualValue, VISUAL_PARITY_RUNTIME } from './harness/visual-parity-metadata';
+import { computeVisualMatrixHash } from '../../scripts/screenshot/visual-coverage-contract';
 
-const VIEWPORTS = [
-	{ name: 'mobile', width: 390, height: 844 },
-	{ name: 'desktop', width: 1440, height: 900 },
-] as const;
+const VIEWPORTS = VISUAL_VIEWPORTS;
 
-const EXPECTED_CAPTURE_COUNT =
-	(CANONICAL_VARIANT_REGISTRY.length + CROSS_PRESET_REPRESENTATIVE_VARIANTS.length) *
-	VIEWPORTS.length;
+const EXPECTED_CAPTURE_COUNT = (CANONICAL_VARIANT_REGISTRY.length + CROSS_PRESET_REPRESENTATIVE_VARIANTS.length) * VIEWPORTS.length;
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const VISUAL_PARITY_MODE =
 	process.env.VISUAL_PARITY_MODE ?? (process.env.CI ? 'compare' : 'diagnostic');
@@ -34,6 +24,7 @@ function getSectionLocator(page: Page, section: CanonicalVariantSection) {
 }
 
 interface CapturedSnapshotInfo {
+	kind: 'variant';
 	section: string;
 	variant: string;
 	preset: string;
@@ -134,6 +125,7 @@ test.describe('Registry-Driven Visual Portability Suite', () => {
 			status: VISUAL_PARITY_MODE === 'compare' ? 'COMPARED' : 'CANDIDATE',
 			mode: VISUAL_PARITY_MODE,
 			totalCaptures: capturedSnapshots.length,
+			matrixHash: computeVisualMatrixHash(capturedSnapshots as unknown as Array<Record<string, unknown>>),
 			baselinePreset: 'jewelry-box',
 			crossPreset: 'celestial-blue',
 			captures: capturedSnapshots,
@@ -206,9 +198,18 @@ async function runVariantVisualTest(
 	// 2. Verify target section element and variant attribute
 	const target = getSectionLocator(page, section);
 	await expect(target).toBeVisible();
+	await target.scrollIntoViewIfNeeded();
 
 	// Wait for document fonts and images to load
 	await page.evaluate(() => document.fonts?.ready);
+	await page.evaluate(async () => {
+		const maxScroll = Math.max(document.documentElement.scrollHeight, window.innerHeight);
+		for (let y = 0; y <= maxScroll; y += Math.max(window.innerHeight, 1)) {
+			window.scrollTo(0, y);
+			await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
+		}
+		window.scrollTo(0, 0);
+	});
 	await page.evaluate(async () => {
 		const images = Array.from(document.querySelectorAll('img'));
 		await Promise.all(
@@ -222,6 +223,8 @@ async function runVariantVisualTest(
 			),
 		);
 	});
+	const brokenImages = await page.evaluate(() => Array.from(document.images).filter((image) => image.currentSrc && image.naturalWidth === 0).map((image) => image.currentSrc));
+	expect(brokenImages).toEqual([]);
 	expect(
 		externalRequests,
 		`External dependencies are forbidden for ${section}.${variant}.`,
@@ -235,67 +238,67 @@ async function runVariantVisualTest(
 	}, variant);
 	expect(hasVariant).toBe(true);
 
-	// 3. Verify CSS owner resolution across all 3 categories and absence of origin-profile CSS
+	// 3. Verify exact CSS ownership across all categories and absence of origin-profile CSS
 	const stylesheets = await page.evaluate(() =>
-		Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')).map(
-			(l) => l.href,
-		),
+		Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')).map((link) => ({
+			href: link.href,
+			canonicalOwner: link.dataset.canonicalCssOwner ?? null,
+		})),
 	);
-	const hasOriginProfile = stylesheets.some((href) => href.includes('invitation-profiles'));
+	const hasOriginProfile = stylesheets.some(({ href }) => href.includes('invitation-profiles'));
 	expect(hasOriginProfile).toBe(false);
 
+	const canonicalOwners = stylesheets
+		.map(({ canonicalOwner }) => canonicalOwner)
+		.filter((owner): owner is string => Boolean(owner));
 	if (cssOwner.startsWith('src/styles/themes/sections/')) {
-		const fileBase = path.basename(cssOwner, '.scss').replace(/^_/, '');
-		const hasOwnerCss = stylesheets.some((href) => href.includes(fileBase));
 		expect(
-			hasOwnerCss,
-			`CSS owner verification failed for ${section}.${variant}: expected modular stylesheet "${fileBase}" from "${cssOwner}" to be loaded. Observed stylesheets: ${JSON.stringify(stylesheets)}`,
-		).toBe(true);
-	} else if (cssOwner.startsWith('theme-bundle:')) {
+			canonicalOwners,
+			'CSS owner verification failed for ' +
+				section +
+				'.' +
+				variant +
+				': expected exact owner "' +
+				cssOwner +
+				'". Observed canonical owners: ' +
+				JSON.stringify(canonicalOwners),
+		).toContain(cssOwner);
+	} else if (cssOwner.startsWith('section-base:')) {
 		const hasPresetBundle = stylesheets.some(
-			(href) =>
-				href.includes(`invitation-presets/${preset}`) ||
-				href.includes(`invitation-sections-by-preset/${preset}`) ||
+			({ href }) =>
+				href.includes('invitation-presets/' + preset) ||
+				href.includes('invitation-sections-by-preset/' + preset) ||
 				href.includes(preset),
 		);
 		expect(
 			hasPresetBundle,
-			`CSS owner verification failed for ${section}.${variant}: expected active preset bundle "${preset}" for owner "${cssOwner}". Observed stylesheets: ${JSON.stringify(stylesheets)}`,
+			'CSS owner verification failed for ' +
+				section +
+				'.' +
+				variant +
+				': expected active preset bundle "' +
+				preset +
+				'" for owner "' +
+				cssOwner +
+				'". Observed stylesheets: ' +
+				JSON.stringify(stylesheets),
 		).toBe(true);
-
 		const sectionDir =
 			section === 'personalizedAccess'
 				? 'personalized-access'
 				: section === 'thankYou'
 					? 'thank-you'
 					: section;
-		const hasModularSectionCss = stylesheets.some(
-			(href) =>
-				href.includes(`/styles/themes/sections/${sectionDir}/`) ||
-				href.includes(`/themes/sections/${sectionDir}/`),
-		);
 		expect(
-			hasModularSectionCss,
-			`CSS owner verification failed for ${section}.${variant}: expected no modular variant stylesheet for "${sectionDir}" under owner "${cssOwner}". Observed stylesheets: ${JSON.stringify(stylesheets)}`,
-		).toBe(false);
-	} else if (cssOwner === 'no-additional-css') {
-		const sectionDir =
-			section === 'personalizedAccess'
-				? 'personalized-access'
-				: section === 'thankYou'
-					? 'thank-you'
-					: section;
-		const hasModularSectionCss = stylesheets.some(
-			(href) =>
-				href.includes(`/styles/themes/sections/${sectionDir}/`) ||
-				href.includes(`/themes/sections/${sectionDir}/`),
-		);
-		expect(
-			hasModularSectionCss,
-			`CSS owner verification failed for ${section}.${variant}: expected no-additional-css for ${section}.${variant}, but found modular stylesheet in observed stylesheets: ${JSON.stringify(stylesheets)}`,
+			canonicalOwners.some((owner) => owner.startsWith('src/styles/themes/sections/' + sectionDir + '/')),
+			'CSS owner verification failed for ' +
+				section +
+				'.' +
+				variant +
+				': a section-base variant must not load modular section CSS. Observed canonical owners: ' +
+				JSON.stringify(canonicalOwners),
 		).toBe(false);
 	}
-
 	// 4. Bounded clipping and overlap layout audit
 	const layoutAudit = await target.evaluate((sectionEl) => {
 		const docWidth = window.innerWidth;
@@ -460,13 +463,12 @@ async function runVariantVisualTest(
 
 	// 8. Capture diagnostic viewport image for contact sheet / manifest
 	const snapshotName = `${preset}-${vp.name}-${section}-${variant}.png`;
+	const viewportSnapshotBuffer = await page.screenshot({ animations: 'disabled' });
 	if (VISUAL_PARITY_MODE === 'candidate' || VISUAL_PARITY_MODE === 'compare') {
-		await expect(page).toHaveScreenshot(snapshotName, {
-			animations: 'disabled',
+		expect(viewportSnapshotBuffer).toMatchSnapshot(snapshotName, {
 			maxDiffPixelRatio: 0.001,
 		});
 	}
-	const viewportSnapshotBuffer = await page.screenshot({ animations: 'disabled' });
 	const hash = crypto.createHash('sha256').update(viewportSnapshotBuffer).digest('hex');
 	const syntheticEvent = buildSyntheticVariantEvent({
 		section,
@@ -485,6 +487,7 @@ async function runVariantVisualTest(
 	fs.writeFileSync(outputSnapshotPath, viewportSnapshotBuffer);
 
 	capturedSnapshots.push({
+		kind: 'variant',
 		section,
 		variant,
 		preset,

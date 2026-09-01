@@ -200,14 +200,14 @@ describe('Goal C — presentation options', () => {
 				gallerySchema.safeParse({
 					title: 'Galería',
 					variant: 'magazine-spread',
-					presentationOptions: { mobileBrowse: 'rail' },
+					variantOptions: { mobileBrowse: 'rail' },
 					items: [{ image: { type: 'external', src: 'https://example.com/a.webp' } }],
 				}).success,
 			).toBe(true);
 			expect(
 				gallerySchema.safeParse({
 					title: 'Galería',
-					presentationOptions: { mobileBrowse: 'carousel' },
+					variantOptions: { mobileBrowse: 'carousel' },
 					items: [{ image: { type: 'external', src: 'https://example.com/a.webp' } }],
 				}).success,
 			).toBe(false);
@@ -226,7 +226,7 @@ describe('Goal C — presentation options', () => {
 				gallery: {
 					title: 'Galería',
 					variant: 'magazine-spread',
-					presentationOptions: { mobileBrowse: 'rail' },
+					variantOptions: { mobileBrowse: 'rail' },
 					items: [
 						{ image: { type: 'external', src: 'https://example.com/a.webp' } },
 						{ image: { type: 'external', src: 'https://example.com/b.webp' } },
@@ -239,7 +239,7 @@ describe('Goal C — presentation options', () => {
 			} as Parameters<typeof adaptEvent>[0]).sections.gallery;
 
 			expect(gallery?.variant).toBe('magazine-spread');
-			expect(gallery?.mobileBrowse).toBe('rail');
+			expect(gallery?.variantOptions?.mobileBrowse).toBe('rail');
 			expect(gallery?.variant).not.toBe('valentina-hernandez');
 
 			const canonical = readSource(

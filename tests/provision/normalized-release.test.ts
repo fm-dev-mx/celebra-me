@@ -36,10 +36,10 @@ async function createProductionRelease(slug = 'romina-rios-chaparro'): Promise<{
 }
 
 describe('normalized managed release semantics & roundtrip parity', () => {
-	it('blocks release generation for authoring-only identity placeholders', async () => {
+	it('blocks release generation before owner-approved identity verification', async () => {
 		await expect(
 			buildNormalizedInvitationRelease({ slug: 'america-johana', sourceDir: 'unused' }),
-		).rejects.toThrow(/authoring-only.*placeholder managed identity/i);
+		).rejects.toThrow(/owner-approved.*persisted managed identity/i);
 	});
 
 	it('uses declared semantic keys rather than environment UUIDs', () => {

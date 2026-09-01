@@ -66,6 +66,10 @@ describe('vercel image optimization policy', () => {
 		expect(plainImgSrc(SUPABASE_STORAGE_URL)).toBe(SUPABASE_STORAGE_URL);
 	});
 
+	it('keeps repository-owned data URLs on a plain img path', () => {
+		expect(shouldOptimizeThroughVercelImage('data:image/webp;base64,AAAA')).toBe(false);
+	});
+
 	it('still optimizes local ImageMetadata and versioned remotes', () => {
 		expect(
 			shouldOptimizeThroughVercelImage({

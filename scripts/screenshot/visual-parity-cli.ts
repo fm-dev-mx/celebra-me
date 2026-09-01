@@ -7,18 +7,35 @@
  */
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import {
+	cpSync,
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	readdirSync,
+	renameSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { listLocalRenderCorpus } from '../provision/local-render-corpus/registry.ts';
+import {
+	buildVisualCoverageCases,
+	computeVisualMatrixHash,
+	VISUAL_VIEWPORTS,
+} from './visual-coverage-contract.ts';
 
 const ROOT = process.cwd();
 const SPECS = [
 	'tests/e2e/structural-variant-portability.spec.ts',
 	'tests/e2e/canonical-invitation-page-parity.spec.ts',
 ] as const;
-const EXPECTED_VARIANT_CAPTURES = 98;
-const EXPECTED_PAGE_CAPTURES = 60;
-const EXPECTED_CAPTURE_COUNT = EXPECTED_VARIANT_CAPTURES + EXPECTED_PAGE_CAPTURES;
+const VISUAL_COVERAGE_CASE_VIEWPORT_COUNT = VISUAL_VIEWPORTS.length;
+const VISUAL_COVERAGE = buildVisualCoverageCases();
+const EXPECTED_VARIANT_CAPTURES = VISUAL_COVERAGE.variantCases.length;
+const EXPECTED_PAGE_CAPTURES =
+	VISUAL_COVERAGE.pageCases.length * VISUAL_COVERAGE_CASE_VIEWPORT_COUNT;
+const EXPECTED_CAPTURE_COUNT = VISUAL_COVERAGE.cases.length;
 const CANDIDATE_ROOT = resolve(ROOT, '.tmp/visual-parity/candidate');
 const COMPARE_ROOT = resolve(ROOT, '.tmp/visual-parity/compare');
 const ACCEPTED_ROOT = resolve(ROOT, 'tests/e2e/visual-baselines');
@@ -31,6 +48,7 @@ interface CaptureManifest {
 	totalCaptures: number;
 	runtimeFingerprint?: Record<string, unknown>;
 	captures: Array<{
+		kind?: string;
 		file: string;
 		sha256: string;
 		contentHash?: string;
@@ -40,6 +58,7 @@ interface CaptureManifest {
 		section: string;
 		variant: string;
 	}>;
+	matrixHash?: string;
 	[key: string]: unknown;
 }
 
@@ -115,15 +134,6 @@ function readManifest(root: string): CombinedManifest {
 	if (!existsSync(variantFile))
 		throw new Error(`Missing visual manifest: ${relative(ROOT, variantFile)}`);
 	const variantManifest = JSON.parse(readFileSync(variantFile, 'utf8')) as CaptureManifest;
-	if (
-		variantManifest.totalCaptures === EXPECTED_CAPTURE_COUNT &&
-		Array.isArray(variantManifest.captures) &&
-		variantManifest.captures.length === EXPECTED_CAPTURE_COUNT &&
-		variantManifest.variantManifest &&
-		variantManifest.pageManifest
-	) {
-		return variantManifest as CombinedManifest;
-	}
 	if (!existsSync(pageFile))
 		throw new Error(`Missing page manifest: ${relative(ROOT, pageFile)}`);
 	const pageManifest = JSON.parse(readFileSync(pageFile, 'utf8')) as CaptureManifest;
@@ -143,11 +153,13 @@ function readManifest(root: string): CombinedManifest {
 			`Expected ${EXPECTED_PAGE_CAPTURES} complete-page captures, found ${pageManifest.totalCaptures}.`,
 		);
 	}
+	const captures = [...variantManifest.captures, ...pageManifest.captures];
 	return {
 		...variantManifest,
 		status: variantManifest.status,
-		totalCaptures: variantManifest.totalCaptures + pageManifest.totalCaptures,
-		captures: [...variantManifest.captures, ...pageManifest.captures],
+		totalCaptures: captures.length,
+		captures,
+		matrixHash: computeVisualMatrixHash(captures as unknown as Array<Record<string, unknown>>),
 		variantManifest,
 		pageManifest,
 	};
@@ -169,6 +181,8 @@ function candidate(): void {
 
 	const manifest = readManifest(CANDIDATE_ROOT);
 	assertManifestIntegrity(manifest, CANDIDATE_ROOT);
+	assertCoverageMatrix(manifest);
+	writeCombinedCandidateArtifacts(CANDIDATE_ROOT, manifest);
 	console.log(
 		`Candidate ready: ${manifest.totalCaptures} captures in ${relative(ROOT, CANDIDATE_ROOT)}.`,
 	);
@@ -187,11 +201,15 @@ function compare(): void {
 	runPlaywright('compare');
 	const compared = readManifest(COMPARE_ROOT);
 	assertManifestIntegrity(compared, COMPARE_ROOT);
+	assertCoverageMatrix(accepted);
 	if (
 		JSON.stringify(accepted.runtimeFingerprint ?? null) !==
 		JSON.stringify(compared.runtimeFingerprint ?? null)
 	) {
 		throw new Error('Visual runtime fingerprint drifted from the accepted baseline.');
+	}
+	if (!accepted.matrixHash || compared.matrixHash !== accepted.matrixHash) {
+		throw new Error('Visual coverage matrix drifted from the accepted baseline.');
 	}
 	const acceptedFiles = new Set(accepted.captures.map((capture) => capture.file));
 	const comparedFiles = new Set(compared.captures.map((capture) => capture.file));
@@ -220,6 +238,52 @@ function compare(): void {
 	console.log(`Visual parity compare passed: ${compared.totalCaptures} captures.`);
 }
 
+function assertCoverageMatrix(manifest: CombinedManifest): void {
+	const expectedHash = computeVisualMatrixHash(VISUAL_COVERAGE.cases);
+	const actualHash = computeVisualMatrixHash(
+		manifest.captures as unknown as Array<Record<string, unknown>>,
+	);
+	if (manifest.matrixHash !== actualHash || actualHash !== expectedHash) {
+		throw new Error(
+			`Visual coverage matrix drifted: expected ${expectedHash}, found ${manifest.matrixHash ?? actualHash}.`,
+		);
+	}
+}
+function writeCombinedCandidateArtifacts(root: string, manifest: CombinedManifest): void {
+	const combinedPath = join(root, 'combined-manifest.json');
+	const payload = {
+		...manifest,
+		status: 'CANDIDATE',
+		mode: 'candidate',
+		matrixHash: computeVisualMatrixHash(
+			manifest.captures as unknown as Array<Record<string, unknown>>,
+		),
+	};
+	const candidateManifestSha256 = createHash('sha256')
+		.update(JSON.stringify(payload))
+		.digest('hex');
+	writeFileSync(
+		combinedPath,
+		`${JSON.stringify({ ...payload, candidateManifestSha256 }, null, 2)}\n`,
+		'utf8',
+	);
+	const cards = manifest.captures
+		.map(
+			(capture) => `
+    <article><header><strong>${capture.section || capture.kind || 'page'}${capture.variant ? `.${capture.variant}` : ''}</strong>
+    <span>${capture.preset ?? ''} / ${capture.viewport}</span></header>
+    <a href="${capture.file}"><img src="${capture.file}" alt="${capture.file}" loading="lazy"></a>
+    <code>${capture.sha256}</code></article>`,
+		)
+		.join('');
+	writeFileSync(
+		join(root, 'combined-contact-sheet.html'),
+		`<!doctype html><html lang="es"><meta charset="utf-8"><title>Visual parity candidate</title>
+    <style>body{font-family:system-ui;background:#0f172a;color:#f8fafc;margin:2rem}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:1rem}article{background:#1e293b;padding:1rem;border-radius:8px}header{display:flex;justify-content:space-between;gap:.5rem;margin-bottom:.5rem}img{max-width:100%;height:auto;border:1px solid #475569}code{display:block;word-break:break-all;font-size:.7rem;color:#cbd5e1;margin-top:.5rem}</style>
+    <p>Candidate: ${manifest.totalCaptures} cases · matrix ${manifest.matrixHash ?? 'uncomputed'} · manifest ${candidateManifestSha256}</p><main>${cards}</main></html>`,
+		'utf8',
+	);
+}
 function listPngFiles(root: string): string[] {
 	if (!existsSync(root)) return [];
 	return readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
@@ -231,65 +295,120 @@ function listPngFiles(root: string): string[] {
 function accept(referenceSha: string): void {
 	if (process.env.CI) throw new Error('Baseline acceptance is unavailable in CI.');
 	const head = assertCleanGitState('accept');
+	const resolvedReferenceSha = resolveReferenceSha(referenceSha, head);
+	const candidateManifest = readManifest(CANDIDATE_ROOT);
+	assertCandidateManifest(candidateManifest, resolvedReferenceSha);
+	assertManifestIntegrity(candidateManifest, CANDIDATE_ROOT);
+	assertCoverageMatrix(candidateManifest);
+	const { candidateManifestSha256, files } = validateCandidateArtifacts();
+
+	const stagingRoot = resolve(ROOT, '.tmp/visual-parity/accepted-' + process.pid);
+	stageCandidateFiles(stagingRoot, files);
+	const acceptedPayload = {
+		...candidateManifest,
+		status: 'ACCEPTED',
+		mode: 'accepted',
+		referenceSha: resolvedReferenceSha,
+		acceptedFromCommit: head,
+		acceptedAt: new Date().toISOString(),
+		candidateManifestSha256,
+	};
+	writeFileSync(
+		join(stagingRoot, 'manifest.json'),
+		JSON.stringify(acceptedPayload, null, 2) + '\n',
+		'utf8',
+	);
+	assertManifestIntegrity(acceptedPayload, stagingRoot);
+
+	const backupRoot = resolve(ROOT, '.tmp/visual-parity/accepted-backup-' + head.slice(0, 12));
+	replaceAcceptedRoot(stagingRoot, backupRoot);
+	console.log(
+		'Accepted ' +
+			EXPECTED_CAPTURE_COUNT +
+			' visual baselines at ' +
+			relative(ROOT, ACCEPTED_ROOT) +
+			'.',
+	);
+}
+
+function resolveReferenceSha(referenceSha: string, head: string): string {
 	if (!/^[0-9a-f]{40,64}$/i.test(referenceSha))
 		throw new Error('Pass --reference-sha with a commit SHA.');
-	let resolvedReferenceSha: string;
+	let resolved: string;
 	try {
-		resolvedReferenceSha = execFileSync(
-			'git',
-			['rev-parse', '--verify', `${referenceSha}^{commit}`],
-			{ cwd: ROOT, encoding: 'utf8' },
-		).trim();
+		resolved = execFileSync('git', ['rev-parse', '--verify', referenceSha + '^{commit}'], {
+			cwd: ROOT,
+			encoding: 'utf8',
+		}).trim();
 	} catch {
-		throw new Error(`Reference SHA does not resolve to a local commit: ${referenceSha}`);
+		throw new Error('Reference SHA does not resolve to a local commit: ' + referenceSha);
 	}
-	const candidateManifest = readManifest(CANDIDATE_ROOT);
-	if (resolvedReferenceSha !== head) {
-		throw new Error(`Reference SHA must equal the current clean HEAD (${head}).`);
-	}
+	if (resolved !== head)
+		throw new Error('Reference SHA must equal the current clean HEAD (' + head + ').');
+	return resolved;
+}
 
-	if (candidateManifest.status !== 'CANDIDATE' || candidateManifest.mode !== 'candidate') {
+function assertCandidateManifest(manifest: CombinedManifest, referenceSha: string): void {
+	if (manifest.status !== 'CANDIDATE' || manifest.mode !== 'candidate') {
 		throw new Error('Only a complete CANDIDATE manifest can be accepted.');
 	}
-	assertManifestIntegrity(candidateManifest, CANDIDATE_ROOT);
-	const files = listPngFiles(CANDIDATE_ROOT);
-	if (candidateManifest.referenceSha !== resolvedReferenceSha) {
+	if (manifest.referenceSha !== referenceSha) {
 		throw new Error(
 			'Candidate reference SHA does not match the approved current HEAD. Regenerate the candidate.',
 		);
 	}
+}
 
-	if (files.length !== EXPECTED_CAPTURE_COUNT)
+function validateCandidateArtifacts(): { candidateManifestSha256: string; files: string[] } {
+	const combinedManifestPath = join(CANDIDATE_ROOT, 'combined-manifest.json');
+	if (!existsSync(combinedManifestPath))
+		throw new Error('Combined candidate manifest is missing.');
+	const combinedManifest = JSON.parse(readFileSync(combinedManifestPath, 'utf8')) as Record<
+		string,
+		unknown
+	>;
+	const candidateManifestSha256 = combinedManifest.candidateManifestSha256;
+	const combinedPayload = { ...combinedManifest };
+	delete combinedPayload.candidateManifestSha256;
+	if (
+		typeof candidateManifestSha256 !== 'string' ||
+		createHash('sha256').update(JSON.stringify(combinedPayload)).digest('hex') !==
+			candidateManifestSha256
+	) {
+		throw new Error('Combined candidate manifest hash is invalid. Regenerate the candidate.');
+	}
+	const files = listPngFiles(CANDIDATE_ROOT);
+	if (files.length !== EXPECTED_CAPTURE_COUNT) {
 		throw new Error(
-			`Expected ${EXPECTED_CAPTURE_COUNT} candidate PNGs, found ${files.length}.`,
+			'Expected ' + EXPECTED_CAPTURE_COUNT + ' candidate PNGs, found ' + files.length + '.',
 		);
-	mkdirSync(ACCEPTED_ROOT, { recursive: true });
+	}
+	return { candidateManifestSha256, files };
+}
+
+function stageCandidateFiles(stagingRoot: string, files: readonly string[]): void {
+	if (existsSync(stagingRoot)) rmSync(stagingRoot, { recursive: true, force: true });
+	mkdirSync(stagingRoot, { recursive: true });
 	for (const source of files) {
-		const target = join(ACCEPTED_ROOT, relative(CANDIDATE_ROOT, source));
+		const target = join(stagingRoot, relative(CANDIDATE_ROOT, source));
 		mkdirSync(resolve(target, '..'), { recursive: true });
 		cpSync(source, target);
 	}
-	writeFileSync(
-		ACCEPTED_MANIFEST,
-		JSON.stringify(
-			{
-				...candidateManifest,
-				status: 'ACCEPTED',
-				mode: 'accepted',
-				referenceSha: resolvedReferenceSha,
-				acceptedFromCommit: head,
-				acceptedAt: new Date().toISOString(),
-			},
-			null,
-			2,
-		) + '\n',
-		'utf8',
-	);
-	console.log(
-		`Accepted ${EXPECTED_CAPTURE_COUNT} visual baselines at ${relative(ROOT, ACCEPTED_ROOT)}.`,
-	);
 }
 
+function replaceAcceptedRoot(stagingRoot: string, backupRoot: string): void {
+	if (existsSync(backupRoot)) rmSync(backupRoot, { recursive: true, force: true });
+	try {
+		if (existsSync(ACCEPTED_ROOT)) renameSync(ACCEPTED_ROOT, backupRoot);
+		renameSync(stagingRoot, ACCEPTED_ROOT);
+		if (existsSync(backupRoot)) rmSync(backupRoot, { recursive: true, force: true });
+	} catch (error) {
+		if (!existsSync(ACCEPTED_ROOT) && existsSync(backupRoot))
+			renameSync(backupRoot, ACCEPTED_ROOT);
+		if (existsSync(stagingRoot)) rmSync(stagingRoot, { recursive: true, force: true });
+		throw error;
+	}
+}
 function assertManifestIntegrity(manifest: CaptureManifest, root: string): void {
 	const declaredFiles = new Set(
 		manifest.captures.map((capture) => capture.file.replaceAll('\\', '/')),

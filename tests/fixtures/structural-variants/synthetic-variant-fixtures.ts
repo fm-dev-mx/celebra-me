@@ -1,7 +1,5 @@
-import type {
-	CanonicalVariantRegistryEntry,
-	CanonicalVariantSection,
-} from '@/lib/invitation/section-variants';
+import type { CanonicalVariantRegistryEntry, CanonicalVariantSection } from '@/lib/invitation/section-variants';
+export { CROSS_PRESET_REPRESENTATIVE_VARIANTS } from '../../../scripts/screenshot/visual-coverage-contract';
 
 export type SyntheticVariantOverrides = {
 	section: CanonicalVariantSection;
@@ -13,22 +11,6 @@ export interface IncompatiblePrerequisiteExpectation {
 	expectedPath: (string | number)[];
 	expectedMessageSubstring?: string;
 }
-
-export const CROSS_PRESET_REPRESENTATIVE_VARIANTS: readonly {
-	section: CanonicalVariantSection;
-	variant: string;
-}[] = [
-	{ section: 'hero', variant: 'split-cover' },
-	{ section: 'family', variant: 'asymmetric-groups' },
-	{ section: 'location', variant: 'split-map' },
-	{ section: 'itinerary', variant: 'editorial-program' },
-	{ section: 'gallery', variant: 'magazine-spread' },
-	{ section: 'gifts', variant: 'editorial-catalog' },
-	{ section: 'personalizedAccess', variant: 'formal-pass' },
-	{ section: 'rsvp', variant: 'editorial-press-pass' },
-	{ section: 'thankYou', variant: 'full-bleed-photo' },
-	{ section: 'countdown', variant: 'magazine-folio' },
-] as const;
 
 export function buildSyntheticVariantEvent(
 	overrides: SyntheticVariantOverrides,

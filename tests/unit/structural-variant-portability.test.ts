@@ -561,6 +561,9 @@ describe('registry-driven canonical variant portability', () => {
 			'/src/styles/themes/sections/itinerary/_editorial-program.scss': {
 				default: '/_astro/itinerary-editorial-program.css',
 			},
+			'/src/styles/themes/sections/personalized-access/_ornamented.scss': {
+				default: '/_astro/access-ornamented.css',
+			},
 			'/src/styles/themes/sections/thank-you/_editorial-back-cover.scss': {
 				default: '/_astro/thank-you-editorial-back-cover.css',
 			},
@@ -648,7 +651,7 @@ describe('registry-driven canonical variant portability', () => {
 			},
 			profileUrlMap,
 		);
-		expect(ornamentedUrls).toEqual(['/_astro/jewelry-bundle.css']);
+		expect(ornamentedUrls).toEqual(['/_astro/jewelry-bundle.css', '/_astro/access-ornamented.css']);
 	});
 
 	it('keeps canonical structural CSS free of origin slug/profile/theme identity', () => {

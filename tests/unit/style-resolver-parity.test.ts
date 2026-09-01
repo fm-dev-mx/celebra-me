@@ -118,7 +118,7 @@ describe('Style and Schema Resolver Parity', () => {
 			]);
 		});
 
-		it('falls back to slug when visualProfileId is absent', () => {
+		it('does not fall back to slug when visualProfileId is absent', () => {
 			const urls = resolveInvitationCssUrls(
 				bundleUrlMap,
 				{},
@@ -128,10 +128,7 @@ describe('Style and Schema Resolver Parity', () => {
 				},
 				profileUrlMap,
 			);
-			expect(urls).toEqual([
-				'/_astro/editorial-magazine-bundle.css',
-				'/_astro/xareni-profile.css',
-			]);
+						expect(urls).toEqual(['/_astro/editorial-magazine-bundle.css']);
 		});
 
 		it('does not load arbitrary CSS for unknown slug or profile ID', () => {

@@ -8,7 +8,6 @@ const KNOWN_BASE_STYLE_FALLBACKS = [
 	"gifts: Contract variant 'standard' intentionally uses base section styles",
 	"rsvp: Contract variant 'standard' intentionally uses base section styles",
 	"personalizedAccess: Contract variant 'standard' intentionally uses base section styles",
-	"personalizedAccess: Contract variant 'ornamented' explicitly declares no additional CSS",
 	"thankYou: Contract variant 'standard' intentionally uses base section styles",
 	"countdown: Contract variant 'standard' intentionally uses base section styles",
 ];

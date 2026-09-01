@@ -167,6 +167,23 @@ describe('Managed Identity: Regression Protection (No Fuzzy Identity Inference)'
 		}
 	});
 
+	it('fails closed for owner-approved definitions when the target slug has another identity', () => {
+		const decision = resolveIdentityWithoutRekey({
+			slug: 'america-johana',
+			managedIdentityId: MANAGED_ID,
+			provenance: 'owner-approved',
+			invitationByManagedIdentity: null,
+			provenanceInvitationId: null,
+			invitationBySlug: {
+				id: '99999999-9999-9999-9999-999999999999',
+				slug: 'america-johana',
+				managedIdentityId: 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee',
+			},
+			activeInvitationByPreviousSlug: null,
+		});
+		expect(decision).toMatchObject({ ok: false, code: 'IDENTITY_CONFLICT' });
+	});
+
 	it('requires explicit rekey when a previous slug is still active', () => {
 		const decision = resolveIdentityWithoutRekey({
 			slug: 'daniela-y-martin',

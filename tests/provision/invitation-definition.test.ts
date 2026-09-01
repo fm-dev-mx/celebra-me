@@ -41,6 +41,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			const def = defineInvitation({
 				slug: 'test-invitation',
 				managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+				managedIdentityProvenance: 'persisted',
 				createdAt: '2026-07-20T00:00:00.000Z',
 				lifecycle: 'in_progress',
 				deliveryScope: 'content-and-assets',
@@ -87,6 +88,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				defineInvitation({
 					slug: '',
 					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+					managedIdentityProvenance: 'persisted',
 					createdAt: '2026-07-20T00:00:00.000Z',
 					lifecycle: 'in_progress',
 					deliveryScope: 'content-and-assets',
@@ -109,6 +111,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				defineInvitation({
 					slug: 'boda-daniela-y-martin',
 					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+					managedIdentityProvenance: 'persisted',
 					createdAt: '2026-07-20T00:00:00.000Z',
 					lifecycle: 'in_progress',
 					deliveryScope: 'content-and-assets',
@@ -131,6 +134,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				defineInvitation({
 					slug: 'test-invitation',
 					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+					managedIdentityProvenance: 'persisted',
 					createdAt: '2026-07-20T00:00:00.000Z',
 					lifecycle: 'in_progress',
 					deliveryScope: 'content-and-assets',
@@ -153,6 +157,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				defineInvitation({
 					slug: 'test-invitation',
 					managedIdentityId: 'aaaaaaaa-bbbb-1ccc-8ddd-eeeeeeeeeeee',
+					managedIdentityProvenance: 'persisted',
 					createdAt: '2026-07-20T00:00:00.000Z',
 					lifecycle: 'in_progress',
 					deliveryScope: 'content-and-assets',
@@ -175,6 +180,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				defineInvitation({
 					slug: 'test-invitation',
 					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+					managedIdentityProvenance: 'persisted',
 					createdAt: '2026-07-20T00:00:00',
 					lifecycle: 'in_progress',
 					deliveryScope: 'content-and-assets',
@@ -197,6 +203,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				defineInvitation({
 					slug: 'test-invitation',
 					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+					managedIdentityProvenance: 'persisted',
 					createdAt: '2026-07-20T00:00:00.000Z',
 					lifecycle: 'draft' as never,
 					deliveryScope: 'content-and-assets',
@@ -219,6 +226,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				defineInvitation({
 					slug: 'test-invitation',
 					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+					managedIdentityProvenance: 'persisted',
 					previousSlugs: ['test-invitation'],
 					createdAt: '2026-07-20T00:00:00.000Z',
 					lifecycle: 'in_progress',
@@ -239,6 +247,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				defineInvitation({
 					slug: 'test-invitation',
 					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+					managedIdentityProvenance: 'persisted',
 					previousSlugs: ['old-slug', 'old-slug'],
 					createdAt: '2026-07-20T00:00:00.000Z',
 					lifecycle: 'in_progress',
@@ -262,6 +271,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				defineInvitation({
 					slug: 'test-invitation',
 					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+					managedIdentityProvenance: 'persisted',
 					createdAt: '2026-07-20T00:00:00.000Z',
 					lifecycle: 'in_progress',
 					deliveryScope: 'content-and-assets',
@@ -291,6 +301,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				defineInvitation({
 					slug: 'unsafe-reference',
 					managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+					managedIdentityProvenance: 'persisted',
 					createdAt: '2026-07-20T00:00:00.000Z',
 					lifecycle: 'in_progress',
 					deliveryScope: 'content-and-assets',

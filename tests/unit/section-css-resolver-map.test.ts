@@ -584,11 +584,13 @@ describe('section-css-resolver-map', () => {
 			{
 				href: '/_astro/family-split-groups.css',
 				owner: 'section-variant',
+				canonicalPath: 'src/styles/themes/sections/family/_split-groups.scss',
 				blocking: false,
 			},
 			{
 				href: '/_astro/gallery-magazine-spread.css',
 				owner: 'section-variant',
+				canonicalPath: 'src/styles/themes/sections/gallery/_magazine-spread.scss',
 				blocking: false,
 			},
 			{ href: '/_astro/renata-profile.css', owner: 'visual-profile', blocking: true },
@@ -617,6 +619,7 @@ describe('section-css-resolver-map', () => {
 			{
 				href: '/_astro/hero-editorial-cover.css',
 				owner: 'section-variant',
+				canonicalPath: 'src/styles/themes/sections/hero/_editorial-cover.scss',
 				blocking: true,
 			},
 		]);

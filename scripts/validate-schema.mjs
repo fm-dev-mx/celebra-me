@@ -106,6 +106,10 @@ function checkExtraInScopeThemeAsVariant() {
 					ERRORS.push(
 						`${dir}: CSS uses theme preset as data-variant '${v}' in ${relative}`,
 					);
+				} else {
+					WARNINGS.push(
+						`${dir}: CSS selector uses unregistered section variant '${v}' in ${relative}`,
+					);
 				}
 			}
 		}
@@ -163,11 +167,7 @@ function main() {
 		for (const variant of contractSet) {
 			if (!cssSet.has(variant)) {
 				const cssOwner = contract.cssOwners.get(variant);
-				if (cssOwner === 'no-additional-css') {
-					EXPECTED_FALLBACKS.push(
-						`${section}: Contract variant '${variant}' explicitly declares no additional CSS`,
-					);
-				} else if (cssOwner?.startsWith('theme-bundle:')) {
+				if (cssOwner?.startsWith('section-base:')) {
 					EXPECTED_FALLBACKS.push(
 						`${section}: Contract variant '${variant}' intentionally uses base section styles`,
 					);

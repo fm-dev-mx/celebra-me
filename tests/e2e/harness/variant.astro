@@ -20,15 +20,16 @@ import { extname, join } from 'node:path';
 import type { CanonicalVariantSection } from '@/lib/invitation/section-variants';
 import type { EventContentEntry } from '@/lib/content/events';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
+import type { InvitationStylesheetHeadLink } from '@/lib/invitation/invitation-css-head-links';
 
 const section = Astro.url.searchParams.get('section') as CanonicalVariantSection | null;
 const variant = Astro.url.searchParams.get('variant') ?? 'standard';
 const preset = Astro.url.searchParams.get('preset') ?? 'jewelry-box';
 const fullPage = Astro.url.searchParams.get('full') === '1';
 let fullPageContext: InvitationPageContext | undefined;
-let fullPageHeadLinks: Array<{ href: string }> | undefined;
+let fullPageHeadLinks: InvitationStylesheetHeadLink[] | undefined;
 let page: InvitationPageContext;
-let headLinks: Array<{ href: string }> = [];
+let headLinks: InvitationStylesheetHeadLink[] = [];
 
 if (fullPage) {
 	const slug = Astro.url.searchParams.get('slug')?.trim();
@@ -123,7 +124,7 @@ const activeSectionCssPlan = resolveInvitationCssLoadPlan(
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>{fullPageContext?.layout.title ?? `${section}.${variant} (${preset})`}</title>
 	{(fullPageHeadLinks ?? headLinks).map((link) => (
-		<link rel="stylesheet" href={link.href} />
+		<link rel="stylesheet" href={link.href} data-canonical-css-owner={link.canonicalPath} />
 	))}
 	<style is:inline lang="scss" set:html={(fullPageContext ?? page).wrapper.scopedStyles} />
 	<style>

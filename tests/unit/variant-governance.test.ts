@@ -177,7 +177,7 @@ describe('canonical variant governance', () => {
 		for (const entry of CANONICAL_VARIANT_REGISTRY.filter((candidate) => !candidate.default)) {
 			expect(
 				entry.cssOwner.startsWith('src/styles/themes/sections/') ||
-					entry.cssOwner === 'no-additional-css',
+					entry.cssOwner.startsWith('src/styles/themes/sections/'),
 			).toBe(true);
 		}
 
@@ -185,7 +185,7 @@ describe('canonical variant governance', () => {
 			CANONICAL_VARIANT_REGISTRY.find(
 				(entry) => entry.section === 'personalizedAccess' && entry.variant === 'ornamented',
 			)?.cssOwner,
-		).toBe('no-additional-css');
+		).toBe('src/styles/themes/sections/personalized-access/_ornamented.scss');
 	});
 
 	it('propagates canonical variants to an explicit DOM contract', () => {
