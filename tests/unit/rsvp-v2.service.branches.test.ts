@@ -63,9 +63,6 @@ describe('rsvp service branches', () => {
 	const findGuestByPhoneAuthMock = guestRepo.findGuestByPhoneAuth as jest.MockedFunction<
 		typeof guestRepo.findGuestByPhoneAuth
 	>;
-	const findGuestByPhonePublicMock = guestRepo.findGuestByPhonePublic as jest.MockedFunction<
-		typeof guestRepo.findGuestByPhonePublic
-	>;
 	const updateGuestByIdMock = guestRepo.updateGuestById as jest.MockedFunction<
 		typeof guestRepo.updateGuestById
 	>;
@@ -149,6 +146,7 @@ describe('rsvp service branches', () => {
 		await expect(
 			listDashboardGuests({
 				eventId: 'evt-1',
+				userId: 'user-1',
 				hostAccessToken: 'token',
 				origin: 'http://localhost',
 			}),
@@ -340,18 +338,12 @@ describe('rsvp service branches', () => {
 		});
 	});
 
-	it('submitGuestRsvpByPublicEvent updates the matching guest when the phone already exists', async () => {
-		findGuestByPhonePublicMock.mockResolvedValue(baseGuest);
-		submitGuestRsvpPublicRpcMock.mockResolvedValue({
-			...baseGuest,
-			attendanceStatus: 'confirmed',
-			attendeeCount: 2,
-			lastResponseSource: 'generic_link',
-			entrySource: 'dashboard',
-			respondedAt: new Date().toISOString(),
-		});
+	it('submitGuestRsvpByPublicEvent does not look up or modify an existing phone collision', async () => {
+		submitGuestRsvpPublicRpcMock.mockRejectedValue(
+			new Error('duplicate key value violates unique constraint "guest_invitations_event_country_phone_active_unique"'),
+		);
 
-		const result = await submitGuestRsvpByPublicEvent({
+		await expect(submitGuestRsvpByPublicEvent({
 			event: baseEvent,
 			fullName: 'Guest',
 			phone: '6680000000',
@@ -362,24 +354,23 @@ describe('rsvp service branches', () => {
 				attendeeCount: 2,
 				guestComment: 'Nos vemos',
 			},
+		})).rejects.toMatchObject({
+			status: 409,
+			code: 'conflict',
 		});
 
-		expect(findGuestByPhonePublicMock).toHaveBeenCalledWith('evt-1', '+52', '6680000000');
 		expect(createGuestInvitationMock).not.toHaveBeenCalled();
 		expect(submitGuestRsvpPublicRpcMock).toHaveBeenCalledWith(
 			expect.objectContaining({
-				inviteId: 'invite-1',
-				attendanceStatus: 'confirmed',
-				attendeeCount: 2,
-				guestComment: 'Nos vemos',
+				eventId: 'evt-1',
+				fullName: 'Guest',
+				phone: '6680000000',
 				responseSource: 'generic_link',
 			}),
 		);
-		expect(result.entrySource).toBe('dashboard');
 	});
 
 	it('submitGuestRsvpByPublicEvent creates a generic public guest when the phone is new', async () => {
-		findGuestByPhonePublicMock.mockResolvedValue(null);
 		submitGuestRsvpPublicRpcMock.mockResolvedValue({
 			...baseGuest,
 			id: 'guest-2',

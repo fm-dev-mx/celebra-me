@@ -20,26 +20,18 @@ export function normalizeClaimCode(rawCode: string): string {
 	return sanitize(rawCode, 256).toLowerCase();
 }
 
-export function isSuperAdminEmail(email: string): boolean {
-	const allowlist = (getEnv('SUPER_ADMIN_EMAILS') || '')
-		.split(',')
-		.map((item) => item.trim().toLowerCase())
-		.filter(Boolean);
-	if (allowlist.length === 0) return false;
-	return allowlist.includes(sanitize(email, 320).toLowerCase());
-}
-
 export async function ensureUserRole(input: {
 	userId: string;
 	email: string;
-	defaultRole?: 'host_client' | 'super_admin';
+	defaultRole?: 'host_client';
 }): Promise<'host_client' | 'super_admin'> {
 	const existing = await findUserRoleService(input.userId);
 	if (existing) return existing.role;
 
-	const nextRole = isSuperAdminEmail(input.email)
-		? 'super_admin'
-		: (input.defaultRole ?? 'host_client');
+	// Email allowlists are not an authorization boundary. Elevated roles are
+	// granted only by authenticated administration or an explicit bootstrap
+	// workflow; public registration always defaults to host_client.
+	const nextRole = input.defaultRole ?? 'host_client';
 	const upserted = await upsertUserRoleService({
 		userId: input.userId,
 		role: nextRole,

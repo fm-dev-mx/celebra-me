@@ -1,11 +1,11 @@
 /**
- * Helper para mockear funciones de seguridad en tests de endpoints admin.
- * Mantiene la intención del middleware sin dependencias externas/estado global.
+ * Helper to mock security functions in admin endpoint tests.
+ * Maintains middleware intent without external dependencies or global state.
  */
 
 /**
- * Configura mocks para funciones de seguridad admin (sin CSRF skip)
- * Útil para endpoints que requieren CSRF validation
+ * Configure mocks for admin security functions (without CSRF skip).
+ * Useful for endpoints requiring CSRF validation.
  */
 export function mockAdminSecurityPass(): void {
 	jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({
@@ -13,33 +13,17 @@ export function mockAdminSecurityPass(): void {
 	}));
 
 	jest.mock('@/lib/rsvp/security/csrf', () => ({
-		validateCsrfToken: jest.fn(), // No lanza error = token válido
-		shouldSkipCsrfValidation: jest.fn().mockReturnValue(false), // Siempre validar CSRF
+		validateCsrfToken: jest.fn(), // No error thrown = valid token
+		shouldSkipCsrfValidation: jest.fn().mockReturnValue(false), // Always validate CSRF
 		getCsrfTokenFromCookies: jest.fn(),
 		getCsrfTokenFromHeader: jest.fn(),
 	}));
 
 	jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
-		checkRateLimit: jest.fn().mockResolvedValue(true as never), // Siempre permite
+		checkRateLimit: jest.fn().mockResolvedValue(true as never), // Always allow
 	}));
-}
 
-/**
- * Configura validateCsrfToken para fallar (simular token inválido)
- * Útil para tests que verifican respuestas de error CSRF normalizadas
- */
-export function setupCsrfFailure(): void {
-	const { ApiError } = jest.requireMock('@/lib/rsvp/core/errors') as {
-		ApiError: new (status: number, code: string, message: string) => Error;
-	};
-	const csrf = jest.requireMock('@/lib/rsvp/security/csrf') as {
-		validateCsrfToken: jest.Mock;
-	};
-	csrf.validateCsrfToken.mockImplementation(() => {
-		throw new ApiError(
-			403,
-			'forbidden',
-			'Token CSRF inválido. Por favor recarga la página e intenta de nuevo.',
-		);
-	});
+	jest.mock('@/lib/server/runtime-mutation-environment', () => ({
+		assertRuntimeMutationEnvironment: jest.fn().mockResolvedValue(undefined),
+	}));
 }

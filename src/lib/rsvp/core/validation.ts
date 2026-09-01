@@ -163,34 +163,3 @@ export function validate<T>(data: unknown, schema: z.ZodSchema<T>): ValidationOu
 		data: result.data,
 	};
 }
-
-/**
- * Validates data and throws when validation fails.
- */
-export function validateOrThrow<T>(
-	data: unknown,
-	schema: z.ZodSchema<T>,
-	errorMessage = 'Validation error',
-): T {
-	const result = validate(data, schema);
-
-	if (!result.success) {
-		const message = result.errors.map((e) => `${e.path}: ${e.message}`).join(', ');
-		throw new Error(`${errorMessage}: ${message}`);
-	}
-
-	return result.data;
-}
-
-/**
- * Converts Zod validation errors into the shared API error payload.
- */
-export function formatZodErrors(error: z.ZodError): Record<string, unknown> {
-	return {
-		validation: error.issues.map((issue) => ({
-			field: issue.path.join('.'),
-			message: issue.message,
-			code: issue.code,
-		})),
-	};
-}

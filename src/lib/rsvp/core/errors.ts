@@ -1,5 +1,6 @@
 export type ApiErrorCode =
 	| 'bad_request'
+	| 'payload_too_large'
 	| 'unauthorized'
 	| 'validation_error'
 	| 'forbidden'
