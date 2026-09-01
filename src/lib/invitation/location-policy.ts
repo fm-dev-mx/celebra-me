@@ -44,7 +44,7 @@ export function shouldRedactEnvelopeTeaser(input: {
 	isConfirmed: boolean;
 }): boolean {
 	if (isRsvpRevealLocation(input.originalLocation)) {
-		return input.originalLocation?.visibility === LOCATION_VISIBILITY_AFTER_RSVP;
+		return (input.originalLocation?.accessPolicy?.visibility ?? input.originalLocation?.visibility) === LOCATION_VISIBILITY_AFTER_RSVP;
 	}
 	return isLocationLocked(input.postPolicyLocation, input.isConfirmed);
 }
@@ -69,7 +69,7 @@ function applyRsvpRevealLocation(
 ): InvitationViewModel {
 	const protectedLocation = viewModel.sections.location;
 	const revealedLocation =
-		protectedLocation?.visibility === LOCATION_VISIBILITY_AFTER_RSVP && isConfirmedGuest
+		((protectedLocation?.accessPolicy?.visibility ?? protectedLocation?.visibility) === LOCATION_VISIBILITY_AFTER_RSVP && isConfirmedGuest)
 			? protectedLocation
 			: undefined;
 

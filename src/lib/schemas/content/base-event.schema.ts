@@ -47,7 +47,8 @@ export const canonicalEventContentSchema = baseEventFieldsSchema
 		}
 	});
 
-type CanonicalEventContent = z.infer<typeof canonicalEventContentSchema>;
+export type CanonicalEventContent = z.infer<typeof canonicalEventContentSchema>;
+export type CanonicalEventContentInput = z.input<typeof canonicalEventContentSchema>;
 
 /** Canonical content is parsed exactly once; legacy aliases are rejected. */
 export const eventContentSchema: z.ZodType<CanonicalEventContent> = canonicalEventContentSchema;

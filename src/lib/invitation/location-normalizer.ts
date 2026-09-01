@@ -35,16 +35,134 @@ function hasValue(record: LocationRecord, key: string): boolean {
 	return record[key] !== undefined && record[key] !== null;
 }
 
+type AccessPolicyParts = {
+	presentationOptions?: LocationRecord;
+	legacyVisibility?: 'public' | 'after-rsvp';
+	legacyRevealPlacement?: 'section' | 'rsvp';
+	suppliedPolicy?: LocationRecord;
+	policyVisibility?: unknown;
+	suppliedRevealPlacement?: unknown;
+};
+
+function readAccessPolicyParts(location: LocationRecord): AccessPolicyParts {
+	const presentationOptions = isRecord(location.presentationOptions)
+		? location.presentationOptions
+		: undefined;
+	const suppliedPolicy = hasValue(location, 'accessPolicy') ? location.accessPolicy : undefined;
+	if (suppliedPolicy !== undefined && !isRecord(suppliedPolicy)) {
+		throw new LocationNormalizationError(
+			'location.accessPolicy must be an object when provided.',
+		);
+	}
+	return {
+		presentationOptions,
+		legacyVisibility:
+			location.visibility === 'after-rsvp' || location.visibility === 'public'
+				? location.visibility
+				: undefined,
+		legacyRevealPlacement:
+			presentationOptions?.revealSurface === 'rsvp' ||
+			presentationOptions?.revealSurface === 'section'
+				? presentationOptions.revealSurface
+				: undefined,
+		suppliedPolicy,
+		policyVisibility: suppliedPolicy?.visibility,
+		suppliedRevealPlacement: suppliedPolicy?.revealPlacement,
+	};
+}
+
+function validateAccessPolicyParts(parts: AccessPolicyParts): void {
+	const { suppliedPolicy, policyVisibility, suppliedRevealPlacement } = parts;
+	if (
+		suppliedPolicy !== undefined &&
+		policyVisibility !== 'after-rsvp' &&
+		policyVisibility !== 'public'
+	) {
+		throw new LocationNormalizationError(
+			'location.accessPolicy.visibility must be public or after-rsvp.',
+		);
+	}
+	if (
+		suppliedRevealPlacement !== undefined &&
+		suppliedRevealPlacement !== 'rsvp' &&
+		suppliedRevealPlacement !== 'section'
+	) {
+		throw new LocationNormalizationError(
+			'location.accessPolicy.revealPlacement must be section or rsvp.',
+		);
+	}
+	if (
+		parts.legacyVisibility !== undefined &&
+		policyVisibility !== undefined &&
+		parts.legacyVisibility !== policyVisibility
+	) {
+		throw new LocationNormalizationError(
+			'location.visibility conflicts with location.accessPolicy.visibility.',
+		);
+	}
+	if (
+		parts.legacyRevealPlacement !== undefined &&
+		suppliedRevealPlacement !== undefined &&
+		parts.legacyRevealPlacement !== suppliedRevealPlacement
+	) {
+		throw new LocationNormalizationError(
+			'location.presentationOptions.revealSurface conflicts with location.accessPolicy.revealPlacement.',
+		);
+	}
+	const effectiveVisibility =
+		policyVisibility === 'public' || policyVisibility === 'after-rsvp'
+			? policyVisibility
+			: parts.legacyVisibility;
+	if (
+		effectiveVisibility === 'public' &&
+		(suppliedRevealPlacement !== undefined || parts.legacyRevealPlacement !== undefined)
+	) {
+		throw new LocationNormalizationError(
+			'Public locations cannot declare an RSVP reveal placement.',
+		);
+	}
+}
+
 function normalizeLegacyAccessPolicy(location: LocationRecord): LocationRecord {
-	if (hasValue(location, 'accessPolicy')) {
-		if (!isRecord(location.accessPolicy)) throw new LocationNormalizationError('location.accessPolicy must be an object when provided.');
+	const parts = readAccessPolicyParts(location);
+	validateAccessPolicyParts(parts);
+	if (
+		parts.suppliedPolicy !== undefined &&
+		parts.legacyVisibility === undefined &&
+		parts.legacyRevealPlacement === undefined
+	) {
 		return location;
 	}
-	const presentationOptions = isRecord(location.presentationOptions) ? location.presentationOptions : undefined;
-	const visibility = location.visibility === 'after-rsvp' ? 'after-rsvp' : location.visibility === 'public' ? 'public' : undefined;
-	const revealSurface = presentationOptions?.revealSurface === 'rsvp' || presentationOptions?.revealSurface === 'section' ? presentationOptions.revealSurface : undefined;
-	if (!visibility && !revealSurface) return location;
-	return { ...location, accessPolicy: { visibility: visibility ?? 'public', ...(revealSurface ? { revealPlacement: revealSurface } : {}) } };
+	if (
+		parts.suppliedPolicy === undefined &&
+		parts.legacyVisibility === undefined &&
+		parts.legacyRevealPlacement === undefined
+	) {
+		return location;
+	}
+	const visibility =
+		parts.policyVisibility === 'after-rsvp' || parts.policyVisibility === 'public'
+			? parts.policyVisibility
+			: parts.legacyVisibility ?? (parts.legacyRevealPlacement ? 'after-rsvp' : 'public');
+	const revealPlacement = parts.suppliedRevealPlacement ?? parts.legacyRevealPlacement;
+	const {
+		visibility: _visibility,
+		accessPolicy: _accessPolicy,
+		presentationOptions: _presentationOptions,
+		...withoutLegacyPolicy
+	} = location;
+	const { revealSurface: _revealSurface, ...canonicalPresentationOptions } =
+		parts.presentationOptions ?? {};
+	return {
+		...withoutLegacyPolicy,
+		accessPolicy: {
+			visibility,
+			...(revealPlacement ? { revealPlacement } : {}),
+		},
+		...(Object.keys(canonicalPresentationOptions).length > 0
+			? { presentationOptions: canonicalPresentationOptions }
+			: {}),
+	};
 }
 
 function normalizeLegacyVenue(

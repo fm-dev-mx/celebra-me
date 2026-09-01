@@ -469,7 +469,7 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 		labels: data.rsvp.labels,
 		eventStartsAt,
 		eventTimeZone: data.eventTiming?.timeZone,
-		locationVisibility: data.location?.visibility,
+		locationVisibility: data.location?.accessPolicy?.visibility ?? data.location?.visibility,
 		calendarTitle: calendar?.title,
 		calendarDescription: calendar?.description,
 	};
