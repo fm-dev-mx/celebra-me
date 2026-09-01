@@ -21,8 +21,10 @@ import type {
 	GalleryPresentation,
 } from '@/lib/invitation/gallery-presentation';
 import type { GiftsPresentation } from '@/lib/invitation/gifts-presentation';
-import type { LocationPresentation } from '@/lib/invitation/location-presentation';
-import type { LocationMapStyle } from '@/lib/invitation/location-presentation';
+import type {
+	LocationPresentation,
+	LocationMapStyle,
+} from '@/lib/invitation/location-presentation';
 import type { z } from 'zod';
 import type { EnvelopeRevealVariant } from '@/lib/schemas/content/envelope.schema';
 import type { giftItemSchema } from '@/lib/schemas/content/gifts.schema';
@@ -207,6 +209,7 @@ export interface InvitationViewModelBrandingVisibility {
 
 export interface LocationSection {
 	visibility?: LocationVisibility;
+	accessPolicy?: { visibility: LocationVisibility; revealPlacement?: 'section' | 'rsvp' };
 	presentation?: LocationPresentation;
 	mapStyle: LocationMapStyle;
 	variant: LocationVariant;
@@ -292,7 +295,7 @@ export interface InvitationViewModel {
 			}>;
 			variant: GalleryVariant;
 			presentation?: GalleryPresentation;
-			mobileBrowse: GalleryMobileBrowseMode;
+			variantOptions?: { mobileBrowse?: GalleryMobileBrowseMode };
 		};
 		itinerary?: {
 			title: string;

@@ -26,7 +26,7 @@ interface Props {
 	items: GalleryItem[];
 	variant: GalleryVariant;
 	presentation?: GalleryPresentation;
-	mobileBrowse?: GalleryMobileBrowseMode;
+	variantOptions?: { mobileBrowse?: GalleryMobileBrowseMode };
 }
 
 const {
@@ -36,10 +36,10 @@ const {
 	items,
 	variant,
 	presentation,
-	mobileBrowse,
+	variantOptions,
 } = Astro.props;
 const isMagazineSpread = variant === 'magazine-spread';
-const resolvedMobileBrowse = mobileBrowse ?? 'stack';
+const resolvedMobileBrowse = variantOptions?.mobileBrowse ?? 'stack';
 const usesMobileRail = isMagazineSpread && resolvedMobileBrowse === 'rail';
 
 if (!items || items.length === 0) return null;

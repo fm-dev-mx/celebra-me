@@ -15,7 +15,7 @@ export const gallerySchema = z
 		subtitle: z.string().optional(),
 		variant: z.enum(GALLERY_VARIANTS),
 		presentation: z.enum(GALLERY_PRESENTATIONS).optional(),
-		presentationOptions: z
+		variantOptions: z
 			.object({
 				mobileBrowse: z.enum(GALLERY_MOBILE_BROWSE_MODES).optional(),
 			})
@@ -38,6 +38,9 @@ export const gallerySchema = z
 	})
 	.strict()
 	.superRefine((gallery, context) => {
+		if (gallery.variant !== 'magazine-spread' && gallery.variantOptions?.mobileBrowse !== undefined) {
+			context.addIssue({ code: 'custom', path: ['variantOptions', 'mobileBrowse'], message: 'gallery.variantOptions.mobileBrowse is only valid for magazine-spread' });
+		}
 		try {
 			assertSupportedGalleryPresentation(gallery.presentation, gallery.items);
 		} catch (error) {

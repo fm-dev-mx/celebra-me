@@ -363,6 +363,7 @@ function buildLocationSectionData(context: AdaptationContext) {
 
 	return {
 		visibility: data.location.visibility,
+		accessPolicy: data.location.accessPolicy,
 		presentation: data.location.presentation,
 		mapStyle: data.location.mapStyle,
 		variant: data.location.variant,
@@ -435,7 +436,7 @@ function buildGallerySectionData(context: AdaptationContext) {
 		...data.gallery,
 		items,
 		variant: data.gallery.variant,
-		mobileBrowse: resolveGalleryMobileBrowse(data.gallery.presentationOptions),
+		mobileBrowse: resolveGalleryMobileBrowse(data.gallery.variantOptions),
 	};
 }
 

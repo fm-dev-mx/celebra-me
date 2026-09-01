@@ -20,8 +20,7 @@ export type CanonicalVariantSection =
 
 export type CanonicalVariantCssOwner =
 	| `src/styles/themes/sections/${string}`
-	| `theme-bundle:${string}`
-	| 'no-additional-css';
+	| `section-base:${string}`;
 
 export type CanonicalVariantRegistryEntry = {
 	section: CanonicalVariantSection;
@@ -43,7 +42,7 @@ const noSpecialPrerequisites = ['Canonical section payload'] as const;
 const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	{
 		section: 'hero', variant: 'standard', default: true, prerequisites: noSpecialPrerequisites,
-		cssOwner: 'theme-bundle:hero', unresolvedVisualVerification: null,
+		cssOwner: 'section-base:hero', unresolvedVisualVerification: null,
 		requiredPersistedContentTransformation: 'No transformation required.',
 	},
 	{
@@ -60,7 +59,7 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'family', variant: 'standard', default: true, prerequisites: noSpecialPrerequisites,
-		cssOwner: 'theme-bundle:family', unresolvedVisualVerification: null,
+		cssOwner: 'section-base:family', unresolvedVisualVerification: null,
 		requiredPersistedContentTransformation: 'No transformation required.',
 	},
 	{
@@ -77,7 +76,7 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'location', variant: 'standard', default: true, prerequisites: noSpecialPrerequisites,
-		cssOwner: 'theme-bundle:location', unresolvedVisualVerification: null,
+		cssOwner: 'section-base:location', unresolvedVisualVerification: null,
 		requiredPersistedContentTransformation: 'No transformation required.',
 	},
 	{
@@ -94,7 +93,7 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'itinerary', variant: 'standard', default: true, prerequisites: noSpecialPrerequisites,
-		cssOwner: 'theme-bundle:itinerary', unresolvedVisualVerification: null,
+		cssOwner: 'section-base:itinerary', unresolvedVisualVerification: null,
 		requiredPersistedContentTransformation: 'No transformation required.',
 	},
 	{
@@ -117,7 +116,7 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'gallery', variant: 'uniform-grid', default: true, prerequisites: noSpecialPrerequisites,
-		cssOwner: 'theme-bundle:gallery', unresolvedVisualVerification: null,
+		cssOwner: 'section-base:gallery', unresolvedVisualVerification: null,
 		requiredPersistedContentTransformation: 'No transformation required.',
 	},
 	{
@@ -164,7 +163,7 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'gifts', variant: 'standard', default: true, prerequisites: noSpecialPrerequisites,
-		cssOwner: 'theme-bundle:gifts', unresolvedVisualVerification: null,
+		cssOwner: 'section-base:gifts', unresolvedVisualVerification: null,
 		requiredPersistedContentTransformation: 'No transformation required.',
 	},
 	{
@@ -175,7 +174,7 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'rsvp', variant: 'standard', default: true, prerequisites: ['rsvp.personalizedAccess'],
-		cssOwner: 'theme-bundle:rsvp', unresolvedVisualVerification: null,
+		cssOwner: 'section-base:rsvp', unresolvedVisualVerification: null,
 		requiredPersistedContentTransformation: 'No transformation required.',
 	},
 	{
@@ -192,12 +191,12 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'personalizedAccess', variant: 'standard', default: true, prerequisites: ['rsvp.personalizedAccess'],
-		cssOwner: 'theme-bundle:personalized-access', unresolvedVisualVerification: null,
+		cssOwner: 'section-base:personalized-access', unresolvedVisualVerification: null,
 		requiredPersistedContentTransformation: 'No transformation required.',
 	},
 	{
 		section: 'personalizedAccess', variant: 'ornamented', default: false, prerequisites: ['rsvp.personalizedAccess'],
-		cssOwner: 'no-additional-css',
+		cssOwner: 'src/styles/themes/sections/personalized-access/_ornamented.scss',
 		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set rsvp.personalizedAccess.variant to ornamented and remove legacy variant fields.',
 	},
@@ -215,7 +214,7 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'thankYou', variant: 'standard', default: true, prerequisites: noSpecialPrerequisites,
-		cssOwner: 'theme-bundle:thank-you', unresolvedVisualVerification: null,
+		cssOwner: 'section-base:thank-you', unresolvedVisualVerification: null,
 		requiredPersistedContentTransformation: 'No transformation required.',
 	},
 	{
@@ -232,7 +231,7 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'countdown', variant: 'standard', default: true, prerequisites: ['countdown'],
-		cssOwner: 'theme-bundle:countdown', unresolvedVisualVerification: null,
+		cssOwner: 'section-base:countdown', unresolvedVisualVerification: null,
 		requiredPersistedContentTransformation: 'No transformation required.',
 	},
 	{

@@ -7,6 +7,7 @@ export interface InvitationStylesheetHeadLink {
 	href: string;
 	media?: string;
 	deferredCss?: boolean;
+	canonicalPath?: string;
 }
 
 export function buildInvitationStylesheetHeadLinks(input: {
@@ -30,8 +31,9 @@ export function buildInvitationStylesheetHeadLinks(input: {
 						href: item.href,
 						media: DEFERRED_INVITATION_CSS_MEDIA,
 						deferredCss: true,
+						canonicalPath: item.canonicalPath,
 					}
-				: { rel: 'stylesheet', href: item.href },
+				: { rel: 'stylesheet', href: item.href, canonicalPath: item.canonicalPath },
 		);
 	}
 	return links;

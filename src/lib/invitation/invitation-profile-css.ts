@@ -1,11 +1,10 @@
 export interface InvitationProfileIdentity {
 	visualProfileId?: string;
-	slug?: string;
 }
 
-/** Resolve the profile identity with the existing visualProfileId → slug precedence. */
+/** Resolve only the explicitly declared visual profile; slug is never an implicit profile. */
 export function resolveInvitationProfileId(input: InvitationProfileIdentity): string | undefined {
-	return input.visualProfileId || input.slug;
+	return input.visualProfileId;
 }
 
 export function resolveInvitationProfileCssUrl(

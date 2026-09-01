@@ -6,7 +6,7 @@ export type GalleryPresentation = (typeof GALLERY_PRESENTATIONS)[number];
 export type GalleryLayoutRole = (typeof GALLERY_LAYOUT_ROLES)[number];
 export type GalleryMobileBrowseMode = (typeof GALLERY_MOBILE_BROWSE_MODES)[number];
 
-export interface GalleryPresentationOptions {
+export interface GalleryVariantOptions {
 	/**
 	 * Mobile browse mode for layout variants that support it (e.g. magazine-spread).
 	 * Default `stack` preserves the canonical column layout on small viewports.
@@ -15,7 +15,7 @@ export interface GalleryPresentationOptions {
 }
 
 export function resolveGalleryMobileBrowse(
-	options: GalleryPresentationOptions | undefined,
+	options: GalleryVariantOptions | undefined,
 ): GalleryMobileBrowseMode {
 	return options?.mobileBrowse ?? 'stack';
 }

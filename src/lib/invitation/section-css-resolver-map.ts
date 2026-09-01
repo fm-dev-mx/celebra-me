@@ -3,7 +3,10 @@ import { CANONICAL_VARIANT_REGISTRY } from './section-variants';
 
 type CssModule = { default: string };
 
-export type SectionUrlMap = Record<string, Record<string, string>>;
+export type SectionUrlMap = Record<string, Record<string, string>> & {
+	/** Exact source path to emitted URL for canonical variant ownership. */
+	readonly __canonicalPaths?: Readonly<Record<string, string>>;
+};
 export type SectionBundleUrlMap = Record<string, string>;
 export type InvitationProfileUrlMap = Record<string, string>;
 
@@ -44,6 +47,8 @@ export interface InvitationCssLoadItem {
 	owner: InvitationCssOwner;
 	/** True when the sheet is required to paint the sealed envelope or hero structural CSS. */
 	blocking: boolean;
+	/** Canonical source path when this item owns a section variant. */
+	canonicalPath?: string;
 }
 
 // Only presets with a dedicated footer/*.scss file go here.
@@ -55,12 +60,6 @@ const FOOTER_PRESET_TO_ENTRYPOINT: Record<string, string> = {
 	'angelic-presence': 'angelic-presence',
 };
 
-function entrypointFromCssOwner(cssOwner: string): string | undefined {
-	if (!cssOwner.startsWith('src/styles/')) return undefined;
-	return cssOwner.split('/').at(-1)?.replace(/^_/, '').replace(/\.scss$/u, '');
-}
-
-
 const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'premiere-floral': 'premiere-floral',
 	editorial: 'editorial',
@@ -71,9 +70,9 @@ const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'enchanted-rose': 'shared-light',
 };
 
-
 export function buildSectionUrlMap(modules: Record<string, CssModule>): SectionUrlMap {
 	const sectionUrlMap: SectionUrlMap = {};
+	const canonicalPaths: Record<string, string> = {};
 
 	for (const [path, mod] of Object.entries(modules)) {
 		const parts = path.split('/');
@@ -84,9 +83,33 @@ export function buildSectionUrlMap(modules: Record<string, CssModule>): SectionU
 		const entrypoint = fileName.replace(/^_/, '').replace(/\.scss$/, '');
 		sectionUrlMap[sectionName] ??= {};
 		sectionUrlMap[sectionName][entrypoint] = mod.default;
+		canonicalPaths[path.replace(/^\/+/, '')] = mod.default;
 	}
 
+	Object.defineProperty(sectionUrlMap, '__canonicalPaths', {
+		value: canonicalPaths,
+		enumerable: false,
+		writable: false,
+	});
 	return sectionUrlMap;
+}
+
+export function mergeSectionUrlMaps(...maps: readonly SectionUrlMap[]): SectionUrlMap {
+	const merged: SectionUrlMap = {};
+	const canonicalPaths: Record<string, string> = {};
+	for (const map of maps) {
+		for (const [section, entries] of Object.entries(map)) {
+			if (section === '__canonicalPaths') continue;
+			merged[section] = { ...merged[section], ...entries };
+		}
+		Object.assign(canonicalPaths, map.__canonicalPaths ?? {});
+	}
+	Object.defineProperty(merged, '__canonicalPaths', {
+		value: canonicalPaths,
+		enumerable: false,
+		writable: false,
+	});
+	return merged;
 }
 
 export function buildSectionBundleUrlMap(modules: Record<string, CssModule>): SectionBundleUrlMap {
@@ -123,7 +146,6 @@ export function resolveSectionCssUrl(
 	return sectionUrlMap[section]?.[entrypoint];
 }
 
-
 /** @internal — re-exported for tests */
 export function resolveSectionCssUrls(
 	sectionUrlMap: SectionUrlMap,
@@ -148,33 +170,17 @@ function resolveSectionVariantLoadItems(
 		if (!entry) {
 			throw new Error(`Unknown canonical section variant: ${section}.${variant}`);
 		}
-		if (entry.cssOwner === 'no-additional-css' || entry.cssOwner.startsWith('theme-bundle:')) {
-			return [];
-		}
-		const entrypoint = entrypointFromCssOwner(entry.cssOwner);
-		if (!entrypoint) {
-			throw new Error(`Invalid CSS owner for ${section}.${variant}: ${entry.cssOwner}`);
-		}
-		const sectionName =
-			section === 'personalizedAccess'
-				? 'personalized-access'
-				: section === 'thankYou'
-					? 'thank-you'
-					: section;
-		const url = resolveSectionCssUrl(
-			sectionUrlMap,
-			sectionName,
-			{ [variant]: entrypoint },
-			variant,
-		);
-		if (!url) {
+		if (entry.cssOwner.startsWith('section-base:')) return [];
+		const exactUrl = sectionUrlMap.__canonicalPaths?.[entry.cssOwner];
+		if (!exactUrl) {
 			throw new Error(`Missing CSS delivery for ${section}.${variant}: ${entry.cssOwner}`);
 		}
 		return [
 			{
-				href: url,
-			owner: 'section-variant' as const,
+				href: exactUrl,
+				owner: 'section-variant' as const,
 				blocking: section === 'hero',
+				canonicalPath: entry.cssOwner,
 			},
 		];
 	});

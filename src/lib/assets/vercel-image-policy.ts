@@ -36,6 +36,9 @@ export function shouldOptimizeThroughVercelImage(src: string | ImageMetadata): b
 	if (typeof url !== 'string') {
 		return true;
 	}
+	// Data URLs are already repository-owned bytes; routing them through the image endpoint
+	// creates an unnecessary same-origin request that cannot be used in deterministic captures.
+	if (/^data:/i.test(url.trim())) return false;
 	return !isMutableInPlaceMediaUrl(url);
 }
 

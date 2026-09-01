@@ -1,6 +1,7 @@
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import {
 	buildSectionUrlMap,
+	mergeSectionUrlMaps,
 	buildSectionBundleUrlMap,
 	buildInvitationProfileUrlMap,
 	resolveInvitationCssLoadPlan as resolveInvitationCssLoadPlanFromMaps,
@@ -40,10 +41,7 @@ const footerVariantUrlMap = buildSectionUrlMap(footerVariantModules);
 const sectionVariantUrlMap = buildSectionUrlMap(sectionVariantModules);
 const sectionBundleUrlMap = buildSectionBundleUrlMap(sectionBundleModules);
 const invitationProfileUrlMap = buildInvitationProfileUrlMap(invitationProfileModules);
-const invitationSectionUrlMap = {
-	...footerVariantUrlMap,
-	...sectionVariantUrlMap,
-};
+const invitationSectionUrlMap = mergeSectionUrlMaps(footerVariantUrlMap, sectionVariantUrlMap);
 
 if (import.meta.env.DEV) {
 	const map = new Map(Object.entries(sectionBundleUrlMap));
