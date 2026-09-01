@@ -1,7 +1,8 @@
 # CSS Visual Parity Gate
 
-**Status:** Blocked pending an owner-approved offline map source and an exact committed reference
-SHA **Related:** [`architecture.md`](architecture.md#invitation-css-ownership-normative)
+**Status:** Blocked pending an exact committed reference SHA and explicit human approval of the
+complete visual candidate. The runtime map renderer is already repository-owned and deterministic.
+**Related:** [`architecture.md`](architecture.md#invitation-css-ownership-normative)
 
 ## Rule
 
@@ -23,7 +24,7 @@ operations:
 ```bash
 pnpm visual:parity:candidate
 pnpm visual:parity:compare
-pnpm visual:parity:accept -- --reference-sha=<approved-commit-sha>
+pnpm visual:parity:accept -- --reference-sha=<approved-commit-sha> --matrix-hash=<candidate-matrix-hash> --candidate-manifest-sha256=<candidate-manifest-hash>
 ```
 
 `candidate` writes ignored files under `.tmp/visual-parity/candidate/`. `compare` never updates

@@ -17,7 +17,7 @@ import {
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 import { listLocalRenderCorpus } from '../provision/local-render-corpus/registry.ts';
 import {
 	buildVisualCoverageCases,
@@ -131,12 +131,33 @@ function runPlaywright(mode: 'candidate' | 'compare'): void {
 function readManifest(root: string): CombinedManifest {
 	const variantFile = join(root, 'manifest.json');
 	const pageFile = join(root, 'pages-manifest.json');
-	if (!existsSync(variantFile))
+	const combinedFile = join(root, 'combined-manifest.json');
+	if (!existsSync(variantFile) && !existsSync(combinedFile)) {
 		throw new Error(`Missing visual manifest: ${relative(ROOT, variantFile)}`);
-	const variantManifest = JSON.parse(readFileSync(variantFile, 'utf8')) as CaptureManifest;
-	if (!existsSync(pageFile))
-		throw new Error(`Missing page manifest: ${relative(ROOT, pageFile)}`);
-	const pageManifest = JSON.parse(readFileSync(pageFile, 'utf8')) as CaptureManifest;
+	}
+	const raw = JSON.parse(
+		readFileSync(existsSync(combinedFile) ? combinedFile : variantFile, 'utf8'),
+	) as CaptureManifest & Partial<CombinedManifest>;
+	const variantManifest = raw.variantManifest ?? raw;
+	if (!variantManifest || !Array.isArray(variantManifest.captures)) {
+		throw new Error('Visual manifest must declare a captures array. Regenerate the candidate.');
+	}
+	let pageManifest = raw.pageManifest;
+	if (!pageManifest && existsSync(pageFile)) {
+		pageManifest = JSON.parse(readFileSync(pageFile, 'utf8')) as CaptureManifest;
+	}
+	if (!pageManifest) {
+		if (!Array.isArray(raw.captures)) {
+			throw new Error(
+				`Missing page manifest: ${relative(ROOT, pageFile)}. Regenerate the candidate.`,
+			);
+		}
+		const pageCaptures = raw.captures.filter((capture) => capture.kind === 'page');
+		pageManifest = { ...raw, captures: pageCaptures, totalCaptures: pageCaptures.length };
+	}
+	if (!Array.isArray(pageManifest.captures)) {
+		throw new Error('Page manifest must declare a captures array. Regenerate the candidate.');
+	}
 	if (
 		variantManifest.totalCaptures !== EXPECTED_VARIANT_CAPTURES ||
 		variantManifest.captures.length !== EXPECTED_VARIANT_CAPTURES
@@ -292,8 +313,17 @@ function listPngFiles(root: string): string[] {
 	});
 }
 
-function accept(referenceSha: string): void {
+function accept(
+	referenceSha: string,
+	approvedMatrixHash: string,
+	approvedCandidateManifestSha256: string,
+): void {
 	if (process.env.CI) throw new Error('Baseline acceptance is unavailable in CI.');
+	if (!approvedMatrixHash || !approvedCandidateManifestSha256) {
+		throw new Error(
+			'Baseline acceptance requires --matrix-hash and --candidate-manifest-sha256 from the reviewed candidate.',
+		);
+	}
 	const head = assertCleanGitState('accept');
 	const resolvedReferenceSha = resolveReferenceSha(referenceSha, head);
 	const candidateManifest = readManifest(CANDIDATE_ROOT);
@@ -301,6 +331,12 @@ function accept(referenceSha: string): void {
 	assertManifestIntegrity(candidateManifest, CANDIDATE_ROOT);
 	assertCoverageMatrix(candidateManifest);
 	const { candidateManifestSha256, files } = validateCandidateArtifacts();
+	if (candidateManifest.matrixHash !== approvedMatrixHash) {
+		throw new Error('Approved matrix hash does not match the candidate manifest.');
+	}
+	if (candidateManifestSha256 !== approvedCandidateManifestSha256) {
+		throw new Error('Approved candidate manifest hash does not match the candidate artifact.');
+	}
 
 	const stagingRoot = resolve(ROOT, '.tmp/visual-parity/accepted-' + process.pid);
 	stageCandidateFiles(stagingRoot, files);
@@ -425,7 +461,7 @@ function assertManifestIntegrity(manifest: CaptureManifest, root: string): void 
 	}
 	for (const capture of manifest.captures) {
 		const absolutePath = resolve(root, capture.file);
-		if (!absolutePath.startsWith(`${resolve(root)}${pathSeparator()}`)) {
+		if (!absolutePath.startsWith(`${resolve(root)}${sep}`)) {
 			throw new Error(`Visual manifest path escapes its root: ${capture.file}`);
 		}
 		if (!existsSync(absolutePath)) {
@@ -438,10 +474,6 @@ function assertManifestIntegrity(manifest: CaptureManifest, root: string): void 
 	}
 }
 
-function pathSeparator(): string {
-	return process.platform === 'win32' ? '\\' : '/';
-}
-
 function main(): void {
 	const [operation, ...args] = process.argv.slice(2);
 	if (operation === 'candidate') return candidate();
@@ -449,12 +481,24 @@ function main(): void {
 	if (operation === 'accept') {
 		const inline = args.find((arg) => arg.startsWith('--reference-sha='));
 		const positional = args.findIndex((arg) => arg === '--reference-sha');
-		const value =
+		const referenceSha =
 			inline?.slice('--reference-sha='.length) ??
 			(positional >= 0 ? args[positional + 1] : undefined);
-		return accept(value ?? '');
+		const matrixInline = args.find((arg) => arg.startsWith('--matrix-hash='));
+		const matrixPositional = args.findIndex((arg) => arg === '--matrix-hash');
+		const matrixHash =
+			matrixInline?.slice('--matrix-hash='.length) ??
+			(matrixPositional >= 0 ? args[matrixPositional + 1] : undefined);
+		const manifestInline = args.find((arg) => arg.startsWith('--candidate-manifest-sha256='));
+		const manifestPositional = args.findIndex((arg) => arg === '--candidate-manifest-sha256');
+		const candidateManifestSha256 =
+			manifestInline?.slice('--candidate-manifest-sha256='.length) ??
+			(manifestPositional >= 0 ? args[manifestPositional + 1] : undefined);
+		return accept(referenceSha ?? '', matrixHash ?? '', candidateManifestSha256 ?? '');
 	}
-	throw new Error('Usage: visual-parity-cli.ts candidate|compare|accept --reference-sha=<sha>');
+	throw new Error(
+		'Usage: visual-parity-cli.ts candidate|compare|accept --reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>',
+	);
 }
 
 try {

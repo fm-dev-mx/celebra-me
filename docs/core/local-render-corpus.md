@@ -37,7 +37,7 @@ pnpm test:local-render-corpus
 pnpm screenshot:local-render-corpus
 pnpm visual:parity:candidate
 pnpm visual:parity:compare
-pnpm visual:parity:accept -- --reference-sha=<approved-commit-sha>
+pnpm visual:parity:accept -- --reference-sha=<approved-commit-sha> --matrix-hash=<candidate-matrix-hash> --candidate-manifest-sha256=<candidate-manifest-hash>
 ```
 
 Candidate files are ignored under `.tmp/visual-parity/candidate/`. Compare never modifies accepted

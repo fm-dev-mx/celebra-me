@@ -43,7 +43,7 @@ Three homes. Exclusive ownership. Do not collapse looks into one SCSS file per i
 
 ### Invitation profile
 
-- **Path / marker:** `invitation-profiles/{id}.scss` (`id` = `visualProfileId || slug`)
+- **Path / marker:** `invitation-profiles/{visualProfileId}.scss` (`visualProfileId` is required for every managed invitation)
 - **Owns:** Client palette token remap and rhythm/intersection overrides that differ from the
   preset.
 - **Must not:** Re-declare section layout; set `font-family` / `background` directly on section
@@ -51,6 +51,16 @@ Three homes. Exclusive ownership. Do not collapse looks into one SCSS file per i
 
 Shared structural base `src/styles/invitation/` is out of scope for ownership moves in this
 contract.
+
+### Transitional ownership exceptions
+
+The current migration is not yet ownership-clean. Existing files under
+`src/styles/invitation-profiles/**` and `src/styles/invitation-sections-by-preset/**` still contain
+historical section selectors and layout rules. These rules are tracked as temporary exceptions,
+not as valid architecture: no new identity- or preset-specific structural selectors may be added,
+and an existing rule may be removed or moved only with the CSS visual-parity gate. The exception
+ends after every affected invitation has a reviewed before/after capture and the rule is owned by a
+section base, a registered semantic variant, or a token-only profile.
 
 ### Gifts flatten
 
