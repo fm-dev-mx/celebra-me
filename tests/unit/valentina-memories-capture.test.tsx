@@ -124,11 +124,11 @@ describe('ValentinaMemoriesCapture', () => {
 							createdAt: '2026-08-29T00:00:00.000Z',
 						},
 						upload: {
-							uploadUrl: 'https://r2.example.invalid/capability',
-							requiredHeaders: {
-								'Content-Type': 'image/jpeg',
-								'If-None-Match': '*',
-								'x-amz-checksum-sha256': 'checksum',
+								uploadUrl: 'https://memories-upload.example.invalid/upload/valentina',
+								requiredHeaders: {
+									Authorization: 'Bearer capability.signature',
+									'Content-Type': 'image/jpeg',
+									'x-amz-checksum-sha256': 'checksum',
 							},
 						},
 					});
@@ -136,7 +136,7 @@ describe('ValentinaMemoriesCapture', () => {
 				if (url === '/api/memories/valentina/items') {
 					return response({ items: [] });
 				}
-				if (url === 'https://r2.example.invalid/capability') {
+			if (url === 'https://memories-upload.example.invalid/upload/valentina') {
 					return response(null, 412);
 				}
 				if (url === '/api/memories/valentina/items/media-public-id') {
@@ -192,14 +192,14 @@ describe('ValentinaMemoriesCapture', () => {
 		expect(reserveBody.objectKey).toBeUndefined();
 
 		const putCall = fetchMock.mock.calls.find(
-			([input]) => input === 'https://r2.example.invalid/capability',
+			([input]) => input === 'https://memories-upload.example.invalid/upload/valentina',
 		);
-		expect(putCall?.[0]).toBe('https://r2.example.invalid/capability');
+		expect(putCall?.[0]).toBe('https://memories-upload.example.invalid/upload/valentina');
 		expect(putCall?.[1]).toMatchObject({
 			method: 'PUT',
 			headers: {
+				Authorization: 'Bearer capability.signature',
 				'Content-Type': 'image/jpeg',
-				'If-None-Match': '*',
 				'x-amz-checksum-sha256': 'checksum',
 			},
 		});
@@ -355,13 +355,17 @@ describe('ValentinaMemoriesCapture', () => {
 						createdAt: '2026-08-29T00:00:00.000Z',
 					},
 					upload: {
-						uploadUrl: 'https://r2.example.invalid/retry',
-						requiredHeaders: { 'Content-Type': 'image/jpeg' },
+						uploadUrl: 'https://memories-upload.example.invalid/upload/valentina',
+						requiredHeaders: {
+							Authorization: 'Bearer retry.signature',
+							'Content-Type': 'image/jpeg',
+							'x-amz-checksum-sha256': 'checksum',
+						},
 					},
 				});
 			}
 			if (url === ITEMS_ENDPOINT_FOR_TEST) return response({ items: [] });
-			if (url === 'https://r2.example.invalid/retry') {
+			if (url === 'https://memories-upload.example.invalid/upload/valentina') {
 				putAttempts += 1;
 				if (putAttempts === 1) throw new TypeError('Failed to fetch');
 				return response(null);
@@ -407,13 +411,17 @@ describe('ValentinaMemoriesCapture', () => {
 						createdAt: '2026-08-29T00:00:00.000Z',
 					},
 					upload: {
-						uploadUrl: 'https://r2.example.invalid/caption',
-						requiredHeaders: { 'Content-Type': 'image/jpeg' },
+						uploadUrl: 'https://memories-upload.example.invalid/upload/valentina',
+						requiredHeaders: {
+							Authorization: 'Bearer caption.signature',
+							'Content-Type': 'image/jpeg',
+							'x-amz-checksum-sha256': 'checksum',
+						},
 					},
 				});
 			}
 			if (url === ITEMS_ENDPOINT_FOR_TEST) return response({ items: [] });
-			if (url === 'https://r2.example.invalid/caption') return response(null);
+			if (url === 'https://memories-upload.example.invalid/upload/valentina') return response(null);
 			if (url === `${ITEMS_ENDPOINT_FOR_TEST}/caption-item` && init?.method === 'POST') {
 				return response({ item: { status: 'accepted' } });
 			}

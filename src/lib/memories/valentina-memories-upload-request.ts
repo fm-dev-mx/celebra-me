@@ -1,6 +1,7 @@
 import {
 	VALENTINA_MEMORIES_PRESIGN_TTL_SECONDS,
 	VALENTINA_MEMORIES_SIGN_PATH,
+	VALENTINA_MEMORIES_UPLOAD_PATH,
 } from '@/data/valentina-memories-upload.contract';
 import { VALENTINA_MEMORIES_UPLOAD_SIGNING_PRIVATE_KEY_ENV_NAME } from '@/data/valentina-memories-media.contract';
 import { MEMORIES_UPLOAD_REQUEST_AUDIENCE } from '@/data/valentina-memories-private-request.contract';
@@ -13,9 +14,13 @@ export interface ValentinaMemoriesUploadCapability {
 	expiresAt: string;
 }
 
-const REQUIRED_UPLOAD_HEADERS = new Set(['content-type', 'if-none-match', 'x-amz-checksum-sha256']);
+const REQUIRED_UPLOAD_HEADERS = new Set([
+	'authorization',
+	'content-type',
+	'x-amz-checksum-sha256',
+]);
 
-function requireUploadUrl(value: unknown): URL {
+function requireUploadUrl(value: unknown, signerUrl: URL): URL {
 	if (typeof value !== 'string') throw new Error('Invalid upload signer response.');
 	let url: URL;
 	try {
@@ -23,11 +28,17 @@ function requireUploadUrl(value: unknown): URL {
 	} catch {
 		throw new Error('Invalid upload signer response.');
 	}
+	const allowsLocalHttp =
+		signerUrl.protocol === 'http:' &&
+		(signerUrl.hostname === 'localhost' || signerUrl.hostname === '127.0.0.1');
 	if (
-		url.protocol !== 'https:' ||
+		(url.protocol !== 'https:' && !allowsLocalHttp) ||
+		url.origin !== signerUrl.origin ||
+		url.pathname !== VALENTINA_MEMORIES_UPLOAD_PATH ||
 		url.username ||
 		url.password ||
-		!url.hostname.endsWith('.r2.cloudflarestorage.com')
+		url.search ||
+		url.hash
 	) {
 		throw new Error('Invalid upload signer response.');
 	}
@@ -47,7 +58,7 @@ function requireUploadHeaders(value: unknown, mimeType: string): Record<string, 
 		names.length !== REQUIRED_UPLOAD_HEADERS.size ||
 		names.some((name) => !REQUIRED_UPLOAD_HEADERS.has(name)) ||
 		headers['Content-Type'] !== mimeType ||
-		headers['If-None-Match'] !== '*' ||
+		!/^Bearer [A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(headers.Authorization ?? '') ||
 		!/^[A-Za-z0-9+/]{43}=$/.test(headers['x-amz-checksum-sha256'] ?? '')
 	) {
 		throw new Error('Invalid upload signer response.');
@@ -96,7 +107,7 @@ export async function requestValentinaMemoryUploadCapability(input: {
 	if (typeof payload !== 'object' || payload === null)
 		throw new Error('Invalid upload signer response.');
 	const candidate = payload as Record<string, unknown>;
-	const uploadUrl = requireUploadUrl(candidate.uploadUrl);
+	const uploadUrl = requireUploadUrl(candidate.uploadUrl, signerUrl);
 	const requiredHeaders = requireUploadHeaders(candidate.requiredHeaders, input.mimeType);
 	const expiresAt = requireShortLivedExpiry(candidate.expiresAt);
 	return { uploadUrl: uploadUrl.toString(), expiresAt, requiredHeaders };

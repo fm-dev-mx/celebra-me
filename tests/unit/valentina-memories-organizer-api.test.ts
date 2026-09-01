@@ -44,7 +44,10 @@ describe('GET /api/dashboard/memories/valentina', () => {
 			),
 		);
 		expect(response.status).toBe(200);
-		expect(mockAccess).toHaveBeenCalledWith({ accessToken: 'owner-token' });
+		expect(mockAccess).toHaveBeenCalledWith({
+			userId: 'owner-id',
+			accessToken: 'owner-token',
+		});
 		expect(mockList).toHaveBeenCalledWith({
 			page: 2,
 			status: 'accepted',

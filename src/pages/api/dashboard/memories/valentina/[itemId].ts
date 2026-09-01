@@ -6,7 +6,7 @@ import {
 	badRequest,
 	withPrivateCache,
 } from '@/lib/rsvp/core/http';
-import { requireDashboardSessionFromLocals } from '@/lib/rsvp/auth/authorization';
+import { requireDashboardMutationAccess, requireDashboardSessionFromLocals } from '@/lib/rsvp/auth/authorization';
 import { retrieveValentinaMemoryObject } from '@/lib/memories/valentina-memories-retrieval';
 import {
 	assertValentinaOrganizerAccess,
@@ -14,14 +14,17 @@ import {
 	updateOrganizerMemoryItem,
 } from '@/lib/memories/valentina-memories.service';
 import { recordValentinaMemoryAccess } from '@/lib/memories/valentina-memories-audit';
+import { requireDashboardRateLimit } from '@/pages/api/dashboard/guests/dashboard-guests-lib';
 
 export const prerender = false;
 
-export const PATCH: APIRoute = async ({ request, locals, params }) => {
+export const PATCH: APIRoute = async ({ request, locals, params, cookies }) => {
 	try {
 		if (!params.itemId) return badRequest('No se especificó el recuerdo.');
-		const session = requireDashboardSessionFromLocals(locals);
+		const session = await requireDashboardMutationAccess(request, cookies, locals);
+		await requireDashboardRateLimit(`valentina:update:${session.userId}`, request);
 		await assertValentinaOrganizerAccess({
+			userId: session.userId,
 			accessToken: session.accessToken,
 		});
 		const bodyResult = await parseJsonBody(request);
@@ -43,6 +46,7 @@ export const GET: APIRoute = async ({ request, locals, params }) => {
 		if (!params.itemId) return badRequest('No se especificó el recuerdo.');
 		const session = requireDashboardSessionFromLocals(locals);
 		await assertValentinaOrganizerAccess({
+			userId: session.userId,
 			accessToken: session.accessToken,
 		});
 		const mode =
@@ -66,11 +70,13 @@ export const GET: APIRoute = async ({ request, locals, params }) => {
 	}
 };
 
-export const DELETE: APIRoute = async ({ locals, params }) => {
+export const DELETE: APIRoute = async ({ locals, params, request, cookies }) => {
 	try {
 		if (!params.itemId) return badRequest('No se especificó el recuerdo.');
-		const session = requireDashboardSessionFromLocals(locals);
+		const session = await requireDashboardMutationAccess(request, cookies, locals);
+		await requireDashboardRateLimit(`valentina:delete:${session.userId}`, request);
 		await assertValentinaOrganizerAccess({
+			userId: session.userId,
 			accessToken: session.accessToken,
 		});
 		await updateOrganizerMemoryItem({

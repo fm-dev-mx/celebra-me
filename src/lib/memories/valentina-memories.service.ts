@@ -441,13 +441,25 @@ export async function reserveGuestMemoryItem(input: {
 	if (!rows[0])
 		throw new ApiError(503, 'service_unavailable', 'No se pudo registrar el recuerdo.');
 	const item = mapMediaRow(rows[0]);
-	const upload = await requestValentinaMemoryUploadCapability({
-		objectKey: item.objectKey,
-		sessionId: input.session.id,
-		mimeType: item.mimeType,
-		sizeBytes: item.sizeBytes,
-		checksumSha256: item.checksumSha256,
-	});
+	let upload: ValentinaMemoriesUploadCapability;
+	try {
+		upload = await requestValentinaMemoryUploadCapability({
+			objectKey: item.objectKey,
+			sessionId: input.session.id,
+			mimeType: item.mimeType,
+			sizeBytes: item.sizeBytes,
+			checksumSha256: item.checksumSha256,
+		});
+	} catch (error) {
+		await supabaseRestRequest({
+			pathWithQuery: 'rpc/release_valentina_memory_reservation',
+			method: 'POST',
+			useServiceRole: true,
+			body: { p_item_id: item.id, p_session_id: input.session.id },
+		}).catch(() => undefined);
+		console.error('[memories] Upload capability failed after reservation.', error);
+		throw new ApiError(503, 'service_unavailable', 'No se pudo preparar la carga. Intente de nuevo.');
+	}
 	await appendValentinaMemoriesAudit({
 		mediaItemId: item.id,
 		actorType: 'guest',
@@ -679,11 +691,12 @@ export async function deleteGuestMemoryItem(input: {
 }
 
 export async function assertValentinaOrganizerAccess(input: {
+	userId: string;
 	accessToken: string;
 }): Promise<void> {
 	const event = await findEventBySlugService(VALENTINA_MEMORIES_EVENT_SLUG);
 	if (!event) throw new ApiError(404, 'not_found', 'El evento no está disponible.');
-	const membership = await findMembershipByEventForHost(event.id, input.accessToken);
+	const membership = await findMembershipByEventForHost(event.id, input.userId, input.accessToken);
 	if (!membership || membership.membershipRole !== 'owner') {
 		throw new ApiError(403, 'forbidden', 'No tiene autorización para estos recuerdos.');
 	}

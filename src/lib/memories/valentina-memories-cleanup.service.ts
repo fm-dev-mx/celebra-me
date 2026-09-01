@@ -68,6 +68,15 @@ async function anonymizeEmptySessions(sessionIds: Set<string>): Promise<void> {
 	}
 }
 
+async function anonymizeExpiredEmptySessions(): Promise<void> {
+	const now = new Date().toISOString();
+	const sessions = await supabaseRestRequest<{ id: string }[]>({
+		pathWithQuery: `valentina_memory_sessions?select=id&event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&or=(expires_at.lte.${encodeURIComponent(now)},revoked_at.not.is.null)&limit=${VALENTINA_MEMORIES_CLEANUP_BATCH_SIZE}`,
+		useServiceRole: true,
+	});
+	await anonymizeEmptySessions(new Set(sessions.map((session) => session.id)));
+}
+
 async function deleteClaimedObjects(
 	rows: CleanupMediaRow[],
 	leaseId: string,
@@ -123,6 +132,7 @@ export async function cleanupValentinaMemoryObjects(): Promise<{
 }> {
 	const now = new Date();
 	const validation = await reconcilePendingValidations();
+	await anonymizeExpiredEmptySessions();
 	const expiredReservations = await supabaseRestRequest<number>({
 		pathWithQuery: 'rpc/expire_valentina_memory_reservations',
 		method: 'POST',
