@@ -2,15 +2,24 @@ import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { CANONICAL_VARIANT_REGISTRY, type CanonicalVariantSection, type CanonicalVariantCssOwner } from '../../src/lib/invitation/section-variants';
+import {
+	CANONICAL_VARIANT_REGISTRY,
+	type CanonicalVariantSection,
+	type CanonicalVariantCssOwner,
+} from '../../src/lib/invitation/section-variants';
 import { buildSyntheticVariantEvent } from '../fixtures/structural-variants/synthetic-variant-fixtures';
-import { CROSS_PRESET_REPRESENTATIVE_VARIANTS, VISUAL_VIEWPORTS } from '../../scripts/screenshot/visual-coverage-contract';
+import {
+	CROSS_PRESET_REPRESENTATIVE_VARIANTS,
+	VISUAL_VIEWPORTS,
+} from '../../scripts/screenshot/visual-coverage-contract';
 import { hashVisualValue, VISUAL_PARITY_RUNTIME } from './harness/visual-parity-metadata';
 import { computeVisualMatrixHash } from '../../scripts/screenshot/visual-coverage-contract';
 
 const VIEWPORTS = VISUAL_VIEWPORTS;
 
-const EXPECTED_CAPTURE_COUNT = (CANONICAL_VARIANT_REGISTRY.length + CROSS_PRESET_REPRESENTATIVE_VARIANTS.length) * VIEWPORTS.length;
+const EXPECTED_CAPTURE_COUNT =
+	(CANONICAL_VARIANT_REGISTRY.length + CROSS_PRESET_REPRESENTATIVE_VARIANTS.length) *
+	VIEWPORTS.length;
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const VISUAL_PARITY_MODE =
 	process.env.VISUAL_PARITY_MODE ?? (process.env.CI ? 'compare' : 'diagnostic');
@@ -125,7 +134,9 @@ test.describe('Registry-Driven Visual Portability Suite', () => {
 			status: VISUAL_PARITY_MODE === 'compare' ? 'COMPARED' : 'CANDIDATE',
 			mode: VISUAL_PARITY_MODE,
 			totalCaptures: capturedSnapshots.length,
-			matrixHash: computeVisualMatrixHash(capturedSnapshots as unknown as Array<Record<string, unknown>>),
+			matrixHash: computeVisualMatrixHash(
+				capturedSnapshots as unknown as Array<Record<string, unknown>>,
+			),
 			baselinePreset: 'jewelry-box',
 			crossPreset: 'celestial-blue',
 			captures: capturedSnapshots,
@@ -223,7 +234,11 @@ async function runVariantVisualTest(
 			),
 		);
 	});
-	const brokenImages = await page.evaluate(() => Array.from(document.images).filter((image) => image.currentSrc && image.naturalWidth === 0).map((image) => image.currentSrc));
+	const brokenImages = await page.evaluate(() =>
+		Array.from(document.images)
+			.filter((image) => image.currentSrc && image.naturalWidth === 0)
+			.map((image) => image.currentSrc),
+	);
 	expect(brokenImages).toEqual([]);
 	expect(
 		externalRequests,
@@ -240,10 +255,12 @@ async function runVariantVisualTest(
 
 	// 3. Verify exact CSS ownership across all categories and absence of origin-profile CSS
 	const stylesheets = await page.evaluate(() =>
-		Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')).map((link) => ({
-			href: link.href,
-			canonicalOwner: link.dataset.canonicalCssOwner ?? null,
-		})),
+		Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')).map(
+			(link) => ({
+				href: link.href,
+				canonicalOwner: link.dataset.canonicalCssOwner ?? null,
+			}),
+		),
 	);
 	const hasOriginProfile = stylesheets.some(({ href }) => href.includes('invitation-profiles'));
 	expect(hasOriginProfile).toBe(false);
@@ -290,7 +307,9 @@ async function runVariantVisualTest(
 					? 'thank-you'
 					: section;
 		expect(
-			canonicalOwners.some((owner) => owner.startsWith('src/styles/themes/sections/' + sectionDir + '/')),
+			canonicalOwners.some((owner) =>
+				owner.startsWith('src/styles/themes/sections/' + sectionDir + '/'),
+			),
 			'CSS owner verification failed for ' +
 				section +
 				'.' +
@@ -615,8 +634,8 @@ function generateContactSheet(
   <header>
     <h1>Canonical Variant Visual Portability — Candidate Baselines</h1>
     <p style="color: var(--muted); margin-bottom: 0.75rem;">
-      Status: <span class="status-badge">${manifest.status}</span> &bull; 
-      Total Visual Test Points: <strong>${manifest.totalCaptures}</strong> &bull; 
+      Status: <span class="status-badge">${manifest.status}</span> &bull;
+      Total Visual Test Points: <strong>${manifest.totalCaptures}</strong> &bull;
       Generated: <strong>${manifest.generatedAt}</strong>
     </p>
   </header>

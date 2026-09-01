@@ -34,22 +34,31 @@ and use Git LFS. The manifest records the reference commit, runtime, viewport, c
 hashes. Baselines may not contain database payloads, guest personalization, cookies, credentials,
 signed URLs, or external requests.
 
-The registry-driven certification covers 158 deterministic comparisons on every CI run: 98 variant
-captures (39 canonical variants plus 10 cross-preset representatives at 390x844 and 1440x900) and 60
-complete-page captures (17 managed invitations plus 13 demos at both viewports). Templates remain
-covered by schema and structural contracts only. The page matrix is discovered from the managed
-invitation registry and `src/content/event-demos`; no manual inventory is maintained.
+Baseline comparison and acceptance require the pinned certification runtime: Linux x64, Node
+`v24.14.1`, pnpm `11.23.0`, Chromium through Playwright `1.62.1`, `en-US`, UTC, device scale factor
+1, resolved browser metadata, four source/resource hashes, and a verified `sha256:<64-hex>` OS-image
+digest. Candidates produced elsewhere remain diagnostic only and cannot be accepted or compared as
+the authoritative reference.
+
+The registry-driven certification is designed to cover 158 deterministic comparisons once an
+accepted baseline is authorized and wired into CI: 98 variant captures (39 canonical variants plus
+10 cross-preset representatives at 390x844 and 1440x900) and 60 complete-page captures (17 managed
+invitations plus 13 demos at both viewports). Templates remain covered by schema and structural
+contracts only. Until that accepted baseline exists, CI does not run `visual:parity:compare`;
+candidate captures remain an explicit, human-reviewed operation. The page matrix is discovered from
+the managed invitation registry and `src/content/event-demos`; no manual inventory is maintained.
 
 Current repository status: the map renderer is a repository-owned deterministic schematic and makes
 no render-time network request. Remote CARTO tiles are not used. Parisienne is not assumed to be
-available; typography must resolve through repository-owned or explicitly authorized local resources.
-No accepted 158-capture baseline exists until the post-cutover reference SHA is approved.
+available; typography must resolve through repository-owned or explicitly authorized local
+resources. No accepted 158-capture baseline exists until the post-cutover reference SHA is approved.
 
 Provider evidence:
 
-- Historical provider references (CARTO/OSM) are retained for provenance only; the current runtime uses `SchematicVenueMap` and makes no tile requests.
-- Historical [OpenStreetMap copyright and attribution](https://www.openstreetmap.org/copyright) — visible
-  attribution and ODbL notice are required for OSM-derived data.
+- Historical provider references (CARTO/OSM) are retained for provenance only; the current runtime
+  uses `SchematicVenueMap` and makes no tile requests.
+- Historical [OpenStreetMap copyright and attribution](https://www.openstreetmap.org/copyright) —
+  visible attribution and ODbL notice are required for OSM-derived data.
 
 ## Current asset evidence
 

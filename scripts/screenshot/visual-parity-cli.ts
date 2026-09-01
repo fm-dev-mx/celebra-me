@@ -66,6 +66,60 @@ interface CombinedManifest extends CaptureManifest {
 	variantManifest: CaptureManifest;
 	pageManifest: CaptureManifest;
 }
+
+const ACCEPTED_VISUAL_RUNTIME = {
+	node: 'v24.14.1',
+	pnpm: '11.23.0',
+	playwright: '1.62.1',
+	browser: 'chromium',
+	platform: 'linux-x64',
+	locale: 'en-US',
+	timezone: 'UTC',
+	deviceScaleFactor: 1,
+} as const;
+
+const HASH_KEYS = ['lockfileSha256', 'cssSha256', 'assetSha256', 'fontSha256'] as const;
+
+function assertPinnedVisualRuntime(
+	manifest: CaptureManifest,
+	operation: 'compare' | 'accept',
+): void {
+	const runtime = manifest.runtimeFingerprint;
+	if (!runtime) {
+		throw new Error(`Visual ${operation} requires a runtime fingerprint.`);
+	}
+	for (const [key, expected] of Object.entries(ACCEPTED_VISUAL_RUNTIME)) {
+		if (runtime[key] !== expected) {
+			throw new Error(
+				`Visual ${operation} requires pinned runtime ${key}=${String(expected)}; found ${String(runtime[key])}.`,
+			);
+		}
+	}
+	if (
+		typeof runtime.osImageDigest !== 'string' ||
+		!/^sha256:[0-9a-f]{64}$/iu.test(runtime.osImageDigest)
+	) {
+		throw new Error(
+			`Visual ${operation} requires a verified Linux image digest (sha256:<64 hex characters>).`,
+		);
+	}
+	for (const key of HASH_KEYS) {
+		if (typeof runtime[key] !== 'string' || !/^[0-9a-f]{64}$/iu.test(runtime[key])) {
+			throw new Error(
+				`Visual ${operation} requires a valid ${key} in the runtime fingerprint.`,
+			);
+		}
+	}
+	if (
+		typeof runtime.browserVersion !== 'string' ||
+		runtime.browserVersion === 'unknown' ||
+		typeof runtime.browserRevision !== 'string' ||
+		runtime.browserRevision === 'unknown'
+	) {
+		throw new Error(`Visual ${operation} requires a resolved Chromium version and revision.`);
+	}
+}
+
 function currentHead(): string {
 	return execFileSync('git', ['rev-parse', 'HEAD'], {
 		cwd: ROOT,
@@ -177,7 +231,6 @@ function readManifest(root: string): CombinedManifest {
 	const captures = [...variantManifest.captures, ...pageManifest.captures];
 	return {
 		...variantManifest,
-		status: variantManifest.status,
 		totalCaptures: captures.length,
 		captures,
 		matrixHash: computeVisualMatrixHash(captures as unknown as Array<Record<string, unknown>>),
@@ -219,9 +272,11 @@ function compare(): void {
 	if (accepted.status !== 'ACCEPTED')
 		throw new Error('Accepted manifest is not marked ACCEPTED.');
 	assertManifestIntegrity(accepted, ACCEPTED_ROOT);
+	assertPinnedVisualRuntime(accepted, 'compare');
 	runPlaywright('compare');
 	const compared = readManifest(COMPARE_ROOT);
 	assertManifestIntegrity(compared, COMPARE_ROOT);
+	assertPinnedVisualRuntime(compared, 'compare');
 	assertCoverageMatrix(accepted);
 	if (
 		JSON.stringify(accepted.runtimeFingerprint ?? null) !==
@@ -329,6 +384,7 @@ function accept(
 	const candidateManifest = readManifest(CANDIDATE_ROOT);
 	assertCandidateManifest(candidateManifest, resolvedReferenceSha);
 	assertManifestIntegrity(candidateManifest, CANDIDATE_ROOT);
+	assertPinnedVisualRuntime(candidateManifest, 'accept');
 	assertCoverageMatrix(candidateManifest);
 	const { candidateManifestSha256, files } = validateCandidateArtifacts();
 	if (candidateManifest.matrixHash !== approvedMatrixHash) {
