@@ -13,7 +13,7 @@ import {
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { createMockRequest } from '../helpers/api-mocks';
 
-// Mock funciones de seguridad admin
+// Mock admin security functions
 jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({
 	requireAdminRateLimit: jest.fn().mockResolvedValue(undefined as never),
 }));
@@ -31,6 +31,13 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminStrongSession: jest.fn(),
+	requireAdminMutationAccess: jest.fn().mockResolvedValue({
+		userId: '550e8400-e29b-41d4-a716-446655440001',
+		email: 'admin@test.com',
+		accessToken: 'token',
+		role: 'super_admin',
+		isSuperAdmin: true,
+	}),
 }));
 
 jest.mock('@/lib/rsvp/services/claim-code-admin.service', () => ({
@@ -38,7 +45,6 @@ jest.mock('@/lib/rsvp/services/claim-code-admin.service', () => ({
 	createClaimCodeAdmin: jest.fn(),
 	updateClaimCodeAdmin: jest.fn(),
 	disableClaimCodeAdmin: jest.fn(),
-	deleteClaimCodeAdmin: jest.fn(),
 }));
 
 const requireAdminStrongSessionMock = requireAdminStrongSession as jest.MockedFunction<

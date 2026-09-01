@@ -1,13 +1,9 @@
 import type { APIRoute } from 'astro';
 import { requireHostSession } from '@/lib/rsvp/auth/auth';
 import { badRequest, csvResponse, errorResponse } from '@/lib/rsvp/core/http';
-import { splitPhoneForExport } from '@/lib/rsvp/core/utils';
+import { sanitize, splitPhoneForExport } from '@/lib/rsvp/core/utils';
 import { listDashboardGuests } from '@/lib/rsvp/services/dashboard-guests.service';
 
-function sanitize(value: unknown, maxLen = 200): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
 
 /**
  * Escapes a CSV value: wraps in double quotes, escapes embedded quotes,
@@ -36,6 +32,7 @@ export const GET: APIRoute = async ({ request, url }) => {
 
 		const data = await listDashboardGuests({
 			eventId,
+			userId: session.userId,
 			status: 'all',
 			search: '',
 			hostAccessToken: session.accessToken,

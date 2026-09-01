@@ -8,8 +8,18 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { createMockRequest } from '../helpers/api-mocks';
 import { mockAdminSecurityPass } from '../helpers/mock-admin-security';
 
-// Mock funciones de seguridad
+// Mock security functions
 mockAdminSecurityPass();
+
+jest.mock('@/lib/rsvp/auth/authorization', () => ({
+	requireDashboardMutationAccess: jest.fn().mockResolvedValue({
+		userId: 'host-1',
+		email: 'host@test.com',
+		accessToken: 'token',
+		role: 'host_client',
+		isSuperAdmin: false,
+	}),
+}));
 
 jest.mock('@/lib/rsvp/services/dashboard-guests.service', () => ({
 	createDashboardGuest: jest.fn(),
@@ -35,7 +45,7 @@ const mockLocals = {
 
 describe('dashboard guests duplicate phone handling', () => {
 	beforeEach(() => {
-		// Mock funciones de seguridad
+		// Mock security functions
 		mockAdminSecurityPass();
 	});
 

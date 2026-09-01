@@ -1,11 +1,16 @@
 import { POST } from '@/pages/api/dashboard/guests/bulk';
-import { requireHostSession } from '@/lib/rsvp/auth/auth';
 import { supabaseRestRequest, type SupabaseRequestOptions } from '@/lib/rsvp/repositories/supabase';
 import { findEventById, findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
 import { createMockRequest } from '../helpers/api-mocks';
 
-jest.mock('@/lib/rsvp/auth/auth', () => ({
-	requireHostSession: jest.fn(),
+jest.mock('@/lib/rsvp/auth/authorization', () => ({
+	requireAuthenticatedMutationAccess: jest.fn().mockResolvedValue({
+		userId: 'host-1',
+		email: 'host@test.com',
+		accessToken: 'token',
+		role: 'host_client',
+		isSuperAdmin: false,
+	}),
 }));
 
 jest.mock('@/lib/rsvp/repositories/supabase', () => ({
@@ -21,7 +26,6 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn().mockResolvedValue(true),
 }));
 
-const requireHostSessionMock = requireHostSession as jest.MockedFunction<typeof requireHostSession>;
 const supabaseRestRequestMock = supabaseRestRequest as jest.MockedFunction<
 	typeof supabaseRestRequest
 >;
@@ -68,13 +72,8 @@ function buildRequest(guests: unknown[]) {
 	} as unknown as Parameters<typeof POST>[0]);
 }
 
-describe('POST /api/dashboard/guests/bulk', () => {
+	describe('POST /api/dashboard/guests/bulk', () => {
 	beforeEach(() => {
-		requireHostSessionMock.mockResolvedValue({
-			userId: 'host-1',
-			email: 'host@test.com',
-			accessToken: 'token',
-		});
 		supabaseRestRequestMock.mockReset();
 		findEventByIdMock.mockReset();
 		findEventByIdServiceMock.mockReset();

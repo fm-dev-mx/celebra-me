@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
-import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
-import { requireDashboardSessionFromLocals } from '@/lib/rsvp/auth/authorization';
+import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
+import { requireDashboardMutationAccess } from '@/lib/rsvp/auth/authorization';
 import { updateShareMessages } from '@/lib/rsvp/services/dashboard-guests.service';
 import { requireDashboardRateLimit } from '@/pages/api/dashboard/guests/dashboard-guests-lib';
 import { reminderSettingsSchema } from '@/lib/schemas/content/shared.schema';
@@ -13,12 +13,14 @@ function parseReminderSettings(raw: unknown): ReminderSettings | null | 'invalid
 	return result.data;
 }
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, locals, cookies }) => {
 	try {
-		const session = requireDashboardSessionFromLocals(locals);
+		const session = await requireDashboardMutationAccess(request, cookies, locals);
 		await requireDashboardRateLimit(`share-messages:${session.userId}`, request);
 
-		const body = await request.json();
+		const bodyResult = await parseJsonBody(request);
+		if (bodyResult instanceof Response) return bodyResult;
+		const body = bodyResult;
 		const eventId = typeof body.eventId === 'string' ? body.eventId.trim() : '';
 		if (!eventId) return badRequest('eventId is required.');
 

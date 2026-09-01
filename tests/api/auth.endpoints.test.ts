@@ -26,7 +26,6 @@ jest.mock('@/lib/rsvp/services/auth-access.service', () => ({
 	buildAuthSessionDto: jest.fn(),
 	claimEventForUserByClaimCode: jest.fn(),
 	ensureUserRole: jest.fn(),
-	isSuperAdminEmail: jest.fn(() => false),
 }));
 
 jest.mock('@/lib/rsvp/services/user-admin.service', () => ({

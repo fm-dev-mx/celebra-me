@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { sanitize } from '@/lib/rsvp/core/utils';
-import { requireDashboardSessionFromLocals } from '@/lib/rsvp/auth/authorization';
+import { requireDashboardMutationAccess } from '@/lib/rsvp/auth/authorization';
 import {
 	deleteDashboardGuest,
 	updateDashboardGuest,
@@ -30,9 +30,9 @@ function parsePhoneUpdate(
 	return validateGuestPhoneInput(rawPhone, countryCode);
 }
 
-export const PATCH: APIRoute = async ({ params, request, url, locals }) => {
+export const PATCH: APIRoute = async ({ params, request, url, locals, cookies }) => {
 	try {
-		const session = requireDashboardSessionFromLocals(locals);
+		const session = await requireDashboardMutationAccess(request, cookies, locals);
 		await requireDashboardRateLimit(`patch:${session.userId}`, request);
 
 		const guestId = sanitize(params.guestId, 120);
@@ -73,9 +73,9 @@ export const PATCH: APIRoute = async ({ params, request, url, locals }) => {
 	}
 };
 
-export const DELETE: APIRoute = async ({ params, request, locals }) => {
+export const DELETE: APIRoute = async ({ params, request, locals, cookies }) => {
 	try {
-		const session = requireDashboardSessionFromLocals(locals);
+		const session = await requireDashboardMutationAccess(request, cookies, locals);
 		await requireDashboardRateLimit(`delete:${session.userId}`, request);
 
 		const guestId = sanitize(params.guestId, 120);
