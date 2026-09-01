@@ -43,7 +43,7 @@ export interface InvitationEventTiming {
 
 export type InvitationLifecycle = 'in_progress' | 'published';
 export type InvitationDeliveryScope = 'content-only' | 'content-and-assets' | 'assets-only';
-export type ManagedIdentityProvenance = 'persisted' | 'authoring-placeholder';
+export type ManagedIdentityProvenance = 'persisted' | 'owner-approved';
 
 const MANAGED_IDENTITY_UUID_RE =
 	/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -56,10 +56,10 @@ export interface InvitationDefinition<K extends string = string> {
 	 */
 	managedIdentityId: string;
 	/**
-	 * Authoring-only definitions may use a deterministic placeholder until an owner-authorized
-	 * environment audit supplies the persisted identity. Such definitions cannot be released.
+	 * Owner-approved definitions carry a fixed UUID until a target-environment preflight verifies the
+	 * corresponding persisted row. They remain in_progress and cannot be released before verification.
 	 */
-	managedIdentityProvenance?: ManagedIdentityProvenance;
+	managedIdentityProvenance: ManagedIdentityProvenance;
 	/**
 	 * Historical slugs previously used by this managed identity. Used for alias diagnostics and
 	 * REKEY_REQUIRED protection — never for silent create/upsert identity inference.
@@ -150,17 +150,26 @@ function validateManagedIdentity<K extends string>(definition: InvitationDefinit
 		);
 	}
 	if (
-		definition.managedIdentityProvenance !== undefined &&
 		definition.managedIdentityProvenance !== 'persisted' &&
-		definition.managedIdentityProvenance !== 'authoring-placeholder'
+		definition.managedIdentityProvenance !== 'owner-approved'
 	) {
 		throw new Error('Invitation definition has an invalid managedIdentityProvenance.');
 	}
 	if (
 		definition.lifecycle === 'published' &&
-		definition.managedIdentityProvenance === 'authoring-placeholder'
+		definition.managedIdentityProvenance !== 'persisted'
 	) {
-		throw new Error('Published invitation definitions require a persisted managed identity.');
+		throw new Error(
+			'Published invitation definitions require a persisted managed identity provenance.',
+		);
+	}
+	if (
+		definition.managedIdentityProvenance === 'owner-approved' &&
+		definition.lifecycle !== 'in_progress'
+	) {
+		throw new Error(
+			'Owner-approved invitation definitions must remain in_progress until environment cutover.',
+		);
 	}
 }
 
@@ -183,9 +192,7 @@ function validateEventTiming<K extends string>(definition: InvitationDefinition<
 	}
 }
 
-function validateInvitationMetadata<K extends string>(
-	definition: InvitationDefinition<K>,
-): void {
+function validateInvitationMetadata<K extends string>(definition: InvitationDefinition<K>): void {
 	if (!definition.slug || typeof definition.slug !== 'string') {
 		throw new Error('Invitation definition requires a non-empty string slug.');
 	}
@@ -213,9 +220,7 @@ function validateInvitationMetadata<K extends string>(
 	}
 }
 
-function validateInvitationStructure<K extends string>(
-	definition: InvitationDefinition<K>,
-): void {
+function validateInvitationStructure<K extends string>(definition: InvitationDefinition<K>): void {
 	if (definition.lifecycle !== 'in_progress' && definition.lifecycle !== 'published') {
 		throw new Error('Invitation definition requires an explicit lifecycle.');
 	}
@@ -280,7 +285,9 @@ export function defineInvitation<K extends string = string>(
 		const issues = parsed.error.issues
 			.map((issue) => `${issue.path.join('.') || '<root>'}: ${issue.message}`)
 			.join('; ');
-		throw new Error(`Invitation definition does not satisfy the canonical content contract: ${issues}`);
+		throw new Error(
+			`Invitation definition does not satisfy the canonical content contract: ${issues}`,
+		);
 	}
 	return definition;
 }

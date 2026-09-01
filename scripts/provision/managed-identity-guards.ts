@@ -131,6 +131,7 @@ function checkPreviousSlugRekey(
 export function resolveIdentityWithoutRekey(input: {
 	slug: string;
 	managedIdentityId: string;
+	provenance?: 'persisted' | 'owner-approved';
 	previousSlugs?: readonly string[];
 	invitationByManagedIdentity: ManagedIdentityRow | null;
 	provenanceInvitationId: string | null;
@@ -141,6 +142,18 @@ export function resolveIdentityWithoutRekey(input: {
 	invitationByClientName?: ManagedIdentityRow | null;
 }): IdentityResolutionDecision {
 	void input.invitationByClientName; // intentionally unused — no fuzzy inference
+
+	if (
+		input.provenance === 'owner-approved' &&
+		input.invitationBySlug?.managedIdentityId &&
+		input.invitationBySlug.managedIdentityId !== input.managedIdentityId
+	) {
+		return {
+			ok: false,
+			code: 'IDENTITY_CONFLICT',
+			message: `IDENTITY_CONFLICT: Slug "${input.slug}" already belongs to managed identity ${input.invitationBySlug.managedIdentityId}, not ${input.managedIdentityId}.`,
+		};
+	}
 
 	const managedId = input.invitationByManagedIdentity?.id ?? null;
 	const provenanceId = input.provenanceInvitationId;

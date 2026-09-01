@@ -307,10 +307,10 @@ export function buildLesliePublishedContent(
 			footerText: `Sábado, 26 de septiembre · ${EVENT_TIME_DISPLAY}`,
 		},
 		location: {
+			accessPolicy: { visibility: 'public' },
 			variant: 'split-map',
 
 			mapStyle: 'dark',
-			visibility: 'public',
 			presentation: 'with-photo',
 			introEyebrow: 'SÁBADO · 26 DE SEPTIEMBRE DE 2026',
 			introHeading: 'Recepción',
@@ -504,6 +504,7 @@ export function buildLesliePublishedContent(
 export const leslieInvitation: InvitationDefinition<LeslieAssetKey> = defineInvitation({
 	slug: LESLIE_EVENT.slug,
 	managedIdentityId: '7f0d1c2a-6b4e-4e8d-9a31-5c7b2d0f4e66',
+	managedIdentityProvenance: 'persisted',
 	createdAt: '2026-08-14T00:00:00.000Z',
 	lifecycle: 'published',
 	deliveryScope: 'content-and-assets',

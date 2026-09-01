@@ -233,7 +233,7 @@ export function buildVictoriaPublishedContent(
 			footerText: 'Los Mochis, Sinaloa',
 		},
 		location: {
-			visibility: 'public',
+			accessPolicy: { visibility: 'public' },
 			mapStyle: 'dark',
 			// Twin venue chapters with illustrated plates; geometry is section-owned.
 			// 'simple' forces the illustrated plate presentation.
@@ -472,6 +472,7 @@ export function buildVictoriaPublishedContent(
 export const victoriaInvitation: InvitationDefinition<VictoriaAssetKey> = defineInvitation({
 	slug: VICTORIA_EVENT.slug,
 	managedIdentityId: 'c4e8a1d2-7f3b-4a9e-8b2c-1d5e6f7a8b9c',
+	managedIdentityProvenance: 'persisted',
 	createdAt: '2026-08-08T04:00:00.000Z',
 	lifecycle: 'published',
 	deliveryScope: 'content-and-assets',

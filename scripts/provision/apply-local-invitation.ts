@@ -387,6 +387,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		const decision = resolveIdentityWithoutRekey({
 			slug,
 			managedIdentityId: definition.managedIdentityId,
+			provenance: definition.managedIdentityProvenance,
 			previousSlugs: definition.previousSlugs,
 			invitationByManagedIdentity: invByManagedIdentity?.id
 				? {

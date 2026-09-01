@@ -221,10 +221,10 @@ export function buildRominaPublishedContent(
 			footerText: 'Ceremonia Religiosa · 5:00 p. m.',
 		},
 		location: {
+			accessPolicy: { visibility: 'public' },
 			variant: 'standard',
 
 			mapStyle: 'dark',
-			visibility: 'public',
 			introEyebrow: 'VIERNES · 14 DE AGOSTO DE 2026',
 			introHeading: 'Ceremonia y recepción',
 			venues: [
@@ -384,6 +384,7 @@ export function buildRominaPublishedContent(
 export const rominaInvitation: InvitationDefinition<RominaAssetKey> = defineInvitation({
 	slug: ROMINA_EVENT.slug,
 	managedIdentityId: '3c4d5e6f-7081-42a3-b4c5-d6e7f8091a2b',
+	managedIdentityProvenance: 'persisted',
 	createdAt: '2026-07-20T00:00:00.000Z',
 	lifecycle: 'published',
 	deliveryScope: 'content-and-assets',

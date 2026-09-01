@@ -208,7 +208,7 @@ export function buildAlbaPublishedContent(
 			author: 'Alba Rosa',
 		},
 		location: {
-			visibility: 'public',
+			accessPolicy: { visibility: 'public' },
 			variant: 'split-map',
 			mapStyle: 'dark',
 			presentationOptions: { showFlourishes: false },
@@ -351,6 +351,7 @@ export function buildAlbaPublishedContent(
 export const albaInvitation: InvitationDefinition<AlbaAssetKey> = defineInvitation({
 	slug: ALBA_EVENT.slug,
 	managedIdentityId: '2b3c4d5e-6f70-4192-a3b4-c5d6e7f8091a',
+	managedIdentityProvenance: 'persisted',
 	createdAt: '2026-07-28T12:00:00.000Z',
 	lifecycle: 'published',
 	deliveryScope: 'content-and-assets',

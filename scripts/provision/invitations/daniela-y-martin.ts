@@ -200,8 +200,8 @@ export function buildDanielaPublishedContent(
 			footerText: 'Huejutla de Reyes, Hidalgo',
 		},
 		location: {
+			accessPolicy: { visibility: 'public' },
 			variant: 'stacked-venue-plates',
-			visibility: 'public',
 			mapStyle: 'dark',
 			// Twin venue chapters with illustrated plates; geometry is section-owned.
 			// With showNavigationButtons=false, VenueCard uses the linked map-preview surface.
@@ -385,6 +385,7 @@ Hombres: traje.`,
 export const danielaInvitation: InvitationDefinition<DanielaAssetKey> = defineInvitation({
 	slug: DANIELA_EVENT.slug,
 	managedIdentityId: '8e4f2a1b-6c3d-4e9f-a0b1-2c3d4e5f6a7b',
+	managedIdentityProvenance: 'persisted',
 	previousSlugs: ['boda-daniela-y-martin'],
 	createdAt: '2026-07-31T12:00:00.000Z',
 	lifecycle: 'published',

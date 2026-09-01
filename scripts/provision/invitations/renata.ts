@@ -255,10 +255,10 @@ export function buildRenataPublishedContent(
 			footerText: 'Misa a las 5:00 p. m. · Recepción a las 7:00 p. m.',
 		},
 		location: {
+			accessPolicy: { visibility: 'public' },
 			variant: 'stacked-venue-plates',
 
 			mapStyle: 'dark',
-			visibility: 'public',
 			presentation: 'simple',
 			presentationOptions: {
 				showFlourishes: true,
@@ -471,6 +471,7 @@ export function buildRenataPublishedContent(
 export const renataInvitation: InvitationDefinition<RenataAssetKey> = defineInvitation({
 	slug: RENATA_EVENT.slug,
 	managedIdentityId: '0d10598f-5007-486f-a36e-4e0acabfe640',
+	managedIdentityProvenance: 'persisted',
 	createdAt: '2026-08-14T00:00:00.000Z',
 	lifecycle: 'published',
 	deliveryScope: 'content-and-assets',

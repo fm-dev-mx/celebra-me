@@ -246,6 +246,7 @@ export function buildValentinaPublishedContent(
 			],
 		},
 		location: {
+			accessPolicy: { visibility: 'public' },
 			variant: 'standard',
 
 			mapStyle: 'dark',
@@ -310,7 +311,7 @@ export function buildValentinaPublishedContent(
 		},
 		gallery: {
 			variant: 'magazine-spread',
-			presentationOptions: {
+			variantOptions: {
 				mobileBrowse: 'rail',
 			},
 			eyebrow: 'Galería',
@@ -457,6 +458,7 @@ export function buildValentinaPublishedContent(
 export const valentinaInvitation: InvitationDefinition<ValentinaAssetKey> = defineInvitation({
 	slug: VALENTINA_EVENT.slug,
 	managedIdentityId: 'b1e9d4a7-6c28-4f3a-a815-9e2d70c4f6b8',
+	managedIdentityProvenance: 'persisted',
 	createdAt: '2026-06-26T00:00:00.000Z',
 	lifecycle: 'published',
 	deliveryScope: 'content-only',
