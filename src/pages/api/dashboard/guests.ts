@@ -1,8 +1,7 @@
 import type { APIRoute } from 'astro';
-import type { DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
 import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { sanitize } from '@/lib/rsvp/core/utils';
-import { requireDashboardSessionFromLocals } from '@/lib/rsvp/auth/authorization';
+import { requireDashboardMutationAccess, requireDashboardSessionFromLocals } from '@/lib/rsvp/auth/authorization';
 import {
 	requireDashboardRateLimit,
 	validateGuestPhoneInput,
@@ -11,7 +10,7 @@ import {
 	createDashboardGuest,
 	listDashboardGuests,
 } from '@/lib/rsvp/services/dashboard-guests.service';
-import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
+import type { AttendanceStatus, DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
 
 function parseStatus(raw: string): AttendanceStatus | 'all' | 'viewed' {
 	if (raw === 'pending' || raw === 'confirmed' || raw === 'declined' || raw === 'viewed')
@@ -36,6 +35,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
 
 		const data = await listDashboardGuests({
 			eventId,
+			userId: session.userId,
 			status,
 			search,
 			delivery,
@@ -48,9 +48,9 @@ export const GET: APIRoute = async ({ url, locals }) => {
 	}
 };
 
-export const POST: APIRoute = async ({ request, url, locals }) => {
+export const POST: APIRoute = async ({ request, url, locals, cookies }) => {
 	try {
-		const session = requireDashboardSessionFromLocals(locals);
+		const session = await requireDashboardMutationAccess(request, cookies, locals);
 		await requireDashboardRateLimit(`create:${session.userId}`, request);
 
 		const bodyResult = await parseJsonBody(request);
