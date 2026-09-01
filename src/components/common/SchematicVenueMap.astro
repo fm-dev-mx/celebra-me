@@ -1,0 +1,94 @@
+---
+import type { LocationMapStyle } from '@/lib/invitation/location-presentation';
+
+interface Props {
+  lat: number;
+  lng: number;
+  title?: string;
+  address?: string;
+  mapStyle: LocationMapStyle;
+}
+
+const { lat, lng, title = 'Ubicación del evento', address = '', mapStyle } = Astro.props;
+const label = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+---
+
+<div class="schematic-venue-map" data-map-style={mapStyle} role="img" aria-label={`${title}. ${address}. Coordenadas ${label}`}>
+  <div class="schematic-venue-map__grid" aria-hidden="true"></div>
+  <div class="schematic-venue-map__route schematic-venue-map__route--one" aria-hidden="true"></div>
+  <div class="schematic-venue-map__route schematic-venue-map__route--two" aria-hidden="true"></div>
+  <div class="schematic-venue-map__marker" aria-hidden="true"><span></span></div>
+  <div class="schematic-venue-map__caption">
+    <strong>{title}</strong>
+    {address && <span>{address}</span>}
+    <small>{label}</small>
+  </div>
+</div>
+
+<style lang="scss">
+  .schematic-venue-map {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 12rem;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: var(--radius-md, 0.5rem);
+    background: var(--map-surface, var(--color-surface-secondary));
+    color: var(--color-text-primary);
+  }
+
+  .schematic-venue-map__grid {
+    position: absolute;
+    inset: -30%;
+    opacity: 0.36;
+    background-image: linear-gradient(28deg, transparent 47%, var(--color-border-subtle) 48% 50%, transparent 51%), linear-gradient(118deg, transparent 47%, var(--color-border-subtle) 48% 50%, transparent 51%);
+    background-size: 5rem 5rem, 7rem 7rem;
+    transform: rotate(-8deg);
+  }
+
+  .schematic-venue-map__route {
+    position: absolute;
+    border: 2px solid var(--color-action-accent);
+    border-radius: 999px;
+    opacity: 0.54;
+    transform: rotate(-16deg);
+  }
+
+  .schematic-venue-map__route--one { inset: 18% -14% 44% 12%; }
+  .schematic-venue-map__route--two { inset: 50% 8% 16% -12%; transform: rotate(28deg); }
+
+  .schematic-venue-map__marker {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 1.25rem;
+    height: 1.25rem;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--color-text-on-dark, #fff);
+    border-radius: 50%;
+    background: var(--color-action-accent);
+    box-shadow: 0 0 0 0.45rem rgb(var(--color-action-accent-rgb) / 0.2);
+    transform: translate(-50%, -50%);
+  }
+
+  .schematic-venue-map__marker span { width: 0.35rem; height: 0.35rem; border-radius: 50%; background: currentcolor; }
+
+  .schematic-venue-map__caption {
+    position: absolute;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    display: grid;
+    gap: 0.15rem;
+    max-width: 18rem;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid rgb(var(--color-border-subtle-rgb) / 70%);
+    background: rgb(var(--color-surface-primary-rgb) / 86%);
+    backdrop-filter: blur(4px);
+  }
+
+  .schematic-venue-map__caption span,
+  .schematic-venue-map__caption small { font-size: 0.72rem; line-height: 1.35; }
+  .schematic-venue-map__caption small { opacity: 0.7; font-variant-numeric: tabular-nums; }
+</style>

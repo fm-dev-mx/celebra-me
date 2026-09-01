@@ -35,6 +35,18 @@ function hasValue(record: LocationRecord, key: string): boolean {
 	return record[key] !== undefined && record[key] !== null;
 }
 
+function normalizeLegacyAccessPolicy(location: LocationRecord): LocationRecord {
+	if (hasValue(location, 'accessPolicy')) {
+		if (!isRecord(location.accessPolicy)) throw new LocationNormalizationError('location.accessPolicy must be an object when provided.');
+		return location;
+	}
+	const presentationOptions = isRecord(location.presentationOptions) ? location.presentationOptions : undefined;
+	const visibility = location.visibility === 'after-rsvp' ? 'after-rsvp' : location.visibility === 'public' ? 'public' : undefined;
+	const revealSurface = presentationOptions?.revealSurface === 'rsvp' || presentationOptions?.revealSurface === 'section' ? presentationOptions.revealSurface : undefined;
+	if (!visibility && !revealSurface) return location;
+	return { ...location, accessPolicy: { visibility: visibility ?? 'public', ...(revealSurface ? { revealPlacement: revealSurface } : {}) } };
+}
+
 function normalizeLegacyVenue(
 	value: unknown,
 	type: 'ceremony' | 'reception',
@@ -75,7 +87,7 @@ export function normalizeLegacyLocation(location: unknown): unknown {
 		);
 	}
 
-	if (hasVenues) return location;
+	if (hasVenues) return normalizeLegacyAccessPolicy(location);
 
 	const venues = [
 		...(hasValue(location, 'ceremony')
@@ -87,10 +99,10 @@ export function normalizeLegacyLocation(location: unknown): unknown {
 	];
 	const { ceremony: _ceremony, reception: _reception, ...canonicalLocation } = location;
 
-	return {
+	return normalizeLegacyAccessPolicy({
 		...canonicalLocation,
 		venues,
-	};
+	});
 }
 
 /** Normalize a content document while preserving all unrelated top-level fields. */

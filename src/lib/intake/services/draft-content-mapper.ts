@@ -740,6 +740,7 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			presentation: str(location.presentation),
 			mapStyle: str(location.mapStyle),
 			variant: str(location.variant),
+			...(isRecord(location.accessPolicy) ? { accessPolicy: location.accessPolicy } : {}),
 			...(isRecord(location.presentationOptions)
 				? { presentationOptions: location.presentationOptions }
 				: {}),

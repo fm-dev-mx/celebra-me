@@ -267,6 +267,7 @@ function mapLocationFromDraft(
 	const priorLocation = normalizeLegacyLocation(ctx.priorPublishedContent?.location) as
 		Record<string, unknown> | undefined;
 	if (draftLocation.visibility) result.visibility = draftLocation.visibility;
+	if (draftLocation.accessPolicy) result.accessPolicy = draftLocation.accessPolicy;
 	if (draftLocation.presentation) result.presentation = draftLocation.presentation;
 	result.mapStyle =
 		draftLocation.mapStyle ?? priorLocation?.mapStyle ?? demoLocation?.mapStyle ?? 'dark';

@@ -83,7 +83,7 @@ export const gallerySchema = z
 		subtitle: optionalText(500),
 		variant: z.enum(GALLERY_VARIANTS).optional(),
 		presentation: z.enum(GALLERY_PRESENTATIONS).optional(),
-		presentationOptions: z
+		variantOptions: z
 			.object({
 				mobileBrowse: z.enum(GALLERY_MOBILE_BROWSE_MODES).optional(),
 			})

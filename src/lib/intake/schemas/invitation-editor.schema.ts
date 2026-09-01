@@ -80,6 +80,13 @@ export const InvitationEditorSectionSchemas = {
 		presentation: z.enum(LOCATION_PRESENTATIONS).optional(),
 		mapStyle: z.enum(LOCATION_MAP_STYLES).optional(),
 		variant: z.enum(LOCATION_VARIANTS).optional(),
+		accessPolicy: z
+			.object({
+				visibility: z.enum(['public', 'after-rsvp']),
+				revealPlacement: z.enum(['section', 'rsvp']).optional(),
+			})
+			.strict()
+			.optional(),
 		presentationOptions: z
 			.object({
 				showFlourishes: z.boolean().optional(),

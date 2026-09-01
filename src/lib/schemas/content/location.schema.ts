@@ -47,6 +47,10 @@ export type VenueEntryInput = z.infer<typeof venueEntrySchema>;
 
 const locationBaseSchema = z.object({
 	visibility: z.enum(['public', 'after-rsvp']).default('public'),
+	accessPolicy: z.object({
+		visibility: z.enum(['public', 'after-rsvp']),
+		revealPlacement: z.enum(['section', 'rsvp']).optional(),
+	}).strict().optional(),
 	presentation: z.enum(LOCATION_PRESENTATIONS).optional(),
 	mapStyle: z.enum(LOCATION_MAP_STYLES).default('dark'),
 	presentationOptions: z
@@ -87,6 +91,13 @@ export const locationSchema = z
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[2]) }),
 	])
 	.superRefine((location, context) => {
+		if (location.accessPolicy?.visibility === 'after-rsvp' && !location.accessPolicy.revealPlacement) {
+			context.addIssue({ code: 'custom', path: ['accessPolicy', 'revealPlacement'], message: 'location.accessPolicy.revealPlacement is required for after-rsvp visibility' });
+		}
+		if (location.accessPolicy?.visibility === 'public' && location.accessPolicy.revealPlacement !== undefined) {
+			context.addIssue({ code: 'custom', path: ['accessPolicy', 'revealPlacement'], message: 'location.accessPolicy.revealPlacement is only valid for after-rsvp visibility' });
+		}
+
 		if (location.variant === 'split-map') {
 			const venues = collectVisibleVenues(location) as Array<{
 				coordinates?: unknown;

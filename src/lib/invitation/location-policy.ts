@@ -9,8 +9,8 @@ export function isRsvpRevealLocation(
 	location: InvitationViewModel['sections']['location'] | undefined,
 ): boolean {
 	return (
-		location?.visibility === LOCATION_VISIBILITY_AFTER_RSVP &&
-		location.presentationOptions?.revealSurface === 'rsvp'
+		(location?.accessPolicy?.visibility ?? location?.visibility) === LOCATION_VISIBILITY_AFTER_RSVP &&
+		(location?.accessPolicy?.revealPlacement ?? location?.presentationOptions?.revealSurface) === 'rsvp'
 	);
 }
 
@@ -19,7 +19,7 @@ export function isLocationLocked(
 	isConfirmed: boolean,
 ): boolean {
 	if (!location || isConfirmed) return false;
-	return location.visibility === LOCATION_VISIBILITY_AFTER_RSVP;
+	return (location.accessPolicy?.visibility ?? location.visibility) === LOCATION_VISIBILITY_AFTER_RSVP;
 }
 
 function redactTeaserDetails(teaser: string): string {
