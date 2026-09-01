@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { requireEditorMutationAccess, requireInvitationId } from '@/lib/intake/editor-api';
 import { getInvitationEditorContext } from '@/lib/intake/services/invitation-editor.service';
 import { publishDraft } from '@/lib/intake/services/publishing.service';
-import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
+import { errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { createRuntimeMutationCommandContext } from '@/lib/server/runtime-mutation-context';
 
 const PublishPreflightSchema = z.object({
@@ -18,7 +18,9 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 	try {
 		const session = await requireEditorMutationAccess(request, cookies);
 		const invitationId = requireInvitationId(params.id);
-		const preflight = PublishPreflightSchema.parse(await request.json());
+		const bodyResult = await parseJsonBody(request);
+		if (bodyResult instanceof Response) return bodyResult;
+		const preflight = PublishPreflightSchema.parse(bodyResult);
 		const result = await publishDraft(
 			invitationId,
 			preflight,

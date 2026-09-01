@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireEditorMutationAccess, requireInvitationId } from '@/lib/intake/editor-api';
 import { importDemoAsset } from '@/lib/intake/services/asset.service';
-import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
+import { errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
 export const POST: APIRoute = async ({ request, cookies, params }) => {
@@ -9,7 +9,9 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		await requireEditorMutationAccess(request, cookies);
 		const invitationId = requireInvitationId(params.id);
 
-		const body = (await request.json()) as { demoKey?: string };
+		const bodyResult = await parseJsonBody(request);
+		if (bodyResult instanceof Response) return bodyResult;
+		const body = bodyResult as { demoKey?: string };
 		if (!body.demoKey) {
 			throw new ApiError(
 				400,

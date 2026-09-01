@@ -5,7 +5,7 @@ import {
 	updateAssetMetadata,
 	restoreAsset,
 } from '@/lib/intake/services/asset.service';
-import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
+import { errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
 function guardAssetId(assetId: string | undefined): asserts assetId is string {
@@ -33,7 +33,9 @@ export const PATCH: APIRoute = async ({ request, cookies, params }) => {
 		const invitationId = requireInvitationId(params.id);
 		guardAssetId(params.assetId);
 
-		const body = (await request.json()) as { displayName?: string; defaultAltText?: string };
+		const bodyResult = await parseJsonBody(request);
+		if (bodyResult instanceof Response) return bodyResult;
+		const body = bodyResult as { displayName?: string; defaultAltText?: string };
 
 		const updated = await updateAssetMetadata(
 			params.assetId,

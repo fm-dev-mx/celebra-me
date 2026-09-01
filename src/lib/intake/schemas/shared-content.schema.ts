@@ -6,6 +6,7 @@ import {
 } from '@/lib/schemas/content/shared.schema';
 import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
+import { safeHttpUrlSchema } from '@/lib/schemas/content/gifts.schema';
 import { THEME_PRESETS, INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { ENVELOPE_SEAL_COLORS } from '@/lib/invitation/reveal-card';
 import {
@@ -26,7 +27,7 @@ export const optionalText = (max = 2000) => z.string().trim().max(max).optional(
 export const optionalUrl = z
 	.string()
 	.trim()
-	.refine((value) => value === '' || z.url().safeParse(value).success, {
+	.refine((value) => value === '' || safeHttpUrlSchema.safeParse(value).success, {
 		message: 'Debe ser una URL válida o dejarse vacío.',
 	})
 	.optional();
