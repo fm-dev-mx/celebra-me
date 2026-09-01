@@ -45,7 +45,7 @@ function productionFetch(): jest.MockedFunction<
 }
 
 describe('post-deploy smoke', () => {
-	it('accepts only the exact Preview success or Production promoted transition', () => {
+	it('accepts only the exact Preview ready or Production promoted transition', () => {
 		const base = {
 			projectId: 'prj_abcdef123456',
 			expectedProjectId: 'prj_abcdef123456',
@@ -58,7 +58,7 @@ describe('post-deploy smoke', () => {
 		expect(
 			validateVercelDispatch({
 				...base,
-				event: 'vercel.deployment.success',
+				event: 'vercel.deployment.ready',
 				environment: 'preview',
 			}).environment,
 		).toBe('preview');
@@ -66,6 +66,13 @@ describe('post-deploy smoke', () => {
 			validateVercelDispatch({
 				...base,
 				event: 'vercel.deployment.success',
+				environment: 'preview',
+			}),
+		).toThrow('approved environment transition');
+		expect(() =>
+			validateVercelDispatch({
+				...base,
+				event: 'vercel.deployment.ready',
 				environment: 'production',
 			}),
 		).toThrow('approved environment transition');
@@ -73,7 +80,7 @@ describe('post-deploy smoke', () => {
 			validateVercelDispatch({
 				...base,
 				projectId: 'prj_other',
-				event: 'vercel.deployment.success',
+				event: 'vercel.deployment.ready',
 				environment: 'preview',
 			}),
 		).toThrow('different or invalid Vercel project');
@@ -110,7 +117,8 @@ describe('post-deploy smoke', () => {
 			'utf8',
 		);
 
-		expect(workflow).toContain("'vercel.deployment.success'");
+		expect(workflow).toContain("'vercel.deployment.ready'");
+		expect(workflow).not.toContain("'vercel.deployment.success'");
 		expect(workflow).toContain("'vercel.deployment.promoted'");
 		expect(workflow).toContain('ref: ${{ github.event.client_payload.git.sha }}');
 		expect(workflow).toContain('cancel-in-progress: true');

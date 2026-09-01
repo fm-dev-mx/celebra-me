@@ -27,7 +27,7 @@ export interface VercelDispatchInput {
 }
 
 export interface ValidatedVercelDispatch {
-	event: 'vercel.deployment.success' | 'vercel.deployment.promoted';
+	event: 'vercel.deployment.ready' | 'vercel.deployment.promoted';
 	environment: PostDeployEnvironment;
 	projectId: string;
 	deploymentId: string;
@@ -74,7 +74,7 @@ function requireValue(value: string, name: string): string {
 }
 
 function validateDispatchTransition(event: string, environment: string): PostDeployEnvironment {
-	if (event === 'vercel.deployment.success' && environment === 'preview') return 'preview';
+	if (event === 'vercel.deployment.ready' && environment === 'preview') return 'preview';
 	if (event === 'vercel.deployment.promoted' && environment === 'production') {
 		return 'production';
 	}
