@@ -1,10 +1,23 @@
+import { randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import {
+	OPERATIONAL_EVIDENCE_SCHEMA_VERSION,
+	serializeOperationalEvidenceEvent,
+	type OperationalEvidenceV1,
+} from '../../src/lib/operations/operational-evidence.ts';
+import {
+	BACKUP_HEALTH_RECEIPT_PATH,
+	createBackupRunEvidence,
+	writeAtomicJson,
+	type BackupHealthPayload,
+} from './backup-health-evidence.ts';
 import {
 	validateCriticalBackupManifest,
 	type CriticalBackupKind,
 	type CriticalBackupManifest,
 } from './backup-manifest.ts';
+import { evaluateCriticalBackupHealth } from './critical-backup-health.ts';
 import { runCommand, timestamp } from './db-workflow-lib.ts';
 import {
 	applyCriticalBackupRetention,
@@ -34,6 +47,7 @@ interface DailyBackupReport {
 const backupRoot = resolve('.backups', 'prod');
 const reportRoot = resolve(backupRoot, 'reports');
 const startedAt = new Date();
+const runId = randomUUID();
 const reportPath = resolve(reportRoot, `daily-backup-${timestamp()}.json`);
 const dailyRetention = 30;
 const monthlyRetention = 12;
@@ -80,6 +94,33 @@ let report: DailyBackupReport = {
 	integrityProfile,
 };
 
+const startedEvidence: OperationalEvidenceV1<'critical_backup', BackupHealthPayload> = {
+	schemaVersion: OPERATIONAL_EVIDENCE_SCHEMA_VERSION,
+	check: 'critical_backup',
+	environment: 'production',
+	runId,
+	startedAt: startedAt.toISOString(),
+	completedAt: null,
+	observedAt: startedAt.toISOString(),
+	status: 'UNVERIFIED',
+	reasonCode: 'backup_started',
+	source: 'local_backup_wrapper',
+	ownerAction: 'Espere el recibo de cierre antes de evaluar el backup.',
+	payload: {
+		exit_code: null,
+		recovery_point_at: null,
+		recovery_point_age_ms: null,
+		daily_report_at: null,
+		daily_report_age_ms: null,
+		manifest_valid: null,
+		orphan_count: null,
+	},
+};
+console.info(
+	serializeOperationalEvidenceEvent('critical_backup_summary', 'started', startedEvidence),
+);
+
+let workflowError: unknown = null;
 try {
 	mkdirSync(backupRoot, { recursive: true });
 	prepareEncryptedLocalDirectory(backupRoot);
@@ -144,15 +185,42 @@ try {
 		integrityProfile,
 	};
 } catch (error: unknown) {
+	workflowError = error;
 	const endedAt = new Date();
 	report.endedAt = endedAt.toISOString();
 	report.durationMs = endedAt.getTime() - startedAt.getTime();
-	writeReport(report);
-	console.error(
-		'Daily critical backup failed:',
-		error instanceof Error ? error.message : String(error),
-	);
-	process.exit(1);
 }
 
-writeReport(report);
+try {
+	writeReport(report);
+} catch (error: unknown) {
+	workflowError ??= error;
+}
+
+let orphanCount: number | null = null;
+try {
+	orphanCount = evaluateCriticalBackupHealth({ backupRoot }).orphanCount;
+} catch {
+	// The receipt remains explicit about missing evidence instead of inventing zero.
+}
+
+const receipt = createBackupRunEvidence({
+	runId,
+	report,
+	exitCode: workflowError ? 1 : 0,
+	orphanCount,
+});
+try {
+	writeAtomicJson(BACKUP_HEALTH_RECEIPT_PATH, receipt);
+} catch (error: unknown) {
+	workflowError ??= error;
+}
+console.info(serializeOperationalEvidenceEvent('critical_backup_summary', 'completed', receipt));
+
+if (workflowError) {
+	console.error(
+		'Daily critical backup failed:',
+		workflowError instanceof Error ? workflowError.message : String(workflowError),
+	);
+	process.exitCode = 1;
+}
