@@ -186,11 +186,7 @@ export function resolveSpeedInsightsConfig(
 	}
 
 	const routePolicy = classifyTrackingRoute(input);
-	if (
-		routePolicy.routeClass === 'dashboard_admin_auth' ||
-		routePolicy.routeClass === 'generic_api' ||
-		routePolicy.routeClass === 'rsvp_guest_api'
-	) {
+	if (!routePolicy.internalAllowed) {
 		return { enabled: false, sampleRate: 0 };
 	}
 
