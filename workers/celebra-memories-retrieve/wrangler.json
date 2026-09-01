@@ -12,6 +12,20 @@
         "head_sampling_rate": 0.05
     },
     "routes": [],
+    "durable_objects": {
+        "bindings": [
+            {
+                "name": "NONCE_GUARD",
+                "class_name": "ReplayGuard"
+            }
+        ]
+    },
+    "migrations": [
+        {
+            "tag": "v1",
+            "new_sqlite_classes": ["ReplayGuard"]
+        }
+    ],
     "r2_buckets": [
         {
             "binding": "MEMORIES_BUCKET",
@@ -24,6 +38,14 @@
             "workers_dev": false,
             "preview_urls": false,
             "routes": [],
+            "durable_objects": {
+                "bindings": [
+                    {
+                        "name": "NONCE_GUARD",
+                        "class_name": "ReplayGuard"
+                    }
+                ]
+            },
             "vars": {
                 "MEMORIES_STORAGE_TARGET": "local"
             },
@@ -39,6 +61,14 @@
             "workers_dev": true,
             "preview_urls": false,
             "routes": [],
+            "durable_objects": {
+                "bindings": [
+                    {
+                        "name": "NONCE_GUARD",
+                        "class_name": "ReplayGuard"
+                    }
+                ]
+            },
             "vars": {
                 "MEMORIES_STORAGE_TARGET": "staging"
             },

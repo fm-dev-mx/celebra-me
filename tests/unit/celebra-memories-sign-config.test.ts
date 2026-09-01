@@ -93,12 +93,12 @@ describe('celebra memories sign production config', () => {
 		expect(owner).toContain('valentina-memories-upload.contract.ts');
 		expect(owner).not.toContain('2026-08-27T06:00:00.000Z');
 		expect(owner).not.toContain('2026-09-04T06:00:00.000Z');
-		expect(envExample).toContain('MEMORIES_R2_ACCOUNT_ID=');
+		expect(envExample).toContain('MEMORIES_UPLOAD_CAPABILITY_SECRET=');
 		expect(envExample).not.toContain('R2_BUCKET=');
 		expect(envExample).toContain('MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY=');
 		expect(envExample).not.toMatch(/PUBLIC_R2_/);
-		expect(envExample).toMatch(/^MEMORIES_R2_PRESIGN_ACCESS_KEY_ID=$/m);
-		expect(envExample).toMatch(/^MEMORIES_R2_PRESIGN_SECRET_ACCESS_KEY=$/m);
+		expect(envExample).toMatch(/^MEMORIES_UPLOAD_CAPABILITY_SECRET=$/m);
+		expect(envExample).not.toMatch(/MEMORIES_R2_PRESIGN/);
 	});
 
 	it('projects the canonical storage map into both Worker configurations', () => {

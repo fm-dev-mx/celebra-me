@@ -8,6 +8,23 @@ type RateLimit = {
 	limit(options: { key: string }): Promise<{ success: boolean }>;
 };
 
+type DurableObjectId = { toString(): string };
+type DurableObjectNamespace = {
+	idFromName(name: string): DurableObjectId;
+	get(id: DurableObjectId): {
+		fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
+	};
+};
+
+type FixedLengthStreamInstance = {
+	readable: ReadableStream<Uint8Array>;
+	writable: WritableStream<Uint8Array>;
+};
+
+declare const FixedLengthStream: {
+	new (length: number): FixedLengthStreamInstance;
+};
+
 type R2Object = {
 	body: ReadableStream<Uint8Array> | null;
 	size: number;
@@ -18,6 +35,15 @@ type R2Object = {
 };
 
 type R2Bucket = {
+	put(
+		key: string,
+		value: ReadableStream<Uint8Array> | ArrayBuffer | ArrayBufferView | Blob | string,
+		options?: {
+			httpMetadata?: { contentType?: string };
+			sha256?: ArrayBuffer;
+			onlyIf?: { etagDoesNotMatch?: string };
+		},
+	): Promise<unknown>;
 	get(
 		key: string,
 		options?: { range?: { offset: number; length?: number } },

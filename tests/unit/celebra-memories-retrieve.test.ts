@@ -50,17 +50,22 @@ function signedRequest(
 		privateKeyEnvName: 'MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY',
 		now: options.now,
 	});
-	return new Request(
-		`https://memories-access.celebra-me.com${VALENTINA_MEMORIES_RETRIEVAL_PATH}`,
-		{
-			method: 'POST',
-			headers,
-			body: options.tamper ? `${rawBody} ` : rawBody,
-		},
-	);
+	const requestBody = options.tamper ? `${rawBody} ` : rawBody;
+	return {
+		method: 'POST',
+		url: `https://memories-access.celebra-me.com${VALENTINA_MEMORIES_RETRIEVAL_PATH}`,
+		headers: new Headers(headers),
+		body: new NodeReadableStream({
+			start(controller) {
+				controller.enqueue(new TextEncoder().encode(requestBody));
+				controller.close();
+			},
+		}),
+	} as unknown as Request;
 }
 
 function createEnv(overrides: Record<string, unknown> = {}) {
+	const used = new Set<string>();
 	return {
 		MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY: PUBLIC_KEY,
 		MEMORIES_STORAGE_TARGET: 'production',
@@ -68,6 +73,17 @@ function createEnv(overrides: Record<string, unknown> = {}) {
 			get: jest.fn(),
 			delete: jest.fn(async () => undefined),
 		},
+		NONCE_GUARD: {
+			idFromName: (name: string) => name as never,
+			get: () => ({
+				fetch: jest.fn(async (_url: string, init?: RequestInit) => {
+					const input = JSON.parse(String(init?.body)) as { key: string };
+					if (used.has(input.key)) return new Response(null, { status: 409 });
+					used.add(input.key);
+					return new Response(null, { status: 204 });
+				}),
+			}),
+		} as never,
 		...overrides,
 	};
 }
@@ -80,10 +96,17 @@ describe('celebra memories private retrieval worker', () => {
 	it('rejects unsigned, wrong-audience, stale, and tampered requests before R2 access', async () => {
 		const body = { objectKey: OBJECT_KEY, mimeType: 'image/jpeg', mode: 'inline' };
 		const env = createEnv();
-		const unsigned = new Request(
-			`https://memories-access.celebra-me.com${VALENTINA_MEMORIES_RETRIEVAL_PATH}`,
-			{ method: 'POST', body: JSON.stringify(body) },
-		);
+		const unsigned = {
+			method: 'POST',
+			url: `https://memories-access.celebra-me.com${VALENTINA_MEMORIES_RETRIEVAL_PATH}`,
+			headers: new Headers(),
+			body: new NodeReadableStream({
+				start(controller) {
+					controller.enqueue(new TextEncoder().encode(JSON.stringify(body)));
+					controller.close();
+				},
+			}),
+		} as unknown as Request;
 		const responses = [
 			await retrieveWorker.fetch(unsigned, env as never),
 			await retrieveWorker.fetch(signedRequest(body, { audience: 'wrong' }), env as never),

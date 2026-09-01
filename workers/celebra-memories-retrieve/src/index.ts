@@ -9,11 +9,17 @@ import {
 	VALENTINA_MEMORIES_OBJECT_PREFIX,
 	getValentinaMemoriesStorageBucketName,
 } from '../../../src/data/valentina-memories-upload.contract';
-import { MEMORIES_RETRIEVAL_REQUEST_AUDIENCE } from '../../../src/data/valentina-memories-private-request.contract';
+import {
+	MEMORIES_PRIVATE_REQUEST_HEADERS,
+	MEMORIES_PRIVATE_REQUEST_TTL_SECONDS,
+	MEMORIES_RETRIEVAL_REQUEST_AUDIENCE,
+} from '../../../src/data/valentina-memories-private-request.contract';
 import { verifyMemoriesPrivateRequest } from '../../shared/private-request';
+import { consumeReplayKey } from '../../shared/replay-guard';
 
 type RetrieveEnv = Omit<MemoriesRetrieveBindings, 'MEMORIES_STORAGE_TARGET'> & {
 	MEMORIES_STORAGE_TARGET: string;
+	NONCE_GUARD?: DurableObjectNamespace;
 	MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY: string;
 };
 type RetrievalMode = 'inline' | 'attachment' | 'inspect' | 'delete';
@@ -196,6 +202,40 @@ function parseRetrievalRequest(rawBody: string): ParsedRetrievalRequest | null {
 	};
 }
 
+async function readBoundedBody(request: Request): Promise<string | null> {
+	const rawLength = request.headers.get('Content-Length');
+	if (rawLength !== null) {
+		if (!/^\d+$/.test(rawLength.trim())) return null;
+		if (Number(rawLength) > VALENTINA_MEMORIES_JSON_BODY_MAX_BYTES) return null;
+	}
+	if (!request.body) return null;
+	const reader = request.body.getReader();
+	const chunks: Uint8Array[] = [];
+	let total = 0;
+	try {
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+			if (!value) continue;
+			total += value.byteLength;
+			if (total > VALENTINA_MEMORIES_JSON_BODY_MAX_BYTES) {
+				await reader.cancel('request body exceeds configured limit');
+				return null;
+			}
+			chunks.push(value);
+		}
+	} finally {
+		reader.releaseLock();
+	}
+	const bytes = new Uint8Array(total);
+	let offset = 0;
+	for (const chunk of chunks) {
+		bytes.set(chunk, offset);
+		offset += chunk.byteLength;
+	}
+	return new TextDecoder().decode(bytes);
+}
+
 async function handleRetrievalRequest(
 	env: RetrieveEnv,
 	body: ParsedRetrievalRequest,
@@ -218,14 +258,12 @@ export default {
 		if (
 			!env.MEMORIES_BUCKET ||
 			!env.MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY ||
+			!env.NONCE_GUARD ||
 			!getValentinaMemoriesStorageBucketName(env.MEMORIES_STORAGE_TARGET)
 		)
 			return json({ error: { code: 'unavailable' } }, 503);
-		const rawBody = await request.text();
-		if (
-			!rawBody ||
-			new TextEncoder().encode(rawBody).byteLength > VALENTINA_MEMORIES_JSON_BODY_MAX_BYTES
-		)
+		const rawBody = await readBoundedBody(request);
+		if (!rawBody)
 			return json({ error: { code: 'bad_request' } }, 400);
 		if (
 			!(await verifyMemoriesPrivateRequest({
@@ -238,8 +276,17 @@ export default {
 		) {
 			return json({ error: { code: 'unauthorized' } }, 401);
 		}
+		const requestId = request.headers.get(MEMORIES_PRIVATE_REQUEST_HEADERS.requestId);
+		const claimed = await consumeReplayKey(
+			env.NONCE_GUARD,
+			`private:${requestId ?? ''}`,
+			Date.now() + MEMORIES_PRIVATE_REQUEST_TTL_SECONDS * 1000,
+		);
+		if (!claimed) return json({ error: { code: 'replay' } }, 409);
 		const body = parseRetrievalRequest(rawBody);
 		if (!body) return json({ error: { code: 'bad_request' } }, 400);
 		return handleRetrievalRequest(env, body);
 	},
 };
+
+export { ReplayGuard } from '../../shared/replay-guard';
