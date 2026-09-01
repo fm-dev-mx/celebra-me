@@ -39,6 +39,7 @@ export interface StoredLead {
 	id: string;
 	leadCode: string;
 	status: LeadStatus;
+	sessionId: string | null;
 }
 
 function emptyToUndefined(value: string | undefined): string | undefined {
@@ -48,21 +49,26 @@ function emptyToUndefined(value: string | undefined): string | undefined {
 
 export async function findLeadByCode(leadCode: string): Promise<StoredLead | null> {
 	const rows = await supabaseRestRequest<
-		Array<{ id: string; lead_code: string; status: LeadStatus }>
+		Array<{ id: string; lead_code: string; status: LeadStatus; session_id: string | null }>
 	>({
-		pathWithQuery: `leads?lead_code=eq.${encodeURIComponent(leadCode)}&select=id,lead_code,status&limit=1`,
+		pathWithQuery: `leads?lead_code=eq.${encodeURIComponent(leadCode)}&select=id,lead_code,status,session_id&limit=1`,
 		method: 'GET',
 		useServiceRole: true,
 	});
 	if (rows.length === 0) return null;
-	return { id: rows[0].id, leadCode: rows[0].lead_code, status: rows[0].status };
+	return {
+		id: rows[0].id,
+		leadCode: rows[0].lead_code,
+		status: rows[0].status,
+		sessionId: rows[0].session_id,
+	};
 }
 
 export async function upsertLead(input: LeadInput): Promise<StoredLead> {
 	let rows = await supabaseRestRequest<
-		Array<{ id: string; lead_code: string; status: LeadStatus }>
+		Array<{ id: string; lead_code: string; status: LeadStatus; session_id: string | null }>
 	>({
-		pathWithQuery: 'leads?on_conflict=lead_code&select=id,lead_code,status',
+		pathWithQuery: 'leads?on_conflict=lead_code&select=id,lead_code,status,session_id',
 		method: 'POST',
 		useServiceRole: true,
 		prefer: 'resolution=ignore-duplicates,return=representation',
@@ -118,10 +124,13 @@ export async function upsertLead(input: LeadInput): Promise<StoredLead> {
 		for (const [key, value] of optionalFields) {
 			if (value !== undefined) updates[key] = value;
 		}
+		if (!input.sessionId) {
+			throw new Error('Lead code is already bound to another session.');
+		}
 		rows = await supabaseRestRequest<
-			Array<{ id: string; lead_code: string; status: LeadStatus }>
+			Array<{ id: string; lead_code: string; status: LeadStatus; session_id: string | null }>
 		>({
-			pathWithQuery: `leads?lead_code=eq.${encodeURIComponent(input.leadCode)}&select=id,lead_code,status`,
+			pathWithQuery: `leads?lead_code=eq.${encodeURIComponent(input.leadCode)}&session_id=eq.${encodeURIComponent(input.sessionId)}&select=id,lead_code,status,session_id`,
 			method: 'PATCH',
 			useServiceRole: true,
 			prefer: 'return=representation',
@@ -138,5 +147,6 @@ export async function upsertLead(input: LeadInput): Promise<StoredLead> {
 		id: row.id,
 		leadCode: row.lead_code,
 		status: row.status,
+		sessionId: row.session_id,
 	};
 }

@@ -17,6 +17,29 @@ const EMAIL_COLORS = {
 	muted: '#999999',
 } as const;
 
+function escapeHtml(value: string): string {
+	return value.replace(
+		/[&<>"']/g,
+		(character) =>
+			({
+				'&': '&amp;',
+				'<': '&lt;',
+				'>': '&gt;',
+				'"': '&quot;',
+				"'": '&#39;',
+			} as Record<string, string>)[character] ?? character,
+	);
+}
+
+function safeHttpUrl(value: string): string | null {
+	try {
+		const url = new URL(value);
+		return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : null;
+	} catch {
+		return null;
+	}
+}
+
 /**
  * Send email using Gmail (Nodemailer)
  */
@@ -40,13 +63,18 @@ export const sendEmail = async (data: EmailPayload): Promise<boolean> => {
 	});
 
 	const recipient = getEnv('CONTACT_FORM_RECIPIENT_EMAIL') || user;
-	const senderEmail = data.email?.trim();
+	const senderEmail = data.email?.trim().replace(/[\r\n]/g, '');
+	const name = escapeHtml(data.name);
+	const phone = escapeHtml(data.phone || 'N/A');
+	const type = escapeHtml(data.type || 'General');
+	const message = escapeHtml(data.message);
+	const safeSenderEmail = escapeHtml(senderEmail || 'No proporcionado');
 
 	const mailOptions = {
 		from: `"Celebra-me Concierge" <${user}>`,
 		to: recipient,
 		replyTo: senderEmail || undefined,
-		subject: `✨ Nueva Solicitud: ${data.name} - ${data.type || 'Contacto'}`,
+		subject: `✨ Nueva Solicitud: ${data.name.replace(/[\r\n]/g, ' ')} - ${data.type || 'Contacto'}`,
 		text: `
 			Nueva solicitud desde Celebra-me.com:
 
@@ -64,11 +92,11 @@ export const sendEmail = async (data: EmailPayload): Promise<boolean> => {
 		html: `
 			<div style="font-family: sans-serif; color: ${EMAIL_COLORS.text}; max-width: 600px; border: 1px solid ${EMAIL_COLORS.border}; padding: 20px; border-radius: 8px;">
 				<h2 style="color: ${EMAIL_COLORS.accent}; border-bottom: 2px solid ${EMAIL_COLORS.background}; padding-bottom: 10px;">Nueva Solicitud Concierge</h2>
-				<p><strong>De:</strong> ${data.name} (${senderEmail || 'No proporcionado'})</p>
-				<p><strong>Teléfono:</strong> ${data.phone || 'N/A'}</p>
-				<p><strong>Tipo de Evento:</strong> ${data.type || 'General'}</p>
+				<p><strong>De:</strong> ${name} (${safeSenderEmail})</p>
+				<p><strong>Teléfono:</strong> ${phone}</p>
+				<p><strong>Tipo de Evento:</strong> ${type}</p>
 				<div style="background: ${EMAIL_COLORS.background}; padding: 15px; border-radius: 4px; border-left: 4px solid ${EMAIL_COLORS.accent}; margin: 20px 0;">
-					<p style="margin: 0; font-style: italic;">"${data.message}"</p>
+					<p style="margin: 0; font-style: italic;">"${message}"</p>
 				</div>
 				<hr style="border: 0; border-top: 1px solid ${EMAIL_COLORS.border}; margin: 20px 0;" />
 				<p style="font-size: 12px; color: ${EMAIL_COLORS.muted};">Esta es una notificación automática de Celebra-me.com</p>
@@ -111,11 +139,19 @@ export const sendIntakeNotification = async (
 	});
 
 	const recipient = getEnv('CONTACT_FORM_RECIPIENT_EMAIL') || user;
+	const reviewUrl = safeHttpUrl(payload.reviewUrl);
+	if (!reviewUrl) {
+		console.error('[intake] Refusing to send notification with an unsafe review URL.');
+		return false;
+	}
+	const invitationTitle = escapeHtml(payload.invitationTitle);
+	const clientName = escapeHtml(payload.clientName);
+	const escapedReviewUrl = escapeHtml(reviewUrl);
 
 	const mailOptions = {
 		from: `"Celebra-me Intake" <${user}>`,
 		to: recipient,
-		subject: `Nueva captura recibida: ${payload.invitationTitle}`,
+		subject: `Nueva captura recibida: ${payload.invitationTitle.replace(/[\r\n]/g, ' ')}`,
 		text: `
 			Se ha recibido una nueva captura de intake.
 
@@ -123,7 +159,7 @@ export const sendIntakeNotification = async (
 			Cliente: ${payload.clientName}
 
 			Revisar captura:
-			${payload.reviewUrl}
+			${reviewUrl}
 
 			---
 			Notificacion automatica de Celebra-me Intake
@@ -131,10 +167,10 @@ export const sendIntakeNotification = async (
 		html: `
 			<div style="font-family: sans-serif; color: ${EMAIL_COLORS.text}; max-width: 600px; border: 1px solid ${EMAIL_COLORS.border}; padding: 20px; border-radius: 8px;">
 				<h2 style="color: ${EMAIL_COLORS.accent}; border-bottom: 2px solid ${EMAIL_COLORS.background}; padding-bottom: 10px;">Nueva Captura Recibida</h2>
-				<p><strong>Invitación:</strong> ${payload.invitationTitle}</p>
-				<p><strong>Cliente:</strong> ${payload.clientName}</p>
+				<p><strong>Invitación:</strong> ${invitationTitle}</p>
+				<p><strong>Cliente:</strong> ${clientName}</p>
 				<div style="background: ${EMAIL_COLORS.background}; padding: 15px; border-radius: 4px; border-left: 4px solid ${EMAIL_COLORS.accent}; margin: 20px 0;">
-					<a href="${payload.reviewUrl}" style="color: ${EMAIL_COLORS.accent}; font-weight: bold;">Revisar captura en el panel</a>
+					<a href="${escapedReviewUrl}" style="color: ${EMAIL_COLORS.accent}; font-weight: bold;">Revisar captura en el panel</a>
 				</div>
 				<hr style="border: 0; border-top: 1px solid ${EMAIL_COLORS.border}; margin: 20px 0;" />
 				<p style="font-size: 12px; color: ${EMAIL_COLORS.muted};">Notificacion automatica de Celebra-me Intake</p>

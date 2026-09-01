@@ -2,9 +2,10 @@ import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { sendEmail } from '@/lib/server/email';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { errorResponse, successResponse } from '@/lib/rsvp/core/http';
+import { errorResponse, getIp, successResponse } from '@/lib/rsvp/core/http';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { createLeadFromContactSubmission } from '@/lib/tracking/lead.service';
+import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 
 const contactSchema = z.object({
 	name: z.string().min(2, 'Name is required.').max(160),
@@ -32,6 +33,14 @@ export const POST: APIRoute = async ({ request }) => {
 	try {
 		const body = await validateBodyOrRespond(request, contactSchema);
 		if (body instanceof Response) return body;
+		const allowed = await checkRateLimit({
+			namespace: 'tracking',
+			entityId: 'contact:submit',
+			ip: getIp(request),
+			maxHits: 10,
+			windowSec: 60,
+		});
+		if (!allowed) throw new ApiError(429, 'rate_limited', 'Intente de nuevo en un momento.');
 		const { name, email, phone, eventType, eventDate, message } = body;
 
 		const lead = await createLeadFromContactSubmission(body);

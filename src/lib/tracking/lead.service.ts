@@ -82,7 +82,7 @@ export async function createLeadFromContactSubmission(
 ): Promise<StoredLead> {
 	const parsed = ContactLeadSubmissionSchema.parse(submission);
 
-	const leadCode = blankToUndefined(parsed.leadCode) ?? createLeadCode();
+	let leadCode = blankToUndefined(parsed.leadCode) ?? createLeadCode();
 	const sessionId = blankToUndefined(parsed.sessionId);
 	const normalizedPhone = normalizeCommercialPhone(parsed.phone);
 	const normalizedEmail = normalizeCommercialEmail(parsed.email);
@@ -90,7 +90,14 @@ export async function createLeadFromContactSubmission(
 	let knownNew: boolean | undefined;
 	if (blankToUndefined(parsed.leadCode)) {
 		try {
-			knownNew = (await findLeadByCode(leadCode)) === null;
+			const existing = await findLeadByCode(leadCode);
+			if (existing && (!sessionId || existing.sessionId !== sessionId)) {
+				// A lead code is a continuation token, never a cross-session write key.
+				leadCode = createLeadCode();
+				knownNew = true;
+			} else {
+				knownNew = existing === null;
+			}
 		} catch {
 			knownNew = undefined; // lookup failed → skip lead_created
 		}
@@ -182,8 +189,45 @@ export async function createLeadFromTrackingEvent(params: {
 	} catch {
 		existing = undefined; // lookup failed → skip lead_created
 	}
+	if (existing && existing.sessionId === sessionId) {
+		return existing; // Same-session continuation; do not duplicate or rewrite it.
+	}
+
 	if (existing) {
-		return existing; // confirmed existing, no lead_created
+		// A lead code is a session-bound continuation token. Never use a code
+		// from another session as an update or disclosure key.
+		const replacementLeadCode = createLeadCode();
+		const replacementLead = await upsertLead({
+			leadCode: replacementLeadCode,
+			sessionId,
+			sourceEventId,
+			channel,
+			status: 'new',
+			consentContact: true,
+			consentMarketing: false,
+			utmSource: blankToUndefined(utmSource),
+			utmMedium: blankToUndefined(utmMedium),
+			utmCampaign: blankToUndefined(utmCampaign),
+			metaAttribution: await resolveLeadMetaAttribution({ sessionId, metaAttribution }),
+		});
+		try {
+			await insertTrackingEvent({
+				sessionId,
+				visitorId,
+				eventName: 'lead_created',
+				routePath: '/api/tracking/events',
+				routeClass: 'commercial',
+				eventProperties: {
+					lead_code: replacementLead.leadCode,
+					lead_channel: channel,
+				},
+				consentSnapshot: { necessary: true, analytics: false, marketing: false },
+				isInternal: false,
+			});
+		} catch {
+			// Non-critical: lead is already persisted.
+		}
+		return replacementLead;
 	}
 
 	const lead = await upsertLead({

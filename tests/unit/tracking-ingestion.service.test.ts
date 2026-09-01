@@ -33,6 +33,7 @@ beforeEach(() => {
 		id: 'lead-id',
 		leadCode: 'CM-ABC123',
 		status: 'new',
+		sessionId: 'session-id',
 	});
 });
 
