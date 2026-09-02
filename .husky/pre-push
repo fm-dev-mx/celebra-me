@@ -7,22 +7,26 @@ set -e
 
 ZERO_SHA="0000000000000000000000000000000000000000"
 
-if [ "$SKIP_BRANCH_PROTECTION" = "true" ]; then
-  echo "⚠️  Bypassing commit validation and tests (SKIP_BRANCH_PROTECTION=true)..."
+echo "🔒 Checking protected branch push policy..."
+
+if [ "$SKIP_COMMIT_RANGE_VALIDATION" = "true" ]; then
+  echo "⚠️  Bypassing commit validation (SKIP_COMMIT_RANGE_VALIDATION=true)..."
 else
   echo "🧪 Running commit-range validation before push..."
-  validated=0
+fi
 
-  while read local_ref local_sha remote_ref remote_sha
-  do
-    # Block direct pushes to main unless ALLOW_MAIN_PUSH=true
-    if [ "$remote_ref" = "refs/heads/main" ]; then
-      if [ "$ALLOW_MAIN_PUSH" != "true" ]; then
-        echo "❌ Error: Pushing directly to 'main' is not allowed."
-        echo "💡 Use 'ALLOW_MAIN_PUSH=true git push origin main' if absolutely necessary."
-        exit 1
-      fi
+while read local_ref local_sha remote_ref remote_sha
+do
+  # Block direct pushes to main unless ALLOW_MAIN_PUSH=true. This guard always runs.
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    if [ "$ALLOW_MAIN_PUSH" != "true" ]; then
+      echo "❌ Error: Pushing directly to 'main' is not allowed."
+      echo "💡 Use 'ALLOW_MAIN_PUSH=true git push origin main' if absolutely necessary."
+      exit 1
     fi
+  fi
+
+  if [ "$SKIP_COMMIT_RANGE_VALIDATION" != "true" ]; then
     if [ -z "$local_sha" ] || [ "$local_sha" = "$ZERO_SHA" ]; then
       continue
     fi
@@ -36,10 +40,9 @@ else
 
     if [ -n "$BASE_SHA" ]; then
       node scripts/validate-commits.mjs "$BASE_SHA" "$local_sha"
-      validated=1
     fi
-  done
+  fi
+done
 
-  # Tests and type-checks stay in CI or manual runs to keep this hook lean.
-  # pnpm test
-fi
+# Tests and type-checks stay in CI or manual runs to keep this hook lean.
+# pnpm test
