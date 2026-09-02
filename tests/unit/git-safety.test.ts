@@ -75,6 +75,26 @@ describe('git-safety start/finish lifecycle', () => {
 		}
 	});
 
+	it('provides a read-only check that preserves the active baseline', () => {
+		const repoRoot = createRepo();
+		try {
+			expect(runGitSafety(repoRoot, ['start']).status).toBe(0);
+			const check = runGitSafety(repoRoot, ['check']);
+			expect(check.status).toBe(0);
+			expect(`${check.stdout}\n${check.stderr}`).toContain('baseline preserved');
+			expect(existsSync(baselinePath(repoRoot))).toBe(true);
+
+			writeFileSync(path.join(repoRoot, 'check-drift.txt'), 'drift\n', 'utf8');
+			runCommand('git', ['add', 'check-drift.txt'], { cwd: repoRoot, env: sanitizeEnv() });
+			const drift = runGitSafety(repoRoot, ['check']);
+			expect(drift.status).toBe(1);
+			expect(`${drift.stdout}\n${drift.stderr}`).toContain('DRIFT_DETECTED');
+			expect(existsSync(baselinePath(repoRoot))).toBe(true);
+		} finally {
+			cleanupFixture(repoRoot);
+		}
+	});
+
 	it('fails on unauthorized index drift and preserves baseline', () => {
 		const repoRoot = createRepo();
 		try {
