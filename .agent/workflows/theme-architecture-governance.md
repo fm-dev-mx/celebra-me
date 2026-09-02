@@ -100,13 +100,14 @@ If violations are found during Step 1 or 2:
       `REGRESSION`, or `INSUFFICIENT_EVIDENCE`; keep auxiliary blocks (music, interludes, gated
       personalized access) separate from semantic section rows.
 
-## 🏗️ Step 5: Final Validation & Commit
+## 🏗️ Step 5: Final Validation & Handoff
 
 After alignment:
 
 - [ ] Run full build/test suite if necessary.
-- [ ] Stage only the files for one coherent ADU (no mixed-intent commits).
-- [ ] Prepare one coherent commit using the standard repository workflow.
+- [ ] Prepare one coherent change boundary for one ADU (no mixed-intent changes). Stage or commit
+      only when the current Task Contract explicitly authorizes the corresponding Git operation.
+- [ ] Hand off the validation evidence and any proposed commit boundary to the owner.
 - [ ] Set governance phase explicitly when needed (`--enforce-phase 1|2|3`) to match rollout policy.
 
 ---

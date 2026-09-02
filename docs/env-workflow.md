@@ -3,7 +3,7 @@
 **Owns:** variable categories, source policy, and precedence for Celebra-me environments.
 
 **Does not own:** database ops procedures (`docs/database-workflow.md`) or schema overview. See the
-Ownership Matrix in [`.agent/index.md`](../.agent/index.md).
+Ownership Matrix in [`.agent/ownership.yaml`](../.agent/ownership.yaml).
 
 This is the canonical human-facing environment guide for Celebra-me. Keep real values out of docs,
 issues, logs, and chat.

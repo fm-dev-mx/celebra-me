@@ -9,7 +9,7 @@ isolation lives in
 [`docs/core/content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md). Concise
 operator cards live in
 [`docs/domains/database/cheatsheets/README.md`](domains/database/cheatsheets/README.md). See the
-Ownership Matrix in [`.agent/index.md`](../.agent/index.md).
+Ownership Matrix in [`.agent/ownership.yaml`](../.agent/ownership.yaml).
 
 ## Principle
 

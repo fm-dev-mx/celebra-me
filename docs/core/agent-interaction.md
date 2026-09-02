@@ -1,54 +1,40 @@
 # Agent Interaction Guide — Celebra-me
 
-This guide helps human developers interact effectively with AI agents while maintaining the
-repository's active governance standards.
+This is a task-prompt reference, not a second governance layer. Repository invariants, routing,
+validation, Git safety, and handoff semantics are inherited from `AGENTS.md` and `.agent/`.
 
----
+## Task prompt fields
 
-## 1) The Gold Standard Prompt
+Include only the fields that are not already guaranteed by repository infrastructure:
 
-A high-quality prompt reduces cycles and prevents "hallucinations". Use this structure:
+| Field | What to provide |
+| --- | --- |
+| Objective | Observable outcome and relevant business context |
+| Operation mode | `audit`, `plan`, `implement`, `remediate`, `validate`, or `release-ops` |
+| Scope / non-goals | Files, surfaces, environments, and explicit exclusions |
+| Task-specific authority | Any exact Git, database, deploy, external-service, or human-approval grant |
+| Acceptance evidence | What must be true and how it will be demonstrated |
+| Required output | Report, patch, plan, review, handoff, or other deliverable |
 
-| Element    | Purpose                               | Example                                                                     |
-| :--------- | :------------------------------------ | :-------------------------------------------------------------------------- |
-| Context    | Set the stage. Why are we doing this? | "Following the theme color variants plan, we need to simplify the palette." |
-| Action     | Precise technical command.            | "Remove `src/styles/themes/_legacy.scss` and merge its 2 valid cases..."    |
-| Constraint | Boundary conditions.                  | "Do not use external libraries; keep it vanilla JS. Avoid overengineering." |
+## Planning and execution
 
----
+Use conversation-scoped planning by default. Persist one plan under `.agent/plans/active/` only when
+continuity, risk, or the repository owner justifies it. The Task Contract remains the semantic source
+of truth across conversation, plans, workflows, skills, and handoffs.
 
-## 2) Planning Scope
+The selected operation mode controls mutability. Workflows and skills provide reusable procedure or
+specialized judgment; they never grant permissions. Git, database, deployment, and provider actions
+still require their owning rules and explicit current-task authorization.
 
-Keep planning in the conversation by default. Create a repository-tracked plan only when the work
-must span sessions, carries high implementation or production risk, or the repository owner asks for
-a durable plan. Tracked plans and the Task Contract / Goal / Handoff semantics follow
-`.agent/plans/README.md`.
+## Good prompt boundaries
 
----
+- State the objective and acceptance evidence instead of repeating repository rules.
+- Declare a non-goal when a nearby surface is intentionally excluded.
+- Split unrelated intents unless a single acceptance criterion genuinely joins them.
+- Provide new evidence before asking to reopen a completed plan.
+- Name a human decision when the repository cannot determine it mechanically.
 
-## 3) Lean Communication Pointers
+## Help
 
-- **Be Atomic**: Ask for one thing at a time. If it spans multiple domains (e.g., UI and DB), it
-  should probably be two prompts or a multi-step plan.
-- **Refer to Docs**: If you know the change affects a specific area, mention it (e.g., "Refer to
-  [`docs/domains/rsvp/architecture.md`](../domains/rsvp/architecture.md)").
-- **Verify early**: Ask the agent to "analyze first" or "summarize the plan" before it writes a
-  single line of code.
-
----
-
-## 4) Anti-Patterns (What to Avoid)
-
-- ❌ **"Fix it"**: Too vague. Fix what? Where?
-- ❌ **"Optimize everything"**: Leads to overengineering and breaking stable code.
-- ❌ **Mixing intents**: Don't ask for a feature and a refactor in the same breath.
-- ❌ **Ignoring Governance**: Asking the agent to bypass gates or "skip the plan" without a valid
-  maintenance reason.
-
----
-
-## 5) Getting Help
-
-If you're not sure how to prompt, you can ask: _"¿Cómo puedo estructurar este prompt siguiendo la
-guía de interacción?"_ The agent will use its `agent-communication` skill to help you refine your
-request.
+When a prompt is underspecified, the agent should use the least-privileged interpretation and ask only
+when the missing information would materially change scope, authority, or acceptance.

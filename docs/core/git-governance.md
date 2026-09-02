@@ -151,7 +151,8 @@ fast-forwards or performs no meaningful rewrite may produce no managed-status ou
 Canonical deterministic path after aligning a lane with `develop`:
 
 ```bash
-pnpm lane:sync
+pnpm lane:sync                 # read-only synchronization preview
+pnpm lane:sync -- --apply      # authorized synchronization after preflight
 ```
 
 This fetches `origin/develop`, rebases (or `--ff-only` merges) the current branch, then always runs

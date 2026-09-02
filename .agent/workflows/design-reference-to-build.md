@@ -171,8 +171,8 @@ Screenshot output is evidence, not a tracked repository artifact.
 
 ## Parallel Work
 
-Follow the visual work zones and structured handoff rules in `celebra-delegation-patterns`. Runtime
-model and provider selection remain runtime-owned.
+Follow the visual work zones and structured handoff fields in `.agent/rules/agent-routing.md` and
+`.agent/plans/README.md`. Runtime model and provider selection remain runtime-owned.
 
 ## Completion and Failure States
 
