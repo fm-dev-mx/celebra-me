@@ -1,52 +1,25 @@
 # `.agent/tmp/` — Temporary Working Directory
 
-This directory stores short-lived files created during agent tasks. Everything under `.agent/tmp/`
-is ignored by git except this README.
+`.agent/tmp/` contains ignored, short-lived execution artifacts. It is not a policy or authority
+source; durable semantics live in [`.agent/rules/agent-routing.md`](../rules/agent-routing.md) and
+the Handoff Contract in [`.agent/plans/README.md`](../plans/README.md).
 
-## Conventions
+## Lifecycle
 
-| Path                          | Purpose                                                                | Lifecycle                                          |
-| ----------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------- |
-| `handoffs/<task-id>/`         | Structured handoff between sequential delegated tasks                  | Delete after task completes                        |
-| `git-safety-baseline.json`    | Interactive mutable-session baseline for `agent:git-safety:*`          | Created by `start`; removed only by successful `finish` (preserved on FAIL) |
-| `branch-lane-checkpoint.json` | Partial read-only branch-lane evidence (SHAs/hashes + check summaries) | Overwritten or deleted on invalidate / session end |
-| `branch-lane-clearance.json`  | Write-ready branch-lane clearance fingerprint (SHAs/hashes only)       | Overwritten or deleted on invalidate / session end |
-| `release-check-evidence.json` | Pass evidence from `pnpm release-check` (SHA + check metadata only)    | Overwritten on each run; invalidated when HEAD/dirty |
-| Other files/dirs              | Scratch work, scripts, screenshots, QA artifacts                       | Not tracked; clean up manually                     |
+- Create only task-scoped checkpoints, handoffs, or validation evidence that the owning workflow
+  explicitly requires.
+- Bind artifacts to the current worktree and invalidate them when their inputs or HEAD change.
+- Delete task artifacts after verification; preserve them only when the owner explicitly requests
+  retention.
+- Never create `allow-git-write` or another filesystem authorization marker. Git authority remains
+  task-scoped and explicit.
 
-Do **not** create `allow-git-write` or any other filesystem marker for Git-write authority. Authorization
-is Task Contract / current-task only (see `.agent/rules/git-safety.md`).
+## Privacy
 
-`branch-lane-checkpoint.json` and `branch-lane-clearance.json` must never contain credentials,
-connection strings, dumps, or PII. They are bound to repository/worktree identity and are
-invalidated when mode, SHAs, working tree, sensitive-file set, or audit contract version change.
+Do not store secrets, credentials, tokens, connection strings, private client data, full transcripts,
+large assets, screenshots, or generated logs. Use runtime-managed storage for transcripts and the
+repository's designated evidence locations for approved artifacts.
 
-**Checkpoint** = reusable partial discovery/audit progress (blockers may remain). **Clearance** =
-validated evidence permitting the next authorized write.
-
-## Structured Handoffs
-
-For sequential delegation (copywriter → builder → QA), use `.agent/tmp/handoffs/<task-id>/` to pass
-approved outputs:
-
-- `approved-copy.json` — copywriter output approved by the orchestrator
-- `visual-direction.md` — visual direction approved by the orchestrator
-- `implementation-spec.md` — spec for the builder
-- `qa-checklist.md` — quality review expectations
-
-See `celebra-delegation-patterns` skill for full guidance.
-
-## Restrictions
-
-Do NOT store in `.agent/tmp/`:
-
-- Secrets, credentials, API keys
-- Private client data (PII)
-- Large assets, generated images, screenshots (use `screenshots/` or `logs/`)
-- Full subagent transcripts (use runtime-managed transcript storage)
-- Anything that should be version-controlled
-
-## Cleanup
-
-Delete `handoffs/<task-id>/` after the task is complete and verified. Preserve only if the user
-explicitly asks to keep the handoff for reference.
+The handoff directory is reserved for ephemeral role-chain artifacts and must remain empty when no
+handoff is active. Its semantic fields follow the canonical Handoff Contract; it is not a second
+template or source of truth.

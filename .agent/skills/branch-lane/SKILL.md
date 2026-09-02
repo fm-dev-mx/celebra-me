@@ -29,7 +29,6 @@ preconditions:
 related_skills:
   - commit-planner
   - database-parity
-  - documentation-governance
   - git-stash-branch-cleanup
 related_docs:
   - docs/core/git-governance.md
