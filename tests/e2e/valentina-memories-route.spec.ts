@@ -6,7 +6,7 @@ import {
 	valentinaMemoriesPageCopy,
 } from '../../src/data/valentina-memories.data';
 
-const STUB_PUT_URL = 'https://r2-stub.test/private-put-capability';
+const STUB_PUT_URL = 'https://memories-upload-stub.test/upload/valentina';
 const PROFILE = {
 	displayName: 'Tía Ana',
 	expiresAt: '2026-09-28T00:00:00.000Z',
@@ -111,8 +111,8 @@ test.describe('Valentina Memories capture route', () => {
 						upload: {
 							uploadUrl: STUB_PUT_URL,
 							requiredHeaders: {
+								Authorization: 'Bearer capability.signature',
 								'Content-Type': 'image/jpeg',
-								'If-None-Match': '*',
 								'x-amz-checksum-sha256': 'synthetic-checksum',
 							},
 						},
@@ -129,7 +129,7 @@ test.describe('Valentina Memories capture route', () => {
 		await page.route(STUB_PUT_URL, async (route) => {
 			expect(route.request().method()).toBe('PUT');
 			expect(route.request().headers()['content-type']).toBe('image/jpeg');
-			expect(route.request().headers()['if-none-match']).toBe('*');
+			expect(route.request().headers().authorization).toBe('Bearer capability.signature');
 			expect(route.request().headers()['x-amz-checksum-sha256']).toBe('synthetic-checksum');
 			await route.fulfill({ status: 412, body: '' });
 		});

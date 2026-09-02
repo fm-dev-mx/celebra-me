@@ -2,6 +2,14 @@ import { z } from 'zod';
 import { GIFTS_PRESENTATIONS } from '@/lib/invitation/presentation-options';
 import { GIFTS_VARIANTS } from '@/lib/invitation/section-variants';
 
+export const safeHttpUrlSchema = z.url().refine(
+	(value) => {
+		const protocol = new URL(value).protocol;
+		return protocol === 'http:' || protocol === 'https:';
+	},
+	{ message: 'Gift links must use http or https.' },
+);
+
 // Canonical gift item schemas — used as the single source of truth for the
 // gift data shape. The discriminated union type GiftItem is derived from
 // giftItemSchema. Intake schemas import and extend these with stricter
@@ -9,31 +17,31 @@ import { GIFTS_VARIANTS } from '@/lib/invitation/section-variants';
 
 const storeGiftLinkSchema = z.object({
 	label: z.string().min(1),
-	url: z.url(),
+	url: safeHttpUrlSchema,
 });
 
-export const storeGiftItemSchema = z
-	.object({
-		type: z.literal('store'),
-		title: z.string(),
-		url: z.url().optional(),
-		links: z.array(storeGiftLinkSchema).optional(),
-		logo: z.string().optional(),
-		description: z.string().optional(),
-		tableNumber: z.string().optional(),
-	})
-	.superRefine((value, ctx) => {
-		const hasLegacyUrl = typeof value.url === 'string' && value.url.length > 0;
-		const hasLinks = Array.isArray(value.links) && value.links.length > 0;
+export const baseStoreGiftItemSchema = z.object({
+	type: z.literal('store'),
+	title: z.string(),
+	url: safeHttpUrlSchema.optional(),
+	links: z.array(storeGiftLinkSchema).optional(),
+	logo: z.string().optional(),
+	description: z.string().optional(),
+	tableNumber: z.string().optional(),
+});
 
-		if (!hasLegacyUrl && !hasLinks) {
-			ctx.addIssue({
-				code: 'custom',
-				message: 'A store gift item must include either url or links.',
-				path: [],
-			});
-		}
-	});
+export const storeGiftItemSchema = baseStoreGiftItemSchema.superRefine((value, ctx) => {
+	const hasLegacyUrl = typeof value.url === 'string' && value.url.length > 0;
+	const hasLinks = Array.isArray(value.links) && value.links.length > 0;
+
+	if (!hasLegacyUrl && !hasLinks) {
+		ctx.addIssue({
+			code: 'custom',
+			message: 'A store gift item must include either url or links.',
+			path: [],
+		});
+	}
+});
 
 export const bankGiftItemSchema = z.object({
 	type: z.literal('bank'),
@@ -47,7 +55,7 @@ export const bankGiftItemSchema = z.object({
 export const paypalGiftItemSchema = z.object({
 	type: z.literal('paypal'),
 	title: z.string().default('PayPal'),
-	url: z.url(),
+	url: safeHttpUrlSchema,
 });
 
 export const cashGiftItemSchema = z.object({

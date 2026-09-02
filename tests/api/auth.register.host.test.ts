@@ -14,7 +14,6 @@ jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 jest.mock('@/lib/rsvp/services/auth-access.service', () => ({
 	claimEventForUserByClaimCode: jest.fn(),
 	ensureUserRole: jest.fn(),
-	isSuperAdminEmail: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/services/user-admin.service', () => ({
@@ -28,7 +27,6 @@ jest.mock('@/lib/rsvp/services/auth-identifier.service', () => ({
 describe('API: /api/auth/register-host', () => {
 	const signUpMock = authApi.signUpWithPassword as jest.Mock;
 	const findUserMock = authIdentifierService.findExistingAuthUserByEmail as jest.Mock;
-	const isSuperAdminMock = authAccessService.isSuperAdminEmail as jest.Mock;
 	const claimEventMock = authAccessService.claimEventForUserByClaimCode as jest.Mock;
 	const ensureRoleMock = authAccessService.ensureUserRole as jest.Mock;
 
@@ -37,7 +35,6 @@ describe('API: /api/auth/register-host', () => {
 	});
 
 	it('Scenario: Standard Host Registration with Claim Code', async () => {
-		isSuperAdminMock.mockReturnValue(false);
 		signUpMock.mockResolvedValue({
 			access_token: 'valid-token',
 			user: { id: 'user-001', email: 'client@test.com' },
@@ -64,14 +61,7 @@ describe('API: /api/auth/register-host', () => {
 		expect(ensureRoleMock).toHaveBeenCalled();
 	});
 
-	it('Scenario: Superadmin Registration without Claim Code', async () => {
-		isSuperAdminMock.mockReturnValue(true); // Whitelisted email
-		signUpMock.mockResolvedValue({
-			access_token: 'admin-token',
-			user: { id: 'admin-001', email: 'admin@celebra.me' },
-		});
-		ensureRoleMock.mockResolvedValue('super_admin');
-
+	it('Scenario: Superadmin Registration without Claim Code is rejected', async () => {
 		const response = await registerHost({
 			request: createMockRequest({
 				email: 'admin@celebra.me',
@@ -82,16 +72,12 @@ describe('API: /api/auth/register-host', () => {
 			url: new URL('http://localhost/api/auth/register-host'),
 		} as unknown as APIContext);
 
-		expect(response.status).toBe(200);
-		const data = await response.json();
-		expect(data.ok).toBe(true);
+		expect(response.status).toBe(400);
 		expect(claimEventMock).not.toHaveBeenCalled();
-		expect(ensureRoleMock).toHaveBeenCalled();
+		expect(signUpMock).not.toHaveBeenCalled();
 	});
 
 	it('Scenario: Forbidden Registration (No Claim Code, Not Admin)', async () => {
-		isSuperAdminMock.mockReturnValue(false);
-
 		const response = await registerHost({
 			request: createMockRequest({
 				email: 'stranger@test.com',
@@ -107,8 +93,6 @@ describe('API: /api/auth/register-host', () => {
 	});
 
 	it('Scenario: Legacy eventSlug no longer replaces claimCode', async () => {
-		isSuperAdminMock.mockReturnValue(false);
-
 		const response = await registerHost({
 			request: createMockRequest({
 				email: 'legacy@test.com',
@@ -123,8 +107,7 @@ describe('API: /api/auth/register-host', () => {
 		expect(data.error.message).toContain('claimCode');
 	});
 
-	it('Scenario: User Already Exists (Login Fallback)', async () => {
-		isSuperAdminMock.mockReturnValue(false);
+	it('Scenario: User Already Exists does not claim an account without proof', async () => {
 		signUpMock.mockRejectedValue(
 			new AuthRequestError({ kind: 'http', operation: 'sign_up', status: 422 }),
 		);
@@ -139,15 +122,12 @@ describe('API: /api/auth/register-host', () => {
 			url: new URL('http://localhost/api/auth/register-host'),
 		} as unknown as APIContext);
 
-		expect(response.status).toBe(200);
-		expect(findUserMock).toHaveBeenCalled();
-		expect(claimEventMock).toHaveBeenCalledWith(
-			expect.objectContaining({ userId: 'existing-001' }),
-		);
+		expect(response.status).toBe(409);
+		expect(findUserMock).not.toHaveBeenCalled();
+		expect(claimEventMock).not.toHaveBeenCalled();
 	});
 
 	it('returns 503 without an existing-user lookup when signup is transiently unavailable', async () => {
-		isSuperAdminMock.mockReturnValue(false);
 		signUpMock.mockRejectedValue(
 			new AuthRequestError({ kind: 'timeout', operation: 'sign_up' }),
 		);

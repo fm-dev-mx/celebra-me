@@ -4,18 +4,16 @@ import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { hashIntakeToken } from '@/lib/intake/services/intake-token.service';
-import { findIntakeRequestByTokenHash } from '@/lib/intake/repositories/intake-request.repository';
+import {
+	findIntakeRequestByTokenHash,
+	submitIntakeRequestOnce,
+} from '@/lib/intake/repositories/intake-request.repository';
 import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
-import { updateInvitation } from '@/lib/intake/repositories/invitation.repository';
 import {
 	findSubmissionByRequestId,
 	createIntakeSubmission,
 } from '@/lib/intake/repositories/intake-submission.repository';
-import { updateIntakeRequest } from '@/lib/intake/repositories/intake-request.repository';
-import {
-	saveSubmissionStep,
-	submitSubmission,
-} from '@/lib/intake/services/intake-submission.service';
+import { saveSubmissionStep } from '@/lib/intake/services/intake-submission.service';
 import {
 	SaveIntakeStepSchema,
 	SubmitIntakeSchema,
@@ -172,10 +170,16 @@ export const POST: APIRoute = async ({ request, params }) => {
 			});
 		}
 
-		const updated = await submitSubmission(ctx.submission!.id, parsed.clientComments);
+		const applied = await submitIntakeRequestOnce({
+			requestId: ctx.request!.id,
+			submissionId: ctx.submission!.id,
+			invitationId: ctx.invitation!.id,
+			clientComments: parsed.clientComments,
+		});
+		const updated =
+			(await findSubmissionByRequestId(ctx.request!.id)) ?? ctx.submission!;
 
-		await updateIntakeRequest(ctx.request!.id, { status: 'submitted' });
-		await updateInvitation(ctx.invitation!.id, { status: 'client_submitted' });
+		if (!applied) return jsonResponse({ item: toIntakeSubmissionDTO(updated) });
 
 		const baseUrl = resolveSiteOrigin();
 		const reviewUrl = `${baseUrl}/dashboard/invitaciones/${ctx.invitation!.id}/review`;

@@ -160,7 +160,7 @@ describe('Valentina media lifecycle contracts', () => {
 		mockFindEvent.mockResolvedValue({ id: 'event-id' });
 		mockFindMembership.mockResolvedValueOnce({ membershipRole: 'owner' });
 		await expect(
-			assertValentinaOrganizerAccess({ accessToken: 'owner-token' }),
+			assertValentinaOrganizerAccess({ userId: 'owner-user', accessToken: 'owner-token' }),
 		).resolves.toBeUndefined();
 
 		for (const membership of [
@@ -170,7 +170,7 @@ describe('Valentina media lifecycle contracts', () => {
 		]) {
 			mockFindMembership.mockResolvedValueOnce(membership);
 			await expect(
-				assertValentinaOrganizerAccess({ accessToken: 'non-owner-token' }),
+				assertValentinaOrganizerAccess({ userId: 'other-user', accessToken: 'non-owner-token' }),
 			).rejects.toMatchObject({ status: 403, code: 'forbidden' });
 		}
 	});

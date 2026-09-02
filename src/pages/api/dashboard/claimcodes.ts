@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
+import { requireAdminMutationAccess, requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
 import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import {
@@ -21,10 +21,9 @@ export const GET: APIRoute = async ({ request, url }) => {
 	}
 };
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
 	try {
-		await requireAdminRateLimit(request, 'claimcodes:create');
-		const session = await requireAdminStrongSession(request);
+		const session = await requireAdminMutationAccess(request, cookies, 'claimcodes:create');
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
 		const body = bodyResult;

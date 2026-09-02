@@ -17,8 +17,8 @@ Do not repeat or override those values in provider notes, UI code, SQL, or deplo
 - The bucket remains private. Disable `r2.dev`, public custom-domain access, public listing, public
   GET, browser credentials, and object ACLs.
 - Guests reach the same-origin app API. The app authenticates the opaque guest session, reserves
-  quota atomically, and privately requests one short-lived PUT capability. File bytes still travel
-  directly from the browser to R2.
+  quota atomically, and privately requests one short-lived PUT capability. File bytes travel through
+  the upload Worker into the private R2 binding.
 - The browser receives the capability URL, its required headers, and expiration only. It never
   receives an object key as a separate field.
 - Retrieval starts with a browser media ID. The app authenticates either the owning guest session
@@ -35,18 +35,18 @@ Use the canonical
 [Valentina Memories environment cheatsheet](../../docs/env-workflow.md#valentina-memories-environment-cheatsheet)
 for every variable name, owner, environment, and value source. Do not reproduce that inventory in
 this runbook. Generate two independent ECDSA P-256 pairs per hosted environment; private keys stay
-in Vercel, Cloudflare receives only the public keys, and R2 credentials stay bucket-scoped in the
-Sign Worker.
+in Vercel, Cloudflare receives only the public keys and capability secret, while the R2 binding stays
+inside the Sign Worker.
 
 Wrangler deployment authentication is an operator boundary, not Worker runtime configuration.
 Interactive owner runs use `wrangler login`. This rollout does not create deployment tokens or use
 Cloudflare Secrets Store.
 
-Rotate both request-signing pairs and the R2 credentials every 90 days, or immediately after
+Rotate both request-signing pairs and the capability secret every 90 days, or immediately after
 suspected exposure. For a request-signing pair, publish the replacement public key and private key
 in a coordinated fail-closed window, verify it, then remove the previous key. For R2 exposure,
-disable signing first, rotate the bucket-scoped credentials, deploy, verify, and revoke the previous
-credentials. Never paste keys, tokens, signed URLs, recovery codes, provider identifiers, or object
+disable signing first, rotate the capability secret, deploy, verify, and revoke the previous secret.
+Never paste keys, tokens, signed URLs, recovery codes, provider identifiers, or object
 names into evidence.
 
 ## Owner Staging apply order
@@ -64,7 +64,7 @@ names into evidence.
 5. Configure the five Vercel Preview server-only values from the canonical cheatsheet, deploy the
    app/backend, and enable the daily cleanup cron. Its endpoint must accept only
    `Authorization: Bearer <CRON_SECRET>`.
-6. Configure the bucket-scoped Staging Sign Worker values, deploy it last with `--env staging`, and
+6. Configure the capability secret and Staging Sign Worker values, deploy it last with `--env staging`, and
    confirm the configured Staging rate-limiter namespace is available. Block rollout if Cloudflare
    rejects it. Then verify requests require a fresh ECDSA envelope and rate-limit by authenticated
    session ID.
@@ -137,7 +137,7 @@ success from repository files or local tests.
 | Boundary        | Required proof                                                                                        | Initial state |
 | --------------- | ----------------------------------------------------------------------------------------------------- | ------------- |
 | Database        | Migration versions, RLS enabled, grants denied to browser roles, RPCs callable only by service role   | UNVERIFIED    |
-| Private R2      | Private bucket, public endpoints disabled, no listing/guessed read, exact CORS and lifecycle          | UNVERIFIED    |
+| Private R2      | Private bucket, Worker-only upload/retrieval, no listing/guessed read, exact lifecycle                 | UNVERIFIED    |
 | Worker auth     | Missing/stale/wrong-audience/tampered envelopes fail without object metadata                          | UNVERIFIED    |
 | Upload          | Synthetic photo/video, checksum persistence, one accepted copy, duplicate cleanup, interruption/retry | UNVERIFIED    |
 | Guest isolation | Recovery, own accepted preview, edit, delete, quota, revocation, cross-session media ID denied        | UNVERIFIED    |
@@ -175,5 +175,5 @@ git diff --check
 ```
 
 A successful repository handoff may be `REPOSITORY_READY`; only owner-operated Staging proof may be
-`STAGING_VERIFIED`. Production requires independent P-256 pairs and R2 credentials, explicit human
+`STAGING_VERIFIED`. Production requires independent P-256 pairs and capability secret, explicit human
 authorization, and a separate validation handoff.

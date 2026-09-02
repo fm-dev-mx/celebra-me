@@ -2,10 +2,11 @@ import { z } from 'zod';
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 import { INTAKE_BLOCK_TYPES } from '@/lib/intake/types';
 import {
-	storeGiftItemSchema,
+	baseStoreGiftItemSchema,
 	bankGiftItemSchema,
 	paypalGiftItemSchema,
 	cashGiftItemSchema,
+	safeHttpUrlSchema,
 } from '@/lib/schemas/content/gifts.schema';
 import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 
@@ -16,7 +17,7 @@ const optionalString = z.string().max(2000).trim().optional().default('');
 const optionalUrl = z
 	.string()
 	.trim()
-	.refine((value) => value === '' || z.url().safeParse(value).success, {
+	.refine((value) => value === '' || safeHttpUrlSchema.safeParse(value).success, {
 		message: 'Must be a valid URL or empty.',
 	})
 	.optional();
@@ -123,7 +124,7 @@ export const musicBlockSchema = z.object({
 });
 
 export const giftItemSchema = z.discriminatedUnion('type', [
-	storeGiftItemSchema.safeExtend({
+	baseStoreGiftItemSchema.extend({
 		title: z.string().min(1).max(200),
 		description: z.string().max(500).optional(),
 	}),

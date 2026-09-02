@@ -4,6 +4,65 @@ import { sanitize } from '@/lib/rsvp/core/utils';
 
 export const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
+export const DEFAULT_JSON_BODY_MAX_BYTES = 256 * 1024;
+
+export async function readBoundedRequestText(request: Request, maxBytes: number): Promise<string> {
+	const contentLength = request.headers.get('content-length');
+	if (contentLength !== null) {
+		if (!/^\d+$/.test(contentLength.trim())) {
+			throw new ApiError(400, 'bad_request', 'Content-Length is invalid.');
+		}
+		if (Number(contentLength) > maxBytes) {
+			throw new ApiError(413, 'payload_too_large', 'Request body is too large.');
+		}
+	}
+
+	if (request.body === undefined || request.body === null) {
+		// Astro test adapters may omit body while exposing the Fetch text method.
+		// Real network Requests always use the bounded stream path below.
+		const fallbackText = await request.text();
+		if (new TextEncoder().encode(fallbackText).byteLength > maxBytes) {
+			throw new ApiError(413, 'payload_too_large', 'Request body is too large.');
+		}
+		return fallbackText;
+	}
+	if (request.body === null) {
+		const fallbackText = await request.text();
+		if (new TextEncoder().encode(fallbackText).byteLength > maxBytes) {
+			throw new ApiError(413, 'payload_too_large', 'Request body is too large.');
+		}
+		return fallbackText;
+	}
+
+	const reader = request.body.getReader();
+	const chunks: Uint8Array[] = [];
+	let totalBytes = 0;
+
+	try {
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+			if (!value) continue;
+			totalBytes += value.byteLength;
+			if (totalBytes > maxBytes) {
+				await reader.cancel('request body exceeds configured limit');
+				throw new ApiError(413, 'payload_too_large', 'Request body is too large.');
+			}
+			chunks.push(value);
+		}
+	} finally {
+		reader.releaseLock();
+	}
+
+	const body = new Uint8Array(totalBytes);
+	let offset = 0;
+	for (const chunk of chunks) {
+		body.set(chunk, offset);
+		offset += chunk.byteLength;
+	}
+	return new TextDecoder().decode(body);
+}
+
 export function withPrivateCache(response: Response): Response {
 	return withPrivateNoStore(response);
 }
@@ -59,9 +118,6 @@ export function forbidden(message: string): Response {
 	return errorResponse(new ApiError(403, 'forbidden', message));
 }
 
-export function conflict(message: string): Response {
-	return errorResponse(new ApiError(409, 'conflict', message));
-}
 
 export function getIp(request: Request): string {
 	const raw =
@@ -69,9 +125,6 @@ export function getIp(request: Request): string {
 	return sanitize(raw.split(',')[0], 100);
 }
 
-export function internalError(error: unknown): Response {
-	return errorResponse(error);
-}
 
 export function errorResponse(error: unknown): Response {
 	if (isAuthRequestError(error)) {
@@ -141,7 +194,10 @@ export function errorResponse(error: unknown): Response {
 	return response;
 }
 
-export async function parseJsonBody(request: Request): Promise<Record<string, unknown> | Response> {
+export async function parseJsonBody(
+	request: Request,
+	maxBytes = DEFAULT_JSON_BODY_MAX_BYTES,
+): Promise<Record<string, unknown> | Response> {
 	const contentType = request.headers.get('content-type');
 	if (!contentType?.includes('application/json')) {
 		return badRequest('Content-Type must be application/json');
@@ -149,10 +205,10 @@ export async function parseJsonBody(request: Request): Promise<Record<string, un
 
 	let rawText: string;
 	try {
-		rawText = await request.text();
+		rawText = await readBoundedRequestText(request, maxBytes);
 	} catch (error) {
-		const message = error instanceof Error ? error.message : 'Failed to read request body';
-		return badRequest(`Failed to read request body: ${message}`);
+		if (isApiError(error)) return errorResponse(error);
+		return badRequest('Failed to read request body.');
 	}
 
 	if (!rawText.trim()) {
@@ -162,8 +218,7 @@ export async function parseJsonBody(request: Request): Promise<Record<string, un
 
 	try {
 		return JSON.parse(rawText) as Record<string, unknown>;
-	} catch (error) {
-		const message = error instanceof Error ? error.message : 'Invalid JSON';
-		return badRequest(`Invalid JSON format: ${message}`);
+	} catch {
+		return badRequest('Invalid JSON format.');
 	}
 }

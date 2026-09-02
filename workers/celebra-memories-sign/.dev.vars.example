@@ -1,7 +1,5 @@
 # Local Sign Worker values only. Copy to .dev.vars (gitignored).
-# Use a bucket-scoped R2 Object Read & Write token. Never commit real values.
-MEMORIES_R2_ACCOUNT_ID=
-MEMORIES_R2_PRESIGN_ACCESS_KEY_ID=
-MEMORIES_R2_PRESIGN_SECRET_ACCESS_KEY=
+# HMAC secret used only for short-lived, single-use upload capabilities.
+MEMORIES_UPLOAD_CAPABILITY_SECRET=
 # Public SPKI P-256 key paired with the Vercel upload-control private key.
 MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY=

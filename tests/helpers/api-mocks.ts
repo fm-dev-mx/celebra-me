@@ -1,11 +1,4 @@
-export const EVENT_SLUG = 'gerardo-sesenta';
-export const TOKEN_SECRET = 'test-rsvp-secret';
-export const ADMIN_USER = 'admin';
-export const ADMIN_PASSWORD = 'admin-pass';
-
-export function buildBasicAuthHeader(user = ADMIN_USER, password = ADMIN_PASSWORD): string {
-	return `Basic ${Buffer.from(`${user}:${password}`, 'utf8').toString('base64')}`;
-}
+import { ReadableStream as NodeReadableStream } from 'node:stream/web';
 
 export function createMockRequest(
 	payload?: unknown,
@@ -31,18 +24,26 @@ export function createMockRequest(
 			}
 		}
 	}
+	const rawBody =
+		payload === undefined || payload === null
+			? null
+			: typeof payload === 'string'
+				? payload
+				: JSON.stringify(payload);
 
 	return {
 		url,
+		body: rawBody === null
+			? null
+			: new NodeReadableStream({
+					start(controller) {
+						controller.enqueue(new TextEncoder().encode(rawBody));
+						controller.close();
+					},
+				}),
 		json: async () => payload,
 		text: async () => {
-			if (payload === undefined || payload === null) {
-				return '';
-			}
-			if (typeof payload === 'string') {
-				return payload;
-			}
-			return JSON.stringify(payload);
+			return rawBody ?? '';
 		},
 		headers: {
 			get: (name: string) => {

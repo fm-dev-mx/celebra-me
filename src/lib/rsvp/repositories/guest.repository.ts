@@ -15,7 +15,6 @@ import {
 	findSingle,
 	insertSingle,
 	updateSingle,
-	deleteByQuery,
 } from '@/lib/rsvp/repositories/shared/operations';
 import { normalizeOptionalPhonePair } from '@/lib/rsvp/core/utils';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
@@ -171,11 +170,6 @@ export async function updateGuestById(
 	);
 }
 
-export async function deleteGuestById(guestId: string, hostAccessToken: string): Promise<void> {
-	return deleteByQuery(TABLE, `id=eq.${encodeURIComponent(guestId)}`, {
-		authToken: hostAccessToken,
-	});
-}
 
 export async function softDeleteGuestById(guestId: string, hostAccessToken: string): Promise<void> {
 	await updateSingle(

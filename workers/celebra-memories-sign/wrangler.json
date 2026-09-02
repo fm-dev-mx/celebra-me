@@ -12,6 +12,26 @@
         "head_sampling_rate": 0.05
     },
     "routes": [],
+    "r2_buckets": [
+        {
+            "binding": "MEMORIES_BUCKET",
+            "bucket_name": "celebra-memories"
+        }
+    ],
+    "durable_objects": {
+        "bindings": [
+            {
+                "name": "NONCE_GUARD",
+                "class_name": "ReplayGuard"
+            }
+        ]
+    },
+    "migrations": [
+        {
+            "tag": "v1",
+            "new_sqlite_classes": ["ReplayGuard"]
+        }
+    ],
     "ratelimits": [
         {
             "name": "SIGN_RATE_LIMITER",
@@ -28,6 +48,20 @@
             "workers_dev": false,
             "preview_urls": false,
             "routes": [],
+            "r2_buckets": [
+                {
+                    "binding": "MEMORIES_BUCKET",
+                    "bucket_name": "celebra-memories-local"
+                }
+            ],
+            "durable_objects": {
+                "bindings": [
+                    {
+                        "name": "NONCE_GUARD",
+                        "class_name": "ReplayGuard"
+                    }
+                ]
+            },
             "vars": {
                 "MEMORIES_STORAGE_TARGET": "local"
             },
@@ -47,6 +81,20 @@
             "workers_dev": true,
             "preview_urls": false,
             "routes": [],
+            "r2_buckets": [
+                {
+                    "binding": "MEMORIES_BUCKET",
+                    "bucket_name": "celebra-memories-staging"
+                }
+            ],
+            "durable_objects": {
+                "bindings": [
+                    {
+                        "name": "NONCE_GUARD",
+                        "class_name": "ReplayGuard"
+                    }
+                ]
+            },
             "vars": {
                 "MEMORIES_STORAGE_TARGET": "staging"
             },

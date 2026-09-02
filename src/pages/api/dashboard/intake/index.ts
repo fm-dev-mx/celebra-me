@@ -9,7 +9,6 @@ import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import {
 	assertCreateInvitationPreset,
 	getEnrichedInvitationList,
-	synchronizeDemoInvitations,
 } from '@/lib/intake/services/invitation.service';
 import { rejectDashboardClientInvitationCreation } from '@/lib/intake/services/dashboard-client-creation-policy';
 import { CreateInvitationSchema } from '@/lib/intake/schemas/invitation.schema';
@@ -17,16 +16,10 @@ import { CreateInvitationSchema } from '@/lib/intake/schemas/invitation.schema';
 export const GET: APIRoute = async ({ request }) => {
 	try {
 		await requireAdminRateLimit(request, 'intake:list');
-		const session = await requireAdminStrongSession(request);
+		await requireAdminStrongSession(request);
 
 		const url = new URL(request.url);
 		const includeArchived = url.searchParams.get('includeArchived') === 'true';
-		const syncDemos = url.searchParams.get('syncDemos') === 'true';
-
-		if (syncDemos) {
-			await synchronizeDemoInvitations(session.userId);
-		}
-
 		const items = await getEnrichedInvitationList(includeArchived ? 'all' : 'active');
 
 		return jsonResponse({ items });

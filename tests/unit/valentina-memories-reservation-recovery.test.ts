@@ -61,17 +61,21 @@ function reservedRow() {
 }
 
 describe('Valentina reservation recovery after signer failure', () => {
-	beforeEach(() => jest.clearAllMocks());
+	beforeEach(() => {
+		jest.clearAllMocks();
+		jest.spyOn(console, 'error').mockImplementation(() => undefined);
+	});
+	afterEach(() => jest.restoreAllMocks());
 
 	it('replays the same atomic reservation and signer input on an idempotent retry', async () => {
 		mockRestRequest.mockResolvedValue([reservedRow()] as never);
 		mockUploadCapability
 			.mockRejectedValueOnce(new Error('synthetic signer failure'))
 			.mockResolvedValueOnce({
-				uploadUrl: 'https://synthetic.r2.cloudflarestorage.com/private',
+				uploadUrl: 'https://memories-upload.example.invalid/upload/valentina',
 				requiredHeaders: {
+					Authorization: 'Bearer capability.signature',
 					'Content-Type': 'image/jpeg',
-					'If-None-Match': '*',
 					'x-amz-checksum-sha256': 'YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=',
 				},
 				expiresAt: '2026-08-29T00:05:00.000Z',
@@ -95,17 +99,24 @@ describe('Valentina reservation recovery after signer failure', () => {
 			clientRequestId: '44444444-4444-4444-8444-444444444444',
 		};
 
-		await expect(reserveGuestMemoryItem(input)).rejects.toThrow('synthetic signer failure');
+		await expect(reserveGuestMemoryItem(input)).rejects.toMatchObject({
+			status: 503,
+			code: 'service_unavailable',
+		});
 		await expect(reserveGuestMemoryItem(input)).resolves.toMatchObject({
 			item: { id: ITEM_ID, status: 'uploading' },
 		});
 
-		expect(mockRestRequest).toHaveBeenCalledTimes(2);
+		expect(mockRestRequest).toHaveBeenCalledTimes(3);
 		expect(mockRestRequest.mock.calls[0][0]).toMatchObject({
 			pathWithQuery: 'rpc/reserve_valentina_memory_item',
 			body: { p_idempotency_key: input.clientRequestId },
 		});
 		expect(mockRestRequest.mock.calls[1][0]).toMatchObject({
+			pathWithQuery: 'rpc/release_valentina_memory_reservation',
+			body: { p_item_id: ITEM_ID, p_session_id: SESSION_ID },
+		});
+		expect(mockRestRequest.mock.calls[2][0]).toMatchObject({
 			pathWithQuery: 'rpc/reserve_valentina_memory_item',
 			body: { p_idempotency_key: input.clientRequestId },
 		});

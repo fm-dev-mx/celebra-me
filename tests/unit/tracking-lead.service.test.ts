@@ -32,6 +32,7 @@ beforeEach(() => {
 		id: 'lead-id',
 		leadCode: 'CM-ABC123',
 		status: 'new',
+		sessionId: 'session-id',
 	});
 	mockFindLeadByCode.mockResolvedValue(null);
 	mockInsertTrackingEvent.mockResolvedValue({
@@ -71,6 +72,7 @@ describe('createLeadFromContactSubmission', () => {
 			id: 'lead-id',
 			leadCode: 'CM-ABC123',
 			status: 'new',
+			sessionId: 'session-id',
 		});
 		expect(mockUpsertLead).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -141,6 +143,7 @@ describe('createLeadFromTrackingEvent', () => {
 			id: 'lead-id',
 			leadCode: 'CM-ABC123',
 			status: 'new',
+			sessionId: 'session-id',
 		});
 
 		expect(mockUpsertLead).toHaveBeenCalledWith(
@@ -165,12 +168,13 @@ describe('createLeadFromTrackingEvent', () => {
 		);
 	});
 
-	it('does not create a lead or emit lead_created for duplicate lead_code', async () => {
+		it('does not create a lead or emit lead_created for duplicate lead_code', async () => {
 		// Simulate an existing lead for this code
 		mockFindLeadByCode.mockResolvedValue({
 			id: 'existing-lead-id',
 			leadCode: 'CM-DUPLICATE',
 			status: 'new',
+			sessionId: '88888888-8888-4888-8888-888888888888',
 		});
 
 		const result = await createLeadFromTrackingEvent({
@@ -186,6 +190,7 @@ describe('createLeadFromTrackingEvent', () => {
 			id: 'existing-lead-id',
 			leadCode: 'CM-DUPLICATE',
 			status: 'new',
+			sessionId: '88888888-8888-4888-8888-888888888888',
 		});
 
 		// Must NOT call upsert (already exists)
@@ -195,11 +200,47 @@ describe('createLeadFromTrackingEvent', () => {
 		expect(mockInsertTrackingEvent).not.toHaveBeenCalled();
 	});
 
+	it('creates a replacement lead when a code belongs to another session', async () => {
+		mockFindLeadByCode.mockResolvedValue({
+			id: 'existing-lead-id',
+			leadCode: 'CM-CROSS01',
+			status: 'new',
+			sessionId: '88888888-8888-4888-8888-888888888888',
+		});
+		mockUpsertLead.mockResolvedValue({
+			id: 'replacement-lead-id',
+			leadCode: 'CM-NEW123',
+			status: 'new',
+			sessionId: '77777777-7777-4777-8777-777777777777',
+		});
+
+		const result = await createLeadFromTrackingEvent({
+			leadCode: 'CM-CROSS01',
+			sessionId: '77777777-7777-4777-8777-777777777777',
+			sourceEventId: '99999999-9999-4999-8999-999999999999',
+			channel: 'whatsapp',
+			visitorId: 'visitor-cross-session',
+		});
+
+		expect(result).toMatchObject({
+			id: 'replacement-lead-id',
+			leadCode: 'CM-NEW123',
+			sessionId: '77777777-7777-4777-8777-777777777777',
+		});
+		expect(mockUpsertLead).toHaveBeenCalledWith(
+			expect.objectContaining({
+				leadCode: expect.not.stringMatching(/^CM-CROSS01$/),
+				sessionId: '77777777-7777-4777-8777-777777777777',
+			}),
+		);
+	});
+
 	it('uses the new lead status for early-intent leads', async () => {
 		mockUpsertLead.mockResolvedValue({
 			id: 'lead-id-2',
 			leadCode: 'CM-EARLYINTENT',
 			status: 'new',
+			sessionId: '55555555-5555-4555-8555-555555555555',
 		});
 
 		const result = await createLeadFromTrackingEvent({

@@ -199,6 +199,7 @@ async function resolvePhoneUpdate(input: {
 
 export async function listDashboardGuests(input: {
 	eventId: string;
+	userId: string;
 	status?: AttendanceStatus | 'all' | 'viewed';
 	search?: string;
 	delivery?: DeliveryFilter;
@@ -240,7 +241,11 @@ export async function listDashboardGuests(input: {
 		};
 	}
 
-	const membership = await findMembershipByEventForHost(input.eventId, input.hostAccessToken);
+	const membership = await findMembershipByEventForHost(
+		input.eventId,
+		input.userId,
+		input.hostAccessToken,
+	);
 	if (membership) {
 		const guests = await findGuestsByEvent(
 			{ eventId: membership.eventId, ...queryParams },

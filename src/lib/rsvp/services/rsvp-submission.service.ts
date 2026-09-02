@@ -1,6 +1,5 @@
 import {
 	findGuestByInviteIdPublic,
-	findGuestByPhonePublic,
 	submitGuestRsvpPublicRpc,
 	trackGuestInvitationViewPublicRpc,
 } from '@/lib/rsvp/repositories/guest.repository';
@@ -13,7 +12,7 @@ import type {
 	GuestRSVPSubmitDTO,
 	ResponseSource,
 } from '@/interfaces/rsvp/domain.interface';
-import { ApiError } from '@/lib/rsvp/core/errors';
+import { ApiError, toErrorMessage } from '@/lib/rsvp/core/errors';
 import {
 	formatPhoneError,
 	MAX_GUEST_COMMENT_LEN,
@@ -86,17 +85,6 @@ export async function resolveRsvpTarget(identity: RsvpIdentity): Promise<Resolve
 		if (phone) {
 			if (!identity.countryCode || !isSupportedCountryCode(identity.countryCode)) {
 				throw new ApiError(400, 'bad_request', 'Código de país no válido.');
-			}
-			const existingInvitation = await findGuestByPhonePublic(
-				identity.event.id,
-				identity.countryCode,
-				phone,
-			);
-			if (existingInvitation) {
-				return {
-					event: identity.event,
-					invitation: existingInvitation,
-				};
 			}
 		}
 
@@ -206,6 +194,18 @@ export async function persistRsvpResponse(
 			entrySource: updated.entrySource ?? 'generic_public',
 		};
 	} catch (error) {
+		const message = toErrorMessage(error, '');
+		if (
+			!target.invitation &&
+			(message.includes('guest_invitations_event_country_phone_active_unique') ||
+				message.includes('23505'))
+		) {
+			throw new ApiError(
+				409,
+				'conflict',
+				'No se pudo registrar su respuesta. Utilice su enlace personalizado o contacte al anfitrión.',
+			);
+		}
 		throw mapSupabaseErrorToApiError(error);
 	}
 }

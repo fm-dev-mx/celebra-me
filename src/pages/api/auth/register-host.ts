@@ -20,10 +20,8 @@ import {
 import {
 	claimEventForUserByClaimCode,
 	ensureUserRole,
-	isSuperAdminEmail,
 } from '@/lib/rsvp/services/auth-access.service';
 import { generateTemporaryPassword } from '@/lib/rsvp/services/user-admin.service';
-import { findExistingAuthUserByEmail } from '@/lib/rsvp/services/auth-identifier.service';
 import { sanitize } from '@/lib/rsvp/core/utils';
 
 export const POST: APIRoute = async ({ request, url }) => {
@@ -45,18 +43,14 @@ export const POST: APIRoute = async ({ request, url }) => {
 			windowSec: 60,
 		});
 
-		const isAdhocAdmin = isSuperAdminEmail(email);
-
-		if (!claimCode && !isAdhocAdmin) {
+		if (!claimCode) {
 			throw new ApiError(
 				400,
 				'bad_request',
-				isAdhocAdmin
-					? 'El correo electrónico es requerido.'
-					: 'El correo electrónico y el código de invitación (claimCode) son requeridos.',
+				'El correo electrónico y el código de invitación (claimCode) son requeridos.',
 			);
 		}
-		if (claimCode) assertValidClaimCode(claimCode);
+		assertValidClaimCode(claimCode);
 
 		const chosenPassword =
 			method === 'password'
@@ -71,15 +65,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			chosenPassword,
 		);
 
-		if (claimCode) {
-			await claimEventAndRole(userId, userEmail, claimCode);
-		} else {
-			await ensureUserRole({
-				userId,
-				email: userEmail,
-				defaultRole: 'host_client',
-			});
-		}
+		await claimEventAndRole(userId, userEmail, claimCode);
 
 		if (method === 'magic_link') {
 			await sendMagicLink({
@@ -144,20 +130,11 @@ async function resolveUser(email: string, chosenPassword: string) {
 		if (!isAuthRequestError(error) || error.kind !== 'http' || error.retryable) {
 			throw error;
 		}
-		const existing = await findExistingAuthUserByEmail(email);
-		if (!existing) {
-			throw new ApiError(
-				409,
-				'conflict',
-				'No fue posible completar el registro. Verifique los datos o intente iniciar sesión.',
-			);
-		}
-		return {
-			userId: existing.id,
-			userEmail: existing.email || email,
-			accessToken: '',
-			refreshToken: '',
-		};
+		throw new ApiError(
+			409,
+			'conflict',
+			'No fue posible completar el registro. Verifique los datos o intente iniciar sesión.',
+		);
 	}
 }
 

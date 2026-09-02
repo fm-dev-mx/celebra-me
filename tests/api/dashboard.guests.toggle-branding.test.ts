@@ -2,6 +2,16 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn().mockResolvedValue(true),
 }));
 
+jest.mock('@/lib/rsvp/auth/authorization', () => {
+	const { ApiError } = jest.requireActual('@/lib/rsvp/core/errors') as typeof import('@/lib/rsvp/core/errors');
+	return {
+		requireDashboardMutationAccess: jest.fn(async (_request: Request, _cookies: unknown, locals: { session?: unknown }) => {
+			if (!locals?.session) throw new ApiError(401, 'unauthorized', 'No autorizado.');
+			return locals.session;
+		}),
+	};
+});
+
 jest.mock('@/lib/rsvp/services/dashboard-guests.service', () => ({
 	toggleGuestBrandingRemoval: jest.fn(),
 }));

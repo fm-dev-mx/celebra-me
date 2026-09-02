@@ -1,4 +1,5 @@
 import type { APIContext } from 'astro';
+import { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { GET as getEvents } from '@/pages/api/dashboard/admin/events';
 import { PATCH as updateEvent } from '@/pages/api/dashboard/admin/events/[eventId]';
 import { GET as getUsers, POST as createUser } from '@/pages/api/dashboard/admin/users';
@@ -78,6 +79,12 @@ function createMockContext(options?: {
 	return {
 		request: {
 			url: options?.url ?? 'http://localhost/api/test',
+			body: new NodeReadableStream({
+				start(controller) {
+					controller.enqueue(new TextEncoder().encode(body));
+					controller.close();
+				},
+			}),
 			json: async () => options?.payload,
 			text: async () => body,
 			headers: h,

@@ -17,6 +17,7 @@ describe('upsertLead', () => {
 
 		const result = await upsertLead({
 			leadCode: 'CM-ABC123',
+			sessionId: 'session-1',
 			channel: 'contact_form',
 			status: 'new',
 			name: '   ',
@@ -34,6 +35,7 @@ describe('upsertLead', () => {
 				body: {
 					consent_contact: true,
 					consent_marketing: true,
+					session_id: 'session-1',
 				},
 			}),
 		);

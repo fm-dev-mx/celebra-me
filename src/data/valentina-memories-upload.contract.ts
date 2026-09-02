@@ -10,6 +10,7 @@ export const VALENTINA_MEMORIES_EVENT_ID = 'valentina' as const;
 export const VALENTINA_MEMORIES_OBJECT_PREFIX = 'events/valentina/' as const;
 
 export const VALENTINA_MEMORIES_SIGN_PATH = '/sign/valentina' as const;
+export const VALENTINA_MEMORIES_UPLOAD_PATH = '/upload/valentina' as const;
 export const VALENTINA_MEMORIES_UPLOAD_ORIGIN_ENV_NAME = 'MEMORIES_PRIVATE_UPLOAD_ORIGIN' as const;
 
 export const VALENTINA_MEMORIES_BROWSER_ORIGINS = {
@@ -22,8 +23,8 @@ export const VALENTINA_MEMORIES_BROWSER_ORIGINS = {
 } as const;
 
 export const VALENTINA_MEMORIES_R2_CORS = {
-	methods: ['PUT'],
-	headers: ['Content-Type', 'If-None-Match', 'x-amz-checksum-sha256'],
+	methods: [],
+	headers: [],
 } as const;
 
 export const VALENTINA_MEMORIES_PRESIGN_TTL_SECONDS = 300;
@@ -63,7 +64,11 @@ export type ValentinaMemoriesR2CorsConfig = {
 };
 
 export function getValentinaMemoriesStorageBucketName(target: unknown): string | null {
-	if (typeof target !== 'string' || !(target in VALENTINA_MEMORIES_STORAGE_TARGETS)) return null;
+	if (
+		typeof target !== 'string' ||
+		!Object.hasOwn(VALENTINA_MEMORIES_STORAGE_TARGETS, target)
+	)
+		return null;
 	return VALENTINA_MEMORIES_STORAGE_TARGETS[target as ValentinaMemoriesStorageTarget].bucketName;
 }
 
@@ -156,7 +161,7 @@ export function getValentinaMemoriesMimePolicy(
 	mimeType: string,
 ): ValentinaMemoriesMimePolicy | null {
 	const normalized = normalizeMemoriesMimeType(mimeType);
-	if (normalized in VALENTINA_MEMORIES_ALLOWED_MIME_TYPES) {
+	if (Object.hasOwn(VALENTINA_MEMORIES_ALLOWED_MIME_TYPES, normalized)) {
 		return VALENTINA_MEMORIES_ALLOWED_MIME_TYPES[
 			normalized as ValentinaMemoriesAllowedMimeType
 		];
@@ -197,13 +202,14 @@ export function isAllowedValentinaMemoriesOrigin(
 }
 
 export function buildValentinaMemoriesR2CorsConfig(
-	target: Exclude<ValentinaMemoriesStorageTarget, 'local'>,
+	_target: Exclude<ValentinaMemoriesStorageTarget, 'local'>,
 ): ValentinaMemoriesR2CorsConfig {
+	void _target;
 	return {
 		rules: [
 			{
 				allowed: {
-					origins: [...VALENTINA_MEMORIES_BROWSER_ORIGINS[target]],
+					origins: [],
 					methods: [...VALENTINA_MEMORIES_R2_CORS.methods],
 					headers: [...VALENTINA_MEMORIES_R2_CORS.headers],
 				},

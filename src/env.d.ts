@@ -39,7 +39,6 @@ interface ImportMetaEnv {
 	readonly UPSTASH_REDIS_REST_URL: string;
 	readonly UPSTASH_REDIS_REST_TOKEN: string;
 	readonly RSVP_V2_DISTRIBUTED_RATELIMIT: string;
-	readonly SUPER_ADMIN_EMAILS: string;
 	readonly REQUIRE_FRESH_MFA_FOR_ADMIN: string;
 	readonly DEV_MFA_BYPASS: string;
 	readonly PREVIEW_MFA_BYPASS: string;

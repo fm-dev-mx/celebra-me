@@ -384,8 +384,21 @@ async function main(): Promise<void> {
 		const plannedAssetPlanId = computePlanId({ ...planIdInput, changes: plannedChanges });
 		const currentAssetPlanId = computePlanId({ ...planIdInput, changes: currentChanges });
 		assert(
-			plannedAssetPlanId !== currentAssetPlanId,
-			'Asset ownership/content drift did not change the reviewed operation set.',
+			JSON.stringify(
+				plannedChanges
+					.filter((change) => change.scope === 'storage')
+					.map((change) => [change.entity, change.operation]),
+			) !==
+				JSON.stringify(
+					currentChanges
+						.filter((change) => change.scope === 'storage')
+						.map((change) => [change.entity, change.operation]),
+				),
+			'Asset ownership/content drift did not change the reviewed storage operation set.',
+		);
+		assert(
+			plannedAssetPlanId === currentAssetPlanId,
+			'Volatile Storage drift incorrectly changed the stable plan identity.',
 		);
 		assert(
 			currentAssets.unreferencedAssets.every(
@@ -398,6 +411,7 @@ async function main(): Promise<void> {
 			result: 'pass',
 			evidence: {
 				reviewedPlanChanged: true,
+				stablePlanIdentity: true,
 				targetOwnedPruneCount: currentAssets.summary.plannedDeletes,
 			},
 		});

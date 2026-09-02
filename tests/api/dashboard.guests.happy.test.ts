@@ -18,6 +18,26 @@ import {
 	defaultShareDateContext,
 	DEFAULT_REMINDER_SETTINGS_FIXTURE,
 } from '@tests/helpers/test-fixtures';
+import { mockAdminSecurityPass } from '../helpers/mock-admin-security';
+
+mockAdminSecurityPass();
+
+jest.mock('@/lib/rsvp/auth/authorization', () => ({
+	requireDashboardSessionFromLocals: jest.fn().mockReturnValue({
+		userId: 'host-1',
+		email: 'host@test.com',
+		accessToken: 'token',
+		role: 'host_client',
+		isSuperAdmin: false,
+	}),
+	requireDashboardMutationAccess: jest.fn().mockResolvedValue({
+		userId: 'host-1',
+		email: 'host@test.com',
+		accessToken: 'token',
+		role: 'host_client',
+		isSuperAdmin: false,
+	}),
+}));
 
 jest.mock('@/lib/rsvp/services/dashboard-guests.service', () => ({
 	listDashboardGuests: jest.fn(),

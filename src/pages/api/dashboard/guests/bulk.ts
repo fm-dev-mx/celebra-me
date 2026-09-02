@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireHostSession } from '@/lib/rsvp/auth/auth';
+import { requireAuthenticatedMutationAccess } from '@/lib/rsvp/auth/authorization';
 import { badRequest, errorResponse, getIp, jsonResponse, forbidden } from '@/lib/rsvp/core/http';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
@@ -25,9 +25,9 @@ const BulkImportSchema = z.object({
 	guests: z.array(BulkGuestSchema),
 });
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
 	try {
-		const session = await requireHostSession(request);
+		const session = await requireAuthenticatedMutationAccess(request, cookies);
 
 		const allowed = await checkRateLimit({
 			namespace: 'dashboard',
@@ -97,7 +97,9 @@ export const POST: APIRoute = async ({ request }) => {
 				p_event_id: body.eventId,
 				p_guests: normalizedGuests,
 			},
-			authToken: session.accessToken,
+			// The privileged RPC is no longer executable by client roles. The
+			// session and event authorization above are the BFF boundary.
+			useServiceRole: true,
 		});
 
 		return jsonResponse({

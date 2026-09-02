@@ -1,22 +1,16 @@
 import type { APIRoute } from 'astro';
-import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
-import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
+import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
+import { sanitize } from '@/lib/rsvp/core/utils';
 import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import {
 	disableClaimCodeAdmin,
 	updateClaimCodeAdmin,
 } from '@/lib/rsvp/services/claim-code-admin.service';
 
-function sanitize(value: unknown, maxLen = 200): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
 
-export const PATCH: APIRoute = async ({ request, params }) => {
+export const PATCH: APIRoute = async ({ request, params, cookies }) => {
 	try {
-		// Rate limiting: 30 req/min for update operations.
-		await requireAdminRateLimit(request, 'claimcodes:update');
-		await requireAdminStrongSession(request);
+		await requireAdminMutationAccess(request, cookies, 'claimcodes:update');
 		const claimCodeId = sanitize(params.claimCodeId, 120);
 		if (!claimCodeId) return badRequest('claimCodeId is required.');
 		const bodyResult = await parseJsonBody(request);
@@ -34,11 +28,9 @@ export const PATCH: APIRoute = async ({ request, params }) => {
 	}
 };
 
-export const DELETE: APIRoute = async ({ request, params }) => {
+export const DELETE: APIRoute = async ({ request, params, cookies }) => {
 	try {
-		// Rate limiting: 10 req/min for delete operations.
-		await requireAdminRateLimit(request, 'claimcodes:delete');
-		await requireAdminStrongSession(request);
+		await requireAdminMutationAccess(request, cookies, 'claimcodes:delete');
 		const claimCodeId = sanitize(params.claimCodeId, 120);
 		if (!claimCodeId) return badRequest('claimCodeId is required.');
 		const item = await disableClaimCodeAdmin({ claimCodeId });

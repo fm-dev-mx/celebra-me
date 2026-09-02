@@ -145,7 +145,7 @@ describe('rsvp repository branches', () => {
 		expect(await findEventByInvitationPublic('evt')).toBeNull();
 		expect(await listAllEventsService()).toEqual([]);
 		expect(await findGuestById('guest')).toBeNull();
-		expect(await findMembershipByEventForHost('evt', 'token')).toBeNull();
+		expect(await findMembershipByEventForHost('evt', 'user', 'token')).toBeNull();
 		expect(await listMembershipsForHost('token')).toEqual([]);
 		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
 			'deleted_at=is.null',

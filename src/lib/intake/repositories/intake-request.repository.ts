@@ -119,3 +119,25 @@ export async function updateIntakeRequest(
 	if (!rows[0]) throw new Error('Intake request not found.');
 	return toIntakeRequest(rows[0]);
 }
+
+/** Atomically transition the client intake request and its invitation once. */
+export async function submitIntakeRequestOnce(input: {
+	requestId: string;
+	submissionId: string;
+	invitationId: string;
+	clientComments: string;
+}): Promise<boolean> {
+	const rows = await supabaseRestRequest<Array<{ applied: boolean }> | { applied: boolean }>({
+		pathWithQuery: 'rpc/submit_intake_request_once',
+		method: 'POST',
+		useServiceRole: true,
+		body: {
+			p_request_id: input.requestId,
+			p_submission_id: input.submissionId,
+			p_invitation_id: input.invitationId,
+			p_client_comments: input.clientComments,
+		},
+	});
+	const row = Array.isArray(rows) ? rows[0] : rows;
+	return row?.applied === true;
+}

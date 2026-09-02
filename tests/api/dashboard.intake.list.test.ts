@@ -73,7 +73,7 @@ describe('GET /api/dashboard/intake', () => {
 		expect(getEnrichedInvitationListMock).toHaveBeenCalledWith('all');
 	});
 
-	it('triggers synchronizeDemoInvitations only when syncDemos=true is explicitly passed', async () => {
+	it('keeps syncDemos=true read-only and does not synchronize during GET', async () => {
 		getEnrichedInvitationListMock.mockResolvedValue([] as never);
 		synchronizeDemoInvitationsMock.mockResolvedValue(undefined);
 
@@ -86,7 +86,7 @@ describe('GET /api/dashboard/intake', () => {
 		} as never);
 
 		expect(response.status).toBe(200);
-		expect(synchronizeDemoInvitationsMock).toHaveBeenCalledWith('admin-1');
+		expect(synchronizeDemoInvitationsMock).not.toHaveBeenCalled();
 		expect(getEnrichedInvitationListMock).toHaveBeenCalledWith('active');
 	});
 });

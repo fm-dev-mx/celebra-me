@@ -100,10 +100,11 @@ export async function softDeleteEventMembershipService(input: {
 
 export async function findMembershipByEventForHost(
 	eventId: string,
+	userId: string,
 	hostAccessToken: string,
 ): Promise<EventMembershipRecord | null> {
 	const rows = await supabaseRestRequest<EventMembershipRow[]>({
-		pathWithQuery: `event_memberships?select=*&event_id=eq.${encodeURIComponent(eventId)}&${ACTIVE_MEMBERSHIP_FILTER}&limit=1`,
+		pathWithQuery: `event_memberships?select=*&event_id=eq.${encodeURIComponent(eventId)}&user_id=eq.${encodeURIComponent(userId)}&${ACTIVE_MEMBERSHIP_FILTER}&limit=1`,
 		authToken: hostAccessToken,
 	});
 	return rows[0] ? toMembershipRecord(rows[0]) : null;

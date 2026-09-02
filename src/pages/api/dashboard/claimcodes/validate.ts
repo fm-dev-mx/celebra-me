@@ -1,19 +1,13 @@
 import type { APIRoute } from 'astro';
-import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
-import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
+import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
+import { sanitize } from '@/lib/rsvp/core/utils';
 import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { validateClaimCodeAdmin } from '@/lib/rsvp/services/claim-code-admin.service';
 
-function sanitize(value: unknown, maxLen = 256): string {
-	if (typeof value !== 'string') return '';
-	return value.trim().slice(0, maxLen);
-}
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
 	try {
-		// Rate limiting: 30 req/min for validation calls.
-		await requireAdminRateLimit(request, 'claimcodes:validate');
-		await requireAdminStrongSession(request);
+		await requireAdminMutationAccess(request, cookies, 'claimcodes:validate');
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
 		const body = bodyResult;

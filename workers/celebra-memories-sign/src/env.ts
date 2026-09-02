@@ -1,8 +1,8 @@
 export type MemoriesSignEnv = Omit<MemoriesSignBindings, 'MEMORIES_STORAGE_TARGET'> & {
 	MEMORIES_STORAGE_TARGET: string;
-	MEMORIES_R2_ACCOUNT_ID: string;
-	MEMORIES_R2_PRESIGN_ACCESS_KEY_ID: string;
-	MEMORIES_R2_PRESIGN_SECRET_ACCESS_KEY: string;
+	MEMORIES_BUCKET: R2Bucket;
+	NONCE_GUARD?: DurableObjectNamespace;
+	MEMORIES_UPLOAD_CAPABILITY_SECRET: string;
 	MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY: string;
 };
 
@@ -16,9 +16,9 @@ export function getMemoriesRateLimiter(env: MemoriesSignEnv): RateLimit | undefi
 
 export function hasRequiredR2Secrets(env: MemoriesSignEnv): boolean {
 	return Boolean(
-		env.MEMORIES_R2_ACCOUNT_ID &&
-		env.MEMORIES_R2_PRESIGN_ACCESS_KEY_ID &&
-		env.MEMORIES_R2_PRESIGN_SECRET_ACCESS_KEY &&
+		env.MEMORIES_BUCKET &&
+		env.NONCE_GUARD &&
+		env.MEMORIES_UPLOAD_CAPABILITY_SECRET &&
 		env.MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY,
 	);
 }

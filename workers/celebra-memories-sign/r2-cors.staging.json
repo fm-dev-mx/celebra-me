@@ -2,12 +2,9 @@
     "rules": [
         {
             "allowed": {
-                "origins": [
-                    "https://celebra-me.vercel.app",
-                    "https://celebra-me-git-feat-valenti-6763f6-francisco-mendoza-s-projects.vercel.app"
-                ],
-                "methods": ["PUT"],
-                "headers": ["Content-Type", "If-None-Match", "x-amz-checksum-sha256"]
+                "origins": [],
+                "methods": [],
+                "headers": []
             }
         }
     ]

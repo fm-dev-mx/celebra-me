@@ -137,6 +137,31 @@ export function requireDashboardSessionFromLocals(locals: LocalsWithSession): Se
 	return locals.session;
 }
 
+/**
+ * Shared boundary for non-admin dashboard mutations. Route-specific rate
+ * limits remain at the route because their keys and budgets differ.
+ */
+export async function requireDashboardMutationAccess(
+	request: Request,
+	cookies: AstroCookies,
+	locals: LocalsWithSession,
+): Promise<SessionContext> {
+	const session = requireDashboardSessionFromLocals(locals);
+	validateCsrfToken(request, cookies);
+	await assertRuntimeMutationEnvironment();
+	return session;
+}
+
+export async function requireAuthenticatedMutationAccess(
+	request: Request,
+	cookies: AstroCookies,
+): Promise<SessionContext> {
+	const session = await requireSessionContext(request);
+	validateCsrfToken(request, cookies);
+	await assertRuntimeMutationEnvironment();
+	return session;
+}
+
 export function requireAdminDashboardSessionFromLocals(locals: LocalsWithSession): SessionContext {
 	const session = requireDashboardSessionFromLocals(locals);
 	if (!session.isSuperAdmin) {

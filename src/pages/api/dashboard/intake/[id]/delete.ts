@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
-import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
+import { errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
 	mutateInvitationLifecycle,
@@ -21,7 +21,9 @@ export const POST: APIRoute = async ({ request, params, cookies }) => {
 			throw new ApiError(400, 'bad_request', 'Invitation ID is required.');
 		}
 
-		const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+		const bodyResult = await parseJsonBody(request);
+		if (bodyResult instanceof Response) return bodyResult;
+		const body = bodyResult;
 		const action = body.action;
 		if (!['archive', 'restore', 'permanent_delete'].includes(String(action))) {
 			throw new ApiError(

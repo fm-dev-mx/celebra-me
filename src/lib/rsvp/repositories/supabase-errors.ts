@@ -118,7 +118,7 @@ export function mapSupabaseErrorToApiError(error: unknown): ApiError {
 	if (constraintName) {
 		const mapping = CONSTRAINT_MAP[constraintName];
 		if (mapping) {
-			return new ApiError(mapping.httpStatus, 'conflict', mapping.userMessage, {
+			return new ApiError(mapping.httpStatus, mapping.httpStatus === 409 ? 'conflict' : 'bad_request', mapping.userMessage, {
 				constraint: constraintName,
 				errorCode: mapping.errorCode,
 			});
