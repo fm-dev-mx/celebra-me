@@ -3,8 +3,8 @@
 # This file is the single authoritative source of truth (SSOT) mapping system aspects
 # to their canonical owner files. Agent OS ownership surface.
 ---
-version: '1.0.0'
-updated: '2026-08-21'
+version: '1.1.0'
+updated: '2026-09-01'
 
 ownership:
     - aspect: 'Agent discovery & active inventory'
@@ -245,3 +245,38 @@ ownership:
       owner: 'scripts/shared/celebra-runtime-env.ts'
       non_owners:
           - 'Ad-hoc .env overrides'
+
+provider_adapters:
+    - path: '.cursor/hooks.json'
+      provider: 'cursor'
+      purpose: 'Cursor hook registration'
+      shared_owners:
+          - '.agent/load-skills.md'
+    - path: '.cursor/hooks/session-start.mjs'
+      provider: 'cursor'
+      purpose: 'Cursor session bootstrap adapter'
+      shared_owners:
+          - '.agent/load-skills.md'
+    - path: '.cursor/hooks/pre-tool-use-agent-context.ts'
+      provider: 'cursor'
+      purpose: 'Cursor context injection adapter'
+      shared_owners:
+          - '.agent/load-skills.md'
+    - path: '.cursor/hooks/before-shell-production.ts'
+      provider: 'cursor'
+      purpose: 'Cursor shell production boundary adapter'
+      shared_owners:
+          - '.agent/rules/database.md'
+          - 'scripts/db/production-boundary-policy.ts'
+    - path: '.cursor/hooks/before-mcp-production.ts'
+      provider: 'cursor'
+      purpose: 'Cursor MCP production boundary adapter'
+      shared_owners:
+          - '.agent/rules/database.md'
+          - 'scripts/db/production-boundary-policy.ts'
+    - path: '.cursor/rules/production-mutation-boundary.mdc'
+      provider: 'cursor'
+      purpose: 'Cursor policy discovery adapter'
+      shared_owners:
+          - '.agent/rules/database.md'
+          - 'scripts/db/production-boundary-policy.ts'

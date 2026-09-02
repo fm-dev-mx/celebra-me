@@ -110,7 +110,8 @@ task-scoped authorization for Git writes, database mutations, and remote operati
 
 ### Multi-Agent Lane Ownership & Preflight
 
-Before making any file edits or running commands inside a worktree lane, agents **must** establish
+Before making file edits or running mutable or environment-affecting commands inside a worktree lane,
+agents **must** establish
 the following state:
 
 ```text
@@ -178,8 +179,13 @@ no task-authorization state. Underlying command:
 node scripts/agent/git-safety.mjs finish
 ```
 
-There is no separate operational `check` / `end` pair. CI does **not** invoke this interactive
-session guard; hermetic tests verify the implementation.
+The read-only `check` command reports whether the active baseline still matches protected state;
+it never removes the baseline. CI does **not** invoke this interactive session guard; hermetic tests
+verify the implementation.
+
+```sh
+pnpm agent:git-safety:check
+```
 
 ---
 

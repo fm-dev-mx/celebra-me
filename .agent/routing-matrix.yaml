@@ -37,7 +37,6 @@ routes:
           - 'theme-architecture'
           - 'animation-motion'
           - 'invitation-rhythm'
-          - 'celebra-delegation-patterns'
       workflows:
           - '.agent/workflows/design-reference-to-build.md'
       briefs:
@@ -77,8 +76,6 @@ routes:
       rules:
           - '.agent/rules/workflow.md'
       skills:
-          - 'documentation-governance'
-          - 'agent-communication'
       workflows:
           - '.agent/workflows/system-doc-alignment.md'
 

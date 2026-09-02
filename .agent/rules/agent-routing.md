@@ -69,15 +69,15 @@ same exploration again.
 
 ## Delegation Contract
 
-Every handoff must include the Delegation Contract fields in `.agent/rules/agent-routing.md` and
-remain consistent with the parent Task Contract / Handoff Contract in `.agent/plans/README.md`:
+Every handoff must include these Delegation Contract fields and remain consistent with the parent Task
+Contract / Handoff Contract in `.agent/plans/README.md`:
 
-1. Role contract and goal.
+1. Objective and role contract.
 2. Allowed files or systems and explicit non-goals.
 3. Required context, including `AGENTS.md` and relevant rules/docs.
-4. Safety constraints and prohibited operations.
-5. Required capabilities and any unavailable/restricted capabilities.
-6. Validation and expected output format.
+4. Safety constraints, authority, and prohibited operations.
+5. Required capabilities, unavailable capabilities, and inputs/evidence.
+6. Acceptance criteria, validation strategy, and expected output/handoff format.
 
 Restrictions in role contracts and handoffs are mandatory instructions unless the active runtime can
 enforce them mechanically. Never claim hard tool isolation without verifying that capability.
@@ -93,5 +93,5 @@ If a task spans multiple roles (e.g., "write copy AND build the component"):
 4. Synthesize results before reporting to the user.
 
 If a sub-task depends on another's output, run them sequentially and pass the verified dependency
-result through a structured handoff. Follow `.agent/skills/celebra-delegation-patterns/SKILL.md` for
-request and synthesis patterns.
+result through the Handoff Contract. The runtime owns invocation syntax, provider/model selection,
+concurrency, and mechanical capability enforcement.
