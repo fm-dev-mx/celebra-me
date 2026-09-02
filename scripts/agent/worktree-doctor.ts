@@ -5,7 +5,7 @@
  * Detects material configuration problems without mutating any state.
  * Safe to run at any time — never deletes, resets, or modifies user work.
  *
- * Usage: pnpm ops worktree-doctor [--all] [--lane <path>]
+ * Usage: pnpm ops worktree-doctor [--deep] [--lane <path>]
  */
 
 import { execSync } from 'node:child_process';
@@ -18,6 +18,7 @@ import {
 	getExternalWorktreeRoot,
 	listExpectedLanePaths,
 } from '../shared/worktree-lane';
+import { inspectLane } from './worktree-status';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -88,6 +89,46 @@ function checkWorktreeLocation(cwd: string, repoRoot: string, diagnoses: Diagnos
 			severity: 'error',
 			title: 'Not a valid worktree',
 			detail: `Directory at "${cwd}" does not contain a package.json.`,
+		});
+	}
+}
+
+function checkGitWorktreeState(cwd: string, lane: ReturnType<typeof detectWorktreeLane>, diagnoses: Diagnosis[]): void {
+	const status = inspectLane({
+		name: lane.displayName,
+		path: cwd,
+		runtimeDefault: lane.runtimeDefault,
+		defaultBranch: lane.id === 'integration' ? 'develop' : 'ephemeral',
+	});
+
+	if (status.inspection === 'unavailable') {
+		diagnoses.push({
+			ok: false,
+			severity: 'error',
+			title: 'Git worktree inspection unavailable',
+			detail: status.diagnostics.join('; '),
+			remediation: 'Resolve the Git inspection failure before claiming or mutating this lane.',
+		});
+		return;
+	}
+
+	if (status.state === 'dirty') {
+		diagnoses.push({
+			ok: false,
+			severity: 'warning',
+			title: 'Working tree is dirty',
+			detail: `${status.modifiedCount} modified or untracked path(s) detected.`,
+			remediation: 'Preserve the existing owner state; do not repurpose this lane.',
+		});
+	}
+
+	if (status.relation === 'UNVERIFIED') {
+		diagnoses.push({
+			ok: false,
+			severity: 'warning',
+			title: 'Develop relation is unverified',
+			detail: 'The lane could not be compared to develop.',
+			remediation: 'Restore the develop ref or report the relation as UNVERIFIED.',
 		});
 	}
 }
@@ -437,6 +478,9 @@ function printSummary(diagnoses: Diagnosis[]): void {
 			if (e.remediation) console.log(`   → ${e.remediation}`);
 		}
 		process.exitCode = 1;
+		console.log('\n❌ Worktree is unhealthy.');
+	} else if (warnings.length > 0) {
+		console.log('\n⚠️ Worktree is inspectable with warnings.');
 	} else {
 		console.log('\n✅ All checks passed — worktree is healthy.');
 	}
@@ -444,10 +488,15 @@ function printSummary(diagnoses: Diagnosis[]): void {
 
 function main(): void {
 	const args = process.argv.slice(2);
+	if (args.includes('--all')) {
+		console.error('Unsupported flag --all; use --deep.');
+		process.exitCode = 1;
+		return;
+	}
 	const laneIndex = args.indexOf('--lane');
 	const explicitLanePath =
 		laneIndex !== -1 && args[laneIndex + 1] ? resolve(args[laneIndex + 1]!) : null;
-	const checkAll = args.includes('--all');
+	const checkDeep = args.includes('--deep');
 
 	const cwd = explicitLanePath ?? process.cwd();
 	const actualRepoRoot = getLanePath(cwd);
@@ -458,10 +507,11 @@ function main(): void {
 
 	// Run all checks
 	checkWorktreeLocation(cwd, actualRepoRoot, diagnoses);
+	checkGitWorktreeState(cwd, lane, diagnoses);
 	checkDependencyConsistency(cwd, diagnoses);
 	checkEnvironmentConfiguration(cwd, lane, diagnoses);
 
-	if (checkAll) {
+	if (checkDeep) {
 		checkSharedGeneratedPaths(cwd, diagnoses);
 		checkPortConflicts(diagnoses);
 	}
@@ -487,7 +537,7 @@ function main(): void {
 		(d) => !!d.title.match(/\.env/),
 		false,
 	);
-	if (checkAll) {
+	if (checkDeep) {
 		printDiagnosisCategory(
 			'── 4. Generated / Shared Paths ──',
 			diagnoses,

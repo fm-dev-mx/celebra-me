@@ -2,13 +2,12 @@
 /**
  * worktree-bootstrap.ts — Canonical worktree bootstrap command.
  *
- * Validates the current lane and installs dependencies deterministically.
- * Idempotent — safe to re-run.
+ * Validates the current lane and optionally installs dependencies deterministically.
+ * Default mode is read-only; use --apply for pnpm install.
  *
- * Usage: pnpm ops worktree-bootstrap [--lane <path>]
+ * Usage: pnpm ops worktree-bootstrap [--lane <path>] [--apply]
  *
- * This command does NOT mutate Git history, environment variables,
- * or database state beyond the pnpm install and generated output.
+ * This command does NOT mutate Git history, environment variables, or database state.
  */
 
 import { execSync } from 'node:child_process';
@@ -161,8 +160,8 @@ function validateLocation(cwd: string, repoRoot: string): boolean {
 		return false;
 	}
 
-	if (!existsSync(resolve(cwd, '.git')) && !existsSync(resolve(cwd, 'package.json'))) {
-		console.error('\n❌ Not a valid worktree: missing .git and package.json');
+	if (!existsSync(resolve(cwd, '.git')) || !existsSync(resolve(cwd, 'package.json'))) {
+		console.error('\n❌ Not a valid worktree: missing .git or package.json');
 		return false;
 	}
 
@@ -171,7 +170,7 @@ function validateLocation(cwd: string, repoRoot: string): boolean {
 
 // ─── Main (split into smaller functions for complexity limit) ──────────────────
 
-function validateEnvironment(pkg: Record<string, unknown>): boolean {
+function validateEnvironment(pkg: Record<string, unknown>, cwd: string): boolean {
 	console.log('\n--- Environment ---');
 	let ok = true;
 
@@ -182,7 +181,7 @@ function validateEnvironment(pkg: Record<string, unknown>): boolean {
 		ok = false;
 	}
 
-	const pnpmVersionRaw = runCmd('pnpm --version', process.cwd());
+	const pnpmVersionRaw = runCmd('pnpm --version', cwd);
 	const pnpmVersion = pnpmVersionRaw.stdout || '(not found)';
 	const pnpmCheck = validatePnpmVersion(pkg, pnpmVersion);
 	console.log(`  ${pnpmCheck.ok ? '✅' : '❌'} ${pnpmCheck.message}`);
@@ -304,11 +303,19 @@ function main(): void {
 	const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as Record<string, unknown>;
 
 	// Validate environment
-	const envOk = validateEnvironment(pkg);
+	const envOk = validateEnvironment(pkg, cwd);
 	if (!envOk) process.exitCode = 1;
 
 	// Install dependencies
-	const depsOk = installDependencies(cwd);
+	const apply = args.includes('--apply');
+	let depsOk = true;
+	if (apply) {
+		depsOk = installDependencies(cwd);
+	} else {
+		console.log(
+			'\n--- Dependencies (Read-Only) ---\n  ℹ️  Skipping pnpm install; rerun with --apply to mutate dependencies.',
+		);
+	}
 	if (!depsOk) process.exitCode = 1;
 
 	// Check env files
