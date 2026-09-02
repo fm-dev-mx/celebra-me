@@ -27,8 +27,10 @@ export function hashAssetFiles(root: string, files: readonly string[]): string {
 	return digest.digest('hex');
 }
 
-function hashDirectoryFiles(root: string, pattern: RegExp): string {
-	if (!fs.existsSync(root)) return 'missing';
+function hashDirectoryFiles(root: string, pattern: RegExp, label: string): string {
+	if (!fs.existsSync(root)) {
+		throw new Error(`Visual parity ${label} directory is missing: ${root}`);
+	}
 	const files: string[] = [];
 	const visit = (directory: string, prefix = ''): void => {
 		for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
@@ -39,6 +41,9 @@ function hashDirectoryFiles(root: string, pattern: RegExp): string {
 		}
 	};
 	visit(root);
+	if (files.length === 0) {
+		throw new Error(`Visual parity ${label} directory has no matching files: ${root}`);
+	}
 	return hashAssetFiles(root, files);
 }
 
@@ -89,19 +94,22 @@ export const VISUAL_PARITY_RUNTIME = {
 	timezone: 'UTC',
 	deviceScaleFactor: 1,
 	lockfileSha256: hashAssetFiles(projectRoot, ['pnpm-lock.yaml']),
-	cssSha256: hashDirectoryFiles(path.join(projectRoot, 'src/styles'), /\.(?:css|scss)$/iu),
+	cssSha256: hashDirectoryFiles(path.join(projectRoot, 'src/styles'), /\.(?:css|scss)$/iu, 'CSS'),
 	assetSha256: hashDirectoryFiles(
 		path.join(projectRoot, 'src/assets'),
 		/\.(?:avif|gif|jpe?g|png|svg|webp)$/iu,
+		'asset',
 	),
 	fontSha256: hashVisualValue({
 		standard: hashDirectoryFiles(
 			path.join(projectRoot, 'node_modules/@fontsource'),
 			/\.(?:css|otf|ttf|woff2?)$/iu,
+			'standard font',
 		),
 		variable: hashDirectoryFiles(
 			path.join(projectRoot, 'node_modules/@fontsource-variable'),
 			/\.(?:css|otf|ttf|woff2?)$/iu,
+			'variable font',
 		),
 	}),
 	osImageDigest: process.env.VISUAL_PARITY_OS_IMAGE_DIGEST ?? 'unverified',
@@ -109,6 +117,5 @@ export const VISUAL_PARITY_RUNTIME = {
 
 /** Hash every versioned binary in a local asset directory in stable path order. */
 export function hashAssetDirectory(root: string): string {
-	if (!fs.existsSync(root)) throw new Error(`Visual asset directory is missing: ${root}`);
-	return hashDirectoryFiles(root, /\.(?:avif|gif|jpe?g|png|webp)$/iu);
+	return hashDirectoryFiles(root, /\.(?:avif|gif|jpe?g|png|webp)$/iu, 'asset');
 }
