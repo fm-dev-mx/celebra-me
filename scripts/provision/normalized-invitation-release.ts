@@ -329,7 +329,7 @@ function assertTargetIdentityPreflight(
 		managedIdentityId: string | null;
 	} | undefined,
 ): void {
-	if (purpose !== 'target' || definition.managedIdentityProvenance !== 'owner-approved') return;
+	if (purpose !== 'target') return;
 	const isAbsent = preflight?.invitationId === null && preflight.managedIdentityId === null;
 	const isExisting =
 		Boolean(preflight?.invitationId) &&
