@@ -70,6 +70,15 @@
             "revokes": ["valentina_memories_reservation_rpc_without_video_quota"],
             "notes": "Replaces the reservation RPC signature with the canonical per-session video quota parameter."
         },
+        "20260901000000": {
+            "phase": "contract",
+            "provides": ["codex_security_remediation"],
+            "revokes": [
+                "ambient_membership_claim_privileges",
+                "historical_permissive_event_policies"
+            ],
+            "notes": "Removes legacy client-side privilege paths, drops historical permissive event policies in favor of canonical active-record RLS, and restricts tenant-write/claim routines to service_role."
+        },
         "__historical_rsvp_dml_revoke__": {
             "phase": "contract",
             "requiresDeployedAppCapabilities": ["public_guest_rsvp_rpc_client"],

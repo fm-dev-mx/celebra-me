@@ -254,20 +254,130 @@ async function resolveAuthenticatedUser(cookies: CookieStore) {
 
 function authHtmlFailure(status: 500 | 502 | 503): Response {
 	const unavailable = status === 503;
-	const response = new Response(
-		`<!doctype html><html lang="es"><meta charset="utf-8"><title>Sesión no disponible</title><body><p>${
-			unavailable
-				? 'No es posible validar su sesión en este momento. Inténtelo de nuevo en unos segundos.'
-				: 'No fue posible validar su sesión.'
-		}</p></body></html>`,
-		{
-			status,
-			headers: {
-				'Content-Type': 'text/html; charset=utf-8',
-				'Cache-Control': PRIVATE_CACHE_CONTROL,
-			},
+	const title = unavailable ? 'Sesión no disponible' : 'Error de autenticación';
+	const message = unavailable
+		? 'No es posible validar su sesión en este momento. Inténtelo de nuevo en unos segundos.'
+		: 'No fue posible validar su sesión.';
+
+	const html = `<!doctype html>
+<html lang="es">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="robots" content="noindex">
+	<title>${title} | Celebra-me</title>
+	<style>
+		:root {
+			--color-bg: #0b0c10;
+			--color-surface: #151821;
+			--color-border: rgba(255, 255, 255, 0.08);
+			--color-text: #f5f6f8;
+			--color-text-muted: #a1a7b5;
+			--color-gold: #d4af37;
+			--color-gold-hover: #c49e2b;
+		}
+		* { box-sizing: border-box; margin: 0; padding: 0; }
+		body {
+			background-color: var(--color-bg);
+			color: var(--color-text);
+			font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 24px;
+		}
+		.card {
+			background-color: var(--color-surface);
+			border: 1px solid var(--color-border);
+			border-radius: 12px;
+			max-width: 440px;
+			width: 100%;
+			padding: 40px 32px;
+			text-align: center;
+			box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+		}
+		.badge {
+			display: inline-block;
+			padding: 4px 12px;
+			background: rgba(212, 175, 55, 0.12);
+			border: 1px solid rgba(212, 175, 55, 0.3);
+			border-radius: 999px;
+			color: var(--color-gold);
+			font-size: 0.8rem;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			margin-bottom: 20px;
+		}
+		h1 {
+			font-size: 1.4rem;
+			font-weight: 600;
+			margin-bottom: 12px;
+			color: var(--color-text);
+		}
+		p {
+			color: var(--color-text-muted);
+			font-size: 0.95rem;
+			line-height: 1.6;
+			margin-bottom: 28px;
+		}
+		.actions {
+			display: flex;
+			flex-direction: column;
+			gap: 12px;
+		}
+		.btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 12px 20px;
+			border-radius: 8px;
+			font-size: 0.9rem;
+			font-weight: 600;
+			text-decoration: none;
+			cursor: pointer;
+			transition: background 0.15s ease, opacity 0.15s ease;
+			border: none;
+		}
+		.btn-primary {
+			background-color: var(--color-gold);
+			color: #0b0c10;
+		}
+		.btn-primary:hover {
+			background-color: var(--color-gold-hover);
+		}
+		.btn-secondary {
+			background-color: transparent;
+			color: var(--color-text-muted);
+			border: 1px solid var(--color-border);
+		}
+		.btn-secondary:hover {
+			color: var(--color-text);
+			border-color: rgba(255, 255, 255, 0.2);
+		}
+	</style>
+</head>
+<body>
+	<main class="card">
+		<span class="badge">${unavailable ? 'Estado 503' : `Estado ${status}`}</span>
+		<h1>${title}</h1>
+		<p>${message}</p>
+		<div class="actions">
+			<button class="btn btn-primary" onclick="window.location.reload()">Reintentar</button>
+			<a class="btn btn-secondary" href="/">Volver al inicio</a>
+		</div>
+	</main>
+</body>
+</html>`;
+
+	const response = new Response(html, {
+		status,
+		headers: {
+			'Content-Type': 'text/html; charset=utf-8',
+			'Cache-Control': PRIVATE_CACHE_CONTROL,
 		},
-	);
+	});
 	if (unavailable) response.headers.set('Retry-After', '5');
 	return response;
 }
@@ -484,6 +594,11 @@ export const onRequest = defineMiddleware(
 				locals,
 			);
 		} catch (error) {
+			if (url.pathname === '/login') {
+				const response = await next();
+				return finalizeMiddlewareResponse(url.pathname, response);
+			}
+
 			const isApiRoute = url.pathname.startsWith('/api/dashboard');
 			if (isAuthRequestError(error)) {
 				return isApiRoute
