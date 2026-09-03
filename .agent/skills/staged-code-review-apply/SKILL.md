@@ -21,7 +21,6 @@ related_skills:
   - staged-code-review
   - commit-planner
   - git-stash-branch-cleanup
-  - celebra-delegation-patterns
 related_docs:
   - docs/core/git-governance.md
   - docs/core/project-conventions.md

@@ -36,6 +36,24 @@ responsibility, but these must remain semantically consistent across projections
 
 When applicable, a Task Contract expresses:
 
+### Operation mode
+
+Every task must select the least-privileged mode that matches the requested work. `operation_mode`
+is semantic Task Contract data; it does not replace the plan `type` field and is not a provider-specific
+status vocabulary.
+
+| Mode | Permitted behavior |
+| --- | --- |
+| `audit` | Read-only inspection and evidence report; no tracked-file edits |
+| `plan` | Read-only planning and contract authoring; no tracked-file edits |
+| `implement` | Edit only the authorized scope; Git writes remain separately gated |
+| `remediate` | Edit only to resolve the confirmed finding set |
+| `validate` | Run checks and collect evidence without tracked-file edits |
+| `release-ops` | Perform only explicitly enumerated external/release operations |
+
+If the mode is omitted, choose the least-privileged mode consistent with the user's verb. Ask only when
+the remaining ambiguity would materially change permissions or acceptance.
+
 | Field | Meaning |
 | --- | --- |
 | Objective | What success looks like |
@@ -193,7 +211,7 @@ Goal, next session, or next role). Include fields when relevant:
   boundary.
 - Multi-session Goal continuity: `.agent/plans/active/` when a tracked plan is justified.
 - Role-chain artifacts: `.agent/tmp/handoffs/<task-id>/` (ephemeral; see
-  `celebra-delegation-patterns`). Not a second policy authority.
+  `.agent/rules/agent-routing.md`). Not a second policy authority.
 - Do not generate mandatory handoff files for trivial work.
 
 Human-facing report **layout** for named review/apply/commit skills remains

@@ -1,5 +1,8 @@
 ---
 description: Lightweight planning guidance for repository work.
+lifecycle: evergreen
+domain: governance
+owner: workflow-governance
 ---
 
 # Plan Authoring Workflow
@@ -21,7 +24,8 @@ Canonical semantics for the Task Contract, Goal protocol, and Handoff Contract l
 5. **Choose lifecycle**: when the work is substantial and audit-driven, follow Goal 1 → Goal 2 →
    Goal 3 in `.agent/plans/README.md`. Keep verification depth and risk as separate Task Contract /
    gatekeeper choices — do not invent Goal “tiers” from task size.
-6. **Implement**: carry out the work with the standard repository workflow and conventional commits.
+6. **Handoff**: return the Task Contract and verification plan. Implementation and commit preparation
+   occur only when a later task explicitly authorizes them.
 
 ## Standards
 

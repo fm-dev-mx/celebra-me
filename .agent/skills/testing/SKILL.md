@@ -387,7 +387,9 @@ Before submitting a PR:
 - [ ] The full suite passes when the change is at a pre-push or pre-deploy checkpoint
 - [ ] New utilities have corresponding tests
 - [ ] React components with state have tests
-- [ ] Coverage does not decrease
+- [ ] If coverage was executed, the relevant coverage does not decrease
+- [ ] Behavior changes cover the success path and the relevant denial/error path, or document why a
+      path is not applicable
 - [ ] Build validation passes when route assembly or assets changed
 - [ ] No console errors in tests
 

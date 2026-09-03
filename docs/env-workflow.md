@@ -3,7 +3,7 @@
 **Owns:** variable categories, source policy, and precedence for Celebra-me environments.
 
 **Does not own:** database ops procedures (`docs/database-workflow.md`) or schema overview. See the
-Ownership Matrix in [`.agent/index.md`](../.agent/index.md).
+Ownership Matrix in [`.agent/ownership.yaml`](../.agent/ownership.yaml).
 
 This is the canonical human-facing environment guide for Celebra-me. Keep real values out of docs,
 issues, logs, and chat.
@@ -110,9 +110,9 @@ execution:
   intentionally omitted from `ImportMetaEnv`. `pnpm invitation:release` treats Preview and
   Production URLs/credentials as script-only values; packages and invitation definitions must
   contain semantic asset references, never those values.
-- **Platform-provided app/runtime:** Vercel supplies `VERCEL`, `VERCEL_ENV`,
-  `VERCEL_GIT_COMMIT_REF`, and `VERCEL_REGION`. They are typed for app/runtime use but omitted from
-  the local template.
+- **Platform-provided app/runtime:** Vercel supplies `VERCEL`, `VERCEL_DEPLOYMENT_ID`, `VERCEL_ENV`,
+  `VERCEL_GIT_COMMIT_SHA`, `VERCEL_GIT_COMMIT_REF`, and `VERCEL_REGION`. They are typed for
+  app/runtime use but omitted from the local template.
 - **Production-only shell variables:** `PROD_DB_URL` is a Postgres connection string only;
   `PROD_SUPABASE_URL` and `PROD_SUPABASE_SERVICE_ROLE_KEY` are the independently verified API and
   Storage inputs for the complete critical backup. They come only from the operator shell or
@@ -142,7 +142,7 @@ with app/runtime typing:
 | Contract category           | Variables                                                                                                                                                                                                                                                                                                                                                                                                                                  | Relationship                                          |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
 | `operational-script-only`   | `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `RSVP_ADMIN_USER`, `SUPER_ADMIN_EMAILS`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`, `PLAYWRIGHT_PREVIEW_SUPABASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS` | Present in `.env.example`; omitted from typing.       |
-| `platform-provided-runtime` | `VERCEL`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_REF`, `VERCEL_REGION`                                                                                                                                                                                                                                                                                                                                                                           | Present in app/runtime typing; omitted from template. |
+| `platform-provided-runtime` | `VERCEL`, `VERCEL_DEPLOYMENT_ID`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA`, `VERCEL_GIT_COMMIT_REF`, `VERCEL_REGION`                                                                                                                                                                                                                                                                                                                          | Present in app/runtime typing; omitted from template. |
 
 `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` are server-only runtime
 secrets for invitation image upload (Astro API + `invitation:release` CLI). Never create

@@ -45,7 +45,7 @@ If a required path is missing, stop and report it.
    - behavior or architecture changes update `docs/core/architecture.md` and the matching
      `docs/domains/**` doc
    - workflow inventory or entrypoint changes update `.agent/index.md` and `AGENTS.md`
-   - ownership or authority-chain changes update the Ownership Matrix in `.agent/index.md`
+   - ownership or authority-chain changes update the Ownership Matrix in `.agent/ownership.yaml`
    - new active docs go in the correct subtree and are linked from the active discovery doc when
      they become a source of truth
    - planning contract changes update `.agent/plans/README.md` when repo-tracked planning guidance
@@ -67,4 +67,4 @@ If a required path is missing, stop and report it.
 - Archive or mark documents as historical when they no longer describe the active system.
 - Do not invent a manifest/archive planning system unless the repository owner explicitly restores
   it.
-- Do not introduce a second active documentation-governance workflow or duplicate Sync Contract.
+- Do not introduce a second active documentation-integrity workflow or duplicate Sync Contract.

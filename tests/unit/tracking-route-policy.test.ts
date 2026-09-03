@@ -76,7 +76,7 @@ describe('tracking route policy', () => {
 	});
 
 	describe('resolveSpeedInsightsConfig', () => {
-		it('enables Speed Insights with default sampleRate in production on public and invitation routes', () => {
+		it('enables Speed Insights only on approved commercial and demo routes in production', () => {
 			const env = { vercelEnv: 'production' };
 
 			expect(resolveSpeedInsightsConfig('/', env)).toEqual({
@@ -88,12 +88,12 @@ describe('tracking route policy', () => {
 				sampleRate: DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE,
 			});
 			expect(resolveSpeedInsightsConfig('/xv/valentina-hernandez', env)).toEqual({
-				enabled: true,
-				sampleRate: DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE,
+				enabled: false,
+				sampleRate: 0,
 			});
 			expect(resolveSpeedInsightsConfig('/xv/valentina-hernandez?invite=abc', env)).toEqual({
-				enabled: true,
-				sampleRate: DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE,
+				enabled: false,
+				sampleRate: 0,
 			});
 		});
 

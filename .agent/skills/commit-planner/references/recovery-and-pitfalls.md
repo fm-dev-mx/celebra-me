@@ -109,7 +109,7 @@ Verify with `git diff --cached` before committing. After stash-pop, confirm the 
   where.
 - **Branch protection**: the pre-commit hook only rejects commits to `main`. Commits to `develop`
   and other branches pass through to commitlint + lint-staged normally. The override variables
-  `SKIP_BRANCH_PROTECTION=true` and `ALLOW_MAIN_PUSH=true` are emergency escape hatches — never
+  `SKIP_COMMIT_RANGE_VALIDATION=true` and `ALLOW_MAIN_PUSH=true` are emergency escape hatches — never
   present them as a routine staging or planning option in the commit plan. Only mention them when
   the user explicitly asks how to bypass protection or when documenting an already-approved
   exception. Every use must be flagged with a caution: "This bypasses branch protection — confirm

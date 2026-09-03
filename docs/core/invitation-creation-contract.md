@@ -194,13 +194,15 @@ A rebase that fast-forwards or rewrites nothing may produce no hook output. Use 
 lane-sync command for deterministic observability after aligning with `develop`:
 
 ```bash
-pnpm lane:sync            # fetch + rebase onto origin/develop, then dbs --compact
+pnpm lane:sync            # read-only synchronization preview from local refs
+pnpm lane:sync -- --apply # fetch + rebase onto origin/develop after Git Safety preflight
 pnpm lane:sync -- --ff-only
 pnpm lane:sync -- --skip-status
 ```
 
-`pnpm lane:sync` never fails the Git synchronization step because remote managed status is
-unavailable; status remains read-only and bounded. Opt-out via `--skip-status` or
+The default `pnpm lane:sync` is read-only and does not fetch. `--apply` is required for Git mutation
+and fails unless the lane is clean, non-protected, and covered by a matching Git Safety baseline.
+Remote managed status remains read-only and bounded; opt out via `--skip-status` or
 `CELEBRA_SKIP_MANAGED_STATUS=1`.
 
 ### PowerShell Helper

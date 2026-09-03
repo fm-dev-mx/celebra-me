@@ -26,7 +26,6 @@ related_skills:
   - theme-architecture
   - demo-content-consistency
   - production-sql-patches
-  - celebra-delegation-patterns
   - frontend-design
   - copywriting-es
 related_docs:
@@ -250,7 +249,7 @@ Merge conflicts / promote / Preview-Production apply remain **publication** scop
 ## Parallelism
 
 For large inventories, group phases with
-[`celebra-delegation-patterns`](../celebra-delegation-patterns/SKILL.md). Otherwise stay sequential.
+`.agent/rules/agent-routing.md`. Otherwise stay sequential.
 
 ## Pitfalls
 

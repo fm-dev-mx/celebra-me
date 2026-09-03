@@ -1,7 +1,8 @@
-# Valentina Memories — owner Staging handoff
+# Valentina Memories — owner handoff
 
-This runbook covers owner-operated Staging rollout and sanitized proof. Repository readiness does
-not authorize database, Cloudflare, R2, Vercel, DNS, Preview, Production, or Git mutations.
+This runbook covers owner-operated Staging rollout, the separately authorized single Production
+canary, and sanitized proof. Repository readiness does not authorize database, Cloudflare, R2,
+Vercel, DNS, Preview, Production, or Git mutations.
 
 The authoritative limits, MIME rules, paths, upload window, retention, quotas, and archive bounds
 live only in:
@@ -48,6 +49,59 @@ in a coordinated fail-closed window, verify it, then remove the previous key. Fo
 disable signing first, rotate the capability secret, deploy, verify, and revoke the previous secret.
 Never paste keys, tokens, signed URLs, recovery codes, provider identifiers, or object
 names into evidence.
+
+## Owner-run Production canary
+
+This is a manual, single-use Production transaction. Repository readiness, a passing test, or a
+previous canary does not authorize it. Before running, review the exact working diff and checkout,
+confirm the three Codex automations remain paused, and obtain explicit current authorization for one
+synthetic Production lifecycle. Do not schedule this command or place it in CI.
+
+Run only from the repository root with the repository-managed `tsx` and Playwright dependencies:
+
+```text
+pnpm canary:valentina-memories -- --destination=https://www.celebra-me.com/r/valentina --confirm-production=I_AUTHORIZE_ONE_VALENTINA_MEMORIES_PRODUCTION_CANARY
+```
+
+The command rejects CI markers, a non-interactive terminal, missing or altered confirmation, unknown
+arguments, and every destination except the exact canonical `www` route. Do not substitute global
+`npx`, install tools, follow a redirect destination, or weaken these checks.
+
+One fresh browser context creates one synthetic guest session and uploads one tiny in-memory,
+non-PII PNG. The request guard permits at most one session creation, reservation, direct R2 PUT, and
+logical DELETE. It permits only the application's existing maximum of three idempotent completion
+attempts against the same media item. It waits for Astro hydration, requires an accepted catalog
+record, decodes the private preview, verifies `private, no-store` and `nosniff`, deletes the item,
+and confirms its absence from the authenticated catalog and UI.
+
+If the normal flow has not attempted DELETE, `finally` may attempt exactly one authenticated DELETE
+and confirm catalog absence. It never begins a second lifecycle. If a session or reservation was
+created, do not rerun the command after any failure. Unconfirmed cleanup is `BLOCKED / FAILED` and
+requires owner investigation; never invoke the scheduled cleanup endpoint manually.
+
+The canary writes JSON lines containing only UTC timestamp, stage, sanitized status, and severity.
+It never creates screenshots, traces, HAR files, or media files and never prints identifiers,
+cookies, capabilities, signed URLs, object keys, checksums, request bodies, recovery codes, tokens,
+or secrets. Expected successful output has this shape (timestamps and the R2 success status vary):
+
+```jsonl
+{"timestamp":"<UTC>","stage":"preflight","status":"READY","severity":"INFO"}
+{"timestamp":"<UTC>","stage":"route","status":200,"severity":"INFO"}
+{"timestamp":"<UTC>","stage":"hydration","status":"READY","severity":"INFO"}
+{"timestamp":"<UTC>","stage":"session","status":201,"severity":"INFO"}
+{"timestamp":"<UTC>","stage":"reservation","status":201,"severity":"INFO"}
+{"timestamp":"<UTC>","stage":"upload","status":200,"severity":"INFO"}
+{"timestamp":"<UTC>","stage":"completion","status":200,"severity":"INFO"}
+{"timestamp":"<UTC>","stage":"catalog","status":200,"severity":"INFO"}
+{"timestamp":"<UTC>","stage":"preview","status":200,"severity":"INFO"}
+{"timestamp":"<UTC>","stage":"deletion","status":200,"severity":"INFO"}
+{"timestamp":"<UTC>","stage":"absence","status":200,"severity":"INFO"}
+{"timestamp":"<UTC>","stage":"result","status":"PASS","severity":"PASS"}
+```
+
+This lifecycle proves the application transaction only. Scheduled physical cleanup remains a
+separate read-only Vercel evidence gate and stays `UNVERIFIED` until invocation metadata proves its
+completion.
 
 ## Owner Staging apply order
 

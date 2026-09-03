@@ -4,7 +4,8 @@ Each subdirectory here represents one task's role-chain artifacts (copy → buil
 Semantic handoff fields follow the Handoff Contract in `.agent/plans/README.md`. This directory is
 not a policy SSOT.
 
-See `.agent/tmp/README.md` and `celebra-delegation-patterns` for conventions.
+See `.agent/tmp/README.md`, `.agent/rules/agent-routing.md`, and `.agent/plans/README.md` for
+conventions.
 
 ## Active handoffs (if any)
 

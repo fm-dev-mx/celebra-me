@@ -15,6 +15,19 @@ const REQUIRED_SKILL_FIELDS = [
 	'related_skills',
 	'related_docs',
 ];
+const REQUIRED_WORKFLOW_FIELDS = ['description', 'lifecycle', 'domain', 'owner'];
+const REQUIRED_ROLE_FIELDS = [
+	'name',
+	'role',
+	'version',
+	'status',
+	'purpose',
+	'responsibilities',
+	'required_capabilities',
+	'restricted_capabilities',
+	'skills',
+	'constraints',
+];
 const PERMITTED_SKILL_DOMAINS = new Set([
 	'frontend',
 	'backend',
@@ -65,6 +78,15 @@ const FORBIDDEN_PROVIDER_ENTRY_POINTS = [
 	'.claude/CLAUDE.md',
 	'GEMINI.md',
 	'.github/copilot-instructions.md',
+];
+const PROVIDER_ADAPTER_ROOTS = [
+	'.cursor/',
+	'.claude/',
+	'.gemini/',
+	'.opencode/',
+	'.codex/',
+	'.agents/',
+	'.antigravity/',
 ];
 const PHYSICAL_PATH_PATTERNS = [
 	/\b[A-Za-z]:[/\\](?:Users|code|home)[/\\][^\s`'")]+/gi,
@@ -163,6 +185,20 @@ function listSkillFiles(root) {
 		.sort();
 }
 
+function listWorkflowFiles(root) {
+	return listFiles(path.join(root, '.agent', 'workflows'), (name) => name.endsWith('.md'));
+}
+
+function isSemver(value) {
+	return /^\d+\.\d+\.\d+$/u.test(String(value ?? ''));
+}
+
+function extractPreconditionPaths(value) {
+	return String(value ?? '')
+		.match(/(?:^|\s)(AGENTS\.md|(?:\.agent|docs|scripts|tests|src|workers)\/[^\s,;`)]+)/gu)
+		?.map((match) => match.trim()) ?? [];
+}
+
 function collectIndexMarkdownPaths(content) {
 	const references = new Set();
 	for (const match of content.matchAll(/\[[^\]]+\]\(([^)]+\.md(?:#[^)]*)?)\)/gu)) {
@@ -208,15 +244,63 @@ export function isForbiddenTrackedPath(file) {
 	return basename.endsWith('.log') || basename.endsWith('.tmp');
 }
 
+function validateSkillMetadata(relativeFile, frontmatter, directoryName) {
+	const errors = [];
+	for (const field of REQUIRED_SKILL_FIELDS) {
+		if (!(field in frontmatter) || frontmatter[field] === undefined) {
+			errors.push(`${relativeFile}: missing required frontmatter field "${field}".`);
+		}
+	}
+	if (!String(frontmatter.description ?? '').trim()) {
+		errors.push(`${relativeFile}: description must not be empty.`);
+	}
+	if (!isSemver(frontmatter.version)) {
+		errors.push(`${relativeFile}: version must be semantic major.minor.patch.`);
+	}
+	for (const field of ['when_to_use', 'preconditions']) {
+		if (!Array.isArray(frontmatter[field]) || frontmatter[field].length === 0) {
+			errors.push(`${relativeFile}: ${field} must contain at least one entry.`);
+		}
+	}
+	if (frontmatter.name !== directoryName) {
+		errors.push(`${relativeFile}: name must match directory "${directoryName}".`);
+	}
+	if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(String(frontmatter.name ?? ''))) {
+		errors.push(`${relativeFile}: name must be kebab-case.`);
+	}
+	if (!PERMITTED_SKILL_DOMAINS.has(frontmatter.domain)) {
+		errors.push(`${relativeFile}: domain "${frontmatter.domain ?? ''}" is not permitted.`);
+	}
+	return errors;
+}
+
+function validateSkillReferences(root, relativeFile, frontmatter, relatedSkillReferences) {
+	const errors = [];
+	for (const reference of frontmatter.related_skills ?? []) {
+		relatedSkillReferences.push({ source: relativeFile, reference });
+	}
+	for (const docReference of frontmatter.related_docs ?? []) {
+		if (!existsSync(path.resolve(root, String(docReference)))) {
+			errors.push(`${relativeFile}: related doc "${docReference}" does not resolve on disk.`);
+		}
+	}
+	for (const precondition of frontmatter.preconditions ?? []) {
+		for (const reference of extractPreconditionPaths(precondition)) {
+			if (!existsSync(path.resolve(root, reference))) {
+				errors.push(`${relativeFile}: precondition path "${reference}" does not resolve on disk.`);
+			}
+		}
+	}
+	return errors;
+}
+
 function validateSkills(root) {
 	const errors = [];
 	const skillFiles = listSkillFiles(root);
 	const skillNames = new Set();
 	const relatedSkillReferences = [];
 
-	if (skillFiles.length === 0) {
-		errors.push('No skills found under .agent/skills.');
-	}
+	if (skillFiles.length === 0) errors.push('No skills found under .agent/skills.');
 
 	for (const skillFile of skillFiles) {
 		const relativeFile = normalizePath(path.relative(root, skillFile));
@@ -225,47 +309,36 @@ function validateSkills(root) {
 			errors.push(`${relativeFile}: missing YAML frontmatter.`);
 			continue;
 		}
-
-		for (const field of REQUIRED_SKILL_FIELDS) {
-			if (!(field in frontmatter) || frontmatter[field] === undefined) {
-				errors.push(`${relativeFile}: missing required frontmatter field "${field}".`);
-			}
-		}
-
 		const directoryName = path.basename(path.dirname(skillFile));
-		if (frontmatter.name !== directoryName) {
-			errors.push(`${relativeFile}: name must match directory "${directoryName}".`);
-		}
-		if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(String(frontmatter.name ?? ''))) {
-			errors.push(`${relativeFile}: name must be kebab-case.`);
-		}
-		if (!PERMITTED_SKILL_DOMAINS.has(frontmatter.domain)) {
-			errors.push(`${relativeFile}: domain "${frontmatter.domain ?? ''}" is not permitted.`);
-		}
-
+		errors.push(...validateSkillMetadata(relativeFile, frontmatter, directoryName));
+		errors.push(...validateSkillReferences(root, relativeFile, frontmatter, relatedSkillReferences));
 		skillNames.add(directoryName);
-		for (const reference of frontmatter.related_skills ?? []) {
-			relatedSkillReferences.push({ source: relativeFile, reference });
-		}
-		for (const docReference of frontmatter.related_docs ?? []) {
-			const resolvedDoc = path.resolve(root, String(docReference));
-			if (!existsSync(resolvedDoc)) {
-				errors.push(
-					`${relativeFile}: related doc "${docReference}" does not resolve on disk.`,
-				);
-			}
-		}
 	}
 
 	for (const { source, reference } of relatedSkillReferences) {
 		if (!skillNames.has(reference)) {
-			errors.push(
-				`${source}: related skill "${reference}" does not resolve under .agent/skills.`,
-			);
+			errors.push(`${source}: related skill "${reference}" does not resolve under .agent/skills.`);
 		}
 	}
-
 	return { errors, skillNames };
+}
+
+function validateWorkflows(root) {
+	const errors = [];
+	for (const workflowFile of listWorkflowFiles(root)) {
+		const relativeFile = normalizePath(path.relative(root, workflowFile));
+		const frontmatter = parseFrontmatter(readFileSync(workflowFile, 'utf8'));
+		if (!frontmatter) {
+			errors.push(`${relativeFile}: missing YAML frontmatter.`);
+			continue;
+		}
+		for (const field of REQUIRED_WORKFLOW_FIELDS) {
+			if (!(field in frontmatter) || frontmatter[field] === undefined || !String(frontmatter[field]).trim()) {
+				errors.push(`${relativeFile}: missing required frontmatter field "${field}".`);
+			}
+		}
+	}
+	return errors;
 }
 
 function validateRoles(root, skillNames) {
@@ -285,6 +358,14 @@ function validateRoles(root, skillNames) {
 						.slice(yamlStart + 1)
 						.join('\n'),
 		);
+		for (const field of REQUIRED_ROLE_FIELDS) {
+			if (!(field in role) || role[field] === undefined) {
+				errors.push(`${relativeFile}: missing required role field "${field}".`);
+			}
+		}
+		if (!isSemver(role.version)) {
+			errors.push(`${relativeFile}: version must be semantic major.minor.patch.`);
+		}
 		for (const reference of role.skills ?? []) {
 			if (!skillNames.has(reference)) {
 				errors.push(
@@ -407,6 +488,82 @@ function validateCanonicalOwnership(root) {
 			errors.push(
 				`.agent/ownership.yaml: aspect "${required.aspect}" must be owned by "${required.owner}" (found "${owner}").`,
 			);
+		}
+	}
+	return errors;
+}
+
+function parseProviderAdapters(content) {
+	const lines = content.split(/\r?\n/u);
+	const sectionIndex = lines.findIndex((line) => line.trim() === 'provider_adapters:');
+	if (sectionIndex === -1) return null;
+	const entries = [];
+	let current = null;
+	let collectingOwners = false;
+	for (const line of lines.slice(sectionIndex + 1)) {
+		if (line.trim() && !/^\s/u.test(line)) break;
+		const pathMatch = line.match(/^\s+-\s+path:\s*(.+)$/u);
+		if (pathMatch) {
+			current = { path: unquote(pathMatch[1]), provider: '', purpose: '', sharedOwners: [] };
+			entries.push(current);
+			collectingOwners = false;
+			continue;
+		}
+		if (!current) continue;
+		const fieldMatch = line.match(/^\s+(provider|purpose):\s*(.+)$/u);
+		if (fieldMatch) {
+			current[fieldMatch[1] === 'provider' ? 'provider' : 'purpose'] = unquote(fieldMatch[2]);
+			collectingOwners = false;
+			continue;
+		}
+		if (/^\s+shared_owners:\s*$/u.test(line)) {
+			collectingOwners = true;
+			continue;
+		}
+		const ownerMatch = line.match(/^\s+-\s+(.+)$/u);
+		if (ownerMatch && collectingOwners) current.sharedOwners.push(unquote(ownerMatch[1]));
+	}
+	return entries;
+}
+
+function validateProviderAdapters(root, trackedFiles) {
+	const errors = [];
+	const file = path.join(root, '.agent', 'ownership.yaml');
+	if (!existsSync(file)) return errors;
+	const content = readFileSync(file, 'utf8');
+	const adapters = parseProviderAdapters(content);
+	const trackedProviderFiles = trackedFiles.filter((tracked) =>
+		PROVIDER_ADAPTER_ROOTS.some((prefix) => tracked.startsWith(prefix)),
+	);
+	if (trackedProviderFiles.length > 0 && !adapters) {
+		errors.push('.agent/ownership.yaml: provider_adapters is required for tracked provider adapter files.');
+		return errors;
+	}
+	if (!adapters) return errors;
+
+	const seen = new Set();
+	for (const adapter of adapters) {
+		const adapterPath = normalizePath(adapter.path);
+		if (!adapterPath || seen.has(adapterPath)) {
+			errors.push(`.agent/ownership.yaml: duplicate or empty provider adapter path "${adapterPath}".`);
+		}
+		seen.add(adapterPath);
+		if (!adapter.provider || !adapter.purpose || adapter.sharedOwners.length === 0) {
+			errors.push(`.agent/ownership.yaml: provider adapter "${adapterPath}" is incomplete.`);
+		}
+		if (!trackedFiles.includes(adapterPath)) {
+			errors.push(`.agent/ownership.yaml: provider adapter path "${adapterPath}" is not tracked.`);
+		}
+		for (const owner of adapter.sharedOwners) {
+			if (!existsSync(path.resolve(root, owner))) {
+				errors.push(`.agent/ownership.yaml: adapter owner "${owner}" does not resolve on disk.`);
+			}
+		}
+	}
+	for (const tracked of trackedProviderFiles) {
+		const matches = adapters.filter((adapter) => normalizePath(adapter.path) === tracked);
+		if (matches.length !== 1) {
+			errors.push(`${tracked}: provider adapter must be registered exactly once in ownership.yaml.`);
 		}
 	}
 	return errors;
@@ -648,12 +805,14 @@ export function validateStructure({ root = process.cwd(), trackedFiles } = {}) {
 	return [
 		...skills.errors,
 		...validateRoles(root, skills.skillNames),
+		...validateWorkflows(root),
 		...validateIndex(root),
 		...validateActivePlans(root),
 		...validateArchivedPlans(root),
 		...validateCanonicalCiInvocation(root),
 		...validateOwnershipYaml(root),
 		...validateCanonicalOwnership(root),
+		...validateProviderAdapters(root, tracked),
 		...validateRoutingMatrixYaml(root, skills.skillNames),
 		...detectOrphanedGuidance(root, skills.skillNames),
 		...validateProviderEntryPoints(root, tracked),

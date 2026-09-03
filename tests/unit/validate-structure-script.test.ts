@@ -53,7 +53,24 @@ function createFixture(skillDomain = 'quality') {
 	writeFixtureFile(
 		root,
 		'.agent/agents/builder.yaml',
-		['---', 'name: builder', 'skills:', '  - testing'].join('\n'),
+		[
+			'---',
+			'name: builder',
+			'role: implementation',
+			'version: 1.0.0',
+			'status: active',
+			'purpose: Build the requested change',
+			'responsibilities:',
+			'  - Implement scoped changes',
+			'required_capabilities:',
+			'  - repository-read',
+			'restricted_capabilities:',
+			'  - git-write',
+			'skills:',
+			'  - testing',
+			'constraints:',
+			'  - Stay within scope',
+		].join('\n'),
 	);
 	writeFixtureFile(
 		root,
@@ -221,6 +238,91 @@ describe('validate-structure script', () => {
 			expect(output).toContain('Markdown path "../missing.md" does not resolve');
 			expect(output).toContain('plan status "unknown" is not recognized');
 			expect(output).toContain('forbidden tracked artifact or scratch file');
+		} finally {
+			rmSync(fixtureRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('requires workflow frontmatter and registered provider adapters', () => {
+		const fixtureRoot = createFixture();
+		try {
+			writeFixtureFile(
+				fixtureRoot,
+				'.agent/workflows/example.md',
+				['---', 'description: Example', 'lifecycle: evergreen', 'domain: governance', '---'].join('\n'),
+			);
+			writeFixtureFile(fixtureRoot, '.cursor/hooks.json', '{}\n');
+			const errors = validateFixture(fixtureRoot, ['.cursor/hooks.json']).join('\n');
+			expect(errors).toContain('example.md: missing required frontmatter field "owner"');
+			expect(errors).toContain('provider_adapters is required');
+		} finally {
+			rmSync(fixtureRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects an invalid skill precondition path and role schema', () => {
+		const fixtureRoot = createFixture();
+		try {
+			writeFixtureFile(
+				fixtureRoot,
+				'.agent/skills/testing/SKILL.md',
+				[
+					'---',
+					'name: testing',
+					'description: Test guidance',
+					'domain: quality',
+					'version: 1.0.0',
+					'when_to_use:',
+					'  - Testing changes',
+					'preconditions:',
+					'  - Read docs/missing-contract.md',
+					'related_skills: []',
+					'related_docs: []',
+					'---',
+				].join('\n'),
+			);
+			writeFixtureFile(fixtureRoot, '.agent/agents/builder.yaml', ['---', 'name: builder'].join('\n'));
+			const errors = validateFixture(fixtureRoot).join('\n');
+			expect(errors).toContain('precondition path "docs/missing-contract.md" does not resolve');
+			expect(errors).toContain('missing required role field "purpose"');
+		} finally {
+			rmSync(fixtureRoot, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects duplicate provider adapters and unresolved shared owners', () => {
+		const fixtureRoot = createFixture();
+		try {
+			writeFixtureFile(fixtureRoot, '.cursor/hooks.json', '{}\n');
+			writeFixtureFile(
+				fixtureRoot,
+				'.agent/ownership.yaml',
+				[
+					'- aspect: "Task Contract, Goal protocol & Handoff Contract"',
+					'  owner: ".agent/plans/README.md"',
+					'- aspect: "Plans lifecycle & tracked plan governance"',
+					'  owner: ".agent/plans/README.md"',
+					'- aspect: "Git authorization & worktree safety"',
+					'  owner: ".agent/rules/git-safety.md"',
+					'- aspect: "testing"',
+					'  owner: "AGENTS.md"',
+					'provider_adapters:',
+					'    - path: ".cursor/hooks.json"',
+					'      provider: "cursor"',
+					'      purpose: "hook registration"',
+					'      shared_owners:',
+					'          - "missing-owner.md"',
+					'    - path: ".cursor/hooks.json"',
+					'      provider: "cursor"',
+					'      purpose: "duplicate hook registration"',
+					'      shared_owners:',
+					'          - "AGENTS.md"',
+				].join('\n'),
+			);
+			const output = validateFixture(fixtureRoot, ['.cursor/hooks.json']).join('\n');
+			expect(output).toContain('duplicate or empty provider adapter path');
+			expect(output).toContain('adapter owner "missing-owner.md" does not resolve');
+			expect(output).toContain('provider adapter must be registered exactly once');
 		} finally {
 			rmSync(fixtureRoot, { recursive: true, force: true });
 		}

@@ -10,16 +10,20 @@
  * Never blocks Git success on remote DB availability. Honors CELEBRA_SKIP_MANAGED_STATUS.
  *
  * Usage:
- *   pnpm lane:sync
+ *   pnpm lane:sync                 # read-only plan using local refs
+ *   pnpm lane:sync -- --apply      # fetch and synchronize (requires preflight)
  *   pnpm lane:sync -- --dry-run
  *   pnpm lane:sync -- --skip-status
  *   pnpm lane:sync -- --ff-only
  */
 
 import { spawnSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 export interface LaneSyncOptions {
 	cwd?: string;
+	apply?: boolean;
 	dryRun?: boolean;
 	skipStatus?: boolean;
 	ffOnly?: boolean;
@@ -75,8 +79,10 @@ function defaultRunStatus(cwd: string): { status: number; stdout: string; stderr
 }
 
 function parseLaneSyncArgs(argv: string[]): LaneSyncOptions {
+	const apply = argv.includes('--apply');
 	return {
-		dryRun: argv.includes('--dry-run'),
+		apply,
+		dryRun: !apply || argv.includes('--dry-run'),
 		skipStatus: argv.includes('--skip-status'),
 		ffOnly: argv.includes('--ff-only'),
 	};
@@ -88,16 +94,22 @@ function syncOntoDevelop(input: {
 	ffOnly?: boolean;
 	runGit: GitRunner;
 }): Pick<LaneSyncResult, 'gitOk' | 'gitMode' | 'statusSkippedReason'> & { lines: string[] } {
-	const { cwd, dryRun, ffOnly, runGit } = input;
+	const { cwd, dryRun = true, ffOnly, runGit } = input;
 	const lines: string[] = [];
 
-	const fetch = runGit(['fetch', 'origin', 'develop'], cwd);
-	if (fetch.status !== 0 && !dryRun) {
-		lines.push(fetch.stderr.trim() || fetch.stdout.trim() || 'git fetch origin develop failed');
-		return { gitOk: false, gitMode: 'skipped', statusSkippedReason: 'git-fetch-failed', lines };
+	if (!dryRun) {
+		const fetch = runGit(['fetch', 'origin', 'develop'], cwd);
+		if (fetch.status !== 0) {
+			lines.push(fetch.stderr.trim() || fetch.stdout.trim() || 'git fetch origin develop failed');
+			return { gitOk: false, gitMode: 'skipped', statusSkippedReason: 'git-fetch-failed', lines };
+		}
 	}
 
 	const behind = runGit(['rev-list', '--count', 'HEAD..origin/develop'], cwd);
+	if (behind.status !== 0) {
+		lines.push('UNVERIFIED: origin/develop is unavailable locally; no synchronization performed');
+		return { gitOk: false, gitMode: 'skipped', statusSkippedReason: 'develop-ref-unavailable', lines };
+	}
 	const behindCount = Number((behind.stdout || '0').trim() || '0');
 
 	if (dryRun) {
@@ -156,15 +168,111 @@ function appendManagedStatus(
 	return { statusRan: true };
 }
 
+function checkApplyPreconditions(
+	cwd: string,
+	runGit: GitRunner,
+): { ok: true } | { ok: false; reason: string; message: string } {
+	const status = runGit(['status', '--short'], cwd);
+	if (status.status !== 0) {
+		return {
+			ok: false,
+			reason: 'working-tree-unavailable',
+			message: 'UNVERIFIED: working-tree state is unavailable; refusing synchronization',
+		};
+	}
+	if (status.stdout.trim()) {
+		return {
+			ok: false,
+			reason: 'working-tree-dirty',
+			message: 'BLOCKED: lane must be clean before --apply synchronization',
+		};
+	}
+
+	const branch = runGit(['rev-parse', '--abbrev-ref', 'HEAD'], cwd);
+	if (branch.status !== 0 || !branch.stdout.trim()) {
+		return {
+			ok: false,
+			reason: 'branch-unavailable',
+			message: 'UNVERIFIED: branch state is unavailable; refusing synchronization',
+		};
+	}
+	const branchName = branch.stdout.trim();
+	if (branchName === 'main' || branchName === 'develop' || branchName.startsWith('dev-')) {
+		return {
+			ok: false,
+			reason: 'protected-branch',
+			message: `BLOCKED: --apply is not allowed on protected branch ${branchName}`,
+		};
+	}
+
+	const baselinePath = resolve(cwd, '.agent', 'tmp', 'git-safety-baseline.json');
+	if (!existsSync(baselinePath)) {
+		return {
+			ok: false,
+			reason: 'missing-git-safety-baseline',
+			message: 'BLOCKED: run agent:git-safety:start before --apply synchronization',
+		};
+	}
+	try {
+		const baseline = JSON.parse(readFileSync(baselinePath, 'utf8')) as {
+			branch?: string | null;
+			head?: string | null;
+		};
+		const head = runGit(['rev-parse', 'HEAD'], cwd);
+		const expectedBaselineBranch = branchName === 'HEAD' ? null : branchName;
+		if (
+			(head.status !== 0 || !head.stdout.trim()) ||
+			baseline.branch !== expectedBaselineBranch ||
+			baseline.head !== head.stdout.trim()
+		) {
+			return {
+				ok: false,
+				reason: 'git-safety-baseline-mismatch',
+				message: 'BLOCKED: Git Safety baseline does not match the current branch or HEAD',
+			};
+		}
+	} catch {
+		return {
+			ok: false,
+			reason: 'invalid-git-safety-baseline',
+			message: 'BLOCKED: Git Safety baseline is unreadable; refusing synchronization',
+		};
+	}
+
+	return { ok: true };
+}
+
 /**
- * Fetch origin/develop and fast-forward or rebase the current branch onto it,
- * then print compact managed status (unless opted out).
+ * Describe synchronization using local refs by default. With --apply, fetch origin/develop and
+ * fast-forward or rebase the current branch onto it, then print compact managed status.
  */
 export function runLaneSync(options: LaneSyncOptions = {}): LaneSyncResult {
 	const cwd = options.cwd ?? process.cwd();
+	if (options.dryRun === false && options.apply !== true) {
+		return {
+			gitOk: false,
+			gitMode: 'skipped',
+			statusRan: false,
+			statusSkippedReason: 'apply-required',
+			stdout: 'BLOCKED: synchronization mutation requires explicit --apply authorization',
+		};
+	}
+	const dryRun = options.apply !== true || options.dryRun === true;
+	if (!dryRun) {
+		const preflight = checkApplyPreconditions(cwd, options.runGit ?? defaultRunGit);
+		if (!preflight.ok) {
+			return {
+				gitOk: false,
+				gitMode: 'skipped',
+				statusRan: false,
+				statusSkippedReason: preflight.reason,
+				stdout: preflight.message,
+			};
+		}
+	}
 	const sync = syncOntoDevelop({
 		cwd,
-		dryRun: options.dryRun,
+		dryRun,
 		ffOnly: options.ffOnly,
 		runGit: options.runGit ?? defaultRunGit,
 	});

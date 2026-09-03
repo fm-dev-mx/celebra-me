@@ -40,7 +40,6 @@ restricted_capabilities:
 skills:
     - testing
     - accessibility
-    - agent-communication
     - frontend-design
 constraints:
     - READ-ONLY file access by default

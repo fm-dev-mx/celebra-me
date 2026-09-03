@@ -1,6 +1,6 @@
 # Gatekeeper Rules — Celebra-me
 
-This document defines the provider-neutral **review/remediation and validation contract**.
+This document defines the provider-neutral **review, remediation, and validation contract**.
 
 It specifies:
 
@@ -19,6 +19,10 @@ Hard Guards in §2 are **non-negotiable**.
 
 ## 1) Scope of Operation
 
+- The active Task Contract `operation_mode` controls whether this document may edit files:
+  `audit`/`validate` are report-only, `implement` permits only the authorized scope, and `remediate`
+  permits only the confirmed finding set. This rule never grants Git, database, deployment, or provider
+  authority.
 - The review/remediation process primarily operates on the current task scope and should inspect the
   actual diff that is being reviewed.
 - If staged changes exist, prefer them as the clearest review boundary.
@@ -240,7 +244,7 @@ When handling security scanner findings (CodeQL, SAST, dependency alerts):
 
 ### 3.1 Auto-Fixes
 
-The agent may automatically fix:
+In `implement` or `remediate` mode, the agent may automatically fix:
 
 - broken or unused imports,
 - obvious typing issues,
@@ -254,20 +258,22 @@ The agent may automatically fix:
 
 ### 3.2 Refactors (Bounded)
 
-The agent may perform **small to medium refactors** provided that they:
+In `implement` mode, the agent may perform **small to medium refactors** provided that they:
 
 - stay within the same feature or module,
 - improve clarity or correctness,
 - do not change public APIs,
 - do not introduce new abstractions.
 
-Cross-cutting or architectural refactors are not allowed.
+Cross-cutting or architectural refactors require an explicit `implement` Task Contract with
+bounded file boundaries and acceptance criteria; otherwise they are not allowed.
 
 ---
 
-## 4) Large Change Mode (Report-Only)
+## 4) Large Change Mode (Review/Remediation)
 
-The agent must switch to **Large Change Mode** when any of the following apply:
+The agent reviewing an existing diff must switch to **Large Change Mode** when any of the following
+apply:
 
 - **≥ 25 files** are in scope, or
 - **≥ 800 total lines** are changed (additions + deletions), or
@@ -275,6 +281,9 @@ The agent must switch to **Large Change Mode** when any of the following apply:
   `tsconfig`, `astro.config`, `package.json`).
 
 ### Behavior in Large Change Mode
+
+Large Change Mode does not override an explicitly authorized `implement` Task Contract. It limits
+review/remediation of a pre-existing broad diff to the actions below:
 
 - Fix only:
   - build or deploy breakers,
@@ -511,7 +520,7 @@ Screenshot infrastructure guardrails:
 If no issues are found:
 
 - Reply with: `✅ **LGTM** — <one short reason>`
-- Output **one** Conventional Commit message (English, present tense).
+- Do not invent a commit message unless the task explicitly requests commit preparation.
 
 ---
 
@@ -521,7 +530,7 @@ If fixes were applied:
 
 - List corrected files.
 - For each file: violation + fix (brief).
-- End with **one** Conventional Commit message:
+- Include a Conventional Commit message only when the task explicitly requests commit preparation:
 
 ```bash
 type(scope): summary

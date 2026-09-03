@@ -48,7 +48,9 @@ interface ImportMetaEnv {
 	/** Optional override for the durable canonical-status cache file. */
 	readonly CELEBRA_STATUS_CACHE_PATH: string;
 	readonly VERCEL: string;
+	readonly VERCEL_DEPLOYMENT_ID: string;
 	readonly VERCEL_ENV: string;
+	readonly VERCEL_GIT_COMMIT_SHA: string;
 	readonly VERCEL_GIT_COMMIT_REF: string;
 	readonly VERCEL_REGION: string;
 	readonly BASE_URL: string;

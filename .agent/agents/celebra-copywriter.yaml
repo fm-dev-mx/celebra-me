@@ -33,7 +33,6 @@ restricted_capabilities:
     - production-mutation
 skills:
     - copywriting-es
-    - agent-communication
 constraints:
     - All visible copy must be in Spanish
     - Use formal "usted" register for guest-facing text

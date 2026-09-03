@@ -150,7 +150,7 @@ const speedInsightsConfig = resolveSpeedInsightsConfig(Astro.url, {
 		</main>
 
 		<ConsentBanner />
-		{isVercelProduction && <Analytics />}
+		{loadCommercialTracking && <Analytics />}
 		{speedInsightsConfig.enabled && (
 			<SpeedInsights sampleRate={speedInsightsConfig.sampleRate} />
 		)}

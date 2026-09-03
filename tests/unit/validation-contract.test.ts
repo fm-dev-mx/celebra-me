@@ -26,7 +26,7 @@ describe('canonical validation contract', () => {
 		expect(ci).not.toContain('agent:git-safety');
 		expect(scripts['agent:git-safety:start']).toBe('node scripts/agent/git-safety.mjs start');
 		expect(scripts['agent:git-safety:finish']).toBe('node scripts/agent/git-safety.mjs finish');
-		expect(scripts['agent:git-safety:check']).toBeUndefined();
+		expect(scripts['agent:git-safety:check']).toBe('node scripts/agent/git-safety.mjs check');
 		expect(scripts['agent:git-safety:end']).toBeUndefined();
 		expect(scripts['validate:markdown-tables']).toBe(
 			'node scripts/validate-markdown-tables.mjs',

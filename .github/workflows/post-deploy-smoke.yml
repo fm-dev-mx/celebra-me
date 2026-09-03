@@ -1,0 +1,113 @@
+name: Post-deploy Smoke
+
+permissions:
+    contents: read
+    statuses: write
+
+on:
+    repository_dispatch:
+        types:
+            - 'vercel.deployment.ready'
+            - 'vercel.deployment.promoted'
+
+concurrency:
+    group: post-deploy-smoke-${{ github.event.client_payload.environment }}-${{ github.event.client_payload.git.ref }}
+    cancel-in-progress: true
+
+jobs:
+    smoke:
+        name: Vercel post-deploy smoke
+        if: >-
+            (github.event.action == 'vercel.deployment.ready' &&
+             github.event.client_payload.environment == 'preview') ||
+            (github.event.action == 'vercel.deployment.promoted' &&
+             github.event.client_payload.environment == 'production')
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            - name: Checkout exact deployment SHA
+              uses: actions/checkout@v7
+              with:
+                  ref: ${{ github.event.client_payload.git.sha }}
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
+                  cache: 'pnpm'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Validate dispatch scope and correlation
+              env:
+                  VERCEL_DISPATCH_EVENT: ${{ github.event.action }}
+                  VERCEL_DISPATCH_ENVIRONMENT: ${{ github.event.client_payload.environment }}
+                  VERCEL_DISPATCH_PROJECT_ID: ${{ github.event.client_payload.project.id }}
+                  VERCEL_DISPATCH_EXPECTED_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+                  VERCEL_DISPATCH_DEPLOYMENT_ID: ${{ github.event.client_payload.id }}
+                  VERCEL_DISPATCH_URL: ${{ github.event.client_payload.url }}
+                  VERCEL_DISPATCH_COMMIT_SHA: ${{ github.event.client_payload.git.sha }}
+                  VERCEL_DISPATCH_GIT_REF: ${{ github.event.client_payload.git.ref }}
+              run: pnpm ops:post-deploy -- validate
+
+            - name: Publish Vercel deployment check
+              uses: vercel/repository-dispatch/actions/status@v1
+              with:
+                  name: Vercel - celebra-me ${{ env.POST_DEPLOY_ENVIRONMENT }} smoke
+
+            - name: Record Preview smoke start
+              if: env.POST_DEPLOY_ENVIRONMENT == 'preview'
+              env:
+                  POST_DEPLOY_PREVIEW_PHASE: started
+                  VERCEL_DISPATCH_EVENT: ${{ github.event.action }}
+                  VERCEL_DISPATCH_PROJECT_ID: ${{ github.event.client_payload.project.id }}
+                  VERCEL_DISPATCH_EXPECTED_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+                  VERCEL_DISPATCH_GIT_REF: ${{ github.event.client_payload.git.ref }}
+              run: pnpm ops:post-deploy -- preview-evidence
+
+            - name: Install Preview browser
+              if: env.POST_DEPLOY_ENVIRONMENT == 'preview'
+              run: pnpm exec playwright install --with-deps chromium
+
+            - name: Run public Preview smoke
+              id: preview-smoke
+              if: env.POST_DEPLOY_ENVIRONMENT == 'preview'
+              continue-on-error: true
+              env:
+                  PLAYWRIGHT_BASE_URL: ${{ env.POST_DEPLOY_BASE_URL }}
+                  PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST: ${{ env.POST_DEPLOY_APPROVED_HOST }}
+                  PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING: 'false'
+                  PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION: 'false'
+                  PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS: 'false'
+                  PLAYWRIGHT_PREVIEW_SUPABASE_URL: ${{ secrets.PLAYWRIGHT_PREVIEW_SUPABASE_URL }}
+                  VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+              run: pnpm test:e2e:preview:public
+
+            - name: Record Preview smoke completion
+              if: always() && env.POST_DEPLOY_ENVIRONMENT == 'preview'
+              env:
+                  POST_DEPLOY_PREVIEW_PHASE: completed
+                  POST_DEPLOY_PREVIEW_OUTCOME: ${{ steps.preview-smoke.outcome }}
+                  VERCEL_DISPATCH_EVENT: ${{ github.event.action }}
+                  VERCEL_DISPATCH_PROJECT_ID: ${{ github.event.client_payload.project.id }}
+                  VERCEL_DISPATCH_EXPECTED_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+                  VERCEL_DISPATCH_GIT_REF: ${{ github.event.client_payload.git.ref }}
+              run: pnpm ops:post-deploy -- preview-evidence
+
+            - name: Enforce Preview smoke result
+              if: env.POST_DEPLOY_ENVIRONMENT == 'preview' && steps.preview-smoke.outcome != 'success'
+              run: exit 1
+
+            - name: Run Production HTTP smoke
+              if: env.POST_DEPLOY_ENVIRONMENT == 'production'
+              env:
+                  VERCEL_DISPATCH_EVENT: ${{ github.event.action }}
+                  VERCEL_DISPATCH_PROJECT_ID: ${{ github.event.client_payload.project.id }}
+                  VERCEL_DISPATCH_EXPECTED_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+                  VERCEL_DISPATCH_GIT_REF: ${{ github.event.client_payload.git.ref }}
+              run: pnpm ops:post-deploy -- production

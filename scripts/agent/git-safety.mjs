@@ -728,9 +728,57 @@ export function cmdFinish(options = {}) {
 	return { ok: true, paths };
 }
 
+/**
+ * Read-only status check for an active mutable-session baseline.
+ * @param {{ repoRoot?: string }} [options]
+ */
+export function cmdCheck(options = {}) {
+	const paths = resolvePaths(options.repoRoot);
+	console.log('agent:git-safety:check');
+	if (!existsSync(paths.baselineFile)) {
+		console.error('NO_ACTIVE_SESSION');
+		console.error('No mutable-session baseline exists.');
+		process.exitCode = 1;
+		return { ok: false, reason: 'no-baseline' };
+	}
+
+	let baseline;
+	try {
+		baseline = readBaseline(paths.baselineFile);
+	} catch (error) {
+		console.error('FAILED');
+		console.error(error instanceof Error ? error.message : String(error));
+		process.exitCode = 1;
+		return { ok: false, reason: 'invalid-baseline' };
+	}
+
+	const current = captureProtectedState(paths.repoRoot);
+	const verdict = evaluateProtectedDrift(baseline, current, {
+		operation: null,
+		paths: [],
+		branch: null,
+	});
+	console.log(`  baseline createdAt: ${baseline.createdAt || '(unknown)'}`);
+	console.log(`  current HEAD:      ${current.head ?? '(unborn)'}`);
+	console.log(`  current branch:    ${formatBranch(current)}`);
+	if (verdict.notes.length > 0) {
+		for (const note of verdict.notes) console.log(`  note: ${note}`);
+	}
+	if (verdict.failures.length > 0) {
+		console.error('DRIFT_DETECTED');
+		for (const failure of verdict.failures) console.error(`  ${failure}`);
+		process.exitCode = 1;
+		return { ok: false, reason: 'drift', failures: verdict.failures };
+	}
+	console.log('PASSED');
+	console.log('protected state unchanged; baseline preserved');
+	return { ok: true, paths };
+}
+
 function printUsage() {
-	console.error(`Usage:
+console.error(`Usage:
   node scripts/agent/git-safety.mjs start
+  node scripts/agent/git-safety.mjs check
   node scripts/agent/git-safety.mjs finish [--authorized-operation=<op>] [--paths=a,b] [--branch=name]
 
 Supported authorized operations (ephemeral, non-persistent, not proof of consent):
@@ -742,7 +790,7 @@ Supported authorized operations (ephemeral, non-persistent, not proof of consent
 
 function main() {
 	const cmd = process.argv[2];
-	if (!cmd || !['start', 'finish'].includes(cmd)) {
+	if (!cmd || !['start', 'check', 'finish'].includes(cmd)) {
 		printUsage();
 		process.exit(1);
 	}
@@ -753,6 +801,15 @@ function main() {
 			process.exit(1);
 		}
 		cmdStart();
+		return;
+	}
+
+	if (cmd === 'check') {
+		if (process.argv.length > 3) {
+			console.error('check does not accept additional arguments');
+			process.exit(1);
+		}
+		cmdCheck();
 		return;
 	}
 

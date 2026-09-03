@@ -19,7 +19,6 @@ preconditions:
 related_skills:
   - staged-code-review-apply
   - commit-planner
-  - celebra-delegation-patterns
 related_docs:
   - docs/core/git-governance.md
   - docs/core/project-conventions.md

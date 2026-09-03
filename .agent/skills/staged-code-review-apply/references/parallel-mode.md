@@ -1,8 +1,8 @@
 # Staged Code Review Apply — Parallel Mode
 
 Load only when apply volume exceeds the sequential thresholds in `SKILL.md`. Prefer sequential
-otherwise. Follow [`celebra-delegation-patterns`](../../celebra-delegation-patterns/SKILL.md) when
-the runtime supports subagents; otherwise apply sequentially. Do not assume provider-specific
+otherwise. Follow `.agent/rules/agent-routing.md` when the runtime supports subagents; otherwise
+apply sequentially. Do not assume provider-specific
 delegation APIs.
 
 ## Thresholds

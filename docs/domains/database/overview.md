@@ -8,7 +8,7 @@
 [`docs/database-workflow.md`](../../database-workflow.md). Content promote/mirror vs RSVP isolation
 lives in
 [`docs/core/content-parity-rsvp-isolation.md`](../../core/content-parity-rsvp-isolation.md). See the
-Ownership Matrix in [`.agent/index.md`](../../../.agent/index.md).
+Ownership Matrix in [`.agent/ownership.yaml`](../../../.agent/ownership.yaml).
 
 This document describes the current Celebra-me Supabase/Postgres schema, entity relationships, and
 major data flows.

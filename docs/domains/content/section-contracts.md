@@ -4,8 +4,8 @@ This document specifies the purpose, required/optional inputs, data models, rend
 asset contracts, accessibility, and validation rules for all supported sections in Celebra-me
 digital invitations.
 
-The canonical ownership matrix for structural variants, presentation options, skins, and profile
-exceptions is maintained in
+The complete post-migration ownership matrix in [`.agent/ownership.yaml`](../../.agent/ownership.yaml) for structural variants, presentation options, skins,
+and profile exceptions is maintained in
 [`docs/domains/theme/variant-system.md`](../theme/variant-system.md).
 
 ---
