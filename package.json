@@ -135,8 +135,7 @@
         "db:prod:export-storage": "tsx scripts/db/db-guard.ts check --target production --operation export-storage --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-storage.ts"
     },
     "dependencies": {
-        "@astrojs/vercel": "11.0.7",
-        "@noble/hashes": "1.8.0",
+        "@astrojs/vercel": "11.0.8",
         "@fontsource-variable/bodoni-moda": "^5.3.0",
         "@fontsource-variable/cinzel": "^5.3.0",
         "@fontsource-variable/cormorant-garamond": "^5.3.0",
@@ -149,6 +148,7 @@
         "@fontsource/pinyon-script": "^5.3.0",
         "@fontsource/special-elite": "^5.3.0",
         "@fontsource/the-nautigal": "^5.3.0",
+        "@noble/hashes": "1.8.0",
         "@supabase/supabase-js": "^2.112.3",
         "@vercel/analytics": "^2.0.1",
         "@vercel/speed-insights": "^2.0.0",
@@ -156,7 +156,7 @@
         "cloudinary": "^2.10.1",
         "date-fns-tz": "3.2.0",
         "framer-motion": "^12.43.0",
-        "nodemailer": "^9.0.5",
+        "nodemailer": "^9.0.6",
         "react": "^19.2.8",
         "react-dom": "^19.2.8",
         "sanitize-html": "^2.17.7",
@@ -173,20 +173,20 @@
         "@inquirer/prompts": "^8.6.0",
         "@playwright/test": "1.62.1",
         "@testing-library/jest-dom": "^7.0.1",
-        "@testing-library/react": "^16.3.2",
+        "@testing-library/react": "^16.3.3",
         "@testing-library/user-event": "^14.6.6",
         "@types/jest": "^30.0.0",
         "@types/node": "^24.13.3",
         "@types/nodemailer": "8.0.1",
         "@types/qrcode": "^1.5.6",
         "@types/react": "19.2.18",
-        "@types/react-dom": "^19.2.4",
+        "@types/react-dom": "^19.2.5",
         "@types/sanitize-html": "^2.16.1",
         "@typescript/native": "npm:typescript@7.0.2",
-        "astro": "7.2.4",
+        "astro": "7.2.9",
         "astro-eslint-parser": "^3.1.0",
         "astro-robots-txt": "^1.0.0",
-        "eslint": "^10.9.0",
+        "eslint": "^10.9.1",
         "eslint-import-resolver-typescript": "^4.4.5",
         "eslint-plugin-astro": "^3.1.0",
         "eslint-plugin-boundaries": "^7.2.0",
@@ -212,14 +212,25 @@
         "typescript-eslint": "^8.67.0"
     },
     "lint-staged": {
-        "*.{ts,tsx,js,jsx,mjs,cjs}": ["eslint --fix --cache", "prettier --write"],
-        "*.astro": ["eslint --fix --cache", "prettier --write"],
-        "*.{scss,css}": ["stylelint --fix --cache", "prettier --write"],
+        "*.{ts,tsx,js,jsx,mjs,cjs}": [
+            "eslint --fix --cache",
+            "prettier --write"
+        ],
+        "*.astro": [
+            "eslint --fix --cache",
+            "prettier --write"
+        ],
+        "*.{scss,css}": [
+            "stylelint --fix --cache",
+            "prettier --write"
+        ],
         "*.md": [
             "node scripts/validate-markdown-tables.mjs --fix --files",
             "prettier --write",
             "node scripts/validate-markdown-tables.mjs --files"
         ],
-        "*.{json,yml,yaml}": ["prettier --write"]
+        "*.{json,yml,yaml}": [
+            "prettier --write"
+        ]
     }
 }
