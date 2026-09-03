@@ -174,7 +174,7 @@ describe('buildInvitationRenderPlan', () => {
 		});
 	});
 
-	it('publishes the five approved Celestial editorial intersection treatments', () => {
+	it('publishes the five approved Celestial editorial intersection treatments in sequential order', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-celestial-blue',
 			data: loadFixture('src/content/event-demos/xv/demo-xv-celestial-blue.json'),
@@ -184,34 +184,32 @@ describe('buildInvitationRenderPlan', () => {
 		const nonNeutral = plan.filter((item) => item.intersection.family !== 'neutral');
 
 		expect(nonNeutral).toHaveLength(5);
-		expect(nonNeutral).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					type: 'interlude',
-					afterSection: 'family',
-					intersection: { family: 'overlap', source: 'family' },
-				}),
-				expect.objectContaining({
-					type: 'section',
-					section: 'gallery',
-					intersection: { family: 'atmospheric-blend', source: 'interlude-after-family' },
-				}),
-				expect.objectContaining({
-					type: 'interlude',
-					afterSection: 'location',
-					intersection: { family: 'arch', source: 'location' },
-				}),
-				expect.objectContaining({
-					type: 'interlude',
-					afterSection: 'itinerary',
-					intersection: { family: 'overlap', source: 'itinerary' },
-				}),
-				expect.objectContaining({
-					type: 'interlude',
-					afterSection: 'rsvp',
-					intersection: { family: 'atmospheric-blend', source: 'rsvp' },
-				}),
-			]),
-		);
+		expect(nonNeutral).toEqual([
+			expect.objectContaining({
+				type: 'interlude',
+				afterSection: 'family',
+				intersection: { family: 'overlap', source: 'family' },
+			}),
+			expect.objectContaining({
+				type: 'section',
+				section: 'gallery',
+				intersection: { family: 'atmospheric-blend', source: 'interlude-after-family' },
+			}),
+			expect.objectContaining({
+				type: 'interlude',
+				afterSection: 'location',
+				intersection: { family: 'arch', source: 'location' },
+			}),
+			expect.objectContaining({
+				type: 'interlude',
+				afterSection: 'itinerary',
+				intersection: { family: 'overlap', source: 'itinerary' },
+			}),
+			expect.objectContaining({
+				type: 'interlude',
+				afterSection: 'rsvp',
+				intersection: { family: 'atmospheric-blend', source: 'rsvp' },
+			}),
+		]);
 	});
 });

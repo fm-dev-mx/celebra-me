@@ -124,6 +124,30 @@ test.describe('Invitation visual computed-style contracts (seed)', () => {
 		).toBe('50%');
 	});
 
+	test('celestial-blue thank-you & section order: editorial frame + early gallery', async ({
+		page,
+	}) => {
+		await page.goto('/xv/demo-xv-celestial-blue?skipEnvelope=true', {
+			waitUntil: 'domcontentloaded',
+		});
+
+		const frame = page.locator('.thank-you-section .photo-frame');
+		const frameRadius = await frame.evaluate((el) => getComputedStyle(el).borderRadius);
+		expect(frameRadius).not.toBe('50%');
+
+		const imageShell = page.locator('.thank-you-section .thank-you-editorial__image-shell');
+		await expect(imageShell).toBeVisible();
+
+		const sections = await page.$$eval('.invitation-section-wrapper', (els) =>
+			els.map((el) => el.getAttribute('data-section-kind')),
+		);
+		const galleryIndex = sections.indexOf('gallery');
+		const countdownIndex = sections.indexOf('countdown');
+		expect(galleryIndex).toBeGreaterThan(-1);
+		expect(countdownIndex).toBeGreaterThan(-1);
+		expect(galleryIndex).toBeLessThan(countdownIndex);
+	});
+
 	test('romina hero: split-cover Parisienne ivory title (not gradient gold display)', async ({
 		page,
 	}) => {
@@ -135,7 +159,9 @@ test.describe('Invitation visual computed-style contracts (seed)', () => {
 		// Production mobile inset (editorial 1rem); do not zero-pad split-cover.
 		expect(hero.padding).toBe('16px');
 		expect(
-			await page.locator('.invitation-hero').evaluate((el) => getComputedStyle(el).justifyContent),
+			await page
+				.locator('.invitation-hero')
+				.evaluate((el) => getComputedStyle(el).justifyContent),
 		).toBe('space-between');
 
 		const title = page.locator('.invitation-hero__title').first();
