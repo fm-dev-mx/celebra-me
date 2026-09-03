@@ -11,9 +11,9 @@ import { buildSyntheticVariantEvent } from '../fixtures/structural-variants/synt
 import {
 	CROSS_PRESET_REPRESENTATIVE_VARIANTS,
 	VISUAL_VIEWPORTS,
+	computeVisualMatrixHash,
 } from '../../scripts/screenshot/visual-coverage-contract';
 import { hashVisualValue, VISUAL_PARITY_RUNTIME } from './harness/visual-parity-metadata';
-import { computeVisualMatrixHash } from '../../scripts/screenshot/visual-coverage-contract';
 
 const VIEWPORTS = VISUAL_VIEWPORTS;
 
@@ -23,6 +23,11 @@ const EXPECTED_CAPTURE_COUNT =
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const VISUAL_PARITY_MODE =
 	process.env.VISUAL_PARITY_MODE ?? (process.env.CI ? 'compare' : 'diagnostic');
+const ACCEPTED_BASELINES_MANIFEST = path.resolve(
+	process.cwd(),
+	'tests/e2e/visual-baselines/manifest.json',
+);
+const hasAcceptedBaselines = fs.existsSync(ACCEPTED_BASELINES_MANIFEST);
 
 function getSectionLocator(page: Page, section: CanonicalVariantSection) {
 	if (section === 'hero') {
@@ -99,7 +104,7 @@ test.describe('Registry-Driven Visual Portability Suite', () => {
 		}
 	}
 
-	test.afterAll(async () => {
+	test.afterAll(() => {
 		if (capturedSnapshots.length === 0) return;
 
 		const outputDir = path.resolve(
@@ -131,7 +136,8 @@ test.describe('Registry-Driven Visual Portability Suite', () => {
 		const manifest = {
 			generatedAt: new Date().toISOString(),
 			runtimeFingerprint: VISUAL_PARITY_RUNTIME,
-			status: VISUAL_PARITY_MODE === 'compare' ? 'COMPARED' : 'CANDIDATE',
+			status:
+				VISUAL_PARITY_MODE === 'compare' && hasAcceptedBaselines ? 'COMPARED' : 'CANDIDATE',
 			mode: VISUAL_PARITY_MODE,
 			totalCaptures: capturedSnapshots.length,
 			matrixHash: computeVisualMatrixHash(
@@ -483,7 +489,10 @@ async function runVariantVisualTest(
 	// 8. Capture diagnostic viewport image for contact sheet / manifest
 	const snapshotName = `${preset}-${vp.name}-${section}-${variant}.png`;
 	const viewportSnapshotBuffer = await page.screenshot({ animations: 'disabled' });
-	if (VISUAL_PARITY_MODE === 'candidate' || VISUAL_PARITY_MODE === 'compare') {
+	if (
+		VISUAL_PARITY_MODE === 'candidate' ||
+		(VISUAL_PARITY_MODE === 'compare' && hasAcceptedBaselines)
+	) {
 		expect(viewportSnapshotBuffer).toMatchSnapshot(snapshotName, {
 			maxDiffPixelRatio: 0.001,
 		});
@@ -517,7 +526,8 @@ async function runVariantVisualTest(
 		sha256: hash,
 		contentHash,
 		assetHash,
-		comparisonResult: VISUAL_PARITY_MODE === 'compare' ? 'PASS' : 'CANDIDATE',
+		comparisonResult:
+			VISUAL_PARITY_MODE === 'compare' && hasAcceptedBaselines ? 'PASS' : 'CANDIDATE',
 	});
 }
 
