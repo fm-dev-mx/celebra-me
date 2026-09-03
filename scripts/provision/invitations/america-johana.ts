@@ -383,7 +383,7 @@ export const americaInvitation = defineCanonicalInvitation({
 	},
 	content,
 	managedIdentityId: '365fa4be-2989-4574-ad37-dd5bcdc12cfe',
-	managedIdentityProvenance: 'owner-approved',
+	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'america_johana',
 	assetDir: 'src/assets/images/events/xv-america-johana',
 	assetFiles: {
@@ -409,4 +409,5 @@ export const americaInvitation = defineCanonicalInvitation({
 	},
 
 	deliveryScope: 'content-and-assets',
+	lifecycle: 'published',
 });

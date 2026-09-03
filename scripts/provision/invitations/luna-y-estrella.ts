@@ -64,8 +64,6 @@ const content: CanonicalEventContentInput = {
 		},
 		parentsOrder: 'father-first',
 		featuredImage: 'family',
-		sectionMessage:
-			'Con inmensa alegría compartimos este día de fe. Gracias por acompañar a Luna y Estrella con su cariño y sus bendiciones.',
 		godparentGroups: [
 			{
 				label: 'Luna',
@@ -191,7 +189,7 @@ export const lunaInvitation = defineCanonicalInvitation({
 	},
 	content,
 	managedIdentityId: '7870cfca-bb65-4bbc-a178-e2c508a33662',
-	managedIdentityProvenance: 'owner-approved',
+	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'luna_y_estrella',
 	assetDir: 'src/assets/images/events/luna-y-estrella-primera-comunion',
 	assetFiles: {
@@ -200,5 +198,6 @@ export const lunaInvitation = defineCanonicalInvitation({
 		family: 'family.webp',
 		thankYouPortrait: 'thank-you.webp',
 	},
-	deliveryScope: 'content-only',
+	deliveryScope: 'content-and-assets',
+	lifecycle: 'published',
 });

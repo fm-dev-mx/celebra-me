@@ -18,7 +18,7 @@ const content: CanonicalEventContentInput = {
 	},
 	hero: {
 		variant: 'standard',
-		date: '2026-02-21T20:00:00.000Z',
+		date: '2026-02-22T03:00:00.000Z',
 		name: 'Gerardo Mendoza',
 		label: '60 Años',
 		nickname: 'Jefe Botas',
@@ -236,6 +236,11 @@ const content: CanonicalEventContentInput = {
 			label: 'Confirmar',
 		},
 	],
+	eventTiming: {
+		localDateTime: '2026-02-21T20:00',
+		timeZone: 'America/Mazatlan',
+		startsAtUtc: '2026-02-22T03:00:00.000Z',
+	},
 	description:
 		'Una noche para celebrar el legado, la familia y los 60 años de Gerardo Mendoza en Los Mochis.',
 };
@@ -248,13 +253,13 @@ export const gerardoInvitation = defineCanonicalInvitation({
 	themeId: 'luxury-hacienda',
 	visualProfileId: 'gerardo-sesenta',
 	eventTiming: {
-		localDateTime: '',
-		timeZone: '',
-		startsAtUtc: '',
+		localDateTime: '2026-02-21T20:00',
+		timeZone: 'America/Mazatlan',
+		startsAtUtc: '2026-02-22T03:00:00.000Z',
 	},
 	content,
 	managedIdentityId: 'b081843b-b75a-423d-ae78-23a3ca9fe777',
-	managedIdentityProvenance: 'owner-approved',
+	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'gerardo_sesenta',
 	assetDir: 'src/assets/images/events/gerardo-sesenta',
 	assetFiles: {
@@ -273,4 +278,5 @@ export const gerardoInvitation = defineCanonicalInvitation({
 	},
 
 	deliveryScope: 'content-and-assets',
+	lifecycle: 'published',
 });

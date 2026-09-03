@@ -19,7 +19,7 @@ const content: CanonicalEventContentInput = {
 	},
 	hero: {
 		variant: 'standard',
-		date: '2026-05-23T07:00:00.000Z',
+		date: '2026-05-24T03:00:00.000Z',
 		name: 'Ana Sofía Cota Guillen',
 		label: 'Mis XV Años',
 		portrait: 'portrait',
@@ -326,6 +326,11 @@ const content: CanonicalEventContentInput = {
 			label: 'Confirmar',
 		},
 	],
+	eventTiming: {
+		localDateTime: '2026-05-23T20:00',
+		timeZone: 'America/Mazatlan',
+		startsAtUtc: '2026-05-24T03:00:00.000Z',
+	},
 	description:
 		'Acompáñanos a celebrar una noche llena de luz, elegancia y momentos inolvidables.',
 };
@@ -334,17 +339,17 @@ export const anaSofiaInvitation = defineCanonicalInvitation({
 	slug: 'ana-sofia-cota-guillen',
 	eventType: 'xv',
 	title: 'XV Años de Ana Sofía',
-	baseDemoId: 'demo-xv-jewelry-box',
+	baseDemoId: 'demo-xv-celestial-blue',
 	themeId: 'celestial-blue',
 	visualProfileId: 'ana-sofia-cota-guillen',
 	eventTiming: {
-		localDateTime: '',
-		timeZone: '',
-		startsAtUtc: '',
+		localDateTime: '2026-05-23T20:00',
+		timeZone: 'America/Mazatlan',
+		startsAtUtc: '2026-05-24T03:00:00.000Z',
 	},
 	content,
 	managedIdentityId: 'cd404b9a-fc0a-40cf-ae21-d5c8d6f79dc7',
-	managedIdentityProvenance: 'owner-approved',
+	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'ana_sofia_cota_guillen',
 	assetDir: 'src/assets/images/events/ana-sofia-cota-guillen',
 	assetFiles: {
@@ -371,4 +376,5 @@ export const anaSofiaInvitation = defineCanonicalInvitation({
 	},
 
 	deliveryScope: 'content-and-assets',
+	lifecycle: 'published',
 });

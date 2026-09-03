@@ -252,7 +252,7 @@ export const leahInvitation = defineCanonicalInvitation({
 	},
 	content,
 	managedIdentityId: 'fa7ebb23-8b95-41f5-a7ba-f4762504ee16',
-	managedIdentityProvenance: 'owner-approved',
+	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'leah_lexa',
 	assetDir: 'src/assets/images/events/leah-lexa-baby-shower',
 	assetFiles: {
@@ -264,4 +264,5 @@ export const leahInvitation = defineCanonicalInvitation({
 	},
 
 	deliveryScope: 'content-and-assets',
+	lifecycle: 'published',
 });

@@ -19,7 +19,7 @@ const content: CanonicalEventContentInput = {
 	},
 	hero: {
 		variant: 'standard',
-		date: '2026-04-11T20:00:00.000Z',
+		date: '2026-04-12T03:00:00.000Z',
 		name: 'Ximena Meza Trasviña',
 		label: 'Mis XV Años',
 		portrait: 'portrait',
@@ -298,6 +298,11 @@ const content: CanonicalEventContentInput = {
 			label: 'Confirmar',
 		},
 	],
+	eventTiming: {
+		localDateTime: '2026-04-11T20:00',
+		timeZone: 'America/Mazatlan',
+		startsAtUtc: '2026-04-12T03:00:00.000Z',
+	},
 	description: 'Acompáñame a celebrar este momento tan especial.',
 };
 
@@ -305,17 +310,17 @@ export const ximenaInvitation = defineCanonicalInvitation({
 	slug: 'ximena-meza-trasvina',
 	eventType: 'xv',
 	title: 'XV años de Ximena',
-	baseDemoId: 'demo-xv-jewelry-box',
+	baseDemoId: 'demo-xv-premiere-floral',
 	themeId: 'premiere-floral',
 	visualProfileId: 'ximena-meza-trasvina',
 	eventTiming: {
-		localDateTime: '',
-		timeZone: '',
-		startsAtUtc: '',
+		localDateTime: '2026-04-11T20:00',
+		timeZone: 'America/Mazatlan',
+		startsAtUtc: '2026-04-12T03:00:00.000Z',
 	},
 	content,
 	managedIdentityId: '8fc66849-5145-412b-a610-cf717177ef70',
-	managedIdentityProvenance: 'owner-approved',
+	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'ximena_meza_trasvina',
 	assetDir: 'src/assets/images/events/ximena-meza-trasvina',
 	assetFiles: {
@@ -342,4 +347,5 @@ export const ximenaInvitation = defineCanonicalInvitation({
 	},
 
 	deliveryScope: 'content-and-assets',
+	lifecycle: 'published',
 });

@@ -89,8 +89,6 @@ const content: CanonicalEventContentInput = {
 			},
 		],
 		parentsOrder: 'father-first',
-		sectionMessage:
-			'Hija, parece que fue ayer cuando te tuvimos en nuestros brazos por primera vez. \nHoy celebramos tus XV años y en lo maravillosa que te has convertido. Te amamos.',
 	},
 	isDemo: false,
 	gallery: {
@@ -350,7 +348,7 @@ export const ayrinInvitation = defineCanonicalInvitation({
 	},
 	content,
 	managedIdentityId: '74f2410f-22f9-4201-a015-9ed2a7823ebe',
-	managedIdentityProvenance: 'owner-approved',
+	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'ayrin_samantha_lerma_castro',
 	assetDir: 'src/assets/images/events/xv-ayrin-samantha-lerma-castro',
 	assetFiles: {
@@ -371,4 +369,5 @@ export const ayrinInvitation = defineCanonicalInvitation({
 		thankYouPortrait: 'thank-you-portrait.webp',
 	},
 	deliveryScope: 'content-and-assets',
+	lifecycle: 'published',
 });

@@ -393,7 +393,7 @@ export const xareniInvitation = defineCanonicalInvitation({
 	},
 	content,
 	managedIdentityId: '71c36786-da95-462f-a972-091fc1be8f48',
-	managedIdentityProvenance: 'owner-approved',
+	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'xareni_iyarit',
 	assetDir: 'src/assets/images/events/xv-xareni-iyarit',
 	assetFiles: {
@@ -415,4 +415,5 @@ export const xareniInvitation = defineCanonicalInvitation({
 		interlude04: 'interlude-04.webp',
 	},
 	deliveryScope: 'content-and-assets',
+	lifecycle: 'published',
 });

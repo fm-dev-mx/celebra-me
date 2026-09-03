@@ -73,7 +73,6 @@ const content: CanonicalEventContentInput = {
 			key: 'family',
 			type: 'internal',
 		},
-		sectionMessage: 'Acompañado por el amor de su familia y la bendición de sus padrinos.',
 	},
 	isDemo: false,
 	gallery: {
@@ -268,7 +267,7 @@ export const cesarInvitation = defineCanonicalInvitation({
 	slug: 'cesar-ramses',
 	eventType: 'bautizo',
 	title: 'Mi Bautizo y 1er Año • César Ramses',
-	baseDemoId: 'demo-bautismo-angelic-presence',
+	baseDemoId: 'demo-bautismo-sacred-keepsake',
 	themeId: 'sacred-keepsake',
 	visualProfileId: 'cesar-ramses',
 	eventTiming: {
@@ -278,7 +277,7 @@ export const cesarInvitation = defineCanonicalInvitation({
 	},
 	content,
 	managedIdentityId: '36c1e8d6-3c31-4e98-a293-bf5a4bd4784b',
-	managedIdentityProvenance: 'owner-approved',
+	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'cesar_ramses',
 	assetDir: 'src/assets/images/events/cesar-ramses',
 	assetFiles: {
@@ -295,4 +294,5 @@ export const cesarInvitation = defineCanonicalInvitation({
 		gallery06: 'gallery-06.webp',
 	},
 	deliveryScope: 'content-and-assets',
+	lifecycle: 'published',
 });
