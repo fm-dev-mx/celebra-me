@@ -98,7 +98,7 @@ const content: CanonicalEventContentInput = {
 		],
 		title: 'Memorias del Festejo',
 		subtitle: 'Instantes, detalles y la esencia de una noche para recordar.',
-		variant: 'feature-mosaic',
+		variant: 'feature-stack',
 	},
 	sharing: {
 		whatsappTemplate:

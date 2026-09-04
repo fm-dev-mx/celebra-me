@@ -98,8 +98,6 @@ const content: CanonicalEventContentInput = {
 			key: 'family',
 			type: 'internal',
 		},
-		sectionMessage:
-			'Gracias por acompañarme en este momento tan especial. Su cariño hace que mis XV años sean un recuerdo inolvidable.',
 		godparentGroups: [
 			{
 				label: 'Padrino',

@@ -188,7 +188,7 @@ const content: CanonicalEventContentInput = {
 		mapStyle: 'dark',
 	},
 	thankYou: {
-		variant: 'full-bleed-photo',
+		variant: 'standard',
 		image: 'thankYouPortrait',
 		message:
 			'Gracias por acompañarnos en el bautizo y primer año de César Ramses. Su presencia, sus oraciones y su cariño quedan guardados en esta memoria de fe, familia y bendición.',

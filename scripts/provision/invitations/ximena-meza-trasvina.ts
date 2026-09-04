@@ -5,13 +5,13 @@ const content: CanonicalEventContentInput = {
 	sectionOrder: [
 		'quote',
 		'family',
+		'gallery',
 		'countdown',
 		'location',
 		'itinerary',
-		'gallery',
-		'gifts',
 		'personalizedAccess',
 		'rsvp',
+		'gifts',
 		'thankYou',
 	],
 	composition: {
@@ -131,7 +131,7 @@ const content: CanonicalEventContentInput = {
 		],
 		title: 'Editorial de Ximena',
 		subtitle: 'Un recorrido visual por la esencia, el brillo y la elegancia.',
-		variant: 'editorial-mosaic',
+		variant: 'uniform-grid',
 	},
 	sharing: {
 		ogImage: 'portrait',
@@ -328,7 +328,7 @@ export const ximenaInvitation = defineCanonicalInvitation({
 		portrait: 'portrait.webp',
 		family: 'family.webp',
 		jardin: 'gallery-03.webp',
-		gallery01: 'gallery-01.webp',
+		gallery01: 'portrait.webp',
 		gallery02: 'gallery-02.webp',
 		gallery03: 'gallery-03.webp',
 		gallery04: 'gallery-04.webp',

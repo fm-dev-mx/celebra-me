@@ -14,6 +14,7 @@ const content: CanonicalEventContentInput = {
 		secondaryName: 'Estrella Abigail',
 		backgroundImage: 'hero',
 		backgroundImageMobile: 'heroMobile',
+		focalPoint: '50% 40%',
 	},
 	rsvp: {
 		variant: 'standard',

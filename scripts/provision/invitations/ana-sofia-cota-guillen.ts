@@ -5,13 +5,13 @@ const content: CanonicalEventContentInput = {
 	sectionOrder: [
 		'quote',
 		'family',
+		'gallery',
 		'countdown',
 		'location',
 		'itinerary',
-		'gallery',
-		'gifts',
 		'personalizedAccess',
 		'rsvp',
+		'gifts',
 		'thankYou',
 	],
 	composition: {

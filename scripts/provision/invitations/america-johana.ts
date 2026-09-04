@@ -5,13 +5,13 @@ const content: CanonicalEventContentInput = {
 	sectionOrder: [
 		'quote',
 		'family',
+		'gallery',
 		'countdown',
 		'location',
 		'itinerary',
-		'gallery',
-		'gifts',
 		'personalizedAccess',
 		'rsvp',
+		'gifts',
 		'thankYou',
 	],
 	composition: {
@@ -366,7 +366,6 @@ const content: CanonicalEventContentInput = {
 		startsAtUtc: '2026-08-29T23:30:00.000Z',
 		localDateTime: '2026-08-29T17:30',
 	},
-	visualProfileId: 'america-johana',
 };
 
 export const americaInvitation = defineCanonicalInvitation({

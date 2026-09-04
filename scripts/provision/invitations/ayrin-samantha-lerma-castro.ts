@@ -147,7 +147,7 @@ const content: CanonicalEventContentInput = {
 		title: 'Instantes de Ayrin',
 		eyebrow: 'Galería',
 		subtitle: 'Una selección de momentos entre rosas, luz cálida y detalles dorados.',
-		variant: 'feature-mosaic',
+		variant: 'uniform-grid',
 	},
 	sharing: {
 		ogImage: {
