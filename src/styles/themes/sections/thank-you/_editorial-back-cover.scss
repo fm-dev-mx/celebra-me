@@ -1,9 +1,9 @@
 // Canonical editorial-back-cover geometry. Presets may retint the section via
 // tokens, but this composition is owned by the section variant.
 
-:is(.event-theme-wrapper, body) .thank-you-section[data-variant='editorial-back-cover'] {
-	background: var(--color-text-primary);
-	color: var(--color-text-on-dark);
+.thank-you-section[data-variant='editorial-back-cover'] {
+	background: var(--thank-you-section-background, transparent);
+	color: var(--thank-you-section-color, var(--color-text-primary));
 	min-height: 100svh;
 	display: flex;
 	align-items: center;
@@ -33,7 +33,10 @@
 		height: auto;
 		aspect-ratio: 3 / 4;
 		border-radius: 0;
-		border: 1px solid rgb(var(--color-text-on-dark-rgb) / 24%);
+		border: var(
+			--thank-you-frame-border,
+			1px solid rgb(var(--color-border-subtle-rgb, var(--color-text-on-dark-rgb)) / 24%)
+		);
 		background: transparent;
 		box-shadow: none;
 		padding: 0;
@@ -78,7 +81,7 @@
 	}
 
 	.thank-you-message {
-		color: rgb(var(--color-text-on-dark-rgb) / 78%);
+		color: var(--thank-you-message-color, var(--color-text-primary));
 		font-family: var(--font-body);
 		font-size: clamp(1rem, 1.8vw, 1.25rem);
 		line-height: 1.8;
@@ -93,7 +96,7 @@
 		max-width: 100%;
 
 		.drop-cap {
-			color: var(--color-text-on-dark);
+			color: var(--thank-you-drop-cap-color, var(--color-text-primary));
 			font-family: var(--font-display);
 			font-size: 3.8em;
 			float: left;
@@ -110,12 +113,9 @@
 	}
 
 	.closing-name {
-		color: var(--color-text-on-dark);
+		color: var(--thank-you-closing-color, var(--color-text-primary));
 		font-family: var(--font-calligraphy);
 		font-size: clamp(3rem, 7vw, 4.8rem);
-		background: none;
-		-webkit-text-fill-color: unset;
-		text-shadow: none;
 		line-height: 1.1;
 		margin: 0;
 		padding: 0;
@@ -125,9 +125,41 @@
 
 	.closing-date {
 		margin: 0.5rem 0 0;
-		color: rgb(var(--color-text-on-dark-rgb) / 70%);
+		color: var(
+			--thank-you-closing-date-color,
+			var(--color-text-muted, var(--color-text-secondary))
+		);
 		padding: 0;
 		width: 100%;
 		max-width: 100%;
+	}
+
+	// Inverted dark magazine cover styling for editorial themes
+	&:is(.theme-preset--editorial-magazine *, .theme-preset--editorial *) {
+		background: var(--color-text-primary);
+		color: var(--color-text-on-dark);
+
+		.thank-you-editorial__media.photo-frame {
+			border: 1px solid rgb(var(--color-text-on-dark-rgb) / 24%);
+		}
+
+		.thank-you-message {
+			color: rgb(var(--color-text-on-dark-rgb) / 78%);
+
+			.drop-cap {
+				color: var(--color-text-on-dark);
+			}
+		}
+
+		.closing-name {
+			color: var(--color-text-on-dark);
+			background: none;
+			-webkit-text-fill-color: unset;
+			text-shadow: none;
+		}
+
+		.closing-date {
+			color: rgb(var(--color-text-on-dark-rgb) / 70%);
+		}
 	}
 }
