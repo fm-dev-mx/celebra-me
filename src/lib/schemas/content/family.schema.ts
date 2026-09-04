@@ -66,7 +66,7 @@ const familyBaseSchema = z.object({
 });
 
 const structuredFamilySchema = familyBaseSchema.extend({
-	groups: z.array(familyGroupSchema).min(2),
+	groups: z.array(familyGroupSchema).min(2).optional(),
 });
 
 export const familySchema = z
@@ -82,6 +82,17 @@ export const familySchema = z
 				message: 'Use either godparents or godparentGroups, not both',
 				path: ['godparentGroups'],
 			});
+		}
+		if (data.variant === 'split-groups' || data.variant === 'asymmetric-groups') {
+			const hasParents = Boolean(data.parents && (data.parents.father || data.parents.mother));
+			const hasGroups = Array.isArray(data.groups) && data.groups.length >= 2;
+			if (!hasParents && !hasGroups) {
+				ctx.addIssue({
+					code: 'custom',
+					message: 'Family section requires parents or at least two groups for split/asymmetric variants',
+					path: ['groups'],
+				});
+			}
 		}
 	})
 	.optional();

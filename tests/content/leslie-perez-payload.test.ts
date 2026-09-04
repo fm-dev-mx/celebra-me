@@ -128,7 +128,7 @@ describe('Leslie Perez provision contract', () => {
 		expect(content.thankYou).not.toHaveProperty('overlaySafeArea');
 	});
 
-	it('includes quote, gifts, and family groups without repeating guest thanks', () => {
+	it('includes quote, gifts, and family parents without repeating guest thanks', () => {
 		expect(content.quote).toMatchObject({
 			author: 'Leslie',
 		});
@@ -141,7 +141,7 @@ describe('Leslie Perez provision contract', () => {
 			'Gracias por ser parte',
 		);
 		expect(content.family).toMatchObject({
-			variant: 'standard',
+			variant: 'asymmetric-groups',
 			presentation: 'text-only',
 			parents: {
 				father: 'Luis Enrique Zacarias Oviedo',
@@ -184,7 +184,7 @@ describe('Leslie Perez provision contract', () => {
 		} as Parameters<typeof adaptEvent>[0]);
 
 		expect(viewModel.hero.variant).toBe('split-cover');
-		expect(viewModel.sections.family?.variant).toBe('standard');
+		expect(viewModel.sections.family?.variant).toBe('asymmetric-groups');
 		expect(viewModel.sections.location?.variant).toBe('split-map');
 		expect(viewModel.sections.location?.showFlourishes).toBe(false);
 		expect(viewModel.sections.gallery?.variant).toBe('index-choreography');

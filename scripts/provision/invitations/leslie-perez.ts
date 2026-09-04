@@ -286,7 +286,7 @@ export function buildLesliePublishedContent(
 			author: 'Leslie',
 		},
 		family: {
-			variant: 'standard',
+			variant: 'asymmetric-groups',
 			presentation: 'text-only',
 			parents: {
 				father: 'Luis Enrique Zacarias Oviedo',
