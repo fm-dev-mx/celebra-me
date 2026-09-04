@@ -112,11 +112,15 @@ export function defineCanonicalInvitation(
 		assetDir: options.assetDir,
 		assets: toAssetSpecs(options.title, options.assetFiles),
 		buildPublishedContent(assetMap) {
-			return canonicalizeAssetReferences(
+			const published = canonicalizeAssetReferences(
 				options.content,
 				assetMap,
 				assetKeys,
 			) as Record<string, unknown>;
+			if (options.visualProfileId && !published.visualProfileId) {
+				published.visualProfileId = options.visualProfileId;
+			}
+			return published;
 		},
 	});
 }

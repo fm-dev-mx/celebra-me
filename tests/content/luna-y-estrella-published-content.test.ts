@@ -14,6 +14,7 @@ export const lunaYEstrellaContent = {
 		fontFamily: 'serif',
 		preset: 'angelic-presence',
 	},
+	visualProfileId: 'luna-y-estrella',
 	eventTiming: {
 		localDateTime: '2026-08-01T14:00',
 		timeZone: 'America/Mexico_City',
@@ -270,6 +271,13 @@ describe('Luna y Estrella Primera Comunión published content', () => {
 			},
 		});
 
+		expect(confirmedContext.wrapper.className.split(' ')).toEqual(
+			expect.arrayContaining([
+				'event-theme-wrapper',
+				'event--luna-y-estrella',
+				'theme-preset--angelic-presence',
+			]),
+		);
 		const revealed = confirmedContext.viewModel.sections.rsvp?.revealedLocation;
 		expect(confirmedContext.viewModel.sections.rsvp?.allowResponseEditing).toBeUndefined();
 		expect(revealed).toBeDefined();
