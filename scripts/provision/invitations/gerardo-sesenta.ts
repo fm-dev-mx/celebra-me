@@ -4,13 +4,13 @@ import type { CanonicalEventContentInput } from '../../../src/lib/schemas/conten
 const content: CanonicalEventContentInput = {
 	sectionOrder: [
 		'quote',
+		'gallery',
 		'countdown',
 		'location',
 		'itinerary',
-		'gallery',
-		'gifts',
 		'personalizedAccess',
 		'rsvp',
+		'gifts',
 		'thankYou',
 	],
 	composition: {
@@ -220,20 +220,20 @@ const content: CanonicalEventContentInput = {
 			label: 'Inicio',
 		},
 		{
-			href: '#event-location',
-			label: 'Ubicación',
-		},
-		{
 			href: '#galeria',
 			label: 'Galería',
 		},
 		{
-			href: '#regalos',
-			label: 'Regalos',
+			href: '#event-location',
+			label: 'Ubicación',
 		},
 		{
 			href: '#rsvp',
 			label: 'Confirmar',
+		},
+		{
+			href: '#regalos',
+			label: 'Regalos',
 		},
 	],
 	eventTiming: {
@@ -266,7 +266,6 @@ export const gerardoInvitation = defineCanonicalInvitation({
 		hero: 'hero.webp',
 		portrait: 'portrait.webp',
 		jardin: 'jardin.webp',
-		family: 'family.webp',
 		gallery01: 'gallery-01.webp',
 		gallery02: 'gallery-02.webp',
 		gallery03: 'gallery-03.webp',
