@@ -16,6 +16,7 @@ jest.mock('@/lib/commercial/orders.repository', () => ({
 	findSalesOrdersByCustomerId: jest.fn(),
 }));
 
+import { Request as NodeRequest } from 'undici';
 import {
 	requireAdminMutationAccess,
 	requireAdminStrongSession,
@@ -28,6 +29,13 @@ import { findSalesOrdersByCustomerId } from '@/lib/commercial/orders.repository'
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { POST as createOrder, GET as listOrders } from '@/pages/api/dashboard/commercial/orders';
 import { POST as markDepositPaid } from '@/pages/api/dashboard/commercial/orders/[orderId]/deposit-paid';
+
+function nodeRequest(
+	input: string,
+	init?: ConstructorParameters<typeof NodeRequest>[1],
+): Request {
+	return new NodeRequest(input, init) as unknown as Request;
+}
 
 const mockRequireAdminMutationAccess = requireAdminMutationAccess as jest.MockedFunction<
 	typeof requireAdminMutationAccess
@@ -45,7 +53,7 @@ const mockFindSalesOrdersByCustomerId = findSalesOrdersByCustomerId as jest.Mock
 	typeof findSalesOrdersByCustomerId
 >;
 
-function createContext(request: Request, params: Record<string, string | undefined> = {}) {
+function createContext(request: { url: string }, params: Record<string, string | undefined> = {}) {
 	return {
 		request,
 		url: new URL(request.url),
@@ -116,7 +124,7 @@ describe('/api/dashboard/commercial/orders', () => {
 	});
 
 	it('creates a commercial sales order as an admin mutation', async () => {
-		const request = new Request('https://www.celebra-me.com/api/dashboard/commercial/orders', {
+		const request = nodeRequest('https://www.celebra-me.com/api/dashboard/commercial/orders', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify({
@@ -154,7 +162,7 @@ describe('/api/dashboard/commercial/orders', () => {
 	});
 
 	it('rejects order creation when customerId is missing', async () => {
-		const request = new Request('https://www.celebra-me.com/api/dashboard/commercial/orders', {
+		const request = nodeRequest('https://www.celebra-me.com/api/dashboard/commercial/orders', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify({
@@ -206,7 +214,7 @@ describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
 	});
 
 	it('marks the first deposit as paid and returns the pending Purchase outbox event', async () => {
-		const request = new Request(
+		const request = nodeRequest(
 			'https://www.celebra-me.com/api/dashboard/commercial/orders/order-id/deposit-paid',
 			{
 				method: 'POST',
@@ -250,7 +258,7 @@ describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
 			),
 		);
 
-		const request = new Request(
+		const request = nodeRequest(
 			'https://www.celebra-me.com/api/dashboard/commercial/orders/order-id/deposit-paid',
 			{
 				method: 'POST',

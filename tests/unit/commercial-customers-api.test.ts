@@ -11,11 +11,19 @@ jest.mock('@/lib/commercial/customer.repository', () => ({
 	findCommercialCustomerById: jest.fn(),
 }));
 
+import { Request as NodeRequest } from 'undici';
 import { requireAdminMutationAccess, requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import { createCommercialCustomer } from '@/lib/commercial/customer.service';
 import { findCommercialCustomerById } from '@/lib/commercial/customer.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { GET, POST } from '@/pages/api/dashboard/commercial/customers';
+
+function nodeRequest(
+	input: string,
+	init?: ConstructorParameters<typeof NodeRequest>[1],
+): Request {
+	return new NodeRequest(input, init) as unknown as Request;
+}
 
 const mockRequireAdminMutationAccess = requireAdminMutationAccess as jest.MockedFunction<
 	typeof requireAdminMutationAccess
@@ -30,7 +38,7 @@ const mockFindCommercialCustomerById = findCommercialCustomerById as jest.Mocked
 	typeof findCommercialCustomerById
 >;
 
-function createContext(request: Request) {
+function createContext(request: { url: string }) {
 	return {
 		request,
 		url: new URL(request.url),
@@ -67,7 +75,7 @@ beforeEach(() => {
 
 describe('/api/dashboard/commercial/customers', () => {
 	it('creates a commercial customer and links the selected lead as an admin mutation', async () => {
-		const request = new Request(
+		const request = nodeRequest(
 			'https://www.celebra-me.com/api/dashboard/commercial/customers',
 			{
 				method: 'POST',
@@ -111,7 +119,7 @@ describe('/api/dashboard/commercial/customers', () => {
 			),
 		);
 
-		const request = new Request(
+		const request = nodeRequest(
 			'https://www.celebra-me.com/api/dashboard/commercial/customers',
 			{
 				method: 'POST',
@@ -141,7 +149,7 @@ describe('/api/dashboard/commercial/customers', () => {
 				phoneE164: '+521234567890',
 			});
 
-			const request = new Request(
+			const request = nodeRequest(
 				'https://www.celebra-me.com/api/dashboard/commercial/customers?id=cust-123',
 			);
 
@@ -156,7 +164,7 @@ describe('/api/dashboard/commercial/customers', () => {
 		it('returns 404 when customer not found', async () => {
 			mockFindCommercialCustomerById.mockResolvedValue(null);
 
-			const request = new Request(
+			const request = nodeRequest(
 				'https://www.celebra-me.com/api/dashboard/commercial/customers?id=nonexistent',
 			);
 
@@ -169,7 +177,7 @@ describe('/api/dashboard/commercial/customers', () => {
 		});
 
 		it('rejects without id param', async () => {
-			const request = new Request(
+			const request = nodeRequest(
 				'https://www.celebra-me.com/api/dashboard/commercial/customers',
 			);
 

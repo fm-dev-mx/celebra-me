@@ -9,7 +9,8 @@ if (typeof structuredClone === 'undefined') {
 }
 
 import { TextDecoder, TextEncoder } from 'node:util';
-import { TransformStream } from 'node:stream/web';
+import { ReadableStream as NodeReadableStream, TransformStream } from 'node:stream/web';
+import { MessagePort as NodeMessagePort } from 'node:worker_threads';
 
 if (typeof globalThis.TextEncoder === 'undefined') {
 	globalThis.TextEncoder = TextEncoder;
@@ -22,6 +23,16 @@ if (typeof globalThis.TextDecoder === 'undefined') {
 if (typeof globalThis.TransformStream === 'undefined') {
 	// @ts-expect-error polyfill for Jest Node environment
 	globalThis.TransformStream = TransformStream;
+}
+
+if (typeof globalThis.ReadableStream === 'undefined') {
+	// @ts-expect-error polyfill for Jest Node environment
+	globalThis.ReadableStream = NodeReadableStream;
+}
+
+if (typeof globalThis.MessagePort === 'undefined') {
+	// @ts-expect-error polyfill for packages that inspect the Fetch runtime
+	globalThis.MessagePort = NodeMessagePort;
 }
 
 /**

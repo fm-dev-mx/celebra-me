@@ -6,10 +6,18 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn(),
 }));
 
+import { Request as NodeRequest } from 'undici';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { ingestTrackingEvent } from '@/lib/tracking/ingestion.service';
 import { POST } from '@/pages/api/tracking/events';
 import { ApiError } from '@/lib/rsvp/core/errors';
+
+function nodeRequest(
+	input: string,
+	init?: ConstructorParameters<typeof NodeRequest>[1],
+): Request {
+	return new NodeRequest(input, init) as unknown as Request;
+}
 
 const mockCheckRateLimit = checkRateLimit as jest.MockedFunction<typeof checkRateLimit>;
 const mockIngestTrackingEvent = ingestTrackingEvent as jest.MockedFunction<
@@ -26,7 +34,7 @@ const payload = {
 	consentSnapshot: { necessary: true, analytics: true, marketing: false },
 };
 
-function createContext(request: Request) {
+function createContext(request: { url: string }) {
 	return {
 		request,
 		url: new URL(request.url),
@@ -50,7 +58,7 @@ beforeEach(() => {
 
 describe('/api/tracking/events', () => {
 	it('ingests a valid tracking event', async () => {
-		const request = new Request('https://www.celebra-me.com/api/tracking/events', {
+		const request = nodeRequest('https://www.celebra-me.com/api/tracking/events', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify(payload),
@@ -82,7 +90,7 @@ describe('/api/tracking/events', () => {
 
 	it('returns accepted false events without persisting route-forbidden details as errors', async () => {
 		mockIngestTrackingEvent.mockResolvedValue({ accepted: false, reason: 'route_not_allowed' });
-		const request = new Request('https://www.celebra-me.com/api/tracking/events', {
+		const request = nodeRequest('https://www.celebra-me.com/api/tracking/events', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify(payload),
@@ -97,7 +105,7 @@ describe('/api/tracking/events', () => {
 
 	it('rate limits noisy clients', async () => {
 		mockCheckRateLimit.mockResolvedValue(false);
-		const request = new Request('https://www.celebra-me.com/api/tracking/events', {
+		const request = nodeRequest('https://www.celebra-me.com/api/tracking/events', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify(payload),
@@ -115,7 +123,7 @@ describe('/api/tracking/events', () => {
 		mockIngestTrackingEvent.mockRejectedValue(
 			new ApiError(400, 'bad_request', 'Tracking event payload is invalid.'),
 		);
-		const request = new Request('https://www.celebra-me.com/api/tracking/events', {
+		const request = nodeRequest('https://www.celebra-me.com/api/tracking/events', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify({ ...payload, eventName: 'order_created' }),

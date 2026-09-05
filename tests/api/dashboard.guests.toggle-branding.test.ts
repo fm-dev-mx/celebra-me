@@ -16,9 +16,17 @@ jest.mock('@/lib/rsvp/services/dashboard-guests.service', () => ({
 	toggleGuestBrandingRemoval: jest.fn(),
 }));
 
+import { Request as NodeRequest } from 'undici';
 import { toggleGuestBrandingRemoval } from '@/lib/rsvp/services/dashboard-guests.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { POST } from '@/pages/api/dashboard/guests/[guestId]/toggle-branding';
+
+function nodeRequest(
+	input: string,
+	init?: ConstructorParameters<typeof NodeRequest>[1],
+): Request {
+	return new NodeRequest(input, init) as unknown as Request;
+}
 
 function createMockRequest({
 	method = 'POST',
@@ -29,7 +37,7 @@ function createMockRequest({
 	body?: Record<string, unknown>;
 	guestId?: string;
 }): [Request, Record<string, string>, URL] {
-	const request = new Request(
+	const request = nodeRequest(
 		`http://localhost/api/dashboard/guests/${guestId}/toggle-branding`,
 		{
 			method,
@@ -39,7 +47,7 @@ function createMockRequest({
 	);
 	const params = { guestId };
 	const url = new URL(`http://localhost/api/dashboard/guests/${guestId}/toggle-branding`);
-	return [request, params, url];
+	return [request as unknown as Request, params, url];
 }
 
 const authorizedLocals = {
