@@ -1,6 +1,12 @@
 import http from 'node:http';
+import { Request as NodeRequest } from 'undici';
 import { DISPOSABLE_TEST, resolveDbUrl } from '../../scripts/db/db-target-config.ts';
 import { runCommand } from '../../scripts/db/db-workflow-lib.ts';
+
+/** Use undici Request so body is a proper ReadableStream under the jsdom test environment. */
+function nodeRequest(input: string, init?: ConstructorParameters<typeof NodeRequest>[1]): Request {
+	return new NodeRequest(input, init) as unknown as Request;
+}
 
 /**
  * HTTP → service → RPC wiring contracts against disposable PostgREST.
@@ -117,7 +123,7 @@ describe('public rsvp & view HTTP API wiring (real DB)', () => {
 	});
 
 	it('submits RSVP via HTTP API route and atomically updates DB without 42501 permission error', async () => {
-		const request = new Request(`http://localhost/api/invitacion/${testInviteId}/rsvp`, {
+		const request = nodeRequest(`http://localhost/api/invitacion/${testInviteId}/rsvp`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
@@ -153,7 +159,7 @@ describe('public rsvp & view HTTP API wiring (real DB)', () => {
 	});
 
 	it('tracks invitation view via HTTP API route and updates DB telemetry', async () => {
-		const request = new Request(`http://localhost/api/invitacion/${testInviteId}/view`, {
+		const request = nodeRequest(`http://localhost/api/invitacion/${testInviteId}/view`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
