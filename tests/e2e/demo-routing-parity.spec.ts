@@ -490,3 +490,31 @@ test.describe('Demo Routing Parity', () => {
 		});
 	});
 });
+
+for (const route of [
+	'/bautizo/demo-bautismo-angelic-presence',
+	'/boda/demo-boda-jewelry-box-wedding',
+	'/primera-comunion/demo-primera-comunion-illustrated',
+]) {
+	for (const viewport of [
+		{ width: 390, height: 844 },
+		{ width: 1440, height: 900 },
+	]) {
+		test(`interlude follows personalized access: ${route} @ ${viewport.width}`, async ({
+			page,
+		}) => {
+			await page.setViewportSize(viewport);
+			const response = await page.goto(`${route}?skipEnvelope=true&animations=off`);
+			expect(response?.status()).toBe(200);
+			const sections = page.locator(
+				'.event-theme-wrapper .invitation-section-wrapper[data-section-kind]',
+			);
+			await expect(sections.nth(0)).toHaveAttribute('data-section-kind', 'quote');
+			await expect(sections.nth(1)).toHaveAttribute(
+				'data-section-kind',
+				'personalized-access',
+			);
+			await expect(sections.nth(2)).toHaveAttribute('data-section-kind', 'interlude');
+		});
+	}
+}

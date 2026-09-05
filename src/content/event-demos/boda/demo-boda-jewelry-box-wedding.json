@@ -255,7 +255,7 @@
   "interludes": [
     {
       "image": "interlude01",
-      "afterSection": "quote",
+      "afterSection": "personalizedAccess",
       "alt": "Corredor de hacienda con flores marfil y luz cálida",
       "height": "screen"
     },

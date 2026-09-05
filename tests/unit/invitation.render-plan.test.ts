@@ -213,3 +213,27 @@ describe('buildInvitationRenderPlan', () => {
 		]);
 	});
 });
+
+describe('published demo interlude placement', () => {
+	it.each([
+		'bautismo/demo-bautismo-angelic-presence',
+		'boda/demo-boda-jewelry-box-wedding',
+		'primera-comunion/demo-primera-comunion-illustrated',
+	])('keeps the first interlude after personalized access in %s', (fixture) => {
+		const event = {
+			id: `event-demos/${fixture}`,
+			data: loadFixture(`src/content/event-demos/${fixture}.json`),
+		} as Parameters<typeof adaptEvent>[0];
+		const plan = buildInvitationRenderPlan(adaptEvent(event));
+		expect(
+			plan.slice(0, 3).map((item) => (item.type === 'section' ? item.section : item.type)),
+		).toEqual(['quote', 'personalized-access', 'interlude']);
+		expect(plan[2]).toEqual(
+			expect.objectContaining({
+				type: 'interlude',
+				afterSection: 'personalizedAccess',
+				intersection: { family: 'neutral', source: 'interlude-after-personalizedAccess' },
+			}),
+		);
+	});
+});

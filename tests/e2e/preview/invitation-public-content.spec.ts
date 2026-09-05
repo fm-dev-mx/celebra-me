@@ -33,25 +33,31 @@ for (const entry of buildVisualPageCases()) {
 			const actual = await root
 				.locator('.invitation-section-wrapper[data-section-kind]')
 				.evaluateAll((sections) =>
-					sections
-						.map((section) => section.getAttribute('data-section-kind'))
-						.filter((kind) => kind !== 'interlude'),
+					sections.map((section) => section.getAttribute('data-section-kind')),
 				);
+			// Assert every declared interlude, including anchors on personalized access.
 			// Public invitations do not fabricate personalized access without a guest.
-			const expected = content.sectionOrder
-				.map((kind: string) =>
-					kind === 'personalizedAccess' ? 'personalized-access' : kind,
-				)
-				.filter(
-					(kind: string) =>
-						kind !== 'interlude' &&
-						(entry.kind === 'demo' || kind !== 'personalized-access'),
-				);
+			const expected = content.sectionOrder.flatMap((kind: string) => [
+				...(kind === 'personalizedAccess'
+					? entry.kind === 'demo'
+						? ['personalized-access']
+						: []
+					: [kind]),
+				...(content.interludes ?? [])
+					.filter(
+						(interlude: { afterSection: string }) => interlude.afterSection === kind,
+					)
+					.map(() => 'interlude'),
+			]);
 			expect(actual).toEqual(expected);
 			for (const [key, selector] of [
 				['gallery', '.gallery-section'],
 				['thankYou', '.thank-you-section'],
 			] as const) {
+				if (!expected.includes(key)) {
+					await expect(root.locator(selector)).toHaveCount(0);
+					continue;
+				}
 				if (content[key]?.variant)
 					await expect(root.locator(selector)).toHaveAttribute(
 						'data-variant',

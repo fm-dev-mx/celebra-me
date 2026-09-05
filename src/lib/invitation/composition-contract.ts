@@ -1,10 +1,14 @@
 import { z } from 'zod';
-import { CONTENT_SECTION_KEYS, SECTION_INTERSECTION_FAMILIES } from '@/lib/theme/theme-contract';
+import {
+	CONTENT_SECTION_KEYS,
+	INVITATION_RENDER_SECTION_KEYS,
+	SECTION_INTERSECTION_FAMILIES,
+} from '@/lib/theme/theme-contract';
 
 export const RENDER_PLAN_TARGETS = [
 	...CONTENT_SECTION_KEYS,
 	'personalized-access',
-	...CONTENT_SECTION_KEYS.map((section) => `interlude-after-${section}` as const),
+	...INVITATION_RENDER_SECTION_KEYS.map((section) => `interlude-after-${section}` as const),
 ] as const;
 
 export type RenderPlanTarget = (typeof RENDER_PLAN_TARGETS)[number];

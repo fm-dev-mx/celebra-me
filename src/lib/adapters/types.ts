@@ -1,6 +1,5 @@
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type {
-	ContentSectionKey,
 	CountdownVariant,
 	IndicationStyleVariant,
 	InvitationRenderSectionKey,
@@ -192,7 +191,7 @@ export interface EnvelopeViewModel {
 
 export interface Interlude {
 	image: ImageAsset;
-	afterSection: ContentSectionKey;
+	afterSection: InvitationRenderSectionKey;
 	alt?: string;
 	height: 'screen' | 'tall' | 'medium';
 	focalPoint?: string;

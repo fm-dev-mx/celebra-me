@@ -1,3 +1,4 @@
+import type { InvitationRenderSectionKey } from '@/lib/theme/theme-contract';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import {
@@ -12,7 +13,7 @@ type RenderPlanMetadata = {
 
 export type InterludeRenderItem = RenderPlanMetadata & {
 	type: 'interlude';
-	afterSection: keyof InvitationViewModel['sections'];
+	afterSection: InvitationRenderSectionKey;
 	image: ImageAsset;
 	alt?: string;
 	height: 'screen' | 'tall' | 'medium';
@@ -40,17 +41,11 @@ function hasRenderableSection(
 	return Boolean(viewModel.sections[section]);
 }
 
-function appendSectionWithInterludes(
+function appendInterludes(
 	items: InvitationRenderPlanItem[],
 	viewModel: InvitationViewModel,
-	section: keyof InvitationViewModel['sections'],
+	section: InvitationRenderSectionKey,
 ): void {
-	items.push({
-		type: 'section',
-		section,
-		intersection: resolveRenderPlanIntersection(viewModel.composition, section),
-	});
-
 	for (const interlude of (viewModel.interludes ?? []).filter(
 		(i) => i.afterSection === section,
 	)) {
@@ -86,18 +81,22 @@ export function buildInvitationRenderPlan(
 	const items: InvitationRenderPlanItem[] = [];
 	for (const section of viewModel.sectionOrder) {
 		if (section === 'personalizedAccess') {
-				items.push({
-					type: 'personalized-access',
-					intersection: resolveRenderPlanIntersection(
-						viewModel.composition,
-						'personalized-access',
-					),
-				});
-				continue;
-			}
-
-		if (!hasRenderableSection(viewModel, section)) continue;
-		appendSectionWithInterludes(items, viewModel, section);
+			items.push({
+				type: 'personalized-access',
+				intersection: resolveRenderPlanIntersection(
+					viewModel.composition,
+					'personalized-access',
+				),
+			});
+		} else {
+			if (!hasRenderableSection(viewModel, section)) continue;
+			items.push({
+				type: 'section',
+				section,
+				intersection: resolveRenderPlanIntersection(viewModel.composition, section),
+			});
+		}
+		appendInterludes(items, viewModel, section);
 	}
 
 	return items;
