@@ -108,7 +108,10 @@ export const PATCH: APIRoute = async ({ request, params }) => {
 		const token = params.token ?? '';
 		const ctx = await resolveTokenContext(token);
 
-		if (isInvitationLockedForClient(ctx.invitation!.status)) {
+		if (
+			isInvitationLockedForClient(ctx.invitation!.status) ||
+			ctx.submission!.status === 'submitted'
+		) {
 			throw new ApiError(
 				403,
 				'forbidden',
@@ -176,8 +179,7 @@ export const POST: APIRoute = async ({ request, params }) => {
 			invitationId: ctx.invitation!.id,
 			clientComments: parsed.clientComments,
 		});
-		const updated =
-			(await findSubmissionByRequestId(ctx.request!.id)) ?? ctx.submission!;
+		const updated = (await findSubmissionByRequestId(ctx.request!.id)) ?? ctx.submission!;
 
 		if (!applied) return jsonResponse({ item: toIntakeSubmissionDTO(updated) });
 

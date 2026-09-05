@@ -89,19 +89,14 @@ describe('saveSubmissionStep', () => {
 		expect(result.blockData).toHaveProperty('music');
 	});
 
-	it('allows editing when status is submitted', async () => {
+	it('blocks client editing when status is submitted', async () => {
 		const submitted = { ...baseSubmission, status: 'submitted' as const };
 		mockFindById.mockResolvedValue(submitted);
-		const updated = {
-			...submitted,
-			blockData: { 'event-details': { celebrantName: 'Updated' } },
-		};
-		mockUpdate.mockResolvedValue(updated);
 
-		const result = await saveSubmissionStep('sub-1', 'event-details', {
-			celebrantName: 'Updated',
-		});
-		expect(result.status).toBe('submitted');
+		await expect(
+			saveSubmissionStep('sub-1', 'event-details', { celebrantName: 'Updated' }),
+		).rejects.toThrow('Cannot edit a submitted submission.');
+		expect(mockUpdate).not.toHaveBeenCalled();
 	});
 
 	it('allows editing when status is needs_changes', async () => {

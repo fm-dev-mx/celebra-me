@@ -2,7 +2,6 @@ import type { IntakeSubmission } from '@/lib/intake/types';
 import {
 	findIntakeSubmissionById,
 	findSubmissionByRequestId,
-	findSubmissionsByRequestId,
 	createIntakeSubmission,
 	updateIntakeSubmission,
 } from '@/lib/intake/repositories/intake-submission.repository';
@@ -10,20 +9,10 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import type { IntakeBlockType } from '@/lib/intake/types';
 import { validateBlockData } from '@/lib/intake/schemas/intake-submission.schema';
 
-export async function getIntakeSubmissionById(id: string): Promise<IntakeSubmission | null> {
-	return findIntakeSubmissionById(id);
-}
-
 export async function getSubmissionByRequestId(
 	intakeRequestId: string,
 ): Promise<IntakeSubmission | null> {
 	return findSubmissionByRequestId(intakeRequestId);
-}
-
-export async function getSubmissionsByRequestId(
-	intakeRequestId: string,
-): Promise<IntakeSubmission[]> {
-	return findSubmissionsByRequestId(intakeRequestId);
 }
 
 export async function createSubmission(input: {
@@ -50,6 +39,13 @@ export async function saveSubmissionStep(
 			409,
 			'submission_already_approved',
 			'Cannot edit an approved submission.',
+		);
+	}
+	if (!allowApproved && submission.status === 'submitted') {
+		throw new ApiError(
+			409,
+			'conflict',
+			'Cannot edit a submitted submission.',
 		);
 	}
 
