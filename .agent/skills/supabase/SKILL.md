@@ -4,7 +4,7 @@ description: |
   Supabase Auth, RLS policies, Edge Functions, Realtime, Storage, CLI, and MCP
   guidance for Celebra-me.
 domain: backend
-version: 1.0.0
+version: 1.1.0
 when_to_use:
   - Writing or reviewing Supabase RLS policies
   - Configuring Auth, Edge Functions, Realtime, or Storage
@@ -13,6 +13,7 @@ when_to_use:
 preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
+  - Read .agent/rules/database.md before operational database work
 related_skills:
   - backend-engineering
   - supabase-postgres
@@ -92,10 +93,11 @@ Do **not** run raw `supabase db push` (linked or `--db-url` Production). Use
 
 ## Making Schema Changes
 
-1. Iterate with `execute_sql` (MCP) or `supabase db query` (CLI) — these do NOT write migration
-   history entries.
-2. When ready to commit: run advisors, review the security checklist, generate migration with
-   `supabase db pull <name> --local --yes`, then verify with `supabase migration list --local`.
+Follow [database safety](../../rules/database.md) and the
+[database workflow](../../../docs/database-workflow.md): author versioned migrations, validate on
+disposable-test, and promote through guarded target workflows. Do not iterate with ad-hoc SQL on
+persistent Local, Preview, or Production and then reverse-engineer migration history. Production
+apply remains owner-only; a request to author SQL does not authorize its execution.
 
 ## Storage
 

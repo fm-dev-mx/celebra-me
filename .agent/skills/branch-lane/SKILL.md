@@ -1,14 +1,9 @@
 ---
 name: branch-lane
 description: |
-  Interactive, resumable orchestrator for Celebra-me develop/main Git lane: auto-discovers mode,
-  always runs branch migration parity, automatically delegates database-sensitive validation to
-  database-parity, exhausts safe read-only diagnosis before any user prompt, persists checkpoints
-  distinct from clearance, consolidates authorization only after the plan is stable, and reports
-  Pass / Needs* / Fail / Hard blocked / Skipped in a nine-section status report. Never force-pushes.
-  Git writes require explicit authorization in the current task.
+  Prepare releases or promote/sync develop and main through the existing parity and checkpoint workflow. Git writes require exact current-task authorization; this skill does not perform database or deployment operations.
 domain: workflow
-version: 2.1.0
+version: 2.1.1
 absorbed_skills: [release-prepare]
 when_to_use:
   - User asks to promote develop to main / fast-forward main / "promueve a main"
@@ -241,8 +236,8 @@ not an owner-acceptable exception.
 
 **Backups:** require a fresh pre-migration Production backup based on risk/policy (state immediately
 before migrate), not merely because the newest dump has a different calendar date. When
-`pnpm db:migrate -- --target production` already creates that backup, do not demand a separate backup authorization
-solely for date skew — see `evaluateProductionBackupRequirement`.
+`pnpm db:migrate -- --target production` already creates that backup, do not demand a separate
+backup authorization solely for date skew — see `evaluateProductionBackupRequirement`.
 
 ### 7. Manual actions
 

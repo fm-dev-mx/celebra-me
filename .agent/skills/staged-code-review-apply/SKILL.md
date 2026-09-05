@@ -6,7 +6,7 @@ description: |
   production, or governance docs. Never stages, unstages, or commits — user owns the index for
   visualization. Respects prior review MCQ scope choices.
 domain: workflow
-version: 1.4.0
+version: 1.5.0
 when_to_use:
   - Immediately after a staged-code-review report when the user says proceed / apply / adelante
   - User explicitly asks to apply staged-code-review fixes
@@ -37,17 +37,19 @@ want to visualize or ship; MM (staged + unstaged) after edits is expected and co
 
 Review tags are a **hint**, never a bypass. Prefer deletion over patching when both are safe.
 
-**Report contract:** [`.agent/templates/agent-report-contract.md`](../../templates/agent-report-contract.md)
-(samples: [`agent-report-samples.md`](../../templates/agent-report-samples.md)).
+**Report contract:**
+[`.agent/templates/agent-report-contract.md`](../../templates/agent-report-contract.md) (samples:
+[`agent-report-samples.md`](../../templates/agent-report-samples.md)).
 
-**Gates / protected paths:** [`references/gates-and-protected-paths.md`](./references/gates-and-protected-paths.md).
+**Gates / protected paths:**
+[`references/gates-and-protected-paths.md`](./references/gates-and-protected-paths.md).
 
 **Large apply sets:** [`references/parallel-mode.md`](./references/parallel-mode.md).
 
 ## Hard constraints
 
-- Never mutate the index: no `git add`, `git restore --staged`, `git reset` (staging), or
-  “re-stage after apply”. Never commit, tag, or push.
+- Never mutate the index: no `git add`, `git restore --staged`, `git reset` (staging), or “re-stage
+  after apply”. Never commit, tag, or push.
 - Leave applied edits **unstaged** (or MM if the path was already staged) so the user can review in
   the working tree / Source Control “Changes” panel.
 - Never auto-apply SQL or production patches.
@@ -55,7 +57,7 @@ Review tags are a **hint**, never a bypass. Prefer deletion over patching when b
   HIGH `risk` fixes (via review/pre-apply MCQ that includes them) are **not** blocked by Gate A
   net-reduction; `~L` may be 0 or positive for those items.
 - Gates stay agent-internal; human skip reasons in plain language (not “Gate A failed”).
-- Decision MCQs: exactly `a`/`b`/`c` with action + scope + brief example (contract). Never offer
+- Decision prompts follow the shared report contract; include the action and scope. Never offer
   agent-driven stage/unstage as an option.
 - Use the same apply-tag vocabulary as review: `auto-safe` · `needs-confirm` · `manual`.
 
@@ -96,11 +98,11 @@ If ≥6 findings across ≥3 files, load [`references/parallel-mode.md`](./refer
 
 ## Tag revalidation
 
-| Review tag | Apply may |
-| --- | --- |
-| `auto-safe` | Confirm against the same allowlist as review, or **downgrade** to `needs-confirm` / `manual` if gate/MM/protected/honesty fails |
-| `needs-confirm` | Keep, or downgrade to `manual`; **upgrade** to `auto-safe` only with new evidence (e.g. proven zero `@use`) |
-| `manual` | Never auto-apply; list under Manual |
+| Review tag      | Apply may                                                                                                                       |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `auto-safe`     | Confirm against the same allowlist as review, or **downgrade** to `needs-confirm` / `manual` if gate/MM/protected/honesty fails |
+| `needs-confirm` | Keep, or downgrade to `manual`; **upgrade** to `auto-safe` only with new evidence (e.g. proven zero `@use`)                     |
+| `manual`        | Never auto-apply; list under Manual                                                                                             |
 
 Use the review skill’s **`auto-safe` allowlist and deny list**
 ([`staged-code-review/SKILL.md`](../staged-code-review/SKILL.md)) as the honesty check. If review
@@ -140,11 +142,11 @@ Additional plain-language reasons are fine when none of the three fit (e.g. “f
 
 ### Deletion rules
 
-| Situation | Final tag |
-| --- | --- |
-| Clearly dead file, zero consumers, outside protected paths | may be `auto-safe` after search |
-| Doubt, `@use`/`@forward`, or unknown consumers | `needs-confirm` (one shared manifest) |
-| Protected / governance / SQL / env | `manual` |
+| Situation                                                  | Final tag                             |
+| ---------------------------------------------------------- | ------------------------------------- |
+| Clearly dead file, zero consumers, outside protected paths | may be `auto-safe` after search       |
+| Doubt, `@use`/`@forward`, or unknown consumers             | `needs-confirm` (one shared manifest) |
+| Protected / governance / SQL / env                         | `manual`                              |
 
 Collect all `needs-confirm` deletions into **one** manifest for a single pre-apply MCQ. Do not
 interleave per-file delete prompts.
@@ -167,8 +169,8 @@ pre-existing lint. Trivial one-line pre-existing lint may be fixed; complex issu
 ```md
 # Apply result
 
-**Veredicto:** <A> aplicados · <S> omitidos · <M> manual · ~<L> líneas · verify PASS|FAIL
-**Scope:** <what the user authorized / default auto-safe>
+**Veredicto:** <A> aplicados · <S> omitidos · <M> manual · ~<L> líneas · verify PASS|FAIL **Scope:**
+<what the user authorized / default auto-safe>
 
 ## Manual
 
@@ -176,14 +178,13 @@ pre-existing lint. Trivial one-line pre-existing lint may be fixed; complex issu
 
 `<path>:<line>`
 
-**Motivo:** ...
-**Sugerencia:** ...
+**Motivo:** ... **Sugerencia:** ...
 
 ## Aplicado
 
-| Archivo | Cambio | ~líneas |
-| --- | --- | --- |
-| `<path>:<line>` | <short description> | <n> |
+| Archivo         | Cambio              | ~líneas |
+| --------------- | ------------------- | ------- |
+| `<path>:<line>` | <short description> | <n>     |
 
 ## Omitido
 
@@ -191,7 +192,7 @@ pre-existing lint. Trivial one-line pre-existing lint may be fixed; complex issu
 
 ## Decisión
 
-<CTA or one a/b/c MCQ — see rules>
+<Next action, or one material decision under the shared report contract>
 
 ## Verify
 
@@ -226,11 +227,11 @@ Hay <N> borrados que requieren confirmación (manifest arriba).
 
 ### Post-apply Decision
 
-| Situation | Decision |
-| --- | --- |
+| Situation                                | Decision                                                                              |
+| ---------------------------------------- | ------------------------------------------------------------------------------------- |
 | Verify PASS, dirty tree, no new blockers | CTA: user stages when ready, then `commit-planner`; or MCQ if material Manual remains |
-| Verify FAIL | CTA/MCQ for triage; never put destructive reset or agent stage/unstage in `a` |
-| Nothing applied / all manual | CTA: resolve Manual or re-run review |
+| Verify FAIL                              | CTA/MCQ for triage; never put destructive reset or agent stage/unstage in `a`         |
+| Nothing applied / all manual             | CTA: resolve Manual or re-run review                                                  |
 
 **Decision rules:**
 

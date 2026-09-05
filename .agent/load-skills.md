@@ -1,92 +1,44 @@
 # Skill Loading Protocol
 
-This file defines how any compatible runtime loads and uses repository skills.
+[AGENTS.md](../AGENTS.md) and its bootstrap rules apply to every task. Read them once; consult
+[routing-matrix.yaml](routing-matrix.yaml) for task/surface-specific candidates and
+[index.md](index.md) for document discovery.
 
-## Prerequisites
+## Select context
 
-Before loading a skill, read [`AGENTS.md`](../AGENTS.md) and the base rules it requires. Consult
-`.agent/index.md` only when discovery is needed to identify the relevant skill or workflow.
-Prerequisites already loaded in the current task must not be reread.
+- Tracked skills live in .agent/skills/*/SKILL.md and follow [SCHEMA.md](skills/SCHEMA.md).
+- Apply the rules from every route matching the touched surfaces.
+- Select only skills whose description and when_to_use match the current work. A route or role's
+  skills list is a candidate catalog, not an instruction to load all entries.
+- Preconditions describe required context/state. Reuse prerequisites already satisfied in this task;
+  reread only when relevant evidence changed or a new question requires it.
+- related_skills and related_docs are optional references, not recursive activation instructions.
+  Load a supporting reference only for the operation it describes.
+- Skills provide procedure, not additional authority. Apply the current task mode and the owning
+  rules before edits, Git operations, environment access, or external actions.
 
-## Loading Protocol
+## Host discovery and precedence
 
-1. Treat `.agent/skills/*/SKILL.md` as the tracked canonical source.
-2. Load only skills relevant to the current task; never preload the full directory.
-3. Treat skill `preconditions` as required state, not repeated read instructions when already
-   satisfied in the current task.
-4. Follow `related_skills` only when the task needs the additional context.
-5. Respect the frontmatter schema in `.agent/skills/SCHEMA.md`.
-6. If the runtime requires local installation, copy or link the required skill into its supported
-   local location without changing the canonical source.
+Repository skills remain canonical when a host exposes a skill with the same name. Local .agents/ is
+gitignored installation state; configure supported host discovery outside Git. If installation is
+needed, link or copy only the required skill without forking its authority. Verify the host's actual
+discovery support rather than assuming an external_dirs setting exists.
 
-## External Tool Protocols (not repo skills)
+Do not dump global catalogs into this repository, require global skills/remote loaders/lock files,
+add provider-specific root entry files, or encode model selection and invocation APIs in role
+contracts. Product-specific workflows belong here; multi-brand creative infrastructure belongs in
+its own workspace. Keep brand briefs and creative templates in their existing locations.
 
-These are runtime capabilities, not tracked Celebra-me skills under `.agent/skills/`:
+## External tooling
 
-- **Context7 / docs MCP** — optional lookup for current third-party library docs. Integrate by thin
-  references inside framework skills (`astro-patterns`, `backend-engineering`, `supabase`,
-  `testing`). Never install a duplicate `.agent/skills/context7/`.
-- **Impeccable.style** — do not install as a parallel design SSOT (root PRODUCT/DESIGN markdown
-  files are forbidden; no CI `impeccable detect` gate). Selective anti-slop absorption (registers,
-  structural bans, Adapt rules for cream/glass, intervention loop) lives in `frontend-design` and
-  visual-director templates only. Temporary installs for audit must be uninstalled before merge.
-- **Host/global skills** — may exist outside the repository for cross-project tooling. They never
-  override `.agent/skills/`. See External Runtime Discovery below. Do **not** dump a host catalog
-  into this repo. Do **promote** Celebra product workflows (for example staged review, branch lane /
-  release prep, stash cleanup) into `.agent/skills/` when they are part of this product's operating
-  contract, then point the host at `.agent/skills` via its discovery mechanism. For Graphify
-  specifically, `.agent/rules/graphify-ops.md` overrides incompatible host “query first”
-  instructions; operators may also disable a global Graphify skill for this repo when the host
-  supports it.
+- Current third-party docs: use an available official-docs lookup when dependency behavior is
+  uncertain; package.json supplies the version. No duplicate Context7 skill is needed.
+- Graphify: [graphify-ops](rules/graphify-ops.md) owns repository use; a global query-first
+  instruction is incompatible. Graph artifacts are optional leads, never policy or required
+  validation.
+- External design skills: do not install a parallel design SSOT, root PRODUCT/DESIGN files, or an
+  Impeccable CI gate. Existing brand, frontend-design, theme, and creative contracts own the work;
+  temporary audit installations must be removed before merge.
 
-## Constraints
-
-- Do not require global skills, provider-specific configuration, remote lock files, or remote
-  loaders.
-- `.agents/` is gitignored local installation state and is never an authority source.
-- Do not treat a local or global skill with the same name as overriding `.agent/skills/`.
-- Do not assume a specific provider, model, tool name, or subagent invocation API.
-- If a skill contradicts the live codebase, the live codebase wins.
-
-## External Runtime Discovery
-
-Provider-neutral rule: runtimes may discover this repository's skills, but the repo remains the
-canonical source.
-
-- Do **not** create provider-specific entry files (for example host-named `*.md` at the repo root).
-  `AGENTS.md` is the only project entry point.
-- Do **not** copy a host's global skill catalog into `.agent/skills/` as a dump or mirror.
-- Do **promote** Celebra-owned workflows into `.agent/skills/` (SCHEMA-compliant, provider-neutral)
-  when they belong to this product; after promotion, host copies should stub/redirect here so
-  `.agent/skills/` remains the single authority.
-- Do **not** re-host multi-brand creative infrastructure inside this product repo.
-- Local/host config (gitignored) may point at this repo's `.agent/skills/` path so the host can load
-  Celebra-me skills without forking them (for example an `external_dirs`-style discovery list).
-- Creative brand contracts for Celebra-me stay in `.agent/briefs/`, `.agent/templates/`, and role
-  YAML under `.agent/agents/`.
-
-### Host discovery verification
-
-Expected host setup for this repo (configure outside git; do not commit host config):
-
-- Include the repository-relative path `.agent/skills` (as an absolute path from the checkout) in
-  the host's external skill discovery list.
-- Keep any cross-project creative skills in their own external dir; do not merge them into
-  Celebra-me's `.agent/skills/`.
-- If Celebra-me repo skills are missing from host discovery, fix the host discovery entry — do not
-  duplicate skills into the host's global tree.
-
-Concrete Codex / Cursor / other host setup is operator configuration outside this repository. It
-never overrides this protocol or `AGENTS.md`, and must not duplicate repository policy into provider
-globals.
-
-### Host catalogs vs Celebra-me skills
-
-Host global categories (tooling discovery, non-authoritative) stay on the host.
-
-Celebra-me tracked skills (canonical) cover product contracts only — see `.agent/index.md` and
-`.agent/skills/`. Deprecated stubs (for example former `release-prepare`, absorbed into
-`branch-lane`) must not be reintroduced as parallel skills.
-
-**Rule:** Hosts provide tooling discovery; `.agent/` provides Celebra-me authority. Overlap in names
-never overrides `.agent/skills/`.
+Live implementation is evidence of current behavior, not permission to weaken a critical contract.
+Report discrepancies instead of treating an implementation defect as an override.

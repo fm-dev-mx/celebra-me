@@ -1,10 +1,10 @@
 ---
 name: astro-patterns
 description:
-  Apply idiomatic Astro patterns to optimize performance, maintainability, and leverage framework
-  features correctly. Covers Content Collections, BFF data fetching, and Image Optimization.
+  Implement or review Astro SSR, hydration, content loading, and image delivery while preserving
+  Celebra-me rendering, cache, managed-content, and server/client contracts.
 domain: frontend
-version: 1.0.0
+version: 1.1.0
 when_to_use:
   - Editing Astro pages, components, collections, or client boundaries
   - Reviewing SSR, hydration, and content-loading patterns
@@ -24,100 +24,32 @@ related_docs:
 
 # Astro Patterns
 
-> **Related skills**: [`backend-engineering`](../backend-engineering/SKILL.md) for API routes.
+Use for SSR, hydration, content loading, and image-delivery changes. The execution model is owned by
+[architecture](../../../docs/core/architecture.md) and astro.config.mjs; do not impose a static
+shell or server-island migration on an unrelated task.
 
-This skill governs **Astro Component Architecture** in Celebra-me. It focuses on how components
-render, fetch data, and interact with the client.
+## Rendering and data
 
-## Current Framework Docs (Context7)
+- Trace the actual route, content resolver, layout, and hydrated consumer. Preserve the current SSR
+  and cache contract, including
+  [public/private invitation responses](../../../docs/domains/invitations/public-response-cache-policy.md).
+- Content collections are sources where the active resolver uses them; real client invitations use
+  the managed published-content pipeline. Do not replace it with static event examples.
+- Keep database access, secrets, and Node APIs on the server. Pass only the intended serialized
+  client data to islands; use the existing service/API boundary for authenticated interactions.
+- Choose hydration according to when the interaction is needed and verify the affected behavior. Do
+  not add client directives to static content or change a working directive by category alone.
 
-When Astro, `@astrojs/*`, or hydration API details are uncertain, consult current library docs via
-Context7 (or the runtime's equivalent docs MCP) using the versions pinned in `package.json`. Do not
-add a repo-local Context7 skill. Context7 never overrides Celebra-me contracts, live code, or
-canonical `docs/`.
+## Assets and components
 
-## Data Fetching Strategies
+- Inspect the existing image owner: bundled assets, managed remote media, social metadata, and
+  dynamic lightbox images do not all use the same delivery path. Reuse astro:assets or the managed
+  normalization/delivery helpers appropriate to that source. Preserve dimensions, responsive
+  sources, focal points, loading priority, and alternative text.
+- Public assets are URL resources, not module imports. Reuse existing component Props and aliases;
+  do not copy illustrative APIs or introduce duplicate interfaces for unchanged components.
+- Validate SSR/client separation and the affected route or component with the Gatekeeper tier. Add
+  browser evidence only when the changed rendering or interaction requires it.
 
-### 1. Static Content (Build Time)
-
-Use **Content Collections** for data that doesn't change between builds (event details, themes).
-
-```astro
----
-import { getEntry } from 'astro:content';
-const event = await getEntry('events', 'my-event');
----
-
-<h1>{event.data.title}</h1>
-```
-
-### 2. Dynamic Content (Runtime - BFF Pattern)
-
-For user-specific data (RSVP status, guest counts), use a **Backend-for-Frontend (BFF)** pattern. Do
-NOT fetch directly from the DB in `.astro` components if it prevents static caching of the shell.
-
-#### Preferred: Server Islands (Astro 5+)
-
-```astro
-<EventHeader />
-<!-- Static -->
-<server-island-guest-status>
-  <GuestStatus server:defer />
-  <!-- Dynamic, loads later -->
-</server-island-guest-status>
-```
-
-#### Alternative: Client Fetch
-
-```astro
----
-// Wrapper component
----
-
-<GuestDashboard client:load eventId={id} />
-```
-
-## Partial Hydration Rules
-
-| Directive        | Use Case                          | Example               |
-| :--------------- | :-------------------------------- | :-------------------- |
-| `client:load`    | Critical interactivity above fold | RSVP Form, Main Nav   |
-| `client:visible` | Heavy components below fold       | Image Gallery, Maps   |
-| `client:idle`    | Low priority background tasks     | Analytics, Preloading |
-| `client:media`   | Device-specific features          | Mobile-only effects   |
-
-## Image Optimization
-
-Always use `astro:assets`.
-
-```astro
----
-import { Image } from 'astro:assets';
-import heroImg from '../assets/hero.jpg';
----
-
-<Image src={heroImg} alt="Hero" w={1200} format="webp" />
-```
-
-## Component Architecture
-
-### The "Islands" Mental Model
-
-Think of your page as a static ocean (HTML) with dynamic islands (React/Preact).
-
-- **Static Ocean**: Layouts, Typography, SEO, Images.
-- **Dynamic Islands**: Forms, Interactive Maps, Audio Players.
-
-### Props Interface
-
-Start every component with a typed interface.
-
-```astro
----
-interface Props {
-  title: string;
-  variant?: 'primary' | 'secondary';
-}
-const { title, variant = 'primary' } = Astro.props;
----
-```
+For uncertain Astro APIs, use official docs for the versions pinned in package.json. Current source
+and the architectural contract take precedence over generic framework examples.

@@ -1,14 +1,9 @@
 ---
 name: database-parity
 description: |
-  Authoritative branch-lane delegate for database-sensitive validation: migration identity/content
-  findings, automatic read-only diagnosis of correctable audit failures (including
-  persistent-local vs disposable drift), Local/Preview/Production read-only audits when credentials
-  resolve, Production guest/RSVP backup coverage reasoned by risk (not calendar date alone),
-  Git-only promote compatibility gating, checkpoint updates, and clearance fingerprint updates.
-  Invoked automatically by branch-lane — not a separate user entry point for the lane flow.
+  Validate migration identity, schema compatibility, and backup evidence for a database-sensitive branch/release range. Use standalone for an explicit parity audit or when branch-lane requires it; database access remains governed by database rules.
 domain: workflow
-version: 2.1.0
+version: 2.1.1
 when_to_use:
   - branch-lane sets requiresParityAudit or identityStatus fail handling
   - User asks for a database-parity audit between main and develop (standalone)
@@ -152,8 +147,8 @@ Inventory `.backups/prod/` (no commit). Use `evaluateProductionBackupRequirement
 
 - Require a **fresh pre-migration** Production backup to capture state immediately before migrate.
 - Do **not** require a separate backup solely because the newest dump has a different calendar date.
-- When `pnpm db:migrate -- --target production` already creates the pre-migration backup, fold that into migrate
-  authorization rather than a date-skew-only backup prompt.
+- When `pnpm db:migrate -- --target production` already creates the pre-migration backup, fold that
+  into migrate authorization rather than a date-skew-only backup prompt.
 - Empty or unusable inventory → `Needs authorization` for `pnpm db:prod:backup`.
 
 **Preview is never a Production backup.**

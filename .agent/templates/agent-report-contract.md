@@ -1,7 +1,7 @@
 ---
 template: agent-report-contract
-purpose: Shared human-facing report hierarchy and Decision/MCQ rules for agent skills
-version: 1.2.0
+purpose: Human-facing evidence reports and material decision prompts
+version: 1.3.0
 applies_to:
   - .agent/workflows/error-remediation.md
   - .agent/skills/staged-code-review
@@ -11,90 +11,36 @@ applies_to:
 
 # Agent Report Contract
 
-Normative layout for user-facing reports from the skills/workflows listed in frontmatter. Does not
-change gate semantics, git authorization, or when those skills run. This is presentation layout
-only — Task Contract and Handoff Contract authority live in `.agent/plans/README.md`.
+Presentation guidance for the listed workflows. Task/Handoff semantics remain in
+[plans/README.md](../plans/README.md); this template grants no edit, Git, or environment authority.
+Follow the user's requested output format. Preserve the workflow's required evidence and statuses.
 
-## Report order (required)
+## Report content
 
-1. **Verdict** (≤3 lines): status counts or atomicity + the single most important fact.
-2. **Body**: findings, commits, or diagnostic detail (priority / commit order).
-3. **Decision** (required close): one-line CTA when no choice is needed, or one MCQ (rules below).
-4. **Ops footer** (only if relevant): verify results, stash name, cycle counter.
+Lead with the verdict and material finding. Include actionable findings or commit boundaries,
+expected vs observed behavior, why it matters, the concrete correction, and supporting file/line or
+validation evidence. Keep risk, cleanup, apply-tags, and mixed staged/unstaged state explicit when
+those distinctions affect the next action.
 
-## Typography (markdown-only)
+Use short prose, lists, or cards according to complexity. Omit empty sections and repeated
+summaries. Report validation passed/failed/not run, residual risks, and session/stash state when
+relevant. Examples in [agent-report-samples.md](agent-report-samples.md) are layouts, not extra
+gates.
 
-| Level | Use |
-| --- | --- |
-| `#` | Report title (once) |
-| `##` | Major sections (priority bands, Decision, manual blockers) |
-| `###` | One finding, one commit unit, or one error |
-| **Bold** | Field labels and the verdict line only |
-| Meta line | `path:line · impact · type` — not in the `###` title when avoidable |
+## Decisions and authorization
 
-LOW findings and routine “Applied” lists MAY be compact bullets or tables. HIGH findings, manual
-blockers, and each proposed commit MUST be full cards with separate labeled lines.
+- Ask only for missing material intent, scope, acceptance, or permission required by the owning
+  rule. Continue already-authorized work without a proceed/stop prompt or cosmetic feedback gate.
+- Ask one question at a time. When options clarify a tradeoff, offer two or three meaningful choices
+  ordered by recommendation (a first); do not invent a third option merely to fill a template.
+- Describe the exact action and consequence briefly. Never recommend a policy-violating option.
+- Bind approval to the actual pending action and scope. Do not interpret an ambiguous affirmative as
+  permission for a broader option, destructive operation, or unrelated Git/environment write.
+  Clarify only if the intended authorized action remains ambiguous.
+- Reuse explicit current-task authorization; do not ask again between commits of an approved plan or
+  for a remediation choice already made. New scope or protected-state drift requires the owning
+  policy's decision process.
+- Keep required failure escalation and human acceptance gates. A shorter report never waives them.
 
-## Expanded card fields
-
-- **What** (symptom or intent) — short `###` title
-- **Why** — one short block (matters / boundary)
-- **Fix** / message / next action — concrete
-- Optional meta: `~N` lines, staging command, verify evidence
-
-Do not cram Issue / Why / Fix into one paragraph.
-
-## Decision prompts (MCQ)
-
-- At most **one** MCQ block per response; place it only under **Decision**.
-- Use an MCQ **only if** at least one holds:
-  - real trade-off the agent must not assume
-  - irreversible or high-risk next step
-  - user must choose scope
-  - remediation exhausted (cycle 3) or overlapping / ambiguous worktree
-  - git recovery that could destroy work
-  - commit plan **ambiguous**
-- Otherwise use a single CTA (proceed / stop) or no question when nothing is asked of the user.
-- When an MCQ is used, it **must** have exactly **three** options — `a`, `b`, `c` — mutually
-  exclusive, ordered by relevance (`a` most relevant / recommended → `c` least / safest stop).
-- **`a` is always the recommended default**, labeled `**(recomendado)**` (or equivalent in the
-  user’s language).
-- Never put the destructive or policy-violating option in `a`. Prefer `c` for stop / pause / do
-  nothing when that is the conservative choice and not the recommendation.
-- Ambiguous affirmatives (“sí”, “ok”, “adelante”) mean **`a`** when an MCQ was shown.
-- Do not MCQ between commits of an already approved plan; do not ask cosmetic / feedback questions.
-
-### Option copy (required)
-
-Each option MUST be formatted as a structured bullet item with high visual hierarchy: bold option label, action title, objective, and concrete example/steps. Never collapse options into unreadable single-line paragraphs. Concrete and aesthetic — not saturated. No gate jargon, no path dumps, no restating the full verdict. Prefer a short name or type (`guests.ts`, “partial SCSS”) over long paths. `c` may omit the sub-bullets when it is simply a safe stop/pause.
-
-### MCQ shape (always three options)
-
-```md
-## Decisión
-
-<one sentence: why a choice is required>
-
-**¿Cómo quiere proceder?**
-
-- **a)** `[Recomendado]` — **<Título de Acción / Objetivo>**
-  - **Objetivo:** <resultado deseado>
-  - **Pasos / Ej.:** <acción concreta o archivos>
-
-- **b)** **<Título de Acción / Objetivo>**
-  - **Objetivo:** <resultado deseado>
-  - **Pasos / Ej.:** <acción concreta o archivos>
-
-- **c)** **<Título de Acción / Pausa>**
-  - **Objetivo:** <detener o mantener estado seguro>
-  - **Pasos / Ej.:** <pausa sin cambios>
-```
-
-## Language
-
-Match the user’s language for report prose. Commit subjects and code identifiers follow existing
-repository rules (unchanged by this contract).
-
-## Samples
-
-See [`agent-report-samples.md`](./agent-report-samples.md).
+Match the user's language for report prose; technical identifiers and commit messages follow the
+repository language rules.

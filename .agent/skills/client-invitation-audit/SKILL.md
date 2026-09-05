@@ -1,14 +1,9 @@
 ---
 name: client-invitation-audit
 description: |
-  Pre-implementation preparation and audit for a real (non-demo) client invitation: conversational
-  intake UX, WhatsApp/chat fact classification, event-completeness evaluation, asset inventory,
-  info-hygiene, prepReadiness aligned to invitation-preparation helpers, theme/preset check,
-  section audit, demo-counterpart invariants, and a two-lane client-vs-theme spec. Preparation may
-  begin before implementation; implementation requires prepReadiness ≠ NOT_READY and task
-  authorization.
+  Prepare or audit a real client invitation: classify supplied facts and assets, evaluate preparation readiness, and separate client-specific from reusable-theme work. Not for pure demos, performance audits, or staged review.
 domain: workflow
-version: 2.1.0
+version: 2.1.1
 when_to_use:
   - Preparing a new real client invitation before implementation
   - Resuming preparation from docs/invitations/<slug>.md
@@ -21,7 +16,8 @@ preconditions:
   - Read .agent/rules/gatekeeper.md
   - Read docs/core/invitation-preparation-contract.md
   - Read .agent/workflows/invitation-preparation.md when running preparation
-  - Load src/lib/invitation-preparation/ helpers as evaluation SSOT (cite outcomes; run `pnpm validate:invitation-preparation`)
+  - Load src/lib/invitation-preparation/ helpers as evaluation SSOT (cite outcomes; run `pnpm
+    validate:invitation-preparation`)
 related_skills:
   - theme-architecture
   - demo-content-consistency
@@ -49,8 +45,8 @@ Structured discovery and preparation analysis for a **real** invitation. Covers:
 2. **Implementation audit** — pipeline identification, theme/preset lanes, section and asset audit,
    two-lane spec (only when prepReadiness allows and the task authorizes implementation work).
 
-**Does not own:** apply/publish lifecycle (`docs/domains/intake/production-flow.md`), dashboard intake publish
-state (`intake-publishing`), identity field lists beyond preparation completeness
+**Does not own:** apply/publish lifecycle (`docs/domains/intake/production-flow.md`), dashboard
+intake publish state (`intake-publishing`), identity field lists beyond preparation completeness
 (`invitation-creation-contract` — load post-prep), or production safety hard-stops
 (`invitation-production` — load when mutating/publishing).
 
@@ -64,13 +60,13 @@ Do not use for pure demos, performance audits, or staged code review.
 
 ## Inputs
 
-| Input | Required for preparation | Notes |
-| ----- | ------------------------ | ----- |
-| Event type | yes | Live `EVENT_TYPES` (`cumple`, not `cumpleanos`) |
-| Chat / WhatsApp material | yes | **Evidence** (text + media claims) — see WhatsApp + hygiene contracts |
-| High-resolution (HR) photo URL and/or source asset path | yes | **Asset source** — refuse inventory without it |
-| Invitation slug | when writing Markdown | May be `requires_owner_decision` initially; freeze only with verified orthography |
-| Existing `docs/invitations/<slug>.md` | when resuming | Canonical state; update in place |
+| Input                                                   | Required for preparation | Notes                                                                             |
+| ------------------------------------------------------- | ------------------------ | --------------------------------------------------------------------------------- |
+| Event type                                              | yes                      | Live `EVENT_TYPES` (`cumple`, not `cumpleanos`)                                   |
+| Chat / WhatsApp material                                | yes                      | **Evidence** (text + media claims) — see WhatsApp + hygiene contracts             |
+| High-resolution (HR) photo URL and/or source asset path | yes                      | **Asset source** — refuse inventory without it                                    |
+| Invitation slug                                         | when writing Markdown    | May be `requires_owner_decision` initially; freeze only with verified orthography |
+| Existing `docs/invitations/<slug>.md`                   | when resuming            | Canonical state; update in place                                                  |
 
 ## Content profiles (demo counterpart)
 
@@ -163,16 +159,15 @@ risk for managed WebP delivery.
 - No selection → recommend from `DEMO_PRESET_CATALOG` + sections/assets; leave final selection as
   `requires_owner_decision`.
 - Colors: preserve client colors; otherwise recommend separately.
-- **Identity spelling freeze:** slug + `hostLoginAlias` only after verified orthography (or
-  recorded owner override).
+- **Identity spelling freeze:** slug + `hostLoginAlias` only after verified orthography (or recorded
+  owner override).
 
 Record recommendations only under Agent Recommendations.
 
 ### Phase P4 — Placeholders, owner pack, prepReadiness (script C6–C7)
 
 - Controlled tokens via `createPlaceholderToken` / `[[PENDIENTE:FIELD]]`.
-- Build **one** consolidated pack with `buildOwnerDecisionPack` /
-  `formatOwnerDecisionPackMarkdown`.
+- Build **one** consolidated pack with `buildOwnerDecisionPack` / `formatOwnerDecisionPackMarkdown`.
 - Evaluate `evaluatePreparationReadiness` + `summarizeAssetQuality`.
 - Write Markdown prepReadiness to **match the helper**. Provisional-only assets ⇒ ceiling
   `READY_WITH_PLACEHOLDERS`, never `READY_FOR_IMPLEMENTATION`.
@@ -248,8 +243,7 @@ Merge conflicts / promote / Preview-Production apply remain **publication** scop
 
 ## Parallelism
 
-For large inventories, group phases with
-`.agent/rules/agent-routing.md`. Otherwise stay sequential.
+For large inventories, group phases with `.agent/rules/agent-routing.md`. Otherwise stay sequential.
 
 ## Pitfalls
 
@@ -270,5 +264,6 @@ For large inventories, group phases with
 - Preparation Markdown updates are allowed when the task authorizes preparation work.
 - Implementation code changes remain blocked while prepReadiness is `NOT_READY`.
 - Markdown prepReadiness must match `evaluatePreparationReadiness`.
-- No Preview/Production mutation, staging, or commits from this skill without explicit authorization.
+- No Preview/Production mutation, staging, or commits from this skill without explicit
+  authorization.
 - Visible copy stays Spanish; identifiers/comments English.
