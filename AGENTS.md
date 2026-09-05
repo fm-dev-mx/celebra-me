@@ -8,8 +8,8 @@ dashboard, RSVP operations, and publishing. This is the canonical entry point fo
 Apply this order when instructions conflict:
 
 1. Non-overridable platform and organization safeguards.
-2. Repository policies and invariants explicitly marked as non-overridable (this file’s Non-Negotiable
-   Boundaries and their owning rules).
+2. Repository policies and invariants explicitly marked as non-overridable (this file’s
+   Non-Negotiable Boundaries and their owning rules).
 3. Explicit current-task authorization, within repository-defined boundaries.
 4. Other repository safety, domain, workflow, and operational policy (`.agent/rules/`, skills,
    workflows, `docs/core/`, `docs/domains/`, briefs, templates).
@@ -58,8 +58,8 @@ These are **non-overridable** unless a cited owning rule explicitly marks a narr
 - **Server/Client Boundary:** Astro server-only code (DB, secrets, Node APIs) must never leak into
   client islands (`client:*`).
 - **Command Authority:** `package.json` is the SSOT for available scripts.
-- **Invitation Slug:** Never prefix `slug` with `eventType`. Routes are `/{eventType}/{slug}`
-  (e.g. `/boda/daniela-y-martin`). See `docs/core/invitation-creation-contract.md`.
+- **Invitation Slug:** Never prefix `slug` with `eventType`. Routes are `/{eventType}/{slug}` (e.g.
+  `/boda/daniela-y-martin`). See `docs/core/invitation-creation-contract.md`.
 
 ## Context Discovery & Routing
 
@@ -69,7 +69,7 @@ These are **non-overridable** unless a cited owning rule explicitly marks a narr
   for Git rules.
 - Load only the smallest relevant rule, workflow, skill, or domain doc.
 
-## Planning & Validation
+## Definition of Done & Planning
 
 - Task Contract, Goal protocol, and Handoff Contract live in `.agent/plans/README.md`. Conversation,
   tracked plans, and role delegation are projections of the same Task Contract.
@@ -77,4 +77,7 @@ These are **non-overridable** unless a cited owning rule explicitly marks a narr
   `.agent/plans/README.md`.
 - Validation tiers are defined in `.agent/rules/gatekeeper.md` using `package.json` script aliases
   (`validate:changed`, `type-check`, `pnpm run ci`).
-- Close mutable sessions with `pnpm agent:git-safety:finish` (see `.agent/rules/git-safety.md`).
+- Completion requires the requested outcome, passing applicable checks, and explicit reporting of
+  failures, skips, and remaining risks. Preserve required human acceptance gates.
+- Before edits, read `docs/core/git-safety-session.md` and run `pnpm agent:git-safety:start`; close
+  the mutable session with `pnpm agent:git-safety:finish`.

@@ -1,0 +1,314 @@
+# Validation and Review Procedures
+
+Detailed procedures implementing Gatekeeper. Load the relevant section when selecting review scope,
+validation, release evidence, or visual proof. These procedures grant no additional authority.
+
+## 1) Scope of Operation
+
+- The active Task Contract `operation_mode` controls whether this document may edit files:
+  `audit`/`validate` are report-only, `implement` permits only the authorized scope, and `remediate`
+  permits only the confirmed finding set. This rule never grants Git, database, deployment, or
+  provider authority.
+- The review/remediation process primarily operates on the current task scope and should inspect the
+  actual diff that is being reviewed.
+- If staged changes exist, prefer them as the clearest review boundary.
+- It must prioritize keeping the repository **buildable and deployable**.
+
+### Exception — Repository Hygiene
+
+The agent may report files **outside the initial diff scope** when repository hygiene requires
+attention, including:
+
+- forbidden artifacts that may need removal,
+- `.gitignore` updates that may prevent repeated artifacts.
+
+Any such change outside the initial diff scope requires explicit repository-owner authorization and
+must be explicitly reported as an extra action.
+
+---
+
+## 3) Allowed Actions
+
+### 3.1 Auto-Fixes
+
+In `implement` or `remediate` mode, the agent may automatically fix:
+
+- broken or unused imports,
+- obvious typing issues,
+- **new `any` introduced by the reviewed scope** (replace with `unknown` + narrowing when safe),
+- incorrect casing,
+- UI strings violating language rules,
+- Tailwind removal with SCSS replacement (within limits),
+- minor accessibility issues.
+
+---
+
+### 3.2 Refactors (Bounded)
+
+In `implement` mode, the agent may perform **small to medium refactors** provided that they:
+
+- stay within the same feature or module,
+- improve clarity or correctness,
+- do not change public APIs,
+- do not introduce new abstractions.
+
+Cross-cutting or architectural refactors require an explicit `implement` Task Contract with bounded
+file boundaries and acceptance criteria; otherwise they are not allowed.
+
+---
+
+## 4) Large Change Mode (Review/Remediation)
+
+The agent reviewing an existing diff must switch to **Large Change Mode** when any of the following
+apply:
+
+- **≥ 25 files** are in scope, or
+- **≥ 800 total lines** are changed (additions + deletions), or
+- changes affect structural configuration or core folders (e.g. `src/pages`, `src/styles`,
+  `tsconfig`, `astro.config`, `package.json`).
+
+### Behavior in Large Change Mode
+
+Large Change Mode does not override an explicitly authorized `implement` Task Contract. It limits
+review/remediation of a pre-existing broad diff to the actions below:
+
+- Fix only:
+  - build or deploy breakers,
+  - hard guard violations (artifacts, casing, boundary leaks),
+  - **new `any` introduced by the reviewed scope** (block/must-fix), avoiding non-trivial typing
+    refactors.
+- Report all other findings without applying changes.
+
+---
+
+## 4.5) Release and CHANGELOG Checkpoints
+
+When the reviewed work is a **release checkpoint** or a clearly product-visible milestone:
+
+- Require an explicit `CHANGELOG note:` verdict matching commit-planner: `update Unreleased` or
+  `n/a — not a product milestone` (the latter is wrong for a release cut).
+- For a release cut / tag, confirm the pre-tag checklist in
+  [`docs/core/release-process.md`](release-process.md) (real Unreleased bullets, no invitation ops
+  dump, schema summarized only, promote + reset, version + tag alignment).
+- Confirm `CHANGELOG.md` `[Unreleased]` (or the versioned section being cut) matches the layered
+  policy in that same doc.
+- Do not demand a changelog bullet for every commit or every migration file.
+- Prefer invitation ops detail under `docs/invitations/` and schema history under
+  `supabase/migrations/`.
+
+---
+
+## 5) Verification Protocol
+
+Non-trivial remediations must record **REGRESSION_DECISION** per
+[`.agent/workflows/error-remediation.md`](../../.agent/workflows/error-remediation.md). Regression
+locks must stay **editor-resilient** per
+[`.agent/skills/testing/SKILL.md`](../../.agent/skills/testing/SKILL.md) (Invitation Copy
+Assertions) — do not add brittle content-coupled asserts.
+
+### 5.1 Script Detection
+
+- Read `package.json`.
+- Detect available scripts dynamically.
+
+### 5.2 Execution Order
+
+Run the closest available match, **scaled to the change scope**:
+
+**A) Small localized style/copy/asset changes — fast local confidence:**
+
+```sh
+pnpm validate:changed      # Agent default when the WORKING TREE matches task scope
+pnpm agent:git-safety:finish
+```
+
+Agents normally cannot stage changes, so `pnpm validate:changed` is the default fast path. It
+validates tracked, staged, and untracked working-tree files without modifying the Git index. When
+unrelated user-owned changes are present, do not let them widen validation scope: run the
+corresponding lint, format, or related-test command against the explicit task files and report the
+excluded pre-existing scope.
+
+Use `pnpm validate:staged` instead only when the requested review boundary is explicitly the staged
+index, such as a human pre-commit check. It does not look at unstaged edits and no-ops successfully
+when there are no staged matching files. Do not run both commands for the same file set.
+
+Prettier is intentionally **advisory** here: the repo carries pre-existing formatting debt in
+reviewed files that is not part of the workflow change. Blocking on that debt would conflate scope.
+ESLint, Stylelint, and related Jest are hard gates. New or modified files in the workflow commit
+must still be formatted — advisory is not a license to commit unformatted code.
+
+Markdown table readability is validated in the same changed/staged scope. Excessive cell prose is a
+hard gate; column count and moderately long cells remain advisory so compact matrices and existing
+technical tables do not become false positives.
+
+**B) Shared component, schema, adapter, render-data, routing, Supabase, or content-resolution
+changes — broader local feedback:**
+
+```sh
+pnpm validate:changed      # ESLint + Stylelint + Prettier + related Jest on WORKING-TREE files
+pnpm type-check            # When TS/Astro contracts, types, schemas, adapters, or routing can change
+pnpm validate:event-parity # when event/content parity can be affected
+pnpm agent:git-safety:finish
+```
+
+Use `pnpm validate:changed` when you have unstaged edits you want feedback on before staging. Use
+`pnpm test:changed` only as a standalone staged-source Jest check; do not run it after
+`pnpm validate:changed`, which already runs related Jest tests. The unrelated-worktree scope rule
+from Tier A also applies here.
+
+`pnpm type-check` is required when executable TypeScript or Astro changes can affect shared
+contracts, type flow, schemas, adapters, render assembly, or routing. It is not required for
+documentation, copy-only, asset-only, or SCSS-only changes. Prefer focused domain validation when it
+proves the changed contract more directly.
+
+```sh
+pnpm run ci                  # Canonical package.json script alias for full pipeline Tier C
+pnpm agent:git-safety:finish # Interactive session close — not part of CI
+```
+
+`pnpm run ci` is the canonical full-pipeline equivalent of Tier C. It runs `pnpm type-check`,
+`pnpm validate:structure`, `pnpm lint`, `pnpm lint:styles`, `pnpm validate:ui-governance`,
+`pnpm validate:event-parity`, `pnpm validate:no-pii`, `pnpm validate:invitation-preparation`,
+`pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. It does **not** invoke interactive Git Safety
+(that requires a same-session baseline). Use `pnpm ci:quick` for fast feedback only.
+
+Close the mutable agent session with `pnpm agent:git-safety:finish` after Tier C when a session was
+started. See `.agent/rules/git-safety.md`.
+
+The pre-push hook intentionally remains lean (commit-message validation only); do not move tests or
+type-checks into pre-push.
+
+### 5.3 Visual evidence (screenshots and browser proof)
+
+Choose the evidence class **before** launching screenshot or browser tools. This section owns
+proportional visual validation; [`scripts/screenshot/README.md`](../../scripts/screenshot/README.md)
+owns tool mechanics and flags.
+
+Evidence hierarchy — consume evidence in this order and stop at the first layer that proves the
+contract:
+
+1. Focused test result and exit status.
+2. Concise `preflight.json` and final `report.json` summaries.
+3. Exact filesystem or manifest assertions.
+4. Targeted log excerpts for failures or disputed results only.
+5. Individual screenshots only when visual judgment is required.
+
+Do not load every generated image, a complete manifest, a full diff, or an entire log by default.
+
+- **Change class:** Material layout, reveal, hero, or section composition
+  - **Evidence class:** **Required**
+  - **Minimum sufficient proof:** Same route; primary viewport (`mobile-standard` unless
+    desktop-only); smallest strict target (`--sections=<id>`, `--set=reveal-only`, or a single
+    affected step); reuse an already-running `pnpm dev`
+- **Change class:** Reference-driven redesign closing an approved brief
+  - **Evidence class:** **Required** (scoped)
+  - **Minimum sufficient proof:** Viewports listed in the brief — not an automatic five-viewport or
+    full interactive default
+- **Change class:** Work under
+  [`docs/domains/theme/section-intersections.md`](../domains/theme/section-intersections.md)
+  - **Evidence class:** **Required**
+  - **Minimum sufficient proof:** Follow that domain matrix only for intersection work; **do not**
+    generalize it to all UI
+- **Change class:** Copy-only, token/color without layout, docs, backend
+  - **Evidence class:** **Unnecessary**
+  - **Minimum sufficient proof:** Skip screenshots
+- **Change class:** Selector presence, overflow, or simple DOM checks
+  - **Evidence class:** **Replaceable**
+  - **Minimum sufficient proof:** Browser snapshot, CDP/`getBoundingClientRect`, or a focused
+    Playwright assert
+- **Change class:** Habitual `full-qa` / `all-sections` / full profile / all invitations
+  - **Evidence class:** **Reducible**
+  - **Minimum sufficient proof:** Prefer one viewport; widen only after a failed or inconclusive
+    minimum pass, or when the owner asks for a full audit
+
+Rules:
+
+- Default capture when screenshots are justified: **one route × one viewport × smallest target**.
+  Use full `critical-qa` / multi-viewport / `all-sections` only when reveal+open composition is in
+  scope, a brief/domain doc requires it, or the minimum pass failed.
+- Reuse an existing server; do not start parallel full screenshot batches against a cold Vite
+  optimize-dep without need.
+- Preserve full visual proof when risk justifies it (invitation ship QA, section-intersection
+  acceptance, reference-driven acceptance). Do not weaken required coverage for those cases.
+- Screenshot validation is impact-driven, not a default closure gate. Visible content, assets,
+  styles, layout, rendered components, browser interactions, and screenshot infrastructure require
+  proportional visual verification; backend-only, observability, CLI, metadata, and provenance
+  changes do not require screenshots unless they affect the screenshot mechanism.
+- Use the smallest representative invitation, section, and viewport set for the change. Full-corpus
+  execution requires explicit justification in the task record. Capture once after implementation
+  stabilizes; repeat only when the earlier evidence is stale or invalidated by a later change. A
+  successful browser check is reusable when no relevant code, configuration, content, asset, server,
+  or acceptance criterion changed.
+- Start with the smallest relevant pure or controlled-integration check. Expand to one
+  representative Local browser check only when that layer leaves a browser contract unresolved or
+  fails. Before every expansion, state the unresolved contract it will prove.
+- Do not rerun a successful browser check without an explicit invalidation reason. Stop when the
+  acceptance criteria are supported by current evidence; a clean gate is not a reason to collect
+  more evidence.
+- Reserve full corpus, hosted Preview, Production, and provider-backed checks for contracts Local
+  cannot prove or for an explicit requirement. State that limitation and the reason before running
+  them; never increase provider or network use merely to measure efficiency.
+- Summarize the selected plan, results, failures, and artifact paths in the closing report.
+- Name the validation tier (A/B/C) and any visual-evidence skips in the closing report.
+
+Default operating budget:
+
+- One representative route × one viewport × the smallest target first.
+- At most one browser execution per unresolved integration contract; widen only after failure,
+  inconclusive evidence, or an explicit requirement.
+- No full corpus without technical justification, no hosted provider when Local proves the same
+  behavior, and no image inspection unless appearance determines the result.
+- Do not repeat a clean final gate unless a later change invalidated it.
+
+When expected work exceeds these defaults, briefly justify the additional scope before executing it.
+
+### 5.4 Context-efficiency rules
+
+The audit identified the main high-consumption failure modes as repeated reads of unchanged files or
+already-established architecture, bulk ingestion of logs/manifests/diffs/images, repeated checks
+whose evidence was still valid, verbose duplicated progress summaries, and investigation continuing
+after acceptance was already demonstrated.
+
+- Use `rg` and focused line ranges first. Reopen an unchanged file only when a new question depends
+  on it; carry forward concise summaries and current evidence.
+- Summarize long command output at the source. Report only commands, status/exit code, failures,
+  material warnings, and affected files or artifact paths.
+- Progress updates must contain only new findings or a changed direction. Do not restate conclusions
+  already established in the same goal.
+- Treat unusually high token consumption as a process defect: explain the cause in the closing
+  report and tighten the next validation expansion. This is a proportional escalation trigger, not a
+  rigid token limit that can force incomplete or unsafe work.
+
+Screenshot infrastructure guardrails:
+
+- Routine screenshot evidence is Local-first. Preview is only for distinct deployment,
+  authentication, remote-asset, or runtime evidence; Production is not a routine screenshot target.
+- `pnpm screenshot --config=...` must validate every configured page and resolve the complete batch
+  before launching its first browser. Targeted requests must not expand route, section, viewport, or
+  artifact scope. Use `--allow-large=true` only for an intentional batch above the normal budget.
+- `pnpm screenshot:local-render-corpus` is an explicit high-cost corpus operation. Prefer a single
+  route, one viewport, and the smallest target for agent evidence; do not run the corpus to validate
+  a localized change.
+- Screenshot preflight/report records and diagnostics must not persist or print credentials,
+  cookies, signed URLs, query values, tokens, or personal invitation data. Cite record paths and
+  summarize failures rather than attaching complete logs or image inventories.
+- Efficiency work must not add telemetry or external uploads of prompts, logs, screenshots, or
+  repository data. Keep token/accounting metadata at the agent/process layer, separate from runtime
+  application behavior.
+- The canonical screenshot contract and representative test matrix live in
+  [`docs/core/screenshot-tool-contract.md`](screenshot-tool-contract.md) and
+  [`scripts/screenshot/README.md`](../../scripts/screenshot/README.md).
+
+---
+
+## 7) Non-Goals
+
+The Gatekeeper must not:
+
+- invent new architectural rules,
+- introduce new features,
+- perform large rewrites,
+- optimize prematurely,
+- override these rules silently.
+
+When in doubt, **report instead of acting**.
