@@ -58,10 +58,14 @@ let page: ReturnType<typeof prepareInvitationPageContext> | null = null;
 let guestContext: InvitationGuestContext | null = null;
 let renderError: string | null = null;
 let viewModel: InvitationViewModel | null = null;
+let contentSource: 'static' | 'published' | null = null;
+let contentVersion: number | null = null;
 
 try {
 	const resolveContentStart = performance.now();
 	const resolution = await resolveInvitationContent(slug, eventType);
+	contentSource = resolution?.source ?? null;
+	contentVersion = resolution?.source === 'published' ? resolution.version : null;
 	resolveContentDur = performance.now() - resolveContentStart;
 
 	if (!resolution) {
@@ -195,6 +199,10 @@ const wrapperDataAttributes = page
 	? {
 			...page.wrapper.dataAttributes,
 			...(skipEnvelope ? { 'data-reveal-state': 'revealed' } : {}),
+			...(contentSource ? { 'data-content-source': contentSource } : {}),
+			...(contentSource === 'published' && contentVersion !== null
+				? { 'data-content-version': String(contentVersion) }
+				: {}),
 		}
 	: {};
 

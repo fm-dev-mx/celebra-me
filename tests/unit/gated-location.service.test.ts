@@ -57,6 +57,7 @@ beforeEach(() => {
 	mockGetInvitationContextByInviteId.mockResolvedValue(confirmedContext);
 	mockResolveInvitationContent.mockResolvedValue({
 		source: 'published',
+		version: 1,
 		rawContent: { location: protectedLocation },
 		viewModel: {
 			id: 'gated-location-test-event',
@@ -92,6 +93,7 @@ describe('resolveGatedLocationPayload', () => {
 		});
 		mockResolveInvitationContent.mockResolvedValue({
 			source: 'published',
+			version: 1,
 			rawContent: {
 				_assetSlug: 'luna-y-estrella-primera-comunion',
 				location: protectedLocation,

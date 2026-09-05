@@ -10,7 +10,12 @@ import { normalizeLegacyLocationInContent } from '@/lib/invitation/location-norm
 
 export type ContentResolution =
 	| { source: 'static'; viewModel: InvitationViewModel }
-	| { source: 'published'; viewModel: InvitationViewModel; rawContent: Record<string, unknown> };
+	| {
+			source: 'published';
+			viewModel: InvitationViewModel;
+			rawContent: Record<string, unknown>;
+			version: number;
+	  };
 
 function isDevTemplateEntry(collection?: string): boolean {
 	return collection === 'event-templates' && isDevEnvironment();
@@ -124,7 +129,12 @@ export async function resolveInvitationContent(
 					isDemo: publishedEntry.isDemo,
 					content: rawContent,
 				});
-				return { source: 'published', viewModel, rawContent };
+				return {
+					source: 'published',
+					viewModel,
+					rawContent,
+					version: publishedEntry.version,
+				};
 			}
 		} catch (error) {
 			if (isMissingSupabaseCredentialsError(error)) {
