@@ -156,14 +156,23 @@ function collectColumnFindings(
 function collectPolicyFindings(
 	prodPolicies: PolicyMetadata[],
 	localPolicies: PolicyMetadata[],
-): string[] {
+	allowedDroppedPolicies?: ReadonlySet<string>,
+): { errors: string[]; infos: string[] } {
 	const errors: string[] = [];
+	const infos: string[] = [];
 	for (const p of prodPolicies) {
 		const match = localPolicies.find(
 			(lp) => lp.tableName === p.tableName && lp.policyName === p.policyName,
 		);
 		if (!match) {
-			errors.push(`RLS Policy "${p.policyName}" on "${p.tableName}" is missing locally!`);
+			const key = `${p.tableName}:${p.policyName}`;
+			if (allowedDroppedPolicies?.has(key)) {
+				infos.push(
+					`RLS Policy "${p.policyName}" on "${p.tableName}" is target-only (expected drop in pending migrations).`,
+				);
+			} else {
+				errors.push(`RLS Policy "${p.policyName}" on "${p.tableName}" is missing locally!`);
+			}
 		} else {
 			const normProdQual = normalizeDef(p.qual || '', p.policyName);
 			const normLocalQual = normalizeDef(match.qual || '', match.policyName);
@@ -174,7 +183,7 @@ function collectPolicyFindings(
 			}
 		}
 	}
-	return errors;
+	return { errors, infos };
 }
 
 function collectStructuralFindings(
@@ -200,6 +209,9 @@ export function compareTargetToCanonicalReference(
 	actual: SchemaMetadata,
 	expected: SchemaMetadata,
 	historyLifecycle: string,
+	options?: {
+		allowedDroppedPolicies?: ReadonlySet<string>;
+	},
 ): SchemaComparisonResult {
 	const prodTableNames = new Set(actual.tables.map((t) => t.tableName));
 	const localTableNames = new Set(expected.tables.map((t) => t.tableName));
@@ -217,13 +229,17 @@ export function compareTargetToCanonicalReference(
 		localTableNames,
 		target,
 	);
-	const policyErrors = collectPolicyFindings(actual.policies, expected.policies);
+	const policies = collectPolicyFindings(
+		actual.policies,
+		expected.policies,
+		options?.allowedDroppedPolicies,
+	);
 	const structuralFindings = collectStructuralFindings(expected, actual);
 	const blockingStructural =
 		historyLifecycle === 'CURRENT' || historyLifecycle === 'SCHEMA_DRIFT';
 	return {
-		errors: [...tables.errors, ...columns.errors, ...policyErrors],
-		infos: [...tables.infos, ...columns.infos],
+		errors: [...tables.errors, ...columns.errors, ...policies.errors],
+		infos: [...tables.infos, ...columns.infos, ...policies.infos],
 		structuralFindings,
 		structuralErrorCount: blockingStructural ? structuralFindings.length : 0,
 	};
@@ -236,6 +252,7 @@ export interface CanonicalObjectAuditInput {
 	reference: DisposableReferenceInput;
 	targetSchema: SchemaMetadata;
 	referenceSchema: SchemaMetadata | null;
+	allowedDroppedPolicies?: ReadonlySet<string>;
 }
 
 export interface CanonicalObjectAuditResult {
@@ -283,6 +300,7 @@ export function runCanonicalObjectAudit(
 		input.targetSchema,
 		input.referenceSchema,
 		input.historyLifecycle,
+		{ allowedDroppedPolicies: input.allowedDroppedPolicies },
 	);
 	return {
 		lifecycle: input.historyLifecycle,

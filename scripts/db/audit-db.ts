@@ -19,7 +19,7 @@
  *   tsx scripts/db/audit-db.ts --target <production|preview|persistent-local|disposable-test> [--db-url <url>]
  */
 
-import { readdirSync, existsSync } from 'node:fs';
+import { readdirSync, existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import {
@@ -545,12 +545,50 @@ interface SchemaAuditRun {
 	lifecycleOverride?: string;
 }
 
+export function extractDroppedPoliciesFromSql(sql: string): Set<string> {
+	const dropped = new Set<string>();
+	const sanitizedSql = sql.replace(/--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+	const regex =
+		/drop\s+policy\s+(?:if\s+exists\s+)?(?:"([^"]+)"|'([^']+)'|([^\s]+))\s+on\s+(?:(?:"?public"?)\.)?(?:"([^"]+)"|'([^']+)'|([^\s;]+))/gi;
+	let match: RegExpExecArray | null;
+	while ((match = regex.exec(sanitizedSql)) !== null) {
+		const policyName = match[1] ?? match[2] ?? match[3];
+		const tableName = match[4] ?? match[5] ?? match[6];
+		if (policyName && tableName) {
+			dropped.add(`${tableName}:${policyName}`);
+		}
+	}
+	return dropped;
+}
+
+export function loadPendingDroppedPolicies(pendingVersions: readonly string[]): Set<string> {
+	const dropped = new Set<string>();
+	if (pendingVersions.length === 0) return dropped;
+	const pendingSet = new Set(pendingVersions);
+	const files = readdirSync(MIGRATIONS_DIR).filter((f) => {
+		const version = f.split('_')[0];
+		return version && pendingSet.has(version) && f.endsWith('.sql');
+	});
+	for (const file of files) {
+		try {
+			const content = readFileSync(resolve(MIGRATIONS_DIR, file), 'utf8');
+			for (const key of extractDroppedPoliciesFromSql(content)) {
+				dropped.add(key);
+			}
+		} catch {
+			// ignore read errors
+		}
+	}
+	return dropped;
+}
+
 function runSchemaAudit(
 	target: string,
 	dbUrl: string,
 	initialErrors: number,
 	historyLifecycle: string,
 	expectedVersions: readonly string[],
+	pendingVersions?: readonly string[],
 ): SchemaAuditRun {
 	if (!existsSync(resolve(PROJECT_ROOT, 'supabase', 'test', 'seed-test-data.sql'))) {
 		console.error('ERROR: Seed data file missing. Pipeline validation cannot run.');
@@ -562,6 +600,11 @@ function runSchemaAudit(
 	console.log(`Target Schema Fingerprint: ${targetFingerprint}`);
 
 	const evidence = loadDisposableReferenceEvidence(expectedVersions);
+	const allowedDroppedPolicies =
+		historyLifecycle === 'BEHIND' && pendingVersions && pendingVersions.length > 0
+			? loadPendingDroppedPolicies(pendingVersions)
+			: undefined;
+
 	const audit = runCanonicalObjectAudit({
 		target,
 		historyLifecycle,
@@ -578,6 +621,7 @@ function runSchemaAudit(
 		},
 		targetSchema: prod,
 		referenceSchema: evidence.referenceSchema,
+		allowedDroppedPolicies,
 	});
 
 	if (!audit.reference.ok || !audit.comparison) {
@@ -700,6 +744,7 @@ function main(): void {
 		migrationAudit.extraRemoteCount,
 		historyLifecycle,
 		expectedVersions,
+		migrationAudit.pendingLocal,
 	);
 
 	const finalLifecycle = schemaAudit.lifecycleOverride ?? historyLifecycle;
