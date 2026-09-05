@@ -1,5 +1,5 @@
 begin;
-select plan(101);
+select plan(105);
 
 insert into auth.users (id, aud, role, email, created_at, updated_at)
 values ('10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'atomic-publish@example.test', now(), now());
@@ -234,6 +234,9 @@ select ok(not has_table_privilege('anon', 'public.guest_invitations', 'SELECT'),
 select ok(not has_table_privilege('anon', 'public.guest_invitations', 'INSERT'), 'anon cannot insert guest rows');
 select ok(not has_table_privilege('anon', 'public.guest_invitations', 'UPDATE'), 'anon cannot update guest rows');
 select ok(not has_table_privilege('anon', 'public.guest_invitations', 'DELETE'), 'anon cannot delete guest rows');
+select ok(not has_table_privilege('anon', 'public.published_invitation_content', 'SELECT'), 'anon cannot read published invitation content directly');
+select ok(not has_table_privilege('authenticated', 'public.published_invitation_content', 'SELECT'), 'authenticated cannot read published invitation content directly');
+select ok(has_table_privilege('service_role', 'public.published_invitation_content', 'SELECT'), 'service role can read published invitation content');
 
 insert into public.events (id, owner_user_id, slug, event_type, title, status, invitation_project_id)
 values (
@@ -281,11 +284,13 @@ select lives_ok(
   'hybrid RSVP creates a guest through RPC'
 );
 select is((select count(*) from public.guest_invitations where event_id='80000000-0000-0000-0000-000000000003' and phone='6680000004'), 1::bigint, 'hybrid RSVP creates one canonical phone row');
-select lives_ok(
+select throws_like(
   $$select public.submit_guest_rsvp_public(null,'80000000-0000-0000-0000-000000000003','Invitado público','6680000004','+52',2,'declined',0,'Cambio','generic_link','IGNORED1')$$,
-  'hybrid RSVP changes the existing guest through RPC'
+  '%guest_invitations_event_country_phone_active_unique%',
+  'hybrid RSVP rejects a phone collision without updating the existing guest'
 );
-select is((select attendance_status from public.guest_invitations where event_id='80000000-0000-0000-0000-000000000003' and phone='6680000004'), 'declined', 'hybrid RSVP updates instead of duplicating');
+select is((select attendance_status from public.guest_invitations where event_id='80000000-0000-0000-0000-000000000003' and phone='6680000004'), 'confirmed', 'phone collision preserves the existing guest');
+select is((select count(*) from public.guest_invitations where event_id='80000000-0000-0000-0000-000000000003' and phone='6680000004'), 1::bigint, 'phone collision does not create a second guest');
 select throws_like(
   $$select public.submit_guest_rsvp_public('ffffffff-ffff-ffff-ffff-ffffffffffff',null,null,null,null,null,'confirmed',1,'','link',null)$$,
   '%guest_invitation_not_found%',

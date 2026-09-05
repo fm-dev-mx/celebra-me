@@ -21,9 +21,23 @@ import path from 'node:path';
 const MIGRATION_FILE = path.resolve(
 	'supabase/migrations/20260715210600_grant_supabase_roles_permissions.sql',
 );
+const CLOSURE_MIGRATION_FILE = path.resolve(
+	'supabase/migrations/20260905000000_codex_security_closure.sql',
+);
+const REMEDIATION_MIGRATION_FILE = path.resolve(
+	'supabase/migrations/20260901000000_codex_security_remediation.sql',
+);
 
 function readMigration(): string {
 	return fs.readFileSync(MIGRATION_FILE, 'utf8');
+}
+
+function readClosureMigration(): string {
+	return fs.readFileSync(CLOSURE_MIGRATION_FILE, 'utf8');
+}
+
+function readRemediationMigration(): string {
+	return fs.readFileSync(REMEDIATION_MIGRATION_FILE, 'utf8');
 }
 
 /** Strip single-line SQL comments (-- ...) so regexes don't match comment text */
@@ -62,11 +76,15 @@ describe('Least-privilege migration: anon role', () => {
 	});
 
 	it('does NOT grant TRUNCATE to anon', () => {
-		expect(sqlNoComments).not.toMatch(/grant\s+(?:[^;]*,\s*)?truncate[^;]*\bto\b[^;]*\banon\b/i);
+		expect(sqlNoComments).not.toMatch(
+			/grant\s+(?:[^;]*,\s*)?truncate[^;]*\bto\b[^;]*\banon\b/i,
+		);
 	});
 
 	it('does NOT grant REFERENCES to anon', () => {
-		expect(sqlNoComments).not.toMatch(/grant\s+(?:[^;]*,\s*)?references[^;]*\bto\b[^;]*\banon\b/i);
+		expect(sqlNoComments).not.toMatch(
+			/grant\s+(?:[^;]*,\s*)?references[^;]*\bto\b[^;]*\banon\b/i,
+		);
 	});
 
 	it('does NOT grant TRIGGER to anon', () => {
@@ -109,14 +127,21 @@ describe('Least-privilege migration: authenticated role', () => {
 		);
 	});
 
-	it('allowlists upsert_guests_v1 EXECUTE for authenticated', () => {
-		// Allowed explicitly as an application-level RPC called by dashboard auth flow
-		expect(sql).toMatch(/grant\s+execute\s+on\s+function\s+public\.upsert_guests_v1[^;]*authenticated/i);
+	it('does not preserve the historical upsert_guests_v1 EXECUTE grant', () => {
+		const finalSql = `${readRemediationMigration()}\n${readClosureMigration()}`;
+		expect(finalSql).toMatch(
+			/revoke\s+execute\s+on\s+function\s+public\.upsert_guests_v1\(uuid,\s*jsonb\)[^;]*from\s+public,\s*anon,\s*authenticated/i,
+		);
+		expect(finalSql).toMatch(
+			/grant\s+execute\s+on\s+function\s+public\.upsert_guests_v1\(uuid,\s*jsonb\)[^;]*to\s+service_role/i,
+		);
 	});
 
 	it('allowlists is_admin_user EXECUTE for authenticated (required by RLS policies)', () => {
 		// Used internally by RLS policies on several tables
-		expect(sql).toMatch(/grant\s+execute\s+on\s+function\s+public\.is_admin_user[^;]*authenticated/i);
+		expect(sql).toMatch(
+			/grant\s+execute\s+on\s+function\s+public\.is_admin_user[^;]*authenticated/i,
+		);
 	});
 
 	it('does NOT grant EXECUTE on sensitive administrative RPCs to authenticated', () => {
@@ -193,11 +218,15 @@ describe('Least-privilege migration: public role revocation', () => {
 	});
 
 	it('revokes all privileges from public role on tables', () => {
-		expect(sqlNoComments).toMatch(/revoke\s+all\s+privileges\s+on\s+all\s+tables[^;]*\bpublic\b[^;]*;/i);
+		expect(sqlNoComments).toMatch(
+			/revoke\s+all\s+privileges\s+on\s+all\s+tables[^;]*\bpublic\b[^;]*;/i,
+		);
 	});
 
 	it('revokes all privileges from anon on tables', () => {
-		expect(sqlNoComments).toMatch(/revoke\s+all\s+privileges\s+on\s+all\s+tables[^;]*\banon\b[^;]*;/i);
+		expect(sqlNoComments).toMatch(
+			/revoke\s+all\s+privileges\s+on\s+all\s+tables[^;]*\banon\b[^;]*;/i,
+		);
 	});
 
 	it('revokes all privileges from authenticated on tables', () => {
@@ -245,9 +274,7 @@ describe('Least-privilege migration: RLS coverage verification', () => {
 
 	it('explicitly revokes routines from anon before granting allowlist', () => {
 		// The REVOKE on routines/functions must appear before any GRANT EXECUTE
-		const revokeAllRoutinesIdx = sql.search(
-			/revoke\s+all\s+privileges\s+on\s+all\s+routines/i,
-		);
+		const revokeAllRoutinesIdx = sql.search(/revoke\s+all\s+privileges\s+on\s+all\s+routines/i);
 		const firstGrantExecuteIdx = sql.search(/grant\s+execute/i);
 		expect(revokeAllRoutinesIdx).toBeGreaterThan(-1);
 		expect(firstGrantExecuteIdx).toBeGreaterThan(-1);
@@ -258,7 +285,34 @@ describe('Least-privilege migration: RLS coverage verification', () => {
 		expect(sql).toContain('invitation_assets');
 	});
 
-	it('migration explicitly names published_invitation_content as an anon-readable table', () => {
-		expect(sql).toContain('published_invitation_content');
+	it('final closure migration removes direct client reads of published content', () => {
+		const closureSql = stripSqlComments(readClosureMigration());
+		expect(closureSql).toMatch(
+			/revoke\s+all\s+on\s+table\s+public\.published_invitation_content\s+from\s+public,\s*anon,\s*authenticated/i,
+		);
+		expect(closureSql).toMatch(
+			/grant\s+select\s+on\s+table\s+public\.published_invitation_content\s+to\s+service_role/i,
+		);
+		expect(closureSql).toMatch(
+			/drop\s+policy\s+if\s+exists\s+"Anyone can read published invitation content"/i,
+		);
+	});
+
+	it('final closure migration keeps BFF-owned invitation and intake tables server-only', () => {
+		const closureSql = stripSqlComments(readClosureMigration());
+		for (const table of [
+			'invitations',
+			'intake_requests',
+			'intake_submissions',
+			'invitation_content_drafts',
+			'invitation_assets',
+		]) {
+			expect(closureSql).toMatch(
+				new RegExp(
+					`revoke\\s+all\\s+on\\s+table\\s+public\\.${table}\\s+from\\s+public,\\s*anon,\\s*authenticated`,
+					'i',
+				),
+			);
+		}
 	});
 });

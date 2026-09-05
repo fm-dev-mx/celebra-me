@@ -79,6 +79,16 @@
             ],
             "notes": "Removes legacy client-side privilege paths, drops historical permissive event policies in favor of canonical active-record RLS, and restricts tenant-write/claim routines to service_role."
         },
+        "20260905000000": {
+            "phase": "contract",
+            "requiresDeployedAppCapabilities": ["published_content_service_role_renderer"],
+            "provides": ["published_invitation_content_private", "public_rsvp_pgcrypto_qualified"],
+            "revokes": [
+                "published_invitation_content_client_read",
+                "bff_owned_client_dml"
+            ],
+            "notes": "Revokes direct client reads for published invitation JSON and direct DML on BFF-owned invitation/intake resources; reapplies the create-only RSVP RPC with extensions.gen_random_bytes under search_path=public."
+        },
         "__historical_rsvp_dml_revoke__": {
             "phase": "contract",
             "requiresDeployedAppCapabilities": ["public_guest_rsvp_rpc_client"],
@@ -94,6 +104,9 @@
             "requiresDbCapabilities": []
         },
         "legacy_adoption_rpc_retired_client": {
+            "requiresDbCapabilities": []
+        },
+        "published_content_service_role_renderer": {
             "requiresDbCapabilities": []
         }
     }

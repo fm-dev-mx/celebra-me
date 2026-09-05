@@ -19,6 +19,10 @@ const pgcryptoMigration = readFileSync(
 	),
 	'utf8',
 );
+const closureMigration = readFileSync(
+	resolve(process.cwd(), 'supabase/migrations/20260905000000_codex_security_closure.sql'),
+	'utf8',
+);
 const isolationMigration = readFileSync(
 	resolve(
 		process.cwd(),
@@ -74,11 +78,19 @@ describe('public guest RSVP mutation boundary migration', () => {
 	});
 
 	it('qualifies extensions.gen_random_bytes under search_path=public for hybrid create', () => {
-		expect(pgcryptoMigration).toMatch(
-			/security definer[\s\S]*?set search_path = 'public'/i,
-		);
+		expect(pgcryptoMigration).toMatch(/security definer[\s\S]*?set search_path = 'public'/i);
 		expect(pgcryptoMigration).toContain('extensions.gen_random_bytes(6)');
 		expect(pgcryptoMigration).not.toMatch(
+			/encode\(\s*gen_random_bytes\s*\(\s*6\s*\)\s*,\s*'hex'\s*\)/,
+		);
+	});
+
+	it('keeps the final create-only RSVP function pgcrypto-qualified', () => {
+		expect(closureMigration).toMatch(
+			/create or replace function public\.submit_guest_rsvp_public[\s\S]*?set search_path = 'public'/i,
+		);
+		expect(closureMigration).toContain('extensions.gen_random_bytes(6)');
+		expect(closureMigration).not.toMatch(
 			/encode\(\s*gen_random_bytes\s*\(\s*6\s*\)\s*,\s*'hex'\s*\)/,
 		);
 	});

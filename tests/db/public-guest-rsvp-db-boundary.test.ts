@@ -160,6 +160,42 @@ describe('public guest rsvp postgresql security boundary (real DB)', () => {
 		expect(authTrack.stderr).toMatch(/permission denied|42501/i);
 	});
 
+	it('denies direct client-role reads of published invitation content', () => {
+		for (const role of ['anon', 'authenticated']) {
+			const result = runSqlAsRole(
+				role,
+				'select id from public.published_invitation_content limit 1;',
+			);
+			expect(result.status).not.toBe(0);
+			expect(result.stderr).toMatch(/permission denied|42501/i);
+		}
+	});
+
+	it('denies direct client-role DML on BFF-owned invitation and intake tables', () => {
+		const statements = [
+			'insert into public.invitations default values;',
+			'update public.invitations set updated_at = updated_at;',
+			'delete from public.invitations;',
+			'insert into public.intake_requests default values;',
+			'update public.intake_requests set updated_at = updated_at;',
+			'delete from public.intake_requests;',
+			'insert into public.intake_submissions default values;',
+			'update public.intake_submissions set updated_at = updated_at;',
+			'delete from public.intake_submissions;',
+			'insert into public.invitation_content_drafts default values;',
+			'update public.invitation_content_drafts set updated_at = updated_at;',
+			'delete from public.invitation_content_drafts;',
+		];
+
+		for (const role of ['anon', 'authenticated']) {
+			for (const statement of statements) {
+				const result = runSqlAsRole(role, statement);
+				expect(result.status).not.toBe(0);
+				expect(result.stderr).toMatch(/permission denied|row-level security|42501/i);
+			}
+		}
+	});
+
 	it('retries the same confirmed RSVP without regressing status or inventing extra guests', () => {
 		const first = runSqlAsRole(
 			'service_role',
