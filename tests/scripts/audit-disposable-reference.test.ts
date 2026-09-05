@@ -2,6 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 import {
 	buildSchemaAuditVerdict,
 	compareTargetToCanonicalReference,
+	extractDroppedPoliciesFromSql,
 	parseSchemaAuditVerdictFromOutput,
 	runCanonicalObjectAudit,
 	type SchemaMetadata,
@@ -298,6 +299,41 @@ describe('runCanonicalObjectAudit', () => {
 		);
 	});
 
+	it('treats policies dropped in pending migrations as non-blocking info when BEHIND', () => {
+		const referenceSchema = emptySchema(CANONICAL_REFERENCE_TABLES);
+		const targetWithDroppedPolicy: SchemaMetadata = {
+			...emptySchema(CANONICAL_REFERENCE_TABLES),
+			policies: [
+				{
+					tableName: 'events',
+					policyName: 'Events: owner can manage',
+					roles: '{authenticated}',
+					cmd: 'ALL',
+					qual: 'true',
+					withCheck: null,
+				},
+			],
+		};
+		const result = runCanonicalObjectAudit({
+			target: 'production',
+			historyLifecycle: 'BEHIND',
+			extraRemoteCount: 0,
+			reference: validReferenceInput(),
+			targetSchema: targetWithDroppedPolicy,
+			referenceSchema,
+			allowedDroppedPolicies: new Set(['events:Events: owner can manage']),
+		});
+		expect(result.lifecycle).toBe('BEHIND');
+		expect(result.comparison?.errors).toEqual([]);
+		expect(result.comparison?.infos).toContain(
+			'RLS Policy "Events: owner can manage" on "events" is target-only (expected drop in pending migrations).',
+		);
+		expect(result.errorCount).toBe(0);
+		expect(buildSchemaAuditVerdict(result.lifecycle, result.errorCount).readyForMigrate).toBe(
+			true,
+		);
+	});
+
 	it('fails closed when reference creation/start does not produce a reachable database', () => {
 		const result = runCanonicalObjectAudit({
 			target: 'production',
@@ -328,3 +364,48 @@ describe('audit verdict parsing for reference failure', () => {
 		expect(isAllowlistedBehindAuditOutput(output, 1)).toBe(false);
 	});
 });
+
+describe('extractDroppedPoliciesFromSql', () => {
+	it('extracts quoted policy names and public table', () => {
+		const sql = `DROP POLICY IF EXISTS "Events: owner can manage" ON public.events;`;
+		expect(extractDroppedPoliciesFromSql(sql)).toEqual(
+			new Set(['events:Events: owner can manage']),
+		);
+	});
+
+	it('extracts unquoted policy names and unquoted tables', () => {
+		const sql = `drop policy if exists rsvp_records_no_access_anon on public.rsvp_records;`;
+		expect(extractDroppedPoliciesFromSql(sql)).toEqual(
+			new Set(['rsvp_records:rsvp_records_no_access_anon']),
+		);
+	});
+
+	it('handles multiline statements across newlines', () => {
+		const sql = `
+			drop policy if exists "Admins can manage invitation projects"
+				on public.invitations;
+		`;
+		expect(extractDroppedPoliciesFromSql(sql)).toEqual(
+			new Set(['invitations:Admins can manage invitation projects']),
+		);
+	});
+
+	it('handles quoted schema prefix "public".', () => {
+		const sql = `DROP POLICY IF EXISTS "Events: owner can manage" ON "public"."events";`;
+		expect(extractDroppedPoliciesFromSql(sql)).toEqual(
+			new Set(['events:Events: owner can manage']),
+		);
+	});
+
+	it('ignores commented-out drop policy statements', () => {
+		const sql = `
+			-- drop policy if exists old_policy on public.events;
+			/*
+			drop policy if exists block_policy on public.events;
+			*/
+			drop policy if exists active_policy on public.events;
+		`;
+		expect(extractDroppedPoliciesFromSql(sql)).toEqual(new Set(['events:active_policy']));
+	});
+});
+
