@@ -1,7 +1,9 @@
 # Agent Discovery Index
 
 This file is the human-readable map for repository guidance and discovery. For machine-readable
-context resolution, use `.agent/routing-matrix.yaml` and `.agent/ownership.yaml`.
+context resolution, use `.agent/routing-matrix.yaml` and `.agent/ownership.yaml`. Routing and role
+skill lists are candidates: load only the capabilities needed for the task. Apply all rules from
+routes matching the touched surfaces.
 
 ## Structured Schemas (SSOT)
 
@@ -43,6 +45,10 @@ context resolution, use `.agent/routing-matrix.yaml` and `.agent/ownership.yaml`
 - [`docs/core/content-schema.md`](../docs/core/content-schema.md) — Content collections schema
 - [`docs/core/release-process.md`](../docs/core/release-process.md) — Release checkpoints and
   CHANGELOG policy
+- [`docs/core/validation-procedures.md`](../docs/core/validation-procedures.md) — Review and
+  validation procedures (load on demand)
+- [`docs/core/git-safety-session.md`](../docs/core/git-safety-session.md) — Mutable Git Safety
+  session lifecycle (load on demand)
 
 ### Environments & Database
 
@@ -72,6 +78,9 @@ context resolution, use `.agent/routing-matrix.yaml` and `.agent/ownership.yaml`
 
 ### Theme, RSVP & Attribution
 
+- [Visual design reference](../docs/domains/theme/visual-design-reference.md) — Aesthetic examples
+  and invitation hero acceptance; load only for those design tasks.
+
 - [`docs/domains/theme/architecture.md`](../docs/domains/theme/architecture.md) — Theme tokens and
   SCSS architecture
 - [`docs/domains/theme/variant-system.md`](../docs/domains/theme/variant-system.md) — Canonical
@@ -83,8 +92,7 @@ context resolution, use `.agent/routing-matrix.yaml` and `.agent/ownership.yaml`
 
 ## Planning & Governance
 
-- Task Contract, Goal protocol, and Handoff Contract:
-  [`.agent/plans/README.md`](./plans/README.md).
+- Task Contract, Goal protocol, and Handoff Contract: [`.agent/plans/README.md`](./plans/README.md).
 - Conversational planning is default. Tracked plans belong under `.agent/plans/active/` per that
   README.
 - Historical audits and reports live under `docs/archive/reports/` and `.agent/plans/archived/`.

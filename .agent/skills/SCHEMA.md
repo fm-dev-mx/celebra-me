@@ -34,7 +34,7 @@ related_docs:
 | `domain`         | yes      | One of: `frontend`, `backend`, `content`, `workflow`, `quality`, `meta`, `growth`, `qa` |
 | `version`        | yes      | Semantic version of the skill content                                                   |
 | `when_to_use`    | yes      | List of concrete triggers for loading this skill                                        |
-| `preconditions`  | yes      | Files the agent must read before using this skill                                       |
+| `preconditions`  | yes      | Required context/state; reuse when already satisfied                                    |
 | `related_skills` | yes      | List of skill names that may be relevant; empty list `[]` if none                       |
 | `related_docs`   | yes      | List of documentation files relevant to this skill                                      |
 | `inputs`         | no       | What the agent provides to use this skill                                               |

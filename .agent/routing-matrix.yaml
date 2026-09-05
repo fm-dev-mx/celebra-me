@@ -1,10 +1,10 @@
 # Celebra-me — Context Routing Matrix (SSOT)
-#
-# Maps task types / domains to the minimum required context (rules, skills, docs).
-# Agent OS routing surface.
+# Select every route matching the touched surfaces and apply its rules.
+# Load only the skills/procedures needed for the task; related skills do not trigger each other.
+# Bootstrap safeguards always apply.
 ---
-version: '1.0.0'
-updated: '2026-08-17'
+version: '1.1.0'
+updated: '2026-09-04'
 
 bootstrap:
     rules:
@@ -13,114 +13,156 @@ bootstrap:
 
 routes:
     - task_type: 'visual_ui'
-      description: 'Visual, SCSS, or UI component implementation'
-      rules:
-          - '.agent/rules/agent-routing.md'
-          - '.agent/rules/dashboard-styling.md'
-          - '.agent/rules/invitation-preset-source-of-truth.md'
+      description: 'Composition, typography, or visual design; add the matching surface route'
       skills:
           - 'frontend-design'
+
+    - task_type: 'dashboard_styling'
+      description: 'Dashboard SCSS, tokens, forms, modals, or responsive layout'
+      rules:
+          - '.agent/rules/dashboard-styling.md'
+
+    - task_type: 'theme_architecture'
+      description: 'Invitation theme tokens, presets, variants, CSS delivery, or isolation contracts'
+      rules:
+          - '.agent/rules/invitation-preset-source-of-truth.md'
+      skills:
           - 'theme-architecture'
-          - 'animation-motion'
-          - 'invitation-rhythm'
       workflows:
           - '.agent/workflows/theme-architecture-governance.md'
       docs:
           - 'docs/domains/theme/architecture.md'
 
+    - task_type: 'invitation_motion'
+      description: 'Invitation animation, reveals, transitions, or reduced-motion behavior'
+      skills:
+          - 'animation-motion'
+
+    - task_type: 'invitation_rhythm'
+      description: 'Invitation section flow, tonal bands, or intersection cadence'
+      skills:
+          - 'invitation-rhythm'
+
     - task_type: 'design_reference_redesign'
-      description: 'Reference-driven visual redesign of invitation, demo, or dashboard'
+      description: 'Visual redesign requiring interpretation of supplied or cited references'
       rules:
           - '.agent/rules/agent-routing.md'
       skills:
           - 'frontend-design'
-          - 'theme-architecture'
-          - 'animation-motion'
-          - 'invitation-rhythm'
       workflows:
           - '.agent/workflows/design-reference-to-build.md'
       briefs:
           - '.agent/briefs/celebra-me.md'
 
     - task_type: 'backend_api'
-      description: 'Backend engineering, API routes, or data validation'
+      description: 'API routes, server validation, or backend service/repository changes'
       rules:
           - '.agent/rules/api-contracts.md'
           - '.agent/rules/auth-session.md'
           - '.agent/rules/database.md'
       skills:
           - 'backend-engineering'
+
+    - task_type: 'astro_rendering'
+      description: 'Astro SSR, hydration, content loading, or image delivery'
+      skills:
           - 'astro-patterns'
+
+    - task_type: 'demo_content'
+      description: 'Demo-only data transforms or cross-section demo date consistency'
+      skills:
           - 'demo-content-consistency'
-      docs:
-          - 'docs/core/architecture.md'
 
     - task_type: 'database_ops'
-      description: 'Supabase, migrations, schema updates, or database parity'
+      description: 'Supabase operations or migrations; select parity/SQL patch routes only when needed'
+      rules:
+          - '.agent/rules/database.md'
+      skills:
+          - 'supabase'
+      docs:
+          - 'docs/database-workflow.md'
+          - 'docs/env-workflow.md'
+
+    - task_type: 'database_query_design'
+      description: 'Postgres query plans, indexes, locking, or schema design'
+      rules:
+          - '.agent/rules/database.md'
+      skills:
+          - 'supabase-postgres'
+
+    - task_type: 'database_parity'
+      description: 'Branch migration parity or database-sensitive release validation'
+      rules:
+          - '.agent/rules/database.md'
+      skills:
+          - 'database-parity'
+
+    - task_type: 'production_sql_authoring'
+      description: 'Author or review manual SQL patch artifacts; does not authorize execution'
       rules:
           - '.agent/rules/database.md'
           - '.agent/rules/manual-sql-manifest.md'
       skills:
-          - 'database-parity'
-          - 'supabase'
-          - 'supabase-postgres'
           - 'production-sql-patches'
-      docs:
-          - 'docs/database-workflow.md'
-          - 'docs/domains/database/overview.md'
-          - 'docs/domains/database/cheatsheets/README.md'
-          - 'docs/env-workflow.md'
 
     - task_type: 'documentation_governance'
-      description: 'Documentation updates, link integrity, or system alignment'
+      description: 'Documentation updates, link integrity, or instruction-system alignment'
       rules:
           - '.agent/rules/workflow.md'
-      skills:
       workflows:
           - '.agent/workflows/system-doc-alignment.md'
 
     - task_type: 'testing_qa'
-      description: 'Testing, Playwright E2E, accessibility, or QA verification'
-      rules:
-          - '.agent/rules/gatekeeper.md'
+      description: 'Automated tests or regression coverage; add accessibility/metadata only if affected'
       skills:
           - 'testing'
+
+    - task_type: 'accessibility'
+      description: 'Keyboard, focus, semantics, contrast, announcements, or accessible interaction'
+      skills:
           - 'accessibility'
+
+    - task_type: 'seo_metadata'
+      description: 'Open Graph, canonical URLs, social previews, or structured metadata'
+      skills:
           - 'seo-metadata'
 
+    - task_type: 'copywriting'
+      description: 'Write or revise Spanish invitation, marketing, or product copy'
+      skills:
+          - 'copywriting-es'
+
     - task_type: 'error_remediation'
-      description: 'Command, test, or build failure diagnosis and surgical fix'
-      rules:
-          - '.agent/rules/gatekeeper.md'
+      description: 'Command, test, or build failure diagnosis and bounded correction'
       workflows:
           - '.agent/workflows/error-remediation.md'
 
     - task_type: 'git_branch_lane'
-      description: 'Git worktree lane operations, branch migration parity, or release prep'
-      rules:
-          - '.agent/rules/git-safety.md'
+      description: 'Branch promotion/sync or release preparation; parity is selected by the skill'
       skills:
           - 'branch-lane'
-          - 'database-parity'
+
+    - task_type: 'commit_preparation'
+      description: 'Plan atomic commits or execute exact Git operations already authorized'
+      skills:
           - 'commit-planner'
+
+    - task_type: 'git_cleanup'
+      description: 'Explicit stash/branch cleanup request; no automatic cleanup during normal work'
+      skills:
           - 'git-stash-branch-cleanup'
-      docs:
-          - 'docs/core/git-governance.md'
-          - 'docs/core/release-process.md'
 
     - task_type: 'invitation_preparation'
-      description: 'Client invitation preparation & intake completeness evaluation'
+      description: 'Prepare a real invitation or assess intake completeness before implementation'
       skills:
           - 'client-invitation-audit'
-          - 'invitation-rhythm'
-          - 'copywriting-es'
       workflows:
           - '.agent/workflows/invitation-preparation.md'
       docs:
           - 'docs/core/invitation-preparation-contract.md'
 
     - task_type: 'invitation_publication'
-      description: 'Publishing or managed lifecycle updates for client invitations'
+      description: 'Publishing or managed lifecycle changes for client invitations'
       rules:
           - '.agent/rules/invitation-production.md'
           - '.agent/rules/intake-publishing.md'
@@ -131,18 +173,27 @@ routes:
           - 'docs/domains/database/cheatsheets/README.md'
 
     - task_type: 'staged_code_review'
-      description: 'Simplification-first code review of staged Git changes'
+      description: 'Requested read-only review of staged changes'
       skills:
           - 'staged-code-review'
+
+    - task_type: 'staged_code_review_apply'
+      description: 'Apply an existing staged review finding set with explicit task authorization'
+      skills:
           - 'staged-code-review-apply'
 
+    - task_type: 'role_delegation'
+      description: 'Assign bounded work to roles when delegation has independent value'
+      rules:
+          - '.agent/rules/agent-routing.md'
+
     - task_type: 'graphify_audit'
-      description: 'Optional architecture-coupling audit using Graphify leads'
+      description: 'Optional coupling audit where Graphify adds value; never a default codebase query'
       rules:
           - '.agent/rules/graphify-ops.md'
 
     - task_type: 'planning'
-      description: 'Multi-session or complex task planning and goal sequencing'
+      description: 'Task planning, multi-session continuity, or goal sequencing'
       rules:
           - '.agent/rules/workflow.md'
       workflows:

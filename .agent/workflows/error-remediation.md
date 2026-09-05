@@ -16,8 +16,9 @@ Human-facing reports follow the shared report contract (not a seventh machine st
 
 **Cycle Limit:** Maximum of 3 cycles per error. If VERIFY fails 3 times, escalate to the user.
 
-**Report contract:** [`.agent/templates/agent-report-contract.md`](../templates/agent-report-contract.md)
-(sample: [`agent-report-samples.md`](../templates/agent-report-samples.md)).
+**Report contract:**
+[`.agent/templates/agent-report-contract.md`](../templates/agent-report-contract.md) (sample:
+[`agent-report-samples.md`](../templates/agent-report-samples.md)).
 
 ## Hard constraints
 
@@ -68,8 +69,9 @@ Propose the minimal atomic fix. _Pre-apply Validation Checks:_
 
 - **WCAG:** Ensure fix doesn't remove `aria-*` or break semantic structure.
 - **Token architecture (SCSS only):** Do not overwrite or bypass the three-level token model
-  (foundation / semantic / component). See [`theme-architecture`](../skills/theme-architecture/SKILL.md)
-  when the failure involves tokens or presets.
+  (foundation / semantic / component). See
+  [`theme-architecture`](../skills/theme-architecture/SKILL.md) when the failure involves tokens or
+  presets.
 
 ### 5. APPLY
 
@@ -80,8 +82,8 @@ Modify the files with the proposed atomic fix.
 Re-run the exact failing command (e.g., `pnpm type-check` or `pnpm test`) to confirm the fix.
 
 - **If VERIFY passes:** run **REGRESSION_DECISION** (below), then proceed. Session close and
-  validation depth remain owned by [`.agent/rules/gatekeeper.md`](../rules/gatekeeper.md) §5
-  (tiers A/B/C); run `pnpm agent:git-safety:finish` when closing a mutable session.
+  validation depth remain owned by [`.agent/rules/gatekeeper.md`](../rules/gatekeeper.md) §5 (tiers
+  A/B/C); run `pnpm agent:git-safety:finish` when closing a mutable session.
 
 - **If VERIFY fails:** inspect the new output and decide whether a targeted follow-up edit is safe.
   If the worktree contains overlapping user changes or the rollback would be ambiguous, stop and
@@ -120,10 +122,9 @@ Follow the shared contract. Shape below.
 ```md
 # Remediation
 
-**Estado:** CYCLE <n>/3 · VERIFY PASS|FAIL
-**Error:** <exact message, 1–2 lines>
-**Dónde:** `<path>:<line>` · category: <…> · complexity: <trivial|moderate|complex>
-**Lock:** <none|extend-existing-test|add-focused-test|domain-validate|escalate-test-gap> — <invariant or none>
+**Estado:** CYCLE <n>/3 · VERIFY PASS|FAIL **Error:** <exact message, 1–2 lines> **Dónde:**
+`<path>:<line>` · category: <…> · complexity: <trivial|moderate|complex> **Lock:**
+<none|extend-existing-test|add-focused-test|domain-validate|escalate-test-gap> — <invariant or none>
 
 ## Hipótesis actual
 
@@ -150,10 +151,10 @@ MCQ.
 ```md
 # Escalation — remediation exhausted
 
-**Bloqueante:** <current error or test-gap>
-**Intentos:** 3 (or test-gap after VERIFY PASS)
+**Bloqueante:** <current error or test-gap> **Intentos:** 3 (or test-gap after VERIFY PASS)
 
 **Qué se intentó:**
+
 - C1: …
 - C2: …
 - C3: …
@@ -173,13 +174,14 @@ Se agotaron 3 ciclos sin VERIFY PASS. (Or: lock required but out of safe scope.)
   - **Pasos / Ej.:** Mapear únicamente en el adapter o un solo call site.
 
 - **c)** **Revertir cambios de esta remediación**
-  - **Objetivo:** Deshacer las modificaciones realizadas durante la remediación si el worktree lo permite.
+  - **Objetivo:** Deshacer las modificaciones realizadas durante la remediación si el worktree lo
+    permite.
   - **Pasos / Ej.:** Restaurar archivos tocados por la sesión de remediación.
 ```
 
 **Decision rules for this workflow:**
 
 - No MCQ on clear cycle-1/2 fixes.
-- On cycle-3 failure, unsafe rollback, or test-gap: MCQ with exactly `a` / `b` / `c`; **`a` = stop /
+- On cycle-3 failure, unsafe rollback, or test-gap: a material decision prompt; **`a` = stop /
   escalate safely** (including ship fix + record gap). Never put destructive reset in `a`. See
   contract.

@@ -15,16 +15,11 @@ Sync Contract must be enforced.
 
 Restore a lean, truthful documentation state without inventing parallel governance structure.
 
-## Required Checks
+## Required Context
 
-Validate that these paths exist before doing anything else:
-
-- `.agent/workflows/`
-- `.agent/plans/`
-- `docs/`
-- `src/`
-
-If a required path is missing, stop and report it.
+Resolve the affected guidance and its live owners. Report missing required sources and stop only the
+decisions that depend on them; a fixed directory checklist is not a prerequisite for every
+documentation task.
 
 ## Placement Rules
 

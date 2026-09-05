@@ -4,7 +4,7 @@
 # to their canonical owner files. Agent OS ownership surface.
 ---
 version: '1.1.0'
-updated: '2026-09-01'
+updated: '2026-09-04'
 
 ownership:
     - aspect: 'Agent discovery & active inventory'
@@ -44,6 +44,18 @@ ownership:
       non_owners:
           - 'docs/core/git-governance.md'
           - 'Workflows'
+
+    - aspect: 'Detailed validation & review procedures'
+      owner: 'docs/core/validation-procedures.md'
+      non_owners:
+          - 'Unscoped validation recipes in skills'
+          - 'Provider/global operator defaults outside the repo'
+
+    - aspect: 'Git Safety session lifecycle procedure'
+      owner: 'docs/core/git-safety-session.md'
+      non_owners:
+          - 'Persistent Git authorization markers'
+          - 'Provider/global operator defaults outside the repo'
 
     - aspect: 'Optional Graphify ops policy'
       owner: '.agent/rules/graphify-ops.md'
@@ -188,6 +200,12 @@ ownership:
       owner: '.agent/skills/frontend-design/SKILL.md'
       non_owners:
           - 'External design installs as SSOT'
+
+    - aspect: 'Specialized visual design reference'
+      owner: 'docs/domains/theme/visual-design-reference.md'
+      non_owners:
+          - 'Generic aesthetic examples as active preset definitions'
+          - 'Host design skills as brand authority'
 
     - aspect: 'Theme tokens / SCSS architecture'
       owner: 'docs/domains/theme/architecture.md'
