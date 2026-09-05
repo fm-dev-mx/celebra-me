@@ -4,8 +4,9 @@ This document specifies the purpose, required/optional inputs, data models, rend
 asset contracts, accessibility, and validation rules for all supported sections in Celebra-me
 digital invitations.
 
-The complete post-migration ownership matrix in [`.agent/ownership.yaml`](../../.agent/ownership.yaml) for structural variants, presentation options, skins,
-and profile exceptions is maintained in
+The complete post-migration ownership matrix in
+[`.agent/ownership.yaml`](../../../.agent/ownership.yaml) for structural variants, presentation
+options, skins, and profile exceptions is maintained in
 [`docs/domains/theme/variant-system.md`](../theme/variant-system.md).
 
 ---
@@ -23,13 +24,12 @@ and profile exceptions is maintained in
   image asset.
 
 Structural renderer selections are section-owned and bounded via each section's required `variant`
-field.
-Hero accepts `standard`, `editorial-cover`, or `split-cover`; Thank You accepts `standard`,
+field. Hero accepts `standard`, `editorial-cover`, or `split-cover`; Thank You accepts `standard`,
 `editorial-back-cover`, or `full-bleed-photo`; Gifts uses `editorial-catalog`; RSVP uses
 `editorial-press-pass` or `formal-register`. `rsvp.personalizedAccess` uses `standard`,
-`ornamented`, `editorial-pass`, or `formal-pass`. These fields select markup/layout only;
-Theme preset remains the visual skin. Legacy aliases are rejected by the canonical schema and are
-tracked only as deployment migration work.
+`ornamented`, `editorial-pass`, or `formal-pass`. These fields select markup/layout only; Theme
+preset remains the visual skin. Legacy aliases are rejected by the canonical schema and are tracked
+only as deployment migration work.
 
 Countdown variants are section-owned (`standard`, `editorial-folio`, `magazine-folio`,
 `jeweled-panel`, `rose-ornament`, and `hacienda-ornament`). Footer remains a visual theme surface
@@ -134,10 +134,10 @@ and has no independent section variant.
 - **Purpose**: Interactive photo gallery grid / carousel of celebrant photos.
 - **Required Inputs**: `items` array of photo asset references with `image` and `alt`.
 - **Required Inputs**: `variant`.
-- **Optional Inputs**: `title`, `subtitle`, `presentation`, item
-  `layoutRole`, and responsive focal-point fields. Canonical layout values are `uniform-grid`,
-  `editorial-mosaic`, `magazine-spread`, `feature-mosaic`, `feature-stack`, `paired-feature-band`,
-  `index-choreography`, and `single-keepsake`.
+- **Optional Inputs**: `title`, `subtitle`, `presentation`, item `layoutRole`, and responsive
+  focal-point fields. Canonical layout values are `uniform-grid`, `editorial-mosaic`,
+  `magazine-spread`, `feature-mosaic`, `feature-stack`, `paired-feature-band`, `index-choreography`,
+  and `single-keepsake`.
 - **Precedence**: `gallery.variant` is the sole layout authority. Legacy `sectionStyles` values,
   theme-named values, and `single` are rejected by the canonical schema.
 - **Rendering & Omission**: Rendered if `items` contains 1 or more resolved photo assets; omitted if

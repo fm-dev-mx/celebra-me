@@ -5,7 +5,7 @@ description: |
   path (not diff-only): dead code, redundant abstractions, orphaned files; secondarily bugs and
   anti-patterns. Read-only — no edits, staging, or commits. Emits apply-tags for staged-code-review-apply.
 domain: quality
-version: 1.3.0
+version: 1.4.0
 when_to_use:
   - User asks to review staged changes before committing
   - User asks to analyze staged work for over-engineering or dead code
@@ -36,19 +36,20 @@ Two jobs on the **staged** set only:
    and propose cleanup coupled to that touch. Read neighbors only when a finding needs proof
    (consumers, CSS↔template, imports). Do not audit non-staged modules opportunistically.
 
-Produces a structured plan with apply-tags for [`staged-code-review-apply`](../staged-code-review-apply/SKILL.md).
-No edits, staging, or commits.
+Produces a structured plan with apply-tags for
+[`staged-code-review-apply`](../staged-code-review-apply/SKILL.md). No edits, staging, or commits.
 
-**Report contract:** [`.agent/templates/agent-report-contract.md`](../../templates/agent-report-contract.md)
-(samples: [`agent-report-samples.md`](../../templates/agent-report-samples.md)).
+**Report contract:**
+[`.agent/templates/agent-report-contract.md`](../../templates/agent-report-contract.md) (samples:
+[`agent-report-samples.md`](../../templates/agent-report-samples.md)).
 
 **Large diffs:** [`references/parallel-mode.md`](./references/parallel-mode.md).
 
 ## Hard constraints
 
 - Read-only: no edits, stash, stage/unstage, or commit.
-- Never run `git add`, `git restore --staged`, `git reset` (staging), or any index mutation.
-  Staging and unstaging are **user-owned** so the owner can visualize diffs in the working tree.
+- Never run `git add`, `git restore --staged`, `git reset` (staging), or any index mutation. Staging
+  and unstaging are **user-owned** so the owner can visualize diffs in the working tree.
 - Do not run lint/test/build unless the user asks.
 - Do not analyze unstaged-only work; stop if `git diff --cached` is empty.
 - Do not run autonomously — only when the user asked for staged analysis/review.
@@ -83,11 +84,11 @@ Otherwise stay sequential.
 
 Required on every expanded finding (and on LOW when actionable):
 
-| Tag | When |
-| --- | --- |
-| `auto-safe` | Only if **all** allowlist conditions hold (below); not protected; not MM-blocked |
+| Tag             | When                                                                                               |
+| --------------- | -------------------------------------------------------------------------------------------------- |
+| `auto-safe`     | Only if **all** allowlist conditions hold (below); not protected; not MM-blocked                   |
 | `needs-confirm` | File delete, doubtful consumers, doubtful SCSS `@use`, mixed safe/unsafe scope, or deny-list items |
-| `manual` | Governance/protected paths, complex bug/security, MM overlap that blocks safe apply |
+| `manual`        | Governance/protected paths, complex bug/security, MM overlap that blocks safe apply                |
 
 Review **labels only**; apply revalidates gates.
 
@@ -116,11 +117,11 @@ Use `needs-confirm`, or keep as LOW **without** implying apply will take it:
 
 ## Priorities
 
-| Priority | Criteria |
-| --- | --- |
-| HIGH | Real bugs, security, regressions, **or** clearly safe cleanup with material impact |
-| MEDIUM | Partial deletion, convention drift, maintainability debt |
-| LOW | Cosmetic, AI-slop comments, tiny nits |
+| Priority | Criteria                                                                           |
+| -------- | ---------------------------------------------------------------------------------- |
+| HIGH     | Real bugs, security, regressions, **or** clearly safe cleanup with material impact |
+| MEDIUM   | Partial deletion, convention drift, maintainability debt                           |
+| LOW      | Cosmetic, AI-slop comments, tiny nits                                              |
 
 Every HIGH card includes **Clase:** `risk` | `cleanup`.
 
@@ -128,10 +129,10 @@ Every HIGH card includes **Clase:** `risk` | `cleanup`.
 
 After checklists / classify, run a **cleanup uplift pass**:
 
-- Any proven dead export/import/type with ≥3 removable lines, **or** any orphan file candidate,
-  MUST be a HIGH card with `Clase: cleanup` — not buried as LOW.
-- The verdict must not show `0 cleanup` when such findings exist (ops diffs may still be
-  risk-heavy; cleanup cards still appear when material).
+- Any proven dead export/import/type with ≥3 removable lines, **or** any orphan file candidate, MUST
+  be a HIGH card with `Clase: cleanup` — not buried as LOW.
+- The verdict must not show `0 cleanup` when such findings exist (ops diffs may still be risk-heavy;
+  cleanup cards still appear when material).
 
 ## MM
 
@@ -178,8 +179,8 @@ identifiers, SCSS not Tailwind).
 ```md
 # Staged review
 
-**Veredicto:** <H> HIGH (<R> risk · <C> cleanup) · <M> MEDIUM · <L> LOW · ~<N> líneas
-**Alcance:** <files>, +Y/−Z — <one sentence>; MM: <count or 0>
+**Veredicto:** <H> HIGH (<R> risk · <C> cleanup) · <M> MEDIUM · <L> LOW · ~<N> líneas **Alcance:**
+<files>, +Y/−Z — <one sentence>; MM: <count or 0>
 
 ## HIGH
 
@@ -187,10 +188,7 @@ identifiers, SCSS not Tailwind).
 
 `<path>:<line>` · ~<N> lines · <type> · apply: <tag> · [MM]
 
-**Clase:** risk | cleanup
-**Qué pasa:** ...
-**Por qué importa:** ...
-**Fix:** ...
+**Clase:** risk | cleanup **Qué pasa:** ... **Por qué importa:** ... **Fix:** ...
 
 ## MEDIUM
 
@@ -202,16 +200,17 @@ identifiers, SCSS not Tailwind).
 
 ## Decisión
 
-<CTA if all actionable findings are auto-safe; else one a/b/c MCQ>
+<Next action, or one material decision under the shared report contract>
 ```
 
-Omit empty priority sections. Every expanded finding: file, line, issue, why, concrete fix, apply-tag.
+Omit empty priority sections. Every expanded finding: file, line, issue, why, concrete fix,
+apply-tag.
 
 **Decision rules:**
 
 - All actionable findings `auto-safe`, none `needs-confirm` → CTA to run `staged-code-review-apply`.
-- Any `needs-confirm`, mixed scope, or material MM → one MCQ (`a`/`b`/`c`); see contract (action +
-  scope + brief example per option).
+- Any `needs-confirm`, mixed scope, or material MM → one material decision prompt; see contract
+  (action + scope + brief example per option).
 - When option `a` is “auto-safe only” (or equivalent), the lead sentence must state that **only
   allowlisted cleanups** will apply; `needs-confirm` / risk stay out unless the chosen option
   includes them.

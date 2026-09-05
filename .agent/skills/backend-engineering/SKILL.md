@@ -4,7 +4,7 @@ description:
   Standardize the development of server-side logic, API routes, data validation, and external
   service integration (Supabase, Email) for Celebra-me.
 domain: backend
-version: 1.0.0
+version: 1.1.0
 when_to_use:
   - Updating API routes, services, repositories, or server-side validation
   - Reviewing external integrations or server-only code paths
@@ -26,170 +26,33 @@ related_docs:
 
 # Backend Engineering
 
-> **Related skills**: [`astro-patterns`](../astro-patterns/SKILL.md) for data fetching in unrelated
-> components.
+Use for API, service, repository, validation, and server integration changes. Read the affected
+handler and consumers before choosing the implementation boundary.
 
-This skill governs **server-side engineering** in Celebra-me. It applies to API routes
-(`src/pages/api/*`), Service layers (`src/lib/*/service.ts`), and Repository layers
-(`src/lib/*/repository.ts`).
+## Contracts to load
 
-## Current Library Docs (Context7)
+- [API contract](../../rules/api-contracts.md): response envelopes, CSRF, admin authorization, and
+  rate limiting. Use the existing helpers in src/lib/rsvp/core/http.ts and typed ApiError; do not
+  introduce a second response shape or expose raw upstream errors.
+- [Auth/session contract](../../rules/auth-session.md) when changing authentication transport,
+  cookies, token refresh, or middleware.
+- [Architecture](../../../docs/core/architecture.md): routes orchestrate HTTP, services own business
+  rules, and repositories/adapters own persistence. Extend existing owners; do not add layers solely
+  to satisfy an example template.
+- [Database safety](../../rules/database.md) before operational database work. Runtime application
+  writes and agent-operated database changes have different authority.
 
-When Zod, Astro `APIRoute`, Vercel adapter, or other dependency APIs are uncertain, consult current
-library docs via Context7 (or the runtime's equivalent docs MCP) using the versions pinned in
-`package.json`. Do not create a repo-local Context7 skill. Context7 never overrides Celebra-me API
-contracts, live code, or canonical `docs/`.
+## Implementation and verification
 
-## Architecture Layers
+1. Trace input validation, authorization, service calls, persistence, and the client-visible result.
+   Reuse canonical Zod schemas, bounded request readers, sanitizers, and DTO mappers. Do not create
+   ad-hoc phone normalization, guessed field limits, or duplicate response types.
+2. Keep credentials and privileged clients server-only. Preserve RLS and authenticated context; use
+   service-role access only inside an established, guarded server operation.
+3. Preserve public response compatibility, authorization order, optimistic locking, idempotency, and
+   atomic publication where applicable. Use existing typed REST wrappers at persistence edges.
+4. Verify the changed behavior with focused tests covering success and relevant denial/error paths;
+   select broader checks from Gatekeeper. Do not call live services merely to validate local code.
 
-Strictly separate concerns into these three layers:
-
-### 1. API Layer (`src/pages/api/`)
-
-- **Responsibility**: HTTP handling, request parsing, response formatting.
-- **Rules**:
-  - No business logic here.
-  - Validate inputs using Zod or sanitization helpers immediately.
-  - Catch errors and return standardized JSON responses.
-  - Use `APIRoute` type from Astro.
-
-```typescript
-// src/pages/api/example.ts
-import type { APIRoute } from 'astro';
-import { doSomething } from '@/lib/domain/service';
-
-export const POST: APIRoute = async ({ request }) => {
-  try {
-    const body = await request.json();
-    // 1. Validate
-    if (!body.email) throw new Error('Email required');
-
-    // 2. Delegate to Service
-    const result = await doSomething(body);
-
-    // 3. Respond
-    return new Response(JSON.stringify(result), { status: 200 });
-  } catch (error) {
-    // 4. Handle Error
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 400 },
-    );
-  }
-};
-```
-
-### 2. Service Layer (`src/lib/*/service.ts`)
-
-- **Responsibility**: Business logic, orchestration, validation rules, side effects (email).
-- **Rules**:
-  - Pure TypeScript functions (no Astro dependencies).
-  - Accepts DTOs, returns DTOs (decoupled from DB structure).
-  - Throws typed Errors for logic failures.
-  - Sanitizes all inputs before passing to Repository.
-
-```typescript
-// src/lib/rsvp/service.ts
-export async function submitRsvp(input: RsvpDTO): Promise<ConfirmationDTO> {
-  const safeInput = sanitizeRsvp(input); // Sanitize
-
-  // Logic
-  if (safeInput.guests > 5) throw new Error('Max guests exceeded');
-
-  // DB interaction via Repository
-  const record = await repository.saveRsvp(safeInput);
-
-  // Side effect
-  await sendConfirmationEmail(record.email);
-
-  return toDto(record); // Normalize output
-}
-```
-
-### 3. Repository Layer (`src/lib/*/repository.ts`)
-
-- **Responsibility**: Database access, SQL/Supabase queries, data mapping.
-- **Rules**:
-  - Sole place where `supabase` client is used.
-  - Returns Data Models (Matches DB schema).
-  - Handles RLS context (passing `accessToken` methods).
-
-## Data Validation & Sanitization
-
-### Runtime Sanitization
-
-Use helper functions to ensure data integrity before processing.
-
-```typescript
-// Standard patterns
-function sanitize(val: unknown, maxLen = 500): string {
-  if (typeof val !== 'string') return '';
-  return val.trim().slice(0, maxLen);
-}
-
-function normalizePhone(phone: string): string {
-  return sanitize(phone, 20).replace(/[^\d+]/g, '');
-}
-```
-
-### Schema Validation (Zod)
-
-For complex inputs, prefer `zod`.
-
-```typescript
-import { z } from 'zod';
-
-const RsvpSchema = z.object({
-  email: z.string().email(),
-  attendees: z.number().int().min(1).max(10),
-});
-```
-
-## Supabase Integration
-
-### `supabaseRestRequest` Pattern
-
-Use the typed wrapper for Rest calls to ensure type safety and handle auth headers.
-
-```typescript
-import { supabaseRestRequest } from './supabase';
-
-export async function findEvent(id: string, token: string) {
-  const rows = await supabaseRestRequest<EventRow[]>({
-    pathWithQuery: `events?id=eq.${id}&select=*`,
-    authToken: token,
-    // useServiceRole: true // ONLY for public/admin bypass
-  });
-  return rows[0] || null;
-}
-```
-
-## Error Handling Standards
-
-All API responses must follow this shape when possible, or standard HTTP codes.
-
-### Success (200/201)
-
-```json
-{
-    "data": { ... },
-    "meta": { ... } // Optional
-}
-```
-
-### Error (4xx/5xx)
-
-```json
-{
-  "error": "Human readable message",
-  "code": "ERROR_CODE" // Optional
-}
-```
-
-## Anti-Patterns
-
-- ❌ **Logic in API Routes**: Don't query the DB directly in `src/pages/api`.
-- ❌ **Leaking DB Rows**: Always map DB rows to DTOs in the Service layer.
-- ❌ **Trusting Client Input**: Never use `request.json()` content without sanitization.
-- ❌ **Service Role Abuse**: Use `useServiceRole: true` ONLY when RLS cannot solve the problem
-  (e.g., initial guest lookup by generic token).
+When dependency behavior is uncertain, consult current official documentation for the package.json
+version. Framework documentation does not override the repository's API or data contracts.

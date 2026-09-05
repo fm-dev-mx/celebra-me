@@ -4,7 +4,7 @@ description:
   Write and maintain tests for Celebra-me using Jest, React Testing Library, and Playwright. Covers
   unit tests, component tests, schema validation, and E2E patterns.
 domain: quality
-version: 1.0.0
+version: 1.1.0
 when_to_use:
   - Adding or updating automated tests
   - Choosing regression coverage for a code change
@@ -38,19 +38,9 @@ differ from generic examples.
 
 ## Test Organization
 
-```plaintext
-tests/
-├── setup.ts                 # Global test setup (RTL, mocks)
-├── sanity.test.ts           # Basic sanity check
-├── utils/
-│   └── email.test.ts        # Utility function tests
-├── components/
-│   ├── RSVP.test.tsx        # Form component tests
-│   ├── MusicPlayer.test.tsx # Audio player tests
-│   └── FAQList.test.tsx     # List component tests
-└── content/
-    └── schema.test.ts       # Zod schema validation
-```
+Inspect jest.config.cjs, playwright.config.ts, tests/setup.ts, tests/helpers/, and the nearest
+relevant suite. Reuse their discovery, mocks, environment setup, and helpers rather than copying a
+sample directory tree. Available test scripts are owned by package.json.
 
 ## Running Tests
 
@@ -66,9 +56,10 @@ tests/
 | `pnpm build`              | Build validation                                |
 
 Select the proportional tier from `.agent/rules/gatekeeper.md` and **name that tier (A/B/C) plus
-intentional skips** in the closing report. Do not run `pnpm run ci`, full `pnpm test`, or `pnpm build`
-for tier A/B work unless risk escalates. Prefer `pnpm type-check` or focused domain checks over a
-full Astro build when only contracts/types need proof (`pnpm build` already re-runs type-check).
+intentional skips** in the closing report. Do not run `pnpm run ci`, full `pnpm test`, or
+`pnpm build` for tier A/B work unless risk escalates. Prefer `pnpm type-check` or focused domain
+checks over a full Astro build when only contracts/types need proof (`pnpm build` already re-runs
+type-check).
 
 Do not follow `pnpm validate:changed` with `pnpm test:changed`; the former already runs Jest
 `--findRelatedTests` for changed source files. Reserve the full test suite and build for the
@@ -77,8 +68,8 @@ working tree, validate explicit task files instead of widening the run to all ch
 
 For screenshots and browser proof, follow gatekeeper §5.3 (Visual evidence) and
 [`scripts/screenshot/README.md`](../../../scripts/screenshot/README.md) agent recipes. Do not
-generalize the five-viewport matrix in `docs/domains/theme/section-intersections.md` to unrelated
-UI work.
+generalize the five-viewport matrix in `docs/domains/theme/section-intersections.md` to unrelated UI
+work.
 
 ## Test File Conventions
 
@@ -97,13 +88,13 @@ wording changes if structure and propagation remain correct. Intentional excepti
 Do not couple pipeline/contract coverage to exact editable invitation wording (labels, titles,
 phrases, venue names, section copy, and similar host/editor fields).
 
-| Test kind                                                    | Exact invitation copy? | Rule                                                                                                                                                         |
-| ------------------------------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Pipeline / adapter / descriptor / projection contracts       | No                     | Assert shape, presence/absence, and value propagation: read the value from the fixture/source under test and expect the same value downstream.               |
+| Test kind                                                    | Exact invitation copy? | Rule                                                                                                                                                                                               |
+| ------------------------------------------------------------ | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pipeline / adapter / descriptor / projection contracts       | No                     | Assert shape, presence/absence, and value propagation: read the value from the fixture/source under test and expect the same value downstream.                                                     |
 | Schema allowlist / “parity” fixtures                         | No                     | Use synthetic tokens (`'Honoree'`, `'Open invitation'`). Assert Zod `success`, `toHaveProperty` / unknown-key rejection, enums, and numeric ranges — never client Spanish from a named invitation. |
-| Local unit fixtures owned by the test                        | Yes                    | Allowed when the test defines the input and asserts against that same input (prefer named constants; avoid copy-pasting live client wording).                 |
-| Invitation content golden / published-content regression     | Yes, when intentional  | Allowed only when the test’s stated purpose is content fidelity for a named fixture; name/describe it as such. Failures mean the wording changed on purpose. |
-| Product/system defaults (non-client editable UI/system copy) | Yes                    | Allowed.                                                                                                                                                     |
+| Local unit fixtures owned by the test                        | Yes                    | Allowed when the test defines the input and asserts against that same input (prefer named constants; avoid copy-pasting live client wording).                                                      |
+| Invitation content golden / published-content regression     | Yes, when intentional  | Allowed only when the test’s stated purpose is content fidelity for a named fixture; name/describe it as such. Failures mean the wording changed on purpose.                                       |
+| Product/system defaults (non-client editable UI/system copy) | Yes                    | Allowed.                                                                                                                                                                                           |
 
 Editor edits to DB drafts do not by themselves fail provision/fixture-based suites. Do not invent
 editor-sync requirements for those tests.
@@ -140,11 +131,11 @@ Used by [`.agent/workflows/error-remediation.md`](../../workflows/error-remediat
 PASS (`REGRESSION_DECISION`). Choose the smallest lock that closes the defect class; do not default
 to E2E or full-invitation corpus.
 
-| Defect class | Preferred lock | Notes |
-| --- | --- | --- |
-| `trivial` | `none` | Typo, unused, import, lint — VERIFY of the failing command is enough |
-| `local-behavior` | `extend-existing-test` or `add-focused-test` | Unit/contract first (pure function, Zod, adapter) |
-| `shared-contract` | `extend-existing-test` or `domain-validate` | Schema, mapper, parity, invitation-preparation scripts |
+| Defect class       | Preferred lock                                        | Notes                                                                       |
+| ------------------ | ----------------------------------------------------- | --------------------------------------------------------------------------- |
+| `trivial`          | `none`                                                | Typo, unused, import, lint — VERIFY of the failing command is enough        |
+| `local-behavior`   | `extend-existing-test` or `add-focused-test`          | Unit/contract first (pure function, Zod, adapter)                           |
+| `shared-contract`  | `extend-existing-test` or `domain-validate`           | Schema, mapper, parity, invitation-preparation scripts                      |
 | `family-extension` | Family invariant (synthetic matrix / schema / parity) | Invitations, sections, variants — one generative rule, not N client goldens |
 
 Layer order: unit/contract → domain validate → RTL → E2E/screenshot last (gatekeeper §5.3 for visual
@@ -152,199 +143,16 @@ evidence). Any lock written during remediation **must** pass the Invitation Copy
 checklist above. If the right lock is large or cross-cutting, choose `escalate-test-gap` instead of
 shipping a brittle or oversized suite.
 
-## Unit Test Patterns
+## Test implementation
 
-### Testing Pure Functions
+Use existing tests for framework syntax and mocks. Jest covers pure functions, schemas, components,
+and request handlers with controlled dependencies; real layout, hydration, and browser APIs need
+browser evidence when a unit/contract test cannot prove the behavior. Inspect the actual handler
+before deciding an API test needs a running server.
 
-```typescript
-import { myFunction } from '@/utils/myUtil';
-
-describe('myFunction', () => {
-  it('should return expected value for valid input', () => {
-    expect(myFunction('valid')).toBe('expected');
-  });
-
-  it('should handle edge cases gracefully', () => {
-    expect(myFunction(null)).toBeNull();
-  });
-
-  it('should throw on invalid input', () => {
-    expect(() => myFunction(-1)).toThrow();
-  });
-});
-```
-
-### Testing Async Functions
-
-```typescript
-describe('asyncFunction', () => {
-  it('should resolve with data', async () => {
-    const result = await asyncFunction();
-    expect(result).toEqual({ success: true });
-  });
-
-  it('should reject on error', async () => {
-    await expect(asyncFunction('bad')).rejects.toThrow('Error message');
-  });
-});
-```
-
-## Component Test Patterns
-
-### Basic Rendering
-
-```tsx
-import { render, screen } from '@testing-library/react';
-import MyComponent from '@/components/MyComponent';
-
-describe('MyComponent', () => {
-  it('should render with required props', () => {
-    render(<MyComponent title="Test" />);
-    expect(screen.getByText('Test')).toBeInTheDocument();
-  });
-});
-```
-
-### User Interactions
-
-```tsx
-import userEvent from '@testing-library/user-event';
-
-it('should handle click events', async () => {
-  const user = userEvent.setup();
-  const handleClick = jest.fn();
-
-  render(<Button onClick={handleClick}>Click Me</Button>);
-  await user.click(screen.getByRole('button'));
-
-  expect(handleClick).toHaveBeenCalledTimes(1);
-});
-```
-
-### Form Testing
-
-```tsx
-it('should validate form inputs', async () => {
-  const user = userEvent.setup();
-  render(<ContactForm />);
-
-  // Fill form
-  await user.type(screen.getByLabelText(/name/i), 'John');
-  await user.type(screen.getByLabelText(/email/i), 'john@test.com');
-
-  // Submit
-  await user.click(screen.getByRole('button', { name: /submit/i }));
-
-  // Assert
-  expect(screen.getByText(/success/i)).toBeInTheDocument();
-});
-```
-
-## Mocking Patterns
-
-### Mocking Nodemailer (Email)
-
-```typescript
-jest.mock('nodemailer', () => ({
-  createTransport: jest.fn(() => ({
-    sendMail: jest.fn(),
-  })),
-}));
-
-import nodemailer from 'nodemailer';
-const mockedNodemailer = nodemailer as jest.Mocked<typeof nodemailer>;
-
-beforeEach(() => {
-  jest.clearAllMocks();
-});
-
-it('should send email successfully', async () => {
-  const transport = { sendMail: jest.fn().mockResolvedValue({ messageId: 'test-id' }) };
-  mockedNodemailer.createTransport.mockReturnValue(transport as never);
-  const result = await sendEmail(payload);
-  expect(result).toBe(true);
-});
-```
-
-### Mocking Audio API
-
-Already configured in `tests/setup.ts`:
-
-```typescript
-window.HTMLAudioElement.prototype.play = jest.fn().mockResolvedValue(undefined);
-window.HTMLAudioElement.prototype.pause = jest.fn();
-window.HTMLAudioElement.prototype.load = jest.fn();
-```
-
-### Mocking SCSS Imports
-
-Configured in `jest.config.cjs`:
-
-```javascript
-moduleNameMapper: {
-  '\\.scss$': 'identity-obj-proxy',
-}
-```
-
-### Mocking import.meta.env
-
-Configured in `tests/setup.ts`:
-
-```typescript
-Object.defineProperty(global, 'import', {
-  value: {
-    meta: {
-      env: {
-        SENDGRID_API_KEY: 'test-api-key',
-        EMAIL_TO: 'test@example.com',
-        EMAIL_FROM: 'noreply@test.com',
-        SMTP_HOST: 'smtp.test.local',
-      },
-    },
-  },
-});
-```
-
-## Schema Validation Tests
-
-### Testing Zod Schemas
-
-```typescript
-import { z } from 'zod';
-
-const eventSchema = z.object({
-  title: z.string(),
-  date: z.string().datetime(),
-});
-
-describe('Event Schema', () => {
-  it('should validate correct data', () => {
-    const result = eventSchema.safeParse({
-      title: 'Test',
-      date: '2025-01-01T00:00:00.000Z',
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it('should reject invalid date format', () => {
-    const result = eventSchema.safeParse({
-      title: 'Test',
-      date: 'invalid',
-    });
-    expect(result.success).toBe(false);
-  });
-});
-```
-
-## What NOT to Test with Jest
-
-| Component Type              | Reason                         | Alternative             |
-| --------------------------- | ------------------------------ | ----------------------- |
-| Astro components (`.astro`) | Server-rendered, no runtime JS | Build validation or E2E |
-| SCSS visual output          | Can't verify visual rendering  | Visual regression       |
-| Full page layouts           | Complex hydration              | E2E tests               |
-| API routes                  | Need server context            | Integration tests       |
-| Browser-specific APIs       | Need real browser              | E2E tests               |
+Reuse tests/setup.ts and jest.config.cjs for audio, styles, module aliases, and environment setup.
+Keep new mocks local to the test unless the shared setup truly owns the behavior. For unfamiliar
+framework APIs, consult current official documentation for the installed version.
 
 ## Build Validation
 

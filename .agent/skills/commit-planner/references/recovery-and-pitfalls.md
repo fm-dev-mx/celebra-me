@@ -13,8 +13,7 @@ by default.
 Before suggesting or executing destructive commands such as `git reset --hard`, verify the current
 branch, pushed/unpushed state, working tree status, staged changes, and whether a backup branch or
 stash is needed. Never execute destructive recovery commands without explicit user confirmation.
-Decision prompts must use exactly three options (`a`/`b`/`c`) in relevance order, with the safe
-recommended option in `a` (see
+Decision prompts follow the shared contract, with the safe recommended option first (see
 [`.agent/templates/agent-report-contract.md`](../../../templates/agent-report-contract.md)).
 
 ## Bad message or non-atomic commit
@@ -29,8 +28,12 @@ git reset --soft HEAD~1
 **Pre-checks (run these before suggesting any destructive command):**
 
 - Verify the wrong-branch commits have not been pushed:
-  `git log --oneline origin/<branch>..<branch>`. If this returns any output, the commits have
-  already been pushed — **do not use `git reset --hard`**. Use `git revert` instead.
+  `git log --oneline origin/<branch>..<branch>`. Output lists commits reachable from the local
+  branch but not the inspected remote-tracking ref; it does not prove the target commit is
+  unpublished everywhere. Check the target SHA against the relevant remote refs and establish their
+  freshness before proposing recovery. If publication status is unknown or the target commit is
+  published, do not propose history-discarding reset; assess an explicitly authorized revert
+  instead.
 - Confirm the working tree is clean: `git status --short` must show nothing.
 - Confirm no unpushed commits on other branches would be orphaned.
 
@@ -93,9 +96,9 @@ Verify with `git diff --cached` before committing. After stash-pop, confirm the 
   Split into separate logical commits. Always run the atomicity check before proposing a plan.
 - **Stale commit descriptions**: when fixing a prior bad commit, use `git reset --soft HEAD~1` to
   undo it while keeping changes staged, then re-stage and re-commit.
-- **Re-stage after hook rejection**: pre-commit hooks (lint-staged, etc.) run on staged content.
-  The **user** `git add`s fixed files before retrying — agents leave fixes unstaged unless staging
-  was explicitly authorized.
+- **Re-stage after hook rejection**: pre-commit hooks (lint-staged, etc.) run on staged content. The
+  **user** `git add`s fixed files before retrying — agents leave fixes unstaged unless staging was
+  explicitly authorized.
 - **Hooks on the wrong branch**: `git stash` + branch switch + `git stash pop` can trigger husky
   hooks (rebase, pre-commit). Always verify which branch you're on after stash-pop with
   `git branch --show-current`.
@@ -109,9 +112,9 @@ Verify with `git diff --cached` before committing. After stash-pop, confirm the 
   where.
 - **Branch protection**: the pre-commit hook only rejects commits to `main`. Commits to `develop`
   and other branches pass through to commitlint + lint-staged normally. The override variables
-  `SKIP_COMMIT_RANGE_VALIDATION=true` and `ALLOW_MAIN_PUSH=true` are emergency escape hatches — never
-  present them as a routine staging or planning option in the commit plan. Only mention them when
-  the user explicitly asks how to bypass protection or when documenting an already-approved
+  `SKIP_COMMIT_RANGE_VALIDATION=true` and `ALLOW_MAIN_PUSH=true` are emergency escape hatches —
+  never present them as a routine staging or planning option in the commit plan. Only mention them
+  when the user explicitly asks how to bypass protection or when documenting an already-approved
   exception. Every use must be flagged with a caution: "This bypasses branch protection — confirm
   with the team before running."
 - **Stash-pop / branch drift**: see “Stash-pop merge conflicts” above; if `develop` advanced via
