@@ -6,32 +6,27 @@ export const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
 export const DEFAULT_JSON_BODY_MAX_BYTES = 256 * 1024;
 
-export async function readBoundedRequestText(request: Request, maxBytes: number): Promise<string> {
+function assertContentLengthWithinLimit(request: Request, maxBytes: number): void {
 	const contentLength = request.headers.get('content-length');
-	if (contentLength !== null) {
-		if (!/^\d+$/.test(contentLength.trim())) {
-			throw new ApiError(400, 'bad_request', 'Content-Length is invalid.');
-		}
-		if (Number(contentLength) > maxBytes) {
-			throw new ApiError(413, 'payload_too_large', 'Request body is too large.');
-		}
+	if (contentLength === null) return;
+	if (!/^\d+$/.test(contentLength.trim())) {
+		throw new ApiError(400, 'bad_request', 'Content-Length is invalid.');
 	}
+	if (Number(contentLength) > maxBytes) {
+		throw new ApiError(413, 'payload_too_large', 'Request body is too large.');
+	}
+}
+
+export async function readBoundedRequestBytes(
+	request: Request,
+	maxBytes: number,
+): Promise<Uint8Array> {
+	assertContentLengthWithinLimit(request, maxBytes);
 
 	if (request.body === undefined || request.body === null) {
-		// Astro test adapters may omit body while exposing the Fetch text method.
-		// Real network Requests always use the bounded stream path below.
-		const fallbackText = await request.text();
-		if (new TextEncoder().encode(fallbackText).byteLength > maxBytes) {
-			throw new ApiError(413, 'payload_too_large', 'Request body is too large.');
-		}
-		return fallbackText;
-	}
-	if (request.body === null) {
-		const fallbackText = await request.text();
-		if (new TextEncoder().encode(fallbackText).byteLength > maxBytes) {
-			throw new ApiError(413, 'payload_too_large', 'Request body is too large.');
-		}
-		return fallbackText;
+		// A request without a body has no bytes to validate. Do not fall back to
+		// request.text(): that API buffers an unbounded body outside this guard.
+		return new Uint8Array(0);
 	}
 
 	const reader = request.body.getReader();
@@ -60,6 +55,11 @@ export async function readBoundedRequestText(request: Request, maxBytes: number)
 		body.set(chunk, offset);
 		offset += chunk.byteLength;
 	}
+	return body;
+}
+
+export async function readBoundedRequestText(request: Request, maxBytes: number): Promise<string> {
+	const body = await readBoundedRequestBytes(request, maxBytes);
 	return new TextDecoder().decode(body);
 }
 
@@ -74,15 +74,6 @@ export interface ApiSuccess<T> {
 		page?: number;
 		perPage?: number;
 		total?: number;
-	};
-}
-
-export interface ApiErrorResponse {
-	success: false;
-	error: {
-		code: string;
-		message: string;
-		details?: unknown;
 	};
 }
 
@@ -118,13 +109,11 @@ export function forbidden(message: string): Response {
 	return errorResponse(new ApiError(403, 'forbidden', message));
 }
 
-
 export function getIp(request: Request): string {
 	const raw =
 		request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 	return sanitize(raw.split(',')[0], 100);
 }
-
 
 export function errorResponse(error: unknown): Response {
 	if (isAuthRequestError(error)) {
@@ -157,7 +146,9 @@ export function errorResponse(error: unknown): Response {
 				error: {
 					code: error.code,
 					message: error.message,
-					details: error.details,
+					// Internal diagnostics, especially database/provider responses, must
+					// never cross a public API boundary on server errors.
+					...(error.status < 500 && error.details ? { details: error.details } : {}),
 				},
 			},
 			error.status,

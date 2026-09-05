@@ -3,7 +3,8 @@
  */
 
 import { z } from 'zod';
-import { badRequest } from '@/lib/rsvp/core/http';
+import { ApiError, isApiError } from '@/lib/rsvp/core/errors';
+import { badRequest, errorResponse, readBoundedRequestText } from '@/lib/rsvp/core/http';
 
 /**
  * Successful validation result.
@@ -19,6 +20,7 @@ export interface ValidationError {
 		path: string;
 		message: string;
 	}>;
+	status?: number;
 }
 
 export type ValidationOutcome<T> = ValidationResult<T> | ValidationError;
@@ -39,6 +41,7 @@ function extractZodErrors(error: z.ZodError): ValidationError['errors'] {
 export async function validateBody<T>(
 	request: Request,
 	schema: z.ZodSchema<T>,
+	maxBytes = 256 * 1024,
 ): Promise<ValidationOutcome<T>> {
 	let body: unknown;
 
@@ -51,7 +54,7 @@ export async function validateBody<T>(
 			};
 		}
 
-		const rawText = await request.text();
+		const rawText = await readBoundedRequestText(request, maxBytes);
 		if (!rawText.trim()) {
 			return {
 				success: false,
@@ -62,6 +65,13 @@ export async function validateBody<T>(
 		body = JSON.parse(rawText);
 	} catch (error) {
 		const message = error instanceof Error ? error.message : 'Invalid JSON';
+		if (isApiError(error)) {
+			return {
+				success: false,
+				errors: [{ path: 'body', message: error.message }],
+				status: error.status,
+			};
+		}
 		return {
 			success: false,
 			errors: [{ path: 'body', message: `Invalid JSON format: ${message}` }],
@@ -89,10 +99,17 @@ export async function validateBody<T>(
 export async function validateBodyOrRespond<T>(
 	request: Request,
 	schema: z.ZodSchema<T>,
+	maxBytes = 256 * 1024,
 ): Promise<T | Response> {
-	const result = await validateBody(request, schema);
+	const result = await validateBody(request, schema, maxBytes);
 
 	if (!result.success) {
+		if (result.status) {
+			const code = result.status === 413 ? 'payload_too_large' : 'bad_request';
+			return errorResponse(
+				new ApiError(result.status, code, result.errors[0]?.message ?? 'Invalid request.'),
+			);
+		}
 		const message = result.errors.map((e) => `${e.path}: ${e.message}`).join(', ');
 		return badRequest(message);
 	}
@@ -145,21 +162,3 @@ export function validateQueryOrRespond<T>(
 	return result.data;
 }
 
-/**
- * Validates an already parsed value against a Zod schema.
- */
-export function validate<T>(data: unknown, schema: z.ZodSchema<T>): ValidationOutcome<T> {
-	const result = schema.safeParse(data);
-
-	if (!result.success) {
-		return {
-			success: false,
-			errors: extractZodErrors(result.error),
-		};
-	}
-
-	return {
-		success: true,
-		data: result.data,
-	};
-}

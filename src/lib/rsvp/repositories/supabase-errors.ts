@@ -5,7 +5,7 @@
 
 import { ApiError, type ApiErrorCode } from '@/lib/rsvp/core/errors';
 
-export interface SupabaseErrorResponse {
+interface SupabaseErrorResponse {
 	message?: string;
 	details?: string;
 	hint?: string;
@@ -41,7 +41,7 @@ const PUBLIC_RSVP_RPC_ERROR_MAP: Record<
 	guest_invitation_not_found: {
 		httpStatus: 404,
 		code: 'not_found',
-		userMessage: 'Invitation not found.',
+		userMessage: 'Invitación no encontrada.',
 		errorCode: 'guest_invitation_not_found',
 	},
 	attendee_count_exceeds_limit: {
@@ -118,10 +118,15 @@ export function mapSupabaseErrorToApiError(error: unknown): ApiError {
 	if (constraintName) {
 		const mapping = CONSTRAINT_MAP[constraintName];
 		if (mapping) {
-			return new ApiError(mapping.httpStatus, mapping.httpStatus === 409 ? 'conflict' : 'bad_request', mapping.userMessage, {
-				constraint: constraintName,
-				errorCode: mapping.errorCode,
-			});
+			return new ApiError(
+				mapping.httpStatus,
+				mapping.httpStatus === 409 ? 'conflict' : 'bad_request',
+				mapping.userMessage,
+				{
+					constraint: constraintName,
+					errorCode: mapping.errorCode,
+				},
+			);
 		}
 	}
 
@@ -159,6 +164,5 @@ export function mapSupabaseErrorToApiError(error: unknown): ApiError {
 		500,
 		'internal_error',
 		'Internal server error while processing the request.',
-		{ originalError: errorMessage },
 	);
 }
