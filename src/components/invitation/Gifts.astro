@@ -281,7 +281,7 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 
 								{gift.type === 'paypal' && safeGiftUrl && (
 									<div class="gift-card__actions">
-										<a href={gift.url} target="_blank" rel="noopener noreferrer" class="gift-card__button gift-card__button--paypal">
+										<a href={safeGiftUrl} target="_blank" rel="noopener noreferrer" class="gift-card__button gift-card__button--paypal">
 											{labels.sendGift}
 										</a>
 									</div>
@@ -300,7 +300,7 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 
 	document.querySelectorAll('.copy-icon-button').forEach((button) => {
 		button.addEventListener('click', async () => {
-			const textToCopy = button.getAttribute('data-copy-text') || button.getAttribute('data-clabe');
+			const textToCopy = button.getAttribute('data-copy-text');
 			if (!textToCopy) {
 				return;
 			}
