@@ -10,7 +10,7 @@ const runtime = validateReadOnlyPreviewEnvironment();
 
 export default defineConfig({
 	testDir: './tests/e2e/preview',
-	testMatch: ['public-preview-smoke.spec.ts'],
+	testMatch: ['public-preview-smoke.spec.ts', 'invitation-public-content.spec.ts'],
 	fullyParallel: false,
 	forbidOnly: true,
 	retries: 0,
