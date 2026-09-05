@@ -3,12 +3,12 @@ type ReplayStorage = {
 	put<T>(key: string, value: T): Promise<void>;
 	list<T = unknown>(): Promise<Map<string, T>>;
 	delete(key: string): Promise<boolean>;
+	setAlarm(scheduledTime: number | Date): Promise<void>;
 };
 
 type ReplayState = {
 	storage: ReplayStorage;
 	blockConcurrencyWhile<T>(callback: () => Promise<T>): Promise<T>;
-	setAlarm(timestamp: number | Date): Promise<void>;
 };
 
 export type ReplayGuardNamespace = {
@@ -24,7 +24,10 @@ const REPLAY_REQUEST_MAX_BYTES = 8 * 1024;
 
 async function readBoundedJson(request: Request): Promise<unknown> {
 	const contentLength = request.headers.get('content-length');
-	if (contentLength !== null && (!/^\d+$/.test(contentLength.trim()) || Number(contentLength) > REPLAY_REQUEST_MAX_BYTES)) {
+	if (
+		contentLength !== null &&
+		(!/^\d+$/.test(contentLength.trim()) || Number(contentLength) > REPLAY_REQUEST_MAX_BYTES)
+	) {
 		throw new Error('request body too large');
 	}
 	if (!request.body) throw new Error('request body missing');
@@ -81,8 +84,10 @@ export class ReplayGuard {
 		const accepted = await this.state.blockConcurrencyWhile(async () => {
 			const current = await this.state.storage.get<ReplayRecord>(input.key as string);
 			if (current && current.expiresAt > now) return false;
-			await this.state.storage.put(input.key as string, { expiresAt: input.expiresAt as number });
-			await this.state.setAlarm(input.expiresAt as number);
+			await this.state.storage.put(input.key as string, {
+				expiresAt: input.expiresAt as number,
+			});
+			await this.state.storage.setAlarm(input.expiresAt as number);
 			return true;
 		});
 		return new Response(null, { status: accepted ? 204 : 409 });
