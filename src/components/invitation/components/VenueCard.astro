@@ -4,7 +4,7 @@
   Extracted from EventLocation.astro to avoid duplication.
 */
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
-import GoogleMap from '@/components/common/GoogleMap.astro';
+import SchematicVenueMap from '@/components/common/SchematicVenueMap.astro';
 import Icon from '@/components/common/icons/Icon.astro';
 import {
 	isNavigableVenueMapUrl,
@@ -106,11 +106,11 @@ const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
 				<div class="event-location__card-image-inner-frame">
 					<div class="event-location__card-image-container" data-focal-point={venue.focalPoint}>
 						{mediaMode === 'map' && venue.coordinates && (
-							<GoogleMap
+							<SchematicVenueMap
 								lat={venue.coordinates.lat}
 								lng={venue.coordinates.lng}
-								zoom={venue.coordinates.zoom}
 								title={venue.venueName}
+								address={venue.address}
 								mapStyle={mapStyle}
 							/>
 						)}
