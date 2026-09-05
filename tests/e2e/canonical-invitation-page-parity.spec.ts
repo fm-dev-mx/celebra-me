@@ -11,6 +11,11 @@ import {
 } from './harness/visual-parity-metadata';
 import { buildSemanticAssetMap } from '../../scripts/provision/normalized-invitation-release';
 import {
+	assertVisualComparisonReady,
+	shouldCompareVisualSnapshots,
+	visualComparisonResult,
+} from './harness/visual-baseline-policy';
+import {
 	buildVisualPageCases,
 	VISUAL_VIEWPORTS,
 	computeVisualMatrixHash,
@@ -18,13 +23,13 @@ import {
 } from '../../scripts/screenshot/visual-coverage-contract';
 
 const VIEWPORTS = VISUAL_VIEWPORTS;
-const VISUAL_PARITY_MODE =
-	process.env.VISUAL_PARITY_MODE ?? (process.env.CI ? 'compare' : 'diagnostic');
+const VISUAL_PARITY_MODE = (process.env.VISUAL_PARITY_MODE ??
+	(process.env.CI ? 'compare' : 'diagnostic')) as 'diagnostic' | 'candidate' | 'compare';
 const ACCEPTED_BASELINES_MANIFEST = path.resolve(
 	process.cwd(),
 	'tests/e2e/visual-baselines/manifest.json',
 );
-const hasAcceptedBaselines = fs.existsSync(ACCEPTED_BASELINES_MANIFEST);
+assertVisualComparisonReady(VISUAL_PARITY_MODE, ACCEPTED_BASELINES_MANIFEST);
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 interface PageCapture {
@@ -45,6 +50,47 @@ const PAGE_CASES: VisualPageCase[] = buildVisualPageCases();
 const EXPECTED_CAPTURE_COUNT = PAGE_CASES.length * VIEWPORTS.length;
 const captures: PageCapture[] = [];
 
+function isAllowedVisualAssetUrl(rawUrl: string, baseOrigin: string): boolean {
+	let url: URL;
+	try {
+		url = new URL(rawUrl);
+	} catch {
+		return false;
+	}
+	if (url.origin === baseOrigin) return true;
+
+	const configuredOrigins = [process.env.PUBLIC_SUPABASE_URL, process.env.SUPABASE_URL]
+		.filter((value): value is string => Boolean(value))
+		.map((value) => {
+			try {
+				return new URL(value).origin;
+			} catch {
+				return null;
+			}
+		})
+		.filter((origin): origin is string => origin !== null);
+	if (
+		configuredOrigins.includes(url.origin) &&
+		url.pathname.startsWith('/storage/v1/object/public/invitation-assets/')
+	) {
+		return true;
+	}
+	if (
+		url.hostname === '127.0.0.1' &&
+		url.port === '54321' &&
+		url.pathname.startsWith('/storage/v1/object/public/invitation-assets/')
+	) {
+		return true;
+	}
+	if (
+		url.hostname === 'res.cloudinary.com' &&
+		url.pathname.startsWith('/dusxvauvj/image/upload/')
+	) {
+		return true;
+	}
+	return /^(?:a|b|c)\.basemaps\.cartocdn\.com$/u.test(url.hostname);
+}
+
 test.describe('Canonical invitation complete-page visual parity', () => {
 	for (const entry of PAGE_CASES) {
 		for (const viewport of VIEWPORTS) {
@@ -58,7 +104,10 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 				const baseOrigin = new URL(String(testInfo.project.use.baseURL)).origin;
 				await page.route('**/*', async (route) => {
 					const requestUrl = route.request().url();
-					if (/^https?:/i.test(requestUrl) && new URL(requestUrl).origin !== baseOrigin) {
+					if (
+						/^https?:/i.test(requestUrl) &&
+						!isAllowedVisualAssetUrl(requestUrl, baseOrigin)
+					) {
 						externalRequests.push(requestUrl);
 						await route.abort();
 						return;
@@ -77,18 +126,21 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 
 				await page.setViewportSize({ width: viewport.width, height: viewport.height });
 				const query = new URLSearchParams({
-					full: '1',
-					slug: entry.slug,
-					eventType: entry.eventType,
+					skipEnvelope: 'true',
+					screenshot: 'true',
+					animations: 'off',
 				});
-				const response = await page.goto(`/test/variant?${query.toString()}`, {
-					waitUntil: 'load',
-				});
+				const response = await page.goto(
+					`/${entry.eventType}/${entry.slug}?${query.toString()}`,
+					{
+						waitUntil: 'load',
+					},
+				);
 				expect(response?.status()).toBe(200);
-				// Every external request is aborted locally; any request is a visual-gate failure.
+				// Only configured application assets and map tiles may leave the page origin.
 				expect(
 					externalRequests,
-					'External dependencies must fail the visual gate.',
+					'Unexpected external dependencies must fail the visual gate.',
 				).toEqual([]);
 				await page.evaluate(() => document.fonts?.ready);
 				await page.evaluate(async () => {
@@ -125,7 +177,9 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 				const audit = await page.evaluate(() => {
 					const issues: string[] = [];
 					for (const section of Array.from(
-						document.querySelectorAll<HTMLElement>('[data-section-id]'),
+						document.querySelectorAll<HTMLElement>(
+							'[data-section-id], .invitation-section-wrapper[data-section-kind]',
+						),
 					)) {
 						const rect = section.getBoundingClientRect();
 						if (rect.left < -2 || rect.right > window.innerWidth + 2)
@@ -137,8 +191,12 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 					return {
 						scrollWidth: document.documentElement.scrollWidth,
 						viewportWidth: window.innerWidth,
-						sections: document.querySelectorAll('[data-section-id]').length,
-						root: Boolean(document.querySelector('#test-invitation-root')),
+						sections: document.querySelectorAll(
+							'[data-section-id], .invitation-section-wrapper[data-section-kind]',
+						).length,
+						root: Boolean(
+							document.querySelector('#test-invitation-root, .event-theme-wrapper'),
+						),
 						issues,
 						brokenImages,
 					};
@@ -152,6 +210,48 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 				expect(consoleErrors).toEqual([]);
 				expect(pageErrors).toEqual([]);
 
+				const definition =
+					entry.kind === 'invitation'
+						? listInvitationDefinitions().find(
+								(candidate) => candidate.slug === entry.slug,
+							)
+						: undefined;
+				if (definition) {
+					const publishedContent = definition.buildPublishedContent(
+						buildSemanticAssetMap(definition),
+					) as { sectionOrder?: unknown };
+					const expectedSectionOrder = Array.isArray(publishedContent.sectionOrder)
+						? publishedContent.sectionOrder.map((section) =>
+								String(
+									section === 'personalizedAccess'
+										? 'personalized-access'
+										: section,
+								),
+							)
+						: [];
+					const actualSectionOrder = await page
+						.locator('.invitation-section-wrapper[data-section-kind]')
+						.evaluateAll((sections) =>
+							sections
+								.map((section) => section.getAttribute('data-section-kind'))
+								.filter(
+									(section): section is string =>
+										section !== null && section !== 'interlude',
+								),
+						);
+					expect(actualSectionOrder).toEqual(expectedSectionOrder);
+					expect(
+						await page
+							.locator('.event-theme-wrapper')
+							.getAttribute('data-content-source'),
+					).toBe('published');
+					expect(
+						await page
+							.locator('.event-theme-wrapper')
+							.getAttribute('data-content-version'),
+					).toMatch(/^[1-9]\d*$/u);
+				}
+
 				await page.waitForTimeout(100);
 				const snapshotName = `pages/${entry.kind}-${entry.eventType}-${entry.slug}-${viewport.name}.png`;
 				const pageHeight = await page.evaluate(() =>
@@ -162,20 +262,11 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 					clip: { x: 0, y: 0, width: viewport.width, height: pageHeight },
 				};
 				const image = await page.screenshot(screenshotOptions);
-				if (
-					VISUAL_PARITY_MODE === 'candidate' ||
-					(VISUAL_PARITY_MODE === 'compare' && hasAcceptedBaselines)
-				) {
+				if (shouldCompareVisualSnapshots(VISUAL_PARITY_MODE)) {
 					expect(image).toMatchSnapshot(snapshotName, {
 						maxDiffPixelRatio: 0.001,
 					});
 				}
-				const definition =
-					entry.kind === 'invitation'
-						? listInvitationDefinitions().find(
-								(candidate) => candidate.slug === entry.slug,
-							)
-						: undefined;
 				const contentHash = definition
 					? hashVisualValue(
 							definition.buildPublishedContent(buildSemanticAssetMap(definition)),
@@ -228,10 +319,7 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 					sha256: crypto.createHash('sha256').update(image).digest('hex'),
 					contentHash,
 					assetHash,
-					comparisonResult:
-						VISUAL_PARITY_MODE === 'compare' && hasAcceptedBaselines
-							? 'PASS'
-							: 'CANDIDATE',
+					comparisonResult: visualComparisonResult(VISUAL_PARITY_MODE),
 				});
 			});
 		}
@@ -262,10 +350,7 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 				{
 					generatedAt: new Date().toISOString(),
 					runtimeFingerprint: VISUAL_PARITY_RUNTIME,
-					status:
-						VISUAL_PARITY_MODE === 'compare' && hasAcceptedBaselines
-							? 'COMPARED'
-							: 'CANDIDATE',
+					status: VISUAL_PARITY_MODE === 'compare' ? 'COMPARED' : 'CANDIDATE',
 					mode: VISUAL_PARITY_MODE,
 					totalCaptures: captures.length,
 					matrixHash: computeVisualMatrixHash(
@@ -279,5 +364,101 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 			),
 			'utf8',
 		);
+	});
+});
+test.describe('Reported invitation public-route regressions', () => {
+	test.use({ viewport: { width: 414, height: 896 } });
+
+	test('xareni gallery loads its canonical composition and images', async ({ page }) => {
+		const response = await page.goto(
+			'/xv/xareni-iyarit?skipEnvelope=true&screenshot=true&animations=off',
+			{
+				waitUntil: 'load',
+			},
+		);
+		expect(response?.status()).toBe(200);
+		await page.evaluate(() => document.fonts?.ready);
+		const audit = await page.locator('.event-theme-wrapper').evaluate((root) => {
+			const gallery = root.querySelector<HTMLElement>('.gallery-section');
+			const images = Array.from(
+				root.querySelectorAll<HTMLImageElement>('.gallery-section img'),
+			);
+			return {
+				source: root.getAttribute('data-content-source'),
+				variant: gallery?.getAttribute('data-variant'),
+				imageCount: images.length,
+				brokenImages: images.filter((image) => image.currentSrc && image.naturalWidth === 0)
+					.length,
+			};
+		});
+		expect(audit.source).toBe('published');
+		expect(audit.variant).toBe('index-choreography');
+		expect(audit.imageCount).toBeGreaterThanOrEqual(6);
+		expect(audit.brokenImages).toBe(0);
+	});
+
+	test('ayrin thank-you keeps its published editorial portrait layout', async ({ page }) => {
+		const response = await page.goto(
+			'/xv/ayrin-samantha-lerma-castro?skipEnvelope=true&screenshot=true&animations=off',
+			{ waitUntil: 'load' },
+		);
+		expect(response?.status()).toBe(200);
+		await page.evaluate(() => document.fonts?.ready);
+		const audit = await page.locator('.event-theme-wrapper').evaluate((root) => {
+			const section = root.querySelector<HTMLElement>('.thank-you-section');
+			const media = root.querySelector<HTMLElement>('.thank-you-editorial__media');
+			const message = root.querySelector<HTMLElement>('.thank-you-message');
+			const closing = root.querySelector<HTMLElement>('.closing-name');
+			return {
+				source: root.getAttribute('data-content-source'),
+				variant: section?.getAttribute('data-variant'),
+				mediaVisible: Boolean(media && getComputedStyle(media).display !== 'none'),
+				messageWidth: message?.getBoundingClientRect().width ?? 0,
+				sectionWidth: section?.getBoundingClientRect().width ?? 0,
+				closingText: closing?.textContent?.trim() ?? '',
+			};
+		});
+		expect(audit.source).toBe('published');
+		expect(audit.variant).toBe('editorial-back-cover');
+		expect(audit.mediaVisible).toBe(true);
+		expect(audit.messageWidth).toBeGreaterThan(0);
+		expect(audit.messageWidth).toBeLessThanOrEqual(audit.sectionWidth);
+		expect(audit.closingText).toContain('Ayrin');
+	});
+
+	test('ana sofia keeps the canonical section order and gallery inventory', async ({ page }) => {
+		const response = await page.goto(
+			'/xv/ana-sofia-cota-guillen?skipEnvelope=true&screenshot=true&animations=off',
+			{
+				waitUntil: 'load',
+			},
+		);
+		expect(response?.status()).toBe(200);
+		await page.evaluate(() => document.fonts?.ready);
+		const audit = await page.locator('.event-theme-wrapper').evaluate((root) => ({
+			source: root.getAttribute('data-content-source'),
+			sections: Array.from(root.querySelectorAll<HTMLElement>('.invitation-section-wrapper'))
+				.map((section) => section.dataset.sectionKind)
+				.filter((section): section is string =>
+					Boolean(section && section !== 'interlude'),
+				),
+			galleryVariant: root.querySelector('.gallery-section')?.getAttribute('data-variant'),
+			galleryImages: root.querySelectorAll('.gallery-section img').length,
+		}));
+		expect(audit.source).toBe('published');
+		expect(audit.sections).toEqual([
+			'quote',
+			'family',
+			'countdown',
+			'itinerary',
+			'location',
+			'gallery',
+			'gifts',
+			'personalized-access',
+			'rsvp',
+			'thankYou',
+		]);
+		expect(audit.galleryVariant).toBe('index-choreography');
+		expect(audit.galleryImages).toBe(10);
 	});
 });
