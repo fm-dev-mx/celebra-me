@@ -234,7 +234,7 @@ const content: CanonicalEventContentInput = {
 		mapStyle: 'dark',
 	},
 	thankYou: {
-		variant: 'editorial-back-cover',
+		variant: 'portrait-letter',
 		image: {
 			key: 'thankYouPortrait',
 			type: 'internal',

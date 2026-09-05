@@ -69,7 +69,7 @@ interface CapturedSnapshotInfo {
 const capturedSnapshots: CapturedSnapshotInfo[] = [];
 
 test.describe('Registry-Driven Visual Portability Suite', () => {
-	// Baseline Preset: jewelry-box (all 39 canonical variants)
+	// Baseline Preset: jewelry-box (all registered canonical variants)
 	for (const entry of CANONICAL_VARIANT_REGISTRY) {
 		for (const vp of VIEWPORTS) {
 			test(`baseline: ${entry.section}.${entry.variant} @ ${vp.name} (jewelry-box)`, async ({
@@ -687,3 +687,31 @@ function generateContactSheet(
 
 	fs.writeFileSync(path.join(outputDir, 'contact-sheet.html'), html, 'utf8');
 }
+
+test('portrait-letter preserves the production mobile portrait and serif letter geometry', async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 414, height: 896 });
+	await page.goto(
+		'/test/variant?section=thankYou&variant=portrait-letter&preset=enchanted-rose',
+		{ waitUntil: 'load' },
+	);
+	await page.evaluate(() => document.fonts.ready);
+	const section = page.locator('.thank-you-section');
+	await section.scrollIntoViewIfNeeded();
+	const geometry = await section.evaluate((root) => {
+		const media = root.querySelector<HTMLElement>('.thank-you-editorial__media')!;
+		const message = root.querySelector<HTMLElement>('.thank-you-message')!;
+		return {
+			portraitWidth: media.getBoundingClientRect().width,
+			fontSize: Number.parseFloat(getComputedStyle(message).fontSize),
+			fontFamily: getComputedStyle(message).fontFamily,
+			paddingTop: Number.parseFloat(getComputedStyle(root).paddingTop),
+		};
+	});
+	// Measured on the accepted Production deployment at the same viewport.
+	expect(geometry.portraitWidth).toBeCloseTo(256.68, 1);
+	expect(geometry.fontSize).toBeCloseTo(25.668, 2);
+	expect(geometry.fontFamily).toContain('Cormorant Garamond');
+	expect(geometry.paddingTop).toBeCloseTo(152, 1);
+});

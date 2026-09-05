@@ -153,8 +153,8 @@ function loadDemoEvent(relativePath: string, id: string) {
 }
 
 describe('registry-driven canonical variant portability', () => {
-	it('validates all 39 registered variants through schema, adapter, render plan, and DOM descriptors', () => {
-		expect(CANONICAL_VARIANT_REGISTRY).toHaveLength(39);
+	it('validates all registered variants through schema, adapter, render plan, and DOM descriptors', () => {
+		expect(CANONICAL_VARIANT_REGISTRY).toHaveLength(40);
 
 		for (const entry of CANONICAL_VARIANT_REGISTRY) {
 			const candidate = buildSyntheticVariantEvent({

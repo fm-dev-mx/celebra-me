@@ -13,14 +13,14 @@
   },
   "sectionOrder": [
     "quote",
-    "countdown",
+    "personalizedAccess",
     "family",
+    "gallery",
+    "countdown",
     "location",
     "itinerary",
-    "gallery",
-    "gifts",
-    "personalizedAccess",
     "rsvp",
+    "gifts",
     "thankYou"
   ],
   "composition": {

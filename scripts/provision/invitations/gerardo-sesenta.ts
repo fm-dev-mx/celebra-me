@@ -4,11 +4,11 @@ import type { CanonicalEventContentInput } from '../../../src/lib/schemas/conten
 const content: CanonicalEventContentInput = {
 	sectionOrder: [
 		'quote',
+		'personalizedAccess',
 		'gallery',
 		'countdown',
 		'location',
 		'itinerary',
-		'personalizedAccess',
 		'rsvp',
 		'gifts',
 		'thankYou',

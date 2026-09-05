@@ -393,6 +393,11 @@ test.describe('Reported invitation public-route regressions', () => {
 		});
 		expect(audit.source).toBe('published');
 		expect(audit.variant).toBe('index-choreography');
+		const gallery = page.locator('.gallery-section');
+		await gallery.scrollIntoViewIfNeeded();
+		const overlay = gallery.locator('.gallery-grid__overlay').first();
+		await expect(overlay).toHaveCSS('display', 'none');
+
 		expect(audit.imageCount).toBeGreaterThanOrEqual(6);
 		expect(audit.brokenImages).toBe(0);
 	});
@@ -419,7 +424,7 @@ test.describe('Reported invitation public-route regressions', () => {
 			};
 		});
 		expect(audit.source).toBe('published');
-		expect(audit.variant).toBe('editorial-back-cover');
+		expect(audit.variant).toBe('portrait-letter');
 		expect(audit.mediaVisible).toBe(true);
 		expect(audit.messageWidth).toBeGreaterThan(0);
 		expect(audit.messageWidth).toBeLessThanOrEqual(audit.sectionWidth);
@@ -448,14 +453,14 @@ test.describe('Reported invitation public-route regressions', () => {
 		expect(audit.source).toBe('published');
 		expect(audit.sections).toEqual([
 			'quote',
-			'family',
-			'countdown',
-			'itinerary',
-			'location',
-			'gallery',
-			'gifts',
 			'personalized-access',
+			'family',
+			'gallery',
+			'countdown',
+			'location',
+			'itinerary',
 			'rsvp',
+			'gifts',
 			'thankYou',
 		]);
 		expect(audit.galleryVariant).toBe('index-choreography');

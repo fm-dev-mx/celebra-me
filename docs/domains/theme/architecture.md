@@ -354,3 +354,7 @@ pnpm lint:styles
 
 Profile LAYOUT deletions additionally require the CSS visual parity harness in
 [`css-visual-parity.md`](css-visual-parity.md).
+
+### Portrait letter composition
+
+`thankYou.variant=portrait-letter` explicitly selects the narrow arched portrait and display-font letter composition. `ThankYou.astro` reuses editorial markup; `_portrait-letter.scss` owns delivery and `_portrait-letter-layout.scss` provides the shared implementation for its retained published skin. The preset supplies atmosphere tokens only and cannot select this variant.

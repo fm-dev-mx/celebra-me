@@ -1,4 +1,7 @@
-import type { CanonicalVariantRegistryEntry, CanonicalVariantSection } from '@/lib/invitation/section-variants';
+import type {
+	CanonicalVariantRegistryEntry,
+	CanonicalVariantSection,
+} from '@/lib/invitation/section-variants';
 export { CROSS_PRESET_REPRESENTATIVE_VARIANTS } from '../../../scripts/screenshot/visual-coverage-contract';
 
 export type SyntheticVariantOverrides = {
@@ -12,13 +15,13 @@ export interface IncompatiblePrerequisiteExpectation {
 	expectedMessageSubstring?: string;
 }
 
-export function buildSyntheticVariantEvent(
-	overrides: SyntheticVariantOverrides,
-): { id: string; data: Record<string, unknown> } {
+export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides): {
+	id: string;
+	data: Record<string, unknown>;
+} {
 	const { section, variant, themePreset = 'jewelry-box' } = overrides;
 
-	const envelopeVariant =
-		themePreset === 'celestial-blue' ? 'celestial-blue' : 'jewelry-box';
+	const envelopeVariant = themePreset === 'celestial-blue' ? 'celestial-blue' : 'jewelry-box';
 
 	const data: Record<string, unknown> = {
 		eventType: 'xv',
@@ -284,10 +287,7 @@ export function buildIncompatiblePrerequisiteEvent(
 			}
 			break;
 		case 'family':
-			if (
-				entry.variant === 'split-groups' ||
-				entry.variant === 'asymmetric-groups'
-			) {
+			if (entry.variant === 'split-groups' || entry.variant === 'asymmetric-groups') {
 				const family = data.family as Record<string, unknown>;
 				family.groups = [{ title: 'Solo Uno', items: [{ name: 'Solo' }] }];
 			}
@@ -346,7 +346,7 @@ export function buildIncompatiblePrerequisiteEvent(
 			}
 			break;
 		case 'thankYou':
-			if (entry.variant === 'full-bleed-photo') {
+			if (entry.variant === 'full-bleed-photo' || entry.variant === 'portrait-letter') {
 				const thankYou = data.thankYou as Record<string, unknown>;
 				delete thankYou.image;
 			} else if (entry.variant === 'editorial-back-cover') {
@@ -386,7 +386,8 @@ export function getIncompatiblePrerequisiteExpectation(
 			}
 			return {
 				expectedPath: ['location', 'variant'],
-				expectedMessageSubstring: 'stacked-venue-plates requires at least two visible venues',
+				expectedMessageSubstring:
+					'stacked-venue-plates requires at least two visible venues',
 			};
 		case 'itinerary':
 			return { expectedPath: ['itinerary', 'items'] };
@@ -406,14 +407,15 @@ export function getIncompatiblePrerequisiteExpectation(
 			if (entry.variant === 'paired-feature-band') {
 				return {
 					expectedPath: ['gallery', 'items'],
-					expectedMessageSubstring: 'paired-feature-band requires at least one item with layoutRole=feature',
+					expectedMessageSubstring:
+						'paired-feature-band requires at least one item with layoutRole=feature',
 				};
 			}
 			return { expectedPath: ['gallery', 'items'] };
 		case 'gifts':
 			return { expectedPath: ['gifts', 'items', 0] };
 		case 'thankYou':
-			if (entry.variant === 'full-bleed-photo') {
+			if (entry.variant === 'full-bleed-photo' || entry.variant === 'portrait-letter') {
 				return { expectedPath: ['thankYou', 'image'] };
 			}
 			return { expectedPath: ['thankYou', 'closingName'] };

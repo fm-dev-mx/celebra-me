@@ -20,6 +20,12 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
   dashboard workspace. Downloads stream through a short-lived HMAC-authenticated retrieval Worker;
   no public bucket, listing, object key, or permanent download URL is exposed.
 
+### Fixed
+
+- **Invitation presentation**: Restore unobstructed index-choreography galleries, add the explicit
+  portrait-letter thank-you composition, and reconcile invitation/demo section sequences with
+  their published Production reference.
+
 ## [0.19.0-beta.1] - 2026-08-24
 
 Release checkpoint consolidating managed invitation corpus growth, release provenance hardening,

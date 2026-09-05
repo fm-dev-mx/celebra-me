@@ -12,14 +12,14 @@
   },
   "sectionOrder": [
     "quote",
+    "personalizedAccess",
     "family",
     "gallery",
     "countdown",
     "location",
     "itinerary",
-    "gifts",
-    "personalizedAccess",
     "rsvp",
+    "gifts",
     "thankYou"
   ],
   "hero": {

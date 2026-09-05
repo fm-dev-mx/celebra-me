@@ -58,18 +58,18 @@ describe('buildInvitationRenderPlan', () => {
 		expect(interludeCount).toBe(4);
 		expect(sectionTypes).toEqual([
 			'quote',
-			'countdown',
-			'interlude',
+			'personalized-access',
 			'family',
+			'interlude',
+			'gallery',
+			'interlude',
+			'countdown',
 			'interlude',
 			'location',
 			'itinerary',
-			'gallery',
-			'interlude',
+			'rsvp',
 			'gifts',
 			'interlude',
-			'personalized-access',
-			'rsvp',
 			'thankYou',
 		]);
 	});

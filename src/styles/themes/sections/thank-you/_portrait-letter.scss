@@ -1,0 +1,5 @@
+@use './portrait-letter-layout' as letter;
+
+.thank-you-section[data-variant='portrait-letter'] {
+	@include letter.composition;
+}

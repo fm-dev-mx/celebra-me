@@ -30,7 +30,7 @@ const {
 	overlayAnchor,
 	overlaySafeArea,
 } = Astro.props;
-const usesEditorialLayout = variant === 'editorial-back-cover';
+const usesEditorialLayout = variant === 'editorial-back-cover' || variant === 'portrait-letter';
 const hasSubjectAwareOverlay = Boolean(overlayAnchor || overlaySafeArea);
 
 const firstLetter = message.charAt(0);

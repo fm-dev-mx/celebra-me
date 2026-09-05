@@ -51,7 +51,7 @@ migration is applied and verified.
 - **Gifts:** `standard`, `editorial-catalog`.
 - **RSVP:** `standard`, `editorial-press-pass`, `formal-register`.
 - **Personalized Access:** `standard`, `ornamented`, `editorial-pass`, `formal-pass`.
-- **Thank You:** `standard`, `editorial-back-cover`, `full-bleed-photo`; `full-bleed-photo` requires
+- **Thank You:** `standard`, `editorial-back-cover`, `portrait-letter`, `full-bleed-photo`; `full-bleed-photo` requires
   `thankYou.image`.
 - **Countdown:** `standard`, `editorial-folio`, `magazine-folio`, `jeweled-panel`, `rose-ornament`,
   `hacienda-ornament`.
@@ -94,3 +94,5 @@ Before adding or promoting a variant:
 4. Provide a compatible non-origin fixture and a fail-closed incompatible case.
 5. Scan reusable code and CSS for client, slug, profile, historical-theme, and invitation-asset dependencies.
 6. Update the derived cutover manifest and run focused schema, portability, CSS, governance, and corpus checks.
+
+The `portrait-letter` variant reuses editorial markup with an arched 2:3 portrait and display-font letter. It requires an image and owns its geometry independently of the preset. Existing published enchanted-rose styling shares the same SCSS mixin until its consumers explicitly migrate.

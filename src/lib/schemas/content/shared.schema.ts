@@ -130,11 +130,14 @@ export const thankYouSchema = z
 	})
 	.strict()
 	.superRefine((thankYou, context) => {
-		if (thankYou.variant === 'full-bleed-photo' && !thankYou.image) {
+		if (
+			(thankYou.variant === 'full-bleed-photo' || thankYou.variant === 'portrait-letter') &&
+			!thankYou.image
+		) {
 			context.addIssue({
 				code: 'custom',
 				path: ['image'],
-				message: 'thankYou.variant=full-bleed-photo requires thankYou.image',
+				message: `thankYou.variant=${thankYou.variant} requires thankYou.image`,
 			});
 		}
 	})
@@ -156,9 +159,9 @@ export const countdownSchema = z
 		presentationOptions: z
 			.object({
 				visibleUnits: z.array(z.enum(COUNTDOWN_UNITS)).min(1).max(4).optional(),
-		})
-		.strict()
-		.optional(),
+			})
+			.strict()
+			.optional(),
 	})
 	.strict()
 	.optional();
