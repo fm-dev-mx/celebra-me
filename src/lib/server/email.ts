@@ -17,18 +17,16 @@ const EMAIL_COLORS = {
 	muted: '#999999',
 } as const;
 
+const HTML_ESCAPE_MAP: Record<string, string> = {
+	'&': '&amp;',
+	'<': '&lt;',
+	'>': '&gt;',
+	'"': '&quot;',
+	"'": '&#39;',
+};
+
 function escapeHtml(value: string): string {
-	return value.replace(
-		/[&<>"']/g,
-		(character) =>
-			({
-				'&': '&amp;',
-				'<': '&lt;',
-				'>': '&gt;',
-				'"': '&quot;',
-				"'": '&#39;',
-			} as Record<string, string>)[character] ?? character,
-	);
+	return value.replace(/[&<>"']/g, (character) => HTML_ESCAPE_MAP[character] ?? character);
 }
 
 function safeHttpUrl(value: string): string | null {
@@ -123,6 +121,12 @@ export interface IntakeNotificationPayload {
 export const sendIntakeNotification = async (
 	payload: IntakeNotificationPayload,
 ): Promise<boolean> => {
+	const reviewUrl = safeHttpUrl(payload.reviewUrl);
+	if (!reviewUrl) {
+		console.error('[intake] Refusing to send notification with an unsafe review URL.');
+		return false;
+	}
+
 	const user = (getEnv('GMAIL_USER') || '').trim();
 	const pass = (getEnv('GMAIL_PASS') || '').trim();
 
@@ -139,11 +143,6 @@ export const sendIntakeNotification = async (
 	});
 
 	const recipient = getEnv('CONTACT_FORM_RECIPIENT_EMAIL') || user;
-	const reviewUrl = safeHttpUrl(payload.reviewUrl);
-	if (!reviewUrl) {
-		console.error('[intake] Refusing to send notification with an unsafe review URL.');
-		return false;
-	}
 	const invitationTitle = escapeHtml(payload.invitationTitle);
 	const clientName = escapeHtml(payload.clientName);
 	const escapedReviewUrl = escapeHtml(reviewUrl);
