@@ -43,6 +43,7 @@ export const PERSONALIZED_ACCESS_DRAFT_KEYS = [
 export const ALLOWED_MIME_TYPES = ['image/webp', 'image/jpeg', 'image/png'];
 
 export const MAX_FILE_SIZE = 8 * 1024 * 1024;
+export const MAX_MULTIPART_BODY_BYTES = MAX_FILE_SIZE + 64 * 1024;
 
 export const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

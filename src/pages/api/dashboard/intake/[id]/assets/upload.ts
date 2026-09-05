@@ -1,15 +1,31 @@
 import type { APIRoute } from 'astro';
 import { requireEditorMutationAccess, requireInvitationId } from '@/lib/intake/editor-api';
 import { uploadAsset } from '@/lib/intake/services/asset.service';
-import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
+import { errorResponse, jsonResponse, readBoundedRequestBytes } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { MAX_MULTIPART_BODY_BYTES } from '@/lib/intake/constants';
 
 export const POST: APIRoute = async ({ request, cookies, params }) => {
 	try {
 		await requireEditorMutationAccess(request, cookies);
 		const invitationId = requireInvitationId(params.id);
 
-		const formData = await request.formData();
+		// Bound the raw multipart stream before the platform parser can buffer it.
+		const rawBody = await readBoundedRequestBytes(request, MAX_MULTIPART_BODY_BYTES);
+		const forwardedHeaders: Record<string, string> = {};
+		request.headers.forEach((value, name) => {
+			forwardedHeaders[name] = value;
+		});
+		const boundedBody = rawBody.buffer.slice(
+			rawBody.byteOffset,
+			rawBody.byteOffset + rawBody.byteLength,
+		) as ArrayBuffer;
+		const boundedRequest = new Request(request.url, {
+			method: request.method,
+			headers: forwardedHeaders,
+			body: boundedBody,
+		});
+		const formData = await boundedRequest.formData();
 		const file = formData.get('file');
 
 		if (!file || typeof file === 'string') {
