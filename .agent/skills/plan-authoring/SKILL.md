@@ -1,17 +1,28 @@
 ---
-description: Lightweight planning guidance for repository work.
-lifecycle: evergreen
-domain: governance
-owner: workflow-governance
+name: plan-authoring
+description: Lightweight planning guidance for repository work — clarify scope, define atomic units, choose persistence, and produce a verifiable handoff.
+domain: workflow
+version: 1.0.0
+when_to_use:
+  - Planning repository work that needs explicit sequencing, boundaries, or verification expectations
+preconditions:
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
+related_skills:
+  - commit-planner
+  - staged-code-review
+related_docs:
+  - .agent/plans/README.md
+  - .agent/rules/workflow.md
 ---
 
-# Plan Authoring Workflow
+# Plan Authoring
 
-Use this workflow when a task needs clearer sequencing, boundaries, or verification expectations.
-This workflow does **not** require a manifest-based `.agent/plans/<plan-id>/` system.
+Use this skill when a task needs clearer sequencing, boundaries, or verification expectations.
+This skill does **not** require a manifest-based `.agent/plans/<plan-id>/` system.
 
 Canonical semantics for the Task Contract, Goal protocol, and Handoff Contract live in
-`.agent/plans/README.md`. This workflow is the lightweight authoring procedure only.
+`.agent/plans/README.md`. This skill is the lightweight authoring procedure only.
 
 ## Routine
 
@@ -23,7 +34,7 @@ Canonical semantics for the Task Contract, Goal protocol, and Handoff Contract l
    owner explicitly requests a tracked plan.
 5. **Choose lifecycle**: when the work is substantial and audit-driven, follow Goal 1 → Goal 2 →
    Goal 3 in `.agent/plans/README.md`. Keep verification depth and risk as separate Task Contract /
-   gatekeeper choices — do not invent Goal “tiers” from task size.
+   gatekeeper choices — do not invent Goal "tiers" from task size.
 6. **Handoff**: return the Task Contract and verification plan. Implementation and commit preparation
    occur only when a later task explicitly authorizes them.
 

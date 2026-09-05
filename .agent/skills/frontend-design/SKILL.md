@@ -29,7 +29,7 @@ related_docs:
   - docs/domains/theme/typography.md
   - docs/domains/theme/architecture.md
   - .agent/briefs/celebra-me.md
-  - .agent/workflows/design-reference-to-build.md
+  - .agent/skills/design-reference-to-build/SKILL.md
 ---
 
 # Frontend Design
@@ -53,7 +53,7 @@ are now managed by `theme-architecture`.
 
 Before reference-driven visual implementation, complete
 [`design-reference-brief`](../../templates/creative/design-reference-brief.md) and follow
-[`design-reference-to-build`](../../workflows/design-reference-to-build.md).
+[`design-reference-to-build`](../design-reference-to-build/SKILL.md).
 
 The brief owns task-scoped inputs, reference interpretation, boundaries, deviations, blocking
 conditions, and acceptance criteria. For a real invitation, it supplements rather than replaces
@@ -262,5 +262,5 @@ Run visual iteration as a bounded loop:
 
 Prefer approved client/product assets over generated placeholders. When a visual change alters a
 live token, preset, section variant, or isolation contract, run
-`.agent/workflows/theme-architecture-governance.md` and update the canonical theme documentation as
+`.agent/skills/theme-architecture-governance/SKILL.md` and update the canonical theme documentation as
 required there.

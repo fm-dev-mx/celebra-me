@@ -1,24 +1,35 @@
 ---
-description: Technical error diagnosis and surgical remediation.
-lifecycle: evergreen
-domain: governance
-owner: workflow-governance
-last_reviewed: 2026-08-08
+name: error-remediation
+description: Diagnose and surgically remediate terminal errors, test failures, and gatekeeper blocks using a strict 6-state machine with a hard 3-cycle limit.
+domain: workflow
+version: 1.0.0
+when_to_use:
+  - Diagnosing and remediating a terminal error, test failure, or gatekeeper block
+preconditions:
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
+  - Read .agent/rules/git-safety.md
+related_skills:
+  - testing
+  - theme-architecture
+related_docs:
+  - .agent/templates/agent-report-contract.md
+  - .agent/rules/gatekeeper.md
 ---
 
 # Error-Diagnosis & Remediation
 
 ## Mission
 
-Execute this workflow when a terminal error, test failure, or gatekeeper block requires remediation.
+Execute this skill when a terminal error, test failure, or gatekeeper block requires remediation.
 Enforces a strict 6-state machine with a hard cycle limit of **3** to prevent fix-fail loops.
 Human-facing reports follow the shared report contract (not a seventh machine state).
 
 **Cycle Limit:** Maximum of 3 cycles per error. If VERIFY fails 3 times, escalate to the user.
 
 **Report contract:**
-[`.agent/templates/agent-report-contract.md`](../templates/agent-report-contract.md) (sample:
-[`agent-report-samples.md`](../templates/agent-report-samples.md)).
+[`.agent/templates/agent-report-contract.md`](../../templates/agent-report-contract.md) (sample:
+[`agent-report-samples.md`](../../templates/agent-report-samples.md)).
 
 ## Hard constraints
 
@@ -70,7 +81,7 @@ Propose the minimal atomic fix. _Pre-apply Validation Checks:_
 - **WCAG:** Ensure fix doesn't remove `aria-*` or break semantic structure.
 - **Token architecture (SCSS only):** Do not overwrite or bypass the three-level token model
   (foundation / semantic / component). See
-  [`theme-architecture`](../skills/theme-architecture/SKILL.md) when the failure involves tokens or
+  [`theme-architecture`](../theme-architecture/SKILL.md) when the failure involves tokens or
   presets.
 
 ### 5. APPLY
@@ -82,7 +93,7 @@ Modify the files with the proposed atomic fix.
 Re-run the exact failing command (e.g., `pnpm type-check` or `pnpm test`) to confirm the fix.
 
 - **If VERIFY passes:** run **REGRESSION_DECISION** (below), then proceed. Session close and
-  validation depth remain owned by [`.agent/rules/gatekeeper.md`](../rules/gatekeeper.md) §5 (tiers
+  validation depth remain owned by [`.agent/rules/gatekeeper.md`](../../rules/gatekeeper.md) §5 (tiers
   A/B/C); run `pnpm agent:git-safety:finish` when closing a mutable session.
 
 - **If VERIFY fails:** inspect the new output and decide whether a targeted follow-up edit is safe.
@@ -99,7 +110,7 @@ CTA only). Do not spam progress cards on every APPLY.
 
 Decide whether this defect class needs a regression lock. Prefer the smallest lock that closes the
 invariant. Lock type selection and Invitation Copy Assertions:
-[`.agent/skills/testing/SKILL.md`](../skills/testing/SKILL.md).
+[`.agent/skills/testing/SKILL.md`](../testing/SKILL.md).
 
 1. **Classify defect:** `trivial` | `local-behavior` | `shared-contract` | `family-extension`.
 2. **Choose lock:** `none` | `extend-existing-test` | `add-focused-test` | `domain-validate` |
@@ -179,7 +190,7 @@ Se agotaron 3 ciclos sin VERIFY PASS. (Or: lock required but out of safe scope.)
   - **Pasos / Ej.:** Restaurar archivos tocados por la sesión de remediación.
 ```
 
-**Decision rules for this workflow:**
+**Decision rules for this skill:**
 
 - No MCQ on clear cycle-1/2 fixes.
 - On cycle-3 failure, unsafe rollback, or test-gap: a material decision prompt; **`a` = stop /

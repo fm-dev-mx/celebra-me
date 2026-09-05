@@ -8,9 +8,8 @@ discovery map and skill-loading protocol.
 ## Canonical Repository Surface
 
 - `.agent/rules/` contains active agent rules.
-- `.agent/workflows/` contains repeatable procedures.
 - `.agent/agents/` contains provider-neutral role documentation contracts, not executable config.
-- `.agent/skills/` contains the tracked canonical skills.
+- `.agent/skills/` contains the tracked canonical skills and repeatable procedures.
 - `.agent/plans/` contains active and archived operational plans (Task Contract / Goal / Handoff
   semantics in `plans/README.md`).
 - `../docs/invitations/` contains invitation-specific records and operational evidence.

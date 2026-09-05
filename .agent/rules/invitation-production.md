@@ -14,7 +14,7 @@ before creating, editing, publishing, or validating an invitation. Content struc
 [`docs/core/invitation-creation-contract.md`](../../docs/core/invitation-creation-contract.md).
 Preparation semantics (classifications, placeholders, preparation readiness) live in
 [`docs/core/invitation-preparation-contract.md`](../../docs/core/invitation-preparation-contract.md)
-and `.agent/workflows/invitation-preparation.md`. Content promote/mirror vs RSVP isolation lives in
+and `.agent/skills/invitation-preparation/SKILL.md`. Content promote/mirror vs RSVP isolation lives in
 [`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md). Do
 not begin invitation-specific implementation while preparation readiness is `NOT_READY`.
 

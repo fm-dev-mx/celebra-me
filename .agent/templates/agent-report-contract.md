@@ -3,7 +3,7 @@ template: agent-report-contract
 purpose: Human-facing evidence reports and material decision prompts
 version: 1.3.0
 applies_to:
-  - .agent/workflows/error-remediation.md
+  - .agent/skills/error-remediation/SKILL.md
   - .agent/skills/staged-code-review
   - .agent/skills/staged-code-review-apply
   - .agent/skills/commit-planner

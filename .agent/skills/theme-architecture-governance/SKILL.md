@@ -1,14 +1,24 @@
 ---
-description: Governance and consistency workflow for theme abstraction and documentation.
-lifecycle: evergreen
-domain: governance
-owner: workflow-governance
-last_reviewed: 2026-04-17
+name: theme-architecture-governance
+description: Audit and enforce the three-level token architecture, section abstraction, preset isolation, and invitation slug isolation rules across invitations, demos, and landing pages.
+domain: frontend
+version: 1.0.0
+when_to_use:
+  - Auditing or changing theme tokens, section variants, preset isolation, or invitation CSS boundaries
+preconditions:
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
+related_skills:
+  - theme-architecture
+  - frontend-design
+related_docs:
+  - docs/domains/theme/architecture.md
+  - docs/domains/theme/variant-system.md
 ---
 
-# Workflow: Theme Architecture Governance
+# Theme Architecture Governance
 
-This workflow ensures that every invitation, demo, and landing page adheres to the three-level token
+This skill ensures that every invitation, demo, and landing page adheres to the three-level token
 architecture, section-based abstraction, and invitation isolation rules.
 
 ## 📌 Architectural Standards

@@ -20,7 +20,7 @@ registry and from demos.
 | ---------------------------------------------- | -------------------------------------------------------------------- |
 | Preparation schema & semantics                 | `docs/core/invitation-preparation-contract.md`                       |
 | Markdown template                              | `.agent/templates/invitation/preparation-state.md`                   |
-| Preparation orchestration                      | `.agent/workflows/invitation-preparation.md`                         |
+| Preparation orchestration                      | `.agent/skills/invitation-preparation/SKILL.md`                       |
 | Analysis skill                                 | `.agent/skills/client-invitation-audit`                              |
 | Executable evaluation (**prepReadiness SSOT**) | `src/lib/invitation-preparation/`                                    |
 | Human creative acceptance outcome              | `docs/invitations/<slug>.md` Creative Direction & Acceptance section |

@@ -1,14 +1,24 @@
 ---
-description: Keep active docs and agent governance aligned with the live repository tree.
-lifecycle: evergreen
-domain: governance
-owner: system-agent
-last_reviewed: 2026-03-24
+name: system-doc-alignment
+description: Keep active docs and agent governance aligned with the live repository tree — audit for drift, enforce placement rules, and apply the Sync Contract.
+domain: workflow
+version: 1.0.0
+when_to_use:
+  - Auditing or aligning active documentation and agent governance with the live repository tree
+preconditions:
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
+related_skills:
+  - plan-authoring
+related_docs:
+  - .agent/index.md
+  - .agent/ownership.yaml
+  - docs/core/architecture.md
 ---
 
 # System Doc Alignment
 
-Use this workflow when documentation or governance metadata may be stale, or when the documentation
+Use this skill when documentation or governance metadata may be stale, or when the documentation
 Sync Contract must be enforced.
 
 ## Goal
@@ -35,11 +45,11 @@ documentation task.
    `.agent/plans/README.md`, `package.json`, `scripts/cli.mjs`, and the relevant governance owner.
 3. Use conversation-scoped planning by default. Create a repo-tracked note under `.agent/plans/`
    only for multi-session or high-risk work, or when the repository owner explicitly requests it.
-4. Prefer consolidation over adding new workflow or governance documents.
+4. Prefer consolidation over adding new skill or governance documents.
 5. Enforce the Sync Contract in the same task:
    - behavior or architecture changes update `docs/core/architecture.md` and the matching
      `docs/domains/**` doc
-   - workflow inventory or entrypoint changes update `.agent/index.md` and `AGENTS.md`
+   - skill inventory or entrypoint changes update `.agent/index.md` and `AGENTS.md`
    - ownership or authority-chain changes update the Ownership Matrix in `.agent/ownership.yaml`
    - new active docs go in the correct subtree and are linked from the active discovery doc when
      they become a source of truth
@@ -62,4 +72,4 @@ documentation task.
 - Archive or mark documents as historical when they no longer describe the active system.
 - Do not invent a manifest/archive planning system unless the repository owner explicitly restores
   it.
-- Do not introduce a second active documentation-integrity workflow or duplicate Sync Contract.
+- Do not introduce a second active documentation-integrity skill or duplicate Sync Contract.

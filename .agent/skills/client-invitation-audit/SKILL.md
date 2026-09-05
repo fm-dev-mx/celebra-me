@@ -15,7 +15,7 @@ preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
   - Read docs/core/invitation-preparation-contract.md
-  - Read .agent/workflows/invitation-preparation.md when running preparation
+  - Read .agent/skills/invitation-preparation/SKILL.md when running preparation
   - Load src/lib/invitation-preparation/ helpers as evaluation SSOT (cite outcomes; run `pnpm
     validate:invitation-preparation`)
 related_skills:
@@ -26,12 +26,12 @@ related_skills:
   - copywriting-es
 related_docs:
   - docs/core/invitation-preparation-contract.md
-  - .agent/workflows/invitation-preparation.md
+  - .agent/skills/invitation-preparation/SKILL.md
   - .agent/templates/invitation/preparation-state.md
   - docs/domains/content/event-governance.md
   - docs/core/invitation-creation-contract.md
   - .agent/rules/invitation-production.md
-  - .agent/workflows/design-reference-to-build.md
+  - .agent/skills/design-reference-to-build/SKILL.md
   - docs/domains/intake/production-flow.md
 ---
 
@@ -51,7 +51,7 @@ intake publish state (`intake-publishing`), identity field lists beyond preparat
 (`invitation-production` — load when mutating/publishing).
 
 Orchestration entry point:
-[`.agent/workflows/invitation-preparation.md`](../../workflows/invitation-preparation.md).
+[`.agent/skills/invitation-preparation/SKILL.md`](../invitation-preparation/SKILL.md).
 
 Conversational UX script:
 [`references/conversational-phase-script.md`](references/conversational-phase-script.md).

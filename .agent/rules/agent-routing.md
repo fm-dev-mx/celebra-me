@@ -28,7 +28,7 @@ synthesis. Documentation implementation may use the builder role when it is a bo
 task. Research stays with the orchestrator unless it forms an independent, self-contained
 investigation.
 
-Use `.agent/workflows/design-reference-to-build.md` when supplied or cited visual references require
+Use `.agent/skills/design-reference-to-build/SKILL.md` when supplied or cited visual references require
 interpretation before implementation. Do not impose it on a correction whose target and expected
 result are already objective (for example, an exact copy replacement or spacing/token value).
 

@@ -127,7 +127,7 @@ parity.”
 
 ## Regression locks after remediation
 
-Used by [`.agent/workflows/error-remediation.md`](../../workflows/error-remediation.md) after VERIFY
+Used by [`.agent/skills/error-remediation/SKILL.md`](../error-remediation/SKILL.md) after VERIFY
 PASS (`REGRESSION_DECISION`). Choose the smallest lock that closes the defect class; do not default
 to E2E or full-invitation corpus.
 

@@ -1,13 +1,25 @@
 ---
-description: Provider-neutral workflow for reference-driven visual design, implementation, and QA.
-lifecycle: evergreen
+name: design-reference-to-build
+description: Orchestrate reference-driven visual design, implementation, and QA for invitations, demos, landings, and dashboards — from brief through gatekeeper handoff.
 domain: frontend
-owner: workflow-governance
+version: 1.0.0
+when_to_use:
+  - Interpreting supplied visual references before implementing an invitation, demo, landing, or dashboard surface
+preconditions:
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
+related_skills:
+  - frontend-design
+  - theme-architecture
+  - client-invitation-audit
+related_docs:
+  - .agent/briefs/celebra-me.md
+  - docs/domains/theme/architecture.md
 ---
 
-# Workflow: Design Reference to Build
+# Design Reference to Build
 
-Use this workflow for reference-driven invitation, demo, landing, or dashboard design. It
+Use this skill for reference-driven invitation, demo, landing, or dashboard design. It
 orchestrates existing owners; it does not own visual intent, theme contracts, validation tiers, or
 invitation publication.
 
@@ -23,7 +35,7 @@ directly under `.agent/rules/agent-routing.md`.
 - Dashboard styling boundaries: `.agent/rules/dashboard-styling.md`
 - Validation tiers: `.agent/rules/gatekeeper.md`
 - Real invitation discovery: `client-invitation-audit`
-- Invitation preparation readiness: `.agent/workflows/invitation-preparation.md` and
+- Invitation preparation readiness: `.agent/skills/invitation-preparation/SKILL.md` and
   `docs/invitations/<slug>.md` (do not implement invite-specific visuals while readiness is
   `NOT_READY`)
 - Invitation lifecycle: `docs/domains/intake/production-flow.md`
@@ -32,7 +44,7 @@ Figma frames, screenshots, Mobbin examples, and other external references are op
 are never sources of truth and must not introduce provider-specific configuration or a parallel
 design system.
 
-Follow the authority order in `AGENTS.md`. Role contracts assign responsibility, this workflow
+Follow the authority order in `AGENTS.md`. Role contracts assign responsibility, this skill
 orders the handoffs, the brief records task decisions, and the QA report records evidence. Neither a
 template nor a completed report can override a rule, canonical skill, or domain contract.
 
@@ -86,7 +98,7 @@ Classify the target before visual work:
 | Token or variant | `frontend-design`, `theme-architecture`, `theme-architecture-governance`              |
 
 For reference-driven redesigns, complete
-[`design-reference-brief.md`](../templates/creative/design-reference-brief.md). Keep it in the
+[`design-reference-brief.md`](../../templates/creative/design-reference-brief.md). Keep it in the
 conversation unless a structured handoff or tracked plan is already justified.
 
 ## Phase 2 — Establish the Baseline
@@ -114,10 +126,10 @@ Each unit must state:
 - acceptance criteria, evidence source, viewports, pass rule, and verification owner;
 - approved deviations and unresolved details.
 
-Prefer one coherent visual dimension per unit. “Improve the hero” is not sufficient; “replace the
-inset media treatment with the approved full-bleed composition while preserving reveal behavior” is.
+Prefer one coherent visual dimension per unit. "Improve the hero" is not sufficient; "replace the
+inset media treatment with the approved full-bleed composition while preserving reveal behavior" is.
 
-Use runtime capabilities such as visual element selection only as a convenience. The workflow must
+Use runtime capabilities such as visual element selection only as a convenience. The skill must
 remain executable through explicit component/section references in any compatible runtime.
 
 ## Phase 4 — Implement in the Live Product
@@ -144,9 +156,9 @@ remain executable through explicit component/section references in any compatibl
    evidence, and a remediation or blocking reason.
 3. Apply the `frontend-design` Visual Critique / Polish Checklist.
 4. Verify accessibility and the **minimum** visual evidence required by
-   [`.agent/rules/gatekeeper.md`](../rules/gatekeeper.md) §5.3 (Visual evidence). Use
-   [`scripts/screenshot/README.md`](../../scripts/screenshot/README.md) for flags and capture
-   mechanics; do not default to the interactive CLI’s full `critical-qa` / multi-viewport set unless
+   [`.agent/rules/gatekeeper.md`](../../rules/gatekeeper.md) §5.3 (Visual evidence). Use
+   [`scripts/screenshot/README.md`](../../../scripts/screenshot/README.md) for flags and capture
+   mechanics; do not default to the interactive CLI's full `critical-qa` / multi-viewport set unless
    the brief or gatekeeper matrix requires it.
 5. QA returns pass, fail, or blocked; it may request a bounded revision but must not redefine the
    approved creative direction.
@@ -164,7 +176,7 @@ Screenshot output is evidence, not a tracked repository artifact.
 
 - Run `theme-architecture-governance` when a live token, preset, variant, or isolation contract
   changes. Update `docs/domains/theme/architecture.md` only when that technical contract changes.
-- For real invitations, continue through `docs/domains/intake/production-flow.md`; this workflow grants no
+- For real invitations, continue through `docs/domains/intake/production-flow.md`; this skill grants no
   Preview or Production authorization.
 - Report the brief/baseline used, files changed, visual evidence, validations, skips, remaining
   risks, and Git/production actions.

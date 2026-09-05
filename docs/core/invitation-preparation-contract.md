@@ -11,7 +11,7 @@ intake status machine (`intake-publishing`), or technical Local/Preview/Producti
 Related authorities:
 
 - Workflow —
-  [`.agent/workflows/invitation-preparation.md`](../../.agent/workflows/invitation-preparation.md)
+  [`.agent/skills/invitation-preparation/SKILL.md`](../../.agent/skills/invitation-preparation/SKILL.md)
 - Analysis skill —
   [`.agent/skills/client-invitation-audit/SKILL.md`](../../.agent/skills/client-invitation-audit/SKILL.md)
 - Executable SSOT — [`src/lib/invitation-preparation/`](../../src/lib/invitation-preparation/)

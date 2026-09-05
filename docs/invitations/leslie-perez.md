@@ -2,7 +2,7 @@
 
 > Schema owner: `docs/core/invitation-preparation-contract.md` Executable evaluation:
 > `src/lib/invitation-preparation/` (**prepReadiness SSOT**) Workflow:
-> `.agent/workflows/invitation-preparation.md`
+> `.agent/skills/invitation-preparation/SKILL.md`
 
 ---
 

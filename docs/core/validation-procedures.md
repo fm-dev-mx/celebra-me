@@ -101,7 +101,7 @@ When the reviewed work is a **release checkpoint** or a clearly product-visible 
 ## 5) Verification Protocol
 
 Non-trivial remediations must record **REGRESSION_DECISION** per
-[`.agent/workflows/error-remediation.md`](../../.agent/workflows/error-remediation.md). Regression
+[`.agent/skills/error-remediation/SKILL.md`](../../.agent/skills/error-remediation/SKILL.md). Regression
 locks must stay **editor-resilient** per
 [`.agent/skills/testing/SKILL.md`](../../.agent/skills/testing/SKILL.md) (Invitation Copy
 Assertions) — do not add brittle content-coupled asserts.

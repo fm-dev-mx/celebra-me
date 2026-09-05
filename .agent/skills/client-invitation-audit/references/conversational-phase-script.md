@@ -1,7 +1,7 @@
 # Conversational Phase Script — Invitation Preparation
 
 Provider-neutral script for interactive preparation. Orchestration owner:
-[`.agent/workflows/invitation-preparation.md`](../../../workflows/invitation-preparation.md).
+[`.agent/skills/invitation-preparation/SKILL.md`](../../invitation-preparation/SKILL.md).
 Semantics SSOT: [`docs/core/invitation-preparation-contract.md`](../../../../docs/core/invitation-preparation-contract.md).
 Executable evaluation: `src/lib/invitation-preparation/` (cite helpers; do not invent readiness).
 

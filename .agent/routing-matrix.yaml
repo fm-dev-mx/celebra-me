@@ -28,8 +28,7 @@ routes:
           - '.agent/rules/invitation-preset-source-of-truth.md'
       skills:
           - 'theme-architecture'
-      workflows:
-          - '.agent/workflows/theme-architecture-governance.md'
+          - 'theme-architecture-governance'
       docs:
           - 'docs/domains/theme/architecture.md'
 
@@ -49,8 +48,7 @@ routes:
           - '.agent/rules/agent-routing.md'
       skills:
           - 'frontend-design'
-      workflows:
-          - '.agent/workflows/design-reference-to-build.md'
+          - 'design-reference-to-build'
       briefs:
           - '.agent/briefs/celebra-me.md'
 
@@ -109,8 +107,8 @@ routes:
       description: 'Documentation updates, link integrity, or instruction-system alignment'
       rules:
           - '.agent/rules/workflow.md'
-      workflows:
-          - '.agent/workflows/system-doc-alignment.md'
+      skills:
+          - 'system-doc-alignment'
 
     - task_type: 'testing_qa'
       description: 'Automated tests or regression coverage; add accessibility/metadata only if affected'
@@ -134,8 +132,8 @@ routes:
 
     - task_type: 'error_remediation'
       description: 'Command, test, or build failure diagnosis and bounded correction'
-      workflows:
-          - '.agent/workflows/error-remediation.md'
+      skills:
+          - 'error-remediation'
 
     - task_type: 'git_branch_lane'
       description: 'Branch promotion/sync or release preparation; parity is selected by the skill'
@@ -156,8 +154,7 @@ routes:
       description: 'Prepare a real invitation or assess intake completeness before implementation'
       skills:
           - 'client-invitation-audit'
-      workflows:
-          - '.agent/workflows/invitation-preparation.md'
+          - 'invitation-preparation'
       docs:
           - 'docs/core/invitation-preparation-contract.md'
 
@@ -196,7 +193,7 @@ routes:
       description: 'Task planning, multi-session continuity, or goal sequencing'
       rules:
           - '.agent/rules/workflow.md'
-      workflows:
-          - '.agent/workflows/plan-authoring.md'
+      skills:
+          - 'plan-authoring'
       docs:
           - '.agent/plans/README.md'

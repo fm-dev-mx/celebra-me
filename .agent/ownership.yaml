@@ -35,7 +35,7 @@ ownership:
           - 'Provider/global operator defaults outside the repo'
 
     - aspect: 'Lightweight plan authoring procedure'
-      owner: '.agent/workflows/plan-authoring.md'
+      owner: '.agent/skills/plan-authoring/SKILL.md'
       non_owners:
           - 'Manifest-based plan-id systems'
 
@@ -108,7 +108,7 @@ ownership:
           - 'Publication readiness'
 
     - aspect: 'Invitation preparation procedure'
-      owner: '.agent/workflows/invitation-preparation.md'
+      owner: '.agent/skills/invitation-preparation/SKILL.md'
       non_owners:
           - 'Creation contract'
           - 'Managed lifecycle'

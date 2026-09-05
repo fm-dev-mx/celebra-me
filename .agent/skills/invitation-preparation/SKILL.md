@@ -1,11 +1,23 @@
 ---
-description: Provider-neutral workflow for interactive invitation preparation before implementation.
-lifecycle: evergreen
-domain: invitations
-owner: workflow-governance
+name: invitation-preparation
+description: Orchestrate interactive preparation for a new or resumed client invitation, from conversational intake through prepReadiness evaluation and canonical Markdown handoff.
+domain: workflow
+version: 1.0.0
+when_to_use:
+  - Preparing or resuming a real client invitation before implementation
+preconditions:
+  - Read AGENTS.md
+  - Read .agent/rules/gatekeeper.md
+  - Read docs/core/invitation-preparation-contract.md
+related_skills:
+  - client-invitation-audit
+  - theme-architecture
+related_docs:
+  - docs/core/invitation-preparation-contract.md
+  - .agent/templates/invitation/preparation-state.md
 ---
 
-# Workflow: Invitation Preparation
+# Invitation Preparation
 
 **Owns:** orchestration of the preparation phase for a new or resumed client invitation until
 **prepReadiness** is known (aligned to executable helpers) and the canonical Markdown state is
@@ -19,7 +31,7 @@ Local/Preview/Production readiness (**envReadiness**). Downstream authorities re
 
 Load in this order; do not copy semantics across layers:
 
-1. This workflow — preparation sequence, conversational checkpoints, handoff boundary.
+1. This skill — preparation sequence, conversational checkpoints, handoff boundary.
 2. `.agent/skills/client-invitation-audit` — reusable analysis + phase script references.
 3. `docs/core/invitation-preparation-contract.md` — classification, hygiene, placeholders,
    readiness policy, Markdown schema.
@@ -46,7 +58,7 @@ state tree under `.agent/`.
 
 ## Entry conditions
 
-Use this workflow when preparing a **real** client invitation before payload/SCSS implementation,
+Use this skill when preparing a **real** client invitation before payload/SCSS implementation,
 or when resuming preparation from an existing `docs/invitations/<slug>.md`.
 
 Required inputs:
@@ -72,7 +84,7 @@ Hard separations:
 ## Conversational procedure
 
 Follow
-[`.agent/skills/client-invitation-audit/references/conversational-phase-script.md`](../skills/client-invitation-audit/references/conversational-phase-script.md)
+[`.agent/skills/client-invitation-audit/references/conversational-phase-script.md`](../client-invitation-audit/references/conversational-phase-script.md)
 phases **C0–C8**. Skill analysis phases **P0–P5** implement the analytical work inside those
 checkpoints (do not invent a third phase numbering scheme).
 

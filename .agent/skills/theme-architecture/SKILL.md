@@ -22,8 +22,8 @@ related_skills:
 related_docs:
   - docs/domains/theme/architecture.md
   - docs/domains/theme/typography.md
-  - .agent/workflows/theme-architecture-governance.md
-  - .agent/workflows/design-reference-to-build.md
+  - .agent/skills/theme-architecture-governance/SKILL.md
+  - .agent/skills/design-reference-to-build/SKILL.md
 ---
 
 # Theme Architecture
@@ -126,7 +126,7 @@ not implementation contracts.
    they are reconciled with the three-level architecture.
 
 If the reference requires a new live token, preset, variant, or isolation rule, run
-`.agent/workflows/theme-architecture-governance.md`. Update `docs/domains/theme/architecture.md`
+`.agent/skills/theme-architecture-governance/SKILL.md`. Update `docs/domains/theme/architecture.md`
 only when the live technical contract changes, not merely because a new visual brief exists.
 
 ## Operational Rules for CSS Boundaries
@@ -183,7 +183,7 @@ entrypoint is missing. Treat any fallback as ship-blocking: verify file existenc
 loaded stylesheets, `[data-variant='<preset>']`, and computed tokens on `.theme-preset--<preset>`
 (wrapper element — not `:root`).
 
-Also run `.agent/workflows/theme-architecture-governance.md` when contracts or isolation rules
+Also run `.agent/skills/theme-architecture-governance/SKILL.md` when contracts or isolation rules
 change.
 
 ## Review Checklist

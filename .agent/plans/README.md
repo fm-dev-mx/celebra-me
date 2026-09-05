@@ -71,7 +71,7 @@ the remaining ambiguity would materially change permissions or acceptance.
 Current-task authorization unlocks only gated operations that repository policy permits. It must not
 implicitly waive unrelated invariants. See `AGENTS.md` Exception Model.
 
-Authoring procedure: `.agent/workflows/plan-authoring.md`. Operating steps: `.agent/rules/workflow.md`.
+Authoring procedure: `.agent/skills/plan-authoring/SKILL.md`. Operating steps: `.agent/rules/workflow.md`.
 
 ## Plan Status Taxonomy
 
@@ -144,8 +144,7 @@ Do not invent a second status vocabulary for a provider or runtime.
 | ------------------- | ----------------------------------------------------------- |
 | `.agent/plans/`     | Operational intent, Goal sequencing, agent memory           |
 | `docs/`             | Stable product and system documentation                     |
-| `.agent/skills/`    | Reusable agent execution guidance                           |
-| `.agent/workflows/` | Repeatable procedures                                       |
+| `.agent/skills/`    | Reusable agent execution guidance and repeatable procedures |
 | `.agent/tmp/handoffs/` | Ephemeral role-chain artifacts (not policy SSOT)         |
 
 ## Goal lifecycle (canonical for substantial audit-driven remediation)

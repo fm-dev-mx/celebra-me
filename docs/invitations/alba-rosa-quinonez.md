@@ -1,7 +1,7 @@
 # Canonical Invitation Preparation State — `alba-rosa-quinonez`
 
 > Schema owner: `docs/core/invitation-preparation-contract.md` Executable evaluation:
-> `src/lib/invitation-preparation/` Workflow: `.agent/workflows/invitation-preparation.md`
+> `src/lib/invitation-preparation/` Skill: `.agent/skills/invitation-preparation/SKILL.md`
 
 ---
 

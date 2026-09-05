@@ -2,7 +2,7 @@
 
 > Schema owner: `docs/core/invitation-preparation-contract.md`  
 > Executable evaluation: `src/lib/invitation-preparation/` (**prepReadiness SSOT**)  
-> Workflow: `.agent/workflows/invitation-preparation.md`
+> Skill: `.agent/skills/invitation-preparation/SKILL.md`
 
 Copy to `docs/invitations/<slug>.md` and update in place. Do not create a parallel state tree under
 `.agent/`. Respect info-hygiene (contract §4.1): opaque source labels only — no absolute
