@@ -1,4 +1,10 @@
 import fs from 'node:fs';
+import path from 'node:path';
+import { assertManifestIntegrity } from '../../../scripts/screenshot/visual-manifest-integrity';
+import {
+	buildVisualCoverageCases,
+	computeVisualMatrixHash,
+} from '../../../scripts/screenshot/visual-coverage-contract';
 
 export type VisualParityMode = 'diagnostic' | 'candidate' | 'compare';
 
@@ -41,7 +47,11 @@ function readAcceptedManifest(manifestPath: string): AcceptedVisualManifest {
 }
 
 /** Compare mode is a release gate and never degrades into a candidate run. */
-export function assertVisualComparisonReady(mode: VisualParityMode, manifestPath: string): void {
+export function assertVisualComparisonReady(
+	mode: VisualParityMode,
+	manifestPath: string,
+	expectedCases = buildVisualCoverageCases().cases,
+): void {
 	if (mode !== 'compare') return;
 
 	const manifest = readAcceptedManifest(manifestPath);
@@ -87,6 +97,17 @@ export function assertVisualComparisonReady(mode: VisualParityMode, manifestPath
 			);
 		}
 		files.add(capture.file);
+	}
+	assertManifestIntegrity(
+		manifest as { captures: { file: string; sha256: string }[] },
+		path.dirname(manifestPath),
+	);
+	const actualHash = computeVisualMatrixHash(manifest.captures);
+	if (
+		manifest.matrixHash !== actualHash ||
+		actualHash !== computeVisualMatrixHash(expectedCases)
+	) {
+		throw new Error('Visual parity compare requires the complete expected coverage matrix.');
 	}
 }
 

@@ -12,12 +12,17 @@ import {
 	existsSync,
 	mkdirSync,
 	readFileSync,
-	readdirSync,
 	renameSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
-import { join, relative, resolve, sep } from 'node:path';
+import { join, relative, resolve } from 'node:path';
+import { assertManifestIntegrity, listPngFiles } from './visual-manifest-integrity.ts';
+import {
+	readVisualManifest,
+	type CaptureManifest,
+	type CombinedManifest,
+} from './visual-manifest.ts';
 import { listLocalRenderCorpus } from '../provision/local-render-corpus/registry.ts';
 import {
 	buildVisualCoverageCases,
@@ -41,31 +46,6 @@ const COMPARE_ROOT = resolve(ROOT, '.tmp/visual-parity/compare');
 const ACCEPTED_ROOT = resolve(ROOT, 'tests/e2e/visual-baselines');
 const PLAYWRIGHT_CLI = resolve(ROOT, 'node_modules/@playwright/test/cli.js');
 const ACCEPTED_MANIFEST = join(ACCEPTED_ROOT, 'manifest.json');
-
-interface CaptureManifest {
-	status: string;
-	mode?: string;
-	totalCaptures: number;
-	runtimeFingerprint?: Record<string, unknown>;
-	captures: Array<{
-		kind?: string;
-		file: string;
-		sha256: string;
-		contentHash?: string;
-		assetHash?: string;
-		viewport: string;
-		preset: string;
-		section: string;
-		variant: string;
-	}>;
-	matrixHash?: string;
-	[key: string]: unknown;
-}
-
-interface CombinedManifest extends CaptureManifest {
-	variantManifest: CaptureManifest;
-	pageManifest: CaptureManifest;
-}
 
 const ACCEPTED_VISUAL_RUNTIME = {
 	node: 'v24.14.1',
@@ -183,60 +163,10 @@ function runPlaywright(mode: 'candidate' | 'compare'): void {
 }
 
 function readManifest(root: string): CombinedManifest {
-	const variantFile = join(root, 'manifest.json');
-	const pageFile = join(root, 'pages-manifest.json');
-	const combinedFile = join(root, 'combined-manifest.json');
-	if (!existsSync(variantFile) && !existsSync(combinedFile)) {
-		throw new Error(`Missing visual manifest: ${relative(ROOT, variantFile)}`);
-	}
-	const raw = JSON.parse(
-		readFileSync(existsSync(combinedFile) ? combinedFile : variantFile, 'utf8'),
-	) as CaptureManifest & Partial<CombinedManifest>;
-	const variantManifest = raw.variantManifest ?? raw;
-	if (!variantManifest || !Array.isArray(variantManifest.captures)) {
-		throw new Error('Visual manifest must declare a captures array. Regenerate the candidate.');
-	}
-	let pageManifest = raw.pageManifest;
-	if (!pageManifest && existsSync(pageFile)) {
-		pageManifest = JSON.parse(readFileSync(pageFile, 'utf8')) as CaptureManifest;
-	}
-	if (!pageManifest) {
-		if (!Array.isArray(raw.captures)) {
-			throw new Error(
-				`Missing page manifest: ${relative(ROOT, pageFile)}. Regenerate the candidate.`,
-			);
-		}
-		const pageCaptures = raw.captures.filter((capture) => capture.kind === 'page');
-		pageManifest = { ...raw, captures: pageCaptures, totalCaptures: pageCaptures.length };
-	}
-	if (!Array.isArray(pageManifest.captures)) {
-		throw new Error('Page manifest must declare a captures array. Regenerate the candidate.');
-	}
-	if (
-		variantManifest.totalCaptures !== EXPECTED_VARIANT_CAPTURES ||
-		variantManifest.captures.length !== EXPECTED_VARIANT_CAPTURES
-	) {
-		throw new Error(
-			`Expected ${EXPECTED_VARIANT_CAPTURES} variant captures, found ${variantManifest.totalCaptures}.`,
-		);
-	}
-	if (
-		pageManifest.totalCaptures !== EXPECTED_PAGE_CAPTURES ||
-		pageManifest.captures.length !== EXPECTED_PAGE_CAPTURES
-	) {
-		throw new Error(
-			`Expected ${EXPECTED_PAGE_CAPTURES} complete-page captures, found ${pageManifest.totalCaptures}.`,
-		);
-	}
-	const captures = [...variantManifest.captures, ...pageManifest.captures];
-	return {
-		...variantManifest,
-		totalCaptures: captures.length,
-		captures,
-		matrixHash: computeVisualMatrixHash(captures as unknown as Array<Record<string, unknown>>),
-		variantManifest,
-		pageManifest,
-	};
+	return readVisualManifest(root, {
+		variants: EXPECTED_VARIANT_CAPTURES,
+		pages: EXPECTED_PAGE_CAPTURES,
+	});
 }
 
 function candidate(): void {
@@ -360,13 +290,6 @@ function writeCombinedCandidateArtifacts(root: string, manifest: CombinedManifes
 		'utf8',
 	);
 }
-function listPngFiles(root: string): string[] {
-	if (!existsSync(root)) return [];
-	return readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
-		const file = join(root, entry.name);
-		return entry.isDirectory() ? listPngFiles(file) : entry.name.endsWith('.png') ? [file] : [];
-	});
-}
 
 function accept(
 	referenceSha: string,
@@ -400,6 +323,10 @@ function accept(
 		...candidateManifest,
 		status: 'ACCEPTED',
 		mode: 'accepted',
+		captures: candidateManifest.captures.map((capture) => ({
+			...capture,
+			comparisonResult: 'ACCEPTED',
+		})),
 		referenceSha: resolvedReferenceSha,
 		acceptedFromCommit: head,
 		acceptedAt: new Date().toISOString(),
@@ -499,34 +426,6 @@ function replaceAcceptedRoot(stagingRoot: string, backupRoot: string): void {
 			renameSync(backupRoot, ACCEPTED_ROOT);
 		if (existsSync(stagingRoot)) rmSync(stagingRoot, { recursive: true, force: true });
 		throw error;
-	}
-}
-function assertManifestIntegrity(manifest: CaptureManifest, root: string): void {
-	const declaredFiles = new Set(
-		manifest.captures.map((capture) => capture.file.replaceAll('\\', '/')),
-	);
-	const actualFiles = new Set(
-		listPngFiles(root).map((file) => relative(root, file).replaceAll('\\', '/')),
-	);
-	for (const file of actualFiles) {
-		if (!declaredFiles.has(file))
-			throw new Error(`Visual root contains an unlisted PNG: ${file}`);
-	}
-	for (const file of declaredFiles) {
-		if (!actualFiles.has(file)) throw new Error(`Visual manifest is missing a PNG: ${file}`);
-	}
-	for (const capture of manifest.captures) {
-		const absolutePath = resolve(root, capture.file);
-		if (!absolutePath.startsWith(`${resolve(root)}${sep}`)) {
-			throw new Error(`Visual manifest path escapes its root: ${capture.file}`);
-		}
-		if (!existsSync(absolutePath)) {
-			throw new Error(`Visual manifest references a missing PNG: ${capture.file}`);
-		}
-		const digest = createHash('sha256').update(readFileSync(absolutePath)).digest('hex');
-		if (digest !== capture.sha256) {
-			throw new Error(`Visual manifest hash mismatch: ${capture.file}`);
-		}
 	}
 }
 
