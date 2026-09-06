@@ -429,8 +429,12 @@ function replaceAcceptedRoot(stagingRoot: string, backupRoot: string): void {
 	}
 }
 
-function main(): void {
+async function main(): Promise<void> {
 	const [operation, ...args] = process.argv.slice(2);
+	if (operation === 'diagnose') {
+		const { diagnoseSections } = await import('./section-visual-diagnosis.ts');
+		return diagnoseSections(args);
+	}
 	if (operation === 'candidate') return candidate();
 	if (operation === 'compare') return compare();
 	if (operation === 'accept') {
@@ -452,13 +456,11 @@ function main(): void {
 		return accept(referenceSha ?? '', matrixHash ?? '', candidateManifestSha256 ?? '');
 	}
 	throw new Error(
-		'Usage: visual-parity-cli.ts candidate|compare|accept --reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>',
+		'Usage: visual-parity-cli.ts candidate|compare|accept|diagnose --reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>',
 	);
 }
 
-try {
-	main();
-} catch (error) {
+main().catch((error: unknown) => {
 	console.error(error instanceof Error ? error.message : String(error));
 	process.exitCode = 1;
-}
+});
