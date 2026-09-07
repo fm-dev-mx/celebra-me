@@ -100,7 +100,8 @@ Cloudinary URLs retain the declared original extension instead of silently reque
 Migration 20260907230000 expands validated-original JPEG/PNG acceptance without updating rows. It
 must be applied through db:migrate to Local, then Preview, before original-format publication.
 Production remains read-only. Local now has 83 migrations after guarded application of this
-migration. Preview still has 82 and requires the new migration before original-format publication.
+migration. Preview subsequently passed the guarded migration and now also has 83/83 migrations. Both object
+audits are CURRENT, with zero structural findings and matching canonical fingerprints.
 Cesar's desktop and mobile sources are the first evidence-backed declarations. Local publication
 created version 6 with two new versioned objects, zero overwritten objects, and zero deletions.
 A repeated release dry-run proposes zero logical, database, or Storage changes.
@@ -118,10 +119,30 @@ Local public-route evidence is in `.tmp/visual-parity/diagnostics/local-cesar-or
 and its `-mobile` rerun. Desktop hero matches the existing threshold. Mobile hero has identical
 image bytes, intrinsic dimensions, and crop but a repeatable pixel difference in two text elements.
 Font bytes, computed styles, and element bounds match in the follow-up probe; the remaining cause
-is not established. Other sections still differ. Preview remains deployed at 0b8e2e7c and does not
-include this implementation. None of these results establish complete visual parity or acceptance.
+is not established. Other sections still differ. A fresh alias lookup found Preview deployed at 124097c9
+(`dpl_EWJRvLej3X4H6tp3dW6Lcv9BYT66`); it includes the earlier corrections but not this image contract. None of these results establish complete visual parity or acceptance.
 
 REGRESSION_DECISION: Add executable propagation, byte-preservation, MIME provenance,
 immutable-cache, and browser source-selection regressions because source conversion and dropped
 delivery metadata can escape section screenshot thresholds. Retain existing visual thresholds and
 caption exception.
+
+
+## Hosted rollout checkpoint
+
+The three reviewed commits are 9774dd97 (schema), 3df19d5f (image contract), and 2d667da2
+(evidence). Guarded Preview schema application is complete; no Production mutation occurred.
+Fresh Local/Preview status in `.agent/tmp/parity-image-contract-local-preview-status.json` shows
+16/17 managed definitions synchronized. Only Cesar is behind in Preview; Local matches. There
+are zero identity conflicts, 28 Local active rows, and 29 Preview active rows. Production is
+explicitly excluded. The additional Preview fixture remains classified as previously documented.
+
+The final Local pilot report at
+`.tmp/visual-parity/diagnostics/local-cesar-image-contract-2d667da2/` covers 18 section/viewports:
+six MATCH and twelve DIFFERENT. Hero image bytes match both viewports; mobile text rasterization
+remains different. No thresholds, baselines, or caption exceptions were expanded.
+
+Deployment must retain the actual develop-scoped Preview configuration. The user authorized
+commits and deployments; protected Git push, PR creation, and integration still require their
+exact authorization under git-safety.md. Prepare the Preview content release but publish it only
+after the new application is deployed and its identity verified. Do not claim visual completion.
