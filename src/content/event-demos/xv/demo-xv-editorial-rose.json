@@ -27,6 +27,7 @@
     "intersections": {}
   },
   "hero": {
+    "presentation": { "venueIndex": 1 },
     "name": "Aurora Valencia",
     "label": "XV Edition",
     "date": "2027-08-28T21:00:00.000Z",

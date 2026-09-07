@@ -23,6 +23,7 @@
     "thankYou"
   ],
   "hero": {
+    "presentation": { "venueIndex": 1 },
     "name": "Camila Torres Rivas",
     "label": "Mis XV Años",
     "date": "2027-09-12T19:00:00.000Z",

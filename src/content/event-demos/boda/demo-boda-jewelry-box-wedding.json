@@ -24,6 +24,7 @@
     "intersections": {}
   },
   "hero": {
+    "presentation": { "venueIndex": 1 },
     "name": "Sofía",
     "secondaryName": "Alejandro",
     "label": "Nuestro enlace",

@@ -26,6 +26,7 @@
     "intersections": {}
   },
   "hero": {
+    "presentation": { "venueIndex": 1 },
     "name": "Xareni Demo",
     "label": "Mis XV Años",
     "date": "2027-09-12T19:00:00.000Z",

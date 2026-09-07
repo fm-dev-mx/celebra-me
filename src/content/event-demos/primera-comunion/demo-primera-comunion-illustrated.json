@@ -29,6 +29,7 @@
     "startsAtUtc": "2026-09-12T17:00:00.000Z"
   },
   "hero": {
+    "presentation": { "venueIndex": 1 },
     "name": "Camila Aurora",
     "label": "Primera Comunión",
     "date": "2026-09-12T11:00:00.000Z",

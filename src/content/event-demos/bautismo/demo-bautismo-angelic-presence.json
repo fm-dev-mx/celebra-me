@@ -24,6 +24,7 @@
     "intersections": {}
   },
   "hero": {
+    "presentation": { "venueIndex": 1 },
     "name": "María Santos",
     "label": "Bautismo",
     "date": "2026-10-18T10:00:00.000Z",

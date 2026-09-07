@@ -25,6 +25,7 @@
     "intersections": {}
   },
   "hero": {
+    "presentation": { "venueIndex": 1 },
     "name": "Valentina Demo",
     "label": "Edición XV",
     "date": "2027-09-25T21:00:00.000Z",

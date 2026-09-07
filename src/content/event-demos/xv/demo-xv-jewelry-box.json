@@ -25,6 +25,7 @@
     "intersections": {}
   },
   "hero": {
+    "presentation": { "venueIndex": 1 },
     "name": "Lucía García Pérez",
     "label": "Mis XV Años",
     "date": "2026-11-21T18:00:00.000Z",
