@@ -75,7 +75,9 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		expect(profile).toContain('--family-deceased-symbol-color');
 		expect(profile).toContain('--location-title-color: var(--victoria-meta)');
 		expect(profile).toContain('--location-date-display: none');
-		expect(profile).toContain("url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'");
+		expect(profile).toContain(
+			"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'",
+		);
 		expect(profile).not.toContain('.event-location__card-map-preview-artwork');
 		expect(profile).not.toContain("data-variant='single'");
 		expect(fs.readFileSync(singleKeepsakeStylesPath, 'utf8')).toContain(
@@ -408,5 +410,14 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		const profile = fs.readFileSync(profilePath, 'utf8');
 		expect(profile).toContain("data-intersection-source='hero'");
 		expect(profile).not.toContain("data-section-kind='quote'][data-intersection-source='hero'");
+	});
+});
+
+it('retains Production note styling and photographic crops', () => {
+	const content = buildVictoriaPublishedContent(buildTestAssets());
+	expect(content).toMatchObject({
+		location: { indications: [{ styleVariant: 'default' }, { styleVariant: 'default' }] },
+		gallery: { items: [{ focalPoint: '50% 40%' }] },
+		thankYou: { focalPoint: '56% 38%' },
 	});
 });

@@ -280,7 +280,7 @@ export function buildVictoriaPublishedContent(
 				},
 				{
 					iconName: 'FlowerSeal',
-					styleVariant: 'reserved',
+					styleVariant: 'default',
 					text: 'Agradecemos considerar que la celebración está reservada para adultos. Gracias por su comprensión.',
 				},
 			],
@@ -382,7 +382,7 @@ export function buildVictoriaPublishedContent(
 					key: 'gallery-01',
 					image: assets['gallery-01'],
 					alt: 'Victoria y Roberto en un abrazo editorial en blanco y negro',
-					focalPoint: '46% 22%',
+					focalPoint: '50% 40%',
 					layoutRole: 'feature',
 					aspectRatio: '2 / 3',
 				},
@@ -458,7 +458,7 @@ export function buildVictoriaPublishedContent(
 			closingName: 'Victoria & Roberto',
 			date: EVENT_DATE_LONG,
 			image: assets['interlude-02'],
-			focalPoint: VICTORIA_INTERLUDE_02.focalPoint,
+			focalPoint: '56% 38%',
 		},
 		sharing: {
 			ogImage: assets['hero-desktop'],
