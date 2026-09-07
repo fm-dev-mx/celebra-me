@@ -17,6 +17,7 @@ export const heroSchema = z
 		presentation: z
 			.object({
 				portraitEnabled: z.boolean().optional(),
+				venueIndex: z.number().int().nonnegative().optional(),
 			})
 			.strict()
 			.optional(),

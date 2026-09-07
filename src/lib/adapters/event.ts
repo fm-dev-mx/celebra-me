@@ -159,6 +159,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 	const preset = normalizedPreset;
 	return {
 		name: data.hero.name,
+		venueIndex: data.hero.presentation?.venueIndex,
 		secondaryName: data.hero.secondaryName,
 		label: data.hero.label || 'Invitación Especial',
 		nickname: data.hero.nickname,

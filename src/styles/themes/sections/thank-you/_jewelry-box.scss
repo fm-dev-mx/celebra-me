@@ -6,7 +6,8 @@
 	.thank-you-section:not(
 		[data-variant='editorial-back-cover'],
 		[data-variant='full-bleed-photo'],
-		[data-variant='portrait-letter']
+		[data-variant='portrait-letter'],
+		[data-variant='portrait-keepsake']
 	) {
 	background: radial-gradient(
 		circle at 50% 0%,

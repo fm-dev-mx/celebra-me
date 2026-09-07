@@ -444,6 +444,31 @@ describe('buildPageContextFromViewModel', () => {
 		expect(context.heroVenueName).toBe('Casa de mi familia');
 	});
 
+	it('selects an explicit hero venue without changing location order or exposing hidden venues', () => {
+		const viewModel = {
+			...baseViewModel,
+			hero: { ...baseViewModel.hero, venueIndex: 1 },
+			sections: {
+				location: {
+					variant: 'standard',
+					venues: [
+						{ venueName: 'Ceremonia', time: '15:00' },
+						{ venueName: 'Recepción', time: '17:00', isVisible: true },
+					],
+				},
+			},
+		} as any;
+		const build = () =>
+			buildPageContextFromViewModel({ viewModel, slug: 'venue-selection', eventType: 'xv' });
+		expect(build()).toMatchObject({ heroVenueName: 'Recepción', heroTime: '17:00' });
+		expect(viewModel.sections.location.venues[0].venueName).toBe('Ceremonia');
+		viewModel.sections.location.venues[1].isVisible = false;
+		expect(build().heroVenueName).toBeUndefined();
+		expect(build().heroTime).toBeUndefined();
+		viewModel.hero.venueIndex = 5;
+		expect(build().heroVenueName).toBeUndefined();
+	});
+
 	it('does not read legacy ceremony/reception when venues[] is absent', () => {
 		const viewModel = {
 			...baseViewModel,

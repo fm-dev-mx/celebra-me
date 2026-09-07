@@ -96,3 +96,16 @@ Before adding or promoting a variant:
 6. Update the derived cutover manifest and run focused schema, portability, CSS, governance, and corpus checks.
 
 The `portrait-letter` variant reuses editorial markup with an arched 2:3 portrait and display-font letter. It requires an image and owns its geometry independently of the preset. Existing published enchanted-rose styling shares the same SCSS mixin until its consumers explicitly migrate.
+
+The `thankYou` variant `portrait-keepsake` owns the narrow rectangular portrait, serif letter,
+responsive grid and signature geometry. It reuses the editorial DOM without selecting by theme
+or invitation identity. It requires an explicit image. Managed definitions need canonical
+publication before public database-backed routes use this variant.
+
+### Hero venue selection
+
+`hero.presentation.venueIndex` optionally selects a zero-based entry from `location.venues`
+for the hero time and venue name, without reordering location cards. Without it, the first visible
+entry with the requested value remains the default. Hidden, missing, or protected selected entries
+must not expose location details. The same presentation schema is used by published content,
+drafts, and the editor so a save cannot discard the selection.

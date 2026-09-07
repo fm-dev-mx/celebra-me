@@ -715,3 +715,117 @@ test('portrait-letter preserves the production mobile portrait and serif letter 
 	expect(geometry.fontFamily).toContain('Cormorant Garamond');
 	expect(geometry.paddingTop).toBeCloseTo(152, 1);
 });
+
+for (const preset of ['celestial-blue', 'jewelry-box']) {
+	test(`portrait-keepsake preserves a narrow portrait and serif letter in ${preset}`, async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 414, height: 896 });
+		await page.goto(
+			`/test/variant?section=thankYou&variant=portrait-keepsake&preset=${preset}`,
+			{ waitUntil: 'load' },
+		);
+		await page.evaluate(() => document.fonts.ready);
+		const section = page.locator('.thank-you-section');
+		const geometry = await section.evaluate((root) => {
+			const media = root.querySelector<HTMLElement>('.thank-you-editorial__media')!;
+			const message = root.querySelector<HTMLElement>('.thank-you-message')!;
+			return {
+				width: media.getBoundingClientRect().width,
+				height: media.getBoundingClientRect().height,
+				fontSize: parseFloat(getComputedStyle(message).fontSize),
+				font: getComputedStyle(message).fontFamily,
+				displayFont: getComputedStyle(root).getPropertyValue('--font-display').trim(),
+			};
+		});
+		expect(geometry.width).toBeCloseTo(256, 1);
+		expect(geometry.height).toBeCloseTo(384, 1);
+		expect(geometry.fontSize).toBeCloseTo(25.668, 2);
+		expect(geometry.font.replace(/["']/g, '')).toBe(geometry.displayFont.replace(/["']/g, ''));
+	});
+}
+
+test('public celestial demo resolves portrait-keepsake from its content', async ({ page }) => {
+	await page.setViewportSize({ width: 414, height: 896 });
+	await page.goto('/xv/demo-xv-celestial-blue', { waitUntil: 'load' });
+	const section = page.locator('.thank-you-section');
+	await expect(section).toHaveAttribute('data-variant', 'portrait-keepsake');
+	const geometry = await section.evaluate((root) => ({
+		width: root.querySelector('.thank-you-editorial__media')!.getBoundingClientRect().width,
+		fontSize: parseFloat(getComputedStyle(root.querySelector('.thank-you-message')!).fontSize),
+	}));
+	expect(geometry.width).toBeCloseTo(256, 1);
+	expect(geometry.fontSize).toBeCloseTo(25.668, 2);
+});
+
+test('section captures exclude a consent banner mounted after capture setup', async ({ page }) => {
+	const { hideFixedOverlaysForCapture } =
+		await import('../../scripts/screenshot/element-capture');
+	await page.setContent(
+		'<main><p>Contenido de la invitación</p></main><aside data-music-player>Audio</aside>',
+	);
+	const restore = await hideFixedOverlaysForCapture(page);
+	await page.evaluate(() => {
+		const root = document.createElement('div');
+		root.id = 'consent-banner-root';
+		root.textContent = 'Aviso de cookies';
+		document.body.append(root);
+	});
+	await expect(page.locator('#consent-banner-root')).toBeHidden();
+	await expect(page.locator('[data-music-player]')).toBeHidden();
+	await expect(page.locator('main')).toBeVisible();
+	await restore();
+	await expect(page.locator('#consent-banner-root')).toBeVisible();
+});
+
+test('venue maps preserve Production tiles and independent navigation without credentials', async ({
+	page,
+}) => {
+	await page.route('https://*.basemaps.cartocdn.com/**', (route) =>
+		route.fulfill({
+			contentType: 'image/png',
+			body: Buffer.from(
+				'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=',
+				'base64',
+			),
+		}),
+	);
+	await page.goto('/test/variant?section=location&variant=standard&preset=jewelry-box', {
+		waitUntil: 'networkidle',
+	});
+	const location = page.locator('#event-location');
+	await location.scrollIntoViewIfNeeded();
+	await expect(location.locator('[data-map-provider="carto-voyager"]').first()).toBeVisible();
+	await expect(location.locator('a[href="https://maps.app.goo.gl/example1"]')).toBeVisible();
+	await expect(location.locator('iframe[src*="maps"]')).toHaveCount(0);
+	const tiles = await location
+		.locator('.rustic-map-tile')
+		.evaluateAll((nodes) => nodes.map((node) => (node as HTMLImageElement).src));
+	expect(tiles).toHaveLength(18);
+	expect(
+		await location
+			.locator('.rustic-map-tiles')
+			.first()
+			.evaluate((node) => getComputedStyle(node).filter),
+	).toBe('grayscale(0.12) contrast(1.02) brightness(0.82)');
+	for (const source of tiles) {
+		const url = new URL(source);
+		expect(url.hostname).toMatch(/^[abc]\.basemaps\.cartocdn\.com$/);
+		expect(url.pathname).toMatch(/^\/rastertiles\/voyager\/\d+\/\d+\/\d+\.png$/);
+		expect(url.search).toBe('');
+	}
+});
+
+test('diagnostic randomness repeats across fresh documents without becoming constant', async ({
+	page,
+}) => {
+	const { stabilizeCaptureRandomness } = await import('../../scripts/screenshot/element-capture');
+	await stabilizeCaptureRandomness(page);
+	const values: number[][] = [];
+	for (let pass = 0; pass < 2; pass++) {
+		await page.goto('about:blank');
+		values.push(await page.evaluate(() => Array.from({ length: 4 }, () => Math.random())));
+	}
+	expect(values[0]).toEqual(values[1]);
+	expect(new Set(values[0]).size).toBe(4);
+});

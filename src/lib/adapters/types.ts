@@ -47,6 +47,7 @@ export interface ThemeConfig {
 }
 
 export interface HeroViewModel {
+	venueIndex?: number;
 	name: string;
 	secondaryName?: string;
 	label: string;

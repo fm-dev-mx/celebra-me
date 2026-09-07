@@ -131,7 +131,7 @@ export const thankYouSchema = z
 	.strict()
 	.superRefine((thankYou, context) => {
 		if (
-			(thankYou.variant === 'full-bleed-photo' || thankYou.variant === 'portrait-letter') &&
+			(thankYou.variant === 'full-bleed-photo' || thankYou.variant === 'portrait-letter' || thankYou.variant === 'portrait-keepsake') &&
 			!thankYou.image
 		) {
 			context.addIssue({

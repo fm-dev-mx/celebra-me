@@ -100,10 +100,14 @@ function buildEnvelopeData(
 function pickHeroValue(
 	sections: InvitationPageContext['viewModel']['sections'] | undefined,
 	field: 'time' | 'venueName',
+	venueIndex?: number,
 ): string | undefined {
-	const val = sections?.location?.venues?.find(
-		(venue) => venue.isVisible !== false && venue[field],
-	)?.[field];
+	const venues = sections?.location?.venues;
+	const venue =
+		venueIndex === undefined
+			? venues?.find((entry) => entry.isVisible !== false && entry[field])
+			: venues?.[venueIndex];
+	const val = venue?.isVisible === false ? undefined : venue?.[field];
 
 	if (typeof val === 'string' && val.startsWith('[[PENDIENTE:')) {
 		return undefined;
@@ -143,8 +147,8 @@ export function buildPageContextFromViewModel(input: {
 		.join(' ');
 
 	const guestName = guestContext?.guest.fullName;
-	const heroTime = pickHeroValue(sections, 'time');
-	const heroVenueName = pickHeroValue(sections, 'venueName');
+	const heroTime = pickHeroValue(sections, 'time', renderViewModel.hero.venueIndex);
+	const heroVenueName = pickHeroValue(sections, 'venueName', renderViewModel.hero.venueIndex);
 
 	const localAccessPreview = shouldShowLocalPersonalizedAccessPreview();
 	const isDemoPreview = (isDemo || screenshotMode || localAccessPreview) && !guestContext;

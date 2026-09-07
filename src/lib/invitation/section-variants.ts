@@ -231,6 +231,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		requiredPersistedContentTransformation: 'Set thankYou.variant to portrait-letter for the approved arched portrait composition; preserve message, closingName and image.',
 	},
 	{
+		section: 'thankYou', variant: 'portrait-keepsake', default: false,
+		prerequisites: ['thankYou.message', 'thankYou.closingName', 'thankYou.image'],
+		cssOwner: 'src/styles/themes/sections/thank-you/_portrait-keepsake.scss',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
+		requiredPersistedContentTransformation: 'Set thankYou.variant to portrait-keepsake for the rectangular portrait and serif letter composition; preserve image, message and closingName.',
+	},
+	{
 		section: 'thankYou', variant: 'full-bleed-photo', default: false,
 		prerequisites: ['thankYou.image'], cssOwner: 'src/styles/themes/sections/thank-you/_full-bleed-photo.scss',
 		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,

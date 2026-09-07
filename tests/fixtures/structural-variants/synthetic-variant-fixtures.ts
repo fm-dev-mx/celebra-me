@@ -346,7 +346,7 @@ export function buildIncompatiblePrerequisiteEvent(
 			}
 			break;
 		case 'thankYou':
-			if (entry.variant === 'full-bleed-photo' || entry.variant === 'portrait-letter') {
+			if (entry.variant === 'full-bleed-photo' || entry.variant === 'portrait-letter' || entry.variant === 'portrait-keepsake') {
 				const thankYou = data.thankYou as Record<string, unknown>;
 				delete thankYou.image;
 			} else if (entry.variant === 'editorial-back-cover') {
@@ -415,7 +415,7 @@ export function getIncompatiblePrerequisiteExpectation(
 		case 'gifts':
 			return { expectedPath: ['gifts', 'items', 0] };
 		case 'thankYou':
-			if (entry.variant === 'full-bleed-photo' || entry.variant === 'portrait-letter') {
+			if (entry.variant === 'full-bleed-photo' || entry.variant === 'portrait-letter' || entry.variant === 'portrait-keepsake') {
 				return { expectedPath: ['thankYou', 'image'] };
 			}
 			return { expectedPath: ['thankYou', 'closingName'] };

@@ -1,3 +1,4 @@
+import { heroSchema } from '@/lib/schemas/content/hero.schema';
 import { z } from 'zod';
 import { INVITATION_RENDER_SECTION_KEYS } from '@/lib/theme/theme-contract';
 import { INVITATION_STATUSES } from '@/lib/intake/types';
@@ -66,7 +67,7 @@ export const InvitationEditorSectionSchemas = {
 			backgroundImageDesktop: editableAssetSchema.optional(),
 			backgroundImageMobile: editableAssetSchema.optional(),
 			portrait: editableAssetSchema.optional(),
-			presentation: z.object({ portraitEnabled: z.boolean().optional() }).strict().optional(),
+			presentation: heroSchema.shape.presentation,
 			variant: z.enum(HERO_VARIANTS).optional(),
 			focalPoint: focalPointSchema.optional(),
 			focalPointMobile: focalPointSchema.optional(),

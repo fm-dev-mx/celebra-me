@@ -13,7 +13,7 @@ async function stylesheetHrefs(page: Page): Promise<string[]> {
 
 test.describe('P0 structural variants render through the live invitation route', () => {
 	for (const viewport of VIEWPORTS) {
-		test(`renders the celestial program and editorial thank-you at ${viewport.name}`, async ({
+		test(`renders the celestial program and portrait keepsake thank-you at ${viewport.name}`, async ({
 			page,
 		}) => {
 			await page.setViewportSize(viewport);
@@ -31,7 +31,7 @@ test.describe('P0 structural variants render through the live invitation route',
 			const thankYou = page.locator('#thank-you-section');
 			await expect(thankYou).toHaveAttribute(
 				'data-variant',
-				'editorial-back-cover',
+				'portrait-keepsake',
 			);
 			await expect(thankYou.locator('.thank-you-editorial')).toBeVisible();
 			await expect(thankYou.locator('.thank-you-content')).toHaveCount(0);

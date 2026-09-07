@@ -24,8 +24,8 @@ const baseInput = {
 
 describe('canonical section variant contracts', () => {
 	it('keeps the complete closed vocabulary in one registry', () => {
-		expect(CANONICAL_VARIANT_REGISTRY).toHaveLength(40);
-		expect(CANONICAL_VARIANT_CUTOVER_MANIFEST).toHaveLength(30);
+		expect(CANONICAL_VARIANT_REGISTRY).toHaveLength(41);
+		expect(CANONICAL_VARIANT_CUTOVER_MANIFEST).toHaveLength(31);
 		expect(CANONICAL_VARIANT_REGISTRY.filter((entry) => entry.default)).toHaveLength(10);
 		expect(CANONICAL_VARIANT_REGISTRY.map((entry) => `${entry.section}.${entry.variant}`)).toEqual(
 			expect.arrayContaining(['family.split-groups', 'gallery.editorial-mosaic', 'thankYou.full-bleed-photo']),

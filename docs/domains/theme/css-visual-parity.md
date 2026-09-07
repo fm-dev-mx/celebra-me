@@ -48,17 +48,11 @@ contracts only. Until that accepted baseline exists, CI does not run `visual:par
 candidate captures remain an explicit, human-reviewed operation. The page matrix is discovered from
 the managed invitation registry and `src/content/event-demos`; no manual inventory is maintained.
 
-Current repository status: the map renderer is a repository-owned deterministic schematic and makes
-no render-time network request. Remote CARTO tiles are not used. Parisienne is not assumed to be
-available; typography must resolve through repository-owned or explicitly authorized local
-resources. No accepted 158-capture baseline exists until the post-cutover reference SHA is approved.
-
-Provider evidence:
-
-- Historical provider references (CARTO/OSM) are retained for provenance only; the current runtime
-  uses `SchematicVenueMap` and makes no tile requests.
-- Historical [OpenStreetMap copyright and attribution](https://www.openstreetmap.org/copyright) —
-  visible attribution and ODbL notice are required for OSM-derived data.
+Venue previews use `StaticVenueMap`, preserving the public Production CARTO Voyager tile URLs
+and geographic framing without introducing an API key. Appearance follows the explicit map style and inherited color tokens;
+the shared renderer owns the tile grid and marker. Google Maps, Apple Maps and Waze navigation
+links remain independent. Remote tile changes or failures must be reported by visual diagnostics,
+not silently replaced or accepted as parity.
 
 ## Current asset evidence
 
