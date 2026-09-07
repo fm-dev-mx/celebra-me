@@ -26,26 +26,26 @@ async function expectRevealed(page: Page) {
 }
 
 test.describe('shared envelope reveal interaction', () => {
-	test('uses the same closed-state transition from the seal and CTA', async ({ page }) => {
-		await page.goto('/cumple/demo-cumple-luxury-hacienda', { waitUntil: 'domcontentloaded' });
-
-		const seal = page.getByRole('button', { name: 'Abrir sobre de la invitación' });
-		const cta = page.getByRole('button', { name: 'Abrir la invitación' });
-		await expect(seal).toBeVisible();
-		await expect(cta).toBeVisible();
-		await expect(page.locator('[data-envelope-card]')).toHaveAttribute('aria-hidden', 'true');
-		await expect(page.locator('[data-envelope-card]')).toHaveCSS('opacity', '0');
-		await expect(page.locator('[data-envelope-card] [data-envelope-open]')).toHaveCount(0);
-
-		await cta.click();
-		await expectRevealed(page);
-
-		await page.goto('/cumple/demo-cumple-luxury-hacienda?forceEnvelope=true', {
-			waitUntil: 'domcontentloaded',
+	for (const trigger of ['CTA', 'seal'] as const) {
+		test(`uses the same closed-state transition from the ${trigger}`, async ({ page }) => {
+			const route = '/cumple/demo-cumple-luxury-hacienda';
+			await page.goto(trigger === 'seal' ? `${route}?forceEnvelope=true` : route, {
+				waitUntil: 'domcontentloaded',
+			});
+			const seal = page.getByRole('button', { name: 'Abrir sobre de la invitación' });
+			const cta = page.getByRole('button', { name: 'Abrir la invitación' });
+			await expect(seal).toBeVisible();
+			await expect(cta).toBeVisible();
+			await expect(page.locator('[data-envelope-card]')).toHaveAttribute(
+				'aria-hidden',
+				'true',
+			);
+			await expect(page.locator('[data-envelope-card]')).toHaveCSS('opacity', '0');
+			await expect(page.locator('[data-envelope-card] [data-envelope-open]')).toHaveCount(0);
+			await (trigger === 'seal' ? seal : cta).click();
+			await expectRevealed(page);
 		});
-		await page.getByRole('button', { name: 'Abrir sobre de la invitación' }).click();
-		await expectRevealed(page);
-	});
+	}
 
 	test('supports Enter and Space and never finalizes twice', async ({ page }) => {
 		await page.goto('/boda/demo-boda-jewelry-box-wedding', { waitUntil: 'domcontentloaded' });
