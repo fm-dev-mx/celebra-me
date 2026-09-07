@@ -1,3 +1,4 @@
+import { stabilizeCaptureRandomness } from './element-capture';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -75,8 +76,7 @@ export function parseDiagnosisArgs(args: string[]): Record<string, string> {
 
 function validateDiagnosisOrigins(options: Record<string, string>): void {
 	for (const env of ['production', 'preview']) {
-		if (!options[`${env}-url`])
-			throw new Error(`Provide the verified ${env} deployment URL.`);
+		if (!options[`${env}-url`]) throw new Error(`Provide the verified ${env} deployment URL.`);
 		const url = new URL(options[`${env}-url`]);
 		if (
 			url.username ||
@@ -124,6 +124,7 @@ async function capturePage(
 				}),
 			);
 		const page = await context.newPage();
+		await stabilizeCaptureRandomness(page);
 		await page.clock.setFixedTime(new Date(fixedTime));
 		const response = await page.goto(`${origin}${route}?skipEnvelope=true&animations=off`, {
 			waitUntil: 'load',
@@ -194,18 +195,29 @@ async function capturePage(
 		});
 		if (measured.length < 2 || !measured.some((section) => section.key === 'hero'))
 			throw new Error('Missing public section inventory.');
-		const screenshot = await page.screenshot({ fullPage: true, animations: 'disabled' });
-		const metadata = await sharp(screenshot).metadata();
 		const sections: Record<string, SectionCapture> = {};
 		for (const section of measured) {
-			const width = Math.min(section.width, metadata.width! - section.left);
-			const height = Math.min(section.height, metadata.height! - section.top);
-			if (width < 1 || height < 1) throw new Error(`Uncapturable section: ${section.key}`);
+			// Capture each section directly: very tall full-page bitmaps can contain blank
+			// compositor regions even when the DOM and image decoding are complete.
+			const selector =
+				section.key === 'hero'
+					? '[data-screenshot-section="hero"]'
+					: `.invitation-section-wrapper[data-screenshot-section="${section.key}"]`;
+			const target = page.locator(selector);
+			await target.scrollIntoViewIfNeeded();
+			const bounds = await target.boundingBox();
+			if (!bounds) throw new Error(`Missing section bounds: ${section.key}`);
+			section.width = Math.ceil(bounds.width);
+			section.height = Math.ceil(bounds.height);
+			const bytes = await target.screenshot({ animations: 'disabled' });
+			const metadata = await sharp(bytes).metadata();
+			if (
+				!metadata.width ||
+				!metadata.height ||
+				Math.abs(metadata.height - section.height) > 1
+			)
+				throw new Error(`Incomplete section capture: ${section.key}`);
 			const file = `${prefix}-${section.key.replace(/[^a-zA-Z0-9-]/gu, '_')}.png`;
-			const bytes = await sharp(screenshot)
-				.extract({ left: section.left, top: section.top, width, height })
-				.png()
-				.toBuffer();
 			fs.writeFileSync(path.join(root, file), bytes);
 			sections[section.key] = {
 				file,

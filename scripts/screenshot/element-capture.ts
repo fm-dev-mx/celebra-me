@@ -38,6 +38,8 @@ export async function hideFixedOverlaysForCapture(page: Page): Promise<() => Pro
 		const toolbarSelectors = getOperationalToolbarSelectors().join(',\n      ');
 		await page.addStyleTag({
 			content: `
+	      html.screenshot-hide-overlays #consent-banner-root,
+	      html.screenshot-hide-overlays [data-music-player],
 	      html.screenshot-hide-overlays .header-base,
 	      html.screenshot-hide-overlays [data-back-to-top],
 	      html.screenshot-hide-overlays .back-to-top,
@@ -563,4 +565,17 @@ async function captureElementFullExtent(
 export function pathLabel(filepath: string): string {
 	const parts = filepath.replace(/\\/g, '/').split('/');
 	return parts[parts.length - 1];
+}
+
+/** Reproduce random demo content in fresh browser documents without changing page layout. */
+export async function stabilizeCaptureRandomness(page: import('@playwright/test').Page) {
+	await page.addInitScript(() => {
+		let state = 0x1a2b3c4d;
+		Math.random = () => {
+			state ^= state << 13;
+			state ^= state >>> 17;
+			state ^= state << 5;
+			return (state >>> 0) / 4294967296;
+		};
+	});
 }

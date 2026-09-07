@@ -22,7 +22,8 @@ provisioning, publication, or deployment occurs.
 
 The default covers all registered invitations and discovered demos at 390×844 and 1440×900.
 `--route=/xv/example` limits a troubleshooting run and marks its scope PARTIAL.
-`--at=<ISO timestamp>` fixes client time across environments and repeats.
+`--at=<ISO timestamp>` fixes client time across environments and repeats. A repeatable browser
+random sequence also stabilizes randomized demo countdowns; it does not modify deployed code.
 `--output=.tmp/visual-parity/diagnostics/<new-run>` selects a new ignored output directory; existing
 results are never overwritten. Public anonymous coverage does not include guest-only personalized
 states.
@@ -34,12 +35,12 @@ states.
 - Load actual public routes with `skipEnvelope=true&animations=off`, without the test variant
   harness or the layout-changing screenshot query mode.
 - Wait for fonts and decoded images, scroll to trigger deferred content, stop animations, and hide
-  operational fixed overlays using the existing capture utility. Navigation/envelope interactions
+  operational fixed overlays (navigation, consent banner and music player) using the existing capture utility. Navigation/envelope interactions
   are outside this section report.
 - Align the hero and section wrappers by `data-screenshot-section`; repeated interludes retain their
   ordinal identity. Detect duplicate identities, missing sections, changed order, invalid routes,
   and failed images explicitly.
-- Crop sections from one full-page image per environment/viewport. Pad unequal dimensions; never
+- Capture each section directly after measuring the public DOM, avoiding blank compositor regions in very tall full-page bitmaps. Reject incomplete captures. Pad unequal dimensions; never
   resize images to make layouts appear equal.
 - Flag RGB channel differences above 24; surface cases exceeding 0.1% of pixels or changing
   dimensions/order. Percentage is a diagnostic ranking, not severity or acceptance. Font, text,
