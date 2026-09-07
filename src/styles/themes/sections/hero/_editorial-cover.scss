@@ -4,6 +4,7 @@
 	--editorial-hero-ease: cubic-bezier(0.16, 1, 0.3, 1);
 	--editorial-hero-ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
 
+	box-sizing: border-box;
 	position: relative;
 	min-height: 100svh;
 	padding: 0;
@@ -92,6 +93,7 @@
 	}
 
 	.invitation-hero__content {
+		box-sizing: border-box;
 		position: relative;
 		z-index: 4;
 		display: flex;
@@ -401,7 +403,7 @@
 	}
 
 	@include mixins.respond-below(md) {
-		padding: 0;
+		padding: clamp(0.8rem, 3vw, 1rem);
 		text-align: center;
 
 		&::before {
@@ -415,8 +417,7 @@
 			justify-content: center;
 			gap: clamp(0.75rem, 1.8svh, 1.05rem);
 			min-height: calc(100svh - 1.6rem);
-			padding: clamp(2.8rem, 7svh, 4.25rem) clamp(0.75rem, 2.5vw, 1.25rem)
-				clamp(3.2rem, 7svh, 4.75rem);
+			padding-block: clamp(2.8rem, 7svh, 4.25rem) clamp(3.2rem, 7svh, 4.75rem);
 		}
 
 		.invitation-hero__text-column {
@@ -490,8 +491,8 @@
 		.invitation-hero__details p {
 			flex: 0 0 auto;
 			max-width: 100%;
-			font-size: clamp(0.62rem, 2vw, 0.74rem);
-			letter-spacing: 0.12em;
+			font-size: clamp(0.64rem, 2.25vw, 0.76rem);
+			letter-spacing: 0.2em;
 			white-space: normal;
 			overflow-wrap: break-word;
 			word-break: normal;
