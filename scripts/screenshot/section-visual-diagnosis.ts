@@ -1,4 +1,4 @@
-import { stabilizeCaptureRandomness } from './element-capture';
+import { stabilizeCaptureRandomness, alignSectionCaptureToPixelGrid } from './element-capture';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -28,6 +28,7 @@ interface SectionCapture {
 	width: number;
 	height: number;
 	domBounds?: { x: number; y: number; width: number; height: number };
+	pixelGridOffset?: { x: number; y: number };
 	fonts: string[];
 	images: CapturedImageIdentity[];
 	textHash: string;
@@ -247,12 +248,15 @@ async function capturePage(
 				await document.fonts.ready;
 				await new Promise(requestAnimationFrame);
 			});
+			const alignment = await alignSectionCaptureToPixelGrid(target);
 			const presentation = await target.evaluate(measureSectionPresentation);
 			const bounds = await target.boundingBox();
 			if (!bounds) throw new Error(`Missing section bounds: ${section.key}`);
 			section.width = Math.ceil(bounds.width);
 			section.height = Math.ceil(bounds.height);
-			const bytes = await target.screenshot({ animations: 'disabled' });
+			const bytes = await target
+				.screenshot({ animations: 'disabled' })
+				.finally(alignment.restore);
 			const metadata = await sharp(bytes).metadata();
 			if (
 				!metadata.width ||
@@ -268,7 +272,8 @@ async function capturePage(
 				index: section.index,
 				width: metadata.width,
 				height: metadata.height,
-				domBounds: bounds,
+				domBounds: alignment.bounds,
+				pixelGridOffset: alignment.offset,
 				fonts: presentation.fonts,
 				images: await Promise.all(
 					presentation.images.map(async (image) => ({
@@ -444,6 +449,8 @@ export async function diagnoseSections(args: string[]): Promise<void> {
 		threshold: 0.001,
 		pixelChannelTolerance: 24,
 		maskedElements: 'Operational fixed overlays only, via hideFixedOverlaysForCapture',
+		pixelGridAlignment:
+			'Isolated section origin only; original DOM bounds and offsets retained',
 		scope: requested || requestedViewports ? 'PARTIAL' : 'FULL',
 		selectedViewports: viewports,
 		expectedRouteViewports: routes.length * viewports.length,

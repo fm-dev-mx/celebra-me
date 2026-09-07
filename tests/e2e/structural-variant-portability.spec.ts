@@ -863,3 +863,29 @@ test('ornamented access preserves explicit inherited presentation tokens', async
 		.evaluate((element) => getComputedStyle(element, '::after').backgroundImage);
 	expect(glow).toBe('none');
 });
+
+test('section pixel alignment preserves geometry and visible differences', async ({ page }) => {
+	const { alignSectionCaptureToPixelGrid } =
+		await import('../../scripts/screenshot/element-capture');
+	await page.setContent(
+		'<div id="section" style="position:absolute;left:20.25px;top:10.75px;width:100px;height:60px;background:red"></div>',
+	);
+	const target = page.locator('#section');
+	const original = await target.boundingBox();
+	const alignment = await alignSectionCaptureToPixelGrid(target);
+	expect(alignment.bounds).toEqual(original);
+	expect(await target.boundingBox()).toEqual({ x: 20, y: 11, width: 100, height: 60 });
+	const red = await target.screenshot();
+	await target.evaluate((element) => {
+		(element as HTMLElement).style.background = 'blue';
+	});
+	const blue = await target.screenshot();
+	expect(red.equals(blue)).toBe(false);
+	await alignment.restore();
+	expect(await target.boundingBox()).toEqual(original);
+	await target.evaluate((element) => {
+		(element as HTMLElement).style.translate = '3px 4px';
+	});
+	await expect(alignSectionCaptureToPixelGrid(target)).rejects.toThrow('authored CSS translate');
+	await expect(target).toHaveCSS('translate', '3px 4px');
+});

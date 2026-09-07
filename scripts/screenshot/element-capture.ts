@@ -579,3 +579,31 @@ export async function stabilizeCaptureRandomness(page: import('@playwright/test'
 		};
 	});
 }
+
+/** Align isolated section rasterization while preserving layout evidence and authored transforms. */
+export async function alignSectionCaptureToPixelGrid(target: Locator) {
+	const original = await target.evaluate((element) => {
+		const node = element as HTMLElement;
+		if (getComputedStyle(node).translate !== 'none') {
+			throw new Error('Cannot normalize a section with an authored CSS translate.');
+		}
+		const rect = node.getBoundingClientRect();
+		const bounds = { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+		const offset = { x: Math.round(rect.x) - rect.x, y: Math.round(rect.y) - rect.y };
+		const value = node.style.getPropertyValue('translate');
+		const priority = node.style.getPropertyPriority('translate');
+		node.style.setProperty('translate', `${offset.x}px ${offset.y}px`);
+		return { bounds, offset, value, priority };
+	});
+	return {
+		bounds: original.bounds,
+		offset: original.offset,
+		restore: () =>
+			target.evaluate((element, previous) => {
+				const node = element as HTMLElement;
+				if (previous.value)
+					node.style.setProperty('translate', previous.value, previous.priority);
+				else node.style.removeProperty('translate');
+			}, original),
+	};
+}
