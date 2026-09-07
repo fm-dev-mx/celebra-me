@@ -288,3 +288,38 @@ describe('enrichCanonicalDiagnostics', () => {
 		expect(unverified).toBeDefined();
 	});
 });
+
+describe('content-only asset ownership', () => {
+	it.each([
+		['hero', false],
+		['https://assets.example/hero.webp', false],
+		[undefined, true],
+		['not-a-valid-key', true],
+	])('classifies independently resolved reference %s', (reference, missing) => {
+		const definition = {
+			slug: 'sample',
+			lifecycle: 'published',
+			deliveryScope: 'content-only',
+			assets: [{ key: 'hero' }],
+			buildPublishedContent: (assets: Record<string, unknown>) => ({
+				hero: { backgroundImage: assets.hero },
+			}),
+		} as unknown as InvitationDefinition;
+		const row = {
+			slug: 'sample',
+			assets: [],
+			publishedVersion: 1,
+			publishedContent: { hero: { backgroundImage: reference } },
+			draftContent: null,
+		} as never;
+		const diagnostics = enrichCanonicalDiagnostics({
+			view: buildCanonicalStatusViewFixture(),
+			definitions: [definition],
+			rowsByEnv: { local: [row], preview: [], production: [] },
+			includeSemanticDetail: false,
+		});
+		expect(diagnostics.some((d) => d.code === 'REQUIRED_PUBLISHED_ASSET_MISSING')).toBe(
+			missing,
+		);
+	});
+});

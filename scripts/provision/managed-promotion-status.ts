@@ -231,16 +231,21 @@ export async function evaluateManagedPromotionStatus(
 		environmentsBySlug,
 		envEvidence,
 		canonicalAvailableBySlug,
+		selectedTargets: options.environments,
 	});
 	const resolvePackage =
 		options.resolvePackage ??
 		((slug) =>
 			resolveInvitationPackageInput({ slug }).then((resolved) => resolved.packageData));
-	const withPendingApproval = await refineManagedPromotionsWithPendingPreviewApproval({
-		...initiallyPresented,
-		resolvePackage,
-	});
-	const includeProductionPreflight = options.includeProductionPreflight !== false;
+	const withPendingApproval =
+		probeEnvs.includes('production') && probeEnvs.includes('preview')
+			? await refineManagedPromotionsWithPendingPreviewApproval({
+					...initiallyPresented,
+					resolvePackage,
+				})
+			: initiallyPresented;
+	const includeProductionPreflight =
+		probeEnvs.includes('production') && options.includeProductionPreflight !== false;
 	const presented = includeProductionPreflight
 		? await refineManagedPromotionsWithProductionPreflight({
 				...withPendingApproval,
@@ -512,6 +517,7 @@ function presentManagedPromotions(input: {
 	environmentsBySlug: Record<string, Record<TargetEnv, EnvironmentPromotionState>>;
 	envEvidence: Record<TargetEnv, EvidenceState>;
 	canonicalAvailableBySlug: ReadonlyMap<string, boolean>;
+	selectedTargets?: readonly TargetEnv[];
 }): Pick<ManagedPromotionStatus, 'promotions' | 'inSyncSlugs'> {
 	const promotions: CanonicalPromotionRow[] = [];
 	const inSyncSlugs: string[] = [];
@@ -526,6 +532,7 @@ function presentManagedPromotions(input: {
 			local: environments.local,
 			preview: environments.preview,
 			production: environments.production,
+			selectedTargets: input.selectedTargets,
 		});
 		if (decision.action === 'NONE') {
 			inSyncSlugs.push(definition.slug);

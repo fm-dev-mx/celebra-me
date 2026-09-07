@@ -100,6 +100,7 @@ export const PUBLICATION_REASON_LABELS: Record<PromotionReasonCode, string> = {
 		'Production coincide con el canónico mientras Preview no. No es una progresión válida.',
 	PREVIEW_ALIGNED_PRODUCTION_BEHIND:
 		'Local y Preview coinciden con el canónico. Production está detrás.',
+	LOCAL_BEHIND_CANONICAL: 'Local no coincide con la definición canónica.',
 	LOCAL_BEHIND_PREVIEW_ALIGNED:
 		'Preview y Production coinciden con el canónico. Local está detrás.',
 	PREVIEW_BEHIND_CANONICAL:

@@ -11,6 +11,8 @@
  *   pnpm dbs --json            # CanonicalStatusView JSON
  */
 
+import { readStatusTargets, statusScopeJson } from './dbs-options.ts';
+import type { TargetEnv } from './dbs-status.ts';
 import { normalizeOperatorArgv } from '../lib/operator-argv.ts';
 import {
 	MANAGED_STATUS_DEFAULT_TIMEOUT_MS,
@@ -49,17 +51,19 @@ async function formatGeneralView(
 	verbose: boolean,
 	includeInSync: boolean,
 	diagnostics: boolean,
+	targets?: TargetEnv[],
 ): Promise<void> {
 	const { buildCanonicalStatusView, refineCanonicalStatusViewPromotions } =
 		await import('./canonical-status.ts');
 	const { formatCanonicalStatusView } = await import('./canonical-status-format.ts');
 	const fast = await buildCanonicalStatusView({
 		diagnostics,
+		environments: targets,
 		includeProductionPreflight: false,
 	});
 	const view = await refineOrKeep(fast, () => refineCanonicalStatusViewPromotions(fast));
 	if (jsonMode) {
-		console.log(JSON.stringify(view, null, 2));
+		console.log(statusScopeJson(view, targets));
 		return;
 	}
 	process.stdout.write(formatCanonicalStatusView(view, { verbose, includeInSync, diagnostics }));
@@ -70,6 +74,7 @@ async function formatInvitationView(
 	jsonMode: boolean,
 	verbose: boolean,
 	diagnostics: boolean,
+	targets?: TargetEnv[],
 ): Promise<void> {
 	const { buildCanonicalStatusView, refineCanonicalStatusViewPromotions } =
 		await import('./canonical-status.ts');
@@ -77,6 +82,7 @@ async function formatInvitationView(
 	const fast = await buildCanonicalStatusView({
 		slugs: [slug],
 		diagnostics,
+		environments: targets,
 		includeProductionPreflight: false,
 	});
 	const view = await refineOrKeep(fast, () =>
@@ -85,16 +91,16 @@ async function formatInvitationView(
 	if (jsonMode) {
 		const promotion = view.promotions.find((row) => row.slug === slug) ?? null;
 		console.log(
-			JSON.stringify(
+			statusScopeJson(
 				{
 					slug,
+					selectedTargets: targets,
 					inSync: view.inSyncSlugs.includes(slug),
 					promotion,
 					environments: view.environments,
 					evidence: view.evidence,
 				},
-				null,
-				2,
+				targets,
 			),
 		);
 		return;
@@ -107,20 +113,31 @@ async function formatCompactView(
 	jsonMode: boolean,
 	timeoutMs: number,
 	aggregateContent: boolean,
+	targets?: TargetEnv[],
 ): Promise<void> {
 	if (jsonMode) {
-		const result = await runCompactManagedStatusSafe({ slug, timeoutMs, aggregateContent });
+		const result = await runCompactManagedStatusSafe({
+			slug,
+			timeoutMs,
+			aggregateContent,
+			environments: targets,
+		});
 		if (!result.ok) {
 			console.log(
 				JSON.stringify({ ok: false, error: result.text.trim(), readOnly: true }, null, 2),
 			);
 			process.exit(0);
 		}
-		console.log(JSON.stringify(result.status, null, 2));
+		console.log(statusScopeJson(result.status, targets));
 		return;
 	}
 
-	const result = await runCompactManagedStatusSafe({ slug, timeoutMs, aggregateContent });
+	const result = await runCompactManagedStatusSafe({
+		slug,
+		timeoutMs,
+		aggregateContent,
+		environments: targets,
+	});
 	process.stdout.write(result.text);
 	if (!result.ok) {
 		process.exit(0);
@@ -128,7 +145,7 @@ async function formatCompactView(
 }
 
 async function main(): Promise<void> {
-	const args = normalizeOperatorArgv(process.argv.slice(2));
+	const { args, targets } = readStatusTargets(normalizeOperatorArgv(process.argv.slice(2)));
 	const jsonMode = args.includes('--json');
 	const compactMode = args.includes('--compact');
 	const verbose = args.includes('--verbose');
@@ -142,14 +159,14 @@ async function main(): Promise<void> {
 	);
 
 	if (compactMode) {
-		await formatCompactView(slug, jsonMode, timeoutMs, aggregateContent);
+		await formatCompactView(slug, jsonMode, timeoutMs, aggregateContent, targets);
 		return;
 	}
 
 	if (slug) {
-		await formatInvitationView(slug, jsonMode, verbose, diagnostics);
+		await formatInvitationView(slug, jsonMode, verbose, diagnostics, targets);
 	} else {
-		await formatGeneralView(jsonMode, verbose, includeInSync, diagnostics);
+		await formatGeneralView(jsonMode, verbose, includeInSync, diagnostics, targets);
 	}
 }
 

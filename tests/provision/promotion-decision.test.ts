@@ -121,3 +121,80 @@ describe('decidePromotionAction', () => {
 		}
 	});
 });
+
+describe('selected target promotion decisions', () => {
+	it.each(['behind', 'unknown', 'conflict'] as const)(
+		'ignores excluded Production %s',
+		(production) => {
+			expect(
+				decidePromotionAction({
+					canonicalAvailable: true,
+					local: 'match',
+					preview: 'match',
+					production,
+					selectedTargets: ['local', 'preview'],
+				}),
+			).toEqual({ action: 'NONE', reasonCode: 'IN_SYNC' });
+		},
+	);
+	it.each(['unknown', 'conflict', 'diverged', 'behind'] as const)(
+		'preserves selected Local failure %s',
+		(local) => {
+			expect(
+				decidePromotionAction({
+					canonicalAvailable: true,
+					local,
+					preview: 'match',
+					production: 'match',
+					selectedTargets: ['local', 'preview'],
+				}).action,
+			).not.toBe('NONE');
+		},
+	);
+	it('never treats an empty scope as synchronized', () =>
+		expect(
+			decidePromotionAction({
+				canonicalAvailable: true,
+				local: 'match',
+				preview: 'match',
+				production: 'match',
+				selectedTargets: [],
+			}).action,
+		).toBe('UNKNOWN'));
+});
+
+describe('partial scope with Production selected', () => {
+	it('does not require excluded environments to declare a match', () => {
+		expect(
+			decidePromotionAction({
+				canonicalAvailable: true,
+				local: 'conflict',
+				preview: 'unknown',
+				production: 'match',
+				selectedTargets: ['production'],
+			}),
+		).toEqual({ action: 'NONE', reasonCode: 'IN_SYNC' });
+	});
+	it('does not propose promotion without evaluating its source', () => {
+		expect(
+			decidePromotionAction({
+				canonicalAvailable: true,
+				local: 'match',
+				preview: 'match',
+				production: 'behind',
+				selectedTargets: ['production'],
+			}).action,
+		).toBe('UNKNOWN');
+	});
+	it('preserves the forward-only guard when both remote targets are selected', () => {
+		expect(
+			decidePromotionAction({
+				canonicalAvailable: true,
+				local: 'unknown',
+				preview: 'behind',
+				production: 'match',
+				selectedTargets: ['preview', 'production'],
+			}).reasonCode,
+		).toBe('PRODUCTION_AHEAD_OF_PREVIEW');
+	});
+});

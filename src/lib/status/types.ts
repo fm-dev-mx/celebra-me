@@ -83,6 +83,7 @@ export type PromotionReasonCode =
 	| 'PRODUCTION_AHEAD_OF_PREVIEW'
 	| 'PREVIEW_ALIGNED_PRODUCTION_BEHIND'
 	| 'LOCAL_BEHIND_PREVIEW_ALIGNED'
+	| 'LOCAL_BEHIND_CANONICAL'
 	| 'PREVIEW_BEHIND_CANONICAL'
 	| 'PREVIEW_APPROVAL_REQUIRED'
 	| 'PRODUCTION_PREFLIGHT_BLOCKED'
@@ -216,6 +217,8 @@ export interface FreshnessMeta {
 }
 
 export interface CanonicalStatusView {
+	/** Explicit probe scope; omitted means all environments. */
+	selectedTargets?: readonly TargetEnv[];
 	schemaVersion: 2;
 	generatedAt: string;
 	evidence: EvidenceState;

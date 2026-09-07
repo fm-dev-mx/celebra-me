@@ -57,7 +57,7 @@ function definition(slug: string): InvitationDefinition {
 	return {
 		slug,
 		managedIdentityId: '00000000-0000-4000-8000-000000000001',
-	managedIdentityProvenance: 'persisted',
+		managedIdentityProvenance: 'persisted',
 		createdAt: '2026-01-01T00:00:00.000Z',
 		lifecycle: 'published',
 		deliveryScope: 'content-and-assets',
@@ -189,6 +189,32 @@ describe('managed promotion status', () => {
 		});
 		expect(runProductionPreflight).not.toHaveBeenCalled();
 		expect(result.inSyncSlugs).toEqual(['alpha']);
+	});
+
+	it('does not resolve Production credentials or run its preflight in Local/Preview scope', async () => {
+		const session = { probeConnectivity: jest.fn(async () => true), psql: jest.fn() };
+		mockResolveDbUrlForEnv.mockImplementation((env: unknown) => {
+			if (env === 'production') throw new Error('Production must not be accessed');
+			return { dbUrl: `postgres://user:secret@${env}.example.internal/db` };
+		});
+		mockReadGrouped.mockImplementation(async () => ({ ok: true, rows: [{ slug: 'alpha' }] }));
+		mockClassify.mockImplementation(() => 'match');
+		const runProductionPreflight = jest.fn(async () => productionReport('alpha', 'PROMOTABLE'));
+		const result = await evaluateManagedPromotionStatus({
+			session: session as never,
+			definitions: [definition('alpha')],
+			environments: ['local', 'preview'],
+			includeProductionPreflight: true,
+			runProductionPreflight,
+		});
+		expect(mockResolveDbUrlForEnv.mock.calls.map((call) => call[0])).toEqual([
+			'local',
+			'preview',
+		]);
+		expect(mockReadGrouped).toHaveBeenCalledTimes(2);
+		expect(runProductionPreflight).not.toHaveBeenCalled();
+		expect(result.inSyncSlugs).toEqual(['alpha']);
+		expect(result.envEvidence.production).toBe('UNVERIFIED');
 	});
 
 	it('omits synchronized invitations from output', async () => {

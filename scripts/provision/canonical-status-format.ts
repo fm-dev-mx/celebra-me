@@ -216,67 +216,82 @@ function formatStatusRows(
 
 	const schemaRow =
 		padVisible('Schema', labelCol) +
-		ENVS.map((env) => {
-			const row = view.environments[env];
-			const label = formatSchemaMigrationsLabel(
-				row.schemaLifecycle,
-				row.appliedCount,
-				row.expectedCount,
-			).replace('Schema migrations: ', '');
-			const styled = styleBySemantic(
-				c,
-				schemaLifecycleSemantic(row.schemaLifecycle, row.evidence),
-				label,
-			);
-			return padVisible(styled, envCol);
-		}).join('');
+		(view.selectedTargets ?? ENVS)
+			.map((env) => {
+				const row = view.environments[env];
+				const label = formatSchemaMigrationsLabel(
+					row.schemaLifecycle,
+					row.appliedCount,
+					row.expectedCount,
+				).replace('Schema migrations: ', '');
+				const styled = styleBySemantic(
+					c,
+					schemaLifecycleSemantic(row.schemaLifecycle, row.evidence),
+					label,
+				);
+				return padVisible(styled, envCol);
+			})
+			.join('');
 
 	const invitationRow =
 		padVisible('Invitations', labelCol) +
-		ENVS.map((env) => {
-			const row = view.environments[env];
-			const raw =
-				row.evidence === 'UNVERIFIED'
-					? 'UNVERIFIED'
-					: `${row.invitationAttentionCount} attention`;
-			const semantic =
-				row.evidence === 'UNVERIFIED'
-					? 'unverified'
-					: row.identityConflictsCount > 0
-						? 'blocked'
-						: row.invitationAttentionCount === 0
-							? 'verified'
-							: 'unverified';
-			return padVisible(styleBySemantic(c, semantic, raw), envCol);
-		}).join('');
+		(view.selectedTargets ?? ENVS)
+			.map((env) => {
+				const row = view.environments[env];
+				const raw =
+					row.evidence === 'UNVERIFIED'
+						? 'UNVERIFIED'
+						: `${row.invitationAttentionCount} attention`;
+				const semantic =
+					row.evidence === 'UNVERIFIED'
+						? 'unverified'
+						: row.identityConflictsCount > 0
+							? 'blocked'
+							: row.invitationAttentionCount === 0
+								? 'verified'
+								: 'unverified';
+				return padVisible(styleBySemantic(c, semantic, raw), envCol);
+			})
+			.join('');
 
 	const readinessRow =
 		padVisible('Readiness', labelCol) +
-		ENVS.map((env) => {
-			const status = view.environments[env].schemaOperationReadiness;
-			return padVisible(styleBySemantic(c, readinessSemantic(status), status), envCol);
-		}).join('');
+		(view.selectedTargets ?? ENVS)
+			.map((env) => {
+				const status = view.environments[env].schemaOperationReadiness;
+				return padVisible(styleBySemantic(c, readinessSemantic(status), status), envCol);
+			})
+			.join('');
 
 	const evidenceRow =
 		padVisible('Evidence', labelCol) +
-		ENVS.map((env) => {
-			const ev = view.environments[env].evidence;
-			return padVisible(styleBySemantic(c, evidenceSemantic(ev), ev), envCol);
-		}).join('');
+		(view.selectedTargets ?? ENVS)
+			.map((env) => {
+				const ev = view.environments[env].evidence;
+				return padVisible(styleBySemantic(c, evidenceSemantic(ev), ev), envCol);
+			})
+			.join('');
 
 	const authorizationRow =
 		padVisible('Authorization', labelCol) +
-		ENVS.map((env) => {
-			const status = view.environments[env].authorizationIntegrity;
-			return padVisible(styleBySemantic(c, authorizationSemantic(status), status), envCol);
-		}).join('');
+		(view.selectedTargets ?? ENVS)
+			.map((env) => {
+				const status = view.environments[env].authorizationIntegrity;
+				return padVisible(
+					styleBySemantic(c, authorizationSemantic(status), status),
+					envCol,
+				);
+			})
+			.join('');
 
 	const patchRow =
 		padVisible('Manual patches', labelCol) +
-		ENVS.map((env) => {
-			const aggregate = aggregateManualPatchStatus(view, env);
-			return padVisible(styleBySemantic(c, aggregate.semantic, aggregate.label), envCol);
-		}).join('');
+		(view.selectedTargets ?? ENVS)
+			.map((env) => {
+				const aggregate = aggregateManualPatchStatus(view, env);
+				return padVisible(styleBySemantic(c, aggregate.semantic, aggregate.label), envCol);
+			})
+			.join('');
 
 	return [schemaRow, invitationRow, readinessRow, evidenceRow, authorizationRow, patchRow];
 }
@@ -351,11 +366,14 @@ function formatRecentMigrationsSection(
 		`  ${c.bold('RECENT MIGRATIONS (Authoritative DB records; probe time is not apply time)')}`,
 	];
 	for (const rec of view.recentMigrations) {
-		const local = formatMigrationPresence(rec.presence.local, c);
-		const preview = formatMigrationPresence(rec.presence.preview, c);
-		const prod = formatMigrationPresence(rec.presence.production, c);
+		const presence = (view.selectedTargets ?? ENVS)
+			.map(
+				(env) =>
+					`${env === 'production' ? 'prod' : env}=${formatMigrationPresence(rec.presence[env], c)}`,
+			)
+			.join(' ');
 		const name = rec.name ? ` (${rec.name})` : '';
-		lines.push(`  - ${rec.version}${name}: local=${local} preview=${preview} prod=${prod}`);
+		lines.push(`  - ${rec.version}${name}: ${presence}`);
 	}
 	return lines;
 }
@@ -379,12 +397,15 @@ function formatManualPatchesSection(
 		`  ${c.bold('ACTIVE MANUAL PATCHES (0 rows = NOT_NEEDED, not applied)')}`,
 	];
 	for (const patch of view.manualPatches) {
-		const envs = ENVS.map(
-			(env) => `${envLabel(env)}=${formatPatchStatus(patch.environments[env].status, c)}`,
-		).join(' ');
+		const envs = (view.selectedTargets ?? ENVS)
+			.map(
+				(env) => `${envLabel(env)}=${formatPatchStatus(patch.environments[env].status, c)}`,
+			)
+			.join(' ');
 		const production = patch.environments.production;
 		lines.push(`  - ${patch.scriptId}: ${envs}`);
 		lines.push(`    File: ${patch.file}`);
+		if (!(view.selectedTargets ?? ENVS).includes('production')) continue;
 		lines.push(`    Reason: ${production.reason}`);
 		if (production.matchingRowCount !== null)
 			lines.push(
@@ -512,7 +533,7 @@ function formatVerboseSchemaDetails(
 ): string[] {
 	const c = getColors(options);
 	const lines: string[] = [];
-	for (const env of ENVS) {
+	for (const env of view.selectedTargets ?? ENVS) {
 		const row = view.environments[env];
 		lines.push('');
 		lines.push(`  ${c.bold(`[${envLabel(env)} schema detail]`)}`);
@@ -535,7 +556,10 @@ function formatRegistrySummarySection(
 		'',
 		c.dim('─'.repeat(headerWidth)),
 		`  Registry invitations: ${c.bold(String(view.registryCount))}    In sync: ${c.green(String(view.inSyncCount))}    Attention: ${attention > 0 ? c.brightYellow(String(attention)) : c.green('0')}`,
-		`  Active DB rows (not registry): Local ${c.bold(String(view.activeRowCounts.local))} · Preview ${c.bold(String(view.activeRowCounts.preview))} · Production ${c.bold(String(view.activeRowCounts.production))}`,
+		'  Active DB rows (not registry): ' +
+			(view.selectedTargets ?? ENVS)
+				.map((env) => envLabel(env) + ' ' + c.bold(String(view.activeRowCounts[env])))
+				.join(' · '),
 	];
 
 	if (
@@ -660,7 +684,7 @@ export function formatCanonicalStatusView(
 	const c = getColors(options);
 	const labelCol = 18;
 	const envCol = 28;
-	const headerWidth = labelCol + envCol * 3;
+	const headerWidth = labelCol + envCol * (view.selectedTargets ?? ENVS).length;
 
 	const lines: string[] = [
 		'',
@@ -670,19 +694,33 @@ export function formatCanonicalStatusView(
 		view.freshnessMeta
 			? `  Evidence freshness: ${view.freshnessMeta.status} (verified ${view.freshnessMeta.lastVerifiedAt})`
 			: `  Evidence: ${view.evidence}`,
+		...(view.selectedTargets
+			? [
+					'  Entornos: ' + view.selectedTargets.join(', '),
+					'  No evaluados: ' +
+						ENVS.filter((env) => !view.selectedTargets?.includes(env)).join(', '),
+				]
+			: []),
 		...formatOperationalActionPlan(view, headerWidth, options),
 		'',
-		`${padVisible('', labelCol)}${c.brightCyan(padVisible('LOCAL', envCol))}${c.brightCyan(padVisible('PREVIEW', envCol))}${c.brightCyan(padVisible('PRODUCTION', envCol))}`,
+		padVisible('', labelCol) +
+			(view.selectedTargets ?? ENVS)
+				.map((env) => c.brightCyan(padVisible(env.toUpperCase(), envCol)))
+				.join(''),
 		c.dim('─'.repeat(headerWidth)),
 		...formatStatusRows(view, labelCol, envCol, options),
 		'',
 		c.dim(
 			'(Schema = migration history. Authorization = owner-apply evidence. Invitations = registry publication. Readiness = migrate authorization.)',
 		),
-		...formatProductionAuthWarning(view.environments.production, options),
+		...((view.selectedTargets ?? ENVS).includes('production')
+			? formatProductionAuthWarning(view.environments.production, options)
+			: []),
 		'',
 		...formatDisposableProofSection(view, headerWidth, options),
-		...formatCriticalBackupHealthSection(headerWidth, options),
+		...((view.selectedTargets ?? ENVS).includes('production')
+			? formatCriticalBackupHealthSection(headerWidth, options)
+			: []),
 		...formatRecentMigrationsSection(view, headerWidth, options),
 		...formatManualPatchesSection(view, headerWidth, options),
 	];
@@ -717,7 +755,7 @@ export function formatSlugStatusView(
 	];
 	if (inSync) {
 		lines.push('Publication: NONE (IN_SYNC)');
-		lines.push('Local, Preview, and Production match canonical.');
+		lines.push((view.selectedTargets ?? ENVS).join(', ') + ' match canonical.');
 		lines.push('');
 		return lines.join('\n');
 	}

@@ -131,6 +131,7 @@ export async function buildCanonicalStatusView(options?: {
 		const generatedAt = new Date().toISOString();
 		return {
 			...buildLocalCanonicalStatusView(),
+			selectedTargets: options?.environments,
 			generatedAt,
 			freshnessMeta: {
 				status: 'LIVE',
@@ -218,11 +219,14 @@ export async function buildCanonicalStatusView(options?: {
 	}));
 
 	const overallEvidence = combineEvidence(
-		(['local', 'preview', 'production'] as const).map((env) => environments[env].evidence),
+		(options?.environments ?? (['local', 'preview', 'production'] as const)).map(
+			(env) => environments[env].evidence,
+		),
 	);
 	const generatedAt = new Date().toISOString();
 
 	const view: CanonicalStatusView = {
+		selectedTargets: options?.environments,
 		schemaVersion: 2,
 		generatedAt,
 		evidence: overallEvidence,
@@ -276,6 +280,7 @@ export async function refineCanonicalStatusViewPromotions(
 		resetSession?: boolean;
 	},
 ): Promise<CanonicalStatusView> {
+	if (view.selectedTargets && !view.selectedTargets.includes('production')) return view;
 	if (options?.resetSession !== false) resetStatusProbeSession();
 	const session = getOrCreateStatusProbeSession();
 	const definitions = listInvitationDefinitions().filter((definition) =>

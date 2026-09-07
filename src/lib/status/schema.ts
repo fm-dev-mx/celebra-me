@@ -45,6 +45,7 @@ const reasonCode = z.enum([
 	'PRODUCTION_AHEAD_OF_PREVIEW',
 	'PREVIEW_ALIGNED_PRODUCTION_BEHIND',
 	'LOCAL_BEHIND_PREVIEW_ALIGNED',
+	'LOCAL_BEHIND_CANONICAL',
 	'PREVIEW_BEHIND_CANONICAL',
 	'PREVIEW_APPROVAL_REQUIRED',
 	'PRODUCTION_PREFLIGHT_BLOCKED',
@@ -232,6 +233,11 @@ const manualPatchStatus = z
 export const CanonicalStatusViewSchema: z.ZodType<CanonicalStatusView> = z
 	.object({
 		schemaVersion: z.literal(2),
+		selectedTargets: z
+			.array(z.enum(['local', 'preview', 'production']))
+			.min(1)
+			.max(3)
+			.optional(),
 		generatedAt: z.iso.datetime({ offset: true }),
 		evidence,
 		freshnessMeta: freshnessMeta.optional(),

@@ -23,7 +23,12 @@ export function derivePromotionRoute(
 ): { source: PromotionSource | null; destination: PromotionDestination | null } {
 	if (action === 'PROMOTE_PREVIEW') return { source: 'canonical', destination: 'preview' };
 	if (action === 'PROMOTE_PRODUCTION') return { source: 'preview', destination: 'production' };
-	if (action === 'BLOCKED' && reasonCode === 'LOCAL_BEHIND_PREVIEW_ALIGNED') {
+	if (
+		action === 'BLOCKED' &&
+		(['LOCAL_BEHIND_PREVIEW_ALIGNED', 'LOCAL_BEHIND_CANONICAL'] as const).some(
+			(code) => code === reasonCode,
+		)
+	) {
 		return { source: 'canonical', destination: 'local' };
 	}
 	return { source: null, destination: null };
@@ -111,7 +116,11 @@ function blockedPromotionHandoff(
 	packageHash?: string,
 	hasPendingPreviewApproval?: boolean,
 ): PromotionHandoff {
-	if (reasonCode === 'LOCAL_BEHIND_PREVIEW_ALIGNED') {
+	if (
+		(['LOCAL_BEHIND_PREVIEW_ALIGNED', 'LOCAL_BEHIND_CANONICAL'] as const).some(
+			(code) => code === reasonCode,
+		)
+	) {
 		return promoteHandoff(slug, 'local', false);
 	}
 	if (reasonCode === 'IDENTITY_CONFLICT') {
@@ -286,8 +295,12 @@ export function formatPublicationReason(
 	if (reasonCode === 'PRODUCTION_AHEAD_OF_PREVIEW') {
 		return `Production matches canonical while Preview is ${preview}. Not forward progression.`;
 	}
-	if (reasonCode === 'LOCAL_BEHIND_PREVIEW_ALIGNED') {
-		return `Preview + Production match canonical. Local is ${local}.`;
+	if (
+		(['LOCAL_BEHIND_PREVIEW_ALIGNED', 'LOCAL_BEHIND_CANONICAL'] as const).some(
+			(code) => code === reasonCode,
+		)
+	) {
+		return `Local is ${local} relative to canonical.`;
 	}
 	if (reasonCode === 'IDENTITY_CONFLICT') {
 		return 'Duplicate or identity-conflicting invitation rows.';

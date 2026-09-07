@@ -56,7 +56,7 @@ export interface OperationalActionPlan {
 }
 
 export function hasPendingSchemaWork(view: CanonicalStatusView): boolean {
-	return ENVS.some((environment) => {
+	return (view.selectedTargets ?? ENVS).some((environment) => {
 		const row = view.environments[environment];
 		return (
 			row.schemaLifecycle === 'BEHIND' ||
@@ -173,7 +173,7 @@ export function aggregateManualPatchStatus(
 
 function isControlHealthy(view: CanonicalStatusView): boolean {
 	if (view.evidence !== 'LIVE') return false;
-	for (const environment of ENVS) {
+	for (const environment of view.selectedTargets ?? ENVS) {
 		const row = view.environments[environment];
 		if (row.evidence !== 'LIVE') return false;
 		if (schemaRemediation(row).semantic !== 'verified') return false;
@@ -182,7 +182,7 @@ function isControlHealthy(view: CanonicalStatusView): boolean {
 	}
 	if (releasePromotions(view.promotions).length > 0) return false;
 	return view.manualPatches.every((patch) =>
-		ENVS.every((environment) => {
+		(view.selectedTargets ?? ENVS).every((environment) => {
 			const status = patch.environments[environment].status;
 			return status === 'NOT_APPLICABLE' || status === 'NOT_NEEDED';
 		}),
@@ -204,7 +204,7 @@ export function buildOperationalActionPlan(view: CanonicalStatusView): Operation
 		);
 	}
 
-	for (const environment of ENVS) {
+	for (const environment of view.selectedTargets ?? ENVS) {
 		const row = view.environments[environment];
 		addAction(
 			actions,
@@ -277,7 +277,7 @@ export function buildOperationalActionPlan(view: CanonicalStatusView): Operation
 	}
 
 	for (const patch of view.manualPatches) {
-		for (const environment of ENVS) {
+		for (const environment of view.selectedTargets ?? ENVS) {
 			const remediation = manualPatchRemediation(patch, environment);
 			addAction(
 				actions,
@@ -295,7 +295,8 @@ export function buildOperationalActionPlan(view: CanonicalStatusView): Operation
 
 	const mergedActions = mergeActions(actions);
 	const unresolvedChecks = mergedActions.length;
-	const applicableChecks = ENVS.length * 4 + 2 + queue.length + view.manualPatches.length;
+	const applicableChecks =
+		(view.selectedTargets ?? ENVS).length * 4 + 2 + queue.length + view.manualPatches.length;
 	const hasBlocked = mergedActions.some((action) => action.semantic === 'blocked');
 	const status: OperationalHealth = isControlHealthy(view)
 		? 'GREEN'

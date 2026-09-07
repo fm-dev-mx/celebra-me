@@ -2,6 +2,7 @@
  * Diagnostic enrichment after canonical classification and promotion decisions.
  * Must not change action, schema lifecycle, or operation readiness.
  */
+import { AssetSchema } from '../../src/lib/schemas/content/shared.schema.ts';
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
 import { isManagedInvitationPath } from '../../src/lib/intake/mutations/ownership.ts';
 import type {
@@ -17,7 +18,11 @@ import {
 	ManagedBaselineError,
 	resolveVerifiedManagedBaseline,
 } from './managed-merge-baseline.ts';
-import { RELEASE_SCHEMA_VERSION, buildSemanticAssetMap } from './normalized-invitation-release.ts';
+import {
+	ASSET_KEY_PREFIX,
+	RELEASE_SCHEMA_VERSION,
+	buildSemanticAssetMap,
+} from './normalized-invitation-release.ts';
 import { apply3WaySemanticPatch } from './semantic-delta.ts';
 import type { InvitationDefinition } from './invitations/invitation-definition.ts';
 import type { LiveInvitationEvidenceRow } from '../status-core/promotional-evidence.ts';
@@ -65,7 +70,44 @@ function assetDiagnostics(
 			.map((asset) => asset.managedSourceKey)
 			.filter((key): key is string => Boolean(key)),
 	);
-	const missing = [...expectedKeys].filter((key) => !liveKeys.has(key));
+	const independentlyResolved = new Map<string, boolean>();
+	// Content-only definitions may retain internal/external assets without catalog rows.
+	if (definition.deliveryScope === 'content-only') {
+		const compareReferences = (canonical: unknown, published: unknown): void => {
+			if (Array.isArray(canonical)) {
+				canonical.forEach((entry, index) =>
+					compareReferences(
+						entry,
+						Array.isArray(published) ? published[index] : undefined,
+					),
+				);
+			} else if (isRecord(canonical)) {
+				if (
+					canonical.type === 'uploaded' &&
+					typeof canonical.assetId === 'string' &&
+					canonical.assetId.startsWith(ASSET_KEY_PREFIX)
+				) {
+					const key = canonical.assetId.slice(ASSET_KEY_PREFIX.length);
+					const parsed = AssetSchema.safeParse(published);
+					const resolved = parsed.success && parsed.data.type !== 'uploaded';
+					independentlyResolved.set(
+						key,
+						(independentlyResolved.get(key) ?? true) && resolved,
+					);
+				} else {
+					for (const [key, entry] of Object.entries(canonical))
+						compareReferences(entry, isRecord(published) ? published[key] : undefined);
+				}
+			}
+		};
+		compareReferences(
+			definition.buildPublishedContent(buildSemanticAssetMap(definition)),
+			row.publishedContent,
+		);
+	}
+	const missing = [...expectedKeys].filter(
+		(key) => !liveKeys.has(key) && !independentlyResolved.get(key),
+	);
 	const unreferenced = [...liveKeys].filter((key) => !expectedKeys.has(key));
 	const unkeyed = row.assets.filter((asset) => !asset.managedSourceKey);
 	const published = row.publishedVersion != null;
@@ -238,7 +280,7 @@ function semanticDiagnostics(
 
 function collectEnvironmentSummaryDiagnostics(view: CanonicalStatusView): CanonicalDiagnostic[] {
 	const diagnostics: CanonicalDiagnostic[] = [];
-	for (const env of ENVS) {
+	for (const env of view.selectedTargets ?? ENVS) {
 		const summary = view.environments[env];
 		if (summary.evidence !== 'UNVERIFIED' && !summary.environmentIdentityOk) {
 			diagnostics.push(
@@ -271,7 +313,7 @@ function collectPromotionConflictDiagnostics(view: CanonicalStatusView): Canonic
 	const diagnostics: CanonicalDiagnostic[] = [];
 	for (const row of view.promotions) {
 		if (row.reasonCode === 'IDENTITY_CONFLICT') {
-			for (const env of ENVS) {
+			for (const env of view.selectedTargets ?? ENVS) {
 				if (row.environments[env] !== 'conflict') continue;
 				diagnostics.push(
 					diagnostic({
@@ -296,7 +338,7 @@ function collectLiveRowDiagnostics(
 	includeSemanticDetail: boolean,
 ): CanonicalDiagnostic[] {
 	const diagnostics: CanonicalDiagnostic[] = [];
-	for (const env of ENVS) {
+	for (const env of view.selectedTargets ?? ENVS) {
 		const evidence = view.environments[env].evidence;
 		for (const live of rowsByEnv[env] ?? []) {
 			const definition = definitionBySlug.get(live.slug);
@@ -333,6 +375,7 @@ function collectStaleLifecycleDiagnostics(
 ): CanonicalDiagnostic[] {
 	const diagnostics: CanonicalDiagnostic[] = [];
 	for (const definition of definitions) {
+		if (view.selectedTargets && !view.selectedTargets.includes('production')) continue;
 		if (definition.lifecycle !== 'in_progress') continue;
 		const promotion = view.promotions.find((row) => row.slug === definition.slug);
 		const inSync = view.inSyncSlugs.includes(definition.slug);

@@ -239,10 +239,15 @@ function blockedPublicationRemediation(row: CanonicalPromotionRow): OperatorReme
 			noCanonicalRemediation: dryRun == null && apply == null,
 		};
 	}
-	if (row.reasonCode === 'LOCAL_BEHIND_PREVIEW_ALIGNED' && row.handoff.applyCommand) {
+	if (
+		(['LOCAL_BEHIND_PREVIEW_ALIGNED', 'LOCAL_BEHIND_CANONICAL'] as const).some(
+			(code) => code === row.reasonCode,
+		) &&
+		row.handoff.applyCommand
+	) {
 		return {
 			semantic: 'blocked',
-			meaning: PUBLICATION_REASON_LABELS.LOCAL_BEHIND_PREVIEW_ALIGNED,
+			meaning: PUBLICATION_REASON_LABELS[row.reasonCode],
 			why: `Local está ${row.environments.local}.`,
 			environmentLabel,
 			nextAction:

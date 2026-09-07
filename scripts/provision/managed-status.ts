@@ -65,6 +65,7 @@ export interface CompactEnvSchemaStatus {
 }
 
 export interface CompactManagedStatus {
+	selectedTargets?: readonly TargetEnv[];
 	content: Record<TargetEnv, CompactEnvContentStatus>;
 	schema: Record<TargetEnv, CompactEnvSchemaStatus>;
 	/** Slug requested on the CLI; compact never classifies publication for it. */
@@ -144,7 +145,10 @@ function contentFromConnectivity(envStatus: EnvTargetStatus): CompactEnvContentS
 	};
 }
 
-function degradedCompactStatus(reason: string): CompactManagedStatus {
+function degradedCompactStatus(
+	reason: string,
+	selectedTargets?: readonly TargetEnv[],
+): CompactManagedStatus {
 	const content = Object.fromEntries(
 		ENVS.map((env) => [
 			env,
@@ -176,6 +180,7 @@ function degradedCompactStatus(reason: string): CompactManagedStatus {
 	return {
 		content,
 		schema,
+		selectedTargets,
 		contentSlug: null,
 		contentMode: 'connectivity',
 		readOnly: true,
@@ -200,6 +205,7 @@ function emitDebugCounters(counters: StatusProbeDebugCounters | undefined, wallM
  * classify publication; use `pnpm dbs` / `pnpm dbs <slug>` for that.
  */
 export async function evaluateCompactManagedStatus(options?: {
+	environments?: readonly TargetEnv[];
 	slug?: string;
 	aggregateContent?: boolean;
 	probeTimeoutMs?: number;
@@ -212,6 +218,7 @@ export async function evaluateCompactManagedStatus(options?: {
 
 	const general = await evaluateGeneralStatus({
 		includeManagedCounts: false,
+		environments: options?.environments,
 		concurrency: 3,
 		session,
 		overallTimeoutMs: options?.overallTimeoutMs,
@@ -228,6 +235,7 @@ export async function evaluateCompactManagedStatus(options?: {
 	) as Record<TargetEnv, number | undefined>;
 
 	const status: CompactManagedStatus = {
+		selectedTargets: options?.environments,
 		content: {
 			local: contentFromConnectivity(general.environments.local),
 			preview: contentFromConnectivity(general.environments.preview),
@@ -276,7 +284,16 @@ function formatSchemaLabel(schema: CompactEnvSchemaStatus): string {
 
 /** Human compact formatter matching the operational CONTENT/SCHEMA layout. */
 export function formatCompactManagedStatus(status: CompactManagedStatus): string {
-	const lines: string[] = ['CONTENT'];
+	const lines: string[] = [
+		...(status.selectedTargets
+			? [
+					'Entornos: ' + status.selectedTargets.join(', '),
+					'No evaluados: ' +
+						ENVS.filter((env) => !status.selectedTargets?.includes(env)).join(', '),
+				]
+			: []),
+		'CONTENT',
+	];
 	if (status.contentSlug) {
 		lines.push(
 			`(connectivity only; not publication state — use pnpm dbs ${status.contentSlug})`,
@@ -284,12 +301,12 @@ export function formatCompactManagedStatus(status: CompactManagedStatus): string
 	} else {
 		lines.push('(connectivity only; not publication state — use pnpm dbs)');
 	}
-	for (const env of ENVS) {
+	for (const env of status.selectedTargets ?? ENVS) {
 		const content = status.content[env];
 		lines.push(`${padLabel(envLabel(env))}${formatContentLabel(content)}`);
 	}
 	lines.push('', 'SCHEMA');
-	for (const env of ENVS) {
+	for (const env of status.selectedTargets ?? ENVS) {
 		const schema = status.schema[env];
 		lines.push(`${padLabel(envLabel(env))}${formatSchemaLabel(schema)}`);
 	}
@@ -302,6 +319,7 @@ export function formatCompactManagedStatus(status: CompactManagedStatus): string
  * On overall timeout: emits UNREACHABLE/UNVERIFIED with timeoutDegraded — never healthy.
  */
 export async function runCompactManagedStatusSafe(options?: {
+	environments?: readonly TargetEnv[];
 	slug?: string;
 	timeoutMs?: number;
 	aggregateContent?: boolean;
@@ -321,6 +339,7 @@ export async function runCompactManagedStatusSafe(options?: {
 		const status = await Promise.race([
 			evaluateCompactManagedStatus({
 				slug: options?.slug,
+				environments: options?.environments,
 				aggregateContent: options?.aggregateContent,
 				probeTimeoutMs: perQueryTimeout,
 				overallTimeoutMs: timeoutMs,
@@ -330,6 +349,7 @@ export async function runCompactManagedStatusSafe(options?: {
 					resolve(
 						degradedCompactStatus(
 							'Managed status timed out waiting for remote environments (timeout degraded; not a proven outage).',
+							options?.environments,
 						),
 					);
 				}, timeoutMs);
