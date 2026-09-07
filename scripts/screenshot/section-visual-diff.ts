@@ -98,6 +98,17 @@ export function normalizeCaptureImageSource(source: string, origin: string): str
 	return `{deployment}${url.pathname}${url.search}${url.hash}`;
 }
 
+/** CSS family matching is caseless; fold only ASCII casing and retain all metrics and evidence.
+ * https://www.w3.org/TR/css-fonts-4/#font-family-casing
+ */
+export function normalizeCapturedFonts(fonts: string[]): string[] {
+	return fonts.map((font) =>
+		font.replace(/^[^|]+/, (family) =>
+			family.replace(/[A-Z]/g, (letter) => letter.toLowerCase()),
+		),
+	);
+}
+
 export function sectionSemanticSignature(section: {
 	textHash: string;
 	fonts: string[];
@@ -105,7 +116,7 @@ export function sectionSemanticSignature(section: {
 }): string {
 	return JSON.stringify({
 		text: section.textHash,
-		fonts: section.fonts,
+		fonts: normalizeCapturedFonts(section.fonts),
 		images: sectionImageSignature(section.images),
 	});
 }

@@ -17,6 +17,7 @@ import {
 	sectionImageSignature,
 	type CapturedImageIdentity,
 	sectionSemanticSignature,
+	normalizeCapturedFonts,
 } from './section-visual-diff';
 import { writeSectionDiagnosisReport } from './section-visual-report';
 
@@ -333,7 +334,10 @@ async function compareInitialSection(
 				`Capture dimensions differ: Production ${a.width}x${a.height}, Preview ${b.width}x${b.height}; DOM heights ${a.domBounds?.height ?? 'unknown'} / ${b.domBounds?.height ?? 'unknown'}.`,
 			);
 		if (a.index !== b.index) row.reasons.push('Section order differs');
-		if (JSON.stringify(a.fonts) !== JSON.stringify(b.fonts))
+		if (
+			JSON.stringify(normalizeCapturedFonts(a.fonts)) !==
+			JSON.stringify(normalizeCapturedFonts(b.fonts))
+		)
 			row.reasons.push('Typography differs');
 		if (a.textHash !== b.textHash) row.reasons.push('Visible text differs');
 		if (sectionImageSignature(a.images) !== sectionImageSignature(b.images))

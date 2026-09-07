@@ -184,3 +184,27 @@ describe('verified delivered image identity', () => {
 		);
 	});
 });
+
+describe('font family case equivalence', () => {
+	const section = {
+		textHash: 'unchanged',
+		fonts: ['parisienne, cursive | 88px | 73.92px | 400'],
+		images: [],
+	};
+	it('equates ASCII family casing without changing the captured evidence', () => {
+		const candidate = { ...section, fonts: ['Parisienne, cursive | 88px | 73.92px | 400'] };
+		expect(sectionSemanticSignature(candidate)).toBe(sectionSemanticSignature(section));
+		expect(candidate.fonts[0].startsWith('Parisienne')).toBe(true);
+	});
+	it.each([
+		'Georgia, cursive | 88px | 73.92px | 400',
+		'parisienne, cursive | 89px | 73.92px | 400',
+		'parisienne, cursive | 88px | 74px | 400',
+		'parisienne, cursive | 88px | 73.92px | 500',
+		'cursive, parisienne | 88px | 73.92px | 400',
+	])('retains real font differences: %s', (font) => {
+		expect(sectionSemanticSignature({ ...section, fonts: [font] })).not.toBe(
+			sectionSemanticSignature(section),
+		);
+	});
+});
