@@ -1223,15 +1223,6 @@ html:has(.event--alba-rosa-quinonez) body {
 			--map-overlay: rgb(var(--alba-ivory-rgb) / 3%);
 		}
 
-		.rustic-map-pin {
-			color: var(--alba-charcoal);
-		}
-
-		.rustic-map-pulse {
-			background: rgb(var(--alba-champagne-rgb) / 65%);
-			box-shadow: 0 0 10px rgb(var(--alba-champagne-rgb) / 72%);
-		}
-
 		&__card-content {
 			text-align: center;
 

@@ -889,3 +889,28 @@ test('section pixel alignment preserves geometry and visible differences', async
 	await expect(alignSectionCaptureToPixelGrid(target)).rejects.toThrow('authored CSS translate');
 	await expect(target).toHaveCSS('translate', '3px 4px');
 });
+
+test('location profile preserves the production map marker palette', async ({ page }) => {
+	const { compile } = await import('sass');
+	const styles = [
+		'src/styles/invitation/_venue-map.scss',
+		'src/styles/invitation-profiles/alba-rosa-quinonez.scss',
+	]
+		.map((file) => compile(file, { loadPaths: ['node_modules'] }).css)
+		.join('\n');
+	await page.setContent(`<style>${styles}</style>
+		<div class="event--alba-rosa-quinonez theme-preset--luxury-hacienda">
+			<div class="event-location"><div class="google-map-container">
+				<div class="rustic-map-pin"></div><div class="rustic-map-pulse"></div>
+			</div></div>
+		</div>`);
+	await expect(page.locator('.rustic-map-pin')).toHaveCSS('color', 'rgb(118, 124, 116)');
+	await expect(page.locator('.rustic-map-pulse')).toHaveCSS(
+		'background-color',
+		'rgba(118, 124, 116, 0.4)',
+	);
+	await expect(page.locator('.rustic-map-pulse')).toHaveCSS(
+		'box-shadow',
+		'rgb(118, 124, 116) 0px 0px 12px 0px',
+	);
+});
