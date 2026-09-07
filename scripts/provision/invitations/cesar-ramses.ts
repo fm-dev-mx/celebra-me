@@ -281,7 +281,7 @@ export const cesarInvitation = defineCanonicalInvitation({
 	hostLoginAlias: 'cesar_ramses',
 	assetDir: 'src/assets/images/events/cesar-ramses',
 	assetFiles: {
-		hero: 'hero-production.jpg',
+		hero: 'gallery-02.webp',
 		heroMobile: 'hero-production.jpg',
 		thankYouPortrait: 'thank-you.webp',
 		family: 'family.webp',
