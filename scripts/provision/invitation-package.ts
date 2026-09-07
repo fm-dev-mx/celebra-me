@@ -1,4 +1,5 @@
 /** Immutable package serialization for a normalized invitation release. */
+import { localManagedStoragePath } from './local-final-asset-verification.ts';
 import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -157,7 +158,12 @@ export function serializeInvitationPackage(
 				defaultAltText: asset.alt,
 				focalPoint: asset.focalPoint,
 				bucket: 'invitation-assets',
-				storagePath: `managed/${release.slug}/${asset.key}.webp`,
+				storagePath: localManagedStoragePath(
+					release.slug,
+					asset.key,
+					asset.versioned ? asset.sha256 : undefined,
+					asset.mimeType,
+				),
 				mimeType: asset.mimeType,
 				width: asset.width,
 				height: asset.height,
@@ -169,7 +175,7 @@ export function serializeInvitationPackage(
 				dataBase64: asset.dataBase64,
 				provider: 'cloudinary' as const,
 				providerPublicId,
-				secureUrl: buildCloudinaryDeliveryUrl(cloudName, providerPublicId),
+				secureUrl: buildCloudinaryDeliveryUrl(cloudName, providerPublicId, asset.mimeType),
 			};
 		}),
 	};

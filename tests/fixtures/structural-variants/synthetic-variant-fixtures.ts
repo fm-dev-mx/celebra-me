@@ -1,3 +1,4 @@
+import type { ImageDelivery } from '@/lib/assets/image-delivery';
 import type {
 	CanonicalVariantRegistryEntry,
 	CanonicalVariantSection,
@@ -8,6 +9,7 @@ export type SyntheticVariantOverrides = {
 	section: CanonicalVariantSection;
 	variant: string;
 	themePreset?: string;
+	imageDelivery?: ImageDelivery;
 };
 
 export interface IncompatiblePrerequisiteExpectation {
@@ -42,7 +44,18 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 			name: 'Celebrante Principal',
 			label: 'Mis XV Años',
 			date: '2026-11-21T18:00:00.000Z',
-			backgroundImage: 'hero',
+			backgroundImage: overrides.imageDelivery
+				? { type: 'internal', key: 'hero', delivery: overrides.imageDelivery }
+				: 'hero',
+			...(overrides.imageDelivery
+				? {
+						backgroundImageMobile: {
+							type: 'internal',
+							key: 'portrait',
+							delivery: overrides.imageDelivery,
+						},
+					}
+				: {}),
 			portrait: 'portrait',
 			focalPoint: '50% 40%',
 			focalPointMobile: '50% 35%',
@@ -346,7 +359,11 @@ export function buildIncompatiblePrerequisiteEvent(
 			}
 			break;
 		case 'thankYou':
-			if (entry.variant === 'full-bleed-photo' || entry.variant === 'portrait-letter' || entry.variant === 'portrait-keepsake') {
+			if (
+				entry.variant === 'full-bleed-photo' ||
+				entry.variant === 'portrait-letter' ||
+				entry.variant === 'portrait-keepsake'
+			) {
 				const thankYou = data.thankYou as Record<string, unknown>;
 				delete thankYou.image;
 			} else if (entry.variant === 'editorial-back-cover') {
@@ -415,7 +432,11 @@ export function getIncompatiblePrerequisiteExpectation(
 		case 'gifts':
 			return { expectedPath: ['gifts', 'items', 0] };
 		case 'thankYou':
-			if (entry.variant === 'full-bleed-photo' || entry.variant === 'portrait-letter' || entry.variant === 'portrait-keepsake') {
+			if (
+				entry.variant === 'full-bleed-photo' ||
+				entry.variant === 'portrait-letter' ||
+				entry.variant === 'portrait-keepsake'
+			) {
 				return { expectedPath: ['thankYou', 'image'] };
 			}
 			return { expectedPath: ['thankYou', 'closingName'] };

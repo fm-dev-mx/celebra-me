@@ -55,7 +55,10 @@ export interface HeroViewModel {
 	date: string;
 	venueName?: string;
 	backgroundImage: ImageAsset;
-	backgroundImageDesktop?: { src: string };
+	backgroundImageDesktop?: {
+		src: string;
+		delivery?: import('@/lib/assets/image-delivery').ImageDelivery;
+	};
 	backgroundImageMobile?: ImageAsset;
 	portrait?: ImageAsset;
 	variant: HeroVariant;
@@ -102,7 +105,6 @@ export interface VenueEntry extends VenueBase {
 	isVisible?: boolean;
 	sortOrder?: number;
 }
-
 
 export interface Indication {
 	iconName: IconName;

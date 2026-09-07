@@ -9,11 +9,14 @@
  * credentials, or external owner UUIDs.
  */
 
+import { ImageDeliverySchema, type ImageDelivery } from '../../../src/lib/assets/image-delivery.ts';
 import { isCanonicalHostLoginAlias } from '../../../src/lib/auth/login-alias.ts';
 import type { ImageOptimizationRole } from '../../../src/lib/invitation-preparation/image-optimization.ts';
 import { eventContentSchema } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
 export interface InvitationAssetSpec {
+	delivery?: ImageDelivery;
+	sourcePolicy?: 'normalize' | 'preserve';
 	key: string;
 	relativePath: string;
 	displayName: string;
@@ -28,6 +31,7 @@ export interface InvitationAssetSpec {
 }
 
 export interface UploadedAssetRef {
+	delivery?: ImageDelivery;
 	type: 'uploaded';
 	assetId: string;
 	src: string;
@@ -94,6 +98,12 @@ export function getInvitationAssetSourceDir(definition: InvitationDefinition): s
 function validateAssetKeys(assets: readonly InvitationAssetSpec[]): void {
 	const assetKeys = new Set<string>();
 	for (const asset of assets) {
+		if (asset.delivery) ImageDeliverySchema.parse(asset.delivery);
+		if (
+			asset.sourcePolicy !== undefined &&
+			!['normalize', 'preserve'].includes(asset.sourcePolicy)
+		)
+			throw new Error('Invalid image source policy.');
 		if (!asset.key || assetKeys.has(asset.key)) {
 			throw new Error('Invitation definition asset keys must be non-empty and unique.');
 		}
@@ -248,6 +258,20 @@ export function defineInvitation<K extends string = string>(
 ): InvitationDefinition<K> {
 	validateInvitationMetadata(definition);
 	validateInvitationStructure(definition);
+	const buildContent = definition.buildPublishedContent;
+	const resolvedDefinition: InvitationDefinition<K> = {
+		...definition,
+		buildPublishedContent(assets) {
+			const presentedAssets = { ...assets };
+			for (const asset of definition.assets) {
+				const key = asset.key as K;
+				if (asset.delivery && assets[key]) {
+					presentedAssets[key] = { ...assets[key], delivery: asset.delivery };
+				}
+			}
+			return buildContent(presentedAssets);
+		},
+	};
 	const semanticAssets = Object.fromEntries(
 		definition.assets.map((asset) => [
 			asset.key,
@@ -278,7 +302,7 @@ export function defineInvitation<K extends string = string>(
 		}
 		Object.values(record).forEach(assertSemanticAssetRefs);
 	};
-	const semanticContent = definition.buildPublishedContent(semanticAssets);
+	const semanticContent = resolvedDefinition.buildPublishedContent(semanticAssets);
 	assertSemanticAssetRefs(semanticContent);
 	const parsed = eventContentSchema.safeParse(semanticContent);
 	if (!parsed.success) {
@@ -289,5 +313,5 @@ export function defineInvitation<K extends string = string>(
 			`Invitation definition does not satisfy the canonical content contract: ${issues}`,
 		);
 	}
-	return definition;
+	return resolvedDefinition;
 }

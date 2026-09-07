@@ -2,6 +2,7 @@ import sharp from 'sharp';
 import { Blob as NodeBlob } from 'node:buffer';
 import {
 	normalizeInvitationImage,
+	extractBlobRawBytes,
 	MAX_OUTPUT_BYTES,
 	MAX_OUTPUT_DIMENSION,
 	ROLE_AWARE_ASSET_POLICY_VERSION,
@@ -133,5 +134,42 @@ describe('invitation asset delivery policy', () => {
 			status: 422,
 			code: 'validation_error',
 		});
+	});
+});
+
+describe('explicit source preservation', () => {
+	it.each(['webp', 'jpeg', 'png'] as const)(
+		'retains the exact validated %s bytes',
+		async (format) => {
+			const source = await imageBlob(format);
+			const result = await normalizeInvitationImage(
+				source,
+				`image/${format}`,
+				undefined,
+				'preserve',
+			);
+			expect(result.mimeType).toBe(`image/${format}`);
+			expect(result.validationVersion).toBe(3);
+			expect(Buffer.from((await extractBlobRawBytes(result.blob))!)).toEqual(
+				Buffer.from(await source.arrayBuffer()),
+			);
+			expect(result.width).toBe(1600);
+			expect(result.height).toBe(1000);
+		},
+	);
+	it('rejects preservation that exceeds the existing dimension contract', async () => {
+		await expect(
+			normalizeInvitationImage(
+				await imageBlob('webp', 3000, 2000),
+				'image/webp',
+				undefined,
+				'preserve',
+			),
+		).rejects.toMatchObject({ status: 422 });
+	});
+	it('still rejects declared format mismatches when preserving', async () => {
+		await expect(
+			normalizeInvitationImage(await imageBlob('jpeg'), 'image/webp', undefined, 'preserve'),
+		).rejects.toMatchObject({ status: 422 });
 	});
 });

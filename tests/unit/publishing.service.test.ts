@@ -107,7 +107,7 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { ROLE_AWARE_ASSET_POLICY_VERSION } from '@/lib/intake/services/asset-policy';
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
-import type { DemoPreset } from '@/lib/intake/types';
+import type { DemoPreset, Invitation } from '@/lib/intake/types';
 import {
 	buildRominaPublishedContent,
 	ROMINA_ASSET_SPECS,
@@ -1675,6 +1675,48 @@ describe('publishDraft', () => {
 		});
 		expect(mockCommitAtomic).not.toHaveBeenCalled();
 	});
+
+	it.each([
+		{ version: 1, mime: 'image/jpeg', originalMime: 'image/jpeg', originalSize: 50000 },
+		{ version: 3, mime: 'image/jpeg', originalMime: 'image/png', originalSize: 50000 },
+		{ version: 3, mime: 'image/png', originalMime: 'image/png', originalSize: 40000 },
+		{ version: 3, mime: 'image/gif', originalMime: 'image/gif', originalSize: 50000 },
+	])(
+		'rejects invalid original image provenance: $version $mime $originalMime $originalSize',
+		async ({ version, mime, originalMime, originalSize }) => {
+			mockGetProject.mockResolvedValue(baseProject as Invitation);
+			mockFindDraft.mockResolvedValue({
+				...validDraft,
+				content: {
+					...validDraft.content,
+					gallery: { items: [{ image: { type: 'uploaded', assetId: VALID_UUID_1 } }] },
+				},
+			});
+			mockFindAssets.mockResolvedValue([
+				{
+					id: VALID_UUID_1,
+					invitationId: 'proj-1',
+					displayName: 'Imagen',
+					bucket: 'invitation-assets',
+					storagePath: 'invitations/proj-1/original/image.jpg',
+					mimeType: mime,
+					originalMimeType: originalMime,
+					originalFileSize: originalSize,
+					width: 1200,
+					height: 800,
+					fileSize: 50000,
+					validationVersion: version,
+					createdAt: '2026-01-01T00:00:00.000Z',
+					updatedAt: '2026-01-01T00:00:00.000Z',
+				},
+			]);
+			await expect(publishDraft('proj-1')).rejects.toMatchObject({
+				status: 422,
+				details: { reason: 'asset_metadata_invalid' },
+			});
+			expect(mockCommitAtomic).not.toHaveBeenCalled();
+		},
+	);
 
 	it('blocks publication when an asset is too small for its assigned role', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);

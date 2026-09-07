@@ -66,6 +66,7 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 			>
 				<CacheSafeImage
 					src={rawSource}
+					delivery={'delivery' in item.image ? item.image.delivery : undefined}
 					alt={item.alt || item.caption || `Imagen ${index + 1}`}
 					width={width}
 					height={height}

@@ -50,6 +50,7 @@ const finalSrc = resolveSrc(imagePath);
 	finalSrc ? (
 		<CacheSafeImage
 			src={finalSrc as ImageMetadata | string}
+			delivery={typeof imagePath === 'object' && imagePath && 'delivery' in imagePath ? imagePath.delivery : undefined}
 			alt={alt}
 			{...widths ? { widths: widths as number[], sizes } : {}}
 			width={width}

@@ -92,7 +92,9 @@ if (fullPage) {
 	return new Response('Missing section parameter', { status: 400 });
 }
 
-const rawEvent = buildSyntheticVariantEvent({ section, variant, themePreset: preset });
+const rawEvent = buildSyntheticVariantEvent({ section, variant, themePreset: preset,
+	...(Astro.url.searchParams.get('imageDelivery') === 'optimized' ? { imageDelivery: {mode: 'optimized' as const, width: 640, height: 800, quality: 77, format: 'webp' as const} } : {}),
+});
 const validated = canonicalEventContentSchema.parse(rawEvent.data);
 const eventEntry = {
 	id: rawEvent.id,

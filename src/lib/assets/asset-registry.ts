@@ -1,3 +1,4 @@
+import type { ImageDelivery } from '@/lib/assets/image-delivery';
 /**
  * Universal Asset Registry
  * Provides a deterministic way to access and optimize project assets.
@@ -39,6 +40,7 @@ import partyToast from '@images/about/party-toast-premium.png';
  * Note: Alt text is now handled by the Adapter to ensure decoupling.
  */
 export interface ImageAsset {
+	delivery?: ImageDelivery;
 	src: string | ImageMetadata;
 	alt: string;
 }

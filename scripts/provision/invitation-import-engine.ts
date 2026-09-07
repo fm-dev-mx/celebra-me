@@ -1523,7 +1523,7 @@ export function resolveHostedUploadedAssetSrc(
 					'Stop before mutation: Cloudinary credentials (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET) are missing. Configure server-only environment values before uploading invitation images.',
 				);
 			}
-			return buildCloudinaryDeliveryUrl(cloudName, asset.providerPublicId);
+			return buildCloudinaryDeliveryUrl(cloudName, asset.providerPublicId, asset.mimeType);
 		}
 		throw new Error(
 			`Cloudinary package asset "${asset.key}" is missing secureUrl and providerPublicId.`,

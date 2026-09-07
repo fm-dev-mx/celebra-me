@@ -1,3 +1,4 @@
+import { imageExtension } from './asset-policy';
 /**
  * Server-only Cloudinary upload/reconcile for invitation images.
  * Astro client islands must not import this module.
@@ -130,9 +131,13 @@ export function buildCloudinaryPublicId(input: {
 	return `${eventType}/${slug}/assets/${sanitizedKey}-${shaPrefix}`;
 }
 
-export function buildCloudinaryDeliveryUrl(cloudName: string, publicId: string): string {
+export function buildCloudinaryDeliveryUrl(
+	cloudName: string,
+	publicId: string,
+	mimeType = 'image/webp',
+): string {
 	const name = cloudName.trim() || 'unconfigured';
-	return `https://res.cloudinary.com/${name}/image/upload/v1/${publicId}.webp`;
+	return `https://res.cloudinary.com/${name}/image/upload/v1/${publicId}.${imageExtension(mimeType)}`;
 }
 
 export function buildCloudinaryOgImageUrl(secureUrl: string): string {
@@ -231,7 +236,7 @@ function buildPredictedAssetResult(
 		width: input.width ?? 1000,
 		height: input.height ?? 1000,
 		bytes: input.bytes.length,
-		format: 'webp',
+		format: imageExtension(input.mimeType),
 		metadata: { predicted: true },
 		action: 'UPLOAD',
 	};
@@ -266,7 +271,11 @@ export async function uploadOrReconcileCloudinaryAsset(
 	initCloudinary(config);
 
 	const publicId = buildCloudinaryPublicId(input);
-	const canonicalSecureUrl = buildCloudinaryDeliveryUrl(config.cloudName, publicId);
+	const canonicalSecureUrl = buildCloudinaryDeliveryUrl(
+		config.cloudName,
+		publicId,
+		input.mimeType,
+	);
 	const canQueryCloudinary =
 		isUsableCredential(config.cloudName) &&
 		isUsableCredential(config.apiKey) &&

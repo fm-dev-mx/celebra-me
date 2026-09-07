@@ -22,6 +22,9 @@ export interface CanonicalInvitationOptions {
 	clientName?: string;
 	assetDir: string;
 	assetFiles: Readonly<Record<string, string>>;
+	assetPresentation?: Readonly<
+		Record<string, Pick<InvitationAssetSpec, 'delivery' | 'sourcePolicy'>>
+	>;
 	lifecycle?: InvitationDefinition['lifecycle'];
 	deliveryScope?: InvitationDefinition['deliveryScope'];
 }
@@ -57,7 +60,7 @@ function canonicalizeAssetReferences(
 		if (typeof record.key !== 'string' || !assetKeys.has(record.key)) {
 			throw new Error(`Canonical asset key is undeclared: ${String(record.key)}`);
 		}
-		return assets[record.key];
+		return { ...assets[record.key], ...(record.delivery ? { delivery: record.delivery } : {}) };
 	}
 	if (record.type === 'uploaded') {
 		throw new Error(
@@ -67,12 +70,7 @@ function canonicalizeAssetReferences(
 	return Object.fromEntries(
 		Object.entries(record).map(([key, child]) => [
 			key,
-			canonicalizeAssetReferences(
-				child,
-				assets,
-				assetKeys,
-				ASSET_REFERENCE_FIELDS.has(key),
-			),
+			canonicalizeAssetReferences(child, assets, assetKeys, ASSET_REFERENCE_FIELDS.has(key)),
 		]),
 	);
 }
@@ -110,7 +108,10 @@ export function defineCanonicalInvitation(
 		visualProfileId: options.visualProfileId,
 		eventTiming: options.eventTiming,
 		assetDir: options.assetDir,
-		assets: toAssetSpecs(options.title, options.assetFiles),
+		assets: toAssetSpecs(options.title, options.assetFiles).map((asset) => ({
+			...asset,
+			...options.assetPresentation?.[asset.key],
+		})),
 		buildPublishedContent(assetMap) {
 			const published = canonicalizeAssetReferences(
 				options.content,

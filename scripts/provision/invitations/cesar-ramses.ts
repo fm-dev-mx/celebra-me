@@ -280,6 +280,16 @@ export const cesarInvitation = defineCanonicalInvitation({
 	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'cesar_ramses',
 	assetDir: 'src/assets/images/events/cesar-ramses',
+	assetPresentation: {
+		heroMobile: {
+			sourcePolicy: 'preserve',
+			delivery: { mode: 'original', width: 1234, height: 1280 },
+		},
+		hero: {
+			sourcePolicy: 'preserve',
+			delivery: { mode: 'original', width: 2400, height: 1350 },
+		},
+	},
 	assetFiles: {
 		hero: 'gallery-02.webp',
 		heroMobile: 'hero-production.jpg',

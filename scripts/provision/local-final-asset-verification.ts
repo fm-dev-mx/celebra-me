@@ -1,3 +1,4 @@
+import { imageExtension } from '../../src/lib/intake/services/asset-policy.ts';
 /**
  * Pure Local final-asset verification helpers.
  *
@@ -22,18 +23,25 @@ export function isCloudinaryDeliveryUrl(url: string): boolean {
 	return url.startsWith('https://res.cloudinary.com');
 }
 
-export function localManagedStoragePath(slug: string, key: string): string {
-	return `managed/${slug}/${key}.webp`;
+export function localManagedStoragePath(
+	slug: string,
+	key: string,
+	sha256?: string,
+	mimeType = 'image/webp',
+): string {
+	if (sha256 !== undefined && !/^[a-f0-9]{64}$/.test(sha256))
+		throw new Error('Invalid asset version digest.');
+	return `managed/${slug}/${key}${sha256 ? `-${sha256}` : ''}.${imageExtension(mimeType)}`;
 }
 
 /** True when secure_url points at the expected managed object for this slug/key. */
 export function isLocalManagedDeliveryUrl(
 	url: string,
-	input: { slug: string; key: string; bucket?: string },
+	input: { slug: string; key: string; bucket?: string; sha256?: string; mimeType?: string },
 ): boolean {
 	if (!isLocalSupabaseDeliveryUrl(url)) return false;
 	const bucket = input.bucket ?? 'invitation-assets';
-	const expectedPath = `/storage/v1/object/public/${bucket}/${localManagedStoragePath(input.slug, input.key)}`;
+	const expectedPath = `/storage/v1/object/public/${bucket}/${localManagedStoragePath(input.slug, input.key, input.sha256, input.mimeType)}`;
 	try {
 		return new URL(url).pathname === expectedPath;
 	} catch {
@@ -46,6 +54,7 @@ export interface LocalFinalAssetRowAcceptanceInput {
 	secureUrl: string | null | undefined;
 	sha256: string | null | undefined;
 	expectedSha256: string;
+	mimeType?: string;
 	slug: string;
 	key: string;
 }
@@ -54,9 +63,7 @@ export interface LocalFinalAssetRowAcceptanceInput {
  * Pure acceptance gate for Local final verification (before reachability fetch).
  * Accepts Local Supabase SSOT rows or Cloudinary leftovers.
  */
-export function isAcceptableLocalFinalAssetRow(
-	input: LocalFinalAssetRowAcceptanceInput,
-): boolean {
+export function isAcceptableLocalFinalAssetRow(input: LocalFinalAssetRowAcceptanceInput): boolean {
 	const secureUrl = typeof input.secureUrl === 'string' ? input.secureUrl : '';
 	if (!secureUrl) return false;
 	if (input.sha256 && input.sha256 !== input.expectedSha256) return false;
@@ -69,7 +76,15 @@ export function isAcceptableLocalFinalAssetRow(
 
 	// Local SSOT + legacy absent provider with a local managed Storage URL.
 	if (provider === 'supabase' || provider === null) {
-		if (isLocalManagedDeliveryUrl(secureUrl, { slug: input.slug, key: input.key })) {
+		if (
+			isLocalManagedDeliveryUrl(secureUrl, { slug: input.slug, key: input.key }) ||
+			isLocalManagedDeliveryUrl(secureUrl, {
+				slug: input.slug,
+				key: input.key,
+				sha256: input.expectedSha256,
+				mimeType: typeof input.mimeType === 'string' ? input.mimeType : undefined,
+			})
+		) {
 			return true;
 		}
 		// Legacy restore: absent/supabase-mislabelled Cloudinary leftover URL.
@@ -111,6 +126,12 @@ export function canReuseExistingLocalAsset(input: {
 			isLocalManagedDeliveryUrl(input.secureUrl, {
 				slug: input.slug,
 				key: input.key,
+			}) ||
+			isLocalManagedDeliveryUrl(input.secureUrl, {
+				slug: input.slug,
+				key: input.key,
+				sha256: input.expectedSha256,
+				mimeType: typeof input.mimeType === 'string' ? input.mimeType : undefined,
 			})
 		) {
 			return true;

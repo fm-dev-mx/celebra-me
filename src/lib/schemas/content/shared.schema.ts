@@ -1,3 +1,4 @@
+import { ImageDeliverySchema } from '@/lib/assets/image-delivery';
 import { z } from 'zod';
 import { ALL_ASSET_KEYS } from '@/lib/assets/asset-keys';
 import { COUNTDOWN_UNITS } from '@/lib/invitation/presentation-options';
@@ -57,6 +58,7 @@ export const overlaySafeAreaSchema = z
 const internalAssetSchema = z
 	.object({
 		type: z.literal('internal'),
+		delivery: ImageDeliverySchema.optional(),
 		key: z.enum(ALL_ASSET_KEYS),
 	})
 	.strict();
@@ -64,6 +66,7 @@ const internalAssetSchema = z
 const externalAssetSchema = z
 	.object({
 		type: z.literal('external'),
+		delivery: ImageDeliverySchema.optional(),
 		src: z.union([secureUrlSchema, publicPathSchema]),
 	})
 	.strict();
@@ -71,6 +74,7 @@ const externalAssetSchema = z
 const uploadedAssetSchema = z
 	.object({
 		type: z.literal('uploaded'),
+		delivery: ImageDeliverySchema.optional(),
 		assetId: z.union([z.uuid(), z.string().startsWith('__INVITATION_ASSET_KEY__:')]),
 		src: z.string().optional(),
 	})
@@ -131,7 +135,9 @@ export const thankYouSchema = z
 	.strict()
 	.superRefine((thankYou, context) => {
 		if (
-			(thankYou.variant === 'full-bleed-photo' || thankYou.variant === 'portrait-letter' || thankYou.variant === 'portrait-keepsake') &&
+			(thankYou.variant === 'full-bleed-photo' ||
+				thankYou.variant === 'portrait-letter' ||
+				thankYou.variant === 'portrait-keepsake') &&
 			!thankYou.image
 		) {
 			context.addIssue({

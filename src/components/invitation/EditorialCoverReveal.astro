@@ -63,6 +63,8 @@ if (coverEdition) issueParts.push({ label: 'EDICIÓN', value: coverEdition });
 const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata | string =>
 	'src' in image ? image.src : image;
 
+const coverImage = backgroundImage ?? portrait;
+const coverDelivery = coverImage && 'delivery' in coverImage ? coverImage.delivery : undefined;
 const resolvedImage = backgroundImage ? resolveImage(backgroundImage) : (portrait ? resolveImage(portrait) : null);
 
 // For SSR fallback when JS is disabled: compute the skip URL
@@ -87,6 +89,7 @@ const shouldRenderHidden =
 			<div class="editorial-cover__background" aria-hidden="true">
 				<CacheSafeImage
 					src={resolvedImage}
+					delivery={coverDelivery}
 					alt=""
 					width={1080}
 					height={1920}

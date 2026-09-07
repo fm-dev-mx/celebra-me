@@ -1,11 +1,14 @@
+import type { ImageDelivery } from '@/lib/assets/image-delivery';
 import type { AssetRegistryKey } from '@/lib/assets/asset-keys';
 
 export interface InternalAssetSource {
+	delivery?: ImageDelivery;
 	type: 'internal';
 	key: AssetRegistryKey;
 }
 
 export interface ExternalAssetSource {
+	delivery?: ImageDelivery;
 	type: 'external';
 	src: string;
 }
@@ -16,6 +19,7 @@ export interface ExternalAssetSource {
  * `src` is NOT present — must be resolved at preview/publish time.
  */
 export interface DraftUploadedAssetSource {
+	delivery?: ImageDelivery;
 	type: 'uploaded';
 	assetId: string;
 }
@@ -26,6 +30,7 @@ export interface DraftUploadedAssetSource {
  * `src` is the resolved public Storage URL at publish time.
  */
 export interface PublishedUploadedAssetSource {
+	delivery?: ImageDelivery;
 	type: 'uploaded';
 	assetId: string;
 	src: string;
@@ -36,18 +41,14 @@ export interface PublishedUploadedAssetSource {
  * Published content uses the resolved `PublishedAssetSource` union.
  */
 export type EditableAssetSource =
-	| InternalAssetSource
-	| ExternalAssetSource
-	| DraftUploadedAssetSource;
+	InternalAssetSource | ExternalAssetSource | DraftUploadedAssetSource;
 
 /**
  * Union of all asset source types that may appear in published content.
  * Uploaded refs always carry a frozen `src`.
  */
 export type PublishedAssetSource =
-	| InternalAssetSource
-	| ExternalAssetSource
-	| PublishedUploadedAssetSource;
+	InternalAssetSource | ExternalAssetSource | PublishedUploadedAssetSource;
 
 /**
  * General-purpose asset source union (covers both editable and published forms).

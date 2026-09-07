@@ -89,19 +89,27 @@ function resolveAsset(
 	if (normalizedSource.type === 'external') {
 		return {
 			src: normalizedSource.src,
+			delivery: normalizedSource.delivery,
 			alt: `Recurso de ${eventTitle}`,
 		};
 	}
 
 	if (normalizedSource.type === 'uploaded') {
 		if ('src' in normalizedSource) {
-			return { src: normalizedSource.src, alt: `Imagen de ${eventTitle}` };
+			return {
+				src: normalizedSource.src,
+				delivery: normalizedSource.delivery,
+				alt: `Imagen de ${eventTitle}`,
+			};
 		}
 		return undefined;
 	}
 
 	if (isCommonAssetKey(normalizedSource.key)) {
-		return getCommonAsset(normalizedSource.key);
+		return {
+			...getCommonAsset(normalizedSource.key),
+			...(normalizedSource.delivery ? { delivery: normalizedSource.delivery } : {}),
+		};
 	}
 
 	if (!isEventAssetKey(normalizedSource.key)) {
@@ -121,7 +129,11 @@ function resolveAsset(
 		alt = `Interludio de ${eventTitle}`;
 	}
 
-	return { src: metadata, alt };
+	return {
+		src: metadata,
+		alt,
+		...(normalizedSource.delivery ? { delivery: normalizedSource.delivery } : {}),
+	};
 }
 
 function resolveAssetSrc(eventSlug: string, source: AssetSource | string | undefined): string {
@@ -167,7 +179,11 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		venueName: pickVenueValue(data.location, 'venueName'),
 		backgroundImage: requireAsset(eventSlug, data.hero.backgroundImage, data.title),
 		backgroundImageDesktop: data.hero.backgroundImageDesktop
-			? { src: resolveAssetSrc(eventSlug, data.hero.backgroundImageDesktop) }
+			? {
+					src: resolveAssetSrc(eventSlug, data.hero.backgroundImageDesktop),
+					delivery: resolveAsset(eventSlug, data.hero.backgroundImageDesktop, data.title)
+						?.delivery,
+				}
 			: undefined,
 		backgroundImageMobile: resolveAsset(eventSlug, data.hero.backgroundImageMobile, data.title),
 		portrait: resolvePortraitEnabled(data.hero.presentation, themeSupportsPortrait(preset))

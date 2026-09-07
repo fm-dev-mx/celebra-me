@@ -95,6 +95,7 @@ function semanticKeyFromUploadedRef(value: unknown): string | null {
 export function areEquivalentAssetRepresentations(left: unknown, right: unknown): boolean {
 	const match = (uploaded: unknown, other: unknown): boolean => {
 		const key = semanticKeyFromUploadedRef(uploaded);
+		if (isRecord(uploaded) && uploaded.delivery !== undefined) return false;
 		if (key == null || typeof other !== 'string' || other.length === 0) return false;
 		if (other === key) return true;
 		if (!isExternalHostedAssetString(other)) return false;
@@ -138,11 +139,17 @@ export function rewriteUploadedAssetReferences(
 		if (current.type === 'uploaded' && typeof current.assetId === 'string') {
 			const assetId = current.assetId;
 			if (assetId.startsWith(ASSET_KEY_PREFIX)) {
-				return semanticAssetRef(assetId.slice(ASSET_KEY_PREFIX.length));
+				return {
+					...semanticAssetRef(assetId.slice(ASSET_KEY_PREFIX.length)),
+					...(current.delivery ? { delivery: current.delivery } : {}),
+				};
 			}
 			const key = keyByAssetId.get(assetId);
 			if (!key) throw new Error('UNMAPPED_UPLOADED_REF');
-			return semanticAssetRef(key);
+			return {
+				...semanticAssetRef(key),
+				...(current.delivery ? { delivery: current.delivery } : {}),
+			};
 		}
 		return Object.fromEntries(
 			Object.entries(current).map(([key, child]) => [key, walk(child)]),

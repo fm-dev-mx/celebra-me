@@ -1,4 +1,6 @@
 ---
+import { resolveExplicitImageDelivery } from '@/lib/assets/image-delivery.server';
+import type { ImageDelivery } from '@/lib/assets/image-delivery';
 import { getImage } from 'astro:assets';
 import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
 import type { ImageMetadata } from 'astro';
@@ -20,7 +22,7 @@ interface Props {
 	time?: string;
 	venueName?: string;
 	backgroundImage: ImageMetadata | ImageAsset;
-	backgroundImageDesktop?: { src: string };
+	backgroundImageDesktop?: { src: string; delivery?: ImageDelivery };
 	backgroundImageMobile?: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset;
 	variant: HeroVariant;
@@ -90,7 +92,11 @@ if (!isEditorialCover) {
 			? backgroundImageMobile.src
 			: null;
 
-	mobileBgSrc = resolvedMobileBg
+	const mobileDelivery =
+		backgroundImageMobile && 'delivery' in backgroundImageMobile
+			? backgroundImageMobile.delivery
+			: undefined;
+	mobileBgSrc = resolvedMobileBg && !mobileDelivery
 		? remoteMobileBgSrc
 			? remoteMobileBgSrc
 			: shouldOptimizeThroughVercelImage(resolvedMobileBg)
@@ -108,7 +114,13 @@ if (!isEditorialCover) {
 				: plainImgSrc(resolvedMobileBg)
 		: null;
 
+	if (mobileDelivery && resolvedMobileBg) {
+		mobileBgSrc = await resolveExplicitImageDelivery(resolvedMobileBg, mobileDelivery, { width: 1080, quality: 84, format: 'webp' });
+	}
 	desktopBgSrc = backgroundImageDesktop ? backgroundImageDesktop.src : null;
+	if (backgroundImageDesktop?.delivery) {
+		desktopBgSrc = await resolveExplicitImageDelivery(backgroundImageDesktop.src, backgroundImageDesktop.delivery, { width: 1920, quality: 84, format: 'webp' });
+	}
 	portraitSrc = portrait ? resolveImage(portrait) : null;
 
 	formattedDate = new Date(date).toLocaleDateString('es-MX', {
@@ -152,6 +164,7 @@ if (!isEditorialCover) {
 					{bgSrc && (
 						<CacheSafeImage
 							src={bgSrc}
+							delivery={'delivery' in backgroundImage ? backgroundImage.delivery : undefined}
 							alt={name}
 							width={1080}
 							height={1920}
@@ -221,6 +234,7 @@ if (!isEditorialCover) {
 					<div class="invitation-hero__portrait">
 						<CacheSafeImage
 							src={portraitSrc}
+							delivery={portrait && 'delivery' in portrait ? portrait.delivery : undefined}
 							alt={`Retrato de ${name}`}
 							width={600}
 							height={800}

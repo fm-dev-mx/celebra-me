@@ -1,4 +1,5 @@
 import type { ImageMetadata } from 'astro';
+import type { ImageDelivery } from './image-delivery';
 
 function parseHttpUrl(src: string): URL | null {
 	const value = src.trim();
@@ -24,14 +25,24 @@ export function isMutableInPlaceMediaUrl(src: string): boolean {
 		/\.supabase\.co$/i.test(parsed.hostname) ||
 		parsed.hostname === '127.0.0.1' ||
 		parsed.hostname === 'localhost';
-	return isSupabaseHost && parsed.pathname.includes('/storage/');
+	return (
+		isSupabaseHost &&
+		parsed.pathname.includes('/storage/') &&
+		!/-[a-f0-9]{64}\.(?:webp|jpg|png)$/.test(parsed.pathname)
+	);
 }
 
 /**
  * Local ImageMetadata and versioned remotes (Cloudinary, hashed `/_astro`)
  * stay on Astro Image / Vercel optimization. Mutable in-place URLs must not.
  */
-export function shouldOptimizeThroughVercelImage(src: string | ImageMetadata): boolean {
+export function shouldOptimizeThroughVercelImage(
+	src: string | ImageMetadata,
+	delivery?: ImageDelivery,
+): boolean {
+	if (delivery?.mode === 'original') return false;
+	if (delivery?.mode === 'optimized' && isMutableInPlaceMediaUrl(plainImgSrc(src)))
+		throw new Error('Optimized delivery requires a versioned image URL.');
 	const url = typeof src === 'string' ? src : src.src;
 	if (typeof url !== 'string') {
 		return true;

@@ -1,3 +1,4 @@
+import type { Metadata } from 'sharp';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from '@/lib/intake/constants';
 import {
@@ -57,6 +58,30 @@ async function encodeInvitationImage(
 
 export const ASSET_POLICY_VERSION = 1;
 export const ROLE_AWARE_ASSET_POLICY_VERSION = 2;
+export const ORIGINAL_ASSET_POLICY_VERSION = 3;
+export const ROLE_AWARE_ORIGINAL_ASSET_POLICY_VERSION = 4;
+
+export function isRoleAwareAssetPolicy(version: number): boolean {
+	return (
+		version === ROLE_AWARE_ASSET_POLICY_VERSION ||
+		version >= ROLE_AWARE_ORIGINAL_ASSET_POLICY_VERSION
+	);
+}
+
+export function isOriginalAssetPolicy(version: number): boolean {
+	return (
+		version === ORIGINAL_ASSET_POLICY_VERSION ||
+		version === ROLE_AWARE_ORIGINAL_ASSET_POLICY_VERSION
+	);
+}
+
+export function imageExtension(mimeType: string): 'webp' | 'jpg' | 'png' {
+	if (mimeType === 'image/webp') return 'webp';
+	if (mimeType === 'image/jpeg') return 'jpg';
+	if (mimeType === 'image/png') return 'png';
+	throw new Error('Unsupported published image MIME type.');
+}
+
 export const OUTPUT_MIME_TYPE = 'image/webp';
 export const MAX_OUTPUT_BYTES = 2_500_000;
 export const MAX_OUTPUT_DIMENSION = 2560;
@@ -100,7 +125,7 @@ export interface NormalizedInvitationImage {
 	width: number;
 	height: number;
 	fileSize: number;
-	mimeType: typeof OUTPUT_MIME_TYPE;
+	mimeType: string;
 	originalMimeType: string;
 	originalFileSize: number;
 	validationVersion: number;
@@ -136,10 +161,48 @@ export async function extractBlobRawBytes(file: Blob): Promise<Uint8Array | unde
 	return undefined;
 }
 
+async function preserveValidatedImage(
+	input: Buffer,
+	metadata: Metadata & { width: number; height: number },
+	detectedMime: string,
+	originalFileSize: number,
+	optimizationRole?: ImageOptimizationRole,
+): Promise<NormalizedInvitationImage> {
+	const sharp = await loadSharp();
+	const maxBytes = optimizationRole ? getWeightTargetBytes(optimizationRole) : MAX_OUTPUT_BYTES;
+	if (
+		input.byteLength > maxBytes ||
+		Math.max(metadata.width, metadata.height) > MAX_OUTPUT_DIMENSION ||
+		(metadata.orientation !== undefined && metadata.orientation !== 1) ||
+		(metadata.pages !== undefined && metadata.pages !== 1)
+	) {
+		throw new ApiError(
+			422,
+			'validation_error',
+			'La imagen original no cumple el contrato de publicación. Requiere revisión.',
+		);
+	}
+	// Decode fully so preservation cannot admit a truncated or corrupt payload.
+	await sharp(input, { failOn: 'error', limitInputPixels: MAX_INPUT_PIXELS }).raw().toBuffer();
+	return {
+		blob: new Blob([Uint8Array.from(input)], { type: detectedMime }),
+		width: metadata.width,
+		height: metadata.height,
+		fileSize: input.byteLength,
+		mimeType: detectedMime,
+		originalMimeType: detectedMime,
+		originalFileSize: originalFileSize,
+		validationVersion: optimizationRole
+			? ROLE_AWARE_ORIGINAL_ASSET_POLICY_VERSION
+			: ORIGINAL_ASSET_POLICY_VERSION,
+	};
+}
+
 export async function normalizeInvitationImage(
 	file: Blob,
 	declaredMimeType: string,
 	optimizationRole?: ImageOptimizationRole,
+	sourcePolicy: 'normalize' | 'preserve' = 'normalize',
 ): Promise<NormalizedInvitationImage> {
 	const normalizedDeclaredMime = declaredMimeType.split(';', 1)[0].trim().toLowerCase();
 	if (!ALLOWED_MIME_TYPES.includes(normalizedDeclaredMime)) {
@@ -204,6 +267,15 @@ export async function normalizeInvitationImage(
 			);
 		}
 
+		if (sourcePolicy === 'preserve') {
+			return await preserveValidatedImage(
+				input,
+				{ ...metadata, width: metadata.width, height: metadata.height },
+				detectedMime,
+				file.size,
+				optimizationRole,
+			);
+		}
 		const output = await encodeInvitationImage(input, optimizationRole);
 
 		if (output.info.size > MAX_OUTPUT_BYTES) {

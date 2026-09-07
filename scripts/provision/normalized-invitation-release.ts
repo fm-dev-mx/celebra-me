@@ -7,7 +7,7 @@ import {
 	detectFileMimeType,
 	normalizeInvitationImage,
 	extractBlobRawBytes,
-	ROLE_AWARE_ASSET_POLICY_VERSION,
+	isRoleAwareAssetPolicy,
 } from '../../src/lib/intake/services/asset-policy.ts';
 import {
 	getImageOptimizationRoleForPath,
@@ -32,6 +32,7 @@ export const ASSET_KEY_PREFIX = '__INVITATION_ASSET_KEY__:';
 export const STORAGE_URL_PLACEHOLDER = '__STORAGE_URL__';
 
 export interface NormalizedInvitationAsset {
+	versioned?: boolean;
 	key: string;
 	displayName: string;
 	alt: string;
@@ -107,7 +108,13 @@ export function buildSemanticAssetMap<K extends string>(
 	definition: InvitationDefinition<K>,
 ): UploadedAssetMap<K> {
 	return Object.fromEntries(
-		definition.assets.map((asset) => [asset.key, semanticAssetRef(asset.key)]),
+		definition.assets.map((asset) => [
+			asset.key,
+			{
+				...semanticAssetRef(asset.key),
+				...(asset.delivery ? { delivery: asset.delivery } : {}),
+			},
+		]),
 	) as UploadedAssetMap<K>;
 }
 
@@ -132,9 +139,13 @@ export function materializeAssetReferences(
 					`No target asset mapping exists for semantic key "${record.assetId}".`,
 				);
 			if (parentKey === 'ogImage' && ref.src.includes('cloudinary.com')) {
-				return { ...ref, src: buildCloudinaryOgImageUrl(ref.src) };
+				return {
+					...ref,
+					...(record.delivery ? { delivery: record.delivery } : {}),
+					src: buildCloudinaryOgImageUrl(ref.src),
+				};
 			}
-			return ref;
+			return { ...ref, ...(record.delivery ? { delivery: record.delivery } : {}) };
 		}
 		return Object.fromEntries(
 			Object.entries(record).map(([k, item]) => [
@@ -160,7 +171,7 @@ export function assertEncodedAssetsMeetPathRoleBudgets(
 				`Published path "${ref.path}" references unknown encoded asset "${key}".`,
 			);
 		}
-		if (asset.validationVersion < ROLE_AWARE_ASSET_POLICY_VERSION) continue;
+		if (!isRoleAwareAssetPolicy(asset.validationVersion)) continue;
 		const role = getImageOptimizationRoleForPath(ref.path);
 		const maxBytes = getWeightTargetBytes(role);
 		if (asset.fileSize > maxBytes) {
@@ -225,7 +236,7 @@ async function loadPersistedAssets(
 		const fileSize = Number(match.file_size);
 		if (
 			spec.optimizationRole &&
-			validationVersion >= ROLE_AWARE_ASSET_POLICY_VERSION &&
+			isRoleAwareAssetPolicy(validationVersion) &&
 			fileSize > getWeightTargetBytes(spec.optimizationRole)
 		) {
 			throw new Error(
@@ -233,6 +244,7 @@ async function loadPersistedAssets(
 			);
 		}
 		assets.push({
+			...(spec.delivery || spec.sourcePolicy === 'preserve' ? { versioned: true } : {}),
 			key: spec.key,
 			displayName: spec.displayName,
 			alt: spec.alt,
@@ -288,21 +300,21 @@ async function loadSourceAssets(
 			!existsSync(source) ||
 			!statSync(source).isFile()
 		)
-			throw new Error(
-				`Declared asset "${asset.key}" is missing or escapes the asset root.`,
-			);
+			throw new Error(`Declared asset "${asset.key}" is missing or escapes the asset root.`);
 		const sourceBytes = readFileSync(source);
 		const declaredMime = detectFileMimeType(asset.relativePath, sourceBytes);
 		const normalized = await normalizeInvitationImage(
 			new Blob([sourceBytes], { type: declaredMime }),
 			declaredMime,
 			asset.optimizationRole,
+			asset.sourcePolicy,
 		);
 		const raw = await extractBlobRawBytes(normalized.blob);
 		if (!raw) throw new Error('Could not extract bytes from Blob.');
 		const bytes = raw;
 		assets.push({
 			key: asset.key,
+			...(asset.delivery || asset.sourcePolicy === 'preserve' ? { versioned: true } : {}),
 			displayName: asset.displayName,
 			alt: asset.alt,
 			focalPoint: asset.focalPoint,
@@ -324,10 +336,12 @@ async function loadSourceAssets(
 function assertTargetIdentityPreflight(
 	definition: InvitationDefinition,
 	purpose: 'package' | 'target',
-	preflight: {
-		invitationId: string | null;
-		managedIdentityId: string | null;
-	} | undefined,
+	preflight:
+		| {
+				invitationId: string | null;
+				managedIdentityId: string | null;
+		  }
+		| undefined,
 ): void {
 	if (purpose !== 'target') return;
 	const isAbsent = preflight?.invitationId === null && preflight.managedIdentityId === null;

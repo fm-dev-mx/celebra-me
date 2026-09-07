@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import {
 	detectFileMimeType,
 	normalizeInvitationImage,
-	ROLE_AWARE_ASSET_POLICY_VERSION,
+	isRoleAwareAssetPolicy,
 } from '@/lib/intake/services/asset-policy';
 import {
 	getImageOptimizationRoleForPath,
@@ -87,7 +87,7 @@ describe('published asset path-role budget contract', () => {
 				}
 
 				for (const role of rolesByKey.get(spec.key) ?? []) {
-					if (validationVersion < ROLE_AWARE_ASSET_POLICY_VERSION) continue;
+					if (!isRoleAwareAssetPolicy(validationVersion)) continue;
 					const maxBytes = getWeightTargetBytes(role);
 					if (fileSize > maxBytes) {
 						throw new Error(

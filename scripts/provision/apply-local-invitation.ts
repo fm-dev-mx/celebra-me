@@ -13,6 +13,7 @@
  */
 /* eslint-disable max-lines -- Application engine sequences checks, dry-run plan, asset processing, draft upsert, and RPC publish. */
 
+import { classifyStorageDownloadFailure } from '../db/storage-object-archive.ts';
 import { createHash, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
@@ -43,6 +44,7 @@ import { buildCloudinaryPublicId } from './cloudinary-adapter.ts';
 import {
 	canReuseExistingLocalAsset,
 	isAcceptableLocalFinalAssetRow,
+	localManagedStoragePath,
 } from './local-final-asset-verification.ts';
 import { resolveAndEnsureInvitationHostOwner } from './invitation-host-owner.ts';
 import { verifySupabaseApiCredential } from './supabase-credential-verification.ts';
@@ -79,6 +81,30 @@ import {
 } from './asset-reconciliation.ts';
 import { fingerprintPathPolicy } from './conflict-resolutions.ts';
 import { assertManagedContentSchema } from './managed-content-validation.ts';
+
+export async function observeVersionedLocalAsset(
+	url: string,
+	expectedSha256: string,
+	fetcher: typeof fetch = fetch,
+): Promise<ObservedStorageState> {
+	const response = await fetcher(url);
+	if (!response.ok) {
+		if (
+			response.status === 404 ||
+			(response.status === 400 &&
+				classifyStorageDownloadFailure(await response.text()) === 'not_found')
+		) {
+			return { present: false, sha256: null, httpStatus: response.status };
+		}
+		throw new Error(`Unable to verify versioned Local asset: HTTP ${response.status}`);
+	}
+	const sha256 = createHash('sha256')
+		.update(new Uint8Array(await response.arrayBuffer()))
+		.digest('hex');
+	if (sha256 !== expectedSha256)
+		throw new Error('Versioned Local asset checksum collision; refusing overwrite.');
+	return { present: true, sha256, httpStatus: response.status };
+}
 
 function deriveDeterministicUuid(namespace: string, seed: string): string {
 	const hash = createHash('sha256').update(`celebra-me:${namespace}:${seed}`).digest('hex');
@@ -258,6 +284,7 @@ async function verifyFinalAsset({
 			secureUrl,
 			sha256: rowSha,
 			expectedSha256: asset.imageHash,
+			mimeType: asset.mimeType,
 			slug,
 			key: asset.key,
 		})
@@ -600,6 +627,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	const assetActions: Array<{ resource: string; name: string; action: string; detail: string }> =
 		[];
 	const currentAssetStates: Array<Record<string, unknown>> = [];
+	const newVersionedStorage = new Set<string>();
 
 	const { data: existingAssetRows } = await supabase
 		.from('invitation_assets')
@@ -662,7 +690,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					resource: 'invitation_assets',
 					name: norm.displayName,
 					action: 'reuse',
-					detail: `${reuseProvider} asset preserved under content-only (${(norm.fileSize / 1024).toFixed(1)} KB WebP)`,
+					detail: `${reuseProvider} asset preserved under content-only (${(norm.fileSize / 1024).toFixed(1)} KB ${norm.mimeType})`,
 				});
 			} else {
 				assetActions.push({
@@ -677,7 +705,12 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			continue;
 		}
 
-		const storagePath = `managed/${slug}/${norm.key}.webp`;
+		const storagePath = localManagedStoragePath(
+			slug,
+			norm.key,
+			norm.versioned ? norm.sha256 : undefined,
+			norm.mimeType,
+		);
 		const localDeliveryUrl = `${env.apiUrl}/storage/v1/object/public/${BUCKET}/${storagePath}`;
 
 		assetMap[norm.key] = {
@@ -698,26 +731,30 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			Number(existingAsset.height) === norm.height &&
 			Number(existingAsset.validation_version) === norm.validationVersion;
 
+		const versionedState = norm.versioned
+			? await observeVersionedLocalAsset(localDeliveryUrl, norm.imageHash)
+			: null;
+		if (versionedState && !versionedState.present) newVersionedStorage.add(norm.displayName);
 		currentAssetStates.push({
 			key: norm.key,
 			storagePath,
-			storageHash: norm.imageHash,
+			storageHash: versionedState ? versionedState.sha256 : norm.imageHash,
 			metadata: existingAsset ?? null,
 		});
 
-		if (isIdentical) {
+		if (isIdentical && versionedState?.present !== false) {
 			assetActions.push({
 				resource: 'invitation_assets',
 				name: norm.displayName,
 				action: 'reuse',
-				detail: `Supabase Storage asset up-to-date (${(norm.fileSize / 1024).toFixed(1)} KB WebP)`,
+				detail: `Supabase Storage asset up-to-date (${(norm.fileSize / 1024).toFixed(1)} KB ${norm.mimeType})`,
 			});
 		} else {
 			assetActions.push({
 				resource: 'invitation_assets',
 				name: norm.displayName,
 				action: existingAsset ? 'replace' : 'create',
-				detail: `${existingAsset ? 'Update' : 'Upload'} binary to Supabase Storage (${(norm.fileSize / 1024).toFixed(1)} KB WebP)`,
+				detail: `${existingAsset && !newVersionedStorage.has(norm.displayName) ? 'Update' : 'Upload'} binary to Supabase Storage (${(norm.fileSize / 1024).toFixed(1)} KB ${norm.mimeType})`,
 			});
 		}
 	}
@@ -848,7 +885,12 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		displayName: asset.displayName,
 		defaultAltText: asset.alt,
 		bucket: BUCKET,
-		storagePath: `managed/${slug}/${asset.key}.webp`,
+		storagePath: localManagedStoragePath(
+			slug,
+			asset.key,
+			asset.versioned ? asset.sha256 : undefined,
+			asset.mimeType,
+		),
 		mimeType: asset.mimeType,
 		width: asset.width,
 		height: asset.height,
@@ -859,7 +901,12 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		sha256: asset.sha256,
 		dataBase64: asset.dataBase64,
 		provider: 'supabase' as const,
-		providerPublicId: `managed/${slug}/${asset.key}.webp`,
+		providerPublicId: localManagedStoragePath(
+			slug,
+			asset.key,
+			asset.versioned ? asset.sha256 : undefined,
+			asset.mimeType,
+		),
 	}));
 	const targetAssetRecords: TargetAssetRecord[] = (
 		assetRows as Array<Record<string, unknown>>
@@ -1021,10 +1068,10 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	const expectedProvenanceProjectionHash = provenanceProjectionHash(release.projectionHash);
 	const isProvenanceCurrent = Boolean(
 		existingProvenance &&
-			existingProvenance.definition_slug === release.slug &&
-			existingProvenance.source_hash === release.sourceHash &&
-			existingProvenance.package_hash === packageHash &&
-			existingProvenance.projection_hash === expectedProvenanceProjectionHash,
+		existingProvenance.definition_slug === release.slug &&
+		existingProvenance.source_hash === release.sourceHash &&
+		existingProvenance.package_hash === packageHash &&
+		existingProvenance.projection_hash === expectedProvenanceProjectionHash,
 	);
 	const needsProvenanceRecord = !isProvenanceCurrent;
 	if (hasManagedChanges || needsProvenanceRecord) {
@@ -1032,9 +1079,10 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			resource: 'managed_invitation_release_provenance',
 			name: 'Procedencia de la versión administrada',
 			action: existingProvenance ? 'replace' : 'create',
-			detail: needsProvenanceRecord && !hasManagedChanges
-				? 'Registrar provenance pendiente (contenido ya sincronizado)'
-				: 'Registrar la identidad del paquete ejecutado',
+			detail:
+				needsProvenanceRecord && !hasManagedChanges
+					? 'Registrar provenance pendiente (contenido ya sincronizado)'
+					: 'Registrar la identidad del paquete ejecutado',
 		});
 	}
 
@@ -1065,8 +1113,12 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		(existingEvent && !isEventIdentical ? 1 : 0) +
 		(existingMembership && !isMembershipIdentical ? 1 : 0) +
 		(needsProvenanceRecord && existingProvenance ? 1 : 0);
-	const estUploads = assetActions.filter((a) => a.action === 'create').length;
-	const estOverwrites = assetActions.filter((a) => a.action === 'replace').length;
+	const estUploads = assetActions.filter(
+		(a) => a.action === 'create' || (a.action === 'replace' && newVersionedStorage.has(a.name)),
+	).length;
+	const estOverwrites = assetActions.filter(
+		(a) => a.action === 'replace' && !newVersionedStorage.has(a.name),
+	).length;
 
 	const functionalChanges = buildSemanticFunctionalChanges({
 		sourceContent: proposedContent,
@@ -1074,7 +1126,11 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			(existingPub?.content as Record<string, unknown> | undefined) ??
 			(existingDraft?.content as Record<string, unknown> | undefined) ??
 			null,
-		assetActions,
+		assetActions: assetActions.map((action) =>
+			newVersionedStorage.has(action.name) && action.action === 'replace'
+				? { ...action, action: 'create' }
+				: action,
+		),
 	});
 
 	const assetStateHash = createHash('sha256')
@@ -1305,10 +1361,16 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					{ key: norm.key, displayName: norm.displayName, sha256: norm.sha256 },
 					{ eventType: definition.eventType, slug },
 				);
-				const storagePath = `managed/${slug}/${norm.key}.webp`;
+				const storagePath = localManagedStoragePath(
+					slug,
+					norm.key,
+					norm.versioned ? norm.sha256 : undefined,
+					norm.mimeType,
+				);
 				const localDeliveryUrl = `${env.apiUrl}/storage/v1/object/public/${BUCKET}/${storagePath}`;
 
 				const isIdentical =
+					!newVersionedStorage.has(norm.displayName) &&
 					Boolean(existing) &&
 					(existing?.provider === 'supabase' || !existing?.provider) &&
 					existing?.storage_path === storagePath &&

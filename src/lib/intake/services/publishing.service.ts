@@ -51,7 +51,8 @@ import {
 	MAX_OUTPUT_BYTES,
 	MAX_OUTPUT_DIMENSION,
 	OUTPUT_MIME_TYPE,
-	ROLE_AWARE_ASSET_POLICY_VERSION,
+	isRoleAwareAssetPolicy,
+	isOriginalAssetPolicy,
 } from '@/lib/intake/services/asset-policy';
 import {
 	getImageOptimizationRoleForPath,
@@ -495,6 +496,16 @@ function assertUploadedAssetRoleReuse(content: Record<string, unknown>): void {
 	}
 }
 
+function hasValidatedDeliveryMime(asset: InvitationAsset): boolean {
+	return (
+		asset.mimeType === OUTPUT_MIME_TYPE ||
+		(isOriginalAssetPolicy(asset.validationVersion ?? 0) &&
+			['image/jpeg', 'image/png'].includes(asset.mimeType) &&
+			asset.originalMimeType === asset.mimeType &&
+			asset.originalFileSize === asset.fileSize)
+	);
+}
+
 function assertUploadedAssetPolicy(
 	asset: InvitationAsset,
 	path: string,
@@ -511,7 +522,7 @@ function assertUploadedAssetPolicy(
 	}
 
 	if (
-		asset.mimeType !== OUTPUT_MIME_TYPE ||
+		!hasValidatedDeliveryMime(asset) ||
 		!asset.width ||
 		!asset.height ||
 		!asset.fileSize ||
@@ -527,7 +538,7 @@ function assertUploadedAssetPolicy(
 		);
 	}
 
-	if ((asset.validationVersion ?? ASSET_POLICY_VERSION) >= ROLE_AWARE_ASSET_POLICY_VERSION) {
+	if (isRoleAwareAssetPolicy(asset.validationVersion ?? ASSET_POLICY_VERSION)) {
 		const role = getImageOptimizationRoleForPath(path);
 		const maxBytes = getWeightTargetBytes(role);
 		if (asset.fileSize > maxBytes) {
