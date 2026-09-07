@@ -99,6 +99,7 @@
 		}
 
 		.gallery-grid__overlay {
+			display: block;
 			position: static;
 			background: transparent;
 			backdrop-filter: none;
@@ -108,6 +109,7 @@
 		}
 
 		.gallery-grid__caption {
+			margin-block: 1em;
 			opacity: 100%;
 			transform: none;
 			font-family: monospace;

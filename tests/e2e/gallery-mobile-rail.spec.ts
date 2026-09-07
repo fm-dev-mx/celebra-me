@@ -43,6 +43,19 @@ test.describe('Gallery mobile rail presentation', () => {
 		expect(mobile.direction).toBe('row');
 		expect(mobile.overflowX).toMatch(/auto|scroll/);
 		expect(mobile.snap).toContain('mandatory');
+		const caption = gallery.locator('.gallery-grid__caption').first();
+		const spacing = await caption.evaluate((element) => {
+			const style = getComputedStyle(element);
+			return {
+				fontSize: parseFloat(style.fontSize),
+				top: parseFloat(style.marginTop),
+				bottom: parseFloat(style.marginBottom),
+			};
+		});
+		// The caption remains in flow with the production paragraph spacing.
+		expect(spacing.top).toBeCloseTo(spacing.fontSize, 2);
+		expect(spacing.bottom).toBeCloseTo(spacing.fontSize, 2);
+
 		// ~78vw rail card; allow sub-pixel / scrollbar variance.
 		expect(mobile.firstWidth).toBeGreaterThan(mobile.viewportWidth * 0.7);
 		expect(mobile.firstWidth).toBeLessThan(mobile.viewportWidth * 0.9);
