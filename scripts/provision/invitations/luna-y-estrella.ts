@@ -193,6 +193,20 @@ export const lunaInvitation = defineCanonicalInvitation({
 	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'luna_y_estrella',
 	assetDir: 'src/assets/images/events/luna-y-estrella-primera-comunion',
+	assetPresentation: {
+		hero: {
+			sourcePolicy: 'preserve',
+			delivery: { mode: 'original', width: 1536, height: 2304 },
+		},
+		heroMobile: {
+			sourcePolicy: 'preserve',
+			delivery: { mode: 'original', width: 1536, height: 2304 },
+		},
+		family: {
+			sourcePolicy: 'preserve',
+			delivery: { mode: 'original', width: 1664, height: 2080 },
+		},
+	},
 	assetFiles: {
 		hero: 'hero.webp',
 		heroMobile: 'hero.webp',

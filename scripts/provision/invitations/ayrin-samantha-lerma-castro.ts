@@ -352,6 +352,16 @@ export const ayrinInvitation = defineCanonicalInvitation({
 	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'ayrin_samantha_lerma_castro',
 	assetDir: 'src/assets/images/events/xv-ayrin-samantha-lerma-castro',
+	assetPresentation: {
+		hero: {
+			sourcePolicy: 'preserve',
+			delivery: { mode: 'original', width: 1672, height: 941 },
+		},
+		heroMobile: {
+			sourcePolicy: 'preserve',
+			delivery: { mode: 'original', width: 1365, height: 2048 },
+		},
+	},
 	assetFiles: {
 		hero: 'remote-hero.webp',
 		heroMobile: 'remote-hero-mobile.webp',

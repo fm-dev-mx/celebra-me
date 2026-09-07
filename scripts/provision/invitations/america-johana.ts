@@ -386,6 +386,12 @@ export const americaInvitation = defineCanonicalInvitation({
 	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'america_johana',
 	assetDir: 'src/assets/images/events/xv-america-johana',
+	assetPresentation: {
+		heroDesktop: {
+			sourcePolicy: 'preserve',
+			delivery: { mode: 'original', width: 1920, height: 1200 },
+		},
+	},
 	assetFiles: {
 		family: 'family.webp',
 		gallery01: 'gallery-01.webp',

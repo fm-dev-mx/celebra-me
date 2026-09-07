@@ -394,6 +394,20 @@ export const xareniInvitation = defineCanonicalInvitation({
 	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'xareni_iyarit',
 	assetDir: 'src/assets/images/events/xv-xareni-iyarit',
+	assetPresentation: {
+		hero: {
+			sourcePolicy: 'preserve',
+			delivery: { mode: 'original', width: 941, height: 1672 },
+		},
+		heroMobile: {
+			sourcePolicy: 'preserve',
+			delivery: { mode: 'original', width: 941, height: 1672 },
+		},
+		heroDesktop: {
+			sourcePolicy: 'preserve',
+			delivery: { mode: 'original', width: 1672, height: 941 },
+		},
+	},
 	assetFiles: {
 		hero: 'hero.webp',
 		heroMobile: 'hero.webp',
