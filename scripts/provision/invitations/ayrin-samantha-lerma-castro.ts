@@ -6,6 +6,7 @@ const content: CanonicalEventContentInput = {
 		intersections: {},
 	},
 	hero: {
+		presentation: { venueIndex: 1 },
 		variant: 'standard',
 		date: '2026-08-01T18:00:00.000Z',
 		name: 'Ayrin Samantha Lerma Castro',

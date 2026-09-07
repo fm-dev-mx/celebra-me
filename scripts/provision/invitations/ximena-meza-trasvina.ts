@@ -19,7 +19,7 @@ const content: CanonicalEventContentInput = {
 	},
 	hero: {
 		variant: 'standard',
-		date: '2026-04-12T03:00:00.000Z',
+		date: '2026-04-11T20:00:00.000Z',
 		name: 'Ximena Meza Trasviña',
 		label: 'Mis XV Años',
 		portrait: 'portrait',
@@ -324,7 +324,7 @@ export const ximenaInvitation = defineCanonicalInvitation({
 	hostLoginAlias: 'ximena_meza_trasvina',
 	assetDir: 'src/assets/images/events/ximena-meza-trasvina',
 	assetFiles: {
-		hero: 'hero.webp',
+		hero: 'ai/hero-background.webp',
 		portrait: 'portrait.webp',
 		family: 'family.webp',
 		jardin: 'gallery-03.webp',

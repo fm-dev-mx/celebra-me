@@ -164,6 +164,7 @@ export function buildRominaPublishedContent(
 		],
 		_assetSlug: ROMINA_EVENT.assetSlug,
 		hero: {
+			presentation: { venueIndex: 1 },
 			name: 'Romina Ríos Chaparro',
 			label: 'MIS XV',
 			date: ROMINA_EVENT.startsAtUtc,

@@ -18,6 +18,7 @@ const content: CanonicalEventContentInput = {
 		intersections: {},
 	},
 	hero: {
+		presentation: { venueIndex: 1 },
 		variant: 'standard',
 		date: '2026-08-29T23:30:00.000Z',
 		name: 'América',
@@ -276,7 +277,7 @@ const content: CanonicalEventContentInput = {
 		mapStyle: 'dark',
 	},
 	thankYou: {
-		variant: 'editorial-back-cover',
+		variant: 'portrait-keepsake',
 		image: 'thankYouPortrait',
 		message:
 			'Gracias por acompañarme en mis XV años. Su presencia y cariño harán que esta noche sea un recuerdo para siempre.',

@@ -252,7 +252,7 @@ const content: CanonicalEventContentInput = {
 		mapStyle: 'dark',
 	},
 	thankYou: {
-		variant: 'editorial-back-cover',
+		variant: 'portrait-keepsake',
 		image: {
 			key: 'thankYouPortrait',
 			type: 'internal',

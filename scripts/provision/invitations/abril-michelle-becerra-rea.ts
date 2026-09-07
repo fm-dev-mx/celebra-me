@@ -185,6 +185,7 @@ export function buildAbrilPublishedContent(
 		},
 		_assetSlug: ABRIL_EVENT.assetSlug,
 		hero: {
+			presentation: { venueIndex: 1 },
 			name: 'Abril Michelle',
 			label: 'CELEBRO MIS XV',
 			date: ABRIL_EVENT.startsAtUtc,

@@ -194,7 +194,7 @@ export function buildRenataPublishedContent(
 			backgroundImageMobile: assets['hero-mobile'],
 			backgroundImageDesktop: assets['hero-desktop'],
 			variant: 'standard',
-			presentation: { portraitEnabled: false },
+			presentation: { portraitEnabled: false, venueIndex: 1 },
 			focalPoint: '50% 32%',
 			focalPointMobile: '50% 34%',
 			focalPointTablet: '48% 30%',
@@ -223,22 +223,6 @@ export function buildRenataPublishedContent(
 			godparents: [
 				{ name: 'Saul Chaidez García' },
 				{ name: 'Yuliana Argelia González Beltrán' },
-			],
-			groups: [
-				{
-					title: 'Mis padres',
-					items: [
-						{ name: 'Ramón Arturo Sainz Quevedo', role: 'Papá' },
-						{ name: 'Dulce Patricia Echevarria Espinoza', role: 'Mamá' },
-					],
-				},
-				{
-					title: 'Mis padrinos',
-					items: [
-						{ name: 'Saul Chaidez García', role: 'Padrino' },
-						{ name: 'Yuliana Argelia González Beltrán', role: 'Madrina' },
-					],
-				},
 			],
 			labels: {
 				sectionSubtitle: 'Familia',

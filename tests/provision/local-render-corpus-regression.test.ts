@@ -52,13 +52,25 @@ function expectedDescriptorComponents(content: Record<string, unknown>): string[
 describe('local render corpus regression sweep', () => {
 	const corpus = listLocalRenderCorpus();
 
+	it.each([
+		['ximena-meza-trasvina', '2026-04-11', '2026-04-12T03:00:00.000Z'],
+		['ana-sofia-cota-guillen', '2026-05-23', '2026-05-24T03:00:00.000Z'],
+	])(
+		'preserves the Production calendar date for %s without changing the actual event instant',
+		(slug, day, instant) => {
+			const entry = corpus.find((item) => item.slug === slug)!;
+			const content = eventContentSchema.parse(resolveCorpusPublishedContent(entry));
+			expect(content.hero.date.slice(0, 10)).toBe(day);
+			expect(content.eventTiming?.startsAtUtc).toBe(instant);
+		},
+	);
+
 	it('registers exactly the 17 supported Production clients', () => {
 		assertLocalRenderCorpusIntegrity();
 		assertCanonicalRegistryCoveredByCorpus();
 		expect(corpus).toHaveLength(EXPECTED_LOCAL_RENDER_CORPUS_SIZE);
 		expect(corpus.map((entry) => entry.slug)).toEqual(
-			listInvitationDefinitions()
-				.map((definition) => definition.slug),
+			listInvitationDefinitions().map((definition) => definition.slug),
 		);
 	});
 

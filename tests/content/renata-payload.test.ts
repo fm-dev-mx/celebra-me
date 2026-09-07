@@ -30,6 +30,14 @@ function buildTestAssets(): RenataAssetMap {
 }
 
 describe('XV Renata provision contract', () => {
+	it('keeps parents and godparents in their original blocks without duplicate groups', () => {
+		const content = eventContentSchema.parse(buildRenataPublishedContent(buildTestAssets()));
+		expect(eventContentSchema.safeParse(content).success).toBe(true);
+		expect(content.family?.groups).toBeUndefined();
+		expect(content.family?.godparents).toHaveLength(2);
+		expect(content.family?.labels?.parentsTitle).toBe('Junto a mis padres');
+	});
+
 	it('registers the managed definition with editorial catalog identity', () => {
 		const definition = getInvitationDefinition('renata');
 		expect(definition.slug).toBe('renata');

@@ -187,6 +187,7 @@ export function buildValentinaPublishedContent(
 			'thankYou',
 		],
 		hero: {
+			presentation: { venueIndex: 1 },
 			name: 'Valentina Hernández Almaguer',
 			label: 'XV Edition',
 			date: VALENTINA_EVENT.startsAtUtc,

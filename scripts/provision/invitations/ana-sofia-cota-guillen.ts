@@ -18,8 +18,9 @@ const content: CanonicalEventContentInput = {
 		intersections: {},
 	},
 	hero: {
+		presentation: { venueIndex: 1 },
 		variant: 'standard',
-		date: '2026-05-24T03:00:00.000Z',
+		date: '2026-05-23T20:00:00.000Z',
 		name: 'Ana Sofía Cota Guillen',
 		label: 'Mis XV Años',
 		portrait: 'portrait',
@@ -215,7 +216,7 @@ const content: CanonicalEventContentInput = {
 		mapStyle: 'dark',
 	},
 	thankYou: {
-		variant: 'editorial-back-cover',
+		variant: 'portrait-keepsake',
 		image: 'thankYouPortrait',
 		message:
 			'Gracias por ser parte de mis XV años. Tu cariño y compañía hacen que este día sea aún más especial.',

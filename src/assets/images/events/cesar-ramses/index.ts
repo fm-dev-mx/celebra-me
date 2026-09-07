@@ -8,7 +8,8 @@ import gallery03 from './gallery-03.webp';
 import gallery04 from './gallery-04.webp';
 import gallery05 from './gallery-05.webp';
 import gallery06 from './gallery-06.webp';
-import hero from './hero.webp';
+import hero from './hero-production.jpg';
+import heroAlternate from './hero.webp';
 import interlude01 from './interlude-01.webp';
 import interlude02 from './interlude-02.webp';
 import reception from './reception.webp';
@@ -24,6 +25,7 @@ export const assets = {
 	gallery05,
 	gallery06,
 	hero,
+	heroAlternate,
 	interlude01,
 	interlude02,
 	reception,
