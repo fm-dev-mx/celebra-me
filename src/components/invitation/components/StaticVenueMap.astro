@@ -1,0 +1,55 @@
+---
+import '@/styles/invitation/_venue-map.scss';
+import type { LocationMapStyle } from '@/lib/invitation/location-presentation';
+import { buildVenueMapTiles } from '@/lib/invitation/venue-map-tiles';
+
+interface Props {
+	lat: number;
+	lng: number;
+	zoom?: number;
+	title?: string;
+	address?: string;
+	mapStyle?: LocationMapStyle;
+}
+const { lat, lng, zoom = 15, title, mapStyle = 'dark' } = Astro.props;
+const { tileGrid, shiftX, shiftY } = buildVenueMapTiles(lat, lng, zoom);
+---
+
+<div
+	class="google-map-container"
+	data-map-style={mapStyle}
+	data-map-preview="static"
+	data-map-provider="carto-voyager"
+>
+	<div class="rustic-map-wrapper">
+		<div class="rustic-map-tiles">
+			{tileGrid.map((tile) => (
+				<img
+					src={tile.url}
+					alt=""
+					loading="lazy"
+					decoding="async"
+					class="rustic-map-tile"
+					data-col={tile.x}
+					data-row={tile.y}
+				/>
+			))}
+		</div>
+		<div class="rustic-map-marker" title={title} aria-label={title}>
+			<div class="rustic-map-pin">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" fill="currentColor">
+					<path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 20 12 20s12-11 12-20c0-6.63-5.37-12-12-12zm0 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
+				</svg>
+			</div>
+			<div class="rustic-map-pulse" />
+		</div>
+	</div>
+	<div class="map-overlay" aria-hidden="true"></div>
+</div>
+
+<style define:vars={{ mapShiftX: `${shiftX}px`, mapShiftY: `${shiftY}px` }}>
+	.google-map-container {
+		--venue-map-shift-x: var(--mapShiftX);
+		--venue-map-shift-y: var(--mapShiftY);
+	}
+</style>

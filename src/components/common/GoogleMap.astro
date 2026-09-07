@@ -1,8 +1,8 @@
 ---
 // Deprecated filename retained as a thin compatibility wrapper for internal imports.
-// The rendered implementation is repository-owned and deterministic.
+// The shared renderer preserves the public Production map preview.
 import type { LocationMapStyle } from '@/lib/invitation/location-presentation';
-import SchematicVenueMap from './SchematicVenueMap.astro';
+import StaticVenueMap from '@/components/invitation/components/StaticVenueMap.astro';
 
 interface Props {
 	lat: number;
@@ -13,9 +13,9 @@ interface Props {
 	mapStyle?: LocationMapStyle;
 }
 
-const { lat, lng, title, address, mapStyle = 'minimal' } = Astro.props as Props;
+const { lat, lng, zoom, title, address, mapStyle = 'minimal' } = Astro.props as Props;
 ---
 
 <div data-map-preview="static">
-	<SchematicVenueMap lat={lat} lng={lng} title={title} address={address} mapStyle={mapStyle} />
+	<StaticVenueMap lat={lat} lng={lng} zoom={zoom} title={title} address={address} mapStyle={mapStyle} />
 </div>
