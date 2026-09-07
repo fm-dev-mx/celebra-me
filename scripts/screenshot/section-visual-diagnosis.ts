@@ -12,6 +12,11 @@ import {
 	assertDiagnosisCoverage,
 	classifySectionDifference,
 	compareSectionImages,
+	normalizeCaptureImageSource,
+	captureImageTransformations,
+	sectionImageSignature,
+	type CapturedImageIdentity,
+	sectionSemanticSignature,
 } from './section-visual-diff';
 import { writeSectionDiagnosisReport } from './section-visual-report';
 
@@ -22,8 +27,9 @@ interface SectionCapture {
 	index: number;
 	width: number;
 	height: number;
+	domBounds?: { x: number; y: number; width: number; height: number };
 	fonts: string[];
-	images: { src: string; objectFit: string; objectPosition: string }[];
+	images: CapturedImageIdentity[];
 	textHash: string;
 }
 interface PageCapture {
@@ -55,6 +61,8 @@ export function parseDiagnosisArgs(args: string[]): Record<string, string> {
 		'production-sha',
 		'preview-sha',
 		'route',
+		'routes',
+		'viewports',
 		'output',
 		'at',
 	];
@@ -71,6 +79,7 @@ export function parseDiagnosisArgs(args: string[]): Record<string, string> {
 		throw new Error('Production and Preview must be distinct origins.');
 	if (options.at && !Number.isFinite(Date.parse(options.at)))
 		throw new Error('Invalid fixed capture time.');
+	if (options.route && options.routes) throw new Error('Use route or routes, not both.');
 	return options;
 }
 
@@ -96,11 +105,43 @@ function validateDiagnosisOrigins(options: Record<string, string>): void {
 	}
 }
 
+function measureSectionPresentation(node: HTMLElement) {
+	return {
+		fonts: [
+			...new Set(
+				Array.from(node.querySelectorAll('h1,h2,h3,p'))
+					.filter((element) =>
+						element.checkVisibility({
+							checkOpacity: true,
+							checkVisibilityCSS: true,
+						}),
+					)
+					.map((element) => {
+						const style = getComputedStyle(element);
+						return `${style.fontFamily} | ${style.fontSize} | ${style.lineHeight} | ${style.fontWeight}`;
+					}),
+			),
+		],
+		images: Array.from(node.querySelectorAll('img'))
+			.filter((image) =>
+				image.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }),
+			)
+			.map((image) => ({
+				src: image.currentSrc || image.getAttribute('src') || '',
+				naturalWidth: image.naturalWidth,
+				naturalHeight: image.naturalHeight,
+				objectFit: getComputedStyle(image).objectFit,
+				objectPosition: getComputedStyle(image).objectPosition,
+			})),
+		text: node.innerText,
+	};
+}
+
 async function capturePage(
 	browser: Browser,
 	origin: string,
 	route: string,
-	viewport: (typeof VISUAL_VIEWPORTS)[number],
+	viewport: { name: string; width: number; height: number },
 	prefix: string,
 	root: string,
 	fixedTime: string,
@@ -124,6 +165,17 @@ async function capturePage(
 				}),
 			);
 		const page = await context.newPage();
+		const deliveredImages = new Map<string, Promise<string | undefined>>();
+		page.on('response', (response) => {
+			if (response.ok() && response.request().resourceType() === 'image')
+				deliveredImages.set(
+					response.url(),
+					response
+						.body()
+						.then((bytes) => digest(bytes))
+						.catch(() => undefined),
+				);
+		});
 		await stabilizeCaptureRandomness(page);
 		await page.clock.setFixedTime(new Date(fixedTime));
 		const response = await page.goto(`${origin}${route}?skipEnvelope=true&animations=off`, {
@@ -176,20 +228,6 @@ async function capturePage(
 					top: Math.max(0, Math.floor(box.top + scrollY)),
 					width: Math.ceil(box.width),
 					height: Math.ceil(box.height),
-					fonts: [
-						...new Set(
-							Array.from(node.querySelectorAll('h1,h2,h3,p')).map((element) => {
-								const style = getComputedStyle(element);
-								return `${style.fontFamily} | ${style.fontSize} | ${style.lineHeight} | ${style.fontWeight}`;
-							}),
-						),
-					],
-					images: Array.from(node.querySelectorAll('img')).map((image) => ({
-						src: image.currentSrc || image.getAttribute('src') || '',
-						objectFit: getComputedStyle(image).objectFit,
-						objectPosition: getComputedStyle(image).objectPosition,
-					})),
-					text: node.innerText,
 				};
 			});
 		});
@@ -205,6 +243,11 @@ async function capturePage(
 					: `.invitation-section-wrapper[data-screenshot-section="${section.key}"]`;
 			const target = page.locator(selector);
 			await target.scrollIntoViewIfNeeded();
+			await page.evaluate(async () => {
+				await document.fonts.ready;
+				await new Promise(requestAnimationFrame);
+			});
+			const presentation = await target.evaluate(measureSectionPresentation);
 			const bounds = await target.boundingBox();
 			if (!bounds) throw new Error(`Missing section bounds: ${section.key}`);
 			section.width = Math.ceil(bounds.width);
@@ -223,11 +266,19 @@ async function capturePage(
 				file,
 				sha256: digest(bytes),
 				index: section.index,
-				width: section.width,
-				height: section.height,
-				fonts: section.fonts,
-				images: section.images,
-				textHash: digest(section.text),
+				width: metadata.width,
+				height: metadata.height,
+				domBounds: bounds,
+				fonts: presentation.fonts,
+				images: await Promise.all(
+					presentation.images.map(async (image) => ({
+						...image,
+						src: normalizeCaptureImageSource(image.src, origin),
+						deliveredSha256: await deliveredImages.get(image.src),
+						transformations: captureImageTransformations(image.src),
+					})),
+				),
+				textHash: digest(presentation.text),
 			};
 		}
 		return {
@@ -272,15 +323,21 @@ async function compareInitialSection(
 	else {
 		const compared = await compareSectionImages(readCapture(root, a), readCapture(root, b));
 		row.ratio = compared.ratio;
-		if (compared.sizeChanged) row.reasons.push('Section dimensions differ');
+		if (compared.sizeChanged)
+			row.reasons.push(
+				`Capture dimensions differ: Production ${a.width}x${a.height}, Preview ${b.width}x${b.height}; DOM heights ${a.domBounds?.height ?? 'unknown'} / ${b.domBounds?.height ?? 'unknown'}.`,
+			);
 		if (a.index !== b.index) row.reasons.push('Section order differs');
 		if (JSON.stringify(a.fonts) !== JSON.stringify(b.fonts))
 			row.reasons.push('Typography differs');
 		if (a.textHash !== b.textHash) row.reasons.push('Visible text differs');
-		if (JSON.stringify(a.images) !== JSON.stringify(b.images))
+		if (sectionImageSignature(a.images) !== sectionImageSignature(b.images))
 			row.reasons.push('Image source or crop differs');
 		row.status =
-			compared.ratio <= 0.001 && !compared.sizeChanged && a.index === b.index
+			compared.ratio <= 0.001 &&
+			!compared.sizeChanged &&
+			a.index === b.index &&
+			sectionSemanticSignature(a) === sectionSemanticSignature(b)
 				? 'MATCH'
 				: 'UNSTABLE';
 		if (row.status !== 'MATCH') {
@@ -320,15 +377,36 @@ async function confirmSection(
 		previewNoise: previewNoise.ratio,
 		sizeChanged: a.width !== b.width || a.height !== b.height,
 		orderChanged: a.index !== b.index,
+		semanticChanged: sectionSemanticSignature(a) !== sectionSemanticSignature(b),
+		semanticUnstable:
+			sectionSemanticSignature(a) !== sectionSemanticSignature(aa) ||
+			sectionSemanticSignature(b) !== sectionSemanticSignature(bb),
 	});
 }
 
 export async function diagnoseSections(args: string[]): Promise<void> {
 	const options = parseDiagnosisArgs(args);
 	const inventory = buildVisualPageCases();
+	const requested = (options.routes ?? options.route)?.split(',');
 	const routes = inventory.filter(
-		(entry) => !options.route || `/${entry.eventType}/${entry.slug}` === options.route,
+		(entry) => !requested || requested.includes(`/${entry.eventType}/${entry.slug}`),
 	);
+	if (
+		requested &&
+		(new Set(requested).size !== requested.length || requested.length !== routes.length)
+	)
+		throw new Error('Unknown or duplicate requested routes.');
+	const availableViewports = [...VISUAL_VIEWPORTS, { name: 'reported', width: 414, height: 896 }];
+	const requestedViewports = options.viewports?.split(',');
+	const viewports = requestedViewports
+		? availableViewports.filter((viewport) => requestedViewports.includes(viewport.name))
+		: VISUAL_VIEWPORTS;
+	if (
+		requestedViewports &&
+		(new Set(requestedViewports).size !== requestedViewports.length ||
+			requestedViewports.length !== viewports.length)
+	)
+		throw new Error('Unknown or duplicate viewports.');
 	if (!routes.length) throw new Error('Requested route is outside the canonical inventory.');
 	const parent = path.resolve('.tmp/visual-parity/diagnostics');
 	const root = path.resolve(
@@ -354,6 +432,9 @@ export async function diagnoseSections(args: string[]): Promise<void> {
 		preview: { url: options['preview-url'], sha: options['preview-sha'] },
 		identitySource: 'Operator-verified deployment identities; use immutable deployment URLs.',
 		localHead: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+		workingTreeDiffSha256: digest(
+			execFileSync('git', ['diff', 'HEAD', '--', 'src', 'scripts', 'astro.config.mjs']),
+		),
 		browser: browser.version(),
 		platform: process.platform,
 		fixedTime,
@@ -363,12 +444,11 @@ export async function diagnoseSections(args: string[]): Promise<void> {
 		threshold: 0.001,
 		pixelChannelTolerance: 24,
 		maskedElements: 'Operational fixed overlays only, via hideFixedOverlaysForCapture',
-		scope: options.route ? 'PARTIAL' : 'FULL',
-		expectedRouteViewports: routes.length * VISUAL_VIEWPORTS.length,
+		scope: requested || requestedViewports ? 'PARTIAL' : 'FULL',
+		selectedViewports: viewports,
+		expectedRouteViewports: routes.length * viewports.length,
 	};
-	const cases = routes.flatMap((entry) =>
-		VISUAL_VIEWPORTS.map((viewport) => ({ entry, viewport })),
-	);
+	const cases = routes.flatMap((entry) => viewports.map((viewport) => ({ entry, viewport })));
 	let next = 0;
 	try {
 		await Promise.all(
@@ -415,6 +495,13 @@ export async function diagnoseSections(args: string[]): Promise<void> {
 							);
 						if (pending.some((row) => row.status !== 'MATCH')) {
 							const [secondProduction, secondPreview] = await capturePair(2);
+							if (
+								production.contentVersion !== secondProduction.contentVersion ||
+								preview.contentVersion !== secondPreview.contentVersion
+							)
+								throw new Error(
+									'Content version changed during capture; evidence invalidated.',
+								);
 							for (const row of pending.filter((row) => row.status !== 'MATCH'))
 								await confirmSection(
 									root,
@@ -453,9 +540,7 @@ export async function diagnoseSections(args: string[]): Promise<void> {
 	}
 	assertDiagnosisCoverage(
 		routes.flatMap((entry) =>
-			VISUAL_VIEWPORTS.map(
-				(viewport) => `/${entry.eventType}/${entry.slug}@${viewport.name}`,
-			),
+			viewports.map((viewport) => `/${entry.eventType}/${entry.slug}@${viewport.name}`),
 		),
 		pages.map((page) => `${page.route}@${page.viewport}`),
 	);

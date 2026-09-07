@@ -65,14 +65,17 @@ export function classifySectionDifference(
 		previewNoise?: number;
 		sizeChanged?: boolean;
 		orderChanged?: boolean;
+		semanticChanged?: boolean;
+		semanticUnstable?: boolean;
 		missing?: boolean;
 	},
 	threshold = 0.001,
 ): 'MATCH' | 'DIFFERENT' | 'UNSTABLE' | 'MISSING' {
 	if (input.missing) return 'MISSING';
+	if (input.semanticUnstable) return 'UNSTABLE';
 	if ((input.productionNoise ?? 0) > threshold || (input.previewNoise ?? 0) > threshold)
 		return 'UNSTABLE';
-	if (input.sizeChanged || input.orderChanged) return 'DIFFERENT';
+	if (input.sizeChanged || input.orderChanged || input.semanticChanged) return 'DIFFERENT';
 	if (input.first <= threshold && (input.repeat ?? 0) <= threshold) return 'MATCH';
 	return input.repeat === undefined || input.repeat <= threshold ? 'UNSTABLE' : 'DIFFERENT';
 }
@@ -84,4 +87,70 @@ export function assertDiagnosisCoverage(expected: string[], observed: string[]):
 	if (new Set(observed).size !== observed.length) throw new Error('Duplicate diagnosis case.');
 	if (expected.length !== observed.length || expected.some((key) => !observed.includes(key)))
 		throw new Error('Incomplete or unexpected diagnosis coverage.');
+}
+
+/** Normalize only the owning deployment origin, preserving image transformations. */
+export function normalizeCaptureImageSource(source: string, origin: string): string {
+	if (!source.trim()) return '';
+	const url = new URL(source, origin);
+	if (url.origin !== new URL(origin).origin) return url.href;
+	url.searchParams.sort();
+	return `{deployment}${url.pathname}${url.search}${url.hash}`;
+}
+
+export function sectionSemanticSignature(section: {
+	textHash: string;
+	fonts: string[];
+	images: CapturedImageIdentity[];
+}): string {
+	return JSON.stringify({
+		text: section.textHash,
+		fonts: section.fonts,
+		images: sectionImageSignature(section.images),
+	});
+}
+
+export interface CapturedImageIdentity {
+	src: string;
+	objectFit: string;
+	objectPosition: string;
+	deliveredSha256?: string;
+	naturalWidth?: number;
+	naturalHeight?: number;
+	transformations?: string;
+}
+
+/** Preserve transform parameters separately from a byte-verified source locator. */
+export function captureImageTransformations(source: string): string {
+	if (!source || source.startsWith('data:')) return '';
+	const url = new URL(
+		source.replace('{deployment}', 'https://deployment.invalid'),
+		'https://deployment.invalid',
+	);
+	if (['/_image', '/_vercel/image'].includes(url.pathname)) {
+		url.searchParams.delete('url');
+		url.searchParams.delete('href');
+	}
+	url.searchParams.sort();
+	const cloudinaryTransform = url.hostname.endsWith('cloudinary.com')
+		? (url.pathname
+				.split('/upload/')[1]
+				?.split('/')
+				.filter((part) => /^(?:w_|h_|c_|q_|f_|g_|e_)/.test(part))
+				.join('/') ?? '')
+		: '';
+	return cloudinaryTransform + url.search;
+}
+
+export function sectionImageSignature(images: CapturedImageIdentity[]): string {
+	return JSON.stringify(
+		images.map((image) => ({
+			source: image.deliveredSha256 ? `sha256:${image.deliveredSha256}` : image.src,
+			transformations: image.transformations ?? captureImageTransformations(image.src),
+			width: image.naturalWidth,
+			height: image.naturalHeight,
+			fit: image.objectFit,
+			position: image.objectPosition,
+		})),
+	);
 }
