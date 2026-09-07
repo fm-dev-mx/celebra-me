@@ -845,3 +845,21 @@ test('diagnostic randomness repeats across fresh documents without becoming cons
 	expect(values[0]).toEqual(values[1]);
 	expect(new Set(values[0]).size).toBe(4);
 });
+
+test('ornamented access preserves explicit inherited presentation tokens', async ({ page }) => {
+	await page.goto(
+		'/test/variant?section=personalizedAccess&variant=ornamented&preset=jewelry-box',
+	);
+	const access = page.locator('.personalized-access');
+	await expect(access).toBeVisible();
+	await access.evaluate((element) => {
+		const parent = element.parentElement!;
+		parent.style.setProperty('--pa-corner-opacity', '0.25');
+		parent.style.setProperty('--pa-card-glow', 'none');
+	});
+	await expect(access.locator('.access-card__corner').first()).toHaveCSS('opacity', '0.25');
+	const glow = await access
+		.locator('.access-card')
+		.evaluate((element) => getComputedStyle(element, '::after').backgroundImage);
+	expect(glow).toBe('none');
+});
