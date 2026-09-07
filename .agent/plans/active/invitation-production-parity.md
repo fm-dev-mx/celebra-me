@@ -54,8 +54,8 @@ unstable location capture. All 30 routes were captured in two viewports.
   marker palette. The compiled style regression reproduces Production colors; Local location
   captures match Production with zero differing pixels in both viewports.
 - Image-delivery differences and remaining section geometry remain open. An explicit
-  backward-compatible image delivery contract was proposed to the owner; approval is pending. Do not
-  infer that approval from the caption exception.
+  backward-compatible image delivery contract was explicitly approved by the owner. Keep that
+  authorization separate from the caption exception.
 
 ## Latest verification
 
@@ -87,3 +87,41 @@ Preview, all current public routes and full pages at 390x844 and 1440x900, plus 
 routes at 414x896. Recheck content versions and invalidate evidence on deployment/content drift. Use
 the existing visual:parity manifests and human approval at the exact final SHA. No unexplained or
 unaccepted difference may remain. Database health does not imply visual parity.
+
+## Explicit image delivery implementation (in progress)
+
+The owner approved the recommended image delivery contract. Optional delivery settings now flow
+through canonical definitions, published asset references, adapters, and shared image components.
+Omitted settings retain existing rendering defaults. Source preservation is opt-in and decodes the
+complete image while retaining dimension, byte-size, MIME, and applicable role-budget validation.
+Versioned Local object paths prevent mutable Storage URLs from entering the image-transform cache.
+Cloudinary URLs retain the declared original extension instead of silently requesting WebP.
+
+Migration 20260907230000 expands validated-original JPEG/PNG acceptance without updating rows. It
+must be applied through db:migrate to Local, then Preview, before original-format publication.
+Production remains read-only. Local now has 83 migrations after guarded application of this
+migration. Preview still has 82 and requires the new migration before original-format publication.
+Cesar's desktop and mobile sources are the first evidence-backed declarations. Local publication
+created version 6 with two new versioned objects, zero overwritten objects, and zero deletions.
+A repeated release dry-run proposes zero logical, database, or Storage changes.
+
+Focused validation: 112 image/publication tests and 32 pipeline/registry tests passed (overlapping
+suites; do not sum). Chromium verifies exact original bytes and dimensions through canonical content
+resolution at 390px and 1440px. Initial type-check found three generic indexing errors; corrected,
+subsequent full CI passed in `.agent/tmp/parity-image-contract-ci-verified.log`: type checks,
+533 unit suites / 6044 tests (one skipped), 230 browser tests, and build. The disposable database
+suite passed 153 assertions after a guarded disposable-only reset. The final-tree rerun in `.agent/tmp/parity-image-contract-release-ci.log` also passed all of those
+checks. Local object audit is CURRENT with 83/83 migrations, zero structural findings, and a
+matching disposable-reference fingerprint. Local and Preview mutation-schema contracts pass.
+
+Local public-route evidence is in `.tmp/visual-parity/diagnostics/local-cesar-original-delivery/`
+and its `-mobile` rerun. Desktop hero matches the existing threshold. Mobile hero has identical
+image bytes, intrinsic dimensions, and crop but a repeatable pixel difference in two text elements.
+Font bytes, computed styles, and element bounds match in the follow-up probe; the remaining cause
+is not established. Other sections still differ. Preview remains deployed at 0b8e2e7c and does not
+include this implementation. None of these results establish complete visual parity or acceptance.
+
+REGRESSION_DECISION: Add executable propagation, byte-preservation, MIME provenance,
+immutable-cache, and browser source-selection regressions because source conversion and dropped
+delivery metadata can escape section screenshot thresholds. Retain existing visual thresholds and
+caption exception.
