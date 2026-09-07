@@ -8,8 +8,8 @@ import { getEnv } from '@/lib/server/env';
  * Flip a boolean here to disable a local-only preview. Do not use env vars.
  */
 export const LOCAL_INVITATION_PREVIEW = {
-	showPersonalizedAccessWithoutGuest: true,
-	showMusicPlayerWithoutUrl: true,
+	showPersonalizedAccessWithoutGuest: false,
+	showMusicPlayerWithoutUrl: false,
 } as const;
 
 export type InvitationMusicPlayerProps = {
@@ -37,7 +37,8 @@ export function hasPlayableMusicUrl(url: string | undefined | null): boolean {
 
 export function shouldShowLocalPersonalizedAccessPreview(): boolean {
 	return (
-		canUseLocalInvitationPreview() && LOCAL_INVITATION_PREVIEW.showPersonalizedAccessWithoutGuest
+		canUseLocalInvitationPreview() &&
+		LOCAL_INVITATION_PREVIEW.showPersonalizedAccessWithoutGuest
 	);
 }
 

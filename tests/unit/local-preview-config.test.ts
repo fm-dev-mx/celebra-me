@@ -126,13 +126,7 @@ describe('local invitation preview config', () => {
 					music: undefined,
 					envelopeEnabled: true,
 				}),
-			).toEqual({
-				url: '',
-				autoPlay: false,
-				title: undefined,
-				revealMode: 'envelope',
-				variant: 'standard',
-			});
+			).toBeUndefined();
 		});
 	});
 
@@ -199,5 +193,14 @@ describe('local invitation preview config', () => {
 
 		expect(shouldShowMusicPlayer('')).toBe(false);
 		expect(shouldShowLocalPersonalizedAccessPreview()).toBe(false);
+	});
+});
+
+describe('public local parity defaults', () => {
+	it('does not inject guest passes or empty music into ordinary public routes', () => {
+		expect(LOCAL_INVITATION_PREVIEW).toEqual({
+			showPersonalizedAccessWithoutGuest: false,
+			showMusicPlayerWithoutUrl: false,
+		});
 	});
 });
