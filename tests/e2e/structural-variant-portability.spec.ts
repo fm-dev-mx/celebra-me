@@ -739,7 +739,23 @@ for (const preset of ['celestial-blue', 'jewelry-box']) {
 			};
 		});
 		expect(geometry.width).toBeCloseTo(256, 1);
-		expect(geometry.height).toBeCloseTo(384, 1);
+		expect(geometry.height).toBeCloseTo(256, 1);
+		// A 4:5 portrait must retain its intrinsic ratio, as delivered in Production.
+		await section.locator('.photo-image').evaluate(async (element) => {
+			const image = element as HTMLImageElement;
+			image.removeAttribute('srcset');
+			image.src =
+				'data:image/svg+xml,' +
+				encodeURIComponent(
+					'<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="400" height="500" fill="tan"/></svg>',
+				);
+			await image.decode();
+		});
+		const intrinsicHeight = await section
+			.locator('.thank-you-editorial__media')
+			.evaluate((element) => element.getBoundingClientRect().height);
+		expect(intrinsicHeight).toBeCloseTo(320, 1);
+
 		expect(geometry.fontSize).toBeCloseTo(25.668, 2);
 		expect(geometry.font.replace(/["']/g, '')).toBe(geometry.displayFont.replace(/["']/g, ''));
 	});
