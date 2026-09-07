@@ -42,9 +42,43 @@ unstable location capture. All 30 routes were captured in two viewports.
 - Wedding itinerary titles: the global anywhere wrapping split words within a narrow timeline
   column. Restore normal word boundaries in the existing wedding skin. Both viewport heights now
   match Production; remaining pixel differences are not accepted by this result.
-- Image-delivery differences, remaining section geometry, and the unstable capture remain open. An
-  explicit backward-compatible image delivery contract was proposed to the owner; approval is
-  pending. Do not infer that approval from the caption exception.
+- Ornamented access: restore explicit inherited corner opacity and card glow instead of replacing
+  them on the variant root. The editorial demo access matches Production in both aligned captures.
+- Section capture alignment: fractional section origins introduced rasterization differences even
+  with equal dimensions. Align isolated captures to the pixel grid, retain original DOM bounds and
+  offsets, and reject authored CSS translate. Geometry and visible-change regressions pass. This
+  does not normalize full pages or relax comparison thresholds. Wedding itinerary matches in both
+  aligned captures; full inventory comparison is being repeated.
+- Alba location: extracting scoped map CSS changed cascade precedence, activating previously
+  ineffective profile marker/halo colors. Remove those redundant overrides and retain the shared
+  marker palette. The compiled style regression reproduces Production colors; Local location
+  captures match Production with zero differing pixels in both viewports.
+- Image-delivery differences and remaining section geometry remain open. An explicit
+  backward-compatible image delivery contract was proposed to the owner; approval is pending. Do not
+  infer that approval from the caption exception.
+
+## Latest verification
+
+The repeated deployed Preview inventory in `.tmp/visual-parity/diagnostics/preview-0b8-aligned-all/`
+covers 60 route/viewports and 756 sections: 570 MATCH, 185 DIFFERENT, and one UNSTABLE, affecting 27
+routes. Of the findings, 133 include image identity/delivery differences. Preview still runs
+0b8e2e7c and does not contain the current style corrections. These numbers are not a measurement of
+the corrected Local candidate or an acceptance.
+
+Full CI passed type checks and 532 unit suites (6027 tests; one skipped), then failed one combined
+seal/CTA test on its 30-second total budget. The unchanged test passed three isolated repeats
+(24.4s, 13.2s, 13.2s). Split the two interactions into separate cases with the same closed/revealed
+assertions and unchanged timeouts. The separated cases passed. The final full rerun in
+`.agent/tmp/parity-aligned-map-ci-verified.log` passed: type checks, 532 unit suites / 6027 tests
+(one skipped), 224 browser tests, and build.
+
+A status read during concurrent validation reported 16/17 synchronized and Ximena behind in Preview.
+Both content-only and content-and-assets/verify dry-runs found zero operations. The independent live
+fingerprint probe classified Ximena as matching in both environments. A fresh complete read after CI
+in `.agent/tmp/parity-aligned-local-preview-dbs-verified.json` confirms 17/17 synchronized, 82/82
+migrations in both environments, zero attention items, and zero identity conflicts. No corrective DB
+writes were performed. The transient alert was not reproduced; its cause is not established. Keep
+that earlier evidence rather than attributing it to a database defect. Production was excluded.
 
 ## Acceptance
 
