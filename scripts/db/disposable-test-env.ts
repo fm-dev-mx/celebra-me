@@ -521,6 +521,7 @@ function cmdRunTests(): void {
 
 	const testFiles = [
 		'atomic_invitation_publication.test.sql',
+		'invitation_original_image_delivery.test.sql',
 		'managed_identity_archive_cascade.test.sql',
 		'valentina_memories_production_readiness.test.sql',
 	];

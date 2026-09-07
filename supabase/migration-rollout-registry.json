@@ -83,10 +83,7 @@
             "phase": "contract",
             "requiresDeployedAppCapabilities": ["published_content_service_role_renderer"],
             "provides": ["published_invitation_content_private", "public_rsvp_pgcrypto_qualified"],
-            "revokes": [
-                "published_invitation_content_client_read",
-                "bff_owned_client_dml"
-            ],
+            "revokes": ["published_invitation_content_client_read", "bff_owned_client_dml"],
             "notes": "Revokes direct client reads for published invitation JSON and direct DML on BFF-owned invitation/intake resources; reapplies the create-only RSVP RPC with extensions.gen_random_bytes under search_path=public."
         },
         "__historical_rsvp_dml_revoke__": {
@@ -94,6 +91,12 @@
             "requiresDeployedAppCapabilities": ["public_guest_rsvp_rpc_client"],
             "revokes": ["direct_guest_service_role_dml"],
             "notes": "Synthetic registry entry modeling the revoke-before-RPC-app outage class for regression tests."
+        },
+        "20260907230000": {
+            "phase": "contract",
+            "provides": ["validated_original_invitation_images"],
+            "notes": "Replaces the WebP-only CHECK with a superset accepting validated original JPEG/PNG. Existing rows and rendered content remain unchanged; pin deployed app identity before hosted apply and publish originals only with the updated validator.",
+            "revokes": ["invitation_asset_webp_only_validation"]
         }
     },
     "appCapabilities": {
