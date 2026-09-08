@@ -1,3 +1,8 @@
+import {
+	formatCanonicalSummary,
+	publicationStatusLabel,
+	publicationInspectionCommand,
+} from './canonical-status-summary';
 /**
  * CLI text for the canonical status view. Formatter only — no classifiers.
  */
@@ -159,15 +164,10 @@ export function formatAttentionCard(
 
 	const lines: string[] = [titleLine, whyLine];
 
-	if (row.handoff.dryRunCommand) {
-		const label =
-			row.handoff.dryRunStepType === 'Diagnose'
-				? 'Diagnose'
-				: row.handoff.dryRunStepType === 'Verify'
-					? 'Verify'
-					: 'Action';
+	const inspectionCommand = publicationInspectionCommand(row);
+	if (inspectionCommand) {
 		lines.push(
-			...formatTaskPromptCommand(label, row.handoff.dryRunCommand, '   ', c.brightCyan),
+			...formatTaskPromptCommand('Revisar cambios', inspectionCommand, '   ', c.brightCyan),
 		);
 	}
 
@@ -437,7 +437,7 @@ function formatPublicationSummaryCard(
 	const c = getColors(options);
 	const transition = formatTransitionLabel(row.source, row.destination);
 	const lines = [
-		`${c.dim(String(index) + '.')} ${c.bold(row.title)}  ${c.dim(`[${row.action}] ${transition}`)}`,
+		`${c.dim(String(index) + '.')} ${c.bold(row.title)} (${row.slug})  ${c.dim(`[${row.action}] ${transition}`)}`,
 		`   ${c.dim('Why:')}     ${formatWhyLine(row)}`,
 	];
 	lines.push(`   ${c.dim('Command lives once in NEXT ACTIONS.')}`);
@@ -629,7 +629,7 @@ function formatOperationalActionPlan(
 ): string[] {
 	const c = getColors(options);
 	const plan = buildOperationalActionPlan(view);
-	const healthText = `${plan.health.label} (${plan.health.unresolvedChecks} acción(es))`;
+	const healthText = `${plan.health.unresolvedChecks} controles o publicaciones pendientes`;
 	const lines = [
 		c.dim('─'.repeat(headerWidth)),
 		`  ${c.bold('OPERATIONAL HEALTH')}: ${styleBySemantic(c, plan.health.status === 'GREEN' ? 'verified' : plan.health.status === 'ACTION_REQUIRED' ? 'blocked' : 'unverified', healthText)}`,
@@ -642,10 +642,23 @@ function formatOperationalActionPlan(
 		return lines;
 	}
 	for (const [index, action] of plan.actions.entries()) {
+		const promotion =
+			action.domain === 'publication'
+				? view.promotions.find((row) => row.slug === action.subject)
+				: undefined;
+		const actionLabel = promotion
+			? publicationStatusLabel(promotion)
+			: SEMANTIC_LABELS[action.semantic];
 		lines.push(
-			`  ${index + 1}. ${c.bold(action.title)} ${styleBySemantic(c, action.semantic, SEMANTIC_LABELS[action.semantic] ?? action.semantic)}`,
+			`  ${index + 1}. ${c.bold(action.title)} ${styleBySemantic(c, action.semantic, actionLabel ?? action.semantic)}`,
 		);
 		lines.push(`     ${action.summary}`);
+		const inspection = promotion ? publicationInspectionCommand(promotion) : null;
+		if (inspection && !action.steps.some((step) => step.command === inspection)) {
+			lines.push(
+				...formatTaskPromptCommand('Revisar cambios', inspection, '     ', c.brightCyan),
+			);
+		}
 		for (const step of action.steps) {
 			const owner = step.requiresOwner ? ' 🔒 OWNER / HITL' : '';
 			if (!step.command) {
@@ -682,6 +695,14 @@ export function formatCanonicalStatusView(
 ): string {
 	const verbose = Boolean(options?.verbose);
 	const c = getColors(options);
+	if (!verbose) {
+		const details = [
+			...(options?.includeInSync ? formatInSyncSection(view, true, options) : []),
+			...formatDiagnosticsSection(view, false, options?.diagnostics, options),
+		];
+		const detailsText = details.length > 0 ? details.join('\n') + '\n' : '';
+		return formatCanonicalSummary(view, options?.backupHealth) + detailsText;
+	}
 	const labelCol = 18;
 	const envCol = 28;
 	const headerWidth = labelCol + envCol * (view.selectedTargets ?? ENVS).length;

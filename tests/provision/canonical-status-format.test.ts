@@ -1,11 +1,14 @@
 import { describe, expect, it } from '@jest/globals';
 import {
-	formatCanonicalStatusView,
+	formatCanonicalStatusView as renderCanonicalStatusView,
 	formatSlugStatusView,
 } from '../../scripts/provision/canonical-status-format.ts';
 import { buildCanonicalStatusViewFixture } from '../helpers/canonical-status-fixture.ts';
 
 const NO_COLOR_ENV = { NO_COLOR: '1' };
+// Existing detail contracts belong to the explicit verbose view.
+const formatCanonicalStatusView: typeof renderCanonicalStatusView = (view, options) =>
+	renderCanonicalStatusView(view, { ...options, verbose: true });
 
 describe('canonical status CLI format', () => {
 	it('scopes CURRENT to schema and keeps disposable separate', () => {
