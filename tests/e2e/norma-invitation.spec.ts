@@ -15,6 +15,13 @@ for (const width of [360, 390, 768, 1440]) {
 		await page.evaluate(() => document.fonts.ready);
 		const chapters = page.locator('[data-gallery-item]');
 		await expect(chapters).toHaveCount(4);
+		const family = chapters.nth(2);
+		await expect(family).toHaveAttribute('data-image-orientation', 'landscape');
+		if (width >= 768) {
+			const familyImage = await family.locator('img').boundingBox();
+			const portraitImage = await chapters.first().locator('img').boundingBox();
+			expect(familyImage!.width).toBeGreaterThan(portraitImage!.width * 1.6);
+		}
 		for (const chapter of await chapters.all()) {
 			await chapter.scrollIntoViewIfNeeded();
 			await expect(chapter.locator('.gallery-grid__caption')).toBeVisible();

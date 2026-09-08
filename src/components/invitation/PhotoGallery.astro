@@ -38,7 +38,8 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 			: (image as ImageMetadata | string);
 	const src = typeof rawSource === 'string' ? rawSource : rawSource.src;
 	const meta = typeof image === 'object' && 'width' in image ? image : (typeof rawSource !== 'string' ? rawSource : null);
-	return { rawSource, src, width: meta?.width ?? 800, height: meta?.height ?? 1000 };
+	const delivery = 'delivery' in image ? image.delivery : undefined;
+	return { rawSource, src, width: delivery?.width ?? meta?.width ?? 800, height: delivery?.height ?? meta?.height ?? 1000 };
 };
 ---
 
@@ -55,6 +56,7 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 				data-gallery-item
 				data-reveal-item
 				data-gallery-index={index}
+				data-image-orientation={width > height ? 'landscape' : 'portrait'}
 				data-layout-role={layoutRole}
 				data-image-key={item.key}
 				data-gallery-src={src}

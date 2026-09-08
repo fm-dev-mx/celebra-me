@@ -4,7 +4,7 @@
 	--gallery-container-max-width: 68rem;
 	--gallery-caption-font: var(--font-display);
 	--gallery-caption-color: var(--color-text-primary);
-	--gallery-caption-size: clamp(1.4rem, 2.5vw, 2rem);
+	--gallery-caption-size: clamp(1.125rem, 1.8vw, 1.25rem);
 	--gallery-caption-style: normal;
 	--gallery-caption-letter-spacing: 0;
 	--gallery-caption-bg: transparent;
@@ -25,6 +25,9 @@
 	}
 
 	.gallery-section__title {
+		font-size: clamp(2rem, 4vw, 2.75rem);
+		font-style: normal;
+		line-height: 1;
 		font-weight: 400;
 		text-transform: none;
 		letter-spacing: -0.02em;
@@ -34,20 +37,21 @@
 		display: flex;
 		flex-direction: column;
 		gap: clamp(4rem, 9vw, 8rem);
-		counter-reset: chapter;
 	}
 
 	.gallery-grid .gallery-grid__item {
+		position: relative;
+		isolation: isolate;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
-		gap: 2rem;
+		gap: 1.5rem;
 		align-items: center;
 		width: 100%;
 		max-width: none;
 		max-height: none;
 		height: auto;
 		aspect-ratio: auto;
-		padding: 0;
+		padding: clamp(1rem, 3vw, 2.5rem);
 		border: 0;
 		border-radius: 0;
 		background: transparent;
@@ -55,7 +59,6 @@
 		overflow: visible;
 		opacity: 100%;
 		transform: none;
-		counter-increment: chapter;
 
 		@include mixins.respond-to(md) {
 			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -70,24 +73,40 @@
 				grid-column: 1;
 				grid-row: 1;
 			}
-		}
 
-		&::before,
-		&::after {
-			content: none;
+			&[data-image-orientation='landscape'] {
+				grid-template-columns: minmax(0, 1fr);
+				padding-inline: 0;
+			}
+
+			&[data-image-orientation='landscape'] img {
+				max-width: none;
+				grid-column: 1;
+				grid-row: 1;
+			}
+
+			&[data-image-orientation='landscape'] .gallery-grid__overlay {
+				grid-column: 1;
+				grid-row: 2;
+				max-width: 44rem;
+				margin-inline: auto;
+				text-align: center;
+			}
 		}
 
 		img {
 			display: block;
 			width: 100%;
+			max-width: min(78vw, 22rem);
+			justify-self: center;
 			height: auto;
 			max-height: none;
 			aspect-ratio: auto;
 			object-fit: contain;
 			filter: none;
 			transform: none;
-			border-radius: 0;
-			box-shadow: 0 0.75rem 2rem rgb(var(--color-text-primary-rgb) / 8%);
+			border-radius: 1.5rem;
+			box-shadow: none;
 		}
 
 		&:focus-visible {
@@ -106,21 +125,18 @@
 		transform: none;
 		backdrop-filter: none;
 		text-align: center;
+
+		@include mixins.respond-to(md) {
+			text-align: left;
+		}
 	}
 
 	.gallery-grid__caption {
-		line-height: 1.55;
+		max-width: 34ch;
+		margin-inline: auto;
+		line-height: 1.5;
 		text-transform: none;
 		text-wrap: pretty;
-
-		&::before {
-			content: counter(chapter, decimal-leading-zero);
-			display: block;
-			margin-bottom: 1.5rem;
-			font: 500 0.75rem / 1 var(--font-body);
-			letter-spacing: 0.15em;
-			color: var(--color-action-accent);
-		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
