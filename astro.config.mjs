@@ -80,8 +80,8 @@ function testVariantHarnessIntegration() {
 }
 
 /**
- * Dev-only integration: checks if local Supabase is responding, attempts automatic container
- * recovery if port bindings were dropped by Docker, and emits a helpful warning if unreachable.
+ * Dev-only integration: checks if local Supabase is responding and warns if unreachable.
+ * Service recovery belongs to the operator; starting Astro must not restart shared containers.
  */
 function supabaseDevPreflightIntegration() {
 	return {
@@ -104,40 +104,6 @@ function supabaseDevPreflightIntegration() {
 					clearTimeout(timer);
 
 					if (res && res.ok) return;
-
-					// Attempt auto-recovery of local containers if Docker dropped port bindings
-					try {
-						const { exec } = await import('node:child_process');
-						const { promisify } = await import('node:util');
-						const execAsync = promisify(exec);
-
-						console.info(
-							'\x1b[36m%s\x1b[0m',
-							'▲ [supabase] Detectando puertos locales desconectados. Intentando reconectar...',
-						);
-
-						await execAsync(
-							'docker restart supabase_kong_celebra-me-rsvp supabase_db_celebra-me-rsvp',
-							{ timeout: 8000 },
-						);
-
-						const verifyController = new AbortController();
-						const verifyTimer = setTimeout(() => verifyController.abort(), 1000);
-						const verifyRes = await fetch(`${supabaseUrl.replace(/\/+$/, '')}/auth/v1/health`, {
-							signal: verifyController.signal,
-						}).catch(() => null);
-						clearTimeout(verifyTimer);
-
-						if (verifyRes && verifyRes.ok) {
-							console.info(
-								'\x1b[32m%s\x1b[0m',
-								'✓ [supabase] Puertos locales de Supabase (54321, 54322) reconectados exitosamente.\n',
-							);
-							return;
-						}
-					} catch {
-						// Fall through to standard warning if auto-recovery fails
-					}
 
 					console.warn(
 						'\x1b[33m%s\x1b[0m',
