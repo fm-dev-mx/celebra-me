@@ -9,10 +9,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { getInvitationAssetSourceDir } from '../invitations/invitation-definition.ts';
-import {
-	getInvitationDefinition,
-	listInvitationDefinitions,
-} from '../invitations/registry.ts';
+import { getInvitationDefinition, listInvitationDefinitions } from '../invitations/registry.ts';
 
 export type CorpusClassification = 'canonical';
 export type CorpusSourceStrategy = 'canonical_definition';
@@ -31,9 +28,12 @@ export interface LocalRenderCorpusEntry {
 	readonly sourceDefinition: string;
 }
 
-function assetReadiness(definition: ReturnType<typeof getInvitationDefinition>): 'ready' | 'missing' {
+function assetReadiness(
+	definition: ReturnType<typeof getInvitationDefinition>,
+): 'ready' | 'missing' {
 	const root = getInvitationAssetSourceDir(definition);
-	return existsSync(root) && definition.assets.every((asset) => existsSync(join(root, asset.relativePath)))
+	return existsSync(root) &&
+		definition.assets.every((asset) => existsSync(join(root, asset.relativePath)))
 		? 'ready'
 		: 'missing';
 }
@@ -45,7 +45,9 @@ function assetStrategyFor(slug: string): CorpusAssetStrategy {
 		: 'VERSIONED_LOCAL_ASSET';
 }
 
-function deriveEntry(definition: ReturnType<typeof getInvitationDefinition>): LocalRenderCorpusEntry {
+function deriveEntry(
+	definition: ReturnType<typeof getInvitationDefinition>,
+): LocalRenderCorpusEntry {
 	return {
 		slug: definition.slug,
 		eventType: definition.eventType,
@@ -60,7 +62,7 @@ function deriveEntry(definition: ReturnType<typeof getInvitationDefinition>): Lo
 	};
 }
 
-export const EXPECTED_LOCAL_RENDER_CORPUS_SIZE = 17;
+export const EXPECTED_LOCAL_RENDER_CORPUS_SIZE = 18;
 
 export const LOCAL_RENDER_CORPUS: readonly LocalRenderCorpusEntry[] =
 	listInvitationDefinitions().map(deriveEntry);
@@ -79,17 +81,23 @@ export function assertLocalRenderCorpusIntegrity(): void {
 			`Local Render Corpus must contain exactly ${EXPECTED_LOCAL_RENDER_CORPUS_SIZE} managed canonical invitations (found ${LOCAL_RENDER_CORPUS.length}).`,
 		);
 	}
-	const definitions = new Map(listInvitationDefinitions().map((definition) => [definition.slug, definition]));
+	const definitions = new Map(
+		listInvitationDefinitions().map((definition) => [definition.slug, definition]),
+	);
 	const slugs = new Set<string>();
 	const routes = new Set<string>();
 	for (const entry of LOCAL_RENDER_CORPUS) {
-		if (slugs.has(entry.slug)) throw new Error(`Duplicate Local Render Corpus slug: ${entry.slug}`);
+		if (slugs.has(entry.slug))
+			throw new Error(`Duplicate Local Render Corpus slug: ${entry.slug}`);
 		slugs.add(entry.slug);
 		const definition = definitions.get(entry.slug);
 		if (!definition) {
 			throw new Error(`Corpus entry ${entry.slug} has no canonical definition.`);
 		}
-		if (entry.sourceStrategy !== 'canonical_definition' || entry.classification !== 'canonical') {
+		if (
+			entry.sourceStrategy !== 'canonical_definition' ||
+			entry.classification !== 'canonical'
+		) {
 			throw new Error(`Corpus entry ${entry.slug} is not canonical-definition backed.`);
 		}
 		if (entry.sourceDefinition !== `scripts/provision/invitations/${entry.slug}.ts`) {
@@ -99,9 +107,14 @@ export function assertLocalRenderCorpusIntegrity(): void {
 		if (routes.has(route)) throw new Error(`Duplicate Local Render Corpus route: ${route}`);
 		routes.add(route);
 		if (entry.slug.startsWith('demo-') || entry.slug === 'e2e-preview-publication') {
-			throw new Error(`Excluded slug incorrectly registered in Local Render Corpus: ${entry.slug}`);
+			throw new Error(
+				`Excluded slug incorrectly registered in Local Render Corpus: ${entry.slug}`,
+			);
 		}
-		if (entry.themeId !== definition.themeId || entry.visualProfileId !== definition.visualProfileId) {
+		if (
+			entry.themeId !== definition.themeId ||
+			entry.visualProfileId !== definition.visualProfileId
+		) {
 			throw new Error(`Corpus metadata drift for ${entry.slug}.`);
 		}
 		const expectedAssetStatus = assetReadiness(definition);
@@ -110,7 +123,10 @@ export function assertLocalRenderCorpusIntegrity(): void {
 		}
 	}
 	const definitionsList = listInvitationDefinitions();
-	if (definitionsList.length !== slugs.size || definitionsList.some((definition) => !slugs.has(definition.slug))) {
+	if (
+		definitionsList.length !== slugs.size ||
+		definitionsList.some((definition) => !slugs.has(definition.slug))
+	) {
 		throw new Error('Invitation registry and Local Render Corpus are out of sync.');
 	}
 }

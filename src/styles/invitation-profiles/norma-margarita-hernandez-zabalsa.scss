@@ -1,0 +1,120 @@
+@use '@fontsource-variable/montserrat/index.css' as montserrat;
+
+.event--norma-margarita-hernandez-zabalsa.theme-preset--luxury-hacienda {
+	--color-surface-primary: rgb(250 246 240);
+	--color-surface-primary-rgb: 250 246 240;
+	--color-surface-secondary: rgb(232 201 208);
+	--color-surface-secondary-rgb: 232 201 208;
+	--color-surface-elevated: rgb(255 253 250);
+	--color-surface-elevated-rgb: 255 253 250;
+	--color-surface-dark: rgb(75 48 59);
+	--color-text-primary: rgb(75 48 59);
+	--color-text-primary-rgb: 75 48 59;
+	--color-text-secondary: rgb(101 68 81);
+	--color-action-accent: rgb(146 93 112);
+	--color-action-accent-rgb: 146 93 112;
+	--color-text-on-dark: rgb(250 246 240);
+	--color-warm-ivory: var(--color-surface-primary);
+	--color-warm-ivory-rgb: var(--color-surface-primary-rgb);
+	--color-blush-pink-rgb: var(--color-surface-secondary-rgb);
+	--color-rose-shadow-rgb: var(--color-text-primary-rgb);
+	--color-deep-rose-red-rgb: var(--color-action-accent-rgb);
+	--color-candle-gold-rgb: var(--color-surface-secondary-rgb);
+	--color-antique-gold-rgb: var(--color-surface-secondary-rgb);
+	--font-display: 'Cormorant Garamond Variable', georgia, serif;
+	--font-body: 'Montserrat Variable', sans-serif;
+	--font-calligraphy: var(--font-display);
+	--color-text-on-dark-rgb: 250 246 240;
+	--color-surface-dark-rgb: 75 48 59;
+	--quote-bg: var(--color-surface-primary);
+	--quote-text-color: var(--color-text-primary);
+	--quote-padding-block: clamp(3rem, 7vw, 5rem);
+	--countdown-section-background: var(--color-surface-secondary);
+	--countdown-section-padding: clamp(4rem, 8vw, 6rem) 1.5rem;
+	--countdown-section-shadow: none;
+	--countdown-title-color: var(--color-text-primary);
+	--countdown-title-shadow: none;
+	--countdown-reduced-title-bg: transparent;
+	--countdown-segment-bg: var(--color-surface-primary);
+	--countdown-segment-shadow: none;
+	--countdown-value-color: var(--color-text-primary);
+	--countdown-label-color: var(--color-text-primary);
+	--countdown-footer-color: var(--color-text-primary);
+	--location-bg: var(--color-surface-primary);
+	--location-card-bg: var(--color-surface-elevated);
+	--location-date-color: var(--color-text-secondary);
+	--location-hour-color: var(--color-text-primary);
+	--location-address-color: var(--color-text-secondary);
+	--location-address-font-size: 1rem;
+	--location-hour-font-size: 1rem;
+	--location-date-font-size: 1rem;
+	--location-nav-font-size: 1rem;
+	--location-nav-letter-spacing: 0.025em;
+	--location-indication-text-font-size: 1rem;
+	--location-indication-text-color: var(--color-text-primary);
+	--location-nav-hover-color: var(--color-text-on-dark);
+	--font-body-hacienda: var(--font-body);
+	--font-display-hacienda: var(--font-display);
+	--font-body-narrative: var(--font-display);
+	--section-title-font: var(--font-display);
+	--section-padding-block: clamp(3.5rem, 7vw, 6.5rem);
+	--gallery-section-bg: var(--color-surface-primary);
+	--gallery-title-color: var(--color-text-primary);
+	--gallery-title-font: var(--font-display);
+	--location-section-bg: var(--color-surface-primary);
+	--location-title-font-family: var(--font-display);
+	--location-place-font-family: var(--font-display);
+	--location-date-font-family: var(--font-body);
+	--location-hour-font-family: var(--font-body);
+	--location-address-font-family: var(--font-body);
+	--location-indication-text-font-family: var(--font-body);
+	--rsvp-section-bg: var(--color-surface-primary);
+	--rsvp-title-color: var(--color-text-primary);
+	--pa-title-font: var(--font-display);
+	--pa-guest-font: var(--font-display);
+
+	.envelope-wrapper[data-variant='luxury-hacienda'] {
+		--env-bg: var(--color-surface-primary);
+		--env-paper-bg: var(--color-surface-secondary);
+		--env-paper-border: var(--color-action-accent);
+		--env-text-primary: var(--color-text-primary);
+		--env-text-secondary: var(--color-text-primary);
+		--env-accent: var(--color-text-primary);
+		--env-seal-bg: var(--color-action-accent);
+		--env-seal-icon-override: var(--color-surface-primary);
+		--env-shadow-seal: 0 4px 12px rgb(75 48 59 / 18%);
+		--env-container-skin-shadow: 0 16px 40px rgb(75 48 59 / 14%);
+		--env-open-label-size: 1rem;
+		--env-open-label-opacity: 100%;
+		--env-open-label-spacing: 0.08em;
+		--reveal-card-bg: var(--color-surface-primary);
+		--reveal-card-text-primary: var(--color-text-primary);
+		--color-text-tooltip: var(--color-text-primary);
+		--duration-reveal: 1.2s;
+	}
+
+	.header-base {
+		--header-bg: rgb(250 246 240 / 96%);
+		--header-bg-scrolled: rgb(250 246 240 / 98%);
+		--header-nav-title-color: var(--color-text-primary);
+		--header-nav-color: var(--color-text-primary);
+		--header-nav-color-transparent: var(--color-text-primary);
+		--header-nav-shadow-transparent: none;
+		--header-nav-filter-transparent: none;
+		--hamburger-color: var(--color-text-primary);
+		--hamburger-color-menu-open: var(--color-text-primary);
+		--mobile-drawer-bg: var(--color-surface-primary);
+		--mobile-drawer-link-color: var(--color-text-primary);
+		--mobile-drawer-link-hover: var(--color-action-accent);
+		--mobile-close-button-color: var(--color-text-primary);
+		--mobile-signature-color: var(--color-text-primary);
+	}
+
+	.quote-section {
+		--quote-content-font: var(--font-display);
+		--quote-content-size: clamp(1.55rem, 3vw, 2.4rem);
+		--quote-content-line-height: 1.5;
+		--quote-author-color: var(--color-text-secondary);
+		--quote-padding-block: clamp(3rem, 7vw, 5rem);
+	}
+}

@@ -5,6 +5,7 @@
  */
 
 import type { InvitationDefinition } from './invitation-definition.ts';
+import { normaInvitation } from './norma-margarita-hernandez-zabalsa.ts';
 import { albaInvitation } from './alba-rosa-quinonez.ts';
 import { abrilInvitation } from './abril-michelle-becerra-rea.ts';
 import { danielaInvitation } from './daniela-y-martin.ts';
@@ -71,6 +72,7 @@ function registerInvitation(definition: InvitationDefinition): void {
 }
 
 // Register canonical invitations
+registerInvitation(normaInvitation);
 registerInvitation(albaInvitation);
 registerInvitation(abrilInvitation);
 registerInvitation(danielaInvitation);

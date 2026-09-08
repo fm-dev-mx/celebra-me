@@ -3,6 +3,10 @@
 // Resides in tests/e2e/harness/ so src/ remains strictly free of test imports and routes.
 
 import Hero from '@/components/invitation/Hero.astro';
+import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
+import EventHeader from '@/components/invitation/EventHeader.astro';
+import globalCssUrl from '@/styles/global.scss?url';
+import invitationCssUrl from '@/styles/invitation.scss?url';
 import InvitationSections from '@/components/invitation/InvitationSections.astro';
 import { canonicalEventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { adaptEvent } from '@/lib/adapters/event';
@@ -26,6 +30,8 @@ const section = Astro.url.searchParams.get('section') as CanonicalVariantSection
 const variant = Astro.url.searchParams.get('variant') ?? 'standard';
 const preset = Astro.url.searchParams.get('preset') ?? 'jewelry-box';
 const fullPage = Astro.url.searchParams.get('full') === '1';
+const showEnvelope = fullPage && Astro.url.searchParams.get('envelope') === '1';
+const fullPresentation = fullPage && (showEnvelope || Astro.url.searchParams.get('presentation') === '1');
 let fullPageContext: InvitationPageContext | undefined;
 let fullPageHeadLinks: InvitationStylesheetHeadLink[] | undefined;
 let page: InvitationPageContext;
@@ -56,6 +62,7 @@ if (fullPage) {
 						type: 'uploaded' as const,
 						assetId: `__INVITATION_ASSET_KEY__:${asset.key}`,
 						src: `data:${mime};base64,${readFileSync(absoluteAssetPath).toString('base64')}`,
+						delivery: asset.delivery,
 					},
 				];
 			}),
@@ -120,11 +127,12 @@ const activeSectionCssPlan = resolveInvitationCssLoadPlan(
 }
 ---
 <!DOCTYPE html>
-<html lang="es" data-screenshot="audit">
+<html lang="es" data-screenshot={showEnvelope ? undefined : 'audit'}>
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>{fullPageContext?.layout.title ?? `${section}.${variant} (${preset})`}</title>
+	{fullPresentation && <><link rel="stylesheet" href={globalCssUrl} /><link rel="stylesheet" href={invitationCssUrl} /></>}
 	{(fullPageHeadLinks ?? headLinks).map((link) => (
 		<link rel="stylesheet" href={link.href} data-canonical-css-owner={link.canonicalPath} />
 	))}
@@ -143,10 +151,12 @@ const activeSectionCssPlan = resolveInvitationCssLoadPlan(
 		}
 	</style>
 </head>
-	<body class={(fullPageContext ?? page).wrapper.className} data-reveal-state="revealed">
-	<div class={(fullPageContext ?? page).wrapper.className} data-reveal-state="revealed" data-screenshot="invitation-root" id="test-invitation-root">
+	<body class={(fullPageContext ?? page).wrapper.className} data-reveal-state={showEnvelope ? undefined : 'revealed'}>
+	<div class={(fullPageContext ?? page).wrapper.className} {...showEnvelope ? page.wrapper.dataAttributes : {}} data-reveal-state={showEnvelope ? 'closed' : 'revealed'} data-screenshot="invitation-root" id="test-invitation-root">
 		{fullPageContext ? (
 			<>
+				{showEnvelope && page.envelope && <EnvelopeReveal {...page.envelope} />}
+				{showEnvelope && <EventHeader links={page.viewModel.navigation ?? []} variant="standard" initials={page.viewModel.envelope?.data?.sealInitials} eventName={page.viewModel.hero.name} eventSubtitle={page.viewModel.hero.label} isDemo={false} />}
 				<Hero {...fullPageContext.viewModel.hero} venueName={fullPageContext.heroVenueName} time={fullPageContext.heroTime} highPriority={true} />
 				<InvitationSections pageContext={fullPageContext} />
 			</>
