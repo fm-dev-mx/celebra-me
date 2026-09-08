@@ -1,5 +1,9 @@
 /** Human summary of canonical decisions. Does not probe or classify environments. */
-import { buildOperationalActionPlan, releasePromotions } from '../../src/lib/status/action-plan';
+import {
+	buildOperationalActionPlan,
+	releasePromotions,
+	type OperationalAction,
+} from '../../src/lib/status/action-plan';
 import {
 	ENV_LABELS,
 	SEMANTIC_LABELS,
@@ -8,6 +12,8 @@ import {
 import type {
 	CanonicalPromotionRow,
 	CanonicalStatusView,
+	EvidenceState,
+	SchemaLifecycleState,
 	TargetEnv,
 } from '../../src/lib/status/types';
 import {
@@ -16,6 +22,19 @@ import {
 } from '../db/critical-backup-health';
 
 const ENVS: readonly TargetEnv[] = ['local', 'preview', 'production'];
+
+const SCHEMA_LABELS: Record<SchemaLifecycleState, string> = {
+	CURRENT: '✓ Al día',
+	BEHIND: '! Atrasado',
+	SCHEMA_DRIFT: '! Divergente',
+	UNVERIFIED: '? Sin verificar',
+};
+
+const EVIDENCE_LABELS: Record<EvidenceState, string> = {
+	LIVE: 'En vivo',
+	CACHED: 'Caché',
+	UNVERIFIED: 'Sin verificar',
+};
 
 export function publicationStatusLabel(row: CanonicalPromotionRow): string {
 	if (row.action === 'BLOCKED') return 'Bloqueado';
@@ -71,7 +90,7 @@ export function groupPublicationRows(rows: CanonicalPromotionRow[]): CanonicalPr
 
 function wrapLines(lines: string[]): string[] {
 	return lines.flatMap((line) => {
-		if (line.length <= 100) return [line];
+		if (line.length <= 100 || line.trimStart().startsWith('pnpm ')) return [line];
 		const leadingIndent = line.match(/^\s*/)?.[0] ?? '';
 		const continuationIndent = leadingIndent || '  ';
 		const words = line.trimStart().split(' ');
@@ -97,43 +116,91 @@ function wrapLines(lines: string[]): string[] {
 function environmentRows(view: CanonicalStatusView, targets: readonly TargetEnv[]): string[] {
 	return targets.map((target) => {
 		const row = view.environments[target];
-		const schema = `${row.schemaLifecycle} ${row.appliedCount ?? '?'}/${row.expectedCount}`;
+		const schema = `${SCHEMA_LABELS[row.schemaLifecycle]} ${row.appliedCount ?? '?'}/${row.expectedCount}`;
 		const publication =
 			row.evidence !== 'LIVE'
-				? 'Sin verificar'
-				: `${row.invitationAttentionCount} pendientes`;
-		return `${ENV_LABELS[target].padEnd(13)}${schema.padEnd(25)}${publication.padEnd(23)}${row.evidence}`;
+				? '? Sin verificar'
+				: row.invitationAttentionCount
+					? `${row.invitationAttentionCount} pendientes`
+					: '✓ Al día';
+		return `${ENV_LABELS[target].padEnd(13)}${schema.padEnd(26)}${publication.padEnd(21)}${EVIDENCE_LABELS[row.evidence]}`;
 	});
 }
 
-function productionWarnings(
-	view: CanonicalStatusView,
-	backupHealth?: CriticalBackupHealth,
-): string[] {
+interface SummaryItem {
+	title: string;
+	lines: string[];
+}
+
+/** Commands stay on their own lines so wrapping cannot corrupt a pasted invocation. */
+function commandLines(inspect: string | null, apply: string | null, owner: boolean): string[] {
 	const lines: string[] = [];
-	const backup = backupHealth ?? evaluateCriticalBackupHealth();
-	if (backup.attention)
-		lines.push(`- Respaldo de Producción: ${backup.summary}. Detalles: --verbose.`);
-	if (view.environments.production.authorizationIntegrity === 'MISSING')
+	if (inspect) lines.push('   Revisar:', '     ' + inspect);
+	if (apply) {
 		lines.push(
-			'- Autorización: faltan registros locales del propietario (informativo; detalles: --verbose).',
+			`   Aplicar [${owner ? 'propietario/TTY' : 'autorización del destino'}; tras revisión]:`,
 		);
+		lines.push(`     ${apply}`);
+	}
+	if (!inspect && !apply)
+		lines.push('   Revisión manual: no hay un comando canónico de corrección.');
 	return lines;
 }
 
-function publicationGroupLines(group: CanonicalPromotionRow[]): string[] {
+function operationalItem(action: OperationalAction, dependentCount: number): SummaryItem {
+	const suffix =
+		action.id === 'schema-production' && dependentCount
+			? `; bloquea ${dependentCount} invitaciones`
+			: '';
+	const inspect =
+		action.steps.find((step) => step.type === 'Plan' && step.command) ??
+		action.steps.find((step) => step.type !== 'Apply' && step.command);
+	const apply = action.steps.find((step) => step.type === 'Apply' && step.command);
+	return {
+		title: `${action.title}: ${SEMANTIC_LABELS[action.semantic]}${suffix}`,
+		lines: commandLines(
+			inspect?.command ?? null,
+			apply?.command ?? null,
+			apply?.requiresOwner ?? false,
+		),
+	};
+}
+
+function publicationGroupItem(group: CanonicalPromotionRow[]): SummaryItem {
 	const row = group[0];
 	const target = publicationTarget(row);
 	const label = target === 'registro' ? 'Registro' : ENV_LABELS[target];
+	const pending = publicationStatusLabel(row) === 'Pendiente de sincronizar';
 	const reason = PUBLICATION_REASON_LABELS[row.reasonCode]
 		.replaceAll('Production', 'Producción')
 		.replace(/\.$/, '');
-	return [
-		`- ${label}: ${group.length} invitaciones · ${publicationStatusLabel(row)} · ${reason}${row.preflightBlockCode ? ` (${row.preflightBlockCode})` : ''}.`,
-		`  Inspeccionar: pnpm dbs ${row.slug}${target === 'registro' ? '' : ` --targets ${target}`}${row.handoff.ownerApplyRequired ? ' · Aplicación: propietario/TTY' : ''}`,
-	];
+	const grouped = group.length > 1;
+	const inspect = publicationInspectionCommand(row);
+	const apply = pending ? row.handoff.applyCommand : null;
+	const template = (command: string | null) =>
+		command && grouped ? command.replaceAll(`--slug ${row.slug}`, '--slug <slug>') : command;
+	return {
+		title: `${label}: ${group.length} invitaciones · ${publicationStatusLabel(row)}${row.preflightBlockCode ? ` (${row.preflightBlockCode})` : ''}`,
+		lines: [
+			...(pending ? [] : [`   ${reason}`]),
+			...(grouped
+				? [`   <slug>: ${group.map((item) => item.slug).join(', ')}`]
+				: [`   Invitación: ${row.slug}`]),
+			...commandLines(template(inspect), template(apply), row.handoff.ownerApplyRequired),
+		],
+	};
 }
 
+function productionBackupItem(backup: CriticalBackupHealth): SummaryItem | null {
+	if (!backup.attention) return null;
+	return {
+		title: `Respaldo de Producción: ${backup.summary}`,
+		lines: [
+			'   Actualizar [respaldo y retención local; requiere autorización]:',
+			'     pnpm db:prod:backup:daily',
+		],
+	};
+}
 export function formatCanonicalSummary(
 	view: CanonicalStatusView,
 	backupHealth?: CriticalBackupHealth,
@@ -149,42 +216,45 @@ export function formatCanonicalSummary(
 			row.preflightBlockCode === 'SCHEMA_INCOMPATIBLE' &&
 			plan.actions.some((action) => action.id === 'schema-production'),
 	);
+	const items = plan.actions
+		.filter((action) => action.subject === null || action.domain !== 'publication')
+		.map((action) => operationalItem(action, dependent.length));
+	items.push(
+		...groupPublicationRows(queue.filter((row) => !dependent.includes(row))).map(
+			publicationGroupItem,
+		),
+	);
+	if (targets.includes('production')) {
+		const backup = productionBackupItem(backupHealth ?? evaluateCriticalBackupHealth());
+		if (backup) items.push(backup);
+	}
 	const lines = [
-		'CELEBRA-ME · Estado operativo',
+		'CELEBRA-ME · Estado de entornos',
 		`Evidencia: ${view.freshnessMeta?.status ?? view.evidence} · ${view.freshnessMeta?.lastVerifiedAt ?? view.generatedAt}`,
-		'',
-		'Entorno      Esquema                  Publicaciones          Evidencia',
+		'─'.repeat(80),
+		'Entorno      Esquema                   Publicaciones        Evidencia',
 		...environmentRows(view, targets),
 	];
 	if (view.selectedTargets)
 		lines.push(
 			`No evaluados: ${ENVS.filter((env) => !targets.includes(env)).join(', ') || 'ninguno'}`,
 		);
-	lines.push('', 'Requiere atención:');
-	for (const action of plan.actions.filter(
-		(action) => action.subject === null || action.domain !== 'publication',
-	)) {
-		const suffix =
-			action.id === 'schema-production' && dependent.length
-				? `; bloquea ${dependent.length} invitaciones`
-				: '';
-		lines.push(`- ${action.title}: ${SEMANTIC_LABELS[action.semantic]}${suffix}.`);
-		const next = action.steps.find((step) => step.command && step.type !== 'Apply');
+	lines.push('─'.repeat(80));
+	if (items.length) {
+		lines.push(`PRÓXIMOS PASOS · ${items.length} grupos de atención`);
+		items.forEach((item, index) => lines.push(`${index + 1}. ${item.title}`, ...item.lines));
+	} else lines.push('✓ Sin acciones pendientes en los controles evaluados.');
+	if (
+		targets.includes('production') &&
+		view.environments.production.authorizationIntegrity === 'MISSING'
+	) {
 		lines.push(
-			`  Revisar: ${next?.command ?? 'pnpm dbs -- --verbose'}${action.steps.some((step) => step.requiresOwner) ? ' · Aplicación: propietario/TTY' : ''}`,
+			'Información: faltan registros locales de autorización; sin reparación automática (--verbose).',
 		);
 	}
 	lines.push(
-		...groupPublicationRows(queue.filter((row) => !dependent.includes(row))).flatMap(
-			publicationGroupLines,
-		),
-	);
-	if (!plan.actions.length && !queue.length)
-		lines.push('  No hay acciones pendientes en los controles evaluados.');
-	if (targets.includes('production')) lines.push(...productionWarnings(view, backupHealth));
-	lines.push(
 		'',
-		'Detalle: pnpm dbs <slug> · Listado completo: --verbose · Causas técnicas: --diagnostics',
+		'Detalle: pnpm dbs <slug> · Más: pnpm dbs -- --verbose · Diagnóstico: --diagnostics',
 	);
 	return wrapLines(lines).join('\n') + '\n';
 }
