@@ -48,7 +48,9 @@
 		&::after {
 			inset: 0;
 			border-radius: inherit;
-			background:
+
+			// Keep the surface in the shared token so the variant fallback preserves this texture.
+			--pa-card-glow:
 				radial-gradient(
 					ellipse 80% 55% at 50% 0%,
 					rgb(var(--color-diamond-white-rgb) / 42%) 0%,
@@ -58,6 +60,7 @@
 					--quote-texture-bg,
 					url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")
 				);
+
 			background-size:
 				auto,
 				220px 220px;
