@@ -36,7 +36,9 @@ export const ROMINA_ASSET_SPECS = [
 	},
 	{
 		key: 'hero-mobile',
-		relativePath: 'IMG_3263.jpeg',
+		relativePath: 'hero-mobile.webp',
+		sourcePolicy: 'preserve',
+		delivery: { mode: 'original', width: 1280, height: 1920 },
 		optimizationRole: 'hero-mobile',
 		displayName: 'Romina — portada móvil',
 		alt: 'Romina con vestido verde salvia vista de espaldas entre follaje',
@@ -64,7 +66,9 @@ export const ROMINA_ASSET_SPECS = [
 	},
 	{
 		key: 'social',
-		relativePath: 'IMG_3201.jpeg',
+		relativePath: 'gallery-final.webp',
+		sourcePolicy: 'preserve',
+		delivery: { mode: 'original', width: 1280, height: 853 },
 		optimizationRole: 'gallery',
 		displayName: 'Romina — vista previa social',
 		alt: 'Romina con vestido verde salvia en una composición horizontal',

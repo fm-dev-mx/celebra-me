@@ -282,7 +282,7 @@ stable keys.
 ### Published-content reads
 
 **Definition.** A published anonymous invitation resolves with one `findPublishedBySlugAndEventType`
-read and must not also `findInvitationBySlug` on that hit.
+read and must not perform an archive lookup on that hit.
 
 **Why it matters.** Extra resolver calls add TTFB and Postgres load on every guest open.
 
@@ -292,6 +292,10 @@ read and must not also `findInvitationBySlug` on that hit.
 **Enforcement.** Hard CI. Count is operations per request, not monthly totals.
 
 **Baseline.** `ANONYMOUS_PUBLISHED_CONTENT_READS = 1`.
+
+Static fallback keeps one archive lookup with `select=archived_at`; tests in
+`tests/unit/invitation.repository.test.ts` protect the projection, archive handling and error
+propagation. It must not fetch snapshot/contact fields merely to determine archive status.
 
 **Interpretation.** A second published-content or invitation-row read on the happy path is a cost
 regression.
@@ -407,9 +411,9 @@ encoding changes.
 
 **Definition.** Canonical WebP delivery budgets by visual role live in
 `src/lib/invitation-preparation/image-optimization.ts` (`IMAGE_ROLE_WEIGHT_TARGETS`). Dashboard
-publish and managed release both enforce `getWeightTargetBytes(getImageOptimizationRoleForPath(path))`
-against the uploaded file bound to that published path. Do not duplicate those kilobyte ceilings in
-this document.
+publish and managed release both enforce
+`getWeightTargetBytes(getImageOptimizationRoleForPath(path))` against the uploaded file bound to
+that published path. Do not duplicate those kilobyte ceilings in this document.
 
 **Why it matters.** Reusing a desktop hero binary on `hero.backgroundImageMobile` can pass spec-role
 checks and still fail publish.
@@ -877,3 +881,11 @@ preserve the cache freshness contract.
 
 Unnecessary global Parisienne injection on invitation routes is already removed; keep loading it
 only for profiles that actually use the family (currently Romina).
+
+### Prepared Romina media
+
+Romina uses preserved role-budgeted WebP derivatives for the mobile hero and the final gallery image
+(social asset key), with explicit original delivery dimensions. The preparation pipeline validates
+these bytes without re-encoding; source JPEGs remain intact. Regression:
+tests/unit/romina-prepared-media.test.ts. Deployment alone does not publish these new managed asset
+references; verify the guarded content release independently.

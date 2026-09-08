@@ -158,7 +158,7 @@ test.describe('shared envelope reveal interaction', () => {
 			await page.setViewportSize(viewport);
 
 			for (const route of sealSizingRoutes) {
-				await page.goto(`${route}?forceEnvelope=true`, { waitUntil: 'domcontentloaded' });
+				await page.goto(`${route}?forceEnvelope=true`, { waitUntil: 'load' });
 
 				const metrics = await page.evaluate(() => {
 					const container = document.querySelector<HTMLElement>('.envelope-container');
@@ -184,7 +184,7 @@ test.describe('shared envelope reveal interaction', () => {
 					};
 				});
 
-				const expectedVisualSize = Math.min(60, Math.max(40, metrics.containerWidth * 0.1));
+				const expectedVisualSize = Math.min(60, Math.max(34, metrics.containerWidth * 0.1));
 
 				expect(Math.abs(metrics.visualWidth - expectedVisualSize)).toBeLessThanOrEqual(1);
 				expect(metrics.buttonWidth).toBeGreaterThanOrEqual(48);

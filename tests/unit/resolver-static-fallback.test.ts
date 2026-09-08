@@ -1,7 +1,7 @@
 import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { getCollection } from 'astro:content';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
-import { findInvitationBySlug } from '@/lib/intake/repositories/invitation.repository';
+import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation.repository';
 
 // Mock environment to prevent Jest import.meta issues
 jest.mock('@/lib/environment', () => ({
@@ -19,7 +19,7 @@ jest.mock('@/lib/intake/repositories/published-invitation-content.repository', (
 }));
 
 jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
-	findInvitationBySlug: jest.fn(),
+	isInvitationArchivedBySlug: jest.fn(),
 }));
 
 describe('resolveInvitationContent Integration Fallback tests', () => {
@@ -29,11 +29,11 @@ describe('resolveInvitationContent Integration Fallback tests', () => {
 
 	it('missing invitation returns null', async () => {
 		const mockFindPublished = findPublishedBySlugAndEventType as jest.Mock;
-		const mockFindInv = findInvitationBySlug as jest.Mock;
+		const mockFindInv = isInvitationArchivedBySlug as jest.Mock;
 		const mockGetCollection = getCollection as jest.Mock;
 
 		mockFindPublished.mockResolvedValue(null);
-		mockFindInv.mockResolvedValue(null);
+		mockFindInv.mockResolvedValue(false);
 		mockGetCollection.mockResolvedValue([]);
 
 		const result = await resolveInvitationContent('missing-invitation', 'boda');
@@ -45,7 +45,7 @@ describe('resolveInvitationContent Integration Fallback tests', () => {
 
 	it('Supabase credentials missing falls back to search static demos/templates and returns null if not found', async () => {
 		const mockFindPublished = findPublishedBySlugAndEventType as jest.Mock;
-		const mockFindInv = findInvitationBySlug as jest.Mock;
+		const mockFindInv = isInvitationArchivedBySlug as jest.Mock;
 		const mockGetCollection = getCollection as jest.Mock;
 
 		mockFindPublished.mockRejectedValue(new Error('SUPABASE_SERVICE_ROLE_KEY no configurada'));
@@ -61,7 +61,7 @@ describe('resolveInvitationContent Integration Fallback tests', () => {
 
 	it('valid static demo entry resolves correctly when Supabase credentials are missing', async () => {
 		const mockFindPublished = findPublishedBySlugAndEventType as jest.Mock;
-		const mockFindInv = findInvitationBySlug as jest.Mock;
+		const mockFindInv = isInvitationArchivedBySlug as jest.Mock;
 		const mockGetCollection = getCollection as jest.Mock;
 
 		mockFindPublished.mockRejectedValue(new Error('SUPABASE_SERVICE_ROLE_KEY no configurada'));

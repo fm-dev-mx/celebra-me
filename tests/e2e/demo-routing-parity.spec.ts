@@ -1,19 +1,20 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Demo Routing Parity', () => {
+	test('keeps the in-progress Norma invitation unavailable publicly', async ({ request }) => {
+		const response = await request.get('/cumple/norma-margarita-hernandez-zabalsa');
+		expect(response.status()).toBe(404);
+		expect(response.headers()['cache-control']).toBe('no-store, private');
+	});
 	test('uses correctness-first caching for public content and private caching for invalid routes', async ({
-		page,
+		request,
 	}) => {
-		const publicResponse = await page.goto('/xv/demo-xv-jewelry-box?skipEnvelope=true', {
-			waitUntil: 'domcontentloaded',
-		});
+		const publicResponse = await request.get('/xv/demo-xv-jewelry-box?skipEnvelope=true');
 		expect(publicResponse?.headers()['cache-control']).toBe(
 			'public, max-age=0, s-maxage=0, must-revalidate',
 		);
 
-		const invalidResponse = await page.goto('/not-an-event/demo-xv-jewelry-box', {
-			waitUntil: 'domcontentloaded',
-		});
+		const invalidResponse = await request.get('/not-an-event/demo-xv-jewelry-box');
 		expect(invalidResponse?.status()).toBe(404);
 		expect(invalidResponse?.headers()['cache-control']).toBe('no-store, private');
 	});

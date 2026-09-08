@@ -7,7 +7,7 @@ jest.mock('@/lib/intake/repositories/published-invitation-content.repository', (
 }));
 
 jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
-	findInvitationBySlug: jest.fn(),
+	isInvitationArchivedBySlug: jest.fn(),
 }));
 
 jest.mock('@/lib/adapters/event', () => ({
@@ -73,7 +73,7 @@ import {
 } from '@/lib/invitation/content-resolver';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
-import { findInvitationBySlug } from '@/lib/intake/repositories/invitation.repository';
+import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import validPublishedContentJson from '@/content/event-demos/xv/demo-xv-jewelry-box.json';
 
@@ -87,13 +87,13 @@ const mockFindPublishedBySlugAndEventType = findPublishedBySlugAndEventType as j
 	typeof findPublishedBySlugAndEventType
 >;
 const mockAdaptDbEvent = adaptDbEvent as jest.Mock;
-const mockFindInvitationBySlug = findInvitationBySlug as jest.MockedFunction<
-	typeof findInvitationBySlug
+const mockIsInvitationArchivedBySlug = isInvitationArchivedBySlug as jest.MockedFunction<
+	typeof isInvitationArchivedBySlug
 >;
 
 beforeEach(() => {
 	jest.clearAllMocks();
-	mockFindInvitationBySlug.mockResolvedValue(null);
+	mockIsInvitationArchivedBySlug.mockResolvedValue(false);
 });
 
 describe('published route POC', () => {
@@ -201,7 +201,7 @@ describe('published route POC', () => {
 			data: { isDemo: true },
 		} as any);
 		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
-		mockFindInvitationBySlug.mockResolvedValue({ archivedAt: '2026-06-01T00:00:00Z' } as any);
+		mockIsInvitationArchivedBySlug.mockResolvedValue(true);
 
 		const result = await resolveInvitationContent('demo-xv', 'xv');
 
@@ -214,7 +214,7 @@ describe('published route POC', () => {
 			data: { isDemo: true },
 		} as any);
 		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
-		mockFindInvitationBySlug.mockRejectedValue(
+		mockIsInvitationArchivedBySlug.mockRejectedValue(
 			new Error("Could not find the table 'public.invitations' in the schema cache"),
 		);
 

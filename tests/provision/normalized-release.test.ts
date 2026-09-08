@@ -25,7 +25,8 @@ async function createProductionRelease(slug = 'romina-rios-chaparro'): Promise<{
 		.toBuffer();
 
 	for (const spec of ROMINA_ASSET_SPECS) {
-		writeFileSync(join(tempDir, spec.relativePath), sampleJpeg);
+		const bytes = spec.relativePath.endsWith('.webp') ? await sharp(sampleJpeg).webp().toBuffer() : sampleJpeg;
+		writeFileSync(join(tempDir, spec.relativePath), bytes);
 	}
 
 	const release = await buildNormalizedInvitationRelease({

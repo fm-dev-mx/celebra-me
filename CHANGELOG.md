@@ -22,9 +22,16 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ### Fixed
 
+- **Visual coverage & media intake**: Exclude in-progress invitations from public visual
+  certification, retain draft denial coverage, and prepare budgeted Romina mobile/gallery media
+  without runtime re-encoding.
+
+- **Public invitation reads**: Limit the static fallback archive check to its required field,
+  avoiding unnecessary client snapshot and contact-data retrieval.
+
 - **Invitation presentation**: Restore unobstructed index-choreography galleries, add the explicit
-  portrait-letter thank-you composition, and reconcile invitation/demo section sequences with
-  their published Production reference.
+  portrait-letter thank-you composition, and reconcile invitation/demo section sequences with their
+  published Production reference.
 
 ## [0.19.0-beta.1] - 2026-08-24
 
