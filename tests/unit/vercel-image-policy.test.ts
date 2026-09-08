@@ -47,7 +47,7 @@ describe('vercel image optimization policy', () => {
 		expect(isCloudinaryDeliveryHostname(CLOUDINARY_VERSIONED_URL)).toBe(true);
 	});
 
-	it('keeps versioned Cloudinary, hashed /_astro, and unrelated remotes eligible for optimization', () => {
+	it('does not classify versioned Cloudinary, hashed /_astro, or unrelated remotes as mutable Storage URLs', () => {
 		expect(isMutableInPlaceMediaUrl(CLOUDINARY_VERSIONED_URL)).toBe(false);
 		expect(isMutableInPlaceMediaUrl('/_astro/hero.hash.webp')).toBe(false);
 		expect(isMutableInPlaceMediaUrl('https://images.unsplash.com/photo-1')).toBe(false);
@@ -70,7 +70,7 @@ describe('vercel image optimization policy', () => {
 		expect(shouldOptimizeThroughVercelImage('data:image/webp;base64,AAAA')).toBe(false);
 	});
 
-	it('still optimizes local ImageMetadata and versioned remotes', () => {
+	it('optimizes bundled ImageMetadata but delivers prepared Cloudinary media directly', () => {
 		expect(
 			shouldOptimizeThroughVercelImage({
 				src: '/_astro/hero.hash.webp',
@@ -79,7 +79,23 @@ describe('vercel image optimization policy', () => {
 				format: 'webp',
 			} as ImageMetadata),
 		).toBe(true);
-		expect(shouldOptimizeThroughVercelImage(CLOUDINARY_VERSIONED_URL)).toBe(true);
+		expect(shouldOptimizeThroughVercelImage(CLOUDINARY_VERSIONED_URL)).toBe(false);
+	});
+
+	it.each([
+		'https://res.cloudinary.com/demo/image/upload/v1/photo.webp',
+		'https://abc.supabase.co/storage/v1/object/public/invitation-assets/photo-' +
+			'a'.repeat(64) +
+			'.webp',
+		'http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/photo-' +
+			'b'.repeat(64) +
+			'.webp',
+	])('delivers prepared managed media directly without explicit encoding: %s', (src) => {
+		expect(shouldOptimizeThroughVercelImage(src)).toBe(false);
+		expect(
+			shouldOptimizeThroughVercelImage({ src, width: 960, height: 1440, format: 'webp' }),
+		).toBe(false);
+		expect(shouldOptimizeThroughVercelImage(src, { mode: 'optimized', width: 640 })).toBe(true);
 	});
 });
 

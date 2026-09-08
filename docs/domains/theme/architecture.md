@@ -398,3 +398,10 @@ SVG identity normalizes only XML line endings while preserving the delivered-byt
 RSVP skins that create absolute decorative pseudo-elements must establish their own positioning
 context on every matching RSVP shell, including the nested shells of the interactive island.
 Decorations must remain inside RSVP and must not paint over the hero or neighboring sections.
+
+Managed Storage and Cloudinary media bypass implicit Astro/Vercel re-encoding, even when URLs are
+versioned. Canonical references use prepared files and `delivery.mode=original`; the name means
+original bytes of the delivery file, which may itself be a prepared derivative. Existing explicit
+`optimized` references retain compatibility until publication replaces them. Bundled demos and
+unmanaged images retain their separate delivery policy; do not disable the adapter globally to
+change managed-media delivery.

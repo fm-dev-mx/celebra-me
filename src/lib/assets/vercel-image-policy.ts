@@ -11,6 +11,17 @@ function parseHttpUrl(src: string): URL | null {
 	}
 }
 
+/** Match managed Storage delivery by host and path, not path lookalikes. */
+function isStorageMediaUrl(src: string | URL): boolean {
+	const parsed = typeof src === 'string' ? parseHttpUrl(src) : src;
+	if (!parsed) return false;
+	const isSupabaseHost =
+		/\.supabase\.co$/i.test(parsed.hostname) ||
+		parsed.hostname === '127.0.0.1' ||
+		parsed.hostname === 'localhost';
+	return isSupabaseHost && parsed.pathname.includes('/storage/');
+}
+
 /**
  * Published media that keeps a stable path when bytes are replaced.
  * Confirmed stale path: these URLs through `/_vercel/image` inherit a 1h
@@ -20,37 +31,30 @@ function parseHttpUrl(src: string): URL | null {
  */
 export function isMutableInPlaceMediaUrl(src: string): boolean {
 	const parsed = parseHttpUrl(src);
-	if (!parsed) return false;
-	const isSupabaseHost =
-		/\.supabase\.co$/i.test(parsed.hostname) ||
-		parsed.hostname === '127.0.0.1' ||
-		parsed.hostname === 'localhost';
 	return (
-		isSupabaseHost &&
-		parsed.pathname.includes('/storage/') &&
+		!!parsed &&
+		isStorageMediaUrl(parsed) &&
 		!/-[a-f0-9]{64}\.(?:webp|jpg|png)$/.test(parsed.pathname)
 	);
 }
 
-/**
- * Local ImageMetadata and versioned remotes (Cloudinary, hashed `/_astro`)
- * stay on Astro Image / Vercel optimization. Mutable in-place URLs must not.
- */
+/** Prepared managed media bypasses a second encoder. Explicit legacy transforms remain supported. */
 export function shouldOptimizeThroughVercelImage(
 	src: string | ImageMetadata,
 	delivery?: ImageDelivery,
 ): boolean {
 	if (delivery?.mode === 'original') return false;
-	if (delivery?.mode === 'optimized' && isMutableInPlaceMediaUrl(plainImgSrc(src)))
-		throw new Error('Optimized delivery requires a versioned image URL.');
-	const url = typeof src === 'string' ? src : src.src;
+	const url = plainImgSrc(src);
 	if (typeof url !== 'string') {
 		return true;
 	}
+	if (delivery?.mode === 'optimized' && isMutableInPlaceMediaUrl(url))
+		throw new Error('Optimized delivery requires a versioned image URL.');
 	// Data URLs are already repository-owned bytes; routing them through the image endpoint
 	// creates an unnecessary same-origin request that cannot be used in deterministic captures.
 	if (/^data:/i.test(url.trim())) return false;
-	return !isMutableInPlaceMediaUrl(url);
+	if (delivery?.mode === 'optimized') return true;
+	return !isStorageMediaUrl(url) && !isCloudinaryDeliveryHostname(url);
 }
 
 export function plainImgSrc(src: string | ImageMetadata): string {
