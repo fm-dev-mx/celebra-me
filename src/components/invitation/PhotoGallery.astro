@@ -62,7 +62,8 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 				style={`${aspectStyle}${item.focalPoint ? `--gallery-item-focal-point: ${item.focalPoint};` : ''}${item.focalPointMobile ? `--gallery-item-focal-point-mobile: ${item.focalPointMobile};` : ''}${item.focalPointTablet ? `--gallery-item-focal-point-tablet: ${item.focalPointTablet};` : ''}${item.focalPointDesktop ? `--gallery-item-focal-point-desktop: ${item.focalPointDesktop};` : ''}`}
 				tabindex="0"
 				role="button"
-				aria-label={item.alt || item.caption || `Ver imagen ${index + 1}`}
+				aria-label={item.alt || (variant === 'narrative-stack' ? `Fotografía ${index + 1}` : item.caption) || `Ver imagen ${index + 1}`}
+				aria-describedby={variant === 'narrative-stack' && item.caption ? `gallery-caption-${index}` : undefined}
 			>
 				<CacheSafeImage
 					src={rawSource}
@@ -82,7 +83,7 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 				)}
 				{item.caption && (
 					<div class="gallery-grid__overlay">
-						<p class="gallery-grid__caption">{item.caption}</p>
+						<p class="gallery-grid__caption" id={variant === 'narrative-stack' ? `gallery-caption-${index}` : undefined}>{item.caption}</p>
 					</div>
 				)}
 			</div>

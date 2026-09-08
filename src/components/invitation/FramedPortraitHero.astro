@@ -1,0 +1,46 @@
+---
+import type { ImageMetadata } from 'astro';
+import type { ImageAsset } from '@/lib/assets/asset-registry';
+import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
+
+interface Props {
+	name: string;
+	secondaryName?: string;
+	label?: string;
+	nickname?: string;
+	date: string;
+	time?: string;
+	venueName?: string;
+	backgroundImage: ImageMetadata | ImageAsset;
+	scrollLabel?: string;
+	highPriority?: boolean;
+}
+
+const { name, secondaryName, label, nickname, date, time, venueName, backgroundImage, scrollLabel = 'Descubra mi historia', highPriority = true } = Astro.props;
+const formattedDate = new Date(date).toLocaleDateString('es-MX', {
+	day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+});
+const source = backgroundImage.src;
+const delivery = 'delivery' in backgroundImage ? backgroundImage.delivery : undefined;
+const width = delivery?.width ?? ('width' in backgroundImage ? backgroundImage.width : 960);
+const height = delivery?.height ?? ('height' in backgroundImage ? backgroundImage.height : 1440);
+---
+
+<section id="inicio" class="invitation-hero framed-portrait-hero" data-variant="framed-portrait" data-screenshot="invitation-open-hero" data-screenshot-section="hero">
+	<div class="framed-portrait-hero__layout">
+		<figure class="framed-portrait-hero__photograph">
+			<CacheSafeImage src={source} delivery={delivery} alt={`Fotografía de ${name}`} width={width} height={height} loading="eager" fetchpriority={highPriority ? 'high' : undefined} />
+		</figure>
+		<div class="framed-portrait-hero__letter">
+			{label && <p class="framed-portrait-hero__occasion">{label}</p>}
+			<h1 class="framed-portrait-hero__name">{name}{secondaryName && <><span aria-hidden="true"> &amp; </span>{secondaryName}</>}</h1>
+			{nickname && <p class="framed-portrait-hero__introduction">{nickname}</p>}
+			<div class="framed-portrait-hero__details">
+				<p>{formattedDate}</p>
+				{time && <p>{time}</p>}
+				{venueName && <p>{venueName}</p>}
+			</div>
+			<p class="framed-portrait-hero__invitation">{scrollLabel}<span aria-hidden="true"> ↓</span></p>
+		</div>
+	</div>
+</section>

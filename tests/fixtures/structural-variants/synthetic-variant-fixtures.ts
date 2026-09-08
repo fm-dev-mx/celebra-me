@@ -294,7 +294,11 @@ export function buildIncompatiblePrerequisiteEvent(
 
 	switch (entry.section) {
 		case 'hero':
-			if (entry.variant === 'editorial-cover' || entry.variant === 'split-cover') {
+			if (
+				entry.variant === 'editorial-cover' ||
+				entry.variant === 'split-cover' ||
+				entry.variant === 'framed-portrait'
+			) {
 				const hero = data.hero as Record<string, unknown>;
 				delete hero.backgroundImage;
 			}

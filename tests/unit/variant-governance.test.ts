@@ -21,6 +21,7 @@ function listFiles(relativeDirectory: string): string[] {
 const reusableRendererSurfaces = [
 	'src/components/invitation/Hero.astro',
 	'src/components/invitation/EditorialCoverHero.astro',
+	'src/components/invitation/FramedPortraitHero.astro',
 	'src/components/invitation/EventLocation.astro',
 	'src/components/invitation/Family.astro',
 	'src/components/invitation/Gallery.astro',
@@ -35,7 +36,8 @@ const reusableRendererSurfaces = [
 const originIdentity =
 	/romina|rios|chaparro|alba|quinonez|daniela|martin|victoria|roberto|abril|michelle|becerra|valentina|xareni/iu;
 
-const normalizeManifestCell = (value: string) => value.replaceAll('`', '').replace(/\s+/gu, ' ').trim();
+const normalizeManifestCell = (value: string) =>
+	value.replaceAll('`', '').replace(/\s+/gu, ' ').trim();
 
 function readCutoverManifestRows() {
 	return read('docs/domains/theme/variant-cutover-manifest.md')
@@ -133,7 +135,9 @@ describe('canonical variant governance', () => {
 		expect(resolver).toContain('CANONICAL_VARIANT_REGISTRY');
 		expect(resolver).not.toContain('STRUCTURAL_VARIANT_TO_ENTRYPOINT');
 		expect(resolver).not.toMatch(originIdentity);
-		const sectionDispatch = resolver.slice(resolver.indexOf('function resolveSectionVariantLoadItems'));
+		const sectionDispatch = resolver.slice(
+			resolver.indexOf('function resolveSectionVariantLoadItems'),
+		);
 		expect(sectionDispatch).not.toMatch(/slug|visualProfileId/);
 	});
 
@@ -160,9 +164,9 @@ describe('canonical variant governance', () => {
 				/structuralVariant|visualVariant|sectionStyles|presentation\.behavior|ITINERARY_(?:BEHAVIOR|PRESENTATION)/,
 			);
 		}
-		expect(fs.existsSync(path.join(process.cwd(), 'src/lib/invitation/itinerary-presentation.ts'))).toBe(
-			false,
-		);
+		expect(
+			fs.existsSync(path.join(process.cwd(), 'src/lib/invitation/itinerary-presentation.ts')),
+		).toBe(false);
 	});
 
 	it('requires canonical section renderers to receive variants explicitly', () => {

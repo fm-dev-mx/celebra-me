@@ -14,7 +14,7 @@
 	background: var(--countdown-section-background);
 	padding: var(--countdown-section-padding, clamp(7rem, 12vw, 10rem) 1rem);
 	position: relative;
-	box-shadow: inset 0 0 80px rgb(0 0 0 / 58%);
+	box-shadow: var(--countdown-section-shadow, inset 0 0 80px rgb(0 0 0 / 58%));
 
 	&::after {
 		content: '';
@@ -40,10 +40,10 @@
 	.countdown-title {
 		font-family: var(--font-display-hacienda);
 		font-size: clamp(2rem, 4.8vw, 3.25rem);
-		color: rgb(231 205 155 / 92%);
+		color: var(--countdown-title-color, rgb(231 205 155 / 92%));
 		text-transform: uppercase;
 		letter-spacing: 0.13em;
-		text-shadow: 0 5px 22px rgb(0 0 0 / 44%);
+		text-shadow: var(--countdown-title-shadow, 0 5px 22px rgb(0 0 0 / 44%));
 		margin-bottom: clamp(1.6rem, 4vw, 2.4rem);
 		position: relative;
 		overflow: hidden;
@@ -53,13 +53,18 @@
 	}
 
 	.countdown__segment {
-		background: linear-gradient(180deg, rgb(61 45 32 / 76%) 0%, rgb(31 23 17 / 82%) 100%);
+		background: var(
+			--countdown-segment-bg,
+			linear-gradient(180deg, rgb(61 45 32 / 76%) 0%, rgb(31 23 17 / 82%) 100%)
+		);
 		border: 1px solid rgb(var(--color-action-accent-rgb, 212 175 55) / 22%);
 		border-radius: 6px;
 		padding: var(--countdown-segment-padding-mobile);
-		box-shadow:
+		box-shadow: var(
+			--countdown-segment-shadow,
 			inset 0 1px 0 rgb(255 241 214 / 8%),
-			0 18px 36px rgb(0 0 0 / 28%);
+			0 18px 36px rgb(0 0 0 / 28%)
+		);
 		position: relative;
 		overflow: hidden;
 		transition:
@@ -97,7 +102,7 @@
 				0 24px 46px rgb(0 0 0 / 36%);
 
 			.countdown__value {
-				color: rgb(244 221 177 / 94%);
+				color: var(--countdown-value-color, rgb(244 221 177 / 94%));
 				text-shadow: 0 5px 18px rgb(0 0 0 / 35%);
 			}
 		}
@@ -111,7 +116,7 @@
 		font-family: var(--font-display-hacienda);
 		font-size: clamp(2.35rem, 11vw, 3.8rem);
 		font-weight: 400;
-		color: rgb(231 205 155 / 88%);
+		color: var(--countdown-value-color, rgb(231 205 155 / 88%));
 		filter: none;
 		position: relative;
 		z-index: 1;
@@ -126,7 +131,7 @@
 
 	.countdown__label {
 		font-family: var(--font-body-hacienda);
-		color: rgb(238 220 181 / 66%);
+		color: var(--countdown-label-color, rgb(238 220 181 / 66%));
 		opacity: 100%;
 		letter-spacing: 0.24em;
 		font-size: 0.68rem;
@@ -138,7 +143,7 @@
 
 	.countdown-invitation-text {
 		font-family: var(--font-body-hacienda);
-		color: rgb(241 219 177 / 74%);
+		color: var(--countdown-footer-color, rgb(241 219 177 / 74%));
 		font-size: clamp(1rem, 2.3vw, 1.28rem);
 		line-height: 1.6;
 		max-width: 36rem;
@@ -167,10 +172,10 @@
 	.countdown-section[data-variant='hacienda-ornament'] {
 		.countdown-title {
 			animation: none;
-			background: var(--color-action-accent);
+			background: var(--countdown-reduced-title-bg, var(--color-action-accent));
 			-webkit-text-fill-color: initial;
 			background-clip: initial;
-			color: var(--color-action-accent);
+			color: var(--countdown-title-color, var(--color-action-accent));
 		}
 
 		.countdown__segment {

@@ -24,7 +24,9 @@ describe('validate-schema script', () => {
 
 		expect(stdout).toContain('Errors: 0');
 		expect(stdout).toContain('Warnings: 0');
-		expect(stdout).toContain(`Expected base-style fallbacks: ${KNOWN_BASE_STYLE_FALLBACKS.length}`);
+		expect(stdout).toContain(
+			`Expected base-style fallbacks: ${KNOWN_BASE_STYLE_FALLBACKS.length}`,
+		);
 
 		for (const fallback of KNOWN_BASE_STYLE_FALLBACKS) {
 			expect(stdout).toContain(fallback);

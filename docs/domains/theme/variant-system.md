@@ -2,7 +2,10 @@
 
 **Status:** Active architecture contract
 
-**Related:** [`variant-compatibility.md`](variant-compatibility.md), [`variant-cutover-manifest.md`](variant-cutover-manifest.md), [`section-intersections.md`](section-intersections.md), and [`../content/section-contracts.md`](../content/section-contracts.md)
+**Related:** [`variant-compatibility.md`](variant-compatibility.md),
+[`variant-cutover-manifest.md`](variant-cutover-manifest.md),
+[`section-intersections.md`](section-intersections.md), and
+[`../content/section-contracts.md`](../content/section-contracts.md)
 
 The canonical dependency direction is:
 
@@ -30,29 +33,31 @@ The runtime path is intentionally linear:
 2. `adaptEvent` exposes typed section view-models without normalization or compatibility merging.
 3. `buildInvitationRenderPlan` follows the explicit `sectionOrder` and `composition`.
 4. `buildInvitationSectionRenderDescriptors` passes the section-owned variant to the renderer.
-5. Section roots emit `data-variant={variant}` and isolated CSS is resolved from the canonical registry.
+5. Section roots emit `data-variant={variant}` and isolated CSS is resolved from the canonical
+   registry.
 
 There is no runtime variant normalizer, legacy alias registry, identity-specific variant branch, or
-silent compatibility fallback in this path. Pre-cutover persisted content may be inspected by migration
-and audit tooling, but deployment remains blocked until the separately authorized environment
-migration is applied and verified.
+silent compatibility fallback in this path. Pre-cutover persisted content may be inspected by
+migration and audit tooling, but deployment remains blocked until the separately authorized
+environment migration is applied and verified.
 
 ## Canonical inventory
 
-- **Hero:** `standard`, `editorial-cover`, `split-cover`.
-- **Family:** `standard`, `split-groups`, `asymmetric-groups`; both non-default group layouts require
-  at least two explicit `groups`.
+- **Hero:** `standard`, `editorial-cover`, `split-cover`, `framed-portrait`.
+- **Family:** `standard`, `split-groups`, `asymmetric-groups`; both non-default group layouts
+  require at least two explicit `groups`.
 - **Location:** `standard`, `split-map`, `stacked-venue-plates`; prerequisites are enforced by the
   owning schema.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
-  `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`.
-  `single-keepsake` requires exactly one item; feature layouts enforce their item requirements.
+  `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`,
+  `narrative-stack`. `single-keepsake` requires exactly one item; feature layouts enforce their item
+  requirements.
 - **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`, `editorial-program`.
 - **Gifts:** `standard`, `editorial-catalog`.
 - **RSVP:** `standard`, `editorial-press-pass`, `formal-register`.
 - **Personalized Access:** `standard`, `ornamented`, `editorial-pass`, `formal-pass`.
-- **Thank You:** `standard`, `editorial-back-cover`, `portrait-letter`, `full-bleed-photo`; `full-bleed-photo` requires
-  `thankYou.image`.
+- **Thank You:** `standard`, `editorial-back-cover`, `portrait-letter`, `full-bleed-photo`;
+  `full-bleed-photo` requires `thankYou.image`.
 - **Countdown:** `standard`, `editorial-folio`, `magazine-folio`, `jeweled-panel`, `rose-ornament`,
   `hacienda-ornament`.
 
@@ -68,17 +73,17 @@ Structural choices live on the owning section object as `variant`. `sectionStyle
 Presentation capabilities such as location flourishes and gallery browsing remain explicit typed
 fields on their owning section.
 
-Cross-section composition is selected only by typed `composition.intersections`. Missing intersection
-entries use the neutral composition contract; omitted `composition` itself is not accepted by the
-canonical schema.
+Cross-section composition is selected only by typed `composition.intersections`. Missing
+intersection entries use the neutral composition contract; omitted `composition` itself is not
+accepted by the canonical schema.
 
 ## SCSS ownership and isolation
 
 Semantic variant entrypoints live at `src/styles/themes/sections/<section>/_<semantic-variant>.scss`
-when the registry assigns a section stylesheet. The registry assigns `section-base:<section>` to defaults and an exact canonical stylesheet path
-to every non-default variant. Presets provide atmosphere tokens only; they never own semantic section
-geometry. The section CSS resolver derives its maps from the canonical registry and
-never from invitation identity.
+when the registry assigns a section stylesheet. The registry assigns `section-base:<section>` to
+defaults and an exact canonical stylesheet path to every non-default variant. Presets provide
+atmosphere tokens only; they never own semantic section geometry. The section CSS resolver derives
+its maps from the canonical registry and never from invitation identity.
 
 Theme presets may supply palette, typography, crop, decoration, motion timing, and documented custom
 properties under `.theme-preset--*`. Invitation profiles may add local visual treatment, but neither
@@ -92,20 +97,31 @@ Before adding or promoting a variant:
 2. Encode incompatible-input and prerequisite failures.
 3. Verify adapter, render-plan, descriptor, DOM marker, and CSS ownership together.
 4. Provide a compatible non-origin fixture and a fail-closed incompatible case.
-5. Scan reusable code and CSS for client, slug, profile, historical-theme, and invitation-asset dependencies.
-6. Update the derived cutover manifest and run focused schema, portability, CSS, governance, and corpus checks.
+5. Scan reusable code and CSS for client, slug, profile, historical-theme, and invitation-asset
+   dependencies.
+6. Update the derived cutover manifest and run focused schema, portability, CSS, governance, and
+   corpus checks.
 
-The `portrait-letter` variant reuses editorial markup with an arched 2:3 portrait and display-font letter. It requires an image and owns its geometry independently of the preset. Existing published enchanted-rose styling shares the same SCSS mixin until its consumers explicitly migrate.
+The `portrait-letter` variant reuses editorial markup with an arched 2:3 portrait and display-font
+letter. It requires an image and owns its geometry independently of the preset. Existing published
+enchanted-rose styling shares the same SCSS mixin until its consumers explicitly migrate.
 
 The `thankYou` variant `portrait-keepsake` owns the narrow rectangular portrait, serif letter,
-responsive grid and signature geometry. It reuses the editorial DOM without selecting by theme
-or invitation identity. It requires an explicit image. Managed definitions need canonical
-publication before public database-backed routes use this variant.
+responsive grid and signature geometry. It reuses the editorial DOM without selecting by theme or
+invitation identity. It requires an explicit image. Managed definitions need canonical publication
+before public database-backed routes use this variant.
 
 ### Hero venue selection
 
-`hero.presentation.venueIndex` optionally selects a zero-based entry from `location.venues`
-for the hero time and venue name, without reordering location cards. Without it, the first visible
-entry with the requested value remains the default. Hidden, missing, or protected selected entries
-must not expose location details. The same presentation schema is used by published content,
-drafts, and the editor so a save cannot discard the selection.
+`hero.presentation.venueIndex` optionally selects a zero-based entry from `location.venues` for the
+hero time and venue name, without reordering location cards. Without it, the first visible entry
+with the requested value remains the default. Hidden, missing, or protected selected entries must
+not expose location details. The same presentation schema is used by published content, drafts, and
+the editor so a save cannot discard the selection.
+
+The `framed-portrait` hero displays the complete background image in a paper frame with a separate
+name and details. It stacks photograph before copy on mobile and uses two columns on desktop. The
+`narrative-stack` gallery preserves image proportions and displays each caption permanently,
+alternating desktop columns while retaining image-before-caption reading order. It requires at least
+one item, non-empty captions, and no forced item aspect ratios. Both layouts are independent of
+invitation profiles.

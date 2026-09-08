@@ -38,8 +38,41 @@ export const gallerySchema = z
 	})
 	.strict()
 	.superRefine((gallery, context) => {
-		if (gallery.variant !== 'magazine-spread' && gallery.variantOptions?.mobileBrowse !== undefined) {
-			context.addIssue({ code: 'custom', path: ['variantOptions', 'mobileBrowse'], message: 'gallery.variantOptions.mobileBrowse is only valid for magazine-spread' });
+		if (gallery.variant === 'narrative-stack') {
+			if (gallery.items.length === 0) {
+				context.addIssue({
+					code: 'custom',
+					path: ['items'],
+					message: 'narrative-stack requires at least one photograph',
+				});
+			}
+			gallery.items.forEach((item, index) => {
+				if (!item.caption?.trim()) {
+					context.addIssue({
+						code: 'custom',
+						path: ['items', index, 'caption'],
+						message: 'narrative-stack requires a caption for every photograph',
+					});
+				}
+				if (item.aspectRatio !== undefined) {
+					context.addIssue({
+						code: 'custom',
+						path: ['items', index, 'aspectRatio'],
+						message:
+							'narrative-stack preserves the complete photograph without aspect-ratio cropping',
+					});
+				}
+			});
+		}
+		if (
+			gallery.variant !== 'magazine-spread' &&
+			gallery.variantOptions?.mobileBrowse !== undefined
+		) {
+			context.addIssue({
+				code: 'custom',
+				path: ['variantOptions', 'mobileBrowse'],
+				message: 'gallery.variantOptions.mobileBrowse is only valid for magazine-spread',
+			});
 		}
 		try {
 			assertSupportedGalleryPresentation(gallery.presentation, gallery.items);

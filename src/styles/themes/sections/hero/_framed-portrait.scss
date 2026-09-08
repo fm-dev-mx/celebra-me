@@ -1,0 +1,100 @@
+@use '../../../global/mixins' as mixins;
+
+.invitation-hero.framed-portrait-hero[data-variant='framed-portrait'] {
+	box-sizing: border-box;
+	position: relative;
+	display: block;
+	min-height: auto;
+	height: auto;
+	padding: clamp(3.5rem, 8vw, 7rem) clamp(1.5rem, 5vw, 5rem) clamp(3rem, 6vw, 6rem);
+	background: var(--color-surface-primary);
+	color: var(--color-text-primary);
+	overflow: visible;
+	text-align: left;
+
+	&::before,
+	&::after {
+		content: none;
+	}
+
+	.framed-portrait-hero__layout {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: clamp(2.5rem, 7vw, 6rem);
+		align-items: center;
+		max-width: 68rem;
+		margin-inline: auto;
+
+		@include mixins.respond-to(lg) {
+			grid-template-columns: minmax(0, 0.95fr) minmax(0, 1fr);
+		}
+	}
+
+	.framed-portrait-hero__photograph {
+		box-sizing: border-box;
+		width: min(100%, 24rem);
+		margin: 0 auto;
+		padding: clamp(0.65rem, 1.5vw, 1rem);
+		background: var(--color-surface-elevated, white);
+		border: 1px solid rgb(var(--color-text-primary-rgb) / 12%);
+		box-shadow: 0 1.25rem 3.5rem rgb(var(--color-text-primary-rgb) / 9%);
+
+		img {
+			display: block;
+			width: 100%;
+			height: auto;
+			object-fit: contain;
+			filter: none;
+		}
+	}
+
+	.framed-portrait-hero__letter {
+		min-width: 0;
+		text-align: center;
+	}
+
+	.framed-portrait-hero__occasion {
+		margin: 0 0 1.25rem;
+		font: 500 0.85rem / 1.5 var(--font-body);
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--color-action-accent);
+	}
+
+	.framed-portrait-hero__name {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: clamp(3.2rem, 6.4vw, 5.5rem);
+		font-weight: 400;
+		line-height: 1;
+		letter-spacing: -0.025em;
+		text-wrap: balance;
+		text-transform: none;
+		overflow-wrap: anywhere;
+	}
+
+	.framed-portrait-hero__introduction {
+		max-width: 28ch;
+		margin: 1.6rem auto 0;
+		font: italic 400 clamp(1.35rem, 2vw, 1.7rem) / 1.45 var(--font-display);
+		text-wrap: balance;
+	}
+
+	.framed-portrait-hero__details {
+		margin-top: 2rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid rgb(var(--color-text-primary-rgb) / 18%);
+		font: 400 1rem / 1.65 var(--font-body);
+
+		p {
+			margin: 0.25rem 0;
+		}
+	}
+
+	.framed-portrait-hero__invitation {
+		margin: 2rem 0 0;
+		font: 400 0.85rem / 1.5 var(--font-body);
+		letter-spacing: 0.06em;
+		color: var(--color-action-accent);
+	}
+}

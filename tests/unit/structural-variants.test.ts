@@ -14,7 +14,10 @@ const baseInput = {
 	sectionOrder: ['family', 'countdown', 'gallery', 'rsvp'],
 	composition: { intersections: {} },
 	hero: {
-		name: 'Fixture', date: '2027-01-01T18:00:00.000Z', backgroundImage: '/fixture.webp', variant: 'standard',
+		name: 'Fixture',
+		date: '2027-01-01T18:00:00.000Z',
+		backgroundImage: '/fixture.webp',
+		variant: 'standard',
 	},
 	family: { variant: 'standard', parents: { father: 'Padre', mother: 'Madre' } },
 	countdown: { title: 'Cuenta', variant: 'standard' },
@@ -24,11 +27,17 @@ const baseInput = {
 
 describe('canonical section variant contracts', () => {
 	it('keeps the complete closed vocabulary in one registry', () => {
-		expect(CANONICAL_VARIANT_REGISTRY).toHaveLength(41);
-		expect(CANONICAL_VARIANT_CUTOVER_MANIFEST).toHaveLength(31);
+		expect(CANONICAL_VARIANT_REGISTRY).toHaveLength(43);
+		expect(CANONICAL_VARIANT_CUTOVER_MANIFEST).toHaveLength(33);
 		expect(CANONICAL_VARIANT_REGISTRY.filter((entry) => entry.default)).toHaveLength(10);
-		expect(CANONICAL_VARIANT_REGISTRY.map((entry) => `${entry.section}.${entry.variant}`)).toEqual(
-			expect.arrayContaining(['family.split-groups', 'gallery.editorial-mosaic', 'thankYou.full-bleed-photo']),
+		expect(
+			CANONICAL_VARIANT_REGISTRY.map((entry) => `${entry.section}.${entry.variant}`),
+		).toEqual(
+			expect.arrayContaining([
+				'family.split-groups',
+				'gallery.editorial-mosaic',
+				'thankYou.full-bleed-photo',
+			]),
 		);
 	});
 
@@ -60,15 +69,21 @@ describe('canonical section variant contracts', () => {
 	it('rejects incompatible family and location prerequisites', () => {
 		const familyResult = eventContentSchema.safeParse({
 			...baseInput,
-			family: { variant: 'split-groups', groups: [{ title: 'Solo', items: [{ name: 'Persona' }] }] },
+			family: {
+				variant: 'split-groups',
+				groups: [{ title: 'Solo', items: [{ name: 'Persona' }] }],
+			},
 		});
 		const locationResult = eventContentSchema.safeParse({
 			...baseInput,
 			location: {
 				variant: 'split-map',
 				ceremony: {
-					venueEvent: 'Ceremonia', venueName: 'Lugar', address: 'Dirección',
-					date: '2027-01-01', time: '18:00',
+					venueEvent: 'Ceremonia',
+					venueName: 'Lugar',
+					address: 'Dirección',
+					date: '2027-01-01',
+					time: '18:00',
 				},
 			},
 		});

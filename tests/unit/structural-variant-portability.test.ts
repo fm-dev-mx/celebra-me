@@ -72,9 +72,7 @@ function buildPortableJewelryBoxEvent(overrides: PortableOverrides = {}) {
 			: {}),
 		hero: {
 			...fixture.hero,
-			...(overrides.heroVariant
-				? { variant: overrides.heroVariant }
-				: {}),
+			...(overrides.heroVariant ? { variant: overrides.heroVariant } : {}),
 		},
 		family: {
 			...fixture.family,
@@ -95,9 +93,7 @@ function buildPortableJewelryBoxEvent(overrides: PortableOverrides = {}) {
 		},
 		location: {
 			...fixture.location,
-			...(overrides.locationVariant
-				? { variant: overrides.locationVariant }
-				: {}),
+			...(overrides.locationVariant ? { variant: overrides.locationVariant } : {}),
 		},
 		gallery: {
 			...fixture.gallery,
@@ -106,15 +102,11 @@ function buildPortableJewelryBoxEvent(overrides: PortableOverrides = {}) {
 		},
 		gifts: {
 			...fixture.gifts,
-			...(overrides.giftsVariant
-				? { variant: overrides.giftsVariant }
-				: {}),
+			...(overrides.giftsVariant ? { variant: overrides.giftsVariant } : {}),
 		},
 		rsvp: {
 			...fixture.rsvp,
-			...(overrides.rsvpVariant
-				? { variant: overrides.rsvpVariant }
-				: {}),
+			...(overrides.rsvpVariant ? { variant: overrides.rsvpVariant } : {}),
 			...(overrides.personalizedAccessVariant
 				? {
 						personalizedAccess: {
@@ -154,7 +146,7 @@ function loadDemoEvent(relativePath: string, id: string) {
 
 describe('registry-driven canonical variant portability', () => {
 	it('validates all registered variants through schema, adapter, render plan, and DOM descriptors', () => {
-		expect(CANONICAL_VARIANT_REGISTRY).toHaveLength(41);
+		expect(CANONICAL_VARIANT_REGISTRY).toHaveLength(43);
 
 		for (const entry of CANONICAL_VARIANT_REGISTRY) {
 			const candidate = buildSyntheticVariantEvent({
@@ -168,7 +160,9 @@ describe('registry-driven canonical variant portability', () => {
 			const event = { ...candidate, data: parsed.data } as Parameters<typeof adaptEvent>[0];
 			const viewModel = adaptEvent(event);
 			const pageContext = prepareInvitationPageContext({
-				eventEntry: event as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'],
+				eventEntry: event as Parameters<
+					typeof prepareInvitationPageContext
+				>[0]['eventEntry'],
 				slug: 'demo-xv-jewelry-box',
 			});
 			const renderPlan = buildInvitationRenderPlan(viewModel);
@@ -229,9 +223,7 @@ describe('registry-driven canonical variant portability', () => {
 			const badData = buildIncompatiblePrerequisiteEvent(entry);
 			const result = eventContentSchema.safeParse(badData);
 			expect(
-				result.success
-					? `Unexpected success for ${entry.section}.${entry.variant}`
-					: false,
+				result.success ? `Unexpected success for ${entry.section}.${entry.variant}` : false,
 			).toBe(false);
 
 			if (!result.success) {
@@ -441,9 +433,7 @@ describe('registry-driven canonical variant portability', () => {
 			personalizedAccessVariant: 'editorial-pass',
 		});
 		const editorialPass = adaptEvent(editorialPassEvent);
-		expect(editorialPass.sections.rsvp?.personalizedAccess?.variant).toBe(
-			'editorial-pass',
-		);
+		expect(editorialPass.sections.rsvp?.personalizedAccess?.variant).toBe('editorial-pass');
 	});
 
 	it('selects Itinerary timeline-paper, editorial-ledger, editorial-program, and standard from section.variant only', () => {
@@ -632,7 +622,7 @@ describe('registry-driven canonical variant portability', () => {
 			sectionUrlMap,
 			{
 				themePreset: 'jewelry-box',
-      sectionVariants: { itinerary: 'editorial-program' },
+				sectionVariants: { itinerary: 'editorial-program' },
 			},
 			profileUrlMap,
 		);
@@ -651,7 +641,10 @@ describe('registry-driven canonical variant portability', () => {
 			},
 			profileUrlMap,
 		);
-		expect(ornamentedUrls).toEqual(['/_astro/jewelry-bundle.css', '/_astro/access-ornamented.css']);
+		expect(ornamentedUrls).toEqual([
+			'/_astro/jewelry-bundle.css',
+			'/_astro/access-ornamented.css',
+		]);
 	});
 
 	it('keeps canonical structural CSS free of origin slug/profile/theme identity', () => {
@@ -702,9 +695,7 @@ describe('registry-driven canonical variant portability', () => {
 
 		expect(combined).toContain(".invitation-hero[data-variant='split-cover']");
 		expect(combined).toContain(".event-location[data-variant='split-map']");
-		expect(combined).toContain(
-			".event-location[data-variant='stacked-venue-plates']",
-		);
+		expect(combined).toContain(".event-location[data-variant='stacked-venue-plates']");
 		expect(stackedPlates).toContain('.event-location__intro');
 		expect(stackedPlates).toContain('.event-location__indications-container');
 		expect(stackedPlates).toContain('--location-plate-row');
@@ -714,9 +705,7 @@ describe('registry-driven canonical variant portability', () => {
 		expect(combined).toContain(".family[data-variant='split-groups']");
 		expect(combined).toContain(".family[data-variant='asymmetric-groups']");
 		expect(combined).toContain(".gallery-section[data-variant='feature-stack']");
-		expect(combined).toContain(
-			".gallery-section[data-variant='paired-feature-band']",
-		);
+		expect(combined).toContain(".gallery-section[data-variant='paired-feature-band']");
 		expect(combined).toContain(".itinerary[data-variant='editorial-ledger']");
 		expect(combined).toContain(".itinerary[data-variant='editorial-program']");
 		expect(combined).toContain(".personalized-access[data-variant='formal-pass']");
