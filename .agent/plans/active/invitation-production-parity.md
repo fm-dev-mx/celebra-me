@@ -52,8 +52,8 @@ exact final reference set through the existing acceptance mechanism.
 - Public Local checks decoded all 47 gallery images without optimizer URLs and confirmed the mobile
   hero at 960x1440. The focused browser suite passed 15 checks. Final image-change CI evidence is
   `.agent/tmp/images-direct-ci-final.log`: exit 0, 6237 unit checks and 251 browser checks passed,
-  with the existing single unit-test skip and a successful build. These delivery
-  checks do not constitute a new full visual-parity acceptance against Production.
+  with the existing single unit-test skip and a successful build. These delivery checks do not
+  constitute a new full visual-parity acceptance against Production.
 - Post-publication Local status is CURRENT (83/83 migrations, 17/17 managed invitations in sync,
   zero identity conflicts). Preview and Production were excluded. The previously classified Ximena
   gallery12 asset warning remains preserved. Evidence: `.agent/tmp/images-direct-local-dbs.json`.
@@ -68,14 +68,15 @@ exact final reference set through the existing acceptance mechanism.
   against the saved Production images, with zero changed pixels and unchanged dimensions. Evidence:
   `.agent/tmp/local-rsvp-containment/checks.json`. Historical reference comparison is diagnostic
   evidence only; it does not certify the current hosted deployment or other sections.
-- Final Local checkpoint CI passed after the RSVP containment change: 537 suites / 6233 unit
-  checks and 243 browser checks, followed by a successful build. One existing suite/test remains
-  skipped. Evidence: `.agent/tmp/parity-local-rsvp-final-ci.log`.
+- Final Local checkpoint CI passed after the RSVP containment change: 537 suites / 6233 unit checks
+  and 243 browser checks, followed by a successful build. One existing suite/test remains skipped.
+  Evidence: `.agent/tmp/parity-local-rsvp-final-ci.log`.
 - Valentina's mobile surname discrepancy follows an existing title-wrapper width correction.
-  Restoring the historical width in a Local browser moves the surname's right edge from 339px
-  to 379.1875px within a 375px hero, reproducing the clipped ending. Keeping the complete surname
-  was proposed as a separate exception; owner approval is pending. Do not broaden the gallery
-  caption exception or restore the clipping without that decision.
+  Restoring the historical width in a Local browser moves the surname's right edge from 339px to
+  379.1875px within a 375px hero, reproducing the clipped ending. The owner approved keeping the
+  complete surname on 2026-09-08. This exception covers only the title-wrapper correction that
+  prevents clipping; it does not broaden gallery/caption exceptions or approve the final visual
+  baseline.
 
 - Fixed content-only reconciliation of delivery metadata when the previous, current and target
   uploaded references identify the same file. Source changes remain protected; concurrent metadata
@@ -141,9 +142,10 @@ exact final reference set through the existing acceptance mechanism.
 2. Diagnose remaining per-section pixel, semantic and geometry differences, including shared demo
    styles, captions, hero backgrounds and any newly exposed labels. Record exact exceptions rather
    than accepting whole galleries or pages.
-3. Await separate owner decisions for Romina's mobile hero (379472 bytes versus 358400 budget) and
-   final gallery image (499896 versus 184320 budget). The attempted substitutions were reverted; the
-   existing optimized files remain. Neither proposed exception is approved by silence.
+3. The owner selected optimization on 2026-09-08, not a byte-budget waiver. Prepared replacements
+   are 245264 bytes for the mobile hero and 176790 bytes for the final gallery image (social key).
+   Original JPEGs remain intact. Local definitions now preserve these WebPs with direct delivery;
+   persistent publication and exact-candidate visual acceptance remain pending.
 4. Complete cleanup review, final checks and atomic commits; integrate/deploy the source corrections
    through the authorized release handoff. Production remains read-only.
 5. Re-verify the actual deployed Preview SHA/content and obtain human reference acceptance. Until

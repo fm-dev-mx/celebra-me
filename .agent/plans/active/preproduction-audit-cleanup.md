@@ -187,3 +187,101 @@ Rollback for this local patch is limited to reversing its reviewed source/depend
 there is no data migration to reverse. A production rollback must use a separately approved,
 compatible deployment. Do not restore the automatic shared-container restart as operational
 recovery.
+
+## Follow-up implementation — 2026-09-08
+
+Current baseline: clean dev-extra at 35068a81a483bbacb636dd54d946bd889f21522c. The user committed
+and deployed the preceding work. Preview deployment dpl_zjvAcgfxuTCAvjTU8SJGDaTq5yPf is READY at
+that SHA. A single credential-free public request returned 302 to Vercel protection; no bypass
+credential was transmitted. New changes below are local and uncommitted. This section supersedes
+earlier pending Norma/Valentina decisions, not historical test evidence.
+
+### Implemented and measured
+
+- Public visual coverage now derives from published lifecycle definitions plus all demos in the
+  active content directory. Demos have no separate lifecycle field. No slug exclusion and no
+  publication-state change. A draft-to-published regression changes page coverage and its hash
+  without removing any structural variant. Norma's public 404/private-cache regression passes.
+- Complete diagnostic: 209/209 cases passed, including 106 structural and 60 full-page captures.
+  Evidence: .agent/tmp/release-gap-visual.log and .tmp/release-gap-visual-20260908/. These captures
+  are diagnostic, not an accepted reference set. Runtime local content may still use previously
+  published media; candidate source bytes are validated separately below.
+- Romina hero-mobile.webp: 1280x1920, 245264 bytes, below 358400. gallery-final.webp (social key):
+  1280x853, 176790 bytes, below 184320. Prepared with normalizeInvitationImage and the existing role
+  budgets; no crop or focal-point change. Original JPEG hashes are protected by tests. sourcePolicy
+  preserve and explicit original delivery prevent publication/runtime re-encoding. Comparison:
+  .agent/tmp/release-gap-media/comparison.jpg (original left, derivative right); full
+  metadata/hashes: .agent/tmp/release-gap-media/report.json. Human visual approval is pending.
+- Compared with the previously recorded 379472/499896-byte delivered files, the two proposed
+  replacements total 422054 bytes versus 879368 (457314 fewer bytes, about 52%). This is a two-file
+  projection, not measured provider savings, complete-page savings or billing telemetry.
+- Valentina's fully visible surname is explicitly owner-approved. Only the existing title-wrapper
+  anti-clipping change is excepted; baseline acceptance and other typography remain separate.
+- Seven 414x896 route regressions are included in test:e2e:ci. They check public rendering,
+  horizontal overflow, application errors and completed broken images, not pixel parity or all
+  lazy-loaded media. Final execution: 7/7 passed. Evidence: .agent/tmp/release-gap-narrow-final.log.
+
+### Confirmed recurring-consumption defect
+
+An isolated service test reproduces repeated anonymization of an already-anonymized expired empty
+session: two cleanup runs issue two PATCHes and two audit writes for that same session. No R2
+objects or live database were used. Revoked rows remain eligible for subsequent selection, so they
+can also occupy the bounded session batch repeatedly. Production incidence is UNVERIFIED.
+
+The current schema has no independent anonymized_at marker. Do not substitute display_name or
+revoked_at as proof of anonymization: a revoked session can still require personal-data removal. A
+correct durable fix needs a separately reviewed schema/application contract: an explicit marker,
+atomic marker-and-anonymization update, exclusion of completed rows, and tests for repeated runs,
+concurrency, retained items and revoked-but-not-anonymized rows. No schema change is included here,
+as the approved plan excludes it. The characterization test records this unresolved defect; its
+passing result does not mean idempotency is fixed. Treat resolution or explicit impact acceptance as
+a release gate.
+
+### Operation budgets and remaining coverage
+
+| Scenario                                                               | Evidence / budget                                                                               | Status                                 |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------- |
+| Empty cleanup batch                                                    | Five bounded DB operations; zero object or audit operations in service test                     | PASSED locally                         |
+| Previously anonymized empty session                                    | Repeated update/audit per run reproduced; target is zero repeated writes                        | FAILED invariant                       |
+| Session retaining undeleted media                                      | No session PATCH or anonymization audit                                                         | PASSED locally                         |
+| Public published resolution                                            | Existing one-read contract; no runtime query change in this patch                               | Existing test evidence                 |
+| Guest context                                                          | Existing hit/miss and authorized view-write budgets preserved                                   | Existing test evidence                 |
+| New Romina media                                                       | Both role byte limits and exact-byte preservation tested                                        | PASSED locally; publication UNVERIFIED |
+| All public routes, mobile/desktop                                      | 60 page captures; 30 public routes                                                              | PASSED locally; Preview UNVERIFIED     |
+| Hosted RSVP, access, QR and uploads                                    | Need controlled fixture transaction and cleanup authorization                                   | UNVERIFIED                             |
+| Demo persistence and interactions                                      | Existing deterministic contracts and routing suite; full hosted interaction measurement pending | PARTIAL                                |
+| Scheduled cleanup telemetry                                            | Production log query, 24h, cleanup filter, grouped status: no rows returned                     | UNVERIFIED                             |
+| Billing, object retention and complete interaction request/byte counts | No complete provider telemetry or controlled hosted scenarios available                         | UNVERIFIED                             |
+
+### Verification and release gates
+
+Focused lifecycle/cleanup cases: 5 passed. Prepared media and normalized release roundtrip: 8
+passed; 64 existing image transformation tests also passed. validate:changed passed after correcting
+a fixture that wrote JPEG bytes under every filename, including WebP. Evidence:
+.agent/tmp/release-gap-changed-final.log. Tier C pre-browser checks passed: type-check (1725 files,
+zero diagnostics), structure, ESLint, SCSS, UI governance, event parity, PII checks, preparation and
+545 Jest suites / 6285 tests. One existing Windows-specific suite/test remains skipped. CI first hit
+the occupied pre-existing 4321 port. Repeating only its browser stage on owned port 4331 failed at
+the missing accepted visual manifest, as required. This is not green CI. Evidence:
+.agent/tmp/release-gap-ci-final.log and .agent/tmp/release-gap-ci-browser.log. build:app passed
+independently in 17.85s. The seven narrow viewport checks passed. Temporary listeners are gone and
+the original 4321 server remains. Git Safety closure follows document finalization; the final task
+response records its outcome.
+
+No deployment, commit, persistent publication, cleanup invocation or provider-resource deletion was
+performed. Existing disposable DB results apply to unchanged DB/runtime contracts; no database
+migration was introduced. Full visual candidate/accept require a clean source revision and explicit
+human hash approval. Do not manufacture accepted metadata from these diagnostic artifacts.
+
+Next required handoff: user reviews and commits this patch; separately authorize only the two Romina
+asset replacements and their content-reference updates through the guarded managed-release flow,
+first Local then Preview, retaining old objects and verifying all unrelated content unchanged.
+Deploy the resulting source SHA. Authorize bounded protected Preview reads through the existing
+same-origin bypass fixture; any synthetic persistent writes remain separately scoped. Complete
+hosted route/feature evidence and review visual differences, then accept the exact candidate hashes,
+commit accepted artifacts, and rerun final CI/release checks. Resolve the cleanup idempotency gate.
+Production deployment remains a separate decision.
+
+Rollback: reverse reviewed source/tests and the two derivative references; original media remains.
+Once publication is separately authorized, retain the previous published version and object
+references for a compatible content rollback. Do not delete originals or shared provider objects.
