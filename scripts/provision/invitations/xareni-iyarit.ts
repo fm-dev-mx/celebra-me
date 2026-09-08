@@ -124,7 +124,7 @@ const content: CanonicalEventContentInput = {
 		items: [
 			{
 				image: {
-					delivery: { mode: 'optimized', width: 1400, height: 1867, quality: 100 },
+					delivery: { mode: 'original', width: 1400, height: 1867 },
 					key: 'gallery01',
 					type: 'internal',
 				},
@@ -132,7 +132,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
-					delivery: { mode: 'optimized', width: 1400, height: 1750, quality: 100 },
+					delivery: { mode: 'original', width: 1400, height: 1750 },
 					key: 'gallery02',
 					type: 'internal',
 				},
@@ -140,7 +140,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
-					delivery: { mode: 'optimized', width: 1400, height: 1750, quality: 100 },
+					delivery: { mode: 'original', width: 1400, height: 1750 },
 					key: 'gallery03',
 					type: 'internal',
 				},
@@ -148,7 +148,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
-					delivery: { mode: 'optimized', width: 1400, height: 1750, quality: 100 },
+					delivery: { mode: 'original', width: 1400, height: 1750 },
 					key: 'gallery04',
 					type: 'internal',
 				},
@@ -156,7 +156,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
-					delivery: { mode: 'optimized', width: 1400, height: 1750, quality: 100 },
+					delivery: { mode: 'original', width: 1400, height: 1750 },
 					key: 'gallery05',
 					type: 'internal',
 				},
@@ -164,7 +164,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
-					delivery: { mode: 'optimized', width: 1400, height: 1750, quality: 100 },
+					delivery: { mode: 'original', width: 1400, height: 1750 },
 					key: 'gallery06',
 					type: 'internal',
 				},

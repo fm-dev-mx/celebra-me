@@ -40,6 +40,24 @@ exact final reference set through the existing acceptance mechanism.
 
 ## Corrections and current verification
 
+- Image delivery correction (Local only): all 47 gallery references whose requested dimensions
+  already matched their source files now use direct original-byte delivery. America's mobile hero
+  uses a prepared 960x1440 WebP (216314 bytes); its original high-resolution file is retained.
+  Canonical publication updated seven Local invitations, with one new Storage object and no
+  overwrites or deletions. Preview has not received these content changes or the code change.
+- The shared image policy no longer implicitly transforms prepared Storage/Cloudinary URLs,
+  including versioned objects. Explicit historical transformations remain supported until their
+  references are republished. All registered canonical managed definitions now reject runtime
+  transformation requests through a regression check. Bundled demos retain their existing pipeline.
+- Public Local checks decoded all 47 gallery images without optimizer URLs and confirmed the mobile
+  hero at 960x1440. The focused browser suite passed 15 checks. Final image-change CI evidence is
+  `.agent/tmp/images-direct-ci-final.log`: exit 0, 6237 unit checks and 251 browser checks passed,
+  with the existing single unit-test skip and a successful build. These delivery
+  checks do not constitute a new full visual-parity acceptance against Production.
+- Post-publication Local status is CURRENT (83/83 migrations, 17/17 managed invitations in sync,
+  zero identity conflicts). Preview and Production were excluded. The previously classified Ximena
+  gallery12 asset warning remains preserved. Evidence: `.agent/tmp/images-direct-local-dbs.json`.
+
 - Current execution is Local-first. Pause additional Preview publications and deployments while
   Local corrections stabilize. A commit is not a prerequisite for guarded database publication; do
   not republish already synchronized content without a demonstrated defect.

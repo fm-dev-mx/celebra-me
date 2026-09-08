@@ -1,3 +1,5 @@
+import sharp from 'sharp';
+import { shouldOptimizeThroughVercelImage } from '../../src/lib/assets/vercel-image-policy';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -5,7 +7,10 @@ import {
 	getInvitationAssetSourceDir,
 	type UploadedAssetMap,
 } from '../../scripts/provision/invitations/invitation-definition';
-import { getInvitationDefinition } from '../../scripts/provision/invitations/registry';
+import {
+	getInvitationDefinition,
+	listInvitationDefinitions,
+} from '../../scripts/provision/invitations/registry';
 import type { ImageDelivery } from '../../src/lib/assets/image-delivery';
 
 // Production 6081525e: measured image dimensions and transformations in both viewports.
@@ -62,7 +67,7 @@ const galleryCases = (
 ).map(([slug, key, width, height]) => ({
 	slug,
 	key,
-	delivery: { mode: 'optimized' as const, width, height, quality: 100 },
+	delivery: { mode: 'original' as const, width, height },
 }));
 
 const originalCases = (
@@ -99,7 +104,7 @@ function publishedContent(slug: string) {
 
 test.each(galleryCases)(
 	'$slug gallery $key retains measured delivery through publication',
-	({ slug, key, delivery }) => {
+	async ({ slug, key, delivery }) => {
 		const content = publishedContent(slug) as {
 			gallery: { items: { image: { assetId: string; delivery?: ImageDelivery } }[] };
 		};
@@ -108,6 +113,19 @@ test.each(galleryCases)(
 		).toEqual(delivery);
 		const asset = getInvitationDefinition(slug).assets.find((asset) => asset.key === key);
 		expect(asset?.delivery).toBeUndefined();
+		if (!asset) throw new Error('Missing prepared gallery asset');
+		const source = resolve(
+			getInvitationAssetSourceDir(getInvitationDefinition(slug)),
+			asset.relativePath,
+		);
+		const metadata = await sharp(source).metadata();
+		expect([metadata.width, metadata.height]).toEqual([delivery.width, delivery.height]);
+		expect(
+			shouldOptimizeThroughVercelImage(
+				'https://res.cloudinary.com/demo/image/upload/v1/photo.webp',
+				delivery,
+			),
+		).toBe(false);
 	},
 );
 
@@ -132,11 +150,6 @@ test.each(originalCases)(
 );
 
 const boundedOriginalCases = [
-	{
-		slug: 'america-johana',
-		key: 'heroMobile',
-		sha256: 'af1b0d24d27f97d375621b84f13ba7f7dbef692695e6426f441efa04c7844db2',
-	},
 	{
 		slug: 'america-johana',
 		key: 'gallery06',
@@ -167,3 +180,28 @@ test.each(boundedOriginalCases)(
 		expect(createHash('sha256').update(bytes).digest('hex')).toBe(sha256);
 	},
 );
+
+test('America mobile hero is prepared once and its high-resolution source remains intact', async () => {
+	const definition = getInvitationDefinition('america-johana');
+	const asset = definition.assets.find((entry) => entry.key === 'heroMobile')!;
+	const root = getInvitationAssetSourceDir(definition);
+	const source = readFileSync(resolve(root, 'hero.webp'));
+	expect(createHash('sha256').update(source).digest('hex')).toBe(
+		'af1b0d24d27f97d375621b84f13ba7f7dbef692695e6426f441efa04c7844db2',
+	);
+	const prepared = readFileSync(resolve(root, asset.relativePath));
+	const metadata = await sharp(prepared).metadata();
+	expect([metadata.width, metadata.height]).toEqual([960, 1440]);
+	expect(prepared.length).toBeLessThan(350 * 1024);
+	expect(asset.sourcePolicy).toBe('preserve');
+	expect(asset.delivery).toEqual({ mode: 'original', width: 960, height: 1440 });
+});
+
+test('canonical managed invitations do not request runtime image transformations', () => {
+	const walk = (value: unknown): void => {
+		if (!value || typeof value !== 'object') return;
+		if ('delivery' in value) expect(value.delivery).not.toMatchObject({ mode: 'optimized' });
+		Object.values(value).forEach(walk);
+	};
+	for (const definition of listInvitationDefinitions()) walk(publishedContent(definition.slug));
+});

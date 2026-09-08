@@ -110,7 +110,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery01',
-					delivery: { mode: 'optimized', width: 1400, height: 2100, quality: 100 },
+					delivery: { mode: 'original', width: 1400, height: 2100 },
 				},
 				caption: 'Un momento especial capturado en luz y cristal.',
 			},
@@ -118,7 +118,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery02',
-					delivery: { mode: 'optimized', width: 1400, height: 2100, quality: 100 },
+					delivery: { mode: 'original', width: 1400, height: 2100 },
 				},
 				caption: 'Detalles que reflejan mi gran noche.',
 			},
@@ -126,7 +126,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery03',
-					delivery: { mode: 'optimized', width: 1400, height: 2100, quality: 100 },
+					delivery: { mode: 'original', width: 1400, height: 2100 },
 				},
 				caption: 'Elegancia y brillo en tonos de cielo.',
 			},
@@ -134,7 +134,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery04',
-					delivery: { mode: 'optimized', width: 1400, height: 1867, quality: 100 },
+					delivery: { mode: 'original', width: 1400, height: 1867 },
 				},
 				caption: 'Recuerdos que guardaré para siempre.',
 			},
@@ -142,7 +142,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery05',
-					delivery: { mode: 'optimized', width: 1400, height: 2100, quality: 100 },
+					delivery: { mode: 'original', width: 1400, height: 2100 },
 				},
 				caption: 'Sonrisas y sueños cumplidos.',
 			},
@@ -150,7 +150,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery06',
-					delivery: { mode: 'optimized', width: 1400, height: 2100, quality: 100 },
+					delivery: { mode: 'original', width: 1400, height: 2100 },
 				},
 				caption: 'Un instante de magia.',
 			},
@@ -158,7 +158,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery07',
-					delivery: { mode: 'optimized', width: 941, height: 1672, quality: 100 },
+					delivery: { mode: 'original', width: 941, height: 1672 },
 				},
 				caption: 'La belleza de cada detalle azul.',
 			},
@@ -166,7 +166,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery08',
-					delivery: { mode: 'optimized', width: 941, height: 1672, quality: 100 },
+					delivery: { mode: 'original', width: 941, height: 1672 },
 				},
 				caption: 'Disfrutando este momento inolvidable.',
 			},
@@ -174,7 +174,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery09',
-					delivery: { mode: 'optimized', width: 941, height: 1672, quality: 100 },
+					delivery: { mode: 'original', width: 941, height: 1672 },
 				},
 				caption: 'Juventud y alegría en una noche perfecta.',
 			},
@@ -182,7 +182,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery10',
-					delivery: { mode: 'optimized', width: 941, height: 1672, quality: 100 },
+					delivery: { mode: 'original', width: 941, height: 1672 },
 				},
 				caption: 'Agradecida por hacer de mis XV un sueño.',
 			},

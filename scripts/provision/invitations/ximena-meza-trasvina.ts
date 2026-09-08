@@ -100,7 +100,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery01',
-					delivery: { mode: 'optimized', width: 1125, height: 1600, quality: 100 },
+					delivery: { mode: 'original', width: 1125, height: 1600 },
 				},
 				caption: 'Mi Gran Día.',
 			},
@@ -108,7 +108,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery02',
-					delivery: { mode: 'optimized', width: 1066, height: 1600, quality: 100 },
+					delivery: { mode: 'original', width: 1066, height: 1600 },
 				},
 				caption: 'Preparada para Brillar.',
 			},
@@ -116,7 +116,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery03',
-					delivery: { mode: 'optimized', width: 1066, height: 1600, quality: 100 },
+					delivery: { mode: 'original', width: 1066, height: 1600 },
 				},
 				caption: 'Elegancia en Cada Detalle.',
 			},
@@ -124,7 +124,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery04',
-					delivery: { mode: 'optimized', width: 1066, height: 1600, quality: 100 },
+					delivery: { mode: 'original', width: 1066, height: 1600 },
 				},
 				caption: 'Brillo Natural.',
 			},
@@ -132,7 +132,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery05',
-					delivery: { mode: 'optimized', width: 1066, height: 1600, quality: 100 },
+					delivery: { mode: 'original', width: 1066, height: 1600 },
 				},
 				caption: 'Sueños en Seda.',
 			},
@@ -140,7 +140,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery07',
-					delivery: { mode: 'optimized', width: 1024, height: 1024, quality: 100 },
+					delivery: { mode: 'original', width: 1024, height: 1024 },
 				},
 				caption: 'Reflejo de Alegría.',
 			},
@@ -148,7 +148,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery09',
-					delivery: { mode: 'optimized', width: 1024, height: 1024, quality: 100 },
+					delivery: { mode: 'original', width: 1024, height: 1024 },
 				},
 				caption: 'Movimiento y Luz.',
 			},
@@ -156,7 +156,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery10',
-					delivery: { mode: 'optimized', width: 1066, height: 1600, quality: 100 },
+					delivery: { mode: 'original', width: 1066, height: 1600 },
 				},
 				caption: 'Actitud y Confianza.',
 			},

@@ -96,7 +96,7 @@ const content: CanonicalEventContentInput = {
 		items: [
 			{
 				image: {
-					delivery: { mode: 'optimized', width: 1080, height: 1350, quality: 100 },
+					delivery: { mode: 'original', width: 1080, height: 1350 },
 					key: 'gallery10',
 					type: 'internal',
 				},
@@ -104,7 +104,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
-					delivery: { mode: 'optimized', width: 1080, height: 1350, quality: 100 },
+					delivery: { mode: 'original', width: 1080, height: 1350 },
 					key: 'gallery06',
 					type: 'internal',
 				},
@@ -112,7 +112,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
-					delivery: { mode: 'optimized', width: 1365, height: 2048, quality: 100 },
+					delivery: { mode: 'original', width: 1365, height: 2048 },
 					key: 'gallery03',
 					type: 'internal',
 				},
@@ -120,7 +120,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
-					delivery: { mode: 'optimized', width: 1080, height: 1350, quality: 100 },
+					delivery: { mode: 'original', width: 1080, height: 1350 },
 					key: 'gallery08',
 					type: 'internal',
 				},
@@ -128,7 +128,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
-					delivery: { mode: 'optimized', width: 1080, height: 1350, quality: 100 },
+					delivery: { mode: 'original', width: 1080, height: 1350 },
 					key: 'gallery02',
 					type: 'internal',
 				},
@@ -137,7 +137,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
-					delivery: { mode: 'optimized', width: 1365, height: 2048, quality: 100 },
+					delivery: { mode: 'original', width: 1365, height: 2048 },
 					key: 'gallery04',
 					type: 'internal',
 				},
@@ -145,7 +145,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
-					delivery: { mode: 'optimized', width: 1080, height: 1350, quality: 100 },
+					delivery: { mode: 'original', width: 1080, height: 1350 },
 					key: 'interlude01',
 					type: 'internal',
 				},

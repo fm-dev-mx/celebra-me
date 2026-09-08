@@ -197,6 +197,17 @@ Helpers: `createPlaceholderToken`, `findPlaceholderTokens`, `validatePlaceholder
    second Astro/`getImage` encode that upscales or re-compresses past native width (see Hero
    managed-URL direct delivery). Record the risk when sources are provisional.
 
+Prepared managed media must use direct delivery. Storage and Cloudinary URLs do not request an
+implicit Astro/Vercel transformation, including content-addressed objects. Preserve explicit
+`original` dimensions on references where layout requires them. Historical explicit `optimized`
+contracts remain readable until their prepared replacements are published; new canonical managed
+references must not depend on this compatibility path. Bundled demo/template assets retain their
+separate Astro pipeline.
+
+For America's mobile hero, `hero-mobile-prepared.webp` is the 960x1440 WebP derivative (quality 84)
+of the retained `hero.webp` source. Preparation uses Sharp with auto-orientation, inside fitting and
+no enlargement. Publication validates and preserves those bytes instead of encoding them again.
+
 Existing `normalizeInvitationImage` and publish dimension gates remain the runtime enforcers.
 WhatsApp attachments never become managed assets without this protocol and explicit quality labels.
 

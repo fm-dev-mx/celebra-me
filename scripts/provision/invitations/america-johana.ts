@@ -134,7 +134,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery01',
-					delivery: { mode: 'optimized', width: 1400, height: 1750, quality: 100 },
+					delivery: { mode: 'original', width: 1400, height: 1750 },
 				},
 				caption: 'La actitud de un espíritu joven.',
 				focalPoint: '50% 36%',
@@ -143,7 +143,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery02',
-					delivery: { mode: 'optimized', width: 1400, height: 1750, quality: 100 },
+					delivery: { mode: 'original', width: 1400, height: 1750 },
 				},
 				caption: 'Entre verde, rojo y luz.',
 				focalPoint: '50% 35%',
@@ -152,7 +152,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery04',
-					delivery: { mode: 'optimized', width: 1400, height: 1750, quality: 100 },
+					delivery: { mode: 'original', width: 1400, height: 1750 },
 				},
 				caption: 'Celebrar rodeada de amigas.',
 				focalPoint: '50% 42%',
@@ -161,7 +161,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery05',
-					delivery: { mode: 'optimized', width: 1600, height: 1200, quality: 100 },
+					delivery: { mode: 'original', width: 1600, height: 1200 },
 				},
 				caption: 'La alegría de compartir.',
 				focalPoint: '50% 44%',
@@ -170,7 +170,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery06',
-					delivery: { mode: 'optimized', width: 4000, height: 6000, quality: 100 },
+					delivery: { mode: 'original', width: 4000, height: 6000 },
 				},
 				caption: 'Con mi familia.',
 				focalPoint: '50% 36%',
@@ -179,7 +179,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery07',
-					delivery: { mode: 'optimized', width: 1600, height: 1200, quality: 100 },
+					delivery: { mode: 'original', width: 1600, height: 1200 },
 				},
 				caption: 'Un recuerdo con quienes me acompañan.',
 				focalPoint: '52% 48%',
@@ -188,7 +188,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery08',
-					delivery: { mode: 'optimized', width: 1600, height: 1200, quality: 100 },
+					delivery: { mode: 'original', width: 1600, height: 1200 },
 				},
 				caption: 'Cariño que se queda.',
 				focalPoint: '50% 42%',
@@ -197,7 +197,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery09',
-					delivery: { mode: 'optimized', width: 1600, height: 1200, quality: 100 },
+					delivery: { mode: 'original', width: 1600, height: 1200 },
 				},
 				caption: 'Amigos y familia en el jardín.',
 				focalPoint: '50% 48%',
@@ -206,7 +206,7 @@ const content: CanonicalEventContentInput = {
 				image: {
 					type: 'internal',
 					key: 'gallery10',
-					delivery: { mode: 'optimized', width: 1600, height: 1200, quality: 100 },
+					delivery: { mode: 'original', width: 1600, height: 1200 },
 				},
 				caption: 'La emoción antes de la gran noche.',
 				focalPoint: '50% 46%',
@@ -426,7 +426,7 @@ export const americaInvitation = defineCanonicalInvitation({
 		gallery06: { sourcePolicy: 'preserve' },
 		heroMobile: {
 			sourcePolicy: 'preserve',
-			delivery: { mode: 'optimized', width: 960, height: 1440, quality: 84 },
+			delivery: { mode: 'original', width: 960, height: 1440 },
 		},
 		family: { sourcePolicy: 'preserve' },
 		gallery01: { sourcePolicy: 'preserve' },
@@ -459,7 +459,7 @@ export const americaInvitation = defineCanonicalInvitation({
 		gallery09: 'gallery-09.webp',
 		gallery10: 'gallery-10.webp',
 		hero: 'hero.webp',
-		heroMobile: 'hero.webp',
+		heroMobile: 'hero-mobile-prepared.webp',
 		heroDesktop: 'hero-desktop.webp',
 		interlude01: 'interlude-01.webp',
 		interlude02: 'interlude-02.webp',
