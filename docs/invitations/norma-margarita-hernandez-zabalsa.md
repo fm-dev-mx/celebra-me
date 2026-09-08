@@ -183,3 +183,87 @@ own authorization. No such operations were performed.
 
 The public-route tests must pass after authorized provisioning; the protected-backup test dependency
 and supported runtime must also be resolved before claiming release readiness.
+
+## Layout refinement — September 8, 2026
+
+Current layout review: `norma-v2-6a263f3c7937`; `.agent/tmp/norma-art-review/layout-v2.json` records
+the changed source hashes. The earlier v1 record above describes the photograph candidates and
+historical validation.
+
+Owner authorization: proceed with the visual critique. Preserve all six photographs, their order,
+approved dedications, event facts and personalized RSVP. Human photograph and whole-invitation
+acceptance remain PENDING.
+
+- Matte envelope with a single opening instruction; compact full childhood portrait on mobile.
+- Narrative gallery uses delivery dimensions to identify landscape photographs. Landscape chapters
+  span the available desktop width; portraits alternate with permanent captions. Chapter counters
+  are removed.
+- Norma-only surface tokens simplify the countdown, maps, RSVP spacing and closing signature.
+  Existing map navigation remains available. Shared surface hooks retain their previous defaults.
+- Header scrim and CTA colors follow the ivory/plum profile. Locked RSVP copy uses the formal usted
+  register.
+- Evidence: `output/playwright/norma-{360,390,768,1440}.png`, `norma-opening.png`,
+  `norma-envelope.png`, and `norma-text-200.png`.
+- Regression decision: extend the existing responsive test to assert landscape classification and a
+  wider family photograph on desktop; reuse neutral variant and portrait-letter geometry checks.
+- Validation: 15 focused browser tests passed, including eight Norma scenarios and seven
+  neutral/shared-variant checks. Full CI and publication are outside this visual iteration; prior
+  release blockers remain recorded above.
+
+Tier B validation for this refinement: `pnpm validate:changed` passed (70 related suites, 909 tests,
+plus 24 corpus regression tests); `pnpm type-check` reported zero errors/warnings;
+`pnpm validate:invitation-preparation` and `pnpm validate:event-parity` passed. Existing five-column
+table warnings and the Node/pnpm engine-version warning remain non-blocking tool observations. Four
+additional shared-envelope interaction tests passed (19 focused browser tests in total). No
+Git-write, database-write, upload or deployment operation was performed.
+
+## Expressive visual revision — September 8, 2026
+
+Current candidate: `norma-v3-8a7affbe4461`. Owner feedback rejected the flat, square character of
+v2. The new candidate remains PENDING visual acceptance.
+
+The envelope now contrasts ivory stationery against plum. The childhood composition uses a broad
+rose curve, an arched outline around the uncropped photograph and a larger name. Narrative
+photographs retain their full image bounds with curved rose surrounds; landscape chapters remain
+wide. An italic rose dedication bridges into the album, while a plum countdown marks the transition
+to the celebration. The closing regains a restrained rose color field. Content, photograph
+candidates and RSVP behavior are unchanged.
+
+The owning SCSS variants provide the geometry. Profile tokens control color and section curvature;
+no new public schema or variant values are introduced. `layout-v3.json` in the private review
+directory identifies the revised style files.
+
+Validation for v3: `pnpm validate:changed` passed (909 related tests and 24 corpus tests). The 15
+focused browser scenarios passed at 360, 390, 768 and 1440 px, including enlarged text, keyboard
+opening and neutral variant fixtures. This iteration changes SCSS and documentation only relative to
+v2; type checking and full CI were not repeated. Publication and human acceptance remain pending.
+
+## Integrated photographs and hierarchy — September 8, 2026
+
+Current local candidate: `norma-v4-bf1d98d9f804`, superseding v3 for visual review. Human acceptance
+remains PENDING. The private `layout-v4.json` records the source hashes.
+
+The owner approved soft corner cropping of background only. The hero photograph now owns its arch;
+its double frame and the album's circular surrounds are removed. Album photographs retain native
+proportions with 24 px corners, permanent captions and the existing full-image viewer. The closing
+keeps its arch. Source photographs and candidate exports are unchanged. Manual review found no
+additional person clipping from these contours.
+
+The name scales from 64 to 104 px, section headings from 32 to 44 px, and dedications from 18 to 20
+px. Italics are reserved for the initial thanks and the life dedication. Secondary desktop portraits
+remain bounded at 352 px; family remains the widest chapter. The countdown has reduced padding and
+internal gaps, with 112–160 px numerals. Venue hours are stronger, and the closing signature is
+secondary to its message. Changes remain in canonical SCSS and profile tokens, without new variants,
+public fields, APIs or content.
+
+Comparable full-page evidence includes hero, family, countdown and closing at both widths:
+`output/playwright/norma-v4-comparison-390.png` and `norma-v4-comparison-1440.png` (v3 left, v4
+right). Separate before/after files are retained alongside those comparisons. Responsive checks also
+cover 360 and 768 px, 200 percent text, reduced motion, keyboard opening, contrast and the album
+viewer.
+
+Validation: `pnpm validate:changed` passed (70 related suites / 909 tests plus 24 corpus tests); all
+15 focused Norma and shared-variant browser tests passed. Final token adjustments received the same
+focused browser checks and scoped style validation. No TypeScript or runtime logic changed in this
+iteration, so type checking and full CI were not repeated. Existing runtime warnings and historical
+release gates above remain applicable. This is a local review only, not publication readiness.

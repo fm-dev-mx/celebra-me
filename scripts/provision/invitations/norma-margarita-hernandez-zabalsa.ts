@@ -150,7 +150,7 @@ export function buildNormaPublishedContent(
 			sealStyle: 'monogram',
 			sealIcon: 'monogram',
 			sealInitials: 'NM',
-			microcopy: 'Abra mi invitación',
+			microcopy: '',
 			tooltipText: 'Abra mi invitación',
 			closedPalette: {
 				primary: 'textPrimary',

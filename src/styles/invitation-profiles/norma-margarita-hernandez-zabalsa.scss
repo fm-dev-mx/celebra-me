@@ -26,27 +26,58 @@
 	--font-calligraphy: var(--font-display);
 	--color-text-on-dark-rgb: 250 246 240;
 	--color-surface-dark-rgb: 75 48 59;
-	--quote-bg: var(--color-surface-primary);
 	--quote-text-color: var(--color-text-primary);
-	--quote-padding-block: clamp(3rem, 7vw, 5rem);
-	--countdown-section-background: var(--color-surface-secondary);
-	--countdown-section-padding: clamp(4rem, 8vw, 6rem) 1.5rem;
+	--countdown-section-background: var(--color-surface-dark);
+	--countdown-section-radius: 50% 50% 0 0 / 3rem 3rem 0 0;
+	--countdown-section-padding: 2rem 1.5rem;
+	--countdown-heading-size: clamp(2rem, 4vw, 2.75rem);
+	--countdown-heading-gap: 0.75rem;
+	--countdown-segment-inset: 0.5rem;
+	--countdown-footer-gap: 1.25rem;
+	--countdown-footer-style: normal;
 	--countdown-section-shadow: none;
-	--countdown-title-color: var(--color-text-primary);
+	--countdown-title-color: var(--color-text-on-dark);
 	--countdown-title-shadow: none;
 	--countdown-reduced-title-bg: transparent;
-	--countdown-segment-bg: var(--color-surface-primary);
+	--countdown-segment-bg: transparent;
+	--countdown-segment-border: 0;
+	--countdown-ornament-display: none;
+	--countdown-title-transform: none;
+	--countdown-title-spacing: 0;
+	--countdown-display-size: clamp(7rem, 14vw, 10rem);
 	--countdown-segment-shadow: none;
-	--countdown-value-color: var(--color-text-primary);
-	--countdown-label-color: var(--color-text-primary);
-	--countdown-footer-color: var(--color-text-primary);
+	--countdown-value-color: var(--color-surface-secondary);
+	--countdown-label-color: var(--color-text-on-dark);
+	--countdown-footer-color: var(--color-text-on-dark);
 	--location-bg: var(--color-surface-primary);
-	--location-card-bg: var(--color-surface-elevated);
+	--location-card-bg: transparent;
+	--location-map-preview-display: none;
+	--location-card-border: 0;
+	--location-card-shadow: none;
+	--location-card-hover-shadow: none;
+	--location-card-hover-transform: none;
+	--location-place-font-size: clamp(1.6rem, 3vw, 2rem);
+	--location-place-line-height: 1.2;
+	--thank-you-letter-min-height: auto;
+	--thank-you-letter-grid-min-height: auto;
+	--thank-you-letter-padding: 4rem 1.5rem;
+	--thank-you-letter-padding-block: 5rem;
+	--thank-you-letter-background: linear-gradient(
+		125deg,
+		var(--color-surface-secondary),
+		var(--color-surface-primary) 75%
+	);
+	--thank-you-letter-ambient-opacity: 0;
+	--thank-you-letter-signature-size: 1.125rem;
+	--thank-you-letter-message-size: clamp(1.125rem, 1.8vw, 1.25rem);
+	--thank-you-letter-image-filter: none;
 	--location-date-color: var(--color-text-secondary);
 	--location-hour-color: var(--color-text-primary);
 	--location-address-color: var(--color-text-secondary);
 	--location-address-font-size: 1rem;
-	--location-hour-font-size: 1rem;
+	--location-hour-font-size: clamp(1.375rem, 2.5vw, 1.75rem);
+	--location-hour-font-family: var(--font-display);
+	--location-hour-font-weight: 600;
 	--location-date-font-size: 1rem;
 	--location-nav-font-size: 1rem;
 	--location-nav-letter-spacing: 0.025em;
@@ -61,30 +92,44 @@
 	--gallery-section-bg: var(--color-surface-primary);
 	--gallery-title-color: var(--color-text-primary);
 	--gallery-title-font: var(--font-display);
-	--location-section-bg: var(--color-surface-primary);
+	--location-intro-heading-size: clamp(2rem, 4vw, 2.75rem);
 	--location-title-font-family: var(--font-display);
 	--location-place-font-family: var(--font-display);
 	--location-date-font-family: var(--font-body);
-	--location-hour-font-family: var(--font-body);
 	--location-address-font-family: var(--font-body);
 	--location-indication-text-font-family: var(--font-body);
-	--rsvp-section-bg: var(--color-surface-primary);
+	--rsvp-section-min-height: auto;
+	--rsvp-card-shadow: none;
 	--rsvp-title-color: var(--color-text-primary);
 	--pa-title-font: var(--font-display);
 	--pa-guest-font: var(--font-display);
 
 	.envelope-wrapper[data-variant='luxury-hacienda'] {
-		--env-bg: var(--color-surface-primary);
-		--env-paper-bg: var(--color-surface-secondary);
-		--env-paper-border: var(--color-action-accent);
+		--env-bg: radial-gradient(
+			ellipse at 25% 15%,
+			rgb(110 76 90),
+			var(--color-surface-dark) 75%
+		);
+		--env-container-ratio: 1.1;
+		--env-container-radius: 12px;
+		--env-title-size: clamp(1.7rem, 7cqw, 2.4rem);
+		--env-paper-bg: var(--color-surface-primary);
+		--env-paper-border: rgb(146 93 112 / 24%);
+		--env-paper-surface: var(--color-surface-primary);
+		--env-flap-shadow: drop-shadow(0 2px 3px rgb(75 48 59 / 8%));
+		--env-name-transform: none;
+		--env-name-weight: 400;
+		--env-name-shadow: none;
+		--env-monogram-shadow: 0 2px 4px rgb(75 48 59 / 15%);
+		--env-seal-sheen-opacity: 0;
+		--env-seal-hint-size: 1rem;
 		--env-text-primary: var(--color-text-primary);
 		--env-text-secondary: var(--color-text-primary);
 		--env-accent: var(--color-text-primary);
 		--env-seal-bg: var(--color-action-accent);
 		--env-seal-icon-override: var(--color-surface-primary);
 		--env-shadow-seal: 0 4px 12px rgb(75 48 59 / 18%);
-		--env-container-skin-shadow: 0 16px 40px rgb(75 48 59 / 14%);
-		--env-open-label-size: 1rem;
+		--env-container-skin-shadow: 0 20px 50px rgb(20 10 16 / 30%);
 		--env-open-label-opacity: 100%;
 		--env-open-label-spacing: 0.08em;
 		--reveal-card-bg: var(--color-surface-primary);
@@ -93,7 +138,22 @@
 		--duration-reveal: 1.2s;
 	}
 
+	.rsvp {
+		--rsvp-title-size: clamp(2rem, 4vw, 2.75rem);
+	}
+
 	.header-base {
+		--nav-transparent-scrim: none;
+		--nav-glass-bg: var(--color-surface-primary);
+		--nav-scrolled-bg: var(--color-surface-primary);
+		--header-nav-cta-bg: var(--color-text-primary);
+		--header-nav-cta-color: var(--color-surface-primary);
+		--header-nav-cta-border: var(--color-text-primary);
+		--header-nav-cta-shadow: none;
+		--mobile-drawer-cta-bg: var(--color-text-primary);
+		--mobile-drawer-cta-color: var(--color-surface-primary);
+		--mobile-drawer-cta-border: 1px solid var(--color-text-primary);
+		--mobile-drawer-cta-shadow: none;
 		--header-bg: rgb(250 246 240 / 96%);
 		--header-bg-scrolled: rgb(250 246 240 / 98%);
 		--header-nav-title-color: var(--color-text-primary);
@@ -110,11 +170,24 @@
 		--mobile-signature-color: var(--color-text-primary);
 	}
 
+	.countdown-section {
+		--color-text-primary: rgb(250 246 240);
+		--color-text-secondary: rgb(232 201 208);
+	}
+
 	.quote-section {
+		--quote-bg: rgb(244 230 230);
+		--quote-surface-radius: 0 0 50% 50% / 0 0 2.5rem 2.5rem;
+		--quote-content-style: italic;
 		--quote-content-font: var(--font-display);
-		--quote-content-size: clamp(1.55rem, 3vw, 2.4rem);
+		--quote-content-size: clamp(1.125rem, 1.8vw, 1.25rem);
 		--quote-content-line-height: 1.5;
+		--quote-content-max-width: 34ch;
 		--quote-author-color: var(--color-text-secondary);
 		--quote-padding-block: clamp(3rem, 7vw, 5rem);
+	}
+
+	.gallery-grid__item:last-child .gallery-grid__caption {
+		font-style: italic;
 	}
 }
