@@ -20,8 +20,8 @@
 		--gallery-section-padding-block: clamp(3.5rem, 8vw, 5.5rem);
 	}
 
-	// Thank-you — surface padding via section token (celestial module)
-	--thank-you-section-padding: clamp(5rem, 14svh, 8rem) clamp(1.15rem, 5vw, 4.5rem)
+	// Thank-you — explicit portrait-keepsake spacing; desktop keeps the variant defaults.
+	--thank-you-keepsake-padding: clamp(5rem, 14svh, 8rem) clamp(1.15rem, 5vw, 4.5rem)
 		clamp(5rem, 12svh, 7.5rem);
 }
 

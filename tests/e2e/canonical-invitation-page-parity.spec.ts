@@ -467,3 +467,31 @@ test.describe('Reported invitation public-route regressions', () => {
 		expect(audit.galleryImages).toBe(10);
 	});
 });
+
+
+test.describe('Portrait keepsake production spacing regression', () => {
+	for (const viewport of [
+		{ width: 390, height: 844, top: 118.16, bottom: 101.28 },
+		{ width: 414, height: 896, top: 125.44, bottom: 107.52 },
+		{ width: 1440, height: 900, top: 126, bottom: 117 },
+	]) {
+		test(`leah keeps the published spacing at ${viewport.width}px`, async ({ page }) => {
+			await page.setViewportSize(viewport);
+			const response = await page.goto(
+				'/baby-shower/leah-lexa?skipEnvelope=true&animations=off',
+				{ waitUntil: 'load' },
+			);
+			expect(response?.status()).toBe(200);
+			const section = page.locator('#thank-you-section');
+			await section.scrollIntoViewIfNeeded();
+			await expect(section).toHaveAttribute('data-variant', 'portrait-keepsake');
+			await expect(page.locator('.event-theme-wrapper')).toHaveAttribute('data-content-source', 'published');
+			const padding = await section.evaluate((node) => {
+				const style = getComputedStyle(node);
+				return { top: parseFloat(style.paddingTop), bottom: parseFloat(style.paddingBottom) };
+			});
+			expect(padding.top).toBeCloseTo(viewport.top, 1);
+			expect(padding.bottom).toBeCloseTo(viewport.bottom, 1);
+		});
+	}
+});

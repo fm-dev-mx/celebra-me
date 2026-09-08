@@ -3,7 +3,10 @@
 .thank-you-section[data-variant='portrait-keepsake'] {
 	min-height: 100svh;
 	align-items: stretch;
-	padding: clamp(7rem, 17svh, 9.5rem) clamp(1.15rem, 5vw, 4.5rem) clamp(6.25rem, 13svh, 9rem);
+	padding: var(
+		--thank-you-keepsake-padding,
+		clamp(7rem, 17svh, 9.5rem) clamp(1.15rem, 5vw, 4.5rem) clamp(6.25rem, 13svh, 9rem)
+	);
 
 	.thank-you-editorial {
 		position: relative;
