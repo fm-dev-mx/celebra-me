@@ -191,6 +191,93 @@ describe('preview-e2e-fixture', () => {
 		expect(again.postcondition).toBe(PREVIEW_E2E_FIXTURE_POSTCONDITION);
 	});
 
+	it.each([false, true])('repairs only the canonical publication with apply=%s', (apply) => {
+		mockedClassify.mockReturnValue({ target: 'preview', reason: 'preview host' } as never);
+		mockedPsql.mockReturnValue({ status: 0, stdout: '', stderr: '' });
+		mockedPsql.mockReturnValueOnce({
+			status: 0,
+			stderr: '',
+			stdout: JSON.stringify({
+				id: '22222222-2222-4222-8222-222222222222',
+				slug: PREVIEW_FIXTURE_SLUG,
+				title: PREVIEW_FIXTURE_TITLE,
+				event_type: 'xv',
+				base_demo_id: 'demo-xv-jewelry-box',
+				created_by: '11111111-1111-4111-8111-111111111111',
+				client_name: '',
+				client_email: '',
+				client_whatsapp: '',
+			}),
+		});
+		const result = ensurePreviewE2eFixture({
+			apply,
+			repairPublication: true,
+			authToken: 'preview:e2e-preview-publication:e2e-fixture',
+			env: { PREVIEW_DB_URL: PREVIEW_URL },
+		});
+		expect(result.action).toBe(apply ? 'repaired' : 'dry_run_repair');
+		const writes = mockedPsql.mock.calls.filter(([sql]) => /^update/i.test(String(sql)));
+		expect(writes).toHaveLength(apply ? 1 : 0);
+		if (apply) {
+			const sql = String(writes[0]?.[0]);
+			expect(sql).toContain('content is distinct from');
+			expect(sql).toContain('invitation_project_id =');
+			expect(sql).toContain("slug = 'e2e-preview-publication'");
+			expect(sql).toContain('sectionOrder');
+			expect(sql).toContain('composition');
+		}
+		expect(
+			mockedPsql.mock.calls.some(([sql]) =>
+				String(sql).includes('invitation_content_drafts'),
+			),
+		).toBe(false);
+	});
+
+	it('rejects publication repair when active fixture is absent', () => {
+		mockedClassify.mockReturnValue({ target: 'preview', reason: 'preview host' } as never);
+		mockedPsql.mockReturnValue({ status: 0, stdout: '', stderr: '' });
+		expect(() =>
+			ensurePreviewE2eFixture({
+				apply: true,
+				repairPublication: true,
+				authToken: 'preview:e2e-preview-publication:e2e-fixture',
+				env: { PREVIEW_DB_URL: PREVIEW_URL },
+			}),
+		).toThrow('PREVIEW_E2E_FIXTURE_REPAIR_REQUIRES_EXISTING');
+	});
+
+	it('fails closed when publication repair query fails', () => {
+		mockedClassify.mockReturnValue({ target: 'preview', reason: 'preview host' } as never);
+		mockedPsql.mockReturnValueOnce({
+			status: 0,
+			stderr: '',
+			stdout: JSON.stringify({
+				id: '22222222-2222-4222-8222-222222222222',
+				slug: PREVIEW_FIXTURE_SLUG,
+				title: PREVIEW_FIXTURE_TITLE,
+				event_type: 'xv',
+				base_demo_id: 'demo-xv-jewelry-box',
+				created_by: '11111111-1111-4111-8111-111111111111',
+				client_name: '',
+				client_email: '',
+				client_whatsapp: '',
+			}),
+		});
+		mockedPsql.mockReturnValueOnce({
+			status: 1,
+			stdout: '',
+			stderr: 'psql update error',
+		});
+		expect(() =>
+			ensurePreviewE2eFixture({
+				apply: true,
+				repairPublication: true,
+				authToken: 'preview:e2e-preview-publication:e2e-fixture',
+				env: { PREVIEW_DB_URL: PREVIEW_URL },
+			}),
+		).toThrow('PREVIEW_E2E_FIXTURE_REPAIR_FAILED');
+	});
+
 	it('rejects missing Preview credentials before mutation', () => {
 		expect(() => resolvePreviewFixtureDbUrl({})).toThrow(/PREVIEW_E2E_FIXTURE_CREDENTIALS/);
 		expect(mockedPsql).not.toHaveBeenCalled();

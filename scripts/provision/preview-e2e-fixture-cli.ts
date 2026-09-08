@@ -17,6 +17,8 @@ Usage:
   pnpm invitation:preview-fixture --dry-run
   pnpm invitation:preview-fixture --apply
 
+Optional --repair-publication repairs only the existing synthetic publication from the versioned demo.
+
 Creates or verifies slug "${PREVIEW_FIXTURE_SLUG}" owned by preview@preview.com.
 Does not restore Dashboard/API invitation creation.
 Production is rejected.
@@ -47,6 +49,7 @@ async function main(): Promise<void> {
 
 	const result = ensurePreviewE2eFixture({
 		apply: apply && !dryRun,
+		repairPublication: args.includes('--repair-publication'),
 		isInteractive,
 	});
 

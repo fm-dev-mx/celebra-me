@@ -7,6 +7,8 @@
  */
 
 import { createHash, randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
 import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
 import {
 	PREVIEW_FIXTURE_DEMO_ID,
@@ -34,7 +36,13 @@ function deriveDeterministicUuid(namespace: string, seed: string): string {
 }
 
 export interface PreviewE2eFixtureResult {
-	action: 'created' | 'already_present' | 'dry_run_create' | 'dry_run_present';
+	action:
+		| 'created'
+		| 'already_present'
+		| 'dry_run_create'
+		| 'dry_run_present'
+		| 'repaired'
+		| 'dry_run_repair';
 	invitationId: string;
 	slug: string;
 	ownerUserId: string;
@@ -263,6 +271,7 @@ function createFixtureRow(input: {
  */
 export function ensurePreviewE2eFixture(options: {
 	apply?: boolean;
+	repairPublication?: boolean;
 	isInteractive?: boolean;
 	authToken?: string;
 	env?: NodeJS.ProcessEnv;
@@ -287,6 +296,38 @@ export function ensurePreviewE2eFixture(options: {
 
 	if (existing) {
 		assertCanonicalExisting(existing, ownerUserId);
+		if (options.repairPublication) {
+			// Repair only this synthetic publication from the versioned demo contract.
+			const content = eventContentSchema.parse(
+				JSON.parse(
+					readFileSync('src/content/event-demos/xv/demo-xv-jewelry-box.json', 'utf8'),
+				),
+			);
+			if (apply) {
+				const result = runPsql(
+					`update public.published_invitation_content
+					 set content = ${sqlLiteral(JSON.stringify(content))}::jsonb,
+					     version = version + 1, updated_at = now(), published_at = now()
+					 where invitation_project_id = ${sqlLiteral(existing.id)}::uuid
+					   and slug = ${sqlLiteral(PREVIEW_FIXTURE_SLUG)}
+					   and event_type = ${sqlLiteral(PREVIEW_FIXTURE_EVENT_TYPE)}
+					   and is_demo = false and deleted_at is null
+					   and content is distinct from ${sqlLiteral(JSON.stringify(content))}::jsonb;`,
+					dbUrl,
+					{ tuplesOnly: true, throwOnError: false },
+				);
+				if (result.status !== 0) throw new Error('PREVIEW_E2E_FIXTURE_REPAIR_FAILED');
+			}
+			return {
+				action: apply ? 'repaired' : 'dry_run_repair',
+				invitationId: existing.id,
+				slug: PREVIEW_FIXTURE_SLUG,
+				ownerUserId,
+				dbUrlRedacted: redactDbUrl(dbUrl),
+				postcondition: PREVIEW_E2E_FIXTURE_POSTCONDITION,
+			};
+		}
+
 		ensureDraft(dbUrl, existing.id, apply);
 		ensurePublishedContent(dbUrl, existing.id, apply);
 		return {
@@ -299,6 +340,7 @@ export function ensurePreviewE2eFixture(options: {
 		};
 	}
 
+	if (options.repairPublication) throw new Error('PREVIEW_E2E_FIXTURE_REPAIR_REQUIRES_EXISTING');
 	const preset = findDemoPreset(PREVIEW_FIXTURE_DEMO_ID);
 	if (!preset) {
 		throw new Error(
