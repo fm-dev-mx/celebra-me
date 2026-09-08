@@ -262,6 +262,18 @@ export const gerardoInvitation = defineCanonicalInvitation({
 	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'gerardo_sesenta',
 	assetDir: 'src/assets/images/events/gerardo-sesenta',
+	assetPresentation: {
+		hero: { sourcePolicy: 'preserve' },
+		jardin: { sourcePolicy: 'preserve' },
+		gallery01: { sourcePolicy: 'preserve' },
+		gallery02: { sourcePolicy: 'preserve' },
+		gallery03: { sourcePolicy: 'preserve' },
+		gallery04: { sourcePolicy: 'preserve' },
+		gallery05: { sourcePolicy: 'preserve' },
+		gallery06: { sourcePolicy: 'preserve' },
+		interlude01: { sourcePolicy: 'preserve' },
+		interlude02: { sourcePolicy: 'preserve' },
+	},
 	assetFiles: {
 		hero: 'hero.webp',
 		portrait: 'portrait.webp',

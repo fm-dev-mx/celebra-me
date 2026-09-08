@@ -395,6 +395,17 @@ export const xareniInvitation = defineCanonicalInvitation({
 	hostLoginAlias: 'xareni_iyarit',
 	assetDir: 'src/assets/images/events/xv-xareni-iyarit',
 	assetPresentation: {
+		thankYouPortrait: { sourcePolicy: 'preserve' },
+		gallery01: { sourcePolicy: 'preserve' },
+		gallery02: { sourcePolicy: 'preserve' },
+		gallery03: { sourcePolicy: 'preserve' },
+		gallery04: { sourcePolicy: 'preserve' },
+		gallery05: { sourcePolicy: 'preserve' },
+		gallery06: { sourcePolicy: 'preserve' },
+		interlude01: { sourcePolicy: 'preserve' },
+		interlude02: { sourcePolicy: 'preserve' },
+		interlude03: { sourcePolicy: 'preserve' },
+		interlude04: { sourcePolicy: 'preserve' },
 		hero: {
 			sourcePolicy: 'preserve',
 			delivery: { mode: 'original', width: 941, height: 1672 },

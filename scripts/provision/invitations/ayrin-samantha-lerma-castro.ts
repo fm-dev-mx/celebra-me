@@ -353,6 +353,18 @@ export const ayrinInvitation = defineCanonicalInvitation({
 	hostLoginAlias: 'ayrin_samantha_lerma_castro',
 	assetDir: 'src/assets/images/events/xv-ayrin-samantha-lerma-castro',
 	assetPresentation: {
+		gallery02: { sourcePolicy: 'preserve' },
+		gallery03: { sourcePolicy: 'preserve' },
+		gallery04: { sourcePolicy: 'preserve' },
+		gallery06: { sourcePolicy: 'preserve' },
+		gallery08: { sourcePolicy: 'preserve' },
+		gallery10: { sourcePolicy: 'preserve' },
+		interlude01: { sourcePolicy: 'preserve' },
+		interlude02: { sourcePolicy: 'preserve' },
+		interlude03: { sourcePolicy: 'preserve' },
+		mapCeremony: { sourcePolicy: 'preserve' },
+		mapReception: { sourcePolicy: 'preserve' },
+		thankYouPortrait: { sourcePolicy: 'preserve' },
 		hero: {
 			sourcePolicy: 'preserve',
 			delivery: { mode: 'original', width: 1672, height: 941 },
