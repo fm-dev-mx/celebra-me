@@ -7,7 +7,7 @@ jest.mock('@/lib/intake/repositories/published-invitation-content.repository', (
 }));
 
 jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
-	findInvitationBySlug: jest.fn(),
+	isInvitationArchivedBySlug: jest.fn(),
 }));
 
 jest.mock('@/lib/adapters/event', () => ({
@@ -49,7 +49,7 @@ jest.mock('@/lib/environment', () => ({
 import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
-import { findInvitationBySlug } from '@/lib/intake/repositories/invitation.repository';
+import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import validPublishedContentJson from '@/content/event-demos/xv/demo-xv-jewelry-box.json';
@@ -66,13 +66,13 @@ const mockFindPublishedBySlugAndEventType = findPublishedBySlugAndEventType as j
 >;
 const mockAdaptEvent = adaptEvent as jest.Mock;
 const mockAdaptDbEvent = adaptDbEvent as jest.Mock;
-const mockFindInvitationBySlug = findInvitationBySlug as jest.MockedFunction<
-	typeof findInvitationBySlug
+const mockIsInvitationArchivedBySlug = isInvitationArchivedBySlug as jest.MockedFunction<
+	typeof isInvitationArchivedBySlug
 >;
 
 beforeEach(() => {
 	jest.clearAllMocks();
-	mockFindInvitationBySlug.mockResolvedValue(null);
+	mockIsInvitationArchivedBySlug.mockResolvedValue(false);
 });
 
 describe('resolveInvitationContent', () => {
@@ -100,7 +100,7 @@ describe('resolveInvitationContent', () => {
 			ANONYMOUS_PUBLISHED_CONTENT_READS,
 			'published-content',
 		);
-		expect(mockFindInvitationBySlug).not.toHaveBeenCalled();
+		expect(mockIsInvitationArchivedBySlug).not.toHaveBeenCalled();
 	});
 
 	it('resolves static demo when Supabase credentials are missing', async () => {
@@ -122,7 +122,7 @@ describe('resolveInvitationContent', () => {
 	it('resolves static demo when all Supabase calls fail with credential errors', async () => {
 		const credError = new Error('SUPABASE_SERVICE_ROLE_KEY no configurada.');
 		mockFindPublishedBySlugAndEventType.mockRejectedValue(credError);
-		mockFindInvitationBySlug.mockRejectedValue(credError);
+		mockIsInvitationArchivedBySlug.mockRejectedValue(credError);
 		mockGetRoutable.mockResolvedValue({
 			id: 'event-demos/xv/demo-xv',
 			data: { isDemo: true },

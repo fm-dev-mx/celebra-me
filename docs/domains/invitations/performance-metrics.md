@@ -282,7 +282,7 @@ stable keys.
 ### Published-content reads
 
 **Definition.** A published anonymous invitation resolves with one `findPublishedBySlugAndEventType`
-read and must not also `findInvitationBySlug` on that hit.
+read and must not perform an archive lookup on that hit.
 
 **Why it matters.** Extra resolver calls add TTFB and Postgres load on every guest open.
 
@@ -292,6 +292,10 @@ read and must not also `findInvitationBySlug` on that hit.
 **Enforcement.** Hard CI. Count is operations per request, not monthly totals.
 
 **Baseline.** `ANONYMOUS_PUBLISHED_CONTENT_READS = 1`.
+
+Static fallback keeps one archive lookup with `select=archived_at`; tests in
+`tests/unit/invitation.repository.test.ts` protect the projection, archive handling and error
+propagation. It must not fetch snapshot/contact fields merely to determine archive status.
 
 **Interpretation.** A second published-content or invitation-row read on the happy path is a cost
 regression.

@@ -72,6 +72,15 @@ export async function findInvitationById(
 	return rows[0] ? toInvitation(rows[0]) : null;
 }
 
+/** Read only the archive marker needed by public static fallback resolution. */
+export async function isInvitationArchivedBySlug(slug: string): Promise<boolean> {
+	const rows = await supabaseRestRequest<{ archived_at: string | null }[]>({
+		pathWithQuery: `invitations?select=archived_at&slug=eq.${encodeURIComponent(slug)}&limit=1`,
+		useServiceRole: true,
+	});
+	return Boolean(rows[0]?.archived_at);
+}
+
 export async function findInvitationBySlug(
 	slug: string,
 	includeArchived = false,

@@ -22,6 +22,9 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ### Fixed
 
+- **Public invitation reads**: Limit the static fallback archive check to its required field,
+  avoiding unnecessary client snapshot and contact-data retrieval.
+
 - **Invitation presentation**: Restore unobstructed index-choreography galleries, add the explicit
   portrait-letter thank-you composition, and reconcile invitation/demo section sequences with
   their published Production reference.

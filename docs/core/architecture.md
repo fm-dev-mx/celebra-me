@@ -182,6 +182,9 @@ Public published invitation lookups against `published_invitation_content` must 
 identity. See `src/lib/invitation/content-resolver.ts` and
 `src/lib/intake/repositories/published-invitation-content.repository.ts`.
 
+Static demo/template fallback preserves the archive check but reads only `archived_at` through
+`isInvitationArchivedBySlug`; it must not load the client snapshot or contact fields.
+
 ---
 
 ## 6) Client → Server Communication

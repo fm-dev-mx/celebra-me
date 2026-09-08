@@ -1,6 +1,6 @@
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
-import { findInvitationBySlug } from '@/lib/intake/repositories/invitation.repository';
+import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import type { InvitationViewModel } from '@/lib/adapters/types';
@@ -150,8 +150,7 @@ export async function resolveInvitationContent(
 	}
 
 	try {
-		const invitation = await findInvitationBySlug(slug, true);
-		if (invitation?.archivedAt) return null;
+		if (await isInvitationArchivedBySlug(slug)) return null;
 	} catch (error) {
 		if (isMissingSupabaseCredentialsError(error)) {
 			// Credentials not configured — proceed to static fallback.
