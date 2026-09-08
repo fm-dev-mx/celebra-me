@@ -97,6 +97,12 @@
             "provides": ["validated_original_invitation_images"],
             "notes": "Replaces the WebP-only CHECK with a superset accepting validated original JPEG/PNG. Existing rows and rendered content remain unchanged; pin deployed app identity before hosted apply and publish originals only with the updated validator.",
             "revokes": ["invitation_asset_webp_only_validation"]
+        },
+        "20260908212231": {
+            "phase": "contract",
+            "provides": ["valentina_memory_session_anonymization"],
+            "revokes": ["valentina_memory_session_anonymization_public_execute"],
+            "notes": "Creates atomic session anonymization RPC and revokes execution privileges from public/anon/authenticated."
         }
     },
     "appCapabilities": {

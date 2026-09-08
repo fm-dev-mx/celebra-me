@@ -95,6 +95,62 @@ function insertSession(sessionId: string): void {
 async function main(): Promise<void> {
 	const createdSessions: string[] = [];
 	try {
+		const anonymizationSession = randomUUID();
+		createdSessions.push(anonymizationSession);
+		insertSession(anonymizationSession);
+		const auditCountBefore = Number(
+			runPsql(
+				"select count(*) from public.valentina_memory_audit_events where action='guest_session_anonymized'",
+			),
+		);
+		const anonymizationSql = (suffix: string) =>
+			`select public.anonymize_valentina_memory_session('valentina','${anonymizationSession}','anonymized-${anonymizationSession}-${suffix}','recovery-${anonymizationSession}-${suffix}',now()+interval '1 day');`;
+		const anonymizationResults = await Promise.all([
+			runConcurrentPsql(anonymizationSql('a')),
+			runConcurrentPsql(anonymizationSql('b')),
+		]);
+		if (
+			anonymizationResults.some((result) => result.status !== 0) ||
+			anonymizationResults
+				.map((result) => result.stdout)
+				.sort()
+				.join(',') !== 'f,t'
+		)
+			throw new Error('Concurrent anonymization must have exactly one winner.');
+		const auditCountAfter = Number(
+			runPsql(
+				"select count(*) from public.valentina_memory_audit_events where action='guest_session_anonymized'",
+			),
+		);
+		if (auditCountAfter !== auditCountBefore + 1)
+			throw new Error('Concurrent anonymization duplicated its audit.');
+		console.info('Concurrent anonymization: one update, one audit, one no-op.');
+
+		const anonymizationRaceSession = randomUUID();
+		createdSessions.push(anonymizationRaceSession);
+		insertSession(anonymizationRaceSession);
+		const [anonymized, reserved] = await Promise.all([
+			runConcurrentPsql(
+				`select public.anonymize_valentina_memory_session('valentina','${anonymizationRaceSession}','race-token-${anonymizationRaceSession}','race-recovery-${anonymizationRaceSession}',now()+interval '1 day');`,
+			),
+			runConcurrentPsql(
+				reservationSql({
+					sessionId: anonymizationRaceSession,
+					objectId: randomUUID(),
+					requestId: randomUUID(),
+					checksum: '1234567890abcdef'.repeat(4),
+				}),
+			),
+		]);
+		if (
+			anonymized.status !== 0 ||
+			(anonymized.stdout === 't'
+				? reserved.status === 0 || !reserved.stderr.includes('memories_session_unavailable')
+				: anonymized.stdout !== 'f' || reserved.status !== 0)
+		)
+			throw new Error('Reservation and anonymization race violated session ownership.');
+		console.info('Reservation/anonymization race: only one operation succeeds.');
+
 		const idempotencySession = randomUUID();
 		createdSessions.push(idempotencySession);
 		insertSession(idempotencySession);
@@ -361,6 +417,8 @@ async function main(): Promise<void> {
 			JSON.stringify({
 				status: 'passed',
 				coverage: [
+					'anonymization_idempotency',
+					'anonymization_reservation_race',
 					'idempotency',
 					'quota',
 					'signer_failure_recovery',

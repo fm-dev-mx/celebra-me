@@ -423,3 +423,11 @@ Historical note:
   no longer the current public contract.
 
 Detailed RSVP design and constraints are documented in `docs/domains/rsvp/architecture.md`.
+
+### Memories session anonymization
+
+Cleanup uses a service-role-only, security-invoker RPC to lock the event and session, verify that no
+undeleted media remains, and commit identity anonymization, anonymized_at and the audit together.
+The event lock order matches reservation. Completed sessions are excluded from subsequent batches.
+Apply the additive session-anonymization migration before deploying the cleanup service; a missing
+RPC fails closed. Legacy rows retain a NULL marker and receive one final anonymization.

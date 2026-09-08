@@ -22,6 +22,9 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ### Fixed
 
+- Make Memories session anonymization atomic and idempotent, including audit writes and concurrent
+  upload reservations.
+
 - **Visual coverage & media intake**: Exclude in-progress invitations from public visual
   certification, retain draft denial coverage, and prepare budgeted Romina mobile/gallery media
   without runtime re-encoding.

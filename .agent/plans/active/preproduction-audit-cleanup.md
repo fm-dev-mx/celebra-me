@@ -285,3 +285,67 @@ Production deployment remains a separate decision.
 Rollback: reverse reviewed source/tests and the two derivative references; original media remains.
 Once publication is separately authorized, retain the previous published version and object
 references for a compatible content rollback. Do not delete originals or shared provider objects.
+
+## Readiness closure checkpoint — 2026-09-08
+
+Baseline c0b6b26d67e4cbb14eff385fb247759fac12cfdd, clean before this implementation. The owner
+requested closing the remaining gates. This checkpoint supersedes the unresolved local anonymization
+finding above; deployment and acceptance are still distinct from implementation.
+
+### Closed with current evidence
+
+- Protected Preview public suite: 61 passed (30 routes at two viewports plus general public/resource
+  smoke), one synthetic-fixture read skipped because its identifier is not configured. Deployment
+  dpl_H7eJi64gEyCTBhkVUiJHDb44eBpW is READY at the baseline SHA. Secret came from .env.local and was
+  supplied only to the same-origin fixture; no secret files were copied or values logged. Evidence:
+  .agent/tmp/preview-c0b6b26-public-authorized.log.
+- Romina's actual mobile hero and final gallery response bodies are byte-identical to the prepared
+  sources: 245264 and 176790 bytes, both HTTP 200. No upload or republishing was necessary.
+  Evidence: .agent/tmp/romina-preview-delivered-media.json. The broader dry-run proposed unrelated
+  Local uploads and later became blocked by the pending schema; neither plan was applied.
+- Repeated anonymization fixed in local source: additive anonymized_at marker; service-role-only
+  security-invoker RPC; event/session locks in reservation order; undeleted-item check; identity,
+  marker and audit in one transaction. Completed rows are excluded from future batches. Missing
+  migration/RPC fails closed. Legacy rows receive one final anonymization; no name-based backfill.
+- Disposable SQL: all suites passed, including 15 new permission/isolation/retry/retained-media/
+  rollback assertions. Concurrency: exactly one anonymization winner and audit; reservation versus
+  anonymization cannot both succeed. Existing idempotency, quotas, signer failure, deduplication,
+  delete race, cleanup leases and 100 synthetic contention reservations passed on disposable DB. No
+  live R2 operations. Evidence: .agent/tmp/readiness-db-tests.log and
+  .agent/tmp/readiness-memory-concurrency-verified.log.
+- Public RSVP DB/HTTP contracts passed on disposable PostgREST. This verifies the real HTTP/service/
+  RPC boundary locally, not a hosted RSVP transaction. Evidence: .agent/tmp/readiness-rsvp-db.log.
+- validate:changed: 281 tests passed. Tier C: type-check (1725 files, no diagnostics), structure,
+  lint, styles, UI governance, event parity, PII and preparation passed; 545 suites / 6285 tests
+  passed, one existing Windows skip. Browser comparison FAILED for the missing accepted manifest.
+  Evidence: .agent/tmp/readiness-changed-final.log and .agent/tmp/readiness-ci.log.
+- Disposable services stopped; persistent-local sentinel remains present. Preview runtime log query
+  grouped by status returned 126 HTTP-200 records in its 24h window; this is not a billing count or
+  complete lifecycle/cleanup proof. No production transaction or persistent migration was run.
+
+### Mandatory rollout order and unresolved gates
+
+1. Review and commit the local correction, without deploying its application code yet. The canonical
+   Preview migration preflight refuses a dirty worktree in migrate-policy-preview.ts. This is an
+   actual DIRTY_WORKTREE failure, not an automatic approval rejection. No Git writes are authorized.
+2. With clean HEAD and current disposable proof, review exactly migration 20260908212231 using pnpm
+   db:migrate -- --target preview --expected 20260908212231. Apply only the reviewed additive
+   migration through the canonical scoped Preview workflow before deploying this cleanup code.
+   Production requires its own owner schema apply before its application rollout.
+3. Complete the controlled hosted flows. Current .env.local/.env.preview.local do not configure
+   PLAYWRIGHT_HOST_LOGIN, PLAYWRIGHT_HOST_PASSWORD or PLAYWRIGHT_PREVIEW_INVITATION_ID. Use the
+   dedicated synthetic Preview fixture and approved cleanup, never customer records. The bypass
+   secret is available and already verified; do not ask for it again. R2 canaries additionally need
+   verified Preview isolation before any write to avoid touching production resources.
+4. Generate the visual candidate only on a clean committed source and the prescribed Linux x64, Node
+   24.14.1, pnpm 11.23.0, Playwright 1.62.1 runtime with a real image digest. Current Windows
+   diagnostic captures are not acceptable substitutes. Obtain exact human reference/matrix/manifest
+   hash approval; then use the existing accept workflow, commit its accepted artifacts and rerun
+   complete CI/release checks. No thresholds or manifests were weakened or fabricated.
+5. Verify deployed cleanup execution and remaining provider telemetry after rollout. No absence of
+   logs is counted as zero consumption. Production deployment remains a separate owner decision.
+
+Rollback: the migration is additive. Retain its column/function when rolling the application back;
+old code remains schema-compatible but reintroduces repeated work. Do not remove the marker or
+restore personal data. The forward fix must be redeployed before claiming idempotent cleanup. Final
+build and Git Safety closure are recorded in the final session handoff.

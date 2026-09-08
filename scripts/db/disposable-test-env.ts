@@ -524,6 +524,7 @@ function cmdRunTests(): void {
 		'invitation_original_image_delivery.test.sql',
 		'managed_identity_archive_cascade.test.sql',
 		'valentina_memories_production_readiness.test.sql',
+		'valentina_memory_session_anonymization.test.sql',
 	];
 	const testPaths = testFiles.map((file) => resolve(PROJECT_ROOT, 'supabase', 'tests', file));
 	if (!testPaths.some((testPath) => existsSync(testPath))) {

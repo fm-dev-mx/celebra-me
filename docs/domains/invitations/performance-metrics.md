@@ -889,3 +889,13 @@ Romina uses preserved role-budgeted WebP derivatives for the mobile hero and the
 these bytes without re-encoding; source JPEGs remain intact. Regression:
 tests/unit/romina-prepared-media.test.ts. Deployment alone does not publish these new managed asset
 references; verify the guarded content release independently.
+
+### Memories cleanup operation budget
+
+An empty batch retains five database operations and no R2 requests. Each eligible session now uses
+one atomic RPC instead of a media read, session PATCH and separate audit write. Sessions with
+anonymized_at set are excluded from future selection. Concurrency and retained-media checks run in
+the database; do not infer completion from revoked_at or the display name. Migration 20260908212231
+must precede the application rollout. No legacy markers are backfilled from names; old rows may
+require one additional cleanup. A rollback may retain the additive column/function; rolling back to
+old code reintroduces repeated work and is not an efficiency fix.

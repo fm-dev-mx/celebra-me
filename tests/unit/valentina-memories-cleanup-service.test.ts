@@ -28,51 +28,43 @@ describe('cleanup provider operations', () => {
 		expect(mockDelete).not.toHaveBeenCalled();
 		expect(mockAudit).not.toHaveBeenCalled();
 	});
-	it('documents the repeated anonymization gap for a previously anonymized empty session', async () => {
-		// Characterization of an unresolved gap: revoked_at alone is not an anonymization marker.
-		const session = {
-			id: 'synthetic-session',
-			display_name: 'Invitado retirado',
-			revoked_at: '2020-01-01T00:00:00.000Z',
-			expires_at: '2020-01-01T00:00:00.000Z',
-		};
-		mockRest.mockImplementation(
-			async ({
-				pathWithQuery,
-				method,
-				body,
-			}: {
-				pathWithQuery: string;
-				method?: string;
-				body?: Record<string, unknown>;
-			}) => {
-				if (method === 'PATCH') {
-					Object.assign(session, body);
-					return [];
-				}
-				if (pathWithQuery.startsWith('valentina_memory_sessions?select=')) return [session];
-				return pathWithQuery.startsWith('rpc/') && !pathWithQuery.includes('claim_')
-					? 0
-					: [];
-			},
-		);
-		await cleanupValentinaMemoryObjects();
-		await cleanupValentinaMemoryObjects();
-		expect(mockRest.mock.calls.filter(([call]) => call.method === 'PATCH')).toHaveLength(2);
-		expect(
-			mockAudit.mock.calls.filter(([call]) => call.action === 'guest_session_anonymized'),
-		).toHaveLength(2);
-		expect(mockDelete).not.toHaveBeenCalled();
-	});
-	it('preserves session data while an undeleted item still exists', async () => {
+	it('delegates empty-session checks and audit atomically and excludes completed sessions', async () => {
+		let completed = false;
 		mockRest.mockImplementation(async ({ pathWithQuery }: { pathWithQuery: string }) => {
-			if (pathWithQuery.startsWith('valentina_memory_sessions?select='))
-				return [{ id: 'synthetic-session' }];
-			if (pathWithQuery.includes('object_deleted_at=is.null'))
-				return [{ id: 'retained-item' }];
+			if (pathWithQuery.startsWith('valentina_memory_sessions?select=')) {
+				expect(pathWithQuery).toContain('anonymized_at=is.null');
+				expect(pathWithQuery).toContain('order=expires_at.asc,id.asc');
+				return completed ? [] : [{ id: 'synthetic-session' }];
+			}
+			if (pathWithQuery === 'rpc/anonymize_valentina_memory_session') {
+				completed = true;
+				return true;
+			}
 			return pathWithQuery.startsWith('rpc/') && !pathWithQuery.includes('claim_') ? 0 : [];
 		});
 		await cleanupValentinaMemoryObjects();
+		await cleanupValentinaMemoryObjects();
+		const calls = mockRest.mock.calls.filter(
+			([call]) => call.pathWithQuery === 'rpc/anonymize_valentina_memory_session',
+		);
+		expect(calls).toHaveLength(1);
+		expect(calls[0][0]).toMatchObject({
+			method: 'POST',
+			useServiceRole: true,
+			body: { p_session_id: 'synthetic-session' },
+		});
+		expect(mockRest.mock.calls.some(([call]) => call.method === 'PATCH')).toBe(false);
+		expect(mockAudit).not.toHaveBeenCalled();
+	});
+	it('does not fall back to non-atomic writes when the migration is unavailable', async () => {
+		mockRest.mockImplementation(async ({ pathWithQuery }: { pathWithQuery: string }) => {
+			if (pathWithQuery.startsWith('valentina_memory_sessions?select='))
+				return [{ id: 'synthetic-session' }];
+			if (pathWithQuery === 'rpc/anonymize_valentina_memory_session')
+				throw new Error('RPC unavailable');
+			return [];
+		});
+		await expect(cleanupValentinaMemoryObjects()).rejects.toThrow('RPC unavailable');
 		expect(mockRest.mock.calls.some(([call]) => call.method === 'PATCH')).toBe(false);
 		expect(mockAudit).not.toHaveBeenCalled();
 	});

@@ -1,5 +1,6 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import {
+	VALENTINA_MEMORIES_AUDIT_RETENTION_SECONDS,
 	VALENTINA_MEMORIES_CLEANUP_BATCH_SIZE,
 	VALENTINA_MEMORIES_CLEANUP_LEASE_SECONDS,
 	VALENTINA_MEMORIES_SESSION_TTL_SECONDS,
@@ -43,27 +44,21 @@ async function reconcilePendingValidations(): Promise<{ reconciled: number; pend
 
 async function anonymizeEmptySessions(sessionIds: Set<string>): Promise<void> {
 	for (const sessionId of sessionIds) {
-		const active = await supabaseRestRequest<{ id: string }[]>({
-			pathWithQuery: `valentina_memory_items?select=id&session_id=eq.${encodeURIComponent(sessionId)}&object_deleted_at=is.null&limit=1`,
-			useServiceRole: true,
-		});
-		if (active.length > 0) continue;
-		await supabaseRestRequest({
-			pathWithQuery: `valentina_memory_sessions?id=eq.${encodeURIComponent(sessionId)}`,
-			method: 'PATCH',
+		await supabaseRestRequest<boolean>({
+			pathWithQuery: 'rpc/anonymize_valentina_memory_session',
+			method: 'POST',
 			useServiceRole: true,
 			body: {
-				display_name: 'Invitado retirado',
-				token_hash: hashValentinaMemorySecret(randomBytes(32).toString('base64url')),
-				recovery_code_hash: hashValentinaMemorySecret(
+				p_event_key: VALENTINA_MEMORIES_EVENT_ID,
+				p_session_id: sessionId,
+				p_token_hash: hashValentinaMemorySecret(randomBytes(32).toString('base64url')),
+				p_recovery_code_hash: hashValentinaMemorySecret(
 					randomBytes(32).toString('base64url'),
 				),
-				revoked_at: new Date().toISOString(),
+				p_audit_expires_at: new Date(
+					Date.now() + VALENTINA_MEMORIES_AUDIT_RETENTION_SECONDS * 1000,
+				).toISOString(),
 			},
-		});
-		await appendValentinaMemoriesAudit({
-			actorType: 'system',
-			action: 'guest_session_anonymized',
 		});
 	}
 }
@@ -71,7 +66,7 @@ async function anonymizeEmptySessions(sessionIds: Set<string>): Promise<void> {
 async function anonymizeExpiredEmptySessions(): Promise<void> {
 	const now = new Date().toISOString();
 	const sessions = await supabaseRestRequest<{ id: string }[]>({
-		pathWithQuery: `valentina_memory_sessions?select=id&event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&or=(expires_at.lte.${encodeURIComponent(now)},revoked_at.not.is.null)&limit=${VALENTINA_MEMORIES_CLEANUP_BATCH_SIZE}`,
+		pathWithQuery: `valentina_memory_sessions?select=id&anonymized_at=is.null&event_key=eq.${VALENTINA_MEMORIES_EVENT_ID}&or=(expires_at.lte.${encodeURIComponent(now)},revoked_at.not.is.null)&order=expires_at.asc,id.asc&limit=${VALENTINA_MEMORIES_CLEANUP_BATCH_SIZE}`,
 		useServiceRole: true,
 	});
 	await anonymizeEmptySessions(new Set(sessions.map((session) => session.id)));
@@ -117,7 +112,7 @@ async function deleteClaimedObjects(
 			action: 'object_deleted',
 		});
 	}
-	await anonymizeEmptySessions(cleanedSessionIds);
+	if (cleanedSessionIds.size > 0) await anonymizeEmptySessions(cleanedSessionIds);
 	return { deleted, failed };
 }
 
