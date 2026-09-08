@@ -116,9 +116,7 @@ const resolvedLabels = {
 };
 
 const shouldRenderMedia = shouldRenderFamilyMedia(presentation, Boolean(featuredImage));
-const imagePath = featuredImage
-	? (typeof featuredImage === 'string' ? featuredImage : (featuredImage.src as string))
-	: undefined;
+const imagePath = featuredImage;
 
 const resolvedFocalPoint = focalPoint || 'center';
 

@@ -80,3 +80,21 @@ for (const variant of ['standard', 'editorial-cover']) {
 		});
 	}
 }
+
+
+test('family retains original delivery dimensions through content resolution', async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	const response = await page.goto('/test/variant?full=1&eventType=primera-comunion&slug=luna-y-estrella');
+	expect(response?.ok()).toBe(true);
+	const image = page.locator('.family__media img').first();
+	await image.scrollIntoViewIfNeeded();
+	await expect(image).toHaveAttribute('width', '1664');
+	await expect(image).toHaveAttribute('height', '2080');
+	await expect.poll(() => image.evaluate((node: HTMLImageElement) => node.complete && node.naturalWidth > 0)).toBe(true);
+	const actual = await image.evaluate((node: HTMLImageElement) => ({ src: node.currentSrc, width: node.naturalWidth, height: node.naturalHeight }));
+	expect(actual.src).toMatch(/^data:image\/webp;base64,/);
+	expect([actual.width, actual.height]).toEqual([1664, 2080]);
+	const bytes = Buffer.from(actual.src.split(',')[1], 'base64');
+	const source = readFileSync(resolve('src/assets/images/events/luna-y-estrella-primera-comunion/family.webp'));
+	expect(createHash('sha256').update(bytes).digest('hex')).toBe(createHash('sha256').update(source).digest('hex'));
+});
