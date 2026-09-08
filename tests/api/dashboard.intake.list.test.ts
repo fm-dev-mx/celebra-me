@@ -1,6 +1,8 @@
 jest.mock('astro:content', () => ({ getCollection: jest.fn() }));
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
-	requireAdminStrongSession: jest.fn().mockResolvedValue({ userId: 'admin-1', isSuperAdmin: true }),
+	requireAdminStrongSession: jest
+		.fn()
+		.mockResolvedValue({ userId: 'admin-1', isSuperAdmin: true }),
 	requireAdminMutationAccess: jest.fn(),
 }));
 jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({
@@ -39,6 +41,10 @@ describe('GET /api/dashboard/intake', () => {
 				eventType: 'boda' as const,
 				status: 'published' as const,
 				published: true,
+				eventDate: '2026-09-09',
+				eventTimeZone: 'America/Chihuahua',
+				validity: 'upcoming',
+				demoShowroomOrder: null,
 			},
 		];
 		getEnrichedInvitationListMock.mockResolvedValue(mockItems as never);

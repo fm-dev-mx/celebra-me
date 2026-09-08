@@ -1,4 +1,4 @@
-import type { Invitation } from '@/lib/intake/types';
+import type { Invitation, IntakeRequest } from '@/lib/intake/types';
 import {
 	listInvitations,
 	createInvitation as createInvitationRecord,
@@ -10,11 +10,15 @@ import {
 } from '@/lib/intake/repositories/invitation.repository';
 import { DEMO_PRESET_CATALOG, findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-import type { InvitationDTO } from '@/lib/dashboard/dto/intake';
+import { getFeaturedDemoShowroomItems } from '@/data/demo-showroom.data';
+import {
+	resolveInvitationSchedule,
+	type InvitationTimingProjection,
+} from '@/lib/intake/invitation-validity';
+import type { InvitationListItemDTO, InvitationDTO } from '@/lib/dashboard/dto/intake';
 import { resolveCaptureLink } from '@/lib/intake/services/intake-request.service';
 import { toInvitationDTO } from '@/lib/dashboard/dto/intake-mapper';
 import { hasRsvpContent } from '@/lib/intake/utils';
-import type { IntakeRequest } from '@/lib/intake/types';
 import { getCollection } from 'astro:content';
 import { getContentEntrySlug } from '@/lib/content/events';
 import {
@@ -54,7 +58,7 @@ export function toEnrichedInvitationDTO(
 
 export async function getEnrichedInvitationList(
 	scope: 'active' | 'archived' | 'all' = 'active',
-): Promise<InvitationDTO[]> {
+): Promise<InvitationListItemDTO[]> {
 	const invitations = await listInvitations(scope);
 	const invitationIds = invitations.map((p) => p.id);
 	if (invitationIds.length === 0) return [];
@@ -83,9 +87,11 @@ export async function getEnrichedInvitationList(
 				invitation_project_id: string;
 				id: string;
 				rsvp?: Record<string, unknown>;
+				eventTiming?: unknown;
+				heroDate?: unknown;
 			}>
 		>({
-			pathWithQuery: `published_invitation_content?select=id,invitation_project_id,rsvp:content->rsvp&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
+			pathWithQuery: `published_invitation_content?select=id,invitation_project_id,rsvp:content->rsvp,eventTiming:content->eventTiming,heroDate:content->hero->>date&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
 			useServiceRole: true,
 		}),
 		supabaseRestRequest<Array<{ id: string; intake_request_id: string }>>({
@@ -96,9 +102,11 @@ export async function getEnrichedInvitationList(
 			Array<{
 				invitation_project_id: string;
 				rsvp?: Record<string, unknown>;
+				eventTiming?: unknown;
+				heroDate?: unknown;
 			}>
 		>({
-			pathWithQuery: `invitation_content_drafts?select=invitation_project_id,rsvp:content->rsvp&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
+			pathWithQuery: `invitation_content_drafts?select=invitation_project_id,rsvp:content->rsvp,eventTiming:content->eventTiming,heroDate:content->hero->>date&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
 			useServiceRole: true,
 		}),
 	]);
@@ -126,23 +134,41 @@ export async function getEnrichedInvitationList(
 		}
 	}
 
+	const publishedByInvitation = new Map(pubRows.map((row) => [row.invitation_project_id, row]));
+	const draftsByInvitation = new Map(draftRows.map((row) => [row.invitation_project_id, row]));
+	const showroom = getFeaturedDemoShowroomItems();
+	const now = new Date();
 	return invitations.map((invitation) => {
 		const rawRequest =
 			requestRows.find((r) => r.invitation_project_id === invitation.id) ?? null;
 		const event = eventsByInvitation.get(invitation.id);
-		return toEnrichedInvitationDTO(invitation, {
-			request: rawRequest
-				? {
-						status: rawRequest.status as IntakeRequest['status'],
-						expiresAt: rawRequest.expires_at,
-						tokenCiphertext: rawRequest.token_ciphertext,
-					}
-				: null,
-			hasSubmission: submissionInvitationIds.has(invitation.id),
-			published: publishedSet.has(invitation.id),
-			rsvpEvent: event ?? null,
-			rsvpSectionHasContent: rsvpContentInvitations.has(invitation.id),
-		});
+		const content: InvitationTimingProjection | undefined =
+			publishedByInvitation.get(invitation.id) ?? draftsByInvitation.get(invitation.id);
+		const demoIndex =
+			invitation.kind === 'demo'
+				? showroom.findIndex(
+						(item) =>
+							item.slug === invitation.slug &&
+							item.eventType === invitation.eventType,
+					)
+				: -1;
+		return {
+			...toEnrichedInvitationDTO(invitation, {
+				request: rawRequest
+					? {
+							status: rawRequest.status as IntakeRequest['status'],
+							expiresAt: rawRequest.expires_at,
+							tokenCiphertext: rawRequest.token_ciphertext,
+						}
+					: null,
+				hasSubmission: submissionInvitationIds.has(invitation.id),
+				published: publishedSet.has(invitation.id),
+				rsvpEvent: event ?? null,
+				rsvpSectionHasContent: rsvpContentInvitations.has(invitation.id),
+			}),
+			...resolveInvitationSchedule(invitation.kind, content, now),
+			demoShowroomOrder: demoIndex < 0 ? null : demoIndex,
+		};
 	});
 }
 

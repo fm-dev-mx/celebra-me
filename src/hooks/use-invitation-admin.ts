@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { adminApi } from '@/lib/dashboard/admin-api';
 import type {
 	InvitationDTO,
+	InvitationListItemDTO,
 	IntakeRequestDTO,
 	IntakeSubmissionDTO,
 	InvitationContentDraftDTO,
@@ -15,7 +16,7 @@ export interface UseInvitationAdminOptions {
 }
 
 export function useInvitationAdmin({ autoLoad = false }: UseInvitationAdminOptions = {}) {
-	const [items, setItems] = useState<InvitationDTO[]>([]);
+	const [items, setItems] = useState<InvitationListItemDTO[]>([]);
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [saving, setSaving] = useState(false);
