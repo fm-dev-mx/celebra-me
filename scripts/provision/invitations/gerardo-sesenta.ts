@@ -18,7 +18,7 @@ const content: CanonicalEventContentInput = {
 	},
 	hero: {
 		variant: 'standard',
-		date: '2026-02-22T03:00:00.000Z',
+		date: '2026-02-21T20:00:00.000Z',
 		name: 'Gerardo Mendoza',
 		label: '60 Años',
 		nickname: 'Jefe Botas',
