@@ -4,8 +4,9 @@ import type {
 	IntakeRequestStatus,
 	IntakeRequestOrigin,
 	IntakeSubmissionStatus,
+	CaptureLinkStatus,
 } from '@/lib/intake/types';
-import type { CaptureLinkStatus } from '@/lib/intake/types';
+import type { InvitationValidity } from '@/lib/intake/invitation-validity';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
 
@@ -38,8 +39,15 @@ export interface InvitationDTO {
 	captureLinkStatus: CaptureLinkStatus | null;
 }
 
+export interface InvitationListItemDTO extends InvitationDTO {
+	eventDate: string | null;
+	eventTimeZone: string;
+	validity: InvitationValidity;
+	demoShowroomOrder: number | null;
+}
+
 export interface InvitationListResponse {
-	items: InvitationDTO[];
+	items: InvitationListItemDTO[];
 }
 
 export interface UpdateInvitationDTO {
