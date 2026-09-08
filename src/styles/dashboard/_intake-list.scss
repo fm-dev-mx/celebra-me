@@ -135,12 +135,6 @@
 	padding: 1rem 0;
 }
 
-.intake-list__empty {
-	text-align: center;
-	color: var(--color-text-muted);
-	padding: 2rem;
-}
-
 .intake-list__table-wrap {
 	overflow-x: auto;
 }
@@ -186,6 +180,13 @@
 	&:hover {
 		color: var(--color-action-accent);
 	}
+}
+
+.intake-list__event-date {
+	margin-top: 0.25rem;
+	font-size: 0.75rem;
+	font-weight: normal;
+	color: var(--color-text-secondary);
 }
 
 .intake-list__cell-client {

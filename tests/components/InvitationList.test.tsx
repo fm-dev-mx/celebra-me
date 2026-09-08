@@ -2,10 +2,10 @@ jest.mock('@/hooks/use-invitation-admin', () => ({
 	useInvitationAdmin: jest.fn(),
 }));
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { act, render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import InvitationList from '@/components/dashboard/intake/InvitationList';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
-import type { InvitationDTO } from '@/lib/dashboard/dto/intake';
+import type { InvitationListItemDTO as InvitationDTO } from '@/lib/dashboard/dto/intake';
 
 const mockUseInvitationAdmin = useInvitationAdmin as jest.Mock;
 
@@ -23,6 +23,10 @@ function makeMockAdmin(overrides: Record<string, unknown> = {}) {
 
 function makeItem(overrides: Record<string, unknown> = {}): InvitationDTO {
 	return {
+		eventDate: '2099-09-09',
+		eventTimeZone: 'America/Chihuahua',
+		validity: 'upcoming',
+		demoShowroomOrder: null,
 		id: 'proj-1',
 		kind: 'client',
 		sourceInvitationId: null,
@@ -92,7 +96,7 @@ describe('InvitationList', () => {
 
 		render(<InvitationList />);
 
-		expect(screen.getByText('Activas')).toBeInTheDocument();
+		expect(screen.getByText('Invitaciones vigentes')).toBeInTheDocument();
 		// "Borradores" and "Publicadas" appear in both metrics and tabs
 		const borradores = screen.getAllByText('Borradores');
 		expect(borradores.length).toBeGreaterThanOrEqual(1);
@@ -116,6 +120,7 @@ describe('InvitationList', () => {
 		);
 
 		render(<InvitationList />);
+		fireEvent.click(screen.getByRole('button', { name: /^Demos(?: \d+)?$/ }));
 
 		const moreButton = screen.getByLabelText('Más acciones');
 		expect(moreButton).toBeInTheDocument();
@@ -214,7 +219,7 @@ describe('InvitationList', () => {
 		render(<InvitationList />);
 
 		expect(
-			screen.getByText(/flujo administrado \(pnpm invitation:release\)/i),
+			screen.getByText('No hay invitaciones vigentes ni demos autorizadas.'),
 		).toBeInTheDocument();
 		expect(screen.queryByRole('link', { name: 'Nueva invitación' })).not.toBeInTheDocument();
 	});
@@ -314,4 +319,64 @@ describe('InvitationList', () => {
 			expect(screen.getByText('Error de red')).toBeInTheDocument();
 		});
 	});
+});
+
+describe('invitation validity filters', () => {
+	afterEach(() => jest.useRealTimers());
+	it('shows upcoming clients followed by authorized demos, retaining other filters', () => {
+		jest.useFakeTimers().setSystemTime(new Date('2026-09-08T18:00:00Z'));
+		mockUseInvitationAdmin.mockReturnValue(
+			makeMockAdmin({
+				items: [
+					makeItem({
+						id: 'demo',
+						title: 'Authorized demo',
+						kind: 'demo',
+						eventDate: '2000-01-01',
+						demoShowroomOrder: 1,
+					}),
+					makeItem({ id: 'later', title: 'Later', eventDate: '2026-09-10' }),
+					makeItem({ id: 'past', title: 'Past event', eventDate: '2026-09-07' }),
+					makeItem({ id: 'today', title: 'Today event', eventDate: '2026-09-08' }),
+					makeItem({ id: 'hidden', title: 'Hidden demo', kind: 'demo' }),
+					makeItem({ id: 'unknown', title: 'Unknown date', eventDate: null }),
+					makeItem({ id: 'archived', title: 'Archived event', archivedAt: '2026-09-01' }),
+				],
+			}),
+		);
+		render(<InvitationList />);
+		const titles = screen
+			.getAllByRole('row')
+			.slice(1)
+			.map((row) => within(row).getAllByRole('link')[0].textContent);
+		expect(titles).toEqual(['Today event', 'Later', 'Authorized demo']);
+		expect(screen.queryByText('Hidden demo')).not.toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: /Pasadas/ }));
+		expect(screen.getByText('Past event')).toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: /Fecha por verificar/ }));
+		expect(screen.getByText('Unknown date')).toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: /Todas/ }));
+		expect(screen.getByText('Hidden demo')).toBeInTheDocument();
+	});
+	it.each(['focus', 'interval'])(
+		'updates after midnight through %s without archiving',
+		(trigger) => {
+			jest.useFakeTimers().setSystemTime(new Date('2026-09-09T05:59:50Z'));
+			const admin = makeMockAdmin({
+				items: [makeItem({ title: 'Tonight', eventDate: '2026-09-08' })],
+				archiveInvitation: jest.fn(),
+			});
+			mockUseInvitationAdmin.mockReturnValue(admin);
+			render(<InvitationList />);
+			expect(screen.getByText('Tonight')).toBeInTheDocument();
+			act(() => {
+				if (trigger === 'focus') {
+					jest.setSystemTime(new Date('2026-09-09T06:00:01Z'));
+					window.dispatchEvent(new Event('focus'));
+				} else jest.advanceTimersByTime(30_000);
+			});
+			expect(screen.queryByText('Tonight')).not.toBeInTheDocument();
+			expect(admin.archiveInvitation).not.toHaveBeenCalled();
+		},
+	);
 });

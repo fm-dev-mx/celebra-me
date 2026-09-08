@@ -1,16 +1,22 @@
 import type { FC } from 'react';
-import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import StatusBadge from '@/components/dashboard/StatusBadge';
 import EmptyState from '@/components/dashboard/EmptyState';
 import OverflowMenu from '@/components/dashboard/intake/OverflowMenu';
 import ConfirmModal from '@/components/dashboard/intake/ConfirmModal';
-import type { InvitationDTO } from '@/lib/dashboard/dto/intake';
+import { classifyInvitationDate } from '@/lib/intake/invitation-validity';
+import type { InvitationListItemDTO as InvitationDTO } from '@/lib/dashboard/dto/intake';
 import { resolveDisplayInfo, hasInconsistency } from '@/lib/intake/display-status';
 import { getPublicSlug } from '@/lib/intake/slug';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 
 type FilterTab =
+	| 'current'
+	| 'upcoming'
+	| 'past'
+	| 'authorized_demos'
+	| 'unknown'
 	| 'all'
 	| 'clients'
 	| 'demos'
@@ -28,6 +34,38 @@ const FILTER_TABS: Array<{
 	match: (invitation: InvitationDTO) => boolean;
 	isPrimary: boolean;
 }> = [
+	{
+		key: 'current',
+		label: 'Vigentes y demos',
+		match: (i) =>
+			!i.archivedAt &&
+			(i.validity === 'upcoming' || (i.kind === 'demo' && i.demoShowroomOrder != null)),
+		isPrimary: true,
+	},
+	{
+		key: 'upcoming',
+		label: 'Vigentes',
+		match: (i) => !i.archivedAt && i.validity === 'upcoming',
+		isPrimary: true,
+	},
+	{
+		key: 'past',
+		label: 'Pasadas',
+		match: (i) => !i.archivedAt && i.validity === 'past',
+		isPrimary: false,
+	},
+	{
+		key: 'authorized_demos',
+		label: 'Demos autorizadas',
+		match: (i) => !i.archivedAt && i.kind === 'demo' && i.demoShowroomOrder != null,
+		isPrimary: true,
+	},
+	{
+		key: 'unknown',
+		label: 'Fecha por verificar',
+		match: (i) => !i.archivedAt && i.validity === 'unknown',
+		isPrimary: false,
+	},
 	{ key: 'all', label: 'Todas', match: (invitation) => !invitation.archivedAt, isPrimary: true },
 	{
 		key: 'clients',
@@ -139,6 +177,15 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 				<a href={invitation.internalEditUrl} className="intake-list__title-link">
 					{invitation.title}
 				</a>
+				<div className="intake-list__event-date">
+					{isDemo
+						? invitation.demoShowroomOrder != null
+							? 'Demo autorizada'
+							: 'Fuera del showroom'
+						: invitation.eventDate
+							? `${invitation.eventDate.split('-').reverse().join('/')} - ${invitation.validity === 'past' ? 'Pasada' : 'Vigente'}`
+							: 'Fecha por verificar'}
+				</div>
 			</td>
 			<td className="intake-list__cell-client">{invitation.clientName || '\u2014'}</td>
 			<td className="intake-list__cell-status">
@@ -219,6 +266,11 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 };
 
 const EMPTY_STATE_MESSAGES: Record<FilterTab, string> = {
+	current: 'No hay invitaciones vigentes ni demos autorizadas.',
+	upcoming: 'No hay invitaciones vigentes.',
+	past: 'No hay invitaciones pasadas.',
+	authorized_demos: 'No hay demos autorizadas.',
+	unknown: 'No hay fechas pendientes de verificar.',
 	all: 'No hay invitaciones activas. Las invitaciones de cliente se crean con el flujo administrado (pnpm invitation:release).',
 	clients:
 		'No hay invitaciones de clientes activas. Use el flujo administrado para crear nuevas.',
@@ -234,28 +286,49 @@ const EMPTY_STATE_MESSAGES: Record<FilterTab, string> = {
 
 const InvitationList: FC = () => {
 	const {
-		items,
+		items: loadedItems,
 		loading,
 		error,
 		archiveInvitation,
 		restoreInvitation,
 		permanentlyDeleteInvitation,
 	} = useInvitationAdmin({ autoLoad: true });
+	const [now, setNow] = useState(() => new Date());
+	useEffect(() => {
+		const refresh = () => setNow(new Date());
+		const timer = window.setInterval(refresh, 30_000);
+		window.addEventListener('focus', refresh);
+		document.addEventListener('visibilitychange', refresh);
+		return () => {
+			window.clearInterval(timer);
+			window.removeEventListener('focus', refresh);
+			document.removeEventListener('visibilitychange', refresh);
+		};
+	}, []);
+	const items = useMemo(
+		() =>
+			loadedItems.map((item) => ({
+				...item,
+				validity: classifyInvitationDate(
+					item.kind,
+					item.eventDate,
+					item.eventTimeZone,
+					now,
+				),
+			})),
+		[loadedItems, now],
+	);
 	const [actionError, setActionError] = useState('');
-	const [activeTab, setActiveTab] = useState<FilterTab>('all');
+	const [activeTab, setActiveTab] = useState<FilterTab>('current');
 
 	const [searchQuery, setSearchQuery] = useState('');
 	const [debouncedSearch, setDebouncedSearch] = useState('');
-	const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	useEffect(() => {
-		if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-		searchTimerRef.current = setTimeout(() => {
+		const timer = setTimeout(() => {
 			setDebouncedSearch(searchQuery);
 		}, 300);
-		return () => {
-			if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-		};
+		return () => clearTimeout(timer);
 	}, [searchQuery]);
 
 	const [confirmState, setConfirmState] = useState<{
@@ -265,7 +338,22 @@ const InvitationList: FC = () => {
 
 	const tabFiltered = useMemo(() => {
 		const tab = FILTER_TABS.find((item) => item.key === activeTab);
-		return tab ? items.filter(tab.match) : items;
+		const selected = tab ? items.filter(tab.match) : [...items];
+		if (
+			activeTab === 'current' ||
+			activeTab === 'upcoming' ||
+			activeTab === 'authorized_demos'
+		) {
+			selected.sort(
+				(a, b) =>
+					Number(a.kind === 'demo') - Number(b.kind === 'demo') ||
+					(a.kind === 'demo'
+						? (a.demoShowroomOrder ?? 0) - (b.demoShowroomOrder ?? 0)
+						: (a.eventDate ?? '').localeCompare(b.eventDate ?? '')) ||
+					a.id.localeCompare(b.id),
+			);
+		}
+		return selected;
 	}, [items, activeTab]);
 
 	const filteredItems = useMemo(() => {
@@ -281,7 +369,8 @@ const InvitationList: FC = () => {
 	const metrics = useMemo(() => {
 		const active = items.filter((i) => !i.archivedAt);
 		return {
-			total: active.length,
+			total: active.filter((i) => i.validity === 'upcoming').length,
+			demos: active.filter((i) => i.kind === 'demo' && i.demoShowroomOrder != null).length,
 			published: active.filter((i) => i.status === 'published').length,
 			drafts: active.filter((i) => i.status === 'draft').length,
 			archived: items.filter((i) => i.archivedAt).length,
@@ -338,8 +427,8 @@ const InvitationList: FC = () => {
 				<div>
 					<h2 className="intake-list__title">Producción de invitaciones</h2>
 					<p className="intake-list__subtitle">
-						Administra invitaciones y demos editables. Las nuevas invitaciones de cliente
-						se crean con el flujo administrado.
+						Administra invitaciones y demos editables. Las nuevas invitaciones de
+						cliente se crean con el flujo administrado.
 					</p>
 				</div>
 			</header>
@@ -352,7 +441,11 @@ const InvitationList: FC = () => {
 			>
 				<span className="intake-list__metric">
 					<span className="intake-list__metric-value">{metrics.total}</span>
-					<span className="intake-list__metric-label">Activas</span>
+					<span className="intake-list__metric-label">Invitaciones vigentes</span>
+				</span>
+				<span className="intake-list__metric">
+					<span className="intake-list__metric-value">{metrics.demos}</span>
+					<span className="intake-list__metric-label">Demos autorizadas</span>
 				</span>
 				<span className="intake-list__metric">
 					<span className="intake-list__metric-value">{metrics.published}</span>
@@ -397,6 +490,7 @@ const InvitationList: FC = () => {
 					return (
 						<button
 							key={tab.key}
+							aria-pressed={activeTab === tab.key}
 							type="button"
 							className={`intake-list__tab${activeTab === tab.key ? ' intake-list__tab--active' : ''}${!tab.isPrimary ? ' intake-list__tab--secondary' : ''}`}
 							onClick={() => setActiveTab(tab.key)}
