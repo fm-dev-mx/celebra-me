@@ -223,3 +223,77 @@ no assertion was weakened. The subsequent complete run passed type checks, 534 u
 run concurrently with that browser-test phase. The updated application styles are not yet deployed.
 Task-authorized commits are local; the owner's previously completed develop deployment does not
 constitute authorization for a new remote push or PR. Preserve that separate integration boundary.
+
+
+## Deployed spacing verification and original-input rollout
+
+The owner deployed develop at 2b3cc78868ec1e6089473222d2af24b38a7e3f9b. GitHub deployment
+6318515097 reports success. The immutable Preview URL is captured in the local deployment evidence.
+The report `.tmp/visual-parity/diagnostics/preview-2b3-leah-deployed/` confirms Leah thank-you
+MATCH with zero pixel difference in both mobile and desktop. This supersedes the prior statement
+that the keepsake spacing correction was not deployed.
+
+Commit 8a44e11e preserves twelve additional verified original optimizer inputs across Cesar,
+Leah, and Luna/Estrella while retaining component delivery defaults. The canonical release created
+12 new objects per environment, no overwrites or deletions. Preview versions became Cesar 10,
+Leah 15, Luna/Estrella 20. Post-release Local/Preview status is 17/17 synchronized, with 83 expected
+migrations (`.agent/tmp/parity-2b3-db-status.json`). The full CI log
+`.agent/tmp/parity-2b3-source-ci.log` passed 534 unit suites / 6073 tests (one skipped), 233 browser
+tests, type checks, and build.
+
+The deployed follow-up `.tmp/visual-parity/diagnostics/preview-2b3-preserved-inputs/` contains
+44 MATCH and six DIFFERENT across 50 section/viewports. Residual sections are Cesar gallery,
+Leah gallery, and Luna family in both viewports. Leah gallery and Luna family have zero differing
+pixels but different transformation contracts, so remain DIFFERENT. Cesar also retains its
+oversized gallery source and gallery typography finding. No semantic checks were weakened.
+
+A second batch declares 86 verified sources across America, Ana Sofia, Ayrin, Xareni, Ximena and
+Gerardo. All six dry-runs passed with zero deletions, moves, or overwrites; 109 focused image
+integrity tests passed. Canonical Local/Preview applications and final CI are in progress. Do not
+claim final synchronization until all six applications finish and the post-release audit passes.
+
+Independent inspection identified why Luna family loses original delivery: Family.astro converts
+featuredImage to its src string before passing it to OptimizedImage, discarding delivery metadata.
+The owning component must preserve the asset object, with a browser regression, before considering
+that semantic discrepancy resolved. That correction has not yet been implemented at this checkpoint.
+
+
+The six expanded-source releases completed successfully with 86 new objects per environment and
+zero overwrites, moves or deletions. Local/Preview public versions respectively are America 15/20,
+Ana Sofia 11/11, Ayrin 8/22, Xareni 8/23, Ximena 7/7, and Gerardo 7/7. The final status in
+`.agent/tmp/parity-2b3-expanded-db-status.json` confirms 17/17 managed invitations synchronized,
+83 expected migrations, and Production excluded. Commit 368fcfd5 contains the six definitions and
+86 additional integrity cases. Full CI for this batch passed 534 unit suites / 6159 tests (one
+skipped), 233 browser tests, types and build in `.agent/tmp/parity-2b3-expanded-ci.log`.
+
+The family delivery regression failed before the correction (expected width 1664; received 960).
+Family now forwards the complete featuredImage object to OptimizedImage, preserving explicit
+metadata and existing string inputs. The focused browser regression passes original dimensions
+1664x2080 and exact SHA-256. Logs: `.agent/tmp/parity-family-before.log` and
+`.agent/tmp/parity-family-after.log`. Final CI including this component correction is in progress.
+The component correction still requires deployment; current Preview remains 2b3cc788. No new
+push, PR or integration was performed by the agent.
+
+
+Final CI including the Family fix passed (exit 0): 534 unit suites / 6159 tests (one skipped),
+234 browser tests, type checks and build in `.agent/tmp/parity-family-final-ci.log`. The owning
+component fix and regression are committed as 128def2c. This code change is not yet deployed.
+
+The six-route deployed report `.tmp/visual-parity/diagnostics/preview-2b3-expanded-inputs/` completed
+with 143 MATCH and 19 DIFFERENT across 162 section/viewports. The exact same cases in the earlier
+7c499 initial report had 68 MATCH and 94 DIFFERENT. This before/after includes the intervening
+verified image declarations; do not attribute every improvement solely to the last batch.
+Remaining findings: America mobile hero and both galleries; Ana Sofia, Ayrin and Ximena galleries;
+Gerardo hero text, gallery typography and thank-you image in both viewports; Xareni location text
+and gallery in both viewports. Zero-pixel semantic differences remain DIFFERENT. No reference was
+accepted or regenerated and no tolerance was changed.
+
+Current inventory remains Local 28 / Preview 29 active rows, zero identity conflicts in either,
+17/17 managed definitions synchronized, and Production explicitly excluded. The previously
+classified extra Preview fixture remains preserved. Production has not been mutated.
+
+Next actions: integrate/deploy 128def2c through the owner-controlled develop flow, verify Luna
+family on that deployment, resolve remaining image transformation contracts and oversized-source
+cases without weakening existing limits, investigate semantic text differences, and reconcile
+all remaining routes/demos. Complete corpus and full-page evidence plus exact-SHA human acceptance
+are still required. This is not complete visual parity.
