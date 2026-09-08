@@ -194,6 +194,7 @@ export const lunaInvitation = defineCanonicalInvitation({
 	hostLoginAlias: 'luna_y_estrella',
 	assetDir: 'src/assets/images/events/luna-y-estrella-primera-comunion',
 	assetPresentation: {
+		thankYouPortrait: { sourcePolicy: 'preserve' },
 		hero: {
 			sourcePolicy: 'preserve',
 			delivery: { mode: 'original', width: 1536, height: 2304 },

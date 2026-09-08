@@ -256,6 +256,10 @@ export const leahInvitation = defineCanonicalInvitation({
 	hostLoginAlias: 'leah_lexa',
 	assetDir: 'src/assets/images/events/leah-lexa-baby-shower',
 	assetPresentation: {
+		hero: { sourcePolicy: 'preserve' },
+		family: { sourcePolicy: 'preserve' },
+		gallery01: { sourcePolicy: 'preserve' },
+		gallery03: { sourcePolicy: 'preserve' },
 		gallery02: { sourcePolicy: 'preserve' },
 	},
 	assetFiles: {

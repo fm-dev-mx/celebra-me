@@ -281,6 +281,13 @@ export const cesarInvitation = defineCanonicalInvitation({
 	hostLoginAlias: 'cesar_ramses',
 	assetDir: 'src/assets/images/events/cesar-ramses',
 	assetPresentation: {
+		family: { sourcePolicy: 'preserve' },
+		reception: { sourcePolicy: 'preserve' },
+		gallery01: { sourcePolicy: 'preserve' },
+		gallery02: { sourcePolicy: 'preserve' },
+		gallery03: { sourcePolicy: 'preserve' },
+		gallery04: { sourcePolicy: 'preserve' },
+		gallery05: { sourcePolicy: 'preserve' },
 		thankYouPortrait: {
 			sourcePolicy: 'preserve',
 			delivery: { mode: 'original', width: 1600, height: 2000 },
