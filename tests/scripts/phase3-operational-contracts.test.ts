@@ -19,8 +19,24 @@ describe('Phase 3 operational contracts', () => {
 		const packageJson = JSON.parse(read('package.json')) as {
 			scripts: Record<string, string>;
 		};
-		expect(packageJson.scripts['test:e2e:ci']).toBe(
-			'playwright test tests/e2e/landing.page.regressions.spec.ts tests/e2e/demo-routing-parity.spec.ts tests/e2e/invitation-route-isolation.spec.ts tests/e2e/envelope-reveal-interaction.spec.ts tests/e2e/p0-structural-runtime.spec.ts tests/e2e/structural-variant-portability.spec.ts tests/e2e/canonical-invitation-page-parity.spec.ts tests/e2e/image-delivery-contract.spec.ts --grep-invert @extended',
+		const command = packageJson.scripts['test:e2e:ci'].split(/\s+/);
+		expect(command.slice(0, 2)).toEqual(['playwright', 'test']);
+		expect(command.filter((argument) => argument.startsWith('--'))).toEqual(['--grep-invert']);
+		expect(command.at(-1)).toBe('@extended');
+		expect(command).toEqual(
+			expect.arrayContaining([
+				'tests/e2e/landing.page.regressions.spec.ts',
+				'tests/e2e/demo-routing-parity.spec.ts',
+				'tests/e2e/invitation-route-isolation.spec.ts',
+				'tests/e2e/envelope-reveal-interaction.spec.ts',
+				'tests/e2e/p0-structural-runtime.spec.ts',
+				'tests/e2e/structural-variant-portability.spec.ts',
+				'tests/e2e/canonical-invitation-page-parity.spec.ts',
+				'tests/e2e/image-delivery-contract.spec.ts',
+				'tests/e2e/rsvp-decoration-containment.spec.ts',
+				'tests/e2e/personalized-access-surface.spec.ts',
+				'tests/e2e/section-presentation-measurement.spec.ts',
+			]),
 		);
 		expect(read('tests/e2e/structural-variant-portability.spec.ts')).toContain(
 			"process.env.CI ? 'compare' : 'diagnostic'",
