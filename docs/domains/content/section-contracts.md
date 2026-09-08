@@ -62,7 +62,7 @@ and has no independent section variant.
   3. Existing icon contract -> `wax-monogram` maps to `wax-organic`, `monogram` to `monogram`, etc.
   4. Default fallback -> `wax-organic`.
 - **Proportional Bounded Sizing**:
-  - The visible seal follows the envelope's inline size at `10cqi`, clamped between `40px` and
+  - The visible seal follows the envelope's inline size at `10cqi`, clamped between `34px` and
     `60px`.
   - The fallback is `40px` when container query units are unavailable.
   - The size declaration belongs to a descendant of `.envelope-container`; the container must not
