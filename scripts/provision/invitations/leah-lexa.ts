@@ -84,6 +84,7 @@ const content: CanonicalEventContentInput = {
 		items: [
 			{
 				image: {
+					delivery: { mode: 'optimized', width: 1400, height: 1600, quality: 100 },
 					key: 'gallery03',
 					type: 'internal',
 				},

@@ -131,47 +131,83 @@ const content: CanonicalEventContentInput = {
 	gallery: {
 		items: [
 			{
-				image: 'gallery01',
+				image: {
+					type: 'internal',
+					key: 'gallery01',
+					delivery: { mode: 'optimized', width: 1400, height: 1750, quality: 100 },
+				},
 				caption: 'La actitud de un espíritu joven.',
 				focalPoint: '50% 36%',
 			},
 			{
-				image: 'gallery02',
+				image: {
+					type: 'internal',
+					key: 'gallery02',
+					delivery: { mode: 'optimized', width: 1400, height: 1750, quality: 100 },
+				},
 				caption: 'Entre verde, rojo y luz.',
 				focalPoint: '50% 35%',
 			},
 			{
-				image: 'gallery04',
+				image: {
+					type: 'internal',
+					key: 'gallery04',
+					delivery: { mode: 'optimized', width: 1400, height: 1750, quality: 100 },
+				},
 				caption: 'Celebrar rodeada de amigas.',
 				focalPoint: '50% 42%',
 			},
 			{
-				image: 'gallery05',
+				image: {
+					type: 'internal',
+					key: 'gallery05',
+					delivery: { mode: 'optimized', width: 1600, height: 1200, quality: 100 },
+				},
 				caption: 'La alegría de compartir.',
 				focalPoint: '50% 44%',
 			},
 			{
-				image: 'gallery06',
+				image: {
+					type: 'internal',
+					key: 'gallery06',
+					delivery: { mode: 'optimized', width: 4000, height: 6000, quality: 100 },
+				},
 				caption: 'Con mi familia.',
 				focalPoint: '50% 36%',
 			},
 			{
-				image: 'gallery07',
+				image: {
+					type: 'internal',
+					key: 'gallery07',
+					delivery: { mode: 'optimized', width: 1600, height: 1200, quality: 100 },
+				},
 				caption: 'Un recuerdo con quienes me acompañan.',
 				focalPoint: '52% 48%',
 			},
 			{
-				image: 'gallery08',
+				image: {
+					type: 'internal',
+					key: 'gallery08',
+					delivery: { mode: 'optimized', width: 1600, height: 1200, quality: 100 },
+				},
 				caption: 'Cariño que se queda.',
 				focalPoint: '50% 42%',
 			},
 			{
-				image: 'gallery09',
+				image: {
+					type: 'internal',
+					key: 'gallery09',
+					delivery: { mode: 'optimized', width: 1600, height: 1200, quality: 100 },
+				},
 				caption: 'Amigos y familia en el jardín.',
 				focalPoint: '50% 48%',
 			},
 			{
-				image: 'gallery10',
+				image: {
+					type: 'internal',
+					key: 'gallery10',
+					delivery: { mode: 'optimized', width: 1600, height: 1200, quality: 100 },
+				},
 				caption: 'La emoción antes de la gran noche.',
 				focalPoint: '50% 46%',
 			},
@@ -387,6 +423,11 @@ export const americaInvitation = defineCanonicalInvitation({
 	hostLoginAlias: 'america_johana',
 	assetDir: 'src/assets/images/events/xv-america-johana',
 	assetPresentation: {
+		gallery06: { sourcePolicy: 'preserve' },
+		heroMobile: {
+			sourcePolicy: 'preserve',
+			delivery: { mode: 'optimized', width: 960, height: 1440, quality: 84 },
+		},
 		family: { sourcePolicy: 'preserve' },
 		gallery01: { sourcePolicy: 'preserve' },
 		gallery02: { sourcePolicy: 'preserve' },

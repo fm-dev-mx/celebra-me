@@ -97,35 +97,67 @@ const content: CanonicalEventContentInput = {
 	gallery: {
 		items: [
 			{
-				image: 'gallery01',
+				image: {
+					type: 'internal',
+					key: 'gallery01',
+					delivery: { mode: 'optimized', width: 1125, height: 1600, quality: 100 },
+				},
 				caption: 'Mi Gran Día.',
 			},
 			{
-				image: 'gallery02',
+				image: {
+					type: 'internal',
+					key: 'gallery02',
+					delivery: { mode: 'optimized', width: 1066, height: 1600, quality: 100 },
+				},
 				caption: 'Preparada para Brillar.',
 			},
 			{
-				image: 'gallery03',
+				image: {
+					type: 'internal',
+					key: 'gallery03',
+					delivery: { mode: 'optimized', width: 1066, height: 1600, quality: 100 },
+				},
 				caption: 'Elegancia en Cada Detalle.',
 			},
 			{
-				image: 'gallery04',
+				image: {
+					type: 'internal',
+					key: 'gallery04',
+					delivery: { mode: 'optimized', width: 1066, height: 1600, quality: 100 },
+				},
 				caption: 'Brillo Natural.',
 			},
 			{
-				image: 'gallery05',
+				image: {
+					type: 'internal',
+					key: 'gallery05',
+					delivery: { mode: 'optimized', width: 1066, height: 1600, quality: 100 },
+				},
 				caption: 'Sueños en Seda.',
 			},
 			{
-				image: 'gallery07',
+				image: {
+					type: 'internal',
+					key: 'gallery07',
+					delivery: { mode: 'optimized', width: 1024, height: 1024, quality: 100 },
+				},
 				caption: 'Reflejo de Alegría.',
 			},
 			{
-				image: 'gallery09',
+				image: {
+					type: 'internal',
+					key: 'gallery09',
+					delivery: { mode: 'optimized', width: 1024, height: 1024, quality: 100 },
+				},
 				caption: 'Movimiento y Luz.',
 			},
 			{
-				image: 'gallery10',
+				image: {
+					type: 'internal',
+					key: 'gallery10',
+					delivery: { mode: 'optimized', width: 1066, height: 1600, quality: 100 },
+				},
 				caption: 'Actitud y Confianza.',
 			},
 		],
@@ -158,7 +190,7 @@ const content: CanonicalEventContentInput = {
 		},
 		indications: [
 			{
-				text: 'Dress Code <strong>El color rosa es exclusivo para la quinceañera</strong>',
+				text: 'Código de vestimenta: <strong>El color rosa es exclusivo para la quinceañera.</strong>',
 				iconName: 'Crown',
 				styleVariant: 'reserved',
 			},

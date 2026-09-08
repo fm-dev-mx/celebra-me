@@ -107,43 +107,83 @@ const content: CanonicalEventContentInput = {
 	gallery: {
 		items: [
 			{
-				image: 'gallery01',
+				image: {
+					type: 'internal',
+					key: 'gallery01',
+					delivery: { mode: 'optimized', width: 1400, height: 2100, quality: 100 },
+				},
 				caption: 'Un momento especial capturado en luz y cristal.',
 			},
 			{
-				image: 'gallery02',
+				image: {
+					type: 'internal',
+					key: 'gallery02',
+					delivery: { mode: 'optimized', width: 1400, height: 2100, quality: 100 },
+				},
 				caption: 'Detalles que reflejan mi gran noche.',
 			},
 			{
-				image: 'gallery03',
+				image: {
+					type: 'internal',
+					key: 'gallery03',
+					delivery: { mode: 'optimized', width: 1400, height: 2100, quality: 100 },
+				},
 				caption: 'Elegancia y brillo en tonos de cielo.',
 			},
 			{
-				image: 'gallery04',
+				image: {
+					type: 'internal',
+					key: 'gallery04',
+					delivery: { mode: 'optimized', width: 1400, height: 1867, quality: 100 },
+				},
 				caption: 'Recuerdos que guardaré para siempre.',
 			},
 			{
-				image: 'gallery05',
+				image: {
+					type: 'internal',
+					key: 'gallery05',
+					delivery: { mode: 'optimized', width: 1400, height: 2100, quality: 100 },
+				},
 				caption: 'Sonrisas y sueños cumplidos.',
 			},
 			{
-				image: 'gallery06',
+				image: {
+					type: 'internal',
+					key: 'gallery06',
+					delivery: { mode: 'optimized', width: 1400, height: 2100, quality: 100 },
+				},
 				caption: 'Un instante de magia.',
 			},
 			{
-				image: 'gallery07',
+				image: {
+					type: 'internal',
+					key: 'gallery07',
+					delivery: { mode: 'optimized', width: 941, height: 1672, quality: 100 },
+				},
 				caption: 'La belleza de cada detalle azul.',
 			},
 			{
-				image: 'gallery08',
+				image: {
+					type: 'internal',
+					key: 'gallery08',
+					delivery: { mode: 'optimized', width: 941, height: 1672, quality: 100 },
+				},
 				caption: 'Disfrutando este momento inolvidable.',
 			},
 			{
-				image: 'gallery09',
+				image: {
+					type: 'internal',
+					key: 'gallery09',
+					delivery: { mode: 'optimized', width: 941, height: 1672, quality: 100 },
+				},
 				caption: 'Juventud y alegría en una noche perfecta.',
 			},
 			{
-				image: 'gallery10',
+				image: {
+					type: 'internal',
+					key: 'gallery10',
+					delivery: { mode: 'optimized', width: 941, height: 1672, quality: 100 },
+				},
 				caption: 'Agradecida por hacer de mis XV un sueño.',
 			},
 		],

@@ -96,6 +96,7 @@ const content: CanonicalEventContentInput = {
 		items: [
 			{
 				image: {
+					delivery: { mode: 'optimized', width: 1080, height: 1350, quality: 100 },
 					key: 'gallery10',
 					type: 'internal',
 				},
@@ -103,6 +104,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
+					delivery: { mode: 'optimized', width: 1080, height: 1350, quality: 100 },
 					key: 'gallery06',
 					type: 'internal',
 				},
@@ -110,6 +112,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
+					delivery: { mode: 'optimized', width: 1365, height: 2048, quality: 100 },
 					key: 'gallery03',
 					type: 'internal',
 				},
@@ -117,6 +120,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
+					delivery: { mode: 'optimized', width: 1080, height: 1350, quality: 100 },
 					key: 'gallery08',
 					type: 'internal',
 				},
@@ -124,6 +128,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
+					delivery: { mode: 'optimized', width: 1080, height: 1350, quality: 100 },
 					key: 'gallery02',
 					type: 'internal',
 				},
@@ -132,6 +137,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
+					delivery: { mode: 'optimized', width: 1365, height: 2048, quality: 100 },
 					key: 'gallery04',
 					type: 'internal',
 				},
@@ -139,6 +145,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				image: {
+					delivery: { mode: 'optimized', width: 1080, height: 1350, quality: 100 },
 					key: 'interlude01',
 					type: 'internal',
 				},
@@ -286,7 +293,7 @@ const content: CanonicalEventContentInput = {
 			},
 		],
 	},
-	_assetSlug: 'demo-xv-enchanted-rose',
+	_assetSlug: 'xv-ayrin-samantha-lerma-castro',
 	interludes: [
 		{
 			alt: 'Detalle de palacio con espejo antiguo y rosas rojas',

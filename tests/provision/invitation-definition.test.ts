@@ -2,7 +2,7 @@
  * Unit & Contract tests for scripts/provision/invitations/
  *
  * Tests single-file invitation definition contract, helper, registry,
- * and Romina single-file projection parity against legacy data.
+ * and canonical Romina publication projection.
  */
 
 import { describe, it, expect } from '@jest/globals';
@@ -13,7 +13,6 @@ import {
 } from '../../scripts/provision/invitations/registry.ts';
 import {
 	rominaInvitation,
-	buildRominaPublishedContent,
 	ROMINA_EVENT,
 	ROMINA_ASSET_SPECS,
 	type RominaAssetKey,
@@ -402,7 +401,6 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				rsvp: { accessMode: 'personalized-only' },
 				envelope: { sealInitials: 'RC' },
 			});
-			expect(buildRominaPublishedContent(mockAssets)).toEqual(content);
 			expect(
 				(content.hero as { backgroundImage: { assetId: string } }).backgroundImage.assetId,
 			).not.toBe(

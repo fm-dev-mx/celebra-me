@@ -80,6 +80,7 @@ export const DANIELA_ASSET_SPECS = [
 	{
 		key: 'gallery-01',
 		relativePath: 'gallery-01-source.jpg',
+		delivery: { mode: 'original', width: 1707, height: 2560 },
 		displayName: 'Daniela y Martín — galería',
 		alt: 'Daniela y Martín en retrato de sesión',
 		focalPoint: {
@@ -89,6 +90,7 @@ export const DANIELA_ASSET_SPECS = [
 	{
 		key: 'interlude-01',
 		relativePath: 'interlude-01.png',
+		delivery: { mode: 'original', width: 1024, height: 1536 },
 		displayName: 'Daniela y Martín — interludio de arquitectura',
 		alt: DANIELA_INTERLUDE_01.alt,
 		focalPoint: {
@@ -98,6 +100,7 @@ export const DANIELA_ASSET_SPECS = [
 	{
 		key: 'interlude-02',
 		relativePath: 'interlude-02.png',
+		delivery: { mode: 'original', width: 1024, height: 1536 },
 		displayName: 'Daniela y Martín — interludio de recepción',
 		alt: DANIELA_INTERLUDE_02.alt,
 		focalPoint: {

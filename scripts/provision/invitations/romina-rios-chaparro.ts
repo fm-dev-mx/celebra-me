@@ -44,18 +44,21 @@ export const ROMINA_ASSET_SPECS = [
 	{
 		key: 'portrait',
 		relativePath: 'IMG_3462.jpeg',
+		delivery: { mode: 'original', width: 1707, height: 2560 },
 		displayName: 'Romina — retrato de presentación',
 		alt: 'Retrato sonriente de Romina entre flores',
 	},
 	{
 		key: 'family',
 		relativePath: 'IMG_3405.jpeg',
+		delivery: { mode: 'original', width: 1707, height: 2560 },
 		displayName: 'Romina — familia',
 		alt: 'Romina acompañada por su familia y sus mascotas',
 	},
 	{
 		key: 'sageLandscape',
 		relativePath: 'IMG_3191.jpeg',
+		delivery: { mode: 'original', width: 2560, height: 1707 },
 		displayName: 'Romina — vestido salvia horizontal',
 		alt: 'Romina con vestido verde salvia en un jardín botánico',
 	},
@@ -76,36 +79,42 @@ export const ROMINA_ASSET_SPECS = [
 	{
 		key: 'petPortrait',
 		relativePath: 'IMG_3308.jpeg',
+		delivery: { mode: 'original', width: 1707, height: 2560 },
 		displayName: 'Romina — retrato con mascota',
 		alt: 'Romina posa con una de sus mascotas',
 	},
 	{
 		key: 'petLandscape',
 		relativePath: 'IMG_3324.jpeg',
+		delivery: { mode: 'original', width: 2560, height: 1707 },
 		displayName: 'Romina — mascotas',
 		alt: 'Romina comparte un momento con sus mascotas en el jardín',
 	},
 	{
 		key: 'whitePortrait',
 		relativePath: 'IMG_3331.jpeg',
+		delivery: { mode: 'original', width: 1707, height: 2560 },
 		displayName: 'Romina — capítulo blanco',
 		alt: 'Romina con vestido blanco en un entorno botánico',
 	},
 	{
 		key: 'whiteBotanical',
 		relativePath: 'IMG_3386.jpeg',
+		delivery: { mode: 'original', width: 1707, height: 2560 },
 		displayName: 'Romina — retrato botánico',
 		alt: 'Romina con vestido blanco entre vegetación y cactus',
 	},
 	{
 		key: 'pinkFloral',
 		relativePath: 'IMG_3449.jpeg',
+		delivery: { mode: 'original', width: 1665, height: 2560 },
 		displayName: 'Romina — capítulo floral',
 		alt: 'Romina con vestido rosa junto a una estructura floral',
 	},
 	{
 		key: 'closing',
 		relativePath: 'IMG_3442.jpeg',
+		delivery: { mode: 'original', width: 2560, height: 1707 },
 		displayName: 'Romina — cierre XV',
 		alt: 'Romina junto a globos con el número quince',
 	},
@@ -224,7 +233,6 @@ export function buildRominaPublishedContent(
 		location: {
 			accessPolicy: { visibility: 'public' },
 			variant: 'standard',
-
 			mapStyle: 'dark',
 			introEyebrow: 'VIERNES · 14 DE AGOSTO DE 2026',
 			introHeading: 'Ceremonia y recepción',
