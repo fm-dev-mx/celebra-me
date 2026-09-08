@@ -85,6 +85,9 @@ export function imageExtension(mimeType: string): 'webp' | 'jpg' | 'png' {
 export const OUTPUT_MIME_TYPE = 'image/webp';
 export const MAX_OUTPUT_BYTES = 2_500_000;
 export const MAX_OUTPUT_DIMENSION = 2560;
+// Explicit original preservation is bounded separately from normalized output sizing.
+export const MAX_PRESERVED_DIMENSION = 6000;
+export const MAX_PRESERVED_PIXELS = 24_000_000;
 const MAX_INPUT_PIXELS = 40_000_000;
 const MIN_INPUT_DIMENSION = 480;
 
@@ -172,7 +175,8 @@ async function preserveValidatedImage(
 	const maxBytes = optimizationRole ? getWeightTargetBytes(optimizationRole) : MAX_OUTPUT_BYTES;
 	if (
 		input.byteLength > maxBytes ||
-		Math.max(metadata.width, metadata.height) > MAX_OUTPUT_DIMENSION ||
+		Math.max(metadata.width, metadata.height) > MAX_PRESERVED_DIMENSION ||
+		metadata.width * metadata.height > MAX_PRESERVED_PIXELS ||
 		(metadata.orientation !== undefined && metadata.orientation !== 1) ||
 		(metadata.pages !== undefined && metadata.pages !== 1)
 	) {

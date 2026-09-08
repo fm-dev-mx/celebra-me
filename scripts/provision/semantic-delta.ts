@@ -119,6 +119,27 @@ function canReconcileRecordChildren(
 	return ![previous.value, current.value, target.value].some(isAssetReference);
 }
 
+/** Presentation may change independently only when all three states identify the same file. */
+function hasStableUploadedIdentity(...states: StructuralValueState[]): boolean {
+	const identities: string[] = [];
+	for (const state of states) {
+		if (!state.present || !isRecord(state.value)) return false;
+		const record = state.value;
+		if (
+			record.type !== 'uploaded' ||
+			typeof record.assetId !== 'string' ||
+			typeof record.src !== 'string'
+		)
+			return false;
+		identities.push(
+			canonicalize(
+				Object.fromEntries(Object.entries(record).filter(([key]) => key !== 'delivery')),
+			),
+		);
+	}
+	return identities.every((identity) => identity === identities[0]);
+}
+
 function canReconcileArrayChildren(
 	previous: StructuralValueState,
 	current: StructuralValueState,
@@ -227,6 +248,16 @@ function reconcileNode(
 	current: StructuralValueState,
 	target: StructuralValueState,
 ): void {
+	if (hasStableUploadedIdentity(previous, current, target)) {
+		reconcileNode(
+			context,
+			[...pathTokens, 'delivery'],
+			childState(previous, 'delivery'),
+			childState(current, 'delivery'),
+			childState(target, 'delivery'),
+		);
+		return;
+	}
 	if (equalState(previous, current)) {
 		if (!context.detectTargetOnlyDrift || equalState(current, target)) return;
 		if (reconcileChildren(context, pathTokens, previous, current, target)) return;

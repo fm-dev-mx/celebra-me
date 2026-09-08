@@ -357,8 +357,12 @@ describe('apply3WaySemanticPatch', () => {
 			src: 'https://example.invalid/managed/hero.webp',
 		};
 		const result = apply3WaySemanticPatch({
-			previousCanonical: { hero: { variant: 'editorial-magazine', backgroundImage: hostedHero } },
-			currentCanonical: { hero: { variant: 'editorial-cover', backgroundImage: packagedHero } },
+			previousCanonical: {
+				hero: { variant: 'editorial-magazine', backgroundImage: hostedHero },
+			},
+			currentCanonical: {
+				hero: { variant: 'editorial-cover', backgroundImage: packagedHero },
+			},
 			currentTarget: { hero: { variant: 'editorial-magazine', backgroundImage: hostedHero } },
 			scope: 'content-only',
 			targetName: 'valentina-hernandez',
@@ -391,5 +395,84 @@ describe('apply3WaySemanticPatch', () => {
 		expect(result.deltas).toContainEqual(
 			expect.objectContaining({ path: 'quote', operation: 'remove', status: 'DRIFT' }),
 		);
+	});
+});
+
+describe('image presentation without asset replacement', () => {
+	const image = {
+		type: 'uploaded',
+		assetId: 'existing-asset',
+		src: 'https://example.com/photo.webp',
+	};
+	const original = { mode: 'original', width: 1707, height: 2560 };
+	const wrap = (value: Record<string, unknown>) => ({ gallery: { items: [{ image: value }] } });
+
+	it('publishes delivery metadata under content-only while preserving file identity', () => {
+		const target = { ...wrap(image), note: 'Unpublished host note' };
+		const result = apply3WaySemanticPatch({
+			previousCanonical: wrap(image),
+			currentCanonical: wrap({ ...image, delivery: original }),
+			currentTarget: target,
+			scope: 'content-only',
+		});
+		expect(result.blocked).toBe(false);
+		expect(result.patchedContent).toEqual({
+			...wrap({ ...image, delivery: original }),
+			note: 'Unpublished host note',
+		});
+		expect(result.hasAssetChanges).toBe(false);
+		expect(result.operations).toEqual([
+			{ kind: 'add', path: ['gallery', 'items', 0, 'image', 'delivery'], value: original },
+		]);
+	});
+
+	it.each(['assetId', 'src'])(
+		'does not let delivery metadata authorize a changed %s',
+		(field) => {
+			const result = apply3WaySemanticPatch({
+				previousCanonical: wrap(image),
+				currentCanonical: wrap({ ...image, [field]: 'replacement', delivery: original }),
+				currentTarget: wrap(image),
+				scope: 'content-only',
+			});
+			expect(result.patchedContent).toEqual(wrap(image));
+			expect(result.operations).toHaveLength(0);
+			expect(result.deltas.some((delta) => delta.status === 'BLOCKED_BY_SCOPE')).toBe(true);
+		},
+	);
+
+	it('retains a conflict when the host independently changed delivery', () => {
+		const target = wrap({ ...image, delivery: { mode: 'optimized', width: 800 } });
+		const result = apply3WaySemanticPatch({
+			previousCanonical: wrap(image),
+			currentCanonical: wrap({ ...image, delivery: original }),
+			currentTarget: target,
+			scope: 'content-only',
+		});
+		expect(result.blocked).toBe(true);
+		expect(result.patchedContent).toEqual(target);
+	});
+
+	it('can remove delivery metadata without replacing the file', () => {
+		const previous = wrap({ ...image, delivery: original });
+		const result = apply3WaySemanticPatch({
+			previousCanonical: previous,
+			currentCanonical: wrap(image),
+			currentTarget: previous,
+			scope: 'content-only',
+		});
+		expect(result.patchedContent).toEqual(wrap(image));
+		expect(result.blocked).toBe(false);
+	});
+
+	it('rejects presentation-only edits under assets-only', () => {
+		const result = apply3WaySemanticPatch({
+			previousCanonical: wrap(image),
+			currentCanonical: wrap({ ...image, delivery: original }),
+			currentTarget: wrap(image),
+			scope: 'assets-only',
+		});
+		expect(result.blocked).toBe(true);
+		expect(result.patchedContent).toEqual(wrap(image));
 	});
 });

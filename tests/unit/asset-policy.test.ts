@@ -157,15 +157,35 @@ describe('explicit source preservation', () => {
 			expect(result.height).toBe(1000);
 		},
 	);
-	it('rejects preservation that exceeds the existing dimension contract', async () => {
+	it.each([
+		[6001, 1000],
+		[5000, 5000],
+	])('rejects preservation beyond bounded dimensions or area: %s x %s', async (width, height) => {
 		await expect(
 			normalizeInvitationImage(
-				await imageBlob('webp', 3000, 2000),
+				await imageBlob('webp', width, height),
 				'image/webp',
 				undefined,
 				'preserve',
 			),
 		).rejects.toMatchObject({ status: 422 });
+	});
+	it('preserves a bounded 24-megapixel original without widening normalized output', async () => {
+		const source = await imageBlob('webp', 4000, 6000);
+		const preserved = await normalizeInvitationImage(
+			source,
+			'image/webp',
+			undefined,
+			'preserve',
+		);
+		expect([preserved.width, preserved.height]).toEqual([4000, 6000]);
+		expect(Buffer.from((await extractBlobRawBytes(preserved.blob))!)).toEqual(
+			Buffer.from(await source.arrayBuffer()),
+		);
+		const normalized = await normalizeInvitationImage(source, 'image/webp');
+		expect(Math.max(normalized.width, normalized.height)).toBeLessThanOrEqual(
+			MAX_OUTPUT_DIMENSION,
+		);
 	});
 	it('still rejects declared format mismatches when preserving', async () => {
 		await expect(
