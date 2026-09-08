@@ -68,6 +68,7 @@ export async function hideFixedOverlaysForCapture(page: Page): Promise<() => Pro
 	}
 
 	return async () => {
+		if (state.alreadyActive) return;
 		await page.evaluate(() => {
 			document.documentElement.classList.remove('screenshot-hide-overlays');
 		});
@@ -568,7 +569,7 @@ export function pathLabel(filepath: string): string {
 }
 
 /** Reproduce random demo content in fresh browser documents without changing page layout. */
-export async function stabilizeCaptureRandomness(page: import('@playwright/test').Page) {
+export async function stabilizeCaptureRandomness(page: Page) {
 	await page.addInitScript(() => {
 		let state = 0x1a2b3c4d;
 		Math.random = () => {

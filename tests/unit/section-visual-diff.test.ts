@@ -5,6 +5,7 @@ import { writeSectionDiagnosisReport } from '../../scripts/screenshot/section-vi
 import sharp from 'sharp';
 import {
 	assertDiagnosisCoverage,
+	captureImageInputSource,
 	normalizeCaptureImageSource,
 	sectionImageSignature,
 	sectionSemanticSignature,
@@ -207,4 +208,29 @@ describe('font family case equivalence', () => {
 			sectionSemanticSignature(section),
 		);
 	});
+});
+
+test('image input comparison retains transformations and detects a different original', () => {
+	const image = {
+		src: 'https://preview.test/_image?href=https%3A%2F%2Fimages.test%2Fa.webp&w=960&q=84',
+		objectFit: 'cover',
+		objectPosition: '50% 50%',
+		inputSha256: 'original-a',
+		deliveredSha256: 'encoded-a',
+		naturalWidth: 960,
+		naturalHeight: 1440,
+	};
+	expect(captureImageInputSource(image.src)).toBe('https://images.test/a.webp');
+	expect(sectionImageSignature([image])).toBe(
+		sectionImageSignature([{ ...image, deliveredSha256: 'encoded-b' }]),
+	);
+	expect(sectionImageSignature([image])).not.toBe(
+		sectionImageSignature([{ ...image, inputSha256: 'original-b' }]),
+	);
+	expect(sectionImageSignature([image])).not.toBe(
+		sectionImageSignature([{ ...image, src: image.src.replace('q=84', 'q=100') }]),
+	);
+	expect(
+		captureImageInputSource('https://preview.test/_image?href=ftp://images.test/a.webp'),
+	).toBeUndefined();
 });

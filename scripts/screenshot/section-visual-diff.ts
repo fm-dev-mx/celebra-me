@@ -126,9 +126,31 @@ export interface CapturedImageIdentity {
 	objectFit: string;
 	objectPosition: string;
 	deliveredSha256?: string;
+	normalizedSvgSha256?: string;
+	inputSha256?: string;
 	naturalWidth?: number;
 	naturalHeight?: number;
 	transformations?: string;
+}
+
+/** Resolve the original requested by the two supported image services. */
+export function captureImageInputSource(source: string): string | undefined {
+	if (!source || source.startsWith('data:')) return undefined;
+	try {
+		const url = new URL(
+			source.replace('{deployment}', 'https://deployment.invalid'),
+			'https://deployment.invalid',
+		);
+		if (!['/_image', '/_vercel/image'].includes(url.pathname)) return undefined;
+		const input = url.searchParams.get('url') ?? url.searchParams.get('href');
+		if (!input) return undefined;
+		const resolved = new URL(input, url.origin);
+		if (!['https:', 'http:'].includes(resolved.protocol) || resolved.username || resolved.password)
+			return undefined;
+		return resolved.href;
+	} catch {
+		return undefined;
+	}
 }
 
 /** Preserve transform parameters separately from a byte-verified source locator. */
@@ -156,7 +178,13 @@ export function captureImageTransformations(source: string): string {
 export function sectionImageSignature(images: CapturedImageIdentity[]): string {
 	return JSON.stringify(
 		images.map((image) => ({
-			source: image.deliveredSha256 ? `sha256:${image.deliveredSha256}` : image.src,
+			source: image.inputSha256
+				? `input:${image.inputSha256}`
+				: image.normalizedSvgSha256
+					? `svg:${image.normalizedSvgSha256}`
+					: image.deliveredSha256
+						? `sha256:${image.deliveredSha256}`
+						: image.src,
 			transformations: image.transformations ?? captureImageTransformations(image.src),
 			width: image.naturalWidth,
 			height: image.naturalHeight,

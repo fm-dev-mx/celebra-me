@@ -106,8 +106,8 @@ export async function captureInvitationDocumentSpaceFullPage(
 	});
 	const physical = planDocumentStripPhysicalPlacement(plan, dpr);
 
-	const tmpDir = path.join(path.dirname(outputPath), `.doc-strips-${Date.now()}`);
-	await fs.promises.mkdir(tmpDir, { recursive: true });
+	await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
+	const tmpDir = await fs.promises.mkdtemp(path.join(path.dirname(outputPath), '.doc-strips-'));
 
 	const restoreOverlays = await hideFixedOverlaysForCapture(page);
 	const cdp = await page.context().newCDPSession(page);

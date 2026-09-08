@@ -1,12 +1,17 @@
-import { stabilizeCaptureRandomness, alignSectionCaptureToPixelGrid } from './element-capture';
+import { captureInvitationDocumentSpaceFullPage } from './invitation-full-page';
+import { verifySectionCropInclusion } from './artifact-validation';
+import {
+	stabilizeCaptureRandomness,
+	alignSectionCaptureToPixelGrid,
+	hideFixedOverlaysForCapture,
+} from './element-capture';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { chromium, type Browser } from 'playwright';
+import { chromium, type Browser, type Page } from 'playwright';
 import sharp from 'sharp';
 import { buildVisualPageCases, VISUAL_VIEWPORTS } from './visual-coverage-contract';
-import { hideFixedOverlaysForCapture } from './element-capture';
 import { assertManifestIntegrity, listPngFiles } from './visual-manifest-integrity';
 import {
 	assertDiagnosisCoverage,
@@ -14,6 +19,7 @@ import {
 	compareSectionImages,
 	normalizeCaptureImageSource,
 	captureImageTransformations,
+	captureImageInputSource,
 	sectionImageSignature,
 	type CapturedImageIdentity,
 	sectionSemanticSignature,
@@ -65,6 +71,7 @@ export function parseDiagnosisArgs(args: string[]): Record<string, string> {
 		'route',
 		'routes',
 		'viewports',
+		'full-pages',
 		'output',
 		'at',
 	];
@@ -82,6 +89,8 @@ export function parseDiagnosisArgs(args: string[]): Record<string, string> {
 	if (options.at && !Number.isFinite(Date.parse(options.at)))
 		throw new Error('Invalid fixed capture time.');
 	if (options.route && options.routes) throw new Error('Use route or routes, not both.');
+	if (options['full-pages'] && !['true', 'false'].includes(options['full-pages']))
+		throw new Error('full-pages must be true or false.');
 	return options;
 }
 
@@ -107,11 +116,42 @@ function validateDiagnosisOrigins(options: Record<string, string>): void {
 	}
 }
 
-function measureSectionPresentation(node: HTMLElement) {
+export function hashDeliveredImage(bytes: Buffer, contentType: string) {
+	return {
+		deliveredSha256: digest(bytes),
+		// XML normalizes CRLF and CR to LF before parsing. Retain the delivered-byte proof.
+		...(contentType.split(';')[0].trim() === 'image/svg+xml'
+			? { normalizedSvgSha256: digest(bytes.toString('utf8').replace(/\r\n?/g, '\n')) }
+			: {}),
+	};
+}
+
+export async function waitForCaptureHydration(page: Page, timeout = 15000): Promise<void> {
+	await page.waitForFunction(
+		() =>
+			Array.from(document.querySelectorAll('astro-island[client="visible"][ssr]')).every(
+				(island) =>
+					!island.getBoundingClientRect().width || !island.getBoundingClientRect().height,
+			),
+		null,
+		{ timeout },
+	);
+}
+
+export function measureSectionPresentation(node: HTMLElement) {
 	return {
 		fonts: [
 			...new Set(
-				Array.from(node.querySelectorAll('h1,h2,h3,p'))
+				[node, ...Array.from(node.querySelectorAll('*'))]
+					.filter(
+						(element) =>
+							element instanceof HTMLElement &&
+							Array.from(element.childNodes).some(
+								(child) =>
+									child.nodeType === Node.TEXT_NODE &&
+									Boolean(child.textContent?.trim()),
+							),
+					)
 					.filter((element) =>
 						element.checkVisibility({
 							checkOpacity: true,
@@ -120,7 +160,7 @@ function measureSectionPresentation(node: HTMLElement) {
 					)
 					.map((element) => {
 						const style = getComputedStyle(element);
-						return `${style.fontFamily} | ${style.fontSize} | ${style.lineHeight} | ${style.fontWeight}`;
+						return `${style.fontFamily} | ${style.fontSize} | ${style.lineHeight} | ${style.fontWeight} | ${style.fontStyle} | ${style.letterSpacing}`;
 					}),
 			),
 		],
@@ -147,7 +187,9 @@ async function capturePage(
 	prefix: string,
 	root: string,
 	fixedTime: string,
-	token?: string,
+	token: string | undefined,
+	fullPages: boolean,
+	inputHashes: Map<string, Promise<string | undefined>>,
 ): Promise<PageCapture> {
 	const context = await browser.newContext({
 		viewport,
@@ -167,17 +209,58 @@ async function capturePage(
 				}),
 			);
 		const page = await context.newPage();
-		const deliveredImages = new Map<string, Promise<string | undefined>>();
+		const deliveredImages = new Map<
+			string,
+			Promise<ReturnType<typeof hashDeliveredImage> | undefined>
+		>();
 		page.on('response', (response) => {
 			if (response.ok() && response.request().resourceType() === 'image')
 				deliveredImages.set(
 					response.url(),
 					response
 						.body()
-						.then((bytes) => digest(bytes))
+						.then((bytes) =>
+							hashDeliveredImage(bytes, response.headers()['content-type'] ?? ''),
+						)
 						.catch(() => undefined),
 				);
 		});
+		const measureImage = async (image: CapturedImageIdentity) => {
+			const input = captureImageInputSource(image.src);
+			if (input && !inputHashes.has(input)) {
+				inputHashes.set(
+					input,
+					page.request
+						.get(input, {
+							timeout: 15000,
+							...(token && new URL(input).origin === origin
+								? { headers: { 'x-vercel-protection-bypass': token } }
+								: {}),
+						})
+						.then(async (response) => {
+							if (
+								!response.ok() ||
+								!response.headers()['content-type']?.startsWith('image/')
+							)
+								return undefined;
+							const bytes = await response.body();
+							const identity = hashDeliveredImage(
+								bytes,
+								response.headers()['content-type'],
+							);
+							return identity.normalizedSvgSha256 ?? identity.deliveredSha256;
+						})
+						.catch(() => undefined),
+				);
+			}
+			return {
+				...image,
+				src: normalizeCaptureImageSource(image.src, origin),
+				...(await deliveredImages.get(image.src)),
+				...(input ? { inputSha256: await inputHashes.get(input) } : {}),
+				transformations: captureImageTransformations(image.src),
+			};
+		};
 		await stabilizeCaptureRandomness(page);
 		await page.clock.setFixedTime(new Date(fixedTime));
 		const response = await page.goto(`${origin}${route}?skipEnvelope=true&animations=off`, {
@@ -185,7 +268,7 @@ async function capturePage(
 			timeout: 60000,
 		});
 		if (response?.status() !== 200 || new URL(page.url()).pathname !== route)
-			throw new Error(`Public route failed: ${route}, HTTP ${response?.status()}.`);
+			throw new Error(`Public route failed: ${origin}${route}, HTTP ${response?.status()}.`);
 		await page.locator('.event-theme-wrapper').waitFor();
 		await page.evaluate(async () => {
 			await document.fonts.ready;
@@ -199,6 +282,7 @@ async function capturePage(
 			}
 			window.scrollTo(0, 0);
 		});
+		await waitForCaptureHydration(page);
 		await page.waitForTimeout(300);
 		await page.addStyleTag({
 			content:
@@ -276,14 +360,47 @@ async function capturePage(
 				domBounds: alignment.bounds,
 				pixelGridOffset: alignment.offset,
 				fonts: presentation.fonts,
-				images: await Promise.all(
-					presentation.images.map(async (image) => ({
-						...image,
-						src: normalizeCaptureImageSource(image.src, origin),
-						deliveredSha256: await deliveredImages.get(image.src),
-						transformations: captureImageTransformations(image.src),
-					})),
-				),
+				images: await Promise.all(presentation.images.map(measureImage)),
+				textHash: digest(presentation.text),
+			};
+		}
+		if (fullPages) {
+			const height = await page.evaluate(() => document.documentElement.scrollHeight);
+			const file = `${prefix}-full-page.png`;
+			const outputPath = path.join(root, file);
+			const capture = await captureInvitationDocumentSpaceFullPage(
+				page,
+				outputPath,
+				'png',
+				0,
+				height,
+				viewport.width,
+				{ deviceScaleFactor: 1 },
+			);
+			for (const section of measured) {
+				const validation = await verifySectionCropInclusion({
+					fullPagePath: outputPath,
+					sectionId: section.key,
+					sectionBounds: { y: section.top, height: section.height },
+					topY: 0,
+					deviceScaleFactor: 1,
+					...(section.key === 'hero'
+						? { standalonePath: path.join(root, sections.hero.file) }
+						: {}),
+				});
+				if (!validation.valid)
+					throw new Error(validation.error ?? 'Incomplete full-page capture.');
+			}
+			const presentation = await page.locator('body').evaluate(measureSectionPresentation);
+			sections['full-page'] = {
+				file,
+				sha256: digest(fs.readFileSync(outputPath)),
+				index: measured.length,
+				width: capture.width,
+				height: capture.height,
+				domBounds: { x: 0, y: 0, width: viewport.width, height },
+				fonts: presentation.fonts,
+				images: await Promise.all(presentation.images.map(measureImage)),
 				textHash: digest(presentation.text),
 			};
 		}
@@ -395,6 +512,7 @@ async function confirmSection(
 
 export async function diagnoseSections(args: string[]): Promise<void> {
 	const options = parseDiagnosisArgs(args);
+	const fullPages = options['full-pages'] === 'true';
 	const inventory = buildVisualPageCases();
 	const requested = (options.routes ?? options.route)?.split(',');
 	const routes = inventory.filter(
@@ -444,6 +562,8 @@ export async function diagnoseSections(args: string[]): Promise<void> {
 		workingTreeDiffSha256: digest(
 			execFileSync('git', ['diff', 'HEAD', '--', 'src', 'scripts', 'astro.config.mjs']),
 		),
+		presentationMeasurementVersion: 3,
+		fullPages,
 		browser: browser.version(),
 		platform: process.platform,
 		fixedTime,
@@ -460,6 +580,7 @@ export async function diagnoseSections(args: string[]): Promise<void> {
 		expectedRouteViewports: routes.length * viewports.length,
 	};
 	const cases = routes.flatMap((entry) => viewports.map((viewport) => ({ entry, viewport })));
+	const inputHashes = new Map<string, Promise<string | undefined>>();
 	let next = 0;
 	try {
 		await Promise.all(
@@ -481,6 +602,8 @@ export async function diagnoseSections(args: string[]): Promise<void> {
 										root,
 										fixedTime,
 										env === 'preview' ? token : undefined,
+										fullPages,
+										inputHashes,
 									),
 								),
 							);
@@ -537,7 +660,7 @@ export async function diagnoseSections(args: string[]): Promise<void> {
 							ratio: null,
 							reasons: [message],
 						});
-						console.error(`${route} @ ${viewport.name}: capture failed`);
+						console.error(`${route} @ ${viewport.name}: capture failed: ${message}`);
 					}
 					fs.writeFileSync(
 						path.join(root, 'progress.json'),
