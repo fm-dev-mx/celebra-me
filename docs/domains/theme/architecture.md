@@ -363,3 +363,38 @@ The `thankYou` variant `portrait-keepsake` owns the narrow rectangular portrait,
 responsive grid and signature geometry. It reuses the editorial DOM without selecting by theme
 or invitation identity. It requires an explicit image. Managed definitions need canonical
 publication before public database-backed routes use this variant.
+
+## Image delivery and surface defaults
+
+Canonical image references carry explicit delivery intent when a section requires a particular
+original or transformation. Preserve it through publication and adaptation; source identity alone is
+not proof that the browser receives the same image. Gallery references may override delivery without
+changing another section that uses the same source.
+
+Content-only reconciliation may change or remove `delivery` only when the uploaded reference has
+identical type, asset ID, URL and other identity fields in all three merge states. Concurrent
+presentation edits still require conflict resolution. Asset replacement and Storage mutation remain
+outside content-only; assets-only does not authorize presentation edits.
+
+Explicit source preservation is limited to 6000 pixels per side and 24 megapixels, with the existing
+transfer-weight, format, orientation, single-frame and full-decode checks. Normalized output remains
+limited to 2560 pixels. Role transfer budgets still apply; do not remove a role to evade them.
+
+The personalized-access skin supplies its paper finish through `--pa-card-glow`. Generic variant
+fallbacks consume that same token so deferred stylesheet order cannot erase an authored texture. The
+single-keepsake gallery owns its 0.68rem label size; profiles supply label color and tracking.
+
+Section diagnosis measurement version 2 includes every visible text-owning HTML element, including
+labels and spans, and records font style and letter spacing. Earlier measurements that sampled only
+headings and paragraphs cannot certify complete typography coverage.
+
+The public diagnostic can include complete pages with `--full-pages true`, using the existing
+document-strip capture and crop-integrity checks. Visible Astro islands must hydrate before a
+capture is valid. Nested screenshot helpers restore only overlay state they changed. Image evidence
+retains delivered bytes and, for supported optimizer URLs, separately verifies the original input;
+matching inputs do not waive requested transformations, natural dimensions, crops or pixel checks.
+SVG identity normalizes only XML line endings while preserving the delivered-byte hash.
+
+RSVP skins that create absolute decorative pseudo-elements must establish their own positioning
+context on every matching RSVP shell, including the nested shells of the interactive island.
+Decorations must remain inside RSVP and must not paint over the hero or neighboring sections.
