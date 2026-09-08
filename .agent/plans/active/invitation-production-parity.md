@@ -23,6 +23,13 @@ MATCH. Record the exact affected captures during final human baseline review usi
 visual:parity acceptance mechanism. This approval is not blanket acceptance of gallery sections or
 of any deployment SHA.
 
+## Approved venue-date exception
+
+The owner explicitly approved retaining 12 September 2026 in Xareni's venue section, instead of
+reproducing the 2029 date observed in Production. This exception is limited to that venue date.
+Keep the text discrepancy visible in diagnosis; it is not a blanket text or baseline approval.
+Production remains unchanged.
+
 ## Evidence and current remediation
 
 The deployed Preview at 0b8e2e7c was compared with Production 6081525e in
@@ -297,3 +304,32 @@ family on that deployment, resolve remaining image transformation contracts and 
 cases without weakening existing limits, investigate semantic text differences, and reconcile
 all remaining routes/demos. Complete corpus and full-page evidence plus exact-SHA human acceptance
 are still required. This is not complete visual parity.
+
+
+## Display-date investigation
+
+The f939778f deployment was verified through GitHub deployment 6318859345. Luna and Estrella
+now pass all 12 section/viewports with zero findings in
+`.tmp/visual-parity/diagnostics/preview-f939-luna-family/`, including exact family image delivery.
+
+Fresh public DOM comparisons identified actual text discrepancies, not whitespace differences:
+Gerardo hero displayed 22 February in Preview versus 21 February in Production; Xareni location
+displayed 2026 in Preview versus 2029 in Production. The owner approved preserving 2026 for Xareni.
+Gerardo's canonical localDateTime is 2026-02-21T20:00 America/Mazatlan, with startsAtUtc
+2026-02-22T03:00:00.000Z. Its hero display field incorrectly contained that UTC instant. The bounded
+correction restores the legacy floating local display date, retaining the eventTiming instant.
+A regression failed with expected 21 / received 22 before correction and passed afterward while
+asserting the unchanged countdown target. Canonical Local/Preview dry-runs contain one hero-field
+update per environment, no asset operations and no deletions. Publication and final CI are pending
+at this checkpoint. Evidence uses `.agent/tmp/parity-gerardo-date-*.log`.
+
+
+Gerardo's display-date correction completed canonical publication to Local and Preview (public
+version 8 in both), with zero asset mutations or deletions. Post-publication status in
+`.agent/tmp/parity-gerardo-date-db-status.json` confirms 17/17 synchronized. Full CI passed 535 unit
+suites / 6160 tests (one skipped), 234 browser tests, type checks and build (exit 0), recorded in
+`.agent/tmp/parity-gerardo-date-ci.log`. Commit 46f712f2 contains the definition and regression.
+The deployed comparison `.tmp/visual-parity/diagnostics/preview-f939-gerardo-date/` has 18 MATCH
+and four DIFFERENT; hero now MATCHes both viewports. Gerardo's gallery typography and thank-you
+image findings remain open. No Production mutation occurred. The approved Xareni 2026 exception
+remains visible and does not imply acceptance of other text differences or final baselines.
