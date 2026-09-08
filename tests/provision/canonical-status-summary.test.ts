@@ -1,3 +1,4 @@
+import { presentPromotionRow } from '../../src/lib/status/presentation';
 import { describe, expect, it } from '@jest/globals';
 import {
 	formatCanonicalStatusView,
@@ -22,13 +23,18 @@ const backup = {
 };
 const options = { env: { NO_COLOR: '1' }, backupHealth: backup };
 function promotion(overrides: Partial<CanonicalPromotionRow> = {}): CanonicalPromotionRow {
-	return { ...buildCanonicalStatusViewFixture().promotions[0], ...overrides };
+	return presentPromotionRow({
+		...buildCanonicalStatusViewFixture().promotions[0],
+		...overrides,
+	});
 }
 
 describe('canonical status summary', () => {
 	it('summarizes ten schema dependents and seven pending invitations within one screen', () => {
 		const view = buildCanonicalStatusViewFixture({ manualPatches: [] });
 		view.environments.production.schemaLifecycle = 'BEHIND';
+		view.environments.production.schemaNextAction = 'pnpm db:migrate -- --target production';
+		view.disposableProof = { status: 'valid', evidence: 'LIVE', reason: 'Current proof' };
 		view.environments.production.pendingMigrations = ['pending'];
 		view.environments.production.authorizationIntegrity = 'MISSING';
 		view.promotions = [
@@ -56,7 +62,12 @@ describe('canonical status summary', () => {
 		expect(text).toContain('7 invitaciones · Pendiente de sincronizar');
 		expect(text).toContain('Respaldo de Producción');
 		expect(text).toContain('faltan registros locales');
-		expect(text).not.toContain('--apply');
+		expect(text).toContain('pnpm prod:apply -- --schema --apply');
+		expect(text).toContain(
+			'pnpm invitation:release -- --slug <slug> --targets preview --apply',
+		);
+		expect(text).toContain('pnpm db:prod:backup:daily');
+		expect(text).toContain('propietario/TTY');
 		expect(text).not.toContain('Sin verificar');
 		expect(text.trimEnd().split('\n').length).toBeLessThanOrEqual(30);
 		expect(text.split('\n').every((line) => line.length <= 100)).toBe(true);
@@ -143,5 +154,45 @@ describe('canonical status summary', () => {
 		expect(formatCanonicalStatusView(view, { ...options, diagnostics: true })).toContain(
 			'MANAGED_DRIFT',
 		);
+	});
+});
+
+describe('actionable operator commands', () => {
+	it('never offers apply for blocked or unknown publication decisions', () => {
+		const view = buildCanonicalStatusViewFixture({
+			manualPatches: [],
+			promotions: [
+				promotion({ action: 'UNKNOWN', reasonCode: 'EVIDENCE_INCOMPLETE' }),
+				promotion({ slug: 'blocked', action: 'BLOCKED', reasonCode: 'MANAGED_DIVERGENCE' }),
+			],
+		});
+		const text = formatCanonicalStatusView(view, {
+			...options,
+			backupHealth: { ...backup, attention: false },
+		});
+		expect(text).not.toContain('--apply');
+		expect(text).toContain('Sin verificar');
+		expect(text).toContain('Bloqueado');
+	});
+
+	it('treats an isolated backup warning as an actionable item, not an all-clear', () => {
+		const view = buildCanonicalStatusViewFixture({ promotions: [], manualPatches: [] });
+		const text = formatCanonicalStatusView(view, options);
+		expect(text).toContain('1 grupos de atención');
+		expect(text).toContain('pnpm db:prod:backup:daily');
+		expect(text).not.toContain('Sin acciones pendientes');
+	});
+
+	it('keeps complete commands copyable even when an unusually long slug exceeds the text width', () => {
+		const slug = 'long-invitation-'.repeat(8);
+		const view = buildCanonicalStatusViewFixture({
+			promotions: [promotion({ slug })],
+			manualPatches: [],
+		});
+		const text = formatCanonicalStatusView(view, options);
+		expect(text.split('\n')).toContain(
+			`     pnpm invitation:release -- --slug ${slug} --targets production --dry-run`,
+		);
+		expect(text.split('\n')).toContain(`     pnpm prod:apply -- --slug ${slug} --apply`);
 	});
 });
