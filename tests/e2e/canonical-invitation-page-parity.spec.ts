@@ -263,7 +263,7 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 				};
 				const image = await page.screenshot(screenshotOptions);
 				if (shouldCompareVisualSnapshots(VISUAL_PARITY_MODE)) {
-					expect(image).toMatchSnapshot(snapshotName, {
+					expect(image).toMatchSnapshot(snapshotName.split('/'), {
 						maxDiffPixelRatio: 0.001,
 					});
 				}
