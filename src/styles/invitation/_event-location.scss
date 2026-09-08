@@ -355,6 +355,10 @@
 		gap: 0.9rem;
 	}
 
+	&__heading {
+		font-size: var(--location-intro-heading-size, 1.5rem);
+	}
+
 	&__locked-icon {
 		width: 3rem;
 		height: 3rem;
@@ -593,7 +597,7 @@
 
 	&__card-map-preview {
 		position: relative;
-		display: grid;
+		display: var(--location-map-preview-display, grid);
 		grid-template-columns: minmax(0, 1fr) auto;
 		align-items: stretch;
 		min-height: 7.5rem;

@@ -43,7 +43,8 @@ Three homes. Exclusive ownership. Do not collapse looks into one SCSS file per i
 
 ### Invitation profile
 
-- **Path / marker:** `invitation-profiles/{visualProfileId}.scss` (`visualProfileId` is required for every managed invitation)
+- **Path / marker:** `invitation-profiles/{visualProfileId}.scss` (`visualProfileId` is required for
+  every managed invitation)
 - **Owns:** Client palette token remap and rhythm/intersection overrides that differ from the
   preset.
 - **Must not:** Re-declare section layout; set `font-family` / `background` directly on section
@@ -56,15 +57,19 @@ contract.
 
 The current migration is not yet ownership-clean. Existing files under
 `src/styles/invitation-profiles/**` and `src/styles/invitation-sections-by-preset/**` still contain
-historical section selectors and layout rules. These rules are tracked as temporary exceptions,
-not as valid architecture: no new identity- or preset-specific structural selectors may be added,
-and an existing rule may be removed or moved only with the CSS visual-parity gate. The exception
-ends after every affected invitation has a reviewed before/after capture and the rule is owned by a
-section base, a registered semantic variant, or a token-only profile.
+historical section selectors and layout rules. These rules are tracked as temporary exceptions, not
+as valid architecture: no new identity- or preset-specific structural selectors may be added, and an
+existing rule may be removed or moved only with the CSS visual-parity gate. The exception ends after
+every affected invitation has a reviewed before/after capture and the rule is owned by a section
+base, a registered semantic variant, or a token-only profile.
 
 ### Gifts flatten
 
-Gifts section styling is the flattened section-level variable contract in `src/styles/invitation/_gifts.scss`. Theme-section Gifts partials under `src/styles/themes/sections/gifts/` are not used. Other sections that retain real structural, layout, content, or behavior variants must not be flattened through the Gifts pattern without explicit parity evidence.
+Gifts section styling is the flattened section-level variable contract in
+`src/styles/invitation/_gifts.scss`. Theme-section Gifts partials under
+`src/styles/themes/sections/gifts/` are not used. Other sections that retain real structural,
+layout, content, or behavior variants must not be flattened through the Gifts pattern without
+explicit parity evidence.
 
 ### Explicit non-goals
 
@@ -263,8 +268,8 @@ invitation stylesheet).
 Controlled exceptions for real layout, pseudo-element, responsive, or decorative behavior belong
 under `src/styles/themes/sections/<section>/` with a semantic `data-variant`, not in presets or
 profiles. Countdown skin variants (`editorial-folio`, `magazine-folio`, …) are the reference for
-behavior-named skins; preset-named section modules under `invitation-sections-by-preset/` are retired
-delivery and must thin toward tokens + semantic variants.
+behavior-named skins; preset-named section modules under `invitation-sections-by-preset/` are
+retired delivery and must thin toward tokens + semantic variants.
 
 Delete or avoid a section theme file when it is empty, only repeats base defaults, exists only for
 symmetry, or contains rules that can be represented as preset tokens without section DOM knowledge.
@@ -282,9 +287,9 @@ Canonical TypeScript and section renderers must remain invitation-agnostic: they
 section contracts and semantic roles, not invitation slugs, event types, profile identities, or
 invitation-specific CSS custom-property names. No identity-specific compatibility branch may execute
 in the canonical schema, adapter, render-plan, or section-rendering path. Historical inputs may be
-handled only at a named migration or audit boundary with a documented consumer and removal condition.
-Do not treat high fan-in alone as a leak when the module is an explicit composition root (for example,
-intersection profiles).
+handled only at a named migration or audit boundary with a documented consumer and removal
+condition. Do not treat high fan-in alone as a leak when the module is an explicit composition root
+(for example, intersection profiles).
 
 ## Behavior-Named Section Variants
 
@@ -357,12 +362,15 @@ Profile LAYOUT deletions additionally require the CSS visual parity harness in
 
 ### Portrait letter composition
 
-`thankYou.variant=portrait-letter` explicitly selects the narrow arched portrait and display-font letter composition. `ThankYou.astro` reuses editorial markup; `_portrait-letter.scss` owns delivery and `_portrait-letter-layout.scss` provides the shared implementation for its retained published skin. The preset supplies atmosphere tokens only and cannot select this variant.
+`thankYou.variant=portrait-letter` explicitly selects the narrow arched portrait and display-font
+letter composition. `ThankYou.astro` reuses editorial markup; `_portrait-letter.scss` owns delivery
+and `_portrait-letter-layout.scss` provides the shared implementation for its retained published
+skin. The preset supplies atmosphere tokens only and cannot select this variant.
 
 The `thankYou` variant `portrait-keepsake` owns the narrow rectangular portrait, serif letter,
-responsive grid and signature geometry. It reuses the editorial DOM without selecting by theme
-or invitation identity. It requires an explicit image. Managed definitions need canonical
-publication before public database-backed routes use this variant.
+responsive grid and signature geometry. It reuses the editorial DOM without selecting by theme or
+invitation identity. It requires an explicit image. Managed definitions need canonical publication
+before public database-backed routes use this variant.
 
 ## Image delivery and surface defaults
 
@@ -405,3 +413,17 @@ original bytes of the delivery file, which may itself be a prepared derivative. 
 `optimized` references retain compatibility until publication replaces them. Bundled demos and
 unmanaged images retain their separate delivery policy; do not disable the adapter globally to
 change managed-media delivery.
+
+The narrative-stack gallery classifies orientation from explicit delivery dimensions before bundled
+metadata. Landscape chapters span its desktop grid; portrait chapters alternate, and captions remain
+visible. This behavior belongs to the canonical variant and does not branch on invitation identity.
+
+Envelope, venue preview, RSVP and portrait-letter surface hooks retain legacy defaults. Profiles can
+simplify paper finish, decorative map visibility, section height, ambient color and signature scale
+through public component tokens. Hiding a decorative venue preview must preserve independent map
+navigation.
+
+The framed-portrait and narrative-stack variants own photographic contours: an integrated portrait
+arch and softly rounded album corners. Native image proportions and full gallery viewer images are
+preserved. Quote and countdown expose optional surface-radius tokens with zero-radius defaults;
+profiles select the shape without duplicating section DOM styling.

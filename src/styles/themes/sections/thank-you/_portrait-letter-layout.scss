@@ -1,10 +1,14 @@
 @use '../../../global/mixins' as mixins;
 
 @mixin composition {
-	min-height: 100svh;
+	min-height: var(--thank-you-letter-min-height, 100svh);
 	align-items: stretch;
-	padding: clamp(7rem, 17svh, 9.5rem) clamp(1.15rem, 5vw, 4.5rem) clamp(6.25rem, 13svh, 9rem);
-	background:
+	padding: var(
+		--thank-you-letter-padding,
+		clamp(7rem, 17svh, 9.5rem) clamp(1.15rem, 5vw, 4.5rem) clamp(6.25rem, 13svh, 9rem)
+	);
+
+	--thank-you-letter-default-background:
 		linear-gradient(
 			180deg,
 			rgb(var(--color-warm-ivory-rgb, var(--color-surface-primary-rgb)) / 92%) 0%,
@@ -31,6 +35,8 @@
 			rgb(var(--color-blush-pink-rgb, var(--color-surface-secondary-rgb)) / 18%) 52%,
 			rgb(var(--color-antique-gold-rgb, var(--color-action-accent-rgb)) / 16%) 100%
 		);
+
+	background: var(--thank-you-letter-background, var(--thank-you-letter-default-background));
 	color: var(--color-text-primary);
 
 	&::before {
@@ -39,6 +45,7 @@
 	}
 
 	&::after {
+		opacity: var(--thank-you-letter-ambient-opacity, 100%);
 		content: '';
 		position: absolute;
 		inset: auto 0 0;
@@ -62,6 +69,7 @@
 	}
 
 	.thank-you-editorial__ambient {
+		opacity: var(--thank-you-letter-ambient-opacity, 100%);
 		position: absolute;
 		inset: -8% -8% -10%;
 		z-index: -1;
@@ -150,7 +158,10 @@
 		border-radius: 0;
 		object-fit: cover;
 		object-position: var(--thank-you-focal-point, var(--thank-you-image-position, center));
-		filter: saturate(1.03) contrast(1.04) brightness(0.92) sepia(0.05);
+		filter: var(
+			--thank-you-letter-image-filter,
+			saturate(1.03) contrast(1.04) brightness(0.92) sepia(0.05)
+		);
 		transform: scale(1.01);
 		transition:
 			transform var(--duration-premium) var(--ease-premium),
@@ -174,7 +185,7 @@
 	.thank-you-message {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: clamp(1.42rem, 6.2vw, 2.05rem);
+		font-size: var(--thank-you-letter-message-size, clamp(1.42rem, 6.2vw, 2.05rem));
 		font-weight: 400;
 		line-height: 1.48;
 		letter-spacing: 0;
@@ -222,7 +233,7 @@
 		margin: 0;
 		padding-block: 0.2em;
 		font-family: var(--font-calligraphy);
-		font-size: clamp(2.85rem, 13vw, 5.35rem);
+		font-size: var(--thank-you-letter-signature-size, clamp(2.85rem, 13vw, 5.35rem));
 		font-weight: 400;
 		line-height: 1.25;
 		letter-spacing: 0;
@@ -239,14 +250,17 @@
 	}
 
 	@include mixins.respond-to(lg) {
-		padding-block: clamp(5.5rem, 14svh, 8rem) clamp(6.25rem, 13svh, 9rem);
+		padding-block: var(
+			--thank-you-letter-padding-block,
+			clamp(5.5rem, 14svh, 8rem) clamp(6.25rem, 13svh, 9rem)
+		);
 		padding-inline: clamp(2.5rem, 6vw, 6rem);
 
 		.thank-you-editorial {
 			grid-template-columns: minmax(18rem, 0.78fr) minmax(24rem, 1fr);
 			align-items: center;
 			gap: clamp(3.5rem, 7vw, 7rem);
-			min-height: clamp(41rem, 82svh, 52rem);
+			min-height: var(--thank-you-letter-grid-min-height, clamp(41rem, 82svh, 52rem));
 		}
 
 		.thank-you-editorial__media {

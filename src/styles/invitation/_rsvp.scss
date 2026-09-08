@@ -15,7 +15,7 @@
 
 	display: grid;
 	place-items: center;
-	min-block-size: 100svh;
+	min-block-size: var(--rsvp-section-min-height, 100svh);
 
 	// prettier-ignore
 	padding-block: calc(var(--rsvp-section-padding-block) + var(--rsvp-header-offset) + var(--rsvp-player-clearance) + var(--rsvp-safe-area-bottom));
@@ -190,7 +190,7 @@
 	background-color: var(--color-glass-bg);
 	border: 1px solid var(--color-glass-border);
 	backdrop-filter: blur(var(--glass-blur, 12px));
-	box-shadow: var(--shadow-premium);
+	box-shadow: var(--rsvp-card-shadow, var(--shadow-premium));
 	color: var(--color-text-primary);
 
 	&__title {

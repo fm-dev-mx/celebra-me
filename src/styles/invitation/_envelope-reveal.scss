@@ -498,15 +498,15 @@
 	padding: 0;
 	color: color-mix(in srgb, var(--env-text-secondary) 78%, var(--env-accent));
 	font-family: var(--font-body);
-	font-size: 0.56rem;
+	font-size: var(--env-seal-hint-size, 0.56rem);
 	font-weight: 500;
-	letter-spacing: 0.32em;
+	letter-spacing: var(--env-open-label-spacing, 0.32em);
 	line-height: 1.3;
 	text-align: center;
 	text-transform: uppercase;
 	white-space: normal;
 	text-wrap: balance;
-	opacity: 58%;
+	opacity: var(--env-open-label-opacity, 58%);
 	pointer-events: none;
 }
 
@@ -647,7 +647,7 @@
 	}
 
 	.envelope-seal-hint {
-		font-size: 0.52rem;
+		font-size: var(--env-seal-hint-size, 0.52rem);
 		letter-spacing: 0.26em;
 	}
 }
