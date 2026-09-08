@@ -125,12 +125,14 @@ export function buildVisualVariantCases(): VisualVariantCase[] {
 
 export function buildVisualPageCases(): VisualPageCase[] {
 	return [
-		...listInvitationDefinitions().map((definition) => ({
-			kind: 'invitation' as const,
-			slug: definition.slug,
-			eventType: definition.eventType,
-			preset: definition.themeId,
-		})),
+		...listInvitationDefinitions()
+			.filter((definition) => definition.lifecycle === 'published')
+			.map((definition) => ({
+				kind: 'invitation' as const,
+				slug: definition.slug,
+				eventType: definition.eventType,
+				preset: definition.themeId,
+			})),
 		...discoverDemoCases(),
 	];
 }

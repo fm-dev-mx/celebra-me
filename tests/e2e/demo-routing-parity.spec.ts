@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Demo Routing Parity', () => {
+	test('keeps the in-progress Norma invitation unavailable publicly', async ({ request }) => {
+		const response = await request.get('/cumple/norma-margarita-hernandez-zabalsa');
+		expect(response.status()).toBe(404);
+		expect(response.headers()['cache-control']).toBe('no-store, private');
+	});
 	test('uses correctness-first caching for public content and private caching for invalid routes', async ({
 		request,
 	}) => {
