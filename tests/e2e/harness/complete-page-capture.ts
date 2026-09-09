@@ -103,7 +103,17 @@ export async function assertCompletePageImage(page: Page, image: Buffer): Promis
 }
 
 export async function captureCompletePage(page: Page): Promise<Buffer> {
-	const image = await page.screenshot({ fullPage: true, animations: 'disabled' });
+	const documentHeight = () =>
+		page.evaluate(() =>
+			Math.max(document.body.scrollHeight, document.documentElement.scrollHeight),
+		);
+	const before = await documentHeight();
+	let image = await page.screenshot({ fullPage: true, animations: 'disabled' });
+	// Screenshot preparation can settle motion or trigger responsive layout updates.
+	// Discard that image once if the document changed; an unstable retry still fails below.
+	if ((await documentHeight()) !== before) {
+		image = await page.screenshot({ fullPage: true, animations: 'disabled' });
+	}
 	await assertCompletePageImage(page, image);
 	return image;
 }

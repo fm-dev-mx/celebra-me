@@ -25,6 +25,27 @@ for (const slug of ['romina-rios-chaparro', 'valentina-hernandez', 'ximena-meza-
 			await page.waitForTimeout(500);
 			expect(await page.locator('body').evaluate(auditCriticalLayout)).toEqual([]);
 			if (slug === 'ximena-meza-trasvina' && viewport.width < 860) {
+				const textSpacing = await page
+					.locator('.invitation-hero__title')
+					.evaluate((title) => {
+						const style = getComputedStyle(title);
+						const context = document.createElement('canvas').getContext('2d')!;
+						context.font = [
+							style.fontStyle,
+							style.fontWeight,
+							style.fontSize,
+							style.fontFamily,
+						].join(' ');
+						const metrics = context.measureText(
+							(title.textContent ?? '').toUpperCase(),
+						);
+						return {
+							lineHeight: parseFloat(style.lineHeight),
+							inkHeight:
+								metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent,
+						};
+					});
+				expect(textSpacing.lineHeight).toBeGreaterThan(textSpacing.inkHeight);
 				const ratios = await page
 					.locator('.invitation-hero__details p')
 					.evaluateAll((elements) => {
@@ -128,3 +149,46 @@ for (const variant of ['split-cover', 'editorial-cover', 'standard']) {
 		});
 	}
 }
+
+test('complete-page capture settles a growing footer before measuring the image', async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.setContent(
+		'<style>body{margin:0}section{height:1800px}footer{height:120px;background:#c23}</style><section data-section-id="hero">Inicio</section><footer>Fin</footer>',
+	);
+	await prepareCompletePage(page);
+	await page.locator('footer').evaluate((footer) =>
+		footer.animate([{ height: '120px' }, { height: '240px' }], {
+			duration: 30000,
+			fill: 'forwards',
+		}),
+	);
+	const image = await captureCompletePage(page);
+	expect((await sharp(image).metadata()).height).toBe(2040);
+	const footerPixel = await sharp(image)
+		.extract({ left: 195, top: 2020, width: 1, height: 1 })
+		.removeAlpha()
+		.raw()
+		.toBuffer();
+	expect([...footerPixel]).toEqual([204, 34, 51]);
+});
+
+test('complete-page capture rejects a document that keeps growing during capture', async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.setContent('<style>body{margin:0}footer{height:1800px}</style><footer>Fin</footer>');
+	const screenshot = page.screenshot.bind(page);
+	let attempts = 0;
+	page.screenshot = async (options) => {
+		attempts++;
+		const image = await screenshot(options);
+		await page.locator('footer').evaluate((footer) => {
+			footer.style.height = footer.getBoundingClientRect().height + 100 + 'px';
+		});
+		return image;
+	};
+	await expect(captureCompletePage(page)).rejects.toThrow('Truncated complete-page capture');
+	expect(attempts).toBe(2);
+});
