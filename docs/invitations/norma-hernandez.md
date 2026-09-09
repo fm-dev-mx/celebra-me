@@ -4,7 +4,7 @@
 
 | Parameter              | Value                               |
 | ---------------------- | ----------------------------------- |
-| **Slug**               | `norma-margarita-hernandez-zabalsa` |
+| **Slug**               | `norma-hernandez`                   |
 | **Host Login Alias**   | `norma_hernandez`                   |
 | **Event Type**         | `cumple`                            |
 | **Preparation Status** | `READY_WITH_PLACEHOLDERS`           |
@@ -27,7 +27,7 @@ are provisional until human acceptance; this record does not grant environment r
 
 | field                 | value                                                                   | classification | source        | notes                                                                                  |
 | --------------------- | ----------------------------------------------------------------------- | -------------- | ------------- | -------------------------------------------------------------------------------------- |
-| slug                  | norma-margarita-hernandez-zabalsa                                       | verified       | approved-plan | Orthography confirmed by supplied material and owner plan                              |
+| slug                  | norma-hernandez                                                         | verified       | approved-plan | Orthography confirmed by supplied material and owner plan                              |
 | celebrantName         | Norma Margarita Hernández Zabalsa                                       | verified       | approved-plan | Display name: Norma Margarita                                                          |
 | eventLabel            | 65 años                                                                 | verified       | client-packet | Birthday                                                                               |
 | eventDate             | 2026-11-14                                                              | verified       | client-packet | Saturday                                                                               |
@@ -51,7 +51,7 @@ are provisional until human acceptance; this record does not grant environment r
 | decision                 | value                                                                 | classification |
 | ------------------------ | --------------------------------------------------------------------- | -------------- |
 | Owner-selected base demo | demo-cumple-luxury-hacienda                                           | verified       |
-| Visual profile           | norma-margarita-hernandez-zabalsa                                     | verified       |
+| Visual profile           | norma-hernandez                                                       | verified       |
 | Hero                     | framed-portrait, full childhood photograph and separate text          | verified       |
 | Album                    | narrative-stack, four ordered photographs with permanent captions     | verified       |
 | Closing                  | portrait-letter, blue dress composite with original portrait fallback | verified       |
@@ -135,9 +135,9 @@ reused for social sharing, without adding a repeated narrative chapter. All othe
 photographic roles have separate sources.
 
 Review the local presentation at
-`/test/variant?full=1&presentation=1&eventType=cumple&slug=norma-margarita-hernandez-zabalsa&envelope=1`.
+`/test/variant?full=1&presentation=1&eventType=cumple&slug=norma-hernandez&envelope=1`.
 This is an existing dev-only harness extended with opt-in envelope presentation; it is absent from
-production builds. The intended public route remains `/cumple/norma-margarita-hernandez-zabalsa`.
+production builds. The intended public route remains `/cumple/norma-hernandez`.
 
 ## Validation and History
 
@@ -267,3 +267,85 @@ Validation: `pnpm validate:changed` passed (70 related suites / 909 tests plus 2
 focused browser checks and scoped style validation. No TypeScript or runtime logic changed in this
 iteration, so type checking and full CI were not repeated. Existing runtime warnings and historical
 release gates above remain applicable. This is a local review only, not publication readiness.
+
+## Readability refinement and second client audit — September 8, 2026
+
+Current display identity: **Norma Hernandez**, monogram **NH**, explicitly requested by the owner.
+Slug, managed UUID, asset paths and host login alias are unchanged. Earlier display names and NM
+references above are historical.
+
+The audit compared the complete WhatsApp text, 25 existing local audio transcriptions and the
+September 5 handwritten draft (00000161). Transcriptions are imperfect evidence; the written draft
+supports the three-line life caption. The owner selected the corrected English wording “Smile at
+life”. Private correspondence and biography remain outside public content.
+
+| Request                              | Evidence                                       | Implementation                                                          | Pending                |
+| ------------------------------------ | ---------------------------------------------- | ----------------------------------------------------------------------- | ---------------------- |
+| Envelope and childhood first         | September 4 text; audio 00000176               | Folded envelope, external instruction, childhood hero                   | Visual acceptance      |
+| Six ordered photos and captions      | September 5 written draft                      | Childhood, children, grandchildren, family, life, closing               | Photo acceptance       |
+| Remove indicated adults              | September 3 text; audios 00000185 and 00000190 | Existing candidate derivatives retained                                 | Photo acceptance       |
+| Patio background and three phrases   | Audios 00000192–00000193; written draft        | Three HTML lines on photo; enlarged text flows below                    | Visual acceptance      |
+| Blue dress closing, natural identity | September 5 text; audios 00000173 and 00000194 | Existing arched candidate and closing thanks                            | Photo acceptance       |
+| Final song: A mi manera              | September 5, 18:47 text                        | No arbitrary recording; earlier song links superseded                   | Exact recording/file   |
+| Event details and RSVP               | September 2 text; audio 00000012               | Dates, times, formal attire and personalized API confirmation preserved | Real guest allocations |
+
+Canonical SCSS owns structure and the Norma profile owns tokens. No new public fields, variants,
+APIs or migrations. Only the life photo uses the existing feature layout role. Source masters and
+exports are unchanged. Baseline real-route captures cover 360, 390, 440, 768 and 1440 px under
+output/playwright/norma-v5-before-*.png.
+
+Current visual candidate: `norma-v5-c046c79d6ad3`; source hashes are recorded in the private
+`layout-v5.json`. Before/after real-route screenshots use
+`output/playwright/norma-v5-{before,after}-{360,390,440,768,1440}.png`. Envelope, enlarged-text and
+CSS-zoom captures are stored alongside them. CSS zoom is not certification of native browser menu
+zoom. Human visual and photographic acceptance remain PENDING.
+
+Validation: `pnpm type-check` passed with zero diagnostics; preparation validation passed. Eleven
+Norma browser scenarios, seven neutral/shared-variant scenarios and four shared-envelope interaction
+scenarios passed. The enlarged-caption test now waits for image decoding and fonts before comparing
+geometry; the final Norma rerun passed. `pnpm validate:changed` passed 71 related suites / 911 tests
+plus 24 corpus tests before the last scoped style adjustments; final validation is recorded in the
+task handoff. Full CI was not run for this local visual iteration, and the existing runtime-version
+warning remains.
+
+The authorized managed lifecycle applied the revised content in Local and Preview as public version
+v2. No photograph uploads or deletions were needed. Post-apply semantic content parity passed, and
+the real Local route returned HTTP 200 with the new name. This content apply does not deploy the
+uncommitted SCSS/Astro changes to the hosted Preview application. No Production operation or Git
+write was performed.
+
+
+## Visual review v6 — 2026-09-08
+
+Candidate: norma-v6-20260908. Human visual and photographic acceptance remains pending.
+
+- Envelope: clean lower pocket; triangular upper flap and NH seal retained.
+- Hero: viewport-aware portrait height, full image, compact spacing; venue and time remain in Location.
+- Quote: 26–32 px, weight 500, 1.5 line height; decorative dividers removed.
+- Album: alternating placement, rose backing for grandchildren, ivory family caption surface; original images preserved.
+- Patio: the latest explicit user instruction supersedes the earlier three-line copy. Only “Smile at life” remains, inside the lower ground area with a dark contrast transition. Enlarged text reflows below the image when needed.
+- Direct URL simulation: only Norma in Local and Preview, without any invite parameter. “Familia de ejemplo”, two places, no API writes; reload resets the simulated response. Valid personalized links keep the real flow. Empty or invalid invite parameters never enable simulation.
+- Editorial-light tonal arc retained: hero to quote Bridge, quote to album Neutral; album background variation is internal to narrative-stack; subsequent section cadence unchanged.
+
+Evidence: output/playwright/norma-v6-{360,390,440,768,1440}.png; dedicated norma-v6-hero.png, norma-v6-quote.png, norma-v6-patio.png and norma-v6-envelope.png. Prior v5 captures remain available for comparison.
+
+Verification: 11 visual/accessibility Norma tests and 4 real-route simulation/exclusion tests passed. Astro check: 1,725 files with zero diagnostics; native TypeScript check passed. validate:changed passed with 103 suites / 1,351 tests and 24 render-corpus cases. The temporary harness runtime had an outdated Vite dependency during the first simulation run; the real local runtime passed both confirmation and declination without API writes.
+
+Managed content was applied to Local and Preview as public v3; semantic parity passed, with no Storage changes. This is not a deployment of the visual/runtime code to hosted Preview. Production was not changed. Live personalized guest writes were not performed; the existing real RSVP flow is preserved. Exact “A mi manera” recording, human acceptance, native browser-menu zoom certification and hosted code deployment remain pending.
+
+Shared regression follow-up: 16 envelope/neutral-variant browser tests passed (31 distinct browser cases including Norma). pnpm type-check passed. Full CI was not run for this local review. Node 26.7.0 / pnpm 11.19.0 differ from the declared supported toolchain; the existing toolchain warning remains.
+
+
+## Browser refinement v7 — 2026-09-08
+
+The user requested the grandchildren dedication entirely inside its rose backing, a single-line italic “Smile at life”, clearer venue hierarchy, smaller section navigation with an animated chevron, and senior-readable pass contrast. Implemented in canonical SCSS and Norma profile tokens without content or RSVP changes. Pass copy uses opaque ivory on solid plum (10.93:1 measured contrast); count uses the inverse pair. Navigation is 16 px and only its chevron moves, disabled for reduced motion. Verified at 360, 390, 430, 768 and 1440 px, including 200% text without overflow. Review images: output/playwright/norma-refine-grandchildren-430.png, norma-refine-life-430.png, norma-refine-location-430.png, norma-refine-navigation-430.png and norma-refine-access-430.png. This remains a local code review, pending human visual acceptance and hosted code deployment.
+
+
+## Photo and pass refinement v8 — 2026-09-08
+
+Latest user feedback removes the patio gradient entirely. “Smile at life” is dark italic HTML directly over the original photograph, with a subpixel light edge around the letterforms for variable stone texture. No raster edits or image filters. The pass now uses a raised ivory guest/quota panel between plum header and footer, a larger sentence-case title and quota, and no small quota box. High-contrast ivory/plum pair remains intact. Browser checks at 360, 430, 768 and 1440 px plus 200% text found no overflow. Local review screenshots: output/playwright/norma-paper-life-430.png and output/playwright/norma-paper-pass-430.png. Human aesthetic acceptance and hosted code deployment remain pending.
+
+
+## Final polish v9 — 2026-09-08
+
+Reviewed the real invitation at mobile and desktop sizes. Kept the palette, asymmetry, photos, copy and section order. Reduced heavy header/closing shadows, tightened the gap before the pass, increased narrative type weight, removed quote text glow and excessive signature tracking, and refined the RSVP title, border radius and field contrast. Venue headings now wrap safely at 200% text, and address copy targets measure 44 by 44 px. Real-route confirmation/declination simulations and invalid/empty invite exclusion: four browser tests passed. Five viewport checks (360, 390, 430, 768, 1440) retained full-height hero without normal-scale overflow. Evidence: output/playwright/norma-final-before-mobile.png, norma-final-before-desktop.png, norma-final-after-mobile.png, norma-final-after-desktop.png and norma-final-rsvp-after.png. Local review only; human visual acceptance and hosted deployment remain outstanding.
