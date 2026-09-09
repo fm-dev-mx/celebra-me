@@ -53,7 +53,7 @@
 	.envelope-base,
 	.envelope-pocket,
 	.envelope-flap {
-		background: var(
+		--env-default-paper-surface: var(
 			--env-paper-surface,
 			linear-gradient(
 				138deg,
@@ -63,10 +63,35 @@
 			),
 			var(--env-paper-bg)
 		);
+
 		border-color: var(--env-paper-border);
 	}
 
+	.envelope-base {
+		background: var(--env-base-surface, var(--env-default-paper-surface));
+	}
+
+	.envelope-pocket {
+		background: var(--env-pocket-surface, var(--env-default-paper-surface));
+	}
+
 	.envelope-flap {
+		background: var(--env-flap-surface, var(--env-default-paper-surface));
+		clip-path: var(
+			--env-flap-shape,
+			polygon(
+				0 0,
+				100% 0,
+				98% 10%,
+				88% 68%,
+				70% 88%,
+				55% 98%,
+				45% 98%,
+				30% 88%,
+				12% 68%,
+				2% 10%
+			)
+		);
 		filter: var(--env-flap-shadow, drop-shadow(0 10px 24px hsl(25deg 40% 15% / 35%)));
 	}
 
@@ -79,10 +104,14 @@
 	}
 
 	.envelope-details {
-		font-size: 0.68rem;
-		letter-spacing: 0.18em;
+		font-family: var(--env-details-font, var(--font-body));
+		font-weight: var(--env-details-weight, 400);
+		text-transform: var(--env-details-transform, uppercase);
+		font-size: var(--env-details-size, 0.68rem);
+		margin-block: var(--env-details-margin, 1em);
+		letter-spacing: var(--env-details-spacing, 0.18em);
 		color: var(--env-text-secondary);
-		opacity: 75%;
+		opacity: var(--env-details-opacity, 75%);
 	}
 
 	.envelope-manifest-label {
@@ -98,13 +127,14 @@
 		color: var(--env-text-secondary);
 
 		span {
-			font-size: 0.68rem;
+			font-size: var(--env-details-size, 0.68rem);
+			margin-block: var(--env-details-margin, 1em);
 			letter-spacing: 0.2em;
 		}
 	}
 
 	.envelope-external-instruction__button {
-		color: var(--env-text-secondary);
+		color: var(--env-instruction-color, var(--env-text-secondary));
 		opacity: var(--env-open-label-opacity, 85%);
 		text-shadow: 0 1px 2px hsl(30deg 30% 60% / 25%);
 	}

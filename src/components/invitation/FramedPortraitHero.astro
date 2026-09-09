@@ -9,14 +9,12 @@ interface Props {
 	label?: string;
 	nickname?: string;
 	date: string;
-	time?: string;
-	venueName?: string;
 	backgroundImage: ImageMetadata | ImageAsset;
 	scrollLabel?: string;
 	highPriority?: boolean;
 }
 
-const { name, secondaryName, label, nickname, date, time, venueName, backgroundImage, scrollLabel = 'Descubra mi historia', highPriority = true } = Astro.props;
+const { name, secondaryName, label, nickname, date, backgroundImage, scrollLabel = 'Descubra mi historia', highPriority = true } = Astro.props;
 const formattedDate = new Date(date).toLocaleDateString('es-MX', {
 	day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
 });
@@ -37,10 +35,8 @@ const height = delivery?.height ?? ('height' in backgroundImage ? backgroundImag
 			{nickname && <p class="framed-portrait-hero__introduction">{nickname}</p>}
 			<div class="framed-portrait-hero__details">
 				<p>{formattedDate}</p>
-				{time && <p>{time}</p>}
-				{venueName && <p>{venueName}</p>}
 			</div>
-			<p class="framed-portrait-hero__invitation">{scrollLabel}<span aria-hidden="true"> ↓</span></p>
 		</div>
 	</div>
+	<p class="framed-portrait-hero__invitation">{scrollLabel}<span aria-hidden="true"> ↓</span></p>
 </section>

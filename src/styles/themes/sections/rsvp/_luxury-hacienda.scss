@@ -39,12 +39,8 @@
 	--rsvp-button-filter-hover: saturate(1.08);
 	--rsvp-error-field: var(--color-state-danger);
 	--rsvp-error-text: var(--color-state-danger-text);
-
-	.rsvp__title {
-		font-family: var(--font-display);
-		color: var(--color-text-primary);
-		letter-spacing: 0.07em;
-	}
+	--rsvp-title-color: var(--color-text-primary);
+	--rsvp-title-letter-spacing: 0.07em;
 
 	.rsvp__button {
 		background: var(--color-action-primary);

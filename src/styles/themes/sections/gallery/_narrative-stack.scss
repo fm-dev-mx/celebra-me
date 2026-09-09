@@ -4,7 +4,7 @@
 	--gallery-container-max-width: 68rem;
 	--gallery-caption-font: var(--font-display);
 	--gallery-caption-color: var(--color-text-primary);
-	--gallery-caption-size: clamp(1.125rem, 1.8vw, 1.25rem);
+	--gallery-caption-size: clamp(1.375rem, 2.5vw, 1.625rem);
 	--gallery-caption-style: normal;
 	--gallery-caption-letter-spacing: 0;
 	--gallery-caption-bg: transparent;
@@ -28,7 +28,7 @@
 		font-size: clamp(2rem, 4vw, 2.75rem);
 		font-style: normal;
 		line-height: 1;
-		font-weight: 400;
+		font-weight: 500;
 		text-transform: none;
 		letter-spacing: -0.02em;
 	}
@@ -132,11 +132,77 @@
 	}
 
 	.gallery-grid__caption {
+		font-weight: 500;
 		max-width: 34ch;
 		margin-inline: auto;
-		line-height: 1.5;
+		line-height: 1.6;
 		text-transform: none;
 		text-wrap: pretty;
+	}
+
+	.gallery-grid__item:nth-child(2):not([data-layout-role='feature'])::before {
+		content: '';
+		position: absolute;
+		z-index: -1;
+		inset: 12% -1rem -1.5rem 0;
+		background: var(--color-surface-secondary);
+		border-radius: 6rem 0 0;
+	}
+
+	.gallery-grid__item[data-image-orientation='landscape'] .gallery-grid__overlay {
+		background: var(--color-surface-primary);
+		padding: 1.5rem;
+		margin-top: -0.75rem;
+	}
+
+	@media (width >= 48rem) {
+		.gallery-grid__item:nth-child(odd):not([data-layout-role='feature'])
+			.gallery-grid__overlay {
+			transform: translateY(2rem);
+		}
+	}
+
+	.gallery-grid .gallery-grid__item[data-layout-role='feature'] {
+		container-type: inline-size;
+		width: min(100%, 30rem);
+		margin-inline: auto;
+		padding: 0;
+		grid-template-columns: minmax(0, 1fr);
+
+		img {
+			grid-area: 1 / 1;
+			max-width: none;
+		}
+
+		.gallery-grid__overlay {
+			grid-area: 2 / 1;
+			text-align: center;
+		}
+	}
+
+	.gallery-grid__item[data-layout-role='feature'] .gallery-grid__caption-line {
+		display: block;
+		max-width: none;
+		margin-inline: auto;
+		font: italic 600 clamp(2.5rem, 10cqw, 3.5rem) / 1.1 var(--font-display);
+	}
+
+	@container (min-width: 18rem) {
+		.gallery-grid__item[data-layout-role='feature'] .gallery-grid__overlay {
+			position: absolute;
+			inset: auto 0 0;
+			padding: 1.5rem 0.75rem 0.75rem;
+
+			--gallery-caption-color: rgb(40 26 32);
+
+			border-radius: 0 0 1.5rem 1.5rem;
+			background: transparent;
+			text-shadow:
+				0.6px 0 0.6px rgb(250 246 240 / 95%),
+				-0.6px 0 0.6px rgb(250 246 240 / 95%),
+				0 0.6px 0.6px rgb(250 246 240 / 95%),
+				0 -0.6px 0.6px rgb(250 246 240 / 95%);
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {

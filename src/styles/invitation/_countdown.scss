@@ -56,9 +56,9 @@
 
 	.event-date {
 		font-family: var(--font-display);
-		font-size: 0.85rem;
+		font-size: var(--countdown-date-size, 0.85rem);
 		text-transform: uppercase;
-		letter-spacing: 0.2em;
+		letter-spacing: var(--countdown-date-spacing, 0.2em);
 		color: var(--color-text-primary);
 		text-align: center;
 	}

@@ -242,7 +242,7 @@
 	}
 
 	40% {
-		transform: translateY(8px);
+		transform: translateY(var(--hero-scroll-distance, 8px));
 	}
 }
 

@@ -312,7 +312,7 @@
 .envelope-zone--identity {
 	grid-area: identity;
 	gap: 0.4rem;
-	padding-top: 0.75rem;
+	padding-top: var(--env-identity-padding, 0.75rem);
 }
 
 .envelope-name {
@@ -491,6 +491,7 @@
 
 // Discrete editorial open cue — positioned in-flow below visual disc for accurate bounding box.
 .envelope-seal-hint {
+	display: var(--env-seal-hint-display, block);
 	position: relative;
 	z-index: 1;
 	max-width: min(14rem, 70cqw);
@@ -638,7 +639,7 @@
 
 	.envelope-zone--identity {
 		gap: 0.35rem;
-		padding-top: 0.5rem;
+		padding-top: var(--env-identity-padding, 0.5rem);
 	}
 
 	.envelope-external-instruction {
@@ -647,6 +648,7 @@
 	}
 
 	.envelope-seal-hint {
+		display: var(--env-seal-hint-display, block);
 		font-size: var(--env-seal-hint-size, 0.52rem);
 		letter-spacing: 0.26em;
 	}
@@ -712,6 +714,7 @@
 	}
 
 	.envelope-seal-hint {
+		display: var(--env-seal-hint-display, block);
 		opacity: 72%;
 	}
 }
@@ -805,6 +808,7 @@
 	}
 
 	.envelope-seal-hint {
+		display: var(--env-seal-hint-display, block);
 		opacity: 52%;
 	}
 

@@ -163,6 +163,7 @@
 	--rsvp-title-font-style: normal;
 	--rsvp-title-font-weight: inherit;
 	--rsvp-title-letter-spacing: 0;
+	--rsvp-title-transform: none;
 
 	/* Spacing variables — overridable per state/viewport */
 	--rsvp-card-padding-block: 1.75rem;
@@ -201,6 +202,7 @@
 		font-weight: var(--rsvp-title-font-weight);
 		line-height: var(--rsvp-title-line-height);
 		letter-spacing: var(--rsvp-title-letter-spacing);
+		text-transform: var(--rsvp-title-transform);
 		color: var(--rsvp-title-color);
 		text-align: center;
 	}
@@ -214,7 +216,7 @@
 		font-family: var(--font-label);
 		font-size: 0.7rem;
 		font-weight: 500;
-		letter-spacing: 0.3em;
+		letter-spacing: var(--rsvp-eyebrow-tracking, 0.3em);
 		text-transform: uppercase;
 		color: var(--color-action-accent);
 		margin-bottom: 0.35rem;

@@ -140,8 +140,8 @@
 		font-family: var(--font-body-hacienda);
 		color: var(--countdown-label-color, rgb(238 220 181 / 66%));
 		opacity: 100%;
-		letter-spacing: 0.24em;
-		font-size: 0.68rem;
+		letter-spacing: var(--countdown-label-spacing, 0.24em);
+		font-size: var(--countdown-label-size, 0.68rem);
 		text-transform: uppercase;
 		margin-top: 1rem;
 		z-index: 1;
@@ -151,7 +151,7 @@
 	.countdown-invitation-text {
 		font-family: var(--font-body-hacienda);
 		color: var(--countdown-footer-color, rgb(241 219 177 / 74%));
-		font-size: clamp(1rem, 2.3vw, 1.28rem);
+		font-size: var(--countdown-footer-size, clamp(1rem, 2.3vw, 1.28rem));
 		line-height: 1.6;
 		max-width: 36rem;
 		margin: var(--countdown-footer-gap, clamp(3.4rem, 7vw, 4.8rem)) auto 0;
