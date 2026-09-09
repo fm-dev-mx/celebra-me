@@ -1,10 +1,7 @@
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import type { InvitationRenderPlanItem } from '@/lib/invitation/render-plan';
 import type { ContentSectionKey } from '@/lib/theme/theme-contract';
-import type {
-	InvitationRevealRecipe,
-	SectionIntersectionFamily,
-} from '@/lib/theme/theme-contract';
+import type { InvitationRevealRecipe, SectionIntersectionFamily } from '@/lib/theme/theme-contract';
 import type { PersonalizedAccessVariant } from '@/lib/invitation/section-variants';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 

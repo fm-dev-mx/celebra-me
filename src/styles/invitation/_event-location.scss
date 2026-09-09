@@ -355,6 +355,33 @@
 		gap: 0.9rem;
 	}
 
+	&__shared-date {
+		display: var(--location-shared-date-display, none);
+		text-align: center;
+		font: 500 1.125rem / 1.6 var(--font-body);
+		margin: 1.5rem auto 2.5rem;
+	}
+
+	&__heading,
+	&__card-title {
+		overflow-wrap: anywhere;
+	}
+
+	&__intro {
+		text-align: center;
+		max-width: 44rem;
+		margin-inline: auto;
+	}
+
+	&__lede {
+		font-size: var(--location-intro-text-size, 1rem);
+		line-height: 1.6;
+	}
+
+	&__eyebrow {
+		font-size: var(--location-eyebrow-size, 1rem);
+	}
+
 	&__heading {
 		font-size: var(--location-intro-heading-size, 1.5rem);
 	}
@@ -420,6 +447,9 @@
 
 	&__card-wrapper {
 		width: var(--location-card-wrapper-width);
+		padding: var(--location-wrapper-padding, 0);
+		border: var(--location-wrapper-border, 0);
+		border-radius: var(--location-wrapper-radius, 0);
 		max-width: var(--location-card-max-width);
 		display: flex;
 		flex-direction: column;
@@ -434,6 +464,9 @@
 	}
 
 	&__card-title {
+		width: var(--location-title-width, auto);
+		padding-inline: var(--location-title-inset, 0);
+		text-align: var(--location-card-text-align, center);
 		font-family: var(--location-title-font-family);
 		font-size: var(--location-title-font-size);
 		color: var(--location-title-color);
@@ -712,7 +745,7 @@
 	/* Content */
 	&__card-content {
 		padding: var(--location-content-padding);
-		text-align: center;
+		text-align: var(--location-card-text-align, center);
 		display: flex;
 		flex-direction: column;
 		flex-grow: 1;
@@ -869,12 +902,13 @@
 		margin-top: var(--location-nav-buttons-margin-top);
 
 		@include mixins.respond-to(xs) {
-			flex-direction: row;
+			flex-direction: var(--location-nav-direction, row);
 		}
 	}
 
 	/* CTA Buttons */
 	&__nav-button {
+		min-height: 44px;
 		flex: 1;
 		display: flex;
 		align-items: center;

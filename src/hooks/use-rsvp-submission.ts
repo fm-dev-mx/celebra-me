@@ -187,12 +187,6 @@ export function useRsvpSubmission({
 			setSubmitStatus('loading');
 
 			try {
-				if (isDemoPreview) {
-					await new Promise((resolve) => setTimeout(resolve, 800));
-					setSubmitStatus('success');
-					return;
-				}
-
 				const validationErrors = validate();
 				const errorKeys = Object.keys(validationErrors);
 
@@ -230,6 +224,12 @@ export function useRsvpSubmission({
 						}
 					}
 
+					return;
+				}
+
+				if (isDemoPreview) {
+					await new Promise((resolve) => setTimeout(resolve, 800));
+					setSubmitStatus('success');
 					return;
 				}
 

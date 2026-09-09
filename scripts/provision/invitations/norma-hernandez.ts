@@ -5,9 +5,9 @@ import {
 } from './invitation-definition.ts';
 
 export const NORMA_EVENT = {
-	slug: 'norma-margarita-hernandez-zabalsa',
+	slug: 'norma-hernandez',
 	eventType: 'cumple',
-	title: '65 años de Norma Margarita Hernández Zabalsa',
+	title: '65 años de Norma Hernandez',
 	baseDemoId: 'demo-cumple-luxury-hacienda',
 	themeId: 'luxury-hacienda',
 	localDateTime: '2026-11-14T17:00',
@@ -24,7 +24,7 @@ export const NORMA_COPY = {
 	grandchildren:
 		'A mis hermosos peques, que dan brillo a mi existencia cada domingo y dejan la casa de la Yaya patas para arriba: gracias, gracias, gracias.',
 	family: 'El tiempo sigue su camino, dejando huellas de amor, felicidad, paz y una inmensa alegría en esta gran familia que Dios me ha regalado. Por eso y tanto más, gracias, Dios.',
-	life: 'Sonría a la vida. La vida es bella.',
+	life: 'Smile at life',
 	closing:
 		'Gracias por acompañarnos en este día tan especial para mí y mi familia. Su presencia hará de esta noche un momento inolvidable.',
 } as const;
@@ -113,7 +113,7 @@ export function buildNormaPublishedContent(
 		visualProfileId: NORMA_EVENT.slug,
 		title: NORMA_EVENT.title,
 		description:
-			'Acompáñenos a celebrar los 65 años de Norma Margarita Hernández Zabalsa el 14 de noviembre de 2026 en Culiacán.',
+			'Acompáñenos a celebrar los 65 años de Norma Hernandez el 14 de noviembre de 2026 en Culiacán.',
 		theme: { preset: NORMA_EVENT.themeId },
 		eventTiming: {
 			localDateTime: NORMA_EVENT.localDateTime,
@@ -132,7 +132,7 @@ export function buildNormaPublishedContent(
 		composition: { intersections: {} },
 		hero: {
 			variant: 'framed-portrait',
-			name: 'Norma Margarita',
+			name: 'Norma Hernandez',
 			label: '65 años',
 			nickname: 'Una vida, tantos motivos para agradecer.',
 			date: NORMA_EVENT.heroDate,
@@ -142,15 +142,15 @@ export function buildNormaPublishedContent(
 		envelope: {
 			variant: 'luxury-hacienda',
 			disabled: false,
-			envelopeName: 'Norma Margarita',
-			cardName: 'Norma Margarita Hernández Zabalsa',
+			envelopeName: 'Norma Hernandez',
+			cardName: 'Norma Hernandez',
 			cardLabel: '65 años',
 			teaserDetails: '65 años · Una vida para celebrar',
 			guestPlacement: 'outside-envelope',
 			sealStyle: 'monogram',
 			sealIcon: 'monogram',
-			sealInitials: 'NM',
-			microcopy: '',
+			sealInitials: 'NH',
+			microcopy: 'Abra mi invitación',
 			tooltipText: 'Abra mi invitación',
 			closedPalette: {
 				primary: 'textPrimary',
@@ -158,7 +158,7 @@ export function buildNormaPublishedContent(
 				background: 'surfaceSecondary',
 			},
 		},
-		quote: { text: NORMA_COPY.childhood, author: 'Norma Margarita' },
+		quote: { text: NORMA_COPY.childhood, author: 'Norma Hernandez' },
 		gallery: {
 			variant: 'narrative-stack',
 			eyebrow: 'Mi historia',
@@ -167,6 +167,7 @@ export function buildNormaPublishedContent(
 				(photo) => photo.key !== 'childhood' && photo.key !== 'closing',
 			).map((photo) => ({
 				key: photo.key,
+				layoutRole: photo.key === 'life' ? 'feature' : 'standard',
 				image: assets[photo.key],
 				alt: photo.alt,
 				caption: NORMA_COPY[photo.key],
@@ -239,7 +240,7 @@ export function buildNormaPublishedContent(
 		thankYou: {
 			variant: 'portrait-letter',
 			message: NORMA_COPY.closing,
-			closingName: 'Norma Margarita',
+			closingName: 'Norma Hernandez',
 			closingPhrase: 'Con todo mi cariño',
 			date,
 			image: assets.closing,
@@ -250,7 +251,7 @@ export function buildNormaPublishedContent(
 		],
 		sharing: {
 			ogImage: assets.childhood,
-			ogDescription: '65 años de Norma Margarita · 14 de noviembre de 2026 · Culiacán',
+			ogDescription: '65 años de Norma Hernandez · 14 de noviembre de 2026 · Culiacán',
 			whatsappTemplate:
 				'Hola {name}, le comparto mi invitación para celebrar mis 65 años: {inviteUrl}',
 		},
@@ -261,12 +262,13 @@ export const normaInvitation = defineInvitation<NormaAssetKey>({
 	slug: NORMA_EVENT.slug,
 	managedIdentityId: '0779ce6e-6d45-4dce-8b23-1895b84953ac',
 	managedIdentityProvenance: 'owner-approved',
+	previousSlugs: ['norma-margarita-hernandez-zabalsa'],
 	createdAt: '2026-09-08T00:00:00.000Z',
 	lifecycle: 'in_progress',
 	deliveryScope: 'content-and-assets',
 	eventType: NORMA_EVENT.eventType,
 	title: NORMA_EVENT.title,
-	clientName: 'Norma Margarita Hernández Zabalsa',
+	clientName: 'Norma Hernandez',
 	hostLoginAlias: 'norma_hernandez',
 	photosReceived: true,
 	baseDemoId: NORMA_EVENT.baseDemoId,

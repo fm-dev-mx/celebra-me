@@ -63,7 +63,7 @@ inventory: .agent/tmp/preproduction-audit-inventory.json. HTTP evidence:
 
 | Route                                               | Registry lifecycle | Local HTTP |
 | --------------------------------------------------- | ------------------ | ---------- |
-| /cumple/norma-margarita-hernandez-zabalsa           | in_progress        | 404        |
+| /cumple/norma-hernandez                             | in_progress        | 404        |
 | /cumple/alba-rosa-quinonez                          | published          | 200        |
 | /xv/abril-michelle-becerra-rea                      | published          | 200        |
 | /boda/daniela-y-martin                              | published          | 200        |

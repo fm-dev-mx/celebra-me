@@ -47,6 +47,12 @@ architecture, section-based abstraction, and invitation isolation rules.
 10. **Identity Boundary**: Canonical resolvers and section renderers MUST NOT branch on invitation
     slug, event type, or visual profile identity. Legacy identity behavior is allowed only in a
     named compatibility boundary with an active consumer, owner, and removal condition.
+11. **Canonical Token Discipline**: Presets and profiles MUST consume established Level 2 component
+    tokens (`--<component>-*`). Never invent rogue property names (such as `--rsvp-heading-*`) when
+    canonical tokens already exist.
+12. **Minimalist Theme Presets**: Presets should set aesthetic token values without imposing invasive
+    typography or layout transforms (e.g. forced `uppercase`) that compel downstream profiles to apply
+    negation overrides (`--token: none`). Never scatter ad-hoc micro-tokens across base styles.
 
 ---
 

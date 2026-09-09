@@ -23,7 +23,7 @@
 		color var(--duration-standard) var(--ease-standard),
 		box-shadow var(--duration-standard) var(--ease-standard),
 		transform var(--duration-standard) var(--ease-standard);
-	animation: pulseChevronRelative 2s infinite ease-in-out;
+	animation: var(--section-nav-animation, pulseChevronRelative 2s infinite ease-in-out);
 	pointer-events: auto;
 	min-height: auto; /* Prevent inheriting min-height from sections */
 	padding: 0.5rem 0.75rem;
@@ -31,14 +31,18 @@
 
 	&__text {
 		font-family: var(--font-body);
-		font-size: 0.7rem;
-		letter-spacing: 0.15em;
+		font-size: var(--section-nav-label-size, 0.7rem);
+		letter-spacing: var(--section-nav-label-tracking, 0.15em);
 		text-transform: uppercase;
 		font-weight: 500;
-		opacity: 80%;
+		opacity: var(--section-nav-label-opacity, 80%);
 	}
 
 	&__icon {
+		@media (prefers-reduced-motion: no-preference) {
+			animation: var(--section-nav-icon-animation, none);
+		}
+
 		svg {
 			width: 2rem;
 			height: 2rem;
@@ -84,7 +88,7 @@
 
 		.section-nav-button__text {
 			color: var(--color-text-emphasis);
-			opacity: 80%;
+			opacity: var(--section-nav-label-opacity, 80%);
 		}
 	}
 
@@ -98,6 +102,19 @@
 }
 
 @keyframes pulseChevronRelative {
+	0%,
+	100% {
+		opacity: 60%;
+		transform: translateY(0);
+	}
+
+	50% {
+		opacity: 100%;
+		transform: translateY(3px);
+	}
+}
+
+@keyframes pulse-chevron-relative {
 	0%,
 	100% {
 		opacity: 60%;

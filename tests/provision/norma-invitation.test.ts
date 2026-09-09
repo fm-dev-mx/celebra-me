@@ -2,7 +2,7 @@ import {
 	normaInvitation,
 	NORMA_COPY,
 	type NormaAssetKey,
-} from '../../scripts/provision/invitations/norma-margarita-hernandez-zabalsa';
+} from '../../scripts/provision/invitations/norma-hernandez';
 import { canonicalEventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { gallerySchema } from '@/lib/schemas/content/gallery.schema';
 import { listInvitationDefinitions } from '../../scripts/provision/invitations/registry';

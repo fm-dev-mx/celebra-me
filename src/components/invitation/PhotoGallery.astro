@@ -85,7 +85,7 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 				)}
 				{item.caption && (
 					<div class="gallery-grid__overlay">
-						<p class="gallery-grid__caption" id={variant === 'narrative-stack' ? `gallery-caption-${index}` : undefined}>{item.caption}</p>
+						<p class="gallery-grid__caption" id={variant === 'narrative-stack' ? `gallery-caption-${index}` : undefined}>{item.caption.split('\n').map((line) => <span class="gallery-grid__caption-line">{line}</span>)}</p>
 					</div>
 				)}
 			</div>

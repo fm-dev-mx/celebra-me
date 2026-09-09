@@ -157,7 +157,7 @@
 		position: relative;
 		display: grid;
 		place-items: center;
-		color: var(--color-action-accent);
+		color: var(--pa-seal-color, var(--color-action-accent));
 		border-radius: 50%;
 		background: transparent;
 		padding: 0.5rem;
@@ -199,7 +199,7 @@
 		font-weight: 500;
 		line-height: 1.1;
 		letter-spacing: var(--pa-title-tracking, 0.18em);
-		text-transform: uppercase;
+		text-transform: var(--pa-title-transform, uppercase);
 		color: var(--pa-title-color, var(--color-text-emphasis));
 		text-shadow: var(--pa-title-shadow, none);
 	}
@@ -208,7 +208,7 @@
 		max-width: 20rem;
 		margin: 0 auto;
 		font-family: var(--pa-subtitle-font, serif);
-		font-weight: 600;
+		font-weight: var(--pa-subtitle-weight, 600);
 		font-size: 0.85rem;
 		line-height: 1.6;
 		color: var(--pa-subtitle-color, var(--color-text-secondary));
@@ -217,6 +217,9 @@
 
 	// Body (guest name + seats)
 	&__body {
+		background: var(--pa-body-bg, transparent);
+		margin-inline: var(--pa-body-margin-inline, 0);
+		box-shadow: var(--pa-body-shadow, none);
 		padding: 1.5rem 1.75rem 2rem;
 		display: grid;
 		gap: 1.5rem;
@@ -311,7 +314,7 @@
 	&__count {
 		display: block;
 		font-family: var(--font-display, serif);
-		font-size: clamp(3.25rem, 9vw, 4.75rem);
+		font-size: var(--pa-count-size, clamp(3.25rem, 9vw, 4.75rem));
 		line-height: 0.85;
 		color: var(--pa-count-color, var(--color-text-emphasis));
 		text-shadow: var(--pa-count-shadow, none);

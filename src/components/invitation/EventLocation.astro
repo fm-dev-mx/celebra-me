@@ -5,6 +5,7 @@
  */
 import '@/styles/invitation/_event-location.scss';
 import VenueCard from '@/components/invitation/components/VenueCard.astro';
+import { formatVenueDateForDisplay } from '@/lib/invitation/venue-datetime';
 import { groupVenues, type GroupedVenue } from '@/lib/invitation/location-helper';
 import Icon from '@/components/common/icons/Icon.astro';
 import SectionNavButton from '@/components/invitation/components/SectionNavButton.astro';
@@ -96,6 +97,7 @@ const {
 
 const displayVenues = groupVenues(venueEntries);
 
+const sharedDate = displayVenues.length > 1 && displayVenues.every((venue) => venue.date === displayVenues[0].date) ? formatVenueDateForDisplay(displayVenues[0].date) : '';
 const isSingleVenue = displayVenues.length === 1;
 ---
 
@@ -108,6 +110,7 @@ const isSingleVenue = displayVenues.length === 1;
 			{introLede && <p class="event-location__lede">{introLede}</p>}
 		</header>
 	)}
+	{!isLocked && sharedDate && <p class="event-location__shared-date">{sharedDate}</p>}
 	{isLocked ? (
 		<div class="event-location__locked" data-gated-location>
 			<div class="event-location__locked-icon" aria-hidden="true">

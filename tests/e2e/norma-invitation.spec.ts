@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 const route =
-	'/test/variant?full=1&presentation=1&eventType=cumple&slug=norma-margarita-hernandez-zabalsa';
+	'/test/variant?full=1&presentation=1&eventType=cumple&slug=norma-hernandez';
 
-for (const width of [360, 390, 768, 1440]) {
+for (const width of [360, 390, 440, 768, 1440]) {
 	test(`Norma album preserves full photographs and visible dedications at ${width}px`, async ({
 		page,
 	}) => {
@@ -132,4 +132,37 @@ test('Norma album exposes dedications to assistive technology and opens its exis
 	await expect(page.getByRole('dialog', { name: 'Vista ampliada de la imagen' })).toBeVisible();
 	await page.keyboard.press('Escape');
 	await expect(page.getByRole('dialog', { name: 'Vista ampliada de la imagen' })).toBeHidden();
+});
+
+test('Norma featured dedication leaves the photograph when text is enlarged', async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 900 });
+	await page.goto(route);
+	const feature = page.locator('[data-gallery-item][data-layout-role="feature"]');
+	await expect(feature).toHaveCount(1);
+	await feature.scrollIntoViewIfNeeded();
+	await feature.locator('img').evaluate((image: HTMLImageElement) => image.decode());
+	await page.evaluate(() => document.fonts.ready);
+	await expect(feature).toContainText('Smile at life');
+	await expect(feature.locator('.gallery-grid__overlay')).toHaveCSS('position', 'absolute');
+	await page.evaluate(() => {
+		document.documentElement.style.fontSize = '200%';
+	});
+	await expect(feature.locator('.gallery-grid__overlay')).toHaveCSS('position', 'static');
+	await expect
+		.poll(async () => {
+			const photo = await feature.locator('img').boundingBox();
+			const caption = await feature.locator('.gallery-grid__overlay').boundingBox();
+			return caption!.y - (photo!.y + photo!.height);
+		})
+		.toBeGreaterThanOrEqual(0);
+});
+
+test('Norma uses the requested public name and a shared venue date', async ({ page }) => {
+	await page.goto(route);
+	await expect(page.locator('h1')).toHaveText('Norma Hernandez');
+	await expect(page.locator('#test-invitation-root')).not.toContainText('Norma Margarita');
+	await expect(page.locator('.event-location__shared-date')).toBeVisible();
+	for (const date of await page.locator('.event-location__card-content-date').all()) {
+		await expect(date).toBeHidden();
+	}
 });

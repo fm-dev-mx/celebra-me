@@ -1,6 +1,6 @@
 @use '@fontsource-variable/montserrat/index.css' as montserrat;
 
-.event--norma-margarita-hernandez-zabalsa.theme-preset--luxury-hacienda {
+.event--norma-hernandez.theme-preset--luxury-hacienda {
 	--color-surface-primary: rgb(250 246 240);
 	--color-surface-primary-rgb: 250 246 240;
 	--color-surface-secondary: rgb(232 201 208);
@@ -9,6 +9,13 @@
 	--color-surface-elevated-rgb: 255 253 250;
 	--color-surface-dark: rgb(75 48 59);
 	--color-text-primary: rgb(75 48 59);
+	--color-text-emphasis: var(--color-text-primary);
+	--color-text-muted: var(--color-text-secondary);
+	--section-nav-label-opacity: 100%;
+	--section-nav-animation: none;
+	--section-nav-label-size: 1rem;
+	--section-nav-label-tracking: 0.04em;
+	--section-nav-icon-animation: pulse-chevron-relative 2.8s ease-in-out infinite;
 	--color-text-primary-rgb: 75 48 59;
 	--color-text-secondary: rgb(101 68 81);
 	--color-action-accent: rgb(146 93 112);
@@ -47,8 +54,28 @@
 	--countdown-display-size: clamp(7rem, 14vw, 10rem);
 	--countdown-segment-shadow: none;
 	--countdown-value-color: var(--color-surface-secondary);
+	--countdown-label-size: 1rem;
+	--countdown-label-spacing: 0.02em;
+	--countdown-date-size: 1.125rem;
+	--countdown-date-spacing: 0.02em;
+	--countdown-footer-size: 1.125rem;
 	--countdown-label-color: var(--color-text-on-dark);
 	--countdown-footer-color: var(--color-text-on-dark);
+	--location-shared-date-display: block;
+	--location-date-display: none;
+	--location-wrapper-padding: 1.5rem;
+	--location-wrapper-border: 1px solid rgb(75 48 59 / 22%);
+	--location-wrapper-radius: 1.5rem;
+	--location-second-card-offset: 0;
+	--location-nav-direction: column;
+	--location-copy-button-height: 2.75rem;
+	--location-copy-button-width: 2.75rem;
+	--location-intro-text-size: 1.125rem;
+	--location-title-font-size: 1rem;
+	--location-title-width: 100%;
+	--location-title-inset: 1.25rem;
+	--location-hour-letter-spacing: 0;
+	--location-title-letter-spacing: 0.04em;
 	--location-bg: var(--color-surface-primary);
 	--location-card-bg: transparent;
 	--location-map-preview-display: none;
@@ -56,8 +83,12 @@
 	--location-card-shadow: none;
 	--location-card-hover-shadow: none;
 	--location-card-hover-transform: none;
-	--location-place-font-size: clamp(1.6rem, 3vw, 2rem);
-	--location-place-line-height: 1.2;
+	--location-place-font-size: clamp(2rem, 3.5vw, 2.5rem);
+	--location-place-font-weight: 600;
+	--location-card-text-align: left;
+	--location-address-text-align: left;
+	--location-place-margin: 0 0 1rem;
+	--location-place-line-height: 1.12;
 	--thank-you-letter-min-height: auto;
 	--thank-you-letter-grid-min-height: auto;
 	--thank-you-letter-padding: 4rem 1.5rem;
@@ -69,19 +100,18 @@
 	);
 	--thank-you-letter-ambient-opacity: 0;
 	--thank-you-letter-signature-size: 1.125rem;
-	--thank-you-letter-message-size: clamp(1.125rem, 1.8vw, 1.25rem);
+	--thank-you-letter-message-size: clamp(1.375rem, 2.2vw, 1.625rem);
+	--thank-you-letter-drop-cap-size: 2.5rem;
 	--thank-you-letter-image-filter: none;
-	--location-date-color: var(--color-text-secondary);
+	--thank-you-portrait-shadow: 0 8px 24px rgb(75 48 59 / 12%);
 	--location-hour-color: var(--color-text-primary);
 	--location-address-color: var(--color-text-secondary);
-	--location-address-font-size: 1rem;
-	--location-hour-font-size: clamp(1.375rem, 2.5vw, 1.75rem);
-	--location-hour-font-family: var(--font-display);
-	--location-hour-font-weight: 600;
-	--location-date-font-size: 1rem;
-	--location-nav-font-size: 1rem;
+	--location-address-font-size: 1.125rem;
+	--location-hour-font-size: clamp(1.75rem, 3vw, 2rem);
+	--location-hour-font-weight: 500;
+	--location-nav-font-size: 1.125rem;
 	--location-nav-letter-spacing: 0.025em;
-	--location-indication-text-font-size: 1rem;
+	--location-indication-text-font-size: 1.125rem;
 	--location-indication-text-color: var(--color-text-primary);
 	--location-nav-hover-color: var(--color-text-on-dark);
 	--font-body-hacienda: var(--font-body);
@@ -93,16 +123,49 @@
 	--gallery-title-color: var(--color-text-primary);
 	--gallery-title-font: var(--font-display);
 	--location-intro-heading-size: clamp(2rem, 4vw, 2.75rem);
-	--location-title-font-family: var(--font-display);
 	--location-place-font-family: var(--font-display);
-	--location-date-font-family: var(--font-body);
-	--location-address-font-family: var(--font-body);
-	--location-indication-text-font-family: var(--font-body);
 	--rsvp-section-min-height: auto;
 	--rsvp-card-shadow: none;
 	--rsvp-title-color: var(--color-text-primary);
+	--pa-padding-block: 2.5rem;
+	--pa-padding-block-lg: 4rem;
 	--pa-title-font: var(--font-display);
 	--pa-guest-font: var(--font-display);
+	--pa-card-bg-color: var(--color-surface-dark);
+	--pa-card-bg-image: none;
+	--pa-card-glow: none;
+	--pa-card-shadow: 0 8px 24px rgb(75 48 59 / 14%);
+	--pa-card-border: 1px solid var(--color-surface-dark);
+	--pa-card-inner-border: 1px solid rgb(232 201 208 / 55%);
+	--pa-body-bg: var(--color-surface-primary);
+	--pa-body-margin-inline: 1rem;
+	--pa-body-shadow: 0 2px 5px rgb(0 0 0 / 14%), inset 0 0 0 1px rgb(75 48 59 / 12%);
+	--pa-divider-gradient: linear-gradient(90deg, transparent, rgb(75 48 59 / 35%), transparent);
+	--pa-divider-diamond-bg: var(--color-surface-primary);
+	--pa-divider-diamond-border-color: var(--color-action-accent);
+	--pa-divider-diamond-shadow: none;
+	--pa-title-color: var(--color-text-on-dark);
+	--pa-title-size: clamp(1.75rem, 4vw, 2rem);
+	--pa-title-transform: none;
+	--pa-subtitle-weight: 400;
+	--pa-seal-color: var(--color-surface-secondary);
+	--pa-title-tracking: 0;
+	--pa-title-shadow: none;
+	--pa-eyebrow-color: var(--color-text-on-dark);
+	--pa-subtitle-color: var(--color-text-on-dark);
+	--pa-label-color: var(--color-text-primary);
+	--pa-label-tracking: 0.06em;
+	--pa-guest-color: var(--color-text-primary);
+	--pa-guest-weight: 500;
+	--pa-count-frame-bg: var(--color-surface-primary);
+	--pa-count-frame-border: none;
+	--pa-count-frame-inner-display: none;
+	--pa-count-size: 4.5rem;
+	--pa-count-frame-shadow: none;
+	--pa-count-color: var(--color-text-primary);
+	--pa-count-shadow: none;
+	--pa-footer-bg: var(--color-surface-dark);
+	--pa-footer-text-color: var(--color-text-on-dark);
 
 	.envelope-wrapper[data-variant='luxury-hacienda'] {
 		--env-bg: radial-gradient(
@@ -110,9 +173,25 @@
 			rgb(110 76 90),
 			var(--color-surface-dark) 75%
 		);
-		--env-container-ratio: 1.1;
+		--env-container-ratio: 1.4;
+		--env-base-surface: rgb(232 201 208);
+		--env-identity-padding: 0;
+		--env-grid: 35% 22% 43%;
+		--env-details-size: 1.125rem;
+		--env-details-font: var(--font-display);
+		--env-details-weight: 500;
+		--env-details-transform: none;
+		--env-details-margin: 0;
+		--env-details-spacing: 0;
+		--env-details-opacity: 100%;
+		--env-seal-hint-display: none;
+		--env-open-label-size: 1.125rem;
+		--env-instruction-color: var(--color-text-on-dark);
+		--env-flap-shape: polygon(0 0, 100% 0, 50% 100%);
+		--env-pocket-surface: rgb(241 223 225);
+		--env-flap-surface: rgb(250 246 240);
 		--env-container-radius: 12px;
-		--env-title-size: clamp(1.7rem, 7cqw, 2.4rem);
+		--env-title-size: clamp(1.5rem, 7cqw, 2.4rem);
 		--env-paper-bg: var(--color-surface-primary);
 		--env-paper-border: rgb(146 93 112 / 24%);
 		--env-paper-surface: var(--color-surface-primary);
@@ -140,9 +219,20 @@
 
 	.rsvp {
 		--rsvp-title-size: clamp(2rem, 4vw, 2.75rem);
+		--rsvp-title-letter-spacing: 0;
+		--rsvp-title-font-weight: 500;
+		--rsvp-title-line-height: 1.15;
+		--rsvp-eyebrow-tracking: 0.1em;
+		--rsvp-radius-card: 1.25rem;
+		--rsvp-radio-label-color: var(--color-text-primary);
+		--rsvp-label-color: var(--color-text-primary);
+		--rsvp-field-bg: var(--color-surface-primary);
+		--rsvp-radio-bg: var(--color-surface-primary);
+		--rsvp-placeholder-color: var(--color-text-secondary);
 	}
 
 	.header-base {
+		--shadow-emphasis: 0 1px 0 rgb(75 48 59 / 14%);
 		--nav-transparent-scrim: none;
 		--nav-glass-bg: var(--color-surface-primary);
 		--nav-scrolled-bg: var(--color-surface-primary);
@@ -180,14 +270,15 @@
 		--quote-surface-radius: 0 0 50% 50% / 0 0 2.5rem 2.5rem;
 		--quote-content-style: italic;
 		--quote-content-font: var(--font-display);
-		--quote-content-size: clamp(1.125rem, 1.8vw, 1.25rem);
+		--quote-content-size: clamp(1.625rem, 3vw, 2rem);
+		--quote-divider-display: none;
+		--quote-author-size: 1.125rem;
+		--quote-author-opacity: 1;
+		--quote-author-tracking: 0.08em;
+		--quote-content-shadow: none;
 		--quote-content-line-height: 1.5;
 		--quote-content-max-width: 34ch;
 		--quote-author-color: var(--color-text-secondary);
-		--quote-padding-block: clamp(3rem, 7vw, 5rem);
-	}
-
-	.gallery-grid__item:last-child .gallery-grid__caption {
-		font-style: italic;
+		--quote-padding-block: clamp(1.5rem, 3vw, 2.5rem);
 	}
 }

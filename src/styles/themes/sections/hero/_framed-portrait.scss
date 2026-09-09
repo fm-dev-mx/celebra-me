@@ -4,10 +4,14 @@
 	position: relative;
 	isolation: isolate;
 	box-sizing: border-box;
-	display: block;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	grid-template-rows: 1fr auto;
+	row-gap: 1.5rem;
+	align-items: center;
 	height: auto;
-	min-height: auto;
-	padding: clamp(5.5rem, 9vw, 8rem) 1.5rem 4rem;
+	min-height: 100dvh;
+	padding: 4.5rem 1.5rem 1.5rem;
 	background: var(--color-surface-primary);
 	color: var(--color-text-primary);
 	overflow: hidden;
@@ -27,8 +31,9 @@
 	.framed-portrait-hero__layout {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
-		gap: 1.8rem;
+		gap: 0.75rem;
 		align-items: center;
+		width: 100%;
 		max-width: 70rem;
 		margin-inline: auto;
 	}
@@ -37,8 +42,9 @@
 		position: relative;
 		isolation: isolate;
 		box-sizing: border-box;
-		width: min(51vw, 14rem);
-		margin: 0 auto;
+		width: fit-content;
+		max-width: 76vw;
+		margin: 0 0 0 auto;
 		padding: 0;
 		border-radius: 50% 50% 0.75rem 0.75rem;
 		overflow: hidden;
@@ -47,8 +53,9 @@
 
 		img {
 			display: block;
-			width: 100%;
-			height: auto;
+			width: auto;
+			height: clamp(10rem, min(46svh, calc(100svh - 28rem)), 28rem);
+			max-width: 100%;
 			object-fit: contain;
 			filter: none;
 		}
@@ -56,55 +63,71 @@
 
 	.framed-portrait-hero__letter {
 		min-width: 0;
-		text-align: center;
+		text-align: left;
 	}
 
 	.framed-portrait-hero__occasion {
 		margin: 0 0 0.5rem;
-		font: 400 clamp(1.65rem, 3vw, 2.5rem) / 1.2 var(--font-display);
+		font: 500 clamp(2.75rem, 5vw, 3.5rem) / 1.1 var(--font-display);
 		color: var(--color-action-accent);
 	}
 
 	.framed-portrait-hero__name {
 		max-width: 9ch;
-		margin: 0 auto;
-		font: 400 clamp(4rem, 10vw, 6.5rem) / 0.88 var(--font-display);
+		margin: 0;
+		font: 500 clamp(4rem, 10vw, 6.5rem) / 1 var(--font-display);
 		letter-spacing: -0.035em;
 		text-transform: none;
-		text-wrap: balance;
+		text-wrap: pretty;
 		overflow-wrap: anywhere;
 	}
 
 	.framed-portrait-hero__introduction {
 		max-width: 27ch;
-		margin: 1.5rem auto 0;
+		margin: 0.5rem 0 0;
 		font: 400 clamp(1.125rem, 2vw, 1.25rem) / 1.35 var(--font-display);
 		text-wrap: balance;
 	}
 
 	.framed-portrait-hero__details {
-		margin-top: 1.5rem;
-		font: 400 1rem / 1.7 var(--font-body);
+		margin-top: 0.5rem;
+		font: 400 clamp(1.125rem, 2vw, 1.25rem) / 1.6 var(--font-body);
 
 		p {
 			margin: 0.2rem 0;
 		}
-
-		p:first-child {
-			margin-bottom: 0.6rem;
-			font-weight: 500;
-		}
 	}
 
 	.framed-portrait-hero__invitation {
-		margin: 1.5rem 0 0;
-		font: 400 1rem / 1.5 var(--font-body);
+		width: 100%;
+		max-width: 70rem;
+		margin: 0 auto;
+		text-align: right;
+		align-self: end;
+		font: 400 1.125rem / 1.5 var(--font-body);
 		color: var(--color-action-accent);
+	}
+
+	.framed-portrait-hero__invitation span {
+		--hero-scroll-distance: 4px;
+
+		display: inline-block;
+		margin-left: 0.35rem;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.framed-portrait-hero__invitation span {
+			animation: invitation-bounce-down 2.8s ease-in-out infinite;
+		}
+
+		.event-theme-wrapper[data-reveal-state='sealed'] & .framed-portrait-hero__invitation span {
+			animation-play-state: paused;
+		}
 	}
 
 	@include mixins.respond-to(lg) {
 		padding-inline: 4rem;
-		padding-bottom: 6rem;
+		padding-bottom: 2rem;
 
 		.framed-portrait-hero__layout {
 			grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
@@ -112,7 +135,11 @@
 		}
 
 		.framed-portrait-hero__photograph {
-			width: min(100%, 22rem);
+			width: fit-content;
+
+			img {
+				height: min(72svh, 42rem);
+			}
 		}
 	}
 }

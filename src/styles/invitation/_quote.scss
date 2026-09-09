@@ -96,7 +96,7 @@
 	line-height: var(--quote-content-line-height);
 	color: var(--quote-text-color);
 	letter-spacing: var(--quote-content-letter-spacing);
-	text-shadow: 0 2px 10px var(--color-glass-shadow);
+	text-shadow: var(--quote-content-shadow, 0 2px 10px var(--color-glass-shadow));
 	max-width: var(--quote-content-max-width);
 }
 
@@ -115,7 +115,7 @@
 	gap: 1rem;
 	margin-top: 2rem;
 	color: var(--quote-author-color);
-	opacity: 80%;
+	opacity: var(--quote-author-opacity, 80%);
 }
 
 .quote-ornament {
@@ -127,9 +127,9 @@
 
 .quote-author {
 	font-family: var(--font-display);
-	font-size: clamp(0.9rem, 3vw, 1.1rem);
+	font-size: var(--quote-author-size, clamp(0.9rem, 3vw, 1.1rem));
 	text-transform: uppercase;
-	letter-spacing: 0.2em;
+	letter-spacing: var(--quote-author-tracking, 0.2em);
 	font-style: normal;
 	color: var(--quote-author-color);
 }

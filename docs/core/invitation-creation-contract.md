@@ -38,6 +38,11 @@ Every managed digital invitation must define:
     (`/boda/boda-daniela-y-martin`) and is forbidden for new invitations.
   - Prefer celebrant/couple identity tokens only (names), not event-type labels (`boda`, `xv`,
     `cumple`, etc.).
+  - **Slug Brevity & Naming Discipline:** Prefer the concise public form `{primer_nombre}-{primer_apellido}`
+    (e.g. `norma-hernandez`, `leslie-perez`). Do **not** bloat slugs with middle names and multiple compound
+    surnames (e.g. avoid `norma-margarita-hernandez-zabalsa`). Slugs drive filesystem paths, asset folders,
+    stylesheets, and URL links; compound surnames or middle names are permitted only when strictly necessary
+    to disambiguate a collision or when explicitly requested by the celebrant for their public URL.
   - `assetSlug` and `visualProfileId` should match the canonical slug unless a documented exception
     exists.
 - **Host Login Alias** (`hostLoginAlias`): Short unique Auth login for the dedicated host. Technical
