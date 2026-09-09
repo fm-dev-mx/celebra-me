@@ -943,6 +943,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		pruneAssets: options.pruneAssets ?? false,
 		definitionSlug: release.slug,
 		targetInvitationId: invitationId,
+		verifiedRekeyFrom: rekeyFrom,
 		referencedAssetIds: collectUploadedAssetIds(proposedContent),
 	});
 	if (assetReconciliation.blocked) {

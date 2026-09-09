@@ -104,6 +104,8 @@ export interface AssetReconciliationOptions {
 	pruneAssets?: boolean;
 	definitionSlug?: string;
 	targetInvitationId?: string;
+	/** Previous slug accepted only after the caller verifies an explicit identity rekey. */
+	verifiedRekeyFrom?: string;
 	referencedAssetIds?: ReadonlySet<string>;
 }
 
@@ -472,6 +474,7 @@ function reconcileCanonicalAsset(
 	storageState: ObservedStorageState,
 	policy: AssetPolicy,
 	definitionSlug?: string,
+	verifiedRekey?: { from: string; invitationId: string },
 ): { item: ReconciledAsset; blocked: boolean; blockReason?: string } {
 	if (canonical.provider === 'cloudinary') {
 		return reconcileCloudinaryCanonical(canonical, dbRecord, policy, definitionSlug);
@@ -483,7 +486,12 @@ function reconcileCanonicalAsset(
 		dbRecord &&
 		definitionSlug &&
 		dbRecord.managedByDefinitionSlug &&
-		dbRecord.managedByDefinitionSlug !== definitionSlug
+		dbRecord.managedByDefinitionSlug !== definitionSlug &&
+		!(
+			verifiedRekey &&
+			dbRecord.managedByDefinitionSlug === verifiedRekey.from &&
+			dbRecord.invitationId === verifiedRekey.invitationId
+		)
 	) {
 		return {
 			item: {
@@ -638,6 +646,7 @@ function reconcileCanonicalList(
 	policy: AssetPolicy,
 	definitionSlug?: string,
 	referencedAssetIds: ReadonlySet<string> = new Set(),
+	verifiedRekey?: { from: string; invitationId: string },
 ) {
 	const reconciledAssets: ReconciledAsset[] = [];
 	let isBlocked = false;
@@ -712,6 +721,7 @@ function reconcileCanonicalList(
 			storageState,
 			policy,
 			definitionSlug,
+			verifiedRekey,
 		);
 		reconciledAssets.push(res.item);
 		if (res.blocked) {
@@ -775,10 +785,15 @@ export function reconcileAssets(options: AssetReconciliationOptions): AssetRecon
 		const byPath = targetDbByPath.get(record.storagePath) ?? [];
 		byPath.push(record);
 		targetDbByPath.set(record.storagePath, byPath);
-		if (
-			record.managedSourceKey &&
-			(!options.definitionSlug || record.managedByDefinitionSlug === options.definitionSlug)
-		) {
+		const isManagedMatch =
+			!options.definitionSlug ||
+			record.managedByDefinitionSlug === options.definitionSlug ||
+			Boolean(
+				options.verifiedRekeyFrom &&
+					record.managedByDefinitionSlug === options.verifiedRekeyFrom &&
+					(!options.targetInvitationId || record.invitationId === options.targetInvitationId),
+			);
+		if (record.managedSourceKey && isManagedMatch) {
 			const byManagedKey = targetDbByManagedKey.get(record.managedSourceKey) ?? [];
 			byManagedKey.push(record);
 			targetDbByManagedKey.set(record.managedSourceKey, byManagedKey);
@@ -794,6 +809,9 @@ export function reconcileAssets(options: AssetReconciliationOptions): AssetRecon
 		policy,
 		options.definitionSlug,
 		options.referencedAssetIds,
+		options.verifiedRekeyFrom && options.targetInvitationId
+			? { from: options.verifiedRekeyFrom, invitationId: options.targetInvitationId }
+			: undefined,
 	);
 
 	const { unreferencedAssets, deletesCount, blockedReason } = reconcileUnreferencedAssets(

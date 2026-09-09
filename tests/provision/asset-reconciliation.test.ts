@@ -46,6 +46,34 @@ const mockTargetDbRecord: TargetAssetRecord = {
 };
 
 describe('asset-reconciliation engine', () => {
+	it.each([
+		['old-slug', 'invitation-1', 'old-slug', false],
+		['old-slug', 'invitation-2', 'old-slug', true],
+		['other-slug', 'invitation-1', 'old-slug', true],
+		['old-slug', 'invitation-1', undefined, true],
+	] as const)(
+		'restricts rekey asset reconciliation to the verified owner (%s, %s, %s)',
+		(managedSlug, invitationId, verifiedRekeyFrom, blocked) => {
+			const result = reconcileAssets({
+				canonicalAssets: [mockStorageCanonicalAsset],
+				targetDbAssets: [
+					{ ...mockTargetDbRecord, invitationId, managedByDefinitionSlug: managedSlug },
+				],
+				observedStorage: {
+					[mockTargetDbRecord.storagePath]: {
+						present: true,
+						sha256: mockStorageCanonicalAsset.sha256,
+					},
+				},
+				definitionSlug: 'new-slug',
+				targetInvitationId: 'invitation-1',
+				verifiedRekeyFrom,
+				policy: 'missing',
+			});
+			expect(result.blocked).toBe(blocked);
+			if (!blocked) expect(result.reconciledAssets[0].plannedAction).toBe('REPAIR_METADATA');
+		},
+	);
 	it('parses valid asset policies and defaults to missing', () => {
 		expect(parseAssetPolicy(undefined)).toBe('missing');
 		expect(parseAssetPolicy('verify')).toBe('verify');
