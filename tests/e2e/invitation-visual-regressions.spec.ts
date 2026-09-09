@@ -7,6 +7,7 @@ import {
 	assertCompletePageImage,
 	assertNoOperationalTooling,
 	initializeVisualCapture,
+	waitForVisualHydration,
 } from './harness/complete-page-capture';
 
 test('visual capture initializes audit mode before application scripts', async ({ page }) => {
@@ -179,13 +180,14 @@ for (const variant of ['split-cover', 'editorial-cover', 'standard']) {
 	]) {
 		test('long accented name: ' + variant + ' at ' + viewport.width, async ({ page }) => {
 			await page.setViewportSize(viewport);
+			await page.emulateMedia({ reducedMotion: 'reduce' });
 			await page.goto(
 				'/test/variant?section=hero&variant=' +
 					variant +
 					'&preset=premiere-floral&longContent=1',
 			);
 			await page.evaluate(() => document.fonts.ready);
-			await page.emulateMedia({ reducedMotion: 'reduce' });
+			await waitForVisualHydration(page);
 			await expect(page.locator('.invitation-hero__title')).toBeVisible();
 			await expect(page.locator('.invitation-hero__title')).toContainText(/maría/i);
 			await expect(page.locator('.invitation-hero__title')).toHaveCSS(
