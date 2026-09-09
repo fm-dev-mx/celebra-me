@@ -1,6 +1,8 @@
 import {
 	hideOperationalTooling,
 	assertNoOperationalTooling,
+	initializeVisualCapture,
+	waitForVisualHydration,
 } from './harness/complete-page-capture';
 import { auditCriticalLayout } from './harness/critical-layout-audit';
 import { test, expect, type Page } from '@playwright/test';
@@ -184,6 +186,7 @@ async function runVariantVisualTest(
 	vp: { name: string; width: number; height: number },
 	cssOwner: CanonicalVariantCssOwner | string,
 ) {
+	await initializeVisualCapture(page);
 	const consoleErrors: string[] = [];
 	const pageErrors: string[] = [];
 	const externalRequests: string[] = [];
@@ -509,8 +512,7 @@ async function runVariantVisualTest(
 		});
 	}
 
-	// Wait for GPU compositing and CSS transition stability before capturing.
-	await page.waitForTimeout(200);
+	await waitForVisualHydration(page);
 
 	// 8. Capture diagnostic viewport image for contact sheet / manifest
 	const snapshotName = `${preset}-${vp.name}-${section}-${variant}.png`;

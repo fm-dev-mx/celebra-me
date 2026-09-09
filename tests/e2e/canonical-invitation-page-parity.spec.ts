@@ -1,5 +1,9 @@
 import { auditCriticalLayout } from './harness/critical-layout-audit';
-import { prepareCompletePage, captureCompletePage } from './harness/complete-page-capture';
+import {
+	initializeVisualCapture,
+	prepareCompletePage,
+	captureCompletePage,
+} from './harness/complete-page-capture';
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -99,6 +103,7 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 			test(`${entry.kind}: ${entry.eventType}/${entry.slug} @ ${viewport.name}`, async ({
 				page,
 			}, testInfo) => {
+				await initializeVisualCapture(page);
 				const externalRequests: string[] = [];
 				const failedResponses: string[] = [];
 				const consoleErrors: string[] = [];

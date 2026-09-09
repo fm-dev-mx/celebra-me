@@ -6,7 +6,50 @@ import {
 	captureCompletePage,
 	assertCompletePageImage,
 	assertNoOperationalTooling,
+	initializeVisualCapture,
 } from './harness/complete-page-capture';
+
+test('visual capture initializes audit mode before application scripts', async ({ page }) => {
+	await initializeVisualCapture(page);
+	await page.goto('data:text/html,<html><body>capture fixture</body></html>');
+	expect(
+		await page.evaluate(() => ({
+			mode: Reflect.get(window, '__celebraScreenshotMode'),
+		})),
+	).toEqual({ mode: 'audit' });
+});
+
+test('complete-page capture waits for deferred island hydration', async ({ page }) => {
+	await page.setContent(
+		'<astro-island ssr style="display:block"><section data-section-id="rsvp"><button style="opacity:0">Confirmar</button></section></astro-island>',
+	);
+	await page.evaluate(() => {
+		setTimeout(() => {
+			const button = document.querySelector('button');
+			if (button) button.style.opacity = '1';
+			document.querySelector('astro-island')?.removeAttribute('ssr');
+		}, 350);
+	});
+	await prepareCompletePage(page);
+	await expect(page.locator('button')).toHaveCSS('opacity', '1');
+});
+
+for (const variant of ['editorial-press-pass', 'formal-register']) {
+	test('RSVP capture remains stable after hydration: ' + variant, async ({ page }) => {
+		await initializeVisualCapture(page);
+		await page.setViewportSize({ width: 390, height: 844 });
+		const images: Buffer[] = [];
+		for (const delay of [0, 700]) {
+			await page.goto(
+				'/test/variant?section=rsvp&variant=' + variant + '&preset=jewelry-box',
+			);
+			await prepareCompletePage(page);
+			await page.waitForTimeout(delay);
+			images.push(await page.locator('#rsvp').screenshot({ animations: 'disabled' }));
+		}
+		expect(images[1].equals(images[0])).toBe(true);
+	});
+}
 
 for (const slug of ['romina-rios-chaparro', 'valentina-hernandez', 'ximena-meza-trasvina']) {
 	for (const viewport of [

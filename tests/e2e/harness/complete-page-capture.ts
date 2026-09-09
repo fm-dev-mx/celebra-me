@@ -2,6 +2,48 @@ import type { Page } from '@playwright/test';
 import sharp from 'sharp';
 import { getOperationalToolbarSelectors } from '../../../scripts/screenshot/utils';
 
+export async function initializeVisualCapture(page: Page): Promise<void> {
+	await page.addInitScript(() => {
+		Object.assign(window, { __celebraScreenshotMode: 'audit' });
+	});
+}
+
+export async function waitForVisualHydration(page: Page): Promise<void> {
+	const scroll = await page.evaluate(() => ({ x: scrollX, y: scrollY }));
+	await page.waitForFunction(() =>
+		Array.from(document.querySelectorAll('astro-island[ssr]')).every(
+			(island) => island.getClientRects().length === 0,
+		),
+	);
+	const fields = page.locator('.rsvp__field');
+	for (let index = 0; index < (await fields.count()); index++) {
+		const field = fields.nth(index);
+		if (!(await field.isVisible())) continue;
+		await field.scrollIntoViewIfNeeded();
+		await page.waitForFunction(
+			(element) => {
+				for (let node: Element | null = element; node; node = node.parentElement) {
+					if (
+						node instanceof HTMLElement &&
+						node.style.opacity !== '' &&
+						Number(node.style.opacity) < 1
+					)
+						return false;
+				}
+				return true;
+			},
+			await field.elementHandle(),
+		);
+	}
+	await page.evaluate(async (position) => {
+		window.scrollTo({ left: position.x, top: position.y, behavior: 'instant' });
+		await document.fonts.ready;
+		await new Promise<void>((resolve) =>
+			requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+		);
+	}, scroll);
+}
+
 export async function assertNoOperationalTooling(page: Page): Promise<void> {
 	const selectors = getOperationalToolbarSelectors();
 	const visibleSelector = await page.evaluate((selectorList) => {
@@ -49,7 +91,7 @@ export async function prepareCompletePage(page: Page): Promise<void> {
 		for (const image of document.images) image.loading = 'eager';
 	});
 	const sections = page.locator(
-		'[data-section-id], .invitation-section-wrapper[data-section-kind], img, footer',
+		'[data-section-id], .invitation-section-wrapper[data-section-kind], astro-island, img, footer',
 	);
 	const sectionCount = await sections.count();
 	for (let index = 0; index < sectionCount; index++) {
@@ -57,6 +99,7 @@ export async function prepareCompletePage(page: Page): Promise<void> {
 		await sections.nth(index).scrollIntoViewIfNeeded();
 		await page.waitForTimeout(40);
 	}
+	await waitForVisualHydration(page);
 	await page.waitForFunction(() =>
 		Array.from(document.images).every(
 			(image) => !image.currentSrc || (image.complete && image.naturalWidth > 0),

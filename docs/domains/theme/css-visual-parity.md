@@ -1,9 +1,10 @@
 # CSS Visual Parity Gate
 
-**Status:** The complete candidate at `1069aa87b588ab98290e3d7d021e3f3cb585205c` has explicit human
-approval. The accepted manifest under `tests/e2e/visual-baselines/` records the exact matrix,
-candidate hash and runtime. Final comparison and CI remain required after the baseline commit.
-**Related:** [`architecture.md`](architecture.md#invitation-css-ownership-normative)
+**Status:** The candidate at `1069aa87b588ab98290e3d7d021e3f3cb585205c` received human approval, but
+comparison at `11547c915baf25210969f4bc133fbfb599fdae4d` exposed unsettled RSVP captures. The
+existing baseline is retained as evidence, not release certification. A stabilized candidate
+requires renewed human approval before acceptance, followed by comparison and final CI. **Related:**
+[`architecture.md`](architecture.md#invitation-css-ownership-normative)
 
 ## Rule
 
@@ -68,6 +69,11 @@ invitation exclusions. A lifecycle change to `published` adds the invitation to 
 and requires new coverage and acceptance; an older matrix cannot certify the added route.
 
 ## Complete-page evidence and acceptance
+
+- Initialize the existing audit screenshot mode before application scripts run, so demo countdowns
+  do not randomize. Wait for rendered Astro islands to finish hydration, fonts to settle, and RSVP
+  fields and their ancestors to finish appearing before capture. Elapsed delays and disabled CSS
+  animations alone do not settle React motion. Do not force opacity to hide an unfinished render.
 
 - Prepare deferred images and fonts, scroll the actual document through every section, individual
   image and footer, await image decoding, and return to the top before capture. A body scroll
