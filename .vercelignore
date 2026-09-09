@@ -1,0 +1,2 @@
+# Visual references belong to Git LFS and the visual test job, not deployment uploads.
+tests/e2e/visual-baselines/

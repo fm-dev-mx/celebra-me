@@ -1,7 +1,8 @@
 # CSS Visual Parity Gate
 
-**Status:** Blocked pending an exact committed reference SHA and explicit human approval of the
-complete visual candidate. The runtime map renderer is already repository-owned and deterministic.
+**Status:** The complete candidate at `1069aa87b588ab98290e3d7d021e3f3cb585205c` has explicit human
+approval. The accepted manifest under `tests/e2e/visual-baselines/` records the exact matrix,
+candidate hash and runtime. Final comparison and CI remain required after the baseline commit.
 **Related:** [`architecture.md`](architecture.md#invitation-css-ownership-normative)
 
 ## Rule
@@ -33,6 +34,14 @@ human-only operation and is rejected in CI. Accepted PNGs live under `tests/e2e/
 and use Git LFS. The manifest records the reference commit, runtime, viewport, case identity, and
 hashes. Baselines may not contain database payloads, guest personalization, cookies, credentials,
 signed URLs, or external requests.
+
+Only the application validation job downloads Git LFS references, through its checkout step. Policy
+validation keeps LFS pointers and must not download image objects. Do not add a second
+`git lfs pull` after an LFS-enabled checkout. Keep Vercel's project Git LFS support disabled while
+these test references are the only LFS assets; revisit that setting before adding runtime assets to
+LFS. `.vercelignore` excludes references from CLI uploads; it does not replace the Git integration's
+LFS setting. Accepted references must remain outside deployed static and function outputs. Temporary
+candidates and differences stay ignored.
 
 For regenerated candidates, the per-suite `manifest.json` and `pages-manifest.json` are the source
 of truth. A retained `combined-manifest.json` must not override those fresh captures or mask
