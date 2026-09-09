@@ -40,19 +40,44 @@ Baseline comparison and acceptance require the pinned certification runtime: Lin
 digest. Candidates produced elsewhere remain diagnostic only and cannot be accepted or compared as
 the authoritative reference.
 
-The registry-driven certification is designed to cover 158 deterministic comparisons once an
-accepted baseline is authorized and wired into CI: 98 variant captures (39 canonical variants plus
-10 cross-preset representatives at 390x844 and 1440x900) and 60 complete-page captures (17 managed
-invitations plus 13 demos at both viewports). Templates remain covered by schema and structural
-contracts only. Until that accepted baseline exists, CI does not run `visual:parity:compare`;
-candidate captures remain an explicit, human-reviewed operation. The page matrix is discovered from
-the managed invitation registry and `src/content/event-demos`; no manual inventory is maintained.
+Capture totals must be derived from `buildVisualPageCases`, `VISUAL_VIEWPORTS` and the canonical
+variant registry in `scripts/screenshot/visual-coverage-contract.ts`. Published invitations and
+active demos form the public matrix; structural fixtures cover every registered variant
+independently of publication lifecycle. Do not maintain separate numeric inventories or hardcoded
+invitation exclusions. Norma remains outside this task's review while in progress; this does not
+change publication state.
 
-Venue previews use `StaticVenueMap`, preserving the public Production CARTO Voyager tile URLs
-and geographic framing without introducing an API key. Appearance follows the explicit map style and inherited color tokens;
-the shared renderer owns the tile grid and marker. Google Maps, Apple Maps and Waze navigation
-links remain independent. Remote tile changes or failures must be reported by visual diagnostics,
-not silently replaced or accepted as parity.
+## Complete-page evidence and acceptance
+
+- Prepare deferred images and fonts, scroll the actual document through every section and footer,
+  and return to the top before capture. A body scroll container must be handled explicitly.
+- Verify physical PNG height against both the measured document and the last content boundary. DOM
+  presence, test counts and viewport-only images cannot establish complete-page coverage. Inspect
+  the complete vertical sequence for blank tails and missing painted content.
+- Hide only selectors returned by `getOperationalToolbarSelectors`. Visible Astro or Vercel tooling
+  invalidates evidence. Music, credits, navigation and other product controls remain visible and
+  must be tested before scrolling changes their state.
+- Record exact clean source SHA, content versions, configuration identity, runtime/browser metadata,
+  matrix hash and candidate artifact hashes. Any relevant change invalidates affected evidence.
+  Diagnostic captures from a dirty checkout are not an acceptable reference.
+- Geometry checks use text ranges for critical names and explicit title/details and prompt/content
+  intersections. Different stacking levels do not exempt meaningful text. Keep existing pixel
+  tolerances unchanged.
+- Geometry cannot establish photographic contrast, ornamental glyph quality or aesthetic acceptance.
+  Human review must inspect the complete pages and representative long-content fixtures.
+- Exceptions identify route, viewport, element, reason and owner approval; they cannot bypass other
+  checks. Valentina's complete surname is intentional and must remain readable; it does not exempt
+  her first name from containment checks.
+- The viewport-only candidate at `39d527de` is withdrawn and must not be accepted. After the owner
+  commits corrections, regenerate the complete candidate with the pinned runtime. Register
+  acceptance only after explicit approval of its exact SHA, matrix hash and candidate-manifest hash.
+  Then compare and run complete CI on the final revision.
+
+Venue previews use `StaticVenueMap`, preserving the public Production CARTO Voyager tile URLs and
+geographic framing without introducing an API key. Appearance follows the explicit map style and
+inherited color tokens; the shared renderer owns the tile grid and marker. Google Maps, Apple Maps
+and Waze navigation links remain independent. Remote tile changes or failures must be reported by
+visual diagnostics, not silently replaced or accepted as parity.
 
 ## Current asset evidence
 
@@ -123,3 +148,10 @@ Baselines under `.tmp/css-visual-parity/**` are **local gate artifacts**, not re
   `tests/e2e/invitation-visual-contracts.spec.ts`.
 - After P0 recovery fixes, new baselines may be captured only as an owner-approved gate for future
   LAYOUT deletes — still do not commit `.tmp/` PNGs.
+
+### Scoped presentation decision
+
+For `/xv/valentina-hernandez` at 390×844, 414×896 and 1440×900, retain the complete text in
+`.invitation-hero__last-name`, as explicitly requested by the owner in the current task. This
+permits the necessary surname wrapping; it does not permit clipping, ellipsis, overlap, or an
+unreadable first name. This content decision is not approval of a screenshot baseline.

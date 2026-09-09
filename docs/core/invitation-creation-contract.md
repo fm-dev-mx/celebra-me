@@ -93,12 +93,12 @@ New managed content must follow the canonical
 [`variant-system.md`](../domains/theme/variant-system.md):
 
 - Select structural or behavioral choices with the owning `section.variant` field. Do not author
-  `sectionStyles`, legacy aliases, theme-named Gallery layouts, or
-  `itinerary.presentation.behavior` in new content. `envelope.variant` selects the reveal design
-  independently of `themeId`; omit it to keep the current theme-preset resolution.
-- Treat `theme.preset` as a visual skin input only. It may not select a
-  renderer, structural layout, required DOM, or section behavior. Every present section must declare
-  its canonical variant; never derive variants from `theme.preset`.
+  `sectionStyles`, legacy aliases, theme-named Gallery layouts, or `itinerary.presentation.behavior`
+  in new content. `envelope.variant` selects the reveal design independently of `themeId`; omit it
+  to keep the current theme-preset resolution.
+- Treat `theme.preset` as a visual skin input only. It may not select a renderer, structural layout,
+  required DOM, or section behavior. Every present section must declare its canonical variant; never
+  derive variants from `theme.preset`.
 - Supply every variant-specific field required by its discriminated section schema. Unknown and
   incompatible configurations must fail publication validation.
 - Keep profile SCSS limited to client palette token remap and rhythm/intersection overrides. Do not
@@ -227,3 +227,20 @@ logic.
   immediately with `IDENTITY_REKEY_UNSUPPORTED_TARGET`.
 - Rekeying preserves the invitation UUID, event ownership, and RSVP records while updating the
   canonical slug and release provenance.
+
+## Readable composition acceptance
+
+Before accepting a new invitation or variant, verify complete names (including accented and
+multiline surnames) inside their content area without clipping or ellipsis. Titles, date/venue
+information, credits, scroll cues and music prompts must not overlap. Maintain the music control's
+accessible label and minimum 44px touch target. Small informational text requires at least 4.5:1
+contrast.
+
+Reuse the canonical visual matrix and shared geometry checks at 390×844, 414×896 and 1440×900 for
+affected flows. Exercise representative long names and wrapped venue/date content in shared variant
+fixtures. Geometry regressions and approved screenshots provide complementary evidence; neither
+replaces human inspection of photographic contrast and ornamental lettering.
+
+Follow [CSS visual parity](../domains/theme/css-visual-parity.md) for complete-page capture, pinned
+runtime, scoped exceptions and exact-artifact human acceptance. A published invitation passing
+schema or route tests alone is not visually accepted.
