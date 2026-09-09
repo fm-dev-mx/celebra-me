@@ -81,4 +81,47 @@ describe('visual manifest source selection', () => {
 			/Expected 2 complete-page captures/,
 		);
 	});
+	it('uses regenerated page captures instead of a stale combined report', () => {
+		const { root, candidate } = fixture();
+		const page = candidate.pageManifest;
+		const added = { ...page.captures[0], file: 'new-invitation.png' };
+		fs.writeFileSync(
+			path.join(root, 'pages-manifest.json'),
+			JSON.stringify({
+				...page,
+				totalCaptures: 2,
+				captures: [...page.captures, added],
+			}),
+		);
+		const result = readVisualManifest(root, { variants: 1, pages: 2 }, true);
+		expect(result.totalCaptures).toBe(3);
+		expect(result.captures).toContainEqual(added);
+	});
+	it('does not mask incomplete current captures with a complete older report', () => {
+		const { root, candidate } = fixture();
+		fs.writeFileSync(
+			path.join(root, 'pages-manifest.json'),
+			JSON.stringify({
+				...candidate.pageManifest,
+				totalCaptures: 0,
+				captures: [],
+			}),
+		);
+		expect(() => readVisualManifest(root, { variants: 1, pages: 1 }, true)).toThrow(
+			/Expected 1 complete-page captures, found 0/,
+		);
+	});
+	it('keeps the combined artifact authoritative outside regeneration', () => {
+		const { root, candidate } = fixture();
+		fs.writeFileSync(
+			path.join(root, 'pages-manifest.json'),
+			JSON.stringify({
+				...candidate.pageManifest,
+				totalCaptures: 0,
+				captures: [],
+			}),
+		);
+		const result = readVisualManifest(root, { variants: 1, pages: 1 });
+		expect(result.pageManifest).toEqual(candidate.pageManifest);
+	});
 });

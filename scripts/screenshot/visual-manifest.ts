@@ -27,7 +27,10 @@ export interface CombinedManifest extends CaptureManifest {
 	pageManifest: CaptureManifest;
 }
 
-function readManifestSource(root: string): CaptureManifest & Partial<CombinedManifest> {
+function readManifestSource(
+	root: string,
+	preferSuiteManifests: boolean,
+): CaptureManifest & Partial<CombinedManifest> {
 	const variantFile = join(root, 'manifest.json');
 	const combinedFile = join(root, 'combined-manifest.json');
 	if (!existsSync(variantFile) && !existsSync(combinedFile)) {
@@ -37,7 +40,8 @@ function readManifestSource(root: string): CaptureManifest & Partial<CombinedMan
 		? (JSON.parse(readFileSync(variantFile, 'utf8')) as CaptureManifest &
 				Partial<CombinedManifest>)
 		: undefined;
-	return primary?.status === 'ACCEPTED'
+	// Regeneration uses fresh suites; acceptance still reads the reviewed combined artifact.
+	return primary && (primary.status === 'ACCEPTED' || preferSuiteManifests)
 		? primary
 		: (JSON.parse(
 				readFileSync(existsSync(combinedFile) ? combinedFile : variantFile, 'utf8'),
@@ -47,9 +51,10 @@ function readManifestSource(root: string): CaptureManifest & Partial<CombinedMan
 export function readVisualManifest(
 	root: string,
 	expected: { variants: number; pages: number },
+	preferSuiteManifests = false,
 ): CombinedManifest {
 	const pageFile = join(root, 'pages-manifest.json');
-	const raw = readManifestSource(root);
+	const raw = readManifestSource(root, preferSuiteManifests);
 	const variantManifest = raw.variantManifest ?? raw;
 	if (!variantManifest || !Array.isArray(variantManifest.captures)) {
 		throw new Error('Visual manifest must declare a captures array. Regenerate the candidate.');

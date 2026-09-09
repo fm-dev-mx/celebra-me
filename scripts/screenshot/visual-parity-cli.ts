@@ -162,11 +162,15 @@ function runPlaywright(mode: 'candidate' | 'compare'): void {
 	}
 }
 
-function readManifest(root: string): CombinedManifest {
-	return readVisualManifest(root, {
-		variants: EXPECTED_VARIANT_CAPTURES,
-		pages: EXPECTED_PAGE_CAPTURES,
-	});
+function readManifest(root: string, preferSuiteManifests = false): CombinedManifest {
+	return readVisualManifest(
+		root,
+		{
+			variants: EXPECTED_VARIANT_CAPTURES,
+			pages: EXPECTED_PAGE_CAPTURES,
+		},
+		preferSuiteManifests,
+	);
 }
 
 function candidate(): void {
@@ -183,7 +187,7 @@ function candidate(): void {
 	}
 	stampCandidateReference(referenceSha);
 
-	const manifest = readManifest(CANDIDATE_ROOT);
+	const manifest = readManifest(CANDIDATE_ROOT, true);
 	assertManifestIntegrity(manifest, CANDIDATE_ROOT);
 	assertCoverageMatrix(manifest);
 	writeCombinedCandidateArtifacts(CANDIDATE_ROOT, manifest);
@@ -204,7 +208,7 @@ function compare(): void {
 	assertManifestIntegrity(accepted, ACCEPTED_ROOT);
 	assertPinnedVisualRuntime(accepted, 'compare');
 	runPlaywright('compare');
-	const compared = readManifest(COMPARE_ROOT);
+	const compared = readManifest(COMPARE_ROOT, true);
 	assertManifestIntegrity(compared, COMPARE_ROOT);
 	assertPinnedVisualRuntime(compared, 'compare');
 	assertCoverageMatrix(accepted);
