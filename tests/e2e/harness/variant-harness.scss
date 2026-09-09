@@ -1,0 +1,21 @@
+// Test harness styles for /test/variant.
+// Ensures canonical reset and section visibility without inline styles in Astro.
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	overflow-x: hidden;
+}
+
+.invitation-section-wrapper {
+	opacity: 1 !important;
+	transform: none !important;
+	visibility: visible !important;
+}

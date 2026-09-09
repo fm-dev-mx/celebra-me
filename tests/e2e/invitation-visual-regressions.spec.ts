@@ -145,6 +145,10 @@ for (const variant of ['split-cover', 'editorial-cover', 'standard']) {
 			await page.emulateMedia({ reducedMotion: 'reduce' });
 			await expect(page.locator('.invitation-hero__title')).toBeVisible();
 			await expect(page.locator('.invitation-hero__title')).toContainText(/maría/i);
+			await expect(page.locator('.invitation-hero__title')).toHaveCSS(
+				'box-sizing',
+				'border-box',
+			);
 			expect(await page.locator('body').evaluate(auditCriticalLayout)).toEqual([]);
 		});
 	}

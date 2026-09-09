@@ -15,11 +15,16 @@
 	// wrapper and must inherit. Property fallbacks below cover demos without a profile.
 	--hero-split-title-offset-block: 0;
 
+	.event-theme-wrapper &:has(.invitation-hero__portrait) {
+		height: auto;
+		min-height: 100svh;
+	}
+
 	.invitation-hero__label {
 		color: var(--color-text-on-dark, white);
 	}
 
-	.invitation-hero__title {
+	.event-theme-wrapper & .invitation-hero__title {
 		color: var(--color-text-on-dark, white);
 		-webkit-text-fill-color: initial;
 		background: none;
@@ -30,6 +35,41 @@
 		line-height: var(--hero-split-title-line-height, 0.9);
 		letter-spacing: var(--hero-split-title-letter-spacing, 0);
 		text-transform: var(--hero-split-title-transform, none);
+		overflow-wrap: anywhere;
+	}
+
+	.event-theme-wrapper & .invitation-hero__title-wrapper {
+		min-width: 0;
+		width: 100%;
+	}
+
+	@media (width <= 860px) {
+		// An optional foreground portrait needs its own flow row before the name and details.
+		.event-theme-wrapper &:has(.invitation-hero__portrait) {
+			.invitation-hero__content {
+				display: grid;
+				height: auto;
+				grid-template-areas: 'label' 'portrait' 'title' 'details';
+				padding-bottom: 4rem;
+			}
+
+			.invitation-hero__label {
+				grid-area: label;
+			}
+
+			.invitation-hero__portrait {
+				grid-area: portrait;
+			}
+
+			.invitation-hero__title-wrapper {
+				grid-area: title;
+			}
+
+			.invitation-hero__details {
+				position: static;
+				grid-area: details;
+			}
+		}
 	}
 
 	.invitation-hero__details {
@@ -83,7 +123,7 @@
 			margin-inline: 0;
 		}
 
-		.invitation-hero__title {
+		.event-theme-wrapper & .invitation-hero__title {
 			position: relative;
 			top: var(--hero-split-title-offset-block);
 			mix-blend-mode: normal;

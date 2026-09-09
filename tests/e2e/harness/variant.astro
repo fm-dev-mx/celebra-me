@@ -7,6 +7,7 @@ import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
 import EventHeader from '@/components/invitation/EventHeader.astro';
 import globalCssUrl from '@/styles/global.scss?url';
 import invitationCssUrl from '@/styles/invitation.scss?url';
+import variantHarnessCssUrl from './variant-harness.scss?url';
 import InvitationSections from '@/components/invitation/InvitationSections.astro';
 import { canonicalEventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { adaptEvent } from '@/lib/adapters/event';
@@ -133,24 +134,11 @@ const activeSectionCssPlan = resolveInvitationCssLoadPlan(
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>{fullPageContext?.layout.title ?? `${section}.${variant} (${preset})`}</title>
+	<link rel="stylesheet" href={variantHarnessCssUrl} />
 	{fullPresentation && <><link rel="stylesheet" href={globalCssUrl} /><link rel="stylesheet" href={invitationCssUrl} /></>}
 	{(fullPageHeadLinks ?? headLinks).map((link) => (
 		<link rel="stylesheet" href={link.href} data-canonical-css-owner={link.canonicalPath} />
 	))}
-	<style is:inline lang="scss" set:html={(fullPageContext ?? page).wrapper.scopedStyles} />
-	<style>
-		*, *::before, *::after { box-sizing: border-box; }
-		html, body {
-			margin: 0;
-			padding: 0;
-			overflow-x: hidden;
-		}
-		.invitation-section-wrapper {
-			opacity: 1 !important;
-			transform: none !important;
-			visibility: visible !important;
-		}
-	</style>
 </head>
 	<body class={(fullPageContext ?? page).wrapper.className} data-reveal-state={showEnvelope ? undefined : 'revealed'}>
 	<div class={(fullPageContext ?? page).wrapper.className} {...showEnvelope ? page.wrapper.dataAttributes : {}} data-reveal-state={showEnvelope ? 'closed' : 'revealed'} data-screenshot="invitation-root" id="test-invitation-root">

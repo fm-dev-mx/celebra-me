@@ -34,6 +34,14 @@ and use Git LFS. The manifest records the reference commit, runtime, viewport, c
 hashes. Baselines may not contain database payloads, guest personalization, cookies, credentials,
 signed URLs, or external requests.
 
+For regenerated candidates, the per-suite `manifest.json` and `pages-manifest.json` are the source
+of truth. A retained `combined-manifest.json` must not override those fresh captures or mask
+incomplete coverage. An accepted primary manifest remains authoritative for comparison.
+
+Synthetic section fixtures must apply the production box-sizing reset across Astro component
+boundaries. Long-name checks must include optional foreground portraits: title and details need
+independent flow space, while background-only covers retain their reviewed composition.
+
 Baseline comparison and acceptance require the pinned certification runtime: Linux x64, Node
 `v24.14.1`, pnpm `11.23.0`, Chromium through Playwright `1.62.1`, `en-US`, UTC, device scale factor
 1, resolved browser metadata, four source/resource hashes, and a verified `sha256:<64-hex>` OS-image
