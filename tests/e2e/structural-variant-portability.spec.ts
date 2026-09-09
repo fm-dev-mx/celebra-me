@@ -1,3 +1,8 @@
+import {
+	hideOperationalTooling,
+	assertNoOperationalTooling,
+} from './harness/complete-page-capture';
+import { auditCriticalLayout } from './harness/critical-layout-audit';
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -432,7 +437,10 @@ async function runVariantVisualTest(
 					if (overlapX > 8 && overlapY > 8) {
 						const z1 = parseInt(window.getComputedStyle(el1).zIndex || '0', 10);
 						const z2 = parseInt(window.getComputedStyle(el2).zIndex || '0', 10);
-						if (z1 !== z2 && (z1 <= 0 || z2 <= 0)) continue;
+						const bothMeaningfulText = Boolean(
+							el1.textContent?.trim() && el2.textContent?.trim(),
+						);
+						if (!bothMeaningfulText && z1 !== z2 && (z1 <= 0 || z2 <= 0)) continue;
 						issues.push(
 							`Unintended overlap (${Math.round(overlapX)}x${Math.round(overlapY)}px) between <${el1.tagName.toLowerCase()} class="${el1.className}"> and <${el2.tagName.toLowerCase()} class="${el2.className}">`,
 						);
@@ -468,6 +476,8 @@ async function runVariantVisualTest(
 		`Layout clipping/overlap audit failed for ${section}.${variant} @ ${vp.name} (${preset}):\n${layoutAudit.issues.join('\n')}`,
 	).toEqual([]);
 
+	expect(await target.evaluate(auditCriticalLayout)).toEqual([]);
+
 	// 5. Verify no horizontal document overflow
 	const hasOverflow = await page.evaluate(() => {
 		return document.documentElement.scrollWidth > window.innerWidth;
@@ -477,6 +487,9 @@ async function runVariantVisualTest(
 	// 6. Verify no console or unhandled errors
 	expect(consoleErrors).toEqual([]);
 	expect(pageErrors).toEqual([]);
+
+	await hideOperationalTooling(page);
+	await assertNoOperationalTooling(page);
 
 	// 7. Deterministic normalizations
 	// Normalize dynamic countdown digits and clear intervals so visual structure, styling,

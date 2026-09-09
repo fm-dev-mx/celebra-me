@@ -1,3 +1,5 @@
+import { auditCriticalLayout } from './harness/critical-layout-audit';
+import { prepareCompletePage, captureCompletePage } from './harness/complete-page-capture';
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -142,37 +144,9 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 					externalRequests,
 					'Unexpected external dependencies must fail the visual gate.',
 				).toEqual([]);
-				await page.evaluate(() => document.fonts?.ready);
-				await page.evaluate(async () => {
-					const maxScroll = Math.max(
-						document.documentElement.scrollHeight,
-						window.innerHeight,
-					);
-					for (let y = 0; y <= maxScroll; y += Math.max(window.innerHeight, 1)) {
-						window.scrollTo(0, y);
-						await new Promise((resolve) =>
-							requestAnimationFrame(() => resolve(undefined)),
-						);
-					}
-					window.scrollTo(0, 0);
-				});
-				await page.evaluate(async () => {
-					await Promise.all(
-						Array.from(document.images).map((image) =>
-							image.complete
-								? Promise.resolve()
-								: new Promise<void>((resolve) => {
-										const done = () => {
-											window.clearTimeout(timeout);
-											resolve();
-										};
-										const timeout = window.setTimeout(done, 1000);
-										image.addEventListener('load', done, { once: true });
-										image.addEventListener('error', done, { once: true });
-									}),
-						),
-					);
-				});
+				await page.evaluate(() => document.fonts.ready);
+				expect(await page.locator('body').evaluate(auditCriticalLayout)).toEqual([]);
+				await prepareCompletePage(page);
 
 				const audit = await page.evaluate(() => {
 					const issues: string[] = [];
@@ -254,14 +228,7 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 
 				await page.waitForTimeout(100);
 				const snapshotName = `pages/${entry.kind}-${entry.eventType}-${entry.slug}-${viewport.name}.png`;
-				const pageHeight = await page.evaluate(() =>
-					Math.max(document.documentElement.scrollHeight, window.innerHeight),
-				);
-				const screenshotOptions = {
-					animations: 'disabled' as const,
-					clip: { x: 0, y: 0, width: viewport.width, height: pageHeight },
-				};
-				const image = await page.screenshot(screenshotOptions);
+				const image = await captureCompletePage(page);
 				if (shouldCompareVisualSnapshots(VISUAL_PARITY_MODE)) {
 					expect(image).toMatchSnapshot(snapshotName.split('/'), {
 						maxDiffPixelRatio: 0.001,
@@ -468,7 +435,6 @@ test.describe('Reported invitation public-route regressions', () => {
 	});
 });
 
-
 test.describe('Portrait keepsake production spacing regression', () => {
 	for (const viewport of [
 		{ width: 390, height: 844, top: 118.16, bottom: 101.28 },
@@ -485,10 +451,16 @@ test.describe('Portrait keepsake production spacing regression', () => {
 			const section = page.locator('#thank-you-section');
 			await section.scrollIntoViewIfNeeded();
 			await expect(section).toHaveAttribute('data-variant', 'portrait-keepsake');
-			await expect(page.locator('.event-theme-wrapper')).toHaveAttribute('data-content-source', 'published');
+			await expect(page.locator('.event-theme-wrapper')).toHaveAttribute(
+				'data-content-source',
+				'published',
+			);
 			const padding = await section.evaluate((node) => {
 				const style = getComputedStyle(node);
-				return { top: parseFloat(style.paddingTop), bottom: parseFloat(style.paddingBottom) };
+				return {
+					top: parseFloat(style.paddingTop),
+					bottom: parseFloat(style.paddingBottom),
+				};
 			});
 			expect(padding.top).toBeCloseTo(viewport.top, 1);
 			expect(padding.bottom).toBeCloseTo(viewport.bottom, 1);

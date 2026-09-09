@@ -100,6 +100,7 @@ if (fullPage) {
 }
 
 const rawEvent = buildSyntheticVariantEvent({ section, variant, themePreset: preset,
+	longContent: Astro.url.searchParams.get('longContent') === '1',
 	...(Astro.url.searchParams.get('imageDelivery') === 'optimized' ? { imageDelivery: {mode: 'optimized' as const, width: 640, height: 800, quality: 77, format: 'webp' as const} } : {}),
 });
 const validated = canonicalEventContentSchema.parse(rawEvent.data);

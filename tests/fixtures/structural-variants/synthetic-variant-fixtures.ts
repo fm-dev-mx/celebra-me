@@ -10,6 +10,7 @@ export type SyntheticVariantOverrides = {
 	variant: string;
 	themePreset?: string;
 	imageDelivery?: ImageDelivery;
+	longContent?: boolean;
 };
 
 export interface IncompatiblePrerequisiteExpectation {
@@ -41,7 +42,7 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 			intersections: {},
 		},
 		hero: {
-			name: 'Celebrante Principal',
+			name: overrides.longContent ? 'María José Hernández Almaguer' : 'Celebrante Principal',
 			label: 'Mis XV Años',
 			date: '2026-11-21T18:00:00.000Z',
 			backgroundImage: overrides.imageDelivery
@@ -138,7 +139,9 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 				{
 					type: 'reception',
 					venueEvent: 'Recepción',
-					venueName: 'Quinta Las Flores',
+					venueName: overrides.longContent
+						? 'Jardín de Eventos María de los Ángeles y Salón de Celebraciones'
+						: 'Quinta Las Flores',
 					address: 'Av. Real de Catorce 123, Col. Valle Alto',
 					city: 'Monterrey',
 					date: '21 de noviembre de 2026',
