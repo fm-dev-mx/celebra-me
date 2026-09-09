@@ -53,6 +53,15 @@ hooks or `PascalCase` types from inside the file.
 - Use **kebab-case** for route segments and dynamic routes, as this matches URL conventions and
   Astro's file-based routing.
 
+### 2.4 Naming Brevity & Discipline
+
+- Keep filenames, identifiers, and slugs concise and meaningful.
+- Avoid unnecessarily long compound names (e.g., prefer `norma-hernandez` over
+  `norma-margarita-hernandez-zabalsa`). Verbose names complicate file paths, imports, test routes, and
+  CSS class selectors.
+- For client invitations, use the primary public name `{primer_nombre}-{primer_apellido}` by default
+  unless disambiguation is strictly required.
+
 ---
 
 ## 3) Utilities and Helpers
@@ -78,6 +87,16 @@ hooks or `PascalCase` types from inside the file.
 - Astro page files should stay focused on routing, redirects, data fetching, and rendering.
 - When an internal compatibility hook or helper loses all runtime consumers, delete it and migrate
   any surviving tests to the active surface instead of preserving a legacy API indefinitely.
+
+### 3.4 Anti-Overengineering & Runtime Simplicity
+
+- Keep production routes (`[slug].astro`), page assembly modules (`page-data.ts`), and client hooks
+  focused strictly on their production responsibilities.
+- **Never inject ad-hoc simulation subsystems or test parameters into production data loaders**
+  (e.g., fake URL query flags for simulating unconfirmed RSVP states or personalized access). Testing
+  variations belongs in isolated test harnesses (`/test/variant`), fixtures, or unit test mocks.
+- Avoid speculative features, premature abstractions, and redundant layers that have no active
+  consumers.
 
 ---
 
@@ -109,6 +128,20 @@ hooks or `PascalCase` types from inside the file.
   inline custom properties or preset/component state classes instead.
 - Runtime `define:vars` is allowed only for script-level Astro data injection when markup or data
   attributes are not sufficient.
+
+### 4.4 Token Discipline & Preset Minimalism
+
+- **No Rogue Tokens:** Presets and profiles must only consume and override canonical Level 2 tokens
+  defined by the component stylesheet (`--<component>-<property>`, e.g.
+  `--rsvp-title-letter-spacing`). Never invent ad-hoc tokens (e.g. `--rsvp-heading-tracking`) that
+  duplicate or bypass established component contracts.
+- **Minimalist Presets (No Negative Overrides):** Theme presets should define aesthetic tokens
+  (colors, letter-spacing, radii), not inject aggressive, opinionated layout/typography mutations
+  (such as forced `text-transform: uppercase`) that force individual profiles to implement negation
+  hacks (`--token: none`).
+- **No Invasive Micro-Token Bloat:** Do not scatter ad-hoc micro-tokens across shared base stylesheets
+  (e.g., wrapping font sizes or spacings in `max(var(--custom-floor), ...)` across dozens of rules).
+  Shared base stylesheets must remain clean, predictable, and standard.
 
 ---
 
