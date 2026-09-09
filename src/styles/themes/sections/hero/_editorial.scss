@@ -1,5 +1,4 @@
 @use '../../../tokens' as tokens;
-@use '../../../global/mixins' as mixins;
 
 // ==========================================================================
 // EDITORIAL HERO
@@ -37,10 +36,6 @@
 		z-index: 2;
 		pointer-events: none;
 		animation: sparkle-move 60s linear infinite;
-
-		@media (prefers-reduced-motion: reduce) {
-			animation-play-state: paused;
-		}
 	}
 
 	.invitation-hero__background {
@@ -243,6 +238,7 @@
 
 		.invitation-hero__title {
 			font-size: clamp(2.5rem, 15vw, 7rem);
+			line-height: 1.05;
 			overflow-wrap: anywhere;
 			text-align: center;
 			transform: translateY(-20%);
