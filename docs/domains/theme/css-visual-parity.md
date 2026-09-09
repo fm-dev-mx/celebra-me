@@ -37,8 +37,11 @@ signed URLs, or external requests.
 Baseline comparison and acceptance require the pinned certification runtime: Linux x64, Node
 `v24.14.1`, pnpm `11.23.0`, Chromium through Playwright `1.62.1`, `en-US`, UTC, device scale factor
 1, resolved browser metadata, four source/resource hashes, and a verified `sha256:<64-hex>` OS-image
-digest. Candidates produced elsewhere remain diagnostic only and cannot be accepted or compared as
-the authoritative reference.
+digest. The browser runner may connect to a separately hosted local Astro server through a read-only
+HTTP bridge; keep database credentials on the server and record both runtime identities and the
+matching source revision. Never expose the development server beyond the required local boundary.
+Candidates produced elsewhere remain diagnostic only and cannot be accepted or compared as the
+authoritative reference.
 
 Capture totals must be derived from `buildVisualPageCases`, `VISUAL_VIEWPORTS` and the canonical
 variant registry in `scripts/screenshot/visual-coverage-contract.ts`. Published invitations and
@@ -51,6 +54,10 @@ change publication state.
 
 - Prepare deferred images and fonts, scroll the actual document through every section and footer,
   and return to the top before capture. A body scroll container must be handled explicitly.
+- If screenshot preparation changes document height through motion or responsive layout, discard
+  that image and capture once more. Reject a still-truncated retry; never widen truncation
+  thresholds. Verify the last painted footer pixels and bounded failure behavior in regression
+  fixtures.
 - Verify physical PNG height against both the measured document and the last content boundary. DOM
   presence, test counts and viewport-only images cannot establish complete-page coverage. Inspect
   the complete vertical sequence for blank tails and missing painted content.
@@ -63,6 +70,8 @@ change publication state.
 - Geometry checks use text ranges for critical names and explicit title/details and prompt/content
   intersections. Different stacking levels do not exempt meaningful text. Keep existing pixel
   tolerances unchanged.
+- Verify multiline accented names against the rendered font ink height; horizontal containment alone
+  cannot detect a diacritic touching the preceding line.
 - Geometry cannot establish photographic contrast, ornamental glyph quality or aesthetic acceptance.
   Human review must inspect the complete pages and representative long-content fixtures.
 - Exceptions identify route, viewport, element, reason and owner approval; they cannot bypass other
