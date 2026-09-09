@@ -232,12 +232,18 @@
 				'label'
 				'portrait'
 				'title';
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr);
 			gap: 1rem;
 		}
 
+		.invitation-hero__title-wrapper {
+			min-width: 0;
+			padding-inline: 1rem;
+		}
+
 		.invitation-hero__title {
-			font-size: clamp(4rem, 18vw, 7rem);
+			font-size: clamp(2.5rem, 15vw, 7rem);
+			overflow-wrap: anywhere;
 			text-align: center;
 			transform: translateY(-20%);
 			mix-blend-mode: normal;

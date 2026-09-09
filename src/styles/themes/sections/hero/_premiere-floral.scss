@@ -39,3 +39,29 @@
 		}
 	}
 }
+
+@media (width <= 860px) {
+	.theme-preset--premiere-floral .invitation-hero[data-variant='standard'] {
+		.invitation-hero__details {
+			background: var(--color-surface-primary);
+		}
+
+		.invitation-hero__details .calligraphy-accent {
+			color: inherit;
+			opacity: 100%;
+		}
+
+		.invitation-hero__details p {
+			color: var(--color-text-primary);
+			opacity: 100%;
+		}
+	}
+}
+
+@media (width >= 860px) {
+	.theme-preset--premiere-floral
+		.invitation-hero[data-variant='standard']
+		.invitation-hero__scroll-indicator {
+		bottom: 1rem;
+	}
+}

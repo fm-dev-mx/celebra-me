@@ -67,7 +67,13 @@
 			);
 		}
 
-		.invitation-hero__content {
+		.event-theme-wrapper & .invitation-hero__content {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			justify-content: center;
+			height: auto;
+			gap: 1.5rem;
 			width: var(--hero-split-content-width);
 			margin: 0 0 0 var(--hero-split-content-inline-start);
 			text-align: left;
@@ -84,7 +90,9 @@
 			transform: none;
 		}
 
-		.invitation-hero__details {
+		.event-theme-wrapper & .invitation-hero__details {
+			position: static;
+			flex-wrap: wrap;
 			margin-inline: 0;
 		}
 

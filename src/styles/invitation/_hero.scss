@@ -170,6 +170,13 @@
 		margin: 0 auto;
 		width: max-content;
 		bottom: 2rem;
+
+		@include mixins.respond-below(md) {
+			left: 1rem;
+			right: auto;
+			margin-inline: 0;
+		}
+
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -367,5 +374,20 @@
 		opacity: 100%;
 		transform: none;
 		animation: none;
+	}
+}
+
+.invitation-hero[data-variant='standard'] {
+	@include mixins.respond-below(md) {
+		.invitation-hero__content {
+			// Reserve the bottom rail when a skin does not provide its own content margin.
+			margin-bottom: 5rem;
+		}
+	}
+
+	.invitation-hero__scroll-indicator {
+		left: 1rem;
+		right: auto;
+		margin-inline: 0;
 	}
 }
