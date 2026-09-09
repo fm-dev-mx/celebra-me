@@ -49,7 +49,7 @@ export async function prepareCompletePage(page: Page): Promise<void> {
 		for (const image of document.images) image.loading = 'eager';
 	});
 	const sections = page.locator(
-		'[data-section-id], .invitation-section-wrapper[data-section-kind], footer',
+		'[data-section-id], .invitation-section-wrapper[data-section-kind], img, footer',
 	);
 	const sectionCount = await sections.count();
 	for (let index = 0; index < sectionCount; index++) {
@@ -62,7 +62,13 @@ export async function prepareCompletePage(page: Page): Promise<void> {
 			(image) => !image.currentSrc || (image.complete && image.naturalWidth > 0),
 		),
 	);
-	await page.evaluate(() => {
+	await page.evaluate(async () => {
+		// Loaded bytes alone do not guarantee that async-decoded images have painted.
+		await Promise.all(
+			Array.from(document.images)
+				.filter((image) => image.currentSrc)
+				.map((image) => image.decode()),
+		);
 		document.body.scrollTop = 0;
 		window.scrollTo({ top: 0, behavior: 'instant' });
 	});

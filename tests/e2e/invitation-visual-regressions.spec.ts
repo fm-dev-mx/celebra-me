@@ -192,3 +192,63 @@ test('complete-page capture rejects a document that keeps growing during capture
 	await expect(captureCompletePage(page)).rejects.toThrow('Truncated complete-page capture');
 	expect(attempts).toBe(2);
 });
+
+for (const viewport of [
+	{ width: 390, height: 844 },
+	{ width: 414, height: 896 },
+	{ width: 1440, height: 900 },
+]) {
+	test(
+		'complete-page capture reveals every image in a gallery taller than the viewport at ' +
+			viewport.width,
+		async ({ page }) => {
+			await page.setViewportSize(viewport);
+			const src =
+				'data:image/svg+xml,' +
+				encodeURIComponent(
+					`<svg xmlns="http://www.w3.org/2000/svg" width="${viewport.width}" height="300"><rect width="${viewport.width}" height="300" fill="#cc2233"/></svg>`,
+				);
+			await page.setContent(
+				'<style>body{margin:0}img{display:block;opacity:0}</style><section data-section-id="gallery">' +
+					Array.from(
+						{ length: 8 },
+						() =>
+							`<img width="${viewport.width}" height="300" loading="lazy" decoding="async" src="` +
+							src +
+							'">',
+					).join('') +
+					'</section><footer>Fin</footer>',
+			);
+			await page.evaluate(() => {
+				const observer = new IntersectionObserver(
+					(entries) => {
+						for (const entry of entries)
+							if (entry.isIntersecting) {
+								(entry.target as HTMLElement).style.opacity = '1';
+								observer.unobserve(entry.target);
+							}
+					},
+					{ threshold: 0.1 },
+				);
+				document.querySelectorAll('img').forEach((image) => observer.observe(image));
+			});
+			await prepareCompletePage(page);
+			const image = await captureCompletePage(page);
+			for (let index = 0; index < 8; index++) {
+				const pixel = await sharp(image)
+					.extract({
+						left: Math.floor(viewport.width / 2),
+						top: index * 300 + 150,
+						width: 1,
+						height: 1,
+					})
+					.removeAlpha()
+					.raw()
+					.toBuffer();
+				expect([...pixel], 'Gallery image ' + index + ' must be painted').toEqual([
+					204, 34, 51,
+				]);
+			}
+		},
+	);
+}

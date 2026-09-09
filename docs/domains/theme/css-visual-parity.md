@@ -52,8 +52,11 @@ change publication state.
 
 ## Complete-page evidence and acceptance
 
-- Prepare deferred images and fonts, scroll the actual document through every section and footer,
-  and return to the top before capture. A body scroll container must be handled explicitly.
+- Prepare deferred images and fonts, scroll the actual document through every section, individual
+  image and footer, await image decoding, and return to the top before capture. A body scroll
+  container must be handled explicitly. Gallery bytes being loaded is not proof that every image has
+  painted; a multi-viewport gallery fixture taller than the viewport must verify image pixels
+  throughout its length.
 - If screenshot preparation changes document height through motion or responsive layout, discard
   that image and capture once more. Reject a still-truncated retry; never widen truncation
   thresholds. Verify the last painted footer pixels and bounded failure behavior in regression
