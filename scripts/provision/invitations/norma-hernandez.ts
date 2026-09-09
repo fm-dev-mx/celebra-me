@@ -261,10 +261,10 @@ export function buildNormaPublishedContent(
 export const normaInvitation = defineInvitation<NormaAssetKey>({
 	slug: NORMA_EVENT.slug,
 	managedIdentityId: '0779ce6e-6d45-4dce-8b23-1895b84953ac',
-	managedIdentityProvenance: 'owner-approved',
+	managedIdentityProvenance: 'persisted',
 	previousSlugs: ['norma-margarita-hernandez-zabalsa'],
 	createdAt: '2026-09-08T00:00:00.000Z',
-	lifecycle: 'in_progress',
+	lifecycle: 'published',
 	deliveryScope: 'content-and-assets',
 	eventType: NORMA_EVENT.eventType,
 	title: NORMA_EVENT.title,

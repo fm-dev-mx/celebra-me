@@ -45,7 +45,7 @@ describe('Norma invitation publication contract', () => {
 		expect(content.music).toBeUndefined();
 		expect(content.gifts).toBeUndefined();
 		expect(content.navigation?.map((item) => item.href)).toEqual(['#event-location', '#rsvp']);
-		expect(normaInvitation.lifecycle).toBe('in_progress');
+		expect(normaInvitation.lifecycle).toBe('published');
 	});
 	it('owns a unique identity and exclusive asset paths with explicit intrinsic dimensions', () => {
 		const all = listInvitationDefinitions();

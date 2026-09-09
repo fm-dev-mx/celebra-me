@@ -47,8 +47,8 @@ Capture totals must be derived from `buildVisualPageCases`, `VISUAL_VIEWPORTS` a
 variant registry in `scripts/screenshot/visual-coverage-contract.ts`. Published invitations and
 active demos form the public matrix; structural fixtures cover every registered variant
 independently of publication lifecycle. Do not maintain separate numeric inventories or hardcoded
-invitation exclusions. Norma remains outside this task's review while in progress; this does not
-change publication state.
+invitation exclusions. A lifecycle change to `published` adds the invitation to the next candidate
+and requires new coverage and acceptance; an older matrix cannot certify the added route.
 
 ## Complete-page evidence and acceptance
 

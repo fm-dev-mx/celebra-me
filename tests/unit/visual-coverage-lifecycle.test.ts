@@ -18,23 +18,21 @@ describe('visual coverage lifecycle', () => {
 				.map((entry) => entry.slug),
 		);
 		expect(cases.filter((entry) => entry.kind === 'demo')).toEqual(discoverDemoCases());
-		for (const draft of definitions.filter((entry) => entry.lifecycle === 'in_progress')) {
-			expect(cases.some((entry) => entry.slug === draft.slug)).toBe(false);
-		}
 	});
 	it('automatically includes a newly published definition and changes only page coverage', () => {
 		const definitions = registry.listInvitationDefinitions();
-		const draft = definitions.find((entry) => entry.lifecycle === 'in_progress');
-		expect(draft).toBeDefined();
+		const draft = { ...definitions[0], lifecycle: 'in_progress' as const };
+		const fixtureDefinitions = [draft, ...definitions.slice(1)];
+		jest.spyOn(registry, 'listInvitationDefinitions').mockReturnValue(fixtureDefinitions);
 		const before = buildVisualCoverageCases();
 		jest.spyOn(registry, 'listInvitationDefinitions').mockReturnValue(
-			definitions.map((entry) =>
+			fixtureDefinitions.map((entry) =>
 				entry === draft ? { ...entry, lifecycle: 'published' } : entry,
 			),
 		);
 		const after = buildVisualCoverageCases();
 		expect(after.pageCases).toHaveLength(before.pageCases.length + 1);
-		expect(after.pageCases.some((entry) => entry.slug === draft!.slug)).toBe(true);
+		expect(after.pageCases.some((entry) => entry.slug === draft.slug)).toBe(true);
 		expect(after.variantCases).toEqual(before.variantCases);
 		expect(after.matrixHash).not.toBe(before.matrixHash);
 	});
