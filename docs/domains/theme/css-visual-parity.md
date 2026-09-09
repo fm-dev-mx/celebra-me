@@ -43,6 +43,11 @@ LFS. `.vercelignore` excludes references from CLI uploads; it does not replace t
 LFS setting. Accepted references must remain outside deployed static and function outputs. Temporary
 candidates and differences stay ignored.
 
+Structural viewport captures require two consecutive byte-identical PNGs before baseline comparison.
+Capture stabilization is bounded to five seconds and fails if the page keeps changing. It does not
+retry a failed comparison, widen pixel tolerances, or update accepted images. This prevents a single
+transitional frame from becoming candidate evidence.
+
 GitHub CI runs static/build, unit, browser, and disposable database checks independently. The
 required `Application Suite` status succeeds only when every application tier succeeds; cancelled,
 failed, or skipped tiers cannot authorize release. New runs cancel superseded runs for the same

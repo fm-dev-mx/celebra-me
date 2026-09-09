@@ -2,6 +2,7 @@ import {
 	hideOperationalTooling,
 	assertNoOperationalTooling,
 	initializeVisualCapture,
+	captureStableViewport,
 	waitForVisualHydration,
 } from './harness/complete-page-capture';
 import { auditCriticalLayout } from './harness/critical-layout-audit';
@@ -517,7 +518,7 @@ async function runVariantVisualTest(
 
 	// 8. Capture diagnostic viewport image for contact sheet / manifest
 	const snapshotName = `${preset}-${vp.name}-${section}-${variant}.png`;
-	const viewportSnapshotBuffer = await page.screenshot({ animations: 'disabled' });
+	const viewportSnapshotBuffer = await captureStableViewport(page);
 	if (shouldCompareVisualSnapshots(VISUAL_PARITY_MODE)) {
 		expect(viewportSnapshotBuffer).toMatchSnapshot(snapshotName, {
 			maxDiffPixelRatio: 0.001,
@@ -878,6 +879,30 @@ test('ornamented access preserves explicit inherited presentation tokens', async
 		.locator('.access-card')
 		.evaluate((element) => getComputedStyle(element, '::after').backgroundImage);
 	expect(glow).toBe('none');
+});
+
+test('viewport capture requires consecutive identical frames', async ({ page }) => {
+	await page.setContent('<style>body { margin: 0; background: red; }</style>');
+	const screenshot = page.screenshot.bind(page);
+	const first = await screenshot({ animations: 'disabled' });
+	let calls = 0;
+	page.screenshot = async (options) => {
+		const image = await screenshot(options);
+		if (++calls === 1) {
+			await page.evaluate(() => {
+				document.body.style.background = 'blue';
+			});
+		}
+		return image;
+	};
+	try {
+		const stable = await captureStableViewport(page);
+		expect(calls).toBeGreaterThanOrEqual(3);
+		expect(stable.equals(first)).toBe(false);
+		expect(stable.equals(await screenshot({ animations: 'disabled' }))).toBe(true);
+	} finally {
+		page.screenshot = screenshot;
+	}
 });
 
 test('section pixel alignment preserves geometry and visible differences', async ({ page }) => {
