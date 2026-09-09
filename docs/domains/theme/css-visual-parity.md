@@ -1,10 +1,9 @@
 # CSS Visual Parity Gate
 
-**Status:** The candidate at `1069aa87b588ab98290e3d7d021e3f3cb585205c` received human approval, but
-comparison at `11547c915baf25210969f4bc133fbfb599fdae4d` exposed unsettled RSVP captures. The
-existing baseline is retained as evidence, not release certification. A stabilized candidate
-requires renewed human approval before acceptance, followed by comparison and final CI. **Related:**
-[`architecture.md`](architecture.md#invitation-css-ownership-normative)
+**Status:** The stabilized candidate at `ba025729e7e28a388a43aa2949996dc94eb0c56a` received explicit
+human approval and replaces the earlier unsettled RSVP reference. The accepted manifest records the
+exact matrix, candidate hash and runtime. Acceptance does not replace comparison or final CI.
+**Related:** [`architecture.md`](architecture.md#invitation-css-ownership-normative)
 
 ## Rule
 
