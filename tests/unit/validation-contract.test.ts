@@ -17,7 +17,8 @@ describe('canonical validation contract', () => {
 	it('keeps full Stylelint and the production build in the canonical CI command', () => {
 		const manifest = readPackageManifest();
 		const scripts = manifest.scripts ?? {};
-		const ci = scripts['ci'] ?? '';
+		expect(scripts['ci']).toBe('pnpm ci:static && pnpm test && pnpm test:e2e:ci');
+		const ci = scripts['ci:static'] ?? '';
 
 		expect(ci).toContain('pnpm lint:styles');
 		expect(ci).not.toContain('pnpm lint:styles:changed');
@@ -123,7 +124,7 @@ describe('canonical validation contract', () => {
 		expect(opsCli).not.toContain("'validate-event-parity'");
 	});
 
-	it('keeps GitHub Actions on the canonical CI command', () => {
+	it('keeps GitHub Actions on the complete canonical CI tiers', () => {
 		const workflowPath = path.resolve(process.cwd(), '.github/workflows/commit-validation.yml');
 		expect(() => fs.readFileSync(workflowPath, 'utf8')).not.toThrow();
 		const workflow = fs.readFileSync(workflowPath, 'utf8');
@@ -136,8 +137,24 @@ describe('canonical validation contract', () => {
 		expect(workflow).toContain('node scripts/validate-commits.mjs');
 		expect(workflow).toContain('pnpm ops check-links');
 		expect(workflow).toContain('pnpm validate:markdown-tables');
-		expect(workflow).toContain('run: pnpm run ci');
-		expect((workflow.match(/run: pnpm run ci/g) ?? []).length).toBe(1);
+		for (const command of [
+			'pnpm ci:static',
+			'pnpm test',
+			'pnpm test:e2e:ci --max-failures=5 --workers=2',
+		]) {
+			expect(workflow).toContain(`run: ${command}\n`);
+		}
+		expect(workflow).toContain('needs: [application-checks, browser-validation]');
+		expect(workflow).toContain('tier: [static, unit, database]');
+		expect(workflow).toContain('cancel-in-progress: true');
+		expect(workflow).toContain("PLAYWRIGHT_USE_CANONICAL_FIXTURES: 'true'");
+		expect(workflow).toContain("PLAYWRIGHT_REQUIRE_VISUAL_PREFLIGHT: 'true'");
+		const imageDigest = workflow.match(/image: .*@(sha256:[a-f0-9]{64})/)?.[1];
+		expect(imageDigest).toBeDefined();
+		expect(workflow).toContain(`VISUAL_PARITY_OS_IMAGE_DIGEST: ${imageDigest}`);
+		expect(workflow).toContain(
+			'test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = success',
+		);
 		expect(workflow).toContain('uses: actions/checkout@v7');
 		expect(workflow).toContain('uses: pnpm/action-setup@v6');
 		expect(workflow).toContain('uses: actions/setup-node@v7');

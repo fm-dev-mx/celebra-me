@@ -1,9 +1,9 @@
 # CSS Visual Parity Gate
 
-**Status:** The stabilized candidate at `ba025729e7e28a388a43aa2949996dc94eb0c56a` received explicit
-human approval and replaces the earlier unsettled RSVP reference. The accepted manifest records the
-exact matrix, candidate hash and runtime. Acceptance does not replace comparison or final CI.
-**Related:** [`architecture.md`](architecture.md#invitation-css-ownership-normative)
+**Status:** The last accepted reference is `ba025729e7e28a388a43aa2949996dc94eb0c56a`. The portable
+CI runtime and mobile premiere hero flow require a new clean-source candidate and human acceptance;
+the existing manifest has not been reapproved or rewritten. Acceptance does not replace comparison
+or final CI. **Related:** [`architecture.md`](architecture.md#invitation-css-ownership-normative)
 
 ## Rule
 
@@ -35,13 +35,38 @@ and use Git LFS. The manifest records the reference commit, runtime, viewport, c
 hashes. Baselines may not contain database payloads, guest personalization, cookies, credentials,
 signed URLs, or external requests.
 
-Only the application validation job downloads Git LFS references, through its checkout step. Policy
-validation keeps LFS pointers and must not download image objects. Do not add a second
+Only the browser validation job downloads Git LFS references, through its checkout step. Other
+validation jobs keep LFS pointers and must not download image objects. Do not add a second
 `git lfs pull` after an LFS-enabled checkout. Keep Vercel's project Git LFS support disabled while
 these test references are the only LFS assets; revisit that setting before adding runtime assets to
 LFS. `.vercelignore` excludes references from CLI uploads; it does not replace the Git integration's
 LFS setting. Accepted references must remain outside deployed static and function outputs. Temporary
 candidates and differences stay ignored.
+
+GitHub CI runs static/build, unit, browser, and disposable database checks independently. The
+required `Application Suite` status succeeds only when every application tier succeeds; cancelled,
+failed, or skipped tiers cannot authorize release. New runs cancel superseded runs for the same
+branch or pull request. Browser CI uses two workers across files and stops after five failed tests,
+remaining failed overall. Each capture suite remains sequential so its manifest stays complete.
+
+Visual suites do not retry individual captures: worker restarts lose the accumulated complete-matrix
+manifest and can hide the first failure behind incomplete-capture errors. An explicitly reviewed
+whole-suite rerun remains possible without updating references or changing tolerances.
+
+Browser CI checks the accepted runtime and registry-derived route availability before starting
+capture workers. `PLAYWRIGHT_USE_CANONICAL_FIXTURES=true` starts a loopback-only, read-only
+transport from versioned invitation definitions and the existing media preparation pipeline.
+Explicit source directories prevent fallback to persisted provider assets. Unknown endpoints and all
+writes fail; this fixture is rendering evidence, not a substitute for the separate disposable
+database contracts or hosted Preview checks. Playwright must own both servers and may not reuse a
+persistent service.
+
+The browser job pins the public Playwright image by digest and installs the required Node and pnpm
+versions. Changing from the previously accepted local image requires a clean-source candidate and
+explicit acceptance of its new runtime fingerprint before CI can certify it. Do not point CI at
+Production, inject personal Local credentials, or downgrade comparison to diagnostic mode to obtain
+a green status. The accepted image must be available to the runner; a local image ID alone is not a
+portable CI setup. Passing local comparison does not establish hosted CI readiness.
 
 For regenerated candidates, the per-suite `manifest.json` and `pages-manifest.json` are the source
 of truth. A retained `combined-manifest.json` must not override those fresh captures or mask
@@ -49,7 +74,10 @@ incomplete coverage. An accepted primary manifest remains authoritative for comp
 
 Synthetic section fixtures must apply the production box-sizing reset across Astro component
 boundaries. Long-name checks must include optional foreground portraits: title and details need
-independent flow space, while background-only covers retain their reviewed composition.
+independent flow space, while background-only covers retain their reviewed composition. Set the
+motion preference before navigation and await settled hydration/fonts before geometry assertions;
+transient transforms must not conceal overlaps. The mobile premiere standard hero with a foreground
+portrait reserves separate flow rows for the portrait, information and full name.
 
 Baseline comparison and acceptance require the pinned certification runtime: Linux x64, Node
 `v24.14.1`, pnpm `11.23.0`, Chromium through Playwright `1.62.1`, `en-US`, UTC, device scale factor

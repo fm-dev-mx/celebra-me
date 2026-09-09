@@ -5,12 +5,36 @@ import { computeVisualMatrixHash } from '../../scripts/screenshot/visual-coverag
 import os from 'node:os';
 import path from 'node:path';
 import {
+	assertVisualRuntimeReady,
 	assertVisualComparisonReady,
 	shouldCompareVisualSnapshots,
 	visualComparisonResult,
 } from '../e2e/harness/visual-baseline-policy';
 
 describe('visual baseline policy', () => {
+	it('rejects an unverified or mismatched certification runtime before capture', () => {
+		const runtime = {
+			node: 'v24.14.1',
+			pnpm: '11.23.0',
+			playwright: '1.62.1',
+			browser: 'chromium',
+			browserRevision: '1234',
+			browserVersion: '151',
+			platform: 'linux-x64',
+			locale: 'en-US',
+			timezone: 'UTC',
+			deviceScaleFactor: 1,
+			osImageDigest: `sha256:${'a'.repeat(64)}`,
+		};
+		expect(() => assertVisualRuntimeReady(runtime, runtime)).not.toThrow();
+		expect(() =>
+			assertVisualRuntimeReady(runtime, { ...runtime, platform: 'win32-x64' }),
+		).toThrow(/platform/);
+		expect(() =>
+			assertVisualRuntimeReady(runtime, { ...runtime, osImageDigest: 'unverified' }),
+		).toThrow(/runtime differs/);
+		expect(() => assertVisualRuntimeReady({}, runtime)).toThrow(/runtime differs/);
+	});
 	it('keeps diagnostic runs non-comparative', () => {
 		expect(() => assertVisualComparisonReady('diagnostic', 'missing.json')).not.toThrow();
 		expect(shouldCompareVisualSnapshots('diagnostic')).toBe(false);

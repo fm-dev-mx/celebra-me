@@ -76,6 +76,7 @@ interface CapturedSnapshotInfo {
 const capturedSnapshots: CapturedSnapshotInfo[] = [];
 
 test.describe('Registry-Driven Visual Portability Suite', () => {
+	test.describe.configure({ retries: 0 });
 	// Baseline Preset: jewelry-box (all registered canonical variants)
 	for (const entry of CANONICAL_VARIANT_REGISTRY) {
 		for (const vp of VIEWPORTS) {

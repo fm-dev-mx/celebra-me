@@ -98,6 +98,7 @@ function isAllowedVisualAssetUrl(rawUrl: string, baseOrigin: string): boolean {
 }
 
 test.describe('Canonical invitation complete-page visual parity', () => {
+	test.describe.configure({ retries: 0 });
 	for (const entry of PAGE_CASES) {
 		for (const viewport of VIEWPORTS) {
 			test(`${entry.kind}: ${entry.eventType}/${entry.slug} @ ${viewport.name}`, async ({

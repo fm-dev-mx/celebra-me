@@ -148,6 +148,7 @@ function runPlaywright(mode: 'candidate' | 'compare'): void {
 			env: {
 				...process.env,
 				VISUAL_PARITY_MODE: mode,
+				PLAYWRIGHT_REQUIRE_VISUAL_PREFLIGHT: 'true',
 				VISUAL_PARITY_OUTPUT_ROOT: relative(ROOT, outputRoot).replace(/\\/g, '/'),
 				VISUAL_PARITY_SNAPSHOT_ROOT:
 					mode === 'candidate'

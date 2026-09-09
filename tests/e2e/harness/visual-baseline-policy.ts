@@ -118,3 +118,35 @@ export function shouldCompareVisualSnapshots(mode: VisualParityMode): boolean {
 export function visualComparisonResult(mode: VisualParityMode): 'PASS' | 'CANDIDATE' {
 	return mode === 'compare' ? 'PASS' : 'CANDIDATE';
 }
+
+export function assertVisualRuntimeReady(
+	accepted: Record<string, unknown>,
+	current: Record<string, unknown>,
+): void {
+	const keys = [
+		'node',
+		'pnpm',
+		'playwright',
+		'browser',
+		'browserRevision',
+		'browserVersion',
+		'platform',
+		'locale',
+		'timezone',
+		'deviceScaleFactor',
+		'osImageDigest',
+	];
+	const differences = keys.filter(
+		(key) => accepted[key] === undefined || current[key] !== accepted[key],
+	);
+	if (
+		differences.length > 0 ||
+		typeof current.osImageDigest !== 'string' ||
+		!/^sha256:[0-9a-f]{64}$/i.test(current.osImageDigest)
+	) {
+		throw new Error(
+			`Visual environment is not ready: certification runtime differs (${differences.join(', ')}). ` +
+				'Use the verified accepted runtime; do not regenerate references or disable comparison to bypass this failure.',
+		);
+	}
+}
