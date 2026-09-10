@@ -54,7 +54,7 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 			</div>
 
 			<section id="panel-login" class="auth-panel" role="tabpanel" aria-labelledby="tab-login">
-				<form id="login-form" class="auth-form" novalidate>
+				<form id="login-form" class="auth-form" method="post" novalidate>
 					<div class="auth-field">
 						<label for="login-method">Como quieres entrar</label>
 						<select id="login-method" name="method">
@@ -87,7 +87,7 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 						<p id="login-password-error" class="field-error" aria-live="polite"></p>
 					</div>
 
-					<button id="login-submit" type="submit" class="auth-submit">Continuar</button>
+					<button id="login-submit" type="submit" class="auth-submit" disabled>Continuar</button>
 				</form>
 			</section>
 
@@ -98,7 +98,7 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 				aria-labelledby="tab-register"
 				hidden
 			>
-				<form id="register-form" class="auth-form" novalidate>
+				<form id="register-form" class="auth-form" method="post" novalidate>
 					<div class="auth-field">
 						<label for="register-method">Como quieres entrar</label>
 						<select id="register-method" name="method">
@@ -145,13 +145,16 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 						<p id="register-claim-code-error" class="field-error" aria-live="polite"></p>
 					</div>
 
-					<button id="register-submit" type="submit" class="auth-submit">
+					<button id="register-submit" type="submit" class="auth-submit" disabled>
 						Crear cuenta y reclamar evento
 					</button>
 				</form>
 			</section>
 
 			<p id="auth-status" class="auth-status" role="status" aria-live="polite" tabindex="-1"></p>
+			<noscript>
+				<p>Para iniciar sesión o registrarse, active JavaScript en su navegador.</p>
+			</noscript>
 		</article>
 	</section>
 

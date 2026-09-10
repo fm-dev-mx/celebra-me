@@ -300,4 +300,6 @@ export function initLoginFlow() {
 	} else {
 		setStatus('Elige como quieres entrar y continua cuando estes listo.', 'info');
 	}
+	// Enable submission only after both handlers and their initial UI are ready.
+	setSubmitting(false, 'login');
 }
