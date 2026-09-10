@@ -77,6 +77,10 @@ describe('groupVenues', () => {
 		const result = groupVenues(venues);
 		expect(result).toHaveLength(1);
 		expect(result[0].venueEvent).toBe('ITINERARIO EN SEDE');
+		expect(
+			groupVenues([{ ...venues[0], label: 'Ceremonia y recepción' }, venues[1]])[0]
+				.venueEvent,
+		).toBe('Ceremonia y recepción');
 		expect(result[0].type).toBe('grouped');
 		expect(result[0].events).toEqual([
 			{ name: 'Ceremonia religiosa', time: '3:45 p.m.' },

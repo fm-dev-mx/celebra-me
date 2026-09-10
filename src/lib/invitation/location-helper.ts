@@ -130,7 +130,7 @@ export function groupVenues(venues: VenueEntry[]): GroupedVenue[] {
 			// Consolidate into one card
 			const groupedVenue: GroupedVenue = {
 				...current,
-				venueEvent: 'ITINERARIO EN SEDE', // Editorial label for the grouped card title
+				venueEvent: current.label || 'ITINERARIO EN SEDE',
 				type: 'grouped',
 				events,
 			};
