@@ -54,12 +54,15 @@ function main(): void {
 		}>;
 	};
 	if (runs.total_count > 100) throw new Error('Check result page is incomplete.');
-	const statuses = api('status?per_page=100') as {
-		sha: string;
-		total_count: number;
-		statuses: Array<{ context: string; state: string; creator: { login: string } }>;
-	};
-	if (statuses.total_count > 100) throw new Error('Status result page is incomplete.');
+	// The combined /status response omits creator. Read the newest-first individual
+	// statuses on this exact SHA so the publisher can be verified.
+	const statuses = api('statuses?per_page=100') as Array<{
+		context: string;
+		state: string;
+		creator?: { login: string };
+	}>;
+	if (!Array.isArray(statuses) || statuses.length >= 100)
+		throw new Error('Status result page is incomplete.');
 	const checks: ReleaseCheck[] = [];
 	for (const name of REQUIRED_RELEASE_CHECKS) {
 		const run = runs.check_runs
@@ -73,13 +76,13 @@ function main(): void {
 				trusted: run.app.id === 15368,
 			});
 		else {
-			const status = statuses.statuses.find((entry) => entry.context === name);
+			const status = statuses.find((entry) => entry.context === name);
 			if (status)
 				checks.push({
 					name,
-					sha: statuses.sha,
+					sha,
 					state: status.state,
-					trusted: status.creator.login === 'github-actions[bot]',
+					trusted: status.creator?.login === 'github-actions[bot]',
 				});
 		}
 	}
