@@ -150,7 +150,9 @@ describe('canonical validation contract', () => {
 			]) {
 				expect(workflowLines).toContain(`run: ${command}`);
 			}
-			expect(workflow).toContain('needs: [application-checks, browser-validation]');
+			expect(workflow).toContain(
+				'needs: [policy-validation, application-checks, browser-validation]',
+			);
 			expect(workflow).toContain('tier: [static, unit, database]');
 			expect(workflow).toContain('cancel-in-progress: true');
 			expect(workflow).toContain("PLAYWRIGHT_USE_CANONICAL_FIXTURES: 'true'");
