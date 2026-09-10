@@ -70,6 +70,8 @@ const sealPresentation = resolveSealPresentation({
 const isWaxRenderer = ['wax-organic', 'wax-medallion'].includes(sealPresentation.renderer);
 // Discrete seal-zone open cue (editorial, not a SaaS tooltip bubble).
 const sealHintText = tooltipText?.trim() || 'Toque el sello';
+const teaserDetailsParts = teaserDetails ? teaserDetails.split(' · ') : [];
+const hasAccentTeaser = teaserDetailsParts.length === 2;
 const skipParams = new URLSearchParams(Astro.url.search);
 skipParams.set('skipEnvelope', 'true');
 const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
@@ -145,7 +147,19 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					teaserDetails && (
 						<div class="tease-details-group">
 							<div class="tease-divider"></div>
-							<p class="envelope-details">{teaserDetails}</p>
+							<p class="envelope-details">
+								{
+									hasAccentTeaser ? (
+										<>
+											{teaserDetailsParts[0]}
+											<span aria-hidden="true"> · </span>
+											<span class="envelope-details__accent">{teaserDetailsParts[1]}</span>
+										</>
+									) : (
+										teaserDetails
+									)
+								}
+							</p>
 						</div>
 					)
 				}
