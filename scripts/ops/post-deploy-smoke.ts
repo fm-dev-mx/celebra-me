@@ -6,6 +6,8 @@ import {
 	assertOperationalEvidenceSafe,
 	serializeOperationalEvidenceEvent,
 	sanitizeOperationalCorrelationId,
+	type OperationalAggregatePayload,
+	type OperationalAggregatePayloadValue,
 	type OperationalEvidenceV1,
 } from '../../src/lib/operations/operational-evidence.ts';
 import {
@@ -37,7 +39,23 @@ export interface ValidatedVercelDispatch {
 	hostname: string;
 }
 
-interface PostDeployPayload extends Record<string, string | number | boolean | null> {
+export type PostDeployProbeId =
+	'homepage' | 'login' | 'demo' | 'auth_boundary' | 'runtime_health' | 'header_policy' | 'asset';
+export type PostDeployProbeTarget =
+	'root' | 'login' | 'demo' | 'auth_session' | 'health' | 'root_headers' | 'astro_asset';
+export type PostDeployProbeFailureClass =
+	'none' | 'network_error' | 'http_status' | 'json_invalid' | 'contract_mismatch';
+
+export interface PostDeployProbeResult extends Record<string, OperationalAggregatePayloadValue> {
+	probe: PostDeployProbeId;
+	target: PostDeployProbeTarget;
+	status_code: number | null;
+	failure_class: PostDeployProbeFailureClass;
+	retry_count: number;
+	duration_ms: number;
+}
+
+export interface PostDeployPayload extends OperationalAggregatePayload {
 	probe_count: number;
 	failed_probe_count: number;
 	network_retry_count: number;
@@ -45,6 +63,7 @@ interface PostDeployPayload extends Record<string, string | number | boolean | n
 	asset_verified: boolean | null;
 	auth_boundary_verified: boolean | null;
 	header_policy_verified: boolean | null;
+	probe_results: PostDeployProbeResult[];
 }
 
 export type PostDeployEvidence = OperationalEvidenceV1<'post_deploy_smoke', PostDeployPayload>;
@@ -58,6 +77,7 @@ export interface ProductionSmokeResult {
 	authBoundaryVerified: boolean;
 	headerPolicyVerified: boolean;
 	failureCodes: string[];
+	probeResults: PostDeployProbeResult[];
 }
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
@@ -237,15 +257,16 @@ function emptyPostDeployPayload(): PostDeployPayload {
 		asset_verified: null,
 		auth_boundary_verified: null,
 		header_policy_verified: null,
+		probe_results: [],
 	};
 }
 
 async function fetchWithOneRetry(
 	fetchImpl: FetchLike,
 	url: string,
-	onRetry: () => void,
-): Promise<Response> {
+): Promise<{ response: Response; retryCount: number }> {
 	let lastError: unknown = null;
+	let retryCount = 0;
 	for (let attempt = 0; attempt < 2; attempt += 1) {
 		try {
 			const response = await fetchImpl(url, {
@@ -255,14 +276,14 @@ async function fetchWithOneRetry(
 				headers: { 'User-Agent': 'celebra-me-post-deploy-smoke/1' },
 			});
 			if (attempt === 0 && TRANSIENT_STATUSES.has(response.status)) {
-				onRetry();
+				retryCount += 1;
 				continue;
 			}
-			return response;
+			return { response, retryCount };
 		} catch (error: unknown) {
 			lastError = error;
 			if (attempt === 0) {
-				onRetry();
+				retryCount += 1;
 				continue;
 			}
 		}
@@ -292,82 +313,171 @@ export async function runProductionSmoke(
 	let headerPolicyVerified = false;
 	let rootHtml: string | null = null;
 	let rootHeaders: Headers | null = null;
+	let rootStatusCode: number | null = null;
+	const probeResults: PostDeployProbeResult[] = [];
 
-	async function probe(code: string, action: () => Promise<boolean>): Promise<void> {
+	async function probe(
+		code: string,
+		probeId: PostDeployProbeId,
+		target: PostDeployProbeTarget,
+		action: () => Promise<{
+			passed: boolean;
+			statusCode: number | null;
+			failureClass: PostDeployProbeFailureClass;
+			retryCount: number;
+		}>,
+	): Promise<void> {
+		const startedAt = performance.now();
 		try {
-			if (!(await action())) failures.push(code);
+			const result = await action();
+			probeResults.push({
+				probe: probeId,
+				target,
+				status_code: result.statusCode,
+				failure_class: result.passed ? 'none' : result.failureClass,
+				retry_count: result.retryCount,
+				duration_ms: Math.round(performance.now() - startedAt),
+			});
+			retries += result.retryCount;
+			if (!result.passed) failures.push(code);
 		} catch {
+			probeResults.push({
+				probe: probeId,
+				target,
+				status_code: null,
+				failure_class: 'network_error',
+				retry_count: 1,
+				duration_ms: Math.round(performance.now() - startedAt),
+			});
+			retries += 1;
 			failures.push(code);
 		}
 	}
 
-	await probe('homepage_failed', async () => {
-		const response = await fetchWithOneRetry(fetchImpl, `${baseUrl}/`, () => {
-			retries += 1;
-		});
+	await probe('homepage_failed', 'homepage', 'root', async () => {
+		const { response, retryCount } = await fetchWithOneRetry(fetchImpl, `${baseUrl}/`);
 		rootHeaders = response.headers;
+		rootStatusCode = response.status;
 		rootHtml = await response.text();
-		return response.status === 200;
+		return {
+			passed: response.status === 200,
+			statusCode: response.status,
+			failureClass: 'http_status',
+			retryCount,
+		};
 	});
-	await probe('login_failed', async () => {
-		const response = await fetchWithOneRetry(fetchImpl, `${baseUrl}/login`, () => {
-			retries += 1;
-		});
-		return response.status === 200;
+	await probe('login_failed', 'login', 'login', async () => {
+		const { response, retryCount } = await fetchWithOneRetry(fetchImpl, `${baseUrl}/login`);
+		return {
+			passed: response.status === 200,
+			statusCode: response.status,
+			failureClass: 'http_status',
+			retryCount,
+		};
 	});
-	await probe('demo_failed', async () => {
-		const response = await fetchWithOneRetry(
+	await probe('demo_failed', 'demo', 'demo', async () => {
+		const { response, retryCount } = await fetchWithOneRetry(
 			fetchImpl,
 			`${baseUrl}/xv/demo-xv-editorial`,
-			() => {
-				retries += 1;
-			},
 		);
-		return response.status === 200;
+		return {
+			passed: response.status === 200,
+			statusCode: response.status,
+			failureClass: 'http_status',
+			retryCount,
+		};
 	});
-	await probe('auth_boundary_failed', async () => {
-		const response = await fetchWithOneRetry(fetchImpl, `${baseUrl}/api/auth/session`, () => {
-			retries += 1;
-		});
+	await probe('auth_boundary_failed', 'auth_boundary', 'auth_session', async () => {
+		const { response, retryCount } = await fetchWithOneRetry(
+			fetchImpl,
+			`${baseUrl}/api/auth/session`,
+		);
 		authBoundaryVerified =
 			response.status === 401 &&
 			(response.headers.get('cache-control')?.includes('no-store') ?? false) &&
 			!response.headers.has('set-cookie');
-		return authBoundaryVerified;
+		return {
+			passed: authBoundaryVerified,
+			statusCode: response.status,
+			failureClass: response.status !== 401 ? 'http_status' : 'contract_mismatch',
+			retryCount,
+		};
 	});
-	await probe('runtime_health_failed', async () => {
-		const response = await fetchWithOneRetry(fetchImpl, `${baseUrl}/api/health`, () => {
-			retries += 1;
-		});
-		if (response.status !== 200) return false;
-		const payload = (await response.json()) as {
+	await probe('runtime_health_failed', 'runtime_health', 'health', async () => {
+		const { response, retryCount } = await fetchWithOneRetry(
+			fetchImpl,
+			`${baseUrl}/api/health`,
+		);
+		if (response.status !== 200)
+			return {
+				passed: false,
+				statusCode: response.status,
+				failureClass: 'http_status',
+				retryCount,
+			};
+		let payload: {
 			status?: unknown;
 			checks?: { runtime?: { status?: unknown } };
 		};
+		try {
+			payload = (await response.json()) as typeof payload;
+		} catch {
+			return {
+				passed: false,
+				statusCode: response.status,
+				failureClass: 'json_invalid',
+				retryCount,
+			};
+		}
 		runtimeHealthVerified =
-			payload.status === 'healthy' && payload.checks?.runtime?.status === 'ok';
-		return runtimeHealthVerified;
+			payload?.status === 'healthy' && payload?.checks?.runtime?.status === 'ok';
+		return {
+			passed: runtimeHealthVerified,
+			statusCode: response.status,
+			failureClass: 'contract_mismatch',
+			retryCount,
+		};
 	});
-	await probe('header_policy_failed', async () => {
+	await probe('header_policy_failed', 'header_policy', 'root_headers', async () => {
 		headerPolicyVerified = rootHeaders !== null && hasExpectedSecurityHeaders(rootHeaders);
-		return headerPolicyVerified;
+		return {
+			passed: headerPolicyVerified,
+			statusCode: rootStatusCode,
+			failureClass: 'contract_mismatch',
+			retryCount: 0,
+		};
 	});
-	await probe('asset_failed', async () => {
+	await probe('asset_failed', 'asset', 'astro_asset', async () => {
 		const match = rootHtml?.match(/(?:src|href)=["']([^"']*\/_astro\/[^"']+)["']/i);
-		if (!match?.[1]) return false;
+		if (!match?.[1])
+			return {
+				passed: false,
+				statusCode: null,
+				failureClass: 'contract_mismatch',
+				retryCount: 0,
+			};
 		const assetUrl = new URL(match[1], baseUrl);
-		if (assetUrl.origin !== new URL(baseUrl).origin) return false;
-		const response = await fetchWithOneRetry(fetchImpl, assetUrl.toString(), () => {
-			retries += 1;
-		});
+		if (assetUrl.origin !== new URL(baseUrl).origin)
+			return {
+				passed: false,
+				statusCode: null,
+				failureClass: 'contract_mismatch',
+				retryCount: 0,
+			};
+		const { response, retryCount } = await fetchWithOneRetry(fetchImpl, assetUrl.toString());
 		assetVerified =
 			response.status === 200 &&
 			(response.headers.get('cache-control')?.includes('immutable') ?? false);
-		return assetVerified;
+		return {
+			passed: assetVerified,
+			statusCode: response.status,
+			failureClass: response.status !== 200 ? 'http_status' : 'contract_mismatch',
+			retryCount,
+		};
 	});
 
 	return {
-		probeCount: 7,
+		probeCount: probeResults.length,
 		failedProbeCount: failures.length,
 		networkRetryCount: retries,
 		runtimeHealthVerified,
@@ -375,6 +485,7 @@ export async function runProductionSmoke(
 		authBoundaryVerified,
 		headerPolicyVerified,
 		failureCodes: failures,
+		probeResults,
 	};
 }
 
@@ -387,6 +498,7 @@ function resultPayload(result: ProductionSmokeResult): PostDeployPayload {
 		asset_verified: result.assetVerified,
 		auth_boundary_verified: result.authBoundaryVerified,
 		header_policy_verified: result.headerPolicyVerified,
+		probe_results: result.probeResults,
 	};
 }
 
@@ -400,21 +512,36 @@ function emitEvidence(evidence: PostDeployEvidence, phase: 'started' | 'complete
 	else console.info(serialized);
 }
 
+export function formatEvidenceSummary(evidence: PostDeployEvidence): string {
+	const tableRows =
+		evidence.payload.probe_results.length > 0
+			? [
+					'| Probe | Target | Status | Class | Retries | Duration ms |',
+					'| --- | --- | ---: | --- | ---: | ---: |',
+					...evidence.payload.probe_results.map(
+						(result) =>
+							`| ${result.probe} | ${result.target} | ${result.status_code ?? 'UNVERIFIED'} | ${result.failure_class} | ${result.retry_count} | ${result.duration_ms} |`,
+					),
+					'',
+				]
+			: [];
+	return [
+		`## Post-deploy smoke — ${evidence.environment}`,
+		'',
+		`- Status: \`${evidence.status}\``,
+		`- Reason: \`${evidence.reasonCode}\``,
+		`- Run: \`${evidence.runId}\``,
+		`- Deployment: \`${evidence.deploymentId ?? 'UNVERIFIED'}\``,
+		`- Commit: \`${evidence.commitSha ?? 'UNVERIFIED'}\``,
+		`- Observed at: \`${evidence.observedAt}\``,
+		`- Owner action: ${evidence.ownerAction}`,
+		'',
+		...tableRows,
+	].join('\n');
+}
+
 function writeEvidenceSummary(evidence: PostDeployEvidence): void {
-	appendSummary(
-		[
-			`## Post-deploy smoke — ${evidence.environment}`,
-			'',
-			`- Status: \`${evidence.status}\``,
-			`- Reason: \`${evidence.reasonCode}\``,
-			`- Run: \`${evidence.runId}\``,
-			`- Deployment: \`${evidence.deploymentId ?? 'UNVERIFIED'}\``,
-			`- Commit: \`${evidence.commitSha ?? 'UNVERIFIED'}\``,
-			`- Observed at: \`${evidence.observedAt}\``,
-			`- Owner action: ${evidence.ownerAction}`,
-			'',
-		].join('\n'),
-	);
+	appendSummary(formatEvidenceSummary(evidence));
 }
 
 async function validateCommand(): Promise<void> {

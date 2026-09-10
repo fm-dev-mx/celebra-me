@@ -2,11 +2,12 @@ import {
 	OPERATIONAL_EVIDENCE_SCHEMA_VERSION,
 	assertOperationalEvidenceSafe,
 	serializeOperationalEvidenceEvent,
+	type OperationalAggregatePayload,
 	type OperationalEvidenceV1,
 } from '@/lib/operations/operational-evidence';
 
 function evidence(
-	payload: Record<string, string | number | boolean | null> = {
+	payload: OperationalAggregatePayload = {
 		count: 1,
 		optional_count: null,
 	},
@@ -47,6 +48,7 @@ describe('OperationalEvidenceV1', () => {
 		[{ invitation_slug: 'client-event' }, 'payload key'],
 		[{ endpoint: 'https://example.com/api?token=secret' }, 'payload value'],
 		[{ cookie_value: 'abc' }, 'payload key'],
+		[{ probe_results: [{ response_body: 'private' }] }, 'payload key'],
 	] as const)('rejects sensitive or high-cardinality %s', (payload, expected) => {
 		expect(() => assertOperationalEvidenceSafe(evidence(payload))).toThrow(expected);
 	});

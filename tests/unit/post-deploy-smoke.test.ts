@@ -1,7 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { runProductionSmoke, validateVercelDispatch } from '../../scripts/ops/post-deploy-smoke';
+import {
+	formatEvidenceSummary,
+	runProductionSmoke,
+	validateVercelDispatch,
+	type PostDeployEvidence,
+} from '../../scripts/ops/post-deploy-smoke';
 
 function response(status: number, body = '', headers: Record<string, string> = {}): Response {
 	return {
@@ -128,6 +133,15 @@ describe('post-deploy smoke', () => {
 			authBoundaryVerified: true,
 			headerPolicyVerified: true,
 			failureCodes: [],
+			probeResults: expect.arrayContaining([
+				expect.objectContaining({
+					probe: 'homepage',
+					target: 'root',
+					status_code: 200,
+					failure_class: 'none',
+					retry_count: 0,
+				}),
+			]),
 		});
 	});
 
@@ -139,6 +153,97 @@ describe('post-deploy smoke', () => {
 
 		expect(result.networkRetryCount).toBe(1);
 		expect(result.failedProbeCount).toBe(0);
+		expect(result.probeResults[0]).toMatchObject({ retry_count: 1, failure_class: 'none' });
+	});
+
+	it('records safe HTTP, JSON, and network diagnostics without request data', async () => {
+		const http = await runProductionSmoke(
+			'https://celebra-me.com',
+			jest.fn(async () => response(403)),
+		);
+		expect(http.probeResults).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					probe: 'homepage',
+					status_code: 403,
+					failure_class: 'http_status',
+				}),
+			]),
+		);
+
+		const baseFetch = productionFetch();
+		const invalidJson = productionFetch();
+		invalidJson.mockImplementation(async (input: string) =>
+			new URL(input).pathname === '/api/health'
+				? response(200, 'not-json')
+				: baseFetch(input),
+		);
+		const json = await runProductionSmoke('https://celebra-me.com', invalidJson);
+		expect(json.probeResults).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					probe: 'runtime_health',
+					status_code: 200,
+					failure_class: 'json_invalid',
+				}),
+			]),
+		);
+
+		const network = await runProductionSmoke(
+			'https://celebra-me.com',
+			jest.fn(async () => Promise.reject(new Error('secret-url?token=do-not-log'))),
+		);
+		expect(network.probeResults).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					status_code: null,
+					failure_class: 'network_error',
+					retry_count: 1,
+				}),
+			]),
+		);
+		expect(JSON.stringify(network.probeResults)).not.toContain('secret-url');
+	});
+
+	it('renders probe diagnostics without URLs, query strings, or response data', () => {
+		const evidence: PostDeployEvidence = {
+			schemaVersion: 1,
+			check: 'post_deploy_smoke',
+			environment: 'production',
+			runId: 'run_abcdef123',
+			startedAt: '2026-09-10T22:00:00.000Z',
+			completedAt: '2026-09-10T22:00:01.000Z',
+			observedAt: '2026-09-10T22:00:01.000Z',
+			status: 'FAILED',
+			reasonCode: 'post_deploy_smoke_failed',
+			source: 'github_actions',
+			ownerAction: 'Revise el Job Summary.',
+			commitSha: 'a'.repeat(40),
+			deploymentId: 'dpl_abcdef123',
+			payload: {
+				probe_count: 7,
+				failed_probe_count: 1,
+				network_retry_count: 0,
+				runtime_health_verified: false,
+				asset_verified: false,
+				auth_boundary_verified: false,
+				header_policy_verified: false,
+				probe_results: [
+					{
+						probe: 'homepage',
+						target: 'root',
+						status_code: 403,
+						failure_class: 'http_status',
+						retry_count: 0,
+						duration_ms: 8,
+					},
+				],
+			},
+		};
+
+		const summary = formatEvidenceSummary(evidence);
+		expect(summary).toContain('| homepage | root | 403 | http_status | 0 | 8 |');
+		expect(summary).not.toMatch(/https?:\/\/|\?|cookie|body|token|secret/i);
 	});
 
 	it('keeps the workflow event-driven, SHA-pinned, single-browser, and artifact-free', () => {
