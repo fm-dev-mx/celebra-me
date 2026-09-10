@@ -28,6 +28,32 @@ describe('users admin hook', () => {
 		});
 	});
 
+	it('refreshes an incomplete account after creation fails without exposing credentials', async () => {
+		const { result } = renderHook(() => useUsersAdmin());
+		await waitFor(() => expect(result.current.loading).toBe(false));
+		mockedAdminApi.createUser.mockRejectedValueOnce(new Error('El alta quedó incompleta.'));
+		mockedAdminApi.listUsers.mockResolvedValueOnce({
+			items: [
+				{
+					id: 'synthetic-user',
+					email: 'host@example.test',
+					role: null,
+					createdAt: '',
+					assignedEvents: [],
+				},
+			],
+			total: 1,
+			page: 1,
+			perPage: 50,
+		});
+		await act(async () => {
+			await result.current.createUser({ email: 'host@example.test', role: 'host_client' });
+		});
+		expect(result.current.createdUser).toBeNull();
+		expect(result.current.items[0].role).toBeNull();
+		expect(result.current.error).toBe('El alta quedó incompleta.');
+	});
+
 	it('stores one-time credentials after creating a user without email', async () => {
 		mockedAdminApi.createUser.mockResolvedValue({
 			item: {

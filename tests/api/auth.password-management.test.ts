@@ -1,3 +1,4 @@
+import { findAppUserRoleByUserIdService } from '@/lib/rsvp/repositories/role-membership.repository';
 import { generateTemporaryPassword } from '@/lib/rsvp/services/user-admin.service';
 import { POST as resetPasswordAdmin } from '@/pages/api/dashboard/admin/users/reset-password';
 import { POST as changePassword } from '@/pages/api/auth/change-password';
@@ -9,6 +10,10 @@ import { createMockRequest } from '../helpers/api-mocks';
 import * as mutationOperationService from '@/lib/intake/services/mutation-operation.service';
 import * as mutationOperationRepository from '@/lib/intake/repositories/mutation-operation.repository';
 import * as runtimeMutationContext from '@/lib/server/runtime-mutation-context';
+
+jest.mock('@/lib/rsvp/repositories/role-membership.repository', () => ({
+	findAppUserRoleByUserIdService: jest.fn(),
+}));
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signInWithPassword: jest.fn(),
@@ -83,12 +88,18 @@ describe('Password Management & Recovery', () => {
 	>;
 
 	beforeEach(() => {
+		jest.mocked(findAppUserRoleByUserIdService).mockResolvedValue({
+			userId: '550e8400-e29b-41d4-a716-446655440000',
+			role: 'host_client',
+			createdAt: '',
+			updatedAt: '',
+		});
 		process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-secret';
 		getAuthUserAdminByIdMock.mockResolvedValue({
 			id: '550e8400-e29b-41d4-a716-446655440000',
 			email: 'client@example.com',
 			user_metadata: {},
-			app_metadata: {},
+			app_metadata: { role: 'host_client' },
 		});
 		findMutationOperationReceiptMock.mockResolvedValue(null);
 		recordInvitationMutationOutcomeMock.mockResolvedValue({

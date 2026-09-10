@@ -7,6 +7,7 @@ import { createMockRequest } from '../helpers/api-mocks';
 import { AuthRequestError } from '@/lib/rsvp/core/errors';
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
+	getAuthUserAdminById: jest.fn(),
 	signUpWithPassword: jest.fn(),
 	sendMagicLink: jest.fn(),
 }));
@@ -32,6 +33,38 @@ describe('API: /api/auth/register-host', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
+		jest.mocked(authApi.getAuthUserAdminById).mockResolvedValue({
+			id: 'user-1',
+			app_metadata: { role: 'host_client' },
+		});
+	});
+
+	it('does not issue cookies or success when role provisioning fails after signup', async () => {
+		const log = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		signUpMock.mockResolvedValue({
+			access_token: 'synthetic-token',
+			user: { id: 'user-1', email: 'host@example.test' },
+		});
+		claimEventMock.mockResolvedValue({ eventId: 'event-1' });
+		ensureRoleMock.mockRejectedValueOnce(new Error('role write failed'));
+		const response = await registerHost({
+			request: createMockRequest({
+				email: 'host@example.test',
+				password: 'Synthetic-123!',
+				claimCode: 'CLAIM-OK',
+			}),
+			url: new URL('http://localhost/api/auth/register-host'),
+		} as unknown as APIContext);
+		expect(response.status).toBe(409);
+		expect(response.headers.has('set-cookie')).toBe(false);
+		expect((await response.json()).error.code).toBe('account_access_incomplete');
+		expect(log).toHaveBeenCalledWith(
+			JSON.stringify({
+				event: 'registration_post_auth_error',
+				status: 409,
+				code: 'account_access_incomplete',
+			}),
+		);
 	});
 
 	it('Scenario: Standard Host Registration with Claim Code', async () => {

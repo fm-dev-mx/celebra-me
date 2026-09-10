@@ -35,7 +35,7 @@ are provisional until human acceptance; this record does not grant environment r
 | timeZone              | America/Mazatlan                                                        | verified       | approved-plan | Ceremony UTC 2026-11-15T00:00:00Z                                                      |
 | baseDemoId            | demo-cumple-luxury-hacienda                                             | verified       | approved-plan | Owner-selected technical base, not client demo selection                               |
 | sourceAssetPath       | source:client-packet                                                    | verified       | approved-plan | Explicitly authorized provisional photo sources; no high-resolution originals supplied |
-| sectionOrder          | quote, gallery, countdown, location, personalizedAccess, rsvp, thankYou | verified       | approved-plan | Envelope and hero precede sections                                                     |
+| sectionOrder          | quote, gallery, countdown, location, gifts, personalizedAccess, rsvp, thankYou | verified       | approved-plan | Envelope and hero precede sections; gifts added 2026-09-09                             |
 | primaryVenueName      | Nuestra Señora de Guadalupe, La Lomita                                  | verified       | client-packet | Ceremony                                                                               |
 | primaryVenueAddress   | Av. Juan Pablo II s/n, colonia Lomas de Guadalupe, Culiacán             | verified       | client-packet | Venue card                                                                             |
 | receptionVenueName    | Salón El Conquistador, Hotel San Luis Lindavista                        | verified       | approved-plan | Reception                                                                              |
@@ -44,7 +44,7 @@ are provisional until human acceptance; this record does not grant environment r
 | dressCode             | Formal                                                                  | verified       | client-packet | No adults-only restriction                                                             |
 | clientColors          | Ivory, dusty pink, plum, deep rose                                      | verified       | approved-plan | Pastel pink originated with client                                                     |
 | musicUrl              | —                                                                       | missing        | client-packet | A mi manera; exact recording pending, omit music until supplied                        |
-| gifts                 | —                                                                       | not_applicable | approved-plan | Omit                                                                                   |
+| gifts                 | cash-envelope; variant: standard; no navigation link                    | verified       | approved-plan | Lluvia de sobres; added 2026-09-09; #regalos omitted from navigation (location + rsvp only) |
 
 ## Design Direction
 

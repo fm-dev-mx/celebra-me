@@ -32,10 +32,39 @@ describe('API: /api/auth/login-host', () => {
 		resolvePasswordAuthEmailMock.mockImplementation(async (identifier: string) => identifier);
 	});
 
+	it('rejects authenticated accounts without a role before issuing cookies', async () => {
+		signInMock.mockResolvedValue({
+			access_token: 'synthetic-token',
+			user: { id: 'user-1', app_metadata: { must_change_password: true } },
+		});
+		const response = await loginHost({
+			request: createMockRequest({ email: 'host@example.test', password: 'Synthetic-123!' }),
+			url: new URL('http://localhost/api/auth/login-host'),
+		} as unknown as APIContext);
+		expect(response.status).toBe(403);
+		expect(response.headers.has('set-cookie')).toBe(false);
+		expect((await response.json()).error.code).toBe('account_access_incomplete');
+	});
+
+	it('routes temporary credentials to the required password change', async () => {
+		signInMock.mockResolvedValue({
+			access_token: 'synthetic-token',
+			user: {
+				id: 'user-1',
+				app_metadata: { role: 'host_client', must_change_password: true },
+			},
+		});
+		const response = await loginHost({
+			request: createMockRequest({ email: 'host@example.test', password: 'Synthetic-123!' }),
+			url: new URL('http://localhost/api/auth/login-host'),
+		} as unknown as APIContext);
+		expect(response.status).toBe(200);
+		expect((await response.json()).next).toBe('/dashboard/cambiar-contrasena');
+	});
 	it('Scenario: Successful Password Login', async () => {
 		signInMock.mockResolvedValue({
 			access_token: 'secret-token-123',
-			user: { id: 'user-001', email: 'host@test.com' },
+			user: { id: 'user-001', app_metadata: { role: 'host_client' }, email: 'host@test.com' },
 		});
 
 		const response = await loginHost({
@@ -76,7 +105,11 @@ describe('API: /api/auth/login-host', () => {
 		resolvePasswordAuthEmailMock.mockResolvedValue('ximena_meza@clientes.celebra.invalid');
 		signInMock.mockResolvedValue({
 			access_token: 'secret-token-123',
-			user: { id: 'user-001', email: 'ximena_meza@clientes.celebra.invalid' },
+			user: {
+				id: 'user-001',
+				app_metadata: { role: 'host_client' },
+				email: 'ximena_meza@clientes.celebra.invalid',
+			},
 		});
 
 		const response = await loginHost({
@@ -157,7 +190,11 @@ describe('API: /api/auth/login-host', () => {
 				{
 					access_token: `concurrent-access-${index}`,
 					refresh_token: `concurrent-refresh-${index}`,
-					user: { id: `concurrent-user-${index}`, email },
+					user: {
+						id: `concurrent-user-${index}`,
+						app_metadata: { role: 'host_client' },
+						email,
+					},
 				},
 				20 - index,
 			);
@@ -213,7 +250,11 @@ describe('API: /api/auth/login-host', () => {
 				return {
 					access_token: `mixed-login-access-${index}`,
 					refresh_token: `mixed-login-refresh-${index}`,
-					user: { id: `mixed-login-user-${index}`, email },
+					user: {
+						id: `mixed-login-user-${index}`,
+						app_metadata: { role: 'host_client' },
+						email,
+					},
 				};
 			}
 			if (index < 15) {
@@ -276,7 +317,11 @@ describe('API: /api/auth/login-host', () => {
 		signInMock.mockResolvedValue({
 			access_token: 'shared-access',
 			refresh_token: 'shared-refresh',
-			user: { id: 'shared-user', email: 'shared@test.invalid' },
+			user: {
+				id: 'shared-user',
+				app_metadata: { role: 'host_client' },
+				email: 'shared@test.invalid',
+			},
 		});
 
 		const responses = await Promise.all(

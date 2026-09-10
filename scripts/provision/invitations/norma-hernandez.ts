@@ -69,7 +69,7 @@ export const NORMA_PHOTOGRAPHS = [
 		key: 'closing',
 		width: 1024,
 		height: 1536,
-		alt: 'Retrato de Norma con vestido azul de celebración',
+		alt: 'Retrato de Norma sonriendo con la mano sobre la mejilla',
 		optimizationRole: 'editorial-featured',
 	},
 ] as const;
@@ -125,6 +125,7 @@ export function buildNormaPublishedContent(
 			'gallery',
 			'countdown',
 			'location',
+			'gifts',
 			'personalizedAccess',
 			'rsvp',
 			'thankYou',
@@ -202,6 +203,18 @@ export function buildNormaPublishedContent(
 			}),
 			indications: [
 				{ iconName: 'DressCode', styleVariant: 'default', text: 'Vestimenta formal' },
+			],
+		},
+		gifts: {
+			variant: 'standard',
+			title: 'Regalos',
+			subtitle: 'Su presencia es mi mayor regalo.',
+			items: [
+				{
+					type: 'cash',
+					title: 'Lluvia de sobres',
+					text: 'Si desea obsequiarme un detalle, puede hacerlo mediante un sobre el día de la celebración.',
+				},
 			],
 		},
 		rsvp: {

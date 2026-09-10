@@ -94,6 +94,7 @@ export function useUsersAdmin() {
 		async (payload: CreateUserDTO) => {
 			setCreating(true);
 			setError('');
+			setCreatedUser(null);
 			try {
 				const result = await adminApi.createUser(payload);
 				setCreatedUser({
@@ -103,7 +104,13 @@ export function useUsersAdmin() {
 				});
 				await loadUsers();
 			} catch (err) {
-				setError(err instanceof Error ? err.message : 'No se pudo crear el usuario.');
+				const message = err instanceof Error ? err.message : 'No se pudo crear el usuario.';
+				setError(message);
+				try {
+					await loadUsers();
+				} catch {
+					setError(`${message} No fue posible actualizar la lista. Recargue la página.`);
+				}
 			} finally {
 				setCreating(false);
 			}
@@ -137,20 +144,26 @@ export function useUsersAdmin() {
 			setUpdatingUserId(userId);
 			setError('');
 			try {
+				if (!targetUser?.role)
+					throw new Error('Asigne un rol antes de restablecer la contraseña.');
 				const result = await adminApi.resetUserPassword(userId);
 				if (!result.credentials) {
-					throw new Error('No se generó una contraseña porque el cambio no fue aplicado.');
+					throw new Error(
+						'No se generó una contraseña porque el cambio no fue aplicado.',
+					);
 				}
 				const credentials: CreatedUserCredentialsDTO = {
 					email: targetUser?.email || userId,
-					role: targetUser?.role || 'host_client',
+					role: targetUser.role,
 					temporaryPassword: result.credentials.temporaryPassword,
 				};
 				setCreatedUser(credentials);
 				await loadUsers();
 				return credentials;
 			} catch (err) {
-				setError(err instanceof Error ? err.message : 'No se pudo restablecer la contraseña.');
+				setError(
+					err instanceof Error ? err.message : 'No se pudo restablecer la contraseña.',
+				);
 				return null;
 			} finally {
 				setUpdatingUserId(null);

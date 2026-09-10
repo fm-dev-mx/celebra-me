@@ -46,7 +46,15 @@ describe('Norma invitation publication contract', () => {
 			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1789008926/Maria_Martha_Serra_Lima_-_A_Mi_Manera_opt_stvuaw.mp3',
 			autoPlay: true,
 		});
-		expect(content.gifts).toBeUndefined();
+		expect(content.gifts?.variant).toBe('standard');
+		expect(content.gifts?.items).toHaveLength(1);
+		expect(content.gifts?.items?.[0]).toMatchObject({ type: 'cash' });
+		const giftsIndex = content.sectionOrder!.indexOf('gifts');
+		expect(content.sectionOrder!.slice(giftsIndex - 1, giftsIndex + 2)).toEqual([
+			'location',
+			'gifts',
+			'personalizedAccess',
+		]);
 		expect(content.navigation?.map((item) => item.href)).toEqual(['#event-location', '#rsvp']);
 		expect(normaInvitation.lifecycle).toBe('published');
 	});

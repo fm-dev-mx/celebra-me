@@ -17,6 +17,7 @@ import { findEventBySlugService } from '@/lib/rsvp/repositories/event.repository
 import { createMockRequest } from '../helpers/api-mocks';
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
+	getAuthUserAdminById: jest.fn(),
 	signInWithPassword: jest.fn(),
 	signUpWithPassword: jest.fn(),
 	sendMagicLink: jest.fn(),
@@ -78,6 +79,13 @@ describe('auth endpoints', () => {
 		typeof findEventBySlugService
 	>;
 
+	beforeEach(() => {
+		jest.mocked(authApi.getAuthUserAdminById).mockResolvedValue({
+			id: 'user-1',
+			app_metadata: { role: 'host_client' },
+		});
+	});
+
 	afterEach(() => {
 		jest.clearAllMocks();
 	});
@@ -87,7 +95,7 @@ describe('auth endpoints', () => {
 		signInWithPasswordMock.mockResolvedValue({
 			access_token: 'token-123',
 			refresh_token: 'refresh',
-			user: { id: 'u1', email: 'host@test.com' },
+			user: { id: 'u1', email: 'host@test.com', app_metadata: { role: 'host_client' } },
 		});
 		const passwordResp = await loginHost({
 			request: createMockRequest({

@@ -1,4 +1,8 @@
 import {
+	assertAccountAccess,
+	verifyUserRoleSynchronization,
+} from '@/lib/rsvp/services/account-access.service';
+import {
 	findAppUserRoleByUserIdService,
 	listEventMembershipsService,
 	createEventMembershipService,
@@ -86,7 +90,7 @@ export async function listAdminUsers(input?: {
 	return users.map((user) => ({
 		id: user.id,
 		email: sanitize(user.login_alias || user.email, 320),
-		role: roleMap.get(user.id) ?? 'host_client',
+		role: roleMap.get(user.id) ?? null,
 		createdAt: user.created_at || new Date().toISOString(),
 		assignedEvents: (membershipsByUser.get(user.id) ?? []).sort((left, right) =>
 			left.title.localeCompare(right.title, 'es-MX'),
@@ -101,7 +105,7 @@ export async function changeUserRoleAdmin(input: {
 }): Promise<{
 	userId: string;
 	role: AppUserRole;
-	previousRole: AppUserRole;
+	previousRole: AppUserRole | null;
 	changedAt: string;
 }> {
 	const userId = sanitize(input.userId, 120);
@@ -118,10 +122,11 @@ export async function changeUserRoleAdmin(input: {
 		newData: next as unknown as Record<string, unknown>,
 	});
 
+	await verifyUserRoleSynchronization(userId, next.role);
 	return {
 		userId: next.userId,
 		role: next.role,
-		previousRole: existing?.role ?? 'host_client',
+		previousRole: existing?.role ?? null,
 		changedAt: next.updatedAt,
 	};
 }
@@ -246,7 +251,7 @@ export async function createAdminUser(input: {
 	role: AppUserRole;
 	actorUserId: string;
 }): Promise<{
-	item: UserListItemDTO;
+	item: UserListItemDTO & { role: AppUserRole };
 	credentials: {
 		temporaryPassword: string;
 	};
@@ -279,12 +284,20 @@ export async function createAdminUser(input: {
 		password: temporaryPassword,
 		loginAlias,
 	});
-	const roleRecord = await upsertUserRoleService({
-		userId: authUser.id,
-		role,
-	});
+	let roleRecord: Awaited<ReturnType<typeof upsertUserRoleService>>;
+	try {
+		roleRecord = await upsertUserRoleService({ userId: authUser.id, role });
+		await verifyUserRoleSynchronization(authUser.id, roleRecord.role);
+	} catch (error) {
+		if (isAuthRequestError(error)) throw error;
+		throw new ApiError(
+			409,
+			'account_access_incomplete',
+			'El alta de la cuenta quedó incompleta. Revise su rol antes de generar credenciales.',
+		);
+	}
 	const createdAt = authUser.created_at || roleRecord.createdAt || new Date().toISOString();
-	const item: UserListItemDTO = {
+	const item: UserListItemDTO & { role: AppUserRole } = {
 		id: authUser.id,
 		email: sanitize(authUser.login_alias || visibleLogin || authUser.email || authEmail, 320),
 		role: roleRecord.role,
@@ -332,12 +345,15 @@ export async function resetUserPasswordAdmin(input: {
 		throw new ApiError(400, 'bad_request', 'userId es requerido.');
 	}
 
+	const roleRecord = await findAppUserRoleByUserIdService(userId);
+	const existingAuth = await getAuthUserAdminById(userId);
+	assertAccountAccess(roleRecord?.role ?? null, existingAuth.app_metadata?.role);
+
 	const rootOperationId = input.credentialOperationId;
 	const temporaryPassword = deriveTemporaryPasswordForOperation(rootOperationId);
 	const completedSteps: string[] = [];
 	let authAlreadyApplied: boolean;
 	try {
-		const existingAuth = await getAuthUserAdminById(userId);
 		authAlreadyApplied =
 			existingAuth.user_metadata?.password_reset_operation_id === rootOperationId;
 		if (!authAlreadyApplied) {
@@ -620,7 +636,7 @@ export async function updateUserLoginAliasAdmin(input: {
 			item: {
 				id: userId,
 				email: requestedAlias,
-				role: roleRecord?.role ?? 'host_client',
+				role: roleRecord?.role ?? null,
 				createdAt:
 					updatedAuth.created_at || existingAuth.created_at || new Date().toISOString(),
 				assignedEvents,
@@ -642,7 +658,7 @@ export async function updateUserLoginAliasAdmin(input: {
 	const item: UserListItemDTO = {
 		id: updatedAuth.id,
 		email: requestedAlias,
-		role: roleRecord?.role ?? 'host_client',
+		role: roleRecord?.role ?? null,
 		createdAt: updatedAuth.created_at || existingAuth.created_at || new Date().toISOString(),
 		assignedEvents,
 	};

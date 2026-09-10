@@ -21,6 +21,7 @@ export type ApiErrorCode =
 	| 'missing_in_prod'
 	| 'stale_production_content'
 	| 'upgrade_required'
+	| 'account_access_incomplete'
 	| 'password_change_required'
 	| 'password_update_failed'
 	| 'metadata_update_failed';

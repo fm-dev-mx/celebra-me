@@ -514,6 +514,16 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect(mockNext).not.toHaveBeenCalled();
 	});
 
+	it('explains rejected sessions without a role before password change', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockReturnValue({ value: 'valid-token' });
+		mockSupabaseResponse({ id: 'user-1', app_metadata: { must_change_password: true } });
+		await middleware(context as unknown as APIContext, mockNext);
+		expect(mockRedirect).toHaveBeenCalledWith('/login?reason=account_access_incomplete');
+		expect(mockNext).not.toHaveBeenCalled();
+		expect(context.locals.session).toBeUndefined();
+	});
+
 	it('allows normal user (aal1) access to dashboard', async () => {
 		const context = createContext('/dashboard/invitados');
 		mockCookies.get.mockReturnValue({ value: 'valid-token' });
