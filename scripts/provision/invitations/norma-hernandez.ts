@@ -146,7 +146,7 @@ export function buildNormaPublishedContent(
 			envelopeName: 'Norma Hernandez',
 			cardName: 'Norma Hernandez',
 			cardLabel: '65 años',
-			teaserDetails: '65 años · Una vida para celebrar',
+			teaserDetails: '65 años · Smile at life',
 			guestPlacement: 'outside-envelope',
 			sealStyle: 'monogram',
 			sealIcon: 'monogram',

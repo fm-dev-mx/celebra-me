@@ -26,6 +26,11 @@ describe('Norma invitation publication contract', () => {
 			normaInvitation.buildPublishedContent(assets),
 		);
 		expect(content.hero.variant).toBe('framed-portrait');
+		expect(content.envelope).toMatchObject({
+			cardLabel: '65 años',
+			teaserDetails: '65 años · Smile at life',
+			guestPlacement: 'outside-envelope',
+		});
 		expect(content.gallery?.variant).toBe('narrative-stack');
 		expect(content.gallery?.items.map((item) => item.caption)).toEqual([
 			NORMA_COPY.children,

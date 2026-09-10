@@ -1,4 +1,5 @@
 @use '@fontsource-variable/montserrat/index.css' as montserrat;
+@use '@fontsource/pinyon-script/400.css' as pinyon-script;
 
 .event--norma-hernandez.theme-preset--luxury-hacienda {
 	--color-surface-primary: rgb(250 246 240);
@@ -215,6 +216,48 @@
 		--reveal-card-text-primary: var(--color-text-primary);
 		--color-text-tooltip: var(--color-text-primary);
 		--duration-reveal: 1.2s;
+
+		.envelope-details__accent {
+			font-family: 'Pinyon Script', cursive;
+			font-size: 1.45em;
+			font-weight: 400;
+			letter-spacing: 0;
+			line-height: 1;
+		}
+
+		.envelope-guest-external {
+			padding: 0.75rem 1.25rem;
+			color: var(--color-text-on-dark);
+			text-align: center;
+			transition:
+				opacity var(--duration-standard) var(--ease-standard),
+				transform var(--duration-standard) var(--ease-standard);
+
+			.personalized-label {
+				color: inherit;
+				opacity: 85%;
+			}
+
+			.personalized-name {
+				display: block;
+				max-width: min(88vw, 32rem);
+				color: inherit;
+				font-size: clamp(1.15rem, 5vw, 1.65rem);
+				font-style: normal;
+				font-weight: 600;
+				letter-spacing: 0.08em;
+				line-height: 1.25;
+				text-wrap: balance;
+			}
+		}
+
+		&.is-opening .envelope-guest-external,
+		&.is-letter-held .envelope-guest-external,
+		&.is-preview-opened .envelope-guest-external {
+			opacity: 0%;
+			pointer-events: none;
+			transform: translateY(-0.5rem);
+		}
 	}
 
 	.gifts-section {
