@@ -18,6 +18,7 @@
 
 .invitation-section-wrapper[data-intersection='arch'] {
 	position: relative;
+	margin-top: var(--intersection-clearance, 0);
 	background: var(--intersection-surface);
 	clip-path: inset(calc(0px - var(--intersection-arch-height) - 2px) 0 0 0);
 
