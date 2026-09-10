@@ -6,7 +6,7 @@ export type OperationalEvidencePhase = 'started' | 'completed';
 export type OperationalAggregateValue = string | number | boolean | null;
 export type OperationalAggregatePayloadValue =
 	| OperationalAggregateValue
-	| OperationalAggregatePayloadValue[]
+	| readonly OperationalAggregatePayloadValue[]
 	| { [key: string]: OperationalAggregatePayloadValue };
 export type OperationalAggregatePayload = Record<string, OperationalAggregatePayloadValue>;
 
@@ -29,7 +29,6 @@ export interface OperationalEvidenceV1<
 	deploymentId?: string;
 	payload: Payload;
 }
-
 
 const SAFE_TOKEN_PATTERN = /^[A-Za-z0-9][A-Za-z0-9:._-]{0,159}$/;
 const SAFE_CODE_PATTERN = /^[a-z][a-z0-9_]{0,79}$/;
