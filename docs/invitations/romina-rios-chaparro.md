@@ -39,10 +39,9 @@ photograph (`IMG_3263.jpeg`) so each path meets its delivery-role budget.
 - Browser portability checks apply the canonical stylesheet to that non-origin demo at mobile and
   desktop sizes and assert no Romina profile stylesheet is loaded.
 - Reusable renderer/CSS governance scans reject client names, invitation slugs, historical theme
-  identities, profile references, and invitation asset imports.
-- The obsolete Romina condition in the legacy `GoogleMap.astro` wrapper is retained only as historical evidence; runtime uses `SchematicVenueMap`.
-  search. Romina's maps retain the generic `premiere-floral` visual path; Location browser smoke
-  remains a required verification because the shared primitive changed.
+  identities, profile references, and invitation asset imports. Romina's maps retain the generic
+  `premiere-floral` visual path; Location browser smoke remains a required verification because the
+  shared primitive changed.
 
 No database, Preview, Production, client copy, event facts, or photographic assets are changed by
 this encapsulation.
