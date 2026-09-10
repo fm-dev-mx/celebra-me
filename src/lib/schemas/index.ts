@@ -5,10 +5,7 @@
 import { z } from 'zod';
 import { RSVP_GUEST_CAP_TECHNICAL_MAX, rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
-import {
-	isCanonicalHostLoginAlias,
-	normalizeHostLoginAlias,
-} from '@/lib/auth/login-alias';
+import { isCanonicalHostLoginAlias, normalizeHostLoginAlias } from '@/lib/auth/login-alias';
 
 // =============================================================================
 // Common Schemas
@@ -140,50 +137,6 @@ export type CreateUserInput = z.infer<typeof CreateUserSchema>;
 export type UpdateUserRoleInput = z.infer<typeof UpdateUserRoleSchema>;
 
 // =============================================================================
-// Claim Code Schemas
-// =============================================================================
-
-export const CreateClaimCodeSchema = z.object({
-	eventId: UuidSchema,
-
-	expiresAt: TimestampSchema.nullable().optional(),
-
-	maxUses: z
-		.number()
-		.int()
-		.min(1, { message: 'At least 1 use is required' })
-		.max(10000, { message: 'No more than 10000 uses are allowed' })
-		.optional()
-		.default(1),
-});
-
-export const UpdateClaimCodeSchema = z.object({
-	active: z.boolean().optional(),
-	expiresAt: TimestampSchema.nullable().optional(),
-	maxUses: z
-		.number()
-		.int()
-		.min(1, { message: 'At least 1 use is required' })
-		.max(10000, { message: 'No more than 10000 uses are allowed' })
-		.optional(),
-	// Optional optimistic locking token.
-	_version: TimestampSchema.optional(),
-});
-
-export const ValidateClaimCodeSchema = z.object({
-	claimCode: z
-		.string()
-		.min(6, { message: 'Code must be at least 6 characters long' })
-		.max(128, { message: 'Code cannot exceed 128 characters' })
-		.regex(/^[A-Za-z0-9_-]+$/, { message: 'Code contains invalid characters' })
-		.trim(),
-});
-
-export type CreateClaimCodeInput = z.infer<typeof CreateClaimCodeSchema>;
-export type UpdateClaimCodeInput = z.infer<typeof UpdateClaimCodeSchema>;
-export type ValidateClaimCodeInput = z.infer<typeof ValidateClaimCodeSchema>;
-
-// =============================================================================
 // Guest Schemas
 // =============================================================================
 
@@ -242,37 +195,6 @@ export const UpdateGuestSchema = z.object({
 export type CreateGuestInput = z.infer<typeof CreateGuestSchema>;
 export type UpdateGuestInput = z.infer<typeof UpdateGuestSchema>;
 
-// =============================================================================
-// Auth Schemas
-// =============================================================================
-
-export const LoginSchema = z.object({
-	email: EmailSchema,
-	password: z
-		.string()
-		.min(8, { message: 'Password must be at least 8 characters long' })
-		.max(200, { message: 'Password cannot exceed 200 characters' }),
-});
-
-export const RegisterSchema = z.object({
-	email: EmailSchema,
-	password: z
-		.string()
-		.min(8, { message: 'Password must be at least 8 characters long' })
-		.max(200, { message: 'Password cannot exceed 200 characters' }),
-
-	displayName: z
-		.string()
-		.min(1, { message: 'Name is required' })
-		.max(200, { message: 'Name cannot exceed 200 characters' })
-		.trim(),
-
-	claimCode: z.string().max(128, { message: 'Invalid invitation code' }).optional(),
-});
-
-export type LoginInput = z.infer<typeof LoginSchema>;
-export type RegisterInput = z.infer<typeof RegisterSchema>;
-
 export const ChangePasswordSchema = z
 	.object({
 		currentPassword: z
@@ -316,25 +238,3 @@ export const UpdateUserLoginAliasSchema = z.object({
 
 export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
 export type ResetUserPasswordInput = z.infer<typeof ResetUserPasswordSchema>;
-
-// =============================================================================
-// Contact Form Schema
-// =============================================================================
-
-export const ContactFormSchema = z.object({
-	name: z
-		.string()
-		.min(1, { message: 'Name is required' })
-		.max(200, { message: 'Name cannot exceed 200 characters' })
-		.trim(),
-
-	email: EmailSchema,
-
-	message: z
-		.string()
-		.min(1, { message: 'Message is required' })
-		.max(5000, { message: 'Message cannot exceed 5000 characters' })
-		.trim(),
-});
-
-export type ContactFormInput = z.infer<typeof ContactFormSchema>;

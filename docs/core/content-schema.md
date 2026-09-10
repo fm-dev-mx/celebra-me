@@ -18,7 +18,6 @@ point) from modular Zod definitions under `src/lib/schemas/content`.
 - `gallery.schema.ts`: gallery image items
 - `interludes.schema.ts`: interlude section configuration
 - `itinerary.schema.ts`: itinerary event schedule
-- `content-block.schema.ts`: generic content block schema
 
 ## Deprecation Policy
 
