@@ -112,6 +112,21 @@ independently of publication lifecycle. Do not maintain separate numeric invento
 invitation exclusions. A lifecycle change to `published` adds the invitation to the next candidate
 and requires new coverage and acceptance; an older matrix cannot certify the added route.
 
+### Release-time visual confirmation
+
+Visual acceptance is part of the owner's decision to release a candidate for deployment. It is not
+an automatic consequence of a push, a green partial CI run, or a Vercel build starting. Before the
+owner sends the exact candidate revision through the release/promotion path, the owner reviews the
+candidate captures generated with the pinned runtime and explicitly confirms its source SHA, matrix
+hash, and candidate-manifest SHA-256. Only then may the owner run `visual:parity:accept`, land the
+accepted references on `develop` through the standard pull-request and checks flow, and require the
+resulting `Application Suite` to pass before deployment.
+
+This ordering is intentional: browser CI consumes the accepted reference before it can become green,
+so acceptance cannot be deferred until after the deployment has started. A missing or rejected
+confirmation keeps the release candidate blocked; it must never be bypassed by shrinking the matrix,
+changing tolerances, or downgrading compare mode.
+
 ## Complete-page evidence and acceptance
 
 - Initialize the existing audit screenshot mode before application scripts run, so demo countdowns

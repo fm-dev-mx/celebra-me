@@ -6,6 +6,35 @@
 
 ## Overview
 
+### Efficient validation and evidence
+
+- Run focused local checks while editing. Use the PR to `develop` for complete remote certification;
+  confirm its workflow run exists. A push to a task branch alone does not run CI.
+- `pnpm test:e2e:ci` explicitly compares visual references and fails before browser work when the
+  certified Linux runtime, isolated fixtures, LFS references or coverage are unavailable. Diagnostic
+  runs and candidate generation are not release certification.
+- Generate candidates with the existing Repository CI manual input `visual_mode=candidate` on a
+  published task ref. The workflow owns the pinned image and fixtures. Download its
+  `visual-candidate-<sha>` artifact and review `changes.html` plus the complete matrix as needed.
+  This mode does not produce a passing Application Suite. Any regenerated manifest requires renewed
+  owner approval of that exact artifact; never transfer approval to a different hash.
+- Preserve previously granted task authorization. Resolve routine paths and command arguments
+  without asking again. Request new decisions only for new scope or material visual approval.
+- Before promotion, run `pnpm ops:release-checks <exact-sha>` to require Repository Policy,
+  Application Suite and the correlated Preview smoke from GitHub Actions. Pending, cancelled,
+  skipped, missing, untrusted or different-SHA evidence blocks this check. It does not replace
+  database compatibility checks or deployment authorization. Recheck after final integration.
+- The main ruleset must still be inspected: this CLI is a fail-closed operator check, not proof that
+  provider-side Preview protection is configured. Never call a release ready from CI alone.
+- Avoid repeating successful complete suites for unchanged evidence. A final integration SHA,
+  changed inputs or an unresolved failure justifies revalidation. Do not reuse PR merge-SHA evidence
+  as if it certified a different final commit.
+- CI records `validation-metrics` artifacts with SHA, mode, attempt, completed job durations, wall
+  time and aggregate runner minutes. These exclude queue time, billing multipliers and the metrics
+  job; they do not estimate token usage. Compare like-for-like runs before adopting sharding. Keep
+  serial coverage until three paired trials meet the agreed 30% wall-time saving and at most 50%
+  runner-minute increase, with identical coverage and passing results.
+
 This document owns release checkpoints and the layered CHANGELOG policy for the Celebra-me
 repository. Checkpoints use Git tags, `package.json` version bumps, and a changelog entry — no
 release branches, no automation runners, no semantic-release.
@@ -135,6 +164,20 @@ without squashing when preceding atomic commits must remain distinct. Revalidate
 SHA after the merge.
 
 ### 5. Promote the validated commit to `main`
+
+Before this promotion, when the release range changes anything inside the CSS visual-parity gate
+scope ("Profile LAYOUT deletion or move" in
+[`../domains/theme/css-visual-parity.md`](../domains/theme/css-visual-parity.md#scope-of-this-gate),
+or a `published` lifecycle change that adds a route to the canonical matrix), obtain the owner's
+release-time visual confirmation. The confirmation reviews the candidate produced with the pinned
+runtime and identifies the exact source SHA, matrix hash, and candidate-manifest SHA-256. Record
+that acceptance through `pnpm visual:parity:accept` before this step, land the accepted references
+on `develop` through the same pull-request and checks flow as step 4, and wait for
+`Application Suite` on that resulting `develop` SHA. This is a human release decision, not an
+automatic action performed by CI or Vercel after a deployment begins.
+
+If visual confirmation is missing or rejected, the candidate is not eligible for promotion or
+deployment. Do not reduce visual coverage, relax comparison, or treat a Preview build as approval.
 
 ```bash
 git switch develop

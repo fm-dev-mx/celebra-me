@@ -20,7 +20,12 @@ describe('Phase 3 operational contracts', () => {
 			scripts: Record<string, string>;
 		};
 		const command = packageJson.scripts['test:e2e:ci'].split(/\s+/);
-		expect(command.slice(0, 2)).toEqual(['playwright', 'test']);
+		expect(command.slice(0, 4)).toEqual([
+			'tsx',
+			'scripts/screenshot/visual-parity-cli.ts',
+			'browser',
+			'test',
+		]);
 		expect(command.filter((argument) => argument.startsWith('--'))).toEqual(['--grep-invert']);
 		expect(command.at(-1)).toBe('@extended');
 		expect(command).toEqual(

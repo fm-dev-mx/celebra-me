@@ -7,6 +7,9 @@ set -e
 
 ZERO_SHA="0000000000000000000000000000000000000000"
 
+# Both policy and Git LFS consume the same ref updates from stdin.
+ref_updates=$(cat)
+
 echo "🔒 Checking protected branch push policy..."
 
 if [ "$SKIP_COMMIT_RANGE_VALIDATION" = "true" ]; then
@@ -42,7 +45,11 @@ do
       node scripts/validate-commits.mjs "$BASE_SHA" "$local_sha"
     fi
   fi
-done
+done <<EOF
+$ref_updates
+EOF
+
+printf '%s\n' "$ref_updates" | git lfs pre-push "$@"
 
 # Tests and type-checks stay in CI or manual runs to keep this hook lean.
 # pnpm test

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { runProductionSmoke, validateVercelDispatch } from '../../scripts/ops/post-deploy-smoke';
 
 function response(status: number, body = '', headers: Record<string, string> = {}): Response {
@@ -45,6 +46,35 @@ function productionFetch(): jest.MockedFunction<
 }
 
 describe('post-deploy smoke', () => {
+	it('executes the workflow argument form without contacting a provider', () => {
+		const env = {
+			...process.env,
+			GITHUB_ENV: '',
+			VERCEL_DISPATCH_EVENT: 'vercel.deployment.ready',
+			VERCEL_DISPATCH_ENVIRONMENT: 'preview',
+			VERCEL_DISPATCH_PROJECT_ID: 'prj_abcdef123456',
+			VERCEL_DISPATCH_EXPECTED_PROJECT_ID: 'prj_abcdef123456',
+			VERCEL_DISPATCH_DEPLOYMENT_ID: 'dpl_abcdef123456',
+			VERCEL_DISPATCH_URL: 'https://celebra-abc123-francisco-mendoza-s-projects.vercel.app',
+			VERCEL_DISPATCH_COMMIT_SHA: 'a'.repeat(40),
+			VERCEL_DISPATCH_GIT_REF: 'develop',
+		};
+		const run = (args: string[], overrides = {}) =>
+			spawnSync(
+				process.execPath,
+				['--import', 'tsx', 'scripts/ops/post-deploy-smoke.ts', ...args],
+				{ encoding: 'utf8', env: { ...env, ...overrides }, timeout: 15000 },
+			);
+		const valid = run(['--', 'validate']);
+		expect(valid.stderr).toBe('');
+		expect(valid.status).toBe(0);
+		expect(valid.stdout).toContain('a'.repeat(40));
+		expect(run(['--', 'invalid']).status).not.toBe(0);
+		expect(run(['--', 'validate', 'extra']).status).not.toBe(0);
+		expect(
+			run(['--', 'validate'], { VERCEL_DISPATCH_EXPECTED_PROJECT_ID: 'prj_other' }).status,
+		).not.toBe(0);
+	}, 30000);
 	it('accepts only the exact Preview ready or Production promoted transition', () => {
 		const base = {
 			projectId: 'prj_abcdef123456',

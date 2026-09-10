@@ -16,7 +16,7 @@ import {
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { basename, join, relative, resolve } from 'node:path';
 import { assertManifestIntegrity, listPngFiles } from './visual-manifest-integrity.ts';
 import {
 	readVisualManifest,
@@ -24,6 +24,8 @@ import {
 	type CombinedManifest,
 } from './visual-manifest.ts';
 import { listLocalRenderCorpus } from '../provision/local-render-corpus/registry.ts';
+import { VISUAL_PARITY_RUNTIME } from '../../tests/e2e/harness/visual-parity-metadata.ts';
+import { assertVisualRuntimeReady } from '../../tests/e2e/harness/visual-baseline-policy.ts';
 import {
 	buildVisualCoverageCases,
 	computeVisualMatrixHash,
@@ -60,9 +62,26 @@ const ACCEPTED_VISUAL_RUNTIME = {
 
 const HASH_KEYS = ['lockfileSha256', 'cssSha256', 'assetSha256', 'fontSha256'] as const;
 
-function assertPinnedVisualRuntime(
-	manifest: CaptureManifest,
-	operation: 'compare' | 'accept',
+function assertCaptureEnvironment(operation: 'compare' | 'candidate'): void {
+	if (
+		process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES !== 'true' ||
+		process.env.PLAYWRIGHT_REQUIRE_VISUAL_PREFLIGHT !== 'true' ||
+		process.env.PLAYWRIGHT_BASE_URL ||
+		process.env.PLAYWRIGHT_REUSE_EXISTING_SERVER === 'true'
+	) {
+		throw new Error(
+			'Certified captures require isolated canonical fixtures and visual preflight.',
+		);
+	}
+	assertPinnedVisualRuntime({ runtimeFingerprint: VISUAL_PARITY_RUNTIME }, operation);
+	console.log(
+		`Visual capture: SHA=${currentHead()} mode=${operation} image=${VISUAL_PARITY_RUNTIME.osImageDigest}`,
+	);
+}
+
+export function assertPinnedVisualRuntime(
+	manifest: Pick<CaptureManifest, 'runtimeFingerprint'>,
+	operation: 'compare' | 'accept' | 'candidate',
 ): void {
 	const runtime = manifest.runtimeFingerprint;
 	if (!runtime) {
@@ -176,6 +195,8 @@ function readManifest(root: string, preferSuiteManifests = false): CombinedManif
 
 function candidate(): void {
 	const referenceSha = assertCleanGitState('candidate');
+	assertCaptureEnvironment('candidate');
+	readPreviousAccepted();
 	const missingAssets = listLocalRenderCorpus()
 		.filter((entry) => entry.assetStatus !== 'ready')
 		.map((entry) => entry.slug);
@@ -189,6 +210,7 @@ function candidate(): void {
 	stampCandidateReference(referenceSha);
 
 	const manifest = readManifest(CANDIDATE_ROOT, true);
+	assertPinnedVisualRuntime(manifest, 'candidate');
 	assertManifestIntegrity(manifest, CANDIDATE_ROOT);
 	assertCoverageMatrix(manifest);
 	writeCombinedCandidateArtifacts(CANDIDATE_ROOT, manifest);
@@ -198,6 +220,7 @@ function candidate(): void {
 }
 
 function compare(): void {
+	assertCaptureEnvironment('compare');
 	if (!existsSync(ACCEPTED_MANIFEST)) {
 		throw new Error(
 			`No accepted manifest at ${relative(ROOT, ACCEPTED_MANIFEST)}. Accept an approved candidate first.`,
@@ -208,6 +231,8 @@ function compare(): void {
 		throw new Error('Accepted manifest is not marked ACCEPTED.');
 	assertManifestIntegrity(accepted, ACCEPTED_ROOT);
 	assertPinnedVisualRuntime(accepted, 'compare');
+	assertVisualRuntimeReady(accepted.runtimeFingerprint ?? {}, VISUAL_PARITY_RUNTIME);
+	assertCoverageMatrix(accepted);
 	runPlaywright('compare');
 	const compared = readManifest(COMPARE_ROOT, true);
 	assertManifestIntegrity(compared, COMPARE_ROOT);
@@ -260,7 +285,18 @@ function assertCoverageMatrix(manifest: CombinedManifest): void {
 		);
 	}
 }
+function readPreviousAccepted(): CaptureManifest | null {
+	if (!existsSync(ACCEPTED_MANIFEST)) return null;
+	// The previous matrix may legitimately have fewer cases than the new candidate.
+	const previous = JSON.parse(readFileSync(ACCEPTED_MANIFEST, 'utf8')) as CaptureManifest;
+	if (previous.status !== 'ACCEPTED' || !Array.isArray(previous.captures))
+		throw new Error('Previous visual references are invalid.');
+	assertManifestIntegrity(previous, ACCEPTED_ROOT);
+	return previous;
+}
+
 function writeCombinedCandidateArtifacts(root: string, manifest: CombinedManifest): void {
+	const previous = readPreviousAccepted();
 	const combinedPath = join(root, 'combined-manifest.json');
 	const payload = {
 		...manifest,
@@ -292,6 +328,28 @@ function writeCombinedCandidateArtifacts(root: string, manifest: CombinedManifes
 		`<!doctype html><html lang="es"><meta charset="utf-8"><title>Visual parity candidate</title>
     <style>body{font-family:system-ui;background:#0f172a;color:#f8fafc;margin:2rem}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:1rem}article{background:#1e293b;padding:1rem;border-radius:8px}header{display:flex;justify-content:space-between;gap:.5rem;margin-bottom:.5rem}img{max-width:100%;height:auto;border:1px solid #475569}code{display:block;word-break:break-all;font-size:.7rem;color:#cbd5e1;margin-top:.5rem}</style>
     <p>Candidate: ${manifest.totalCaptures} cases · matrix ${manifest.matrixHash ?? 'uncomputed'} · manifest ${candidateManifestSha256}</p><main>${cards}</main></html>`,
+		'utf8',
+	);
+	const changed = manifest.captures.filter(
+		(capture) =>
+			previous?.captures.find((old) => old.file === capture.file)?.sha256 !== capture.sha256,
+	);
+	const removed =
+		previous?.captures.filter(
+			(old) => !manifest.captures.some((capture) => capture.file === old.file),
+		) ?? [];
+	const reviewCards = changed
+		.map((capture) => {
+			const old = previous?.captures.find((entry) => entry.file === capture.file);
+			const before = old
+				? `<img alt="Referencia anterior" src="data:image/png;base64,${readFileSync(join(ACCEPTED_ROOT, old.file)).toString('base64')}">`
+				: '<p>Captura nueva</p>';
+			return `<article><h2>${capture.file}</h2>${before}<img alt="Candidato" src="${capture.file}"></article>`;
+		})
+		.join('');
+	writeFileSync(
+		join(root, 'changes.html'),
+		`<!doctype html><html lang="es"><meta charset="utf-8"><title>Revisión visual</title><style>body{font-family:system-ui}article{border-bottom:1px solid #888}img{max-width:45%;vertical-align:top}</style><h1>Revisión visual</h1><p>SHA: ${manifest.referenceSha}</p><p>Matriz: ${payload.matrixHash}</p><p>Manifiesto: ${candidateManifestSha256}</p><p>${changed.length} capturas nuevas o modificadas; ${removed.length} eliminadas.</p><a href="combined-contact-sheet.html">Ver matriz completa</a>${reviewCards}<h2>Eliminadas</h2><p>${removed.map((capture) => capture.file).join('<br>')}</p></html>`,
 		'utf8',
 	);
 }
@@ -434,8 +492,34 @@ function replaceAcceptedRoot(stagingRoot: string, backupRoot: string): void {
 	}
 }
 
+function certifiedBrowser(args: string[]): void {
+	if (args.some((arg) => /^(?:-u|--update-snapshots)(?:=|$)/.test(arg))) {
+		throw new Error('Certified browser comparison cannot update snapshots.');
+	}
+	process.env.VISUAL_PARITY_MODE = 'compare';
+	process.env.VISUAL_PARITY_SNAPSHOT_ROOT = 'tests/e2e/visual-baselines';
+	process.env.VISUAL_PARITY_OUTPUT_ROOT = '.tmp/visual-parity/compare';
+	process.env.CI = 'true';
+	process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES = 'true';
+	process.env.PLAYWRIGHT_REQUIRE_VISUAL_PREFLIGHT = 'true';
+	assertCaptureEnvironment('compare');
+	const accepted = readManifest(ACCEPTED_ROOT);
+	if (accepted.status !== 'ACCEPTED') throw new Error('Expected accepted visual references.');
+	assertManifestIntegrity(accepted, ACCEPTED_ROOT);
+	assertPinnedVisualRuntime(accepted, 'compare');
+	assertVisualRuntimeReady(accepted.runtimeFingerprint ?? {}, VISUAL_PARITY_RUNTIME);
+	assertCoverageMatrix(accepted);
+	const result = spawnSync(process.execPath, [PLAYWRIGHT_CLI, ...args], {
+		stdio: 'inherit',
+		env: process.env,
+	});
+	if (result.status !== 0)
+		throw new Error(`Certified browser suite failed (exit ${result.status}).`);
+}
+
 async function main(): Promise<void> {
 	const [operation, ...args] = process.argv.slice(2);
+	if (operation === 'browser') return certifiedBrowser(args);
 	if (operation === 'diagnose') {
 		const { diagnoseSections } = await import('./section-visual-diagnosis.ts');
 		return diagnoseSections(args);
@@ -465,7 +549,9 @@ async function main(): Promise<void> {
 	);
 }
 
-main().catch((error: unknown) => {
-	console.error(error instanceof Error ? error.message : String(error));
-	process.exitCode = 1;
-});
+if (process.argv[1] && /^visual-parity-cli\.(?:ts|js)$/.test(basename(process.argv[1]))) {
+	main().catch((error: unknown) => {
+		console.error(error instanceof Error ? error.message : String(error));
+		process.exitCode = 1;
+	});
+}

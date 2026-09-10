@@ -105,9 +105,10 @@
             "notes": "Creates atomic session anonymization RPC and revokes execution privileges from public/anon/authenticated."
         },
         "20260910160000": {
-            "phase": "expand",
+            "phase": "contract",
+            "revokes": ["invitations_authenticated_table_dml"],
             "provides": ["invitation_administrative_workflow"],
-            "notes": "Adds administrative metadata; invitation-specific initialization requires a separately authorized operation."
+            "notes": "Adds administrative metadata and replaces authenticated table-wide INSERT/UPDATE with grants on existing columns. Hosted apply requires deployed-app evidence that invitation writes use explicit existing columns or the server service role. Invitation-specific initialization is separately authorized."
         }
     },
     "appCapabilities": {
