@@ -520,6 +520,7 @@ function cmdRunTests(): void {
 	console.info('=== Disposable Test Environment: Run Tests ===\n');
 
 	const testFiles = [
+		'account_role_sync.test.sql',
 		'atomic_invitation_publication.test.sql',
 		'invitation_original_image_delivery.test.sql',
 		'managed_identity_archive_cascade.test.sql',
