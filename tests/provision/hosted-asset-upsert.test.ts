@@ -30,12 +30,18 @@ const familyAsset: InvitationPackageAsset = {
 	sha256: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
 	dataBase64: 'mock',
 };
+const definitionSlug = 'alba-rosa-quinonez';
+
+const engineSource = readFileSync(
+	resolve(process.cwd(), 'scripts/provision/invitation-import-engine.ts'),
+	'utf8',
+);
 
 const sql = buildHostedAssetUpsertSql({
 	assetId: '7bce748d-8c86-40e3-b28e-0b5523640034',
 	targetInvitationId: '28110aef-078d-46bd-857c-893e10e11bc1',
 	asset: familyAsset,
-	definitionSlug: 'alba-rosa-quinonez',
+	definitionSlug,
 	operationId: '11111111-1111-4111-8111-111111111111',
 });
 
@@ -54,9 +60,7 @@ describe('buildHostedAssetUpsertSql', () => {
 	});
 
 	it('refuses to update a row owned by another invitation', () => {
-		expect(sql).toContain(
-			'where invitation_assets.invitation_id = excluded.invitation_id',
-		);
+		expect(sql).toContain('where invitation_assets.invitation_id = excluded.invitation_id');
 	});
 });
 
@@ -75,13 +79,9 @@ describe('assertHostedAssetUpsertApplied', () => {
 });
 
 describe('upsertAssetRows wiring', () => {
-	const source = readFileSync(
-		resolve(process.cwd(), 'scripts/provision/invitation-import-engine.ts'),
-		'utf8',
-	);
-	const upsertFn = source.slice(
-		source.indexOf('function upsertAssetRows'),
-		source.indexOf('function executePublicationRpcCall'),
+	const upsertFn = engineSource.slice(
+		engineSource.indexOf('function upsertAssetRows'),
+		engineSource.indexOf('function executePublicationRpcCall'),
 	);
 
 	it('reads command tags and rejects a no-op conflict update', () => {
@@ -105,38 +105,50 @@ const deletedFamilyRow: HostedAssetIdentityRow = {
 	deleted_at: '2026-01-01T00:00:00Z',
 };
 
+const deletedAlias: HostedAssetIdentityRow = {
+	...deletedFamilyRow,
+	storage_path: 'managed/alba-rosa-quinonez/other.webp',
+};
+
 describe('selectHostedAssetIdentityRow', () => {
 	it('reuses a live row by storage path', () => {
-		expect(selectHostedAssetIdentityRow({ asset: familyAsset, rows: [liveFamilyRow] })?.id).toBe(
-			liveFamilyRow.id,
-		);
+		expect(
+			selectHostedAssetIdentityRow({
+				asset: familyAsset,
+				rows: [liveFamilyRow],
+				definitionSlug,
+			})?.id,
+		).toBe(liveFamilyRow.id);
 	});
 
 	it('reuses a soft-deleted row with the same storage path', () => {
 		expect(
-			selectHostedAssetIdentityRow({ asset: familyAsset, rows: [deletedFamilyRow] })?.id,
+			selectHostedAssetIdentityRow({
+				asset: familyAsset,
+				rows: [deletedFamilyRow],
+				definitionSlug,
+			})?.id,
 		).toBe(deletedFamilyRow.id);
 	});
 
 	it('prefers the live row when a deleted row shares only the display name', () => {
-		const deletedAlias: HostedAssetIdentityRow = {
-			...deletedFamilyRow,
-			storage_path: 'managed/alba-rosa-quinonez/other.webp',
-		};
 		expect(
 			selectHostedAssetIdentityRow({
 				asset: familyAsset,
 				rows: [liveFamilyRow, deletedAlias],
+				definitionSlug,
 			})?.id,
 		).toBe(liveFamilyRow.id);
 	});
 
 	it('does not reuse a soft-deleted row that only matches display name', () => {
-		const deletedAlias: HostedAssetIdentityRow = {
-			...deletedFamilyRow,
-			storage_path: 'managed/alba-rosa-quinonez/other.webp',
-		};
-		expect(selectHostedAssetIdentityRow({ asset: familyAsset, rows: [deletedAlias] })).toBeNull();
+		expect(
+			selectHostedAssetIdentityRow({
+				asset: familyAsset,
+				rows: [deletedAlias],
+				definitionSlug,
+			}),
+		).toBeNull();
 	});
 
 	it('does not reuse a soft-deleted row with the same path in another bucket', () => {
@@ -145,7 +157,26 @@ describe('selectHostedAssetIdentityRow', () => {
 			bucket: 'other-bucket',
 		};
 		expect(
-			selectHostedAssetIdentityRow({ asset: familyAsset, rows: [deletedOtherBucket] }),
+			selectHostedAssetIdentityRow({
+				asset: familyAsset,
+				rows: [deletedOtherBucket],
+				definitionSlug,
+			}),
+		).toBeNull();
+	});
+
+	it('does not reuse a live row with the same path in another bucket', () => {
+		const liveOtherBucket: HostedAssetIdentityRow = {
+			...liveFamilyRow,
+			display_name: 'Otra fila viva en otro bucket',
+			bucket: 'other-bucket',
+		};
+		expect(
+			selectHostedAssetIdentityRow({
+				asset: familyAsset,
+				rows: [liveOtherBucket],
+				definitionSlug,
+			}),
 		).toBeNull();
 	});
 
@@ -156,23 +187,67 @@ describe('selectHostedAssetIdentityRow', () => {
 			storage_path: 'managed/alba-rosa-quinonez/other.webp',
 		};
 		expect(() =>
-			selectHostedAssetIdentityRow({ asset: familyAsset, rows: [liveFamilyRow, otherLive] }),
+			selectHostedAssetIdentityRow({
+				asset: familyAsset,
+				rows: [liveFamilyRow, otherLive],
+				definitionSlug,
+			}),
 		).toThrow(/no se puede resolver de forma unívoca/);
+	});
+
+	it('reuses a managed row when a versioned asset changes path and display name', () => {
+		const replacementAsset: InvitationPackageAsset = {
+			...familyAsset,
+			key: 'closing',
+			displayName: 'Retrato de Norma sonriendo con la mano sobre la mejilla',
+			storagePath: 'managed/norma-hernandez/closing-new-version.webp',
+		};
+		const priorClosingRow: HostedAssetIdentityRow = {
+			...liveFamilyRow,
+			display_name: 'Retrato de Norma con vestido azul de celebración',
+			storage_path: 'managed/norma-hernandez/closing-prior-version.webp',
+			managed_by_definition_slug: 'norma-hernandez',
+			managed_source_key: 'closing',
+		};
+
+		expect(
+			selectHostedAssetIdentityRow({
+				asset: replacementAsset,
+				rows: [priorClosingRow],
+				definitionSlug: 'norma-hernandez',
+			})?.id,
+		).toBe(priorClosingRow.id);
+	});
+
+	it('does not reuse a managed row from another definition', () => {
+		const managedElsewhere: HostedAssetIdentityRow = {
+			...liveFamilyRow,
+			display_name: 'Another invitation family',
+			storage_path: 'managed/another-invitation/family.webp',
+			managed_by_definition_slug: 'another-invitation',
+			managed_source_key: familyAsset.key,
+		};
+
+		expect(
+			selectHostedAssetIdentityRow({
+				asset: { ...familyAsset, storagePath: 'managed/another/path.webp' },
+				rows: [managedElsewhere],
+				definitionSlug,
+			}),
+		).toBeNull();
 	});
 });
 
 describe('resolveTargetAssetRefs wiring', () => {
-	const source = readFileSync(
-		resolve(process.cwd(), 'scripts/provision/invitation-import-engine.ts'),
-		'utf8',
-	);
-	const resolveFn = source.slice(
-		source.indexOf('function resolveTargetAssetRefs'),
-		source.indexOf('export function computeTargetAssetFingerprint'),
+	const resolveFn = engineSource.slice(
+		engineSource.indexOf('function resolveTargetAssetRefs'),
+		engineSource.indexOf('export function computeTargetAssetFingerprint'),
 	);
 
 	it('loads soft-deleted rows so prune-then-reimport can reuse id', () => {
 		expect(resolveFn).toContain('selectHostedAssetIdentityRow');
+		expect(resolveFn).toContain('managed_by_definition_slug');
+		expect(resolveFn).toContain('managed_source_key');
 		expect(resolveFn).not.toMatch(/deleted_at is null/);
 	});
 
@@ -222,7 +297,11 @@ describe('rewriteUploadedDeliverySrcs', () => {
 		const rewritten = rewriteUploadedDeliverySrcs(
 			{
 				hero: { type: 'uploaded', assetId, src: `${storageHost}/managed/alba/hero.webp` },
-				ogImage: { type: 'uploaded', assetId, src: `${storageHost}/managed/alba/hero.webp` },
+				ogImage: {
+					type: 'uploaded',
+					assetId,
+					src: `${storageHost}/managed/alba/hero.webp`,
+				},
 			},
 			{ hero: { type: 'uploaded', assetId, src: cloudinarySrc } },
 		) as Record<string, { src: string }>;

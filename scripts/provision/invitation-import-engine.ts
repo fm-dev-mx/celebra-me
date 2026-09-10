@@ -1439,6 +1439,8 @@ export interface HostedAssetIdentityRow {
 	storage_path: string;
 	bucket?: string | null;
 	deleted_at?: string | null;
+	managed_by_definition_slug?: string | null;
+	managed_source_key?: string | null;
 }
 
 function uniqueHostedAssetIdentityRows(
@@ -1453,17 +1455,37 @@ function throwAmbiguousHostedAssetIdentity(displayName: string): never {
 	);
 }
 
+function hasHostedAssetBucketParity(
+	row: HostedAssetIdentityRow,
+	asset: Pick<InvitationPackageAsset, 'bucket'>,
+): boolean {
+	return typeof row.bucket !== 'string' || row.bucket === asset.bucket;
+}
+
 /**
- * Reuse a live row by path or display name; if none, reuse a soft-deleted row
- * with the same (bucket, storage_path) so ON CONFLICT (id) can undelete it.
+ * Reuse a live managed row by its canonical definition identity before falling
+ * back to path or display name. Path matching requires bucket parity (a null
+ * row bucket matches any bucket). If none, reuse a soft-deleted row with the
+ * same (bucket, storage_path) so ON CONFLICT (id) can undelete it.
  * Display-name matching ignores deleted rows to avoid colliding with a live alias.
  */
 export function selectHostedAssetIdentityRow(input: {
-	asset: Pick<InvitationPackageAsset, 'displayName' | 'storagePath' | 'bucket'>;
+	asset: Pick<InvitationPackageAsset, 'key' | 'displayName' | 'storagePath' | 'bucket'>;
 	rows: readonly HostedAssetIdentityRow[];
+	definitionSlug: string;
 	preferredAssetIds?: ReadonlySet<string>;
 }): HostedAssetIdentityRow | null {
 	const liveRows = input.rows.filter((row) => row.deleted_at == null);
+	const managedMatches = liveRows.filter(
+		(row) =>
+			row.managed_by_definition_slug === input.definitionSlug &&
+			row.managed_source_key === input.asset.key,
+	);
+	if (managedMatches.length > 1) {
+		throwAmbiguousHostedAssetIdentity(input.asset.displayName);
+	}
+	if (managedMatches[0]) return managedMatches[0];
+
 	const byPath = new Map<string, HostedAssetIdentityRow[]>();
 	const byDisplayName = new Map<string, HostedAssetIdentityRow[]>();
 	for (const row of liveRows) {
@@ -1475,7 +1497,9 @@ export function selectHostedAssetIdentityRow(input: {
 		byDisplayName.set(row.display_name, displayRows);
 	}
 	const candidates = uniqueHostedAssetIdentityRows([
-		...(byPath.get(input.asset.storagePath) ?? []),
+		...(byPath.get(input.asset.storagePath) ?? []).filter((row) =>
+			hasHostedAssetBucketParity(row, input.asset),
+		),
 		...(byDisplayName.get(input.asset.displayName) ?? []),
 	]);
 	const preferredAssetIds = input.preferredAssetIds ?? new Set<string>();
@@ -1491,7 +1515,7 @@ export function selectHostedAssetIdentityRow(input: {
 			(row) =>
 				row.deleted_at != null &&
 				row.storage_path === input.asset.storagePath &&
-				(typeof row.bucket !== 'string' || row.bucket === input.asset.bucket),
+				hasHostedAssetBucketParity(row, input.asset),
 		),
 	);
 	if (deletedPathMatches.length > 1) {
@@ -1581,7 +1605,7 @@ function resolveTargetAssetRefs(
 	preferredAssetIds: ReadonlySet<string> = new Set(),
 ): UploadedAssetMap {
 	const result = runPsql(
-		`select json_agg(t) from (select id, display_name, storage_path, bucket, deleted_at from public.invitation_assets where invitation_id = '${invitationId}'::uuid) t;`,
+		`select json_agg(t) from (select id, display_name, storage_path, bucket, deleted_at, managed_by_definition_slug, managed_source_key from public.invitation_assets where invitation_id = '${invitationId}'::uuid) t;`,
 		targetDbUrl,
 		{ tuplesOnly: true, throwOnError: false },
 	);
@@ -1594,6 +1618,12 @@ function resolveTargetAssetRefs(
 				storage_path: row.storage_path,
 				bucket: typeof row.bucket === 'string' ? row.bucket : null,
 				deleted_at: typeof row.deleted_at === 'string' ? row.deleted_at : null,
+				managed_by_definition_slug:
+					typeof row.managed_by_definition_slug === 'string'
+						? row.managed_by_definition_slug
+						: null,
+				managed_source_key:
+					typeof row.managed_source_key === 'string' ? row.managed_source_key : null,
 			},
 		];
 	});
@@ -1603,6 +1633,7 @@ function resolveTargetAssetRefs(
 			const existingRecord = selectHostedAssetIdentityRow({
 				asset,
 				rows,
+				definitionSlug: pkg.sourceSlug,
 				preferredAssetIds,
 			});
 			const assetId = existingRecord?.id ?? randomUUID();
