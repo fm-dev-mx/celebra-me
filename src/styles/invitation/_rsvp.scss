@@ -823,6 +823,14 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
+		// Reduced-motion hydration must not preserve the server's hidden field state.
+		.rsvp__fieldset {
+			/* stylelint-disable-next-line declaration-no-important */
+			opacity: 100% !important;
+			/* stylelint-disable-next-line declaration-no-important */
+			transform: none !important;
+		}
+
 		.rsvp__button,
 		.rsvp__radio-card,
 		.rsvp__radio-indicator,
@@ -938,7 +946,7 @@
 		font-family: var(--font-body, serif);
 		font-size: 0.72rem;
 		letter-spacing: 0.1em;
-		color: rgb(var(--color-text-on-dark-rgb) / 40%);
+		color: var(--rsvp-demo-footer-color, rgb(var(--color-text-on-dark-rgb) / 40%));
 	}
 
 	// Base styles for progressive-disclosure attendance summary row.

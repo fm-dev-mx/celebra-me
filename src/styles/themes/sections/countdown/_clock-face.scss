@@ -1,0 +1,71 @@
+.countdown-section[data-variant='clock-face'] {
+	padding: 5rem 1.25rem;
+	background: var(--color-surface-secondary);
+	color: var(--color-text-primary);
+	display: grid;
+	place-items: center;
+
+	&::before {
+		content: '';
+		position: absolute;
+		width: min(85vw, 32rem);
+		aspect-ratio: 1;
+		border: 6px double var(--color-cold-silver);
+		border-radius: 50%;
+		background: repeating-conic-gradient(
+			from -1deg,
+			var(--color-cold-silver) 0deg 1deg,
+			transparent 1deg 30deg
+		);
+		mask: radial-gradient(circle, transparent 64%, black 64%);
+		opacity: 60%;
+	}
+
+	.countdown-title {
+		font: 500 clamp(1.7rem, 6vw, 2.5rem) / 1.2 var(--font-display);
+		text-transform: none;
+		max-width: 17ch;
+		margin: 0 auto 2rem;
+		color: inherit;
+	}
+
+	.countdown__timer {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 0.4rem;
+		max-width: 30rem;
+		margin: auto;
+	}
+
+	.countdown__segment {
+		background: transparent;
+		box-shadow: none;
+		border: 0;
+		padding: 1rem 0.2rem;
+	}
+
+	.countdown__segment::before {
+		display: none;
+	}
+
+	.countdown__value {
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 8vw, 3.5rem);
+		color: var(--color-text-primary);
+	}
+
+	.countdown__label {
+		opacity: 100%;
+		font-size: 0.7rem;
+		color: var(--color-text-primary);
+	}
+
+	.countdown-date {
+		margin-top: 1.5rem;
+	}
+
+	.countdown-invitation-text {
+		color: var(--color-text-primary);
+		opacity: 100%;
+	}
+}

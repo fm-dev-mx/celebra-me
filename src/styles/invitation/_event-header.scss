@@ -17,9 +17,9 @@
 		font-size: clamp(0.92rem, 3vw, 1.15rem);
 		font-weight: 600;
 		letter-spacing: 0.08em;
-		line-height: 1;
+		line-height: var(--header-control-min-height, 1);
 		max-width: min(62vw, 18rem);
-		min-width: 0;
+		min-width: var(--header-control-min-height, 0);
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -55,6 +55,7 @@
 	}
 
 	&__action-btn {
+		min-height: var(--header-control-min-height, auto);
 		position: relative;
 		flex: 0 0 auto;
 		display: inline-flex;

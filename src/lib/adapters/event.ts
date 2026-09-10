@@ -170,6 +170,9 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 	const { data, eventSlug, normalizedPreset } = context;
 	const preset = normalizedPreset;
 	return {
+		ornament: resolveAsset(eventSlug, data.hero.ornament, ''),
+		accentOrnament: resolveAsset(eventSlug, data.hero.accentOrnament, ''),
+		ambience: resolveAsset(eventSlug, data.hero.ambience, ''),
 		name: data.hero.name,
 		venueIndex: data.hero.presentation?.venueIndex,
 		secondaryName: data.hero.secondaryName,
@@ -234,6 +237,7 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 		data: {
 			teaserDetails,
 			sealStyle: data.envelope.sealStyle,
+			backdropImage: resolveAsset(eventSlug, data.envelope.backdropImage, ''),
 			sealIcon: data.envelope.sealIcon,
 			sealInitials: data.envelope.sealInitials,
 			sealVariant: data.envelope.sealVariant,

@@ -1,0 +1,115 @@
+.event--allison-scarlett.theme-preset--celestial-blue {
+	// Silver stationery and blue ink; section variants own composition.
+	--color-satin-blue: rgb(144 171 204);
+	--color-satin-blue-rgb: 144 171 204;
+	--color-ice-blue: rgb(219 231 245);
+	--color-ice-blue-rgb: 219 231 245;
+	--color-cool-ivory: var(--color-ice-blue);
+	--color-cool-ivory-rgb: var(--color-ice-blue-rgb);
+	--color-surface-primary-rgb: 187 207 230;
+	--color-surface-secondary-rgb: var(--color-ice-blue-rgb);
+	--color-action-accent-rgb: var(--color-deep-blue-graphite-rgb);
+	--color-glass-bg: var(--color-ice-blue);
+	--rsvp-section-background: var(--color-ice-blue);
+	--color-surface-primary: color-mix(in srgb, var(--color-satin-blue) 42%, var(--color-ice-blue));
+	--font-display: 'Cormorant Garamond Variable', georgia, serif;
+	--font-calligraphy: 'Pinyon Script', cursive;
+	--font-body: 'Instrument Sans Variable', sans-serif;
+	--font-label: var(--font-body);
+	--formal-chapter-band: var(--color-deep-blue-graphite);
+	--formal-chapter-band-rgb: var(--color-deep-blue-graphite-rgb);
+	--formal-chapter-cream: var(--color-ice-blue);
+	--formal-chapter-cream-rgb: var(--color-ice-blue-rgb);
+	--formal-chapter-sand: var(--color-satin-blue);
+	--formal-chapter-sand-rgb: var(--color-satin-blue-rgb);
+	--formal-chapter-metal: var(--color-cold-silver);
+	--formal-chapter-metal-rgb: var(--color-cold-silver-rgb);
+	--formal-chapter-title: var(--color-deep-blue-graphite);
+	--formal-chapter-muted: var(--color-deep-blue-graphite);
+	--formal-chapter-meta: var(--color-deep-blue-graphite);
+	--color-surface-secondary: var(--color-ice-blue);
+	--color-text-primary: var(--color-deep-blue-graphite);
+	--color-text-secondary: var(--color-deep-blue-graphite);
+	--color-action-accent: var(--color-deep-blue-graphite);
+	--color-text-emphasis: var(--color-deep-blue-graphite);
+	--motion-reveal-distance: 12px;
+	--motion-reveal-blur: 0;
+	--motion-reveal-duration: 650ms;
+	--motion-ambient-scale-to: 1;
+	--nav-transparent-scrim: none;
+	--rsvp-section-min-height: auto;
+	--location-address-color: var(--color-text-primary);
+	--color-text-muted: var(--color-text-primary);
+	--footer-powered-opacity: 100%;
+	--footer-replay-opacity: 100%;
+	--footer-control-min-height: 44px;
+	--header-control-min-height: 44px;
+
+	background: var(--color-surface-primary);
+
+	// Full-dark-finale: hero → family Bridge; location → gallery Bridge;
+	// RSVP → closing Climax. All other boundaries remain Neutral.
+	.invitation-section-wrapper[data-intersection-source='hero'] {
+		--intersection-surface: var(--color-surface-secondary);
+		--intersection-arch-height: clamp(3rem, 5vw, 4.5rem);
+	}
+
+	.invitation-section-wrapper[data-intersection-source='location'] {
+		--intersection-depth: 7rem;
+		--intersection-blend: radial-gradient(
+			ellipse 120% 100% at 18% 0%,
+			var(--color-surface-secondary),
+			transparent 85%
+		);
+	}
+
+	.invitation-section-wrapper[data-intersection-source='rsvp'] {
+		--intersection-clearance: 6.5rem;
+		--intersection-surface: var(--color-deep-blue-graphite);
+		--intersection-arch-height: clamp(3rem, 5vw, 4.5rem);
+	}
+
+	.gallery-section {
+		background: transparent;
+	}
+
+	.gifts-section {
+		--gifts-card-bg: transparent;
+		--gifts-card-border: 0;
+		--gifts-card-shadow: none;
+		--gifts-title-letter-spacing: 0.06em;
+	}
+
+	.rsvp {
+		--rsvp-card-shadow: none;
+		--shadow-editorial: none;
+		--rsvp-section-border: 0;
+		--rsvp-demo-footer-color: var(--color-text-primary);
+	}
+
+	.event-location {
+		--location-copy-button-height: 44px;
+		--location-card-bg: transparent;
+		--location-card-border: 0;
+		--location-card-shadow: none;
+		--location-card-hover-shadow: none;
+		--location-card-hover-transform: none;
+		--location-indications-panel-bg: transparent;
+		--location-indications-panel-border: 0;
+		--location-indication-item-bg: transparent;
+		--location-indication-item-border: 0;
+		--location-indication-item-box-shadow: none;
+	}
+
+	.header-base {
+		--header-nav-color: var(--color-deep-blue-graphite);
+		--header-nav-cta-color: var(--color-deep-blue-graphite);
+		--header-nav-cta-bg: var(--color-ice-blue);
+		--header-nav-title-color: var(--color-deep-blue-graphite);
+		--header-nav-color-transparent: var(--color-deep-blue-graphite);
+		--header-nav-shadow-transparent: none;
+		--header-nav-filter-transparent: none;
+		--hamburger-color: var(--color-deep-blue-graphite);
+		--header-bg-scrolled: var(--color-ice-blue);
+	}
+}

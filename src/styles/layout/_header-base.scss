@@ -221,6 +221,8 @@
 	}
 
 	&__mobile-toggle {
+		min-width: var(--header-control-min-height, 0);
+		min-height: var(--header-control-min-height, 0);
 		position: relative;
 		z-index: var(--layer-nav-toggle);
 		padding: 0.5rem;

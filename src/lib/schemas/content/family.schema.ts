@@ -71,6 +71,7 @@ const structuredFamilySchema = familyBaseSchema.extend({
 
 export const familySchema = z
 	.discriminatedUnion('variant', [
+		familyBaseSchema.strict().extend({ variant: z.literal('ceremonial-family') }),
 		familyBaseSchema.strict().extend({ variant: z.literal(FAMILY_VARIANTS[0]) }),
 		structuredFamilySchema.strict().extend({ variant: z.literal(FAMILY_VARIANTS[1]) }),
 		structuredFamilySchema.strict().extend({ variant: z.literal(FAMILY_VARIANTS[2]) }),

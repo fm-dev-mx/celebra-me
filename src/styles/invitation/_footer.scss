@@ -84,7 +84,7 @@
 		font-weight: 400;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		opacity: 55%;
+		opacity: var(--footer-powered-opacity, 55%);
 
 		@include mixins.respond-to(xs) {
 			display: block;
@@ -104,6 +104,7 @@
 }
 
 .whatsapp-button {
+	min-height: var(--footer-control-min-height, auto);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -149,6 +150,7 @@
 }
 
 .footer__replay-link {
+	min-height: var(--footer-control-min-height, auto);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -165,7 +167,7 @@
 	transition:
 		opacity var(--duration-snappy) var(--ease-standard),
 		color var(--duration-snappy) var(--ease-standard);
-	opacity: 70%;
+	opacity: var(--footer-replay-opacity, 70%);
 
 	&:hover {
 		color: var(--color-text-secondary);

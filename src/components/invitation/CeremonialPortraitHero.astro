@@ -1,0 +1,39 @@
+---
+import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
+import type { ImageMetadata } from 'astro';
+import type { ImageAsset } from '@/lib/assets/asset-registry';
+import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
+import CeremonialFiligree from './CeremonialFiligree.astro';
+
+interface Props {
+	name: string;
+	secondaryName?: string;
+	label?: string;
+	date: string;
+	backgroundImage?: ImageMetadata | ImageAsset;
+	ornament?: ImageAsset;
+	accentOrnament?: ImageAsset;
+	ambience?: ImageAsset;
+	highPriority?: boolean;
+}
+const { name, secondaryName, label, date, backgroundImage, ornament, accentOrnament, ambience, highPriority = true } = Astro.props;
+const words = name.trim().split(/\s+/);
+const split = Math.ceil(words.length / 2);
+const lines = [words.slice(0, split).join(' '), words.slice(split).join(' ')].filter(Boolean);
+const delivery = backgroundImage && 'delivery' in backgroundImage ? backgroundImage.delivery : undefined;
+const formattedDate = new Date(date).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+---
+<section id="inicio" class="invitation-hero ceremonial-portrait-hero" data-variant="ceremonial-portrait" data-screenshot="invitation-open-hero" data-screenshot-section="hero">
+	{ambience && <img class="ceremonial-portrait-hero__ambience" src={plainImgSrc(ambience.src)} alt="" width="900" height="1350" loading="lazy" decoding="async" />}
+	<CeremonialFiligree class="ceremonial-portrait-hero__side ceremonial-portrait-hero__side--left" />
+	<CeremonialFiligree class="ceremonial-portrait-hero__side ceremonial-portrait-hero__side--right" />
+	<div class="ceremonial-portrait-hero__paper">
+		<CeremonialFiligree class="ceremonial-portrait-hero__crest" />
+		{label && <p class="ceremonial-portrait-hero__label">{label}</p>}
+		<h1 class="ceremonial-portrait-hero__name">{lines.map(line => <span>{line}</span>)}{secondaryName && <span>&amp; {secondaryName}</span>}</h1>
+		<p class="ceremonial-portrait-hero__date">{formattedDate}</p>
+		{backgroundImage && <figure class="ceremonial-portrait-hero__photograph"><CacheSafeImage src={backgroundImage.src} delivery={delivery} alt={`Fotografía de ${name}`} width={delivery?.width ?? 1476} height={delivery?.height ?? 1600} loading="eager" fetchpriority={highPriority ? 'high' : undefined} /></figure>}
+		{ornament && <img class="ceremonial-portrait-hero__ornament" src={plainImgSrc(ornament.src)} alt="" width="360" height="240" loading="lazy" decoding="async" />}
+		{accentOrnament && <img class="ceremonial-portrait-hero__accent" src={plainImgSrc(accentOrnament.src)} alt="" width="180" height="180" loading="lazy" decoding="async" />}
+	</div>
+</section>

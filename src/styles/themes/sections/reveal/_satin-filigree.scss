@@ -1,0 +1,120 @@
+.envelope-wrapper[data-variant='satin-filigree'] {
+	--env-bg: var(--color-ice-blue);
+	--env-paper-bg: linear-gradient(
+		145deg,
+		var(--color-ice-blue),
+		var(--color-satin-blue) 47%,
+		var(--color-ice-blue) 68%,
+		var(--color-satin-blue)
+	);
+	--env-paper-border: var(--color-cold-silver);
+	--env-text-primary: var(--color-deep-blue-graphite);
+	--env-text-secondary: var(--color-deep-blue-graphite);
+	--env-container-width: min(84vw, 38rem);
+	--env-container-ratio: 1.12;
+	--env-container-max-height: 56svh;
+	--env-grid: 34% 26% 40%;
+	--env-seal-size-min: 90px;
+	--env-seal-size-max: 130px;
+	--env-seal-size-ratio: 25;
+	--env-title-size: clamp(2rem, 8cqw, 3rem);
+	--env-font-display: var(--font-calligraphy);
+	--reveal-card-bg: var(--color-ice-blue);
+	--reveal-card-text-primary: var(--color-deep-blue-graphite);
+	--duration-reveal: 900ms;
+
+	.envelope-reveal-stage {
+		visibility: hidden;
+	}
+
+	.envelope-ambient {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		pointer-events: none;
+	}
+
+	.envelope-container {
+		border: 1px solid var(--color-cold-silver);
+	}
+
+	.envelope-flap {
+		height: 53%;
+		clip-path: polygon(0 0, 100% 0, 50% 100%);
+	}
+
+	.envelope-flap::after {
+		content: '';
+		position: absolute;
+		inset: 2% 4% 5%;
+		background:
+			linear-gradient(28deg, transparent 48%, var(--color-cold-silver) 49%, transparent 50%),
+			linear-gradient(-28deg, transparent 48%, var(--color-cold-silver) 49%, transparent 50%);
+	}
+
+	.envelope-filigree {
+		height: auto;
+		position: absolute;
+		top: 8%;
+		left: 10%;
+		width: 80%;
+		opacity: 100%;
+	}
+
+	.envelope-pocket {
+		clip-path: polygon(0 25%, 50% 55%, 100% 25%, 100% 100%, 0 100%);
+	}
+
+	.envelope-seal-button__visual {
+		width: var(--env-seal-size);
+		height: var(--env-seal-size);
+		position: relative;
+		background: transparent;
+		border: 0;
+		box-shadow: none;
+	}
+
+	.envelope-seal-button__visual .seal-icon--image {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
+
+	.envelope-seal-button__pulse {
+		display: none;
+	}
+
+	.envelope-crystal-initials {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		padding-bottom: 5%;
+		color: var(--color-deep-blue-graphite);
+		font: 600 1.6rem / 1 var(--font-display);
+	}
+
+	.envelope-seal-hint {
+		color: var(--color-deep-blue-graphite);
+	}
+
+	.envelope-name {
+		font-family: var(--font-calligraphy);
+		text-shadow: none;
+	}
+
+	.envelope-external-instruction {
+		z-index: 1;
+	}
+
+	.envelope-external-instruction__button {
+		min-height: 44px;
+		color: var(--color-deep-blue-graphite);
+	}
+
+	.envelope-zone--identity {
+		padding-top: 1rem;
+	}
+}

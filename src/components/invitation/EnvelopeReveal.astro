@@ -1,6 +1,8 @@
 ---
 import InvitationRevealCard from '@/components/invitation/InvitationRevealCard.astro';
+import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
 import SealIcon from '@/components/common/icons/invitation/SealIcon.astro';
+import CeremonialFiligree from './CeremonialFiligree.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import {
 	resolveSealPresentation,
@@ -16,6 +18,8 @@ interface Props {
 	sealVariant?: string;
 	sealColor?: string;
 	sealImage?: ImageAsset;
+	backdropImage?: ImageAsset;
+	revealVariant?: string;
 	microcopy: string;
 	documentLabel?: string;
 	stampText?: string;
@@ -38,6 +42,8 @@ const {
 	sealVariant,
 	sealColor,
 	sealImage,
+	backdropImage,
+	revealVariant,
 	microcopy,
 	documentLabel,
 	stampText,
@@ -77,18 +83,20 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	]}
 	data-screenshot="reveal-section"
 	data-event-slug={eventSlug}
-	data-variant={variant}
+	data-variant={revealVariant === 'satin-filigree' ? revealVariant : variant}
 	data-seal-variant={sealVariant || ''}
 	data-seal-skin={sealPresentation.skin || ''}
 	data-audio-url={audioUrl || ''}
 	data-dev-skip={String(import.meta.env.DEV)}
 	data-preview-state={previewState}
 >
+	{backdropImage && <img class="envelope-ambient" src={plainImgSrc(backdropImage.src)} alt="" width="960" height="1440" decoding="async" />}
 	<div class="envelope-container">
 		<div class="envelope-base"></div>
 		<div class="envelope-pocket"></div>
 
 		<div class="envelope-flap" data-envelope-flap>
+			{revealVariant === 'satin-filigree' && <CeremonialFiligree class="envelope-filigree" />}
 			<div class="envelope-flap-shadow"></div>
 		</div>
 
@@ -120,6 +128,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 							presentation={sealPresentation}
 							class="seal-icon"
 						/>
+						{revealVariant === 'satin-filigree' && <span class="envelope-crystal-initials" aria-hidden="true">{sealInitials}</span>}
 						{
 							!isWaxRenderer && (
 								<div class="envelope-seal-button__pulse" aria-hidden="true"></div>
@@ -415,6 +424,11 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				}
 
 				this.classList.add('is-opening');
+				if (this.dataset.variant === 'satin-filigree') {
+					// One short flap gesture; no intermediate date card.
+					window.setTimeout(completeReveal, 900);
+					return;
+				}
 
 				const showLetter = () => {
 					if (hasRevealed) return;

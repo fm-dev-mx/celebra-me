@@ -1,0 +1,6 @@
+---
+import silverFiligree from '@/assets/images/ornaments/silver-filigree.webp';
+interface Props { class?: string }
+const { class: className } = Astro.props;
+---
+<img class={className} src={silverFiligree.src} width={silverFiligree.width} height={silverFiligree.height} alt="" aria-hidden="true" decoding="async" />

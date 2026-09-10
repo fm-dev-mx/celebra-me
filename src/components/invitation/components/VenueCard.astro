@@ -72,6 +72,8 @@ const {
 // legacy Published prose is normalized inside the shared helpers.
 const formattedDate = formatVenueDateForDisplay(venue.date);
 const formattedTime = formatVenueTimeForDisplay(venue.time);
+const addressPending = /\[\[PENDIENTE:/u.test(venue.address);
+const displayAddress = addressPending ? 'Dirección pendiente de confirmar' : venue.address;
 const mediaMode = resolveLocationMediaMode(presentation, {
 	hasCoordinates: Boolean(venue.coordinates),
 	hasImage: Boolean(venue.image),
@@ -252,8 +254,8 @@ const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
 					<li class="event-location__card-content-hour">{formattedTime}</li>
 				) : null}
 				<li class="event-location__card-content-address">
-					<span class="event-location__card-content-address-text">{venue.address}</span>
-					<button
+					<span class="event-location__card-content-address-text">{displayAddress}</span>
+					{!addressPending && <button
 						type="button"
 						class="event-location__card-content-copy-button copy-button"
 						data-address={venue.address}
@@ -261,7 +263,7 @@ const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
 						title="Copiar dirección"
 					>
 						<Icon name="Copy" size={20} />
-					</button>
+					</button>}
 				</li>
 			</ul>
 

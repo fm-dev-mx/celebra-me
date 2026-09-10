@@ -1,6 +1,7 @@
 ---
 import '@/styles/invitation/_family.scss';
 import Container from '@/components/layout/Container.astro';
+import CeremonialFiligree from './CeremonialFiligree.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { FamilyVariant } from '@/lib/invitation/section-variants';
@@ -338,6 +339,7 @@ if (!hasContent) return;
 			</div>
 		</div>
 	</Container>
+	{variant === 'ceremonial-family' && <CeremonialFiligree class="family__filigree" />}
 </section>
 <style define:vars={{ familyFocalPoint: resolvedFocalPoint }}>
 	.family {

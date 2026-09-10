@@ -1,0 +1,40 @@
+.family[data-variant='ceremonial-family'] {
+	--family-bg: var(--color-surface-secondary);
+	--family-panel-bg: transparent;
+	--family-panel-surface-bg: transparent;
+	--family-panel-surface-after-bg: none;
+	--family-group-filter: none;
+	--family-group-title-color: var(--color-text-primary);
+	--family-message-color: var(--color-text-primary);
+	--family-meta-color: var(--color-text-primary);
+	--family-eyebrow-color: var(--color-text-primary);
+	--family-eyebrow-opacity: 100%;
+	--family-panel-border: none;
+	--family-panel-shadow: none;
+	--family-panel-shadow-extra-display: none;
+	--family-panel-rotate: none;
+	--family-header-filter: none;
+	--family-title-font: var(--font-display);
+	--family-title-size: clamp(2rem, 7vw, 3rem);
+	--family-title-line-height: 1.15;
+	--family-name-font: var(--font-display);
+	--family-name-size: 1.7rem;
+	--family-name-text-shadow: none;
+	--family-title-text-shadow: none;
+	--family-panel-watermark-color: transparent;
+	--family-panel-margin-top: 1rem;
+	--family-panel-spacing: 1.5rem 0;
+	--family-accent: var(--color-text-primary);
+	--family-padding-block: 4rem;
+
+	.family__panel {
+		border-radius: 0;
+	}
+
+	.family__filigree {
+		height: auto;
+		display: block;
+		width: min(70%, 20rem);
+		margin: 1rem auto 0;
+	}
+}

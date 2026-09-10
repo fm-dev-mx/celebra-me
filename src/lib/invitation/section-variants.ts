@@ -41,6 +41,15 @@ const noSpecialPrerequisites = ['Canonical section payload'] as const;
 const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	{
 		section: 'hero',
+		variant: 'ceremonial-portrait',
+		default: false,
+		prerequisites: ['Canonical section payload; optional ceremonial ornament'],
+		cssOwner: 'src/styles/themes/sections/hero/_ceremonial-portrait.scss',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
+		requiredPersistedContentTransformation: 'Set hero.variant to ceremonial-portrait.',
+	},
+	{
+		section: 'hero',
 		variant: 'framed-portrait',
 		default: false,
 		prerequisites: ['hero.backgroundImage'],
@@ -458,6 +467,30 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation:
 			'Set countdown.variant to hacienda-ornament and remove legacy variant fields.',
+	},
+	{
+		section: 'countdown', variant: 'clock-face', default: false,
+		prerequisites: ['countdown'], cssOwner: 'src/styles/themes/sections/countdown/_clock-face.scss',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
+		requiredPersistedContentTransformation: 'Set countdown.variant to clock-face.',
+	},
+	{
+		section: 'gallery', variant: 'paired-portraits', default: false,
+		prerequisites: ['Two complete gallery images'], cssOwner: 'src/styles/themes/sections/gallery/_paired-portraits.scss',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
+		requiredPersistedContentTransformation: 'Set gallery.variant to paired-portraits with two images.',
+	},
+	{
+		section: 'thankYou', variant: 'ceremonial-closing', default: false,
+		prerequisites: ['Closing copy; optional decorative image'], cssOwner: 'src/styles/themes/sections/thank-you/_ceremonial-closing.scss',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
+		requiredPersistedContentTransformation: 'Set thankYou.variant to ceremonial-closing.',
+	},
+	{
+		section: 'family', variant: 'ceremonial-family', default: false,
+		prerequisites: ['Family names'], cssOwner: 'src/styles/themes/sections/family/_ceremonial-family.scss',
+		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
+		requiredPersistedContentTransformation: 'Set family.variant to ceremonial-family.',
 	},
 ] as const satisfies readonly CanonicalVariantRegistryEntry[];
 

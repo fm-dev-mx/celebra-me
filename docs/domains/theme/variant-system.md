@@ -125,3 +125,14 @@ name and details. It stacks photograph before copy on mobile and uses two column
 alternating desktop columns while retaining image-before-caption reading order. It requires at least
 one item, non-empty captions, and no forced item aspect ratios. Both layouts are independent of
 invitation profiles.
+
+## Ceremonial stationery variants
+
+- hero.ceremonial-portrait: centered calligraphic lockup, complete rectangular portrait, optional typed ornament and accentOrnament assets. The standalone renderer also supports no photograph.
+- family.ceremonial-family: centered family groups on continuous paper with restrained filigree.
+- countdown.clock-face: decorative dial without clock hands; real countdown values remain text.
+- gallery.paired-portraits: exactly two complete photographs, paired on desktop.
+- thankYou.ceremonial-closing: compact closing copy and optional decorative image.
+- envelope.revealVariant satin-filigree: triangular satin envelope, existing sealImage and optional backdropImage; preserves the shared reveal lifecycle.
+
+These variants carry no client identity or profile dependency. The profile supplies color and rhythm; human visual acceptance remains separate from structural verification.

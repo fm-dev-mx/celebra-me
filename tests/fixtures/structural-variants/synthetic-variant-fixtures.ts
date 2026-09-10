@@ -200,6 +200,9 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 			title: 'Momentos Especiales',
 			variant: section === 'gallery' ? variant : 'uniform-grid',
 			items:
+				section === 'gallery' && variant === 'paired-portraits'
+					? [{ key: 'g1', image: 'gallery01', caption: 'Foto 1' }, { key: 'g2', image: 'gallery02', caption: 'Foto 2' }]
+					:
 				section === 'gallery' && variant === 'single-keepsake'
 					? [{ key: 'g1', image: 'gallery01', caption: 'Recuerdo Principal' }]
 					: section === 'gallery' && variant === 'paired-feature-band'
@@ -297,16 +300,13 @@ export function buildIncompatiblePrerequisiteEvent(
 
 	switch (entry.section) {
 		case 'hero':
-			if (
-				entry.variant === 'editorial-cover' ||
-				entry.variant === 'split-cover' ||
-				entry.variant === 'framed-portrait'
-			) {
+			if (['editorial-cover', 'split-cover', 'framed-portrait', 'ceremonial-portrait'].includes(entry.variant)) {
 				const hero = data.hero as Record<string, unknown>;
 				delete hero.backgroundImage;
 			}
 			break;
 		case 'family':
+			if (entry.variant === 'ceremonial-family') delete (data.family as Record<string, unknown>).variant;
 			if (entry.variant === 'split-groups' || entry.variant === 'asymmetric-groups') {
 				const family = data.family as Record<string, unknown>;
 				family.groups = [{ title: 'Solo Uno', items: [{ name: 'Solo' }] }];
@@ -373,7 +373,7 @@ export function buildIncompatiblePrerequisiteEvent(
 			) {
 				const thankYou = data.thankYou as Record<string, unknown>;
 				delete thankYou.image;
-			} else if (entry.variant === 'editorial-back-cover') {
+			} else if (entry.variant === 'editorial-back-cover' || entry.variant === 'ceremonial-closing') {
 				const thankYou = data.thankYou as Record<string, unknown>;
 				delete thankYou.closingName;
 			}
@@ -397,6 +397,7 @@ export function getIncompatiblePrerequisiteExpectation(
 		case 'hero':
 			return { expectedPath: ['hero', 'backgroundImage'] };
 		case 'family':
+			if (entry.variant === 'ceremonial-family') return { expectedPath: ['family', 'variant'] };
 			return {
 				expectedPath: ['family', 'groups'],
 				expectedMessageSubstring: '>=2',
