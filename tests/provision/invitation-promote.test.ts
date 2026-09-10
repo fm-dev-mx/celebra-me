@@ -718,7 +718,7 @@ describe('removed dead public registrations', () => {
 		expect(pkg.scripts.ops).toContain('cli.mjs');
 	});
 
-	it('ops dispatcher no longer registers dead commands or dbs alias', () => {
+	it('ops dispatcher leaves removed commands to its generic unknown-command path', () => {
 		const cli = readFileSync('scripts/cli.mjs', 'utf8');
 		expect(cli).toMatch(/const SCRIPTS = \{[\s\S]*?\};/);
 		const scriptsBlock = cli.match(/const SCRIPTS = \{[\s\S]*?\};/)?.[0] ?? '';
@@ -726,7 +726,7 @@ describe('removed dead public registrations', () => {
 		expect(scriptsBlock).not.toContain('new-invitation');
 		expect(scriptsBlock).not.toContain('adopt-legacy-events');
 		expect(scriptsBlock).not.toContain('dbs:');
-		expect(cli).toContain("command === 'dbs'");
+		expect(cli).not.toContain("command === 'dbs'");
 		expect(cli).toContain('pnpm dbs');
 	});
 });

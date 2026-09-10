@@ -9,19 +9,13 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
-import {
-	validateCriticalBackupManifest,
-	type CriticalBackupManifest,
-} from './backup-manifest.ts';
+import { validateCriticalBackupManifest, type CriticalBackupManifest } from './backup-manifest.ts';
 import {
 	assertWindowsEfsEncrypted,
 	listCriticalBackups,
 	type RetentionCandidate,
 } from './local-backup-operations.ts';
-import {
-	captureRecoveryIntegrity,
-	type RecoveryIntegritySnapshot,
-} from './recovery-integrity.ts';
+import { captureRecoveryIntegrity, type RecoveryIntegritySnapshot } from './recovery-integrity.ts';
 
 export const DEFAULT_CRITICAL_BACKUP_ROOT = resolve('.backups', 'prod');
 
@@ -132,10 +126,7 @@ function candidateManifestPaths(
 	return loaded;
 }
 
-function isProductionManifest(
-	manifest: CriticalBackupManifest,
-	projectRef: string,
-): boolean {
+function isProductionManifest(manifest: CriticalBackupManifest, projectRef: string): boolean {
 	return manifest.environment === 'production' && manifest.projectRef === projectRef;
 }
 
@@ -362,14 +353,6 @@ export function evaluateCriticalBackupCoverage(
 		maxAgeMs,
 		failures: failuresForReason(reason, maxAgeMs),
 	};
-}
-
-/** @deprecated Prefer evaluateCriticalBackupCoverage — kept as a thin alias for transitional imports. */
-export function evaluateCriticalBackupReuse(
-	input: EvaluateCriticalBackupCoverageInput,
-): CriticalBackupCoverage & { reusable: boolean } {
-	const coverage = evaluateCriticalBackupCoverage(input);
-	return { ...coverage, reusable: coverage.covered };
 }
 
 /**

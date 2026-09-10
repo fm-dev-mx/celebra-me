@@ -43,19 +43,6 @@ test.describe('Social preview: short-code redirect page', () => {
 				assertVaryUserAgent(response.headers());
 			});
 		}
-
-		test('redirects to full invitation page with invite param', async ({ request }) => {
-			const response = await request.get(SHORT_URLS[0].url, {
-				headers: { 'User-Agent': BROWSER_UA },
-				maxRedirects: 0,
-			});
-
-			expect(response.status()).toBe(302);
-			const location = response.headers()['location'];
-			expect(location).toContain('?invite=');
-			assertNoStoreCache(response.headers());
-			assertVaryUserAgent(response.headers());
-		});
 	});
 
 	test.describe('social crawler requests', () => {

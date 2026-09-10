@@ -53,22 +53,6 @@ Run \`pnpm ops <command> --help\` for specific command info.
 }
 
 const command = args[0];
-if (command === 'dbs') {
-	console.error(
-		'Removed alias: use `pnpm dbs` (canonical). `pnpm ops dbs` is no longer registered.',
-	);
-	process.exit(1);
-}
-if (
-	command === 'optimize-assets' ||
-	command === 'new-invitation' ||
-	command === 'adopt-legacy-events'
-) {
-	console.error(
-		`Removed command: pnpm ops ${command}. This one-shot/legacy path is no longer registered.`,
-	);
-	process.exit(1);
-}
 if (!SCRIPTS[command]) {
 	console.error(`❌ Unknown command: ${command}`);
 	console.log(`Use 'pnpm ops --help' to see available commands.`);
