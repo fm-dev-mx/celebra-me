@@ -2,7 +2,7 @@ import {
 	hideOperationalTooling,
 	assertNoOperationalTooling,
 	initializeVisualCapture,
-	captureStableViewport,
+	captureStablePage,
 	waitForVisualHydration,
 } from './harness/complete-page-capture';
 import { auditCriticalLayout } from './harness/critical-layout-audit';
@@ -77,7 +77,7 @@ interface CapturedSnapshotInfo {
 const capturedSnapshots: CapturedSnapshotInfo[] = [];
 
 test.describe('Registry-Driven Visual Portability Suite', () => {
-	test.describe.configure({ retries: 0 });
+	test.describe.configure({ mode: 'serial', retries: 0 });
 	// Baseline Preset: jewelry-box (all registered canonical variants)
 	for (const entry of CANONICAL_VARIANT_REGISTRY) {
 		for (const vp of VIEWPORTS) {
@@ -518,7 +518,7 @@ async function runVariantVisualTest(
 
 	// 8. Capture diagnostic viewport image for contact sheet / manifest
 	const snapshotName = `${preset}-${vp.name}-${section}-${variant}.png`;
-	const viewportSnapshotBuffer = await captureStableViewport(page);
+	const viewportSnapshotBuffer = await captureStablePage(page);
 	if (shouldCompareVisualSnapshots(VISUAL_PARITY_MODE)) {
 		expect(viewportSnapshotBuffer).toMatchSnapshot(snapshotName, {
 			maxDiffPixelRatio: 0.001,
@@ -881,29 +881,37 @@ test('ornamented access preserves explicit inherited presentation tokens', async
 	expect(glow).toBe('none');
 });
 
-test('viewport capture requires consecutive identical frames', async ({ page }) => {
-	await page.setContent('<style>body { margin: 0; background: red; }</style>');
-	const screenshot = page.screenshot.bind(page);
-	const first = await screenshot({ animations: 'disabled' });
-	let calls = 0;
-	page.screenshot = async (options) => {
-		const image = await screenshot(options);
-		if (++calls === 1) {
-			await page.evaluate(() => {
-				document.body.style.background = 'blue';
-			});
+for (const fullPage of [false, true]) {
+	test(`${fullPage ? 'complete-page' : 'viewport'} capture requires consecutive identical frames`, async ({
+		page,
+	}) => {
+		await page.setContent(
+			'<style>body { margin: 0; min-height: 2000px; background: red; }</style>',
+		);
+		const screenshot = page.screenshot.bind(page);
+		const first = await screenshot({ fullPage, animations: 'disabled' });
+		let calls = 0;
+		page.screenshot = async (options) => {
+			const image = await screenshot(options);
+			if (++calls === 1) {
+				await page.evaluate(() => {
+					document.body.style.background = 'blue';
+				});
+			}
+			return image;
+		};
+		try {
+			const stable = await captureStablePage(page, fullPage);
+			expect(calls).toBeGreaterThanOrEqual(3);
+			expect(stable.equals(first)).toBe(false);
+			expect(stable.equals(await screenshot({ fullPage, animations: 'disabled' }))).toBe(
+				true,
+			);
+		} finally {
+			page.screenshot = screenshot;
 		}
-		return image;
-	};
-	try {
-		const stable = await captureStableViewport(page);
-		expect(calls).toBeGreaterThanOrEqual(3);
-		expect(stable.equals(first)).toBe(false);
-		expect(stable.equals(await screenshot({ animations: 'disabled' }))).toBe(true);
-	} finally {
-		page.screenshot = screenshot;
-	}
-});
+	});
+}
 
 test('section pixel alignment preserves geometry and visible differences', async ({ page }) => {
 	const { alignSectionCaptureToPixelGrid } =

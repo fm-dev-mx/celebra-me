@@ -167,6 +167,17 @@ jobs:
             - name: Browser checks
               run: pnpm test:e2e:ci --max-failures=5 --workers=2
 
+            - name: Preserve visual failure evidence
+              if: failure()
+              uses: actions/upload-artifact@v7
+              with:
+                  name: visual-failures
+                  path: |
+                      test-results/**/*-actual.png
+                      test-results/**/*-diff.png
+                  if-no-files-found: ignore
+                  retention-days: 3
+
     application-validation:
         name: Application Suite
         runs-on: ubuntu-24.04

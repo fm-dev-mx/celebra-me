@@ -229,17 +229,14 @@ test('complete-page capture rejects a document that keeps growing during capture
 	await page.setViewportSize({ width: 390, height: 844 });
 	await page.setContent('<style>body{margin:0}footer{height:1800px}</style><footer>Fin</footer>');
 	const screenshot = page.screenshot.bind(page);
-	let attempts = 0;
 	page.screenshot = async (options) => {
-		attempts++;
 		const image = await screenshot(options);
 		await page.locator('footer').evaluate((footer) => {
 			footer.style.height = footer.getBoundingClientRect().height + 100 + 'px';
 		});
 		return image;
 	};
-	await expect(captureCompletePage(page)).rejects.toThrow('Truncated complete-page capture');
-	expect(attempts).toBe(2);
+	await expect(captureCompletePage(page)).rejects.toThrow('Page capture did not stabilize');
 });
 
 for (const viewport of [

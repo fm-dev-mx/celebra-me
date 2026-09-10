@@ -8,16 +8,16 @@ export async function initializeVisualCapture(page: Page): Promise<void> {
 	});
 }
 
-export async function captureStableViewport(page: Page): Promise<Buffer> {
+export async function captureStablePage(page: Page, fullPage = false): Promise<Buffer> {
 	const deadline = Date.now() + 5_000;
-	let previous = await page.screenshot({ animations: 'disabled' });
+	let previous = await page.screenshot({ fullPage, animations: 'disabled' });
 	while (Date.now() < deadline) {
 		await page.waitForTimeout(100);
-		const current = await page.screenshot({ animations: 'disabled' });
+		const current = await page.screenshot({ fullPage, animations: 'disabled' });
 		if (current.equals(previous)) return current;
 		previous = current;
 	}
-	throw new Error('Viewport capture did not stabilize within 5 seconds.');
+	throw new Error('Page capture did not stabilize within 5 seconds.');
 }
 
 export async function waitForVisualHydration(page: Page): Promise<void> {
@@ -164,17 +164,7 @@ export async function assertCompletePageImage(page: Page, image: Buffer): Promis
 }
 
 export async function captureCompletePage(page: Page): Promise<Buffer> {
-	const documentHeight = () =>
-		page.evaluate(() =>
-			Math.max(document.body.scrollHeight, document.documentElement.scrollHeight),
-		);
-	const before = await documentHeight();
-	let image = await page.screenshot({ fullPage: true, animations: 'disabled' });
-	// Screenshot preparation can settle motion or trigger responsive layout updates.
-	// Discard that image once if the document changed; an unstable retry still fails below.
-	if ((await documentHeight()) !== before) {
-		image = await page.screenshot({ fullPage: true, animations: 'disabled' });
-	}
+	const image = await captureStablePage(page, true);
 	await assertCompletePageImage(page, image);
 	return image;
 }
