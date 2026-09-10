@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import sharp from 'sharp';
+import pixelmatch from 'pixelmatch';
 import { getOperationalToolbarSelectors } from '../../../scripts/screenshot/utils';
 
 export async function initializeVisualCapture(page: Page): Promise<void> {
@@ -15,6 +16,20 @@ export async function captureStablePage(page: Page, fullPage = false): Promise<B
 		await page.waitForTimeout(100);
 		const current = await page.screenshot({ fullPage, animations: 'disabled' });
 		if (current.equals(previous)) return current;
+		const [before, after] = await Promise.all(
+			[previous, current].map((image) =>
+				sharp(image).ensureAlpha().raw().toBuffer({ resolveWithObject: true }),
+			),
+		);
+		if (
+			before.info.width === after.info.width &&
+			before.info.height === after.info.height &&
+			// Match Playwright's color/antialiasing rules, but allow zero changed pixels.
+			pixelmatch(before.data, after.data, undefined, after.info.width, after.info.height, {
+				threshold: 0.2,
+			}) === 0
+		)
+			return current;
 		previous = current;
 	}
 	throw new Error('Page capture did not stabilize within 5 seconds.');

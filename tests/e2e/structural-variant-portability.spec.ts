@@ -882,7 +882,7 @@ test('ornamented access preserves explicit inherited presentation tokens', async
 });
 
 for (const fullPage of [false, true]) {
-	test(`${fullPage ? 'complete-page' : 'viewport'} capture requires consecutive identical frames`, async ({
+	test(`${fullPage ? 'complete-page' : 'viewport'} capture rejects a visible frame change`, async ({
 		page,
 	}) => {
 		await page.setContent(
@@ -912,6 +912,27 @@ for (const fullPage of [false, true]) {
 		}
 	});
 }
+
+test('capture accepts imperceptible raster noise without requiring byte identity', async ({
+	page,
+}) => {
+	await page.setContent('<style>body { margin: 0; background: rgb(100,100,100); }</style>');
+	const screenshot = page.screenshot.bind(page);
+	const first = await screenshot();
+	await page.evaluate(() => {
+		document.body.style.background = 'rgb(101,101,101)';
+	});
+	const second = await screenshot();
+	expect(first.equals(second)).toBe(false);
+	let calls = 0;
+	page.screenshot = async () => (++calls % 2 === 1 ? first : second);
+	try {
+		expect((await captureStablePage(page)).equals(second)).toBe(true);
+		expect(calls).toBe(2);
+	} finally {
+		page.screenshot = screenshot;
+	}
+});
 
 test('section pixel alignment preserves geometry and visible differences', async ({ page }) => {
 	const { alignSectionCaptureToPixelGrid } =
