@@ -10,7 +10,7 @@ export interface UserAssignedEventDTO {
 export interface UserListItemDTO {
 	id: string;
 	email: string;
-	role: AppUserRole;
+	role: AppUserRole | null;
 	createdAt: string;
 	assignedEvents: UserAssignedEventDTO[];
 }
@@ -28,7 +28,7 @@ export interface CreateUserDTO {
 }
 
 export interface CreateUserResponse {
-	item: UserListItemDTO;
+	item: UserListItemDTO & { role: AppUserRole };
 	credentials: {
 		temporaryPassword: string;
 	};
@@ -47,7 +47,7 @@ export interface UpdateUserRoleDTO {
 export interface UserRoleChangeResponse {
 	userId: string;
 	role: AppUserRole;
-	previousRole: AppUserRole;
+	previousRole: AppUserRole | null;
 	changedAt: string;
 }
 

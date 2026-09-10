@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { verifyUserRoleSynchronization } from '@/lib/rsvp/services/account-access.service';
 import { ApiError, isAuthRequestError } from '@/lib/rsvp/core/errors';
 import { errorResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { sendMagicLink, signUpWithPassword } from '@/lib/rsvp/auth/auth-api';
@@ -141,11 +142,21 @@ async function resolveUser(email: string, chosenPassword: string) {
 async function claimEventAndRole(userId: string, userEmail: string, claimCode: string) {
 	try {
 		await claimEventForUserByClaimCode({ userId, claimCode });
-		await ensureUserRole({
-			userId,
-			email: userEmail,
-			defaultRole: 'host_client',
-		});
+		try {
+			const role = await ensureUserRole({
+				userId,
+				email: userEmail,
+				defaultRole: 'host_client',
+			});
+			await verifyUserRoleSynchronization(userId, role);
+		} catch (error) {
+			if (isAuthRequestError(error)) throw error;
+			throw new ApiError(
+				409,
+				'account_access_incomplete',
+				'El alta de su cuenta quedó incompleta. Solicite al administrador que revise su acceso.',
+			);
+		}
 	} catch (error) {
 		console.error(
 			JSON.stringify({

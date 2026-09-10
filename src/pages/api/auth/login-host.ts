@@ -1,3 +1,4 @@
+import { normalizeAppRole } from '@/lib/rsvp/auth/roles';
 import type { APIRoute } from 'astro';
 import { ApiError, isAuthRequestError, isRejectedAuthCredential } from '@/lib/rsvp/core/errors';
 import { errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
@@ -92,10 +93,20 @@ export const POST: APIRoute = async ({ request, url }) => {
 		} catch (cause) {
 			throw classifySignInError(cause);
 		}
+		if (!normalizeAppRole(auth.user.app_metadata?.role)) {
+			throw new ApiError(
+				403,
+				'account_access_incomplete',
+				'Su cuenta requiere que el administrador complete el acceso. Comuníquese con él para continuar.',
+			);
+		}
 		const payload = {
 			ok: true,
 			message: 'Sesión iniciada con éxito.',
-			next: '/dashboard/invitados',
+			next:
+				auth.user.app_metadata?.must_change_password === true
+					? '/dashboard/cambiar-contrasena'
+					: '/dashboard/invitados',
 		};
 
 		const headers = new Headers({ 'Content-Type': 'application/json' });

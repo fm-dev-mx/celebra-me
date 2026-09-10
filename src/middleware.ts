@@ -515,6 +515,8 @@ async function handleProtectedAuthRequest(
 	const authContext = resolveAuthContext(cookies, request, user, accessToken);
 	if (!authContext.role) {
 		clearPrimaryAuthCookies(cookies);
+		if (!isApiRoute)
+			return privateRedirect(redirect, '/login?reason=account_access_incomplete');
 		return handleUnauthenticatedResponse(url, isApiRoute, redirect);
 	}
 

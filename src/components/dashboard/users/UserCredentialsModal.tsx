@@ -52,7 +52,7 @@ const UserCredentialsModal: React.FC<UserCredentialsModalProps> = ({
 	};
 
 	const handleResetPassword = async () => {
-		if (busy) return;
+		if (busy || !user.role) return;
 		if (!confirmReset) {
 			setConfirmReset(true);
 			return;
@@ -94,8 +94,8 @@ const UserCredentialsModal: React.FC<UserCredentialsModalProps> = ({
 									disabled={busy}
 								/>
 								<p className="dashboard-form-help">
-									Alias simple como <code>abril_becerra</code> (sin{' '}
-									<code>@</code>). Se usará para iniciar sesión.
+									Alias simple como <code>abril_becerra</code> (sin <code>@</code>
+									). Se usará para iniciar sesión.
 								</p>
 							</div>
 							{(localError || error) && (
@@ -121,7 +121,11 @@ const UserCredentialsModal: React.FC<UserCredentialsModalProps> = ({
 						<div className="dashboard-form-grid">
 							<div className="dashboard-form-field dashboard-form-field--full">
 								<label htmlFor="credentials-email-readonly">Correo de acceso</label>
-								<input id="credentials-email-readonly" value={user.email} readOnly />
+								<input
+									id="credentials-email-readonly"
+									value={user.email}
+									readOnly
+								/>
 								<p className="dashboard-form-help">
 									Este usuario inicia sesión con correo real. El usuario de acceso
 									tipo alias solo aplica a cuentas administradas.
@@ -148,6 +152,12 @@ const UserCredentialsModal: React.FC<UserCredentialsModalProps> = ({
 					<div className="dashboard-form-grid">
 						<div className="dashboard-form-field dashboard-form-field--full">
 							<p className="dashboard-modal__subtitle">Contraseña</p>
+							{!user.role && (
+								<p role="status">
+									Sin rol asignado. Asigne un rol antes de restablecer la
+									contraseña.
+								</p>
+							)}
 							<p className="dashboard-modal__description">
 								{confirmReset
 									? `Se generará una contraseña temporal para ${user.email}. La actual se reemplazará y se pedirá una nueva al siguiente inicio de sesión.`
@@ -171,7 +181,7 @@ const UserCredentialsModal: React.FC<UserCredentialsModalProps> = ({
 								onClick={() => {
 									void handleResetPassword();
 								}}
-								disabled={busy}
+								disabled={busy || !user.role}
 								aria-label={`Restablecer contraseña de ${user.email}`}
 							>
 								{busy

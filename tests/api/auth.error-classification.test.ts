@@ -59,7 +59,7 @@ describe('POST /api/auth/login-host — error classification', () => {
 		signInMock.mockResolvedValue({
 			access_token: 'token-123',
 			refresh_token: 'refresh-456',
-			user: { id: 'u1', email: 'host@test.com' },
+			user: { id: 'u1', email: 'host@test.com', app_metadata: { role: 'host_client' } },
 		});
 
 		const response = await callLogin();

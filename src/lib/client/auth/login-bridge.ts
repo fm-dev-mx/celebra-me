@@ -220,7 +220,10 @@ export function initLoginFlow() {
 						: data.message || 'Bienvenido, redirigiendo a tu panel...';
 				setStatus(message, 'success', true);
 				if (payload.method === 'password') {
-					window.location.href = nextPath || data.next || '/dashboard/invitados';
+					window.location.href =
+						data.next === '/dashboard/cambiar-contrasena'
+							? data.next
+							: nextPath || data.next || '/dashboard/invitados';
 				}
 			} catch (error) {
 				const errorMessage =

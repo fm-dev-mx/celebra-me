@@ -1,5 +1,7 @@
 import {
 	createAdminUser,
+	listAdminUsers,
+	changeUserRoleAdmin,
 	deriveTemporaryPasswordForOperation,
 	generateTemporaryPassword,
 	resetUserPasswordAdmin,
@@ -13,10 +15,12 @@ import {
 	findAuthUserByEmail,
 	findAuthUserByLoginIdentifier,
 	getAuthUserAdminById,
+	listAuthUsers,
 } from '@/lib/rsvp/auth/auth-api';
 import {
 	findAppUserRoleByUserIdService,
 	listEventMembershipsService,
+	listUserRolesService,
 	upsertUserRoleService,
 } from '@/lib/rsvp/repositories/role-membership.repository';
 import { listAllEventsService } from '@/lib/rsvp/repositories/event.repository';
@@ -115,6 +119,16 @@ describe('rsvp user admin service', () => {
 	});
 
 	beforeEach(() => {
+		getAuthUserAdminByIdMock.mockResolvedValue({
+			id: 'user-1',
+			app_metadata: { role: 'host_client' },
+		});
+		findAppUserRoleByUserIdServiceMock.mockResolvedValue({
+			userId: 'user-1',
+			role: 'host_client',
+			createdAt: '',
+			updatedAt: '',
+		});
 		findMutationOperationReceiptMock.mockResolvedValue(null);
 		recordInvitationMutationOutcomeMock.mockResolvedValue({
 			operationId: OPERATION_ID,
@@ -123,6 +137,99 @@ describe('rsvp user admin service', () => {
 			completedSteps: [],
 		});
 		logAdminActionStrictMock.mockResolvedValue(undefined);
+	});
+
+	it.each([null, 'super_admin'] as const)(
+		'blocks password reset for invalid canonical access %s, including retries',
+		async (role) => {
+			findAppUserRoleByUserIdServiceMock.mockResolvedValue(
+				role ? { userId: 'user-1', role, createdAt: '', updatedAt: '' } : null,
+			);
+			getAuthUserAdminByIdMock.mockResolvedValue({
+				id: 'user-1',
+				app_metadata: { role: 'host_client' },
+				user_metadata: { password_reset_operation_id: OPERATION_ID },
+			});
+			await expect(
+				resetUserPasswordAdmin({
+					userId: 'user-1',
+					actorUserId: 'admin-1',
+					credentialOperationId: OPERATION_ID,
+					commandContext: COMMAND_CONTEXT,
+				}),
+			).rejects.toMatchObject({ status: 409, code: 'account_access_incomplete' });
+			expect(adminResetAuthUserPasswordMock).not.toHaveBeenCalled();
+		},
+	);
+
+	it('preserves role lookup failures without resetting credentials', async () => {
+		const failure = new Error('lookup unavailable');
+		findAppUserRoleByUserIdServiceMock.mockRejectedValueOnce(failure);
+		await expect(
+			resetUserPasswordAdmin({
+				userId: 'user-1',
+				actorUserId: 'admin-1',
+				credentialOperationId: OPERATION_ID,
+				commandContext: COMMAND_CONTEXT,
+			}),
+		).rejects.toBe(failure);
+		expect(adminResetAuthUserPasswordMock).not.toHaveBeenCalled();
+	});
+
+	it('reports a missing previous role after explicit assignment and synchronization', async () => {
+		findAppUserRoleByUserIdServiceMock.mockResolvedValueOnce(null);
+		upsertUserRoleServiceMock.mockResolvedValueOnce({
+			userId: 'user-1',
+			role: 'host_client',
+			createdAt: '',
+			updatedAt: '',
+		});
+		await expect(
+			changeUserRoleAdmin({ userId: 'user-1', actorUserId: 'admin-1', role: 'host_client' }),
+		).resolves.toMatchObject({ previousRole: null, role: 'host_client' });
+		expect(getAuthUserAdminByIdMock).toHaveBeenCalledWith('user-1');
+	});
+
+	it('does not report successful assignment when metadata synchronization failed', async () => {
+		upsertUserRoleServiceMock.mockResolvedValueOnce({
+			userId: 'user-1',
+			role: 'host_client',
+			createdAt: '',
+			updatedAt: '',
+		});
+		getAuthUserAdminByIdMock.mockResolvedValueOnce({ id: 'user-1', app_metadata: {} });
+		await expect(
+			changeUserRoleAdmin({ userId: 'user-1', actorUserId: 'admin-1', role: 'host_client' }),
+		).rejects.toMatchObject({ code: 'account_access_incomplete' });
+	});
+
+	it('lists orphan accounts honestly without assigning a default role', async () => {
+		jest.mocked(listAuthUsers).mockResolvedValueOnce([
+			{ id: 'user-1', email: 'host@example.test' },
+		]);
+		jest.mocked(listUserRolesService).mockResolvedValueOnce([]);
+		listEventMembershipsServiceMock.mockResolvedValueOnce([]);
+		listAllEventsServiceMock.mockResolvedValueOnce([]);
+		await expect(listAdminUsers()).resolves.toEqual([expect.objectContaining({ role: null })]);
+		expect(upsertUserRoleServiceMock).not.toHaveBeenCalled();
+	});
+
+	it('keeps an incomplete admin-created account recoverable without releasing credentials', async () => {
+		findAuthUserByEmailMock.mockResolvedValueOnce(null);
+		createAuthUserByAdminMock.mockResolvedValueOnce({
+			id: 'user-1',
+			email: 'host@example.test',
+		});
+		upsertUserRoleServiceMock.mockRejectedValueOnce(new Error('role write failed'));
+		await expect(
+			createAdminUser({
+				email: 'host@example.test',
+				role: 'host_client',
+				actorUserId: 'admin-1',
+			}),
+		).rejects.toMatchObject({ code: 'account_access_incomplete' });
+		expect(createAuthUserByAdminMock).toHaveBeenCalledTimes(1);
+		expect(logAdminActionMock).not.toHaveBeenCalled();
 	});
 
 	it('generates short memorable temporary passwords with secure randomness', () => {
@@ -150,7 +257,7 @@ describe('rsvp user admin service', () => {
 				id: 'user-host',
 				email: 'abril_becerra@clientes.celebra.invalid',
 				user_metadata: {},
-				app_metadata: {},
+				app_metadata: { role: 'host_client' },
 			});
 			adminResetAuthUserPasswordMock.mockResolvedValue({ id: 'user-host' });
 		});
@@ -228,7 +335,7 @@ describe('rsvp user admin service', () => {
 				id: 'user-host',
 				email: 'abril_becerra@clientes.celebra.invalid',
 				user_metadata: { password_reset_operation_id: OPERATION_ID },
-				app_metadata: {},
+				app_metadata: { role: 'host_client' },
 			});
 			findMutationOperationReceiptMock.mockResolvedValue({
 				operationId: OPERATION_ID,
@@ -415,7 +522,7 @@ describe('rsvp user admin service', () => {
 				email: 'abril_michelle_becerra_rea@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
 				user_metadata: { login_alias: 'abril_michelle_becerra_rea' },
-				app_metadata: {},
+				app_metadata: { role: 'host_client' },
 			});
 			findAuthUserByLoginIdentifierMock.mockResolvedValue(null);
 			findAuthUserByEmailMock.mockResolvedValue(null);
@@ -456,7 +563,7 @@ describe('rsvp user admin service', () => {
 				email: 'abril_becerra@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
 				user_metadata: { login_alias: 'abril_becerra' },
-				app_metadata: {},
+				app_metadata: { role: 'host_client' },
 			});
 
 			const result = await updateUserLoginAliasAdmin({
@@ -479,7 +586,7 @@ describe('rsvp user admin service', () => {
 				email: 'cliente@ejemplo.com',
 				created_at: '2026-04-01T00:00:00.000Z',
 				user_metadata: {},
-				app_metadata: {},
+				app_metadata: { role: 'host_client' },
 			});
 
 			await expect(
@@ -503,7 +610,7 @@ describe('rsvp user admin service', () => {
 				email: 'cliente@ejemplo.com',
 				created_at: '2026-04-01T00:00:00.000Z',
 				user_metadata: { login_alias: 'cliente_ejemplo' },
-				app_metadata: {},
+				app_metadata: { role: 'host_client' },
 			});
 
 			await expect(
@@ -527,7 +634,7 @@ describe('rsvp user admin service', () => {
 				email: 'abril_becerra@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
 				user_metadata: { login_alias: 'abril_becerra' },
-				app_metadata: {},
+				app_metadata: { role: 'host_client' },
 			});
 			findAuthUserByLoginIdentifierMock.mockResolvedValue({
 				id: 'other-user',
@@ -553,7 +660,7 @@ describe('rsvp user admin service', () => {
 				email: 'abril_anterior@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
 				user_metadata: { login_alias: 'abril_anterior' },
-				app_metadata: {},
+				app_metadata: { role: 'host_client' },
 			});
 			findAuthUserByLoginIdentifierMock.mockResolvedValue(null);
 			findAuthUserByEmailMock.mockResolvedValue(null);
@@ -589,7 +696,7 @@ describe('rsvp user admin service', () => {
 				email: 'abril_anterior@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
 				user_metadata: { login_alias: 'abril_anterior' },
-				app_metadata: {},
+				app_metadata: { role: 'host_client' },
 			});
 			findAuthUserByLoginIdentifierMock.mockResolvedValue(null);
 			findAuthUserByEmailMock.mockResolvedValue(null);
@@ -628,7 +735,7 @@ describe('rsvp user admin service', () => {
 					login_alias: 'abril_becerra',
 					login_alias_operation_id: OPERATION_ID,
 				},
-				app_metadata: {},
+				app_metadata: { role: 'host_client' },
 			});
 			findMutationOperationReceiptMock.mockResolvedValue({
 				operationId: OPERATION_ID,

@@ -64,7 +64,7 @@ const UsersAdminTable: React.FC = () => {
 							<td>{item.email}</td>
 							<td>
 								<select
-									value={item.role}
+									value={item.role ?? ''}
 									onChange={(event) => {
 										const role = event.target.value as AppUserRole;
 										void updateUserRole(item.id, role);
@@ -72,6 +72,9 @@ const UsersAdminTable: React.FC = () => {
 									disabled={loading || updatingUserId === item.id}
 									aria-label={`Rol de ${item.email}`}
 								>
+									<option value="" disabled>
+										Sin rol asignado
+									</option>
 									<option value="host_client">Anfitrión</option>
 									<option value="super_admin">Administrador</option>
 								</select>
@@ -79,10 +82,7 @@ const UsersAdminTable: React.FC = () => {
 							<td>
 								<div className="dashboard-assigned-events">
 									{item.assignedEvents.map((event) => (
-										<span
-											key={event.eventId}
-											className="dashboard-event-chip"
-										>
+										<span key={event.eventId} className="dashboard-event-chip">
 											{event.title}
 											<button
 												type="button"
@@ -125,8 +125,7 @@ const UsersAdminTable: React.FC = () => {
 											.filter(
 												(event) =>
 													!item.assignedEvents.some(
-														(assigned) =>
-															assigned.eventId === event.id,
+														(assigned) => assigned.eventId === event.id,
 													),
 											)
 											.map((event) => (

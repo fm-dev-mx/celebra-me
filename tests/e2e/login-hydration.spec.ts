@@ -1,5 +1,34 @@
 import { expect, test } from '@playwright/test';
 
+test('explains missing access without reflecting arbitrary query text', async ({ page }) => {
+	await page.goto('/login?reason=account_access_incomplete');
+	await expect(page.getByRole('alert')).toContainText('el administrador complete el acceso');
+	await page.goto('/login?reason=untrusted-reason-marker');
+	await expect(page.getByText('untrusted-reason-marker')).toHaveCount(0);
+});
+
+test('prioritizes mandatory password change over the requested dashboard', async ({ page }) => {
+	await page.route('**/api/auth/login-host', async (route) => {
+		await route.fulfill({
+			status: 200,
+			json: { ok: true, next: '/dashboard/cambiar-contrasena' },
+		});
+	});
+	await page.route('**/dashboard/cambiar-contrasena', async (route) => {
+		await route.fulfill({
+			status: 200,
+			contentType: 'text/html',
+			body: '<p>Cambio requerido</p>',
+		});
+	});
+	await page.goto('/login?next=/dashboard/invitados');
+	await expect(page.locator('#login-submit')).toBeEnabled();
+	await page.locator('#login-email').fill('synthetic@example.test');
+	await page.locator('#login-password').fill('Synthetic-123!');
+	await page.locator('#login-submit').click();
+	await expect(page).toHaveURL(/\/dashboard\/cambiar-contrasena$/);
+});
+
 test.describe('Authentication before hydration', () => {
 	test.use({ javaScriptEnabled: false });
 

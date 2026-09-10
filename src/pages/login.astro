@@ -25,6 +25,9 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 		</header>
 
 		<article class="auth-card" aria-labelledby="auth-title">
+			{Astro.url.searchParams.get('reason') === 'account_access_incomplete' && (
+				<p class="auth-status" role="alert" data-tone="error">Su cuenta requiere que el administrador complete el acceso. Comuníquese con él para continuar.</p>
+			)}
 			<div class="auth-copy">
 				<p class="auth-kicker">Acceso seguro para anfitriones</p>
 				<h1 id="auth-title">Accede a tu panel</h1>
