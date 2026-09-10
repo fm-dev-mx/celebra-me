@@ -1,12 +1,29 @@
 import type { Page } from '@playwright/test';
 import sharp from 'sharp';
-import pixelmatch from 'pixelmatch';
 import { getOperationalToolbarSelectors } from '../../../scripts/screenshot/utils';
 
 export async function initializeVisualCapture(page: Page): Promise<void> {
 	await page.addInitScript(() => {
 		Object.assign(window, { __celebraScreenshotMode: 'audit' });
 	});
+}
+
+function hasVisiblePixelChange(before: Buffer, after: Buffer): boolean {
+	// Playwright's default 0.2 threshold uses normalized YIQ color distance.
+	// Permit no above-threshold pixels; baseline comparison keeps its own pixel budget.
+	const maximumDistance = 35215 * 0.2 ** 2;
+	for (let offset = 0; offset < before.length; offset += 4) {
+		if (before[offset + 3] !== after[offset + 3]) return true;
+		const r = before[offset] - after[offset];
+		const g = before[offset + 1] - after[offset + 1];
+		const b = before[offset + 2] - after[offset + 2];
+		if (r === 0 && g === 0 && b === 0) continue;
+		const y = r * 0.29889531 + g * 0.58662247 + b * 0.11448223;
+		const i = r * 0.59597799 - g * 0.2741761 - b * 0.32180189;
+		const q = r * 0.21147017 - g * 0.52261711 + b * 0.31114694;
+		if (0.5053 * y * y + 0.299 * i * i + 0.1957 * q * q > maximumDistance) return true;
+	}
+	return false;
 }
 
 export async function captureStablePage(page: Page, fullPage = false): Promise<Buffer> {
@@ -26,10 +43,7 @@ export async function captureStablePage(page: Page, fullPage = false): Promise<B
 		if (
 			before.info.width === after.info.width &&
 			before.info.height === after.info.height &&
-			// Match Playwright's color/antialiasing rules, but allow zero changed pixels.
-			pixelmatch(before.data, after.data, undefined, after.info.width, after.info.height, {
-				threshold: 0.2,
-			}) === 0
+			!hasVisiblePixelChange(before.data, after.data)
 		)
 			return current;
 		previous = current;

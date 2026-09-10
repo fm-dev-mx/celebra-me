@@ -46,15 +46,17 @@ candidates and differences stay ignored.
 
 Viewport and complete-page captures require two consecutive visually stable PNGs before baseline
 comparison. Stabilization requires identical dimensions and zero perceptually changed pixels using
-Playwright's default color threshold (0.2) and antialiasing rules. Byte identity alone is unsuitable
-for Chromium's repeated rasterization of rotated rounded corners. The final baseline comparison
-tolerances remain unchanged. Stabilization is bounded to five seconds for viewports and twenty
-seconds for complete pages: large desktop PNGs can require 4–5 seconds each, and an initial height
-adjustment requires a third frame. The loop returns immediately once stable; continuously changing
-pages still fail. It does not retry a failed comparison, widen pixel tolerances, or update accepted
-images. This prevents a single transitional frame from becoming candidate evidence.
+Playwright's default YIQ color threshold (0.2), without a changed-pixel allowance. Byte identity is
+unsuitable for Chromium's repeated rasterization of rotated rounded corners. The final baseline
+comparison tolerances remain unchanged. Stabilization is bounded to five seconds for viewports and
+twenty seconds for complete pages: large desktop PNGs can require 4–5 seconds each, and an initial
+height adjustment requires a third frame. The loop returns immediately once stable; continuously
+changing pages still fail. It does not retry a failed comparison, widen pixel tolerances, or update
+accepted images. This prevents a single transitional frame from becoming candidate evidence.
 
-Each manifest-producing suite runs serially without retries. A failed capture stops that suite;
+Complete-page tests allow sixty seconds for navigation, deferred media, PNG encoding and audits on
+shared CI runners; the stabilization loop retains its separate bounded timeout. Each
+manifest-producing suite runs serially without retries. A failed capture stops that suite;
 continuing it in a replacement worker would discard the earlier in-memory manifest entries. CI
 retains only actual/diff PNGs on failure for three days, without traces or credential artifacts.
 

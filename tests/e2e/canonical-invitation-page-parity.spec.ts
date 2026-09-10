@@ -104,6 +104,8 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 			test(`${entry.kind}: ${entry.eventType}/${entry.slug} @ ${viewport.name}`, async ({
 				page,
 			}, testInfo) => {
+				// Complete-page decoding and stabilization need headroom on shared CI runners.
+				test.setTimeout(60_000);
 				await initializeVisualCapture(page);
 				const externalRequests: string[] = [];
 				const failedResponses: string[] = [];
