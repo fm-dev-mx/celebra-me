@@ -13,8 +13,12 @@ import type { HeroVariant } from '@/lib/invitation/section-variants';
 import '@/styles/invitation/_hero.scss';
 import EditorialCoverHero from './EditorialCoverHero.astro';
 import FramedPortraitHero from './FramedPortraitHero.astro';
+import CeremonialPortraitHero from './CeremonialPortraitHero.astro';
 
 interface Props {
+	ornament?: ImageAsset;
+	accentOrnament?: ImageAsset;
+	ambience?: ImageAsset;
 	name: string;
 	secondaryName?: string;
 	label?: string;
@@ -58,6 +62,7 @@ const {
 
 const isEditorialCover = variant === 'editorial-cover';
 const isFramedPortrait = variant === 'framed-portrait';
+const isCeremonialPortrait = variant === 'ceremonial-portrait';
 
 let displayLabel: string | undefined;
 let ageLockupMatch: RegExpMatchArray | null = null;
@@ -73,7 +78,7 @@ let fpMobile = fpDefault;
 let fpTablet = fpDefault;
 let fpDesktop = fpDefault;
 
-if (!isEditorialCover && !isFramedPortrait) {
+if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
 	displayLabel =
 		label &&
 		(label.toLowerCase().trim() === 'xv edition' || label.toLowerCase().trim() === 'xv edición')
@@ -145,7 +150,9 @@ if (!isEditorialCover && !isFramedPortrait) {
 ---
 
 {
-	isFramedPortrait ? (
+	isCeremonialPortrait ? (
+	<CeremonialPortraitHero {...Astro.props} />
+	) : isFramedPortrait ? (
 	<FramedPortraitHero {...Astro.props} />
 	) : isEditorialCover ? (
 	<EditorialCoverHero {...Astro.props} />

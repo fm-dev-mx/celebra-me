@@ -38,6 +38,9 @@ export const gallerySchema = z
 	})
 	.strict()
 	.superRefine((gallery, context) => {
+		if (gallery.variant === 'paired-portraits' && gallery.items.length !== 2) {
+			context.addIssue({ code: 'custom', path: ['items'], message: 'paired-portraits requires exactly two photographs' });
+		}
 		if (gallery.variant === 'narrative-stack') {
 			if (gallery.items.length === 0) {
 				context.addIssue({

@@ -47,6 +47,9 @@ export interface ThemeConfig {
 }
 
 export interface HeroViewModel {
+	ornament?: ImageAsset;
+	accentOrnament?: ImageAsset;
+	ambience?: ImageAsset;
 	venueIndex?: number;
 	name: string;
 	secondaryName?: string;
@@ -165,6 +168,7 @@ export interface EnvelopeViewModel {
 		sealVariant?: 'wax-organic' | 'wax-medallion' | 'premium-rose' | string;
 		sealColor?: string;
 		sealImage?: ImageAsset;
+		backdropImage?: ImageAsset;
 		microcopy: string;
 		documentLabel?: string;
 		stampText?: string;

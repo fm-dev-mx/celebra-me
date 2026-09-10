@@ -14,6 +14,9 @@ export const heroSchema = z
 		backgroundImageDesktop: AssetSchema.optional(),
 		backgroundImageMobile: AssetSchema.optional(),
 		portrait: AssetSchema.optional(),
+		ornament: AssetSchema.optional(),
+		accentOrnament: AssetSchema.optional(),
+		ambience: AssetSchema.optional(),
 		presentation: z
 			.object({
 				portraitEnabled: z.boolean().optional(),

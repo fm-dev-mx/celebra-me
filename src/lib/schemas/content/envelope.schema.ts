@@ -3,7 +3,7 @@ import { AssetSchema, ColorTokenSchema } from '@/lib/schemas/content/shared.sche
 import { ENVELOPE_SEAL_COLORS } from '@/lib/invitation/reveal-card';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
-export const envelopeRevealVariantSchema = z.enum(['celestial-blue', 'editorial-cover']);
+export const envelopeRevealVariantSchema = z.enum(['celestial-blue', 'editorial-cover', 'satin-filigree']);
 export type EnvelopeRevealVariant = z.infer<typeof envelopeRevealVariantSchema>;
 
 export const envelopeSchema = z
@@ -27,6 +27,7 @@ export const envelopeSchema = z
 		sealColor: z.enum(ENVELOPE_SEAL_COLORS).optional(),
 		sealVariant: z.enum(['wax-organic', 'wax-medallion', 'premium-rose']).optional(),
 		sealImage: AssetSchema.optional(),
+		backdropImage: AssetSchema.optional(),
 		cardLabel: z.string().trim().max(60).optional(),
 		envelopeName: z.string().trim().max(200).optional(),
 		cardName: z.string().trim().max(200).optional(),

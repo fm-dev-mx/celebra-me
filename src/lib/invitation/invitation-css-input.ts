@@ -24,7 +24,7 @@ export function buildInvitationCssResolverInput(input: {
 			gallery: viewModel.sections.gallery?.variant,
 			countdown: viewModel.sections.countdown?.variant,
 		},
-		envelopeVariant: page.envelope?.variant,
+		envelopeVariant: page.envelope?.revealVariant === 'satin-filigree' ? 'satin-filigree' : page.envelope?.variant,
 		visualProfileId: viewModel.visualProfileId,
 		slug: input.slug,
 	};

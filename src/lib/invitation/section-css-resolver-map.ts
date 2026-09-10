@@ -61,6 +61,7 @@ const FOOTER_PRESET_TO_ENTRYPOINT: Record<string, string> = {
 };
 
 const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
+	'satin-filigree': 'satin-filigree',
 	'premiere-floral': 'premiere-floral',
 	editorial: 'editorial',
 	'luxury-hacienda': 'luxury-hacienda',

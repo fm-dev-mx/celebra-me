@@ -1,5 +1,6 @@
 ---
 import '@/styles/invitation/_thank-you.scss';
+import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { ThankYouVariant } from '@/lib/invitation/section-variants';
@@ -68,7 +69,13 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 	data-has-overlay-safe-area={overlaySafeArea ? 'true' : undefined}
 >
 	{
-		usesEditorialLayout ? (
+		variant === 'ceremonial-closing' ? (
+			<div class="ceremonial-closing">
+				<p class="ceremonial-closing__message">{message}</p>
+				<p class="ceremonial-closing__name">{closingName}</p>
+				{image && <img src={plainImgSrc(typeof image === 'string' ? image : image.src)} alt="" width="240" height="160" loading="lazy" decoding="async" />}
+			</div>
+		) : usesEditorialLayout ? (
 			<div class="thank-you-editorial">
 				<div class="thank-you-editorial__ambient" aria-hidden="true" />
 				{image && (

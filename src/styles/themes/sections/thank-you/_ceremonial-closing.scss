@@ -1,0 +1,28 @@
+.thank-you-section[data-variant='ceremonial-closing'] {
+	min-height: auto;
+	padding: 5rem 1.5rem;
+	background: var(--color-deep-blue-graphite);
+	color: var(--color-ice-blue);
+	text-align: center;
+
+	.ceremonial-closing {
+		width: min(100%, 36rem);
+		margin: auto;
+	}
+
+	.ceremonial-closing__message {
+		font: 400 1.4rem / 1.5 var(--font-display);
+	}
+
+	.ceremonial-closing__name {
+		font: 400 clamp(2.8rem, 10vw, 4rem) / 1.2 var(--font-calligraphy);
+		margin: 1.5rem 0;
+	}
+
+	img {
+		display: block;
+		width: 12rem;
+		height: auto;
+		margin: 1.5rem auto 0;
+	}
+}

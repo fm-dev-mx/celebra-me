@@ -1,0 +1,127 @@
+@use '@fontsource/pinyon-script/index.css' as pinyon;
+@use '@fontsource-variable/cormorant-garamond/index.css' as cormorant;
+@use '@fontsource-variable/instrument-sans/index.css' as instrument;
+
+.invitation-hero.ceremonial-portrait-hero[data-variant='ceremonial-portrait'] {
+	position: relative;
+	display: block;
+	height: auto;
+	min-height: auto;
+	padding: 4.5rem 1.25rem 5rem;
+	text-align: center;
+	color: var(--color-text-primary);
+	background: radial-gradient(
+		ellipse at top,
+		var(--color-surface-secondary),
+		var(--color-surface-primary)
+	);
+	overflow: hidden;
+
+	.ceremonial-portrait-hero__ambience {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		opacity: 12%;
+		mask-image: linear-gradient(black, transparent 90%);
+		pointer-events: none;
+	}
+
+	.ceremonial-portrait-hero__paper {
+		position: relative;
+		max-width: 38rem;
+		margin-inline: auto;
+		padding: 0 1rem;
+		border: 0;
+		background: transparent;
+	}
+
+	.ceremonial-portrait-hero__crest {
+		width: min(52%, 11rem);
+		height: auto;
+	}
+
+	.ceremonial-portrait-hero__label {
+		margin: 0.5rem 0;
+		font: 400 1rem / 1.5 var(--font-body);
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+	}
+
+	.ceremonial-portrait-hero__name {
+		margin: 0.75rem 0;
+		font: 400 clamp(3rem, 14vw, 3.5rem) / 1.06 var(--font-calligraphy);
+		text-shadow: none;
+		letter-spacing: 0;
+	}
+
+	.ceremonial-portrait-hero__name span {
+		display: block;
+		white-space: nowrap;
+	}
+
+	.ceremonial-portrait-hero__date {
+		margin: 0.65rem 0 1.25rem;
+		font: 500 1.3rem / 1.5 var(--font-display);
+	}
+
+	.ceremonial-portrait-hero__photograph {
+		width: min(100%, 20rem);
+		margin: 0 auto;
+		padding: 6px;
+		border: 1px solid var(--color-cold-silver);
+		border-radius: 0.7rem;
+		box-shadow: none;
+	}
+
+	.ceremonial-portrait-hero__photograph img {
+		display: block;
+		width: 100%;
+		height: auto;
+		object-fit: contain;
+		border-radius: 0.35rem;
+	}
+
+	.ceremonial-portrait-hero__ornament {
+		display: block;
+		width: min(52%, 11rem);
+		height: auto;
+		margin: 0.75rem 0 0 auto;
+	}
+
+	.ceremonial-portrait-hero__accent {
+		position: absolute;
+		bottom: 0.5rem;
+		left: 1rem;
+		width: 5rem;
+		height: auto;
+	}
+
+	.ceremonial-portrait-hero__side {
+		display: none;
+	}
+
+	@media (width >= 64rem) {
+		padding: 5rem 2rem 6rem;
+
+		.ceremonial-portrait-hero__side {
+			display: block;
+			position: absolute;
+			width: 12rem;
+			height: auto;
+			top: 52%;
+			opacity: 45%;
+		}
+
+		.ceremonial-portrait-hero__side--left {
+			left: calc(50% - 24rem);
+			transform: rotate(90deg);
+		}
+
+		.ceremonial-portrait-hero__side--right {
+			right: calc(50% - 24rem);
+			transform: rotate(-90deg);
+		}
+	}
+}
