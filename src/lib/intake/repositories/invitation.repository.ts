@@ -1,8 +1,9 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { Invitation, DemoPreset } from '@/lib/intake/types';
+import type { WorkStatus } from '@/lib/intake/workflow';
 
 interface InvitationRow {
-	work_status: 'in_progress' | 'completed';
+	work_status: WorkStatus;
 	owner_reviewed_at: string | null;
 	owner_reviewed_by: string | null;
 	id: string;

@@ -36,7 +36,6 @@ const allowedHydratedComponents = new Set([
 	'InvitationList',
 	'InvitationDetail',
 	'DraftReview',
-	'InvitationMetadataForm',
 	'IntakeForm',
 	'SubmissionReview',
 ]);

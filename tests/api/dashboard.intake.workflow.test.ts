@@ -29,18 +29,19 @@ describe('workflow mutations', () => {
 		} as Awaited<ReturnType<typeof requireAdminMutationAccess>>);
 		db.mockResolvedValue([{ id }]);
 	});
-	it.each(['confirm_review', 'clear_review'])(
-		'rejects %s from another administrator',
-		async (action) => {
-			auth.mockResolvedValue({
-				userId: id,
-				email: 'preview@preview.com',
-				isSuperAdmin: true,
-			} as Awaited<ReturnType<typeof requireAdminMutationAccess>>);
-			expect((await invoke({ action, expectedUpdatedAt })).status).toBe(403);
-			expect(db).not.toHaveBeenCalled();
-		},
-	);
+	it.each(
+		['confirm_review', 'clear_review'].flatMap((action) =>
+			['preview@preview.com', undefined].map((email) => ({ action, email })),
+		),
+	)('rejects %s from another administrator', async ({ action, email }) => {
+		auth.mockResolvedValue({
+			userId: id,
+			email,
+			isSuperAdmin: true,
+		} as Awaited<ReturnType<typeof requireAdminMutationAccess>>);
+		expect((await invoke({ action, expectedUpdatedAt })).status).toBe(403);
+		expect(db).not.toHaveBeenCalled();
+	});
 	it('clears both review fields without changing work', async () => {
 		expect((await invoke({ action: 'clear_review', expectedUpdatedAt })).status).toBe(200);
 		expect(db).toHaveBeenCalledWith(
@@ -67,6 +68,11 @@ describe('workflow mutations', () => {
 		);
 	});
 	it('attributes review to the authenticated owner on the server', async () => {
+		auth.mockResolvedValue({
+			userId: id,
+			email: ' CELEBRA.ME.COM@gmail.com ',
+			isSuperAdmin: true,
+		} as Awaited<ReturnType<typeof requireAdminMutationAccess>>);
 		expect((await invoke({ action: 'confirm_review', expectedUpdatedAt })).status).toBe(200);
 		expect(db).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -78,16 +84,19 @@ describe('workflow mutations', () => {
 		db.mockResolvedValue([]);
 		expect((await invoke({ action: 'clear_review', expectedUpdatedAt })).status).toBe(409);
 	});
-	it('rejects forged attribution before writing', async () => {
-		expect(
-			(
-				await invoke({
-					action: 'confirm_review',
-					expectedUpdatedAt,
-					ownerReviewedAt: expectedUpdatedAt,
-				})
-			).status,
-		).toBe(400);
-		expect(db).not.toHaveBeenCalled();
-	});
+	it.each(['ownerReviewedAt', 'ownerReviewedBy'])(
+		'rejects forged %s before writing',
+		async (field) => {
+			expect(
+				(
+					await invoke({
+						action: 'confirm_review',
+						expectedUpdatedAt,
+						[field]: expectedUpdatedAt,
+					})
+				).status,
+			).toBe(400);
+			expect(db).not.toHaveBeenCalled();
+		},
+	);
 });
