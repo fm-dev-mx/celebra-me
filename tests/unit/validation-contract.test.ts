@@ -124,44 +124,51 @@ describe('canonical validation contract', () => {
 		expect(opsCli).not.toContain("'validate-event-parity'");
 	});
 
-	it('keeps GitHub Actions on the complete canonical CI tiers', () => {
-		const workflowPath = path.resolve(process.cwd(), '.github/workflows/commit-validation.yml');
-		expect(() => fs.readFileSync(workflowPath, 'utf8')).not.toThrow();
-		const workflow = fs.readFileSync(workflowPath, 'utf8');
+	it.each(['\n', '\r\n'])(
+		'keeps GitHub Actions on the complete canonical CI tiers with %j line endings',
+		(lineEnding) => {
+			const workflowPath = path.resolve(
+				process.cwd(),
+				'.github/workflows/commit-validation.yml',
+			);
+			expect(() => fs.readFileSync(workflowPath, 'utf8')).not.toThrow();
+			const workflow = fs.readFileSync(workflowPath, 'utf8').replace(/\r?\n/g, lineEnding);
+			const workflowLines = workflow.split(/\r?\n/).map((line) => line.trim());
 
-		expect(workflow).toContain('name: Repository CI');
-		expect(workflow).toContain('policy-validation:');
-		expect(workflow).toContain('name: Repository Policy');
-		expect(workflow).toContain('application-validation:');
-		expect(workflow).toContain('name: Application Suite');
-		expect(workflow).toContain('node scripts/validate-commits.mjs');
-		expect(workflow).toContain('pnpm ops check-links');
-		expect(workflow).toContain('pnpm validate:markdown-tables');
-		for (const command of [
-			'pnpm ci:static',
-			'pnpm test',
-			'pnpm test:e2e:ci --max-failures=5 --workers=2',
-		]) {
-			expect(workflow).toContain(`run: ${command}\n`);
-		}
-		expect(workflow).toContain('needs: [application-checks, browser-validation]');
-		expect(workflow).toContain('tier: [static, unit, database]');
-		expect(workflow).toContain('cancel-in-progress: true');
-		expect(workflow).toContain("PLAYWRIGHT_USE_CANONICAL_FIXTURES: 'true'");
-		expect(workflow).toContain("PLAYWRIGHT_REQUIRE_VISUAL_PREFLIGHT: 'true'");
-		const imageDigest = workflow.match(/image: .*@(sha256:[a-f0-9]{64})/)?.[1];
-		expect(imageDigest).toBeDefined();
-		expect(workflow).toContain(`VISUAL_PARITY_OS_IMAGE_DIGEST: ${imageDigest}`);
-		expect(workflow).toContain(
-			'test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = success',
-		);
-		expect(workflow).toContain('uses: actions/checkout@v7');
-		expect(workflow).toContain('uses: pnpm/action-setup@v6');
-		expect(workflow).toContain('uses: actions/setup-node@v7');
-		expect(workflow).not.toContain('uses: actions/checkout@v4');
-		expect(workflow).not.toContain('uses: pnpm/action-setup@v4');
-		expect(workflow).not.toContain('uses: actions/setup-node@v4');
-		expect(workflow).not.toMatch(/needs:\s*policy-validation/);
-		expect(workflow).not.toContain('name: Validate PR Commits');
-	});
+			expect(workflow).toContain('name: Repository CI');
+			expect(workflow).toContain('policy-validation:');
+			expect(workflow).toContain('name: Repository Policy');
+			expect(workflow).toContain('application-validation:');
+			expect(workflow).toContain('name: Application Suite');
+			expect(workflow).toContain('node scripts/validate-commits.mjs');
+			expect(workflow).toContain('pnpm ops check-links');
+			expect(workflow).toContain('pnpm validate:markdown-tables');
+			for (const command of [
+				'pnpm ci:static',
+				'pnpm test',
+				'pnpm test:e2e:ci --max-failures=5 --workers=2',
+			]) {
+				expect(workflowLines).toContain(`run: ${command}`);
+			}
+			expect(workflow).toContain('needs: [application-checks, browser-validation]');
+			expect(workflow).toContain('tier: [static, unit, database]');
+			expect(workflow).toContain('cancel-in-progress: true');
+			expect(workflow).toContain("PLAYWRIGHT_USE_CANONICAL_FIXTURES: 'true'");
+			expect(workflow).toContain("PLAYWRIGHT_REQUIRE_VISUAL_PREFLIGHT: 'true'");
+			const imageDigest = workflow.match(/image: .*@(sha256:[a-f0-9]{64})/)?.[1];
+			expect(imageDigest).toBeDefined();
+			expect(workflow).toContain(`VISUAL_PARITY_OS_IMAGE_DIGEST: ${imageDigest}`);
+			expect(workflow).toContain(
+				'test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = success',
+			);
+			expect(workflow).toContain('uses: actions/checkout@v7');
+			expect(workflow).toContain('uses: pnpm/action-setup@v6');
+			expect(workflow).toContain('uses: actions/setup-node@v7');
+			expect(workflow).not.toContain('uses: actions/checkout@v4');
+			expect(workflow).not.toContain('uses: pnpm/action-setup@v4');
+			expect(workflow).not.toContain('uses: actions/setup-node@v4');
+			expect(workflow).not.toMatch(/needs:\s*policy-validation/);
+			expect(workflow).not.toContain('name: Validate PR Commits');
+		},
+	);
 });
