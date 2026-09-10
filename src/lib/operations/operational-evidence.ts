@@ -4,7 +4,11 @@ export type OperationalEvidenceEnvironment = 'local' | 'preview' | 'production';
 export type OperationalEvidenceStatus = 'VERIFIED' | 'WARNING' | 'FAILED' | 'UNVERIFIED';
 export type OperationalEvidencePhase = 'started' | 'completed';
 export type OperationalAggregateValue = string | number | boolean | null;
-export type OperationalAggregatePayload = Record<string, OperationalAggregateValue>;
+export type OperationalAggregatePayloadValue =
+	| OperationalAggregateValue
+	| readonly OperationalAggregatePayloadValue[]
+	| { [key: string]: OperationalAggregatePayloadValue };
+export type OperationalAggregatePayload = Record<string, OperationalAggregatePayloadValue>;
 
 export interface OperationalEvidenceV1<
 	Check extends string = string,
@@ -24,12 +28,6 @@ export interface OperationalEvidenceV1<
 	commitSha?: string;
 	deploymentId?: string;
 	payload: Payload;
-}
-
-export interface OperationalEvidenceLogEvent {
-	event: string;
-	phase: OperationalEvidencePhase;
-	evidence: OperationalEvidenceV1;
 }
 
 const SAFE_TOKEN_PATTERN = /^[A-Za-z0-9][A-Za-z0-9:._-]{0,159}$/;
@@ -87,20 +85,40 @@ function assertEvidenceCorrelation(evidence: OperationalEvidenceV1): void {
 	}
 }
 
+function assertEvidencePayloadValue(value: OperationalAggregatePayloadValue, key: string): void {
+	if (Array.isArray(value)) {
+		for (const item of value) assertEvidencePayloadValue(item, key);
+		return;
+	}
+	if (value !== null && typeof value === 'object') {
+		for (const [nestedKey, nestedValue] of Object.entries(value)) {
+			if (
+				!SAFE_CODE_PATTERN.test(nestedKey) ||
+				FORBIDDEN_PAYLOAD_KEY_PATTERN.test(nestedKey)
+			) {
+				throw new Error(`Operational evidence payload key is not approved: ${nestedKey}`);
+			}
+			assertEvidencePayloadValue(nestedValue, nestedKey);
+		}
+		return;
+	}
+	if (typeof value === 'number' && (!Number.isFinite(value) || value < 0)) {
+		throw new Error(`Operational evidence metric must be finite and non-negative: ${key}`);
+	}
+	if (
+		typeof value === 'string' &&
+		(!SAFE_TOKEN_PATTERN.test(value) || FORBIDDEN_TEXT_PATTERN.test(value))
+	) {
+		throw new Error(`Operational evidence payload value is not sanitized: ${key}`);
+	}
+}
+
 function assertEvidencePayload(payload: OperationalAggregatePayload): void {
 	for (const [key, value] of Object.entries(payload)) {
 		if (!SAFE_CODE_PATTERN.test(key) || FORBIDDEN_PAYLOAD_KEY_PATTERN.test(key)) {
 			throw new Error(`Operational evidence payload key is not approved: ${key}`);
 		}
-		if (typeof value === 'number' && (!Number.isFinite(value) || value < 0)) {
-			throw new Error(`Operational evidence metric must be finite and non-negative: ${key}`);
-		}
-		if (
-			typeof value === 'string' &&
-			(!SAFE_TOKEN_PATTERN.test(value) || FORBIDDEN_TEXT_PATTERN.test(value))
-		) {
-			throw new Error(`Operational evidence payload value is not sanitized: ${key}`);
-		}
+		assertEvidencePayloadValue(value, key);
 	}
 }
 
@@ -123,5 +141,5 @@ export function serializeOperationalEvidenceEvent(
 		throw new Error('Operational evidence event name is invalid.');
 	}
 	assertOperationalEvidenceSafe(evidence);
-	return JSON.stringify({ event, phase, evidence } satisfies OperationalEvidenceLogEvent);
+	return JSON.stringify({ event, phase, evidence });
 }
