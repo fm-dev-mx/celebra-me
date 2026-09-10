@@ -511,7 +511,9 @@ function previewEvidenceCommand(): void {
 }
 
 async function main(): Promise<void> {
-	const command = process.argv[2];
+	const args = process.argv.slice(2);
+	if (args[0] === '--') args.shift();
+	const command = args.length === 1 ? args[0] : undefined;
 	if (command === 'validate') return validateCommand();
 	if (command === 'production') return productionCommand();
 	if (command === 'preview-evidence') return previewEvidenceCommand();

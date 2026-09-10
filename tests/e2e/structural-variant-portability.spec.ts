@@ -76,6 +76,25 @@ interface CapturedSnapshotInfo {
 
 const capturedSnapshots: CapturedSnapshotInfo[] = [];
 
+test('certified comparison rejects a deliberately different rendered page', async ({ page }) => {
+	test.skip(
+		VISUAL_PARITY_MODE !== 'compare',
+		'Negative comparison proof only applies to certification.',
+	);
+	const file = 'jewelry-box-desktop-countdown-standard.png';
+	const reference = fs.readFileSync(path.resolve('tests/e2e/visual-baselines', file));
+	await page.setViewportSize({
+		width: reference.readUInt32BE(16),
+		height: reference.readUInt32BE(20),
+	});
+	await page.setContent(
+		'<html><body style="margin:0;background:#ff0000;height:100vh"></body></html>',
+	);
+	await expect(
+		expect(page).toHaveScreenshot(file, { timeout: 1500, maxDiffPixels: 0 }),
+	).rejects.toThrow(/pixels.*different/);
+});
+
 test.describe('Registry-Driven Visual Portability Suite', () => {
 	test.describe.configure({ mode: 'serial', retries: 0 });
 	// Baseline Preset: jewelry-box (all registered canonical variants)

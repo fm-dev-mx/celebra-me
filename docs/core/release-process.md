@@ -6,6 +6,35 @@
 
 ## Overview
 
+### Efficient validation and evidence
+
+- Run focused local checks while editing. Use the PR to `develop` for complete remote certification;
+  confirm its workflow run exists. A push to a task branch alone does not run CI.
+- `pnpm test:e2e:ci` explicitly compares visual references and fails before browser work when the
+  certified Linux runtime, isolated fixtures, LFS references or coverage are unavailable. Diagnostic
+  runs and candidate generation are not release certification.
+- Generate candidates with the existing Repository CI manual input `visual_mode=candidate` on a
+  published task ref. The workflow owns the pinned image and fixtures. Download its
+  `visual-candidate-<sha>` artifact and review `changes.html` plus the complete matrix as needed.
+  This mode does not produce a passing Application Suite. Any regenerated manifest requires renewed
+  owner approval of that exact artifact; never transfer approval to a different hash.
+- Preserve previously granted task authorization. Resolve routine paths and command arguments
+  without asking again. Request new decisions only for new scope or material visual approval.
+- Before promotion, run `pnpm ops:release-checks <exact-sha>` to require Repository Policy,
+  Application Suite and the correlated Preview smoke from GitHub Actions. Pending, cancelled,
+  skipped, missing, untrusted or different-SHA evidence blocks this check. It does not replace
+  database compatibility checks or deployment authorization. Recheck after final integration.
+- The main ruleset must still be inspected: this CLI is a fail-closed operator check, not proof that
+  provider-side Preview protection is configured. Never call a release ready from CI alone.
+- Avoid repeating successful complete suites for unchanged evidence. A final integration SHA,
+  changed inputs or an unresolved failure justifies revalidation. Do not reuse PR merge-SHA evidence
+  as if it certified a different final commit.
+- CI records `validation-metrics` artifacts with SHA, mode, attempt, completed job durations, wall
+  time and aggregate runner minutes. These exclude queue time, billing multipliers and the metrics
+  job; they do not estimate token usage. Compare like-for-like runs before adopting sharding. Keep
+  serial coverage until three paired trials meet the agreed 30% wall-time saving and at most 50%
+  runner-minute increase, with identical coverage and passing results.
+
 This document owns release checkpoints and the layered CHANGELOG policy for the Celebra-me
 repository. Checkpoints use Git tags, `package.json` version bumps, and a changelog entry — no
 release branches, no automation runners, no semantic-release.
