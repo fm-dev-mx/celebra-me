@@ -48,8 +48,10 @@ Viewport and complete-page captures require two consecutive visually stable PNGs
 comparison. Stabilization requires identical dimensions and zero perceptually changed pixels using
 Playwright's default color threshold (0.2) and antialiasing rules. Byte identity alone is unsuitable
 for Chromium's repeated rasterization of rotated rounded corners. The final baseline comparison
-tolerances remain unchanged. Capture stabilization is bounded to five seconds and fails if the page
-keeps changing. It does not retry a failed comparison, widen pixel tolerances, or update accepted
+tolerances remain unchanged. Stabilization is bounded to five seconds for viewports and twenty
+seconds for complete pages: large desktop PNGs can require 4–5 seconds each, and an initial height
+adjustment requires a third frame. The loop returns immediately once stable; continuously changing
+pages still fail. It does not retry a failed comparison, widen pixel tolerances, or update accepted
 images. This prevents a single transitional frame from becoming candidate evidence.
 
 Each manifest-producing suite runs serially without retries. A failed capture stops that suite;

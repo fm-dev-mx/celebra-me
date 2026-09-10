@@ -10,7 +10,9 @@ export async function initializeVisualCapture(page: Page): Promise<void> {
 }
 
 export async function captureStablePage(page: Page, fullPage = false): Promise<Buffer> {
-	const deadline = Date.now() + 5_000;
+	// A 1440px-wide complete page can take 4-5 seconds per PNG before comparison.
+	const timeout = fullPage ? 20_000 : 5_000;
+	const deadline = Date.now() + timeout;
 	let previous = await page.screenshot({ fullPage, animations: 'disabled' });
 	while (Date.now() < deadline) {
 		await page.waitForTimeout(100);
@@ -32,7 +34,7 @@ export async function captureStablePage(page: Page, fullPage = false): Promise<B
 			return current;
 		previous = current;
 	}
-	throw new Error('Page capture did not stabilize within 5 seconds.');
+	throw new Error(`Page capture did not stabilize within ${timeout / 1000} seconds.`);
 }
 
 export async function waitForVisualHydration(page: Page): Promise<void> {

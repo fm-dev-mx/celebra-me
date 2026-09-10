@@ -881,6 +881,29 @@ test('ornamented access preserves explicit inherited presentation tokens', async
 	expect(glow).toBe('none');
 });
 
+test('complete-page stabilization allows slow encoding across a changed first frame', async ({
+	page,
+}) => {
+	await page.setContent('<style>body { margin: 0; background: red; }</style>');
+	const screenshot = page.screenshot.bind(page);
+	const first = await screenshot();
+	await page.evaluate(() => {
+		document.body.style.background = 'blue';
+	});
+	const final = await screenshot();
+	let calls = 0;
+	page.screenshot = async () => {
+		await page.waitForTimeout(3000);
+		return ++calls === 1 ? first : final;
+	};
+	try {
+		expect((await captureStablePage(page, true)).equals(final)).toBe(true);
+		expect(calls).toBe(3);
+	} finally {
+		page.screenshot = screenshot;
+	}
+});
+
 for (const fullPage of [false, true]) {
 	test(`${fullPage ? 'complete-page' : 'viewport'} capture rejects a visible frame change`, async ({
 		page,
