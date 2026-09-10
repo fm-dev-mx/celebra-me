@@ -1,8 +1,8 @@
 ---
 title: Leslie Perez — Section parity handoff (Phase 1)
-status: active
+status: superseded
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-09-10
 type: diagnostic
 related_skills:
   - theme-architecture
@@ -19,12 +19,18 @@ related_docs:
 
 # Leslie Perez — Section parity handoff
 
+> Historical evidence, not current authorization. The canonical definition is now published
+> and has a profile stylesheet; the original state and instructions below describe the August
+> inspection. Current preparation facts belong to `docs/invitations/leslie-perez.md`.
+> Retained owner decisions and unresolved visual observations are not considered accepted or
+> resolved by this archival. Revalidate them against current code before any further work.
+
 **Phase:** Goal 1 complete. Goal 2 must not start until the owner accepts this file.
 
 **Authorization for Goal 2 (when accepted):** local SCSS / Leslie definition / listed tests only.
 No database, Preview, Production, `invitation:release`, publish, or Git mutation.
 
-This file is the sole Phase 2 authority. It does not replace `docs/invitations/leslie-perez.md`.
+The original scope below is retained for historical context only; it grants no new work authority.
 
 ## Current state
 
