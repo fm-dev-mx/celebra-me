@@ -69,7 +69,7 @@ export const NORMA_PHOTOGRAPHS = [
 		key: 'closing',
 		width: 1024,
 		height: 1536,
-		alt: 'Retrato de Norma con vestido azul de celebración',
+		alt: 'Retrato de Norma sonriendo con la mano sobre la mejilla',
 		optimizationRole: 'editorial-featured',
 	},
 ] as const;
