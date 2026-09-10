@@ -217,6 +217,16 @@
 		--duration-reveal: 1.2s;
 	}
 
+	.gifts-section {
+		--gifts-padding-block: clamp(3rem, 6vw, 4rem);
+		--gifts-padding-inline: min(1.5rem, 4vw);
+		--gifts-title-letter-spacing: 0.04em;
+		--gifts-card-bg: var(--color-surface-elevated);
+		--gifts-card-border: 1px solid rgb(var(--color-action-accent-rgb) / 22%);
+		--gifts-card-radius: 1.25rem;
+		--gifts-card-shadow: none;
+	}
+
 	.rsvp {
 		--rsvp-title-size: clamp(2rem, 4vw, 2.75rem);
 		--rsvp-title-letter-spacing: 0;

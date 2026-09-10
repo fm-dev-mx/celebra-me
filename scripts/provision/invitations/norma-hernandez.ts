@@ -125,6 +125,7 @@ export function buildNormaPublishedContent(
 			'gallery',
 			'countdown',
 			'location',
+			'gifts',
 			'personalizedAccess',
 			'rsvp',
 			'thankYou',
@@ -198,6 +199,18 @@ export function buildNormaPublishedContent(
 			}),
 			indications: [
 				{ iconName: 'DressCode', styleVariant: 'default', text: 'Vestimenta formal' },
+			],
+		},
+		gifts: {
+			variant: 'standard',
+			title: 'Regalos',
+			subtitle: 'Su presencia es mi mayor regalo.',
+			items: [
+				{
+					type: 'cash',
+					title: 'Lluvia de sobres',
+					text: 'Si desea obsequiarme un detalle, puede hacerlo mediante un sobre el día de la celebración.',
+				},
 			],
 		},
 		rsvp: {
