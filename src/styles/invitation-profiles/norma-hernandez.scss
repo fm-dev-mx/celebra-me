@@ -219,10 +219,10 @@
 
 		.envelope-details__accent {
 			font-family: 'Pinyon Script', cursive;
-			font-size: 1.45em;
 			font-weight: 400;
 			letter-spacing: 0;
 			line-height: 1;
+			opacity: 75%;
 		}
 
 		.envelope-guest-external {
@@ -257,6 +257,16 @@
 			opacity: 0%;
 			pointer-events: none;
 			transform: translateY(-0.5rem);
+		}
+	}
+
+	.music-player {
+		flex-direction: row-reverse;
+		left: 1.5rem;
+		right: auto;
+
+		@media (width <= 768px) {
+			left: 1rem;
 		}
 	}
 
