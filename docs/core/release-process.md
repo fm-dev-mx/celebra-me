@@ -136,6 +136,20 @@ SHA after the merge.
 
 ### 5. Promote the validated commit to `main`
 
+Before this promotion, when the release range changes anything inside the CSS visual-parity gate
+scope ("Profile LAYOUT deletion or move" in
+[`../domains/theme/css-visual-parity.md`](../domains/theme/css-visual-parity.md#scope-of-this-gate),
+or a `published` lifecycle change that adds a route to the canonical matrix), obtain the owner's
+release-time visual confirmation. The confirmation reviews the candidate produced with the pinned
+runtime and identifies the exact source SHA, matrix hash, and candidate-manifest SHA-256. Record
+that acceptance through `pnpm visual:parity:accept` before this step, land the accepted references
+on `develop` through the same pull-request and checks flow as step 4, and wait for
+`Application Suite` on that resulting `develop` SHA. This is a human release decision, not an
+automatic action performed by CI or Vercel after a deployment begins.
+
+If visual confirmation is missing or rejected, the candidate is not eligible for promotion or
+deployment. Do not reduce visual coverage, relax comparison, or treat a Preview build as approval.
+
 ```bash
 git switch develop
 git pull --ff-only origin develop
