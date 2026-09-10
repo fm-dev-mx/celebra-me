@@ -1,9 +1,10 @@
 # CSS Visual Parity Gate
 
-**Status:** The last accepted reference is `ba025729e7e28a388a43aa2949996dc94eb0c56a`. The portable
-CI runtime and mobile premiere hero flow require a new clean-source candidate and human acceptance;
-the existing manifest has not been reapproved or rewritten. Acceptance does not replace comparison
-or final CI. **Related:** [`architecture.md`](architecture.md#invitation-css-ownership-normative)
+**Status:** The accepted reference is `b68f378b75c7004922cb32ae54b26fe5f348b21d`, approved with the
+public pinned CI runtime and the corrected Ximena mobile hero. The remaining captures passed the
+existing pixel comparison. Exact approval identity is recorded in the accepted manifest. Acceptance
+does not replace comparison or final CI. **Related:**
+[`architecture.md`](architecture.md#invitation-css-ownership-normative)
 
 ## Rule
 
