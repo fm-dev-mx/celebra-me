@@ -18,12 +18,6 @@ export interface RevealedLocationPayload {
 	location: LocationSection;
 }
 
-export interface ContactPayload {
-	name: string;
-	email: string;
-	message: string;
-}
-
 class RsvpApi {
 	private handleResponse<T>(result: ApiResult<T>): T {
 		if (!result.ok) {
@@ -98,15 +92,6 @@ class RsvpApi {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ rsvpId, channel, action }),
-		});
-		this.handleResponse(result);
-	}
-
-	async submitContact(payload: ContactPayload): Promise<void> {
-		const result = await fetchJSON<void>('/api/contact', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(payload),
 		});
 		this.handleResponse(result);
 	}
