@@ -42,7 +42,10 @@ describe('Norma invitation publication contract', () => {
 			accessMode: 'personalized-only',
 			confirmationMode: 'api',
 		});
-		expect(content.music).toBeUndefined();
+		expect(content.music).toEqual({
+			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1789008926/Maria_Martha_Serra_Lima_-_A_Mi_Manera_opt_stvuaw.mp3',
+			autoPlay: true,
+		});
 		expect(content.gifts).toBeUndefined();
 		expect(content.navigation?.map((item) => item.href)).toEqual(['#event-location', '#rsvp']);
 		expect(normaInvitation.lifecycle).toBe('published');

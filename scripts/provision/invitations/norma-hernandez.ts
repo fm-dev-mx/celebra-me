@@ -158,6 +158,10 @@ export function buildNormaPublishedContent(
 				background: 'surfaceSecondary',
 			},
 		},
+		music: {
+			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1789008926/Maria_Martha_Serra_Lima_-_A_Mi_Manera_opt_stvuaw.mp3',
+			autoPlay: true,
+		},
 		quote: { text: NORMA_COPY.childhood, author: 'Norma Hernandez' },
 		gallery: {
 			variant: 'narrative-stack',
