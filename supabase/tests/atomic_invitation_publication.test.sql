@@ -1,5 +1,5 @@
 begin;
-select plan(105);
+select plan(107);
 
 insert into auth.users (id, aud, role, email, created_at, updated_at)
 values ('10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'atomic-publish@example.test', now(), now());
@@ -7,6 +7,11 @@ insert into public.invitations (id, slug, title, event_type, status, base_demo_i
 values ('20000000-0000-0000-0000-000000000001', 'atomic-publish', 'Publicación atómica', 'xv', 'in_production', 'demo-xv-jewelry-box', 'jewelry-box', '{}'::jsonb, '10000000-0000-0000-0000-000000000001', 'client');
 insert into public.invitation_content_drafts (id, invitation_project_id, content, status)
 values ('30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', '{"title":"Publicación atómica"}'::jsonb, 'draft');
+
+-- Synthetic administrative decisions must survive the real publication RPC.
+update public.invitations set work_status = 'completed', owner_reviewed_at = '2026-09-01T12:00:00Z',
+  owner_reviewed_by = '10000000-0000-0000-0000-000000000001'
+where id = '20000000-0000-0000-0000-000000000001';
 
 select has_function('public', 'publish_invitation_atomic', array['uuid','uuid','timestamp with time zone','text','text','boolean','jsonb'], 'functional legacy compatibility overload exists');
 select has_function('public', 'publish_invitation_atomic', array['uuid','uuid','timestamp with time zone','integer','text','text','uuid','text','text','boolean','jsonb'], 'new eleven-argument publication RPC exists');
@@ -27,6 +32,8 @@ where i.id = '20000000-0000-0000-0000-000000000001';
 
 select is((select result -> 'publishedContent' ->> 'version' from publication_test_result), '1', 'new contract publishes version one');
 select is((select result ->> 'idempotent' from publication_test_result), 'false', 'original response is stored with its original indicator');
+select is((select work_status from public.invitations where id = '20000000-0000-0000-0000-000000000001'), 'completed', 'publication preserves work status');
+select is((select owner_reviewed_at from public.invitations where id = '20000000-0000-0000-0000-000000000001'), '2026-09-01T12:00:00Z'::timestamptz, 'publication preserves manual review');
 select is((select status from public.invitation_content_drafts where id = '30000000-0000-0000-0000-000000000001'), 'approved', 'draft approved atomically');
 select is((select count(*) from public.invitation_publication_idempotency), 1::bigint, 'one durable receipt is created');
 select ok((select result is not null from public.invitation_publication_idempotency), 'receipt contains exact successful response');

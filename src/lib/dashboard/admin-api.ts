@@ -35,6 +35,7 @@ import type {
 } from './dto/intake';
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
 import type { MutationOutcome } from '@/lib/intake/mutations/outcome';
+import type { WorkflowCommand } from '@/lib/intake/workflow';
 
 export class AdminApi {
 	private readonly passwordMutationRoots = new Map<string, string>();
@@ -100,9 +101,7 @@ export class AdminApi {
 		return this.handleResponse(result).item;
 	}
 
-	async resetUserPassword(
-		userId: string,
-	): Promise<{
+	async resetUserPassword(userId: string): Promise<{
 		userId: string;
 		credentials?: { temporaryPassword: string };
 		outcome: MutationOutcome;
@@ -140,15 +139,12 @@ export class AdminApi {
 		const result = await dashboardApi.patch<{
 			item?: UserListItemDTO;
 			outcome: MutationOutcome;
-		}>(
-			`/api/dashboard/admin/users/${encodeURIComponent(userId)}/login-alias`,
-			{
-				...payload,
-				operationId,
-				aliasOperationId,
-				...(existingRoot ? { retryOfOperationId: aliasOperationId } : {}),
-			},
-		);
+		}>(`/api/dashboard/admin/users/${encodeURIComponent(userId)}/login-alias`, {
+			...payload,
+			operationId,
+			aliasOperationId,
+			...(existingRoot ? { retryOfOperationId: aliasOperationId } : {}),
+		});
 		const response = this.handleResponse(result);
 		if (response.outcome.status === 'applied' || response.outcome.status === 'replayed') {
 			this.aliasMutationRoots.delete(key);
@@ -226,6 +222,14 @@ export class AdminApi {
 			{ expectedUpdatedAt, value: payload },
 		);
 		return this.handleResponse(result).item;
+	}
+
+	async setInvitationWorkflow(invitationId: string, command: WorkflowCommand): Promise<void> {
+		const result = await dashboardApi.patch<{ updated: boolean }>(
+			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/workflow`,
+			command,
+		);
+		this.handleResponse(result);
 	}
 
 	async createIntakeRequest(

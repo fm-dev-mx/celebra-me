@@ -1,0 +1,8 @@
+.invitation-workflow {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--spacing-xs);
+	min-inline-size: 15rem;
+	overflow-wrap: anywhere;
+}

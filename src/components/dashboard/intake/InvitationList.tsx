@@ -1,3 +1,5 @@
+import WorkflowControls from '@/components/dashboard/intake/WorkflowControls';
+import '@/styles/dashboard/_invitation-workflow.scss';
 import type { FC } from 'react';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
@@ -12,6 +14,7 @@ import { getPublicSlug } from '@/lib/intake/slug';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 
 type FilterTab =
+	| 'work_in_progress'
 	| 'current'
 	| 'upcoming'
 	| 'past'
@@ -34,6 +37,12 @@ const FILTER_TABS: Array<{
 	match: (invitation: InvitationDTO) => boolean;
 	isPrimary: boolean;
 }> = [
+	{
+		key: 'work_in_progress',
+		label: 'En proceso',
+		match: (i) => !i.archivedAt && i.workflow?.workStatus === 'in_progress',
+		isPrimary: true,
+	},
 	{
 		key: 'current',
 		label: 'Vigentes y demos',
@@ -143,6 +152,8 @@ function relativeDate(dateStr: string): string {
 
 interface InvitationTableRowProps {
 	invitation: InvitationDTO;
+	canReviewManually: boolean;
+	onUpdated: () => Promise<void>;
 	onArchive: (invitation: InvitationDTO) => void;
 	onRestore: (invitation: InvitationDTO) => void;
 	onPermanentDelete: (invitation: InvitationDTO) => void;
@@ -150,6 +161,8 @@ interface InvitationTableRowProps {
 
 const InvitationTableRow: FC<InvitationTableRowProps> = ({
 	invitation,
+	canReviewManually,
+	onUpdated,
 	onArchive,
 	onRestore,
 	onPermanentDelete,
@@ -189,6 +202,11 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 			</td>
 			<td className="intake-list__cell-client">{invitation.clientName || '\u2014'}</td>
 			<td className="intake-list__cell-status">
+				<WorkflowControls
+					invitation={invitation}
+					canReviewManually={canReviewManually}
+					onUpdated={onUpdated}
+				/>
 				<div className="intake-list__status-group">
 					<StatusBadge variant={displayInfo.variant} label={displayInfo.label} />
 					{isDemo && <span className="intake-list__demo-badge">Demo</span>}
@@ -266,6 +284,7 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 };
 
 const EMPTY_STATE_MESSAGES: Record<FilterTab, string> = {
+	work_in_progress: 'No hay invitaciones en proceso.',
 	current: 'No hay invitaciones vigentes ni demos autorizadas.',
 	upcoming: 'No hay invitaciones vigentes.',
 	past: 'No hay invitaciones pasadas.',
@@ -287,6 +306,8 @@ const EMPTY_STATE_MESSAGES: Record<FilterTab, string> = {
 const InvitationList: FC = () => {
 	const {
 		items: loadedItems,
+		canReviewManually,
+		reloadInvitations,
 		loading,
 		error,
 		archiveInvitation,
@@ -525,6 +546,8 @@ const InvitationList: FC = () => {
 						<tbody>
 							{filteredItems.map((invitation) => (
 								<InvitationTableRow
+									onUpdated={reloadInvitations}
+									canReviewManually={canReviewManually}
 									key={invitation.id}
 									invitation={invitation}
 									onArchive={handleArchive}

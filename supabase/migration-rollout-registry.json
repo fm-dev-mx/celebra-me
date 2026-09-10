@@ -103,6 +103,11 @@
             "provides": ["valentina_memory_session_anonymization"],
             "revokes": ["valentina_memory_session_anonymization_public_execute"],
             "notes": "Creates atomic session anonymization RPC and revokes execution privileges from public/anon/authenticated."
+        },
+        "20260910160000": {
+            "phase": "expand",
+            "provides": ["invitation_administrative_workflow"],
+            "notes": "Adds administrative metadata; invitation-specific initialization requires a separately authorized operation."
         }
     },
     "appCapabilities": {
@@ -117,6 +122,9 @@
         },
         "published_content_service_role_renderer": {
             "requiresDbCapabilities": []
+        },
+        "invitation_admin_workflow_client": {
+            "requiresDbCapabilities": ["invitation_administrative_workflow"]
         }
     }
 }

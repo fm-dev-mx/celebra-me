@@ -521,6 +521,7 @@ function cmdRunTests(): void {
 
 	const testFiles = [
 		'account_role_sync.test.sql',
+		'invitation_workflow.test.sql',
 		'atomic_invitation_publication.test.sql',
 		'invitation_original_image_delivery.test.sql',
 		'managed_identity_archive_cascade.test.sql',

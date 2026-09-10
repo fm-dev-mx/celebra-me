@@ -1,3 +1,4 @@
+import { canRecordOwnerReview } from '@/lib/intake/workflow';
 import type { APIRoute } from 'astro';
 import {
 	requireAdminMutationAccess,
@@ -16,13 +17,16 @@ import { CreateInvitationSchema } from '@/lib/intake/schemas/invitation.schema';
 export const GET: APIRoute = async ({ request }) => {
 	try {
 		await requireAdminRateLimit(request, 'intake:list');
-		await requireAdminStrongSession(request);
+		const session = await requireAdminStrongSession(request);
 
 		const url = new URL(request.url);
 		const includeArchived = url.searchParams.get('includeArchived') === 'true';
 		const items = await getEnrichedInvitationList(includeArchived ? 'all' : 'active');
 
-		return jsonResponse({ items });
+		return jsonResponse({
+			items,
+			canReviewManually: canRecordOwnerReview(session.email),
+		});
 	} catch (error) {
 		return errorResponse(error);
 	}

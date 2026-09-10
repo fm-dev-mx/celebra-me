@@ -58,7 +58,7 @@ describe('GET /api/dashboard/intake', () => {
 		} as never);
 
 		expect(response.status).toBe(200);
-		expect(await response.json()).toEqual({ items: mockItems });
+		expect(await response.json()).toEqual({ items: mockItems, canReviewManually: false });
 		expect(synchronizeDemoInvitationsMock).not.toHaveBeenCalled();
 		expect(getEnrichedInvitationListMock).toHaveBeenCalledWith('active');
 	});

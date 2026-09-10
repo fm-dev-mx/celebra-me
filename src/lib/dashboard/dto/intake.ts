@@ -11,6 +11,7 @@ import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
 
 export interface InvitationDTO {
+	workflow?: import('@/lib/intake/workflow').InvitationWorkflow;
 	id: string;
 	kind: 'demo' | 'client';
 	sourceInvitationId: string | null;
@@ -48,6 +49,7 @@ export interface InvitationListItemDTO extends InvitationDTO {
 
 export interface InvitationListResponse {
 	items: InvitationListItemDTO[];
+	canReviewManually: boolean;
 }
 
 export interface UpdateInvitationDTO {

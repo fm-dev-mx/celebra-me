@@ -36,7 +36,10 @@ describe('useInvitationAdmin hook', () => {
 				status: 'draft' as const,
 			},
 		];
-		listInvitationsMock.mockResolvedValue({ items: mockItems } as never);
+		listInvitationsMock.mockResolvedValue({
+			items: mockItems,
+			canReviewManually: false,
+		} as never);
 
 		const { result } = renderHook(() => useInvitationAdmin({ autoLoad: true }));
 
@@ -50,7 +53,7 @@ describe('useInvitationAdmin hook', () => {
 	});
 
 	it('reloads invitations explicitly via reloadInvitations', async () => {
-		listInvitationsMock.mockResolvedValue({ items: [] } as never);
+		listInvitationsMock.mockResolvedValue({ items: [], canReviewManually: false } as never);
 
 		const { result } = renderHook(() => useInvitationAdmin({ autoLoad: false }));
 		expect(listInvitationsMock).not.toHaveBeenCalled();

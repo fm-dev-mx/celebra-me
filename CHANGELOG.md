@@ -12,6 +12,10 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ### Added
 
+- **Invitation work tracking**: The existing dashboard separates work completion from the owner's
+  manual review, with an in-progress filter and protected, concurrent updates. Publication and
+  technical acceptance remain independent. Requires the administrative workflow schema migration.
+
 - **Valentina Memories capture**: Guests can upload a supported photo or short video from
   `/r/valentina` through a direct, private R2 upload flow; the page confirms the upload without
   exposing a public gallery or object listing.

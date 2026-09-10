@@ -2,6 +2,9 @@ import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { Invitation, DemoPreset } from '@/lib/intake/types';
 
 interface InvitationRow {
+	work_status: 'in_progress' | 'completed';
+	owner_reviewed_at: string | null;
+	owner_reviewed_by: string | null;
 	id: string;
 	kind: string;
 	source_invitation_id: string | null;
@@ -25,6 +28,11 @@ interface InvitationRow {
 function toInvitation(row: InvitationRow): Invitation {
 	return {
 		id: row.id,
+		workflow: {
+			workStatus: row.work_status,
+			ownerReviewedAt: row.owner_reviewed_at,
+			ownerReviewedBy: row.owner_reviewed_by,
+		},
 		kind: row.kind as Invitation['kind'],
 		sourceInvitationId: row.source_invitation_id,
 		slug: row.slug,
@@ -46,7 +54,7 @@ function toInvitation(row: InvitationRow): Invitation {
 }
 
 const SELECT_COLUMNS =
-	'id,kind,source_invitation_id,slug,title,event_type,status,base_demo_id,theme_id,snapshot,client_name,client_email,client_whatsapp,photos_received,created_by,archived_at,created_at,updated_at';
+	'work_status,owner_reviewed_at,owner_reviewed_by,id,kind,source_invitation_id,slug,title,event_type,status,base_demo_id,theme_id,snapshot,client_name,client_email,client_whatsapp,photos_received,created_by,archived_at,created_at,updated_at';
 
 export async function listInvitations(
 	scope: 'active' | 'archived' | 'all' = 'active',
@@ -212,4 +220,19 @@ export async function updateInvitationConditionally(
 	});
 
 	return rows[0] ? toInvitation(rows[0]) : null;
+}
+
+export async function updateInvitationWorkflowConditionally(
+	id: string,
+	expectedUpdatedAt: string,
+	body: Record<string, string | null>,
+): Promise<boolean> {
+	const rows = await supabaseRestRequest<Array<{ id: string }>>({
+		pathWithQuery: `invitations?id=eq.${encodeURIComponent(id)}&updated_at=eq.${encodeURIComponent(expectedUpdatedAt)}&archived_at=is.null&select=id`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body,
+	});
+	return rows.length === 1;
 }

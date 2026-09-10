@@ -17,6 +17,7 @@ export interface UseInvitationAdminOptions {
 
 export function useInvitationAdmin({ autoLoad = false }: UseInvitationAdminOptions = {}) {
 	const [items, setItems] = useState<InvitationListItemDTO[]>([]);
+	const [canReviewManually, setCanReviewManually] = useState(false);
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [saving, setSaving] = useState(false);
@@ -34,6 +35,7 @@ export function useInvitationAdmin({ autoLoad = false }: UseInvitationAdminOptio
 		try {
 			const result = await adminApi.listInvitations();
 			setItems(result.items);
+			setCanReviewManually(result.canReviewManually);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Error inesperado.');
 		} finally {
@@ -300,6 +302,7 @@ export function useInvitationAdmin({ autoLoad = false }: UseInvitationAdminOptio
 
 	return {
 		items,
+		canReviewManually,
 		error,
 		loading,
 		saving,

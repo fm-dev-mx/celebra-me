@@ -74,6 +74,7 @@ export interface DemoPreset {
 }
 
 export interface Invitation {
+	workflow?: import('@/lib/intake/workflow').InvitationWorkflow;
 	id: string;
 	kind: InvitationKind;
 	sourceInvitationId: string | null;

@@ -15,6 +15,7 @@ import { resolveCaptureLink } from '@/lib/intake/services/intake-request.service
 export function toInvitationDTO(invitation: Invitation): InvitationDTO {
 	return {
 		id: invitation.id,
+		workflow: invitation.workflow,
 		kind: invitation.kind,
 		sourceInvitationId: invitation.sourceInvitationId,
 		slug: invitation.slug,
