@@ -26,12 +26,14 @@ new-row default when introduced. No runtime slug exception exists.
 ## Rollout
 
 Apply migration `20260910160000` through the guarded database workflow before deploying the
-dashboard code that selects the new columns. This is an additive schema change; previous code can
-continue to run. Production apply and deployment require separate owner authorization. Use the
-current canonical invitation registry and demo preset catalog to identify matching active rows in
-the target before administrative initialization and report missing or unexpected identities rather
-than synchronizing or publishing them to fill gaps. This repository-only implementation does not
-assert that those rows exist in Production.
+dashboard code that selects the new columns. Columns are additive, but the permission change is
+classified as a contract migration. Before hosted application, provide the existing deployed-app SHA
+and verify that invitation writes use explicit existing columns or the server service role. Do not
+deploy the new dashboard before its columns exist. Production apply and deployment require separate
+owner authorization. Use the current canonical invitation registry and demo preset catalog to
+identify matching active rows in the target before administrative initialization and report missing
+or unexpected identities rather than synchronizing or publishing them to fill gaps. This
+repository-only implementation does not assert that those rows exist in Production.
 
 A rollback to previous application code can leave the additive columns in place. Do not drop the
 columns or clear owner decisions as part of an application rollback. Production decisions copied in
