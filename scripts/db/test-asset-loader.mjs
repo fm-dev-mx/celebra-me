@@ -19,6 +19,14 @@ export async function resolve(specifier, context, nextResolve) {
 }
 
 export async function load(url, context, nextLoad) {
+	if (url.endsWith('/src/lib/environment.ts')) {
+		// Bare Node has no Vite import.meta.env; service-flow tests exercise production semantics.
+		return {
+			format: 'module',
+			shortCircuit: true,
+			source: 'export const isDevEnvironment = () => false;',
+		};
+	}
 	if (url === 'astro:content') {
 		return {
 			format: 'module',
