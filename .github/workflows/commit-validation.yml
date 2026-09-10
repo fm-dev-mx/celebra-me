@@ -175,6 +175,7 @@ jobs:
                   path: |
                       test-results/**/*-actual.png
                       test-results/**/*-diff.png
+                      test-results/**/trace.zip
                   if-no-files-found: ignore
                   retention-days: 3
 

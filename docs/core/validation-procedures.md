@@ -101,8 +101,8 @@ When the reviewed work is a **release checkpoint** or a clearly product-visible 
 ## 5) Verification Protocol
 
 Non-trivial remediations must record **REGRESSION_DECISION** per
-[`.agent/skills/error-remediation/SKILL.md`](../../.agent/skills/error-remediation/SKILL.md). Regression
-locks must stay **editor-resilient** per
+[`.agent/skills/error-remediation/SKILL.md`](../../.agent/skills/error-remediation/SKILL.md).
+Regression locks must stay **editor-resilient** per
 [`.agent/skills/testing/SKILL.md`](../../.agent/skills/testing/SKILL.md) (Invitation Copy
 Assertions) — do not add brittle content-coupled asserts.
 
@@ -170,13 +170,39 @@ pnpm agent:git-safety:finish # Interactive session close — not part of CI
 `pnpm validate:structure`, `pnpm lint`, `pnpm lint:styles`, `pnpm validate:ui-governance`,
 `pnpm validate:event-parity`, `pnpm validate:no-pii`, `pnpm validate:invitation-preparation`,
 `pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. It does **not** invoke interactive Git Safety
-(that requires a same-session baseline). Use `pnpm ci:quick` for fast feedback only.
+(that requires a same-session baseline). Use `pnpm validate:changed` for focused feedback; run
+`pnpm type-check` and `pnpm validate:structure` when required by the scope. Focused validation does
+not replace these repository-wide checks or the full release pipeline.
 
 Close the mutable agent session with `pnpm agent:git-safety:finish` after Tier C when a session was
 started. See `.agent/rules/git-safety.md`.
 
 The pre-push hook intentionally remains lean (commit-message validation only); do not move tests or
 type-checks into pre-push.
+
+#### Remote CI coverage and efficiency
+
+`pnpm run ci` does not include every check in `.github/workflows/commit-validation.yml`. The remote
+workflow additionally checks commit messages, documentation links, Markdown tables, and the
+disposable RSVP and managed database contracts. Browser CI uses canonical fixtures, accepted visual
+references and the pinned Linux image; a local diagnostic capture run is not equivalent to that
+comparison or to human reference acceptance.
+
+Keep focused validation and pre-commit distinct: `validate:changed` already runs related Jest for
+working-tree sources; `test:changed` serves the staged-source pre-commit boundary. Do not rerun
+related Jest against unchanged working-tree inputs merely to repeat the same evidence.
+
+Worker settings currently differ intentionally by execution entry point: Playwright's CI default is
+one worker, while the remote browser job explicitly selects two. This documents the existing
+behavior, not a measured optimum. Before changing it, compare the same code, cases, runtime image,
+fixtures and visual mode across repeated runs, including retries and server preparation. Do not
+infer remote savings from local diagnostic timings. Retain serial execution within suites that
+aggregate captures and require complete coverage.
+
+The aggregate application check requires both application and browser jobs to succeed; failed,
+cancelled or incomplete jobs must never become aggregate approval. Failure artifacts retain
+actual/diff images and available first-retry traces for three days. No additional capture, retry,
+tolerance or acceptance policy is introduced for diagnostics.
 
 ### 5.3 Visual evidence (screenshots and browser proof)
 

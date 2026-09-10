@@ -29,8 +29,6 @@
         "release-check": "tsx scripts/db/release-check.ts",
         "ci": "pnpm ci:static && pnpm test && pnpm test:e2e:ci",
         "ci:static": "pnpm type-check && pnpm validate:structure && pnpm lint && pnpm lint:styles && pnpm validate:ui-governance && pnpm validate:event-parity && pnpm validate:no-pii && pnpm validate:invitation-preparation && pnpm build:app",
-        "ci:quick": "node scripts/ci-quick.mjs",
-        "ci:diagnose": "node scripts/ci-diagnose.mjs",
         "validate:staged": "node scripts/validate-staged.mjs",
         "validate:changed": "node scripts/validate-changed.mjs",
         "validate:markdown-tables": "node scripts/validate-markdown-tables.mjs",
