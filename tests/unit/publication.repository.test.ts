@@ -33,41 +33,14 @@ const result = Object.freeze({
 	},
 });
 
-describe('commitAtomicPublication compatibility', () => {
+describe('commitAtomicPublication', () => {
 	beforeEach(() => jest.resetAllMocks());
 
-	it('uses the new contract when it is available', async () => {
+	it('uses the current atomic contract', async () => {
 		mockRequest.mockResolvedValueOnce(result as never);
 
-		await expect(commitAtomicPublication(input)).resolves.toMatchObject({
-			durableIdempotency: true,
-		});
+		await expect(commitAtomicPublication(input)).resolves.toEqual(result);
 		expect(mockRequest).toHaveBeenCalledTimes(1);
-	});
-
-	it('falls back only when PostgREST confirms the new overload is unavailable', async () => {
-		mockRequest
-			.mockRejectedValueOnce(
-				new SupabaseHttpError(
-					404,
-					'{"code":"PGRST202","message":"Could not find the function public.publish_invitation_atomic(p_expected_published_version) in the schema cache"}',
-					'PGRST202',
-				),
-			)
-			.mockResolvedValueOnce(result as never);
-
-		await expect(commitAtomicPublication(input)).resolves.toMatchObject({
-			durableIdempotency: false,
-		});
-		expect(mockRequest).toHaveBeenCalledTimes(2);
-		expect(mockRequest).toHaveBeenNthCalledWith(
-			2,
-			expect.objectContaining({
-				body: expect.not.objectContaining({
-					p_expected_published_version: expect.anything(),
-				}),
-			}),
-		);
 	});
 
 	it('does not fall back after a new-contract business error', async () => {
