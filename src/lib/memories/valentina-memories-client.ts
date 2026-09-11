@@ -1,4 +1,4 @@
-import { sha256 } from '@noble/hashes/sha2';
+import { sha256 } from '@noble/hashes/sha2.js';
 import {
 	VALENTINA_MEMORIES_HASH_CHUNK_BYTES,
 	VALENTINA_MEMORIES_IMAGE_OPTIMIZATION_MAX_DIMENSION_PX,
@@ -198,7 +198,8 @@ export async function calculateFileSha256Hex(file: File | Blob): Promise<string>
 		const chunk = file.slice(offset, offset + VALENTINA_MEMORIES_HASH_CHUNK_BYTES);
 		digest.update(new Uint8Array(await chunk.arrayBuffer()));
 	}
-	return Array.from(digest.digest(), (byte) => byte.toString(16).padStart(2, '0')).join('');
+	const digestBytes = digest.digest() as Uint8Array;
+	return Array.from(digestBytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 export function generateBulkZipPassphrase(): string {
