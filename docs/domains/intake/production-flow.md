@@ -125,13 +125,10 @@ receipt instead of blindly uploading or deleting again.
 - Do not reuse a long-lived release JSON across definition edits: Local can look correct while
   Preview/Production still serve the stale package (for example `envelope.sealIcon`).
 
-## Publication integrity rollout
+## Publication integrity
 
-Phase one retains the old seven-argument RPC only as a service-role fail-closed
-`publish_upgrade_required` stub. Apply it, deploy the application and provisioning scripts using the
-current RPC, monitor legacy calls while old serverless instances drain, then remove the stub in a
-separate reviewed migration. During that overlap, publishing from an old instance is intentionally
-unavailable.
+Publishing uses the eleven-argument RPC with reviewed draft and published revisions, metadata and
+projection hashes, and a durable idempotency key. The retired seven-argument overload is absent.
 
 Successful confirmation stores a durable idempotency receipt containing the full request fingerprint
 and exact response. It is retained for the invitation/draft lifetime with restrictive foreign keys;
@@ -237,13 +234,13 @@ validated by `eventContentSchema`.
 - Save with the current `expectedUpdatedAt`. A stale save returns a conflict; reload and reconcile
   rather than overwriting a newer draft.
 - `sectionOrder` is required in canonical public content and defines the exact render sequence.
-  Payloads that omit it are rejected after the cutover; any temporary conversion belongs only to
-  the documented ingress migration boundary.
+  Payloads that omit it are rejected after the cutover; any temporary conversion belongs only to the
+  documented ingress migration boundary.
 - Optional sections are omitted when their content is absent or ineligible. Do not create empty
   placeholders just to match another invitation.
 - Canonical locations use `venues[]` for grouped cards and preserve map URLs and location-gating
-  semantics. Legacy `ceremony`/`reception` objects may appear only at the named ingress
-  migration boundary until persisted rows and intake producers are converted.
+  semantics. Legacy `ceremony`/`reception` objects may appear only at the named ingress migration
+  boundary until persisted rows and intake producers are converted.
 - Test long names, headings, addresses, gift descriptions, and WhatsApp copy. The editor limits are
   validation boundaries, not design targets.
 - Publication merges existing published content, draft changes, and the selected demo defaults, then

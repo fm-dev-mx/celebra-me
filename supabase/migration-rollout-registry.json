@@ -109,6 +109,12 @@
             "revokes": ["invitations_authenticated_table_dml"],
             "provides": ["invitation_administrative_workflow"],
             "notes": "Adds administrative metadata and replaces authenticated table-wide INSERT/UPDATE with grants on existing columns. Hosted apply requires deployed-app evidence that invitation writes use explicit existing columns or the server service role. Invitation-specific initialization is separately authorized."
+        },
+        "20260911070000": {
+            "phase": "contract",
+            "requiresDeployedAppCapabilities": ["current_atomic_publication_client"],
+            "revokes": ["seven_argument_publication_overload"],
+            "notes": "Drops the drained seven-argument publication overload after all application and provisioning callers moved to the concurrency-safe current contract."
         }
     },
     "appCapabilities": {
@@ -126,6 +132,9 @@
         },
         "invitation_admin_workflow_client": {
             "requiresDbCapabilities": ["invitation_administrative_workflow"]
+        },
+        "current_atomic_publication_client": {
+            "requiresDbCapabilities": []
         }
     }
 }

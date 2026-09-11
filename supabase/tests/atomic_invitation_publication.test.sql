@@ -1,5 +1,5 @@
 begin;
-select plan(107);
+select plan(103);
 
 insert into auth.users (id, aud, role, email, created_at, updated_at)
 values ('10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'atomic-publish@example.test', now(), now());
@@ -13,11 +13,9 @@ update public.invitations set work_status = 'completed', owner_reviewed_at = '20
   owner_reviewed_by = '10000000-0000-0000-0000-000000000001'
 where id = '20000000-0000-0000-0000-000000000001';
 
-select has_function('public', 'publish_invitation_atomic', array['uuid','uuid','timestamp with time zone','text','text','boolean','jsonb'], 'functional legacy compatibility overload exists');
+select hasnt_function('public', 'publish_invitation_atomic', array['uuid','uuid','timestamp with time zone','text','text','boolean','jsonb'], 'retired seven-argument publication overload is absent');
 select has_function('public', 'publish_invitation_atomic', array['uuid','uuid','timestamp with time zone','integer','text','text','uuid','text','text','boolean','jsonb'], 'new eleven-argument publication RPC exists');
 select has_function('public', 'replay_invitation_publication', array['uuid','uuid','timestamp with time zone','integer','text','text','uuid'], 'receipt replay RPC exists');
-select ok(has_function_privilege('service_role', 'public.publish_invitation_atomic(uuid,uuid,timestamptz,text,text,boolean,jsonb)', 'EXECUTE'), 'service role can execute legacy stub');
-select ok(not has_function_privilege('authenticated', 'public.publish_invitation_atomic(uuid,uuid,timestamptz,text,text,boolean,jsonb)', 'EXECUTE'), 'authenticated cannot execute legacy stub');
 select ok(not has_function_privilege('authenticated', 'public.replay_invitation_publication(uuid,uuid,timestamptz,integer,text,text,uuid)', 'EXECUTE'), 'authenticated cannot execute receipt replay');
 select ok(not has_table_privilege('authenticated', 'public.invitation_publication_idempotency', 'SELECT'), 'authenticated cannot read idempotency receipts');
 create temporary table publication_test_result as
@@ -62,17 +60,6 @@ select throws_like(
   $$select public.publish_invitation_atomic('20000000-0000-0000-0000-000000000001','30000000-0000-0000-0000-000000000001',now(),1,'bad','bad','40000000-0000-0000-0000-000000000001','other','xv',false,'{}')$$,
   '%publish_idempotency_key_reused%', 'same key with different request fails deterministically'
 );
-insert into public.invitations (id, slug, title, event_type, base_demo_id, theme_id, kind, status)
-values ('20000000-0000-0000-0000-000000000002', 'legacy-compatibility', 'Compatibilidad heredada', 'xv', 'demo-xv-jewelry-box', 'jewelry-box', 'demo', 'draft');
-insert into public.invitation_content_drafts (id, invitation_project_id, content, status)
-values ('30000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000002', '{"title":"Compatibilidad heredada"}'::jsonb, 'draft');
-select is(
-  (select public.publish_invitation_atomic(i.id, d.id, d.updated_at, 'legacy-compatibility', 'xv', true, '{"title":"Compatibilidad heredada"}'::jsonb) -> 'publishedContent' ->> 'version'
-    from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id = i.id
-    where i.id = '20000000-0000-0000-0000-000000000002'),
-  '1', 'legacy compatibility overload publishes with its historical result shape'
-);
-select is((select status from public.invitation_content_drafts where id = '30000000-0000-0000-0000-000000000002'), 'approved', 'legacy compatibility overload approves the draft');
 select is((select relrowsecurity from pg_class where oid='public.invitation_publication_idempotency'::regclass), true, 'idempotency table has RLS enabled');
 select is((select count(*) from information_schema.table_privileges where table_schema='public' and table_name='invitation_publication_idempotency' and grantee='service_role'), 3::bigint, 'only intended service role table privileges remain');
 select is((select confdeltype from pg_constraint where conname = 'invitation_publication_idempotency_invitation_id_fkey'), 'r', 'invitation deletion is restricted by receipt retention');
