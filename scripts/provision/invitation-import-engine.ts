@@ -42,10 +42,11 @@ import {
 } from './promotion-comparison.ts';
 import {
 	isRecoverableManagedPartial,
-	resolveManagedMergeBaseline,
+	resolveManagedMergeBaselineForReconciliation,
 	ManagedBaselineError,
 	type ManagedBaselineReceiptEvidence,
 } from './managed-merge-baseline.ts';
+import { mapNestedToDraftContent } from '../../src/lib/intake/services/draft-content-mapper.ts';
 import {
 	materializeAssetReferences,
 	provenanceProjectionHash,
@@ -83,7 +84,10 @@ import {
 } from './invitation-update-options.ts';
 import { sortPathPolicy } from './conflict-resolutions.ts';
 import { verifySupabaseApiCredential } from './supabase-credential-verification.ts';
-import { assertManagedContentSchema } from './managed-content-validation.ts';
+import {
+	assertManagedContentSchema,
+	assertManagedDraftContentSchema,
+} from './managed-content-validation.ts';
 import { decideRekeyIdentity, resolveIdentityWithoutRekey } from './managed-identity-guards.ts';
 
 export interface ImportEngineOptions {
@@ -1309,6 +1313,10 @@ function analyzeTargetDrift(
 		pkg.draft.content,
 		assetRefs,
 	) as Record<string, unknown>;
+	const packagePublishedContent = materializeAssetReferences(
+		pkg.publishedContent?.content ?? pkg.draft.content,
+		assetRefs,
+	) as Record<string, unknown>;
 	const packageContentHash = hashPublicationProjection(packageCanonicalContent);
 
 	if (
@@ -1321,34 +1329,37 @@ function analyzeTargetDrift(
 		});
 		let prevCanonical: Record<string, unknown>;
 		try {
-			prevCanonical = resolveManagedMergeBaseline({
-				managedProjection: scanned.managedProjection,
-				appliedDraftUpdatedAt: scanned.appliedDraftUpdatedAt,
-				appliedOperationId: scanned.appliedOperationId,
-				appliedPublishedVersion: scanned.appliedPublishedVersion,
-				appliedPublishedProjectionHash: scanned.appliedPublishedProjectionHash,
-				currentDraftUpdatedAt: recoveringPartial
-					? scanned.appliedDraftUpdatedAt
-					: typeof scanned.existingDraft.updated_at === 'string'
-						? scanned.existingDraft.updated_at
-						: null,
-				currentPublishedVersion: recoveringPartial
-					? scanned.appliedPublishedVersion
-					: typeof scanned.existingPub?.version === 'number'
-						? scanned.existingPub.version
-						: null,
-				currentPublishedProjectionHash: recoveringPartial
-					? scanned.appliedPublishedProjectionHash
-					: scanned.existingPub?.content
-						? hashPublicationProjection(
-								scanned.existingPub.content as Record<string, unknown>,
-							)
-						: null,
-				appliedReceipt: scanned.appliedReceipt,
-				latestMutationReceipt: recoveringPartial
-					? scanned.appliedReceipt
-					: scanned.latestMutationReceipt,
-			});
+			prevCanonical = resolveManagedMergeBaselineForReconciliation(
+				{
+					managedProjection: scanned.managedProjection,
+					appliedDraftUpdatedAt: scanned.appliedDraftUpdatedAt,
+					appliedOperationId: scanned.appliedOperationId,
+					appliedPublishedVersion: scanned.appliedPublishedVersion,
+					appliedPublishedProjectionHash: scanned.appliedPublishedProjectionHash,
+					currentDraftUpdatedAt: recoveringPartial
+						? scanned.appliedDraftUpdatedAt
+						: typeof scanned.existingDraft.updated_at === 'string'
+							? scanned.existingDraft.updated_at
+							: null,
+					currentPublishedVersion: recoveringPartial
+						? scanned.appliedPublishedVersion
+						: typeof scanned.existingPub?.version === 'number'
+							? scanned.existingPub.version
+							: null,
+					currentPublishedProjectionHash: recoveringPartial
+						? scanned.appliedPublishedProjectionHash
+						: scanned.existingPub?.content
+							? hashPublicationProjection(
+									scanned.existingPub.content as Record<string, unknown>,
+								)
+							: null,
+					appliedReceipt: scanned.appliedReceipt,
+					latestMutationReceipt: recoveringPartial
+						? scanned.appliedReceipt
+						: scanned.latestMutationReceipt,
+				},
+				{ acknowledgeDiscardUnpublishedDraft },
+			);
 		} catch (error) {
 			if (
 				error instanceof ManagedBaselineError &&
@@ -1364,37 +1375,45 @@ function analyzeTargetDrift(
 				throw error;
 			}
 		}
-		const patchRes = apply3WaySemanticPatch({
-			previousCanonical: prevCanonical,
-			currentCanonical: packageCanonicalContent,
-			currentTarget: scanned.existingDraft.content as Record<string, unknown>,
-			scope: updateScope,
-			targetName: slug,
-			resolutions: conflictResolutions,
-		});
-		if (patchRes.blocked) {
-			throw new MergeConflictError(
-				patchRes.blockReason ?? 'Asset preservation violation detected.',
-				patchRes.deltas,
-			);
+		if (acknowledgeDiscardUnpublishedDraft) {
+			targetDraftContent = packageCanonicalContent;
+		} else {
+			const patchRes = apply3WaySemanticPatch({
+				previousCanonical: prevCanonical,
+				currentCanonical: packageCanonicalContent,
+				currentTarget: scanned.existingDraft.content as Record<string, unknown>,
+				scope: updateScope,
+				targetName: slug,
+				resolutions: conflictResolutions,
+			});
+			if (patchRes.blocked) {
+				throw new MergeConflictError(
+					patchRes.blockReason ?? 'Asset preservation violation detected.',
+					patchRes.deltas,
+				);
+			}
+			targetDraftContent = patchRes.patchedContent;
 		}
-		targetDraftContent = patchRes.patchedContent;
-		targetPublishedContent = patchRes.patchedContent;
+		targetPublishedContent = packagePublishedContent;
 	} else {
 		targetDraftContent = packageCanonicalContent;
-		targetPublishedContent = materializeAssetReferences(
-			pkg.publishedContent?.content ?? pkg.draft.content,
-			assetRefs,
-		) as Record<string, unknown>;
+		targetPublishedContent = packagePublishedContent;
 	}
-	assertManagedContentSchema(targetDraftContent);
+	assertManagedDraftContentSchema(targetDraftContent);
 	assertManagedContentSchema(targetPublishedContent);
 
 	checkTargetDivergenceConflict(
 		slug,
 		targetDraftContent,
 		scanned.existingDraft,
-		scanned.existingPub,
+		scanned.existingPub
+			? {
+					...scanned.existingPub,
+					content: mapNestedToDraftContent(
+						scanned.existingPub.content as Record<string, unknown>,
+					),
+				}
+			: null,
 		{
 			packageContentHash,
 			acknowledgeDiscardUnpublishedDraft,

@@ -285,6 +285,22 @@ export function resolveManagedMergeBaseline(
 }
 
 /**
+ * An explicit draft-discard decision ignores only draft-side mutations. Publication
+ * identity and completed managed receipt evidence remain mandatory.
+ */
+export function resolveManagedMergeBaselineForReconciliation(
+	input: ManagedMergeBaselineInput,
+	options: { acknowledgeDiscardUnpublishedDraft?: boolean },
+): Record<string, unknown> {
+	if (!options.acknowledgeDiscardUnpublishedDraft) return resolveManagedMergeBaseline(input);
+	return resolveManagedMergeBaseline({
+		...input,
+		currentDraftUpdatedAt: input.appliedDraftUpdatedAt,
+		latestMutationReceipt: input.appliedReceipt,
+	});
+}
+
+/**
  * Pure evaluator checking whether a given baseline input satisfies the strict
  * Phase 2 release provenance contract (correct schema version, complete identity,
  * matching durable receipt, and provenance_recorded completed step).

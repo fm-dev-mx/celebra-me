@@ -25,6 +25,8 @@ import {
 	type InvitationDeliveryScope,
 } from './invitations/invitation-definition.ts';
 import type { EnvironmentPromotionState } from '../../src/lib/status/types.ts';
+import { InvitationContentDraftContentSchema } from '../../src/lib/intake/schemas/invitation-content-draft.schema.ts';
+import { mapNestedToDraftContent } from '../../src/lib/intake/services/draft-content-mapper.ts';
 
 export { rewriteUploadedAssetReferences };
 export type { EnvironmentPromotionState };
@@ -63,10 +65,22 @@ export interface CanonicalFingerprintResult {
 	assetKeys: readonly string[];
 	assetDigests: readonly PromotionalAssetDigest[];
 	content: Record<string, unknown>;
+	draftContent: Record<string, unknown>;
 }
 
 export interface CanonicalFingerprintFailure {
 	ok: false;
+}
+
+function resolveCanonicalDraftContent(
+	options:
+		| {
+				canonicalContent?: Record<string, unknown>;
+				canonicalDraftContent?: Record<string, unknown>;
+		  }
+		| undefined,
+): Record<string, unknown> | null {
+	return options?.canonicalDraftContent ?? options?.canonicalContent ?? null;
 }
 
 export type LiveFingerprintResult =
@@ -229,6 +243,7 @@ export function buildLivePromotionalFingerprint(
 		deliveryScope?: InvitationDeliveryScope;
 		canonicalAssetDigests?: readonly PromotionalAssetDigest[];
 		canonicalContent?: Record<string, unknown>;
+		canonicalDraftContent?: Record<string, unknown>;
 	},
 ): LiveFingerprintResult {
 	if (!isRecord(row.publishedContent)) return { ok: false };
@@ -263,7 +278,7 @@ export function buildLivePromotionalFingerprint(
 	const draft = draftDigestForFingerprint(
 		row.draftContent,
 		keyByAssetId,
-		options?.canonicalContent ?? null,
+		resolveCanonicalDraftContent(options),
 		useExternalKeyRepresentation,
 	);
 	if (!draft.ok) return { ok: false };
@@ -305,6 +320,14 @@ export async function buildCanonicalPromotionalFingerprint(
 		if (!snapshot || snapshot.themeId !== definition.themeId) return { ok: false };
 		const content = definition.buildPublishedContent(buildSemanticAssetMap(definition));
 		if (!isRecord(content)) return { ok: false };
+		const draftResult = InvitationContentDraftContentSchema.safeParse(
+			mapNestedToDraftContent(content),
+		);
+		if (!draftResult.success) return { ok: false };
+		const draftContent = JSON.parse(JSON.stringify(draftResult.data)) as Record<
+			string,
+			unknown
+		>;
 		const assetDigests =
 			options?.assetDigests ??
 			(await loadSourceAssetDigests(
@@ -331,6 +354,7 @@ export async function buildCanonicalPromotionalFingerprint(
 				sha256: asset.sha256.toLowerCase(),
 			})),
 			content,
+			draftContent,
 		};
 	} catch {
 		return { ok: false };
@@ -346,6 +370,7 @@ export function classifyLiveInvitation(input: {
 	deliveryScope?: InvitationDeliveryScope;
 	canonicalAssetDigests?: readonly PromotionalAssetDigest[];
 	canonicalContent?: Record<string, unknown>;
+	canonicalDraftContent?: Record<string, unknown>;
 }): EnvironmentPromotionState {
 	if (input.rows.length === 0) return 'absent';
 	if (input.rows.length > 1) return 'conflict';
@@ -358,10 +383,14 @@ export function classifyLiveInvitation(input: {
 		deliveryScope: input.deliveryScope,
 		canonicalAssetDigests: input.canonicalAssetDigests,
 		canonicalContent: input.canonicalContent,
+		canonicalDraftContent: input.canonicalDraftContent,
 	});
 	if (!live.ok) return 'behind';
 	const publishedMatches = live.fingerprint === input.canonicalFingerprint;
-	const draftDiverged = live.draftDigest != null && live.draftDigest !== live.publishedDigest;
+	const canonicalDraftDigest = input.canonicalDraftContent
+		? hashManagedInvitationContent(input.canonicalDraftContent)
+		: live.publishedDigest;
+	const draftDiverged = live.draftDigest != null && live.draftDigest !== canonicalDraftDigest;
 	if (publishedMatches && draftDiverged) return 'diverged';
 	if (publishedMatches && row.managedIdentityId === input.expectedManagedIdentityId) {
 		return 'match';

@@ -60,6 +60,7 @@ type CanonicalPromotionFingerprint = {
 	assetKeys: readonly string[];
 	assetDigests: readonly { key: string; sha256: string }[];
 	content: Record<string, unknown>;
+	draftContent: Record<string, unknown>;
 };
 
 async function buildCanonicalFingerprints(
@@ -75,6 +76,7 @@ async function buildCanonicalFingerprints(
 					assetKeys: canonical.assetKeys,
 					assetDigests: canonical.assetDigests,
 					content: canonical.content,
+					draftContent: canonical.draftContent,
 				});
 			}
 		}),
@@ -123,6 +125,7 @@ async function probeManagedPromotionEnvironment(input: {
 				canonicalAssetKeys: canonical.assetKeys,
 				canonicalAssetDigests: canonical.assetDigests,
 				canonicalContent: canonical.content,
+				canonicalDraftContent: canonical.draftContent,
 				deliveryScope: definition.deliveryScope,
 				expectedSlug: definition.slug,
 				expectedManagedIdentityId: definition.managedIdentityId,
