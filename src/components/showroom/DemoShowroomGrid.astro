@@ -29,7 +29,7 @@ const isRealPhone = !isPlaceholderContactPhone(phone);
 const showWhatsAppCta = Boolean(featuredItem && isRealPhone);
 const isSingleDemo = items.length === 1;
 const featuredEyebrow = isSingleDemo ? 'Estilo disponible' : 'Estilo destacado';
-const demoChecks = ['RSVP', 'Pases', 'Ubicación', 'Música', 'Galería'];
+const demoChecks = ['RSVP', 'Pases', 'Ubicación', 'Galería'];
 
 const selectorItems = items.filter((item) => item.slug !== featuredItem?.slug);
 
