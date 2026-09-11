@@ -150,7 +150,7 @@ describe('Style boundary governance', () => {
 		const pageFiles = getFilesRecursively('src/pages/[eventType]/[slug]', ['.astro']);
 
 		const commonFiles = [
-			'src/components/common/GoogleMap.astro',
+			'src/components/invitation/components/StaticVenueMap.astro',
 			'src/components/common/OptimizedImage.astro',
 		];
 

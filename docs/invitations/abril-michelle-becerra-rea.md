@@ -49,7 +49,8 @@ Storage mutations when content is unchanged.
 - **Included Sections:** `quote`, `family`, `countdown`, `location`, `itinerary`, `gallery`,
   `personalizedAccess`, `rsvp`, `thankYou`.
 - **Intentionally Omitted Sections:** `gifts`.
-- **Established Production field omissions:** `location.indicationsHeading`, `hero.nickname`, `hero.secondaryName`, `thankYou.closingPhrase`.
+- **Established Production field omissions:** `location.indicationsHeading`, `hero.nickname`,
+  `hero.secondaryName`, `thankYou.closingPhrase`.
 
 ---
 
@@ -131,7 +132,8 @@ Storage mutations when content is unchanged.
 - **Declared variant:** `gallery.variant: 'paired-feature-band'` (section-owned storyboard: portrait
   pairs + full-width feature band). Geometry lives in
   `src/styles/themes/sections/gallery/_paired-feature-band.scss`; the Abril profile may tint
-  borders/filters only. See [`docs/domains/theme/gallery-variants.md`](../domains/theme/gallery-variants.md).
+  borders/filters only. See
+  [`docs/domains/theme/gallery-variants.md`](../domains/theme/gallery-variants.md).
 - **Item contract:** at least three items with one `layoutRole: 'feature'` (confetti band).
 - **Narrative order (locked):** portrait pair → feature band (`thank-you-confetti`) → portrait pair.
 - **Intentionally outside gallery:** `gallery-02-bw-cake` (Family featured),
@@ -151,7 +153,8 @@ Storage mutations when content is unchanged.
     `events_slug_key`.
   - `invitation-update-plan.ts`: Guarded array recursion prevents stack overflow when comparing
     against `undefined` targets.
-  - `StaticVenueMap.astro`: Deterministic venue map is derived from canonical coordinates without network requests.
+  - `StaticVenueMap.astro`: Deterministic venue map is derived from canonical coordinates without
+    network requests.
 - **Media Provider Strategy:** Cloudinary for invitation images (shared server adapter). Music
   remains a content URL. Legacy Supabase binaries are pruned in a later managed step.
 
@@ -179,8 +182,8 @@ Storage mutations when content is unchanged.
   `publish_invitation_atomic` event creation.
 - **2026-07-24:** Fixed `invitation-update-plan.ts` array diffing recursion for absent target
   objects.
-- **2026-07-24:** Refactored `GoogleMap.astro` to remove hardcoded Abril slug in favor of generic
-  theme mapping.
+- **2026-07-24:** Refactored the shared static venue map to remove hardcoded Abril slug in favor of
+  generic theme mapping.
 - **2026-07-24:** Added Playwright E2E audit suite `tests/e2e/abril-audit.spec.ts` for automated
   multi-viewport visual QA.
 - **2026-07-24:** Evaluated Cloudinary vs Supabase Storage; retained Supabase Storage due to lack of

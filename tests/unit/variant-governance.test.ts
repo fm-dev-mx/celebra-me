@@ -244,14 +244,14 @@ describe('canonical variant governance', () => {
 	it('keeps typed composition and shared maps free of runtime identity selection', () => {
 		const composition = read('src/lib/invitation/composition-contract.ts');
 		const renderPlan = read('src/lib/invitation/render-plan.ts');
-		const googleMap = read('src/components/common/GoogleMap.astro');
+		const staticVenueMap = read('src/components/invitation/components/StaticVenueMap.astro');
 
 		expect(composition).not.toMatch(originIdentity);
 		expect(renderPlan).not.toMatch(/visualProfileId|eventSlug|slug/);
-		expect(googleMap).not.toContain("variant === 'romina-rios-chaparro'");
-		expect(googleMap).not.toContain('<iframe');
-		expect(googleMap).not.toContain('output=embed');
-		expect(googleMap).toContain('data-map-preview="static"');
+		expect(staticVenueMap).not.toContain("variant === 'romina-rios-chaparro'");
+		expect(staticVenueMap).not.toContain('<iframe');
+		expect(staticVenueMap).not.toContain('output=embed');
+		expect(staticVenueMap).toContain('data-map-preview="static"');
 		expect(
 			fs.existsSync(path.join(process.cwd(), 'src/lib/invitation/intersection-profiles.ts')),
 		).toBe(false);
