@@ -314,16 +314,12 @@ describe('legacy draft detection', () => {
 		expect(auditDraftContract(draft).canonical).toBe(true);
 	});
 
-	it('fails explicitly for unrepresentable nested markers', () => {
-		const audit = auditDraftContract({
+	it('accepts deceased family markers after canonicalization', () => {
+		const draft = mapNestedToDraftContent({
 			family: { groups: [{ title: 'Padres', items: [{ name: 'Jorge', deceased: true }] }] },
 		});
-		expect(audit.canonical).toBe(false);
-		expect(
-			audit.violations.some(
-				(v) => v.kind === 'normalization_unsupported' && v.path.includes('deceased'),
-			),
-		).toBe(true);
+		expect(draft.family?.groups).toEqual([{ title: 'Padres', names: 'Jorge †' }]);
+		expect(auditDraftContract(draft).canonical).toBe(true);
 	});
 });
 

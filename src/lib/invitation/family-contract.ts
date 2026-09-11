@@ -5,10 +5,7 @@ export type ParentsOrder = 'father-first' | 'mother-first';
 export const DEFAULT_PARENTS_ORDER: ParentsOrder = 'mother-first';
 
 /** Re-export from the Draft schema SSOT — do not maintain a parallel list here. */
-export {
-	FAMILY_LABEL_KEYS,
-	type FamilyLabelKey,
-} from '@/lib/intake/schemas/family-draft.schema';
+export { FAMILY_LABEL_KEYS, type FamilyLabelKey } from '@/lib/intake/schemas/family-draft.schema';
 
 function text(value: unknown): string | undefined {
 	return typeof value === 'string' && value.trim() ? value.trim() : undefined;
@@ -21,8 +18,33 @@ function memberLine(value: unknown): string | undefined {
 	const name = text(value.name);
 	if (!name) return undefined;
 
+	const displayName = value.deceased === true ? `${name} †` : name;
 	const role = text(value.role);
-	return role ? `${name} — ${role}` : name;
+	return role ? `${displayName} — ${role}` : displayName;
+}
+
+export interface ParsedFamilyMemberLine {
+	name: string;
+	role?: string;
+	deceased?: true;
+}
+
+export function parseFamilyMemberLines(value: string): ParsedFamilyMemberLine[] {
+	return value
+		.split('\n')
+		.map((line) => line.trim())
+		.filter(Boolean)
+		.map((line) => {
+			const [rawName, ...roleParts] = line.split(' — ').map((part) => part.trim());
+			const deceased = rawName.endsWith('†');
+			const name = deceased ? rawName.slice(0, -1).trim() : rawName;
+			const role = text(roleParts.join(' — '));
+			return {
+				name,
+				...(role ? { role } : {}),
+				...(deceased ? { deceased: true as const } : {}),
+			};
+		});
 }
 
 export function formatFamilyMembersAsLines(value: unknown): string | undefined {

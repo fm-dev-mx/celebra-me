@@ -15,10 +15,7 @@ import {
 } from '@/lib/shared/data-utils';
 import { VENUE_URL_FIELDS, ENVELOPE_TEXT_FIELDS } from '@/lib/intake/constants';
 import type { IconName } from '@/lib/icons/icon-catalog';
-import {
-	normalizeLegacyLocation,
-	type LocationRecord,
-} from '@/lib/invitation/location-normalizer';
+import { normalizeLegacyLocation, type LocationRecord } from '@/lib/invitation/location-normalizer';
 import {
 	DraftNormalizationError,
 	type DraftNormalizationIssue,
@@ -40,13 +37,6 @@ export type {
 	DraftNormalizationIssueReason,
 } from '@/lib/intake/services/draft-normalization-types';
 export { DraftNormalizationError } from '@/lib/intake/services/draft-normalization-types';
-
-function formatFamilyMemberLine(member: { name?: string; role?: string }): string {
-	const name = str(member.name);
-	if (!name) return '';
-	const role = str(member.role);
-	return role ? `${name} — ${role}` : name;
-}
 
 function mapEventDetails(data: Record<string, unknown>): Partial<DraftContent> {
 	return {
@@ -107,9 +97,9 @@ function mapDateLocations(data: Record<string, unknown>): Partial<DraftContent> 
 	}) as LocationRecord;
 	const venues = Array.isArray(normalizedLocation.venues)
 		? normalizedLocation.venues.map((venue, index) => ({
-			...venue,
-			id: `venue_legacy_${index}`,
-		}))
+				...venue,
+				id: `venue_legacy_${index}`,
+			}))
 		: [];
 
 	return {
@@ -286,7 +276,11 @@ function mapFamilyToDraft(
 	const childrenArr = family.children as Array<{ name: string }> | undefined;
 	const labels = family.labels as Record<string, unknown> | undefined;
 	const publishedGroups = family.groups as
-		Array<{ title: string; items: Array<{ name: string; role?: string }> }> | undefined;
+		| Array<{
+				title: string;
+				items: Array<{ name: string; role?: string; deceased?: boolean }>;
+		  }>
+		| undefined;
 	const result = {
 		fatherName: str(parents?.father),
 		motherName: str(parents?.mother),
@@ -320,16 +314,12 @@ function mapFamilyToDraft(
 		visible: typeof family.visible === 'boolean' ? family.visible : undefined,
 		presentation: str(family.presentation) as
 			NonNullable<DraftContent['family']>['presentation'] | undefined,
-		variant: str(family.variant) as
-			NonNullable<DraftContent['family']>['variant'] | undefined,
+		variant: str(family.variant) as NonNullable<DraftContent['family']>['variant'] | undefined,
 		groups: publishedGroups
 			?.filter((g) => g.items && g.items.length > 0)
 			.map((g) => ({
 				title: str(g.title),
-				names: g.items
-					.map((item) => formatFamilyMemberLine(item))
-					.filter(Boolean)
-					.join('\n'),
+				names: formatFamilyMembersAsLines(g.items),
 			})),
 	};
 	if (family.featuredImage !== undefined)
@@ -422,21 +412,8 @@ function reportUnknownKeys(
 	}
 }
 
-/** Flattens a published member list to draft lines, reporting unrepresentable flags. */
-function membersToDraftLines(
-	members: readonly unknown[],
-	path: string,
-	issues: DraftNormalizationIssue[],
-): string | undefined {
-	members.forEach((member, index) => {
-		if (isRecord(member) && member.deceased === true) {
-			issues.push({
-				path: `${path}[${index}].deceased`,
-				reason: 'unrepresentable_field',
-				detail: 'the flat draft contract cannot express a deceased marker for list members',
-			});
-		}
-	});
+/** Flattens a published member list to canonical editable lines. */
+function membersToDraftLines(members: readonly unknown[]): string | undefined {
 	return formatFamilyMembersAsLines(members);
 }
 
@@ -471,7 +448,7 @@ function canonicalizeGroupList(
 		adoptFlatValue(
 			next,
 			'names',
-			membersToDraftLines(nested, `${path}[${index}].${nestedKey}`, issues),
+			membersToDraftLines(nested),
 			`${path}[${index}].names`,
 			issues,
 		);
@@ -700,7 +677,13 @@ export function mapNestedToDraftContent(nestedContent: Record<string, unknown>):
 			date: normalizeDate(hero.date),
 			variant: str(hero.variant) as NonNullable<DraftContent['hero']>['variant'],
 		};
-		for (const field of ['presentation', 'focalPoint', 'focalPointMobile', 'focalPointTablet', 'focalPointDesktop'] as const) {
+		for (const field of [
+			'presentation',
+			'focalPoint',
+			'focalPointMobile',
+			'focalPointTablet',
+			'focalPointDesktop',
+		] as const) {
 			if (hero[field] !== undefined)
 				(result.hero as Record<string, unknown>)[field] = hero[field];
 		}

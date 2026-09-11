@@ -607,20 +607,21 @@ describe('draft canonicalization', () => {
 			expect(() => normalizeDraftContent(draft)).toThrow(DraftNormalizationError);
 		});
 
-		it('reports a deceased marker inside a nested group', () => {
-			const draft = {
-				family: {
-					groups: [{ title: 'Padres', items: [{ name: 'Jorge', deceased: true }] }],
-				},
-			};
+		it('preserves a deceased marker inside a nested group', () => {
+			const published = buildNestedFamilyPublished();
+			const family = published.family as Record<string, unknown>;
+			family.groups = [
+				{ title: 'Padres', items: [{ name: 'Jorge', deceased: true }] },
+				{ title: 'Abuelos', items: [{ name: 'Elena' }] },
+			];
 
-			expect(canonicalizeDraftContent(draft).issues).toEqual([
-				{
-					path: 'family.groups[0].items[0].deceased',
-					reason: 'unrepresentable_field',
-					detail: 'the flat draft contract cannot express a deceased marker for list members',
-				},
+			const canonical = canonicalizeDraftContent(published);
+			expect(canonical.issues).toEqual([]);
+			expect(canonical.content.family?.groups).toEqual([
+				{ title: 'Padres', names: 'Jorge †' },
+				{ title: 'Abuelos', names: 'Elena' },
 			]);
+			expect(comparePublication(canonical.content, published).changedPaths).toEqual([]);
 		});
 
 		it('reports conflicting flat and nested values', () => {

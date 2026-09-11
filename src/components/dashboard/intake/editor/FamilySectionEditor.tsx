@@ -1,5 +1,7 @@
 import Field from '@/components/dashboard/intake/editor/Field';
-import SectionCard, { type SectionRestoreProps } from '@/components/dashboard/intake/editor/SectionCard';
+import SectionCard, {
+	type SectionRestoreProps,
+} from '@/components/dashboard/intake/editor/SectionCard';
 import TextArea from '@/components/dashboard/intake/editor/TextArea';
 import TextPresetPicker from '@/components/dashboard/intake/editor/TextPresetPicker';
 import ImageAssetField from '@/components/dashboard/intake/editor/ImageAssetField';
@@ -206,7 +208,11 @@ function SectionCopyFields({
 
 const GROUP_FIELDS: RepeatingField<FamilyGroupDraft>[] = [
 	{ name: 'title', label: 'Título del grupo', placeholder: 'Padrinos', type: 'field' },
-	{ name: 'names', label: 'Nombres (uno por línea)', type: 'textarea' },
+	{
+		name: 'names',
+		label: 'Nombres (uno por línea; use † para familiares fallecidos)',
+		type: 'textarea',
+	},
 ];
 
 const GODPARENT_GROUP_FIELDS: RepeatingField<GodparentGroupDraft>[] = [
@@ -269,8 +275,7 @@ export default function FamilySectionEditor({
 					onChange={(event) =>
 						onUpdateFamily({
 							presentation: (event.target.value || undefined) as
-								| FamilyPresentation
-								| undefined,
+								FamilyPresentation | undefined,
 						})
 					}
 				>
