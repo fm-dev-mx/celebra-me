@@ -1,11 +1,7 @@
 import type { AssetField } from '@/lib/assets/asset-source';
 import { resolveFrozenSrc, resolveSrc } from '@/lib/assets/asset-utils';
-import {
-	getCommonAsset,
-	getEventAsset,
-	isCommonAssetKey,
-	isEventAssetKey,
-} from '@/lib/assets/asset-registry';
+import { isCommonAssetKey, isEventAssetKey } from '@/lib/assets/asset-keys';
+import { getCommonAsset, getEventAsset } from '@/lib/assets/asset-registry';
 
 type ImageDisplayState = 'empty' | 'selected' | 'default' | 'missing';
 

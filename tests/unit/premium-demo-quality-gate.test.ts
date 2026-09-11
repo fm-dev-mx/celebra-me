@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { getFeaturedDemoShowroomItems } from '@/data/demo-showroom.data';
-import { getEventAsset, isEventAssetKey, type EventAssetKey } from '@/lib/assets/asset-registry';
+import { isEventAssetKey, type EventAssetKey } from '@/lib/assets/asset-keys';
+import { getEventAsset } from '@/lib/assets/asset-registry';
 
 const projectRoot = process.cwd();
 const demosRoot = path.join(projectRoot, 'src/content/event-demos');

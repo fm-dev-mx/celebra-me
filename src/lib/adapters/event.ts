@@ -1,12 +1,6 @@
-import {
-	getCommonAsset,
-	getEventAsset,
-	isCommonAssetKey,
-	isEventAssetKey,
-	isAssetRegistryKey,
-	type AssetSource,
-	type ImageAsset,
-} from '@/lib/assets/asset-registry';
+import { getCommonAsset, getEventAsset, type ImageAsset } from '@/lib/assets/asset-registry';
+import { isCommonAssetKey, isEventAssetKey, isAssetRegistryKey } from '@/lib/assets/asset-keys';
+import type { AssetSource } from '@/lib/assets/asset-source';
 import { buildCanonicalNavigation } from '@/lib/invitation/canonical-navigation';
 import {
 	THEME_PRESETS,

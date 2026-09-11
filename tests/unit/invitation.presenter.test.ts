@@ -6,7 +6,7 @@ import {
 	buildPageContextFromViewModel,
 	prepareInvitationPageContext,
 } from '@/lib/invitation/page-data';
-import { isEventAssetKey } from '@/lib/assets/asset-registry';
+import { isEventAssetKey } from '@/lib/assets/asset-keys';
 
 function describeRenderPlan(items: InvitationRenderPlanItem[]): string[] {
 	return items.map((item) => (item.type === 'section' ? item.section : item.type));

@@ -1,9 +1,5 @@
-import {
-	getCommonAsset,
-	getEventAsset,
-	isCommonAssetKey,
-	isEventAssetKey,
-} from '@/lib/assets/asset-registry';
+import { isCommonAssetKey, isEventAssetKey } from '@/lib/assets/asset-keys';
+import { getCommonAsset, getEventAsset } from '@/lib/assets/asset-registry';
 import type { EditableAssetSource } from '@/lib/assets/asset-source';
 
 export function resolveSrc(source: { src: string | { src: string } }): string {

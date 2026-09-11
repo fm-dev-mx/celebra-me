@@ -9,20 +9,7 @@ import type { ImageDelivery } from '@/lib/assets/image-delivery';
  */
 
 import type { ImageMetadata } from 'astro';
-import type {
-	InternalAssetSource,
-	ExternalAssetSource,
-	AssetSource,
-} from '@/lib/assets/asset-source';
-import {
-	EVENT_KEYS,
-	isEventAssetKey,
-	isCommonAssetKey,
-	isAssetRegistryKey,
-	type EventAssetKey,
-	type CommonAssetKey,
-	type AssetRegistryKey,
-} from '@/lib/assets/asset-keys';
+import { EVENT_KEYS, type EventAssetKey, type CommonAssetKey } from '@/lib/assets/asset-keys';
 
 // Common Assets
 import avatar1 from '@images/hero/avatar1.png';
@@ -44,12 +31,6 @@ export interface ImageAsset {
 	src: string | ImageMetadata;
 	alt: string;
 }
-
-// Re-export shared types for backward compatibility
-export type { InternalAssetSource, ExternalAssetSource, AssetSource };
-export { isEventAssetKey, isCommonAssetKey, isAssetRegistryKey };
-export type { EventAssetKey, CommonAssetKey, AssetRegistryKey };
-export { EVENT_KEYS, COMMON_KEYS, ALL_ASSET_KEYS } from '@/lib/assets/asset-keys';
 
 /**
  * Standard schema for event-specific assets.

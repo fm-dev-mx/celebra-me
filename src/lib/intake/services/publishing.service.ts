@@ -26,7 +26,8 @@ import type {
 } from '@/lib/intake/types';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { loadDemoContent } from '@/lib/intake/editor-api';
-import { isValidEvent, getEventAsset, isEventAssetKey } from '@/lib/assets/asset-registry';
+import { isEventAssetKey } from '@/lib/assets/asset-keys';
+import { isValidEvent, getEventAsset } from '@/lib/assets/asset-registry';
 import { resolveAssetSlug } from '@/lib/assets/asset-slug';
 import { computeEffectiveContent } from '@/lib/intake/services/merge-content.service';
 import { DraftNormalizationError } from '@/lib/intake/services/draft-content-mapper';

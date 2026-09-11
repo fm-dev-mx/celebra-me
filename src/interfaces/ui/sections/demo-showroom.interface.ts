@@ -1,14 +1,8 @@
 import type { EventType } from '@/lib/theme/theme-contract';
-import type { EventAssetKey } from '@/lib/assets/asset-registry';
+import type { EventAssetKey } from '@/lib/assets/asset-keys';
 
 export type DemoShowroomPublicSlug =
-	| 'xv'
-	| 'boda'
-	| 'bautizo'
-	| 'bautismo'
-	| 'baby-shower'
-	| 'cumpleanos'
-	| 'primera-comunion';
+	'xv' | 'boda' | 'bautizo' | 'bautismo' | 'baby-shower' | 'cumpleanos' | 'primera-comunion';
 
 export type DemoShowroomVisibility = 'featured' | 'hidden';
 export type DemoShowroomReviewStatus = 'approved' | 'needs-review';

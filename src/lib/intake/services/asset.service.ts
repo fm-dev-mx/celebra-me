@@ -19,7 +19,8 @@ import { getDemoPresetAssets } from '@/lib/intake/services/demo-asset.service';
 import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { resolveAssetSlug } from '@/lib/assets/asset-slug';
-import { isEventAssetKey, getEventAsset, isValidEvent } from '@/lib/assets/asset-registry';
+import { isEventAssetKey } from '@/lib/assets/asset-keys';
+import { getEventAsset, isValidEvent } from '@/lib/assets/asset-registry';
 import type { InvitationAsset } from '@/lib/intake/types';
 import { normalizeInvitationImage } from '@/lib/intake/services/asset-policy';
 

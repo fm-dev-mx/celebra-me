@@ -21,8 +21,11 @@ jest.mock('@/lib/assets/asset-slug', () => ({
 
 jest.mock('@/lib/assets/asset-registry', () => ({
 	isValidEvent: mockIsValidEvent,
-	isEventAssetKey: (...args: unknown[]) => mockIsEventAssetKey(...args),
 	getEventAsset: mockGetEventAsset,
+}));
+
+jest.mock('@/lib/assets/asset-keys', () => ({
+	isEventAssetKey: (...args: unknown[]) => mockIsEventAssetKey(...args),
 }));
 
 jest.mock('@/lib/intake/storage', () => ({
