@@ -30,6 +30,15 @@ function promotion(overrides: Partial<CanonicalPromotionRow> = {}): CanonicalPro
 }
 
 describe('canonical status summary', () => {
+	it('labels the aggregate column as reconciliation rather than pending publications', () => {
+		const text = formatCanonicalStatusView(
+			buildCanonicalStatusViewFixture({ manualPatches: [] }),
+			options,
+		);
+		expect(text).toContain('Reconciliación');
+		expect(text).not.toContain('Esquema                   Publicaciones');
+	});
+
 	it('summarizes ten schema dependents and seven pending invitations within one screen', () => {
 		const view = buildCanonicalStatusViewFixture({ manualPatches: [] });
 		view.environments.production.schemaLifecycle = 'BEHIND';

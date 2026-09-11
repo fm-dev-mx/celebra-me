@@ -232,7 +232,7 @@ export function formatCanonicalSummary(
 		'CELEBRA-ME · Estado de entornos',
 		`Evidencia: ${view.freshnessMeta?.status ?? view.evidence} · ${view.freshnessMeta?.lastVerifiedAt ?? view.generatedAt}`,
 		'─'.repeat(80),
-		'Entorno      Esquema                   Publicaciones        Evidencia',
+		'Entorno      Esquema                   Reconciliación       Evidencia',
 		...environmentRows(view, targets),
 	];
 	if (view.selectedTargets)
