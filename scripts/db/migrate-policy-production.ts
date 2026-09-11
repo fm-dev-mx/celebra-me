@@ -49,7 +49,15 @@ import { OperatorError, operatorSymbol, shortSha, writeHuman } from './operator-
 import { requireOwnerProductionApply } from './owner-production-apply.ts';
 import { extractSupabaseProjectRef } from './db-target-config.ts';
 import { matchProductionWritePermit } from './production-write-permit.ts';
-import { ensureValidReleaseCheckEvidence, readGitWorktreeState } from './release-check.ts';
+import { assertCleanGitWorktree, readGitWorktreeState } from './release-check.ts';
+import { loadMigrationRolloutRegistry } from './migration-deployment-compatibility.ts';
+import {
+	isRemoteEvidenceUnavailable,
+	loadLatestProductionDeployment,
+	loadRemoteChecks,
+	requireReleaseChecks,
+} from '../ops/release-readiness.ts';
+import { readDeployedApplicationAttestation } from './deployed-app-attestation.ts';
 
 export const PRODUCTION_MIGRATION_OPERATION_TYPE = 'production_migration';
 
@@ -238,6 +246,41 @@ function validatePendingVersions(
 	}
 }
 
+function resolveContractDeploymentEvidence(input: {
+	candidateVersions: readonly string[];
+	registry: ReturnType<typeof loadMigrationRolloutRegistry>;
+	targetReleaseSha: string;
+	mode: 'preflight' | 'apply';
+}): {
+	deployedAppIdentity: { sha: string; capabilities: string[] } | null;
+	remoteEvidenceUnavailable: string | null;
+} {
+	const requiresContractEvidence = input.candidateVersions.some(
+		(version) => input.registry.migrations[version]?.phase === 'contract',
+	);
+	if (!requiresContractEvidence) {
+		return { deployedAppIdentity: null, remoteEvidenceUnavailable: null };
+	}
+	try {
+		const deployment = loadLatestProductionDeployment();
+		return {
+			deployedAppIdentity: readDeployedApplicationAttestation({
+				deployedSha: deployment.sha,
+				targetReleaseSha: input.targetReleaseSha,
+				checks: loadRemoteChecks(deployment.sha),
+			}),
+			remoteEvidenceUnavailable: null,
+		};
+	} catch (error: unknown) {
+		if (input.mode === 'apply' || !isRemoteEvidenceUnavailable(error)) throw error;
+		const message = error instanceof Error ? error.message : String(error);
+		return {
+			deployedAppIdentity: null,
+			remoteEvidenceUnavailable: `UNVERIFIED: Production deployment evidence unavailable (${message}).`,
+		};
+	}
+}
+
 export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 	target: 'production',
 
@@ -259,7 +302,8 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 		}
 		writeHuman(`${operatorSymbol('info')} Release: asegurando evidencia de release-check…`);
 		const worktree = readGitWorktreeState();
-		const evidence = ensureValidReleaseCheckEvidence({ worktree });
+		const evidence = { sha: assertCleanGitWorktree(worktree) };
+		requireReleaseChecks(evidence.sha, loadRemoteChecks(evidence.sha));
 		if (ctx.session) {
 			ctx.session.releaseCheckCompleted = true;
 			ctx.session.releaseEvidenceSha = evidence.sha;
@@ -295,19 +339,34 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 			pendingVersions.length > 0
 				? pendingVersions
 				: (ctx.expectedPin ?? []).filter((v) => v !== 'none');
-
+		const registry = loadMigrationRolloutRegistry();
+		const { deployedAppIdentity, remoteEvidenceUnavailable } =
+			resolveContractDeploymentEvidence({
+				candidateVersions,
+				registry,
+				targetReleaseSha: releaseSha,
+				mode,
+			});
 		const compat = evaluateHostedCompatibilityForPlan({
 			target: 'production',
 			candidateVersions,
 			dbAppliedVersions,
 			env: ctx.env,
 			targetReleaseShaOverride: releaseSha,
+			deployedAppIdentity,
 		});
-		assertHostedCompatibilityOrFail(compat, fail);
+		if (!remoteEvidenceUnavailable) {
+			assertHostedCompatibilityOrFail(compat, fail);
+		}
 		if (!quiet) {
 			logHostedCompatibility(compat);
 		}
-		const planCompat = toPlanCompatibility(compat);
+		const planCompat = remoteEvidenceUnavailable
+			? {
+					compatibilityStatus: 'environment_not_ready' as const,
+					compatibilityReasons: [remoteEvidenceUnavailable],
+				}
+			: toPlanCompatibility(compat);
 
 		let releaseEvidenceSha: string | null = null;
 		if (mode === 'apply') {
@@ -320,7 +379,8 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 						`${operatorSymbol('info')} Release: asegurando evidencia de release-check…`,
 					);
 				}
-				const evidence = ensureValidReleaseCheckEvidence({ worktree });
+				const evidence = { sha: assertCleanGitWorktree(worktree) };
+				requireReleaseChecks(evidence.sha, loadRemoteChecks(evidence.sha));
 				releaseEvidenceSha = evidence.sha;
 				if (ctx.session) {
 					ctx.session.releaseCheckCompleted = true;
@@ -431,6 +491,11 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 			technicalReview,
 			env: ctx.env,
 			readConfirmationLine: ctx.readConfirmationLine,
+			assertReleaseEvidence: () => ({
+				sha:
+					ctx.session?.releaseEvidenceSha ??
+					assertCleanGitWorktree(readGitWorktreeState()),
+			}),
 		});
 	},
 

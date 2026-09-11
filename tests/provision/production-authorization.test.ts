@@ -45,7 +45,7 @@ const APPROVED_MUTATORS: MutatorSpec[] = [
 		firstWritePattern: /executeSupabasePush\s*\(\s*ctx\.dbUrl/,
 		preflightPatterns: [
 			/audit-db\.ts/,
-			/ensureValidReleaseCheckEvidence/,
+			/requireReleaseChecks/,
 			/ensureCriticalProductionBackup/,
 			/revalidateCriticalProductionBackup/,
 		],

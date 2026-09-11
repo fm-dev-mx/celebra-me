@@ -434,17 +434,17 @@ assumptions. Cross-machine concurrent migrate is an accepted single-operator res
 Rollout phases (registry metadata; **hosted candidates must have an explicit phase** — omission
 fails closed; do not backfill already-applied historical migrations without need):
 
-| Phase      | Meaning                                                    | Hosted rule                                                                                                                    |
-| ---------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `expand`   | Adds capability compatible with the currently deployed app | May run before target deployment when release membership + DB deps hold                                                        |
-| `neutral`  | Does not invalidate current or target app contracts        | Normal guarded path + membership                                                                                               |
-| `contract` | Removes/restricts behavior an older app relies on          | Blocked until `CELEBRA_DEPLOYED_APP_SHA` + required `CELEBRA_DEPLOYED_APP_CAPABILITIES` prove the replacement path is deployed |
+| Phase      | Meaning                                                    | Hosted rule                                                                                                                                      |
+| ---------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `expand`   | Adds capability compatible with the currently deployed app | May run before target deployment when release membership + DB deps hold                                                                          |
+| `neutral`  | Does not invalidate current or target app contracts        | Normal guarded path + membership                                                                                                                 |
+| `contract` | Removes/restricts behavior an older app relies on          | Blocked until GitHub/Vercel prove a prior Production deployment passed smoke and its versioned capability manifest provides the replacement path |
 
 Safe RSVP-class sequencing:
 
 ```text
 EXPAND (RPC / portable capability)
-→ deploy + verify replacement application
+→ Production deploy + verified GitHub/Vercel smoke of replacement application
 → CONTRACT (revoke legacy direct DML paths)
 ```
 

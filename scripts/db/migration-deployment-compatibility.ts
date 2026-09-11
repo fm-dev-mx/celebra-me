@@ -128,7 +128,7 @@ function collectContractReasons(options: {
 	}
 	if (!options.deployedAppSha || !options.deployedAppSha.trim()) {
 		reasons.push(
-			`Contract migration ${options.version} requires CELEBRA_DEPLOYED_APP_SHA proving the replacement application is deployed.`,
+			`Contract migration ${options.version} requires immutable deployed-application evidence proving the replacement application is deployed.`,
 		);
 	}
 	for (const required of options.entry?.requiresDeployedAppCapabilities ?? []) {
@@ -325,15 +325,7 @@ export function resolveHostedMigrationIdentity(env: NodeJS.ProcessEnv = process.
 	deployedAppCapabilities: string[];
 } {
 	const targetReleaseSha = env.CELEBRA_TARGET_RELEASE_SHA?.trim() || null;
-	const deployedAppSha = env.CELEBRA_DEPLOYED_APP_SHA?.trim() || null;
-	const rawCaps = env.CELEBRA_DEPLOYED_APP_CAPABILITIES?.trim() || '';
-	const deployedAppCapabilities = rawCaps
-		? rawCaps
-				.split(/[,\s]+/)
-				.map((c) => c.trim())
-				.filter(Boolean)
-		: [];
-	return { targetReleaseSha, deployedAppSha, deployedAppCapabilities };
+	return { targetReleaseSha, deployedAppSha: null, deployedAppCapabilities: [] };
 }
 
 export function assertCompatibilityOrFail(

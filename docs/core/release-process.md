@@ -22,8 +22,11 @@
   without asking again. Request new decisions only for new scope or material visual approval.
 - Before promotion, run `pnpm ops:release-checks <exact-sha>` to require Repository Policy,
   Application Suite and the correlated Preview smoke from GitHub Actions. Pending, cancelled,
-  skipped, missing, untrusted or different-SHA evidence blocks this check. It does not replace
-  database compatibility checks or deployment authorization. Recheck after final integration.
+  skipped, missing, untrusted or different-SHA evidence blocks this check. For database contracts,
+  follow `expand → CI/Preview → Production deployment + smoke → contract`; the contract gate
+  verifies the prior Production SHA and its versioned application-capability manifest. It does not
+  replace database compatibility checks or owner deployment authorization. Recheck after final
+  integration.
 - The main ruleset must still be inspected: this CLI is a fail-closed operator check, not proof that
   provider-side Preview protection is configured. Never call a release ready from CI alone.
 - Avoid repeating successful complete suites for unchanged evidence. A final integration SHA,
@@ -210,18 +213,19 @@ existing tag.
 
 ## Database-dependent releases
 
-When application code depends on a migration, use this order:
+When application code depends on a migration, use the staged contract order:
 
-1. Validate the complete migration chain against local Supabase.
-2. Apply the reviewed required migrations to production with explicit owner authorization.
-3. Verify the RPCs, schema objects, grants, and metadata introduced by those migrations.
-4. Deploy the dependent application build.
-5. Run the production smoke and cache-isolation checks from
-   [`../domains/intake/production-flow.md`](../domains/intake/production-flow.md).
+1. Apply and validate the `expand` migration against local/Preview environments.
+2. Require complete CI and correlated Preview smoke for the exact release SHA.
+3. Deploy that application build to Production and require the correlated Production smoke.
+4. Apply the reviewed `contract` migration only after the previous deployment SHA and its capability
+   manifest satisfy the rollout registry.
+5. Verify the RPCs, schema objects, grants, and metadata introduced by the migration.
 
-Never deploy dependent code before its database contract. An application rollback may restore the
-prior deployment; an applied migration is immutable history and must be corrected by a new forward
-migration. Capture logs and current published/draft revisions before incident remediation.
+For a `contract` migration, deploy the replacement application before revoking the legacy database
+path. An application rollback may restore the prior deployment; an applied migration is immutable
+history and must be corrected by a new forward migration. Capture logs and current published/draft
+revisions before incident remediation.
 
 ## What to Record as Known Issues
 

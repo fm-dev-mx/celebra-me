@@ -25,6 +25,7 @@ export interface HostedCompatibilityPlanInput {
 	env?: NodeJS.ProcessEnv;
 	/** Production: override with clean HEAD. */
 	targetReleaseShaOverride?: string | null;
+	deployedAppIdentity?: { sha: string; capabilities: string[] } | null;
 }
 
 export interface HostedCompatibilityPlanResult {
@@ -62,6 +63,10 @@ export function evaluateHostedCompatibilityForPlan(
 
 	const env = options.env ?? process.env;
 	const identity = resolveHostedMigrationIdentity(env);
+	if (options.deployedAppIdentity) {
+		identity.deployedAppSha = options.deployedAppIdentity.sha;
+		identity.deployedAppCapabilities = options.deployedAppIdentity.capabilities;
+	}
 	if (options.targetReleaseShaOverride !== undefined) {
 		identity.targetReleaseSha = options.targetReleaseShaOverride?.trim() || null;
 	}

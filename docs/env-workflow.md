@@ -126,9 +126,12 @@ execution:
   alternative. `CELEBRA_AGENT_CONTEXT` rejects agent self-authorization and is injected by default
   in agent sessions (Cursor hooks). It is not a substitute for owner TTY confirmation. Apply also
   requires valid `pnpm release-check` evidence for the current clean `HEAD`.
-- **Preview hosted migrate identity:** clean Git `HEAD` (same release pattern as Production). For
-  contract phases, `CELEBRA_DEPLOYED_APP_SHA` / `CELEBRA_DEPLOYED_APP_CAPABILITIES` authorize
-  deployed-app readiness. Preview DB URL must match the canonical Preview project ref.
+- **Hosted migrate identity:** clean Git `HEAD` is the target release. Production contract phases
+  resolve the prior deployed SHA from GitHub/Vercel evidence, require its trusted Production smoke,
+  and read `supabase/deployed-app-capabilities.json` from that exact Git tree. Shell variables never
+  authorize deployed-app readiness. An unavailable remote preflight is reported as `UNVERIFIED` and
+  never authorizes apply; invalid evidence blocks both preflight and apply. Preview DB URL must
+  match the canonical Preview project ref.
 - **Test-only:** `PLAYWRIGHT_*`, audit run IDs, test fixture variables. The canonical local E2E
   server is isolated by default; `PLAYWRIGHT_REUSE_EXISTING_SERVER=true` is an explicit opt-in.
 - **Stale/manual-only:** `DATABASE_URL` and `RSVP_TOKEN_SECRET` are not active runtime inputs. Keep
@@ -139,10 +142,10 @@ execution:
 The deterministic env contract test uses these explicit lists to reconcile the secret-free template
 with app/runtime typing:
 
-| Contract category           | Variables                                                                                                                                                                                                                                                                                                                                                                                                                                  | Relationship                                          |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| Contract category           | Variables                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Relationship                                          |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
 | `operational-script-only`   | `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `RSVP_ADMIN_USER`, `SUPER_ADMIN_EMAILS`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`, `PLAYWRIGHT_PREVIEW_SUPABASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS` | Present in `.env.example`; omitted from typing.       |
-| `platform-provided-runtime` | `VERCEL`, `VERCEL_DEPLOYMENT_ID`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA`, `VERCEL_GIT_COMMIT_REF`, `VERCEL_REGION`                                                                                                                                                                                                                                                                                                                          | Present in app/runtime typing; omitted from template. |
+| `platform-provided-runtime` | `VERCEL`, `VERCEL_DEPLOYMENT_ID`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA`, `VERCEL_GIT_COMMIT_REF`, `VERCEL_REGION`                                                                                                                                                                                                                                                                                                                                                | Present in app/runtime typing; omitted from template. |
 
 `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` are server-only runtime
 secrets for invitation image upload (Astro API + `invitation:release` CLI). Never create
@@ -159,19 +162,19 @@ This table is the sole human-facing authority for where each value belongs. Loca
 in ignored files; tracked examples contain empty values only. Preview/Staging and Production use
 independent key pairs and credentials.
 
-| Name                                             | Local                              | Preview / Staging                              | Production                                           | Value source                                         |
-| ------------------------------------------------ | ---------------------------------- | ---------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------- |
-| `MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY`    | `.env.local` secret                | Vercel Preview secret                          | Vercel Production secret, independent                | Locally generated PKCS#8 P-256 upload pair           |
-| `MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY` | `.env.local` secret                | Vercel Preview secret                          | Vercel Production secret, independent                | Locally generated PKCS#8 P-256 retrieval pair        |
-| `MEMORIES_PRIVATE_UPLOAD_ORIGIN`                 | Local Wrangler origin              | Vercel Preview config                          | Vercel Production config                             | Deployed Sign Worker origin; path stays in code      |
-| `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`              | Local Wrangler origin              | Vercel Preview config                          | Vercel Production config                             | Deployed Retrieval Worker origin; path stays in code |
-| `CRON_SECRET`                                    | Synthetic `.env.local` secret      | Vercel Preview secret                          | Vercel Production secret, independent                | Cryptographically secure random generator            |
-| `MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY`      | Sign Worker `.dev.vars`            | Sign Worker Staging secret                     | Sign Worker Production secret                        | SPKI public key from the upload pair                 |
-| `MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY`   | Retrieval Worker `.dev.vars`       | Retrieval Worker Staging secret                | Retrieval Worker Production secret                   | SPKI public key from the retrieval pair              |
-| `MEMORIES_UPLOAD_CAPABILITY_SECRET`              | Sign Worker `.dev.vars`            | Sign Worker Staging secret                     | Independent Sign Worker Production secret            | HMAC secret for one-use upload capabilities          |
-| `MEMORIES_STORAGE_TARGET`                        | Wrangler versioned var: `local`    | Wrangler versioned var: `staging`              | Wrangler versioned var: `production`                 | Repository Worker configuration                      |
-| `MEMORIES_BUCKET`                                | Simulated local R2 binding         | Binding to the Staging bucket                  | Binding to the Production bucket                     | Wrangler R2 binding; never a variable or secret      |
-| Supabase URL / anon / service role               | Values reported by local Supabase  | Vercel Preview values from the Preview project | Vercel Production values from the Production project | Matching Supabase project API settings               |
+| Name                                             | Local                             | Preview / Staging                              | Production                                           | Value source                                         |
+| ------------------------------------------------ | --------------------------------- | ---------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------- |
+| `MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY`    | `.env.local` secret               | Vercel Preview secret                          | Vercel Production secret, independent                | Locally generated PKCS#8 P-256 upload pair           |
+| `MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY` | `.env.local` secret               | Vercel Preview secret                          | Vercel Production secret, independent                | Locally generated PKCS#8 P-256 retrieval pair        |
+| `MEMORIES_PRIVATE_UPLOAD_ORIGIN`                 | Local Wrangler origin             | Vercel Preview config                          | Vercel Production config                             | Deployed Sign Worker origin; path stays in code      |
+| `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`              | Local Wrangler origin             | Vercel Preview config                          | Vercel Production config                             | Deployed Retrieval Worker origin; path stays in code |
+| `CRON_SECRET`                                    | Synthetic `.env.local` secret     | Vercel Preview secret                          | Vercel Production secret, independent                | Cryptographically secure random generator            |
+| `MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY`      | Sign Worker `.dev.vars`           | Sign Worker Staging secret                     | Sign Worker Production secret                        | SPKI public key from the upload pair                 |
+| `MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY`   | Retrieval Worker `.dev.vars`      | Retrieval Worker Staging secret                | Retrieval Worker Production secret                   | SPKI public key from the retrieval pair              |
+| `MEMORIES_UPLOAD_CAPABILITY_SECRET`              | Sign Worker `.dev.vars`           | Sign Worker Staging secret                     | Independent Sign Worker Production secret            | HMAC secret for one-use upload capabilities          |
+| `MEMORIES_STORAGE_TARGET`                        | Wrangler versioned var: `local`   | Wrangler versioned var: `staging`              | Wrangler versioned var: `production`                 | Repository Worker configuration                      |
+| `MEMORIES_BUCKET`                                | Simulated local R2 binding        | Binding to the Staging bucket                  | Binding to the Production bucket                     | Wrangler R2 binding; never a variable or secret      |
+| Supabase URL / anon / service role               | Values reported by local Supabase | Vercel Preview values from the Preview project | Vercel Production values from the Production project | Matching Supabase project API settings               |
 
 Do not create `PUBLIC_MEMORIES_*`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, or Valentina
 Memories values in Cloudflare Secrets Store. Interactive deployment authentication is owned by
