@@ -1,3 +1,4 @@
+import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineCanonicalInvitation } from './canonical-definition.ts';
 import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
@@ -179,12 +180,9 @@ const content: CanonicalEventContentInput = {
 	sharing: {
 		ogDescription:
 			'Acompáñame en mis XV años el sábado, 12 de septiembre de 2026, en Apizaco, Tlaxcala.',
-		shareMessages: {
-			reminder:
-				'Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}',
-			invitation:
-				'Hola {{invitado}}, te comparto tu invitación a los {{evento}}:\n\n{{enlace}}\n\nÁbrela para ver los detalles y confirmar tu asistencia.',
-		},
+		shareMessages: createShareMessages(
+			'Hola {{invitado}}, te comparto tu invitación a los {{evento}}:\n\n{{enlace}}\n\nÁbrela para ver los detalles y confirmar tu asistencia.',
+		),
 	},
 	envelope: {
 		disabled: false,

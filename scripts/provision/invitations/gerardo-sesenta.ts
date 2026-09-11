@@ -1,3 +1,4 @@
+import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineCanonicalInvitation } from './canonical-definition.ts';
 import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
@@ -101,8 +102,9 @@ const content: CanonicalEventContentInput = {
 		variant: 'feature-stack',
 	},
 	sharing: {
-		whatsappTemplate:
+		shareMessages: createShareMessages(
 			'Hola {name}, te comparto la invitación para celebrar los 60 años de Gerardo Mendoza. Aquí puedes ver los detalles y confirmar tu asistencia: {inviteUrl}',
+		),
 	},
 	envelope: {
 		disabled: false,

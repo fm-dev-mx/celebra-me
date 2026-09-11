@@ -1,3 +1,4 @@
+import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineCanonicalInvitation } from './canonical-definition.ts';
 import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
@@ -96,12 +97,9 @@ const content: CanonicalEventContentInput = {
 	sharing: {
 		ogDescription:
 			'Acompáñenos en la Primera Comunión de Luna y Estrella el sábado, 1 de agosto de 2026.',
-		shareMessages: {
-			reminder:
-				'Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}',
-			invitation:
-				'Hola {{invitado}}, te comparto tu invitación a la {{evento}}:\n\n{{enlace}}\n\nÁbrela para ver los detalles y confirmar tu asistencia.',
-		},
+		shareMessages: createShareMessages(
+			'Hola {{invitado}}, te comparto tu invitación a la {{evento}}:\n\n{{enlace}}\n\nÁbrela para ver los detalles y confirmar tu asistencia.',
+		),
 		reminderSettings: {
 			enabled: true,
 			audience: 'all-shared',

@@ -6,6 +6,7 @@
  * locations, map URLs, section order, and content structure in one location.
  */
 
+import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineInvitation } from './invitation-definition.ts';
 import type {
 	InvitationDefinition,
@@ -377,19 +378,14 @@ export function buildRominaPublishedContent(
 		sharing: {
 			ogImage: assets['social-og'],
 			ogDescription: 'Invitación a los XV años de Romina Ríos Chaparro',
-			shareMessages: {
-				reminder:
-					'Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}',
-				invitation:
-					'Hola {name}, le compartimos su invitación para los XV años de Romina: {inviteUrl}',
-			},
+			shareMessages: createShareMessages(
+				'Hola {name}, le compartimos su invitación para los XV años de Romina: {inviteUrl}',
+			),
 			reminderSettings: {
 				enabled: true,
 				audience: 'unconfirmed',
 				showWhenDaysBeforeEvent: 7,
 			},
-			whatsappTemplate:
-				'Hola {name}, le compartimos su invitación para los XV años de Romina: {inviteUrl}',
 		},
 	};
 }

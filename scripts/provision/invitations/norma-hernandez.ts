@@ -1,3 +1,4 @@
+import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import {
 	defineInvitation,
 	type InvitationAssetSpec,
@@ -269,8 +270,9 @@ export function buildNormaPublishedContent(
 		sharing: {
 			ogImage: assets.childhood,
 			ogDescription: '65 años de Norma Hernandez · 14 de noviembre de 2026 · Culiacán',
-			whatsappTemplate:
+			shareMessages: createShareMessages(
 				'Hola {name}, le comparto mi invitación para celebrar mis 65 años: {inviteUrl}',
+			),
 		},
 	};
 }

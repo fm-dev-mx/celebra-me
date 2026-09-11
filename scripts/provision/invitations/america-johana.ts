@@ -1,3 +1,4 @@
+import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineCanonicalInvitation } from './canonical-definition.ts';
 import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
@@ -220,19 +221,14 @@ const content: CanonicalEventContentInput = {
 	sharing: {
 		ogImage: 'portrait',
 		ogDescription: 'XV años • América Johana',
-		shareMessages: {
-			reminder:
-				'Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}',
-			invitation:
-				'Hola {name}, te comparto la invitación a los XV años de América Johana, estaremos felices de contar con su presencia.\n\n{inviteUrl}\n\n Ábrela y confirma tu asistencia. ¡Será un gusto verte!',
-		},
+		shareMessages: createShareMessages(
+			'Hola {name}, te comparto la invitación a los XV años de América Johana, estaremos felices de contar con su presencia.\n\n{inviteUrl}\n\n Ábrela y confirma tu asistencia. ¡Será un gusto verte!',
+		),
 		reminderSettings: {
 			enabled: true,
 			audience: 'all-shared',
 			showWhenDaysBeforeEvent: 7,
 		},
-		whatsappTemplate:
-			'Hola {name}, te comparto tu invitación a los XV América Johana\n\n{inviteUrl}\n\n Ábrela y confirma tu asistencia. ¡Será un gusto verte!',
 	},
 	envelope: {
 		disabled: false,

@@ -6,6 +6,7 @@
  * Prep SoT: docs/invitations/daniela-y-martin.md
  */
 
+import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineInvitation } from './invitation-definition.ts';
 import type {
 	InvitationDefinition,
@@ -379,8 +380,9 @@ Hombres: traje.`,
 		sharing: {
 			ogImage: assets['hero-desktop'],
 			ogDescription: 'Invitación a la boda de Daniela y Martín',
-			whatsappTemplate:
+			shareMessages: createShareMessages(
 				'Hola {name}, le compartimos la invitación a la boda de Daniela y Martín: {inviteUrl}',
+			),
 		},
 	};
 }

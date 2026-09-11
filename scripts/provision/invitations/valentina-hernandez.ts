@@ -8,6 +8,7 @@
  * event asset folder until remastered.
  */
 
+import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineInvitation } from './invitation-definition.ts';
 import type {
 	InvitationDefinition,
@@ -446,8 +447,9 @@ export function buildValentinaPublishedContent(
 			},
 		},
 		sharing: {
-			whatsappTemplate:
+			shareMessages: createShareMessages(
 				'Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}',
+			),
 			// Content-only Preview/Production preserve the hosted OG asset key (`portrait`).
 			ogImage: assets.portrait,
 			ogDescription:

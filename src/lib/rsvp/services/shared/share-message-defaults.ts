@@ -92,6 +92,10 @@ export interface ShareMessagesConfig {
 	reminder: string;
 }
 
+export function createShareMessages(invitation: string): ShareMessagesConfig {
+	return { invitation, reminder: DEFAULT_REMINDER_MESSAGE };
+}
+
 export type ReminderAudience = 'unconfirmed' | 'all-shared';
 
 export interface ReminderSettings {

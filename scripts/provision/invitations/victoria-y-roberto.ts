@@ -6,6 +6,7 @@
  * prepReadiness: READY_FOR_IMPLEMENTATION
  */
 
+import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineInvitation } from './invitation-definition.ts';
 import type {
 	InvitationDefinition,
@@ -463,8 +464,9 @@ export function buildVictoriaPublishedContent(
 		sharing: {
 			ogImage: assets['hero-desktop'],
 			ogDescription: 'Invitación a la boda de Victoria y Roberto',
-			whatsappTemplate:
+			shareMessages: createShareMessages(
 				'Hola {name}, le compartimos la invitación a la boda de Victoria y Roberto: {inviteUrl}',
+			),
 		},
 	};
 }

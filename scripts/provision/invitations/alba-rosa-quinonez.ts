@@ -5,6 +5,7 @@
  * Prep SoT: docs/invitations/alba-rosa-quinonez.md
  */
 
+import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineInvitation } from './invitation-definition.ts';
 import type {
 	InvitationDefinition,
@@ -224,7 +225,8 @@ export function buildAlbaPublishedContent(
 					time: '8:00 p. m.',
 					mapUrl: mapsSearchUrl,
 					googleMapsUrl: mapsSearchUrl,
-					appleMapsUrl: 'https://maps.apple.com/?q=Canta+Luna+Campestre+Los+Mochis+Sinaloa',
+					appleMapsUrl:
+						'https://maps.apple.com/?q=Canta+Luna+Campestre+Los+Mochis+Sinaloa',
 					coordinates: {
 						lat: 25.833891,
 						lng: -109.052681,
@@ -342,8 +344,9 @@ export function buildAlbaPublishedContent(
 		sharing: {
 			ogImage: assets['hero-desktop'],
 			ogDescription: 'Invitación a los 70 años de Alba Rosa Quiñónez López',
-			whatsappTemplate:
+			shareMessages: createShareMessages(
 				'Hola {name}, le compartimos la invitación para los 70 años de Alba Rosa: {inviteUrl}',
+			),
 		},
 	};
 }

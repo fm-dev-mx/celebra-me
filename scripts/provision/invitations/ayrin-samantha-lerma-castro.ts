@@ -1,3 +1,4 @@
+import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineCanonicalInvitation } from './canonical-definition.ts';
 import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
@@ -163,12 +164,9 @@ const content: CanonicalEventContentInput = {
 			type: 'internal',
 		},
 		ogDescription: 'Celebra con nosotros los XV años de Ayrin Samantha.',
-		shareMessages: {
-			reminder:
-				'Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}',
-			invitation:
-				'Hola {guestName}, te compartimos tu invitación a {eventTitle}:\n\n{inviteUrl}\n\nÁbrela para ver los detalles y confirmar tu asistencia.',
-		},
+		shareMessages: createShareMessages(
+			'Hola {guestName}, te compartimos tu invitación a {eventTitle}:\n\n{inviteUrl}\n\nÁbrela para ver los detalles y confirmar tu asistencia.',
+		),
 		reminderSettings: {
 			enabled: true,
 			audience: 'all-shared',

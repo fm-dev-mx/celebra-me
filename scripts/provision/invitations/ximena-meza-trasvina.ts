@@ -1,3 +1,4 @@
+import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineCanonicalInvitation } from './canonical-definition.ts';
 import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
@@ -167,8 +168,9 @@ const content: CanonicalEventContentInput = {
 	},
 	sharing: {
 		ogImage: 'portrait',
-		whatsappTemplate:
+		shareMessages: createShareMessages(
 			'Hola {name}, te comparto tu invitación para los XV años de Ximena: {inviteUrl}',
+		),
 	},
 	envelope: {
 		disabled: false,
