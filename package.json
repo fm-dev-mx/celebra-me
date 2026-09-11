@@ -203,7 +203,7 @@
         "sass-embedded": "^1.103.1",
         "stylelint": "17.14.1",
         "stylelint-config-standard-scss": "^17.0.0",
-        "supabase": "2.115.0",
+        "supabase": "2.116.0",
         "ts-jest": "^29.4.12",
         "tsx": "^4.23.12",
         "typescript": "npm:@typescript/typescript6@6.0.2",
