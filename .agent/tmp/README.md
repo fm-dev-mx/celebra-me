@@ -11,14 +11,13 @@ the Handoff Contract in [`.agent/plans/README.md`](../plans/README.md).
 - Bind artifacts to the current worktree and invalidate them when their inputs or HEAD change.
 - Delete task artifacts after verification; preserve them only when the owner explicitly requests
   retention.
-- Never create `allow-git-write` or another filesystem authorization marker. Git authority remains
-  task-scoped and explicit.
+- Never create a filesystem authorization marker. Git authority remains task-scoped and explicit.
 
 ## Privacy
 
-Do not store secrets, credentials, tokens, connection strings, private client data, full transcripts,
-large assets, screenshots, or generated logs. Use runtime-managed storage for transcripts and the
-repository's designated evidence locations for approved artifacts.
+Do not store secrets, credentials, tokens, connection strings, private client data, full
+transcripts, large assets, screenshots, or generated logs. Use runtime-managed storage for
+transcripts and the repository's designated evidence locations for approved artifacts.
 
 The handoff directory is reserved for ephemeral role-chain artifacts and must remain empty when no
 handoff is active. Its semantic fields follow the canonical Handoff Contract; it is not a second

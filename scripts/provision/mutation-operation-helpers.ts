@@ -1,12 +1,8 @@
-/**
- * Shared helpers for Romina production mutation planners (schema-repair, draft-reset).
- */
 import { createHash } from 'node:crypto';
 import { canonicalize } from './normalized-invitation-release.ts';
 
 type JsonRecord = Record<string, unknown>;
 
-/** Deterministic SHA-256 operation id for Romina invitation mutation receipts. */
 export function deriveStableOperationId(context: {
 	operationType: string;
 	targetEnv: string;
@@ -61,9 +57,9 @@ export function diffContentPaths(before: unknown, after: unknown, path = ''): st
 	return [path || '$'];
 }
 
-export function deriveRominaReceiptOperationId(operationId: string): string {
+export function deriveReceiptOperationId(operationId: string): string {
 	if (!/^[a-f0-9]{64}$/i.test(operationId)) {
-		throw new Error('ROMINA_RECEIPT_OPERATION_ID_INVALID: expected a SHA-256 operation ID.');
+		throw new Error('RECEIPT_OPERATION_ID_INVALID: expected a SHA-256 operation ID.');
 	}
 	const hex = operationId.slice(0, 32).toLowerCase().split('');
 	hex[12] = '8';

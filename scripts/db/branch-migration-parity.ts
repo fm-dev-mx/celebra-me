@@ -60,8 +60,6 @@ export interface BranchMigrationParityResult {
 	sensitiveDetection: DatabaseSensitiveDetectionResult;
 	/** True when migration identity/content checks pass (duplicates/malformed/mutations absent). */
 	identityOk: boolean;
-	/** @deprecated use identityOk — kept for older call sites */
-	ok: boolean;
 	errors: string[];
 	findings: Finding[];
 	requiresParityAudit: boolean;
@@ -424,7 +422,6 @@ export function runBranchMigrationParity(options: {
 		headMalformed: headTree.malformed,
 		sensitiveDetection,
 		identityOk: compared.identityOk,
-		ok: compared.identityOk,
 		errors: compared.errors,
 		findings,
 		requiresParityAudit,

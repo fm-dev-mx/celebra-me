@@ -245,30 +245,6 @@ export function createPendingPreviewApprovalArtifact(
 }
 
 /**
- * @deprecated Evidence scaffolds are intentionally excluded from the approval happy path.
- */
-export function writePendingApprovalEvidenceScaffold(
-	input: {
-		packageHash: string;
-		outputPath: string;
-		reviewedBy?: string;
-		intendedProductionProjectRef?: string;
-	},
-	options?: PreviewApprovalServiceOptions,
-): {
-	outputPath: string;
-	packageHash: string;
-	slug: string;
-	planId: string;
-} {
-	void input;
-	void options;
-	throw new Error(
-		'EVIDENCE_SCAFFOLD_REMOVED: use pnpm invitation:release -- --package-hash <hash> --approve for direct live Preview verification.',
-	);
-}
-
-/**
  * Approve a pending artifact using direct, machine-generated hosted Preview results.
  */
 export function approvePreviewArtifactFromLiveVerification(
@@ -332,24 +308,6 @@ export function approvePreviewArtifactFromLiveVerification(
 		intendedProductionProjectRef,
 		hostedValidation,
 	});
-}
-
-/**
- * @deprecated Filesystem evidence finalization was replaced by direct live verification.
- */
-export function finalizePreviewApprovalArtifact(
-	input: {
-		packageHash?: string;
-		artifactPath?: string;
-		evidencePath: string;
-	},
-	options?: PreviewApprovalServiceOptions,
-): PreviewApprovalArtifact {
-	void input;
-	void options;
-	throw new Error(
-		'EVIDENCE_FINALIZE_REMOVED: use pnpm invitation:release -- --package-hash <hash> --approve for direct live Preview verification.',
-	);
 }
 
 /**

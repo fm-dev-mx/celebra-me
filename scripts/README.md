@@ -25,20 +25,19 @@ are no longer registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation 
 
 ## Invitation Provisioning & Promotion Commands
 
-| Command                              | Audience      | Canonical Script                                              | Purpose                                                                |
-| ------------------------------------ | ------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Command                              | Audience      | Canonical Script                                              | Purpose                                                                              |
+| ------------------------------------ | ------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | `pnpm dbs`                           | Human / agent | `scripts/provision/dbs-cli.ts`                                | Canonical read-only matrix: schema, publication, readiness, Production authorization |
-| `pnpm dbs --compact`                 | Human / agent | `scripts/provision/managed-status.ts`                         | Connectivity CONTENT + SCHEMA only (not publication; Git-hook friendly) |
-| `pnpm invitation:release`            | Human / agent | `scripts/provision/invitation-release-cli.ts`                 | Define, plan, apply, approve, and release managed invitations          |
-| `pnpm invitation:reconcile`          | Human / agent | `scripts/provision/invitation-reconcile-cli.ts`               | Guided Local/Preview managed divergence reconciliation                 |
-| `pnpm invitation:content-parity`     | Human / agent | `scripts/provision/content-parity-cli.ts`                     | Read-only semantic content parity (excludes RSVP/PII)                  |
-| `pnpm invitation:preview-fixture`    | Human / agent | `scripts/provision/preview-e2e-fixture-cli.ts`                | Preview-only E2E fixture bootstrap (not Dashboard create)              |
-| `pnpm invitation:purge-by-id`        | Human / agent | `scripts/provision/invitation-id-purge-cli.ts`                | Preview-only UUID purge with dry-run audit                             |
-| `pnpm invitation:cross-db-reconcile` | Human / agent | `scripts/provision/cross-db-invitation-reconciliation-cli.ts` | Read-only cross-DB invitation inventory parity                         |
-| `pnpm invitation:inventory-audit`    | Human / agent | `scripts/provision/inventory-audit-cli.ts`                    | Tabular/JSON inventory matrix (distinct from `dbs` summary)            |
-| `pnpm invitation:diagnose-identity`  | Human / agent | `scripts/provision/managed-identity-diagnostics-cli.ts`       | Managed identity / alias diagnostics                                   |
-| `pnpm invitation:local-corpus`       | Human / agent | `scripts/provision/local-render-corpus/cli.ts`                | Bootstrap local render corpus slugs                                    |
-| `pnpm invitation:romina-draft-reset` | Owner (temp)  | `scripts/provision/romina-draft-reset-cli.ts`                 | Temporary one-off; remove after owner confirms complete                |
+| `pnpm dbs --compact`                 | Human / agent | `scripts/provision/managed-status.ts`                         | Connectivity CONTENT + SCHEMA only (not publication; Git-hook friendly)              |
+| `pnpm invitation:release`            | Human / agent | `scripts/provision/invitation-release-cli.ts`                 | Define, plan, apply, approve, and release managed invitations                        |
+| `pnpm invitation:reconcile`          | Human / agent | `scripts/provision/invitation-reconcile-cli.ts`               | Guided Local/Preview managed divergence reconciliation                               |
+| `pnpm invitation:content-parity`     | Human / agent | `scripts/provision/content-parity-cli.ts`                     | Read-only semantic content parity (excludes RSVP/PII)                                |
+| `pnpm invitation:preview-fixture`    | Human / agent | `scripts/provision/preview-e2e-fixture-cli.ts`                | Preview-only E2E fixture bootstrap (not Dashboard create)                            |
+| `pnpm invitation:purge-by-id`        | Human / agent | `scripts/provision/invitation-id-purge-cli.ts`                | Preview-only UUID purge with dry-run audit                                           |
+| `pnpm invitation:cross-db-reconcile` | Human / agent | `scripts/provision/cross-db-invitation-reconciliation-cli.ts` | Read-only cross-DB invitation inventory parity                                       |
+| `pnpm invitation:inventory-audit`    | Human / agent | `scripts/provision/inventory-audit-cli.ts`                    | Tabular/JSON inventory matrix (distinct from `dbs` summary)                          |
+| `pnpm invitation:diagnose-identity`  | Human / agent | `scripts/provision/managed-identity-diagnostics-cli.ts`       | Managed identity / alias diagnostics                                                 |
+| `pnpm invitation:local-corpus`       | Human / agent | `scripts/provision/local-render-corpus/cli.ts`                | Bootstrap local render corpus slugs                                                  |
 
 Operator cards:
 [`docs/domains/database/cheatsheets/README.md`](../docs/domains/database/cheatsheets/README.md).
@@ -67,41 +66,41 @@ action before the configured Prettier formatter.
 
 ## Database Command Inventory
 
-| Command                                    | Audience       | Owner          | Purpose                                                               |
-| ------------------------------------------ | -------------- | -------------- | --------------------------------------------------------------------- |
-| `pnpm db:push`                             | Safety rail    | `package.json` | blocked fail-closed replacement for ambiguous raw Supabase push       |
-| `pnpm db:start` / `pnpm db:stop`           | Human          | Supabase CLI   | start/stop persistent-local Supabase stack                            |
-| `pnpm db:availability:verify`              | Agent/human    | `scripts/db/`  | fail-closed reachability + read-only session preflight                |
-| `pnpm db:prod:backup`                      | Owner          | `scripts/db/`  | read-only production public dump                                      |
-| `pnpm db:prod:backup:critical`             | Owner          | `scripts/db/`  | complete Production DB/Auth/Storage critical set                      |
-| `pnpm db:prod:backup:daily`                | Operator       | `scripts/db/`  | scheduled local critical backup + EFS/report verification             |
-| `pnpm db:backup:verify-manifest`           | Human          | `scripts/db/`  | validate critical backup manifest                                     |
-| `pnpm db:backup:create-manifest`           | Human          | `scripts/db/`  | assemble manifest from captured artifacts                             |
-| `pnpm db:backup:create-disposable-fixture` | Human          | `scripts/db/`  | synthetic recovery set for disposable drill                           |
-| `pnpm db:restore:verify-disposable`        | Human          | `scripts/db/`  | rebuild/restore/verify in disposable-test only                        |
-| `pnpm db:contract:verify`                  | Human/agent    | `scripts/db/`  | read-only mutation schema/privilege contract verification             |
-| `pnpm db:prod:audit`                       | Owner/agent    | `scripts/db/`  | object-audit readiness vs disposable reference                        |
-| `pnpm db:branch:parity`                    | Agent/human    | `scripts/db/`  | branch migration identity/content sensitivity (`--json`)              |
-| `pnpm db:branch:diagnose`                  | Agent          | `scripts/db/`  | branch-lane diagnosis from structured evidence                        |
-| `pnpm db:branch:remediate-disposable`      | Agent          | `scripts/db/`  | verify then rebuild disposable-test only                              |
-| `pnpm release-check`                       | Owner          | `scripts/db/`  | clean-HEAD type-check + test + build; writes release evidence         |
-| `pnpm db:migrate`                          | Human/agent    | `scripts/db/`  | Canonical schema migrate CLI (`migrate-cli.ts`; TTY Cancelar default) |
-| `pnpm prod:apply`                          | Owner (+ agent plan) | `scripts/db/` | Owner-only Production plan/apply (`production-apply-cli.ts`) |
-| `pnpm db:local:audit`                      | Human/agent    | `scripts/db/`  | object-audit readiness for persistent-local                           |
-| `pnpm db:preview:audit`                    | Human/agent    | `scripts/db/`  | object-audit readiness for Preview                                    |
-| `pnpm db:preview:sync-invitations`         | Human/agent    | `scripts/db/`  | Prod→Preview content mirror (specialized; RSVP reset)                 |
-| `pnpm db:disposable:start`                 | Human/agent    | `scripts/db/`  | start disposable containers                                           |
-| `pnpm db:disposable:reset`                 | Human/agent/CI | `scripts/db/`  | reset isolated disposable test environment                            |
-| `pnpm db:disposable:test`                  | Human          | `scripts/db/`  | pgTAP + migration tests (also embedded in validate pipeline)          |
-| `pnpm test:db:rsvp-contracts`              | CI             | `scripts/db/`  | disposable RSVP DB/HTTP contracts                                     |
-| `pnpm test:db:managed-contracts`           | CI             | `scripts/db/`  | disposable managed rekey contracts                                    |
-| `pnpm db:disposable:phase3-concurrency`    | Human          | `scripts/db/`  | concurrency/stale-plan scenarios                                      |
-| `pnpm db:validate:pipeline`                | Human/agent    | `scripts/db/`  | full database validation pipeline                                     |
-| `pnpm db:local:restore-from-dump`          | Human          | `scripts/db/`  | import production dump into persistent local (PII)                    |
-| `pnpm db:prod:export-auth`                 | Owner          | `scripts/db/`  | read-only Auth user export                                            |
-| `pnpm db:prod:export-storage`              | Owner          | `scripts/db/`  | Storage bucket export                                                 |
-| `pnpm db:sql:lint -- --file <path>`        | Human/agent    | `scripts/db/`  | lint a manifest-bearing production SQL patch                          |
-| `pnpm db:prod:patch -- --dry-run --file <path>` | Human/agent | `scripts/db/` | Lint-only manifest and SQL check; mutation is only `prod:apply --patch` |
+| Command                                         | Audience             | Owner          | Purpose                                                                 |
+| ----------------------------------------------- | -------------------- | -------------- | ----------------------------------------------------------------------- |
+| `pnpm db:push`                                  | Safety rail          | `package.json` | blocked fail-closed replacement for ambiguous raw Supabase push         |
+| `pnpm db:start` / `pnpm db:stop`                | Human                | Supabase CLI   | start/stop persistent-local Supabase stack                              |
+| `pnpm db:availability:verify`                   | Agent/human          | `scripts/db/`  | fail-closed reachability + read-only session preflight                  |
+| `pnpm db:prod:backup`                           | Owner                | `scripts/db/`  | read-only production public dump                                        |
+| `pnpm db:prod:backup:critical`                  | Owner                | `scripts/db/`  | complete Production DB/Auth/Storage critical set                        |
+| `pnpm db:prod:backup:daily`                     | Operator             | `scripts/db/`  | scheduled local critical backup + EFS/report verification               |
+| `pnpm db:backup:verify-manifest`                | Human                | `scripts/db/`  | validate critical backup manifest                                       |
+| `pnpm db:backup:create-manifest`                | Human                | `scripts/db/`  | assemble manifest from captured artifacts                               |
+| `pnpm db:backup:create-disposable-fixture`      | Human                | `scripts/db/`  | synthetic recovery set for disposable drill                             |
+| `pnpm db:restore:verify-disposable`             | Human                | `scripts/db/`  | rebuild/restore/verify in disposable-test only                          |
+| `pnpm db:contract:verify`                       | Human/agent          | `scripts/db/`  | read-only mutation schema/privilege contract verification               |
+| `pnpm db:prod:audit`                            | Owner/agent          | `scripts/db/`  | object-audit readiness vs disposable reference                          |
+| `pnpm db:branch:parity`                         | Agent/human          | `scripts/db/`  | branch migration identity/content sensitivity (`--json`)                |
+| `pnpm db:branch:diagnose`                       | Agent                | `scripts/db/`  | branch-lane diagnosis from structured evidence                          |
+| `pnpm db:branch:remediate-disposable`           | Agent                | `scripts/db/`  | verify then rebuild disposable-test only                                |
+| `pnpm release-check`                            | Owner                | `scripts/db/`  | clean-HEAD type-check + test + build; writes release evidence           |
+| `pnpm db:migrate`                               | Human/agent          | `scripts/db/`  | Canonical schema migrate CLI (`migrate-cli.ts`; TTY Cancelar default)   |
+| `pnpm prod:apply`                               | Owner (+ agent plan) | `scripts/db/`  | Owner-only Production plan/apply (`production-apply-cli.ts`)            |
+| `pnpm db:local:audit`                           | Human/agent          | `scripts/db/`  | object-audit readiness for persistent-local                             |
+| `pnpm db:preview:audit`                         | Human/agent          | `scripts/db/`  | object-audit readiness for Preview                                      |
+| `pnpm db:preview:sync-invitations`              | Human/agent          | `scripts/db/`  | Prod→Preview content mirror (specialized; RSVP reset)                   |
+| `pnpm db:disposable:start`                      | Human/agent          | `scripts/db/`  | start disposable containers                                             |
+| `pnpm db:disposable:reset`                      | Human/agent/CI       | `scripts/db/`  | reset isolated disposable test environment                              |
+| `pnpm db:disposable:test`                       | Human                | `scripts/db/`  | pgTAP + migration tests (also embedded in validate pipeline)            |
+| `pnpm test:db:rsvp-contracts`                   | CI                   | `scripts/db/`  | disposable RSVP DB/HTTP contracts                                       |
+| `pnpm test:db:managed-contracts`                | CI                   | `scripts/db/`  | disposable managed rekey contracts                                      |
+| `pnpm db:disposable:phase3-concurrency`         | Human                | `scripts/db/`  | concurrency/stale-plan scenarios                                        |
+| `pnpm db:validate:pipeline`                     | Human/agent          | `scripts/db/`  | full database validation pipeline                                       |
+| `pnpm db:local:restore-from-dump`               | Human                | `scripts/db/`  | import production dump into persistent local (PII)                      |
+| `pnpm db:prod:export-auth`                      | Owner                | `scripts/db/`  | read-only Auth user export                                              |
+| `pnpm db:prod:export-storage`                   | Owner                | `scripts/db/`  | Storage bucket export                                                   |
+| `pnpm db:sql:lint -- --file <path>`             | Human/agent          | `scripts/db/`  | lint a manifest-bearing production SQL patch                            |
+| `pnpm db:prod:patch -- --dry-run --file <path>` | Human/agent          | `scripts/db/`  | Lint-only manifest and SQL check; mutation is only `prod:apply --patch` |
 
 Status evidence classes and retention notes:
 [`docs/domains/database/cheatsheets/README.md`](../docs/domains/database/cheatsheets/README.md).

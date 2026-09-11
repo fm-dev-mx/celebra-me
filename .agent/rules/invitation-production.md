@@ -14,9 +14,9 @@ before creating, editing, publishing, or validating an invitation. Content struc
 [`docs/core/invitation-creation-contract.md`](../../docs/core/invitation-creation-contract.md).
 Preparation semantics (classifications, placeholders, preparation readiness) live in
 [`docs/core/invitation-preparation-contract.md`](../../docs/core/invitation-preparation-contract.md)
-and `.agent/skills/invitation-preparation/SKILL.md`. Content promote/mirror vs RSVP isolation lives in
-[`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md). Do
-not begin invitation-specific implementation while preparation readiness is `NOT_READY`.
+and `.agent/skills/invitation-preparation/SKILL.md`. Content promote/mirror vs RSVP isolation lives
+in [`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md).
+Do not begin invitation-specific implementation while preparation readiness is `NOT_READY`.
 
 Obsolete one-shot tooling (`ops optimize-assets`, `ops new-invitation`, `ops adopt-legacy-events`,
 `reorganize-cloudinary-assets.ts`) has been removed. Use preparation asset protocol +
@@ -101,9 +101,9 @@ Local and Preview agent browser/Editor access uses real `super_admin` product id
   `docs/env-workflow.md` Playwright Preview auth).
 
 Do not authenticate agents with `service_role`, invent agent-only app permissions, or grant
-Production application access. Production managed promotion remains owner-only via `pnpm prod:apply` (`--slug` / `--all-ready`
-for Production content). `invitation:release --targets production --dry-run` remains the domain
-preflight.
+Production application access. Production managed promotion remains owner-only via `pnpm prod:apply`
+(`--slug` / `--all-ready` for Production content).
+`invitation:release --targets production --dry-run` remains the domain preflight.
 
 ## Actor capability matrix (SSOT)
 
@@ -166,8 +166,7 @@ execution-boundary separation.
 
 ### Production specialized SQL patch
 
-- **Agent:** Never (`db:prod:patch` is lint-only; `prod:apply --patch --apply` is owner-TTY
-  only).
+- **Agent:** Never (`db:prod:patch` is lint-only; `prod:apply --patch --apply` is owner-TTY only).
 - **Owner:** Owner-only specialized maintenance (`RESTRICT_OWNER_ONLY`).
 
 ### Reconciliation
@@ -219,15 +218,3 @@ require exact Preview task scope before any write (`preview:schema:migrate` /
 
 Disposable operations are available to **both Agent and Owner** under the guarded disposable-test
 workflows.
-
-## Pending one-off Production maintenance
-
-Retain each tool only until its operation completes, is verified, or is explicitly abandoned; then
-delete implementation, package alias, tests, and active docs in a code-only cleanup.
-
-| Command / path                       | Pending operation                                     | Removal condition           |
-| ------------------------------------ | ----------------------------------------------------- | --------------------------- |
-| `pnpm invitation:romina-draft-reset` | Full draft←published reset for `romina-rios-chaparro` | Apply verified or abandoned |
-
-Romina narrow schema-repair was superseded by draft-reset and removed. Operational sequences live in
-[`docs/database-workflow.md`](../../docs/database-workflow.md).

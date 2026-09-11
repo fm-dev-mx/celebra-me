@@ -31,9 +31,6 @@ export function supportsEnvelopeSealColorOptions(_context?: { assetLookupSlug?: 
 	return true;
 }
 
-/** @deprecated Use supportsEnvelopeSealColorOptions. */
-export const supportsXareniPresentationOptions = supportsEnvelopeSealColorOptions;
-
 export const SECTION_LABELS: Record<string, string> = {
 	Hero: 'Datos principales / Hero',
 	countdown: PUBLIC_SECTION_DEFINITIONS.countdown.label,

@@ -9,9 +9,7 @@ changes, the repository owner runs these **explicit** steps:
    through `pnpm invitation:release`.
 3. **Production compatibility:** live `pnpm db:prod:audit` before any Production migrate; do not
    trust frozen counts in docs/reports. Owner apply is `pnpm prod:apply -- --schema --apply`.
-4. **One-offs:** confirm whether `invitation:romina-draft-reset` is finished; remove alias only
-   after owner confirmation and zero remaining references.
-5. **Daily backup health:** inspect latest `.backups/prod/reports/` for RPO/EFS failures.
+4. **Daily backup health:** inspect latest `.backups/prod/reports/` for RPO/EFS failures.
 
 Agents may prepare dry-run evidence; they must not run hosted `--apply` without current-task owner
 authorization.

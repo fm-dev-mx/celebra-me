@@ -1,6 +1,4 @@
 import {
-	XARENI_SEAL_COLORS,
-	XARENI_SEAL_COLOR_LABELS,
 	resolveLocationMediaMode,
 	shouldRenderFamilyMedia,
 	supportsEnvelopeSealColorOptions,
@@ -38,9 +36,9 @@ function buildEnvelopeStyles(sealAccent?: string) {
 }
 
 describe('Xareni presentation options', () => {
-	it('keeps legacy exports as aliases of the canonical Envelope/editor owners', () => {
-		expect(XARENI_SEAL_COLORS).toBe(ENVELOPE_SEAL_COLORS);
-		expect(XARENI_SEAL_COLOR_LABELS).toBe(ENVELOPE_SEAL_COLOR_LABELS);
+	it('uses the canonical Envelope/editor contracts', () => {
+		expect(ENVELOPE_SEAL_COLORS).toContain('roseGold');
+		expect(ENVELOPE_SEAL_COLOR_LABELS.roseGold).toBe('Oro rosado');
 		expect(isEnvelopeSealColor('roseGold')).toBe(true);
 		expect(isEnvelopeSealColor('var(--anything-from-editor)')).toBe(false);
 	});
@@ -77,19 +75,19 @@ describe('Xareni presentation options', () => {
 				eventType: 'xv',
 				isDemo: false,
 				assetSlug: 'xv-xareni-iyarit',
-					content: {
-						eventType: 'xv',
-						title: 'XV años de Xareni Iyarit',
-						theme: { preset: 'celestial-blue' },
-						sectionOrder: ['quote'],
-						composition: { intersections: {} },
+				content: {
+					eventType: 'xv',
+					title: 'XV años de Xareni Iyarit',
+					theme: { preset: 'celestial-blue' },
+					sectionOrder: ['quote'],
+					composition: { intersections: {} },
 					_assetSlug: 'xv-xareni-iyarit',
 					hero: {
 						name: 'Xareni Iyarit',
 						label: 'Mis XV años',
-							date: '2026-09-13T01:00:00.000Z',
-							backgroundImage: 'hero',
-							variant: 'standard',
+						date: '2026-09-13T01:00:00.000Z',
+						backgroundImage: 'hero',
+						variant: 'standard',
 					},
 					envelope: {
 						disabled: false,

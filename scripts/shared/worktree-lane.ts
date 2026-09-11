@@ -9,9 +9,6 @@
  *       ├── dev-local/
  *       ├── dev-preview/
  *       └── dev-extra/
- *
- * The old `.worktrees/` layout is detected as legacy and tooling warns about it
- * but does not treat those directories as active canonical lanes.
  */
 
 import { execSync } from 'node:child_process';
@@ -26,16 +23,6 @@ export interface WorktreeLaneDefinition {
 	/** Segment name under the external worktree root (null for Integration). */
 	segment: string | null;
 }
-
-/** Segment names for legacy `.worktrees/` directories that tooling warns about. */
-export const LEGACY_WORKTREE_SEGMENTS = Object.freeze(['dev-lane', 'val-lane']);
-
-/** Names of lanes that are still in the old `.worktrees/` location and need migration. */
-export const DEPRECATED_DOT_WORKTREES_SEGMENTS = Object.freeze([
-	'dev-local',
-	'dev-preview',
-	'dev-extra',
-]);
 
 export const WORKTREE_LANES: readonly WorktreeLaneDefinition[] = Object.freeze([
 	{
@@ -156,29 +143,6 @@ function detectExternalPath(lower: string, externalRoots: string[]): WorktreeLan
 	return null;
 }
 
-function detectOldDotWorktrees(lower: string): WorktreeLaneDefinition | null {
-	for (const lane of WORKTREE_LANES) {
-		if (!lane.segment) continue;
-		const marker = `/.worktrees/${lane.segment}`.toLowerCase();
-		if (lower.includes(marker) || lower.endsWith(`.worktrees/${lane.segment}`)) {
-			return lane;
-		}
-	}
-	// Check legacy-only segments (not in WORKTREE_LANES)
-	for (const legacy of LEGACY_WORKTREE_SEGMENTS) {
-		const marker = `/.worktrees/${legacy}`.toLowerCase();
-		if (lower.includes(marker)) {
-			return {
-				id: 'unknown' as WorktreeLaneId,
-				displayName: `Legacy worktree (${legacy})`,
-				runtimeDefault: 'local' as const,
-				segment: `.worktrees/${legacy}`,
-			};
-		}
-	}
-	return null;
-}
-
 export function detectWorktreeLane(
 	cwd = process.cwd(),
 	repoRootHint?: string,
@@ -201,10 +165,6 @@ export function detectWorktreeLane(
 	// Check canonical external paths
 	const externalMatch = detectExternalPath(lower, externalRoots);
 	if (externalMatch) return externalMatch;
-
-	// Check old .worktrees/ layout (legacy)
-	const dotWorktreesMatch = detectOldDotWorktrees(lower);
-	if (dotWorktreesMatch) return dotWorktreesMatch;
 
 	// Fallback: Integration lane guess by basename
 	if (root && lower === root.toLowerCase()) {

@@ -243,32 +243,11 @@ describe('git-safety start/finish lifecycle', () => {
 		}
 	});
 
-	it('ignores legacy allow-git-write as authorization and retires it', () => {
-		const repoRoot = createRepo();
-		try {
-			expect(runGitSafety(repoRoot, ['start']).status).toBe(0);
-			const allow = path.join(repoRoot, '.agent', 'tmp', 'allow-git-write');
-			mkdirSync(path.dirname(allow), { recursive: true });
-			writeFileSync(allow, 'legacy\n', 'utf8');
-			writeFileSync(path.join(repoRoot, 'x.txt'), 'x\n', 'utf8');
-			runCommand('git', ['add', 'x.txt'], { cwd: repoRoot, env: sanitizeEnv() });
-			const finish = runGitSafety(repoRoot, ['finish']);
-			expect(finish.status).toBe(1);
-			expect(existsSync(allow)).toBe(false);
-			expect(existsSync(baselinePath(repoRoot))).toBe(true);
-		} finally {
-			cleanupFixture(repoRoot);
-		}
-	});
-
 	it('rejects unknown authorized operations', () => {
 		const repoRoot = createRepo();
 		try {
 			expect(runGitSafety(repoRoot, ['start']).status).toBe(0);
-			const finish = runGitSafety(repoRoot, [
-				'finish',
-				'--authorized-operation=push',
-			]);
+			const finish = runGitSafety(repoRoot, ['finish', '--authorized-operation=push']);
 			expect(finish.status).toBe(1);
 			expect(`${finish.stdout}\n${finish.stderr}`).toContain('Unknown authorized operation');
 		} finally {
@@ -348,7 +327,7 @@ describe('git-safety start/finish lifecycle', () => {
 		}
 	});
 
-	it('rejects legacy baseline schemas without deleting them', () => {
+	it('rejects invalid baseline schemas without deleting them', () => {
 		const repoRoot = createRepo();
 		try {
 			mkdirSync(path.join(repoRoot, '.agent', 'tmp'), { recursive: true });
@@ -360,14 +339,12 @@ describe('git-safety start/finish lifecycle', () => {
 			const finish = runGitSafety(repoRoot, ['finish']);
 			expect(finish.status).toBe(1);
 			expect(existsSync(baselinePath(repoRoot))).toBe(true);
-			expect(`${finish.stdout}\n${finish.stderr}`).toContain('legacy/incompatible baseline');
-			expect(`${finish.stdout}\n${finish.stderr}`).toContain('One-time operator migration');
+			expect(`${finish.stdout}\n${finish.stderr}`).toContain('invalid baseline');
 
 			const start = runGitSafety(repoRoot, ['start']);
 			expect(start.status).toBe(1);
 			expect(existsSync(baselinePath(repoRoot))).toBe(true);
-			expect(`${start.stdout}\n${start.stderr}`).toContain('legacy/incompatible baseline');
-			expect(`${start.stdout}\n${start.stderr}`).toContain('One-time operator migration');
+			expect(`${start.stdout}\n${start.stderr}`).toContain('invalid baseline');
 			expect(JSON.parse(readFileSync(baselinePath(repoRoot), 'utf8')).stagedDiffHash).toBe(
 				'def',
 			);

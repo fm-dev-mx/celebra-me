@@ -18,7 +18,7 @@ import {
 import { computeEffectiveContent } from '../../src/lib/intake/services/merge-content.service.ts';
 import { canonicalizePublicationValue } from '../../src/lib/intake/services/publication-canonicalize.ts';
 import { canonicalize } from './normalized-invitation-release.ts';
-import { deriveRominaReceiptOperationId, deriveStableOperationId } from './romina-shared-helpers.ts';
+import { deriveReceiptOperationId, deriveStableOperationId } from './mutation-operation-helpers.ts';
 
 export const DRAFT_CANONICALIZATION_OPERATION_TYPE = 'draft_canonicalization' as const;
 
@@ -135,7 +135,9 @@ function collectDivergentSections(
 		if (seen.has(sectionKey)) continue;
 		seen.set(sectionKey, { sectionKey, sectionLabel: section?.label ?? key });
 	}
-	return [...seen.values()].sort((left, right) => left.sectionKey.localeCompare(right.sectionKey));
+	return [...seen.values()].sort((left, right) =>
+		left.sectionKey.localeCompare(right.sectionKey),
+	);
 }
 
 export function buildDraftCanonicalizationPlan(
@@ -221,7 +223,7 @@ export function buildDraftCanonicalizationPlan(
 		afterContent: after,
 		operationFingerprint,
 		operationId,
-		receiptOperationId: deriveRominaReceiptOperationId(operationId),
+		receiptOperationId: deriveReceiptOperationId(operationId),
 	};
 }
 

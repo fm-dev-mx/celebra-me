@@ -54,7 +54,7 @@ const MCP_PRODUCTION_WRITE_TOOLS = new Set([
 ]);
 
 const CANONICAL_OWNER_WORKFLOW =
-	/\b(?:pnpm\s+(?:prod:apply|db:migrate|db:prod:patch|invitation:release|invitation:romina-draft-reset|invitation:draft-canonicalize|invitation:draft-restore)|scripts\/db\/(?:production-apply-cli|migrate-cli|run-prod-patch)\.ts|scripts\/provision\/(?:invitation-release-cli|romina-draft-reset-cli|draft-canonicalization-cli|draft-restore-cli)\.ts)\b/i;
+	/\b(?:pnpm\s+(?:prod:apply|db:migrate|db:prod:patch|invitation:release|invitation:draft-canonicalize|invitation:draft-restore)|scripts\/db\/(?:production-apply-cli|migrate-cli|run-prod-patch)\.ts|scripts\/provision\/(?:invitation-release-cli|draft-canonicalization-cli|draft-restore-cli)\.ts)\b/i;
 
 const AGENT_CONTEXT_ASSIGNMENT =
 	/(?:(?:^|[;&\r\n]\s*)(?:export\s+)?(?:\$env:)?|(?:^|[;&\r\n]\s*)\$env:)CELEBRA_AGENT_CONTEXT\s*=\s*(?:'[^']*'|"[^"]*"|\S+)\s*;?/gi;
@@ -111,8 +111,6 @@ const ALWAYS_PRODUCTION_APPLY = [
 	/\bproduction-apply-cli\b/i,
 	/\bdb:prod:patch\b/i,
 	/\brun-prod-patch\b/i,
-	/\binvitation:romina-draft-reset\b/i,
-	/\bromina-draft-reset-cli\b/i,
 ];
 
 const PRODUCTION_TARGETED_APPLY = [

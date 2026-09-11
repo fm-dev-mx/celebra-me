@@ -102,17 +102,15 @@ Invariant).
 | Authorized operation plus adjacent protected drift | FAIL — baseline preserved                      |
 | No active session (no baseline)                    | FAIL                                           |
 | Active baseline already present at `start`         | FAIL — refuse overwrite                        |
-| Legacy / incompatible baseline (e.g. v1)           | FAIL — preserve file; one-time operator remove |
+| Invalid baseline                                   | FAIL — preserve file; explicit operator remove |
 
-### Legacy baseline (one-time migration)
+### Invalid baseline
 
-Pre-v2 baselines (no `version`, or fields like `stagedDiffHash`) are not sessions under this
-lifecycle. `start` and `finish` refuse them without deleting or rewriting the file.
+Files that do not satisfy the current baseline contract are not valid sessions. `start` and `finish`
+refuse them without deleting or rewriting the file.
 
-Operator one-time cleanup when no valid v2 session should continue:
+Operator cleanup when no valid session should continue:
 
 1. Inspect `.agent/tmp/git-safety-baseline.json`.
 2. Delete that file only with explicit intent (not via a new lifecycle command).
-3. Run `pnpm agent:git-safety:start` to open a v2 session.
-
-Do not recreate `allow-git-write` or any persistent Git-write authorization marker.
+3. Run `pnpm agent:git-safety:start` to open a current session.

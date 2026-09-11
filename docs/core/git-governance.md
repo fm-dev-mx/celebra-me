@@ -63,11 +63,9 @@ Lane-specific operational cards (facts only; policy stays centralized):
 ### Core Invariants
 
 - **Worktrees are persistent**: Canonical directory locations (root for Integration; sibling
-  `celebra-me-worktrees/` directory for development lanes) remain on disk. `.worktrees/` is
-  gitignored and no longer a canonical location.
+  `celebra-me-worktrees/` directory for development lanes) remain on disk.
 - **Task branches are ephemeral**: Development lanes operate on normal task-scoped branches
-  (`feat/*`, `fix/*`, `candidate/*`). Creating permanent branches like `dev-local`, `dev-preview`,
-  `dev-lane`, or `val-lane` is strictly forbidden.
+  (`feat/*`, `fix/*`, `candidate/*`). Persistent lane branches are forbidden.
 - **Worktree location does NOT grant environment authorization**: Being inside `dev-preview` does
   not give permission to mutate Preview or Production databases. Environment access is determined
   solely by explicit task scope, target environment, operation risk, and safety rules.

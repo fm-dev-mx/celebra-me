@@ -17,7 +17,6 @@ import {
 import {
 	detectWorktreeLane,
 	getWorktreeDevServerPort,
-	LEGACY_WORKTREE_SEGMENTS,
 	listExpectedLanePaths,
 	WORKTREE_DEV_SERVER_PORTS,
 } from '../../scripts/shared/worktree-lane';
@@ -26,9 +25,7 @@ describe('worktree lane detection', () => {
 	it('recognizes Integration and the four persistent development lanes', () => {
 		expect(detectWorktreeLane('/mock/celebra-me').id).toBe('integration');
 		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-local').id).toBe('dev-local');
-		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-preview').id).toBe(
-			'dev-preview',
-		);
+		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-preview').id).toBe('dev-preview');
 		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-extra').id).toBe('dev-extra');
 	});
 
@@ -41,18 +38,9 @@ describe('worktree lane detection', () => {
 		expect(detectWorktreeLane('/home/dev/celebra-me-worktrees/dev-extra').id).toBe('dev-extra');
 	});
 
-	it('still recognizes deprecated .worktrees/ lane segments', () => {
-		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/dev-local').id).toBe('dev-local');
-		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/dev-preview').id).toBe(
-			'dev-preview',
-		);
-		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/dev-extra').id).toBe('dev-extra');
-	});
-
-	it('marks legacy lane paths as unknown without treating them as active lanes', () => {
+	it('does not recognize paths outside the canonical external layout', () => {
+		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/dev-local').id).toBe('unknown');
 		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/dev-lane').id).toBe('unknown');
-		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/val-lane').id).toBe('unknown');
-		expect([...LEGACY_WORKTREE_SEGMENTS]).toEqual(['dev-lane', 'val-lane']);
 	});
 
 	it('lists expected lane paths under the repository root', () => {
@@ -104,7 +92,9 @@ describe('celebra runtime env bootstrap', () => {
 	});
 
 	function writeLane(segment: string | null) {
-		const cwd = segment ? join(tempRoot, '.worktrees', segment) : join(tempRoot, 'celebra-me');
+		const cwd = segment
+			? join(tempRoot, 'celebra-me-worktrees', segment)
+			: join(tempRoot, 'celebra-me');
 		mkdirSync(cwd, { recursive: true });
 		return cwd;
 	}

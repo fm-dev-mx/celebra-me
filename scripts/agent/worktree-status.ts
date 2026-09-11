@@ -1,7 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { LEGACY_WORKTREE_SEGMENTS, findRepoRoot, listExpectedLanePaths } from '../shared/worktree-lane';
+import { findRepoRoot, listExpectedLanePaths } from '../shared/worktree-lane';
 
 export type InspectionState = 'ok' | 'unavailable';
 export type WorktreeState = 'clean' | 'dirty' | 'unknown';
@@ -138,7 +137,8 @@ export function inspectLane(lane: LaneConfig, runner: GitRunner = runGit): LaneS
 	const branchResult = runner(['rev-parse', '--abbrev-ref', 'HEAD'], lane.path);
 	const headResult = runner(['rev-parse', '--short', 'HEAD'], lane.path);
 	const statusResult = runner(['status', '--short'], lane.path);
-	const branch = branchResult.status === 0 && branchResult.stdout ? branchResult.stdout : 'unknown';
+	const branch =
+		branchResult.status === 0 && branchResult.stdout ? branchResult.stdout : 'unknown';
 	const head = headResult.status === 0 && headResult.stdout ? headResult.stdout : 'unknown';
 
 	if (branchResult.status !== 0) diagnostics.push('branch inspection failed');
@@ -146,8 +146,10 @@ export function inspectLane(lane: LaneConfig, runner: GitRunner = runGit): LaneS
 	if (statusResult.status !== 0) diagnostics.push('working-tree inspection failed');
 
 	const inspection: InspectionState = diagnostics.length === 0 ? 'ok' : 'unavailable';
-	const statusLines = statusResult.status === 0 ? statusResult.stdout.split('\n').filter(Boolean) : [];
-	const state: WorktreeState = statusResult.status !== 0 ? 'unknown' : statusLines.length ? 'dirty' : 'clean';
+	const statusLines =
+		statusResult.status === 0 ? statusResult.stdout.split('\n').filter(Boolean) : [];
+	const state: WorktreeState =
+		statusResult.status !== 0 ? 'unknown' : statusLines.length ? 'dirty' : 'clean';
 	const relation =
 		inspection === 'ok'
 			? getDevelopRelation(branch, head, lane.path, runner, diagnostics)
@@ -177,7 +179,9 @@ function printHuman(statuses: LaneStatus[]): void {
 		console.log(`📌 ${info.name}`);
 		console.log(`   Path:        ${info.path}`);
 		console.log(`   Inspection:  ${info.inspection}`);
-		console.log(`   State:       ${info.state}${info.modifiedCount ? ` (${info.modifiedCount} modified/untracked)` : ''}`);
+		console.log(
+			`   State:       ${info.state}${info.modifiedCount ? ` (${info.modifiedCount} modified/untracked)` : ''}`,
+		);
 		console.log(`   Branch:      ${info.branch === 'HEAD' ? '(detached HEAD)' : info.branch}`);
 		console.log(`   HEAD:        ${info.head}`);
 		console.log(`   Runtime:     ${info.runtimeDefault} default`);
@@ -201,21 +205,15 @@ export function collectStatus(
 function main(): void {
 	const statuses = collectStatus();
 	if (parseJsonFlag(process.argv.slice(2))) {
-		console.log(JSON.stringify({ generatedAt: new Date().toISOString(), lanes: statuses }, null, 2));
+		console.log(
+			JSON.stringify({ generatedAt: new Date().toISOString(), lanes: statuses }, null, 2),
+		);
 	} else {
 		printHuman(statuses);
 	}
 
 	const unavailable = statuses.filter((status) => status.inspection === 'unavailable');
 	if (unavailable.length > 0) process.exitCode = 2;
-
-	const legacyPresent = LEGACY_WORKTREE_SEGMENTS.filter((segment) =>
-		existsSync(resolve(REPO_ROOT, '.worktrees', segment)),
-	);
-	if (legacyPresent.length > 0 && !parseJsonFlag(process.argv.slice(2))) {
-		console.log('⚠️  Legacy worktree directories still present (should be migrated):');
-		for (const segment of legacyPresent) console.log(`   - ${resolve(REPO_ROOT, '.worktrees', segment)}`);
-	}
 }
 
 if (process.argv[1]?.replaceAll('\\', '/').endsWith('worktree-status.ts')) main();

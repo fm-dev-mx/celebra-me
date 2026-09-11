@@ -5,7 +5,6 @@
  * compares against the approved mutator registry, and proves gate-before-first-write
  * ordering. Patch execution is deliberately delegated from the direct lint-only
  * entrypoint to the composite prod:apply owner gate.
- * Temporary one-offs remain registered until retired (e.g. romina-draft-reset).
  */
 
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
@@ -36,12 +35,7 @@ interface MutatorSpec {
 	/** Optional earlier markers that must remain before the gate (preflight). */
 	preflightPatterns?: RegExp[];
 	/** permanent | pending one-off awaiting Goal 4 retirement */
-	family:
-		| 'schema_migration'
-		| 'managed_promotion'
-		| 'draft_repair'
-		| 'pending_one_off'
-		| 'mixed_production_apply';
+	family: 'schema_migration' | 'managed_promotion' | 'draft_repair' | 'mixed_production_apply';
 }
 
 /** Approved Production mutators. Discovery must match this set exactly. */
@@ -67,12 +61,6 @@ const APPROVED_MUTATORS: MutatorSpec[] = [
 			/revalidateBackup\s*\(\s*\{/,
 		],
 		family: 'managed_promotion',
-	},
-	{
-		file: 'scripts/provision/romina-draft-reset-cli.ts',
-		firstWritePattern: /applyRominaDraftReset\s*\(/,
-		preflightPatterns: [/evaluatePromotionBackupGate/, /BACKUP_REQUIRED/],
-		family: 'pending_one_off',
 	},
 	{
 		file: 'scripts/provision/draft-canonicalization-cli.ts',

@@ -13,20 +13,13 @@
  */
 
 import { createHash } from 'node:crypto';
-import {
-	existsSync,
-	mkdirSync,
-	readFileSync,
-	unlinkSync,
-	writeFileSync,
-} from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import process from 'node:process';
 
 export const BASELINE_VERSION = 2;
-export const LEGACY_ALLOW_FILE_NAME = 'allow-git-write';
 export const BASELINE_FILE_NAME = 'git-safety-baseline.json';
 
 /** @typedef {'stage' | 'unstage' | 'commit' | 'branch-switch'} AuthorizedOperation */
@@ -43,7 +36,6 @@ export function resolvePaths(repoRoot = process.env.CELEBRA_GIT_SAFETY_ROOT || d
 		repoRoot: root,
 		tmpDir,
 		baselineFile: join(tmpDir, BASELINE_FILE_NAME),
-		legacyAllowFile: join(tmpDir, LEGACY_ALLOW_FILE_NAME),
 	};
 }
 
@@ -70,8 +62,12 @@ export function git(repoRoot, args, options = {}) {
 	}
 	return {
 		status,
-		stdout: String(result.stdout || '').replace(/\r\n/g, '\n').trimEnd(),
-		stderr: String(result.stderr || '').replace(/\r\n/g, '\n').trimEnd(),
+		stdout: String(result.stdout || '')
+			.replace(/\r\n/g, '\n')
+			.trimEnd(),
+		stderr: String(result.stderr || '')
+			.replace(/\r\n/g, '\n')
+			.trimEnd(),
 	};
 }
 
@@ -123,9 +119,13 @@ export function captureHeadState(repoRoot) {
  * @param {string} repoRoot
  */
 export function captureDiagnosticRefs(repoRoot) {
-	const heads = git(repoRoot, ['for-each-ref', '--format=%(refname) %(objectname)', 'refs/heads'], {
-		allowFailure: true,
-	});
+	const heads = git(
+		repoRoot,
+		['for-each-ref', '--format=%(refname) %(objectname)', 'refs/heads'],
+		{
+			allowFailure: true,
+		},
+	);
 	const tags = git(repoRoot, ['for-each-ref', '--format=%(refname) %(objectname)', 'refs/tags'], {
 		allowFailure: true,
 	});
@@ -484,19 +484,6 @@ function removeIfExists(filePath) {
 
 /**
  * @param {ReturnType<typeof resolvePaths>} paths
- */
-function retireLegacyAllowMarker(paths) {
-	if (removeIfExists(paths.legacyAllowFile)) {
-		console.log(
-			`  retired obsolete ${LEGACY_ALLOW_FILE_NAME} (not an authorization source)`,
-		);
-		return true;
-	}
-	return false;
-}
-
-/**
- * @param {ReturnType<typeof resolvePaths>} paths
  * @param {ReturnType<typeof captureProtectedState>} state
  */
 export function writeBaseline(paths, state) {
@@ -518,43 +505,36 @@ export function writeBaseline(paths, state) {
 /**
  * Classify an on-disk baseline without mutating it.
  * @param {string} baselineFile
- * @returns {{ kind: 'v2' | 'legacy' | 'unreadable', versionLabel: string, detail?: string }}
+ * @returns {{ kind: 'v2' | 'invalid', versionLabel: string, detail?: string }}
  */
 export function classifyBaselineFile(baselineFile) {
 	try {
 		const raw = JSON.parse(readFileSync(baselineFile, 'utf8'));
 		if (!raw || typeof raw !== 'object') {
-			return { kind: 'unreadable', versionLabel: 'invalid', detail: 'not a JSON object' };
+			return { kind: 'invalid', versionLabel: 'invalid', detail: 'not a JSON object' };
 		}
 		if (raw.version === BASELINE_VERSION) {
 			return { kind: 'v2', versionLabel: String(raw.version) };
 		}
 		return {
-			kind: 'legacy',
+			kind: 'invalid',
 			versionLabel: raw.version === undefined ? 'missing' : String(raw.version),
-			detail:
-				raw.stagedDiffHash !== undefined
-					? 'v1 schema (stagedDiffHash)'
-					: 'incompatible schema',
+			detail: 'unsupported schema',
 		};
 	} catch (error) {
 		return {
-			kind: 'unreadable',
+			kind: 'invalid',
 			versionLabel: 'unreadable',
 			detail: error instanceof Error ? error.message : String(error),
 		};
 	}
 }
 
-function printLegacyBaselineMigration(baselineFile, classification) {
-	console.error(`legacy/incompatible baseline detected (version ${classification.versionLabel})`);
+function printInvalidBaseline(baselineFile, classification) {
+	console.error(`invalid baseline detected (version ${classification.versionLabel})`);
 	if (classification.detail) console.error(`  detail: ${classification.detail}`);
 	console.error(`  path: ${baselineFile}`);
-	console.error('One-time operator migration (not a lifecycle command):');
-	console.error('  1. Inspect .agent/tmp/git-safety-baseline.json');
-	console.error('  2. Delete that file only with explicit operator intent');
-	console.error('  3. Run `pnpm agent:git-safety:start` to open a v2 session');
-	console.error('Do not recreate allow-git-write or any persistent authorization marker.');
+	console.error('Inspect and remove the invalid file only with explicit operator intent.');
 }
 
 /**
@@ -564,7 +544,7 @@ export function readBaseline(baselineFile) {
 	const classification = classifyBaselineFile(baselineFile);
 	if (classification.kind !== 'v2') {
 		throw new Error(
-			`incompatible or legacy baseline (version ${classification.versionLabel}); remove it deliberately after inspecting evidence, then run start`,
+			`invalid baseline (version ${classification.versionLabel}); remove it deliberately after inspecting evidence, then run start`,
 		);
 	}
 	const raw = JSON.parse(readFileSync(baselineFile, 'utf8'));
@@ -607,13 +587,11 @@ export function cmdStart(options = {}) {
 			);
 		} else {
 			console.error('Refusing to overwrite.');
-			printLegacyBaselineMigration(paths.baselineFile, classification);
+			printInvalidBaseline(paths.baselineFile, classification);
 		}
 		process.exitCode = 1;
 		return { ok: false, reason: 'baseline-exists', classification };
 	}
-
-	retireLegacyAllowMarker(paths);
 
 	const state = captureProtectedState(paths.repoRoot);
 	const baseline = writeBaseline(paths, state);
@@ -681,7 +659,6 @@ export function cmdFinish(options = {}) {
 		console.error('FAILED');
 		console.error('no active session baseline');
 		console.error('Run `pnpm agent:git-safety:start` before mutable work, then finish.');
-		retireLegacyAllowMarker(paths);
 		process.exitCode = 1;
 		return { ok: false, reason: 'no-baseline' };
 	}
@@ -689,7 +666,7 @@ export function cmdFinish(options = {}) {
 	const classification = classifyBaselineFile(paths.baselineFile);
 	if (classification.kind !== 'v2') {
 		console.error('FAILED');
-		printLegacyBaselineMigration(paths.baselineFile, classification);
+		printInvalidBaseline(paths.baselineFile, classification);
 		console.error(`baseline preserved at ${paths.baselineFile}`);
 		process.exitCode = 1;
 		return { ok: false, reason: 'invalid-baseline', classification };
@@ -715,13 +692,11 @@ export function cmdFinish(options = {}) {
 		for (const failure of verdict.failures) console.log(failure);
 		console.log(`\nEvidence preserved at ${paths.baselineFile}`);
 		console.log('Do not auto-remediate. Report the drift and ask how to proceed.');
-		retireLegacyAllowMarker(paths);
 		process.exitCode = 1;
 		return { ok: false, reason: 'drift', failures: verdict.failures, paths };
 	}
 
 	removeIfExists(paths.baselineFile);
-	retireLegacyAllowMarker(paths);
 	console.log('\nPASSED');
 	console.log('protected state verified; session baseline removed');
 	console.log('working tree may contain unstaged implementation edits');
@@ -776,7 +751,7 @@ export function cmdCheck(options = {}) {
 }
 
 function printUsage() {
-console.error(`Usage:
+	console.error(`Usage:
   node scripts/agent/git-safety.mjs start
   node scripts/agent/git-safety.mjs check
   node scripts/agent/git-safety.mjs finish [--authorized-operation=<op>] [--paths=a,b] [--branch=name]

@@ -6,11 +6,6 @@ import {
 	verifyPreviewApprovalArtifact,
 	type PreviewApprovalArtifact,
 } from '../../scripts/provision/preview-approval-service.ts';
-import * as previewApprovalModule from '../../scripts/provision/preview-approval-service.ts';
-
-const writePendingApprovalEvidenceScaffold = (previewApprovalModule as Record<string, any>)[
-	'writePendingApprovalEvidenceScaffold'
-];
 import type { PreviewLiveVerificationResult } from '../../scripts/provision/preview-live-verification.ts';
 import {
 	createMemoryPreviewApprovalStore,
@@ -189,16 +184,6 @@ describe('Preview approval artifact (shared store)', () => {
 		createPending({});
 		const approved = approve(liveVerification({ storageHashVerification: {} }));
 		expect(approved.approvalState).toBe('approved');
-	});
-
-	it('disables the evidence scaffold happy path', () => {
-		createPending();
-		expect(() =>
-			writePendingApprovalEvidenceScaffold({
-				packageHash: PACKAGE_HASH,
-				outputPath: 'ignored.json',
-			}),
-		).toThrow(/EVIDENCE_SCAFFOLD_REMOVED/);
 	});
 
 	it('keeps seven-day freshness as fallback when no live recheck is available', () => {

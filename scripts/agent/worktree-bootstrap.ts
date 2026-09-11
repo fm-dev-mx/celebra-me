@@ -13,12 +13,7 @@
 import { execSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import {
-	DEPRECATED_DOT_WORKTREES_SEGMENTS,
-	detectWorktreeLane,
-	findRepoRoot,
-	getExternalWorktreeRoot,
-} from '../shared/worktree-lane';
+import { detectWorktreeLane, findRepoRoot } from '../shared/worktree-lane';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -141,25 +136,7 @@ function validatePnpmVersion(
 
 // ─── Location checks ───────────────────────────────────────────────────────────
 
-function isDeprecatedLocation(cwd: string): boolean {
-	const normalised = cwd.replaceAll('\\', '/').toLowerCase();
-	return DEPRECATED_DOT_WORKTREES_SEGMENTS.some(
-		(seg) =>
-			normalised.includes(`/.worktrees/${seg}`) || normalised.endsWith(`.worktrees/${seg}`),
-	);
-}
-
-function validateLocation(cwd: string, repoRoot: string): boolean {
-	if (isDeprecatedLocation(cwd)) {
-		console.warn(
-			'\n⚠️  WARNING: This worktree is at a deprecated location under `.worktrees/`.\n' +
-				'   Create a new worktree at the canonical external location:\n' +
-				`     ${getExternalWorktreeRoot(repoRoot)}/<lane>\n` +
-				'   See docs/core/git-governance.md for migration instructions.',
-		);
-		return false;
-	}
-
+function validateLocation(cwd: string): boolean {
 	if (!existsSync(resolve(cwd, '.git')) || !existsSync(resolve(cwd, 'package.json'))) {
 		console.error('\n❌ Not a valid worktree: missing .git or package.json');
 		return false;
@@ -288,7 +265,7 @@ function main(): void {
 	console.log(`📂 Path:      ${cwd}`);
 
 	// Validate location
-	if (!validateLocation(cwd, actualRepoRoot)) {
+	if (!validateLocation(cwd)) {
 		process.exitCode = 1;
 		return;
 	}

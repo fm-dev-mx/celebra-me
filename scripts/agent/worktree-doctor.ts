@@ -9,10 +9,9 @@
  */
 
 import { execSync } from 'node:child_process';
-import { existsSync, readFileSync, statSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
-	DEPRECATED_DOT_WORKTREES_SEGMENTS,
 	detectWorktreeLane,
 	findRepoRoot,
 	getExternalWorktreeRoot,
@@ -37,28 +36,6 @@ interface Diagnosis {
 function checkWorktreeLocation(cwd: string, repoRoot: string, diagnoses: Diagnosis[]): void {
 	const normalised = cwd.replaceAll('\\', '/').toLowerCase();
 	const canonicalExternalRoot = getExternalWorktreeRoot(repoRoot);
-
-	// Check if inside .worktrees/
-	const deprecatedMatch = DEPRECATED_DOT_WORKTREES_SEGMENTS.find(
-		(seg) =>
-			normalised.includes(`/.worktrees/${seg}`) || normalised.endsWith(`.worktrees/${seg}`),
-	);
-
-	if (deprecatedMatch) {
-		diagnoses.push({
-			ok: false,
-			severity: 'error',
-			title: 'Deprecated worktree location',
-			detail: `This worktree is under the old .worktrees/ layout at "${cwd}".`,
-			remediation:
-				`Create a new worktree at the canonical external location:\n` +
-				`  git worktree add ${canonicalExternalRoot}/${deprecatedMatch} <branch>\n` +
-				`Then remove the old one:\n` +
-				`  git worktree remove ${cwd}\n` +
-				`See docs/core/git-governance.md for details.`,
-		});
-		return;
-	}
 
 	// Check if nested inside another worktree
 	const repoNormalised = resolve(repoRoot).replaceAll('\\', '/').toLowerCase();
@@ -93,7 +70,11 @@ function checkWorktreeLocation(cwd: string, repoRoot: string, diagnoses: Diagnos
 	}
 }
 
-function checkGitWorktreeState(cwd: string, lane: ReturnType<typeof detectWorktreeLane>, diagnoses: Diagnosis[]): void {
+function checkGitWorktreeState(
+	cwd: string,
+	lane: ReturnType<typeof detectWorktreeLane>,
+	diagnoses: Diagnosis[],
+): void {
 	const status = inspectLane({
 		name: lane.displayName,
 		path: cwd,
@@ -107,7 +88,8 @@ function checkGitWorktreeState(cwd: string, lane: ReturnType<typeof detectWorktr
 			severity: 'error',
 			title: 'Git worktree inspection unavailable',
 			detail: status.diagnostics.join('; '),
-			remediation: 'Resolve the Git inspection failure before claiming or mutating this lane.',
+			remediation:
+				'Resolve the Git inspection failure before claiming or mutating this lane.',
 		});
 		return;
 	}
@@ -353,39 +335,7 @@ function checkPortConflicts(diagnoses: Diagnosis[]): void {
 	}
 }
 
-function checkStaleState(cwd: string, repoRoot: string, diagnoses: Diagnosis[]): void {
-	// Check for old .worktrees/ directories
-	const oldWorktreesPath = resolve(repoRoot, '.worktrees');
-	if (existsSync(oldWorktreesPath)) {
-		try {
-			const children = readdirSync(oldWorktreesPath).filter((d) =>
-				[
-					...DEPRECATED_DOT_WORKTREES_SEGMENTS,
-					'dev-extra',
-					'dev-lane',
-					'val-lane',
-				].includes(d),
-			);
-			if (children.length > 0) {
-				diagnoses.push({
-					ok: false,
-					severity: 'warning' as const,
-					title: 'Stale .worktrees/ directories detected',
-					detail:
-						`The following directories remain under ${oldWorktreesPath}:\n` +
-						children.map((c) => `  - ${c}`).join('\n'),
-					remediation:
-						'These are from the old worktree layout and may still have active Git worktrees.\n' +
-						'Use git worktree list to check, then:\n' +
-						'  1. git worktree remove <path> for each that has no uncommitted work\n' +
-						'  2. rm -rf <directory> to clean up stale state after Git worktree removal',
-				});
-			}
-		} catch {
-			// readdir failed — skip
-		}
-	}
-
+function checkStaleState(cwd: string, diagnoses: Diagnosis[]): void {
 	// Check for symlinked node_modules
 	const nmPath = resolve(cwd, 'node_modules');
 	if (existsSync(nmPath)) {
@@ -516,7 +466,7 @@ function main(): void {
 		checkPortConflicts(diagnoses);
 	}
 
-	checkStaleState(cwd, actualRepoRoot, diagnoses);
+	checkStaleState(cwd, diagnoses);
 
 	// Print results per category
 	printDiagnosisCategory(

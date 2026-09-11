@@ -195,8 +195,6 @@ task authorization, target classification, and standard guard checks.
   preview row-count bounds and backup, and prompts the owner. Persistent DDL (`CREATE TABLE/INDEX`,
   routines, schema-changing `ALTER`, persistent `DROP`, `GRANT`/`REVOKE`) is rejected. Patches must
   not bypass `pnpm prod:apply -- --schema` or `pnpm prod:apply -- --slug`.
-- `invitation:romina-draft-reset` remains a temporary explicit one-off (never `--all-ready`) until
-  the owner confirms it is complete.
 - Production patch files must include the manifest required by
   [`manual-sql-manifest.md`](manual-sql-manifest.md).
 - Non-manifest SQL patch files are historical records only and must not be copied as templates.

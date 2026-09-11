@@ -150,5 +150,5 @@ Working-tree edits remain allowed only within the task scope.
 
 An ephemeral --authorized-operation declaration only describes an exact current-task authorization.
 It grants no authority and must not hide adjacent drift; path scope is required for stage/unstage.
-Supported operations, fail-closed behavior, and legacy-baseline handling stay in the linked
-procedure. Never create or rely on allow-git-write or any persistent Git-write authorization marker.
+Supported operations and fail-closed behavior stay in the linked procedure. Filesystem markers are
+never authorization sources.
