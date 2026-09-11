@@ -25,9 +25,10 @@ import { checkTargetDivergenceConflict } from './promotion-comparison.ts';
 import {
 	isRecoverableManagedPartial,
 	ManagedBaselineError,
-	resolveManagedMergeBaseline,
+	resolveManagedMergeBaselineForReconciliation,
 	type ManagedBaselineReceiptEvidence,
 } from './managed-merge-baseline.ts';
+import { mapNestedToDraftContent } from '../../src/lib/intake/services/draft-content-mapper.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
 import {
 	buildNormalizedInvitationRelease,
@@ -80,7 +81,10 @@ import {
 	type TargetAssetRecord,
 } from './asset-reconciliation.ts';
 import { fingerprintPathPolicy } from './conflict-resolutions.ts';
-import { assertManagedContentSchema } from './managed-content-validation.ts';
+import {
+	assertManagedContentSchema,
+	assertManagedDraftContentSchema,
+} from './managed-content-validation.ts';
 
 export async function observeVersionedLocalAsset(
 	url: string,
@@ -769,6 +773,10 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		release.draftContent,
 		assetMap,
 	) as Record<string, unknown>;
+	const packagePublishedContent = materializeAssetReferences(
+		release.publishedProjection,
+		assetMap,
+	) as Record<string, unknown>;
 	const packageContentHash = hashPublicationProjection(packageCanonicalContent);
 
 	let proposedContent: Record<string, unknown>;
@@ -782,44 +790,49 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		});
 		let prevCanonical: Record<string, unknown>;
 		try {
-			prevCanonical = resolveManagedMergeBaseline({
-				managedProjection: existingProvenance?.managed_projection as
-					Record<string, unknown> | null | undefined,
-				appliedDraftUpdatedAt:
-					typeof existingProvenance?.applied_draft_updated_at === 'string'
-						? existingProvenance.applied_draft_updated_at
-						: null,
-				appliedOperationId,
-				appliedPublishedVersion:
-					typeof existingProvenance?.applied_published_version === 'number'
-						? existingProvenance.applied_published_version
-						: null,
-				appliedPublishedProjectionHash:
-					typeof existingProvenance?.applied_published_projection_hash === 'string'
-						? existingProvenance.applied_published_projection_hash
-						: null,
-				currentDraftUpdatedAt: recoveringPartial
-					? (existingProvenance?.applied_draft_updated_at as string)
-					: typeof existingDraft.updated_at === 'string'
-						? existingDraft.updated_at
-						: null,
-				currentPublishedVersion: recoveringPartial
-					? (existingProvenance?.applied_published_version as number)
-					: typeof existingPub?.version === 'number'
-						? existingPub.version
-						: null,
-				currentPublishedProjectionHash: recoveringPartial
-					? (existingProvenance?.applied_published_projection_hash as string)
-					: existingPub?.content
-						? hashPublicationProjection(existingPub.content as Record<string, unknown>)
-						: null,
-				appliedReceipt: toReceiptEvidence(
-					appliedReceiptRow as Record<string, unknown> | null,
-				),
-				latestMutationReceipt: recoveringPartial
-					? toReceiptEvidence(appliedReceiptRow as Record<string, unknown> | null)
-					: latestReceiptEvidence,
-			});
+			prevCanonical = resolveManagedMergeBaselineForReconciliation(
+				{
+					managedProjection: existingProvenance?.managed_projection as
+						Record<string, unknown> | null | undefined,
+					appliedDraftUpdatedAt:
+						typeof existingProvenance?.applied_draft_updated_at === 'string'
+							? existingProvenance.applied_draft_updated_at
+							: null,
+					appliedOperationId,
+					appliedPublishedVersion:
+						typeof existingProvenance?.applied_published_version === 'number'
+							? existingProvenance.applied_published_version
+							: null,
+					appliedPublishedProjectionHash:
+						typeof existingProvenance?.applied_published_projection_hash === 'string'
+							? existingProvenance.applied_published_projection_hash
+							: null,
+					currentDraftUpdatedAt: recoveringPartial
+						? (existingProvenance?.applied_draft_updated_at as string)
+						: typeof existingDraft.updated_at === 'string'
+							? existingDraft.updated_at
+							: null,
+					currentPublishedVersion: recoveringPartial
+						? (existingProvenance?.applied_published_version as number)
+						: typeof existingPub?.version === 'number'
+							? existingPub.version
+							: null,
+					currentPublishedProjectionHash: recoveringPartial
+						? (existingProvenance?.applied_published_projection_hash as string)
+						: existingPub?.content
+							? hashPublicationProjection(
+									existingPub.content as Record<string, unknown>,
+								)
+							: null,
+					appliedReceipt: toReceiptEvidence(
+						appliedReceiptRow as Record<string, unknown> | null,
+					),
+					latestMutationReceipt: recoveringPartial
+						? toReceiptEvidence(appliedReceiptRow as Record<string, unknown> | null)
+						: latestReceiptEvidence,
+				},
+				{ acknowledgeDiscardUnpublishedDraft: options.acknowledgeDiscardUnpublishedDraft },
+			);
 		} catch (error) {
 			if (
 				error instanceof ManagedBaselineError &&
@@ -832,25 +845,30 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				throw error;
 			}
 		}
-		const patchRes = apply3WaySemanticPatch({
-			previousCanonical: prevCanonical,
-			currentCanonical: packageCanonicalContent,
-			currentTarget: existingDraft.content as Record<string, unknown>,
-			scope: updateScope,
-			targetName: slug,
-			resolutions: options.conflictResolutions,
-		});
-		if (patchRes.blocked) {
-			throw new MergeConflictError(
-				patchRes.blockReason ?? 'Asset preservation violation detected.',
-				patchRes.deltas,
-			);
+		if (options.acknowledgeDiscardUnpublishedDraft) {
+			proposedContent = packageCanonicalContent;
+		} else {
+			const patchRes = apply3WaySemanticPatch({
+				previousCanonical: prevCanonical,
+				currentCanonical: packageCanonicalContent,
+				currentTarget: existingDraft.content as Record<string, unknown>,
+				scope: updateScope,
+				targetName: slug,
+				resolutions: options.conflictResolutions,
+			});
+			if (patchRes.blocked) {
+				throw new MergeConflictError(
+					patchRes.blockReason ?? 'Asset preservation violation detected.',
+					patchRes.deltas,
+				);
+			}
+			proposedContent = patchRes.patchedContent;
 		}
-		proposedContent = patchRes.patchedContent;
 	} else {
 		proposedContent = packageCanonicalContent;
 	}
-	assertManagedContentSchema(proposedContent);
+	assertManagedDraftContentSchema(proposedContent);
+	assertManagedContentSchema(packagePublishedContent);
 	const observedStorage: Record<string, ObservedStorageState> = {};
 	for (const state of currentAssetStates) {
 		observedStorage[String(state.storagePath)] = {
@@ -944,7 +962,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		definitionSlug: release.slug,
 		targetInvitationId: invitationId,
 		verifiedRekeyFrom: rekeyFrom,
-		referencedAssetIds: collectUploadedAssetIds(proposedContent),
+		referencedAssetIds: collectUploadedAssetIds(packagePublishedContent),
 	});
 	if (assetReconciliation.blocked) {
 		throw new Error(assetReconciliation.blockReason ?? 'Asset reconciliation is blocked.');
@@ -994,7 +1012,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			: null,
 		existingPub
 			? {
-					content: existingPub.content as Record<string, unknown>,
+					content: mapNestedToDraftContent(
+						existingPub.content as Record<string, unknown>,
+					),
 					version: existingPub.version,
 				}
 			: null,
@@ -1007,7 +1027,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	const isDraftContentIdentical =
 		existingDraft && canonicalize(existingDraft.content) === canonicalize(proposedContent);
 	const isPubContentIdentical =
-		existingPub && canonicalize(existingPub.content) === canonicalize(proposedContent);
+		existingPub && canonicalize(existingPub.content) === canonicalize(packagePublishedContent);
 
 	const actions: Array<{ resource: string; name: string; action: string; detail: string }> = [
 		{
@@ -1122,7 +1142,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	).length;
 
 	const functionalChanges = buildSemanticFunctionalChanges({
-		sourceContent: proposedContent,
+		sourceContent: packagePublishedContent,
 		targetContent:
 			(existingPub?.content as Record<string, unknown> | undefined) ??
 			(existingDraft?.content as Record<string, unknown> | undefined) ??
@@ -1572,7 +1592,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				existingPub?.content as Record<string, unknown> | undefined,
 			);
 
-			const projectionHash = hashPublicationProjection(proposedContent);
+			const projectionHash = hashPublicationProjection(packagePublishedContent);
 
 			const { data: pubResult, error: pubError } = await supabase.rpc(
 				'publish_invitation_atomic',
@@ -1589,7 +1609,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					p_slug: targetSlug,
 					p_event_type: definition.eventType,
 					p_is_demo: false,
-					p_content: proposedContent,
+					p_content: packagePublishedContent,
 				},
 			);
 
@@ -1747,29 +1767,39 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			),
 		);
 		const finalEventRow = finalEvent.data as Record<string, unknown> | null;
-		const verified = Boolean(
-			finalInvitationRow &&
-			finalInvitationRow.title === targetMetadata.title &&
-			finalInvitationRow.event_type === definition.eventType &&
-			finalInvitationRow.base_demo_id === definition.baseDemoId &&
-			finalInvitationRow.theme_id === definition.themeId &&
-			finalInvitationRow.kind === 'client' &&
-			finalInvitationRow.client_name === targetMetadata.clientName &&
-			finalInvitationRow.client_email === targetMetadata.clientEmail &&
-			finalInvitationRow.client_whatsapp === targetMetadata.clientWhatsapp &&
-			finalInvitationRow.photos_received === targetMetadata.photosReceived &&
-			finalInvitationRow.created_by === targetMetadata.ownerUserId &&
-			canonicalize(finalDraft.data?.content) === canonicalize(proposedContent) &&
-			canonicalize(finalPublication.data?.content) === canonicalize(proposedContent) &&
-			finalEventRow?.owner_user_id === ownerUserId &&
-			finalEventRow.event_type === definition.eventType &&
-			finalEventRow.invitation_project_id === invitationId &&
-			finalMembership.data?.membership_role === 'owner' &&
-			assetsVerified.every(Boolean),
-		);
-		if (!verified)
+		const verificationChecks = {
+			invitation: Boolean(finalInvitationRow),
+			metadata: Boolean(
+				finalInvitationRow &&
+				finalInvitationRow.title === targetMetadata.title &&
+				finalInvitationRow.event_type === definition.eventType &&
+				finalInvitationRow.base_demo_id === definition.baseDemoId &&
+				finalInvitationRow.theme_id === definition.themeId &&
+				finalInvitationRow.kind === 'client' &&
+				finalInvitationRow.client_name === targetMetadata.clientName &&
+				finalInvitationRow.client_email === targetMetadata.clientEmail &&
+				finalInvitationRow.client_whatsapp === targetMetadata.clientWhatsapp &&
+				finalInvitationRow.photos_received === targetMetadata.photosReceived &&
+				finalInvitationRow.created_by === targetMetadata.ownerUserId,
+			),
+			draft: canonicalize(finalDraft.data?.content) === canonicalize(proposedContent),
+			publication:
+				canonicalize(finalPublication.data?.content) ===
+				canonicalize(packagePublishedContent),
+			event: Boolean(
+				finalEventRow?.owner_user_id === ownerUserId &&
+				finalEventRow.event_type === definition.eventType &&
+				finalEventRow.invitation_project_id === invitationId,
+			),
+			membership: finalMembership.data?.membership_role === 'owner',
+			assets: assetsVerified.every(Boolean),
+		};
+		const failedVerification = Object.entries(verificationChecks)
+			.filter(([, passed]) => !passed)
+			.map(([name]) => name);
+		if (failedVerification.length > 0)
 			throw new Error(
-				'Final Local verification failed; managed-release provenance was not recorded.',
+				`Final Local verification failed (${failedVerification.join(', ')}); managed-release provenance was not recorded.`,
 			);
 
 		const appliedDraftUpdatedAt =
@@ -1793,7 +1823,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				applied_draft_updated_at: appliedDraftUpdatedAt,
 				applied_operation_id: activeOperationId,
 				applied_published_version: finalVersion,
-				applied_published_projection_hash: hashPublicationProjection(proposedContent),
+				applied_published_projection_hash:
+					hashPublicationProjection(packagePublishedContent),
 				applied_at: new Date().toISOString(),
 			});
 		if (provenanceError) throw provenanceError;

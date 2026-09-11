@@ -5,6 +5,7 @@ import {
 	ManagedBaselineError,
 	isRecoverableManagedPartial,
 	resolveManagedMergeBaseline,
+	resolveManagedMergeBaselineForReconciliation,
 	type ManagedMergeBaselineInput,
 } from '../../scripts/provision/managed-merge-baseline.ts';
 
@@ -182,6 +183,35 @@ describe('resolveManagedMergeBaseline', () => {
 				},
 			}),
 		).toBe(projection);
+	});
+});
+
+describe('resolveManagedMergeBaselineForReconciliation', () => {
+	it('uses the managed baseline when draft discard is explicitly acknowledged', () => {
+		expect(
+			resolveManagedMergeBaselineForReconciliation(
+				{
+					...completeInput,
+					currentDraftUpdatedAt: '2026-07-29T15:01:00.000Z',
+					latestMutationReceipt: {
+						operationId: crypto.randomUUID(),
+						status: 'applied',
+						commandKind: 'editor_section_update',
+						origin: 'editor',
+					},
+				},
+				{ acknowledgeDiscardUnpublishedDraft: true },
+			),
+		).toBe(projection);
+	});
+
+	it('still rejects publication drift while discarding a draft', () => {
+		expect(() =>
+			resolveManagedMergeBaselineForReconciliation(
+				{ ...completeInput, currentPublishedVersion: 5 },
+				{ acknowledgeDiscardUnpublishedDraft: true },
+			),
+		).toThrow(ManagedBaselineError);
 	});
 });
 

@@ -17,6 +17,8 @@ import { collectUploadedContentRefs } from '../../src/lib/invitation-preparation
 import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
+import { InvitationContentDraftContentSchema } from '../../src/lib/intake/schemas/invitation-content-draft.schema.ts';
+import { mapNestedToDraftContent } from '../../src/lib/intake/services/draft-content-mapper.ts';
 import { buildCloudinaryOgImageUrl } from './cloudinary-adapter.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
 import {
@@ -400,9 +402,9 @@ export async function buildNormalizedInvitationRelease(options: {
 		photosReceived: definition.photosReceived ?? true,
 		snapshot: snapshot as unknown as Record<string, unknown>,
 	};
-	const draftContent = definition.buildPublishedContent(buildSemanticAssetMap(definition));
+	const publishedProjection = definition.buildPublishedContent(buildSemanticAssetMap(definition));
 
-	const canonicalValidation = eventContentSchema.safeParse(draftContent);
+	const canonicalValidation = eventContentSchema.safeParse(publishedProjection);
 	if (!canonicalValidation.success) {
 		const issues = canonicalValidation.error.issues
 			.map((issue) => `${issue.path.map(String).join('.') || '<root>'}: ${issue.message}`)
@@ -412,19 +414,38 @@ export async function buildNormalizedInvitationRelease(options: {
 		);
 	}
 
-	assertEncodedAssetsMeetPathRoleBudgets(draftContent, assets);
+	const draftValidation = InvitationContentDraftContentSchema.safeParse(
+		mapNestedToDraftContent(publishedProjection),
+	);
+	if (!draftValidation.success) {
+		const issues = draftValidation.error.issues
+			.map((issue) => `${issue.path.map(String).join('.') || '<root>'}: ${issue.message}`)
+			.join('; ');
+		throw new Error(
+			`Managed invitation "${definition.slug}" produced an invalid draft: ${issues}`,
+		);
+	}
+	// Persisted JSON cannot represent undefined; remove optional mapper placeholders
+	// before hashing, planning, or verifying the release.
+	const draftContent = JSON.parse(JSON.stringify(draftValidation.data)) as Record<
+		string,
+		unknown
+	>;
+
+	assertEncodedAssetsMeetPathRoleBudgets(publishedProjection, assets);
 
 	const assetManifestHash = hash(
 		assets.map(({ bytes: _bytes, dataBase64: _data, ...asset }) => asset),
 	);
 	const metadataHash = hash(metadata);
-	const projectionHash = hashPublicationProjection(draftContent);
+	const projectionHash = hashPublicationProjection(publishedProjection);
 	const sourceHash = hash({
 		schemaVersion: RELEASE_SCHEMA_VERSION,
 		slug: definition.slug,
 		createdAt: definition.createdAt,
 		metadata,
 		draftContent,
+		publishedProjection,
 		assetManifestHash,
 	});
 	return {
@@ -437,7 +458,7 @@ export async function buildNormalizedInvitationRelease(options: {
 		assetManifestHash,
 		metadata,
 		draftContent,
-		publishedProjection: draftContent,
+		publishedProjection,
 		assets,
 	};
 }
