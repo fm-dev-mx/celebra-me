@@ -622,6 +622,11 @@ describe('draft canonicalization', () => {
 				{ title: 'Abuelos', names: 'Elena' },
 			]);
 			expect(comparePublication(canonical.content, published).changedPaths).toEqual([]);
+			const persisted = JSON.parse(JSON.stringify(canonical.content)) as Record<
+				string,
+				unknown
+			>;
+			expect(canonicalizeDraftContent(persisted).changed).toBe(false);
 		});
 
 		it('reports conflicting flat and nested values', () => {

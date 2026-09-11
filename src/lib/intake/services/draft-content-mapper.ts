@@ -1,4 +1,5 @@
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
+import { stableStringify } from '@/lib/content-publication/normalize-content';
 import {
 	FAMILY_LABEL_KEYS,
 	formatFamilyMembersAsLines,
@@ -588,7 +589,7 @@ function canonicalizeFamilyDraft(
 export function canonicalizeDraftContent(
 	content: DraftContent | Record<string, unknown>,
 ): DraftCanonicalizationResult {
-	const before = JSON.stringify(content ?? {});
+	const before = stableStringify(JSON.parse(JSON.stringify(content ?? {})));
 	const result = structuredClone(content) as Record<string, unknown>;
 	const issues: DraftNormalizationIssue[] = [];
 
@@ -643,7 +644,7 @@ export function canonicalizeDraftContent(
 		content: result as DraftContent,
 		issues,
 		removedPublishedOnlyKeys,
-		changed: JSON.stringify(result) !== before,
+		changed: stableStringify(JSON.parse(JSON.stringify(result))) !== before,
 	};
 }
 
