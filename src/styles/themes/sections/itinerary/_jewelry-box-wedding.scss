@@ -1,0 +1,29 @@
+// Retint only the demo consumer; editorial-ledger remains the geometry owner.
+.event-theme-wrapper.theme-preset--jewelry-box-wedding[data-is-demo='true'] {
+	.itinerary[data-variant='editorial-ledger'] {
+		--editorial-ledger-rule: rgb(90 62 39 / 18%);
+		--editorial-ledger-spine: rgb(90 62 39 / 28%);
+
+		.itinerary__header {
+			margin-inline: 0 auto;
+		}
+
+		.itinerary__item-label {
+			background: none;
+			-webkit-text-fill-color: rgb(67 46 32);
+			color: rgb(67 46 32);
+			text-shadow: none;
+		}
+
+		.itinerary__item-time {
+			color: rgb(141 101 65);
+			font-family: var(--font-label);
+			font-weight: 600;
+			letter-spacing: 0.14em;
+		}
+
+		.itinerary__item-description {
+			color: rgb(67 46 32 / 72%);
+		}
+	}
+}

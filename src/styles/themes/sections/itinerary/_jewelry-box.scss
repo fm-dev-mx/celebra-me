@@ -61,6 +61,7 @@
 	.itinerary__item--left,
 	.itinerary__item--right {
 		.itinerary__item-content {
+			grid-column: 2;
 			text-align: left;
 		}
 	}

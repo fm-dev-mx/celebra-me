@@ -1,0 +1,74 @@
+// Retint only the demo consumer; stacked-venue-plates remains the geometry owner.
+.event-theme-wrapper.theme-preset--jewelry-box-wedding[data-is-demo='true'] {
+	.event-location[data-variant='stacked-venue-plates'] {
+		--location-bg: linear-gradient(180deg, rgb(247 240 228) 0%, rgb(252 248 240) 100%);
+		--location-card-bg: rgb(251 247 238);
+		--location-card-border: 1px solid rgb(106 75 46 / 22%);
+		--location-card-shadow: none;
+		--location-place-color: rgb(64 44 30);
+		--location-title-color: rgb(132 97 63);
+		--location-address-color: rgb(64 44 30 / 76%);
+		--location-flourish-color: rgb(178 138 88);
+		--location-indication-icon-color: rgb(118 80 52);
+		--location-indication-icon-border: 1px solid rgb(118 80 52 / 28%);
+		--location-indication-icon-bg: transparent;
+
+		.event-location__intro {
+			max-width: 38rem;
+		}
+
+		.event-location__heading {
+			color: rgb(64 44 30);
+			-webkit-text-fill-color: rgb(64 44 30);
+		}
+
+		.event-location__container {
+			max-width: 62rem;
+			margin-inline: auto;
+		}
+
+		.event-location__card-title {
+			font-family: var(--font-label);
+			font-size: 0.7rem;
+			font-weight: 600;
+			letter-spacing: 0.25em;
+			color: rgb(118 80 52);
+		}
+
+		.event-location__card-image-outer-frame {
+			padding: 0;
+			background: transparent;
+			box-shadow: none;
+		}
+
+		.event-location__card-image-inner-frame {
+			padding: 0;
+			border: 0;
+		}
+
+		.event-location__card-image-container {
+			aspect-ratio: 4 / 3;
+			border-bottom: 1px solid rgb(106 75 46 / 18%);
+		}
+
+		.event-location__card-content {
+			padding: clamp(1.35rem, 3vw, 1.85rem);
+			text-align: left;
+		}
+
+		.event-location__card-content-date,
+		.event-location__card-content-hour {
+			font-family: var(--font-label);
+			font-size: 0.7rem;
+			font-weight: 600;
+			letter-spacing: 0.16em;
+			color: rgb(118 80 52);
+		}
+
+		.event-location__indications-container {
+			max-width: 46rem;
+			border-inline: 0;
+			background: transparent;
+		}
+	}
+}

@@ -1,0 +1,113 @@
+// A directional veil reserves the generated hero's left negative space for text.
+.event-theme-wrapper.theme-preset--jewelry-box-wedding[data-is-demo='true'] {
+	.invitation-hero[data-variant='standard'] {
+		--hero-overlay: transparent;
+		--hero-label-color: rgb(255 250 240);
+		--hero-scroll-indicator-color: rgb(255 250 240 / 88%);
+
+		align-items: flex-start;
+		text-align: left;
+
+		.invitation-hero__background::after {
+			background:
+				linear-gradient(
+					90deg,
+					rgb(33 24 17 / 78%) 0%,
+					rgb(33 24 17 / 64%) 30%,
+					rgb(33 24 17 / 18%) 54%,
+					transparent 74%
+				),
+				linear-gradient(0deg, rgb(24 17 12 / 52%) 0%, transparent 46%);
+		}
+
+		.invitation-hero__content {
+			position: relative;
+			z-index: 1;
+			width: min(42rem, 48vw);
+			margin: 0 0 clamp(6.5rem, 13vh, 9rem) clamp(1.8rem, 7vw, 7rem);
+			padding: 0;
+			background: transparent;
+			border: 0;
+			box-shadow: none;
+		}
+
+		.invitation-hero__label,
+		.invitation-hero__title,
+		.invitation-hero__date,
+		.invitation-hero__time,
+		.invitation-hero__venue {
+			background: none;
+			-webkit-text-fill-color: currentcolor;
+			color: rgb(255 250 240);
+			text-shadow: 0 2px 12px rgb(0 0 0 / 34%);
+		}
+
+		.invitation-hero__title {
+			font-size: clamp(3rem, 5.6vw, 5.75rem);
+			font-weight: 500;
+			line-height: 0.98;
+			animation: motion-fade-in-up var(--motion-hero-title-duration) var(--ease-out)
+				var(--motion-hero-title-delay) forwards;
+		}
+
+		.invitation-hero__label {
+			font-family: var(--font-label);
+			font-size: 0.7rem;
+			font-weight: 600;
+			letter-spacing: 0.28em;
+		}
+
+		.invitation-hero__divider {
+			margin-inline: 0;
+			background: rgb(216 186 134);
+		}
+
+		.invitation-hero__details {
+			align-items: flex-start;
+		}
+
+		.invitation-hero__date {
+			font-family: var(--font-label);
+			font-size: clamp(0.72rem, 1.2vw, 0.84rem);
+			font-weight: 600;
+			letter-spacing: 0.18em;
+			text-transform: uppercase;
+		}
+
+		.invitation-hero__scroll-indicator {
+			z-index: 1;
+		}
+
+		@media (width <= 61.9375rem) {
+			align-items: center;
+			text-align: center;
+
+			.invitation-hero__background::after {
+				background: linear-gradient(
+					0deg,
+					rgb(26 18 13 / 72%) 0%,
+					rgb(26 18 13 / 28%) 58%,
+					transparent 100%
+				);
+			}
+
+			.invitation-hero__content {
+				width: min(100% - 2.5rem, 30rem);
+				margin: 0 auto 6.75rem;
+				text-align: center;
+			}
+
+			.invitation-hero__title {
+				font-size: clamp(3rem, 14vw, 4.6rem);
+			}
+
+			.invitation-hero__divider {
+				margin-inline: auto;
+			}
+
+			.invitation-hero__details {
+				align-items: center;
+			}
+		}
+	}
+}
