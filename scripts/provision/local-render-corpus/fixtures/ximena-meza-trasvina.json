@@ -165,13 +165,11 @@
       },
       "indications": [
         {
-          "icon": "crown",
           "text": "Dress Code <strong>El color rosa es exclusivo para la quinceañera</strong>",
           "iconName": "Crown",
           "styleVariant": "reserved"
         },
         {
-          "icon": "envelope",
           "text": "<strong>Favor de confirmar antes del 8 de abril</strong>",
           "iconName": "Enveloped",
           "styleVariant": "default"

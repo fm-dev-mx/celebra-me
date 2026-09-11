@@ -180,13 +180,11 @@
       },
       "indications": [
         {
-          "icon": "dressCode",
           "text": "Código de vestimenta <strong>formal</strong>. El color <strong>azul cielo</strong> está reservado para la quinceañera.",
           "iconName": "DressCode",
           "styleVariant": "reserved"
         },
         {
-          "icon": "calendar",
           "text": "Favor de confirmar asistencia <strong>antes del 19 de mayo</strong>.",
           "iconName": "Calendar",
           "styleVariant": "default"

@@ -130,13 +130,11 @@
       "variant": "standard",
       "indications": [
         {
-          "icon": "dressCode",
           "text": "Código de vestimenta: <strong>casual elegante</strong>",
           "iconName": "Gift",
           "styleVariant": "default"
         },
         {
-          "icon": "envelope",
           "text": "Favor de confirmar tu asistencia antes del <strong>14 de febrero</strong>",
           "iconName": "Enveloped",
           "styleVariant": "reserved"
