@@ -27,7 +27,9 @@
     "intersections": {}
   },
   "hero": {
-    "presentation": { "venueIndex": 1 },
+    "presentation": {
+      "venueIndex": 1
+    },
     "name": "Aurora Valencia",
     "label": "XV Edition",
     "date": "2027-08-28T21:00:00.000Z",
@@ -38,7 +40,9 @@
     "variant": "standard"
   },
   "location": {
-    "accessPolicy": { "visibility": "public" },
+    "accessPolicy": {
+      "visibility": "public"
+    },
     "introEyebrow": "Ciudad de México",
     "introHeading": "Sábado, 28 de agosto de 2027",
     "introLede": "Aurora celebrará sus XV años en una noche de ceremonia, cena y baile preparada para recibir a sus invitados con especial cuidado.",
@@ -258,8 +262,11 @@
     }
   },
   "sharing": {
-    "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}",
     "ogImage": "portrait",
-    "ogDescription": "Acompáñame en mis XV años el sábado, 28 de agosto de 2027, en la Ciudad de México."
+    "ogDescription": "Acompáñame en mis XV años el sábado, 28 de agosto de 2027, en la Ciudad de México.",
+    "shareMessages": {
+      "invitation": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}",
+      "reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}"
+    }
   }
 }

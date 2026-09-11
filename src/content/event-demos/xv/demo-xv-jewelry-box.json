@@ -25,7 +25,9 @@
     "intersections": {}
   },
   "hero": {
-    "presentation": { "venueIndex": 1 },
+    "presentation": {
+      "venueIndex": 1
+    },
     "name": "Lucía García Pérez",
     "label": "Mis XV Años",
     "date": "2026-11-21T18:00:00.000Z",
@@ -36,7 +38,9 @@
     "variant": "standard"
   },
   "location": {
-    "accessPolicy": { "visibility": "public" },
+    "accessPolicy": {
+      "visibility": "public"
+    },
     "introEyebrow": "Monterrey nos espera",
     "introHeading": "Sábado, 21 de noviembre de 2026",
     "introLede": "Con la bendición de su familia, Lucía celebrará una noche de luz, gratitud y recuerdos cuidadosamente guardados.",
@@ -292,8 +296,11 @@
     }
   ],
   "sharing": {
-    "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV Años: {inviteUrl}",
     "ogImage": "portrait",
-    "ogDescription": "Acompáñame a celebrar mis XV años en Monterrey. Consulta todos los detalles de la celebración aquí."
+    "ogDescription": "Acompáñame a celebrar mis XV años en Monterrey. Consulta todos los detalles de la celebración aquí.",
+    "shareMessages": {
+      "invitation": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV Años: {inviteUrl}",
+      "reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}"
+    }
   }
 }

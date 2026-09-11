@@ -23,7 +23,9 @@
     "thankYou"
   ],
   "hero": {
-    "presentation": { "venueIndex": 1 },
+    "presentation": {
+      "venueIndex": 1
+    },
     "name": "Camila Torres Rivas",
     "label": "Mis XV Años",
     "date": "2027-09-12T19:00:00.000Z",
@@ -36,7 +38,9 @@
     "variant": "standard"
   },
   "location": {
-    "accessPolicy": { "visibility": "public" },
+    "accessPolicy": {
+      "visibility": "public"
+    },
     "indications": [
       {
         "iconName": "DressCode",
@@ -281,8 +285,11 @@
     }
   },
   "sharing": {
-    "whatsappTemplate": "Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}",
-    "ogImage": "portrait"
+    "ogImage": "portrait",
+    "shareMessages": {
+      "invitation": "Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}",
+      "reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}"
+    }
   },
   "music": {
     "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1779331586/Ludovico_Einaudi_-_Nuvole_Bianche_z9ltlm.mp3",

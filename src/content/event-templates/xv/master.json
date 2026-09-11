@@ -30,7 +30,9 @@
     "variant": "standard"
   },
   "location": {
-    "accessPolicy": { "visibility": "public" },
+    "accessPolicy": {
+      "visibility": "public"
+    },
     "indications": [
       {
         "iconName": "Crown",
@@ -153,7 +155,6 @@
     }
   },
   "sharing": {
-    "whatsappTemplate": "Hola {name}, te comparto tu invitación para {eventTitle}: {inviteUrl}",
     "shareMessages": {
       "invitation": "Hola {guestName}, te compartimos tu invitación a {eventTitle}:\n\n{inviteUrl}\n\nÁbrela para ver los detalles y confirmar tu asistencia.",
       "reminder": "Hola {guestName}, te compartimos nuevamente tu invitación a {eventTitle}:\n\n{inviteUrl}\n\nAhí puedes revisar los detalles y confirmar tu asistencia."

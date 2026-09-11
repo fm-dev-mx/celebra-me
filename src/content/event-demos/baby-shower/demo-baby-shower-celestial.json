@@ -85,7 +85,9 @@
     "variant": "index-choreography"
   },
   "location": {
-    "accessPolicy": { "visibility": "public" },
+    "accessPolicy": {
+      "visibility": "public"
+    },
     "introEyebrow": "Nos vemos para celebrar",
     "introHeading": "Sábado, 15 de agosto de 2026",
     "introLede": "A las 16:00 compartiremos una tarde tranquila para celebrar la llegada de Luna Celeste.",
@@ -218,8 +220,11 @@
     }
   ],
   "sharing": {
-    "whatsappTemplate": "Hola {name}, te comparto la invitación al Baby Shower de Luna Celeste: {inviteUrl}",
     "ogImage": "hero",
-    "ogDescription": "Te invitamos a celebrar el Baby Shower de Luna Celeste. Consulta la fecha, horario y ubicación en esta invitación."
+    "ogDescription": "Te invitamos a celebrar el Baby Shower de Luna Celeste. Consulta la fecha, horario y ubicación en esta invitación.",
+    "shareMessages": {
+      "invitation": "Hola {name}, te comparto la invitación al Baby Shower de Luna Celeste: {inviteUrl}",
+      "reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}"
+    }
   }
 }

@@ -32,7 +32,9 @@
     "variant": "standard"
   },
   "location": {
-    "accessPolicy": { "visibility": "public" },
+    "accessPolicy": {
+      "visibility": "public"
+    },
     "indications": [
       {
         "iconName": "DressCode",
@@ -236,7 +238,10 @@
     }
   },
   "sharing": {
-    "whatsappTemplate": "Hola {name}, es un gusto invitarte a {eventTitle} 🥂\n\nPuedes ver todos los detalles y confirmar tu asistencia aquí:\n\n✨ {inviteUrl}"
+    "shareMessages": {
+      "invitation": "Hola {name}, es un gusto invitarte a {eventTitle} 🥂\n\nPuedes ver todos los detalles y confirmar tu asistencia aquí:\n\n✨ {inviteUrl}",
+      "reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}"
+    }
   },
   "interludes": [
     {

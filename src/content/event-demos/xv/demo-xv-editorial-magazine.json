@@ -26,7 +26,9 @@
     "intersections": {}
   },
   "hero": {
-    "presentation": { "venueIndex": 1 },
+    "presentation": {
+      "venueIndex": 1
+    },
     "name": "Roberta",
     "label": "Edición XV",
     "date": "2027-09-25T21:00:00.000Z",
@@ -73,7 +75,9 @@
     "variant": "standard"
   },
   "location": {
-    "accessPolicy": { "visibility": "public" },
+    "accessPolicy": {
+      "visibility": "public"
+    },
     "introEyebrow": "Edición especial",
     "introHeading": "Sábado, 25 de septiembre de 2027",
     "introLede": "La celebración tendrá dos escenas principales: ceremonia y recepción.",
@@ -148,7 +152,9 @@
   },
   "gallery": {
     "variant": "magazine-spread",
-    "variantOptions": { "mobileBrowse": "rail" },
+    "variantOptions": {
+      "mobileBrowse": "rail"
+    },
     "eyebrow": "Galería",
     "title": "Doble página editorial",
     "subtitle": "Una selección visual con retratos, detalles y escenas de celebración.",
@@ -247,8 +253,11 @@
     }
   },
   "sharing": {
-    "whatsappTemplate": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}",
     "ogImage": "portrait",
-    "ogDescription": "Acompáñame en mis XV años el sábado, 25 de septiembre de 2027, en Ciudad de México."
+    "ogDescription": "Acompáñame en mis XV años el sábado, 25 de septiembre de 2027, en Ciudad de México.",
+    "shareMessages": {
+      "invitation": "Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}",
+      "reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}"
+    }
   }
 }

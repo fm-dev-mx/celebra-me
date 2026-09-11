@@ -27,7 +27,9 @@
     "intersections": {}
   },
   "hero": {
-    "presentation": { "venueIndex": 1 },
+    "presentation": {
+      "venueIndex": 1
+    },
     "name": "Isabella Rose Valenzuela",
     "label": "Mis XV Años",
     "date": "2027-11-20T20:00:00.000Z",
@@ -41,7 +43,9 @@
     "variant": "standard"
   },
   "location": {
-    "accessPolicy": { "visibility": "public" },
+    "accessPolicy": {
+      "visibility": "public"
+    },
     "introEyebrow": "Querétaro",
     "introHeading": "Ubicación",
     "introLede": "Isabella Rose celebrará sus XV años en una noche de ceremonia, cena y baile entre rosas, música y luz de velas.",
@@ -249,8 +253,11 @@
     }
   },
   "sharing": {
-    "whatsappTemplate": "Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}",
-    "ogImage": "portrait"
+    "ogImage": "portrait",
+    "shareMessages": {
+      "invitation": "Hola {name}, te comparto la invitación para {eventTitle}: {inviteUrl}",
+      "reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}"
+    }
   },
   "music": {
     "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1779331586/Ludovico_Einaudi_-_Nuvole_Bianche_z9ltlm.mp3",
