@@ -152,7 +152,7 @@
         "@zip.js/zip.js": "^2.14.0",
         "cloudinary": "^2.11.0",
         "date-fns-tz": "3.2.0",
-        "framer-motion": "^12.43.0",
+        "framer-motion": "^13.2.0",
         "nodemailer": "^9.0.6",
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
