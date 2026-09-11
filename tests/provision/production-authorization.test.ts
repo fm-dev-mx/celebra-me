@@ -63,12 +63,6 @@ const APPROVED_MUTATORS: MutatorSpec[] = [
 		family: 'managed_promotion',
 	},
 	{
-		file: 'scripts/provision/draft-canonicalization-cli.ts',
-		firstWritePattern: /applyDraftCanonicalization\s*\(\s*\{/,
-		preflightPatterns: [/evaluatePromotionBackupGate/, /BACKUP_REQUIRED/],
-		family: 'draft_repair',
-	},
-	{
 		file: 'scripts/provision/draft-restore-cli.ts',
 		firstWritePattern: /applyRestoreSql\s*\(\s*\{/,
 		preflightPatterns: [/evaluatePromotionBackupGate/, /BACKUP_REQUIRED/],

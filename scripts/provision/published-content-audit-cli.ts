@@ -8,11 +8,11 @@
  *   pnpm invitation:published-audit --slug <slug> [--target local|preview|production] [--json]
  */
 import { auditPublishedContent } from '../../src/lib/intake/services/published-content-audit.service.ts';
-import type { DraftCanonicalizationTarget } from './draft-canonicalization.ts';
 import {
-	readDraftCanonicalizationState,
+	readPersistedInvitationContent,
 	resolveTargetDbUrl,
-} from './draft-canonicalization-service.ts';
+	type PersistedContentTarget,
+} from './persisted-invitation-content.ts';
 
 const args = process.argv.slice(2);
 const json = args.includes('--json');
@@ -29,7 +29,7 @@ function requireSlug(): string {
 	return slug;
 }
 
-function requireTarget(): DraftCanonicalizationTarget {
+function requireTarget(): PersistedContentTarget {
 	const target = value('--target') ?? 'local';
 	if (target !== 'local' && target !== 'preview' && target !== 'production') {
 		throw new Error('TARGET_INVALID: --target must be local, preview or production.');
@@ -40,7 +40,7 @@ function requireTarget(): DraftCanonicalizationTarget {
 const slug = requireSlug();
 const target = requireTarget();
 const dbUrl = resolveTargetDbUrl(target);
-const state = readDraftCanonicalizationState(slug, dbUrl);
+const state = readPersistedInvitationContent(slug, dbUrl);
 if (!state?.published.content) {
 	console.error(`PUBLISHED_NOT_FOUND: no published content for ${slug} in ${target}.`);
 	process.exitCode = 1;

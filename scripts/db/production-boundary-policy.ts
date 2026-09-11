@@ -54,7 +54,7 @@ const MCP_PRODUCTION_WRITE_TOOLS = new Set([
 ]);
 
 const CANONICAL_OWNER_WORKFLOW =
-	/\b(?:pnpm\s+(?:prod:apply|db:migrate|db:prod:patch|invitation:release|invitation:draft-canonicalize|invitation:draft-restore)|scripts\/db\/(?:production-apply-cli|migrate-cli|run-prod-patch)\.ts|scripts\/provision\/(?:invitation-release-cli|draft-canonicalization-cli|draft-restore-cli)\.ts)\b/i;
+	/\b(?:pnpm\s+(?:prod:apply|db:migrate|db:prod:patch|invitation:release|invitation:draft-restore)|scripts\/db\/(?:production-apply-cli|migrate-cli|run-prod-patch)\.ts|scripts\/provision\/(?:invitation-release-cli|draft-restore-cli)\.ts)\b/i;
 
 const AGENT_CONTEXT_ASSIGNMENT =
 	/(?:(?:^|[;&\r\n]\s*)(?:export\s+)?(?:\$env:)?|(?:^|[;&\r\n]\s*)\$env:)CELEBRA_AGENT_CONTEXT\s*=\s*(?:'[^']*'|"[^"]*"|\S+)\s*;?/gi;
@@ -116,8 +116,6 @@ const ALWAYS_PRODUCTION_APPLY = [
 const PRODUCTION_TARGETED_APPLY = [
 	/\binvitation:release\b/i,
 	/\binvitation-release-cli\b/i,
-	/\binvitation:draft-canonicalize\b/i,
-	/\bdraft-canonicalization-cli\b/i,
 	/\binvitation:draft-restore\b/i,
 	/\bdraft-restore-cli\b/i,
 ];

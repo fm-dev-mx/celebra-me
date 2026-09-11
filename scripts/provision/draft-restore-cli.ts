@@ -26,9 +26,9 @@ import {
 	withProductionPermitScope,
 } from '../db/production-write-permit.ts';
 import {
-	readDraftCanonicalizationState,
+	readPersistedInvitationContent,
 	resolveTargetDbUrl,
-} from './draft-canonicalization-service.ts';
+} from './persisted-invitation-content.ts';
 import { canonicalize } from './normalized-invitation-release.ts';
 import { evaluatePromotionBackupGate } from './invitation-promote.ts';
 
@@ -85,7 +85,7 @@ function loadPlan() {
 	const target = requireTarget();
 	const scope = requireScope();
 	const dbUrl = resolveTargetDbUrl(target);
-	const state = readDraftCanonicalizationState(slug, dbUrl);
+	const state = readPersistedInvitationContent(slug, dbUrl);
 	if (!state?.published.content) {
 		throw new Error(`PUBLISHED_NOT_FOUND: no published revision for ${slug} in ${target}.`);
 	}

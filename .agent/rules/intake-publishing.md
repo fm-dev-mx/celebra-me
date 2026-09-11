@@ -63,8 +63,8 @@ spellings as equal during the transition. Inventory legacy Published values with
 
 **`showFlourishes` ownership:** canonical field is `location.presentationOptions.showFlourishes`.
 Legacy `sectionStyles.location.showFlourishes` is inspected only by the read-only audit/migration
-boundary and is rejected by canonical publication input. It must not be folded by the adapter or
-new draft mapper.
+boundary and is rejected by canonical publication input. It must not be folded by the adapter or new
+draft mapper.
 
 Location navigation visibility follows the same boundary:
 `location.presentationOptions.showNavigationButtons` is canonical; legacy section-style values are
@@ -84,9 +84,9 @@ Rules:
   published revision always goes through `mapNestedToDraftContent`.
 - Persisted drafts must not carry published-only content: `theme`, `templateId`, `visualProfileId`,
   `_assetSlug`, `isDemo`, `navigation`, `sectionStyles`, `rsvp.personalizedAccess.noteText`,
-  `rsvp.whatsappConfig` (folded to `whatsappPhone`), legacy `location.indications[].icon`, or obsolete
-  `countdown.subtitlePrefix`. Publish restores published-only fields from the invitation record or
-  the prior published revision.
+  `rsvp.whatsappConfig` (folded to `whatsappPhone`), legacy `location.indications[].icon`, or
+  obsolete `countdown.subtitlePrefix`. Publish restores published-only fields from the invitation
+  record or the prior published revision.
 - `normalizeDraftContent` is the single legacy-draft migration boundary. Editor hydration, preview,
   publish projection, and draft writes must emit the canonical contract; no runtime adapter or
   publish mapper may normalize legacy aliases.
@@ -94,9 +94,9 @@ Rules:
   `DraftNormalizationError` with explicit paths instead of dropping data it cannot express.
 - `mapDraftToPublished` stays strict: it rejects a family draft that still holds published-shaped
   structures rather than silently dropping `groups`, `children` or `godparentGroups`.
-- Repair legacy drafts with `pnpm invitation:draft-canonicalize --slug <slug> --target <env>`
-  (read-only dry-run by default; Production writes require a backup manifest and owner
-  confirmation).
+- Discard an obsolete draft with
+  `pnpm invitation:draft-restore --slug <slug> --entire --target <env>`. (read-only dry-run by
+  default; Production writes require a backup manifest and owner confirmation).
 - Detect non-canonical persisted drafts (read-only) with
   `pnpm invitation:draft-audit --slug <slug> --target <env>` or inventory all drafts with
   `pnpm invitation:draft-audit --all --target <env>`.
