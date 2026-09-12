@@ -8,7 +8,9 @@ import { resolve } from 'node:path';
 import { parseEnvContent } from '../db/db-workflow-lib.ts';
 import {
 	uploadOrReconcileCloudinaryAsset as uploadOrReconcileFromEnv,
+	verifyCloudinaryAsset as verifyCloudinaryAssetFromEnv,
 	type CloudinaryAssetUploadInput,
+	type CloudinaryAssetVerificationInput,
 	type CloudinaryAssetResult,
 } from '../../src/lib/intake/services/cloudinary-assets.ts';
 
@@ -16,6 +18,9 @@ export {
 	buildCloudinaryDeliveryUrl,
 	buildCloudinaryOgImageUrl,
 	buildCloudinaryPublicId,
+	classifyCloudinaryPublicIdEnvironment,
+	assertCloudinaryPublicIdEnvironment,
+	assertCloudinaryMutationTarget,
 } from '../../src/lib/intake/services/cloudinary-assets.ts';
 
 const FILE_KEYS = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'] as const;
@@ -52,4 +57,12 @@ export async function uploadOrReconcileCloudinaryAsset(
 ): Promise<CloudinaryAssetResult> {
 	hydrateCloudinaryEnvFromFiles();
 	return uploadOrReconcileFromEnv(input);
+}
+
+/** Read-only Cloudinary verification used before a content-only release preserves an asset. */
+export async function verifyCloudinaryAsset(
+	input: CloudinaryAssetVerificationInput,
+): Promise<CloudinaryAssetResult> {
+	hydrateCloudinaryEnvFromFiles();
+	return verifyCloudinaryAssetFromEnv(input);
 }

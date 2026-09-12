@@ -4,14 +4,19 @@
 /* eslint-disable max-lines -- Target identity, planning, apply, and verification share one atomic safety boundary. */
 
 import { randomUUID, createHash } from 'node:crypto';
+import sharp from 'sharp';
 import { readFileSync, existsSync } from 'node:fs';
 import type { InvitationPackageData, InvitationPackageAsset } from './invitation-package.ts';
 import { computePackageHash, PACKAGE_SCHEMA_VERSION } from './invitation-package.ts';
 import { selectPackageApprovalAssetHashes } from './approval-asset-hashes.ts';
 import {
 	buildCloudinaryDeliveryUrl,
+	classifyCloudinaryPublicIdEnvironment,
 	buildCloudinaryOgImageUrl,
+	assertCloudinaryPublicIdEnvironment,
+	assertCloudinaryMutationTarget,
 	uploadOrReconcileCloudinaryAsset,
+	verifyCloudinaryAsset,
 } from './cloudinary-adapter.ts';
 import {
 	classifyDbTarget,
@@ -461,6 +466,29 @@ function hashTargetAssetState(
 		.digest('hex');
 }
 
+export function assertReconciledMutationTargets(
+	reconciliation: AssetReconciliationResult,
+	targetDbAssets: TargetAssetRecord[],
+	targetIdentity: { environment: 'preview' | 'production'; eventType: string; slug: string },
+): void {
+	for (const item of [...reconciliation.reconciledAssets, ...reconciliation.unreferencedAssets]) {
+		const targetRecord = targetDbAssets.find(
+			(record) =>
+				record.id === item.targetAssetId || record.storagePath === item.targetStoragePath,
+		);
+		if (targetRecord?.provider !== 'cloudinary') continue;
+		const publicId = targetRecord.providerPublicId ?? targetRecord.storagePath;
+		if (classifyCloudinaryPublicIdEnvironment(publicId) === 'legacy') {
+			if (
+				item.reasonCode === 'LEGACY_COPY_TO_TARGET_NAMESPACE' &&
+				item.plannedAction === 'UPLOAD'
+			)
+				continue;
+			if (item.plannedAction === 'REUSE' || item.plannedAction === 'RETAIN') continue;
+		}
+		assertCloudinaryMutationTarget(publicId, targetIdentity);
+	}
+}
 async function scanAssetStatus(
 	assets: InvitationPackageAsset[],
 	targetStorageUrl: string,
@@ -470,6 +498,7 @@ async function scanAssetStatus(
 	pruneAssets = false,
 	definitionSlug?: string,
 	resultingContent?: Record<string, unknown>,
+	targetIdentity?: { environment: 'preview' | 'production'; eventType: string; slug: string },
 ): Promise<{
 	assetsToUpload: InvitationPackageAsset[];
 	assetsToUpsertDbOnly: InvitationPackageAsset[];
@@ -504,6 +533,8 @@ async function scanAssetStatus(
 		);
 	}
 
+	if (targetIdentity)
+		assertReconciledMutationTargets(reconciliation, targetDbAssets, targetIdentity);
 	const assetsToUpload: InvitationPackageAsset[] = [];
 	const assetsToUpsertDbOnly: InvitationPackageAsset[] = [];
 	const assetsToDelete: Array<{ record: TargetAssetRecord; deleteStorage: boolean }> = [];
@@ -582,7 +613,7 @@ async function scanAssetStatus(
 
 async function uploadAndVerifyAssets(
 	assetsToUpload: InvitationPackageAsset[],
-	identity: { eventType: string; slug: string },
+	identity: { eventType: string; slug: string; targetEnvironment: 'preview' | 'production' },
 ): Promise<{ verifiedAssetHashes: Record<string, string>; uploadedCount: number }> {
 	const verifiedAssetHashes: Record<string, string> = {};
 	let uploadedCount = 0;
@@ -590,6 +621,7 @@ async function uploadAndVerifyAssets(
 	for (const pAsset of assetsToUpload) {
 		const bytes = new Uint8Array(Buffer.from(pAsset.dataBase64, 'base64'));
 		const result = await uploadOrReconcileCloudinaryAsset({
+			targetEnvironment: identity.targetEnvironment,
 			eventType: identity.eventType,
 			slug: identity.slug,
 			key: pAsset.key,
@@ -607,12 +639,20 @@ async function uploadAndVerifyAssets(
 		pAsset.providerPublicId = result.publicId;
 		pAsset.secureUrl = result.secureUrl;
 
-		const verifyRes = await fetch(result.secureUrl);
+		const verifyRes = await fetch(result.secureUrl, { signal: AbortSignal.timeout(10_000) });
 		if (!verifyRes.ok) {
 			throw new Error(
 				`Cloudinary read-back verification failed for "${pAsset.key}" (HTTP ${verifyRes.status}).`,
 			);
 		}
+		if (verifyRes.headers.get('content-type')?.split(';')[0] !== pAsset.mimeType)
+			throw new Error(`Cloudinary read-back MIME mismatch for "${pAsset.key}".`);
+		const readBack = Buffer.from(await verifyRes.arrayBuffer());
+		if (createHash('sha256').update(readBack).digest('hex') !== pAsset.sha256)
+			throw new Error(`Cloudinary read-back SHA-256 mismatch for "${pAsset.key}".`);
+		const dimensions = await sharp(readBack).metadata();
+		if (dimensions.width !== pAsset.width || dimensions.height !== pAsset.height)
+			throw new Error(`Cloudinary read-back dimensions mismatch for "${pAsset.key}".`);
 
 		verifiedAssetHashes[pAsset.storagePath] = pAsset.sha256;
 		if (result.action === 'UPLOAD') uploadedCount++;
@@ -621,6 +661,69 @@ async function uploadAndVerifyAssets(
 	return { verifiedAssetHashes, uploadedCount };
 }
 
+/**
+ * A content-only release may preserve references, never unverified binaries.
+ * Verify the provider before a plan can claim that an existing Cloudinary asset is reusable.
+ */
+async function verifyContentOnlyHostedAssets(
+	assets: readonly InvitationPackageAsset[],
+	identity: { eventType: string; slug: string },
+	targetStorageUrl: string,
+	targetEnvironment: 'preview' | 'production',
+	targetAssets: readonly TargetAssetRecord[],
+	assetRefs: UploadedAssetMap,
+): Promise<void> {
+	const failures: string[] = [];
+	for (const asset of assets) {
+		const record = targetAssets.find(
+			(candidate) => candidate.id === assetRefs[asset.key]?.assetId,
+		);
+		const provider = record?.provider ?? 'missing';
+		try {
+			if (!record) throw new Error('managed target asset record is missing.');
+			if (provider === 'cloudinary') {
+				const publicId = record.providerPublicId ?? record.storagePath;
+				if (!publicId) throw new Error('missing provider public ID.');
+				assertCloudinaryPublicIdEnvironment(publicId, targetEnvironment, {
+					allowLegacyRead: true,
+				});
+				await verifyCloudinaryAsset({
+					publicId,
+					sha256: asset.sha256,
+					mimeType: asset.mimeType,
+					width: asset.width ?? undefined,
+					height: asset.height ?? undefined,
+				});
+				continue;
+			}
+			if (provider !== 'supabase')
+				throw new Error(`unsupported asset provider "${provider}".`);
+			const response = await fetch(
+				`${targetStorageUrl}/storage/v1/object/public/${record.bucket}/${record.storagePath}`,
+			);
+			if (!response.ok)
+				throw new Error(`Supabase object delivery failed (HTTP ${response.status}).`);
+			const contentType = response.headers.get('content-type')?.split(';')[0]?.trim();
+			if (contentType !== asset.mimeType)
+				throw new Error(
+					`Supabase object MIME "${contentType ?? 'missing'}" does not match "${asset.mimeType}".`,
+				);
+			if (sha256Bytes(new Uint8Array(await response.arrayBuffer())) !== asset.sha256)
+				throw new Error('Supabase object SHA-256 does not match the canonical asset.');
+		} catch (error: unknown) {
+			failures.push(
+				`${asset.key} [${provider}] : ${error instanceof Error ? error.message : String(error)}`,
+			);
+		}
+	}
+	if (failures.length > 0)
+		throw new Error(
+			`CONTENT_ONLY_HOSTED_ASSET_VERIFICATION_FAILED for "${identity.slug}":\n${failures
+				.sort()
+				.map((failure) => `- ${failure}`)
+				.join('\n')}`,
+		);
+}
 async function pruneHostedManagedAssets(input: {
 	deletions: Array<{ record: TargetAssetRecord; deleteStorage: boolean }>;
 	targetDbUrl: string;
@@ -1904,12 +2007,23 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		options.pruneAssets ?? false,
 		pkg.sourceSlug,
 		drift.targetDraftContent,
+		{ environment: expectedTarget, eventType: pkg.invitation.eventType, slug: drift.slug },
 	);
 	assertContentOnlyAllowsNoAssetMutations({
 		updateScope,
 		plannedAssetMutations:
 			assetsToUpload.length + assetsToUpsertDbOnly.length + assetsToDelete.length,
 	});
+	if (updateScope === 'content-only') {
+		await verifyContentOnlyHostedAssets(
+			pkg.assets,
+			{ eventType: pkg.invitation.eventType, slug: drift.slug },
+			targetStorageUrl,
+			expectedTarget,
+			fetchTargetDbAssets(targetDbUrl, drift.targetInvitationId),
+			assetRefs,
+		);
+	}
 	const actions = buildResourceActions({
 		slug: drift.slug,
 		route: drift.route,
@@ -2323,6 +2437,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			const uploadRes = await uploadAndVerifyAssets(assetsToUpload, {
 				eventType: pkg.invitation.eventType,
 				slug: pkg.invitation.slug,
+				targetEnvironment: expectedTarget,
 			});
 			Object.assign(verifiedAssetHashes, uploadRes.verifiedAssetHashes);
 			executedMutations += uploadRes.uploadedCount;
@@ -2473,6 +2588,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			options.pruneAssets ?? false,
 			pkg.sourceSlug,
 			targetDraftContent,
+			{ environment: expectedTarget, eventType: pkg.invitation.eventType, slug: drift.slug },
 		);
 		if (
 			finalAssets.assetsToUpload.length > 0 ||
@@ -2489,7 +2605,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		const storedProjectionHash = provenanceProjectionHash(pkg.projectionHash);
 		markResourceOverwritten('managed_invitation_release_provenance', drift.targetInvitationId);
 		runPsql(
-			`insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, managed_identity_id, previous_slugs, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, managed_projection, applied_draft_updated_at, applied_operation_id, applied_published_version, applied_published_projection_hash, applied_at) values ('${drift.targetInvitationId}'::uuid, ${sqlLiteral(pkg.sourceSlug)}, ${sqlLiteral(managedIdentityId)}::uuid, ${sqlTextArray(previousSlugs)}, ${sqlLiteral(pkg.schemaVersion)}, ${sqlLiteral(pkg.sourceHash)}, ${sqlLiteral(pkg.packageHash)}, ${sqlLiteral(pkg.metadataHash)}, ${sqlLiteral(storedProjectionHash)}, ${sqlLiteral(pkg.assetManifestHash)}, ${sqlLiteral(JSON.stringify(targetDraftContent))}::jsonb, (select updated_at from public.invitation_content_drafts where invitation_project_id = '${drift.targetInvitationId}'::uuid and deleted_at is null limit 1), '${activeOperationId}'::uuid, ${finalPublishedVersion}, ${sqlLiteral(hashPublicationProjection(targetPublishedContent))}, now()) on conflict (invitation_id) do update set definition_slug = excluded.definition_slug, managed_identity_id = coalesce(public.managed_invitation_release_provenance.managed_identity_id, excluded.managed_identity_id), previous_slugs = excluded.previous_slugs, release_schema_version = excluded.release_schema_version, source_hash = excluded.source_hash, package_hash = excluded.package_hash, metadata_hash = excluded.metadata_hash, projection_hash = excluded.projection_hash, asset_manifest_hash = excluded.asset_manifest_hash, managed_projection = excluded.managed_projection, applied_draft_updated_at = excluded.applied_draft_updated_at, applied_operation_id = excluded.applied_operation_id, applied_published_version = excluded.applied_published_version, applied_published_projection_hash = excluded.applied_published_projection_hash, applied_at = excluded.applied_at;`,
+			`insert into public.managed_invitation_release_provenance (invitation_id, definition_slug, managed_identity_id, previous_slugs, release_schema_version, source_hash, package_hash, metadata_hash, projection_hash, asset_manifest_hash, managed_projection, applied_draft_updated_at, applied_operation_id, applied_published_version, applied_published_projection_hash, applied_at) values ('${drift.targetInvitationId}'::uuid, ${sqlLiteral(pkg.sourceSlug)}, ${sqlLiteral(managedIdentityId)}::uuid, ${sqlTextArray(previousSlugs)}, ${sqlLiteral(pkg.schemaVersion)}, ${sqlLiteral(pkg.sourceHash)}, ${sqlLiteral(pkg.packageHash)}, ${sqlLiteral(pkg.metadataHash)}, ${sqlLiteral(storedProjectionHash)}, ${sqlLiteral(pkg.assetManifestHash)}, ${sqlLiteral(JSON.stringify(targetDraftContent))}::jsonb, (select updated_at from public.invitation_content_drafts where invitation_project_id = '${drift.targetInvitationId}'::uuid and deleted_at is null order by updated_at desc limit 1), '${activeOperationId}'::uuid, ${finalPublishedVersion}, ${sqlLiteral(hashPublicationProjection(targetPublishedContent))}, now()) on conflict (invitation_id) do update set definition_slug = excluded.definition_slug, managed_identity_id = coalesce(public.managed_invitation_release_provenance.managed_identity_id, excluded.managed_identity_id), previous_slugs = excluded.previous_slugs, release_schema_version = excluded.release_schema_version, source_hash = excluded.source_hash, package_hash = excluded.package_hash, metadata_hash = excluded.metadata_hash, projection_hash = excluded.projection_hash, asset_manifest_hash = excluded.asset_manifest_hash, managed_projection = excluded.managed_projection, applied_draft_updated_at = excluded.applied_draft_updated_at, applied_operation_id = excluded.applied_operation_id, applied_published_version = excluded.applied_published_version, applied_published_projection_hash = excluded.applied_published_projection_hash, applied_at = excluded.applied_at;`,
 			targetDbUrl,
 		);
 		completedSteps.push('provenance_recorded');

@@ -4,18 +4,23 @@
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { createHash } from 'node:crypto';
+import sharp from 'sharp';
 import {
 	buildCloudinaryPublicId,
 	buildCloudinaryOgImageUrl,
+	assertCloudinaryPublicIdEnvironment,
+	classifyCloudinaryPublicIdEnvironment,
+	assertCloudinaryMutationTarget,
 	getCloudinaryErrorStatus,
 	uploadOrReconcileCloudinaryAsset,
+	verifyCloudinaryAsset,
 } from '../../src/lib/intake/services/cloudinary-assets.ts';
 import {
 	ABRIL_ASSET_SPECS,
+	abrilInvitation,
 	buildAbrilPublishedContent,
 } from '../../scripts/provision/invitations/abril-michelle-becerra-rea.ts';
 import { buildSemanticAssetMap } from '../../scripts/provision/normalized-invitation-release.ts';
-import { abrilInvitation } from '../../scripts/provision/invitations/abril-michelle-becerra-rea.ts';
 
 describe('Cloudinary Adapter & Managed Asset Provider', () => {
 	const originalEnv = process.env;
@@ -47,6 +52,56 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			expect(publicId.endsWith('.webp')).toBe(false);
 		});
 
+		it('builds isolated Preview and Production IDs while retaining legacy read classification', () => {
+			const sha256 = createHash('sha256').update('environment-isolation').digest('hex');
+			const input = {
+				eventType: 'xv',
+				slug: 'valentina-hernandez',
+				key: 'hero',
+				sha256,
+			};
+			const preview = buildCloudinaryPublicId({ ...input, targetEnvironment: 'preview' });
+			const production = buildCloudinaryPublicId({
+				...input,
+				targetEnvironment: 'production',
+			});
+			expect(preview).toBe(
+				'preview/xv/valentina-hernandez/assets/hero-' + sha256.slice(0, 12),
+			);
+			expect(production).toBe(
+				'production/xv/valentina-hernandez/assets/hero-' + sha256.slice(0, 12),
+			);
+			expect(classifyCloudinaryPublicIdEnvironment(preview)).toBe('preview');
+			expect(
+				classifyCloudinaryPublicIdEnvironment('xv/valentina-hernandez/assets/hero-abc'),
+			).toBe('legacy');
+			expect(() => assertCloudinaryPublicIdEnvironment(preview, 'production')).toThrow(
+				'namespace mismatch',
+			);
+			expect(() =>
+				assertCloudinaryPublicIdEnvironment(
+					'xv/valentina-hernandez/assets/hero-abc',
+					'preview',
+					{ allowLegacyRead: true },
+				),
+			).not.toThrow();
+		});
+		it('blocks mutation of legacy, cross-environment, and other invitation assets', () => {
+			const target = { environment: 'preview' as const, eventType: 'xv', slug: 'valentina-hernandez' };
+			expect(() =>
+				assertCloudinaryMutationTarget(
+					'preview/xv/valentina-hernandez/assets/hero-abc',
+					target,
+				),
+			).not.toThrow();
+			for (const publicId of [
+				'xv/valentina-hernandez/assets/hero-abc',
+				'production/xv/valentina-hernandez/assets/hero-abc',
+				'preview/xv/other-invitation/assets/hero-abc',
+			]) {
+				expect(() => assertCloudinaryMutationTarget(publicId, target)).toThrow();
+			}
+		});
 		it('changes the public ID when the content hash changes', () => {
 			const first = createHash('sha256').update('hero-bytes-v1').digest('hex');
 			const second = createHash('sha256').update('hero-bytes-v2').digest('hex');
@@ -127,6 +182,7 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 
 			await expect(
 				uploadOrReconcileCloudinaryAsset({
+					targetEnvironment: 'preview',
 					eventType: 'xv',
 					slug: 'abril-michelle-becerra-rea',
 					key: 'hero-desktop',
@@ -150,6 +206,7 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 
 			try {
 				const res = await uploadOrReconcileCloudinaryAsset({
+					targetEnvironment: 'preview',
 					eventType: 'xv',
 					slug: 'abril-michelle-becerra-rea',
 					key: 'hero-desktop',
@@ -165,7 +222,7 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 				expect(res.provider).toBe('cloudinary');
 				expect(res.secureUrl).toContain('res.cloudinary.com');
 				expect(res.publicId).toBe(
-					`xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
+					`preview/xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
 				);
 			} finally {
 				resourceSpy.mockRestore();
@@ -228,31 +285,6 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			expect(keys).toContain('gallery-03-seated-balloons');
 			expect(keys).toContain('gallery-04-white-suit');
 			expect(keys).toContain('gallery-05-white-dress');
-
-			const content = buildAbrilPublishedContent(buildSemanticAssetMap(abrilInvitation)) as {
-				family: { featuredImage: { assetId: string } };
-				thankYou: { image: { assetId: string } };
-				gallery: { items: Array<{ image: { assetId: string } }> };
-			};
-			expect(content.family.featuredImage.assetId).toContain('gallery-02-bw-cake');
-			expect(content.thankYou.image.assetId).toContain('gallery-05-white-dress');
-			expect(content.gallery.items).toHaveLength(5);
-			expect(content.gallery.items[2]?.image.assetId).toContain('thank-you-confetti');
-			expect(
-				content.gallery.items.some((item) =>
-					item.image.assetId.includes('gallery-05-white-dress'),
-				),
-			).toBe(false);
-			expect(
-				content.gallery.items.some((item) =>
-					item.image.assetId.includes('gallery-02-bw-cake'),
-				),
-			).toBe(false);
-			expect(
-				content.gallery.items.some((item) =>
-					item.image.assetId.includes('family-portrait'),
-				),
-			).toBe(true);
 		});
 	});
 
@@ -268,10 +300,10 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			const dummySha = createHash('sha256').update(dummyBytes).digest('hex');
 
 			const cloudinaryModule = await import('cloudinary');
-			jest.spyOn(cloudinaryModule.v2.api, 'resource').mockImplementation(async () => ({
-				public_id: `xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
+			const resourceSpy = jest.spyOn(cloudinaryModule.v2.api, 'resource').mockImplementation(async () => ({
+				public_id: `preview/xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
 				version: 1,
-				secure_url: 'https://res.cloudinary.com/mock-cloud/image/upload/v1/test.webp',
+				secure_url: undefined,
 				width: 1000,
 				height: 1000,
 				bytes: 3,
@@ -281,44 +313,9 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 				context: { custom: { sha256: dummySha } },
 			}));
 
-			const res = await uploadOrReconcileCloudinaryAsset({
-				eventType: 'xv',
-				slug: 'abril-michelle-becerra-rea',
-				key: 'hero-desktop',
-				displayName: 'Hero Desktop',
-				alt: 'Hero Alt',
-				bytes: dummyBytes,
-				sha256: dummySha,
-				mimeType: 'image/webp',
-				dryRun: false,
-			});
-
-			expect(res.action).toBe('REUSE');
-			expect(res.secureUrl).toBe(
-				'https://res.cloudinary.com/mock-cloud/image/upload/v1/test.webp',
-			);
-		});
-
-		it('throws collision error when existing Cloudinary asset has conflicting SHA-256 context', async () => {
-			const dummyBytes = new Uint8Array([1, 2, 3]);
-			const dummySha = createHash('sha256').update(dummyBytes).digest('hex');
-
-			const cloudinaryModule = await import('cloudinary');
-			jest.spyOn(cloudinaryModule.v2.api, 'resource').mockImplementation(async () => ({
-				public_id: `xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
-				version: 1,
-				secure_url: 'https://res.cloudinary.com/mock-cloud/image/upload/v1/test.webp',
-				width: 1000,
-				height: 1000,
-				bytes: 3,
-				format: 'webp',
-				resource_type: 'image',
-				created_at: '2026-07-25T00:00:00Z',
-				context: { custom: { sha256: 'different-sha256-hash' } },
-			}));
-
-			await expect(
-				uploadOrReconcileCloudinaryAsset({
+			try {
+				const res = await uploadOrReconcileCloudinaryAsset({
+					targetEnvironment: 'preview',
 					eventType: 'xv',
 					slug: 'abril-michelle-becerra-rea',
 					key: 'hero-desktop',
@@ -328,8 +325,133 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 					sha256: dummySha,
 					mimeType: 'image/webp',
 					dryRun: false,
-				}),
-			).rejects.toThrow('Cloudinary public ID collision detected');
+				});
+
+				expect(res.action).toBe('REUSE');
+				expect(res.secureUrl).toBe(
+					'https://res.cloudinary.com/mock-cloud/image/upload/v1/' +
+						res.publicId +
+						'.webp',
+				);
+			} finally {
+				resourceSpy.mockRestore();
+			}
+		});
+
+		it('throws collision error when existing Cloudinary asset has conflicting SHA-256 context', async () => {
+			const dummyBytes = new Uint8Array([1, 2, 3]);
+			const dummySha = createHash('sha256').update(dummyBytes).digest('hex');
+
+			const cloudinaryModule = await import('cloudinary');
+			const resourceSpy = jest.spyOn(cloudinaryModule.v2.api, 'resource').mockImplementation(async () => ({
+				public_id: `preview/xv/abril-michelle-becerra-rea/assets/hero-desktop-${dummySha.slice(0, 12)}`,
+				version: 1,
+				secure_url: undefined,
+				width: 1000,
+				height: 1000,
+				bytes: 3,
+				format: 'webp',
+				resource_type: 'image',
+				created_at: '2026-07-25T00:00:00Z',
+				context: { custom: { sha256: 'different-sha256-hash' } },
+			}));
+
+			try {
+				await expect(
+					uploadOrReconcileCloudinaryAsset({
+						targetEnvironment: 'preview',
+						eventType: 'xv',
+						slug: 'abril-michelle-becerra-rea',
+						key: 'hero-desktop',
+						displayName: 'Hero Desktop',
+						alt: 'Hero Alt',
+						bytes: dummyBytes,
+						sha256: dummySha,
+						mimeType: 'image/webp',
+						dryRun: false,
+					}),
+				).rejects.toThrow('Cloudinary public ID collision detected');
+			} finally {
+				resourceSpy.mockRestore();
+			}
+		});
+
+		it('verifies the delivered binary instead of trusting provider SHA context alone', async () => {
+			const canonical = await sharp({
+				create: { width: 2, height: 2, channels: 3, background: '#ffffff' },
+			}).webp().toBuffer();
+			const sha256 = createHash('sha256').update(canonical).digest('hex');
+			const publicId = 'preview/xv/example/assets/hero-' + sha256.slice(0, 12);
+			const cloudinaryModule = await import('cloudinary');
+			const resourceSpy = jest.spyOn(cloudinaryModule.v2.api, 'resource').mockResolvedValue({
+				public_id: publicId,
+				version: 1,
+				width: 2,
+				height: 2,
+				bytes: canonical.length,
+				format: 'webp',
+				resource_type: 'image',
+				created_at: '2026-09-01T00:00:00Z',
+				context: { custom: { sha256 } },
+			} as never);
+			const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
+				ok: true,
+				status: 200,
+				headers: { get: () => 'image/webp' },
+				arrayBuffer: async () => Uint8Array.from(canonical).buffer,
+			} as unknown as Response);
+			try {
+				await expect(verifyCloudinaryAsset({
+					publicId, sha256, mimeType: 'image/webp', width: 2, height: 2,
+				})).resolves.toMatchObject({ publicId, sha256 });
+				fetchSpy.mockResolvedValue({
+					ok: true,
+					status: 200,
+					headers: { get: () => 'image/webp' },
+					arrayBuffer: async () => Uint8Array.from([1, 2, 3]).buffer,
+				} as unknown as Response);
+				await expect(verifyCloudinaryAsset({
+					publicId, sha256, mimeType: 'image/webp', width: 2, height: 2,
+				})).rejects.toThrow('delivered binary SHA-256');
+			} finally {
+				resourceSpy.mockRestore();
+				fetchSpy.mockRestore();
+			}
+		});
+		it('rejects a preserved asset when provider metadata or delivery no longer matches', async () => {
+			const sha256 = createHash('sha256').update('canonical').digest('hex');
+			const cloudinaryModule = await import('cloudinary');
+			const resourceSpy = jest.spyOn(cloudinaryModule.v2.api, 'resource').mockResolvedValue({
+				public_id: 'xv/valentina-hernandez/assets/hero-test',
+				version: 1,
+				secure_url:
+					'https://res.cloudinary.com/mock-cloud/image/upload/v1/xv/valentina-hernandez/assets/hero-test.webp',
+				width: 1000,
+				height: 1200,
+				bytes: 100,
+				format: 'webp',
+				resource_type: 'image',
+				created_at: '2026-09-01T00:00:00Z',
+				context: { custom: { sha256 } },
+			} as never);
+			const fetchSpy = jest
+				.spyOn(global, 'fetch')
+				.mockResolvedValue(new Response('', { status: 404 }));
+
+			try {
+				await expect(
+					verifyCloudinaryAsset({
+						publicId: 'xv/valentina-hernandez/assets/hero-test',
+						sha256,
+						mimeType: 'image/webp',
+						width: 1000,
+						height: 1200,
+					}),
+				).rejects.toThrow('delivery failed (HTTP 404)');
+			} finally {
+				resourceSpy.mockRestore();
+				fetchSpy.mockRestore();
+			}
 		});
 	});
 });

@@ -49,6 +49,7 @@ const RECEPTION_MAP_URL = 'https://maps.app.goo.gl/yzDo1Azex7AfmyGX8';
 export const RENATA_ASSET_SPECS = [
 	{
 		key: 'hero-desktop',
+		optimizationRole: 'hero-desktop',
 		relativePath: 'hero-02-source.jpg',
 		displayName: 'Renata — portada',
 		alt: 'Renata sentada en un sofá floral con vestido negro, asomándose por encima de los lentes',
@@ -61,6 +62,7 @@ export const RENATA_ASSET_SPECS = [
 	},
 	{
 		key: 'hero-mobile',
+		optimizationRole: 'hero-mobile',
 		relativePath: 'hero-02-source.jpg',
 		displayName: 'Renata — portada móvil',
 		alt: 'Renata sentada en un sofá floral con vestido negro, asomándose por encima de los lentes',
@@ -73,6 +75,7 @@ export const RENATA_ASSET_SPECS = [
 	},
 	{
 		key: 'gallery-feature',
+		optimizationRole: 'gallery',
 		relativePath: 'gallery-feature-source.jpg',
 		displayName: 'Renata — galería principal',
 		alt: 'Renata con vestido amarillo bajo un arco de flores',
@@ -84,6 +87,7 @@ export const RENATA_ASSET_SPECS = [
 	},
 	{
 		key: 'gallery-01',
+		optimizationRole: 'gallery',
 		relativePath: 'gallery-01-source.jpg',
 		displayName: 'Renata — galería sofá',
 		alt: 'Renata sentada en un sofá floral con vestido negro',
@@ -93,6 +97,7 @@ export const RENATA_ASSET_SPECS = [
 	},
 	{
 		key: 'gallery-03',
+		optimizationRole: 'gallery',
 		relativePath: 'gallery-03-source.jpg',
 		displayName: 'Renata — galería editorial',
 		alt: 'Renata en retrato editorial de vestido negro',
@@ -102,6 +107,7 @@ export const RENATA_ASSET_SPECS = [
 	},
 	{
 		key: 'interlude',
+		optimizationRole: 'editorial-featured',
 		relativePath: 'interlude-source.jpg',
 		displayName: 'Renata — interludio',
 		alt: 'Renata recostada con vestido amarillo en un estudio floral',
@@ -113,6 +119,7 @@ export const RENATA_ASSET_SPECS = [
 	},
 	{
 		key: 'interlude-02',
+		optimizationRole: 'editorial-featured',
 		relativePath: 'interlude-02-source.jpg',
 		displayName: 'Renata — segundo interludio',
 		alt: 'Renata sentada con vestido amarillo entre arreglos florales',
@@ -124,6 +131,7 @@ export const RENATA_ASSET_SPECS = [
 	},
 	{
 		key: 'interlude-03',
+		optimizationRole: 'editorial-featured',
 		relativePath: 'hero-source.jpg',
 		displayName: 'Renata — tercer interludio',
 		alt: 'Renata de pie con vestido negro y lentes al pecho, frente a un muro verde',
@@ -135,6 +143,7 @@ export const RENATA_ASSET_SPECS = [
 	},
 	{
 		key: 'thank-you',
+		optimizationRole: 'editorial-featured',
 		relativePath: 'thank-you-source.jpg',
 		displayName: 'Renata — cierre',
 		alt: 'Renata recostada en un sofá floral con vestido negro',
