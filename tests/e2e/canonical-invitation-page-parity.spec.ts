@@ -55,6 +55,7 @@ const PAGE_CASES: VisualPageCase[] = buildVisualPageCases();
 
 const EXPECTED_CAPTURE_COUNT = PAGE_CASES.length * VIEWPORTS.length;
 const captures: PageCapture[] = [];
+let captureCaseFailed = false;
 
 function isAllowedVisualAssetUrl(rawUrl: string, baseOrigin: string): boolean {
 	let url: URL;
@@ -94,6 +95,9 @@ function isAllowedVisualAssetUrl(rawUrl: string, baseOrigin: string): boolean {
 
 test.describe('Canonical invitation complete-page visual parity', () => {
 	test.describe.configure({ mode: 'serial', retries: 0 });
+	test.afterEach((_, testInfo) => {
+		if (testInfo.status !== testInfo.expectedStatus) captureCaseFailed = true;
+	});
 	for (const entry of PAGE_CASES) {
 		for (const viewport of VIEWPORTS) {
 			test(`${entry.kind}: ${entry.eventType}/${entry.slug} @ ${viewport.name}`, async ({
@@ -314,7 +318,7 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 			),
 			contentType: 'application/json',
 		});
-		if (VISUAL_PARITY_MODE !== 'diagnostic') {
+		if (VISUAL_PARITY_MODE !== 'diagnostic' && !captureCaseFailed) {
 			expect(captures.length).toBe(EXPECTED_CAPTURE_COUNT);
 		}
 		if (captures.length === 0) return;

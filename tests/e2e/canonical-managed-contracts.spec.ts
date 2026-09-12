@@ -1,4 +1,26 @@
 import { expect, test } from '@playwright/test';
+import { initializeVisualCapture } from './harness/complete-page-capture';
+
+test('April visual capture keeps its accepted countdown while the public route expires', async ({
+	browser,
+}) => {
+	const audit = await browser.newPage();
+	const publicPage = await browser.newPage();
+	try {
+		await initializeVisualCapture(audit);
+		await audit.goto(
+			'/xv/abril-michelle-becerra-rea?skipEnvelope=true&screenshot=true&animations=off',
+		);
+		await expect(audit.locator('[data-countdown-value="days"]')).toHaveText('45');
+		await publicPage.clock.setFixedTime(new Date('2026-09-13T00:00:00.000Z'));
+		await publicPage.goto('/xv/abril-michelle-becerra-rea?skipEnvelope=true');
+		await expect(publicPage.locator('[data-countdown-status]')).toBeVisible();
+		await expect(publicPage.locator('[data-countdown]')).toBeHidden();
+	} finally {
+		await audit.close();
+		await publicPage.close();
+	}
+});
 
 test.describe('canonical managed invitation route contracts', () => {
 	test('Alba renders the canonical days-only Countdown and split-map Location', async ({

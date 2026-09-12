@@ -88,6 +88,11 @@
 	}
 }
 
+// Theme display rules must not reveal an expired countdown.
+.countdown__timer[hidden] {
+	display: none;
+}
+
 .countdown__segment {
 	padding: var(--countdown-segment-padding-mobile, 1.8rem 0.75rem);
 	border-radius: 6px;
