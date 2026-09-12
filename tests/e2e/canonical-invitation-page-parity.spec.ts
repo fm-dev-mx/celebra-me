@@ -88,12 +88,7 @@ function isAllowedVisualAssetUrl(rawUrl: string, baseOrigin: string): boolean {
 	) {
 		return true;
 	}
-	if (
-		url.hostname === 'res.cloudinary.com' &&
-		url.pathname.startsWith('/dusxvauvj/image/upload/')
-	) {
-		return true;
-	}
+
 	return /^(?:a|b|c)\.basemaps\.cartocdn\.com$/u.test(url.hostname);
 }
 

@@ -83,7 +83,7 @@ being eternal.
 
 ## Asset record
 
-The registry contains 17 keys: `hero`, `portrait`, `family`, `thankYouPortrait`, `gallery01` through
+The registry contains 16 keys: `hero`, `portrait`, `family`, `thankYouPortrait`, `gallery01` through
 `gallery08`, and `interlude01` through `interlude04`.
 
 The current files are WhatsApp-compressed JPEG previews:

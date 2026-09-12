@@ -6,6 +6,7 @@ import {
 } from '../../../scripts/screenshot/visual-coverage-contract';
 import { listInvitationDefinitions } from '../../../scripts/provision/invitations/registry';
 import { buildSemanticAssetMap } from '../../../scripts/provision/normalized-invitation-release';
+import { assertRenderedImageDelivery } from './image-delivery';
 
 // Complements the controlled visual harness with the deployed public resolver.
 // Deployment protection is handled by the existing read-only Preview fixture.
@@ -19,6 +20,21 @@ for (const entry of buildVisualPageCases()) {
 			page,
 		}) => {
 			await page.setViewportSize(viewport);
+			const imageResponses = new Map<
+				string,
+				{ status: number; mime: string; bytes: number }
+			>();
+			page.on('response', (assetResponse) => {
+				if (assetResponse.request().resourceType() !== 'image') return;
+				const contentType =
+					assetResponse.headers()['content-type']?.split(';')[0]?.trim() ?? '';
+				const contentLength = Number(assetResponse.headers()['content-length'] ?? 0);
+				imageResponses.set(assetResponse.url(), {
+					status: assetResponse.status(),
+					mime: contentType,
+					bytes: Number.isFinite(contentLength) ? contentLength : 0,
+				});
+			});
 			const response = await page.goto(
 				`/${entry.eventType}/${entry.slug}?skipEnvelope=true&animations=off`,
 				{ waitUntil: 'load' },
@@ -64,6 +80,65 @@ for (const entry of buildVisualPageCases()) {
 						content[key].variant,
 					);
 			}
+
+			const delivered = await assertRenderedImageDelivery(page);
+			const failures = delivered.flatMap((image) => {
+				const response = imageResponses.get(image.url);
+				if (!response)
+					return [
+						image.section +
+							'/' +
+							image.altOrKey +
+							': no image response for ' +
+							image.redactedUrl,
+					];
+				if (response.status >= 400)
+					return [
+						image.section +
+							'/' +
+							image.altOrKey +
+							': HTTP ' +
+							response.status +
+							' for ' +
+							image.redactedUrl,
+					];
+				if (!response.mime.startsWith('image/'))
+					return [
+						image.section +
+							'/' +
+							image.altOrKey +
+							': invalid MIME ' +
+							(response.mime || 'missing') +
+							' for ' +
+							image.redactedUrl,
+					];
+				return [];
+			});
+			expect(failures).toEqual([]);
+			if (entry.slug === 'valentina-hernandez' && definition) {
+				const manifestKeys = definition.assets.map((asset) => asset.key);
+				expect(manifestKeys).toHaveLength(16);
+				const deliveredKeys = new Set(
+					delivered.flatMap((image) =>
+						manifestKeys.filter((key) => image.url.includes('/assets/' + key + '-')),
+					),
+				);
+				expect(deliveredKeys.has('hero')).toBe(true);
+			}
 		});
 	}
 }
+
+test('public image delivery reports one broken external image with a redacted URL', async ({
+	page,
+}) => {
+	await page.route('**/broken.webp*', (route) =>
+		route.fulfill({ status: 404, contentType: 'image/webp' }),
+	);
+	await page.setContent(
+		'<img src="https://images.example.test/broken.webp?token=secret" alt="Imagen de prueba" />',
+	);
+	await expect(assertRenderedImageDelivery(page)).rejects.toThrow(
+		'IMAGE_DELIVERY_FAILED:\npage/Imagen de prueba: decode failed for images.example.test/broken.webp',
+	);
+});
