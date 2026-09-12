@@ -80,6 +80,9 @@
         "test:local-render-corpus": "tsx scripts/observability/run-local-render-corpus-regression.ts",
         "invitation:local-corpus": "tsx scripts/provision/local-render-corpus/cli.ts",
         "invitation:delivery:baseline": "tsx scripts/invitation/measure-delivery-baseline.ts",
+        "invitation:media:audit": "tsx scripts/invitation/media-audit.ts",
+        "invitation:media:verify-preview": "tsx scripts/invitation/verify-preview-images.ts",
+        "invitation:media:inventory": "tsx scripts/invitation/hosted-image-inventory.ts",
         "db:disposable:phase3-concurrency": "tsx scripts/db/disposable-test-env.ts run-phase3-concurrency-test",
         "db:disposable:memories-concurrency": "tsx scripts/db/disposable-test-env.ts run-memories-concurrency-test",
         "memories:load": "tsx scripts/valentina-memories-load.ts",
@@ -209,25 +212,14 @@
         "typescript-eslint": "^8.70.0"
     },
     "lint-staged": {
-        "*.{ts,tsx,js,jsx,mjs,cjs}": [
-            "eslint --fix --cache",
-            "prettier --write"
-        ],
-        "*.astro": [
-            "eslint --fix --cache",
-            "prettier --write"
-        ],
-        "*.{scss,css}": [
-            "stylelint --fix --cache",
-            "prettier --write"
-        ],
+        "*.{ts,tsx,js,jsx,mjs,cjs}": ["eslint --fix --cache", "prettier --write"],
+        "*.astro": ["eslint --fix --cache", "prettier --write"],
+        "*.{scss,css}": ["stylelint --fix --cache", "prettier --write"],
         "*.md": [
             "node scripts/validate-markdown-tables.mjs --fix --files",
             "prettier --write",
             "node scripts/validate-markdown-tables.mjs --files"
         ],
-        "*.{json,yml,yaml}": [
-            "prettier --write"
-        ]
+        "*.{json,yml,yaml}": ["prettier --write"]
     }
 }
