@@ -120,6 +120,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					type="button"
 					class={`envelope-seal-button envelope-seal-button--${sealStyle}`}
 					data-envelope-open
+					disabled
 					data-seal-icon={sealPresentation.icon || sealIcon || 'wax-organic'}
 					data-seal-renderer={sealPresentation.renderer}
 					data-screenshot="reveal-trigger"
@@ -199,6 +200,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					type="button"
 					class="envelope-external-instruction__button"
 					data-envelope-open
+					disabled
 					aria-label="Abrir la invitación"
 				>
 					{microcopy}
@@ -475,6 +477,8 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					requestOpen();
 				});
 			});
+			// SSR controls become actionable only after their listeners are installed.
+			setControlsDisabled(false);
 		}
 	}
 

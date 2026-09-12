@@ -26,6 +26,28 @@ async function expectRevealed(page: Page) {
 }
 
 test.describe('shared envelope reveal interaction', () => {
+	test('keeps XV controls inactive until the reveal script is ready', async ({ page }) => {
+		let releaseScripts!: () => void;
+		const scriptsReady = new Promise<void>((resolve) => {
+			releaseScripts = resolve;
+		});
+		await page.route('**/*', async (route) => {
+			if (route.request().resourceType() === 'script') await scriptsReady;
+			await route.continue();
+		});
+		try {
+			await page.goto('/xv/demo-xv-jewelry-box?forceEnvelope=true', { waitUntil: 'commit' });
+			const seal = page.getByRole('button', { name: 'Abrir sobre de la invitación' });
+			await expect(seal).toBeVisible();
+			await expect(seal).toBeDisabled();
+			releaseScripts();
+			await expect(seal).toBeEnabled();
+			await seal.click();
+			await expectRevealed(page);
+		} finally {
+			releaseScripts();
+		}
+	});
 	for (const trigger of ['CTA', 'seal'] as const) {
 		test(`uses the same closed-state transition from the ${trigger}`, async ({ page }) => {
 			const route = '/cumple/demo-cumple-luxury-hacienda';

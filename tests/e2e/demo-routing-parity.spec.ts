@@ -21,16 +21,12 @@ test.describe('Demo Routing Parity', () => {
 
 	test('renders a public demo event correctly without an inviteId', async ({ page }) => {
 		// A demo event provides high-fidelity showcase without requiring personalization
-		const response = await page.goto('/xv/demo-xv-jewelry-box?forceEnvelope=true', {
+		const response = await page.goto('/xv/demo-xv-jewelry-box?skipEnvelope=true', {
 			waitUntil: 'domcontentloaded',
 		});
 		expect(response?.ok()).toBeTruthy();
 
-		// Should render the main envelope, revealing the event
-		await expect(page.locator('.envelope-wrapper')).toBeVisible();
-
-		// Opening the envelope exposes the underlying components
-		await page.getByRole('button', { name: 'Abrir sobre de la invitación' }).click();
+		// Reveal interaction belongs to envelope-reveal-interaction.spec.ts.
 		await expect(page.locator('.event-theme-wrapper')).toHaveAttribute(
 			'data-reveal-state',
 			'revealed',
