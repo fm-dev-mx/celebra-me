@@ -19,6 +19,27 @@ describe('prod:apply CLI arguments', () => {
 		expect(() => parse(['--apply'])).toThrow(/SCOPE_REQUIRED/);
 	});
 
+	it('requires one reviewed image namespace scope and keeps rollback explicit', () => {
+		expect(parse(['--image-namespace', 'plan.json'])).toMatchObject({
+			imageManifestPath: 'plan.json',
+			imageRollback: false,
+			inspectAll: false,
+			apply: false,
+		});
+		expect(parse(['--image-namespace-rollback', 'plan.json', '--apply'])).toMatchObject({
+			imageManifestPath: 'plan.json',
+			imageRollback: true,
+			apply: true,
+		});
+		expect(() => parse(['--image-namespace', 'plan.json', '--patch', 'x.sql'])).toThrow(
+			'only Production apply scope',
+		);
+		expect(() =>
+			parse(['--image-namespace', 'plan.json', '--image-namespace-rollback', 'plan.json']),
+		).toThrow('Choose migration or rollback');
+		expect(() => parse(['--image-namespace', '--apply'])).toThrow('requires a manifest path');
+	});
+
 	it('parses schema, single slug, multi-slug, all-ready, and patch scopes', () => {
 		expect(parse(['--schema'])).toMatchObject({
 			schema: true,

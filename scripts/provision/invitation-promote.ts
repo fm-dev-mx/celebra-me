@@ -22,7 +22,6 @@ import { PROJECT_ROOT } from '../db/db-workflow-lib.ts';
 import type { InvitationPackageData } from './invitation-package.ts';
 import {
 	cloudinaryEraHostingMessage,
-	findCloudinaryEraHostingViolations,
 	isCloudinaryEraInvitation,
 } from '../../src/lib/intake/services/cloudinary-era-hosting.ts';
 import {
@@ -369,7 +368,11 @@ export async function runPromotionPreflight(input: {
 			createdAt: input.packageData.definitionCreatedAt,
 		})
 	) {
-		const violations = findCloudinaryEraHostingViolations(input.packageData.assets);
+		const violations = (input.packageData.assets ?? [])
+			.filter(
+				(asset) => asset.provider !== 'cloudinary' || !/^[a-f0-9]{64}$/u.test(asset.sha256),
+			)
+			.map((asset) => asset.key);
 		if (violations.length > 0) {
 			return {
 				slug,

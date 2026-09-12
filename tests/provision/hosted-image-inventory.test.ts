@@ -97,6 +97,50 @@ describe('published invitation image inventory', () => {
 			namespace: 'legacy',
 		});
 	});
+	it('includes an unpublished client asset and historical references in the migration inventory', () => {
+		const unpublished: InventoryInvitation[] = [
+			{
+				slug: 'unmanaged-client',
+				eventType: 'xv',
+				content: {},
+				draftContent: { hero: { image: { type: 'uploaded', assetId: 'draft-hero' } } },
+				historicalContents: [
+					{ gallery: { image: { type: 'uploaded', assetId: 'historical-gallery' } } },
+				],
+				assets: [
+					{
+						id: 'draft-hero',
+						key: 'hero',
+						provider: 'cloudinary',
+						publicId: 'xv/unmanaged-client/assets/hero-abc',
+						sha256,
+						mimeType: 'image/webp',
+					},
+					{
+						id: 'historical-gallery',
+						key: 'gallery',
+						provider: 'cloudinary',
+						publicId: 'xv/unmanaged-client/assets/gallery-abc',
+						sha256,
+						mimeType: 'image/webp',
+					},
+				],
+			},
+		];
+		const findings = inspectHostedImageInventory(unpublished, 'preview');
+		expect(findings).toHaveLength(2);
+		expect(findings.find((item) => item.assetId === 'draft-hero')).toMatchObject({
+			referenced: false,
+			draftReferenced: true,
+			historicalReferenced: false,
+		});
+		expect(findings.find((item) => item.assetId === 'historical-gallery')).toMatchObject({
+			referenced: false,
+			draftReferenced: false,
+			historicalReferenced: true,
+		});
+	});
+
 	it('accepts a namespaced referenced image', () => {
 		const published: InventoryInvitation[] = [
 			{

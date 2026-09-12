@@ -21,6 +21,7 @@ export {
 	classifyCloudinaryPublicIdEnvironment,
 	assertCloudinaryPublicIdEnvironment,
 	assertCloudinaryMutationTarget,
+	getCloudinaryErrorStatus,
 } from '../../src/lib/intake/services/cloudinary-assets.ts';
 
 const FILE_KEYS = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'] as const;
