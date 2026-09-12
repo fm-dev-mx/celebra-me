@@ -8,17 +8,13 @@
 
 import {
 	DEFAULT_BUCKET,
-	deleteFromStorage,
 	getPublicUrl,
 	uploadToStorage,
 } from '@/lib/intake/storage';
 import {
-	buildCloudinaryDeliveryUrl,
 	uploadOrReconcileCloudinaryAsset,
 } from '@/lib/intake/services/cloudinary-assets';
-import { isDevEnvironment } from '@/lib/environment';
 import { getEnv } from '@/lib/server/env';
-import type { AssetDeliverySource } from '@/lib/intake/services/asset-delivery';
 
 export interface StorageUploadInput {
 	invitationId: string;
@@ -58,8 +54,6 @@ export interface StoredAssetResult {
 export interface StorageProvider {
 	readonly providerName: 'supabase' | 'cloudinary';
 	uploadAsset(input: StorageUploadInput): Promise<StoredAssetResult>;
-	resolveDeliveryUrl(asset: AssetDeliverySource): string;
-	deleteAsset(storagePath: string, bucket?: string): Promise<void>;
 }
 
 export class SupabaseLocalStorageProvider implements StorageProvider {
@@ -109,15 +103,6 @@ export class SupabaseLocalStorageProvider implements StorageProvider {
 		};
 	}
 
-	resolveDeliveryUrl(asset: AssetDeliverySource): string {
-		const bucket = asset.bucket?.trim() || DEFAULT_BUCKET;
-		const storagePath = asset.storagePath?.trim() || asset.providerPublicId?.trim() || '';
-		return getPublicUrl(bucket, storagePath);
-	}
-
-	async deleteAsset(storagePath: string, bucket?: string): Promise<void> {
-		await deleteFromStorage(bucket || DEFAULT_BUCKET, storagePath);
-	}
 }
 
 async function extractBytes(blob: Blob): Promise<Uint8Array> {
@@ -126,10 +111,6 @@ async function extractBytes(blob: Blob): Promise<Uint8Array> {
 	}
 	if (typeof (blob as unknown as { bytes: () => Promise<Uint8Array> }).bytes === 'function') {
 		return await (blob as unknown as { bytes: () => Promise<Uint8Array> }).bytes();
-	}
-	if (typeof blob.text === 'function') {
-		const buffer = Buffer.from(await blob.text());
-		return new Uint8Array(buffer);
 	}
 	const internalBuffer = (blob as unknown as { _buffer?: Buffer })._buffer;
 	if (internalBuffer && Buffer.isBuffer(internalBuffer)) {
@@ -146,16 +127,19 @@ async function extractBytes(blob: Blob): Promise<Uint8Array> {
 			reader.readAsArrayBuffer(blob);
 		});
 	}
-	return new Uint8Array();
+	throw new Error('Unsupported blob: binary extraction is not available.');
 }
 
 export class CloudinaryStorageProvider implements StorageProvider {
 	readonly providerName = 'cloudinary' as const;
 
+	constructor(private readonly targetEnvironment: 'preview' | 'production') {}
+
 	async uploadAsset(input: StorageUploadInput): Promise<StoredAssetResult> {
 		const bytes = await extractBytes(input.blob);
 
 		const uploaded = await uploadOrReconcileCloudinaryAsset({
+			targetEnvironment: this.targetEnvironment,
 			eventType: input.eventType,
 			slug: input.slug,
 			key: input.key,
@@ -186,20 +170,6 @@ export class CloudinaryStorageProvider implements StorageProvider {
 		};
 	}
 
-	resolveDeliveryUrl(asset: AssetDeliverySource): string {
-		const secure = asset.secureUrl?.trim();
-		if (secure && /^https?:\/\//i.test(secure)) return secure;
-
-		const publicId = (asset.providerPublicId ?? asset.storagePath)?.trim();
-		if (!publicId) return '';
-
-		const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim() || '';
-		return buildCloudinaryDeliveryUrl(cloudName, publicId);
-	}
-
-	async deleteAsset(): Promise<void> {
-		// Soft-delete policy: Cloudinary binaries are preserved for audit/history.
-	}
 }
 
 export function resolveEffectiveTarget(targetEnv?: string): 'local' | 'preview' | 'production' {
@@ -216,7 +186,6 @@ export function resolveEffectiveTarget(targetEnv?: string): 'local' | 'preview' 
 	if (celebraTarget === 'production') return 'production';
 	if (celebraTarget === 'local') return 'local';
 
-	if (isDevEnvironment()) return 'local';
 	return 'local';
 }
 
@@ -225,5 +194,5 @@ export function getStorageProvider(targetEnv?: string): StorageProvider {
 	if (effective === 'local') {
 		return new SupabaseLocalStorageProvider();
 	}
-	return new CloudinaryStorageProvider();
+	return new CloudinaryStorageProvider(effective);
 }

@@ -150,9 +150,7 @@ export function planImageOptimization(input: {
 	}
 
 	const weightStatus =
-		role === 'unassigned'
-			? 'within-target'
-			: evaluateWeightAgainstTarget(fileSizeBytes, role);
+		role === 'unassigned' ? 'within-target' : evaluateWeightAgainstTarget(fileSizeBytes, role);
 
 	const generateDerivative = needsCropOrDerivative || weightStatus === 'above-target';
 	const recompressRecommended = weightStatus === 'above-target';

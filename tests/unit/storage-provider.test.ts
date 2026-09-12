@@ -6,11 +6,6 @@ jest.mock('@/lib/server/supabase-credentials', () => ({
 	getSupabaseServiceRoleKey: mockGetSupabaseServiceRoleKey,
 }));
 
-const mockIsDevEnvironment = jest.fn(() => true);
-jest.mock('@/lib/environment', () => ({
-	isDevEnvironment: mockIsDevEnvironment,
-}));
-
 const mockUploadOrReconcile = jest.fn();
 jest.mock('@/lib/intake/services/cloudinary-assets', () => ({
 	uploadOrReconcileCloudinaryAsset: (...args: unknown[]) => mockUploadOrReconcile(...args),
@@ -38,6 +33,7 @@ describe('StorageProvider Abstraction', () => {
 
 	afterEach(() => {
 		process.env = originalEnv;
+		jest.restoreAllMocks();
 	});
 
 	describe('SupabaseLocalStorageProvider', () => {
@@ -108,40 +104,10 @@ describe('StorageProvider Abstraction', () => {
 			expect(result.provider).toBe('supabase');
 			expect(fetchSpy).not.toHaveBeenCalled();
 		});
-
-		it('resolves delivery URLs correctly for local assets', () => {
-			const url = provider.resolveDeliveryUrl({
-				provider: 'supabase',
-				bucket: 'invitation-assets',
-				storagePath: 'invitations/inv-123/hero.webp',
-			});
-			expect(url).toBe(
-				'http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/invitations/inv-123/hero.webp',
-			);
-		});
-
-		it('deletes assets from local storage via DELETE request', async () => {
-			const fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue({
-				ok: true,
-			} as Response);
-
-			await provider.deleteAsset('invitations/inv-123/hero.webp', 'invitation-assets');
-
-			expect(fetchSpy).toHaveBeenCalledWith(
-				'http://127.0.0.1:54321/storage/v1/object/invitation-assets/invitations/inv-123/hero.webp',
-				expect.objectContaining({
-					method: 'DELETE',
-					headers: expect.objectContaining({
-						apikey: 'sb_secret_test',
-						Authorization: 'Bearer sb_secret_test',
-					}),
-				}),
-			);
-		});
 	});
 
 	describe('CloudinaryStorageProvider', () => {
-		const provider = new CloudinaryStorageProvider();
+		const provider = new CloudinaryStorageProvider('preview');
 
 		it('delegates asset upload to Cloudinary SDK and returns Cloudinary metadata', async () => {
 			mockUploadOrReconcile.mockResolvedValue({
@@ -178,16 +144,6 @@ describe('StorageProvider Abstraction', () => {
 			expect(result.providerPublicId).toBe('boda/daniela-y-martin/assets/hero-desktop');
 			expect(result.secureUrl).toContain('https://res.cloudinary.com');
 			expect(result.deliveryUrl).toBe(result.secureUrl);
-		});
-
-		it('resolves delivery URLs from secure_url when present', () => {
-			const url = provider.resolveDeliveryUrl({
-				provider: 'cloudinary',
-				bucket: 'invitation-assets',
-				storagePath: 'boda/daniela-y-martin/assets/hero-desktop',
-				secureUrl: 'https://res.cloudinary.com/demo/image/upload/v1/hero.webp',
-			});
-			expect(url).toBe('https://res.cloudinary.com/demo/image/upload/v1/hero.webp');
 		});
 	});
 
