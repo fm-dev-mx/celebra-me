@@ -18,6 +18,7 @@ import {
 import { buildSyntheticVariantEvent } from '../fixtures/structural-variants/synthetic-variant-fixtures';
 import {
 	CROSS_PRESET_REPRESENTATIVE_VARIANTS,
+	buildVisualVariantCases,
 	VISUAL_VIEWPORTS,
 	computeVisualMatrixHash,
 } from '../../scripts/screenshot/visual-coverage-contract';
@@ -146,8 +147,26 @@ test.describe('Registry-Driven Visual Portability Suite', () => {
 		}
 	}
 
-	test.afterAll(() => {
-		if (capturedSnapshots.length === 0) return;
+	test.afterAll(async ({ browserName }, testInfo) => {
+		const identity = (entry: {
+			section: string;
+			variant: string;
+			preset: string;
+			viewport: string;
+		}) => `${entry.section}.${entry.variant}/${entry.preset}/${entry.viewport}`;
+		const expected = buildVisualVariantCases().map(identity);
+		const completed = new Set(capturedSnapshots.map(identity));
+		await testInfo.attach('variant-capture-coverage', {
+			body: Buffer.from(
+				JSON.stringify({
+					browser: browserName,
+					expected: expected.length,
+					completed: [...completed],
+					missing: expected.filter((entry) => !completed.has(entry)),
+				}),
+			),
+			contentType: 'application/json',
+		});
 
 		const outputDir = path.resolve(
 			process.cwd(),
@@ -160,6 +179,7 @@ test.describe('Registry-Driven Visual Portability Suite', () => {
 		if (VISUAL_PARITY_MODE !== 'diagnostic') {
 			expect(capturedSnapshots.length).toBe(EXPECTED_CAPTURE_COUNT);
 		}
+		if (capturedSnapshots.length === 0) return;
 		for (const capture of capturedSnapshots) {
 			const filePath = path.join(outputDir, capture.file);
 			expect(fs.existsSync(filePath)).toBe(true);

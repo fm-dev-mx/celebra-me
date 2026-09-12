@@ -300,11 +300,29 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 		}
 	}
 
-	test.afterAll(() => {
-		if (captures.length === 0) return;
+	test.afterAll(async ({ browserName }, testInfo) => {
+		const expectedFiles = PAGE_CASES.flatMap((entry) =>
+			VIEWPORTS.map(
+				(viewport) =>
+					`pages/${entry.kind}-${entry.eventType}-${entry.slug}-${viewport.name}.png`,
+			),
+		);
+		const completedFiles = new Set(captures.map((capture) => capture.file));
+		await testInfo.attach('page-capture-coverage', {
+			body: Buffer.from(
+				JSON.stringify({
+					browser: browserName,
+					expected: expectedFiles.length,
+					completed: [...completedFiles],
+					missing: expectedFiles.filter((file) => !completedFiles.has(file)),
+				}),
+			),
+			contentType: 'application/json',
+		});
 		if (VISUAL_PARITY_MODE !== 'diagnostic') {
 			expect(captures.length).toBe(EXPECTED_CAPTURE_COUNT);
 		}
+		if (captures.length === 0) return;
 		const outputRoot = path.resolve(
 			process.cwd(),
 			process.env.VISUAL_PARITY_OUTPUT_ROOT ?? 'output/screenshots/variant-portability',

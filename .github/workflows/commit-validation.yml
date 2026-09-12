@@ -194,8 +194,8 @@ jobs:
                   include-hidden-files: true
                   retention-days: 7
 
-            - name: Preserve visual failure evidence
-              if: failure()
+            - name: Preserve browser results and failure evidence
+              if: always()
               uses: actions/upload-artifact@v7
               with:
                   name: visual-failures
@@ -203,6 +203,8 @@ jobs:
                       test-results/**/*-actual.png
                       test-results/**/*-diff.png
                       test-results/**/trace.zip
+                      test-results/**/error-context.md
+                      test-results/**/*.json
                   if-no-files-found: ignore
                   retention-days: 3
 
