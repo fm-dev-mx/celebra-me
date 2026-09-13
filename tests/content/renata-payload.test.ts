@@ -153,7 +153,7 @@ describe('XV Renata provision contract', () => {
 		const byKey = Object.fromEntries(RENATA_ASSET_SPECS.map((spec) => [spec.key, spec]));
 		expect(byKey['hero-desktop'].relativePath).toBe('hero-02-source.jpg');
 		expect(byKey['hero-desktop'].relativePath).toBe(byKey['hero-mobile'].relativePath);
-		expect(byKey['interlude-03'].relativePath).toBe('hero-source.jpg');
+		expect(byKey['interlude-03'].relativePath).toBe('interlude-03-published.webp');
 		expect(byKey['interlude-03'].relativePath).not.toBe(byKey['hero-desktop'].relativePath);
 		expect(byKey['thank-you'].relativePath).not.toBe(byKey['hero-desktop'].relativePath);
 		expect(byKey['gallery-feature'].relativePath).not.toBe(byKey['hero-desktop'].relativePath);

@@ -75,8 +75,8 @@ export const RENATA_ASSET_SPECS = [
 	},
 	{
 		key: 'gallery-feature',
-		optimizationRole: 'gallery',
-		relativePath: 'gallery-feature-source.jpg',
+		sourcePolicy: 'preserve',
+		relativePath: 'gallery-feature-published.webp',
 		displayName: 'Renata — galería principal',
 		alt: 'Renata con vestido amarillo bajo un arco de flores',
 		focalPoint: {
@@ -87,8 +87,9 @@ export const RENATA_ASSET_SPECS = [
 	},
 	{
 		key: 'gallery-01',
-		optimizationRole: 'gallery',
-		relativePath: 'gallery-01-source.jpg',
+		// Preserve the owner-approved published original under the existing original-image contract.
+		sourcePolicy: 'preserve',
+		relativePath: 'gallery-01-published.webp',
 		displayName: 'Renata — galería sofá',
 		alt: 'Renata sentada en un sofá floral con vestido negro',
 		focalPoint: {
@@ -97,8 +98,8 @@ export const RENATA_ASSET_SPECS = [
 	},
 	{
 		key: 'gallery-03',
-		optimizationRole: 'gallery',
-		relativePath: 'gallery-03-source.jpg',
+		sourcePolicy: 'preserve',
+		relativePath: 'gallery-03-published.webp',
 		displayName: 'Renata — galería editorial',
 		alt: 'Renata en retrato editorial de vestido negro',
 		focalPoint: {
@@ -107,8 +108,8 @@ export const RENATA_ASSET_SPECS = [
 	},
 	{
 		key: 'interlude',
-		optimizationRole: 'editorial-featured',
-		relativePath: 'interlude-source.jpg',
+		sourcePolicy: 'preserve',
+		relativePath: 'interlude-published.webp',
 		displayName: 'Renata — interludio',
 		alt: 'Renata recostada con vestido amarillo en un estudio floral',
 		focalPoint: {
@@ -119,8 +120,8 @@ export const RENATA_ASSET_SPECS = [
 	},
 	{
 		key: 'interlude-02',
-		optimizationRole: 'editorial-featured',
-		relativePath: 'interlude-02-source.jpg',
+		sourcePolicy: 'preserve',
+		relativePath: 'interlude-02-published.webp',
 		displayName: 'Renata — segundo interludio',
 		alt: 'Renata sentada con vestido amarillo entre arreglos florales',
 		focalPoint: {
@@ -131,8 +132,8 @@ export const RENATA_ASSET_SPECS = [
 	},
 	{
 		key: 'interlude-03',
-		optimizationRole: 'editorial-featured',
-		relativePath: 'hero-source.jpg',
+		sourcePolicy: 'preserve',
+		relativePath: 'interlude-03-published.webp',
 		displayName: 'Renata — tercer interludio',
 		alt: 'Renata de pie con vestido negro y lentes al pecho, frente a un muro verde',
 		focalPoint: {
@@ -143,8 +144,8 @@ export const RENATA_ASSET_SPECS = [
 	},
 	{
 		key: 'thank-you',
-		optimizationRole: 'editorial-featured',
-		relativePath: 'thank-you-source.jpg',
+		sourcePolicy: 'preserve',
+		relativePath: 'thank-you-published.webp',
 		displayName: 'Renata — cierre',
 		alt: 'Renata recostada en un sofá floral con vestido negro',
 		focalPoint: {
@@ -250,7 +251,6 @@ export function buildRenataPublishedContent(
 		location: {
 			accessPolicy: { visibility: 'public' },
 			variant: 'stacked-venue-plates',
-
 			mapStyle: 'dark',
 			presentation: 'simple',
 			presentationOptions: {

@@ -84,15 +84,28 @@ Rules:
 
 Contract maturity for this event type: `evidence-backed` (`xv`).
 
-| requirement | fields                                                                                                                                            | status               |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| required    | slug, celebrantName, eventLabel, eventDate, eventTime, timeZone, baseDemoId, sourceAssetPath, sectionOrder, primaryVenueName, primaryVenueAddress | resolved             |
-| required    | rsvpConfirmationMode, rsvpGuestCap                                                                                                                | **blocking missing** |
-| conditional | receptionVenueName, receptionVenueAddress                                                                                                         | resolved             |
-| recommended | fatherName, motherName, godparents, ceremonyMapUrl                                                                                                | resolved             |
-| optional    | dressCode, gifts                                                                                                                                  | resolved             |
-| optional    | musicUrl                                                                                                                                          | not_applicable       |
-| optional    | clientColors                                                                                                                                      | resolved             |
+- **requirement:** required
+  - **fields:** slug, celebrantName, eventLabel, eventDate, eventTime, timeZone, baseDemoId,
+    sourceAssetPath, sectionOrder, primaryVenueName, primaryVenueAddress
+  - **status:** resolved
+- **requirement:** required
+  - **fields:** rsvpConfirmationMode, rsvpGuestCap
+  - **status:** **blocking missing**
+- **requirement:** conditional
+  - **fields:** receptionVenueName, receptionVenueAddress
+  - **status:** resolved
+- **requirement:** recommended
+  - **fields:** fatherName, motherName, godparents, ceremonyMapUrl
+  - **status:** resolved
+- **requirement:** optional
+  - **fields:** dressCode, gifts
+  - **status:** resolved
+- **requirement:** optional
+  - **fields:** musicUrl
+  - **status:** not_applicable
+- **requirement:** optional
+  - **fields:** clientColors
+  - **status:** resolved
 
 ### Missing blockers
 
@@ -196,38 +209,48 @@ Demo remains the gold base template. Real invite identity lives in Lane A. Real 
 Source label: `source:hr-photos` (opaque)  
 WhatsApp-compressed files are `provisional-whatsapp` or `unusable` and were not ingested.
 
-| source filename     | dims      | format | orientation | weight | quality          | role            | duplicate                    | processing                           | derivative                 |
-| ------------------- | --------- | ------ | ----------- | ------ | ---------------- | --------------- | ---------------------------- | ------------------------------------ | -------------------------- |
-| 1000511838          | 3900×5861 | jpeg   | portrait    | HR     | production-ready | interlude-03    | former hero reused           | downscale 2560 long edge, no upscale | hero-source.jpg            |
-| _DSC5939            | 4024×6048 | jpeg   | portrait    | HR     | production-ready | gallery-feature | no                           | downscale 2560 long edge, no upscale | gallery-feature-source.jpg |
-| 1000511828          | 4024×6048 | jpeg   | portrait    | HR     | production-ready | gallery         | no                           | downscale 2560 long edge, no upscale | gallery-01-source.jpg      |
-| _DSC5847            | 3995×6004 | jpeg   | portrait    | HR     | unused           | none            | removed from gallery         | not referenced                       | gallery-02-source.jpg      |
-| 1000511822          | 4024×6048 | jpeg   | portrait    | HR     | production-ready | gallery         | no                           | downscale 2560 long edge, no upscale | gallery-03-source.jpg      |
-| _DSC5759            | 3734×5611 | jpeg   | portrait    | HR     | unused           | none            | removed from gallery         | not referenced                       | gallery-04-source.jpg      |
-| _DSC5878            | 5390×3586 | jpeg   | landscape   | HR     | production-ready | interlude       | no                           | downscale 2560 long edge, no upscale | interlude-source.jpg       |
-| _DSC5914            | 6002×3993 | jpeg   | landscape   | HR     | production-ready | interlude-02    | no                           | downscale 2560 long edge, no upscale | interlude-02-source.jpg    |
-| 1000511840          | 4024×6048 | jpeg   | portrait    | HR     | production-ready | thankYou        | no                           | downscale 2560 long edge, no upscale | thank-you-source.jpg       |
-| _DSC5820            | 5298×3526 | jpeg   | landscape   | HR     | unused           | none            | unused HR reserve            | not ingested                         | —                          |
-| _DSC5907            | 5476×3643 | jpeg   | landscape   | HR     | unused           | none            | unused HR reserve            | not ingested                         | —                          |
-| client-hero-seated  | 1006×1512 | jpeg   | portrait    | WA     | provisional-whatsapp | hero         | no                           | ingested as provided, no upscale     | hero-02-source.jpg         |
-| 1001086433          | 1070×1600 | jpeg   | portrait    | WA     | unusable         | none            | near-dup yellow              | not ingested                         | —                          |
-| 1000511882          | 1080×2400 | jpeg   | portrait    | weak   | unusable         | none            | insufficient for desktop     | not ingested                         | —                          |
+| source filename    | dims      | format | orientation | weight | quality              | role            | duplicate                | processing                           | derivative                 |
+| ------------------ | --------- | ------ | ----------- | ------ | -------------------- | --------------- | ------------------------ | ------------------------------------ | -------------------------- |
+| 1000511838         | 3900×5861 | jpeg   | portrait    | HR     | production-ready     | interlude-03    | former hero reused       | downscale 2560 long edge, no upscale | hero-source.jpg            |
+| _DSC5939           | 4024×6048 | jpeg   | portrait    | HR     | production-ready     | gallery-feature | no                       | downscale 2560 long edge, no upscale | gallery-feature-source.jpg |
+| 1000511828         | 4024×6048 | jpeg   | portrait    | HR     | production-ready     | gallery         | no                       | downscale 2560 long edge, no upscale | gallery-01-source.jpg      |
+| _DSC5847           | 3995×6004 | jpeg   | portrait    | HR     | unused               | none            | removed from gallery     | not referenced                       | gallery-02-source.jpg      |
+| 1000511822         | 4024×6048 | jpeg   | portrait    | HR     | production-ready     | gallery         | no                       | downscale 2560 long edge, no upscale | gallery-03-source.jpg      |
+| _DSC5759           | 3734×5611 | jpeg   | portrait    | HR     | unused               | none            | removed from gallery     | not referenced                       | gallery-04-source.jpg      |
+| _DSC5878           | 5390×3586 | jpeg   | landscape   | HR     | production-ready     | interlude       | no                       | downscale 2560 long edge, no upscale | interlude-source.jpg       |
+| _DSC5914           | 6002×3993 | jpeg   | landscape   | HR     | production-ready     | interlude-02    | no                       | downscale 2560 long edge, no upscale | interlude-02-source.jpg    |
+| 1000511840         | 4024×6048 | jpeg   | portrait    | HR     | production-ready     | thankYou        | no                       | downscale 2560 long edge, no upscale | thank-you-source.jpg       |
+| _DSC5820           | 5298×3526 | jpeg   | landscape   | HR     | unused               | none            | unused HR reserve        | not ingested                         | —                          |
+| _DSC5907           | 5476×3643 | jpeg   | landscape   | HR     | unused               | none            | unused HR reserve        | not ingested                         | —                          |
+| client-hero-seated | 1006×1512 | jpeg   | portrait    | WA     | provisional-whatsapp | hero            | no                       | ingested as provided, no upscale     | hero-02-source.jpg         |
+| 1001086433         | 1070×1600 | jpeg   | portrait    | WA     | unusable             | none            | near-dup yellow          | not ingested                         | —                          |
+| 1000511882         | 1080×2400 | jpeg   | portrait    | weak   | unusable             | none            | insufficient for desktop | not ingested                         | —                          |
 
-### Uniqueness table
+### Historical preparation source mapping
 
-| role            | source            | derivative                 | intentional multi-role? |
-| --------------- | ----------------- | -------------------------- | ----------------------- |
-| hero            | client-hero-seated | hero-02-source.jpg        | no                      |
-| interlude-03    | 1000511838        | hero-source.jpg            | former hero reused      |
-| gallery-feature | _DSC5939          | gallery-feature-source.jpg | no                      |
-| gallery-01      | 1000511828        | gallery-01-source.jpg      | no                      |
-| gallery-03      | 1000511822        | gallery-03-source.jpg      | no                      |
-| interlude       | _DSC5878          | interlude-source.jpg       | no                      |
-| interlude-02    | _DSC5914          | interlude-02-source.jpg    | no                      |
-| thankYou        | 1000511840        | thank-you-source.jpg       | no                      |
+The table below records the preparation inputs, not the current release asset paths. On 2026-09-13
+the owner confirmed the currently published sofa photograph as canonical. The package now preserves
+the published originals for `gallery-01`, `gallery-03`, `gallery-feature`, `interlude`,
+`interlude-02`, `interlude-03`, and `thank-you` using the corresponding `<key>-published.webp` files
+and the existing validated original-image contract. The sofa source differed in photograph as well
+as encoding. The other six published files also differed from the package in bytes/dimensions;
+preserving them avoids recompression. No shared image size limit or validation tolerance was
+increased. Original preparation files remain provenance evidence and are not inputs for these seven
+active release keys.
+
+| role            | source             | derivative                 | intentional multi-role? |
+| --------------- | ------------------ | -------------------------- | ----------------------- |
+| hero            | client-hero-seated | hero-02-source.jpg         | no                      |
+| interlude-03    | 1000511838         | hero-source.jpg            | former hero reused      |
+| gallery-feature | _DSC5939           | gallery-feature-source.jpg | no                      |
+| gallery-01      | 1000511828         | gallery-01-source.jpg      | no                      |
+| gallery-03      | 1000511822         | gallery-03-source.jpg      | no                      |
+| interlude       | _DSC5878           | interlude-source.jpg       | no                      |
+| interlude-02    | _DSC5914           | interlude-02-source.jpg    | no                      |
+| thankYou        | 1000511840         | thank-you-source.jpg       | no                      |
 
 Hero desktop and hero mobile share `hero-02-source.jpg` with independent focals. The former hero
-file `hero-source.jpg` is reused only as `interlude-03`. Closing image is not the hero. Gallery
+photograph is preserved in `interlude-03-published.webp`. Closing image is not the hero. Gallery
 uses `feature-stack` with `gallery-01`, `gallery-feature`, and `gallery-03`.
 
 ---
@@ -242,14 +265,19 @@ uses `feature-stack` with `gallery-01`, `gallery-feature`, and `gallery-03`.
   Location consumes `stacked-venue-plates` with section-scoped type/palette so the chapter matches
   the shared plate presentation. Yellow is not a UI color on surrounding sections. Cream/blush are
   light surfaces; silver is line/detail; coral is rare (wax highlight).
-- Structural selections: itinerary `editorial-program` (5 described moments); gallery `feature-stack` with item order
-  `gallery-01` (feature, 3/4), `gallery-feature` (standard, 4/5), `gallery-03` (wide, 5/4); location `stacked-venue-plates` with `presentation: 'simple'`,
-  `presentationOptions.showNavigationButtons: false`, and `presentationOptions.showFlourishes: true`, using canonical `venues[]` (ceremony and reception venue entries); personalized access `formal-pass`; RSVP `formal-register`
-  (presentation only — do not persist `accessMode`, `confirmationMode`, or `guestCap`); family
-  `asymmetric-groups` + `text-only` (with two distinct groups and godparents); thank you `full-bleed-photo` with overlay anchor/safe area; envelope `variant: 'premiere-floral'` with
-  `sealIcon: 'monogram'`, `envelopeName: 'Renata - Mis XV años'`, `cardName: 'Renata'`, `cardLabel: 'MIS XV'`,
-  `cardTagline: '05 · 09 · 2026'`, and `microcopy: 'Abra su invitación'`. Reveal appearance is owned by the premiere-floral envelope variant, not the
-  Renata profile. Interlude crop is owned by provision `focalPoint` / `focalPointDesktop`.
+- Structural selections: itinerary `editorial-program` (5 described moments); gallery
+  `feature-stack` with item order `gallery-01` (feature, 3/4), `gallery-feature` (standard, 4/5),
+  `gallery-03` (wide, 5/4); location `stacked-venue-plates` with `presentation: 'simple'`,
+  `presentationOptions.showNavigationButtons: false`, and
+  `presentationOptions.showFlourishes: true`, using canonical `venues[]` (ceremony and reception
+  venue entries); personalized access `formal-pass`; RSVP `formal-register` (presentation only — do
+  not persist `accessMode`, `confirmationMode`, or `guestCap`); family `asymmetric-groups` +
+  `text-only` (with two distinct groups and godparents); thank you `full-bleed-photo` with overlay
+  anchor/safe area; envelope `variant: 'premiere-floral'` with `sealIcon: 'monogram'`,
+  `envelopeName: 'Renata - Mis XV años'`, `cardName: 'Renata'`, `cardLabel: 'MIS XV'`,
+  `cardTagline: '05 · 09 · 2026'`, and `microcopy: 'Abra su invitación'`. Reveal appearance is owned
+  by the premiere-floral envelope variant, not the Renata profile. Interlude crop is owned by
+  provision `focalPoint` / `focalPointDesktop`.
 - Lane B: none. Demo stays the gold editorial template.
 - Music omit / include: omitted (`not_applicable`).
 - Other: no `renata` key in `LEGACY_INTERSECTION_PROFILES`. No shared renderer/variant branches.
