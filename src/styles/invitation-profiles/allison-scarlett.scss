@@ -87,7 +87,10 @@
 		--gifts-padding-block: clamp(4rem, 7vw, 5.5rem);
 
 		.gifts-section__title {
-			font: 500 clamp(2rem, 4vw, 2.75rem) / 1.2 'EB Garamond Variable', georgia, serif;
+			font:
+				500 clamp(2rem, 4vw, 2.75rem) / 1.2 'EB Garamond Variable',
+				georgia,
+				serif;
 			text-transform: none;
 			text-wrap: balance;
 		}
@@ -122,7 +125,8 @@
 			max-width: 100%;
 			height: 7.5rem;
 			margin: 0 auto 1.25rem;
-			background: url('../../assets/invitations/allison-scarlett/seal-delivery.webp') center / contain no-repeat;
+			background: url('../../assets/invitations/allison-scarlett/seal-delivery.webp') center /
+				contain no-repeat;
 			border: 0;
 			box-shadow: none;
 			backdrop-filter: none;
@@ -133,7 +137,10 @@
 		}
 
 		.gift-card__title {
-			font: 500 clamp(1.625rem, 3vw, 1.875rem) / 1.3 'EB Garamond Variable', georgia, serif;
+			font:
+				500 clamp(1.625rem, 3vw, 1.875rem) / 1.3 'EB Garamond Variable',
+				georgia,
+				serif;
 			letter-spacing: 0;
 			margin-bottom: 0.75rem;
 			overflow-wrap: anywhere;
@@ -158,7 +165,10 @@
 		.ceremonial-closing__message {
 			max-width: 30ch;
 			margin: 0;
-			font: 400 clamp(1.375rem, 2.5vw, 1.75rem) / 1.5 'EB Garamond Variable', georgia, serif;
+			font:
+				400 clamp(1.375rem, 2.5vw, 1.75rem) / 1.5 'EB Garamond Variable',
+				georgia,
+				serif;
 			color: var(--color-ice-blue);
 			text-wrap: balance;
 		}
@@ -712,5 +722,170 @@
 		--header-nav-filter-transparent: none;
 		--hamburger-color: var(--color-deep-blue-graphite);
 		--header-bg-scrolled: var(--color-ice-blue);
+	}
+
+	// Preserve Allison's current full-bleed treatment without changing the shared variant.
+
+	.invitation-hero.ceremonial-portrait-hero[data-variant='ceremonial-portrait'] {
+		height: auto;
+		text-align: left;
+
+		.ceremonial-portrait-hero__paper {
+			display: contents;
+		}
+
+		.ceremonial-portrait-hero__side {
+			display: none;
+		}
+
+		.ceremonial-portrait-hero__scrim,
+		.ceremonial-portrait-hero__scroll-indicator {
+			display: block;
+		}
+
+		.ceremonial-portrait-hero__photograph {
+			margin: 0;
+			padding: 0;
+			border: 0;
+			border-radius: 0;
+		}
+
+		.ceremonial-portrait-hero__photograph img {
+			border-radius: 0;
+		}
+
+		position: relative;
+		display: grid;
+		min-height: 100svh;
+		place-items: end start;
+		padding: clamp(6.5rem, 14svh, 10rem) 1.5rem clamp(3.5rem, 9svh, 6rem);
+		color: var(--color-ice-blue, rgb(243 248 255));
+		background: var(--color-deep-blue-graphite);
+		overflow: hidden;
+
+		.ceremonial-portrait-hero__media,
+		.ceremonial-portrait-hero__media img {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+		}
+
+		.ceremonial-portrait-hero__media img {
+			object-fit: cover;
+			object-position: var(--hero-focal-point-mobile, 50% 38%);
+		}
+
+		.ceremonial-portrait-hero__scrim {
+			position: absolute;
+			inset: 0;
+			background: linear-gradient(
+				0deg,
+				rgb(4 14 29 / 78%) 0%,
+				rgb(4 14 29 / 42%) 20%,
+				transparent 46%
+			);
+			pointer-events: none;
+		}
+
+		.ceremonial-portrait-hero__ambience {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			opacity: 9%;
+			mix-blend-mode: screen;
+			mask-image: linear-gradient(90deg, black, transparent 62%);
+			pointer-events: none;
+		}
+
+		.ceremonial-portrait-hero__content {
+			position: relative;
+			z-index: 1;
+			max-width: min(33rem, 92vw);
+			text-align: left;
+			text-wrap: balance;
+		}
+
+		.ceremonial-portrait-hero__crest {
+			width: min(42%, 8.5rem);
+			height: auto;
+			filter: drop-shadow(0 0.3rem 0.7rem rgb(4 14 29 / 44%));
+		}
+
+		.ceremonial-portrait-hero__label {
+			margin: 1.25rem 0 0.4rem;
+			font: 600 clamp(0.7rem, 2.4vw, 0.84rem) / 1.4 var(--font-body);
+			letter-spacing: 0.26em;
+			text-transform: uppercase;
+			text-shadow: 0 0.1rem 0.45rem rgb(4 14 29 / 70%);
+		}
+
+		.ceremonial-portrait-hero__name {
+			margin: 0;
+			font: 400 clamp(4.5rem, 18vw, 7.5rem) / 0.8 var(--font-calligraphy);
+			text-shadow: 0 0.2rem 1.2rem rgb(4 14 29 / 70%);
+			letter-spacing: 0;
+		}
+
+		.ceremonial-portrait-hero__name span {
+			display: block;
+			white-space: nowrap;
+		}
+
+		.ceremonial-portrait-hero__date {
+			margin: 1.4rem 0 0;
+			font: 600 clamp(1rem, 4vw, 1.35rem) / 1.35 var(--font-display);
+			letter-spacing: 0.06em;
+			text-shadow: 0 0.1rem 0.5rem rgb(4 14 29 / 80%);
+		}
+
+		.ceremonial-portrait-hero__scroll-indicator {
+			z-index: 1;
+			bottom: 1.25rem;
+			right: 1.25rem;
+			left: auto;
+			margin: 0;
+			transform: none;
+			color: rgb(243 248 255 / 88%);
+			text-shadow: 0 0.1rem 0.45rem rgb(4 14 29 / 84%);
+		}
+
+		.event-theme-wrapper:has(.music-player) & .ceremonial-portrait-hero__scroll-indicator {
+			bottom: 6.5rem;
+		}
+
+		@media (width >= 64rem) {
+			padding: clamp(7rem, 16vh, 11rem) clamp(3rem, 10vw, 10rem);
+
+			.ceremonial-portrait-hero__media img {
+				object-position: var(--hero-focal-point-desktop, 50% 38%);
+			}
+
+			.ceremonial-portrait-hero__scrim {
+				background: linear-gradient(
+					0deg,
+					rgb(4 14 29 / 80%) 0%,
+					rgb(4 14 29 / 40%) 22%,
+					transparent 48%
+				);
+			}
+
+			.ceremonial-portrait-hero__content {
+				max-width: min(38rem, 47vw);
+			}
+
+			.ceremonial-portrait-hero__name {
+				font-size: clamp(6rem, 9vw, 10rem);
+			}
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.ceremonial-portrait-hero__scroll-indicator,
+			.ceremonial-portrait-hero__scroll-indicator .invitation-hero__scroll-chevron {
+				animation: none;
+			}
+		}
 	}
 }

@@ -1,26 +1,56 @@
 import { expect, test } from '@playwright/test';
 import { initializeVisualCapture } from './harness/complete-page-capture';
 
-test('April visual capture keeps its accepted countdown while the public route expires', async ({
-	browser,
-}) => {
-	const audit = await browser.newPage();
-	const publicPage = await browser.newPage();
-	try {
-		await initializeVisualCapture(audit);
-		await audit.goto(
-			'/xv/abril-michelle-becerra-rea?skipEnvelope=true&screenshot=true&animations=off',
-		);
-		await expect(audit.locator('[data-countdown-value="days"]')).toHaveText('45');
-		await publicPage.clock.setFixedTime(new Date('2026-09-13T00:00:00.000Z'));
-		await publicPage.goto('/xv/abril-michelle-becerra-rea?skipEnvelope=true');
-		await expect(publicPage.locator('[data-countdown-status]')).toBeVisible();
-		await expect(publicPage.locator('[data-countdown]')).toBeHidden();
-	} finally {
-		await audit.close();
-		await publicPage.close();
+for (const audit of [false, true]) {
+	for (const expired of [false, true]) {
+		test(`countdown ${audit ? 'audit' : 'public'} renders ${expired ? 'expired' : 'future'} state`, async ({
+			page,
+		}) => {
+			const now = new Date(expired ? '2026-09-13T00:00:00.000Z' : '2026-09-10T19:37:17.052Z');
+			if (audit) await initializeVisualCapture(page, now);
+			else await page.clock.setFixedTime(now);
+			await page.goto(
+				`/xv/abril-michelle-becerra-rea?skipEnvelope=true${audit ? '&screenshot=true&animations=off' : ''}`,
+			);
+			const timer = page.locator('[data-countdown]');
+			const status = page.locator('[data-countdown-status]');
+			if (expired) {
+				await expect(timer).toBeHidden();
+				await expect(status).toBeVisible();
+				await expect(status).toHaveText('La celebración ya comenzó');
+			} else {
+				await expect(timer).toBeVisible();
+				await expect(status).toBeHidden();
+				if (audit)
+					await expect(page.locator('[data-countdown-value="days"]')).toHaveText('45');
+			}
+		});
 	}
-});
+}
+
+for (const width of [390, 1440]) {
+	test(`Allison keeps its isolated full-bleed hero at ${width}px`, async ({ page }, testInfo) => {
+		await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+		await initializeVisualCapture(page);
+		await page.goto('/test/variant?full=1&presentation=1&slug=allison-scarlett');
+		await page.evaluate(() => document.fonts.ready);
+		const hero = page.locator('.ceremonial-portrait-hero');
+		const media = hero.locator('.ceremonial-portrait-hero__media');
+		await expect(hero).toHaveCSS('display', 'grid');
+		await expect(media).toHaveCSS('position', 'absolute');
+		await expect(hero.locator('.ceremonial-portrait-hero__side').first()).toBeHidden();
+		const bounds = await hero.boundingBox();
+		const photo = await media.boundingBox();
+		expect(bounds).not.toBeNull();
+		expect(photo).not.toBeNull();
+		expect(photo!.width).toBeCloseTo(bounds!.width, 0);
+		expect(photo!.height).toBeCloseTo(bounds!.height, 0);
+		await hero.screenshot({
+			path: testInfo.outputPath(`allison-${width}.png`),
+			animations: 'disabled',
+		});
+	});
+}
 
 test.describe('canonical managed invitation route contracts', () => {
 	test('Alba renders the canonical days-only Countdown and split-map Location', async ({

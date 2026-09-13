@@ -4,37 +4,22 @@
 
 .invitation-hero.ceremonial-portrait-hero[data-variant='ceremonial-portrait'] {
 	position: relative;
-	display: grid;
-	min-height: 100svh;
-	place-items: end start;
-	padding: clamp(6.5rem, 14svh, 10rem) 1.5rem clamp(3.5rem, 9svh, 6rem);
-	color: var(--color-ice-blue, rgb(243 248 255));
-	background: var(--color-deep-blue-graphite);
+	display: block;
+	height: auto;
+	min-height: auto;
+	padding: 4.5rem 1.25rem 5rem;
+	text-align: center;
+	color: var(--color-text-primary);
+	background: radial-gradient(
+		ellipse at top,
+		var(--color-surface-secondary),
+		var(--color-surface-primary)
+	);
 	overflow: hidden;
 
-	.ceremonial-portrait-hero__media,
-	.ceremonial-portrait-hero__media img {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-	}
-
-	.ceremonial-portrait-hero__media img {
-		object-fit: cover;
-		object-position: var(--hero-focal-point-mobile, 50% 38%);
-	}
-
-	.ceremonial-portrait-hero__scrim {
-		position: absolute;
-		inset: 0;
-		background: linear-gradient(
-			0deg,
-			rgb(4 14 29 / 78%) 0%,
-			rgb(4 14 29 / 42%) 20%,
-			transparent 46%
-		);
-		pointer-events: none;
+	.ceremonial-portrait-hero__scrim,
+	.ceremonial-portrait-hero__scroll-indicator {
+		display: none;
 	}
 
 	.ceremonial-portrait-hero__ambience {
@@ -43,38 +28,36 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		opacity: 9%;
-		mix-blend-mode: screen;
-		mask-image: linear-gradient(90deg, black, transparent 62%);
+		opacity: 12%;
+		mask-image: linear-gradient(black, transparent 90%);
 		pointer-events: none;
 	}
 
-	.ceremonial-portrait-hero__content {
+	.ceremonial-portrait-hero__paper {
 		position: relative;
-		z-index: 1;
-		max-width: min(33rem, 92vw);
-		text-align: left;
-		text-wrap: balance;
+		max-width: 38rem;
+		margin-inline: auto;
+		padding: 0 1rem;
+		border: 0;
+		background: transparent;
 	}
 
 	.ceremonial-portrait-hero__crest {
-		width: min(42%, 8.5rem);
+		width: min(52%, 11rem);
 		height: auto;
-		filter: drop-shadow(0 0.3rem 0.7rem rgb(4 14 29 / 44%));
 	}
 
 	.ceremonial-portrait-hero__label {
-		margin: 1.25rem 0 0.4rem;
-		font: 600 clamp(0.7rem, 2.4vw, 0.84rem) / 1.4 var(--font-body);
-		letter-spacing: 0.26em;
+		margin: 0.5rem 0;
+		font: 400 1rem / 1.5 var(--font-body);
+		letter-spacing: 0.2em;
 		text-transform: uppercase;
-		text-shadow: 0 0.1rem 0.45rem rgb(4 14 29 / 70%);
 	}
 
 	.ceremonial-portrait-hero__name {
-		margin: 0;
-		font: 400 clamp(4.5rem, 18vw, 7.5rem) / 0.8 var(--font-calligraphy);
-		text-shadow: 0 0.2rem 1.2rem rgb(4 14 29 / 70%);
+		margin: 0.75rem 0;
+		font: 400 clamp(3rem, 14vw, 3.5rem) / 1.06 var(--font-calligraphy);
+		text-shadow: none;
 		letter-spacing: 0;
 	}
 
@@ -84,56 +67,66 @@
 	}
 
 	.ceremonial-portrait-hero__date {
-		margin: 1.4rem 0 0;
-		font: 600 clamp(1rem, 4vw, 1.35rem) / 1.35 var(--font-display);
-		letter-spacing: 0.06em;
-		text-shadow: 0 0.1rem 0.5rem rgb(4 14 29 / 80%);
+		margin: 0.65rem 0 1.25rem;
+		font: 500 1.3rem / 1.5 var(--font-display);
 	}
 
-	.ceremonial-portrait-hero__scroll-indicator {
-		z-index: 1;
-		bottom: 1.25rem;
-		right: 1.25rem;
-		left: auto;
-		margin: 0;
-		transform: none;
-		color: rgb(243 248 255 / 88%);
-		text-shadow: 0 0.1rem 0.45rem rgb(4 14 29 / 84%);
+	.ceremonial-portrait-hero__photograph {
+		width: min(100%, 20rem);
+		margin: 0 auto;
+		padding: 6px;
+		border: 1px solid var(--color-cold-silver);
+		border-radius: 0.7rem;
+		box-shadow: none;
 	}
 
-	.event-theme-wrapper:has(.music-player) & .ceremonial-portrait-hero__scroll-indicator {
-		bottom: 6.5rem;
+	.ceremonial-portrait-hero__photograph img {
+		display: block;
+		width: 100%;
+		height: auto;
+		object-fit: contain;
+		border-radius: 0.35rem;
+	}
+
+	.ceremonial-portrait-hero__ornament {
+		display: block;
+		width: min(52%, 11rem);
+		height: auto;
+		margin: 0.75rem 0 0 auto;
+	}
+
+	.ceremonial-portrait-hero__accent {
+		position: absolute;
+		bottom: 0.5rem;
+		left: 1rem;
+		width: 5rem;
+		height: auto;
+	}
+
+	.ceremonial-portrait-hero__side {
+		display: none;
 	}
 
 	@media (width >= 64rem) {
-		padding: clamp(7rem, 16vh, 11rem) clamp(3rem, 10vw, 10rem);
+		padding: 5rem 2rem 6rem;
 
-		.ceremonial-portrait-hero__media img {
-			object-position: var(--hero-focal-point-desktop, 50% 38%);
+		.ceremonial-portrait-hero__side {
+			display: block;
+			position: absolute;
+			width: 12rem;
+			height: auto;
+			top: 52%;
+			opacity: 45%;
 		}
 
-		.ceremonial-portrait-hero__scrim {
-			background: linear-gradient(
-				0deg,
-				rgb(4 14 29 / 80%) 0%,
-				rgb(4 14 29 / 40%) 22%,
-				transparent 48%
-			);
+		.ceremonial-portrait-hero__side--left {
+			left: calc(50% - 24rem);
+			transform: rotate(90deg);
 		}
 
-		.ceremonial-portrait-hero__content {
-			max-width: min(38rem, 47vw);
-		}
-
-		.ceremonial-portrait-hero__name {
-			font-size: clamp(6rem, 9vw, 10rem);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.ceremonial-portrait-hero__scroll-indicator,
-		.ceremonial-portrait-hero__scroll-indicator .invitation-hero__scroll-chevron {
-			animation: none;
+		.ceremonial-portrait-hero__side--right {
+			right: calc(50% - 24rem);
+			transform: rotate(-90deg);
 		}
 	}
 }

@@ -2,10 +2,13 @@ import type { Page } from '@playwright/test';
 import sharp from 'sharp';
 import { getOperationalToolbarSelectors } from '../../../scripts/screenshot/utils';
 
-export async function initializeVisualCapture(page: Page): Promise<void> {
-	// Match the accepted visual references while leaving browser timers running.
-	// Public invitation pages do not use this capture harness.
-	await page.clock.setFixedTime(new Date('2026-09-10T19:37:17.052Z'));
+export async function initializeVisualCapture(
+	page: Page,
+	now = new Date('2026-09-10T19:37:17.052Z'),
+): Promise<void> {
+	// Keep the matrix epoch stable; temporal behavior tests supply an explicit epoch.
+	// This changes only the browser clock, never invitation dates or persisted data.
+	await page.clock.setFixedTime(now);
 	await page.addInitScript(() => {
 		Object.assign(window, { __celebraScreenshotMode: 'audit' });
 	});
