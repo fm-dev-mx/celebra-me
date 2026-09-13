@@ -757,6 +757,7 @@ function cmdRunManagedDbContracts(): void {
 			'--config',
 			'jest.managed-db-contracts.config.cjs',
 			'tests/provision/goal2-rekey-disposable-integration.test.ts',
+			'tests/provision/image-namespace-disposable-integration.test.ts',
 		],
 		{
 			throwOnError: false,

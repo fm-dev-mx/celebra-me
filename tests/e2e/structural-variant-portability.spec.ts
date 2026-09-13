@@ -228,6 +228,23 @@ async function runVariantVisualTest(
 	cssOwner: CanonicalVariantCssOwner | string,
 ) {
 	await initializeVisualCapture(page);
+	if (section === 'countdown') {
+		await page.addInitScript(() => {
+			const intervalIds: number[] = [];
+			const browserWindow: Window = window;
+			const setInterval = browserWindow.setInterval.bind(browserWindow);
+			browserWindow.setInterval = (
+				handler: TimerHandler,
+				timeout?: number,
+				...args: unknown[]
+			) => {
+				const id = setInterval(handler, timeout, ...args);
+				intervalIds.push(id);
+				return id;
+			};
+			Object.assign(window, { __countdownCaptureIntervalIds: intervalIds });
+		});
+	}
 	const consoleErrors: string[] = [];
 	const pageErrors: string[] = [];
 	const externalRequests: string[] = [];
@@ -540,11 +557,11 @@ async function runVariantVisualTest(
 	// and typography are tested deterministically without live clock-ticking drift.
 	if (section === 'countdown') {
 		await page.evaluate(() => {
-			let id = window.setInterval(() => {}, 0);
-			while (id > 0) {
-				window.clearInterval(id);
-				id--;
-			}
+			// Clock-backed timer IDs are opaque and can start at very large values.
+			const captureWindow = window as Window & { __countdownCaptureIntervalIds?: number[] };
+			if (!captureWindow.__countdownCaptureIntervalIds)
+				throw new Error('Missing capture timer registry.');
+			for (const id of captureWindow.__countdownCaptureIntervalIds) window.clearInterval(id);
 			const values = document.querySelectorAll<HTMLElement>('.countdown__value');
 			const defaults = ['173', '12', '34', '56'];
 			values.forEach((v, i) => {

@@ -11,12 +11,14 @@ import { computePackageHash, PACKAGE_SCHEMA_VERSION } from './invitation-package
 import { selectPackageApprovalAssetHashes } from './approval-asset-hashes.ts';
 import {
 	buildCloudinaryDeliveryUrl,
+	buildCloudinaryPublicId,
 	classifyCloudinaryPublicIdEnvironment,
 	buildCloudinaryOgImageUrl,
 	assertCloudinaryPublicIdEnvironment,
 	assertCloudinaryMutationTarget,
 	uploadOrReconcileCloudinaryAsset,
 	verifyCloudinaryAsset,
+	hydrateCloudinaryEnvFromFiles,
 } from './cloudinary-adapter.ts';
 import {
 	classifyDbTarget,
@@ -209,6 +211,9 @@ export function validatePackageData(pkg: InvitationPackageData): InvitationPacka
 		throw new Error(
 			`Package hash integrity verification failed! Computed ${computedHash}, package claims ${pkg.packageHash}.`,
 		);
+	}
+	if (pkg.assets.some((asset) => asset.providerPublicId || asset.secureUrl)) {
+		throw new Error('Package contains hosted image identity; regenerate a portable package.');
 	}
 	return pkg;
 }
@@ -788,6 +793,7 @@ async function pruneHostedManagedAssets(input: {
 
 interface DatabaseUpsertParams {
 	targetDbUrl: string;
+	targetEnvironment: 'preview' | 'production';
 	targetInvitationId: string;
 	ownerUserId: string;
 	slug: string;
@@ -815,6 +821,37 @@ export type HostedMutationFlags = {
 	shouldPublish: boolean;
 	shouldUpsertEvent: boolean;
 };
+
+/** Resolve target identity after package hash validation, never inside the portable package. */
+export function materializeHostedPackageAssets(
+	packageData: InvitationPackageData,
+	target: 'preview' | 'production',
+): InvitationPackageData {
+	const cloudName = hydrateCloudinaryEnvFromFiles({
+		keys: ['CLOUDINARY_CLOUD_NAME'],
+	}).CLOUDINARY_CLOUD_NAME?.trim();
+	if (!cloudName || cloudName === 'unconfigured')
+		throw new Error('Cloudinary cloud name is required for hosted package materialization.');
+	return {
+		...packageData,
+		assets: packageData.assets.map((asset) => {
+			if (asset.provider !== 'cloudinary') return asset;
+			const publicId = buildCloudinaryPublicId({
+				targetEnvironment: target,
+				eventType: packageData.invitation.eventType,
+				slug: packageData.invitation.slug,
+				key: asset.key,
+				sha256: asset.sha256,
+			});
+			return {
+				...asset,
+				storagePath: publicId,
+				providerPublicId: publicId,
+				secureUrl: buildCloudinaryDeliveryUrl(cloudName, publicId, asset.mimeType),
+			};
+		}),
+	};
+}
 
 /**
  * Decide which hosted DB writes a managed import must perform.
@@ -902,6 +939,9 @@ export interface HostedAssetUpsertInput {
 	asset: InvitationPackageAsset;
 	definitionSlug: string;
 	operationId: string;
+	targetEnvironment: 'preview' | 'production';
+	eventType: string;
+	slug: string;
 }
 
 /**
@@ -912,6 +952,15 @@ export function buildHostedAssetUpsertSql(input: HostedAssetUpsertInput): string
 	const { assetId, targetInvitationId, asset, definitionSlug, operationId } = input;
 	const provider = asset.provider ?? 'cloudinary';
 	const providerPublicId = asset.providerPublicId ?? asset.storagePath;
+	if (provider === 'cloudinary') {
+		assertCloudinaryMutationTarget(providerPublicId, {
+			environment: input.targetEnvironment,
+			eventType: input.eventType,
+			slug: input.slug,
+		});
+		if (!asset.secureUrl || !asset.secureUrl.includes(`/${providerPublicId}.`))
+			throw new Error('Hosted Cloudinary asset lacks its canonical destination URL.');
+	}
 	const secureUrlSql = asset.secureUrl ? sqlLiteral(asset.secureUrl) : 'null';
 	return (
 		`insert into public.invitation_assets (id, invitation_id, display_name, default_alt_text, bucket, storage_path, mime_type, width, height, file_size, validation_version, original_mime_type, original_file_size, sha256, provider, provider_public_id, secure_url, managed_by_definition_slug, managed_source_key, managed_sha256, managed_operation_id) values ('${assetId}'::uuid, '${targetInvitationId}'::uuid, ${sqlLiteral(asset.displayName)}, ${asset.defaultAltText ? sqlLiteral(asset.defaultAltText) : 'null'}, ${sqlLiteral(asset.bucket)}, ${sqlLiteral(asset.storagePath)}, ${sqlLiteral(asset.mimeType)}, ${asset.width ?? 'null'}, ${asset.height ?? 'null'}, ${asset.fileSize ?? 'null'}, ${asset.validationVersion}, ${asset.originalMimeType ? sqlLiteral(asset.originalMimeType) : 'null'}, ${asset.originalFileSize ?? 'null'}, ${sqlLiteral(asset.sha256)}, ${sqlLiteral(provider)}, ${sqlLiteral(providerPublicId)}, ${secureUrlSql}, ${sqlLiteral(definitionSlug)}, ${sqlLiteral(asset.key)}, ${sqlLiteral(asset.sha256)}, ${sqlLiteral(operationId)}::uuid) ` +
@@ -935,6 +984,9 @@ function upsertAssetRows(
 	assetRefs: UploadedAssetMap,
 	definitionSlug: string,
 	operationId: string,
+	targetEnvironment: 'preview' | 'production',
+	eventType: string,
+	slug: string,
 ): number {
 	let count = 0;
 	for (const pAsset of assets) {
@@ -948,6 +1000,9 @@ function upsertAssetRows(
 				asset: pAsset,
 				definitionSlug,
 				operationId,
+				targetEnvironment,
+				eventType,
+				slug,
 			}),
 			targetDbUrl,
 			{ tuplesOnly: false },
@@ -1061,6 +1116,9 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 			params.assetRefs,
 			params.pkg.sourceSlug,
 			params.operationId,
+			params.targetEnvironment,
+			params.eventType,
+			params.slug,
 		);
 	}
 
@@ -1826,9 +1884,10 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	if (Boolean(packagePath) === Boolean(options.packageData)) {
 		throw new Error('Provide exactly one of packagePath or packageData.');
 	}
-	const pkg = packagePath
+	const sourcePkg = packagePath
 		? validatePackage(packagePath)
 		: validatePackageData(options.packageData!);
+	const pkg = materializeHostedPackageAssets(sourcePkg, expectedTarget);
 	const validatedUrls = validateEnvironmentUrlsPreflight({
 		target: expectedTarget,
 		targetDbUrl,
@@ -2481,6 +2540,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			'published_invitation_content',
 		]);
 		const dbMutations = executeDatabaseUpserts({
+			targetEnvironment: expectedTarget,
 			targetDbUrl,
 			targetInvitationId: drift.targetInvitationId,
 			ownerUserId,

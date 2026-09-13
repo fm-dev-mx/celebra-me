@@ -86,7 +86,11 @@ jobs:
                   PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS: 'false'
                   PLAYWRIGHT_PREVIEW_SUPABASE_URL: ${{ secrets.PLAYWRIGHT_PREVIEW_SUPABASE_URL }}
                   VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-              run: pnpm test:e2e:preview:public
+                  PREVIEW_DB_URL: ${{ secrets.PREVIEW_DB_URL }}
+                  PREVIEW_PUBLIC_ROUTES_MANIFEST: .tmp/playwright/preview-public-routes.json
+              run: |
+                  pnpm exec tsx scripts/invitation/preview-public-routes.ts "$PREVIEW_PUBLIC_ROUTES_MANIFEST"
+                  pnpm test:e2e:preview:public
 
             - name: Record Preview smoke completion
               if: always() && env.POST_DEPLOY_ENVIRONMENT == 'preview'

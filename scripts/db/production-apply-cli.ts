@@ -19,6 +19,7 @@ import {
 } from './production-apply-orchestrator.ts';
 import { renderOperatorError, writeHuman } from './operator-cli-ux.ts';
 import { productionApplyHandoff } from './production-apply-plan.ts';
+import { runProductionImageNamespaceApply } from './production-image-namespace-apply.ts';
 
 function writeJson(value: unknown): void {
 	process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
@@ -44,6 +45,14 @@ async function main(): Promise<void> {
 	}
 
 	try {
+		if (parsed.imageManifestPath) {
+			await runProductionImageNamespaceApply({
+				manifestPath: parsed.imageManifestPath,
+				apply: parsed.apply,
+				rollback: Boolean(parsed.imageRollback),
+			});
+			return;
+		}
 		if (!parsed.apply) {
 			const plan = await buildProductionApplyPlan(parsed);
 			if (parsed.json) {

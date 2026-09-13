@@ -26,6 +26,7 @@ export interface InventoryInvitation {
 	eventType: string;
 	content: Record<string, unknown>;
 	draftContent?: Record<string, unknown> | null;
+	historicalContents?: Record<string, unknown>[];
 	assets: InventoryAsset[];
 }
 export interface ImageInventoryFinding {
@@ -34,6 +35,7 @@ export interface ImageInventoryFinding {
 	assetId: string;
 	referenced: boolean;
 	draftReferenced: boolean;
+	historicalReferenced: boolean;
 	namespace: string;
 	sourcePublicId: string | null;
 	targetPublicId: string | null;
@@ -49,10 +51,16 @@ export function inspectHostedImageInventory(
 		const route = '/' + invitation.eventType + '/' + invitation.slug;
 		const refs = collectUploadedContentRefs(invitation.content);
 		const draftRefs = collectUploadedContentRefs(invitation.draftContent);
+		const historicalRefs = (invitation.historicalContents ?? []).flatMap((content) =>
+			collectUploadedContentRefs(content),
+		);
 		const byId = new Map(invitation.assets.map((asset) => [asset.id, asset]));
 		const referencedIds = new Set(refs.map((ref) => ref.assetId));
 		const draftReferencedIds = new Set(draftRefs.map((ref) => ref.assetId));
-		const missingRefs = new Map([...refs, ...draftRefs].map((ref) => [ref.assetId, ref.path]));
+		const historicalReferencedIds = new Set(historicalRefs.map((ref) => ref.assetId));
+		const missingRefs = new Map(
+			[...historicalRefs, ...draftRefs, ...refs].map((ref) => [ref.assetId, ref.path]),
+		);
 		for (const [assetId, path] of missingRefs) {
 			if (byId.has(assetId)) continue;
 			findings.push({
@@ -61,6 +69,7 @@ export function inspectHostedImageInventory(
 				assetId,
 				referenced: referencedIds.has(assetId),
 				draftReferenced: draftReferencedIds.has(assetId),
+				historicalReferenced: historicalReferencedIds.has(assetId),
 				namespace: 'missing',
 				sourcePublicId: null,
 				targetPublicId: null,
@@ -95,6 +104,7 @@ export function inspectHostedImageInventory(
 				assetId: asset.id,
 				referenced: referencedIds.has(asset.id),
 				draftReferenced: draftReferencedIds.has(asset.id),
+				historicalReferenced: historicalReferencedIds.has(asset.id),
 				sourcePublicId: asset.publicId,
 				targetPublicId,
 				namespace,
@@ -135,14 +145,17 @@ function readInventory(target: Target): InventoryInvitation[] {
 	else assertProductionDbUrl(dbUrl);
 	const sql = [
 		"select coalesce(json_agg(row_to_json(t)), '[]'::json)::text from (",
-		'select i.slug, i.event_type as "eventType", pub.content,',
+		'select i.slug, i.event_type as "eventType",',
+		"coalesce(to_jsonb(pub.content), '{}'::jsonb) as content,",
+		"(select coalesce(json_agg(content), '[]'::json) from public.published_invitation_content",
+		'where invitation_project_id = i.id and deleted_at is null) as "historicalContents",',
 		'(select content from public.invitation_content_drafts where invitation_project_id = i.id',
 		'and deleted_at is null order by updated_at desc limit 1) as "draftContent",',
 		'coalesce((select json_agg(json_build_object(',
 		"'id', a.id::text, 'key', a.managed_source_key, 'provider', a.provider,",
 		"'publicId', a.provider_public_id, 'sha256', a.sha256, 'mimeType', a.mime_type))",
 		"from public.invitation_assets a where a.invitation_id = i.id and a.deleted_at is null), '[]'::json) as assets",
-		'from public.invitations i join lateral (',
+		'from public.invitations i left join lateral (',
 		'select content from public.published_invitation_content',
 		'where invitation_project_id = i.id and deleted_at is null',
 		'order by version desc limit 1) pub on true',
@@ -163,12 +176,14 @@ function main(): void {
 	const invalid = findings.filter((item) => item.reasons.length > 0);
 	const report = {
 		environment: target,
-		publishedInvitations: invitations.length,
+		clientInvitations: invitations.length,
 		imageRows: findings.filter((item) => item.namespace !== 'missing').length,
 		legacyImageRows: legacy.length,
 		copyCandidates: legacy.filter((item) => item.targetPublicId).length,
 		referencedLegacyImageRows: legacy.filter((item) => item.referenced).length,
 		draftReferencedLegacyImageRows: legacy.filter((item) => item.draftReferenced).length,
+		historicalReferencedLegacyImageRows: legacy.filter((item) => item.historicalReferenced)
+			.length,
 		findings: invalid,
 	};
 	if (process.argv.includes('--json'))
@@ -177,8 +192,8 @@ function main(): void {
 		process.stdout.write(
 			target +
 				': ' +
-				report.publishedInvitations +
-				' published invitations; ' +
+				report.clientInvitations +
+				' client invitations; ' +
 				report.imageRows +
 				' image rows; ' +
 				report.legacyImageRows +

@@ -3,6 +3,9 @@ import sharp from 'sharp';
 import { getOperationalToolbarSelectors } from '../../../scripts/screenshot/utils';
 
 export async function initializeVisualCapture(page: Page): Promise<void> {
+	// Match the accepted visual references while leaving browser timers running.
+	// Public invitation pages do not use this capture harness.
+	await page.clock.setFixedTime(new Date('2026-09-10T19:37:17.052Z'));
 	await page.addInitScript(() => {
 		Object.assign(window, { __celebraScreenshotMode: 'audit' });
 	});

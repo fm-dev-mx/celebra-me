@@ -4,11 +4,6 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import {
-	buildCloudinaryDeliveryUrl,
-	buildCloudinaryPublicId,
-} from '../../src/lib/intake/services/cloudinary-assets.ts';
-import { hydrateCloudinaryEnvFromFiles } from './cloudinary-adapter.ts';
-import {
 	buildNormalizedInvitationRelease,
 	canonicalize,
 	RELEASE_SCHEMA_VERSION,
@@ -109,10 +104,6 @@ export function computePackageHash(
 export function serializeInvitationPackage(
 	release: NormalizedInvitationRelease,
 ): InvitationPackageData {
-	const cloudName =
-		hydrateCloudinaryEnvFromFiles({
-			keys: ['CLOUDINARY_CLOUD_NAME'],
-		}).CLOUDINARY_CLOUD_NAME?.trim() || 'unconfigured';
 	const rawPayload: Omit<InvitationPackageData, 'packageHash'> = {
 		schemaVersion: release.schemaVersion,
 		sourceHash: release.sourceHash,
@@ -146,12 +137,6 @@ export function serializeInvitationPackage(
 			status: 'published',
 		},
 		assets: release.assets.map((asset) => {
-			const providerPublicId = buildCloudinaryPublicId({
-				eventType: release.metadata.eventType,
-				slug: release.slug,
-				key: asset.key,
-				sha256: asset.sha256,
-			});
 			return {
 				key: asset.key,
 				displayName: asset.displayName,
@@ -174,8 +159,6 @@ export function serializeInvitationPackage(
 				sha256: asset.sha256,
 				dataBase64: asset.dataBase64,
 				provider: 'cloudinary' as const,
-				providerPublicId,
-				secureUrl: buildCloudinaryDeliveryUrl(cloudName, providerPublicId, asset.mimeType),
 			};
 		}),
 	};

@@ -8,7 +8,10 @@ import {
 	type InvitationPackageData,
 } from '../../scripts/provision/invitation-package.ts';
 import type { NormalizedInvitationRelease } from '../../scripts/provision/normalized-invitation-release.ts';
-import { validatePackageData } from '../../scripts/provision/invitation-import-engine.ts';
+import {
+	materializeHostedPackageAssets,
+	validatePackageData,
+} from '../../scripts/provision/invitation-import-engine.ts';
 
 const hash = 'a'.repeat(64);
 const md5hash = 'a'.repeat(32);
@@ -156,15 +159,11 @@ describe('invitation package', () => {
 		expect(pkg.sourceHash).toBe(release.sourceHash);
 		expect(pkg.assets.every((asset) => !asset.storagePath.includes('127.0.0.1'))).toBe(true);
 		expect(pkg.assets.every((asset) => asset.provider === 'cloudinary')).toBe(true);
-		expect(pkg.assets[0]?.providerPublicId).toBe(
-			`xv/test-invitation/assets/hero-${hash.slice(0, 12)}`,
-		);
-		expect(pkg.assets[0]?.secureUrl).toContain(
-			`/xv/test-invitation/assets/hero-${hash.slice(0, 12)}.webp`,
-		);
+		expect(pkg.assets[0]?.providerPublicId).toBeUndefined();
+		expect(pkg.assets[0]?.secureUrl).toBeUndefined();
 	});
 
-	it('hydrates Cloudinary configuration before deriving the package identity', () => {
+	it('derives environment identity only after validating the portable package', () => {
 		const tempRoot = mkdtempSync(join(tmpdir(), 'invitation-package-env-'));
 		const originalCloudName = process.env.CLOUDINARY_CLOUD_NAME;
 		const cwdSpy = jest.spyOn(process, 'cwd').mockReturnValue(tempRoot);
@@ -174,7 +173,16 @@ describe('invitation package', () => {
 			delete process.env.CLOUDINARY_CLOUD_NAME;
 			const pkg = serializeInvitationPackage(baseRelease);
 			expect(pkg.packageHash).toBe(computePackageHash(pkg));
-			expect(pkg.assets[0]?.secureUrl).toContain('res.cloudinary.com/stable-cloud/');
+			const preview = materializeHostedPackageAssets(pkg, 'preview');
+			const production = materializeHostedPackageAssets(pkg, 'production');
+			expect(preview.assets[0]?.providerPublicId).toBe(
+				`preview/xv/test-invitation/assets/hero-${hash.slice(0, 12)}`,
+			);
+			expect(production.assets[0]?.providerPublicId).toBe(
+				`production/xv/test-invitation/assets/hero-${hash.slice(0, 12)}`,
+			);
+			expect(preview.assets[0]?.secureUrl).toContain('res.cloudinary.com/stable-cloud/');
+			expect(pkg.assets[0]?.providerPublicId).toBeUndefined();
 			expect(process.env.CLOUDINARY_CLOUD_NAME).toBe('stable-cloud');
 		} finally {
 			cwdSpy.mockRestore();
@@ -190,5 +198,18 @@ describe('invitation package', () => {
 		expect(() => validatePackageData({ ...valid, packageHash: 'f'.repeat(64) })).toThrow(
 			/integrity verification/i,
 		);
+	});
+
+	it('rejects a package that embeds a legacy remote image identity', () => {
+		const embedded = {
+			...basePayload,
+			assets: basePayload.assets.map((asset) => ({
+				...asset,
+				providerPublicId: `xv/test-invitation/assets/${asset.key}-aaaaaaaaaaaa`,
+			})),
+		};
+		expect(() =>
+			validatePackageData({ ...embedded, packageHash: computePackageHash(embedded) }),
+		).toThrow('regenerate a portable package');
 	});
 });

@@ -40,12 +40,40 @@ const engineSource = readFileSync(
 const sql = buildHostedAssetUpsertSql({
 	assetId: '7bce748d-8c86-40e3-b28e-0b5523640034',
 	targetInvitationId: '28110aef-078d-46bd-857c-893e10e11bc1',
-	asset: familyAsset,
+	asset: {
+		...familyAsset,
+		provider: 'cloudinary',
+		providerPublicId: 'preview/cumple/alba-rosa-quinonez/assets/family-aaaaaaaaaaaa',
+		secureUrl:
+			'https://res.cloudinary.com/test/image/upload/v1/preview/cumple/alba-rosa-quinonez/assets/family-aaaaaaaaaaaa.webp',
+	},
 	definitionSlug,
 	operationId: '11111111-1111-4111-8111-111111111111',
+	targetEnvironment: 'preview',
+	eventType: 'cumple',
+	slug: definitionSlug,
 });
 
 describe('buildHostedAssetUpsertSql', () => {
+	it('rejects a legacy or cross-environment Cloudinary ID before building a mutation', () => {
+		for (const publicId of [
+			'cumple/alba-rosa-quinonez/assets/family-aaaaaaaaaaaa',
+			'production/cumple/alba-rosa-quinonez/assets/family-aaaaaaaaaaaa',
+		]) {
+			expect(() =>
+				buildHostedAssetUpsertSql({
+					assetId: '7bce748d-8c86-40e3-b28e-0b5523640034',
+					targetInvitationId: '28110aef-078d-46bd-857c-893e10e11bc1',
+					asset: { ...familyAsset, provider: 'cloudinary', providerPublicId: publicId },
+					definitionSlug,
+					operationId: '11111111-1111-4111-8111-111111111111',
+					targetEnvironment: 'preview',
+					eventType: 'cumple',
+					slug: definitionSlug,
+				}),
+			).toThrow();
+		}
+	});
 	it('conflicts on primary key id, not bucket/storage_path', () => {
 		expect(sql).toContain('on conflict (id) do update set');
 		expect(sql).not.toContain('on conflict (bucket, storage_path)');
