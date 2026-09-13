@@ -1,3 +1,4 @@
+import { recordVisualComparison } from './harness/deferred-visual-comparison';
 import { auditCriticalLayout } from './harness/critical-layout-audit';
 import {
 	initializeVisualCapture,
@@ -48,12 +49,13 @@ interface PageCapture {
 	sha256: string;
 	contentHash: string;
 	assetHash: string;
-	comparisonResult: 'PASS' | 'CANDIDATE';
+	comparisonResult: 'PASS' | 'FAIL' | 'CANDIDATE';
 }
 
 const PAGE_CASES: VisualPageCase[] = buildVisualPageCases();
 
 const EXPECTED_CAPTURE_COUNT = PAGE_CASES.length * VIEWPORTS.length;
+const visualDifferences: Array<{ file: string; message: string }> = [];
 const captures: PageCapture[] = [];
 let captureCaseFailed = false;
 
@@ -102,7 +104,7 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 	});
 	for (const entry of PAGE_CASES) {
 		for (const viewport of VIEWPORTS) {
-			test(`${entry.kind}: ${entry.eventType}/${entry.slug} @ ${viewport.name}`, async ({
+			test(`capture ${entry.kind}: ${entry.eventType}/${entry.slug} @ ${viewport.name}`, async ({
 				page,
 			}, testInfo) => {
 				// Complete-page decoding and stabilization need headroom on shared CI runners.
@@ -238,10 +240,20 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 				await page.waitForTimeout(100);
 				const snapshotName = `pages/${entry.kind}-${entry.eventType}-${entry.slug}-${viewport.name}.png`;
 				const image = await captureCompletePage(page);
+				let comparisonResult: PageCapture['comparisonResult'] =
+					visualComparisonResult(VISUAL_PARITY_MODE);
 				if (shouldCompareVisualSnapshots(VISUAL_PARITY_MODE)) {
-					expect(image).toMatchSnapshot(snapshotName.split('/'), {
-						maxDiffPixelRatio: 0.001,
-					});
+					const compare = () =>
+						expect(image).toMatchSnapshot(snapshotName.split('/'), {
+							maxDiffPixelRatio: 0.001,
+						});
+					if (VISUAL_PARITY_MODE === 'compare')
+						comparisonResult = recordVisualComparison(
+							compare,
+							snapshotName,
+							visualDifferences,
+						);
+					else compare();
 				}
 				const contentHash = definition
 					? hashVisualValue(
@@ -295,7 +307,7 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 					sha256: crypto.createHash('sha256').update(image).digest('hex'),
 					contentHash,
 					assetHash,
-					comparisonResult: visualComparisonResult(VISUAL_PARITY_MODE),
+					comparisonResult,
 				});
 			});
 		}
@@ -322,6 +334,7 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 		});
 		if (VISUAL_PARITY_MODE !== 'diagnostic' && !captureCaseFailed) {
 			expect(captures.length).toBe(EXPECTED_CAPTURE_COUNT);
+			expect([...completedFiles].sort()).toEqual([...expectedFiles].sort());
 		}
 		if (captures.length === 0) return;
 		const outputRoot = path.resolve(
@@ -344,7 +357,12 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 				{
 					generatedAt: new Date().toISOString(),
 					runtimeFingerprint: VISUAL_PARITY_RUNTIME,
-					status: VISUAL_PARITY_MODE === 'compare' ? 'COMPARED' : 'CANDIDATE',
+					status:
+						captureCaseFailed || visualDifferences.length
+							? 'FAILED'
+							: VISUAL_PARITY_MODE === 'compare'
+								? 'COMPARED'
+								: 'CANDIDATE',
 					mode: VISUAL_PARITY_MODE,
 					totalCaptures: captures.length,
 					matrixHash: computeVisualMatrixHash(
@@ -358,6 +376,13 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 			),
 			'utf8',
 		);
+		await testInfo.attach('visual-comparison-results', {
+			body: Buffer.from(
+				JSON.stringify({ captures: captures.length, differences: visualDifferences }),
+			),
+			contentType: 'application/json',
+		});
+		expect(visualDifferences, 'Complete-page visual comparisons must all pass').toEqual([]);
 	});
 });
 test.describe('Reported invitation public-route regressions', () => {

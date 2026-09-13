@@ -65,6 +65,10 @@ required `Application Suite` status succeeds only when every application tier su
 failed, or skipped tiers cannot authorize release. New runs cancel superseded runs for the same
 branch or pull request. Browser CI uses two workers across files and stops after five failed tests,
 remaining failed overall. Each capture suite remains sequential so its manifest stays complete.
+Pixel mismatches are recorded per capture and fail the aggregate comparison after the full matrix.
+Capture-case success means capture completion, not parity acceptance. Reports retain FAIL entries
+and a FAILED manifest when any pixel comparison differs. Navigation, missing/corrupt baselines, and
+capture integrity errors remain immediate failures.
 
 Visual suites do not retry individual captures: worker restarts lose the accumulated complete-matrix
 manifest and can hide the first failure behind incomplete-capture errors. An explicitly reviewed

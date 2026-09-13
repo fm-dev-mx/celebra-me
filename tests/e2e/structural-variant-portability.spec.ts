@@ -1,3 +1,4 @@
+import { recordVisualComparison } from './harness/deferred-visual-comparison';
 import {
 	hideOperationalTooling,
 	assertNoOperationalTooling,
@@ -75,6 +76,7 @@ interface CapturedSnapshotInfo {
 	comparisonResult: string;
 }
 
+const visualDifferences: Array<{ file: string; message: string }> = [];
 const capturedSnapshots: CapturedSnapshotInfo[] = [];
 
 test('certified comparison rejects a deliberately different rendered page', async ({ page }) => {
@@ -101,7 +103,7 @@ test.describe('Registry-Driven Visual Portability Suite', () => {
 	// Baseline Preset: jewelry-box (all registered canonical variants)
 	for (const entry of CANONICAL_VARIANT_REGISTRY) {
 		for (const vp of VIEWPORTS) {
-			test(`baseline: ${entry.section}.${entry.variant} @ ${vp.name} (jewelry-box)`, async ({
+			test(`capture baseline: ${entry.section}.${entry.variant} @ ${vp.name} (jewelry-box)`, async ({
 				page,
 			}) => {
 				await runVariantVisualTest(
@@ -123,7 +125,7 @@ test.describe('Registry-Driven Visual Portability Suite', () => {
 		);
 
 		for (const vp of VIEWPORTS) {
-			test(`cross-preset: ${rep.section}.${rep.variant} @ ${vp.name} (celestial-blue)`, async ({
+			test(`capture cross-preset: ${rep.section}.${rep.variant} @ ${vp.name} (celestial-blue)`, async ({
 				page,
 			}) => {
 				expect(
@@ -178,6 +180,7 @@ test.describe('Registry-Driven Visual Portability Suite', () => {
 		// runs may select a focused case without weakening CI or acceptance gates.
 		if (VISUAL_PARITY_MODE !== 'diagnostic') {
 			expect(capturedSnapshots.length).toBe(EXPECTED_CAPTURE_COUNT);
+			expect([...completed].sort()).toEqual([...expected].sort());
 		}
 		if (capturedSnapshots.length === 0) return;
 		for (const capture of capturedSnapshots) {
@@ -198,7 +201,11 @@ test.describe('Registry-Driven Visual Portability Suite', () => {
 		const manifest = {
 			generatedAt: new Date().toISOString(),
 			runtimeFingerprint: VISUAL_PARITY_RUNTIME,
-			status: VISUAL_PARITY_MODE === 'compare' ? 'COMPARED' : 'CANDIDATE',
+			status: visualDifferences.length
+				? 'FAILED'
+				: VISUAL_PARITY_MODE === 'compare'
+					? 'COMPARED'
+					: 'CANDIDATE',
 			mode: VISUAL_PARITY_MODE,
 			totalCaptures: capturedSnapshots.length,
 			matrixHash: computeVisualMatrixHash(
@@ -216,6 +223,16 @@ test.describe('Registry-Driven Visual Portability Suite', () => {
 		);
 
 		generateContactSheet(outputDir, manifest);
+		await testInfo.attach('visual-comparison-results', {
+			body: Buffer.from(
+				JSON.stringify({
+					captures: capturedSnapshots.length,
+					differences: visualDifferences,
+				}),
+			),
+			contentType: 'application/json',
+		});
+		expect(visualDifferences, 'Variant visual comparisons must all pass').toEqual([]);
 	});
 });
 
@@ -575,10 +592,16 @@ async function runVariantVisualTest(
 	// 8. Capture diagnostic viewport image for contact sheet / manifest
 	const snapshotName = `${preset}-${vp.name}-${section}-${variant}.png`;
 	const viewportSnapshotBuffer = await captureStablePage(page);
+	let comparisonResult: 'PASS' | 'FAIL' | 'CANDIDATE' =
+		visualComparisonResult(VISUAL_PARITY_MODE);
 	if (shouldCompareVisualSnapshots(VISUAL_PARITY_MODE)) {
-		expect(viewportSnapshotBuffer).toMatchSnapshot(snapshotName, {
-			maxDiffPixelRatio: 0.001,
-		});
+		const compare = () =>
+			expect(viewportSnapshotBuffer).toMatchSnapshot(snapshotName, {
+				maxDiffPixelRatio: 0.001,
+			});
+		if (VISUAL_PARITY_MODE === 'compare')
+			comparisonResult = recordVisualComparison(compare, snapshotName, visualDifferences);
+		else compare();
 	}
 	const hash = crypto.createHash('sha256').update(viewportSnapshotBuffer).digest('hex');
 	const syntheticEvent = buildSyntheticVariantEvent({
@@ -609,7 +632,7 @@ async function runVariantVisualTest(
 		sha256: hash,
 		contentHash,
 		assetHash,
-		comparisonResult: visualComparisonResult(VISUAL_PARITY_MODE),
+		comparisonResult,
 	});
 }
 
