@@ -95,7 +95,9 @@ function isAllowedVisualAssetUrl(rawUrl: string, baseOrigin: string): boolean {
 
 test.describe('Canonical invitation complete-page visual parity', () => {
 	test.describe.configure({ mode: 'serial', retries: 0 });
-	test.afterEach((_, testInfo) => {
+	// Playwright requires fixture destructuring even when only testInfo is used.
+	// eslint-disable-next-line no-empty-pattern
+	test.afterEach(({}, testInfo) => {
 		if (testInfo.status !== testInfo.expectedStatus) captureCaseFailed = true;
 	});
 	for (const entry of PAGE_CASES) {
