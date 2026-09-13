@@ -171,6 +171,9 @@ export default defineConfig({
 	vite: {
 		envPrefix: ['PUBLIC_', 'VITE_'],
 		server: {
+			// Immutable browser fixtures must not consume Astro's buffered startup reload.
+			// Keep hot reload available for normal interactive development.
+			hmr: process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES === 'true' ? false : undefined,
 			// Fail closed on lane port collisions instead of silently binding the next
 			// free port (which makes browsers keep hitting another worktree on :4321).
 			strictPort: true,
