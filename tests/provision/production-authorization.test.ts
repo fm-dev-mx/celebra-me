@@ -35,11 +35,25 @@ interface MutatorSpec {
 	/** Optional earlier markers that must remain before the gate (preflight). */
 	preflightPatterns?: RegExp[];
 	/** permanent | pending one-off awaiting Goal 4 retirement */
-	family: 'schema_migration' | 'managed_promotion' | 'draft_repair' | 'mixed_production_apply';
+	family:
+		| 'schema_migration'
+		| 'managed_promotion'
+		| 'draft_repair'
+		| 'mixed_production_apply'
+		| 'image_namespace';
 }
 
 /** Approved Production mutators. Discovery must match this set exactly. */
 const APPROVED_MUTATORS: MutatorSpec[] = [
+	{
+		file: 'scripts/db/production-image-namespace-apply.ts',
+		firstWritePattern: /runPsql\s*\(/,
+		preflightPatterns: [
+			/const snapshot = readSnapshot\s*\(/,
+			/const backup = ensureCriticalProductionBackup\s*\(/,
+		],
+		family: 'image_namespace',
+	},
 	{
 		file: 'scripts/db/migrate-policy-production.ts',
 		firstWritePattern: /executeSupabasePush\s*\(\s*ctx\.dbUrl/,
@@ -407,6 +421,19 @@ describe('requireOwnerProductionApply', () => {
 });
 
 describe('Production mutator discovery and gate ordering', () => {
+	it('gates both image namespace write paths after backup revalidation and permit scope', () => {
+		const source = sourceOf('scripts/db/production-image-namespace-apply.ts');
+		const gateIndex = indexOfPattern(source, OWNER_GATE_CALL);
+		const backupIndex = indexOfPattern(source, /revalidateCriticalProductionBackup\s*\(/);
+		const permitIndex = indexOfPattern(source, /await withProductionPermitScope\s*\(/);
+		expect(gateIndex).toBeGreaterThanOrEqual(0);
+		expect(backupIndex).toBeGreaterThan(gateIndex);
+		expect(permitIndex).toBeGreaterThan(backupIndex);
+		for (const write of [/runPsql\s*\(/, /await applyRemoteMigration\s*\(/]) {
+			expect(indexOfPattern(source, write)).toBeGreaterThan(permitIndex);
+		}
+	});
+
 	it('owner Production apply reuses or runs release-check instead of failing closed', () => {
 		const source = sourceOf('scripts/db/owner-production-apply.ts');
 		expect(source).toContain('ensureValidReleaseCheckEvidence');
