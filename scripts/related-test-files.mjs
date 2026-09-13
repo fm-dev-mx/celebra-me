@@ -21,3 +21,20 @@ export function getRelatedTestSourceFiles(changedFiles, pathExists = existsSync)
 		...new Set(changedFiles.filter((file) => SOURCE_PATTERN.test(file) && pathExists(file))),
 	];
 }
+
+/** Deleted sources and data/config inputs have no reliable import graph. */
+export function buildRelatedTestArgs(changedFiles, pathExists = existsSync) {
+	const files = [...new Set(changedFiles.map((file) => file.replaceAll('\\', '/')))];
+	const needsFullSuite = files.some(
+		(file) =>
+			(/\.(?:json|ya?ml)$/u.test(file) && !file.startsWith('docs/')) ||
+			(SOURCE_PATTERN.test(file) && !file.startsWith('tests/e2e/') && !pathExists(file)),
+	);
+	if (needsFullSuite) return ['exec', 'jest'];
+	const sources = getRelatedTestSourceFiles(files, pathExists).filter(
+		(file) => !file.startsWith('tests/e2e/'),
+	);
+	return sources.length
+		? ['exec', 'jest', '--findRelatedTests', '--passWithNoTests', ...sources]
+		: [];
+}

@@ -88,13 +88,26 @@ wording changes if structure and propagation remain correct. Intentional excepti
 Do not couple pipeline/contract coverage to exact editable invitation wording (labels, titles,
 phrases, venue names, section copy, and similar host/editor fields).
 
-| Test kind                                                    | Exact invitation copy? | Rule                                                                                                                                                                                               |
-| ------------------------------------------------------------ | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pipeline / adapter / descriptor / projection contracts       | No                     | Assert shape, presence/absence, and value propagation: read the value from the fixture/source under test and expect the same value downstream.                                                     |
-| Schema allowlist / “parity” fixtures                         | No                     | Use synthetic tokens (`'Honoree'`, `'Open invitation'`). Assert Zod `success`, `toHaveProperty` / unknown-key rejection, enums, and numeric ranges — never client Spanish from a named invitation. |
-| Local unit fixtures owned by the test                        | Yes                    | Allowed when the test defines the input and asserts against that same input (prefer named constants; avoid copy-pasting live client wording).                                                      |
-| Invitation content golden / published-content regression     | Yes, when intentional  | Allowed only when the test’s stated purpose is content fidelity for a named fixture; name/describe it as such. Failures mean the wording changed on purpose.                                       |
-| Product/system defaults (non-client editable UI/system copy) | Yes                    | Allowed.                                                                                                                                                                                           |
+- **Test kind:** Pipeline / adapter / descriptor / projection contracts
+  - **Exact invitation copy?:** No
+  - **Rule:** Assert shape, presence/absence, and value propagation: read the value from the
+    fixture/source under test and expect the same value downstream.
+- **Test kind:** Schema allowlist / “parity” fixtures
+  - **Exact invitation copy?:** No
+  - **Rule:** Use synthetic tokens (`'Honoree'`, `'Open invitation'`). Assert Zod `success`,
+    `toHaveProperty` / unknown-key rejection, enums, and numeric ranges — never client Spanish from
+    a named invitation.
+- **Test kind:** Local unit fixtures owned by the test
+  - **Exact invitation copy?:** Yes
+  - **Rule:** Allowed when the test defines the input and asserts against that same input (prefer
+    named constants; avoid copy-pasting live client wording).
+- **Test kind:** Invitation content golden / published-content regression
+  - **Exact invitation copy?:** Yes, when intentional
+  - **Rule:** Allowed only when the test’s stated purpose is content fidelity for a named fixture;
+    name/describe it as such. Failures mean the wording changed on purpose.
+- **Test kind:** Product/system defaults (non-client editable UI/system copy)
+  - **Exact invitation copy?:** Yes
+  - **Rule:** Allowed.
 
 Editor edits to DB drafts do not by themselves fail provision/fixture-based suites. Do not invent
 editor-sync requirements for those tests.
@@ -192,7 +205,7 @@ contract, the state values, a copy-pasteable helper, and stuck-at-`sealed` diagn
 Before submitting a PR:
 
 - [ ] The Gatekeeper validation tier selected for the change passes
-- [ ] The full suite passes when the change is at a pre-push or pre-deploy checkpoint
+- [ ] The selected local tier passes; full remote certification passes before integration/release
 - [ ] New utilities have corresponding tests
 - [ ] React components with state have tests
 - [ ] If coverage was executed, the relevant coverage does not decrease

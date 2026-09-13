@@ -8,6 +8,15 @@
 
 ### Efficient validation and evidence
 
+- `pnpm run ci` covers static/build, Jest and certified browser checks. The remote workflow also
+  requires Repository Policy and disposable DB contracts; local CI alone is not release readiness.
+- `validate:changed` already runs related Jest. Do not repeat `test:changed` at the same unchanged
+  local checkpoint. The commit hook independently verifies staged inputs.
+- Deleted sources and non-documentation JSON/YAML inputs use full Jest when import selection is
+  incomplete. Changed Playwright specs need an explicit browser execution; Jest does not run them.
+  SCSS/layout changes still require applicable browser evidence. Local Render Corpus is Jest
+  contract coverage, not visual certification.
+
 - Run focused local checks while editing. Use the PR to `develop` for complete remote certification;
   confirm its workflow run exists. A push to a task branch alone does not run CI.
 - `pnpm test:e2e:ci` explicitly compares visual references and fails before browser work when the

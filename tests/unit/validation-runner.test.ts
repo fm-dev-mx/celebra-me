@@ -144,3 +144,41 @@ describe('related Jest source selection', () => {
 		]);
 	});
 });
+
+describe('validation without a reliable import graph', () => {
+	it.each([
+		'src/lib/deleted.ts',
+		'src/content/event.json',
+		'package.json',
+		'.github/workflows/ci.yml',
+	])('uses the full Jest suite for %s', (file) => {
+		const args = evaluateModuleScript<string[]>(`
+    import { buildRelatedTestArgs } from ${JSON.stringify(RELATED_TEST_MODULE)};
+    process.stdout.write(JSON.stringify(buildRelatedTestArgs([${JSON.stringify(file)}], () => false)));
+   `);
+		expect(args).toEqual(['exec', 'jest']);
+	});
+	it('does not pass deleted files to linters or pretend Playwright files are Jest tests', () => {
+		const result = evaluateModuleScript<{ lintableFiles: string[]; jestArgs: string[] }>(`
+   import { buildValidationPlan } from ${JSON.stringify(VALIDATION_RUNNER_MODULE)};
+   process.stdout.write(JSON.stringify(buildValidationPlan(['src/lib/deleted.ts'], () => false)));
+  `);
+		expect(result.lintableFiles).toEqual([]);
+		expect(result.jestArgs).toEqual(['exec', 'jest']);
+		const args = evaluateModuleScript<string[]>(`
+   import { buildRelatedTestArgs } from ${JSON.stringify(RELATED_TEST_MODULE)};
+   process.stdout.write(JSON.stringify(buildRelatedTestArgs(['tests/e2e/example.spec.ts'], () => true)));
+  `);
+		expect(args).toEqual([]);
+		const deletedE2eArgs = evaluateModuleScript<string[]>(`
+   import { buildRelatedTestArgs } from ${JSON.stringify(RELATED_TEST_MODULE)};
+   process.stdout.write(JSON.stringify(buildRelatedTestArgs(['tests/e2e/example.spec.ts'], () => false)));
+  `);
+		expect(deletedE2eArgs).toEqual([]);
+		const e2ePlan = evaluateModuleScript<{ relatedTestSources: string[] }>(`
+   import { buildValidationPlan } from ${JSON.stringify(VALIDATION_RUNNER_MODULE)};
+   process.stdout.write(JSON.stringify(buildValidationPlan(['tests/e2e/example.spec.ts'], () => true)));
+  `);
+		expect(e2ePlan.relatedTestSources).toEqual([]);
+	});
+});

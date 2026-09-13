@@ -15,29 +15,28 @@
 
 import { spawnSync } from 'node:child_process';
 import { getStagedFiles } from './shared-changed-files.mjs';
-import { getRelatedTestSourceFiles } from './related-test-files.mjs';
+import { buildRelatedTestArgs } from './related-test-files.mjs';
 
 const REPO_ROOT = process.cwd();
-const relatedSources = getRelatedTestSourceFiles(getStagedFiles());
+const stagedFiles = getStagedFiles();
+const jestArgs = buildRelatedTestArgs(stagedFiles);
 
-if (relatedSources.length === 0) {
-	console.log('No staged source files for related tests. Skipping.');
+if (jestArgs.length === 0) {
+	console.log(
+		'No staged Jest inputs. Browser specs and layout changes require their applicable checks.',
+	);
 	process.exit(0);
 }
 
-console.log(`Finding tests related to staged source files:\n- ${relatedSources.join('\n- ')}`);
+console.log(`Validating staged inputs with Jest:\n- ${stagedFiles.join('\n- ')}`);
 
-const result = spawnSync(
-	'pnpm',
-	['exec', 'jest', '--findRelatedTests', '--passWithNoTests', ...relatedSources],
-	{
-		cwd: REPO_ROOT,
-		stdio: 'inherit',
-		env: process.env,
-		shell: process.platform === 'win32',
-		maxBuffer: 10 * 1024 * 1024,
-	},
-);
+const result = spawnSync('pnpm', jestArgs, {
+	cwd: REPO_ROOT,
+	stdio: 'inherit',
+	env: process.env,
+	shell: process.platform === 'win32',
+	maxBuffer: 10 * 1024 * 1024,
+});
 
 if (result.error) throw result.error;
 process.exit(result.status ?? 1);

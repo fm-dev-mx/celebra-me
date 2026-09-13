@@ -1,5 +1,4 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
 
 function runGit(args, { allowFailure = false } = {}) {
 	const result = spawnSync('git', args, {
@@ -37,7 +36,7 @@ function hasHeadCommit() {
 
 function getFilesFromExplicitRange(baseSha, headSha) {
 	return parseFileList(
-		runGit(['diff', '--name-only', '--diff-filter=ACMR', baseSha, headSha]).stdout,
+		runGit(['diff', '--name-only', '--diff-filter=ACMRD', baseSha, headSha]).stdout,
 	);
 }
 
@@ -49,7 +48,7 @@ function getFilesFromExplicitRange(baseSha, headSha) {
  */
 function getStagedFiles() {
 	return unique(
-		parseFileList(runGit(['diff', '--cached', '--name-only', '--diff-filter=ACMR']).stdout),
+		parseFileList(runGit(['diff', '--cached', '--name-only', '--diff-filter=ACMRD']).stdout),
 	);
 }
 
@@ -60,14 +59,14 @@ function getStagedFiles() {
  */
 function getChangedFilesInWorkingTree() {
 	const trackedArgs = hasHeadCommit()
-		? ['diff', '--name-only', '--diff-filter=ACMR', 'HEAD']
-		: ['diff', '--cached', '--name-only', '--diff-filter=ACMR'];
+		? ['diff', '--name-only', '--diff-filter=ACMRD', 'HEAD']
+		: ['diff', '--cached', '--name-only', '--diff-filter=ACMRD'];
 	const tracked = parseFileList(runGit(trackedArgs).stdout);
 	const staged = parseFileList(
-		runGit(['diff', '--cached', '--name-only', '--diff-filter=ACMR']).stdout,
+		runGit(['diff', '--cached', '--name-only', '--diff-filter=ACMRD']).stdout,
 	);
 	const untracked = parseFileList(runGit(['ls-files', '--others', '--exclude-standard']).stdout);
-	return unique([...tracked, ...staged, ...untracked]).filter((file) => existsSync(file));
+	return unique([...tracked, ...staged, ...untracked]);
 }
 
 /**

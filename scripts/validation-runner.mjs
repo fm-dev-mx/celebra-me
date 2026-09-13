@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-import { getRelatedTestSourceFiles } from './related-test-files.mjs';
+import { existsSync } from 'node:fs';
+import { getRelatedTestSourceFiles, buildRelatedTestArgs } from './related-test-files.mjs';
 
 const REPO_ROOT = process.cwd();
 const IGNORE_FILES = /(?:\.eslintcache|\.stylelintcache|node_modules|\.git)$/u;
@@ -66,9 +67,10 @@ export function requiresManagedInvitationRegression(files) {
 		);
 }
 
-export function buildValidationPlan(files, pathExists) {
+export function buildValidationPlan(files, pathExists = existsSync) {
 	const relevantFiles = uniqueRelevantFiles(files);
-	const filter = (pattern) => relevantFiles.filter((file) => pattern.test(file));
+	const filter = (pattern) =>
+		relevantFiles.filter((file) => pattern.test(file) && pathExists(file));
 
 	return {
 		files: relevantFiles,
@@ -76,7 +78,10 @@ export function buildValidationPlan(files, pathExists) {
 		stylesheetFiles: filter(PATTERNS.stylesheet),
 		prettierFiles: filter(PATTERNS.prettier),
 		markdownFiles: filter(PATTERNS.markdown),
-		relatedTestSources: getRelatedTestSourceFiles(relevantFiles, pathExists),
+		relatedTestSources: getRelatedTestSourceFiles(relevantFiles, pathExists).filter(
+			(file) => !file.startsWith('tests/e2e/'),
+		),
+		jestArgs: buildRelatedTestArgs(relevantFiles, pathExists),
 		requiresManagedInvitationRegression: requiresManagedInvitationRegression(relevantFiles),
 	};
 }
@@ -156,16 +161,17 @@ export function runValidation({
 		console.log(`\n→ Markdown table readability: no ${scopeDescription} files, skipping.`);
 	}
 
-	if (plan.relatedTestSources.length > 0) {
-		console.log(`\n→ Jest (tests related to ${scopeDescription} source files):`);
-		for (const file of plan.relatedTestSources) console.log(`  - ${file}`);
-		const code = runStep('Jest related tests', 'pnpm', [
-			'exec',
-			'jest',
-			'--findRelatedTests',
-			'--passWithNoTests',
-			...plan.relatedTestSources,
-		]);
+	if (plan.jestArgs.length > 0) {
+		const isFullSuite = plan.jestArgs.length === 2 && plan.jestArgs[1] === 'jest';
+		if (isFullSuite) {
+			console.log(
+				`\n→ Jest (full suite: changed data/config or deleted sources lack an import graph):`,
+			);
+		} else {
+			console.log(`\n→ Jest (tests related to ${scopeDescription} source files):`);
+			for (const file of plan.relatedTestSources) console.log(`  - ${file}`);
+		}
+		const code = runStep('Jest validation', 'pnpm', plan.jestArgs);
 		if (code !== 0) return fail('jest-related', code);
 	} else {
 		console.log(`\n→ Jest related tests: no ${scopeDescription} source files, skipping.`);
@@ -182,6 +188,17 @@ export function runValidation({
 		);
 	}
 
-	console.log(`\n✓ validate:${scope} passed.`);
+	if (
+		plan.files.some(
+			(file) => file.startsWith('tests/e2e/') || /\.(?:astro|scss|css)$/u.test(file),
+		)
+	) {
+		console.log(
+			'Browser/layout behavior requires the applicable focused browser check; Jest and the Local Render Corpus do not certify visual parity.',
+		);
+	}
+	console.log(
+		`\n✓ validate:${scope} local checks passed; domain and release gates remain separate.`,
+	);
 	return 0;
 }
