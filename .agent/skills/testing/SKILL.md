@@ -44,16 +44,16 @@ sample directory tree. Available test scripts are owned by package.json.
 
 ## Running Tests
 
-| Command                   | Purpose                                         |
-| ------------------------- | ----------------------------------------------- |
-| `pnpm validate:changed`   | Working-tree validation, including related Jest |
-| `pnpm validate:staged`    | Staged-index pre-commit validation              |
-| `pnpm test:changed`       | Standalone related Jest for staged source files |
-| `pnpm test`               | Run all tests                                   |
-| `pnpm test -- --verbose`  | Verbose output                                  |
-| `pnpm test -- --watch`    | Watch mode                                      |
-| `pnpm test -- --coverage` | Coverage report                                 |
-| `pnpm build`              | Build validation                                |
+| Command                   | Purpose                                                          |
+| ------------------------- | ---------------------------------------------------------------- |
+| `pnpm validate:changed`   | Working-tree validation, including related Jest                  |
+| `pnpm validate:staged`    | Select staged paths; tools read working-tree contents            |
+| `pnpm test:changed`       | Shared Jest selector for staged paths, including broad fallbacks |
+| `pnpm test`               | Run all tests                                                    |
+| `pnpm test -- --verbose`  | Verbose output                                                   |
+| `pnpm test -- --watch`    | Watch mode                                                       |
+| `pnpm test -- --coverage` | Coverage report                                                  |
+| `pnpm build`              | Build validation                                                 |
 
 Select the proportional tier from `.agent/rules/gatekeeper.md` and **name that tier (A/B/C) plus
 intentional skips** in the closing report. Do not run `pnpm run ci`, full `pnpm test`, or
@@ -61,8 +61,8 @@ intentional skips** in the closing report. Do not run `pnpm run ci`, full `pnpm 
 checks over a full Astro build when only contracts/types need proof (`pnpm build` already re-runs
 type-check).
 
-Do not follow `pnpm validate:changed` with `pnpm test:changed`; the former already runs Jest
-`--findRelatedTests` for changed source files. Reserve the full test suite and build for the
+Do not follow `pnpm validate:changed` with `pnpm test:changed`; the former already runs Jest through
+the shared selector, including broad fallbacks. Reserve the full test suite and build for the
 contracts and release checkpoints that require them. When unrelated user-owned changes are in the
 working tree, validate explicit task files instead of widening the run to all changed files.
 

@@ -20,11 +20,11 @@ invitation source-of-truth contract.
 | `event-demos`     | `src/content/event-demos/**`     | public showcase demos             |
 | `event-templates` | `src/content/event-templates/**` | development-only reusable masters |
 
-`event-demos` is publicly routable. `event-templates` is resolvable only in development through the
-explicit template path in `src/lib/content/events.ts`; production routing excludes it. DB-published
-client content from `published_invitation_content` is the only source for real/client invitations.
-Capability flags and canonical-reference roles are centralized in
-`src/lib/invitation/invitation-descriptors.ts`.
+`src/lib/content/events.ts` looks up both collections. The static eligibility gate belongs to
+`src/lib/invitation/content-resolver.ts`: demo content is eligible, while non-demo templates require
+development mode. DB-published client content from `published_invitation_content` is the only source
+for real/client invitations. Editor presets belong to `src/lib/intake/demo-preset-catalog.ts` and
+public showroom approval to `src/data/demo-showroom.data.ts`; these are intentionally distinct sets.
 
 ## Event Type Contract
 
@@ -87,11 +87,9 @@ folder. `demo-primera-comunion-illustrated` follows the same contract with `_ass
 
 ## Validation
 
-```bash
-pnpm type-check
-pnpm ops validate-schema
-pnpm build
-```
+Use `pnpm ops validate-schema` for content schema checks and the proportional tiers in
+[validation procedures](../../core/validation-procedures.md). `pnpm build` already includes
+`pnpm type-check`; do not repeat that check at an unchanged build checkpoint.
 
 ## Related Docs
 

@@ -2,15 +2,16 @@
 /**
  * run-related-tests.mjs
  *
- * Launcher for `pnpm test:changed`. Passes staged source files directly to
- * Jest `--findRelatedTests`, matching `validate:staged`'s source selection.
+ * Launcher for `pnpm test:changed`. Uses the same staged-input selector as
+ * `validate:staged`: related Jest for sources, full Jest for data/config/deletions.
  *
  * Why staged: the natural place to run `pnpm test:changed` is right before
- * `git commit`. Working-tree drift that the user has not yet committed
- * would be noise here. The dedicated working-tree feedback command is
- * `pnpm validate:changed`.
+ * `git commit`. Unrelated unstaged paths are not selected, but Jest still reads
+ * working-tree contents of selected paths. The working-tree feedback command
+ * is `pnpm validate:changed`.
  *
- * Exits 0 when no staged source files are found (no-op).
+ * Visual references are covered by visual certification, not Jest dependency discovery.
+ * Exits 0 when there are no staged Jest inputs; other validation tiers still apply.
  */
 
 import { spawnSync } from 'node:child_process';

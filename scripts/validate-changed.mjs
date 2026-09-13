@@ -9,8 +9,8 @@
  * This is a wider scope than `pnpm validate:staged`. Both run the same
  * steps; only the file set differs.
  *
- * CI equivalent: `pnpm ci` (full pipeline) or with VALIDATION_BASE_SHA /
- * VALIDATION_HEAD_SHA env vars set, the explicit PR range.
+ * `pnpm run ci` covers static/build, Jest and browser checks. The remote workflow
+ * additionally owns repository policy, disposable DB contracts and aggregation.
  */
 
 import { getChangedFilesInWorkingTree } from './shared-changed-files.mjs';

@@ -37,14 +37,14 @@ Right: JSON → Adapter (shift) → SSR (all shifted) → Client JS (tick only)
 - Different dates in hero vs countdown within one demo
 - Values change on refresh (`Math.random`)
 
-## Technique — deterministic per-item offset
+## Current date contract
 
-Hash a stable id (content entry id / slug); map to a fixed day offset. Same id → same offset;
-different demos → different offsets; real invites (`isDemo !== true`) → no shift.
-
-Prefer existing helpers when present (e.g. `src/lib/time/demo-date.ts` + `adaptEvent` in
-`src/lib/adapters/event.ts`). Do not reintroduce client `isDemo` date overrides in `CountdownTimer`
-or siblings.
+`adaptEvent` in `src/lib/adapters/event.ts` uses configured content dates; countdown target
+resolution belongs to `src/lib/time/event-time.ts`. There is no automatic per-slug date-shift
+helper. Preserve configured dates unless a date change is explicitly requested. If a demo-only
+transform is required, derive all affected fields consistently on the server from deterministic
+inputs and leave real invitations unchanged. Do not introduce client `isDemo` date overrides in
+`CountdownTimer` or siblings.
 
 ## Fields to cover
 
@@ -59,7 +59,7 @@ When shifting dates, update every date-carrying field the UI shows for that item
 ## Verification
 
 - [ ] All date-visible sections agree within one demo
-- [ ] Different demos differ when ids differ
+- [ ] Configured dates are preserved unless the requested change explicitly transforms them
 - [ ] Refresh is stable (no randomness)
 - [ ] Real invitations unchanged
 - [ ] No client `isDemo` date override; no flicker

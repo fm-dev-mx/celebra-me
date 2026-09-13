@@ -105,16 +105,24 @@ reuse it without per-invitation comparison rules.
 
 ### Executable owners (do not add a second path)
 
-| Concern                            | Owner                                                                                                                    |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Managed definition                 | `scripts/provision/invitations/<slug>.ts` via `defineInvitation` / registry                                              |
-| Lifecycle / delivery scope         | `InvitationDefinition.lifecycle`, `deliveryScope`                                                                        |
-| Package / publication apply        | `pnpm invitation:release` (Local/Preview), `pnpm prod:apply -- --slug` (Production)                                      |
-| Definition vs live status          | `pnpm dbs` promotional fingerprint (`scripts/provision/promotional-fingerprint.ts`)                                      |
-| Cross-environment semantic compare | `pnpm invitation:content-parity` (`scripts/provision/content-parity.ts`)                                                 |
-| Semantic canonicalization          | `canonicalizeManagedInvitationContent` + `rewriteUploadedAssetReferences` in `scripts/provision/promotion-comparison.ts` |
-| Canonical variant fields             | `eventContentSchema` and the adapter consume only declared section variants; legacy aliases are ingress-only during cutover |
-| Publication projection             | `preparePublicationProjection` / `canonicalizePublicationValue`                                                          |
+- **Concern:** Managed definition
+  - **Owner:** `scripts/provision/invitations/<slug>.ts` via `defineInvitation` / registry
+- **Concern:** Lifecycle / delivery scope
+  - **Owner:** `InvitationDefinition.lifecycle`, `deliveryScope`
+- **Concern:** Package / publication apply
+  - **Owner:** `pnpm invitation:release` (Local/Preview), `pnpm prod:apply -- --slug` (Production)
+- **Concern:** Definition vs live status
+  - **Owner:** `pnpm dbs` promotional fingerprint (`scripts/provision/promotional-fingerprint.ts`)
+- **Concern:** Cross-environment semantic compare
+  - **Owner:** `pnpm invitation:content-parity` (`scripts/provision/content-parity.ts`)
+- **Concern:** Semantic canonicalization
+  - **Owner:** `canonicalizeManagedInvitationContent` + `rewriteUploadedAssetReferences` in
+    `scripts/provision/promotion-comparison.ts`
+- **Concern:** Canonical variant fields
+  - **Owner:** `eventContentSchema` and the adapter consume only declared section variants; legacy
+    aliases are ingress-only during cutover
+- **Concern:** Publication projection
+  - **Owner:** `preparePublicationProjection` / `canonicalizePublicationValue`
 
 `hashPublicationProjection` remains the publication optimistic-lock fingerprint. It is **not** the
 cross-environment semantic owner.
@@ -260,19 +268,20 @@ provisioning path (`pnpm test:e2e:preview:provision` and
 Image storage and delivery follows an environment-deterministic abstraction (`StorageProvider`):
 
 - **Local (`dev-local`):** Uses **Supabase Storage local** (`http://127.0.0.1:54321` / bucket
-  `invitation-assets`). Dashboard uploads and `pnpm invitation:apply:local` persist locally with
+  `invitation-assets`). Dashboard uploads and
+  `pnpm invitation:release -- --targets local --slug <slug> --apply` persist locally with
   `provider: 'supabase'` and require zero third-party credentials.
 - **Preview & Production:** Uses **Cloudinary** (`provider: 'cloudinary'`, `secure_url`). Client
   invitations published in Preview/Production must deliver referenced images from Cloudinary
   (publish and promote fail closed if local or Supabase Storage URLs are referenced).
 - **Demos / Templates:** Resolve through Astro/Vite static image pipeline across all environments.
 
-| Flow                                 | Local (`dev-local`)                                                                           | Preview / Production                                                                                                        |
-| ------------------------------------ | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Dashboard Intake / Upload            | Uploads to Supabase Storage local (`127.0.0.1:54321/storage/...`)                             | Uploads to Cloudinary with SHA-256 deduplication                                                                            |
-| Provision (`invitation:apply:local`) | Uploads normalized binaries to local Supabase Storage (`managed/<slug>/<key>.webp`)           | N/A (local provision only)                                                                                                  |
-| Release / Promote (`prod:apply`)     | N/A                                                                                           | Uploads/reconciles canonical binaries to Cloudinary; freezes immutable CDN URLs                                             |
-| Production→Preview mirror            | Binary copy for rows with `storage_path`; rewrite public Storage URLs in `content`/`snapshot` | `secure_url` and Cloudinary hosts are **copied/preserved**, not rewritten; rows without `storage_path` skip binary transfer |
+| Flow                                   | Local (`dev-local`)                                                                           | Preview / Production                                                                                                        |
+| -------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Dashboard Intake / Upload              | Uploads to Supabase Storage local (`127.0.0.1:54321/storage/...`)                             | Uploads to Cloudinary with SHA-256 deduplication                                                                            |
+| Managed release (`invitation:release`) | Local target uploads normalized binaries to Supabase Storage                                  | Preview target uploads/reconciles canonical binaries to Cloudinary                                                          |
+| Release / Promote (`prod:apply`)       | N/A                                                                                           | Uploads/reconciles canonical binaries to Cloudinary; freezes immutable CDN URLs                                             |
+| Production→Preview mirror              | Binary copy for rows with `storage_path`; rewrite public Storage URLs in `content`/`snapshot` | `secure_url` and Cloudinary hosts are **copied/preserved**, not rewritten; rows without `storage_path` skip binary transfer |
 
 ---
 

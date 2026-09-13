@@ -177,8 +177,8 @@ not replace these repository-wide checks or the full release pipeline.
 Close the mutable agent session with `pnpm agent:git-safety:finish` after Tier C when a session was
 started. See `.agent/rules/git-safety.md`.
 
-The pre-push hook intentionally remains lean (commit-message validation only); do not move tests or
-type-checks into pre-push.
+The pre-push hook retains the main guard, commit-range validation and Git LFS handoff; do not move
+tests or type-checks into pre-push.
 
 #### Remote CI coverage and efficiency
 
@@ -192,6 +192,14 @@ Keep focused validation and pre-commit distinct: `validate:changed` already runs
 working-tree sources; `test:changed` serves the staged-source pre-commit boundary. Do not rerun
 related Jest against unchanged working-tree inputs merely to repeat the same evidence.
 
+The shared Jest selector exempts only `tests/e2e/visual-baselines/manifest.json` from the broad
+JSON/configuration fallback. Baseline PNGs are not Jest inputs. This exception does not certify
+visual references: provenance, integrity, coverage, complete comparison and human acceptance still
+apply. Other JSON/YAML inputs outside `docs/`, including other JSON files in the baseline directory,
+require full Jest; deleted non-E2E sources do too. Mixed changes retain the union of these
+requirements. Changed Jest tests are passed directly to related-test selection. SCSS still requires
+its style and applicable rendering checks even when the Jest selector returns no inputs.
+
 Worker settings currently differ intentionally by execution entry point: Playwright's CI default is
 one worker, while the remote browser job explicitly selects two. This documents the existing
 behavior, not a measured optimum. Before changing it, compare the same code, cases, runtime image,
@@ -199,10 +207,24 @@ fixtures and visual mode across repeated runs, including retries and server prep
 infer remote savings from local diagnostic timings. Retain serial execution within suites that
 aggregate captures and require complete coverage.
 
-The aggregate application check requires both application and browser jobs to succeed; failed,
+The aggregate application check requires policy, application and browser jobs to succeed; failed,
 cancelled or incomplete jobs must never become aggregate approval. Failure artifacts retain
-actual/diff images and available first-retry traces for three days. No additional capture, retry,
-tolerance or acceptance policy is introduced for diagnostics.
+actual/diff images and traces when produced for three days. No additional capture, retry, tolerance
+or acceptance policy is introduced for diagnostics.
+
+#### Documentation audit limits
+
+`pnpm ops check-links` checks relative inline link targets in changed Markdown. `--all` scans
+`AGENTS.md`, `README.md`, `CHANGELOG.md`, `.agent/` and `docs/`, including historical archives.
+Neither mode validates external URLs or section anchors; `--all` is not a complete inventory of
+every versioned document. Historical missing paths are dated evidence, not automatically active
+procedure failures.
+
+`pnpm validate:markdown-tables -- --all-active` uses the existing allowlist in
+`scripts/markdownlint/table-readability.mjs`; other versioned documentation, including
+`CONTRIBUTING.md` and `scripts/README.md`, still requires direct review. A passing link or table
+check does not establish semantic alignment. Compare procedures with `package.json`, hook/workflow
+code and dated effective remote configuration; report uncovered documents and unverifiable claims.
 
 ### 5.3 Visual evidence (screenshots and browser proof)
 

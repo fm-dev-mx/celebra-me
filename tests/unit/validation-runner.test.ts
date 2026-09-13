@@ -146,6 +146,47 @@ describe('related Jest source selection', () => {
 });
 
 describe('validation without a reliable import graph', () => {
+	it('retains stylesheet validation when visual references have no Jest inputs', () => {
+		const plan = evaluateModuleScript<{ stylesheetFiles: string[]; jestArgs: string[] }>(`
+			import { buildValidationPlan } from ${JSON.stringify(VALIDATION_RUNNER_MODULE)};
+			process.stdout.write(JSON.stringify(buildValidationPlan(['tests/e2e/visual-baselines/manifest.json', 'src/styles/example.scss'], () => true)));
+		`);
+		expect(plan.stylesheetFiles).toEqual(['src/styles/example.scss']);
+		expect(plan.jestArgs).toEqual([]);
+	});
+	it.each([
+		[
+			['tests/e2e/visual-baselines/manifest.json', 'tests/e2e/visual-baselines/example.png'],
+			[],
+		],
+		[['tests\\e2e\\visual-baselines\\manifest.json', 'README.md'], []],
+		[['tests/e2e/visual-baselines/other.json'], ['exec', 'jest']],
+		[
+			['tests/e2e/visual-baselines/manifest.json', 'package.json'],
+			['exec', 'jest'],
+		],
+		[
+			['tests/e2e/visual-baselines/manifest.json', 'src/lib/deleted.ts'],
+			['exec', 'jest'],
+		],
+		[
+			['tests/e2e/visual-baselines/manifest.json', 'tests/unit/direct.test.ts'],
+			[
+				'exec',
+				'jest',
+				'--findRelatedTests',
+				'--passWithNoTests',
+				'tests/unit/direct.test.ts',
+			],
+		],
+		[['docs/guide.md', 'src/styles/example.scss'], []],
+	])('preserves the required Jest union for %j', (files, expected) => {
+		const args = evaluateModuleScript<string[]>(`
+			import { buildRelatedTestArgs } from ${JSON.stringify(RELATED_TEST_MODULE)};
+			process.stdout.write(JSON.stringify(buildRelatedTestArgs(${JSON.stringify(files)}, file => !file.endsWith('deleted.ts'))));
+		`);
+		expect(args).toEqual(expected);
+	});
 	it.each([
 		'src/lib/deleted.ts',
 		'src/content/event.json',

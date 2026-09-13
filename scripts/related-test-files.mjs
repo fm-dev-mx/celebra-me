@@ -27,7 +27,9 @@ export function buildRelatedTestArgs(changedFiles, pathExists = existsSync) {
 	const files = [...new Set(changedFiles.map((file) => file.replaceAll('\\', '/')))];
 	const needsFullSuite = files.some(
 		(file) =>
-			(/\.(?:json|ya?ml)$/u.test(file) && !file.startsWith('docs/')) ||
+			(/\.(?:json|ya?ml)$/u.test(file) &&
+				!file.startsWith('docs/') &&
+				file !== 'tests/e2e/visual-baselines/manifest.json') ||
 			(SOURCE_PATTERN.test(file) && !file.startsWith('tests/e2e/') && !pathExists(file)),
 	);
 	if (needsFullSuite) return ['exec', 'jest'];

@@ -80,7 +80,7 @@ interface CapturedSnapshotInfo {
 const visualDifferences: Array<{ file: string; message: string }> = [];
 const capturedSnapshots: CapturedSnapshotInfo[] = [];
 
-test('gift number geometry stays fixed during the first complete-page capture', async ({
+test('gift registry event identifier geometry stays fixed during the first complete-page capture', async ({
 	page,
 }) => {
 	test.setTimeout(60_000);

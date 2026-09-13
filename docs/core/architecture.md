@@ -18,6 +18,15 @@ Celebra-me follows these guiding principles:
 - **Explicit boundaries** UI code, route orchestration, and server-only logic stay separated.
 - **Deploy safety first** Architecture must remain compatible with Astro and Vercel constraints.
 
+### Validation and operational tooling boundary
+
+`scripts/related-test-files.mjs` owns Jest input selection for the existing local runners. Visual
+reference metadata is certified by the visual pipeline; mixed application changes retain their
+required Jest checks. Hooks enforce Git policy, staged checks and LFS transfer without querying
+invitation databases. `pnpm dbs` remains an explicit read-only operator command. Executable commands
+come from `package.json`; [validation procedures](validation-procedures.md) own validation scope and
+[Git governance](git-governance.md) owns hook ranges and remote enforcement policy.
+
 ### Invitation mutation boundary
 
 Invitation writes use a lightweight ports-and-adapters boundary. Routes and UI collect validated

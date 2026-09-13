@@ -42,9 +42,8 @@ function getFilesFromExplicitRange(baseSha, headSha) {
 
 /**
  * Files explicitly staged in the index. This is the only scope that
- * `validate:staged` should ever read — the user has committed these to be
- * reviewed, and unrelated working-tree changes must not influence the
- * validation result.
+ * `validate:staged` selects. Validation tools still read working-tree contents;
+ * selecting index paths does not create an isolated snapshot of staged bytes.
  */
 function getStagedFiles() {
 	return unique(
@@ -54,7 +53,7 @@ function getStagedFiles() {
 
 /**
  * Working-tree changes (tracked + staged) plus untracked. This is the scope
- * for `validate:changed` and `test:changed` when the user wants broader
+ * for `validate:changed` when the user wants broader
  * local feedback beyond what they have already staged.
  */
 function getChangedFilesInWorkingTree() {
