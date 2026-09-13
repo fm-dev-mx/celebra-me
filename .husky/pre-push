@@ -35,8 +35,20 @@ do
     fi
 
     if [ -z "$remote_sha" ] || [ "$remote_sha" = "$ZERO_SHA" ]; then
-      # New branch: try to find base against main or develop first
-      BASE_SHA=$(git merge-base "$local_sha" origin/main 2>/dev/null || git merge-base "$local_sha" origin/develop 2>/dev/null || git rev-list --max-parents=0 "$local_sha" | tail -n 1)
+      BASE_SHA=""
+      # New origin task branches integrate into develop. Other destinations retain
+      # their existing range policy; an unavailable trunk uses the fallbacks below.
+      case "$remote_ref" in
+        refs/heads/main|refs/heads/develop) ;;
+        refs/heads/*)
+          if [ "$1" = "origin" ]; then
+            BASE_SHA=$(git merge-base "$local_sha" origin/develop 2>/dev/null || true)
+          fi
+          ;;
+      esac
+      if [ -z "$BASE_SHA" ]; then
+        BASE_SHA=$(git merge-base "$local_sha" origin/main 2>/dev/null || git merge-base "$local_sha" origin/develop 2>/dev/null || git rev-list --max-parents=0 "$local_sha" | tail -n 1)
+      fi
     else
       BASE_SHA=$(git merge-base "$local_sha" "$remote_sha")
     fi

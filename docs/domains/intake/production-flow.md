@@ -181,8 +181,10 @@ Reference selection is concern-specific; no invitation is universally canonical.
 | `demo-baby-shower-celestial`    | Optional-section and intentionally omitted-section coverage | Compact section order, sparse content, grouped family/location/gifts behavior        | Baby-shower-specific narrative or the Leah Lexa client profile |
 | `demo-boda-jewelry-box-wedding` | Non-XV and wedding structure                                | Couple naming, ceremony/reception separation, wedding theme compatibility            | Wedding-only semantics for other event types                   |
 
-The capability contract in `src/lib/invitation/invitation-descriptors.ts` encodes these roles and
-validates the intentionally different routable, editor-selectable, and showroom subsets.
+These are reference recommendations. Runtime collection lookup, static eligibility, editor presets
+and showroom approval have separate owners listed in
+[event content governance](../content/event-governance.md#source-roles); no shared descriptor
+registry encodes all four concerns.
 
 ## 3. Create the invitation
 
@@ -220,8 +222,9 @@ create.
 
 Canonical status entrypoint: `pnpm dbs` (detail) and `pnpm dbs --compact` (CONTENT + SCHEMA).
 Compact mode composes `dbs-status` content vocabulary and `classifySchemaLifecycle` — it does not
-introduce a parallel divergence model and never mutates. Optional post-commit/merge/rewrite hooks
-may print compact status; they never block Git. Opt out with `CELEBRA_SKIP_MANAGED_STATUS=1`.
+introduce a parallel divergence model and never mutates. Git hooks do not query this status; run the
+command explicitly. See the
+[canonical status procedure](../../core/invitation-creation-contract.md).
 
 ## 4. Edit content
 

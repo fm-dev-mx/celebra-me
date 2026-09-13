@@ -12,10 +12,11 @@
   requires Repository Policy and disposable DB contracts; local CI alone is not release readiness.
 - `validate:changed` already runs related Jest. Do not repeat `test:changed` at the same unchanged
   local checkpoint. The commit hook independently verifies staged inputs.
-- Deleted sources and non-documentation JSON/YAML inputs use full Jest when import selection is
-  incomplete. Changed Playwright specs need an explicit browser execution; Jest does not run them.
-  SCSS/layout changes still require applicable browser evidence. Local Render Corpus is Jest
-  contract coverage, not visual certification.
+- Use the shared selection rules in
+  [validation procedures](validation-procedures.md#remote-ci-coverage-and-efficiency), including the
+  exact visual-manifest exception and mixed-change requirements. Changed Playwright specs need
+  browser evidence; Jest does not run them. Local Render Corpus is Jest contract coverage, not
+  visual certification.
 
 - Run focused local checks while editing. Use the PR to `develop` for complete remote certification;
   confirm its workflow run exists. A push to a task branch alone does not run CI.

@@ -7,9 +7,10 @@
 - `published_invitation_content` is the public source for real/client invitations.
 - `src/content/event-demos/` contains public, fictitious showcase content.
 - `src/content/event-templates/` contains development-only reusable masters.
-- `src/lib/invitation/invitation-descriptors.ts` records routability, editor selection, showroom
-  approval, canonical-reference roles, production enablement, event type, preset, and asset
-  namespace. Intentional subsets remain distinct and are tested for parity.
+- `src/lib/content/events.ts` owns collection lookup; `src/lib/invitation/content-resolver.ts` owns
+  static eligibility. `src/lib/intake/demo-preset-catalog.ts` owns editor selection and
+  `src/data/demo-showroom.data.ts` owns showroom approval. These sets are intentionally distinct;
+  reference recommendations live in the production runbook, not a shared descriptor registry.
 
 Static content is not a temporary database fallback. A real invitation may use a demo as an
 editorial reference, but it receives its own DB route slug, published content, and client-owned
@@ -21,8 +22,8 @@ asset namespace.
   demo/template reference metadata. They may differ.
 - Public demo slugs are unique across `event-demos`. Production client slugs must not collide with
   static demo or development-template routes.
-- Theme presets and event types come from `src/lib/theme/theme-contract.ts`; compatibility comes
-  from the descriptor/preset catalog contract, never from free-form strings.
+- Theme presets and event types come from `src/lib/theme/theme-contract.ts`; editor compatibility
+  comes from the preset catalog contract, never from free-form strings.
 - A routable demo is not automatically editor-selectable or showroom-approved.
 - The `xv/master.json` template is a tested development-only starter, not production content.
 

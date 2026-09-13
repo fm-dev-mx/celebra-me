@@ -44,12 +44,13 @@ LFS. `.vercelignore` excludes references from CLI uploads; it does not replace t
 LFS setting. Accepted references must remain outside deployed static and function outputs. Temporary
 candidates and differences stay ignored.
 
-Canonical capture initialization pins the gift table-number `--font-mono` fallback to
+Canonical capture initialization pins the gift-registry event identifier's `--font-mono` fallback to
 `Liberation Mono` in the fixed Linux image. Chromium otherwise changes from WenQuanYi Zen Hei Mono
-to Liberation Mono during the first full-page PNG, altering gift-number line metrics even after
+to Liberation Mono during the first full-page PNG, altering event-identifier line metrics even after
 `document.fonts.ready`. This affects only the browser test document, not public invitation styles or
-content. A regression check requires gift-number geometry and document height to remain unchanged
-across the first PNG.
+content. The persisted field `tableNumber` names this gift-registry event identifier, not guest
+seating; it remains unchanged for compatibility. A regression check requires identifier geometry and
+document height to remain unchanged across the first PNG.
 
 Viewport and complete-page captures require two consecutive visually stable PNGs before baseline
 comparison. Stabilization requires identical dimensions and zero perceptually changed pixels using

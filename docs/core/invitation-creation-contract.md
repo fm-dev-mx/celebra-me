@@ -38,11 +38,12 @@ Every managed digital invitation must define:
     (`/boda/boda-daniela-y-martin`) and is forbidden for new invitations.
   - Prefer celebrant/couple identity tokens only (names), not event-type labels (`boda`, `xv`,
     `cumple`, etc.).
-  - **Slug Brevity & Naming Discipline:** Prefer the concise public form `{primer_nombre}-{primer_apellido}`
-    (e.g. `norma-hernandez`, `leslie-perez`). Do **not** bloat slugs with middle names and multiple compound
-    surnames (e.g. avoid `norma-margarita-hernandez-zabalsa`). Slugs drive filesystem paths, asset folders,
-    stylesheets, and URL links; compound surnames or middle names are permitted only when strictly necessary
-    to disambiguate a collision or when explicitly requested by the celebrant for their public URL.
+  - **Slug Brevity & Naming Discipline:** Prefer the concise public form
+    `{primer_nombre}-{primer_apellido}` (e.g. `norma-hernandez`, `leslie-perez`). Do **not** bloat
+    slugs with middle names and multiple compound surnames (e.g. avoid
+    `norma-margarita-hernandez-zabalsa`). Slugs drive filesystem paths, asset folders, stylesheets,
+    and URL links; compound surnames or middle names are permitted only when strictly necessary to
+    disambiguate a collision or when explicitly requested by the celebrant for their public URL.
   - `assetSlug` and `visualProfileId` should match the canonical slug unless a documented exception
     exists.
 - **Host Login Alias** (`hostLoginAlias`): Short unique Auth login for the dedicated host. Technical
@@ -179,7 +180,7 @@ pnpm dbs                 # Canonical schema + publication + readiness
 pnpm dbs <slug>          # One registry invitation
 pnpm dbs --verbose       # Migration IDs, env states, reasonCode
 pnpm dbs --diagnostics   # Same decisions plus diagnostic enrichment
-pnpm dbs --compact       # Connectivity CONTENT + SCHEMA (not publication; Git-hook friendly)
+pnpm dbs --compact       # Connectivity CONTENT + SCHEMA (not publication)
 pnpm dbs --compact <slug># Same connectivity CONTENT scoped to one slug
 ```
 
@@ -189,14 +190,8 @@ never migrates, reconciles, updates, or promotes. Unavailable remotes degrade to
 comes from `pnpm dbs` / `pnpm dbs <slug>` via `classifyLiveInvitation` and `decidePromotionAction`,
 not from package-hash compact output.
 
-Optional non-blocking Git hooks (`post-commit`, `post-merge`, `post-rewrite`) may print compact
-status with a strict per-query timeout. They never block Git success. Temporary opt-out:
-`CELEBRA_SKIP_MANAGED_STATUS=1`. Blocking husky gates (`pre-commit`, `pre-push`, `commit-msg`) do
-not run database/network status.
-
-**Hooks vs lane sync:** `post-rewrite` is not a reliable semantic equivalent of “lane synchronized”.
-A rebase that fast-forwards or rewrites nothing may produce no hook output. Use the canonical
-lane-sync command for deterministic observability after aligning with `develop`:
+Git hooks do not query managed invitation status. Run `pnpm dbs` explicitly when status evidence is
+needed. The separately invoked lane-sync command retains its bounded read-only status option:
 
 ```bash
 pnpm lane:sync            # read-only synchronization preview from local refs

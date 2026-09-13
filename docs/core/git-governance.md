@@ -142,9 +142,8 @@ _Note: Agents do not use shell functions and must always specify explicit workin
 
 ### Lane synchronization observability
 
-Git hooks (`post-commit`, `post-merge`, `post-rewrite`) may print `pnpm dbs --compact` as fail-open
-observability. They are **not** a reliable “lane synchronized” signal: a rebase that effectively
-fast-forwards or performs no meaningful rewrite may produce no managed-status output.
+Git hooks do not query database status. Use `pnpm dbs` for a manual read. The explicitly invoked
+lane-sync command retains its bounded status output.
 
 Canonical deterministic path after aligning a lane with `develop`:
 
@@ -153,9 +152,9 @@ pnpm lane:sync                 # read-only synchronization preview
 pnpm lane:sync -- --apply      # authorized synchronization after preflight
 ```
 
-This fetches `origin/develop`, rebases (or `--ff-only` merges) the current branch, then always runs
-compact managed status unless `CELEBRA_SKIP_MANAGED_STATUS=1` or `--skip-status` is set. Remote DB
-unavailability never fails the Git synchronization step.
+With `--apply`, this fetches `origin/develop`, rebases (or `--ff-only` merges) the current branch,
+then runs compact managed status unless `CELEBRA_SKIP_MANAGED_STATUS=1` or `--skip-status` is set.
+Remote DB unavailability never fails the Git synchronization step.
 
 ### Worktree Inspection Tooling
 
@@ -318,33 +317,39 @@ judgment.
 
 ## Ownership
 
-| Owner                                     | Responsibility                                                                                   |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `.agent/plans/README.md`                  | Task Contract, Goal protocol, Handoff Contract, durable tracked plans                            |
-| `.agent/rules/gatekeeper.md`              | Validation tiers and review/remediation gates                                                    |
-| `.agent/rules/workflow.md`                | Agent operating procedure and authorization handoff                                              |
-| `commitlint.config.cjs`                   | Commit message validation and quality rules                                                      |
-| `scripts/validate-commits.mjs`            | Audit-only validation and commit-hygiene warnings for commit ranges                              |
-| `.husky/pre-commit`                       | Branch protection and staged-file checks                                                         |
-| `.husky/pre-push`                         | Audit-only commit-range validation before push                                                   |
-| `.github/workflows/commit-validation.yml` | Repository policy checks (commit messages, doc links) and full application suite (`pnpm run ci`) |
+| Owner                                     | Responsibility                                                                      |
+| ----------------------------------------- | ----------------------------------------------------------------------------------- |
+| `.agent/plans/README.md`                  | Task Contract, Goal protocol, Handoff Contract, durable tracked plans               |
+| `.agent/rules/gatekeeper.md`              | Validation tiers and review/remediation gates                                       |
+| `.agent/rules/workflow.md`                | Agent operating procedure and authorization handoff                                 |
+| `commitlint.config.cjs`                   | Commit message validation and quality rules                                         |
+| `scripts/validate-commits.mjs`            | Audit-only validation and commit-hygiene warnings for commit ranges                 |
+| `.husky/pre-commit`                       | Branch protection and staged-file checks                                            |
+| `.husky/pre-push`                         | Main guard, audit-only commit-range validation and Git LFS handoff                  |
+| `.github/workflows/commit-validation.yml` | Policy, static/build, unit, database and browser jobs, aggregate result and metrics |
 
 ## Active Hooks and CI Sequence
 
-1. `pre-commit` blocks direct commits to `main` unless explicitly bypassed and runs
-   `pnpm lint-staged` on all branches. GitHub rules require pull requests for changes targeting
-   `develop`.
+1. `pre-commit` blocks detached HEAD and direct commits to `main` (subject to the existing main
+   exception), then runs `pnpm lint-staged` and `pnpm test:changed`. Failures propagate.
 2. `commit-msg` runs `commitlint` against the pending commit message on all branches.
 3. `pre-push` blocks direct pushes to `main` (override: `ALLOW_MAIN_PUSH=true`) and validates the
-   pushed commit range with `scripts/validate-commits.mjs` in audit-only mode.
+   pushed commit range with `scripts/validate-commits.mjs` in audit-only mode, then passes the same
+   ref updates and remote arguments to Git LFS. New task branches pushed to `origin` use the common
+   ancestor with `origin/develop`, the repository's default integration target. Existing remote
+   branches use the common ancestor with their remote SHA. New `main`/`develop` refs, tags and other
+   remotes retain the main-first fallback; unavailable develop ancestry falls back to main, develop,
+   then the root as before. This does not infer a future PR's target from its branch name.
 4. CI workflow `Repository CI` (`.github/workflows/commit-validation.yml`) runs on push to `develop`
-   and on pull requests targeting `develop` or `main`. It reports two parallel jobs with
-   non-overlapping validation:
-   - **Repository Policy** — commit-message range checks and `pnpm ops check-links`
-   - **Application Suite** — canonical `pnpm run ci` (after Playwright Chromium install)
-     Checkout/pnpm/Node/install setup is duplicated per job because GitHub Actions jobs do not share
-     a workspace. Jobs are not linked with `needs`, so one job's failure does not cancel the other;
-     the trade-off is duplicated setup and two runners instead of sequential short-circuiting.
+   and on pull requests targeting `develop` or `main`, and supports manual dispatch. Comparison mode
+   runs **Repository Policy**, the **Application** static/unit/database matrix and **Application /
+   browser**. **Application Suite** aggregates all three dependencies; **Validation metrics**
+   records their results. Candidate mode prepares visual evidence and deliberately skips
+   policy/application certification. It is not a release check. See the canonical
+   [validation procedure](validation-procedures.md#remote-ci-coverage-and-efficiency) for commands,
+   validation scope and the distinction from `pnpm run ci`.
+5. No post-commit, post-merge or post-rewrite hook queries invitation status. Use `pnpm dbs`
+   manually.
 
 ## Guarantees
 
@@ -353,8 +358,8 @@ judgment.
 - Commit hygiene warnings stay non-blocking so developers still get feedback without hidden
   automation side effects.
 - Direct commits and pushes to `main` are blocked by local hooks (`pre-commit` / `pre-push`).
-  `develop` is the active trunk and accepts changes through pull requests. Repository rulesets
-  protect both integration branches:
+  `develop` is the active trunk and policy requires changes through pull requests. Required remote
+  enforcement is:
   - `develop` requires a pull request, resolved review threads, `Repository Policy`, and
     `Application Suite`.
   - `main` blocks deletion and non-fast-forward updates and requires the same checks, but does not
@@ -364,6 +369,14 @@ judgment.
   enforcement is active.
 - Atomicity is expected by policy, but enforced through warnings and review rather than a rigid
   local gate.
+
+### Observed remote enforcement (2026-09-13)
+
+Read-only `gh api repos/fm-dev-mx/celebra-me/rules/branches/<branch>` showed deletion and
+non-fast-forward protection on both branches, and required status checks on `main`. `develop`
+returned no pull-request or required-status-check rule. This is an enforcement gap against the
+policy above, not permission to bypass it. Repairing remote protection is a separate authorized
+operation; re-query effective rules before promotion rather than relying on this dated observation.
 
 ## Production Promotion
 

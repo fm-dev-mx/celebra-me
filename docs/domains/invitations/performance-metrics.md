@@ -349,7 +349,7 @@ hero.
 
 **Measurement.** Operation counts: `tests/unit/rsvp-v2.service.test.ts` with
 `assertObservedOperationCount` (a duplicate lookup or RPC fails). Duplicate UI:
-`tests/components/RSVP.test.ts`. RPC atomicity: `tests/db/public-guest-rsvp-db-boundary.test.ts`.
+`tests/components/RSVP.test.tsx`. RPC atomicity: `tests/db/public-guest-rsvp-db-boundary.test.ts`.
 Functional outcome (HTTP 200 + DB `confirmed` + audit) on **disposable local DB only**:
 `tests/db/public-rsvp-http-wiring-db.test.ts` (`pnpm test:db:rsvp-contracts`). Playwright
 `tests/e2e/rsvp-v2.e2e.test.ts` mocks the API and proves UI confirmation, not a live mutation. Never

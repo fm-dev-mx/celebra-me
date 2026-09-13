@@ -60,11 +60,27 @@ describeRangeValidation('validate-commits script', () => {
 			const result = runCommand('node', [SCRIPT_PATH, baseSha, headSha], {
 				cwd: repoRoot,
 				allowFailure: true,
+				// The fixture borrows installed dependencies; never let pnpm reinstall the
+				// external symlink target. Commitlint itself still executes normally.
+				env: { ...process.env, pnpm_config_verify_deps_before_run: 'warn' },
 			});
 
 			expect(result.status).toBe(0);
 			expect(result.stdout).toContain('Checking commit:');
 			expect(result.stdout).toContain('Commit validation completed');
+
+			writeFileSync(trackedFile, '# fixture\n\ninvalid commit message\n', 'utf8');
+			runCommand('git', ['add', 'README.md'], { cwd: repoRoot });
+			runCommand('git', ['commit', '--no-verify', '-m', 'invalid'], { cwd: repoRoot });
+			const invalidHead = runCommand('git', ['rev-parse', 'HEAD'], {
+				cwd: repoRoot,
+			}).stdout.trim();
+			const invalid = runCommand('node', [SCRIPT_PATH, headSha, invalidHead], {
+				cwd: repoRoot,
+				env: { ...process.env, pnpm_config_verify_deps_before_run: 'warn' },
+			});
+			expect(invalid.stderr).toContain('Commit validation failed');
+			expect(invalid.stdout).toContain('Commit validation found issues (audit-only mode)');
 		} finally {
 			cleanupFixture(repoRoot);
 		}

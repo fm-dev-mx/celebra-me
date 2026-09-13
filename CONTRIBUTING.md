@@ -35,10 +35,11 @@ The process described here has several goals:
 Please follow these steps to have your contribution considered by the maintainers:
 
 1. Fork the repository.
-2. Create a branch from `develop` (`git switch -c feat/short-description develop`).
-   Branch creation SSOT: [`docs/core/git-governance.md`](docs/core/git-governance.md).
+2. Create a branch from `develop` (`git switch -c feat/short-description develop`). Branch creation
+   SSOT: [`docs/core/git-governance.md`](docs/core/git-governance.md).
 3. Make your changes, ensuring that you follow the coding style guidelines (below).
-4. Commit your changes (`git commit -m 'feat: add some feature'`).
+4. Commit your changes (for example,
+   `git commit -m 'fix(validation): preserve mixed input checks'`).
    > [!NOTE] We use **Conventional Commits** with a required scope. See
    > [`docs/core/git-governance.md`](docs/core/git-governance.md) for the full commit policy,
    > including atomic-commit expectations and commit-body guidance.
@@ -76,13 +77,8 @@ Please follow these coding standards:
 
 To set up the development environment:
 
-1. Install Node.js matching `package.json` `engines` (`>=22.12.0 <25`). Prefer a current Node 22 LTS
-   release.
-2. Use pnpm as the package manager. Install pnpm if you don't have it installed:
-
-   ```bash
-   pnpm install -g pnpm
-   ```
+1. Install Node.js within the range in `package.json` → `engines`.
+2. Use the exact pnpm version declared in `package.json` → `packageManager`.
 
 3. Install the Supabase CLI if you plan to run the local database workflows (`pnpm db:start`,
    `pnpm db:migrate -- --target local`, `pnpm db:local:validate`, `pnpm db:disposable:reset`,
@@ -110,42 +106,18 @@ To set up the development environment:
 
 ### Testing Requirements
 
-Before submitting a pull request, ensure:
+Follow the A/B/C tiers and commands in the canonical
+[validation procedures](docs/core/validation-procedures.md). Start with `pnpm validate:changed` and
+the focused checks required by the change; do not repeat related Jest against unchanged inputs. The
+commit hook independently checks staged paths. Add behavior tests where a changed contract needs
+them; coverage runs are useful when investigating a coverage gap, not an extra mandatory full-suite
+repetition for every PR.
 
-1. **Run the required validation suite**:
-
-   ```bash
-   pnpm run ci
-   ```
-
-   This command is the authoritative pre-PR gate for contributor work. It matches the `ci` script in
-   `package.json` (type-check, structure, lint, styles, governance, event parity, PII, invitation
-   preparation, unit tests, e2e CI slice, production build, and Git-safety check).
-
-2. **Coverage is maintained** — New code should have tests where appropriate. Run coverage to
-   verify:
-
-   ```bash
-   pnpm test -- --coverage
-   ```
-
-3. **Documentation links stay valid when docs change**:
-
-   ```bash
-   pnpm ops check-links
-   ```
-
-   Run this when your pull request touches Markdown files. The GitHub PR workflow also runs it
-   against changed Markdown files.
-
-4. **Use the full Stylelint audit when you are paying down stylesheet debt**:
-
-   ```bash
-   pnpm lint:styles
-   ```
-
-   This is an audit command for the repository-wide SCSS baseline. It is intentionally broader than
-   the required changed-file Stylelint gate in `pnpm run ci`.
+For Markdown changes, run `pnpm ops check-links` and the Markdown table check. Full `pnpm run ci`
+runs static/build, Jest and browser checks, including full Stylelint; it does not run interactive
+Git Safety, Repository Policy or disposable database contracts. Complete remote CI and correlated
+Preview smoke on the final SHA remain release requirements. Use
+[release process](docs/core/release-process.md) for certification and promotion.
 
 For detailed repository conventions, see
 [`docs/core/project-conventions.md`](docs/core/project-conventions.md).
