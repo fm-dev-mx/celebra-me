@@ -11,6 +11,14 @@
 
 **Preparation Readiness (prepReadiness):** `NOT_READY`
 
+Current owner clarification (2026-09-12): the existing photographs are definitive. Preserve the
+configured RSVP behavior and guest allocations; do not request or invent a new global capacity. The
+existing `guestCap: 2` is a fallback, while personalized passes use the persisted guest's
+`maxAllowedAttendees` through `src/lib/invitation/section-render-data.ts`. No guest records change.
+Earlier provisional-photo notes below describe historical preparation, not a current photo blocker.
+This confirmation does not replace acceptance of the exact visual candidate or authorize provider
+writes.
+
 The owner authorized creation with temporary data and requested no further questions. The owner has
 since supplied the venue address; this does not promote provisional photographs. A managed
 definition, local source assets and invitation profile now implement the explicitly requested local
@@ -136,12 +144,13 @@ confirms three distinct poses. No beauty reshaping or generative reconstruction 
 | gallery second | photo 22 | gallery-02.webp     | No                               |
 
 The three original JPEGs remain byte-for-byte identical to the ZIP sources (SHA-256 checked).
-Delivery copies use WebP quality 84 at the original 1476 × 1600 dimensions: hero fallback 209428 bytes,
-hero desktop 126966 bytes, hero mobile 140696 bytes, gallery first 155412 bytes, gallery second 162582 bytes.
-This is compression only: no generative photo editing, exposure change, background replacement, crop,
-enlargement or anatomical alteration. Business images 55, 56 and 57 are excluded. Source quality remains
-provisional; compression does not promote preparation readiness. Human comparison of originals and
-derivatives remains pending. Role ceilings remain mobile hero 350 KB, desktop hero 500 KB and gallery 180 KB.
+Delivery copies use WebP quality 84 at the original 1476 × 1600 dimensions: hero fallback 209428
+bytes, hero desktop 126966 bytes, hero mobile 140696 bytes, gallery first 155412 bytes, gallery
+second 162582 bytes. This is compression only: no generative photo editing, exposure change,
+background replacement, crop, enlargement or anatomical alteration. Business images 55, 56 and 57
+are excluded. Source quality remains provisional; compression does not promote preparation
+readiness. Human comparison of originals and derivatives remains pending. Role ceilings remain
+mobile hero 350 KB, desktop hero 500 KB and gallery 180 KB.
 
 ## Implementation Constraints
 
