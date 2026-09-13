@@ -44,6 +44,13 @@ LFS. `.vercelignore` excludes references from CLI uploads; it does not replace t
 LFS setting. Accepted references must remain outside deployed static and function outputs. Temporary
 candidates and differences stay ignored.
 
+Canonical capture initialization pins the gift table-number `--font-mono` fallback to
+`Liberation Mono` in the fixed Linux image. Chromium otherwise changes from WenQuanYi Zen Hei Mono
+to Liberation Mono during the first full-page PNG, altering gift-number line metrics even after
+`document.fonts.ready`. This affects only the browser test document, not public invitation styles or
+content. A regression check requires gift-number geometry and document height to remain unchanged
+across the first PNG.
+
 Viewport and complete-page captures require two consecutive visually stable PNGs before baseline
 comparison. Stabilization requires identical dimensions and zero perceptually changed pixels using
 Playwright's default YIQ color threshold (0.2), without a changed-pixel allowance. Byte identity is
@@ -58,7 +65,9 @@ Complete-page tests allow sixty seconds for navigation, deferred media, PNG enco
 shared CI runners; the stabilization loop retains its separate bounded timeout. Each
 manifest-producing suite runs serially without retries. A failed capture stops that suite;
 continuing it in a replacement worker would discard the earlier in-memory manifest entries. CI
-retains only actual/diff PNGs on failure for three days, without traces or credential artifacts.
+retains actual/diff PNGs and diagnostic JSON on failure for three days, without traces or credential
+artifacts. A stabilization timeout preserves the last two available frames and their capture times;
+it does not take replacement screenshots after the failure.
 
 GitHub CI runs static/build, unit, browser, and disposable database checks independently. The
 required `Application Suite` status succeeds only when every application tier succeeds; cancelled,

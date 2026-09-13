@@ -1,4 +1,5 @@
-import type { Page } from '@playwright/test';
+import { test, type Page } from '@playwright/test';
+import { mkdir, writeFile } from 'node:fs/promises';
 import sharp from 'sharp';
 import { getOperationalToolbarSelectors } from '../../../scripts/screenshot/utils';
 
@@ -11,6 +12,19 @@ export async function initializeVisualCapture(
 	await page.clock.setFixedTime(now);
 	await page.addInitScript(() => {
 		Object.assign(window, { __celebraScreenshotMode: 'audit' });
+		document.addEventListener(
+			'DOMContentLoaded',
+			() => {
+				// Pin the final font from the Linux runtime instead of Chromium's lazy
+				// generic fallback, which can change line metrics during the first PNG.
+				for (const number of document.querySelectorAll<HTMLElement>(
+					'.gift-card__table-number-code',
+				)) {
+					number.style.setProperty('--font-mono', '"Liberation Mono", monospace');
+				}
+			},
+			{ once: true },
+		);
 	});
 }
 
@@ -36,10 +50,15 @@ export async function captureStablePage(page: Page, fullPage = false): Promise<B
 	// A 1440px-wide complete page can take 4-5 seconds per PNG before comparison.
 	const timeout = fullPage ? 20_000 : 5_000;
 	const deadline = Date.now() + timeout;
+	const started = Date.now();
+	const captureTimes: number[] = [];
+	let penultimate: Buffer | undefined;
 	let previous = await page.screenshot({ fullPage, animations: 'disabled' });
+	captureTimes.push(Date.now() - started);
 	while (Date.now() < deadline) {
 		await page.waitForTimeout(100);
 		const current = await page.screenshot({ fullPage, animations: 'disabled' });
+		captureTimes.push(Date.now() - started);
 		if (current.equals(previous)) return current;
 		const [before, after] = await Promise.all(
 			[previous, current].map((image) =>
@@ -52,8 +71,19 @@ export async function captureStablePage(page: Page, fullPage = false): Promise<B
 			!hasVisiblePixelChange(before.data, after.data)
 		)
 			return current;
+		penultimate = previous;
 		previous = current;
 	}
+	// Keep the actual failing frames, not a fresh screenshot of a later state.
+	const info = test.info();
+	await mkdir(info.outputDir, { recursive: true });
+	await writeFile(info.outputPath('capture-stability-current-actual.png'), previous);
+	if (penultimate)
+		await writeFile(info.outputPath('capture-stability-previous-actual.png'), penultimate);
+	await writeFile(
+		info.outputPath('capture-stability.json'),
+		JSON.stringify({ timeoutMs: timeout, elapsedMs: Date.now() - started, captureTimes }),
+	);
 	throw new Error(`Page capture did not stabilize within ${timeout / 1000} seconds.`);
 }
 

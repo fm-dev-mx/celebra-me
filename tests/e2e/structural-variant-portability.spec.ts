@@ -5,6 +5,7 @@ import {
 	initializeVisualCapture,
 	captureStablePage,
 	waitForVisualHydration,
+	prepareCompletePage,
 } from './harness/complete-page-capture';
 import { auditCriticalLayout } from './harness/critical-layout-audit';
 import { test, expect, type Page } from '@playwright/test';
@@ -78,6 +79,23 @@ interface CapturedSnapshotInfo {
 
 const visualDifferences: Array<{ file: string; message: string }> = [];
 const capturedSnapshots: CapturedSnapshotInfo[] = [];
+
+test('gift number geometry stays fixed during the first complete-page capture', async ({
+	page,
+}) => {
+	test.setTimeout(60_000);
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await initializeVisualCapture(page);
+	await page.goto('/xv/america-johana?skipEnvelope=true&screenshot=true&animations=off');
+	await prepareCompletePage(page);
+	const number = page.locator('.gift-card__table-number-code').first();
+	await expect(number).toBeVisible();
+	const before = await number.boundingBox();
+	const height = await page.evaluate(() => document.documentElement.scrollHeight);
+	await page.screenshot({ fullPage: true, animations: 'disabled' });
+	expect(await number.boundingBox()).toEqual(before);
+	expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(height);
+});
 
 test('certified comparison rejects a deliberately different rendered page', async ({ page }) => {
 	test.skip(
