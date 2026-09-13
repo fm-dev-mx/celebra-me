@@ -45,6 +45,7 @@ import {
 	formatInvitationGuidance,
 	formatPreviewApplyApprovalGuidance,
 	translatePreconditionFailure,
+	translatePreviewNamespaceFailure,
 } from './invitation-operator-guidance.ts';
 import { readFastInvitationInventory } from './invitation-status-inventory.ts';
 import { evaluateInvitationReadiness } from './invitation-readiness.ts';
@@ -1289,20 +1290,27 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						const errMsg = sanitizeMessage(
 							error instanceof Error ? error.message : String(error),
 						);
-						const previewReason = isTargetDivergenceConflictMessage(errMsg)
-							? errMsg
-							: 'No fue posible inspeccionar Preview de forma segura. Revise credenciales, identidad del proyecto, conectividad y estado remoto antes de volver a planificar.';
+						const namespaceReason = translatePreviewNamespaceFailure(errMsg);
+						const previewReason =
+							namespaceReason ??
+							(isTargetDivergenceConflictMessage(errMsg)
+								? errMsg
+								: 'No fue posible inspeccionar Preview de forma segura. Revise credenciales, identidad del proyecto, conectividad y estado remoto antes de volver a planificar.');
 						reports.push({
 							stage: 'plan',
 							environment: 'preview',
 							status: 'BLOCKED',
-							reasonCode: isTargetDivergenceConflictMessage(errMsg)
-								? 'TARGET_DIVERGENCE_CONFLICT'
-								: 'PREVIEW_PLAN_BLOCKED',
+							reasonCode: namespaceReason
+								? 'PREVIEW_ASSET_NAMESPACE_MISMATCH'
+								: isTargetDivergenceConflictMessage(errMsg)
+									? 'TARGET_DIVERGENCE_CONFLICT'
+									: 'PREVIEW_PLAN_BLOCKED',
 							reason: previewReason,
-							remainingAction: isTargetDivergenceConflictMessage(errMsg)
-								? errMsg
-								: `Detalle técnico sanitizado: ${errMsg}`,
+							remainingAction:
+								namespaceReason ??
+								(isTargetDivergenceConflictMessage(errMsg)
+									? errMsg
+									: `Detalle técnico sanitizado: ${errMsg}`),
 						});
 						targetPlans.push({
 							target: 'preview',

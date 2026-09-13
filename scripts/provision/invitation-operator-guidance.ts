@@ -4,6 +4,18 @@
  */
 import { formatOperatorFailure, type OperatorFailureInput } from '../db/operator-cli-ux.ts';
 
+/** Match only the bounded provider diagnostic; never echo arbitrary provider error details. */
+export function translatePreviewNamespaceFailure(message: string): string | null {
+	const match =
+		/Cloudinary asset namespace mismatch: expected preview, observed (legacy|production|invalid)\./u.exec(
+			message,
+		);
+	if (!match) return null;
+	return match[1] === 'legacy'
+		? 'Preview contiene imágenes en el espacio legacy de Cloudinary. Prepare y revise la migración de imágenes a preview antes de volver a planificar; no fuerce la sobrescritura.'
+		: 'Una imagen no pertenece al espacio preview de Cloudinary. Revise su origen e identidad antes de volver a planificar; no reutilice recursos de otro entorno.';
+}
+
 function taskPromptRetry(slug: string, targets: string): string {
 	return `--slug ${slug} --targets ${targets} --apply`;
 }

@@ -16,7 +16,7 @@ const publishedId = '10000000-0000-4000-8000-000000000003';
 const assetId = '10000000-0000-4000-8000-000000000004';
 const newAssetId = '10000000-0000-4000-8000-000000000005';
 const sha256 = 'a'.repeat(64);
-const oldPublicId = 'boda/namespace-contract/assets/hero-legacy';
+const oldPublicId = 'boda/namespace-contract/assets/hero-aaaaaaaaaaaa';
 const content = {
 	sectionOrder: ['hero'],
 	hero: {

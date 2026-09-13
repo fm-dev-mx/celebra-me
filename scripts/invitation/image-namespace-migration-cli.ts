@@ -265,6 +265,7 @@ export async function applyRemoteMigration(
 		throw new Error('Production migration requires the owner-confirmed prod:apply permit.');
 	if (plan.snapshotHash !== fingerprint(snapshot))
 		throw new Error('Migration source changed before copy.');
+	buildNamespaceRemapSql(snapshot, plan.swaps, plan.retirements);
 	for (const swap of plan.swaps) {
 		await verifySource(swap);
 		const sourceUrl = buildCloudinaryDeliveryUrl(
@@ -347,6 +348,7 @@ async function planAll(target: Target, outputDir: string, dbUrl: string): Promis
 			const path = join(targetDir, `${slug}.json`);
 			if (existsSync(path)) throw new Error('reviewed manifest already exists');
 			const plan = buildPlan(readSnapshot(target, slug, dbUrl), cloudName);
+			buildNamespaceRemapSql(plan.before, plan.swaps, plan.retirements);
 			for (const swap of plan.swaps) await verifySource(swap);
 			writeFileSync(path, JSON.stringify(plan, null, 2) + '\n', { flag: 'wx' });
 			images += plan.swaps.length;
@@ -433,6 +435,7 @@ async function main(): Promise<void> {
 	const snapshot = readSnapshot(target, slug, dbUrl);
 	if (mode === 'plan') {
 		const plan = buildPlan(snapshot, canonicalCloudName());
+		buildNamespaceRemapSql(snapshot, plan.swaps, plan.retirements);
 		for (const swap of plan.swaps) await verifySource(swap);
 		if (manifestPath && existsSync(resolve(manifestPath)))
 			throw new Error('Refusing to replace an existing reviewed migration manifest.');

@@ -40,6 +40,21 @@ const snapshot: NamespaceSnapshot = {
 };
 
 describe('hosted image namespace remap', () => {
+	it('accepts identical digest paths under the new namespace but rejects residual raw values', () => {
+		const sameDigest = { ...swap, oldPublicId: swap.newPublicId.replace('preview/', '') };
+		expect(rewriteNamespaceRefs(content, [sameDigest]).hero).toEqual({
+			image: { type: 'uploaded', assetId: newId, src: swap.newUrl },
+		});
+		expect(() =>
+			rewriteNamespaceRefs(
+				{
+					...content,
+					footer: `https://res.cloudinary.com/example/image/upload/v1/${sameDigest.oldPublicId}.webp`,
+				},
+				[sameDigest],
+			),
+		).toThrow('outside uploaded references');
+	});
 	it('remaps hero and Open Graph references without changing authored content', () => {
 		const result = rewriteNamespaceRefs(content, [swap]);
 		expect(result.hero).toEqual({

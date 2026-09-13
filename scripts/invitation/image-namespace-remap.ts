@@ -162,8 +162,21 @@ export function rewriteNamespaceRefs(
 	const rewritten = visit(content) as Record<string, unknown>;
 	const remaining = collectUploadedContentRefs(rewritten).filter((ref) => byId.has(ref.assetId));
 	if (remaining.length > 0) throw new Error('Legacy uploaded references remain after remap.');
-	const rewrittenJson = JSON.stringify(rewritten);
-	if (swaps.some((swap) => rewrittenJson.includes(swap.oldPublicId)))
+	const destinationUrls = new Set(
+		swaps.flatMap((swap) => [swap.newUrl, buildCloudinaryOgImageUrl(swap.newUrl)]),
+	);
+	const hasLegacyValue = (value: unknown): boolean => {
+		if (typeof value === 'string')
+			return (
+				!destinationUrls.has(value) &&
+				swaps.some((swap) => value.includes(swap.oldPublicId))
+			);
+		if (Array.isArray(value)) return value.some(hasLegacyValue);
+		return (
+			value !== null && typeof value === 'object' && Object.values(value).some(hasLegacyValue)
+		);
+	};
+	if (hasLegacyValue(rewritten))
 		throw new Error('Legacy Cloudinary URLs remain outside uploaded references.');
 	return rewritten;
 }

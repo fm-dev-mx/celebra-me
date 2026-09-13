@@ -16,7 +16,10 @@ import {
 	readMigrationManifest,
 	readSnapshot,
 } from '../invitation/image-namespace-migration-cli.ts';
-import { buildNamespaceRollbackSql } from '../invitation/image-namespace-remap.ts';
+import {
+	buildNamespaceRemapSql,
+	buildNamespaceRollbackSql,
+} from '../invitation/image-namespace-remap.ts';
 
 export async function runProductionImageNamespaceApply(input: {
 	manifestPath: string;
@@ -34,6 +37,7 @@ export async function runProductionImageNamespaceApply(input: {
 	if (!input.rollback) {
 		if (fingerprint(snapshot) !== plan.snapshotHash)
 			throw new Error('Production manifest is stale; regenerate and review it.');
+		buildNamespaceRemapSql(snapshot, plan.swaps, plan.retirements);
 	} else {
 		buildNamespaceRollbackSql(plan.before, plan.swaps, plan.retirements);
 	}
@@ -42,7 +46,7 @@ export async function runProductionImageNamespaceApply(input: {
 		: plan.planId;
 	process.stdout.write(
 		`${input.rollback ? 'Rollback' : 'Migration'} Production/${plan.slug}: ` +
-			`${plan.swaps.length} copied images, ${plan.retirements.length} retired rows; plan ${binding.slice(0, 8)}.\n`,
+			`${plan.swaps.length} planned image copies, ${plan.retirements.length} planned row retirements; plan ${binding.slice(0, 8)}.\n`,
 	);
 	if (!input.apply) return;
 	const backup = ensureCriticalProductionBackup({
