@@ -80,6 +80,7 @@ const ASSET_REFERENCE_FIELDS = new Set([
 	'backgroundImageMobile',
 	'backgroundImageDesktop',
 	'featuredImage',
+	'ornament',
 	'image',
 	'ogImage',
 	'portrait',

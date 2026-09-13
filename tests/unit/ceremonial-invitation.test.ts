@@ -48,4 +48,39 @@ describe('ceremonial invitation contracts', () => {
 			startsAtUtc: '2026-11-28T00:00:00.000Z',
 		});
 	});
+
+	it('binds purpose-built mobile and desktop hero derivatives', () => {
+		const content = allisonInvitation.buildPublishedContent(
+			Object.fromEntries(
+				allisonInvitation.assets.map((asset) => [
+					asset.key,
+					{
+						type: 'uploaded' as const,
+						assetId: asset.key,
+						src: `/${asset.relativePath}`,
+					},
+				]),
+			),
+		);
+		const hero = content.hero as Record<string, unknown>;
+		expect(hero.backgroundImageMobile).toMatchObject({ assetId: 'heroMobile' });
+		expect(hero.backgroundImageDesktop).toMatchObject({ assetId: 'heroDesktop' });
+		expect(hero.focalPointMobile).toBe('50% 36%');
+		expect(hero.focalPointDesktop).toBe('52% 32%');
+		expect(hero.ornament).toBeUndefined();
+		expect(hero.accentOrnament).toBeUndefined();
+		expect(content.countdown).toMatchObject({
+			ornament: { assetId: 'slipper' },
+		});
+		expect(content.thankYou).toMatchObject({ image: { assetId: 'closingCarriage' } });
+		expect(allisonInvitation.assets).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ key: 'heroMobile', relativePath: 'hero-mobile.webp' }),
+				expect.objectContaining({ key: 'heroDesktop', relativePath: 'hero-desktop.webp' }),
+			]),
+		);
+		expect(allisonInvitation.assets.map((asset) => asset.key)).not.toEqual(
+			expect.arrayContaining(['carriage']),
+		);
+	});
 });

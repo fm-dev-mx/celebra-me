@@ -162,6 +162,7 @@ export const countdownSchema = z
 		title: z.string().default('¡Falta muy poco!'),
 		footerText: z.string().default('Prepárate para una noche inolvidable'),
 		variant: z.enum(COUNTDOWN_VARIANTS),
+		ornament: AssetSchema.optional(),
 		presentationOptions: z
 			.object({
 				visibleUnits: z.array(z.enum(COUNTDOWN_UNITS)).min(1).max(4).optional(),

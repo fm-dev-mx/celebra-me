@@ -1,7 +1,7 @@
 import { defineCanonicalInvitation } from './canonical-definition.ts';
 import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
-/** Owner-authorized local draft. Venue, guest cap and time zone remain provisional. */
+/** Owner-authorized local draft. Guest cap and time zone remain provisional. */
 export const ALLISON_TIMING = {
 	localDateTime: '2026-11-27T18:00',
 	timeZone: 'America/Mexico_City',
@@ -13,7 +13,7 @@ const content: CanonicalEventContentInput = {
 	isDemo: false,
 	templateId: 'xv-celestial-blue',
 	title: 'Mis XV años — Allison Scarlett',
-	description: 'Una noche para soñar, una vida para recordar. Celebre conmigo mis XV años.',
+	description: 'Le invito a compartir la celebración de mis XV años.',
 	theme: { preset: 'celestial-blue', fontFamily: 'serif' },
 	eventTiming: ALLISON_TIMING,
 	sectionOrder: [
@@ -35,15 +35,17 @@ const content: CanonicalEventContentInput = {
 	},
 	hero: {
 		variant: 'ceremonial-portrait',
-		ornament: { type: 'internal', key: 'carriage' },
-		accentOrnament: { type: 'internal', key: 'slipper' },
 		ambience: { type: 'internal', key: 'ambience' },
 		name: 'Allison Scarlett',
 		label: 'Mis XV años',
 		// Hero formats its display date in UTC; eventTiming owns the real instant.
 		date: '2026-11-27T18:00:00.000Z',
 		backgroundImage: 'hero',
-		focalPoint: '50% 50%',
+		backgroundImageMobile: 'heroMobile',
+		backgroundImageDesktop: 'heroDesktop',
+		focalPoint: '50% 42%',
+		focalPointMobile: '50% 36%',
+		focalPointDesktop: '52% 32%',
 		presentation: { venueIndex: 0, portraitEnabled: false },
 	},
 	envelope: {
@@ -66,32 +68,31 @@ const content: CanonicalEventContentInput = {
 		parents: { father: 'Edgar Juarez', mother: 'Erika Mejia' },
 		godparents: [{ name: 'Geovanny Castillo' }, { name: 'Sherly Velazquez' }],
 		labels: {
-			sectionTitle: 'Un sueño compartido',
-			sectionSubtitle: 'Con el amor de mi familia',
+			sectionTitle: 'Mi familia',
+			sectionSubtitle: 'Con su cariño comienza esta celebración',
 			parentsTitle: 'Mis papás',
 			godparentsTitle: 'Mis padrinos',
-			sectionMessage:
-				'Hoy comienza un nuevo capítulo. Me hará muy feliz compartir esta noche con usted.',
+			sectionMessage: 'Me alegrará contar con su presencia en este día tan especial.',
 		},
 	},
 	countdown: {
 		variant: 'clock-face',
 		title: 'La magia está por comenzar',
 		footerText: '',
+		ornament: { type: 'internal', key: 'slipper' },
 	},
 	location: {
 		variant: 'standard',
 		presentation: 'simple',
-		introHeading: 'Una noche para recordar',
-		introLede: 'La ceremonia y la recepción se celebrarán en el mismo lugar.',
+		introHeading: 'Ceremonia y recepción',
 		venues: [
 			{
 				type: 'ceremony',
-				label: 'Ceremonia y recepción',
+				label: 'Lugar de la celebración',
 				venueEvent: 'Ceremonia religiosa',
 				venueName: 'Salón Jardín Luigi',
-				address: '[[PENDIENTE:VENUE_ADDRESS]]',
-				city: 'Ciudad de México — provisional',
+				address: 'Francisco I. Madero 4, Cuautepec de Madero, CDMX',
+				city: 'Ciudad de México',
 				date: '27 de noviembre de 2026',
 				time: '6:00 p. m.',
 				mapUrl: 'https://maps.app.goo.gl/N4W3Dz8kQi6b3bPy6?g_st=aw',
@@ -100,10 +101,10 @@ const content: CanonicalEventContentInput = {
 				type: 'reception',
 				venueEvent: 'Recepción',
 				venueName: 'Salón Jardín Luigi',
-				address: '[[PENDIENTE:VENUE_ADDRESS]]',
-				city: 'Ciudad de México — provisional',
+				address: 'Francisco I. Madero 4, Cuautepec de Madero, CDMX',
+				city: 'Ciudad de México',
 				date: '27 de noviembre de 2026',
-				time: '7:00 p. m. — provisional',
+				time: '7:00 p. m.',
 				mapUrl: 'https://maps.app.goo.gl/N4W3Dz8kQi6b3bPy6?g_st=aw',
 			},
 		],
@@ -123,12 +124,12 @@ const content: CanonicalEventContentInput = {
 			{
 				image: 'gallery01',
 				alt: 'Allison de perfil con su ramo de rosas azules',
-				caption: 'La ilusión de este momento.',
+				caption: 'Un instante antes de celebrar.',
 			},
 			{
 				image: 'gallery02',
 				alt: 'Allison con vestido azul, vista de espalda y rostro de perfil',
-				caption: 'Un recuerdo para siempre.',
+				caption: 'La emoción de mis XV años.',
 			},
 		],
 	},
@@ -136,19 +137,19 @@ const content: CanonicalEventContentInput = {
 		variant: 'standard',
 		title: 'Detalles con cariño',
 		subtitle:
-			'Su presencia es mi mejor regalo. Si desea tener un detalle conmigo, me encantan Hello Kitty, el maquillaje, las bolsas y los productos de cuidado de la piel.',
+			'Si desea obsequiarme un detalle, me gustan Hello Kitty, el maquillaje, las bolsas y los productos para el cuidado de la piel.',
 		items: [
 			{
 				type: 'cash',
 				title: 'Lluvia de sobres',
-				text: 'También puede acompañar sus buenos deseos con un sobre el día de la celebración.',
+				text: 'También puede hacerme llegar sus buenos deseos en un sobre durante la celebración.',
 			},
 		],
 	},
 	rsvp: {
 		variant: 'standard',
 		title: '¿Me acompaña a celebrar?',
-		subcopy: 'Borrador local: los pases y los datos pendientes son provisionales.',
+		subcopy: 'Le agradeceré confirmar su asistencia desde esta invitación.',
 		guestCap: 2,
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',
@@ -170,7 +171,7 @@ const content: CanonicalEventContentInput = {
 	thankYou: {
 		variant: 'ceremonial-closing',
 		image: { type: 'internal', key: 'closingCarriage' },
-		message: 'El mejor recuerdo será compartirlo con usted.',
+		message: 'Gracias por ser parte de esta celebración.',
 		closingName: 'Allison Scarlett',
 	},
 };
@@ -190,14 +191,15 @@ export const allisonInvitation = defineCanonicalInvitation({
 	hostLoginAlias: 'allison_scarlett',
 	assetDir: 'src/assets/invitations/allison-scarlett',
 	assetFiles: {
-		carriage: 'carriage-delivery.webp',
 		closingCarriage: 'carriage-delivery.webp',
 		seal: 'seal-delivery.webp',
 		ambience: 'palace-ambience.webp',
-		slipper: 'slipper-delivery.webp',
 		hero: 'hero.webp',
+		heroMobile: 'hero-mobile.webp',
+		heroDesktop: 'hero-desktop.webp',
 		gallery01: 'gallery-01.webp',
 		gallery02: 'gallery-02.webp',
+		slipper: 'slipper-delivery.webp',
 	},
 	lifecycle: 'in_progress',
 	deliveryScope: 'content-and-assets',

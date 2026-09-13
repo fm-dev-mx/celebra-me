@@ -3,14 +3,17 @@
 // Premium countdown section
 import '@/styles/invitation/_countdown.scss';
 import CountdownTimer from '@/components/invitation/CountdownTimer.astro';
+import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
 import type { CountdownUnit } from '@/lib/invitation/countdown-presentation';
 import type { CountdownVariant } from '@/lib/theme/theme-contract';
+import type { ImageAsset } from '@/lib/assets/asset-registry';
 
 interface Props {
 	targetIso: string;
 	eventTimeZone?: string;
 	title?: string;
 	footerText?: string;
+	ornament?: ImageAsset;
 	visibleUnits?: CountdownUnit[];
 	variant: CountdownVariant;
 	isDemo?: boolean;
@@ -21,6 +24,7 @@ const {
 	eventTimeZone,
 	title = "¡Falta muy poco!",
 	footerText,
+	ornament,
 	visibleUnits,
 	variant,
 	isDemo = false,
@@ -67,6 +71,18 @@ const formattedDate = formatCountdownDate(targetIso, eventTimeZone);
 			</p>
 			<div class="subtitle-line"></div>
 		</div>
+
+		{ornament && (
+			<img
+				class="countdown__ornament"
+				src={plainImgSrc(ornament.src)}
+				alt=""
+				width="260"
+				height="180"
+				loading="lazy"
+				decoding="async"
+			/>
+		)}
 
 		{footerText && (
 			<footer class="countdown-footer">

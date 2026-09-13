@@ -305,7 +305,7 @@ function buildQuoteSectionData(context: AdaptationContext) {
 }
 
 function buildCountdownSectionData(context: AdaptationContext) {
-	const { data } = context;
+	const { data, eventSlug } = context;
 	if (!data.sectionOrder?.includes('countdown')) return undefined;
 
 	const variant = data.countdown?.variant;
@@ -327,6 +327,9 @@ function buildCountdownSectionData(context: AdaptationContext) {
 	return {
 		title,
 		footerText,
+		ornament: data.countdown?.ornament
+			? resolveAsset(eventSlug, data.countdown.ornament, data.title)
+			: undefined,
 		targetIso: target.targetIso,
 		targetSource: target.source,
 		eventTimeZone: data.eventTiming?.timeZone,

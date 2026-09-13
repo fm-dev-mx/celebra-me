@@ -264,6 +264,7 @@ export interface InvitationViewModel {
 			eventTimeZone?: string;
 			title: string;
 			footerText?: string;
+			ornament?: ImageAsset;
 			visibleUnits: CountdownUnit[];
 			variant: CountdownVariant;
 			/** Demo-only: if true, countdown uses a random target 30-60 days ahead */

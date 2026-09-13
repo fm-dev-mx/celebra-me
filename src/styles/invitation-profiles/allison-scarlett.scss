@@ -44,14 +44,20 @@
 	--footer-replay-opacity: 100%;
 	--footer-control-min-height: 44px;
 	--header-control-min-height: 44px;
+	--allison-family-surface: var(--color-surface-secondary);
 
 	background: var(--color-surface-primary);
 
 	// Full-dark-finale: hero → family Bridge; location → gallery Bridge;
 	// RSVP → closing Climax. All other boundaries remain Neutral.
 	.invitation-section-wrapper[data-intersection-source='hero'] {
-		--intersection-surface: var(--color-surface-secondary);
+		--intersection-surface: var(--allison-family-surface);
 		--intersection-arch-height: clamp(3rem, 5vw, 4.5rem);
+
+		> .family {
+			--family-bg: var(--allison-family-surface);
+			--family-vignette-bg: transparent;
+		}
 	}
 
 	.invitation-section-wrapper[data-intersection-source='location'] {
@@ -77,7 +83,101 @@
 		--gifts-card-bg: transparent;
 		--gifts-card-border: 0;
 		--gifts-card-shadow: none;
-		--gifts-title-letter-spacing: 0.06em;
+		--gifts-title-letter-spacing: 0;
+		--gifts-padding-block: clamp(4rem, 7vw, 5.5rem);
+
+		.gifts-section__title {
+			font: 500 clamp(2rem, 4vw, 2.75rem) / 1.2 'EB Garamond Variable', georgia, serif;
+			text-transform: none;
+			text-wrap: balance;
+		}
+
+		.gifts-section__subtitle {
+			max-width: 48ch;
+			font: 400 clamp(1rem, 1.5vw, 1.0625rem) / 1.75 var(--font-body);
+			opacity: 100%;
+			text-wrap: pretty;
+		}
+
+		.gifts-section__separator,
+		.gift-card::after {
+			display: none;
+		}
+
+		.gift-card {
+			height: auto;
+			padding: 1.5rem 1rem 0;
+			backdrop-filter: none;
+
+			&:hover {
+				transform: none;
+				border: 0;
+				box-shadow: none;
+			}
+		}
+
+		.gift-card__icon-medallion,
+		.gift-card:hover .gift-card__icon-medallion {
+			width: 5.5rem;
+			max-width: 100%;
+			height: 7.5rem;
+			margin: 0 auto 1.25rem;
+			background: url('../../assets/invitations/allison-scarlett/seal-delivery.webp') center / contain no-repeat;
+			border: 0;
+			box-shadow: none;
+			backdrop-filter: none;
+		}
+
+		.gift-card__icon-inner {
+			display: none;
+		}
+
+		.gift-card__title {
+			font: 500 clamp(1.625rem, 3vw, 1.875rem) / 1.3 'EB Garamond Variable', georgia, serif;
+			letter-spacing: 0;
+			margin-bottom: 0.75rem;
+			overflow-wrap: anywhere;
+		}
+
+		.gift-card__description {
+			font: 400 clamp(0.9375rem, 1.5vw, 1rem) / 1.75 var(--font-body);
+			opacity: 100%;
+			text-wrap: pretty;
+			overflow-wrap: anywhere;
+		}
+	}
+
+	.thank-you-section[data-variant='ceremonial-closing'] {
+		.ceremonial-closing {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: clamp(1.5rem, 3vw, 2rem);
+		}
+
+		.ceremonial-closing__message {
+			max-width: 30ch;
+			margin: 0;
+			font: 400 clamp(1.375rem, 2.5vw, 1.75rem) / 1.5 'EB Garamond Variable', georgia, serif;
+			color: var(--color-ice-blue);
+			text-wrap: balance;
+		}
+
+		.ceremonial-closing__name {
+			max-width: 100%;
+			margin: 0;
+			font: 400 clamp(2.75rem, 8vw, 4rem) / 1.3 var(--font-calligraphy);
+			color: var(--color-cold-silver);
+			text-wrap: balance;
+			overflow-wrap: anywhere;
+		}
+
+		img {
+			width: clamp(10rem, 20vw, 12rem);
+			max-width: 100%;
+			height: auto;
+			margin: 0;
+		}
 	}
 
 	.rsvp {
@@ -89,16 +189,517 @@
 
 	.event-location {
 		--location-copy-button-height: 44px;
-		--location-card-bg: transparent;
-		--location-card-border: 0;
 		--location-card-shadow: none;
 		--location-card-hover-shadow: none;
 		--location-card-hover-transform: none;
+		--location-card-bg: transparent;
+		--location-card-border: 0;
+		--location-card-radius: 0;
+		--location-card-backdrop-filter: none;
+		--location-card-after-bg: none;
+		--location-content-padding: 0;
+		--location-card-max-width: 32rem;
+		--location-place-font-family: 'EB Garamond Variable', georgia, serif;
+		--location-place-font-size: clamp(2.25rem, 5vw, 3.25rem);
+		--location-place-font-weight: 500;
+		--location-place-line-height: 1.12;
+		--location-place-letter-spacing: 0;
+		--location-place-margin: 0 0 1rem;
+		--location-date-color: var(--color-deep-blue-graphite);
+		--location-date-font-family: var(--font-body);
+		--location-date-font-size: 0.75rem;
+		--location-date-font-weight: 500;
+		--location-date-letter-spacing: 0.1em;
+		--location-date-white-space: normal;
+		--location-address-border-top: 0;
+		--location-address-padding-top: 0;
+		--location-address-font-size: 0.875rem;
+		--location-nav-bg: var(--color-deep-blue-graphite);
+		--location-nav-color: var(--color-ice-blue);
+		--location-nav-border: 1px solid var(--color-deep-blue-graphite);
+		--location-nav-hover-bg: var(--color-ice-blue);
+		--location-nav-hover-color: var(--color-deep-blue-graphite);
 		--location-indications-panel-bg: transparent;
 		--location-indications-panel-border: 0;
+		--location-indications-panel-padding: 0;
+		--location-indications-grid-template: minmax(0, 1fr);
 		--location-indication-item-bg: transparent;
 		--location-indication-item-border: 0;
 		--location-indication-item-box-shadow: none;
+		--location-indication-icon-bg: transparent;
+		--location-indication-icon-color: var(--color-deep-blue-graphite);
+		--location-indication-text-color: var(--color-deep-blue-graphite);
+
+		container-type: inline-size;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 2.5rem;
+		padding: clamp(3.5rem, 7vw, 5rem) clamp(1.25rem, 5vw, 5rem);
+		background: var(--color-ice-blue);
+
+		.event-location__intro {
+			width: 100%;
+			max-width: 30rem;
+			margin: 0 auto;
+			text-align: center;
+
+			&::before {
+				content: '';
+				display: block;
+				width: clamp(9rem, 24vw, 12rem);
+				max-width: 100%;
+				aspect-ratio: 640 / 490;
+				margin: 0 auto 1.5rem;
+				background: url('../../assets/invitations/allison-scarlett/location-chandelier.webp')
+					center / contain no-repeat;
+			}
+		}
+
+		.event-location__heading {
+			margin: 0 auto 1rem;
+			font: 400 clamp(2.5rem, 6vw, 3.5rem) / 1.2 var(--font-calligraphy);
+			letter-spacing: 0;
+			text-wrap: balance;
+			overflow-wrap: anywhere;
+		}
+
+		.event-location__lede {
+			display: none;
+		}
+
+		.event-location__container {
+			width: 100%;
+			max-width: 32rem;
+			margin: 0 auto;
+		}
+
+		.event-location__card-title {
+			display: none;
+		}
+
+		.event-location__card-flourish,
+		.event-location__card-map-preview {
+			display: none;
+		}
+
+		.event-location__card-content-place {
+			order: -2;
+			text-wrap: balance;
+		}
+
+		.event-location__card-content {
+			padding: 0;
+			min-width: 0;
+		}
+
+		.event-location__card-content-list {
+			display: flex;
+			flex-direction: column;
+		}
+
+		.event-location__card-content-address {
+			order: -1;
+			margin: 0 auto 1.5rem;
+			font: 400 0.9375rem / 1.7 var(--font-body);
+			color: var(--color-deep-blue-graphite);
+			text-wrap: pretty;
+		}
+
+		.event-location__card-content-itinerary {
+			margin: 1.75rem 0;
+			padding: 1.25rem 0;
+			border-block: 1px solid var(--color-cold-silver);
+		}
+
+		.event-location__card-content-itinerary-list {
+			display: grid;
+			gap: 1rem;
+			padding: 0;
+			margin: 0;
+		}
+
+		.event-location__card-content-itinerary-item {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			align-items: baseline;
+			gap: 0.35rem 1.25rem;
+			text-align: left;
+		}
+
+		.event-location__card-content-itinerary-dot {
+			display: none;
+		}
+
+		.event-location__card-content-itinerary-label,
+		.event-location__card-content-itinerary-time {
+			font: 400 0.9375rem / 1.6 var(--font-body);
+			color: var(--color-deep-blue-graphite);
+		}
+
+		.event-location__card-content-itinerary-time {
+			font-weight: 600;
+			white-space: normal;
+			justify-self: auto;
+			text-align: inherit;
+		}
+
+		.event-location__nav-button {
+			min-height: 48px;
+			width: fit-content;
+			max-width: 100%;
+			flex: 0 1 auto;
+			align-self: center;
+			min-width: min(100%, 13rem);
+			padding: 0.85rem 1.5rem;
+			flex-wrap: wrap;
+			white-space: normal;
+			overflow-wrap: anywhere;
+			font-size: 0.75rem;
+			letter-spacing: 0.12em;
+			border-radius: 999px;
+			background: var(--color-deep-blue-graphite);
+			color: var(--color-ice-blue);
+			border: 1px solid var(--color-deep-blue-graphite);
+
+			&:hover {
+				background: var(--color-ice-blue);
+				color: var(--color-deep-blue-graphite);
+			}
+
+			&:focus-visible {
+				outline: 2px solid var(--color-deep-blue-graphite);
+				outline-offset: 4px;
+			}
+		}
+
+		.event-location__indications-container {
+			width: 100%;
+			max-width: 32rem;
+			margin: 0 auto;
+			padding-top: 1.5rem;
+			border-top: 1px solid var(--color-cold-silver);
+		}
+
+		.event-location__divider {
+			display: none;
+		}
+
+		.event-location__indication-item {
+			padding: 0;
+			gap: 1rem;
+			transition: none;
+
+			&:hover {
+				background: transparent;
+				border-color: transparent;
+				transform: none;
+				box-shadow: none;
+			}
+
+			&::after {
+				content: none;
+			}
+		}
+
+		.event-location__indication-text {
+			font: 400 0.875rem / 1.8 var(--font-body);
+		}
+
+		.nav-button-container {
+			margin: 0;
+		}
+
+		@container (width < 18rem) {
+			.event-location__nav-button {
+				padding-inline: 0.5rem;
+				letter-spacing: 0.04em;
+			}
+
+			.event-location__card-content-itinerary-item {
+				grid-template-columns: minmax(0, 1fr);
+				text-align: center;
+			}
+
+			.event-location__indication-item {
+				grid-template-columns: minmax(0, 1fr);
+				text-align: center;
+			}
+
+			.event-location__indication-icon {
+				justify-self: center;
+			}
+		}
+
+		@media (width >= 64rem) {
+			grid-template-columns: minmax(0, 26rem) minmax(0, 32rem);
+			justify-content: center;
+			align-items: start;
+			column-gap: clamp(3rem, 7vw, 7rem);
+
+			.event-location__intro {
+				grid-column: 1;
+				grid-row: 1 / 3;
+			}
+
+			.event-location__container,
+			.event-location__indications-container,
+			.nav-button-container {
+				grid-column: 2;
+			}
+		}
+	}
+
+	.invitation-section-wrapper:has(> .countdown-section[data-variant='clock-face']) {
+		background: var(--color-surface-secondary);
+	}
+
+	.countdown-section[data-variant='clock-face'] {
+		--countdown-numeral-font: 'EB Garamond Variable', georgia, serif;
+		--countdown-night-surface: color-mix(
+			in srgb,
+			var(--color-deep-blue-graphite) 82%,
+			var(--color-satin-blue)
+		);
+		--countdown-primary-ink: color-mix(in srgb, var(--color-ice-blue) 35%, white);
+		--countdown-secondary-ink: var(--color-ice-blue);
+
+		container-type: inline-size;
+		grid-template-columns: minmax(0, 1fr);
+		padding: clamp(4rem, 9vw, 6rem) 1.25rem;
+		min-height: 0;
+		border-radius: 50% / clamp(2rem, 6vw, 4.5rem);
+		background:
+			radial-gradient(
+				ellipse at 50% 42%,
+				rgb(var(--color-satin-blue-rgb) / 20%),
+				transparent 68%
+			),
+			linear-gradient(145deg, var(--countdown-night-surface), var(--color-deep-blue-graphite));
+		color: var(--countdown-primary-ink);
+
+		&::before,
+		&::after {
+			content: none;
+			mask: none;
+			background: none;
+			border: 0;
+			box-shadow: none;
+		}
+
+		.countdown-texture {
+			background: radial-gradient(
+				ellipse at 50% 0,
+				rgb(var(--color-cold-silver-rgb) / 12%),
+				transparent 48%
+			);
+		}
+
+		.countdown-container {
+			justify-self: center;
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-rows: auto minmax(2.5rem, 1fr) auto auto auto minmax(2.5rem, 1fr);
+			max-width: 30rem;
+			padding: 0;
+			isolation: isolate;
+
+			&::before,
+			&::after {
+				content: '';
+				grid-area: 2 / 1 / 7 / 2;
+				pointer-events: none;
+				z-index: -1;
+			}
+
+			&::before {
+				min-height: min(30rem, 100cqi);
+				height: 100%;
+				box-sizing: border-box;
+				border: 1px solid rgb(var(--color-cold-silver-rgb) / 64%);
+				border-radius: min(15rem, 50cqi);
+				background: radial-gradient(
+					ellipse at 42% 28%,
+					rgb(var(--color-ice-blue-rgb) / 6%),
+					transparent 72%
+				);
+				box-shadow:
+					inset 0 0 0 0.45rem rgb(var(--color-deep-blue-graphite-rgb) / 30%),
+					inset 0 0 0 calc(0.45rem + 1px) rgb(var(--color-cold-silver-rgb) / 30%),
+					inset 0 1.5rem 3rem rgb(var(--color-ice-blue-rgb) / 3%),
+					0 1.25rem 3rem -1rem rgb(var(--color-deep-blue-graphite-rgb) / 55%);
+			}
+
+			&::after {
+				margin: 0.75rem;
+				background:
+					linear-gradient(var(--color-cold-silver), var(--color-cold-silver)) top center /
+						1px 0.65rem,
+					linear-gradient(var(--color-cold-silver), var(--color-cold-silver)) bottom
+						center / 1px 0.65rem,
+					linear-gradient(var(--color-cold-silver), var(--color-cold-silver)) left
+						center / 0.65rem 1px,
+					linear-gradient(var(--color-cold-silver), var(--color-cold-silver)) right
+						center / 0.65rem 1px;
+				background-repeat: no-repeat;
+			}
+		}
+
+		.countdown-title {
+			grid-area: 1 / 1;
+			max-width: 100%;
+			margin: 0 auto 2.25rem;
+			font-family: var(--font-calligraphy);
+			font-size: clamp(1.5rem, 9cqi, 2.8rem);
+			font-weight: 400;
+			color: var(--color-cold-silver);
+			line-height: 1.25;
+			letter-spacing: 0;
+			overflow-wrap: anywhere;
+			white-space: nowrap;
+		}
+
+		.countdown-timer-wrapper {
+			grid-area: 3 / 1;
+			min-width: 0;
+			margin: 0 12%;
+		}
+
+		.countdown__timer {
+			width: 100%;
+			max-width: none;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 1.5rem 0.5rem;
+			padding: 0;
+			border: 0;
+		}
+
+		.countdown__timer[hidden] {
+			display: none;
+		}
+
+		.countdown__status {
+			font: 500 1.25rem / 1.5 var(--font-display);
+			color: var(--countdown-secondary-ink);
+			text-wrap: balance;
+		}
+
+		.countdown__segment {
+			min-width: 0;
+			padding: 0;
+			gap: 0.4rem;
+		}
+
+		.countdown__segment[data-unit='days'] {
+			grid-column: 1 / -1;
+			gap: 0.25rem;
+
+			.countdown__value {
+				font-family: var(--countdown-numeral-font);
+				font-size: clamp(6rem, 18vw, 8rem);
+				font-weight: 500;
+				color: var(--countdown-primary-ink);
+			}
+
+			.countdown__label {
+				font-size: 0.75rem;
+				font-weight: 600;
+				color: var(--countdown-primary-ink);
+				letter-spacing: 0.28em;
+			}
+		}
+
+		.countdown__value-wrapper {
+			height: auto;
+			overflow: visible;
+		}
+
+		.countdown__value {
+			font-family: var(--countdown-numeral-font);
+			font-size: clamp(1.75rem, 4vw, 2rem);
+			font-weight: 400;
+			color: var(--countdown-secondary-ink);
+			line-height: 1;
+			letter-spacing: 0;
+			font-variant-numeric: lining-nums tabular-nums;
+		}
+
+		.countdown__label {
+			font-family: var(--font-body);
+			font-size: clamp(0.6875rem, 1.4vw, 0.75rem);
+			font-weight: 500;
+			color: var(--countdown-secondary-ink);
+			letter-spacing: 0.08em;
+			line-height: 1.4;
+			opacity: 100%;
+		}
+
+		.countdown-date {
+			grid-area: 4 / 1;
+			margin: 1.5rem 10% 0;
+			gap: 0;
+		}
+
+		.event-date {
+			margin: 0;
+			font-family: var(--font-body);
+			font-size: clamp(0.75rem, 1.6vw, 0.875rem);
+			font-weight: 500;
+			color: var(--countdown-secondary-ink);
+			line-height: 1.7;
+			letter-spacing: 0.1em;
+			opacity: 100%;
+			text-wrap: balance;
+		}
+
+		.countdown-date .subtitle-line {
+			display: none;
+		}
+
+		.countdown__ornament {
+			grid-area: 5 / 1;
+			display: block;
+			width: clamp(3.5rem, 9vw, 4.5rem);
+			height: auto;
+			margin: 0.75rem auto 0;
+			opacity: 100%;
+			filter: none;
+		}
+
+		.countdown-footer {
+			grid-area: 7 / 1;
+		}
+
+		@container (width < 20rem) {
+			.countdown-timer-wrapper {
+				margin-inline: 7%;
+			}
+		}
+
+		@container (width < 16rem) {
+			.countdown-title {
+				white-space: normal;
+				text-wrap: balance;
+			}
+
+			.countdown__timer {
+				grid-template-columns: minmax(0, 1fr);
+			}
+
+			.countdown__segment[data-unit='days'] .countdown__value {
+				font-size: 3.5rem;
+			}
+		}
+
+		@media (width < 40rem) {
+			.event-date-desktop {
+				display: none;
+			}
+
+			.event-date-mobile {
+				display: grid;
+				gap: 0.15rem;
+			}
+		}
 	}
 
 	.header-base {

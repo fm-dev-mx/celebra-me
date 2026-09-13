@@ -11,76 +11,80 @@
 
 **Preparation Readiness (prepReadiness):** `NOT_READY`
 
-The owner authorized creation with temporary data and requested no further questions. This does not
-establish the missing real venue address or promote provisional photographs. A managed definition,
-local source assets and invitation profile now implement the explicitly requested local draft. No
-account or persisted invitation has been created. Preparation remains NOT_READY for real-data
-completeness; temporary values are not verified client facts.
+The owner authorized creation with temporary data and requested no further questions. The owner has
+since supplied the venue address; this does not promote provisional photographs. A managed
+definition, local source assets and invitation profile now implement the explicitly requested local
+draft. Preparation remains NOT_READY for real-data completeness because the photograph source and
+other operational details remain provisional. The local served invitation may lag this source until
+an authorized content apply; source edits alone do not update persisted invitations.
 
 ## Sources
 
-| Source               | Reference                                                                                                                                               | Use                                                                         |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Client conversation  | source:wa-export                                                                                                                                        | Event facts and three client photographs                                    |
-| Visual reference     | source:reference-captures                                                                                                                               | Five screenshots; inspiration only                                          |
-| Owner decisions      | source:owner-session                                                                                                                                    | Cinderella reinterpretation, temporary data, conservative photo improvement |
-| Public venue listing | [BuscoSalon](https://buscosalon.com.mx/ciudad-de-mexico/ciudad-de-mexico/salon-jardin-luigi/)                                                           | Francisco I. Madero 4; unconfirmed candidate                                |
-| Public venue listing | [Waze](https://www.waze.com/es/live-map/directions/salon-jardin-luigi-venustiano-carranza-4-gustavo-a.-madero?to=place.w.170983619.1709574051.10130597) | Venustiano Carranza 4; contradictory street                                 |
+| Source               | Reference                                                                                                                                               | Use                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Client conversation  | source:wa-export                                                                                                                                        | Event facts and three client photographs                                |
+| Visual reference     | source:reference-captures                                                                                                                               | Five screenshots; inspiration only                                      |
+| Owner decisions      | source:owner-session                                                                                                                                    | Cinderella direction, confirmed venue address, reception display, no QR |
+| Public venue listing | [BuscoSalon](https://buscosalon.com.mx/ciudad-de-mexico/ciudad-de-mexico/salon-jardin-luigi/)                                                           | Earlier address candidate, superseded by owner-supplied address         |
+| Public venue listing | [Waze](https://www.waze.com/es/live-map/directions/salon-jardin-luigi-venustiano-carranza-4-gustavo-a.-madero?to=place.w.170983619.1709574051.10130597) | Earlier conflicting candidate, superseded by owner-supplied address     |
 
 No higher-resolution source is available according to the owner. Do not request it again. Do not
 persist raw chat exports, source-directory paths, or business screenshots as invitation assets.
 
 ## Fact Register
 
-| field                | value                                                                              | classification | source          | notes                                                                         |
-| -------------------- | ---------------------------------------------------------------------------------- | -------------- | --------------- | ----------------------------------------------------------------------------- |
-| slug                 | allison-scarlett                                                                   | inferred       | owner-session   | Working identity based on supplied spelling; no inferred surnames             |
-| celebrantName        | Allison Scarlett                                                                   | verified       | wa-export       | Preserve double t                                                             |
-| eventLabel           | Mis XV Años                                                                        | verified       | wa-export       | XV event                                                                      |
-| eventDate            | 2026-11-27                                                                         | verified       | wa-export       | Friday                                                                        |
-| eventTime            | 18:00                                                                              | verified       | wa-export       | Religious ceremony                                                            |
-| receptionTime        | 19:00                                                                              | inferred       | wa-export       | Client wrote 7:00; p.m. is a temporary interpretation                         |
-| timeZone             | America/Mexico_City                                                                | inferred       | public-listings | Conditional on candidate venue being correct                                  |
-| baseDemoId           | demo-xv-celestial-blue                                                             | inferred       | owner-session   | Technical base of accepted working plan, not a client-selected demo           |
-| sourceAssetPath      | source:wa-export                                                                   | verified       | owner-session   | Only available photographs; provisional quality                               |
-| sectionOrder         | family, personalizedAccess, countdown, location, gallery, gifts, rsvp, thankYou    | inferred       | owner-session   | Working design; opening and hero precede these sections                       |
-| primaryVenueName     | Salón Jardín Luigi                                                                 | verified       | wa-export       | Both ceremony and reception                                                   |
-| primaryVenueAddress  | [[PENDIENTE:VENUE_ADDRESS]]                                                        | ambiguous      | public-listings | Francisco I. Madero 4 versus Venustiano Carranza 4; original pin not verified |
-| distinctVenues       | false                                                                              | verified       | wa-export       | Two event moments at the same venue                                           |
-| ceremonyMapUrl       | https://maps.app.goo.gl/N4W3Dz8kQi6b3bPy6?g_st=aw                                  | verified       | wa-export       | Supplied link verified as evidence only; destination unverified               |
-| fatherName           | Edgar Juarez                                                                       | verified       | wa-export       | Preserve supplied spelling                                                    |
-| motherName           | Erika Mejia                                                                        | verified       | wa-export       | Preserve supplied spelling                                                    |
-| godparents           | Geovanny Castillo; Sherly Velazquez                                                | verified       | wa-export       | Capitalization normalized only                                                |
-| dressCode            | Azul y plata reservados para la quinceañera                                        | verified       | wa-export       | Do not add formal or sport-elegant requirement                                |
-| gifts                | Hello Kitty; maquillaje; bolsas; productos de cuidado de la piel; lluvia de sobres | verified       | wa-export       | No registry or bank details                                                   |
-| rsvpConfirmationMode | api                                                                                | verified       | wa-export       | Existing invitation-based confirmation accepted                               |
-| rsvpGuestCap         | 2                                                                                  | inferred       | owner-session   | Synthetic working example only; not actual event capacity or assigned passes  |
-| rsvpWhatsappPhone    | —                                                                                  | not_applicable | wa-export       | No public WhatsApp confirmation flow                                          |
-| musicUrl             | —                                                                                  | not_applicable | owner-session   | Omit until a track is selected; reference audio is not a selection            |
+| field                | value                                                                                       | classification | source        | notes                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------- | -------------- | ------------- | ---------------------------------------------------------------------------- |
+| slug                 | allison-scarlett                                                                            | inferred       | owner-session | Working identity based on supplied spelling; no inferred surnames            |
+| celebrantName        | Allison Scarlett                                                                            | verified       | wa-export     | Preserve double t                                                            |
+| eventLabel           | Mis XV Años                                                                                 | verified       | wa-export     | XV event                                                                     |
+| eventDate            | 2026-11-27                                                                                  | verified       | wa-export     | Friday                                                                       |
+| eventTime            | 18:00                                                                                       | verified       | wa-export     | Religious ceremony                                                           |
+| receptionTime        | 19:00                                                                                       | inferred       | wa-export     | Client wrote 7:00; owner chose p.m. from ceremony context                    |
+| timeZone             | America/Mexico_City                                                                         | inferred       | owner-session | Based on owner-supplied CDMX address                                         |
+| baseDemoId           | demo-xv-celestial-blue                                                                      | inferred       | owner-session | Technical base of accepted working plan, not a client-selected demo          |
+| sourceAssetPath      | source:wa-export                                                                            | verified       | owner-session | Only available photographs; provisional quality                              |
+| sectionOrder         | family, personalizedAccess, countdown, location, gallery, gifts, rsvp, thankYou             | inferred       | owner-session | Working design; opening and hero precede these sections                      |
+| primaryVenueName     | Salón Jardín Luigi                                                                          | verified       | wa-export     | Both ceremony and reception                                                  |
+| primaryVenueAddress  | Francisco I. Madero 4, Cuautepec de Madero, Gustavo A. Madero, 07220 Ciudad de México, CDMX | verified       | owner-session | Visible abbreviation: Francisco I. Madero 4, Cuautepec de Madero, CDMX       |
+| distinctVenues       | false                                                                                       | verified       | wa-export     | Two event moments at the same venue                                          |
+| ceremonyMapUrl       | https://maps.app.goo.gl/N4W3Dz8kQi6b3bPy6?g_st=aw                                           | verified       | wa-export     | Supplied link verified as evidence only; destination unverified              |
+| fatherName           | Edgar Juarez                                                                                | verified       | wa-export     | Preserve supplied spelling                                                   |
+| motherName           | Erika Mejia                                                                                 | verified       | wa-export     | Preserve supplied spelling                                                   |
+| godparents           | Geovanny Castillo; Sherly Velazquez                                                         | verified       | wa-export     | Capitalization normalized only                                               |
+| dressCode            | Azul y plata reservados para la quinceañera                                                 | verified       | wa-export     | Do not add formal or sport-elegant requirement                               |
+| gifts                | Hello Kitty; maquillaje; bolsas; productos de cuidado de la piel; lluvia de sobres          | verified       | wa-export     | No registry or bank details                                                  |
+| rsvpConfirmationMode | api                                                                                         | verified       | wa-export     | Existing invitation-based confirmation accepted                              |
+| rsvpGuestCap         | 2                                                                                           | inferred       | owner-session | Synthetic working example only; not actual event capacity or assigned passes |
+| rsvpWhatsappPhone    | —                                                                                           | not_applicable | wa-export     | No public WhatsApp confirmation flow                                         |
+| musicUrl             | —                                                                                           | not_applicable | owner-session | Omit until a track is selected; reference audio is not a selection           |
+| sharedAlbumQr        | —                                                                                           | not_applicable | owner-session | Owner confirmed QR is not needed                                             |
+| itinerary            | —                                                                                           | not_applicable | wa-export     | Client explicitly requested no itinerary                                     |
+| giftRegistry         | —                                                                                           | not_applicable | wa-export     | Client declined registry                                                     |
 
 ## Event Completeness
 
-XV contract maturity: `evidence-backed`. Available information is not sufficient to release the
-invitation under the current preparation contract: the required venue address remains ambiguous.
-Temporary defaults are explicitly recorded and do not resolve real-world uncertainty. Reception
-time, event zone, working guest cap, and commercial contact data need resolution before release.
+XV contract maturity: `evidence-backed`. The owner supplied the required venue address. The
+invitation remains `NOT_READY` because the photographs are provisional; the time zone, working guest
+cap, and commercial contact still need operational resolution before release. Reception at 19:00 is
+the owner-selected contextual reading of the client's 7:00, not an explicit p.m. statement.
 
 ## Placeholders
 
-| token                         | missing datum   | blocking | reason                       | replacement requirement                                              |
-| ----------------------------- | --------------- | -------- | ---------------------------- | -------------------------------------------------------------------- |
-| [[PENDIENTE:VENUE_ADDRESS]]   | VENUE_ADDRESS   | yes      | Contradictory public streets | Establish the address corresponding to the client's venue pin        |
-| [[PENDIENTE:CLIENT_WHATSAPP]] | CLIENT_WHATSAPP | no       | Not included in export       | Supply verified commercial contact before managed account operations |
+| token                         | missing datum   | blocking | reason                 | replacement requirement                                              |
+| ----------------------------- | --------------- | -------- | ---------------------- | -------------------------------------------------------------------- |
+| [[PENDIENTE:CLIENT_WHATSAPP]] | CLIENT_WHATSAPP | no       | Not included in export | Supply verified commercial contact before managed account operations |
 
 Temporary preview-only values: guest name `Invitado de prueba`, two passes, email
-`allison-preview@example.invalid`. No outbound messages or account creation. For layout planning,
-address text may read `Dirección de ejemplo — pendiente de confirmar`; this must never be treated as
-a navigable address or verified fact.
+`allison-preview@example.invalid`. No outbound messages or account creation. The invitation uses a
+shortened display address; the full owner-supplied address is retained in the fact register.
 
 ## Owner Decisions
 
 - Creation and conservative photograph improvement requested; no further intake questions requested.
-- Shared QR album deferred explicitly. No provider, destination, upload flow, or fake functional QR.
+- Shared QR album removed from requirements by the owner; no QR or album flow is needed.
+- Display the client's reception time as 7:00 p. m. based on ceremony context, and abbreviate the
+  supplied venue address to `Francisco I. Madero 4, Cuautepec de Madero, CDMX` in the invitation.
 - No release, Git mutation, persistent database mutation, or shared-state operation authorized.
 - Human acceptance of image derivatives and final visual composition remains pending.
 
@@ -88,17 +92,17 @@ a navigable address or verified fact.
 
 Use the existing celestial-blue skin and supported section variants; do not clone another client's
 data or create a shared renderer to implement this invitation. Keep the working alias independent of
-the eventual account operation. Retain the two listed address candidates without choosing one as
-verified. No assumptions about private client contacts or surnames.
+the eventual account operation. Use the owner-supplied address over earlier conflicting public
+listings. No assumptions about private client contacts or surnames.
 
 ## Sections
 
 Satin envelope and ceremonial photographic hero, then family, personalized access, countdown,
 location with ceremony/reception and clothing restriction, two-image gallery, gifts, RSVP, and a
-carriage closing. No itinerary, registry, music, or album section until resolved. Countdown uses the
-ceremony instant. With the provisional Mexico City zone, ceremony would be `2026-11-28T00:00:00Z`
-and reception `2026-11-28T01:00:00Z`; both display November 27 locally. Never change the visible
-date to November 28 through UTC formatting.
+carriage closing. No itinerary, registry, music, QR, or album section. Countdown uses the ceremony
+instant. With the provisional Mexico City zone, ceremony would be `2026-11-28T00:00:00Z` and
+reception `2026-11-28T01:00:00Z`; both display November 27 locally. Never change the visible date to
+November 28 through UTC formatting.
 
 ## Design Direction
 
@@ -125,18 +129,19 @@ confirms three distinct poses. No beauty reshaping or generative reconstruction 
 
 | role           | source   | proposed derivative | intentional reuse                |
 | -------------- | -------- | ------------------- | -------------------------------- |
-| hero desktop   | photo 23 | hero.webp           | Same optimized binary as mobile  |
-| hero mobile    | photo 23 | hero.webp           | Same optimized binary as desktop |
+| hero desktop   | photo 23 | hero-desktop.webp   | Purpose-built desktop derivative |
+| hero mobile    | photo 23 | hero-mobile.webp    | Purpose-built mobile derivative  |
+| hero fallback  | photo 23 | hero.webp           | Standard fallback binary         |
 | gallery first  | photo 21 | gallery-01.webp     | No                               |
 | gallery second | photo 22 | gallery-02.webp     | No                               |
 
 The three original JPEGs remain byte-for-byte identical to the ZIP sources (SHA-256 checked).
-Delivery copies use WebP quality 84 at the original 1476 × 1600 dimensions: hero 209428 bytes,
-gallery first 155412 bytes, gallery second 162582 bytes. This is compression only: no generative
-photo editing, exposure change, background replacement, crop, enlargement or anatomical alteration.
-Business images 55, 56 and 57 are excluded. Source quality remains provisional; compression does not
-promote preparation readiness. Human comparison of originals and derivatives remains pending. Role
-ceilings remain mobile hero 350 KB, desktop hero 500 KB and gallery 180 KB.
+Delivery copies use WebP quality 84 at the original 1476 × 1600 dimensions: hero fallback 209428 bytes,
+hero desktop 126966 bytes, hero mobile 140696 bytes, gallery first 155412 bytes, gallery second 162582 bytes.
+This is compression only: no generative photo editing, exposure change, background replacement, crop,
+enlargement or anatomical alteration. Business images 55, 56 and 57 are excluded. Source quality remains
+provisional; compression does not promote preparation readiness. Human comparison of originals and
+derivatives remains pending. Role ceilings remain mobile hero 350 KB, desktop hero 500 KB and gallery 180 KB.
 
 ## Implementation Constraints
 
@@ -174,13 +179,14 @@ crystal seal, ceremonial hero and transition to family before implementation. Th
 ornaments use a consistent silver-and-crystal illustration treatment; all invitation text is live
 HTML.
 
-| Asset key                  | File                   | Bytes  | Role                                |
-| -------------------------- | ---------------------- | ------ | ----------------------------------- |
-| seal                       | seal-delivery.webp     | 73104  | Crystal medallion; live AS monogram |
-| carriage / closingCarriage | carriage-delivery.webp | 137220 | Hero and closing; one shared binary |
-| slipper                    | slipper-delivery.webp  | 56084  | Secondary hero ornament             |
-| ambience                   | palace-ambience.webp   | 61696  | Subtle palace and satin curtains    |
-| shared filigree            | silver-filigree.webp   | 51254  | Typed shared silver crest           |
+| Asset key       | File                     | Bytes  | Role                                |
+| --------------- | ------------------------ | ------ | ----------------------------------- |
+| seal            | seal-delivery.webp       | 73104  | Crystal medallion; live AS monogram |
+| closingCarriage | carriage-delivery.webp   | 137220 | Closing carriage illustration       |
+| slipper         | slipper-delivery.webp    | 56084  | Countdown clock ornament            |
+| chandelier      | location-chandelier.webp | 107620 | Location header chandelier          |
+| ambience        | palace-ambience.webp     | 61696  | Subtle palace and satin curtains    |
+| shared filigree | silver-filigree.webp     | 51254  | Typed shared silver crest           |
 
 Artwork was created with imagegen, then resized/compressed for delivery. The common direction was
 polished silver, faceted clear crystal, powder-blue reflections and consistent soft lighting;
@@ -212,57 +218,58 @@ human accessibility assessment. Decorative separators are excluded from text-con
 
 The fixture accepts reads only. No RSVP submission, persistent write, album integration or
 deployment was performed. Automated checks do not constitute aesthetic approval: final human
-acceptance remains `PENDING`, and the provisional venue details and QR album remain unresolved.
+acceptance remains `PENDING`. At that review, venue details and the QR album were unresolved; the
+owner has since supplied the address and removed the QR requirement.
 
-Final local checks: `pnpm run type-check` passed (Astro: 1739 files, zero diagnostics;
-TypeScript passed). `pnpm run validate:changed` passed 177 related suites / 2267 tests and
-25 local-render regression tests. Focused Stylelint passed after the last control-size adjustment.
-Visible buttons and links were measured at 390 and 1440 pixels: no target below 44 × 44 pixels.
-The computed-color scan found no failing normal/large text; its only flagged item was an
-aria-hidden decorative separator. Full CI, production performance and live RSVP were not run.
-
+Final local checks: `pnpm run type-check` passed (Astro: 1739 files, zero diagnostics; TypeScript
+passed). `pnpm run validate:changed` passed 177 related suites / 2267 tests and 25 local-render
+regression tests. Focused Stylelint passed after the last control-size adjustment. Visible buttons
+and links were measured at 390 and 1440 pixels: no target below 44 × 44 pixels. The computed-color
+scan found no failing normal/large text; its only flagged item was an aria-hidden decorative
+separator. Full CI, production performance and live RSVP were not run.
 
 ## Approved Direction — Refinement Pass
 
-The owner approved the Cinderella art direction and authorized refinement, not redesign.
-The seated portrait, three original photographs, envelope, crystal assets, typography, palette,
-content order and RSVP behavior remain. This pass removes the outer hero card, groups the name/date
-more closely, gives the full portrait more usable width, and reuses the palace ambience at low opacity.
-Gallery portraits alternate alignment with unboxed captions. Venue and gift surfaces lose redundant
-card borders/shadows. The venue label uses existing canonical `label` data; unresolved address tokens
+The owner approved the Cinderella art direction and authorized refinement, not redesign. The seated
+portrait, three original photographs, envelope, crystal assets, typography, palette, content order
+and RSVP behavior remain. This pass removes the outer hero card, groups the name/date more closely,
+gives the full portrait more usable width, and reuses the palace ambience at low opacity. Gallery
+portraits alternate alignment with unboxed captions. Venue and gift surfaces lose redundant card
+borders/shadows. The venue label uses existing canonical `label` data; unresolved address tokens
 render as readable pending text without a copy action. The countdown date is no longer duplicated.
 
-Cadence: hero → family uses a shallow asymmetric arch; location → gallery uses an atmospheric bridge;
-RSVP → closing uses the second shallow arch. Other boundaries remain neutral. No media or controls
-are covered by decorative intersections. Profile tokens own surfaces; semantic variants own geometry.
-`hero.ambience` is an optional typed asset and does not select a renderer or require Allison's profile.
+Cadence: hero → family uses a shallow asymmetric arch; location → gallery uses an atmospheric
+bridge; RSVP → closing uses the second shallow arch. Other boundaries remain neutral. No media or
+controls are covered by decorative intersections. Profile tokens own surfaces; semantic variants own
+geometry. `hero.ambience` is an optional typed asset and does not select a renderer or require
+Allison's profile.
 
 Client reconciliation: names, November 27, ceremony at 18:00, shared venue, reserved blue/silver,
-gift preferences and cash envelopes remain. Reception at 19:00, city and address remain provisional.
-No itinerary section or registry is added. The client accepted in-invitation RSVP after asking about
-telephone confirmation. The shared QR album remains a client requirement deferred by the owner;
-it is not considered removed or delivered. Host operations and live RSVP remain unverified locally.
+gift preferences and cash envelopes remain. Reception at 19:00 was inferred from the chat and later
+selected by the owner; the address was supplied in the later owner session. No itinerary section or
+registry is added. The client accepted in-invitation RSVP after asking about telephone confirmation.
+The owner later removed the QR requirement. Host operations and live RSVP remain unverified locally.
 
 The previous direction is owner-approved. Human acceptance of this refinement remains pending.
-Visual evidence: `.agent/tmp/allison-review/refined-{390,414,1440}-{closed,hero,full}.png`.
-The review now uses the existing development-only `/test/variant` full-page harness, including an
+Visual evidence: `.agent/tmp/allison-review/refined-{390,414,1440}-{closed,hero,full}.png`. The
+review now uses the existing development-only `/test/variant` full-page harness, including an
 explicit synthetic pass. The normal unpublished route has no persisted invitation; no database was
 modified to make it available. This harness does not authorize publication or real confirmations.
 
 Refinement validation: `pnpm run type-check` passed with zero Astro/TypeScript diagnostics.
-`pnpm run validate:changed` passed 2390 related tests and 25 corpus tests. `pnpm test` passed
-6322 tests, with one suite/test skipped by its existing configuration. Full `pnpm run ci` initially
+`pnpm run validate:changed` passed 2390 related tests and 25 corpus tests. `pnpm test` passed 6322
+tests, with one suite/test skipped by its existing configuration. Full `pnpm run ci` initially
 stopped at the family-partial inventory omission; that inventory was corrected and the full unit
 suite rerun successfully. CI static checks/build passed; the complete CI browser matrix was not run.
-Focused style/contract checks were repeated after the closing clearance and preview-text contrast fixes.
-Browser inspection covers both portable presets without a photograph, reduced-motion opening,
-readable pending address, absence of its copy action, and preserved ceremony/reception labels.
-The computed contrast sampler cannot resolve the admission-card gradient; that surface requires
-visual assessment rather than treating the underlying dark fallback as its rendered color.
+Focused style/contract checks were repeated after the closing clearance and preview-text contrast
+fixes. Browser inspection covers both portable presets without a photograph, reduced-motion opening,
+readable pending address, absence of its copy action, and preserved ceremony/reception labels. The
+computed contrast sampler cannot resolve the admission-card gradient; that surface requires visual
+assessment rather than treating the underlying dark fallback as its rendered color.
 
 Final reduced-motion browser check exposed an existing SSR/hydration mismatch in the attendance
-fieldset's initial opacity. A reduced-motion-only CSS visibility override now keeps that field visible
-without changing submission or guest logic; the browser measured opacity 1 after the fix. Hydration
-attribute warnings in the existing animation implementation remain a technical follow-up.
+fieldset's initial opacity. A reduced-motion-only CSS visibility override now keeps that field
+visible without changing submission or guest logic; the browser measured opacity 1 after the fix.
+Hydration attribute warnings in the existing animation implementation remain a technical follow-up.
 The closing arch now has 6.5rem of static clearance, keeping the form outside its decorative zone.
 Focused Stylelint and style-boundary tests passed after these final presentation changes.
