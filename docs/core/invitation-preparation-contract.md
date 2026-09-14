@@ -194,8 +194,8 @@ Helpers: `createPlaceholderToken`, `findPlaceholderTokens`, `validatePlaceholder
 8. Do not recompress already suitable images solely for process theater.
 9. Generate derivatives only when crop/DPR/role weight justifies it.
 10. **Double-encode note:** Prefer delivering already-normalized managed-release WebPs without a
-   second Astro/`getImage` encode that upscales or re-compresses past native width (see Hero
-   managed-URL direct delivery). Record the risk when sources are provisional.
+    second Astro/`getImage` encode that upscales or re-compresses past native width (see Hero
+    managed-URL direct delivery). Record the risk when sources are provisional.
 
 Prepared managed media must use direct delivery. Storage and Cloudinary URLs do not request an
 implicit Astro/Vercel transformation, including content-addressed objects. Preserve explicit
@@ -256,6 +256,11 @@ hygiene). Prose alignment to the helpers remains mandatory between runs.
 
 ### 9.2 Creative acceptance is a separate human gate
 
+The canonical machine-readable field is `**Human creative outcome:**` followed by exactly one of
+`PENDING`, `ACCEPTED`, `ACCEPTED_WITH_BLOCKERS`, or `REJECTED`. Only exact `ACCEPTED`, together with
+a `prepReadiness` other than `NOT_READY`, permits a future `in_progress -> published` transition.
+Existing published definitions are audited as warnings and are not rewritten.
+
 `prepReadiness` answers whether preparation is sufficiently resolved to begin implementation. It
 does **not** mean that the rendered invitation is creatively finished. After implementation and
 before final acceptance or release, the invitation must receive a lightweight creative-QA review
@@ -272,11 +277,11 @@ representative mobile viewport and one desktop viewport (the default proof pair 
 - local exceptions to the selected preset;
 - responsive reflow, legibility, focus, reduced motion, and visible/operational placeholders.
 
-Record mechanical capture/render status separately from the human outcome. The human outcome is
-one of `PENDING`, `ACCEPTED`, `ACCEPTED_WITH_BLOCKERS`, or `REJECTED`; only an explicit human
-`ACCEPTED` may clear creative acceptance. `ACCEPTED_WITH_BLOCKERS` names a non-creative dependency
-and remains blocking for the applicable release boundary. Pixel thresholds, image diffs, and visual
-snapshots are not part of this contract.
+Record mechanical capture/render status separately from the human outcome. The human outcome is one
+of `PENDING`, `ACCEPTED`, `ACCEPTED_WITH_BLOCKERS`, or `REJECTED`; only an explicit human `ACCEPTED`
+may clear creative acceptance. `ACCEPTED_WITH_BLOCKERS` names a non-creative dependency and remains
+blocking for the applicable release boundary. Pixel thresholds, image diffs, and visual snapshots
+are not part of this contract.
 
 This gate does not replace executable readiness or publication preflight. The helpers and release
 checks remain authoritative for their respective invariants; the QA record supplies the explicit

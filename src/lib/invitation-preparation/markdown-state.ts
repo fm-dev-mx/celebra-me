@@ -31,6 +31,20 @@ import { isEventType, type EventType } from '@/lib/theme/theme-contract';
 const READINESS_LINE =
 	/\*\*Preparation Readiness(?:\s*\(prepReadiness\))?:\*\*\s*`?(NOT_READY|READY_WITH_PLACEHOLDERS|READY_FOR_IMPLEMENTATION)`?/i;
 
+export const CREATIVE_ACCEPTANCE_OUTCOMES = [
+	'PENDING',
+	'ACCEPTED',
+	'ACCEPTED_WITH_BLOCKERS',
+	'REJECTED',
+] as const;
+export type CreativeAcceptanceOutcome = (typeof CREATIVE_ACCEPTANCE_OUTCOMES)[number];
+
+const CREATIVE_ACCEPTANCE_PATTERNS = [
+	/\*\*Human creative outcome:\*\*\s*`?(PENDING|ACCEPTED_WITH_BLOCKERS|ACCEPTED|REJECTED)`?(?![A-Z_])/iu,
+	/Human creative outcome\s*\|\s*\*\*?`?(PENDING|ACCEPTED_WITH_BLOCKERS|ACCEPTED|REJECTED)`?\*\*?(?![A-Z_])/iu,
+	/Human creative outcome:\s*`?(PENDING|ACCEPTED_WITH_BLOCKERS|ACCEPTED|REJECTED)`?(?![A-Z_])/iu,
+] as const;
+
 const FACT_ROW = /^\|\s*([a-z][a-zA-Z0-9_]*)\s*\|\s*([^|]*)\|\s*`?([^|]+?)`?\s*\|/u;
 
 const EVENT_TYPE_ROW = /\|\s*\*\*Event Type\*\*\s*\|\s*`?([a-z0-9-]+)`?\s*\|/i;
@@ -53,6 +67,16 @@ export function parsePreparationReadinessFromMarkdown(
 	if (!match) return null;
 	const value = match[1].toUpperCase();
 	return isPreparationReadiness(value) ? value : null;
+}
+
+export function parseCreativeAcceptanceFromMarkdown(
+	markdown: string,
+): CreativeAcceptanceOutcome | null {
+	for (const pattern of CREATIVE_ACCEPTANCE_PATTERNS) {
+		const match = markdown.match(pattern);
+		if (match) return match[1].toUpperCase() as CreativeAcceptanceOutcome;
+	}
+	return null;
 }
 
 function parseEventTypeFromMarkdown(markdown: string): EventType | null {

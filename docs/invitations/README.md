@@ -1,5 +1,8 @@
 # Invitation documentation
 
+The canonical Local/Preview/Production command and evidence sequence is the
+[five-operation release map](../core/release-process.md#canonical-operation-map).
+
 Per-client invitation evidence and **canonical preparation state** live here:
 
 ```text
@@ -20,7 +23,7 @@ registry and from demos.
 | ---------------------------------------------- | -------------------------------------------------------------------- |
 | Preparation schema & semantics                 | `docs/core/invitation-preparation-contract.md`                       |
 | Markdown template                              | `.agent/templates/invitation/preparation-state.md`                   |
-| Preparation orchestration                      | `.agent/skills/invitation-preparation/SKILL.md`                       |
+| Preparation orchestration                      | `.agent/skills/invitation-preparation/SKILL.md`                      |
 | Analysis skill                                 | `.agent/skills/client-invitation-audit`                              |
 | Executable evaluation (**prepReadiness SSOT**) | `src/lib/invitation-preparation/`                                    |
 | Human creative acceptance outcome              | `docs/invitations/<slug>.md` Creative Direction & Acceptance section |
@@ -41,7 +44,9 @@ Persist opaque source labels and classified event facts only. Do **not** commit 
 machine/`Clientes` paths, WhatsApp chat-folder titles, raw chat exports, photo dumps, or
 credential-bearing / payroll / portal URLs. See preparation-contract §4.1.
 
-Automated gate: `pnpm validate:invitation-preparation` (Markdown prepReadiness ↔ helpers + hygiene).
+Automated gates: `pnpm validate:invitation-preparation` (Markdown prepReadiness ↔ helpers + hygiene)
+and `pnpm validate:invitation-publication-transitions -- --base <sha> --head <sha>` (future
+`in_progress -> published` transitions only).
 
 Surviving companion files (asset reports, merge-conflict notes) are historical evidence beside the
 canonical `<slug>.md`. They are not a second contract. Durable preparation decisions live in

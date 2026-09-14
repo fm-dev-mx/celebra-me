@@ -12,17 +12,17 @@ OneDrive/`Clientes` paths, chat-title dumps, or credential-bearing URLs.
 
 ## Identity
 
-| Parameter              | Value                                                                               |
-| ---------------------- | ----------------------------------------------------------------------------------- |
-| **Slug**               | `<slug>` (freeze only with verified orthography)                                    |
-| **Host Login Alias**   | `<primer_nombre_primer_apellido>` (see `docs/core/invitation-creation-contract.md`) |
-| **Event Type**         | `<eventType>`                                                                       |
+| Parameter              | Value                                                                                   |
+| ---------------------- | --------------------------------------------------------------------------------------- |
+| **Slug**               | `<slug>` (freeze only with verified orthography)                                        |
+| **Host Login Alias**   | `<primer_nombre_primer_apellido>` (see `docs/core/invitation-creation-contract.md`)     |
+| **Event Type**         | `<eventType>`                                                                           |
 | **Preparation Status** | Must match helper: `NOT_READY` / `READY_WITH_PLACEHOLDERS` / `READY_FOR_IMPLEMENTATION` |
 
 **Preparation Readiness (prepReadiness):** `NOT_READY`
 
-Must equal `evaluatePreparationReadiness` for the facts/assets/design recorded below. Provisional-only
-assets cannot be `READY_FOR_IMPLEMENTATION`.
+Must equal `evaluatePreparationReadiness` for the facts/assets/design recorded below.
+Provisional-only assets cannot be `READY_FOR_IMPLEMENTATION`.
 
 Technical Local/Preview/Production readiness (**envReadiness**) is **out of scope** for this
 document and remains owned by `pnpm invitation:release -- --status` / `invitation-readiness.ts`.
@@ -31,11 +31,11 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 
 ## Sources
 
-| Source                         | Reference                         | Notes                                                      |
-| ------------------------------ | --------------------------------- | ---------------------------------------------------------- |
-| WhatsApp / conversation        | `source:wa-export` (opaque label) | Evidence only — never photo SoT; no chat-title dumps       |
+| Source                         | Reference                         | Notes                                                         |
+| ------------------------------ | --------------------------------- | ------------------------------------------------------------- |
+| WhatsApp / conversation        | `source:wa-export` (opaque label) | Evidence only — never photo SoT; no chat-title dumps          |
 | High-res photos / assets root  | `source:hr-photos` (opaque label) | Required before photo analysis; real URL/path is session-only |
-| Other authoritative references | —                                 | PDFs, emails, prior Markdown — no secrets                  |
+| Other authoritative references | —                                 | PDFs, emails, prior Markdown — no secrets                     |
 
 ---
 
@@ -44,12 +44,12 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 Classification must be one of: `verified` | `inferred` | `ambiguous` | `missing` | `not_applicable`
 | `requires_owner_decision`.
 
-| field           | value | classification          | source | notes                                            |
-| --------------- | ----- | ----------------------- | ------ | ------------------------------------------------ |
+| field           | value | classification          | source | notes                                               |
+| --------------- | ----- | ----------------------- | ------ | --------------------------------------------------- |
 | celebrantName   |       | missing                 |        | Orthography must be verified before identity freeze |
-| eventDate       |       | missing                 |        |                                                  |
-| baseDemoId      |       | requires_owner_decision |        | Recommendation lives under Agent Recommendations |
-| sourceAssetPath |       | missing                 |        | Opaque label only in this file                   |
+| eventDate       |       | missing                 |        |                                                     |
+| baseDemoId      |       | requires_owner_decision |        | Recommendation lives under Agent Recommendations    |
+| sourceAssetPath |       | missing                 |        | Opaque label only in this file                      |
 
 Rules:
 
@@ -152,34 +152,36 @@ If the client did not select a demo, final selection remains `requires_owner_dec
 
 ## Creative Direction & Acceptance
 
+**Human creative outcome:** `PENDING`
+
 This section extends the preparation record into the implementation handoff. It does **not** change
 `prepReadiness` and it cannot be inferred from a successful build or screenshot capture. Complete
 the direction rows when applicable before implementation, then complete the acceptance rows after
 the rendered invitation has been reviewed as a whole.
 
-| concern | decision / evidence | status |
-| ------- | ------------------- | ------ |
-| Typography roles (display, heading, body, metadata) |  | pending / verified / owner decision |
-| Vertical rhythm and density |  | pending / verified / owner decision |
-| Surface hierarchy (open flow vs cards/containers) |  | pending / verified / owner decision |
-| Photographic treatment (role, crop, focal point, filter) |  | pending / verified / owner decision |
-| Section-intersection intent and narrative cadence |  | pending / verified / owner decision |
-| Local exceptions to the selected preset |  | none / documented |
+| concern                                                  | decision / evidence | status                              |
+| -------------------------------------------------------- | ------------------- | ----------------------------------- |
+| Typography roles (display, heading, body, metadata)      |                     | pending / verified / owner decision |
+| Vertical rhythm and density                              |                     | pending / verified / owner decision |
+| Surface hierarchy (open flow vs cards/containers)        |                     | pending / verified / owner decision |
+| Photographic treatment (role, crop, focal point, filter) |                     | pending / verified / owner decision |
+| Section-intersection intent and narrative cadence        |                     | pending / verified / owner decision |
+| Local exceptions to the selected preset                  |                     | none / documented                   |
 
 ### Creative acceptance record
 
-The record is required after implementation and before final acceptance or release. Use the
-existing [Creative QA Report](../creative/creative-qa-report.md) when a detailed report is useful;
-this table remains the durable invitation-level outcome.
+The record is required after implementation and before final acceptance or release. Use the existing
+[Creative QA Report](../creative/creative-qa-report.md) when a detailed report is useful; this table
+remains the durable invitation-level outcome.
 
-| field | value |
-| ----- | ----- |
-| Mechanical render/capture result | pending / pass / fail |
-| Whole-invitation responsive inspection | viewports and evidence references |
-| Section boundaries and narrative continuity | pass / fail / blocked + note |
-| Human creative outcome | `PENDING` / `ACCEPTED` / `ACCEPTED_WITH_BLOCKERS` / `REJECTED` |
-| Reviewer and date |  |
-| Blocking reason or owner follow-up |  |
+| field                                       | value                                                          |
+| ------------------------------------------- | -------------------------------------------------------------- |
+| Mechanical render/capture result            | pending / pass / fail                                          |
+| Whole-invitation responsive inspection      | viewports and evidence references                              |
+| Section boundaries and narrative continuity | pass / fail / blocked + note                                   |
+| Human creative outcome                      | `PENDING` / `ACCEPTED` / `ACCEPTED_WITH_BLOCKERS` / `REJECTED` |
+| Reviewer and date                           |                                                                |
+| Blocking reason or owner follow-up          |                                                                |
 
 `ACCEPTED_WITH_BLOCKERS` is allowed only for an explicit, recorded non-creative dependency (for
 example owner data); it still blocks the applicable release boundary. A mechanical `pass` never
@@ -236,6 +238,6 @@ upscale of managed-release WebPs.
 
 ## Preparation Readiness History
 
-| date | readiness   | helper basis                         | notes               |
-| ---- | ----------- | ------------------------------------ | ------------------- |
-|      | `NOT_READY` | `evaluatePreparationReadiness`       | Initial preparation |
+| date | readiness   | helper basis                   | notes               |
+| ---- | ----------- | ------------------------------ | ------------------- |
+|      | `NOT_READY` | `evaluatePreparationReadiness` | Initial preparation |
