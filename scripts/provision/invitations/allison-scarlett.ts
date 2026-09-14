@@ -187,7 +187,7 @@ export const allisonInvitation = defineCanonicalInvitation({
 	eventTiming: ALLISON_TIMING,
 	content,
 	managedIdentityId: '8f64e9a4-fcbe-436a-8630-62e18fcafdf7',
-	managedIdentityProvenance: 'owner-approved',
+	managedIdentityProvenance: 'persisted',
 	hostLoginAlias: 'allison_scarlett',
 	assetDir: 'src/assets/invitations/allison-scarlett',
 	assetFiles: {
@@ -201,6 +201,6 @@ export const allisonInvitation = defineCanonicalInvitation({
 		gallery02: 'gallery-02.webp',
 		slipper: 'slipper-delivery.webp',
 	},
-	lifecycle: 'in_progress',
+	lifecycle: 'published',
 	deliveryScope: 'content-and-assets',
 });
