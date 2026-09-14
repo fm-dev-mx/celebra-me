@@ -31,10 +31,21 @@ if (jestArgs.length === 0) {
 
 console.log(`Validating staged inputs with Jest:\n- ${stagedFiles.join('\n- ')}`);
 
+const cleanEnv = { ...process.env };
+for (const key of Object.keys(cleanEnv)) {
+	if (
+		/^GIT_(?:DIR|WORK_TREE|INDEX_FILE|OBJECT_DIRECTORY|ALTERNATE_OBJECT_DIRECTORIES|PREFIX)$/iu.test(
+			key,
+		)
+	) {
+		delete cleanEnv[key];
+	}
+}
+
 const result = spawnSync('pnpm', jestArgs, {
 	cwd: REPO_ROOT,
 	stdio: 'inherit',
-	env: process.env,
+	env: cleanEnv,
 	shell: process.platform === 'win32',
 	maxBuffer: 10 * 1024 * 1024,
 });

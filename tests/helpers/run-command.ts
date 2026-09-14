@@ -17,6 +17,15 @@ export function sanitizeEnv(extra?: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
 	const env = { ...process.env, ...extra };
 	delete env.VALIDATION_BASE_SHA;
 	delete env.VALIDATION_HEAD_SHA;
+	for (const key of Object.keys(env)) {
+		if (
+			/^GIT_(?:DIR|WORK_TREE|INDEX_FILE|OBJECT_DIRECTORY|ALTERNATE_OBJECT_DIRECTORIES|PREFIX)$/iu.test(
+				key,
+			)
+		) {
+			delete env[key];
+		}
+	}
 	return env;
 }
 

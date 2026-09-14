@@ -104,6 +104,20 @@ jobs:
             - name: Markdown table readability
               run: pnpm validate:markdown-tables
 
+            - name: Validate invitation publication transitions
+              run: pnpm validate:invitation-publication-transitions -- --base "$VALIDATION_BASE_SHA" --head "$VALIDATION_HEAD_SHA"
+
+            - name: Classify release (advisory)
+              run: pnpm ops:classify-release -- --base "$VALIDATION_BASE_SHA" --head "$VALIDATION_HEAD_SHA" --output release-classification.json
+
+            - name: Upload release classification
+              uses: actions/upload-artifact@v7
+              with:
+                  name: release-classification-${{ github.sha }}
+                  path: release-classification.json
+                  if-no-files-found: error
+                  retention-days: 14
+
     application-checks:
         name: Application / ${{ matrix.tier }}
         if: github.event.inputs.visual_mode != 'candidate'

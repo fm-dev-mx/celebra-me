@@ -1,12 +1,12 @@
 import { rmSync } from 'fs';
 import { tmpdir } from 'os';
-import { runCommand } from './run-command';
+import { runCommand, sanitizeEnv } from './run-command';
 
 export function initGitRepo(repoRoot: string, userName: string, userEmail: string) {
-	runCommand('git', ['init'], { cwd: repoRoot });
-	runCommand('git', ['config', 'user.name', userName], { cwd: repoRoot });
-	runCommand('git', ['config', 'user.email', userEmail], { cwd: repoRoot });
-	runCommand('git', ['config', 'commit.gpgsign', 'false'], { cwd: repoRoot });
+	runCommand('git', ['init'], { cwd: repoRoot, env: sanitizeEnv() });
+	runCommand('git', ['config', 'user.name', userName], { cwd: repoRoot, env: sanitizeEnv() });
+	runCommand('git', ['config', 'user.email', userEmail], { cwd: repoRoot, env: sanitizeEnv() });
+	runCommand('git', ['config', 'commit.gpgsign', 'false'], { cwd: repoRoot, env: sanitizeEnv() });
 }
 
 export function cleanupFixture(repoRoot: string) {
