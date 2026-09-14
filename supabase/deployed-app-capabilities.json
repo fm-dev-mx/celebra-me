@@ -1,4 +1,4 @@
 {
     "version": 1,
-    "capabilities": []
+    "capabilities": ["current_atomic_publication_client"]
 }
