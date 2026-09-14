@@ -110,6 +110,7 @@ jobs:
             - name: Run Production HTTP smoke
               if: env.POST_DEPLOY_ENVIRONMENT == 'production'
               env:
+                  VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
                   VERCEL_DISPATCH_EVENT: ${{ github.event.action }}
                   VERCEL_DISPATCH_PROJECT_ID: ${{ github.event.client_payload.project.id }}
                   VERCEL_DISPATCH_EXPECTED_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}

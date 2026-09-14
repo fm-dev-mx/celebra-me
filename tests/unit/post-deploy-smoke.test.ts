@@ -51,6 +51,56 @@ function productionFetch(): jest.MockedFunction<
 }
 
 describe('post-deploy smoke', () => {
+	it('authenticates only the approved deployment without following redirects or setting cookies', async () => {
+		const fetchMock = productionFetch();
+		const host = 'celebra-exact.vercel.app';
+		const result = await runProductionSmoke(`https://${host}`, fetchMock, {
+			approvedHost: host,
+			bypassSecret: 'test-bypass-secret',
+		});
+		expect(result.failedProbeCount).toBe(0);
+		for (const [url, init] of fetchMock.mock.calls) {
+			expect(new URL(url).hostname).toBe(host);
+			expect(init?.redirect).toBe('manual');
+			const headers = new Headers(init?.headers);
+			expect(headers.get('x-vercel-protection-bypass')).toBe('test-bypass-secret');
+			expect(headers.has('x-vercel-set-bypass-cookie')).toBe(false);
+			expect(headers.has('cookie')).toBe(false);
+		}
+		expect(result.authBoundaryVerified).toBe(true);
+		expect(JSON.stringify(result)).not.toContain('test-bypass-secret');
+	});
+	it('rejects missing credentials or a mismatched host before contacting the deployment', async () => {
+		const fetchMock = productionFetch();
+		await expect(
+			runProductionSmoke('https://celebra-exact.vercel.app', fetchMock),
+		).rejects.toThrow('VERCEL_AUTOMATION_BYPASS_SECRET');
+		await expect(
+			runProductionSmoke('https://celebra-exact.vercel.app', fetchMock, {
+				approvedHost: 'other.vercel.app',
+				bypassSecret: 'secret',
+			}),
+		).rejects.toThrow('exact approved');
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+	it('does not forward the credential to an external asset or SSO redirect', async () => {
+		const fetchMock = productionFetch();
+		fetchMock.mockImplementation(async () =>
+			response(302, '<script src="https://external.example/_astro/app.js"></script>', {
+				location: 'https://vercel.com/sso-api',
+			}),
+		);
+		const result = await runProductionSmoke('https://celebra-exact.vercel.app', fetchMock, {
+			approvedHost: 'celebra-exact.vercel.app',
+			bypassSecret: 'secret',
+		});
+		expect(result.failureCodes).toContain('asset_failed');
+		expect(
+			fetchMock.mock.calls.every(
+				([url]) => new URL(url).hostname === 'celebra-exact.vercel.app',
+			),
+		).toBe(true);
+	});
 	it('executes the workflow argument form without contacting a provider', () => {
 		const env = {
 			...process.env,

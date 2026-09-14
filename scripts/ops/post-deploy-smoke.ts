@@ -304,7 +304,24 @@ function hasExpectedSecurityHeaders(headers: Headers): boolean {
 export async function runProductionSmoke(
 	baseUrl: string,
 	fetchImpl: FetchLike = fetch,
+	access: { approvedHost?: string; bypassSecret?: string } = {},
 ): Promise<ProductionSmokeResult> {
+	const origin = parseDeploymentOrigin(baseUrl, 'production');
+	const bypassSecret = access.bypassSecret?.trim();
+	if (origin.hostname.endsWith('.vercel.app') && !bypassSecret)
+		throw new Error(
+			'VERCEL_AUTOMATION_BYPASS_SECRET is required for the protected deployment smoke.',
+		);
+	if (bypassSecret && access.approvedHost !== origin.hostname)
+		throw new Error('Protection bypass requires the exact approved deployment host.');
+	const request: FetchLike = (url, init) => {
+		if (new URL(url).origin !== origin.origin)
+			throw new Error('Smoke request rejected a different origin.');
+		const headers = new Headers(init?.headers);
+		if (bypassSecret) headers.set('x-vercel-protection-bypass', bypassSecret);
+		// No bypass cookie: the application session probe must remain anonymous.
+		return fetchImpl(url, { ...init, headers, redirect: 'manual' });
+	};
 	const failures: string[] = [];
 	let retries = 0;
 	let runtimeHealthVerified = false;
@@ -355,7 +372,7 @@ export async function runProductionSmoke(
 	}
 
 	await probe('homepage_failed', 'homepage', 'root', async () => {
-		const { response, retryCount } = await fetchWithOneRetry(fetchImpl, `${baseUrl}/`);
+		const { response, retryCount } = await fetchWithOneRetry(request, `${baseUrl}/`);
 		rootHeaders = response.headers;
 		rootStatusCode = response.status;
 		rootHtml = await response.text();
@@ -367,7 +384,7 @@ export async function runProductionSmoke(
 		};
 	});
 	await probe('login_failed', 'login', 'login', async () => {
-		const { response, retryCount } = await fetchWithOneRetry(fetchImpl, `${baseUrl}/login`);
+		const { response, retryCount } = await fetchWithOneRetry(request, `${baseUrl}/login`);
 		return {
 			passed: response.status === 200,
 			statusCode: response.status,
@@ -377,7 +394,7 @@ export async function runProductionSmoke(
 	});
 	await probe('demo_failed', 'demo', 'demo', async () => {
 		const { response, retryCount } = await fetchWithOneRetry(
-			fetchImpl,
+			request,
 			`${baseUrl}/xv/demo-xv-editorial`,
 		);
 		return {
@@ -389,7 +406,7 @@ export async function runProductionSmoke(
 	});
 	await probe('auth_boundary_failed', 'auth_boundary', 'auth_session', async () => {
 		const { response, retryCount } = await fetchWithOneRetry(
-			fetchImpl,
+			request,
 			`${baseUrl}/api/auth/session`,
 		);
 		authBoundaryVerified =
@@ -404,10 +421,7 @@ export async function runProductionSmoke(
 		};
 	});
 	await probe('runtime_health_failed', 'runtime_health', 'health', async () => {
-		const { response, retryCount } = await fetchWithOneRetry(
-			fetchImpl,
-			`${baseUrl}/api/health`,
-		);
+		const { response, retryCount } = await fetchWithOneRetry(request, `${baseUrl}/api/health`);
 		if (response.status !== 200)
 			return {
 				passed: false,
@@ -464,7 +478,7 @@ export async function runProductionSmoke(
 				failureClass: 'contract_mismatch',
 				retryCount: 0,
 			};
-		const { response, retryCount } = await fetchWithOneRetry(fetchImpl, assetUrl.toString());
+		const { response, retryCount } = await fetchWithOneRetry(request, assetUrl.toString());
 		assetVerified =
 			response.status === 200 &&
 			(response.headers.get('cache-control')?.includes('immutable') ?? false);
@@ -589,7 +603,10 @@ async function productionCommand(): Promise<void> {
 		}),
 		'started',
 	);
-	const result = await runProductionSmoke(dispatch.baseUrl);
+	const result = await runProductionSmoke(dispatch.baseUrl, fetch, {
+		approvedHost: dispatch.hostname,
+		bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
+	});
 	const passed = result.failedProbeCount === 0;
 	const evidence = createPostDeployEvidence({
 		dispatch,
