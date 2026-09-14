@@ -34,6 +34,7 @@ export function schemaItemFromPlan(plan: MigrationPlan): ProductionApplyPlanItem
 		compatibilityStatus: plan.compatibilityStatus,
 	});
 	const pending = plan.pendingVersions.filter((version) => version !== 'none');
+	const compatibilityBlocked = plan.compatibilityStatus !== 'allow';
 	return {
 		domain: 'schema',
 		id: 'schema',
@@ -44,8 +45,33 @@ export function schemaItemFromPlan(plan: MigrationPlan): ProductionApplyPlanItem
 				: `Pendientes: ${pending.join(', ')}`,
 		binding: plan.planId,
 		pendingVersions: pending,
-		detail: readiness === 'READY' ? plan.planId : undefined,
+		detail: compatibilityBlocked
+			? formatCompatibilityReasons(plan.compatibilityReasons)
+			: undefined,
+		blockCode: compatibilityBlocked
+			? compatibilityBlockCode(plan.compatibilityReasons)
+			: undefined,
 	};
+}
+
+function formatCompatibilityReasons(reasons: readonly string[]): string {
+	const value = reasons
+		.map((reason) => reason.replace(/https?:\/\/\S+/gi, '[URL redactada]'))
+		.map((reason) => reason.replace(/\b[a-f0-9]{40}\b/gi, '[SHA redactado]'))
+		.join('; ')
+		.trim();
+	return value || 'Compatibilidad de despliegue no verificada.';
+}
+
+function compatibilityBlockCode(reasons: readonly string[]): string {
+	const combined = reasons.join('\n');
+	if (/UNVERIFIED: Production deployment evidence unavailable/i.test(combined)) {
+		return 'PRODUCTION_DEPLOYMENT_EVIDENCE_UNAVAILABLE';
+	}
+	if (/requires immutable deployed-application evidence|provides capability/i.test(combined)) {
+		return 'DEPLOYED_APP_CAPABILITY_MISSING';
+	}
+	return 'DEPLOYMENT_COMPATIBILITY_BLOCKED';
 }
 
 export function schemaItemFromError(error: unknown): ProductionApplyPlanItem {
@@ -133,7 +159,11 @@ export async function inspectInvitation(
 		);
 		const runPreflight =
 			deps.runInvitationPreflight ??
-			((data: InvitationPackageData, scope?: UpdateScope, acknowledgeDiscardUnpublishedDraft?: boolean) =>
+			((
+				data: InvitationPackageData,
+				scope?: UpdateScope,
+				acknowledgeDiscardUnpublishedDraft?: boolean,
+			) =>
 				runPromotionPreflight({
 					packageData: data,
 					requireBackup: false,

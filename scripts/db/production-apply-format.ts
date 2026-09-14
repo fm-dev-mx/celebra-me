@@ -41,8 +41,9 @@ function itemLine(item: ProductionApplyPlanItem): string {
 		: item.packageHash
 			? ` · pkg ${shortSha(item.packageHash)}`
 			: '';
+	const code = item.blockCode ? ` [${item.blockCode}]` : '';
 	const reason = item.detail ? ` — ${item.detail}` : '';
-	return `${item.domain}:${item.id}  ${readinessLabel(item.readiness)}${extra}${reason}`;
+	return `${item.domain}:${item.id}  ${readinessLabel(item.readiness)}${extra}${code}${reason}`;
 }
 
 const READINESS_GROUPS: ReadonlyArray<{

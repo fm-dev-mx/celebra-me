@@ -12,6 +12,12 @@ import {
 	type ProductionApplyPlanItem,
 	type ProductionApplyScope,
 } from '../../scripts/db/production-apply-plan.ts';
+import { schemaItemFromPlan } from '../../scripts/db/production-apply-inspectors.ts';
+import {
+	formatProductionApplyPlan,
+	toPublicProductionApplyPlan,
+} from '../../scripts/db/production-apply-format.ts';
+import type { MigrationPlan } from '../../scripts/db/migration-plan.ts';
 
 const inspectScope: ProductionApplyScope = {
 	schema: true,
@@ -30,7 +36,65 @@ function item(
 	};
 }
 
+function migrationPlan(overrides: Partial<MigrationPlan>): MigrationPlan {
+	return {
+		target: 'production',
+		mode: 'preflight',
+		sourceHead: 'a'.repeat(40),
+		redactedTargetIdentity: 'production:redacted',
+		pendingVersions: ['20260911070000'],
+		expectedPin: ['20260911070000'],
+		phaseByVersion: { '20260911070000': 'contract' },
+		compatibilityStatus: 'allow',
+		compatibilityReasons: [],
+		releaseIdentity: { kind: 'head', value: 'a'.repeat(40) },
+		deployedAppIdentity: { sha: null, capabilities: [] },
+		authRequirement: 'production_owner_tty',
+		backupRequirement: 'prod_critical_pre_post',
+		executor: 'supabase_cli_push',
+		verificationRequirement: 'history_and_mutation_contract',
+		releaseEvidenceSha: null,
+		planId: 'schema-plan',
+		...overrides,
+	};
+}
+
 describe('production apply plan classification', () => {
+	it('propagates sanitized compatibility evidence to human and JSON plans', () => {
+		const plan = migrationPlan({
+			compatibilityStatus: 'environment_not_ready',
+			compatibilityReasons: [
+				'UNVERIFIED: Production deployment evidence unavailable (https://example.test/token).',
+			],
+		});
+		const schema = schemaItemFromPlan(plan);
+		expect(schema).toMatchObject({
+			readiness: 'BLOCKED',
+			blockCode: 'PRODUCTION_DEPLOYMENT_EVIDENCE_UNAVAILABLE',
+			detail: expect.stringContaining('[URL redactada]'),
+		});
+		const productionPlan = assembleProductionApplyPlan(inspectScope, [schema]);
+		expect(formatProductionApplyPlan(productionPlan)).toContain(
+			'PRODUCTION_DEPLOYMENT_EVIDENCE_UNAVAILABLE',
+		);
+		expect(toPublicProductionApplyPlan(productionPlan).items[0]).toMatchObject({
+			blockCode: 'PRODUCTION_DEPLOYMENT_EVIDENCE_UNAVAILABLE',
+			detail: expect.stringContaining('[URL redactada]'),
+		});
+	});
+
+	it('classifies absent deployed capability with a stable block code', () => {
+		const schema = schemaItemFromPlan(
+			migrationPlan({
+				compatibilityStatus: 'block',
+				compatibilityReasons: [
+					'Contract migration 20260911070000 is blocked until deployed application provides capability "current_atomic_publication_client".',
+				],
+			}),
+		);
+		expect(schema.blockCode).toBe('DEPLOYED_APP_CAPABILITY_MISSING');
+	});
+
 	it('classifies schema pending as READY and empty as IN_SYNC', () => {
 		expect(
 			classifySchemaPreflight({
@@ -285,7 +349,11 @@ describe('READY_AFTER_DISCARD readiness', () => {
 			allReady: false,
 			inspectAll: false,
 		};
-		const itemA = item({ id: 'leslie-perez', readiness: 'READY_AFTER_DISCARD', binding: 'hash-a' });
+		const itemA = item({
+			id: 'leslie-perez',
+			readiness: 'READY_AFTER_DISCARD',
+			binding: 'hash-a',
+		});
 		const itemB = { ...itemA, binding: 'hash-b' };
 		expect(buildProductionApplyPlanId([itemA])).not.toBe(buildProductionApplyPlanId([itemB]));
 		// and plan without the item gets a different id
@@ -296,4 +364,3 @@ describe('READY_AFTER_DISCARD readiness', () => {
 		expect(planA.planId).not.toBe(planB.planId);
 	});
 });
-
