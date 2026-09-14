@@ -5,9 +5,15 @@ import {
 
 const deployedSha = 'a'.repeat(40);
 const targetSha = 'b'.repeat(40);
-const smoke = [
+const checks = [
 	{
 		name: 'Vercel - celebra-me production smoke',
+		sha: deployedSha,
+		state: 'success',
+		trusted: true,
+	},
+	{
+		name: 'Application / static',
 		sha: deployedSha,
 		state: 'success',
 		trusted: true,
@@ -41,7 +47,7 @@ describe('deployed application attestation', () => {
 		).toThrow();
 	});
 
-	it('requires a prior SHA and a trusted production smoke', () => {
+	it('accepts an exact deployed target SHA only with trusted smoke and static evidence', () => {
 		const runner = (command: string, args: string[]): string => {
 			if (command === 'git' && args[0] === 'show') {
 				return JSON.stringify({ version: 1, capabilities: ['replacement_path'] });
@@ -52,21 +58,21 @@ describe('deployed application attestation', () => {
 			readDeployedApplicationAttestation({
 				deployedSha,
 				targetReleaseSha: targetSha,
-				checks: smoke,
+				checks,
 				runner,
 			}),
 		).toEqual({
 			sha: deployedSha,
 			capabilities: ['replacement_path'],
 		});
-		expect(() =>
+		expect(
 			readDeployedApplicationAttestation({
-				deployedSha: targetSha,
-				targetReleaseSha: targetSha,
-				checks: smoke,
+				deployedSha,
+				targetReleaseSha: deployedSha,
+				checks,
 				runner,
 			}),
-		).toThrow(/self-authorize/);
+		).toEqual({ sha: deployedSha, capabilities: ['replacement_path'] });
 		expect(() =>
 			readDeployedApplicationAttestation({
 				deployedSha,
@@ -78,8 +84,16 @@ describe('deployed application attestation', () => {
 		expect(() =>
 			readDeployedApplicationAttestation({
 				deployedSha,
+				targetReleaseSha: deployedSha,
+				checks: checks.filter((check) => check.name !== 'Application / static'),
+				runner,
+			}),
+		).toThrow(/Static capability evidence/);
+		expect(() =>
+			readDeployedApplicationAttestation({
+				deployedSha,
 				targetReleaseSha: targetSha,
-				checks: smoke,
+				checks,
 				runner: (command: string, args: string[]): string => {
 					if (command === 'git' && args[0] === 'show') {
 						throw new Error('fatal: path does not exist');

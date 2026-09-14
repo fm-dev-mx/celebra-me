@@ -1,12 +1,14 @@
 import { execFileSync } from 'node:child_process';
 import { basename } from 'node:path';
 
+export const STATIC_CAPABILITY_CHECK = 'Application / static';
+export const PRODUCTION_DEPLOYMENT_SMOKE = 'Vercel - celebra-me production smoke';
 export const REQUIRED_RELEASE_CHECKS = [
 	'Repository Policy',
 	'Application Suite',
+	STATIC_CAPABILITY_CHECK,
 	'Vercel - celebra-me preview smoke',
 ] as const;
-export const PRODUCTION_DEPLOYMENT_SMOKE = 'Vercel - celebra-me production smoke';
 export interface ReleaseCheck {
 	name: string;
 	sha: string;
@@ -82,6 +84,24 @@ export function requireProductionDeploymentSmoke(sha: string, checks: RemoteChec
 			'invalid',
 			`Production deployment smoke blocked: ${PRODUCTION_DEPLOYMENT_SMOKE}`,
 		);
+}
+
+/** Proves the versioned deployed-app capability manifest passed its static validator. */
+export function requireStaticCapabilityCheck(sha: string, checks: RemoteCheckRun[]): void {
+	if (!/^[a-f0-9]{40}$/.test(sha))
+		throw new RemoteEvidenceError('invalid', 'An exact deployed SHA is required.');
+	const matching = checks.filter((check) => check.name === STATIC_CAPABILITY_CHECK);
+	if (
+		matching.length !== 1 ||
+		matching[0].sha !== sha ||
+		matching[0].state !== 'success' ||
+		!matching[0].trusted
+	) {
+		throw new RemoteEvidenceError(
+			'invalid',
+			`Static capability evidence blocked: ${STATIC_CAPABILITY_CHECK}`,
+		);
+	}
 }
 export function loadRemoteChecks(sha: string, run: GhRunner = defaultGhRunner): RemoteCheckRun[] {
 	if (!/^[a-f0-9]{40}$/i.test(sha))

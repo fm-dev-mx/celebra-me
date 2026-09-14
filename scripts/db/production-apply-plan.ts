@@ -11,7 +11,13 @@ import type {
 } from './production-patch-preview.ts';
 
 export type ProductionApplyReadiness =
-	'READY' | 'READY_AFTER_SCHEMA' | 'READY_AFTER_DISCARD' | 'IN_SYNC' | 'BLOCKED' | 'UNKNOWN' | 'NOT_APPLICABLE';
+	| 'READY'
+	| 'READY_AFTER_SCHEMA'
+	| 'READY_AFTER_DISCARD'
+	| 'IN_SYNC'
+	| 'BLOCKED'
+	| 'UNKNOWN'
+	| 'NOT_APPLICABLE';
 
 export type ProductionApplyDomain = 'schema' | 'invitation' | 'patch';
 
@@ -77,7 +83,11 @@ export interface ProductionApplyPlan {
 const PLAN_ID_VERSION = 2;
 
 function isMutationReadiness(readiness: ProductionApplyReadiness): boolean {
-	return readiness === 'READY' || readiness === 'READY_AFTER_SCHEMA' || readiness === 'READY_AFTER_DISCARD';
+	return (
+		readiness === 'READY' ||
+		readiness === 'READY_AFTER_SCHEMA' ||
+		readiness === 'READY_AFTER_DISCARD'
+	);
 }
 
 export function mutationItemsOf(plan: ProductionApplyPlan): ProductionApplyPlanItem[] {
@@ -144,7 +154,9 @@ export function classifySchemaError(error: unknown): {
 		error && typeof error === 'object' && 'code' in error
 			? String((error as { code?: string }).code ?? 'SCHEMA_PREFLIGHT_FAILED')
 			: 'SCHEMA_PREFLIGHT_FAILED';
-	const detail = error instanceof Error ? error.message : String(error);
+	const detail = sanitizeSchemaPreflightDetail(
+		error instanceof Error ? error.message : String(error),
+	);
 	if (
 		/PROD_DB_URL is required/i.test(detail) ||
 		/UNREACHABLE|ECONNREFUSED|CREDENTIALS/i.test(detail) ||
@@ -152,7 +164,20 @@ export function classifySchemaError(error: unknown): {
 	) {
 		return { readiness: 'UNKNOWN', blockCode: code, detail };
 	}
+	if (
+		/Production deployment smoke blocked|Static capability evidence blocked|Deployment attestation|Deployed application SHA must be an ancestor|Deployed application capabilit/i.test(
+			detail,
+		)
+	) {
+		return { readiness: 'BLOCKED', blockCode: 'DEPLOYMENT_COMPATIBILITY_BLOCKED', detail };
+	}
 	return { readiness: 'BLOCKED', blockCode: code, detail };
+}
+
+function sanitizeSchemaPreflightDetail(value: string): string {
+	return value
+		.replace(/https?:\/\/\S+/gi, '[URL redactada]')
+		.replace(/\b[a-f0-9]{40}\b/gi, '[SHA redactado]');
 }
 
 export function classifyInvitationPreflight(input: {

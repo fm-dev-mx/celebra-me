@@ -1,8 +1,10 @@
 import {
 	PRODUCTION_DEPLOYMENT_SMOKE,
+	STATIC_CAPABILITY_CHECK,
 	isRemoteEvidenceUnavailable,
 	loadLatestProductionDeployment,
 	loadRemoteChecks,
+	requireStaticCapabilityCheck,
 	requireProductionDeploymentSmoke,
 	requireReleaseChecks,
 	REQUIRED_RELEASE_CHECKS,
@@ -50,6 +52,20 @@ describe('release check evidence', () => {
 		checks[0].sha = sha;
 		checks[0].trusted = false;
 		expect(() => requireProductionDeploymentSmoke(sha, checks)).toThrow();
+	});
+
+	it('requires trusted static capability evidence for the deployed SHA', () => {
+		const checks = [{ name: STATIC_CAPABILITY_CHECK, sha, state: 'success', trusted: true }];
+		expect(() => requireStaticCapabilityCheck(sha, checks)).not.toThrow();
+		checks[0].sha = 'b'.repeat(40);
+		expect(() => requireStaticCapabilityCheck(sha, checks)).toThrow(
+			'Static capability evidence',
+		);
+		checks[0].sha = sha;
+		checks[0].trusted = false;
+		expect(() => requireStaticCapabilityCheck(sha, checks)).toThrow(
+			'Static capability evidence',
+		);
 	});
 
 	it('loads exact remote checks and treats incomplete pages as unavailable', () => {

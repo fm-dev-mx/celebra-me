@@ -12,7 +12,10 @@ import {
 	type ProductionApplyPlanItem,
 	type ProductionApplyScope,
 } from '../../scripts/db/production-apply-plan.ts';
-import { schemaItemFromPlan } from '../../scripts/db/production-apply-inspectors.ts';
+import {
+	schemaItemFromError,
+	schemaItemFromPlan,
+} from '../../scripts/db/production-apply-inspectors.ts';
 import {
 	formatProductionApplyPlan,
 	toPublicProductionApplyPlan,
@@ -93,6 +96,35 @@ describe('production apply plan classification', () => {
 			}),
 		);
 		expect(schema.blockCode).toBe('DEPLOYED_APP_CAPABILITY_MISSING');
+	});
+
+	it('keeps direct deployment-attestation errors sanitized and stable in human and JSON plans', () => {
+		const schema = schemaItemFromError(
+			new Error(
+				`Static capability evidence blocked: Application / static https://example.test/token ${'a'.repeat(40)}`,
+			),
+		);
+		expect(schema).toMatchObject({
+			readiness: 'BLOCKED',
+			blockCode: 'DEPLOYMENT_COMPATIBILITY_BLOCKED',
+			detail: expect.stringContaining('[URL redactada]'),
+		});
+		expect(schema.detail).toContain('[SHA redactado]');
+		const productionPlan = assembleProductionApplyPlan(inspectScope, [schema]);
+		expect(formatProductionApplyPlan(productionPlan)).toContain(
+			'DEPLOYMENT_COMPATIBILITY_BLOCKED',
+		);
+		expect(toPublicProductionApplyPlan(productionPlan).items[0]).toMatchObject({
+			blockCode: 'DEPLOYMENT_COMPATIBILITY_BLOCKED',
+			detail: expect.stringContaining('[URL redactada]'),
+		});
+		const malformedCapabilities = schemaItemFromError(
+			new Error('Deployed application capabilities must be unique lowercase identifiers.'),
+		);
+		expect(malformedCapabilities).toMatchObject({
+			readiness: 'BLOCKED',
+			blockCode: 'DEPLOYMENT_COMPATIBILITY_BLOCKED',
+		});
 	});
 
 	it('classifies schema pending as READY and empty as IN_SYNC', () => {
