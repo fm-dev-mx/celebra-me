@@ -153,7 +153,7 @@ export function ensureCriticalProductionBackup(
 		});
 		if (current.covered && current.manifestPath) {
 			writeHuman(
-				`${operatorSymbol('ok')} Respaldo vigente reutilizado · edad ${formatBackupAge(
+				`${operatorSymbol('ok')} Respaldo reutilizado · huella ${current.manifest?.stateDigest ?? 'no-disponible'} · edad ${formatBackupAge(
 					current.ageMs ?? 0,
 				)} · RPO máximo ${formatBackupAge(current.maxAgeMs)}`,
 			);
@@ -165,7 +165,7 @@ export function ensureCriticalProductionBackup(
 			return { manifestPath: current.manifestPath, reused: true, coverage: current };
 		}
 		writeHuman(
-			`${operatorSymbol('info')} Respaldo vencido o estructuralmente incompatible; creando uno nuevo…`,
+			`${operatorSymbol('info')} Respaldo no reutilizable · motivo ${current.reason}; creando uno nuevo…`,
 		);
 	}
 
@@ -194,7 +194,9 @@ export function ensureCriticalProductionBackup(
 		});
 	}
 	const coverage = assertCapturedCoverage(input, manifestPath);
-	writeHuman(`${operatorSymbol('ok')} Respaldo crítico verificado.`);
+	writeHuman(
+		`${operatorSymbol('ok')} Respaldo crítico creado · huella ${coverage.manifest?.stateDigest ?? 'no-disponible'} · edad ${formatBackupAge(coverage.ageMs ?? 0)}.`,
+	);
 	return { manifestPath, reused: false, coverage };
 }
 

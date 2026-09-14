@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { basename } from 'node:path';
+import { assessExactEvidence } from './operational-evidence.ts';
 
 export const STATIC_CAPABILITY_CHECK = 'Application / static';
 export const PRODUCTION_DEPLOYMENT_SMOKE = 'Vercel - celebra-me production smoke';
@@ -73,13 +74,13 @@ function createGitHubClient(run: GhRunner): {
 export function requireProductionDeploymentSmoke(sha: string, checks: RemoteCheckRun[]): void {
 	if (!/^[a-f0-9]{40}$/.test(sha))
 		throw new RemoteEvidenceError('invalid', 'An exact deployed SHA is required.');
-	const matching = checks.filter((check) => check.name === PRODUCTION_DEPLOYMENT_SMOKE);
-	if (
-		matching.length !== 1 ||
-		matching[0].sha !== sha ||
-		matching[0].state !== 'success' ||
-		!matching[0].trusted
-	)
+	const assessment = assessExactEvidence({
+		sha,
+		environment: 'production',
+		records: checks.filter((check) => check.name === PRODUCTION_DEPLOYMENT_SMOKE),
+		missingAction: 'Collect the trusted Production smoke result for the exact deployed SHA.',
+	});
+	if (assessment.status !== 'VERIFIED')
 		throw new RemoteEvidenceError(
 			'invalid',
 			`Production deployment smoke blocked: ${PRODUCTION_DEPLOYMENT_SMOKE}`,
@@ -90,13 +91,13 @@ export function requireProductionDeploymentSmoke(sha: string, checks: RemoteChec
 export function requireStaticCapabilityCheck(sha: string, checks: RemoteCheckRun[]): void {
 	if (!/^[a-f0-9]{40}$/.test(sha))
 		throw new RemoteEvidenceError('invalid', 'An exact deployed SHA is required.');
-	const matching = checks.filter((check) => check.name === STATIC_CAPABILITY_CHECK);
-	if (
-		matching.length !== 1 ||
-		matching[0].sha !== sha ||
-		matching[0].state !== 'success' ||
-		!matching[0].trusted
-	) {
+	const assessment = assessExactEvidence({
+		sha,
+		environment: 'repository',
+		records: checks.filter((check) => check.name === STATIC_CAPABILITY_CHECK),
+		missingAction: 'Collect the trusted static capability result for the exact SHA.',
+	});
+	if (assessment.status !== 'VERIFIED') {
 		throw new RemoteEvidenceError(
 			'invalid',
 			`Static capability evidence blocked: ${STATIC_CAPABILITY_CHECK}`,
@@ -201,15 +202,15 @@ export function loadLatestProductionDeployment(
 export function requireReleaseChecks(sha: string, checks: ReleaseCheck[]): void {
 	if (!/^[a-f0-9]{40}$/.test(sha))
 		throw new RemoteEvidenceError('invalid', 'An exact release SHA is required.');
-	const blocked = REQUIRED_RELEASE_CHECKS.filter((name) => {
-		const matching = checks.filter((check) => check.name === name);
-		return (
-			matching.length !== 1 ||
-			matching[0].sha !== sha ||
-			matching[0].state !== 'success' ||
-			!matching[0].trusted
-		);
-	});
+	const blocked = REQUIRED_RELEASE_CHECKS.filter(
+		(name) =>
+			assessExactEvidence({
+				sha,
+				environment: name.includes('preview') ? 'preview' : 'repository',
+				records: checks.filter((check) => check.name === name),
+				missingAction: `Collect trusted ${name} evidence for the exact SHA.`,
+			}).status !== 'VERIFIED',
+	);
 	if (blocked.length)
 		throw new RemoteEvidenceError('invalid', `Release checks blocked: ${blocked.join(', ')}`);
 }

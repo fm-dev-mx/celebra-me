@@ -2,9 +2,48 @@
 
 **Status:** Active
 
-**Last Updated:** 2026-08-24
+**Last Updated:** 2026-09-14
 
 ## Overview
+
+## Canonical operation map
+
+Diagnosis never authorizes mutation. `CURRENT`, green CI, an accessible deployment, lifecycle
+`published`, a `READY` dry-run, or Local preparation is evidence for only its own gate.
+
+- **Schema migration:** diagnose with `pnpm dbs` and
+  `pnpm db:migrate -- --target <target> --dry-run`; Production mutates only through
+  `pnpm prod:apply -- --schema`. Require pending set, compatibility, disposable/Preview proof and,
+  for contract, capability manifest, exact Production deployment and smoke, owner permit and backup.
+- **Tooling-only release:** diagnose with `pnpm ops:classify-release -- --base <sha> --head <sha>`.
+  The result is advisory and retains Repository Policy, Application Suite and Preview smoke, but
+  indicates no DB apply, migration or backup.
+- **Application release:** diagnose with `pnpm ops:release-checks <exact-sha>` and use the
+  owner-authorized deployment workflow. Require exact trusted checks, deployment/environment and
+  smoke; schema evidence remains separate.
+- **Preview invitation update:** diagnose with
+  `pnpm invitation:release -- --slug <slug> --targets preview`; add `--apply` only with scoped
+  Preview authorization. Require canonical package, lifecycle, provenance, asset namespace,
+  three-way plan and hosted approval bound to current hashes.
+- **Production invitation publication:** use `pnpm prod:apply -- --slug <slug>` for preflight and
+  the same owner-only entrypoint with `--apply`. Require `published`, current hash-bound approval,
+  provenance/baseline, resolved conflicts, assets, backup and owner permit.
+
+Terminal evidence is always explicit: verified/ready/applied plus post-audit, or `BLOCKED`, `STALE`
+or `UNVERIFIED`.
+
+After a timeout or unknown result following an initiated write, observe status, receipt/provenance
+and parity first (`OBSERVE_FIRST`). Repeat the same command only for a transient failure proven to
+have occurred before writes (`RETRY_SAFE`). Missing authorization, approval, lifecycle, conflict,
+quota or evidence is `BLOCKED_UNTIL_INPUT`; repetition cannot change it. A backup is reused only
+while its target, fingerprint, integrity, encryption, recovery profile, migration history and
+15-minute RPO remain valid, and is revalidated immediately before the owner permit.
+
+### Inherited editorial debt
+
+Allison Scarlett (`NOT_READY` / creative outcome pending) and Renata (historical local-only creative
+acceptance) remain non-blocking corpus warnings. Their lifecycle, facts, assets and acceptance
+require separate editorial authorization; this release workflow never rewrites them automatically.
 
 ### Efficient validation and evidence
 

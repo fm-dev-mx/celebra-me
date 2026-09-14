@@ -1,5 +1,9 @@
 # Environment Workflow
 
+Use the five-operation command/evidence map in
+[`docs/core/release-process.md`](core/release-process.md#canonical-operation-map); this document
+only defines environment identity and variable sourcing.
+
 **Owns:** variable categories, source policy, and precedence for Celebra-me environments.
 
 **Does not own:** database ops procedures (`docs/database-workflow.md`) or schema overview. See the

@@ -1,5 +1,9 @@
 # Database Workflow
 
+Use the five-operation command/evidence map in
+[`docs/core/release-process.md`](core/release-process.md#canonical-operation-map) before this
+domain-specific procedure.
+
 **Owns:** how to operate Local / Preview / Production databases (migrations, backups, refresh,
 authorization boundaries).
 
