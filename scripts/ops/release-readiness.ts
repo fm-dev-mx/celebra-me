@@ -142,6 +142,10 @@ export interface ProductionDeploymentEvidence {
 	sha: string;
 }
 
+function isProductionDeploymentEnvironment(value: unknown): boolean {
+	return typeof value === 'string' && value.trim().toLowerCase() === 'production';
+}
+
 export function loadLatestProductionDeployment(
 	run: GhRunner = defaultGhRunner,
 ): ProductionDeploymentEvidence {
@@ -152,7 +156,7 @@ export function loadLatestProductionDeployment(
 		environment?: unknown;
 	}>;
 	const deployment = Array.isArray(deployments)
-		? deployments.find((entry) => entry.environment === 'production')
+		? deployments.find((entry) => isProductionDeploymentEnvironment(entry.environment))
 		: undefined;
 	const id = typeof deployment?.id === 'number' ? deployment.id : null;
 	const sha = typeof deployment?.sha === 'string' ? deployment.sha.toLowerCase() : '';

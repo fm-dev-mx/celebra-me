@@ -115,6 +115,26 @@ describe('release check evidence', () => {
 		expect(() => loadLatestProductionDeployment(failed)).toThrow('did not succeed');
 	});
 
+	it.each(['production', 'Production', ' Production '])(
+		'accepts a normalized Production deployment environment: %s',
+		(environment) => {
+			const runner = ghRunner({
+				'deployments?environment=production&per_page=100': [{ id: 42, environment, sha }],
+				'deployments/42/statuses?per_page=100': [{ state: 'success' }],
+			});
+			expect(loadLatestProductionDeployment(runner)).toEqual({ id: 42, sha });
+		},
+	);
+
+	it('rejects missing, blank, and non-string deployment environments', () => {
+		for (const environment of [undefined, '', ' preview ', 42]) {
+			const runner = ghRunner({
+				'deployments?environment=production&per_page=100': [{ id: 42, environment, sha }],
+			});
+			expect(() => loadLatestProductionDeployment(runner)).toThrow('history is unavailable');
+		}
+	});
+
 	it('handles check runs without an app object safely as untrusted', () => {
 		const runner = ghRunner({
 			[`commits/${sha}/check-runs?filter=latest&per_page=100`]: {
