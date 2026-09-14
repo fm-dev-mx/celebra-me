@@ -32,6 +32,31 @@ draft.
 
 ## Execution order
 
+The migration CLI now checks the shared Admin API balance before each invitation. Planning requires
+one resource lookup per image; applying requires two. Both retain a reserve of 10 percent of the
+reported hourly limit, rounded up. The quota query itself consumes an Admin request and is counted
+separately. There is no persistent quota cache or account-wide lock.
+
+Each subsequent resource call checks the latest observed balance. Observations older than 60
+seconds, expired windows, or missing successful-response quota metadata require one refresh;
+unavailable evidence blocks the operation. Failed resource requests are charged locally because the
+SDK omits their quota headers. Shared usage can still exhaust the account unexpectedly. HTTP 420/429
+or an insufficient reserve stops the batch immediately, without sleeps or retries. The CLI reports
+the reset time when available, completed/pending invitations, resource calls, quota queries, and
+observed account consumption since its first observation. Account consumption is not attributed
+solely to this process. No quota metadata enters an asset record or manifest hash.
+
+During apply, the freshly verified source download is reused for copying. Destination metadata comes
+from the existing-resource lookup or upload response, followed by an independent delivery hash, MIME
+and decoded-dimension check. Thus each image needs one source download and one destination download;
+neither verification relies solely on provider context. Authenticated dry-runs treat only a
+confirmed 404 as absence; offline predictions remain explicitly marked as predictions.
+
+Use canonical commands for subsequent operations. Temporary scripts that budget entire batches from
+fixed per-image estimates are retired; do not use them to resume. Re-run the exact reviewed manifest
+through the guarded CLI after the reported reset and snapshot verification, preserving verified
+copies. Do not regenerate already reviewed manifests merely to retry provider availability.
+
 1. Reconcile Local through `pnpm invitation:release`, starting with `--dry-run`. Preserve the
    approved originals and divergent editorial content. Do not introduce a Local migration path.
 2. Apply an exact reviewed Preview manifest with the migration CLI `apply-preview` mode and the

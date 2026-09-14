@@ -74,6 +74,96 @@ export interface CloudinaryAssetVerificationInput {
 	height?: number;
 }
 
+/** Operation-local accounting; never included in asset metadata or persisted manifests. */
+export interface CloudinaryAdminObserver {
+	beforeRequest(): Promise<void>;
+	observe(response: unknown): void;
+	failed(status: number | undefined): void;
+}
+
+function safeProviderError(error: unknown): Error & { http_code?: number } {
+	const status = getCloudinaryErrorStatus(error);
+	return Object.assign(
+		new Error(status ? `Cloudinary API HTTP ${status}` : 'Cloudinary API request failed.'),
+		{ http_code: status },
+	);
+}
+
+export async function readCloudinaryQuota(): Promise<unknown> {
+	const config = resolveCloudinaryConfigFromEnv();
+	assertCloudinaryCredentials(config);
+	try {
+		// The SDK discards rate-limit headers on errors. Keep only these safe headers.
+		const response = await fetch(
+			`https://api.cloudinary.com/v1_1/${encodeURIComponent(config.cloudName)}/usage`,
+			{
+				headers: {
+					Authorization: `Basic ${Buffer.from(`${config.apiKey}:${config.apiSecret}`).toString('base64')}`,
+				},
+				signal: AbortSignal.timeout(10_000),
+			},
+		);
+		const numberHeader = (key: string) =>
+			response.headers.has(key) ? Number(response.headers.get(key)) : undefined;
+		const quota = {
+			rate_limit_allowed: numberHeader('x-featureratelimit-limit'),
+			rate_limit_remaining: numberHeader('x-featureratelimit-remaining'),
+			rate_limit_reset_at: response.headers.get('x-featureratelimit-reset'),
+		};
+		await response.body?.cancel();
+		if (!response.ok)
+			throw Object.assign(new Error(`Cloudinary quota query HTTP ${response.status}`), {
+				http_code: response.status,
+				quota,
+			});
+		return quota;
+	} catch (error) {
+		if (error instanceof Error && 'quota' in error) throw error;
+		throw safeProviderError(error);
+	}
+}
+
+async function readResource(
+	publicId: string,
+	observer?: CloudinaryAdminObserver,
+): Promise<CloudinaryResourceData> {
+	await observer?.beforeRequest();
+	try {
+		const result = await cloudinary.api.resource(publicId, { context: true });
+		observer?.observe(result);
+		return result as CloudinaryResourceData;
+	} catch (error) {
+		observer?.failed(getCloudinaryErrorStatus(error));
+		throw safeProviderError(error);
+	}
+}
+
+/** Verify delivered bytes independently of the Admin API or upload response. */
+export async function verifyCloudinaryDelivery(
+	input: CloudinaryAssetVerificationInput,
+	secureUrl: string,
+): Promise<Uint8Array> {
+	const config = resolveCloudinaryConfigFromEnv();
+	const canonicalUrl = buildCloudinaryDeliveryUrl(
+		config.cloudName,
+		input.publicId,
+		input.mimeType,
+	);
+	if (normalizeCloudinaryDeliveryUrl(secureUrl) !== canonicalUrl)
+		throw new Error('Cloudinary delivery URL does not match the canonical asset.');
+	const response = await fetch(canonicalUrl, { signal: AbortSignal.timeout(10_000) });
+	if (!response.ok) throw new Error(`Cloudinary delivery failed (HTTP ${response.status}).`);
+	if (response.headers.get('content-type')?.split(';')[0]?.trim() !== input.mimeType)
+		throw new Error('Cloudinary delivery MIME does not match the canonical asset.');
+	const bytes = Buffer.from(await response.arrayBuffer());
+	if (createHash('sha256').update(bytes).digest('hex') !== input.sha256)
+		throw new Error('Cloudinary delivered binary SHA-256 does not match the canonical asset.');
+	const metadata = await sharp(bytes).metadata();
+	if (metadata.width !== input.width || metadata.height !== input.height)
+		throw new Error('Cloudinary delivered dimensions do not match the resource metadata.');
+	return bytes;
+}
+
 let configuredSignature = '';
 
 export function resolveCloudinaryConfigFromEnv(): CloudinaryConfig {
@@ -176,9 +266,12 @@ export function assertCloudinaryMutationTarget(
 ): void {
 	assertCloudinaryPublicIdEnvironment(publicId, target.environment);
 	const prefix =
-		target.environment + '/' +
-		sanitizePublicIdSegment(target.eventType) + '/' +
-		sanitizePublicIdSegment(target.slug) + '/assets/';
+		target.environment +
+		'/' +
+		sanitizePublicIdSegment(target.eventType) +
+		'/' +
+		sanitizePublicIdSegment(target.slug) +
+		'/assets/';
 	if (!publicId.startsWith(prefix) || publicId.length <= prefix.length) {
 		throw new Error('Cloudinary asset does not belong to the target invitation namespace.');
 	}
@@ -206,7 +299,7 @@ export function buildCloudinaryOgImageUrl(secureUrl: string): string {
 
 function buildAssetResult(
 	resource: CloudinaryResourceData,
-	input: CloudinaryAssetUploadInput,
+	input: { sha256: string },
 	canonicalSecureUrl: string,
 	action: CloudinaryAssetResult['action'],
 ): CloudinaryAssetResult {
@@ -243,10 +336,15 @@ function assertCloudinaryResourceMatches(
 			`Cloudinary asset "${input.publicId}" SHA-256 context does not match the canonical asset.`,
 		);
 	}
-	if (!Number.isFinite(resource.width) || resource.width <= 0 ||
-		!Number.isFinite(resource.height) || resource.height <= 0) {
+	if (
+		!Number.isFinite(resource.width) ||
+		resource.width <= 0 ||
+		!Number.isFinite(resource.height) ||
+		resource.height <= 0
+	) {
 		throw new Error('Cloudinary asset has invalid dimensions.');
-	}	if (resource.resource_type !== 'image') {
+	}
+	if (resource.resource_type !== 'image') {
 		throw new Error(`Cloudinary asset "${input.publicId}" is not an image resource.`);
 	}
 	if (resource.format !== imageExtension(input.mimeType)) {
@@ -273,13 +371,18 @@ function assertCloudinaryResourceMatches(
 export async function verifyCloudinaryAsset(
 	input: CloudinaryAssetVerificationInput,
 ): Promise<CloudinaryAssetResult> {
+	return (await readVerifiedCloudinaryAsset(input)).asset;
+}
+
+export async function readVerifiedCloudinaryAsset(
+	input: CloudinaryAssetVerificationInput,
+	observer?: CloudinaryAdminObserver,
+): Promise<{ asset: CloudinaryAssetResult; bytes: Uint8Array }> {
 	const config = resolveCloudinaryConfigFromEnv();
 	assertCloudinaryCredentials(config);
 	initCloudinary(config);
 	try {
-		const resource = (await cloudinary.api.resource(input.publicId, {
-			context: true,
-		})) as CloudinaryResourceData;
+		const resource = await readResource(input.publicId, observer);
 		assertCloudinaryResourceMatches(resource, input);
 		const secureUrl =
 			resource.secure_url ??
@@ -294,42 +397,12 @@ export async function verifyCloudinaryAsset(
 				`Cloudinary asset "${input.publicId}" does not expose the canonical delivery URL.`,
 			);
 		}
-		const response = await fetch(canonicalSecureUrl, { signal: AbortSignal.timeout(10_000) });
-		if (!response.ok) {
-			throw new Error(
-				`Cloudinary asset "${input.publicId}" delivery failed (HTTP ${response.status}).`,
-			);
-		}
-		const deliveryMime = response.headers.get('content-type')?.split(';')[0]?.trim();
-		if (deliveryMime !== input.mimeType) {
-			throw new Error('Cloudinary delivery MIME does not match the canonical asset.');
-		}
-		const deliveredBytes = Buffer.from(await response.arrayBuffer());
-		if (createHash('sha256').update(deliveredBytes).digest('hex') !== input.sha256) {
-			throw new Error('Cloudinary delivered binary SHA-256 does not match the canonical asset.');
-		}
-		const deliveredMetadata = await sharp(deliveredBytes).metadata();
-		if (deliveredMetadata.width !== resource.width || deliveredMetadata.height !== resource.height) {
-			throw new Error('Cloudinary delivered dimensions do not match the resource metadata.');
-		}
-		return buildAssetResult(
-			resource,
-			{
-				targetEnvironment: 'preview',
-				eventType: '',
-				slug: '',
-				key: input.publicId,
-				displayName: input.publicId,
-				alt: '',
-				bytes: new Uint8Array(),
-				sha256: input.sha256,
-				mimeType: input.mimeType,
-				width: input.width,
-				height: input.height,
-			},
-			secureUrl,
-			'REUSE',
+		const bytes = await verifyCloudinaryDelivery(
+			{ ...input, width: resource.width, height: resource.height },
+			canonicalSecureUrl,
 		);
+		const asset = buildAssetResult(resource, input, secureUrl, 'REUSE');
+		return { asset, bytes };
 	} catch (error: unknown) {
 		const status = getCloudinaryErrorStatus(error);
 		if (status === 404) {
@@ -369,12 +442,11 @@ async function findExistingAsset(
 	publicId: string,
 	input: CloudinaryAssetUploadInput,
 	canonicalSecureUrl: string,
+	observer?: CloudinaryAdminObserver,
 ): Promise<CloudinaryAssetResult | null> {
 	try {
-		const resource = (await cloudinary.api.resource(publicId, {
-			context: true,
-		})) as CloudinaryResourceData | null;
-		if (!resource) return null;
+		const resource = await readResource(publicId, observer);
+		if (!resource) throw new Error('Cloudinary returned no resource without a confirmed 404.');
 
 		try {
 			assertCloudinaryResourceMatches(resource, {
@@ -405,7 +477,7 @@ async function findExistingAsset(
 	} catch (error: unknown) {
 		if (isCollisionError(error)) throw error;
 		const statusCode = getCloudinaryErrorStatus(error);
-		if (statusCode === 404 || input.dryRun) return null;
+		if (statusCode === 404) return null;
 		throw error;
 	}
 }
@@ -440,20 +512,31 @@ async function uploadCloudinaryAsset(
 		input.assetFolder ??
 		`${input.targetEnvironment}/${sanitizePublicIdSegment(input.eventType)}/${sanitizePublicIdSegment(input.slug)}/assets`;
 
-	const uploadResult: UploadApiResponse = await cloudinary.uploader.upload(dataUri, {
-		public_id: publicId,
-		asset_folder: targetFolder,
-		overwrite: false,
-		unique_filename: false,
-		context: `sha256=${input.sha256}|slug=${input.slug}|key=${input.key}|displayName=${encodeURIComponent(input.displayName)}`,
-		tags: ['managed-invitation', input.slug],
-	});
+	const uploadResult: UploadApiResponse = await cloudinary.uploader
+		.upload(dataUri, {
+			public_id: publicId,
+			asset_folder: targetFolder,
+			overwrite: false,
+			unique_filename: false,
+			context: `sha256=${input.sha256}|slug=${input.slug}|key=${input.key}|displayName=${encodeURIComponent(input.displayName)}`,
+			tags: ['managed-invitation', input.slug],
+		})
+		.catch((error: unknown) => {
+			throw safeProviderError(error);
+		});
 
+	assertCloudinaryResourceMatches(uploadResult, { ...input, publicId });
+	if (
+		uploadResult.secure_url &&
+		normalizeCloudinaryDeliveryUrl(uploadResult.secure_url) !== canonicalSecureUrl
+	)
+		throw new Error('Cloudinary upload delivery URL does not match its canonical URL.');
 	return buildAssetResult(uploadResult, input, canonicalSecureUrl, 'UPLOAD');
 }
 
 export async function uploadOrReconcileCloudinaryAsset(
 	input: CloudinaryAssetUploadInput,
+	observer?: CloudinaryAdminObserver,
 ): Promise<CloudinaryAssetResult> {
 	const config = resolveCloudinaryConfigFromEnv();
 	initCloudinary(config);
@@ -471,7 +554,7 @@ export async function uploadOrReconcileCloudinaryAsset(
 		isUsableCredential(config.apiSecret);
 
 	const existingResult = canQueryCloudinary
-		? await findExistingAsset(publicId, input, canonicalSecureUrl)
+		? await findExistingAsset(publicId, input, canonicalSecureUrl, observer)
 		: null;
 	if (existingResult) return existingResult;
 

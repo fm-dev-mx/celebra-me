@@ -6,11 +6,11 @@ import { basename, dirname, join, resolve } from 'node:path';
 import {
 	buildCloudinaryDeliveryUrl,
 	buildCloudinaryPublicId,
-	verifyCloudinaryAsset,
-	uploadOrReconcileCloudinaryAsset,
+	createCloudinaryMigrationSession,
 	getCloudinaryErrorStatus,
 	hydrateCloudinaryEnvFromFiles,
 } from '../provision/cloudinary-adapter.ts';
+import { CloudinaryQuotaError } from '../provision/cloudinary-quota.ts';
 import { collectUploadedContentRefs } from '../../src/lib/invitation-preparation/uploaded-content-refs.ts';
 import {
 	assertPreviewDbUrl,
@@ -66,7 +66,7 @@ export interface MigrationPlan {
 	retirements: NamespaceAssetRetirement[];
 }
 
-export function computePlanId(
+function computePlanId(
 	plan: Omit<MigrationPlan, 'schemaVersion' | 'planId' | 'cloudName'>,
 ): string {
 	return createHash('sha256')
@@ -145,7 +145,7 @@ function previousFingerprint(snapshot: LiveSnapshot): string {
 	return createHash('sha256').update(JSON.stringify(previousShape)).digest('hex');
 }
 
-export function canonicalCloudName(): string {
+function canonicalCloudName(): string {
 	const cloudName = hydrateCloudinaryEnvFromFiles({
 		keys: ['CLOUDINARY_CLOUD_NAME'],
 	}).CLOUDINARY_CLOUD_NAME?.trim();
@@ -243,14 +243,14 @@ function buildPlan(snapshot: LiveSnapshot, cloudName: string): MigrationPlan {
 	};
 }
 
-export async function verifySource(swap: NamespaceAssetSwap): Promise<void> {
-	await verifyCloudinaryAsset({
+function sourceVerification(swap: NamespaceAssetSwap) {
+	return {
 		publicId: swap.oldPublicId,
 		sha256: swap.sha256,
 		mimeType: swap.mimeType,
 		width: swap.width,
 		height: swap.height,
-	});
+	};
 }
 
 export async function applyRemoteMigration(
@@ -266,43 +266,37 @@ export async function applyRemoteMigration(
 	if (plan.snapshotHash !== fingerprint(snapshot))
 		throw new Error('Migration source changed before copy.');
 	buildNamespaceRemapSql(snapshot, plan.swaps, plan.retirements);
-	for (const swap of plan.swaps) {
-		await verifySource(swap);
-		const sourceUrl = buildCloudinaryDeliveryUrl(
-			plan.cloudName,
-			swap.oldPublicId,
-			swap.mimeType,
+	const session = createCloudinaryMigrationSession();
+	try {
+		await session.quota.beginInvitation(plan.swaps.length * 2);
+		for (const swap of plan.swaps) {
+			const { bytes } = await session.verifySource(sourceVerification(swap));
+			const source = snapshot.assets.find((asset) => asset.id === swap.oldId)!;
+			const result = await session.copy({
+				targetEnvironment: plan.target,
+				eventType: snapshot.eventType,
+				slug: snapshot.slug,
+				key: swap.key,
+				displayName: source.displayName,
+				alt: source.alt ?? '',
+				bytes,
+				sha256: swap.sha256,
+				mimeType: swap.mimeType,
+				width: swap.width,
+				height: swap.height,
+			});
+			if (result.publicId !== swap.newPublicId || result.secureUrl !== swap.newUrl)
+				throw new Error(`${swap.key}: Cloudinary destination identity changed.`);
+			swap.providerVersion = result.version;
+			swap.providerMetadata = result.metadata;
+		}
+	} catch (error) {
+		process.stdout.write(
+			`Completed invitations: none; pending: ${plan.slug}. Verified copies may be reused after snapshot revalidation.\n`,
 		);
-		const response = await fetch(sourceUrl, { signal: AbortSignal.timeout(10_000) });
-		if (!response.ok) throw new Error(`${swap.key}: source delivery HTTP ${response.status}.`);
-		const bytes = new Uint8Array(await response.arrayBuffer());
-		if (createHash('sha256').update(bytes).digest('hex') !== swap.sha256)
-			throw new Error(`${swap.key}: source binary SHA-256 changed before copy.`);
-		const source = snapshot.assets.find((asset) => asset.id === swap.oldId)!;
-		const result = await uploadOrReconcileCloudinaryAsset({
-			targetEnvironment: plan.target,
-			eventType: snapshot.eventType,
-			slug: snapshot.slug,
-			key: swap.key,
-			displayName: source.displayName,
-			alt: source.alt ?? '',
-			bytes,
-			sha256: swap.sha256,
-			mimeType: swap.mimeType,
-			width: swap.width,
-			height: swap.height,
-		});
-		if (result.publicId !== swap.newPublicId || result.secureUrl !== swap.newUrl)
-			throw new Error(`${swap.key}: Cloudinary destination identity changed.`);
-		swap.providerVersion = result.version;
-		swap.providerMetadata = result.metadata;
-		await verifyCloudinaryAsset({
-			publicId: swap.newPublicId,
-			sha256: swap.sha256,
-			mimeType: swap.mimeType,
-			width: swap.width,
-			height: swap.height,
-		});
+		throw error;
+	} finally {
+		process.stdout.write(`Cloudinary quota: ${JSON.stringify(session.quota.summary())}\n`);
 	}
 	const current = readSnapshot(plan.target, plan.slug, dbUrl);
 	if (fingerprint(current) !== plan.snapshotHash)
@@ -336,29 +330,44 @@ async function rollbackPreview(plan: MigrationPlan, dbUrl: string): Promise<void
 	});
 }
 
-async function planAll(target: Target, outputDir: string, dbUrl: string): Promise<void> {
+export async function planAll(target: Target, outputDir: string, dbUrl: string): Promise<void> {
 	const slugs = listLegacySlugs(dbUrl);
 	const cloudName = canonicalCloudName();
 	const targetDir = resolve(outputDir, target);
 	mkdirSync(targetDir, { recursive: true });
 	const failures: string[] = [];
+	const completed: string[] = [];
+	const session = createCloudinaryMigrationSession();
 	let images = 0;
-	for (const slug of slugs) {
-		try {
-			const path = join(targetDir, `${slug}.json`);
-			if (existsSync(path)) throw new Error('reviewed manifest already exists');
-			const plan = buildPlan(readSnapshot(target, slug, dbUrl), cloudName);
-			buildNamespaceRemapSql(plan.before, plan.swaps, plan.retirements);
-			for (const swap of plan.swaps) await verifySource(swap);
-			writeFileSync(path, JSON.stringify(plan, null, 2) + '\n', { flag: 'wx' });
-			images += plan.swaps.length;
-			process.stdout.write(`${target}/${slug}: ${plan.swaps.length} verified.\n`);
-		} catch (error: unknown) {
-			failures.push(`${slug}: ${safeFailure(error)}`);
+	try {
+		for (const slug of slugs) {
+			try {
+				const path = join(targetDir, `${slug}.json`);
+				if (existsSync(path)) throw new Error('reviewed manifest already exists');
+				const plan = buildPlan(readSnapshot(target, slug, dbUrl), cloudName);
+				buildNamespaceRemapSql(plan.before, plan.swaps, plan.retirements);
+				await session.quota.beginInvitation(plan.swaps.length);
+				for (const swap of plan.swaps) await session.verifySource(sourceVerification(swap));
+				writeFileSync(path, JSON.stringify(plan, null, 2) + '\n', { flag: 'wx' });
+				images += plan.swaps.length;
+				completed.push(slug);
+				process.stdout.write(`${target}/${slug}: ${plan.swaps.length} verified.\n`);
+			} catch (error: unknown) {
+				failures.push(`${slug}: ${safeFailure(error)}`);
+				if (
+					error instanceof CloudinaryQuotaError ||
+					[420, 429].includes(getCloudinaryErrorStatus(error) ?? 0)
+				)
+					break;
+			}
 		}
+	} finally {
+		process.stdout.write(
+			`Cloudinary quota: ${JSON.stringify(session.quota.summary())}\nCompleted invitations: ${completed.join(', ') || 'none'}; pending: ${slugs.filter((slug) => !completed.includes(slug)).join(', ') || 'none'}.\n`,
+		);
 	}
 	process.stdout.write(
-		`${target}: ${slugs.length - failures.length}/${slugs.length} manifests, ${images} verified images.\n`,
+		`${target}: ${completed.length}/${slugs.length} manifests, ${images} verified images.\n`,
 	);
 	if (failures.length > 0) throw new Error(failures.join('\n'));
 }
@@ -436,7 +445,16 @@ async function main(): Promise<void> {
 	if (mode === 'plan') {
 		const plan = buildPlan(snapshot, canonicalCloudName());
 		buildNamespaceRemapSql(snapshot, plan.swaps, plan.retirements);
-		for (const swap of plan.swaps) await verifySource(swap);
+		const session = createCloudinaryMigrationSession();
+		try {
+			await session.quota.beginInvitation(plan.swaps.length);
+			for (const swap of plan.swaps) await session.verifySource(sourceVerification(swap));
+		} catch (error) {
+			process.stdout.write(`Completed invitations: none; pending: ${slug}.\n`);
+			throw error;
+		} finally {
+			process.stdout.write(`Cloudinary quota: ${JSON.stringify(session.quota.summary())}\n`);
+		}
 		if (manifestPath && existsSync(resolve(manifestPath)))
 			throw new Error('Refusing to replace an existing reviewed migration manifest.');
 		if (manifestPath) {

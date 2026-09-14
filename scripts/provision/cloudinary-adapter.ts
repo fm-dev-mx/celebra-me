@@ -9,10 +9,45 @@ import { parseEnvContent } from '../db/db-workflow-lib.ts';
 import {
 	uploadOrReconcileCloudinaryAsset as uploadOrReconcileFromEnv,
 	verifyCloudinaryAsset as verifyCloudinaryAssetFromEnv,
+	readVerifiedCloudinaryAsset,
+	verifyCloudinaryDelivery,
+	readCloudinaryQuota,
+	getCloudinaryErrorStatus,
 	type CloudinaryAssetUploadInput,
 	type CloudinaryAssetVerificationInput,
 	type CloudinaryAssetResult,
 } from '../../src/lib/intake/services/cloudinary-assets.ts';
+import { CloudinaryQuota } from './cloudinary-quota.ts';
+
+/** Canonical migration session: quota and fresh binary evidence live only in this operation. */
+export function createCloudinaryMigrationSession() {
+	hydrateCloudinaryEnvFromFiles();
+	const quota = new CloudinaryQuota(readCloudinaryQuota);
+	return {
+		quota,
+		verifySource: (input: CloudinaryAssetVerificationInput) =>
+			readVerifiedCloudinaryAsset(input, quota),
+		async copy(input: CloudinaryAssetUploadInput) {
+			try {
+				const asset = await uploadOrReconcileFromEnv(input, quota);
+				await verifyCloudinaryDelivery(
+					{
+						publicId: asset.publicId,
+						sha256: input.sha256,
+						mimeType: input.mimeType,
+						width: asset.width,
+						height: asset.height,
+					},
+					asset.secureUrl,
+				);
+				return asset;
+			} catch (error) {
+				quota.failed(getCloudinaryErrorStatus(error));
+				throw error;
+			}
+		},
+	};
+}
 
 export {
 	buildCloudinaryDeliveryUrl,
