@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-09-13T12:26:09.173Z",
+    "generatedAt": "2026-09-16T15:57:34.525Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -13,14 +13,14 @@
         "deviceScaleFactor": 1,
         "lockfileSha256": "9946e44276e04a8b09c5ba131c6f0870780a6e2a5795ad29e5806cfeddf87ac6",
         "cssSha256": "7fbbd4072d5467193b0cbd9576060e3cd76d1f70899b20cdd5db71bbb07d5a6e",
-        "assetSha256": "03f3f5075f4ee8f36bbdf499054797c44406c7690481e6f60622a7f2112a1600",
+        "assetSha256": "b3527ec2b19822c3c93413de4209b81bce19947ca41a1ce6ebe1f5901f3d9a0a",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 178,
-    "matrixHash": "116cfca4181ba7fa7cbea404d6fa4c4036e3436bc2c314ada834017e36ec34a9",
+    "totalCaptures": 180,
+    "matrixHash": "6b1ef55c303a826be16a74c0476df68b312558aa9ebb0cb5113df0fb12147c17",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -1650,6 +1650,30 @@
         },
         {
             "kind": "invitation",
+            "slug": "allison-scarlett",
+            "eventType": "xv",
+            "preset": "celestial-blue",
+            "viewport": "mobile",
+            "file": "pages/invitation-xv-allison-scarlett-mobile.png",
+            "sha256": "70866dfb3ca5a4bea98cb134c2d08ac1af6d9a695dfd0d1f88dcb6195cc4137a",
+            "contentHash": "1882fc66ab72b23ebb52426806ce8bf32439555e9fe0e57026f09f6fc172ab4c",
+            "assetHash": "228ff245fe161ccf685baac7506c4834f067a2f77de2ee31a6962a01ce952f97",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "allison-scarlett",
+            "eventType": "xv",
+            "preset": "celestial-blue",
+            "viewport": "desktop",
+            "file": "pages/invitation-xv-allison-scarlett-desktop.png",
+            "sha256": "fe4fd726f6fac9b7e17d32ee36a435cfa881d10820dbccb5e30e0b07ae9ce200",
+            "contentHash": "1882fc66ab72b23ebb52426806ce8bf32439555e9fe0e57026f09f6fc172ab4c",
+            "assetHash": "228ff245fe161ccf685baac7506c4834f067a2f77de2ee31a6962a01ce952f97",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
             "slug": "norma-hernandez",
             "eventType": "cumple",
             "preset": "luxury-hacienda",
@@ -1799,9 +1823,9 @@
             "preset": "editorial",
             "viewport": "mobile",
             "file": "pages/invitation-xv-renata-mobile.png",
-            "sha256": "a875050c214e5be1a6be03c554273ee0b40426c85e3dcedd351796320ae58557",
+            "sha256": "73ae289f9681b1489226dbe3e3e463cd5c9b894e0af2ea451c88e8bd76574023",
             "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
-            "assetHash": "789b047af3c1887c9900900de9899c0351486a60c870860b31cb403c883a1cd0",
+            "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -1811,9 +1835,9 @@
             "preset": "editorial",
             "viewport": "desktop",
             "file": "pages/invitation-xv-renata-desktop.png",
-            "sha256": "57e7144605db8fa727f3dd75379a8fa82c8dfe5f93acb45ff84357a0cd2a3a97",
+            "sha256": "7f056c834de87b23e05c05b3b81d1bec27134c8204ed891a027644c3f6874fcb",
             "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
-            "assetHash": "789b047af3c1887c9900900de9899c0351486a60c870860b31cb403c883a1cd0",
+            "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -1883,7 +1907,7 @@
             "preset": "celestial-blue",
             "viewport": "desktop",
             "file": "pages/invitation-xv-america-johana-desktop.png",
-            "sha256": "85ba15e12aa1c7225133469bd82e974865cec9c8105a6268b6be113e76f00f17",
+            "sha256": "2bf6b9e50da88708311d8ad5dc8fed4a1e97e775b582440162a97511fc8e0d44",
             "contentHash": "c0e712c8bc932ec0e71585fb166c3a68432a088a2f53f62db21ee8639ad04186",
             "assetHash": "a4ec26854049e556cc12ba9902b3fece10065d59d5bb590056e37eb4e47cd2ef",
             "comparisonResult": "ACCEPTED"
@@ -1919,7 +1943,7 @@
             "preset": "enchanted-rose",
             "viewport": "mobile",
             "file": "pages/invitation-xv-ayrin-samantha-lerma-castro-mobile.png",
-            "sha256": "8c5a35ab84de4954cedd18af11e2e353165907edb958ae9f75535dbfb4c64c6a",
+            "sha256": "f203e25be646ac3fb816abd2951d438d70b0d790e92c101703ad6707f9e35de2",
             "contentHash": "ebacb4fc0aab2da89525adbbe9f2d136bdaf354b1b2c92c2b0a2b62e64e06886",
             "assetHash": "b17eaf6173b61e905fa324b10e61a24ba2f14bb62a2f37d04fff744880f3be94",
             "comparisonResult": "ACCEPTED"
@@ -2063,7 +2087,7 @@
             "preset": "premiere-floral",
             "viewport": "mobile",
             "file": "pages/invitation-xv-ximena-meza-trasvina-mobile.png",
-            "sha256": "d340af0dd8b47ae69bae17c01b0ca239dcf91c167345b4d1289072be5c068fcf",
+            "sha256": "efb3fe95387169102da0320d2874914be4743b824215dc0ad33744e30871ec84",
             "contentHash": "63dee95dcfb80d38552644eaa9fe72a6b02f6f3776655cdb5e703ba63123bf36",
             "assetHash": "fa1dd03a925be03caa26611b1216ac7328a346d62f2f3609d90843840afdfc62",
             "comparisonResult": "ACCEPTED"
@@ -2393,9 +2417,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "9626e633f2697e2350ef48c34de0cc7d5d84e796",
+    "referenceSha": "cf8308af30ab52a603055de2339e4894e7115a35",
     "variantManifest": {
-        "generatedAt": "2026-09-13T12:26:09.173Z",
+        "generatedAt": "2026-09-16T15:57:34.525Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2409,7 +2433,7 @@
             "deviceScaleFactor": 1,
             "lockfileSha256": "9946e44276e04a8b09c5ba131c6f0870780a6e2a5795ad29e5806cfeddf87ac6",
             "cssSha256": "7fbbd4072d5467193b0cbd9576060e3cd76d1f70899b20cdd5db71bbb07d5a6e",
-            "assetSha256": "03f3f5075f4ee8f36bbdf499054797c44406c7690481e6f60622a7f2112a1600",
+            "assetSha256": "b3527ec2b19822c3c93413de4209b81bce19947ca41a1ce6ebe1f5901f3d9a0a",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4045,10 +4069,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "9626e633f2697e2350ef48c34de0cc7d5d84e796"
+        "referenceSha": "cf8308af30ab52a603055de2339e4894e7115a35"
     },
     "pageManifest": {
-        "generatedAt": "2026-09-13T12:23:59.304Z",
+        "generatedAt": "2026-09-16T15:55:36.680Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4062,16 +4086,40 @@
             "deviceScaleFactor": 1,
             "lockfileSha256": "9946e44276e04a8b09c5ba131c6f0870780a6e2a5795ad29e5806cfeddf87ac6",
             "cssSha256": "7fbbd4072d5467193b0cbd9576060e3cd76d1f70899b20cdd5db71bbb07d5a6e",
-            "assetSha256": "03f3f5075f4ee8f36bbdf499054797c44406c7690481e6f60622a7f2112a1600",
+            "assetSha256": "b3527ec2b19822c3c93413de4209b81bce19947ca41a1ce6ebe1f5901f3d9a0a",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 62,
-        "matrixHash": "eb6ce3f7e801536021ba71e9aae8dcc00106e3e4e37c9c437e02b86cc3e4fbdd",
-        "cases": 31,
+        "totalCaptures": 64,
+        "matrixHash": "1e69d19a0d41f97be62b550e4773ce9d594965e6689afdc71c3a385e6fdca8ef",
+        "cases": 32,
         "captures": [
+            {
+                "kind": "invitation",
+                "slug": "allison-scarlett",
+                "eventType": "xv",
+                "preset": "celestial-blue",
+                "viewport": "mobile",
+                "file": "pages/invitation-xv-allison-scarlett-mobile.png",
+                "sha256": "70866dfb3ca5a4bea98cb134c2d08ac1af6d9a695dfd0d1f88dcb6195cc4137a",
+                "contentHash": "1882fc66ab72b23ebb52426806ce8bf32439555e9fe0e57026f09f6fc172ab4c",
+                "assetHash": "228ff245fe161ccf685baac7506c4834f067a2f77de2ee31a6962a01ce952f97",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "allison-scarlett",
+                "eventType": "xv",
+                "preset": "celestial-blue",
+                "viewport": "desktop",
+                "file": "pages/invitation-xv-allison-scarlett-desktop.png",
+                "sha256": "fe4fd726f6fac9b7e17d32ee36a435cfa881d10820dbccb5e30e0b07ae9ce200",
+                "contentHash": "1882fc66ab72b23ebb52426806ce8bf32439555e9fe0e57026f09f6fc172ab4c",
+                "assetHash": "228ff245fe161ccf685baac7506c4834f067a2f77de2ee31a6962a01ce952f97",
+                "comparisonResult": "CANDIDATE"
+            },
             {
                 "kind": "invitation",
                 "slug": "norma-hernandez",
@@ -4223,9 +4271,9 @@
                 "preset": "editorial",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-renata-mobile.png",
-                "sha256": "a875050c214e5be1a6be03c554273ee0b40426c85e3dcedd351796320ae58557",
+                "sha256": "73ae289f9681b1489226dbe3e3e463cd5c9b894e0af2ea451c88e8bd76574023",
                 "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
-                "assetHash": "789b047af3c1887c9900900de9899c0351486a60c870860b31cb403c883a1cd0",
+                "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -4235,9 +4283,9 @@
                 "preset": "editorial",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-renata-desktop.png",
-                "sha256": "57e7144605db8fa727f3dd75379a8fa82c8dfe5f93acb45ff84357a0cd2a3a97",
+                "sha256": "7f056c834de87b23e05c05b3b81d1bec27134c8204ed891a027644c3f6874fcb",
                 "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
-                "assetHash": "789b047af3c1887c9900900de9899c0351486a60c870860b31cb403c883a1cd0",
+                "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -4307,7 +4355,7 @@
                 "preset": "celestial-blue",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-america-johana-desktop.png",
-                "sha256": "85ba15e12aa1c7225133469bd82e974865cec9c8105a6268b6be113e76f00f17",
+                "sha256": "2bf6b9e50da88708311d8ad5dc8fed4a1e97e775b582440162a97511fc8e0d44",
                 "contentHash": "c0e712c8bc932ec0e71585fb166c3a68432a088a2f53f62db21ee8639ad04186",
                 "assetHash": "a4ec26854049e556cc12ba9902b3fece10065d59d5bb590056e37eb4e47cd2ef",
                 "comparisonResult": "CANDIDATE"
@@ -4343,7 +4391,7 @@
                 "preset": "enchanted-rose",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-ayrin-samantha-lerma-castro-mobile.png",
-                "sha256": "8c5a35ab84de4954cedd18af11e2e353165907edb958ae9f75535dbfb4c64c6a",
+                "sha256": "f203e25be646ac3fb816abd2951d438d70b0d790e92c101703ad6707f9e35de2",
                 "contentHash": "ebacb4fc0aab2da89525adbbe9f2d136bdaf354b1b2c92c2b0a2b62e64e06886",
                 "assetHash": "b17eaf6173b61e905fa324b10e61a24ba2f14bb62a2f37d04fff744880f3be94",
                 "comparisonResult": "CANDIDATE"
@@ -4487,7 +4535,7 @@
                 "preset": "premiere-floral",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-ximena-meza-trasvina-mobile.png",
-                "sha256": "d340af0dd8b47ae69bae17c01b0ca239dcf91c167345b4d1289072be5c068fcf",
+                "sha256": "efb3fe95387169102da0320d2874914be4743b824215dc0ad33744e30871ec84",
                 "contentHash": "63dee95dcfb80d38552644eaa9fe72a6b02f6f3776655cdb5e703ba63123bf36",
                 "assetHash": "fa1dd03a925be03caa26611b1216ac7328a346d62f2f3609d90843840afdfc62",
                 "comparisonResult": "CANDIDATE"
@@ -4817,9 +4865,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "9626e633f2697e2350ef48c34de0cc7d5d84e796"
+        "referenceSha": "cf8308af30ab52a603055de2339e4894e7115a35"
     },
-    "candidateManifestSha256": "8f394c02d63dfe576a1984677c50deed3c0b78b1ff034665ebf41cea53e84186",
-    "acceptedFromCommit": "9626e633f2697e2350ef48c34de0cc7d5d84e796",
-    "acceptedAt": "2026-09-13T12:42:49.894Z"
+    "candidateManifestSha256": "196e74bf9ed69710f7ba49dd4f06ae9bba72e5f8775670aa8e9123600f2dcfa0",
+    "acceptedFromCommit": "cf8308af30ab52a603055de2339e4894e7115a35",
+    "acceptedAt": "2026-09-16T17:10:27.996Z"
 }
