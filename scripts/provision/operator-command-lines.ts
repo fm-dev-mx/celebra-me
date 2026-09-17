@@ -5,6 +5,8 @@ export interface OperatorCommandDisplayOptions {
 	indent?: string;
 }
 
+const MAX_INTERACTIVE_COMMAND_COLUMNS = 72;
+
 /**
  * Preserve the canonical one-line command for pipes/JSON. In an interactive narrow terminal,
  * split only between arguments and emit a shell-valid continuation marker.
@@ -14,17 +16,20 @@ export function formatOperatorCommandLines(
 	options: OperatorCommandDisplayOptions,
 ): string[] {
 	const indent = options.indent ?? '     ';
-	if (!options.isTTY || indent.length + command.length <= options.columns) {
+	const columns = options.isTTY
+		? Math.min(options.columns, MAX_INTERACTIVE_COMMAND_COLUMNS)
+		: options.columns;
+	if (!options.isTTY || indent.length + command.length <= columns) {
 		return [`${indent}${command}`];
 	}
 	const continuation = options.platform === 'win32' ? '`' : '\\';
 	const continuationIndent = `${indent}  `;
 	const tokens = command.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) ?? [command];
 	const lines: string[] = [];
+	const limit = Math.max(20, columns - 2);
 	let current = indent;
 	for (const token of tokens) {
 		const separator = current.trim() ? ' ' : '';
-		const limit = Math.max(20, options.columns - 2);
 		if (current.length + separator.length + token.length > limit && current.trim()) {
 			lines.push(`${current} ${continuation}`);
 			current = `${continuationIndent}${token}`;

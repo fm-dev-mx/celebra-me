@@ -194,7 +194,9 @@ describe('actionable operator commands', () => {
 	it('treats an isolated backup warning as an actionable item, not an all-clear', () => {
 		const view = buildCanonicalStatusViewFixture({ promotions: [], manualPatches: [] });
 		const text = formatCanonicalStatusView(view, options);
-		expect(text).toContain('1 grupos de atención');
+		expect(text).toContain('1 operaciones requieren atención');
+		expect(text).toContain('1. PREPARACIÓN');
+		expect(text).toContain('• Respaldo de Producción');
 		expect(text).toContain('pnpm db:prod:backup:daily');
 		expect(text).not.toContain('Sin acciones pendientes');
 	});
@@ -235,8 +237,27 @@ describe('actionable operator commands', () => {
 		});
 		expect(text).toContain('--targets preview --dry-run');
 		expect(text).toContain(`--package-hash ${hash} --approve`);
+		expect(text).toContain('Aprobar Preview [HITL]');
+		expect(text).toContain('Requisito: TTY; Cancelar es el valor seguro.');
 		expect(text).toContain('Despliegue previo: UNVERIFIED');
 		expect(text).not.toContain('prod:apply -- --slug');
+	});
+
+	it('renders copy-safe PowerShell continuations and action prerequisites', () => {
+		const view = buildCanonicalStatusViewFixture({ promotions: [] });
+		const text = formatCanonicalStatusView(view, {
+			...options,
+			columns: 120,
+			platform: 'win32',
+			isTTY: true,
+		});
+		expect(text).toContain('pnpm db:prod:patch -- --dry-run --file `');
+		expect(text).toContain('pnpm prod:apply -- --patch `');
+		expect(text).toContain('Aplicar parche [OWNER / TTY / HITL]');
+		expect(text).toContain('Requisito: TTY del propietario; Cancelar es el valor seguro.');
+		expect(text).toContain('1. PREPARACIÓN');
+		expect(text).toContain('2. DATOS');
+		expect(text).not.toMatch(/^\d+\. Parche/m);
 	});
 
 	it('colors complete commands bright cyan only when terminal color is enabled', () => {

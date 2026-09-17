@@ -171,9 +171,23 @@ function operationalItem(
 			: '';
 	const deployment = action.deploymentPrerequisite;
 	const stepLines = action.steps.flatMap((step) => {
-		if (!step.command) return [`   ${step.label}: revisión manual; sin comando canónico.`];
-		const owner = step.requiresOwner ? ' [OWNER / TTY / HITL]' : '';
-		return [`   ${step.label}${owner}:`, ...coloredCommandLines(step.command, color, display)];
+		const authority = step.requiresOwner
+			? ' [OWNER / TTY / HITL]'
+			: step.type === 'Manual/HITL'
+				? ' [HITL]'
+				: '';
+		const prerequisite = step.prerequisite ? [`   Requisito: ${step.prerequisite}`] : [];
+		if (!step.command) {
+			return [
+				`   ${step.label}${authority}: revisión manual; sin comando canónico.`,
+				...prerequisite,
+			];
+		}
+		return [
+			`   ${step.label}${authority}:`,
+			...coloredCommandLines(step.command, color, display),
+			...prerequisite,
+		];
 	});
 	return {
 		title: `${action.title}: ${SEMANTIC_LABELS[action.semantic]}${suffix}`,
@@ -278,19 +292,15 @@ function appendActionItems(lines: string[], items: SummaryItem[]): void {
 		lines.push('✓ Sin acciones pendientes en los controles evaluados.');
 		return;
 	}
-	lines.push(`PRÓXIMOS PASOS · ${items.length} grupos de atención`);
-	let index = 0;
+	lines.push(`PRÓXIMOS PASOS · ${items.length} operaciones requieren atención`);
+	let stage = 0;
 	for (const category of SUMMARY_CATEGORIES) {
 		const categoryItems = items.filter((item) => item.category === category);
 		if (!categoryItems.length) continue;
-		lines.push(category);
+		stage += 1;
+		lines.push(`${stage}. ${category}`);
 		for (const item of categoryItems) {
-			if (category === 'DATOS') {
-				lines.push(`• ${item.title}`, ...item.lines);
-			} else {
-				index += 1;
-				lines.push(`${index}. ${item.title}`, ...item.lines);
-			}
+			lines.push(`• ${item.title}`, ...item.lines);
 		}
 	}
 }
