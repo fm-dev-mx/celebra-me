@@ -100,9 +100,9 @@ describe('local operational status cache', () => {
 		expect(existsSync(cacheFile)).toBe(false);
 	});
 
-	it('discards schema v1 caches safely', async () => {
-		const v1 = { ...buildCanonicalStatusViewFixture(), schemaVersion: 1 };
-		writeFileSync(cacheFile, JSON.stringify(v1), 'utf8');
+	it('discards schema v2 caches safely', async () => {
+		const v2 = { ...buildCanonicalStatusViewFixture(), schemaVersion: 2 };
+		writeFileSync(cacheFile, JSON.stringify(v2), 'utf8');
 		expect(await readOperationalStatusCache()).toBeNull();
 	});
 

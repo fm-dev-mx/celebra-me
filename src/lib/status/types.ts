@@ -64,6 +64,20 @@ export type SchemaOperationReadiness =
 	| 'NOT_CONFIGURED'
 	| 'UNVERIFIED';
 
+export type DeploymentPrerequisite = 'YES' | 'NO' | 'UNVERIFIED';
+export type DeploymentEvidenceStatus =
+	'SATISFIED' | 'UNSATISFIED' | 'UNVERIFIED' | 'NOT_APPLICABLE';
+
+export interface MigrationDeploymentRequirement {
+	required: DeploymentPrerequisite;
+	status: DeploymentEvidenceStatus;
+	phases: Array<'expand' | 'neutral' | 'contract' | 'unspecified'>;
+	requiredAppCapabilities: string[];
+	observedAppSha: string | null;
+	observedAppCapabilities: string[];
+	reason: string;
+}
+
 /** Owner-apply ledger vs live Production history. Independent of schemaLifecycle. */
 export type AuthorizationIntegrity =
 	'RECORDED' | 'MISSING' | 'GRANDFATHERED' | 'NOT_APPLICABLE' | 'UNVERIFIED';
@@ -153,6 +167,7 @@ export interface CanonicalEnvSummary {
 	expectedCount: number;
 	migrationHead: string | null;
 	pendingMigrations: string[];
+	migrationDeployment: MigrationDeploymentRequirement;
 	extraMigrations: string[];
 	invitationAttentionCount: number;
 	identityConflictsCount: number;
@@ -219,10 +234,12 @@ export interface FreshnessMeta {
 export interface CanonicalStatusView {
 	/** Explicit probe scope; omitted means all environments. */
 	selectedTargets?: readonly TargetEnv[];
-	schemaVersion: 2;
+	schemaVersion: 3;
 	generatedAt: string;
 	evidence: EvidenceState;
 	freshnessMeta?: FreshnessMeta;
+	/** Clean checkout identity candidate for copy-ready release checks; null when Git is unavailable. */
+	repositoryHeadSha?: string | null;
 	expectedMigrationHead: string | null;
 	expectedMigrationCount: number;
 	registryCount: number;

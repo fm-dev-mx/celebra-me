@@ -56,7 +56,7 @@ describe('GET /api/dashboard/estado', () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get('Cache-Control')).toContain('no-store');
 		const body = await response.json();
-		expect(body.schemaVersion).toBe(2);
+		expect(body.schemaVersion).toBe(3);
 		expect(body.evidence).toBe('CACHED');
 		expect(mockRefresh).not.toHaveBeenCalled();
 		const serialized = JSON.stringify(body);

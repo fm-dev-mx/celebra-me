@@ -13,12 +13,15 @@ import {
 import { ENV_LABELS } from './labels';
 import { ENVS } from './evidence';
 import { releasePromotions } from './promotion-lifecycle';
-import type { CanonicalStatusView, StatusSemantic, TargetEnv } from './types';
+import type {
+	CanonicalStatusView,
+	DeploymentEvidenceStatus,
+	DeploymentPrerequisite,
+	StatusSemantic,
+	TargetEnv,
+} from './types';
 
 export {
-	authoringPromotions,
-	authoringSlugSet,
-	isAuthoringLifecycle,
 	isAuthoringPromotion,
 	partitionPromotions,
 	releasePromotions,
@@ -42,6 +45,9 @@ export interface OperationalAction {
 	verifyWhen: string;
 	why: string | null;
 	noCanonicalRemediation: boolean;
+	deploymentPrerequisite: DeploymentPrerequisite;
+	deploymentStatus: DeploymentEvidenceStatus;
+	executionOrder: number;
 }
 
 export interface OperationalActionPlan {
@@ -71,6 +77,16 @@ function actionPriority(remediation: OperatorRemediation): number {
 	if (remediation.semantic === 'unverified') return 1;
 	return 2;
 }
+
+const DOMAIN_EXECUTION_ORDER: Record<OperationalActionDomain, number> = {
+	evidence: 10,
+	disposable: 20,
+	readiness: 30,
+	schema: 40,
+	patch: 50,
+	publication: 60,
+	authorization: 70,
+};
 
 function uniqueSteps(steps: OperatorActionStep[]): OperatorActionStep[] {
 	const seen = new Set<string>();
@@ -119,7 +135,12 @@ function mergeActions(actions: OperationalAction[]): OperationalAction[] {
 			existing.why = existing.why ? `${existing.why} · ${action.why}` : action.why;
 		}
 	}
-	return merged.sort((a, b) => a.priority - b.priority || a.title.localeCompare(b.title, 'es'));
+	return merged.sort(
+		(a, b) =>
+			a.executionOrder - b.executionOrder ||
+			a.priority - b.priority ||
+			a.title.localeCompare(b.title, 'es'),
+	);
 }
 
 function toAction(
@@ -129,6 +150,8 @@ function toAction(
 	remediation: OperatorRemediation,
 	environment: string,
 	subject: string | null = null,
+	deploymentPrerequisite: DeploymentPrerequisite = 'UNVERIFIED',
+	deploymentStatus: DeploymentEvidenceStatus = 'UNVERIFIED',
 ): OperationalAction | null {
 	if (remediation.semantic === 'verified' || remediation.semantic === 'neutral') return null;
 	return {
@@ -144,6 +167,9 @@ function toAction(
 		verifyWhen: remediation.verifyWhen,
 		why: remediation.why,
 		noCanonicalRemediation: remediation.noCanonicalRemediation,
+		deploymentPrerequisite,
+		deploymentStatus,
+		executionOrder: DOMAIN_EXECUTION_ORDER[domain],
 	};
 }
 
@@ -214,6 +240,9 @@ export function buildOperationalActionPlan(view: CanonicalStatusView): Operation
 				`Migraciones · ${ENV_LABELS[environment]}`,
 				schemaRemediation(row),
 				ENV_LABELS[environment],
+				null,
+				row.migrationDeployment.required,
+				row.migrationDeployment.status,
 			),
 		);
 		addAction(
@@ -258,6 +287,8 @@ export function buildOperationalActionPlan(view: CanonicalStatusView): Operation
 				'Publicación',
 				publicationQueueRemediation(view),
 				'registro',
+				null,
+				'NO',
 			),
 		);
 	} else {
@@ -271,6 +302,14 @@ export function buildOperationalActionPlan(view: CanonicalStatusView): Operation
 					publicationRemediation(promotion),
 					'registro',
 					promotion.slug,
+					promotion.reasonCode.startsWith('PRODUCTION_PREFLIGHT_') ||
+						promotion.reasonCode === 'PREVIEW_APPROVAL_REQUIRED'
+						? 'UNVERIFIED'
+						: 'NO',
+					promotion.reasonCode.startsWith('PRODUCTION_PREFLIGHT_') ||
+						promotion.reasonCode === 'PREVIEW_APPROVAL_REQUIRED'
+						? 'UNVERIFIED'
+						: 'NOT_APPLICABLE',
 				),
 			);
 		}

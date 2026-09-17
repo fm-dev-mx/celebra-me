@@ -160,7 +160,7 @@ describe('status semantics', () => {
 		expect(commandOf(remediation)).toBe('pnpm db:migrate -- --target disposable-test --apply');
 	});
 
-	it('uses schemaNextAction from readiness instead of inventing a migrate path', () => {
+	it('pins the canonical migrate path to the observed pending set', () => {
 		const behind = {
 			...buildCanonicalStatusViewFixture().environments.local,
 			schemaLifecycle: 'BEHIND' as const,
@@ -169,7 +169,9 @@ describe('status semantics', () => {
 			pendingMigrations: ['20260807120000'],
 			evidence: 'LIVE' as const,
 		};
-		expect(commandOf(schemaRemediation(behind))).toBe('pnpm db:migrate -- --target local');
+		expect(commandOf(schemaRemediation(behind))).toBe(
+			'pnpm db:migrate -- --target local --expected 20260807120000',
+		);
 		expect(readinessSemantic('UNVERIFIED')).toBe('unverified');
 		expect(readinessSemantic('PENDING_MIGRATIONS')).toBe('blocked');
 	});

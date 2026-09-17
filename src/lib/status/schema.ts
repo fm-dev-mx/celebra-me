@@ -62,6 +62,20 @@ const envSummary = z
 		expectedCount: z.number().int().nonnegative(),
 		migrationHead: migrationVersion.nullable(),
 		pendingMigrations: z.array(migrationVersion).max(200),
+		migrationDeployment: z
+			.object({
+				required: z.enum(['YES', 'NO', 'UNVERIFIED']),
+				status: z.enum(['SATISFIED', 'UNSATISFIED', 'UNVERIFIED', 'NOT_APPLICABLE']),
+				phases: z.array(z.enum(['expand', 'neutral', 'contract', 'unspecified'])).max(200),
+				requiredAppCapabilities: z.array(z.string().min(1).max(120)).max(200),
+				observedAppSha: z
+					.string()
+					.regex(/^[0-9a-f]{7,40}$/i)
+					.nullable(),
+				observedAppCapabilities: z.array(z.string().min(1).max(120)).max(200),
+				reason: z.string().min(1).max(400),
+			})
+			.strict(),
 		extraMigrations: z.array(migrationVersion).max(200),
 		invitationAttentionCount: z.number().int().nonnegative().max(1000),
 		identityConflictsCount: z.number().int().nonnegative().max(100_000),
@@ -146,7 +160,7 @@ const promotionRow = z
 				applyStepType: nextStepType,
 				ownerApplyRequired: z.boolean(),
 				optionalDiagnosticCommand: z.string().max(400).nullable(),
-				steps: z.array(z.string().min(1).max(80)).max(8),
+				steps: z.array(z.string().min(1).max(240)).max(8),
 			})
 			.strict(),
 	})
@@ -232,13 +246,18 @@ const manualPatchStatus = z
 
 export const CanonicalStatusViewSchema: z.ZodType<CanonicalStatusView> = z
 	.object({
-		schemaVersion: z.literal(2),
+		schemaVersion: z.literal(3),
 		selectedTargets: z
 			.array(z.enum(['local', 'preview', 'production']))
 			.min(1)
 			.max(3)
 			.optional(),
 		generatedAt: z.iso.datetime({ offset: true }),
+		repositoryHeadSha: z
+			.string()
+			.regex(/^[0-9a-f]{40}$/i)
+			.nullable()
+			.optional(),
 		evidence,
 		freshnessMeta: freshnessMeta.optional(),
 		expectedMigrationHead: migrationVersion.nullable(),

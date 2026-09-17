@@ -5,10 +5,7 @@ import type { ManualPatchStatus, PatchEvidenceReason, TargetEnv } from './types'
 const REFRESH_COMMAND = 'pnpm dbs';
 
 function patchPlanCommand(patch: ManualPatchStatus): string {
-	const command =
-		patch.environments.production.planCommand ??
-		`pnpm prod:apply -- --patch ${patch.file} --apply`;
-	return command.replace('<file>', patch.file);
+	return `pnpm prod:apply -- --patch ${patch.file}`;
 }
 
 function patchReasonLabel(reason: PatchEvidenceReason): string {
@@ -71,7 +68,9 @@ export function manualPatchRemediation(
 		};
 	}
 	if (state.status === 'PENDING') {
-		const command = patchPlanCommand(patch);
+		const planCommand = patchPlanCommand(patch);
+		const applyCommand = `${planCommand} --apply`;
+		const lintCommand = `pnpm db:prod:patch -- --dry-run --file ${patch.file}`;
 		return {
 			semantic: 'blocked',
 			meaning: `Parche pendiente: ${state.matchingRowCount ?? '—'} fila(s) dentro del rango ${patch.expectedRowsMin}–${patch.expectedRowsMax}.`,
@@ -81,12 +80,36 @@ export function manualPatchRemediation(
 				'Ejecute el comando canónico. El CLI planifica, pide una confirmación Owner y aplica sobre las superficies publicadas/draft que existan.',
 			steps: [
 				step(
+					'Verify',
+					lintCommand,
+					'Lint y dry-run local; no abre una conexión de escritura.',
+					false,
+					false,
+					'Validar parche',
+				),
+				step(
+					'Plan',
+					planCommand,
+					'Plan read-only revisado contra el detector en vivo.',
+					true,
+					false,
+					'Planificar parche',
+				),
+				step(
 					'Apply',
-					command,
+					applyCommand,
 					'TTY del propietario; Cancelar es el valor seguro. Un draft ausente no bloquea el published.',
 					true,
 					false,
 					'Aplicar parche',
+				),
+				step(
+					'Verify',
+					REFRESH_COMMAND,
+					'Después del apply; el detector residual debe devolver cero filas.',
+					false,
+					false,
+					'Verificar parche',
 				),
 			],
 			verifyWhen: 'La consulta read-only devuelve 0 filas y evidencia LIVE.',

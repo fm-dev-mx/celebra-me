@@ -63,7 +63,17 @@ async function formatGeneralView(
 	});
 	const view = await refineOrKeep(fast, () => refineCanonicalStatusViewPromotions(fast));
 	if (jsonMode) {
-		console.log(statusScopeJson(view, targets));
+		const { buildOperationalActionPlan } = await import('../../src/lib/status/action-plan.ts');
+		const { DbsStatusJsonSchema } = await import('../../src/lib/status/dbs-json.ts');
+		const excludedTargets = targets
+			? (['local', 'preview', 'production'] as const).filter((env) => !targets.includes(env))
+			: undefined;
+		const payload = DbsStatusJsonSchema.parse({
+			...view,
+			operationalPlan: buildOperationalActionPlan(view),
+			...(excludedTargets ? { excludedTargets } : {}),
+		});
+		console.log(statusScopeJson(payload, targets));
 		return;
 	}
 	process.stdout.write(formatCanonicalStatusView(view, { verbose, includeInSync, diagnostics }));

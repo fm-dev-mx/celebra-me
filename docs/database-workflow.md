@@ -46,7 +46,22 @@ The same view includes the active manual-patch catalog. These detectors add one 
 the existing read-only session. `NOT_NEEDED` is a live zero-row result, not proof of application;
 `PENDING` is a positive count within the manifest range and `BLOCKED` is an invalid manifest or
 out-of-range count. A patch refresh is an independent `domain=patch` merge and does not discard
-schema/content evidence from other environments. Version-1 status caches are rejected and rebuilt.
+schema/content evidence from other environments. Canonical status schema v3 separates a deployment
+requirement from evidence that the requirement is satisfied; older status caches are rejected and
+rebuilt rather than coerced.
+
+The default `pnpm dbs` text is an operator sequence, not an apply runner. It prints only actionable
+or unverified controls and orders them as preparation/backup, required code deployment, schema, data
+patches, publication, and verification. Commands are cyan in an ANSI-capable TTY and remain plain,
+complete, and copyable when `NO_COLOR` is set or output is redirected. A Production patch always
+shows lint/dry-run, owner plan, owner apply, and residual verification separately. A hosted contract
+migration reports a prior deployment only when the rollout registry declares required app
+capabilities; missing registry or deployment evidence is `UNVERIFIED`. The repository has no
+canonical Vercel deployment command, so `dbs` never invents one. Production apply remains an
+independent owner/TTY decision even when deployment and smoke evidence are valid. Interactive
+commands wider than the terminal use a shell-valid continuation marker (PowerShell backtick on
+Windows, backslash on POSIX); redirected and JSON output retain the canonical one-line command.
+`--json` is validated as the canonical v3 view plus its typed `operationalPlan`.
 
 The current projection remains application-owned SQL rather than a database view. A view would not
 reduce the one content invocation per environment, would add an independently grantable object, and

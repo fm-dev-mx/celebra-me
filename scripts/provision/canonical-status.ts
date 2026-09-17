@@ -3,6 +3,7 @@
  * Authorization integrity is a separate evidence class from schema lifecycle.
  */
 import { assertCurrentDisposableMigrationProof } from '../db/disposable-migration-proof.ts';
+import { execFileSync } from 'node:child_process';
 import { evaluateProductionAuthorizationIntegrity } from '../db/production-authorization-integrity.ts';
 import {
 	evaluateGeneralStatus,
@@ -30,6 +31,10 @@ import {
 import { authoringSlugSet } from '../../src/lib/status/promotion-lifecycle.ts';
 import { getValidatedMigrationFiles } from '../db/apply-migrations.ts';
 import {
+	loadMigrationRolloutRegistry,
+	type MigrationRolloutRegistry,
+} from '../db/migration-deployment-compatibility.ts';
+import {
 	buildUnverifiedManualPatchStatuses,
 	readManualPatchStatuses,
 } from './manual-patch-status.ts';
@@ -38,6 +43,7 @@ import type {
 	CanonicalStatusView,
 	DisposableProofStatus,
 	EvidenceState,
+	MigrationDeploymentRequirement,
 	RecentMigrationRecord,
 	SchemaLifecycleState,
 	SchemaOperationReadiness,
@@ -65,12 +71,18 @@ function envSummary(
 	status: EnvTargetStatus,
 	expectedVersions: readonly string[],
 	invitationAttentionCountValue: number,
+	rolloutRegistry: MigrationRolloutRegistry,
 ): CanonicalEnvSummary {
 	const reachableLive = status.reachable && status.freshness?.source === 'live';
 	const evidence: EvidenceState = reachableLive ? 'LIVE' : 'UNVERIFIED';
 	const targetClassification = status.targetClassification || 'unknown';
 	const pending = status.pendingMigrations ?? [];
 	const extra = status.extraMigrations ?? [];
+	const migrationDeployment = migrationDeploymentRequirement(
+		status.environment,
+		pending,
+		rolloutRegistry,
+	);
 	const appliedVersions = reachableLive
 		? inferAppliedVersions(expectedVersions, pending, extra)
 		: null;
@@ -86,6 +98,7 @@ function envSummary(
 		expectedCount: expectedVersions.length,
 		migrationHead: status.migrationHead ?? null,
 		pendingMigrations: pending,
+		migrationDeployment,
 		extraMigrations: extra,
 		invitationAttentionCount: invitationAttentionCountValue,
 		identityConflictsCount: status.identityConflictsCount,
@@ -100,6 +113,87 @@ function envSummary(
 		authorizationMissingVersions: authorization.missingVersions,
 		evidence,
 		probedAt: status.freshness?.probedAt ?? null,
+	};
+}
+
+function readRepositoryHeadSha(): string | null {
+	try {
+		const sha = execFileSync('git', ['rev-parse', '--verify', 'HEAD'], {
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		}).trim();
+		return /^[0-9a-f]{40}$/i.test(sha) ? sha : null;
+	} catch {
+		return null;
+	}
+}
+
+function migrationDeploymentRequirement(
+	environment: TargetEnv,
+	pendingVersions: readonly string[],
+	registry: MigrationRolloutRegistry,
+): MigrationDeploymentRequirement {
+	if (pendingVersions.length === 0) {
+		return {
+			required: 'NO',
+			status: 'NOT_APPLICABLE',
+			phases: [],
+			requiredAppCapabilities: [],
+			observedAppSha: null,
+			observedAppCapabilities: [],
+			reason: 'No hay migraciones pendientes.',
+		};
+	}
+	const entries = pendingVersions.map((version) => registry.migrations[version]);
+	const phases = entries.map((entry) => entry?.phase ?? 'unspecified');
+	const requiredAppCapabilities = [
+		...new Set(entries.flatMap((entry) => entry?.requiresDeployedAppCapabilities ?? [])),
+	].sort();
+	if (environment === 'local') {
+		return {
+			required: 'NO',
+			status: 'NOT_APPLICABLE',
+			phases,
+			requiredAppCapabilities,
+			observedAppSha: null,
+			observedAppCapabilities: [],
+			reason: 'Local no está condicionado por identidad de despliegue hospedado.',
+		};
+	}
+	if (entries.some((entry) => !entry)) {
+		return {
+			required: 'UNVERIFIED',
+			status: 'UNVERIFIED',
+			phases,
+			requiredAppCapabilities,
+			observedAppSha: null,
+			observedAppCapabilities: [],
+			reason: 'Al menos una migración pendiente no tiene fase en el rollout registry.',
+		};
+	}
+	if (
+		entries.some(
+			(entry) => entry?.phase === 'contract' && entry.requiresDeployedAppCapabilities?.length,
+		)
+	) {
+		return {
+			required: 'YES',
+			status: 'UNVERIFIED',
+			phases,
+			requiredAppCapabilities,
+			observedAppSha: null,
+			observedAppCapabilities: [],
+			reason: 'Una migración contract requiere capacidades de aplicación desplegada; la sonda de estado no demuestra todavía el despliegue hospedado.',
+		};
+	}
+	return {
+		required: 'NO',
+		status: 'NOT_APPLICABLE',
+		phases,
+		requiredAppCapabilities,
+		observedAppSha: null,
+		observedAppCapabilities: [],
+		reason: 'El rollout registry no declara capacidades de aplicación desplegada requeridas.',
 	};
 }
 
@@ -147,6 +241,7 @@ export async function buildCanonicalStatusView(options?: {
 	const refreshContent = domain !== 'schema';
 	const refreshPatch = domain !== 'content';
 	const expectedVersions = listExpectedMigrationVersions();
+	const rolloutRegistry = loadMigrationRolloutRegistry();
 	const disposable = assertCurrentDisposableMigrationProof();
 	const includeProductionPreflight = options?.includeProductionPreflight === true;
 	const [general, promotion, manualPatches] = await Promise.all([
@@ -186,16 +281,19 @@ export async function buildCanonicalStatusView(options?: {
 			general.environments.local,
 			expectedVersions,
 			invitationAttentionCount(envStateMap, 'local', { excludeSlugs: authoringSlugs }),
+			rolloutRegistry,
 		),
 		preview: envSummary(
 			general.environments.preview,
 			expectedVersions,
 			invitationAttentionCount(envStateMap, 'preview', { excludeSlugs: authoringSlugs }),
+			rolloutRegistry,
 		),
 		production: envSummary(
 			general.environments.production,
 			expectedVersions,
 			invitationAttentionCount(envStateMap, 'production', { excludeSlugs: authoringSlugs }),
+			rolloutRegistry,
 		),
 	};
 
@@ -227,8 +325,9 @@ export async function buildCanonicalStatusView(options?: {
 
 	const view: CanonicalStatusView = {
 		selectedTargets: options?.environments,
-		schemaVersion: 2,
+		schemaVersion: 3,
 		generatedAt,
+		repositoryHeadSha: readRepositoryHeadSha(),
 		evidence: overallEvidence,
 		freshnessMeta: {
 			status: 'LIVE',
@@ -317,6 +416,7 @@ export async function refineCanonicalStatusViewPromotions(
 	const next: CanonicalStatusView = {
 		...view,
 		generatedAt: new Date().toISOString(),
+		repositoryHeadSha: readRepositoryHeadSha(),
 		inSyncSlugs: refined.inSyncSlugs,
 		inSyncCount: refined.inSyncSlugs.length,
 		promotions: refined.promotions,
@@ -353,6 +453,15 @@ export function buildLocalCanonicalStatusView(): CanonicalStatusView {
 		expectedCount: expectedVersions.length,
 		migrationHead: null,
 		pendingMigrations: [],
+		migrationDeployment: {
+			required: 'UNVERIFIED',
+			status: 'UNVERIFIED',
+			phases: [],
+			requiredAppCapabilities: [],
+			observedAppSha: null,
+			observedAppCapabilities: [],
+			reason: 'El entorno no ha sido consultado.',
+		},
 		extraMigrations: [],
 		invitationAttentionCount: 0,
 		identityConflictsCount: 0,
@@ -366,7 +475,7 @@ export function buildLocalCanonicalStatusView(): CanonicalStatusView {
 		probedAt: null,
 	});
 	return {
-		schemaVersion: 2,
+		schemaVersion: 3,
 		generatedAt: new Date().toISOString(),
 		evidence: 'UNVERIFIED',
 		expectedMigrationHead: expectedVersions.at(-1) ?? null,

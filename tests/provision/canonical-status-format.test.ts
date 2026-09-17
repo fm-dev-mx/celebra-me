@@ -130,7 +130,6 @@ describe('canonical status CLI format', () => {
 		);
 		expect(text).toContain('Task: invitation:release');
 		expect(text).toContain('Escribir: --slug renata --targets preview --apply');
-		expect(text).not.toContain('Terminal');
 		expect(text).not.toContain('$env:CELEBRA_TASK_SCOPE');
 		expect(text).not.toContain(
 			'pnpm invitation:release -- --slug renata --targets preview --apply',

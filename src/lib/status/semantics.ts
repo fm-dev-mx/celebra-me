@@ -112,6 +112,13 @@ export function schemaRemediation(row: CanonicalEnvSummary): OperatorRemediation
 			? `Pendientes: ${row.pendingMigrations.join(', ')}.`
 			: 'classifySchemaLifecycle devolvió BEHIND.';
 	const productionPreflight = row.environment === 'production';
+	const expectedSuffix =
+		row.pendingMigrations.length > 0 ? ` --expected ${row.pendingMigrations.join(',')}` : '';
+	const migratePlanCommand = productionPreflight
+		? `pnpm prod:apply -- --schema${expectedSuffix}`
+		: `pnpm db:migrate -- --target ${row.environment}${expectedSuffix}`;
+	const migrateApplyCommand = `${migratePlanCommand} --apply`;
+	const auditCommand = `pnpm db:${row.environment === 'production' ? 'prod' : row.environment}:audit`;
 	return {
 		semantic: 'blocked',
 		meaning: 'El historial de migraciones está detrás del repositorio.',
@@ -124,32 +131,30 @@ export function schemaRemediation(row: CanonicalEnvSummary): OperatorRemediation
 			? [
 					step(
 						'Verify',
-						row.schemaNextAction,
+						migratePlanCommand,
 						'Confirme el preflight antes de cualquier apply.',
-						productionPreflight,
+						false,
 						false,
 						'Verificar migración',
 					),
-					...(productionPreflight
-						? [
-								step(
-									'Plan',
-									'pnpm prod:apply -- --schema',
-									'Preflight sin mutaciones aprobado.',
-									true,
-									false,
-									'Planificar apply',
-								),
-								step(
-									'Apply',
-									'pnpm prod:apply -- --schema --apply',
-									'Plan revisado; requiere TTY del propietario.',
-									true,
-									false,
-									'Aplicar migración',
-								),
-							]
-						: []),
+					step(
+						'Apply',
+						migrateApplyCommand,
+						productionPreflight
+							? 'Plan revisado; requiere TTY del propietario.'
+							: 'Preflight revisado y autorización del destino vigente.',
+						productionPreflight,
+						false,
+						'Aplicar migración',
+					),
+					step(
+						'Verify',
+						auditCommand,
+						'Después del apply; audita historial y objetos por separado.',
+						false,
+						false,
+						'Verificar esquema',
+					),
 				]
 			: [],
 		verifyWhen: 'Esquema CURRENT con evidencia suficiente.',

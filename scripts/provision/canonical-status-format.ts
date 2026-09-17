@@ -691,6 +691,9 @@ export function formatCanonicalStatusView(
 		diagnostics?: boolean;
 		env?: NodeJS.ProcessEnv;
 		backupHealth?: CriticalBackupHealth;
+		columns?: number;
+		platform?: NodeJS.Platform;
+		isTTY?: boolean;
 	},
 ): string {
 	const verbose = Boolean(options?.verbose);
@@ -701,7 +704,7 @@ export function formatCanonicalStatusView(
 			...formatDiagnosticsSection(view, false, options?.diagnostics, options),
 		];
 		const detailsText = details.length > 0 ? details.join('\n') + '\n' : '';
-		return formatCanonicalSummary(view, options?.backupHealth) + detailsText;
+		return formatCanonicalSummary(view, options) + detailsText;
 	}
 	const labelCol = 18;
 	const envCol = 28;

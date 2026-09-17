@@ -78,7 +78,10 @@ describe('operational action plan', () => {
 		);
 		const commands = patchAction?.steps.map((step) => step.command).filter(Boolean) ?? [];
 		expect(commands).toEqual([
+			'pnpm db:prod:patch -- --dry-run --file scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql',
+			'pnpm prod:apply -- --patch scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql',
 			'pnpm prod:apply -- --patch scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql --apply',
+			'pnpm dbs',
 		]);
 		expect(commands.some((command) => command?.includes('--apply --apply'))).toBe(false);
 	});

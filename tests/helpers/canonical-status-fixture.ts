@@ -10,6 +10,15 @@ export function buildCanonicalStatusViewFixture(
 		expectedCount: 75,
 		migrationHead: '20260806120000',
 		pendingMigrations: [],
+		migrationDeployment: {
+			required: 'NO' as const,
+			status: 'NOT_APPLICABLE' as const,
+			phases: [],
+			requiredAppCapabilities: [],
+			observedAppSha: null,
+			observedAppCapabilities: [],
+			reason: 'No hay migraciones pendientes.',
+		},
 		extraMigrations: [],
 		invitationAttentionCount: 1,
 		identityConflictsCount: 0,
@@ -24,8 +33,9 @@ export function buildCanonicalStatusViewFixture(
 		probedAt: '2026-08-12T22:11:46.000Z',
 	});
 	return {
-		schemaVersion: 2,
+		schemaVersion: 3,
 		generatedAt: '2026-08-12T22:11:54.000Z',
+		repositoryHeadSha: '0123456789abcdef0123456789abcdef01234567',
 		evidence: 'LIVE',
 		expectedMigrationHead: '20260806120000',
 		expectedMigrationCount: 75,
