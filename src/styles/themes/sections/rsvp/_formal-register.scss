@@ -60,12 +60,18 @@
 	--rsvp-field-bg-focus: transparent;
 	--rsvp-editorial-gold-glow: none;
 	--color-border-light: rgb(var(--formal-chapter-metal-rgb) / 28%);
-	--rsvp-button-color: var(--formal-chapter-band);
-	--rsvp-button-color-hover: var(--formal-chapter-band);
-	--rsvp-button-bg: var(--formal-chapter-metal);
-	--rsvp-button-bg-hover: rgb(var(--formal-chapter-metal-rgb) / 88%);
-	--rsvp-button-border: var(--formal-chapter-metal);
-	--rsvp-button-border-hover: var(--formal-chapter-metal);
+	--rsvp-button-color: var(--formal-chapter-button-color, var(--formal-chapter-band));
+	--rsvp-button-color-hover: var(--formal-chapter-button-color-hover, var(--formal-chapter-band));
+	--rsvp-button-bg: var(--formal-chapter-button-bg, var(--formal-chapter-metal));
+	--rsvp-button-bg-hover: var(
+		--formal-chapter-button-bg-hover,
+		rgb(var(--formal-chapter-metal-rgb) / 88%)
+	);
+	--rsvp-button-border: var(--formal-chapter-button-border, var(--formal-chapter-metal));
+	--rsvp-button-border-hover: var(
+		--formal-chapter-button-border-hover,
+		var(--formal-chapter-metal)
+	);
 	--rsvp-title-letter-spacing: normal;
 
 	width: min(100%, 40rem);

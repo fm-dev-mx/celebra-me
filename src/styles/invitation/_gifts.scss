@@ -290,7 +290,7 @@
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 		text-decoration: none;
-		border-radius: 8px;
+		border-radius: var(--gifts-button-border-radius);
 		transition:
 			background-color var(--duration-snappy) var(--ease-standard),
 			color var(--duration-snappy) var(--ease-standard),

@@ -73,6 +73,7 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 			<div class="ceremonial-closing">
 				<p class="ceremonial-closing__message">{message}</p>
 				<p class="ceremonial-closing__name">{closingName}</p>
+				{date && <p class="ceremonial-closing__date">{date}</p>}
 				{image && <img src={plainImgSrc(typeof image === 'string' ? image : image.src)} alt="" width="240" height="160" loading="lazy" decoding="async" />}
 			</div>
 		) : usesEditorialLayout ? (
