@@ -1,0 +1,260 @@
+// Melissa & Luis Osmar — couture paper profile on jewelry-box-wedding.
+// Palette and composition are invitation-local; shared renderers remain canonical.
+.event--melissa-y-luis-osmar.theme-preset--jewelry-box-wedding {
+	--melissa-paper: rgb(247 243 237);
+	--melissa-paper-rgb: 247 243 237;
+	--melissa-pearl: rgb(255 253 249);
+	--melissa-pearl-rgb: 255 253 249;
+	--melissa-ink: rgb(48 41 37);
+	--melissa-ink-rgb: 48 41 37;
+	--melissa-taupe: rgb(117 103 94);
+	--melissa-cocoa: rgb(58 49 44);
+	--melissa-cocoa-rgb: 58 49 44;
+	--melissa-champagne: rgb(169 130 90);
+	--melissa-champagne-rgb: 169 130 90;
+	--melissa-hairline: 1px solid rgb(var(--melissa-champagne-rgb) / 38%);
+
+	// Existing theme typography remains the single source for calligraphy,
+	// editorial serif, and readable interface sans roles.
+	--color-surface-primary: var(--melissa-paper);
+	--color-surface-primary-rgb: var(--melissa-paper-rgb);
+	--color-surface-secondary: var(--melissa-pearl);
+	--color-surface-soft: var(--melissa-pearl);
+	--color-surface-elevated: var(--melissa-pearl);
+	--color-surface-elevated-rgb: var(--melissa-pearl-rgb);
+	--color-surface-dark: var(--melissa-cocoa);
+	--color-surface-dark-rgb: var(--melissa-cocoa-rgb);
+	--color-text-primary: var(--melissa-ink);
+	--color-text-primary-rgb: var(--melissa-ink-rgb);
+	--color-text-secondary: var(--melissa-taupe);
+	--color-text-emphasis: var(--melissa-cocoa);
+	--color-text-on-dark: var(--melissa-pearl);
+	--color-text-on-light: var(--melissa-ink);
+	--color-action-primary: var(--melissa-cocoa);
+	--color-action-primary-rgb: var(--melissa-cocoa-rgb);
+	--color-action-accent: var(--melissa-champagne);
+	--color-action-accent-rgb: var(--melissa-champagne-rgb);
+	--color-glass-bg: rgb(var(--melissa-pearl-rgb) / 88%);
+	--color-glass-border: rgb(var(--melissa-champagne-rgb) / 34%);
+	--color-glass-shadow: rgb(var(--melissa-ink-rgb) / 10%);
+	--shadow-premium: 0 18px 44px rgb(var(--melissa-ink-rgb) / 10%);
+	--border-fine-gold: var(--melissa-hairline);
+	--motion-reveal-distance: 12px;
+	--motion-reveal-duration: 620ms;
+	--motion-reveal-blur: 0;
+
+	// Paper, pearl, and cocoa are the only tonal surfaces. Champagne is an
+	// ornamental accent, never a fourth section surface.
+	background: var(--melissa-paper);
+	color: var(--melissa-ink);
+
+	#event-header {
+		--header-nav-title-color: var(--melissa-cocoa);
+		--header-nav-color: var(--melissa-cocoa);
+		--header-nav-color-transparent: var(--melissa-cocoa);
+		--header-nav-hover-color: var(--melissa-champagne);
+		--nav-transparent-scrim: linear-gradient(
+			180deg,
+			rgb(var(--melissa-pearl-rgb) / 92%) 0%,
+			transparent 100%
+		);
+	}
+
+	// The existing SVG filigree and monogram components provide code-native
+	// ornament. Fine rules and generous whitespace keep the hero editorial.
+	.ceremonial-portrait-hero {
+		padding-block: clamp(5.5rem, 13vw, 8.5rem) clamp(5rem, 11vw, 7rem);
+		background:
+			linear-gradient(
+				90deg,
+				transparent 0 8%,
+				rgb(var(--melissa-champagne-rgb) / 18%) 8% 8.1%,
+				transparent 8.1% 91.9%,
+				rgb(var(--melissa-champagne-rgb) / 18%) 91.9% 92%,
+				transparent 92%
+			),
+			radial-gradient(
+				circle at 50% 14%,
+				rgb(var(--melissa-champagne-rgb) / 10%),
+				transparent 34%
+			),
+			var(--melissa-paper);
+
+		.ceremonial-portrait-hero__paper {
+			max-width: 42rem;
+			padding: clamp(1.5rem, 5vw, 3rem);
+			border-block: var(--melissa-hairline);
+		}
+
+		.ceremonial-portrait-hero__crest,
+		.ceremonial-portrait-hero__side {
+			color: var(--melissa-champagne);
+			filter: sepia(0.24) saturate(0.72);
+		}
+
+		.ceremonial-portrait-hero__label {
+			color: var(--melissa-taupe);
+			letter-spacing: 0.28em;
+		}
+
+		.ceremonial-portrait-hero__name {
+			color: var(--melissa-cocoa);
+			font-size: clamp(3rem, 13vw, 5.4rem);
+		}
+
+		.ceremonial-portrait-hero__date {
+			color: var(--melissa-taupe);
+			font-size: clamp(1.1rem, 3vw, 1.45rem);
+		}
+
+		// This hero is a paper composition, not a photographic portrait. The
+		// required schema fallback stays outside the visual and accessibility trees.
+		.ceremonial-portrait-hero__photograph {
+			display: none;
+		}
+	}
+
+	// Cadence map (ordered render plan):
+	// family -> cathedral interlude: overlap (geometry 1)
+	// cathedral interlude -> location: atmospheric blend
+	// location -> itinerary: neutral
+	// itinerary -> Belcanto interlude: neutral
+	// Belcanto interlude -> gifts: atmospheric blend
+	// gifts -> personalized access: arch (geometry 2)
+	// personalized access -> RSVP -> thank-you: neutral
+	.invitation-section-wrapper[data-section-kind='interlude'][data-intersection='overlap'] {
+		--intersection-depth: clamp(2.5rem, 6vw, 5rem);
+		--intersection-surface: var(--melissa-paper);
+	}
+
+	.invitation-section-wrapper[data-intersection='atmospheric-blend'] {
+		--intersection-depth: clamp(2.25rem, 5vw, 4rem);
+		--intersection-surface: var(--melissa-pearl);
+		--intersection-blend: linear-gradient(
+			180deg,
+			rgb(var(--melissa-champagne-rgb) / 12%),
+			transparent 78%
+		);
+	}
+
+	.invitation-section-wrapper[data-section-kind='personalized-access'][data-intersection='arch'] {
+		--intersection-surface: var(--melissa-cocoa);
+		--intersection-depth: clamp(2.75rem, 6vw, 5.25rem);
+	}
+
+	.invitation-section-wrapper[data-section-kind='quote'],
+	.invitation-section-wrapper[data-section-kind='family'],
+	.invitation-section-wrapper[data-section-kind='gifts'] {
+		background: var(--melissa-paper);
+	}
+
+	.invitation-section-wrapper[data-section-kind='countdown'],
+	.invitation-section-wrapper[data-section-kind='location'],
+	.invitation-section-wrapper[data-section-kind='itinerary'] {
+		background: var(--melissa-pearl);
+	}
+
+	--quote-content-font: var(--font-display);
+	--quote-content-size: clamp(1.35rem, 3.8vw, 2.1rem);
+	--quote-content-line-height: 1.55;
+	--quote-divider-display: block;
+	--family-bg: var(--melissa-paper);
+	--family-panel-bg: transparent;
+	--family-panel-border: var(--melissa-hairline);
+	--family-panel-shadow: none;
+	--family-panel-radius: 0;
+	--family-accent: var(--melissa-champagne);
+	--family-text-primary: var(--melissa-ink);
+	--family-text-muted: var(--melissa-taupe);
+	--family-texture-opacity: 0.04;
+	--family-vignette-bg: none;
+	--location-title-color: var(--melissa-cocoa);
+	--location-hour-color: var(--melissa-champagne);
+	--location-indications-heading-color: var(--melissa-cocoa);
+	--location-date-display: none;
+	--gifts-title-color: var(--melissa-cocoa);
+
+	.invitation-interlude {
+		--interlude-bg: var(--melissa-cocoa);
+		--interlude-image-filter: saturate(0.74) contrast(1.02) sepia(0.08);
+		--interlude-overlay-opacity: 1;
+		--interlude-overlay:
+			linear-gradient(
+				180deg,
+				rgb(var(--melissa-ink-rgb) / 6%),
+				transparent 30% 70%,
+				rgb(var(--melissa-ink-rgb) / 22%)
+			),
+			linear-gradient(
+				90deg,
+				rgb(var(--melissa-paper-rgb) / 8%),
+				transparent 24% 76%,
+				rgb(var(--melissa-paper-rgb) / 8%)
+			);
+		--interlude-frame-inset: clamp(0.65rem, 2vw, 1.25rem);
+		--interlude-frame-border: 1px solid rgb(var(--melissa-pearl-rgb) / 48%);
+		--interlude-focal-point: 50% 50%;
+	}
+
+	.invitation-interlude[data-interlude-index='1'] {
+		--interlude-min-height-1: clamp(34rem, 78svh, 50rem);
+		--interlude-min-height-1-sm: clamp(30rem, 68svh, 40rem);
+		--interlude-focal-point: 50% 48%;
+	}
+
+	.invitation-interlude[data-interlude-index='2'] {
+		--interlude-min-height-2: clamp(25rem, 58svh, 38rem);
+		--interlude-min-height-2-sm: clamp(23rem, 52svh, 32rem);
+		--interlude-focal-point: 50% 52%;
+		--interlude-image-filter: saturate(0.84) contrast(1.01) sepia(0.05);
+	}
+
+	// The shared interlude ambient loop is intentionally replaced with one
+	// quiet arrival; the artwork never remains animated.
+	@media (prefers-reduced-motion: no-preference) {
+		.invitation-interlude.is-visible .invitation-interlude__image {
+			animation: melissa-media-arrival 900ms ease-out both;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.invitation-interlude.is-visible .invitation-interlude__image {
+			animation: none;
+			transform: none;
+			transition: none;
+		}
+	}
+
+	.envelope-wrapper {
+		--env-bg: radial-gradient(circle at 50% 38%, var(--melissa-pearl), var(--melissa-paper));
+		--env-paper-bg: linear-gradient(145deg, var(--melissa-pearl), var(--melissa-paper));
+		--env-paper-border: rgb(var(--melissa-champagne-rgb) / 42%);
+		--env-ink: var(--melissa-cocoa);
+		--env-accent: var(--melissa-champagne);
+		--env-container-radius: 2px;
+		--env-shadow-container: 0 24px 52px rgb(var(--melissa-ink-rgb) / 14%);
+		--reveal-card-bg: var(--melissa-pearl);
+		--reveal-card-border: rgb(var(--melissa-champagne-rgb) / 36%);
+		--reveal-card-radius: 2px;
+		--reveal-card-shadow: 0 22px 46px rgb(var(--melissa-ink-rgb) / 13%);
+	}
+
+	button,
+	a,
+	[role='button'] {
+		&:focus-visible {
+			outline: 2px solid var(--melissa-champagne);
+			outline-offset: 4px;
+		}
+	}
+}
+
+@keyframes melissa-media-arrival {
+	from {
+		transform: scale(1.018);
+	}
+
+	to {
+		transform: scale(1);
+	}
+}
