@@ -2,7 +2,9 @@
 
 > Schema owner: `docs/core/invitation-preparation-contract.md`  
 > Executable evaluation: `src/lib/invitation-preparation/` (**prepReadiness SSOT**)  
-> Scope: preparation and Local implementation only; no persistent database or publication authority.
+> Scope: implementation and managed application in Local and Preview only, including the dedicated
+> technical host identity created by the canonical release workflow. Production, guest creation and
+> RSVP persistence remain outside the authorized boundary.
 
 ## Identity
 
@@ -88,13 +90,14 @@ Contract maturity for `boda`: `partial`.
 
 ### Missing blockers
 
-- None for Local implementation according to `evaluateEventCompleteness`.
+- None for Local and Preview implementation according to `evaluateEventCompleteness`.
 
 ### Non-blocking release dependencies
 
 - Confirm both navigation pins and venue addresses with Melissa.
 - Confirm the normalized capitalization and accents of family and godparent names.
-- Obtain the host email and WhatsApp only when identity provisioning is separately authorized.
+- Obtain a client contact email and WhatsApp only if later required for a human handoff; the managed
+  release uses the canonical technical identity derived from `hostLoginAlias`.
 - Record an explicit final music decision; the current implementation omits music.
 
 Deterministic question: **Is the available information sufficient to prepare this invitation?**
@@ -114,16 +117,16 @@ rendered as plausible navigation links.
 | -------- | --------------------- | -------------------------------------------------------- | -------------------------------------- | --------------------------------------------- | ---------------------------------------------- |
 | maps     | missing-client-facts  | Exact navigation pins are not client-confirmed           | Public address references only         | Confirm both links / keep buttons hidden      | Keep navigation buttons hidden until confirmed |
 | names    | ambiguous-data        | Three names received capitalization/accent normalization | Client reference sheet                 | Approve normalized forms / supply corrections | Confirm normalized forms before publication    |
-| contact  | missing-client-facts  | Host provisioning contact is absent                      | No authoritative contact supplied      | Supply email and WhatsApp when provisioning   | Do not invent or provision identity            |
+| contact  | missing-client-facts  | Client handoff contact is absent                         | No authoritative contact supplied      | Supply email and WhatsApp before handoff      | Use only the canonical technical host identity |
 | creative | photograph-acceptance | Generated venue art requires human review                | Six generated candidates; two selected | Accept / request bounded revision             | Review selected art in the complete invitation |
 
 ## Agent Recommendations
 
-| topic     | recommendation                                                                   | basis                                                                  | status                            |
-| --------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------- |
-| venue art | Use interpretive architectural editorials, not simulated documentary photographs | Sparse public Belcanto evidence and client request for premium visuals | approved for Local implementation |
-| palette   | Warm ivory editorial-light arc with a cacao closing band                         | Client neutral preference plus Jewelry Box foundation                  | approved for Local implementation |
-| media     | Use only two venue interludes; omit couple photography and gallery               | Explicit client requirement and narrative restraint                    | approved for Local implementation |
+| topic     | recommendation                                                                   | basis                                                                  | status                                        |
+| --------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------- |
+| venue art | Use interpretive architectural editorials, not simulated documentary photographs | Sparse public Belcanto evidence and client request for premium visuals | approved for Local and Preview implementation |
+| palette   | Warm ivory editorial-light arc with a cacao closing band                         | Client neutral preference plus Jewelry Box foundation                  | approved for Local and Preview implementation |
+| media     | Use only two venue interludes; omit couple photography and gallery               | Explicit client requirement and narrative restraint                    | approved for Local and Preview implementation |
 
 ## Sections
 
@@ -132,7 +135,7 @@ rendered as plausible navigation links.
 | requested  | quote, countdown, family, location, itinerary, gifts, personalizedAccess, rsvp, thankYou |
 | auxiliary  | interlude after family; interlude after itinerary                                        |
 | omitted    | gallery, music                                                                           |
-| unresolved | none for Local implementation                                                            |
+| unresolved | none for Local and Preview implementation                                                |
 
 ## Design Direction
 
@@ -166,9 +169,9 @@ no shared preset, schema or renderer change is required.
 
 | field                                       | value                                                                  |
 | ------------------------------------------- | ---------------------------------------------------------------------- |
-| Mechanical render/capture result            | pending implementation QA                                              |
-| Whole-invitation responsive inspection      | pending 390×844 and 1440×900 evidence                                  |
-| Section boundaries and narrative continuity | pending                                                                |
+| Mechanical render/capture result            | 13/13 focused browser checks passed                                    |
+| Whole-invitation responsive inspection      | inspected at 320×800, 360×800, 390×844, 430×932 and 1440×900           |
+| Section boundaries and narrative continuity | Local harness evidence complete; Preview route evidence still required |
 | Human creative outcome                      | `PENDING`                                                              |
 | Reviewer and date                           | —                                                                      |
 | Blocking reason or owner follow-up          | Human review of final composition and both interpretive venue artworks |
@@ -209,8 +212,13 @@ logos, no signage and no watermark.
 - RSVP uses `confirmationMode: api` and `accessMode: personalized-only`; no guest records are
   seeded.
 - Music and gallery remain omitted.
-- No Local/Preview/Production database writes, identity provisioning, publication, staging or
-  commit.
+- Managed application is authorized only through `invitation:release` for the exact slug in Local
+  and Preview, after dry-run and environment identity checks.
+- The canonical release may create the dedicated `host_client` technical identity derived from
+  `hostLoginAlias` in Local and Preview; it must not provision any guest or client-contact data.
+- Synthetic pass and RSVP fixtures remain test-only and never create accounts, guests or responses.
+- Production writes, Production dry-run promotion, schema migration and Preview content mirror are
+  outside scope.
 
 ## Preparation Readiness History
 

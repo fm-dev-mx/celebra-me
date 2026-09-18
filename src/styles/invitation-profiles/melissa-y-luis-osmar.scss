@@ -13,6 +13,8 @@
 	--melissa-champagne: rgb(169 130 90);
 	--melissa-champagne-rgb: 169 130 90;
 	--melissa-hairline: 1px solid rgb(var(--melissa-champagne-rgb) / 38%);
+	--melissa-space-compact: clamp(2.75rem, 6vw, 4rem);
+	--melissa-space-standard: clamp(4.25rem, 8vw, 6rem);
 
 	// Existing theme typography remains the single source for calligraphy,
 	// editorial serif, and readable interface sans roles.
@@ -42,6 +44,28 @@
 	--motion-reveal-distance: 12px;
 	--motion-reveal-duration: 620ms;
 	--motion-reveal-blur: 0;
+
+	// The formal chapter reuses canonical geometry and receives only a local
+	// chromatic/material remap at the event root.
+	--formal-chapter-band: var(--melissa-cocoa);
+	--formal-chapter-band-rgb: var(--melissa-cocoa-rgb);
+	--formal-chapter-cream: var(--melissa-pearl);
+	--formal-chapter-cream-rgb: var(--melissa-pearl-rgb);
+	--formal-chapter-sand: var(--melissa-paper);
+	--formal-chapter-sand-rgb: var(--melissa-paper-rgb);
+	--formal-chapter-metal: var(--melissa-champagne);
+	--formal-chapter-metal-rgb: var(--melissa-champagne-rgb);
+	--formal-chapter-ink: var(--melissa-ink);
+	--formal-chapter-ink-rgb: var(--melissa-ink-rgb);
+	--formal-chapter-title: var(--melissa-cocoa);
+	--formal-chapter-muted: var(--melissa-taupe);
+	--formal-chapter-meta: var(--melissa-taupe);
+	--formal-chapter-button-bg: var(--melissa-pearl);
+	--formal-chapter-button-bg-hover: var(--melissa-paper);
+	--formal-chapter-button-color: var(--melissa-cocoa);
+	--formal-chapter-button-color-hover: var(--melissa-cocoa);
+	--formal-chapter-button-border: var(--melissa-pearl);
+	--formal-chapter-button-border-hover: var(--melissa-champagne);
 
 	// Paper, pearl, and cocoa are the only tonal surfaces. Champagne is an
 	// ornamental accent, never a fourth section surface.
@@ -121,7 +145,8 @@
 	// itinerary -> Belcanto interlude: neutral
 	// Belcanto interlude -> gifts: atmospheric blend
 	// gifts -> personalized access: arch (geometry 2)
-	// personalized access -> RSVP -> thank-you: neutral
+	// personalized access -> RSVP: neutral
+	// RSVP -> thank-you: atmospheric blend
 	.invitation-section-wrapper[data-section-kind='interlude'][data-intersection='overlap'] {
 		--intersection-depth: clamp(2.5rem, 6vw, 5rem);
 		--intersection-surface: var(--melissa-paper);
@@ -154,25 +179,71 @@
 		background: var(--melissa-pearl);
 	}
 
-	--quote-content-font: var(--font-display);
-	--quote-content-size: clamp(1.35rem, 3.8vw, 2.1rem);
-	--quote-content-line-height: 1.55;
-	--quote-divider-display: block;
-	--family-bg: var(--melissa-paper);
-	--family-panel-bg: transparent;
-	--family-panel-border: var(--melissa-hairline);
-	--family-panel-shadow: none;
-	--family-panel-radius: 0;
-	--family-accent: var(--melissa-champagne);
-	--family-text-primary: var(--melissa-ink);
-	--family-text-muted: var(--melissa-taupe);
-	--family-texture-opacity: 0.04;
-	--family-vignette-bg: none;
-	--location-title-color: var(--melissa-cocoa);
-	--location-hour-color: var(--melissa-champagne);
-	--location-indications-heading-color: var(--melissa-cocoa);
-	--location-date-display: none;
-	--gifts-title-color: var(--melissa-cocoa);
+	.quote-section {
+		--quote-bg: var(--melissa-paper);
+		--quote-padding-block: var(--melissa-space-compact);
+		--quote-content-font: var(--font-display);
+		--quote-content-size: clamp(1.12rem, 2.4vw, 1.5rem);
+		--quote-content-line-height: 1.62;
+		--quote-content-letter-spacing: 0.005em;
+		--quote-content-max-width: 34rem;
+		--quote-content-shadow: none;
+		--quote-divider-display: block;
+		--quote-divider-opacity: 0.22;
+	}
+
+	.family {
+		--family-bg: var(--melissa-paper);
+		--family-panel-bg: transparent;
+		--family-panel-border: var(--melissa-hairline);
+		--family-panel-shadow: none;
+		--family-panel-radius: 0;
+		--family-accent: var(--melissa-champagne);
+		--family-text-primary: var(--melissa-ink);
+		--family-text-muted: var(--melissa-taupe);
+		--family-texture-opacity: 0.04;
+		--family-vignette-bg: none;
+		--family-split-gap-inline: clamp(2rem, 5vw, 4rem);
+		--family-split-gap-block: clamp(1rem, 2.5vw, 1.4rem);
+		--family-split-content-max-width: 54rem;
+		--family-split-divider: rgb(var(--melissa-champagne-rgb) / 30%);
+	}
+
+	.event-location {
+		--location-padding-block: var(--melissa-space-standard);
+		--location-gap: clamp(1.25rem, 3vw, 2rem);
+		--location-stack-gap: clamp(2rem, 5vw, 3.25rem);
+		--location-card-radius: 2px;
+		--location-card-radius-xs: 2px;
+		--location-card-shadow: 0 8px 22px rgb(var(--melissa-ink-rgb) / 6%);
+		--location-card-hover-shadow: 0 10px 24px rgb(var(--melissa-ink-rgb) / 8%);
+		--location-card-border: var(--melissa-hairline);
+		--location-title-color: var(--melissa-cocoa);
+		--location-hour-color: var(--melissa-champagne);
+		--location-indications-heading-color: var(--melissa-cocoa);
+		--location-date-display: none;
+	}
+
+	.gifts-section {
+		--gifts-bg: var(--melissa-paper);
+		--gifts-padding-block: var(--melissa-space-standard);
+		--gifts-card-bg: var(--melissa-pearl);
+		--gifts-card-border: var(--melissa-hairline);
+		--gifts-card-radius: 2px;
+		--gifts-card-shadow: 0 7px 20px rgb(var(--melissa-ink-rgb) / 5%);
+		--gifts-button-border-radius: 2px;
+		--gifts-title-color: var(--melissa-cocoa);
+	}
+
+	.thank-you-section {
+		--ceremonial-closing-bg: var(--melissa-paper);
+		--ceremonial-closing-color: var(--melissa-ink);
+		--ceremonial-closing-padding: var(--melissa-space-standard) 1.5rem;
+		--ceremonial-closing-message-width: 32rem;
+		--ceremonial-closing-message-size: clamp(1.08rem, 2.5vw, 1.35rem);
+		--ceremonial-closing-name-size: clamp(2.35rem, 8vw, 3.7rem);
+		--ceremonial-closing-date-color: var(--melissa-taupe);
+	}
 
 	.invitation-interlude {
 		--interlude-bg: var(--melissa-cocoa);
@@ -237,6 +308,16 @@
 		--reveal-card-border: rgb(var(--melissa-champagne-rgb) / 36%);
 		--reveal-card-radius: 2px;
 		--reveal-card-shadow: 0 22px 46px rgb(var(--melissa-ink-rgb) / 13%);
+	}
+
+	@media (width <= 30rem) {
+		.ceremonial-portrait-hero {
+			padding-block: clamp(4.5rem, 18vw, 6rem) clamp(4rem, 16vw, 5.5rem);
+
+			.ceremonial-portrait-hero__name {
+				font-size: clamp(2.75rem, 12vw, 4.1rem);
+			}
+		}
 	}
 
 	button,

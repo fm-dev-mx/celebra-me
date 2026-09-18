@@ -24,7 +24,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import type { CanonicalVariantSection } from '@/lib/invitation/section-variants';
 import type { EventContentEntry } from '@/lib/content/events';
-import type { InvitationPageContext } from '@/lib/invitation/page-data';
+import type {
+	InvitationGuestContext,
+	InvitationPageContext,
+} from '@/lib/invitation/page-data';
 import type { InvitationStylesheetHeadLink } from '@/lib/invitation/invitation-css-head-links';
 
 const section = Astro.url.searchParams.get('section') as CanonicalVariantSection | null;
@@ -82,7 +85,31 @@ if (fullPage) {
 	if (!eventEntry) return new Response(`Unknown visual parity source: ${slug}`, { status: 404 });
 
 	const viewModel = adaptEvent(eventEntry);
-	const builtPage = prepareInvitationPageContext({ eventEntry, slug });
+	const guestSeats = Number.parseInt(Astro.url.searchParams.get('guestSeats') ?? '', 10);
+	const guestName = Astro.url.searchParams.get('guestName')?.trim();
+	const syntheticGuestContext: InvitationGuestContext | undefined =
+		Number.isInteger(guestSeats) && guestSeats > 0 && guestName
+			? {
+					inviteId: '00000000-0000-4000-8000-000000000001',
+					eventSlug: slug,
+					eventType: eventEntry.data.eventType,
+					eventTitle: eventEntry.data.title,
+					guest: {
+						fullName: guestName,
+						maxAllowedAttendees: guestSeats,
+						attendanceStatus: 'pending',
+						attendeeCount: 0,
+						guestComment: '',
+						hideCelebraMeBranding: false,
+					},
+				}
+			: undefined;
+	const builtPage = prepareInvitationPageContext({
+		eventEntry,
+		slug,
+		guestContext: syntheticGuestContext,
+	});
+	if (syntheticGuestContext) builtPage.isDemoPreview = true;
 	const activePresetUrl = resolvePresetCssUrl(builtPage.viewModel.theme.preset);
 	const activeSectionCssPlan = resolveInvitationCssLoadPlan(
 		buildInvitationCssResolverInput({ page: builtPage, viewModel, slug }),

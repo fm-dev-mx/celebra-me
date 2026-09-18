@@ -139,7 +139,10 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 			confirmationMode: 'api',
 			personalizedAccess: { variant: 'formal-pass' },
 		});
-		expect(content.thankYou).toMatchObject({ variant: 'ceremonial-closing' });
+		expect(content.thankYou).toMatchObject({
+			variant: 'ceremonial-closing',
+			date: '16 de diciembre de 2026',
+		});
 	});
 
 	it('preserves confirmed names, schedule, policy, gifts, and RSVP deadline', () => {
@@ -226,10 +229,24 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 			{ family: 'neutral', source: 'interlude-after-itinerary' },
 		]);
 		expect(
+			renderPlan.find((item) => item.type === 'section' && item.section === 'family')
+				?.intersection,
+		).toEqual({
+			family: 'atmospheric-blend',
+			source: 'countdown',
+		});
+		expect(
 			renderPlan.find((item) => item.type === 'personalized-access')?.intersection,
 		).toEqual({
 			family: 'arch',
 			source: 'gifts',
+		});
+		expect(
+			renderPlan.find((item) => item.type === 'section' && item.section === 'thankYou')
+				?.intersection,
+		).toEqual({
+			family: 'atmospheric-blend',
+			source: 'rsvp',
 		});
 
 		expect(JSON.stringify(content)).not.toMatch(/OneDrive|Clientes\\/i);

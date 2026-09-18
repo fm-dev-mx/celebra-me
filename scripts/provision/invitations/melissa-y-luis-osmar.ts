@@ -101,10 +101,12 @@ export function buildMelissaPublishedContent(
 		],
 		composition: {
 			intersections: {
+				family: { family: 'atmospheric-blend', source: 'countdown' },
 				'interlude-after-family': { family: 'overlap', source: 'family' },
 				location: { family: 'atmospheric-blend', source: 'interlude-after-family' },
 				gifts: { family: 'atmospheric-blend', source: 'interlude-after-itinerary' },
 				'personalized-access': { family: 'arch', source: 'gifts' },
+				thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
 			},
 		},
 		_assetSlug: MELISSA_EVENT.assetSlug,
