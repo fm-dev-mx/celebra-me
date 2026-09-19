@@ -3,14 +3,16 @@ import path from 'node:path';
 import { prepareCompletePage } from './harness/complete-page-capture';
 
 const invitationUrl =
-	'/test/variant?full=1&eventType=boda&slug=melissa-y-luis-osmar&screenshot=true&animations=off';
+	'/test/variant?full=1&presentation=1&eventType=boda&slug=melissa-y-luis-osmar&screenshot=true&animations=off';
 
 const viewports = [
 	{ name: '320x800', width: 320, height: 800 },
 	{ name: '360x800', width: 360, height: 800 },
 	{ name: '390x844', width: 390, height: 844 },
 	{ name: '430x932', width: 430, height: 932 },
+	{ name: '768x1024', width: 768, height: 1024 },
 	{ name: '1440x900', width: 1440, height: 900 },
+	{ name: '1440x600', width: 1440, height: 600 },
 ] as const;
 
 async function expectStableInvitation(
@@ -36,6 +38,62 @@ async function expectStableInvitation(
 	}));
 	expect(layout.scrollWidth).toBeLessThanOrEqual(layout.viewportWidth);
 	expect(layout.brokenImages).toEqual([]);
+	const opening = await page.locator('.ceremonial-portrait-hero').evaluate((hero) => {
+		const landscape = getComputedStyle(hero, '::after');
+		const bounds = hero.getBoundingClientRect();
+		const date = hero.querySelector('.ceremonial-portrait-hero__date')!;
+		return {
+			dateBottom: date.getBoundingClientRect().bottom,
+			landscapeTop:
+				bounds.bottom - parseFloat(landscape.bottom) - parseFloat(landscape.height),
+		};
+	});
+	expect(opening.dateBottom).toBeLessThanOrEqual(opening.landscapeTop);
+}
+
+async function expectContentContainersToReflow(page: import('@playwright/test').Page) {
+	const overflow = await page.evaluate(() => {
+		const selectors = [
+			'.ceremonial-portrait-hero__paper',
+			'.ceremonial-portrait-hero__name',
+			'.countdown__timer',
+			'.family__header',
+			'.family__content',
+			'.event-location__intro',
+			'.event-location__card-wrapper',
+			'.event-location__indications-container',
+			'.itinerary__header',
+			'.itinerary__items',
+			'.gifts-section__header',
+			'.gifts-grid',
+			'.gift-card',
+			'.personalized-access__container',
+			'.access-card',
+			'.rsvp',
+		];
+
+		return selectors.flatMap((selector) =>
+			Array.from(document.querySelectorAll<HTMLElement>(selector))
+				.filter((element) => element.getClientRects().length > 0)
+				.filter((element) => element.scrollWidth > element.clientWidth + 1)
+				.map((element) => ({
+					selector,
+					className: element.className,
+					clientWidth: element.clientWidth,
+					scrollWidth: element.scrollWidth,
+					descendants: Array.from(element.querySelectorAll<HTMLElement>('*'))
+						.filter((child) => child.scrollWidth > child.clientWidth + 1)
+						.slice(0, 5)
+						.map((child) => ({
+							className: child.className,
+							clientWidth: child.clientWidth,
+							scrollWidth: child.scrollWidth,
+						})),
+				})),
+		);
+	});
+
+	expect(overflow).toEqual([]);
 }
 
 test.describe('Melissa y Luis Osmar local visual contract', () => {
@@ -45,6 +103,29 @@ test.describe('Melissa y Luis Osmar local visual contract', () => {
 			const response = await page.goto(invitationUrl, { waitUntil: 'load' });
 			expect(response?.status()).toBe(200);
 			await expectStableInvitation(page);
+			const crest = page.locator('.ceremonial-portrait-hero__crest');
+			await expect(crest).toHaveAttribute('aria-hidden', 'true');
+			await expect(crest).toBeHidden();
+			await expect(page.locator('.ceremonial-portrait-hero__date')).toHaveCSS('opacity', '1');
+			const timerColumns = await page
+				.locator('.countdown__timer')
+				.evaluate(
+					(element) => getComputedStyle(element).gridTemplateColumns.split(' ').length,
+				);
+			expect(timerColumns).toBe(viewport.width <= 384 ? 2 : 4);
+			for (const label of await page.locator('.countdown__label').all()) {
+				const lines = await label.evaluate((element) => {
+					const range = document.createRange();
+					range.selectNodeContents(element);
+					return range.getClientRects().length;
+				});
+				expect(lines).toBe(1);
+			}
+			const hero = page.locator('.ceremonial-portrait-hero');
+			const landscape = await hero.evaluate(
+				(element) => getComputedStyle(element, '::after').backgroundImage,
+			);
+			expect(landscape).toContain('hero-landscape');
 			await page.screenshot({
 				path: path.join(
 					process.cwd(),
@@ -59,14 +140,22 @@ test.describe('Melissa y Luis Osmar local visual contract', () => {
 		});
 	}
 
-	test('keeps long content contained at 200% text size', async ({ page }) => {
-		await page.setViewportSize({ width: 360, height: 800 });
-		await page.goto(invitationUrl, { waitUntil: 'load' });
-		await page.locator('html').evaluate((root) => {
-			root.style.fontSize = '200%';
+	for (const viewport of [
+		{ name: '320x800', width: 320, height: 800 },
+		{ name: '360x800', width: 360, height: 800 },
+	] as const) {
+		test(`keeps long content contained at 200% text size at ${viewport.name}`, async ({
+			page,
+		}) => {
+			await page.setViewportSize(viewport);
+			await page.goto(invitationUrl, { waitUntil: 'load' });
+			await page.locator('html').evaluate((root) => {
+				root.style.fontSize = '200%';
+			});
+			await expectStableInvitation(page);
+			await expectContentContainersToReflow(page);
 		});
-		await expectStableInvitation(page);
-	});
+	}
 
 	test('keeps the sealed envelope and raised letter operable at 320px', async ({ page }) => {
 		await page.setViewportSize({ width: 320, height: 800 });
@@ -80,6 +169,36 @@ test.describe('Melissa y Luis Osmar local visual contract', () => {
 		await page.getByRole('button', { name: 'Abrir sobre de la invitación' }).click();
 		await expect(envelope).toHaveClass(/is-letter-held/);
 		await expect(page.locator('[data-screenshot="reveal-letter"]')).toBeVisible();
+	});
+
+	test('keeps copy controls touch-sized and keyboard focus visible', async ({ page }) => {
+		await page.setViewportSize({ width: 390, height: 844 });
+		await page.goto(invitationUrl, { waitUntil: 'load' });
+		await expectStableInvitation(page);
+		const controls = page.locator(
+			'.event-location__card-content-copy-button, .gift-card .copy-icon-button',
+		);
+		await expect(controls).toHaveCount(3);
+		for (const control of await controls.all()) {
+			const bounds = await control.boundingBox();
+			expect(bounds?.width).toBeGreaterThanOrEqual(44);
+			expect(bounds?.height).toBeGreaterThanOrEqual(44);
+		}
+		await page.keyboard.press('Tab');
+		await controls.first().focus();
+		await expect(controls.first()).toHaveCSS('outline-style', 'solid');
+	});
+
+	test('keeps informational cards still on hover', async ({ page }) => {
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await page.goto(invitationUrl, { waitUntil: 'load' });
+		await expectStableInvitation(page);
+		for (const card of await page.locator('.event-location__card-wrapper, .gift-card').all()) {
+			await card.hover();
+			await expect(card).toHaveCSS('transform', 'none');
+			await expect(card).toHaveCSS('box-shadow', 'none');
+			await expect(card).toHaveCSS('backdrop-filter', 'none');
+		}
 	});
 
 	for (const seats of [1, 2, 6]) {
@@ -96,7 +215,10 @@ test.describe('Melissa y Luis Osmar local visual contract', () => {
 				root.style.fontSize = '200%';
 			});
 			await expectStableInvitation(page, 11);
+			await expectContentContainersToReflow(page);
 			const pass = page.locator('.personalized-access');
+			// The variant alone cannot render the card without the canonical base stylesheet.
+			await expect(pass.locator('.access-card')).not.toHaveCSS('background-image', 'none');
 			await expect(pass).toContainText(guestName);
 			await expect(pass).toContainText(
 				seats === 1 ? 'Lugar reservado' : 'Lugares reservados',
@@ -160,6 +282,14 @@ test.describe('Melissa y Luis Osmar local visual contract', () => {
 			'animation-name',
 			'none',
 		);
+	});
+
+	test('uses one media arrival instead of the shared ambient loop', async ({ page }) => {
+		await page.goto(invitationUrl, { waitUntil: 'load' });
+		await expectStableInvitation(page);
+		const image = page.locator('.invitation-interlude__image').first();
+		await expect(image).toHaveCSS('animation-name', 'melissa-media-arrival');
+		await expect(image).toHaveCSS('animation-iteration-count', '1');
 	});
 
 	test('delivers the complete editorial content without JavaScript', async ({ browser }) => {

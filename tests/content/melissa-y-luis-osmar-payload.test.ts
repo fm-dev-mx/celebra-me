@@ -150,8 +150,9 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 		const serialized = JSON.stringify(content);
 
 		expect(serialized).toContain(
-			'Dicen que cuando encuentras a la persona correcta, el corazón lo sabe.',
+			'El amor todo lo disculpa, todo lo cree, todo lo espera, todo lo soporta.',
 		);
+		expect(content.quote?.author).toBe('1 Corintios 13:7-8');
 		for (const name of [
 			'Martha Elena Osuna Rubio',
 			'Rodrigo Landell Osuna',
@@ -232,8 +233,8 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 			renderPlan.find((item) => item.type === 'section' && item.section === 'family')
 				?.intersection,
 		).toEqual({
-			family: 'atmospheric-blend',
-			source: 'countdown',
+			family: 'neutral',
+			source: 'family',
 		});
 		expect(
 			renderPlan.find((item) => item.type === 'personalized-access')?.intersection,

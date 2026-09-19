@@ -101,7 +101,6 @@ export function buildMelissaPublishedContent(
 		],
 		composition: {
 			intersections: {
-				family: { family: 'atmospheric-blend', source: 'countdown' },
 				'interlude-after-family': { family: 'overlap', source: 'family' },
 				location: { family: 'atmospheric-blend', source: 'interlude-after-family' },
 				gifts: { family: 'atmospheric-blend', source: 'interlude-after-itinerary' },
@@ -144,7 +143,8 @@ export function buildMelissaPublishedContent(
 			},
 		},
 		quote: {
-			text: 'Dicen que cuando encuentras a la persona correcta, el corazón lo sabe. Nosotros lo supimos y hoy queremos celebrar nuestro amor rodeados de las personas más importantes en nuestras vidas.',
+			text: 'El amor todo lo disculpa, todo lo cree, todo lo espera, todo lo soporta. El amor no pasará jamás.',
+			author: '1 Corintios 13:7-8',
 		},
 		countdown: {
 			variant: 'clock-face',
@@ -245,13 +245,13 @@ export function buildMelissaPublishedContent(
 				},
 				{
 					iconName: 'Reception',
-					label: 'Recepción',
+					label: 'Recepción y cóctel de bienvenida',
 					time: MELISSA_SCHEDULE.receptionTime,
 					description: 'Belcanto Jardín.',
 				},
 				{
 					iconName: 'Rings',
-					label: 'Ceremonia civil',
+					label: 'Ceremonia civil y banquete',
 					time: MELISSA_SCHEDULE.civilCeremonyTime,
 					description: 'Belcanto Jardín.',
 				},
@@ -261,7 +261,7 @@ export function buildMelissaPublishedContent(
 			variant: 'standard',
 			title: 'Mesa de regalos',
 			subtitle:
-				'Su presencia es nuestro mejor regalo. Si desea tener un detalle adicional, agradecemos profundamente su gesto.',
+				'Su presencia es nuestro mejor regalo. Si desea tener un detalle adicional, agradecemos profundamente su muestra de afecto.',
 			items: [
 				{
 					type: 'store',

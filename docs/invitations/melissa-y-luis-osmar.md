@@ -152,29 +152,137 @@ The reference collage informs materiality and hierarchy only. It is not copied a
 production asset. Lane A owns invitation data, generated assets and profile SCSS. Lane B is empty:
 no shared preset, schema or renderer change is required.
 
+## Sistema tipográfico
+
+La referencia principal es el diseño actual de dev-extra, trasladado selectivamente al perfil local.
+La portada combina papel marfil, monograma Cinzel y paisaje mediterráneo; conserva los nombres y la
+fecha como texto real. Las ilustraciones de los recintos y sus recortes se mantienen. El paisaje es
+decorativo y no representa un recinto confirmado del evento.
+
+| Role                               | Family                       | Treatment                                             |
+| ---------------------------------- | ---------------------------- | ----------------------------------------------------- |
+| Hero and primary headings          | Cinzel                       | Restrained tracking; balanced wrapping                |
+| Family names and prose             | Cormorant Garamond           | Names above roles; 18–20 px body prose                |
+| Practical information and controls | Instrument Sans              | 16 px information; 12 px metadata                     |
+| Formal pass and RSVP chapter       | Canonical variant typography | Bodoni retained; no local scale or geometry overrides |
+
+All fonts reuse installed dependencies. Dark taupe replaces ornamental gold for small text on paper.
+Champagne remains available for borders and decoration. Countdown uses canonical grid reflow at 200%
+text size; copy controls retain a 44 px minimum. Motion follows semantic timing and disables
+decorative hover transforms for reduced motion.
+
+Lane A scope: profile, decorative landscape, reference copy and focused verification. Existing
+shared responsive fixes and envelope geometry are preserved. No new Lane B contract is added. The
+reference's extra family intersection is omitted: the existing canonical section flow remains.
+
 ## Creative Direction & Acceptance
 
 **Human creative outcome:** `PENDING`
 
-| concern                     | decision / evidence                                                                         | status     |
-| --------------------------- | ------------------------------------------------------------------------------------------- | ---------- |
-| Typography roles            | Existing script display, editorial serif and sans metadata roles                            | verified   |
-| Vertical rhythm and density | Editorial-light flow with two media pauses and dark closing action band                     | verified   |
-| Surface hierarchy           | Maximum three tonal surfaces; functional sections remain open rather than nested cards      | verified   |
-| Photographic treatment      | Two interpretive venue artworks; no couple photography; no embedded text                    | verified   |
-| Section-intersection intent | Family→cathedral overlap; cathedral→location blend; Belcanto→gifts blend; gifts→access arch | verified   |
-| Local exceptions            | `.event--melissa-y-luis-osmar` profile only                                                 | documented |
+| concern                     | decision / evidence                                                                                     | status     |
+| --------------------------- | ------------------------------------------------------------------------------------------------------- | ---------- |
+| Typography roles            | Cinzel headings, Cormorant names/prose, Instrument Sans practical information; canonical formal chapter | verified   |
+| Vertical rhythm and density | Editorial-light flow with two media pauses and dark closing action band                                 | verified   |
+| Surface hierarchy           | Maximum three tonal surfaces; functional sections remain open rather than nested cards                  | verified   |
+| Photographic treatment      | Two interpretive venue artworks; no couple photography; no embedded text                                | verified   |
+| Section-intersection intent | Family→cathedral overlap; cathedral→location blend; Belcanto→gifts blend; gifts→access arch             | verified   |
+| Local exceptions            | `.event--melissa-y-luis-osmar` profile only                                                             | documented |
 
 ### Creative acceptance record
 
 | field                                       | value                                                                  |
 | ------------------------------------------- | ---------------------------------------------------------------------- |
-| Mechanical render/capture result            | 13/13 focused browser checks passed                                    |
-| Whole-invitation responsive inspection      | inspected at 320×800, 360×800, 390×844, 430×932 and 1440×900           |
+| Mechanical render/capture result            | 19 focused browser checks passed for editorial polish                  |
+| Whole-invitation responsive inspection      | 320, 360, 390, 430, 768 and 1440 px; 200% text at 320/360; 1440×600    |
 | Section boundaries and narrative continuity | Local harness evidence complete; Preview route evidence still required |
 | Human creative outcome                      | `PENDING`                                                              |
 | Reviewer and date                           | —                                                                      |
-| Blocking reason or owner follow-up          | Human review of final composition and both interpretive venue artworks |
+| Blocking reason or owner follow-up          | Human review of editorial polish, landscape and venue artworks         |
+
+The reference transfer was validated locally on 2026-09-19. The comparison uses the reference
+worktree's existing harness captures and equivalent local routes/viewports. Published-route and
+Preview parity remain unverified; no managed content was applied.
+
+Decorative hero asset: `hero-landscape.webp`, 1600×893, 87314 bytes, reused unchanged from the
+reference. It replaces the unused botanical SVG. No package dependency was added.
+
+## Editorial Polish Evidence — 2026-09-19
+
+This pass is presentation-only and local-only. It does not extend earlier release permissions.
+Content, section order, artwork and existing shared corrections are frozen. SHA-256 checks of the
+payload and local image assets match the pre-polish baseline. Interlude dimensions and object
+positions match at all five measured viewports.
+
+### Implementation and cleanup
+
+- Necessary configuration: palette, typography roles, section rhythm, artwork geometry, envelope
+  material tokens and the formal chapter's chromatic remap remain local.
+- Public location/gift variables replace equivalent direct rules. The legacy elegant gifts bundle
+  hardcodes padding, radius, hover and shadows, so a small documented local bridge remains; no
+  shared component or new API was introduced.
+- Local exceptions: landscape hero composition, centered family introduction, balanced godparent
+  columns, readable itinerary typography, gift-code reflow and the blocked RSVP card treatment.
+- Removed duplicate card styles, formal-pass/register geometry and type-scale overrides, repeated
+  diamonds/dividers, closing watermark, extra artwork masks, card blur/lifts, the location cue's
+  continuous pulse and the unused `--env-ink` assignment (no consumer in `src`).
+- EB Garamond and Montserrat imports were removed from this profile. Installed packages remain:
+  other project consumers exist. No image asset became unused in this pass.
+- The fixed outer gift gutters and bounded card padding preserve reading width at 200% text size.
+  The hero reserves landscape space and grows instead of overlapping its date.
+
+### Before/after measurements
+
+| Metric                                 | Before  | After   | Change    |
+| -------------------------------------- | ------- | ------- | --------- |
+| Profile source bytes                   | 45,660  | 25,783  | −43.5%    |
+| Profile source lines                   | 1,710   | 886     | −48.2%    |
+| Compressed Sass output bytes           | 63,181  | 35,079  | −44.5%    |
+| Profile declarations observed in CSSOM | 1,040   | 489     | −53.0%    |
+| Complete harness CSSOM bytes           | 614,897 | 583,389 | −5.1%     |
+| Requested font files                   | 6       | 6       | unchanged |
+| Requested WOFF2 file bytes             | 199,636 | 192,516 | −3.6%     |
+
+Measurements use the same local full-invitation harness with `presentation=1` (global/base CSS),
+animations disabled, fresh Chromium contexts, device scale 1, UTC and the same viewport sizes. CSSOM
+bytes measure the parsed styles delivered to the harness, not compressed production transfer size.
+Sass output includes font-face imports. Font bytes are the summed local files matching observed font
+requests, excluding headers. The before baseline is reconstructed by intercepting only the profile
+stylesheet with Sass output from its saved pre-edit source; no worktree file is reverted. Earlier
+captures without `presentation=1` omitted base styles and are superseded by these measurements. The
+restored Bodoni formal chapter and Cormorant extended subset explain the unchanged request count; EB
+Garamond and Montserrat are no longer requested by this invitation.
+
+Evidence resides in ignored `.tmp/visual-review/melissa-polish/{before-full,after-full}/`: complete
+screenshots and `metrics.json`. Reference captures are in `.tmp/visual-review/melissa-transfer/`.
+The reference worktree's recorded HEAD, index entries and scoped file hashes remain unchanged.
+
+### Validation scope and limits
+
+- `pnpm validate:changed`: ESLint, Stylelint and formatting checks; 76 related Jest suites (968
+  tests) and the local corpus regression suite (26 tests) passed. Five advisory warnings concern
+  pre-existing wide Markdown tables.
+- `pnpm test:e2e tests/e2e/melissa-y-luis-osmar.spec.ts --workers=1`: 19 checks, using the existing
+  local harness server through `PLAYWRIGHT_REUSE_EXISTING_SERVER` and `PLAYWRIGHT_WEB_SERVER_URL`.
+- Tier A: no shared contract or executable application code changed. Full CI/build/type-check are
+  not rerun for this presentation pass.
+
+The initial full-presentation run exposed a 360 px countdown label wrap and a shared,
+higher-specificity ambient animation overriding the local media arrival. Both were corrected in the
+profile; the latter also removed capture stability timeouts. Focused regression assertions now cover
+both findings.
+
+The focused browser suite covers the complete invitation, short desktop, text zoom, landscape/date
+separation, countdown columns, unbroken countdown labels, stationary information cards, 44 px copy
+controls, visible focus, envelope, synthetic passes for 1/2/6 seats, non-persistent RSVP states, a
+single media arrival (no inherited ambient loop), reduced motion and no-JavaScript content. Visual
+inspection additionally reviews hierarchy, section transitions and artwork framing. The taupe
+metadata on paper has a 4.92:1 contrast ratio; quote attribution and the scroll cue no longer reduce
+that contrast through opacity.
+
+The formal chapter intentionally retains its canonical typography, including its 10.88 px eyebrow;
+changing that shared contract is outside this presentation pass. Production transfer size and Core
+Web Vitals are not measured. Published and Preview routes are not exercised. Human creative
+acceptance remains **PENDING**, independently of technical checks.
 
 ## Photograph Inventory
 
