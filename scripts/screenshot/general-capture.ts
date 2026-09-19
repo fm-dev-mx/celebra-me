@@ -48,7 +48,7 @@ export async function captureGeneralPageScreenshots(
 				{
 					...result,
 					viewportName,
-					label: result.label || task.label,
+					label: task.label,
 				},
 				task,
 			),
