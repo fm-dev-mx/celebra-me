@@ -11,13 +11,30 @@
 
 	.itinerary__header {
 		width: min(100%, 46rem);
+		min-width: 0;
 		text-align: left;
+	}
+
+	.itinerary__title,
+	.itinerary__subtitle {
+		max-width: 100%;
+		overflow-wrap: anywhere;
 	}
 
 	.itinerary__animated-line-container,
 	.itinerary__item-icon-wrapper,
 	.itinerary__item-dot {
 		display: none;
+	}
+
+	.itinerary__header-flourish {
+		gap: clamp(0.5rem, 3vw, 1rem);
+
+		.flourish-line {
+			flex: 1 1 2.5rem;
+			width: auto;
+			max-width: 3.75rem;
+		}
 	}
 
 	.itinerary__timeline {
@@ -33,6 +50,7 @@
 	.itinerary__item {
 		display: block;
 		grid-template-columns: none;
+		min-width: 0;
 		padding-left: 0;
 	}
 
@@ -44,8 +62,14 @@
 	}
 
 	.itinerary__item-content {
+		min-width: 0;
 		padding: clamp(1.35rem, 2.6vw, 1.75rem) 0;
 		border-bottom: 1px solid var(--editorial-ledger-rule);
+	}
+
+	.itinerary__item-label,
+	.itinerary__item-description {
+		overflow-wrap: anywhere;
 	}
 
 	.itinerary__item:first-child .itinerary__item-content {

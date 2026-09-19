@@ -49,7 +49,7 @@
 	--formal-chapter-label: 'Bodoni Moda Variable', 'Playfair Display Variable', georgia, serif;
 	--formal-chapter-measure: min(100%, 34rem);
 	--formal-chapter-control-radius: 2px;
-	--rsvp-radio-columns: 1fr;
+	--rsvp-radio-columns: minmax(0, 1fr);
 	--rsvp-label-color: rgb(var(--formal-chapter-cream-rgb) / 92%);
 	--rsvp-placeholder-color: rgb(var(--formal-chapter-cream-rgb) / 58%);
 	--rsvp-radio-indicator-border: rgb(var(--formal-chapter-metal-rgb) / 75%);
@@ -112,6 +112,7 @@
 		color: var(--formal-chapter-cream);
 		text-align: left;
 		text-wrap: balance;
+		overflow-wrap: anywhere;
 
 		&::after {
 			display: none;
@@ -127,10 +128,22 @@
 		color: rgb(var(--formal-chapter-cream-rgb) / 78%);
 		text-align: left;
 		text-wrap: pretty;
+		overflow-wrap: anywhere;
 	}
 
 	.rsvp__form {
 		width: var(--formal-chapter-measure);
+		max-width: 100%;
+		min-width: 0;
+	}
+
+	.rsvp__field,
+	.rsvp__radio-group,
+	.rsvp__attendance-summary {
+		width: 100%;
+		min-width: 0;
+		min-inline-size: 0;
+		max-width: 100%;
 	}
 
 	.rsvp__label,
@@ -153,6 +166,8 @@
 	}
 
 	.rsvp__radio-group .rsvp__radio-card {
+		width: 100%;
+		min-width: 0;
 		min-height: 3.25rem;
 		justify-content: flex-start;
 		gap: 0.95rem;
@@ -184,11 +199,13 @@
 	}
 
 	.rsvp__radio-label {
+		min-width: 0;
 		font-family: var(--formal-chapter-body);
 		font-size: clamp(0.95rem, 1.6vw, 1.05rem);
 		font-weight: 500;
 		letter-spacing: 0.01em;
 		color: var(--rsvp-radio-label-color);
+		overflow-wrap: anywhere;
 	}
 
 	.rsvp__field:focus-within .rsvp__field-line {

@@ -63,7 +63,9 @@
 
 	.ceremonial-portrait-hero__name span {
 		display: block;
-		white-space: nowrap;
+		max-width: 100%;
+		overflow-wrap: anywhere;
+		white-space: normal;
 	}
 
 	.ceremonial-portrait-hero__date {

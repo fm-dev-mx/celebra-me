@@ -31,9 +31,12 @@
 
 	.countdown__timer {
 		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
+
+		// The rem floor responds to text-only zoom: four columns remain at the
+		// default size and collapse naturally when labels need more room.
+		grid-template-columns: repeat(auto-fit, minmax(min(4rem, 100%), 1fr));
 		gap: 0.4rem;
-		max-width: 30rem;
+		width: min(100%, 30rem);
 		margin: auto;
 	}
 
@@ -57,6 +60,7 @@
 	.countdown__label {
 		opacity: 100%;
 		font-size: 0.7rem;
+		overflow-wrap: anywhere;
 		color: var(--color-text-primary);
 	}
 

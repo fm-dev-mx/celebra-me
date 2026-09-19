@@ -108,6 +108,11 @@
 	--location-map-preview-pin-border: rgb(
 		var(--color-action-primary-rgb, var(--color-action-accent-rgb)) / 32%
 	);
+	--location-map-preview-grid-opacity: 32%;
+	--location-map-preview-artwork-opacity: 45%;
+	--location-map-preview-detail-opacity: 90%;
+	--location-map-preview-cross-opacity: 75%;
+	--location-map-preview-horizon-opacity: 50%;
 	--location-indications-before-display: none;
 	--location-indications-spacing: clamp(3rem, 6vw, 4.25rem);
 	--location-indications-container-max-width: 42rem;
@@ -200,6 +205,7 @@
 		width: min(100%, var(--location-card-max-width));
 		margin-block: 0;
 		gap: clamp(0.35rem, 1vw, 0.55rem);
+		min-width: 0;
 	}
 
 	.event-location__card-title {
@@ -226,6 +232,7 @@
 
 	.event-location__card-content-place {
 		text-wrap: balance;
+		overflow-wrap: anywhere;
 	}
 
 	.event-location__card-content-copy-button {
@@ -276,7 +283,7 @@
 		position: absolute;
 		inset: 0;
 		transform: none;
-		opacity: 32%;
+		opacity: var(--location-map-preview-grid-opacity);
 		background:
 			repeating-linear-gradient(
 				90deg,
@@ -302,24 +309,24 @@
 
 	.event-location__card-map-preview-artwork-silhouette {
 		fill: currentcolor;
-		opacity: 45%;
+		opacity: var(--location-map-preview-artwork-opacity);
 	}
 
 	.event-location__card-map-preview-artwork-detail {
 		fill: var(--location-map-preview-artwork-detail, var(--color-surface-primary));
-		opacity: 90%;
+		opacity: var(--location-map-preview-detail-opacity);
 	}
 
 	.event-location__card-map-preview-artwork-cross {
 		fill: var(--color-action-primary, currentcolor);
-		opacity: 75%;
+		opacity: var(--location-map-preview-cross-opacity);
 	}
 
 	.event-location__card-map-preview-artwork-horizon {
 		fill: none;
 		stroke: var(--location-map-preview-artwork-horizon, var(--color-border-subtle));
 		stroke-width: 1.5;
-		opacity: 50%;
+		opacity: var(--location-map-preview-horizon-opacity);
 	}
 
 	.event-location__card-map-preview-pin {

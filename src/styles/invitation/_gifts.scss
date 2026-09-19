@@ -26,6 +26,20 @@
 	--gifts-account-color: var(--color-text-primary);
 	--gifts-copy-color: var(--color-action-accent);
 	--gifts-copy-border: 1px solid var(--color-action-accent);
+	--gifts-container-max-width: 900px;
+	--gifts-header-margin-bottom: var(--spacing-xl);
+	--gifts-title-size: clamp(2rem, 5vw, 3rem);
+	--gifts-subtitle-size: 1.25rem;
+	--gifts-grid-min-column: 280px;
+	--gifts-card-padding: var(--spacing-xl) var(--spacing-lg);
+	--gifts-card-hover-transform: translateY(-6px);
+	--gifts-card-hover-shadow: var(--shadow-premium);
+	--gifts-icon-size: 52px;
+	--gifts-icon-radius: 50%;
+	--gifts-icon-bg: var(--color-glass-bg);
+	--gifts-icon-border: 1.5px solid var(--color-glass-border);
+	--gifts-icon-shadow: var(--shadow-subtle);
+	--gifts-code-font-family: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', monospace;
 
 	// ---------------------------------------------------------------------
 	// Base Structural Styles
@@ -37,13 +51,13 @@
 	color: var(--gifts-text-color);
 
 	&__container {
-		max-width: 900px;
+		max-width: var(--gifts-container-max-width);
 		margin: 0 auto;
 		text-align: center;
 	}
 
 	&__header {
-		margin-bottom: var(--spacing-xl);
+		margin-bottom: var(--gifts-header-margin-bottom);
 	}
 
 	&__eyebrow {
@@ -60,11 +74,13 @@
 
 	&__title {
 		font-family: var(--font-display);
-		font-size: clamp(2rem, 5vw, 3rem);
+		font-size: var(--gifts-title-size);
 		margin-bottom: var(--spacing-md);
 		text-transform: uppercase;
 		letter-spacing: var(--gifts-title-letter-spacing);
 		color: var(--gifts-title-color);
+		overflow-wrap: anywhere;
+		text-wrap: balance;
 	}
 
 	&__flourish {
@@ -92,7 +108,7 @@
 
 	&__subtitle {
 		font-family: var(--font-body);
-		font-size: 1.25rem;
+		font-size: var(--gifts-subtitle-size);
 		line-height: 1.6;
 		max-width: 600px;
 		margin: 0 auto;
@@ -110,7 +126,7 @@
 
 .gifts-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(min(var(--gifts-grid-min-column), 100%), 1fr));
 	gap: var(--spacing-lg);
 
 	&[data-count='1'] {
@@ -121,7 +137,8 @@
 
 .gift-card {
 	border-radius: var(--gifts-card-radius);
-	padding: var(--spacing-xl) var(--spacing-lg);
+	min-width: 0;
+	padding: var(--gifts-card-padding);
 	position: relative;
 	overflow: hidden;
 	background: var(--gifts-card-bg);
@@ -141,8 +158,8 @@
 
 	@media (hover: hover) and (pointer: fine) {
 		&:hover {
-			transform: translateY(-6px);
-			box-shadow: var(--shadow-premium);
+			transform: var(--gifts-card-hover-transform);
+			box-shadow: var(--gifts-card-hover-shadow);
 			border-color: var(--color-action-accent);
 
 			.gift-card__icon-medallion {
@@ -170,17 +187,17 @@
 	}
 
 	&__icon-medallion {
-		width: 52px;
-		height: 52px;
+		width: var(--gifts-icon-size);
+		height: var(--gifts-icon-size);
 		margin: 0 auto 0.85rem;
-		border-radius: 50%;
+		border-radius: var(--gifts-icon-radius);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		position: relative;
-		background: var(--color-glass-bg);
-		border: 1.5px solid var(--color-glass-border);
-		box-shadow: var(--shadow-subtle);
+		background: var(--gifts-icon-bg);
+		border: var(--gifts-icon-border);
+		box-shadow: var(--gifts-icon-shadow);
 		backdrop-filter: blur(8px);
 		transition:
 			border-color var(--duration-snappy) var(--ease-standard),
@@ -208,6 +225,7 @@
 		letter-spacing: 0.03em;
 		margin-bottom: 0.35rem;
 		color: var(--gifts-card-title-color);
+		overflow-wrap: anywhere;
 	}
 
 	&__description {
@@ -217,6 +235,7 @@
 		margin-top: 0.25rem;
 		opacity: 90%;
 		color: var(--color-text-secondary);
+		overflow-wrap: anywhere;
 	}
 
 	&__store-label {
@@ -258,7 +277,7 @@
 	}
 
 	&__table-number-code {
-		font-family: var(--font-mono, monospace);
+		font-family: var(--gifts-code-font-family);
 		font-size: 0.88rem;
 		letter-spacing: 0.08em;
 		color: var(--gifts-account-color);
