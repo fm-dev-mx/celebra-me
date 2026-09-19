@@ -212,6 +212,61 @@ describe('run-prod-patch orchestration', () => {
 			});
 			expect(mockRunPsql).toHaveBeenCalledTimes(2);
 		});
+
+		it('reports a redacted psql diagnostic when SQL execution fails before verification', async () => {
+			mockRunPsql
+				.mockReturnValueOnce({ status: 0, stdout: pairedRows, stderr: '' })
+				.mockReturnValueOnce({
+					status: 3,
+					stdout: 'UPDATE 6',
+					stderr: [
+						'ERROR: THANKYOU_CONTRACT_ABORT: xv/example has 2 active published rows',
+						`DETAIL: connection ${VALID_PROD_DB_URL}`,
+						'STATEMENT: UPDATE public.published_invitation_content SET content = secret_payload',
+					].join('\n'),
+				});
+			const { patchModule, prepared } = await prepareDelegatedApply();
+
+			const error = await patchModule
+				.applyPreparedProductionPatch({
+					prepared,
+					ownerUserId: VALID_UUID,
+					authorizedPlanBindingHex: bindingHex,
+				})
+				.catch((caught: unknown) => caught);
+			expect(error).toMatchObject({
+				state: 'APPLIED_VERIFICATION_FAILED',
+				code: 'APPLIED_VERIFICATION_FAILED',
+				causeText: expect.stringContaining('ERROR: THANKYOU_CONTRACT_ABORT'),
+			});
+			const cause = (error as { causeText: string }).causeText;
+			expect(cause).toContain('exit 3');
+			expect(cause).toContain('<redacted>');
+			expect(cause).not.toContain('secret_payload');
+			expect(mockRunCommand).not.toHaveBeenCalled();
+		});
+
+		it('keeps the exit-code fallback when psql returns no safe diagnostic', async () => {
+			mockRunPsql
+				.mockReturnValueOnce({ status: 0, stdout: pairedRows, stderr: '' })
+				.mockReturnValueOnce({
+					status: 3,
+					stdout: '',
+					stderr: 'STATEMENT: UPDATE secret_payload',
+				});
+			const { patchModule, prepared } = await prepareDelegatedApply();
+
+			await expect(
+				patchModule.applyPreparedProductionPatch({
+					prepared,
+					ownerUserId: VALID_UUID,
+					authorizedPlanBindingHex: bindingHex,
+				}),
+			).rejects.toMatchObject({
+				state: 'APPLIED_VERIFICATION_FAILED',
+				causeText: 'Production patch process failed (exit 3).',
+			});
+		});
 	});
 });
 

@@ -11,7 +11,7 @@ import {
 	type SqlManifest,
 } from './sql-safety.ts';
 import { getProdDbUrl, runPsql } from './db-workflow-lib.ts';
-import { extractSupabaseProjectRef } from './db-target-config.ts';
+import { extractSupabaseProjectRef, redactCredentials } from './db-target-config.ts';
 import {
 	OperatorError,
 	operatorSymbol,
@@ -46,7 +46,6 @@ function printUsage(): void {
 
 interface ParsedPatchInput {
 	dryRun: boolean;
-	file: string;
 	path: string;
 }
 
@@ -118,7 +117,7 @@ function parsePatchInput(): ParsedPatchInput {
 		process.exit(1);
 	}
 
-	return { dryRun, file, path };
+	return { dryRun, path };
 }
 
 export interface PreparedProductionPatch {
@@ -173,7 +172,9 @@ export function inspectProductionPatchPreview(
 	if (result.status !== 0) {
 		throw new OperatorError({
 			title: 'Vista previa del parche fallida',
-			cause: (result.stderr || result.stdout).trim() || 'La consulta de vista previa falló.',
+			cause:
+				redactCredentials((result.stderr || result.stdout).trim()) ||
+				'La consulta de vista previa falló.',
 			code: 'PATCH_PREVIEW_FAILED',
 			remediation: ['Corrija el manifiesto o el estado de datos antes de aplicar.'],
 		});
@@ -246,6 +247,31 @@ export class ProductionPatchApplyError extends OperatorError {
 		});
 		this.name = 'ProductionPatchApplyError';
 	}
+}
+
+const SAFE_PSQL_DIAGNOSTIC_LINE = /^(?:psql(?::[^\n]*)?:\s*)?(?:error|fatal|panic|hint|detail):/i;
+const MAX_PSQL_DIAGNOSTIC_LINES = 3;
+const MAX_PSQL_DIAGNOSTIC_LINE_LENGTH = 500;
+
+/**
+ * Preserve a compact database failure cause without exposing SQL text or connection credentials.
+ * psql normally writes server diagnostics to stderr, which was previously discarded by this runner.
+ */
+function formatSafePsqlDiagnostic(stderr: string, secrets: readonly string[]): string | null {
+	const redacted = redactCredentials(
+		secrets.reduce(
+			(text, secret) => (secret ? text.replaceAll(secret, '<redacted>') : text),
+			stderr,
+		),
+	);
+	const diagnosticLines = redacted
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter((line) => SAFE_PSQL_DIAGNOSTIC_LINE.test(line))
+		.slice(0, MAX_PSQL_DIAGNOSTIC_LINES)
+		.map((line) => line.slice(0, MAX_PSQL_DIAGNOSTIC_LINE_LENGTH));
+
+	return diagnosticLines.length > 0 ? diagnosticLines.join(' ') : null;
 }
 
 /**
@@ -390,8 +416,14 @@ function executeProductionPatchSql(
 	});
 
 	if (execResult.status !== 0) {
+		const diagnostic = formatSafePsqlDiagnostic(execResult.stderr, [dbUrl, normalizedUrl]);
 		throw new ProductionPatchApplyError(
-			`Production patch process failed (exit ${execResult.status ?? 'unknown'}).`,
+			[
+				`Production patch process failed (exit ${execResult.status ?? 'unknown'}).`,
+				diagnostic ? `Database diagnostic: ${diagnostic}` : null,
+			]
+				.filter((value): value is string => value !== null)
+				.join(' '),
 		);
 	}
 
