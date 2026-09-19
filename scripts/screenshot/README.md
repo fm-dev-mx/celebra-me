@@ -55,6 +55,37 @@ execution it writes `report.json` with route, mode, planned task results, viewpo
 generated files, dimensions, selector checks, warnings, failures, console errors, and request
 failures. A partial or failed run is never reported as passed.
 
+## Capture Evidence and Comparison Limits
+
+`report.json` includes additive `sourceEvidence` (before/after capture-workspace fingerprints) and
+per-viewport `presentationEvidence` plus render `resources`. Existing report consumers remain
+compatible. Git reads never modify the index. Git failure produces nulls and `unavailable`, not a
+clean-state claim. A detected source change during capture makes the run fail validation.
+
+- Workspace provenance records HEAD and SHA-256 fingerprints of staged/unstaged patches and
+  non-ignored untracked files under source roots. It is **not** proof of the serving process or a
+  remote deployment's revision; correlate those independently.
+- Presentation evidence describes the **post-capture** state: browser version, locale/timezone, DPR,
+  visual viewport scale, observed clock, reduced motion, loaded FontFace states, selected computed
+  font roles, stylesheet order/media and readable CSSOM hashes. Per-glyph fallback remains
+  `unverified`. Cross-origin unreadable CSS has a null hash.
+- Render resources are observed stylesheet/font/image responses with byte hashes when readable. No
+  API bodies are inspected and no additional requests are issued. Inline/data image sources and
+  invitation text are hashed, not persisted. URL query values are redacted; only allowlisted capture
+  controls are recorded, with a query fingerprint for distinguishing other conditions.
+- Full `/test/variant?full=1` captures require active global and invitation base styles, enabled by
+  `presentation=1` or `envelope=1`. Missing layers fail validation even if the query requested them.
+  Isolated sections remain supported. Public-route presentation parity is explicitly unverified;
+  this guard does not certify application-wide CSS completeness.
+- Failed/loading fonts fail validation. Successfully loaded fonts still require role/fallback
+  review. Reported audit normalizations, animation handling and capture state must accompany the
+  images; normalized stills never certify natural loading, motion or interaction.
+
+Compare equivalent routes, states, content/resources, viewports/DPR, browser and clock. Label
+historical or reconstructed baselines and all mismatches. Do not claim controlled equivalence from
+filenames or a successful run alone. Preserve the first proposal evidence; a later run is a new
+snapshot. Screenshot hashes already recorded in `outputFiles` identify the artifacts themselves.
+
 ## Commands
 
 | Command                               | Description                                                     | Status                                           |

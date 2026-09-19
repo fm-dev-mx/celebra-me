@@ -292,6 +292,8 @@ export interface SectionCoverageReport {
 }
 
 export interface ViewportRunReport {
+	presentationEvidence?: import('./presentation-evidence.js').PresentationEvidence;
+	resources?: import('./presentation-evidence.js').CaptureResourceEvidence[];
 	name: string;
 	width: number;
 	height: number;
@@ -317,6 +319,11 @@ export interface ViewportRunReport {
 }
 
 export interface ScreenshotRunReport {
+	sourceEvidence?: {
+		before: import('./source-evidence.js').CaptureSourceEvidence;
+		after: import('./source-evidence.js').CaptureSourceEvidence;
+		stable: boolean | null;
+	};
 	route: string;
 	mode: ScreenshotMode;
 	startedAt: string;

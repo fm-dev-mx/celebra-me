@@ -1,6 +1,10 @@
 import { test, type Page } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import sharp from 'sharp';
+import {
+	collectPresentationEvidence,
+	presentationFailures,
+} from '../../../scripts/screenshot/presentation-evidence';
 import { getOperationalToolbarSelectors } from '../../../scripts/screenshot/utils';
 
 export async function initializeVisualCapture(
@@ -195,6 +199,8 @@ export async function prepareCompletePage(page: Page): Promise<void> {
 		window.scrollTo({ top: 0, behavior: 'instant' });
 	});
 	await assertNoOperationalTooling(page);
+	const failures = presentationFailures(await collectPresentationEvidence(page));
+	if (failures.length) throw new Error(failures.join('\n'));
 }
 
 export async function assertCompletePageImage(page: Page, image: Buffer): Promise<void> {

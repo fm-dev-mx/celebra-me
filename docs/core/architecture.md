@@ -287,6 +287,13 @@ They are not a temporary fallback for real/client invitations.
   sealed envelope are non-blocking (`media="not all"`) until first paint, envelope open, a bounded
   paint fallback, or an envelope-skipped visit.
 
+Visual audit tooling records capture-workspace fingerprints and post-capture presentation/resource
+evidence in the existing screenshot report. Full invitation harness captures must include active
+global/base styles; isolated section captures remain distinct. This does not certify a remote
+deployment's revision, per-glyph font fallback or human creative acceptance. The executable evidence
+contract and limitations are documented in
+[the screenshot tool](../../scripts/screenshot/README.md#capture-evidence-and-comparison-limits).
+
 ---
 
 ## 9) Environment & Deployment (Vercel)

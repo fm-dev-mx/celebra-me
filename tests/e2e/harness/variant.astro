@@ -156,13 +156,13 @@ const activeSectionCssPlan = resolveInvitationCssLoadPlan(
 }
 ---
 <!DOCTYPE html>
-<html lang="es" data-screenshot={showEnvelope ? undefined : 'audit'}>
+<html lang="es" data-capture-surface={fullPage ? 'full-invitation' : 'isolated-section'} data-screenshot={showEnvelope ? undefined : 'audit'}>
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>{fullPageContext?.layout.title ?? `${section}.${variant} (${preset})`}</title>
 	<link rel="stylesheet" href={variantHarnessCssUrl} />
-	{fullPresentation && <><link rel="stylesheet" href={globalCssUrl} /><link rel="stylesheet" href={invitationCssUrl} /></>}
+	{fullPresentation && <><link rel="stylesheet" href={globalCssUrl} data-capture-layer="global" /><link rel="stylesheet" href={invitationCssUrl} data-capture-layer="invitation" /></>}
 	{(fullPageHeadLinks ?? headLinks).map((link) => (
 		<link rel="stylesheet" href={link.href} data-canonical-css-owner={link.canonicalPath} />
 	))}

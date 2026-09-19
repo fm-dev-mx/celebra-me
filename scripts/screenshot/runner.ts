@@ -51,6 +51,12 @@ import {
 } from './capture.js';
 import { buildScreenshotUrl, isSameScreenshotNavigationUrl } from './navigation.js';
 import { ensureInvitationOpenForCapture } from './reveal.js';
+import { readCaptureSourceEvidence, type CaptureSourceEvidence } from './source-evidence.js';
+import {
+	collectPresentationEvidence,
+	presentationFailures,
+	observeCaptureResources,
+} from './presentation-evidence.js';
 
 interface SingleViewportCaptureResult {
 	captures: CaptureResult[];
@@ -113,6 +119,7 @@ async function captureSingleViewport(
 ): Promise<SingleViewportCaptureResult> {
 	const context = await createContext(browser, viewport, { authMethod: job.authMethod });
 	const page = await context.newPage();
+	const readResources = observeCaptureResources(page);
 	const consoleErrors: string[] = [];
 	const requestFailures: RequestFailureReport[] = [];
 
@@ -143,6 +150,7 @@ async function captureSingleViewport(
 		});
 
 		if (viewportReport.sectionCoverage) {
+			// Coverage remains independent of resource provenance.
 			const cov = viewportReport.sectionCoverage;
 			console.log(`  ─── Section Coverage Matrix (${viewport.name}) ───`);
 			console.log(`    Expected sections:   ${cov.expectedCount}`);
@@ -156,6 +164,8 @@ async function captureSingleViewport(
 				`    Duplicate sections:  ${cov.duplicateSections.length > 0 ? cov.duplicateSections.join(', ') : 'none'}`,
 			);
 		}
+
+		viewportReport.resources = await readResources();
 
 		// Log summary for this viewport
 		const succeeded = results.filter((r) => r.success && !r.isOptional).length;
@@ -216,6 +226,7 @@ async function captureSingleViewport(
  *  4. Report results
  */
 export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
+	const sourceBefore = readCaptureSourceEvidence();
 	const startTime = Date.now();
 	const startedAt = new Date().toISOString();
 	const allCaptures: CaptureResult[] = [];
@@ -325,6 +336,7 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 	}
 
 	return finalizeScreenshotJobResult({
+		sourceBefore,
 		job,
 		startedAt,
 		startTime,
@@ -337,6 +349,7 @@ export async function runScreenshotJob(job: ScreenshotJob): Promise<JobResult> {
 }
 
 async function finalizeScreenshotJobResult(input: {
+	sourceBefore: CaptureSourceEvidence;
 	job: ScreenshotJob;
 	startedAt: string;
 	startTime: number;
@@ -377,6 +390,13 @@ async function finalizeScreenshotJobResult(input: {
 	const validationFailureMessages = viewportReports.flatMap(
 		(report) => report.validationFailures ?? [],
 	);
+	const sourceAfter = readCaptureSourceEvidence();
+	const sourceStable =
+		input.sourceBefore.status === 'recorded' && sourceAfter.status === 'recorded'
+			? JSON.stringify(input.sourceBefore) === JSON.stringify(sourceAfter)
+			: null;
+	if (sourceStable === false)
+		validationFailureMessages.push('CAPTURE_SOURCE_CHANGED: Workspace changed during capture.');
 	const validationFailed = validationFailureMessages.length;
 
 	const warnings = viewportReports.flatMap((report) => report.warnings);
@@ -417,6 +437,7 @@ async function finalizeScreenshotJobResult(input: {
 	});
 
 	const report: ScreenshotRunReport = {
+		sourceEvidence: { before: input.sourceBefore, after: sourceAfter, stable: sourceStable },
 		route: job.url,
 		mode: job.mode,
 		startedAt,
@@ -649,6 +670,13 @@ async function buildViewportReport({
 	const classifiedConsoleErrors = consoleErrors.map(classifyConsoleError);
 
 	const auditNormalizations = await readAuditNormalizations(page);
+	const presentationEvidence = await collectPresentationEvidence(page);
+	validationFailures.push(...presentationFailures(presentationEvidence));
+	if (presentationEvidence.presentation === 'unverified') {
+		notices.push(
+			'Presentation parity is unverified outside the marked full invitation harness.',
+		);
+	}
 	for (const norm of auditNormalizations) {
 		const msg = `Audit normalization: ${norm}`;
 		notices.push(msg);
@@ -691,6 +719,7 @@ async function buildViewportReport({
 
 	return {
 		name: viewport.name,
+		presentationEvidence,
 		width: viewport.width,
 		height: viewport.height,
 		deviceScaleFactor: viewport.deviceScaleFactor,
