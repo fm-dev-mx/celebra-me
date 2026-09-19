@@ -232,6 +232,12 @@ positions match at all five measured viewports.
 
 ### Before/after measurements
 
+These are historical measurements from the saved `before-full/after-full` reports, not a current
+HEAD benchmark. The September 19 comparative audit found 875 lines / 25,436 bytes in the
+then-current profile versus 886 lines / 25,783 bytes in the saved after-report. Keep the recorded
+snapshot intact; remeasure an explicitly identified source before claiming current performance or
+size.
+
 | Metric                                 | Before  | After   | Change    |
 | -------------------------------------- | ------- | ------- | --------- |
 | Profile source bytes                   | 45,660  | 25,783  | −43.5%    |
@@ -283,6 +289,43 @@ The formal chapter intentionally retains its canonical typography, including its
 changing that shared contract is outside this presentation pass. Production transfer size and Core
 Web Vitals are not measured. Published and Preview routes are not exercised. Human creative
 acceptance remains **PENDING**, independently of technical checks.
+
+## Comparative Audit and First-Proposal Baseline
+
+Audit date: 2026-09-19. Sources: repository history, existing local captures, the original visual
+reference and recovered invitation/refinement task conversations. No new render was produced by that
+audit. The first versioned implementation is `535216506`; it is not proven to be the first proposal
+the user saw. `0a2487044` records early refinement. The later reference consisted of that commit
+plus staged and unstaged work, not an independently committed design. `4af293ad0` records the
+transferred and simplified local presentation after the shared responsive work in `8f98a111a`.
+
+The evidence supports a gap between the approved direction and its rendered realization, not a claim
+that the initial brief lacked detail. Early captures show a large script quote, stacked ornamental
+boundaries and a terracotta formal chapter despite the neutral palette. The later reference improved
+the opening through monogram, restrained type and landscape, but retained small metadata and
+repeated decoration. Subsequent polishing improved legibility and simplified styles. These visual
+judgments do not establish that every later choice is objectively superior.
+
+Evidence inventory (ignored, local-only):
+
+- `.tmp/visual-review/melissa-transfer/`: saved pre-transfer profile, before/reference images and
+  `reference-state.json` with HEAD, index and scoped file hashes. Copies at 390 and 1440 px matched
+  their source captures during the audit.
+- `.tmp/visual-review/melissa-polish/{before-full,after-full}/`: captures and metrics at 320×800,
+  390×844, 768×1024, 1440×900 and 1440×600. Content and three artwork hashes match across the pair.
+  The old profile was intercepted over the later shared environment; this is not an exact old build.
+- `output/playwright/melissa-refined/report.json`: historical public-route section evidence at
+  390×844, DPR 2. It must not be compared pixel-for-pixel with DPR 1 harness captures.
+
+Earlier harness references omitted global/base CSS. Captures with unrevealed blank areas are not
+valid complete-composition evidence. Clock/browser-version and per-glyph font provenance are not
+fully recorded. A complete causal history of the reference worktree was not recovered. The text of
+the quote, itinerary labels and gifts subtitle also changed across the historical transfer, so that
+comparison cannot isolate styling alone. Current published-route parity remains unverified.
+
+First-proposal evidence identity, exact correction count and rework duration: `UNVERIFIED`. Human
+acceptance: `PENDING`. Use the existing creative QA correction register for future proposals; do not
+manufacture retrospective counts from commits or task duration.
 
 ## Photograph Inventory
 

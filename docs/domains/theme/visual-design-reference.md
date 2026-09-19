@@ -6,6 +6,44 @@ selecting art direction, and the hero contract when changing or reviewing invita
 [theme architecture](architecture.md) owns implementation. Example palettes/fonts are not a live
 preset catalog; verify the active tokens and assets before use.
 
+## Comparative Quality Criteria
+
+Use these criteria with the existing design-reference brief and creative QA report. They evaluate
+the rendered result, not the amount of implementation work. Human creative acceptance remains
+independent of mechanical validation.
+
+| Dimension      | Observable review                                                                     | Demonstrated anti-pattern                                                                         |
+| -------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Composition    | Identify the dominant element and the role of each secondary element                  | Reproducing palette and ornament while losing the reference's spatial relationships               |
+| Typography     | Distinct display, narrative and functional roles; effective size, contrast and reflow | A long script paragraph competing with the names; tiny tracked capitals for practical information |
+| Rhythm         | Review complete sections and boundaries, plus readable detail crops                   | Treating unrevealed blank content as negative space; approving isolated components only           |
+| Surfaces       | Explain the hierarchy served by each border, shadow and ornament                      | Outer border, inner frame, medallion and elevation all marking the same item                      |
+| Imagery        | Verify loaded media, crop, resolution and its narrative role at required viewports    | Assuming resource presence proves correct rendering or crop                                       |
+| Implementation | Check the consumer's computed styles and complete delivery chain                      | Assuming root tokens override component-local values or isolated CSS proves page parity           |
+| Resilience     | Verify narrow and short viewports, text enlargement and relevant interactions         | Shrinking practical text or clipping overflow to preserve decoration                              |
+
+### Melissa and Luis Osmar: bounded before/after evidence
+
+The September 2026 audit recovered these historical examples; they are not a universal wedding style
+prescription. Detailed provenance and limitations belong in
+[`docs/invitations/melissa-y-luis-osmar.md`](../../invitations/melissa-y-luis-osmar.md).
+
+- Opening: a framed calligraphic name stack became a restrained monogram/name composition with an
+  architectural landscape. The transferable principle is a specific composition; Cinzel, the
+  Mediterranean landscape and `M | L` belong to this invitation.
+- Quote: a large script paragraph became readable editorial prose. The historical text also changed,
+  so reduced height cannot be attributed to typography alone.
+- Functional sections: repeated ornamental boundaries and small capitals were reduced in favor of
+  readable names, metadata and controls. More restraint did not require removing semantic grouping.
+- Later polishing retained content and artwork hashes while reducing observed profile declarations
+  from 1,040 to 489. This demonstrates possible simplification, not an automatic quality score.
+
+The existing ignored evidence sets are `melissa-transfer` and `melissa-polish` under
+`.tmp/visual-review/`. Only the latter's `before-full/after-full` pair includes the full harness
+presentation on both sides; its earlier profile was reconstructed on the later shared styles. Do not
+regenerate an "original" image and label it historical. If these local artifacts are absent, mark
+the visual comparison unavailable and retain the qualified written findings.
+
 ## Aesthetic Directions
 
 ### 1. The "Jewelry Box" Aesthetic (XV Años Premium)

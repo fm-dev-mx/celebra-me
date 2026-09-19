@@ -152,7 +152,7 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 		expect(serialized).toContain(
 			'El amor todo lo disculpa, todo lo cree, todo lo espera, todo lo soporta.',
 		);
-		expect(content.quote?.author).toBe('1 Corintios 13:7-8');
+		expect(content.quote).toMatchObject({ author: '1 Corintios 13:7-8' });
 		for (const name of [
 			'Martha Elena Osuna Rubio',
 			'Rodrigo Landell Osuna',

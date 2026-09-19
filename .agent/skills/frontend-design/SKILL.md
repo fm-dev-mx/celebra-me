@@ -218,6 +218,17 @@ direction on client Lane A invitations.
 
 ## Visual Critique / Polish Checklist
 
+For reference-led work, evaluate the compositional relationships recorded in the brief against the
+rendered page. Check styles on their consuming elements: an ancestor token does not override a
+component-local custom property. Do not equate more ornament, code, fonts or animation with quality.
+Review the full narrative and readable crops; missing reveals or unloaded media invalidate the
+affected evidence rather than proving intentional whitespace.
+
+Use the
+[comparative quality criteria](../../../docs/domains/theme/visual-design-reference.md#comparative-quality-criteria)
+for evidence-backed examples and transferable principles. Keep art-direction preferences distinct
+from measurable defects and from human acceptance.
+
 Use this as a procedure (not a separate skill) before shipping UI or invitation visuals:
 
 1. **Register** — Persuade vs Operate named for the surface.
@@ -262,5 +273,5 @@ Run visual iteration as a bounded loop:
 
 Prefer approved client/product assets over generated placeholders. When a visual change alters a
 live token, preset, section variant, or isolation contract, run
-`.agent/skills/theme-architecture-governance/SKILL.md` and update the canonical theme documentation as
-required there.
+`.agent/skills/theme-architecture-governance/SKILL.md` and update the canonical theme documentation
+as required there.

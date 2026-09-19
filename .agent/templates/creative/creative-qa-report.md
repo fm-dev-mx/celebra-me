@@ -91,6 +91,16 @@ brief; `Blocked` identifies evidence or environment that could not be obtained.
 
 ## UI / Invitation Findings
 
+### Evidence comparability
+
+Record capture report identity, source fingerprints, route and safe capture controls, viewport/DPR,
+browser, font/resource status and normalizations. The screenshot report owns executable metadata;
+link it rather than copying its schema. Distinguish historical comparisons from controlled ones.
+State changes in content/assets/crops and any unverified server revision or per-glyph font fallback.
+Classify each conclusion as observed fact, visual judgment or causal hypothesis, with confidence and
+an alternative explanation when causality is uncertain. Do not compare normalized motion-disabled
+captures as proof of natural interaction behavior.
+
 Severity: `Critical` blocks safe delivery or core use; `Important` fails an approved criterion or
 causes a material regression; `Minor` is observable but does not block acceptance.
 
@@ -99,6 +109,22 @@ causes a material regression; `Minor` is observable but does not block acceptanc
 |     |          | Pass / Fail / Blocked |                    |                    |           |          |        |          |                                |                |
 
 ## Technical QA
+
+### First-proposal correction register
+
+Use one row per substantive correction after the first proposal, not per commit or implementation
+attempt. Substantive means a change to composition, hierarchy, imagery, responsive behavior or core
+usability. Minor copy fixes may be logged separately. Retain the first proposal evidence and brief
+revision; do not replace them with the latest screenshots.
+
+| Proposal / brief revision and first evidence | Human outcome / date | Correction ID, reason and category                               | Rework minutes and revised evidence / outcome |
+| -------------------------------------------- | -------------------- | ---------------------------------------------------------------- | --------------------------------------------- |
+|                                              | PENDING              | Defect / missed criterion / changed preference / changed content | UNVERIFIED                                    |
+
+The reviewer supplies the reason and outcome; the implementer records actual rework time. Missing
+time or feedback stays `UNVERIFIED` or `PENDING`, never zero. Count correction rounds separately
+from individual findings. Compare invitations of similar scope and asset readiness; establish the
+observed baseline before setting a target. Do not retrospectively invent timing or approval.
 
 | Check                                | Pass/Fail | Notes |
 | ------------------------------------ | --------- | ----- |

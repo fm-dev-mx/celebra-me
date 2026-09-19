@@ -74,6 +74,17 @@ not show enough evidence; do not infer silently.
 
 ## Focus and Boundaries
 
+### Composition translation
+
+| Reference relationship                                               | Intended rendered relationship | Preserved / adapted / omitted and why | Evidence and acceptance criterion |
+| -------------------------------------------------------------------- | ------------------------------ | ------------------------------------- | --------------------------------- |
+| Dominant subject, type scale, image/text balance or reading sequence |                                |                                       |                                   |
+
+State the event-specific visual idea in one sentence. A palette, font list or adjective such as
+"premium" does not define a composition. Identify which choices are reusable principles and which
+belong only to this invitation. Missing motion or responsive evidence in a reference stays
+`Unsupported`; do not invent it.
+
 | Priority | Target section or element | Section intent | Desired change | Owning layer |
 | -------- | ------------------------- | -------------- | -------------- | ------------ |
 | P0       |                           |                |                |              |

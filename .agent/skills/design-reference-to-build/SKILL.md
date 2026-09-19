@@ -1,10 +1,13 @@
 ---
 name: design-reference-to-build
-description: Orchestrate reference-driven visual design, implementation, and QA for invitations, demos, landings, and dashboards — from brief through gatekeeper handoff.
+description:
+  Orchestrate reference-driven visual design, implementation, and QA for invitations, demos,
+  landings, and dashboards — from brief through gatekeeper handoff.
 domain: frontend
 version: 1.0.0
 when_to_use:
-  - Interpreting supplied visual references before implementing an invitation, demo, landing, or dashboard surface
+  - Interpreting supplied visual references before implementing an invitation, demo, landing, or
+    dashboard surface
 preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
@@ -19,9 +22,9 @@ related_docs:
 
 # Design Reference to Build
 
-Use this skill for reference-driven invitation, demo, landing, or dashboard design. It
-orchestrates existing owners; it does not own visual intent, theme contracts, validation tiers, or
-invitation publication.
+Use this skill for reference-driven invitation, demo, landing, or dashboard design. It orchestrates
+existing owners; it does not own visual intent, theme contracts, validation tiers, or invitation
+publication.
 
 Entry condition: a request supplies or cites visual references and the intended result requires
 interpretation before implementation. Exact, localized corrections with an observable target route
@@ -44,8 +47,8 @@ Figma frames, screenshots, Mobbin examples, and other external references are op
 are never sources of truth and must not introduce provider-specific configuration or a parallel
 design system.
 
-Follow the authority order in `AGENTS.md`. Role contracts assign responsibility, this skill
-orders the handoffs, the brief records task decisions, and the QA report records evidence. Neither a
+Follow the authority order in `AGENTS.md`. Role contracts assign responsibility, this skill orders
+the handoffs, the brief records task decisions, and the QA report records evidence. Neither a
 template nor a completed report can override a rule, canonical skill, or domain contract.
 
 ## Inputs and Outputs
@@ -116,6 +119,16 @@ Apply the blocking rules and reference-sufficiency decision recorded in the desi
 
 ## Phase 3 — Define Focused Iteration Units
 
+Before coding, translate the reference into compositional relationships, not just a palette or a
+list of effects: dominant subject, relative type scale, image/text balance, reading sequence and
+section rhythm. Record each relationship, its intended rendered result and any approved departure in
+the existing brief. A detailed brief is not evidence that the browser implements it.
+
+For a new invitation, resolve the opening plus one narrative and one functional section at mobile
+and desktop sizes, then check their continuity in the whole invitation. Reuse the live product; do
+not create a second prototype system. Content shortening, new imagery and crop changes are separate
+decisions, not silent ways to make a comparison look better.
+
 Each unit must state:
 
 - the target section, element, route, or selector;
@@ -172,12 +185,26 @@ does not clear creative acceptance.
 
 Screenshot output is evidence, not a tracked repository artifact.
 
+### Before the first user proposal
+
+The builder verifies the effective cascade (base, preset, variant and profile), font loading,
+critical media and interaction states. QA reviews the complete narrative and readable details,
+checks each brief criterion and resolves material discrepancies before presentation. Use the capture
+evidence contract in `scripts/screenshot/README.md`; isolated harness views and normalized
+screenshots cannot stand in for public-route behavior. Unknown provenance or missing coverage is
+reported as unverified, never silently treated as equivalent.
+
+Keep technical status and human creative acceptance separate. After presentation, use the correction
+register in `creative-qa-report` to distinguish defects, missed brief criteria and new preferences.
+Establish a baseline before promising reductions in rework. No process guarantees subjective quality
+from the first proposal.
+
 ## Phase 6 — Sync and Handoff
 
 - Run `theme-architecture-governance` when a live token, preset, variant, or isolation contract
   changes. Update `docs/domains/theme/architecture.md` only when that technical contract changes.
-- For real invitations, continue through `docs/domains/intake/production-flow.md`; this skill grants no
-  Preview or Production authorization.
+- For real invitations, continue through `docs/domains/intake/production-flow.md`; this skill grants
+  no Preview or Production authorization.
 - Report the brief/baseline used, files changed, visual evidence, validations, skips, remaining
   risks, and Git/production actions.
 
