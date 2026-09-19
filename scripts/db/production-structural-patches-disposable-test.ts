@@ -1,5 +1,5 @@
 /**
- * Runtime contract for the two P0 structural Production patches.
+ * Runtime contract for production structural patches.
  *
  * This executes the versioned SQL against PostgreSQL 17 disposable data only.
  * The tests prove the transaction guards, target population, idempotence, and
@@ -16,6 +16,8 @@ interface PatchCase {
 	name: string;
 	file: string;
 	rows: Array<{ slug: string; eventType: string }>;
+	preservedRows?: Array<{ slug: string; eventType: string; content: string }>;
+	initialContent?: string;
 	failureCode: string;
 	conflictContent: string;
 	canonicalPredicate: string;
@@ -51,15 +53,30 @@ const PATCHES: PatchCase[] = [
 		name: 'thank-you editorial back-cover contracts',
 		file: '20260812_thankyou_editorial_back_cover_structural_contracts.sql',
 		rows: [
-			{ slug: 'xareni-iyarit', eventType: 'xv' },
 			{ slug: 'america-johana', eventType: 'xv' },
 			{ slug: 'ana-sofia-cota-guillen', eventType: 'xv' },
 			{ slug: 'ayrin-samantha-lerma-castro', eventType: 'xv' },
 			{ slug: 'leah-lexa', eventType: 'baby-shower' },
 		],
+		preservedRows: [
+			{
+				slug: 'xareni-iyarit',
+				eventType: 'xv',
+				content: `jsonb_build_object('thankYou', jsonb_build_object('variant', 'portrait-keepsake'))`,
+			},
+		],
 		failureCode: 'THANKYOU_CONTRACT_ABORT',
 		conflictContent: `jsonb_build_object('thankYou', jsonb_build_object('variant', 'standard'))`,
 		canonicalPredicate: `content#>>'{thankYou,variant}' = 'editorial-back-cover' and content#>>'{sectionStyles,thankYou,structuralVariant}' = 'editorial-back-cover'`,
+	},
+	{
+		name: 'America Johana ceremony coordinates',
+		file: '20260815_america_johana_ceremony_coordinates.sql',
+		rows: [{ slug: 'america-johana', eventType: 'xv' }],
+		initialContent: `jsonb_build_object('location', jsonb_build_object('ceremony', jsonb_build_object('googleMapsUrl', 'https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8', 'coordinates', jsonb_build_object('lat', 19.27, 'lng', -99.51, 'zoom', 16))))`,
+		failureCode: 'AMERICA_COORDINATES_ABORT',
+		conflictContent: `jsonb_build_object('location', jsonb_build_object('ceremony', jsonb_build_object('googleMapsUrl', 'https://maps.app.goo.gl/unapproved')))`,
+		canonicalPredicate: `content#>>'{location,ceremony,coordinates,lat}' = '19.2759461' and content#>>'{location,ceremony,coordinates,lng}' = '-99.5176924' and content#>>'{location,ceremony,coordinates,zoom}' = '16'`,
 	},
 ];
 
@@ -74,7 +91,9 @@ function sqlLiteral(value: string): string {
 function runSql(sql: string, label: string): CommandResult {
 	const result = runPsql(sql, DISPOSABLE_DB_URL, { throwOnError: false });
 	if (result.status !== 0) {
-		fail(`${label} failed: ${redactCredentials(result.stderr || result.stdout || `exit ${result.status}`)}`);
+		fail(
+			`${label} failed: ${redactCredentials(result.stderr || result.stdout || `exit ${result.status}`)}`,
+		);
 	}
 	return result;
 }
@@ -95,8 +114,12 @@ function patchPath(patch: PatchCase): string {
 }
 
 function recreateFixture(patch: PatchCase): void {
-	const invitations = patch.rows
-		.map((row, index) => `(${sqlLiteral(`id-${index + 1}`)}, ${sqlLiteral(row.slug)}, ${sqlLiteral(row.eventType)})`)
+	const fixtureRows = [...patch.rows, ...(patch.preservedRows ?? [])];
+	const invitations = fixtureRows
+		.map(
+			(row, index) =>
+				`(${sqlLiteral(`id-${index + 1}`)}, ${sqlLiteral(row.slug)}, ${sqlLiteral(row.eventType)})`,
+		)
 		.join(',\n');
 	runSql(
 		`
@@ -124,7 +147,7 @@ CREATE TABLE public.invitation_content_drafts (
   updated_at timestamptz,
   deleted_at timestamptz
 );
-	INSERT INTO public.invitations (id, slug, event_type) VALUES ${invitations};
+INSERT INTO public.invitations (id, slug, event_type) VALUES ${invitations};
 INSERT INTO public.published_invitation_content (invitation_project_id, version)
 SELECT id, ${patch.initialVersion ?? 1} FROM public.invitations;
 INSERT INTO public.invitation_content_drafts (invitation_project_id)
@@ -132,6 +155,34 @@ SELECT id FROM public.invitations;
 `,
 		`recreate ${patch.name} fixture`,
 	);
+	if (patch.initialContent) {
+		runSql(
+			`
+UPDATE public.published_invitation_content SET content = ${patch.initialContent};
+UPDATE public.invitation_content_drafts SET content = ${patch.initialContent};
+`,
+			`${patch.name} seed initial content`,
+		);
+	}
+	for (const row of patch.preservedRows ?? []) {
+		runSql(
+			`
+UPDATE public.published_invitation_content p
+SET content = ${row.content}
+FROM public.invitations i
+WHERE p.invitation_project_id = i.id
+  AND i.slug = ${sqlLiteral(row.slug)}
+  AND i.event_type = ${sqlLiteral(row.eventType)};
+UPDATE public.invitation_content_drafts d
+SET content = ${row.content}
+FROM public.invitations i
+WHERE d.invitation_project_id = i.id
+  AND i.slug = ${sqlLiteral(row.slug)}
+  AND i.event_type = ${sqlLiteral(row.eventType)};
+`,
+			`${patch.name} seed preserved rows`,
+		);
+	}
 }
 
 function applyPatch(patch: PatchCase): CommandResult {
@@ -140,14 +191,18 @@ function applyPatch(patch: PatchCase): CommandResult {
 
 function requireSuccess(result: CommandResult, label: string): void {
 	if (result.status !== 0) {
-		fail(`${label} should succeed: ${redactCredentials(result.stderr || result.stdout || `exit ${result.status}`)}`);
+		fail(
+			`${label} should succeed: ${redactCredentials(result.stderr || result.stdout || `exit ${result.status}`)}`,
+		);
 	}
 }
 
 function requireFailure(result: CommandResult, code: string, label: string): void {
 	const output = `${result.stdout}\n${result.stderr}`;
 	if (result.status === 0 || !output.includes(code)) {
-		fail(`${label} must fail with ${code}: ${redactCredentials(output || `exit ${result.status}`)}`);
+		fail(
+			`${label} must fail with ${code}: ${redactCredentials(output || `exit ${result.status}`)}`,
+		);
 	}
 }
 
@@ -164,7 +219,9 @@ function assertCanonicalRows(patch: PatchCase): void {
 	for (const table of ['published_invitation_content', 'invitation_content_drafts']) {
 		const count = canonicalCount(patch, table);
 		if (count !== patch.rows.length) {
-			fail(`${patch.name} expected ${patch.rows.length} canonical ${table} rows, got ${count}.`);
+			fail(
+				`${patch.name} expected ${patch.rows.length} canonical ${table} rows, got ${count}.`,
+			);
 		}
 	}
 	if (patch.galleryCanonicalCount !== undefined) {
@@ -174,7 +231,24 @@ function assertCanonicalRows(patch: PatchCase): void {
 				'gallery canonical count',
 			),
 		);
-		if (galleryCount !== patch.galleryCanonicalCount) fail(`Itinerary patch expected ${patch.galleryCanonicalCount} canonical gallery rows, got ${galleryCount}.`);
+		if (galleryCount !== patch.galleryCanonicalCount)
+			fail(
+				`Itinerary patch expected ${patch.galleryCanonicalCount} canonical gallery rows, got ${galleryCount}.`,
+			);
+	}
+}
+
+function assertPreservedRows(patch: PatchCase): void {
+	for (const row of patch.preservedRows ?? []) {
+		for (const table of ['published_invitation_content', 'invitation_content_drafts']) {
+			const isPreserved = query(
+				`select (c.content = ${row.content}::jsonb)::text from public.${table} c join public.invitations i on c.invitation_project_id = i.id where i.slug = ${sqlLiteral(row.slug)} and i.event_type = ${sqlLiteral(row.eventType)};`,
+				`${patch.name} preserved ${table} content`,
+			);
+			if (isPreserved !== 't') {
+				fail(`${patch.name} mutated preserved ${row.eventType}/${row.slug} in ${table}.`);
+			}
+		}
 	}
 }
 
@@ -182,17 +256,20 @@ function testSuccessfulExecutionAndRerun(patch: PatchCase): void {
 	recreateFixture(patch);
 	requireSuccess(applyPatch(patch), `${patch.name} first apply`);
 	assertCanonicalRows(patch);
+	assertPreservedRows(patch);
 	const firstVersions = query(
 		`select string_agg(version::text, ',' order by id) from public.published_invitation_content;`,
 		`${patch.name} first versions`,
 	);
 	requireSuccess(applyPatch(patch), `${patch.name} idempotent rerun`);
 	assertCanonicalRows(patch);
+	assertPreservedRows(patch);
 	const rerunVersions = query(
 		`select string_agg(version::text, ',' order by id) from public.published_invitation_content;`,
 		`${patch.name} rerun versions`,
 	);
-	if (firstVersions !== rerunVersions) fail(`${patch.name} rerun changed already-canonical published rows.`);
+	if (firstVersions !== rerunVersions)
+		fail(`${patch.name} rerun changed already-canonical published rows.`);
 	console.info(`PASS ${patch.name}: expected rows and idempotent rerun`);
 }
 

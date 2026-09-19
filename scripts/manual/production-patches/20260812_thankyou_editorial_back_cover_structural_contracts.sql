@@ -4,19 +4,19 @@
 -- @ticket: invitation-contract-render-parity-goal3
 -- @tables: public.published_invitation_content, public.invitation_content_drafts
 -- @operation: update
--- @expected-rows-min: 5
--- @expected-rows-max: 10
+-- @expected-rows-min: 4
+-- @expected-rows-max: 8
 -- @requires-backup: true
 -- @paired-stores: published,draft
 -- @pair-key: event_type,slug
--- @dry-run-query: select 'published' as store, i.event_type, i.slug, p.version from public.invitations i join public.published_invitation_content p on p.invitation_project_id = i.id where i.archived_at is null and p.deleted_at is null and ((i.event_type = 'xv' and i.slug in ('xareni-iyarit','america-johana','ana-sofia-cota-guillen','ayrin-samantha-lerma-castro')) or (i.event_type = 'baby-shower' and i.slug = 'leah-lexa')) and (p.content#>>'{thankYou,variant}' is distinct from 'editorial-back-cover' or p.content#>>'{sectionStyles,thankYou,structuralVariant}' is distinct from 'editorial-back-cover') union all select 'draft' as store, i.event_type, i.slug, null::integer as version from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id = i.id where i.archived_at is null and d.deleted_at is null and ((i.event_type = 'xv' and i.slug in ('xareni-iyarit','america-johana','ana-sofia-cota-guillen','ayrin-samantha-lerma-castro')) or (i.event_type = 'baby-shower' and i.slug = 'leah-lexa')) and (d.content#>>'{thankYou,variant}' is distinct from 'editorial-back-cover' or d.content#>>'{sectionStyles,thankYou,structuralVariant}' is distinct from 'editorial-back-cover')
--- @rollback: restore public.published_invitation_content and matching invitation_content_drafts for slugs xareni-iyarit, america-johana, ana-sofia-cota-guillen, ayrin-samantha-lerma-castro, and leah-lexa from the pre-apply Production backup
+-- @dry-run-query: select 'published' as store, i.event_type, i.slug, p.version from public.invitations i join public.published_invitation_content p on p.invitation_project_id = i.id where i.archived_at is null and p.deleted_at is null and ((i.event_type = 'xv' and i.slug in ('america-johana','ana-sofia-cota-guillen','ayrin-samantha-lerma-castro')) or (i.event_type = 'baby-shower' and i.slug = 'leah-lexa')) and (p.content#>>'{thankYou,variant}' is distinct from 'editorial-back-cover' or p.content#>>'{sectionStyles,thankYou,structuralVariant}' is distinct from 'editorial-back-cover') union all select 'draft' as store, i.event_type, i.slug, null::integer as version from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id = i.id where i.archived_at is null and d.deleted_at is null and ((i.event_type = 'xv' and i.slug in ('america-johana','ana-sofia-cota-guillen','ayrin-samantha-lerma-castro')) or (i.event_type = 'baby-shower' and i.slug = 'leah-lexa')) and (d.content#>>'{thankYou,variant}' is distinct from 'editorial-back-cover' or d.content#>>'{sectionStyles,thankYou,structuralVariant}' is distinct from 'editorial-back-cover')
+-- @rollback: restore public.published_invitation_content and matching invitation_content_drafts for slugs america-johana, ana-sofia-cota-guillen, ayrin-samantha-lerma-castro, and leah-lexa from the pre-apply Production backup
 
 begin;
 
 do $$
 declare
-  expected_xv text[] := array['xareni-iyarit','america-johana','ana-sofia-cota-guillen','ayrin-samantha-lerma-castro'];
+  expected_xv text[] := array['america-johana','ana-sofia-cota-guillen','ayrin-samantha-lerma-castro'];
   expected_slug text;
   published_count int;
   thank_you_variant text;
@@ -85,7 +85,7 @@ where p.invitation_project_id = i.id
   and i.archived_at is null
   and p.deleted_at is null
   and (
-    (i.event_type = 'xv' and i.slug in ('xareni-iyarit', 'america-johana', 'ana-sofia-cota-guillen', 'ayrin-samantha-lerma-castro'))
+    (i.event_type = 'xv' and i.slug in ('america-johana', 'ana-sofia-cota-guillen', 'ayrin-samantha-lerma-castro'))
     or (i.event_type = 'baby-shower' and i.slug = 'leah-lexa')
   )
   and (
@@ -116,7 +116,7 @@ where d.invitation_project_id = i.id
   and i.archived_at is null
   and d.deleted_at is null
   and (
-    (i.event_type = 'xv' and i.slug in ('xareni-iyarit', 'america-johana', 'ana-sofia-cota-guillen', 'ayrin-samantha-lerma-castro'))
+    (i.event_type = 'xv' and i.slug in ('america-johana', 'ana-sofia-cota-guillen', 'ayrin-samantha-lerma-castro'))
     or (i.event_type = 'baby-shower' and i.slug = 'leah-lexa')
   )
   and (
