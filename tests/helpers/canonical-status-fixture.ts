@@ -122,8 +122,8 @@ export function buildCanonicalStatusViewFixture(
 				file: 'scripts/manual/production-patches/20260812_thankyou_editorial_back_cover_structural_contracts.sql',
 				purpose: 'Persist thank-you editorial back-cover structural contracts.',
 				targetEnvironments: ['production'],
-				expectedRowsMin: 4,
-				expectedRowsMax: 8,
+				expectedRowsMin: 3,
+				expectedRowsMax: 6,
 				environments: {
 					local: {
 						status: 'NOT_APPLICABLE',

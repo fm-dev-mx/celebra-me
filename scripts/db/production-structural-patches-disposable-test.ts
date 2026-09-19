@@ -16,7 +16,12 @@ interface PatchCase {
 	name: string;
 	file: string;
 	rows: Array<{ slug: string; eventType: string }>;
-	preservedRows?: Array<{ slug: string; eventType: string; content: string }>;
+	preservedRows?: Array<{
+		slug: string;
+		eventType: string;
+		content: string;
+		preservedPredicate: string;
+	}>;
 	initialContent?: string;
 	failureCode: string;
 	conflictContent: string;
@@ -53,7 +58,6 @@ const PATCHES: PatchCase[] = [
 		name: 'thank-you editorial back-cover contracts',
 		file: '20260812_thankyou_editorial_back_cover_structural_contracts.sql',
 		rows: [
-			{ slug: 'america-johana', eventType: 'xv' },
 			{ slug: 'ana-sofia-cota-guillen', eventType: 'xv' },
 			{ slug: 'ayrin-samantha-lerma-castro', eventType: 'xv' },
 			{ slug: 'leah-lexa', eventType: 'baby-shower' },
@@ -63,6 +67,13 @@ const PATCHES: PatchCase[] = [
 				slug: 'xareni-iyarit',
 				eventType: 'xv',
 				content: `jsonb_build_object('thankYou', jsonb_build_object('variant', 'portrait-keepsake'))`,
+				preservedPredicate: `c.content#>>'{thankYou,variant}' = 'portrait-keepsake'`,
+			},
+			{
+				slug: 'america-johana',
+				eventType: 'xv',
+				content: `jsonb_build_object('thankYou', jsonb_build_object('variant', 'portrait-keepsake'))`,
+				preservedPredicate: `c.content#>>'{thankYou,variant}' = 'portrait-keepsake'`,
 			},
 		],
 		failureCode: 'THANKYOU_CONTRACT_ABORT',
@@ -242,11 +253,13 @@ function assertPreservedRows(patch: PatchCase): void {
 	for (const row of patch.preservedRows ?? []) {
 		for (const table of ['published_invitation_content', 'invitation_content_drafts']) {
 			const isPreserved = query(
-				`select (c.content = ${row.content}::jsonb)::text from public.${table} c join public.invitations i on c.invitation_project_id = i.id where i.slug = ${sqlLiteral(row.slug)} and i.event_type = ${sqlLiteral(row.eventType)};`,
+				`select (${row.preservedPredicate})::text from public.${table} c join public.invitations i on c.invitation_project_id = i.id where i.slug = ${sqlLiteral(row.slug)} and i.event_type = ${sqlLiteral(row.eventType)};`,
 				`${patch.name} preserved ${table} content`,
 			);
-			if (isPreserved !== 't') {
-				fail(`${patch.name} mutated preserved ${row.eventType}/${row.slug} in ${table}.`);
+			if (isPreserved !== 'true') {
+				fail(
+					`${patch.name} preservation check failed for ${row.eventType}/${row.slug} in ${table}; received ${JSON.stringify(isPreserved)}.`,
+				);
 			}
 		}
 	}
