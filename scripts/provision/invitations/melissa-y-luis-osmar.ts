@@ -341,9 +341,9 @@ export function buildMelissaPublishedContent(
 export const melissaInvitation: InvitationDefinition<MelissaAssetKey> = defineInvitation({
 	slug: MELISSA_EVENT.slug,
 	managedIdentityId: 'e8bf73bf-50df-452c-844e-0889f2a0ae22',
-	managedIdentityProvenance: 'owner-approved',
+	managedIdentityProvenance: 'persisted',
 	createdAt: '2026-09-18T20:05:55.937Z',
-	lifecycle: 'in_progress',
+	lifecycle: 'published',
 	deliveryScope: 'content-and-assets',
 	eventType: MELISSA_EVENT.eventType,
 	title: MELISSA_EVENT.title,

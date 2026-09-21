@@ -34,7 +34,7 @@ function buildTestAssets(): MelissaAssetMap {
 }
 
 describe('Boda Melissa y Luis Osmar provision contract', () => {
-	it('registers an in-progress managed jewelry-box definition', () => {
+	it('registers a published managed jewelry-box definition', () => {
 		const definition = getInvitationDefinition('melissa-y-luis-osmar');
 		expect(definition).toMatchObject({
 			slug: 'melissa-y-luis-osmar',
@@ -43,8 +43,8 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 			baseDemoId: 'demo-boda-jewelry-box-wedding',
 			themeId: 'jewelry-box-wedding',
 			visualProfileId: 'melissa-y-luis-osmar',
-			lifecycle: 'in_progress',
-			managedIdentityProvenance: 'owner-approved',
+			lifecycle: 'published',
+			managedIdentityProvenance: 'persisted',
 			deliveryScope: 'content-and-assets',
 		});
 		expect(definition.clientName).toBe('Melissa Landell Osuna');
