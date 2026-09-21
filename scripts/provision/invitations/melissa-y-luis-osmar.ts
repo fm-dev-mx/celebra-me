@@ -39,6 +39,12 @@ const EVENT_DATE_LONG = '16 de diciembre de 2026';
 const EVENT_DATE_HEADING = 'Miércoles, 16 de diciembre de 2026';
 const RSVP_DEADLINE = '16 de noviembre de 2026';
 
+export const MELISSA_MUSIC = {
+	url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1790029560/Christina_Perri_-_A_Thousand_Years_l9vbmy.mp3',
+	title: 'A Thousand Years — Christina Perri',
+	autoPlay: true,
+} as const;
+
 export const MELISSA_ASSET_SPECS = [
 	{
 		key: 'cathedral-editorial',
@@ -71,9 +77,7 @@ export const MELISSA_ASSET_SPECS = [
 export type MelissaAssetKey = (typeof MELISSA_ASSET_SPECS)[number]['key'];
 export type MelissaAssetMap = Record<MelissaAssetKey, UploadedAssetRef>;
 
-export function buildMelissaPublishedContent(
-	assets: UploadedAssetMap<MelissaAssetKey>,
-): Record<string, unknown> {
+export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAssetKey>) {
 	return {
 		eventType: MELISSA_EVENT.eventType,
 		isDemo: false,
@@ -83,6 +87,7 @@ export function buildMelissaPublishedContent(
 		description:
 			'Invitación a la boda de Melissa y Luis Osmar, el 16 de diciembre de 2026 en Mazatlán, Sinaloa.',
 		theme: { preset: MELISSA_EVENT.themeId },
+		music: MELISSA_MUSIC,
 		eventTiming: {
 			localDateTime: MELISSA_EVENT.localDateTime,
 			timeZone: MELISSA_EVENT.timeZone,
@@ -143,8 +148,8 @@ export function buildMelissaPublishedContent(
 			},
 		},
 		quote: {
-			text: 'El amor todo lo disculpa, todo lo cree, todo lo espera, todo lo soporta. El amor no pasará jamás.',
-			author: '1 Corintios 13:7-8',
+			text: 'A dondequiera que tú fueres, iré yo; y dondequiera que vivieres, viviré.',
+			author: 'Rut 1:16',
 		},
 		countdown: {
 			variant: 'clock-face',
@@ -202,10 +207,11 @@ export function buildMelissaPublishedContent(
 					id: 'ceremony-cathedral',
 					venueEvent: 'Ceremonia religiosa',
 					venueName: 'Catedral Basílica de la Inmaculada Concepción',
-					address: '21 de Marzo s/n, Centro, 82000 Mazatlán, Sinaloa',
+					address: '21 de Marzo, Centro, 82000 Mazatlán, Sinaloa',
 					city: 'Mazatlán, Sinaloa',
 					date: EVENT_DATE_LONG,
 					time: MELISSA_SCHEDULE.ceremonyTime,
+					googleMapsUrl: 'https://maps.app.goo.gl/fDfSjGhYbnG8FmYz8',
 				},
 				{
 					type: 'reception',
@@ -216,16 +222,19 @@ export function buildMelissaPublishedContent(
 					city: 'Mazatlán, Sinaloa',
 					date: EVENT_DATE_LONG,
 					time: MELISSA_SCHEDULE.receptionTime,
+					googleMapsUrl: 'https://maps.app.goo.gl/thY2JoawdYj1vkbx8',
 				},
 			],
 			indicationsHeading: 'Consideraciones',
 			indications: [
 				{
+					title: 'Vestimenta',
 					iconName: 'DressCode',
 					styleVariant: 'default',
 					text: 'Código de vestimenta: Gala formal.',
 				},
 				{
+					title: 'Celebración',
 					iconName: 'FlowerSeal',
 					styleVariant: 'default',
 					text: 'Celebración reservada para adultos.',
@@ -245,13 +254,13 @@ export function buildMelissaPublishedContent(
 				},
 				{
 					iconName: 'Reception',
-					label: 'Recepción y cóctel de bienvenida',
+					label: 'Recepción',
 					time: MELISSA_SCHEDULE.receptionTime,
 					description: 'Belcanto Jardín.',
 				},
 				{
 					iconName: 'Rings',
-					label: 'Ceremonia civil y banquete',
+					label: 'Ceremonia civil',
 					time: MELISSA_SCHEDULE.civilCeremonyTime,
 					description: 'Belcanto Jardín.',
 				},

@@ -28,36 +28,37 @@ Production readiness (**envReadiness**) remains separately owned by the managed 
 | Client reference sheet      | `source:client-reference-sheet`  | Event facts and visual direction; not reused as a production asset            |
 | Generated architectural art | `source:generated-venue-art`     | Project-local masters and prepared derivatives; interpretive, not documentary |
 | Public venue references     | `source:public-venue-references` | Address evidence; navigation links still require client confirmation          |
+| Client map links            | `source:client-map-link`         | Google Maps pins supplied and confirmed for both venues                       |
 
 ## Fact Register
 
 Classification is one of: `verified` | `inferred` | `ambiguous` | `missing` | `not_applicable` |
 `requires_owner_decision`.
 
-| field                 | value                                                                                    | classification | source                         | notes                                                           |
-| --------------------- | ---------------------------------------------------------------------------------------- | -------------- | ------------------------------ | --------------------------------------------------------------- |
-| slug                  | melissa-y-luis-osmar                                                                     | verified       | owner implementation plan      | Orthography and canonical route explicitly approved             |
-| celebrantName         | Melissa Landell Osuna                                                                    | verified       | source:client-reference-sheet  | Full name supplied by client                                    |
-| secondaryName         | Luis Osmar Muñoz Rodríguez                                                               | verified       | source:client-reference-sheet  | Full name supplied by client                                    |
-| eventDate             | 2026-12-16                                                                               | verified       | source:client-reference-sheet  | Wednesday, 16 December 2026                                     |
-| eventTime             | 12:00                                                                                    | verified       | source:client-reference-sheet  | Religious ceremony start                                        |
-| timeZone              | America/Mazatlan                                                                         | inferred       | venue city + IANA zone         | Must be reconfirmed before publication                          |
-| baseDemoId            | demo-boda-jewelry-box-wedding                                                            | verified       | source:wa-export               | Client selected the shared wedding demo direction               |
-| sourceAssetPath       | src/assets/invitations/melissa-y-luis-osmar                                              | verified       | source:generated-venue-art     | Repository-relative root; no client filesystem path persisted   |
-| sectionOrder          | quote, countdown, family, location, itinerary, gifts, personalizedAccess, rsvp, thankYou | verified       | owner implementation plan      | Interludes are auxiliary narrative inserts                      |
-| primaryVenueName      | Catedral Basílica de la Inmaculada Concepción                                            | verified       | source:client-reference-sheet  | Ceremony venue                                                  |
-| primaryVenueAddress   | 21 de Marzo s/n, Centro, 82000 Mazatlán, Sinaloa                                         | inferred       | source:public-venue-references | Confirm exact navigation pin with client before publication     |
-| receptionVenueName    | Belcanto Jardín                                                                          | verified       | source:client-reference-sheet  | Reception and civil ceremony venue                              |
-| receptionVenueAddress | Lib. 3 12100, Valle del Ejido, 82129 Mazatlán, Sinaloa                                   | inferred       | source:public-venue-references | Public listing; confirm with client before publication          |
-| distinctVenues        | true                                                                                     | verified       | source:client-reference-sheet  | Ceremony and reception use different venues                     |
-| rsvpConfirmationMode  | api                                                                                      | verified       | owner implementation plan      | Canonical RSVP API                                              |
-| rsvpAccessMode        | personalized-only                                                                        | verified       | owner implementation plan      | Assigned guest pass determines capacity                         |
-| rsvpDeadline          | 2026-11-16                                                                               | verified       | owner implementation plan      | Thirty days before the event                                    |
-| dressCode             | Gala formal                                                                              | verified       | owner implementation plan      | No reserved colors invented                                     |
-| childPolicy           | Celebración reservada para adultos                                                       | verified       | source:client-reference-sheet  | Formal visible wording                                          |
-| gifts                 | Liverpool event 60019030; lluvia de sobres                                               | verified       | source:client-reference-sheet  | No payment buttons or bank data                                 |
-| musicUrl              | —                                                                                        | not_applicable | owner implementation plan      | Music omitted unless a licensed direct source is later approved |
-| clientColors          | marfil, perla, taupe, cacao y champagne                                                  | verified       | owner implementation plan      | Champagne restricted to decorative emphasis                     |
+| field                 | value                                                                                    | classification | source                        | notes                                                         |
+| --------------------- | ---------------------------------------------------------------------------------------- | -------------- | ----------------------------- | ------------------------------------------------------------- |
+| slug                  | melissa-y-luis-osmar                                                                     | verified       | owner implementation plan     | Orthography and canonical route explicitly approved           |
+| celebrantName         | Melissa Landell Osuna                                                                    | verified       | source:client-reference-sheet | Full name supplied by client                                  |
+| secondaryName         | Luis Osmar Muñoz Rodríguez                                                               | verified       | source:client-reference-sheet | Full name supplied by client                                  |
+| eventDate             | 2026-12-16                                                                               | verified       | source:client-reference-sheet | Wednesday, 16 December 2026                                   |
+| eventTime             | 12:00                                                                                    | verified       | source:client-reference-sheet | Religious ceremony start                                      |
+| timeZone              | America/Mazatlan                                                                         | inferred       | venue city + IANA zone        | Must be reconfirmed before publication                        |
+| baseDemoId            | demo-boda-jewelry-box-wedding                                                            | verified       | source:wa-export              | Client selected the shared wedding demo direction             |
+| sourceAssetPath       | src/assets/invitations/melissa-y-luis-osmar                                              | verified       | source:generated-venue-art    | Repository-relative root; no client filesystem path persisted |
+| sectionOrder          | quote, countdown, family, location, itinerary, gifts, personalizedAccess, rsvp, thankYou | verified       | owner implementation plan     | Interludes are auxiliary narrative inserts                    |
+| primaryVenueName      | Catedral Basílica de la Inmaculada Concepción                                            | verified       | source:client-reference-sheet | Ceremony venue                                                |
+| primaryVenueAddress   | 21 de Marzo, Centro, 82000 Mazatlán, Sinaloa                                             | verified       | source:client-map-link        | Google Maps pin confirmed for the cathedral                   |
+| receptionVenueName    | Belcanto Jardín                                                                          | verified       | source:client-reference-sheet | Reception and civil ceremony venue                            |
+| receptionVenueAddress | Lib. 3 12100, Valle del Ejido, 82129 Mazatlán, Sinaloa                                   | verified       | source:client-map-link        | Google Maps pin confirmed for Belcanto Jardín                 |
+| distinctVenues        | true                                                                                     | verified       | source:client-reference-sheet | Ceremony and reception use different venues                   |
+| rsvpConfirmationMode  | api                                                                                      | verified       | owner implementation plan     | Canonical RSVP API                                            |
+| rsvpAccessMode        | personalized-only                                                                        | verified       | owner implementation plan     | Assigned guest pass determines capacity                       |
+| rsvpDeadline          | 2026-11-16                                                                               | verified       | owner implementation plan     | Thirty days before the event                                  |
+| dressCode             | Gala formal                                                                              | verified       | owner implementation plan     | No reserved colors invented                                   |
+| childPolicy           | Celebración reservada para adultos                                                       | verified       | source:client-reference-sheet | Formal visible wording                                        |
+| gifts                 | Liverpool event 60019030; lluvia de sobres                                               | verified       | source:client-reference-sheet | No payment buttons or bank data                               |
+| musicUrl              | Cloudinary direct audio source                                                           | verified       | owner-provided source         | “A Thousand Years” by Christina Perri; autoplay enabled       |
+| clientColors          | marfil, perla, taupe, cacao y champagne                                                  | verified       | owner implementation plan     | Champagne restricted to decorative emphasis                   |
 
 ### Family and godparents
 
@@ -94,11 +95,9 @@ Contract maturity for `boda`: `partial`.
 
 ### Non-blocking release dependencies
 
-- Confirm both navigation pins and venue addresses with Melissa.
 - Confirm the normalized capitalization and accents of family and godparent names.
 - Obtain a client contact email and WhatsApp only if later required for a human handoff; the managed
   release uses the canonical technical identity derived from `hostLoginAlias`.
-- Record an explicit final music decision; the current implementation omits music.
 
 Deterministic question: **Is the available information sufficient to prepare this invitation?**
 Answer: `yes`.
@@ -115,7 +114,7 @@ rendered as plausible navigation links.
 
 | id       | category              | issue                                                    | evidence                               | options                                       | recommendation                                 |
 | -------- | --------------------- | -------------------------------------------------------- | -------------------------------------- | --------------------------------------------- | ---------------------------------------------- |
-| maps     | missing-client-facts  | Exact navigation pins are not client-confirmed           | Public address references only         | Confirm both links / keep buttons hidden      | Keep navigation buttons hidden until confirmed |
+| maps     | confirmed-client-link | Exact navigation pins confirmed via client links         | Client Google Maps links               | Use pins; keep buttons hidden in simple mode  | Keep navigation buttons hidden per simple mode |
 | names    | ambiguous-data        | Three names received capitalization/accent normalization | Client reference sheet                 | Approve normalized forms / supply corrections | Confirm normalized forms before publication    |
 | contact  | missing-client-facts  | Client handoff contact is absent                         | No authoritative contact supplied      | Supply email and WhatsApp before handoff      | Use only the canonical technical host identity |
 | creative | photograph-acceptance | Generated venue art requires human review                | Six generated candidates; two selected | Accept / request bounded revision             | Review selected art in the complete invitation |
@@ -134,7 +133,7 @@ rendered as plausible navigation links.
 | ---------- | ---------------------------------------------------------------------------------------- |
 | requested  | quote, countdown, family, location, itinerary, gifts, personalizedAccess, rsvp, thankYou |
 | auxiliary  | interlude after family; interlude after itinerary                                        |
-| omitted    | gallery, music                                                                           |
+| omitted    | gallery                                                                                  |
 | unresolved | none for Local and Preview implementation                                                |
 
 ## Design Direction
@@ -359,10 +358,10 @@ logos, no signage and no watermark.
 - Reuse canonical variants; no slug or profile branching in shared renderers.
 - Invitation-specific styling remains under `.event--melissa-y-luis-osmar`.
 - Generated art is decorative/atmospheric; essential venue information remains real text.
-- Navigation buttons remain hidden until client-confirmed map URLs exist.
+- Navigation buttons remain hidden per simple variant presentation.
 - RSVP uses `confirmationMode: api` and `accessMode: personalized-only`; no guest records are
   seeded.
-- Music and gallery remain omitted.
+- Gallery remains omitted; music uses owner-provided audio source.
 - Managed application is authorized only through `invitation:release` for the exact slug in Local
   and Preview, after dry-run and environment identity checks.
 - The canonical release may create the dedicated `host_client` technical identity derived from

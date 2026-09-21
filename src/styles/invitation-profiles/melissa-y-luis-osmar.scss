@@ -18,6 +18,9 @@
 	--melissa-cocoa-rgb: 58 49 44;
 	--melissa-champagne: rgb(169 130 90);
 	--melissa-champagne-rgb: 169 130 90;
+	--melissa-aged-bronze: rgb(132 88 52);
+	--melissa-aged-bronze-rgb: 132 88 52;
+	--melissa-mineral-olive: rgb(79 88 72);
 	--melissa-hairline: 1px solid rgb(var(--melissa-champagne-rgb) / 30%);
 	--melissa-space-compact: clamp(3rem, 6vw, 4.5rem);
 	--melissa-space-standard: clamp(4.25rem, 8vw, 6rem);
@@ -104,7 +107,7 @@
 		flex-direction: column;
 		justify-content: space-between;
 		align-items: center;
-		min-height: 100svh;
+		min-height: 100dvh;
 		padding-top: clamp(3.5rem, 8svh, 6rem);
 		padding-bottom: calc(var(--melissa-landscape-height) + 5.5rem);
 		padding-inline: 1.25rem;
@@ -144,7 +147,7 @@
 			max-width: 100%;
 			width: 100%;
 			min-width: 0;
-			margin-inline: auto;
+			margin: clamp(1rem, 3svh, 2.5rem) auto 0;
 			padding: 0;
 			border: none;
 			border-radius: 0;
@@ -161,7 +164,7 @@
 		.ceremonial-portrait-hero__content {
 			position: relative;
 			z-index: 2;
-			max-width: 34rem;
+			max-width: 42rem;
 			min-width: 0;
 			margin-inline: auto;
 			text-align: center;
@@ -179,7 +182,7 @@
 			font-weight: 400;
 			letter-spacing: 0.14em;
 			text-transform: uppercase;
-			margin-bottom: clamp(1.15rem, 2.5svh, 1.65rem);
+			margin-bottom: clamp(0.9rem, 2svh, 1.35rem);
 
 			&::before {
 				content: '';
@@ -200,29 +203,29 @@
 		.ceremonial-portrait-hero__name {
 			color: var(--melissa-cocoa);
 			font-family: var(--font-display-formal);
-			font-size: clamp(1.25rem, 3.2vw, 1.875rem);
+			font-size: clamp(1.5rem, 3.5vw, 2.25rem);
 			font-weight: 400;
-			line-height: 1.4;
-			letter-spacing: 0.12em;
-			text-indent: 0.12em;
+			line-height: 1.25;
+			letter-spacing: 0.08em;
+			text-indent: 0.08em;
 			text-transform: uppercase;
 			text-shadow: none;
 			text-wrap: balance;
 			overflow-wrap: anywhere;
 			min-width: 0;
-			margin: 0 0 clamp(1.15rem, 2.5svh, 1.65rem);
+			margin: 0 0 clamp(1.25rem, 2.75svh, 1.85rem);
 
 			&::before {
 				content: 'M\00a0\00a0L';
 				display: block;
 				font-family: var(--font-display-formal);
-				font-size: clamp(3.25rem, 8vw, 4.5rem);
+				font-size: clamp(3.5rem, 8vw, 5rem);
 				font-weight: 300;
 				letter-spacing: 0.12em;
 				text-indent: 0.12em;
 				color: var(--melissa-taupe);
 				line-height: 1;
-				margin: 0 auto clamp(1.35rem, 3.2svh, 2.25rem);
+				margin: 0 auto clamp(1.1rem, 2.6svh, 1.75rem);
 				background-image: linear-gradient(
 					to bottom,
 					transparent 4%,
@@ -239,8 +242,8 @@
 			span {
 				display: inline-block;
 				max-width: 100%;
-				letter-spacing: 0.12em;
-				margin-inline: 0.25em;
+				letter-spacing: 0.08em;
+				margin-inline: 0.2em;
 				overflow-wrap: anywhere;
 				text-wrap: balance;
 			}
@@ -249,9 +252,9 @@
 		.ceremonial-portrait-hero__date {
 			color: var(--melissa-taupe);
 			font-family: var(--font-ui);
-			font-size: 0.75rem;
-			font-weight: 400;
-			letter-spacing: 0.12em;
+			font-size: clamp(0.75rem, 1.25vw, 0.875rem);
+			font-weight: 500;
+			letter-spacing: 0.14em;
 			text-transform: uppercase;
 			margin-top: 0;
 			opacity: 100%;
@@ -268,7 +271,8 @@
 			justify-content: center;
 			gap: 0.45rem;
 			position: absolute;
-			bottom: clamp(0.85rem, 2.2svh, 1.5rem);
+			top: calc(100dvh - clamp(4.25rem, 8svh, 5.5rem));
+			bottom: auto;
 			left: 50%;
 			transform: translateX(-50%);
 			z-index: 3;
@@ -293,17 +297,16 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			width: 1px;
-			height: 24px;
-			background: linear-gradient(
-				to bottom,
-				var(--melissa-champagne) 0%,
-				rgb(var(--melissa-champagne-rgb) / 40%) 60%,
-				transparent 100%
-			);
+			width: 1.25rem;
+			height: 1.25rem;
+			background: none;
 
 			svg {
-				display: none;
+				display: block;
+				width: 100%;
+				height: 100%;
+				color: var(--melissa-champagne);
+				stroke-width: 1.5;
 			}
 		}
 	}
@@ -339,7 +342,7 @@
 		--quote-content-max-width: 32ch;
 		--quote-content-shadow: none;
 		--quote-text-color: var(--melissa-cocoa);
-		--quote-author-color: var(--melissa-taupe);
+		--quote-author-color: var(--melissa-aged-bronze);
 		--quote-author-opacity: 100%;
 		--quote-divider-display: none;
 
@@ -383,6 +386,7 @@
 
 		.countdown__value {
 			font: 400 clamp(2.25rem, 6vw, 3rem) / 1.1 var(--font-display);
+			color: var(--melissa-aged-bronze);
 		}
 
 		.countdown__label {
@@ -416,9 +420,11 @@
 		--family-panel-shadow: none;
 		--family-panel-radius: 0;
 		--family-panel-spacing: 1.5rem 0 0;
-		--family-accent: var(--melissa-taupe);
+		--family-accent: var(--melissa-mineral-olive);
 		--family-text-primary: var(--melissa-cocoa);
 		--family-text-muted: var(--melissa-taupe);
+		--family-eyebrow-color: var(--melissa-aged-bronze);
+		--family-group-title-color: var(--melissa-mineral-olive);
 		--family-texture-opacity: 0;
 		--family-vignette-bg: none;
 		--family-title-font: var(--font-display-formal);
@@ -478,7 +484,7 @@
 			display: block;
 			margin-bottom: 0.75rem;
 			font: 400 1.25rem / 1 var(--font-display);
-			color: var(--melissa-taupe);
+			color: var(--melissa-aged-bronze);
 		}
 
 		.family__message {
@@ -539,70 +545,267 @@
 
 	// The location variant owns its grid and card markup. Configure its public tokens.
 	.event-location {
+		// 1. Superficie de sección y ritmo espacial
+		--location-bg: linear-gradient(
+			180deg,
+			var(--melissa-pearl) 0%,
+			var(--melissa-paper) 28%,
+			var(--melissa-paper) 82%,
+			var(--melissa-pearl) 100%
+		);
 		--location-padding-block: var(--melissa-space-standard);
 		--location-padding-inline: 1.25rem;
-		--location-card-bg: var(--melissa-pearl);
-		--location-card-border: var(--melissa-hairline);
+		--location-gap: clamp(2rem, 5vw, 3.5rem);
+
+		// 2. Tarjetas de Venues (Acabado de papelería nupcial con elevación de joyería)
+		--location-card-bg: linear-gradient(
+			180deg,
+			var(--melissa-pearl) 0%,
+			rgb(var(--melissa-paper-rgb) / 78%) 100%
+		);
+		--location-card-border: 1px solid rgb(var(--melissa-champagne-rgb) / 38%);
 		--location-card-radius: 4px;
 		--location-card-radius-xs: 4px;
-		--location-card-shadow: none;
-		--location-card-hover-shadow: none;
-		--location-card-hover-border-color: rgb(var(--melissa-champagne-rgb) / 30%);
-		--location-content-padding: clamp(1.25rem, 3vw, 2rem);
-		--location-title-color: var(--melissa-taupe);
-		--location-title-font-size: 0.75rem;
-		--location-title-letter-spacing: 0.1em;
-		--location-place-font-size: clamp(1.5rem, 3vw, 1.875rem);
-		--location-place-letter-spacing: 0;
-		--location-place-line-height: 1.2;
-		--location-hour-font-family: var(--font-ui);
-		--location-hour-font-size: 1rem;
-		--location-hour-color: var(--melissa-taupe);
+		--location-card-shadow: var(--shadow-premium);
+		--location-card-hover-shadow:
+			0 24px 48px -12px rgb(var(--melissa-ink-rgb) / 14%),
+			0 6px 18px rgb(var(--melissa-ink-rgb) / 6%);
+		--location-card-hover-border-color: rgb(var(--melissa-aged-bronze-rgb) / 55%);
+		--location-card-hover-transform: translateY(-3px);
+		--location-content-padding: clamp(1.35rem, 3.2vw, 2.25rem);
+
+		// 3. Estampa arquitectónica de mapa (Vignette de Catedral y Salón)
+		--location-map-preview-art-bg: linear-gradient(
+			180deg,
+			rgb(var(--melissa-pearl-rgb) / 95%) 0%,
+			rgb(var(--melissa-paper-rgb) / 65%) 100%
+		);
+		--location-map-preview-grid-opacity: 20%;
+		--location-map-preview-artwork-color: var(--melissa-cocoa);
+		--location-map-preview-artwork-opacity: 58%;
+		--location-map-preview-artwork-detail: var(--melissa-pearl);
+		--location-map-preview-artwork-horizon: var(--melissa-champagne);
+		--location-map-preview-horizon-opacity: 65%;
+
+		// Pin como sello heráldico
+		--location-map-preview-pin-bg: var(--melissa-pearl);
+		--location-map-preview-pin-color: var(--melissa-aged-bronze);
+		--location-map-preview-pin-border: 1px solid rgb(var(--melissa-champagne-rgb) / 55%);
+		--location-map-preview-pin-shadow: 0 4px 14px rgb(var(--melissa-cocoa-rgb) / 18%);
+
+		// Pie interactivo "Ver mapa"
+		--location-map-preview-copy-bg: rgb(var(--melissa-pearl-rgb) / 94%);
+		--location-map-preview-copy-border: rgb(var(--melissa-champagne-rgb) / 28%);
+		--location-map-preview-link-color: var(--melissa-cocoa);
+
+		// 4. Tipografía y contenido de tarjetas
+		--location-title-color: var(--melissa-aged-bronze);
+		--location-title-font-family: var(--font-ui);
+		--location-title-font-size: 0.72rem;
+		--location-title-font-weight: 600;
+		--location-title-letter-spacing: 0.2em;
+		--location-place-color: var(--melissa-cocoa);
+		--location-place-font-family: var(--font-display);
+		--location-place-font-size: clamp(1.45rem, 3vw, 1.85rem);
+		--location-place-font-weight: 500;
+		--location-place-line-height: 1.22;
+		--location-date-color: var(--melissa-taupe);
+		--location-date-font-family: var(--font-ui);
+		--location-date-font-size: 0.78rem;
+		--location-date-letter-spacing: 0.12em;
+		--location-hour-font-family: var(--font-display);
+		--location-hour-font-size: clamp(1.15rem, 2.4vw, 1.35rem);
+		--location-hour-font-weight: 500;
+		--location-hour-color: var(--melissa-aged-bronze);
 		--location-address-font-family: var(--font-ui);
-		--location-address-font-size: 1rem;
+		--location-address-font-size: 0.92rem;
 		--location-address-color: var(--melissa-ink-soft);
 		--location-address-line-height: 1.6;
-		--location-copy-button-opacity: 100%;
-		--location-indications-heading-font-size: 0.75rem;
-		--location-indications-heading-letter-spacing: 0.1em;
+		--location-address-padding-top: 1rem;
+		--location-address-border-top: 1px solid rgb(var(--melissa-champagne-rgb) / 24%);
+
+		// Micro-botón de copiado de dirección
+		--location-copy-button-bg: rgb(var(--melissa-champagne-rgb) / 10%);
+		--location-copy-button-border: 1px solid rgb(var(--melissa-champagne-rgb) / 32%);
+		--location-copy-button-color: var(--melissa-cocoa);
+		--location-copy-button-hover-bg: var(--melissa-cocoa);
+		--location-copy-button-hover-color: var(--melissa-pearl);
+		--location-copy-button-radius: 4px;
+		--location-copy-button-opacity: 90%;
+
+		// 5. Pliego de Consideraciones (Indications: sin tarjetas anidadas, pliego editorial limpio)
+		--location-indications-spacing: clamp(3rem, 6vw, 4.5rem);
+		--location-indications-container-max-width: 48rem;
+		--location-indications-panel-bg: transparent;
+		--location-indications-panel-border: none;
+		--location-indications-border-radius: 0;
+		--location-indications-panel-padding: 0;
+		--location-indications-heading-font-family: var(--font-display-formal);
+		--location-indications-heading-font-size: clamp(1.1rem, 2vw, 1.35rem);
+		--location-indications-heading-font-weight: 400;
+		--location-indications-heading-letter-spacing: 0.14em;
+		--location-indications-heading-color: var(--melissa-cocoa);
+		--location-indications-heading-margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+
+		// Ítems de consideración: flotantes sobre la superficie de papel (cero cajas)
+		--location-indication-item-bg: transparent;
+		--location-indication-item-border: none;
+		--location-indication-item-radius: 0;
+		--location-indication-item-padding: 0;
+		--location-indication-item-gap: 1.15rem;
+		--location-indication-item-hover-bg: transparent;
+		--location-indication-item-hover-border-color: transparent;
+		--location-indication-item-hover-box-shadow: none;
+		--location-indication-item-hover-transform: none;
+
+		// Medallón circular discreto para iconos (DressCode / FlowerSeal)
+		--location-indication-icon-size: 2.5rem;
+		--location-indication-icon-bg: rgb(var(--melissa-pearl-rgb) / 90%);
+		--location-indication-icon-border: 1px solid rgb(var(--melissa-champagne-rgb) / 40%);
+		--location-indication-icon-radius: 50%;
+		--location-indication-icon-color: var(--melissa-aged-bronze);
+		--location-indication-icon-shadow: none;
+		--location-indication-icon-svg-size: 18px;
+		--location-indication-icon-svg-stroke: 1.2px;
+		--location-indication-icon-opacity: 100%;
+
+		// Tipografía de consideraciones
 		--location-indication-text-font-family: var(--font-ui);
-		--location-indication-text-font-size: 1rem;
-		--location-indication-item-gap: 0.6rem;
-		--location-indication-icon-bg: transparent;
-		--location-indication-icon-border: none;
+		--location-indication-text-font-size: 0.95rem;
+		--location-indication-text-line-height: 1.6;
+		--location-indication-text-letter-spacing: 0.01em;
+		--location-indication-text-color: var(--melissa-ink-soft);
+		--location-indication-strong-color: var(--melissa-cocoa);
+		--location-indication-strong-font-weight: 600;
 
 		.event-location__eyebrow {
+			font-family: var(--font-ui);
 			font-size: 0.75rem;
-			letter-spacing: 0.1em;
+			letter-spacing: 0.14em;
+			text-transform: uppercase;
+			color: var(--melissa-taupe);
+			margin-bottom: 0.5rem;
+		}
+
+		.event-location__heading {
+			font-family: var(--font-display-formal);
+			color: var(--melissa-cocoa);
+			-webkit-text-fill-color: var(--melissa-cocoa);
+			letter-spacing: 0.04em;
+			font-weight: 400;
 		}
 
 		.event-location__lede {
-			font-size: 1.25rem;
+			font-family: var(--font-display);
+			font-size: clamp(1.15rem, 2.5vw, 1.35rem);
+			font-style: italic;
+			color: var(--melissa-taupe);
+			line-height: 1.5;
 		}
 
-		// No confirmed map asset exists; preserve the invitation's existing omission.
-		.event-location__card-map-preview {
+		.event-location__card-map-preview--link {
+			border-top: var(--melissa-hairline);
+
+			&:focus-visible {
+				outline: 2px solid var(--melissa-aged-bronze);
+				outline-offset: 4px;
+			}
+
+			@media (prefers-reduced-motion: no-preference) {
+				&:hover .event-location__card-map-preview-pin,
+				&:focus-visible .event-location__card-map-preview-pin {
+					transform: translate(-50%, -50%) scale(1.08);
+				}
+
+				&:hover .event-location__card-map-preview-foot {
+					color: var(--melissa-aged-bronze);
+				}
+			}
+		}
+
+		.event-location__card-map-preview-pin {
+			@media (prefers-reduced-motion: no-preference) {
+				transition: transform var(--motion-interaction-duration, 200ms) var(--ease-premium);
+			}
+		}
+
+		.event-location__divider {
 			display: none;
+		}
+
+		// Pliego de consideraciones: sin contenedor tipo card ni ítems encasillados
+		.event-location__indications-container {
+			background: transparent;
+			border: none;
+			border-top: 1px solid rgb(var(--melissa-champagne-rgb) / 28%);
+			box-shadow: none;
+			padding-top: clamp(2.5rem, 5vw, 3.5rem);
+		}
+
+		.event-location__indications {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: clamp(1.5rem, 4vw, 3rem);
+		}
+
+		.event-location__indication-item {
+			background: transparent;
+			border: none;
+			padding: 0;
+			box-shadow: none;
+			transition: none;
+		}
+
+		.event-location__indication-title {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			margin-bottom: 0.35rem;
+			font: 500 0.72rem / 1.4 var(--font-ui);
+			letter-spacing: 0.16em;
+			color: var(--melissa-aged-bronze);
+			text-transform: uppercase;
+		}
+
+		.event-location__indication-number {
+			font-family: var(--font-display-formal);
+			font-size: 0.8rem;
+			letter-spacing: 0.05em;
+			color: var(--melissa-champagne);
+			opacity: 90%;
+		}
+
+		.event-location__indication-text {
+			color: var(--melissa-ink-soft);
+		}
+
+		@media (width <= 44rem) {
+			.event-location__indications {
+				grid-template-columns: 1fr;
+				gap: 1.5rem;
+			}
 		}
 	}
 
 	.itinerary {
 		--itinerary-bg: var(--melissa-paper);
-		--editorial-ledger-spine: rgb(var(--melissa-champagne-rgb) / 35%);
-		--editorial-ledger-rule: transparent;
-		--itinerary-item-time-color: var(--melissa-taupe);
+		--editorial-ledger-spine: rgb(var(--melissa-aged-bronze-rgb) / 48%);
+		--editorial-ledger-rule: rgb(var(--melissa-champagne-rgb) / 28%);
+		--editorial-ledger-max-width: 48rem;
+		--itinerary-item-time-color: var(--melissa-aged-bronze);
 		--itinerary-item-label-color: var(--melissa-cocoa);
-		--itinerary-item-desc-color: var(--melissa-ink-soft);
+		--itinerary-item-desc-color: var(--melissa-mineral-olive);
 
 		padding: var(--melissa-space-standard) 1.25rem;
 
 		.itinerary__header {
-			margin-bottom: 2.5rem;
+			margin-bottom: clamp(2.5rem, 5vw, 4rem);
 		}
 
 		.itinerary__title {
 			font: 400 clamp(1.375rem, 3vw, 1.875rem) / 1.4 var(--font-display-formal);
 			letter-spacing: 0.03em;
+			color: var(--melissa-mineral-olive);
 		}
 
 		.itinerary__subtitle {
@@ -610,8 +813,8 @@
 		}
 
 		.itinerary__item-time {
-			font: 500 1rem / 1.5 var(--font-ui);
-			letter-spacing: 0.02em;
+			font: 400 clamp(1.6rem, 4vw, 2.35rem) / 1 var(--font-display);
+			letter-spacing: 0.01em;
 		}
 
 		.itinerary__item-label {
@@ -621,6 +824,22 @@
 
 		.itinerary__item-description {
 			font: 400 1rem / 1.6 var(--font-ui);
+		}
+
+		.itinerary__items {
+			counter-reset: melissa-itinerary;
+		}
+
+		.itinerary__item {
+			counter-increment: melissa-itinerary;
+		}
+
+		.itinerary__item-label::before {
+			content: counter(melissa-itinerary, decimal-leading-zero) '  ';
+			font: 500 0.7rem / 1 var(--font-ui);
+			letter-spacing: 0.1em;
+			color: var(--melissa-aged-bronze);
+			vertical-align: 0.2em;
 		}
 	}
 
@@ -641,7 +860,7 @@
 		--gifts-icon-bg: transparent;
 		--gifts-icon-border: none;
 		--gifts-icon-shadow: none;
-		--gifts-icon-color: var(--melissa-taupe);
+		--gifts-icon-color: var(--melissa-mineral-olive);
 		--gifts-button-color: var(--melissa-cocoa);
 		--gifts-button-border: 1px solid var(--melissa-taupe);
 		--gifts-button-hover-bg: var(--melissa-cocoa);
@@ -651,6 +870,7 @@
 		.gifts-section__title {
 			font-family: var(--font-display-formal);
 			font-weight: 400;
+			color: var(--melissa-aged-bronze);
 		}
 
 		.gifts-section__subtitle {
@@ -770,7 +990,7 @@
 		--ceremonial-closing-message-size: 1.25rem;
 		--ceremonial-closing-message-width: 34ch;
 		--ceremonial-closing-name-size: clamp(1.75rem, 4vw, 2.5rem);
-		--ceremonial-closing-date-color: var(--melissa-taupe);
+		--ceremonial-closing-date-color: var(--melissa-aged-bronze);
 		--ceremonial-closing-date-size: 0.75rem;
 
 		.ceremonial-closing__message {

@@ -9,6 +9,7 @@ import path from 'node:path';
 import {
 	MELISSA_ASSET_SPECS,
 	MELISSA_EVENT,
+	MELISSA_MUSIC,
 	buildMelissaPublishedContent,
 	type MelissaAssetMap,
 } from '../../scripts/provision/invitations/melissa-y-luis-osmar.ts';
@@ -94,6 +95,9 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 		expect(profile).toContain("data-intersection='overlap'");
 		expect(profile).toContain("data-intersection='arch'");
 		expect(profile).toContain('@media (prefers-reduced-motion: reduce)');
+		expect(profile).toContain('min-height: 100dvh');
+		expect(profile).toContain('top: calc(100dvh - clamp(4.25rem, 8svh, 5.5rem))');
+		expect(profile).toContain('color: var(--melissa-champagne)');
 		expect(profile).not.toMatch(/data-variant=['"](?:formal-pass|formal-register)/);
 		expect(profile).not.toMatch(/OneDrive|Clientes\\/i);
 	});
@@ -115,7 +119,7 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 			'thankYou',
 		]);
 		expect(content).not.toHaveProperty('gallery');
-		expect(content).not.toHaveProperty('music');
+		expect(content.music).toEqual(MELISSA_MUSIC);
 
 		expect(content.hero).toMatchObject({
 			name: 'Melissa',
@@ -131,8 +135,24 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 		expect(content.location).toMatchObject({
 			variant: 'stacked-venue-plates',
 			presentationOptions: { showNavigationButtons: false },
+			venues: [
+				expect.objectContaining({
+					type: 'ceremony',
+					googleMapsUrl: 'https://maps.app.goo.gl/fDfSjGhYbnG8FmYz8',
+				}),
+				expect.objectContaining({
+					type: 'reception',
+					googleMapsUrl: 'https://maps.app.goo.gl/thY2JoawdYj1vkbx8',
+				}),
+			],
 		});
 		expect(content.itinerary).toMatchObject({ variant: 'editorial-ledger' });
+		expect(content.itinerary.items).toEqual([
+			expect.objectContaining({ label: 'Ceremonia religiosa', time: '12:00' }),
+			expect.objectContaining({ label: 'Recepción', time: '14:00' }),
+			expect.objectContaining({ label: 'Ceremonia civil', time: '15:00' }),
+		]);
+		expect(JSON.stringify(content.itinerary)).not.toMatch(/cóctel|banquete/i);
 		expect(content.rsvp).toMatchObject({
 			variant: 'formal-register',
 			accessMode: 'personalized-only',
@@ -150,9 +170,9 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 		const serialized = JSON.stringify(content);
 
 		expect(serialized).toContain(
-			'El amor todo lo disculpa, todo lo cree, todo lo espera, todo lo soporta.',
+			'A dondequiera que tú fueres, iré yo; y dondequiera que vivieres, viviré.',
 		);
-		expect(content.quote).toMatchObject({ author: '1 Corintios 13:7-8' });
+		expect(content.quote).toMatchObject({ author: 'Rut 1:16' });
 		for (const name of [
 			'Martha Elena Osuna Rubio',
 			'Rodrigo Landell Osuna',
@@ -169,36 +189,39 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 		expect(serialized).toContain('Gala formal');
 		expect(serialized).toContain('Celebración reservada para adultos');
 
-		const itinerary = content.itinerary as { items: Array<{ time: string }> };
-		expect(itinerary.items.map((item) => item.time)).toEqual(['12:00', '14:00', '15:00']);
+		expect(content.itinerary.items.map((item) => item.time)).toEqual([
+			'12:00',
+			'14:00',
+			'15:00',
+		]);
 
-		const gifts = content.gifts as {
-			items: Array<{ type: string; tableNumber?: string; url?: string }>;
-		};
-		expect(gifts.items).toContainEqual(
+		expect(content.gifts.items).toContainEqual(
 			expect.objectContaining({
 				type: 'store',
 				tableNumber: '60019030',
 				url: 'https://mesaderegalos.liverpool.com.mx/eventodebusqueda',
 			}),
 		);
-		expect(gifts.items).toContainEqual(expect.objectContaining({ type: 'cash' }));
+		expect(content.gifts.items).toContainEqual(expect.objectContaining({ type: 'cash' }));
 		expect(serialized).not.toMatch(/paypal|mercado\s*pago|transferencia bancaria/i);
 
-		const rsvp = content.rsvp as { subcopy: string; personalizedAccess: { noteText: string } };
-		expect(rsvp.subcopy).toContain('16 de noviembre de 2026');
-		expect(rsvp.personalizedAccess.noteText).toContain('{count}');
-		expect(rsvp.personalizedAccess.noteText).toContain('pase asignado');
+		expect(content.rsvp.subcopy).toContain('16 de noviembre de 2026');
+		expect(content.rsvp.personalizedAccess.noteText).toContain('{count}');
+		expect(content.rsvp.personalizedAccess.noteText).toContain('pase asignado');
 	});
 
 	it('places both architectural interludes in the intended render order', () => {
 		const content = buildMelissaPublishedContent(buildTestAssets());
-		const interludes = content.interludes as Array<{
-			afterSection: string;
-			focalPoint?: string;
-		}>;
-		expect(interludes.map((item) => item.afterSection)).toEqual(['family', 'itinerary']);
-		expect(interludes.every((item) => item.focalPoint === undefined)).toBe(true);
+		expect(content.interludes.map((item) => item.afterSection)).toEqual([
+			'family',
+			'itinerary',
+		]);
+		expect(
+			content.interludes.every(
+				(item: { afterSection: string; focalPoint?: string }) =>
+					item.focalPoint === undefined,
+			),
+		).toBe(true);
 
 		const viewModel = adaptEvent({
 			id: 'events/melissa-y-luis-osmar',
