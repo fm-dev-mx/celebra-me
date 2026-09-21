@@ -51,7 +51,7 @@ describe('Valentina Hernández managed definition', () => {
 		expect(getInvitationDefinition('valentina-hernandez')).toBe(valentinaInvitation);
 		expect(valentinaInvitation.hostLoginAlias).toBe('valentina_hernandez');
 		expect(valentinaInvitation.lifecycle).toBe('published');
-		expect(valentinaInvitation.deliveryScope).toBe('content-only');
+		expect(valentinaInvitation.deliveryScope).toBe('content-and-assets');
 	});
 
 	it('uses a consistent editorial-magazine catalog entry', () => {

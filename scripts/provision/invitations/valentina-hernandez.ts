@@ -2,10 +2,10 @@
  * valentina-hernandez.ts — Managed invitation definition for Valentina Hernández Almaguer XV
  *
  * Content owner for xv/valentina-hernandez. Section variants are authored explicitly;
- * editorial-magazine is atmosphere only. deliveryScope is content-only for Preview and
- * Production (reuse hosted assets). First Local / corpus populate uses content-and-assets
- * when invitation_assets rows are missing. Draft WhatsApp JPEGs remain in the legacy
- * event asset folder until remastered.
+ * editorial-magazine is atmosphere only. The managed release owns content and assets so
+ * environments without invitation_assets rows can establish the canonical hosted records.
+ * Existing matching assets are reused. Draft WhatsApp JPEGs remain in the legacy event
+ * asset folder until remastered.
  */
 
 import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
@@ -450,7 +450,6 @@ export function buildValentinaPublishedContent(
 			shareMessages: createShareMessages(
 				'Hola {name}, te comparto con mucha ilusión la invitación a mis XV años: {inviteUrl}',
 			),
-			// Content-only Preview/Production preserve the hosted OG asset key (`portrait`).
 			ogImage: assets.portrait,
 			ogDescription:
 				'Acompáñame en mis XV años el sábado, 29 de agosto de 2026, en Texcoco, Estado de México.',
@@ -464,7 +463,7 @@ export const valentinaInvitation: InvitationDefinition<ValentinaAssetKey> = defi
 	managedIdentityProvenance: 'persisted',
 	createdAt: '2026-06-26T00:00:00.000Z',
 	lifecycle: 'published',
-	deliveryScope: 'content-only',
+	deliveryScope: 'content-and-assets',
 	eventType: VALENTINA_EVENT.eventType,
 	title: VALENTINA_EVENT.title,
 	clientName: 'Valentina Hernández Almaguer',
