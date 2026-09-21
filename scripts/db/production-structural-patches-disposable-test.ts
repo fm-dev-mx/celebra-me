@@ -16,24 +16,13 @@ interface PatchCase {
 	name: string;
 	file: string;
 	rows: Array<{ slug: string; eventType: string }>;
-	initialContent?: string;
 	failureCode: string;
 	conflictContent: string;
 	canonicalPredicate: string;
-	initialVersion?: number;
 	galleryCanonicalCount?: number;
 }
 
 const PATCHES: PatchCase[] = [
-	{
-		name: 'abril residual itinerary structural contract',
-		file: '20260814_p0_abril_itinerary_residual_structural_contracts.sql',
-		rows: [{ slug: 'abril-michelle-becerra-rea', eventType: 'xv' }],
-		failureCode: 'P0_RESIDUAL_CONTRACT_ABORT',
-		conflictContent: `jsonb_build_object('itinerary', jsonb_build_object('variant', 'standard'))`,
-		canonicalPredicate: `content#>>'{itinerary,variant}' = 'timeline-paper' and content#>>'{itinerary,presentation,behavior}' = 'timeline-paper'`,
-		initialVersion: 12,
-	},
 	{
 		name: 'itinerary and gallery structural contracts',
 		file: '20260812_p0_itinerary_gallery_structural_contracts.sql',
@@ -118,21 +107,12 @@ CREATE TABLE public.invitation_content_drafts (
 );
 INSERT INTO public.invitations (id, slug, event_type) VALUES ${invitations};
 INSERT INTO public.published_invitation_content (invitation_project_id, version)
-SELECT id, ${patch.initialVersion ?? 1} FROM public.invitations;
+SELECT id, 1 FROM public.invitations;
 INSERT INTO public.invitation_content_drafts (invitation_project_id)
 SELECT id FROM public.invitations;
 `,
 		`recreate ${patch.name} fixture`,
 	);
-	if (patch.initialContent) {
-		runSql(
-			`
-UPDATE public.published_invitation_content SET content = ${patch.initialContent};
-UPDATE public.invitation_content_drafts SET content = ${patch.initialContent};
-`,
-			`${patch.name} seed initial content`,
-		);
-	}
 }
 
 function applyPatch(patch: PatchCase): CommandResult {

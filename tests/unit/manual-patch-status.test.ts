@@ -46,6 +46,9 @@ describe('active manual patch status', () => {
 		expect(discovered).not.toContain(
 			'20260812_thankyou_editorial_back_cover_structural_contracts',
 		);
+		expect(discovered).not.toContain(
+			'20260814_p0_abril_itinerary_residual_structural_contracts',
+		);
 		expect(discovered).not.toContain('20260815_america_johana_ceremony_coordinates');
 		expect(
 			ACTIVE_MANUAL_PATCH_CATALOG.every(
