@@ -186,8 +186,9 @@ export async function prepareCompletePage(page: Page): Promise<void> {
 	const giftNumber = page.locator('.gift-card__table-number-code').first();
 	if (await giftNumber.isVisible()) {
 		// Chromium resolves the pinned system monospace lazily on the first rasterization.
-		// Warm the exact glyph run before complete-page geometry is measured or captured.
-		await giftNumber.screenshot({ animations: 'disabled' });
+		// Only a complete-page raster exercises that path, so discard one before geometry
+		// is measured and before the stable capture pair is recorded.
+		await page.screenshot({ fullPage: true, animations: 'disabled' });
 	}
 	await page.waitForFunction(() =>
 		Array.from(document.images).every(
