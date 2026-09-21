@@ -137,7 +137,17 @@ export async function resolveWithDiscardIfDraftDivergence(
 	updateScope: UpdateScope | undefined,
 ): Promise<PromotionPreflightReport | undefined> {
 	if (first.status !== 'BLOCKED') return undefined;
-	if (!isTargetDivergenceConflictMessage(first.reason ?? '')) return undefined;
+	const hasDiscardableBaselineDrift =
+		first.divergence?.managedDivergences?.some(
+			(difference) =>
+				difference.path === '(managed baseline)' &&
+				/\b(?:manual_or_unmanaged_drift|editor_mutation_after_baseline)\b/.test(
+					difference.detail,
+				),
+		) ?? false;
+	if (!isTargetDivergenceConflictMessage(first.reason ?? '') && !hasDiscardableBaselineDrift) {
+		return undefined;
+	}
 	return runPreflight(packageData, updateScope, true);
 }
 

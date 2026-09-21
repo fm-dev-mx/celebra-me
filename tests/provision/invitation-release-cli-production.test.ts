@@ -35,6 +35,21 @@ describe('invitation:release Production dispatch', () => {
 		expect(source).not.toMatch(/runPromotionApply\s*\(/);
 	});
 
+	it('forwards explicit unpublished-draft discard acknowledgement to Production preflight', () => {
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/invitation-release-cli.ts'),
+			'utf8',
+		);
+		const start = source.indexOf('async function runProductionPreflightDispatch');
+		const end = source.indexOf('async function runProductionReleaseDispatch');
+		const dispatch = source.slice(start, end);
+
+		expect(dispatch).toContain('acknowledgeDiscardUnpublishedDraft: boolean');
+		expect(dispatch).toContain(
+			'acknowledgeDiscardUnpublishedDraft: input.acknowledgeDiscardUnpublishedDraft',
+		);
+	});
+
 	it('points schema incompatibility at pnpm db:migrate', () => {
 		const source = readFileSync(
 			resolve(process.cwd(), 'scripts/provision/invitation-release-cli.ts'),

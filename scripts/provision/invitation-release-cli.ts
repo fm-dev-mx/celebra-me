@@ -212,6 +212,7 @@ async function runProductionPreflightDispatch(input: {
 	assetPolicy: ReturnType<typeof parseAssetPolicy> | undefined;
 	conflictResolutions: ReturnType<typeof loadConflictResolutionsFile> | undefined;
 	updateScope?: UpdateScope;
+	acknowledgeDiscardUnpublishedDraft: boolean;
 }): Promise<void> {
 	const preflight = await runPromotionPreflight({
 		packageData: input.packageInput.packageData,
@@ -220,6 +221,7 @@ async function runProductionPreflightDispatch(input: {
 		pruneAssets: input.pruneAssets,
 		updateScope: input.updateScope,
 		conflictResolutions: input.conflictResolutions,
+		acknowledgeDiscardUnpublishedDraft: input.acknowledgeDiscardUnpublishedDraft,
 		backupManifestPath: input.backupManifestPath,
 		requireBackup: false,
 		getProductionDbUrl: getProdDbUrl,
@@ -265,6 +267,7 @@ async function runProductionReleaseDispatch(input: {
 	updateScope?: UpdateScope;
 	conflictResolutionsPath?: string;
 	backupManifestPath?: string;
+	acknowledgeDiscardUnpublishedDraft: boolean;
 	apply: boolean;
 	json: boolean;
 	verbose: boolean;
@@ -985,6 +988,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			updateScope: parsedScope,
 			conflictResolutionsPath: value(args, '--conflict-resolutions'),
 			backupManifestPath: value(args, '--backup-manifest'),
+			acknowledgeDiscardUnpublishedDraft,
 			apply: Boolean(apply),
 			json,
 			verbose,
