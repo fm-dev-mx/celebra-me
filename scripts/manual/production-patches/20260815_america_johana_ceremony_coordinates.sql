@@ -7,6 +7,7 @@
 -- @expected-rows-min: 1
 -- @expected-rows-max: 2
 -- @requires-backup: true
+-- @catalog: historical
 -- @paired-stores: published,draft
 -- @pair-key: slug
 -- @dry-run-query: select 'published' as store, i.slug from public.invitations i join public.published_invitation_content p on p.invitation_project_id = i.id where i.slug = 'america-johana' and i.event_type = 'xv' and i.archived_at is null and p.deleted_at is null and (p.content#>>'{location,ceremony,coordinates,lat}' is distinct from '19.2759461' or p.content#>>'{location,ceremony,coordinates,lng}' is distinct from '-99.5176924') union all select 'draft' as store, i.slug from public.invitation_content_drafts d join public.invitations i on i.id = d.invitation_project_id where i.slug = 'america-johana' and i.event_type = 'xv' and i.archived_at is null and d.deleted_at is null and (d.content#>>'{location,ceremony,coordinates,lat}' is distinct from '19.2759461' or d.content#>>'{location,ceremony,coordinates,lng}' is distinct from '-99.5176924')

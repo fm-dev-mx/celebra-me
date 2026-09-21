@@ -48,15 +48,6 @@ const PATCHES: PatchCase[] = [
 		canonicalPredicate: `content#>>'{itinerary,variant}' = 'timeline-paper' and content#>>'{itinerary,presentation,behavior}' = 'timeline-paper'`,
 		galleryCanonicalCount: 3,
 	},
-	{
-		name: 'America Johana ceremony coordinates',
-		file: '20260815_america_johana_ceremony_coordinates.sql',
-		rows: [{ slug: 'america-johana', eventType: 'xv' }],
-		initialContent: `jsonb_build_object('location', jsonb_build_object('ceremony', jsonb_build_object('googleMapsUrl', 'https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8', 'coordinates', jsonb_build_object('lat', 19.27, 'lng', -99.51, 'zoom', 16))))`,
-		failureCode: 'AMERICA_COORDINATES_ABORT',
-		conflictContent: `jsonb_build_object('location', jsonb_build_object('ceremony', jsonb_build_object('googleMapsUrl', 'https://maps.app.goo.gl/unapproved')))`,
-		canonicalPredicate: `content#>>'{location,ceremony,coordinates,lat}' = '19.2759461' and content#>>'{location,ceremony,coordinates,lng}' = '-99.5176924' and content#>>'{location,ceremony,coordinates,zoom}' = '16'`,
-	},
 ];
 
 function fail(message: string): never {

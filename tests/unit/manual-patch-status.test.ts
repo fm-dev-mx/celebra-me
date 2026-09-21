@@ -36,19 +36,17 @@ function pairedStoreScriptIds(): string[] {
 }
 
 describe('active manual patch status', () => {
-	it('discovers every paired-store production patch, including America residuals', () => {
+	it('discovers every active paired-store production patch', () => {
 		const discovered = ACTIVE_MANUAL_PATCH_CATALOG.map((item) => item.scriptId);
 		expect(new Set(discovered)).toEqual(new Set(pairedStoreScriptIds()));
 		expect(discovered).toEqual(
-			expect.arrayContaining([
-				'20260815_america_johana_gifts_rsvp_copy',
-				'20260815_america_johana_ceremony_coordinates',
-			]),
+			expect.arrayContaining(['20260815_america_johana_gifts_rsvp_copy']),
 		);
 		expect(discovered).not.toContain('20260812_p0_itinerary_gallery_structural_contracts');
 		expect(discovered).not.toContain(
 			'20260812_thankyou_editorial_back_cover_structural_contracts',
 		);
+		expect(discovered).not.toContain('20260815_america_johana_ceremony_coordinates');
 		expect(
 			ACTIVE_MANUAL_PATCH_CATALOG.every(
 				(item) => item.targetEnvironments.join(',') === 'production',
