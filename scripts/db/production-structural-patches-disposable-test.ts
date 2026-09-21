@@ -16,12 +16,6 @@ interface PatchCase {
 	name: string;
 	file: string;
 	rows: Array<{ slug: string; eventType: string }>;
-	preservedRows?: Array<{
-		slug: string;
-		eventType: string;
-		content: string;
-		preservedPredicate: string;
-	}>;
 	initialContent?: string;
 	failureCode: string;
 	conflictContent: string;
@@ -53,32 +47,6 @@ const PATCHES: PatchCase[] = [
 		conflictContent: `jsonb_build_object('itinerary', jsonb_build_object('variant', 'standard'))`,
 		canonicalPredicate: `content#>>'{itinerary,variant}' = 'timeline-paper' and content#>>'{itinerary,presentation,behavior}' = 'timeline-paper'`,
 		galleryCanonicalCount: 3,
-	},
-	{
-		name: 'thank-you editorial back-cover contracts',
-		file: '20260812_thankyou_editorial_back_cover_structural_contracts.sql',
-		rows: [
-			{ slug: 'ana-sofia-cota-guillen', eventType: 'xv' },
-			{ slug: 'ayrin-samantha-lerma-castro', eventType: 'xv' },
-			{ slug: 'leah-lexa', eventType: 'baby-shower' },
-		],
-		preservedRows: [
-			{
-				slug: 'xareni-iyarit',
-				eventType: 'xv',
-				content: `jsonb_build_object('thankYou', jsonb_build_object('variant', 'portrait-keepsake'))`,
-				preservedPredicate: `c.content#>>'{thankYou,variant}' = 'portrait-keepsake'`,
-			},
-			{
-				slug: 'america-johana',
-				eventType: 'xv',
-				content: `jsonb_build_object('thankYou', jsonb_build_object('variant', 'portrait-keepsake'))`,
-				preservedPredicate: `c.content#>>'{thankYou,variant}' = 'portrait-keepsake'`,
-			},
-		],
-		failureCode: 'THANKYOU_CONTRACT_ABORT',
-		conflictContent: `jsonb_build_object('thankYou', jsonb_build_object('variant', 'standard'))`,
-		canonicalPredicate: `content#>>'{thankYou,variant}' = 'editorial-back-cover' and content#>>'{sectionStyles,thankYou,structuralVariant}' = 'editorial-back-cover'`,
 	},
 	{
 		name: 'America Johana ceremony coordinates',
@@ -125,8 +93,7 @@ function patchPath(patch: PatchCase): string {
 }
 
 function recreateFixture(patch: PatchCase): void {
-	const fixtureRows = [...patch.rows, ...(patch.preservedRows ?? [])];
-	const invitations = fixtureRows
+	const invitations = patch.rows
 		.map(
 			(row, index) =>
 				`(${sqlLiteral(`id-${index + 1}`)}, ${sqlLiteral(row.slug)}, ${sqlLiteral(row.eventType)})`,
@@ -173,25 +140,6 @@ UPDATE public.published_invitation_content SET content = ${patch.initialContent}
 UPDATE public.invitation_content_drafts SET content = ${patch.initialContent};
 `,
 			`${patch.name} seed initial content`,
-		);
-	}
-	for (const row of patch.preservedRows ?? []) {
-		runSql(
-			`
-UPDATE public.published_invitation_content p
-SET content = ${row.content}
-FROM public.invitations i
-WHERE p.invitation_project_id = i.id
-  AND i.slug = ${sqlLiteral(row.slug)}
-  AND i.event_type = ${sqlLiteral(row.eventType)};
-UPDATE public.invitation_content_drafts d
-SET content = ${row.content}
-FROM public.invitations i
-WHERE d.invitation_project_id = i.id
-  AND i.slug = ${sqlLiteral(row.slug)}
-  AND i.event_type = ${sqlLiteral(row.eventType)};
-`,
-			`${patch.name} seed preserved rows`,
 		);
 	}
 }
@@ -249,34 +197,16 @@ function assertCanonicalRows(patch: PatchCase): void {
 	}
 }
 
-function assertPreservedRows(patch: PatchCase): void {
-	for (const row of patch.preservedRows ?? []) {
-		for (const table of ['published_invitation_content', 'invitation_content_drafts']) {
-			const isPreserved = query(
-				`select (${row.preservedPredicate})::text from public.${table} c join public.invitations i on c.invitation_project_id = i.id where i.slug = ${sqlLiteral(row.slug)} and i.event_type = ${sqlLiteral(row.eventType)};`,
-				`${patch.name} preserved ${table} content`,
-			);
-			if (isPreserved !== 'true') {
-				fail(
-					`${patch.name} preservation check failed for ${row.eventType}/${row.slug} in ${table}; received ${JSON.stringify(isPreserved)}.`,
-				);
-			}
-		}
-	}
-}
-
 function testSuccessfulExecutionAndRerun(patch: PatchCase): void {
 	recreateFixture(patch);
 	requireSuccess(applyPatch(patch), `${patch.name} first apply`);
 	assertCanonicalRows(patch);
-	assertPreservedRows(patch);
 	const firstVersions = query(
 		`select string_agg(version::text, ',' order by id) from public.published_invitation_content;`,
 		`${patch.name} first versions`,
 	);
 	requireSuccess(applyPatch(patch), `${patch.name} idempotent rerun`);
 	assertCanonicalRows(patch);
-	assertPreservedRows(patch);
 	const rerunVersions = query(
 		`select string_agg(version::text, ',' order by id) from public.published_invitation_content;`,
 		`${patch.name} rerun versions`,

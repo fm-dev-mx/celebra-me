@@ -46,6 +46,9 @@ describe('active manual patch status', () => {
 			]),
 		);
 		expect(discovered).not.toContain('20260812_p0_itinerary_gallery_structural_contracts');
+		expect(discovered).not.toContain(
+			'20260812_thankyou_editorial_back_cover_structural_contracts',
+		);
 		expect(
 			ACTIVE_MANUAL_PATCH_CATALOG.every(
 				(item) => item.targetEnvironments.join(',') === 'production',

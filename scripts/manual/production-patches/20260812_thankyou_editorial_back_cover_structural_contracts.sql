@@ -7,6 +7,7 @@
 -- @expected-rows-min: 3
 -- @expected-rows-max: 6
 -- @requires-backup: true
+-- @catalog: historical
 -- @paired-stores: published,draft
 -- @pair-key: event_type,slug
 -- @dry-run-query: select 'published' as store, i.event_type, i.slug, p.version from public.invitations i join public.published_invitation_content p on p.invitation_project_id = i.id where i.archived_at is null and p.deleted_at is null and ((i.event_type = 'xv' and i.slug in ('ana-sofia-cota-guillen','ayrin-samantha-lerma-castro')) or (i.event_type = 'baby-shower' and i.slug = 'leah-lexa')) and (p.content#>>'{thankYou,variant}' is distinct from 'editorial-back-cover' or p.content#>>'{sectionStyles,thankYou,structuralVariant}' is distinct from 'editorial-back-cover') union all select 'draft' as store, i.event_type, i.slug, null::integer as version from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id = i.id where i.archived_at is null and d.deleted_at is null and ((i.event_type = 'xv' and i.slug in ('ana-sofia-cota-guillen','ayrin-samantha-lerma-castro')) or (i.event_type = 'baby-shower' and i.slug = 'leah-lexa')) and (d.content#>>'{thankYou,variant}' is distinct from 'editorial-back-cover' or d.content#>>'{sectionStyles,thankYou,structuralVariant}' is distinct from 'editorial-back-cover')
