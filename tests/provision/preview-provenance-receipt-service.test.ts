@@ -42,6 +42,58 @@ const packageData = {
 	assets: [],
 } as InvitationPackageData;
 
+const assetSha = '9'.repeat(64);
+const packageWithAsset = {
+	...packageData,
+	packageHash: '7'.repeat(64),
+	assetManifestHash: '6'.repeat(64),
+	assets: [
+		{
+			key: 'hero',
+			displayName: 'Canonical hero',
+			defaultAltText: 'Canonical alt',
+			bucket: 'invitation-assets',
+			storagePath: 'canonical/hero.webp',
+			mimeType: 'image/webp',
+			width: 1200,
+			height: 1600,
+			fileSize: 12345,
+			validationVersion: 2,
+			originalMimeType: 'image/jpeg',
+			originalFileSize: 23456,
+			sha256: assetSha,
+			dataBase64: '',
+			provider: 'cloudinary',
+		},
+	],
+} as InvitationPackageData;
+
+function previewAsset(sha256 = assetSha): PreviewReceiptState['assets'][number] {
+	return {
+		id: '44444444-4444-4444-8444-444444444444',
+		display_name: 'Preview hero',
+		storage_path: 'preview-specific/hero.webp',
+		bucket: 'preview-assets',
+		mime_type: 'image/webp',
+		width: 1200,
+		height: 1600,
+		file_size: 12345,
+		validation_version: 1,
+		original_mime_type: null,
+		original_file_size: null,
+		default_alt_text: 'Preview alt',
+		provider: 'supabase',
+		provider_public_id: 'preview/hero',
+		provider_version: null,
+		secure_url: 'https://preview.invalid/hero.webp',
+		sha256,
+		managed_by_definition_slug: packageWithAsset.sourceSlug,
+		managed_source_key: 'hero',
+		managed_sha256: sha256,
+		managed_operation_id: oldOperation,
+	};
+}
+
 function receipt(
 	operationId: string,
 	status: 'applied' | 'partial' = 'applied',
@@ -206,6 +258,62 @@ describe('Preview receipt stale provenance evaluator', () => {
 			writes: { content: 0, storage: 0, metadata: 0 },
 		});
 		expect(result.blockers).toEqual([]);
+	});
+
+	it('allows controlled baseline adoption when live content and asset payloads match', () => {
+		const adoptionState = state(receipt(oldOperation), packageWithAsset);
+		adoptionState.assets = [previewAsset()];
+		adoptionState.provenance = {
+			...adoptionState.provenance!,
+			source_hash: 'e'.repeat(64),
+			package_hash: 'f'.repeat(64),
+			metadata_hash: '1'.repeat(64),
+			projection_hash: provenanceProjectionHash('old'),
+			asset_manifest_hash: '2'.repeat(64),
+			managed_projection: { title: 'Prior baseline' },
+		};
+		adoptionState.latestReceipt = adoptionState.appliedReceipt;
+
+		const result = evaluatePreviewReceiptState(packageWithAsset, adoptionState);
+
+		expect(result).toMatchObject({
+			status: 'RECOVERABLE',
+			recoveryEligible: true,
+			parity: { assets: true, assetPayloads: true },
+			writes: { content: 0, storage: 0, metadata: 2 },
+		});
+		expect(result.blockers).toEqual([]);
+	});
+
+	it('blocks baseline adoption when an asset payload hash differs', () => {
+		const adoptionState = state(receipt(oldOperation), packageWithAsset);
+		adoptionState.assets = [previewAsset('8'.repeat(64))];
+		adoptionState.latestReceipt = adoptionState.appliedReceipt;
+
+		const result = evaluatePreviewReceiptState(packageWithAsset, adoptionState);
+
+		expect(result.status).toBe('BLOCKED');
+		expect(result.recoveryEligible).toBe(false);
+		expect(result.parity.assetPayloads).toBe(false);
+		expect(result.blockers).toContain('asset_metadata_mismatch');
+		expect(result.writes).toEqual({ content: 0, storage: 0, metadata: 0 });
+	});
+
+	it('blocks baseline adoption when live published content differs', () => {
+		const adoptionState = state(receipt(oldOperation), packageWithAsset);
+		adoptionState.assets = [previewAsset()];
+		adoptionState.published = {
+			...adoptionState.published!,
+			content: { title: 'Changed in Preview' },
+		};
+		adoptionState.latestReceipt = adoptionState.appliedReceipt;
+
+		const result = evaluatePreviewReceiptState(packageWithAsset, adoptionState);
+
+		expect(result.status).toBe('BLOCKED');
+		expect(result.recoveryEligible).toBe(false);
+		expect(result.blockers).toContain('publication_content_mismatch');
+		expect(result.writes).toEqual({ content: 0, storage: 0, metadata: 0 });
 	});
 
 	it('blocks partial receipts and never plans metadata writes', () => {

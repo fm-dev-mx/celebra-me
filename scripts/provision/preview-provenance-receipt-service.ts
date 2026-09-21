@@ -47,6 +47,7 @@ export interface PreviewReceiptDiagnosis {
 	parity: {
 		content: { draft: boolean; publication: boolean; managedProjection: boolean };
 		assets: boolean;
+		assetPayloads: boolean;
 		assetIdentities: Record<string, { id: string; secureUrl: string | null }>;
 		revisions: {
 			draftCurrent: string | null;
@@ -111,7 +112,8 @@ function isOrphanZeroDriftReplay(input: {
 	if (latest.status !== 'replayed') return false;
 	if (latest.commandKind !== 'managed_invitation_apply') return false;
 	const steps = latest.completedSteps ?? [];
-	if (!steps.includes('existing_result_reused') || !steps.includes('target_verified')) return false;
+	if (!steps.includes('existing_result_reused') || !steps.includes('target_verified'))
+		return false;
 	if (steps.includes('provenance_recorded')) return false;
 	if (latest.inputHashes?.packageHash !== pkg.packageHash) return false;
 	if (latest.inputHashes?.sourceHash !== pkg.sourceHash) return false;
@@ -213,10 +215,41 @@ function currentAssetMetadata(row: PreviewAssetRow): Record<string, unknown> {
 	};
 }
 
+function expectedAssetPayload(
+	asset: InvitationPackageData['assets'][number],
+	definitionSlug?: string,
+): Record<string, unknown> {
+	return {
+		key: asset.key,
+		mimeType: asset.mimeType,
+		width: asset.width,
+		height: asset.height,
+		fileSize: asset.fileSize,
+		sha256: asset.sha256,
+		managedByDefinitionSlug: definitionSlug ?? null,
+		managedSourceKey: asset.key,
+		managedSha256: asset.sha256,
+	};
+}
+
+function currentAssetPayload(row: PreviewAssetRow): Record<string, unknown> {
+	return {
+		key: row.managed_source_key,
+		mimeType: row.mime_type,
+		width: row.width,
+		height: row.height,
+		fileSize: row.file_size,
+		sha256: row.sha256,
+		managedByDefinitionSlug: row.managed_by_definition_slug,
+		managedSourceKey: row.managed_source_key,
+		managedSha256: row.managed_sha256,
+	};
+}
+
 function compareAssets(
 	pkg: InvitationPackageData,
 	rows: PreviewAssetRow[],
-): { equal: boolean; expectedHash: string; currentHash: string } {
+): { equal: boolean; payloadsEqual: boolean; expectedHash: string; currentHash: string } {
 	const expected = pkg.assets
 		.map((asset) => expectedAssetMetadata(asset, pkg.sourceSlug))
 		.sort((a, b) => String(a.key).localeCompare(String(b.key)));
@@ -255,10 +288,23 @@ function compareAssets(
 			),
 		)
 		.sort((a, b) => String(a.key).localeCompare(String(b.key)));
+	const expectedPayloads = pkg.assets
+		.map((asset) => expectedAssetPayload(asset, pkg.sourceSlug))
+		.sort((a, b) => String(a.key).localeCompare(String(b.key)));
+	const currentPayloads = pkg.assets
+		.map((asset) => {
+			const row = byKey.get(asset.key);
+			return row ? currentAssetPayload(row) : null;
+		})
+		.filter((asset): asset is Record<string, unknown> => asset !== null)
+		.sort((a, b) => String(a.key).localeCompare(String(b.key)));
+	const managedRows = rows.filter((row) => row.managed_source_key);
 	return {
-		equal:
-			same(expected, current) &&
-			rows.filter((row) => row.managed_source_key).length === pkg.assets.length,
+		equal: same(expected, current) && managedRows.length === pkg.assets.length,
+		payloadsEqual:
+			pkg.assets.every((asset) => Boolean(asset.sha256)) &&
+			same(expectedPayloads, currentPayloads) &&
+			managedRows.length === pkg.assets.length,
 		expectedHash: hashValue(expected),
 		currentHash: hashValue(current),
 	};
@@ -278,6 +324,31 @@ function hasFinalStatus(receipt: ReceiptRow | null): boolean {
 	return receipt?.status === 'applied' || receipt?.status === 'replayed';
 }
 
+// eslint-disable-next-line complexity -- Baseline adoption intentionally keeps every independent fail-closed gate explicit.
+function isLivePackageBaselineCandidate(input: {
+	pkg: InvitationPackageData;
+	state: PreviewReceiptState;
+	content: { draft: boolean; publication: boolean };
+	assetPayloadsEqual: boolean;
+}): boolean {
+	const { pkg, state, content, assetPayloadsEqual } = input;
+	const provenance = state.provenance;
+	const latest = state.latestReceipt;
+	const linked = state.appliedReceipt;
+	if (!provenance || !latest || !linked || !state.draft || !state.published) return false;
+	if (!content.draft || !content.publication || !assetPayloadsEqual) return false;
+	if (!hasFinalStatus(latest) || !hasFinalStatus(linked)) return false;
+	if (!isManagedReceipt(latest) || !isManagedReceipt(linked)) return false;
+	if (!latest.completedSteps?.includes('target_verified')) return false;
+	if (!linked.completedSteps?.includes('target_verified')) return false;
+	if (!linked.completedSteps?.includes('provenance_recorded')) return false;
+	if (provenance.applied_operation_id !== linked.operationId) return false;
+	if (provenance.definition_slug !== pkg.sourceSlug) return false;
+	if (provenance.release_schema_version !== pkg.schemaVersion) return false;
+	if (state.invitation.managed_identity_id !== pkg.invitation.managedIdentityId) return false;
+	return provenance.managed_identity_id === pkg.invitation.managedIdentityId;
+}
+
 // eslint-disable-next-line complexity -- Recovery classification evaluates independent fail-closed evidence gates.
 function buildDiagnosis(
 	pkg: InvitationPackageData,
@@ -294,10 +365,10 @@ function buildDiagnosis(
 	const orphanZeroDrift = isOrphanZeroDriftReplay({ latest, provenance, pkg, state });
 	const liveMatchesBaseline = Boolean(
 		provenance?.managed_projection &&
-			state.draft &&
-			same(provenance.managed_projection, state.draft.content) &&
-			provenance.package_hash === pkg.packageHash &&
-			provenance.source_hash === pkg.sourceHash,
+		state.draft &&
+		same(provenance.managed_projection, state.draft.content) &&
+		provenance.package_hash === pkg.packageHash &&
+		provenance.source_hash === pkg.sourceHash,
 	);
 	const expectedPublicationHash =
 		state.published && expectedPublication
@@ -311,7 +382,8 @@ function buildDiagnosis(
 	const assets = compareAssets(pkg, state.assets);
 	const hostedAssetsWithoutDbRows =
 		state.assets.length === 0 && provenance?.asset_manifest_hash === pkg.assetManifestHash;
-	const assetsEqual = assets.equal || hostedAssetsWithoutDbRows || orphanZeroDrift;
+	const assetsEqual =
+		assets.equal || assets.payloadsEqual || hostedAssetsWithoutDbRows || orphanZeroDrift;
 	const assetIdentities = Object.fromEntries(
 		state.assets
 			.filter((asset) => asset.managed_source_key)
@@ -323,24 +395,28 @@ function buildDiagnosis(
 	const content = {
 		draft: Boolean(
 			orphanZeroDrift ||
-				liveMatchesBaseline ||
-				(state.draft && expectedDraft && same(expectedDraft, state.draft.content)),
+			(state.draft && expectedDraft && same(expectedDraft, state.draft.content)),
 		),
 		publication: Boolean(
 			orphanZeroDrift ||
-				liveMatchesBaseline ||
-				(state.published &&
-					expectedPublication &&
-					same(expectedPublication, state.published.content)),
+			(state.published &&
+				expectedPublication &&
+				same(expectedPublication, state.published.content)),
 		),
 		managedProjection: Boolean(
 			orphanZeroDrift ||
-				liveMatchesBaseline ||
-				(provenance?.managed_projection &&
-					expectedDraft &&
-					same(expectedDraft, provenance.managed_projection)),
+			liveMatchesBaseline ||
+			(provenance?.managed_projection &&
+				expectedDraft &&
+				same(expectedDraft, provenance.managed_projection)),
 		),
 	};
+	const livePackageBaselineCandidate = isLivePackageBaselineCandidate({
+		pkg,
+		state,
+		content,
+		assetPayloadsEqual: assets.payloadsEqual,
+	});
 	const operationIsNew = Boolean(
 		latest?.operationId && latest.operationId !== provenance?.applied_operation_id,
 	);
@@ -409,8 +485,9 @@ function buildDiagnosis(
 		latest.operationId !== provenance?.applied_operation_id
 	)
 		blockers.push('receipt_provenance_contradiction');
-	if (latest?.inputHashes?.sourceHash !== pkg.sourceHash) blockers.push('source_hash_mismatch');
-	if (latest?.inputHashes?.packageHash !== pkg.packageHash)
+	if (!livePackageBaselineCandidate && latest?.inputHashes?.sourceHash !== pkg.sourceHash)
+		blockers.push('source_hash_mismatch');
+	if (!livePackageBaselineCandidate && latest?.inputHashes?.packageHash !== pkg.packageHash)
 		blockers.push('package_hash_mismatch');
 	for (const [field, expected] of [
 		['sourceHash', pkg.sourceHash],
@@ -419,34 +496,65 @@ function buildDiagnosis(
 		['projectionHash', pkg.projectionHash],
 		['assetManifestHash', pkg.assetManifestHash],
 	] as const) {
-		if (latest?.inputHashes?.[field] !== undefined && latest.inputHashes[field] !== expected)
+		if (
+			!livePackageBaselineCandidate &&
+			latest?.inputHashes?.[field] !== undefined &&
+			latest.inputHashes[field] !== expected
+		)
 			blockers.push(`latest_${field}_mismatch`);
 	}
 	if (!content.draft) blockers.push('draft_content_mismatch');
 	if (!content.publication) blockers.push('publication_content_mismatch');
-	if (!content.managedProjection && !stale) blockers.push('managed_projection_mismatch');
-	if (!assets.equal && !orphanZeroDrift && !hostedAssetsWithoutDbRows)
+	if (!content.managedProjection && !stale && !livePackageBaselineCandidate)
+		blockers.push('managed_projection_mismatch');
+	if (!assets.equal && !assets.payloadsEqual && !orphanZeroDrift && !hostedAssetsWithoutDbRows)
 		blockers.push('asset_metadata_mismatch');
-	if (!packageHashes.source || !packageHashes.package) blockers.push('release_hash_mismatch');
-	if (!packageHashes.metadata && !orphanZeroDrift && !liveMatchesBaseline)
+	if (!livePackageBaselineCandidate && (!packageHashes.source || !packageHashes.package))
+		blockers.push('release_hash_mismatch');
+	if (
+		!livePackageBaselineCandidate &&
+		!packageHashes.metadata &&
+		!orphanZeroDrift &&
+		!liveMatchesBaseline
+	)
 		blockers.push('metadata_hash_mismatch');
-	if (!packageHashes.projection && !orphanZeroDrift && !liveMatchesBaseline)
+	if (
+		!livePackageBaselineCandidate &&
+		!packageHashes.projection &&
+		!orphanZeroDrift &&
+		!liveMatchesBaseline
+	)
 		blockers.push('publication_projection_hash_mismatch');
-	if (!packageHashes.assetManifest && !orphanZeroDrift && !hostedAssetsWithoutDbRows)
+	if (
+		!livePackageBaselineCandidate &&
+		!packageHashes.assetManifest &&
+		!orphanZeroDrift &&
+		!hostedAssetsWithoutDbRows
+	)
 		blockers.push('asset_manifest_hash_mismatch');
-	if (!stale && Object.values(provenanceHashes).some((matches) => !matches))
+	if (
+		!livePackageBaselineCandidate &&
+		!stale &&
+		Object.values(provenanceHashes).some((matches) => !matches)
+	)
 		blockers.push('provenance_hash_mismatch');
 	if (provenance?.definition_slug !== pkg.sourceSlug) blockers.push('definition_slug_mismatch');
 	if (provenance?.release_schema_version !== pkg.schemaVersion)
 		blockers.push('incompatible_normalization_version');
 	if (
+		!livePackageBaselineCandidate &&
 		typeof latest?.result?.publishedVersion === 'number' &&
 		latest.result.publishedVersion !== state.published?.version
 	)
 		blockers.push('latest_publication_version_mismatch');
-	if (!stale && provenance?.applied_draft_updated_at !== state.draft?.updated_at)
+	if (
+		!livePackageBaselineCandidate &&
+		!stale &&
+		provenance?.applied_draft_updated_at !== state.draft?.updated_at
+	)
 		blockers.push('draft_revision_mismatch');
 	if (
+		!livePackageBaselineCandidate &&
 		!stale &&
 		(provenance?.applied_published_version !== state.published?.version ||
 			provenance?.applied_published_projection_hash !== currentPublicationHash)
@@ -464,7 +572,9 @@ function buildDiagnosis(
 	)
 		blockers.push('package_identity_mismatch');
 	const recoveryEligible =
-		classification === 'stale_provenance' && stale && blockers.length === 0;
+		((classification === 'stale_provenance' && stale) ||
+			(livePackageBaselineCandidate && classification !== 'verified_current')) &&
+		blockers.length === 0;
 	const status = recoveryEligible
 		? 'RECOVERABLE'
 		: classification === 'verified_current' &&
@@ -495,6 +605,7 @@ function buildDiagnosis(
 		parity: {
 			content,
 			assets: assetsEqual,
+			assetPayloads: assets.payloadsEqual,
 			assetIdentities,
 			revisions: {
 				draftCurrent: state.draft?.updated_at ?? null,
@@ -515,7 +626,9 @@ function buildDiagnosis(
 		writes: { content: 0, storage: 0, metadata: recoveryEligible ? 2 : 0 },
 		blockers,
 		message: recoveryEligible
-			? 'La operación administrada más reciente coincide con el paquete y solo falta reconciliar la provenance.'
+			? livePackageBaselineCandidate
+				? 'El contenido y los payloads de assets vivos coinciden con el paquete; solo falta readoptar el baseline administrado.'
+				: 'La operación administrada más reciente coincide con el paquete y solo falta reconciliar la provenance.'
 			: status === 'IN_SYNC'
 				? 'La provenance y el estado publicado ya están sincronizados.'
 				: 'La evidencia de Preview no permite una recuperación metadata-only segura.',
@@ -549,13 +662,13 @@ function sqlTextArray(values: readonly string[]): string {
 	return values.length === 0 ? 'array[]::text[]' : `array[${values.map(sqlLiteral).join(', ')}]`;
 }
 
-function buildAssetChecks(pkg: InvitationPackageData, invitationId: string): string {
+function buildAssetPayloadChecks(pkg: InvitationPackageData, invitationId: string): string {
 	return pkg.assets
 		.map((asset) => {
-			const expected = expectedAssetMetadata(asset, pkg.sourceSlug);
+			const expected = expectedAssetPayload(asset, pkg.sourceSlug);
 			const nullable = (value: unknown): string =>
 				value === null ? 'null' : sqlLiteral(String(value));
-			return `exists (select 1 from public.invitation_assets ia where ia.invitation_id = ${sqlLiteral(invitationId)}::uuid and ia.deleted_at is null and ia.managed_source_key = ${sqlLiteral(asset.key)} and ia.managed_by_definition_slug = ${sqlLiteral(pkg.sourceSlug)} and ia.provider is not distinct from ${nullable(expected.provider)} and ia.provider_public_id is not distinct from ${nullable(expected.providerPublicId)} and ia.secure_url is not distinct from ${nullable(expected.secureUrl)} and ia.sha256 is not distinct from ${nullable(expected.sha256)} and ia.managed_sha256 is not distinct from ${nullable(expected.managedSha256)} and ia.display_name is not distinct from ${nullable(expected.displayName)} and ia.storage_path is not distinct from ${nullable(expected.storagePath)} and ia.bucket is not distinct from ${nullable(expected.bucket)} and ia.mime_type is not distinct from ${nullable(expected.mimeType)} and ia.width is not distinct from ${expected.width === null ? 'null' : String(expected.width)} and ia.height is not distinct from ${expected.height === null ? 'null' : String(expected.height)} and ia.file_size is not distinct from ${expected.fileSize === null ? 'null' : String(expected.fileSize)} and ia.validation_version is not distinct from ${expected.validationVersion === null ? 'null' : String(expected.validationVersion)} and ia.original_mime_type is not distinct from ${nullable(expected.originalMimeType)} and ia.original_file_size is not distinct from ${expected.originalFileSize === null ? 'null' : String(expected.originalFileSize)} and ia.default_alt_text is not distinct from ${nullable(expected.defaultAltText)})`;
+			return `exists (select 1 from public.invitation_assets ia where ia.invitation_id = ${sqlLiteral(invitationId)}::uuid and ia.deleted_at is null and ia.managed_source_key = ${sqlLiteral(asset.key)} and ia.managed_by_definition_slug = ${sqlLiteral(pkg.sourceSlug)} and ia.sha256 is not distinct from ${nullable(expected.sha256)} and ia.managed_sha256 is not distinct from ${nullable(expected.managedSha256)} and ia.mime_type is not distinct from ${nullable(expected.mimeType)} and ia.width is not distinct from ${expected.width === null ? 'null' : String(expected.width)} and ia.height is not distinct from ${expected.height === null ? 'null' : String(expected.height)} and ia.file_size is not distinct from ${expected.fileSize === null ? 'null' : String(expected.fileSize)})`;
 		})
 		.join(' and ');
 }
@@ -579,6 +692,12 @@ function applyRecovery(
 		pkg,
 		state,
 	});
+	const livePackageBaselineCandidate =
+		diagnosis.recoveryEligible &&
+		diagnosis.classification !== 'stale_provenance' &&
+		diagnosis.parity.content.draft &&
+		diagnosis.parity.content.publication &&
+		diagnosis.parity.assetPayloads;
 	const assetRefs = Object.fromEntries(
 		Object.entries(diagnosis.parity.assetIdentities).map(([key, value]) => [
 			key,
@@ -606,17 +725,21 @@ function applyRecovery(
 		publishedVersion: diagnosis.parity.revisions.publicationCurrent,
 		latestOperationId: diagnosis.latestOperationId,
 	};
+	const assetPayloadChecks = buildAssetPayloadChecks(pkg, diagnosis.invitationId);
 	const assetCheckSql =
 		orphanZeroDrift || pkg.assets.length === 0
 			? 'true'
-			: buildAssetChecks(pkg, diagnosis.invitationId) || 'false';
+			: `(${assetPayloadChecks || 'false'}) and (select count(*) from public.invitation_assets ia where ia.invitation_id = ${sqlLiteral(diagnosis.invitationId)}::uuid and ia.deleted_at is null and ia.managed_source_key is not null) = ${pkg.assets.length}`;
+	const latestReceiptPackagePredicate = livePackageBaselineCandidate
+		? ''
+		: ` and input_hashes->>'sourceHash' = ${sqlLiteral(pkg.sourceHash)} and input_hashes->>'packageHash' = ${sqlLiteral(pkg.packageHash)}`;
 	const sql = `
 begin;
 select id from public.invitations where id = ${sqlLiteral(diagnosis.invitationId)}::uuid and slug = ${sqlLiteral(pkg.invitation.slug)} and archived_at is null and kind = 'client' for update;
 select invitation_id from public.managed_invitation_release_provenance where invitation_id = ${sqlLiteral(diagnosis.invitationId)}::uuid for update;
 select operation_id from public.invitation_mutation_operation_receipts where invitation_id = ${sqlLiteral(diagnosis.invitationId)}::uuid order by created_at desc, id desc limit 1 for update;
 do $$ begin
-  if not exists (select 1 from public.invitation_mutation_operation_receipts where invitation_id = ${sqlLiteral(diagnosis.invitationId)}::uuid and operation_id = ${sqlLiteral(diagnosis.latestOperationId)}::uuid and status in ('applied', 'replayed') and command_kind in ('managed_invitation_apply', 'managed_baseline_reconstruction') and origin in ('managed_cli_local', 'managed_cli_hosted') and 'target_verified' = any(completed_steps) and input_hashes->>'sourceHash' = ${sqlLiteral(pkg.sourceHash)} and input_hashes->>'packageHash' = ${sqlLiteral(pkg.packageHash)}) then raise exception 'PREVIEW_RECONCILE_PRECONDITION_FAILED: latest receipt changed'; end if;
+  if not exists (select 1 from public.invitation_mutation_operation_receipts where invitation_id = ${sqlLiteral(diagnosis.invitationId)}::uuid and operation_id = ${sqlLiteral(diagnosis.latestOperationId)}::uuid and status in ('applied', 'replayed') and command_kind in ('managed_invitation_apply', 'managed_baseline_reconstruction', 'managed_baseline_adoption') and origin in ('managed_cli_local', 'managed_cli_hosted', 'recovery') and 'target_verified' = any(completed_steps)${latestReceiptPackagePredicate}) then raise exception 'PREVIEW_RECONCILE_PRECONDITION_FAILED: latest receipt changed'; end if;
   if not exists (select 1 from public.managed_invitation_release_provenance where invitation_id = ${sqlLiteral(diagnosis.invitationId)}::uuid and applied_operation_id = ${sqlLiteral(diagnosis.linkedOperationId ?? '')}::uuid and definition_slug = ${sqlLiteral(pkg.sourceSlug)} and managed_identity_id = ${sqlLiteral(pkg.invitation.managedIdentityId)}::uuid and release_schema_version = ${sqlLiteral(pkg.schemaVersion)}) then raise exception 'PREVIEW_RECONCILE_PRECONDITION_FAILED: provenance changed'; end if;
   if exists (select 1 from public.invitation_mutation_operation_receipts where invitation_id = ${sqlLiteral(diagnosis.invitationId)}::uuid and operation_id = ${sqlLiteral(diagnosis.latestOperationId)}::uuid and 'provenance_recorded' = any(completed_steps) and operation_id <> ${sqlLiteral(diagnosis.linkedOperationId ?? '')}::uuid) then raise exception 'PREVIEW_RECONCILE_PRECONDITION_FAILED: receipt/provenance contradiction'; end if;
   if not exists (select 1 from public.invitation_content_drafts where invitation_project_id = ${sqlLiteral(diagnosis.invitationId)}::uuid and deleted_at is null and updated_at::text = ${sqlLiteral(String(diagnosis.parity.revisions.draftCurrent ?? ''))} and content = ${sqlLiteral(JSON.stringify(expectedDraft))}::jsonb) then raise exception 'PREVIEW_RECONCILE_PRECONDITION_FAILED: draft changed'; end if;
