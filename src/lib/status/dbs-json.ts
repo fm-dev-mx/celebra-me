@@ -2,9 +2,11 @@ import { z } from 'zod';
 import type { OperationalActionPlan } from './action-plan';
 import { CanonicalStatusViewSchema } from './schema';
 import type { CanonicalStatusView, TargetEnv } from './types';
+import type { MediaReferencesStatus } from './media-reference-types';
 
 export type DbsStatusJson = CanonicalStatusView & {
 	operationalPlan: OperationalActionPlan;
+	mediaReferences?: MediaReferencesStatus;
 	excludedTargets?: TargetEnv[];
 };
 
@@ -43,6 +45,7 @@ const operationalPlan = z
 							'publication',
 							'patch',
 							'disposable',
+							'media',
 						]),
 						title: z.string().min(1).max(240),
 						summary: z.string().max(500),
@@ -69,16 +72,48 @@ const operationalPlan = z
 	})
 	.strict();
 
+const mediaReferenceEnvironmentStatus = z
+	.object({
+		status: z.enum(['MATCH', 'REFERENCE_DRIFT', 'MISSING_ASSET', 'UNVERIFIED']),
+		invitations: z.number().int().nonnegative(),
+		references: z.number().int().nonnegative(),
+		findings: z.array(
+			z
+				.object({
+					route: z.string(),
+					slug: z.string(),
+					path: z.string(),
+					assetKey: z.string(),
+					issue: z.enum(['REFERENCE_DRIFT', 'MISSING_ASSET']),
+				})
+				.strict(),
+		),
+	})
+	.strict()
+	.nullable();
+
 export const DbsStatusJsonSchema = z
 	.looseObject({
 		operationalPlan,
+		mediaReferences: z
+			.object({
+				preview: mediaReferenceEnvironmentStatus,
+				production: mediaReferenceEnvironmentStatus,
+			})
+			.strict()
+			.optional(),
 		excludedTargets: z
 			.array(z.enum(['local', 'preview', 'production']))
 			.max(3)
 			.optional(),
 	})
 	.superRefine((value, ctx) => {
-		const { operationalPlan: _plan, excludedTargets: _excluded, ...canonical } = value;
+		const {
+			operationalPlan: _plan,
+			mediaReferences: _media,
+			excludedTargets: _excluded,
+			...canonical
+		} = value;
 		const result = CanonicalStatusViewSchema.safeParse(canonical);
 		if (!result.success) {
 			for (const issue of result.error.issues) {
