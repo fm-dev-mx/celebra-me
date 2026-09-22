@@ -304,6 +304,29 @@ describe('resolveHostedUploadedAssetSrc', () => {
 		expect(src).not.toContain('supabase.co/storage');
 	});
 
+	it('prefers the verified persisted delivery URL for an existing asset row', () => {
+		const persisted =
+			'https://res.cloudinary.com/dusxvauvj/image/upload/v1/boda/victoria/assets/hero-aaaaaaaaaaaa.webp';
+		const src = resolveHostedUploadedAssetSrc(
+			{
+				...familyAsset,
+				provider: 'cloudinary',
+				providerPublicId: 'production/boda/victoria/assets/hero-aaaaaaaaaaaa',
+				secureUrl:
+					'https://res.cloudinary.com/dusxvauvj/image/upload/v1/production/boda/victoria/assets/hero-aaaaaaaaaaaa.webp',
+			},
+			{
+				id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+				display_name: familyAsset.displayName,
+				storage_path: 'boda/victoria/assets/hero-aaaaaaaaaaaa',
+				secure_url: persisted,
+			},
+			storageUrl,
+		);
+
+		expect(src).toBe(persisted);
+	});
+
 	it('fails closed when Cloudinary identity is missing', () => {
 		expect(() =>
 			resolveHostedUploadedAssetSrc(

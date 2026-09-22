@@ -1617,6 +1617,7 @@ export interface HostedAssetIdentityRow {
 	id: string;
 	display_name: string;
 	storage_path: string;
+	secure_url?: string | null;
 	bucket?: string | null;
 	deleted_at?: string | null;
 	managed_by_definition_slug?: string | null;
@@ -1718,6 +1719,8 @@ export function resolveHostedUploadedAssetSrc(
 	targetStorageUrl: string,
 ): string {
 	if (asset.provider === 'cloudinary') {
+		const persisted = existingRecord?.secure_url?.trim();
+		if (persisted && isHttpUrl(persisted)) return persisted;
 		const packaged = asset.secureUrl?.trim();
 		if (packaged && isHttpUrl(packaged)) return packaged;
 		if (asset.providerPublicId?.trim()) {
@@ -1785,7 +1788,7 @@ function resolveTargetAssetRefs(
 	preferredAssetIds: ReadonlySet<string> = new Set(),
 ): UploadedAssetMap {
 	const result = runPsql(
-		`select json_agg(t) from (select id, display_name, storage_path, bucket, deleted_at, managed_by_definition_slug, managed_source_key from public.invitation_assets where invitation_id = '${invitationId}'::uuid) t;`,
+		`select json_agg(t) from (select id, display_name, storage_path, secure_url, bucket, deleted_at, managed_by_definition_slug, managed_source_key from public.invitation_assets where invitation_id = '${invitationId}'::uuid) t;`,
 		targetDbUrl,
 		{ tuplesOnly: true, throwOnError: false },
 	);
@@ -1796,6 +1799,7 @@ function resolveTargetAssetRefs(
 				id: row.id,
 				display_name: String(row.display_name ?? ''),
 				storage_path: row.storage_path,
+				secure_url: typeof row.secure_url === 'string' ? row.secure_url : null,
 				bucket: typeof row.bucket === 'string' ? row.bucket : null,
 				deleted_at: typeof row.deleted_at === 'string' ? row.deleted_at : null,
 				managed_by_definition_slug:

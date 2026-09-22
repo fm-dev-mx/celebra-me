@@ -139,6 +139,38 @@ describe('evaluateAppliedHostedTargetIdentity', () => {
 			}),
 		).toThrow(APPLIED_HOSTED_TARGET_IDENTITY_FAILURE);
 	});
+
+	it('rejects a stale frozen delivery URL even when the asset identity is unchanged', () => {
+		const rows = matchingRows();
+		const expectedContent = {
+			hero: {
+				image: {
+					type: 'uploaded',
+					assetId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+					src: 'https://res.cloudinary.com/demo/image/upload/canonical.webp',
+				},
+			},
+		};
+		const actualContent = {
+			hero: {
+				image: {
+					type: 'uploaded',
+					assetId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+					src: 'https://res.cloudinary.com/demo/image/upload/production/stale.webp',
+				},
+			},
+		};
+		const identity = evaluateAppliedHostedTargetIdentity({
+			...rows,
+			expectedDraftContent: expectedContent,
+			expectedPublishedContent: expectedContent,
+			existingDraft: { ...(rows.existingDraft as object), content: actualContent },
+			existingPub: { version: 18, content: actualContent },
+		});
+
+		expect(identity.isDraftIdentical).toBe(false);
+		expect(identity.isPubIdentical).toBe(false);
+	});
 });
 
 describe('hosted post-apply verification contract', () => {

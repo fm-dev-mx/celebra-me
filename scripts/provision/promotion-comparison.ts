@@ -11,6 +11,7 @@ import {
 	preparePublicationProjection,
 } from '../../src/lib/intake/services/publication-canonicalize.ts';
 import { ASSET_KEY_PREFIX, semanticAssetRef } from './normalized-invitation-release.ts';
+import { collectUploadedContentRefs } from '../../src/lib/invitation-preparation/uploaded-content-refs.ts';
 
 // ---------------------------------------------------------------------------
 // Canonical publication projection
@@ -256,7 +257,23 @@ export function checkDraftContentIdentical(
 	targetStorageUrl: string,
 ): boolean {
 	if (!existingDraft) return false;
-	return isSemanticallyEqual(pkgDraftContent, existingDraft.content, targetStorageUrl);
+	return (
+		isSemanticallyEqual(pkgDraftContent, existingDraft.content, targetStorageUrl) &&
+		hasIdenticalUploadedDeliveryRefs(pkgDraftContent, existingDraft.content)
+	);
+}
+
+/**
+ * Delivery URLs are environment-owned physical identity. The semantic projection
+ * intentionally ignores them, but promotion must still repair a stale frozen
+ * `src` when the referenced asset row already points at the canonical object.
+ */
+function hasIdenticalUploadedDeliveryRefs(expected: unknown, actual: unknown): boolean {
+	const identity = (value: unknown) =>
+		collectUploadedContentRefs(value)
+			.map(({ path, assetId, src }) => ({ path, assetId, src: src ?? null }))
+			.sort((left, right) => left.path.localeCompare(right.path));
+	return JSON.stringify(identity(expected)) === JSON.stringify(identity(actual));
 }
 
 export function checkPublishedContentIdentical(
@@ -266,7 +283,10 @@ export function checkPublishedContentIdentical(
 	isInvMetadataIdentical: boolean,
 ): boolean {
 	if (!existingPub || !isInvMetadataIdentical) return false;
-	return isSemanticallyEqual(pkgPublishedContent, existingPub.content, targetStorageUrl);
+	return (
+		isSemanticallyEqual(pkgPublishedContent, existingPub.content, targetStorageUrl) &&
+		hasIdenticalUploadedDeliveryRefs(pkgPublishedContent, existingPub.content)
+	);
 }
 
 export function checkEventAndMembershipIdentical(
