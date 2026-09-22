@@ -11,6 +11,12 @@ import { getWorktreeDevServerPort } from './scripts/shared/worktree-lane.ts';
 
 const isBuildCommand = process.argv.includes('build');
 const isVercel = process.env.VERCEL === '1' || Boolean(process.env.VERCEL_ENV);
+const configuredBaseUrl = process.env.BASE_URL;
+const publicSiteUrl =
+	configuredBaseUrl &&
+	!/^https?:\/\/(?:127\.0\.0\.1|localhost)(?::|\/|$)/i.test(configuredBaseUrl)
+		? configuredBaseUrl
+		: 'https://www.celebra-me.com';
 
 // Lane-aware env bootstrap: Local lanes use .env/.env.local; Preview lane overlays
 // .env.preview.local and sets CELEBRA_RUNTIME_TARGET. Validation is fail-closed for
@@ -124,9 +130,9 @@ function supabaseDevPreflightIntegration() {
 export default defineConfig({
 	// The base URL for the site.
 	site:
-		process.env.NODE_ENV === 'development'
+		!isVercel && !isBuildCommand && process.env.NODE_ENV === 'development'
 			? `http://127.0.0.1:${devServerPort}`
-			: process.env.BASE_URL || 'https://www.celebra-me.com',
+			: publicSiteUrl,
 
 	integrations: [
 		react(),

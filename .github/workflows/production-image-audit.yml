@@ -1,0 +1,39 @@
+name: Production Image Audit
+
+permissions:
+    contents: read
+
+on:
+    schedule:
+        - cron: '23 13 * * *'
+    workflow_dispatch:
+
+concurrency:
+    group: production-image-audit
+    cancel-in-progress: false
+
+jobs:
+    verify:
+        name: Verify published invitation images
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
+                  cache: 'pnpm'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Verify Production image delivery
+              env:
+                  PROD_DB_URL: ${{ secrets.PROD_DB_URL }}
+              run: pnpm invitation:media:verify -- --target production --all --origin https://www.celebra-me.com --json
