@@ -58,10 +58,7 @@ import {
 } from './production-apply-plan.ts';
 import type { ProductionApplyCliArgs } from './production-apply-cli-args.ts';
 import { toPublicProductionApplyPlan } from './production-apply-format.ts';
-import {
-	inspectInvitation,
-	inspectSchema,
-} from './production-apply-inspectors.ts';
+import { inspectInvitation, inspectSchema } from './production-apply-inspectors.ts';
 
 const PRODUCTION_APPLY_OPERATION_TYPE = 'production_apply';
 
@@ -95,6 +92,8 @@ export interface ProductionApplyExecuteDeps extends ProductionApplyAssemblerDeps
 		acknowledgeDiscardUnpublishedDraft?: boolean;
 	}) => Promise<PromotionApplyReport>;
 	revalidateInvitationPlan?: (reviewed: ProductionApplyPlan) => Promise<void>;
+	verifyInvitationMedia?: (slug: string) => Promise<void>;
+	verifyInvitationMediaBefore?: (slug: string) => Promise<void>;
 	applyPatch?: typeof applyPreparedProductionPatch;
 	ensurePatchBackup?: (input: {
 		prodDbUrl: string;
@@ -405,6 +404,88 @@ function throwInvitationApplyFailure(report: PromotionApplyReport): never {
 	});
 }
 
+async function verifyMediaBeforeApply(
+	item: ProductionApplyPlanItem,
+	deps: ProductionApplyExecuteDeps,
+): Promise<void> {
+	const hasPreexisting =
+		item.preflight?.engineResult === undefined ||
+		typeof item.preflight.engineResult.plan?.targetPreconditions?.existingPublishedVersion ===
+			'number';
+	const verify =
+		deps.verifyInvitationMediaBefore ??
+		(deps.applyInvitation
+			? undefined
+			: async (slug: string) => {
+					const { assertPublishedImageVerification } =
+						await import('../invitation/verify-published-images.ts');
+					await assertPublishedImageVerification([
+						'--target',
+						'production',
+						'--slug',
+						slug,
+						'--provider-only',
+						'--allow-empty',
+					]);
+				});
+	if (hasPreexisting && verify) {
+		try {
+			await verify(item.id);
+		} catch (error) {
+			throw new OperatorError({
+				title: 'La verificación previa de imágenes falló',
+				cause: failureDetail(error),
+				code: 'PUBLISHED_IMAGE_PRECHECK_FAILED',
+				remediation: [
+					'No se realizó la promoción.',
+					'Repare o verifique el objeto activo antes de volver a aplicar.',
+				],
+			});
+		}
+	}
+}
+
+async function verifyMediaAfterApply(
+	item: ProductionApplyPlanItem,
+	deps: ProductionApplyExecuteDeps,
+	outcomes: ProductionApplyOutcomeRow[],
+): Promise<void> {
+	const verify =
+		deps.verifyInvitationMedia ??
+		(deps.applyInvitation
+			? undefined
+			: async (slug: string) => {
+					const { assertPublishedImageVerification } =
+						await import('../invitation/verify-published-images.ts');
+					await assertPublishedImageVerification([
+						'--target',
+						'production',
+						'--slug',
+						slug,
+					]);
+				});
+	if (verify) {
+		try {
+			await verify(item.id);
+		} catch (error) {
+			replaceOutcome(outcomes, item.id, {
+				id: item.id,
+				outcome: 'APPLIED_VERIFICATION_FAILED',
+				detail: failureDetail(error),
+			});
+			throw new OperatorError({
+				title: 'La verificación de imágenes publicadas falló',
+				cause: failureDetail(error),
+				code: 'PUBLISHED_IMAGE_VERIFICATION_FAILED',
+				remediation: [
+					'No declare cerrada la promoción.',
+					'Repare los objetos faltantes mediante un manifiesto revisado y vuelva a verificar.',
+				],
+			});
+		}
+	}
+}
+
 async function applyOneInvitationMutation(
 	item: ProductionApplyPlanItem,
 	reviewed: ProductionApplyPlan,
@@ -451,6 +532,7 @@ async function applyOneInvitationMutation(
 					assertDelegatedPermit(gate.dbUrl, input.authorizedPlanBindingHex);
 				},
 			}));
+	await verifyMediaBeforeApply(item, deps);
 	const report = await applyInvitation({
 		packageData,
 		authorizedPlanBindingHex: reviewed.planId,
@@ -469,6 +551,7 @@ async function applyOneInvitationMutation(
 		});
 		throwInvitationApplyFailure(report);
 	}
+	await verifyMediaAfterApply(item, deps, outcomes);
 	replaceOutcome(outcomes, item.id, {
 		id: item.id,
 		outcome: report.status === 'IN_SYNC' ? 'already_applied' : 'APPLIED_AND_VERIFIED',
