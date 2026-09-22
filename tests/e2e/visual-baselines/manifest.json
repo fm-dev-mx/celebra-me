@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-09-21T21:18:28.454Z",
+    "generatedAt": "2026-09-22T01:01:11.252Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "9946e44276e04a8b09c5ba131c6f0870780a6e2a5795ad29e5806cfeddf87ac6",
-        "cssSha256": "27f442c89920877b70abd9abd7093ad167c562114c0e16780ee96245c38a3e1f",
+        "cssSha256": "1e9e88001f2e23d94022194800d320e1a2d91dfe0fb9cedb91afb4170f9e9423",
         "assetSha256": "7b3bc45f1e45a7615298230f5f560e5df47a8491067928b0e0cd8f25c2cf7e29",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -75,7 +75,7 @@
             "cssOwner": "src/styles/themes/sections/hero/_framed-portrait.scss",
             "fixtureIdentity": "synthetic:hero.framed-portrait",
             "file": "jewelry-box-desktop-hero-framed-portrait.png",
-            "sha256": "c3c6e47b955b2badcebc407a297fea4443982eabcffb3a454da822f9c71a9952",
+            "sha256": "055fc0f9bb76f0c535198140c536e517274e6187b3c7c016ce3731e83f7ed76d",
             "contentHash": "af722167ea9e0a04e4fac3c7ea2cd289545b08192bf08e6c21b1414599b4114a",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -285,7 +285,7 @@
             "cssOwner": "section-base:location",
             "fixtureIdentity": "synthetic:location.standard",
             "file": "jewelry-box-mobile-location-standard.png",
-            "sha256": "17ba5168f53d9765796226b0da6de86846b1bedfe08c5bfb896e18623dea0205",
+            "sha256": "a0f873af10c032efc41ed3c6f453347d59c9d96287e297b371c195f468a2aee3",
             "contentHash": "1eea290a2a8ec848c3fe8ad02644881019086ebc29881ba625322b473e641af9",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -299,7 +299,7 @@
             "cssOwner": "section-base:location",
             "fixtureIdentity": "synthetic:location.standard",
             "file": "jewelry-box-desktop-location-standard.png",
-            "sha256": "3c63665a61dd77ace5638bc0f35a4610e4143680dc2b813328a5887dcdada6fc",
+            "sha256": "c8bf23f1d54cb0e28397c993014705de0930bb8bb529e06f874f2a5a1c15e6f0",
             "contentHash": "1eea290a2a8ec848c3fe8ad02644881019086ebc29881ba625322b473e641af9",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -313,7 +313,7 @@
             "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
             "fixtureIdentity": "synthetic:location.split-map",
             "file": "jewelry-box-mobile-location-split-map.png",
-            "sha256": "d08ff280437a129a9f595bd9e8818cbb6d2f6f8c2d7a337a5c2ec9d9a9b49483",
+            "sha256": "42e4d7375d15caf8859bfc649a8a6777c107308713703564689e09951c0adda9",
             "contentHash": "c1ffb614af4ebfbe876f3a53f754ef67a364be5adea407f43877b6f36727bccd",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -327,7 +327,7 @@
             "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
             "fixtureIdentity": "synthetic:location.split-map",
             "file": "jewelry-box-desktop-location-split-map.png",
-            "sha256": "5369c70f33a3ef07b812e33ad35681fb228f25d2e43b181b2f82bd05da3693f9",
+            "sha256": "c4acd5e326d78aa5c2ae1c44111f0fd3deba6079a6a2654846822e1ce9f82ad8",
             "contentHash": "c1ffb614af4ebfbe876f3a53f754ef67a364be5adea407f43877b6f36727bccd",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -341,7 +341,7 @@
             "cssOwner": "src/styles/themes/sections/location/_stacked-venue-plates.scss",
             "fixtureIdentity": "synthetic:location.stacked-venue-plates",
             "file": "jewelry-box-mobile-location-stacked-venue-plates.png",
-            "sha256": "f94af0c4f8626a8215117eb40540f78208aafff1c63eba44e895f078cae3e997",
+            "sha256": "cd4e3bb9675775913541ce881f76647181692f9cbb72c5c4b267288b133ff34f",
             "contentHash": "53f71e4c9966acb4e68e60115e3e0e117400dbe09e92dac84bbc02d9885befee",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -355,7 +355,7 @@
             "cssOwner": "src/styles/themes/sections/location/_stacked-venue-plates.scss",
             "fixtureIdentity": "synthetic:location.stacked-venue-plates",
             "file": "jewelry-box-desktop-location-stacked-venue-plates.png",
-            "sha256": "9d24f86fa6aebe2766787e248613399e0a093dd9bb368b2bcf5938be40cc4a2d",
+            "sha256": "2a995d46d21d8553ae470f78f7cd9f77f161b57298809ca36aae8fec258fda2c",
             "contentHash": "53f71e4c9966acb4e68e60115e3e0e117400dbe09e92dac84bbc02d9885befee",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -1433,7 +1433,7 @@
             "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
             "fixtureIdentity": "synthetic:location.split-map",
             "file": "celestial-blue-mobile-location-split-map.png",
-            "sha256": "bd454893efab7823117e29e152153221b92b3578afefac4c6b8f9a263fa691b3",
+            "sha256": "4364ab555ed0ffd4dc9b3821b98f1dd0529a05a46339cd3ffe7dfead833b1d34",
             "contentHash": "483fe3c45e8629aae5a2344e4ad1c84071b5acd8a370e934748e675ada4b8f05",
             "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
             "comparisonResult": "ACCEPTED"
@@ -1447,7 +1447,7 @@
             "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
             "fixtureIdentity": "synthetic:location.split-map",
             "file": "celestial-blue-desktop-location-split-map.png",
-            "sha256": "4450816beee442df18e1c322e331ab8024a071b999163ee8a218ba82ecc9601c",
+            "sha256": "7b9ba6b92c01c1282858d3e1f973e743e6ece01a3c7cd0d7e6eecb4c6f3fe952",
             "contentHash": "483fe3c45e8629aae5a2344e4ad1c84071b5acd8a370e934748e675ada4b8f05",
             "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
             "comparisonResult": "ACCEPTED"
@@ -1775,7 +1775,7 @@
             "preset": "premiere-floral",
             "viewport": "mobile",
             "file": "pages/invitation-xv-romina-rios-chaparro-mobile.png",
-            "sha256": "90f921d9b6ebfe4c86bc61611880e5ac9dcdc44dda7178a455653aa7147fc606",
+            "sha256": "d05b6d415851863db905d1b81fa986164ea913ed1d4b33f985bac3cb9856b237",
             "contentHash": "0477217d01c1c1e30c297733829749a52c922e288d6b26242cd36e8cff0179bb",
             "assetHash": "ec84c16cb7db7945ad9a4c40f8a7a0fb6c5da933383c8a068e8682a3cc1228fb",
             "comparisonResult": "ACCEPTED"
@@ -1787,7 +1787,7 @@
             "preset": "premiere-floral",
             "viewport": "desktop",
             "file": "pages/invitation-xv-romina-rios-chaparro-desktop.png",
-            "sha256": "f10523f28905e9790f7ac1d7ba089986ea2b073a18891debf5f4a3c3d528885a",
+            "sha256": "8f679f42e99d6afd890253f10d8bb63640f1ec6f78aaa99495b16c7d2689f580",
             "contentHash": "0477217d01c1c1e30c297733829749a52c922e288d6b26242cd36e8cff0179bb",
             "assetHash": "ec84c16cb7db7945ad9a4c40f8a7a0fb6c5da933383c8a068e8682a3cc1228fb",
             "comparisonResult": "ACCEPTED"
@@ -1823,8 +1823,8 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/invitation-boda-melissa-y-luis-osmar-mobile.png",
-            "sha256": "75bff33d4d8981271d1458181fe95ea2d1ecc378054f63592fbe4802844cc14d",
-            "contentHash": "16c7f8b3fce96ec6645f9d476ea5029780c097babd8b02669ede461f745e2681",
+            "sha256": "6b0ac749620b2c2a40af99d9efd18a0d09ffeed76c911667a10c0e026048001a",
+            "contentHash": "f5baad20252726a4a6238c995143c8f47a620613291c1debf523380d5840c43e",
             "assetHash": "e99bf3b417d20588d317bb66c04f59ffac86c5206c610c1430ed0d1c08b97cf0",
             "comparisonResult": "ACCEPTED"
         },
@@ -1835,8 +1835,8 @@
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
             "file": "pages/invitation-boda-melissa-y-luis-osmar-desktop.png",
-            "sha256": "85f385be39fd87332cd8eb966c42ce4d235f5bb999c18a54a509623c57532e1e",
-            "contentHash": "16c7f8b3fce96ec6645f9d476ea5029780c097babd8b02669ede461f745e2681",
+            "sha256": "f19fe1c0ede2938120847f77648548b07c4a54a99f7308556b4c64e8744939f7",
+            "contentHash": "f5baad20252726a4a6238c995143c8f47a620613291c1debf523380d5840c43e",
             "assetHash": "e99bf3b417d20588d317bb66c04f59ffac86c5206c610c1430ed0d1c08b97cf0",
             "comparisonResult": "ACCEPTED"
         },
@@ -1919,7 +1919,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/invitation-xv-america-johana-mobile.png",
-            "sha256": "6fd9e7e183f6237d0f7a961752133f4b3b9bf975140cb15efbd220927491b938",
+            "sha256": "4e12244ad446e246dcf3a40128e4d8e21d4b93b10482407908616c6d562d555b",
             "contentHash": "c0e712c8bc932ec0e71585fb166c3a68432a088a2f53f62db21ee8639ad04186",
             "assetHash": "a4ec26854049e556cc12ba9902b3fece10065d59d5bb590056e37eb4e47cd2ef",
             "comparisonResult": "ACCEPTED"
@@ -1931,7 +1931,7 @@
             "preset": "celestial-blue",
             "viewport": "desktop",
             "file": "pages/invitation-xv-america-johana-desktop.png",
-            "sha256": "617bb8702bb21801703c716f6dfc5da2b2f8961af68be9325a9e4c53ef6167b3",
+            "sha256": "61a46ebdfe60dedfea7006d5cf0271d91ce75377dbb448cf28c095ee935a4b7a",
             "contentHash": "c0e712c8bc932ec0e71585fb166c3a68432a088a2f53f62db21ee8639ad04186",
             "assetHash": "a4ec26854049e556cc12ba9902b3fece10065d59d5bb590056e37eb4e47cd2ef",
             "comparisonResult": "ACCEPTED"
@@ -2003,7 +2003,7 @@
             "preset": "sacred-keepsake",
             "viewport": "desktop",
             "file": "pages/invitation-bautizo-cesar-ramses-desktop.png",
-            "sha256": "6e044d454b2a76144710c5140ac5bcd4270d3770ef6babae97c2f9f51ef6db97",
+            "sha256": "d064dede3bf967a34ee2f23572df4280ac81d73c3c743f11b48e0c58f77d2dba",
             "contentHash": "ead8267c574796e1114ff99a4d0736d0384e6272e9cc90fb1c79603382792bfb",
             "assetHash": "6a206d26d762ba5c4c9b6e8d052323062de772f04ba8ed3ec5d467626cb4f6e3",
             "comparisonResult": "ACCEPTED"
@@ -2087,7 +2087,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/invitation-xv-xareni-iyarit-mobile.png",
-            "sha256": "b287266e3bb1088e170f911f5e0eb435fd43b76adcb071bf3c4d726f98b3e6c8",
+            "sha256": "5d69eb14376a7e0cac0c02afc9c0acd9082cb5062655d2c43500e679fb57fe2d",
             "contentHash": "681e70e6bb14a67d36679c31d2bf4adc7f16b67dcc419404a60677633f4d9e28",
             "assetHash": "86673c42feb861764c0c3e650a3617f2b29ea7664019151493f8080754444d9b",
             "comparisonResult": "ACCEPTED"
@@ -2099,7 +2099,7 @@
             "preset": "celestial-blue",
             "viewport": "desktop",
             "file": "pages/invitation-xv-xareni-iyarit-desktop.png",
-            "sha256": "d2709cde286c65000d9337c64a6b2d6b24acb1e98b6106016ca6ad559c7e0271",
+            "sha256": "16a8f8c1ea2ba5b792786919bf72b255e71a7cdefa67139e691aa1a7613e7bd2",
             "contentHash": "681e70e6bb14a67d36679c31d2bf4adc7f16b67dcc419404a60677633f4d9e28",
             "assetHash": "86673c42feb861764c0c3e650a3617f2b29ea7664019151493f8080754444d9b",
             "comparisonResult": "ACCEPTED"
@@ -2375,7 +2375,7 @@
             "preset": "jewelry-box",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-jewelry-box-mobile.png",
-            "sha256": "b06a16a6c10235c31e7137fdd5b21254c06ab20949ed28e78cc5ec7ed21228cd",
+            "sha256": "418b1f4948429bb981d9f675913f55e0f30d4d86aec5be5cbe04a2e40fbe3ccd",
             "contentHash": "5c7e89b64e7deb756ccd866843b3ffff74f0a51921a213a808ebec0245658be2",
             "assetHash": "e55cad63dd5783459a7ceb82ecd6f01001be0f07fe5585bc2fbb5c7ac09ce5d3",
             "comparisonResult": "ACCEPTED"
@@ -2441,9 +2441,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "c449661adfeaec5e0026be4287c95a5aa661bd7a",
+    "referenceSha": "2a83956df91cbd1a843b5561d8b36b59269896af",
     "variantManifest": {
-        "generatedAt": "2026-09-21T21:18:28.454Z",
+        "generatedAt": "2026-09-22T01:01:11.252Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2456,7 +2456,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "9946e44276e04a8b09c5ba131c6f0870780a6e2a5795ad29e5806cfeddf87ac6",
-            "cssSha256": "27f442c89920877b70abd9abd7093ad167c562114c0e16780ee96245c38a3e1f",
+            "cssSha256": "1e9e88001f2e23d94022194800d320e1a2d91dfe0fb9cedb91afb4170f9e9423",
             "assetSha256": "7b3bc45f1e45a7615298230f5f560e5df47a8491067928b0e0cd8f25c2cf7e29",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2519,7 +2519,7 @@
                 "cssOwner": "src/styles/themes/sections/hero/_framed-portrait.scss",
                 "fixtureIdentity": "synthetic:hero.framed-portrait",
                 "file": "jewelry-box-desktop-hero-framed-portrait.png",
-                "sha256": "c3c6e47b955b2badcebc407a297fea4443982eabcffb3a454da822f9c71a9952",
+                "sha256": "055fc0f9bb76f0c535198140c536e517274e6187b3c7c016ce3731e83f7ed76d",
                 "contentHash": "af722167ea9e0a04e4fac3c7ea2cd289545b08192bf08e6c21b1414599b4114a",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2729,7 +2729,7 @@
                 "cssOwner": "section-base:location",
                 "fixtureIdentity": "synthetic:location.standard",
                 "file": "jewelry-box-mobile-location-standard.png",
-                "sha256": "17ba5168f53d9765796226b0da6de86846b1bedfe08c5bfb896e18623dea0205",
+                "sha256": "a0f873af10c032efc41ed3c6f453347d59c9d96287e297b371c195f468a2aee3",
                 "contentHash": "1eea290a2a8ec848c3fe8ad02644881019086ebc29881ba625322b473e641af9",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2743,7 +2743,7 @@
                 "cssOwner": "section-base:location",
                 "fixtureIdentity": "synthetic:location.standard",
                 "file": "jewelry-box-desktop-location-standard.png",
-                "sha256": "3c63665a61dd77ace5638bc0f35a4610e4143680dc2b813328a5887dcdada6fc",
+                "sha256": "c8bf23f1d54cb0e28397c993014705de0930bb8bb529e06f874f2a5a1c15e6f0",
                 "contentHash": "1eea290a2a8ec848c3fe8ad02644881019086ebc29881ba625322b473e641af9",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2757,7 +2757,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
                 "fixtureIdentity": "synthetic:location.split-map",
                 "file": "jewelry-box-mobile-location-split-map.png",
-                "sha256": "d08ff280437a129a9f595bd9e8818cbb6d2f6f8c2d7a337a5c2ec9d9a9b49483",
+                "sha256": "42e4d7375d15caf8859bfc649a8a6777c107308713703564689e09951c0adda9",
                 "contentHash": "c1ffb614af4ebfbe876f3a53f754ef67a364be5adea407f43877b6f36727bccd",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2771,7 +2771,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
                 "fixtureIdentity": "synthetic:location.split-map",
                 "file": "jewelry-box-desktop-location-split-map.png",
-                "sha256": "5369c70f33a3ef07b812e33ad35681fb228f25d2e43b181b2f82bd05da3693f9",
+                "sha256": "c4acd5e326d78aa5c2ae1c44111f0fd3deba6079a6a2654846822e1ce9f82ad8",
                 "contentHash": "c1ffb614af4ebfbe876f3a53f754ef67a364be5adea407f43877b6f36727bccd",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2785,7 +2785,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_stacked-venue-plates.scss",
                 "fixtureIdentity": "synthetic:location.stacked-venue-plates",
                 "file": "jewelry-box-mobile-location-stacked-venue-plates.png",
-                "sha256": "f94af0c4f8626a8215117eb40540f78208aafff1c63eba44e895f078cae3e997",
+                "sha256": "cd4e3bb9675775913541ce881f76647181692f9cbb72c5c4b267288b133ff34f",
                 "contentHash": "53f71e4c9966acb4e68e60115e3e0e117400dbe09e92dac84bbc02d9885befee",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2799,7 +2799,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_stacked-venue-plates.scss",
                 "fixtureIdentity": "synthetic:location.stacked-venue-plates",
                 "file": "jewelry-box-desktop-location-stacked-venue-plates.png",
-                "sha256": "9d24f86fa6aebe2766787e248613399e0a093dd9bb368b2bcf5938be40cc4a2d",
+                "sha256": "2a995d46d21d8553ae470f78f7cd9f77f161b57298809ca36aae8fec258fda2c",
                 "contentHash": "53f71e4c9966acb4e68e60115e3e0e117400dbe09e92dac84bbc02d9885befee",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -3877,7 +3877,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
                 "fixtureIdentity": "synthetic:location.split-map",
                 "file": "celestial-blue-mobile-location-split-map.png",
-                "sha256": "bd454893efab7823117e29e152153221b92b3578afefac4c6b8f9a263fa691b3",
+                "sha256": "4364ab555ed0ffd4dc9b3821b98f1dd0529a05a46339cd3ffe7dfead833b1d34",
                 "contentHash": "483fe3c45e8629aae5a2344e4ad1c84071b5acd8a370e934748e675ada4b8f05",
                 "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
                 "comparisonResult": "CANDIDATE"
@@ -3891,7 +3891,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
                 "fixtureIdentity": "synthetic:location.split-map",
                 "file": "celestial-blue-desktop-location-split-map.png",
-                "sha256": "4450816beee442df18e1c322e331ab8024a071b999163ee8a218ba82ecc9601c",
+                "sha256": "7b9ba6b92c01c1282858d3e1f973e743e6ece01a3c7cd0d7e6eecb4c6f3fe952",
                 "contentHash": "483fe3c45e8629aae5a2344e4ad1c84071b5acd8a370e934748e675ada4b8f05",
                 "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
                 "comparisonResult": "CANDIDATE"
@@ -4093,10 +4093,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "c449661adfeaec5e0026be4287c95a5aa661bd7a"
+        "referenceSha": "2a83956df91cbd1a843b5561d8b36b59269896af"
     },
     "pageManifest": {
-        "generatedAt": "2026-09-21T21:15:57.521Z",
+        "generatedAt": "2026-09-22T00:59:07.932Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4109,7 +4109,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "9946e44276e04a8b09c5ba131c6f0870780a6e2a5795ad29e5806cfeddf87ac6",
-            "cssSha256": "27f442c89920877b70abd9abd7093ad167c562114c0e16780ee96245c38a3e1f",
+            "cssSha256": "1e9e88001f2e23d94022194800d320e1a2d91dfe0fb9cedb91afb4170f9e9423",
             "assetSha256": "7b3bc45f1e45a7615298230f5f560e5df47a8491067928b0e0cd8f25c2cf7e29",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4247,7 +4247,7 @@
                 "preset": "premiere-floral",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-romina-rios-chaparro-mobile.png",
-                "sha256": "90f921d9b6ebfe4c86bc61611880e5ac9dcdc44dda7178a455653aa7147fc606",
+                "sha256": "d05b6d415851863db905d1b81fa986164ea913ed1d4b33f985bac3cb9856b237",
                 "contentHash": "0477217d01c1c1e30c297733829749a52c922e288d6b26242cd36e8cff0179bb",
                 "assetHash": "ec84c16cb7db7945ad9a4c40f8a7a0fb6c5da933383c8a068e8682a3cc1228fb",
                 "comparisonResult": "CANDIDATE"
@@ -4259,7 +4259,7 @@
                 "preset": "premiere-floral",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-romina-rios-chaparro-desktop.png",
-                "sha256": "f10523f28905e9790f7ac1d7ba089986ea2b073a18891debf5f4a3c3d528885a",
+                "sha256": "8f679f42e99d6afd890253f10d8bb63640f1ec6f78aaa99495b16c7d2689f580",
                 "contentHash": "0477217d01c1c1e30c297733829749a52c922e288d6b26242cd36e8cff0179bb",
                 "assetHash": "ec84c16cb7db7945ad9a4c40f8a7a0fb6c5da933383c8a068e8682a3cc1228fb",
                 "comparisonResult": "CANDIDATE"
@@ -4295,8 +4295,8 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
                 "file": "pages/invitation-boda-melissa-y-luis-osmar-mobile.png",
-                "sha256": "75bff33d4d8981271d1458181fe95ea2d1ecc378054f63592fbe4802844cc14d",
-                "contentHash": "16c7f8b3fce96ec6645f9d476ea5029780c097babd8b02669ede461f745e2681",
+                "sha256": "6b0ac749620b2c2a40af99d9efd18a0d09ffeed76c911667a10c0e026048001a",
+                "contentHash": "f5baad20252726a4a6238c995143c8f47a620613291c1debf523380d5840c43e",
                 "assetHash": "e99bf3b417d20588d317bb66c04f59ffac86c5206c610c1430ed0d1c08b97cf0",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4307,8 +4307,8 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "desktop",
                 "file": "pages/invitation-boda-melissa-y-luis-osmar-desktop.png",
-                "sha256": "85f385be39fd87332cd8eb966c42ce4d235f5bb999c18a54a509623c57532e1e",
-                "contentHash": "16c7f8b3fce96ec6645f9d476ea5029780c097babd8b02669ede461f745e2681",
+                "sha256": "f19fe1c0ede2938120847f77648548b07c4a54a99f7308556b4c64e8744939f7",
+                "contentHash": "f5baad20252726a4a6238c995143c8f47a620613291c1debf523380d5840c43e",
                 "assetHash": "e99bf3b417d20588d317bb66c04f59ffac86c5206c610c1430ed0d1c08b97cf0",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4391,7 +4391,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-america-johana-mobile.png",
-                "sha256": "6fd9e7e183f6237d0f7a961752133f4b3b9bf975140cb15efbd220927491b938",
+                "sha256": "4e12244ad446e246dcf3a40128e4d8e21d4b93b10482407908616c6d562d555b",
                 "contentHash": "c0e712c8bc932ec0e71585fb166c3a68432a088a2f53f62db21ee8639ad04186",
                 "assetHash": "a4ec26854049e556cc12ba9902b3fece10065d59d5bb590056e37eb4e47cd2ef",
                 "comparisonResult": "CANDIDATE"
@@ -4403,7 +4403,7 @@
                 "preset": "celestial-blue",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-america-johana-desktop.png",
-                "sha256": "617bb8702bb21801703c716f6dfc5da2b2f8961af68be9325a9e4c53ef6167b3",
+                "sha256": "61a46ebdfe60dedfea7006d5cf0271d91ce75377dbb448cf28c095ee935a4b7a",
                 "contentHash": "c0e712c8bc932ec0e71585fb166c3a68432a088a2f53f62db21ee8639ad04186",
                 "assetHash": "a4ec26854049e556cc12ba9902b3fece10065d59d5bb590056e37eb4e47cd2ef",
                 "comparisonResult": "CANDIDATE"
@@ -4475,7 +4475,7 @@
                 "preset": "sacred-keepsake",
                 "viewport": "desktop",
                 "file": "pages/invitation-bautizo-cesar-ramses-desktop.png",
-                "sha256": "6e044d454b2a76144710c5140ac5bcd4270d3770ef6babae97c2f9f51ef6db97",
+                "sha256": "d064dede3bf967a34ee2f23572df4280ac81d73c3c743f11b48e0c58f77d2dba",
                 "contentHash": "ead8267c574796e1114ff99a4d0736d0384e6272e9cc90fb1c79603382792bfb",
                 "assetHash": "6a206d26d762ba5c4c9b6e8d052323062de772f04ba8ed3ec5d467626cb4f6e3",
                 "comparisonResult": "CANDIDATE"
@@ -4559,7 +4559,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-xareni-iyarit-mobile.png",
-                "sha256": "b287266e3bb1088e170f911f5e0eb435fd43b76adcb071bf3c4d726f98b3e6c8",
+                "sha256": "5d69eb14376a7e0cac0c02afc9c0acd9082cb5062655d2c43500e679fb57fe2d",
                 "contentHash": "681e70e6bb14a67d36679c31d2bf4adc7f16b67dcc419404a60677633f4d9e28",
                 "assetHash": "86673c42feb861764c0c3e650a3617f2b29ea7664019151493f8080754444d9b",
                 "comparisonResult": "CANDIDATE"
@@ -4571,7 +4571,7 @@
                 "preset": "celestial-blue",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-xareni-iyarit-desktop.png",
-                "sha256": "d2709cde286c65000d9337c64a6b2d6b24acb1e98b6106016ca6ad559c7e0271",
+                "sha256": "16a8f8c1ea2ba5b792786919bf72b255e71a7cdefa67139e691aa1a7613e7bd2",
                 "contentHash": "681e70e6bb14a67d36679c31d2bf4adc7f16b67dcc419404a60677633f4d9e28",
                 "assetHash": "86673c42feb861764c0c3e650a3617f2b29ea7664019151493f8080754444d9b",
                 "comparisonResult": "CANDIDATE"
@@ -4847,7 +4847,7 @@
                 "preset": "jewelry-box",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-jewelry-box-mobile.png",
-                "sha256": "b06a16a6c10235c31e7137fdd5b21254c06ab20949ed28e78cc5ec7ed21228cd",
+                "sha256": "418b1f4948429bb981d9f675913f55e0f30d4d86aec5be5cbe04a2e40fbe3ccd",
                 "contentHash": "5c7e89b64e7deb756ccd866843b3ffff74f0a51921a213a808ebec0245658be2",
                 "assetHash": "e55cad63dd5783459a7ceb82ecd6f01001be0f07fe5585bc2fbb5c7ac09ce5d3",
                 "comparisonResult": "CANDIDATE"
@@ -4913,9 +4913,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "c449661adfeaec5e0026be4287c95a5aa661bd7a"
+        "referenceSha": "2a83956df91cbd1a843b5561d8b36b59269896af"
     },
-    "candidateManifestSha256": "5380c39d3de328c2d38524d35dee3747d6bd538ea91c5bf18f39a37b91e9cb23",
-    "acceptedFromCommit": "c449661adfeaec5e0026be4287c95a5aa661bd7a",
-    "acceptedAt": "2026-09-21T21:31:25.476Z"
+    "candidateManifestSha256": "ee56df2abf4235b4b9f13d1f07733d2dcf6710727b5dd10e1951d66ae0a799d9",
+    "acceptedFromCommit": "2a83956df91cbd1a843b5561d8b36b59269896af",
+    "acceptedAt": "2026-09-22T01:26:25.559Z"
 }
