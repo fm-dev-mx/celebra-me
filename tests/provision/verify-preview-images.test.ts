@@ -52,9 +52,9 @@ describe('read-only published Preview image verification', () => {
 			async () => new Response(null, { status: 404 }),
 		) as unknown as typeof fetch;
 		expect(await verifyPublishedImageManifest(expected, published, download)).toEqual([
+			'different: published content has no active asset row',
 			'hero: HTTP 404',
-			'hero: asset is not referenced by published content',
-			'hero: persisted SHA-256 mismatch',
+			'hero: persisted SHA-256 differs from package',
 		]);
 	});
 

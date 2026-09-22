@@ -304,6 +304,15 @@ export async function applyRemoteMigration(
 	runPsql(buildNamespaceRemapSql(current, plan.swaps, plan.retirements), dbUrl, {
 		throwOnError: true,
 	});
+	for (const swap of plan.swaps) {
+		await session.verifySource({
+			publicId: swap.newPublicId,
+			sha256: swap.sha256,
+			mimeType: swap.mimeType,
+			width: swap.width,
+			height: swap.height,
+		});
+	}
 	const after = readSnapshot(plan.target, plan.slug, dbUrl);
 	if (
 		after.assets.some(
