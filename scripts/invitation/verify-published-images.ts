@@ -18,7 +18,7 @@ import { listInvitationDefinitions } from '../provision/invitations/registry.ts'
 
 export type MediaVerificationTarget = 'preview' | 'production';
 export type MediaVerificationClassification =
-	'HEALTHY' | 'MISSING' | 'HASH_MISMATCH' | 'METADATA_DRIFT';
+	'HEALTHY' | 'MISSING' | 'HASH_MISMATCH' | 'METADATA_DRIFT' | 'REFERENCE_DRIFT';
 
 export interface PublishedAsset {
 	id: string;
@@ -72,10 +72,16 @@ function redactedUrl(value: string | null): string | null {
 }
 
 function classify(reasons: readonly string[]): MediaVerificationClassification {
-	if (reasons.some((reason) => /HTTP 404|missing|not referenced|no active asset/i.test(reason)))
+	const activeReasons = reasons.filter((reason) => !reason.startsWith('published content URL:'));
+	if (
+		activeReasons.some((reason) =>
+			/HTTP 404|missing|not referenced|no active asset/i.test(reason),
+		)
+	)
 		return 'MISSING';
-	if (reasons.some((reason) => /SHA-256|hash/i.test(reason))) return 'HASH_MISMATCH';
-	return reasons.length === 0 ? 'HEALTHY' : 'METADATA_DRIFT';
+	if (activeReasons.some((reason) => /SHA-256|hash/i.test(reason))) return 'HASH_MISMATCH';
+	if (activeReasons.length > 0) return 'METADATA_DRIFT';
+	return reasons.length === 0 ? 'HEALTHY' : 'REFERENCE_DRIFT';
 }
 
 function validCloudinaryUrl(value: string | null): URL | null {
@@ -451,7 +457,7 @@ async function main(): Promise<void> {
 				route,
 				asset: assetKey,
 				status: classification,
-				http: status ?? '-',
+				activeHttp: status ?? '-',
 				reason: reasons.join('; '),
 			})),
 		);

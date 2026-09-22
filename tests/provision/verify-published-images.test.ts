@@ -120,7 +120,7 @@ describe('published image verification', () => {
 		expect(JSON.stringify(rows)).not.toContain('token=secret');
 	});
 
-	it('blocks a stale frozen content URL even when the active binary is healthy', async () => {
+	it('identifies a broken published reference without calling the active binary missing', async () => {
 		const { bytes, sha256 } = await imageFixture();
 		const activeUrl =
 			'https://res.cloudinary.com/demo/image/upload/v1/boda/example/assets/hero.webp';
@@ -163,7 +163,43 @@ describe('published image verification', () => {
 			null,
 			download,
 		);
-		expect(row).toMatchObject({ classification: 'MISSING' });
+		expect(row).toMatchObject({ classification: 'REFERENCE_DRIFT', status: 200 });
+		expect(row?.reasons).toContain('published content URL: HTTP 404');
+	});
+
+	it('keeps MISSING when the active object itself returns 404', async () => {
+		const download = jest.fn(
+			async () => new Response(null, { status: 404 }),
+		) as unknown as typeof fetch;
+		const [row] = await verifyPublishedInvitation(
+			{
+				eventType: 'boda',
+				slug: 'example',
+				content: {
+					hero: {
+						image: {
+							type: 'uploaded',
+							assetId: 'asset-1',
+							src: 'https://res.cloudinary.com/demo/image/upload/v1/production/boda/example/hero.webp',
+						},
+					},
+				},
+				assets: [
+					{
+						id: 'asset-1',
+						key: 'hero',
+						sha256: 'expected',
+						mimeType: 'image/webp',
+						width: 3,
+						height: 2,
+						url: 'https://res.cloudinary.com/demo/image/upload/v1/boda/example/hero.webp',
+					},
+				],
+			},
+			null,
+			download,
+		);
+		expect(row).toMatchObject({ classification: 'MISSING', status: 404 });
 		expect(row?.reasons).toContain('published content URL: HTTP 404');
 	});
 });
