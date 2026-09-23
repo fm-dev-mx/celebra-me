@@ -60,6 +60,14 @@ export function certificationMatches(
 	return Object.entries(expected).every(([key, expectedValue]) => record[key] === expectedValue);
 }
 
+export function isolatedGitEnvironment(extra: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv {
+	const environment = { ...process.env };
+	for (const key of Object.keys(environment)) {
+		if (key.startsWith('GIT_')) delete environment[key];
+	}
+	return { ...environment, ...extra };
+}
+
 function parseFlag(name: string): string | undefined {
 	const args = process.argv.slice(2);
 	const inline = args.find((arg) => arg.startsWith(`${name}=`));
@@ -221,6 +229,7 @@ export function visualDifferenceFiles(root: string): string[] {
 
 function main(): void {
 	const sha = assertExactCommit(parseFlag('--sha') ?? '');
+	const repositoryRoot = git(['rev-parse', '--show-toplevel']);
 	const targetRef = parseFlag('--target-ref') ?? 'refs/heads/develop';
 	const baseSha = parseFlag('--base-sha');
 	const paths = changedPaths(baseSha, sha);
@@ -242,15 +251,18 @@ function main(): void {
 	const checkout = join(temporaryRoot, 'checkout');
 	const evidence = join(temporaryRoot, 'evidence');
 	try {
-		execFileSync('git', ['clone', '--no-checkout', process.cwd(), checkout], {
+		execFileSync('git', ['clone', '--no-checkout', repositoryRoot, checkout], {
 			stdio: 'inherit',
-			env: { ...process.env, GIT_LFS_SKIP_SMUDGE: '1' },
+			env: isolatedGitEnvironment({ GIT_LFS_SKIP_SMUDGE: '1' }),
 		});
 		execFileSync('git', ['-C', checkout, 'checkout', '--detach', sha], {
 			stdio: 'inherit',
-			env: { ...process.env, GIT_LFS_SKIP_SMUDGE: '1' },
+			env: isolatedGitEnvironment({ GIT_LFS_SKIP_SMUDGE: '1' }),
 		});
-		execFileSync('git', ['-C', checkout, 'lfs', 'pull'], { stdio: 'inherit' });
+		execFileSync('git', ['-C', checkout, 'lfs', 'pull'], {
+			stdio: 'inherit',
+			env: isolatedGitEnvironment(),
+		});
 		const identity = identityForCheckout(checkout, sha);
 		const certificationPath = gitPath(`visual-certifications/${sha}.json`);
 		if (existsSync(certificationPath)) {

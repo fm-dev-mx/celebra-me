@@ -7,6 +7,7 @@ import {
 	PNPM_VERSION,
 	PLAYWRIGHT_IMAGE,
 	certificationMatches,
+	isolatedGitEnvironment,
 	shouldRequireVisualCertification,
 	visualDifferenceFiles,
 } from '../../scripts/ops/visual-prepush-certification.ts';
@@ -81,6 +82,25 @@ describe('visual pre-push certification', () => {
 			]);
 		} finally {
 			rmSync(root, { recursive: true, force: true });
+		}
+	});
+
+	it('removes hook-owned Git variables from isolated clone commands', () => {
+		const originalGitDir = process.env.GIT_DIR;
+		const originalGitWorkTree = process.env.GIT_WORK_TREE;
+		process.env.GIT_DIR = 'hook-git-dir';
+		process.env.GIT_WORK_TREE = 'hook-work-tree';
+		try {
+			const environment = isolatedGitEnvironment({ GIT_LFS_SKIP_SMUDGE: '1' });
+			expect(environment.GIT_DIR).toBeUndefined();
+			expect(environment.GIT_WORK_TREE).toBeUndefined();
+			expect(environment.GIT_LFS_SKIP_SMUDGE).toBe('1');
+			expect(environment.Path ?? environment.PATH).toBe(process.env.Path ?? process.env.PATH);
+		} finally {
+			if (originalGitDir === undefined) delete process.env.GIT_DIR;
+			else process.env.GIT_DIR = originalGitDir;
+			if (originalGitWorkTree === undefined) delete process.env.GIT_WORK_TREE;
+			else process.env.GIT_WORK_TREE = originalGitWorkTree;
 		}
 	});
 });
