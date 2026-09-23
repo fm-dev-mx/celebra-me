@@ -57,7 +57,6 @@ shift
 				LFS_TEST_STATUS: lfsStatus,
 				MISSING_REFS: missingRefs,
 				POLICY_STATUS: policyStatus,
-				ALLOW_MAIN_PUSH: '',
 				SKIP_COMMIT_RANGE_VALIDATION: '',
 			},
 			timeout: 10000,
@@ -103,7 +102,7 @@ shift
 					encoding: 'utf8',
 					timeout: 10000,
 					input: `refs/heads/task ${head} refs/heads/task ${'0'.repeat(40)}\n`,
-					env: { ...process.env, ALLOW_MAIN_PUSH: '', SKIP_COMMIT_RANGE_VALIDATION: '' },
+					env: { ...process.env, SKIP_COMMIT_RANGE_VALIDATION: '' },
 				},
 			);
 			expect(result.error).toBeUndefined();
@@ -164,9 +163,11 @@ shift
 		expect(result.stdout).toContain(updates);
 	});
 	it('propagates LFS failure', () => expect(run(updates, '1').status).toBe(1));
-	it('keeps main protection ahead of upload', () => {
+	it('leaves protected-branch enforcement to GitHub while retaining validation', () => {
 		const result = run(updates.replaceAll('refs/heads/task', 'refs/heads/main'));
-		expect(result.status).toBe(1);
-		expect(result.stdout).not.toContain('LFS_ARGS');
+		expect(result.status).toBe(0);
+		expect(result.stdout).toContain('POLICY:');
+		expect(result.stdout).toContain('CERT:validate:prepush');
+		expect(result.stdout).toContain('LFS_ARGS');
 	});
 });

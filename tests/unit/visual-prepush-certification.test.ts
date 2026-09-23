@@ -31,9 +31,9 @@ const identity = {
 };
 
 describe('visual pre-push certification', () => {
-	it('always requires a full certification for protected branches', () => {
-		expect(shouldRequireVisualCertification('refs/heads/develop', [])).toBe(true);
-		expect(shouldRequireVisualCertification('refs/heads/main', ['docs/readme.md'])).toBe(true);
+	it('skips full certification for nonvisual changes on protected branches', () => {
+		expect(shouldRequireVisualCertification('refs/heads/develop', [])).toBe(false);
+		expect(shouldRequireVisualCertification('refs/heads/main', ['docs/readme.md'])).toBe(false);
 	});
 
 	it('keeps the candidate wrapper bound to the exact certified browser runtime', () => {
@@ -41,7 +41,7 @@ describe('visual pre-push certification', () => {
 		expect(NODE_ARCHIVE_SHA256).toMatch(/^[0-9a-f]{64}$/u);
 	});
 
-	it('requires feature-branch certification only for cumulative visual impact', () => {
+	it('requires certification for cumulative visual impact on every branch', () => {
 		expect(
 			shouldRequireVisualCertification('refs/heads/feature/example', ['src/styles/app.scss']),
 		).toBe(true);

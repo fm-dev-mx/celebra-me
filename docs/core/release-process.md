@@ -16,8 +16,8 @@ Diagnosis never authorizes mutation. `CURRENT`, green CI, an accessible deployme
   `pnpm prod:apply -- --schema`. Require pending set, compatibility, disposable/Preview proof and,
   for contract, capability manifest, exact Production deployment and smoke, owner permit and backup.
 - **Tooling-only release:** diagnose with `pnpm ops:classify-release -- --base <sha> --head <sha>`.
-  The result is advisory and retains Repository Policy, Application Suite and Preview smoke, but
-  indicates no DB apply, migration or backup.
+  The result is advisory and retains Repository Policy and Application Suite, but indicates no DB
+  apply, migration or backup.
 - **Application release:** diagnose with `pnpm ops:release-checks <exact-sha>` and use the
   owner-authorized deployment workflow. Require exact trusted checks, deployment/environment and
   smoke; schema evidence remains separate.
@@ -47,26 +47,18 @@ require separate editorial authorization; this release workflow never rewrites t
 
 ### Efficient validation and evidence
 
-#### CI-gated Preview deployments
+#### CI and Vercel Git deployments
 
-- `Repository CI` is the only source workflow allowed to unlock a Preview deployment. A completed
-  `push` run for `develop` must be successful; manual candidate runs and pull-request runs cannot
-  deploy.
-- `.github/workflows/deploy-preview.yml` checks out the exact successful SHA, uses the pinned Vercel
-  CLI, builds once, deploys only `.vercel/output` with `--prebuilt`, and runs the trusted public
-  Preview smoke against the immutable deployment URL. Its smoke check keeps the canonical name
-  `Vercel - celebra-me preview smoke` used by release readiness.
-- Vercel Git deployments for `develop` must be disabled in project settings after this workflow and
-  its secrets are verified. Otherwise Vercel will continue creating an earlier parallel Preview
-  outside the CI gate. Required GitHub secrets are `VERCEL_TOKEN` and `VERCEL_ORG_ID`; the existing
-  `VERCEL_PROJECT_ID` repository variable identifies the project. Preview smoke retains its existing
-  scoped secrets.
-- Production remains an owner-authorized promotion of the exact validated Preview. The separate
-  `Post-deploy Smoke` workflow handles the promoted Production deployment; it does not create or
-  approve promotions.
-- Configure repository rulesets outside the repository so `develop` and `main` require
-  `Repository Policy` and `Application Suite`. Require pull requests for `develop`; retain the
-  documented fast-forward promotion contract for `main`.
+- `Repository CI` is the only remote validation authority. Pull requests to `develop` and `main`
+  must pass `Repository Policy` and `Application Suite` before merge.
+- Vercel's Git integration owns deployments: pull requests and `develop` receive automatic Preview
+  deployments, while `main` receives the automatic Production deployment. GitHub Actions does not
+  build or deploy a second Preview.
+- `Post-deploy Smoke` validates the correlated Production deployment, SHA, approved host and
+  critical HTTP behavior. The scheduled/manual `Production Image Audit` separately reports
+  published-media drift and never determines deployment health.
+- Repository rulesets require pull requests and the two canonical checks on both protected branches,
+  and continue blocking deletion and non-fast-forward updates.
 
 #### Failure classification and retry
 
@@ -90,10 +82,9 @@ require separate editorial authorization; this release workflow never rewrites t
 - `pnpm validate:prepush -- --sha <exact-sha>` certifies an isolated checkout of the exact commit in
   the same digest-pinned Linux Playwright image used by Repository CI. Native Windows captures are
   diagnostic only and do not satisfy this gate.
-- The pre-push hook always requires this certification for `develop` and `main`. Other branches
-  require it when their cumulative range from `origin/develop` intersects the shared conservative
-  visual-impact classifier. A nonvisual final commit cannot hide inherited visual debt on a
-  protected branch.
+- The pre-push hook requires this certification only when the cumulative pushed range intersects the
+  shared conservative visual-impact classifier, regardless of destination branch. Accepted
+  references, the visual matrix and capture infrastructure remain visual-impact inputs.
 - Successful evidence is cached under the worktree's internal Git path and is reusable only while
   SHA, visual matrix, accepted-manifest hash, lockfile hash, verified Node archive, Node/pnpm
   versions, image digest, certified command, and command schema all match. It is never committed.
@@ -128,19 +119,14 @@ require separate editorial authorization; this release workflow never rewrites t
   `visual-candidate-<sha>` artifact and review `changes.html` plus the complete matrix as needed.
   This mode does not produce a passing Application Suite. Any regenerated manifest requires renewed
   owner approval of that exact artifact; never transfer approval to a different hash.
-- Workflows triggered by `workflow_run` must be installed on the repository default branch before
-  they can observe `develop` CI. Activate those workflow files and their minimum dependencies on
-  `main` through a narrow operational PR before disabling Vercel Git auto-deploy; do not promote
-  unrelated application commits merely to install the listeners.
 - Preserve previously granted task authorization. Resolve routine paths and command arguments
   without asking again. Request new decisions only for new scope or material visual approval.
 - Before promotion, run `pnpm ops:release-checks <exact-sha>` to require Repository Policy,
-  Application Suite and the correlated Preview smoke from GitHub Actions. Pending, cancelled,
-  skipped, missing, untrusted or different-SHA evidence blocks this check. For database contracts,
-  follow `expand → CI/Preview → Production deployment + smoke → contract`; the contract gate
-  verifies the prior Production SHA and its versioned application-capability manifest. It does not
-  replace database compatibility checks or owner deployment authorization. Recheck after final
-  integration.
+  Application Suite and static capability evidence. Pending, cancelled, skipped, missing, untrusted
+  or different-SHA evidence blocks this check. For database contracts, follow
+  `expand → CI/Preview → Production deployment + smoke → contract`; the contract gate verifies the
+  prior Production SHA and its versioned application-capability manifest. It does not replace
+  database compatibility checks or owner deployment authorization. Recheck after final integration.
 - The main ruleset must still be inspected: this CLI is a fail-closed operator check, not proof that
   provider-side Preview protection is configured. Never call a release ready from CI alone.
 - Avoid repeating successful complete suites for unchanged evidence. A final integration SHA,
@@ -296,24 +282,14 @@ automatic action performed by CI or Vercel after a deployment begins.
 If visual confirmation is missing or rejected, the candidate is not eligible for promotion or
 deployment. Do not reduce visual coverage, relax comparison, or treat a Preview build as approval.
 
-```bash
-git switch develop
-git pull --ff-only origin develop
-git switch main
-git pull --ff-only origin main
-git merge --ff-only develop
-ALLOW_MAIN_PUSH=true git push origin main
-```
-
-The `main` ruleset requires the same checks as `develop` but intentionally omits the pull-request
-rule. The promotion must reuse the exact checked `develop` SHA and must not create a merge, squash,
-or rebase commit.
+Open a pull request from `develop` to `main`, wait for `Repository Policy` and `Application Suite`,
+then merge through GitHub. Direct pushes are not part of the release path.
 
 ### 6. Verify the promoted deployment
 
-Confirm that `origin/main` and `origin/develop` resolve to the same SHA, then verify the automatic
-production deployment and critical smoke routes. If the deployment fails, revert on `develop`,
-validate, and promote the revert by fast-forward; never rewrite `main`.
+Verify the automatic Production deployment and critical smoke routes for the merged `main` SHA. If
+the deployment fails, create a revert branch and use the same pull-request flow; never rewrite
+`main`.
 
 ### 7. Create and push the annotated tag
 
@@ -330,7 +306,7 @@ existing tag.
 When application code depends on a migration, use the staged contract order:
 
 1. Apply and validate the `expand` migration against local/Preview environments.
-2. Require complete CI and correlated Preview smoke for the exact release SHA.
+2. Require complete CI and review the automatic Preview for the release branch.
 3. Deploy that application build to Production and require the correlated Production smoke.
 4. Apply the reviewed `contract` migration only after the previous deployment SHA and its capability
    manifest satisfy the rollout registry.

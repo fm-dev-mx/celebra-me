@@ -2,9 +2,6 @@
 
 set -e
 
-# Main push guard blocks refs/heads/main unless ALLOW_MAIN_PUSH=true.
-# (The commit validation and tests below still apply)
-
 ZERO_SHA="0000000000000000000000000000000000000000"
 
 # Both policy and Git LFS consume the same ref updates from stdin.
@@ -25,15 +22,6 @@ do
   fi
 
   BASE_SHA=""
-
-  # Block direct pushes to main unless ALLOW_MAIN_PUSH=true. This guard always runs.
-  if [ "$remote_ref" = "refs/heads/main" ]; then
-    if [ "$ALLOW_MAIN_PUSH" != "true" ]; then
-      echo "❌ Error: Pushing directly to 'main' is not allowed."
-      echo "💡 Use 'ALLOW_MAIN_PUSH=true git push origin main' if absolutely necessary."
-      exit 1
-    fi
-  fi
 
   if [ -z "$remote_sha" ] || [ "$remote_sha" = "$ZERO_SHA" ]; then
     # New origin task branches integrate into develop. Other destinations retain

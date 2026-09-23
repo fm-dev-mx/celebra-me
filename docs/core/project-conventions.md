@@ -57,8 +57,8 @@ hooks or `PascalCase` types from inside the file.
 
 - Keep filenames, identifiers, and slugs concise and meaningful.
 - Avoid unnecessarily long compound names (e.g., prefer `norma-hernandez` over
-  `norma-margarita-hernandez-zabalsa`). Verbose names complicate file paths, imports, test routes, and
-  CSS class selectors.
+  `norma-margarita-hernandez-zabalsa`). Verbose names complicate file paths, imports, test routes,
+  and CSS class selectors.
 - For client invitations, use the primary public name `{primer_nombre}-{primer_apellido}` by default
   unless disambiguation is strictly required.
 
@@ -93,8 +93,9 @@ hooks or `PascalCase` types from inside the file.
 - Keep production routes (`[slug].astro`), page assembly modules (`page-data.ts`), and client hooks
   focused strictly on their production responsibilities.
 - **Never inject ad-hoc simulation subsystems or test parameters into production data loaders**
-  (e.g., fake URL query flags for simulating unconfirmed RSVP states or personalized access). Testing
-  variations belongs in isolated test harnesses (`/test/variant`), fixtures, or unit test mocks.
+  (e.g., fake URL query flags for simulating unconfirmed RSVP states or personalized access).
+  Testing variations belongs in isolated test harnesses (`/test/variant`), fixtures, or unit test
+  mocks.
 - Avoid speculative features, premature abstractions, and redundant layers that have no active
   consumers.
 
@@ -139,9 +140,9 @@ hooks or `PascalCase` types from inside the file.
   (colors, letter-spacing, radii), not inject aggressive, opinionated layout/typography mutations
   (such as forced `text-transform: uppercase`) that force individual profiles to implement negation
   hacks (`--token: none`).
-- **No Invasive Micro-Token Bloat:** Do not scatter ad-hoc micro-tokens across shared base stylesheets
-  (e.g., wrapping font sizes or spacings in `max(var(--custom-floor), ...)` across dozens of rules).
-  Shared base stylesheets must remain clean, predictable, and standard.
+- **No Invasive Micro-Token Bloat:** Do not scatter ad-hoc micro-tokens across shared base
+  stylesheets (e.g., wrapping font sizes or spacings in `max(var(--custom-floor), ...)` across
+  dozens of rules). Shared base stylesheets must remain clean, predictable, and standard.
 
 ---
 
@@ -305,7 +306,7 @@ Jest uses the same six-package ESM graph through `scripts/jest-esm-to-cjs-transf
 Jest exception when the repository Jest pipeline consumes the graph directly. Remove the Vite SSR
 exception when the Vercel runtime can load the upstream CommonJS-to-ESM boundary directly (or
 `sanitize-html` ships a compatible entry), and only after local handler invocation, the full local
-suite, and an authenticated Preview smoke test pass without it.
+suite, and authenticated verification on the automatic Vercel Preview without it.
 
 Prefer Context7 (or equivalent) against the pinned versions when API details are uncertain. Major
 framework upgrades should not mix with invitation production work.
