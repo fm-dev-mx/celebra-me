@@ -58,6 +58,18 @@ describe('related Jest source selection', () => {
 		expect(relatedTestSources).not.toContain('src/lib/example.test.ts');
 	});
 
+	it('uses the shared classifier to mark visual certification as outstanding', () => {
+		const visualImpactFiles = evaluateModuleScript<string[]>(`
+			import { buildValidationPlan } from ${JSON.stringify(VALIDATION_RUNNER_MODULE)};
+			const plan = buildValidationPlan(
+				['src/styles/app.scss', 'scripts/ops/ci-metrics.ts'],
+				() => true,
+			);
+			process.stdout.write(JSON.stringify(plan.visualImpactFiles));
+		`);
+		expect(visualImpactFiles).toEqual(['src/styles/app.scss']);
+	});
+
 	it('routes shared invitation rendering changes to the Local Render Corpus sweep only', () => {
 		const result = evaluateModuleScript<{
 			rendering: boolean;

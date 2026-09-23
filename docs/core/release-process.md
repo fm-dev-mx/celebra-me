@@ -2,7 +2,7 @@
 
 **Status:** Active
 
-**Last Updated:** 2026-09-22
+**Last Updated:** 2026-09-23
 
 ## Overview
 
@@ -84,6 +84,25 @@ require separate editorial authorization; this release workflow never rewrites t
   remains mandatory for every application run; this signal explains when hash-bound human review is
   additionally required and never reduces coverage.
 
+#### Local visual certification before push
+
+- `pnpm validate:prepush -- --sha <exact-sha>` certifies an isolated checkout of the exact commit in
+  the same digest-pinned Linux Playwright image used by Repository CI. Native Windows captures are
+  diagnostic only and do not satisfy this gate.
+- The pre-push hook always requires this certification for `develop` and `main`. Other branches
+  require it when their cumulative range from `origin/develop` intersects the shared conservative
+  visual-impact classifier. A nonvisual final commit cannot hide inherited visual debt on a
+  protected branch.
+- Successful evidence is cached under the worktree's internal Git path and is reusable only while
+  SHA, visual matrix, accepted-manifest hash, lockfile hash, image digest, and command schema all
+  match. It is never committed. Failed evidence is retained under the internal Git path for local
+  diagnosis and never changes accepted references.
+- `validate:changed` remains fast feedback. When it prints `VISUAL_CERTIFICATION_REQUIRED`, its
+  success is not permission to push; run the exact-SHA pre-push certification after committing.
+- Candidate generation accepts `--sha` and fails when it does not equal the clean current HEAD.
+  Candidate success is review evidence only. Acceptance still requires the exact reference SHA,
+  matrix hash, and candidate-manifest SHA-256 followed by a new passing compare.
+
 - `pnpm run ci` covers static/build, Jest and certified browser checks. The remote workflow also
   requires Repository Policy and disposable DB contracts; local CI alone is not release readiness.
 - `validate:changed` already runs related Jest. Do not repeat `test:changed` at the same unchanged
@@ -104,6 +123,10 @@ require separate editorial authorization; this release workflow never rewrites t
   `visual-candidate-<sha>` artifact and review `changes.html` plus the complete matrix as needed.
   This mode does not produce a passing Application Suite. Any regenerated manifest requires renewed
   owner approval of that exact artifact; never transfer approval to a different hash.
+- Workflows triggered by `workflow_run` must be installed on the repository default branch before
+  they can observe `develop` CI. Activate those workflow files and their minimum dependencies on
+  `main` through a narrow operational PR before disabling Vercel Git auto-deploy; do not promote
+  unrelated application commits merely to install the listeners.
 - Preserve previously granted task authorization. Resolve routine paths and command arguments
   without asking again. Request new decisions only for new scope or material visual approval.
 - Before promotion, run `pnpm ops:release-checks <exact-sha>` to require Repository Policy,

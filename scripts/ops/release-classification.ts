@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { normalizeVisualPath, visualImpactFiles } from './visual-impact.ts';
 
 export type ReleaseCategory =
 	'tooling-only' | 'application' | 'schema-dependent' | 'invitation-content';
@@ -12,17 +13,6 @@ export interface ReleaseClassification {
 	visualImpact: boolean;
 	visualReasons: string[];
 }
-
-const VISUAL_PATH_PATTERNS = [
-	/^src\/(?:components|layouts|pages)\/.*\.(?:astro|tsx)$/u,
-	/^src\/styles\//u,
-	/^src\/content\//u,
-	/^src\/assets\//u,
-	/^public\/.*\.(?:avif|gif|jpe?g|png|svg|webp|woff2?)$/u,
-	/^scripts\/(?:playwright|screenshot)\//u,
-	/^tests\/(?:e2e|fixtures)\//u,
-	/^(?:astro|playwright)\.config\./u,
-] as const;
 
 export function classifyReleaseFiles(
 	paths: string[],
@@ -49,16 +39,18 @@ export function classifyReleaseFiles(
 			return 'tooling-only';
 		return 'application';
 	};
-	const files = paths.filter(Boolean).map((path) => ({ path, category: classify(path) }));
+	const files = paths
+		.filter(Boolean)
+		.map(normalizeVisualPath)
+		.map((path) => ({ path, category: classify(path) }));
 	const categories = new Set(files.map((file) => file.category));
 	let category: ReleaseCategory;
 	if (categories.has('schema-dependent')) category = 'schema-dependent';
 	else if (categories.has('application') || categories.size > 1) category = 'application';
 	else category = files[0]?.category ?? 'application';
 	const applicableGates = ['Repository Policy', 'Application Suite', 'Preview smoke'];
-	const visualFiles = files.filter((file) =>
-		VISUAL_PATH_PATTERNS.some((pattern) => pattern.test(file.path)),
-	);
+	const visualPaths = new Set(visualImpactFiles(files.map((file) => file.path)));
+	const visualFiles = files.filter((file) => visualPaths.has(file.path));
 	const visualImpact = visualFiles.length > 0;
 	const visualReasons = visualImpact
 		? visualFiles.map((file) => `${file.path} is inside the conservative visual gate.`)

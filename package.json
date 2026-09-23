@@ -31,6 +31,7 @@
         "ci:static": "pnpm type-check && pnpm validate:structure && pnpm validate:deployed-app-capabilities && pnpm lint && pnpm lint:styles && pnpm validate:ui-governance && pnpm validate:event-parity && pnpm validate:no-pii && pnpm validate:invitation-preparation && pnpm build:app",
         "validate:staged": "node scripts/validate-staged.mjs",
         "validate:changed": "node scripts/validate-changed.mjs",
+        "validate:prepush": "tsx scripts/ops/visual-prepush-certification.ts",
         "validate:markdown-tables": "node scripts/validate-markdown-tables.mjs",
         "format:markdown-tables": "node scripts/validate-markdown-tables.mjs --fix",
         "validate:structure": "node scripts/validate-structure.mjs",

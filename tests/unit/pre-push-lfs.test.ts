@@ -39,6 +39,7 @@ git() {
   printf '%s\\n' aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 }
 node() { printf 'POLICY:%s\\n' "$*"; return "$POLICY_STATUS"; }
+pnpm() { printf 'CERT:%s\\n' "$*"; return 0; }
 hook=$1
 shift
 . "$hook"
@@ -88,6 +89,7 @@ describe('pre-push LFS handoff', () => {
 					`
 git() { if [ "$1" = lfs ]; then cat >/dev/null; else command git "$@"; fi; }
 node() { printf 'PENDING:'; command git rev-list --count "$2..$3"; }
+pnpm() { printf 'CERT:%s\\n' "$*"; return 0; }
 hook=$1
 shift
 . "$hook"
@@ -118,8 +120,10 @@ shift
 		expect(result.stdout).toContain('POLICY:scripts/validate-commits.mjs origin/develop ');
 	});
 	it('keeps the existing remote SHA as the base for branch updates', () => {
-		expect(run(updates).stdout).toContain(
-			`POLICY:scripts/validate-commits.mjs ${'b'.repeat(40)} `,
+		const output = run(updates).stdout;
+		expect(output).toContain(`POLICY:scripts/validate-commits.mjs ${'b'.repeat(40)} `);
+		expect(output).toContain(
+			`CERT:validate:prepush -- --sha ${'a'.repeat(40)} --base-sha ${'b'.repeat(40)} --target-ref refs/heads/task`,
 		);
 	});
 	it.each([

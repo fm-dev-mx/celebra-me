@@ -20,6 +20,12 @@ fi
 
 while read local_ref local_sha remote_ref remote_sha
 do
+  if [ -z "$local_sha" ] || [ "$local_sha" = "$ZERO_SHA" ]; then
+    continue
+  fi
+
+  BASE_SHA=""
+
   # Block direct pushes to main unless ALLOW_MAIN_PUSH=true. This guard always runs.
   if [ "$remote_ref" = "refs/heads/main" ]; then
     if [ "$ALLOW_MAIN_PUSH" != "true" ]; then
@@ -29,33 +35,34 @@ do
     fi
   fi
 
+  if [ -z "$remote_sha" ] || [ "$remote_sha" = "$ZERO_SHA" ]; then
+    # New origin task branches integrate into develop. Other destinations retain
+    # their existing range policy; an unavailable trunk uses the fallbacks below.
+    case "$remote_ref" in
+      refs/heads/main|refs/heads/develop) ;;
+      refs/heads/*)
+        if [ "$1" = "origin" ]; then
+          BASE_SHA=$(git merge-base "$local_sha" origin/develop 2>/dev/null || true)
+        fi
+        ;;
+    esac
+    if [ -z "$BASE_SHA" ]; then
+      BASE_SHA=$(git merge-base "$local_sha" origin/main 2>/dev/null || git merge-base "$local_sha" origin/develop 2>/dev/null || git rev-list --max-parents=0 "$local_sha" | tail -n 1)
+    fi
+  else
+    BASE_SHA=$(git merge-base "$local_sha" "$remote_sha")
+  fi
+
   if [ "$SKIP_COMMIT_RANGE_VALIDATION" != "true" ]; then
-    if [ -z "$local_sha" ] || [ "$local_sha" = "$ZERO_SHA" ]; then
-      continue
-    fi
-
-    if [ -z "$remote_sha" ] || [ "$remote_sha" = "$ZERO_SHA" ]; then
-      BASE_SHA=""
-      # New origin task branches integrate into develop. Other destinations retain
-      # their existing range policy; an unavailable trunk uses the fallbacks below.
-      case "$remote_ref" in
-        refs/heads/main|refs/heads/develop) ;;
-        refs/heads/*)
-          if [ "$1" = "origin" ]; then
-            BASE_SHA=$(git merge-base "$local_sha" origin/develop 2>/dev/null || true)
-          fi
-          ;;
-      esac
-      if [ -z "$BASE_SHA" ]; then
-        BASE_SHA=$(git merge-base "$local_sha" origin/main 2>/dev/null || git merge-base "$local_sha" origin/develop 2>/dev/null || git rev-list --max-parents=0 "$local_sha" | tail -n 1)
-      fi
-    else
-      BASE_SHA=$(git merge-base "$local_sha" "$remote_sha")
-    fi
-
     if [ -n "$BASE_SHA" ]; then
       node scripts/validate-commits.mjs "$BASE_SHA" "$local_sha"
     fi
+  fi
+
+  if [ -n "$BASE_SHA" ]; then
+    pnpm validate:prepush -- --sha "$local_sha" --base-sha "$BASE_SHA" --target-ref "$remote_ref"
+  else
+    pnpm validate:prepush -- --sha "$local_sha" --target-ref "$remote_ref"
   fi
 done <<EOF
 $ref_updates

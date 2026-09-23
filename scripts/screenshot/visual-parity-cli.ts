@@ -193,8 +193,13 @@ function readManifest(root: string, preferSuiteManifests = false): CombinedManif
 	);
 }
 
-function candidate(): void {
+function candidate(expectedSha?: string): void {
 	const referenceSha = assertCleanGitState('candidate');
+	if (expectedSha && expectedSha !== referenceSha) {
+		throw new Error(
+			`Candidate SHA mismatch: requested ${expectedSha}, current HEAD is ${referenceSha}.`,
+		);
+	}
 	assertCaptureEnvironment('candidate');
 	readPreviousAccepted();
 	const missingAssets = listLocalRenderCorpus()
@@ -517,6 +522,12 @@ function certifiedBrowser(args: string[]): void {
 		throw new Error(`Certified browser suite failed (exit ${result.status}).`);
 }
 
+function parseCliFlag(args: string[], name: string): string | undefined {
+	const inline = args.find((arg) => arg.startsWith(`${name}=`));
+	const positional = args.findIndex((arg) => arg === name);
+	return inline?.slice(name.length + 1) ?? (positional >= 0 ? args[positional + 1] : undefined);
+}
+
 async function main(): Promise<void> {
 	const [operation, ...args] = process.argv.slice(2);
 	if (operation === 'browser') return certifiedBrowser(args);
@@ -524,28 +535,18 @@ async function main(): Promise<void> {
 		const { diagnoseSections } = await import('./section-visual-diagnosis.ts');
 		return diagnoseSections(args);
 	}
-	if (operation === 'candidate') return candidate();
+	if (operation === 'candidate') {
+		return candidate(parseCliFlag(args, '--sha'));
+	}
 	if (operation === 'compare') return compare();
 	if (operation === 'accept') {
-		const inline = args.find((arg) => arg.startsWith('--reference-sha='));
-		const positional = args.findIndex((arg) => arg === '--reference-sha');
-		const referenceSha =
-			inline?.slice('--reference-sha='.length) ??
-			(positional >= 0 ? args[positional + 1] : undefined);
-		const matrixInline = args.find((arg) => arg.startsWith('--matrix-hash='));
-		const matrixPositional = args.findIndex((arg) => arg === '--matrix-hash');
-		const matrixHash =
-			matrixInline?.slice('--matrix-hash='.length) ??
-			(matrixPositional >= 0 ? args[matrixPositional + 1] : undefined);
-		const manifestInline = args.find((arg) => arg.startsWith('--candidate-manifest-sha256='));
-		const manifestPositional = args.findIndex((arg) => arg === '--candidate-manifest-sha256');
-		const candidateManifestSha256 =
-			manifestInline?.slice('--candidate-manifest-sha256='.length) ??
-			(manifestPositional >= 0 ? args[manifestPositional + 1] : undefined);
+		const referenceSha = parseCliFlag(args, '--reference-sha');
+		const matrixHash = parseCliFlag(args, '--matrix-hash');
+		const candidateManifestSha256 = parseCliFlag(args, '--candidate-manifest-sha256');
 		return accept(referenceSha ?? '', matrixHash ?? '', candidateManifestSha256 ?? '');
 	}
 	throw new Error(
-		'Usage: visual-parity-cli.ts candidate|compare|accept|diagnose --reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>',
+		'Usage: visual-parity-cli.ts candidate [--sha=<sha>]|compare|accept|diagnose --reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>',
 	);
 }
 

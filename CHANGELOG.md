@@ -16,6 +16,10 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
   passes Repository CI, deploy one prebuilt Vercel artifact, and complete the canonical Preview
   smoke. CI evidence distinguishes code, visual, and infrastructure failures and permits only one
   automatic retry for a confirmed infrastructure-only failure.
+- **Exact-SHA local visual certification**: Protected-branch pushes now require the full browser
+  comparison in the digest-pinned Linux Playwright runtime, with hash-keyed reusable evidence and
+  fail-closed invalidation. Changed-file validation shares the same visual-impact classifier and
+  reports when this certification remains outstanding.
 
 - **Invitation work tracking**: The existing dashboard separates work completion from the owner's
   manual review, with an in-progress filter and protected, concurrent updates. Publication and

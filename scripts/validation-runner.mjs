@@ -3,6 +3,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { getRelatedTestSourceFiles, buildRelatedTestArgs } from './related-test-files.mjs';
+import { visualImpactFiles } from './ops/visual-impact.ts';
 
 const REPO_ROOT = process.cwd();
 const IGNORE_FILES = /(?:\.eslintcache|\.stylelintcache|node_modules|\.git)$/u;
@@ -83,7 +84,15 @@ export function buildValidationPlan(files, pathExists = existsSync) {
 		),
 		jestArgs: buildRelatedTestArgs(relevantFiles, pathExists),
 		requiresManagedInvitationRegression: requiresManagedInvitationRegression(relevantFiles),
+		visualImpactFiles: visualImpactFiles(relevantFiles),
 	};
+}
+
+function reportVisualCertificationRequirement(files) {
+	if (files.length === 0) return;
+	console.log('\nVISUAL_CERTIFICATION_REQUIRED');
+	console.log('Run pnpm validate:prepush -- --sha <exact-commit-sha> before pushing.');
+	for (const file of files) console.log(`  - ${file}`);
 }
 
 export function runValidation({
@@ -197,6 +206,7 @@ export function runValidation({
 			'Browser/layout behavior requires the applicable focused browser check; Jest and the Local Render Corpus do not certify visual parity.',
 		);
 	}
+	reportVisualCertificationRequirement(plan.visualImpactFiles);
 	console.log(
 		`\n✓ validate:${scope} local checks passed; domain and release gates remain separate.`,
 	);
