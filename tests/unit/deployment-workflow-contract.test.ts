@@ -23,6 +23,9 @@ describe('deployment workflow contract', () => {
 		const workflow = readFileSync(resolve('.github/workflows/deploy-preview.yml'), 'utf8');
 		expect(workflow.match(/vercel@59\.25\.4 build/g)).toHaveLength(1);
 		expect(workflow.match(/vercel@59\.25\.4 deploy --prebuilt/g)).toHaveLength(1);
+		expect(workflow).toContain('--meta "releaseSha=$RELEASE_SHA"');
+		expect(workflow).toContain('test "$DEPLOYED_SHA" = "$RELEASE_SHA"');
+		expect(workflow).toContain('preview-deployment-${{ env.RELEASE_SHA }}');
 		expect(workflow).toContain('name: Vercel - celebra-me preview smoke');
 		expect(workflow).toContain('pnpm test:e2e:preview:public');
 	});
@@ -33,7 +36,8 @@ describe('deployment workflow contract', () => {
 			'utf8',
 		);
 		expect(workflow).toContain('github.event.workflow_run.run_attempt == 1');
-		expect(workflow).toContain("e.primaryCause==='INFRASTRUCTURE'");
+		expect(workflow).toContain('ci-infrastructure-retry.ts');
+		expect(workflow).not.toContain('gh run download');
 		expect(workflow).toContain("steps.classification.outputs.should_retry == 'true'");
 		expect(workflow).toContain('gh run rerun "$RUN_ID"');
 	});

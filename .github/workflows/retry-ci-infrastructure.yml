@@ -19,16 +19,21 @@ jobs:
             github.event.workflow_run.head_repository.full_name == github.repository
         runs-on: ubuntu-24.04
         steps:
-            - name: Download validation evidence
+            - name: Checkout trusted retry classifier
+              uses: actions/checkout@v7
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
+
+            - name: Confirm post-test artifact infrastructure failure
+              id: classification
               env:
                   GH_TOKEN: ${{ github.token }}
                   RUN_ID: ${{ github.event.workflow_run.id }}
-              run: gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" --name "validation-metrics-${RUN_ID}-1" --dir .tmp
-
-            - name: Require infrastructure classification
-              id: classification
-              run: |
-                  node -e "const fs=require('fs'); const e=require('./.tmp/validation-metrics.json'); fs.appendFileSync(process.env.GITHUB_OUTPUT, 'should_retry='+(e.primaryCause==='INFRASTRUCTURE'&&e.retryInfrastructure===true)+'\n')"
+                  RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+              run: node --experimental-strip-types scripts/ops/ci-infrastructure-retry.ts
 
             - name: Retry failed jobs once
               if: steps.classification.outputs.should_retry == 'true'

@@ -25,6 +25,7 @@ jobs:
         outputs:
             url: ${{ steps.deploy.outputs.url }}
             host: ${{ steps.deploy.outputs.host }}
+            deployment-id: ${{ steps.deploy.outputs.deployment_id }}
         env:
             VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
             VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -61,16 +62,42 @@ jobs:
               id: deploy
               run: |
                   set -euo pipefail
-                  URL="$(pnpm dlx vercel@59.25.4 deploy --prebuilt --yes --token="$VERCEL_TOKEN" | tail -n 1)"
+                  mkdir -p .tmp
+                  pnpm dlx vercel@59.25.4 deploy --prebuilt --yes --json --meta "releaseSha=$RELEASE_SHA" --token="$VERCEL_TOKEN" > .tmp/vercel-deploy.json
+                  URL="$(jq -r '.url // empty' .tmp/vercel-deploy.json)"
                   case "$URL" in
                     https://*.vercel.app) ;;
                     *) echo "Vercel returned an invalid Preview URL"; exit 1 ;;
                   esac
+                  pnpm dlx vercel@59.25.4 inspect "$URL" --wait --timeout 3m --json --token="$VERCEL_TOKEN" > .tmp/vercel-inspect.json
+                  DEPLOYMENT_ID="$(jq -r '.id // empty' .tmp/vercel-inspect.json)"
+                  STATE="$(jq -r '.readyState // .state // empty' .tmp/vercel-inspect.json)"
+                  DEPLOYED_SHA="$(jq -r '.meta.releaseSha // empty' .tmp/vercel-inspect.json)"
+                  test -n "$DEPLOYMENT_ID"
+                  test "$STATE" = "READY"
+                  test "$DEPLOYED_SHA" = "$RELEASE_SHA"
+                  jq -n \
+                    --arg sha "$RELEASE_SHA" \
+                    --arg url "$URL" \
+                    --arg deploymentId "$DEPLOYMENT_ID" \
+                    --arg state "$STATE" \
+                    '{schemaVersion: 1, sha: $sha, url: $url, deploymentId: $deploymentId, state: $state}' \
+                    > .tmp/preview-deployment.json
                   echo "url=$URL" >> "$GITHUB_OUTPUT"
                   echo "host=${URL#https://}" >> "$GITHUB_OUTPUT"
+                  echo "deployment_id=$DEPLOYMENT_ID" >> "$GITHUB_OUTPUT"
                   echo "## Preview deployment" >> "$GITHUB_STEP_SUMMARY"
                   echo "- SHA: \`$RELEASE_SHA\`" >> "$GITHUB_STEP_SUMMARY"
                   echo "- URL: $URL" >> "$GITHUB_STEP_SUMMARY"
+                  echo "- Deployment: \`$DEPLOYMENT_ID\`" >> "$GITHUB_STEP_SUMMARY"
+
+            - name: Preserve deployment identity
+              uses: actions/upload-artifact@v7
+              with:
+                  name: preview-deployment-${{ env.RELEASE_SHA }}
+                  path: .tmp/preview-deployment.json
+                  if-no-files-found: error
+                  retention-days: 14
 
             - name: Classify deployment failure
               if: failure()

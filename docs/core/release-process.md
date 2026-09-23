@@ -76,13 +76,14 @@ require separate editorial authorization; this release workflow never rewrites t
 - Browser comparison writes `.tmp/browser-outcome.json` with the visual evidence filenames. A failed
   browser job after a successful browser test step is infrastructure-only; a snapshot diff is
   `VISUAL_DIFF`; other browser failures are `CODE`.
-- `.github/workflows/retry-ci-infrastructure.yml` retries only failed jobs, only when the first
-  attempt is classified `INFRASTRUCTURE`. Visual differences, code failures, deployment failures,
-  and smoke failures are never retried automatically.
-- Release classification marks conservative visual impact for Astro/TSX components, styles, rendered
-  content/assets, Playwright fixtures/specs, and screenshot infrastructure. The browser compare
-  remains mandatory for every application run; this signal explains when hash-bound human review is
-  additionally required and never reduces coverage.
+- `.github/workflows/retry-ci-infrastructure.yml` retries only failed jobs, only on the first
+  attempt and only when the GitHub job/step evidence proves that browser checks passed before the
+  evidence upload failed. It does not depend on the artifact whose finalization may have failed.
+  Visual differences, code failures, deployment failures, and smoke failures are never retried.
+- Release classification marks conservative visual impact for application TypeScript/Astro, styles,
+  rendered invitation builders/content/assets, fonts, Playwright fixtures/specs, the lockfile, and
+  screenshot infrastructure. The browser compare remains mandatory for every application run; this
+  signal explains when hash-bound human review is additionally required and never reduces coverage.
 
 #### Local visual certification before push
 
@@ -94,9 +95,11 @@ require separate editorial authorization; this release workflow never rewrites t
   visual-impact classifier. A nonvisual final commit cannot hide inherited visual debt on a
   protected branch.
 - Successful evidence is cached under the worktree's internal Git path and is reusable only while
-  SHA, visual matrix, accepted-manifest hash, lockfile hash, image digest, and command schema all
-  match. It is never committed. Failed evidence is retained under the internal Git path for local
-  diagnosis and never changes accepted references.
+  SHA, visual matrix, accepted-manifest hash, lockfile hash, verified Node archive, Node/pnpm
+  versions, image digest, certified command, and command schema all match. It is never committed.
+  Failed evidence is retained under the internal Git path for local diagnosis and never changes
+  accepted references. `VISUAL_DIFF` is derived from failed captures in the structured compare
+  manifests; diagnostic `actual` images alone do not qualify.
 - `validate:changed` remains fast feedback. When it prints `VISUAL_CERTIFICATION_REQUIRED`, its
   success is not permission to push; run the exact-SHA pre-push certification after committing.
 - Candidate generation accepts `--sha` and fails when it does not equal the clean current HEAD.
