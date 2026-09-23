@@ -19,7 +19,9 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 - **Exact-SHA local visual certification**: Protected-branch pushes now require the full browser
   comparison in the digest-pinned Linux Playwright runtime, with hash-keyed reusable evidence and
   fail-closed invalidation. Changed-file validation shares the same visual-impact classifier and
-  reports when this certification remains outstanding.
+  reports when this certification remains outstanding. Node archives are checksum-verified, runtime
+  identity includes the complete command contract, and structured manifests enumerate actual visual
+  differences without confusing diagnostic images with snapshot failures.
 
 - **Invitation work tracking**: The existing dashboard separates work completion from the owner's
   manual review, with an in-progress filter and protected, concurrent updates. Publication and

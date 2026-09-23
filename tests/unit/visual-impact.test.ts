@@ -7,10 +7,16 @@ describe('visual impact contract', () => {
 		'src/pages/index.astro',
 		'src/styles/themes/sections/countdown/_magazine-folio.scss',
 		'src/content/config.ts',
+		'src/lib/invitation/section-render-data.ts',
+		'scripts/provision/invitations/melissa-y-luis-osmar.ts',
+		'scripts/provision/local-render-corpus/registry.ts',
 		'public/fonts/example.woff2',
+		'public/fonts/example.ttf',
 		'tests/e2e/visual-baselines/manifest.json',
 		'scripts/screenshot/visual-parity-cli.ts',
 		'playwright.config.ts',
+		'playwright.preview.config.ts',
+		'pnpm-lock.yaml',
 	])('classifies %s as visual', (path) => expect(isVisualImpactPath(path)).toBe(true));
 
 	it('normalizes, deduplicates, and excludes nonvisual operational files', () => {

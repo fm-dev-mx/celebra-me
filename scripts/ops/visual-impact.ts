@@ -1,12 +1,14 @@
 const VISUAL_PATH_PATTERNS = [
-	/^src\/(?:components|layouts|pages)\/.*\.(?:astro|tsx)$/u,
-	/^src\/styles\//u,
+	/^src\/.*\.(?:astro|css|json|scss|ts|tsx|ya?ml)$/u,
 	/^src\/content\//u,
 	/^src\/assets\//u,
-	/^public\/.*\.(?:avif|gif|jpe?g|png|svg|webp|woff2?)$/u,
+	/^public\/.*\.(?:avif|gif|jpe?g|otf|png|svg|ttf|webp|woff2?)$/u,
+	/^scripts\/provision\/invitations\/.*\.ts$/u,
+	/^scripts\/provision\/local-render-corpus\//u,
 	/^scripts\/(?:playwright|screenshot)\//u,
 	/^tests\/(?:e2e|fixtures)\//u,
-	/^(?:astro|playwright)\.config\./u,
+	/^(?:astro|playwright(?:\.[^.]+)?)\.config\./u,
+	/^(?:package\.json|pnpm-lock\.yaml)$/u,
 ];
 
 export function normalizeVisualPath(path: string): string {

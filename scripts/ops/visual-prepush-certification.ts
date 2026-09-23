@@ -6,7 +6,6 @@ import {
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
-	readdirSync,
 	readFileSync,
 	rmSync,
 	writeFileSync,
@@ -16,10 +15,14 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { visualImpactFiles } from './visual-impact.ts';
 
 export const CERTIFICATION_SCHEMA_VERSION = 1;
-export const CERTIFICATION_COMMAND_VERSION = 1;
+export const CERTIFICATION_COMMAND_VERSION = 2;
 export const PLAYWRIGHT_IMAGE =
 	'mcr.microsoft.com/playwright@sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac';
-const PNPM_VERSION = '11.23.0';
+export const NODE_VERSION = '24.14.1';
+export const NODE_ARCHIVE_SHA256 =
+	'ace9fa104992ed0829642629c46ca7bd7fd6e76278cb96c958c4b387d29658ea';
+export const PNPM_VERSION = '11.23.0';
+export const CERTIFIED_BROWSER_COMMAND = 'pnpm test:e2e:ci --max-failures=5 --workers=2';
 const ACCEPTED_MANIFEST = 'tests/e2e/visual-baselines/manifest.json';
 
 export interface CertificationIdentity {
@@ -30,6 +33,11 @@ export interface CertificationIdentity {
 	acceptedManifestSha256: string;
 	lockfileSha256: string;
 	playwrightImage: string;
+	nodeVersion: string;
+	nodeArchiveSha256: string;
+	pnpmVersion: string;
+	certifiedBrowserCommand: string;
+	runtimeContractHash: string;
 }
 
 export function shouldRequireVisualCertification(
@@ -92,6 +100,13 @@ function identityForCheckout(checkout: string, sha: string): CertificationIdenti
 	if (typeof manifest.matrixHash !== 'string' || !/^[0-9a-f]{64}$/u.test(manifest.matrixHash)) {
 		throw new Error('Accepted visual manifest has no valid matrixHash.');
 	}
+	const runtimeContract = {
+		playwrightImage: PLAYWRIGHT_IMAGE,
+		nodeVersion: NODE_VERSION,
+		nodeArchiveSha256: NODE_ARCHIVE_SHA256,
+		pnpmVersion: PNPM_VERSION,
+		certifiedBrowserCommand: CERTIFIED_BROWSER_COMMAND,
+	};
 	return {
 		schemaVersion: CERTIFICATION_SCHEMA_VERSION,
 		commandVersion: CERTIFICATION_COMMAND_VERSION,
@@ -99,7 +114,10 @@ function identityForCheckout(checkout: string, sha: string): CertificationIdenti
 		matrixHash: manifest.matrixHash,
 		acceptedManifestSha256: sha256(manifestPath),
 		lockfileSha256: sha256(join(checkout, 'pnpm-lock.yaml')),
-		playwrightImage: PLAYWRIGHT_IMAGE,
+		...runtimeContract,
+		runtimeContractHash: createHash('sha256')
+			.update(JSON.stringify(runtimeContract))
+			.digest('hex'),
 	};
 }
 
@@ -118,14 +136,15 @@ function runDocker(checkout: string, evidence: string): number {
 		'cp -a /source/. /work',
 		'cd /work',
 		`trap 'if [ -d test-results ]; then cp -a test-results /evidence/; fi; if [ -d .tmp/visual-parity/compare ]; then mkdir -p /evidence/visual-parity; cp -a .tmp/visual-parity/compare /evidence/visual-parity/; fi' EXIT`,
-		'if [ ! -x /node-cache/bin/node ]; then curl -fsSL https://nodejs.org/dist/v24.14.1/node-v24.14.1-linux-x64.tar.gz | tar -xz -C /node-cache --strip-components=1; fi',
+		`if [ ! -x /node-cache/bin/node ] || [ "$(/node-cache/bin/node --version 2>/dev/null || true)" != "v${NODE_VERSION}" ] || [ "$(cat /node-cache/.archive.sha256 2>/dev/null || true)" != "${NODE_ARCHIVE_SHA256}" ]; then find /node-cache -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +; curl -fsSL -o /tmp/node.tar.gz https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz; echo "${NODE_ARCHIVE_SHA256}  /tmp/node.tar.gz" | sha256sum -c -; tar -xzf /tmp/node.tar.gz -C /node-cache --strip-components=1; printf '%s' '${NODE_ARCHIVE_SHA256}' > /node-cache/.archive.sha256; rm /tmp/node.tar.gz; fi`,
 		'export PATH=/node-cache/bin:$PATH',
+		`test "$(node --version)" = "v${NODE_VERSION}"`,
 		'corepack enable',
 		`corepack prepare pnpm@${PNPM_VERSION} --activate`,
 		'pnpm config set store-dir /pnpm-store',
 		'pnpm install --frozen-lockfile',
 		'touch /evidence/prepush-runtime-ready',
-		'pnpm test:e2e:ci --max-failures=5 --workers=2',
+		CERTIFIED_BROWSER_COMMAND,
 	].join(' && ');
 	const result = spawnSync(
 		'docker',
@@ -174,14 +193,30 @@ function preserveFailureEvidence(evidence: string, sha: string): string {
 	return destination;
 }
 
-function hasVisualDiff(root: string): boolean {
-	if (!existsSync(root)) return false;
-	for (const entry of readdirSync(root, { withFileTypes: true })) {
-		const path = join(root, entry.name);
-		if (entry.isDirectory() && hasVisualDiff(path)) return true;
-		if (entry.isFile() && /-(?:actual|diff)\.png$/u.test(entry.name)) return true;
+interface VisualCaptureResult {
+	file?: unknown;
+	comparisonResult?: unknown;
+}
+
+export function visualDifferenceFiles(root: string): string[] {
+	const files = new Set<string>();
+	for (const manifestName of ['manifest.json', 'pages-manifest.json']) {
+		const manifestPath = join(root, 'visual-parity', 'compare', manifestName);
+		if (!existsSync(manifestPath)) continue;
+		try {
+			const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
+				captures?: VisualCaptureResult[];
+			};
+			for (const capture of manifest.captures ?? []) {
+				if (capture.comparisonResult === 'FAIL' && typeof capture.file === 'string') {
+					files.add(capture.file);
+				}
+			}
+		} catch {
+			return [];
+		}
 	}
-	return false;
+	return [...files].sort();
 }
 
 function main(): void {
@@ -234,13 +269,17 @@ function main(): void {
 					`VISUAL_PREFLIGHT_INFRASTRUCTURE: pinned runtime setup failed for ${sha}. Evidence: ${evidencePath}.`,
 				);
 			}
-			if (!hasVisualDiff(evidence)) {
+			const visualDifferences = visualDifferenceFiles(evidence);
+			if (visualDifferences.length === 0) {
 				throw new Error(
 					`BROWSER_FAILURE: certified browser checks failed for ${sha} without visual diff evidence. Evidence: ${evidencePath}.`,
 				);
 			}
+			console.error(
+				['Visual differences:', ...visualDifferences.map((file) => `- ${file}`)].join('\n'),
+			);
 			throw new Error(
-				`VISUAL_DIFF: certification failed for ${sha}. Evidence: ${evidencePath}. Generate a candidate for this exact SHA; never accept references automatically.`,
+				`VISUAL_DIFF: certification failed for ${sha} with ${visualDifferences.length} changed captures. Evidence: ${evidencePath}. Generate a candidate for this exact SHA; never accept references automatically.`,
 			);
 		}
 		mkdirSync(dirname(certificationPath), { recursive: true });

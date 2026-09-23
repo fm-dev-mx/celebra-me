@@ -63,7 +63,7 @@ action before the configured Prettier formatter.
 | `pnpm validate:structure`    | `scripts/validate-structure.mjs`              | validate deterministic repository and agent structure rules   |
 | `pnpm validate:staged`       | `scripts/validate-staged.mjs`                 | validate staged files without modifying them                  |
 | `pnpm validate:changed`      | `scripts/validate-changed.mjs`                | validate staged, unstaged, and untracked working-tree changes |
-| `pnpm validate:prepush`      | `scripts/ops/visual-prepush-certification.ts` | certify an exact SHA in the pinned Linux visual runtime       |
+| `pnpm validate:prepush`      | `scripts/ops/visual-prepush-certification.ts` | certify an exact SHA in a checksum-verified Linux runtime     |
 
 ## Database Command Inventory
 
