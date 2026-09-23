@@ -34,7 +34,7 @@ function buildTestAssets(): MelissaAssetMap {
 	) as MelissaAssetMap;
 }
 
-describe('Boda Melissa y Luis Osmar provision contract', () => {
+describe('Boda Melissa y Luis Osmar managed content regression', () => {
 	it('registers a published managed jewelry-box definition', () => {
 		const definition = getInvitationDefinition('melissa-y-luis-osmar');
 		expect(definition).toMatchObject({
@@ -87,7 +87,7 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 		}
 	});
 
-	it('keeps the visual profile scoped, restrained, and variant-independent', () => {
+	it('keeps the visual profile scoped and formal geometry variant-owned', () => {
 		const profile = fs.readFileSync(profilePath, 'utf8');
 		expect(profile).toContain('.event--melissa-y-luis-osmar.theme-preset--jewelry-box-wedding');
 		expect(profile).toContain('--melissa-paper: rgb(247 243 237)');
@@ -95,10 +95,22 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 		expect(profile).toContain("data-intersection='overlap'");
 		expect(profile).toContain("data-intersection='arch'");
 		expect(profile).toContain('@media (prefers-reduced-motion: reduce)');
-		expect(profile).toContain('min-height: 100dvh');
-		expect(profile).toContain('top: calc(100dvh - clamp(4.25rem, 8svh, 5.5rem))');
+		expect(profile).not.toContain('hero-landscape');
+		expect(profile).not.toContain('--melissa-landscape-height');
 		expect(profile).toContain('color: var(--melissa-champagne)');
-		expect(profile).not.toMatch(/data-variant=['"](?:formal-pass|formal-register)/);
+		const formalControls = profile.match(
+			/\.personalized-access\[data-variant='formal-pass'\]\s*\{([^}]+)\}/,
+		)?.[1];
+		expect(formalControls).toBeDefined();
+		// The profile configures tokens only; shared owners keep element geometry and type rules.
+		expect(
+			formalControls
+				?.split(';')
+				.map((entry) => entry.trim())
+				.filter(Boolean)
+				.every((entry) => /^--(?:pa-|formal-chapter-)[\w-]+\s*:/.test(entry)),
+		).toBe(true);
+		expect(profile).not.toMatch(/\.access-card(?:__[\w-]+)?\s*\{/);
 		expect(profile).not.toMatch(/OneDrive|Clientes\\/i);
 	});
 
@@ -149,10 +161,11 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 		expect(content.itinerary).toMatchObject({ variant: 'editorial-ledger' });
 		expect(content.itinerary.items).toEqual([
 			expect.objectContaining({ label: 'Ceremonia religiosa', time: '12:00' }),
-			expect.objectContaining({ label: 'Recepción', time: '14:00' }),
+			expect.objectContaining({ label: 'Recepción / cóctel de bienvenida', time: '14:00' }),
 			expect.objectContaining({ label: 'Ceremonia civil', time: '15:00' }),
+			{ iconName: 'Party', label: 'Fiesta', time: '17:00' },
 		]);
-		expect(JSON.stringify(content.itinerary)).not.toMatch(/cóctel|banquete/i);
+		expect(JSON.stringify(content.itinerary)).not.toMatch(/banquete/i);
 		expect(content.rsvp).toMatchObject({
 			variant: 'formal-register',
 			accessMode: 'personalized-only',
@@ -169,10 +182,11 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 		const content = buildMelissaPublishedContent(buildTestAssets());
 		const serialized = JSON.stringify(content);
 
-		expect(serialized).toContain(
-			'A dondequiera que tú fueres, iré yo; y dondequiera que vivieres, viviré.',
-		);
-		expect(content.quote).toMatchObject({ author: 'Rut 1:16' });
+		expect(content.quote).toEqual({
+			text: 'Dicen que cuando encuentras a la persona correcta, el corazón lo sabe.\nNosotros lo supimos y por eso queremos celebrar nuestro amor rodeados de las personas más importantes de nuestras vidas.',
+		});
+		expect(content.rsvp.calendar.startsAt).toBe('2026-12-16T19:00:00.000Z');
+		expect(content.location.venues[0].time).toBe('12:00');
 		for (const name of [
 			'Martha Elena Osuna Rubio',
 			'Rodrigo Landell Osuna',
@@ -193,6 +207,7 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 			'12:00',
 			'14:00',
 			'15:00',
+			'17:00',
 		]);
 
 		expect(content.gifts.items).toContainEqual(
@@ -207,15 +222,13 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 
 		expect(content.rsvp.subcopy).toContain('16 de noviembre de 2026');
 		expect(content.rsvp.personalizedAccess.noteText).toContain('{count}');
-		expect(content.rsvp.personalizedAccess.noteText).toContain('pase asignado');
+		expect(content.rsvp.personalizedAccess.noteText).toContain('Su pase incluye a');
 	});
 
-	it('places both architectural interludes in the intended render order', () => {
+	it('preserves the cathedral and joins itinerary directly to gifts', () => {
 		const content = buildMelissaPublishedContent(buildTestAssets());
-		expect(content.interludes.map((item) => item.afterSection)).toEqual([
-			'family',
-			'itinerary',
-		]);
+		expect(content.interludes.map((item) => item.afterSection)).toEqual(['family']);
+		expect(content.interludes[0].image).toEqual(buildTestAssets()['cathedral-editorial']);
 		expect(
 			content.interludes.every(
 				(item: { afterSection: string; focalPoint?: string }) =>
@@ -240,7 +253,6 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 			'interlude',
 			'location',
 			'itinerary',
-			'interlude',
 			'gifts',
 			'personalized-access',
 			'rsvp',
@@ -248,10 +260,7 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 		]);
 		expect(
 			renderPlan.filter((item) => item.type === 'interlude').map((item) => item.intersection),
-		).toEqual([
-			{ family: 'overlap', source: 'family' },
-			{ family: 'neutral', source: 'interlude-after-itinerary' },
-		]);
+		).toEqual([{ family: 'overlap', source: 'family' }]);
 		expect(
 			renderPlan.find((item) => item.type === 'section' && item.section === 'family')
 				?.intersection,
@@ -273,6 +282,10 @@ describe('Boda Melissa y Luis Osmar provision contract', () => {
 			source: 'rsvp',
 		});
 
+		expect(
+			renderPlan.find((item) => item.type === 'section' && item.section === 'gifts')
+				?.intersection,
+		).toEqual({ family: 'neutral', source: 'itinerary' });
 		expect(JSON.stringify(content)).not.toMatch(/OneDrive|Clientes\\/i);
 	});
 });

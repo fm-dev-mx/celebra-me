@@ -33,6 +33,7 @@ const MELISSA_SCHEDULE = {
 	ceremonyTime: '12:00',
 	receptionTime: '14:00',
 	civilCeremonyTime: '15:00',
+	partyTime: '17:00',
 } as const;
 
 const EVENT_DATE_LONG = '16 de diciembre de 2026';
@@ -106,9 +107,11 @@ export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAss
 		],
 		composition: {
 			intersections: {
+				quote: { family: 'atmospheric-blend', source: 'hero' },
 				'interlude-after-family': { family: 'overlap', source: 'family' },
 				location: { family: 'atmospheric-blend', source: 'interlude-after-family' },
-				gifts: { family: 'atmospheric-blend', source: 'interlude-after-itinerary' },
+				itinerary: { family: 'atmospheric-blend', source: 'location' },
+				gifts: { family: 'neutral', source: 'itinerary' },
 				'personalized-access': { family: 'arch', source: 'gifts' },
 				thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
 			},
@@ -148,8 +151,7 @@ export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAss
 			},
 		},
 		quote: {
-			text: 'A dondequiera que tú fueres, iré yo; y dondequiera que vivieres, viviré.',
-			author: 'Rut 1:16',
+			text: 'Dicen que cuando encuentras a la persona correcta, el corazón lo sabe.\nNosotros lo supimos y por eso queremos celebrar nuestro amor rodeados de las personas más importantes de nuestras vidas.',
 		},
 		countdown: {
 			variant: 'clock-face',
@@ -231,7 +233,7 @@ export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAss
 					title: 'Vestimenta',
 					iconName: 'DressCode',
 					styleVariant: 'default',
-					text: 'Código de vestimenta: Gala formal.',
+					text: 'Gala formal.',
 				},
 				{
 					title: 'Celebración',
@@ -253,8 +255,8 @@ export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAss
 					description: 'Catedral Basílica de la Inmaculada Concepción.',
 				},
 				{
-					iconName: 'Reception',
-					label: 'Recepción',
+					iconName: 'Toast',
+					label: 'Recepción / cóctel de bienvenida',
 					time: MELISSA_SCHEDULE.receptionTime,
 					description: 'Belcanto Jardín.',
 				},
@@ -263,6 +265,11 @@ export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAss
 					label: 'Ceremonia civil',
 					time: MELISSA_SCHEDULE.civilCeremonyTime,
 					description: 'Belcanto Jardín.',
+				},
+				{
+					iconName: 'Party',
+					label: 'Fiesta',
+					time: MELISSA_SCHEDULE.partyTime,
 				},
 			],
 		},
@@ -293,12 +300,6 @@ export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAss
 				alt: 'Interior editorial de una catedral en tonos marfil con luz natural',
 				height: 'tall',
 			},
-			{
-				image: assets['belcanto-editorial'],
-				afterSection: 'itinerary',
-				alt: 'Jardín para recepción preparado al atardecer con iluminación cálida',
-				height: 'medium',
-			},
 		],
 		rsvp: {
 			variant: 'formal-register',
@@ -324,10 +325,14 @@ export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAss
 			},
 			personalizedAccess: {
 				variant: 'formal-pass',
-				title: 'Su invitación personal',
-				noteText:
-					'Esta invitación es válida para {count} {personWord}. El número de lugares corresponde al pase asignado.',
-				footerText: 'Confirme su asistencia en la siguiente sección.',
+				ticket: {
+					signature: 'Melissa & Luis Osmar',
+					monogram: 'M · L',
+				},
+				title: 'Pase personal',
+				subtitle: 'Será un placer celebrar con usted.',
+				noteText: 'Su pase incluye a {count} {personWord}. Gracias por acompañarnos.',
+				footerText: 'Confirme su asistencia y celebremos juntos.',
 			},
 		},
 		thankYou: {

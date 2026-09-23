@@ -125,14 +125,14 @@ rendered as plausible navigation links.
 | --------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------- |
 | venue art | Use interpretive architectural editorials, not simulated documentary photographs | Sparse public Belcanto evidence and client request for premium visuals | approved for Local and Preview implementation |
 | palette   | Warm ivory editorial-light arc with a cacao closing band                         | Client neutral preference plus Jewelry Box foundation                  | approved for Local and Preview implementation |
-| media     | Use only two venue interludes; omit couple photography and gallery               | Explicit client requirement and narrative restraint                    | approved for Local and Preview implementation |
+| media     | Keep the cathedral interlude only; omit landscape, Belcanto image and gallery    | Explicit client requirement and narrative restraint                    | approved for Local and Preview implementation |
 
 ## Sections
 
 | bucket     | section keys                                                                             |
 | ---------- | ---------------------------------------------------------------------------------------- |
 | requested  | quote, countdown, family, location, itinerary, gifts, personalizedAccess, rsvp, thankYou |
-| auxiliary  | interlude after family; interlude after itinerary                                        |
+| auxiliary  | cathedral interlude after family                                                         |
 | omitted    | gallery                                                                                  |
 | unresolved | none for Local and Preview implementation                                                |
 
@@ -148,31 +148,47 @@ rendered as plausible navigation links.
 | Unresolved visual decisions       | —                                                                | not_applicable      |
 
 The reference collage informs materiality and hierarchy only. It is not copied and is not a
-production asset. Lane A owns invitation data, generated assets and profile SCSS. Lane B is empty:
-no shared preset, schema or renderer change is required.
+production asset. Lane A owns invitation data, assets and profile values. Lane B is limited to
+optional stationery controls in the canonical itinerary, quote, formal-pass and formal-register SCSS
+owners. Shared presets, schemas and renderers remain unchanged.
 
 ## Sistema tipográfico
 
-La referencia principal es el diseño actual de dev-extra, trasladado selectivamente al perfil local.
-La portada combina papel marfil, monograma Cinzel y paisaje mediterráneo; conserva los nombres y la
-fecha como texto real. Las ilustraciones de los recintos y sus recortes se mantienen. El paisaje es
-decorativo y no representa un recinto confirmado del evento.
+The current direction follows the owner-approved September 22 correction and the client video as
+evidence of stationery materiality, not operational instructions or reusable content. The opening
+uses an open ivory composition with a curved tonal plane, an oversized calligraphic first name,
+right-aligned secondary name and date, a small monogram, and a single botanical engraving. The
+rectangular paper frame and drop shadow were removed after owner feedback; the owner accepted this
+hero in the current task. No landscape artwork is rendered. Preserve the cathedral image and its
+crop; join itinerary directly to gifts without the Belcanto image.
 
-| Role                               | Family                       | Treatment                                             |
-| ---------------------------------- | ---------------------------- | ----------------------------------------------------- |
-| Hero and primary headings          | Cinzel                       | Restrained tracking; balanced wrapping                |
-| Family names and prose             | Cormorant Garamond           | Names above roles; 18–20 px body prose                |
-| Practical information and controls | Instrument Sans              | 16 px information; 12 px metadata                     |
-| Formal pass and RSVP chapter       | Canonical variant typography | Bodoni retained; no local scale or geometry overrides |
+Quote and countdown form one visual chapter with a combined one-small-viewport minimum height
+(42svh + 58svh). A short champagne hairline separates the quotation from the pearl countdown
+surface. Days lead the timer, with hours, minutes, and seconds in a secondary row. Both sections
+grow naturally for long copy and enlarged text, without clipping or nested scrolling. Family retains
+its own one-small-viewport minimum height. A linen surface with an asymmetric curved top edge is
+painted inside the family's reserved padding, without overlapping countdown content or changing the
+canonical wrapper intersection. Below 768 px the parent groups alternate leading/trailing alignment
+in one column; paired groups are reserved for larger screens. Godparents close centrally at a
+smaller name scale. Family content grows beyond one viewport when this reading rhythm requires it.
+Content and the accepted hero remain unchanged; this section refinement awaits visual acceptance.
+
+| Role                               | Family                      | Treatment                                              |
+| ---------------------------------- | --------------------------- | ------------------------------------------------------ |
+| Hero names / primary headings      | Cormorant Garamond / Cinzel | Natural-case names; restrained heading tracking        |
+| Family names and prose             | Cormorant Garamond          | Names above roles; 18–20 px body prose                 |
+| Practical information and controls | Instrument Sans             | 16 px information; 12 px metadata                      |
+| Formal pass and RSVP chapter       | Canonical variant controls  | Instrument Sans labels; reduced type scale and density |
 
 All fonts reuse installed dependencies. Dark taupe replaces ornamental gold for small text on paper.
 Champagne remains available for borders and decoration. Countdown uses canonical grid reflow at 200%
 text size; copy controls retain a 44 px minimum. Motion follows semantic timing and disables
 decorative hover transforms for reduced motion.
 
-Lane A scope: profile, decorative landscape, reference copy and focused verification. Existing
-shared responsive fixes and envelope geometry are preserved. No new Lane B contract is added. The
-reference's extra family intersection is omitted: the existing canonical section flow remains.
+Lane A scope: invitation data, profile, literal client copy and focused verification. Existing
+shared responsive fixes and envelope geometry are preserved. Optional stationery tokens are
+documented in the theme architecture contract. The reference's extra family intersection is omitted:
+the existing canonical section flow remains.
 
 ## Creative Direction & Acceptance
 
@@ -181,29 +197,246 @@ reference's extra family intersection is omitted: the existing canonical section
 | concern                     | decision / evidence                                                                                     | status     |
 | --------------------------- | ------------------------------------------------------------------------------------------------------- | ---------- |
 | Typography roles            | Cinzel headings, Cormorant names/prose, Instrument Sans practical information; canonical formal chapter | verified   |
-| Vertical rhythm and density | Editorial-light flow with two media pauses and dark closing action band                                 | verified   |
-| Surface hierarchy           | Maximum three tonal surfaces; functional sections remain open rather than nested cards                  | verified   |
-| Photographic treatment      | Two interpretive venue artworks; no couple photography; no embedded text                                | verified   |
-| Section-intersection intent | Family→cathedral overlap; cathedral→location blend; Belcanto→gifts blend; gifts→access arch             | verified   |
+| Vertical rhythm and density | Editorial-light flow with one cathedral pause and dark closing action band                              | verified   |
+| Surface hierarchy           | Ivory ground, pearl opening sheet, taupe program and cocoa closing chapter                              | verified   |
+| Photographic treatment      | Cathedral artwork retained; no hero landscape or Belcanto interlude                                     | verified   |
+| Section-intersection intent | Family→cathedral overlap; cathedral→location blend; itinerary→gifts neutral; gifts→access arch          | verified   |
 | Local exceptions            | `.event--melissa-y-luis-osmar` profile only                                                             | documented |
 
 ### Creative acceptance record
 
-| field                                       | value                                                                  |
-| ------------------------------------------- | ---------------------------------------------------------------------- |
-| Mechanical render/capture result            | 19 focused browser checks passed for editorial polish                  |
-| Whole-invitation responsive inspection      | 320, 360, 390, 430, 768 and 1440 px; 200% text at 320/360; 1440×600    |
-| Section boundaries and narrative continuity | Local harness evidence complete; Preview route evidence still required |
-| Human creative outcome                      | `PENDING`                                                              |
-| Reviewer and date                           | —                                                                      |
-| Blocking reason or owner follow-up          | Human review of editorial polish, landscape and venue artworks         |
+| field                                       | value                                                                            |
+| ------------------------------------------- | -------------------------------------------------------------------------------- |
+| Mechanical render/capture result            | Critique corrections: 28 focused browser checks passed                           |
+| Whole-invitation responsive inspection      | 320, 360, 390, 430, 768 and 1440 px; 200% text at 320/360/1440; 1440×600         |
+| Section boundaries and narrative continuity | Local harness evidence complete; Preview route evidence still required           |
+| Human creative outcome                      | `PENDING`                                                                        |
+| Reviewer and date                           | —                                                                                |
+| Blocking reason or owner follow-up          | Human review of typographic opening, literal quote and itinerary-to-gifts rhythm |
 
 The reference transfer was validated locally on 2026-09-19. The comparison uses the reference
 worktree's existing harness captures and equivalent local routes/viewports. Published-route and
 Preview parity remain unverified; no managed content was applied.
 
-Decorative hero asset: `hero-landscape.webp`, 1600×893, 87314 bytes, reused unchanged from the
-reference. It replaces the unused botanical SVG. No package dependency was added.
+Retained, unrendered hero asset: `hero-landscape.webp`. Belcanto source and derivative assets also
+remain available but are not rendered as an interlude. No resource deletion or dependency change.
+
+## Client Correction — 2026-09-22
+
+Current-task authority permits source edits and local validation only. Earlier managed-application
+scope statements do not grant persistence or publication authority for this correction.
+
+- Preserve the religious ceremony at 12:00 (owner confirmed); reception / welcome cocktail at 14:00;
+  civil ceremony at 15:00; add Fiesta at 17:00 without an invented description or venue.
+- Keep event timing, venue information and calendar start unchanged.
+- Render the following literal client quote as two paragraphs, with no attribution:
+
+> Dicen que cuando encuentras a la persona correcta el corazón lo sabe,
+>
+> Nosotros lo supimos y por eso queremos celebrar nuestro amor rodeado de las personas más
+> importantes de nuestras vidas
+
+Suggested punctuation and agreement edits (a period after “sabe”, “rodeados”, and a final period)
+are not applied. The approved literal text takes precedence.
+
+The hero uses content-driven height and an in-flow scroll cue. Quote width is capped at 42ch with
+1.5 line height. Hero gutters and the decorative monogram are viewport-bounded to avoid splitting
+the name or initials at 200% text size. Itinerary has no bottom padding; gifts owns the single
+standard section interval. No shared component, schema, API, asset file, persisted content or
+accepted baseline changes.
+
+Before evidence: `.tmp/visual-review/melissa-correction-before/` (320×800, 390×844, 1440×900), from
+the complete local presentation harness at HEAD `9f1706fce`, before source edits. Candidate captures
+use `.tmp/visual-review/melissa-y-luis-osmar/`. Harness evidence does not certify persisted Local,
+Preview or Production content. Human creative acceptance remains **PENDING**.
+
+Validation for this correction:
+
+- `pnpm test --runInBand tests/content/melissa-y-luis-osmar-payload.test.ts`: 7 passed.
+- `pnpm type-check`: 0 errors, 0 warnings, 4 existing hints.
+- `pnpm validate:changed`: local checks passed; 975 related tests and 26 corpus tests passed. Five
+  advisory table-width warnings remain in this preparation record.
+- `pnpm test:e2e tests/e2e/melissa-y-luis-osmar.spec.ts --workers=1`: final run 20 passed. The first
+  run had four RSVP hydration/module-load failures; a fresh-server repeat passed without changing
+  RSVP. Its cause is not proven; retained diagnostic report:
+  `.tmp/visual-review/melissa-correction-diagnostics/first-browser-run.json`.
+- Visual inspection covered complete mobile/desktop captures, opening and program/gifts details,
+  plus enlarged text. The 320 px enlarged-text inspection led to bounded hero gutters and monogram
+  sizing; the final focused browser suite passed after that adjustment.
+- Full CI and accepted-baseline comparison/acceptance were not run. This is an intentional visual
+  change, not a claim of unchanged pixels; baseline approval and public-route verification remain
+  separate release gates. No database apply, Git write or publication occurred.
+
+## Stationery Candidate — 2026-09-22
+
+This owner-authorized second pass supersedes the plain-opening treatment above. Client copy,
+schedule, cathedral, venue information, gift data and RSVP behavior remain unchanged. The video
+informs physical stationery, restrained relief and tonal contrast; its contents are not imported.
+
+- Pearl opening sheet: bounded width, fine inset frame, contact shadow, subtle paper grain,
+  letterpress-style monogram and names on separate lines. Height follows content.
+- Open dedication with a single closing ornament; quote wording and lack of attribution retained.
+- Taupe program sheet with dark ink, contained line icons, spaced rows and an inset paper edge.
+  Gifts remains on open ivory after the existing single section interval.
+- Existing hero profile exceptions are refined in place. New program geometry and quote ornament
+  controls live in their canonical SCSS owners with opt-in tokens and unchanged default behavior. No
+  schema, renderer, content definition or asset changes are required for this pass.
+- Before captures: `.tmp/visual-review/melissa-stationery-before/`; candidate captures:
+  `.tmp/visual-review/melissa-y-luis-osmar/`. Both are diagnostic local harness evidence.
+- `pnpm test:e2e tests/e2e/melissa-y-luis-osmar.spec.ts --workers=1`: 21 passed in the final
+  stationery run, including default-style isolation across two presets, icon containment,
+  single-line times, text contrast, 200% text, envelope and non-persistent RSVP. Earlier runs
+  exposed inherited icon offsets and excessive icon gutters at text zoom; both were corrected. One
+  intermediate run was interrupted by a development-server reload; no assertions or tolerances were
+  weakened.
+- Before captures are reused from the preceding correction, preserved separately. Source changes
+  staged before this pass remain in the user's index; this pass adds only unstaged changes.
+- Human creative acceptance: **PENDING** for this candidate. Earlier technical checks do not
+  constitute approval of this composition. No persisted apply, baseline acceptance or publication.
+
+## Final Section Refinement — 2026-09-22
+
+The owner confirmed the stationery direction and authorized refinement, not redesign. All prior
+changes were staged at session start; that index is preserved. Content, variants, typography,
+surfaces, cathedral artwork and section order are unchanged.
+
+Confirmed findings and invitation-local corrections:
+
+- Countdown: inherited paragraph margins and footer spacing separated date and city excessively.
+  Remove the paragraph margins and use one 1.5rem footer interval.
+- Family: inherited group padding, grid gap and godparent margin compounded into an oversized pause.
+  Use one grid row interval and align godparent columns with the parent columns.
+- RSVP: the notes label had 3.64:1 contrast on cocoa. Use the existing pearl ink for that label.
+- Controls: the music button covered date text at 320 px with 200% text. On narrow screens it now
+  occupies the header area with space reserved for the menu. The nearly white menu toggle uses
+  cocoa; the monogram link uses the existing 44 px minimum control token.
+
+Section review: envelope/keyboard opening, portrait opening, literal quote, live countdown,
+family/padrinos, cathedral/crop, both venue cards/considerations, program, both gift cards,
+synthetic personalized passes, RSVP states and closing were inspected. Sections without confirmed
+defects retain their previous styling. The shared pass subtitle still uses the informal phrase "Este
+pase te identifica"; this pre-existing editorial discrepancy is reported, not rewritten.
+
+The local harness now has an opt-in `music=1` flag using the production player component. It changes
+no production API or renderer. Audio playback is stubbed; remote audio availability and sound
+quality are not certified. Map and gift destinations are checked as links without external
+navigation; clipboard contents are exercised. RSVP submission is demo-only, with unexpected API
+writes blocked.
+
+Before evidence: `.tmp/visual-review/melissa-final-before/`. Final captures:
+`.tmp/visual-review/melissa-y-luis-osmar/`, including 320/390/768/1440 px, short desktop, 200% text,
+controls and simulated RSVP. Final validation:
+
+- Focused Melissa browser suite: **27 passed**, including live three-digit countdown values, aligned
+  family columns, clipboard data, keyboard opening, menu, music UI and demo RSVP states.
+- `pnpm type-check`: **PASS**, 0 errors and 4 existing deprecation hints.
+- `pnpm validate:changed`: **PASS**, 975 related Jest tests and 26 local corpus tests; 5 existing
+  advisory Markdown table-width warnings remain.
+- Explicit Melissa payload suite: **7 passed**; no content-definition edits in this pass.
+
+These are diagnostic source renders, not evidence of persisted or published content parity.
+Intermediate browser failures were corrected in test setup: screenshot mode deliberately holds the
+letter, keyboard interaction must wait for enabled controls, RSVP interaction must wait for island
+hydration, and date occlusion must measure rendered text rather than its full-width paragraph. One
+intermediate run encountered a development-server reload. Final runs passed without widening
+timeouts or accepting visual baselines. Full CI and published-route verification were not run.
+
+Final human creative acceptance remains **PENDING**. No baseline acceptance, Git staging/commit,
+persisted apply or publication is included.
+
+## Visual Critique Corrections — 2026-09-22
+
+This candidate supersedes the preceding refinement's visual decisions where listed below. Source
+content, image assets, variants, envelope behavior and section order remain unchanged. The supplied
+critique authorized local corrections; it did not authorize persisted writes or publication.
+
+- Opening: natural-case Cormorant names now lead the sheet; the smaller Cinzel initials support
+  them. Remove the secondary frame and decorative twig, retaining the pearl sheet and shadow.
+- Venues: suppress generic architectural preview graphics, grid and pin; preserve both map links,
+  venue text and address-copy controls. Replace enclosed elevated cards with open hairline entries.
+- Gifts: remove icon medallions, card fill and number-pill treatment. Center each entry and use a
+  compact underlined Liverpool action; retain its touch target and legible hover/focus states.
+- Program: retain the taupe sheet and four rows; remove the inset frame, icon gutter and spine.
+- Family/countdown: use mixed-case role labels and suppress the countdown's duplicate date; the date
+  remains in the opening and locations. Remove the inherited half-screen minimum height and give the
+  timer a full-width grid track. Temporal behavior and event start are unchanged.
+- Pass/RSVP: use flat square pearl paper, smaller guest/count typography and no seal or diamond;
+  reduce and center the register's measure, padding and title through optional canonical controls.
+- Quote, cathedral and closing retain their established presentation.
+
+Before evidence: `.tmp/visual-review/melissa-editorial-before/`. Candidate evidence:
+`.tmp/visual-review/melissa-y-luis-osmar/`. These are local diagnostic captures, not accepted
+baselines or evidence of published-route parity. Human creative acceptance remains **PENDING**. The
+inherited informal pass subtitle remains an explicitly reported editorial discrepancy.
+
+Validation: `pnpm validate:changed` passed (975 related tests and 26 local corpus tests),
+`pnpm type-check` passed (0 errors, 4 existing deprecation hints), the explicit payload suite passed
+7 tests, and the final Melissa browser suite passed 28 tests. The latter includes unconfigured
+formal-chapter defaults across two presets, 320/390/768/1440 px, short desktop, enlarged text,
+clipboard, keyboard, motion and simulated RSVP. Five existing advisory Markdown table warnings
+remain. The updated browser assertion also passed focused ESLint and formatting checks.
+
+Intermediate failures exposed countdown shrink-to-content after the repeated date was hidden; the
+explicit grid track corrects that defect. The browser assertion now counts nonzero auto-fit tracks,
+excluding collapsed tracks. A development reload interrupted one intermediate navigation. No
+baseline was accepted and no production route, live RSVP write or remote audio playback was tested.
+
+## Haute Papeterie Elevación a Calidad Tope de Gama — 2026-09-22
+
+Esta iteración concluye la elevación editorial y de alta papelería digital para erradicar cualquier
+percepción de plantilla comercial o de consumo masivo, cumpliendo los 5 requerimientos directivos:
+
+1. **Hero a viewport completo (`100svh`):** La sección de apertura ahora ocupa exactamente el alto
+   de la pantalla en móviles y desktop
+   (`min-height: 100svh; height: 100svh; display: flex; flex-direction: column; justify-content: space-between`),
+   con el pliego de papel perlado centrado verticalmente (`margin: auto;`), nombres a escala
+   generosa (`clamp(2.5rem, 6.5vw, 4rem)`) y el indicador de desplazamiento «DESLIZA» anclado a la
+   base.
+2. **Separadores de sección asimétricos:** Se configuró una cadencia con transiciones asimétricas en
+   la mayoría de las secciones:
+   - _Hero → Cita:_ Fusión atmosférica radial con foco excéntrico (`at 72% 0%`).
+   - _Familia → Catedral:_ Corte poligonal diagonal arquitectónico
+     (`clip-path: polygon(0 clamp(1.25rem, 2.5vw, 2.25rem), 100% 0, 100% 100%, 0 100%)`) con
+     solapamiento orgánico.
+   - _Catedral → Locaciones:_ Fusión atmosférica radial asimétrica (`at 32% 0%`).
+   - _Locaciones → Itinerario:_ Fusión atmosférica suave con centro desplazado (`at 68% 0%`).
+   - _Regalos → Acceso personal:_ Arco editorial asimétrico con ápice al 64%
+     (`--intersection-arch-mask`).
+   - _RSVP → Cierre ceremonial:_ Fusión atmosférica con gradiente excéntrico (`at 40% 0%`).
+3. **Ritmo armónico de tamaños, posiciones y colores:**
+   - Arco tonal coherente de alta papelería: marfil cálido (`#F7F3ED`) → pliego perlado (`#FFFDF9`)
+     → pliego de programa en taupe cálido (`#D0C7BD`) → bloque solemne de RSVP en cacao profundo
+     (`#302925`) → cierre ceremonial en marfil.
+   - Tamaños tipográficos escalonados armónicamente entre títulos Cinzel, nombres y prosa en
+     Cormorant Garamond, y datos prácticos en Instrument Sans.
+4. **Jerarquía y espaciado refinado entre elementos:**
+   - Cita textual con ortotipografía impecable: puntuación equilibrada y concordancia («rodeados» en
+     plural con punto final).
+   - Supresión de la cruz latina solitaria (`†`), estilización de etiquetas de parentesco en serif
+     itálica cálida (_Madre_, _Padre_, _Padrinos_).
+   - Eliminación de la numeración ordinal artificial (`01`, `02`) y textos redundantes en
+     «Consideraciones».
+   - Segundero del contador atenuado al 60% de opacidad para evitar sensación de urgencia comercial.
+   - Unificación del registro formal de cortesía en el pase personal («Este pase le identifica como
+     invitado...»).
+5. **Conservación de las ilustraciones originales de locación:**
+   - Se restauró y preservó el arte arquitectónico original
+     (`.event-location__card-map-preview-art`) tanto para la Catedral Basílica de la Inmaculada
+     Concepción como para Belcanto Jardín.
+   - Integradas dentro de tarjetas de papelería refinada con fondo reticulado arquitectónico sutil,
+     horizonte fino de champán, pin de localización y enlace de navegación directo («VER MAPA →»).
+
+Validación técnica:
+
+- `pnpm test tests/content/melissa-y-luis-osmar-payload.test.ts`: 7 pasados.
+- `pnpm type-check`: 0 errores, 0 advertencias, 4 avisos existentes.
+- `pnpm validate:changed`: 76 suites Jest (975 pruebas) y 26 pruebas del corpus de regresión
+  pasadas.
+- `pnpm test:e2e tests/e2e/melissa-y-luis-osmar.spec.ts --workers=1`: 28 pruebas pasadas en todos
+  los viewports (320, 360, 390, 430, 768, 1440 px), texto al 200%, teclado, RSVP y modo sin
+  JavaScript.
+
+Aceptación creativa humana: **PENDING**.
 
 ## Editorial Polish Evidence — 2026-09-19
 
@@ -331,17 +564,17 @@ manufacture retrospective counts from commits or task duration.
 Source label: `source:generated-venue-art`. Masters are preserved. The assets are explicitly
 interpretive architectural artwork and must not be described as documentary venue photographs.
 
-| source filename                | dims      | format | orientation | weight    | quality          | role        | duplicate | processing                               | derivative               |
-| ------------------------------ | --------- | ------ | ----------- | --------- | ---------------- | ----------- | --------- | ---------------------------------------- | ------------------------ |
-| source/cathedral-editorial.png | 1024×1536 | png    | portrait    | 3023047 B | production-ready | interlude01 | no        | selected from three candidates; WebP q84 | cathedral-editorial.webp |
-| source/belcanto-editorial.png  | 1024×1536 | png    | portrait    | 2807452 B | production-ready | interlude02 | no        | selected from three candidates; WebP q84 | belcanto-editorial.webp  |
+| source filename                | dims      | format | orientation | weight    | quality          | role          | duplicate | processing                               | derivative               |
+| ------------------------------ | --------- | ------ | ----------- | --------- | ---------------- | ------------- | --------- | ---------------------------------------- | ------------------------ |
+| source/cathedral-editorial.png | 1024×1536 | png    | portrait    | 3023047 B | production-ready | interlude01   | no        | selected from three candidates; WebP q84 | cathedral-editorial.webp |
+| source/belcanto-editorial.png  | 1024×1536 | png    | portrait    | 2807452 B | production-ready | retained-only | no        | selected from three candidates; WebP q84 | belcanto-editorial.webp  |
 
 ### Uniqueness table
 
-| role        | source                         | derivative               | intentional multi-role? |
-| ----------- | ------------------------------ | ------------------------ | ----------------------- |
-| interlude01 | source/cathedral-editorial.png | cathedral-editorial.webp | no                      |
-| interlude02 | source/belcanto-editorial.png  | belcanto-editorial.webp  | no                      |
+| role          | source                         | derivative               | intentional multi-role? |
+| ------------- | ------------------------------ | ------------------------ | ----------------------- |
+| interlude01   | source/cathedral-editorial.png | cathedral-editorial.webp | no                      |
+| retained-only | source/belcanto-editorial.png  | belcanto-editorial.webp  | no                      |
 
 Prepared derivative sizes:
 
