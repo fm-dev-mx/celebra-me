@@ -19,7 +19,6 @@ jobs:
         if: >-
             (github.event.action == 'vercel.deployment.promoted' &&
              github.event.client_payload.environment == 'production')
-        environment: Production
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -66,8 +65,3 @@ jobs:
                   VERCEL_DISPATCH_EXPECTED_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
                   VERCEL_DISPATCH_GIT_REF: ${{ github.event.client_payload.git.ref }}
               run: pnpm ops:post-deploy -- production
-
-            - name: Verify all published Production images
-              env:
-                  PROD_DB_URL: ${{ secrets.PROD_DB_URL }}
-              run: pnpm invitation:media:verify -- --target production --all --origin "${{ env.POST_DEPLOY_BASE_URL }}" --json

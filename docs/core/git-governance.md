@@ -325,7 +325,7 @@ judgment.
 | `commitlint.config.cjs`                   | Commit message validation and quality rules                                         |
 | `scripts/validate-commits.mjs`            | Audit-only validation and commit-hygiene warnings for commit ranges                 |
 | `.husky/pre-commit`                       | Branch protection and staged-file checks                                            |
-| `.husky/pre-push`                         | Main guard, audit-only commit-range validation and Git LFS handoff                  |
+| `.husky/pre-push`                         | Commit-range validation, conditional visual certification and Git LFS handoff       |
 | `.github/workflows/commit-validation.yml` | Policy, static/build, unit, database and browser jobs, aggregate result and metrics |
 
 ## Active Hooks and CI Sequence
@@ -333,9 +333,9 @@ judgment.
 1. `pre-commit` blocks detached HEAD and direct commits to `main` (subject to the existing main
    exception), then runs `pnpm lint-staged` and `pnpm test:changed`. Failures propagate.
 2. `commit-msg` runs `commitlint` against the pending commit message on all branches.
-3. `pre-push` blocks direct pushes to `main` (override: `ALLOW_MAIN_PUSH=true`) and validates the
-   pushed commit range with `scripts/validate-commits.mjs` in audit-only mode, then passes the same
-   ref updates and remote arguments to Git LFS. New task branches pushed to `origin` use the common
+3. `pre-push` validates the pushed commit range with `scripts/validate-commits.mjs` in audit-only
+   mode, runs exact-SHA visual certification only for visual-impact ranges, then passes the same ref
+   updates and remote arguments to Git LFS. New task branches pushed to `origin` use the common
    ancestor with `origin/develop`, the repository's default integration target. Existing remote
    branches use the common ancestor with their remote SHA. New `main`/`develop` refs, tags and other
    remotes retain the main-first fallback; unavailable develop ancestry falls back to main, develop,
@@ -357,14 +357,13 @@ judgment.
 - Subjects must describe the actual change with a concrete target.
 - Commit hygiene warnings stay non-blocking so developers still get feedback without hidden
   automation side effects.
-- Direct commits and pushes to `main` are blocked by local hooks (`pre-commit` / `pre-push`).
-  `develop` is the active trunk and policy requires changes through pull requests. Required remote
-  enforcement is:
+- Direct commits to `main` are blocked locally. Direct pushes to both protected branches are blocked
+  by GitHub rulesets, which are the authoritative enforcement boundary. Required remote enforcement
+  is:
   - `develop` requires a pull request, resolved review threads, `Repository Policy`, and
     `Application Suite`.
-  - `main` blocks deletion and non-fast-forward updates and requires the same checks, but does not
-    require a pull request. This permits an already-validated `develop` commit to be promoted
-    without manufacturing a merge, squash, or rebase commit.
+  - `main` requires a pull request, `Repository Policy`, and `Application Suite`.
+  - both branches block deletion and non-fast-forward updates.
 - Verify the live rulesets before each production promotion; documentation is not proof that remote
   enforcement is active.
 - Atomicity is expected by policy, but enforced through warnings and review rather than a rigid
@@ -387,46 +386,31 @@ ranges automatically invoke
 [`.agent/skills/database-parity/SKILL.md`](../../.agent/skills/database-parity/SKILL.md) before
 remote integration or promotion. This section remains the human Git policy SSOT.
 
-### Preferred hotfix path
-
-Land the fix on `develop`, validate, then fast-forward `main`. That keeps the invariant `main` ⊂
-`develop` without a recovery merge.
-
-### Fast-Forward Flow
+### Pull-request promotion flow
 
 When a release is ready:
 
 ```bash
-# 1. Ensure the final develop SHA is up to date and validated
+# 1. Ensure develop is current
 git checkout develop
-git pull --ff-only
-pnpm run ci
+git pull --ff-only origin develop
 
-# 2. Confirm origin/main is an ancestor, then fast-forward main to match develop
-git fetch origin
-git merge-base --is-ancestor origin/main origin/develop
-git checkout main
-git pull --ff-only origin main
-git merge --ff-only develop
+# 2. Open a PR from develop to main and wait for the required checks
+gh pr create --base main --head develop --title "chore(release): promote validated develop"
 
-# 3. Push main after the exact develop SHA has both required checks
-ALLOW_MAIN_PUSH=true git push origin main
-
-# 4. Verify the deployment, then tag the exact promoted SHA
+# 3. Merge in GitHub, verify the automatic deployment, then tag the deployed main SHA
 git tag -a vX.Y.Z -m "Release vX.Y.Z — summary"
 git push origin vX.Y.Z
 ```
 
 Rules:
 
-- `main` should remain a subset of `develop` — do not plan work that diverges `main` on purpose.
-- `git merge --ff-only` fails if `main` has drifted; do not force-push to “fix” it.
 - Tags are annotated (`-a`) to carry release metadata.
 - Never rewrite or force-push `main` without explicit approval.
-- The `main` ruleset deliberately omits the pull-request rule. Required checks are reused from the
-  exact commit already validated on `develop`; no bypass actor is configured.
-- Rollback: `git revert` on `develop`, then fast-forward promote again.
-- Direct commits on `main` are blocked by `pre-commit`; promotion is FF-only from `develop`.
+- Both protected branches require pull requests and the canonical checks; no bypass actor is
+  configured.
+- Rollback: create a revert branch, validate it through a PR, and merge it normally.
+- Direct commits on `main` remain blocked by `pre-commit`; direct pushes are rejected remotely.
 
 ### Production tip recovery (when `main` drifted)
 

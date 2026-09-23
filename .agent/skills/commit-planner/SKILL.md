@@ -54,7 +54,7 @@ limits.
   approved plan. Never use directory-level globs (`git add src/components/`).
 - Option B preserves manual user staging step-by-step.
 - Do not run `git commit` without explicit plan approval / user authorization.
-- Never present `SKIP_COMMIT_RANGE_VALIDATION` / `ALLOW_MAIN_PUSH` as routine plan options.
+- Never present validation bypasses as routine plan options.
 - Match the user’s language for report prose; commit subjects stay English per governance.
 - Do not include recovery/pitfall dumps in routine plan reports.
 - Recovery recipes that show `git add` / unstage are for the **user** (or only when the user

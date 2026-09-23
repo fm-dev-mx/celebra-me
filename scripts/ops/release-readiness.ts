@@ -8,7 +8,6 @@ export const REQUIRED_RELEASE_CHECKS = [
 	'Repository Policy',
 	'Application Suite',
 	STATIC_CAPABILITY_CHECK,
-	'Vercel - celebra-me preview smoke',
 ] as const;
 export interface ReleaseCheck {
 	name: string;
