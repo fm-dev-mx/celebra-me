@@ -40,7 +40,7 @@ map, and closing images. Compare:
 - monthly cost at current traffic and at two growth scenarios.
 
 The pilot must preserve the current mobile and desktop budgets, SHA-256 verification, immutable
-environment namespaces, sanitized reports, and the public Preview smoke.
+environment namespaces, sanitized reports, and public verification on the automatic Preview.
 
 ## Rollback
 

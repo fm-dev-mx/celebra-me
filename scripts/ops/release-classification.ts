@@ -48,7 +48,7 @@ export function classifyReleaseFiles(
 	if (categories.has('schema-dependent')) category = 'schema-dependent';
 	else if (categories.has('application') || categories.size > 1) category = 'application';
 	else category = files[0]?.category ?? 'application';
-	const applicableGates = ['Repository Policy', 'Application Suite', 'Preview smoke'];
+	const applicableGates = ['Repository Policy', 'Application Suite'];
 	const visualPaths = new Set(visualImpactFiles(files.map((file) => file.path)));
 	const visualFiles = files.filter((file) => visualPaths.has(file.path));
 	const visualImpact = visualFiles.length > 0;

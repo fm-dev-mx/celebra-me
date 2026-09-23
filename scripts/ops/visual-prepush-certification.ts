@@ -41,10 +41,9 @@ export interface CertificationIdentity {
 }
 
 export function shouldRequireVisualCertification(
-	targetRef: string,
+	_targetRef: string,
 	changedPaths: string[],
 ): boolean {
-	if (targetRef === 'refs/heads/develop' || targetRef === 'refs/heads/main') return true;
 	return visualImpactFiles(changedPaths).length > 0;
 }
 

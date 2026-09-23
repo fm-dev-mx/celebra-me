@@ -90,6 +90,7 @@ content needs it. Historical source files may remain as documented provenance wi
 release inputs. Audio and unrelated compatibility mechanisms are outside this image procedure.
 
 Closure requires zero active obsolete image dependencies, unchanged Production bytes and
-presentation, explained reconciliation results, final-SHA CI and Preview smoke, and required human
-acceptance. Asset-row counts alone do not establish absence of legacy URLs in content. Report
-unverified provider inventory, retained historical references, and pending owner actions explicitly.
+presentation, explained reconciliation results, final-SHA CI, automatic Preview verification, and
+required human acceptance. Asset-row counts alone do not establish absence of legacy URLs in
+content. Report unverified provider inventory, retained historical references, and pending owner
+actions explicitly.

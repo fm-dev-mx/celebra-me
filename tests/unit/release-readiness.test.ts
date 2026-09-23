@@ -33,8 +33,13 @@ describe('release check evidence', () => {
 			expect(() => requireReleaseChecks(sha, checks)).toThrow('Application Suite');
 		},
 	);
-	it('blocks missing Preview evidence, stale SHAs and untrusted results', () => {
-		expect(() => requireReleaseChecks(sha, passing().slice(0, 2))).toThrow('preview smoke');
+	it('blocks missing application evidence, stale SHAs and untrusted results', () => {
+		expect(() =>
+			requireReleaseChecks(
+				sha,
+				passing().filter((check) => check.name !== 'Application Suite'),
+			),
+		).toThrow('Application Suite');
 		const checks = passing();
 		checks[0].sha = 'b'.repeat(40);
 		expect(() => requireReleaseChecks(sha, checks)).toThrow('Repository Policy');
