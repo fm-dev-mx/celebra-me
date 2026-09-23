@@ -53,7 +53,8 @@ jobs:
               run: pnpm ops:post-deploy -- validate
 
             - name: Publish Vercel deployment check
-              uses: vercel/repository-dispatch/actions/status@v1
+              # Official Node 24 runtime update from vercel/repository-dispatch#18.
+              uses: vercel/repository-dispatch/actions/status@44f4d342ebc265c58167a2aa77d5a0d5a6eb20fd
               with:
                   name: Vercel - celebra-me ${{ env.POST_DEPLOY_ENVIRONMENT }} smoke
 

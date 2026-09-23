@@ -310,6 +310,10 @@ describe('post-deploy smoke', () => {
 		expect(workflow).not.toContain('environment: Production');
 		expect(workflow).not.toContain('PROD_DB_URL');
 		expect(workflow).not.toContain('pnpm invitation:media:verify');
+		expect(workflow).toContain(
+			'vercel/repository-dispatch/actions/status@44f4d342ebc265c58167a2aa77d5a0d5a6eb20fd',
+		);
+		expect(workflow).not.toContain('vercel/repository-dispatch/actions/status@v1');
 		expect(workflow).toContain('VERCEL_DISPATCH_EXPECTED_PROJECT_ID');
 		expect(workflow).not.toContain('upload-artifact');
 		expect(workflow).not.toContain('schedule:');
