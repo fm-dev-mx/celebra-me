@@ -9,7 +9,20 @@ export interface ReleaseClassification {
 	category: ReleaseCategory;
 	reasons: string[];
 	applicableGates: string[];
+	visualImpact: boolean;
+	visualReasons: string[];
 }
+
+const VISUAL_PATH_PATTERNS = [
+	/^src\/(?:components|layouts|pages)\/.*\.(?:astro|tsx)$/u,
+	/^src\/styles\//u,
+	/^src\/content\//u,
+	/^src\/assets\//u,
+	/^public\/.*\.(?:avif|gif|jpe?g|png|svg|webp|woff2?)$/u,
+	/^scripts\/(?:playwright|screenshot)\//u,
+	/^tests\/(?:e2e|fixtures)\//u,
+	/^(?:astro|playwright)\.config\./u,
+] as const;
 
 export function classifyReleaseFiles(
 	paths: string[],
@@ -43,6 +56,14 @@ export function classifyReleaseFiles(
 	else if (categories.has('application') || categories.size > 1) category = 'application';
 	else category = files[0]?.category ?? 'application';
 	const applicableGates = ['Repository Policy', 'Application Suite', 'Preview smoke'];
+	const visualFiles = files.filter((file) =>
+		VISUAL_PATH_PATTERNS.some((pattern) => pattern.test(file.path)),
+	);
+	const visualImpact = visualFiles.length > 0;
+	const visualReasons = visualImpact
+		? visualFiles.map((file) => `${file.path} is inside the conservative visual gate.`)
+		: ['No changed path is inside the conservative visual gate.'];
+	if (visualImpact) applicableGates.push('visual compare and hash-bound owner approval');
 	if (category === 'schema-dependent')
 		applicableGates.push(
 			'capability manifest',
@@ -70,6 +91,8 @@ export function classifyReleaseFiles(
 						`Effective category is ${category}; unknown paths and mixed categories escalate conservatively.`,
 					],
 		applicableGates,
+		visualImpact,
+		visualReasons,
 	};
 }
 
