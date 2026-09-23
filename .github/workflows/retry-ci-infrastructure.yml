@@ -1,4 +1,5 @@
 name: Retry CI Infrastructure Failure
+# DEFAULT_BRANCH_INSTALL_REQUIRED: workflow_run listeners execute from the default branch.
 
 permissions:
     actions: write

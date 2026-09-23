@@ -2,6 +2,15 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 describe('deployment workflow contract', () => {
+	it('documents that workflow_run listeners must be installed on the default branch', () => {
+		for (const path of [
+			'.github/workflows/deploy-preview.yml',
+			'.github/workflows/retry-ci-infrastructure.yml',
+		]) {
+			const workflow = readFileSync(resolve(path), 'utf8');
+			expect(workflow).toContain('DEFAULT_BRANCH_INSTALL_REQUIRED');
+		}
+	});
 	it('never deploys candidate or pull-request validation runs', () => {
 		const workflow = readFileSync(resolve('.github/workflows/deploy-preview.yml'), 'utf8');
 		expect(workflow).toContain("github.event.workflow_run.conclusion == 'success'");

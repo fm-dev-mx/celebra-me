@@ -1,4 +1,5 @@
 name: Deploy CI-approved Preview
+# DEFAULT_BRANCH_INSTALL_REQUIRED: workflow_run listeners execute from the default branch.
 
 permissions:
     contents: read
