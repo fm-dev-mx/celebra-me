@@ -234,6 +234,22 @@ test.describe('Melissa y Luis Osmar local visual contract', () => {
 			const response = await page.goto(invitationUrl, { waitUntil: 'load' });
 			expect(response?.status()).toBe(200);
 			await expectStableInvitation(page);
+			const parentNameLines = await page
+				.locator(
+					'.family__group--group-0 .family__name, .family__group--group-1 .family__name',
+				)
+				.evaluateAll((names) =>
+					names.map((name) => {
+						const textNode = Array.from(name.childNodes).find(
+							(node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim(),
+						);
+						if (!textNode) return 0;
+						const range = document.createRange();
+						range.selectNodeContents(textNode);
+						return range.getClientRects().length;
+					}),
+				);
+			expect(parentNameLines).toEqual([1, 1, 1, 1]);
 			const rhythm = await page.evaluate(() => {
 				const bounds = (selector: string) =>
 					document.querySelector(selector)!.getBoundingClientRect();
@@ -292,6 +308,29 @@ test.describe('Melissa y Luis Osmar local visual contract', () => {
 			const hero = page.locator('.ceremonial-portrait-hero');
 			const heroBox = await hero.boundingBox();
 			expect(heroBox!.height).toBeGreaterThanOrEqual(viewport.height - 2);
+			const groomName = await hero
+				.locator('.ceremonial-portrait-hero__name span')
+				.last()
+				.evaluate((name) => ({
+					height: name.getBoundingClientRect().height,
+					lineHeight: Number.parseFloat(getComputedStyle(name).lineHeight),
+				}));
+			expect(groomName.height).toBeLessThan(groomName.lineHeight * 1.5);
+			if (viewport.width === 390) {
+				const father = page
+					.locator('.family__member-name')
+					.filter({ hasText: 'Jesús Gerardo Muñoz Silva' });
+				await expect(father.locator('.family__deceased-indicator')).toHaveText('†');
+				await expect(father.locator('.family__deceased-indicator')).toHaveAttribute(
+					'aria-hidden',
+					'true',
+				);
+				await expect(father.locator('.sr-only')).toHaveText(', quien falleció');
+				await expect(page.getByText('De etiqueta.', { exact: true })).toBeVisible();
+				await expect(
+					page.locator('.gift-card__title', { hasText: 'Sobres' }),
+				).toBeVisible();
+			}
 			const landscape = await hero.evaluate(
 				(element) => getComputedStyle(element, '::after').backgroundImage,
 			);

@@ -41,7 +41,7 @@ const EVENT_DATE_HEADING = 'Miércoles, 16 de diciembre de 2026';
 const RSVP_DEADLINE = '16 de noviembre de 2026';
 
 export const MELISSA_MUSIC = {
-	url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1790029560/Christina_Perri_-_A_Thousand_Years_l9vbmy.mp3',
+	url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1790200190/Christina_Perri_-_A_Thousand_Years_Piano_Cello_Cover_-_The_Piano_Guys_l598pf.mp3',
 	title: 'A Thousand Years — Christina Perri',
 	autoPlay: true,
 } as const;
@@ -173,7 +173,7 @@ export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAss
 					title: 'Familia de Luis Osmar',
 					items: [
 						{ name: 'Martha Leticia Rodríguez Vargas', role: 'Madre' },
-						{ name: 'Jesús Gerardo Muñoz Silva', role: 'Padre' },
+						{ name: 'Jesús Gerardo Muñoz Silva', role: 'Padre', deceased: true },
 					],
 				},
 			],
@@ -233,7 +233,7 @@ export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAss
 					title: 'Vestimenta',
 					iconName: 'DressCode',
 					styleVariant: 'default',
-					text: 'Gala formal.',
+					text: 'De etiqueta.',
 				},
 				{
 					title: 'Celebración',
@@ -288,7 +288,7 @@ export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAss
 				},
 				{
 					type: 'cash',
-					title: 'Lluvia de sobres',
+					title: 'Sobres',
 					text: 'Podrá entregarnos su obsequio en efectivo dentro de un sobre durante la recepción.',
 				},
 			],
