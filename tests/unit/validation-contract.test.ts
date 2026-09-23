@@ -138,9 +138,10 @@ describe('canonical validation contract', () => {
 			expect(workflow).toContain('name: Repository CI');
 			expect(workflow).toContain('workflow_dispatch:');
 			expect(workflow).toContain('pull_request:');
-			expect(workflow).toContain('            - develop');
+			expect(workflow).toMatch(/^\s{4}push:\s*$/m);
+			expect(workflow).toMatch(/push:\s*\n\s+branches:\s*\n\s+- develop/);
+			expect(workflow).not.toMatch(/pull_request:[\s\S]*?branches:\s*\n\s+- develop/);
 			expect(workflow).toContain('            - main');
-			expect(workflow).not.toMatch(/^\s{4}push:\s*$/m);
 			expect(workflow).toContain('policy-validation:');
 			expect(workflow).toContain('name: Repository Policy');
 			expect(workflow).toContain('application-validation:');
