@@ -340,12 +340,14 @@ judgment.
    branches use the common ancestor with their remote SHA. New `main`/`develop` refs, tags and other
    remotes retain the main-first fallback; unavailable develop ancestry falls back to main, develop,
    then the root as before. This does not infer a future PR's target from its branch name.
-4. CI workflow `Repository CI` (`.github/workflows/commit-validation.yml`) runs on push to `develop`
-   and on pull requests targeting `develop` or `main`, and supports manual dispatch. Comparison mode
-   runs **Repository Policy**, the **Application** static/unit/database matrix and **Application /
-   browser**. **Application Suite** aggregates all three dependencies; **Validation metrics**
-   records their results. Candidate mode prepares visual evidence and deliberately skips
-   policy/application certification. It is not a release check. See the canonical
+4. CI workflow `Repository CI` (`.github/workflows/commit-validation.yml`) runs on pull requests
+   targeting `develop` or `main`, and supports manual dispatch. It does not repeat the complete
+   suite after the resulting `develop` push: the integration PR is the first gate and the later
+   `develop` to `main` PR is the release gate. Comparison mode runs **Repository Policy**, the
+   **Application** static/unit/database matrix and **Application / browser**. **Application Suite**
+   aggregates all three dependencies; **Validation metrics** records their results. Candidate mode
+   prepares visual evidence and deliberately skips policy/application certification. It is not a
+   release check. See the canonical
    [validation procedure](validation-procedures.md#remote-ci-coverage-and-efficiency) for commands,
    validation scope and the distinction from `pnpm run ci`.
 5. No post-commit, post-merge or post-rewrite hook queries invitation status. Use `pnpm dbs`
@@ -396,7 +398,7 @@ git checkout develop
 git pull --ff-only origin develop
 
 # 2. Open a PR from develop to main and wait for the required checks
-gh pr create --base main --head develop --title "chore(release): promote validated develop"
+gh pr create --base main --head develop --title "release: <primary outcome>"
 
 # 3. Merge in GitHub, verify the automatic deployment, then tag the deployed main SHA
 git tag -a vX.Y.Z -m "Release vX.Y.Z — summary"
@@ -405,6 +407,9 @@ git push origin vX.Y.Z
 
 Rules:
 
+- Release PR titles describe the primary shipped outcome rather than the mechanical branch
+  promotion. Their bodies list included PRs, material risks, visual/schema/content impact,
+  separately authorized operations, and expected CI/smoke evidence without ceremonial repetition.
 - Tags are annotated (`-a`) to carry release metadata.
 - Never rewrite or force-push `main` without explicit approval.
 - Both protected branches require pull requests and the canonical checks; no bypass actor is

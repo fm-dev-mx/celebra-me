@@ -16,9 +16,6 @@ on:
                 type: choice
                 options: [compare, candidate]
                 default: compare
-    push:
-        branches:
-            - develop
     pull_request:
         types: [opened, synchronize, reopened]
         branches:
