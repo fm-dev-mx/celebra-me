@@ -9,6 +9,16 @@
 	--editorial-ledger-spine: rgb(0 0 0 / 20%);
 	--editorial-ledger-max-width: 52rem;
 
+	// Optional stationery treatment. Defaults preserve the open, text-only ledger.
+	.itinerary__container {
+		max-width: var(--editorial-ledger-panel-width, 1000px);
+		padding: var(--editorial-ledger-panel-padding, 0);
+		background: var(--editorial-ledger-panel-bg, transparent);
+		box-shadow: var(--editorial-ledger-panel-shadow, none);
+		outline: var(--editorial-ledger-panel-outline, none);
+		outline-offset: -8px;
+	}
+
 	.itinerary__header {
 		width: min(100%, 46rem);
 		min-width: 0;
@@ -22,9 +32,27 @@
 	}
 
 	.itinerary__animated-line-container,
-	.itinerary__item-icon-wrapper,
 	.itinerary__item-dot {
 		display: none;
+	}
+
+	.itinerary__item-icon-wrapper {
+		display: var(--editorial-ledger-icon-display, none);
+		position: absolute;
+		top: 1.5rem;
+		right: 0;
+		left: auto;
+		width: 28px;
+		height: 28px;
+		margin: 0;
+		background: none;
+		border: 0;
+		box-shadow: none;
+		backdrop-filter: none;
+
+		&::before {
+			content: none;
+		}
 	}
 
 	.itinerary__header-flourish {
@@ -52,6 +80,8 @@
 		grid-template-columns: none;
 		min-width: 0;
 		padding-left: 0;
+		padding-right: var(--editorial-ledger-icon-space, 0);
+		padding-block: var(--editorial-ledger-row-space, 0);
 	}
 
 	.itinerary__item--left .itinerary__item-content,
@@ -101,7 +131,10 @@
 
 		.itinerary__item-content {
 			display: grid;
-			grid-template-columns: minmax(7rem, 0.24fr) minmax(0, 1fr);
+			grid-template-columns: minmax(var(--editorial-ledger-time-width, 7rem), 0.24fr) minmax(
+					0,
+					1fr
+				);
 			gap: 0 clamp(1.75rem, 4vw, 3rem);
 			width: 100%;
 			padding: clamp(1.35rem, 2.8vw, 1.85rem) 0;

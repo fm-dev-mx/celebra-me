@@ -712,7 +712,10 @@ describe('registry-driven canonical variant portability', () => {
 		expect(combined).toContain(".thank-you-section[data-variant='editorial-back-cover']");
 		expect(editorialLedger).toContain('.itinerary__item-icon-wrapper');
 		expect(editorialLedger).toMatch(
-			/\.itinerary__animated-line-container[\s\S]*?\.itinerary__item-icon-wrapper[\s\S]*?\.itinerary__item-dot[\s\S]*?display:\s*none/,
+			/\.itinerary__animated-line-container[\s\S]*?\.itinerary__item-dot[\s\S]*?display:\s*none/,
+		);
+		expect(editorialLedger).toMatch(
+			/\.itinerary__item-icon-wrapper\s*\{\s*display:\s*var\(--editorial-ledger-icon-display,\s*none\)/,
 		);
 		expect(editorialProgram).toContain('counter-reset: editorial-program');
 		expect(editorialProgram).toContain('--editorial-program-display');

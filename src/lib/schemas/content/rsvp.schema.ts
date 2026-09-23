@@ -1,10 +1,7 @@
 import { z } from 'zod';
 import { rsvpResponseMessagesSchema } from '@/lib/intake/schemas/shared-content.schema';
 import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
-import {
-	PERSONALIZED_ACCESS_VARIANTS,
-	RSVP_VARIANTS,
-} from '@/lib/invitation/section-variants';
+import { PERSONALIZED_ACCESS_VARIANTS, RSVP_VARIANTS } from '@/lib/invitation/section-variants';
 
 export const rsvpLabelsSchema = z
 	.object({
@@ -42,6 +39,12 @@ export const rsvpSchema = z
 		personalizedAccess: z
 			.object({
 				variant: z.enum(PERSONALIZED_ACCESS_VARIANTS),
+				ticket: z
+					.object({
+						signature: z.string(),
+						monogram: z.string(),
+					})
+					.optional(),
 				title: z.string().optional(),
 				subtitle: z.string().optional(),
 				footerText: z.string().optional(),

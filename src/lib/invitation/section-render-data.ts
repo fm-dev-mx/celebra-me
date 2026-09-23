@@ -22,6 +22,7 @@ type GiftsProps = Omit<SectionData<'gifts'>, 'items'> & {
 };
 
 type PersonalizedAccessProps = {
+	ticket?: { signature: string; monogram: string };
 	guestName: string;
 	maxAllowedAttendees: number;
 	eventYear?: string;
@@ -164,6 +165,7 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 	return {
 		component: 'personalized-access' as const,
 		props: {
+			ticket: rsvpSection?.personalizedAccess?.ticket,
 			guestName: guestContext?.guest.fullName ?? DEMO_GUEST_NAME,
 			maxAllowedAttendees:
 				guestContext?.guest.maxAllowedAttendees ??
@@ -386,6 +388,12 @@ function resolveSectionReveal(descriptor: DescriptorData): InvitationRevealRecip
 	if (descriptor.component === 'gallery' && descriptor.props.variant === 'magazine-spread') {
 		return 'none';
 	}
+	if (descriptor.component === 'itinerary' && descriptor.props.variant === 'editorial-ledger') {
+		return 'fade-up';
+	}
+	if (descriptor.component === 'family' && descriptor.props.variant === 'asymmetric-groups') {
+		return 'fade-up';
+	}
 	return REVEAL_RECIPES[descriptor.component];
 }
 
@@ -413,11 +421,9 @@ function withRenderMetadata<T extends DescriptorData>(
 export function buildInvitationSectionRenderDescriptors(
 	pageContext: InvitationPageContext,
 ): InvitationSectionRenderDescriptor[] {
-	const descriptors = pageContext.renderPlan
+	return pageContext.renderPlan
 		.map((block, index) => renderBlock(pageContext, block, index, pageContext.renderPlan))
 		.filter((block): block is InvitationSectionRenderDescriptor => block !== null);
-
-	return descriptors;
 }
 
 function findNextSectionLink(

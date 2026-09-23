@@ -5,8 +5,8 @@
 // Personalized Access formal-pass: credential card on a dark confirmation chapter.
 // Owns layout, type metrics, ornaments, and section-scoped chroma so any host
 // theme can consume the same presentation. Profiles must not redefine the card
-// geometry, type scale, or chapter band. Chroma defaults live on :where() so a
-// host profile can retint at the event root without forking geometry.
+// geometry or type selectors. Optional public tokens configure density, scale
+// and material; their defaults preserve unconfigured consumers.
 
 :where(.event-theme-wrapper) {
 	--formal-chapter-band: rgb(120 56 38);
@@ -32,7 +32,7 @@
 	--color-text-secondary: rgb(var(--formal-chapter-cream-rgb) / 82%);
 	--color-text-muted: rgb(var(--formal-chapter-cream-rgb) / 64%);
 
-	background: var(--formal-chapter-band);
+	background: var(--pa-section-bg, var(--formal-chapter-band));
 	color: var(--formal-chapter-cream);
 	padding-block-end: clamp(1.5rem, 3.5vw, 2.5rem);
 }
@@ -40,7 +40,9 @@
 .personalized-access[data-variant='formal-pass'] {
 	--formal-chapter-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
 	--formal-chapter-body: 'Instrument Sans Variable', system-ui, sans-serif;
-	--formal-chapter-label: 'Bodoni Moda Variable', 'Playfair Display Variable', georgia, serif;
+	--formal-chapter-label:
+		var(--formal-chapter-label-font, 'Bodoni Moda Variable'), 'Playfair Display Variable',
+		georgia, serif;
 	--pa-padding-block: clamp(3rem, 6vw, 4.5rem);
 	--pa-padding-block-lg: clamp(4rem, 7vw, 5.5rem);
 	--pa-card-border-radius: 0.875rem;
@@ -84,8 +86,8 @@
 	--pa-footer-text-color: rgb(var(--formal-chapter-ink-rgb) / 72%);
 	--pa-footer-text-font-style: normal;
 
-	padding-block: clamp(1rem, 2.5vw, 2rem);
-	padding-inline: clamp(1rem, 3.5vw, 2.25rem);
+	padding-block: var(--pa-section-padding, clamp(1rem, 2.5vw, 2rem));
+	padding-inline: var(--pa-section-inline, clamp(1rem, 3.5vw, 2.25rem));
 	background: transparent;
 
 	.personalized-access__container {
@@ -97,8 +99,10 @@
 		border-radius: var(--pa-card-border-radius, 0.875rem);
 
 		&__header {
-			padding: 2rem 1.5rem 1.15rem;
+			padding: var(--pa-header-padding, 2rem 1.5rem 1.15rem);
 			gap: 0.45rem;
+			align-items: var(--pa-align-items, center);
+			text-align: var(--pa-text-align, center);
 		}
 
 		&__eyebrow {
@@ -108,6 +112,7 @@
 		}
 
 		&__seal {
+			display: var(--pa-seal-display, grid);
 			width: 2.5rem;
 			padding: 0;
 			margin-block-end: 0.15rem;
@@ -125,40 +130,43 @@
 
 		&__title {
 			font-family: var(--formal-chapter-display);
-			font-size: clamp(1rem, 1.4vw + 0.5rem, 1.25rem);
+			font-size: var(--pa-title-size, clamp(1rem, 1.4vw + 0.5rem, 1.25rem));
 			font-weight: 500;
-			letter-spacing: 0.12em;
-			text-transform: uppercase;
+			letter-spacing: var(--pa-title-tracking, 0.12em);
+			text-transform: var(--pa-title-transform, uppercase);
 		}
 
 		&__subtitle {
+			margin-inline: var(--pa-note-margin-inline, auto);
 			max-width: 22rem;
 			font-family: var(--formal-chapter-body);
-			font-size: 0.825rem;
+			font-size: var(--pa-body-size, 0.825rem);
 			font-weight: 400;
 			line-height: 1.55;
 		}
 
 		&__body {
 			min-width: 0;
-			padding: 1.25rem 1.5rem 1.65rem;
-			gap: 1.35rem;
+			padding: var(--pa-body-padding, 1.25rem 1.5rem 1.65rem);
+			gap: var(--pa-body-gap, 1.35rem);
 		}
 
 		&__field {
-			gap: 0.4rem;
+			gap: var(--pa-field-gap, 0.4rem);
+			justify-items: var(--pa-align-items, center);
+			text-align: var(--pa-text-align, center);
 		}
 
 		&__label {
 			font-family: var(--formal-chapter-label);
-			font-size: 0.68rem;
+			font-size: var(--pa-label-size, 0.68rem);
 			letter-spacing: 0.22em;
 		}
 
 		&__guest {
 			max-width: min(100%, 16ch);
 			font-family: var(--formal-chapter-display);
-			font-size: clamp(2.25rem, 4.5vw + 0.8rem, 3.25rem);
+			font-size: var(--pa-guest-size, clamp(2.25rem, 4.5vw + 0.8rem, 3.25rem));
 			font-weight: 500;
 			line-height: 1.05;
 			letter-spacing: 0.01em;
@@ -170,9 +178,19 @@
 
 		&__quota {
 			gap: 0.35rem;
+			grid-template-columns: var(--pa-quota-columns, minmax(0, 1fr));
+			place-items: center var(--pa-align-items, center);
+			text-align: var(--pa-text-align, center);
+			position: relative;
+			background: var(--pa-quota-bg, transparent);
+			padding: var(--pa-quota-padding, 0);
+			margin: var(--pa-quota-margin, 0);
+			border-top: var(--pa-quota-border, 0);
 		}
 
 		&__count-frame {
+			grid-column: var(--pa-count-column, auto);
+			grid-row: var(--pa-count-row, auto);
 			min-width: 0;
 			padding: 0.15rem 0 0;
 			margin: 0 auto;
@@ -180,33 +198,171 @@
 
 		&__count {
 			font-family: var(--formal-chapter-display);
-			font-size: clamp(4.75rem, 6vw + 0.5rem, 5.5rem);
+			font-size: var(--pa-count-size, clamp(4.75rem, 6vw + 0.5rem, 5.5rem));
 			font-weight: 600;
 			line-height: 0.9;
 		}
 
 		&__note {
 			max-width: 25.5rem;
-			margin-inline: auto;
-			margin-top: 0.85rem;
+			margin-inline: var(--pa-note-margin-inline, auto);
+			margin-top: var(--pa-note-margin-top, 0.85rem);
+			font-style: var(--pa-note-style, normal);
 			font-family: var(--formal-chapter-body);
-			font-size: clamp(0.825rem, 1.8vw, 0.92rem);
+			font-size: var(--pa-body-size, clamp(0.825rem, 1.8vw, 0.92rem));
 			line-height: 1.55;
 			color: rgb(var(--formal-chapter-band-rgb) / 88%);
-			text-align: center;
+			text-align: var(--pa-text-align, center);
 			text-wrap: balance;
 		}
 
 		&__footer {
-			padding: 1rem 1.5rem 1.4rem;
+			padding: var(--pa-footer-padding, 1rem 1.5rem 1.4rem);
+			text-align: var(--pa-text-align, center);
 
 			p {
+				margin-inline: var(--pa-note-margin-inline, auto);
 				max-width: 24rem;
 				font-family: var(--formal-chapter-body);
-				font-size: clamp(0.76rem, 1.5vw, 0.82rem);
+				font-size: var(--pa-footer-size, clamp(0.76rem, 1.5vw, 0.82rem));
 				line-height: 1.55;
 				letter-spacing: 0.02em;
 			}
+		}
+	}
+}
+
+// Admission ticket composition; opt-in content comes from the section renderer.
+.personalized-access[data-variant='formal-pass'][data-presentation='admission-ticket'] {
+	.personalized-access__container {
+		width: min(100%, 38rem);
+	}
+
+	.access-card {
+		border-radius: 0.75rem;
+		box-shadow: none;
+		mask-image:
+			radial-gradient(
+				circle 0.65rem at 0 var(--ticket-notch-y, 75%),
+				transparent 98%,
+				black 100%
+			),
+			radial-gradient(
+				circle 0.65rem at 100% var(--ticket-notch-y, 75%),
+				transparent 98%,
+				black 100%
+			);
+		mask-composite: intersect;
+	}
+
+	.access-card__header {
+		padding: 2.5rem 2rem 0;
+		gap: 1rem;
+	}
+
+	.access-card__signature {
+		margin: 0;
+		font:
+			400 clamp(1.9rem, 5vw, 2.7rem) / 1.25 'Pinyon Script',
+			cursive;
+		color: var(--formal-chapter-meta);
+	}
+
+	.access-card__eyebrow {
+		order: -1;
+	}
+
+	.access-card__eyebrow:empty {
+		display: none;
+	}
+
+	.access-card__title {
+		font: 500 0.75rem / 1.5 var(--formal-chapter-body);
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		margin: 0;
+	}
+
+	.access-card__body {
+		padding: 2.75rem 2rem 0;
+		gap: 1.25rem;
+	}
+
+	.access-card__field {
+		min-height: 6.5rem;
+		align-content: start;
+	}
+
+	.access-card__guest {
+		font-size: clamp(3.25rem, 7vw, 4.5rem);
+		line-height: 1;
+		font-weight: 400;
+	}
+
+	.access-card__welcome {
+		margin: 0 0 1.75rem;
+		font: 400 1.375rem / 1.4 var(--formal-chapter-display);
+		color: var(--formal-chapter-muted);
+	}
+
+	.access-card__divider {
+		display: none;
+	}
+
+	.access-card__quota {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		gap: 1rem;
+		margin: 0 -2rem;
+		padding: 1.5rem 2rem 1.75rem;
+		background: transparent;
+		border-top: 0;
+		background-image: repeating-linear-gradient(
+			90deg,
+			var(--formal-chapter-metal) 0 2px,
+			transparent 2px 5px
+		);
+		background-size: calc(100% - 2rem) 1px;
+		background-position: center top;
+		background-repeat: no-repeat;
+	}
+
+	.access-card__quota > .access-card__label {
+		grid-column: 2;
+		grid-row: 1;
+		font: 500 0.75rem / 1.6 var(--formal-chapter-body);
+		letter-spacing: 0.15em;
+		max-width: 12ch;
+		overflow-wrap: anywhere;
+	}
+
+	.access-card__count-frame {
+		grid-column: 1;
+		grid-row: 1;
+		padding: 0;
+	}
+
+	.access-card__count {
+		font-size: 5.5rem;
+		font-weight: 400;
+	}
+
+	.access-card__monogram {
+		grid-column: 3;
+		grid-row: 1;
+		border-left: 1px solid rgb(var(--formal-chapter-metal-rgb) / 45%);
+		padding-left: 1rem;
+		font: 400 1.25rem / 1.5 var(--formal-chapter-display);
+		color: var(--formal-chapter-meta);
+	}
+
+	@media (width <= 24rem) {
+		.access-card__quota {
+			column-gap: 0.75rem;
+			grid-template-columns: auto minmax(0, 1fr);
+		}
+
+		.access-card__monogram {
+			display: none;
 		}
 	}
 }

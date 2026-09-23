@@ -342,6 +342,7 @@ export interface InvitationViewModel {
 			};
 			personalizedAccess: {
 				variant: PersonalizedAccessVariant;
+				ticket?: { signature: string; monogram: string };
 				title?: string;
 				subtitle?: string;
 				footerText?: string;

@@ -83,6 +83,7 @@
 }
 
 .quote-divider-bottom {
+	display: var(--quote-divider-bottom-display, var(--quote-divider-display));
 	margin-top: clamp(1.5rem, 3vh, 3rem);
 }
 

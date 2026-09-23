@@ -5,8 +5,8 @@
 // RSVP formal-register: underline confirmation register on a dark chapter.
 // Owns layout, type metrics, controls, feedback, and section-scoped chroma so
 // any host theme can consume the same presentation. Profiles must not redefine
-// the register geometry, type scale, or chapter band. Chroma defaults live on
-// :where() so a host profile can retint at the event root without forking geometry.
+// register geometry or type selectors. Optional public tokens configure density
+// and scale while preserving the defaults for unconfigured consumers.
 
 :where(.event-theme-wrapper) {
 	--formal-chapter-band: rgb(120 56 38);
@@ -35,20 +35,22 @@
 	--rsvp-bg: var(--formal-chapter-band);
 
 	display: grid;
-	grid-template-columns: minmax(0, 64rem);
+	grid-template-columns: minmax(0, var(--formal-register-shell-width, 64rem));
 	justify-content: center;
 	justify-items: start;
 	min-block-size: auto;
-	padding-block: clamp(3rem, 6vh, 4.75rem);
+	padding-block: var(--formal-register-shell-padding, clamp(3rem, 6vh, 4.75rem));
 	background: var(--rsvp-bg);
 }
 
 .rsvp[data-variant='formal-register'] {
 	--formal-chapter-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
 	--formal-chapter-body: 'Instrument Sans Variable', system-ui, sans-serif;
-	--formal-chapter-label: 'Bodoni Moda Variable', 'Playfair Display Variable', georgia, serif;
+	--formal-chapter-label:
+		var(--formal-chapter-label-font, 'Bodoni Moda Variable'), 'Playfair Display Variable',
+		georgia, serif;
 	--formal-chapter-measure: min(100%, 34rem);
-	--formal-chapter-control-radius: 2px;
+	--formal-chapter-control-radius: var(--formal-register-control-radius, 2px);
 	--rsvp-radio-columns: minmax(0, 1fr);
 	--rsvp-label-color: rgb(var(--formal-chapter-cream-rgb) / 92%);
 	--rsvp-placeholder-color: rgb(var(--formal-chapter-cream-rgb) / 58%);
@@ -105,7 +107,7 @@
 
 	.rsvp__title {
 		font-family: var(--formal-chapter-display);
-		font-size: clamp(2rem, 4.4vw, 3.25rem);
+		font-size: var(--formal-register-title-size, clamp(2rem, 4.4vw, 3.25rem));
 		font-weight: 600;
 		letter-spacing: normal;
 		line-height: 1.06;
@@ -123,7 +125,7 @@
 		max-width: var(--formal-chapter-measure);
 		margin-inline: 0;
 		font-family: var(--formal-chapter-body);
-		font-size: clamp(0.9rem, 1.6vw, 0.98rem);
+		font-size: var(--formal-register-body-size, clamp(0.9rem, 1.6vw, 0.98rem));
 		line-height: 1.55;
 		color: rgb(var(--formal-chapter-cream-rgb) / 78%);
 		text-align: left;
@@ -149,7 +151,7 @@
 	.rsvp__label,
 	.rsvp__legend {
 		font-family: var(--formal-chapter-label);
-		font-size: 0.7rem;
+		font-size: var(--formal-register-label-size, 0.7rem);
 		font-weight: 500;
 		letter-spacing: 0.16em;
 		color: var(--rsvp-label-color);
@@ -253,7 +255,7 @@
 			display: block;
 			margin-bottom: 0.35rem;
 			font-family: var(--formal-chapter-label);
-			font-size: 0.74rem;
+			font-size: var(--formal-register-label-size, 0.74rem);
 			font-weight: 600;
 			letter-spacing: 0.18em;
 			color: var(--formal-chapter-metal);
@@ -492,7 +494,7 @@
 			max-width: var(--formal-chapter-measure);
 			margin: 0;
 			font-family: var(--formal-chapter-body);
-			font-size: clamp(0.9rem, 1.6vw, 0.98rem);
+			font-size: var(--formal-register-body-size, clamp(0.9rem, 1.6vw, 0.98rem));
 			line-height: 1.55;
 			color: rgb(var(--formal-chapter-cream-rgb) / 78%);
 			text-align: left;

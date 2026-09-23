@@ -2,6 +2,7 @@
 import type { PersonalizedAccessVariant } from '@/lib/invitation/section-variants';
 
 interface Props {
+	ticket?: { signature: string; monogram: string };
 	maxAllowedAttendees: number;
 	guestName: string;
 	eventYear?: string;
@@ -14,6 +15,7 @@ interface Props {
 }
 
 const {
+	ticket,
 	maxAllowedAttendees,
 	guestName,
 	eventYear,
@@ -46,6 +48,7 @@ const showOrnaments = variant !== 'standard';
 	aria-labelledby="personalized-access-title"
 	data-screenshot-section="personalized-access"
 	data-variant={variant}
+	data-presentation={ticket ? "admission-ticket" : undefined}
 >
 	<div class="personalized-access__container">
 		{isDemoPreview && variant === 'editorial-pass' && (
@@ -66,6 +69,7 @@ const showOrnaments = variant !== 'standard';
 			}
 
 			<header class="access-card__header">
+				{ticket && <p class="access-card__signature">{ticket.signature}</p>}
 				<span class="access-card__eyebrow" data-demo-label>
 					{isDemoPreview && variant !== 'editorial-pass' ? 'Vista previa' : null}
 				</span>
@@ -98,17 +102,16 @@ const showOrnaments = variant !== 'standard';
 				<h3 id="personalized-access-title" class="access-card__title">
 					{title}
 				</h3>
-				<p class="access-card__subtitle">
-					{subtitle}
-				</p>
+				{!ticket && <p class="access-card__subtitle">{subtitle}</p>}
 			</header>
 
 			<div class="access-card__body">
 				<div class="access-card__field">
-					<span class="access-card__label">Invitado</span>
+					{!ticket && <span class="access-card__label">Invitado</span>}
 					<strong class="access-card__guest">{guestName}</strong>
 				</div>
 
+				{ticket && <p class="access-card__welcome">{subtitle ?? 'Será un placer celebrar con usted.'}</p>}
 				<div class="access-card__divider" aria-hidden="true"></div>
 
 				<div class="access-card__quota">
@@ -116,10 +119,11 @@ const showOrnaments = variant !== 'standard';
 					<div class="access-card__count-frame">
 						<span class="access-card__count">{maxAllowedAttendees}</span>
 					</div>
+					{ticket && <span class="access-card__monogram" aria-hidden="true">{ticket.monogram}</span>}
 				</div>
 
 				{
-					formattedNoteText && (
+					!ticket && formattedNoteText && (
 						<p class="access-card__note">
 							{formattedNoteText}
 						</p>
@@ -137,7 +141,7 @@ const showOrnaments = variant !== 'standard';
 			)}
 
 			{
-				footerText && footerText.trim().length > 0 && (
+				!ticket && footerText && footerText.trim().length > 0 && (
 					<footer class="access-card__footer">
 						<p>{footerText}</p>
 					</footer>
@@ -146,3 +150,26 @@ const showOrnaments = variant !== 'standard';
 		</article>
 	</div>
 </section>
+
+<script>
+	// Cut the paper itself at the responsive stub boundary; never paint over its edge.
+	const ticketObservers: ResizeObserver[] = [];
+	document.querySelectorAll<HTMLElement>('[data-presentation="admission-ticket"] .access-card').forEach((card) => {
+		const stub = card.querySelector<HTMLElement>('.access-card__quota');
+		if (!stub) return;
+		const updateNotch = () => {
+			if (card.offsetHeight <= 0) return;
+			const cardBounds = card.getBoundingClientRect();
+			const scale = cardBounds.height / card.offsetHeight;
+			if (Number.isFinite(scale) && scale > 0) {
+				card.style.setProperty('--ticket-notch-y', `${(stub.getBoundingClientRect().top - cardBounds.top) / scale}px`);
+			}
+		};
+		const observer = new ResizeObserver(updateNotch);
+		observer.observe(card);
+		observer.observe(stub);
+		ticketObservers.push(observer);
+		updateNotch();
+	});
+	window.addEventListener('pagehide', () => ticketObservers.forEach((observer) => observer.disconnect()), { once: true });
+</script>

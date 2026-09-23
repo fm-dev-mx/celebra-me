@@ -5,6 +5,7 @@
 import Hero from '@/components/invitation/Hero.astro';
 import EnvelopeReveal from '@/components/invitation/EnvelopeReveal.astro';
 import EventHeader from '@/components/invitation/EventHeader.astro';
+import MusicPlayer from '@/components/invitation/MusicPlayer.astro';
 import globalCssUrl from '@/styles/global.scss?url';
 import invitationCssUrl from '@/styles/invitation.scss?url';
 import variantHarnessCssUrl from './variant-harness.scss?url';
@@ -35,6 +36,7 @@ const variant = Astro.url.searchParams.get('variant') ?? 'standard';
 const preset = Astro.url.searchParams.get('preset') ?? 'jewelry-box';
 const fullPage = Astro.url.searchParams.get('full') === '1';
 const showEnvelope = fullPage && Astro.url.searchParams.get('envelope') === '1';
+const showMusic = fullPage && Astro.url.searchParams.get('music') === '1';
 const fullPresentation = fullPage && (showEnvelope || Astro.url.searchParams.get('presentation') === '1');
 let fullPageContext: InvitationPageContext | undefined;
 let fullPageHeadLinks: InvitationStylesheetHeadLink[] | undefined;
@@ -175,6 +177,7 @@ const activeSectionCssPlan = resolveInvitationCssLoadPlan(
 				{showEnvelope && <EventHeader links={page.viewModel.navigation ?? []} variant="standard" initials={page.viewModel.envelope?.data?.sealInitials} eventName={page.viewModel.hero.name} eventSubtitle={page.viewModel.hero.label} isDemo={false} />}
 				<Hero {...fullPageContext.viewModel.hero} venueName={fullPageContext.heroVenueName} time={fullPageContext.heroTime} highPriority={true} />
 				<InvitationSections pageContext={fullPageContext} />
+				{showMusic && page.musicPlayer && <MusicPlayer {...page.musicPlayer} />}
 			</>
 		) : section === 'hero' ? (
 			<Hero {...page.viewModel.hero} venueName={page.heroVenueName} time={page.heroTime} highPriority={true} />

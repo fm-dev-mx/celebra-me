@@ -63,6 +63,20 @@ existing rule may be removed or moved only with the CSS visual-parity gate. The 
 every affected invitation has a reviewed before/after capture and the rule is owned by a section
 base, a registered semantic variant, or a token-only profile.
 
+### Optional stationery treatments
+
+The `editorial-ledger` itinerary exposes optional stationery tokens for its existing container:
+`--editorial-ledger-panel-width`, `--editorial-ledger-panel-padding`, `--editorial-ledger-panel-bg`,
+`--editorial-ledger-panel-shadow`, and `--editorial-ledger-panel-outline`. Defaults retain the
+transparent, unpadded 1000px container. `--editorial-ledger-icon-display`,
+`--editorial-ledger-icon-space`, and `--editorial-ledger-row-space` opt into contained line icons
+and row breathing room; defaults keep icons hidden and spacing unchanged.
+`--editorial-ledger-time-width` controls the desktop time column (default 7rem). The variant owns
+geometry; profiles supply values only.
+
+Quote exposes `--quote-divider-bottom-display` for a closing ornament independently of the top
+divider. It falls back to `--quote-divider-display`, preserving other invitations.
+
 ### Gifts flatten
 
 Gifts section styling is the flattened section-level variable contract in
@@ -301,6 +315,13 @@ confirmation register is `formal-register`. Itinerary variants are selected only
 `rsvp.personalizedAccess.variant` and `rsvp.variant`. The historical
 `itinerary.presentation.behavior` input is rejected by the canonical schema and may appear only in
 explicit migration/audit code. Theme presets remain visual skins.
+
+The formal chapter owners expose optional profile controls for bounded typography and density:
+`--formal-chapter-label-font`, `--pa-seal-display`, `--pa-guest-size`, `--pa-count-size`,
+`--formal-register-shell-width`, `--formal-register-shell-padding`, and
+`--formal-register-title-size`. Unconfigured consumers retain their previous font, seal, size and
+spacing defaults. Profiles may set these controls and existing material tokens; structural
+selectors, responsive behavior and interaction remain variant-owned.
 
 ## Runtime CSS Delivery
 
