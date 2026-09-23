@@ -302,14 +302,12 @@ describe('post-deploy smoke', () => {
 			'utf8',
 		);
 
-		expect(workflow).toContain("'vercel.deployment.ready'");
+		expect(workflow).not.toContain("'vercel.deployment.ready'");
 		expect(workflow).not.toContain("'vercel.deployment.success'");
 		expect(workflow).toContain("'vercel.deployment.promoted'");
 		expect(workflow).toContain('ref: ${{ github.event.client_payload.git.sha }}');
 		expect(workflow).toContain('cancel-in-progress: true');
-		expect(workflow).toContain('pnpm test:e2e:preview:public');
 		expect(workflow).toContain('pnpm invitation:media:verify -- --target production --all');
-		expect(workflow).toContain('playwright install --with-deps chromium');
 		expect(workflow).toContain('VERCEL_DISPATCH_EXPECTED_PROJECT_ID');
 		expect(workflow).not.toContain('upload-artifact');
 		expect(workflow).not.toContain('schedule:');

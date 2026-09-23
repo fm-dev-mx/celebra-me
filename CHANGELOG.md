@@ -12,6 +12,11 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ### Added
 
+- **CI-gated Preview delivery**: Preview deployments now start only after the exact `develop` SHA
+  passes Repository CI, deploy one prebuilt Vercel artifact, and complete the canonical Preview
+  smoke. CI evidence distinguishes code, visual, and infrastructure failures and permits only one
+  automatic retry for a confirmed infrastructure-only failure.
+
 - **Invitation work tracking**: The existing dashboard separates work completion from the owner's
   manual review, with an in-progress filter and protected, concurrent updates. Publication and
   technical acceptance remain independent. Requires the administrative workflow schema migration.

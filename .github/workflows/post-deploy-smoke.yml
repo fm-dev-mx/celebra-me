@@ -7,7 +7,6 @@ permissions:
 on:
     repository_dispatch:
         types:
-            - 'vercel.deployment.ready'
             - 'vercel.deployment.promoted'
 
 concurrency:
@@ -18,8 +17,6 @@ jobs:
     smoke:
         name: Vercel post-deploy smoke
         if: >-
-            (github.event.action == 'vercel.deployment.ready' &&
-             github.event.client_payload.environment == 'preview') ||
             (github.event.action == 'vercel.deployment.promoted' &&
              github.event.client_payload.environment == 'production')
         runs-on: ubuntu-latest
@@ -60,55 +57,7 @@ jobs:
               with:
                   name: Vercel - celebra-me ${{ env.POST_DEPLOY_ENVIRONMENT }} smoke
 
-            - name: Record Preview smoke start
-              if: env.POST_DEPLOY_ENVIRONMENT == 'preview'
-              env:
-                  POST_DEPLOY_PREVIEW_PHASE: started
-                  VERCEL_DISPATCH_EVENT: ${{ github.event.action }}
-                  VERCEL_DISPATCH_PROJECT_ID: ${{ github.event.client_payload.project.id }}
-                  VERCEL_DISPATCH_EXPECTED_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
-                  VERCEL_DISPATCH_GIT_REF: ${{ github.event.client_payload.git.ref }}
-              run: pnpm ops:post-deploy -- preview-evidence
-
-            - name: Install Preview browser
-              if: env.POST_DEPLOY_ENVIRONMENT == 'preview'
-              run: pnpm exec playwright install --with-deps chromium
-
-            - name: Run public Preview smoke
-              id: preview-smoke
-              if: env.POST_DEPLOY_ENVIRONMENT == 'preview'
-              continue-on-error: true
-              env:
-                  PLAYWRIGHT_BASE_URL: ${{ env.POST_DEPLOY_BASE_URL }}
-                  PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST: ${{ env.POST_DEPLOY_APPROVED_HOST }}
-                  PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING: 'false'
-                  PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION: 'false'
-                  PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS: 'false'
-                  PLAYWRIGHT_PREVIEW_SUPABASE_URL: ${{ secrets.PLAYWRIGHT_PREVIEW_SUPABASE_URL }}
-                  VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-                  PREVIEW_DB_URL: ${{ secrets.PREVIEW_DB_URL }}
-                  PREVIEW_PUBLIC_ROUTES_MANIFEST: .tmp/playwright/preview-public-routes.json
-              run: |
-                  pnpm exec tsx scripts/invitation/preview-public-routes.ts "$PREVIEW_PUBLIC_ROUTES_MANIFEST"
-                  pnpm test:e2e:preview:public
-
-            - name: Record Preview smoke completion
-              if: always() && env.POST_DEPLOY_ENVIRONMENT == 'preview'
-              env:
-                  POST_DEPLOY_PREVIEW_PHASE: completed
-                  POST_DEPLOY_PREVIEW_OUTCOME: ${{ steps.preview-smoke.outcome }}
-                  VERCEL_DISPATCH_EVENT: ${{ github.event.action }}
-                  VERCEL_DISPATCH_PROJECT_ID: ${{ github.event.client_payload.project.id }}
-                  VERCEL_DISPATCH_EXPECTED_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
-                  VERCEL_DISPATCH_GIT_REF: ${{ github.event.client_payload.git.ref }}
-              run: pnpm ops:post-deploy -- preview-evidence
-
-            - name: Enforce Preview smoke result
-              if: env.POST_DEPLOY_ENVIRONMENT == 'preview' && steps.preview-smoke.outcome != 'success'
-              run: exit 1
-
             - name: Run Production HTTP smoke
-              if: env.POST_DEPLOY_ENVIRONMENT == 'production'
               env:
                   VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
                   VERCEL_DISPATCH_EVENT: ${{ github.event.action }}
@@ -118,7 +67,6 @@ jobs:
               run: pnpm ops:post-deploy -- production
 
             - name: Verify all published Production images
-              if: env.POST_DEPLOY_ENVIRONMENT == 'production'
               env:
                   PROD_DB_URL: ${{ secrets.PROD_DB_URL }}
               run: pnpm invitation:media:verify -- --target production --all --origin "${{ env.POST_DEPLOY_BASE_URL }}" --json

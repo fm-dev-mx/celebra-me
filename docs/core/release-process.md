@@ -2,7 +2,7 @@
 
 **Status:** Active
 
-**Last Updated:** 2026-09-14
+**Last Updated:** 2026-09-22
 
 ## Overview
 
@@ -46,6 +46,43 @@ acceptance) remain non-blocking corpus warnings. Their lifecycle, facts, assets 
 require separate editorial authorization; this release workflow never rewrites them automatically.
 
 ### Efficient validation and evidence
+
+#### CI-gated Preview deployments
+
+- `Repository CI` is the only source workflow allowed to unlock a Preview deployment. A completed
+  `push` run for `develop` must be successful; manual candidate runs and pull-request runs cannot
+  deploy.
+- `.github/workflows/deploy-preview.yml` checks out the exact successful SHA, uses the pinned Vercel
+  CLI, builds once, deploys only `.vercel/output` with `--prebuilt`, and runs the trusted public
+  Preview smoke against the immutable deployment URL. Its smoke check keeps the canonical name
+  `Vercel - celebra-me preview smoke` used by release readiness.
+- Vercel Git deployments for `develop` must be disabled in project settings after this workflow and
+  its secrets are verified. Otherwise Vercel will continue creating an earlier parallel Preview
+  outside the CI gate. Required GitHub secrets are `VERCEL_TOKEN` and `VERCEL_ORG_ID`; the existing
+  `VERCEL_PROJECT_ID` repository variable identifies the project. Preview smoke retains its existing
+  scoped secrets.
+- Production remains an owner-authorized promotion of the exact validated Preview. The separate
+  `Post-deploy Smoke` workflow handles the promoted Production deployment; it does not create or
+  approve promotions.
+- Configure repository rulesets outside the repository so `develop` and `main` require
+  `Repository Policy` and `Application Suite`. Require pull requests for `develop`; retain the
+  documented fast-forward promotion contract for `main`.
+
+#### Failure classification and retry
+
+- Validation evidence reports one primary cause: `CODE`, `VISUAL_DIFF`, or `INFRASTRUCTURE`.
+  `Application Suite` is an aggregator and never replaces the primary failing tier. Deployment and
+  smoke workflows report `DEPLOY` and `SMOKE` respectively.
+- Browser comparison writes `.tmp/browser-outcome.json` with the visual evidence filenames. A failed
+  browser job after a successful browser test step is infrastructure-only; a snapshot diff is
+  `VISUAL_DIFF`; other browser failures are `CODE`.
+- `.github/workflows/retry-ci-infrastructure.yml` retries only failed jobs, only when the first
+  attempt is classified `INFRASTRUCTURE`. Visual differences, code failures, deployment failures,
+  and smoke failures are never retried automatically.
+- Release classification marks conservative visual impact for Astro/TSX components, styles, rendered
+  content/assets, Playwright fixtures/specs, and screenshot infrastructure. The browser compare
+  remains mandatory for every application run; this signal explains when hash-bound human review is
+  additionally required and never reduces coverage.
 
 - `pnpm run ci` covers static/build, Jest and certified browser checks. The remote workflow also
   requires Repository Policy and disposable DB contracts; local CI alone is not release readiness.

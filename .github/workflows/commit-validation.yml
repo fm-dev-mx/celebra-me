@@ -164,6 +164,8 @@ jobs:
 
     browser-validation:
         name: Application / browser
+        outputs:
+            check-outcome: ${{ steps.browser-outcome.outputs.classification }}
         runs-on: ubuntu-24.04
         timeout-minutes: 25
         container:
@@ -192,8 +194,17 @@ jobs:
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
             - name: Browser checks
+              id: browser-checks
               if: github.event.inputs.visual_mode != 'candidate'
+              continue-on-error: true
               run: pnpm test:e2e:ci --max-failures=5 --workers=2
+
+            - name: Classify browser outcome
+              id: browser-outcome
+              if: always() && github.event.inputs.visual_mode != 'candidate'
+              env:
+                  BROWSER_STEP_OUTCOME: ${{ steps.browser-checks.outcome }}
+              run: pnpm exec tsx scripts/ops/browser-outcome.ts
 
             - name: Generate visual review candidate
               if: github.event.inputs.visual_mode == 'candidate'
@@ -219,8 +230,13 @@ jobs:
                       test-results/**/trace.zip
                       test-results/**/error-context.md
                       test-results/**/*.json
+                      .tmp/browser-outcome.json
                   if-no-files-found: ignore
                   retention-days: 3
+
+            - name: Enforce browser result
+              if: github.event.inputs.visual_mode != 'candidate' && steps.browser-checks.outcome != 'success'
+              run: exit 1
 
     application-validation:
         name: Application Suite
@@ -242,11 +258,17 @@ jobs:
         runs-on: ubuntu-24.04
         steps:
             - uses: actions/checkout@v7
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
             - name: Record measured validation cost
+              id: validation-evidence
               env:
                   GH_TOKEN: ${{ github.token }}
                   VISUAL_PARITY_MODE: ${{ github.event.inputs.visual_mode || 'compare' }}
-              run: node scripts/ops/ci-metrics.mjs
+                  BROWSER_CHECK_OUTCOME: ${{ needs.browser-validation.outputs.check-outcome || 'code' }}
+              run: node scripts/ops/ci-metrics.ts
             - uses: actions/upload-artifact@v7
               with:
                   name: validation-metrics-${{ github.run_id }}-${{ github.run_attempt }}

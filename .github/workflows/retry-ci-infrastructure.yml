@@ -1,0 +1,37 @@
+name: Retry CI Infrastructure Failure
+
+permissions:
+    actions: write
+    contents: read
+
+on:
+    workflow_run:
+        workflows: ['Repository CI']
+        types: [completed]
+
+jobs:
+    retry:
+        name: Retry one confirmed infrastructure failure
+        if: >-
+            github.event.workflow_run.conclusion == 'failure' &&
+            github.event.workflow_run.run_attempt == 1 &&
+            github.event.workflow_run.head_repository.full_name == github.repository
+        runs-on: ubuntu-24.04
+        steps:
+            - name: Download validation evidence
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  RUN_ID: ${{ github.event.workflow_run.id }}
+              run: gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" --name "validation-metrics-${RUN_ID}-1" --dir .tmp
+
+            - name: Require infrastructure classification
+              id: classification
+              run: |
+                  node -e "const fs=require('fs'); const e=require('./.tmp/validation-metrics.json'); fs.appendFileSync(process.env.GITHUB_OUTPUT, 'should_retry='+(e.primaryCause==='INFRASTRUCTURE'&&e.retryInfrastructure===true)+'\n')"
+
+            - name: Retry failed jobs once
+              if: steps.classification.outputs.should_retry == 'true'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  RUN_ID: ${{ github.event.workflow_run.id }}
+              run: gh run rerun "$RUN_ID" --repo "$GITHUB_REPOSITORY" --failed
