@@ -307,6 +307,7 @@ describe('post-deploy smoke', () => {
 		expect(workflow).toContain("'vercel.deployment.promoted'");
 		expect(workflow).toContain('ref: ${{ github.event.client_payload.git.sha }}');
 		expect(workflow).toContain('cancel-in-progress: true');
+		expect(workflow).toContain('environment: Production');
 		expect(workflow).toContain('pnpm invitation:media:verify -- --target production --all');
 		expect(workflow).toContain('VERCEL_DISPATCH_EXPECTED_PROJECT_ID');
 		expect(workflow).not.toContain('upload-artifact');
@@ -320,6 +321,7 @@ describe('post-deploy smoke', () => {
 		);
 		expect(workflow).toContain('schedule:');
 		expect(workflow).toContain('workflow_dispatch:');
+		expect(workflow).toContain('environment: Production');
 		expect(workflow).toContain('pnpm invitation:media:verify -- --target production --all');
 		expect(workflow).not.toMatch(/prod:apply|--apply|cloudinary.*secret/i);
 	});
