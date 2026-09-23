@@ -103,8 +103,10 @@ require separate editorial authorization; this release workflow never rewrites t
 - `validate:changed` remains fast feedback. When it prints `VISUAL_CERTIFICATION_REQUIRED`, its
   success is not permission to push; run the exact-SHA pre-push certification after committing.
 - Candidate generation accepts `--sha` and fails when it does not equal the clean current HEAD.
-  Candidate success is review evidence only. Acceptance still requires the exact reference SHA,
-  matrix hash, and candidate-manifest SHA-256 followed by a new passing compare.
+  `pnpm visual:parity:candidate:certified -- --sha <exact-sha>` creates that candidate in the same
+  checksum-verified Linux runtime and stores it in the internal Git path. Candidate success is
+  review evidence only. Acceptance still requires the exact reference SHA, matrix hash, and
+  candidate-manifest SHA-256 followed by a new passing compare.
 
 - `pnpm run ci` covers static/build, Jest and certified browser checks. The remote workflow also
   requires Repository Policy and disposable DB contracts; local CI alone is not release readiness.

@@ -36,6 +36,11 @@ describe('visual pre-push certification', () => {
 		expect(shouldRequireVisualCertification('refs/heads/main', ['docs/readme.md'])).toBe(true);
 	});
 
+	it('keeps the candidate wrapper bound to the exact certified browser runtime', () => {
+		expect(CERTIFIED_BROWSER_COMMAND).toBe('pnpm test:e2e:ci --max-failures=5 --workers=2');
+		expect(NODE_ARCHIVE_SHA256).toMatch(/^[0-9a-f]{64}$/u);
+	});
+
 	it('requires feature-branch certification only for cumulative visual impact', () => {
 		expect(
 			shouldRequireVisualCertification('refs/heads/feature/example', ['src/styles/app.scss']),

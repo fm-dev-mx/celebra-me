@@ -57,13 +57,14 @@ The pre-commit `lint-staged` pipeline applies the correction, runs Prettier, and
 check. In VS Code, install the recommended Markdownlint extension; an explicit save runs its fix
 action before the configured Prettier formatter.
 
-| Command                      | Canonical Script                              | Purpose                                                       |
-| ---------------------------- | --------------------------------------------- | ------------------------------------------------------------- |
-| `pnpm validate:event-parity` | `scripts/validate-event-parity.ts`            | compare content events against the Supabase `events` table    |
-| `pnpm validate:structure`    | `scripts/validate-structure.mjs`              | validate deterministic repository and agent structure rules   |
-| `pnpm validate:staged`       | `scripts/validate-staged.mjs`                 | validate staged files without modifying them                  |
-| `pnpm validate:changed`      | `scripts/validate-changed.mjs`                | validate staged, unstaged, and untracked working-tree changes |
-| `pnpm validate:prepush`      | `scripts/ops/visual-prepush-certification.ts` | certify an exact SHA in a checksum-verified Linux runtime     |
+| Command                                  | Canonical Script                              | Purpose                                                        |
+| ---------------------------------------- | --------------------------------------------- | -------------------------------------------------------------- |
+| `pnpm validate:event-parity`             | `scripts/validate-event-parity.ts`            | compare content events against the Supabase `events` table     |
+| `pnpm validate:structure`                | `scripts/validate-structure.mjs`              | validate deterministic repository and agent structure rules    |
+| `pnpm validate:staged`                   | `scripts/validate-staged.mjs`                 | validate staged files without modifying them                   |
+| `pnpm validate:changed`                  | `scripts/validate-changed.mjs`                | validate staged, unstaged, and untracked working-tree changes  |
+| `pnpm validate:prepush`                  | `scripts/ops/visual-prepush-certification.ts` | certify an exact SHA in a checksum-verified Linux runtime      |
+| `pnpm visual:parity:candidate:certified` | `scripts/ops/visual-prepush-certification.ts` | generate an exact-SHA candidate in the certified Linux runtime |
 
 ## Database Command Inventory
 

@@ -133,7 +133,12 @@ function gitPath(relativePath: string): string {
 	return resolve(git(['rev-parse', '--path-format=absolute', '--git-path', relativePath]));
 }
 
-function runDocker(checkout: string, evidence: string): number {
+function runDocker(
+	checkout: string,
+	evidence: string,
+	sha: string,
+	operation: 'candidate' | 'compare',
+): number {
 	const pnpmStore = gitPath('visual-runtime-cache/pnpm');
 	const nodeStore = gitPath('visual-runtime-cache/node-v24.14.1');
 	mkdirSync(pnpmStore, { recursive: true });
@@ -143,16 +148,27 @@ function runDocker(checkout: string, evidence: string): number {
 		'set -eu',
 		'cp -a /source/. /work',
 		'cd /work',
-		`trap 'if [ -d test-results ]; then cp -a test-results /evidence/; fi; if [ -d .tmp/visual-parity/compare ]; then mkdir -p /evidence/visual-parity; cp -a .tmp/visual-parity/compare /evidence/visual-parity/; fi' EXIT`,
+		`trap 'if [ -d test-results ]; then cp -a test-results /evidence/; fi; if [ -d .tmp/visual-parity/${operation} ]; then mkdir -p /evidence/visual-parity; cp -a .tmp/visual-parity/${operation} /evidence/visual-parity/; fi' EXIT`,
 		`if [ ! -x /node-cache/bin/node ] || [ "$(/node-cache/bin/node --version 2>/dev/null || true)" != "v${NODE_VERSION}" ] || [ "$(cat /node-cache/.archive.sha256 2>/dev/null || true)" != "${NODE_ARCHIVE_SHA256}" ]; then find /node-cache -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +; curl -fsSL -o /tmp/node.tar.gz https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz; echo "${NODE_ARCHIVE_SHA256}  /tmp/node.tar.gz" | sha256sum -c -; tar -xzf /tmp/node.tar.gz -C /node-cache --strip-components=1; printf '%s' '${NODE_ARCHIVE_SHA256}' > /node-cache/.archive.sha256; rm /tmp/node.tar.gz; fi`,
 		'export PATH=/node-cache/bin:$PATH',
 		`test "$(node --version)" = "v${NODE_VERSION}"`,
 		'corepack enable',
 		`corepack prepare pnpm@${PNPM_VERSION} --activate`,
-		'pnpm config set store-dir /pnpm-store',
-		'pnpm install --frozen-lockfile',
+		'pnpm install --frozen-lockfile --store-dir /pnpm-store',
 		'touch /evidence/prepush-runtime-ready',
-		CERTIFIED_BROWSER_COMMAND,
+		// The isolated checkout may originate on Windows. Preserve its checkout
+		// normalization when Git evaluates cleanliness inside the Linux container.
+		operation === 'candidate' ? 'git config core.autocrlf true' : 'true',
+		// The pinned Playwright image does not ship git-lfs. The host has already
+		// verified the materialized exact-SHA checkout, so hide only tracked LFS
+		// baselines from the container's otherwise strict cleanliness check.
+		operation === 'candidate'
+			? "git ls-files -z 'tests/e2e/visual-baselines/*.png' 'tests/e2e/visual-baselines/**/*.png' | git update-index --assume-unchanged -z --stdin"
+			: 'true',
+		operation === 'candidate' ? 'git status --porcelain=v1 --untracked-files=all' : 'true',
+		operation === 'candidate'
+			? `pnpm visual:parity:candidate -- --sha ${sha}`
+			: CERTIFIED_BROWSER_COMMAND,
 	].join(' && ');
 	const result = spawnSync(
 		'docker',
@@ -177,7 +193,7 @@ function runDocker(checkout: string, evidence: string): number {
 			'--env',
 			'PLAYWRIGHT_REQUIRE_VISUAL_PREFLIGHT=true',
 			'--env',
-			'VISUAL_PARITY_MODE=compare',
+			`VISUAL_PARITY_MODE=${operation}`,
 			'--env',
 			`VISUAL_PARITY_OS_IMAGE_DIGEST=${PLAYWRIGHT_IMAGE.slice(PLAYWRIGHT_IMAGE.indexOf('@') + 1)}`,
 			'--env',
@@ -198,6 +214,16 @@ function preserveFailureEvidence(evidence: string, sha: string): string {
 	rmSync(destination, { recursive: true, force: true });
 	mkdirSync(destination, { recursive: true });
 	if (existsSync(evidence)) cpSync(evidence, destination, { recursive: true });
+	return destination;
+}
+
+function preserveCandidateEvidence(evidence: string, sha: string): string {
+	const source = join(evidence, 'visual-parity', 'candidate');
+	if (!existsSync(source)) throw new Error('Certified candidate output is missing.');
+	const destination = gitPath(`visual-candidates/${sha}`);
+	rmSync(destination, { recursive: true, force: true });
+	mkdirSync(dirname(destination), { recursive: true });
+	cpSync(source, destination, { recursive: true });
 	return destination;
 }
 
@@ -230,10 +256,11 @@ export function visualDifferenceFiles(root: string): string[] {
 function main(): void {
 	const sha = assertExactCommit(parseFlag('--sha') ?? '');
 	const repositoryRoot = git(['rev-parse', '--show-toplevel']);
+	const candidateMode = process.argv.slice(2).includes('--candidate');
 	const targetRef = parseFlag('--target-ref') ?? 'refs/heads/develop';
 	const baseSha = parseFlag('--base-sha');
 	const paths = changedPaths(baseSha, sha);
-	if (!shouldRequireVisualCertification(targetRef, paths)) {
+	if (!candidateMode && !shouldRequireVisualCertification(targetRef, paths)) {
 		console.log('Visual certification is not required for this ref update.');
 		return;
 	}
@@ -263,7 +290,32 @@ function main(): void {
 			stdio: 'inherit',
 			env: isolatedGitEnvironment(),
 		});
+		const isolatedStatus = execFileSync(
+			'git',
+			['-C', checkout, 'status', '--porcelain=v1', '--untracked-files=all'],
+			{ encoding: 'utf8', env: isolatedGitEnvironment() },
+		).trim();
+		if (isolatedStatus) {
+			throw new Error(
+				`Isolated exact-SHA checkout is not clean after Git LFS materialization:\n${isolatedStatus}`,
+			);
+		}
 		const identity = identityForCheckout(checkout, sha);
+		if (candidateMode) {
+			const exitCode = runDocker(checkout, evidence, sha, 'candidate');
+			if (exitCode !== 0) {
+				const evidencePath = preserveFailureEvidence(evidence, sha);
+				const category = existsSync(join(evidence, 'prepush-runtime-ready'))
+					? 'BROWSER_FAILURE'
+					: 'VISUAL_PREFLIGHT_INFRASTRUCTURE';
+				throw new Error(
+					`${category}: candidate generation failed for ${sha}. Evidence: ${evidencePath}.`,
+				);
+			}
+			const candidatePath = preserveCandidateEvidence(evidence, sha);
+			console.log(`Certified visual candidate generated for ${sha}: ${candidatePath}`);
+			return;
+		}
 		const certificationPath = gitPath(`visual-certifications/${sha}.json`);
 		if (existsSync(certificationPath)) {
 			const cached = JSON.parse(readFileSync(certificationPath, 'utf8')) as unknown;
@@ -273,7 +325,7 @@ function main(): void {
 			}
 		}
 
-		const exitCode = runDocker(checkout, evidence);
+		const exitCode = runDocker(checkout, evidence, sha, 'compare');
 		if (exitCode !== 0) {
 			const evidencePath = preserveFailureEvidence(evidence, sha);
 			if (!existsSync(join(evidence, 'prepush-runtime-ready'))) {
