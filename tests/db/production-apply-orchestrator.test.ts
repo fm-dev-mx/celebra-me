@@ -426,6 +426,102 @@ describe('production apply execution', () => {
 		expect(JSON.stringify(result)).not.toMatch(/postgres(ql)?:\/\/postgres:super-secret/);
 	});
 
+	it('fails the invitation outcome when published image post-verification fails', async () => {
+		const applyInvitation = jest.fn(
+			async () =>
+				({
+					...invitationPreflight('demo'),
+					status: 'PROMOTED',
+				}) as PromotionApplyReport,
+		);
+		const verifyInvitationMedia = jest.fn(async (_slug: string) => {
+			void _slug;
+			throw new Error('PUBLISHED_IMAGE_VERIFICATION_FAILED: demo/hero HTTP 404');
+		});
+		await expect(
+			applyProductionApplyPlan(cli(['--slug', 'demo', '--apply']), {
+				...baseDeps({ pending: [], preflights: { demo: invitationPreflight('demo') } }),
+				requireOwnerApply: async (input) => {
+					issueProductionWritePermit({
+						projectRef: SUPABASE_PROJECT_REFS.production,
+						operationType: 'production_apply',
+						bindingHex: input.bindingHex,
+					});
+				},
+				applyInvitation,
+				verifyInvitationMedia,
+			}),
+		).rejects.toMatchObject({ code: 'PUBLISHED_IMAGE_VERIFICATION_FAILED' });
+		expect(verifyInvitationMedia).toHaveBeenCalledWith('demo');
+	});
+
+	it('fails the invitation apply when published image pre-verification fails', async () => {
+		const applyInvitation = jest.fn(
+			async () =>
+				({
+					...invitationPreflight('demo'),
+					status: 'PROMOTED',
+				}) as PromotionApplyReport,
+		);
+		const verifyInvitationMediaBefore = jest.fn(async (_slug: string) => {
+			void _slug;
+			throw new Error('PUBLISHED_IMAGE_PRECHECK_FAILED: demo/hero HTTP 404');
+		});
+		await expect(
+			applyProductionApplyPlan(cli(['--slug', 'demo', '--apply']), {
+				...baseDeps({ pending: [], preflights: { demo: invitationPreflight('demo') } }),
+				requireOwnerApply: async (input) => {
+					issueProductionWritePermit({
+						projectRef: SUPABASE_PROJECT_REFS.production,
+						operationType: 'production_apply',
+						bindingHex: input.bindingHex,
+					});
+				},
+				applyInvitation,
+				verifyInvitationMediaBefore,
+			}),
+		).rejects.toMatchObject({ code: 'PUBLISHED_IMAGE_PRECHECK_FAILED' });
+		expect(verifyInvitationMediaBefore).toHaveBeenCalledWith('demo');
+		expect(applyInvitation).not.toHaveBeenCalled();
+	});
+
+	it('skips published image pre-verification for an invitation never before published', async () => {
+		const applyInvitation = jest.fn(
+			async () =>
+				({
+					...invitationPreflight('demo'),
+					status: 'PROMOTED',
+				}) as PromotionApplyReport,
+		);
+		const verifyInvitationMediaBefore = jest.fn(async (_slug: string) => {
+			void _slug;
+		});
+		const preflightWithNewPublication = {
+			...invitationPreflight('demo'),
+			engineResult: {
+				plan: {
+					targetPreconditions: {
+						existingPublishedVersion: undefined,
+					},
+				},
+			},
+		} as unknown as PromotionPreflightReport;
+		const result = await applyProductionApplyPlan(cli(['--slug', 'demo', '--apply']), {
+			...baseDeps({ pending: [], preflights: { demo: preflightWithNewPublication } }),
+			requireOwnerApply: async (input) => {
+				issueProductionWritePermit({
+					projectRef: SUPABASE_PROJECT_REFS.production,
+					operationType: 'production_apply',
+					bindingHex: input.bindingHex,
+				});
+			},
+			applyInvitation,
+			verifyInvitationMediaBefore,
+		});
+		expect(verifyInvitationMediaBefore).not.toHaveBeenCalled();
+		expect(result.wrote).toBe(true);
+	});
+
 	it('does not prompt when everything is already applied', async () => {
 		const requireOwnerApply = jest.fn(async () => undefined);
 		const result = await applyProductionApplyPlan(cli(['--schema', '--apply']), {

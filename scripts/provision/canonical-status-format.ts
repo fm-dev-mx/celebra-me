@@ -25,6 +25,7 @@ import {
 	partitionPromotions,
 	releasePromotions,
 } from '../../src/lib/status/action-plan.ts';
+import type { OperationalActionPlan } from '../../src/lib/status/action-plan.ts';
 import type {
 	CanonicalPromotionRow,
 	CanonicalStatusView,
@@ -625,10 +626,10 @@ function formatDiagnosticsSection(
 function formatOperationalActionPlan(
 	view: CanonicalStatusView,
 	headerWidth: number,
-	options?: { env?: NodeJS.ProcessEnv },
+	options?: { env?: NodeJS.ProcessEnv; operationalPlan?: OperationalActionPlan },
 ): string[] {
 	const c = getColors(options);
-	const plan = buildOperationalActionPlan(view);
+	const plan = options?.operationalPlan ?? buildOperationalActionPlan(view);
 	const healthText = `${plan.health.unresolvedChecks} controles o publicaciones pendientes`;
 	const lines = [
 		c.dim('─'.repeat(headerWidth)),
@@ -694,6 +695,7 @@ export function formatCanonicalStatusView(
 		columns?: number;
 		platform?: NodeJS.Platform;
 		isTTY?: boolean;
+		operationalPlan?: OperationalActionPlan;
 	},
 ): string {
 	const verbose = Boolean(options?.verbose);

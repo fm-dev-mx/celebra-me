@@ -28,7 +28,14 @@ export {
 } from './promotion-lifecycle';
 
 export type OperationalActionDomain =
-	'schema' | 'readiness' | 'authorization' | 'evidence' | 'publication' | 'patch' | 'disposable';
+	| 'schema'
+	| 'readiness'
+	| 'authorization'
+	| 'evidence'
+	| 'publication'
+	| 'patch'
+	| 'disposable'
+	| 'media';
 
 export type OperationalHealth = 'GREEN' | 'ACTION_REQUIRED' | 'UNVERIFIED';
 
@@ -85,6 +92,7 @@ const DOMAIN_EXECUTION_ORDER: Record<OperationalActionDomain, number> = {
 	schema: 40,
 	patch: 50,
 	publication: 60,
+	media: 65,
 	authorization: 70,
 };
 

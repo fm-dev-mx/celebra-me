@@ -18,6 +18,13 @@ import {
 	MANAGED_STATUS_DEFAULT_TIMEOUT_MS,
 	runCompactManagedStatusSafe,
 } from './managed-status.ts';
+import {
+	buildMediaOperationalPlan,
+	formatMediaReferences,
+	readMediaReferencesStatus,
+} from './dbs-media-references.ts';
+import { shouldOpenDbsMenu } from './dbs-interactive-model.ts';
+import { buildOperationalActionPlan } from '../../src/lib/status/action-plan.ts';
 
 function readTimeoutMs(args: string[]): number {
 	const idx = args.indexOf('--timeout-ms');
@@ -62,21 +69,30 @@ async function formatGeneralView(
 		includeProductionPreflight: false,
 	});
 	const view = await refineOrKeep(fast, () => refineCanonicalStatusViewPromotions(fast));
+	const mediaReferences = readMediaReferencesStatus({ targets });
+	const operationalPlan = buildMediaOperationalPlan(
+		buildOperationalActionPlan(view),
+		mediaReferences,
+	);
 	if (jsonMode) {
-		const { buildOperationalActionPlan } = await import('../../src/lib/status/action-plan.ts');
 		const { DbsStatusJsonSchema } = await import('../../src/lib/status/dbs-json.ts');
 		const excludedTargets = targets
 			? (['local', 'preview', 'production'] as const).filter((env) => !targets.includes(env))
 			: undefined;
 		const payload = DbsStatusJsonSchema.parse({
 			...view,
-			operationalPlan: buildOperationalActionPlan(view),
+			mediaReferences,
+			operationalPlan,
 			...(excludedTargets ? { excludedTargets } : {}),
 		});
 		console.log(statusScopeJson(payload, targets));
 		return;
 	}
-	process.stdout.write(formatCanonicalStatusView(view, { verbose, includeInSync, diagnostics }));
+	process.stdout.write(
+		formatCanonicalStatusView(view, { verbose, includeInSync, diagnostics, operationalPlan }) +
+			`Estado operativo: ${operationalPlan.health.status}\n` +
+			formatMediaReferences(mediaReferences, { verbose }),
+	);
 }
 
 async function formatInvitationView(
@@ -98,6 +114,11 @@ async function formatInvitationView(
 	const view = await refineOrKeep(fast, () =>
 		refineCanonicalStatusViewPromotions(fast, { slugs: [slug] }),
 	);
+	const mediaReferences = readMediaReferencesStatus({ targets, slug });
+	const operationalPlan = buildMediaOperationalPlan(
+		buildOperationalActionPlan(view),
+		mediaReferences,
+	);
 	if (jsonMode) {
 		const promotion = view.promotions.find((row) => row.slug === slug) ?? null;
 		console.log(
@@ -107,6 +128,8 @@ async function formatInvitationView(
 					selectedTargets: targets,
 					inSync: view.inSyncSlugs.includes(slug),
 					promotion,
+					mediaReferences,
+					operationalPlan,
 					environments: view.environments,
 					evidence: view.evidence,
 				},
@@ -115,7 +138,11 @@ async function formatInvitationView(
 		);
 		return;
 	}
-	process.stdout.write(formatSlugStatusView(view, slug, { verbose }));
+	process.stdout.write(
+		formatSlugStatusView(view, slug, { verbose }) +
+			`Estado operativo: ${operationalPlan.health.status}\n` +
+			formatMediaReferences(mediaReferences, { verbose, slug }),
+	);
 }
 
 async function formatCompactView(
@@ -134,11 +161,22 @@ async function formatCompactView(
 		});
 		if (!result.ok) {
 			console.log(
-				JSON.stringify({ ok: false, error: result.text.trim(), readOnly: true }, null, 2),
+				JSON.stringify(
+					{
+						ok: false,
+						error: result.text.trim(),
+						readOnly: true,
+						mediaReferences: 'NOT_EVALUATED',
+					},
+					null,
+					2,
+				),
 			);
 			process.exit(0);
 		}
-		console.log(statusScopeJson(result.status, targets));
+		console.log(
+			statusScopeJson({ ...result.status, mediaReferences: 'NOT_EVALUATED' }, targets),
+		);
 		return;
 	}
 
@@ -148,14 +186,20 @@ async function formatCompactView(
 		aggregateContent,
 		environments: targets,
 	});
-	process.stdout.write(result.text);
+	process.stdout.write(result.text + '\nImágenes publicadas: no evaluadas en --compact.\n');
 	if (!result.ok) {
 		process.exit(0);
 	}
 }
 
 async function main(): Promise<void> {
-	const { args, targets } = readStatusTargets(normalizeOperatorArgv(process.argv.slice(2)));
+	const normalizedArgs = normalizeOperatorArgv(process.argv.slice(2));
+	if (shouldOpenDbsMenu(normalizedArgs, Boolean(process.stdin.isTTY && process.stdout.isTTY))) {
+		const { runDbsInteractive } = await import('./dbs-interactive.ts');
+		await runDbsInteractive();
+		return;
+	}
+	const { args, targets } = readStatusTargets(normalizedArgs);
 	const jsonMode = args.includes('--json');
 	const compactMode = args.includes('--compact');
 	const verbose = args.includes('--verbose');

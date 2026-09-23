@@ -42,6 +42,7 @@ import type {
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
 const ACTION_DOMAIN_LABELS: Record<OperationalActionDomain, string> = {
+	media: 'Imágenes',
 	schema: 'Migraciones',
 	readiness: 'Preparación',
 	authorization: 'Autorización',

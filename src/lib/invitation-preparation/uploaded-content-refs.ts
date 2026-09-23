@@ -3,6 +3,7 @@
 export interface UploadedContentRef {
 	path: string;
 	assetId: string;
+	src?: string;
 }
 
 /**
@@ -21,7 +22,11 @@ export function collectUploadedContentRefs(content: unknown): UploadedContentRef
 		}
 		const obj = value as Record<string, unknown>;
 		if (obj.type === 'uploaded' && typeof obj.assetId === 'string') {
-			refs.push({ path, assetId: obj.assetId });
+			refs.push({
+				path,
+				assetId: obj.assetId,
+				...(typeof obj.src === 'string' ? { src: obj.src } : {}),
+			});
 			return;
 		}
 		for (const [key, child] of Object.entries(obj)) {

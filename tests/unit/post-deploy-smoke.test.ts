@@ -308,9 +308,29 @@ describe('post-deploy smoke', () => {
 		expect(workflow).toContain('ref: ${{ github.event.client_payload.git.sha }}');
 		expect(workflow).toContain('cancel-in-progress: true');
 		expect(workflow).toContain('pnpm test:e2e:preview:public');
+		expect(workflow).toContain('pnpm invitation:media:verify -- --target production --all');
 		expect(workflow).toContain('playwright install --with-deps chromium');
 		expect(workflow).toContain('VERCEL_DISPATCH_EXPECTED_PROJECT_ID');
 		expect(workflow).not.toContain('upload-artifact');
 		expect(workflow).not.toContain('schedule:');
+	});
+
+	it('runs a separate daily read-only Production image audit', () => {
+		const workflow = readFileSync(
+			resolve('.github', 'workflows', 'production-image-audit.yml'),
+			'utf8',
+		);
+		expect(workflow).toContain('schedule:');
+		expect(workflow).toContain('workflow_dispatch:');
+		expect(workflow).toContain('pnpm invitation:media:verify -- --target production --all');
+		expect(workflow).not.toMatch(/prod:apply|--apply|cloudinary.*secret/i);
+	});
+
+	it('keeps generated sitemap URLs on the public origin during builds', () => {
+		const config = readFileSync(resolve('astro.config.mjs'), 'utf8');
+		expect(config).toContain('!isVercel && !isBuildCommand');
+		expect(config).toContain('publicSiteUrl');
+		expect(config).toContain("'https://www.celebra-me.com'");
+		expect(config).toMatch(/127\\\.0\\\.0\\\.1\|localhost/);
 	});
 });
