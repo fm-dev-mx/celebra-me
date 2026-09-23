@@ -51,6 +51,9 @@ require separate editorial authorization; this release workflow never rewrites t
 
 - `Repository CI` is the only remote validation authority. Pull requests to `develop` and `main`
   must pass `Repository Policy` and `Application Suite` before merge.
+- Repository CI does not run again on the resulting `develop` push. The integration PR already
+  validates the proposed merge, while the later `develop` to `main` PR performs the independent
+  release validation. This keeps two purposeful gates instead of three duplicate full suites.
 - Vercel's Git integration owns deployments: pull requests and `develop` receive automatic Preview
   deployments, while `main` receives the automatic Production deployment. GitHub Actions does not
   build or deploy a second Preview.
@@ -283,7 +286,10 @@ If visual confirmation is missing or rejected, the candidate is not eligible for
 deployment. Do not reduce visual coverage, relax comparison, or treat a Preview build as approval.
 
 Open a pull request from `develop` to `main`, wait for `Repository Policy` and `Application Suite`,
-then merge through GitHub. Direct pushes are not part of the release path.
+then merge through GitHub. Title the PR for its primary outcome (for example,
+`release: simplify validation and deployment`), not for the mechanical promotion. Keep the body to
+included PRs, material risks, visual/schema/content impact, separately authorized operations, and
+the expected CI and smoke evidence. Direct pushes are not part of the release path.
 
 ### 6. Verify the promoted deployment
 
