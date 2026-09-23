@@ -117,7 +117,6 @@ const resolvedLabels = {
 };
 
 const shouldRenderMedia = shouldRenderFamilyMedia(presentation, Boolean(featuredImage));
-const imagePath = featuredImage;
 
 const resolvedFocalPoint = focalPoint || 'center';
 
@@ -255,7 +254,7 @@ if (!hasContent) return;
 				<figure class="family__media family__reveal" data-reveal-item>
 					<div class="family__media-frame">
 						<OptimizedImage
-							imagePath={imagePath}
+							imagePath={featuredImage}
 							alt={celebrantName}
 							width={960}
 							height={1280}
@@ -298,7 +297,10 @@ if (!hasContent) return;
 													<span class:list={['family__member-name', 'family__name']}>
 														{member.name}
 														{member.deceased && (
-															<span class="family__deceased-indicator" aria-hidden="true">†</span>
+															<>
+																<span class="family__deceased-indicator" aria-hidden="true">†</span>
+																<span class="sr-only">, quien falleció</span>
+															</>
 														)}
 													</span>
 													{member.role && !shouldHideRoleVisually(member.role) && (
@@ -324,7 +326,10 @@ if (!hasContent) return;
 										<span class:list={['family__member-name', 'family__name']}>
 											{entry.name}
 											{entry.deceased && (
-												<span class="family__deceased-indicator" aria-hidden="true">†</span>
+												<>
+													<span class="family__deceased-indicator" aria-hidden="true">†</span>
+													<span class="sr-only">, quien falleció</span>
+												</>
 											)}
 										</span>
 										{entry.role && !shouldHideRoleVisually(entry.role) && (
