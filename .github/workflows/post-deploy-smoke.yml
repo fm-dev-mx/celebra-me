@@ -19,6 +19,7 @@ jobs:
         if: >-
             (github.event.action == 'vercel.deployment.promoted' &&
              github.event.client_payload.environment == 'production')
+        environment: Production
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
