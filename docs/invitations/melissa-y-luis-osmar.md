@@ -54,9 +54,9 @@ Classification is one of: `verified` | `inferred` | `ambiguous` | `missing` | `n
 | rsvpConfirmationMode  | api                                                                                      | verified       | owner implementation plan     | Canonical RSVP API                                            |
 | rsvpAccessMode        | personalized-only                                                                        | verified       | owner implementation plan     | Assigned guest pass determines capacity                       |
 | rsvpDeadline          | 2026-11-16                                                                               | verified       | owner implementation plan     | Thirty days before the event                                  |
-| dressCode             | Gala formal                                                                              | verified       | owner implementation plan     | No reserved colors invented                                   |
+| dressCode             | De etiqueta                                                                              | verified       | source:client-corrections     | Supersedes earlier "Gala formal" wording                      |
 | childPolicy           | Celebración reservada para adultos                                                       | verified       | source:client-reference-sheet | Formal visible wording                                        |
-| gifts                 | Liverpool event 60019030; lluvia de sobres                                               | verified       | source:client-reference-sheet | No payment buttons or bank data                               |
+| gifts                 | Liverpool event 60019030; Sobres                                                         | verified       | source:client-corrections     | Liverpool retained; remove "lluvia" from cash option          |
 | musicUrl              | Cloudinary direct audio source                                                           | verified       | owner-provided source         | “A Thousand Years” by Christina Perri; autoplay enabled       |
 | clientColors          | marfil, perla, taupe, cacao y champagne                                                  | verified       | owner implementation plan     | Champagne restricted to decorative emphasis                   |
 
@@ -67,7 +67,7 @@ Classification is one of: `verified` | `inferred` | `ambiguous` | `missing` | `n
 | Madre de Melissa      | Martha Elena Osuna Rubio        | verified       | source:client-reference-sheet | Confirm final accents before publication              |
 | Padre de Melissa      | Rodrigo Landell Osuna           | inferred       | source:client-reference-sheet | Capitalization normalized; confirm before publication |
 | Madre de Luis Osmar   | Martha Leticia Rodríguez Vargas | verified       | source:client-reference-sheet | Confirm final accents before publication              |
-| Padre de Luis Osmar   | Jesús Gerardo Muñoz Silva       | verified       | source:client-reference-sheet | Confirm final accents before publication              |
+| Padre de Luis Osmar   | Jesús Gerardo Muñoz Silva       | verified       | source:client-corrections     | Fallecido; mostrar † junto al nombre                  |
 | Padrino de matrimonio | Leonardo Campuzano              | verified       | source:client-reference-sheet | —                                                     |
 | Madrina de matrimonio | María Laura Moraga              | verified       | source:client-reference-sheet | —                                                     |
 | Madrina de velación   | Lucina Elsi Morán               | inferred       | source:client-reference-sheet | Accent normalized; confirm before publication         |
@@ -193,6 +193,12 @@ the existing canonical section flow remains.
 ## Creative Direction & Acceptance
 
 **Human creative outcome:** `PENDING`
+
+Client corrections received on 2026-09-23: show `†` beside Jesús Gerardo Muñoz Silva, give Luis
+Osmar's opening name the same visual size as Melissa's, label the cash gift `Sobres` while retaining
+Liverpool, and use `De etiqueta.` for dress code. These supersede the earlier dagger suppression and
+copy decisions. Responsive review and human creative acceptance remain pending; no managed apply or
+publication is implied.
 
 | concern                     | decision / evidence                                                                                     | status     |
 | --------------------------- | ------------------------------------------------------------------------------------------------------- | ---------- |
@@ -608,3 +614,21 @@ logos, no signage and no watermark.
 | date       | readiness                  | helper basis                   | notes                                                                                                         |
 | ---------- | -------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------- |
 | 2026-09-18 | `READY_FOR_IMPLEMENTATION` | `evaluatePreparationReadiness` | Required boda fields resolved; two unique production-ready generated assets; design selected; no placeholders |
+
+## Client Correction Verification — 2026-09-23
+
+- Source harness: inspected the complete invitation at 320, 390 and 1440 px. The groom's opening
+  name stays on one line without document overflow; `†` follows the final surname, with a
+  screen-reader-only explanation. Focused captures are under
+  `.tmp/visual-review/melissa-client-corrections/` (ignored diagnostic evidence).
+- Source content: `De etiqueta.`, `Sobres`, and the Liverpool event remain in the managed
+  definition. Preparation validation, the seven Melissa content tests, `validate:changed`, and
+  `type-check` passed. The focused browser checks passed at 320, 360, 390, 430, 440, 768 and 1440 px
+  after a transient development-server reload on the first 320 px attempt.
+- Public Local route `/boda/melissa-y-luis-osmar?skipEnvelope=true` returned HTTP 200 but still
+  rendered `Gala formal.` and lacked the deceased marker. Persisted content is therefore behind the
+  source changes; Preview and Production were not checked or modified.
+- Client follow-up: all four parent names stay on one line at standard 320–1440 px viewports. At
+  200% text size they may wrap to preserve legibility without horizontal overflow.
+- Human creative outcome: `PENDING`. The source candidate and any later managed apply need separate
+  visual acceptance.

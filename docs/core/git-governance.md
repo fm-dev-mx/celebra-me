@@ -340,14 +340,13 @@ judgment.
    branches use the common ancestor with their remote SHA. New `main`/`develop` refs, tags and other
    remotes retain the main-first fallback; unavailable develop ancestry falls back to main, develop,
    then the root as before. This does not infer a future PR's target from its branch name.
-4. CI workflow `Repository CI` (`.github/workflows/commit-validation.yml`) runs on pull requests
-   targeting `develop` or `main`, and supports manual dispatch. It does not repeat the complete
-   suite after the resulting `develop` push: the integration PR is the first gate and the later
-   `develop` to `main` PR is the release gate. Comparison mode runs **Repository Policy**, the
-   **Application** static/unit/database matrix and **Application / browser**. **Application Suite**
-   aggregates all three dependencies; **Validation metrics** records their results. Candidate mode
-   prepares visual evidence and deliberately skips policy/application certification. It is not a
-   release check. See the canonical
+4. CI workflow `Repository CI` (`.github/workflows/commit-validation.yml`) runs on pushes to
+   `develop`, on pull requests targeting `main`, and by manual dispatch. The `develop` push is the
+   integration gate and the later `develop` to `main` pull request is the release gate. Comparison
+   mode runs **Repository Policy**, the **Application** static/unit/database matrix and
+   **Application / browser**. **Application Suite** aggregates all three dependencies; **Validation
+   metrics** records their results. Candidate mode prepares visual evidence and deliberately skips
+   policy/application certification. It is not a release check. See the canonical
    [validation procedure](validation-procedures.md#remote-ci-coverage-and-efficiency) for commands,
    validation scope and the distinction from `pnpm run ci`.
 5. No post-commit, post-merge or post-rewrite hook queries invitation status. Use `pnpm dbs`
@@ -359,11 +358,10 @@ judgment.
 - Subjects must describe the actual change with a concrete target.
 - Commit hygiene warnings stay non-blocking so developers still get feedback without hidden
   automation side effects.
-- Direct commits to `main` are blocked locally. Direct pushes to both protected branches are blocked
-  by GitHub rulesets, which are the authoritative enforcement boundary. Required remote enforcement
-  is:
-  - `develop` requires a pull request, resolved review threads, `Repository Policy`, and
-    `Application Suite`.
+- Direct commits and pushes to `main` are blocked. Direct fast-forward pushes to `develop` are the
+  integration path and run Repository CI after arrival. Required remote enforcement is:
+  - `develop` blocks deletion and non-fast-forward updates; a red integration remains in Preview and
+    cannot satisfy the release pull request.
   - `main` requires a pull request, `Repository Policy`, and `Application Suite`.
   - both branches block deletion and non-fast-forward updates.
 - Verify the live rulesets before each production promotion; documentation is not proof that remote

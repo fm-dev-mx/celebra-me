@@ -200,7 +200,13 @@ describe('Boda Melissa y Luis Osmar managed content regression', () => {
 			expect(serialized).toContain(name);
 		}
 		expect(serialized).toContain('Con la bendición de Dios y de nuestros padres');
-		expect(serialized).toContain('Gala formal');
+		expect(content.family.groups[1].items[1]).toEqual({
+			name: 'Jesús Gerardo Muñoz Silva',
+			role: 'Padre',
+			deceased: true,
+		});
+		expect(serialized).toContain('De etiqueta.');
+		expect(serialized).not.toContain('Gala formal.');
 		expect(serialized).toContain('Celebración reservada para adultos');
 
 		expect(content.itinerary.items.map((item) => item.time)).toEqual([
@@ -217,7 +223,14 @@ describe('Boda Melissa y Luis Osmar managed content regression', () => {
 				url: 'https://mesaderegalos.liverpool.com.mx/eventodebusqueda',
 			}),
 		);
-		expect(content.gifts.items).toContainEqual(expect.objectContaining({ type: 'cash' }));
+		expect(content.gifts.items).toContainEqual(
+			expect.objectContaining({
+				type: 'cash',
+				title: 'Sobres',
+				text: 'Podrá entregarnos su obsequio en efectivo dentro de un sobre durante la recepción.',
+			}),
+		);
+		expect(serialized).not.toContain('Lluvia de sobres');
 		expect(serialized).not.toMatch(/paypal|mercado\s*pago|transferencia bancaria/i);
 
 		expect(content.rsvp.subcopy).toContain('16 de noviembre de 2026');

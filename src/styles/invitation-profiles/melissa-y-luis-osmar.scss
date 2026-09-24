@@ -270,6 +270,7 @@
 
 			span + span {
 				margin: 0.5rem 0 0;
+				font-size: 1.6em;
 				text-align: right;
 			}
 
@@ -282,6 +283,10 @@
 		@media (width <= 24rem) {
 			.ceremonial-portrait-hero__name span:first-child {
 				font-size: clamp(1.4em, 17vw, 1.65em);
+			}
+
+			.ceremonial-portrait-hero__name span + span {
+				font-size: 1.5em;
 			}
 		}
 
@@ -565,7 +570,9 @@
 		--family-name-line-height: 1.3;
 		--family-name-max-width: 22ch;
 		--family-name-letter-spacing: 0;
-		--family-meta-size: 1.125rem;
+		--family-deceased-symbol-color: var(--melissa-aged-bronze);
+		--family-deceased-symbol-size: 0.78em;
+		--family-deceased-symbol-opacity: 100%;
 		--family-meta-letter-spacing: 0;
 		--family-meta-weight: 400;
 		--family-split-divider: transparent;
@@ -658,6 +665,21 @@
 			text-wrap: balance;
 		}
 
+		.family__group--group-0 .family__name,
+		.family__group--group-1 .family__name {
+			max-width: none;
+			font-size: clamp(1rem, 6.5vw, 1.875rem);
+			letter-spacing: -0.02em;
+		}
+
+		.family__member--deceased .family__name {
+			display: inline;
+		}
+
+		.family__deceased-indicator {
+			margin-inline-start: 0.15em;
+		}
+
 		.family__meta {
 			text-transform: none;
 			font-family: var(--font-display);
@@ -715,6 +737,11 @@
 		}
 
 		@media (width >= 48rem) {
+			.family__group--group-0 .family__name,
+			.family__group--group-1 .family__name {
+				font-size: clamp(1.25rem, 2.1vw, 1.875rem);
+			}
+
 			.family__content {
 				display: grid;
 				grid-template-columns: repeat(2, minmax(0, 1fr));

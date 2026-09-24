@@ -49,19 +49,20 @@ require separate editorial authorization; this release workflow never rewrites t
 
 #### CI and Vercel Git deployments
 
-- `Repository CI` is the only remote validation authority. Pull requests to `develop` and `main`
-  must pass `Repository Policy` and `Application Suite` before merge.
-- Repository CI does not run again on the resulting `develop` push. The integration PR already
-  validates the proposed merge, while the later `develop` to `main` PR performs the independent
-  release validation. This keeps two purposeful gates instead of three duplicate full suites.
+- `Repository CI` is the only remote validation authority. Direct pushes to `develop` run the
+  complete integration suite; the single release pull request from `develop` to `main` must pass
+  `Repository Policy` and `Application Suite` before merge.
+- `develop` is a Preview integration branch and may be temporarily red after a push. `main` remains
+  fail-closed: a failed integration cannot pass the independent release pull-request gate.
 - Vercel's Git integration owns deployments: pull requests and `develop` receive automatic Preview
   deployments, while `main` receives the automatic Production deployment. GitHub Actions does not
   build or deploy a second Preview.
 - `Post-deploy Smoke` validates the correlated Production deployment, SHA, approved host and
   critical HTTP behavior. The scheduled/manual `Production Image Audit` separately reports
   published-media drift and never determines deployment health.
-- Repository rulesets require pull requests and the two canonical checks on both protected branches,
-  and continue blocking deletion and non-fast-forward updates.
+- The `develop` ruleset allows direct fast-forward pushes but blocks deletion and non-fast-forward
+  updates. The `main` ruleset requires a pull request and the two canonical checks, and also blocks
+  deletion and non-fast-forward updates.
 
 #### Failure classification and retry
 
@@ -112,8 +113,9 @@ require separate editorial authorization; this release workflow never rewrites t
   browser evidence; Jest does not run them. Local Render Corpus is Jest contract coverage, not
   visual certification.
 
-- Run focused local checks while editing. Use the PR to `develop` for complete remote certification;
-  confirm its workflow run exists. A push to a task branch alone does not run CI.
+- Run focused local checks while editing. Integrate the final task range into `develop` and push it
+  for complete remote certification; confirm its workflow run exists. A push to a task branch alone
+  does not run Repository CI.
 - `pnpm test:e2e:ci` explicitly compares visual references and fails before browser work when the
   certified Linux runtime, isolated fixtures, LFS references or coverage are unavailable. Diagnostic
   runs and candidate generation are not release certification.
@@ -265,9 +267,9 @@ git add package.json CHANGELOG.md
 git commit -m "chore(release): publish vX.Y.Z checkpoint"
 ```
 
-Open a pull request to `develop`, wait for `Repository Policy` and `Application Suite`, and merge
-without squashing when preceding atomic commits must remain distinct. Revalidate the final `develop`
-SHA after the merge.
+Integrate the candidate into current `develop` without rewriting shared history, then push
+`develop`. Wait for `Repository Policy` and `Application Suite` on that exact SHA before opening the
+release pull request. Preserve preceding atomic commits when they remain meaningful.
 
 ### 5. Promote the validated commit to `main`
 
