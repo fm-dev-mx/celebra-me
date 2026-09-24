@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-09-23T17:23:45.279Z",
+    "generatedAt": "2026-09-24T00:15:05.144Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "a6d3590a9da26545da49e597bfb1d4ccfcf6e37525cbef8b694ec01bf09c31d0",
-        "cssSha256": "51d575dc1ff2dca33c162d6d7252441f5631e3aa54913db2faf455c03c3a78b8",
+        "cssSha256": "ad146e2096f1ce118f105957d60d04910f7d2d4fb16ba8d87abc3e2f3af78e59",
         "assetSha256": "91e363c0c5b28b104ae2e73b4a780831c3dd03d780b0c16a476becfe7fbe972a",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -1433,7 +1433,7 @@
             "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
             "fixtureIdentity": "synthetic:location.split-map",
             "file": "celestial-blue-mobile-location-split-map.png",
-            "sha256": "5958a1155e91cce92066130638841848242913a02a453c13bed76596a1b0375d",
+            "sha256": "ad64f520721c546e9a09082e04b06a8b5b2c5e3057189cf228406769fbbcdd81",
             "contentHash": "483fe3c45e8629aae5a2344e4ad1c84071b5acd8a370e934748e675ada4b8f05",
             "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
             "comparisonResult": "ACCEPTED"
@@ -1823,8 +1823,8 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/invitation-boda-melissa-y-luis-osmar-mobile.png",
-            "sha256": "81bc2c2ce5785c2d9cde3e3df5983500cea3643c3e69f272bedba231c4b7f319",
-            "contentHash": "b90bb1191cfcb314d678431d87f20a180caa3a11120715f698ae344dc202c0dc",
+            "sha256": "fc9567b131e2eb542e725503c1565ee29b343bfb35941df42498bbfbb607a346",
+            "contentHash": "e67b189773623c3e1ab6f78aa2c0907e92e65deedddd9adc9bdaa7c4cc091771",
             "assetHash": "e99bf3b417d20588d317bb66c04f59ffac86c5206c610c1430ed0d1c08b97cf0",
             "comparisonResult": "ACCEPTED"
         },
@@ -1835,8 +1835,8 @@
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
             "file": "pages/invitation-boda-melissa-y-luis-osmar-desktop.png",
-            "sha256": "4f1980fa531686c4e747da1a840545ea890e9a5d74eed488e768f76622b4642a",
-            "contentHash": "b90bb1191cfcb314d678431d87f20a180caa3a11120715f698ae344dc202c0dc",
+            "sha256": "2ab42cad6c2527033dadec44e4fecfd25e04405045cfb8f5b5de1a54a39b7a55",
+            "contentHash": "e67b189773623c3e1ab6f78aa2c0907e92e65deedddd9adc9bdaa7c4cc091771",
             "assetHash": "e99bf3b417d20588d317bb66c04f59ffac86c5206c610c1430ed0d1c08b97cf0",
             "comparisonResult": "ACCEPTED"
         },
@@ -1847,7 +1847,7 @@
             "preset": "editorial",
             "viewport": "mobile",
             "file": "pages/invitation-xv-renata-mobile.png",
-            "sha256": "8ffe1c091f41c94a19b70e9d9d5f9678035a90ac906621bebff14f3788c2d0b0",
+            "sha256": "85c5ff17692ab0814acbd9ec41ece137dd6d33617b9e237ffb25d3462822a792",
             "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
             "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
             "comparisonResult": "ACCEPTED"
@@ -1859,7 +1859,7 @@
             "preset": "editorial",
             "viewport": "desktop",
             "file": "pages/invitation-xv-renata-desktop.png",
-            "sha256": "1fc23520f445ac85bea7c89cccf73dfe9b1f29a79e926ca87e51d6a69dd0303f",
+            "sha256": "11f2884e7cc5a3ad1998a1c443a10856007e32ca97bab985e4ad6efb10265dde",
             "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
             "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
             "comparisonResult": "ACCEPTED"
@@ -2087,7 +2087,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/invitation-xv-xareni-iyarit-mobile.png",
-            "sha256": "b287266e3bb1088e170f911f5e0eb435fd43b76adcb071bf3c4d726f98b3e6c8",
+            "sha256": "5d69eb14376a7e0cac0c02afc9c0acd9082cb5062655d2c43500e679fb57fe2d",
             "contentHash": "681e70e6bb14a67d36679c31d2bf4adc7f16b67dcc419404a60677633f4d9e28",
             "assetHash": "86673c42feb861764c0c3e650a3617f2b29ea7664019151493f8080754444d9b",
             "comparisonResult": "ACCEPTED"
@@ -2441,9 +2441,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "c3cc67846fea27a13c2199e729bacd5f2f0d7d1e",
+    "referenceSha": "d86bb80b09ab1f834deff4dc3aa7bef2691e67c2",
     "variantManifest": {
-        "generatedAt": "2026-09-23T17:23:45.279Z",
+        "generatedAt": "2026-09-24T00:15:05.144Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2456,7 +2456,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a6d3590a9da26545da49e597bfb1d4ccfcf6e37525cbef8b694ec01bf09c31d0",
-            "cssSha256": "51d575dc1ff2dca33c162d6d7252441f5631e3aa54913db2faf455c03c3a78b8",
+            "cssSha256": "ad146e2096f1ce118f105957d60d04910f7d2d4fb16ba8d87abc3e2f3af78e59",
             "assetSha256": "91e363c0c5b28b104ae2e73b4a780831c3dd03d780b0c16a476becfe7fbe972a",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -3877,7 +3877,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
                 "fixtureIdentity": "synthetic:location.split-map",
                 "file": "celestial-blue-mobile-location-split-map.png",
-                "sha256": "5958a1155e91cce92066130638841848242913a02a453c13bed76596a1b0375d",
+                "sha256": "ad64f520721c546e9a09082e04b06a8b5b2c5e3057189cf228406769fbbcdd81",
                 "contentHash": "483fe3c45e8629aae5a2344e4ad1c84071b5acd8a370e934748e675ada4b8f05",
                 "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
                 "comparisonResult": "CANDIDATE"
@@ -4093,10 +4093,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "c3cc67846fea27a13c2199e729bacd5f2f0d7d1e"
+        "referenceSha": "d86bb80b09ab1f834deff4dc3aa7bef2691e67c2"
     },
     "pageManifest": {
-        "generatedAt": "2026-09-23T17:22:12.595Z",
+        "generatedAt": "2026-09-24T00:13:27.668Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4109,7 +4109,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a6d3590a9da26545da49e597bfb1d4ccfcf6e37525cbef8b694ec01bf09c31d0",
-            "cssSha256": "51d575dc1ff2dca33c162d6d7252441f5631e3aa54913db2faf455c03c3a78b8",
+            "cssSha256": "ad146e2096f1ce118f105957d60d04910f7d2d4fb16ba8d87abc3e2f3af78e59",
             "assetSha256": "91e363c0c5b28b104ae2e73b4a780831c3dd03d780b0c16a476becfe7fbe972a",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4295,8 +4295,8 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
                 "file": "pages/invitation-boda-melissa-y-luis-osmar-mobile.png",
-                "sha256": "81bc2c2ce5785c2d9cde3e3df5983500cea3643c3e69f272bedba231c4b7f319",
-                "contentHash": "b90bb1191cfcb314d678431d87f20a180caa3a11120715f698ae344dc202c0dc",
+                "sha256": "fc9567b131e2eb542e725503c1565ee29b343bfb35941df42498bbfbb607a346",
+                "contentHash": "e67b189773623c3e1ab6f78aa2c0907e92e65deedddd9adc9bdaa7c4cc091771",
                 "assetHash": "e99bf3b417d20588d317bb66c04f59ffac86c5206c610c1430ed0d1c08b97cf0",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4307,8 +4307,8 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "desktop",
                 "file": "pages/invitation-boda-melissa-y-luis-osmar-desktop.png",
-                "sha256": "4f1980fa531686c4e747da1a840545ea890e9a5d74eed488e768f76622b4642a",
-                "contentHash": "b90bb1191cfcb314d678431d87f20a180caa3a11120715f698ae344dc202c0dc",
+                "sha256": "2ab42cad6c2527033dadec44e4fecfd25e04405045cfb8f5b5de1a54a39b7a55",
+                "contentHash": "e67b189773623c3e1ab6f78aa2c0907e92e65deedddd9adc9bdaa7c4cc091771",
                 "assetHash": "e99bf3b417d20588d317bb66c04f59ffac86c5206c610c1430ed0d1c08b97cf0",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4319,7 +4319,7 @@
                 "preset": "editorial",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-renata-mobile.png",
-                "sha256": "8ffe1c091f41c94a19b70e9d9d5f9678035a90ac906621bebff14f3788c2d0b0",
+                "sha256": "85c5ff17692ab0814acbd9ec41ece137dd6d33617b9e237ffb25d3462822a792",
                 "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
                 "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
                 "comparisonResult": "CANDIDATE"
@@ -4331,7 +4331,7 @@
                 "preset": "editorial",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-renata-desktop.png",
-                "sha256": "1fc23520f445ac85bea7c89cccf73dfe9b1f29a79e926ca87e51d6a69dd0303f",
+                "sha256": "11f2884e7cc5a3ad1998a1c443a10856007e32ca97bab985e4ad6efb10265dde",
                 "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
                 "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
                 "comparisonResult": "CANDIDATE"
@@ -4559,7 +4559,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-xareni-iyarit-mobile.png",
-                "sha256": "b287266e3bb1088e170f911f5e0eb435fd43b76adcb071bf3c4d726f98b3e6c8",
+                "sha256": "5d69eb14376a7e0cac0c02afc9c0acd9082cb5062655d2c43500e679fb57fe2d",
                 "contentHash": "681e70e6bb14a67d36679c31d2bf4adc7f16b67dcc419404a60677633f4d9e28",
                 "assetHash": "86673c42feb861764c0c3e650a3617f2b29ea7664019151493f8080754444d9b",
                 "comparisonResult": "CANDIDATE"
@@ -4913,9 +4913,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "c3cc67846fea27a13c2199e729bacd5f2f0d7d1e"
+        "referenceSha": "d86bb80b09ab1f834deff4dc3aa7bef2691e67c2"
     },
-    "candidateManifestSha256": "0e5d5c4f68b556e61c6763976b343c92a7b7552bb1585af8b58e6fa124e6fd59",
-    "acceptedFromCommit": "c3cc67846fea27a13c2199e729bacd5f2f0d7d1e",
-    "acceptedAt": "2026-09-23T17:33:30.923Z"
+    "candidateManifestSha256": "e7aaaabc17fc51d4d5b03ae4f806b634f99d3c1ba73519ba72a1d8a40aaaa44d",
+    "acceptedFromCommit": "d86bb80b09ab1f834deff4dc3aa7bef2691e67c2",
+    "acceptedAt": "2026-09-24T00:25:43.062Z"
 }
