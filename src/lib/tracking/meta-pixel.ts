@@ -337,7 +337,7 @@ const META_EVENT_MAP: Record<string, string> = {
 	page_viewed: 'PageView',
 	demo_viewed: 'ViewContent',
 	package_viewed: 'ViewContent',
-	whatsapp_contact_clicked: 'Contact',
+	whatsapp_contact_clicked: 'WhatsAppClick',
 	form_submitted: 'Lead',
 	// lead_created is currently server-side only; mapped here for
 	// code-level versioning of the tracking contract.
@@ -350,7 +350,16 @@ function mapToMetaEvent(firstPartyName: string): string | undefined {
 
 // Only non-PII, low-cardinality identifiers. No names, emails, phones,
 // message text, guest data, invite IDs, tokens, or claim codes.
-const SAFE_META_KEYS = new Set(['content_name', 'content_category', 'event_type', 'source_area']);
+const SAFE_META_KEYS = new Set([
+	'content_name',
+	'content_category',
+	'event_type',
+	'source_area',
+	'demo_slug',
+	'cta_id',
+	'cta_location',
+	'destination_type',
+]);
 
 function sanitizeForMeta(
 	properties: Record<string, string | number | boolean>,
@@ -400,6 +409,7 @@ function buildDemoViewPayload(properties: Record<string, string | number | boole
 	const eventType = pickNonEmptyString(properties.event_type);
 	const sourceArea = pickNonEmptyString(properties.source_area);
 	if (demoSlug) parameters.content_name = demoSlug;
+	if (demoSlug) parameters.demo_slug = demoSlug;
 	if (eventType) parameters.event_type = eventType;
 	if (sourceArea) parameters.source_area = sourceArea;
 	return parameters;
@@ -459,7 +469,13 @@ function buildMetaPayload(
 	parameters: Record<string, string | number | boolean>;
 	options?: { eventID?: string };
 } {
-	const eventId = pickNonEmptyString(properties.event_id, properties.lead_code);
+	// Consultation codes are private CRM correlation data, never provider event IDs.
+	const candidateId = pickNonEmptyString(properties.event_id);
+	const eventId =
+		candidateId &&
+		/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(candidateId)
+			? candidateId
+			: undefined;
 	let base: Record<string, string | number | boolean> = {};
 
 	switch (eventName) {
@@ -473,7 +489,14 @@ function buildMetaPayload(
 			base = buildPackageViewPayload(properties);
 			break;
 		case 'whatsapp_contact_clicked':
-			base = buildContactPayload(properties);
+			base = {
+				...buildContactPayload(properties),
+				...Object.fromEntries(
+					['demo_slug', 'cta_id', 'cta_location', 'destination_type']
+						.filter((key) => typeof properties[key] === 'string')
+						.map((key) => [key, properties[key]]),
+				),
+			};
 			break;
 		case 'form_submitted':
 		case 'lead_created':

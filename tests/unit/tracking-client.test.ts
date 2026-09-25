@@ -38,6 +38,7 @@ describe('initCommercialTracking package views', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
+		document.body.replaceWith(document.createElement('body'));
 		MockIntersectionObserver.instances = [];
 		window.history.replaceState({}, '', '/?fbclid=Click-123');
 		document.body.innerHTML = `
@@ -81,7 +82,10 @@ describe('initCommercialTracking package views', () => {
 					fbc: 'fb.1.1710000000000.Click-123',
 					fbclid: 'Click-123',
 				},
-				eventProperties: { page_type: 'commercial' },
+				eventProperties: expect.objectContaining({
+					page_type: 'commercial',
+					event_id: expect.any(String),
+				}),
 			}),
 		);
 		expect(pageView?.eventProperties).not.toHaveProperty('fbp');
@@ -140,8 +144,6 @@ describe('initCommercialTracking package views', () => {
 	});
 });
 
-
-
 /* ================================================================
  * WhatsApp lead identity [T1, T2]
  *
@@ -156,6 +158,7 @@ describe('WhatsApp lead identity [T1, T2]', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
+		document.body.replaceWith(document.createElement('body'));
 		MockIntersectionObserver.instances = [];
 		window.history.replaceState({}, '', '/');
 		document.body.innerHTML = `
@@ -260,6 +263,7 @@ describe('navigation-safe Meta Pixel dispatch [T10]', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
+		document.body.replaceWith(document.createElement('body'));
 		MockIntersectionObserver.instances = [];
 		window.history.replaceState({}, '', '/');
 		document.body.innerHTML = `

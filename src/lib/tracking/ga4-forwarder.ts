@@ -247,6 +247,7 @@ function mapEventName(firstPartyName: string): string | undefined {
 
 // Deliberate subset of SAFE_EVENT_PROPERTY_KEYS from event-contract.ts.
 const SAFE_GA4_KEYS = new Set([
+	'event_id',
 	'page_type',
 	'section_id',
 	'visibility_bucket',
@@ -270,6 +271,12 @@ function sanitizeForGA4(
 	const result: Record<string, string | number | boolean> = {};
 	for (const [key, value] of Object.entries(properties)) {
 		if (!SAFE_GA4_KEYS.has(key)) continue;
+		if (
+			key === 'event_id' &&
+			(typeof value !== 'string' ||
+				!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value))
+		)
+			continue;
 		if (typeof value === 'string') {
 			result[key] = value.slice(0, 160);
 		} else if (typeof value === 'number' && Number.isFinite(value)) {
