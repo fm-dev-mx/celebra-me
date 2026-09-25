@@ -288,6 +288,21 @@ describe('production apply plan fingerprint and eligibility', () => {
 		});
 	});
 
+	it('excludes draft-discard readiness from --all-ready mutations and fingerprint', () => {
+		const allReadyScope: ProductionApplyScope = {
+			schema: true,
+			slugs: [],
+			allReady: true,
+			inspectAll: false,
+		};
+		const discard = item({ id: 'alpha', readiness: 'READY_AFTER_DISCARD', binding: 'pkg-a' });
+		const withDiscard = assembleProductionApplyPlan(allReadyScope, [discard]);
+		const withoutDiscard = assembleProductionApplyPlan(allReadyScope, []);
+
+		expect(mutationItemsOf(withDiscard)).toEqual([]);
+		expect(withDiscard.planId).toBe(withoutDiscard.planId);
+	});
+
 	it('fails inspect-all apply as SCOPE_REQUIRED', () => {
 		const plan = assembleProductionApplyPlan(inspectScope, [
 			item({ id: 'alpha', readiness: 'READY', binding: 'a' }),
@@ -374,7 +389,7 @@ describe('READY_AFTER_DISCARD readiness', () => {
 		expect(evaluateApplyEligibility(plan)).toEqual({ ok: true });
 	});
 
-	it('READY_AFTER_DISCARD items are included in planId so the fingerprint changes if the binding changes', () => {
+	it('binds explicit draft discard disposition and package to the plan fingerprint', () => {
 		const scope: ProductionApplyScope = {
 			schema: false,
 			slugs: ['leslie-perez'],
@@ -388,9 +403,11 @@ describe('READY_AFTER_DISCARD readiness', () => {
 		});
 		const itemB = { ...itemA, binding: 'hash-b' };
 		expect(buildProductionApplyPlanId([itemA])).not.toBe(buildProductionApplyPlanId([itemB]));
+		expect(buildProductionApplyPlanId([itemA])).not.toBe(
+			buildProductionApplyPlanId([{ ...itemA, readiness: 'READY' }]),
+		);
 		// and plan without the item gets a different id
 		expect(buildProductionApplyPlanId([itemA])).not.toBe(buildProductionApplyPlanId([]));
-		// verify that allReady omits the item from planId (patch-style exclusion does NOT apply to invitations)
 		const planA = assembleProductionApplyPlan(scope, [itemA]);
 		const planB = assembleProductionApplyPlan(scope, [itemB]);
 		expect(planA.planId).not.toBe(planB.planId);

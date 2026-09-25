@@ -296,7 +296,6 @@ export function resolveManagedMergeBaselineForReconciliation(
 	return resolveManagedMergeBaseline({
 		...input,
 		currentDraftUpdatedAt: input.appliedDraftUpdatedAt,
-		latestMutationReceipt: input.appliedReceipt,
 	});
 }
 

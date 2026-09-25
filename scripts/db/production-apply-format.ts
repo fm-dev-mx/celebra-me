@@ -23,7 +23,7 @@ function readinessLabel(readiness: ProductionApplyReadiness): string {
 		case 'READY_AFTER_SCHEMA':
 			return 'READY (después de schema)';
 		case 'READY_AFTER_DISCARD':
-			return 'READY (borrador inédito descartado)';
+			return 'READY (requiere descartar borrador inédito)';
 		case 'IN_SYNC':
 			return 'IN_SYNC';
 		case 'BLOCKED':
@@ -52,7 +52,7 @@ const READINESS_GROUPS: ReadonlyArray<{
 }> = [
 	{ readiness: 'READY', label: 'Listo' },
 	{ readiness: 'READY_AFTER_SCHEMA', label: 'Listo después de schema' },
-	{ readiness: 'READY_AFTER_DISCARD', label: 'Listo (borrador inédito descartado)' },
+	{ readiness: 'READY_AFTER_DISCARD', label: 'Listo (requiere descartar borrador inédito)' },
 	{ readiness: 'IN_SYNC', label: 'En sync' },
 	{ readiness: 'BLOCKED', label: 'Bloqueado' },
 	{ readiness: 'UNKNOWN', label: 'Desconocido' },
@@ -85,10 +85,18 @@ export function formatProductionApplyPlan(plan: ProductionApplyPlan): string {
 			lines.push(`  ${itemLine(item)}`);
 		}
 	}
+	if (plan.scope.allReady && visible.some((item) => item.readiness === 'READY_AFTER_DISCARD')) {
+		lines.push(
+			`${operatorSymbol('info')} --all-ready omitió invitaciones con borradores inéditos; revíselas por slug con --acknowledge-discard-unpublished-draft.`,
+		);
+	}
 	lines.push('');
 	lines.push(`${operatorSymbol('info')} ${productionApplyHandoff(plan)}`);
 	if (mutations.length > 0 && !plan.scope.inspectAll) {
-		const applyCommand = `pnpm prod:apply -- ${describeScope(plan)} --apply`;
+		const discardAck = mutations.some((item) => item.readiness === 'READY_AFTER_DISCARD')
+			? ' --acknowledge-discard-unpublished-draft'
+			: '';
+		const applyCommand = `pnpm prod:apply -- ${describeScope(plan)}${discardAck} --apply`;
 		const display = displayOperatorCommand(applyCommand);
 		lines.push(`${operatorSymbol('info')} Para aplicar:`);
 		if (display.keepFullCommand) {

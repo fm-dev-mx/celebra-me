@@ -80,7 +80,7 @@ export interface ProductionApplyPlan {
 	items: ProductionApplyPlanItem[];
 }
 
-const PLAN_ID_VERSION = 2;
+const PLAN_ID_VERSION = 3;
 
 function isMutationReadiness(readiness: ProductionApplyReadiness): boolean {
 	return (
@@ -90,20 +90,28 @@ function isMutationReadiness(readiness: ProductionApplyReadiness): boolean {
 	);
 }
 
-export function mutationItemsOf(plan: ProductionApplyPlan): ProductionApplyPlanItem[] {
-	return plan.items.filter((item) => {
-		if (!isMutationReadiness(item.readiness)) return false;
-		if (plan.scope.allReady && item.domain === 'patch') return false;
-		return true;
-	});
+function isPlanMutation(item: ProductionApplyPlanItem, scope?: ProductionApplyScope): boolean {
+	if (!isMutationReadiness(item.readiness)) return false;
+	if (scope?.allReady && (item.domain === 'patch' || item.readiness === 'READY_AFTER_DISCARD')) {
+		return false;
+	}
+	return true;
 }
 
-export function buildProductionApplyPlanId(items: readonly ProductionApplyPlanItem[]): string {
+export function mutationItemsOf(plan: ProductionApplyPlan): ProductionApplyPlanItem[] {
+	return plan.items.filter((item) => isPlanMutation(item, plan.scope));
+}
+
+export function buildProductionApplyPlanId(
+	items: readonly ProductionApplyPlanItem[],
+	scope?: ProductionApplyScope,
+): string {
 	const mutation = items
-		.filter((item) => isMutationReadiness(item.readiness))
+		.filter((item) => isPlanMutation(item, scope))
 		.map((item) => ({
 			domain: item.domain,
 			id: item.id,
+			readiness: item.readiness,
 			binding: item.binding ?? '',
 			updateScope: item.updateScope ?? '',
 			patchPreview:
@@ -128,7 +136,7 @@ export function assembleProductionApplyPlan(
 ): ProductionApplyPlan {
 	const planItems = [...items];
 	return {
-		planId: buildProductionApplyPlanId(planItems),
+		planId: buildProductionApplyPlanId(planItems, scope),
 		scope,
 		items: planItems,
 	};

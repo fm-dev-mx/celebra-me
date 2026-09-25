@@ -154,7 +154,14 @@ export async function buildProductionApplyPlan(
 
 	const invitationItems: ProductionApplyPlanItem[] = [];
 	for (const slug of slugList) {
-		invitationItems.push(await inspectInvitation(slug, schemaReadyInPlan, deps));
+		invitationItems.push(
+			await inspectInvitation(
+				slug,
+				schemaReadyInPlan,
+				deps,
+				args.acknowledgeDiscardUnpublishedDraft,
+			),
+		);
 	}
 
 	const patchItem = inspectPatch(scope.patchFile, deps);
@@ -269,6 +276,9 @@ async function authorizeReviewedPlan(
 ): Promise<void> {
 	const getProductionDbUrl = deps.getProductionDbUrl ?? getProdDbUrl;
 	const { url: dbUrl } = getProductionDbUrl();
+	const discardDraftSlugs = mutations
+		.filter((item) => item.readiness === 'READY_AFTER_DISCARD')
+		.map((item) => item.id);
 	const ownerGateInput: OwnerProductionApplyInput = {
 		apply: true,
 		dbUrl,
@@ -281,6 +291,12 @@ async function authorizeReviewedPlan(
 			['Operación', 'Plan mixto Production'],
 			['Mutaciones', String(mutations.length)],
 			['Alcance', mutations.map((item) => `${item.domain}:${item.id}`).join(', ')],
+			[
+				'Borradores inéditos',
+				discardDraftSlugs.length > 0
+					? `Se reemplazarán: ${discardDraftSlugs.join(', ')}`
+					: 'Ninguno',
+			],
 			['Autorización', 'Una confirmación cubre el plan exacto'],
 		],
 		technicalReview: [

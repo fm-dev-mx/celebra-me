@@ -69,6 +69,28 @@ describe('prod:apply CLI arguments', () => {
 		);
 	});
 
+	it('requires draft-discard acknowledgement to target explicit invitation slugs only', () => {
+		const acknowledgement = '--acknowledge-discard-unpublished-draft';
+		expect(parse(['--slug', 'demo', acknowledgement])).toMatchObject({
+			slugs: ['demo'],
+			acknowledgeDiscardUnpublishedDraft: true,
+		});
+		expect(parse(['--slugs', 'demo,other', acknowledgement])).toMatchObject({
+			slugs: ['demo', 'other'],
+			acknowledgeDiscardUnpublishedDraft: true,
+		});
+		expect(() => parse([acknowledgement])).toThrow(/requires an explicit --slug or --slugs/);
+		expect(() => parse(['--all-ready', acknowledgement])).toThrow(
+			/cannot be combined with --all-ready/,
+		);
+		expect(() => parse(['--schema', '--slug', 'demo', acknowledgement])).toThrow(
+			/cannot be combined with --all-ready, --schema/,
+		);
+		expect(() => parse(['--patch', 'x.sql', '--slug', 'demo', acknowledgement])).toThrow(
+			/cannot be combined with --all-ready, --schema, --patch/,
+		);
+	});
+
 	it('rejects CLI authorization bypass flags', () => {
 		expect(() => parse(['--schema', '--already-authorized'])).toThrow(
 			/Authorization cannot be supplied from CLI/,

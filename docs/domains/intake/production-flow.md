@@ -80,6 +80,13 @@ override/assertion, not required on the happy path. Dry-run reports owner action
 planned before any mutation; a blocked or unevaluated target aborts the complete apply phase across
 all targets.
 
+Production draft discard is never automatic. A target draft that diverges from both the selected
+package and published content requires an explicit selected `--slug`/`--slugs` scope plus
+`--acknowledge-discard-unpublished-draft`; the read-only plan and owner TTY confirmation identify
+which unpublished draft will be replaced. `--all-ready` excludes these items. Manual/editor managed
+baseline drift remains `BLOCKED`, even with the acknowledgement. Publication version/hash, partial
+operation, and newer managed-receipt guards remain mandatory.
+
 ### Package freshness (definition vs `--package`)
 
 Local and hosted execution are adapters behind the same immutable plan/apply lifecycle in
