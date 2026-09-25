@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import DemoFollowupForm from '@/components/dashboard/commercial/DemoFollowupForm';
+import type { DemoInventoryItem } from '@/lib/tracking/demo-conversion-report';
 
 import CrmTimeline from '@/components/dashboard/commercial/CrmTimeline';
 import CustomerOrdersBox, {
@@ -33,6 +35,7 @@ interface ReconciliationResult {
 
 interface SalesWorkspaceProps {
 	initialLeads: LeadCandidate[];
+	demoInventory?: DemoInventoryItem[];
 }
 
 const EVENT_TYPE_OPTIONS = Object.entries(EVENT_TYPE_LABELS).map(([value, label]) => ({
@@ -59,7 +62,7 @@ function getCustomerSuggestedAction(orders: SalesOrder[]): string {
 	return 'Revisar la actividad comercial';
 }
 
-const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
+const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInventory = [] }) => {
 	const [searchLeadCode, setSearchLeadCode] = useState('');
 	const [searchPhone, setSearchPhone] = useState('');
 	const [searchEmail, setSearchEmail] = useState('');
@@ -243,10 +246,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 		setErrorMessage('');
 		setSuccessMessage('');
 		if (lead.customerId) {
-			handleSelectCustomer(
-				buildSyntheticCustomer(lead),
-				lead,
-			);
+			handleSelectCustomer(buildSyntheticCustomer(lead), lead);
 		} else {
 			handleReconcileLead(lead);
 		}
@@ -414,7 +414,9 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 						: status === 'failed' || status === 'skipped' || status === 'ambiguous'
 							? 'Conversión requiere atención.'
 							: 'Conversión pendiente.';
-				setSuccessMessage(`Anticipo registrado. ${formatConversion(conversionEvent.status)}`);
+				setSuccessMessage(
+					`Anticipo registrado. ${formatConversion(conversionEvent.status)}`,
+				);
 				if (activeCustomer) {
 					void fetchCustomerOrders(activeCustomer.id);
 					void fetchTimeline(activeCustomer.id);
@@ -446,6 +448,11 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads }) => {
 
 	return (
 		<div className="sales-workspace">
+			{demoInventory.length > 0 && (
+				<section className="demo-conversion-report" aria-label="Seguimiento por demo">
+					<DemoFollowupForm inventory={demoInventory} />
+				</section>
+			)}
 			<header className="sales-workspace__intro">
 				<div>
 					<p className="sales-workspace__eyebrow">CRM comercial</p>
