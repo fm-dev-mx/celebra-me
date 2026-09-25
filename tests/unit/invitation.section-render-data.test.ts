@@ -61,6 +61,21 @@ function setupDemoPageContext(fixtureSlug = 'demo-xv-editorial') {
 }
 
 describe('buildInvitationSectionRenderDescriptors', () => {
+	it('uses a section fade for the portrait register without changing standard family motion', () => {
+		const portrait = buildInvitationSectionRenderDescriptors(
+			setupDemoPageContext('demo-xv-celestial-blue'),
+		).find((descriptor) => descriptor.component === 'family');
+		expect(portrait).toMatchObject({
+			intersection: 'arch',
+			reveal: 'fade',
+			props: { variant: 'portrait-register' },
+		});
+		const standard = buildInvitationSectionRenderDescriptors(
+			setupDemoPageContext('demo-xv-jewelry-box'),
+		).find((descriptor) => descriptor.component === 'family');
+		expect(standard).toMatchObject({ reveal: 'stagger-group', props: { variant: 'standard' } });
+	});
+
 	it('marks a public personalized-only RSVP for server-only rendering', () => {
 		const pageContext = { ...setupDemoPageContext(), isDemoPreview: false };
 		const rsvp = pageContext.viewModel.sections.rsvp;
@@ -194,7 +209,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		] as const) {
 			const descriptor = descriptors.find((item) => item.component === component);
 			if (component === 'gallery') {
-					expect(descriptor).toMatchObject({ props: { variant: 'editorial-mosaic' } });
+				expect(descriptor).toMatchObject({ props: { variant: 'editorial-mosaic' } });
 			} else if (component === 'countdown') {
 				expect(descriptor).toMatchObject({ props: { variant: 'editorial-folio' } });
 			} else if (component === 'quote') {
@@ -512,10 +527,10 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 					sectionOrder: ['rsvp'],
 					sections: {
 						rsvp: {
-						...originalRsvpSection,
-						variant: 'standard',
-						personalizedAccess: { variant: 'standard' },
-					},
+							...originalRsvpSection,
+							variant: 'standard',
+							personalizedAccess: { variant: 'standard' },
+						},
 					},
 				} as any,
 			});

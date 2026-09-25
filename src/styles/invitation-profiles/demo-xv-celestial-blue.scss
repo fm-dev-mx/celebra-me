@@ -1,4 +1,5 @@
 @use '../global/mixins' as mixins;
+@use '@fontsource-variable/cormorant-garamond/wght-italic.css' as cormorant-garamond-italic;
 
 // Celestial Blue demo — midnight conservatory: a directional ink-blue veil, silver constellation
 // and long editorial name stack create a cinematic first impression without competing with Camila's
@@ -19,6 +20,33 @@
 	--celestial-portal-thread: rgb(var(--color-liquid-silver-rgb) / 72%);
 	--celestial-portal-light: rgb(var(--color-satin-blue-rgb) / 34%);
 	--celestial-family-overlap-depth: clamp(2rem, 8vw, 4rem);
+
+	// Family album: cool stationery, a complete portrait, then separate name registers.
+	--family-bg: color-mix(in srgb, var(--color-cool-ivory) 65%, var(--color-ice-blue));
+	--family-padding-block: clamp(4rem, 6vw, 6rem) clamp(6rem, 7vw, 6.5rem);
+	--family-texture-opacity: 0;
+	--family-vignette-bg: none;
+	--family-header-filter: none;
+	--family-name-font: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+	--family-title-font: var(--family-name-font);
+	--family-title-size: clamp(2.75rem, 5vw, 3.75rem);
+	--family-title-line-height: 1.15;
+	--family-title-text-shadow: none;
+	--family-eyebrow-size: 0.8125rem;
+	--family-eyebrow-color: var(--color-soft-graphite);
+	--family-eyebrow-opacity: 100%;
+	--family-divider: rgb(var(--color-deep-blue-graphite-rgb) / 16%);
+	--family-message-color: var(--color-soft-graphite);
+	--family-message-margin: 1.25rem auto 0;
+	--family-group-filter: none;
+	--family-group-title-color: var(--color-soft-graphite);
+	--family-group-title-opacity: 100%;
+	--family-group-title-margin: 0 0 1.5rem;
+	--family-name-size: clamp(1.625rem, 2.5vw, 1.875rem);
+	--family-name-line-height: 1.2;
+	--family-name-max-width: 24ch;
+	--family-name-text-shadow: none;
+	--family-meta-color: var(--color-soft-graphite);
 
 	@media (576px <= width < 992px) {
 		--hero-title-max-width: 8ch;
@@ -156,9 +184,15 @@
 		}
 	}
 
-	// Full-dark finale. Cadence: family -> interlude (bridge overlap);
+	// Cadence: quote -> family (shallow asymmetric arch); family -> interlude (bridge overlap);
 	// interlude -> gallery (bridge blend); itinerary -> gifts (climax blend).
 	// All other section boundaries are intentionally neutral.
+	.invitation-section-wrapper[data-section-kind='family'][data-intersection='arch'] {
+		--intersection-surface: var(--family-bg);
+		--intersection-arch-height: clamp(2.5rem, 5vw, 4.5rem);
+		--intersection-arch-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 24' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M0 24V23C22 22 36 2 62 2C79 2 91 10 100 15V24Z'/%3E%3C/svg%3E");
+	}
+
 	.invitation-section-wrapper[data-section-kind='interlude'] {
 		--intersection-depth: var(--celestial-family-overlap-depth);
 	}

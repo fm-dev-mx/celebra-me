@@ -1,37 +1,63 @@
 ---
+import type { ImageMetadata } from 'astro';
+import OptimizedImage from '@/components/common/OptimizedImage.astro';
+import { getEventAsset, type ImageAsset } from '@/lib/assets/asset-registry';
 import { CELESTIAL_DEMO_SLUG, getCelestialQuoteLink } from '@/lib/invitation/demo-conversion';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 import '@/styles/invitation/_demo-conversion.scss';
 
 interface Props {
 	placement: 'gallery' | 'closing';
+	galleryItem?: { image: ImageMetadata | ImageAsset; alt?: string; caption?: string };
 }
-const { placement } = Astro.props;
+const { placement, galleryItem } = Astro.props;
 const available = !isPlaceholderContactPhone(getContactPhone());
+const isGallery = placement === 'gallery';
+const image = isGallery ? galleryItem?.image : getEventAsset(CELESTIAL_DEMO_SLUG, 'interlude04');
+const rawSource = image?.src;
+const imageSource = typeof rawSource === 'string' ? rawSource : rawSource?.src;
+const imageAlt = isGallery ? (galleryItem?.alt || galleryItem?.caption || 'Retrato de la demo Celestial Blue') : '';
+const headingId = `demo-conversion-${placement}-title`;
+const channelId = `demo-conversion-${placement}-channel`;
 ---
 
-<aside class="demo-conversion" aria-label="Información comercial de esta demo" data-placement={placement}>
-	{placement === 'closing' && (
-		<>
-			<h2>Una invitación basada en este estilo</h2>
-			<p>Consulte las opciones de personalización para su celebración.</p>
-		</>
+<aside class="demo-conversion" aria-labelledby={headingId} data-placement={placement} data-screenshot-section={`demo-${placement}`}>
+	<OptimizedImage imagePath={image} alt={imageAlt} width={isGallery ? 1080 : 1024} height={isGallery ? 1350 : 1536}
+		class="demo-conversion__photo" loading="lazy" decoding="async" />
+	{isGallery && imageSource && (
+		<button type="button" class="demo-conversion__enlarge" data-gallery-item
+			data-gallery-src={imageSource} data-gallery-caption={galleryItem?.caption ?? ''}
+			data-gallery-alt={imageAlt} aria-label="Ampliar fotografía de Celestial Blue">
+			Ampliar foto
+		</button>
 	)}
+	<div class="demo-conversion__content">
+	<p class="demo-conversion__eyebrow">{isGallery ? 'Demo Celestial Blue · Celebra-me' : 'Celebra-me'}</p>
+	<h2 class="demo-conversion__title" id={headingId}>
+		{isGallery ? 'Este estilo,' : 'Celestial Blue,'}
+		<em>{isGallery ? 'para sus XV años.' : 'para su celebración.'}</em>
+	</h2>
+	{!isGallery && <p class="demo-conversion__description">Consulte las opciones de personalización para sus XV años.</p>}
+	<div class="demo-conversion__action">
 	{available ? (
 		<a class="demo-conversion__primary" href={getCelestialQuoteLink()} target="_blank" rel="noopener noreferrer"
+			aria-describedby={channelId}
 			data-track-event="whatsapp_contact_clicked" data-track-cta={`demo_quote_${placement}`}
 			data-track-section={`demo_${placement}`} data-track-intent="whatsapp"
 			data-track-label="Cotizar este estilo por WhatsApp" data-event-type="xv"
 			data-demo-slug={CELESTIAL_DEMO_SLUG} data-preserve-message="true">
-			Cotizar este estilo por WhatsApp
+			<span>Cotizar este estilo</span><span aria-hidden="true">↗</span>
 		</a>
 	) : (
 		<a class="demo-conversion__primary" href="/#contacto">Consultar este estilo</a>
 	)}
-	{placement === 'closing' && (
+	{available && <span class="demo-conversion__channel" id={channelId}>Por WhatsApp</span>}
+	</div>
+	{!isGallery && (
 		<a class="demo-conversion__secondary" href="/demos/xv"
 			data-track-event="cta_clicked" data-track-cta="demo_browse_styles"
 			data-track-section="demo_closing" data-track-intent="showroom"
 			data-event-type="xv" data-demo-slug={CELESTIAL_DEMO_SLUG}>Ver otros estilos</a>
 	)}
+	</div>
 </aside>

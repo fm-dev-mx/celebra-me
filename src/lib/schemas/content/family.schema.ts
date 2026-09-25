@@ -59,6 +59,7 @@ const familyBaseSchema = z.object({
 		.optional(),
 	groups: z.array(familyGroupSchema).min(1).optional(),
 	featuredImage: AssetSchema.optional(),
+	featuredImageAlt: z.string().trim().min(1).optional(),
 	presentation: z.enum(FAMILY_PRESENTATIONS).optional(),
 	focalPoint: focalPointSchema.optional(),
 	visible: z.boolean().optional(),
@@ -71,12 +72,31 @@ const structuredFamilySchema = familyBaseSchema.extend({
 
 export const familySchema = z
 	.discriminatedUnion('variant', [
+		familyBaseSchema.strict().extend({
+			variant: z.literal('portrait-register'),
+			featuredImage: AssetSchema,
+			presentation: z.literal('with-photo').optional(),
+		}),
 		familyBaseSchema.strict().extend({ variant: z.literal('ceremonial-family') }),
 		familyBaseSchema.strict().extend({ variant: z.literal(FAMILY_VARIANTS[0]) }),
 		structuredFamilySchema.strict().extend({ variant: z.literal(FAMILY_VARIANTS[1]) }),
 		structuredFamilySchema.strict().extend({ variant: z.literal(FAMILY_VARIANTS[2]) }),
 	])
 	.superRefine((data, ctx) => {
+		const portraitDelivery = data.featuredImage?.delivery;
+		if (
+			data.variant === 'portrait-register' &&
+			(portraitDelivery?.mode !== 'original' ||
+				!portraitDelivery.width ||
+				!portraitDelivery.height)
+		) {
+			ctx.addIssue({
+				code: 'custom',
+				message:
+					'Portrait register requires original delivery with width and height to preserve the complete photograph without layout shifts',
+				path: ['featuredImage', 'delivery'],
+			});
+		}
 		if (data.godparents && data.godparentGroups) {
 			ctx.addIssue({
 				code: 'custom',
@@ -85,12 +105,15 @@ export const familySchema = z
 			});
 		}
 		if (data.variant === 'split-groups' || data.variant === 'asymmetric-groups') {
-			const hasParents = Boolean(data.parents && (data.parents.father || data.parents.mother));
+			const hasParents = Boolean(
+				data.parents && (data.parents.father || data.parents.mother),
+			);
 			const hasGroups = Array.isArray(data.groups) && data.groups.length >= 2;
 			if (!hasParents && !hasGroups) {
 				ctx.addIssue({
 					code: 'custom',
-					message: 'Family section requires parents or at least two groups for split/asymmetric variants',
+					message:
+						'Family section requires parents or at least two groups for split/asymmetric variants',
 					path: ['groups'],
 				});
 			}

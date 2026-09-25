@@ -255,7 +255,7 @@ if (!hasContent) return;
 					<div class="family__media-frame">
 						<OptimizedImage
 							imagePath={featuredImage}
-							alt={celebrantName}
+							alt={typeof featuredImage === 'object' ? featuredImage.alt : celebrantName}
 							width={960}
 							height={1280}
 							quality={84}

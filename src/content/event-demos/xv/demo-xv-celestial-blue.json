@@ -83,17 +83,26 @@
         "introLede": "Ubicación ilustrativa de la demo"
     },
     "family": {
-        "featuredImage": "family",
+        "featuredImage": {
+            "type": "internal",
+            "key": "family",
+            "delivery": {
+                "mode": "original",
+                "width": 1122,
+                "height": 1402
+            }
+        },
+        "featuredImageAlt": "Retrato ilustrativo de Camila con vestido azul, acompañada de su madre y su padre.",
         "parents": {
             "father": "Alejandro Torres Mendoza",
             "mother": "Mariana Fernanda Rivas"
         },
         "labels": {
-            "sectionTitle": "Mi Familia",
+            "sectionTitle": "Mi familia",
             "sectionSubtitle": "Con amor y gratitud",
             "parentsTitle": "Con la bendición de",
             "godparentsTitle": "Padrinos",
-            "sectionMessage": "Cada paso de este camino ha estado iluminado por su cariño. Gracias por ser parte de esta noche que siempre llevaré en el corazón."
+            "sectionMessage": "El cariño que me acompaña en cada paso."
         },
         "godparents": [
             {
@@ -109,7 +118,7 @@
                 "role": "Padrino"
             }
         ],
-        "variant": "standard"
+        "variant": "portrait-register"
     },
     "gallery": {
         "variant": "index-choreography",
@@ -138,16 +147,19 @@
                 "caption": "Sonrisas que iluminan la noche."
             },
             {
-                "image": "gallery06",
-                "caption": "Detalles que cuentan una historia."
-            },
-            {
                 "image": "gallery07",
-                "caption": "Brillo y distinción en cada rincón."
+                "caption": "Brillo y distinción en cada rincón.",
+                "focalPoint": "center 38%",
+                "aspectRatio": "3 / 4"
             },
             {
                 "image": "gallery08",
-                "caption": "La magia de los quince años."
+                "caption": "La magia de los quince años.",
+                "focalPoint": "center 45%"
+            },
+            {
+                "image": "gallery06",
+                "caption": "Detalles que cuentan una historia."
             }
         ]
     },
@@ -270,6 +282,10 @@
     },
     "composition": {
         "intersections": {
+            "family": {
+                "family": "arch",
+                "source": "quote"
+            },
             "interlude-after-family": {
                 "family": "overlap",
                 "source": "family"

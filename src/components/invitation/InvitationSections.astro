@@ -24,12 +24,6 @@ interface Props {
 
 const { pageContext, showDemoConversion = false } = Astro.props;
 const sections = buildInvitationSectionRenderDescriptors(pageContext);
-const conversionPlacement = (component: string): 'gallery' | 'closing' | undefined => {
-	if (!showDemoConversion) return undefined;
-	if (component === 'gallery') return 'gallery';
-	if (component === 'thankYou') return 'closing';
-	return undefined;
-};
 
 const interludeIndices = new Map<number, number>();
 {
@@ -47,13 +41,12 @@ const interludeId = (i: number) => {
   return idx ? `interlude-${idx}` : 'interlude';
 };
 
+const getScreenshotSection = (component: string, i: number) =>
+  component === 'interlude' ? interludeId(i) : component;
+
 const expectedSectionIds = [
 	'hero',
-	...sections.map((s, i) =>
-		s.component === 'interlude'
-			? interludeId(i)
-			: s.component,
-	),
+	...sections.map((s, i) => getScreenshotSection(s.component, i)),
 ];
 ---
 
@@ -65,15 +58,11 @@ const expectedSectionIds = [
 	{
 		sections.map(({component, props, afterInterlude, intersection, intersectionSource, reveal, renderMode}, index) => {
 			const interludeIndex = component === 'interlude' ? interludeIndices.get(index) : undefined;
-			const placement = conversionPlacement(component);
 
 			return (
-				<>
 				<div
 					data-section-id={`section-${index}-${component}`}
-					data-screenshot-section={component === 'interlude'
-						? interludeId(index)
-						: component}
+					data-screenshot-section={getScreenshotSection(component, index)}
 					class="invitation-section-wrapper"
 					data-section-kind={component}
 					data-intersection={intersection}
@@ -84,18 +73,23 @@ const expectedSectionIds = [
 					{component === 'interlude' && <Interlude {...props} interludeIndex={interludeIndex} />}
 					{component === 'quote' && <Quote {...props} />}
 					{component === 'family' && <Family {...props} />}
-					{component === 'gallery' && <Gallery {...props} />}
+					{component === 'gallery' && (showDemoConversion && props.items?.length ? (
+						<Gallery {...props}>
+							<DemoConversion slot="last-item" placement="gallery" galleryItem={props.items[props.items.length - 1]} />
+						</Gallery>
+					) : <Gallery {...props} />)}
 					{component === 'countdown' && <Countdown {...props} />}
 					{component === 'location' && <EventLocation {...props} />}
 					{component === 'itinerary' && <Itinerary {...props} />}
-					{component === 'rsvp' && renderMode === 'locked' && <LockedRsvpPreview title={props.title} variant={props.variant} />}
-					{component === 'rsvp' && renderMode !== 'locked' && <RSVP client:visible {...props} />}
+					{component === 'rsvp' && (renderMode === 'locked' ? (
+						<LockedRsvpPreview title={props.title} variant={props.variant} />
+					) : (
+						<RSVP client:visible {...props} />
+					))}
 					{component === 'gifts' && <Gifts {...props} />}
 					{component === 'thankYou' && <ThankYou {...props} />}
 					{component === 'personalized-access' && <PersonalizedAccess {...props} />}
 				</div>
-				{placement && <DemoConversion placement={placement} />}
-				</>
 			);
 		})
 	}

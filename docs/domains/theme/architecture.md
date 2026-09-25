@@ -77,6 +77,15 @@ geometry; profiles supply values only.
 Quote exposes `--quote-divider-bottom-display` for a closing ornament independently of the top
 divider. It falls back to `--quote-divider-display`, preserving other invitations.
 
+Family's `portrait-register` variant centers a complete photograph above separate name registers:
+parents use two columns and godparents use an adaptive row on desktop; mobile keeps a single reading
+column. Its canonical stylesheet owns the card-free geometry and typography, while profiles supply
+palette and rhythm tokens. It requires a photograph with explicit original delivery, width and
+height, and does not accept `text-only` presentation. Existing variants retain their original
+geometry and image defaults. `family.featuredImageAlt` supplies a descriptive image alternative
+through the existing `ImageAsset`; omission retains the celebrant-name fallback. Source preservation
+uses the existing image `delivery` contract, independently of the CSS crop.
+
 ### Gifts flatten
 
 Gifts section styling is the flattened section-level variable contract in
