@@ -1,0 +1,52 @@
+.demo-conversion-report {
+	display: grid;
+	gap: var(--spacing-md);
+	margin-block: var(--spacing-lg);
+
+	form,
+	fieldset {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-md);
+		align-items: end;
+	}
+
+	fieldset {
+		border: 0;
+		padding: 0;
+		margin: 0;
+	}
+
+	label {
+		display: grid;
+		gap: var(--spacing-sm);
+	}
+
+	input,
+	select,
+	button {
+		min-height: 44px;
+		max-width: 100%;
+	}
+
+	:focus-visible {
+		outline: 2px solid var(--dashboard-focus-ring);
+		outline-offset: 2px;
+	}
+
+	&__table {
+		overflow-x: auto;
+	}
+
+	table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+
+	th,
+	td {
+		padding: var(--spacing-md);
+		text-align: left;
+		border-bottom: 1px solid var(--dashboard-card-border);
+	}
+}

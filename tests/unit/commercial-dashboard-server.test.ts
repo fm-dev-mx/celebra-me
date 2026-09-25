@@ -7,6 +7,11 @@ import { loadCommercialDashboardData } from '@/lib/tracking/commercial-dashboard
 
 const mockRest = supabaseRestRequest as jest.MockedFunction<typeof supabaseRestRequest>;
 
+beforeEach(() => {
+	mockRest.mockReset();
+	mockRest.mockResolvedValue([]);
+});
+
 describe('commercial historical Purchase diagnostics', () => {
 	it('lists historical paid orders without a stable Purchase without issuing repair writes', async () => {
 		mockRest
