@@ -119,6 +119,7 @@ const itemsWithAssets = items.map((item) => {
 										data-track-cta="demo_hero_whatsapp"
 										data-track-intent="whatsapp"
 										data-demo-slug={featuredItem.slug}
+										data-preserve-message={featuredItem.slug === 'demo-xv-celestial-blue' ? 'true' : undefined}
 										data-event-type={showroom.eventType}
 									>
 										Cotizar este estilo
@@ -246,6 +247,7 @@ const itemsWithAssets = items.map((item) => {
 													data-track-cta="demo_hero_whatsapp"
 													data-track-intent="whatsapp"
 													data-demo-slug={item.slug}
+													data-preserve-message={item.slug === 'demo-xv-celestial-blue' ? 'true' : undefined}
 													data-event-type={showroom.eventType}
 												>
 													Cotizar este estilo

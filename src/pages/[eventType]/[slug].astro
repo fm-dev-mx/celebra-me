@@ -2,6 +2,7 @@
 export const prerender = false;
 
 import InvitationSections from '@/components/invitation/InvitationSections.astro';
+import { hasDemoConversion } from '@/lib/invitation/demo-conversion';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { buildPageContextFromViewModel, prepareInvitationPageContext } from '@/lib/invitation/page-data';
@@ -336,7 +337,7 @@ const wrapperDataAttributes = page
 								highPriority={skipEnvelope || !page.wrapper.showEnvelope}
 							/>
 
-							<InvitationSections pageContext={page} />
+							<InvitationSections pageContext={page} showDemoConversion={hasDemoConversion(page.viewModel.id, page.viewModel.isDemo)} />
 
 							{
 								guestContext && (
@@ -366,7 +367,7 @@ const wrapperDataAttributes = page
 								variant="standard"
 								closingPhrase={page.footerClosingPhrase}
 								showFooterBranding={page.viewModel.brandingVisibility.showFooterBranding}
-								showContactCta={page.viewModel.brandingVisibility.showContactCta}
+								showContactCta={page.viewModel.brandingVisibility.showContactCta && !hasDemoConversion(page.viewModel.id, page.viewModel.isDemo)}
 							/>
 
 							{page.musicPlayer && (

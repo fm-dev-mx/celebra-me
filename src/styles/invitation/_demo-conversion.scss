@@ -1,0 +1,53 @@
+.demo-conversion {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+	padding: clamp(2rem, 5vw, 4rem) 1.5rem;
+	background: var(--color-surface-primary);
+	color: var(--color-text-primary);
+	text-align: center;
+	font-family: var(--font-body);
+
+	h2,
+	p {
+		margin: 0;
+		max-width: 45ch;
+	}
+
+	a {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 44px;
+		max-width: 100%;
+		padding: 0.75rem 1.25rem;
+		font-size: 1rem;
+		line-height: 1.5;
+		border-radius: 0.5rem;
+
+		&:focus-visible {
+			outline: 2px solid var(--color-text-primary);
+			outline-offset: 4px;
+		}
+
+		&:active {
+			text-decoration: underline;
+		}
+	}
+
+	&__primary {
+		background: var(--color-surface-dark);
+		color: var(--color-text-on-dark);
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	&__secondary {
+		color: inherit;
+		text-underline-offset: 0.2em;
+	}
+}

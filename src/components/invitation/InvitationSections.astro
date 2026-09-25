@@ -1,5 +1,6 @@
 ---
 import Countdown from '@/components/invitation/Countdown.astro';
+import DemoConversion from '@/components/invitation/DemoConversion.astro';
 import EventLocation from '@/components/invitation/EventLocation.astro';
 import Family from '@/components/invitation/Family.astro';
 import Gallery from '@/components/invitation/Gallery.astro';
@@ -18,10 +19,17 @@ import {
 
 interface Props {
 	pageContext: InvitationPageContext;
+	showDemoConversion?: boolean;
 }
 
-const { pageContext } = Astro.props;
+const { pageContext, showDemoConversion = false } = Astro.props;
 const sections = buildInvitationSectionRenderDescriptors(pageContext);
+const conversionPlacement = (component: string): 'gallery' | 'closing' | undefined => {
+	if (!showDemoConversion) return undefined;
+	if (component === 'gallery') return 'gallery';
+	if (component === 'thankYou') return 'closing';
+	return undefined;
+};
 
 const interludeIndices = new Map<number, number>();
 {
@@ -57,8 +65,10 @@ const expectedSectionIds = [
 	{
 		sections.map(({component, props, afterInterlude, intersection, intersectionSource, reveal, renderMode}, index) => {
 			const interludeIndex = component === 'interlude' ? interludeIndices.get(index) : undefined;
+			const placement = conversionPlacement(component);
 
 			return (
+				<>
 				<div
 					data-section-id={`section-${index}-${component}`}
 					data-screenshot-section={component === 'interlude'
@@ -84,6 +94,8 @@ const expectedSectionIds = [
 					{component === 'thankYou' && <ThankYou {...props} />}
 					{component === 'personalized-access' && <PersonalizedAccess {...props} />}
 				</div>
+				{placement && <DemoConversion placement={placement} />}
+				</>
 			);
 		})
 	}

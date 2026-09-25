@@ -395,6 +395,16 @@ before public database-backed routes use this variant.
 
 ## Image delivery and surface defaults
 
+The retained Celestial standard hero consumes `--hero-title-max-width` with its existing 12ch
+default. The demo narrows that token only at tablet widths to keep its title clear of the portrait;
+photograph identity and focal points do not change.
+
+RSVP supports `--rsvp-shell-background` (transparent by default), `--rsvp-shell-padding-block` (the
+existing header/player clearance calculation by default), and `--rsvp-subcopy-color` (the existing
+secondary text by default). The retained Celestial skin consumes `--rsvp-card-shadow` and
+`--rsvp-skin-title-color` with its existing fallbacks. These hooks allow a profile to set a dark
+finale without duplicating RSVP structure or changing other profiles.
+
 Canonical image references carry explicit delivery intent when a section requires a particular
 original or transformation. Preserve it through publication and adaptation; source identity alone is
 not proof that the browser receives the same image. Gallery references may override delivery without

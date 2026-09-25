@@ -1,0 +1,37 @@
+---
+import { CELESTIAL_DEMO_SLUG, getCelestialQuoteLink } from '@/lib/invitation/demo-conversion';
+import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
+import '@/styles/invitation/_demo-conversion.scss';
+
+interface Props {
+	placement: 'gallery' | 'closing';
+}
+const { placement } = Astro.props;
+const available = !isPlaceholderContactPhone(getContactPhone());
+---
+
+<aside class="demo-conversion" aria-label="Información comercial de esta demo" data-placement={placement}>
+	{placement === 'closing' && (
+		<>
+			<h2>Una invitación basada en este estilo</h2>
+			<p>Consulte las opciones de personalización para su celebración.</p>
+		</>
+	)}
+	{available ? (
+		<a class="demo-conversion__primary" href={getCelestialQuoteLink()} target="_blank" rel="noopener noreferrer"
+			data-track-event="whatsapp_contact_clicked" data-track-cta={`demo_quote_${placement}`}
+			data-track-section={`demo_${placement}`} data-track-intent="whatsapp"
+			data-track-label="Cotizar este estilo por WhatsApp" data-event-type="xv"
+			data-demo-slug={CELESTIAL_DEMO_SLUG} data-preserve-message="true">
+			Cotizar este estilo por WhatsApp
+		</a>
+	) : (
+		<a class="demo-conversion__primary" href="/#contacto">Consultar este estilo</a>
+	)}
+	{placement === 'closing' && (
+		<a class="demo-conversion__secondary" href="/demos/xv"
+			data-track-event="cta_clicked" data-track-cta="demo_browse_styles"
+			data-track-section="demo_closing" data-track-intent="showroom"
+			data-event-type="xv" data-demo-slug={CELESTIAL_DEMO_SLUG}>Ver otros estilos</a>
+	)}
+</aside>
