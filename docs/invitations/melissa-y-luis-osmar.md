@@ -224,8 +224,9 @@ The reference transfer was validated locally on 2026-09-19. The comparison uses 
 worktree's existing harness captures and equivalent local routes/viewports. Published-route and
 Preview parity remain unverified; no managed content was applied.
 
-Retained, unrendered hero asset: `hero-landscape.webp`. Belcanto source and derivative assets also
-remain available but are not rendered as an interlude. No resource deletion or dependency change.
+Cleanup on 2026-09-25 removed `hero-landscape.webp` after confirming it was not declared in the
+invitation asset package or referenced by generated published content. Belcanto source and
+derivative remain retained-only and declared by the asset package; no remote object was deleted.
 
 ## Client Correction — 2026-09-22
 
