@@ -35,13 +35,13 @@
 	--quote-ornament-opacity: 0.3;
 
 	position: relative;
-	min-height: 40svh;
+	min-height: var(--quote-min-height, 40svh);
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	overflow: hidden;
 	padding: var(--quote-padding-block) var(--quote-padding-inline);
-	text-align: center;
+	text-align: var(--quote-text-align, center);
 	color: var(--quote-text-color);
 	background: var(--quote-bg);
 	border-radius: var(--quote-surface-radius, 0);
@@ -60,7 +60,7 @@
 .quote-container {
 	position: relative;
 	z-index: 1;
-	max-width: 800px;
+	max-width: var(--quote-container-max-width, 800px);
 	width: 100%;
 }
 
@@ -82,6 +82,14 @@
 	margin-bottom: clamp(1.5rem, 3vh, 3rem);
 }
 
+.quote-mark {
+	display: var(--quote-mark-display, none);
+	width: 2rem;
+	height: 2rem;
+	margin: var(--quote-mark-margin, 0 auto 1.5rem);
+	fill: var(--quote-accent-color);
+}
+
 .quote-divider-bottom {
 	display: var(--quote-divider-bottom-display, var(--quote-divider-display));
 	margin-top: clamp(1.5rem, 3vh, 3rem);
@@ -91,7 +99,7 @@
 	margin: 0 auto;
 	padding: 0;
 	font-family: var(--quote-content-font);
-	font-weight: 500;
+	font-weight: var(--quote-content-weight, 500);
 	font-size: var(--quote-content-size);
 	font-style: var(--quote-content-style);
 	line-height: var(--quote-content-line-height);
@@ -102,7 +110,12 @@
 }
 
 .quote-line {
+	margin-block-start: var(--quote-line-margin-start, 1em);
 	margin-bottom: 0.5rem;
+
+	& + & {
+		padding-inline-start: var(--quote-continuation-indent, 0);
+	}
 
 	&:last-child {
 		margin-bottom: 0;
@@ -112,7 +125,7 @@
 .quote-author-container {
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	justify-content: var(--quote-author-justify, center);
 	gap: 1rem;
 	margin-top: 2rem;
 	color: var(--quote-author-color);
@@ -120,6 +133,7 @@
 }
 
 .quote-ornament {
+	display: var(--quote-ornament-display, block);
 	width: 40px;
 	height: 1px;
 	background: linear-gradient(90deg, transparent, var(--quote-ornament-color), transparent);
@@ -127,9 +141,9 @@
 }
 
 .quote-author {
-	font-family: var(--font-display);
+	font-family: var(--quote-author-font, var(--font-display));
 	font-size: var(--quote-author-size, clamp(0.9rem, 3vw, 1.1rem));
-	text-transform: uppercase;
+	text-transform: var(--quote-author-transform, uppercase);
 	letter-spacing: var(--quote-author-tracking, 0.2em);
 	font-style: normal;
 	color: var(--quote-author-color);
