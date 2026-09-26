@@ -269,11 +269,6 @@
 				text-align: right;
 				padding-inline-end: 0.08em;
 			}
-
-			span + span::first-letter {
-				font-size: 0.45em;
-				font-style: normal;
-			}
 		}
 
 		.ceremonial-portrait-hero__date {
@@ -286,10 +281,6 @@
 			letter-spacing: 0.06em;
 			color: var(--melissa-cocoa);
 			opacity: 100%;
-
-			&::after {
-				content: none;
-			}
 		}
 
 		.ceremonial-portrait-hero__scroll-indicator {
@@ -501,14 +492,6 @@
 
 		.countdown-date {
 			display: none;
-			margin-top: 1.5rem;
-		}
-
-		.event-date {
-			margin: 0;
-			font: 400 1.125rem / 1.5 var(--font-display);
-			letter-spacing: 0.02em;
-			text-transform: none;
 		}
 
 		.countdown-footer {
@@ -704,10 +687,6 @@
 		.family__group--group-1 .family__group-title {
 			justify-content: flex-end;
 			text-align: right;
-		}
-
-		.family__title::before {
-			content: none;
 		}
 
 		.family__message {
@@ -1439,8 +1418,7 @@
 	.event-location__card-flourish,
 	.itinerary__header-flourish,
 	.gifts-section__flourish,
-	.gifts-section__separator,
-	.countdown-date .subtitle-line {
+	.gifts-section__separator {
 		display: none;
 	}
 
