@@ -1,5 +1,6 @@
 @use '../global/mixins' as mixins;
 @use '@fontsource-variable/cormorant-garamond/wght-italic.css' as cormorant-garamond-italic;
+@use '@fontsource-variable/eb-garamond/wght-italic.css' as eb-garamond-italic;
 
 // Celestial Blue demo — midnight conservatory: a directional ink-blue veil, silver constellation
 // and long editorial name stack create a cinematic first impression without competing with Camila's
@@ -21,32 +22,151 @@
 	--celestial-portal-light: rgb(var(--color-satin-blue-rgb) / 34%);
 	--celestial-family-overlap-depth: clamp(2rem, 8vw, 4rem);
 
-	// Family album: cool stationery, a complete portrait, then separate name registers.
+	// The standard family layout owns the responsive portrait/name split.
 	--family-bg: color-mix(in srgb, var(--color-cool-ivory) 65%, var(--color-ice-blue));
+	--family-accent: color-mix(
+		in srgb,
+		var(--color-deep-blue-graphite) 65%,
+		var(--color-satin-blue)
+	);
 	--family-padding-block: clamp(4rem, 6vw, 6rem) clamp(6rem, 7vw, 6.5rem);
 	--family-texture-opacity: 0;
 	--family-vignette-bg: none;
 	--family-header-filter: none;
 	--family-name-font: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
 	--family-title-font: var(--family-name-font);
-	--family-title-size: clamp(2.75rem, 5vw, 3.75rem);
+	--family-title-size: clamp(2.5rem, 5vw, 3.5rem);
 	--family-title-line-height: 1.15;
 	--family-title-text-shadow: none;
-	--family-eyebrow-size: 0.8125rem;
-	--family-eyebrow-color: var(--color-soft-graphite);
+	--family-eyebrow-size: 0.875rem;
+	--family-eyebrow-color: var(--family-accent);
 	--family-eyebrow-opacity: 100%;
-	--family-divider: rgb(var(--color-deep-blue-graphite-rgb) / 16%);
+	--family-divider: transparent;
+	--family-divider-height: 0;
+	--family-divider-margin: 0;
+	--family-message-font: var(--font-body);
+	--family-message-size: clamp(1rem, 2vw, 1.125rem);
 	--family-message-color: var(--color-soft-graphite);
 	--family-message-margin: 1.25rem auto 0;
+	--family-panel-spacing: 0;
+	--family-panel-width: 100%;
+	--family-panel-max-width: none;
+	--family-panel-margin-top: 0;
+	--family-panel-border: 0;
+	--family-panel-radius: 0;
+	--family-panel-bg: transparent;
+	--family-panel-shadow: none;
+	--family-panel-shadow-extra-display: none;
+	--family-panel-rotate: none;
+	--family-panel-surface-bg: transparent;
+	--family-panel-surface-after-bg: none;
+	--family-panel-surface-after-opacity: 0;
+	--family-panel-watermark-opacity: 0;
+	--family-panel-edge-border: none;
+	--family-panel-edge-shadow: none;
+	--family-media-aspect-ratio: auto;
+	--family-media-image-height: auto;
+	--family-media-image-fit: contain;
+	--family-media-border: 0;
+	--family-media-inner-border: 0;
+	--family-media-filter: none;
+	--family-media-radius: 0;
+	--family-media-image-radius: 0;
+	--family-media-bg: transparent;
+	--family-media-shadow: none;
+	--family-content-gap: 2.25rem;
+	--family-group-text-align: start;
+	--family-item-align: flex-start;
+	--family-group-padding: 0 0 0 clamp(1.5rem, 5vw, 3rem);
+	--family-parents-padding: 0;
+	--family-parents-margin-inline: 0;
 	--family-group-filter: none;
-	--family-group-title-color: var(--color-soft-graphite);
+	--family-group-title-font: var(--font-ui);
+	--family-group-title-size: 0.875rem;
+	--family-group-title-weight: 500;
+	--family-group-title-letter-spacing: 0.04em;
+	--family-group-title-text-transform: none;
+	--family-group-title-color: var(--family-accent);
 	--family-group-title-opacity: 100%;
-	--family-group-title-margin: 0 0 1.5rem;
-	--family-name-size: clamp(1.625rem, 2.5vw, 1.875rem);
+	--family-group-title-margin: 0 0 1.25rem;
+	--family-list-gap: 1.25rem;
+	--family-godparents-list-columns: 1fr;
+	--family-name-size: clamp(1.5rem, 2.5vw, 1.75rem);
 	--family-name-line-height: 1.2;
 	--family-name-max-width: 24ch;
 	--family-name-text-shadow: none;
-	--family-meta-color: var(--color-soft-graphite);
+	--family-meta-font: var(--font-ui);
+	--family-meta-size: 0.875rem;
+	--family-meta-weight: 400;
+	--family-meta-letter-spacing: 0.02em;
+	--family-meta-text-transform: none;
+	--family-meta-color: var(--family-accent);
+
+	// Quote defaults are component-scoped; override the public tokens on their owner.
+	.quote-section {
+		--quote-min-height: 0;
+		--quote-text-align: start;
+		--quote-container-max-width: 35rem;
+		--quote-continuation-indent: 1.5em;
+		--quote-line-margin-start: 0;
+		--quote-mark-margin: 0 0 1.25rem;
+		--quote-author-justify: flex-start;
+		--quote-content-font: 'EB Garamond Variable', 'EB Garamond', georgia, serif;
+		--quote-content-weight: 500;
+		--quote-content-size: clamp(2rem, 5vw, 2.75rem);
+		--quote-content-line-height: 1.3;
+		--quote-content-style: italic;
+		--quote-content-shadow: none;
+		--quote-content-max-width: 32rem;
+		--quote-padding-block: clamp(4rem, 7vw, 5.5rem);
+		--quote-padding-inline: clamp(1.5rem, 6vw, 1.75rem);
+		--quote-text-color: var(--color-deep-blue-graphite);
+		--quote-author-font: var(--font-ui);
+		--quote-author-transform: none;
+		--quote-author-color: color-mix(
+			in srgb,
+			var(--color-deep-blue-graphite) 65%,
+			var(--color-satin-blue)
+		);
+		--quote-author-opacity: 100%;
+		--quote-author-size: 0.875rem;
+		--quote-author-tracking: 0.04em;
+		--quote-accent-color: var(--quote-author-color);
+		--quote-mark-display: block;
+		--quote-divider-display: none;
+		--quote-ornament-display: none;
+	}
+
+	.gallery-section {
+		--gallery-section-bg: var(--color-cool-ivory);
+		--gallery-title-font: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+		--gallery-title-size: clamp(2.5rem, 5vw, 3.5rem);
+		--gallery-title-color: var(--color-deep-blue-graphite);
+		--gallery-title-transform: none;
+		--gallery-title-letter-spacing: 0;
+		--gallery-subtitle-font: var(--font-body);
+		--gallery-subtitle-size: clamp(1rem, 2vw, 1.125rem);
+		--gallery-subtitle-max-width: 40ch;
+		--gallery-subtitle-margin-inline: auto;
+		--gallery-subtitle-color: color-mix(
+			in srgb,
+			var(--color-deep-blue-graphite) 65%,
+			var(--color-satin-blue)
+		);
+		--gallery-subtitle-transform: none;
+		--gallery-subtitle-letter-spacing: 0;
+		--gallery-header-gap: clamp(2rem, 4vw, 3rem);
+		--gallery-item-radius: 0;
+		--gallery-item-image-radius: 0;
+		--gallery-item-border: 0;
+		--gallery-item-shadow: none;
+		--gallery-item-emphasis-shadow: none;
+		--gallery-item-hover-shadow: none;
+		--gallery-item-focus-outline: 2px solid var(--gallery-subtitle-color);
+		--gallery-overlay-opacity: 0;
+		--gallery-overlay-emphasis-opacity: 0;
+		--gallery-overlay-hover-opacity: 0;
+	}
 
 	@media (576px <= width < 992px) {
 		--hero-title-max-width: 8ch;
@@ -184,9 +304,40 @@
 		}
 	}
 
-	// Cadence: quote -> family (shallow asymmetric arch); family -> interlude (bridge overlap);
+	// Cadence: hero -> quote (bridge, asymmetrical ink-to-ice atmospheric blend);
+	// quote -> family (climax arch); family -> interlude (bridge overlap);
 	// interlude -> gallery (bridge blend); itinerary -> gifts (climax blend).
 	// All other section boundaries are intentionally neutral.
+	.invitation-section-wrapper[data-section-kind='quote'][data-intersection='atmospheric-blend'] {
+		--intersection-depth: clamp(3.25rem, 6.5vw, 4.5rem);
+		--intersection-surface: var(--color-cool-ivory);
+		--intersection-blend: radial-gradient(
+			ellipse 132% 106% at 68% 0%,
+			rgb(var(--color-liquid-silver-rgb) / 34%) 0%,
+			rgb(var(--color-satin-blue-rgb) / 18%) 42%,
+			transparent 92%
+		);
+	}
+
+	// Keep the hero at the first fold; begin the atmospheric blend only when the quote scrolls into
+	// view. Paint it on the incoming section because its opaque surface covers the shared pseudo-element.
+	.invitation-section-wrapper[data-intersection='atmospheric-blend'][data-intersection-source='hero'] {
+		> .quote-section {
+			background-color: var(--quote-bg, var(--color-cool-ivory));
+			background-image:
+				var(--intersection-blend),
+				linear-gradient(
+					180deg,
+					var(--color-deep-blue-graphite) 0%,
+					color-mix(in srgb, var(--color-satin-blue) 48%, var(--color-cool-ivory)) 54%,
+					var(--quote-bg, var(--color-cool-ivory)) 100%
+				);
+			background-repeat: no-repeat;
+			background-position: top;
+			background-size: 100% var(--intersection-depth);
+		}
+	}
+
 	.invitation-section-wrapper[data-section-kind='family'][data-intersection='arch'] {
 		--intersection-surface: var(--family-bg);
 		--intersection-arch-height: clamp(2.5rem, 5vw, 4.5rem);
@@ -206,13 +357,21 @@
 	}
 
 	.gifts-section {
+		--font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
 		--gifts-bg: var(--color-surface-dark);
-		--gifts-text-color: var(--color-text-on-dark);
-		--gifts-title-color: var(--color-text-on-dark);
-		--gifts-subtitle-color: var(--color-text-on-dark);
-		--gifts-card-title-color: var(--color-text-on-dark);
+		--gifts-text-color: var(--color-cool-ivory);
+		--gifts-title-color: var(--color-cool-ivory);
+		--gifts-subtitle-color: var(--color-cold-silver);
+		--gifts-card-title-color: var(--color-cool-ivory);
+		--gifts-card-description-color: var(--color-cold-silver);
 		--gifts-card-bg: transparent;
-		--gifts-icon-color: var(--color-text-on-dark);
+		--gifts-card-border: 1px solid rgb(var(--color-satin-blue-rgb) / 22%);
+		--gifts-card-shadow: none;
+		--gifts-card-hover-shadow: none;
+		--gifts-icon-color: var(--color-ice-blue);
+		--gifts-icon-bg: rgb(var(--color-satin-blue-rgb) / 10%);
+		--gifts-icon-border: 1px solid rgb(var(--color-satin-blue-rgb) / 24%);
+		--gifts-icon-shadow: none;
 	}
 
 	.personalized-access {

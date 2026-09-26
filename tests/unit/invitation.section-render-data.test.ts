@@ -62,9 +62,14 @@ function setupDemoPageContext(fixtureSlug = 'demo-xv-editorial') {
 
 describe('buildInvitationSectionRenderDescriptors', () => {
 	it('uses a section fade for the portrait register without changing standard family motion', () => {
-		const portrait = buildInvitationSectionRenderDescriptors(
-			setupDemoPageContext('demo-xv-celestial-blue'),
-		).find((descriptor) => descriptor.component === 'family');
+		const portraitContext = setupDemoPageContext('demo-xv-celestial-blue');
+		const family = portraitContext.viewModel.sections.family;
+		if (!family) throw new Error('Family fixture is required');
+		// Select the canonical variant explicitly; live demo styling is not a motion contract.
+		family.variant = 'portrait-register';
+		const portrait = buildInvitationSectionRenderDescriptors(portraitContext).find(
+			(descriptor) => descriptor.component === 'family',
+		);
 		expect(portrait).toMatchObject({
 			intersection: 'arch',
 			reveal: 'fade',
@@ -74,6 +79,14 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			setupDemoPageContext('demo-xv-jewelry-box'),
 		).find((descriptor) => descriptor.component === 'family');
 		expect(standard).toMatchObject({ reveal: 'stagger-group', props: { variant: 'standard' } });
+		const celestial = buildInvitationSectionRenderDescriptors(
+			setupDemoPageContext('demo-xv-celestial-blue'),
+		).find((descriptor) => descriptor.component === 'family');
+		expect(celestial).toMatchObject({
+			intersection: 'arch',
+			reveal: 'stagger-group',
+			props: { variant: 'standard' },
+		});
 	});
 
 	it('marks a public personalized-only RSVP for server-only rendering', () => {

@@ -183,8 +183,13 @@ describe('buildInvitationRenderPlan', () => {
 		const plan = buildInvitationRenderPlan(adaptEvent(event));
 		const nonNeutral = plan.filter((item) => item.intersection.family !== 'neutral');
 
-		expect(nonNeutral).toHaveLength(4);
+		expect(nonNeutral).toHaveLength(5);
 		expect(nonNeutral).toEqual([
+			expect.objectContaining({
+				type: 'section',
+				section: 'quote',
+				intersection: { family: 'atmospheric-blend', source: 'hero' },
+			}),
 			expect.objectContaining({
 				type: 'section',
 				section: 'family',

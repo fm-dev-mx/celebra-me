@@ -118,47 +118,31 @@
                 "role": "Padrino"
             }
         ],
-        "variant": "portrait-register"
+        "variant": "standard"
     },
     "gallery": {
-        "variant": "index-choreography",
-        "eyebrow": "Galería",
-        "title": "Momentos de mis quince años",
-        "subtitle": "Una celebración para recordar en familia.",
+        "variant": "feature-stack",
+        "title": "Antes de la celebración",
+        "subtitle": "Retratos que guardan la ilusión de mis quince años.",
         "items": [
             {
+                "image": "gallery04",
+                "alt": "Camila con vestido azul entre los arcos de un corredor.",
+                "caption": "Azul entre los arcos"
+            },
+            {
                 "image": "gallery01",
-                "caption": "Una noche de ensueño en tonos de cielo."
+                "alt": "Retrato cercano de Camila con tiara.",
+                "caption": "La ilusión en una mirada"
             },
             {
                 "image": "gallery02",
-                "caption": "Cada instante, una obra de luz."
-            },
-            {
-                "image": "gallery03",
-                "caption": "Elegancia que trasciende el momento."
-            },
-            {
-                "image": "gallery04",
-                "caption": "Reflejos de una velada inolvidable."
-            },
-            {
-                "image": "gallery05",
-                "caption": "Sonrisas que iluminan la noche."
-            },
-            {
-                "image": "gallery07",
-                "caption": "Brillo y distinción en cada rincón.",
-                "focalPoint": "center 38%",
-                "aspectRatio": "3 / 4"
-            },
-            {
-                "image": "gallery08",
-                "caption": "La magia de los quince años.",
-                "focalPoint": "center 45%"
+                "alt": "Camila de perfil en un balcón, con vestido azul y tiara.",
+                "caption": "Un instante en el balcón"
             },
             {
                 "image": "gallery06",
+                "alt": "Camila sentada en un banco de madera con vestido azul.",
                 "caption": "Detalles que cuentan una historia."
             }
         ]
@@ -195,8 +179,8 @@
         }
     },
     "quote": {
-        "text": "Hoy empieza una nueva historia, y no hay mejor escenario que tenerlos a mi lado.",
-        "author": "Camila Torres Rivas"
+        "text": "La posibilidad de realizar un sueño es lo que hace que la vida sea interesante.",
+        "author": "Paulo Coelho"
     },
     "thankYou": {
         "message": "Gracias por compartir esta noche conmigo. Su amor y compañía hacen de mis XV años un recuerdo que atesoraré para siempre.",
@@ -248,11 +232,20 @@
     },
     "interludes": [
         {
-            "image": "interlude02",
+            "image": {
+                "type": "internal",
+                "key": "gallery05",
+                "delivery": {
+                    "mode": "original",
+                    "width": 1080,
+                    "height": 1350
+                }
+            },
             "afterSection": "family",
-            "alt": "Detalle de tiara y tul azul cielo",
-            "height": "screen",
-            "focalPoint": "50% 25%",
+            "alt": "Camila con vestido azul en un balcón al anochecer.",
+            "height": "medium",
+            "focalPoint": "50% 30%",
+            "focalPointDesktop": "50% 12%",
             "lightX": "54%",
             "lightY": "34%"
         }
@@ -282,6 +275,10 @@
     },
     "composition": {
         "intersections": {
+            "quote": {
+                "family": "atmospheric-blend",
+                "source": "hero"
+            },
             "family": {
                 "family": "arch",
                 "source": "quote"

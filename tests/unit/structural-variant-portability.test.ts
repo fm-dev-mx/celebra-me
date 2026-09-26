@@ -446,12 +446,17 @@ describe('registry-driven canonical variant portability', () => {
 		expect(keepsakeEvent.data).not.toHaveProperty('visualProfileId');
 		expect(keepsake.sections.gallery?.variant).toBe('single-keepsake');
 
-		const index = adaptEvent(
+		const celestial = adaptEvent(
 			loadDemoEvent(
 				'src/content/event-demos/xv/demo-xv-celestial-blue.json',
 				'event-demos/xv/demo-xv-celestial-blue',
 			),
 		);
+		expect(celestial.sections.gallery?.variant).toBe('feature-stack');
+
+		const indexEvent = buildPortableJewelryBoxEvent({ galleryVariant: 'index-choreography' });
+		const index = adaptEvent(indexEvent);
+		expect(indexEvent.data).not.toHaveProperty('visualProfileId');
 		expect(index.sections.gallery?.variant).toBe('index-choreography');
 
 		// jewelry-box demo already authors feature-mosaic; re-assert under a non-origin theme skin.
