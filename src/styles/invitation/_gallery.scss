@@ -63,13 +63,6 @@
 	--gallery-item-aspect-ratio-feature: var(--gallery-item-aspect-ratio);
 	--gallery-item-aspect-ratio-wide: var(--gallery-item-aspect-ratio);
 	--gallery-item-aspect-ratio-standard: var(--gallery-item-aspect-ratio);
-	--gallery-lightbox-bg: rgb(0 0 0 / 90%);
-	--gallery-lightbox-close-color: var(--color-action-accent);
-	--gallery-lightbox-image-border: 2px solid rgb(var(--color-action-accent-rgb) / 30%);
-	--gallery-lightbox-image-radius: 4px;
-	--gallery-lightbox-footer-font: var(--font-body);
-	--gallery-lightbox-footer-color: var(--color-text-on-dark);
-	--gallery-lightbox-footer-size: 1.15rem;
 
 	padding: var(--gallery-section-padding-block) var(--gallery-section-padding-inline);
 	position: relative;
@@ -98,6 +91,8 @@
 	}
 
 	&__subtitle {
+		max-width: var(--gallery-subtitle-max-width, none);
+		margin-inline: var(--gallery-subtitle-margin-inline, 0);
 		font-family: var(--gallery-subtitle-font);
 		font-size: var(--gallery-subtitle-size);
 		color: var(--gallery-subtitle-color);
@@ -247,7 +242,7 @@
 	position: fixed;
 	inset: 0;
 	z-index: 20000;
-	background: var(--gallery-lightbox-bg);
+	background: var(--gallery-lightbox-bg, rgb(0 0 0 / 90%));
 	backdrop-filter: blur(10px);
 	display: flex;
 	align-items: center;
@@ -270,7 +265,7 @@
 		right: 2rem;
 		background: transparent;
 		border: none;
-		color: var(--gallery-lightbox-close-color);
+		color: var(--gallery-lightbox-close-color, var(--color-action-accent));
 		cursor: pointer;
 		padding: 0.5rem;
 		transition: transform var(--motion-interaction-duration, 0.2s) ease;
@@ -305,8 +300,11 @@
 			height: auto;
 			max-height: 85svh;
 			object-fit: contain;
-			border: var(--gallery-lightbox-image-border);
-			border-radius: var(--gallery-lightbox-image-radius);
+			border: var(
+				--gallery-lightbox-image-border,
+				2px solid rgb(var(--color-action-accent-rgb) / 30%)
+			);
+			border-radius: var(--gallery-lightbox-image-radius, 4px);
 		}
 	}
 
@@ -318,9 +316,9 @@
 		text-align: center;
 
 		p {
-			color: var(--gallery-lightbox-footer-color);
-			font-family: var(--gallery-lightbox-footer-font);
-			font-size: var(--gallery-lightbox-footer-size);
+			color: var(--gallery-lightbox-footer-color, var(--color-text-on-dark));
+			font-family: var(--gallery-lightbox-footer-font, var(--font-body));
+			font-size: var(--gallery-lightbox-footer-size, 1.15rem);
 			margin: 0;
 		}
 	}
