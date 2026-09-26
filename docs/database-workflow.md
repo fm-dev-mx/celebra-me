@@ -274,12 +274,17 @@ presence, worktree path, runtime target, and UI banners do not authorize mutatio
    ```bash
    pnpm prod:apply -- --slug <slug>
    pnpm prod:apply -- --slug <slug> --apply
+   pnpm prod:apply -- --slug <slug> --acknowledge-discard-unpublished-draft
+   pnpm prod:apply -- --slug <slug> --acknowledge-discard-unpublished-draft --apply
    pnpm prod:apply -- --all-ready --apply
    ```
 
    No arguments prints a read-only Production plan and does not write. `--all-ready` includes only
-   evidence-backed READY schema and invitations. Domain dry-run remains available:
-   `pnpm invitation:release -- --slug <slug> --targets production --dry-run`.
+   evidence-backed READY schema and invitations; it never includes draft discards. A divergent
+   unpublished draft can be replaced only for explicitly selected `--slug`/`--slugs` when the plan
+   includes `--acknowledge-discard-unpublished-draft`; manual/editor managed-baseline drift remains
+   BLOCKED. Review the plan and its owner-confirmation summary before applying. Domain dry-run
+   remains available: `pnpm invitation:release -- --slug <slug> --targets production --dry-run`.
 
 3. **Semantic content parity (read-only)**:
    ```bash

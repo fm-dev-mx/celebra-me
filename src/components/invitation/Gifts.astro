@@ -6,6 +6,7 @@ import { CashIcon } from '@/components/common/icons/ui/Cash';
 import { PayPalIcon } from '@/components/common/icons/social/PayPal';
 import { CopyIcon } from '@/components/common/icons/ui/Copy';
 import { CheckIcon } from '@/components/common/icons/ui/Check';
+import CatalogIcon from '@/components/common/icons/Icon.astro';
 import type { GiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import type { GiftsVariant } from '@/lib/invitation/section-variants';
 
@@ -45,6 +46,7 @@ interface GiftCash {
 	type: 'cash';
 	title: string;
 	text?: string;
+	iconName?: string;
 }
 
 type Gift = GiftStore | GiftBank | GiftPaypal | GiftCash;
@@ -178,6 +180,7 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 					const headerDescription = getGiftHeaderDescription(gift);
 					const safeLinks = safeGiftLinks[index] ?? [];
 					const safeGiftUrl = safeGiftUrls[index] ?? null;
+					const titleIconName = gift.type === 'cash' ? gift.iconName : undefined;
 					return (
 						<div class={`gift-card gift-card--${gift.type}`} data-reveal-item>
 							<div class="gift-card__inner">
@@ -201,11 +204,20 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 										</div>
 									</div>
 
-									<h3 class="gift-card__title">{gift.title}</h3>
+									<h3 class="gift-card__title">
+										{titleIconName ? (
+											<>
+												<CatalogIcon name={titleIconName} size={44} class="gift-card__title-icon" />
+												<span class="sr-only">{gift.title}</span>
+											</>
+										) : (
+											gift.title
+										)}
+									</h3>
 
-					{headerDescription && (
-						<p class={headerDescription.className}>{headerDescription.text}</p>
-					)}
+									{headerDescription && (
+										<p class={headerDescription.className}>{headerDescription.text}</p>
+									)}
 								</div>
 
 								{gift.type === 'store' && gift.tableNumber && (

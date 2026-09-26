@@ -62,6 +62,9 @@ export const cashGiftItemSchema = z.object({
 	type: z.literal('cash'),
 	title: z.string().default('Lluvia de Sobres'),
 	text: z.string().optional(),
+	// Optional catalog icon name (e.g. 'Enveloped') rendered in place of the
+	// literal title when the design calls for a glyph instead of the word.
+	iconName: z.string().min(1).optional(),
 });
 
 export const giftItemSchema = z.discriminatedUnion('type', [

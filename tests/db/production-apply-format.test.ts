@@ -71,6 +71,33 @@ describe('production apply presentation', () => {
 		expect(rendered).not.toMatch(/postgres(ql)?:\/\//i);
 	});
 
+	it('shows the explicit draft-discard command for a selected invitation', () => {
+		const rendered = formatProductionApplyPlan(
+			plan({
+				scope: {
+					schema: false,
+					slugs: ['draft-owner'],
+					allReady: false,
+					inspectAll: false,
+				},
+				items: [
+					{
+						domain: 'invitation',
+						id: 'draft-owner',
+						readiness: 'READY_AFTER_DISCARD',
+						summary: 'Target draft divergence',
+						binding: 'package-hash',
+					},
+				],
+			}),
+		);
+
+		expect(rendered).toContain('requiere descartar borrador inédito');
+		expect(rendered).toContain(
+			'--slug draft-owner --acknowledge-discard-unpublished-draft --apply',
+		);
+	});
+
 	it('strips preflight from the public plan', () => {
 		const publicPlan = toPublicProductionApplyPlan(plan());
 		expect(publicPlan.items.find((item) => item.id === 'america-johana')).not.toHaveProperty(

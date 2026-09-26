@@ -11,6 +11,7 @@ const KNOWN_FLAGS = new Set([
 	'--slug',
 	'--slugs',
 	'--all-ready',
+	'--acknowledge-discard-unpublished-draft',
 	'--patch',
 	'--image-namespace',
 	'--image-namespace-rollback',
@@ -39,6 +40,7 @@ export interface ProductionApplyCliArgs {
 	schema: boolean;
 	slugs: string[];
 	allReady: boolean;
+	acknowledgeDiscardUnpublishedDraft: boolean;
 	patchFile?: string;
 	imageManifestPath?: string;
 	imageRollback?: boolean;
@@ -56,6 +58,8 @@ Absence of scope never means apply everything.
   pnpm prod:apply
   pnpm prod:apply -- --schema
   pnpm prod:apply -- --slug <slug>
+  pnpm prod:apply -- --slug <slug> --acknowledge-discard-unpublished-draft
+  pnpm prod:apply -- --slug <slug> --acknowledge-discard-unpublished-draft --apply
   pnpm prod:apply -- --slugs <slug,slug>
   pnpm prod:apply -- --all-ready
   pnpm prod:apply -- --patch <file.sql>
@@ -69,7 +73,9 @@ Options:
   --schema              Include canonical pending schema migrations
   --slug <slug>         Include one invitation (repeatable)
   --slugs <a,b>         Include an explicit invitation set (order preserved)
-  --all-ready           Include READY schema + READY invitations only
+  --all-ready           Include READY schema + READY invitations only; never discard drafts
+  --acknowledge-discard-unpublished-draft
+                        Explicitly review selected invitation draft discards
   --patch <file>        Explicit specialized DML (never implied by --all-ready)
   --image-namespace <file>          Reviewed invitation image migration manifest
   --image-namespace-rollback <file> Reviewed image migration rollback
@@ -79,9 +85,11 @@ Options:
   --json                Emit the secret-free plan on stdout
   --help, -h            Show this help (no database access)
 
---all-ready excludes draft repair, one-off resets, historical patches, and
-UNKNOWN/BLOCKED items. --apply reuses valid release-check evidence for the current
-HEAD or runs pnpm release-check once. Agents must stop after the read-only plan.
+Draft discard requires an explicit --slug or --slugs scope and this acknowledgement.
+Manual/editor baseline drift remains BLOCKED. --all-ready excludes draft discards,
+draft repair, one-off resets, historical patches, and UNKNOWN/BLOCKED items.
+--apply reuses valid release-check evidence for the current HEAD or runs
+pnpm release-check once. Agents must stop after the read-only plan.
 `);
 }
 
@@ -157,8 +165,33 @@ function isInspectAllScope(input: {
 	);
 }
 
+function assertDiscardAcknowledgementScope(input: {
+	acknowledgeDiscardUnpublishedDraft: boolean;
+	allReady: boolean;
+	schema: boolean;
+	slugs: readonly string[];
+	patchFile?: string;
+	imageManifestPath?: string;
+	expectedPin: string[] | null;
+}): void {
+	if (!input.acknowledgeDiscardUnpublishedDraft) return;
+	const explicitInvitationOnlyScope =
+		input.slugs.length > 0 &&
+		!input.allReady &&
+		!input.schema &&
+		!input.patchFile &&
+		!input.imageManifestPath &&
+		!input.expectedPin;
+	if (!explicitInvitationOnlyScope) {
+		throw new Error(
+			'--acknowledge-discard-unpublished-draft requires an explicit --slug or --slugs scope only; it cannot be combined with --all-ready, --schema, --patch, --expected, or image namespace operations.',
+		);
+	}
+}
+
 function assertCliCombinations(input: {
 	allReady: boolean;
+	acknowledgeDiscardUnpublishedDraft: boolean;
 	schema: boolean;
 	slugs: readonly string[];
 	patchFile?: string;
@@ -172,6 +205,7 @@ function assertCliCombinations(input: {
 			'Cannot combine --all-ready with --slug, --slugs, or --patch. --all-ready includes only READY schema and invitations.',
 		);
 	}
+	assertDiscardAcknowledgementScope(input);
 	if (
 		input.imageManifestPath &&
 		(input.schema ||
@@ -202,6 +236,7 @@ export function parseProductionApplyCliArgs(argv: string[]): ProductionApplyCliA
 			schema: false,
 			slugs: [],
 			allReady: false,
+			acknowledgeDiscardUnpublishedDraft: false,
 			imageRollback: false,
 			inspectAll: true,
 			expectedPin: null,
@@ -211,6 +246,9 @@ export function parseProductionApplyCliArgs(argv: string[]): ProductionApplyCliA
 	assertKnownCliFlags(args);
 	const schema = args.includes('--schema');
 	const allReady = args.includes('--all-ready');
+	const acknowledgeDiscardUnpublishedDraft = args.includes(
+		'--acknowledge-discard-unpublished-draft',
+	);
 	const apply = args.includes('--apply');
 	const json = args.includes('--json');
 	const patchFile = flagValue(args, '--patch');
@@ -227,6 +265,7 @@ export function parseProductionApplyCliArgs(argv: string[]): ProductionApplyCliA
 	const expectedPin = parseExpectedConstraint(args).expectedPin;
 	assertCliCombinations({
 		allReady,
+		acknowledgeDiscardUnpublishedDraft,
 		schema,
 		slugs,
 		patchFile,
@@ -243,6 +282,7 @@ export function parseProductionApplyCliArgs(argv: string[]): ProductionApplyCliA
 		schema: schema || allReady,
 		slugs,
 		allReady,
+		acknowledgeDiscardUnpublishedDraft,
 		patchFile,
 		imageManifestPath,
 		imageRollback,

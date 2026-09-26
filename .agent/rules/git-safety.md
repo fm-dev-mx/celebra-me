@@ -92,6 +92,23 @@ The tooling derives lane paths from the checkout root (`scripts/shared/worktree-
 not require any specific parent directory. See `docs/core/git-governance.md` for the labeled
 reference-machine example layout.
 
+### Task Checkout Boundary
+
+- A task is confined to the checkout in which it was assigned or the exact checkout explicitly named
+  by the user. Stay in that checkout for inspection, edits, tests, and validation.
+- Do not enumerate sibling worktrees to choose a workspace, or inspect, search, diff, test, copy
+  from, or modify another worktree unless the user explicitly names that checkout and authorizes the
+  specific current-task operation.
+- Never use another worktree as scratch space, a source of patches, or a substitute checkout. Do not
+  create, switch to, claim, hand off to, or repurpose a worktree automatically.
+- If the assigned checkout is not the requested repository lane or branch, stop and report the
+  mismatch. Do not switch branches or continue in a sibling checkout; ask the user to assign the
+  intended checkout.
+- For an explicitly authorized second-checkout operation, verify only that named checkout's path,
+  branch/HEAD, staged and unstaged state, and task ownership before acting. Keep the operation
+  within its explicitly authorized files and actions; authorization does not extend to other
+  worktrees or Git operations.
+
 ### Path Authorization Invariant
 
 Being located inside a development worktree (`dev-local`, `dev-preview`, or `dev-extra`) **does not

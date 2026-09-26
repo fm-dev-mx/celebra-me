@@ -45,6 +45,43 @@ describe('published image verification', () => {
 		expect(rows).toEqual([expect.objectContaining({ classification: 'HEALTHY', reasons: [] })]);
 	});
 
+	it('verifies a published invitation even when no repository package is available', async () => {
+		const { bytes, sha256 } = await imageFixture();
+		const url =
+			'https://res.cloudinary.com/demo/image/upload/v1/production/xv/unregistered/assets/hero.webp';
+		const download = jest.fn(async () => ({
+			ok: true,
+			status: 200,
+			url,
+			headers: new Headers({ 'content-type': 'image/webp' }),
+			arrayBuffer: async () => Uint8Array.from(bytes).buffer,
+		})) as unknown as typeof fetch;
+		const rows = await verifyPublishedInvitation(
+			{
+				eventType: 'xv',
+				slug: 'unregistered',
+				content: { hero: { image: { type: 'uploaded', assetId: 'asset-1' } } },
+				assets: [
+					{
+						id: 'asset-1',
+						key: 'hero',
+						sha256,
+						mimeType: 'image/webp',
+						width: 3,
+						height: 2,
+						url,
+					},
+				],
+			},
+			null,
+			download,
+		);
+		expect(rows).toEqual([
+			expect.objectContaining({ route: 'xv/unregistered', classification: 'HEALTHY' }),
+		]);
+		expect(download).toHaveBeenCalledTimes(1);
+	});
+
 	it.each([
 		[404, 'MISSING'],
 		[200, 'METADATA_DRIFT'],

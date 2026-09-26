@@ -198,6 +198,7 @@ async function runProductionApply(options: {
 		schema: true,
 		slugs: [],
 		allReady: false,
+		acknowledgeDiscardUnpublishedDraft: false,
 		inspectAll: false,
 		expectedPin: options.expectedPin ? [...options.expectedPin] : null,
 	});

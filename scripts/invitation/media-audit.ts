@@ -22,7 +22,10 @@ import {
 	type InvitationAssetSpec,
 } from '../provision/invitations/invitation-definition.ts';
 import { listInvitationDefinitions } from '../provision/invitations/registry.ts';
-import { buildSemanticAssetMap, ASSET_KEY_PREFIX } from '../provision/normalized-invitation-release.ts';
+import {
+	buildSemanticAssetMap,
+	ASSET_KEY_PREFIX,
+} from '../provision/normalized-invitation-release.ts';
 import { collectUploadedContentRefs } from '../../src/lib/invitation-preparation/uploaded-content-refs.ts';
 
 type TargetEnvironment = 'preview' | 'production';
@@ -123,7 +126,7 @@ async function main(): Promise<void> {
 	}
 
 	const rows: AuditRow[] = [];
-	const unusedAssets: string[] = [];
+	const contentUnreferencedAssets: string[] = [];
 	const missingReferences: string[] = [];
 	const firstKeyByHash = new Map<string, string>();
 	for (const definition of definitions) {
@@ -142,7 +145,9 @@ async function main(): Promise<void> {
 		}
 		const assetDir = join(process.cwd(), getInvitationAssetSourceDir(definition));
 		for (const spec of definition.assets) {
-			if (!referencedKeys.has(spec.key)) unusedAssets.push(definition.slug + ':' + spec.key);
+			// Definitions feed release packages even when current published content omits an asset.
+			if (!referencedKeys.has(spec.key))
+				contentUnreferencedAssets.push(definition.slug + ':' + spec.key);
 			const source = join(assetDir, spec.relativePath);
 			if (!existsSync(source)) {
 				rows.push({
@@ -213,7 +218,9 @@ async function main(): Promise<void> {
 			const reasons: string[] = [];
 			if (remote && !observed) reasons.push('remote resource is missing');
 			if (bytes > budget.maxBytes[viewport])
-				reasons.push('asset bytes exceed section budget; viewport delivery remains unverified');
+				reasons.push(
+					'asset bytes exceed section budget; viewport delivery remains unverified',
+				);
 			if (Math.max(width, height) > budget.maxPreparedEdgePx)
 				reasons.push('prepared edge exceeds role maximum');
 			if (!['webp', 'avif'].includes(format))
@@ -257,10 +264,10 @@ async function main(): Promise<void> {
 			failures: rows.filter((row) => !row.compliant).length,
 			duplicates: rows.filter((row) => row.duplicateOf).length,
 			bytes: rows.reduce((sum, row) => sum + row.bytes, 0),
-			unusedAssets: unusedAssets.length,
+			contentUnreferencedAssets: contentUnreferencedAssets.length,
 			missingReferences: missingReferences.length,
 		},
-		unusedAssets,
+		contentUnreferencedAssets,
 		missingReferences,
 		usage: usage
 			? {

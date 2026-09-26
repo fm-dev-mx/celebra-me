@@ -268,7 +268,7 @@ export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAss
 				},
 				{
 					iconName: 'Party',
-					label: 'Fiesta',
+					label: 'Primer baile y brindis',
 					time: MELISSA_SCHEDULE.partyTime,
 				},
 			],
@@ -290,6 +290,7 @@ export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAss
 					type: 'cash',
 					title: 'Sobres',
 					text: 'Podrá entregarnos su obsequio en efectivo dentro de un sobre durante la recepción.',
+					iconName: 'Enveloped',
 				},
 			],
 		},

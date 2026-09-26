@@ -6,9 +6,11 @@ This document defines the core 7-step operating procedure for agents.
 
 1. **Load Governance:** Read mandatory bootstrap rules (`gatekeeper.md`, `git-safety.md`). Consult
    `.agent/routing-matrix.yaml` (or `.agent/index.md`) for domain-specific context additions.
-2. **Preflight Lane State:** For read-only work, inspect worktree path, branch, working-tree state,
-   and target environment using `pnpm ops worktree-status` without claiming the lane. For mutable
-   work, claim a lane only if it is idle and clean.
+2. **Preflight Assigned Checkout:** Stay in the checkout assigned to the task; do not enumerate,
+   inspect, select, or claim a sibling worktree. Confirm the current checkout path, branch, and
+   working-tree state. If it does not match the requested lane, stop and ask the user rather than
+   switching or continuing elsewhere. A second checkout may be touched only when the user names it
+   and authorizes the exact operation, following `.agent/rules/git-safety.md`.
 3. **Set Scope:** Establish the Task Contract for this work (objective, `operation_mode`, authorized
    actions, scope, non-goals, invariants, acceptance, verification, stop conditions) per
    `.agent/plans/README.md`. State file boundaries explicitly. For mutable sessions, run

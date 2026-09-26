@@ -213,6 +213,42 @@ describe('resolveManagedMergeBaselineForReconciliation', () => {
 			),
 		).toThrow(ManagedBaselineError);
 	});
+
+	it('still rejects a partial mutation receipt while discarding a draft', () => {
+		expect(() =>
+			resolveManagedMergeBaselineForReconciliation(
+				{
+					...completeInput,
+					currentDraftUpdatedAt: '2026-07-29T15:01:00.000Z',
+					latestMutationReceipt: {
+						operationId: crypto.randomUUID(),
+						status: 'partial',
+						commandKind: 'managed_invitation_apply',
+						origin: 'managed_cli_hosted',
+					},
+				},
+				{ acknowledgeDiscardUnpublishedDraft: true },
+			),
+		).toThrow('A prior mutation remains partially applied.');
+	});
+
+	it('still rejects newer managed receipt evidence while discarding a draft', () => {
+		expect(() =>
+			resolveManagedMergeBaselineForReconciliation(
+				{
+					...completeInput,
+					currentDraftUpdatedAt: '2026-07-29T15:01:00.000Z',
+					latestMutationReceipt: {
+						operationId: crypto.randomUUID(),
+						status: 'applied',
+						commandKind: 'managed_invitation_apply',
+						origin: 'managed_cli_hosted',
+					},
+				},
+				{ acknowledgeDiscardUnpublishedDraft: true },
+			),
+		).toThrow('A newer managed operation is not represented by provenance.');
+	});
 });
 
 describe('managed baseline diagnostics', () => {

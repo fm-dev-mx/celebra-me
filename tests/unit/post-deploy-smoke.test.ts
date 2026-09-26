@@ -307,16 +307,25 @@ describe('post-deploy smoke', () => {
 		expect(workflow).toContain("'vercel.deployment.promoted'");
 		expect(workflow).toContain('ref: ${{ github.event.client_payload.git.sha }}');
 		expect(workflow).toContain('cancel-in-progress: true');
-		expect(workflow).not.toContain('environment: Production');
-		expect(workflow).not.toContain('PROD_DB_URL');
-		expect(workflow).not.toContain('pnpm invitation:media:verify');
+		expect(workflow).toContain('environment: Production');
+		expect(workflow).toContain('PROD_DB_URL: ${{ secrets.PROD_DB_URL }}');
 		expect(workflow).toContain(
-			'vercel/repository-dispatch/actions/status@44f4d342ebc265c58167a2aa77d5a0d5a6eb20fd',
+			'pnpm invitation:media:verify -- --target production --all --origin https://www.celebra-me.com --json',
 		);
+		expect(workflow.indexOf('run: pnpm ops:post-deploy -- production')).toBeLessThan(
+			workflow.indexOf('pnpm invitation:media:verify -- --target production --all'),
+		);
+		expect(workflow).not.toContain('continue-on-error');
+		expect(
+			workflow.match(
+				/vercel\/repository-dispatch\/actions\/status@44f4d342ebc265c58167a2aa77d5a0d5a6eb20fd/gu,
+			),
+		).toHaveLength(1);
 		expect(workflow).not.toContain('vercel/repository-dispatch/actions/status@v1');
 		expect(workflow).toContain('VERCEL_DISPATCH_EXPECTED_PROJECT_ID');
 		expect(workflow).not.toContain('upload-artifact');
 		expect(workflow).not.toContain('schedule:');
+		expect(workflow).not.toMatch(/prod:apply|--apply|cloudinary.*secret/i);
 	});
 
 	it('runs a separate daily read-only Production image audit', () => {

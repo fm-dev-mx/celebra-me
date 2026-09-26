@@ -115,16 +115,8 @@ export async function inspectSchema(
 }
 
 /**
- * When the first preflight is blocked solely because the target has an unpublished draft
- * whose content diverges from both the incoming package and the last published version,
- * retry with `acknowledgeDiscardUnpublishedDraft: true`.
- *
- * This mirrors the interactive recovery that the release wizard already performs, but
- * without a user prompt: the draft has never been approved as a release, so discarding it
- * in favour of the package-approved content is always safe.
- *
- * Returns `undefined` when the first result is not a draft-divergence block, signalling
- * the caller to keep the original preflight unchanged.
+ * Retry an unpublished-draft divergence only after an explicit CLI acknowledgement.
+ * Managed-baseline drift is never eligible for this recovery path.
  */
 export async function resolveWithDiscardIfDraftDivergence(
 	first: PromotionPreflightReport,
@@ -135,17 +127,13 @@ export async function resolveWithDiscardIfDraftDivergence(
 	) => Promise<PromotionPreflightReport>,
 	packageData: InvitationPackageData,
 	updateScope: UpdateScope | undefined,
+	acknowledgeDiscardUnpublishedDraft: boolean,
 ): Promise<PromotionPreflightReport | undefined> {
-	if (first.status !== 'BLOCKED') return undefined;
-	const hasDiscardableBaselineDrift =
-		first.divergence?.managedDivergences?.some(
-			(difference) =>
-				difference.path === '(managed baseline)' &&
-				/\b(?:manual_or_unmanaged_drift|editor_mutation_after_baseline)\b/.test(
-					difference.detail,
-				),
-		) ?? false;
-	if (!isTargetDivergenceConflictMessage(first.reason ?? '') && !hasDiscardableBaselineDrift) {
+	if (
+		!acknowledgeDiscardUnpublishedDraft ||
+		first.status !== 'BLOCKED' ||
+		!isTargetDivergenceConflictMessage(first.reason ?? '')
+	) {
 		return undefined;
 	}
 	return runPreflight(packageData, updateScope, true);
@@ -155,6 +143,7 @@ export async function inspectInvitation(
 	slug: string,
 	schemaReadyInPlan: boolean,
 	deps: ProductionApplyAssemblerDeps,
+	acknowledgeDiscardUnpublishedDraft = false,
 ): Promise<ProductionApplyPlanItem> {
 	try {
 		const resolvePackage =
@@ -187,6 +176,7 @@ export async function inspectInvitation(
 			runPreflight,
 			packageData,
 			updateScope,
+			acknowledgeDiscardUnpublishedDraft,
 		);
 		const preflight = recovered ?? firstPreflight;
 		const draftDiscarded = recovered !== undefined && preflight.status !== 'BLOCKED';
@@ -203,7 +193,7 @@ export async function inspectInvitation(
 			id: slug,
 			readiness,
 			summary: draftDiscarded
-				? `Borrador inédito descartado automáticamente; ${preflight.reason ?? preflight.status}`
+				? `El borrador inédito se reemplazará tras confirmación del propietario; ${preflight.reason ?? preflight.status}`
 				: (preflight.reason ?? preflight.status),
 			detail: preflight.reason ?? preflight.schema.detail,
 			blockCode: draftDiscarded ? TARGET_DIVERGENCE_BLOCK_CODE : preflight.blockCode,
