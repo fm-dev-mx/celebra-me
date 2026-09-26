@@ -22,12 +22,8 @@
 	--melissa-aged-bronze-rgb: 132 88 52;
 	--melissa-mineral-olive: rgb(79 88 72);
 	--melissa-stationery-taupe: rgb(198 188 174);
-	--melissa-paper-shadow:
-		0 3px 0 rgb(var(--melissa-pearl-rgb) / 90%),
-		0 6px 12px -4px rgb(var(--melissa-ink-rgb) / 22%);
 	--melissa-paper-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.035'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperNoise)'/%3E%3C/svg%3E");
 	--melissa-hairline: 1px solid rgb(var(--melissa-champagne-rgb) / 30%);
-	--melissa-space-compact: clamp(3rem, 6vw, 4.5rem);
 	--melissa-space-standard: clamp(4.25rem, 8vw, 6rem);
 	--font-display-formal: 'Cinzel Variable', 'Cinzel', serif;
 	--font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', serif;
@@ -257,12 +253,11 @@
 				max-width: 100%;
 				overflow-wrap: normal;
 				white-space: normal;
+				font-family: 'Pinyon Script', cursive;
+				font-size: min(1.75em, 15.2vw);
 			}
 
 			span:first-child {
-				font-family: 'Pinyon Script', cursive;
-				font-size: 2.1em;
-				font-weight: 400;
 				line-height: 1.15;
 				text-align: left;
 				padding-inline-start: 0.04em;
@@ -270,23 +265,14 @@
 
 			span + span {
 				margin: 0.5rem 0 0;
-				font-size: 1.6em;
+				line-height: 1.25;
 				text-align: right;
+				padding-inline-end: 0.08em;
 			}
 
 			span + span::first-letter {
-				font-size: 0.65em;
-				font-style: italic;
-			}
-		}
-
-		@media (width <= 24rem) {
-			.ceremonial-portrait-hero__name span:first-child {
-				font-size: clamp(1.4em, 17vw, 1.65em);
-			}
-
-			.ceremonial-portrait-hero__name span + span {
-				font-size: 1.5em;
+				font-size: 0.45em;
+				font-style: normal;
 			}
 		}
 
@@ -1218,6 +1204,17 @@
 		.gift-card__title {
 			font: 400 clamp(2rem, 4vw, 2.5rem) / 1.2 var(--font-display);
 			color: var(--melissa-cocoa);
+		}
+
+		// Cash gift renders the canonical catalog envelope icon in place of the
+		// literal word; the sr-only title keeps the card's accessible name.
+		.gift-card--cash .gift-card__title-icon {
+			display: block;
+			width: clamp(2.75rem, 5vw, 3.25rem);
+			height: auto;
+			margin-inline: auto;
+			color: var(--gifts-icon-color);
+			stroke-width: 1.4;
 		}
 
 		.gift-card__description {

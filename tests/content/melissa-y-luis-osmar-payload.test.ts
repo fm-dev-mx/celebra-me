@@ -163,7 +163,7 @@ describe('Boda Melissa y Luis Osmar managed content regression', () => {
 			expect.objectContaining({ label: 'Ceremonia religiosa', time: '12:00' }),
 			expect.objectContaining({ label: 'Recepción / cóctel de bienvenida', time: '14:00' }),
 			expect.objectContaining({ label: 'Ceremonia civil', time: '15:00' }),
-			{ iconName: 'Party', label: 'Fiesta', time: '17:00' },
+			{ iconName: 'Party', label: 'Primer baile y brindis', time: '17:00' },
 		]);
 		expect(JSON.stringify(content.itinerary)).not.toMatch(/banquete/i);
 		expect(content.rsvp).toMatchObject({
@@ -228,6 +228,7 @@ describe('Boda Melissa y Luis Osmar managed content regression', () => {
 				type: 'cash',
 				title: 'Sobres',
 				text: 'Podrá entregarnos su obsequio en efectivo dentro de un sobre durante la recepción.',
+				iconName: 'Enveloped',
 			}),
 		);
 		expect(serialized).not.toContain('Lluvia de sobres');

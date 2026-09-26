@@ -110,7 +110,7 @@ async function expectStableInvitation(
 		'Ceremonia religiosa',
 		'Recepción / cóctel de bienvenida',
 		'Ceremonia civil',
-		'Fiesta',
+		'Primer baile y brindis',
 	]);
 	await expect(page.locator('.itinerary__item-time')).toHaveText([
 		'12:00 PM',
@@ -316,6 +316,11 @@ test.describe('Melissa y Luis Osmar local visual contract', () => {
 					lineHeight: Number.parseFloat(getComputedStyle(name).lineHeight),
 				}));
 			expect(groomName.height).toBeLessThan(groomName.lineHeight * 1.5);
+			const nameSizes = await hero
+				.locator('.ceremonial-portrait-hero__name span')
+				.evaluateAll((spans) => spans.map((span) => getComputedStyle(span).fontSize));
+			expect(nameSizes.length).toBe(2);
+			expect(new Set(nameSizes).size).toBe(1);
 			if (viewport.width === 390) {
 				const father = page
 					.locator('.family__member-name')
@@ -330,6 +335,9 @@ test.describe('Melissa y Luis Osmar local visual contract', () => {
 				await expect(
 					page.locator('.gift-card__title', { hasText: 'Sobres' }),
 				).toBeVisible();
+				const cashIcon = page.locator('.gift-card--cash .gift-card__title-icon');
+				await expect(cashIcon).toBeVisible();
+				await expect(cashIcon).toHaveCount(1);
 			}
 			const landscape = await hero.evaluate(
 				(element) => getComputedStyle(element, '::after').backgroundImage,

@@ -173,12 +173,12 @@ in one column; paired groups are reserved for larger screens. Godparents close c
 smaller name scale. Family content grows beyond one viewport when this reading rhythm requires it.
 Content and the accepted hero remain unchanged; this section refinement awaits visual acceptance.
 
-| Role                               | Family                      | Treatment                                              |
-| ---------------------------------- | --------------------------- | ------------------------------------------------------ |
-| Hero names / primary headings      | Cormorant Garamond / Cinzel | Natural-case names; restrained heading tracking        |
-| Family names and prose             | Cormorant Garamond          | Names above roles; 18–20 px body prose                 |
-| Practical information and controls | Instrument Sans             | 16 px information; 12 px metadata                      |
-| Formal pass and RSVP chapter       | Canonical variant controls  | Instrument Sans labels; reduced type scale and density |
+| Role                               | Family                     | Treatment                                                             |
+| ---------------------------------- | -------------------------- | --------------------------------------------------------------------- |
+| Hero names / primary headings      | Pinyon Script / Cinzel     | Both names in cursive; reduced ampersand; restrained heading tracking |
+| Family names and prose             | Cormorant Garamond         | Names above roles; 18–20 px body prose                                |
+| Practical information and controls | Instrument Sans            | 16 px information; 12 px metadata                                     |
+| Formal pass and RSVP chapter       | Canonical variant controls | Instrument Sans labels; reduced type scale and density                |
 
 All fonts reuse installed dependencies. Dark taupe replaces ornamental gold for small text on paper.
 Champagne remains available for borders and decoration. Countdown uses canonical grid reflow at 200%
@@ -633,3 +633,48 @@ logos, no signage and no watermark.
   200% text size they may wrap to preserve legibility without horizontal overflow.
 - Human creative outcome: `PENDING`. The source candidate and any later managed apply need separate
   visual acceptance.
+
+## Client Correction — 2026-09-25
+
+Current-task authority permits source edits, local validation, and the managed Local/Preview release
+for this slug. Production remains outside scope.
+
+- Hero: both celebrant names render in cursive at exactly the same size. Both name spans now use
+  Pinyon Script (the profile's established calligraphic identity, also used by the monogram and the
+  closing) with an identical `min(1.75em, 15.2vw)` scale, verified equal computed font size at 320,
+  390, and 1440 px while the groom's name stays on one line. The ampersand is reduced through
+  `::first-letter`. Profile-local only.
+- Gifts: the cash card renders the existing canonical catalog envelope icon (`Enveloped` —
+  `src/components/common/icons/invitation/Enveloped.tsx`) through the shared `Icon.astro` registry.
+  A minimal optional `iconName` field was added to the canonical cash gift schema and to
+  `Gifts.astro` (title glyph + `sr-only` accessible title). No duplicated inline SVG remains; the
+  envelope uses the section's mineral-olive icon color, centered at ~2.75–3.25rem. Other invitations
+  are unaffected because they never set `iconName`.
+- Itinerary: the 17:00 label changes from `Fiesta` to `Primer baile y brindis` in the managed
+  definition (`scripts/provision/invitations/melissa-y-luis-osmar.ts`); time and `iconName` are
+  unchanged. This is a content change and requires the managed Local/Preview release to become
+  visible on persisted routes. The first release also carried the still-unapplied 2026-09-23
+  corrections (`De etiqueta.`, the `†` marker, and the `Sobres` label), which persisted Local
+  content had not received.
+
+Validation for this correction:
+
+- `pnpm test --runInBand tests/content/melissa-y-luis-osmar-payload.test.ts`: 7 passed.
+- `pnpm test:e2e tests/e2e/melissa-y-luis-osmar.spec.ts --workers=1`: 29 passed, including the
+  one-line groom-name and no-overflow checks at 320–1440 px, identical computed font size for both
+  name spans, the visible catalog envelope title icon with its `sr-only` accessible title, and the
+  updated itinerary label.
+- Focused captures: `.tmp/visual-review/melissa-client-corrections/` (hero/gifts/itinerary at 390
+  and 1440 px; ignored diagnostic evidence).
+- Managed release: `invitation:release --slug melissa-y-luis-osmar --targets local,preview` dry-run
+  followed by apply. The content correction (itinerary label) applied as published v11 on both
+  targets. After the envelope-icon correction added `iconName` to the cash gift, a second release
+  applied published content v12 (Local: 1 insertion, 2 updates; Preview: 3 updates; 0 storage;
+  Preview required the task-scoped automation assertion
+  `CELEBRA_TASK_SCOPE="preview:melissa-y-luis-osmar:apply"`). Persisted Local route
+  `/boda/melissa-y-luis-osmar?skipEnvelope=true` verified: renders `Primer baile y brindis`, the
+  catalog envelope `<svg>` with the `sr-only` `Sobres` title, and `De etiqueta.` Captures:
+  `.tmp/visual-review/melissa-client-corrections/` (`persisted-gift-v12-390.png`, `reuse-*.png`).
+  Production was not touched (owner path: `pnpm prod:apply`).
+- Human creative outcome: `PENDING`. Visual acceptance of the cursive opening and envelope glyph
+  remains with the client.
