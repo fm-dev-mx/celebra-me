@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-09-26T04:59:03.785Z",
+    "generatedAt": "2026-09-26T19:57:35.236Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,9 +11,9 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "a6d3590a9da26545da49e597bfb1d4ccfcf6e37525cbef8b694ec01bf09c31d0",
-        "cssSha256": "d74e0224d35c9fb37d7b67ae100805383ae2f25692f0ddf6c8600bf621943eb1",
-        "assetSha256": "150d8ebb24a40305dc6f283e470fed1b55b63e6ba6a8aec316ee2271bf05bbaf",
+        "lockfileSha256": "9946e44276e04a8b09c5ba131c6f0870780a6e2a5795ad29e5806cfeddf87ac6",
+        "cssSha256": "b219afd5d25df408e3c2cdda1b661ef79d92691d0169c65ab2e65f794ee8d175",
+        "assetSha256": "00f55ba9e5df49f4c8bf409644003c2f58c2c7ca764afc65fb5bbe357c6689e6",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
@@ -1655,7 +1655,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/invitation-xv-allison-scarlett-mobile.png",
-            "sha256": "db204cbf7f9bf02c344cfc59392c3a6632e2c1ff6e8fe8c4eb8d467dde55c2b8",
+            "sha256": "6c76834d9cc6d5b2fd1cf18e7ecb17310d88de4f203682abc4fd952bcfa39ce0",
             "contentHash": "1882fc66ab72b23ebb52426806ce8bf32439555e9fe0e57026f09f6fc172ab4c",
             "assetHash": "228ff245fe161ccf685baac7506c4834f067a2f77de2ee31a6962a01ce952f97",
             "comparisonResult": "ACCEPTED"
@@ -1931,7 +1931,7 @@
             "preset": "celestial-blue",
             "viewport": "desktop",
             "file": "pages/invitation-xv-america-johana-desktop.png",
-            "sha256": "775366a080004ba170b43776cd9e51960e0f2642ae0bea49a532edbfa762f42e",
+            "sha256": "d44853e7a739ee49980f7d13939ce4dc0c676e007a5ec97f2eabf4bcafae4ba6",
             "contentHash": "c0e712c8bc932ec0e71585fb166c3a68432a088a2f53f62db21ee8639ad04186",
             "assetHash": "a4ec26854049e556cc12ba9902b3fece10065d59d5bb590056e37eb4e47cd2ef",
             "comparisonResult": "ACCEPTED"
@@ -1955,7 +1955,7 @@
             "preset": "celestial-blue",
             "viewport": "desktop",
             "file": "pages/invitation-xv-ana-sofia-cota-guillen-desktop.png",
-            "sha256": "418f857c21db200a1d4448449827eb815b79058531c5b7672d0ba6d3ee298ee1",
+            "sha256": "52c64c59193057b77e3bbc23b69805bbe55887fa0dc051b52b10b2ebe2ac1505",
             "contentHash": "2474f1379d8f01ba2448797c921e96c580f827a72aeda527b21dc18263d0e2a2",
             "assetHash": "fb483d576ea64e6767001de4309f5438973f188caa4592482e332a0acf4fc9bd",
             "comparisonResult": "ACCEPTED"
@@ -2051,7 +2051,7 @@
             "preset": "celestial-blue",
             "viewport": "desktop",
             "file": "pages/invitation-baby-shower-leah-lexa-desktop.png",
-            "sha256": "22aa5c0e6644610e16c76544fba4e4ee0b35b08e7a01cd6d8b4250cfe5708efa",
+            "sha256": "825eaa2ee8fe64d21d0731abf50117b283b53818fe3c9eaecc05b88cea61f93b",
             "contentHash": "0e8216d3991782fda03e171aa727f89b7dfbfdd500306d7ce989f48a264da874",
             "assetHash": "105735670692d2e869dc8572bbb0993c0bf0f6c85ba7e798470ebf130c47fb76",
             "comparisonResult": "ACCEPTED"
@@ -2441,9 +2441,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "6573e59a7741924168badd32b26c382a96197fdb",
+    "referenceSha": "4b5eb3a0a8de4a3468f9655c56bd286bb3c7eaf4",
     "variantManifest": {
-        "generatedAt": "2026-09-26T04:59:03.785Z",
+        "generatedAt": "2026-09-26T19:57:35.236Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2455,9 +2455,9 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "a6d3590a9da26545da49e597bfb1d4ccfcf6e37525cbef8b694ec01bf09c31d0",
-            "cssSha256": "d74e0224d35c9fb37d7b67ae100805383ae2f25692f0ddf6c8600bf621943eb1",
-            "assetSha256": "150d8ebb24a40305dc6f283e470fed1b55b63e6ba6a8aec316ee2271bf05bbaf",
+            "lockfileSha256": "9946e44276e04a8b09c5ba131c6f0870780a6e2a5795ad29e5806cfeddf87ac6",
+            "cssSha256": "b219afd5d25df408e3c2cdda1b661ef79d92691d0169c65ab2e65f794ee8d175",
+            "assetSha256": "00f55ba9e5df49f4c8bf409644003c2f58c2c7ca764afc65fb5bbe357c6689e6",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4093,10 +4093,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "6573e59a7741924168badd32b26c382a96197fdb"
+        "referenceSha": "4b5eb3a0a8de4a3468f9655c56bd286bb3c7eaf4"
     },
     "pageManifest": {
-        "generatedAt": "2026-09-26T04:57:20.859Z",
+        "generatedAt": "2026-09-26T19:55:05.587Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4108,9 +4108,9 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "a6d3590a9da26545da49e597bfb1d4ccfcf6e37525cbef8b694ec01bf09c31d0",
-            "cssSha256": "d74e0224d35c9fb37d7b67ae100805383ae2f25692f0ddf6c8600bf621943eb1",
-            "assetSha256": "150d8ebb24a40305dc6f283e470fed1b55b63e6ba6a8aec316ee2271bf05bbaf",
+            "lockfileSha256": "9946e44276e04a8b09c5ba131c6f0870780a6e2a5795ad29e5806cfeddf87ac6",
+            "cssSha256": "b219afd5d25df408e3c2cdda1b661ef79d92691d0169c65ab2e65f794ee8d175",
+            "assetSha256": "00f55ba9e5df49f4c8bf409644003c2f58c2c7ca764afc65fb5bbe357c6689e6",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4127,7 +4127,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-allison-scarlett-mobile.png",
-                "sha256": "db204cbf7f9bf02c344cfc59392c3a6632e2c1ff6e8fe8c4eb8d467dde55c2b8",
+                "sha256": "6c76834d9cc6d5b2fd1cf18e7ecb17310d88de4f203682abc4fd952bcfa39ce0",
                 "contentHash": "1882fc66ab72b23ebb52426806ce8bf32439555e9fe0e57026f09f6fc172ab4c",
                 "assetHash": "228ff245fe161ccf685baac7506c4834f067a2f77de2ee31a6962a01ce952f97",
                 "comparisonResult": "CANDIDATE"
@@ -4403,7 +4403,7 @@
                 "preset": "celestial-blue",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-america-johana-desktop.png",
-                "sha256": "775366a080004ba170b43776cd9e51960e0f2642ae0bea49a532edbfa762f42e",
+                "sha256": "d44853e7a739ee49980f7d13939ce4dc0c676e007a5ec97f2eabf4bcafae4ba6",
                 "contentHash": "c0e712c8bc932ec0e71585fb166c3a68432a088a2f53f62db21ee8639ad04186",
                 "assetHash": "a4ec26854049e556cc12ba9902b3fece10065d59d5bb590056e37eb4e47cd2ef",
                 "comparisonResult": "CANDIDATE"
@@ -4427,7 +4427,7 @@
                 "preset": "celestial-blue",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-ana-sofia-cota-guillen-desktop.png",
-                "sha256": "418f857c21db200a1d4448449827eb815b79058531c5b7672d0ba6d3ee298ee1",
+                "sha256": "52c64c59193057b77e3bbc23b69805bbe55887fa0dc051b52b10b2ebe2ac1505",
                 "contentHash": "2474f1379d8f01ba2448797c921e96c580f827a72aeda527b21dc18263d0e2a2",
                 "assetHash": "fb483d576ea64e6767001de4309f5438973f188caa4592482e332a0acf4fc9bd",
                 "comparisonResult": "CANDIDATE"
@@ -4523,7 +4523,7 @@
                 "preset": "celestial-blue",
                 "viewport": "desktop",
                 "file": "pages/invitation-baby-shower-leah-lexa-desktop.png",
-                "sha256": "22aa5c0e6644610e16c76544fba4e4ee0b35b08e7a01cd6d8b4250cfe5708efa",
+                "sha256": "825eaa2ee8fe64d21d0731abf50117b283b53818fe3c9eaecc05b88cea61f93b",
                 "contentHash": "0e8216d3991782fda03e171aa727f89b7dfbfdd500306d7ce989f48a264da874",
                 "assetHash": "105735670692d2e869dc8572bbb0993c0bf0f6c85ba7e798470ebf130c47fb76",
                 "comparisonResult": "CANDIDATE"
@@ -4913,9 +4913,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "6573e59a7741924168badd32b26c382a96197fdb"
+        "referenceSha": "4b5eb3a0a8de4a3468f9655c56bd286bb3c7eaf4"
     },
-    "candidateManifestSha256": "2699ea4991db5e6aa396c687a6193c091ff2401cd45dac9db13edda40076863b",
-    "acceptedFromCommit": "6573e59a7741924168badd32b26c382a96197fdb",
-    "acceptedAt": "2026-09-26T05:02:44.500Z"
+    "candidateManifestSha256": "8f67e306f040956001dc7f2f9b6246e8b4eaec8532db0a5ab87028bc2457e7b1",
+    "acceptedFromCommit": "4b5eb3a0a8de4a3468f9655c56bd286bb3c7eaf4",
+    "acceptedAt": "2026-09-26T20:13:05.027Z"
 }
