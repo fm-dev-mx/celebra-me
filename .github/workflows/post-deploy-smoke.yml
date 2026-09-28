@@ -55,7 +55,7 @@ jobs:
 
             - name: Publish Vercel deployment check
               # Official Node 24 runtime update from vercel/repository-dispatch#18.
-              uses: vercel/repository-dispatch/actions/status@44f4d342ebc265c58167a2aa77d5a0d5a6eb20fd
+              uses: vercel/repository-dispatch/actions/status@61881006269f0b5ac2cb186b198c54be6afe90e1
               with:
                   name: Vercel - celebra-me ${{ env.POST_DEPLOY_ENVIRONMENT }} smoke
 
