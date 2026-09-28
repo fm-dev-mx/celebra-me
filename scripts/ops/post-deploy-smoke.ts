@@ -197,6 +197,34 @@ function dispatchFromEnvironment(): ValidatedVercelDispatch {
 	return dispatch;
 }
 
+export function requireReadyDeployment(
+	dispatch: ValidatedVercelDispatch,
+	state: string,
+	expected: { sha: string; environment: PostDeployEnvironment; gitRef: string },
+): void {
+	if (!SHA_PATTERN.test(expected.sha) || dispatch.commitSha !== expected.sha.toLowerCase())
+		throw new Error('Deployment SHA does not match the intended release.');
+	if (dispatch.environment !== expected.environment || dispatch.gitRef !== expected.gitRef)
+		throw new Error('Deployment environment/ref does not match the intended release.');
+	if (state !== 'READY')
+		throw new Error('Deployment is not READY; push/build success is insufficient.');
+}
+
+function verifyDeploymentCommand(): void {
+	const dispatch = dispatchFromEnvironment();
+	const environment = process.env.RELEASE_EXPECTED_ENVIRONMENT;
+	if (environment !== 'preview' && environment !== 'production')
+		throw new Error('RELEASE_EXPECTED_ENVIRONMENT must be preview or production.');
+	requireReadyDeployment(dispatch, process.env.VERCEL_DEPLOYMENT_STATE ?? '', {
+		sha: process.env.RELEASE_EXPECTED_SHA ?? '',
+		environment,
+		gitRef: environment === 'preview' ? 'develop' : 'main',
+	});
+	console.info(
+		`READY ${dispatch.environment} ${dispatch.commitSha} ${dispatch.deploymentId} ${dispatch.baseUrl}; smoke and alias verification remain required.`,
+	);
+}
+
 function appendEnvironment(name: string, value: string): void {
 	const path = process.env.GITHUB_ENV;
 	if (!path) return;
@@ -659,9 +687,10 @@ async function main(): Promise<void> {
 	if (args[0] === '--') args.shift();
 	const command = args.length === 1 ? args[0] : undefined;
 	if (command === 'validate') return validateCommand();
+	if (command === 'verify') return verifyDeploymentCommand();
 	if (command === 'production') return productionCommand();
 	if (command === 'preview-evidence') return previewEvidenceCommand();
-	throw new Error('Usage: post-deploy-smoke.ts <validate|production|preview-evidence>');
+	throw new Error('Usage: post-deploy-smoke.ts <validate|verify|production|preview-evidence>');
 }
 
 if (process.argv[1] && /^post-deploy-smoke\.(?:ts|js)$/.test(basename(process.argv[1]))) {
