@@ -26,6 +26,19 @@ function makeMinimalEvent(location: Record<string, unknown>) {
 }
 
 describe('adaptEvent', () => {
+	it('preserves the family image description and original delivery without changing the fallback', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-celestial-blue.json');
+		const event = {
+			id: 'event-demos/xv/demo-xv-celestial-blue',
+			data: fixture,
+		} as Parameters<typeof adaptEvent>[0];
+		const image = adaptEvent(event).sections.family?.featuredImage;
+		expect(image?.alt).toBe(fixture.family.featuredImageAlt);
+		expect(image?.delivery).toEqual({ mode: 'original', width: 1122, height: 1402 });
+		delete fixture.family.featuredImageAlt;
+		expect(adaptEvent(event).sections.family?.featuredImage?.alt).toBe(fixture.hero.name);
+	});
+
 	it('all events default to branding visible when called via adaptEvent (no guest context)', () => {
 		const demos = [
 			'event-demos/xv/demo-xv-jewelry-box',
@@ -222,9 +235,9 @@ describe('adaptEvent', () => {
 		expect(viewModel.id).toBe('demo-primera-comunion-illustrated');
 		expect(viewModel.theme.preset).toBe('angelic-presence');
 		expect(viewModel.hero.backgroundImage.src).toEqual(expect.any(String));
-		expect(viewModel.sections.location?.venues.find((venue) => venue.image)?.image?.src).toEqual(
-			expect.any(String),
-		);
+		expect(
+			viewModel.sections.location?.venues.find((venue) => venue.image)?.image?.src,
+		).toEqual(expect.any(String));
 		expect(viewModel.sections.thankYou?.image?.src).toEqual(expect.any(String));
 	});
 
@@ -742,12 +755,22 @@ describe('adaptEvent', () => {
 					introHeading: 'Ubicación',
 					venues: [
 						{
-							id: 'ceremony', type: 'ceremony', venueName: 'Iglesia', address: 'Calle L',
-							city: 'Querétaro', date: '2027-11-20', time: '18:00',
+							id: 'ceremony',
+							type: 'ceremony',
+							venueName: 'Iglesia',
+							address: 'Calle L',
+							city: 'Querétaro',
+							date: '2027-11-20',
+							time: '18:00',
 						},
 						{
-							id: 'reception', type: 'reception', venueName: 'Salón', address: 'Calle R',
-							city: 'Querétaro', date: '2027-11-20', time: '20:00',
+							id: 'reception',
+							type: 'reception',
+							venueName: 'Salón',
+							address: 'Calle R',
+							city: 'Querétaro',
+							date: '2027-11-20',
+							time: '20:00',
 						},
 					],
 				}),
@@ -772,23 +795,26 @@ describe('adaptEvent', () => {
 					},
 					theme: { preset: 'enchanted-rose' },
 					location: {
-						venues: [{
-							id: 'ceremony',
-							type: 'ceremony',
-							venueName: 'Parroquia del Sagrado Corazón',
-							address: 'Av. de las Rosas 240',
-							city: 'Querétaro',
-							date: '20 de noviembre de 2027',
-							time: '6:00 PM',
-						}, {
-							id: 'reception',
-							type: 'reception',
-							venueName: 'Salón Imperial',
-							address: 'Paseo del Palacio 18',
-							city: 'Querétaro',
-							date: '20 de noviembre de 2027',
-							time: '8:00 PM',
-						}],
+						venues: [
+							{
+								id: 'ceremony',
+								type: 'ceremony',
+								venueName: 'Parroquia del Sagrado Corazón',
+								address: 'Av. de las Rosas 240',
+								city: 'Querétaro',
+								date: '20 de noviembre de 2027',
+								time: '6:00 PM',
+							},
+							{
+								id: 'reception',
+								type: 'reception',
+								venueName: 'Salón Imperial',
+								address: 'Paseo del Palacio 18',
+								city: 'Querétaro',
+								date: '20 de noviembre de 2027',
+								time: '8:00 PM',
+							},
+						],
 					},
 				},
 			} as Parameters<typeof adaptEvent>[0];

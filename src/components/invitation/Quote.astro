@@ -15,6 +15,9 @@ const { text, author, variant } = Astro.props;
 <section id="quote-section" class="quote-section" data-screenshot-section="quote" data-variant={variant}>
 	<div class="quote-texture" aria-hidden="true"></div>
 	<div class="quote-container">
+		<svg class="quote-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+			<path d="M14 5C7 6 3 11 3 18v9h11V16H8c0-4 2-7 6-8V5Zm15 0c-7 1-11 6-11 13v9h11V16h-6c0-4 2-7 6-8V5Z"/>
+		</svg>
 		<div class="quote-divider-top" aria-hidden="true">
 			<svg viewBox="0 0 200 40" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor">
 				<path d="M10,20 Q50,0 100,20 T190,20" stroke-width="0.5" opacity="0.6"/>

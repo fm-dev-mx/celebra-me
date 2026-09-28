@@ -4,6 +4,7 @@ import type {
 	DemoShowroomPublicSlug,
 } from '@/interfaces/ui/sections/demo-showroom.interface';
 import type { EventType } from '@/lib/theme/theme-contract';
+import { CELESTIAL_QUOTE_MESSAGE } from '@/lib/invitation/demo-conversion';
 
 export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 	{
@@ -239,8 +240,7 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		visibility: 'featured',
 		reviewStatus: 'approved',
 		sortOrder: 10,
-		ctaMessage:
-			'Hola, me gustaría una invitación digital para XV años similar al demo Celestial Blue.',
+		ctaMessage: CELESTIAL_QUOTE_MESSAGE,
 		thumbnail: {
 			assetSlug: 'demo-xv-celestial-blue',
 			key: 'hero',

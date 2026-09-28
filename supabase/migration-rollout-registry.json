@@ -110,6 +110,11 @@
             "provides": ["invitation_administrative_workflow"],
             "notes": "Adds administrative metadata and replaces authenticated table-wide INSERT/UPDATE with grants on existing columns. Hosted apply requires deployed-app evidence that invitation writes use explicit existing columns or the server service role. Invitation-specific initialization is separately authorized."
         },
+        "20260925182713": {
+            "phase": "expand",
+            "provides": ["commercial_demo_followups"],
+            "notes": "Adds administrator-only append-only demo milestones. Application reports unavailability until explicitly authorized guarded migration apply."
+        },
         "20260911070000": {
             "phase": "contract",
             "requiresDeployedAppCapabilities": ["current_atomic_publication_client"],

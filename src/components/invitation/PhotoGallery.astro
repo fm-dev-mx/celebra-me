@@ -43,7 +43,7 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 };
 ---
 
-<div class="gallery-grid" data-gallery data-variant={variant}>
+<div class="gallery-grid" data-variant={variant}>
 	{
 		items.map((item, index) => {
 			const { rawSource, src, width, height } = resolveImage(item.image);
@@ -114,7 +114,7 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 					detail: {
 						src: item.dataset.gallerySrc || '',
 						caption: item.dataset.galleryCaption || '',
-						alt: item.getAttribute('aria-label') || ''
+						alt: item.dataset.galleryAlt || item.getAttribute('aria-label') || ''
 					}
 				})
 			);
@@ -123,6 +123,8 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 		galleryItems.forEach((item) => {
 			const htmlItem = item as HTMLElement;
 			htmlItem.addEventListener('click', () => openLightbox(htmlItem));
+			// Native buttons already synthesize a click for Enter and Space.
+			if (htmlItem instanceof HTMLButtonElement) return;
 			htmlItem.addEventListener('keydown', (event: KeyboardEvent) => {
 				if (event.key === 'Enter' || event.key === ' ') {
 					event.preventDefault();

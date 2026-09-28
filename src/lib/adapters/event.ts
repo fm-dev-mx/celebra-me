@@ -405,10 +405,13 @@ function buildLocationSectionData(context: AdaptationContext) {
 function buildFamilySectionData(context: AdaptationContext) {
 	const { data, eventSlug } = context;
 	if (!data.family) return undefined;
+	const featuredImage = data.family.featuredImage
+		? resolveAsset(eventSlug, data.family.featuredImage, data.title)
+		: undefined;
 	return {
 		...data.family,
-		featuredImage: data.family.featuredImage
-			? resolveAsset(eventSlug, data.family.featuredImage, data.title)
+		featuredImage: featuredImage
+			? { ...featuredImage, alt: data.family.featuredImageAlt ?? data.hero.name }
 			: undefined,
 		celebrantName: data.hero.name,
 		variant: data.family.variant,

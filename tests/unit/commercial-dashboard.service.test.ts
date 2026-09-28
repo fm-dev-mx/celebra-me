@@ -245,7 +245,7 @@ describe('summarizeCommercialAnalytics', () => {
 		expect(summary.dataContext.scopeLabel).toBe('Sin filtro de fechas activo');
 		expect(summary.dataContext.lastTrackingEventAt).toBe('2026-07-09T12:01:00.000Z');
 		expect(summary.dataContext.lastCommercialUpdateAt).toBe('2026-07-09T12:05:00.000Z');
-		expect(summary.dataContext.limitNotice).toContain('últimos registros cargados');
+		expect(summary.dataContext.limitNotice).toContain('Consulta paginada');
 	});
 
 	it('summarizes tracking, disabled CAPI, and commercial data warnings', () => {

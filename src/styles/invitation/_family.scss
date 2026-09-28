@@ -219,7 +219,7 @@
 	&__media-frame {
 		position: relative;
 		width: 100%;
-		aspect-ratio: 3 / 4;
+		aspect-ratio: var(--family-media-aspect-ratio, 3 / 4);
 		overflow: hidden;
 		padding: var(--family-media-padding, 0);
 		border: var(--family-media-border, 1px solid rgb(var(--color-text-primary-rgb) / 18%));
@@ -254,8 +254,8 @@
 		img {
 			display: block;
 			width: 100%;
-			height: 100%;
-			object-fit: cover;
+			height: var(--family-media-image-height, 100%);
+			object-fit: var(--family-media-image-fit, cover);
 			object-position: var(--family-focal-point, center);
 			border-radius: var(
 				--family-media-image-radius,
@@ -401,7 +401,7 @@
 		display: flex;
 		min-width: 0;
 		flex-direction: column;
-		align-items: center;
+		align-items: var(--family-item-align, center);
 		gap: 0.28rem;
 	}
 

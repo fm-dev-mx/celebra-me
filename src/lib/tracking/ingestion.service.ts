@@ -17,8 +17,7 @@ export interface IngestTrackingEventInput {
 }
 
 export type IngestTrackingEventResult =
-	| { accepted: true; eventId: string }
-	| { accepted: false; reason: string };
+	{ accepted: true; eventId: string } | { accepted: false; reason: string };
 
 function parseTrackingPayload(payload: unknown): PublicTrackingEvent {
 	const result = PublicTrackingEventSchema.safeParse(payload);
@@ -56,6 +55,9 @@ export async function ingestTrackingEvent(
 	}
 
 	const consentSnapshot = payload.consentSnapshot;
+	if (!consentSnapshot.analytics && !consentSnapshot.marketing) {
+		return { accepted: false, reason: 'consent_required' };
+	}
 	const eventProperties = sanitizeEventProperties(rawEventProperties);
 
 	await upsertVisitorSession({
@@ -73,10 +75,11 @@ export async function ingestTrackingEvent(
 		routeClass: routePolicy.routeClass,
 		isInternal: false,
 		consentSnapshot,
-		metaAttribution: payload.metaAttribution,
+		metaAttribution: consentSnapshot.marketing ? payload.metaAttribution : undefined,
 	});
 
 	const event = await insertTrackingEvent({
+		eventId: payload.eventId,
 		sessionId: payload.sessionId,
 		visitorId: payload.visitorId,
 		eventName: payload.eventName,
@@ -111,7 +114,9 @@ export async function ingestTrackingEvent(
 					utmSource: payload.source,
 					utmMedium: payload.medium,
 					utmCampaign: payload.campaign,
-					metaAttribution: payload.metaAttribution,
+					metaAttribution: consentSnapshot.marketing
+						? payload.metaAttribution
+						: undefined,
 				});
 			} catch (leadError) {
 				console.error('[tracking] Failed to auto-create WhatsApp lead:', leadError);

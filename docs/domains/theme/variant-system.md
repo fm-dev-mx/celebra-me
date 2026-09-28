@@ -45,7 +45,9 @@ environment migration is applied and verified.
 
 - **Hero:** `standard`, `editorial-cover`, `split-cover`, `framed-portrait`.
 - **Family:** `standard`, `split-groups`, `asymmetric-groups`; both non-default group layouts
-  require at least two explicit `groups`.
+  require at least two explicit `groups`. `portrait-register` places a complete photograph above the
+  family registers and uses a section fade. It requires `featuredImage` with original delivery and
+  explicit width and height; `text-only` is incompatible.
 - **Location:** `standard`, `split-map`, `stacked-venue-plates`; prerequisites are enforced by the
   owning schema.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
@@ -72,6 +74,13 @@ Structural choices live on the owning section object as `variant`. `sectionStyle
 `itinerary.presentation.behavior` are not canonical input and are rejected by the canonical schema.
 Presentation capabilities such as location flourishes and gallery browsing remain explicit typed
 fields on their owning section.
+
+The optional `Gallery` named slot `last-item` replaces, rather than duplicates, the final source
+photograph outside the variant mosaic. The caller must render that image and its caption/alt and
+provide a separate native `button[data-gallery-item]` for enlargement. `Gallery` owns the single
+collection root; `PhotoGallery` owns the existing lightbox opener. Commercial links remain sibling
+controls and never open the lightbox. Without the slot, all items follow the normal variant layout.
+Public-page composition owns demo opt-in; canonical variants never select commercial content.
 
 Cross-section composition is selected only by typed `composition.intersections`. Missing
 intersection entries use the neutral composition contract; omitted `composition` itself is not
@@ -128,11 +137,14 @@ invitation profiles.
 
 ## Ceremonial stationery variants
 
-- hero.ceremonial-portrait: centered calligraphic lockup, complete rectangular portrait, optional typed ornament and accentOrnament assets. The standalone renderer also supports no photograph.
+- hero.ceremonial-portrait: centered calligraphic lockup, complete rectangular portrait, optional
+  typed ornament and accentOrnament assets. The standalone renderer also supports no photograph.
 - family.ceremonial-family: centered family groups on continuous paper with restrained filigree.
 - countdown.clock-face: decorative dial without clock hands; real countdown values remain text.
 - gallery.paired-portraits: exactly two complete photographs, paired on desktop.
 - thankYou.ceremonial-closing: compact closing copy and optional decorative image.
-- envelope.revealVariant satin-filigree: triangular satin envelope, existing sealImage and optional backdropImage; preserves the shared reveal lifecycle.
+- envelope.revealVariant satin-filigree: triangular satin envelope, existing sealImage and optional
+  backdropImage; preserves the shared reveal lifecycle.
 
-These variants carry no client identity or profile dependency. The profile supplies color and rhythm; human visual acceptance remains separate from structural verification.
+These variants carry no client identity or profile dependency. The profile supplies color and
+rhythm; human visual acceptance remains separate from structural verification.

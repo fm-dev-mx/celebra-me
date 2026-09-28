@@ -41,6 +41,7 @@ describe('GA4 forwarder integration', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
+		document.body.replaceWith(document.createElement('body'));
 		MockIntersectionObserver.instances = [];
 		window.history.replaceState({}, '', '/');
 		document.body.innerHTML = `
@@ -163,9 +164,7 @@ describe('GA4 forwarder integration', () => {
 		initCommercialTracking();
 		await flushPromises();
 
-		const pageViewCall = mockForwardToGA4.mock.calls.find(
-			([name]) => name === 'page_viewed',
-		);
+		const pageViewCall = mockForwardToGA4.mock.calls.find(([name]) => name === 'page_viewed');
 		expect(pageViewCall).toBeDefined();
 		const [, properties] = pageViewCall as [string, Record<string, unknown>];
 		expect(properties).toHaveProperty('page_type', 'commercial');

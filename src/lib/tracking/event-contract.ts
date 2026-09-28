@@ -95,6 +95,8 @@ export function hasUnsafeEventProperties(properties: Record<string, unknown>): b
 		// Safe-property keys never trigger the unsafe-name check, even if their name matches the pattern.
 		if (!SAFE_EVENT_PROPERTY_KEYS.has(key) && UNSAFE_KEY_PATTERN.test(key)) return true;
 		if (typeof value !== 'string') return false;
+		// A validated technical UUID can contain long digit runs without being a phone number.
+		if (key === 'event_id' && z.uuid().safeParse(value).success) return false;
 		return EMAIL_PATTERN.test(value) || LONG_PHONE_PATTERN.test(value);
 	});
 }
@@ -138,6 +140,7 @@ const MetaAttributionSchema = z
 	);
 
 export const TrackingEventSchema = z.object({
+	eventId: z.uuid().optional(),
 	sessionId: z.uuid(),
 	visitorId: z.string().trim().min(6).max(120),
 	eventName: z.enum(TRACKING_EVENT_NAMES),

@@ -41,12 +41,13 @@ const {
 const isMagazineSpread = variant === 'magazine-spread';
 const resolvedMobileBrowse = variantOptions?.mobileBrowse ?? 'stack';
 const usesMobileRail = isMagazineSpread && resolvedMobileBrowse === 'rail';
+const hasLastItem = Astro.slots.has('last-item');
 
 if (!items || items.length === 0) return null;
 ---
 
 <section id="galeria" class="gallery-section" data-variant={variant} data-screenshot-section="gallery" {...(presentation && { 'data-presentation': presentation })} data-mobile-browse={resolvedMobileBrowse}>
-	<div class="gallery-section__container">
+	<div class="gallery-section__container" data-gallery>
 		<header class="gallery-section__header">
 			{eyebrow && <span class="gallery-section__eyebrow">{eyebrow}</span>}
 			{title?.trim() && <h2 class="gallery-section__title">{title}</h2>}
@@ -56,7 +57,8 @@ if (!items || items.length === 0) return null;
 			)}
 		</header>
 
-		<PhotoGallery items={items} variant={variant} />
+		<PhotoGallery items={hasLastItem ? items.slice(0, -1) : items} variant={variant} />
+		<slot name="last-item" />
 	</div>
 </section>
 

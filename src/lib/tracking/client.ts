@@ -16,6 +16,7 @@ type ConsentSnapshot = {
 };
 
 type TrackingPayload = {
+	eventId: string;
 	sessionId: string;
 	visitorId: string;
 	eventName: PublicTrackingEventName;
@@ -188,15 +189,24 @@ function trackEvent(
 	eventProperties: TrackingPayload['eventProperties'] = {},
 ): void {
 	if (shouldIgnoreTracking()) return;
+	const consent = getConsentSnapshot();
+	if (!consent.analytics && !consent.marketing) return;
+	eventProperties = {
+		...eventProperties,
+		event_id: crypto.randomUUID ? crypto.randomUUID() : fallbackUuid(),
+	};
 
 	const routeClass = document.body.dataset.trackingRouteClass;
 	if (!routeClass) return;
 
 	const utm = getUtmSnapshot();
-	const metaAttribution = metaAttributionOrUndefined(getMetaAttributionSnapshot());
+	const metaAttribution = consent.marketing
+		? metaAttributionOrUndefined(getMetaAttributionSnapshot())
+		: undefined;
 	const firstTouchReferrer = getFirstTouchReferrer();
 
 	const payload: TrackingPayload = {
+		eventId: String(eventProperties.event_id),
 		sessionId: getSessionId(),
 		visitorId: getVisitorId(),
 		eventName,
@@ -210,10 +220,14 @@ function trackEvent(
 		referrer: firstTouchReferrer,
 		metaAttribution,
 		eventProperties,
-		consentSnapshot: getConsentSnapshot(),
+		consentSnapshot: consent,
 	};
 
-	pushDataLayer(eventName, eventProperties);
+	const publicProperties = { ...eventProperties };
+	delete publicProperties.lead_code;
+	delete publicProperties.cta_label;
+	delete publicProperties.destination;
+	pushDataLayer(eventName, publicProperties);
 
 	// Synchronously forward to GA4 and Meta Pixel BEFORE any async network operations.
 	// This guarantees that outbound navigation events (like WhatsApp clicks) are tracked
@@ -248,13 +262,15 @@ function trackEvent(
 }
 
 function setContactHiddenFields(leadCode: string): void {
-	const utm = getUtmSnapshot();
-	const metaAttribution = getMetaAttributionSnapshot();
+	const consent = getConsentSnapshot();
+	const mayMeasure = consent.analytics || consent.marketing;
+	const utm = mayMeasure ? getUtmSnapshot() : {};
+	const metaAttribution = consent.marketing ? getMetaAttributionSnapshot() : {};
 	document.querySelectorAll('form[data-commercial-contact-form]').forEach((form) => {
 		if (!(form instanceof HTMLFormElement)) return;
 		const values: Record<string, string> = {
-			sessionId: getSessionId(),
-			visitorId: getVisitorId(),
+			sessionId: mayMeasure ? getSessionId() : '',
+			visitorId: mayMeasure ? getVisitorId() : '',
 			leadCode,
 			utmSource: utm.source ?? '',
 			utmMedium: utm.medium ?? '',
@@ -438,7 +454,7 @@ function bindPackageViews(): void {
 }
 
 function bindClicks(): void {
-	document.addEventListener('click', (event) => {
+	document.body.addEventListener('click', (event) => {
 		const target =
 			event.target instanceof Element ? event.target.closest('[data-track-event]') : null;
 		if (!(target instanceof HTMLElement)) return;
@@ -451,7 +467,12 @@ function bindClicks(): void {
 		// For WhatsApp clicks, resolve the session-scoped lead code. All repeated clicks
 		// within the same tab reuse the same code, preventing duplicate lead creation.
 		// Non-WhatsApp clicks do not generate a lead code here.
-		const leadCode = isWhatsAppClick ? getOrCreateWhatsAppLeadCode() : '';
+		const preserveMessage = target.dataset.preserveMessage === 'true';
+		const consent = getConsentSnapshot();
+		const leadCode =
+			isWhatsAppClick && !preserveMessage && (consent.analytics || consent.marketing)
+				? getOrCreateWhatsAppLeadCode()
+				: '';
 
 		if (isWhatsAppClick && target instanceof HTMLAnchorElement && leadCode) {
 			const targetPromoCode = target.dataset.promoCode || DEFAULT_PROMO_CODE;
@@ -492,7 +513,6 @@ function bindForms(): void {
 			void trackEvent('form_submitted', {
 				form_id: 'contact',
 				lead_code: currentLeadCode,
-				event_id: currentLeadCode,
 				event_type: eventType,
 				source_area: 'contact',
 				promo_code: DEFAULT_PROMO_CODE,
@@ -511,6 +531,8 @@ export function initCommercialTracking(): void {
 	}
 
 	if (!document.body.dataset.trackingRouteClass || shouldIgnoreTracking()) return;
+	if (document.body.dataset.commercialTrackingBound === 'true') return;
+	document.body.dataset.commercialTrackingBound = 'true';
 	const routeClass = document.body.dataset.trackingRouteClass;
 
 	// Initialize third-party integrations gated by consent.

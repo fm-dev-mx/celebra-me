@@ -141,6 +141,7 @@ describe('forwardToMetaPixel', () => {
 		expect(fbq()).toHaveBeenCalledWith('track', 'ViewContent', {
 			content_category: 'demo',
 			content_name: 'celestial-blue',
+			demo_slug: 'celestial-blue',
 			event_type: 'xv',
 			source_area: 'demo_showroom_featured',
 		});
@@ -159,21 +160,22 @@ describe('forwardToMetaPixel', () => {
 		});
 	});
 
-	it('forwards whatsapp_contact_clicked as fbq("track", "Contact", ...)', () => {
+	it('forwards a WhatsApp click as a custom event with a technical ID, never a lead code', () => {
 		forwardToMetaPixel('whatsapp_contact_clicked', {
+			event_id: '11111111-1111-4111-8111-111111111111',
 			lead_code: 'CM-ABC123',
 			package_name: 'Premium',
 			source_area: 'pricing',
 		});
 		expect(fbq()).toHaveBeenCalledWith(
-			'track',
-			'Contact',
+			'trackCustom',
+			'WhatsAppClick',
 			{
 				content_category: 'package',
 				content_name: 'Premium',
 				source_area: 'pricing',
 			},
-			{ eventID: 'CM-ABC123' },
+			{ eventID: '11111111-1111-4111-8111-111111111111' },
 		);
 	});
 
@@ -184,17 +186,12 @@ describe('forwardToMetaPixel', () => {
 			event_type: 'xv',
 			source_area: 'contact',
 		});
-		expect(fbq()).toHaveBeenCalledWith(
-			'track',
-			'Lead',
-			{
-				content_category: 'lead_form',
-				content_name: 'contact',
-				event_type: 'xv',
-				source_area: 'contact',
-			},
-			{ eventID: 'CM-LEAD42' },
-		);
+		expect(fbq()).toHaveBeenCalledWith('track', 'Lead', {
+			content_category: 'lead_form',
+			content_name: 'contact',
+			event_type: 'xv',
+			source_area: 'contact',
+		});
 	});
 
 	it('forwards lead_created as fbq("track", "Lead", ...) — future standard event', () => {
@@ -289,8 +286,7 @@ describe('pending-event queue [T4]', () => {
 		// a fresh instance for this test.
 		let freshInit: ((id?: string) => void) | undefined;
 		let freshForward:
-			| ((name: string, props: Record<string, string | number | boolean>) => void)
-			| undefined;
+			((name: string, props: Record<string, string | number | boolean>) => void) | undefined;
 
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -337,7 +333,7 @@ describe('pending-event queue [T4]', () => {
 		);
 		expect(trackCalls).toHaveLength(2);
 		expect(trackCalls[0]?.[1]).toBe('PageView');
-		expect(trackCalls[1]?.[1]).toBe('Contact');
+		expect(trackCalls[1]?.[1]).toBe('WhatsAppClick');
 	});
 
 	it('[T4b] pending queue is not flushed after onerror — events are discarded', async () => {
@@ -345,8 +341,7 @@ describe('pending-event queue [T4]', () => {
 
 		let freshInit: (() => void) | undefined;
 		let freshForward:
-			| ((name: string, props: Record<string, string | number | boolean>) => void)
-			| undefined;
+			((name: string, props: Record<string, string | number | boolean>) => void) | undefined;
 
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -388,8 +383,7 @@ describe('pending-event queue [T4]', () => {
 
 		let freshInit: (() => void) | undefined;
 		let freshForward:
-			| ((name: string, props: Record<string, string | number | boolean>) => void)
-			| undefined;
+			((name: string, props: Record<string, string | number | boolean>) => void) | undefined;
 
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -448,8 +442,7 @@ describe('onerror sets pixel as failed, not loaded [T6]', () => {
 
 		let freshInit: (() => void) | undefined;
 		let freshForward:
-			| ((name: string, props: Record<string, string | number | boolean>) => void)
-			| undefined;
+			((name: string, props: Record<string, string | number | boolean>) => void) | undefined;
 
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -495,8 +488,7 @@ describe('retry after script failure [T7]', () => {
 
 		let freshInit: (() => void) | undefined;
 		let freshForward:
-			| ((name: string, props: Record<string, string | number | boolean>) => void)
-			| undefined;
+			((name: string, props: Record<string, string | number | boolean>) => void) | undefined;
 
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -672,8 +664,7 @@ describe('late consent PageView [T8] and no pre-consent replay [T9]', () => {
 
 		let freshInit: (() => void) | undefined;
 		let freshForward:
-			| ((name: string, props: Record<string, string | number | boolean>) => void)
-			| undefined;
+			((name: string, props: Record<string, string | number | boolean>) => void) | undefined;
 
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -811,8 +802,7 @@ describe('route boundaries for Meta Pixel', () => {
 
 		let freshInit: (() => void) | undefined;
 		let freshForward:
-			| ((name: string, props: Record<string, string | number | boolean>) => void)
-			| undefined;
+			((name: string, props: Record<string, string | number | boolean>) => void) | undefined;
 
 		jest.isolateModules(() => {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports

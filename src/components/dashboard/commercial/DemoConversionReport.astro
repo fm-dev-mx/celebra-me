@@ -1,0 +1,29 @@
+---
+import type { loadDemoConversionReport } from '@/lib/tracking/demo-conversion-report.server';
+import '@/styles/dashboard/_demo-conversion-report.scss';
+const days = Astro.url.searchParams.get('days') === '60' ? 60 : 30;
+interface Props { report: Awaited<ReturnType<typeof loadDemoConversionReport>> | null }
+const { report } = Astro.props;
+const display = (value: number | null) => value === null ? 'Sin medición' : value;
+---
+<section class="dashboard-card demo-conversion-report" aria-labelledby="demo-conversion-report-title">
+	<h2 id="demo-conversion-report-title">Recorrido comercial por demo</h2>
+	<form method="get">
+		<label for="demo-period">Periodo de atribución</label>
+		<select id="demo-period" name="days"><option value="30" selected={days === 30}>30 días completos</option><option value="60" selected={days === 60}>60 días completos</option></select>
+		<button type="submit" class="btn-secondary">Actualizar informe</button>
+	</form>
+	{report ? <>
+		<p>{report.period.startDate} a {report.period.endDate} · {report.period.timeZone}. No incluye hoy.</p>
+		<p>Consulta paginada completa de registros disponibles; no acredita cobertura histórica total. Las visitas dependen también de qué enlaces se compartieron y del consentimiento. No se suman datos de GA4 o Vercel.</p>
+		<div class="demo-conversion-report__table" tabindex="0" role="region" aria-label="Métricas por demo">
+		<table><thead><tr>{['Demo', 'Vistas', 'Clics a WhatsApp', 'CTR en demo', 'Compartida', 'Consulta recibida', 'Cotización', 'Pago', 'Perdida'].map((h) => <th scope="col">{h}</th>)}</tr></thead>
+		<tbody>{report.metrics.map((m) => <tr>
+			<th scope="row">{m.title}</th><td>{display(m.views)}</td><td>{display(m.clicks)}</td><td>{m.ctr === null ? 'Sin medición' : `${(m.ctr * 100).toFixed(1)} %`}</td>
+			<td>{display(m.shared)}</td><td>{display(m.contacted)}</td><td>{display(m.quoted)}</td><td>{display(m.paid)}</td><td>{display(m.lost)}</td>
+		</tr>)}</tbody></table></div>
+		<p>CTR: sesiones que pulsaron WhatsApp dentro de la demo ÷ sesiones que vieron esa demo en este periodo. Clics incluye también el showroom. Las etapas comerciales cuentan oportunidades únicas registradas, no vistas ni leads técnicos creados por clic.</p>
+		<p>Pagos sin atribución inequívoca: {display(report.unattributedPayments)}. Si se compartieron varios estilos con la misma oportunidad, no se adjudica la venta a uno arbitrariamente.</p>
+		{report.followupsAvailable ? <p>Registre el avance de cada oportunidad en el espacio de ventas.</p> : <p role="status">Seguimiento manual no disponible: falta validar la migración o la consulta de registros. No se interpreta como cero contactos.</p>}
+	</> : <p role="status">Datos no disponibles o consulta incompleta. No se muestran totales parciales. Revise la conexión y el esquema antes de reintentar.</p>}
+</section>

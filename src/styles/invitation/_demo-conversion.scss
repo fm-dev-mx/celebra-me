@@ -1,0 +1,289 @@
+.demo-conversion {
+	position: relative;
+	isolation: isolate;
+	display: flex;
+	align-items: end;
+	min-height: 500px;
+	background: var(--color-surface-dark);
+	color: var(--color-text-on-dark);
+	font-family: var(--font-body);
+	text-align: left;
+
+	&__photo {
+		position: absolute;
+		inset: 0;
+		z-index: -2;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: 50% 0%;
+	}
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		background: linear-gradient(
+			to top,
+			var(--color-surface-dark) 0%,
+			rgb(var(--color-surface-dark-rgb) / 94%) 15%,
+			rgb(var(--color-surface-dark-rgb) / 57%) 40%,
+			rgb(var(--color-surface-dark-rgb) / 4%) 66%,
+			transparent 100%
+		);
+	}
+
+	&__content {
+		position: relative;
+		width: 100%;
+		min-width: 0;
+		padding: 260px 42px 34px;
+	}
+
+	&__eyebrow {
+		margin: 0 0 14px;
+		font-size: 0.75rem;
+		line-height: 1.6;
+		letter-spacing: 0.06em;
+	}
+
+	&__title {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: 2.75rem;
+		font-weight: 500;
+		line-height: 1.04;
+		letter-spacing: 0;
+		color: inherit;
+
+		em {
+			display: block;
+			font-weight: inherit;
+		}
+	}
+
+	&__description {
+		max-width: 31ch;
+		margin: 20px 0 0;
+		font-size: 0.9375rem;
+		line-height: 1.65;
+	}
+
+	&__action {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 8px 18px;
+		margin-top: 24px;
+	}
+
+	&__primary,
+	&__secondary,
+	&__enlarge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		max-width: 100%;
+		color: inherit;
+		font-family: inherit;
+		line-height: 1.5;
+		text-underline-offset: 5px;
+		transition:
+			background-color 160ms ease,
+			color 160ms ease;
+
+		&:focus-visible {
+			outline: 3px solid var(--color-action-accent);
+			outline-offset: 5px;
+		}
+
+		&:active {
+			text-decoration: underline;
+		}
+	}
+
+	&__primary {
+		justify-content: space-between;
+		gap: 18px;
+		min-width: min(214px, 100%);
+		min-height: 52px;
+		padding: 10px 2px;
+		border-bottom: 1px solid currentcolor;
+		font-size: 0.9375rem;
+		text-decoration: none;
+
+		&:hover {
+			color: var(--color-action-accent);
+		}
+	}
+
+	&__channel {
+		font-size: 0.8125rem;
+		line-height: 1.5;
+	}
+
+	&__secondary {
+		min-height: 44px;
+		margin-top: 16px;
+		font-size: 0.8125rem;
+		text-decoration: underline;
+
+		&:hover {
+			color: var(--color-action-accent);
+		}
+	}
+
+	&__enlarge {
+		position: absolute;
+		inset: 18px auto auto 18px;
+		z-index: 1;
+		min-height: 44px;
+		padding: 8px 12px;
+		border: 1px solid rgb(var(--color-text-on-dark-rgb) / 65%);
+		border-radius: 3px;
+		background: rgb(var(--color-surface-dark-rgb) / 88%);
+		font-size: 0.8125rem;
+		cursor: pointer;
+
+		&:hover {
+			background: var(--color-surface-dark);
+		}
+	}
+
+	&[data-placement='gallery'] {
+		margin-top: 1.5rem;
+	}
+
+	&[data-placement='closing'] {
+		align-items: center;
+
+		.demo-conversion__photo {
+			left: auto;
+			width: 67%;
+			object-position: 50% 65%;
+		}
+
+		&::before {
+			background: linear-gradient(
+				to right,
+				var(--color-surface-dark) 28%,
+				rgb(var(--color-surface-dark-rgb) / 94%) 40%,
+				rgb(var(--color-surface-dark-rgb) / 55%) 64%,
+				rgb(var(--color-surface-dark-rgb) / 6%) 100%
+			);
+		}
+
+		.demo-conversion__content {
+			width: 67%;
+			max-width: 600px;
+			padding: 42px;
+		}
+
+		.demo-conversion__eyebrow {
+			font-size: 1.125rem;
+			color: var(--color-action-accent);
+			letter-spacing: 0;
+		}
+
+		.demo-conversion__title {
+			font-size: 3rem;
+
+			em {
+				font-size: 0.77em;
+				margin-top: 4px;
+			}
+		}
+
+		.demo-conversion__action {
+			flex-direction: column;
+			align-items: start;
+		}
+
+		.demo-conversion__primary {
+			padding: 12px 18px;
+			border: 1px solid var(--color-action-accent);
+			border-radius: 4px;
+			background: var(--color-action-accent);
+			color: var(--color-surface-dark);
+
+			&:hover {
+				background: var(--color-text-on-dark);
+			}
+		}
+	}
+
+	@media (width <= 600px) {
+		min-height: 590px;
+
+		&__content {
+			padding: 310px 24px 30px;
+		}
+
+		&__title {
+			font-size: 2.25rem;
+		}
+
+		&__action {
+			flex-direction: column;
+			align-items: start;
+			gap: 8px;
+		}
+
+		&__primary {
+			min-width: min(222px, 100%);
+		}
+
+		&[data-placement='closing'] {
+			min-height: 0;
+
+			.demo-conversion__photo {
+				width: 100%;
+				height: 350px;
+				object-position: 50% 50%;
+			}
+
+			&::before {
+				background: linear-gradient(
+					to bottom,
+					rgb(var(--color-surface-dark-rgb) / 12%) 0,
+					rgb(var(--color-surface-dark-rgb) / 42%) 180px,
+					var(--color-surface-dark) 330px
+				);
+			}
+
+			.demo-conversion__content {
+				width: 100%;
+				padding: 230px 24px 30px;
+			}
+
+			.demo-conversion__title {
+				font-size: 2.625rem;
+			}
+
+			.demo-conversion__primary {
+				width: 100%;
+			}
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		&__primary,
+		&__secondary,
+		&__enlarge {
+			transition: none;
+		}
+	}
+}
+
+// Scoped to the pilot's invitation farewell, before the commercial closing.
+.demo-conversion-farewell {
+	--color-surface-primary: var(--color-surface-dark);
+	--color-text-primary: var(--color-text-on-dark);
+	--color-text-secondary: var(--color-text-on-dark);
+	--color-text-muted: var(--color-text-on-dark);
+	--color-border-subtle: transparent;
+	--footer-control-min-height: 44px;
+	--footer-replay-opacity: 100%;
+}
