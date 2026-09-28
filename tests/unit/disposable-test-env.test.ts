@@ -1,13 +1,46 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { redactCredentials } from '../../scripts/db/db-workflow-lib.ts';
-import { buildPostgrestDockerArgs } from '../../scripts/db/disposable-test-env.ts';
+import {
+	buildPostgrestDockerArgs,
+	classifyImagePullFailure,
+	POSTGRES_IMAGE,
+	POSTGREST_IMAGE,
+} from '../../scripts/db/disposable-test-env.ts';
 
 // ---------------------------------------------------------------------------
 // Cross-platform CI fixes: curl.exe removal, Linux Docker --add-host,
 // failure diagnostics, and secret redaction.
 // ---------------------------------------------------------------------------
 describe('disposable-test-env — cross-platform fixes', () => {
+	describe('Supabase disposable image references', () => {
+		it('uses the existing PostgreSQL and PostgREST versions from immutable GHCR digests', () => {
+			expect(POSTGRES_IMAGE).toBe(
+				'ghcr.io/supabase/postgres:17.6.1.143@sha256:80d7b27c3e8d77cfa7226eee9508671796da214781ff15a35b3670d7ad5ee453',
+			);
+			expect(POSTGREST_IMAGE).toBe(
+				'ghcr.io/supabase/postgrest:v14.14@sha256:d2009b5c9deffc210c8a5592698472fede14fd9f6ca89823c8474ca54d58c012',
+			);
+		});
+
+		it('classifies registry quota responses as non-retriable', () => {
+			expect(classifyImagePullFailure('toomanyrequests: Data limit exceeded')).toBe(
+				'rate-limit',
+			);
+		});
+
+		it.each([
+			'unauthorized: authentication required',
+			'manifest unknown: requested image was not found',
+		])('classifies permanent registry rejection: %s', (errorOutput) => {
+			expect(classifyImagePullFailure(errorOutput)).toBe('registry-rejected');
+		});
+
+		it('keeps transient network failures eligible for bounded retry', () => {
+			expect(classifyImagePullFailure('TLS handshake timeout')).toBe('transient');
+		});
+	});
+
 	// -----------------------------------------------------------------------
 	// 1. No curl.exe dependency
 	// -----------------------------------------------------------------------
@@ -42,6 +75,7 @@ describe('disposable-test-env — cross-platform fixes', () => {
 		it('does not include --add-host on non-Linux', () => {
 			const args = buildPostgrestDockerArgs(false);
 			expect(args).not.toContain('--add-host');
+			expect(args[args.length - 1]).toBe(POSTGREST_IMAGE);
 		});
 
 		it('splice inserts --add-host at position 3 (after --rm, before --name)', () => {
