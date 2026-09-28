@@ -4,6 +4,8 @@
  * Ordinary additive/neutral SQL needs no registry ceremony.
  * Destructive SQL (DROP / REVOKE / TRUNCATE / ALTER … DROP) fails closed unless the
  * rollout registry entry is phase=contract with contract metadata.
+ * Initial ALL privilege revocation on an unconditionally new, schema-qualified table
+ * in the same explicit transaction is additive; ambiguous SQL retains the guard.
  */
 
 import { createHash } from 'node:crypto';
@@ -57,32 +59,21 @@ const DESTRUCTIVE_PATTERNS: Array<{ kind: MigrationSqlRiskKind; pattern: RegExp 
 	},
 ];
 
-function stripSqlComments(sql: string): string {
-	const withoutBlock = sql.replace(/\/\*[\s\S]*?\*\//g, ' ');
-	return withoutBlock
-		.split(/\r?\n/)
-		.map((line) => line.replace(/--.*$/, ''))
-		.join('\n');
-}
-
-function stripDollarQuotedBodies(sql: string): string {
-	// Ignore bodies inside $$…$$ / $tag$…$tag$ so DROP language inside function source is not flagged.
-	return sql.replace(/\$([A-Za-z_]*)\$[\s\S]*?\$\1\$/g, ' ');
-}
-
-function stripSingleQuotedLiterals(sql: string): string {
-	return sql.replace(/'(?:''|[^'])*'/g, "''");
-}
-
 export function normalizeSqlForRiskScan(sql: string): string {
-	return stripSingleQuotedLiterals(stripDollarQuotedBodies(stripSqlComments(sql)));
+	// Consume lexical units in source order: a comment marker inside a literal must
+	// never swallow subsequent executable SQL (including a real REVOKE).
+	return sql.replace(
+		/--[^\r\n]*|\/\*[\s\S]*?\*\/|\$([A-Za-z_][A-Za-z0-9_]*|)\$[\s\S]*?\$\1\$|'(?:''|[^'])*'/g,
+		(token) => (token.startsWith("'") ? "''" : ' '),
+	);
 }
 
 export function classifySqlText(sql: string): MigrationSqlRiskFinding[] {
 	const scanned = normalizeSqlForRiskScan(sql);
+	const revokeScan = excludeNewTablePermissionInitialization(sql, scanned);
 	const findings: MigrationSqlRiskFinding[] = [];
 	for (const { kind, pattern } of DESTRUCTIVE_PATTERNS) {
-		const match = scanned.match(pattern);
+		const match = (kind === 'destructive_revoke' ? revokeScan : scanned).match(pattern);
 		if (match) {
 			findings.push({
 				kind,
@@ -94,6 +85,60 @@ export function classifySqlText(sql: string): MigrationSqlRiskFinding[] {
 		return [{ kind: 'ordinary', evidence: 'no destructive DDL/DCL patterns detected' }];
 	}
 	return findings;
+}
+
+/** Narrow proof, not a general SQL parser: unsupported syntax retains the original guard. */
+function excludeNewTablePermissionInitialization(sql: string, scanned: string): string {
+	// Do not infer object identity or statement boundaries through quoted/dynamic SQL.
+	const literals = sql.match(/'(?:''|[^'])*'/g) ?? [];
+	if (
+		/"|\$[A-Za-z_]*\$|\/\*|\\/.test(sql) ||
+		literals.some((literal) => /;|--|\/\*/.test(literal))
+	) {
+		return scanned;
+	}
+	const identifier = '[a-z_][a-z0-9_]*';
+	const qualified = `(${identifier}\\.${identifier})`;
+	const createTable = new RegExp(`^create\\s+table\\s+${qualified}\\s*\\([\\s\\S]*\\)$`, 'i');
+	const revoke = new RegExp(
+		`^revoke\\s+all(?:\\s+privileges)?\\s+on\\s+(?:table\\s+)?${qualified}\\s+from\\s+${identifier}(?:\\s*,\\s*${identifier})*$`,
+		'i',
+	);
+	const alterRls = new RegExp(
+		`^alter\\s+table\\s+${qualified}\\s+(?:enable|force)\\s+row\\s+level\\s+security$`,
+		'i',
+	);
+	const createIndex = new RegExp(
+		`^create\\s+(?:unique\\s+)?index\\s+${identifier}\\s+on\\s+${qualified}\\s*\\([^()]*\\)$`,
+		'i',
+	);
+	let inTransaction = false;
+	const created = new Set<string>();
+	return scanned
+		.split(';')
+		.map((statement) => {
+			const text = statement.trim();
+			if (/^begin(?:\s+transaction)?$/i.test(text) && !inTransaction) {
+				inTransaction = true;
+				created.clear();
+				return statement;
+			}
+			const table = text.match(createTable)?.[1]?.toLowerCase();
+			if (inTransaction && table) {
+				created.add(table);
+				return statement;
+			}
+			const revokedTable = text.match(revoke)?.[1]?.toLowerCase();
+			if (inTransaction && revokedTable && created.has(revokedTable)) return '';
+			const preservedTable = (text.match(alterRls) ??
+				text.match(createIndex))?.[1]?.toLowerCase();
+			if (inTransaction && preservedTable && created.has(preservedTable)) return statement;
+			// Includes COMMIT, ROLLBACK, savepoints, renames, dynamic calls and unknown operations.
+			inTransaction = false;
+			created.clear();
+			return statement;
+		})
+		.join(';');
 }
 
 export function contentDigestOf(sql: string): string {
@@ -148,10 +193,7 @@ export function evaluateMigrationSqlRisk(options: {
 		return { blocked: false, reasons: [], risk };
 	}
 
-	if (
-		options.skipContractEnforcement ||
-		options.version <= SQL_RISK_CONTRACT_ENFORCEMENT_AFTER
-	) {
+	if (options.skipContractEnforcement || options.version <= SQL_RISK_CONTRACT_ENFORCEMENT_AFTER) {
 		return { blocked: false, reasons: [], risk };
 	}
 
