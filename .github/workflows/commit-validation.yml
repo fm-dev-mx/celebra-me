@@ -210,11 +210,13 @@ jobs:
               run: pnpm visual:parity:candidate
 
             - name: Preserve candidate for owner review
-              if: github.event.inputs.visual_mode == 'candidate'
+              if: always() && github.event.inputs.visual_mode == 'candidate'
               uses: actions/upload-artifact@v7
               with:
                   name: visual-candidate-${{ github.sha }}
-                  path: .tmp/visual-parity/candidate
+                  path: |
+                      .tmp/visual-parity/candidate
+                      .tmp/visual-parity/candidate-references
                   include-hidden-files: true
                   retention-days: 7
 
@@ -230,6 +232,7 @@ jobs:
                       test-results/**/error-context.md
                       test-results/**/*.json
                       .tmp/browser-outcome.json
+                      .tmp/visual-parity-failure.json
                   if-no-files-found: ignore
                   retention-days: 3
 

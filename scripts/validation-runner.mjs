@@ -91,7 +91,9 @@ export function buildValidationPlan(files, pathExists = existsSync) {
 function reportVisualCertificationRequirement(files) {
 	if (files.length === 0) return;
 	console.log('\nVISUAL_CERTIFICATION_REQUIRED');
-	console.log('Run pnpm validate:prepush -- --sha <exact-commit-sha> before pushing.');
+	console.log(
+		'Run pnpm validate:prepush -- --sha <exact-commit-sha> --base-sha <base-sha> before pushing.',
+	);
 	for (const file of files) console.log(`  - ${file}`);
 }
 

@@ -11,6 +11,7 @@ import {
 	cpSync,
 	existsSync,
 	mkdirSync,
+	mkdtempSync,
 	readFileSync,
 	renameSync,
 	rmSync,
@@ -48,6 +49,7 @@ const COMPARE_ROOT = resolve(ROOT, '.tmp/visual-parity/compare');
 const ACCEPTED_ROOT = resolve(ROOT, 'tests/e2e/visual-baselines');
 const PLAYWRIGHT_CLI = resolve(ROOT, 'node_modules/@playwright/test/cli.js');
 const ACCEPTED_MANIFEST = join(ACCEPTED_ROOT, 'manifest.json');
+let failurePhase = 'PREFLIGHT';
 
 const ACCEPTED_VISUAL_RUNTIME = {
 	node: 'v24.14.1',
@@ -157,6 +159,7 @@ function stampCandidateReference(referenceSha: string): void {
 }
 
 function runPlaywright(mode: 'candidate' | 'compare'): void {
+	failurePhase = 'BROWSER';
 	const outputRoot = mode === 'candidate' ? CANDIDATE_ROOT : COMPARE_ROOT;
 	const result = spawnSync(
 		process.execPath,
@@ -201,6 +204,7 @@ function candidate(expectedSha?: string): void {
 		);
 	}
 	assertCaptureEnvironment('candidate');
+	failurePhase = 'MANIFEST';
 	readPreviousAccepted();
 	const missingAssets = listLocalRenderCorpus()
 		.filter((entry) => entry.assetStatus !== 'ready')
@@ -208,16 +212,22 @@ function candidate(expectedSha?: string): void {
 	if (missingAssets.length > 0) {
 		throw new Error(`VISUAL_BASELINE_ASSETS_INCOMPLETE: ${missingAssets.join(', ')}`);
 	}
+	// Preserve the complete prior review bundle before any capture can replace its files.
+	const archived = archiveCandidate(CANDIDATE_ROOT);
+	if (archived) console.log(`Previous candidate preserved: ${relative(ROOT, archived)}`);
 	runPlaywright('candidate');
 	if (assertCleanGitState('candidate') !== referenceSha) {
 		throw new Error('Visual parity candidate HEAD changed during capture.');
 	}
+	failurePhase = 'MANIFEST';
 	stampCandidateReference(referenceSha);
 
 	const manifest = readManifest(CANDIDATE_ROOT, true);
 	assertPinnedVisualRuntime(manifest, 'candidate');
 	assertManifestIntegrity(manifest, CANDIDATE_ROOT);
+	failurePhase = 'COVERAGE';
 	assertCoverageMatrix(manifest);
+	failurePhase = 'REPORT';
 	writeCombinedCandidateArtifacts(CANDIDATE_ROOT, manifest);
 	console.log(
 		`Candidate ready: ${manifest.totalCaptures} captures in ${relative(ROOT, CANDIDATE_ROOT)}.`,
@@ -226,11 +236,16 @@ function candidate(expectedSha?: string): void {
 
 function compare(): void {
 	assertCaptureEnvironment('compare');
+	failurePhase = 'MANIFEST';
 	if (!existsSync(ACCEPTED_MANIFEST)) {
 		throw new Error(
 			`No accepted manifest at ${relative(ROOT, ACCEPTED_MANIFEST)}. Accept an approved candidate first.`,
 		);
 	}
+	const coverageManifest = JSON.parse(readFileSync(ACCEPTED_MANIFEST, 'utf8')) as CaptureManifest;
+	failurePhase = 'COVERAGE';
+	assertCoverageMatrix(coverageManifest);
+	failurePhase = 'MANIFEST';
 	const accepted = readManifest(ACCEPTED_ROOT);
 	if (accepted.status !== 'ACCEPTED')
 		throw new Error('Accepted manifest is not marked ACCEPTED.');
@@ -239,10 +254,10 @@ function compare(): void {
 	assertVisualRuntimeReady(accepted.runtimeFingerprint ?? {}, VISUAL_PARITY_RUNTIME);
 	assertCoverageMatrix(accepted);
 	runPlaywright('compare');
+	failurePhase = 'MANIFEST';
 	const compared = readManifest(COMPARE_ROOT, true);
 	assertManifestIntegrity(compared, COMPARE_ROOT);
 	assertPinnedVisualRuntime(compared, 'compare');
-	assertCoverageMatrix(accepted);
 	if (
 		JSON.stringify(accepted.runtimeFingerprint ?? null) !==
 		JSON.stringify(compared.runtimeFingerprint ?? null)
@@ -279,7 +294,9 @@ function compare(): void {
 	console.log(`Visual parity compare passed: ${compared.totalCaptures} captures.`);
 }
 
-function assertCoverageMatrix(manifest: CombinedManifest): void {
+export function assertCoverageMatrix(
+	manifest: Pick<CaptureManifest, 'captures' | 'matrixHash'>,
+): void {
 	const expectedHash = computeVisualMatrixHash(VISUAL_COVERAGE.cases);
 	const actualHash = computeVisualMatrixHash(
 		manifest.captures as unknown as Array<Record<string, unknown>>,
@@ -290,18 +307,34 @@ function assertCoverageMatrix(manifest: CombinedManifest): void {
 		);
 	}
 }
-function readPreviousAccepted(): CaptureManifest | null {
-	if (!existsSync(ACCEPTED_MANIFEST)) return null;
+export function readPreviousAccepted(root = ACCEPTED_ROOT): CaptureManifest | null {
+	const manifestPath = join(root, 'manifest.json');
+	if (!existsSync(manifestPath)) return null;
 	// The previous matrix may legitimately have fewer cases than the new candidate.
-	const previous = JSON.parse(readFileSync(ACCEPTED_MANIFEST, 'utf8')) as CaptureManifest;
+	const previous = JSON.parse(readFileSync(manifestPath, 'utf8')) as CaptureManifest;
 	if (previous.status !== 'ACCEPTED' || !Array.isArray(previous.captures))
 		throw new Error('Previous visual references are invalid.');
-	assertManifestIntegrity(previous, ACCEPTED_ROOT);
+	assertManifestIntegrity(previous, root);
 	return previous;
 }
 
-function writeCombinedCandidateArtifacts(root: string, manifest: CombinedManifest): void {
-	const previous = readPreviousAccepted();
+export function archiveCandidate(root: string): string | undefined {
+	const references = join(root, '..', 'candidate-references');
+	if (!existsSync(root) && !existsSync(references)) return undefined;
+	const history = resolve(root, '..', 'history');
+	mkdirSync(history, { recursive: true });
+	const attempt = mkdtempSync(join(history, 'candidate-'));
+	if (existsSync(root)) renameSync(root, join(attempt, 'candidate'));
+	if (existsSync(references)) renameSync(references, join(attempt, 'candidate-references'));
+	return attempt;
+}
+
+export function writeCombinedCandidateArtifacts(
+	root: string,
+	manifest: CombinedManifest,
+	previous: CaptureManifest | null = readPreviousAccepted(),
+	acceptedRoot = ACCEPTED_ROOT,
+): void {
 	const combinedPath = join(root, 'combined-manifest.json');
 	const payload = {
 		...manifest,
@@ -346,10 +379,15 @@ function writeCombinedCandidateArtifacts(root: string, manifest: CombinedManifes
 	const reviewCards = changed
 		.map((capture) => {
 			const old = previous?.captures.find((entry) => entry.file === capture.file);
+			if (old) {
+				const target = resolve(root, '..', 'candidate-references', old.file);
+				mkdirSync(resolve(target, '..'), { recursive: true });
+				cpSync(join(acceptedRoot, old.file), target);
+			}
 			const before = old
-				? `<img alt="Referencia anterior" src="data:image/png;base64,${readFileSync(join(ACCEPTED_ROOT, old.file)).toString('base64')}">`
+				? `<img alt="Referencia anterior" loading="lazy" src="../candidate-references/${old.file}">`
 				: '<p>Captura nueva</p>';
-			return `<article><h2>${capture.file}</h2>${before}<img alt="Candidato" src="${capture.file}"></article>`;
+			return `<article><h2>${capture.file}</h2>${before}<img alt="Candidato" loading="lazy" src="${capture.file}"></article>`;
 		})
 		.join('');
 	writeFileSync(
@@ -508,12 +546,17 @@ function certifiedBrowser(args: string[]): void {
 	process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES = 'true';
 	process.env.PLAYWRIGHT_REQUIRE_VISUAL_PREFLIGHT = 'true';
 	assertCaptureEnvironment('compare');
+	failurePhase = 'MANIFEST';
+	const coverageManifest = JSON.parse(readFileSync(ACCEPTED_MANIFEST, 'utf8')) as CaptureManifest;
+	failurePhase = 'COVERAGE';
+	assertCoverageMatrix(coverageManifest);
+	failurePhase = 'MANIFEST';
 	const accepted = readManifest(ACCEPTED_ROOT);
 	if (accepted.status !== 'ACCEPTED') throw new Error('Expected accepted visual references.');
 	assertManifestIntegrity(accepted, ACCEPTED_ROOT);
 	assertPinnedVisualRuntime(accepted, 'compare');
 	assertVisualRuntimeReady(accepted.runtimeFingerprint ?? {}, VISUAL_PARITY_RUNTIME);
-	assertCoverageMatrix(accepted);
+	failurePhase = 'BROWSER';
 	const result = spawnSync(process.execPath, [PLAYWRIGHT_CLI, ...args], {
 		stdio: 'inherit',
 		env: process.env,
@@ -551,7 +594,16 @@ async function main(): Promise<void> {
 }
 
 if (process.argv[1] && /^visual-parity-cli\.(?:ts|js)$/.test(basename(process.argv[1]))) {
+	rmSync(resolve(ROOT, '.tmp/visual-parity-failure.json'), { force: true });
 	main().catch((error: unknown) => {
+		mkdirSync(resolve(ROOT, '.tmp'), { recursive: true });
+		writeFileSync(
+			resolve(ROOT, '.tmp/visual-parity-failure.json'),
+			JSON.stringify({
+				operation: process.argv[2],
+				phase: failurePhase,
+			}),
+		);
 		console.error(error instanceof Error ? error.message : String(error));
 		process.exitCode = 1;
 	});
