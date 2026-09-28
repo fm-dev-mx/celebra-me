@@ -410,8 +410,8 @@ Rules:
   separately authorized operations, and expected CI/smoke evidence without ceremonial repetition.
 - Tags are annotated (`-a`) to carry release metadata.
 - Never rewrite or force-push `main` without explicit approval.
-- Both protected branches require pull requests and the canonical checks; no bypass actor is
-  configured.
+- `develop` permits direct fast-forward integration pushes; `main` requires the release pull request
+  and canonical checks. Inspect effective remote rules before writing; never use a bypass.
 - Rollback: create a revert branch, validate it through a PR, and merge it normally.
 - Direct commits on `main` remain blocked by `pre-commit`; direct pushes are rejected remotely.
 

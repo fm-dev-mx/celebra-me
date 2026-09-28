@@ -3,7 +3,7 @@ name: production-pr
 description: |
   Prepare and open a production pull request with an explicit release range, current validation evidence, and task-scoped Git authorization. Stops before merge or deployment.
 domain: workflow
-version: 1.0.0
+version: 1.1.0
 when_to_use:
   - Prepare or open a pull request intended for production
   - Audit the scope and evidence for an existing production pull request
@@ -24,6 +24,10 @@ related_docs:
 ---
 
 # Production PR
+
+When used inside explicitly invoked `publish-production`, its documented invocation authority covers
+scoped PR creation/update and subsequent merge. Reuse it without another approval prompt; return to
+that skill for deployment verification. Standalone PR preparation still ends at the PR.
 
 Prepare a reviewable release comparison and open its PR when the required evidence and authority are
 present. Repository policies own branch strategy, validation, and authorization; this skill only

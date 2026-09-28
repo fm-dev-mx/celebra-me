@@ -37,12 +37,11 @@ State every planned Git action with exact direction, for example:
 ```bash
 git switch develop
 git pull --ff-only origin develop
-pnpm run ci
 ```
 
-If `ci` is too heavy for the authorized scope, state that explicitly (`Skipped` with reason), run
-the closest gatekeeper-appropriate substitute, and do **not** claim full CI passed. Red CI without
-an explicit current-task override → `Fail` / stop (do not invent bypass authority).
+Select local checks through validation procedures and reuse matching completed evidence. Require
+`pnpm ops:release-checks <exact-integrated-sha>` before opening the release PR. Local CI does not
+replace the required integration and PR checks; red or missing required CI stops promotion.
 
 3. Create or update a pull request from `develop` to `main` — source `develop@<sha>`, target
    `main@<sha>`. Do not switch to or commit on `main` locally.

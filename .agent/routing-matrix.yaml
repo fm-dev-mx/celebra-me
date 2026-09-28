@@ -140,6 +140,14 @@ routes:
       skills:
           - 'branch-lane'
 
+    - task_type: 'code_release_execution'
+      description: 'Execute scoped Preview or Production code delivery after explicit invocation'
+      skills:
+          - 'publish-preview'
+          - 'publish-production'
+      docs:
+          - 'docs/core/release-execution.md'
+
     - task_type: 'production_pr_preparation'
       description: 'Prepare or open a production PR with scoped changes and validation evidence'
       skills:

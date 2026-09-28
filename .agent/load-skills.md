@@ -15,7 +15,9 @@
 - related_skills and related_docs are optional references, not recursive activation instructions.
   Load a supporting reference only for the operation it describes.
 - Skills provide procedure, not additional authority. Apply the current task mode and the owning
-  rules before edits, Git operations, environment access, or external actions.
+  rules before edits, Git operations, environment access, or external actions. Explicit
+  release-skill invocation carries the user's scoped request as defined by
+  [Git Safety](rules/git-safety.md); automatic discovery alone never authorizes execution.
 
 ## Host discovery and precedence
 

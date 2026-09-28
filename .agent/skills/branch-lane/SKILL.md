@@ -3,7 +3,7 @@ name: branch-lane
 description: |
   Prepare releases or promote/sync develop and main through the existing parity and checkpoint workflow. Git writes require exact current-task authorization; this skill does not perform database or deployment operations.
 domain: workflow
-version: 2.1.1
+version: 2.2.0
 absorbed_skills: [release-prepare]
 when_to_use:
   - User asks to promote develop to main / fast-forward main / "promueve a main"
@@ -33,6 +33,11 @@ related_docs:
 ---
 
 # Branch Lane
+
+When used by an explicitly invoked `publish-preview` or `publish-production`, reuse its documented
+current-task Git authority; do not request it again. Follow the shared
+[release execution procedure](../../../docs/core/release-execution.md) for deployment completion.
+This helper alone remains Git-only and grants no additional database authority.
 
 **Single user entry point** for supported Git lane operations. This skill orchestrates discovery,
 routing, authorization gates, and reporting. **Policy SSOT** stays in docs — this skill does not
@@ -68,14 +73,19 @@ Do **not** invent informal variants (for example `Pass (info)`). Put routing con
 Every non-`Pass` finding must include **cause**, **impact**, **owner**, **remediation**, **next
 step**.
 
-| Situation                                                                                                                        | Status                |
-| -------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| Missing credentials                                                                                                              | `Needs manual action` |
-| Correctable command/network/ref/CI/migration-file issue                                                                          | `Fail`                |
-| Intentional non-critical drift needing disposition                                                                               | `Needs decision`      |
-| Remote write or backup ready                                                                                                     | `Needs authorization` |
-| Validation deferred with no unsafe continuation                                                                                  | `Skipped`             |
-| Unsafe Git state, force/rebase, duplicate/malformed migration, applied-migration content mutation, incompatible structural drift | `Hard blocked`        |
+- **Situation:** Missing credentials
+  - **Status:** `Needs manual action`
+- **Situation:** Correctable command/network/ref/CI/migration-file issue
+  - **Status:** `Fail`
+- **Situation:** Intentional non-critical drift needing disposition
+  - **Status:** `Needs decision`
+- **Situation:** Remote write or backup ready
+  - **Status:** `Needs authorization`
+- **Situation:** Validation deferred with no unsafe continuation
+  - **Status:** `Skipped`
+- **Situation:** Unsafe Git state, force/rebase, duplicate/malformed migration, applied-migration
+  content mutation, incompatible structural drift
+  - **Status:** `Hard blocked`
 
 **Applied migration content mutation is never an acceptable exception.** Restore the original file
 and add a corrective migration.
@@ -101,7 +111,12 @@ On every invocation, **exhaust safe automatic investigation before any user prom
 8. When no user action is required yet, say so explicitly and continue automatic work.
 
 Helpers: `mayRequestUserInput`, `buildConsolidatedAuthorizationPlan` in
-`scripts/db/branch-lane-diagnosis.ts`.
+`scripts/db/branch-lane-diagnosis.ts`. When the current Task Contract already authorizes the exact
+`laneDirection`, pass that direction as the ephemeral `alreadyAuthorizedGitDirection` input. This
+suppresses only the duplicate Git prompt; database permissions, decisions and blockers remain. Do
+not serialize it into checkpoints. The diagnosis CLI accepts it only through
+`--authorized-git-direction <exact-direction>`; match the reported `laneDirection` after checking
+full source/target SHAs against the Task Contract.
 
 ## Checkpoint vs clearance
 
