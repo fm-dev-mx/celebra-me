@@ -613,6 +613,8 @@ export function buildConsolidatedAuthorizationPlan(input: {
 	previewMigrateNeeded: boolean;
 	productionMigrateNeeded: boolean;
 	gitWriteNeeded: boolean;
+	/** Ephemeral Task Contract declaration; never persisted or treated as a permission source. */
+	alreadyAuthorizedGitDirection?: string;
 	/** Automatic steps still outstanding (empty ⇒ diagnosis complete for prompting). */
 	remainingAutomaticSteps?: readonly string[];
 }): {
@@ -700,7 +702,7 @@ export function buildConsolidatedAuthorizationPlan(input: {
 			reason: `Production must receive pending migrations before or with ${input.laneDirection}.`,
 		});
 	}
-	if (input.gitWriteNeeded) {
+	if (input.gitWriteNeeded && input.alreadyAuthorizedGitDirection !== input.laneDirection) {
 		items.push({
 			id: 'git-ff-promote',
 			status: 'Needs authorization',
