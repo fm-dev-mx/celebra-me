@@ -5,7 +5,7 @@ import { hasDemoConversion } from '@/lib/invitation/demo-conversion';
 
 const read = (file: string) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
 const photoGallery = read('src/components/invitation/PhotoGallery.astro');
-const source = photoGallery.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+const source = photoGallery.match(/<script>([\s\S]*?)<\/script>/i)?.[1];
 
 it('replaces the last photo only through an explicitly provided slot', () => {
 	const gallery = read('src/components/invitation/Gallery.astro');
