@@ -34,7 +34,10 @@ const content: CanonicalEventContentInput = {
 		'thankYou',
 	],
 	composition: {
-		intersections: { rsvp: { family: 'atmospheric-blend', source: 'itinerary' } },
+		intersections: {
+			rsvp: { family: 'arch', source: 'itinerary' },
+			thankYou: { family: 'atmospheric-blend', source: 'gifts' },
+		},
 	},
 	hero: {
 		variant: 'framed-portrait',
@@ -55,15 +58,17 @@ const content: CanonicalEventContentInput = {
 		sealIcon: 'heart',
 		sealInitials: 'NP',
 		microcopy: 'Toque para abrir la invitación',
+		teaserDetails: '17 de octubre de 2026 · Los Mochis',
 	},
 	family: {
 		variant: 'ceremonial-family',
 		presentation: 'text-only',
 		parentsOrder: 'father-first',
 		parents: { father: 'David Martinez', mother: 'María Cota' },
+		// Non-breaking spaces keep each person's full name on one line; pairs break at "y".
 		godparents: [
-			{ name: 'Eduardo Martinez Verdin y Florentina Solis' },
-			{ name: 'Eduardo Martinez Solis y Delia Cota' },
+			{ name: 'Eduardo\u00a0Martinez\u00a0Verdin y\u00a0Florentina\u00a0Solis' },
+			{ name: 'Eduardo\u00a0Martinez\u00a0Solis y\u00a0Delia\u00a0Cota' },
 		],
 		labels: {
 			sectionTitle: 'Mi familia',
@@ -72,7 +77,7 @@ const content: CanonicalEventContentInput = {
 			fatherRole: '',
 			motherRole: '',
 			godparentsTitle: 'Mis padrinos',
-			sectionMessage: '',
+			sectionMessage: 'Con la bendición de Dios y el cariño de mi familia.',
 		},
 	},
 	interludes: [
@@ -89,27 +94,29 @@ const content: CanonicalEventContentInput = {
 			alt: 'Naydelin con su vestido de gala junto a los arcos.',
 			height: 'tall',
 			focalPoint: '50% 38%',
+			focalPointDesktop: '50% 22%',
 		},
 	],
 	gallery: {
 		variant: 'paired-feature-band',
-		eyebrow: 'Mis XV años',
+		eyebrow: 'Sesión de fotos',
 		title: 'Retratos de Naydelin',
 		items: [
 			{ image: 'gallery01', alt: 'Retrato de Naydelin junto a un tocador.' },
 			{ image: 'gallery02', alt: 'Naydelin sentada en un sillón.' },
-			{ image: 'gallery03', alt: 'Naydelin de pie junto a una pared con plantas.' },
-			{ image: 'gallery04', alt: 'Naydelin sentada en un sillón con vestido de lunares.' },
+			// The feature band separates the two portraits taken at the same shelf.
 			{
 				image: 'galleryFeature',
 				layoutRole: 'feature',
 				alt: 'Retrato horizontal de Naydelin junto al estante.',
 			},
+			{ image: 'gallery03', alt: 'Naydelin de pie junto a una pared con plantas.' },
+			{ image: 'gallery04', alt: 'Naydelin sentada en un sillón con vestido de lunares.' },
 		],
 	},
 	countdown: {
 		variant: 'standard',
-		title: 'La cuenta regresiva',
+		title: 'Falta muy poco',
 		footerText: '',
 	},
 	location: {
@@ -118,13 +125,13 @@ const content: CanonicalEventContentInput = {
 		accessPolicy: { visibility: 'public' },
 		presentationOptions: { showNavigationButtons: true, showFlourishes: false },
 		introEyebrow: 'Los Mochis, Sinaloa',
-		introHeading: '17 de octubre de 2026',
+		introHeading: 'Ceremonia y recepción',
 		mapStyle: 'dark',
 		indications: [],
 		venues: [
 			{
 				type: 'ceremony',
-				venueEvent: 'Ceremonia',
+				venueEvent: 'Ceremonia religiosa',
 				venueName: 'Parroquia El Señor San José',
 				address: 'Calle Ignacio Allende y Av. Bienestar, La Bienestar, Los Mochis, Sinaloa',
 				date: '17 de octubre de 2026',
@@ -147,10 +154,11 @@ const content: CanonicalEventContentInput = {
 	itinerary: {
 		variant: 'editorial-ledger',
 		title: 'Itinerario',
+		// Waltz, dinner, and closing times are owner estimates pending confirmation.
 		items: [
 			{
 				iconName: 'Church',
-				label: 'Ceremonia',
+				label: 'Ceremonia religiosa',
 				time: '19:00',
 				description: 'Parroquia El Señor San José',
 			},
@@ -160,34 +168,57 @@ const content: CanonicalEventContentInput = {
 				time: '21:00',
 				description: 'Salón Granada',
 			},
+			{
+				iconName: 'Waltz',
+				label: 'Vals',
+				time: '22:00',
+				description: 'Mi primer baile de la noche.',
+			},
+			{
+				iconName: 'Dinner',
+				label: 'Cena',
+				time: '22:30',
+				description: 'Compartamos la mesa y la alegría de esta noche.',
+			},
+			{
+				iconName: 'Party',
+				label: 'Cierre',
+				time: '02:00',
+				description: 'Los últimos momentos de la celebración.',
+			},
 		],
 	},
 	rsvp: {
 		variant: 'formal-register',
 		title: 'Confirme su asistencia',
-		subcopy: 'Le agradeceré confirmar su asistencia desde esta invitación.',
+		subcopy: 'Su confirmación me ayudará a preparar cada detalle con cariño.',
 		guestCap: 1,
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',
 		personalizedAccess: {
 			variant: 'formal-pass',
-			title: 'Pase personalizado',
-			subtitle: '',
-			footerText: 'Confirme su asistencia en la sección de RSVP.',
+			// Admission-ticket presentation: notched stub, perforation, and monogram.
+			ticket: { signature: 'Naydelin', monogram: 'NP' },
+			title: 'Pase de acceso',
+			subtitle: 'Con cariño le espero para celebrar mis XV años.',
 		},
 		labels: {
 			name: 'Su nombre',
 			attendance: 'Asistencia',
 			guestCount: 'Número de asistentes',
 			confirmButton: 'Confirmar asistencia',
-			notesPlaceholder: 'Escriba un mensaje para Naydelin…',
+			notesLabel: 'Un mensaje para Naydelin (opcional)',
+			notesPlaceholder: 'Escriba unas palabras para Naydelin…',
 		},
-		confirmationMessage: 'Gracias por confirmar. Me dará mucho gusto contar con usted.',
+		confirmationMessage: 'Gracias por confirmar. Me dará mucho gusto celebrar con usted.',
 		responseMessages: {
-			confirmed: { title: 'Gracias por confirmar', subtitle: '' },
+			confirmed: {
+				title: 'Gracias por confirmar',
+				subtitle: 'Le espero el sábado 17 de octubre.',
+			},
 			declined: {
 				title: 'Gracias por avisarme',
-				subtitle: 'Lamento que no pueda acompañarme.',
+				subtitle: 'Lamento que no pueda acompañarme; le tendré presente en este día.',
 			},
 		},
 	},
@@ -195,21 +226,23 @@ const content: CanonicalEventContentInput = {
 		variant: 'standard',
 		title: 'Regalos',
 		subtitle:
-			'Su presencia es mi mejor regalo. Si desea obsequiarme algo, habrá lluvia de sobres.',
+			'Su presencia es mi mejor regalo. Si además desea tener un detalle conmigo, esta es mi sugerencia:',
 		items: [{ type: 'cash', title: 'Lluvia de sobres' }],
 	},
 	thankYou: {
 		variant: 'portrait-letter',
 		image: 'thankYouPortrait',
 		focalPoint: '50% 35%',
-		message: 'Gracias por acompañarme a celebrar mis XV años.',
+		message:
+			'Gracias por ser parte de este día tan especial. Su compañía hará de mis XV años un recuerdo inolvidable.',
 		closingName: CELEBRANT_NAME,
 	},
 	sharing: {
 		ogImage: 'ogShare',
-		ogDescription: `Mis XV años — ${CELEBRANT_NAME}`,
+		ogDescription:
+			'Le invito a celebrar mis XV años el sábado 17 de octubre de 2026 en Los Mochis.',
 		shareMessages: createShareMessages(
-			'Hola {{invitado}}, con mucho cariño le compartimos la invitación a los XV años de Naydelin:\n\n{{enlace}}\n\nÁbrala para ver los detalles y confirmar su asistencia.',
+			'Hola {{invitado}}: con mucho cariño le compartimos la invitación a los XV años de Naydelin.\n\n{{enlace}}\n\nEn ella encontrará los detalles y podrá confirmar su asistencia.',
 		),
 	},
 };

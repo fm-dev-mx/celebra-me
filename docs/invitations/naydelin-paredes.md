@@ -139,43 +139,78 @@ No unresolved blocking owner decisions for this Local draft.
 - **bucket:** unresolved
   - **section keys:** Personal quote: `[[PENDIENTE:SPECIAL_MESSAGES]]`; RSVP deadline is not shown
 
-The itinerary contains only the confirmed ceremony and reception times. The target delivery date of
-Thursday, 1 October 2026 is internal and does not appear in the invitation.
+The itinerary lists the confirmed ceremony (19:00) and reception (21:00) plus waltz (22:00), dinner
+(22:30), and closing (02:00). **The last three times are estimates pending owner confirmation.** The
+target delivery date of Thursday, 1 October 2026 is internal and does not appear in the invitation.
 
 ## Design Direction
 
-| decision                          | value                                                                                                | classification                                              |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Owner-selected base demo          | `demo-xv-jewelry-box`                                                                                | verified                                                    |
-| Client reference                  | Quoted from the Ana Sofía Cota Guillén invitation: functional parity (passes, RSVP), not its styling | verified                                                    |
-| Selected variant / visual profile | Jewelry Box / `naydelin-paredes` profile                                                             | Local implementation direction; creative acceptance pending |
-| Client color requirement          | Gold invitation; rose-gold gown                                                                      | verified                                                    |
-| Palette                           | Warm ivory and pearl, champagne-gold metal, rose-gold hairlines, espresso RSVP and gifts band        | Current Local candidate                                     |
-| Typography                        | Cormorant Garamond titles (500, sentence case, one scale); Montserrat body and tracked gold eyebrows | Current Local candidate                                     |
-| Unresolved visual decisions       | Owner creative acceptance; personal quote remains missing and omitted                                | pending                                                     |
+- **decision:** Owner-selected base demo
+  - **value:** `demo-xv-jewelry-box`
+  - **classification:** verified
+- **decision:** Client reference
+  - **value:** Quoted from the Ana Sofía Cota Guillén invitation: functional parity (passes, RSVP),
+    not its styling
+  - **classification:** verified
+- **decision:** Selected variant / visual profile
+  - **value:** Jewelry Box / `naydelin-paredes` profile
+  - **classification:** Local implementation direction; creative acceptance pending
+- **decision:** Client color requirement
+  - **value:** Gold invitation; rose-gold gown
+  - **classification:** verified
+- **decision:** Palette
+  - **value:** Warm ivory, champagne-foil gold (rules, ornaments, seal, dark-band titles), rose-gold
+    gown echoes, espresso RSVP and gifts band
+  - **classification:** Current Local candidate
+- **decision:** Typography
+  - **value:** Cormorant Garamond titles (500, sentence case, one scale); Montserrat body and
+    tracked gold eyebrows
+  - **classification:** Current Local candidate
+- **decision:** Unresolved visual decisions
+  - **value:** Owner creative acceptance; personal quote remains missing and omitted
+  - **classification:** pending
 
-Tonal band: ivory from hero through itinerary, an atmospheric bridge into the espresso RSVP and
-gifts band, then a luminous `portrait-letter` closing whose arch echoes the hero doorway.
+Tonal band: ivory from hero through itinerary, an arch (vertex ~62%) into the espresso RSVP and
+gifts band, then an atmospheric bridge (espresso warming into champagne light, focal 38%, with a
+short foil thread) into the luminous `portrait-letter` closing, whose arched portrait echoes the
+hero doorway. All other boundaries are neutral.
 
-| section             | canonical variant / presentation                                |
-| ------------------- | --------------------------------------------------------------- |
-| hero                | `framed-portrait` (photo 6)                                     |
-| personalized access | `formal-pass`                                                   |
-| interlude           | after personalized access (photo 5), `tall`                     |
-| family              | `ceremonial-family`, `text-only`                                |
-| gallery             | `paired-feature-band`; photos 2, 3, 4, 7 and photo 10 `feature` |
-| countdown           | `standard`, with the Jewelry Box `jeweled-panel` skin           |
-| interlude           | after countdown (photo 8), `tall`                               |
-| location            | `stacked-venue-plates`                                          |
-| itinerary           | `editorial-ledger`                                              |
-| RSVP                | `formal-register`; `atmospheric-blend` from itinerary           |
-| gifts               | `standard`                                                      |
-| thank you           | `portrait-letter` (photo 9)                                     |
+| section             | canonical variant / presentation                              |
+| ------------------- | ------------------------------------------------------------- |
+| hero                | `framed-portrait` (photo 6)                                   |
+| personalized access | `formal-pass`, admission-ticket mode (signature, monogram NP) |
+| interlude           | after personalized access (photo 5), `tall`                   |
+| family              | `ceremonial-family`, `text-only`                              |
+| gallery             | `paired-feature-band`; photos 2, 3, feature 10, then 4, 7     |
+| countdown           | `standard`, with the Jewelry Box `jeweled-panel` skin         |
+| interlude           | after countdown (photo 8), `tall`                             |
+| location            | `stacked-venue-plates`                                        |
+| itinerary           | `editorial-ledger`                                            |
+| RSVP                | `formal-register`; `arch` from itinerary                      |
+| gifts               | `standard`                                                    |
+| thank you           | `portrait-letter` (photo 9); `atmospheric-blend` from gifts   |
 
-The envelope retains `jewelry-box` with a champagne-gold wax seal. Section typography is unified
-through slug-scoped selectors in the profile, following the Allison Scarlett precedent, so canonical
-variants gain no new micro-tokens. Photo 1 is not used because it repeats the bar setting of
-photo 10.
+The envelope retains `jewelry-box` with warm champagne paper, a foil edge, and a larger foil wax
+seal. Section typography is unified through slug-scoped selectors in the profile, following the
+Allison Scarlett precedent, so canonical variants gain no new micro-tokens. Photo 1 is not used
+because it repeats the bar setting of photo 10; the feature band (photo 10) sits between the gallery
+pairs so it does not follow photo 2, taken at the same shelf.
+
+Profile-scoped exceptions (no canonical token exists): hero portrait foil hairline, countdown cell
+radius and top rule, hidden location "next section" cue, itinerary top padding, family breathing
+after the interlude, and the closing drop cap, grain, and message ink. The motion signature is a
+single CSS foil sweep (700 ms) on the dark-band titles and the closing signature, triggered by the
+coordinator's `is-visible` class and disabled under reduced motion.
+
+Known canonical follow-ups (not changed here): the `jewelry-box` envelope shows ~1 s of blank paper
+and a grey flap interior while opening; `REVEAL_RECIPES` assigns adjacent `stagger-group` recipes
+(mitigated in this profile with a zero stagger step); `formal-register` radio transitions exceed the
+250 ms interaction limit and its nested shells apply padding twice; countdown digits change without
+a transition; the RSVP eyebrow "RSVP PRIVADO" is not configurable from content; the RSVP guest-count
+hint, the attendance validation message, the reminder share placeholders, and the footer
+"Contáctanos" use the informal register; "ENVIAR RESPUESTA" is hardcoded uppercase; the envelope
+reveal card abbreviates the month ("17 · OCT · 2026"); the `paired-feature-band` grid is capped at
+880px on desktop.
 
 ## Photograph Inventory
 
