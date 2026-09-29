@@ -49,6 +49,25 @@
 		rgb(var(--naydelin-gold-light-rgb)) 100%
 	);
 
+	// Cotton stationery shared by the letter and the pass so both read as one paper stock:
+	// a warm ivory tone, raking light from the upper left, edge toning, and two stitched
+	// turbulence tiles (fine grain plus long horizontal fibres) kept below noise threshold.
+	--naydelin-paper-tone: linear-gradient(168deg, rgb(255 252 245) 0%, rgb(249 242 231) 100%);
+	--naydelin-paper-raking: linear-gradient(
+		112deg,
+		rgb(255 255 255 / 55%) 0%,
+		rgb(255 255 255 / 0%) 34%,
+		rgb(var(--naydelin-espresso-rgb) / 0%) 60%,
+		rgb(var(--naydelin-espresso-rgb) / 3.5%) 100%
+	);
+	--naydelin-paper-edge: radial-gradient(
+		ellipse 125% 115% at 46% 42%,
+		transparent 68%,
+		rgb(var(--naydelin-sand-rgb) / 38%) 100%
+	);
+	--naydelin-paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.33 0 0 0 0 0.22 1.3 0 0 0 -0.58'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)' opacity='0.22'/%3E%3C/svg%3E");
+	--naydelin-paper-fibre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='f' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.3' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.45 0 0 0 0 0.32 1.6 0 0 0 -0.86'/%3E%3C/filter%3E%3Crect width='320' height='320' filter='url(%23f)' opacity='0.1'/%3E%3C/svg%3E");
+
 	// Shared typography rhythm for section titles and eyebrows.
 	--naydelin-title-size: clamp(2.5rem, 5vw, 3.5rem);
 	--naydelin-title-weight: 500;
@@ -189,18 +208,27 @@
 		--wax-seal-shadow: rgb(var(--naydelin-espresso-rgb));
 		--wax-seal-emboss-shadow: rgb(98 72 36);
 
-		// Letter: pearl stationery, foil edge, gold-ink display type.
-		--reveal-card-bg: rgb(var(--naydelin-pearl-rgb));
-		--reveal-card-border: rgb(var(--naydelin-foil-mid-rgb) / 45%);
+		// Letter: cotton stationery, gold-ink display type. The paper layers replace the shared
+		// scan-line grain (opacity 0), which read as a repeating stripe. The shadow stack draws
+		// the cut edge: a lit top bevel, a toned lower bevel, and a 1px sand thickness line
+		// under the sheet before the soft lift; the hairline border stays faint so the edge,
+		// not a stroke, defines the sheet.
+		--reveal-card-bg:
+			var(--naydelin-paper-raking), var(--naydelin-paper-edge),
+			var(--naydelin-paper-fibre) 0 0 / 320px 320px,
+			var(--naydelin-paper-grain) 0 0 / 240px 240px, var(--naydelin-paper-tone);
+		--reveal-card-border: rgb(var(--naydelin-foil-mid-rgb) / 30%);
 		--reveal-card-radius: 2px;
-		--reveal-card-grain-opacity: 0.35;
+		--reveal-card-grain-opacity: 0;
 		--reveal-card-text-primary: rgb(var(--naydelin-gold-ink-rgb));
 		--reveal-card-text-secondary: var(--color-text-secondary);
 		--reveal-card-accent: rgb(var(--naydelin-foil-mid-rgb));
 		--reveal-card-font-display: var(--font-display);
 		--reveal-card-shadow:
-			0 18px 40px rgb(var(--naydelin-espresso-rgb) / 12%),
-			0 2px 6px rgb(var(--naydelin-espresso-rgb) / 6%);
+			inset 0 1px 0 rgb(255 255 255 / 85%),
+			inset 0 -1px 0 rgb(var(--naydelin-sand-rgb) / 90%), 0 1px 0 rgb(226 212 190),
+			0 2px 3px rgb(var(--naydelin-espresso-rgb) / 7%),
+			0 18px 40px rgb(var(--naydelin-espresso-rgb) / 11%);
 
 		// Nearly invisible fibre so the paper reads matte, not striped.
 		.envelope-base::before,
@@ -307,8 +335,13 @@
 		--hero-portrait-height-desktop: auto;
 		--hero-section-padding: 5rem 1.5rem 2rem;
 		--hero-section-padding-desktop: 5.5rem 3rem 2.5rem;
-		--hero-title-size: clamp(2.5rem, 5vw, 4.5rem);
-		--hero-title-max-width: 18ch;
+
+		// Pinyon Script (loaded by the preset, already the pass signature) sets the name in a
+		// calligraphic hand. Each half measures ~6.3em and three words ~9.2em, so an 8.25em
+		// measure always breaks "Naydelin Pauleth / Paredes Martinez" without touching the data;
+		// the 2.5rem floor keeps a half at ~252px inside the 272px column at 320px.
+		--hero-title-size: clamp(2.5rem, 5vw + 1.4rem, 5rem);
+		--hero-title-max-width: 8.25em;
 		--hero-label-size: var(--naydelin-eyebrow-size);
 
 		// The corner wash reads as an artifact behind the header and, on desktop, clips behind
@@ -335,11 +368,37 @@
 			text-transform: uppercase;
 			color: rgb(var(--naydelin-gold-ink-rgb));
 		}
+
+		// Script ascenders (0.79em) and descenders (0.39em) need 1.2 so the "y" of Naydelin
+		// clears the "P" below; the variant's negative tracking would knot the joins.
+		// Ink on ivory stays at ~13:1.
+		.framed-portrait-hero__name {
+			font-family: 'Pinyon Script', var(--font-display);
+			font-weight: 400;
+			line-height: 1.2;
+			letter-spacing: 0;
+			text-wrap: balance;
+			overflow-wrap: normal;
+		}
+
+		// The final "z" swash descends past the line box; keep it off the date.
+		.framed-portrait-hero__details {
+			margin-top: 0.9rem;
+		}
 	}
 
 	.personalized-access {
-		--pa-card-bg-image: none;
-		--pa-card-bg-color: var(--color-surface-elevated);
+		// Same cotton stock as the letter. Ticket mode masks the notches and drops box-shadow,
+		// so the edge toning and a lit top bevel ride on the glow layer instead.
+		--pa-card-bg-color: rgb(249 242 231);
+		--pa-card-bg-image:
+			var(--naydelin-paper-raking), var(--naydelin-paper-fibre), var(--naydelin-paper-grain),
+			var(--naydelin-paper-tone);
+		--pa-card-bg-size: auto, 320px 320px, 240px 240px, auto;
+		--pa-card-bg-position: 0 0;
+		--pa-card-glow:
+			linear-gradient(180deg, rgb(255 255 255 / 80%) 0, rgb(255 255 255 / 0%) 2px),
+			var(--naydelin-paper-edge);
 		--pa-card-shadow: none;
 		--pa-card-border-radius: 2px;
 

@@ -164,8 +164,18 @@ target delivery date of Thursday, 1 October 2026 is internal and does not appear
   - **classification:** Current Local candidate
 - **decision:** Typography
   - **value:** Cormorant Garamond titles (500, sentence case, one scale); Montserrat body and
-    tracked gold eyebrows
+    tracked gold eyebrows; Pinyon Script (preset-loaded, shared with the pass signature) for the
+    hero name, which always breaks as "Naydelin Pauleth / Paredes Martinez"
   - **classification:** Current Local candidate
+- **decision:** Stationery
+  - **value:** The reveal letter and the admission pass share one cotton paper stock: warm ivory
+    tone, raking light, edge toning, and stitched `feTurbulence` grain and fibre tiles (inline SVG,
+    low opacity); the letter adds a visible cut edge through its shadow stack
+  - **classification:** Current Local candidate
+- **decision:** Closing signature and envelope typeface
+  - **value:** Proposed, not applied: Pinyon Script on `closing-name` to bookend the hero; the
+    reveal letter keeps Cormorant at its small card size
+  - **classification:** pending owner decision
 - **decision:** Unresolved visual decisions
   - **value:** Owner creative acceptance; personal quote remains missing and omitted
   - **classification:** pending
