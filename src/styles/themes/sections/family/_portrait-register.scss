@@ -1,0 +1,111 @@
+// A complete portrait followed by separate family registers, without a surrounding card.
+.family[data-variant='portrait-register'] {
+	.family__header {
+		margin-bottom: clamp(2rem, 4vw, 3rem);
+	}
+
+	.family__title {
+		font-weight: 400;
+	}
+
+	.family__message {
+		font-family: var(--family-name-font, var(--font-display));
+		font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+		font-style: italic;
+		line-height: 1.5;
+	}
+
+	.family__panel:not(.family__panel--no-media) {
+		grid-template-columns: minmax(0, 1fr);
+		justify-items: center;
+		gap: clamp(3rem, 5vw, 4rem);
+		width: 100%;
+		max-width: none;
+		margin-top: 0;
+		padding: 0;
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
+		transform: none;
+	}
+
+	.family__panel::before,
+	.family__panel::after,
+	.family__content-overlay,
+	.family__media-frame::before,
+	.family__media-frame::after,
+	.family__header-divider,
+	.family__group + .family__group::before {
+		display: none;
+	}
+
+	.family__media {
+		width: min(100%, 30rem);
+	}
+
+	.family__media-frame {
+		aspect-ratio: auto;
+		padding: 0;
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
+
+		img {
+			height: auto;
+			border-radius: 0;
+			object-fit: contain;
+			filter: none;
+		}
+	}
+
+	.family__content {
+		width: 100%;
+		max-width: 62rem;
+		gap: clamp(2.75rem, 5vw, 3.5rem);
+	}
+
+	.family__group-title {
+		font-family: var(--family-name-font, var(--font-display));
+		font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+		font-weight: 400;
+		font-style: italic;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+
+	.family__list {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 1.75rem;
+	}
+
+	.family__name {
+		font-weight: 400;
+	}
+
+	.family__meta {
+		font-family: var(--family-name-font, var(--font-display));
+		font-size: 1rem;
+		font-weight: 400;
+		font-style: italic;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+
+	.family__group--godparents {
+		padding-top: clamp(2.5rem, 4vw, 3rem);
+		border-top: 1px solid var(--color-border-subtle);
+	}
+
+	@media (width >= 48rem) {
+		.family__group--parents .family__list {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.family__group--godparents .family__list {
+			grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+		}
+	}
+}

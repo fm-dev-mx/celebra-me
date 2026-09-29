@@ -1,5 +1,5 @@
 import ceremony from './ceremony.webp';
-import family from './family.webp';
+import family from './family-group.webp';
 import gallery01 from './gallery-01.webp';
 import gallery02 from './gallery-02.webp';
 import gallery03 from './gallery-03.webp';
@@ -19,6 +19,9 @@ import interlude04 from './interlude-04.webp';
 import portrait from './portrait.webp';
 import reception from './reception.webp';
 import thankYouPortrait from './thank-you-portrait.webp';
+
+// Retain the previous portrait as a reference without adding it to the active asset registry.
+export { default as previousFamilyPortrait } from './family.webp';
 
 export const assets = {
 	ceremony,

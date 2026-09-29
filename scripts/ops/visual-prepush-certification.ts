@@ -15,7 +15,7 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { visualImpactFiles } from './visual-impact.ts';
 
 export const CERTIFICATION_SCHEMA_VERSION = 1;
-export const CERTIFICATION_COMMAND_VERSION = 2;
+export const CERTIFICATION_COMMAND_VERSION = 3;
 export const PLAYWRIGHT_IMAGE =
 	'mcr.microsoft.com/playwright@sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac';
 export const NODE_VERSION = '24.14.1';
@@ -59,6 +59,14 @@ export function certificationMatches(
 	return Object.entries(expected).every(([key, expectedValue]) => record[key] === expectedValue);
 }
 
+export function hasReusableCertification(path: string, identity: CertificationIdentity): boolean {
+	try {
+		return certificationMatches(JSON.parse(readFileSync(path, 'utf8')), identity);
+	} catch {
+		return false;
+	}
+}
+
 export function isolatedGitEnvironment(extra: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv {
 	const environment = { ...process.env };
 	for (const key of Object.keys(environment)) {
@@ -79,10 +87,6 @@ function git(args: string[], cwd = process.cwd()): string {
 	return execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
 }
 
-function sha256(path: string): string {
-	return createHash('sha256').update(readFileSync(path)).digest('hex');
-}
-
 function assertExactCommit(sha: string, flagName = '--sha'): string {
 	if (!/^[0-9a-f]{40}$/u.test(sha))
 		throw new Error(`${flagName} must be an exact 40-character SHA.`);
@@ -92,18 +96,17 @@ function assertExactCommit(sha: string, flagName = '--sha'): string {
 }
 
 function changedPaths(baseSha: string | undefined, sha: string): string[] {
-	if (!baseSha) return [];
+	if (!baseSha) throw new Error('--base-sha is required for range certification.');
 	const base = assertExactCommit(baseSha, '--base-sha');
 	return git(['diff', '--name-only', '--diff-filter=ACMRD', base, sha])
 		.split(/\r?\n/u)
 		.filter(Boolean);
 }
 
-function identityForCheckout(checkout: string, sha: string): CertificationIdentity {
-	const manifestPath = join(checkout, ACCEPTED_MANIFEST);
-	if (!existsSync(manifestPath))
-		throw new Error(`Missing accepted manifest: ${ACCEPTED_MANIFEST}`);
-	const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { matrixHash?: unknown };
+function identityForCommit(sha: string): CertificationIdentity {
+	const readBlob = (path: string): Buffer => execFileSync('git', ['show', `${sha}:${path}`]);
+	const manifestBytes = readBlob(ACCEPTED_MANIFEST);
+	const manifest = JSON.parse(manifestBytes.toString('utf8')) as { matrixHash?: unknown };
 	if (typeof manifest.matrixHash !== 'string' || !/^[0-9a-f]{64}$/u.test(manifest.matrixHash)) {
 		throw new Error('Accepted visual manifest has no valid matrixHash.');
 	}
@@ -119,8 +122,8 @@ function identityForCheckout(checkout: string, sha: string): CertificationIdenti
 		commandVersion: CERTIFICATION_COMMAND_VERSION,
 		sha,
 		matrixHash: manifest.matrixHash,
-		acceptedManifestSha256: sha256(manifestPath),
-		lockfileSha256: sha256(join(checkout, 'pnpm-lock.yaml')),
+		acceptedManifestSha256: createHash('sha256').update(manifestBytes).digest('hex'),
+		lockfileSha256: createHash('sha256').update(readBlob('pnpm-lock.yaml')).digest('hex'),
 		...runtimeContract,
 		runtimeContractHash: createHash('sha256')
 			.update(JSON.stringify(runtimeContract))
@@ -147,7 +150,7 @@ function runDocker(
 		'set -eu',
 		'cp -a /source/. /work',
 		'cd /work',
-		`trap 'if [ -d test-results ]; then cp -a test-results /evidence/; fi; if [ -d .tmp/visual-parity/${operation} ]; then mkdir -p /evidence/visual-parity; cp -a .tmp/visual-parity/${operation} /evidence/visual-parity/; fi' EXIT`,
+		`trap 'if [ -d test-results ]; then cp -a test-results /evidence/; fi; if [ -f .tmp/visual-parity-failure.json ]; then cp .tmp/visual-parity-failure.json /evidence/; fi; if [ -d .tmp/visual-parity/${operation} ]; then mkdir -p /evidence/visual-parity; cp -a .tmp/visual-parity/${operation} /evidence/visual-parity/; fi; if [ -d .tmp/visual-parity/candidate-references ]; then mkdir -p /evidence/visual-parity; cp -a .tmp/visual-parity/candidate-references /evidence/visual-parity/; fi' EXIT`,
 		`if [ ! -x /node-cache/bin/node ] || [ "$(/node-cache/bin/node --version 2>/dev/null || true)" != "v${NODE_VERSION}" ] || [ "$(cat /node-cache/.archive.sha256 2>/dev/null || true)" != "${NODE_ARCHIVE_SHA256}" ]; then find /node-cache -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +; curl -fsSL -o /tmp/node.tar.gz https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz; echo "${NODE_ARCHIVE_SHA256}  /tmp/node.tar.gz" | sha256sum -c -; tar -xzf /tmp/node.tar.gz -C /node-cache --strip-components=1; printf '%s' '${NODE_ARCHIVE_SHA256}' > /node-cache/.archive.sha256; rm /tmp/node.tar.gz; fi`,
 		'export PATH=/node-cache/bin:$PATH',
 		`test "$(node --version)" = "v${NODE_VERSION}"`,
@@ -208,22 +211,47 @@ function runDocker(
 	return result.status ?? 1;
 }
 
-function preserveFailureEvidence(evidence: string, sha: string): string {
-	const destination = gitPath(`visual-failures/${sha}`);
-	rmSync(destination, { recursive: true, force: true });
-	mkdirSync(destination, { recursive: true });
+export function preserveEvidenceAttempt(evidence: string, root: string): string {
+	mkdirSync(root, { recursive: true });
+	const destination = mkdtempSync(join(root, 'attempt-'));
 	if (existsSync(evidence)) cpSync(evidence, destination, { recursive: true });
 	return destination;
+}
+
+function preserveFailureEvidence(evidence: string, sha: string): string {
+	return preserveEvidenceAttempt(evidence, gitPath(`visual-failures/${sha}`));
 }
 
 function preserveCandidateEvidence(evidence: string, sha: string): string {
 	const source = join(evidence, 'visual-parity', 'candidate');
 	if (!existsSync(source)) throw new Error('Certified candidate output is missing.');
-	const destination = gitPath(`visual-candidates/${sha}`);
-	rmSync(destination, { recursive: true, force: true });
-	mkdirSync(dirname(destination), { recursive: true });
-	cpSync(source, destination, { recursive: true });
-	return destination;
+	const destination = preserveEvidenceAttempt(
+		join(evidence, 'visual-parity'),
+		gitPath(`visual-candidates/${sha}`),
+	);
+	return join(destination, 'candidate');
+}
+
+export function classifyVisualFailure(root: string): string {
+	if (!existsSync(join(root, 'prepush-runtime-ready'))) return 'VISUAL_PREFLIGHT_INFRASTRUCTURE';
+	const diagnostic = join(root, 'visual-parity-failure.json');
+	if (existsSync(diagnostic)) {
+		try {
+			const { phase } = JSON.parse(readFileSync(diagnostic, 'utf8')) as { phase?: unknown };
+			if (
+				typeof phase === 'string' &&
+				['PREFLIGHT', 'MANIFEST', 'COVERAGE', 'REPORT'].includes(phase)
+			)
+				return `VISUAL_${phase}_FAILURE`;
+		} catch {
+			return 'VISUAL_EVIDENCE_INVALID';
+		}
+	}
+	try {
+		return visualDifferenceFiles(root).length ? 'VISUAL_DIFF' : 'BROWSER_FAILURE';
+	} catch {
+		return 'VISUAL_EVIDENCE_INVALID';
+	}
 }
 
 interface VisualCaptureResult {
@@ -246,7 +274,7 @@ export function visualDifferenceFiles(root: string): string[] {
 				}
 			}
 		} catch {
-			return [];
+			throw new Error(`Invalid visual comparison manifest: ${manifestName}`);
 		}
 	}
 	return [...files].sort();
@@ -258,9 +286,15 @@ function main(): void {
 	const candidateMode = process.argv.slice(2).includes('--candidate');
 	const targetRef = parseFlag('--target-ref') ?? 'refs/heads/develop';
 	const baseSha = parseFlag('--base-sha');
-	const paths = changedPaths(baseSha, sha);
+	const paths = candidateMode ? [] : changedPaths(baseSha, sha);
 	if (!candidateMode && !shouldRequireVisualCertification(targetRef, paths)) {
 		console.log('Visual certification is not required for this ref update.');
+		return;
+	}
+	const identity = candidateMode ? undefined : identityForCommit(sha);
+	const certificationPath = gitPath(`visual-certifications/${sha}.json`);
+	if (identity && hasReusableCertification(certificationPath, identity)) {
+		console.log(`Visual certification cache hit for ${sha}.`);
 		return;
 	}
 
@@ -276,6 +310,7 @@ function main(): void {
 	const temporaryRoot = mkdtempSync(join(tmpdir(), 'celebra-me-visual-prepush-'));
 	const checkout = join(temporaryRoot, 'checkout');
 	const evidence = join(temporaryRoot, 'evidence');
+	let cleanup = true;
 	try {
 		execFileSync('git', ['clone', '--no-checkout', repositoryRoot, checkout], {
 			stdio: 'inherit',
@@ -299,50 +334,20 @@ function main(): void {
 				`Isolated exact-SHA checkout is not clean after Git LFS materialization:\n${isolatedStatus}`,
 			);
 		}
-		const identity = identityForCheckout(checkout, sha);
 		if (candidateMode) {
 			const exitCode = runDocker(checkout, evidence, sha, 'candidate');
 			if (exitCode !== 0) {
-				const evidencePath = preserveFailureEvidence(evidence, sha);
-				const category = existsSync(join(evidence, 'prepush-runtime-ready'))
-					? 'BROWSER_FAILURE'
-					: 'VISUAL_PREFLIGHT_INFRASTRUCTURE';
-				throw new Error(
-					`${category}: candidate generation failed for ${sha}. Evidence: ${evidencePath}.`,
-				);
+				const category = classifyVisualFailure(evidence);
+				throw new Error(`${category}: candidate generation failed for ${sha}.`);
 			}
 			const candidatePath = preserveCandidateEvidence(evidence, sha);
 			console.log(`Certified visual candidate generated for ${sha}: ${candidatePath}`);
 			return;
 		}
-		const certificationPath = gitPath(`visual-certifications/${sha}.json`);
-		if (existsSync(certificationPath)) {
-			const cached = JSON.parse(readFileSync(certificationPath, 'utf8')) as unknown;
-			if (certificationMatches(cached, identity)) {
-				console.log(`Visual certification cache hit for ${sha}.`);
-				return;
-			}
-		}
-
 		const exitCode = runDocker(checkout, evidence, sha, 'compare');
 		if (exitCode !== 0) {
-			const evidencePath = preserveFailureEvidence(evidence, sha);
-			if (!existsSync(join(evidence, 'prepush-runtime-ready'))) {
-				throw new Error(
-					`VISUAL_PREFLIGHT_INFRASTRUCTURE: pinned runtime setup failed for ${sha}. Evidence: ${evidencePath}.`,
-				);
-			}
-			const visualDifferences = visualDifferenceFiles(evidence);
-			if (visualDifferences.length === 0) {
-				throw new Error(
-					`BROWSER_FAILURE: certified browser checks failed for ${sha} without visual diff evidence. Evidence: ${evidencePath}.`,
-				);
-			}
-			console.error(
-				['Visual differences:', ...visualDifferences.map((file) => `- ${file}`)].join('\n'),
-			);
 			throw new Error(
-				`VISUAL_DIFF: certification failed for ${sha} with ${visualDifferences.length} changed captures. Evidence: ${evidencePath}. Generate a candidate for this exact SHA; never accept references automatically.`,
+				`${classifyVisualFailure(evidence)}: certification failed for ${sha}. Never accept references automatically.`,
 			);
 		}
 		mkdirSync(dirname(certificationPath), { recursive: true });
@@ -352,8 +357,21 @@ function main(): void {
 			'utf8',
 		);
 		console.log(`Visual certification recorded for ${sha}.`);
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		let evidencePath: string;
+		try {
+			evidencePath = preserveFailureEvidence(evidence, sha);
+		} catch (preservationError) {
+			cleanup = false;
+			throw new Error(
+				`${message} Evidence preservation failed; original retained at ${temporaryRoot}.`,
+				{ cause: preservationError },
+			);
+		}
+		throw new Error(`${message} Evidence: ${evidencePath}.`, { cause: error });
 	} finally {
-		rmSync(temporaryRoot, { recursive: true, force: true });
+		if (cleanup) rmSync(temporaryRoot, { recursive: true, force: true });
 	}
 }
 

@@ -49,6 +49,10 @@ require separate editorial authorization; this release workflow never rewrites t
 
 #### CI and Vercel Git deployments
 
+For a single scoped execution, invoke repository skill `publish-preview` or `publish-production`.
+Their shared [execution procedure](release-execution.md) defines invocation authority, evidence
+reuse, recovery and verified deployment completion. Neither includes database or content writes.
+
 - `Repository CI` is the only remote validation authority. Direct pushes to `develop` run the
   complete integration suite; the single release pull request from `develop` to `main` must pass
   `Repository Policy` and `Application Suite` before merge.
@@ -83,25 +87,28 @@ require separate editorial authorization; this release workflow never rewrites t
 
 #### Local visual certification before push
 
-- `pnpm validate:prepush -- --sha <exact-sha>` certifies an isolated checkout of the exact commit in
-  the same digest-pinned Linux Playwright image used by Repository CI. Native Windows captures are
-  diagnostic only and do not satisfy this gate.
+- `pnpm validate:prepush -- --sha <exact-sha> --base-sha <base-sha>` certifies an isolated checkout
+  of the exact commit in the same digest-pinned Linux Playwright image used by Repository CI. Native
+  Windows captures are diagnostic only and do not satisfy this gate.
 - The pre-push hook requires this certification only when the cumulative pushed range intersects the
   shared conservative visual-impact classifier, regardless of destination branch. Accepted
   references, the visual matrix and capture infrastructure remain visual-impact inputs.
 - Successful evidence is cached under the worktree's internal Git path and is reusable only while
   SHA, visual matrix, accepted-manifest hash, lockfile hash, verified Node archive, Node/pnpm
   versions, image digest, certified command, and command schema all match. It is never committed.
-  Failed evidence is retained under the internal Git path for local diagnosis and never changes
-  accepted references. `VISUAL_DIFF` is derived from failed captures in the structured compare
-  manifests; diagnostic `actual` images alone do not qualify.
+  Cache identity uses committed manifest/lockfile bytes and is checked before Docker/LFS setup.
+  Failed evidence is retained per attempt under the internal Git path for local diagnosis and never
+  changes accepted references. `VISUAL_DIFF` is derived from failed captures in the structured
+  compare manifests; diagnostic `actual` images alone do not qualify.
 - `validate:changed` remains fast feedback. When it prints `VISUAL_CERTIFICATION_REQUIRED`, its
   success is not permission to push; run the exact-SHA pre-push certification after committing.
 - Candidate generation accepts `--sha` and fails when it does not equal the clean current HEAD.
   `pnpm visual:parity:candidate:certified -- --sha <exact-sha>` creates that candidate in the same
-  checksum-verified Linux runtime and stores it in the internal Git path. Candidate success is
-  review evidence only. Acceptance still requires the exact reference SHA, matrix hash, and
-  candidate-manifest SHA-256 followed by a new passing compare.
+  checksum-verified Linux runtime and stores it in `visual-candidates/<sha>/attempt-*/candidate`
+  under the internal Git path, with sibling `candidate-references` for portable review. Subsequent
+  attempts never replace earlier evidence. Candidate success is review evidence only. Acceptance
+  still requires the exact reference SHA, matrix hash, and candidate-manifest SHA-256 followed by a
+  new passing compare.
 
 - `pnpm run ci` covers static/build, Jest and certified browser checks. The remote workflow also
   requires Repository Policy and disposable DB contracts; local CI alone is not release readiness.
@@ -121,9 +128,14 @@ require separate editorial authorization; this release workflow never rewrites t
   runs and candidate generation are not release certification.
 - Generate candidates with the existing Repository CI manual input `visual_mode=candidate` on a
   published task ref. The workflow owns the pinned image and fixtures. Download its
-  `visual-candidate-<sha>` artifact and review `changes.html` plus the complete matrix as needed.
-  This mode does not produce a passing Application Suite. Any regenerated manifest requires renewed
-  owner approval of that exact artifact; never transfer approval to a different hash.
+  `visual-candidate-<sha>` artifact and review `candidate/changes.html` plus the complete matrix as
+  needed. Keep the sibling `candidate-references` directory: original PNGs are linked lazily, not
+  embedded in HTML. Native candidate reruns archive the prior bundle under ignored
+  `.tmp/visual-parity/history/`. Coverage expansion accepts a smaller prior matrix as review input,
+  but comparison still requires the entire current matrix. Structured failure phases distinguish
+  preflight, coverage, manifest, browser and report errors; none changes the success criteria. This
+  mode does not produce a passing Application Suite. Any regenerated manifest requires renewed owner
+  approval of that exact artifact; never transfer approval to a different hash.
 - Preserve previously granted task authorization. Resolve routine paths and command arguments
   without asking again. Request new decisions only for new scope or material visual approval.
 - Before promotion, run `pnpm ops:release-checks <exact-sha>` to require Repository Policy,

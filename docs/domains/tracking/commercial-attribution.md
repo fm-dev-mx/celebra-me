@@ -8,11 +8,15 @@ contact form API. No third-party cookies are used.
 
 ## Mexico consent
 
-Consent follows Mexico ARCO practice. Categories: `necessary` (always on), `analytics` (gates GA4), `marketing` (gates Meta Pixel and any GTM marketing tags). Default before user choice: analytics and marketing off. Analytics and marketing consent can be withdrawn at any time.
+Consent follows Mexico ARCO practice. Categories: `necessary` (always on), `analytics` (gates GA4),
+`marketing` (gates Meta Pixel and any GTM marketing tags). Default before user choice: analytics and
+marketing off. Analytics and marketing consent can be withdrawn at any time.
 
 ## GA4 vs GTM ownership
 
-First-party tracking is the source of truth. GA4 is behavioral analytics and is loaded directly, not through GTM. Meta Pixel is ad optimisation only. GTM is not activated; if added later it must not bypass app route policy or consent policy.
+First-party tracking is the source of truth. GA4 is behavioral analytics and is loaded directly, not
+through GTM. Meta Pixel is ad optimisation only. GTM is not activated; if added later it must not
+bypass app route policy or consent policy.
 
 ## Retention
 
@@ -58,8 +62,8 @@ triggers automatic lead creation during ingestion (`ingestion.service.ts`).
 | Name/contact | `null` initially — filled later through manual reconciliation or eventual form submission |
 | Intent       | Early commercial intent, NOT a qualified lead, sale, or confirmed customer                |
 
-The WhatsApp URL is rewritten client-side to embed the canonical `lead_code` (`CM-XXXXXX`) in the message text. The lead code bridges the
-anonymous click to any future contact form submission.
+The WhatsApp URL is rewritten client-side to embed the canonical `lead_code` (`CM-XXXXXX`) in the
+message text. The lead code bridges the anonymous click to any future contact form submission.
 
 ### Contact form submissions
 
@@ -115,7 +119,7 @@ The following are explicitly excluded from commercial attribution:
 - Dashboard admin auth
 - Consent banner UI
 - Meta Pixel behaviour (forwarding decisions are orthogonal to attribution)
-- SQL schema changes (the feature uses existing tables and columns)
+- Public browser writes to administrative demo milestones
 
 Route exclusion is enforced by `route-policy.ts`. See `docs/domains/rsvp/architecture.md` for the
 separate guest tracking mechanism.
@@ -128,20 +132,20 @@ secrets are exposed client-side.
 
 ### Browser-side event map
 
-| First-party event          | Meta event    | When it fires                                                     | Metadata sent                                                                              | Dedup key                |
-| -------------------------- | ------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------ |
-| `page_viewed`              | `PageView`    | Commercial/demo page load after marketing consent                 | `content_category=page`, optional `content_name`, `source_area`                            | —                        |
-| `demo_viewed`              | `ViewContent` | Demo page load on real showroom/demo routes                       | `content_name`, `content_category=demo`, `event_type`, `source_area`                       | —                        |
-| `package_viewed`           | `ViewContent` | Pricing/package card becomes visible on the landing page          | `content_name`, `content_category=package`, `source_area`                                  | —                        |
-| `whatsapp_contact_clicked` | `Contact`     | Commercial WhatsApp CTA click                                     | `content_name`, `content_category`, optional `event_type`, `source_area`                   | `lead_code` when present |
-| `form_submitted`           | `Lead`        | Contact form submission succeeds (`POST /api/contact` returns OK) | `content_name=contact`, `content_category=lead_form`, optional `event_type`, `source_area` | `lead_code`              |
+| First-party event          | Meta event      | When it fires                                                     | Metadata sent                                                                              | Dedup key                 |
+| -------------------------- | --------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------- |
+| `page_viewed`              | `PageView`      | Commercial/demo page load after marketing consent                 | `content_category=page`, optional `content_name`, `source_area`                            | —                         |
+| `demo_viewed`              | `ViewContent`   | Demo page load on real showroom/demo routes                       | `content_name`, `content_category=demo`, `event_type`, `source_area`                       | —                         |
+| `package_viewed`           | `ViewContent`   | Pricing/package card becomes visible on the landing page          | `content_name`, `content_category=package`, `source_area`                                  | —                         |
+| `whatsapp_contact_clicked` | `WhatsAppClick` | Commercial WhatsApp CTA click                                     | `content_name`, `content_category`, optional `event_type`, `source_area`                   | Technical `event_id` UUID |
+| `form_submitted`           | `Lead`          | Contact form submission succeeds (`POST /api/contact` returns OK) | `content_name=contact`, `content_category=lead_form`, optional `event_type`, `source_area` | Technical `event_id` UUID |
 
 Notes:
 
 - Meta payloads intentionally exclude guest identity, RSVP data, names, email, phone, free-text
   messages, invite tokens, and claim codes.
-- `lead_code` is used as the browser-side `eventID` when a contact/lead event already has a stable
-  non-PII identifier.
+- Browser `eventID` uses only the per-activation technical UUID. Consultation codes are never sent
+  to GA4, Meta, or the public data layer. Server Purchase IDs remain unchanged.
 - Pixel loading stays route-gated and consent-gated through `route-policy.ts`, `consent-client.ts`,
   and `meta-pixel.ts`.
 
@@ -443,6 +447,77 @@ outbox/attempt/classification evidence, revert application behavior, and use a n
 migration for schema changes. Never regenerate stable event IDs or rewrite an applied migration.
 
 ---
+
+## Celestial Blue conversion pilot
+
+The pilot is selected for current exposure, not measured preference. Most demo traffic is driven by
+operator-shared WhatsApp links. A design change or before/after difference cannot establish sales
+causality.
+
+- Public demo composition opts in only for `demo-xv-celestial-blue`. Two static WhatsApp links
+  follow gallery and thank-you; the latter also links to the existing XV showroom.
+- `data-preserve-message=true` protects the exact style message from promotional and folio rewrites.
+  No new commercial CTA is added to real invitations. Links do not depend on JavaScript or
+  analytics.
+- `demo_viewed` still means demo page load, not envelope opening. One initialization per document
+  prevents hydration/reopening duplicates. A genuine second activation has a new technical UUID.
+- First-party browser events require analytics or marketing consent. GA4 and Meta retain their
+  individual consent gates. No pre-consent click/view history is reconstructed.
+- The first-party event UUID is the tracking row ID. Repeated ingestion returns the existing row
+  only for the same session and event name. Purchase idempotency is not modified.
+
+### Measurement rollout
+
+Mapping authored on 2026-09-25; **production effective date and deployment SHA: pending
+validation**. The WhatsApp browser mapping changes from standard `Contact` to custom
+`WhatsAppClick`. Historical records retain their original meaning. Neither event proves a received
+conversation. Before release, validate current official Meta documentation, dataset configuration,
+Test Events, GA4 mapping and QA exclusions under separately authorized provider access. No provider
+setup or new server-side contact integration is included.
+
+### Existing dashboard and administrative persistence
+
+The report in `/dashboard/commercial` offers 30/60 complete calendar days in `America/Chihuahua`,
+excluding today. The inventory is the canonical demo collection, including demos not listed in the
+showroom. Keyset pagination continues to an empty page; query errors, non-advancing cursors or
+safety overflow produce unavailable data, never partial totals.
+
+The older operational overview remains explicitly all-history; it also uses complete pagination.
+Recent lists remain short presentation lists, not data-source limits. Neither surface sums GA4 and
+Vercel data.
+
+An observed view establishes that measurement exists for that demo in the selected period; absent
+views are unknown coverage, not proof of zero traffic. A zero contact count means no administrative
+records found, not proof of no WhatsApp conversations. CTR uses measured demo sessions only; the
+click count separately includes showroom activations. Period stage counts are not a cohort
+conversion rate.
+
+Migration `20260925182713_commercial_demo_followups.sql` is **authored, not applied**. It adds an
+append-only milestone ledger linked to existing leads and authenticated actors. It does not create a
+new CRM, alter order/payment state, or emit provider events. Service-role SELECT/INSERT only;
+anonymous and authenticated direct access is denied by privileges and RLS. The existing admin
+authentication, CSRF, runtime mutation guard and rate limiting protect the POST endpoint.
+
+A lead code selects an existing opportunity; only sharing/contact milestones can create a missing
+opportunity, with no personal fields or marketing consent. Operators reuse the same code for the
+same opportunity and link existing conversations manually. Each lead/demo/action is recorded once.
+Retries preserve the request ID and return the original milestone without changing its timestamp.
+This minimal ledger does not provide corrections or reopening; those require a separately reviewed
+administrative workflow. Loss reasons use a closed list and default to “No informado”.
+
+Payments use existing orders and the first confirmed-deposit timestamp. A payment is assigned only
+when exactly one style was recorded as shared before that payment; ambiguous/unlinked payments
+remain unattributed. Multiple styles and later shares cannot arbitrarily change historical credit.
+Existing order and Purchase transitions remain owned by the Sales Workspace.
+
+### Remaining acceptance gates
+
+- Guarded migration review/apply and disposable-database privilege/idempotency verification.
+- Authenticated dashboard end-to-end checks with complete, empty and unavailable data.
+- Human mobile/desktop approval, complete visual regression and assistive-technology verification.
+- Media quality/rights confirmation; no new assets or licenses have been acquired.
+- Exact Preview artifact approval, separately authorized Production publication, and measurement
+  cutover timestamp. Local source and tests do not prove deployed behavior.
 
 ## Future Work
 

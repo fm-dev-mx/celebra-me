@@ -35,6 +35,12 @@
 	}
 }
 
+.invitation-section-wrapper[data-section-kind='quote'][data-intersection='arch'] {
+	--intersection-surface: var(--color-surface-primary);
+	--intersection-arch-height: clamp(1.5rem, 3vw, 2.75rem);
+	--intersection-arch-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0 24V18C12 17 19 11 32 7C44 3 52 4 64 8C78 13 87 17 100 19V24Z'/%3E%3C/svg%3E");
+}
+
 .invitation-section-wrapper[data-intersection='atmospheric-blend'] {
 	position: relative;
 
@@ -48,7 +54,8 @@
 		pointer-events: none;
 	}
 
-	> * {
+	// Modal siblings own their viewport positioning and stacking.
+	> :not([role='dialog']) {
 		position: relative;
 		z-index: 1;
 	}

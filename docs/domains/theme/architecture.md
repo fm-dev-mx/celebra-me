@@ -75,7 +75,47 @@ and row breathing room; defaults keep icons hidden and spacing unchanged.
 geometry; profiles supply values only.
 
 Quote exposes `--quote-divider-bottom-display` for a closing ornament independently of the top
-divider. It falls back to `--quote-divider-display`, preserving other invitations.
+divider. It falls back to `--quote-divider-display`, preserving other invitations. Its optional
+decorative SVG is controlled by `--quote-mark-display` (default `none`) and uses
+`--quote-accent-color`. `--quote-content-weight` defaults to `500`; `--quote-ornament-display`
+defaults to `block` for the attribution flourishes. These opt-ins do not select a renderer or change
+the default presentation. Profile token overrides must target `.quote-section`, which owns the
+existing component-local defaults, rather than relying on inherited values from the outer wrapper.
+Attribution typography uses `--quote-author-font` (fallback `var(--font-display)`) and
+`--quote-author-transform` (fallback `uppercase`), independently of the quotation typography.
+Alignment and rhythm use `--quote-min-height` (`40svh`), `--quote-text-align` (`center`),
+`--quote-container-max-width` (`800px`), `--quote-mark-margin` (`0 auto 1.5rem`), and
+`--quote-author-justify` (`center`). `--quote-continuation-indent` defaults to `0` and applies only
+to paragraphs following another quotation paragraph, not to wrapped lines. Defaults preserve the
+centered composition; profiles can opt into left-aligned quotations without new renderers.
+`--quote-line-margin-start` defaults to the paragraph's native `1em`; a profile can use `0` for
+continuous verse lines without changing other quotations' spacing. An incoming quote wrapper may opt
+into the shared `arch` intersection with `source: hero`. The arch uses the primary surface, a
+restrained 1.5–2.75rem height, and an asymmetric mask; other quote boundaries remain neutral unless
+selected in composition data.
+
+Family's `portrait-register` variant centers a complete photograph above separate name registers:
+parents use two columns and godparents use an adaptive row on desktop; mobile keeps a single reading
+column. Its canonical stylesheet owns the card-free geometry and typography, while profiles supply
+palette and rhythm tokens. It requires a photograph with explicit original delivery, width and
+height, and does not accept `text-only` presentation. Existing variants retain their original
+geometry and image defaults. `family.featuredImageAlt` supplies a descriptive image alternative
+through the existing `ImageAsset`; omission retains the celebrant-name fallback. Source preservation
+uses the existing image `delivery` contract, independently of the CSS crop. The shared Family media
+contract exposes `--family-media-aspect-ratio` (fallback `3 / 4`), `--family-media-image-height`
+(fallback `100%`), and `--family-media-image-fit` (fallback `cover`). Profiles can preserve an
+uncropped photograph with `auto`, `auto`, and `contain` without replacing the canonical layout;
+existing media defaults remain unchanged. `--family-item-align` controls member alignment (fallback
+`center`); it complements the existing group text alignment, padding, and parent-margin tokens
+without changing the standard split layout.
+
+Gallery subtitles expose `--gallery-subtitle-max-width` (fallback `none`) and
+`--gallery-subtitle-margin-inline` (fallback `0`) for bounded text measures and optional centering
+without redefining the gallery header or grid in an invitation profile. Other variants retain their
+existing sizing and alignment. The lightbox is a sibling of the gallery section: its property
+consumers provide local fallbacks without shadowing inherited theme tokens. Atmospheric
+intersections exclude direct dialog children from section stacking so viewport-fixed overlays retain
+their positioning and stacking order.
 
 ### Gifts flatten
 
@@ -83,7 +123,9 @@ Gifts section styling is the flattened section-level variable contract in
 `src/styles/invitation/_gifts.scss`. Theme-section Gifts partials under
 `src/styles/themes/sections/gifts/` are not used. Other sections that retain real structural,
 layout, content, or behavior variants must not be flattened through the Gifts pattern without
-explicit parity evidence.
+explicit parity evidence. `--gifts-card-description-color` falls back to
+`var(--color-text-secondary)`; dark-section profiles can provide a readable description color
+without changing invitation-wide text semantics.
 
 ### Explicit non-goals
 
@@ -394,6 +436,16 @@ invitation identity. It requires an explicit image. Managed definitions need can
 before public database-backed routes use this variant.
 
 ## Image delivery and surface defaults
+
+The retained Celestial standard hero consumes `--hero-title-max-width` with its existing 12ch
+default. The demo narrows that token only at tablet widths to keep its title clear of the portrait;
+photograph identity and focal points do not change.
+
+RSVP supports `--rsvp-shell-background` (transparent by default), `--rsvp-shell-padding-block` (the
+existing header/player clearance calculation by default), and `--rsvp-subcopy-color` (the existing
+secondary text by default). The retained Celestial skin consumes `--rsvp-card-shadow` and
+`--rsvp-skin-title-color` with its existing fallbacks. These hooks allow a profile to set a dark
+finale without duplicating RSVP structure or changing other profiles.
 
 Canonical image references carry explicit delivery intent when a section requires a particular
 original or transformation. Preserve it through publication and adaptation; source identity alone is

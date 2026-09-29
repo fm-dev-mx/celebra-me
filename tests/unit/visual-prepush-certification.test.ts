@@ -10,8 +10,11 @@ import {
 	isolatedGitEnvironment,
 	shouldRequireVisualCertification,
 	visualDifferenceFiles,
+	classifyVisualFailure,
+	preserveEvidenceAttempt,
+	hasReusableCertification,
 } from '../../scripts/ops/visual-prepush-certification.ts';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -31,6 +34,52 @@ const identity = {
 };
 
 describe('visual pre-push certification', () => {
+	it('recovers from missing or corrupt cache by requiring fresh certification', () => {
+		const root = mkdtempSync(join(tmpdir(), 'visual-cache-'));
+		const path = join(root, 'cache.json');
+		try {
+			expect(hasReusableCertification(path, identity)).toBe(false);
+			writeFileSync(path, '{');
+			expect(hasReusableCertification(path, identity)).toBe(false);
+			writeFileSync(
+				path,
+				JSON.stringify({ ...identity, certifiedAt: '2026-09-28T00:00:00.000Z' }),
+			);
+			expect(hasReusableCertification(path, identity)).toBe(true);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
+	it.each(Object.keys(identity))('invalidates a cached certification when %s changes', (key) => {
+		const cached = { ...identity, certifiedAt: '2026-09-28T00:00:00.000Z', [key]: 'changed' };
+		expect(certificationMatches(cached, identity)).toBe(false);
+	});
+
+	it('preserves distinct attempts and diagnoses recoverable infrastructure without hiding evidence failures', () => {
+		const root = mkdtempSync(join(tmpdir(), 'visual-attempt-test-'));
+		const evidence = join(root, 'evidence');
+		mkdirSync(evidence);
+		try {
+			expect(classifyVisualFailure(evidence)).toBe('VISUAL_PREFLIGHT_INFRASTRUCTURE');
+			writeFileSync(join(evidence, 'prepush-runtime-ready'), '');
+			for (const phase of ['PREFLIGHT', 'COVERAGE', 'MANIFEST', 'REPORT']) {
+				writeFileSync(
+					join(evidence, 'visual-parity-failure.json'),
+					JSON.stringify({ phase }),
+				);
+				expect(classifyVisualFailure(evidence)).toBe(`VISUAL_${phase}_FAILURE`);
+			}
+			const first = preserveEvidenceAttempt(evidence, join(root, 'saved'));
+			writeFileSync(join(evidence, 'visual-parity-failure.json'), '{');
+			const second = preserveEvidenceAttempt(evidence, join(root, 'saved'));
+			expect(first).not.toBe(second);
+			expect(classifyVisualFailure(first)).toBe('VISUAL_REPORT_FAILURE');
+			expect(classifyVisualFailure(second)).toBe('VISUAL_EVIDENCE_INVALID');
+			expect(readFileSync(join(second, 'visual-parity-failure.json'), 'utf8')).toBe('{');
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
 	it('skips full certification for nonvisual changes on protected branches', () => {
 		expect(shouldRequireVisualCertification('refs/heads/develop', [])).toBe(false);
 		expect(shouldRequireVisualCertification('refs/heads/main', ['docs/readme.md'])).toBe(false);

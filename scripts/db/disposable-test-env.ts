@@ -7,7 +7,7 @@
  *   - Container:     celebra-me-test-db
  *   - Port:          54332
  *   - Credentials:   supabase_admin / postgres (or postgres / postgres)
- *   - Image:         public.ecr.aws/supabase/postgres:17.6.1.143
+ *   - Image:         ghcr.io/supabase/postgres:17.6.1.143 (digest-pinned)
  *   - Data:          synthetic test data only
  *
  * Usage:
@@ -51,8 +51,27 @@ const DISPOSABLE_PORTS = {
 
 const POSTGREST_CONTAINER = DISPOSABLE_TEST.postgrestContainerName;
 
-/** Image identifier for the Supabase PostgreSQL container. */
-const POSTGRES_IMAGE = 'public.ecr.aws/supabase/postgres:17.6.1.143';
+/** Immutable Supabase images used by the disposable database contract tests. */
+export const POSTGRES_IMAGE =
+	'ghcr.io/supabase/postgres:17.6.1.143@sha256:80d7b27c3e8d77cfa7226eee9508671796da214781ff15a35b3670d7ad5ee453';
+export const POSTGREST_IMAGE =
+	'ghcr.io/supabase/postgrest:v14.14@sha256:d2009b5c9deffc210c8a5592698472fede14fd9f6ca89823c8474ca54d58c012';
+
+export type ImagePullFailureClass = 'rate-limit' | 'registry-rejected' | 'transient';
+
+export function classifyImagePullFailure(errorOutput: string): ImagePullFailureClass {
+	if (/toomanyrequests|data limit exceeded|rate.?limit|\b429\b/i.test(errorOutput)) {
+		return 'rate-limit';
+	}
+	if (
+		/unauthorized|authentication required|denied:|forbidden|manifest unknown|name unknown|not found|no matching manifest|invalid reference format/i.test(
+			errorOutput,
+		)
+	) {
+		return 'registry-rejected';
+	}
+	return 'transient';
+}
 
 /**
  * Bounded wait for a fresh disposable PostgreSQL container to become ready.
@@ -172,7 +191,13 @@ function ensureImageExists(imageName = POSTGRES_IMAGE): void {
 		return;
 	}
 
-	console.info(`  Pulling ${imageName} (up to ${IMAGE_RETRY_COUNT} retries)...`);
+	const registry = imageName.split('/')[0] ?? 'unknown registry';
+	console.info(
+		`  Pulling ${imageName} from ${registry} (up to ${IMAGE_RETRY_COUNT} attempts)...`,
+	);
+	let lastFailure = '';
+	let lastFailureClass: ImagePullFailureClass = 'transient';
+	let attempts = 0;
 	for (let attempt = 1; attempt <= IMAGE_RETRY_COUNT; attempt++) {
 		if (attempt > 1) {
 			const delay = IMAGE_RETRY_DELAY_MS * attempt;
@@ -182,16 +207,23 @@ function ensureImageExists(imageName = POSTGRES_IMAGE): void {
 		const pullResult = runCommand('docker', ['pull', imageName], {
 			throwOnError: false,
 		});
+		attempts = attempt;
 		if (pullResult.status === 0) {
 			console.info(`  Image ${imageName} pulled successfully.`);
 			return;
 		}
+		lastFailure =
+			redactCredentials(pullResult.stderr.trim()) ||
+			`docker pull exited with status ${pullResult.status}`;
+		lastFailureClass = classifyImagePullFailure(lastFailure);
 		console.warn(
-			`  docker pull attempt ${attempt} failed: ${pullResult.stderr?.slice(0, 200) || `exit ${pullResult.status}`}`,
+			`  docker pull attempt ${attempt}/${IMAGE_RETRY_COUNT} failed (${lastFailureClass}): ${lastFailure.slice(0, 300) || `exit ${pullResult.status}`}`,
 		);
+		if (lastFailureClass !== 'transient') break;
 	}
+	const failureDetail = lastFailure || 'Docker returned no error details.';
 	fail(
-		`Failed to pull ${imageName} after ${IMAGE_RETRY_COUNT} attempts. Check Docker Hub rate limits and network connectivity.`,
+		`Failed to pull ${imageName} from ${registry} after ${attempts} attempt(s) (${lastFailureClass}). ${failureDetail}`,
 	);
 }
 
@@ -604,7 +636,7 @@ export function buildPostgrestDockerArgs(isLinux: boolean): string[] {
 		'PGRST_DB_ANON_ROLE=anon',
 		'-e',
 		'PGRST_JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long',
-		'public.ecr.aws/supabase/postgrest:v14.14',
+		POSTGREST_IMAGE,
 	];
 	if (isLinux) {
 		args.splice(3, 0, '--add-host=host.docker.internal:host-gateway');
@@ -626,7 +658,7 @@ async function waitForPostgrestReady(): Promise<void> {
 }
 
 async function startPostgrest(): Promise<void> {
-	ensureImageExists('public.ecr.aws/supabase/postgrest:v14.14');
+	ensureImageExists(POSTGREST_IMAGE);
 	const existing = runCommand('docker', [
 		'ps',
 		'-a',

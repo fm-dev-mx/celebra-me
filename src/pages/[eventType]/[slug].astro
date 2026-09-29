@@ -2,6 +2,8 @@
 export const prerender = false;
 
 import InvitationSections from '@/components/invitation/InvitationSections.astro';
+import DemoConversion from '@/components/invitation/DemoConversion.astro';
+import { hasDemoConversion } from '@/lib/invitation/demo-conversion';
 import { getRoutableEventEntry } from '@/lib/content/events';
 import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { buildPageContextFromViewModel, prepareInvitationPageContext } from '@/lib/invitation/page-data';
@@ -206,6 +208,10 @@ const wrapperDataAttributes = page
 		}
 	: {};
 
+const isDemoConversion = Boolean(
+	page && hasDemoConversion(page.viewModel.id, page.viewModel.isDemo),
+);
+
 ---
 
 {
@@ -336,7 +342,7 @@ const wrapperDataAttributes = page
 								highPriority={skipEnvelope || !page.wrapper.showEnvelope}
 							/>
 
-							<InvitationSections pageContext={page} />
+							<InvitationSections pageContext={page} showDemoConversion={isDemoConversion} />
 
 							{
 								guestContext && (
@@ -361,13 +367,15 @@ const wrapperDataAttributes = page
 							}
 
 							<Footer
+								class={isDemoConversion ? 'demo-conversion-farewell' : undefined}
 								eventSlug={page.viewModel.id}
 								showEnvelope={page.wrapper.showEnvelope}
 								variant="standard"
 								closingPhrase={page.footerClosingPhrase}
-								showFooterBranding={page.viewModel.brandingVisibility.showFooterBranding}
-								showContactCta={page.viewModel.brandingVisibility.showContactCta}
+								showFooterBranding={page.viewModel.brandingVisibility.showFooterBranding && !isDemoConversion}
+								showContactCta={page.viewModel.brandingVisibility.showContactCta && !isDemoConversion}
 							/>
+							{isDemoConversion && <DemoConversion placement="closing" />}
 
 							{page.musicPlayer && (
 								<MusicPlayer

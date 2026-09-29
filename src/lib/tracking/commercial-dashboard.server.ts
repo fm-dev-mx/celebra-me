@@ -1,3 +1,4 @@
+import { loadCommercialRows } from './commercial-pagination.server';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import {
 	summarizeCommercialAnalytics,
@@ -55,40 +56,31 @@ interface CommercialRecoveryRow {
 
 export async function loadCommercialDashboardData(): Promise<CommercialDashboardSummary> {
 	const [sessions, events, leads, orders, conversions, classifications] = await Promise.all([
-		supabaseRestRequest<CommercialSessionRow[]>({
-			pathWithQuery:
-				'visitor_sessions?select=id,route_class,is_internal,source:utm_source,medium:utm_medium,campaign:utm_campaign,last_seen_at&order=last_seen_at.desc&limit=1000',
-			useServiceRole: true,
-		}),
-		supabaseRestRequest<CommercialEventRow[]>({
-			pathWithQuery:
-				'tracking_events?select=event_name,event_properties,source,medium,campaign,consent_snapshot,occurred_at,is_internal&order=occurred_at.desc&limit=2000',
-			useServiceRole: true,
-		}),
-		supabaseRestRequest<CommercialLeadRow[]>({
-			pathWithQuery:
-				'leads?select=id,lead_code,customer_id,name,email,phone,phone_e164,event_type,package_interest,status,channel,utm_source,utm_medium,utm_campaign,created_at&order=created_at.desc&limit=200',
-			useServiceRole: true,
-		}),
-		supabaseRestRequest<SalesOrderSummaryRow[]>({
-			pathWithQuery:
-				'sales_orders?select=id,order_number,customer_id,lead_id,status,event_type,package_name,total_amount,amount_paid,deposit_amount,created_at,deposit_paid_at&order=created_at.desc&limit=500',
-			useServiceRole: true,
-		}),
-		supabaseRestRequest<ConversionSummaryRow[]>({
-			pathWithQuery:
-				'meta_conversion_events?select=id,order_id,lead_id,event_id,customer_id,status,created_at,updated_at,last_error_message,next_attempt_at,claimed_at,claim_expires_at&order=created_at.desc&limit=500',
-			useServiceRole: true,
-		}).catch(() => []),
-		supabaseRestRequest<CommercialRecordClassification[]>({
-			pathWithQuery:
-				'commercial_record_classifications?classification=eq.test_qa&revoked_at=is.null&select=record_type,record_id&limit=2000',
-			useServiceRole: true,
-		}).catch(() => []),
+		loadCommercialRows<CommercialSessionRow & { id: string }>(
+			'visitor_sessions?select=id,route_class,is_internal,source:utm_source,medium:utm_medium,campaign:utm_campaign,last_seen_at',
+		),
+		loadCommercialRows<CommercialEventRow & { id: string }>(
+			'tracking_events?select=id,event_name,event_properties,source,medium,campaign,consent_snapshot,occurred_at,is_internal',
+		),
+		loadCommercialRows<CommercialLeadRow & { id: string }>(
+			'leads?select=id,lead_code,customer_id,name,email,phone,phone_e164,event_type,package_interest,status,channel,utm_source,utm_medium,utm_campaign,created_at',
+		),
+		loadCommercialRows<SalesOrderSummaryRow & { id: string }>(
+			'sales_orders?select=id,order_number,customer_id,lead_id,status,event_type,package_name,total_amount,amount_paid,deposit_amount,created_at,deposit_paid_at',
+		),
+		loadCommercialRows<ConversionSummaryRow & { id: string }>(
+			'meta_conversion_events?select=id,order_id,lead_id,event_id,customer_id,status,created_at,updated_at,last_error_message,next_attempt_at,claimed_at,claim_expires_at',
+		),
+		loadCommercialRows<CommercialRecordClassification & { id: string }>(
+			'commercial_record_classifications?classification=eq.test_qa&revoked_at=is.null&select=id,record_type,record_id',
+		),
 	]);
 	const commercialRows = excludeClassifiedTestRecords(
 		{ leads, orders, conversions },
 		classifications,
+	);
+	commercialRows.leads.sort(
+		(a, b) => Date.parse(b.created_at ?? '') - Date.parse(a.created_at ?? ''),
 	);
 	const historicalPaidOrdersWithoutPurchase: HistoricalPaidOrderDiagnostic[] = orders
 		.filter(

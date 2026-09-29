@@ -40,17 +40,10 @@ const RsvpShell = forwardRef<
 		children: ReactNode;
 		demoFooter?: ReactNode;
 	}
->(function RsvpShell(
-	{ state, variant, onFocusCapture, header, children, demoFooter },
-	ref,
-) {
+>(function RsvpShell({ state, variant, onFocusCapture, header, children, demoFooter }, ref) {
 	return (
 		<section id="rsvp" ref={ref} className="rsvp-section" onFocusCapture={onFocusCapture}>
-			<div
-				className="rsvp"
-				data-variant={variant}
-				data-state={state}
-			>
+			<div className="rsvp" data-variant={variant} data-state={state}>
 				<header className="rsvp__header">{header}</header>
 				{children}
 				{demoFooter}
@@ -303,7 +296,7 @@ export const SubmittedState = forwardRef<
 				{showWhatsAppCta && (
 					<div className="rsvp__contact-host">
 						<p className="rsvp__contact-text">
-							Comparte tu respuesta con{' '}
+							Comparta su respuesta con{' '}
 							<strong>{celebrantName || 'el festejado'}</strong>.
 						</p>
 						<a
@@ -463,7 +456,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 			demoFooter={
 				isDemoPreview ? (
 					<p className="rsvp__demo-footer">
-						Demo interactiva. No se enviará ninguna respuesta
+						Demo interactiva. No se enviará ninguna respuesta.
 					</p>
 				) : null
 			}
@@ -471,7 +464,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 			<form onSubmit={onSubmit} className="rsvp__form" id="rsvp-form">
 				{isEditorialPressPass && (
 					<div className="rsvp__response-heading" id="rsvp-response-heading">
-						<span>SELECCIONA TU RESPUESTA</span>
+						<span>SELECCIONE SU RESPUESTA</span>
 						<span>EDICIÓN XV</span>
 					</div>
 				)}

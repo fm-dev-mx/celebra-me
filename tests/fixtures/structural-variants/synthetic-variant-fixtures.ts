@@ -18,6 +18,18 @@ export interface IncompatiblePrerequisiteExpectation {
 	expectedMessageSubstring?: string;
 }
 
+function buildFamilyPortraitFixture(section: CanonicalVariantSection, variant: string) {
+	if (section !== 'family' || variant !== 'portrait-register') return {};
+	return {
+		featuredImage: {
+			type: 'internal',
+			key: 'family',
+			delivery: { mode: 'original', width: 1024, height: 1024 },
+		},
+		featuredImageAlt: 'Retrato familiar de la celebración.',
+	};
+}
+
 export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides): {
 	id: string;
 	data: Record<string, unknown>;
@@ -73,6 +85,7 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 		},
 		family: {
 			variant: section === 'family' ? variant : 'standard',
+			...buildFamilyPortraitFixture(section, variant),
 			...(section === 'family' &&
 			(variant === 'split-groups' || variant === 'asymmetric-groups')
 				? {
@@ -201,27 +214,29 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 			variant: section === 'gallery' ? variant : 'uniform-grid',
 			items:
 				section === 'gallery' && variant === 'paired-portraits'
-					? [{ key: 'g1', image: 'gallery01', caption: 'Foto 1' }, { key: 'g2', image: 'gallery02', caption: 'Foto 2' }]
-					:
-				section === 'gallery' && variant === 'single-keepsake'
-					? [{ key: 'g1', image: 'gallery01', caption: 'Recuerdo Principal' }]
-					: section === 'gallery' && variant === 'paired-feature-band'
-						? [
-								{ key: 'g1', image: 'gallery01' },
-								{ key: 'g2', image: 'gallery02', layoutRole: 'feature' },
-								{ key: 'g3', image: 'gallery03' },
-							]
-						: section === 'gallery' && variant === 'feature-stack'
+					? [
+							{ key: 'g1', image: 'gallery01', caption: 'Foto 1' },
+							{ key: 'g2', image: 'gallery02', caption: 'Foto 2' },
+						]
+					: section === 'gallery' && variant === 'single-keepsake'
+						? [{ key: 'g1', image: 'gallery01', caption: 'Recuerdo Principal' }]
+						: section === 'gallery' && variant === 'paired-feature-band'
 							? [
-									{ key: 'g1', image: 'gallery01', layoutRole: 'feature' },
-									{ key: 'g2', image: 'gallery02', layoutRole: 'standard' },
-									{ key: 'g3', image: 'gallery03', layoutRole: 'wide' },
+									{ key: 'g1', image: 'gallery01' },
+									{ key: 'g2', image: 'gallery02', layoutRole: 'feature' },
+									{ key: 'g3', image: 'gallery03' },
 								]
-							: [
-									{ key: 'g1', image: 'gallery01', caption: 'Foto 1' },
-									{ key: 'g2', image: 'gallery02', caption: 'Foto 2' },
-									{ key: 'g3', image: 'gallery03', caption: 'Foto 3' },
-								],
+							: section === 'gallery' && variant === 'feature-stack'
+								? [
+										{ key: 'g1', image: 'gallery01', layoutRole: 'feature' },
+										{ key: 'g2', image: 'gallery02', layoutRole: 'standard' },
+										{ key: 'g3', image: 'gallery03', layoutRole: 'wide' },
+									]
+								: [
+										{ key: 'g1', image: 'gallery01', caption: 'Foto 1' },
+										{ key: 'g2', image: 'gallery02', caption: 'Foto 2' },
+										{ key: 'g3', image: 'gallery03', caption: 'Foto 3' },
+									],
 		},
 		gifts: {
 			variant: section === 'gifts' ? variant : 'standard',
@@ -300,13 +315,23 @@ export function buildIncompatiblePrerequisiteEvent(
 
 	switch (entry.section) {
 		case 'hero':
-			if (['editorial-cover', 'split-cover', 'framed-portrait', 'ceremonial-portrait'].includes(entry.variant)) {
+			if (
+				[
+					'editorial-cover',
+					'split-cover',
+					'framed-portrait',
+					'ceremonial-portrait',
+				].includes(entry.variant)
+			) {
 				const hero = data.hero as Record<string, unknown>;
 				delete hero.backgroundImage;
 			}
 			break;
 		case 'family':
-			if (entry.variant === 'ceremonial-family') delete (data.family as Record<string, unknown>).variant;
+			if (entry.variant === 'portrait-register')
+				delete (data.family as Record<string, unknown>).featuredImage;
+			if (entry.variant === 'ceremonial-family')
+				delete (data.family as Record<string, unknown>).variant;
 			if (entry.variant === 'split-groups' || entry.variant === 'asymmetric-groups') {
 				const family = data.family as Record<string, unknown>;
 				family.groups = [{ title: 'Solo Uno', items: [{ name: 'Solo' }] }];
@@ -373,7 +398,10 @@ export function buildIncompatiblePrerequisiteEvent(
 			) {
 				const thankYou = data.thankYou as Record<string, unknown>;
 				delete thankYou.image;
-			} else if (entry.variant === 'editorial-back-cover' || entry.variant === 'ceremonial-closing') {
+			} else if (
+				entry.variant === 'editorial-back-cover' ||
+				entry.variant === 'ceremonial-closing'
+			) {
 				const thankYou = data.thankYou as Record<string, unknown>;
 				delete thankYou.closingName;
 			}
@@ -397,7 +425,10 @@ export function getIncompatiblePrerequisiteExpectation(
 		case 'hero':
 			return { expectedPath: ['hero', 'backgroundImage'] };
 		case 'family':
-			if (entry.variant === 'ceremonial-family') return { expectedPath: ['family', 'variant'] };
+			if (entry.variant === 'portrait-register')
+				return { expectedPath: ['family', 'featuredImage'] };
+			if (entry.variant === 'ceremonial-family')
+				return { expectedPath: ['family', 'variant'] };
 			return {
 				expectedPath: ['family', 'groups'],
 				expectedMessageSubstring: '>=2',

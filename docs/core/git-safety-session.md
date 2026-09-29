@@ -64,6 +64,8 @@ pnpm agent:git-safety:check
 
 Git write operations are authorized only when the user explicitly requests that exact Git operation
 in the current task (Task Contract). No filesystem marker provides standing Git-write authority.
+Explicit `publish-preview` / `publish-production` invocation is such a scoped request for their
+enumerated operations; see `.agent/rules/git-safety.md`. Do not request the same grant again.
 
 When `finish` must interpret an already-authorized mutation for detection only, pass an ephemeral
 declaration for that invocation:

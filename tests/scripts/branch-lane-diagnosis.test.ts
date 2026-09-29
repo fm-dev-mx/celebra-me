@@ -250,6 +250,55 @@ describe('lane direction wording', () => {
 });
 
 describe('authorization deferral until diagnosis stable', () => {
+	it('omits only exact already-authorized Git scope and retains database authority boundaries', () => {
+		const laneDirection = 'develop@source -> main@target via PR';
+		const base = {
+			laneDirection,
+			gitOnlyPromotion: evaluateGitOnlyPromotionAlternative({
+				sourceBranch: 'develop',
+				targetBranch: 'main',
+				sourceSha: 'aaa',
+				targetSha: 'bbb',
+				pendingRemoteMigrations: [],
+				headAppReferencesPendingSchema: false,
+			}),
+			backup: evaluateProductionBackupRequirement({
+				productionMigratePlanned: false,
+				latestBackupCapturedAt: null,
+				migrateWorkflowIncludesAutomaticBackup: false,
+				backupInventoryEmpty: false,
+				latestBackupUnusable: false,
+			}),
+			previewMigrateNeeded: false,
+			productionMigrateNeeded: false,
+			gitWriteNeeded: true,
+		};
+		expect(buildConsolidatedAuthorizationPlan(base).items.map((item) => item.id)).toContain(
+			'git-ff-promote',
+		);
+		expect(
+			buildConsolidatedAuthorizationPlan({
+				...base,
+				alreadyAuthorizedGitDirection: laneDirection,
+			}).readyForUserPrompt,
+		).toBe(false);
+		expect(
+			buildConsolidatedAuthorizationPlan({
+				...base,
+				alreadyAuthorizedGitDirection: 'different scope',
+			}).readyForUserPrompt,
+		).toBe(true);
+		const withDatabase = buildConsolidatedAuthorizationPlan({
+			...base,
+			alreadyAuthorizedGitDirection: laneDirection,
+			previewMigrateNeeded: true,
+			productionMigrateNeeded: true,
+		});
+		expect(withDatabase.items.map((item) => item.id)).toEqual([
+			'preview-migrate',
+			'prod-migrate',
+		]);
+	});
 	it('defers consolidated auth while automatic steps remain', () => {
 		const gitOnly = evaluateGitOnlyPromotionAlternative({
 			sourceBranch: 'develop',

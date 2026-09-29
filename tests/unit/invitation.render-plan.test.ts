@@ -174,7 +174,7 @@ describe('buildInvitationRenderPlan', () => {
 		});
 	});
 
-	it('publishes the five approved Celestial editorial intersection treatments in sequential order', () => {
+	it('publishes the Celestial pilot intersection treatments in sequential order', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-celestial-blue',
 			data: loadFixture('src/content/event-demos/xv/demo-xv-celestial-blue.json'),
@@ -186,6 +186,16 @@ describe('buildInvitationRenderPlan', () => {
 		expect(nonNeutral).toHaveLength(5);
 		expect(nonNeutral).toEqual([
 			expect.objectContaining({
+				type: 'section',
+				section: 'quote',
+				intersection: { family: 'atmospheric-blend', source: 'hero' },
+			}),
+			expect.objectContaining({
+				type: 'section',
+				section: 'family',
+				intersection: { family: 'arch', source: 'quote' },
+			}),
+			expect.objectContaining({
 				type: 'interlude',
 				afterSection: 'family',
 				intersection: { family: 'overlap', source: 'family' },
@@ -196,19 +206,9 @@ describe('buildInvitationRenderPlan', () => {
 				intersection: { family: 'atmospheric-blend', source: 'interlude-after-family' },
 			}),
 			expect.objectContaining({
-				type: 'interlude',
-				afterSection: 'location',
-				intersection: { family: 'arch', source: 'location' },
-			}),
-			expect.objectContaining({
-				type: 'interlude',
-				afterSection: 'itinerary',
-				intersection: { family: 'overlap', source: 'itinerary' },
-			}),
-			expect.objectContaining({
-				type: 'interlude',
-				afterSection: 'rsvp',
-				intersection: { family: 'atmospheric-blend', source: 'rsvp' },
+				type: 'section',
+				section: 'gifts',
+				intersection: { family: 'atmospheric-blend', source: 'itinerary' },
 			}),
 		]);
 	});

@@ -37,10 +37,12 @@ interface EvidenceFile {
 
 function printUsage(): void {
 	console.log(`Usage:
-  tsx scripts/db/branch-lane-diagnose.ts --evidence-json <path> [--json]
+  tsx scripts/db/branch-lane-diagnose.ts --evidence-json <path> [--json] [--authorized-git-direction <exact-direction>]
 
 Reads structured non-secret evidence and emits diagnosis JSON.
 Does not mutate databases. Does not print credentials.
+The optional direction declares existing task authority for prompt deduplication only.
+It is not read from evidence files, persisted, or treated as permission to execute writes.
 `);
 }
 
@@ -56,7 +58,7 @@ function remediationSteps(localDrift: LocalDriftDiagnosis | null): string[] {
 	return localDrift.automaticDisposableRemediationSteps;
 }
 
-function buildDiagnosisReport(evidence: EvidenceFile) {
+function buildDiagnosisReport(evidence: EvidenceFile, alreadyAuthorizedGitDirection?: string) {
 	const pendingFromSql = pendingFromEvidence(evidence);
 	const localDrift = evidence.localDrift
 		? diagnoseLocalDisposableDrift(evidence.localDrift)
@@ -106,6 +108,7 @@ function buildDiagnosisReport(evidence: EvidenceFile) {
 					previewMigrateNeeded: evidence.previewMigrateNeeded ?? false,
 					productionMigrateNeeded: evidence.productionMigrateNeeded ?? false,
 					gitWriteNeeded: evidence.gitWriteNeeded ?? false,
+					alreadyAuthorizedGitDirection,
 					remainingAutomaticSteps,
 				})
 			: null;
@@ -137,7 +140,18 @@ function main(): number {
 	}
 	const path = resolve(args[idx + 1]!);
 	const evidence = JSON.parse(readFileSync(path, 'utf8')) as EvidenceFile;
-	console.log(JSON.stringify(buildDiagnosisReport(evidence), null, 2));
+	const authIndex = args.indexOf('--authorized-git-direction');
+	if (authIndex >= 0 && (!args[authIndex + 1]?.trim() || args[authIndex + 1]?.startsWith('--'))) {
+		printUsage();
+		return 2;
+	}
+	console.log(
+		JSON.stringify(
+			buildDiagnosisReport(evidence, authIndex < 0 ? undefined : args[authIndex + 1]),
+			null,
+			2,
+		),
+	);
 	return 0;
 }
 

@@ -16,9 +16,10 @@
 	display: grid;
 	place-items: center;
 	min-block-size: var(--rsvp-section-min-height, 100svh);
+	background: var(--rsvp-shell-background, transparent);
 
 	// prettier-ignore
-	padding-block: calc(var(--rsvp-section-padding-block) + var(--rsvp-header-offset) + var(--rsvp-player-clearance) + var(--rsvp-safe-area-bottom));
+	padding-block: var(--rsvp-shell-padding-block, calc(var(--rsvp-section-padding-block) + var(--rsvp-header-offset) + var(--rsvp-player-clearance) + var(--rsvp-safe-area-bottom)));
 	padding-inline: var(--rsvp-section-padding-inline);
 	box-sizing: border-box;
 	scroll-margin-block-start: var(--preview-banner-height, 0);
@@ -235,7 +236,7 @@
 		font-family: var(--font-body);
 		font-size: 0.88rem;
 		line-height: 1.45;
-		color: var(--color-text-secondary);
+		color: var(--rsvp-subcopy-color, var(--color-text-secondary));
 		max-width: 30rem;
 		margin-inline: auto;
 	}

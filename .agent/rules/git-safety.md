@@ -19,6 +19,13 @@ state, or unrelated working-tree files unless the user explicitly requests that 
 in the current task. Authorization is **task-scoped** — permission from a previous task does not
 carry over.
 
+Explicit invocation of `publish-preview` or `publish-production` is an explicit current-task request
+for the exact operations enumerated in that skill, limited to the identified release scope and
+assigned checkout. Record that scope before writes; do not ask again for the same operations. Merely
+loading, auditing, editing, mentioning, or automatically selecting a skill grants nothing. These
+invocations do not authorize database/content publication, visual acceptance, protection changes,
+destructive cleanup, force pushes, or operations outside their documented scope.
+
 ---
 
 ## Git Write Operations (Forbidden Without Current-Task Authorization)

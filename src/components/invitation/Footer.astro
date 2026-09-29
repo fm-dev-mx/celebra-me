@@ -13,6 +13,7 @@ interface Props {
 	closingPhrase?: string;
 	showFooterBranding?: boolean;
 	showContactCta?: boolean;
+	class?: string;
 }
 
 const {
@@ -22,6 +23,7 @@ const {
 	closingPhrase,
 	showFooterBranding = true,
 	showContactCta = true,
+	class: className,
 } = Astro.props;
 const hasReplay = Boolean(showEnvelope && eventSlug);
 
@@ -31,7 +33,7 @@ const shouldShowContactCta = showContactCta && !isPlaceholderContactPhone(getCon
 ---
 
 <footer
-	class="invitation-footer"
+	class:list={['invitation-footer', className]}
 	data-variant={variant}
 >
 	{closingPhrase && (

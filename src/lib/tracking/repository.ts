@@ -3,6 +3,7 @@ import type { ConsentSnapshot } from '@/lib/tracking/consent-policy';
 import type { TrackingEventName } from '@/lib/tracking/event-contract';
 import type { MetaAttribution } from '@/lib/tracking/meta-attribution';
 import type { TrackingRouteClass } from '@/lib/tracking/route-policy';
+import { ApiError } from '@/lib/rsvp/core/errors';
 
 export interface VisitorSessionInput {
 	sessionId: string;
@@ -22,6 +23,7 @@ export interface VisitorSessionInput {
 }
 
 export interface TrackingEventRepositoryInput {
+	eventId?: string;
 	sessionId: string;
 	visitorId: string;
 	eventName: TrackingEventName;
@@ -84,11 +86,16 @@ export async function insertTrackingEvent(
 	input: TrackingEventRepositoryInput,
 ): Promise<InsertedTrackingEvent> {
 	const rows = await supabaseRestRequest<Array<{ id: string; event_name: TrackingEventName }>>({
-		pathWithQuery: 'tracking_events?select=id,event_name',
+		pathWithQuery: input.eventId
+			? 'tracking_events?on_conflict=id&select=id,event_name'
+			: 'tracking_events?select=id,event_name',
 		method: 'POST',
 		useServiceRole: true,
-		prefer: 'return=representation',
+		prefer: input.eventId
+			? 'resolution=ignore-duplicates,return=representation'
+			: 'return=representation',
 		body: {
+			id: input.eventId,
 			session_id: input.sessionId,
 			visitor_id: input.visitorId,
 			event_name: input.eventName,
@@ -104,7 +111,18 @@ export async function insertTrackingEvent(
 		},
 	});
 
-	const row = rows[0];
+	let row = rows[0];
+	if (!row && input.eventId) {
+		const existing = await supabaseRestRequest<
+			Array<{ id: string; event_name: TrackingEventName }>
+		>({
+			pathWithQuery: `tracking_events?id=eq.${encodeURIComponent(input.eventId)}&session_id=eq.${encodeURIComponent(input.sessionId)}&event_name=eq.${encodeURIComponent(input.eventName)}&select=id,event_name`,
+			method: 'GET',
+			useServiceRole: true,
+		});
+		row = existing[0];
+		if (!row) throw new ApiError(409, 'conflict', 'Event identifier is already in use.');
+	}
 	if (!row) {
 		throw new Error('Tracking event insert did not return an event id.');
 	}

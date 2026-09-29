@@ -13,7 +13,7 @@ Section intersections can make an invitation read as one continuous editorial co
 preserving clear section boundaries. They are hierarchy tools, not a requirement to decorate every
 transition.
 
-This system distills the approved Abril direction into reusable guidance. The reusable closed set
+This system distills approved visual directions into reusable guidance. The reusable closed set
 contains a neutral default and three primary patterns:
 
 1. Neutral
@@ -98,14 +98,19 @@ A champagne, antique-gold, or theme-equivalent thread may connect selected momen
 
 ## Selection Matrix
 
-| Adjacent condition                                                               | Preferred choice                             | Decision rule                                                                                                             |
-| -------------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Strong light-to-dark or dark-to-light surface change with a narrative turn       | Editorial arch                               | Use only when the incoming plane should visibly enter the outgoing composition and reserved space protects prior content. |
-| A selected photo or decorative asset directly connects both sections             | Layered overlap                              | Use only when crop safety, static space reservation, and bounded stacking can be proven.                                  |
-| Related surfaces or moods need continuity without a literal edge                 | Atmospheric blend                            | Match outgoing and incoming colors with asymmetric radial light or texture, then end the blend before content begins.     |
-| Dense text, forms, maps, controls, or uncertain content height near the boundary | Neutral boundary                             | Preserve spacing and contrast; do not introduce a transition zone that can collide with content.                          |
-| Low contrast between adjacent surfaces                                           | Neutral boundary or subtle atmospheric blend | Add a blend only when it clarifies hierarchy; otherwise use spacing and tokenized surface depth.                          |
-| Both sections already contain strong photography or decoration                   | Neutral boundary                             | Avoid competing focal points and visual stacking.                                                                         |
+Choose one treatment only when it improves the handoff and the boundary passes content-safety
+checks:
+
+- **Strong surface change with a narrative turn:** editorial arch, provided reserved space protects
+  previous content.
+- **A selected photo or decorative asset directly connects both sections:** layered overlap, only
+  when crop safety, static space, and bounded stacking are proven.
+- **Related surfaces need continuity without a literal edge:** atmospheric blend that ends before
+  incoming content.
+- **Dense content, uncertain height, or already-strong photography on both sides:** neutral
+  boundary.
+- **Low-contrast surfaces:** neutral by default; use a subtle blend only when it clarifies
+  hierarchy.
 
 Choose the treatment in this order:
 
@@ -122,9 +127,10 @@ Choose the treatment in this order:
 Each profile should classify its boundaries before styling them:
 
 - **Neutral:** information-heavy, functional, or closing sections remain clean and fully spaced.
-- **Bridge:** one selected overlap or atmospheric blend connects a related photograph and surface.
-- **Climax:** an arch or the final atmospheric transition marks a narrative turn; reserve these for
-  one or two moments in the invitation.
+- **Bridge:** one selected overlap or atmospheric blend connects related surfaces without a
+  narrative climax.
+- **Climax:** an editorial arch or deep atmospheric transition marks a narrative turn; reserve these
+  for one or two moments in the invitation.
 
 Record only the non-neutral mappings in typed `composition.intersections`; the absence of a mapping
 is the intentional neutral default. A profile stylesheet may tune the selected treatment with tokens
@@ -181,18 +187,19 @@ Reusable mechanics are selected before rendering and copied onto stable wrapper 
 - `data-section-kind`: stable incoming section kind.
 
 Selection is owned by typed `composition.intersections` and copied through the render plan. CSS must
-not infer a family from
-route slug, JSON order, screenshot order, `nth-*`, incidental adjacency, or a theme name. Profiles
-may set visual tokens against these stable attributes; shared mechanics live in
-`src/styles/invitation/_section-intersections.scss`.
+not infer a family from route slug, JSON order, screenshot order, `nth-*`, incidental adjacency, or
+a theme name. Profiles may set visual tokens against these stable attributes; shared mechanics live
+in `src/styles/invitation/_section-intersections.scss`.
 
 Current explicit mappings:
 
 - Abril retains its two interlude overlaps, gallery → RSVP arch, and atmospheric blends through
   content-owned `composition.intersections` (plus invitation profile visual tokens).
-- Celestial uses two photographic bridges (family → tiara and itinerary → lantern), a soft detail →
-  gallery blend, the location → architecture arch, and the RSVP → tul atmospheric finale. Its
-  remaining boundaries are intentionally neutral.
+- Celestial uses an asymmetrical atmospheric blend from hero → quote (Bridge), an asymmetric quote →
+  family arch (Climax), a family → interlude photo overlap (Bridge), an interlude → gallery blend
+  (Bridge), and an itinerary → gifts dark transition (Climax). The hero fills the first viewport;
+  the blend begins with the quote below the fold. Its remaining boundaries are intentionally
+  neutral.
 
 ## Required Proof
 

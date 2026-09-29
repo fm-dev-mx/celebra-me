@@ -234,7 +234,7 @@
 		line-height: 1.5;
 		margin-top: 0.25rem;
 		opacity: 90%;
-		color: var(--color-text-secondary);
+		color: var(--gifts-card-description-color, var(--color-text-secondary));
 		overflow-wrap: anywhere;
 	}
 

@@ -15,6 +15,8 @@ import {
 	presentCommercialAttribution,
 } from '@/lib/tracking/commercial-presentation';
 import SalesWorkspace from '@/components/dashboard/commercial/SalesWorkspace';
+import DemoConversionReport from '@/components/dashboard/commercial/DemoConversionReport.astro';
+import { loadDemoConversionReport } from '@/lib/tracking/demo-conversion-report.server';
 import CapiOutboxPanel from '@/components/dashboard/commercial/CapiOutboxPanel';
 import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
 import { getEnv } from '@/lib/server/env';
@@ -25,6 +27,10 @@ if (!Astro.locals.session?.isSuperAdmin) {
 }
 
 let dashboardData: CommercialDashboardSummary | null = null;
+let demoReport: Awaited<ReturnType<typeof loadDemoConversionReport>> | null = null;
+try { demoReport = await loadDemoConversionReport(Astro.url.searchParams.get('days') === '60' ? 60 : 30); } catch {
+	// Unavailable reads are displayed as unknown, never partial totals.
+}
 let loadError = false;
 let initialConversions: ConversionEvent[] = [];
 const dashboardServer = await import('@/lib/tracking/commercial-dashboard.server');
@@ -111,12 +117,13 @@ const revenueAttribution = dashboardData
 			<div class="dashboard-card commercial-dashboard__notice">
 				<h3>Datos no disponibles</h3>
 				<p>
-					El panel está listo, pero las tablas comerciales aún no respondieron en este
-					ambiente. Aplica la migración MVP antes de usarlo en producción.
+					No se pudieron consultar los datos comerciales. Revise la conexión y el esquema;
+					la falta de respuesta no significa que no existan registros.
 				</p>
 			</div>
 		)}
 
+		<DemoConversionReport report={demoReport} />
 		{dashboardData && viewModel && (
 			<>
 				<div class="commercial-tabs" role="tablist" aria-label="Secciones del espacio comercial">
@@ -215,7 +222,7 @@ const revenueAttribution = dashboardData
 				</div>
 
 				<div class="tab-content active" id="tab-ventas" role="tabpanel" aria-labelledby="commercial-tab-ventas" tabindex="0">
-					<SalesWorkspace client:load initialLeads={initialSalesLeads} />
+					<SalesWorkspace client:load initialLeads={initialSalesLeads} demoInventory={demoReport?.followupsAvailable ? demoReport.inventory : []} />
 				</div>
 
 				<div class="tab-content" id="tab-atribucion" role="tabpanel" aria-labelledby="commercial-tab-atribucion" tabindex="0" hidden>
@@ -301,11 +308,7 @@ const revenueAttribution = dashboardData
 
 							<section class="dashboard-card">
 								<h3>Demos</h3>
-								<ul class="commercial-dashboard__list">
-									{renderList([...presentCommercialAttribution(dashboardData.topDemos, 'Demos internas / QA').commercial, ...presentCommercialAttribution(dashboardData.topDemos, 'Demos internas / QA').technical]).map((item) => (
-										<li><span>{item.label}</span><strong>{formatCount(item.count)}</strong></li>
-									))}
-								</ul>
+								<p>Consulte el inventario completo y el periodo seleccionado en «Recorrido comercial por demo».</p>
 							</section>
 							<section class="dashboard-card">
 								<h3>Desplazamiento</h3>

@@ -263,7 +263,7 @@ function propertyAsString(properties: EventProperties, key: string): string | un
 }
 
 const QUERY_LIMIT_NOTICE =
-	'Basado en los últimos registros cargados: 1000 sesiones, 2000 eventos, 200 leads, 500 órdenes y 500 conversiones.';
+	'Consulta paginada de todos los registros disponibles. La cobertura histórica de medición requiere validación.';
 
 const EMPTY_CONVERSION_COUNTS: Record<ConversionSummaryRow['status'], number> = {
 	pending: 0,
