@@ -33,7 +33,7 @@
 
 	.family__filigree {
 		height: auto;
-		display: block;
+		display: var(--family-filigree-display, block);
 		width: min(70%, 20rem);
 		margin: 1rem auto 0;
 	}

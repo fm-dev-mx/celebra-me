@@ -1,6 +1,6 @@
 # Theme And Token Architecture
 
-**Last Updated:** 2026-08-17
+**Last Updated:** 2026-09-28
 
 Celebra-me uses a strict three-level styling architecture. The post-migration structural,
 presentation, skin, fallback, and profile inventory is maintained in
@@ -360,6 +360,24 @@ The formal chapter owners expose optional profile controls for bounded typograph
 spacing defaults. Profiles may set these controls and existing material tokens; structural
 selectors, responsive behavior and interaction remain variant-owned.
 
+Bounded controls retain their canonical section owner:
+
+- `framed-portrait` consumes `--hero-portrait-radius`, `--hero-portrait-max-width`, mobile/desktop
+  `--hero-portrait-width-*` and `--hero-portrait-height-*`, `--hero-section-padding`,
+  `--hero-section-padding-desktop`, `--hero-title-size`, `--hero-title-max-width`, and
+  `--hero-label-size`. Defaults retain the original arch, dimensions, spacing, and typography;
+  profiles may preserve a complete rectangular photograph without adding layout selectors.
+- `paired-feature-band` consumes the existing `--gallery-grid-columns-mobile`,
+  `--gallery-item-aspect-ratio`, and `--gallery-item-aspect-ratio-feature` tokens. Unconfigured
+  consumers retain one mobile column, 4:5 portraits, and an 8:5 feature band; the variant owns the
+  paired desktop grid and full-width `feature` role.
+- `ceremonial-family` consumes `--family-filigree-display` with a `block` fallback.
+- The retained `jeweled-panel` skin consumes existing `--countdown-segment-inset`,
+  `--countdown-label-size`, `--countdown-label-spacing`, and `--countdown-label-color` controls,
+  plus `--countdown-label-opacity` (default `60%`). Existing visual defaults remain unchanged.
+- The retained Jewelry Box thank-you skin excludes `ceremonial-closing`; that canonical variant owns
+  its background, spacing, and signature treatment.
+
 ## Runtime CSS Delivery
 
 - `src/styles/invitation.scss` keeps shared invitation structure and imports the existing
@@ -475,6 +493,10 @@ RSVP skins that create absolute decorative pseudo-elements must establish their 
 context on every matching RSVP shell, including the nested shells of the interactive island.
 Decorations must remain inside RSVP and must not paint over the hero or neighboring sections.
 
+The RSVP presence boundary disables initial animations for the first render. Server markup and
+client hydration therefore stay visible and consistent when reduced motion is enabled; subsequent
+form/status transitions retain their existing motion behavior.
+
 Managed Storage and Cloudinary media bypass implicit Astro/Vercel re-encoding, even when URLs are
 versioned. Canonical references use prepared files and `delivery.mode=original`; the name means
 original bytes of the delivery file, which may itself be a prepared derivative. Existing explicit
@@ -491,7 +513,8 @@ simplify paper finish, decorative map visibility, section height, ambient color 
 through public component tokens. Hiding a decorative venue preview must preserve independent map
 navigation.
 
-The framed-portrait and narrative-stack variants own photographic contours: an integrated portrait
-arch and softly rounded album corners. Native image proportions and full gallery viewer images are
+The framed-portrait and narrative-stack variants own photographic contours: a portrait arch by
+default and softly rounded album corners. The bounded framed-portrait controls above also support
+complete rectangular photographs. Native image proportions and full gallery viewer images are
 preserved. Quote and countdown expose optional surface-radius tokens with zero-radius defaults;
 profiles select the shape without duplicating section DOM styling.

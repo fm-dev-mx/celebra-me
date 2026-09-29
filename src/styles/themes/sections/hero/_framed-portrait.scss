@@ -1,5 +1,9 @@
 @use '../../../global/mixins' as mixins;
 
+:where(.invitation-hero)[data-variant='framed-portrait'] {
+	--hero-title-size: clamp(4rem, 10vw, 6.5rem);
+}
+
 .invitation-hero.framed-portrait-hero[data-variant='framed-portrait'] {
 	position: relative;
 	isolation: isolate;
@@ -11,7 +15,7 @@
 	align-items: center;
 	height: auto;
 	min-height: 100dvh;
-	padding: 4.5rem 1.5rem 1.5rem;
+	padding: var(--hero-section-padding, 4.5rem 1.5rem 1.5rem);
 	background: var(--color-surface-primary);
 	color: var(--color-text-primary);
 	overflow: hidden;
@@ -43,18 +47,21 @@
 		isolation: isolate;
 		box-sizing: border-box;
 		width: fit-content;
-		max-width: 76vw;
+		max-width: var(--hero-portrait-max-width, 76vw);
 		margin: 0 0 0 auto;
 		padding: 0;
-		border-radius: 50% 50% 0.75rem 0.75rem;
+		border-radius: var(--hero-portrait-radius, 50% 50% 0.75rem 0.75rem);
 		overflow: hidden;
 		background: transparent;
 		box-shadow: none;
 
 		img {
 			display: block;
-			width: auto;
-			height: clamp(10rem, min(46svh, calc(100svh - 28rem)), 28rem);
+			width: var(--hero-portrait-width-mobile, auto);
+			height: var(
+				--hero-portrait-height-mobile,
+				clamp(10rem, min(46svh, calc(100svh - 28rem)), 28rem)
+			);
 			max-width: 100%;
 			object-fit: contain;
 			filter: none;
@@ -68,14 +75,14 @@
 
 	.framed-portrait-hero__occasion {
 		margin: 0 0 0.5rem;
-		font: 500 clamp(2.75rem, 5vw, 3.5rem) / 1.1 var(--font-display);
+		font: 500 var(--hero-label-size, clamp(2.75rem, 5vw, 3.5rem)) / 1.1 var(--font-display);
 		color: var(--color-action-accent);
 	}
 
 	.framed-portrait-hero__name {
-		max-width: 9ch;
+		max-width: var(--hero-title-max-width, 9ch);
 		margin: 0;
-		font: 500 clamp(4rem, 10vw, 6.5rem) / 1 var(--font-display);
+		font: 500 var(--hero-title-size) / 1 var(--font-display);
 		letter-spacing: -0.035em;
 		text-transform: none;
 		text-wrap: pretty;
@@ -126,8 +133,7 @@
 	}
 
 	@include mixins.respond-to(lg) {
-		padding-inline: 4rem;
-		padding-bottom: 2rem;
+		padding: var(--hero-section-padding-desktop, 4.5rem 4rem 2rem);
 
 		.framed-portrait-hero__layout {
 			grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
@@ -138,7 +144,8 @@
 			width: fit-content;
 
 			img {
-				height: min(72svh, 42rem);
+				width: var(--hero-portrait-width-desktop, auto);
+				height: var(--hero-portrait-height-desktop, min(72svh, 42rem));
 			}
 		}
 	}
