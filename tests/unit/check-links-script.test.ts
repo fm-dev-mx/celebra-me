@@ -25,7 +25,12 @@ function createRepoFixture() {
 
 describe('check-links script', () => {
 	it.each([
-		['only a deletion', undefined, 0, 'No Markdown files to validate.'],
+		[
+			'an unchanged referrer',
+			undefined,
+			1,
+			'README.md: missing relative link target "guide.md"',
+		],
 		['removed reference', '# Updated\n', 0, 'Checked 1 changed Markdown file'],
 		[
 			'dangling reference',
@@ -55,6 +60,32 @@ describe('check-links script', () => {
 
 			expect(result.status).toBe(status);
 			expect(`${result.stdout}\n${result.stderr}`).toContain(message);
+		} finally {
+			cleanupFixture(repoRoot);
+		}
+	});
+
+	it('passes when deleted Markdown has no referrers', () => {
+		const repoRoot = createRepoFixture();
+
+		try {
+			writeFileSync(join(repoRoot, 'guide.md'), '# Guide\n', 'utf8');
+			writeFileSync(join(repoRoot, 'README.md'), '# Readme\n', 'utf8');
+			runCommand('git', ['add', '.'], { cwd: repoRoot });
+			runCommand('git', ['commit', '--no-verify', '-m', 'docs(core): add guide'], {
+				cwd: repoRoot,
+			});
+
+			unlinkSync(join(repoRoot, 'guide.md'));
+
+			const result = runCommand('node', [CLI_PATH, 'check-links'], {
+				cwd: repoRoot,
+				allowFailure: true,
+				env: sanitizeEnv(),
+			});
+
+			expect(result.status).toBe(0);
+			expect(result.stdout).toContain('No Markdown files to validate.');
 		} finally {
 			cleanupFixture(repoRoot);
 		}
