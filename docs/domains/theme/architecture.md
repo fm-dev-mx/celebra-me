@@ -6,11 +6,6 @@ Celebra-me uses a strict three-level styling architecture. The post-migration st
 presentation, skin, fallback, and profile inventory is maintained in
 [`variant-system.md`](variant-system.md).
 
-The latest bounded corpus audit is
-[`render-parity-ownership-audit-2026-08-10.md`](../../archive/reports/render-parity-ownership-audit-2026-08-10.md).
-It is the evidence record for parity status and remaining compatibility ownership; it does not
-authorize changes to runtime, content, or styling by itself.
-
 Gallery section variants (as-is catalog, compatibility aliases, and the canonical layout-role
 contract) are documented in [`gallery-variants.md`](gallery-variants.md).
 

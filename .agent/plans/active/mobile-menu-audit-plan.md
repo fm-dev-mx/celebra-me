@@ -4,8 +4,6 @@ status: active
 created: 2026-08-21
 updated: 2026-08-21
 type: implementation
-related_docs:
-  - .agent/plans/archived/mobile-menu-audit-plan.md
 ---
 
 # Mobile Menu Residual Work

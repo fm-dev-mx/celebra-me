@@ -95,7 +95,7 @@ routes matching the touched surfaces.
 - Task Contract, Goal protocol, and Handoff Contract: [`.agent/plans/README.md`](./plans/README.md).
 - Conversational planning is default. Tracked plans belong under `.agent/plans/active/` per that
   README.
-- Historical audits and reports live under `docs/archive/reports/` and `.agent/plans/archived/`.
+- Point-in-time audits, reports, and completed plans are not tracked; Git history is the archive.
 - Human-facing agent report layout (review / apply / commit / remediation):
   [`.agent/templates/agent-report-contract.md`](./templates/agent-report-contract.md) (presentation
   only).

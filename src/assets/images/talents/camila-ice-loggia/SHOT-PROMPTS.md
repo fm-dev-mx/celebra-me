@@ -2,7 +2,7 @@
 
 Ready-to-run GenerateImage prompts. **Do not generate** until the owner approves this document.
 
-Companion: `MODEL.md` · Plan: `.agent/plans/active/celestial-blue-photo-set-overhaul.md`
+Companion: `MODEL.md`
 
 ---
 

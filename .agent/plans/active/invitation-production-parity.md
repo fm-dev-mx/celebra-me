@@ -25,7 +25,7 @@ unpublished drafts, guest/RSVP data, user-owned changes, and immutable visual ev
   Evidence: `.agent/tmp/parity-close-local-audit.log`, `.agent/tmp/parity-close-preview-audit.log`,
   `.agent/tmp/parity-close-local-contract.log`, `.agent/tmp/parity-close-preview-contract.log`.
 - These are pre-correction results, not certification of the working tree. Older checkpoints remain
-  in [the superseded record](../archived/invitation-production-parity-through-db6da25f.md).
+  in Git history.
 
 ## Approved exceptions
 

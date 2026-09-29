@@ -1,6 +1,8 @@
 ---
 name: system-doc-alignment
-description: Keep active docs and agent governance aligned with the live repository tree — audit for drift, enforce placement rules, and apply the Sync Contract.
+description:
+  Keep active docs and agent governance aligned with the live repository tree — audit for drift,
+  enforce placement rules, and apply the Sync Contract.
 domain: workflow
 version: 1.0.0
 when_to_use:
@@ -35,7 +37,6 @@ documentation task.
 
 - `docs/core/` for evergreen architecture and cross-cutting policy docs
 - `docs/domains/` for bounded domain or feature docs
-- `docs/archive/` for historical reports and superseded notes
 - `.agent/index.md` for active discovery links and entrypoints
 
 ## Workflow
