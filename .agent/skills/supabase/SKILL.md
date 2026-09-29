@@ -4,7 +4,7 @@ description: |
   Supabase Auth, RLS policies, Edge Functions, Realtime, Storage, CLI, and MCP
   guidance for Celebra-me.
 domain: backend
-version: 1.1.0
+version: 1.2.0
 when_to_use:
   - Writing or reviewing Supabase RLS policies
   - Configuring Auth, Edge Functions, Realtime, or Storage
@@ -42,22 +42,7 @@ canonical docs.
 - Always enable RLS on every table in exposed schemas (`public` by default).
 - Use `TO authenticated` + `USING (auth.uid() = user_id)` — never `TO authenticated` alone (that is
   authentication without authorization, aka BOLA/IDOR).
-- UPDATE policies must have both `USING` and `WITH CHECK`.
 - Prefer `TO anon` or `TO authenticated` over `auth.role()` — the function is deprecated.
-
-```sql
--- Correct RLS pattern
-CREATE POLICY "users_own_rows" ON table_name
-    FOR SELECT
-    TO authenticated
-    USING ((select auth.uid()) = user_id);
-
-CREATE POLICY "users_update_own_rows" ON table_name
-    FOR UPDATE
-    TO authenticated
-    USING ((select auth.uid()) = user_id)
-    WITH CHECK ((select auth.uid()) = user_id);
-```
 
 ### Security Checklist
 
@@ -68,7 +53,6 @@ CREATE POLICY "users_update_own_rows" ON table_name
   15+.
 - **`SECURITY DEFINER` functions bypass RLS** — never add `SECURITY DEFINER` to resolve a permission
   error. Keep such functions in non-exposed schemas with an `auth.uid()` check.
-- **Storage upsert requires INSERT + SELECT + UPDATE** — granting only INSERT is not enough.
 
 ## CLI Usage
 
@@ -83,13 +67,6 @@ supabase <group> <command> --help  # Flags
 Do **not** run raw `supabase db push` (linked or `--db-url` Production). Use
 `pnpm db:migrate -- --target <local|preview|production|disposable-test>`. Production MCP
 `apply_migration` and mutating `execute_sql` are blocked; read-only Production MCP is allowed.
-
-### Known Gotchas
-
-- `supabase db query` requires CLI v2.79.0+ — use MCP `execute_sql` or `psql` as fallback.
-- `supabase db advisors` requires CLI v2.81.3+ — use MCP `get_advisors` as fallback.
-- Always create migration files with `supabase migration new <name>`, never manually.
-- Verify migrations with `supabase migration list --local`.
 
 ## Making Schema Changes
 

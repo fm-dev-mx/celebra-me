@@ -4,7 +4,7 @@ description:
   Implement SEO and Open Graph metadata for digital invitations. Ensure attractive social media
   previews when invitations are shared on WhatsApp, Facebook, and Instagram.
 domain: growth
-version: 1.0.0
+version: 1.1.0
 when_to_use:
   - Creating or updating invitation pages with share metadata
   - Reviewing Open Graph, Twitter, or structured page metadata
@@ -32,33 +32,8 @@ The live invitation metadata surface is the shared [Layout.astro](../../../src/l
 contract plus the invitation route at
 [src/pages/[eventType]/[slug].astro](../../../src/pages/[eventType]/[slug].astro). Invitation pages
 must publish title, description, canonical URL, and absolute social-image URLs through those
-surfaces.
-
-```astro
----
-// src/layouts/Layout.astro
-interface Props {
-  title: string; // "XV Años de María Elena"
-  description: string; // "Te invitamos a celebrar • 15 de marzo, 2026 • Salón Los Arcos"
-  image: string; // Absolute URL to OG image
-  url: string; // Canonical URL
-  type?: 'website' | 'event';
-}
-
-const { title, description, image, url, type = 'website' } = Astro.props;
-const ogImage = new URL(image, Astro.url);
-const canonicalUrl = import.meta.env.PROD ? Astro.url : new URL('https://celebra-me.com/');
----
-
-<!-- Open Graph -->
-<meta property="og:title" content={title} />
-<meta property="og:description" content={description} />
-<meta property="og:image" content={ogImage} />
-<meta property="og:url" content={canonicalUrl} />
-<meta property="og:type" content={type} />
-<meta property="og:site_name" content="Celebra-me" />
-<meta property="og:locale" content="es_MX" />
-```
+surfaces. Reuse the [social metadata helpers](../../../src/lib/invitation/social-metadata.ts) and
+preserve public-origin canonical URLs without personalization parameters.
 
 ### Content Guidelines
 
@@ -69,55 +44,7 @@ const canonicalUrl = import.meta.env.PROD ? Astro.url : new URL('https://celebra
 
 ---
 
-## 2. Twitter Cards
-
-Fallback for Twitter/X sharing:
-
-```astro
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content={title} />
-<meta name="twitter:description" content={description} />
-<meta name="twitter:image" content={absoluteImage} />
-<meta name="twitter:image:alt" content={`Invitación: ${title}`} />
-```
-
----
-
-## 3. Astro Implementation
-
-Live layout integration:
-
-```astro
----
-// src/pages/[eventType]/[slug].astro
-import Layout from '@/layouts/Layout.astro';
-
-interface Props {
-  layout: {
-    title: string;
-    description: string;
-    image: string;
-    className: string;
-  };
-}
-
-const { layout } = Astro.props;
----
-
-<Layout
-  title={layout.title}
-  description={layout.description}
-  image={layout.image}
-  hideHeader={true}
->
-  <slot />
-</Layout>
-```
-
----
-
-## 4. Image Requirements
+## 2. Image Requirements
 
 | Property       | Requirement                               |
 | -------------- | ----------------------------------------- |
@@ -127,29 +54,9 @@ const { layout } = Astro.props;
 | **Alt text**   | Descriptive, include event type           |
 | **Safe zone**  | Keep text within center 80%               |
 
-### OG Image Generation
-
-```astro
----
-// Generate OG-optimized image at build time
-import { getImage } from 'astro:assets';
-import heroSrc from '../assets/hero.jpg';
-
-const ogImage = await getImage({
-  src: heroSrc,
-  width: 1200,
-  height: 630,
-  format: 'jpg',
-  quality: 80,
-});
 ---
 
-<meta property="og:image" content={new URL(ogImage.src, Astro.url)} />
-```
-
----
-
-## 5. Structured Data (JSON-LD)
+## 3. Structured Data (JSON-LD)
 
 Add Schema.org Event markup for rich search results:
 
@@ -181,12 +88,12 @@ const jsonLd = {
 };
 ---
 
-<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
 ```
 
 ---
 
-## 6. Platform-Specific Tips
+## 4. Platform-Specific Tips
 
 ### WhatsApp
 
@@ -210,21 +117,7 @@ const jsonLd = {
 
 ---
 
-## 7. Anti-patterns
-
-| ❌ Don't                  | ✅ Do                      |
-| ------------------------- | -------------------------- |
-| Images < 600px wide       | Use 1200×630 minimum       |
-| Generic descriptions      | Include date + venue       |
-| Relative image URLs       | Always use absolute URLs   |
-| Descriptions > 200 chars  | Keep under 155 chars       |
-| Missing `og:url`          | Always include canonical   |
-| Same image for all events | Unique hero per invitation |
-| Text outside safe zone    | Center important content   |
-
----
-
-## 8. Verification Checklist
+## 5. Verification Checklist
 
 Before deploying any invitation:
 
@@ -236,5 +129,4 @@ Before deploying any invitation:
 - [ ] JSON-LD validates at [Schema.org Validator](https://validator.schema.org/)
 - [ ] Test in Facebook Debugger
 - [ ] Test WhatsApp preview on mobile
-- [ ] `<html lang="es-MX">` is set
 - [ ] No console errors for missing images
