@@ -149,8 +149,9 @@
 		--header-control-min-height: 44px;
 	}
 
-	// Champagne stationery on ivory: warm paper, a foil hairline edge, and a larger foil seal.
-	// The paper sits a step warmer than the field so the envelope reads as an object.
+	// Champagne stationery on ivory: warm paper with foil seams, a gold wax medallion, a foil
+	// liner revealed as the flap turns, and a framed letter. The paper sits a step warmer than
+	// the field so the envelope reads as an object.
 	.envelope-wrapper {
 		--env-bg: radial-gradient(
 			ellipse 90% 60% at 42% 38%,
@@ -167,18 +168,131 @@
 		--env-accent: rgb(var(--naydelin-gold-ink-rgb));
 		--env-text-primary: rgb(var(--naydelin-gold-ink-rgb));
 		--env-seal-accent: rgb(var(--naydelin-foil-mid-rgb));
-		--env-seal-size-min: 52px;
-		--env-seal-size-max: 68px;
-		--env-seal-size-ratio: 17;
+		--env-shadow-container:
+			0 22px 44px rgb(var(--naydelin-espresso-rgb) / 12%),
+			0 4px 12px rgb(var(--naydelin-espresso-rgb) / 6%);
+
+		// The medallion SVG keeps an inner margin, so the box runs larger than the visible disc.
+		--env-seal-size-min: 68px;
+		--env-seal-size-max: 84px;
+		--env-seal-size-ratio: 21;
 		--env-seal-hint-display: none;
-		--reveal-card-bg: rgb(var(--naydelin-pearl-rgb));
-		--reveal-card-border: rgb(var(--naydelin-foil-mid-rgb) / 45%);
+
+		// Shorter turn: the letter's rise waits for the flap, so this trims the blank-paper beat.
+		--duration-reveal: 1.1s;
+
+		// Gold wax medallion: foil highlight to deep antique gold, with dark-gold initials.
 		--wax-seal-highlight: rgb(var(--naydelin-foil-hi-rgb));
 		--wax-seal-mid: rgb(var(--naydelin-foil-mid-rgb));
-		--wax-seal-deep: rgb(var(--naydelin-foil-deep-rgb));
+		--wax-seal-deep: rgb(var(--naydelin-gold-ink-rgb));
 		--wax-seal-letter: rgb(98 72 36);
 		--wax-seal-shadow: rgb(var(--naydelin-espresso-rgb));
 		--wax-seal-emboss-shadow: rgb(98 72 36);
+
+		// Letter: pearl stationery, foil edge, gold-ink display type.
+		--reveal-card-bg: rgb(var(--naydelin-pearl-rgb));
+		--reveal-card-border: rgb(var(--naydelin-foil-mid-rgb) / 45%);
+		--reveal-card-radius: 2px;
+		--reveal-card-grain-opacity: 0.35;
+		--reveal-card-text-primary: rgb(var(--naydelin-gold-ink-rgb));
+		--reveal-card-text-secondary: var(--color-text-secondary);
+		--reveal-card-accent: rgb(var(--naydelin-foil-mid-rgb));
+		--reveal-card-font-display: var(--font-display);
+		--reveal-card-shadow:
+			0 18px 40px rgb(var(--naydelin-espresso-rgb) / 12%),
+			0 2px 6px rgb(var(--naydelin-espresso-rgb) / 6%);
+
+		// Nearly invisible fibre so the paper reads matte, not striped.
+		.envelope-base::before,
+		.envelope-pocket::before,
+		.envelope-flap::before {
+			opacity: 30%;
+		}
+
+		.envelope-pocket::after,
+		.envelope-flap::after {
+			background: var(--naydelin-foil-rule);
+		}
+
+		// A warm, faint shadow replaces the espresso bloom that greyed the turning flap.
+		.envelope-flap-shadow {
+			background: rgb(var(--naydelin-gold-ink-rgb) / 12%);
+		}
+
+		// Keep the letter stage hidden while the envelope is closed: the shared reduced-motion
+		// rule otherwise forces it visible over the paper and seal.
+		&:not(.is-opening, .is-letter-held, .is-preview-opened) .envelope-reveal-stage {
+			visibility: hidden;
+		}
+
+		.invitation-reveal-card::after {
+			content: '';
+			position: absolute;
+			inset: 0.6rem;
+			z-index: 0;
+			border: 1px solid rgb(var(--naydelin-foil-mid-rgb) / 55%);
+			pointer-events: none;
+		}
+
+		.invitation-reveal-card__label {
+			letter-spacing: 0.28em;
+			color: rgb(var(--naydelin-gold-ink-rgb));
+		}
+
+		.invitation-reveal-card__name {
+			font-weight: 500;
+			line-height: 1.1;
+			color: var(--color-text-primary);
+		}
+
+		// The canonical card date abbreviates the month; the tagline carries the full date.
+		.invitation-reveal-card__date {
+			display: none;
+		}
+
+		.invitation-reveal-card__tagline {
+			margin-top: 0.4rem;
+			font-family: var(--font-display);
+			font-style: normal;
+			color: var(--color-text-secondary);
+		}
+
+		.invitation-reveal-card__divider {
+			width: min(6rem, 36%);
+			margin-top: 0.75rem;
+			background: var(--naydelin-foil-rule);
+		}
+
+		.invitation-reveal-card__guest-label {
+			letter-spacing: 0.24em;
+			opacity: 100%;
+			color: rgb(var(--naydelin-gold-ink-rgb));
+		}
+
+		.invitation-reveal-card__guest-name {
+			letter-spacing: 0.02em;
+			color: var(--color-text-primary);
+		}
+
+		// The flap's inside face is a champagne foil liner: once it turns past 90°, the
+		// discrete background swap shows gold instead of the paper's reverse.
+		&.is-opening .envelope-flap {
+			animation:
+				invitation-env-flap-open var(--duration-reveal) forwards var(--ease-premium),
+				naydelin-flap-liner var(--duration-reveal) forwards var(--ease-premium);
+		}
+
+		// Two initials at the medallion's default 48/120 size crowd the embossed ring; CSS px on
+		// SVG text are viewBox units, so 36 leaves the die ring a clear margin.
+		.envelope-seal-button__visual text {
+			font-size: 36px;
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.envelope-seal-button__visual {
+				animation: none;
+			}
+		}
 	}
 
 	.invitation-hero {
@@ -611,5 +725,22 @@
 
 	to {
 		background-position: 0% 50%;
+	}
+}
+
+@keyframes naydelin-flap-liner {
+	0%,
+	49% {
+		background: var(--env-paper-bg);
+	}
+
+	50%,
+	100% {
+		background: linear-gradient(
+			160deg,
+			rgb(var(--naydelin-foil-hi-rgb)) 0%,
+			rgb(var(--naydelin-foil-mid-rgb)) 55%,
+			rgb(var(--naydelin-foil-deep-rgb)) 100%
+		);
 	}
 }

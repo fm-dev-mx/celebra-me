@@ -55,8 +55,10 @@ const content: CanonicalEventContentInput = {
 		disabled: false,
 		variant: 'jewelry-box',
 		sealStyle: 'wax',
-		sealIcon: 'heart',
+		// Embossed wax medallion carries the NP initials; the profile tints it champagne gold.
+		sealIcon: 'wax-medallion',
 		sealInitials: 'NP',
+		cardTagline: 'Sábado 17 de octubre de 2026',
 		microcopy: 'Toque para abrir la invitación',
 		teaserDetails: '17 de octubre de 2026 · Los Mochis',
 	},

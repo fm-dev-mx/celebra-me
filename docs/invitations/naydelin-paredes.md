@@ -190,11 +190,15 @@ hero doorway. All other boundaries are neutral.
 | gifts               | `standard`                                                    |
 | thank you           | `portrait-letter` (photo 9); `atmospheric-blend` from gifts   |
 
-The envelope retains `jewelry-box` with warm champagne paper, a foil edge, and a larger foil wax
-seal. Section typography is unified through slug-scoped selectors in the profile, following the
-Allison Scarlett precedent, so canonical variants gain no new micro-tokens. Photo 1 is not used
-because it repeats the bar setting of photo 10; the feature band (photo 10) sits between the gallery
-pairs so it does not follow photo 2, taken at the same shelf.
+The envelope retains `jewelry-box` with warm champagne paper, foil seams, and an embossed gold wax
+medallion (`sealIcon: 'wax-medallion'`, initials NP). The flap reveals a champagne foil liner as it
+turns, the opening is shortened to 1.1 s, and the letter carries an inset foil frame and the full
+date as its tagline (the canonical card date is hidden because it abbreviates the month). The letter
+stage stays hidden while the envelope is closed under reduced motion. Section typography is unified
+through slug-scoped selectors in the profile, following the Allison Scarlett precedent, so canonical
+variants gain no new micro-tokens. Photo 1 is not used because it repeats the bar setting of photo
+10; the feature band (photo 10) sits between the gallery pairs so it does not follow photo 2, taken
+at the same shelf.
 
 Profile-scoped exceptions (no canonical token exists): hero portrait foil hairline, countdown cell
 radius and top rule, hidden location "next section" cue, itinerary top padding, family breathing
@@ -209,8 +213,9 @@ and a grey flap interior while opening; `REVEAL_RECIPES` assigns adjacent `stagg
 a transition; the RSVP eyebrow "RSVP PRIVADO" is not configurable from content; the RSVP guest-count
 hint, the attendance validation message, the reminder share placeholders, and the footer
 "Contáctanos" use the informal register; "ENVIAR RESPUESTA" is hardcoded uppercase; the envelope
-reveal card abbreviates the month ("17 · OCT · 2026"); the `paired-feature-band` grid is capped at
-880px on desktop.
+reveal card abbreviates the month ("17 · OCT · 2026"); the wax-medallion glow loop ignores reduced
+motion and the shared reduced-motion rule shows the letter stage over a closed envelope (both
+patched in this profile); the `paired-feature-band` grid is capped at 880px on desktop.
 
 ## Photograph Inventory
 
