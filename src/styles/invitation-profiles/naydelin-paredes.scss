@@ -1,0 +1,328 @@
+@use '@fontsource-variable/cormorant-garamond/index.css' as cormorant;
+
+// The doorway and champagne gown establish the photographic identity: warm ivory stationery,
+// champagne-gold metal, and restrained rose-gold hairlines for the celebrant's gown.
+// Tonal band: dark interlude with luminous closing. Hero through itinerary: ivory / pearl.
+// Itinerary -> RSVP: atmospheric Bridge. RSVP -> gifts: espresso band. The portrait-letter
+// closing returns to ivory, its arch echoing the hero doorway.
+// Canonical variants own geometry; this profile supplies tokens plus slug-scoped typography.
+.event--naydelin-paredes.theme-preset--jewelry-box {
+	// Palette primitives.
+	--naydelin-ivory-rgb: 251 247 241;
+	--naydelin-pearl-rgb: 255 253 249;
+	--naydelin-sand-rgb: 241 232 220;
+	--naydelin-espresso-rgb: 48 41 35;
+	--naydelin-gold-rgb: 176 141 87; // Ornament and hairline gold; not for small text.
+	--naydelin-gold-ink-rgb: 133 100 48; // Small gold text on ivory (5.1:1).
+	--naydelin-gold-light-rgb: 214 184 128; // Gold on the espresso finale (7.5:1).
+	--naydelin-rose-rgb: 183 117 108;
+
+	// Shared typography rhythm for section titles and eyebrows.
+	--naydelin-title-size: clamp(2.5rem, 5vw, 3.5rem);
+	--naydelin-title-weight: 500;
+	--naydelin-eyebrow-size: 0.72rem;
+	--naydelin-eyebrow-spacing: 0.24em;
+	--color-surface-primary: rgb(var(--naydelin-ivory-rgb));
+	--color-surface-primary-rgb: var(--naydelin-ivory-rgb);
+	--color-surface-secondary: rgb(var(--naydelin-sand-rgb));
+	--color-surface-soft: var(--color-surface-secondary);
+	--color-surface-elevated: rgb(var(--naydelin-pearl-rgb));
+	--color-surface-elevated-rgb: var(--naydelin-pearl-rgb);
+	--color-surface-dark: rgb(var(--naydelin-espresso-rgb));
+	--color-surface-dark-rgb: var(--naydelin-espresso-rgb);
+	--color-text-primary: rgb(var(--naydelin-espresso-rgb));
+	--color-text-primary-rgb: var(--naydelin-espresso-rgb);
+	--color-text-secondary: rgb(105 89 75);
+	--color-text-emphasis: var(--color-text-primary);
+	--color-text-on-light: var(--color-text-primary);
+	--color-text-on-dark: rgb(var(--naydelin-ivory-rgb));
+	--color-action-primary: rgb(var(--naydelin-gold-ink-rgb));
+	--color-action-primary-rgb: var(--naydelin-gold-ink-rgb);
+	--color-action-accent: rgb(var(--naydelin-gold-ink-rgb));
+	--color-action-accent-rgb: var(--naydelin-gold-ink-rgb);
+	--color-glass-bg: rgb(var(--naydelin-pearl-rgb));
+	--color-glass-border: rgb(var(--naydelin-gold-rgb) / 30%);
+	--color-glass-shadow: rgb(var(--naydelin-espresso-rgb) / 6%);
+	--font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', serif;
+	--font-display-elegant: var(--font-display);
+	--font-calligraphy: var(--font-display);
+	--font-body: 'Montserrat Variable', 'Montserrat', sans-serif;
+	--font-ui: var(--font-body);
+	--font-label: var(--font-body);
+	--spacing-section-gap: clamp(4rem, 6vw, 6rem);
+	--shadow-subtle: 0 4px 16px rgb(var(--naydelin-espresso-rgb) / 5%);
+	--shadow-premium: 0 8px 24px rgb(var(--naydelin-espresso-rgb) / 8%);
+	--motion-reveal-distance: 8px;
+	--motion-reveal-duration: 500ms;
+	--motion-stagger-step: 60ms;
+	--motion-stagger-cap: 180ms;
+	--motion-reveal-blur: 0;
+	--formal-chapter-band: var(--color-surface-dark);
+	--formal-chapter-band-rgb: var(--color-surface-dark-rgb);
+	--formal-chapter-cream: var(--color-surface-primary);
+	--formal-chapter-cream-rgb: var(--color-surface-primary-rgb);
+	--formal-chapter-sand: var(--color-surface-secondary);
+	--formal-chapter-sand-rgb: var(--naydelin-sand-rgb);
+	--formal-chapter-metal: rgb(var(--naydelin-gold-light-rgb));
+	--formal-chapter-metal-rgb: var(--naydelin-gold-light-rgb);
+	--formal-chapter-ink: var(--color-text-primary);
+	--formal-chapter-ink-rgb: var(--color-text-primary-rgb);
+	--formal-chapter-title: var(--color-text-primary);
+	--formal-chapter-muted: var(--color-text-secondary);
+	--formal-chapter-meta: var(--color-action-primary);
+	--formal-chapter-label-font: var(--font-body);
+	--pa-section-bg: var(--color-surface-primary);
+	--rsvp-section-min-height: auto;
+
+	// Eyebrows share one voice: small tracked sans in gold ink.
+	.gallery-section__eyebrow,
+	.event-location__eyebrow,
+	.event-location__card-title,
+	.family__group-title,
+	.access-card__eyebrow {
+		display: block;
+		font-family: var(--font-label);
+		font-size: var(--naydelin-eyebrow-size);
+		font-weight: 500;
+		letter-spacing: var(--naydelin-eyebrow-spacing);
+		text-transform: uppercase;
+		color: rgb(var(--naydelin-gold-ink-rgb));
+	}
+
+	// Section titles share one voice: sentence-case Cormorant at a single scale.
+	.family__title,
+	.gallery-section__title,
+	.countdown-title,
+	.event-location__heading,
+	.itinerary__title,
+	.rsvp__title,
+	.gifts-section__title {
+		font-family: var(--font-display);
+		font-size: var(--naydelin-title-size);
+		font-weight: var(--naydelin-title-weight);
+		letter-spacing: 0;
+		line-height: 1.1;
+		text-transform: none;
+	}
+
+	#event-header {
+		--nav-transparent-scrim: none;
+		--hamburger-color: var(--color-text-primary);
+		--header-nav-color-transparent: var(--color-text-primary);
+		--header-nav-color: var(--color-text-primary);
+		--header-nav-title-color: var(--color-text-primary);
+		--header-nav-cta-color: var(--color-text-primary);
+		--header-nav-cta-border: rgb(var(--naydelin-gold-rgb));
+		--header-control-min-height: 44px;
+	}
+
+	.envelope-wrapper {
+		--env-accent: rgb(var(--naydelin-gold-ink-rgb));
+		--env-seal-accent: rgb(var(--naydelin-gold-rgb));
+		--wax-seal-highlight: rgb(236 214 170);
+		--wax-seal-mid: rgb(var(--naydelin-gold-rgb));
+		--wax-seal-deep: rgb(122 92 48);
+		--wax-seal-letter: rgb(98 72 36);
+		--wax-seal-shadow: rgb(var(--naydelin-espresso-rgb));
+		--wax-seal-emboss-shadow: rgb(98 72 36);
+	}
+
+	.invitation-hero {
+		--hero-portrait-radius: 0;
+		--hero-portrait-max-width: 100%;
+		--hero-portrait-width-mobile: 18.125rem;
+		--hero-portrait-height-mobile: auto;
+		--hero-portrait-width-desktop: 27.5rem;
+		--hero-portrait-height-desktop: auto;
+		--hero-section-padding: 5rem 1.5rem 2rem;
+		--hero-section-padding-desktop: 5.5rem 3rem 2.5rem;
+		--hero-title-size: clamp(2.5rem, 5vw, 4.5rem);
+		--hero-title-max-width: 18ch;
+		--hero-label-size: var(--naydelin-eyebrow-size);
+
+		// The corner wash reads as an artifact behind the mobile header; keep it for desktop only.
+		&::before {
+			display: none;
+			background: rgb(var(--naydelin-gold-rgb) / 16%);
+		}
+
+		@media (width >= 992px) {
+			&::before {
+				display: block;
+			}
+		}
+
+		.framed-portrait-hero__occasion {
+			margin-bottom: 0.9rem;
+			font-family: var(--font-label);
+			font-weight: 500;
+			letter-spacing: 0.28em;
+			line-height: 1.4;
+			text-transform: uppercase;
+			color: rgb(var(--naydelin-gold-ink-rgb));
+		}
+	}
+
+	.personalized-access {
+		--pa-card-bg-image: none;
+		--pa-card-bg-color: var(--color-surface-elevated);
+		--pa-card-shadow: none;
+		--pa-card-border-radius: 2px;
+		--pa-card-border: 1px solid rgb(var(--naydelin-rose-rgb) / 30%);
+		--pa-section-padding: 2rem 0;
+		--pa-header-padding: 1.5rem 1.5rem 0.75rem;
+		--pa-seal-display: none;
+		--pa-count-size: 2.5rem;
+		--pa-title-tracking: 0.05em;
+		--pa-title-shadow: none;
+		--pa-count-shadow: none;
+		--formal-chapter-body: var(--font-body);
+
+		// Lining figures keep a single seat from reading as the letter "I".
+		.access-card__count {
+			font-variant-numeric: lining-nums;
+		}
+	}
+
+	.family {
+		--family-filigree-display: none;
+		--family-bg: var(--color-surface-primary);
+		--family-padding-block: 4rem;
+		--family-panel-spacing: 1.5rem 0;
+		--family-name-size: clamp(1.55rem, 3vw, 2rem);
+		--family-name-max-width: 27ch;
+		--family-name-line-height: 1.3;
+		--family-group-padding: 1.5rem 0;
+		--family-list-gap: 1.25rem;
+
+		.family__name {
+			text-wrap: balance;
+		}
+	}
+
+	.gallery-section {
+		--gallery-section-bg: var(--color-surface-elevated);
+		--gallery-section-padding-block: clamp(4rem, 6vw, 6rem);
+		--gallery-grid-columns-mobile: 2;
+		--gallery-item-aspect-ratio: 2 / 3;
+		--gallery-item-aspect-ratio-feature: 3 / 2;
+		--gallery-title-color: var(--color-text-primary);
+		--gallery-item-radius: 2px;
+		--gallery-item-border: none;
+		--gallery-item-shadow: none;
+		--gallery-item-emphasis-shadow: none;
+		--gallery-item-hover-shadow: none;
+		--gallery-item-image-base-filter: none;
+		--gallery-item-image-emphasis-filter: none;
+		--gallery-item-image-filter-rest: none;
+		--gallery-item-image-scale-hover: 1;
+
+		.gallery-section__eyebrow {
+			margin-bottom: 0.75rem;
+		}
+	}
+
+	.event-location {
+		--location-map-preview-display: none;
+		--location-date-display: none;
+		--location-stack-gap: 1.5rem;
+		--location-padding-block: clamp(4rem, 6vw, 6rem);
+		--location-padding-inline: 1rem;
+		--location-place-font-size: clamp(1.7rem, 3vw, 2.2rem);
+		--location-address-font-size: 1rem;
+		--location-hour-font-family: var(--font-body);
+		--location-hour-font-size: 1rem;
+		--location-card-shadow: none;
+		--location-card-hover-shadow: none;
+		--location-card-bg: var(--color-surface-elevated);
+		--location-content-padding: clamp(1.5rem, 3vw, 2rem);
+		--location-nav-maps-bg: transparent;
+		--location-nav-maps-color: rgb(var(--naydelin-gold-ink-rgb));
+		--location-nav-maps-border: 1px solid rgb(var(--naydelin-gold-rgb) / 70%);
+		--location-nav-maps-hover-bg: rgb(var(--naydelin-gold-rgb) / 10%);
+		--location-nav-maps-hover-border-color: rgb(var(--naydelin-gold-ink-rgb));
+	}
+
+	.countdown-section {
+		--countdown-section-background: var(--color-surface-primary);
+		--shadow-premium: none;
+		--color-glass-shadow: transparent;
+		--countdown-segment-inset: 2rem 0.25rem;
+		--countdown-label-size: 0.62rem;
+		--countdown-label-spacing: 0.08em;
+		--countdown-label-color: var(--color-text-secondary);
+		--countdown-label-opacity: 1;
+		--countdown-date-size: 1rem;
+		--countdown-date-spacing: 0.06em;
+
+		.countdown-title {
+			margin-bottom: 2.75rem;
+		}
+
+		.countdown-title::after {
+			background: radial-gradient(circle, rgb(var(--naydelin-gold-rgb)) 0%, transparent 100%);
+		}
+
+		.countdown__value,
+		.countdown-date {
+			font-variant-numeric: lining-nums tabular-nums;
+		}
+	}
+
+	.itinerary {
+		--itinerary-bg: var(--color-surface-primary);
+		--itinerary-line-color: rgb(var(--naydelin-gold-rgb));
+		--editorial-ledger-rule: rgb(var(--naydelin-gold-rgb) / 30%);
+		--editorial-ledger-spine: rgb(var(--naydelin-gold-rgb) / 30%);
+		--editorial-ledger-time-width: 8rem;
+		--editorial-ledger-row-space: 0.75rem;
+
+		.itinerary__header,
+		.itinerary__items {
+			margin-inline: auto;
+		}
+
+		.itinerary__header {
+			text-align: center;
+		}
+
+		.itinerary__item-time {
+			font-size: 0.78rem;
+			letter-spacing: 0.2em;
+			color: rgb(var(--naydelin-gold-ink-rgb));
+		}
+
+		// Plain ink replaces the preset's gradient text fill so the event name leads each row.
+		.itinerary__item-label {
+			background: none;
+			-webkit-text-fill-color: currentcolor;
+			text-shadow: none;
+			font-size: clamp(1.6rem, 4vw, 1.9rem);
+			font-weight: 500;
+			color: var(--color-text-primary);
+		}
+	}
+
+	.rsvp {
+		--formal-chapter-body: var(--font-body);
+		--formal-register-body-size: 1rem;
+		--formal-register-label-size: 0.8rem;
+		--formal-register-shell-padding: clamp(3.5rem, 8vw, 5rem) 1.5rem clamp(2.5rem, 6vw, 3.5rem);
+	}
+
+	.gifts-section {
+		--gifts-bg: var(--color-surface-dark);
+		--gifts-text-color: var(--color-text-on-dark);
+		--gifts-title-color: var(--color-text-on-dark);
+		--gifts-subtitle-color: rgb(var(--naydelin-ivory-rgb) / 88%);
+		--gifts-card-title-color: var(--color-text-on-dark);
+		--gifts-card-bg: transparent;
+		--gifts-card-border: none;
+		--gifts-card-shadow: none;
+		--gifts-icon-color: var(--formal-chapter-metal);
+		--gifts-icon-bg: transparent;
+		--gifts-icon-border: 1px solid rgb(var(--naydelin-gold-light-rgb) / 35%);
+		--gifts-icon-shadow: none;
+		--gifts-padding-block: 2.5rem;
+	}
+}
