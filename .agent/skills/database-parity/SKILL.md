@@ -3,7 +3,7 @@ name: database-parity
 description: |
   Validate migration identity, schema compatibility, and backup evidence for a database-sensitive branch/release range. Use standalone for an explicit parity audit or when branch-lane requires it; database access remains governed by database rules.
 domain: workflow
-version: 2.1.1
+version: 2.1.2
 when_to_use:
   - branch-lane sets requiresParityAudit or identityStatus fail handling
   - User asks for a database-parity audit between main and develop (standalone)
@@ -116,13 +116,25 @@ Use `diagnoseLocalDisposableDrift` / `pnpm db:branch:diagnose -- --evidence-json
 structured evidence (version lists, column diffs, migration SQL expectations). Persist a
 **checkpoint** after this diagnosis.
 
-| Classification                   | Status                | Agent action                                                                                                                                                                                                                                 |
-| -------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `disposable_stale_or_incomplete` | `Fail` (agent-owned)  | After conclusive disposable-test target verification, automatically remediate via `pnpm db:disposable:reset` (disposable-only write) and re-audit — **no user “investigate?” prompt**. If target identity cannot be proven → `Hard blocked`. |
-| `migration_history_mismatch`     | `Fail`                | Continue automatic history alignment / verified disposable remediation when disposable is behind workspace                                                                                                                                   |
-| `local_unversioned_drift`        | `Hard blocked`        | Stop; owner must add corrective versioned migration (never mutate applied files)                                                                                                                                                             |
-| `aligned`                        | `Pass`                | Continue                                                                                                                                                                                                                                     |
-| `inconclusive`                   | `Needs manual action` | Only after automatic evidence collection is exhausted                                                                                                                                                                                        |
+- **Classification:** `disposable_stale_or_incomplete`
+  - **Status:** `Fail` (agent-owned)
+  - **Agent action:** After conclusive disposable-test target verification, automatically remediate
+    via `pnpm db:disposable:reset` (disposable-only write) and re-audit — **no user “investigate?”
+    prompt**. If target identity cannot be proven → `Hard blocked`.
+- **Classification:** `migration_history_mismatch`
+  - **Status:** `Fail`
+  - **Agent action:** Continue automatic history alignment / verified disposable remediation when
+    disposable is behind workspace
+- **Classification:** `local_unversioned_drift`
+  - **Status:** `Hard blocked`
+  - **Agent action:** Stop; owner must add corrective versioned migration (never mutate applied
+    files)
+- **Classification:** `aligned`
+  - **Status:** `Pass`
+  - **Agent action:** Continue
+- **Classification:** `inconclusive`
+  - **Status:** `Needs manual action`
+  - **Agent action:** Only after automatic evidence collection is exhausted
 
 **Disposable remediation is not read-only.** It is automated low-risk mutation of disposable-test
 only, gated by `verifyDisposableRebuildTarget` / `scripts/db/branch-lane-disposable-remediate.ts`.
@@ -143,13 +155,9 @@ Pending Production/Preview migrations required by app/tests:
 
 ### 7. Production backup coverage (guest / RSVP)
 
-Inventory `.backups/prod/` (no commit). Use `evaluateProductionBackupRequirement`:
-
-- Require a **fresh pre-migration** Production backup to capture state immediately before migrate.
-- Do **not** require a separate backup solely because the newest dump has a different calendar date.
-- When `pnpm db:migrate -- --target production` already creates the pre-migration backup, fold that
-  into migrate authorization rather than a date-skew-only backup prompt.
-- Empty or unusable inventory → `Needs authorization` for `pnpm db:prod:backup`.
+Evaluate Production recovery coverage under the
+[canonical backup and recovery workflow](../../../docs/database-workflow.md#production-backup-and-recovery-authority);
+a missing valid recovery set blocks readiness.
 
 **Preview is never a Production backup.**
 
