@@ -1,4 +1,4 @@
-import { cpSync, mkdtempSync, mkdirSync, writeFileSync } from 'fs';
+import { cpSync, mkdtempSync, mkdirSync, unlinkSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { tmpdir } from 'os';
 import { runCommand, sanitizeEnv } from '../helpers/run-command';
@@ -24,6 +24,42 @@ function createRepoFixture() {
 }
 
 describe('check-links script', () => {
+	it.each([
+		['only a deletion', undefined, 0, 'No Markdown files to validate.'],
+		['removed reference', '# Updated\n', 0, 'Checked 1 changed Markdown file'],
+		[
+			'dangling reference',
+			'# Updated\n[Guide](guide.md)\n',
+			1,
+			'missing relative link target "guide.md"',
+		],
+	])('handles deleted Markdown with %s', (_scenario, readme, status, message) => {
+		const repoRoot = createRepoFixture();
+
+		try {
+			writeFileSync(join(repoRoot, 'guide.md'), '# Guide\n', 'utf8');
+			writeFileSync(join(repoRoot, 'README.md'), '[Guide](guide.md)\n', 'utf8');
+			runCommand('git', ['add', '.'], { cwd: repoRoot });
+			runCommand('git', ['commit', '--no-verify', '-m', 'docs(core): add guide'], {
+				cwd: repoRoot,
+			});
+
+			unlinkSync(join(repoRoot, 'guide.md'));
+			if (readme !== undefined) writeFileSync(join(repoRoot, 'README.md'), readme, 'utf8');
+
+			const result = runCommand('node', [CLI_PATH, 'check-links'], {
+				cwd: repoRoot,
+				allowFailure: true,
+				env: sanitizeEnv(),
+			});
+
+			expect(result.status).toBe(status);
+			expect(`${result.stdout}\n${result.stderr}`).toContain(message);
+		} finally {
+			cleanupFixture(repoRoot);
+		}
+	});
+
 	it('passes when changed markdown links resolve', () => {
 		const repoRoot = createRepoFixture();
 

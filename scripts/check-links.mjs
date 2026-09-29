@@ -28,7 +28,7 @@ if (checkAll) {
 		),
 	];
 } else {
-	markdownFiles = getChangedFiles().filter((file) => file.endsWith('.md'));
+	markdownFiles = getChangedFiles().filter((file) => file.endsWith('.md') && existsSync(file));
 }
 
 if (markdownFiles.length === 0) {
@@ -85,4 +85,3 @@ const modeLabel = checkAll ? '' : 'changed ';
 console.log(
 	`Checked ${markdownFiles.length} ${modeLabel}Markdown ${label}; all relative links resolved.`,
 );
-
