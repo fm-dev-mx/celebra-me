@@ -197,11 +197,6 @@ routes:
       rules:
           - '.agent/rules/agent-routing.md'
 
-    - task_type: 'graphify_audit'
-      description: 'Optional coupling audit where Graphify adds value; never a default codebase query'
-      rules:
-          - '.agent/rules/graphify-ops.md'
-
     - task_type: 'planning'
       description: 'Task planning, multi-session continuity, or goal sequencing'
       rules:
