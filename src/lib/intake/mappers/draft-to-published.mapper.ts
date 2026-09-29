@@ -405,6 +405,11 @@ function buildHeroFromDraft(
 		if (draftHero[field] !== undefined) result[field] = draftHero[field];
 		else if (!ctx.isDemo && priorHero?.[field] !== undefined) result[field] = priorHero[field];
 	}
+	// Editorial-cover copy is not editable in the dashboard; carry it through publishes.
+	for (const field of ['tagline', 'photoCredit'] as const) {
+		const value = str((ctx.isDemo ? demoHero : priorHero)?.[field]);
+		if (value) result[field] = value;
+	}
 
 	return result;
 }
@@ -534,6 +539,20 @@ function mapGallerySection(
 	};
 }
 
+// Folio mark is not editable in the dashboard; keep the prior (client) or demo value.
+function resolveGiftsFolioMark(
+	draftGifts: NonNullable<DraftContent['gifts']>,
+	demoGifts: Record<string, unknown> | undefined,
+	priorGifts: Record<string, unknown> | undefined,
+	ctx: PublishCtx,
+): string | undefined {
+	return (
+		str(draftGifts.folioMark) ||
+		demoStr(ctx, demoGifts?.folioMark) ||
+		(ctx.isDemo ? undefined : str(priorGifts?.folioMark))
+	);
+}
+
 function mapGiftsSection(
 	draftGifts: DraftContent['gifts'],
 	demoGifts: Record<string, unknown> | undefined,
@@ -545,6 +564,7 @@ function mapGiftsSection(
 	}
 	const presentation =
 		typeof draftGifts.presentation === 'string' ? draftGifts.presentation : undefined;
+	const folioMark = resolveGiftsFolioMark(draftGifts, demoGifts, priorGifts, ctx);
 	const items =
 		presentation === 'legend-only'
 			? []
@@ -560,6 +580,7 @@ function mapGiftsSection(
 		),
 		title: str(draftGifts.title) || demoStr(ctx, demoGifts?.title),
 		subtitle: str(draftGifts.subtitle) || demoStr(ctx, demoGifts?.subtitle),
+		...(folioMark ? { folioMark } : {}),
 		...(presentation ? { presentation } : {}),
 		items,
 	};

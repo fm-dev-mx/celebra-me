@@ -29,6 +29,8 @@ interface Props {
 	focalPointMobile?: string;
 	focalPointTablet?: string;
 	focalPointDesktop?: string;
+	tagline?: string;
+	photoCredit?: string;
 	highPriority?: boolean;
 }
 
@@ -49,6 +51,8 @@ const {
 	focalPointMobile,
 	focalPointTablet,
 	focalPointDesktop,
+	tagline,
+	photoCredit,
 	highPriority = true,
 } = Astro.props;
 
@@ -197,9 +201,7 @@ const fpDesktop = focalPointDesktop || fpDefault;
 				</div>
 			)}
 
-			<p class="invitation-hero__deck">
-				Una noche entre moda, memoria y celebración.
-			</p>
+			{tagline && <p class="invitation-hero__deck">{tagline}</p>}
 
 			<div class="invitation-hero__divider"></div>
 
@@ -213,8 +215,12 @@ const fpDesktop = focalPointDesktop || fpDefault;
 
 			<!-- Fashion/Publication credits block -->
 			<div class="invitation-hero__credits">
-				<span class="invitation-hero__credit-item">FOTOGRAFÍA / ESTUDIO CRISTAL</span>
-				<span class="invitation-hero__credit-divider">•</span>
+				{photoCredit && (
+					<>
+						<span class="invitation-hero__credit-item">FOTOGRAFÍA / {photoCredit}</span>
+						<span class="invitation-hero__credit-divider">•</span>
+					</>
+				)}
 				<span class="invitation-hero__credit-item">DISEÑO / CELEBRA ME</span>
 			</div>
 		</div>

@@ -79,6 +79,8 @@ export const giftsSchema = z
 		variant: z.enum(GIFTS_VARIANTS),
 		title: z.string().optional(),
 		subtitle: z.string().optional(),
+		// Decorative monogram shown in the editorial-catalog card folio.
+		folioMark: z.string().max(12).optional(),
 		presentation: z.enum(GIFTS_PRESENTATIONS).optional(),
 		items: z.array(giftItemSchema).optional(),
 	})

@@ -192,6 +192,8 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		focalPointTablet: data.hero.focalPointTablet,
 		focalPointDesktop: data.hero.focalPointDesktop,
 		scrollLabel: data.hero.scrollLabel,
+		tagline: data.hero.tagline,
+		photoCredit: data.hero.photoCredit,
 	};
 }
 

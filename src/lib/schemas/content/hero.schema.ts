@@ -9,6 +9,9 @@ export const heroSchema = z
 		label: z.string().optional(),
 		nickname: z.string().optional(),
 		scrollLabel: z.string().max(80).optional(),
+		// Editorial-cover copy; each renders only when provided.
+		tagline: z.string().max(160).optional(),
+		photoCredit: z.string().max(80).optional(),
 		date: z.iso.datetime(),
 		backgroundImage: AssetSchema,
 		backgroundImageDesktop: AssetSchema.optional(),

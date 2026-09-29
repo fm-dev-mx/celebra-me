@@ -58,6 +58,7 @@ interface Props {
 	eyebrow?: string;
 	title?: string;
 	subtitle?: string;
+	folioMark?: string;
 	labels?: {
 		copy?: string;
 		copied?: string;
@@ -75,6 +76,7 @@ const {
 	presentation,
 	eyebrow,
 	title = 'Mesa de Regalos',
+	folioMark,
 	subtitle = 'Su presencia es nuestro mayor regalo, pero si desean tener un detalle, aquí les compartimos algunas opciones.',
 	labels = {
 		copy: 'Copiar',
@@ -89,7 +91,7 @@ const {
 
 const isEditorialCatalog = variant === 'editorial-catalog';
 const isLegendOnly = presentation === 'legend-only';
-const displayTitle = isEditorialCatalog ? 'Mesa de cortesía' : title;
+const showEditorialFolio = isEditorialCatalog && Boolean(folioMark);
 
 function isSafeHttpUrl(value: unknown): value is string {
 	if (typeof value !== 'string') return false;
@@ -157,7 +159,7 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 	<div class="gifts-section__container">
 		<header class="gifts-section__header">
 			{eyebrow && <span class="gifts-section__eyebrow">{eyebrow}</span>}
-			<h2 class="gifts-section__title">{displayTitle}</h2>
+			<h2 class="gifts-section__title">{title}</h2>
 			{!isLegendOnly && (
 				<div class="gifts-section__flourish" aria-hidden="true">
 					<span class="flourish-line"></span>
@@ -185,9 +187,9 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 						<div class={`gift-card gift-card--${gift.type}`} data-reveal-item>
 							<div class="gift-card__inner">
 								<div class="gift-card__content-head">
-									{isEditorialCatalog && (
+									{showEditorialFolio && (
 										<div class="gift-card__folio" aria-hidden="true">
-											<span>VH</span>
+											<span>{folioMark}</span>
 											<span>EDICIÓN XV</span>
 										</div>
 									)}

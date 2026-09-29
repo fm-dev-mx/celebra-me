@@ -70,6 +70,8 @@ export interface HeroViewModel {
 	focalPointTablet?: string;
 	focalPointDesktop?: string;
 	scrollLabel?: string;
+	tagline?: string;
+	photoCredit?: string;
 }
 
 export type LocationVisibility = 'public' | 'after-rsvp';
@@ -352,6 +354,7 @@ export interface InvitationViewModel {
 		gifts?: {
 			title?: string;
 			subtitle?: string;
+			folioMark?: string;
 			presentation: GiftsPresentation;
 			items: GiftItem[];
 			variant: GiftsVariant;

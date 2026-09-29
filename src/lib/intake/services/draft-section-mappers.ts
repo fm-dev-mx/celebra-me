@@ -130,6 +130,7 @@ export function mapGiftsToDraft(gifts: Record<string, unknown>): Record<string, 
 		...(str(gifts.variant) ? { variant: str(gifts.variant) } : {}),
 		...(str(gifts.title) ? { title: str(gifts.title) } : {}),
 		...(str(gifts.subtitle) ? { subtitle: str(gifts.subtitle) } : {}),
+		...(str(gifts.folioMark) ? { folioMark: str(gifts.folioMark) } : {}),
 		...(str(gifts.presentation) ? { presentation: str(gifts.presentation) } : {}),
 		...(Array.isArray(gifts.items) ? { items: gifts.items } : {}),
 	};
