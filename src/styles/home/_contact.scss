@@ -366,3 +366,36 @@
 		align-items: flex-start;
 	}
 }
+
+// ---------------------------------------------------------------------------
+// About block (#nosotros) inside the contact card
+// ---------------------------------------------------------------------------
+
+.contact-about {
+	margin-top: clamp(1.25rem, 3vw, 1.75rem);
+	padding-top: 1rem;
+	border-top: 1px solid var(--color-border-subtle);
+	scroll-margin-top: calc(var(--nav-current-height, 70px) + 1.5rem);
+}
+
+.contact-about__title {
+	margin: 0 0 0.35rem;
+	color: var(--color-action-accent);
+	font-family: var(--font-body);
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+.contact-about__text {
+	margin: 0 0 0.35rem;
+	color: var(--color-text-primary);
+	font-size: 0.92rem;
+	line-height: 1.55;
+}
+
+.contact-about__email {
+	color: var(--color-action-accent);
+	font-size: 0.9rem;
+}

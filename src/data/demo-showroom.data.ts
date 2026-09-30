@@ -13,7 +13,7 @@ import {
 
 /** Shared home-selector quote CTA: the general promo message, code and value. */
 const SHOWROOM_QUOTE_CTA = {
-	label: 'Cotizar esta invitación',
+	label: 'Cotizar por WhatsApp',
 	message: buildGeneralMessage(),
 	promoCode: getGeneralPromoCode(),
 	trackValue: getStartingPrice(),

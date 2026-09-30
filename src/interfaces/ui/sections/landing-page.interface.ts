@@ -6,9 +6,16 @@ export interface HeroData {
 	subtitle: string;
 	mobileTitle?: string;
 	mobileSubtitle?: string;
+	/** "Desde <starting price> <suffix>"; the price comes from the promo module. */
+	priceLine: {
+		prefix: string;
+		suffix: string;
+	};
+	paymentNote: string;
 	primaryCtaLabel: string;
 	secondaryCtaLabel: string;
 	secondaryCtaUrl: string;
+	secondaryCtaDemoSlug?: string;
 	proofLine?: string;
 }
 
@@ -16,16 +23,16 @@ export interface ProductProofData {
 	eyebrow?: string;
 	title: string;
 	description: string;
-	items?: Array<{
+	items: Array<{
 		title: string;
 		description: string;
 	}>;
-	railTitle?: string;
-	railItems?: Array<{
+	railTitle: string;
+	railItems: Array<{
 		title: string;
 		text: string;
 	}>;
-	proofLine?: string;
+	proofLine: string;
 	cta: {
 		label: string;
 		message?: string;
@@ -94,11 +101,11 @@ export interface PricingData {
 	tiers: PricingTier[];
 }
 
+/** Anonymous client quote: role and event type only, never the client name. */
 export interface TestimonialItem {
-	name: string;
 	text: string;
-	role?: string;
-	guests?: string;
+	role: string;
+	eventLabel?: string;
 }
 
 export interface TestimonialsData {
@@ -106,6 +113,7 @@ export interface TestimonialsData {
 	title: string;
 	subtitle?: string;
 	testimonials: TestimonialItem[];
+	notice?: string;
 	proofLine?: string;
 }
 
@@ -139,6 +147,11 @@ export interface ContactData {
 	};
 	channelSecondary?: {
 		value: string;
+	};
+	about?: {
+		title: string;
+		text: string;
+		email: string;
 	};
 }
 

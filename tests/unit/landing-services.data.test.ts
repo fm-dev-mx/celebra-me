@@ -1,4 +1,6 @@
+import { DEMO_SHOWROOM_ITEMS } from '@/data/demo-showroom.data';
 import { landingData } from '@/data/landing-page.data';
+import { CLIENT_TESTIMONIALS } from '@/data/testimonials.data';
 import {
 	formatMxn,
 	getExpressDelivery,
@@ -11,14 +13,23 @@ describe('landing services product value data', () => {
 		const services = landingData.services;
 		const hero = landingData.hero;
 
-		expect(hero.title).toBe('Con pases y confirmación, personalizada para cada invitado');
-		expect(hero.primaryCtaLabel).toBe('Cotizar mi invitación');
-		expect(hero.secondaryCtaLabel).toBe('Ver demos de invitaciones');
-		expect(hero.secondaryCtaUrl).toBe('#tipo-evento');
+		expect(hero.title).toBe(
+			'Invitaciones digitales con pase y confirmación para cada invitado',
+		);
+		expect(hero.subtitle).toBe(
+			'Diseño único para su evento. Usted la envía por WhatsApp y ve quién confirmó.',
+		);
+		expect(hero.paymentNote).toBe('Sin anticipo: paga al recibir su invitación terminada.');
+		expect(hero.secondaryCtaLabel).toBe('Ver una invitación');
+		expect(DEMO_SHOWROOM_ITEMS.some((item) => item.href === hero.secondaryCtaUrl)).toBe(true);
 
 		expect(services.title).toBe('Todo claro para sus invitados, todo bajo control para usted');
-		expect(services.items).toHaveLength(4);
-		expect(services.cta.label).toBe('Quiero cotizar por WhatsApp');
+		expect(services.items.map((item) => item.title)).toEqual([
+			'Agregar al calendario',
+			'Google Maps, Waze y Apple Maps',
+			'Ubicación al confirmar',
+			'Mesa de regalos',
+		]);
 	});
 });
 
@@ -66,7 +77,47 @@ describe('landing package catalog', () => {
 	});
 
 	it('keeps the compact high-intent FAQ and process steps', () => {
-		expect(landingData.faq.faqs).toHaveLength(6);
+		expect(landingData.faq.faqs.map((faq) => faq.question)).toEqual([
+			'¿Cómo y cuándo pago?',
+			'¿Cuánto tarda?',
+			'¿Puedo pedir cambios?',
+			'¿La invitación lleva publicidad?',
+			'¿Cuánto tiempo estará disponible?',
+			'¿Qué necesito enviar?',
+		]);
 		expect(landingData.howItWorks.steps).toHaveLength(4);
+	});
+});
+
+describe('landing primary CTA and trust copy', () => {
+	it('uses a single primary WhatsApp CTA label', () => {
+		const labels = [
+			landingData.hero.primaryCtaLabel,
+			landingData.productProof.cta.label,
+			landingData.services.cta.label,
+			landingData.guestExperience.cta.label,
+			landingData.howItWorks.cta?.label,
+			landingData.faq.helpSection?.cta,
+			landingData.contact.cta?.label,
+		];
+		expect(new Set(labels)).toEqual(new Set(['Cotizar por WhatsApp']));
+	});
+
+	it('publishes real, anonymous testimonials with a privacy notice', () => {
+		const { testimonials, notice } = landingData.testimonials;
+		expect(testimonials).toBe(CLIENT_TESTIMONIALS);
+		expect(testimonials.length).toBeGreaterThan(0);
+		for (const testimonial of testimonials) {
+			expect(Object.keys(testimonial).sort()).toEqual(
+				testimonial.eventLabel ? ['eventLabel', 'role', 'text'] : ['role', 'text'],
+			);
+			expect(testimonial.text).not.toMatch(/\p{Extended_Pictographic}/u);
+		}
+		expect(notice).toBe('Testimonios reales de clientes. Omitimos sus nombres por privacidad.');
+	});
+
+	it('introduces the responsible party in the about block', () => {
+		expect(landingData.contact.about?.text).toContain('Francisco Mendoza');
+		expect(landingData.contact.about?.text).toContain('Los Mochis, Sinaloa');
 	});
 });

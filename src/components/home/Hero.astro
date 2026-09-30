@@ -8,8 +8,10 @@ import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 import type { HeroData } from '@/interfaces/ui/sections/landing-page.interface';
 import {
 	buildCampaignCode,
+	formatMxn,
 	getGeneralPromoCode,
 	getStartingPrice,
+	getStartingRegularPrice,
 	PROMO_CAMPAIGN,
 } from '@/data/promo-campaign.data';
 import { getContactPhone } from '@/utils/whatsapp';
@@ -76,7 +78,12 @@ const heroImages = [
 
 			<p class="hero-prime__subtitle stagger-3">
 				<span class="hero-prime__copy-desktop">{data.subtitle}</span>
-				<span class="hero-prime__copy-mobile">{data.mobileSubtitle ?? data.subtitle}</span>
+				<span class="hero-prime__copy-mobile">{data.mobileSubtitle ?? data.subtitle}</span>{' '}
+				<span class="hero-prime__price-line">
+					{data.priceLine.prefix}{' '}
+					<span data-promo-only>{formatMxn(getStartingPrice())}</span><span data-promo-fallback>{formatMxn(getStartingRegularPrice())}</span>{' '}
+					{data.priceLine.suffix}
+				</span>
 			</p>
 
 			<div class="hero-prime__actions stagger-4">
@@ -88,6 +95,7 @@ const heroImages = [
 					campaignSection="HERO"
 					ariaLabel="Cotizar por WhatsApp"
 				/>
+				<p class="hero-prime__payment-note">{data.paymentNote}</p>
 				<ActionBase
 					as="a"
 					href={data.secondaryCtaUrl || '#tipo-evento'}
@@ -98,8 +106,9 @@ const heroImages = [
 					data-track-section="hero"
 					data-track-cta="hero_secondary"
 					data-track-label={data.secondaryCtaLabel}
-					data-track-intent="section_nav"
-					data-track-destination="event-types"
+					data-track-intent="demo_showroom"
+					data-track-destination="demo"
+					data-demo-slug={data.secondaryCtaDemoSlug}
 					data-campaign-code={buildCampaignCode('DEMO')}
 					data-promo-code={getGeneralPromoCode()}
 					data-track-value={getStartingPrice()}

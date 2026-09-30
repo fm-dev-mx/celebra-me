@@ -94,6 +94,16 @@ const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(wha
 							</div>
 						</a>
 					</div>
+
+					{data.about && (
+						<div id="nosotros" class="contact-about">
+							<h4 class="contact-about__title">{data.about.title}</h4>
+							<p class="contact-about__text">{data.about.text}</p>
+							<a class="contact-about__email" href={`mailto:${data.about.email}`}>
+								{data.about.email}
+							</a>
+						</div>
+					)}
 				</div>
 			</div>
 

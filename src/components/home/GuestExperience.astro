@@ -2,7 +2,7 @@
 // src/components/home/GuestExperience.astro
 import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
-import WhatsAppButton from '@components/ui/WhatsAppButton.tsx';
+import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 import type { GuestExperienceData } from '@/interfaces/ui/sections/landing-page.interface';
 import { getContactPhone } from '@/utils/whatsapp';
 
@@ -20,7 +20,12 @@ const phone = getContactPhone();
 const titleHtml = data.title.replace('. ', '.<br>');
 ---
 
-<Section id="experiencia-invitados" class="guest-experience" data-screenshot="landing-guest-experience">
+<Section
+	id="experiencia-invitados"
+	class="guest-experience"
+	data-track-section="guest-experience"
+	data-screenshot="landing-guest-experience"
+>
 	<div class="guest-experience__bg-overlay"></div>
 
 	<Container class="guest-experience__container">
@@ -111,6 +116,9 @@ const titleHtml = data.title.replace('. ', '.<br>');
 					phone={phone}
 					message={data.cta.message}
 					label={data.cta.label}
+					trackSection="guest-experience"
+					trackCta="whatsapp-guest-experience"
+					campaignSection="GUESTS"
 				/>
 			</div>
 		</div>

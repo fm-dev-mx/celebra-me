@@ -16,6 +16,8 @@ import {
 	PROMO_CAMPAIGN,
 } from '../../src/data/promo-campaign.data';
 import { footerData } from '../../src/data/footer.data';
+import { landingData } from '../../src/data/landing-page.data';
+import { CLIENT_TESTIMONIALS } from '../../src/data/testimonials.data';
 
 const DAY_MS = 86_400_000;
 const campaignStart = Date.parse(PROMO_CAMPAIGN.startsAt);
@@ -124,6 +126,10 @@ test.describe('Landing page regressions', () => {
 		await expect(page.locator('.home-nav-actions__login')).toHaveText(loginLabel);
 		await expect(page.locator('.home-nav-actions__login')).toHaveAttribute('href', loginHref);
 		await expect(page.locator('.home-nav-actions__cta')).toHaveAttribute('href', ctaHref);
+		await expect(page.locator('.home-nav__link', { hasText: 'Nosotros' })).toHaveAttribute(
+			'href',
+			'#nosotros',
+		);
 
 		const navLinkStyles = await page
 			.locator('.home-nav__link')
@@ -218,11 +224,22 @@ test.describe('Landing page regressions', () => {
 		await page.goto('/', { waitUntil: 'load' });
 
 		await expect(page.locator('#hero-title')).toContainText(
-			'Con pases y confirmación, personalizada para cada invitado',
+			'Invitaciones digitales con pase y confirmación para cada invitado',
 		);
 		await expect(page.locator('.hero-prime__eyebrow')).toContainText('INVITACIONES DIGITALES');
 		await expect(page.locator('.hero-prime__subtitle')).toContainText(
-			'Agregue a sus invitados, asigne pases y lleve el control de confirmaciones.',
+			landingData.hero.subtitle,
+		);
+		await expect(page.locator('.hero-prime__subtitle')).toContainText(
+			`Desde ${formatMxn(getStartingPrice())} MXN, pago único.`,
+			{ useInnerText: true },
+		);
+		await expect(page.locator('.hero-prime__payment-note')).toHaveText(
+			'Sin anticipo: paga al recibir su invitación terminada.',
+		);
+		await expect(page.locator('.hero-prime__secondary-action')).toHaveAttribute(
+			'href',
+			landingData.hero.secondaryCtaUrl,
 		);
 		const heroCta = page.locator('[data-track-cta="whatsapp-hero"]');
 		await expect(heroCta).toBeVisible();
@@ -335,7 +352,7 @@ test.describe('Landing page regressions', () => {
 		);
 		await expect(page.locator('.proof-rail-flow__item')).toHaveCount(4);
 		await expect(page.locator('.proof-rail-flow__item').first()).toContainText(
-			'Quién recibió la invitación',
+			'Quién ya abrió su invitación',
 		);
 		await expect(page.locator('#prueba-producto')).toHaveAttribute(
 			'data-track-section',
@@ -627,6 +644,96 @@ test.describe('Landing page regressions', () => {
 		await expect(footer.locator('.footer-link--cookie')).toHaveCSS('cursor', 'pointer');
 	});
 
+	test('uses one primary WhatsApp label and tracks every quote CTA', async ({ page }) => {
+		await page.setViewportSize({ width: 1280, height: 900 });
+		await page.goto('/', { waitUntil: 'load' });
+
+		const labels = await page
+			.locator(
+				'main [data-track-event="whatsapp_contact_clicked"]:not([data-track-cta="whatsapp-sticky"]):not([data-track-cta="footer_whatsapp"])',
+			)
+			.evaluateAll((links) => links.map((link) => link.getAttribute('data-track-label')));
+		expect(labels.length).toBeGreaterThan(5);
+		expect(new Set(labels)).toEqual(new Set(['Cotizar por WhatsApp']));
+
+		const guestCta = page.locator(
+			'#experiencia-invitados [data-track-event="whatsapp_contact_clicked"]',
+		);
+		await expect(guestCta).toHaveAttribute('data-track-cta', 'whatsapp-guest-experience');
+		await expect(guestCta).toHaveAttribute('data-track-section', 'guest-experience');
+		await expect(guestCta).toHaveAttribute('data-campaign-code', buildCampaignCode('GUESTS'));
+		await expect(guestCta).toHaveAttribute('data-promo-code', getGeneralPromoCode());
+		await expect(guestCta).toContainText('Cotizar por WhatsApp');
+	});
+
+	test('shows the sticky WhatsApp bar after the hero and hides it over the contact form', async ({
+		page,
+	}) => {
+		await page.addInitScript(() => {
+			window.localStorage.setItem(
+				'cm_consent',
+				JSON.stringify({
+					necessary: true,
+					analytics: false,
+					marketing: false,
+					updatedAt: new Date().toISOString(),
+				}),
+			);
+		});
+		await page.setViewportSize({ width: 390, height: 844 });
+		await page.goto('/', { waitUntil: 'load' });
+
+		const bar = page.locator('[data-sticky-cta]');
+		const cta = bar.locator('[data-track-cta="whatsapp-sticky"]');
+		await expect(bar).not.toHaveClass(/sticky-cta--visible/);
+		await expect(cta).toHaveAttribute('data-campaign-code', buildCampaignCode('STICKY'));
+
+		await page.locator('#pricing').scrollIntoViewIfNeeded();
+		await expect(bar).toHaveClass(/sticky-cta--visible/);
+		await expect(cta).toContainText(`WhatsApp · desde ${formatMxn(getStartingPrice())}`, {
+			useInnerText: true,
+		});
+
+		await page.locator('#contacto .contact-form-wrapper').scrollIntoViewIfNeeded();
+		await expect(bar).not.toHaveClass(/sticky-cta--visible/);
+	});
+
+	test('keeps the sticky bar clear of the cookie banner and off desktop', async ({ page }) => {
+		await page.setViewportSize({ width: 390, height: 844 });
+		await page.goto('/', { waitUntil: 'load' });
+		await expect(page.locator('#consent-banner-bar')).toBeVisible();
+
+		const bar = page.locator('[data-sticky-cta]');
+		await page.locator('#pricing').scrollIntoViewIfNeeded();
+		await expect(bar).not.toHaveClass(/sticky-cta--visible/);
+
+		// The Astro dev toolbar can overlap the banner buttons on narrow viewports in dev mode.
+		await page.locator('#consent-reject').evaluate((button) => (button as HTMLElement).click());
+		await expect(page.locator('#consent-banner-bar')).toBeHidden();
+		await expect(bar).toHaveClass(/sticky-cta--visible/);
+
+		await page.setViewportSize({ width: 1280, height: 900 });
+		await expect(bar).toBeHidden();
+	});
+
+	test('shows anonymous client testimonials with the privacy notice', async ({ page }) => {
+		await page.goto('/', { waitUntil: 'load' });
+		const section = page.locator('#testimonios');
+
+		await expect(section.locator('.testimonials__card')).toHaveCount(
+			CLIENT_TESTIMONIALS.length,
+		);
+		await expect(section.locator('.testimonials__card').first()).toContainText(
+			CLIENT_TESTIMONIALS[0].text,
+		);
+		await expect(section.locator('.testimonials__footer').first()).toContainText(
+			CLIENT_TESTIMONIALS[0].role,
+		);
+		await expect(section.locator('.testimonials__notice')).toHaveText(
+			'Testimonios reales de clientes. Omitimos sus nombres por privacidad.',
+		);
+	});
+
 	test('keeps section headings below the sticky header after anchor navigation', async ({
 		page,
 	}) => {
@@ -645,5 +752,8 @@ test.describe('Landing page regressions', () => {
 
 		await page.goto('/#contacto', { waitUntil: 'load' });
 		await sectionHeaderIsBelowStickyHeader(page, '.contact-title');
+
+		await page.goto('/#nosotros', { waitUntil: 'load' });
+		await sectionHeaderIsBelowStickyHeader(page, '#nosotros .contact-about__title');
 	});
 });

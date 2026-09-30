@@ -76,3 +76,36 @@ html:not([data-promo-state='expired']) [data-promo-fallback],
 html[data-promo-state='expired'] [data-promo-only] {
 	display: none;
 }
+
+// ---------------------------------------------------------------------------
+// Hero promo copy: starting price and no-deposit payment note
+// ---------------------------------------------------------------------------
+
+.hero-prime__price-line {
+	white-space: nowrap;
+}
+
+// The note sits right under the primary CTA: below the button row on desktop, between the
+// primary and secondary actions once they stack on smaller screens.
+.hero-prime__actions .hero-prime__payment-note {
+	order: 3;
+	flex-basis: 100%;
+	margin: 0;
+	color: rgb(var(--color-text-on-dark-rgb) / 82%);
+	font-family: var(--font-body);
+	font-size: 0.86rem;
+	line-height: 1.4;
+
+	@media (width <= 991px) {
+		order: 1;
+		flex-basis: auto;
+		font-size: 0.8rem;
+		text-align: center;
+	}
+}
+
+@media (width <= 991px) {
+	.hero-prime__actions .hero-prime__secondary-action {
+		order: 2;
+	}
+}

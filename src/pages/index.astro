@@ -15,6 +15,7 @@ import FAQ from '@/components/home/FAQ.astro';
 import Contact from '@/components/home/Contact.astro';
 import Footer from '@/components/home/Footer.astro';
 import PromoStatus from '@/components/home/PromoStatus.astro';
+import StickyWhatsAppBar from '@/components/home/StickyWhatsAppBar.astro';
 import { DEMO_SHOWROOM_EVENTS } from '@/data/demo-showroom.data';
 import { landingData } from '@/data/landing-page.data';
 import { footerData } from '@/data/footer.data';
@@ -61,6 +62,7 @@ import '@/styles/landing.scss';
 		<Contact data={landingData.contact} />
 		<Footer data={footerData} />
 	</div>
+	<StickyWhatsAppBar />
 	<PromoStatus />
 </Layout>
 <script>

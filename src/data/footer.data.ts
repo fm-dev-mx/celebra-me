@@ -8,7 +8,7 @@ export const footerData: FooterProps = {
 		{
 			title: 'Compañía',
 			links: [
-				{ label: 'Sobre Nosotros', href: '/#experiencia-invitados' },
+				{ label: 'Sobre Nosotros', href: '/#nosotros' },
 				{ label: 'Demos', href: '/#tipo-evento' },
 				{ label: 'Planes', href: '/#pricing' },
 			],
