@@ -21,6 +21,9 @@ export const heroSchema = z
 			.object({
 				portraitEnabled: z.boolean().optional(),
 				venueIndex: z.number().int().nonnegative().optional(),
+				// Leading words of `name` set as the display line; the rest follows as a
+				// secondary line. Presentation only: `name` stays whole everywhere else.
+				nameLeadWords: z.number().int().min(1).max(4).optional(),
 			})
 			.strict()
 			.optional(),

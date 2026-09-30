@@ -51,6 +51,7 @@ export interface HeroViewModel {
 	accentOrnament?: ImageAsset;
 	ambience?: ImageAsset;
 	venueIndex?: number;
+	nameLeadWords?: number;
 	name: string;
 	secondaryName?: string;
 	label: string;
@@ -359,6 +360,7 @@ export interface InvitationViewModel {
 		thankYou?: {
 			message: string;
 			closingName: string;
+			closingNameLeadWords?: number;
 			closingPhrase?: string;
 			date?: string;
 			image?: ImageAsset;

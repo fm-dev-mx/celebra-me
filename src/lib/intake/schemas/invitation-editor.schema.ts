@@ -6,6 +6,7 @@ import {
 	focalPointSchema,
 	overlayAnchorSchema,
 	overlaySafeAreaSchema,
+	closingNameLeadWordsSchema,
 } from '@/lib/schemas/content/shared.schema';
 import { LOCATION_PRESENTATIONS } from '@/lib/invitation/presentation-options';
 import { LOCATION_MAP_STYLES } from '@/lib/invitation/location-presentation';
@@ -163,6 +164,7 @@ export const InvitationEditorSectionSchemas = {
 				variant: z.enum(THANK_YOU_VARIANTS).optional(),
 				message: optionalText(2000),
 				closingName: optionalText(200),
+				closingNameLeadWords: closingNameLeadWordsSchema,
 				closingPhrase: optionalText(200),
 				date: optionalText(40),
 				image: editableAssetSchema.optional(),
