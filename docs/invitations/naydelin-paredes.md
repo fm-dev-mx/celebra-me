@@ -164,8 +164,9 @@ target delivery date of Thursday, 1 October 2026 is internal and does not appear
   - **classification:** Current Local candidate
 - **decision:** Typography
   - **value:** Cormorant Garamond titles (500, sentence case, one scale); Montserrat body and
-    tracked gold eyebrows; Pinyon Script (preset-loaded, shared with the pass signature) for the
-    hero name, which always breaks as "Naydelin Pauleth / Paredes Martinez"
+    tracked gold eyebrows; hero name split with `hero.presentation.nameLeadWords: 1`: "Naydelin" in
+    Pinyon Script (preset-loaded, shared with the pass signature) at the title size, then "Pauleth
+    Paredes Martinez" as a tracked Cormorant line
   - **classification:** Current Local candidate
 - **decision:** Stationery
   - **value:** The reveal letter and the admission pass share one cotton paper stock: warm ivory
@@ -173,9 +174,17 @@ target delivery date of Thursday, 1 October 2026 is internal and does not appear
     low opacity); the letter adds a visible cut edge through its shadow stack
   - **classification:** Current Local candidate
 - **decision:** Closing signature and envelope typeface
-  - **value:** Proposed, not applied: Pinyon Script on `closing-name` to bookend the hero; the
+  - **value:** The closing repeats the hero hierarchy (`thankYou.closingNameLeadWords: 1`):
+    "Naydelin" in Pinyon Script foil, then the full name as the tracked Cormorant line in ink; the
     reveal letter keeps Cormorant at its small card size
-  - **classification:** pending owner decision
+  - **classification:** Current Local candidate
+- **decision:** Family, gallery, countdown, and location hierarchy
+  - **value:** Family groups split under a centered letterhead (parents left, godparents right; side
+    by side from 768px); gallery prints mounted on the cotton stock with a foil inner hairline, a
+    staggered second print per pair from 768px, a feature band widened to ~1040px from 1200px, and
+    an ivory lightbox; the countdown is one stationery card with foil hairline dividers; location
+    venue names lead, with a compact hairline maps action
+  - **classification:** Current Local candidate
 - **decision:** Unresolved visual decisions
   - **value:** Owner creative acceptance; personal quote remains missing and omitted
   - **classification:** pending
@@ -210,11 +219,14 @@ variants gain no new micro-tokens. Photo 1 is not used because it repeats the ba
 10; the feature band (photo 10) sits between the gallery pairs so it does not follow photo 2, taken
 at the same shelf.
 
-Profile-scoped exceptions (no canonical token exists): hero portrait foil hairline, countdown cell
-radius and top rule, hidden location "next section" cue, itinerary top padding, family breathing
-after the interlude, and the closing drop cap, grain, and message ink. The motion signature is a
-single CSS foil sweep (700 ms) on the dark-band titles and the closing signature, triggered by the
-coordinator's `is-visible` class and disabled under reduced motion.
+Profile-scoped exceptions (no canonical token exists): hero portrait foil hairline, the countdown
+card (timer surface, segment reset, hairline dividers, value size), hidden location "next section"
+cue, the compact location maps action, itinerary top padding, family breathing after the interlude,
+the family left/right group alignment and two-column grid, the gallery inner hairline, staggered
+prints and wider feature band, and the closing drop cap, grain, message ink, and split signature
+lines. The motion signature is a single CSS foil sweep (700 ms) on the dark-band titles and the
+closing signature, triggered by the coordinator's `is-visible` class and disabled under reduced
+motion.
 
 Known canonical follow-ups (not changed here): the `jewelry-box` envelope shows ~1 s of blank paper
 and a grey flap interior while opening; `REVEAL_RECIPES` assigns adjacent `stagger-group` recipes
@@ -225,7 +237,10 @@ hint, the attendance validation message, the reminder share placeholders, and th
 "Contáctanos" use the informal register; "ENVIAR RESPUESTA" is hardcoded uppercase; the envelope
 reveal card abbreviates the month ("17 · OCT · 2026"); the wax-medallion glow loop ignores reduced
 motion and the shared reduced-motion rule shows the letter stage over a closed envelope (both
-patched in this profile); the `paired-feature-band` grid is capped at 880px on desktop.
+patched in this profile); the `paired-feature-band` grid is capped at 880px on desktop (the feature
+band is widened in this profile); the shared location styles consume `--location-nav-maps-border` as
+a `border-color`, so a shorthand value silently falls back to `currentcolor` (fixed in this
+profile).
 
 ## Photograph Inventory
 

@@ -21,6 +21,11 @@ const content: CanonicalEventContentInput = {
 	title: `Mis XV años — ${CELEBRANT_NAME}`,
 	description: 'Le invito a celebrar conmigo mis XV años el 17 de octubre de 2026.',
 	theme: { preset: 'jewelry-box', fontFamily: 'serif' },
+	music: {
+		url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1790729635/Imagine_-_John_Lennon_The_Plastic_Ono_Band_ndhjjv.mp3',
+		title: 'Imagine - John Lennon',
+		autoPlay: true,
+	},
 	eventTiming: NAYDELIN_TIMING,
 	sectionOrder: [
 		'personalizedAccess',
@@ -48,7 +53,8 @@ const content: CanonicalEventContentInput = {
 		backgroundImage: 'hero',
 		focalPoint: '50% 50%',
 		focalPointMobile: '50% 50%',
-		presentation: { venueIndex: 0 },
+		// "Naydelin" leads in script; "Pauleth Paredes Martinez" follows as a tracked line.
+		presentation: { venueIndex: 0, nameLeadWords: 1 },
 		scrollLabel: 'Descubra los detalles',
 	},
 	envelope: {
@@ -238,6 +244,8 @@ const content: CanonicalEventContentInput = {
 		message:
 			'Gracias por ser parte de este día tan especial. Su compañía hará de mis XV años un recuerdo inolvidable.',
 		closingName: CELEBRANT_NAME,
+		// Same hierarchy as the hero: "Naydelin" signs in script above the full name.
+		closingNameLeadWords: 1,
 	},
 	sharing: {
 		ogImage: 'ogShare',
