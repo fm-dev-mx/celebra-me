@@ -1,16 +1,29 @@
+/**
+ * Owner-run Production canary for one event memory space: one synthetic guest
+ * session, one tiny non-PII PNG, one accepted catalog record, one private
+ * preview, one logical DELETE. Refuses CI, non-interactive terminals, unknown
+ * arguments and every destination except the canonical `www` route.
+ */
+
 import path from 'node:path';
 import type { Page, Request, Response, Route } from '@playwright/test';
+import { MEMORIES_UUID_PATTERN } from '../../src/lib/memories/contract/catalog';
 import {
-	VALENTINA_MEMORIES_ROUTE_PATH,
-	valentinaMemoriesCaptureCopy,
-} from '../../src/data/valentina-memories.data';
-import { getValentinaMemoriesBrowserOrigins } from '../../src/data/valentina-memories-upload.contract';
+	buildMemoriesGuestApiPath,
+	buildMemoriesPublicPath,
+	isMemoriesPublicSlug,
+} from '../../src/lib/memories/contract/private-request';
+import { memoriesCaptureCopy } from '../../src/lib/memories/copy';
 
-const ITEMS_PATH = '/api/memories/valentina/items';
-const SESSION_PATH = '/api/memories/valentina/session';
+/** Canonical app origin allowed by the Sign Worker in Production. */
+export const MEMORIES_CANONICAL_APP_ORIGIN = 'https://www.celebra-me.com' as const;
+export const MEMORIES_PRODUCTION_CONFIRMATION =
+	'I_AUTHORIZE_ONE_MEMORIES_PRODUCTION_CANARY' as const;
+
 const MAX_COMPLETION_ATTEMPTS = 3;
-const SESSION_DISPLAY_NAME = 'Canario Valentina';
+const SESSION_DISPLAY_NAME = 'Canario sintético';
 const REQUEST_TIMEOUT_MS = 30_000;
+const CAPTURE_SELECTOR = '[data-capture="memories"]';
 const CI_ENV_KEYS = [
 	'CI',
 	'GITHUB_ACTIONS',
@@ -21,19 +34,6 @@ const CI_ENV_KEYS = [
 	'JENKINS_URL',
 	'TEAMCITY_VERSION',
 ] as const;
-
-export const VALENTINA_MEMORIES_PRODUCTION_CONFIRMATION =
-	'I_AUTHORIZE_ONE_VALENTINA_MEMORIES_PRODUCTION_CANARY' as const;
-
-const productionOrigins = getValentinaMemoriesBrowserOrigins('production');
-if (productionOrigins.length !== 1) {
-	throw new Error('Valentina Memories must have exactly one canonical Production origin.');
-}
-
-export const VALENTINA_MEMORIES_PRODUCTION_CANARY_DESTINATION = new URL(
-	VALENTINA_MEMORIES_ROUTE_PATH,
-	productionOrigins[0],
-).href;
 
 const TINY_NON_PII_PNG = Buffer.from(
 	'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
@@ -65,20 +65,14 @@ export type CanaryEvent = {
 };
 
 export type CanaryInvocation = {
-	destination: typeof VALENTINA_MEMORIES_PRODUCTION_CANARY_DESTINATION;
+	slug: string;
+	destination: string;
+	sessionPath: string;
+	itemsPath: string;
 };
 
-type TerminalState = {
-	stdin: boolean;
-	stdout: boolean;
-};
-
-type RequestObservation = {
-	method: string;
-	url: string;
-	body: string | null;
-};
-
+type TerminalState = { stdin: boolean; stdout: boolean };
+type RequestObservation = { method: string; url: string; body: string | null };
 type LifecycleCounts = {
 	sessionCreations: number;
 	reservations: number;
@@ -86,11 +80,7 @@ type LifecycleCounts = {
 	completions: number;
 	deletes: number;
 };
-
-type CatalogItem = {
-	id: string;
-	status: string;
-};
+type CatalogItem = { id: string; status: string };
 
 export class CanaryFailure extends Error {
 	readonly stage: CanaryStage;
@@ -112,6 +102,10 @@ function hasCiMarker(env: NodeJS.ProcessEnv): boolean {
 	return CI_ENV_KEYS.some((key) => typeof env[key] === 'string' && env[key]!.length > 0);
 }
 
+export function buildCanaryDestination(slug: string): string {
+	return new URL(buildMemoriesPublicPath(slug), MEMORIES_CANONICAL_APP_ORIGIN).href;
+}
+
 export function parseCanaryInvocation(
 	argv: readonly string[],
 	env: NodeJS.ProcessEnv,
@@ -126,22 +120,22 @@ export function parseCanaryInvocation(
 		const match = /^--([a-z-]+)=(.+)$/.exec(argument);
 		if (!match) fail('preflight', 'INVALID_ARGUMENT');
 		const [, key, value] = match;
-		if (key !== 'destination' && key !== 'confirm-production')
+		if (key !== 'slug' && key !== 'destination' && key !== 'confirm-production')
 			fail('preflight', 'UNKNOWN_ARGUMENT');
 		if (values.has(key)) fail('preflight', 'DUPLICATE_ARGUMENT');
 		values.set(key, value);
 	}
 
-	if (values.size !== 2) fail('preflight', 'REQUIRED_ARGUMENT_MISSING');
-	if (values.get('confirm-production') !== VALENTINA_MEMORIES_PRODUCTION_CONFIRMATION)
+	if (values.size !== 3) fail('preflight', 'REQUIRED_ARGUMENT_MISSING');
+	if (values.get('confirm-production') !== MEMORIES_PRODUCTION_CONFIRMATION)
 		fail('preflight', 'PRODUCTION_CONFIRMATION_REJECTED');
+	const slug = values.get('slug') ?? '';
+	if (!isMemoriesPublicSlug(slug)) fail('preflight', 'INVALID_SLUG');
 
+	const canonical = buildCanaryDestination(slug);
 	const destination = values.get('destination');
 	try {
-		if (
-			!destination ||
-			new URL(destination).href !== VALENTINA_MEMORIES_PRODUCTION_CANARY_DESTINATION
-		) {
+		if (!destination || new URL(destination).href !== canonical) {
 			fail('preflight', 'NONCANONICAL_DESTINATION_REJECTED');
 		}
 	} catch (error) {
@@ -149,7 +143,13 @@ export function parseCanaryInvocation(
 		fail('preflight', 'NONCANONICAL_DESTINATION_REJECTED');
 	}
 
-	return { destination: VALENTINA_MEMORIES_PRODUCTION_CANARY_DESTINATION };
+	const apiBase = buildMemoriesGuestApiPath(slug);
+	return {
+		slug,
+		destination: canonical,
+		sessionPath: `${apiBase}/session`,
+		itemsPath: `${apiBase}/items`,
+	};
 }
 
 export function formatCanaryEvent(event: CanaryEvent): string {
@@ -171,15 +171,8 @@ function readAction(body: string | null): string | null {
 	}
 }
 
-function itemPathFromUrl(url: URL): string | null {
-	if (!url.pathname.startsWith(`${ITEMS_PATH}/`)) return null;
-	const suffix = url.pathname.slice(ITEMS_PATH.length + 1);
-	return suffix && !suffix.includes('/') ? url.pathname : null;
-}
-
 export class CanaryLifecycleGuard {
-	private readonly productionOrigin = new URL(VALENTINA_MEMORIES_PRODUCTION_CANARY_DESTINATION)
-		.origin;
+	private readonly productionOrigin = MEMORIES_CANONICAL_APP_ORIGIN;
 	private readonly state: LifecycleCounts = {
 		sessionCreations: 0,
 		reservations: 0,
@@ -189,28 +182,31 @@ export class CanaryLifecycleGuard {
 	};
 	private lifecycleItemPath: string | null = null;
 
+	constructor(private readonly invocation: Pick<CanaryInvocation, 'sessionPath' | 'itemsPath'>) {}
+
+	private itemPathFromUrl(url: URL): string | null {
+		if (!url.pathname.startsWith(`${this.invocation.itemsPath}/`)) return null;
+		const suffix = url.pathname.slice(this.invocation.itemsPath.length + 1);
+		return suffix && !suffix.includes('/') ? url.pathname : null;
+	}
+
 	observe(observation: RequestObservation): void {
 		const method = observation.method.toUpperCase();
 		const url = new URL(observation.url);
-
 		if (method === 'PUT') {
 			this.observePut(url);
 			return;
 		}
-
 		if (url.origin !== this.productionOrigin) return;
-
-		if (method === 'POST' && url.pathname === SESSION_PATH) {
+		if (method === 'POST' && url.pathname === this.invocation.sessionPath) {
 			this.observeSessionCreation(observation.body);
 			return;
 		}
-
-		if (method === 'POST' && url.pathname === ITEMS_PATH) {
+		if (method === 'POST' && url.pathname === this.invocation.itemsPath) {
 			this.observeReservation(observation.body);
 			return;
 		}
-
-		const itemPath = itemPathFromUrl(url);
+		const itemPath = this.itemPathFromUrl(url);
 		if (!itemPath) return;
 		this.observeItemMutation(method, itemPath, observation.body);
 	}
@@ -245,7 +241,6 @@ export class CanaryLifecycleGuard {
 			fail('cleanup', 'MULTIPLE_MEDIA_LIFECYCLES_REJECTED');
 		}
 		this.lifecycleItemPath ??= itemPath;
-
 		if (method === 'POST') {
 			this.state.completions += 1;
 			if (
@@ -256,7 +251,6 @@ export class CanaryLifecycleGuard {
 			}
 			return;
 		}
-
 		if (method === 'DELETE') {
 			this.state.deletes += 1;
 			if (this.state.deletes > 1) fail('deletion', 'DELETE_BOUNDARY_VIOLATION');
@@ -264,14 +258,8 @@ export class CanaryLifecycleGuard {
 	}
 
 	registerMediaId(mediaId: string): void {
-		if (
-			!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-				mediaId,
-			)
-		) {
-			fail('reservation', 'INVALID_MEDIA_ID');
-		}
-		const expectedPath = `${ITEMS_PATH}/${encodeURIComponent(mediaId)}`;
+		if (!MEMORIES_UUID_PATTERN.test(mediaId)) fail('reservation', 'INVALID_MEDIA_ID');
+		const expectedPath = `${this.invocation.itemsPath}/${encodeURIComponent(mediaId)}`;
 		if (this.lifecycleItemPath && this.lifecycleItemPath !== expectedPath) {
 			fail('reservation', 'MEDIA_ID_MISMATCH');
 		}
@@ -314,11 +302,7 @@ function emit(
 }
 
 function requestObservation(request: Request): RequestObservation {
-	return {
-		method: request.method(),
-		url: request.url(),
-		body: request.postData(),
-	};
+	return { method: request.method(), url: request.url(), body: request.postData() };
 }
 
 function isResponseFor(response: Response, method: string, pathname: string): boolean {
@@ -328,28 +312,22 @@ function isResponseFor(response: Response, method: string, pathname: string): bo
 
 async function readJson(response: Response, stage: CanaryStage): Promise<Record<string, unknown>> {
 	const payload: unknown = await response.json().catch(() => null);
-	if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+	if (!payload || typeof payload !== 'object' || Array.isArray(payload))
 		fail(stage, 'INVALID_JSON_RESPONSE');
-	}
 	return payload as Record<string, unknown>;
 }
 
-function readReservationMediaId(payload: Record<string, unknown>): string {
+function readItemField(
+	payload: Record<string, unknown>,
+	field: 'id' | 'status',
+	stage: CanaryStage,
+): string {
 	if (!payload.item || typeof payload.item !== 'object' || Array.isArray(payload.item)) {
-		fail('reservation', 'RESERVATION_RESPONSE_REJECTED');
+		fail(stage, `${stage.toUpperCase()}_RESPONSE_REJECTED`);
 	}
-	const item = payload.item as Record<string, unknown>;
-	if (typeof item.id !== 'string') fail('reservation', 'RESERVATION_RESPONSE_REJECTED');
-	return item.id;
-}
-
-function readCompletionStatus(payload: Record<string, unknown>): string {
-	if (!payload.item || typeof payload.item !== 'object' || Array.isArray(payload.item)) {
-		fail('completion', 'COMPLETION_RESPONSE_REJECTED');
-	}
-	const item = payload.item as Record<string, unknown>;
-	if (typeof item.status !== 'string') fail('completion', 'COMPLETION_RESPONSE_REJECTED');
-	return item.status;
+	const value = (payload.item as Record<string, unknown>)[field];
+	if (typeof value !== 'string') fail(stage, `${stage.toUpperCase()}_RESPONSE_REJECTED`);
+	return value;
 }
 
 function readCatalogItems(payload: Record<string, unknown>): CatalogItem[] {
@@ -370,12 +348,12 @@ function readCatalogItems(payload: Record<string, unknown>): CatalogItem[] {
 
 async function waitForHydration(page: Page): Promise<void> {
 	await page.waitForFunction(
-		() => {
-			const capture = document.querySelector('[data-capture="valentina-memories"]');
+		(selector) => {
+			const capture = document.querySelector(selector);
 			const island = capture?.closest('astro-island');
 			return Boolean(island && !island.hasAttribute('ssr'));
 		},
-		undefined,
+		CAPTURE_SELECTOR,
 		{ timeout: REQUEST_TIMEOUT_MS },
 	);
 }
@@ -387,7 +365,11 @@ async function authenticatedDelete(page: Page, mediaPath: string): Promise<numbe
 	}, mediaPath);
 }
 
-async function confirmCatalogAbsence(page: Page, mediaId: string): Promise<boolean> {
+async function confirmCatalogAbsence(
+	page: Page,
+	itemsPath: string,
+	mediaId: string,
+): Promise<boolean> {
 	return page.evaluate(
 		async ({ endpoint, targetId }) => {
 			const response = await fetch(endpoint, { headers: { Accept: 'application/json' } });
@@ -405,7 +387,7 @@ async function confirmCatalogAbsence(page: Page, mediaId: string): Promise<boole
 					)
 				: false;
 		},
-		{ endpoint: ITEMS_PATH, targetId: mediaId },
+		{ endpoint: itemsPath, targetId: mediaId },
 	);
 }
 
@@ -442,7 +424,7 @@ async function openFreshGuestSession(
 	write: (line: string) => void,
 ): Promise<void> {
 	const initialSessionResponse = page.waitForResponse((response) =>
-		isResponseFor(response, 'GET', SESSION_PATH),
+		isResponseFor(response, 'GET', invocation.sessionPath),
 	);
 	stage.current = 'route';
 	const routeResponse = await page.goto(invocation.destination, {
@@ -463,13 +445,13 @@ async function openFreshGuestSession(
 
 	stage.current = 'session';
 	const sessionResponsePromise = page.waitForResponse((response) =>
-		isResponseFor(response, 'POST', SESSION_PATH),
+		isResponseFor(response, 'POST', invocation.sessionPath),
 	);
 	const emptyCatalogResponsePromise = page.waitForResponse((response) =>
-		isResponseFor(response, 'GET', ITEMS_PATH),
+		isResponseFor(response, 'GET', invocation.itemsPath),
 	);
-	await page.getByLabel('Nombre o apodo').fill(SESSION_DISPLAY_NAME);
-	await page.getByRole('button', { name: 'Continuar' }).click();
+	await page.getByLabel(memoriesCaptureCopy.displayNameLabel).fill(SESSION_DISPLAY_NAME);
+	await page.getByRole('button', { name: memoriesCaptureCopy.continueLabel }).click();
 	const sessionResponse = await sessionResponsePromise;
 	if (sessionResponse.status() !== 201) fail('session', 'SESSION_STATUS_REJECTED');
 	const emptyCatalogResponse = await emptyCatalogResponsePromise;
@@ -480,27 +462,10 @@ async function openFreshGuestSession(
 	emit('session', 201, 'INFO', write);
 }
 
-function isSuccessfulCompletionResponse(response: Response): boolean {
-	const request = response.request();
-	return (
-		request.method() === 'POST' &&
-		new URL(response.url()).pathname.startsWith(`${ITEMS_PATH}/`) &&
-		response.ok()
-	);
-}
-
-function isPrivatePreviewResponse(response: Response): boolean {
-	return (
-		response.request().method() === 'GET' &&
-		itemPathFromUrl(new URL(response.url())) !== null &&
-		response.ok()
-	);
-}
-
 async function verifyPrivatePreview(
 	page: Page,
 	response: Response,
-	mediaId: string,
+	mediaPath: string,
 	write: (line: string) => void,
 ): Promise<void> {
 	if (response.status() !== 200) fail('preview', 'PREVIEW_STATUS_REJECTED');
@@ -513,7 +478,6 @@ async function verifyPrivatePreview(
 	) {
 		fail('preview', 'PREVIEW_PRIVACY_HEADERS_REJECTED');
 	}
-	const mediaPath = `${ITEMS_PATH}/${encodeURIComponent(mediaId)}`;
 	await page.waitForFunction(
 		(pathname) => {
 			const image = document.querySelector(`img[src="${pathname}"]`);
@@ -527,34 +491,48 @@ async function verifyPrivatePreview(
 
 async function uploadAcceptedMedia(
 	page: Page,
+	invocation: CanaryInvocation,
 	guard: CanaryLifecycleGuard,
 	stage: StageRef,
 	write: (line: string) => void,
 ): Promise<string> {
-	const fileInput = page.locator('[data-capture="valentina-memories"] input[type="file"]');
-	await fileInput.setInputFiles({
-		name: 'valentina-canary.png',
+	await page.locator(`${CAPTURE_SELECTOR} input[type="file"]`).setInputFiles({
+		name: 'canary.png',
 		mimeType: 'image/png',
 		buffer: createTinyNonPiiPng(),
 	});
-
+	const itemPrefix = `${invocation.itemsPath}/`;
 	const reservationResponsePromise = page.waitForResponse((response) =>
-		isResponseFor(response, 'POST', ITEMS_PATH),
+		isResponseFor(response, 'POST', invocation.itemsPath),
 	);
 	const putResponsePromise = page.waitForResponse(
 		(response) => response.request().method() === 'PUT',
 	);
-	const completionResponsePromise = page.waitForResponse(isSuccessfulCompletionResponse);
-	const catalogResponsePromise = page.waitForResponse((response) =>
-		isResponseFor(response, 'GET', ITEMS_PATH),
+	const completionResponsePromise = page.waitForResponse(
+		(response) =>
+			response.request().method() === 'POST' &&
+			new URL(response.url()).pathname.startsWith(itemPrefix) &&
+			response.ok(),
 	);
-	const previewResponsePromise = page.waitForResponse(isPrivatePreviewResponse);
+	const catalogResponsePromise = page.waitForResponse((response) =>
+		isResponseFor(response, 'GET', invocation.itemsPath),
+	);
+	const previewResponsePromise = page.waitForResponse(
+		(response) =>
+			response.request().method() === 'GET' &&
+			new URL(response.url()).pathname.startsWith(itemPrefix) &&
+			response.ok(),
+	);
 
 	stage.current = 'reservation';
-	await page.getByRole('button', { name: valentinaMemoriesCaptureCopy.confirmUpload }).click();
+	await page.getByRole('button', { name: memoriesCaptureCopy.confirmUpload }).click();
 	const reservationResponse = await reservationResponsePromise;
 	if (reservationResponse.status() !== 201) fail('reservation', 'RESERVATION_STATUS_REJECTED');
-	const mediaId = readReservationMediaId(await readJson(reservationResponse, 'reservation'));
+	const mediaId = readItemField(
+		await readJson(reservationResponse, 'reservation'),
+		'id',
+		'reservation',
+	);
 	guard.registerMediaId(mediaId);
 	emit('reservation', 201, 'INFO', write);
 
@@ -567,8 +545,12 @@ async function uploadAcceptedMedia(
 	stage.current = 'completion';
 	const completionResponse = await completionResponsePromise;
 	if (completionResponse.status() !== 200) fail('completion', 'COMPLETION_STATUS_REJECTED');
-	const completedStatus = readCompletionStatus(await readJson(completionResponse, 'completion'));
-	if (completedStatus !== 'accepted') fail('completion', 'MEDIA_NOT_ACCEPTED');
+	if (
+		readItemField(await readJson(completionResponse, 'completion'), 'status', 'completion') !==
+		'accepted'
+	) {
+		fail('completion', 'MEDIA_NOT_ACCEPTED');
+	}
 	emit('completion', 200, 'INFO', write);
 
 	stage.current = 'catalog';
@@ -581,17 +563,23 @@ async function uploadAcceptedMedia(
 	emit('catalog', 200, 'INFO', write);
 
 	stage.current = 'preview';
-	await verifyPrivatePreview(page, await previewResponsePromise, mediaId, write);
+	await verifyPrivatePreview(
+		page,
+		await previewResponsePromise,
+		`${itemPrefix}${encodeURIComponent(mediaId)}`,
+		write,
+	);
 	return mediaId;
 }
 
 async function deleteAndConfirmAbsence(
 	page: Page,
+	invocation: CanaryInvocation,
 	mediaId: string,
 	stage: StageRef,
 	write: (line: string) => void,
 ): Promise<void> {
-	const mediaPath = `${ITEMS_PATH}/${encodeURIComponent(mediaId)}`;
+	const mediaPath = `${invocation.itemsPath}/${encodeURIComponent(mediaId)}`;
 	stage.current = 'deletion';
 	const deletionResponsePromise = page.waitForResponse(
 		(response) =>
@@ -599,13 +587,13 @@ async function deleteAndConfirmAbsence(
 			new URL(response.url()).pathname === mediaPath,
 	);
 	const absenceResponsePromise = page.waitForResponse((response) =>
-		isResponseFor(response, 'GET', ITEMS_PATH),
+		isResponseFor(response, 'GET', invocation.itemsPath),
 	);
 	page.once('dialog', (dialog) => void dialog.accept());
 	await page
 		.locator(`img[src="${mediaPath}"]`)
 		.locator('xpath=ancestor::article')
-		.getByRole('button', { name: valentinaMemoriesCaptureCopy.deleteMemory })
+		.getByRole('button', { name: memoriesCaptureCopy.deleteMemory })
 		.click();
 	const deletionResponse = await deletionResponsePromise;
 	if (deletionResponse.status() !== 200) fail('deletion', 'DELETE_STATUS_REJECTED');
@@ -614,8 +602,11 @@ async function deleteAndConfirmAbsence(
 	stage.current = 'absence';
 	const absenceResponse = await absenceResponsePromise;
 	if (absenceResponse.status() !== 200) fail('absence', 'ABSENCE_STATUS_REJECTED');
-	const itemsAfterDelete = readCatalogItems(await readJson(absenceResponse, 'catalog'));
-	if (itemsAfterDelete.some((item) => item.id === mediaId)) {
+	if (
+		readCatalogItems(await readJson(absenceResponse, 'catalog')).some(
+			(item) => item.id === mediaId,
+		)
+	) {
 		fail('absence', 'DELETED_MEDIA_STILL_VISIBLE');
 	}
 	await page.locator(`img[src="${mediaPath}"]`).waitFor({ state: 'detached' });
@@ -624,49 +615,45 @@ async function deleteAndConfirmAbsence(
 
 async function cleanupFailedLifecycle(
 	page: Page | null,
+	invocation: CanaryInvocation,
 	mediaId: string | null,
 	deletionConfirmed: boolean,
 	guard: CanaryLifecycleGuard,
 	write: (line: string) => void,
 ): Promise<{ deletionConfirmed: boolean; failure: CanaryFailure | null }> {
 	if (!page || deletionConfirmed) return { deletionConfirmed, failure: null };
+	const unconfirmed = {
+		deletionConfirmed: false,
+		failure: new CanaryFailure('cleanup', 'CLEANUP_UNCONFIRMED'),
+	};
 	if (mediaId && !guard.deleteAttempted) {
 		try {
-			const mediaPath = `${ITEMS_PATH}/${encodeURIComponent(mediaId)}`;
+			const mediaPath = `${invocation.itemsPath}/${encodeURIComponent(mediaId)}`;
 			const cleanupStatus = await authenticatedDelete(page, mediaPath);
-			const absent = cleanupStatus === 200 && (await confirmCatalogAbsence(page, mediaId));
-			if (absent) {
+			if (
+				cleanupStatus === 200 &&
+				(await confirmCatalogAbsence(page, invocation.itemsPath, mediaId))
+			) {
 				emit('cleanup', 200, 'INFO', write);
 				return { deletionConfirmed: true, failure: null };
 			}
 		} catch {
 			// Sanitized failure is returned below.
 		}
-		return {
-			deletionConfirmed: false,
-			failure: new CanaryFailure('cleanup', 'CLEANUP_UNCONFIRMED'),
-		};
+		return unconfirmed;
 	}
 	if (mediaId && guard.deleteAttempted) {
 		try {
-			if (await confirmCatalogAbsence(page, mediaId)) {
+			if (await confirmCatalogAbsence(page, invocation.itemsPath, mediaId)) {
 				emit('cleanup', 'CONFIRMED', 'INFO', write);
 				return { deletionConfirmed: true, failure: null };
 			}
 		} catch {
-			// Keep the failure sanitized below. A second DELETE is intentionally forbidden.
+			// A second DELETE is intentionally forbidden.
 		}
-		return {
-			deletionConfirmed: false,
-			failure: new CanaryFailure('cleanup', 'CLEANUP_UNCONFIRMED'),
-		};
+		return unconfirmed;
 	}
-	if (guard.reservationAttempted) {
-		return {
-			deletionConfirmed: false,
-			failure: new CanaryFailure('cleanup', 'CLEANUP_UNCONFIRMED'),
-		};
-	}
+	if (guard.reservationAttempted) return unconfirmed;
 	return { deletionConfirmed: false, failure: null };
 }
 
@@ -675,7 +662,7 @@ export async function runProductionCanary(
 	write: (line: string) => void = console.log,
 ): Promise<void> {
 	const { chromium } = await import('@playwright/test');
-	const guard = new CanaryLifecycleGuard();
+	const guard = new CanaryLifecycleGuard(invocation);
 	let browser: Awaited<ReturnType<typeof chromium.launch>> | null = null;
 	let page: Page | null = null;
 	let mediaId: string | null = null;
@@ -685,7 +672,6 @@ export async function runProductionCanary(
 	let readInterceptedFailure: () => CanaryFailure | null = () => null;
 
 	emit('preflight', 'READY', 'INFO', write);
-
 	try {
 		browser = await chromium.launch({ headless: true });
 		const context = await browser.newContext({
@@ -696,8 +682,8 @@ export async function runProductionCanary(
 		page.setDefaultTimeout(REQUEST_TIMEOUT_MS);
 		readInterceptedFailure = await installLifecycleGuard(page, guard, stage);
 		await openFreshGuestSession(page, invocation, stage, write);
-		mediaId = await uploadAcceptedMedia(page, guard, stage, write);
-		await deleteAndConfirmAbsence(page, mediaId, stage, write);
+		mediaId = await uploadAcceptedMedia(page, invocation, guard, stage, write);
+		await deleteAndConfirmAbsence(page, invocation, mediaId, stage, write);
 		deletionConfirmed = true;
 		const interceptedFailure = readInterceptedFailure();
 		if (interceptedFailure) throw interceptedFailure;
@@ -707,6 +693,7 @@ export async function runProductionCanary(
 	} finally {
 		const cleanup = await cleanupFailedLifecycle(
 			page,
+			invocation,
 			mediaId,
 			deletionConfirmed,
 			guard,
@@ -742,10 +729,9 @@ export async function main(
 }
 
 const entryArg = process.argv[1] ? path.resolve(process.argv[1]) : '';
-const isDirectRun =
-	entryArg.endsWith(`${path.sep}valentina-memories-production-canary.ts`) ||
-	entryArg.endsWith(`${path.sep}valentina-memories-production-canary.js`);
-
-if (isDirectRun) {
+if (
+	entryArg.endsWith(`${path.sep}memories-production-canary.ts`) ||
+	entryArg.endsWith(`${path.sep}memories-production-canary.js`)
+) {
 	void main();
 }
