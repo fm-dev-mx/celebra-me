@@ -1,7 +1,10 @@
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { validateDeployedAppCapabilities } from '../../scripts/db/validate-deployed-app-capabilities.ts';
+import {
+	EXECUTABLE_MEMORIES_PATHS,
+	validateDeployedAppCapabilities,
+} from '../../scripts/db/validate-deployed-app-capabilities.ts';
 
 function fixtureRoot(): string {
 	const root = mkdtempSync(join(tmpdir(), 'celebra-capability-proof-'));
@@ -12,6 +15,7 @@ function fixtureRoot(): string {
 		'scripts/provision/apply-local-invitation.ts',
 		'scripts/provision/invitation-import-engine.ts',
 		'scripts/invitation/image-namespace-remap.ts',
+		...EXECUTABLE_MEMORIES_PATHS,
 	]) {
 		const source = join(process.cwd(), path);
 		const target = join(root, path);
@@ -69,6 +73,19 @@ describe('deployed application capability validation', () => {
 			const path = join(root, 'scripts/invitation/image-namespace-remap.ts');
 			writeFileSync(path, `${readFileSync(path, 'utf8')}\npublish_invitation_atomic(a, b);`);
 			expect(validateDeployedAppCapabilities(root).join('\n')).toMatch(/Revoked positional/);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects the memories client proof when a legacy object is referenced', () => {
+		const root = fixtureRoot();
+		try {
+			const path = join(root, EXECUTABLE_MEMORIES_PATHS[1]);
+			writeFileSync(path, `${readFileSync(path, 'utf8')}\n// valentina_memory_items`);
+			expect(validateDeployedAppCapabilities(root).join('\n')).toMatch(
+				/Legacy memories object/,
+			);
 		} finally {
 			rmSync(root, { recursive: true, force: true });
 		}

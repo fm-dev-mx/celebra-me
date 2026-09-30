@@ -1,4 +1,4 @@
 {
     "version": 1,
-    "capabilities": ["current_atomic_publication_client"]
+    "capabilities": ["current_atomic_publication_client", "event_memories_client"]
 }
