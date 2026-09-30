@@ -71,7 +71,7 @@
 	}
 
 	&__title {
-		font-family: var(--font-display, 'Playfair Display', serif);
+		font-family: var(--font-display, 'Playfair Display Variable', 'Playfair Display', serif);
 		font-size: clamp(2.5rem, 8vw, 4rem);
 		font-weight: 400;
 		color: var(--color-text-primary);
@@ -87,7 +87,7 @@
 	}
 
 	&__description {
-		font-family: var(--font-body, 'EB Garamond', serif);
+		font-family: var(--font-body, 'EB Garamond Variable', 'EB Garamond', serif);
 		font-size: 1.2rem;
 		line-height: 1.6;
 		color: var(--color-text-on-light);
@@ -113,7 +113,7 @@
 	}
 
 	&__status {
-		font-family: var(--font-body, 'EB Garamond', serif);
+		font-family: var(--font-body, 'EB Garamond Variable', 'EB Garamond', serif);
 		font-size: 1.05rem;
 		line-height: 1.5;
 		color: var(--color-text-on-light);
@@ -140,7 +140,7 @@
 		background: var(--color-action-primary);
 		color: var(--color-surface-primary);
 		text-decoration: none;
-		font-family: var(--font-display, 'Playfair Display', serif);
+		font-family: var(--font-display, 'Playfair Display Variable', 'Playfair Display', serif);
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 		font-size: 0.875rem;
@@ -185,7 +185,7 @@
 		left: 0;
 		right: 0;
 		text-align: center;
-		font-family: var(--font-body, 'EB Garamond', serif);
+		font-family: var(--font-body, 'EB Garamond Variable', 'EB Garamond', serif);
 		font-size: 0.9rem;
 		color: rgb(var(--color-text-primary-rgb) / 40%);
 		letter-spacing: 0.05em;
