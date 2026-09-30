@@ -34,6 +34,7 @@ interface GiftBank {
 	accountHolder: string;
 	clabe: string;
 	accountNumber?: string;
+	accountKind?: 'clabe' | 'card' | 'account';
 }
 
 interface GiftPaypal {
@@ -151,6 +152,28 @@ function getTableNumberEntries(tableNumberStr?: string) {
 	});
 }
 
+// Transfer number label and copy wording by kind; CLABE stays the default.
+const BANK_NUMBER_COPY = {
+	clabe: { label: 'CLABE', copy: 'Copiar número CLABE', title: 'Copiar CLABE' },
+	card: { label: 'Tarjeta', copy: 'Copiar número de tarjeta', title: 'Copiar número de tarjeta' },
+	account: { label: 'Cuenta', copy: 'Copiar número de cuenta', title: 'Copiar número de cuenta' },
+} as const;
+
+function bankNumberCopy(gift: GiftBank) {
+	return BANK_NUMBER_COPY[gift.accountKind ?? 'clabe'];
+}
+
+/** Explicit kinds use their own label; the default keeps the configurable CLABE label. */
+function bankNumberLabel(gift: GiftBank): string {
+	return gift.accountKind ? bankNumberCopy(gift).label : (labels.clabe ?? 'CLABE');
+}
+
+/** Card numbers read in groups of four; CLABE and account numbers are shown as given. */
+function formatBankNumber(gift: GiftBank): string {
+	if (gift.accountKind !== 'card') return gift.clabe;
+	return gift.clabe.replace(/\s+/g, '').replace(/(\d{4})(?=\d)/g, '$1 ');
+}
+
 const safeGiftLinks = gifts.map(getSafeGiftLinks);
 const safeGiftUrls = gifts.map(getSafeGiftUrl);
 ---
@@ -255,15 +278,15 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 										</p>
 										<div class="bank-details__clabe-wrapper">
 											<p class="bank-details__item">
-												<strong>{labels.clabe}:</strong>
-												<span class="clabe-number">{gift.clabe}</span>
+												<strong>{bankNumberLabel(gift)}:</strong>
+												<span class="clabe-number">{formatBankNumber(gift)}</span>
 											</p>
 											<button
 												type="button"
 												class="copy-icon-button"
 												data-copy-text={gift.clabe.replace(/\s+/g, '')}
-												aria-label="Copiar número CLABE"
-												title="Copiar CLABE"
+												aria-label={bankNumberCopy(gift).copy}
+												title={bankNumberCopy(gift).title}
 											>
 												<CopyIcon size={14} className="icon-copy" />
 												<CheckIcon size={14} className="icon-check" />
