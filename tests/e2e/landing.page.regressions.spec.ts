@@ -1,4 +1,36 @@
 import { expect, test, type Page } from '@playwright/test';
+import {
+	buildCampaignCode,
+	buildGeneralMessage,
+	buildPackageMessage,
+	formatDaysLeft,
+	formatMxn,
+	formatMxnAmount,
+	getExpressDelivery,
+	getGeneralPromoCode,
+	getPromoCode,
+	getPromoPackage,
+	getPromoStatus,
+	getStartingPrice,
+	getValidityNote,
+	PROMO_CAMPAIGN,
+} from '../../src/data/promo-campaign.data';
+import { footerData } from '../../src/data/footer.data';
+import { landingData } from '../../src/data/landing-page.data';
+import { CLIENT_TESTIMONIALS } from '../../src/data/testimonials.data';
+
+const DAY_MS = 86_400_000;
+const campaignStart = Date.parse(PROMO_CAMPAIGN.startsAt);
+const campaignEnd = Date.parse(PROMO_CAMPAIGN.endsAt);
+/** A date inside the campaign, before the countdown window. */
+const MID_CAMPAIGN = new Date(campaignStart + 14 * DAY_MS + DAY_MS / 2);
+/** A date inside the countdown window. */
+const COUNTDOWN_DAY = new Date(campaignEnd - 4.5 * DAY_MS);
+/** A date after the campaign ended. */
+const AFTER_CAMPAIGN = new Date(campaignEnd + DAY_MS);
+
+const decodeWhatsAppText = (href: string | null) =>
+	new URL(href ?? 'https://wa.me/').searchParams.get('text') ?? '';
 
 test.describe('Landing page regressions', () => {
 	const expectedNavLabels = ['Demos', 'Planes', 'Nosotros'];
@@ -33,6 +65,9 @@ test.describe('Landing page regressions', () => {
 	};
 
 	test.beforeEach(async ({ page }) => {
+		// The prerendered page ships the promo; pin the browser clock inside the campaign so the
+		// client-side expiry never depends on the date the suite runs.
+		await page.clock.setFixedTime(MID_CAMPAIGN);
 		page.on('pageerror', (error) => {
 			throw new Error('Page JS error: ' + error.message);
 		});
@@ -78,7 +113,9 @@ test.describe('Landing page regressions', () => {
 	test('keeps the desktop navigation visible and readable on desktop', async ({ page }) => {
 		await page.setViewportSize({ width: 1280, height: 900 });
 		await page.goto('/', { waitUntil: 'load' });
-		await page.locator('[data-nav-mobile-toggle]').waitFor({ state: 'attached', timeout: 5000 });
+		await page
+			.locator('[data-nav-mobile-toggle]')
+			.waitFor({ state: 'attached', timeout: 5000 });
 		await scrollLandingHeader(page);
 
 		await expect(page.locator('.header-base__desktop-nav')).toBeVisible();
@@ -89,6 +126,10 @@ test.describe('Landing page regressions', () => {
 		await expect(page.locator('.home-nav-actions__login')).toHaveText(loginLabel);
 		await expect(page.locator('.home-nav-actions__login')).toHaveAttribute('href', loginHref);
 		await expect(page.locator('.home-nav-actions__cta')).toHaveAttribute('href', ctaHref);
+		await expect(page.locator('.home-nav__link', { hasText: 'Nosotros' })).toHaveAttribute(
+			'href',
+			'#nosotros',
+		);
 
 		const navLinkStyles = await page
 			.locator('.home-nav__link')
@@ -183,13 +224,22 @@ test.describe('Landing page regressions', () => {
 		await page.goto('/', { waitUntil: 'load' });
 
 		await expect(page.locator('#hero-title')).toContainText(
-			'Con pases y confirmación, personalizada para cada invitado',
+			'Invitaciones digitales con pase y confirmación para cada invitado',
 		);
-		await expect(page.locator('.hero-prime__eyebrow')).toContainText(
-			'INVITACIONES DIGITALES',
+		await expect(page.locator('.hero-prime__eyebrow')).toContainText('INVITACIONES DIGITALES');
+		await expect(page.locator('.hero-prime__subtitle')).toContainText(
+			landingData.hero.subtitle,
 		);
 		await expect(page.locator('.hero-prime__subtitle')).toContainText(
-			'Agrega tus invitados, asigna pases y lleva el control de confirmaciones.',
+			`Desde ${formatMxn(getStartingPrice())} MXN, pago único.`,
+			{ useInnerText: true },
+		);
+		await expect(page.locator('.hero-prime__payment-note')).toHaveText(
+			'Sin anticipo: paga al recibir su invitación terminada.',
+		);
+		await expect(page.locator('.hero-prime__secondary-action')).toHaveAttribute(
+			'href',
+			landingData.hero.secondaryCtaUrl,
 		);
 		const heroCta = page.locator('[data-track-cta="whatsapp-hero"]');
 		await expect(heroCta).toBeVisible();
@@ -218,24 +268,29 @@ test.describe('Landing page regressions', () => {
 		expect(ctaBox!.y + ctaBox!.height).toBeLessThanOrEqual(780);
 	});
 
-	test('uses the launch coupon and structured tracking on WhatsApp CTAs', async ({ page }) => {
+	test('uses the promo reference and structured tracking on WhatsApp CTAs', async ({ page }) => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/', { waitUntil: 'load' });
 
 		const heroCta = page.locator('[data-track-cta="whatsapp-hero"]');
 		await expect(heroCta).toHaveAttribute('data-track-event', 'whatsapp_contact_clicked');
-		await expect(heroCta).toHaveAttribute('data-promo-code', 'LANZAMIENTO-899');
-		await expect(heroCta).toHaveAttribute('data-campaign-code', 'HERO-LANZAMIENTO-899');
-		await expect(heroCta).toHaveAttribute('data-track-value', '899');
+		await expect(heroCta).toHaveAttribute('data-promo-code', getGeneralPromoCode());
+		await expect(heroCta).toHaveAttribute('data-campaign-code', buildCampaignCode('HERO'));
+		await expect(heroCta).toHaveAttribute('data-track-value', String(getStartingPrice()));
 
 		const heroHref = await heroCta.getAttribute('href');
-		expect(decodeURIComponent(heroHref ?? '')).toContain('cupón: LANZAMIENTO-899');
-		expect(decodeURIComponent(heroHref ?? '')).not.toContain('Folio: CM-899-');
-		expect(decodeURIComponent(heroHref ?? '')).not.toContain('HERO-PROMO899');
-		// NOTE: post-click `clickedHref` re-reads the href after a synthetic
-		// click. Client-side hooks may append a Folio suffix in some viewport/
-		// motion configurations, which is not stable enough to assert against
-		// here. The pre-click assertion above already proves the CTA wiring.
+		const heroMessage = decodeWhatsAppText(heroHref);
+		expect(heroMessage).toBe(buildGeneralMessage());
+		expect(heroMessage).not.toContain('Cupón');
+		expect(heroMessage).not.toMatch(/CM-\d+-/);
+
+		// Outside Vercel production no rewriter runs: a click must leave the message untouched.
+		const clickedHref = await heroCta.evaluate((anchor) => {
+			anchor.addEventListener('click', (event) => event.preventDefault(), { once: true });
+			anchor.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+			return anchor.getAttribute('href');
+		});
+		expect(clickedHref).toBe(heroHref);
 	});
 
 	test('keeps the event showroom personalization wired to WhatsApp context', async ({ page }) => {
@@ -257,38 +312,23 @@ test.describe('Landing page regressions', () => {
 		await expect(page.locator('[data-panel-event="boda"] [data-showroom-title]')).toContainText(
 			'Mariana & Rodrigo',
 		);
-		await expect(eventCta).toContainText('Cotizar esta invitación');
 		await expect(eventCta).toHaveAttribute('data-event-type', 'boda');
 		await expect(eventCta).toHaveAttribute('data-event-label', 'Boda');
-		await expect(eventCta).toHaveAttribute('data-package-interest', 'premium');
-		await expect(eventCta).toHaveAttribute('data-package-name', 'Premium');
-		await expect(eventCta).toHaveAttribute('data-promo-code', 'LANZAMIENTO-1499');
-		await expect(eventCta).toHaveAttribute('data-track-value', '1499');
-		const eventHref = await eventCta.getAttribute('href');
-		// NOTE: After clicking the Boda tab, the stable CTA is rewritten
-		// client-side to use Boda's `quoteCta.message`:
-		//   "Hola, quiero hacer válida la promo de lanzamiento de mi invitación
-		//    digital premium para el paquete Premium.\n\nEvento: Boda\n\nCupón: LANZAMIENTO-1499"
-		// `URLSearchParams.toString()` encodes spaces as `+` rather than `%20`,
-		// so we replace `+` with a space before substring matching.
-		const decodedEventHref = decodeURIComponent(eventHref ?? '').split('+').join(' ');
-		// Assert the stable substring the current data renders.
-		expect(decodedEventHref).toContain('Evento: Boda');
-		expect(decodedEventHref).toContain('LANZAMIENTO-1499');
-		// NOTE: Folio is injected client-side at WhatsApp composer open,
-		// not on the rendered link. The original test asserting a Folio on
-		// the rendered <a> was depending on a client-side hook that the
-		// production CTA path rewrites. Drop the brittle assertion.
+		await expect(eventCta).not.toHaveAttribute('data-package-interest');
+		await expect(eventCta).not.toHaveAttribute('data-package-name');
+		await expect(eventCta).toHaveAttribute('data-promo-code', getGeneralPromoCode());
+		await expect(eventCta).toHaveAttribute('data-campaign-code', buildCampaignCode('DEMO'));
+		await expect(eventCta).toHaveAttribute('data-track-value', String(getStartingPrice()));
+		expect(decodeWhatsAppText(await eventCta.getAttribute('href'))).toBe(buildGeneralMessage());
+
 		const clickedHref = await eventCta.evaluate((anchor) => {
 			anchor.addEventListener('click', (event) => event.preventDefault(), { once: true });
 			anchor.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-			return anchor.getAttribute('href') ?? '';
+			return anchor.getAttribute('href');
 		});
-		const clickedMessage = new URL(clickedHref).searchParams.get('text') ?? '';
-		expect(clickedMessage).toContain('paquete Premium');
-		expect(clickedMessage).toContain('Evento: Boda');
-		expect(clickedMessage).toContain('Cupón: LANZAMIENTO-1499');
-		expect(clickedMessage).toMatch(/Folio: CM-1499-[A-Z0-9]{4}/);
+		const clickedMessage = decodeWhatsAppText(clickedHref);
+		expect(clickedMessage).toBe(buildGeneralMessage());
+		expect(clickedMessage).not.toMatch(/Folio/);
 	});
 
 	test('shows event categories before product proof', async ({ page }) => {
@@ -308,11 +348,11 @@ test.describe('Landing page regressions', () => {
 
 		expect(eventSelectorTop).toBeLessThan(proofTop);
 		await expect(page.locator('#product-proof-title')).toContainText(
-			'La invitación también organiza tu evento',
+			'La invitación también organiza su evento',
 		);
 		await expect(page.locator('.proof-rail-flow__item')).toHaveCount(4);
 		await expect(page.locator('.proof-rail-flow__item').first()).toContainText(
-			'Quién recibió la invitación',
+			'Quién ya abrió su invitación',
 		);
 		await expect(page.locator('#prueba-producto')).toHaveAttribute(
 			'data-track-section',
@@ -334,25 +374,68 @@ test.describe('Landing page regressions', () => {
 		await page.goto('/', { waitUntil: 'load' });
 		await page.locator('#pricing').scrollIntoViewIfNeeded();
 
-		await expect(page.locator('.pricing-title')).toContainText(
-			'Elija con una recomendación clara',
-		);
-		await expect(page.locator('.pricing-note')).toContainText(
-			'Promoción de lanzamiento desde $899 MXN. Pago único.',
-		);
+		await expect(page.locator('.pricing-note')).toContainText(getValidityNote());
 
-		const pricingCta = page
-			.locator('.pricing-card')
-			.first()
-			.locator('[data-track-cta^="pricing_"]');
-		await expect(pricingCta).toHaveAttribute('data-track-event', 'whatsapp_contact_clicked');
-		await expect(pricingCta).toHaveAttribute('href', /wa\.me/);
-		await expect(pricingCta).toHaveAttribute('data-campaign-code', 'PRICING-LANZAMIENTO-1699');
-		await expect(pricingCta).toHaveAttribute('data-package-name', 'Signature');
-		await expect(pricingCta).toHaveAttribute('data-track-value', '1699');
+		for (const [index, pkg] of PROMO_CAMPAIGN.packages.entries()) {
+			const card = page.locator('.pricing-card').nth(index);
+			const cta = card.locator('[data-track-cta^="pricing_"]');
+			const code = getPromoCode(pkg);
 
-		const pricingHref = await pricingCta.getAttribute('href');
-		expect(decodeURIComponent(pricingHref ?? '')).toContain('paquete Signature de $1,699 MXN');
+			await expect(card.locator('.tier-name')).toHaveText(pkg.name);
+			await expect(card.locator('.tier-price[data-promo-only] .amount')).toHaveText(
+				formatMxnAmount(pkg.promoPrice),
+			);
+			await expect(card.locator('.regular-price s')).toContainText(
+				formatMxnAmount(pkg.regularPrice),
+			);
+			await expect(cta).toHaveAttribute('data-track-event', 'whatsapp_contact_clicked');
+			await expect(cta).toHaveAttribute('href', /wa\.me/);
+			await expect(cta).toHaveAttribute(
+				'data-campaign-code',
+				buildCampaignCode('PRICING', code),
+			);
+			await expect(cta).toHaveAttribute('data-promo-code', code);
+			await expect(cta).toHaveAttribute('data-package-name', pkg.name);
+			await expect(cta).toHaveAttribute('data-track-value', String(pkg.promoPrice));
+			expect(decodeWhatsAppText(await cta.getAttribute('href'))).toBe(
+				buildPackageMessage(pkg),
+			);
+		}
+
+		await expect(page.locator('.pricing-card.is-primary .tier-name')).toHaveText(
+			getPromoPackage('signature').name,
+		);
+		await expect(page.locator('.pricing-card[data-tier="atelier"]')).toContainText(
+			'sin la firma de Celebra-me',
+		);
+		await expect(page.locator('#pricing')).not.toContainText(/con marca|con publicidad/i);
+	});
+
+	test('adds the remaining-days countdown during the last week', async ({ page }) => {
+		await page.clock.setFixedTime(COUNTDOWN_DAY);
+		await page.goto('/', { waitUntil: 'load' });
+
+		const { daysLeft, showCountdown } = getPromoStatus(COUNTDOWN_DAY);
+		expect(showCountdown).toBe(true);
+		await expect(page.locator('.pricing-note [data-promo-days-left]')).toHaveText(
+			formatDaysLeft(daysLeft),
+		);
+	});
+
+	test('hides the promo and shows regular prices once the campaign ends', async ({ page }) => {
+		await page.clock.setFixedTime(AFTER_CAMPAIGN);
+		await page.setViewportSize({ width: 1280, height: 900 });
+		await page.goto('/', { waitUntil: 'load' });
+		await page.locator('#pricing').scrollIntoViewIfNeeded();
+
+		await expect(page.locator('html')).toHaveAttribute('data-promo-state', 'expired');
+		await expect(page.locator('.pricing-note')).toBeHidden();
+		const firstCard = page.locator('.pricing-card').first();
+		await expect(firstCard.locator('.tier-promo-label')).toBeHidden();
+		await expect(firstCard.locator('.regular-price')).toBeHidden();
+		await expect(firstCard.locator('.tier-price[data-promo-fallback] .amount')).toHaveText(
+			formatMxnAmount(PROMO_CAMPAIGN.packages[0].regularPrice),
+		);
 	});
 
 	test('keeps pricing visible without JavaScript', async ({ browser }) => {
@@ -367,9 +450,10 @@ test.describe('Landing page regressions', () => {
 		await expect(page.locator('.pricing-card').first()).toBeVisible({ timeout: 5000 });
 		await expect(page.locator('.pricing-card')).toHaveCount(3);
 		await expect(page.locator('.pricing-card').first()).toBeVisible();
-		await expect(page.locator('.pricing-card').first()).toContainText('Signature');
-		await expect(page.locator('.pricing-card').nth(1)).toContainText('Colección');
-		await expect(page.locator('.pricing-card').nth(2)).toContainText('Atelier');
+		for (const [index, pkg] of PROMO_CAMPAIGN.packages.entries()) {
+			await expect(page.locator('.pricing-card').nth(index)).toContainText(pkg.name);
+		}
+		await expect(page.locator('.pricing-note')).toBeVisible();
 		await expect
 			.poll(async () =>
 				page
@@ -441,6 +525,215 @@ test.describe('Landing page regressions', () => {
 		expect(overflow).toBeLessThanOrEqual(1);
 	});
 
+	test('fits a 375 px viewport with the hero CTA and pricing cards in bounds', async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 375, height: 812 });
+		await page.goto('/', { waitUntil: 'load' });
+
+		const overflow = await page.evaluate(
+			() => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+		);
+		expect(overflow).toBeLessThanOrEqual(1);
+
+		const heroCta = page.locator('[data-track-cta="whatsapp-hero"]');
+		const heroBox = await heroCta.boundingBox();
+		expect(heroBox).not.toBeNull();
+		expect(heroBox!.x).toBeGreaterThanOrEqual(0);
+		expect(heroBox!.x + heroBox!.width).toBeLessThanOrEqual(375);
+		const clippedText = await heroCta.evaluate((cta) => cta.scrollWidth - cta.clientWidth);
+		expect(clippedText).toBeLessThanOrEqual(1);
+
+		await page.locator('#pricing').scrollIntoViewIfNeeded();
+		// Measure against the root box so a classic desktop scrollbar does not skew the centering.
+		const offsets = await page.locator('.pricing-card').evaluateAll((cards) => {
+			const root = document.documentElement.getBoundingClientRect();
+			return cards.map((card) => {
+				const box = card.getBoundingClientRect();
+				return Math.abs(box.left - root.left - (root.right - box.right));
+			});
+		});
+		expect(offsets).toHaveLength(PROMO_CAMPAIGN.packages.length);
+		for (const offset of offsets) expect(offset).toBeLessThanOrEqual(2);
+	});
+
+	test('keeps the testimonials rotator height stable across quotes', async ({ page }) => {
+		await page.setViewportSize({ width: 375, height: 812 });
+		await page.goto('/', { waitUntil: 'load' });
+		await page.locator('#testimonios').scrollIntoViewIfNeeded();
+
+		const heights = await page.locator('.testimonials__rotator').evaluate((rotator) => {
+			const cards = [...rotator.querySelectorAll('.testimonials__card')];
+			return cards.map((card) => {
+				cards.forEach((other) =>
+					other.classList.toggle('testimonials__card--active', other === card),
+				);
+				return Math.round(rotator.getBoundingClientRect().height);
+			});
+		});
+		expect(heights.length).toBeGreaterThan(1);
+		expect(new Set(heights).size).toBe(1);
+	});
+
+	test('loads the Playfair Display and Montserrat web fonts', async ({ page }) => {
+		await page.goto('/', { waitUntil: 'load' });
+
+		await expect
+			.poll(() =>
+				page.evaluate(async () => {
+					await document.fonts.ready;
+					return [...document.fonts]
+						.filter((face) => face.status === 'loaded')
+						.map((face) => face.family.replace(/["']/g, ''));
+				}),
+			)
+			.toEqual(
+				expect.arrayContaining([
+					expect.stringMatching(/Playfair Display/),
+					expect.stringMatching(/Montserrat/),
+				]),
+			);
+	});
+
+	test('publishes the legal pages without placeholders and with the service terms', async ({
+		page,
+	}) => {
+		await page.goto('/privacidad', { waitUntil: 'load' });
+		const privacy = await page.locator('.legal-page').innerText();
+		expect(privacy).not.toContain('[');
+		expect(privacy).toContain('Francisco Mendoza');
+		expect(privacy).toContain('contacto@celebra-me.com');
+
+		await page.goto('/terminos', { waitUntil: 'load' });
+		const terms = page.locator('.legal-page');
+		await expect(terms).toContainText('No solicitamos anticipo');
+		await expect(terms).toContainText('Invitado de prueba');
+		await expect(terms).toContainText('3 a 5 días hábiles');
+		await expect(terms).toContainText(formatMxn(getExpressDelivery().price));
+	});
+
+	test('shows real social links, contact details and a full-width copyright row', async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 1280, height: 900 });
+		await page.goto('/', { waitUntil: 'load' });
+		const footer = page.locator('.footer-section');
+		await footer.scrollIntoViewIfNeeded();
+
+		const socialHrefs = await footer
+			.locator('.social-link')
+			.evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+		expect(socialHrefs).toEqual(footerData.socialLinks?.links.map((link) => link.href));
+		await expect(footer.locator('.footer-contact')).toContainText(footerData.contact!.email);
+		await expect(footer.locator('.footer-contact')).toContainText(footerData.contact!.city);
+		await expect(footer.locator('[data-track-cta="footer_whatsapp"]')).toHaveAttribute(
+			'data-campaign-code',
+			buildCampaignCode('FOOTER'),
+		);
+
+		const rowWidths = await footer.evaluate((element) => {
+			const containers = element.querySelectorAll('.container');
+			const bottom = element.querySelector('.footer-bottom');
+			return {
+				container: containers[0]?.getBoundingClientRect().width ?? 0,
+				bottom: bottom?.getBoundingClientRect().width ?? 0,
+			};
+		});
+		// The copyright row spans the same width as the link columns above it.
+		expect(rowWidths.bottom).toBeGreaterThan(rowWidths.container * 0.9);
+		await expect(footer.locator('.footer-link--cookie')).toHaveCSS('cursor', 'pointer');
+	});
+
+	test('uses one primary WhatsApp label and tracks every quote CTA', async ({ page }) => {
+		await page.setViewportSize({ width: 1280, height: 900 });
+		await page.goto('/', { waitUntil: 'load' });
+
+		const labels = await page
+			.locator(
+				'main [data-track-event="whatsapp_contact_clicked"]:not([data-track-cta="whatsapp-sticky"]):not([data-track-cta="footer_whatsapp"])',
+			)
+			.evaluateAll((links) => links.map((link) => link.getAttribute('data-track-label')));
+		expect(labels.length).toBeGreaterThan(5);
+		expect(new Set(labels)).toEqual(new Set(['Cotizar por WhatsApp']));
+
+		const guestCta = page.locator(
+			'#experiencia-invitados [data-track-event="whatsapp_contact_clicked"]',
+		);
+		await expect(guestCta).toHaveAttribute('data-track-cta', 'whatsapp-guest-experience');
+		await expect(guestCta).toHaveAttribute('data-track-section', 'guest-experience');
+		await expect(guestCta).toHaveAttribute('data-campaign-code', buildCampaignCode('GUESTS'));
+		await expect(guestCta).toHaveAttribute('data-promo-code', getGeneralPromoCode());
+		await expect(guestCta).toContainText('Cotizar por WhatsApp');
+	});
+
+	test('shows the sticky WhatsApp bar after the hero and hides it over the contact form', async ({
+		page,
+	}) => {
+		await page.addInitScript(() => {
+			window.localStorage.setItem(
+				'cm_consent',
+				JSON.stringify({
+					necessary: true,
+					analytics: false,
+					marketing: false,
+					updatedAt: new Date().toISOString(),
+				}),
+			);
+		});
+		await page.setViewportSize({ width: 390, height: 844 });
+		await page.goto('/', { waitUntil: 'load' });
+
+		const bar = page.locator('[data-sticky-cta]');
+		const cta = bar.locator('[data-track-cta="whatsapp-sticky"]');
+		await expect(bar).not.toHaveClass(/sticky-cta--visible/);
+		await expect(cta).toHaveAttribute('data-campaign-code', buildCampaignCode('STICKY'));
+
+		await page.locator('#pricing').scrollIntoViewIfNeeded();
+		await expect(bar).toHaveClass(/sticky-cta--visible/);
+		await expect(cta).toContainText(`WhatsApp · desde ${formatMxn(getStartingPrice())}`, {
+			useInnerText: true,
+		});
+
+		await page.locator('#contacto .contact-form-wrapper').scrollIntoViewIfNeeded();
+		await expect(bar).not.toHaveClass(/sticky-cta--visible/);
+	});
+
+	test('keeps the sticky bar clear of the cookie banner and off desktop', async ({ page }) => {
+		await page.setViewportSize({ width: 390, height: 844 });
+		await page.goto('/', { waitUntil: 'load' });
+		await expect(page.locator('#consent-banner-bar')).toBeVisible();
+
+		const bar = page.locator('[data-sticky-cta]');
+		await page.locator('#pricing').scrollIntoViewIfNeeded();
+		await expect(bar).not.toHaveClass(/sticky-cta--visible/);
+
+		// The Astro dev toolbar can overlap the banner buttons on narrow viewports in dev mode.
+		await page.locator('#consent-reject').evaluate((button) => (button as HTMLElement).click());
+		await expect(page.locator('#consent-banner-bar')).toBeHidden();
+		await expect(bar).toHaveClass(/sticky-cta--visible/);
+
+		await page.setViewportSize({ width: 1280, height: 900 });
+		await expect(bar).toBeHidden();
+	});
+
+	test('shows anonymous client testimonials with the privacy notice', async ({ page }) => {
+		await page.goto('/', { waitUntil: 'load' });
+		const section = page.locator('#testimonios');
+
+		await expect(section.locator('.testimonials__card')).toHaveCount(
+			CLIENT_TESTIMONIALS.length,
+		);
+		await expect(section.locator('.testimonials__card').first()).toContainText(
+			CLIENT_TESTIMONIALS[0].text,
+		);
+		await expect(section.locator('.testimonials__footer').first()).toContainText(
+			CLIENT_TESTIMONIALS[0].role,
+		);
+		await expect(section.locator('.testimonials__notice')).toHaveText(
+			'Testimonios reales de clientes. Omitimos sus nombres por privacidad.',
+		);
+	});
+
 	test('keeps section headings below the sticky header after anchor navigation', async ({
 		page,
 	}) => {
@@ -459,5 +752,8 @@ test.describe('Landing page regressions', () => {
 
 		await page.goto('/#contacto', { waitUntil: 'load' });
 		await sectionHeaderIsBelowStickyHeader(page, '.contact-title');
+
+		await page.goto('/#nosotros', { waitUntil: 'load' });
+		await sectionHeaderIsBelowStickyHeader(page, '#nosotros .contact-about__title');
 	});
 });

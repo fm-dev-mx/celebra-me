@@ -5,6 +5,13 @@ import ActionIcon from '@components/common/actions/ActionIcon.astro';
 import Icon from '@components/common/icons/Icon.astro';
 import type { ContactData } from '@/interfaces/ui/sections/landing-page.interface';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
+import {
+	buildCampaignCode,
+	buildGeneralMessage,
+	getGeneralPromoCode,
+	getStartingPrice,
+	PROMO_CAMPAIGN,
+} from '@/data/promo-campaign.data';
 
 // Import stylesheet
 import '@/styles/home/_contact.scss';
@@ -20,7 +27,8 @@ const contactPhone = getContactPhone();
 const isPlaceholder = isPlaceholderContactPhone(contactPhone);
 const hasValidWhatsApp = !isPlaceholder || import.meta.env.DEV;
 const displayPhone = (isPlaceholder && import.meta.env.DEV) ? '521234567890' : contactPhone;
-const whatsappMessage = data.cta?.message || 'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899';
+const whatsappMessage = data.cta?.message ?? buildGeneralMessage();
+const promoCode = getGeneralPromoCode();
 const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(whatsappMessage)}`;
 ---
 
@@ -41,15 +49,13 @@ const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(wha
 			<div class="contact-info reveal-fade-up stagger-4">
 				<div class="contact-info__content">
 					<h3 class="contact-info__title">{data.cta?.label || 'Cotizar por WhatsApp'}</h3>
-					<p class="contact-info__description">
-						{data.subtitle}
-					</p>
 
 					<div class="contact-channels">
 						{hasValidWhatsApp && (
 							<a
 								href={whatsappUrl}
 								target="_blank"
+								rel="noopener noreferrer"
 								class="channel-link channel-link--whatsapp"
 								data-track-event="whatsapp_contact_clicked"
 								data-track-section="contact"
@@ -57,16 +63,15 @@ const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(wha
 								data-track-label="Cotizar por WhatsApp"
 								data-track-intent="whatsapp"
 								data-track-destination="whatsapp"
-								data-campaign-code="FINAL-LANZAMIENTO-899"
-								data-promo-code="LANZAMIENTO-899"
-								data-track-value="899"
-								data-track-currency="MXN"
+								data-campaign-code={buildCampaignCode('FINAL', promoCode)}
+								data-promo-code={promoCode}
+								data-track-value={getStartingPrice()}
+								data-track-currency={PROMO_CAMPAIGN.currency}
 							>
 								<div class="channel-icon-wrapper">
 									<Icon name="WhatsApp" size={24} />
 								</div>
 								<div class="channel-text">
-									<span class="channel-label">{data.channelPrimary?.label || 'Principal'}</span>
 									<span class="channel-value">{data.channelPrimary?.value || 'Cotizar por WhatsApp'}</span>
 								</div>
 							</a>
@@ -85,16 +90,25 @@ const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(wha
 								<Icon name="Message" size={24} />
 							</div>
 							<div class="channel-text">
-								<span class="channel-label">{data.channelSecondary?.label || 'Secundario'}</span>
 								<span class="channel-value">{data.channelSecondary?.value || 'Escribir por correo'}</span>
 							</div>
 						</a>
 					</div>
+
+					{data.about && (
+						<div id="nosotros" class="contact-about">
+							<h4 class="contact-about__title">{data.about.title}</h4>
+							<p class="contact-about__text">{data.about.text}</p>
+							<a class="contact-about__email" href={`mailto:${data.about.email}`}>
+								{data.about.email}
+							</a>
+						</div>
+					)}
 				</div>
 			</div>
 
 			<div class="contact-form-wrapper reveal-fade-up stagger-4">
-				<p class="contact-form-wrapper__intro">{data.formIntro || 'O deja tus datos y le contactamos.'}</p>
+				<p class="contact-form-wrapper__intro">{data.formIntro || 'O déjenos sus datos y le contactamos.'}</p>
 				<ContactForm />
 				{data.microcopy && <p class="contact-microcopy">{data.microcopy}</p>}
 			</div>

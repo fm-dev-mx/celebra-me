@@ -38,6 +38,30 @@ describe('sanitizeIndicationHtml', () => {
 		).toHaveLength(0);
 	});
 
+	it('keeps https links, forcing a new tab and safe rel, and drops other attributes', () => {
+		const rendered = renderIndication(
+			'Síganme en <a href="https://www.instagram.com/desteny_ts/" class="x" onclick="alert(1)" target="_self"><strong>@desteny_ts</strong></a>',
+		);
+		const link = rendered.querySelector('a');
+
+		expect(link?.getAttribute('href')).toBe('https://www.instagram.com/desteny_ts/');
+		expect(link?.getAttribute('target')).toBe('_blank');
+		expect(link?.getAttribute('rel')).toBe('noopener noreferrer');
+		expect(link?.hasAttribute('class')).toBe(false);
+		expect(link?.hasAttribute('onclick')).toBe(false);
+		expect(link?.querySelector('strong')?.textContent).toBe('@desteny_ts');
+	});
+
+	it.each(['http://example.com', '//example.com', 'mailto:hola@example.com', '/relativo'])(
+		'drops non-https links but keeps their text (%s)',
+		(href) => {
+			const rendered = renderIndication(`Ver <a href="${href}">perfil</a>`);
+
+			expect(rendered.querySelectorAll('a')).toHaveLength(0);
+			expect(rendered.textContent).toBe('Ver perfil');
+		},
+	);
+
 	it('keeps plain text from malformed nested tags without restoring disallowed elements', () => {
 		const rendered = renderIndication('<div><em>no</em><strong>sí</strong></div>');
 

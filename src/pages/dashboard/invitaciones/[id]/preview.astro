@@ -30,6 +30,7 @@ import '@/styles/invitation/_preview-banner.scss';
 
 import { evaluatePreviewRevision } from '@/lib/editor/preview-revision';
 import { resolveInvitationTheme, resolvePreviewSlug } from '@/lib/intake/services/invitation-preset-resolver';
+import { buildCoverContents } from '@/lib/invitation/cover-contents';
 
 const { id } = Astro.params;
 Astro.response.headers.set('Cache-Control', 'no-store, private');
@@ -260,6 +261,10 @@ const headLinks = buildInvitationStylesheetHeadLinks({
 									heroDate={pageCtx.viewModel.hero.date}
 									heroVenueName={pageCtx.heroVenueName}
 									previewState={revealState === 'opened' ? 'opened' : 'closed'}
+									coverContents={buildCoverContents(pageCtx.viewModel)}
+									spreadImage={pageCtx.viewModel.hero.backgroundImage}
+									coverExperience={pageCtx.envelope.coverExperience}
+									coverImage={pageCtx.envelope.backdropImage}
 									backgroundImage={pageCtx.viewModel.hero.backgroundImage}
 									portrait={pageCtx.viewModel.hero.portrait}
 									focalPoint={pageCtx.viewModel.hero.focalPoint}
@@ -321,6 +326,7 @@ const headLinks = buildInvitationStylesheetHeadLinks({
 						url={pageCtx.musicPlayer.url}
 						autoPlay={pageCtx.musicPlayer.autoPlay}
 						title={pageCtx.musicPlayer.title}
+						startAt={pageCtx.musicPlayer.startAt}
 						revealMode={pageCtx.musicPlayer.revealMode}
 						variant={pageCtx.musicPlayer.variant}
 					/>

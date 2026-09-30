@@ -62,10 +62,11 @@ export function useAssetLibrary(invitationId: string, filter = 'active'): UseAss
 
 		fetchAssets(invitationId, filter, signal)
 			.then((data) => {
-				if (data) setAssets(data.assets);
+				if (!signal.cancelled && data) setAssets(data.assets);
 			})
 			.catch((err) => {
-				setError(err instanceof Error ? err.message : 'Error de red.');
+				if (!signal.cancelled)
+					setError(err instanceof Error ? err.message : 'Error de red.');
 			})
 			.finally(() => {
 				if (!signal.cancelled) setLoading(false);

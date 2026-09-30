@@ -1,5 +1,17 @@
 ---
 import Icon from '@/components/common/icons/Icon.astro';
+import {
+	buildCampaignCode,
+	buildGeneralMessage,
+	buildPackageMessage,
+	getGeneralPromoCode,
+	getPromoCode,
+	getPromoPackage,
+	getStartingPrice,
+	PROMO_CAMPAIGN,
+	type CampaignSection,
+	type PromoPackageId,
+} from '@/data/promo-campaign.data';
 import { isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 interface Props {
@@ -10,9 +22,12 @@ interface Props {
 	trackSection?: string;
 	trackCta?: string;
 	trackIntent?: string;
+	/** Explicit campaign code; otherwise `<campaignSection>-<promo code>`. */
 	trackCampaign?: string;
-	trackPackage?: string;
-	packageName?: string;
+	/** Section prefix for the derived campaign code. */
+	campaignSection?: CampaignSection;
+	/** Package context; derives name, promo code, value and the package quote message. */
+	packageId?: PromoPackageId;
 	trackValue?: number;
 	trackCurrency?: string;
 	trackDestination?: string;
@@ -20,29 +35,42 @@ interface Props {
 	eventType?: string;
 	eventLabel?: string;
 	ariaLabel?: string;
+	/** Keeps the message untouched by the click-time folio rewrite. */
 	preserveMessage?: boolean;
+	/** Omits promo attributes for CTAs that are not promo quotes. */
+	withoutPromo?: boolean;
 }
 
 const {
 	className = '',
 	phone: explicitPhone,
-	message = '¡Hola! Me gustaría recibir información sobre las invitaciones digitales premium.',
-	label = 'Solicitar asesoría',
+	message: explicitMessage,
+	label = 'Cotizar por WhatsApp',
 	trackSection = 'hero',
 	trackCta = 'hero_whatsapp',
 	trackIntent = 'whatsapp',
 	trackCampaign,
-	trackPackage,
-	packageName,
+	campaignSection = 'FINAL',
+	packageId,
 	trackValue,
 	trackCurrency,
 	trackDestination = 'whatsapp',
-	promoCode,
+	promoCode: explicitPromoCode,
 	eventType,
 	eventLabel,
-	ariaLabel = 'Contactar por WhatsApp',
+	ariaLabel = 'Cotizar por WhatsApp',
 	preserveMessage = false,
+	withoutPromo = false,
 } = Astro.props;
+
+const pkg = packageId ? getPromoPackage(packageId) : undefined;
+const promoCode = withoutPromo
+	? undefined
+	: (explicitPromoCode ?? (pkg ? getPromoCode(pkg) : getGeneralPromoCode()));
+const promoValue = withoutPromo ? undefined : (trackValue ?? pkg?.promoPrice ?? getStartingPrice());
+const campaignCode = trackCampaign ?? (promoCode ? buildCampaignCode(campaignSection, promoCode) : undefined);
+const currency = trackCurrency ?? (promoValue !== undefined ? PROMO_CAMPAIGN.currency : undefined);
+const message = explicitMessage ?? (pkg ? buildPackageMessage(pkg) : buildGeneralMessage());
 
 // If no phone is explicitly provided, fall back to empty string (caller provides phone).
 // If the phone is a placeholder, hide the CTA to avoid broken links.
@@ -66,84 +94,18 @@ const whatsappUrl = shouldRender ? `https://wa.me/${displayPhone}${message ? `?t
 	data-track-label={label}
 	data-track-intent={trackIntent}
 	data-track-destination={trackDestination}
-	data-campaign-code={trackCampaign}
-	data-package-interest={trackPackage}
-	data-package-name={packageName}
+	data-campaign-code={campaignCode}
+	data-package-interest={pkg?.id}
+	data-package-name={pkg?.name}
 	data-promo-code={promoCode}
 	data-event-type={eventType}
 	data-event-label={eventLabel}
-	data-track-value={trackValue}
-	data-track-currency={trackCurrency}
+	data-track-value={promoValue}
+	data-track-currency={currency}
 	data-phone={phone}
 	data-preserve-message={preserveMessage ? 'true' : undefined}
 >
 	<Icon name="WhatsApp" size={20} />
-	{label}
+	<slot>{label}</slot>
 </a>
 )}
-
-<script>
-	const FOLIO_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-	const FOLIO_PATTERN = /Folio:\s*CM-\d+-[A-Z0-9]{4}/i;
-
-	const getPromoCodeAndPrice = (anchor: HTMLAnchorElement) => {
-		const promoCode = anchor.getAttribute('data-promo-code') || 'LANZAMIENTO-899';
-		const match = promoCode.match(/(\d+)$/);
-		const price = match ? match[1] : '899';
-		return { promoCode, price };
-	};
-
-	const createPromoFolio = (price: string) => {
-		const values = new Uint8Array(4);
-		crypto.getRandomValues(values);
-		const suffix = [...values]
-			.map((value) => FOLIO_ALPHABET[value % FOLIO_ALPHABET.length])
-			.join('');
-		return `CM-${price}-${suffix}`;
-	};
-
-	const ensureWhatsAppPromoFolio = (anchor: HTMLAnchorElement) => {
-		if (anchor.getAttribute('data-preserve-message') === 'true') return;
-
-		const url = new URL(anchor.href);
-		const baseMessage =
-			url.searchParams.get('text') || 'Hola, quiero información sobre una invitación digital.';
-		if (FOLIO_PATTERN.test(baseMessage)) return;
-
-		// 1. Get promo code and price
-		const { promoCode, price } = getPromoCodeAndPrice(anchor);
-
-		// 2. Format the message dynamically based on context
-		const isPackage = anchor.getAttribute('data-package-interest');
-		const packageName = anchor.getAttribute('data-package-name') || '';
-		const eventLabel = anchor.getAttribute('data-event-label') || '';
-		const trackValue = anchor.getAttribute('data-track-value') || '';
-		const trackCurrency = anchor.getAttribute('data-track-currency') || '';
-		const packagePrice =
-			trackValue && trackCurrency
-				? ` de $${Number(trackValue).toLocaleString('es-MX')} ${trackCurrency}`
-				: '';
-
-		const messageHeader = (isPackage && packageName)
-			? `Hola, quiero elegir el paquete ${packageName}${packagePrice} para mi invitación digital.`
-			: `Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.`;
-
-		const messageParts = [
-			messageHeader,
-			...(eventLabel ? [`Evento: ${eventLabel}`] : []),
-			`Cupón: ${promoCode}`,
-			`Folio: ${createPromoFolio(price)}`
-		];
-
-		url.searchParams.set('text', messageParts.join('\n\n'));
-		anchor.href = url.toString();
-	};
-
-	document.addEventListener('click', (event) => {
-		const target =
-			event.target instanceof Element
-				? event.target.closest('[data-track-event="whatsapp_contact_clicked"]')
-				: null;
-		if (target instanceof HTMLAnchorElement) ensureWhatsAppPromoFolio(target);
-	});
-</script>

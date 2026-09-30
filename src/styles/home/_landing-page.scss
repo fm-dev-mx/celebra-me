@@ -1,5 +1,4 @@
 html {
-	scroll-snap-type: y proximity;
 	scroll-behavior: smooth;
 }
 
@@ -8,32 +7,31 @@ html {
 	flex-direction: column;
 }
 
+// Vertical rhythm only: each section keeps its own inline padding so content is not squeezed
+// on narrow screens.
 .landing-sections-wrapper section,
 .landing-sections-wrapper .hero-prime {
-	scroll-snap-align: start;
 	scroll-margin-top: calc(var(--nav-current-height, 70px) + 2.5rem);
 	min-height: auto;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	padding: var(--section-padding-y, var(--spacing-xl) 0);
-}
-
-footer {
-	scroll-snap-align: end;
-	min-height: auto;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	padding: var(--spacing-xl) 0;
+	padding-block: var(--section-padding-y, var(--spacing-xl));
 }
 
 // ---------------------------------------------------------------------------
 // Typography Normalization (Playfair Display serif + Montserrat sans-serif)
 // ---------------------------------------------------------------------------
 
-// Eyebrows
 .theme-preset--jewelry-box-landing {
+	// @fontsource-variable registers the "… Variable" family names; the plain names stay as
+	// fallbacks. Scoped to this stylesheet, which only index.astro loads, so demo, legal and
+	// invitation routes keep their current typography.
+	--font-display: 'Playfair Display Variable', 'Playfair Display', serif;
+	--font-body: 'Montserrat Variable', 'Montserrat', system-ui, sans-serif;
+	--font-ui: 'Montserrat Variable', 'Montserrat', system-ui, sans-serif;
+
+	// Eyebrows
 	.hero-prime__eyebrow,
 	.event-selector__eyebrow,
 	.product-proof__eyebrow,
@@ -65,5 +63,49 @@ footer {
 	.faq-title,
 	.contact-title {
 		font-family: var(--font-display);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Promo visibility
+// The prerendered landing always ships the promo; PromoStatus.astro sets
+// html[data-promo-state='expired'] once the campaign ends in the visitor's browser.
+// ---------------------------------------------------------------------------
+
+html:not([data-promo-state='expired']) [data-promo-fallback],
+html[data-promo-state='expired'] [data-promo-only] {
+	display: none;
+}
+
+// ---------------------------------------------------------------------------
+// Hero promo copy: starting price and no-deposit payment note
+// ---------------------------------------------------------------------------
+
+.hero-prime__price-line {
+	white-space: nowrap;
+}
+
+// The note sits right under the primary CTA: below the button row on desktop, between the
+// primary and secondary actions once they stack on smaller screens.
+.hero-prime__actions .hero-prime__payment-note {
+	order: 3;
+	flex-basis: 100%;
+	margin: 0;
+	color: rgb(var(--color-text-on-dark-rgb) / 82%);
+	font-family: var(--font-body);
+	font-size: 0.86rem;
+	line-height: 1.4;
+
+	@media (width <= 991px) {
+		order: 1;
+		flex-basis: auto;
+		font-size: 0.8rem;
+		text-align: center;
+	}
+}
+
+@media (width <= 991px) {
+	.hero-prime__actions .hero-prime__secondary-action {
+		order: 2;
 	}
 }

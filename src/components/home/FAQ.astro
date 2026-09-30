@@ -18,9 +18,6 @@ const phone = getContactPhone();
 <!-- FAQ Section -->
 <section id="faq-section" class="faq-section" data-screenshot="landing-faq">
 	<div class="faq-noise"></div>
-	<div class="faq-section__divider" aria-hidden="true">
-		<span>{data.divider || 'Dudas antes de cotizar'}</span>
-	</div>
 
 	<div class="container">
 		<header class="faq-header">
@@ -43,15 +40,10 @@ const phone = getContactPhone();
 			<WhatsAppButton
 				className="faq-cta__button"
 				phone={phone}
-				message={data.helpSection?.message || "Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\\n\\nCupón: LANZAMIENTO-899"}
-				label={data.helpSection?.cta || "Hablar con un asesor"}
+				label={data.helpSection?.cta}
 				trackSection="faq"
 				trackCta="whatsapp-faq"
-				trackCampaign="FINAL-LANZAMIENTO-899"
-				trackValue={899}
-				trackCurrency="MXN"
-				promoCode="LANZAMIENTO-899"
-				ariaLabel="Hablar con un asesor"
+				campaignSection="FINAL"
 			/>
 		</div>
 

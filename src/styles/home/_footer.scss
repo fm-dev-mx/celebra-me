@@ -29,7 +29,7 @@
 		}
 
 		@media (width >= 992px) {
-			grid-template-columns: 2fr 1fr 1fr 1.5fr;
+			grid-template-columns: 1.5fr 1fr 1fr 1.35fr 0.9fr;
 		}
 	}
 }
@@ -76,6 +76,42 @@
 	}
 }
 
+.footer-contact {
+	.footer-contact__whatsapp {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		width: fit-content;
+		min-width: 0;
+		padding: 0;
+		color: var(--footer-link-color);
+		background: none;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+		font-weight: 400;
+		letter-spacing: normal;
+		text-transform: none;
+
+		svg {
+			width: 18px;
+			height: 18px;
+			color: currentcolor;
+		}
+
+		&:hover {
+			background: none;
+			box-shadow: none;
+		}
+	}
+
+	.footer-contact__city {
+		margin: 0;
+		font-size: 0.95rem;
+		opacity: var(--footer-link-opacity);
+	}
+}
+
 .footer-socials {
 	.social-links-grid {
 		display: flex;
@@ -115,6 +151,9 @@
 }
 
 .footer-bottom {
+	// The bottom row lives in its own .container, which is also a grid: span every column so the
+	// copyright and legal links are not squeezed into the first track.
+	grid-column: 1 / -1;
 	margin-top: var(--spacing-xl);
 	padding-top: var(--spacing-lg);
 	border-top: 1px solid var(--footer-bottom-border);
@@ -141,13 +180,27 @@
 		font-size: 0.85rem;
 		opacity: var(--footer-legal-opacity);
 
-		a {
+		a,
+		.footer-link--cookie {
 			color: white;
 			text-decoration: none;
 			transition: opacity 0.3s ease;
 
 			&:hover {
 				opacity: 100%;
+			}
+		}
+
+		.footer-link--cookie {
+			padding: 0;
+			background: none;
+			border: 0;
+			font: inherit;
+			cursor: pointer;
+
+			&:hover,
+			&:focus-visible {
+				text-decoration: underline;
 			}
 		}
 	}

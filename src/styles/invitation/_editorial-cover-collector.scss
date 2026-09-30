@@ -1,0 +1,1027 @@
+// Editorial Cover — collector edition
+// ---------------------------------------------------------------
+// Opt-in via envelope.coverExperience = 'collector'. A printed magazine rests on a table; the
+// guest turns the cover like a page (collector-reveal.ts clips the front, reflects the inside
+// cover across the fold line, and moves the fold shadow every frame), then the spread settles
+// and the first page's photograph becomes the hero. Profiles restyle colors; geometry,
+// printed layout, and motion live here. Copy positions are % of the magazine so they stay on
+// the cover photograph's free zones at every size.
+
+@use '../global/mixins' as mixins;
+
+// The hero stays "sealed" until the hand-off completes, but in the collector edition it is
+// already visible behind the flying photograph: release the title wrapper during the
+// revealing phase so the name enters with the rest of the hero copy instead of popping in.
+.event-theme-wrapper[data-editorial-reveal-phase='revealing']:has(
+		ds-editorial-cover[data-cover-experience='collector']
+	)
+	.invitation-hero__title-wrapper {
+	opacity: 100%;
+	transform: none;
+}
+
+// The hero title is painted as gold gradient-clipped text until the reveal completes, then
+// switches to its solid fill. Behind the collector hand-off that switch reads as a colour
+// snap, so the name enters in its final colour from the start.
+.event-theme-wrapper[data-editorial-reveal-phase='revealing']:has(
+		ds-editorial-cover[data-cover-experience='collector']
+	)
+	:is(.invitation-hero__title, .invitation-hero__first-name, .invitation-hero__last-name) {
+	background: none;
+	-webkit-text-fill-color: currentcolor;
+}
+
+// While the magazine covers the screen: no page scrollbar, and the reserved scrollbar gutter
+// (fixed elements cannot paint into it) takes the table's colour instead of a light strip.
+html.envelope-open:has(ds-editorial-cover[data-cover-experience='collector']:not([hidden])) {
+	overflow: hidden;
+	background-color: rgb(20 18 16);
+}
+
+.editorial-cover-wrapper[data-cover-experience='collector'] {
+	// Stacked layout (portrait screens): magazine centred, ribbon and hint underneath.
+	--ec-actions-h: 6.5rem;
+	--ec-book-h: min(calc(100svh - var(--ec-actions-h) - 2.5rem), calc((100vw - 2.5rem) * 1.5));
+	--ec-book-w: calc(var(--ec-book-h) / 1.5);
+	--ec-book-top: max(1.25rem, calc((100svh - var(--ec-actions-h) - var(--ec-book-h)) / 2));
+	--ec-book-left: calc((100vw - var(--ec-book-w)) / 2);
+	--ec-hint-top: calc(var(--ec-book-top) + var(--ec-book-h) + 1.25rem);
+	--ec-hint-left: var(--ec-book-left);
+	--ec-hint-w: calc(var(--ec-book-w) * 0.62);
+	--ec-face-ink: rgb(20 18 16);
+	--ec-face-ink-soft: rgb(20 18 16 / 78%);
+	--ec-face-rule: rgb(20 18 16 / 38%);
+	--ec-paper: rgb(246 243 238);
+	--ec-paper-edge: rgb(214 207 196);
+	--ec-gold: rgb(176 141 87);
+	--ec-gold-light: rgb(226 201 152);
+	--ec-gold-dark: rgb(118 90 48);
+	--ec-tilt-x: 0deg;
+	--ec-tilt-y: 0deg;
+	--ec-gloss-x: 50%;
+
+	transition: opacity 500ms ease;
+
+	// Side-by-side layout (landscape screens): hint in a column to the right.
+	@media (orientation: landscape) and (width >= 640px) {
+		--ec-book-h: min(calc(100svh - 8.25rem), calc((100vw - 21rem) * 1.5));
+		--ec-book-top: 1.5rem;
+		--ec-book-left: calc((100vw - var(--ec-book-w) - 18.5rem) / 2);
+		--ec-hint-top: calc(var(--ec-book-top) + var(--ec-book-h) - 3.5rem);
+		--ec-hint-left: calc(var(--ec-book-left) + var(--ec-book-w) + 2.5rem);
+		--ec-hint-w: 15rem;
+	}
+
+	&::before,
+	&::after {
+		content: none;
+	}
+
+	// The collector drives its own motion; the standard slide-up exit must not run.
+	&.is-opening,
+	&[data-editorial-reveal-phase='revealing'] {
+		animation: none;
+
+		.editorial-cover-container {
+			animation: none;
+		}
+	}
+
+	&.is-collector-exit {
+		opacity: 0%;
+		pointer-events: none;
+		transition: opacity 600ms cubic-bezier(0.33, 1, 0.68, 1);
+	}
+
+	&.is-collector-exit .editorial-cover-container {
+		transform: scale(0.97);
+	}
+
+	.editorial-cover-container {
+		position: absolute;
+		inset: 0;
+		display: block;
+		min-height: 0;
+		padding: 0;
+		transition: transform 700ms cubic-bezier(0.33, 1, 0.68, 1);
+	}
+
+	// A warm pool of light switches on over the table as the scene opens.
+	.editorial-cover-container::before {
+		position: absolute;
+		inset: 0;
+		display: block;
+		border: 0;
+		content: '';
+		background:
+			radial-gradient(
+				ellipse 55% 60% at 50% 46%,
+				rgb(var(--ec-light-rgb, 226 201 152) / 14%),
+				transparent 70%
+			),
+			radial-gradient(ellipse at 50% 50%, transparent 55%, rgb(0 0 0 / 45%) 100%);
+		opacity: 100%;
+		pointer-events: none;
+		animation: ecCollectorTableLight 500ms ease-out backwards;
+	}
+
+	// ── The magazine ──
+	.ec-book {
+		position: absolute;
+		top: var(--ec-book-top);
+		left: var(--ec-book-left);
+		z-index: 2;
+		width: var(--ec-book-w);
+		height: var(--ec-book-h);
+		transform: perspective(1600px) rotateX(var(--ec-tilt-y)) rotateY(var(--ec-tilt-x));
+		transform-origin: 0 50%;
+		touch-action: none;
+		cursor: grab;
+		user-select: none;
+		-webkit-tap-highlight-color: transparent;
+		transition:
+			transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+			translate 120ms ease-out,
+			scale 120ms ease-out;
+		animation: ecCollectorArrive 820ms 80ms linear backwards;
+	}
+
+	// Anticipation before the automatic turn: the magazine dips as the ribbon is pulled.
+	&.is-collector-anticipate .ec-book {
+		translate: 0 2px;
+		scale: 0.995;
+	}
+
+	&.is-collector-dragging .ec-book,
+	&.is-collector-opening .ec-book {
+		--ec-tilt-x: 0deg;
+		--ec-tilt-y: 0deg;
+
+		animation: none;
+	}
+
+	&.is-collector-dragging .ec-book {
+		cursor: grabbing;
+		transition: none;
+	}
+
+	&.is-collector-opening .ec-book {
+		cursor: default;
+	}
+
+	// Page block under the cover (one continuous edge, no stepped corner) and table shadows.
+	.ec-book__edge {
+		position: absolute;
+		inset: 3px -4px -4px 2px;
+		z-index: 0;
+		border-radius: 2px 4px 4px 2px;
+		background:
+			repeating-linear-gradient(90deg, rgb(255 255 255 / 60%) 0 1px, transparent 1px 2px),
+			linear-gradient(135deg, rgb(236 231 222), var(--ec-paper-edge));
+		box-shadow:
+			0 2px 4px rgb(0 0 0 / 45%),
+			0 1.5rem 3rem -0.5rem rgb(0 0 0 / 62%);
+		animation: ecCollectorShadowLand 820ms 80ms linear backwards;
+	}
+
+	// First inner page: the photograph that becomes the hero.
+	.ec-book__first-page {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		overflow: hidden;
+		border-radius: 2px 4px 4px 2px;
+		background: var(--ec-paper);
+	}
+
+	.ec-page__photo {
+		position: absolute;
+		inset: 0 0 7%;
+		width: 100%;
+		height: 93%;
+		object-fit: cover;
+		object-position: 42% 30%;
+	}
+
+	.ec-page__folio {
+		position: absolute;
+		right: 6%;
+		bottom: 2.2%;
+		color: var(--ec-face-ink-soft);
+		font-family: var(--ec-font-body);
+		font-size: max(0.5rem, calc(var(--ec-book-w) * 0.022));
+		font-weight: 700;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+	}
+
+	.ec-book__front,
+	.ec-book__flap {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		border-radius: 2px 4px 4px 2px;
+		transform-origin: 0 0;
+		will-change: clip-path, transform;
+	}
+
+	.ec-book__front {
+		z-index: 2;
+	}
+
+	.ec-book__front,
+	.ec-book__flap,
+	.ec-hint {
+		font-feature-settings: 'lnum', 'kern', 'liga';
+		font-optical-sizing: auto;
+		text-rendering: optimizelegibility;
+	}
+
+	// Inside front cover; reflected across the fold line by collector-reveal.ts.
+	.ec-book__flap {
+		z-index: 3;
+		clip-path: polygon(0 0, 0 0, 0 0);
+		background:
+			linear-gradient(115deg, transparent 35%, rgb(255 255 255 / 30%) 48%, transparent 60%),
+			var(--ec-paper);
+	}
+
+	// Mirrored so the printed contents read correctly once the cover lies open on the left.
+	.ec-book__flap-content {
+		position: absolute;
+		inset: 0;
+		padding: 11% 10% 9%;
+		transform: scaleX(-1);
+		color: var(--ec-face-ink);
+	}
+
+	.ec-book__shadows {
+		position: absolute;
+		inset: 0;
+		z-index: 4;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	// Straddles the fold line: cast shadow on the page underneath and curvature on the flap.
+	.ec-book__fold {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: calc(var(--ec-book-h) * 2.4);
+		height: calc(var(--ec-book-w) * 0.5);
+		opacity: 0%;
+		transform-origin: 0 0;
+		background: linear-gradient(
+			180deg,
+			transparent 0%,
+			rgb(0 0 0 / 16%) 34%,
+			rgb(0 0 0 / 48%) 50%,
+			rgb(0 0 0 / 30%) 50%,
+			rgb(0 0 0 / 8%) 58%,
+			rgb(255 255 255 / 16%) 70%,
+			transparent 100%
+		);
+		will-change: transform, opacity;
+	}
+
+	// ── Printed cover ──
+	.ec-face__image,
+	.ec-book__front picture,
+	.ec-book__first-page picture {
+		position: absolute;
+		inset: 0;
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	.ec-face__image {
+		object-fit: cover;
+		object-position: 50% 50%;
+	}
+
+	// Glossy stock: a soft specular band that follows the tilt.
+	.ec-face__gloss {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: linear-gradient(
+				115deg,
+				transparent 38%,
+				rgb(255 255 255 / 16%) 48%,
+				rgb(255 255 255 / 4%) 56%,
+				transparent 64%
+			)
+			var(--ec-gloss-x) 50% / 260% 100% no-repeat;
+		transition: background-position 420ms ease-out;
+		animation: ecCollectorGlossSweep 700ms 900ms cubic-bezier(0.45, 0, 0.55, 1);
+	}
+
+	// Perfect-bound spine and the hinge crease a magazine cover gets near the spine.
+	.ec-face__spine {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: linear-gradient(
+			90deg,
+			rgb(0 0 0 / 40%) 0,
+			rgb(0 0 0 / 12%) 1.2%,
+			rgb(255 255 255 / 24%) 1.7%,
+			transparent 3%,
+			rgb(0 0 0 / 12%) 3.5%,
+			rgb(255 255 255 / 16%) 3.9%,
+			transparent 4.6%
+		);
+	}
+
+	// Copy sits on the pale sky (x 12–78 %); the door frame and window wood are dark.
+	.ec-face__masthead,
+	.ec-face__rail,
+	.ec-face__kicker,
+	.ec-face__star,
+	.ec-face__teasers {
+		position: absolute;
+		left: 12%;
+		width: 66%;
+		color: var(--ec-face-ink);
+	}
+
+	// Masthead with a hot-stamped gold sweep.
+	.ec-face__masthead {
+		top: 5.5%;
+		padding-bottom: 0.8%;
+		border-bottom: 1px solid var(--ec-face-rule);
+		background: linear-gradient(
+				100deg,
+				var(--ec-face-ink) 42%,
+				var(--ec-gold-light) 50%,
+				var(--ec-face-ink) 58%
+			)
+			100% 0 / 300% 100%;
+		/* stylelint-disable-next-line property-no-vendor-prefix -- Safari needs the prefix for text clipping */
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		font-family: var(--ec-font-display);
+		font-size: calc(var(--ec-book-w) * 0.078);
+		font-weight: 700;
+		line-height: 0.84;
+		text-align: center;
+		white-space: nowrap;
+		animation: ecCollectorFoil 900ms 1.1s cubic-bezier(0.45, 0, 0.55, 1);
+	}
+
+	&.is-idle-foil .ec-face__masthead {
+		animation: ecCollectorFoil 1100ms 250ms cubic-bezier(0.45, 0, 0.55, 1);
+	}
+
+	.ec-face__rail {
+		top: 13.6%;
+		display: flex;
+		justify-content: space-between;
+		gap: 0.5rem;
+		color: var(--ec-face-ink-soft);
+		font-family: var(--ec-font-body);
+		font-size: max(0.52rem, calc(var(--ec-book-w) * 0.024));
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	.ec-face__kicker {
+		top: 18.2%;
+		color: var(--ec-gold-dark);
+		font-family: var(--ec-font-body);
+		font-size: max(0.5rem, calc(var(--ec-book-w) * 0.022));
+		font-weight: 800;
+		letter-spacing: 0.26em;
+		text-align: center;
+		text-transform: uppercase;
+	}
+
+	// The cover star: italic serif, mixed case, centred — unlike the hero's gold capitals.
+	.ec-face__star {
+		top: 20.6%;
+		text-wrap: balance;
+		font-family: var(--ec-font-display);
+		font-size: calc(var(--ec-book-w) * 0.078);
+		font-style: italic;
+		font-weight: 500;
+		line-height: 1;
+		letter-spacing: -0.01em;
+		text-align: center;
+		text-transform: none;
+		white-space: nowrap;
+	}
+
+	.ec-face__teasers {
+		top: 28.4%;
+		width: auto;
+		max-width: 66%;
+		display: grid;
+		gap: 0.25em;
+		padding: 0.35em 0.7em 0.4em 0.6em;
+		border-left: 2px solid var(--ec-gold);
+		background: rgb(246 243 238 / 82%);
+		box-shadow: 0 1px 0 rgb(0 0 0 / 6%);
+		font-size: max(0.6rem, calc(var(--ec-book-w) * 0.03));
+	}
+
+	.ec-face__teaser {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0 0.4em;
+		align-items: baseline;
+		line-height: 1.2;
+	}
+
+	.ec-face__teaser-kicker {
+		color: var(--ec-gold-dark);
+		font-family: var(--ec-font-body);
+		font-size: 0.66em;
+		font-weight: 800;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+	}
+
+	.ec-face__teaser-dash {
+		color: var(--ec-gold-dark);
+	}
+
+	.ec-face__teaser-label {
+		font-family: var(--ec-font-display);
+		font-style: italic;
+		font-weight: 500;
+		text-wrap: balance;
+	}
+
+	.ec-face__teaser-page {
+		color: var(--ec-face-ink);
+		font-family: var(--ec-font-body);
+		font-size: 0.72em;
+		font-weight: 800;
+		font-feature-settings: 'tnum', 'lnum';
+		letter-spacing: 0.06em;
+
+		&::before {
+			margin-right: 0.35em;
+			content: '·';
+			color: var(--ec-gold-dark);
+		}
+	}
+
+	// Foil seal on the dark window wood.
+	.ec-face__seal {
+		position: absolute;
+		top: 12%;
+		right: 3%;
+		display: grid;
+		place-content: center;
+		width: calc(var(--ec-book-w) * 0.17);
+		aspect-ratio: 1;
+		gap: 0.1em;
+		border-radius: 50%;
+		background: radial-gradient(
+			circle at 35% 30%,
+			var(--ec-gold-light),
+			var(--ec-gold) 55%,
+			var(--ec-gold-dark)
+		);
+		box-shadow:
+			0 0 0 2px rgb(0 0 0 / 18%),
+			inset 0 0 0 3px rgb(255 255 255 / 22%);
+		color: var(--ec-face-ink);
+		font-family: var(--ec-font-body);
+		font-size: max(0.36rem, calc(var(--ec-book-w) * 0.015));
+		font-weight: 800;
+		line-height: 1.1;
+		letter-spacing: 0.12em;
+		text-align: center;
+		text-transform: uppercase;
+		transform: rotate(-12deg);
+	}
+
+	.ec-face__seal-mark {
+		color: var(--ec-gold-dark);
+		font-size: 2.2em;
+		line-height: 1;
+		letter-spacing: 0;
+	}
+
+	.ec-face__sill {
+		position: absolute;
+		top: 90.6%;
+		left: 6%;
+		color: var(--ec-face-ink);
+		display: flex;
+		gap: 0.75rem;
+		align-items: flex-end;
+		justify-content: space-between;
+		width: 88%;
+		padding-top: 0.8%;
+		border-top: 1px solid var(--ec-face-rule);
+	}
+
+	.ec-face__label {
+		display: grid;
+		min-width: 0;
+		gap: 0.1em;
+	}
+
+	.ec-face__label-kicker {
+		color: var(--ec-face-ink-soft);
+		font-family: var(--ec-font-body);
+		font-size: max(0.48rem, calc(var(--ec-book-w) * 0.02));
+		font-weight: 800;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+	}
+
+	.ec-face__label-name {
+		overflow: hidden;
+		font-family: var(--ec-font-display);
+		font-size: max(0.62rem, calc(var(--ec-book-w) * 0.032));
+		font-style: italic;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.ec-face__label-seats {
+		font-style: normal;
+	}
+
+	.ec-face__barcode {
+		display: grid;
+		flex: 0 0 auto;
+		justify-items: end;
+		gap: 0.15em;
+
+		svg {
+			display: block;
+			width: calc(var(--ec-book-w) * 0.15);
+			height: calc(var(--ec-book-w) * 0.045);
+			fill: var(--ec-face-ink);
+		}
+	}
+
+	.ec-face__price {
+		display: flex;
+		gap: 0.8em;
+		justify-content: flex-end;
+		font-family: var(--ec-font-body);
+		font-size: max(0.38rem, calc(var(--ec-book-w) * 0.014));
+		font-weight: 700;
+		font-feature-settings: 'tnum', 'lnum';
+		letter-spacing: 0.06em;
+		white-space: nowrap;
+	}
+
+	// Page corner that lifts to invite the drag.
+	.ec-face__corner {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		width: calc(var(--ec-book-w) * 0.03);
+		height: calc(var(--ec-book-w) * 0.03);
+		background: linear-gradient(
+			to top left,
+			rgb(30 26 22) 0 50%,
+			var(--ec-paper) 50%,
+			var(--ec-paper-edge) 100%
+		);
+		box-shadow: -2px -2px 6px rgb(0 0 0 / 22%);
+	}
+
+	&.is-idle-cue .ec-face__corner {
+		animation: ecCollectorCornerCue 1200ms cubic-bezier(0.45, 0, 0.55, 1);
+	}
+
+	&.is-collector-dragging .ec-face__corner,
+	&.is-collector-opening .ec-face__corner {
+		animation: none;
+		opacity: 0%;
+	}
+
+	// ── Inside front cover: "En este número" ──
+	.ec-inside__kicker {
+		display: block;
+		padding-bottom: 0.6em;
+		border-bottom: 1px solid var(--ec-face-rule);
+		color: var(--ec-gold-dark);
+		font-family: var(--ec-font-body);
+		font-size: max(0.55rem, calc(var(--ec-book-w) * 0.026));
+		font-weight: 800;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+	}
+
+	.ec-inside__list {
+		display: grid;
+		margin-top: 6%;
+	}
+
+	.ec-inside__entry {
+		display: grid;
+		grid-template-columns: 1.6em 1fr;
+		gap: 0.5em;
+		align-items: baseline;
+		padding-block: 0.45em;
+		border-bottom: 1px solid rgb(20 18 16 / 12%);
+		font-size: calc(var(--ec-book-w) * 0.05);
+	}
+
+	.ec-inside__page {
+		color: var(--ec-gold);
+		font-family: var(--ec-font-display);
+		font-weight: 700;
+		font-feature-settings: 'tnum', 'lnum';
+	}
+
+	// Light runs down the contents, one entry after another.
+	&.is-collector-spread .ec-inside__page {
+		animation: ecCollectorInsideGlint 700ms ease-in-out;
+	}
+
+	@for $i from 2 through 12 {
+		&.is-collector-spread .ec-inside__entry:nth-child(#{$i}) .ec-inside__page {
+			animation-delay: #{($i - 1) * 45}ms;
+		}
+	}
+
+	.ec-inside__label {
+		font-family: var(--ec-font-display);
+		font-size: 0.78em;
+		font-style: italic;
+	}
+
+	.ec-inside__mark {
+		position: absolute;
+		right: 7%;
+		bottom: 5%;
+		color: rgb(20 18 16 / 5%);
+		font-family: var(--ec-font-display);
+		font-size: calc(var(--ec-book-w) * 0.26);
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	.ec-inside__folio {
+		position: absolute;
+		bottom: 2.2%;
+		left: 10%;
+		color: var(--ec-face-ink-soft);
+		font-family: var(--ec-font-body);
+		font-size: max(0.5rem, calc(var(--ec-book-w) * 0.022));
+		font-weight: 700;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+	}
+
+	// ── Bookmark ribbon (call to action) and hint ──
+	.ec-ribbon-anchor {
+		position: absolute;
+		top: calc(var(--ec-book-top) + var(--ec-book-h) + 1px);
+		left: calc(var(--ec-book-left) + var(--ec-book-w) * 0.7);
+		z-index: 3;
+		width: auto;
+		margin: 0;
+		padding: 0;
+		transform-origin: 50% 0;
+		transition: opacity 240ms ease;
+		animation: ecCollectorRibbonDrop 700ms 1.3s linear backwards;
+	}
+
+	&.is-idle-cue .ec-ribbon-anchor {
+		animation: ecCollectorRibbonNudge 900ms 250ms cubic-bezier(0.45, 0, 0.55, 1);
+	}
+
+	.ec-ribbon-anchor:has(.ec-ribbon:focus-visible) {
+		outline: 2px solid var(--ec-gold-light);
+		outline-offset: 4px;
+	}
+
+	.editorial-cover__cta.ec-ribbon {
+		display: flex;
+		align-items: flex-start;
+		justify-content: center;
+		width: clamp(2.1rem, calc(var(--ec-book-w) * 0.085), 2.7rem);
+		position: relative;
+		height: 5.6rem;
+		min-height: 0;
+		padding: 0.55rem 0 0;
+		border: 0;
+		border-radius: 0;
+		background: linear-gradient(
+			90deg,
+			var(--ec-gold-dark) 0%,
+			var(--ec-gold) 18%,
+			var(--ec-gold-light) 44%,
+			var(--ec-gold) 62%,
+			var(--ec-gold-dark) 100%
+		);
+		color: var(--ec-face-ink);
+		clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 84%, 0 100%);
+		box-shadow: none;
+		cursor: pointer;
+		transform-origin: 50% 0;
+		transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+
+		&:hover,
+		&:focus-visible {
+			border: 0;
+			background: linear-gradient(
+				90deg,
+				var(--ec-gold-dark) 0%,
+				var(--ec-gold) 18%,
+				var(--ec-gold-light) 44%,
+				var(--ec-gold) 62%,
+				var(--ec-gold-dark) 100%
+			);
+			color: var(--ec-face-ink);
+			outline: none;
+			transform: translateY(4px);
+		}
+
+		&::before {
+			content: none;
+		}
+
+		// Tucked between the pages: a shade where the ribbon leaves the magazine.
+		&::after {
+			position: absolute;
+			inset: 0 0 auto;
+			height: 0.8rem;
+			content: '';
+			background: linear-gradient(180deg, rgb(0 0 0 / 38%), transparent);
+			pointer-events: none;
+		}
+
+		&[data-cta-hint='active'] {
+			animation: ecCollectorRibbonTug 520ms cubic-bezier(0.34, 1.56, 0.64, 1);
+		}
+	}
+
+	&.is-collector-anticipate .editorial-cover__cta.ec-ribbon {
+		transform: translateY(6px);
+		transition-duration: 120ms;
+	}
+
+	.ec-ribbon__text {
+		font-family: var(--ec-font-body);
+		font-size: 0.56rem;
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		line-height: 1;
+		text-transform: uppercase;
+		writing-mode: vertical-rl;
+		text-orientation: upright;
+	}
+
+	.ec-hint {
+		position: absolute;
+		top: var(--ec-hint-top);
+		left: var(--ec-hint-left);
+		z-index: 1;
+		width: var(--ec-hint-w);
+		margin: 0;
+		color: rgb(255 255 255 / 72%);
+		font-family: var(--ec-font-display);
+		font-size: clamp(0.9rem, 2.4vw, 1.05rem);
+		font-style: italic;
+		line-height: 1.3;
+		text-wrap: balance;
+		transition: opacity 240ms ease;
+		animation: ecCollectorHintIn 500ms 1.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+	}
+
+	// The entrance animations fill forwards, so they must stop for the fade to apply.
+	&.is-collector-opening .ec-ribbon-anchor,
+	&.is-collector-opening .ec-hint {
+		opacity: 0%;
+		animation: none;
+	}
+}
+
+@include mixins.reduced-motion {
+	.editorial-cover-wrapper[data-cover-experience='collector'] {
+		.editorial-cover-container::before,
+		.ec-book,
+		.ec-book__edge,
+		.ec-face__gloss,
+		.ec-face__corner,
+		.ec-face__masthead,
+		.ec-inside__page,
+		.ec-ribbon-anchor,
+		.editorial-cover__cta.ec-ribbon,
+		.ec-hint {
+			animation: none;
+		}
+
+		transition: opacity 300ms ease;
+	}
+}
+
+// Keyframes use per-segment easing: timing lives in the curve of each segment, not in one
+// global curve, so falls accelerate, landings decelerate, and settles damp out.
+
+@keyframes ecCollectorTableLight {
+	from {
+		opacity: 0%;
+	}
+
+	to {
+		opacity: 100%;
+	}
+}
+
+// Fall from above, touch down at 62 %, overshoot the rotation slightly, and settle.
+@keyframes ecCollectorArrive {
+	0% {
+		opacity: 0%;
+		translate: 0 -6vh;
+		rotate: -2.5deg;
+		animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.35);
+	}
+
+	28% {
+		opacity: 100%;
+	}
+
+	62% {
+		translate: 0 0;
+		rotate: 0.4deg;
+		animation-timing-function: cubic-bezier(0.25, 0.8, 0.4, 1);
+	}
+
+	82% {
+		rotate: -0.15deg;
+		animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+	}
+
+	100% {
+		opacity: 100%;
+		translate: 0 0;
+		rotate: 0deg;
+	}
+}
+
+// The shadow is wide and faint while the magazine is in the air, tight on contact.
+@keyframes ecCollectorShadowLand {
+	0% {
+		box-shadow:
+			0 2px 4px rgb(0 0 0 / 0%),
+			0 5rem 5rem -1rem rgb(0 0 0 / 18%);
+		animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.35);
+	}
+
+	62% {
+		box-shadow:
+			0 2px 4px rgb(0 0 0 / 50%),
+			0 1.3rem 2.6rem -0.5rem rgb(0 0 0 / 68%);
+		animation-timing-function: cubic-bezier(0.25, 0.8, 0.4, 1);
+	}
+
+	100% {
+		box-shadow:
+			0 2px 4px rgb(0 0 0 / 45%),
+			0 1.5rem 3rem -0.5rem rgb(0 0 0 / 62%);
+	}
+}
+
+@keyframes ecCollectorGlossSweep {
+	from {
+		background-position: 130% 50%;
+	}
+
+	to {
+		background-position: -30% 50%;
+	}
+}
+
+@keyframes ecCollectorFoil {
+	from {
+		background-position: 100% 0;
+	}
+
+	to {
+		background-position: 0% 0;
+	}
+}
+
+// Idle cue: a tiny dip (anticipation), the lift, and a damped return.
+@keyframes ecCollectorCornerCue {
+	0% {
+		width: calc(var(--ec-book-w) * 0.03);
+		height: calc(var(--ec-book-w) * 0.03);
+	}
+
+	12% {
+		width: calc(var(--ec-book-w) * 0.024);
+		height: calc(var(--ec-book-w) * 0.024);
+	}
+
+	45% {
+		width: calc(var(--ec-book-w) * 0.088);
+		height: calc(var(--ec-book-w) * 0.088);
+		animation-timing-function: cubic-bezier(0.25, 0.8, 0.4, 1);
+	}
+
+	80% {
+		width: calc(var(--ec-book-w) * 0.026);
+		height: calc(var(--ec-book-w) * 0.026);
+	}
+
+	100% {
+		width: calc(var(--ec-book-w) * 0.03);
+		height: calc(var(--ec-book-w) * 0.03);
+	}
+}
+
+// The ribbon slides out from between the pages (grows from the edge) and swings like a
+// pendulum that damps out.
+@keyframes ecCollectorRibbonDrop {
+	0% {
+		scale: 1 0;
+		rotate: 0deg;
+		animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.35);
+	}
+
+	45% {
+		scale: 1 1.05;
+		rotate: 2.4deg;
+		animation-timing-function: cubic-bezier(0.25, 0.8, 0.4, 1);
+	}
+
+	65% {
+		scale: 1 0.99;
+		rotate: -1.3deg;
+	}
+
+	82% {
+		scale: 1 1;
+		rotate: 0.5deg;
+	}
+
+	100% {
+		scale: 1 1;
+		rotate: 0deg;
+	}
+}
+
+// Secondary action to the corner cue: a small, damped swing.
+@keyframes ecCollectorRibbonNudge {
+	0%,
+	100% {
+		rotate: 0deg;
+	}
+
+	30% {
+		rotate: 1.6deg;
+	}
+
+	60% {
+		rotate: -0.8deg;
+	}
+
+	82% {
+		rotate: 0.3deg;
+	}
+}
+
+// Scroll intent: a quick tug that springs back.
+@keyframes ecCollectorRibbonTug {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+
+	35% {
+		transform: translateY(7px);
+	}
+}
+
+@keyframes ecCollectorInsideGlint {
+	0%,
+	100% {
+		color: var(--ec-gold);
+	}
+
+	40% {
+		color: var(--ec-gold-light);
+		text-shadow: 0 0 0.6em rgb(226 201 152 / 45%);
+	}
+}
+
+@keyframes ecCollectorHintIn {
+	from {
+		opacity: 0%;
+		translate: 0 6px;
+	}
+
+	to {
+		opacity: 100%;
+		translate: 0 0;
+	}
+}

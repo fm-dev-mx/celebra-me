@@ -2,7 +2,7 @@
 // src/components/home/GuestExperience.astro
 import Container from '@components/layout/Container.astro';
 import Section from '@components/layout/Section.astro';
-import WhatsAppButton from '@components/ui/WhatsAppButton.tsx';
+import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 import type { GuestExperienceData } from '@/interfaces/ui/sections/landing-page.interface';
 import { getContactPhone } from '@/utils/whatsapp';
 
@@ -20,7 +20,12 @@ const phone = getContactPhone();
 const titleHtml = data.title.replace('. ', '.<br>');
 ---
 
-<Section id="experiencia-invitados" class="guest-experience" data-screenshot="landing-guest-experience">
+<Section
+	id="experiencia-invitados"
+	class="guest-experience"
+	data-track-section="guest-experience"
+	data-screenshot="landing-guest-experience"
+>
 	<div class="guest-experience__bg-overlay"></div>
 
 	<Container class="guest-experience__container">
@@ -33,13 +38,13 @@ const titleHtml = data.title.replace('. ', '.<br>');
 				<div class="guest-experience__scene">
 					{/* WhatsApp chat bubble (tier 1 — small contextual cue) */}
 					<div class="guest-experience__chat-bubble" aria-hidden="true">
-						<p class="guest-experience__chat-text">📨 Te compartimos tu invitación</p>
+						<p class="guest-experience__chat-text">📨 Le compartimos su invitación</p>
 						<span class="guest-experience__chat-time">10:28 a.m.</span>
 					</div>
 
 					{/* Invitation card (tier 2 — supporting background layer) */}
 					<div class="guest-experience__invitation-card" aria-hidden="true">
-						<span class="guest-experience__invitation-eyebrow">Celebra·me</span>
+						<span class="guest-experience__invitation-eyebrow">Celebra-me</span>
 						<p class="guest-experience__invitation-names">Ana &amp; Luis</p>
 						<p class="guest-experience__invitation-date">22 de noviembre · 5:00 p.m.</p>
 					</div>
@@ -111,6 +116,9 @@ const titleHtml = data.title.replace('. ', '.<br>');
 					phone={phone}
 					message={data.cta.message}
 					label={data.cta.label}
+					trackSection="guest-experience"
+					trackCta="whatsapp-guest-experience"
+					campaignSection="GUESTS"
 				/>
 			</div>
 		</div>

@@ -3,8 +3,16 @@ import { AssetSchema, ColorTokenSchema } from '@/lib/schemas/content/shared.sche
 import { ENVELOPE_SEAL_COLORS } from '@/lib/invitation/reveal-card';
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
-export const envelopeRevealVariantSchema = z.enum(['celestial-blue', 'editorial-cover', 'satin-filigree']);
+export const envelopeRevealVariantSchema = z.enum([
+	'celestial-blue',
+	'editorial-cover',
+	'satin-filigree',
+]);
 export type EnvelopeRevealVariant = z.infer<typeof envelopeRevealVariantSchema>;
+
+/** Editorial cover experience: 'collector' adds the drag-to-open bending magazine. */
+export const editorialCoverExperienceSchema = z.enum(['standard', 'collector']);
+export type EditorialCoverExperience = z.infer<typeof editorialCoverExperienceSchema>;
 
 export const envelopeSchema = z
 	.object({
@@ -53,6 +61,7 @@ export const envelopeSchema = z
 		coverEdition: z.string().optional(),
 		coverVolume: z.string().optional(),
 		coverIssue: z.string().optional(),
+		coverExperience: editorialCoverExperienceSchema.optional(),
 	})
 	.loose() // Preserva campos desconocidos del envelope (defensivo para datos DB legacy)
 	.optional();

@@ -2,6 +2,13 @@
 import CheckIcon from '@components/ui/CheckIcon.astro';
 import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 import type { PricingData } from '@/interfaces/ui/sections/landing-page.interface';
+import {
+	formatMxn,
+	formatMxnAmount,
+	getPromoPackage,
+	getValidityNote,
+	PROMO_CAMPAIGN,
+} from '@/data/promo-campaign.data';
 import { getContactPhone } from '@/utils/whatsapp';
 
 interface Props {
@@ -10,8 +17,8 @@ interface Props {
 
 const { data } = Astro.props;
 const phone = getContactPhone();
-
-const cleanPriceAmount = (amountStr: string): number => Number(amountStr.replace(/,/g, ''));
+const validityNote = getValidityNote();
+const currency = PROMO_CAMPAIGN.currency;
 ---
 
 <section id="pricing" class="pricing-section" data-track-section="pricing" data-screenshot="landing-pricing">
@@ -23,15 +30,16 @@ const cleanPriceAmount = (amountStr: string): number => Number(amountStr.replace
 				<span class="pricing-eyebrow reveal-fade-up stagger-1">{data.eyebrow}</span>
 				<h2 class="pricing-title reveal-fade-up stagger-2">{data.title}</h2>
 				<p class="pricing-intro reveal-fade-up stagger-3">{data.intro}</p>
-				<p class="pricing-note reveal-fade-up stagger-4">{data.note}</p>
+				<p class="pricing-note reveal-fade-up stagger-4" data-promo-only>
+					<span>{validityNote}</span>
+					<span class="pricing-note__countdown" data-promo-days-left></span>
+				</p>
 			</header>
 
-			<div class="pricing-grid reveal-fade-up stagger-5" aria-label="Niveles de experiencia">
+			<div class="pricing-grid reveal-fade-up stagger-5" aria-label="Paquetes">
 				{
 					data.tiers.map((tier, index) => {
-						const priceValue = cleanPriceAmount(tier.price.amount);
-						const tierPromoCode = `LANZAMIENTO-${priceValue}`;
-						const tierCampaignCode = `PRICING-LANZAMIENTO-${priceValue}`;
+						const pkg = getPromoPackage(tier.packageId);
 
 						return (
 							<article
@@ -41,61 +49,76 @@ const cleanPriceAmount = (amountStr: string): number => Number(amountStr.replace
 									{ 'is-exclusive': tier.isExclusive },
 								]}
 								data-index={index}
-								data-tier={tier.id}
+								data-tier={pkg.id}
 								data-track-package-view
-								data-package-id={tier.id ?? tier.title.toLowerCase()}
-								data-package-name={tier.title}
+								data-package-id={pkg.id}
+								data-package-name={pkg.name}
 								data-source-area="pricing"
 							>
 								{tier.isPrimary && tier.badge && <div class="pricing-badge">{tier.badge}</div>}
 
 								<div class="card-content">
 									<header class="tier-header">
-										<h3 class="tier-name">{tier.title}</h3>
-										<p class="tier-desc">{tier.description}</p>
+										<h3 class="tier-name">{pkg.name}</h3>
 									</header>
 
-									<div class="tier-price" aria-label={`${tier.price.amount} ${tier.price.currency}`}>
-										<span class="currency-symbol">$</span>
-										<span class="amount">{tier.price.amount}</span>
-										<span class="currency-code">{tier.price.currency}</span>
-										{tier.price.period && <span class="period">{tier.price.period}</span>}
+									<div class="tier-pricing">
+										<p class="tier-promo-label" data-promo-only>{PROMO_CAMPAIGN.label}</p>
+										<div
+											class="tier-price"
+											data-promo-only
+											aria-label={`${formatMxn(pkg.promoPrice)} ${currency}, pago único`}
+										>
+											<span class="currency-symbol">$</span>
+											<span class="amount">{formatMxnAmount(pkg.promoPrice)}</span>
+											<span class="currency-code">{currency}</span>
+											<span class="period">pago único</span>
+										</div>
+										<div
+											class="tier-price"
+											data-promo-fallback
+											aria-label={`${formatMxn(pkg.regularPrice)} ${currency}, pago único`}
+										>
+											<span class="currency-symbol">$</span>
+											<span class="amount">{formatMxnAmount(pkg.regularPrice)}</span>
+											<span class="currency-code">{currency}</span>
+											<span class="period">pago único</span>
+										</div>
+										<p class="regular-price" data-promo-only>
+											Precio regular: <s>{formatMxn(pkg.regularPrice)} {currency}</s>
+										</p>
 									</div>
-
-									{tier.regularPrice && <p class="regular-price">{tier.regularPrice}</p>}
-									<p class="tier-ideal">{tier.idealFor}</p>
 
 									<div class="tier-sections">
-										{tier.sections.map((section) => (
-											<div class="tier-section">
-												<h4 class="section-title">{section.title}</h4>
-												<ul class="section-items">
-													{section.items.map((item) => (
-														<li class="section-item">
-															<CheckIcon />
-															<span>{item}</span>
-														</li>
-													))}
-												</ul>
+										{tier.includesFrom && <p class="tier-includes-from">{tier.includesFrom}</p>}
+										<ul class="section-items">
+											{tier.includes.map((item) => (
+												<li class="section-item">
+													<CheckIcon />
+													<span>{item}</span>
+												</li>
+											))}
+										</ul>
+									</div>
+
+									<dl class="tier-details">
+										{tier.details.map((detail) => (
+											<div class="tier-details__row">
+												<dt>{detail.label}</dt>
+												<dd>{detail.value}</dd>
 											</div>
 										))}
-									</div>
+									</dl>
 
 									<WhatsAppButton
 										className="cta-button"
 										phone={phone}
-										message={tier.ctaMessage}
-										label={`Elegir ${tier.title}`}
-										ariaLabel={`Elegir ${tier.title}`}
+										packageId={pkg.id}
+										ariaLabel={`Cotizar el paquete ${pkg.name} por WhatsApp`}
 										trackSection="pricing"
-										trackCta={`pricing_${tier.id ?? tier.title.toLowerCase().replaceAll(' ', '_')}`}
+										trackCta={`pricing_${pkg.id}`}
 										trackIntent="package_interest"
-										trackCampaign={tierCampaignCode}
-										trackPackage={tier.id ?? tier.title.toLowerCase()}
-										packageName={tier.title}
-										trackValue={priceValue}
-										trackCurrency="MXN"
-										promoCode={tierPromoCode}
+										campaignSection="PRICING"
 									/>
 								</div>
 							</article>
@@ -104,26 +127,13 @@ const cleanPriceAmount = (amountStr: string): number => Number(amountStr.replace
 				}
 			</div>
 
-			<aside class="pricing-guide reveal-fade-up stagger-5" aria-labelledby="pricing-guide-title">
+			<aside class="pricing-guide pricing-extras reveal-fade-up stagger-5" aria-labelledby="pricing-extras-title">
 				<div>
-					<h3 id="pricing-guide-title">{data.decisionGuide.title}</h3>
+					<h3 id="pricing-extras-title">{data.extras.title}</h3>
 					<ul>
-						{data.decisionGuide.rows.map((row) => <li>{row}</li>)}
+						{data.extras.items.map((item) => <li>{item}</li>)}
 					</ul>
 				</div>
-				<WhatsAppButton
-					className="pricing-guide__cta"
-					phone={phone}
-					message={data.decisionGuide.message}
-					label={data.decisionGuide.cta}
-					trackSection="pricing"
-					trackCta="pricing_decision_help"
-					trackIntent="package_help"
-					trackCampaign="PRICING-DECISION-GUIDE"
-					trackCurrency="MXN"
-					ariaLabel={data.decisionGuide.cta}
-					preserveMessage
-				/>
 			</aside>
 		</div>
 	</div>

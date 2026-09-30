@@ -579,6 +579,31 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
+	it('preserves non-editable editorial copy (hero tagline/photoCredit, gifts folioMark) from prior content', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			priorPublishedContent: {
+				...baseInput.priorPublishedContent,
+				hero: {
+					...baseDemoContent.hero,
+					tagline: 'Una noche inolvidable.',
+					photoCredit: 'Estudio Real',
+				},
+				gifts: { variant: 'standard', items: [], folioMark: 'A·S' },
+			},
+			draftContent: {
+				...baseInput.draftContent,
+				gifts: { title: 'Mesa de regalos', items: [{ type: 'cash', title: 'Sobres' }] },
+			},
+		});
+
+		expect(result.hero).toMatchObject({
+			tagline: 'Una noche inolvidable.',
+			photoCredit: 'Estudio Real',
+		});
+		expect(result.gifts).toMatchObject({ title: 'Mesa de regalos', folioMark: 'A·S' });
+	});
+
 	it('maps quote section', () => {
 		const result = mapDraftToPublished({
 			...baseInput,

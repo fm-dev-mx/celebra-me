@@ -1,0 +1,25 @@
+---
+/**
+ * src/components/home/PromoStatus.astro
+ *
+ * Client-only promo state for the prerendered landing page. It never renders markup:
+ * - adds "Quedan N días" to `[data-promo-days-left]` during the last days of the campaign;
+ * - marks `html[data-promo-state]` so CSS hides `[data-promo-only]` and reveals
+ *   `[data-promo-fallback]` once the campaign has ended.
+ * Dates come from `src/data/promo-campaign.data.ts`; there is no hour/minute clock.
+ */
+---
+
+<script>
+	import { formatDaysLeft, getPromoStatus } from '@/data/promo-campaign.data';
+
+	const status = getPromoStatus(new Date());
+	document.documentElement.dataset.promoState = status.phase;
+
+	if (status.showCountdown) {
+		const label = formatDaysLeft(status.daysLeft);
+		document.querySelectorAll<HTMLElement>('[data-promo-days-left]').forEach((element) => {
+			element.textContent = label;
+		});
+	}
+</script>

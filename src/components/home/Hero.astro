@@ -6,6 +6,15 @@
 import ActionBase from '@components/common/actions/ActionBase.astro';
 import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 import type { HeroData } from '@/interfaces/ui/sections/landing-page.interface';
+import {
+	buildCampaignCode,
+	formatMxn,
+	getGeneralPromoCode,
+	getStartingPrice,
+	getStartingRegularPrice,
+	PROMO_CAMPAIGN,
+} from '@/data/promo-campaign.data';
+import { getContactPhone } from '@/utils/whatsapp';
 
 import heroBrideDesktop from '@/assets/images/hero/hero-bride-desktop.webp';
 import heroBrideMobile from '@/assets/images/hero/hero-bride-mobile.webp';
@@ -23,6 +32,7 @@ interface Props {
 }
 
 const { data } = Astro.props;
+const phone = getContactPhone();
 
 const heroImages = [
 	{ desktop: heroBrideDesktop, mobile: heroBrideMobile },
@@ -68,22 +78,24 @@ const heroImages = [
 
 			<p class="hero-prime__subtitle stagger-3">
 				<span class="hero-prime__copy-desktop">{data.subtitle}</span>
-				<span class="hero-prime__copy-mobile">{data.mobileSubtitle ?? data.subtitle}</span>
+				<span class="hero-prime__copy-mobile">{data.mobileSubtitle ?? data.subtitle}</span>{' '}
+				<span class="hero-prime__price-line">
+					{data.priceLine.prefix}{' '}
+					<span data-promo-only>{formatMxn(getStartingPrice())}</span><span data-promo-fallback>{formatMxn(getStartingRegularPrice())}</span>{' '}
+					{data.priceLine.suffix}
+				</span>
 			</p>
 
 			<div class="hero-prime__actions stagger-4">
 				<WhatsAppButton
-					phone={data.whatsappPhone}
-					message={data.whatsappMessage}
+					phone={phone}
 					label={data.primaryCtaLabel}
 					trackSection="hero"
 					trackCta="whatsapp-hero"
-					trackCampaign="HERO-LANZAMIENTO-899"
-					trackValue={899}
-					trackCurrency="MXN"
-					promoCode="LANZAMIENTO-899"
+					campaignSection="HERO"
 					ariaLabel="Cotizar por WhatsApp"
 				/>
+				<p class="hero-prime__payment-note">{data.paymentNote}</p>
 				<ActionBase
 					as="a"
 					href={data.secondaryCtaUrl || '#tipo-evento'}
@@ -94,12 +106,13 @@ const heroImages = [
 					data-track-section="hero"
 					data-track-cta="hero_secondary"
 					data-track-label={data.secondaryCtaLabel}
-					data-track-intent="section_nav"
-					data-track-destination="event-types"
-					data-campaign-code="DEMO-LANZAMIENTO-899"
-					data-promo-code="LANZAMIENTO-899"
-					data-track-value="899"
-					data-track-currency="MXN"
+					data-track-intent="demo_showroom"
+					data-track-destination="demo"
+					data-demo-slug={data.secondaryCtaDemoSlug}
+					data-campaign-code={buildCampaignCode('DEMO')}
+					data-promo-code={getGeneralPromoCode()}
+					data-track-value={getStartingPrice()}
+					data-track-currency={PROMO_CAMPAIGN.currency}
 				>
 					{data.secondaryCtaLabel}
 				</ActionBase>

@@ -1,0 +1,80 @@
+---
+/**
+ * src/components/home/StickyWhatsAppBar.astro
+ *
+ * Fixed mobile CTA (not a content section). It appears once the hero leaves the viewport, hides
+ * over the contact form and footer, and yields to the cookie consent bar while that bar is open.
+ */
+import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
+import { formatMxn, getStartingPrice, getStartingRegularPrice } from '@/data/promo-campaign.data';
+import { getContactPhone } from '@/utils/whatsapp';
+
+import '@/styles/home/_sticky-cta.scss';
+
+const phone = getContactPhone();
+const promoPrice = formatMxn(getStartingPrice());
+const regularPrice = formatMxn(getStartingRegularPrice());
+---
+
+<div class="sticky-cta" data-sticky-cta inert>
+	<WhatsAppButton
+		className="sticky-cta__button"
+		phone={phone}
+		label={`WhatsApp · desde ${promoPrice}`}
+		trackSection="sticky"
+		trackCta="whatsapp-sticky"
+		campaignSection="STICKY"
+	>
+		<span>
+			WhatsApp · desde{' '}
+			<span data-promo-only>{promoPrice}</span><span data-promo-fallback>{regularPrice}</span>
+		</span>
+	</WhatsAppButton>
+</div>
+
+<script>
+	const bar = document.querySelector<HTMLElement>('[data-sticky-cta]');
+	const hero = document.getElementById('inicio');
+	const consentBar = document.getElementById('consent-banner-bar');
+	const hideZones = [document.getElementById('contacto'), document.querySelector('.footer-section')];
+
+	if (bar && hero && 'IntersectionObserver' in window) {
+		let heroVisible = true;
+		const visibleHideZones = new Set<Element>();
+
+		const isConsentOpen = () =>
+			consentBar instanceof HTMLElement && getComputedStyle(consentBar).display !== 'none';
+
+		const update = () => {
+			const visible = !heroVisible && visibleHideZones.size === 0 && !isConsentOpen();
+			bar.classList.toggle('sticky-cta--visible', visible);
+			bar.inert = !visible;
+		};
+
+		new IntersectionObserver(([entry]) => {
+			heroVisible = entry.isIntersecting;
+			update();
+		}).observe(hero);
+
+		const zoneObserver = new IntersectionObserver((entries) => {
+			entries.forEach((entry) => {
+				if (entry.isIntersecting) visibleHideZones.add(entry.target);
+				else visibleHideZones.delete(entry.target);
+			});
+			update();
+		});
+		hideZones.forEach((zone) => {
+			if (zone) zoneObserver.observe(zone);
+		});
+
+		// The consent bar toggles its inline display; keep the CTA out of its way.
+		if (consentBar) {
+			new MutationObserver(update).observe(consentBar, {
+				attributes: true,
+				attributeFilter: ['style', 'class'],
+			});
+		}
+
+		update();
+	}
+</script>

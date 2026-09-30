@@ -1,19 +1,14 @@
 ---
 // src/components/home/TestimonialsGrid.astro
 // Compact editorial quote rotator — one testimonial at a time
-
-interface TestimonialItem {
-	name: string;
-	text: string;
-	role?: string;
-	guests?: string;
-}
+import type { TestimonialItem } from '@/interfaces/ui/sections/landing-page.interface';
 
 interface Props {
 	eyebrow?: string;
 	title?: string;
 	subtitle?: string;
 	testimonials: TestimonialItem[];
+	notice?: string;
 	proofLine?: string;
 }
 
@@ -22,6 +17,7 @@ const {
 	title,
 	subtitle,
 	testimonials = [],
+	notice,
 	proofLine,
 } = Astro.props;
 
@@ -51,9 +47,8 @@ if (!total) return null;
 					>
 						<p class="testimonials__text">“{t.text}”</p>
 						<footer class="testimonials__footer">
-							<span class="testimonials__name">{t.name}</span>
-							{t.role && <span class="testimonials__role">{t.role}</span>}
-							{t.guests && <span class="testimonials__guests">{t.guests}</span>}
+							<span class="testimonials__name">{t.role}</span>
+							{t.eventLabel && <span class="testimonials__role">{t.eventLabel}</span>}
 						</footer>
 					</article>
 				))
@@ -73,6 +68,7 @@ if (!total) return null;
 				}
 			</span>
 		</div>
+		{notice && <p class="testimonials__notice">{notice}</p>}
 	</div>
 </div>
 

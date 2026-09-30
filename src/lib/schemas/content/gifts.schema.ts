@@ -48,8 +48,10 @@ export const bankGiftItemSchema = z.object({
 	title: z.string().default('Transferencia'),
 	bankName: z.string(),
 	accountHolder: z.string(),
+	/** The transfer number shown and copied; `accountKind` says what it is (default CLABE). */
 	clabe: z.string(),
 	accountNumber: z.string().optional(),
+	accountKind: z.enum(['clabe', 'card', 'account']).optional(),
 });
 
 export const paypalGiftItemSchema = z.object({
@@ -79,6 +81,8 @@ export const giftsSchema = z
 		variant: z.enum(GIFTS_VARIANTS),
 		title: z.string().optional(),
 		subtitle: z.string().optional(),
+		// Decorative monogram shown in the editorial-catalog card folio.
+		folioMark: z.string().max(12).optional(),
 		presentation: z.enum(GIFTS_PRESENTATIONS).optional(),
 		items: z.array(giftItemSchema).optional(),
 	})
