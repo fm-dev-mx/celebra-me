@@ -27,6 +27,7 @@ import InvitationDeferredCssPromotion from '@/components/invitation/InvitationDe
 import { isEventType } from '@/lib/theme/theme-contract';
 
 import { performance } from 'node:perf_hooks';
+import { buildCoverContents } from '@/lib/invitation/cover-contents';
 
 const slug = Astro.params.slug!;
 const eventType = Astro.params.eventType!;
@@ -291,6 +292,12 @@ const isDemoConversion = Boolean(
 									heroLabel={page.viewModel.hero.label}
 									heroDate={page.viewModel.hero.date}
 									heroVenueName={page.heroVenueName}
+									coverContents={buildCoverContents(page.viewModel)}
+									spreadImage={page.viewModel.hero.backgroundImage}
+									guestName={page.guestName}
+									guestSeats={page.guestContext?.guest.maxAllowedAttendees}
+									coverExperience={page.envelope.coverExperience}
+									coverImage={page.envelope.backdropImage}
 									backgroundImage={page.viewModel.hero.backgroundImage}
 									portrait={page.viewModel.hero.portrait}
 									focalPoint={page.viewModel.hero.focalPoint}
@@ -382,6 +389,7 @@ const isDemoConversion = Boolean(
 									url={page.musicPlayer.url}
 									autoPlay={page.musicPlayer.autoPlay}
 									title={page.musicPlayer.title}
+									startAt={page.musicPlayer.startAt}
 									revealMode={page.musicPlayer.revealMode}
 									variant={page.musicPlayer.variant}
 								/>

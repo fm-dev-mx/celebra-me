@@ -3,6 +3,8 @@
 import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type { EditorialCoverExperience } from '@/lib/schemas/content/envelope.schema';
+import type { CoverContentsEntry } from '@/lib/invitation/cover-contents';
 
 interface Props {
 	coverEdition?: string;
@@ -18,10 +20,22 @@ interface Props {
 	heroDate: string;
 	heroVenueName?: string;
 	previewState?: 'closed' | 'opened' | 'letter';
+	/** Dedicated cover photograph (envelope.backdropImage); takes precedence over hero images. */
+	coverImage?: ImageMetadata | ImageAsset;
 	backgroundImage?: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset;
 	focalPoint?: string;
 	focalPointMobile?: string;
+	/** 'collector' renders the drag-to-open bending magazine; default is the standard cover. */
+	coverExperience?: EditorialCoverExperience;
+	/** Collector edition: guest the copy is printed for ("Edición exclusiva para: …"). */
+	guestName?: string;
+	/** Collector edition: seats reserved for that guest. */
+	guestSeats?: number;
+	/** Collector edition: table of contents, in the invitation's section order. */
+	coverContents?: CoverContentsEntry[];
+	/** Collector edition: photograph printed on the first inner page (hands off to the hero). */
+	spreadImage?: ImageMetadata | ImageAsset;
 }
 
 const {
@@ -37,16 +51,63 @@ const {
 	heroDate,
 	heroVenueName,
 	previewState,
+	coverImage: dedicatedCoverImage,
 	backgroundImage,
 	portrait,
 	focalPoint,
 	focalPointMobile,
+	coverExperience = 'standard',
+	guestName,
+	guestSeats,
+	coverContents = [],
+	spreadImage,
 } = Astro.props;
+
+const isCollector = coverExperience === 'collector';
+
+// ── Collector edition copy: magazine furniture that never repeats the hero's text. ──
+const heroDateValue = new Date(heroDate);
+const issueMonth = heroDateValue
+	.toLocaleDateString('es-MX', { month: 'long', timeZone: 'UTC' })
+	.toUpperCase();
+const issueYear = heroDateValue.getUTCFullYear();
+const issueRail = [
+	coverVolume && `VOL. ${coverVolume}`,
+	coverEdition && `NÚM. ${coverEdition}`,
+	`${issueMonth} ${issueYear}`,
+].filter(Boolean) as string[];
+// Decorative ISSN built from the event day and month (e.g. 13 Nov 2026 → 1311-2026).
+const issn = `ISSN ${String(heroDateValue.getUTCDate()).padStart(2, '0')}${String(
+	heroDateValue.getUTCMonth() + 1,
+).padStart(2, '0')}-${issueYear}`;
+const coverTeasers = coverContents.slice(0, 2);
+const trimmedGuestName = guestName?.trim();
+const seatsLabel =
+	typeof guestSeats === 'number' && guestSeats > 0
+		? `${guestSeats} ${guestSeats === 1 ? 'pase' : 'pases'}`
+		: undefined;
+// Deterministic, decorative barcode derived from the slug.
+let barcodeX = 0;
+const barcodeRects = Array.from(`${eventSlug}-celebra-me`)
+	.flatMap((char, index) => {
+		const code = char.charCodeAt(0);
+		return [
+			{ width: 1 + (code % 3), gap: 1 + ((code >> 2) % 2) },
+			{ width: 1 + ((code + index) % 2), gap: 1 + ((code >> 1) % 3) },
+		];
+	})
+	.slice(0, 34)
+	.map((bar) => {
+		const rect = { x: barcodeX, width: bar.width };
+		barcodeX += bar.width + bar.gap;
+		return rect;
+	});
+const barcodeWidth = barcodeX;
 
 const ctaText = coverEdition ? 'ABRIR INVITACIÓN' : 'DESCUBRIR';
 const coverLines = ['Una noche de estreno', 'Retrato de una celebración'];
 const coverKicker = coverEdition ? `Edición ${coverEdition}` : heroLabel;
-const formattedDate = new Date(heroDate).toLocaleDateString('es-MX', {
+const formattedDate = heroDateValue.toLocaleDateString('es-MX', {
 	day: 'numeric',
 	month: 'long',
 	year: 'numeric',
@@ -59,13 +120,18 @@ if (coverVolume) issueParts.push({ label: 'VOL.', value: coverVolume });
 if (coverIssue) issueParts.push({ label: 'NÚM.', value: coverIssue });
 if (coverEdition) issueParts.push({ label: 'EDICIÓN', value: coverEdition });
 
-// Resolve cover image from background image or fallback to portrait
+// Resolve the cover image: dedicated cover photograph, then hero background, then portrait.
 const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata | string =>
 	'src' in image ? image.src : image;
 
-const coverImage = backgroundImage ?? portrait;
+const hasImageSource = (image?: ImageMetadata | ImageAsset): image is ImageMetadata | ImageAsset =>
+	Boolean(image && ('src' in image ? image.src : image));
+
+const coverImage = [dedicatedCoverImage, backgroundImage, portrait].find(hasImageSource);
 const coverDelivery = coverImage && 'delivery' in coverImage ? coverImage.delivery : undefined;
-const resolvedImage = backgroundImage ? resolveImage(backgroundImage) : (portrait ? resolveImage(portrait) : null);
+const resolvedImage = coverImage ? resolveImage(coverImage) : null;
+const spreadSource = spreadImage ? resolveImage(spreadImage) : null;
+const spreadDelivery = spreadImage && 'delivery' in spreadImage ? spreadImage.delivery : undefined;
 
 // For SSR fallback when JS is disabled: compute the skip URL
 const skipParams = new URLSearchParams(Astro.url.search);
@@ -81,9 +147,155 @@ const shouldRenderHidden =
 	data-event-slug={eventSlug}
 	data-variant={variant || ''}
 	data-preview-state={previewState}
+	data-cover-experience={coverExperience}
 	hidden={shouldRenderHidden ? true : undefined}
 >
 	<div class="editorial-cover-container">
+		{isCollector ? (
+			<>
+				<!-- Collector edition: a printed magazine on a table; the guest turns the cover. -->
+				<div class="ec-book" data-collector-book aria-hidden="true">
+					<span class="ec-book__edge"></span>
+
+					<!-- First inner page (right-hand page of the opening spread). -->
+					<div class="ec-book__first-page">
+						{spreadSource && (
+							<CacheSafeImage
+								class="ec-page__photo"
+								src={spreadSource}
+								delivery={spreadDelivery}
+								alt=""
+								width={1080}
+								height={1620}
+								format="webp"
+								quality={80}
+								loading="eager"
+							/>
+						)}
+						<span class="ec-page__folio">pág. 03</span>
+					</div>
+
+					<div class="ec-book__front" data-collector-front>
+						{resolvedImage && (
+							<CacheSafeImage
+								class="ec-face__image"
+								src={resolvedImage}
+								delivery={coverDelivery}
+								alt=""
+								width={1080}
+								height={1620}
+								format="webp"
+								quality={82}
+								loading="eager"
+								fetchpriority="high"
+							/>
+						)}
+						<span class="ec-face__gloss"></span>
+						<span class="ec-face__spine"></span>
+						<span class="ec-face__masthead">CELEBRA · ME</span>
+						<span class="ec-face__rail">
+							{issueRail.map((part) => <span>{part}</span>)}
+						</span>
+						<span class="ec-face__kicker">En portada</span>
+						<span class="ec-face__star">
+							{heroName}
+							{heroSecondaryName && <> &amp; {heroSecondaryName}</>}
+						</span>
+						{coverTeasers.length > 0 && (
+							<span class="ec-face__teasers">
+								{coverTeasers.map((entry) => (
+									<span class="ec-face__teaser">
+										<span class="ec-face__teaser-kicker">{entry.kicker}</span>
+										<span class="ec-face__teaser-dash" aria-hidden="true">—</span>
+										<span class="ec-face__teaser-label">{entry.deck ?? entry.label}</span>
+										<span class="ec-face__teaser-page">{entry.page}</span>
+									</span>
+								))}
+							</span>
+						)}
+						<span class="ec-face__seal">
+							<span class="ec-face__seal-line">Número</span>
+							<span class="ec-face__seal-mark" aria-hidden="true">✦</span>
+							<span class="ec-face__seal-line">de colección</span>
+						</span>
+						<span class="ec-face__sill">
+							<span class="ec-face__label">
+								{trimmedGuestName ? (
+									<>
+										<span class="ec-face__label-kicker">Edición exclusiva para</span>
+										<span class="ec-face__label-name">
+											{trimmedGuestName}
+											{seatsLabel && <span class="ec-face__label-seats"> · {seatsLabel}</span>}
+										</span>
+									</>
+								) : (
+									<span class="ec-face__label-kicker">Ejemplar de colección</span>
+								)}
+							</span>
+							<span class="ec-face__barcode">
+								<svg viewBox={`0 0 ${barcodeWidth} 24`} preserveAspectRatio="none">
+									{barcodeRects.map((rect) => (
+										<rect x={rect.x} y="0" width={rect.width} height="24" />
+									))}
+								</svg>
+								<span class="ec-face__price">{issn}</span>
+							</span>
+						</span>
+						<span class="ec-face__corner"></span>
+					</div>
+
+					<!-- Inside front cover: printed contents, reflected across the fold while turning. -->
+					<div class="ec-book__flap" data-collector-flap>
+						<div class="ec-book__flap-content">
+							<span class="ec-inside__kicker">En este número</span>
+							<span class="ec-inside__list">
+								{coverContents.map((entry) => (
+									<span class="ec-inside__entry">
+										<span class="ec-inside__page">{entry.page}</span>
+										<span class="ec-inside__label">{entry.label}</span>
+									</span>
+								))}
+							</span>
+							<span class="ec-inside__mark">{coverEdition ?? 'XV'}</span>
+							<span class="ec-inside__folio">pág. 02</span>
+						</div>
+					</div>
+
+					<div class="ec-book__shadows">
+						<span class="ec-book__fold" data-collector-fold></span>
+					</div>
+				</div>
+
+				<div class="sr-only">
+					<h1>
+						{heroName}
+						{heroSecondaryName && <> &amp; {heroSecondaryName}</>}
+					</h1>
+					{coverKicker && <p>{coverKicker}</p>}
+					<p>{formattedDate}</p>
+					{heroVenueName && <p>{heroVenueName}</p>}
+				</div>
+
+				<!-- Bookmark ribbon between the pages: the call to action. -->
+				<div class="editorial-cover__action ec-ribbon-anchor">
+					<button
+						type="button"
+						class="editorial-cover__cta ec-ribbon"
+						data-editorial-open
+						aria-label={microcopy}
+					>
+						<span class="ec-ribbon__text" aria-hidden="true">Abrir</span>
+					</button>
+					<noscript>
+						<a href={skipUrl} class="editorial-cover__cta editorial-cover__cta--fallback">
+							<span class="editorial-cover__cta-text">{ctaText}</span>
+						</a>
+					</noscript>
+				</div>
+				<p class="ec-hint" aria-hidden="true">Jale el listón o pase la página.</p>
+			</>
+		) : (
+		<>
 		<!-- Photographic cover background -->
 		{resolvedImage && (
 			<div class="editorial-cover__background" aria-hidden="true">
@@ -174,10 +386,14 @@ const shouldRenderHidden =
 		<footer class="editorial-cover__footer">
 			<span class="editorial-cover__issue">Colección editorial · Celebra Me</span>
 		</footer>
+		</>
+		)}
 	</div>
 </ds-editorial-cover>
 
 <script>
+	import { setupCollectorReveal } from './editorial-cover/collector-reveal';
+
 	const EXIT_ANIMATION_MS = 1600;
 	const EXIT_COMPLETION_FALLBACK_MS = EXIT_ANIMATION_MS + 600;
 
@@ -234,6 +450,8 @@ const shouldRenderHidden =
 			let ctaHintTimer = 0;
 			let lastCtaHint = 0;
 			let touchStartY = 0;
+			// Disabling the button drops focus to <body>, so remember where focus was at commit.
+			let focusWasInside = false;
 			const completeReveal = () => {
 				if (hasRevealed) return;
 				hasRevealed = true;
@@ -242,7 +460,7 @@ const shouldRenderHidden =
 				window.clearTimeout(ctaHintTimer);
 				if (openButton) openButton.removeAttribute('data-cta-hint');
 
-				const shouldMoveFocus = this.contains(document.activeElement);
+				const shouldMoveFocus = focusWasInside || this.contains(document.activeElement);
 
 				clearRevealPhase();
 				document.documentElement.classList.remove('envelope-open');
@@ -299,20 +517,41 @@ const shouldRenderHidden =
 
 			document.documentElement.classList.add('envelope-open');
 
+			const rememberOpened = () => {
+				if (isDemoInvitation) return;
+				try {
+					localStorage.setItem(storageKey, 'true');
+				} catch {
+					// Ignore localStorage access errors
+				}
+			};
+
+			if (this.dataset.coverExperience === 'collector') {
+				setupCollectorReveal({
+					root: this,
+					openButton,
+					reducedMotion: motionPreference,
+					onCommit: () => {
+						focusWasInside = this.contains(document.activeElement);
+						if (openButton) {
+							openButton.disabled = true;
+							openButton.setAttribute('aria-disabled', 'true');
+						}
+						rememberOpened();
+					},
+					onExitStart: setRevealPhase,
+					onComplete: completeReveal,
+				});
+			}
+
 			openButton?.addEventListener('click', (event) => {
+				if (this.dataset.coverExperience === 'collector') return;
 				event.stopPropagation();
 				event.preventDefault();
 				openButton.disabled = true;
 				openButton.setAttribute('aria-disabled', 'true');
 
-				// Store flag
-				if (!isDemoInvitation) {
-					try {
-						localStorage.setItem(storageKey, 'true');
-					} catch {
-					// Ignore localStorage access errors
-				}
-				}
+				rememberOpened();
 
 				if (motionPreference) {
 					completeReveal();

@@ -297,6 +297,7 @@ export const envelopeSchema = z
 		coverEdition: z.string().trim().max(80).optional(),
 		coverVolume: z.string().trim().max(40).optional(),
 		coverIssue: z.string().trim().max(40).optional(),
+		coverExperience: z.enum(['standard', 'collector']).optional(),
 		closedPalette: z
 			.object({
 				primary: ColorTokenSchema.optional(),

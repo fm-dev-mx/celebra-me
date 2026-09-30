@@ -193,6 +193,8 @@ export interface EnvelopeViewModel {
 		coverVolume?: string;
 		/** Editorial cover reveal: issue year (e.g. "2027"). */
 		coverIssue?: string;
+		/** Editorial cover reveal: 'collector' enables the drag-to-open bending magazine. */
+		coverExperience?: 'standard' | 'collector';
 		/** Explicit content reveal variant. Only 'editorial-cover' replaces the standard envelope. */
 		revealVariant?: EnvelopeRevealVariant;
 	};
@@ -341,6 +343,7 @@ export interface InvitationViewModel {
 				guestCount?: string;
 				attendance?: string;
 				confirmButton?: string;
+				notesPlaceholder?: string;
 			};
 			personalizedAccess: {
 				variant: PersonalizedAccessVariant;
@@ -381,6 +384,8 @@ export interface InvitationViewModel {
 		url: string;
 		autoPlay: boolean;
 		title?: string;
+		/** Second at which playback starts and loops back to. */
+		startAt?: number;
 		revealMode: 'envelope' | 'immediate';
 	};
 	interludes?: Interlude[];
