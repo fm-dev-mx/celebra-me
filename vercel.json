@@ -7,7 +7,7 @@
     "installCommand": "corepack pnpm install --frozen-lockfile",
     "crons": [
         {
-            "path": "/api/cron/valentina-memories-cleanup",
+            "path": "/api/cron/memories-cleanup",
             "schedule": "17 7 * * *"
         }
     ],

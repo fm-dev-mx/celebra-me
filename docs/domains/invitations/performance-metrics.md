@@ -892,10 +892,11 @@ references; verify the guarded content release independently.
 
 ### Memories cleanup operation budget
 
-An empty batch retains five database operations and no R2 requests. Each eligible session now uses
-one atomic RPC instead of a media read, session PATCH and separate audit write. Sessions with
-anonymized_at set are excluded from future selection. Concurrency and retained-media checks run in
-the database; do not infer completion from revoked_at or the display name. Migration 20260908212231
-must precede the application rollout. No legacy markers are backfilled from names; old rows may
-require one additional cleanup. A rollback may retain the additive column/function; rolling back to
-old code reintroduces repeated work and is not an efficiency fix.
+An empty run costs six database operations (stale validations, session anonymization candidates,
+reservation expiry, retention expiry, one cleanup claim, audit purge) and no R2 requests. The run
+keeps claiming batches of `MEMORIES_CLEANUP_BATCH_SIZE` while `MEMORIES_CLEANUP_TIME_BUDGET_MS`
+allows and stops after the first batch with a failed physical deletion. Each eligible session uses
+one atomic RPC; sessions with `anonymized_at` set are excluded from future selection. Concurrency
+and retained-media checks run in the database; do not infer completion from `revoked_at` or the
+display name. Migration `20260930180000` must precede the application rollout; a missing RPC fails
+closed.

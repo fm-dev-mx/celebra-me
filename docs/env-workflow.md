@@ -156,32 +156,35 @@ secrets for invitation image upload (Astro API + `invitation:release` CLI). Neve
 `PUBLIC_CLOUDINARY_*` equivalents or place real Cloudinary values in tracked files. Missing values
 fail closed: invitation image uploads do not fall back to Supabase Storage.
 
-Valentina Memories has no browser-facing environment variable. The browser calls same-origin APIs;
-the backend uses server-only Worker origins and repository-owned route paths. Missing or invalid
-values fail closed.
+Event memories have no browser-facing environment variable. The browser calls same-origin APIs; the
+backend uses server-only Worker origins and repository-owned route paths. Missing or invalid values
+fail closed.
 
-### Valentina Memories environment cheatsheet
+### Event memories environment cheatsheet
 
 This table is the sole human-facing authority for where each value belongs. Local private values go
 in ignored files; tracked examples contain empty values only. Preview/Staging and Production use
-independent key pairs and credentials.
+independent key pairs and credentials. Per-event configuration (public slug, window, retention,
+quotas) is not environment configuration: it lives in the `event_memory_settings` table and is
+managed from the super-admin dashboard.
 
-| Name                                             | Local                             | Preview / Staging                              | Production                                           | Value source                                         |
-| ------------------------------------------------ | --------------------------------- | ---------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------- |
-| `MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY`    | `.env.local` secret               | Vercel Preview secret                          | Vercel Production secret, independent                | Locally generated PKCS#8 P-256 upload pair           |
-| `MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY` | `.env.local` secret               | Vercel Preview secret                          | Vercel Production secret, independent                | Locally generated PKCS#8 P-256 retrieval pair        |
-| `MEMORIES_PRIVATE_UPLOAD_ORIGIN`                 | Local Wrangler origin             | Vercel Preview config                          | Vercel Production config                             | Deployed Sign Worker origin; path stays in code      |
-| `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`              | Local Wrangler origin             | Vercel Preview config                          | Vercel Production config                             | Deployed Retrieval Worker origin; path stays in code |
-| `CRON_SECRET`                                    | Synthetic `.env.local` secret     | Vercel Preview secret                          | Vercel Production secret, independent                | Cryptographically secure random generator            |
-| `MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY`      | Sign Worker `.dev.vars`           | Sign Worker Staging secret                     | Sign Worker Production secret                        | SPKI public key from the upload pair                 |
-| `MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY`   | Retrieval Worker `.dev.vars`      | Retrieval Worker Staging secret                | Retrieval Worker Production secret                   | SPKI public key from the retrieval pair              |
-| `MEMORIES_UPLOAD_CAPABILITY_SECRET`              | Sign Worker `.dev.vars`           | Sign Worker Staging secret                     | Independent Sign Worker Production secret            | HMAC secret for one-use upload capabilities          |
-| `MEMORIES_STORAGE_TARGET`                        | Wrangler versioned var: `local`   | Wrangler versioned var: `staging`              | Wrangler versioned var: `production`                 | Repository Worker configuration                      |
-| `MEMORIES_BUCKET`                                | Simulated local R2 binding        | Binding to the Staging bucket                  | Binding to the Production bucket                     | Wrangler R2 binding; never a variable or secret      |
-| Supabase URL / anon / service role               | Values reported by local Supabase | Vercel Preview values from the Preview project | Vercel Production values from the Production project | Matching Supabase project API settings               |
+| Name                                             | Local                             | Preview / Staging                                                                   | Production                                           | Value source                                              |
+| ------------------------------------------------ | --------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------- |
+| `MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY`    | `.env.local` secret               | Vercel Preview secret                                                               | Vercel Production secret, independent                | Locally generated PKCS#8 P-256 upload pair                |
+| `MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY` | `.env.local` secret               | Vercel Preview secret                                                               | Vercel Production secret, independent                | Locally generated PKCS#8 P-256 retrieval pair             |
+| `MEMORIES_PRIVATE_UPLOAD_ORIGIN`                 | Local Wrangler origin             | Vercel Preview config                                                               | Vercel Production config                             | Deployed Sign Worker origin; path stays in code           |
+| `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN`              | Local Wrangler origin             | Vercel Preview config                                                               | Vercel Production config                             | Deployed Retrieval Worker origin; path stays in code      |
+| `CRON_SECRET`                                    | Synthetic `.env.local` secret     | Vercel Preview secret                                                               | Vercel Production secret, independent                | Cryptographically secure random generator                 |
+| `MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY`      | Sign Worker `.dev.vars`           | Sign Worker Staging secret                                                          | Sign Worker Production secret                        | SPKI public key from the upload pair                      |
+| `MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY`   | Retrieval Worker `.dev.vars`      | Retrieval Worker Staging secret                                                     | Retrieval Worker Production secret                   | SPKI public key from the retrieval pair                   |
+| `MEMORIES_UPLOAD_CAPABILITY_SECRET`              | Sign Worker `.dev.vars`           | Sign Worker Staging secret                                                          | Independent Sign Worker Production secret            | Secret that seals one-use upload capabilities (AES-GCM)   |
+| `MEMORIES_STORAGE_TARGET`                        | Wrangler versioned var: `local`   | Wrangler versioned var: `staging`                                                   | Wrangler versioned var: `production`                 | Repository Worker configuration                           |
+| `MEMORIES_ALLOWED_ORIGINS`                       | Wrangler versioned var            | Wrangler versioned var; branch previews via `--var` at deploy time, never committed | Wrangler versioned var: `https://www.celebra-me.com` | Repository Worker configuration (comma-separated origins) |
+| `MEMORIES_BUCKET`                                | Simulated local R2 binding        | Binding to the Staging bucket                                                       | Binding to the Production bucket                     | Wrangler R2 binding; never a variable or secret           |
+| Supabase URL / anon / service role               | Values reported by local Supabase | Vercel Preview values from the Preview project                                      | Vercel Production values from the Production project | Matching Supabase project API settings                    |
 
-Do not create `PUBLIC_MEMORIES_*`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, or Valentina
-Memories values in Cloudflare Secrets Store. Interactive deployment authentication is owned by
+Do not create `PUBLIC_MEMORIES_*`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, or event
+memories values in Cloudflare Secrets Store. Interactive deployment authentication is owned by
 `wrangler login`; Worker runtime secrets are applied to the exact environment with
 `wrangler secret put --env <environment>`. Never place API tokens, capability secrets, object keys,
 signed URLs, or reusable secret values in tracked templates, documentation, logs, or evidence.

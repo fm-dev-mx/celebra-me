@@ -362,6 +362,8 @@ Celebra-me includes a dedicated RSVP and guest-management module for:
 ### Host Dashboard Routes
 
 - `/dashboard/invitados`
+- `/dashboard/memories`
+- `/dashboard/admin/recuerdos`
 - `/dashboard/claimcodes`
 - `/dashboard/usuarios`
 - `/dashboard/admin`
@@ -440,10 +442,40 @@ Historical note:
 
 Detailed RSVP design and constraints are documented in `docs/domains/rsvp/architecture.md`.
 
-### Memories session anonymization
+### Event memories (guest photo/video QR)
 
-Cleanup uses a service-role-only, security-invoker RPC to lock the event and session, verify that no
-undeleted media remains, and commit identity anonymization, anonymized_at and the audit together.
-The event lock order matches reservation. Completed sessions are excluded from subsequent batches.
-Apply the additive session-anonymization migration before deploying the cleanup service; a missing
-RPC fails closed. Legacy rows retain a NULL marker and receive one final anonymization.
+One private memory space per event, activated by a super admin from `/dashboard/admin/recuerdos`.
+The feature is event-neutral: nothing in code names a client, and adding an event never requires a
+deployment.
+
+- **Module layout** (enforced by the ESLint `boundaries` elements): `src/lib/memories/contract/` is
+  import-free and shared by the app, the islands and the Cloudflare Workers;
+  `src/lib/memories/server/` holds repositories (the only modules that name tables and RPCs),
+  services, route guards and the Worker gateway; `src/lib/memories/client/` holds the browser API
+  client, media preparation and encrypted export; islands live in `src/components/memories/` and
+  `src/components/dashboard/memories/`.
+- **Routes:** `/r/[slug]` and `/r/[slug]/recuperar` (SSR, `noindex`, `no-store`) resolve the space
+  by its immutable public slug; `/dashboard/memories?eventId=` is the owner-only organizer surface;
+  `/dashboard/admin/recuerdos` manages spaces.
+- **Guest API:** `GET|POST|PATCH|DELETE /api/memories/:slug/session`,
+  `GET|POST /api/memories/:slug/items`, `GET|PATCH|POST|DELETE /api/memories/:slug/items/:itemId`.
+  Authentication is a per-space `__Host-` cookie; anonymous operations are rate limited by IP and
+  everything else by session.
+- **Organizer API:** `GET /api/dashboard/memories`, `GET|POST /api/dashboard/memories/:eventId`,
+  `GET|PATCH|DELETE /api/dashboard/memories/:eventId/items/:itemId` (owner membership required;
+  mutations are CSRF-protected through the dashboard client).
+- **Admin API:** `GET|POST /api/dashboard/admin/memories`,
+  `PATCH /api/dashboard/admin/memories/:eventId`.
+- **Data:** `event_memory_settings` (window, retention, quotas, entitlement; `on delete restrict` to
+  `events`), `event_memory_sessions`, `event_memory_items`, `event_memory_audit_events`. The
+  reservation RPC decides availability, window and every quota under one advisory lock; a single
+  retention instant per space expires sessions, catalog rows and objects together. The R2 lifecycle
+  rule (`events/`, maximum object lifetime from the contract) is the final backstop.
+- **Workers:** `celebra-memories-sign` (`/sign`, `/upload`) and `celebra-memories-retrieve`
+  (`/retrieve`) verify ECDSA-signed app requests, enforce the global media policy and never learn
+  about events. Upload capabilities are AES-GCM sealed so the browser cannot read object keys.
+- **Cleanup:** `GET /api/cron/memories-cleanup` (Vercel cron, bearer secret) reconciles abandoned
+  validations, expires reservations and retention-ended spaces, deletes scheduled objects in leased
+  batches within a time budget, anonymizes inactive guest sessions after their last object is gone,
+  and purges audit rows. Anonymization is a service-role-only, security-invoker RPC that locks the
+  event and session in the same order as reservation; a missing RPC fails closed.
