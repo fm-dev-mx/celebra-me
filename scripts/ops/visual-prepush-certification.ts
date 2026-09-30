@@ -12,6 +12,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { visualImpactFiles } from './visual-impact.ts';
 
 export const CERTIFICATION_SCHEMA_VERSION = 1;
@@ -280,6 +281,148 @@ export function visualDifferenceFiles(root: string): string[] {
 	return [...files].sort();
 }
 
+interface CandidateCaptureEntry {
+	file: string;
+	sha256?: string;
+	kind?: string;
+	section?: string;
+	variant?: string;
+	preset?: string;
+	viewport?: string;
+}
+
+interface CombinedCandidateManifest {
+	status?: string;
+	mode?: string;
+	totalCaptures?: number;
+	referenceSha?: string;
+	matrixHash?: string;
+	candidateManifestSha256?: string;
+	captures?: CandidateCaptureEntry[];
+}
+
+function printCategoryList(title: string, items: string[], prefix = '*', max = 8): void {
+	if (items.length === 0) return;
+	console.log(`  - ${title} (${items.length}):`);
+	for (const item of items.slice(0, max)) {
+		console.log(`    ${prefix} ${item}`);
+	}
+	if (items.length > max) console.log(`    ... y ${items.length - max} más`);
+}
+
+function categorizeCandidateDiffs(
+	candidateManifest: CombinedCandidateManifest,
+	acceptedManifest: { captures?: CandidateCaptureEntry[] } | null,
+): { newPages: string[]; modifiedPages: string[]; variantDiffs: string[] } {
+	const acceptedMap = new Map<string, string>();
+	for (const capture of acceptedManifest?.captures ?? []) {
+		if (capture.file && capture.sha256) acceptedMap.set(capture.file, capture.sha256);
+	}
+
+	const newFiles: string[] = [];
+	const modifiedFiles: string[] = [];
+	for (const capture of candidateManifest.captures ?? []) {
+		if (!acceptedMap.has(capture.file)) {
+			newFiles.push(capture.file);
+		} else if (acceptedMap.get(capture.file) !== capture.sha256) {
+			modifiedFiles.push(capture.file);
+		}
+	}
+
+	const clean = (path: string): string => path.replace('pages/', '').replace('.png', '');
+	return {
+		newPages: newFiles.filter((f) => f.startsWith('pages/')).map(clean),
+		modifiedPages: modifiedFiles.filter((f) => f.startsWith('pages/')).map(clean),
+		variantDiffs: [...newFiles, ...modifiedFiles]
+			.filter((f) => !f.startsWith('pages/'))
+			.map(clean),
+	};
+}
+
+function printVisualCandidateSummary(candidateDir: string, root: string, sha: string): void {
+	const combinedPath = join(candidateDir, 'combined-manifest.json');
+	const acceptedPath = join(root, ACCEPTED_MANIFEST);
+
+	if (!existsSync(combinedPath)) {
+		console.log(`Certified visual candidate generated for ${sha}: ${candidateDir}`);
+		return;
+	}
+
+	try {
+		const candidateManifest = JSON.parse(
+			readFileSync(combinedPath, 'utf8'),
+		) as CombinedCandidateManifest;
+		const acceptedManifest = existsSync(acceptedPath)
+			? (JSON.parse(readFileSync(acceptedPath, 'utf8')) as {
+					captures?: CandidateCaptureEntry[];
+				})
+			: null;
+
+		const { newPages, modifiedPages, variantDiffs } = categorizeCandidateDiffs(
+			candidateManifest,
+			acceptedManifest,
+		);
+		const totalDiffs = newPages.length + modifiedPages.length + variantDiffs.length;
+		const changesUrl = pathToFileURL(resolve(candidateDir, 'changes.html')).href;
+
+		console.log('\n' + '─'.repeat(72));
+		console.log(
+			`📊 RESUMEN DE CAMBIOS VISUALES (Candidato certificado para ${sha.slice(0, 9)})`,
+		);
+		console.log('─'.repeat(72));
+		console.log(
+			`• Total de capturas evaluadas: ${candidateManifest.totalCaptures ?? candidateManifest.captures?.length ?? 0}`,
+		);
+		console.log(`• Cambios detectados: ${totalDiffs}`);
+
+		printCategoryList('Páginas nuevas provisionadas', newPages, '+');
+		printCategoryList('Páginas completas modificadas', modifiedPages, '~');
+		printCategoryList('Variantes de sección afectadas', variantDiffs, '*');
+
+		console.log('─'.repeat(72));
+		console.log(`🔗 Reporte visual interactivo (Antes vs Candidato):`);
+		console.log(`   ${changesUrl}`);
+		console.log('─'.repeat(72));
+		console.log(`✅ Para aceptar estos cambios tras tu revisión:`);
+		console.log(`   pnpm visual:parity:accept\n`);
+	} catch (error) {
+		console.log(`Certified visual candidate generated for ${sha}: ${candidateDir}`);
+		console.error('No se pudo generar el resumen visual:', error);
+	}
+}
+
+function assertHostPrerequisites(): void {
+	for (const command of [
+		['docker', ['version', '--format', '{{.Server.Version}}']],
+		['git', ['lfs', 'version']],
+	] as const) {
+		const result = spawnSync(command[0], command[1], { stdio: 'ignore', shell: false });
+		if ((result.status ?? 1) !== 0)
+			throw new Error(`${command[0]} ${command[1].join(' ')} is required.`);
+	}
+}
+
+function materializeCandidateWorkspace(evidence: string, root: string, sha: string): void {
+	preserveCandidateEvidence(evidence, sha);
+
+	const targetTmp = resolve(root, '.tmp/visual-parity');
+	mkdirSync(targetTmp, { recursive: true });
+
+	const sourceCandidate = join(evidence, 'visual-parity', 'candidate');
+	const targetCandidate = join(targetTmp, 'candidate');
+	if (existsSync(targetCandidate)) rmSync(targetCandidate, { recursive: true, force: true });
+	cpSync(sourceCandidate, targetCandidate, { recursive: true });
+
+	const sourceReferences = join(evidence, 'visual-parity', 'candidate-references');
+	const targetReferences = join(targetTmp, 'candidate-references');
+	if (existsSync(targetReferences)) rmSync(targetReferences, { recursive: true, force: true });
+	if (existsSync(sourceReferences)) {
+		cpSync(sourceReferences, targetReferences, { recursive: true });
+	}
+
+	printVisualCandidateSummary(targetCandidate, root, sha);
+}
+
 function main(): void {
 	const sha = assertExactCommit(parseFlag('--sha') ?? '');
 	const repositoryRoot = git(['rev-parse', '--show-toplevel']);
@@ -298,14 +441,7 @@ function main(): void {
 		return;
 	}
 
-	for (const command of [
-		['docker', ['version', '--format', '{{.Server.Version}}']],
-		['git', ['lfs', 'version']],
-	] as const) {
-		const result = spawnSync(command[0], command[1], { stdio: 'ignore', shell: false });
-		if ((result.status ?? 1) !== 0)
-			throw new Error(`${command[0]} ${command[1].join(' ')} is required.`);
-	}
+	assertHostPrerequisites();
 
 	const temporaryRoot = mkdtempSync(join(tmpdir(), 'celebra-me-visual-prepush-'));
 	const checkout = join(temporaryRoot, 'checkout');
@@ -340,14 +476,18 @@ function main(): void {
 				const category = classifyVisualFailure(evidence);
 				throw new Error(`${category}: candidate generation failed for ${sha}.`);
 			}
-			const candidatePath = preserveCandidateEvidence(evidence, sha);
-			console.log(`Certified visual candidate generated for ${sha}: ${candidatePath}`);
+			materializeCandidateWorkspace(evidence, repositoryRoot, sha);
 			return;
 		}
 		const exitCode = runDocker(checkout, evidence, sha, 'compare');
 		if (exitCode !== 0) {
+			const category = classifyVisualFailure(evidence);
+			const hint =
+				category === 'VISUAL_DIFF'
+					? `\n💡 Para generar el candidato certificado e inspeccionar visualmente los cambios:\n   pnpm visual:parity:candidate:certified -- --sha ${sha}`
+					: '';
 			throw new Error(
-				`${classifyVisualFailure(evidence)}: certification failed for ${sha}. Never accept references automatically.`,
+				`${category}: certification failed for ${sha}. Never accept references automatically.${hint}`,
 			);
 		}
 		mkdirSync(dirname(certificationPath), { recursive: true });

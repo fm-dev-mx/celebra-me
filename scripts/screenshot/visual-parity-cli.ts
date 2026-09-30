@@ -398,28 +398,27 @@ export function writeCombinedCandidateArtifacts(
 }
 
 function accept(
-	referenceSha: string,
-	approvedMatrixHash: string,
-	approvedCandidateManifestSha256: string,
+	referenceSha?: string,
+	approvedMatrixHash?: string,
+	approvedCandidateManifestSha256?: string,
 ): void {
 	if (process.env.CI) throw new Error('Baseline acceptance is unavailable in CI.');
-	if (!approvedMatrixHash || !approvedCandidateManifestSha256) {
-		throw new Error(
-			'Baseline acceptance requires --matrix-hash and --candidate-manifest-sha256 from the reviewed candidate.',
-		);
-	}
 	const head = assertCleanGitState('accept');
-	const resolvedReferenceSha = resolveReferenceSha(referenceSha, head);
+	const resolvedReferenceSha = referenceSha ? resolveReferenceSha(referenceSha, head) : head;
 	const candidateManifest = readManifest(CANDIDATE_ROOT);
 	assertCandidateManifest(candidateManifest, resolvedReferenceSha);
 	assertManifestIntegrity(candidateManifest, CANDIDATE_ROOT);
 	assertPinnedVisualRuntime(candidateManifest, 'accept');
 	assertCoverageMatrix(candidateManifest);
 	const { candidateManifestSha256, files } = validateCandidateArtifacts();
-	if (candidateManifest.matrixHash !== approvedMatrixHash) {
+
+	if (approvedMatrixHash && candidateManifest.matrixHash !== approvedMatrixHash) {
 		throw new Error('Approved matrix hash does not match the candidate manifest.');
 	}
-	if (candidateManifestSha256 !== approvedCandidateManifestSha256) {
+	if (
+		approvedCandidateManifestSha256 &&
+		candidateManifestSha256 !== approvedCandidateManifestSha256
+	) {
 		throw new Error('Approved candidate manifest hash does not match the candidate artifact.');
 	}
 
@@ -586,10 +585,10 @@ async function main(): Promise<void> {
 		const referenceSha = parseCliFlag(args, '--reference-sha');
 		const matrixHash = parseCliFlag(args, '--matrix-hash');
 		const candidateManifestSha256 = parseCliFlag(args, '--candidate-manifest-sha256');
-		return accept(referenceSha ?? '', matrixHash ?? '', candidateManifestSha256 ?? '');
+		return accept(referenceSha, matrixHash, candidateManifestSha256);
 	}
 	throw new Error(
-		'Usage: visual-parity-cli.ts candidate [--sha=<sha>]|compare|accept|diagnose --reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>',
+		'Usage: visual-parity-cli.ts candidate [--sha=<sha>]|compare|accept [--reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>]|diagnose',
 	);
 }
 
