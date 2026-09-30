@@ -3,6 +3,10 @@
 // Gallery paired-feature-band: portrait pairs with a full-width feature band.
 // The variant owns the paired grid; public tokens tune column count and image proportions.
 .gallery-section[data-variant='paired-feature-band'] {
+	--gallery-grid-columns-mobile: 1;
+	--gallery-item-aspect-ratio: 4 / 5;
+	--gallery-item-aspect-ratio-feature: 8 / 5;
+
 	.gallery-grid {
 		display: grid;
 		grid-template-columns: repeat(var(--gallery-grid-columns-mobile, 1), minmax(0, 1fr));

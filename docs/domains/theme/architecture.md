@@ -375,8 +375,6 @@ Bounded controls retain their canonical section owner:
 - The retained `jeweled-panel` skin consumes existing `--countdown-segment-inset`,
   `--countdown-label-size`, `--countdown-label-spacing`, and `--countdown-label-color` controls,
   plus `--countdown-label-opacity` (default `60%`). Existing visual defaults remain unchanged.
-- The retained Jewelry Box thank-you skin excludes `ceremonial-closing`; that canonical variant owns
-  its background, spacing, and signature treatment.
 
 ## Runtime CSS Delivery
 
