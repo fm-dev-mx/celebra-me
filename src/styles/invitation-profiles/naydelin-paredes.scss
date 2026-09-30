@@ -71,7 +71,7 @@
 	// Shared typography rhythm for section titles and eyebrows.
 	--naydelin-title-size: clamp(2.5rem, 5vw, 3.5rem);
 	--naydelin-title-weight: 500;
-	--naydelin-eyebrow-size: 0.72rem;
+	--naydelin-eyebrow-size: 0.55rem;
 	--naydelin-eyebrow-spacing: 0.24em;
 	--color-surface-primary: rgb(var(--naydelin-ivory-rgb));
 	--color-surface-primary-rgb: var(--naydelin-ivory-rgb);
@@ -399,6 +399,81 @@
 
 		.framed-portrait-hero__details {
 			margin-top: 0.9rem;
+		}
+
+		// Scroll cue: centered on the composition axis, away from the music player's corner, in
+		// the eyebrow voice (gold ink, 5.9:1) with a foil thread instead of the arrow glyph. The
+		// variant's right alignment has no token, so the profile sets the layout here.
+		.framed-portrait-hero__invitation {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 0.85rem;
+			font-family: var(--font-label);
+			font-size: var(--naydelin-eyebrow-size);
+			font-weight: 500;
+			letter-spacing: var(--naydelin-eyebrow-spacing);
+			line-height: 1.4;
+			text-align: center;
+			text-transform: uppercase;
+			color: rgb(var(--naydelin-gold-ink-rgb));
+
+			// On narrow phones the tracked label would reach the player's corner and its idle pulse
+			// ring (~20px past the button); symmetric inline padding wraps it into two centered
+			// lines instead.
+			@media (width < 420px) {
+				padding-inline: 4.5rem;
+				text-wrap: balance;
+			}
+		}
+
+		.framed-portrait-hero__invitation span {
+			display: block;
+			width: 1px;
+			height: 2.5rem;
+			flex: none;
+			margin: 0;
+			font-size: 0;
+			background:
+				linear-gradient(
+						180deg,
+						transparent 0%,
+						rgb(var(--naydelin-foil-hi-rgb)) 50%,
+						transparent 100%
+					)
+					0 -2.5rem / 100% 2.5rem no-repeat,
+				linear-gradient(
+					180deg,
+					rgb(var(--naydelin-foil-mid-rgb)) 0%,
+					rgb(var(--naydelin-foil-mid-rgb) / 0%) 100%
+				);
+		}
+
+		// A highlight runs down the thread. Longhands keep the variant's sealed-envelope pause
+		// (animation-play-state) and replace its bounce; reduced motion keeps the static thread.
+		@media (prefers-reduced-motion: no-preference) {
+			.framed-portrait-hero__invitation span {
+				animation-name: naydelin-scroll-thread;
+				animation-duration: 2.4s;
+				animation-timing-function: ease-in-out;
+				animation-iteration-count: infinite;
+			}
+		}
+	}
+
+	// Keep the player clear of the iOS home indicator; colors stay with the preset tokens.
+	.music-player {
+		right: max(1rem, calc(env(safe-area-inset-right) + 0.75rem));
+		bottom: max(1rem, calc(env(safe-area-inset-bottom) + 0.75rem));
+	}
+
+	// On phones the hero runs past the fold, so the transient prompt pill ("Pausar música" for
+	// ~4s after the envelope opens) would sit on the scroll cue. The button alone carries the
+	// state there: play/pause icon, pulse ring while idle, and its aria-label. Tablet and desktop
+	// keep the prompt, which clears the centered cue.
+	@media (width < 768px) {
+		.music-player__prompt {
+			display: none;
 		}
 	}
 
@@ -985,6 +1060,20 @@
 
 	to {
 		background-position: 0% 50%;
+	}
+}
+
+@keyframes naydelin-scroll-thread {
+	from {
+		background-position:
+			0 -2.5rem,
+			0 0;
+	}
+
+	to {
+		background-position:
+			0 2.5rem,
+			0 0;
 	}
 }
 

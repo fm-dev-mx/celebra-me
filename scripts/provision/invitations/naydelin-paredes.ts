@@ -141,7 +141,8 @@ const content: CanonicalEventContentInput = {
 				type: 'ceremony',
 				venueEvent: 'Ceremonia religiosa',
 				venueName: 'Parroquia El Señor San José',
-				address: 'Calle Ignacio Allende y Av. Bienestar, La Bienestar, Los Mochis, Sinaloa',
+				address:
+					'Calle Ignacio Allende y Av. Bienestar, Col. La Bienestar, Los Mochis, Sinaloa',
 				date: '17 de octubre de 2026',
 				time: '19:00',
 				googleMapsUrl: 'https://maps.app.goo.gl/LPtwqZq8qf8Jmkux8',
@@ -151,7 +152,7 @@ const content: CanonicalEventContentInput = {
 				type: 'reception',
 				venueEvent: 'Recepción',
 				venueName: 'Salón Granada',
-				address: 'Gral. Ángel Flores 525, Centro, Los Mochis, Sinaloa',
+				address: 'Gral. Ángel Flores 525, Col. Centro, Los Mochis, Sinaloa',
 				date: '17 de octubre de 2026',
 				time: '21:00',
 				googleMapsUrl: 'https://maps.app.goo.gl/H6AyoUXDHLmH6QYk6',

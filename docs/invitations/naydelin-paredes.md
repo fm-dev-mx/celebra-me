@@ -44,37 +44,37 @@ recorded here as an accepted, documented owner decision rather than a silent pro
 Classification: `verified` | `inferred` | `ambiguous` | `missing` | `not_applicable` |
 `requires_owner_decision`.
 
-| field                 | value                                                                                             | classification | source          | notes                                                                                                        |
-| --------------------- | ------------------------------------------------------------------------------------------------- | -------------- | --------------- | ------------------------------------------------------------------------------------------------------------ |
-| slug                  | `naydelin-paredes`                                                                                | verified       | owner-session   | Confirmed canonical slug; public route is `/xv/naydelin-paredes`                                             |
-| celebrantName         | Naydelin Pauleth Paredes Martinez                                                                 | verified       | wa-export       | Preserve the confirmed spelling                                                                              |
-| eventLabel            | Mis XV años                                                                                       | verified       | wa-export       | XV celebration                                                                                               |
-| eventDate             | 2026-10-17                                                                                        | verified       | wa-export       | Saturday                                                                                                     |
-| eventTime             | 19:00                                                                                             | verified       | wa-export       | Ceremony start; display as 7:00 p. m.                                                                        |
-| receptionTime         | 21:00                                                                                             | verified       | wa-export       | Reception start; display as 9:00 p. m.                                                                       |
-| timeZone              | America/Mazatlan                                                                                  | verified       | owner-session   | Confirmed IANA zone for Los Mochis                                                                           |
-| baseDemoId            | demo-xv-jewelry-box                                                                               | verified       | owner-session   | Owner-selected base; no sample demo copy is retained                                                         |
-| sourceAssetPath       | `source:wa-export`                                                                                | verified       | wa-export       | Evidence-only source label for the definitive local selection; no authoritative HR asset source was supplied |
-| sectionOrder          | quote, personalizedAccess, family, gallery, countdown, location, itinerary, rsvp, gifts, thankYou | verified       | owner-session   | Requested Jewelry Box order; the current candidate omits the unconfirmed quote visually                      |
-| primaryVenueName      | Parroquia El Señor San José                                                                       | verified       | venue-maps      | Ceremony                                                                                                     |
-| primaryVenueAddress   | Calle Ignacio Allende y Av. Bienestar, La Bienestar, Los Mochis, Sinaloa                          | verified       | venue-maps      | Use the supplied pin and address                                                                             |
-| distinctVenues        | true                                                                                              | verified       | venue-maps      | Ceremony and reception are at different venues                                                               |
-| ceremonyMapUrl        | https://maps.app.goo.gl/LPtwqZq8qf8Jmkux8                                                         | verified       | venue-maps      | Supplied ceremony link                                                                                       |
-| receptionVenueName    | Salón Granada                                                                                     | verified       | venue-maps      | Reception                                                                                                    |
-| receptionVenueAddress | Gral. Ángel Flores 525, Centro, Los Mochis, Sinaloa                                               | verified       | venue-maps      | Use the supplied pin and address                                                                             |
-| receptionMapUrl       | https://maps.app.goo.gl/H6AyoUXDHLmH6QYk6                                                         | verified       | venue-maps      | Supplied reception link                                                                                      |
-| fatherName            | David Martinez                                                                                    | ambiguous      | wa-export       | Confirm Martínez / Verdín / Solís accents                                                                    |
-| motherName            | María Cota                                                                                        | verified       | wa-export       | Preserve the confirmed spelling                                                                              |
-| godparents            | Eduardo Martinez Verdin + Florentina Solis; Eduardo Martinez Solis + Delia Cota                   | verified       | wa-export       | Preserve the two confirmed pairs and spellings                                                               |
-| clientColors          | Dorado para la invitación                                                                         | verified       | wa-export       | Rose-gold accents are a visual recommendation, not an additional client color requirement                    |
-| dressCode             | —                                                                                                 | not_applicable | owner-session   | Do not add a guest dress code; rose gold describes the celebrant’s dress                                     |
-| gifts                 | Lluvia de sobres                                                                                  | verified       | wa-export       | No registry, account, or extra gift options supplied                                                         |
-| rsvpConfirmationMode  | api                                                                                               | verified       | owner-session   | RSVP is through the invitation website                                                                       |
-| rsvpGuestCap          | 1                                                                                                 | verified       | product-default | `rsvpSchema` default per confirmation; no guest-list capacity inferred                                       |
-| rsvpWhatsappPhone     | —                                                                                                 | not_applicable | owner-session   | Website/API RSVP only; no phone is included                                                                  |
-| musicUrl              | —                                                                                                 | not_applicable | owner-session   | Omit demo music                                                                                              |
-| rsvpDeadline          | —                                                                                                 | missing        | wa-export       | No deadline confirmed; omit it rather than invent one                                                        |
-| specialMessages       | `[[PENDIENTE:SPECIAL_MESSAGES]]`                                                                  | missing        | wa-export       | No personal quote was confirmed                                                                              |
+| field                 | value                                                                                                                 | classification | source          | notes                                                                                                        |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------- | --------------- | ------------------------------------------------------------------------------------------------------------ |
+| slug                  | `naydelin-paredes`                                                                                                    | verified       | owner-session   | Confirmed canonical slug; public route is `/xv/naydelin-paredes`                                             |
+| celebrantName         | Naydelin Pauleth Paredes Martinez                                                                                     | verified       | wa-export       | Preserve the confirmed spelling                                                                              |
+| eventLabel            | Mis XV años                                                                                                           | verified       | wa-export       | XV celebration                                                                                               |
+| eventDate             | 2026-10-17                                                                                                            | verified       | wa-export       | Saturday                                                                                                     |
+| eventTime             | 19:00                                                                                                                 | verified       | wa-export       | Ceremony start; display as 7:00 p. m.                                                                        |
+| receptionTime         | 21:00                                                                                                                 | verified       | wa-export       | Reception start; display as 9:00 p. m.                                                                       |
+| timeZone              | America/Mazatlan                                                                                                      | verified       | owner-session   | Confirmed IANA zone for Los Mochis                                                                           |
+| baseDemoId            | demo-xv-jewelry-box                                                                                                   | verified       | owner-session   | Owner-selected base; no sample demo copy is retained                                                         |
+| sourceAssetPath       | `source:wa-export`                                                                                                    | verified       | wa-export       | Evidence-only source label for the definitive local selection; no authoritative HR asset source was supplied |
+| sectionOrder          | quote, personalizedAccess, family, gallery, countdown, location, itinerary, rsvp, gifts, thankYou                     | verified       | owner-session   | Requested Jewelry Box order; the current candidate omits the unconfirmed quote visually                      |
+| primaryVenueName      | Parroquia El Señor San José                                                                                           | verified       | venue-maps      | Ceremony                                                                                                     |
+| primaryVenueAddress   | Calle Ignacio Allende y Av. Bienestar, Col. La Bienestar, Los Mochis, Sinaloa                                         | verified       | venue-maps      | Use the supplied pin and address                                                                             |
+| distinctVenues        | true                                                                                                                  | verified       | venue-maps      | Ceremony and reception are at different venues                                                               |
+| ceremonyMapUrl        | https://maps.app.goo.gl/LPtwqZq8qf8Jmkux8                                                                             | verified       | venue-maps      | Supplied ceremony link                                                                                       |
+| receptionVenueName    | Salón Granada                                                                                                         | verified       | venue-maps      | Reception                                                                                                    |
+| receptionVenueAddress | Gral. Ángel Flores 525, Col. Centro, Los Mochis, Sinaloa                                                              | verified       | venue-maps      | Use the supplied pin and address                                                                             |
+| receptionMapUrl       | https://maps.app.goo.gl/H6AyoUXDHLmH6QYk6                                                                             | verified       | venue-maps      | Supplied reception link                                                                                      |
+| fatherName            | David Martinez                                                                                                        | ambiguous      | wa-export       | Confirm Martínez / Verdín / Solís accents                                                                    |
+| motherName            | María Cota                                                                                                            | verified       | wa-export       | Preserve the confirmed spelling                                                                              |
+| godparents            | Eduardo Martinez Verdin + Florentina Solis; Eduardo Martinez Solis + Delia Cota                                       | verified       | wa-export       | Preserve the two confirmed pairs and spellings                                                               |
+| clientColors          | Dorado para la invitación                                                                                             | verified       | wa-export       | Rose-gold accents are a visual recommendation, not an additional client color requirement                    |
+| dressCode             | —                                                                                                                     | not_applicable | owner-session   | Do not add a guest dress code; rose gold describes the celebrant’s dress                                     |
+| gifts                 | Lluvia de sobres                                                                                                      | verified       | wa-export       | No registry, account, or extra gift options supplied                                                         |
+| rsvpConfirmationMode  | api                                                                                                                   | verified       | owner-session   | RSVP is through the invitation website                                                                       |
+| rsvpGuestCap          | 1                                                                                                                     | verified       | product-default | `rsvpSchema` default per confirmation; no guest-list capacity inferred                                       |
+| rsvpWhatsappPhone     | —                                                                                                                     | not_applicable | owner-session   | Website/API RSVP only; no phone is included                                                                  |
+| musicUrl              | `https://res.cloudinary.com/dusxvauvj/video/upload/v1790729635/Imagine_-_John_Lennon_The_Plastic_Ono_Band_ndhjjv.mp3` | verified       | owner-session   | Imagine - John Lennon; configured with autoPlay and profile safe-area styling                                |
+| rsvpDeadline          | —                                                                                                                     | missing        | wa-export       | No deadline confirmed; omit it rather than invent one                                                        |
+| specialMessages       | `[[PENDIENTE:SPECIAL_MESSAGES]]`                                                                                      | missing        | wa-export       | No personal quote was confirmed                                                                              |
 
 ## Event Completeness
 
@@ -94,7 +94,8 @@ XV contract maturity: `evidence-backed`.
   - **status:** satisfied except specialMessages (non-blocking)
 - **requirement:** optional
   - **fields:** dressCode, gifts, musicUrl, rsvpDeadline, clientColors
-  - **status:** omitted/not applicable or documented; no RSVP deadline supplied
+  - **status:** satisfied (musicUrl, gifts, clientColors); dressCode, rsvpDeadline omitted/not
+    applicable
 
 **Is the available information sufficient to prepare this invitation?** `yes` —
 `evaluateEventCompleteness` reports no blocking gaps. The missing personal quote is non-blocking and
@@ -134,8 +135,8 @@ No unresolved blocking owner decisions for this Local draft.
 - **bucket:** inferred / recommended
   - **section keys:** Rose-gold accents within the soft-gold Jewelry Box palette
 - **bucket:** omitted
-  - **section keys:** Unconfirmed quote, demo music, sample phone number, sample
-    addresses/dates/text, guest dress code, unconfirmed program items
+  - **section keys:** Unconfirmed quote, sample phone number, sample addresses/dates/text, guest
+    dress code, unconfirmed program items
 - **bucket:** unresolved
   - **section keys:** Personal quote: `[[PENDIENTE:SPECIAL_MESSAGES]]`; RSVP deadline is not shown
 
@@ -223,10 +224,12 @@ Profile-scoped exceptions (no canonical token exists): hero portrait foil hairli
 card (timer surface, segment reset, hairline dividers, value size), hidden location "next section"
 cue, the compact location maps action, itinerary top padding, family breathing after the interlude,
 the family left/right group alignment and two-column grid, the gallery inner hairline, staggered
-prints and wider feature band, and the closing drop cap, grain, message ink, and split signature
-lines. The motion signature is a single CSS foil sweep (700 ms) on the dark-band titles and the
-closing signature, triggered by the coordinator's `is-visible` class and disabled under reduced
-motion.
+prints and wider feature band, the centered hero scroll cue (eyebrow label with an animated foil
+thread instead of the arrow, wrapped into two lines below 420px), the music player's safe-area
+offsets and its prompt pill hidden below 768px so it cannot cover the cue, and the closing drop cap,
+grain, message ink, and split signature lines. The motion signature is a single CSS foil sweep (700
+ms) on the dark-band titles and the closing signature, triggered by the coordinator's `is-visible`
+class and disabled under reduced motion.
 
 Known canonical follow-ups (not changed here): the `jewelry-box` envelope shows ~1 s of blank paper
 and a grey flap interior while opening; `REVEAL_RECIPES` assigns adjacent `stagger-group` recipes
@@ -240,7 +243,8 @@ motion and the shared reduced-motion rule shows the letter stage over a closed e
 patched in this profile); the `paired-feature-band` grid is capped at 880px on desktop (the feature
 band is widened in this profile); the shared location styles consume `--location-nav-maps-border` as
 a `border-color`, so a shorthand value silently falls back to `currentcolor` (fixed in this
-profile).
+profile); the `framed-portrait` scroll cue hardcodes `text-align: right` at the bottom-right corner,
+where the fixed music player sits, and the base player has no safe-area offsets.
 
 ## Photograph Inventory
 
@@ -283,7 +287,7 @@ its role budget.
   in the invitation registry and the Local render corpus.
 - RSVP is `personalized-only` with `api` confirmation; host passes assign seats per guest, and
   `guestCap: 1` is the content default.
-- Omit music, guest dress code, RSVP deadline, extra itinerary stops, and unapproved quotation.
+- Omit guest dress code, RSVP deadline, extra itinerary stops, and unapproved quotation.
 - Preview and Production releases follow `docs/domains/intake/production-flow.md` and require their
   own explicit authorization.
 
