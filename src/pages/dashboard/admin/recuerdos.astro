@@ -1,0 +1,17 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
+import MemoriesAdmin from '@/components/dashboard/memories/MemoriesAdmin';
+
+if (!Astro.locals.session?.isSuperAdmin) {
+	return Astro.redirect('/dashboard/invitados');
+}
+---
+
+<DashboardLayout title="Espacios de recuerdos">
+	<DashboardPageHeader
+		title="Espacios de recuerdos"
+		subtitle="Active el QR de recuerdos por evento, defina su ventana de carga, retención y límites."
+	/>
+	<MemoriesAdmin client:load />
+</DashboardLayout>

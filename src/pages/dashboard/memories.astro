@@ -1,13 +1,34 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
-import ValentinaMemoriesOrganizer from '@/components/dashboard/memories/ValentinaMemoriesOrganizer';
+import MemoriesOrganizer from '@/components/dashboard/memories/MemoriesOrganizer';
+import { listOrganizerMemorySpaces } from '@/lib/memories/server/organizer.service';
+import { toMemorySpaceSummary } from '@/lib/memories/server/space.service';
+
+const session = Astro.locals.session;
+if (!session) return Astro.redirect('/login');
+
+const spaces = (await listOrganizerMemorySpaces(session)).map((space) => ({
+	eventId: space.eventId,
+	...toMemorySpaceSummary(space),
+}));
+const requestedEventId = Astro.url.searchParams.get('eventId') ?? '';
+const initialEventId = spaces.some((space) => space.eventId === requestedEventId)
+	? requestedEventId
+	: '';
 ---
 
-<DashboardLayout title="Recuerdos de Valentina">
+<DashboardLayout title="Recuerdos">
 	<DashboardPageHeader
-		title="Recuerdos de Valentina"
+		title="Recuerdos"
 		subtitle="Bandeja privada para revisar y descargar los recuerdos compartidos por invitados."
 	/>
-	<ValentinaMemoriesOrganizer client:load />
+	{spaces.length === 0 ? (
+		<section class="dashboard-card">
+			<h2>Sin recuerdos activos</h2>
+			<p>Ninguno de sus eventos tiene un espacio de recuerdos habilitado.</p>
+		</section>
+	) : (
+		<MemoriesOrganizer client:load spaces={spaces} initialEventId={initialEventId} />
+	)}
 </DashboardLayout>

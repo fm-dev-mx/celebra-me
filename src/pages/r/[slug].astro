@@ -1,0 +1,78 @@
+---
+export const prerender = false;
+
+import Layout from '@/layouts/Layout.astro';
+import MemoriesCapture from '@/components/memories/MemoriesCapture';
+import { buildMemoriesPageCopy, buildMemoriesWindowCopy } from '@/lib/memories/copy';
+import {
+	MEMORIES_ORGANIZER_LOGIN_PATH,
+	buildMemoriesPublicPath,
+	buildMemoriesRecoveryPath,
+} from '@/lib/memories/contract/private-request';
+import {
+	findPublicMemorySpace,
+	isMemorySpaceInteractive,
+	toMemorySpaceSummary,
+} from '@/lib/memories/server/space.service';
+
+Astro.response.headers.set('Cache-Control', 'no-store, private');
+
+// A printed QR outlives its event: expired spaces render a closure message, not a 404.
+const space = await findPublicMemorySpace(Astro.params.slug);
+if (!space) {
+	return new Response(null, { status: 404, headers: { 'Cache-Control': 'no-store, private' } });
+}
+
+const summary = toMemorySpaceSummary(space);
+const interactive = isMemorySpaceInteractive(summary.windowState);
+const copy = buildMemoriesPageCopy({ eventTitle: space.eventTitle });
+const windowCopy = buildMemoriesWindowCopy(summary);
+---
+
+<Layout
+	title={copy.title}
+	description={copy.description}
+	hideHeader={true}
+	className="theme-preset--jewelry-box-landing"
+>
+	<meta name="robots" content={copy.robots} slot="head" />
+
+	<main
+		class="status-page status-page--memories"
+		data-route={buildMemoriesPublicPath(space.publicSlug)}
+		data-page="memories"
+	>
+		<div class="status-page__bg-decoration"></div>
+
+		<div class="status-page__container">
+			<section class="status-page__card" aria-labelledby="memories-heading">
+				<header class="status-page__header">
+					<span class="status-page__subtitle">{copy.subtitle}</span>
+					<h1 id="memories-heading" class="status-page__title">{copy.heading}</h1>
+					{interactive ? <p class="status-page__description">{copy.body}</p> : null}
+				</header>
+
+				{windowCopy ? (
+					<p class="status-page__status" role="status">{windowCopy}</p>
+				) : null}
+
+				{interactive ? (
+					<>
+						<MemoriesCapture
+							client:load
+							space={summary}
+							maxSessionVideos={space.maxSessionVideos}
+						/>
+
+						<nav class="status-page__support-links" aria-label="Enlaces de ayuda">
+							<a href={buildMemoriesRecoveryPath(space.publicSlug)}>
+								{copy.recoveryCtaLabel}
+							</a>
+							<a href={MEMORIES_ORGANIZER_LOGIN_PATH}>{copy.organizerCtaLabel}</a>
+						</nav>
+					</>
+				) : null}
+			</section>
+		</div>
+	</main>
+</Layout>
