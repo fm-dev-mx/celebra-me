@@ -1,4 +1,12 @@
-import { VALENTINA_MEMORIES_PRESIGN_TTL_SECONDS } from '../../../src/data/valentina-memories-upload.contract';
+/**
+ * Single-use upload capability. Claims are sealed with AES-GCM under a key
+ * derived from the Worker's capability secret, so the browser carries an opaque
+ * token: it can neither read the object key nor the session id, nor forge one.
+ */
+
+import { MEMORIES_PRESIGN_TTL_SECONDS } from '../../../src/lib/memories/contract/limits';
+import { MEMORIES_SHA256_HEX_PATTERN } from '../../../src/lib/memories/contract/catalog';
+import { decodeBase64, encodeBase64Url, toArrayBuffer } from '../../shared/encoding';
 
 export type UploadCapabilityClaims = {
 	objectKey: string;
@@ -10,77 +18,49 @@ export type UploadCapabilityClaims = {
 	nonce: string;
 };
 
-function encodeBase64Url(bytes: Uint8Array): string {
-	let binary = '';
-	for (const byte of bytes) binary += String.fromCharCode(byte);
-	return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-}
+const KEY_INFO = 'memories-upload-capability-v2';
+const IV_BYTES = 12;
+const MAX_TOKEN_LENGTH = 4096;
+const MIN_NONCE_LENGTH = 16;
 
-function hexToBytes(value: string): Uint8Array {
-	const bytes = new Uint8Array(value.length / 2);
-	for (let index = 0; index < bytes.length; index += 1) {
-		bytes[index] = Number.parseInt(value.slice(index * 2, index * 2 + 2), 16);
-	}
-	return bytes;
-}
-
-export function sha256HexToBase64(value: string): string {
-	const bytes = hexToBytes(value);
-	let binary = '';
-	for (const byte of bytes) binary += String.fromCharCode(byte);
-	return btoa(binary);
-}
-
-function decodeBase64Url(value: string): Uint8Array {
-	const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
-	const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
-	const binary = atob(padded);
-	return Uint8Array.from(binary, (character) => character.charCodeAt(0));
-}
-
-function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
-	const copy = new Uint8Array(bytes.byteLength);
-	copy.set(bytes);
-	return copy.buffer;
-}
-
-function serializeClaims(claims: UploadCapabilityClaims): string {
-	return encodeBase64Url(
-		new TextEncoder().encode(
-			JSON.stringify({
-				k: claims.objectKey,
-				s: claims.sessionId,
-				m: claims.mimeType,
-				z: claims.sizeBytes,
-				c: claims.checksumSha256,
-				e: claims.expiresAt,
-				n: claims.nonce,
-			}),
-		),
-	);
-}
-
-async function sign(value: string, secret: string): Promise<string> {
-	const key = await crypto.subtle.importKey(
+async function deriveKey(secret: string): Promise<CryptoKey> {
+	const baseKey = await crypto.subtle.importKey(
 		'raw',
 		new TextEncoder().encode(secret),
-		{ name: 'HMAC', hash: 'SHA-256' },
+		'HKDF',
 		false,
-		['sign'],
+		['deriveKey'],
 	);
-	return encodeBase64Url(
-		new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value))),
+	return crypto.subtle.deriveKey(
+		{
+			name: 'HKDF',
+			hash: 'SHA-256',
+			salt: new Uint8Array(0),
+			info: new TextEncoder().encode(KEY_INFO),
+		},
+		baseKey,
+		{ name: 'AES-GCM', length: 256 },
+		false,
+		['encrypt', 'decrypt'],
 	);
 }
 
-function decodeCapabilityClaims(
-	encodedClaims: string,
-	now: Date,
-): UploadCapabilityClaims | null {
-	const claims = JSON.parse(new TextDecoder().decode(decodeBase64Url(encodedClaims))) as Record<
-		string,
-		unknown
-	>;
+function serializeClaims(claims: UploadCapabilityClaims): Uint8Array {
+	return new TextEncoder().encode(
+		JSON.stringify({
+			k: claims.objectKey,
+			s: claims.sessionId,
+			m: claims.mimeType,
+			z: claims.sizeBytes,
+			c: claims.checksumSha256,
+			e: claims.expiresAt,
+			n: claims.nonce,
+		}),
+	);
+}
+
+function parseClaims(bytes: Uint8Array, now: Date): UploadCapabilityClaims | null {
+	const claims = JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>;
 	if (Object.keys(claims).sort().join(',') !== 'c,e,k,m,n,s,z') return null;
 	if (
 		typeof claims.k !== 'string' ||
@@ -89,11 +69,11 @@ function decodeCapabilityClaims(
 		typeof claims.z !== 'number' ||
 		!Number.isSafeInteger(claims.z) ||
 		typeof claims.c !== 'string' ||
-		!/^[0-9a-f]{64}$/i.test(claims.c) ||
+		!MEMORIES_SHA256_HEX_PATTERN.test(claims.c) ||
 		typeof claims.e !== 'number' ||
 		!Number.isSafeInteger(claims.e) ||
 		typeof claims.n !== 'string' ||
-		claims.n.length < 16 ||
+		claims.n.length < MIN_NONCE_LENGTH ||
 		claims.e * 1000 <= now.getTime()
 	)
 		return null;
@@ -119,12 +99,23 @@ export async function createUploadCapability(
 	const fullClaims: UploadCapabilityClaims = {
 		...claims,
 		expiresAt:
-			claims.expiresAt ?? Math.floor(now.getTime() / 1000) + VALENTINA_MEMORIES_PRESIGN_TTL_SECONDS,
+			claims.expiresAt ?? Math.floor(now.getTime() / 1000) + MEMORIES_PRESIGN_TTL_SECONDS,
 		nonce: claims.nonce ?? crypto.randomUUID(),
 	};
-	const encodedClaims = serializeClaims(fullClaims);
+	const key = await deriveKey(secret);
+	const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
+	const sealed = new Uint8Array(
+		await crypto.subtle.encrypt(
+			{ name: 'AES-GCM', iv },
+			key,
+			toArrayBuffer(serializeClaims(fullClaims)),
+		),
+	);
+	const token = new Uint8Array(iv.byteLength + sealed.byteLength);
+	token.set(iv, 0);
+	token.set(sealed, iv.byteLength);
 	return {
-		token: `${encodedClaims}.${await sign(encodedClaims, secret)}`,
+		token: encodeBase64Url(token),
 		expiresAt: new Date(fullClaims.expiresAt * 1000).toISOString(),
 		claims: fullClaims,
 	};
@@ -135,34 +126,18 @@ export async function verifyUploadCapability(
 	secret: string,
 	now = new Date(),
 ): Promise<UploadCapabilityClaims | null> {
-	if (!token || token.length > 4096 || !secret) return null;
-	const parts = token.split('.');
-	if (parts.length !== 2) return null;
+	if (!token || token.length > MAX_TOKEN_LENGTH || !secret) return null;
 	try {
-		const encodedClaims = parts[0];
-		const signature = parts[1];
-		const claims = decodeCapabilityClaims(encodedClaims, now);
-		if (!claims) return null;
-		const key = await crypto.subtle.importKey(
-			'raw',
-			new TextEncoder().encode(secret),
-			{ name: 'HMAC', hash: 'SHA-256' },
-			false,
-			['verify'],
-		);
-		const valid = await crypto.subtle.verify(
-			'HMAC',
+		const bytes = decodeBase64(token);
+		if (bytes.byteLength <= IV_BYTES) return null;
+		const key = await deriveKey(secret);
+		const opened = await crypto.subtle.decrypt(
+			{ name: 'AES-GCM', iv: bytes.slice(0, IV_BYTES) },
 			key,
-			toArrayBuffer(decodeBase64Url(signature)),
-			new TextEncoder().encode(encodedClaims),
+			toArrayBuffer(bytes.slice(IV_BYTES)),
 		);
-		if (!valid) return null;
-		return claims;
+		return parseClaims(new Uint8Array(opened), now);
 	} catch {
 		return null;
 	}
-}
-
-export function sha256HexToArrayBuffer(value: string): ArrayBuffer {
-	return toArrayBuffer(hexToBytes(value));
 }

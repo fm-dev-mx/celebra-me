@@ -4,6 +4,7 @@
 interface __BaseEnv_Env {
 	SIGN_RATE_LIMITER: RateLimit;
 	MEMORIES_STORAGE_TARGET: "local" | "staging" | "production";
+	MEMORIES_ALLOWED_ORIGINS: string;
 }
 declare namespace Cloudflare {
 	interface GlobalProps {
@@ -12,10 +13,12 @@ declare namespace Cloudflare {
 	interface LocalEnv {
 		SIGN_RATE_LIMITER: RateLimit;
 		MEMORIES_STORAGE_TARGET: "local";
+		MEMORIES_ALLOWED_ORIGINS: "http://localhost:4321,http://127.0.0.1:4321";
 	}
 	interface StagingEnv {
 		SIGN_RATE_LIMITER: RateLimit;
 		MEMORIES_STORAGE_TARGET: "staging";
+		MEMORIES_ALLOWED_ORIGINS: "https://celebra-me.vercel.app";
 	}
 	interface Env extends __BaseEnv_Env {}
 }
@@ -24,7 +27,7 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "MEMORIES_STORAGE_TARGET">> {}
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "MEMORIES_STORAGE_TARGET" | "MEMORIES_ALLOWED_ORIGINS">> {}
 }
 
 // Begin runtime types

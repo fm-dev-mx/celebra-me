@@ -1,5 +1,5 @@
 # Local Sign Worker values only. Copy to .dev.vars (gitignored).
-# HMAC secret used only for short-lived, single-use upload capabilities.
+# Secret that seals short-lived, single-use upload capabilities (AES-GCM via HKDF).
 MEMORIES_UPLOAD_CAPABILITY_SECRET=
 # Public SPKI P-256 key paired with the Vercel upload-control private key.
 MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY=
