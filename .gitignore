@@ -81,8 +81,6 @@ output/playwright/
 .prettierignore
 .eslintcache
 .stylelintcache
-graphify-out/
-!.graphifyignore
 # .editorconfig  <-- Keep tracked if you want shared IDE settings
 # .eslintrc.*    <-- Keep tracked for linting consistency
 

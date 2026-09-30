@@ -112,10 +112,10 @@ task authorization, target classification, and standard guard checks.
   intent select + short bound code). No token, secret, or noninteractive confirmation alternative
   exists. `production_authorization_receipts` is historical inert state. Successful Production
   schema applies write a local owner-apply record; schema parity is not authorization evidence.
-  Agent sessions receive `CELEBRA_AGENT_CONTEXT` by default (Cursor session/preToolUse hooks) and
-  cannot disable it with `false`/`0`/empty. Agent Shell denies canonical Production `--apply`. Raw
-  `supabase db push` / mutating `psql` and Supabase MCP writes against Production are blocked
-  outside this owner workflow. Read-only Production MCP/SQL remains allowed.
+  Cursor session/preToolUse hooks set `CELEBRA_AGENT_CONTEXT` and reject `false`/`0`/empty
+  overrides; do not assume other hosts provide these hooks. Agent Production writes remain
+  prohibited regardless of host enforcement. Read-only Production MCP/SQL remains allowed within
+  task authorization.
 - **Hosted identity vs environment selection**: Selecting Preview/Production and having credentials
   is not authorization. Production and Preview migrate derive release identity from clean `HEAD`
   (Production also requires `pnpm release-check`). Preview URL must match the canonical project ref
@@ -343,9 +343,8 @@ persistent-local database was preserved.
   `pnpm db:prod:patch -- --dry-run --file <path>` (`RESTRICT_OWNER_ONLY`) and mutates only through
   `pnpm prod:apply -- --patch <path> --apply`.
 - Do not run `supabase db push --linked`.
-- Do not use Supabase MCP `apply_migration` or mutating `execute_sql` against Production. Agent
-  sessions set `CELEBRA_AGENT_CONTEXT` automatically; that rejects Production owner-apply
-  self-authorization. Preview remains agent-operable under its existing scope/TTY policy.
+- Do not use Supabase MCP `apply_migration` or mutating `execute_sql` against Production. Preview
+  remains agent-operable under its existing scope/TTY policy.
 - Prefer fail-closed behavior over preserving old command compatibility.
 - `pnpm run ci` must never reset or modify the persistent local database.
 - The sentinel must survive the full validation pipeline.

@@ -12,13 +12,11 @@ owns the command inventory.
 
 ## Available Ops Commands
 
-| Command                     | Canonical Script               | Purpose                                                                              |
-| --------------------------- | ------------------------------ | ------------------------------------------------------------------------------------ |
-| `pnpm ops check-links`      | `scripts/check-links.mjs`      | validate relative links inside changed Markdown files                                |
-| `pnpm ops validate-schema`  | `scripts/validate-schema.mjs`  | compare theme-contract variants against modular section-theme selectors              |
-| `pnpm ops validate-commits` | `scripts/validate-commits.mjs` | replay commitlint and commit-audit checks across a commit range                      |
-| `pnpm ops graphify-views`   | `scripts/graphify/entry.ts`    | generate Graphify operational domain and community reports                           |
-| `pnpm ops graphify-refresh` | `scripts/graphify/refresh.ts`  | rebuild, cluster, promote, fingerprint, and validate the canonical Graphify snapshot |
+| Command                     | Canonical Script               | Purpose                                                                 |
+| --------------------------- | ------------------------------ | ----------------------------------------------------------------------- |
+| `pnpm ops check-links`      | `scripts/check-links.mjs`      | validate relative links inside changed Markdown files                   |
+| `pnpm ops validate-schema`  | `scripts/validate-schema.mjs`  | compare theme-contract variants against modular section-theme selectors |
+| `pnpm ops validate-commits` | `scripts/validate-commits.mjs` | replay commitlint and commit-audit checks across a commit range         |
 
 Removed one-shot commands (`optimize-assets`, `new-invitation`, `adopt-legacy-events`, `ops dbs`)
 are no longer registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation operations.

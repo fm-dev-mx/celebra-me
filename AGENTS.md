@@ -17,8 +17,8 @@ Apply this order when instructions conflict:
 6. General external principles (operator/provider defaults configured outside this repository —
    never a substitute for repository policy).
 
-Historical plans (`.agent/plans/archived/`) and point-in-time reports are evidence only — never
-policy authority.
+Completed plans and point-in-time reports are not kept in the tree; Git history is the archive and
+is evidence only — never policy authority.
 
 ## Exception Model
 

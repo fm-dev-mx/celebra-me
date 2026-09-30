@@ -3,7 +3,7 @@ name: branch-lane
 description: |
   Prepare releases or promote/sync develop and main through the existing parity and checkpoint workflow. Git writes require exact current-task authorization; this skill does not perform database or deployment operations.
 domain: workflow
-version: 2.2.0
+version: 2.2.1
 absorbed_skills: [release-prepare]
 when_to_use:
   - User asks to promote develop to main / fast-forward main / "promueve a main"
@@ -249,10 +249,7 @@ Never accept applied-migration content mutation as an exception.
 (`evaluateGitOnlyPromotionAlternative`). If head requires pending remote schema → `Hard blocked`,
 not an owner-acceptable exception.
 
-**Backups:** require a fresh pre-migration Production backup based on risk/policy (state immediately
-before migrate), not merely because the newest dump has a different calendar date. When
-`pnpm db:migrate -- --target production` already creates that backup, do not demand a separate
-backup authorization solely for date skew — see `evaluateProductionBackupRequirement`.
+[`Database-parity`](../database-parity/SKILL.md) owns Production recovery-coverage assessment.
 
 ### 7. Manual actions
 

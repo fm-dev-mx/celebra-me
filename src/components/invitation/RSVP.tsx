@@ -303,7 +303,8 @@ const RSVP: React.FC<RSVPProps> = ({
 	return (
 		<section data-screenshot-section="rsvp" className="rsvp-section">
 			<RsvpContext.Provider value={{ eventType }}>
-				<AnimatePresence mode="wait">
+				{/* Keep the first server/client render visible regardless of motion preference. */}
+				<AnimatePresence initial={false} mode="wait">
 					{submitted ? (
 						<motion.div
 							key="rsvp-success"

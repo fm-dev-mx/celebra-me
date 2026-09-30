@@ -3,8 +3,7 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Centralized mapping of available ops commands.
 // Invitation lifecycle commands are first-class package.json scripts (invitation:* / dbs).
@@ -12,9 +11,6 @@ const SCRIPTS = {
 	'check-links': { script: 'check-links.mjs', runtime: 'node' },
 	'validate-schema': { script: 'validate-schema.mjs', runtime: 'node' },
 	'validate-commits': { script: 'validate-commits.mjs', runtime: 'node' },
-	'graphify-views': { script: 'graphify/entry.ts', runtime: 'tsx' },
-	'graphify-refresh': { script: 'graphify/refresh.ts', runtime: 'tsx' },
-	'graphify-doctor': { script: 'graphify/doctor.ts', runtime: 'tsx' },
 	'data-audit-events-invitations': {
 		script: 'data-audit-events-invitations.mjs',
 		runtime: 'node',

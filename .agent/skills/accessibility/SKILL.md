@@ -5,7 +5,7 @@ description:
   cognitive disabilities. Apply WCAG 2.1 AA compliance standards to Astro components, SCSS styles,
   and dynamic content.
 domain: frontend
-version: 1.0.0
+version: 1.0.1
 when_to_use:
   - Updating interactive UI, forms, or navigation
   - Reviewing semantic HTML, contrast, focus, or motion behavior
@@ -78,7 +78,7 @@ standards. Every guest should be able to view and interact with invitations rega
 ### Minimum Ratios (WCAG AA)
 
 - **Normal text**: 4.5:1 contrast ratio
-- **Large text** (18px+ or 14px+ bold): 3:1 contrast ratio
+- **Large text** (18pt / 24px+, or 14pt / 18.67px+ bold): 3:1 contrast ratio
 - **UI components and graphics**: 3:1 contrast ratio
 
 ### Color Independence

@@ -107,8 +107,6 @@ routes:
       description: 'Documentation updates, link integrity, or instruction-system alignment'
       rules:
           - '.agent/rules/workflow.md'
-      skills:
-          - 'system-doc-alignment'
 
     - task_type: 'testing_qa'
       description: 'Automated tests or regression coverage; add accessibility/metadata only if affected'
@@ -196,11 +194,6 @@ routes:
       description: 'Assign bounded work to roles when delegation has independent value'
       rules:
           - '.agent/rules/agent-routing.md'
-
-    - task_type: 'graphify_audit'
-      description: 'Optional coupling audit where Graphify adds value; never a default codebase query'
-      rules:
-          - '.agent/rules/graphify-ops.md'
 
     - task_type: 'planning'
       description: 'Task planning, multi-session continuity, or goal sequencing'

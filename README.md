@@ -63,7 +63,6 @@ canonical environment workflow.
 - `check-links`
 - `validate-schema`
 - `validate-commits`
-- `graphify-views` / `graphify-refresh`
 
 Removed one-shot ops (`optimize-assets`, `new-invitation`, `adopt-legacy-events`, `ops dbs`) are not
 registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation operations.
@@ -72,7 +71,7 @@ registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation operations.
 
 ```text
 celebra-me/
-├── docs/                    # Evergreen docs (`core/`, `domains/`) and `archive/`
+├── docs/                    # Evergreen docs (`core/`, `domains/`, `invitations/`)
 ├── public/                  # Public static assets
 ├── scripts/                 # Operational CLI scripts and script docs
 ├── src/
@@ -186,7 +185,6 @@ variable categories live in [`docs/env-workflow.md`](docs/env-workflow.md).
 - `docs/domains/theme/variant-system.md`
 - `docs/domains/tracking/commercial-attribution.md`
 - `docs/invitations/README.md`
-- `docs/archive/` for historical material
 
 ## Maintainer
 

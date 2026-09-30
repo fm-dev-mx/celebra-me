@@ -35,9 +35,6 @@ its own workspace. Keep brand briefs and creative templates in their existing lo
 
 - Current third-party docs: use an available official-docs lookup when dependency behavior is
   uncertain; package.json supplies the version. No duplicate Context7 skill is needed.
-- Graphify: [graphify-ops](rules/graphify-ops.md) owns repository use; a global query-first
-  instruction is incompatible. Graph artifacts are optional leads, never policy or required
-  validation.
 - External design skills: do not install a parallel design SSOT, root PRODUCT/DESIGN files, or an
   Impeccable CI gate. Existing brand, frontend-design, theme, and creative contracts own the work;
   temporary audit installations must be removed before merge.

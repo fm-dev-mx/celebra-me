@@ -17,7 +17,8 @@ This document defines the core 7-step operating procedure for agents.
    `pnpm agent:git-safety:start` (interactive plumbing; see `.agent/rules/git-safety.md`).
 4. **Implement Narrowly:** Edit only authorized files within scope. Keep the implementation simple,
    avoid duplicate owners and speculative legacy compatibility, and do not clean unrelated working
-   tree changes.
+   tree changes. Update only the canonical documents and discovery references whose contracts
+   changed.
 5. **Verify Proportionally:** Run the Gatekeeper validation tier matching the change scope (Tier A:
    `validate:changed`, Tier B: `type-check`, Tier C: `pnpm run ci`).
 6. **Finish Session:** Close the mutable session with `pnpm agent:git-safety:finish`. On failure,

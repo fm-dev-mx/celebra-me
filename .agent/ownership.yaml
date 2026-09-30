@@ -57,12 +57,6 @@ ownership:
           - 'Persistent Git authorization markers'
           - 'Provider/global operator defaults outside the repo'
 
-    - aspect: 'Optional Graphify ops policy'
-      owner: '.agent/rules/graphify-ops.md'
-      non_owners:
-          - 'Host/global Graphify skills'
-          - 'graphify-out/'
-
     - aspect: 'Agent operating procedure'
       owner: '.agent/rules/workflow.md'
       non_owners:
