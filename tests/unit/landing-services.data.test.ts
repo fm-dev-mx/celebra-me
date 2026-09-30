@@ -1,80 +1,71 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
-
-/**
- * Load the real landingData from the source file.
- * We read + sanitize the source instead of using a direct import because
- * Jest's parser cannot handle import.meta.env expressions in the source.
- * Only import.meta.env.* is replaced; the actual data object is the real
- * source content, not a mock.
- */
-function loadLandingData(): LandingPageData {
-	const source = readFileSync(join(process.cwd(), 'src/data/landing-page.data.ts'), 'utf8');
-
-	// Strip import.meta.env expressions — only whatsappPhone uses it,
-	// with fallback '521000000000'. This avoids Jest parse errors while
-	// keeping the rest of the source data intact.
-	const sanitized = source.replace(/import\.meta\.env\.\w+/g, "'521000000000'");
-
-	// Extract the exported landingData object literal.
-	// Format: export const landingData: LandingPageData = { ... };
-	const match = sanitized.match(
-		/export\s+const\s+landingData\s*:\s*LandingPageData\s*=\s*(\{[\s\S]*\})\s*;/,
-	);
-	if (!match) {
-		throw new Error('Could not extract landingData from source');
-	}
-
-	// Evaluate the extracted object literal via new Function.
-	// Same approach as before — runs in the Node global scope, not a sandbox.
-	return new Function('return ' + match[1])() as LandingPageData;
-}
+import { landingData } from '@/data/landing-page.data';
+import {
+	formatMxn,
+	getExpressDelivery,
+	getPromoPackage,
+	PROMO_CAMPAIGN,
+} from '@/data/promo-campaign.data';
 
 describe('landing services product value data', () => {
 	it('frames Services as product value instead of event demo discovery', () => {
-		const landingData = loadLandingData();
 		const services = landingData.services;
 		const hero = landingData.hero;
 
-		// Hero fields (changed in this changeset)
 		expect(hero.title).toBe('Con pases y confirmación, personalizada para cada invitado');
-		expect(hero.subtitle).toBe(
-			'Agrega tus invitados, asigna pases y lleva el control de confirmaciones.',
-		);
 		expect(hero.primaryCtaLabel).toBe('Cotizar mi invitación');
-		expect(hero.whatsappMessage).toContain('cupón: LANZAMIENTO-899');
 		expect(hero.secondaryCtaLabel).toBe('Ver demos de invitaciones');
 		expect(hero.secondaryCtaUrl).toBe('#tipo-evento');
 
-		// Services block assertions
 		expect(services.title).toBe('Todo claro para sus invitados, todo bajo control para usted');
 		expect(services.items).toHaveLength(4);
 		expect(services.cta.label).toBe('Quiero cotizar por WhatsApp');
-		expect(services.cta.href).toBe('#contacto');
 	});
+});
 
-	it('publishes the editorial pricing ladder and compact high-intent FAQ', () => {
-		const landingData = loadLandingData();
+describe('landing package catalog', () => {
+	it('lists Esencial, Signature (recommended) and Atelier in screen order', () => {
+		const { tiers } = landingData.pricing;
 
-		expect(landingData.pricing.eyebrow).toBe('INVERSIÓN PARA SU CELEBRACIÓN');
-		expect(landingData.pricing.title).toBe('Elija con una recomendación clara');
-		expect(landingData.pricing.note).toBe(
-			'Promoción de lanzamiento desde $899 MXN. Pago único.',
+		expect(tiers.map((tier) => tier.packageId)).toEqual(
+			PROMO_CAMPAIGN.packages.map((pkg) => pkg.id),
 		);
-		expect(landingData.pricing.tiers.map((tier) => tier.title)).toEqual([
+		expect(tiers.map((tier) => getPromoPackage(tier.packageId).name)).toEqual([
+			'Esencial',
 			'Signature',
-			'Colección',
 			'Atelier',
 		]);
-		expect(landingData.pricing.tiers[0].price.amount).toBe('1,699');
-		expect(landingData.pricing.tiers[1].price.amount).toBe('899');
-		expect(landingData.pricing.tiers[2].price.amount).toBe('2,899');
-		expect(landingData.pricing.tiers[0].regularPrice).toBe('Precio regular: $2,299 MXN');
-		expect(landingData.pricing.tiers[1].regularPrice).toBe('Precio regular: $1,299 MXN');
-		expect(landingData.pricing.tiers[2].regularPrice).toBe('Precio regular: $3,899 MXN');
-		expect(landingData.pricing.tiers[1].ctaMessage).toContain('paquete Colección de $899 MXN');
-		expect(landingData.pricing.decisionGuide.rows).toHaveLength(1);
+		expect(tiers.filter((tier) => tier.isPrimary).map((tier) => tier.packageId)).toEqual([
+			'signature',
+		]);
+	});
+
+	it('describes upper tiers incrementally and never labels lower tiers as branded', () => {
+		const [esencial, signature, atelier] = landingData.pricing.tiers;
+
+		expect(esencial.includesFrom).toBeUndefined();
+		expect(signature.includesFrom).toBe('Todo lo de Esencial, más:');
+		expect(signature.includes).toContain('QR de recuerdos');
+		expect(atelier.includesFrom).toBe('Todo lo de Signature, más:');
+		expect(atelier.includes).toContain('Su invitación a su nombre, sin la firma de Celebra-me');
+
+		const copy = JSON.stringify(landingData.pricing);
+		expect(copy).not.toMatch(/con marca|con publicidad/i);
+	});
+
+	it('derives the express delivery extra from the promo module', () => {
+		const express = getExpressDelivery();
+		const expressPrice = `+${formatMxn(express.price)} MXN`;
+		const [esencial, signature, atelier] = landingData.pricing.tiers;
+		const expressValue = (tier: typeof esencial) =>
+			tier.details.find((detail) => detail.label === express.name)?.value;
+
+		expect(expressValue(esencial)).toBe(expressPrice);
+		expect(expressValue(signature)).toBe(expressPrice);
+		expect(expressValue(atelier)).toBe('No aplica');
+		expect(landingData.pricing.extras.items.join(' ')).toContain(expressPrice);
+	});
+
+	it('keeps the compact high-intent FAQ and process steps', () => {
 		expect(landingData.faq.faqs).toHaveLength(6);
 		expect(landingData.howItWorks.steps).toHaveLength(4);
 	});

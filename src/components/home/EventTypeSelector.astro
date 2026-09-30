@@ -109,8 +109,6 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 						data-quote-message={quote.message}
 						data-quote-promo={quote.promoCode}
 						data-quote-value={quote.trackValue}
-						data-quote-package={quote.packageInterest || ""}
-						data-quote-package-name={quote.packageName || ""}
 						aria-hidden={index === 0 ? "false" : "true"}
 						{...(index === 0 ? {} : { inert: true })}
 					>
@@ -188,12 +186,9 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 					label={events[0].homeSelector.quoteCta.label}
 					trackSection="event-types"
 					trackCta={`showroom_quote_${events[0].eventType}`}
-					trackCampaign="DEMO-LANZAMIENTO-899"
+					campaignSection="DEMO"
 					trackValue={events[0].homeSelector.quoteCta.trackValue}
-					trackCurrency="MXN"
 					promoCode={events[0].homeSelector.quoteCta.promoCode}
-					trackPackage={events[0].homeSelector.quoteCta.packageInterest}
-					packageName={events[0].homeSelector.quoteCta.packageName}
 					eventType={events[0].eventType}
 					eventLabel={events[0].label}
 					ariaLabel="Cotizar esta invitación"
@@ -320,8 +315,6 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 			const message = panel.getAttribute("data-quote-message") || "";
 			const promo = panel.getAttribute("data-quote-promo") || "";
 			const value = panel.getAttribute("data-quote-value") || "";
-			const pkg = panel.getAttribute("data-quote-package") || "";
-			const pkgName = panel.getAttribute("data-quote-package-name") || "";
 
 			if (demoLink) {
 				demoLink.href = href;
@@ -351,10 +344,6 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 				quoteLink.setAttribute("data-track-value", value);
 				quoteLink.setAttribute("data-event-type", panel.getAttribute("data-panel-event") || "");
 				quoteLink.setAttribute("data-event-label", label);
-				if (pkg) quoteLink.setAttribute("data-package-interest", pkg);
-				else quoteLink.removeAttribute("data-package-interest");
-				if (pkgName) quoteLink.setAttribute("data-package-name", pkgName);
-				else quoteLink.removeAttribute("data-package-name");
 				quoteLink.setAttribute("aria-label", "Cotizar esta invitación");
 			}
 

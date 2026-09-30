@@ -1,3 +1,5 @@
+import type { PromoPackageId } from '@/data/promo-campaign.data';
+
 export interface HeroData {
 	eyebrow?: string;
 	title: string;
@@ -7,8 +9,6 @@ export interface HeroData {
 	primaryCtaLabel: string;
 	secondaryCtaLabel: string;
 	secondaryCtaUrl: string;
-	whatsappPhone?: string;
-	whatsappMessage?: string;
 	proofLine?: string;
 }
 
@@ -60,44 +60,36 @@ export interface ServicesData {
 	}>;
 	cta: {
 		label: string;
-		href: string;
 	};
 }
 
-interface PricingSection {
-	title: string;
-	items: string[];
+export interface PricingTierDetail {
+	label: string;
+	value: string;
 }
 
-interface PricingTier {
-	id?: string;
-	title: string;
-	description: string;
+/**
+ * Package card copy. Names, prices, promo codes and WhatsApp messages are resolved from
+ * `src/data/promo-campaign.data.ts` through `packageId`.
+ */
+export interface PricingTier {
+	packageId: PromoPackageId;
 	badge?: string;
-	idealFor: string;
-	sections: PricingSection[];
-	price: {
-		amount: string;
-		currency: string;
-		period: string;
-	};
-	regularPrice?: string;
-	cta: string;
-	ctaMessage?: string;
 	isPrimary?: boolean;
 	isExclusive?: boolean;
+	/** Lead-in for incremental tiers, e.g. "Todo lo de Esencial, más:". */
+	includesFrom?: string;
+	includes: string[];
+	details: PricingTierDetail[];
 }
 
 export interface PricingData {
 	eyebrow: string;
 	title: string;
 	intro: string;
-	note: string;
-	decisionGuide: {
+	extras: {
 		title: string;
-		rows: string[];
-		cta: string;
-		message: string;
+		items: string[];
 	};
 	tiers: PricingTier[];
 }
@@ -130,7 +122,6 @@ export interface FAQData {
 		title: string;
 		description: string;
 		cta: string;
-		message: string;
 	};
 }
 

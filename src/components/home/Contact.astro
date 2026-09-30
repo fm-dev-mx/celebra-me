@@ -5,6 +5,13 @@ import ActionIcon from '@components/common/actions/ActionIcon.astro';
 import Icon from '@components/common/icons/Icon.astro';
 import type { ContactData } from '@/interfaces/ui/sections/landing-page.interface';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
+import {
+	buildCampaignCode,
+	buildGeneralMessage,
+	getGeneralPromoCode,
+	getStartingPrice,
+	PROMO_CAMPAIGN,
+} from '@/data/promo-campaign.data';
 
 // Import stylesheet
 import '@/styles/home/_contact.scss';
@@ -20,7 +27,8 @@ const contactPhone = getContactPhone();
 const isPlaceholder = isPlaceholderContactPhone(contactPhone);
 const hasValidWhatsApp = !isPlaceholder || import.meta.env.DEV;
 const displayPhone = (isPlaceholder && import.meta.env.DEV) ? '521234567890' : contactPhone;
-const whatsappMessage = data.cta?.message || 'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899';
+const whatsappMessage = data.cta?.message ?? buildGeneralMessage();
+const promoCode = getGeneralPromoCode();
 const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(whatsappMessage)}`;
 ---
 
@@ -50,6 +58,7 @@ const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(wha
 							<a
 								href={whatsappUrl}
 								target="_blank"
+								rel="noopener noreferrer"
 								class="channel-link channel-link--whatsapp"
 								data-track-event="whatsapp_contact_clicked"
 								data-track-section="contact"
@@ -57,10 +66,10 @@ const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(wha
 								data-track-label="Cotizar por WhatsApp"
 								data-track-intent="whatsapp"
 								data-track-destination="whatsapp"
-								data-campaign-code="FINAL-LANZAMIENTO-899"
-								data-promo-code="LANZAMIENTO-899"
-								data-track-value="899"
-								data-track-currency="MXN"
+								data-campaign-code={buildCampaignCode('FINAL', promoCode)}
+								data-promo-code={promoCode}
+								data-track-value={getStartingPrice()}
+								data-track-currency={PROMO_CAMPAIGN.currency}
 							>
 								<div class="channel-icon-wrapper">
 									<Icon name="WhatsApp" size={24} />

@@ -15,7 +15,6 @@ interface Props {
 
 const { data } = Astro.props;
 const phone = getContactPhone();
-const ctaMessage = data.cta?.message || 'Hola, quiero empezar mi invitación digital con panel de invitados.';
 ---
 
 <Section id="como-funciona" class="how-it-works" data-track-section="how-it-works" data-screenshot="landing-process">
@@ -33,10 +32,10 @@ const ctaMessage = data.cta?.message || 'Hola, quiero empezar mi invitación dig
 						<WhatsAppButton
 							className="how-it-works__cta"
 							phone={phone}
-							message={ctaMessage}
 							label={data.cta.label}
 							trackSection="how-it-works"
 							trackCta="whatsapp-process"
+							campaignSection="PROCESS"
 							ariaLabel="Empezar mi invitación por WhatsApp"
 						/>
 					</div>
@@ -100,10 +99,10 @@ const ctaMessage = data.cta?.message || 'Hola, quiero empezar mi invitación dig
 						<WhatsAppButton
 							className="how-it-works__cta"
 							phone={phone}
-							message={ctaMessage}
 							label={data.cta.label}
 							trackSection="how-it-works"
 							trackCta="whatsapp-process"
+							campaignSection="PROCESS"
 							ariaLabel="Empezar mi invitación por WhatsApp"
 						/>
 					</div>

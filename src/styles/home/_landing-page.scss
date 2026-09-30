@@ -67,3 +67,14 @@ footer {
 		font-family: var(--font-display);
 	}
 }
+
+// ---------------------------------------------------------------------------
+// Promo visibility
+// The prerendered landing always ships the promo; PromoStatus.astro sets
+// html[data-promo-state='expired'] once the campaign ends in the visitor's browser.
+// ---------------------------------------------------------------------------
+
+html:not([data-promo-state='expired']) [data-promo-fallback],
+html[data-promo-state='expired'] [data-promo-only] {
+	display: none;
+}

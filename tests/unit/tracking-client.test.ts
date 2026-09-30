@@ -19,6 +19,7 @@ jest.mock('@/lib/tracking/consent-client', () => ({
 
 import { MockIntersectionObserver } from '../helpers/intersection-observer';
 import { initCommercialTracking } from '@/lib/tracking/client';
+import { buildGeneralMessage, getGeneralPromoCode } from '@/data/promo-campaign.data';
 
 function flushPromises(): Promise<void> {
 	return new Promise((resolve) => {
@@ -163,10 +164,10 @@ describe('WhatsApp lead identity [T1, T2]', () => {
 		window.history.replaceState({}, '', '/');
 		document.body.innerHTML = `
 			<a
-				href="https://wa.me/521234567890?text=Hola"
+				href="https://wa.me/521234567890?text=${encodeURIComponent(buildGeneralMessage())}"
 				data-track-event="whatsapp_contact_clicked"
 				data-track-cta="hero_whatsapp"
-				data-promo-code="LANZAMIENTO-899"
+				data-promo-code="${getGeneralPromoCode()}"
 			>WhatsApp</a>
 		`;
 		document.body.dataset.trackingRouteClass = 'commercial';
@@ -197,6 +198,25 @@ describe('WhatsApp lead identity [T1, T2]', () => {
 		// Price-suffix folio (CM-NNN-XXXX) must NOT appear.
 		const priceSuffixFolioPattern = /CM-\d{3}-[A-Z0-9]+/i;
 		expect(anchor.href).not.toMatch(priceSuffixFolioPattern);
+	});
+
+	it('[T1b] keeps the CTA message verbatim and appends exactly one folio line', async () => {
+		initCommercialTracking();
+		const anchor = document.querySelector(
+			'a[data-track-event="whatsapp_contact_clicked"]',
+		) as HTMLAnchorElement;
+		anchor.addEventListener('click', (e) => e.preventDefault());
+		anchor.click();
+		await flushPromises();
+		anchor.click();
+		await flushPromises();
+
+		const message = new URL(anchor.href).searchParams.get('text') ?? '';
+		const [firstLine, folioLine, ...rest] = message.split('\n');
+		expect(firstLine).toBe(buildGeneralMessage());
+		expect(folioLine).toMatch(/^Folio CM-[A-Z0-9]{6}$/);
+		expect(rest).toEqual([]);
+		expect(message).not.toContain('Cupón');
 	});
 
 	it('[T2] repeated WhatsApp clicks within the same session reuse the same lead_code', async () => {

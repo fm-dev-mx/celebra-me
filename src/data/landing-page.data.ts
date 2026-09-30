@@ -1,4 +1,11 @@
 import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
+import { formatMxn, getExpressDelivery, getPromoPackage } from '@/data/promo-campaign.data';
+
+const expressDelivery = getExpressDelivery();
+const expressDeliveryPackages = expressDelivery.appliesTo
+	.map((packageId) => getPromoPackage(packageId).name)
+	.join(' y ');
+const expressDeliveryPrice = `+${formatMxn(expressDelivery.price)} MXN`;
 
 export const landingData: LandingPageData = {
 	hero: {
@@ -8,9 +15,6 @@ export const landingData: LandingPageData = {
 		primaryCtaLabel: 'Cotizar mi invitación',
 		secondaryCtaLabel: 'Ver demos de invitaciones',
 		secondaryCtaUrl: '#tipo-evento',
-		whatsappPhone: import.meta.env.CONTACT_WHATSAPP || '521000000000',
-		whatsappMessage:
-			'Hola, quiero hacer válido el cupón: LANZAMIENTO-899 para mi invitación digital.',
 		proofLine: 'RSVP · Pases digitales · Galería',
 	},
 	eventSelector: {
@@ -45,7 +49,6 @@ export const landingData: LandingPageData = {
 		],
 		cta: {
 			label: 'Iniciar mi invitación',
-			message: 'Hola, quiero empezar mi invitación digital premium.',
 		},
 	},
 	services: {
@@ -76,7 +79,6 @@ export const landingData: LandingPageData = {
 		],
 		cta: {
 			label: 'Quiero cotizar por WhatsApp',
-			href: '#contacto',
 		},
 	},
 	guestExperience: {
@@ -142,91 +144,59 @@ export const landingData: LandingPageData = {
 	pricing: {
 		eyebrow: 'INVERSIÓN PARA SU CELEBRACIÓN',
 		title: 'Elija con una recomendación clara',
-		intro: 'Elige el nivel de diseño que necesita tu evento. Todas las invitaciones pueden integrar confirmación, pases, ubicación, música, galería y detalles importantes; los paquetes superiores elevan la dirección visual, el grado de personalización y el acompañamiento.',
-		note: 'Promoción de lanzamiento desde $899 MXN. Pago único.',
-		decisionGuide: {
-			title: '¿No sabes cuál elegir?',
-			rows: [
-				'Te recomendamos el paquete ideal por WhatsApp según tu evento, invitados y estilo.',
+		intro: 'Todos los paquetes incluyen diseño único, pases, confirmación y panel de invitados, agregar al calendario y cambios y correcciones sin costo. Pago único.',
+		extras: {
+			title: 'Extras',
+			items: [
+				`${expressDelivery.name}: ${expressDeliveryPrice}, disponible para ${expressDeliveryPackages}.`,
 			],
-			cta: 'Recibir recomendación personalizada',
-			message: 'Hola, quiero que me ayuden a elegir el mejor paquete para mi evento.',
 		},
 		tiers: [
 			{
-				id: 'signature',
-				title: 'Signature',
-				description: 'Diseño con personalización editorial media y refinamiento estético.',
-				badge: 'MÁS RECOMENDADO',
+				packageId: 'esencial',
+				includes: [
+					'Diseño único, pases, confirmación y panel de invitados',
+					'Agregar al calendario',
+					'Cambios y correcciones sin costo',
+				],
+				details: [
+					{ label: 'Entrega', value: '3 a 5 días hábiles' },
+					{ label: 'Carga de la lista de invitados', value: 'La realiza usted' },
+					{ label: 'Firma de Celebra-me al pie', value: 'Discreta' },
+					{ label: expressDelivery.name, value: expressDeliveryPrice },
+				],
+			},
+			{
+				packageId: 'signature',
+				badge: 'RECOMENDADO',
 				isPrimary: true,
-				price: { amount: '1,699', currency: 'MXN', period: 'pago único' },
-				regularPrice: 'Precio regular: $2,299 MXN',
-				idealFor:
-					'Para quienes buscan un diseño más personalizado y adaptado a su paleta de colores.',
-				sections: [
-					{
-						title: 'Incluye',
-						items: [
-							'Personalización editorial del diseño',
-							'Confirmación RSVP & Pases digitales',
-							'Secciones con estructura flexible',
-							'Adaptación de paleta de colores',
-							'Soporte para detalles especiales',
-						],
-					},
+				includesFrom: 'Todo lo de Esencial, más:',
+				includes: ['QR de recuerdos'],
+				details: [
+					{ label: 'Entrega', value: '3 a 5 días hábiles' },
+					{ label: 'Carga de la lista de invitados', value: 'La realiza usted' },
+					{ label: 'Firma de Celebra-me al pie', value: 'Discreta' },
+					{ label: expressDelivery.name, value: expressDeliveryPrice },
 				],
-				cta: 'Elegir Signature',
-				ctaMessage:
-					'Hola, quiero elegir el paquete Signature de $1,699 MXN con personalización editorial.',
 			},
 			{
-				id: 'coleccion',
-				title: 'Colección',
-				description:
-					'Diseño esencial sobre plantilla preestablecida con toda la funcionalidad activa.',
-				price: { amount: '899', currency: 'MXN', period: 'pago único' },
-				regularPrice: 'Precio regular: $1,299 MXN',
-				idealFor: 'Para eventos que buscan una invitación impecable, clara y funcional.',
-				sections: [
-					{
-						title: 'Incluye',
-						items: [
-							'Invitación con diseño de catálogo',
-							'Confirmación RSVP & Pases digitales',
-							'Detalles de recepción y ceremonia',
-							'Ubicaciones y mesa de regalos',
-							'Galería de fotos y música de fondo',
-						],
-					},
-				],
-				cta: 'Elegir Colección',
-				ctaMessage:
-					'Hola, quiero elegir el paquete Colección de $899 MXN para mi invitación digital.',
-			},
-			{
-				id: 'atelier',
-				title: 'Atelier',
-				description: 'Diseño a la medida con dirección visual avanzada y acompañamiento.',
+				packageId: 'atelier',
 				isExclusive: true,
-				price: { amount: '2,899', currency: 'MXN', period: 'pago único' },
-				regularPrice: 'Precio regular: $3,899 MXN',
-				idealFor:
-					'Para eventos premium que exigen una identidad visual única y dirección editorial experta.',
-				sections: [
-					{
-						title: 'Incluye',
-						items: [
-							'Dirección visual avanzada a la medida',
-							'Confirmación RSVP & Pases digitales',
-							'Mayor detalle editorial y narrativa',
-							'Animaciones y tipografía curada',
-							'Acompañamiento y asesoría prioritaria',
-						],
-					},
+				includesFrom: 'Todo lo de Signature, más:',
+				includes: [
+					'Entrega en 48 horas',
+					'Celebra-me carga su lista de invitados',
+					'Su invitación a su nombre, sin la firma de Celebra-me',
 				],
-				cta: 'Elegir Atelier',
-				ctaMessage:
-					'Hola, quiero elegir el paquete Atelier de $2,899 MXN con dirección visual avanzada.',
+				details: [
+					{ label: 'Entrega', value: '48 horas' },
+					{
+						label: 'Carga de la lista de invitados',
+						value: 'Celebra-me, con lista en Excel o legible',
+					},
+					{ label: 'Firma de Celebra-me al pie', value: 'Se retira' },
+					{ label: expressDelivery.name, value: 'No aplica' },
+				],
 			},
 		],
 	},
@@ -267,7 +237,6 @@ export const landingData: LandingPageData = {
 			description:
 				'Te ayudamos por WhatsApp a elegir el nivel adecuado según tu evento, cantidad de invitados y estilo.',
 			cta: 'Hablar con un asesor',
-			message: 'Hola, quiero asesoría para elegir el paquete ideal de invitación digital.',
 		},
 	},
 	howItWorks: {
@@ -307,7 +276,6 @@ export const landingData: LandingPageData = {
 		],
 		cta: {
 			label: 'Quiero iniciar mi invitación',
-			message: 'Hola, quiero empezar mi invitación digital premium.',
 		},
 	},
 	contact: {
@@ -317,7 +285,6 @@ export const landingData: LandingPageData = {
 			'Te ayudamos a elegir el paquete adecuado según el nivel de personalización, diseño y acompañamiento que necesita tu evento.',
 		cta: {
 			label: 'Cotizar por WhatsApp',
-			message: 'Hola, quiero cotizar una invitación digital para mi evento.',
 		},
 		microcopy:
 			'Te asesoraremos para elegir la estructura y el nivel de diseño ideal para tu celebración.',

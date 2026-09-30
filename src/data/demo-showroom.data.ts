@@ -5,6 +5,19 @@ import type {
 } from '@/interfaces/ui/sections/demo-showroom.interface';
 import type { EventType } from '@/lib/theme/theme-contract';
 import { CELESTIAL_QUOTE_MESSAGE } from '@/lib/invitation/demo-conversion';
+import {
+	buildGeneralMessage,
+	getGeneralPromoCode,
+	getStartingPrice,
+} from '@/data/promo-campaign.data';
+
+/** Shared home-selector quote CTA: the general promo message, code and value. */
+const SHOWROOM_QUOTE_CTA = {
+	label: 'Cotizar esta invitación',
+	message: buildGeneralMessage(),
+	promoCode: getGeneralPromoCode(),
+	trackValue: getStartingPrice(),
+} as const;
 
 export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 	{
@@ -36,13 +49,7 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 				description:
 					'Diseñamos una invitación con RSVP, pases por familia, ubicación, música y galería para que cada invitado reciba una experiencia clara.',
 			},
-			quoteCta: {
-				label: 'Cotizar esta invitación',
-				message:
-					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: XV años\n\nCupón: LANZAMIENTO-899',
-				promoCode: 'LANZAMIENTO-899',
-				trackValue: 899,
-			},
+			quoteCta: SHOWROOM_QUOTE_CTA,
 		},
 		sortOrder: 10,
 	},
@@ -75,15 +82,7 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 				description:
 					'Comparte ceremonia, recepción, mesa de regalos, confirmaciones y pases digitales en una experiencia visual coherente con tu estilo.',
 			},
-			quoteCta: {
-				label: 'Cotizar esta invitación',
-				message:
-					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium para el paquete Premium.\n\nEvento: Boda\n\nCupón: LANZAMIENTO-1499',
-				promoCode: 'LANZAMIENTO-1499',
-				trackValue: 1499,
-				packageName: 'Premium',
-				packageInterest: 'premium',
-			},
+			quoteCta: SHOWROOM_QUOTE_CTA,
 		},
 		sortOrder: 20,
 	},
@@ -117,13 +116,7 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 				description:
 					'Organiza ceremonia, recepción, padrinos, ubicación y confirmaciones en una invitación clara y fácil de compartir.',
 			},
-			quoteCta: {
-				label: 'Cotizar esta invitación',
-				message:
-					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Bautizo\n\nCupón: LANZAMIENTO-899',
-				promoCode: 'LANZAMIENTO-899',
-				trackValue: 899,
-			},
+			quoteCta: SHOWROOM_QUOTE_CTA,
 		},
 		sortOrder: 30,
 	},
@@ -156,13 +149,7 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 				description:
 					'Reúne ubicación, mesa de regalos, galería y confirmaciones en una experiencia clara para familiares y amigos.',
 			},
-			quoteCta: {
-				label: 'Cotizar esta invitación',
-				message:
-					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Baby shower\n\nCupón: LANZAMIENTO-899',
-				promoCode: 'LANZAMIENTO-899',
-				trackValue: 899,
-			},
+			quoteCta: SHOWROOM_QUOTE_CTA,
 		},
 		sortOrder: 40,
 	},
@@ -195,13 +182,7 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 				description:
 					'Comparte horario, ubicación, confirmaciones y detalles importantes en una invitación visualmente cuidada.',
 			},
-			quoteCta: {
-				label: 'Cotizar esta invitación',
-				message:
-					'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nEvento: Cumpleaños\n\nCupón: LANZAMIENTO-899',
-				promoCode: 'LANZAMIENTO-899',
-				trackValue: 899,
-			},
+			quoteCta: SHOWROOM_QUOTE_CTA,
 		},
 		sortOrder: 50,
 	},
