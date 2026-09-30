@@ -1,11 +1,13 @@
 // Fonts
-$sys-font-display-formal: ('Cinzel', serif);
-$sys-font-display-elegant: ('Playfair Display', serif);
-$sys-font-display-hacienda: ('Cormorant Garamond', serif);
+// @fontsource-variable packages register "<Family> Variable"; the plain family name stays as a
+// fallback for locally installed static fonts. Pinyon Script ships as a static @fontsource package.
+$sys-font-display-formal: ('Cinzel Variable', 'Cinzel', serif);
+$sys-font-display-elegant: ('Playfair Display Variable', 'Playfair Display', serif);
+$sys-font-display-hacienda: ('Cormorant Garamond Variable', 'Cormorant Garamond', serif);
 $sys-font-calligraphy: ('Pinyon Script', cursive);
-$sys-font-body: ('EB Garamond', georgia, serif);
-$sys-font-body-hacienda: ('EB Garamond', serif);
-$sys-font-ui: ('Montserrat', system-ui, sans-serif);
+$sys-font-body: ('EB Garamond Variable', 'EB Garamond', georgia, serif);
+$sys-font-body-hacienda: ('EB Garamond Variable', 'EB Garamond', serif);
+$sys-font-ui: ('Montserrat Variable', 'Montserrat', system-ui, sans-serif);
 
 // Sizes
 $sys-size-h1: clamp(2.5rem, 8vw, 5rem);
