@@ -14,10 +14,15 @@ import { footerData } from '@/data/footer.data';
 		<div class="legal-page__container">
 			<header class="legal-page__header">
 				<h1>Política de Privacidad</h1>
-				<p class="legal-page__updated">Última actualización: Junio 2026</p>
+				<p class="legal-page__updated">Última actualización: Septiembre 2026</p>
 			</header>
 
 			<section class="legal-page__content">
+				<h2>Responsable del tratamiento</h2>
+				<p>
+					Francisco Mendoza, bajo el nombre comercial Celebra-me, con domicilio en Los Mochis, Sinaloa, México, es responsable del tratamiento de sus datos personales. Para cualquier asunto relacionado con esta política puede escribir a <a href="mailto:contacto@celebra-me.com">contacto@celebra-me.com</a>.
+				</p>
+
 				<h2>1. Información que Recopilamos</h2>
 				<p>
 					Recopilamos información que usted nos proporciona directamente, incluyendo: nombre, correo electrónico, número de teléfono y detalles de su evento. Esta información es esencial para crear su invitación digital personalizada.
@@ -30,7 +35,7 @@ import { footerData } from '@/data/footer.data';
 				<ul>
 					<li>Diseñar y entregar su invitación digital</li>
 					<li>Comunicarnos con usted sobre su pedido</li>
-					<li>Procesar pagos de forma segura</li>
+					<li>Gestionar el pago de su pedido</li>
 					<li>Mejorar nuestros servicios</li>
 					<li>Enviar comunicaciones de marketing (solo con su consentimiento)</li>
 				</ul>
@@ -45,12 +50,11 @@ import { footerData } from '@/data/footer.data';
 					No vendemos ni compartimos su información personal con terceros, excepto cuando sea necesario para proporcionar nuestros servicios o cuando la ley lo requiera. A continuación, enumeramos los terceros con los que colaboramos:
 				</p>
 				<ul>
-					<li><strong>Google Analytics 4 (Google LLC)</strong> — análisis de comportamiento de navegación en nuestro sitio web. Los datos se anonimizan y no incluyen información personal identificable. <em>[REQUIERE REVISIÓN DEL PROPIETARIO/ASESOR LEGAL]</em></li>
-					<li><strong>Meta Pixel (Meta Platforms, Inc.)</strong> — medición de campañas publicitarias y personalización de anuncios. Solo se activa con su consentimiento de marketing. <em>[REQUIERE REVISIÓN DEL PROPIETARIO/ASESOR LEGAL]</em></li>
+					<li><strong>Google Analytics 4 (Google LLC)</strong> — análisis de comportamiento de navegación en nuestro sitio web. Los datos se anonimizan y no incluyen información personal identificable.</li>
+					<li><strong>Meta Pixel (Meta Platforms, Inc.)</strong> — medición de campañas publicitarias y personalización de anuncios. Solo se activa con su consentimiento de marketing.</li>
 					<li><strong>Vercel Inc.</strong> — plataforma de hosting y Vercel Web Analytics (análisis a nivel de plataforma).</li>
 					<li><strong>Supabase</strong> — base de datos y almacenamiento de archivos.</li>
-					<li><strong>Proveedor de correo electrónico (Nodemailer / Gmail)</strong> — envío de notificaciones sobre su solicitud y comunicaciones relacionadas con el servicio.</li>
-					<li><strong>Procesador de pagos futuro</strong> — solo cuando se implemente un flujo de pago en línea. <em>[ACTUALIZAR CUANDO SE INCORPORE]</em></li>
+					<li><strong>Proveedor de correo electrónico</strong> — envío de notificaciones sobre su solicitud y comunicaciones relacionadas con el servicio.</li>
 				</ul>
 
 				<h2>5. Cookies y Tecnologías Similares</h2>
@@ -113,11 +117,7 @@ import { footerData } from '@/data/footer.data';
 
 				<h2>10. Contacto</h2>
 				<p>
-					Si tiene preguntas sobre esta política de privacidad, desea ejercer sus derechos ARCO, o tiene consultas sobre el uso de cookies y tecnologías de seguimiento, contáctenos a través de nuestro formulario de contacto o vía WhatsApp.
-				</p>
-
-				<p class="legal-page__disclaimer">
-					<strong>Aviso legal:</strong> El texto anterior es un borrador técnico. <em>[REQUIERE REVISIÓN DEL PROPIETARIO/ASESOR LEGAL]</em> antes de su publicación. No constituye asesoría legal.
+					Si tiene preguntas sobre esta política de privacidad, desea ejercer sus derechos ARCO, o tiene consultas sobre el uso de cookies y tecnologías de seguimiento, contáctenos en <a href="mailto:contacto@celebra-me.com">contacto@celebra-me.com</a>, a través de nuestro formulario de contacto o vía WhatsApp.
 				</p>
 			</section>
 
@@ -194,12 +194,8 @@ import { footerData } from '@/data/footer.data';
 		margin-bottom: 0.5rem;
 	}
 
-	.legal-page__disclaimer {
-		margin-top: 2rem;
-		font-size: 0.85rem;
-		color: #888;
-		border-top: 1px solid #333;
-		padding-top: 1rem;
+	.legal-page__content a {
+		color: var(--color-action-accent);
 	}
 
 	.legal-page__back {

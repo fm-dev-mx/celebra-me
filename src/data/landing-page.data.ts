@@ -1,5 +1,10 @@
 import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
-import { formatMxn, getExpressDelivery, getPromoPackage } from '@/data/promo-campaign.data';
+import {
+	formatMxn,
+	getExpressDelivery,
+	getPromoPackage,
+	getStartingPrice,
+} from '@/data/promo-campaign.data';
 
 const expressDelivery = getExpressDelivery();
 const expressDeliveryPackages = expressDelivery.appliesTo
@@ -8,10 +13,14 @@ const expressDeliveryPackages = expressDelivery.appliesTo
 const expressDeliveryPrice = `+${formatMxn(expressDelivery.price)} MXN`;
 
 export const landingData: LandingPageData = {
+	seo: {
+		title: 'Celebra-me | Invitaciones Digitales Premium',
+		description: `Invitaciones digitales con pase y confirmación para cada invitado. Diseño único, panel de invitados y envío por WhatsApp. Desde ${formatMxn(getStartingPrice())} MXN, sin anticipo.`,
+	},
 	hero: {
 		eyebrow: 'INVITACIONES DIGITALES',
 		title: 'Con pases y confirmación, personalizada para cada invitado',
-		subtitle: 'Agrega tus invitados, asigna pases y lleva el control de confirmaciones.',
+		subtitle: 'Agregue a sus invitados, asigne pases y lleve el control de confirmaciones.',
 		primaryCtaLabel: 'Cotizar mi invitación',
 		secondaryCtaLabel: 'Ver demos de invitaciones',
 		secondaryCtaUrl: '#tipo-evento',
@@ -19,32 +28,31 @@ export const landingData: LandingPageData = {
 	},
 	eventSelector: {
 		eyebrow: 'DEMOS POR EVENTO',
-		title: 'Revisa cómo puede verse tu invitación',
+		title: 'Vea cómo puede lucir su invitación',
 		description:
-			'Explora demos para boda, XV años, cumpleaños y otros eventos. El diseño se adapta al estilo de tu celebración.',
+			'Explore demos para boda, XV años, cumpleaños y otros eventos. El diseño se adapta al estilo de su celebración.',
 	},
 	productProof: {
 		eyebrow: 'NO ES UN PDF, TAMPOCO ES UN ENLACE IGUAL PARA TODOS',
-		title: 'La invitación también organiza tu evento',
+		title: 'La invitación también organiza su evento',
 		description:
-			'Puedes agregar invitados, asignar pases y enviar una invitación personal para cada persona o familia.',
+			'Puede agregar invitados, asignar pases y enviar una invitación personal para cada persona o familia.',
 		items: [
 			{
 				title: 'Lista de invitados',
-				description: 'Organiza personas, familias o grupos desde un solo lugar.',
+				description: 'Organice personas, familias o grupos desde un solo lugar.',
 			},
 			{
 				title: 'Pases claros',
-				description: 'Define cuántos accesos tiene cada invitado.',
+				description: 'Defina cuántos accesos tiene cada invitado.',
 			},
 			{
 				title: 'Invitación personal',
-				description:
-					'Cada invitado recibe su una invitación con su nombre o el de su familia.',
+				description: 'Cada invitado recibe su invitación con su nombre o el de su familia.',
 			},
 			{
 				title: 'Confirmaciones ordenadas',
-				description: 'Revisa quién confirmó sin perderte entre mensajes.',
+				description: 'Vea quién confirmó sin perderse entre mensajes.',
 			},
 		],
 		cta: {
@@ -54,10 +62,10 @@ export const landingData: LandingPageData = {
 	services: {
 		eyebrow: 'LO QUE PUEDE INCLUIR',
 		title: 'Todo claro para sus invitados, todo bajo control para usted',
-		subtitle: 'Presenta cada detalle de forma clara.',
-		dossierSubtext: 'Activamos solo lo que tu evento necesita.',
+		subtitle: 'Cada detalle del evento, presentado de forma clara.',
+		dossierSubtext: 'Activamos solo lo que su evento necesita.',
 		dossierTag: 'SECCIONES A MEDIDA',
-		closingStatement: '',
+		closingStatement: 'Menos mensajes sueltos. Más claridad para usted y sus invitados.',
 		items: [
 			{
 				title: 'Confirmación RSVP',
@@ -65,7 +73,7 @@ export const landingData: LandingPageData = {
 			},
 			{
 				title: 'Pases digitales',
-				description: 'Define cuántos lugares tiene cada invitado o familia.',
+				description: 'Defina cuántos lugares tiene cada invitado o familia.',
 			},
 			{
 				title: 'Ubicación y mesa de regalos',
@@ -74,7 +82,7 @@ export const landingData: LandingPageData = {
 			{
 				title: 'Itinerario, música y galería',
 				description:
-					'Muestra horarios, agrega tu canción favorita e incluye tu sesión de fotos.',
+					'Muestre horarios, agregue su canción favorita e incluya su sesión de fotos.',
 			},
 		],
 		cta: {
@@ -82,7 +90,7 @@ export const landingData: LandingPageData = {
 		},
 	},
 	guestExperience: {
-		eyebrow: 'PARA TUS INVITADOS',
+		eyebrow: 'PARA SUS INVITADOS',
 		title: 'Una invitación clara desde el primer mensaje',
 		description:
 			'Al abrirla, cada invitado puede ver sus pases, consultar los detalles del evento y confirmar asistencia.',
@@ -205,11 +213,10 @@ export const landingData: LandingPageData = {
 		title: 'Preguntas frecuentes',
 		subtitle:
 			'Las dudas más importantes sobre entrega, invitaciones personalizadas, pases y confirmaciones.',
-		divider: 'Dudas antes de cotizar',
 		faqs: [
 			{
 				question: '¿La invitación se envía por WhatsApp?',
-				answer: 'Sí. Desde tu panel puedes enviar las invitaciones a tus invitados. Cada persona recibe su propia invitación, no un enlace genérico para todos.',
+				answer: 'Sí. Desde su panel puede enviar las invitaciones a sus invitados. Cada persona recibe su propia invitación, no un enlace genérico para todos.',
 			},
 			{
 				question: '¿Cada invitado recibe una invitación diferente?',
@@ -217,7 +224,7 @@ export const landingData: LandingPageData = {
 			},
 			{
 				question: '¿Qué es el panel de invitados?',
-				answer: 'Es el espacio donde puedes organizar tu lista, asignar pases, enviar invitaciones y revisar confirmaciones.',
+				answer: 'Es el espacio donde puede organizar su lista, asignar pases, enviar invitaciones y revisar confirmaciones.',
 			},
 			{
 				question: '¿Es una plantilla, PDF o imagen?',
@@ -225,28 +232,28 @@ export const landingData: LandingPageData = {
 			},
 			{
 				question: '¿Puedo asignar pases por familia?',
-				answer: 'Sí. Puedes asignar pases por persona, pareja, familia o grupo.',
+				answer: 'Sí. Puede asignar pases por persona, pareja, familia o grupo.',
 			},
 			{
 				question: '¿Cómo veo quién confirmó?',
-				answer: 'Las respuestas quedan ordenadas para que puedas revisar quién confirmó y quién sigue pendiente.',
+				answer: 'Las respuestas quedan ordenadas para que pueda revisar quién confirmó y quién sigue pendiente.',
 			},
 		],
 		helpSection: {
-			title: '¿Prefieres resolverlo directamente?',
+			title: '¿Prefiere resolverlo directamente?',
 			description:
-				'Te ayudamos por WhatsApp a elegir el nivel adecuado según tu evento, cantidad de invitados y estilo.',
+				'Le ayudamos por WhatsApp a elegir el nivel adecuado según su evento, cantidad de invitados y estilo.',
 			cta: 'Hablar con un asesor',
 		},
 	},
 	howItWorks: {
 		eyebrow: 'PROCESO SIMPLE',
-		title: 'Nosotros la diseñamos. Tú la envías desde tu panel.',
+		title: 'Nosotros la diseñamos. Usted la envía desde su panel.',
 		subtitle:
-			'Te entregamos una invitación lista para usar, con una forma clara de organizar invitados, pases y confirmaciones.',
+			'Le entregamos una invitación lista para usar, con una forma clara de organizar invitados, pases y confirmaciones.',
 		deliveryDossier: {
 			title: 'Entrega preparada',
-			subtitle: 'Lo que recibes al final del proceso',
+			subtitle: 'Lo que recibe al final del proceso',
 			rows: [
 				{ label: 'Invitación personalizada', status: 'Lista' },
 				{ label: 'Panel de invitados', status: 'Activo' },
@@ -257,21 +264,21 @@ export const landingData: LandingPageData = {
 		},
 		steps: [
 			{
-				title: 'Nos compartes los datos',
+				title: 'Nos comparte los datos',
 				description: 'Fecha, lugar, nombres, fotos y detalles del evento.',
 			},
 			{
-				title: 'Diseñamos tu invitación',
-				description: 'Adaptamos el estilo y las secciones según tu celebración.',
+				title: 'Diseñamos su invitación',
+				description: 'Adaptamos el estilo y las secciones según su celebración.',
 			},
 			{
-				title: 'Agregas tus invitados',
-				description: 'Puedes organizar personas, familias o grupos.',
+				title: 'Agrega a sus invitados',
+				description: 'Puede organizar personas, familias o grupos.',
 			},
 			{
-				title: 'Envías y revisas confirmaciones',
+				title: 'Envía y revisa confirmaciones',
 				description:
-					'Cada invitado recibe su propia invitación y puedes ver quién ya respondió.',
+					'Cada invitado recibe su propia invitación y usted ve quién ya respondió.',
 			},
 		],
 		cta: {
@@ -279,22 +286,20 @@ export const landingData: LandingPageData = {
 		},
 	},
 	contact: {
-		eyebrow: 'COTIZA TU INVITACIÓN',
-		title: 'Cuéntanos qué evento estás preparando',
+		eyebrow: 'COTICE SU INVITACIÓN',
+		title: 'Cuéntenos qué evento está preparando',
 		subtitle:
-			'Te ayudamos a elegir el paquete adecuado según el nivel de personalización, diseño y acompañamiento que necesita tu evento.',
+			'Le ayudamos a elegir el paquete adecuado según el nivel de personalización, diseño y acompañamiento que necesita su evento.',
 		cta: {
 			label: 'Cotizar por WhatsApp',
 		},
 		microcopy:
-			'Te asesoraremos para elegir la estructura y el nivel de diseño ideal para tu celebración.',
-		formIntro: 'O déjanos tus datos y te contactamos.',
+			'Le asesoramos para elegir la estructura y el nivel de diseño ideal para su celebración.',
+		formIntro: 'O déjenos sus datos y le contactamos.',
 		channelPrimary: {
-			label: 'Principal',
 			value: 'Cotizar por WhatsApp',
 		},
 		channelSecondary: {
-			label: 'Secundario',
 			value: 'Escribir por correo',
 		},
 	},

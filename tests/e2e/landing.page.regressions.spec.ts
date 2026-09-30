@@ -4,7 +4,9 @@ import {
 	buildGeneralMessage,
 	buildPackageMessage,
 	formatDaysLeft,
+	formatMxn,
 	formatMxnAmount,
+	getExpressDelivery,
 	getGeneralPromoCode,
 	getPromoCode,
 	getPromoPackage,
@@ -13,6 +15,7 @@ import {
 	getValidityNote,
 	PROMO_CAMPAIGN,
 } from '../../src/data/promo-campaign.data';
+import { footerData } from '../../src/data/footer.data';
 
 const DAY_MS = 86_400_000;
 const campaignStart = Date.parse(PROMO_CAMPAIGN.startsAt);
@@ -219,7 +222,7 @@ test.describe('Landing page regressions', () => {
 		);
 		await expect(page.locator('.hero-prime__eyebrow')).toContainText('INVITACIONES DIGITALES');
 		await expect(page.locator('.hero-prime__subtitle')).toContainText(
-			'Agrega tus invitados, asigna pases y lleva el control de confirmaciones.',
+			'Agregue a sus invitados, asigne pases y lleve el control de confirmaciones.',
 		);
 		const heroCta = page.locator('[data-track-cta="whatsapp-hero"]');
 		await expect(heroCta).toBeVisible();
@@ -328,7 +331,7 @@ test.describe('Landing page regressions', () => {
 
 		expect(eventSelectorTop).toBeLessThan(proofTop);
 		await expect(page.locator('#product-proof-title')).toContainText(
-			'La invitación también organiza tu evento',
+			'La invitación también organiza su evento',
 		);
 		await expect(page.locator('.proof-rail-flow__item')).toHaveCount(4);
 		await expect(page.locator('.proof-rail-flow__item').first()).toContainText(
@@ -503,6 +506,125 @@ test.describe('Landing page regressions', () => {
 		});
 
 		expect(overflow).toBeLessThanOrEqual(1);
+	});
+
+	test('fits a 375 px viewport with the hero CTA and pricing cards in bounds', async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 375, height: 812 });
+		await page.goto('/', { waitUntil: 'load' });
+
+		const overflow = await page.evaluate(
+			() => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+		);
+		expect(overflow).toBeLessThanOrEqual(1);
+
+		const heroCta = page.locator('[data-track-cta="whatsapp-hero"]');
+		const heroBox = await heroCta.boundingBox();
+		expect(heroBox).not.toBeNull();
+		expect(heroBox!.x).toBeGreaterThanOrEqual(0);
+		expect(heroBox!.x + heroBox!.width).toBeLessThanOrEqual(375);
+		const clippedText = await heroCta.evaluate((cta) => cta.scrollWidth - cta.clientWidth);
+		expect(clippedText).toBeLessThanOrEqual(1);
+
+		await page.locator('#pricing').scrollIntoViewIfNeeded();
+		// Measure against the root box so a classic desktop scrollbar does not skew the centering.
+		const offsets = await page.locator('.pricing-card').evaluateAll((cards) => {
+			const root = document.documentElement.getBoundingClientRect();
+			return cards.map((card) => {
+				const box = card.getBoundingClientRect();
+				return Math.abs(box.left - root.left - (root.right - box.right));
+			});
+		});
+		expect(offsets).toHaveLength(PROMO_CAMPAIGN.packages.length);
+		for (const offset of offsets) expect(offset).toBeLessThanOrEqual(2);
+	});
+
+	test('keeps the testimonials rotator height stable across quotes', async ({ page }) => {
+		await page.setViewportSize({ width: 375, height: 812 });
+		await page.goto('/', { waitUntil: 'load' });
+		await page.locator('#testimonios').scrollIntoViewIfNeeded();
+
+		const heights = await page.locator('.testimonials__rotator').evaluate((rotator) => {
+			const cards = [...rotator.querySelectorAll('.testimonials__card')];
+			return cards.map((card) => {
+				cards.forEach((other) =>
+					other.classList.toggle('testimonials__card--active', other === card),
+				);
+				return Math.round(rotator.getBoundingClientRect().height);
+			});
+		});
+		expect(heights.length).toBeGreaterThan(1);
+		expect(new Set(heights).size).toBe(1);
+	});
+
+	test('loads the Playfair Display and Montserrat web fonts', async ({ page }) => {
+		await page.goto('/', { waitUntil: 'load' });
+
+		await expect
+			.poll(() =>
+				page.evaluate(async () => {
+					await document.fonts.ready;
+					return [...document.fonts]
+						.filter((face) => face.status === 'loaded')
+						.map((face) => face.family.replace(/["']/g, ''));
+				}),
+			)
+			.toEqual(
+				expect.arrayContaining([
+					expect.stringMatching(/Playfair Display/),
+					expect.stringMatching(/Montserrat/),
+				]),
+			);
+	});
+
+	test('publishes the legal pages without placeholders and with the service terms', async ({
+		page,
+	}) => {
+		await page.goto('/privacidad', { waitUntil: 'load' });
+		const privacy = await page.locator('.legal-page').innerText();
+		expect(privacy).not.toContain('[');
+		expect(privacy).toContain('Francisco Mendoza');
+		expect(privacy).toContain('contacto@celebra-me.com');
+
+		await page.goto('/terminos', { waitUntil: 'load' });
+		const terms = page.locator('.legal-page');
+		await expect(terms).toContainText('No solicitamos anticipo');
+		await expect(terms).toContainText('Invitado de prueba');
+		await expect(terms).toContainText('3 a 5 días hábiles');
+		await expect(terms).toContainText(formatMxn(getExpressDelivery().price));
+	});
+
+	test('shows real social links, contact details and a full-width copyright row', async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 1280, height: 900 });
+		await page.goto('/', { waitUntil: 'load' });
+		const footer = page.locator('.footer-section');
+		await footer.scrollIntoViewIfNeeded();
+
+		const socialHrefs = await footer
+			.locator('.social-link')
+			.evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+		expect(socialHrefs).toEqual(footerData.socialLinks?.links.map((link) => link.href));
+		await expect(footer.locator('.footer-contact')).toContainText(footerData.contact!.email);
+		await expect(footer.locator('.footer-contact')).toContainText(footerData.contact!.city);
+		await expect(footer.locator('[data-track-cta="footer_whatsapp"]')).toHaveAttribute(
+			'data-campaign-code',
+			buildCampaignCode('FOOTER'),
+		);
+
+		const rowWidths = await footer.evaluate((element) => {
+			const containers = element.querySelectorAll('.container');
+			const bottom = element.querySelector('.footer-bottom');
+			return {
+				container: containers[0]?.getBoundingClientRect().width ?? 0,
+				bottom: bottom?.getBoundingClientRect().width ?? 0,
+			};
+		});
+		// The copyright row spans the same width as the link columns above it.
+		expect(rowWidths.bottom).toBeGreaterThan(rowWidths.container * 0.9);
+		await expect(footer.locator('.footer-link--cookie')).toHaveCSS('cursor', 'pointer');
 	});
 
 	test('keeps section headings below the sticky header after anchor navigation', async ({

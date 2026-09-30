@@ -113,7 +113,6 @@ export interface FAQData {
 	pretitle?: string;
 	title: string;
 	subtitle?: string;
-	divider?: string;
 	faqs: Array<{
 		question: string;
 		answer: string;
@@ -136,11 +135,9 @@ export interface ContactData {
 	microcopy?: string;
 	formIntro?: string;
 	channelPrimary?: {
-		label: string;
 		value: string;
 	};
 	channelSecondary?: {
-		label: string;
 		value: string;
 	};
 }
@@ -166,6 +163,10 @@ export interface HowItWorksData {
 }
 
 export interface LandingPageData {
+	seo: {
+		title: string;
+		description: string;
+	};
 	hero: HeroData;
 	eventSelector?: {
 		eyebrow: string;

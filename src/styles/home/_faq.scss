@@ -2,8 +2,7 @@
 	position: relative;
 	padding: clamp(2.25rem, 5vw, 3.6rem) 0 clamp(3rem, 6vw, 4.8rem);
 	background:
-		linear-gradient(180deg, rgb(20 13 10) 0%, var(--faq-section-bg) 100%),
-		var(--faq-section-bg);
+		linear-gradient(180deg, rgb(20 13 10) 0%, var(--faq-section-bg) 100%), var(--faq-section-bg);
 	overflow: hidden;
 	color: var(--faq-section-color);
 
@@ -14,12 +13,7 @@
 		left: 10%;
 		right: 10%;
 		height: 1px;
-		background: linear-gradient(
-			90deg,
-			transparent,
-			rgb(217 169 58 / 20%),
-			transparent
-		);
+		background: linear-gradient(90deg, transparent, rgb(217 169 58 / 20%), transparent);
 		pointer-events: none;
 	}
 
@@ -38,38 +32,6 @@
 		max-width: 1200px;
 		margin: 0 auto;
 		padding: 0 var(--spacing-md);
-	}
-}
-
-.faq-section__divider {
-	position: relative;
-	z-index: 2;
-	width: 100%;
-	margin: 0 0 clamp(1.5rem, 3vw, 2rem);
-	display: flex;
-	align-items: center;
-	gap: clamp(0.75rem, 2vw, 1.5rem);
-	color: var(--color-champagne);
-	font-family: var(--font-body);
-	font-size: 0.68rem;
-	font-weight: 800;
-	letter-spacing: 0.22em;
-	text-transform: uppercase;
-
-	&::before,
-	&::after {
-		content: '';
-		height: 1px;
-		flex: 1;
-		background: linear-gradient(90deg, transparent, rgb(var(--color-action-accent-rgb) / 44%));
-	}
-
-	&::after {
-		background: linear-gradient(90deg, rgb(var(--color-action-accent-rgb) / 44%), transparent);
-	}
-
-	span {
-		white-space: nowrap;
 	}
 }
 
@@ -120,7 +82,10 @@
 	border: 1px solid var(--faq-item-border);
 	border-radius: var(--faq-item-border-radius);
 	overflow: hidden;
-	transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+	transition:
+		background-color 0.3s ease,
+		border-color 0.3s ease,
+		box-shadow 0.3s ease;
 
 	&:hover {
 		border-color: var(--faq-item-hover-border);
@@ -224,7 +189,7 @@
 	border-radius: 8px;
 	background: var(--faq-item-bg);
 	backdrop-filter: blur(12px);
-	box-shadow: 
+	box-shadow:
 		0 20px 50px rgb(0 0 0 / 40%),
 		inset 0 1px 0 rgb(255 255 255 / 5%);
 

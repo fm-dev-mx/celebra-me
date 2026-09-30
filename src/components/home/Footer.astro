@@ -1,6 +1,8 @@
 ---
 // src/components/home/Footer.astro
 import Logo from '@components/ui/Logo.astro';
+import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
+import { getContactPhone } from '@/utils/whatsapp';
 import type { FooterProps } from '@/interfaces/ui/sections/footer.interface';
 
 interface Props {
@@ -9,6 +11,7 @@ interface Props {
 
 const { data } = Astro.props;
 const currentYear = new Date().getFullYear();
+const phone = getContactPhone();
 ---
 
 <footer class="footer-section" data-screenshot="landing-footer">
@@ -33,14 +36,42 @@ const currentYear = new Date().getFullYear();
 			))
 		}
 
+		<!-- Contact Column -->
+		{
+			data.contact && (
+				<div class="footer-group footer-contact">
+					<h4 class="group-title">{data.contact.title}</h4>
+					<WhatsAppButton
+						className="footer-link footer-contact__whatsapp"
+						phone={phone}
+						label={data.contact.whatsappLabel}
+						ariaLabel="Cotizar por WhatsApp"
+						trackSection="footer"
+						trackCta="footer_whatsapp"
+						campaignSection="FOOTER"
+					/>
+					<a href={`mailto:${data.contact.email}`} class="footer-link">
+						{data.contact.email}
+					</a>
+					<p class="footer-contact__city">{data.contact.city}</p>
+				</div>
+			)
+		}
+
 		<!-- Social Column -->
 		{
 			data.socialLinks && (
 				<div class="footer-socials footer-group">
-					<h4 class="group-title">Síguenos</h4>
+					<h4 class="group-title">Síganos</h4>
 					<div class="social-links-grid">
 						{data.socialLinks.links.map((social) => (
-							<a href={social.href} class="social-link" aria-label={social.label} target="_blank">
+							<a
+								href={social.href}
+								class="social-link"
+								aria-label={social.label}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
 								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 									{social.label === 'Instagram' && (
 										<>

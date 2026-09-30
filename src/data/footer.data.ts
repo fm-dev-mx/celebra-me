@@ -1,6 +1,8 @@
-export const footerData = {
+import type { FooterProps } from '@/interfaces/ui/sections/footer.interface';
+
+export const footerData: FooterProps = {
 	siteInfo: {
-		slogan: 'Celebra cada momento, diseña cada recuerdo.',
+		slogan: 'Celebre cada momento, diseñe cada recuerdo.',
 	},
 	linkGroups: [
 		{
@@ -19,10 +21,24 @@ export const footerData = {
 			],
 		},
 	],
+	contact: {
+		title: 'Contacto',
+		whatsappLabel: 'WhatsApp',
+		email: 'contacto@celebra-me.com',
+		city: 'Los Mochis, Sinaloa',
+	},
 	socialLinks: {
 		links: [
-			{ label: 'Instagram', href: 'https://instagram.com/celebrame', icon: 'InstagramIcon' },
-			{ label: 'Facebook', href: 'https://facebook.com/celebrame', icon: 'FacebookIcon' },
+			{
+				label: 'Instagram',
+				href: 'https://www.instagram.com/celebra_me_com/',
+				icon: 'InstagramIcon',
+			},
+			{
+				label: 'Facebook',
+				href: 'https://www.facebook.com/invitaciones.celebrame',
+				icon: 'FacebookIcon',
+			},
 		],
 	},
 };

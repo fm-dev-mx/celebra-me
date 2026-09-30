@@ -1,5 +1,4 @@
 html {
-	scroll-snap-type: y proximity;
 	scroll-behavior: smooth;
 }
 
@@ -8,32 +7,31 @@ html {
 	flex-direction: column;
 }
 
+// Vertical rhythm only: each section keeps its own inline padding so content is not squeezed
+// on narrow screens.
 .landing-sections-wrapper section,
 .landing-sections-wrapper .hero-prime {
-	scroll-snap-align: start;
 	scroll-margin-top: calc(var(--nav-current-height, 70px) + 2.5rem);
 	min-height: auto;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	padding: var(--section-padding-y, var(--spacing-xl) 0);
-}
-
-footer {
-	scroll-snap-align: end;
-	min-height: auto;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	padding: var(--spacing-xl) 0;
+	padding-block: var(--section-padding-y, var(--spacing-xl));
 }
 
 // ---------------------------------------------------------------------------
 // Typography Normalization (Playfair Display serif + Montserrat sans-serif)
 // ---------------------------------------------------------------------------
 
-// Eyebrows
 .theme-preset--jewelry-box-landing {
+	// @fontsource-variable registers the "… Variable" family names; the plain names stay as
+	// fallbacks. Scoped to this stylesheet, which only index.astro loads, so demo, legal and
+	// invitation routes keep their current typography.
+	--font-display: 'Playfair Display Variable', 'Playfair Display', serif;
+	--font-body: 'Montserrat Variable', 'Montserrat', system-ui, sans-serif;
+	--font-ui: 'Montserrat Variable', 'Montserrat', system-ui, sans-serif;
+
+	// Eyebrows
 	.hero-prime__eyebrow,
 	.event-selector__eyebrow,
 	.product-proof__eyebrow,
