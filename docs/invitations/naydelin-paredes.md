@@ -146,49 +146,39 @@ target delivery date of Thursday, 1 October 2026 is internal and does not appear
 
 ## Design Direction
 
-- **decision:** Owner-selected base demo
-  - **value:** `demo-xv-jewelry-box`
-  - **classification:** verified
-- **decision:** Client reference
-  - **value:** Quoted from the Ana Sofía Cota Guillén invitation: functional parity (passes, RSVP),
-    not its styling
-  - **classification:** verified
-- **decision:** Selected variant / visual profile
-  - **value:** Jewelry Box / `naydelin-paredes` profile
-  - **classification:** Local implementation direction; creative acceptance pending
-- **decision:** Client color requirement
-  - **value:** Gold invitation; rose-gold gown
-  - **classification:** verified
-- **decision:** Palette
-  - **value:** Warm ivory, champagne-foil gold (rules, ornaments, seal, dark-band titles), rose-gold
-    gown echoes, espresso RSVP and gifts band
-  - **classification:** Current Local candidate
-- **decision:** Typography
-  - **value:** Cormorant Garamond titles (500, sentence case, one scale); Montserrat body and
-    tracked gold eyebrows; hero name split with `hero.presentation.nameLeadWords: 1`: "Naydelin" in
-    Pinyon Script (preset-loaded, shared with the pass signature) at the title size, then "Pauleth
-    Paredes Martinez" as a tracked Cormorant line
-  - **classification:** Current Local candidate
-- **decision:** Stationery
-  - **value:** The reveal letter and the admission pass share one cotton paper stock: warm ivory
-    tone, raking light, edge toning, and stitched `feTurbulence` grain and fibre tiles (inline SVG,
-    low opacity); the letter adds a visible cut edge through its shadow stack
-  - **classification:** Current Local candidate
-- **decision:** Closing signature and envelope typeface
-  - **value:** The closing repeats the hero hierarchy (`thankYou.closingNameLeadWords: 1`):
-    "Naydelin" in Pinyon Script foil, then the full name as the tracked Cormorant line in ink; the
-    reveal letter keeps Cormorant at its small card size
-  - **classification:** Current Local candidate
-- **decision:** Family, gallery, countdown, and location hierarchy
-  - **value:** Family groups split under a centered letterhead (parents left, godparents right; side
-    by side from 768px); gallery prints mounted on the cotton stock with a foil inner hairline, a
-    staggered second print per pair from 768px, a feature band widened to ~1040px from 1200px, and
-    an ivory lightbox; the countdown is one stationery card with foil hairline dividers; location
-    venue names lead, with a compact hairline maps action
-  - **classification:** Current Local candidate
-- **decision:** Unresolved visual decisions
-  - **value:** Owner creative acceptance; personal quote remains missing and omitted
-  - **classification:** pending
+| decision                    | selected source / value                                | classification |
+| --------------------------- | ------------------------------------------------------ | -------------- |
+| Owner-selected base demo    | `demo-xv-jewelry-box`                                  | verified       |
+| Theme preset                | `jewelry-box`                                          | verified       |
+| Visual profile              | `naydelin-paredes` profile                             | verified       |
+| Client reference            | Ana Sofía Cota Guillén functional parity               | verified       |
+| Color requirement           | Gold invitation, rose-gold gown                        | verified       |
+| Palette                     | Ivory, champagne foil, rose-gold echoes, espresso band | verified       |
+| Typography                  | Cormorant Garamond, Montserrat, Pinyon Script          | verified       |
+| Stationery                  | Warm ivory cotton paper stock with grain and cut edge  | verified       |
+| Closing signature           | Pinyon Script foil lead with Cormorant line            | verified       |
+| Unresolved visual decisions | Owner creative acceptance; quote omitted               | pending        |
+
+### Design Notes
+
+- **Palette:** Warm ivory, champagne-foil gold (rules, ornaments, seal, dark-band titles), rose-gold
+  gown echoes, espresso RSVP and gifts band.
+- **Typography:** Cormorant Garamond titles (500, sentence case, one scale); Montserrat body and
+  tracked gold eyebrows; hero name split with `hero.presentation.nameLeadWords: 1`: "Naydelin" in
+  Pinyon Script (preset-loaded, shared with the pass signature) at the title size, then "Pauleth
+  Paredes Martinez" as a tracked Cormorant line.
+- **Stationery:** The reveal letter and the admission pass share one cotton paper stock: warm ivory
+  tone, raking light, edge toning, and stitched `feTurbulence` grain and fibre tiles (inline SVG,
+  low opacity); the letter adds a visible cut edge through its shadow stack.
+- **Closing signature and envelope typeface:** The closing repeats the hero hierarchy
+  (`thankYou.closingNameLeadWords: 1`): "Naydelin" in Pinyon Script foil, then the full name as the
+  tracked Cormorant line in ink; the reveal letter keeps Cormorant at its small card size.
+- **Family, gallery, countdown, and location hierarchy:** Family groups split under a centered
+  letterhead (parents left, godparents right; side by side from 768px); gallery prints mounted on
+  the cotton stock with a foil inner hairline, a staggered second print per pair from 768px, a
+  feature band widened to ~1040px from 1200px, and an ivory lightbox; the countdown is one
+  stationery card with foil hairline dividers; location venue names lead, with a compact hairline
+  maps action.
 
 Tonal band: ivory from hero through itinerary, an arch (vertex ~62%) into the espresso RSVP and
 gifts band, then an atmospheric bridge (espresso warming into champagne light, focal 38%, with a
