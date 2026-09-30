@@ -98,20 +98,66 @@ describe('Destenid Sofía managed definition', () => {
 		expect(parsed.family?.parents).toBeUndefined();
 		expect(parsed.family?.godparents).toBeUndefined();
 		expect(parsed.family?.godparentGroups).toBeUndefined();
-		expect(parsed.gifts?.items?.map((item) => item.type)).toEqual(['cash']);
+		// Envelopes always; the transfer card appears once the owner fills in the card number.
+		const giftTypes = parsed.gifts?.items?.map((item) => item.type) ?? [];
+		expect(giftTypes[0]).toBe('cash');
+		expect(giftTypes.every((type) => type === 'cash' || type === 'bank')).toBe(true);
+		const transfer = parsed.gifts?.items?.find((item) => item.type === 'bank');
+		if (transfer && transfer.type === 'bank') {
+			expect(transfer.bankName).toBe('BBVA');
+			expect(transfer.accountHolder).toBe('Destenid Sofía Magaña Almaraz');
+			expect(transfer.accountKind).toBe('card');
+			expect(transfer.clabe.replace(/\s+/g, '')).toMatch(/^\d{16}$/);
+			expect(parsed.gifts?.title).toBe('Lluvia de sobres o transferencia');
+		}
 	});
 
 	it('sets editorial-cover and editorial-catalog copy explicitly', () => {
 		const parsed = eventContentSchema.parse(buildDestenidPublishedContent(buildTestAssets()));
-		expect(parsed.hero.tagline).toBe('Una noche entre moda, memoria y celebración.');
+		expect(parsed.hero.tagline).toBe('Mis XV, un nuevo capítulo.');
 		// Real invitation: no fictional photographer credit.
 		expect(parsed.hero.photoCredit).toBeUndefined();
-		expect(parsed.gifts?.title).toBe('Mesa de cortesía');
+		expect(parsed.gifts?.title).toMatch(/^Lluvia de sobres( o transferencia)?$/);
 		expect(parsed.gifts?.folioMark).toBe('D·S');
+	});
+
+	it('uses the client program and keeps the client phrases literal', () => {
+		const parsed = eventContentSchema.parse(buildDestenidPublishedContent(buildTestAssets()));
+		expect(parsed.itinerary?.items.map((item) => [item.label, item.time])).toEqual([
+			['Recepción', '19:00'],
+			['Presentación de la quinceañera', '20:00'],
+			['Cena', '20:30'],
+			['Vals', '22:00'],
+			['Cierre', '02:00'],
+		]);
+		expect(parsed.gallery?.subtitle).toBe(
+			'¡Lit! Mi fiesta no sería lo mismo sin ti. Gracias por acompañarme en los momentos más icónicos.',
+		);
+		expect(parsed.gallery?.items?.every((item) => Boolean(item.alt))).toBe(true);
+		// The client's chosen photograph leads both the mobile and desktop cover.
+		expect(DESTENID_ASSET_SPECS.find((spec) => spec.key === 'heroPortrait')?.relativePath).toBe(
+			'hero.jpg',
+		);
+		// The magazine cover uses its own photograph so the reveal differs from the hero.
+		expect(parsed.envelope?.backdropImage).toBeDefined();
+		expect(parsed.envelope?.backdropImage).not.toEqual(parsed.hero.backgroundImage);
 	});
 
 	it('does not expose placeholder or admin copy', () => {
 		const content = buildDestenidPublishedContent(buildTestAssets());
 		expect(collectPlaceholderStrings(content)).toEqual([]);
+	});
+
+	it('plays the client song from second 39', () => {
+		const parsed = eventContentSchema.parse(buildDestenidPublishedContent(buildTestAssets()));
+		expect(parsed.music?.url).toMatch(/^https:\/\/res\.cloudinary\.com\/.+\.mp3$/);
+		expect(parsed.music?.startAt).toBe(39);
+		expect(parsed.music?.autoPlay).toBe(true);
+	});
+
+	it('links the celebrant Instagram in the guest details', () => {
+		const parsed = eventContentSchema.parse(buildDestenidPublishedContent(buildTestAssets()));
+		const memories = parsed.location?.indications?.find((item) => item.title === 'Recuerdos');
+		expect(memories?.text).toContain('href="https://www.instagram.com/desteny_ts/"');
 	});
 });

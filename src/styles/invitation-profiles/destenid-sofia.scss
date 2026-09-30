@@ -1,4 +1,6 @@
 @use '../global/mixins' as mixins;
+@use '@fontsource-variable/bodoni-moda/opsz.css' as bodoni-moda-opsz;
+@use '@fontsource-variable/bodoni-moda/opsz-italic.css' as bodoni-moda-opsz-italic;
 
 // Event-scoped CSS override for Destenid Sofía XV
 // Ported from the valentina-hernandez editorial profile (the client's chosen reference) and
@@ -74,156 +76,28 @@
 	--color-glass-border: rgb(var(--editorial-magazine-ink-rgb) / 24%);
 
 	// ==========================================================================
-	// 3. EDITORIAL COVER REVEAL OVERRIDES
+	// 3. EDITORIAL COVER REVEAL — COLLECTOR EDITION
 	// ==========================================================================
-	// --ec-* variables are declared inside the wrapper scope to avoid CSS custom
-	// property shadowing: the component (_editorial-cover.scss) sets --ec-* on
-	// .editorial-cover-wrapper, so ancestor-level overrides are invisible.
+	// envelope.coverExperience = 'collector': geometry, printed layout, ribbon, and the page-turn
+	// mechanics live in src/styles/invitation/_editorial-cover-collector.scss. This block only
+	// dresses the table and print in the Destenid palette. Cover copy sits on the WA0034 sky
+	// and sill; the forbidden zone (face, crown, arms, bouquet, tulle: x 9–77 %, y 58–90 %) is
+	// guarded by tests/e2e/destenid-face-safety.spec.ts. --ec-* live on the wrapper itself
+	// because the component declares them there.
 	.editorial-cover-wrapper {
 		--ec-bg:
-			linear-gradient(90deg, rgb(var(--ds-beige-rgb) / 78%) 0 18%, transparent 22%),
-			radial-gradient(ellipse at 72% 24%, rgb(var(--ds-white-rgb) / 10%), transparent 34%),
-			linear-gradient(135deg, var(--ds-ink), rgb(38 33 27) 58%, var(--ds-ink));
-		--ec-text-primary: var(--ds-white);
-		--ec-text-secondary: rgb(var(--ds-white-rgb) / 78%);
-		--ec-text-muted: rgb(var(--ds-white-rgb) / 52%);
-		--ec-accent: var(--ds-accent);
-		--ec-accent-strong: var(--ds-white);
-		--ec-rule: rgb(var(--ds-white-rgb) / 48%);
-		--ec-rule-soft: rgb(var(--ds-white-rgb) / 12%);
-		--ec-panel: rgb(var(--ds-white-rgb) / 5%);
+			radial-gradient(ellipse at 50% 42%, rgb(var(--ds-accent-rgb) / 16%), transparent 60%),
+			linear-gradient(160deg, rgb(38 33 27), var(--ds-ink) 64%);
+		--ec-face-ink: var(--ds-ink);
+		--ec-face-ink-soft: rgb(var(--ds-ink-rgb) / 80%);
+		--ec-face-rule: rgb(var(--ds-ink-rgb) / 40%);
+		--ec-gold: var(--ds-accent);
+		--ec-gold-dark: var(--ds-gold);
+	}
 
-		.editorial-cover__background img {
-			filter: grayscale(0.06) saturate(0.94) contrast(1.02) brightness(0.85) sepia(0.04);
-		}
-
-		&.is-opening .editorial-cover__background img {
-			filter: grayscale(0.02) saturate(0.98) contrast(1.01) brightness(0.92) sepia(0.02);
-		}
-
-		.editorial-masthead__brand {
-			color: rgb(var(--ds-white-rgb) / 86%);
-		}
-
-		.editorial-cover__headline {
-			color: var(--ds-white);
-		}
-
-		.editorial-cover__cover-line,
-		.editorial-cover__venue,
-		.editorial-cover__ampersand {
-			color: rgb(var(--ds-white-rgb) / 88%);
-		}
-
-		.editorial-cover__cta {
-			border-color: rgb(var(--ds-white-rgb) / 68%);
-			border-block-width: 2px;
-			background: rgb(var(--ds-white-rgb) / 6%);
-			backdrop-filter: blur(4px);
-			/* stylelint-disable-next-line property-no-vendor-prefix */
-			-webkit-backdrop-filter: blur(4px);
-			padding-inline: 0.5rem;
-			color: var(--ds-white);
-		}
-
-		.editorial-cover__cta:hover {
-			border-color: var(--ds-white);
-			border-block-width: 2px;
-			background: rgb(var(--ds-white-rgb) / 14%);
-		}
-
-		.editorial-cover__cta:focus-visible {
-			outline-color: var(--ds-accent);
-		}
-
-		.editorial-cover__cta[data-cta-hint='active'] {
-			background: rgb(var(--ds-white-rgb) / 20%);
-			border-color: var(--ds-white);
-		}
-
-		@media (width <= 640px) {
-			--ec-masthead-size: clamp(2.25rem, 9.8vw, 3.35rem);
-			--ec-headline-size: clamp(3.05rem, 13.2vw, 4.55rem);
-
-			.editorial-masthead {
-				border-bottom-color: rgb(var(--ds-white-rgb) / 22%);
-			}
-
-			.editorial-masthead__brand {
-				color: rgb(var(--ds-white-rgb) / 74%);
-			}
-
-			.editorial-masthead__eyebrow,
-			.editorial-cover__metadata-label,
-			.editorial-cover__label,
-			.editorial-cover__issue {
-				letter-spacing: 0.12em;
-			}
-
-			.editorial-cover__metadata {
-				opacity: 52%;
-			}
-
-			.editorial-cover__metadata-value {
-				font-size: 1rem;
-			}
-
-			.editorial-cover__cover-lines {
-				display: none;
-			}
-
-			.editorial-cover__label {
-				color: rgb(var(--ds-white-rgb) / 64%);
-			}
-
-			.editorial-cover__headline {
-				max-width: min(100%, 19rem);
-				line-height: 0.9;
-			}
-
-			.editorial-cover__details {
-				border-top-color: rgb(var(--ds-white-rgb) / 24%);
-			}
-
-			.editorial-cover__footer {
-				display: none;
-			}
-		}
-
-		// ── Intermediate responsive band (≥640px up to 991px) ──
-		// Reduces typography dominance at tablet/intermediate widths so the
-		// masthead, headline, and the celebrant's face remain visible and composed.
-		// Uses raw @media (consistent with the existing <=640px pattern in this file)
-		// instead of nested mixins to avoid exceeding max-nesting-depth: 3.
-		@media (width >= 640px) and (width <= 991px) {
-			--ec-masthead-size: clamp(2.8rem, 6.5vw, 4.2rem);
-			--ec-headline-size: clamp(3.4rem, 9.5vw, 5.4rem);
-
-			.editorial-cover__cover-lines {
-				display: none;
-			}
-
-			.editorial-cover__metadata {
-				opacity: 60%;
-			}
-
-			.editorial-cover__headline {
-				max-width: min(100%, 24rem);
-				line-height: 0.88;
-			}
-
-			.editorial-cover__footer {
-				display: none;
-			}
-		}
-
-		// ── Desktop responsive guardrails (≥992px) ──
-		// Keeps masthead and headline proportional on desktop so they don't
-		// overwhelm the composition or push content out of the 100svh frame.
-		@include mixins.respond-to(lg) {
-			--ec-masthead-size: clamp(2.6rem, 4.5vw, 3.8rem);
-			--ec-headline-size: clamp(3.2rem, 5.5vw, 4.8rem);
-		}
+	// The magazine cover carries the brand; the hero does not repeat it.
+	.invitation-hero__credits {
+		display: none;
 	}
 
 	// ==========================================================================
@@ -296,6 +170,21 @@
 			position: relative;
 			z-index: 1;
 		}
+
+		&.has-motion:not(.is-visible) .family__media-frame {
+			clip-path: inset(100% 0 0);
+		}
+	}
+
+	// Thank-you: the photograph wipes in, then the signature writes itself left to right.
+	.invitation-section-wrapper[data-section-id$='-thankYou'] {
+		&.has-motion:not(.is-visible) .thank-you-editorial__media.photo-frame {
+			clip-path: inset(100% 0 0);
+		}
+
+		&.has-motion:not(.is-visible) .closing-name {
+			clip-path: inset(-50% 110% -50% -10%);
+		}
 	}
 
 	.invitation-section-wrapper[data-section-id$='-rsvp'] {
@@ -332,11 +221,16 @@
 
 		// Mobile rail geometry is owned by gallery.presentationOptions.mobileBrowse=rail.
 		.gallery-section__swipe-hint {
-			color: var(--ds-accent);
+			color: var(--ds-gold);
+		}
+
+		// Antique gold is below 3:1 on beige; the deep gold keeps the display title readable.
+		.gallery-section__title {
+			color: var(--ds-gold);
 		}
 
 		&::before {
-			content: 'COLECCIÓN DE RETRATOS / EDICIÓN XV';
+			content: 'GALERÍA / MIS XV';
 		}
 
 		.gallery-grid {
@@ -465,17 +359,188 @@
 			top: clamp(4.5rem, 7svh, 5.5rem);
 		}
 
+		// Display cut of Bodoni (optical sizing), ivory capitals with a true gold italic
+		// signature — distinct from the cover's centred italic ink name.
+		.invitation-hero__title,
+		.invitation-hero__first-name,
+		.invitation-hero__last-name,
+		.invitation-hero__deck,
+		.invitation-hero__venue .calligraphy-accent {
+			font-optical-sizing: auto;
+			font-feature-settings: 'lnum', 'kern', 'liga';
+		}
+
+		.invitation-hero__first-name {
+			color: var(--ds-white);
+			font-weight: 600;
+			letter-spacing: 0.02em;
+		}
+
+		// Solid ivory capitals at every size: drop the theme's gold gradient-clipped glint, which
+		// it only strips below md.
+		.invitation-hero__title,
+		.invitation-hero__first-name,
+		.invitation-hero__last-name {
+			background: none;
+			-webkit-text-fill-color: currentcolor;
+		}
+
+		// The theme's 3 % "XV" watermark is anchored off the edge and clipped: in Bodoni only the
+		// thick diagonals survive, reading as "\ \". It is replaced by a composed outline "XV" on
+		// the desktop panel (see respond-to(lg) below); phones have no free spot for it.
+		.invitation-hero__watermark {
+			display: none;
+		}
+
+		// Parallax: the photograph drifts slower than the page while scrolling away. It starts at
+		// zero offset, so the collector hand-off still lands exactly on it. No support → static.
+		.invitation-hero__background picture,
+		.invitation-hero__portrait img {
+			animation: dsHeroParallax linear both;
+			animation-timeline: scroll(root);
+			animation-range: 0 100svh;
+		}
+
+		// Scroll cue: a short gold line that runs down and fades, in a slow loop (no copy).
+		.invitation-hero__content::after {
+			position: absolute;
+			bottom: clamp(1.1rem, 3svh, 1.75rem);
+
+			// Aligned with the copy's left edge on phones, clear of the music prompt.
+			left: clamp(1.5rem, 6vw, 2.5rem);
+			z-index: 5;
+			width: 1px;
+			height: 2.4rem;
+			content: '';
+			background: linear-gradient(180deg, transparent, var(--ds-accent));
+			transform-origin: top;
+			animation: dsHeroScrollCue 2.6s 2s cubic-bezier(0.65, 0, 0.35, 1) infinite both;
+			pointer-events: none;
+		}
+
+		.invitation-hero__last-name {
+			color: var(--ds-accent);
+			font-family: var(--font-display);
+			font-style: italic;
+			font-weight: 400;
+			letter-spacing: 0;
+		}
+
+		.invitation-hero__deck {
+			font-family: var(--font-display);
+			font-style: italic;
+			font-weight: 400;
+			letter-spacing: 0;
+		}
+
+		.invitation-hero__date {
+			letter-spacing: 0.22em;
+		}
+
+		.invitation-hero__venue .calligraphy-accent {
+			font-family: var(--font-display);
+			font-style: italic;
+			font-weight: 400;
+			text-transform: none;
+			letter-spacing: 0;
+		}
+
 		@include mixins.respond-to(lg) {
-			// Solid background on desktop text column to block duplicate background portrait and ensure high contrast
+			// The desktop portrait is the client's chosen photograph; frame the face and crown.
+			.invitation-hero__portrait img {
+				object-position: var(--hero-focal-point, 45% 34%);
+			}
+
+			// The page folio collides with the fixed navigation on desktop.
+			.invitation-hero__folio-page {
+				display: none;
+			}
+
+			// Scroll cue centred under the text panel, not on the seam.
+			.invitation-hero__content::after {
+				left: 75%;
+			}
+
+			// The text panel reads as a magazine page: gold seam, thin inner frame, copy anchored
+			// low, and a composed outline "XV" in the upper corner.
+			// Solid ink panel also blocks the duplicate background portrait behind it.
 			.invitation-hero__text-column {
-				background: var(--ds-ink);
+				position: relative;
 				z-index: 2;
+				justify-content: flex-end;
+				padding: clamp(4rem, 6vw, 6rem) clamp(3rem, 6vw, 6rem) clamp(5rem, 11svh, 7rem);
+				border-left: 1px solid rgb(var(--ds-accent-rgb) / 38%);
+				background: var(--ds-ink);
+			}
+
+			.invitation-hero__text-column::before {
+				position: absolute;
+
+				// Starts below the fixed navigation so its top rule never crosses the menu.
+				inset: 5.75rem clamp(1.25rem, 2vw, 1.75rem) clamp(1.25rem, 2vw, 1.75rem);
+				content: '';
+				border: 1px solid rgb(var(--ds-accent-rgb) / 20%);
+				pointer-events: none;
+			}
+
+			.invitation-hero__text-column::after {
+				position: absolute;
+				top: clamp(6.5rem, 14svh, 8.5rem);
+				right: clamp(3rem, 5vw, 5rem);
+				content: 'XV';
+				color: transparent;
+				font-family: var(--font-display);
+				font-size: clamp(8rem, 12vw, 12rem);
+				font-weight: 400;
+				font-variation-settings: 'opsz' 11;
+				line-height: 0.8;
+				letter-spacing: 0.02em;
+				-webkit-text-stroke: 1px rgb(var(--ds-accent-rgb) / 62%);
+				pointer-events: none;
+			}
+
+			.invitation-hero__first-name {
+				font-size: clamp(4rem, 14cqi, 7rem);
+			}
+
+			.invitation-hero__details {
+				display: flex;
+				flex-flow: row wrap;
+				gap: 0.5rem 0.8rem;
+				align-items: baseline;
+			}
+
+			.invitation-hero__date {
+				flex-basis: 100%;
+			}
+
+			.invitation-hero__time + .invitation-hero__venue::before {
+				margin-right: 0.8rem;
+				content: '·';
+				color: var(--ds-accent);
+				font-weight: 800;
+			}
+
+			.invitation-hero__last-name {
+				font-size: clamp(2.2rem, 3.2vw, 3.1rem);
+				margin-top: -0.1em;
+			}
+
+			.invitation-hero__deck {
+				font-size: clamp(1.1rem, 1.35vw, 1.35rem);
+				color: rgb(var(--ds-white-rgb) / 86%);
 			}
 		}
 
+		// Below lg the hero is a two-part spread: the photograph on top, the copy on an ink
+		// panel underneath, so no text ever sits on the celebrant (see
+		// tests/e2e/destenid-face-safety.spec.ts).
 		@include mixins.respond-below(lg) {
+			--ds-hero-photo-h: 62svh;
+
 			min-height: 100svh;
 			padding: clamp(0.75rem, 3vw, 1rem);
+			background: var(--ds-ink);
 
 			&::before {
 				inset: clamp(0.7rem, 3vw, 1rem);
@@ -483,6 +548,9 @@
 			}
 
 			.invitation-hero__background {
+				inset: 0 0 auto;
+				height: var(--ds-hero-photo-h);
+				overflow: hidden;
 				opacity: 100%;
 			}
 
@@ -492,14 +560,14 @@
 				filter: none;
 			}
 
+			// Only a short fade into the panel at the photo's lower edge; no copy sits on it.
 			.invitation-hero__background::after {
-				background: linear-gradient(
-					to bottom,
-					transparent 0%,
-					rgb(0 0 0 / 6%) 40%,
-					rgb(0 0 0 / 60%) 100%
-				);
+				background: linear-gradient(to bottom, transparent 84%, var(--ds-ink) 100%);
 				opacity: 100%;
+			}
+
+			.invitation-hero__folio-header {
+				display: none;
 			}
 
 			.invitation-hero__portrait {
@@ -510,11 +578,11 @@
 				display: flex;
 				flex-direction: column;
 				align-items: flex-start;
-				justify-content: flex-end;
+				justify-content: flex-start;
 				gap: clamp(0.72rem, 1.8svh, 1.05rem);
 				min-height: calc(100svh - 1.5rem);
 				padding-inline: clamp(1.5rem, 5vw, 2.5rem);
-				padding-block: clamp(3rem, 8svh, 4.5rem) clamp(2.5rem, 6svh, 4rem);
+				padding-block: calc(var(--ds-hero-photo-h) + 0.25rem) clamp(2rem, 5svh, 3rem);
 			}
 
 			.invitation-hero__text-column {
@@ -537,8 +605,10 @@
 				text-align: left;
 			}
 
+			// The title hugs the name so the italic signature tucks under its right edge.
 			.invitation-hero__title {
-				width: 100%;
+				width: fit-content;
+				max-width: 100%;
 				display: flex;
 				flex-direction: column;
 			}
@@ -546,33 +616,26 @@
 			.invitation-hero__first-name {
 				display: block;
 				text-align: left;
-				font-size: clamp(3.2rem, 12vw, 4.5rem);
-				font-weight: 700;
-				line-height: 0.85;
-				letter-spacing: -0.01em;
-				color: var(--ds-white);
+				font-size: clamp(3.4rem, 13.4vw, 5rem);
+				line-height: 0.86;
 			}
 
 			.invitation-hero__last-name {
 				display: block;
 				text-align: right;
 				align-self: flex-end;
-				font-size: clamp(1.35rem, 5vw, 1.8rem);
-				font-style: italic;
-				font-weight: 300;
+
+				// A signature that tucks up under the capitals.
+				font-size: clamp(1.9rem, 7vw, 2.6rem);
 				line-height: 1;
-				color: var(--ds-accent);
-				margin-top: 0.35rem;
+				margin-top: -0.12em;
 				width: 100%;
 			}
 
 			.invitation-hero__deck {
 				text-align: left;
-				font-family: var(--font-body);
-				font-style: normal;
-				font-weight: 400;
-				font-size: 0.8rem;
-				letter-spacing: 0.04em;
+				font-size: clamp(1rem, 4vw, 1.2rem);
+				line-height: 1.3;
 				color: rgb(var(--ds-white-rgb) / 88%);
 				border-left: 2px solid var(--ds-accent);
 				padding-left: 0.75rem;
@@ -594,10 +657,22 @@
 				text-align: left;
 				width: 100%;
 				display: flex;
-				flex-direction: column;
-				gap: 0.35rem;
+				flex-flow: row wrap;
+				gap: 0.4rem 0.7rem;
+				align-items: baseline;
 				border-top: 1px solid rgb(var(--ds-white-rgb) / 14%);
 				padding-top: 0.75rem;
+			}
+
+			.invitation-hero__date {
+				flex-basis: 100%;
+			}
+
+			.invitation-hero__time + .invitation-hero__venue::before {
+				margin-right: 0.7rem;
+				content: '·';
+				color: var(--ds-accent);
+				font-weight: 800;
 			}
 
 			.invitation-hero__details p {
@@ -611,14 +686,11 @@
 			.invitation-hero__venue {
 				font-style: normal;
 				font-weight: 600;
-				color: var(--ds-accent);
+				color: var(--ds-beige);
 			}
 
-			.invitation-hero__credits {
-				align-self: flex-start;
-				text-align: left;
-				color: rgb(var(--ds-white-rgb) / 36%);
-				margin-top: 1.25rem;
+			.invitation-hero__venue .calligraphy-accent {
+				color: var(--ds-accent);
 			}
 
 			// Tablet sub-breakpoint (768-991px): larger portrait, larger text,
@@ -629,7 +701,7 @@
 				}
 
 				.invitation-hero__last-name {
-					font-size: clamp(1.3rem, 2.4vw, 1.8rem);
+					font-size: clamp(2rem, 3.6vw, 2.6rem);
 				}
 
 				.invitation-hero__title-wrapper,
@@ -638,7 +710,7 @@
 				}
 
 				.invitation-hero__deck {
-					font-size: clamp(0.85rem, 1.4vw, 1rem);
+					font-size: clamp(1.05rem, 1.8vw, 1.25rem);
 				}
 
 				.invitation-hero__label {
@@ -656,11 +728,338 @@
 				.invitation-hero__content {
 					gap: clamp(0.85rem, 1.5svh, 1.25rem);
 				}
+			}
 
-				.invitation-hero__cover-lines {
-					display: none;
+			// Landscape phones: a 62svh strip would crop to her face under the fixed header, so the
+			// spread turns sideways — photograph on the left, copy on the right.
+			@media (orientation: landscape) and (height <= 600px) {
+				.invitation-hero__background {
+					inset: 0 auto 0 0;
+					width: 50%;
+					height: 100%;
+				}
+
+				.invitation-hero__background img {
+					object-position: 42% 8%;
+				}
+
+				.invitation-hero__background::after {
+					background: linear-gradient(to right, transparent 86%, var(--ds-ink) 100%);
+				}
+
+				.invitation-hero__content {
+					justify-content: center;
+					padding-block: clamp(1.5rem, 6svh, 2.5rem);
+					padding-inline: calc(50% + 1.5rem) 1.5rem;
+				}
+
+				.invitation-hero__content::after {
+					left: calc(50% + 1.5rem);
 				}
 			}
+		}
+	}
+
+	// Countdown as a dark chapter: breaks the run of light sections between the prayer and the
+	// location. The folio layout reads its colors from the magazine ink token, so invert it here.
+	.countdown-section {
+		--editorial-magazine-ink: var(--ds-beige);
+		--editorial-magazine-ink-rgb: var(--ds-beige-rgb);
+		--countdown-bg: var(--ds-ink);
+		--countdown-title-color: var(--ds-beige);
+		--countdown-value-color: var(--ds-white);
+
+		.countdown-title {
+			font-size: clamp(1.8rem, 5vw, 3rem);
+			line-height: 0.96;
+		}
+
+		.countdown__label {
+			color: var(--ds-accent);
+			opacity: 100%;
+		}
+
+		// Date and venue lines use the page text color, which is ink; lift them onto the dark chapter.
+		.countdown-footer,
+		.event-date-desktop,
+		.event-date-mobile-weekday,
+		.event-date-mobile-full,
+		.countdown-invitation-text {
+			color: rgb(var(--ds-beige-rgb) / 82%);
+		}
+
+		&::before {
+			content: '13 · XI · 2026 / CUAUTITLÁN IZCALLI';
+			color: rgb(var(--ds-beige-rgb) / 62%);
+		}
+	}
+
+	// The night's program as a gold timeline: a line that draws itself as the section enters,
+	// a round node per moment with its icon, the hour as the protagonist, and the moment as an
+	// italic caption. Local exception to the editorial-program grid (documented in
+	// docs/invitations/destenid-sofia.md).
+	.itinerary[data-variant='editorial-program'] {
+		--editorial-program-paper: var(--ds-paper);
+		--editorial-program-ink: var(--ds-ink);
+		--editorial-program-ink-rgb: var(--ds-ink-rgb);
+		--editorial-program-accent: var(--ds-gold);
+		--ds-program-node: clamp(2.8rem, 9vw, 3.5rem);
+
+		background:
+			linear-gradient(90deg, rgb(var(--ds-ink-rgb) / 3.5%) 0 1px, transparent 1px 100%),
+			var(--ds-paper);
+		background-size: clamp(3rem, 6vw, 5rem) 100%;
+
+		// Running head: double rule over "La noche" and the page folio, like a magazine page.
+		.itinerary__container {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			align-items: start;
+			max-width: min(46rem, 100%);
+			margin-inline: auto;
+
+			&::before,
+			&::after {
+				grid-area: 1 / 1 / 2 / -1;
+				padding: 0.7rem 0 0.6rem;
+				color: var(--ds-gold);
+				font-family: var(--font-label);
+				font-size: 0.68rem;
+				font-weight: 800;
+				letter-spacing: 0.26em;
+				text-transform: uppercase;
+			}
+
+			&::before {
+				content: 'La noche';
+				border-top: 3px double rgb(var(--ds-accent-rgb) / 80%);
+				border-bottom: 1px solid rgb(var(--ds-ink-rgb) / 12%);
+			}
+
+			&::after {
+				justify-self: end;
+				content: 'pág. 04';
+				color: rgb(var(--ds-ink-rgb) / 48%);
+				letter-spacing: 0.18em;
+				text-transform: none;
+			}
+		}
+
+		.itinerary__header {
+			margin: clamp(1.75rem, 5vw, 2.5rem) 0 clamp(2.25rem, 6vw, 3.5rem);
+		}
+
+		.itinerary__title {
+			font-optical-sizing: auto;
+			font-size: clamp(3rem, 9vw, 5.6rem);
+			font-weight: 600;
+			letter-spacing: 0.01em;
+		}
+
+		.itinerary__subtitle {
+			max-width: 26rem;
+			margin: 0.75rem 0 0;
+
+			&::after {
+				display: block;
+				width: 3rem;
+				height: 1px;
+				margin-top: 1.25rem;
+				content: '';
+				background: var(--ds-accent);
+			}
+
+			color: rgb(var(--ds-ink-rgb) / 72%);
+			font-family: var(--font-display);
+			font-size: clamp(1.15rem, 3.4vw, 1.45rem);
+			font-style: italic;
+			line-height: 1.3;
+			font-optical-sizing: auto;
+		}
+
+		.itinerary__items {
+			position: relative;
+			border-top: 0;
+
+			// The gold thread: drawn top to bottom once the moments come into view.
+			&::before {
+				position: absolute;
+				top: calc(var(--ds-program-node) / 2 + 1.1rem);
+				bottom: calc(var(--ds-program-node) / 2 + 1.1rem);
+				left: calc(var(--ds-program-node) / 2 - 0.5px);
+				width: 1px;
+				content: '';
+				background: linear-gradient(
+					180deg,
+					rgb(var(--ds-accent-rgb) / 20%),
+					var(--ds-accent) 12%,
+					var(--ds-accent) 88%,
+					rgb(var(--ds-accent-rgb) / 20%)
+				);
+				transform: scaleY(0);
+				transform-origin: top;
+				transition: transform 1200ms cubic-bezier(0.65, 0, 0.35, 1);
+			}
+
+			&:has(.is-visible)::before {
+				transform: scaleY(1);
+			}
+		}
+
+		.itinerary__item {
+			position: relative;
+			grid-template-columns: var(--ds-program-node) minmax(0, 1fr);
+			column-gap: clamp(1rem, 4vw, 2.25rem);
+			align-items: center;
+			padding-block: 1.1rem;
+			border-bottom: 0;
+
+			// Magazine folio (01…05) in the corner of each moment, set in italic Bodoni.
+			&::before {
+				grid-area: 1 / 2;
+				place-self: start end;
+				content: counter(editorial-program, decimal-leading-zero);
+				color: var(--ds-gold);
+				font-family: var(--font-display);
+				font-size: 1.05rem;
+				font-style: italic;
+				font-feature-settings: 'lnum';
+				font-optical-sizing: auto;
+			}
+
+			// Dotted leader between moments, starting at the text column (the thread stays clean).
+			&:not(:last-child)::after {
+				position: absolute;
+				right: 0;
+				bottom: 0;
+				left: calc(var(--ds-program-node) + clamp(1rem, 4vw, 2.25rem));
+				content: '';
+				border-bottom: 1px dotted rgb(var(--ds-accent-rgb) / 55%);
+			}
+		}
+
+		// The two defining moments of a XV carry a small gold kicker.
+		.itinerary__item:nth-child(2) .itinerary__item-label::after,
+		.itinerary__item:nth-child(4) .itinerary__item-label::after {
+			display: block;
+			margin-top: 0.45rem;
+			content: 'Momento estelar';
+			color: var(--ds-gold);
+			font-family: var(--font-label);
+			font-size: 0.62rem;
+			font-style: normal;
+			font-weight: 800;
+			letter-spacing: 0.24em;
+			text-transform: uppercase;
+		}
+
+		// Desktop: a two-page spread — sticky title with an outline "05" on the left, the
+		// night's moments on the right.
+		@include mixins.respond-to(lg) {
+			.itinerary__container {
+				grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+				column-gap: clamp(3rem, 6vw, 6rem);
+				max-width: 72rem;
+			}
+
+			.itinerary__header {
+				position: sticky;
+				top: 7rem;
+				grid-area: 2 / 1;
+				margin-bottom: 0;
+			}
+
+			.itinerary__title {
+				font-size: clamp(3.2rem, 5vw, 4.8rem);
+			}
+
+			.itinerary__title::after {
+				display: block;
+				margin-top: 2.5rem;
+				content: '05' / '';
+				color: transparent;
+				font-size: clamp(8rem, 13vw, 12rem);
+				font-weight: 400;
+				font-variation-settings: 'opsz' 11;
+				line-height: 0.8;
+				-webkit-text-stroke: 1px rgb(var(--ds-accent-rgb) / 62%);
+			}
+
+			.itinerary__timeline {
+				grid-area: 2 / 2;
+				margin-top: clamp(1.75rem, 5vw, 2.5rem);
+			}
+		}
+
+		.itinerary__item--left .itinerary__item-content,
+		.itinerary__item--right .itinerary__item-content {
+			grid-area: 1 / 2;
+		}
+
+		.itinerary__item-icon-wrapper {
+			position: relative;
+			inset: auto;
+			z-index: 1;
+			display: grid;
+			grid-area: 1 / 1;
+			place-items: center;
+			width: var(--ds-program-node);
+			height: var(--ds-program-node);
+			margin: 0;
+			border: 1px solid var(--ds-accent);
+			border-radius: 50%;
+			background: var(--ds-paper);
+			color: var(--ds-gold);
+			transform: none;
+		}
+
+		.itinerary__item-icon-inner {
+			display: grid;
+			place-items: center;
+			width: 56%;
+			height: 56%;
+			margin: 0;
+			padding: 0;
+			border: 0;
+			background: none;
+			box-shadow: none;
+			color: inherit;
+			transform: none;
+
+			svg {
+				width: 100%;
+				height: 100%;
+			}
+		}
+
+		// The two defining moments of a XV — presentation and waltz — get a double ring.
+		.itinerary__item:nth-child(2) .itinerary__item-icon-wrapper,
+		.itinerary__item:nth-child(4) .itinerary__item-icon-wrapper {
+			box-shadow:
+				0 0 0 4px var(--ds-paper),
+				0 0 0 5px rgb(var(--ds-accent-rgb) / 70%);
+		}
+
+		.itinerary__item-time {
+			color: var(--ds-ink);
+			font-family: var(--font-display);
+			font-size: clamp(1.9rem, 6.5vw, 3rem);
+			font-weight: 500;
+			font-feature-settings: 'lnum', 'tnum';
+			line-height: 1;
+			letter-spacing: 0;
+			font-optical-sizing: auto;
+		}
+
+		.itinerary__item-label {
+			margin-top: 0.3rem;
+			color: var(--ds-gold);
+			font-family: var(--font-display);
+			font-size: clamp(1.1rem, 3.6vw, 1.5rem);
+			font-style: italic;
+			font-weight: 400;
+			line-height: 1.2;
+			font-optical-sizing: auto;
 		}
 	}
 
@@ -671,9 +1070,8 @@
 		--family-panel-spacing: 0;
 		--family-group-text-align: left;
 
-		background:
-			linear-gradient(90deg, transparent 0 58%, rgb(var(--ds-white-rgb) / 46%) 58% 100%),
-			var(--ds-paper);
+		background: var(--ds-paper);
+		overflow-x: clip;
 
 		.family__header {
 			position: relative;
@@ -686,12 +1084,18 @@
 				font-size: 0.72rem;
 				font-weight: 800;
 				letter-spacing: 0.2em;
-				color: var(--ds-accent);
+				color: var(--ds-gold);
 				margin-bottom: 0.75rem;
 			}
 		}
 
+		.family__header-inner {
+			align-items: flex-start;
+			text-align: left;
+		}
+
 		.family__title {
+			margin-inline: 0;
 			max-width: 9ch;
 			text-transform: uppercase;
 			font-size: clamp(2.2rem, 4.5vw, 3.2rem);
@@ -700,22 +1104,42 @@
 			letter-spacing: -0.01em;
 		}
 
+		.family__header-divider {
+			width: 3rem;
+			height: 1px;
+			margin: 1.4rem 0 0;
+			background: var(--ds-accent);
+		}
+
 		.family__message {
 			font-family: var(--font-display);
 			font-style: italic;
 			font-size: clamp(1.05rem, 1.8vw, 1.25rem);
-			line-height: 1.5;
+			line-height: 1.7;
 			color: rgb(var(--ds-ink-rgb) / 82%);
 			border-left: none;
 			padding-left: 0;
 			text-align: left;
-			margin: 1.5rem 0 2rem;
-			max-width: min(100%, 36rem);
+			hyphens: none;
+			margin: 1.4rem 0 0;
+			max-width: min(100%, 34ch);
+			font-optical-sizing: auto;
+
+			// Upright gold Bodoni initial opens the prayer.
+			&::first-letter {
+				float: left;
+				margin: 0.08em 0.1em 0 0;
+				color: var(--ds-gold);
+				font-size: 3.6em;
+				font-style: normal;
+				font-weight: 500;
+				line-height: 0.8;
+			}
 		}
 
 		.family__panel {
 			position: relative;
-			gap: clamp(1.8rem, 4vw, 3.4rem);
+			display: block;
 		}
 
 		.family__panel::before {
@@ -723,29 +1147,98 @@
 			display: none;
 		}
 
+		// No family groups in this invitation: never reserve an empty column.
+		.family__groups:not(:has(*)) {
+			display: none;
+		}
+
+		// A printed plate: 4:5 crop closer on the celebrant, ivory mat, a gold rule set off
+		// behind it, and a short italic caption under the photograph (never over it).
+		.family__media {
+			position: relative;
+			isolation: isolate;
+			margin: 0;
+
+			&::before {
+				position: absolute;
+				inset: 1rem -1rem 2.4rem 1rem;
+				z-index: -1;
+				content: '';
+				border: 1px solid rgb(var(--ds-accent-rgb) / 70%);
+			}
+
+			&::after {
+				display: block;
+				margin-top: 0.85rem;
+				content: '— Con fe';
+				color: var(--ds-gold);
+				font-family: var(--font-display);
+				font-size: 1.05rem;
+				font-style: italic;
+				text-align: right;
+				font-optical-sizing: auto;
+			}
+		}
+
 		.family__media-frame {
+			aspect-ratio: 4 / 5;
+			overflow: hidden;
+			border: 0;
 			border-radius: 0;
-			border: 1px solid var(--ds-ink);
-			box-shadow: 0 1rem 2.5rem rgb(var(--ds-ink-rgb) / 6%);
+			background: var(--ds-white);
+			box-shadow: 0 1.5rem 3rem rgb(var(--ds-ink-rgb) / 12%);
+			clip-path: inset(0);
+			transition: clip-path 1300ms cubic-bezier(0.65, 0, 0.35, 1);
 
 			img {
+				width: 100%;
+				height: 100%;
 				border-radius: 0;
+				object-fit: cover;
+				object-position: var(--family-focal-point, center);
+				scale: 1.3;
+				transform-origin: var(--family-focal-point, center);
 			}
 		}
 
 		&::before {
-			content: 'CRÉDITOS DE FAMILIA / EDICIÓN XV';
+			content: 'ORACIÓN / MIS XV';
 		}
 
-		@media (width <= 768px) {
+		@include mixins.respond-below(lg) {
 			padding-block: clamp(3rem, 6vw, 4.5rem);
 
 			.family__header {
-				margin-bottom: 1.5rem;
+				margin-bottom: 2.25rem;
+			}
+
+			.family__media::before {
+				inset: 0.75rem -0.6rem 2.4rem 0.6rem;
+			}
+		}
+
+		// Desktop: photograph left, title and prayer right — one magazine page.
+		@include mixins.respond-to(lg) {
+			.family__container {
+				display: grid;
+				grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+				column-gap: clamp(3.5rem, 7vw, 7rem);
+				align-items: center;
+				max-width: 72rem;
+			}
+
+			.family__header {
+				grid-area: 1 / 2;
+				max-width: none;
+				margin: 0;
 			}
 
 			.family__panel {
-				gap: 1.75rem;
+				grid-area: 1 / 1;
+			}
+
+			.family__media-frame {
+				max-height: 82svh;
 			}
 		}
 	}
@@ -757,7 +1250,7 @@
 		background-size: clamp(3rem, 6vw, 5rem) 100%;
 
 		&::before {
-			content: 'ACCESO PRIVADO / EDICIÓN XV';
+			content: 'LUGAR / MIS XV';
 		}
 
 		.event-location__eyebrow,
@@ -771,13 +1264,13 @@
 		}
 
 		.event-location__heading {
-			max-width: 10ch;
+			max-width: 13ch;
 			margin-inline: auto;
 			color: var(--ds-ink);
 			font-family: var(--font-display);
-			font-size: clamp(2.4rem, 5vw, 3.8rem);
+			font-size: clamp(2.2rem, 5vw, 3.6rem);
 			font-weight: 800;
-			line-height: 0.78;
+			line-height: 0.94;
 			letter-spacing: 0;
 			text-transform: uppercase;
 		}
@@ -792,6 +1285,22 @@
 			align-items: stretch;
 			gap: clamp(1.25rem, 3vw, 2rem);
 			max-width: min(1120px, calc(100% - 2rem));
+		}
+
+		// Reception is the only venue: a centered, bounded card instead of a full-width strip.
+		.event-location__container--single {
+			justify-content: center;
+			max-width: min(44rem, calc(100% - 2rem));
+			margin-inline: auto;
+
+			.event-location__card-wrapper {
+				width: 100%;
+			}
+
+			.event-location__card-content-place {
+				margin-inline: auto;
+				text-align: center;
+			}
 		}
 
 		.event-location__card-wrapper {
@@ -873,7 +1382,7 @@
 			max-width: 13ch;
 			margin-bottom: 1.2rem;
 			font-size: clamp(1.6rem, 3.2vw, 2.4rem);
-			line-height: 0.86;
+			line-height: 0.96;
 			overflow-wrap: anywhere;
 		}
 
@@ -958,6 +1467,11 @@
 			border: 1px solid rgb(var(--ds-ink-rgb) / 28%);
 			border-radius: 0;
 			flex: 0 0 auto;
+
+			&:focus-visible {
+				outline: 2px solid rgb(var(--ds-gold-rgb) / 68%);
+				outline-offset: 3px;
+			}
 		}
 
 		.event-location__card-navigation-buttons {
@@ -997,7 +1511,7 @@
 			font-family: var(--font-display);
 			font-size: clamp(1.8rem, 3.5vw, 2.6rem);
 			font-weight: 800;
-			line-height: 0.82;
+			line-height: 0.96;
 			letter-spacing: 0;
 			text-align: left;
 			text-transform: uppercase;
@@ -1072,6 +1586,37 @@
 		.event-location__indication-text strong {
 			color: var(--ds-white);
 		}
+
+		.event-location__indication-text a[href*='instagram.com'] {
+			display: inline-flex;
+			gap: 0.35em;
+			align-items: center;
+			color: var(--ds-white);
+			text-decoration: underline;
+			text-decoration-color: rgb(var(--ds-accent-rgb) / 55%);
+			text-underline-offset: 0.25em;
+			transition: text-decoration-color 200ms ease;
+
+			&::before {
+				flex: 0 0 auto;
+				width: 1.1em;
+				height: 1.1em;
+				content: '';
+				background: var(--ds-accent);
+				mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='5'/%3E%3Ccircle cx='12' cy='12' r='4.2'/%3E%3Ccircle cx='17.4' cy='6.6' r='0.9' fill='black' stroke='none'/%3E%3C/svg%3E")
+					center / contain no-repeat;
+			}
+
+			&:hover,
+			&:focus-visible {
+				text-decoration-color: var(--ds-accent);
+			}
+
+			&:focus-visible {
+				outline: 2px solid rgb(var(--ds-accent-rgb) / 72%);
+				outline-offset: 3px;
+			}
+		}
 	}
 
 	.gifts-section {
@@ -1080,7 +1625,7 @@
 			var(--ds-paper);
 
 		&::before {
-			content: 'CONCIERGE DE CORTESÍA / D·S';
+			content: 'DETALLES / D·S';
 		}
 
 		.gifts-section__header {
@@ -1091,9 +1636,9 @@
 		}
 
 		.gifts-section__title {
-			max-width: 9ch;
-			font-size: clamp(2.4rem, 5vw, 3.8rem);
-			line-height: 0.78;
+			max-width: 11ch;
+			font-size: clamp(2.2rem, 5vw, 3.6rem);
+			line-height: 0.94;
 		}
 
 		.gifts-section__subtitle {
@@ -1122,6 +1667,17 @@
 			@media (width >= 768px) {
 				grid-template-columns: repeat(3, minmax(0, 1fr));
 				align-items: stretch;
+			}
+
+			// Fewer cards than columns: let each card use the full row instead of a third of it.
+			&[data-count='1'] {
+				grid-template-columns: minmax(0, 1fr);
+			}
+
+			&[data-count='2'] {
+				@media (width >= 768px) {
+					grid-template-columns: repeat(2, minmax(0, 1fr));
+				}
 			}
 		}
 
@@ -1176,7 +1732,7 @@
 			align-items: center;
 			justify-content: space-between;
 			gap: 1rem;
-			color: rgb(var(--ds-ink-rgb) / 54%);
+			color: rgb(var(--ds-ink-rgb) / 68%);
 			font-family: var(--font-label);
 			font-size: 0.62rem;
 			font-weight: 800;
@@ -1200,7 +1756,7 @@
 			text-transform: uppercase;
 
 			span:first-child {
-				color: var(--ds-accent);
+				color: var(--ds-gold);
 				font-family: var(--font-display);
 				font-size: clamp(2rem, 5vw, 2.75rem);
 				line-height: 0.9;
@@ -1318,7 +1874,7 @@
 			auto;
 
 		&::before {
-			content: 'ACCESO PRIVADO / EDICIÓN XV';
+			content: 'MIS XV / 13 · XI · 2026';
 			position: relative;
 			z-index: 1;
 		}
@@ -1531,9 +2087,15 @@
 			color: rgb(var(--ds-white-rgb) / 68%);
 			font-size: 0.6rem;
 
-			&:hover {
+			&:hover,
+			&:focus-visible {
 				border-color: var(--ds-accent);
 				color: var(--ds-accent);
+			}
+
+			&:focus-visible {
+				outline: 2px solid rgb(var(--ds-accent-rgb) / 72%);
+				outline-offset: 3px;
 			}
 		}
 
@@ -1546,7 +2108,7 @@
 
 			input::placeholder,
 			textarea::placeholder {
-				color: rgb(var(--ds-white-rgb) / 38%);
+				color: rgb(var(--ds-white-rgb) / 60%);
 			}
 
 			// Phone country-code prefix — visually distinct from the phone input.
@@ -1566,6 +2128,12 @@
 
 			.rsvp__country-code:hover {
 				color: rgb(var(--ds-white-rgb) / 72%);
+			}
+
+			.rsvp__country-code:focus-visible {
+				color: var(--ds-white);
+				outline: 2px solid rgb(var(--ds-accent-rgb) / 72%);
+				outline-offset: 2px;
 			}
 
 			.rsvp__country-code option {
@@ -1593,14 +2161,14 @@
 				display: none;
 			}
 
-			// Repurpose eyebrow to display merged "RSVP PRIVADO · EDICIÓN XV"
+			// Repurpose eyebrow as a single, short kicker (the card already carries "Edición XV").
 			.rsvp__eyebrow {
 				position: relative;
 				font-size: 0;
 			}
 
 			.rsvp__eyebrow::before {
-				content: 'RSVP PRIVADO · EDICIÓN XV';
+				content: 'CONFIRMACIÓN';
 				font-size: 0.6rem;
 				letter-spacing: 0.2em;
 			}
@@ -1613,6 +2181,7 @@
 			.rsvp__subcopy {
 				font-size: 0.75rem;
 				max-width: 24rem;
+				padding-inline: 1rem;
 			}
 
 			// ── End RSVP header compression ──
@@ -1679,19 +2248,271 @@
 		}
 	}
 
+	// Back cover of the collector's edition: photograph and quote side by side (never over each
+	// other), gold signature, and a barcode colophon echoing the magazine cover.
+	.thank-you-section[data-variant='editorial-back-cover'] {
+		position: relative;
+		overflow-x: clip;
+		background:
+			radial-gradient(ellipse at 78% 20%, rgb(var(--ds-accent-rgb) / 10%), transparent 60%),
+			var(--ds-ink);
+
+		.thank-you-editorial {
+			position: relative;
+			max-width: 72rem;
+			row-gap: clamp(2.5rem, 7vw, 4rem);
+
+			@include mixins.respond-to(md) {
+				grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+				column-gap: clamp(3rem, 7vw, 7rem);
+			}
+
+			// Colophon strip across the page foot: barcode + edition line.
+			&::after {
+				grid-column: 1 / -1;
+				padding: 1.1rem 0 0 5.25rem;
+				content: 'Edición de colección · Cuautitlán Izcalli · MMXXVI';
+				border-top: 1px solid rgb(var(--ds-accent-rgb) / 30%);
+				color: rgb(var(--ds-white-rgb) / 58%);
+				font-family: var(--font-label);
+				font-size: 0.62rem;
+				font-weight: 700;
+				line-height: 1.6rem;
+				letter-spacing: 0.22em;
+				text-transform: uppercase;
+				background: linear-gradient(
+						90deg,
+						var(--ds-accent) 0 2px,
+						transparent 2px 4px,
+						var(--ds-accent) 4px 5px,
+						transparent 5px 8px,
+						var(--ds-accent) 8px 11px,
+						transparent 11px 12px,
+						var(--ds-accent) 12px 13px,
+						transparent 13px 16px,
+						var(--ds-accent) 16px 17px,
+						transparent 17px 18px,
+						var(--ds-accent) 18px 21px,
+						transparent 21px 24px,
+						var(--ds-accent) 24px 25px,
+						transparent 25px 27px,
+						var(--ds-accent) 27px 29px,
+						transparent 29px 31px,
+						var(--ds-accent) 31px 32px,
+						transparent 32px 35px,
+						var(--ds-accent) 35px 38px,
+						transparent 38px 39px,
+						var(--ds-accent) 39px 40px,
+						transparent 40px 43px,
+						var(--ds-accent) 43px 44px,
+						transparent 44px 46px,
+						var(--ds-accent) 46px 49px,
+						transparent 49px 50px,
+						var(--ds-accent) 50px 52px,
+						transparent 52px 55px,
+						var(--ds-accent) 55px 56px,
+						transparent 56px
+					)
+					0 calc(100% - 0.1rem) / 4.25rem 1.6rem no-repeat;
+			}
+		}
+
+		// The template's decorative layer must not take a grid cell.
+		.thank-you-editorial__ambient {
+			position: absolute;
+			inset: 0;
+			pointer-events: none;
+		}
+
+		.thank-you-editorial__media.photo-frame {
+			max-width: 30rem;
+			aspect-ratio: 4 / 5;
+			border: 0;
+			outline: 1px solid rgb(var(--ds-accent-rgb) / 55%);
+			outline-offset: 0.9rem;
+			clip-path: inset(-2rem);
+			transition: clip-path 1300ms cubic-bezier(0.65, 0, 0.35, 1);
+
+			.photo-image {
+				object-position: var(--thank-you-focal-point, center);
+			}
+		}
+
+		.thank-you-editorial__copy {
+			gap: 1.75rem;
+
+			&::before {
+				content: 'Hasta pronto';
+				color: var(--ds-accent);
+				font-family: var(--font-label);
+				font-size: 0.7rem;
+				font-weight: 800;
+				letter-spacing: 0.28em;
+				text-transform: uppercase;
+			}
+		}
+
+		.thank-you-message {
+			max-width: 30ch;
+			color: rgb(var(--ds-white-rgb) / 90%);
+			font-family: var(--font-display);
+			font-size: clamp(1.4rem, 3.2vw, 2.05rem);
+			font-style: italic;
+			line-height: 1.35;
+			letter-spacing: 0;
+			font-optical-sizing: auto;
+
+			.drop-cap {
+				color: var(--ds-accent);
+				font-style: normal;
+				font-size: 2.9em;
+				line-height: 0.82;
+			}
+		}
+
+		.signature-block {
+			margin-top: 0;
+		}
+
+		.closing-name {
+			color: var(--ds-accent);
+			clip-path: inset(-50% -10% -50% -10%);
+			transition: clip-path 1500ms cubic-bezier(0.45, 0, 0.2, 1) 450ms;
+		}
+
+		.closing-date {
+			width: fit-content;
+			margin-top: 0.9rem;
+			padding-top: 0.9rem;
+			border-top: 1px solid rgb(var(--ds-accent-rgb) / 40%);
+			color: rgb(var(--ds-white-rgb) / 70%);
+		}
+
+		// Phones: the photograph runs edge to edge above the quote.
+		@include mixins.respond-below(md) {
+			.thank-you-editorial__media.photo-frame {
+				width: 100vw;
+				max-width: none;
+				margin-inline: calc(50% - 50vw);
+				outline: 0;
+			}
+
+			.thank-you-editorial::after {
+				font-size: 0.56rem;
+				letter-spacing: 0.16em;
+			}
+		}
+	}
+
+	// Colophon: gold monogram, a rule, the edition line, then the service row set quietly.
 	.invitation-footer {
-		&::after {
-			content: 'EDICIÓN XV — MMXXVI';
+		padding: clamp(3rem, 8vw, 4.5rem) 1rem calc(2rem + env(safe-area-inset-bottom, 0px));
+		border-top: 1px solid rgb(var(--ds-accent-rgb) / 22%);
+		background: linear-gradient(180deg, var(--ds-ink), rgb(var(--ds-ink-rgb) / 96%));
+		box-shadow: none;
+		backdrop-filter: none;
+		text-align: center;
+
+		&::before {
 			display: block;
-			text-align: center;
-			margin-top: 1.5rem;
-			font-family: var(--font-label);
-			font-size: 0.58rem;
+			content: 'D·S';
+			color: var(--ds-accent);
+			font-family: var(--font-display);
+			font-size: clamp(2.6rem, 8vw, 3.4rem);
 			font-weight: 500;
+			line-height: 1;
+			letter-spacing: 0.04em;
+			font-optical-sizing: auto;
+		}
+
+		.footer__divider {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 0.9rem;
+			width: auto;
+			height: auto;
+			margin: 1.1rem 0 2rem;
+			background: none;
+
+			&::before {
+				width: 3rem;
+				height: 1px;
+				content: '';
+				background: var(--ds-accent);
+			}
+
+			&::after {
+				content: 'Mis XV · 13 · XI · 2026';
+				color: rgb(var(--ds-white-rgb) / 72%);
+				font-family: var(--font-label);
+				font-size: 0.66rem;
+				font-weight: 700;
+				letter-spacing: 0.28em;
+				text-transform: uppercase;
+			}
+		}
+
+		.footer__content {
+			flex-direction: column;
+			gap: 1.1rem;
+			max-width: 40rem;
+			padding-top: 1.75rem;
+			border-top: 1px solid rgb(var(--ds-white-rgb) / 10%);
+		}
+
+		.footer__primary-row {
+			gap: 1rem 2rem;
+			opacity: 82%;
+		}
+
+		.footer__info .powered-by {
+			color: rgb(var(--ds-white-rgb) / 60%);
+			font-size: 0.6rem;
+		}
+
+		// The dark script logo disappears on the ink footer; render it as a light beige mark.
+		.footer-brand-logo.logo {
+			width: 7.25rem;
+			filter: invert(1) sepia(0.35) brightness(0.95);
+		}
+
+		.whatsapp-button {
+			padding: 0.55rem 1.3rem;
+			font-size: 0.62rem;
+		}
+
+		.footer__replay-link {
+			gap: 0.55rem;
+			color: rgb(var(--ds-white-rgb) / 80%);
+			text-decoration: underline;
+			text-decoration-color: transparent;
+			text-underline-offset: 0.35em;
+			transition:
+				color 200ms ease,
+				text-decoration-color 200ms ease;
+
+			&::before {
+				content: '↺' / '';
+				color: var(--ds-accent);
+				font-size: 1.1rem;
+				letter-spacing: 0;
+			}
+
+			&:hover,
+			&:focus-visible {
+				color: var(--ds-white);
+				text-decoration-color: var(--ds-accent);
+				transform: none;
+			}
 		}
 	}
 
 	.quote-section {
+		// The opening phrase is long; a reading size keeps it from becoming a nine-line headline.
+		--quote-content-size: clamp(1.45rem, 5.4vw, 2.6rem);
+		--quote-content-line-height: 1.22;
+
 		&::before {
 			display: none;
 		}
@@ -1722,12 +2543,18 @@
 	}
 
 	.invitation-interlude {
-		--interlude-focal-point-desktop: 50% 18%;
+		--interlude-focal-point-desktop: 50% 52%;
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
 	.event--destenid-sofia.theme-preset--editorial-magazine {
+		.invitation-hero__background picture,
+		.invitation-hero__portrait img,
+		.invitation-hero__content::after {
+			animation: none;
+		}
+
 		.gallery-section {
 			.gallery-grid__item[data-gallery-index='0']::after {
 				animation: none;
@@ -1763,5 +2590,33 @@
 	50% {
 		opacity: 80%;
 		transform: translateY(-50%) translateX(4px);
+	}
+}
+
+@keyframes dsHeroParallax {
+	from {
+		translate: 0 0;
+	}
+
+	to {
+		translate: 0 22svh;
+	}
+}
+
+@keyframes dsHeroScrollCue {
+	0% {
+		opacity: 0%;
+		transform: scaleY(0);
+	}
+
+	35% {
+		opacity: 100%;
+		transform: scaleY(1);
+	}
+
+	75%,
+	100% {
+		opacity: 0%;
+		transform: scaleY(1) translateY(0.6rem);
 	}
 }

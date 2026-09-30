@@ -18,7 +18,7 @@ import type {
 } from './invitation-definition.ts';
 
 const TIME_ZONE = 'America/Mexico_City';
-// Start time is an owner-authorized provisional value pending client confirmation.
+// Reception start confirmed by the client's program (Recepción 7 pm).
 const RECEPTION_LOCAL = '2026-11-13T19:00';
 const derivedStartsAtUtc = deriveStartsAtUtc(RECEPTION_LOCAL, TIME_ZONE);
 if (!derivedStartsAtUtc) {
@@ -54,6 +54,18 @@ const VENUE_CITY = 'Cuautitlán Izcalli, Estado de México';
 const MAPS_URL =
 	'https://www.google.com/maps/search/?api=1&query=Jard%C3%ADn+Quinta+Para%C3%ADso+Calle+Rosa+Violeta+8+Cuautitl%C3%A1n+Izcalli';
 const RSVP_WHATSAPP = '524611830851';
+const MUSIC_URL =
+	'https://res.cloudinary.com/dusxvauvj/video/upload/v1790740387/yo_soy_Rebelde_-_RBD_vnzffv.mp3';
+// The client asked for the song "del segundo 39 en adelante"; the file is the full track.
+const MUSIC_START_SECONDS = 39;
+
+/**
+ * Gift transfer: BBVA debit card supplied by the client (holder below). The owner pastes the
+ * 16-digit card number here — it is intentionally not typed by tooling. The transfer card
+ * appears only when this is filled; with a CLABE instead, set accountKind to 'clabe'.
+ */
+const GIFT_TRANSFER_CARD = '';
+const GIFT_TRANSFER_HOLDER = 'Destenid Sofía Magaña Almaraz';
 
 const PRAYER =
 	'Gracias, Dios, por estos 15 años llenos de vida, amor y aprendizaje. Hoy pongo en tus manos esta nueva etapa que comienza; sé siempre la luz que guíe mis pasos y el refugio de mis sueños. Te doy gracias por el milagro de mi vida, por la infancia que con amor dejo atrás y por el futuro que hoy pongo en tus manos. Gracias por mi familia y por cada persona que ha sido un reflejo de tu amor en mi camino. Te pido que bendigas esta nueva etapa, ilumines mi corazón y me des la sabiduría para caminar siempre de tu mano. Amén.';
@@ -65,6 +77,15 @@ export const DESTENID_ASSET_SPECS = [
 		displayName: 'Destenid — portada',
 		alt: 'Destenid con corona dorada junto a hortensias y un portón de madera',
 		focalPoint: { default: '45% 34%', mobile: '42% 30%' },
+	},
+	{
+		// Same source as the cover: the client's chosen photograph also leads the desktop card,
+		// under its own key so each delivery role keeps a single binding.
+		key: 'heroPortrait',
+		relativePath: 'hero.jpg',
+		displayName: 'Destenid — portada (retrato)',
+		alt: 'Destenid con corona dorada junto a hortensias y un portón de madera',
+		focalPoint: { default: '45% 34%' },
 	},
 	{
 		key: 'portrait',
@@ -151,21 +172,26 @@ export const DESTENID_ASSET_SPECS = [
 		key: 'thankYouPortrait',
 		relativePath: 'thank-you-portrait.jpg',
 		displayName: 'Destenid — cierre',
-		alt: 'Destenid sonriendo en una ventana con ramo de flores',
-		focalPoint: { default: '52% 68%' },
+		alt: 'Destenid con vestido corto y guantes blancos, sentada en un muro de piedra',
+		focalPoint: { default: '42% 90%' },
 	},
 ] as const;
 
 export type DestenidAssetKey = (typeof DESTENID_ASSET_SPECS)[number]['key'];
 export type DestenidAssetMap = Record<DestenidAssetKey, UploadedAssetRef>;
 
+const ASSET_ALT = Object.fromEntries(
+	DESTENID_ASSET_SPECS.map((spec) => [spec.key, spec.alt]),
+) as Record<DestenidAssetKey, string>;
+
 function galleryItem(assets: DestenidAssetMap, key: DestenidAssetKey) {
-	return { image: assets[key] };
+	return { image: assets[key], alt: ASSET_ALT[key] };
 }
 
 export function buildDestenidPublishedContent(
 	assets: UploadedAssetMap<DestenidAssetKey>,
 ): Record<string, unknown> {
+	const hasTransfer = GIFT_TRANSFER_CARD.replace(/\s+/g, '').length > 0;
 	return {
 		eventType: DESTENID_EVENT.eventType,
 		isDemo: false,
@@ -185,6 +211,12 @@ export function buildDestenidPublishedContent(
 			startsAtUtc: DESTENID_EVENT.startsAtUtc,
 		},
 		composition: { intersections: {} },
+		music: {
+			url: MUSIC_URL,
+			title: 'Rebelde · RBD',
+			autoPlay: true,
+			startAt: MUSIC_START_SECONDS,
+		},
 		sectionOrder: [
 			'quote',
 			'family',
@@ -202,14 +234,16 @@ export function buildDestenidPublishedContent(
 			label: 'Mis XV',
 			date: DESTENID_EVENT.heroDate,
 			backgroundImage: assets.hero,
-			portrait: assets.portrait,
+			// The client chose WA0029 as the main photograph, so it also leads the desktop cover.
+			portrait: assets.heroPortrait,
 			variant: 'editorial-cover',
 			focalPoint: '45% 34%',
 			focalPointMobile: '42% 30%',
-			tagline: 'Una noche entre moda, memoria y celebración.',
+			tagline: 'Mis XV, un nuevo capítulo.',
 		},
 		quote: {
-			text: 'Un día me dijeron que la vida se mide en momentos inolvidables... hoy empieza uno de los más grandes. Acompáñame a escribir este capítulo.',
+			// Client phrase; only the three dots became a typographic ellipsis.
+			text: 'Un día me dijeron que la vida se mide en momentos inolvidables… hoy empieza uno de los más grandes. Acompáñame a escribir este capítulo.',
 			author: CELEBRANT_NAME,
 		},
 		family: {
@@ -220,32 +254,33 @@ export function buildDestenidPublishedContent(
 				sectionSubtitle: 'Mi oración',
 				sectionMessage: PRAYER,
 			},
-			focalPoint: '50% 60%',
+			focalPoint: '53% 74%',
 		},
 		countdown: {
-			title: 'La celebración comienza en',
+			title: 'La cuenta regresiva',
 			footerText: 'Jardín Quinta Paraíso, Cuautitlán Izcalli',
 			variant: 'magazine-folio',
 		},
 		itinerary: {
 			title: 'Programa',
+			subtitle: 'Cinco momentos, una sola noche.',
 			variant: 'editorial-program',
 			items: [
-				{
-					iconName: 'Reception',
-					label: 'Recepción',
-					time: '19:00',
-					description: `Celebración en ${VENUE_NAME}.`,
-				},
+				{ iconName: 'Reception', label: 'Recepción', time: '19:00' },
+				{ iconName: 'Crown', label: 'Presentación de la quinceañera', time: '20:00' },
+				{ iconName: 'Dinner', label: 'Cena', time: '20:30' },
+				{ iconName: 'Waltz', label: 'Vals', time: '22:00' },
+				// The client wrote "Cierre 2,pm"; read as 2:00 a.m. after the 10 p.m. waltz.
+				{ iconName: 'Party', label: 'Cierre', time: '02:00' },
 			],
 		},
 		location: {
 			accessPolicy: { visibility: 'public' },
 			variant: 'standard',
 			mapStyle: 'dark',
-			introEyebrow: 'Te espero en Cuautitlán Izcalli',
+			introEyebrow: 'Le espero en Cuautitlán Izcalli',
 			introHeading: 'Viernes 13 de noviembre',
-			introLede: 'Mi fiesta no sería lo mismo sin ti.',
+			introLede: 'Una noche para celebrar juntos este nuevo capítulo.',
 			indicationsHeading: 'Detalles para mis invitados',
 			venues: [
 				{
@@ -255,20 +290,20 @@ export function buildDestenidPublishedContent(
 					address: VENUE_ADDRESS,
 					city: VENUE_CITY,
 					date: DESTENID_EVENT.eventDateLong,
-					time: '7:00 p.m.',
+					time: '7:00 p. m.',
 					googleMapsUrl: MAPS_URL,
 				},
 			],
 			indications: [
 				{
 					title: 'Confirmación',
-					iconName: 'Calendar',
+					iconName: 'Enveloped',
 					styleVariant: 'default',
 					text: 'Agradezco que confirme su asistencia con anticipación para preparar cada detalle con cariño.',
 				},
 				{
 					title: 'Puntualidad',
-					iconName: 'Enveloped',
+					iconName: 'Calendar',
 					styleVariant: 'default',
 					text: 'Su puntualidad me ayudará a disfrutar juntos cada momento de esta noche.',
 				},
@@ -276,7 +311,7 @@ export function buildDestenidPublishedContent(
 					title: 'Recuerdos',
 					iconName: 'Photo',
 					styleVariant: 'default',
-					text: 'Comparta sus mejores fotos y videos de la fiesta etiquetándome en <strong>@desteny_ts</strong>.',
+					text: 'Comparta sus mejores fotos y videos de la fiesta etiquetándome en <a href="https://www.instagram.com/desteny_ts/"><strong>@desteny_ts</strong></a>.',
 				},
 			],
 		},
@@ -288,7 +323,8 @@ export function buildDestenidPublishedContent(
 			eyebrow: 'Galería',
 			title: 'Momentos icónicos.',
 			subtitle:
-				'Lit, mi fiesta no sería lo mismo sin ti. Gracias por acompañarme en los momentos más icónicos.',
+				// Client phrase; "Lit" is an interjection, so it gets its exclamation marks.
+				'¡Lit! Mi fiesta no sería lo mismo sin ti. Gracias por acompañarme en los momentos más icónicos.',
 			items: [
 				galleryItem(assets, 'gallery01'),
 				galleryItem(assets, 'gallery02'),
@@ -303,17 +339,33 @@ export function buildDestenidPublishedContent(
 			],
 		},
 		gifts: {
-			title: 'Mesa de cortesía',
+			// The client's own words: "lo de la lluvia de sobres o transferencia".
+			title: hasTransfer ? 'Lluvia de sobres o transferencia' : 'Lluvia de sobres',
 			folioMark: 'D·S',
-			subtitle:
-				'Su presencia es mi mejor regalo, pero si desea tener un detalle conmigo, le comparto esta opción.',
+			subtitle: hasTransfer
+				? 'Su presencia es mi mejor regalo, pero si desea tener un detalle conmigo, le comparto estas opciones.'
+				: 'Su presencia es mi mejor regalo, pero si desea tener un detalle conmigo, le comparto esta opción.',
 			variant: 'editorial-catalog',
 			items: [
 				{
 					type: 'cash',
-					title: 'Lluvia de Sobres',
-					text: 'Se proporcionará un sobre el día del evento.',
+					title: 'En sobre, el día del evento',
+					// The icon replaces the visible card heading so the title is not printed twice.
+					iconName: 'Enveloped',
+					text: 'Si desea obsequiarme un detalle, podrá hacerlo en sobre el día del evento.',
 				},
+				...(hasTransfer
+					? [
+							{
+								type: 'bank',
+								title: 'Transferencia',
+								bankName: 'BBVA',
+								accountHolder: GIFT_TRANSFER_HOLDER,
+								clabe: GIFT_TRANSFER_CARD,
+								accountKind: 'card',
+							},
+						]
+					: []),
 			],
 		},
 		rsvp: {
@@ -328,6 +380,13 @@ export function buildDestenidPublishedContent(
 			variant: 'editorial-press-pass',
 			personalizedAccess: {
 				variant: 'editorial-pass',
+				title: 'Su pase',
+				subtitle: 'Hemos reservado estos lugares para usted.',
+				footerText: 'Confirme su asistencia en la sección siguiente.',
+			},
+			labels: {
+				name: 'Su nombre',
+				notesPlaceholder: 'Escriba unas palabras para Destenid…',
 			},
 			whatsappConfig: {
 				phone: RSVP_WHATSAPP,
@@ -337,15 +396,16 @@ export function buildDestenidPublishedContent(
 			message:
 				'Gracias por acompañarme a cerrar esta etapa e iniciar la más top de todas. Your presence is the best gift!',
 			closingName: CELEBRANT_NAME,
+			date: '13 · XI · 2026',
 			image: assets.thankYouPortrait,
-			focalPoint: '52% 68%',
+			focalPoint: '42% 90%',
 			variant: 'editorial-back-cover',
 		},
 		interludes: [
 			{
 				image: assets.interlude01,
-				afterSection: 'location',
-				alt: 'Destenid al fondo de un túnel de piedra',
+				afterSection: 'family',
+				alt: ASSET_ALT.interlude01,
 				height: 'medium',
 				focalPoint: '50% 52%',
 				lightX: '50%',
@@ -355,6 +415,10 @@ export function buildDestenidPublishedContent(
 		envelope: {
 			disabled: false,
 			revealVariant: 'editorial-cover',
+			// Magazine cover uses its own photograph (WA0034) so the reveal reads differently from the hero.
+			backdropImage: assets.portrait,
+			// Collector edition: the guest drags the cover open and the page bends.
+			coverExperience: 'collector',
 			coverEdition: 'XV',
 			coverVolume: '1',
 			coverIssue: '2026',
@@ -362,7 +426,7 @@ export function buildDestenidPublishedContent(
 			sealIcon: 'flower',
 			sealInitials: 'D·S',
 			sealVariant: 'wax-medallion',
-			microcopy: 'Abrir edición XV',
+			microcopy: 'Abrir invitación',
 			documentLabel: 'Edición XV',
 			cardLabel: 'Edición XV',
 			cardTagline: 'Un nuevo capítulo',
