@@ -346,11 +346,18 @@
 		}
 	}
 
+	// Hero photograph grade: calmer hydrangeas, warmer skin, a touch more depth.
+	--ds-hero-grade: saturate(0.84) sepia(0.07) contrast(1.05) brightness(0.98);
+
 	// Music
+	--music-player-prompt-bg: rgb(var(--ds-ink-rgb) / 94%);
+	--music-player-prompt-color: var(--ds-beige);
+	--music-player-prompt-border: 1px solid rgb(var(--ds-accent-rgb) / 55%);
 	--music-player-prompt-accent: var(--ds-accent);
-	--music-player-button-bg: var(--ds-accent);
-	--music-player-button-color: var(--ds-white);
-	--music-player-ring-color: rgb(var(--ds-accent-rgb) / 34%);
+	--music-player-button-bg: rgb(var(--ds-ink-rgb) / 90%);
+	--music-player-button-color: var(--ds-accent);
+	--music-player-button-border: 1px solid rgb(var(--ds-accent-rgb) / 75%);
+	--music-player-ring-color: rgb(var(--ds-accent-rgb) / 55%);
 
 	// Opened hero — mobile editorial spread composition.
 	.invitation-hero {
@@ -371,9 +378,11 @@
 		}
 
 		.invitation-hero__first-name {
+			position: relative;
+			z-index: 1;
 			color: var(--ds-white);
 			font-weight: 600;
-			letter-spacing: 0.02em;
+			letter-spacing: 0.01em;
 		}
 
 		// Solid ivory capitals at every size: drop the theme's gold gradient-clipped glint, which
@@ -394,11 +403,48 @@
 
 		// Parallax: the photograph drifts slower than the page while scrolling away. It starts at
 		// zero offset, so the collector hand-off still lands exactly on it. No support → static.
-		.invitation-hero__background picture,
-		.invitation-hero__portrait img {
+		.invitation-hero__background picture {
 			animation: dsHeroParallax linear both;
 			animation-timeline: scroll(root);
 			animation-range: 0 100svh;
+		}
+
+		.invitation-hero__background img,
+		.invitation-hero__portrait img {
+			filter: var(--ds-hero-grade);
+		}
+
+		.invitation-hero__portrait {
+			position: relative;
+		}
+
+		// Film grain over the photograph, barely there.
+		.invitation-hero__background::before,
+		.invitation-hero__portrait::before {
+			position: absolute;
+			inset: 0;
+			z-index: 1;
+			content: '';
+			background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+			opacity: 9%;
+			mix-blend-mode: overlay;
+			pointer-events: none;
+		}
+
+		// A single band of warm light crosses the photograph after it appears.
+		.invitation-hero__portrait::after {
+			position: absolute;
+			inset: 0;
+			z-index: 1;
+			content: '';
+			background: linear-gradient(
+					105deg,
+					transparent 40%,
+					rgb(255 236 200 / 20%) 50%,
+					transparent 60%
+				) -60%
+				0 / 250% 100% no-repeat;
+			pointer-events: none;
 		}
 
 		// Scroll cue: a short gold line that runs down and fades, in a slow loop (no copy).
@@ -418,12 +464,18 @@
 			pointer-events: none;
 		}
 
+		// The second name is a gold Pinyon signature that crosses the foot of the capitals.
 		.invitation-hero__last-name {
+			position: relative;
+			z-index: 2;
 			color: var(--ds-accent);
-			font-family: var(--font-display);
-			font-style: italic;
+			font-family: var(--font-calligraphy);
+			font-style: normal;
 			font-weight: 400;
 			letter-spacing: 0;
+			text-transform: none;
+			text-shadow: 0 0.04em 0.14em rgb(var(--ds-ink-rgb) / 85%);
+			rotate: -4deg;
 		}
 
 		.invitation-hero__deck {
@@ -437,18 +489,29 @@
 			letter-spacing: 0.22em;
 		}
 
+		// Details: the date as a spaced label; time and place set in Bodoni, lowercase "p. m."
+		// (matching the location card), with the connecting "en" dropped for a gold dot.
 		.invitation-hero__venue .calligraphy-accent {
+			display: none;
+		}
+
+		.invitation-hero__details .invitation-hero__time,
+		.invitation-hero__details .invitation-hero__venue {
+			color: var(--ds-beige);
 			font-family: var(--font-display);
-			font-style: italic;
+			font-size: clamp(1rem, 3.9vw, 1.15rem);
+			font-style: normal;
 			font-weight: 400;
+			letter-spacing: 0.01em;
 			text-transform: none;
-			letter-spacing: 0;
+			font-optical-sizing: auto;
 		}
 
 		@include mixins.respond-to(lg) {
-			// The desktop portrait is the client's chosen photograph; frame the face and crown.
+			// The desktop portrait is the client's chosen photograph; the wider 58 % column draws it
+			// larger, so frame it lower to keep headroom between the crown and the page folio.
 			.invitation-hero__portrait img {
-				object-position: var(--hero-focal-point, 45% 34%);
+				object-position: 45% 16%;
 			}
 
 			// The page folio collides with the fixed navigation on desktop.
@@ -456,9 +519,14 @@
 				display: none;
 			}
 
+			// The photograph takes the larger share of the spread.
+			.invitation-hero__content {
+				grid-template-columns: 58% 42%;
+			}
+
 			// Scroll cue centred under the text panel, not on the seam.
 			.invitation-hero__content::after {
-				left: 75%;
+				left: 79%;
 			}
 
 			// The text panel reads as a magazine page: gold seam, thin inner frame, copy anchored
@@ -467,8 +535,9 @@
 			.invitation-hero__text-column {
 				position: relative;
 				z-index: 2;
-				justify-content: flex-end;
-				padding: clamp(4rem, 6vw, 6rem) clamp(3rem, 6vw, 6rem) clamp(5rem, 11svh, 7rem);
+				justify-content: center;
+				padding: clamp(6.5rem, 12svh, 8rem) clamp(3rem, 5vw, 5.5rem)
+					clamp(5rem, 11svh, 7rem);
 				border-left: 1px solid rgb(var(--ds-accent-rgb) / 38%);
 				background: var(--ds-ink);
 			}
@@ -483,24 +552,39 @@
 				pointer-events: none;
 			}
 
+			// A giant outline "XV" set behind the name, as a layer of the page.
 			.invitation-hero__text-column::after {
 				position: absolute;
-				top: clamp(6.5rem, 14svh, 8.5rem);
-				right: clamp(3rem, 5vw, 5rem);
+				top: 50%;
+				left: 50%;
+				z-index: 0;
 				content: 'XV';
 				color: transparent;
 				font-family: var(--font-display);
-				font-size: clamp(8rem, 12vw, 12rem);
+				font-size: clamp(15rem, 25vw, 25rem);
 				font-weight: 400;
 				font-variation-settings: 'opsz' 11;
 				line-height: 0.8;
 				letter-spacing: 0.02em;
-				-webkit-text-stroke: 1px rgb(var(--ds-accent-rgb) / 62%);
+				-webkit-text-stroke: 1px rgb(var(--ds-accent-rgb) / 30%);
+				translate: -50% -58%;
 				pointer-events: none;
 			}
 
+			.invitation-hero__text-column > * {
+				position: relative;
+				z-index: 1;
+			}
+
+			.invitation-hero__title {
+				display: flex;
+				flex-direction: column;
+				width: fit-content;
+			}
+
 			.invitation-hero__first-name {
-				font-size: clamp(4rem, 14cqi, 7rem);
+				font-size: clamp(4rem, 5.8vw, 6.6rem);
+				white-space: nowrap;
 			}
 
 			.invitation-hero__details {
@@ -508,6 +592,7 @@
 				flex-flow: row wrap;
 				gap: 0.5rem 0.8rem;
 				align-items: baseline;
+				justify-content: flex-start;
 			}
 
 			.invitation-hero__date {
@@ -522,8 +607,10 @@
 			}
 
 			.invitation-hero__last-name {
-				font-size: clamp(2.2rem, 3.2vw, 3.1rem);
-				margin-top: -0.1em;
+				align-self: flex-end;
+				margin-top: -0.24em;
+				font-size: clamp(3.4rem, 5vw, 5rem);
+				line-height: 1;
 			}
 
 			.invitation-hero__deck {
@@ -536,7 +623,7 @@
 		// panel underneath, so no text ever sits on the celebrant (see
 		// tests/e2e/destenid-face-safety.spec.ts).
 		@include mixins.respond-below(lg) {
-			--ds-hero-photo-h: 62svh;
+			--ds-hero-photo-h: 63svh;
 
 			min-height: 100svh;
 			padding: clamp(0.75rem, 3vw, 1rem);
@@ -557,12 +644,27 @@
 			.invitation-hero__background img {
 				object-fit: cover;
 				object-position: var(--hero-focal-point-mobile, 50% 32%);
-				filter: none;
+				filter: var(--ds-hero-grade);
 			}
 
-			// Only a short fade into the panel at the photo's lower edge; no copy sits on it.
+			// A long, soft dissolve into the ink panel (no copy sits on the photograph), plus the
+			// single band of warm light that crosses it once.
 			.invitation-hero__background::after {
-				background: linear-gradient(to bottom, transparent 84%, var(--ds-ink) 100%);
+				z-index: 1;
+				background:
+					linear-gradient(
+							105deg,
+							transparent 40%,
+							rgb(255 236 200 / 20%) 50%,
+							transparent 60%
+						) -60%
+						0 / 250% 100% no-repeat,
+					linear-gradient(
+						to bottom,
+						transparent 55%,
+						rgb(var(--ds-ink-rgb) / 45%) 80%,
+						var(--ds-ink) 100%
+					);
 				opacity: 100%;
 			}
 
@@ -613,11 +715,13 @@
 				flex-direction: column;
 			}
 
+			// The name spans the full measure of the panel.
 			.invitation-hero__first-name {
 				display: block;
 				text-align: left;
-				font-size: clamp(3.4rem, 13.4vw, 5rem);
+				font-size: clamp(3.2rem, 14.4vw, 5.4rem);
 				line-height: 0.86;
+				white-space: nowrap;
 			}
 
 			.invitation-hero__last-name {
@@ -625,11 +729,12 @@
 				text-align: right;
 				align-self: flex-end;
 
-				// A signature that tucks up under the capitals.
-				font-size: clamp(1.9rem, 7vw, 2.6rem);
+				// The signature crosses the foot of the capitals.
+				font-size: clamp(2.7rem, 12vw, 3.8rem);
 				line-height: 1;
-				margin-top: -0.12em;
-				width: 100%;
+				margin-top: -0.26em;
+				padding-right: 0.05em;
+				width: auto;
 			}
 
 			.invitation-hero__deck {
@@ -660,6 +765,7 @@
 				flex-flow: row wrap;
 				gap: 0.4rem 0.7rem;
 				align-items: baseline;
+				justify-content: flex-start;
 				border-top: 1px solid rgb(var(--ds-white-rgb) / 14%);
 				padding-top: 0.75rem;
 			}
@@ -683,25 +789,15 @@
 				white-space: normal;
 			}
 
-			.invitation-hero__venue {
-				font-style: normal;
-				font-weight: 600;
-				color: var(--ds-beige);
-			}
-
-			.invitation-hero__venue .calligraphy-accent {
-				color: var(--ds-accent);
-			}
-
 			// Tablet sub-breakpoint (768-991px): larger portrait, larger text,
 			// adjusted background focal point for the wider full-bleed canvas.
 			@media (width >= 768px) {
 				.invitation-hero__first-name {
-					font-size: clamp(3.2rem, 5.5vw, 4.4rem);
+					font-size: clamp(4.4rem, 11vw, 6.2rem);
 				}
 
 				.invitation-hero__last-name {
-					font-size: clamp(2rem, 3.6vw, 2.6rem);
+					font-size: clamp(3rem, 7vw, 4.4rem);
 				}
 
 				.invitation-hero__title-wrapper,
@@ -756,6 +852,227 @@
 				.invitation-hero__content::after {
 					left: calc(50% + 1.5rem);
 				}
+			}
+		}
+	}
+
+	// The magazine's first-page photograph becomes the hero: grade it the same so the colour
+	// never shifts during the hand-off.
+	img.ec-page__photo,
+	.ec-page__photo img {
+		filter: var(--ds-hero-grade);
+	}
+
+	// Behind the collector hand-off the copy waits, so it can enter after the photograph lands.
+	// The selectors carry the hero variant so they outrank the theme's editorialCoverHeroReveal.
+	&[data-editorial-reveal-phase='revealing'] .invitation-hero[data-variant='editorial-cover'] {
+		.invitation-hero__title {
+			opacity: 100%;
+			animation: none;
+		}
+
+		.invitation-hero__first-name,
+		.invitation-hero__last-name,
+		.invitation-hero__deck,
+		.invitation-hero__details {
+			opacity: 0%;
+			animation: none;
+		}
+	}
+
+	&[data-reveal-state='revealed'] .invitation-hero[data-variant='editorial-cover'] {
+		// Push-in from scale 1, so a photograph that has just landed never jumps.
+		.invitation-hero__background img,
+		.invitation-hero__portrait img {
+			transform-origin: 44% 30%;
+			animation: dsHeroPushIn 9s cubic-bezier(0.22, 0.61, 0.36, 1) 0.2s both;
+		}
+
+		// Desktop: anchored at the top edge, so the crown moves away from the page folio.
+		.invitation-hero__portrait img {
+			transform-origin: 44% 0%;
+			animation:
+				dsHeroParallax linear both,
+				dsHeroPushIn 9s cubic-bezier(0.22, 0.61, 0.36, 1) 0.2s both;
+			animation-timeline: scroll(root), auto;
+			animation-range:
+				0 100svh,
+				normal;
+		}
+
+		.invitation-hero__background::after,
+		.invitation-hero__portrait::after {
+			animation: dsHeroLightSweep 2.6s 0.9s cubic-bezier(0.45, 0, 0.2, 1) both;
+		}
+
+		.invitation-hero__title,
+		.invitation-hero__title-wrapper {
+			opacity: 100%;
+			transform: none;
+			animation: none;
+		}
+
+		.invitation-hero__first-name {
+			opacity: 100%;
+			animation: dsHeroNameRise 1.15s cubic-bezier(0.2, 0.7, 0.15, 1) 0.15s both;
+		}
+
+		.invitation-hero__last-name {
+			opacity: 100%;
+			animation: dsHeroSign 1.4s cubic-bezier(0.45, 0, 0.2, 1) 0.8s both;
+		}
+
+		.invitation-hero__deck {
+			animation: dsHeroFadeUp 0.8s cubic-bezier(0.2, 0.7, 0.15, 1) 1.35s both;
+		}
+
+		.invitation-hero__details {
+			animation: dsHeroFadeUp 0.8s cubic-bezier(0.2, 0.7, 0.15, 1) 1.55s both;
+		}
+	}
+
+	// Music: an ink-and-gold seal that reads on the photograph, the ink chapters and the paper
+	// pages alike. Paused → a slow gold halo breathes around it; playing → a thin gold arc turns
+	// like a record. The prompt is a tag with a pointer aimed at the seal.
+	.music-player {
+		gap: 0.85rem;
+	}
+
+	.music-player__button--play {
+		width: 3.25rem;
+		height: 3.25rem;
+		box-shadow:
+			0 0.6rem 1.6rem rgb(0 0 0 / 28%),
+			inset 0 1px 0 rgb(var(--ds-white-rgb) / 10%);
+		backdrop-filter: blur(6px);
+		transition:
+			scale 200ms ease,
+			border-color 200ms ease,
+			color 200ms ease;
+
+		svg {
+			filter: none;
+		}
+
+		// Inner hairline, like the rim of a coin.
+		&::after {
+			inset: 4px;
+			border: 1px solid rgb(var(--ds-accent-rgb) / 38%);
+			opacity: 100%;
+		}
+
+		&:focus {
+			transform: none;
+		}
+
+		&:focus-visible {
+			scale: 1.05;
+			color: var(--ds-beige);
+			outline: 2px solid var(--ds-accent);
+			outline-offset: 4px;
+		}
+
+		&:hover::after {
+			transform: none;
+		}
+
+		// Hover only where a pointer hovers; on touch it would stick after a tap.
+		@media (hover: hover) {
+			&:hover {
+				scale: 1.05;
+				color: var(--ds-beige);
+			}
+
+			&:hover::after {
+				border-color: rgb(var(--ds-accent-rgb) / 70%);
+			}
+		}
+
+		&:active {
+			transform: none;
+			scale: 0.96;
+		}
+	}
+
+	.music-player__button--pulsing::before {
+		inset: -6px;
+		border-color: rgb(var(--ds-accent-rgb) / 60%);
+	}
+
+	// Playing: a gold arc turns around the seal.
+	.music-player__button--play:not(.music-player__button--pulsing)::before {
+		position: absolute;
+		inset: -5px;
+		content: '';
+		border-radius: 50%;
+		background: conic-gradient(
+			from 0deg,
+			transparent 0 45%,
+			rgb(var(--ds-accent-rgb) / 25%) 60%,
+			var(--ds-accent) 97%,
+			transparent 97%
+		);
+		mask: radial-gradient(
+			farthest-side,
+			transparent calc(100% - 2.5px),
+			rgb(0 0 0) calc(100% - 2px)
+		);
+		animation: dsRecordSpin 3.2s linear infinite;
+		pointer-events: none;
+	}
+
+	.music-player__prompt {
+		position: relative;
+		padding: 0.6rem 1.05rem 0.6rem 0.95rem;
+		border-radius: 999px;
+		font-family: var(--font-label);
+		font-size: 0.62rem;
+		font-weight: 800;
+		letter-spacing: 0.18em;
+		white-space: nowrap;
+		box-shadow: 0 0.5rem 1.4rem rgb(0 0 0 / 28%);
+
+		// Pointer toward the seal.
+		&::after {
+			position: absolute;
+			top: 50%;
+			right: -5px;
+			width: 8px;
+			height: 8px;
+			content: '';
+			border-top: 1px solid rgb(var(--ds-accent-rgb) / 55%);
+			border-right: 1px solid rgb(var(--ds-accent-rgb) / 55%);
+			background: rgb(var(--ds-ink-rgb) / 94%);
+			transform: translateY(-50%) rotate(45deg);
+		}
+	}
+
+	// Phones: the tag sits above the seal, pointing down, clear of the hero details.
+	@include mixins.respond-below(md) {
+		.music-player {
+			flex-direction: column;
+			align-items: flex-end;
+			gap: 0.7rem;
+		}
+
+		.music-player__button--play {
+			width: 2.9rem;
+			height: 2.9rem;
+		}
+
+		.music-player__prompt {
+			max-width: none;
+			padding: 0.5rem 0.85rem;
+			font-size: 0.58rem;
+			line-height: 1.2;
+			text-align: left;
+			white-space: nowrap;
+
+			&::after {
+				top: auto;
+				right: 1.2rem;
+				bottom: -5px;
+				transform: rotate(135deg);
 			}
 		}
 	}
@@ -838,7 +1155,7 @@
 
 			&::after {
 				justify-self: end;
-				content: 'pág. 04';
+				content: 'pág. 07';
 				color: rgb(var(--ds-ink-rgb) / 48%);
 				letter-spacing: 0.18em;
 				text-transform: none;
@@ -1078,7 +1395,7 @@
 			text-align: left;
 
 			&::before {
-				content: 'N.º 02';
+				content: 'pág. 04';
 				display: block;
 				font-family: var(--font-label);
 				font-size: 0.72rem;
@@ -1625,7 +1942,7 @@
 			var(--ds-paper);
 
 		&::before {
-			content: 'DETALLES / D·S';
+			content: 'REGALOS / MIS XV';
 		}
 
 		.gifts-section__header {
@@ -1635,10 +1952,14 @@
 			margin-bottom: clamp(2rem, 4vw, 3rem);
 		}
 
+		// Balanced heading wrapping down to 320 px without mid-word breaks.
 		.gifts-section__title {
-			max-width: 11ch;
-			font-size: clamp(2.2rem, 5vw, 3.6rem);
+			max-width: 100%;
+			font-size: clamp(1.7rem, 8.4vw, 3.6rem);
 			line-height: 0.94;
+			overflow-wrap: normal;
+			hyphens: manual;
+			text-wrap: balance;
 		}
 
 		.gifts-section__subtitle {
@@ -1772,6 +2093,253 @@
 			margin: 0;
 			font-size: clamp(1.4rem, 4vw, 1.9rem);
 			line-height: 1.1;
+		}
+
+		// The shared catalog repeats the bank title under its issue label ("02 Transferencia bancaria");
+		// keep the heading for assistive tech and hide it visually.
+		.gift-card--bank .gift-card__title {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
+		}
+
+		// Transfer data as a subtle card object — generic, no bank branding: warm ink body,
+		// faint gold guilloché, a gold chip and a "Copiar" pill on top, the number centred, the
+		// holder bottom left and the bank where a card network mark sits. Field labels stay for
+		// assistive tech only.
+		.bank-details {
+			position: relative;
+			isolation: isolate;
+			display: grid;
+			grid-template:
+				'chip copy' auto
+				'number number' 1fr
+				'holder bank' auto / minmax(0, 1fr) auto;
+			gap: 0.55rem 0.75rem;
+			align-items: center;
+			width: 100%;
+			max-width: 22rem;
+			aspect-ratio: 1.586;
+			margin: 0.35rem 0 0;
+			padding: 1.1rem 1.15rem 1rem;
+			border: 1px solid rgb(var(--ds-accent-rgb) / 30%);
+			border-radius: 14px;
+			background:
+				linear-gradient(
+						110deg,
+						transparent 38%,
+						rgb(var(--ds-white-rgb) / 16%) 50%,
+						transparent 62%
+					) -150%
+					0 / 250% 100% no-repeat,
+				linear-gradient(
+					135deg,
+					var(--ds-ink) 0%,
+					color-mix(in srgb, var(--ds-ink) 84%, var(--ds-accent)) 55%,
+					var(--ds-ink) 100%
+				);
+			box-shadow:
+				0 1.1rem 2.2rem rgb(var(--ds-ink-rgb) / 22%),
+				inset 0 1px 0 rgb(var(--ds-white-rgb) / 8%);
+			color: var(--ds-white);
+			container-type: inline-size;
+			transition:
+				translate 300ms ease,
+				box-shadow 300ms ease;
+
+			// Chip: gold plate with fine contact lines.
+			&::before {
+				grid-area: chip;
+				width: clamp(2.1rem, 16cqi, 2.8rem);
+				aspect-ratio: 1.3;
+				content: '';
+				border-radius: 5px;
+				background:
+					linear-gradient(
+						90deg,
+						transparent 0 31%,
+						rgb(var(--ds-ink-rgb) / 30%) 31% 33%,
+						transparent 33% 67%,
+						rgb(var(--ds-ink-rgb) / 30%) 67% 69%,
+						transparent 69%
+					),
+					linear-gradient(
+						0deg,
+						transparent 0 47%,
+						rgb(var(--ds-ink-rgb) / 30%) 47% 53%,
+						transparent 53%
+					),
+					linear-gradient(135deg, var(--ds-beige), var(--ds-accent) 55%, var(--ds-gold));
+				box-shadow: inset 0 0 0 1px rgb(var(--ds-ink-rgb) / 18%);
+			}
+
+			// Guilloché: concentric hairlines from the lower right corner.
+			&::after {
+				position: absolute;
+				inset: 0;
+				z-index: -1;
+				content: '';
+				border-radius: inherit;
+				background: repeating-radial-gradient(
+					circle at 108% 118%,
+					transparent 0 9px,
+					rgb(var(--ds-accent-rgb) / 9%) 9px 10px
+				);
+				pointer-events: none;
+			}
+
+			@media (hover: hover) {
+				&:hover {
+					translate: 0 -3px;
+					box-shadow:
+						0 1.5rem 2.8rem rgb(var(--ds-ink-rgb) / 28%),
+						inset 0 1px 0 rgb(var(--ds-white-rgb) / 8%);
+				}
+			}
+		}
+
+		.gift-card.is-visible .bank-details {
+			animation: dsCardSheen 1700ms 600ms cubic-bezier(0.45, 0, 0.2, 1) both;
+		}
+
+		.bank-details__item {
+			margin: 0;
+			color: var(--ds-white);
+			font-size: 0.9rem;
+		}
+
+		.bank-details__item strong {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
+		}
+
+		.bank-details > .bank-details__item:first-child {
+			grid-area: bank;
+			place-self: end end;
+			font-family: var(--font-label);
+			font-size: 0.8rem;
+			font-weight: 800;
+			letter-spacing: 0.24em;
+			text-transform: uppercase;
+		}
+
+		.bank-details > .bank-details__item:nth-child(2) {
+			grid-area: holder;
+			color: rgb(var(--ds-white-rgb) / 82%);
+			font-family: var(--font-label);
+			font-size: 0.6rem;
+			font-weight: 700;
+			line-height: 1.45;
+			letter-spacing: 0.16em;
+			text-transform: uppercase;
+		}
+
+		.bank-details__clabe-wrapper {
+			display: contents;
+		}
+
+		.bank-details__clabe-wrapper .bank-details__item {
+			grid-area: number;
+		}
+
+		.bank-details .clabe-number {
+			padding: 0;
+			border-radius: 0;
+			background: none;
+
+			// Embossed card numerals: OCR-A where installed, otherwise the platform monospace
+			// (SF Mono / Menlo / Consolas), in champagne with a raised edge.
+			color: color-mix(in srgb, var(--ds-white) 78%, var(--ds-accent));
+			font-family:
+				'OCR A Extended', 'OCR A Std', OCR-A, ui-monospace, 'SF Mono', menlo, consolas,
+				monospace;
+			font-size: clamp(0.9rem, 7cqi, 1.35rem);
+			font-weight: 500;
+			font-variant-numeric: tabular-nums;
+			word-spacing: 0.35em;
+			letter-spacing: 0.06em;
+			white-space: nowrap;
+			text-shadow:
+				0 1px 0 rgb(0 0 0 / 75%),
+				0 -1px 0 rgb(var(--ds-white-rgb) / 22%);
+		}
+
+		.bank-details .copy-icon-button {
+			grid-area: copy;
+			justify-self: end;
+			gap: 0.4rem;
+			min-height: 2.5rem;
+			padding: 0 0.9rem;
+			border: 1px solid rgb(var(--ds-accent-rgb) / 70%);
+			border-radius: 999px;
+			background: rgb(var(--ds-accent-rgb) / 8%);
+			color: var(--ds-accent);
+			opacity: 100%;
+			font-family: var(--font-label);
+			font-size: 0.6rem;
+			font-weight: 800;
+			letter-spacing: 0.18em;
+			text-transform: uppercase;
+			transition:
+				background-color 200ms ease,
+				color 200ms ease;
+
+			&::after {
+				content: 'Copiar';
+			}
+
+			&:hover {
+				background: rgb(var(--ds-accent-rgb) / 18%);
+				color: var(--ds-beige);
+				transform: none;
+			}
+
+			&:focus-visible {
+				outline: 2px solid var(--ds-accent);
+				outline-offset: 3px;
+			}
+		}
+
+		.bank-details .copy-icon-button.copy-success {
+			background: rgb(var(--ds-accent-rgb) / 22%);
+			color: var(--ds-beige);
+
+			&::after {
+				content: 'Copiado';
+			}
+		}
+
+		// Phones and two-column tablets: the card borrows the gift card's side padding so the
+		// number keeps one line. The card grows past its 1.586 ratio when the holder wraps.
+		@include mixins.respond-below(lg) {
+			.bank-details {
+				width: calc(100% + 2.5rem);
+				max-width: none;
+				margin-inline: -1.25rem;
+			}
+		}
+
+		// Very narrow cards (320 px phones): break the number between its groups, never inside.
+		@container (width < 15.5rem) {
+			.bank-details .clabe-number {
+				white-space: normal;
+				text-wrap: balance;
+			}
+
+			.bank-details .copy-icon-button {
+				padding-inline: 0.7rem;
+			}
+
+			.bank-details > .bank-details__item:nth-child(2) {
+				letter-spacing: 0.1em;
+			}
 		}
 
 		.gift-card__description,
@@ -1920,16 +2488,24 @@
 			text-transform: uppercase;
 		}
 
-		.rsvp__access-kicker {
-			margin: 0 0 0.65rem;
-			color: var(--ds-accent);
-			font-size: 0.68rem;
+		// One gold kicker over the title at every size. The component's "Confirmación de
+		// asistencia", "RSVP privado" and "Acceso privado · Edición XV" repeated the title and the
+		// card's own "Edición XV".
+		.rsvp__access-kicker,
+		.rsvp__separator,
+		.rsvp__edition-label {
+			display: none;
 		}
 
-		.rsvp__edition-label {
-			margin: 0.85rem 0 0;
-			color: rgb(var(--ds-white-rgb) / 62%);
-			font-size: 0.62rem;
+		.rsvp__eyebrow {
+			font-size: 0;
+		}
+
+		.rsvp__eyebrow::before {
+			content: 'Acceso privado';
+			color: var(--ds-accent);
+			font-size: 0.68rem;
+			letter-spacing: 0.2em;
 		}
 
 		.rsvp__subcopy {
@@ -2144,33 +2720,12 @@
 
 		@media (width <= 640px) {
 			// ── RSVP header compression ──
-			// Hide redundant labels on mobile; merge eyebrow with edition info.
 			.rsvp__header {
 				padding-bottom: 0.65rem;
 			}
 
-			.rsvp__access-kicker {
-				display: none;
-			}
-
-			.rsvp__separator {
-				display: none;
-			}
-
-			.rsvp__edition-label {
-				display: none;
-			}
-
-			// Repurpose eyebrow as a single, short kicker (the card already carries "Edición XV").
-			.rsvp__eyebrow {
-				position: relative;
-				font-size: 0;
-			}
-
 			.rsvp__eyebrow::before {
-				content: 'CONFIRMACIÓN';
 				font-size: 0.6rem;
-				letter-spacing: 0.2em;
 			}
 
 			.rsvp__title {
@@ -2443,7 +2998,7 @@
 			}
 
 			&::after {
-				content: 'Mis XV · 13 · XI · 2026';
+				content: 'Mis XV';
 				color: rgb(var(--ds-white-rgb) / 72%);
 				font-family: var(--font-label);
 				font-size: 0.66rem;
@@ -2547,12 +3102,41 @@
 	}
 }
 
+// The hand-off flies a copy of that photograph appended to <body>, outside the invitation's
+// scope; it takes the same grade (value mirrors --ds-hero-grade).
+body:has(.event--destenid-sofia) > img[aria-hidden='true'] {
+	filter: saturate(0.84) sepia(0.07) contrast(1.05) brightness(0.98);
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.event--destenid-sofia.theme-preset--editorial-magazine {
+		.gifts-section .bank-details {
+			animation: none;
+			transition: none;
+		}
+
+		.music-player__button--play::before {
+			animation: none;
+		}
+
 		.invitation-hero__background picture,
 		.invitation-hero__portrait img,
 		.invitation-hero__content::after {
 			animation: none;
+		}
+
+		&[data-reveal-state='revealed'] .invitation-hero[data-variant='editorial-cover'] {
+			.invitation-hero__background img,
+			.invitation-hero__portrait img,
+			.invitation-hero__background::after,
+			.invitation-hero__portrait::after,
+			.invitation-hero__first-name,
+			.invitation-hero__last-name,
+			.invitation-hero__deck,
+			.invitation-hero__details {
+				opacity: 100%;
+				animation: none;
+			}
 		}
 
 		.gallery-section {
@@ -2618,5 +3202,85 @@
 	100% {
 		opacity: 0%;
 		transform: scaleY(1) translateY(0.6rem);
+	}
+}
+
+@keyframes dsCardSheen {
+	from {
+		background-position:
+			-150% 0,
+			0 0;
+	}
+
+	to {
+		background-position:
+			250% 0,
+			0 0;
+	}
+}
+
+@keyframes dsHeroPushIn {
+	from {
+		scale: 1;
+	}
+
+	to {
+		scale: 1.07;
+	}
+}
+
+@keyframes dsHeroLightSweep {
+	from {
+		background-position:
+			-60% 0,
+			0 0;
+	}
+
+	to {
+		background-position:
+			160% 0,
+			0 0;
+	}
+}
+
+@keyframes dsHeroNameRise {
+	from {
+		clip-path: inset(0 0 100% 0);
+		letter-spacing: 0.09em;
+		translate: 0 0.28em;
+	}
+
+	to {
+		clip-path: inset(-20% -5% -20% -5%);
+		letter-spacing: 0.01em;
+		translate: 0 0;
+	}
+}
+
+@keyframes dsHeroSign {
+	from {
+		clip-path: inset(-50% 100% -50% -12%);
+	}
+
+	to {
+		clip-path: inset(-50% -12% -50% -12%);
+	}
+}
+
+@keyframes dsHeroFadeUp {
+	from {
+		opacity: 0%;
+		translate: 0 0.8rem;
+	}
+
+	to {
+		opacity: 100%;
+		translate: 0 0;
+	}
+}
+
+@keyframes dsRecordSpin {
+	to {
+		rotate: 1turn;
 	}
 }

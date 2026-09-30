@@ -109,11 +109,36 @@ async function findOverlaps(
 			const originX = box.x + offset(posX, box.width - drawnW);
 			const originY = box.y + offset(posY ?? '50%', box.height - drawnH);
 
-			// Forbidden zone in viewport pixels, clipped to the visible image box.
-			const zx0 = Math.max(box.x, originX + zone.x0 * drawnW);
-			const zy0 = Math.max(box.y, originY + zone.y0 * drawnH);
-			const zx1 = Math.min(box.x + box.width, originX + zone.x1 * drawnW);
-			const zy1 = Math.min(box.y + box.height, originY + zone.y1 * drawnH);
+			// Visible area: the image box, cut by any ancestor that clips it (a scaled photograph
+			// overflows its frame, but only the part inside the frame can be covered by copy).
+			let visX0 = box.x;
+			let visY0 = box.y;
+			let visX1 = box.x + box.width;
+			let visY1 = box.y + box.height;
+			for (let node = img.parentElement; node; node = node.parentElement) {
+				const cs = getComputedStyle(node);
+				if (
+					cs.overflow === 'visible' &&
+					cs.overflowX === 'visible' &&
+					cs.overflowY === 'visible'
+				) {
+					continue;
+				}
+				const clip = node.getBoundingClientRect();
+				visX0 = Math.max(visX0, clip.x);
+				visY0 = Math.max(visY0, clip.y);
+				visX1 = Math.min(visX1, clip.right);
+				visY1 = Math.min(visY1, clip.bottom);
+			}
+
+			// Forbidden zone in viewport pixels, clipped to the visible image area.
+			const zx0 = Math.max(visX0, originX + zone.x0 * drawnW);
+			const zy0 = Math.max(visY0, originY + zone.y0 * drawnH);
+			const zx1 = Math.min(visX1, originX + zone.x1 * drawnW);
+			const zy1 = Math.min(visY1, originY + zone.y1 * drawnH);
+			if (zx1 <= zx0 || zy1 <= zy0) {
+				return { overlaps: [], checked: 0 };
+			}
 			const zoneRect = { x: zx0, y: zy0, width: zx1 - zx0, height: zy1 - zy0 };
 
 			const overlaps: Overlap[] = [];

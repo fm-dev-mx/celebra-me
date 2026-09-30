@@ -103,21 +103,22 @@ describe('Destenid Sofía managed definition', () => {
 		expect(giftTypes[0]).toBe('cash');
 		expect(giftTypes.every((type) => type === 'cash' || type === 'bank')).toBe(true);
 		const transfer = parsed.gifts?.items?.find((item) => item.type === 'bank');
+		expect(transfer).toBeDefined();
 		if (transfer && transfer.type === 'bank') {
 			expect(transfer.bankName).toBe('BBVA');
 			expect(transfer.accountHolder).toBe('Destenid Sofía Magaña Almaraz');
 			expect(transfer.accountKind).toBe('card');
 			expect(transfer.clabe.replace(/\s+/g, '')).toMatch(/^\d{16}$/);
-			expect(parsed.gifts?.title).toBe('Lluvia de sobres o transferencia');
+			expect(transfer.title).toBe('Transferencia bancaria');
 		}
 	});
 
 	it('sets editorial-cover and editorial-catalog copy explicitly', () => {
 		const parsed = eventContentSchema.parse(buildDestenidPublishedContent(buildTestAssets()));
-		expect(parsed.hero.tagline).toBe('Mis XV, un nuevo capítulo.');
+		expect(parsed.hero.tagline).toBe('Quince años, una sola vez.');
 		// Real invitation: no fictional photographer credit.
 		expect(parsed.hero.photoCredit).toBeUndefined();
-		expect(parsed.gifts?.title).toMatch(/^Lluvia de sobres( o transferencia)?$/);
+		expect(parsed.gifts?.title).toBe('Un detalle para mí');
 		expect(parsed.gifts?.folioMark).toBe('D·S');
 	});
 

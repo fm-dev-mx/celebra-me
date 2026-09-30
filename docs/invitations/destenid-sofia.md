@@ -293,11 +293,13 @@ crops so the full dress is not revealed.
 - Instagram: the "Recuerdos" indication links `@desteny_ts` (https-only links are now allowed by
   `sanitizeIndicationHtml`, forced to `target=_blank rel=noopener noreferrer`); the profile adds a
   gold Instagram glyph.
-- Gifts: section title becomes the client's own words, "Lluvia de sobres o transferencia", once the
-  transfer exists. The BBVA card item (holder "Destenid Sofía Magaña Almaraz",
-  `accountKind: 'card'`, shown in groups of four) is added only when the owner fills
-  `GIFT_TRANSFER_CARD` in the definition — the number is not typed by tooling. A CLABE is safer to
-  publish than a card number if the client can supply one.
+- Gifts: section title "Un detalle para mí" (owner-approved, warmer than the client's working name
+  "lluvia de sobres o transferencia"); the transfer item reads "Transferencia bancaria" and the
+  profile renders its data as a subtle simulated card (ink, guilloché, gold chip, generic — no bank
+  branding) with a visible "Copiar" pill; labels stay for screen readers. The BBVA card item (holder
+  "Destenid Sofía Magaña Almaraz", `accountKind: 'card'`, shown in groups of four) is added only
+  when the owner fills `GIFT_TRANSFER_CARD` in the definition — the number is not typed by tooling.
+  A CLABE is safer to publish than a card number if the client can supply one.
 - Hero typography: Bodoni Moda optical-size and true-italic cuts; ivory capitals with a gold italic
   "Sofía" signature; Bodoni italic tagline; the theme's gold gradient glint is disabled.
 - Hero composition: the theme's clipped 3 % "XV" watermark (read as "\ \" because Bodoni's hairlines
@@ -332,6 +334,28 @@ crops so the full dress is not revealed.
   `.thank-you-editorial__ambient` layer is taken out of the grid, which fixed the diagonal desktop
   layout. WA0069 replaced WA0035 in the thank-you so the window scene is not shown three times.
   Face-safety spec also checks both plates.
+- Copy review (owner-requested): hero tagline "Quince años, una sola vez." (the label already reads
+  "Mis XV"); family title "En tus manos" (it repeated the prayer's opening); location lede "Será un
+  honor celebrar con usted." and heading "Viernes, 13 de noviembre"; gallery title "Mis looks"
+  (subtitle already says "icónicos"); gifts subtitle "Si desea hacerme un obsequio, le comparto dos
+  opciones." (the thank-you already says the presence is the best gift), cash item "Lluvia de
+  sobres" / "Podrá entregarlo el día de la fiesta."; RSVP subcopy without a third "confirme su
+  asistencia" and a single "Acceso privado" kicker at every size; section folios match the cover
+  index (oración pág. 04, programa pág. 07); running heads use "SECCIÓN / MIS XV". Two light fixes
+  to the prayer: "el futuro que hoy te confío" and "Te pido que me bendigas" (repeated "pongo en tus
+  manos" and "nueva etapa"). Known shared gap: the program prints "7:00 PM" while hero and venue use
+  "7:00 p. m." (shared time formatter).
+- Hero, cinematic pass (profile SCSS only): one colour grade (`--ds-hero-grade`) on the hero
+  photograph, the magazine's first-page photo and the hand-off clone (so colour never shifts); film
+  grain; a 9 s push-in from scale 1 (never jumps after the hand-off; anchored at the top on desktop
+  to keep crown headroom under the folio) plus one warm light sweep; name set to the full measure in
+  Bodoni with "Sofía" as a gold Pinyon Script signature crossing the capitals; details as a spaced
+  date label plus "7:00 p. m. · Jardín Quinta Paraíso" in Bodoni (the "en" connector hidden);
+  entrance choreography (name rises from a mask, signature writes itself, then deck and details)
+  that outranks the theme's `editorialCoverHeroReveal` and waits behind the collector hand-off;
+  photo 63svh with a long dissolve on phones, 58/42 spread with a giant outline "XV" behind the name
+  on desktop; music prompt in ink and gold. Face-safety spec now clips each forbidden zone to the
+  photograph's visible frame (a scaled photo overflows it).
 - Lane B: none.
 - Music omit / include: omitted until a trimmed, hosted audio file exists.
 - Other: no photo QR (paid add-on not purchased).

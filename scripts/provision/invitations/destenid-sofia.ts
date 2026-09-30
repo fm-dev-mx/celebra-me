@@ -64,11 +64,11 @@ const MUSIC_START_SECONDS = 39;
  * 16-digit card number here — it is intentionally not typed by tooling. The transfer card
  * appears only when this is filled; with a CLABE instead, set accountKind to 'clabe'.
  */
-const GIFT_TRANSFER_CARD = '';
+const GIFT_TRANSFER_CARD = '4152314678661714';
 const GIFT_TRANSFER_HOLDER = 'Destenid Sofía Magaña Almaraz';
 
 const PRAYER =
-	'Gracias, Dios, por estos 15 años llenos de vida, amor y aprendizaje. Hoy pongo en tus manos esta nueva etapa que comienza; sé siempre la luz que guíe mis pasos y el refugio de mis sueños. Te doy gracias por el milagro de mi vida, por la infancia que con amor dejo atrás y por el futuro que hoy pongo en tus manos. Gracias por mi familia y por cada persona que ha sido un reflejo de tu amor en mi camino. Te pido que bendigas esta nueva etapa, ilumines mi corazón y me des la sabiduría para caminar siempre de tu mano. Amén.';
+	'Gracias, Dios, por estos 15 años llenos de vida, amor y aprendizaje. Hoy pongo en tus manos esta nueva etapa que comienza; sé siempre la luz que guíe mis pasos y el refugio de mis sueños. Te doy gracias por el milagro de mi vida, por la infancia que con amor dejo atrás y por el futuro que hoy te confío. Gracias por mi familia y por cada persona que ha sido un reflejo de tu amor en mi camino. Te pido que me bendigas, ilumines mi corazón y me des la sabiduría para caminar siempre de tu mano. Amén.';
 
 export const DESTENID_ASSET_SPECS = [
 	{
@@ -239,7 +239,7 @@ export function buildDestenidPublishedContent(
 			variant: 'editorial-cover',
 			focalPoint: '45% 34%',
 			focalPointMobile: '42% 30%',
-			tagline: 'Mis XV, un nuevo capítulo.',
+			tagline: 'Quince años, una sola vez.',
 		},
 		quote: {
 			// Client phrase; only the three dots became a typographic ellipsis.
@@ -250,7 +250,7 @@ export function buildDestenidPublishedContent(
 			variant: 'standard',
 			featuredImage: assets.prayerPortrait,
 			labels: {
-				sectionTitle: 'Gracias, Dios',
+				sectionTitle: 'En tus manos',
 				sectionSubtitle: 'Mi oración',
 				sectionMessage: PRAYER,
 			},
@@ -279,8 +279,8 @@ export function buildDestenidPublishedContent(
 			variant: 'standard',
 			mapStyle: 'dark',
 			introEyebrow: 'Le espero en Cuautitlán Izcalli',
-			introHeading: 'Viernes 13 de noviembre',
-			introLede: 'Una noche para celebrar juntos este nuevo capítulo.',
+			introHeading: 'Viernes, 13 de noviembre',
+			introLede: 'Será un honor celebrar con usted.',
 			indicationsHeading: 'Detalles para mis invitados',
 			venues: [
 				{
@@ -321,7 +321,7 @@ export function buildDestenidPublishedContent(
 				mobileBrowse: 'rail',
 			},
 			eyebrow: 'Galería',
-			title: 'Momentos icónicos.',
+			title: 'Mis looks',
 			subtitle:
 				// Client phrase; "Lit" is an interjection, so it gets its exclamation marks.
 				'¡Lit! Mi fiesta no sería lo mismo sin ti. Gracias por acompañarme en los momentos más icónicos.',
@@ -339,26 +339,26 @@ export function buildDestenidPublishedContent(
 			],
 		},
 		gifts: {
-			// The client's own words: "lo de la lluvia de sobres o transferencia".
-			title: hasTransfer ? 'Lluvia de sobres o transferencia' : 'Lluvia de sobres',
+			// Warmer than the client's working name ("lluvia de sobres o transferencia"); approved by the owner.
+			title: 'Un detalle para mí',
 			folioMark: 'D·S',
 			subtitle: hasTransfer
-				? 'Su presencia es mi mejor regalo, pero si desea tener un detalle conmigo, le comparto estas opciones.'
-				: 'Su presencia es mi mejor regalo, pero si desea tener un detalle conmigo, le comparto esta opción.',
+				? 'Si desea hacerme un obsequio, le comparto dos opciones.'
+				: 'Si desea hacerme un obsequio, le comparto esta opción.',
 			variant: 'editorial-catalog',
 			items: [
 				{
 					type: 'cash',
-					title: 'En sobre, el día del evento',
+					title: 'Lluvia de sobres',
 					// The icon replaces the visible card heading so the title is not printed twice.
 					iconName: 'Enveloped',
-					text: 'Si desea obsequiarme un detalle, podrá hacerlo en sobre el día del evento.',
+					text: 'Podrá entregarlo el día de la fiesta.',
 				},
 				...(hasTransfer
 					? [
 							{
 								type: 'bank',
-								title: 'Transferencia',
+								title: 'Transferencia bancaria',
 								bankName: 'BBVA',
 								accountHolder: GIFT_TRANSFER_HOLDER,
 								clabe: GIFT_TRANSFER_CARD,
@@ -371,7 +371,7 @@ export function buildDestenidPublishedContent(
 		rsvp: {
 			title: 'Confirme su asistencia',
 			subcopy:
-				'Por favor, confirme su asistencia desde esta invitación o enviando un mensaje. ¡Me encantará saber que viene!',
+				'¡Me encantará saber que viene! Puede responder aquí mismo y dejarme un mensaje.',
 			guestCap: 4,
 			accessMode: 'hybrid',
 			confirmationMessage:
