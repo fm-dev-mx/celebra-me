@@ -5,6 +5,7 @@ import {
 	focalPointSchema,
 	overlayAnchorSchema,
 	overlaySafeAreaSchema,
+	closingNameLeadWordsSchema,
 } from '@/lib/schemas/content/shared.schema';
 import { interludesSchema } from '@/lib/schemas/content/interludes.schema';
 import { LOCATION_PRESENTATIONS } from '@/lib/invitation/presentation-options';
@@ -75,6 +76,7 @@ export const InvitationContentDraftContentSchema = z
 				variant: z.enum(THANK_YOU_VARIANTS).optional(),
 				message: optionalText(2000),
 				closingName: optionalText(200),
+				closingNameLeadWords: closingNameLeadWordsSchema,
 				closingPhrase: optionalText(200),
 				date: optionalText(40),
 				image: editableAssetSchema.optional(),
@@ -96,7 +98,13 @@ export const InvitationContentDraftContentSchema = z
 				presentation: z.enum(LOCATION_PRESENTATIONS).optional(),
 				mapStyle: z.enum(LOCATION_MAP_STYLES).optional(),
 				variant: z.enum(LOCATION_VARIANTS).optional(),
-				accessPolicy: z.object({ visibility: z.enum(['public', 'after-rsvp']), revealPlacement: z.enum(['section', 'rsvp']).optional() }).strict().optional(),
+				accessPolicy: z
+					.object({
+						visibility: z.enum(['public', 'after-rsvp']),
+						revealPlacement: z.enum(['section', 'rsvp']).optional(),
+					})
+					.strict()
+					.optional(),
 				presentationOptions: z
 					.object({
 						showFlourishes: z.boolean().optional(),

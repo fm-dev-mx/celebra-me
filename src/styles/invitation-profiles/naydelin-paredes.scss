@@ -1,0 +1,1095 @@
+@use '@fontsource-variable/cormorant-garamond/index.css' as cormorant;
+
+// The doorway and champagne gown establish the photographic identity: warm ivory stationery,
+// champagne-foil metal, and restrained rose-gold hairlines that echo the celebrant's gown.
+// Tonal band (full-dark-finale variant): ivory from hero through itinerary, an espresso RSVP and
+// gifts band where the metal reads strongest, then a luminous portrait-letter closing whose arch
+// echoes the hero doorway. Gold carries structure (rules, ornaments, seal, dark-band titles);
+// rose gold appears only as a gown echo on the pass border and the closing portrait.
+// Canonical variants own geometry; this profile supplies tokens plus slug-scoped typography.
+
+// Cadence map — non-neutral boundaries only
+// itinerary → rsvp     : climax  arch  vertex ~62%  (the espresso band rises into ivory)
+// gifts     → thankYou : bridge  atmospheric-blend, focal 38% (espresso warms to champagne light)
+// Every other boundary is intentionally neutral: shared ivory surfaces and reserved space.
+.event--naydelin-paredes.theme-preset--jewelry-box {
+	// Palette primitives. Contrast ratios are measured against ivory unless noted.
+	--naydelin-ivory-rgb: 251 247 241;
+	--naydelin-pearl-rgb: 255 253 249;
+	--naydelin-sand-rgb: 241 232 220;
+	--naydelin-espresso-rgb: 48 41 35;
+	--naydelin-gold-rgb: 176 141 87; // Ornament and hairline gold; not for small text.
+	--naydelin-gold-ink-rgb: 122 90 38; // Small gold text on light surfaces (5.9:1; sand 5.2:1).
+	--naydelin-gold-light-rgb: 224 196 140; // Gold text on the espresso band (8.5:1).
+	--naydelin-rose-rgb: 183 117 108;
+
+	// Champagne foil stops. Decorative unless noted; text use is limited to the espresso band
+	// (hi 10.5:1, mid 5.9:1) and, for deep, display text on ivory (4.8:1).
+	--naydelin-foil-hi-rgb: 238 219 176;
+	--naydelin-foil-mid-rgb: 198 160 96;
+	--naydelin-foil-deep-rgb: 140 104 48;
+	--naydelin-foil: linear-gradient(
+		115deg,
+		rgb(var(--naydelin-foil-hi-rgb)) 0%,
+		rgb(var(--naydelin-foil-mid-rgb)) 45%,
+		rgb(var(--naydelin-foil-deep-rgb)) 100%
+	);
+	--naydelin-foil-rule: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(--naydelin-foil-mid-rgb)) 50%,
+		transparent 100%
+	);
+
+	// Foil text for the espresso band; every stop keeps at least 5.9:1 on espresso.
+	--naydelin-foil-text-dark: linear-gradient(
+		100deg,
+		rgb(var(--naydelin-foil-mid-rgb)) 0%,
+		rgb(var(--naydelin-foil-hi-rgb)) 45%,
+		rgb(var(--naydelin-gold-light-rgb)) 100%
+	);
+
+	// Cotton stationery shared by the letter and the pass so both read as one paper stock:
+	// a warm ivory tone, raking light from the upper left, edge toning, and two stitched
+	// turbulence tiles (fine grain plus long horizontal fibres) kept below noise threshold.
+	--naydelin-paper-tone: linear-gradient(168deg, rgb(255 252 245) 0%, rgb(249 242 231) 100%);
+	--naydelin-paper-raking: linear-gradient(
+		112deg,
+		rgb(255 255 255 / 55%) 0%,
+		rgb(255 255 255 / 0%) 34%,
+		rgb(var(--naydelin-espresso-rgb) / 0%) 60%,
+		rgb(var(--naydelin-espresso-rgb) / 3.5%) 100%
+	);
+	--naydelin-paper-edge: radial-gradient(
+		ellipse 125% 115% at 46% 42%,
+		transparent 68%,
+		rgb(var(--naydelin-sand-rgb) / 38%) 100%
+	);
+	--naydelin-paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.33 0 0 0 0 0.22 1.3 0 0 0 -0.58'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)' opacity='0.22'/%3E%3C/svg%3E");
+	--naydelin-paper-fibre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='f' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.3' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.45 0 0 0 0 0.32 1.6 0 0 0 -0.86'/%3E%3C/filter%3E%3Crect width='320' height='320' filter='url(%23f)' opacity='0.1'/%3E%3C/svg%3E");
+
+	// Shared typography rhythm for section titles and eyebrows.
+	--naydelin-title-size: clamp(2.5rem, 5vw, 3.5rem);
+	--naydelin-title-weight: 500;
+	--naydelin-eyebrow-size: 0.55rem;
+	--naydelin-eyebrow-spacing: 0.24em;
+	--color-surface-primary: rgb(var(--naydelin-ivory-rgb));
+	--color-surface-primary-rgb: var(--naydelin-ivory-rgb);
+	--color-surface-secondary: rgb(var(--naydelin-sand-rgb));
+	--color-surface-soft: var(--color-surface-secondary);
+	--color-surface-elevated: rgb(var(--naydelin-pearl-rgb));
+	--color-surface-elevated-rgb: var(--naydelin-pearl-rgb);
+	--color-surface-dark: rgb(var(--naydelin-espresso-rgb));
+	--color-surface-dark-rgb: var(--naydelin-espresso-rgb);
+	--color-text-primary: rgb(var(--naydelin-espresso-rgb));
+	--color-text-primary-rgb: var(--naydelin-espresso-rgb);
+	--color-text-secondary: rgb(105 89 75);
+	--color-text-emphasis: var(--color-text-primary);
+	--color-text-on-light: var(--color-text-primary);
+	--color-text-on-dark: rgb(var(--naydelin-ivory-rgb));
+	--color-action-primary: rgb(var(--naydelin-gold-ink-rgb));
+	--color-action-primary-rgb: var(--naydelin-gold-ink-rgb);
+	--color-action-accent: rgb(var(--naydelin-gold-ink-rgb));
+	--color-action-accent-rgb: var(--naydelin-gold-ink-rgb);
+	--color-glass-bg: rgb(var(--naydelin-pearl-rgb));
+	--color-glass-border: rgb(var(--naydelin-gold-rgb) / 30%);
+	--color-glass-shadow: rgb(var(--naydelin-espresso-rgb) / 6%);
+	--font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', serif;
+	--font-display-elegant: var(--font-display);
+	--font-calligraphy: var(--font-display);
+	--font-body: 'Montserrat Variable', 'Montserrat', sans-serif;
+	--font-ui: var(--font-body);
+	--font-label: var(--font-body);
+	--spacing-section-gap: clamp(4rem, 6vw, 6rem);
+	--shadow-subtle: 0 4px 16px rgb(var(--naydelin-espresso-rgb) / 5%);
+	--shadow-premium: 0 8px 24px rgb(var(--naydelin-espresso-rgb) / 8%);
+	--motion-reveal-distance: 12px;
+	--motion-reveal-duration: 600ms;
+	--motion-reveal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+	--motion-stagger-step: 80ms;
+	--motion-stagger-cap: 240ms;
+	--motion-reveal-blur: 0;
+	--formal-chapter-band: var(--color-surface-dark);
+	--formal-chapter-band-rgb: var(--color-surface-dark-rgb);
+	--formal-chapter-cream: var(--color-surface-primary);
+	--formal-chapter-cream-rgb: var(--color-surface-primary-rgb);
+	--formal-chapter-sand: var(--color-surface-secondary);
+	--formal-chapter-sand-rgb: var(--naydelin-sand-rgb);
+	--formal-chapter-metal: rgb(var(--naydelin-gold-light-rgb));
+	--formal-chapter-metal-rgb: var(--naydelin-gold-light-rgb);
+	--formal-chapter-ink: var(--color-text-primary);
+	--formal-chapter-ink-rgb: var(--color-text-primary-rgb);
+	--formal-chapter-title: var(--color-text-primary);
+	--formal-chapter-muted: var(--color-text-secondary);
+	--formal-chapter-meta: var(--color-action-primary);
+	--formal-chapter-label-font: var(--font-body);
+	--pa-section-bg: var(--color-surface-primary);
+	--rsvp-section-min-height: auto;
+
+	// Eyebrows share one voice: small tracked sans in gold ink.
+	.gallery-section__eyebrow,
+	.event-location__eyebrow,
+	.event-location__card-title,
+	.family__group-title,
+	.access-card__eyebrow {
+		display: block;
+		font-family: var(--font-label);
+		font-size: var(--naydelin-eyebrow-size);
+		font-weight: 500;
+		letter-spacing: var(--naydelin-eyebrow-spacing);
+		text-transform: uppercase;
+		color: rgb(var(--naydelin-gold-ink-rgb));
+	}
+
+	// Section titles share one voice: sentence-case Cormorant at a single scale.
+	.family__title,
+	.gallery-section__title,
+	.countdown-title,
+	.event-location__heading,
+	.itinerary__title,
+	.rsvp__title,
+	.gifts-section__title {
+		font-family: var(--font-display);
+		font-size: var(--naydelin-title-size);
+		font-weight: var(--naydelin-title-weight);
+		letter-spacing: 0;
+		line-height: 1.1;
+		text-transform: none;
+	}
+
+	#event-header {
+		--nav-transparent-scrim: none;
+		--hamburger-color: var(--color-text-primary);
+		--header-nav-color-transparent: var(--color-text-primary);
+		--header-nav-color: var(--color-text-primary);
+		--header-nav-title-color: var(--color-text-primary);
+		--header-nav-cta-color: var(--color-text-primary);
+		--header-nav-cta-border: rgb(var(--naydelin-gold-rgb));
+		--header-control-min-height: 44px;
+	}
+
+	// Champagne stationery on ivory: warm paper with foil seams, a gold wax medallion, a foil
+	// liner revealed as the flap turns, and a framed letter. The paper sits a step warmer than
+	// the field so the envelope reads as an object.
+	.envelope-wrapper {
+		--env-bg: radial-gradient(
+			ellipse 90% 60% at 42% 38%,
+			rgb(var(--naydelin-pearl-rgb)) 0%,
+			rgb(var(--naydelin-ivory-rgb)) 60%,
+			rgb(246 239 229) 100%
+		);
+		--env-paper-bg: linear-gradient(
+			160deg,
+			rgb(var(--naydelin-pearl-rgb)) 0%,
+			rgb(247 239 226) 100%
+		);
+		--env-paper-border: rgb(var(--naydelin-foil-mid-rgb) / 55%);
+		--env-accent: rgb(var(--naydelin-gold-ink-rgb));
+		--env-text-primary: rgb(var(--naydelin-gold-ink-rgb));
+		--env-seal-accent: rgb(var(--naydelin-foil-mid-rgb));
+		--env-shadow-container:
+			0 22px 44px rgb(var(--naydelin-espresso-rgb) / 12%),
+			0 4px 12px rgb(var(--naydelin-espresso-rgb) / 6%);
+
+		// The medallion SVG keeps an inner margin, so the box runs larger than the visible disc.
+		--env-seal-size-min: 68px;
+		--env-seal-size-max: 84px;
+		--env-seal-size-ratio: 21;
+		--env-seal-hint-display: none;
+
+		// Shorter turn: the letter's rise waits for the flap, so this trims the blank-paper beat.
+		--duration-reveal: 1.1s;
+
+		// Gold wax medallion: foil highlight to deep antique gold, with dark-gold initials.
+		--wax-seal-highlight: rgb(var(--naydelin-foil-hi-rgb));
+		--wax-seal-mid: rgb(var(--naydelin-foil-mid-rgb));
+		--wax-seal-deep: rgb(var(--naydelin-gold-ink-rgb));
+		--wax-seal-letter: rgb(98 72 36);
+		--wax-seal-shadow: rgb(var(--naydelin-espresso-rgb));
+		--wax-seal-emboss-shadow: rgb(98 72 36);
+
+		// Letter: cotton stationery, gold-ink display type. The paper layers replace the shared
+		// scan-line grain (opacity 0), which read as a repeating stripe. The shadow stack draws
+		// the cut edge: a lit top bevel, a toned lower bevel, and a 1px sand thickness line
+		// under the sheet before the soft lift; the hairline border stays faint so the edge,
+		// not a stroke, defines the sheet.
+		--reveal-card-bg:
+			var(--naydelin-paper-raking), var(--naydelin-paper-edge),
+			var(--naydelin-paper-fibre) 0 0 / 320px 320px,
+			var(--naydelin-paper-grain) 0 0 / 240px 240px, var(--naydelin-paper-tone);
+		--reveal-card-border: rgb(var(--naydelin-foil-mid-rgb) / 30%);
+		--reveal-card-radius: 2px;
+		--reveal-card-grain-opacity: 0;
+		--reveal-card-text-primary: rgb(var(--naydelin-gold-ink-rgb));
+		--reveal-card-text-secondary: var(--color-text-secondary);
+		--reveal-card-accent: rgb(var(--naydelin-foil-mid-rgb));
+		--reveal-card-font-display: var(--font-display);
+		--reveal-card-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 85%),
+			inset 0 -1px 0 rgb(var(--naydelin-sand-rgb) / 90%), 0 1px 0 rgb(226 212 190),
+			0 2px 3px rgb(var(--naydelin-espresso-rgb) / 7%),
+			0 18px 40px rgb(var(--naydelin-espresso-rgb) / 11%);
+
+		// Nearly invisible fibre so the paper reads matte, not striped.
+		.envelope-base::before,
+		.envelope-pocket::before,
+		.envelope-flap::before {
+			opacity: 30%;
+		}
+
+		.envelope-pocket::after,
+		.envelope-flap::after {
+			background: var(--naydelin-foil-rule);
+		}
+
+		// A warm, faint shadow replaces the espresso bloom that greyed the turning flap.
+		.envelope-flap-shadow {
+			background: rgb(var(--naydelin-gold-ink-rgb) / 12%);
+		}
+
+		// Keep the letter stage hidden while the envelope is closed: the shared reduced-motion
+		// rule otherwise forces it visible over the paper and seal.
+		&:not(.is-opening, .is-letter-held, .is-preview-opened) .envelope-reveal-stage {
+			visibility: hidden;
+		}
+
+		.invitation-reveal-card::after {
+			content: '';
+			position: absolute;
+			inset: 0.6rem;
+			z-index: 0;
+			border: 1px solid rgb(var(--naydelin-foil-mid-rgb) / 55%);
+			pointer-events: none;
+		}
+
+		.invitation-reveal-card__label {
+			letter-spacing: 0.28em;
+			color: rgb(var(--naydelin-gold-ink-rgb));
+		}
+
+		.invitation-reveal-card__name {
+			font-weight: 500;
+			line-height: 1.1;
+			color: var(--color-text-primary);
+		}
+
+		// The canonical card date abbreviates the month; the tagline carries the full date.
+		.invitation-reveal-card__date {
+			display: none;
+		}
+
+		.invitation-reveal-card__tagline {
+			margin-top: 0.4rem;
+			font-family: var(--font-display);
+			font-style: normal;
+			color: var(--color-text-secondary);
+		}
+
+		.invitation-reveal-card__divider {
+			width: min(6rem, 36%);
+			margin-top: 0.75rem;
+			background: var(--naydelin-foil-rule);
+		}
+
+		.invitation-reveal-card__guest-label {
+			letter-spacing: 0.24em;
+			opacity: 100%;
+			color: rgb(var(--naydelin-gold-ink-rgb));
+		}
+
+		.invitation-reveal-card__guest-name {
+			letter-spacing: 0.02em;
+			color: var(--color-text-primary);
+		}
+
+		// The flap's inside face is a champagne foil liner: once it turns past 90°, the
+		// discrete background swap shows gold instead of the paper's reverse.
+		&.is-opening .envelope-flap {
+			animation:
+				invitation-env-flap-open var(--duration-reveal) forwards var(--ease-premium),
+				naydelin-flap-liner var(--duration-reveal) forwards var(--ease-premium);
+		}
+
+		// Two initials at the medallion's default 48/120 size crowd the embossed ring; CSS px on
+		// SVG text are viewBox units, so 36 leaves the die ring a clear margin.
+		.envelope-seal-button__visual text {
+			font-size: 36px;
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.envelope-seal-button__visual {
+				animation: none;
+			}
+		}
+	}
+
+	.invitation-hero {
+		--hero-portrait-radius: 0;
+		--hero-portrait-max-width: 100%;
+
+		// The single-column layout runs up to the lg breakpoint; grow the portrait with the
+		// viewport so tablets do not strand a phone-sized photograph in an empty field.
+		--hero-portrait-width-mobile: clamp(18.125rem, 58vw, 27rem);
+		--hero-portrait-height-mobile: auto;
+		--hero-portrait-width-desktop: 27.5rem;
+		--hero-portrait-height-desktop: auto;
+		--hero-section-padding: 5rem 1.5rem 2rem;
+		--hero-section-padding-desktop: 5.5rem 3rem 2.5rem;
+
+		// The name splits in two (`nameLeadWords: 1`): "Naydelin" in Pinyon Script (loaded by
+		// the preset, already the pass signature) at the title size, then the given and family
+		// names as a tracked Cormorant line. Content without the split keeps the whole name in
+		// script: each half measures ~6.3em and three words ~9.2em, so the 8.25em measure breaks
+		// "Naydelin Pauleth / Paredes Martinez".
+		--hero-title-size: clamp(2.5rem, 5vw + 1.4rem, 5rem);
+		--hero-title-max-width: 8.25em;
+		--hero-label-size: var(--naydelin-eyebrow-size);
+
+		// The corner wash reads as an artifact behind the header and, on desktop, clips behind
+		// the name. The foil frame on the portrait carries the ornament instead.
+		&::before {
+			display: none;
+		}
+
+		// Inset passe-partout hairline: gold framing without covering the doorway.
+		.framed-portrait-hero__photograph::after {
+			content: '';
+			position: absolute;
+			inset: 0.625rem;
+			border: 1px solid rgb(var(--naydelin-foil-hi-rgb) / 75%);
+			pointer-events: none;
+		}
+
+		.framed-portrait-hero__occasion {
+			margin-bottom: 0.9rem;
+			font-family: var(--font-label);
+			font-weight: 500;
+			letter-spacing: 0.28em;
+			line-height: 1.4;
+			text-transform: uppercase;
+			color: rgb(var(--naydelin-gold-ink-rgb));
+		}
+
+		// Both lines stay in ink on ivory (~13:1). The script line keeps a 1.25 line box so the
+		// "y" descender (0.39em) swings into the gap above the second line without touching it;
+		// the variant's negative tracking would knot the joins.
+		.framed-portrait-hero__name {
+			font-family: 'Pinyon Script', var(--font-display);
+			font-weight: 400;
+			line-height: 1.2;
+			letter-spacing: 0;
+			text-wrap: balance;
+			overflow-wrap: normal;
+		}
+
+		.framed-portrait-hero__name-lead {
+			display: block;
+			line-height: 1.25;
+		}
+
+		.framed-portrait-hero__name-rest {
+			display: block;
+			font-family: var(--font-display);
+			font-size: clamp(0.95rem, 0.5vw + 0.85rem, 1.3rem);
+			font-weight: 500;
+			line-height: 1.5;
+			letter-spacing: 0.22em;
+			text-wrap: balance;
+		}
+
+		.framed-portrait-hero__details {
+			margin-top: 0.9rem;
+		}
+
+		// Scroll cue: centered on the composition axis, away from the music player's corner, in
+		// the eyebrow voice (gold ink, 5.9:1) with a foil thread instead of the arrow glyph. The
+		// variant's right alignment has no token, so the profile sets the layout here.
+		.framed-portrait-hero__invitation {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 0.85rem;
+			font-family: var(--font-label);
+			font-size: var(--naydelin-eyebrow-size);
+			font-weight: 500;
+			letter-spacing: var(--naydelin-eyebrow-spacing);
+			line-height: 1.4;
+			text-align: center;
+			text-transform: uppercase;
+			color: rgb(var(--naydelin-gold-ink-rgb));
+
+			// On narrow phones the tracked label would reach the player's corner and its idle pulse
+			// ring (~20px past the button); symmetric inline padding wraps it into two centered
+			// lines instead.
+			@media (width < 420px) {
+				padding-inline: 4.5rem;
+				text-wrap: balance;
+			}
+		}
+
+		.framed-portrait-hero__invitation span {
+			display: block;
+			width: 1px;
+			height: 2.5rem;
+			flex: none;
+			margin: 0;
+			font-size: 0;
+			background:
+				linear-gradient(
+						180deg,
+						transparent 0%,
+						rgb(var(--naydelin-foil-hi-rgb)) 50%,
+						transparent 100%
+					)
+					0 -2.5rem / 100% 2.5rem no-repeat,
+				linear-gradient(
+					180deg,
+					rgb(var(--naydelin-foil-mid-rgb)) 0%,
+					rgb(var(--naydelin-foil-mid-rgb) / 0%) 100%
+				);
+		}
+
+		// A highlight runs down the thread. Longhands keep the variant's sealed-envelope pause
+		// (animation-play-state) and replace its bounce; reduced motion keeps the static thread.
+		@media (prefers-reduced-motion: no-preference) {
+			.framed-portrait-hero__invitation span {
+				animation-name: naydelin-scroll-thread;
+				animation-duration: 2.4s;
+				animation-timing-function: ease-in-out;
+				animation-iteration-count: infinite;
+			}
+		}
+	}
+
+	// Keep the player clear of the iOS home indicator; colors stay with the preset tokens.
+	.music-player {
+		right: max(1rem, calc(env(safe-area-inset-right) + 0.75rem));
+		bottom: max(1rem, calc(env(safe-area-inset-bottom) + 0.75rem));
+	}
+
+	// On phones the hero runs past the fold, so the transient prompt pill ("Pausar música" for
+	// ~4s after the envelope opens) would sit on the scroll cue. The button alone carries the
+	// state there: play/pause icon, pulse ring while idle, and its aria-label. Tablet and desktop
+	// keep the prompt, which clears the centered cue.
+	@media (width < 768px) {
+		.music-player__prompt {
+			display: none;
+		}
+	}
+
+	.personalized-access {
+		// Same cotton stock as the letter. Ticket mode masks the notches and drops box-shadow,
+		// so the edge toning and a lit top bevel ride on the glow layer instead.
+		--pa-card-bg-color: rgb(249 242 231);
+		--pa-card-bg-image:
+			var(--naydelin-paper-raking), var(--naydelin-paper-fibre), var(--naydelin-paper-grain),
+			var(--naydelin-paper-tone);
+		--pa-card-bg-size: auto, 320px 320px, 240px 240px, auto;
+		--pa-card-bg-position: 0 0;
+		--pa-card-glow:
+			linear-gradient(180deg, rgb(255 255 255 / 80%) 0, rgb(255 255 255 / 0%) 2px),
+			var(--naydelin-paper-edge);
+		--pa-card-shadow: none;
+		--pa-card-border-radius: 2px;
+
+		// Admission ticket (formal-pass ticket mode owns notches, perforation, and stub): a
+		// rose-gold edge echoes the gown, a foil inner hairline frames the paper, and the corner
+		// ornaments stay off so the notches read as the ticket's only cut-outs.
+		--pa-card-border: 1px solid rgb(var(--naydelin-rose-rgb) / 45%);
+		--pa-card-inner-border: 1px solid rgb(var(--naydelin-foil-mid-rgb) / 40%);
+		--pa-card-inset: 0.4rem;
+		--pa-card-inner-radius: 0.5rem;
+		--pa-corner-opacity: 0%;
+		--pa-footer-border-top: 1px solid rgb(var(--naydelin-foil-mid-rgb) / 30%);
+
+		// The ticket's perforation and monogram rule read from the chapter metal token.
+		--formal-chapter-metal: rgb(var(--naydelin-foil-mid-rgb));
+		--formal-chapter-metal-rgb: var(--naydelin-foil-mid-rgb);
+
+		// Extra trailing space so the full-bleed interlude does not land on the card.
+		--pa-section-padding: 2rem 3.5rem;
+		--pa-header-padding: 1.5rem 1.5rem 0.75rem;
+		--pa-seal-display: none;
+		--pa-count-size: 2.5rem;
+		--pa-title-tracking: 0.05em;
+		--pa-title-shadow: none;
+		--pa-count-shadow: none;
+		--formal-chapter-body: var(--font-body);
+
+		// Lining figures keep a single seat from reading as the letter "I".
+		.access-card__count {
+			font-variant-numeric: lining-nums;
+		}
+
+		.access-card__signature,
+		.access-card__monogram {
+			color: rgb(var(--naydelin-gold-ink-rgb));
+		}
+
+		// The welcome line follows the ticket's centered axis.
+		.access-card__welcome {
+			text-align: center;
+		}
+
+		// The stub label's 12ch cap with `overflow-wrap: anywhere` split "RESERVADOS" mid-word;
+		// let it wrap between words and sit beside the seat count.
+		.access-card__quota > .access-card__label {
+			max-width: none;
+			overflow-wrap: normal;
+			text-align: left;
+		}
+	}
+
+	.family {
+		--family-filigree-display: none;
+		--family-bg: var(--color-surface-primary);
+
+		// The preset's vignette and texture end in a warmer band that seams against the gallery.
+		--family-vignette-bg: none;
+		--family-texture-opacity: 0;
+		--family-padding-block: 4rem;
+		--family-panel-spacing: 1.5rem 0;
+		--family-name-size: clamp(1.55rem, 3vw, 2rem);
+		--family-name-max-width: 27ch;
+		--family-name-line-height: 1.3;
+		--family-group-padding: 1.5rem 0;
+		--family-list-gap: 1.25rem;
+		--family-divider: var(--naydelin-foil-rule);
+		--family-divider-opacity: 100%;
+
+		.family__name {
+			text-wrap: balance;
+		}
+
+		// Asymmetric pair under a centered letterhead (after the asymmetric-groups variant):
+		// parents read from the left margin, godparents answer from the right. The title and
+		// blessing stay on the center axis so the split reads as deliberate composition.
+		.family__group--parents,
+		.family__group--godparents {
+			--family-parents-margin-inline: 0;
+
+			width: 100%;
+		}
+
+		.family__group--parents {
+			--family-group-text-align: left;
+			--family-item-align: flex-start;
+			--family-list-align-items: flex-start;
+
+			.family__name {
+				justify-content: flex-start;
+				text-align: left;
+			}
+		}
+
+		.family__group--godparents {
+			--family-group-text-align: right;
+			--family-item-align: flex-end;
+			--family-list-align-items: flex-end;
+
+			.family__name {
+				justify-content: flex-end;
+				text-align: right;
+			}
+		}
+
+		// Side by side from tablet up; the horizontal pivot rule becomes redundant there.
+		@media (width >= 768px) {
+			.family__content {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				column-gap: clamp(2.5rem, 6vw, 4.5rem);
+				align-items: start;
+			}
+
+			.family__group + .family__group::before {
+				display: none;
+			}
+		}
+	}
+
+	// The shared layout collapses top padding after an interlude (with !important); reserve the
+	// breath on the container instead so the title does not sit on the photograph.
+	.invitation-section-wrapper[data-after-interlude] > .family .family__container {
+		padding-top: clamp(3.5rem, 7vw, 5rem);
+	}
+
+	.gallery-section {
+		// Ivory, not pearl: a ~1% luminance step against family reads as a seam, not a band.
+		--gallery-section-bg: var(--color-surface-primary);
+		--gallery-section-padding-block: clamp(4rem, 6vw, 6rem);
+		--gallery-grid-columns-mobile: 2;
+		--gallery-item-aspect-ratio: 2 / 3;
+		--gallery-item-aspect-ratio-feature: 3 / 2;
+		--gallery-title-color: var(--color-text-primary);
+		--gallery-item-radius: 2px;
+
+		// Prints mounted on the invitation's cotton stock: a paper mat with the letter's cut edge,
+		// a foil hairline inside the mat, and a rose-gold outer edge shared with the pass.
+		--gallery-item-padding: clamp(0.45rem, 1.4vw, 0.75rem);
+		--gallery-item-bg:
+			var(--naydelin-paper-raking), var(--naydelin-paper-edge),
+			var(--naydelin-paper-grain) 0 0 / 240px 240px, var(--naydelin-paper-tone);
+		--gallery-item-border: 1px solid rgb(var(--naydelin-rose-rgb) / 35%);
+		--gallery-item-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 85%), 0 1px 0 rgb(226 212 190),
+			0 14px 30px rgb(var(--naydelin-espresso-rgb) / 9%);
+		--gallery-item-emphasis-shadow: var(--gallery-item-shadow);
+		--gallery-item-hover-shadow: var(--gallery-item-shadow);
+
+		// Two adjacent stagger groups (family, countdown) compound; this one reveals as a whole.
+		--motion-stagger-step: 0ms;
+		--gallery-item-image-base-filter: none;
+		--gallery-item-image-emphasis-filter: none;
+		--gallery-item-image-filter-rest: none;
+		--gallery-item-image-scale-hover: 1;
+
+		// Ivory viewing table instead of the default dark box; the close control is gold ink.
+		--gallery-lightbox-bg: rgb(var(--naydelin-ivory-rgb) / 94%);
+		--gallery-lightbox-image-border: 1px solid rgb(var(--naydelin-foil-mid-rgb) / 60%);
+		--gallery-lightbox-image-radius: 2px;
+		--gallery-lightbox-footer-color: var(--color-text-primary);
+
+		.gallery-section__eyebrow {
+			margin-bottom: 0.75rem;
+		}
+
+		.gallery-grid__item::after {
+			content: '';
+			position: absolute;
+			inset: calc(var(--gallery-item-padding) + 0.4rem);
+			border: 1px solid rgb(var(--naydelin-foil-hi-rgb) / 80%);
+			pointer-events: none;
+		}
+
+		// Editorial rhythm from tablet up: the second print of each pair drops a step, and the
+		// feature band (a 1600px source) widens past the variant's 880px measure.
+		@media (width >= 768px) {
+			.gallery-grid__item {
+				align-self: start;
+			}
+
+			.gallery-grid__item:nth-child(2),
+			.gallery-grid__item:nth-child(5) {
+				margin-top: clamp(2rem, 5vw, 3.5rem);
+			}
+		}
+
+		@media (width >= 1200px) {
+			.gallery-grid__item[data-layout-role='feature'] {
+				margin-inline: -5rem;
+			}
+		}
+
+		// A slow settle as each print enters view; static under reduced motion.
+		@media (prefers-reduced-motion: no-preference) {
+			--gallery-item-image-scale-rest: 1.04;
+			--gallery-item-image-scale-in-view: 1;
+			--gallery-item-transition-duration: 1.2s;
+		}
+	}
+
+	.event-location {
+		// Flat ivory: the variant's sand fade ended in a hard edge against the itinerary.
+		--location-bg: var(--color-surface-primary);
+		--location-map-preview-display: none;
+		--location-date-display: none;
+		--location-stack-gap: 1.5rem;
+
+		// Consumed as `padding` shorthand: top, inline, bottom. A shorter bottom keeps the
+		// itinerary title from floating ~200px below the last venue card.
+		--location-padding-block: clamp(4rem, 6vw, 6rem) clamp(4rem, 6vw, 6rem)
+			clamp(2rem, 4vw, 3rem);
+		--location-padding-inline: 1rem;
+
+		// Hierarchy: the venue name leads, the hour and address follow, and the maps link is a
+		// quiet hairline action rather than the loudest element on the card.
+		--location-place-font-size: clamp(2rem, 4.5vw, 2.5rem);
+		--location-place-line-height: 1.1;
+		--location-place-letter-spacing: 0;
+		--location-address-font-size: 0.9rem;
+		--location-hour-font-family: var(--font-body);
+		--location-hour-font-size: 0.95rem;
+		--location-card-shadow: none;
+		--location-card-hover-shadow: none;
+		--location-card-bg: var(--color-surface-elevated);
+		--location-content-padding: clamp(1.5rem, 3vw, 2rem);
+		--location-nav-maps-bg: transparent;
+		--location-nav-maps-color: rgb(var(--naydelin-gold-ink-rgb));
+
+		// Consumed as `border-color`: a shorthand here was invalid and fell back to the dark
+		// currentcolor edge that outweighed the venue name.
+		--location-nav-maps-border: rgb(var(--naydelin-foil-mid-rgb) / 50%);
+		--location-nav-maps-hover-bg: rgb(var(--naydelin-gold-rgb) / 8%);
+		--location-nav-maps-hover-border-color: rgb(var(--naydelin-gold-ink-rgb) / 70%);
+		--location-nav-buttons-margin-top: 1.5rem;
+		--location-nav-font-size: 0.68rem;
+		--location-nav-letter-spacing: 0.2em;
+
+		// The itinerary title follows directly; a "next section" cue would repeat it.
+		.nav-button-container {
+			display: none;
+		}
+
+		// A compact centered action (44px tall for touch) instead of a full-width bar.
+		.event-location__card-navigation-buttons {
+			align-items: center;
+			justify-content: center;
+		}
+
+		.event-location__nav-button {
+			flex: 0 1 auto;
+			padding-inline: 1.75rem;
+			font-weight: 500;
+		}
+	}
+
+	.countdown-section {
+		--countdown-section-background: var(--color-surface-primary);
+		--shadow-premium: none;
+		--color-glass-shadow: transparent;
+		--countdown-label-size: clamp(0.6rem, 1.6vw, 0.7rem);
+		--countdown-label-spacing: 0.1em;
+		--countdown-label-color: rgb(var(--naydelin-gold-ink-rgb));
+		--countdown-label-opacity: 1;
+		--countdown-date-size: 1rem;
+		--countdown-date-spacing: 0.06em;
+		--motion-stagger-step: 0ms;
+
+		// The shared 6rem block padding stacks with neighbors into ~160px of dead space.
+		padding-block: clamp(3.5rem, 6vw, 5rem);
+
+		.countdown-title {
+			margin-bottom: 2.75rem;
+		}
+
+		.countdown-title::after {
+			background: var(--naydelin-foil-rule);
+		}
+
+		// One stationery card instead of four glass cells: the pass's cotton stock and rose-gold
+		// edge with a foil inner frame, the units divided by foil hairlines. The cells are not
+		// interactive, so the preset's lift-on-hover is removed.
+		.countdown__timer {
+			position: relative;
+			gap: 0;
+			max-width: 38rem;
+			margin-inline: auto;
+			padding: clamp(1.1rem, 3vw, 1.75rem) clamp(0.25rem, 2vw, 1.25rem);
+			border: 1px solid rgb(var(--naydelin-rose-rgb) / 45%);
+			border-radius: 2px;
+			background:
+				var(--naydelin-paper-raking),
+				var(--naydelin-paper-edge),
+				var(--naydelin-paper-fibre) 0 0 / 320px 320px,
+				var(--naydelin-paper-grain) 0 0 / 240px 240px,
+				var(--naydelin-paper-tone);
+
+			&::after {
+				content: '';
+				position: absolute;
+				inset: 0.4rem;
+				border: 1px solid rgb(var(--naydelin-foil-mid-rgb) / 40%);
+				pointer-events: none;
+			}
+		}
+
+		.countdown__segment,
+		.countdown__segment:hover {
+			padding: clamp(0.9rem, 2.5vw, 1.25rem) 0.25rem;
+			background: none;
+			backdrop-filter: none;
+			border: 0;
+			border-radius: 0;
+			box-shadow: none;
+			transform: none;
+		}
+
+		.countdown__segment + .countdown__segment {
+			border-inline-start: 1px solid rgb(var(--naydelin-foil-mid-rgb) / 45%);
+		}
+
+		.countdown__value {
+			font-size: clamp(2.5rem, 8vw, 4.25rem);
+			line-height: 1;
+			letter-spacing: 0;
+		}
+
+		// Gold-ink eyebrow voice (5.7:1 on the card).
+		.countdown__label {
+			font-family: var(--font-label);
+			font-weight: 500;
+			color: rgb(var(--naydelin-gold-ink-rgb));
+		}
+
+		// A quarter of the card is ~62px at 320px; "SEGUNDOS" needs tighter tracking to clear
+		// the hairlines.
+		@media (width < 400px) {
+			--countdown-label-size: 0.52rem;
+			--countdown-label-spacing: 0;
+
+			.countdown__timer {
+				padding-inline: 0.15rem;
+			}
+		}
+
+		.countdown__value,
+		.countdown-date {
+			font-variant-numeric: lining-nums tabular-nums;
+		}
+	}
+
+	.itinerary {
+		--itinerary-bg: var(--color-surface-primary);
+		--itinerary-line-color: rgb(var(--naydelin-foil-mid-rgb));
+		--editorial-ledger-rule: rgb(var(--naydelin-gold-rgb) / 30%);
+		--editorial-ledger-spine: rgb(var(--naydelin-gold-rgb) / 30%);
+		--editorial-ledger-time-width: 8rem;
+		--editorial-ledger-row-space: 0.75rem;
+
+		// The shared 8rem desktop top padding floats the title far below the venue cards. The
+		// bottom keeps its space: it reserves the arch rising from the RSVP band.
+		padding-top: clamp(3.5rem, 6vw, 5rem);
+
+		.itinerary__header,
+		.itinerary__items {
+			margin-inline: auto;
+		}
+
+		.itinerary__header {
+			text-align: center;
+		}
+
+		// Foil diamond without the preset's glow halo, which reads as a cheap bloom on ivory.
+		.itinerary__header-flourish .flourish-diamond {
+			background: var(--naydelin-foil);
+			box-shadow: none;
+		}
+
+		.itinerary__item-time {
+			font-size: 0.78rem;
+			letter-spacing: 0.2em;
+			color: rgb(var(--naydelin-gold-ink-rgb));
+		}
+
+		// Plain ink replaces the preset's gradient text fill so the event name leads each row.
+		.itinerary__item-label {
+			background: none;
+			-webkit-text-fill-color: currentcolor;
+			text-shadow: none;
+			font-size: clamp(1.6rem, 4vw, 1.9rem);
+			font-weight: 500;
+			color: var(--color-text-primary);
+		}
+	}
+
+	// Climax: the espresso band rises into the itinerary through the shared arch primitive.
+	// Vertex at ~62% (never centered); height follows the itinerary-exit reference.
+	.invitation-section-wrapper[data-section-kind='rsvp'][data-intersection='arch'] {
+		--intersection-surface: var(--color-surface-dark);
+		--intersection-arch-height: clamp(2.85rem, 5.5vw, 5.25rem);
+		--intersection-arch-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0 24V17C18 16 36 11.5 52 8.6C58 7.6 64 7.5 70 8.2C82 9.6 92 12.4 100 14.8V24Z'/%3E%3C/svg%3E");
+	}
+
+	// Register shell tokens live on the wrapper: the shells are ancestors of `.rsvp`.
+	.invitation-section-wrapper[data-section-kind='rsvp'] {
+		// Consumed as `padding-block` by both nested register shells, so each half is applied
+		// twice: keep the pair compact to avoid a dead band before gifts.
+		--formal-register-shell-padding: clamp(2rem, 5vw, 3rem) clamp(0.75rem, 2vw, 1.25rem);
+
+		// A centered 40rem register keeps the desktop band from leaving its right half empty.
+		--formal-register-shell-width: 40rem;
+	}
+
+	.rsvp {
+		--formal-chapter-body: var(--font-body);
+		--formal-register-body-size: 1rem;
+		--formal-register-label-size: 0.8rem;
+	}
+
+	// Dark-band titles: lighter weight and open tracking compensate for the dark surface, and
+	// the champagne foil lives where metal reads best. Solid gold-light is the fallback.
+	.rsvp__title,
+	.gifts-section__title {
+		font-weight: 400;
+		letter-spacing: 0.06em;
+		color: rgb(var(--naydelin-gold-light-rgb));
+
+		@supports (background-clip: text) or (-webkit-background-clip: text) {
+			background: var(--naydelin-foil-text-dark) 0% 50% / 200% 100%;
+			background-clip: text;
+			-webkit-text-fill-color: transparent;
+		}
+	}
+
+	.gifts-section {
+		--gifts-bg: var(--color-surface-dark);
+		--gifts-text-color: var(--color-text-on-dark);
+		--gifts-title-color: var(--color-text-on-dark);
+		--gifts-subtitle-color: rgb(var(--naydelin-ivory-rgb) / 88%);
+		--gifts-card-title-color: var(--color-text-on-dark);
+		--gifts-card-bg: transparent;
+		--gifts-card-border: none;
+		--gifts-card-shadow: none;
+		--gifts-icon-color: rgb(var(--naydelin-foil-hi-rgb));
+		--gifts-icon-bg: transparent;
+		--gifts-icon-border: 1px solid rgb(var(--naydelin-foil-mid-rgb) / 70%);
+		--gifts-icon-shadow: none;
+		--gifts-padding-block: 2.5rem;
+
+		.gifts-section__flourish {
+			color: rgb(var(--naydelin-foil-mid-rgb));
+			opacity: 100%;
+		}
+	}
+
+	// Closing letter: the espresso finale warms into champagne light and settles on ivory paper.
+	// The bridge is painted on the letter because its opaque background covers the wrapper's
+	// shared blend layer (section-intersections.md). Both layers end transparent before the
+	// portrait; the variant's ambient wash (a blurred box with visible edges) stays off.
+	.thank-you-section {
+		--color-warm-ivory: rgb(var(--naydelin-ivory-rgb));
+		--color-warm-ivory-rgb: var(--naydelin-ivory-rgb);
+		--color-candle-gold-rgb: var(--naydelin-foil-hi-rgb);
+		--color-antique-gold: rgb(var(--naydelin-gold-ink-rgb));
+		--color-antique-gold-rgb: var(--naydelin-foil-mid-rgb);
+		--color-blush-pink-rgb: var(--naydelin-rose-rgb);
+		--color-rose-shadow-rgb: var(--naydelin-espresso-rgb);
+		--color-deep-rose-red: rgb(var(--naydelin-foil-deep-rgb));
+		--color-velvet-burgundy: rgb(var(--naydelin-foil-deep-rgb));
+		--thank-you-letter-ambient-opacity: 0%;
+		--thank-you-letter-signature-size: clamp(3rem, 9vw, 4.75rem);
+		--thank-you-letter-background:
+			linear-gradient(
+					180deg,
+					rgb(var(--naydelin-espresso-rgb)) 0%,
+					rgb(var(--naydelin-espresso-rgb) / 72%) 18%,
+					rgb(var(--naydelin-gold-light-rgb) / 50%) 52%,
+					transparent 100%
+				)
+				top / 100% clamp(7rem, 16vw, 9rem) no-repeat,
+			radial-gradient(
+					ellipse 90% 100% at 38% 0%,
+					rgb(var(--naydelin-foil-hi-rgb) / 45%) 0%,
+					transparent 100%
+				)
+				top / 100% clamp(10rem, 22vw, 14rem) no-repeat,
+			linear-gradient(
+				170deg,
+				rgb(var(--naydelin-ivory-rgb)) 0%,
+				rgb(var(--naydelin-pearl-rgb)) 55%,
+				rgb(var(--naydelin-ivory-rgb)) 100%
+			);
+
+		// Secondary golden thread: the variant's grain layer becomes a short foil rule that
+		// settles the bridge before the portrait.
+		&::before {
+			inset: clamp(4.5rem, 10vw, 6rem) auto auto 50%;
+			width: 4rem;
+			height: 1px;
+			background: var(--naydelin-foil-rule);
+			opacity: 100%;
+			transform: translateX(-50%);
+		}
+
+		// The message stays in ink so the gold signature leads.
+		.thank-you-message {
+			background: none;
+			-webkit-text-fill-color: currentcolor;
+			color: var(--color-text-primary);
+		}
+
+		// A one-line message cannot carry a floated initial; it split "Gracias" in two.
+		.thank-you-message .drop-cap {
+			float: none;
+			margin: 0;
+			color: inherit;
+			font-size: inherit;
+			font-weight: inherit;
+			line-height: inherit;
+			text-shadow: none;
+		}
+
+		// Foil signature: deep-to-ink gold keeps at least 4.8:1 on ivory. The closing repeats the
+		// hero hierarchy (`closingNameLeadWords: 1`): "Naydelin" signs in Pinyon Script foil and
+		// the full name follows as the hero's tracked Cormorant line, in ink because small foil
+		// text cannot hold 4.5:1 across the whole gradient. Unsplit content signs in script.
+		.closing-name {
+			font-family: 'Pinyon Script', var(--font-display);
+			font-weight: 400;
+			text-wrap: balance;
+			background-size: 200% 100%;
+		}
+
+		.closing-name__lead {
+			display: block;
+			line-height: 1.2;
+		}
+
+		.closing-name__rest {
+			display: block;
+			margin-top: 0.35rem;
+			font-family: var(--font-display);
+			font-size: clamp(0.95rem, 0.5vw + 0.85rem, 1.3rem);
+			font-weight: 500;
+			line-height: 1.5;
+			letter-spacing: 0.22em;
+			-webkit-text-fill-color: var(--color-text-primary);
+			color: var(--color-text-primary);
+		}
+	}
+
+	// Motion signature: a single foil sweep across the dark-band titles and the closing
+	// signature as their section is revealed. Runs once on the coordinator's is-visible class;
+	// the static state is the resting foil, so no-JS and reduced motion show the same result.
+	@media (prefers-reduced-motion: no-preference) {
+		.invitation-section-wrapper.has-motion.is-visible {
+			.rsvp__title,
+			.gifts-section__title,
+			.closing-name {
+				animation: naydelin-foil-sweep 700ms var(--motion-reveal-ease) 150ms both;
+			}
+		}
+	}
+}
+
+@keyframes naydelin-foil-sweep {
+	from {
+		background-position: 100% 50%;
+	}
+
+	to {
+		background-position: 0% 50%;
+	}
+}
+
+@keyframes naydelin-scroll-thread {
+	from {
+		background-position:
+			0 -2.5rem,
+			0 0;
+	}
+
+	to {
+		background-position:
+			0 2.5rem,
+			0 0;
+	}
+}
+
+@keyframes naydelin-flap-liner {
+	0%,
+	49% {
+		background: var(--env-paper-bg);
+	}
+
+	50%,
+	100% {
+		background: linear-gradient(
+			160deg,
+			rgb(var(--naydelin-foil-hi-rgb)) 0%,
+			rgb(var(--naydelin-foil-mid-rgb)) 55%,
+			rgb(var(--naydelin-foil-deep-rgb)) 100%
+		);
+	}
+}

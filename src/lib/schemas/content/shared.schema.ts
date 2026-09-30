@@ -119,11 +119,15 @@ export const quoteSchema = z
 	})
 	.strict();
 
+/** Leading words of `closingName` set as the display line; presentation only. */
+export const closingNameLeadWordsSchema = z.number().int().min(1).max(4).optional();
+
 export const thankYouSchema = z
 	.object({
 		variant: z.enum(THANK_YOU_VARIANTS),
 		message: z.string(),
 		closingName: z.string(),
+		closingNameLeadWords: closingNameLeadWordsSchema,
 		/** Footer closing phrase; falls back to product default when omitted. */
 		closingPhrase: z.string().optional(),
 		date: z.string().optional(),

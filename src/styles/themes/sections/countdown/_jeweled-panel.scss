@@ -55,7 +55,7 @@
 		background: var(--color-glass-bg);
 		backdrop-filter: blur(15px);
 		border: 1px solid var(--color-glass-border);
-		padding: 2.5rem 1.5rem;
+		padding: var(--countdown-segment-inset, 2.5rem 1.5rem);
 		border-radius: 1rem;
 		box-shadow: var(--shadow-premium);
 		transition:
@@ -81,11 +81,11 @@
 
 	.countdown__label {
 		font-family: var(--font-display);
-		font-size: 0.75rem;
+		font-size: var(--countdown-label-size, 0.75rem);
 		text-transform: uppercase;
-		letter-spacing: 0.2em;
-		color: var(--color-text-primary);
-		opacity: 60%;
+		letter-spacing: var(--countdown-label-spacing, 0.2em);
+		color: var(--countdown-label-color, var(--color-text-primary));
+		opacity: var(--countdown-label-opacity, 60%);
 		margin-top: 0.5rem;
 	}
 

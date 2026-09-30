@@ -168,6 +168,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		ambience: resolveAsset(eventSlug, data.hero.ambience, ''),
 		name: data.hero.name,
 		venueIndex: data.hero.presentation?.venueIndex,
+		nameLeadWords: data.hero.presentation?.nameLeadWords,
 		secondaryName: data.hero.secondaryName,
 		label: data.hero.label || 'Invitación Especial',
 		nickname: data.hero.nickname,

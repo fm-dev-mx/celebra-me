@@ -205,6 +205,22 @@ describe('adaptEvent', () => {
 		expect(viewModel.hero.portrait?.src).toBe('/images/custom-portrait.webp');
 	});
 
+	it('passes the hero name split through without altering the full name', () => {
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const event = {
+			id: 'event-demos/xv/demo-xv-jewelry-box',
+			data: {
+				...fixture,
+				hero: { ...fixture.hero, presentation: { nameLeadWords: 1 } },
+			},
+		} as Parameters<typeof adaptEvent>[0];
+
+		const viewModel = adaptEvent(event);
+
+		expect(viewModel.hero.nameLeadWords).toBe(1);
+		expect(viewModel.hero.name).toBe(fixture.hero.name);
+	});
+
 	it('resolves the Baby Shower catalog demo through its explicit asset slug', () => {
 		const event = {
 			id: 'event-demos/baby-shower/demo-baby-shower-celestial',

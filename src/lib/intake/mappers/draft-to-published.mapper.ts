@@ -629,6 +629,8 @@ function mapThankYouSection(
 	if (draftThankYou.focalPoint !== undefined) overlayFields.focalPoint = draftThankYou.focalPoint;
 	if (draftThankYou.closingPhrase !== undefined)
 		overlayFields.closingPhrase = draftThankYou.closingPhrase;
+	if (draftThankYou.closingNameLeadWords !== undefined)
+		overlayFields.closingNameLeadWords = draftThankYou.closingNameLeadWords;
 	if (draftThankYou.overlayAnchor !== undefined)
 		overlayFields.overlayAnchor = draftThankYou.overlayAnchor;
 	if (draftThankYou.overlaySafeArea !== undefined)

@@ -4,10 +4,12 @@ import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { ThankYouVariant } from '@/lib/invitation/section-variants';
+import { splitLeadWords } from '@/lib/invitation/name-split';
 
 interface Props {
 	message: string;
 	closingName: string;
+	closingNameLeadWords?: number;
 	date?: string;
 	image?: string | ImageAsset;
 	variant: ThankYouVariant;
@@ -24,6 +26,7 @@ interface Props {
 const {
 	message,
 	closingName,
+	closingNameLeadWords,
 	date,
 	image,
 	variant,
@@ -31,6 +34,8 @@ const {
 	overlayAnchor,
 	overlaySafeArea,
 } = Astro.props;
+// Optional split into a display line and a secondary line; profiles style the two spans.
+const closingNameSplit = splitLeadWords(closingName, closingNameLeadWords);
 const usesEditorialLayout = variant === 'editorial-back-cover' || variant === 'portrait-letter' || variant === 'portrait-keepsake';
 const hasSubjectAwareOverlay = Boolean(overlayAnchor || overlaySafeArea);
 
@@ -100,7 +105,7 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 
 					<div class="signature-block">
 						<p class="closing-name">
-							{closingName}
+							{closingNameSplit ? <><span class="closing-name__lead">{closingNameSplit.lead}</span>{' '}<span class="closing-name__rest">{closingNameSplit.rest}</span></> : closingName}
 						</p>
 						{date && <p class="closing-date">{date}</p>}
 					</div>
@@ -125,7 +130,7 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 
 				<div class="signature-block">
 					<p class="closing-name">
-						{closingName}
+						{closingNameSplit ? <><span class="closing-name__lead">{closingNameSplit.lead}</span>{' '}<span class="closing-name__rest">{closingNameSplit.rest}</span></> : closingName}
 					</p>
 					{date && <p class="closing-date">{date}</p>}
 				</div>
