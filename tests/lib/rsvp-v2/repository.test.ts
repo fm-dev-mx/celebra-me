@@ -158,7 +158,7 @@ describe('rsvp repository', () => {
 		expect(audit.eventType).toBe('viewed');
 	});
 
-	it('filters soft-deleted guests in phone lookups and soft deletes via patch', async () => {
+	it('filters soft-deleted guests in phone lookups and soft deletes via RPC', async () => {
 		supabaseRestRequestMock.mockResolvedValueOnce([]);
 		await findGuestByPhoneAuth('evt-1', '+52', '6680000000', 'token');
 		expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
@@ -168,19 +168,21 @@ describe('rsvp repository', () => {
 			'country_code=eq.%2B52',
 		);
 
-		supabaseRestRequestMock.mockResolvedValueOnce([makeGuestRow()]);
-		await softDeleteGuestById('guest-1', 'token');
-		expect(supabaseRestRequestMock.mock.calls[1]?.[0]).toEqual(
-			expect.objectContaining({
-				method: 'PATCH',
-				pathWithQuery: expect.stringContaining('id=eq.guest-1&deleted_at=is.null'),
-				body: expect.objectContaining({
-					deleted_at: expect.any(String),
-				}),
-				authToken: 'token',
-				prefer: 'return=representation',
-			}),
-		);
+		// RLS hides soft-deleted rows from client sessions, so the soft delete runs
+		// through the service-role RPC that re-checks the actor's event access.
+		supabaseRestRequestMock.mockResolvedValueOnce(true);
+		await expect(softDeleteGuestById('guest-1', 'user-1')).resolves.toBe(true);
+		const softDeleteRequest = supabaseRestRequestMock.mock.calls[1]?.[0];
+		expect(softDeleteRequest).toEqual({
+			pathWithQuery: 'rpc/soft_delete_guest_invitation_v1',
+			method: 'POST',
+			useServiceRole: true,
+			body: { p_guest_id: 'guest-1', p_actor_user_id: 'user-1' },
+		});
+		expect(softDeleteRequest?.authToken).toBeUndefined();
+
+		supabaseRestRequestMock.mockResolvedValueOnce(false);
+		await expect(softDeleteGuestById('guest-1', 'user-1')).resolves.toBe(false);
 	});
 
 	it('findGuestByPhoneAuth scopes by event — same phone in different events is allowed', async () => {
@@ -313,5 +315,4 @@ describe('rsvp repository', () => {
 			);
 		});
 	});
-
 });

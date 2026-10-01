@@ -18,11 +18,16 @@ import * as guestRepo from '@/lib/rsvp/repositories/guest.repository';
 import * as membershipRepo from '@/lib/rsvp/repositories/role-membership.repository';
 import * as claimRepo from '@/lib/rsvp/repositories/claim-code.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
+import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
 
 jest.mock('@/lib/rsvp/repositories/event.repository');
 jest.mock('@/lib/rsvp/repositories/guest.repository');
 jest.mock('@/lib/rsvp/repositories/role-membership.repository');
 jest.mock('@/lib/rsvp/repositories/claim-code.repository');
+jest.mock('@/lib/rsvp/services/audit-logger.service', () => ({
+	logAdminAction: jest.fn().mockResolvedValue(undefined),
+}));
 jest.mock('@/lib/rsvp/services/shared/invitation-helpers', () => ({
 	...jest.requireActual('@/lib/rsvp/services/shared/invitation-helpers'),
 	getSharingConfigForSlug: jest.fn().mockResolvedValue({}),
@@ -166,6 +171,35 @@ describe('rsvp service branches', () => {
 		).rejects.toMatchObject({ status: 400 });
 	});
 
+	it('createDashboardGuest maps a duplicate-phone Supabase error to the friendly 409', async () => {
+		const duplicateBody = JSON.stringify({
+			code: '23505',
+			details: 'Key (event_id, country_code, phone) already exists.',
+			hint: null,
+			message:
+				'duplicate key value violates unique constraint "guest_invitations_event_country_phone_active_unique"',
+		});
+		createGuestInvitationMock.mockRejectedValueOnce(
+			new SupabaseHttpError(409, duplicateBody, '23505'),
+		);
+
+		await expect(
+			createDashboardGuest({
+				eventId: 'evt-1',
+				fullName: 'Guest',
+				phone: '6680000000',
+				countryCode: '+52',
+				maxAllowedAttendees: 2,
+				hostAccessToken: 'token',
+				origin: 'http://localhost',
+			}),
+		).rejects.toMatchObject({
+			status: 409,
+			code: 'conflict',
+			message: 'Ya existe un invitado con ese número de teléfono.',
+		});
+	});
+
 	it('createDashboardGuest preserves a configured attendee limit above 20', async () => {
 		createGuestInvitationMock.mockResolvedValue({
 			...baseGuest,
@@ -284,15 +318,16 @@ describe('rsvp service branches', () => {
 
 	it('deleteDashboardGuest soft deletes active guests and treats deleted guests as missing', async () => {
 		findGuestByIdMock.mockResolvedValueOnce(baseGuest);
-		softDeleteGuestByIdMock.mockResolvedValueOnce(undefined);
+		softDeleteGuestByIdMock.mockResolvedValueOnce(true);
 
 		await expect(
 			deleteDashboardGuest({
 				guestId: 'guest-1',
 				hostAccessToken: 'token',
+				actorUserId: 'host-1',
 			}),
 		).resolves.toBeUndefined();
-		expect(softDeleteGuestByIdMock).toHaveBeenCalledWith('guest-1', 'token');
+		expect(softDeleteGuestByIdMock).toHaveBeenCalledWith('guest-1', 'host-1');
 
 		findGuestByIdMock.mockResolvedValueOnce(null);
 
@@ -300,8 +335,66 @@ describe('rsvp service branches', () => {
 			deleteDashboardGuest({
 				guestId: 'guest-1',
 				hostAccessToken: 'token',
+				actorUserId: 'host-1',
 			}),
 		).rejects.toMatchObject({ status: 404 });
+	});
+
+	it('deleteDashboardGuest returns 404 when the guest was deleted concurrently', async () => {
+		findGuestByIdMock.mockResolvedValueOnce(baseGuest);
+		softDeleteGuestByIdMock.mockResolvedValueOnce(false);
+
+		await expect(
+			deleteDashboardGuest({
+				guestId: 'guest-1',
+				hostAccessToken: 'token',
+				actorUserId: 'host-1',
+			}),
+		).rejects.toMatchObject({ status: 404, code: 'not_found' });
+	});
+
+	it('deleteDashboardGuest maps database access denials to a redacted 403 and skips the admin audit', async () => {
+		const rlsBody = JSON.stringify({
+			code: '42501',
+			details: null,
+			hint: null,
+			message: 'guest_invitation_access_denied',
+		});
+		findGuestByIdMock.mockResolvedValueOnce(baseGuest);
+		softDeleteGuestByIdMock.mockRejectedValueOnce(new SupabaseHttpError(403, rlsBody, '42501'));
+
+		const failure = deleteDashboardGuest({
+			guestId: 'guest-1',
+			hostAccessToken: 'token',
+			actorUserId: 'admin-1',
+			isSuperAdmin: true,
+		});
+
+		await expect(failure).rejects.toMatchObject({ status: 403, code: 'forbidden' });
+		await failure.catch((error: Error) => {
+			expect(error.message).not.toContain('guest_invitation_access_denied');
+			expect(error.message).not.toContain('Supabase error');
+		});
+		expect(logAdminAction).not.toHaveBeenCalled();
+	});
+
+	it('deleteDashboardGuest records the super admin audit only after a successful soft delete', async () => {
+		findGuestByIdMock.mockResolvedValueOnce(baseGuest);
+		softDeleteGuestByIdMock.mockResolvedValueOnce(true);
+
+		await deleteDashboardGuest({
+			guestId: 'guest-1',
+			hostAccessToken: 'token',
+			actorUserId: 'admin-1',
+			isSuperAdmin: true,
+		});
+
+		expect(logAdminAction).toHaveBeenCalledWith(
+			expect.objectContaining({ action: 'delete_guest', targetId: 'guest-1', newData: null }),
+		);
+		expect(softDeleteGuestByIdMock.mock.invocationCallOrder[0]).toBeLessThan(
+			(logAdminAction as jest.Mock).mock.invocationCallOrder[0],
+		);
 	});
 
 	it('getInvitationContext validates invite and event existence', async () => {
@@ -340,21 +433,25 @@ describe('rsvp service branches', () => {
 
 	it('submitGuestRsvpByPublicEvent does not look up or modify an existing phone collision', async () => {
 		submitGuestRsvpPublicRpcMock.mockRejectedValue(
-			new Error('duplicate key value violates unique constraint "guest_invitations_event_country_phone_active_unique"'),
+			new Error(
+				'duplicate key value violates unique constraint "guest_invitations_event_country_phone_active_unique"',
+			),
 		);
 
-		await expect(submitGuestRsvpByPublicEvent({
-			event: baseEvent,
-			fullName: 'Guest',
-			phone: '6680000000',
-			countryCode: '+52',
-			maxAllowedAttendees: 3,
-			payload: {
-				attendanceStatus: 'confirmed',
-				attendeeCount: 2,
-				guestComment: 'Nos vemos',
-			},
-		})).rejects.toMatchObject({
+		await expect(
+			submitGuestRsvpByPublicEvent({
+				event: baseEvent,
+				fullName: 'Guest',
+				phone: '6680000000',
+				countryCode: '+52',
+				maxAllowedAttendees: 3,
+				payload: {
+					attendanceStatus: 'confirmed',
+					attendeeCount: 2,
+					guestComment: 'Nos vemos',
+				},
+			}),
+		).rejects.toMatchObject({
 			status: 409,
 			code: 'conflict',
 		});

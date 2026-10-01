@@ -1,7 +1,7 @@
-import http from 'node:http';
 import { Request as NodeRequest } from 'undici';
 import { DISPOSABLE_TEST, resolveDbUrl } from '../../scripts/db/db-target-config.ts';
 import { runCommand } from '../../scripts/db/db-workflow-lib.ts';
+import { disposablePostgrestFetch } from '../helpers/disposable-postgrest-fetch.ts';
 
 /** Use undici Request so body is a proper ReadableStream under the jsdom test environment. */
 function nodeRequest(input: string, init?: ConstructorParameters<typeof NodeRequest>[1]): Request {
@@ -12,44 +12,6 @@ function nodeRequest(input: string, init?: ConstructorParameters<typeof NodeRequ
  * HTTP → service → RPC wiring contracts against disposable PostgREST.
  * Executed only by `pnpm test:db:rsvp-contracts` (excluded from no-DB Jest).
  */
-function realHttpFetch(urlStr: string | URL, options: any = {}): Promise<any> {
-	return new Promise((resolve, reject) => {
-		const url = typeof urlStr === 'string' ? new URL(urlStr) : new URL(urlStr.toString());
-		// Disposable PostgREST serves the API at `/` (not Kong's `/rest/v1` prefix).
-		if (url.pathname.startsWith('/rest/v1/')) {
-			url.pathname = url.pathname.slice('/rest/v1'.length);
-		}
-		const req = http.request(
-			{
-				hostname: url.hostname,
-				port: url.port,
-				path: url.pathname + url.search,
-				method: options.method || 'GET',
-				headers: options.headers || {},
-			},
-			(res) => {
-				let data = '';
-				res.on('data', (chunk) => (data += chunk));
-				res.on('end', () => {
-					const statusCode = res.statusCode || 200;
-					resolve({
-						ok: statusCode >= 200 && statusCode < 300,
-						status: statusCode,
-						headers: {
-							get: (h: string) => res.headers[h.toLowerCase()],
-						},
-						text: async () => data,
-						json: async () => (data ? JSON.parse(data) : {}),
-					});
-				});
-			},
-		);
-		req.on('error', reject);
-		if (options.body) req.write(options.body);
-		req.end();
-	});
-}
-
 const disposableApi = `http://127.0.0.1:${DISPOSABLE_TEST.apiPort}`;
 process.env.SUPABASE_URL = process.env.SUPABASE_URL || disposableApi;
 process.env.PUBLIC_SUPABASE_URL = process.env.PUBLIC_SUPABASE_URL || disposableApi;
@@ -78,7 +40,7 @@ describe('public rsvp & view HTTP API wiring (real DB)', () => {
 	}
 
 	beforeEach(() => {
-		global.fetch = realHttpFetch as any;
+		global.fetch = disposablePostgrestFetch as unknown as typeof fetch;
 	});
 
 	function runSql(sql: string): { stdout: string; stderr: string; status: number } {
