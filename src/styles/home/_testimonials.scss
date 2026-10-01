@@ -50,9 +50,8 @@
 .testimonials {
 	position: relative;
 	width: 100%;
-	max-width: min(1080px, calc(100% - 2rem));
+	max-width: min(var(--container-max), 100% - 2 * var(--container-padding-x));
 	margin-inline: auto;
-	padding-block: clamp(3rem, 7vw, 5rem) clamp(2.1rem, 5vw, 3rem);
 	display: grid;
 	grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
 	gap: clamp(2rem, 4vw, 3.5rem);
@@ -300,7 +299,6 @@
 @include mixins.respond-below(lg) {
 	.testimonials {
 		gap: 2rem;
-		padding-block: 3rem 2.4rem;
 
 		&__title {
 			max-width: 20rem;
@@ -316,8 +314,6 @@
 	.testimonials {
 		grid-template-columns: 1fr;
 		gap: 1.25rem;
-		padding-block: clamp(2.5rem, 7vw, 3.25rem) clamp(1.4rem, 4vw, 1.8rem);
-		max-width: calc(100% - 1.25rem);
 
 		&::after {
 			right: auto;

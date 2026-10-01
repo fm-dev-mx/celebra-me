@@ -50,61 +50,18 @@ export const landingData: LandingPageData = {
 	productProof: {
 		eyebrow: 'SU PANEL DE INVITADOS',
 		title: 'La invitación también organiza su evento',
-		description:
-			'Importe su lista desde Excel, envíe cada invitación por WhatsApp y vea quién confirmó, sin perseguir respuestas.',
-		items: [
+		description: 'Organice a sus invitados desde un solo panel, sin perseguir respuestas.',
+		features: [
+			{ title: 'Lista desde Excel', text: 'Importe a sus invitados en un paso.' },
 			{
-				title: 'Lista desde Excel',
-				description: 'Importe su lista en un paso.',
+				title: 'Envío por WhatsApp',
+				text: 'Mensaje editable y recordatorios a quien no ha confirmado.',
 			},
 			{
-				title: 'WhatsApp',
-				description: 'Mensaje editable',
+				title: 'Vistas y confirmaciones',
+				text: 'Quién ya vio su invitación y quién confirmó.',
 			},
-			{
-				title: 'Recordatorios',
-				description: 'A quien no ha confirmado.',
-			},
-			{
-				title: 'Pases',
-				description: 'Por familia',
-			},
-		],
-		railTitle: 'Lo que ve en su panel',
-		railItems: [
-			{ title: 'Vistas', text: 'Quién ya vio su invitación' },
-			{ title: 'Confirmadas', text: 'Quién confirmó asistencia' },
-			{ title: 'Asistentes', text: 'Total de asistentes confirmados' },
-			{ title: 'Exportación', text: 'Descargue su lista con las respuestas' },
-		],
-		cta: {
-			label: PRIMARY_CTA_LABEL,
-		},
-	},
-	services: {
-		eyebrow: 'EN CADA INVITACIÓN',
-		title: 'Todo claro para sus invitados, todo bajo control para usted',
-		subtitle: 'Lo que sus invitados necesitan para llegar, confirmar y celebrar con usted.',
-		dossierSubtext: 'Funciones listas en su invitación.',
-		dossierTag: 'PARA SUS INVITADOS',
-		closingStatement: 'Menos mensajes sueltos. Más claridad para usted y sus invitados.',
-		items: [
-			{
-				title: 'Agregar al calendario',
-				description: 'Sus invitados guardan la fecha en su calendario con un toque.',
-			},
-			{
-				title: 'Google Maps, Waze y Apple Maps',
-				description: 'Botones para llegar con la aplicación que cada invitado prefiera.',
-			},
-			{
-				title: 'Ubicación al confirmar',
-				description: 'La ubicación se muestra solo a quienes confirman asistencia.',
-			},
-			{
-				title: 'Mesa de regalos',
-				description: 'Su mesa de regalos, dentro de la misma invitación.',
-			},
+			{ title: 'Exportación', text: 'Descargue su lista con las respuestas.' },
 		],
 		cta: {
 			label: PRIMARY_CTA_LABEL,
@@ -114,27 +71,27 @@ export const landingData: LandingPageData = {
 		eyebrow: 'PARA SUS INVITADOS',
 		title: 'Una invitación clara desde el primer mensaje',
 		description:
-			'Al abrirla, cada invitado puede ver sus pases, consultar los detalles del evento y confirmar asistencia.',
+			'Todo lo que necesitan para llegar, confirmar y celebrar con usted, en un solo enlace.',
 		values: [
 			{
-				name: 'Su nombre',
-				description: 'Cada invitación muestra el nombre del invitado o familia.',
+				name: 'Su nombre y sus pases',
+				description: 'Cada invitación muestra a quién va dirigida y cuántos lugares tiene.',
 			},
 			{
-				name: 'Sus pases',
-				description: 'El invitado sabe cuántos lugares tiene asignados.',
-			},
-			{
-				name: 'Detalles del evento',
-				description:
-					'Fecha, ubicación, itinerario, música, galería o información especial.',
-			},
-			{
-				name: 'Confirmación fácil',
+				name: 'Confirmación en un toque',
 				description: 'Responden desde la misma invitación.',
 			},
+			{
+				name: 'Cómo llegar',
+				description:
+					'Google Maps, Waze y Apple Maps. La ubicación se muestra a quienes confirman.',
+			},
+			{
+				name: 'Calendario y mesa de regalos',
+				description:
+					'Guardan la fecha con un toque y ven su mesa de regalos en la invitación.',
+			},
 		],
-		closingLine: '',
 		cta: {
 			label: PRIMARY_CTA_LABEL,
 		},
@@ -232,12 +189,6 @@ export const landingData: LandingPageData = {
 			label: PRIMARY_CTA_LABEL,
 		},
 		formIntro: 'O déjenos sus datos y le contactamos.',
-		channelPrimary: {
-			value: PRIMARY_CTA_LABEL,
-		},
-		channelSecondary: {
-			value: 'Escribir por correo',
-		},
 		about: {
 			title: 'Nosotros',
 			text: 'Celebra-me es atendido por Francisco Mendoza desde Los Mochis, Sinaloa.',

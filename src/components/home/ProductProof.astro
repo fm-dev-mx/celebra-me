@@ -13,89 +13,79 @@ interface Props {
 
 const { data } = Astro.props;
 const phone = getContactPhone();
+
+// Sample guests for the panel preview. Labels, statuses and the metadata row mirror the real
+// guest dashboard (`GuestSummary.tsx`, `GuestCard.tsx`, `GuestMobileDock.tsx`, `guest-presenter.ts`);
+// names and counts are fictitious.
+const sampleGuests = [
+	{ name: 'Familia Torres', status: 'Confirmada', tone: 'confirmed', meta: '#01 · 4/4 asistentes' },
+	{
+		name: 'Ana y Luis',
+		status: 'Por confirmar',
+		tone: 'pending',
+		meta: '#02 · 0/2 asistentes',
+		action: 'Recordar',
+	},
+	{ name: 'Tía Carmen', status: 'Enviada', tone: 'sent', meta: '#03 · 0/3 asistentes' },
+	{ name: 'Familia Ruiz', status: 'Confirmada', tone: 'confirmed', meta: '#04 · 5/5 asistentes' },
+];
 ---
 
 <Section
 	id="prueba-producto"
 	class="product-proof"
 	data-track-section="product-proof"
+	data-screenshot="landing-product-proof"
 	aria-labelledby="product-proof-title"
 >
-	<!-- Subtle top gold hairline separator -->
-	<div class="product-proof__top-separator" aria-hidden="true"></div>
-
 	<Container class="product-proof__container">
-		<div class="product-proof__layout">
-			<div class="product-proof__narrative">
-				<p class="product-proof__eyebrow reveal-fade-up stagger-1">{data.eyebrow || 'INVITACIÓN + CONFIRMACIÓN'}</p>
-				<h2 id="product-proof-title" class="product-proof__title reveal-fade-up stagger-2">{data.title}</h2>
-				<p class="product-proof__description reveal-fade-up stagger-3">{data.description}</p>
-				
-				<div class="product-proof__cta-desktop">
-					<WhatsAppButton
-						className="product-proof__cta reveal-fade-up stagger-4"
-						phone={phone}
-						label={data.cta.label}
-						trackSection="product-proof"
-						trackCta="whatsapp-product-proof"
-						campaignSection="PROOF"
-					/>
+		<header class="product-proof__header">
+			{data.eyebrow && <p class="product-proof__eyebrow reveal-fade-up stagger-1">{data.eyebrow}</p>}
+			<h2 id="product-proof-title" class="product-proof__title reveal-fade-up stagger-2">{data.title}</h2>
+			<p class="product-proof__description reveal-fade-up stagger-3">{data.description}</p>
+		</header>
+
+		<figure class="product-proof__visual reveal-fade-up stagger-3">
+			<div class="landing-phone" role="img" aria-label="Ejemplo del panel de invitados con confirmaciones">
+				<div class="landing-phone__screen panel-preview" aria-hidden="true">
+					<div class="panel-preview__event">
+						<span class="panel-preview__event-label">Evento</span>
+						<span class="panel-preview__event-name">XV años · Sofía Valentina</span>
+					</div>
+					<div class="panel-preview__summary">
+						<span><small>Enviadas</small><strong>18<em>/</em>24</strong></span>
+						<span><small>Confirmadas</small><strong>12</strong></span>
+						<span><small>Asistentes</small><strong>31<em>/</em>52</strong></span>
+					</div>
+					<ul class="panel-preview__list">
+						{sampleGuests.map((guest) => (
+							<li class="panel-preview__card">
+								<span class="panel-preview__name">{guest.name}</span>
+								<span class={`panel-preview__status panel-preview__status--${guest.tone}`}>{guest.status}</span>
+								<span class="panel-preview__meta">{guest.meta}</span>
+								{guest.action && <span class="panel-preview__action">{guest.action}</span>}
+							</li>
+						))}
+					</ul>
+					<div class="panel-preview__dock">
+						<span class="panel-preview__dock-item">+ Agregar</span>
+						<span class="panel-preview__dock-item panel-preview__dock-item--main">→ Recordar (6)</span>
+					</div>
 				</div>
 			</div>
+			<figcaption class="product-proof__caption">Panel con datos de ejemplo.</figcaption>
+		</figure>
 
-			<div class="product-proof__showcase reveal-fade-up stagger-5" aria-label="Invitación personalizada con funciones integradas">
-				<div class="invitation-object">
-					<div class="invitation-object__paper">
-						<p class="invitation-object__label">Celebra-me Signature</p>
-						<p class="invitation-object__date">Sábado · 15 de marzo</p>
-						<h3 class="invitation-object__names">Mariana<br />&amp; Diego</h3>
-						<p class="invitation-object__copy">Boda · RSVP personalizado · pase familiar</p>
-						<div class="invitation-object__actions" aria-hidden="true">
-							<span>Confirmar asistencia</span>
-							<span>Ver pase</span>
-						</div>
-					</div>
+		<div class="product-proof__body">
+			<ul class="proof-rail-flow reveal-fade-up stagger-4" role="list">
+				{data.features.map((item) => (
+					<li class="proof-rail-flow__item">
+						<strong class="proof-rail-flow__label">{item.title}</strong>
+						<span class="proof-rail-flow__text">{item.text}</span>
+					</li>
+				))}
+			</ul>
 
-					<div class="invitation-object__control-panel" aria-hidden="true">
-						<div class="control-panel__row">
-							<span class="control-panel__label">ASISTENCIA</span>
-							<span class="control-panel__value control-panel__value--confirmed">
-								<span class="control-panel__dot"></span>Confirmada
-							</span>
-						</div>
-						<div class="control-panel__row">
-							<span class="control-panel__label">PASE FAMILIAR</span>
-							<span class="control-panel__value">2 invitados</span>
-						</div>
-						<div class="control-panel__row">
-							<span class="control-panel__label">UBICACIÓN</span>
-							<span class="control-panel__value">Enviada</span>
-						</div>
-					</div>
-
-					<div class="invitation-object__phone" aria-hidden="true">
-						<span class="invitation-object__phone-status">Confirmada</span>
-						<span class="invitation-object__phone-pass">Pase 2 / 2</span>
-					</div>
-				</div>
-
-				<div class="product-callouts" role="list">
-					{data.items.map((item, idx) => (
-						<div
-							class={`product-callout product-callout--${['top', 'right', 'bottom', 'left'][idx] || 'top'}`}
-							role="listitem"
-						>
-							<span class="product-callout__status"></span>
-							<strong>{item.title}</strong>
-							<small>{item.description}</small>
-						</div>
-					))}
-				</div>
-			</div>
-		</div>
-
-		<div class="product-proof__mobile-footer">
-			{data.proofLine && <p class="product-proof__proof-line">{data.proofLine}</p>}
 			<WhatsAppButton
 				className="product-proof__cta"
 				phone={phone}
@@ -105,24 +95,5 @@ const phone = getContactPhone();
 				campaignSection="PROOF"
 			/>
 		</div>
-
-		<div class="product-proof__rail" aria-labelledby="proof-rail-heading">
-			<h3 id="proof-rail-heading" class="product-proof__rail-title">{data.railTitle}</h3>
-			
-			<div class="proof-rail-flow" role="list">
-				{data.railItems.map((item, idx) => (
-					<div class="proof-rail-flow__item" role="listitem">
-						<span class="proof-rail-flow__num">{String(idx + 1).padStart(2, '0')}</span>
-						<div class="proof-rail-flow__content">
-							<strong class="proof-rail-flow__label">{item.title}</strong>
-							<span class="proof-rail-flow__text">{item.text}</span>
-						</div>
-					</div>
-				))}
-			</div>
-		</div>
 	</Container>
-
-	<!-- Subtle bottom gold hairline separator and fade transition -->
-	<div class="product-proof__bottom-separator" aria-hidden="true"></div>
 </Section>

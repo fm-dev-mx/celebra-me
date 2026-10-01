@@ -37,7 +37,6 @@ test.describe('Landing page regressions', () => {
 	const expectedMobileNavLabels = ['DEMOS', 'PLANES', 'NOSOTROS'];
 	const loginHref = '/login?next=%2Fdashboard%2Finvitados';
 	const loginLabel = 'Iniciar sesión';
-	const ctaHref = '#contacto';
 	const sectionHeaderIsBelowStickyHeader = async (page: Page, headingSelector: string) => {
 		const geometry = await page.locator(headingSelector).evaluate((heading) => {
 			const header = document.querySelector('#home-header');
@@ -89,8 +88,9 @@ test.describe('Landing page regressions', () => {
 
 			await expect(page.locator('[data-nav-mobile-toggle]')).toBeVisible();
 			await expect(page.locator('.header-base__desktop-nav')).toBeHidden();
-			await expect(page.locator('.dossier-panel__module').first()).toBeVisible();
-			await expect(page.locator('#experiencia-invitados')).toBeVisible();
+			await expect(
+				page.locator('#experiencia-invitados .guest-experience__value-item').first(),
+			).toBeVisible();
 
 			await page.locator('[data-nav-mobile-toggle]').click();
 			await expect(page.locator('[data-nav-mobile-menu]')).toBeVisible();
@@ -105,7 +105,13 @@ test.describe('Landing page regressions', () => {
 				'href',
 				loginHref,
 			);
-			await expect(page.locator('.mobile-nav-actions__cta')).toHaveAttribute('href', ctaHref);
+			const menuCta = page.locator('.mobile-nav-actions__cta');
+			await expect(menuCta).toHaveText('Cotizar por WhatsApp');
+			await expect(menuCta).toHaveAttribute('href', /wa\.me/);
+			await expect(menuCta).toHaveAttribute(
+				'data-campaign-code',
+				buildCampaignCode('HEADER'),
+			);
 			await expect(page.locator('#home-header')).toHaveClass(/header-base--menu-open/);
 		}
 	});
@@ -125,7 +131,11 @@ test.describe('Landing page regressions', () => {
 		await expect(page.locator('.home-nav__link')).toHaveText(expectedNavLabels);
 		await expect(page.locator('.home-nav-actions__login')).toHaveText(loginLabel);
 		await expect(page.locator('.home-nav-actions__login')).toHaveAttribute('href', loginHref);
-		await expect(page.locator('.home-nav-actions__cta')).toHaveAttribute('href', ctaHref);
+		const headerCta = page.locator('.home-nav-actions__cta');
+		await expect(headerCta).toHaveText('Cotizar por WhatsApp');
+		await expect(headerCta).toHaveAttribute('href', /wa\.me/);
+		await expect(headerCta).toHaveAttribute('data-track-cta', 'whatsapp-header');
+		await expect(headerCta).toHaveAttribute('data-campaign-code', buildCampaignCode('HEADER'));
 		await expect(page.locator('.home-nav__link', { hasText: 'Nosotros' })).toHaveAttribute(
 			'href',
 			'#nosotros',
@@ -353,8 +363,9 @@ test.describe('Landing page regressions', () => {
 		);
 		await expect(page.locator('.proof-rail-flow__item')).toHaveCount(4);
 		await expect(page.locator('.proof-rail-flow__item').first()).toContainText(
-			'Quién ya vio su invitación',
+			'Lista desde Excel',
 		);
+		await expect(page.locator('#prueba-producto')).toContainText('Quién ya vio su invitación');
 		await expect(page.locator('#prueba-producto')).toHaveAttribute(
 			'data-track-section',
 			'product-proof',
@@ -364,10 +375,44 @@ test.describe('Landing page regressions', () => {
 			'event-types',
 		);
 		await expect(
-			page
-				.locator('.product-proof__cta-desktop')
-				.locator('[data-track-cta="whatsapp-product-proof"]'),
+			page.locator('#prueba-producto [data-track-cta="whatsapp-product-proof"]'),
+		).toHaveCount(1);
+		await expect(
+			page.locator('#prueba-producto [data-track-cta="whatsapp-product-proof"]'),
 		).toBeVisible();
+	});
+
+	test('orders sections from product proof to the decision', async ({ page }) => {
+		await page.setViewportSize({ width: 390, height: 844 });
+		await page.goto('/', { waitUntil: 'load' });
+
+		const order = await page.evaluate(() =>
+			[
+				'tipo-evento',
+				'prueba-producto',
+				'experiencia-invitados',
+				'testimonios',
+				'pricing',
+				'como-funciona',
+				'faq-section',
+				'contacto',
+			].map(
+				(id) => document.getElementById(id)!.getBoundingClientRect().top + window.scrollY,
+			),
+		);
+		expect(order).toEqual([...order].sort((a, b) => a - b));
+		await expect(page.locator('#servicios, .photo-interlude')).toHaveCount(0);
+		// One WhatsApp quote CTA per section.
+		for (const id of [
+			'prueba-producto',
+			'experiencia-invitados',
+			'como-funciona',
+			'contacto',
+		]) {
+			await expect(
+				page.locator(`#${id} [data-track-event="whatsapp_contact_clicked"]`),
+			).toHaveCount(1);
+		}
 	});
 
 	test('sends pricing CTAs directly to WhatsApp with package context', async ({ page }) => {

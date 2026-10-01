@@ -8,9 +8,8 @@ import {
 	PROMO_CAMPAIGN,
 } from '@/data/promo-campaign.data';
 
-describe('landing services product value data', () => {
-	it('frames Services as product value instead of event demo discovery', () => {
-		const services = landingData.services;
+describe('landing product value data', () => {
+	it('states the hero promise and folds guest features into one section', () => {
 		const hero = landingData.hero;
 
 		expect(hero.title).toBe(
@@ -22,13 +21,25 @@ describe('landing services product value data', () => {
 		expect(hero.secondaryCtaLabel).toBe('Ver una invitación');
 		expect(DEMO_SHOWROOM_ITEMS.some((item) => item.href === hero.secondaryCtaUrl)).toBe(true);
 
-		expect(services.title).toBe('Todo claro para sus invitados, todo bajo control para usted');
-		expect(services.items.map((item) => item.title)).toEqual([
-			'Agregar al calendario',
-			'Google Maps, Waze y Apple Maps',
-			'Ubicación al confirmar',
-			'Mesa de regalos',
+		expect(landingData.guestExperience.values.map((value) => value.name)).toEqual([
+			'Su nombre y sus pases',
+			'Confirmación en un toque',
+			'Cómo llegar',
+			'Calendario y mesa de regalos',
 		]);
+		expect('services' in landingData).toBe(false);
+	});
+
+	it('describes the guest panel with the labels the dashboard uses', () => {
+		const features = landingData.productProof.features;
+
+		expect(features.map((feature) => feature.title)).toEqual([
+			'Lista desde Excel',
+			'Envío por WhatsApp',
+			'Vistas y confirmaciones',
+			'Exportación',
+		]);
+		expect(JSON.stringify(landingData.productProof)).not.toMatch(/Abiertas/);
 	});
 });
 
@@ -94,7 +105,6 @@ describe('landing primary CTA and trust copy', () => {
 		const labels = [
 			landingData.hero.primaryCtaLabel,
 			landingData.productProof.cta.label,
-			landingData.services.cta.label,
 			landingData.guestExperience.cta.label,
 			landingData.howItWorks.cta?.label,
 			landingData.contact.cta?.label,

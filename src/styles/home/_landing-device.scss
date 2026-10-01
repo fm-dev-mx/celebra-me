@@ -1,0 +1,54 @@
+/* stylelint-disable color-no-hex */
+
+// Shared phone frame for product screens on the landing (demo captures and the guest panel).
+// One device language keeps every product proof consistent across sections.
+.landing-phone {
+	--landing-phone-width: clamp(15rem, 23vw, 17.5rem);
+	--landing-phone-radius: 2.35rem;
+	--landing-phone-bezel: 0.45rem;
+
+	position: relative;
+	width: var(--landing-phone-width);
+	aspect-ratio: 9 / 19.5;
+	margin: 0;
+	padding: var(--landing-phone-bezel);
+	border-radius: var(--landing-phone-radius);
+	background: linear-gradient(150deg, #4a4239 0%, #17120e 46%, #2f2821 100%);
+	box-shadow:
+		inset 0 0 0 1px rgb(255 255 255 / 14%),
+		inset 0 1px 0 rgb(255 255 255 / 22%),
+		0 1.75rem 3.5rem rgb(17 13 9 / 26%),
+		0 0.4rem 1rem rgb(17 13 9 / 16%);
+	isolation: isolate;
+
+	&__screen {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		border-radius: calc(var(--landing-phone-radius) - var(--landing-phone-bezel));
+		background: var(--color-ivory);
+
+		// Dynamic-island pill.
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0.55rem;
+			left: 50%;
+			z-index: 3;
+			width: 3.4rem;
+			height: 0.95rem;
+			border-radius: 999px;
+			background: #0d0a08;
+			transform: translateX(-50%);
+		}
+	}
+
+	&__image {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: top center;
+	}
+}

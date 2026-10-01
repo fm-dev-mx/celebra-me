@@ -91,7 +91,7 @@ const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
 		<div class="mobile-nav-footer">
 			<div class="mobile-nav-footer__divider"></div>
 			{
-				(loginLink || ctaLink) && (
+				(loginLink || ctaLink || Astro.slots.has('cta')) && (
 					<div class="mobile-nav-actions">
 						{loginLink && (
 							<a
@@ -102,14 +102,20 @@ const staggerClass = (index: number) => `mobile-nav-stagger-${index}`;
 								{loginLabel}
 							</a>
 						)}
-						{ctaLink && (
-							<a
-								href={ctaLink}
-								class:list={['mobile-nav-actions__cta', staggerClass(links.length + 1)]}
-								data-nav-mobile-link
-							>
-								{ctaLabel}
-							</a>
+						{Astro.slots.has('cta') ? (
+							<div class={staggerClass(links.length + 1)} data-nav-mobile-link>
+								<slot name="cta" />
+							</div>
+						) : (
+							ctaLink && (
+								<a
+									href={ctaLink}
+									class:list={['mobile-nav-actions__cta', staggerClass(links.length + 1)]}
+									data-nav-mobile-link
+								>
+									{ctaLabel}
+								</a>
+							)
 						)}
 					</div>
 				)

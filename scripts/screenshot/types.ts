@@ -450,14 +450,6 @@ export const KNOWN_SECTIONS: KnownSection[] = [
 		outputSlug: 'product-proof',
 	},
 	{
-		id: 'services',
-		label: 'Services',
-		pageType: 'landing',
-		selector: '[data-screenshot="landing-includes"]',
-		fallbackSelectors: ['#servicios'],
-		outputSlug: 'services',
-	},
-	{
 		id: 'guest-experience',
 		label: 'Guest Experience',
 		pageType: 'landing',
@@ -470,7 +462,7 @@ export const KNOWN_SECTIONS: KnownSection[] = [
 		label: 'About Us',
 		pageType: 'landing',
 		selector: '[data-screenshot="landing-about"]',
-		fallbackSelectors: ['#sobre-nosotros'],
+		fallbackSelectors: ['#nosotros'],
 		outputSlug: 'about-us',
 	},
 	{

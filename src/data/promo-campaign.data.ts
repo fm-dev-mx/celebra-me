@@ -18,6 +18,7 @@ export type PromoPackageId = 'esencial' | 'signature' | 'atelier';
 
 /** Section prefix used to build campaign codes: `<SECTION>-<promo code>`. */
 export type CampaignSection =
+	| 'HEADER'
 	| 'HERO'
 	| 'DEMO'
 	| 'PROOF'

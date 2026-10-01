@@ -594,7 +594,6 @@ export function getDefaultCriticalSelectors(pageType: PageType): ScreenshotSelec
 				selector: '[data-screenshot="landing-event-selector"], #tipo-evento',
 				required: false,
 			},
-			{ selector: '[data-screenshot="landing-includes"], #servicios', required: false },
 			{
 				selector: '[data-screenshot="landing-guest-experience"], #experiencia-invitados',
 				required: false,

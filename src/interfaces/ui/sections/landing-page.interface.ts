@@ -23,16 +23,11 @@ export interface ProductProofData {
 	eyebrow?: string;
 	title: string;
 	description: string;
-	items: Array<{
-		title: string;
-		description: string;
-	}>;
-	railTitle: string;
-	railItems: Array<{
+	/** What the host sees and does in the guest panel. */
+	features: Array<{
 		title: string;
 		text: string;
 	}>;
-	proofLine?: string;
 	cta: {
 		label: string;
 		message?: string;
@@ -51,22 +46,6 @@ export interface GuestExperienceData {
 	cta: {
 		label: string;
 		message?: string;
-	};
-}
-
-export interface ServicesData {
-	title: string;
-	subtitle: string;
-	eyebrow?: string;
-	dossierSubtext?: string;
-	dossierTag?: string;
-	closingStatement?: string;
-	items: Array<{
-		title: string;
-		description: string;
-	}>;
-	cta: {
-		label: string;
 	};
 }
 
@@ -142,12 +121,6 @@ export interface ContactData {
 	};
 	microcopy?: string;
 	formIntro?: string;
-	channelPrimary?: {
-		value: string;
-	};
-	channelSecondary?: {
-		value: string;
-	};
 	about?: {
 		title: string;
 		text: string;
@@ -189,7 +162,6 @@ export interface LandingPageData {
 	};
 	productProof: ProductProofData;
 	guestExperience: GuestExperienceData;
-	services: ServicesData;
 	pricing: PricingData;
 	testimonials: TestimonialsData;
 	faq: FAQData;

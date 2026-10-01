@@ -33,11 +33,19 @@
 	--color-text-light-rgb: 247 240 228;
 
 	// Core Spacing System Clamps
-	--section-padding-y: clamp(5rem, 10vw, 9rem);
-	--section-padding-y-compact: clamp(3.5rem, 7vw, 6rem);
+	// One vertical rhythm for every landing section: 56px on phones, 112px on wide screens.
+	--section-padding-y: clamp(3.5rem, 8vw, 7rem);
+	--section-padding-y-compact: clamp(2.5rem, 6vw, 4.5rem);
 	--container-max: 1120px;
 	--container-padding-x: clamp(1.25rem, 5vw, 4rem);
 	--card-radius: 1.25rem;
+
+	// Landing type scale: one size per role across every section.
+	--landing-h2-size: clamp(2rem, 4.6vw, 3rem);
+	--landing-h2-line-height: 1.08;
+	--landing-lead-size: clamp(1rem, 1.35vw, 1.125rem);
+	--landing-lead-line-height: 1.6;
+	--landing-hairline-color: rgb(var(--color-border-gold-rgb) / 24%);
 
 	// Typography Override
 	--font-display: 'Playfair Display', serif;
@@ -229,10 +237,8 @@
 	// Contact Section
 	--contact-section-bg: var(--color-surface-primary);
 	--contact-section-color: var(--color-surface-dark);
-	--contact-texture-opacity: 0.03;
 	--contact-pretitle-color: var(--color-text-emphasis);
 	--contact-title-color: var(--color-text-primary);
-	--contact-divider-bg: var(--color-border-emphasis);
 	--contact-info-title-color: var(--color-text-primary);
 	--contact-info-description-color: var(--color-text-secondary);
 	--contact-form-bg: rgb(var(--color-surface-primary-rgb) / 70%);
