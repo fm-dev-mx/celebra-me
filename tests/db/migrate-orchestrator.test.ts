@@ -175,8 +175,8 @@ describe('migrate orchestrator', () => {
 			});
 			expect(order).toEqual(['prepare', 'before', 'auth', 'exec', 'after']);
 			expect(result.state).toBe('APPLIED_AND_VERIFIED');
-			// Disposable has no backup, so it skips the post-backup rebuild.
-			expect(mockBuildPlan).toHaveBeenCalledTimes(target === 'disposable-test' ? 1 : 2);
+			// A fresh plan with no backup in between is not rebuilt; Production always revalidates.
+			expect(mockBuildPlan).toHaveBeenCalledTimes(target === 'production' ? 2 : 1);
 			expect(mockPrepareApply.mock.invocationCallOrder[0]).toBeLessThan(
 				mockBeforeWrite.mock.invocationCallOrder[0]!,
 			);
@@ -209,6 +209,33 @@ describe('migrate orchestrator', () => {
 		);
 		expect(mockBeforeWrite.mock.invocationCallOrder[0]).toBeLessThan(
 			mockBuildPlan.mock.invocationCallOrder[0]!,
+		);
+	});
+
+	it('seeds the policy session with evidence prod:apply already verified', async () => {
+		const { orchestrateMigrate } = await import('../../scripts/db/migrate-orchestrator.ts');
+		mockBuildPlan.mockReturnValue(plan({ target: 'production', mode: 'apply' }));
+
+		await orchestrateMigrate({
+			target: 'production',
+			mode: 'apply',
+			expectedPin: null,
+			remindConcurrencyRisk: false,
+			sessionSeed: {
+				releaseCheckCompleted: true,
+				releaseEvidenceSha: 'b'.repeat(40),
+				productionAuditCompleted: true,
+			},
+		});
+
+		expect(mockPrepareApply).toHaveBeenCalledWith(
+			expect.objectContaining({
+				session: expect.objectContaining({
+					releaseCheckCompleted: true,
+					releaseEvidenceSha: 'b'.repeat(40),
+					productionAuditCompleted: true,
+				}),
+			}),
 		);
 	});
 

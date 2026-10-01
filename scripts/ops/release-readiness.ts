@@ -33,14 +33,19 @@ export function isRemoteEvidenceUnavailable(error: unknown): boolean {
 	return error instanceof RemoteEvidenceError && error.issue === 'unavailable';
 }
 
+/** A stalled `gh` call must surface as unavailable evidence instead of hanging the operator. */
+const GH_TIMEOUT_MS = 30_000;
+
 function defaultGhRunner(args: string[]): string {
-	return execFileSync('gh', args, { encoding: 'utf8' });
+	return execFileSync('gh', args, { encoding: 'utf8', timeout: GH_TIMEOUT_MS });
 }
 
-function createGitHubClient(run: GhRunner): {
-	repository: string;
-	api: (suffix: string) => unknown;
-} {
+// Repository identity cannot change within one process; resolve it once per runner.
+const repositoryByRunner = new WeakMap<GhRunner, string>();
+
+function resolveRepository(run: GhRunner): string {
+	const cached = repositoryByRunner.get(run);
+	if (cached) return cached;
 	let repository: string;
 	try {
 		repository = run([
@@ -56,6 +61,15 @@ function createGitHubClient(run: GhRunner): {
 	}
 	if (!repository)
 		throw new RemoteEvidenceError('unavailable', 'GitHub repository identity is unavailable.');
+	repositoryByRunner.set(run, repository);
+	return repository;
+}
+
+function createGitHubClient(run: GhRunner): {
+	repository: string;
+	api: (suffix: string) => unknown;
+} {
+	const repository = resolveRepository(run);
 	return {
 		repository,
 		api: (suffix) => {

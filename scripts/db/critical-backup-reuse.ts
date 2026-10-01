@@ -234,18 +234,8 @@ function evaluateCandidateCoverage(input: {
 		flags.missingIntegrity = true;
 		return null;
 	}
-	if (
-		!artifactsAndEfsOk(
-			manifest,
-			candidate.manifestPath,
-			input.validateManifest,
-			input.assertEncrypted,
-			flags,
-		)
-	) {
-		return null;
-	}
-
+	// Cheap manifest checks run first: re-hashing and EFS-checking every artifact is only worth it
+	// for a candidate that could still cover Production.
 	const storedProfile = manifest.integrity.profile ?? 'phase3';
 	const liveProfile = liveIntegrity.profile ?? 'phase3';
 	if (storedProfile !== liveProfile) {
@@ -256,6 +246,18 @@ function evaluateCandidateCoverage(input: {
 	const ageMs = Math.max(0, nowMs - candidate.createdAtMs);
 	if (ageMs > maxAgeMs) {
 		flags.expired = true;
+		return null;
+	}
+
+	if (
+		!artifactsAndEfsOk(
+			manifest,
+			candidate.manifestPath,
+			input.validateManifest,
+			input.assertEncrypted,
+			flags,
+		)
+	) {
 		return null;
 	}
 

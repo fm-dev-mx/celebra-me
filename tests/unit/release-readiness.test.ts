@@ -111,6 +111,24 @@ describe('release check evidence', () => {
 		}
 	});
 
+	it('resolves the repository identity once per runner', () => {
+		let repoViews = 0;
+		const base = ghRunner({
+			[`commits/${sha}/check-runs?filter=latest&per_page=100`]: {
+				total_count: 0,
+				check_runs: [],
+			},
+			[`commits/${sha}/statuses?per_page=100`]: [],
+		});
+		const runner = (args: string[]) => {
+			if (args[0] === 'repo') repoViews += 1;
+			return base(args);
+		};
+		loadRemoteChecks(sha, runner);
+		loadRemoteChecks(sha, runner);
+		expect(repoViews).toBe(1);
+	});
+
 	it('requires the latest successful Production deployment', () => {
 		const runner = ghRunner({
 			'deployments?environment=production&per_page=100': [
