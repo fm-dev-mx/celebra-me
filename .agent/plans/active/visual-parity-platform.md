@@ -50,11 +50,36 @@ explicit owner authorization in the current task.
 ### Stage 1 — quick wins (this task)
 
 1. Defer size-only mismatches; set `updateSnapshots: 'none'` in compare mode.
-2. **Blocked:** CARTO Basemaps Terms §9.c prohibit server-side caching, proxying and redistributing
-   tiles, so recorded tile fixtures cannot be stored. Owner decision needed between a deterministic
-   synthetic tile served only to the browser gate (map framing, marker and filters stay covered;
-   CARTO imagery is not) and masking the tile layer. Either one changes `location-*` references and
-   belongs to the single stage-2 migration acceptance.
+2. **Blocked on the venue-map decision below.** CARTO Basemaps Terms §9.c prohibit server-side
+   caching, proxying and redistributing tiles, so recorded tile fixtures cannot be stored.
+
+#### Venue map proposal (owner decision)
+
+- Usage: `StaticVenueMap` (`src/lib/invitation/venue-map-tiles.ts`) renders a static,
+  non-interactive 3×3 grid of CARTO Voyager tiles fetched by the guest's browser. Only 7 routes
+  render it: the published invitations abril-michelle-becerra-rea, alba-rosa-quinonez,
+  america-johana, leah-lexa and romina-rios-chaparro, plus the demos demo-xv-jewelry-box and
+  demo-cumple-luxury-hacienda (11 map instances). Every other route already uses a venue photo, an
+  illustrated plate or links only.
+- Compliance gap: CARTO requires a per-customer API key for commercial use (free up to 1M tile
+  requests per month) and credit to CARTO and OpenStreetMap on every map. Production uses neither a
+  key nor attribution. The public OpenStreetMap tile servers are not a production alternative (best
+  effort, no SLA, heavy use may be blocked).
+- The map is decorative: guests navigate with the existing Google Maps, Apple Maps and Waze links.
+  The project already switched four times between iframe, CARTO and a keyless SVG schematic map.
+- Recommendation: drop CARTO. Render the venue photo when one exists, otherwise an in-house
+  illustrated venue card (token-styled SVG with pin, venue name, address and the existing navigation
+  actions). Remove the cartocdn allowlists from the capture specs. This removes the licensing
+  exposure, the third-party request that leaks guest IPs, and the only live network dependency in
+  the visual gate. Affected references (8 `location-*` variant captures and 14 page captures) join
+  the single stage-2 migration acceptance; the five clients should be informed before deployment
+  because their published pages change.
+- Optional later: a self-generated static map image per venue, rendered once at publication from
+  OpenStreetMap data and stored with the invitation assets (ODbL attribution required). Only if real
+  geography is a product requirement.
+- Data check: america-johana's ceremony coordinates (19.2759, −99.5177, near Toluca) do not match
+  its Coyoacán address; the live map may show the wrong area.
+
 3. Replace in-memory accumulation with per-capture records written to disk and a post-run aggregator
    that rebuilds the suite manifests, asserts complete coverage and fails on any FAIL record.
    Behavior stays serial by default.
@@ -81,8 +106,24 @@ explicit owner authorization in the current task.
   - Stable-capture time per capture is unchanged under contention (pages 3.5 s → 3.7 s average).
 - Review report on real data (Windows captures against Linux references): 144 captures, 134 gate
   failures listed with diffs, 7 gate-passing byte changes collapsed, 670 linked images, 223 KB HTML.
-- Pending owner authorization: commit, certified `validate:prepush` (step timings), the
-  `visual_parallel` CI input with its validation-contract update, and three paired CI trials.
+- Certified pre-push (pinned Linux image, serial, same 333 tests):
+
+  | Step                  | Before     | Archive + volume (cold)     | Warm        |
+  | --------------------- | ---------- | --------------------------- | ----------- |
+  | Source into container | 109 s copy | 36 s archive + 26 s extract | 20 s + 25 s |
+  | pnpm install          | 132 s      | 13 s                        | 6 s         |
+  | Playwright            | 9.3 min    | 9.0 min                     | 9.0 min     |
+  | Total                 | 840 s      | 644 s                       | 622 s       |
+
+- `develop` (`fc5212554`) already fails 152 of 184 certified comparisons, identical to this branch:
+  `601d7b716` changed font fallbacks in tokens and presets without re-accepted references. The
+  branch reproduces develop's rendered bytes for 179 of 184 captures; the 5 that differ between runs
+  (map, thank-you and photo-heavy pages) show run-to-run nondeterminism.
+- Band probe (Windows diagnostic, 26 demo pages, one row inserted between the first two sections):
+  whole-page comparison fails 26 of 26; 0 of 328 bands below the change fail the gate (108 drift
+  below the threshold). Bands remove the cascade without changing the tolerance.
+- Pending owner authorization: the `visual_parallel` CI input with its validation-contract update,
+  three paired CI trials, re-accepting references for the font change, and the venue-map decision.
 
 ### Stage 2 — banded complete pages and triage engine
 
