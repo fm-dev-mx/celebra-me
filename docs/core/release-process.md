@@ -107,8 +107,8 @@ reuse, recovery and verified deployment completion. Neither includes database or
   checksum-verified Linux runtime and stores it in `visual-candidates/<sha>/attempt-*/candidate`
   under the internal Git path, with sibling `candidate-references` for portable review. Subsequent
   attempts never replace earlier evidence. Candidate success is review evidence only. Acceptance
-  still requires the exact reference SHA, matrix hash, and candidate-manifest SHA-256 followed by a
-  new passing compare.
+  still binds the exact reference SHA (the clean HEAD), the matrix hash and the candidate-manifest
+  SHA-256 recorded by the candidate, followed by a new passing compare.
 
 - `pnpm run ci` covers static/build, Jest and certified browser checks. The remote workflow also
   requires Repository Policy and disposable DB contracts; local CI alone is not release readiness.
@@ -129,8 +129,10 @@ reuse, recovery and verified deployment completion. Neither includes database or
 - Generate candidates with the existing Repository CI manual input `visual_mode=candidate` on a
   published task ref. The workflow owns the pinned image and fixtures. Download its
   `visual-candidate-<sha>` artifact and review `candidate/changes.html` plus the complete matrix as
-  needed. Keep the sibling `candidate-references` directory: original PNGs are linked lazily, not
-  embedded in HTML. Native candidate reruns archive the prior bundle under ignored
+  needed. It lists only captures that fail the unchanged comparison, plus new captures; gate-passing
+  byte changes keep their accepted bytes and are only counted. Keep the sibling
+  `candidate-references` and `candidate-diffs` directories: PNGs are linked lazily, not embedded in
+  HTML. Native candidate reruns archive the prior bundle under ignored
   `.tmp/visual-parity/history/`. Coverage expansion accepts a smaller prior matrix as review input,
   but comparison still requires the entire current matrix. Structured failure phases distinguish
   preflight, coverage, manifest, browser and report errors; none changes the success criteria. This
