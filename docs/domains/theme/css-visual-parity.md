@@ -197,11 +197,12 @@ changing tolerances, or downgrading compare mode.
   acceptance only after explicit approval of its exact SHA, matrix hash and candidate-manifest hash.
   Then compare and run complete CI on the final revision.
 
-Venue previews use `StaticVenueMap`, preserving the public Production CARTO Voyager tile URLs and
-geographic framing without introducing an API key. Appearance follows the explicit map style and
-inherited color tokens; the shared renderer owns the tile grid and marker. Google Maps, Apple Maps
-and Waze navigation links remain independent. Remote tile changes or failures must be reported by
-visual diagnostics, not silently replaced or accepted as parity.
+Venue previews use `StaticVenueMap`, an in-house illustration (street grid, blocks, park and pin)
+styled with theme tokens and the explicit map style. It uses no basemap provider, credential or
+network request: CARTO's terms require a per-customer key and on-map attribution for commercial use
+and forbid caching tiles. Coordinates only vary the illustration's street angle and park side.
+Google Maps, Apple Maps and Waze navigation links remain the way guests reach the venue. Capture
+specs allow no external map origin.
 
 ## Current asset evidence
 

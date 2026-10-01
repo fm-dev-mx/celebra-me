@@ -1,40 +1,64 @@
 ---
 import '@/styles/invitation/_venue-map.scss';
 import type { LocationMapStyle } from '@/lib/invitation/location-presentation';
-import { buildVenueMapTiles } from '@/lib/invitation/venue-map-tiles';
+import { buildVenueMapIllustration } from '@/lib/invitation/venue-map-illustration';
 
 interface Props {
 	lat: number;
 	lng: number;
-	zoom?: number;
 	title?: string;
-	address?: string;
 	mapStyle?: LocationMapStyle;
 }
-const { lat, lng, zoom = 15, title, mapStyle = 'dark' } = Astro.props;
-const { tileGrid, shiftX, shiftY } = buildVenueMapTiles(lat, lng, zoom);
+const { lat, lng, title, mapStyle = 'dark' } = Astro.props;
+const { rotation, parkSide } = buildVenueMapIllustration(lat, lng);
+const parkX = parkSide === 'left' ? 118 : 238;
 ---
 
 <div
 	class="google-map-container"
 	data-map-style={mapStyle}
 	data-map-preview="static"
-	data-map-provider="carto-voyager"
+	data-map-provider="illustration"
 >
-	<div class="rustic-map-wrapper">
-		<div class="rustic-map-tiles">
-			{tileGrid.map((tile) => (
-				<img
-					src={tile.url}
-					alt=""
-					loading="lazy"
-					decoding="async"
-					class="rustic-map-tile"
-					data-col={tile.x}
-					data-row={tile.y}
+	<div class="venue-map-wrapper">
+		<svg
+			class="venue-map-illustration"
+			viewBox="0 0 400 300"
+			preserveAspectRatio="xMidYMid slice"
+			aria-hidden="true"
+			focusable="false"
+		>
+			<g transform={`rotate(${rotation} 200 150)`}>
+				<rect class="venue-map-illustration__ground" x="-100" y="-100" width="600" height="500" />
+				<g class="venue-map-illustration__blocks">
+					{[-60, 28, 116, 204, 292, 380].flatMap((x) =>
+						[-70, 10, 90, 170, 250, 330].map((y) => (
+							<rect x={x} y={y} width="72" height="64" rx="5" />
+						)),
+					)}
+				</g>
+				<rect
+					class="venue-map-illustration__park"
+					x={parkX}
+					y="96"
+					width="44"
+					height="40"
+					rx="12"
 				/>
-			))}
-		</div>
+				<g class="venue-map-illustration__streets">
+					{[-68, 20, 108, 196, 284, 372].map((x) => (
+						<path d={`M${x} -100V400`} />
+					))}
+					{[-78, 2, 82, 162, 242, 322].map((y) => (
+						<path d={`M-100 ${y}H500`} />
+					))}
+				</g>
+				<g class="venue-map-illustration__avenues">
+					<path d="M-100 162H500" />
+					<path d="M-60 330C60 250 140 230 200 150S330 30 460 -40" />
+				</g>
+			</g>
+		</svg>
 		<div class="rustic-map-marker" title={title} aria-label={title}>
 			<div class="rustic-map-pin">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" fill="currentColor">
@@ -46,10 +70,3 @@ const { tileGrid, shiftX, shiftY } = buildVenueMapTiles(lat, lng, zoom);
 	</div>
 	<div class="map-overlay" aria-hidden="true"></div>
 </div>
-
-<style define:vars={{ mapShiftX: `${shiftX}px`, mapShiftY: `${shiftY}px` }}>
-	.google-map-container {
-		--venue-map-shift-x: var(--mapShiftX);
-		--venue-map-shift-y: var(--mapShiftY);
-	}
-</style>

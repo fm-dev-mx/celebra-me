@@ -409,9 +409,9 @@ Role-aware WebP transfer-weight **targets** (guidance):
 
 ### Neutral TOP PREMIUM Refinement (2026-07-28 — implemented final state)
 
-Implemented in `src/styles/invitation-profiles/alba-rosa-quinonez.scss` and
-content-owned `composition.intersections`. No shared components, presets, or other invitations were
-modified for those invitation-local visual treatments.
+Implemented in `src/styles/invitation-profiles/alba-rosa-quinonez.scss` and content-owned
+`composition.intersections`. No shared components, presets, or other invitations were modified for
+those invitation-local visual treatments.
 
 - **Café/brown removal:** All inherited luxury-hacienda café tones neutralized inside the profile
   scope: reveal/envelope/seal tokens (`--env-*`, `--reveal-card-*`), header + mobile drawer hooks
@@ -512,10 +512,10 @@ profiles were modified.
   preserves the eyebrow. It explicitly groups Event, Location, Navigation, and Protocol; mobile
   flows event/address → map → navigation → dress code, while tablet/desktop uses a 55/45
   left-information/right-map-and-actions composition.
-- **Map & legibility:** The existing map uses verified Canta Luna coordinates at zoom 15 with venue
-  pin and Carto street context. Its neutral filter and border are eased to retain road/street-label
-  clarity without commercial clutter or card-like shadow. Address copy and each map action have a
-  44px target; functional/address text remains 15.2px+ on mobile and 17.28px at tablet/desktop.
+- **Map & legibility:** The venue pin sits on the in-house illustrated street plate, seeded by the
+  verified Canta Luna coordinates. Its neutral filter and border keep the plate quiet, without
+  commercial clutter or card-like shadow. Address copy and each map action have a 44px target;
+  functional/address text remains 15.2px+ on mobile and 17.28px at tablet/desktop.
 - **Automated Verification:** `pnpm validate:changed` passed (68 suites / 847 tests, ESLint and
   Stylelint; Prettier remains advisory for pre-existing changed-file debt), `pnpm type-check`
   passed, and `pnpm validate:event-parity` passed. Browser checks at 320×568, 390×844, 430×932,

@@ -44,9 +44,7 @@ assertVisualComparisonReady(VISUAL_PARITY_MODE, ACCEPTED_BASELINES_MANIFEST);
 
 function isExpectedVisualDependency(rawUrl: string, documentOrigin: string): boolean {
 	try {
-		const url = new URL(rawUrl);
-		if (url.origin === documentOrigin) return true;
-		return /^(?:a|b|c)\.basemaps\.cartocdn\.com$/u.test(url.hostname);
+		return new URL(rawUrl).origin === documentOrigin;
 	} catch {
 		return false;
 	}
@@ -647,42 +645,28 @@ test('section captures exclude a consent banner mounted after capture setup', as
 	await expect(page.locator('#consent-banner-root')).toBeVisible();
 });
 
-test('venue maps preserve Production tiles and independent navigation without credentials', async ({
-	page,
-}) => {
-	await page.route('https://*.basemaps.cartocdn.com/**', (route) =>
-		route.fulfill({
-			contentType: 'image/png',
-			body: Buffer.from(
-				'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=',
-				'base64',
-			),
-		}),
-	);
+test('venue maps render in-house illustrations without external requests', async ({ page }) => {
+	const externalRequests: string[] = [];
+	page.on('request', (request) => {
+		const { protocol, hostname } = new URL(request.url());
+		if (/^https?:$/u.test(protocol) && !['127.0.0.1', 'localhost'].includes(hostname))
+			externalRequests.push(request.url());
+	});
 	await page.goto('/test/variant?section=location&variant=standard&preset=jewelry-box', {
 		waitUntil: 'networkidle',
 	});
 	const location = page.locator('#event-location');
 	await location.scrollIntoViewIfNeeded();
-	await expect(location.locator('[data-map-provider="carto-voyager"]').first()).toBeVisible();
+	await expect(location.locator('[data-map-provider="illustration"]').first()).toBeVisible();
 	await expect(location.locator('a[href="https://maps.app.goo.gl/example1"]')).toBeVisible();
 	await expect(location.locator('iframe[src*="maps"]')).toHaveCount(0);
-	const tiles = await location
-		.locator('.rustic-map-tile')
-		.evaluateAll((nodes) => nodes.map((node) => (node as HTMLImageElement).src));
-	expect(tiles).toHaveLength(18);
 	expect(
 		await location
-			.locator('.rustic-map-tiles')
+			.locator('.venue-map-illustration')
 			.first()
 			.evaluate((node) => getComputedStyle(node).filter),
 	).toBe('grayscale(0.12) contrast(1.02) brightness(0.82)');
-	for (const source of tiles) {
-		const url = new URL(source);
-		expect(url.hostname).toMatch(/^[abc]\.basemaps\.cartocdn\.com$/);
-		expect(url.pathname).toMatch(/^\/rastertiles\/voyager\/\d+\/\d+\/\d+\.png$/);
-		expect(url.search).toBe('');
-	}
+	expect(externalRequests).toEqual([]);
 });
 
 test('diagnostic randomness repeats across fresh documents without becoming constant', async ({

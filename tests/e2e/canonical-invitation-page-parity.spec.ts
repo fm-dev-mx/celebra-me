@@ -74,7 +74,7 @@ function isAllowedVisualAssetUrl(rawUrl: string, baseOrigin: string): boolean {
 		return true;
 	}
 
-	return /^(?:a|b|c)\.basemaps\.cartocdn\.com$/u.test(url.hostname);
+	return false;
 }
 
 test.describe('Canonical invitation complete-page visual parity', () => {
