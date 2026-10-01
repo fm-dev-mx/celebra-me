@@ -8,8 +8,6 @@
 // ==========================================================================
 
 .theme-preset--angelic-presence .invitation-hero[data-variant='standard'] {
-	--hero-angelic-title-shadow: 0 8px 24px rgb(var(--color-eternal-ink-rgb) / 14%);
-
 	min-height: 100svh;
 	align-items: stretch;
 	justify-content: flex-end;
@@ -269,7 +267,8 @@
 		justify-content: flex-end;
 
 		&::before {
-			background:
+			background: var(
+				--hero-angelic-mobile-veil,
 				radial-gradient(
 					ellipse at 18% 16%,
 					rgb(var(--color-angelic-blue-rgb) / 14%) 0%,
@@ -280,7 +279,8 @@
 					rgb(var(--color-ivory-warm-rgb) / 74%) 0%,
 					rgb(var(--color-angelic-mist-rgb) / 32%) 24%,
 					transparent 52%
-				);
+				)
+			);
 		}
 
 		.invitation-hero__background img {

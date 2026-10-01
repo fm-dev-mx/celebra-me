@@ -1,0 +1,26 @@
+// Angelic Presence bautismo demo — the hero photograph is a pale ivory christening portrait, so the
+// preset's translucent champagne title disappears into it on mobile. A deeper ivory veil rises under
+// the name block and the title gradient stays opaque ink with an antique-gold sheen.
+
+.event--demo-bautismo-angelic-presence.theme-preset--angelic-presence {
+	--hero-title-gradient: linear-gradient(
+		115deg,
+		var(--color-eternal-ink) 0%,
+		color-mix(in srgb, var(--color-sacred-gold) 62%, var(--color-eternal-ink)) 50%,
+		var(--color-eternal-ink) 100%
+	);
+	--hero-angelic-mobile-veil:
+		linear-gradient(
+			90deg,
+			rgb(var(--color-pure-ivory-rgb) / 44%) 0%,
+			rgb(var(--color-pure-ivory-rgb) / 18%) 52%,
+			transparent 78%
+		),
+		linear-gradient(
+			to top,
+			rgb(var(--color-ivory-warm-rgb) / 92%) 0%,
+			rgb(var(--color-ivory-warm-rgb) / 80%) 30%,
+			rgb(var(--color-angelic-mist-rgb) / 46%) 44%,
+			transparent 60%
+		);
+}
