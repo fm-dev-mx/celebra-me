@@ -3,7 +3,7 @@ name: branch-lane
 description: |
   Prepare releases or promote/sync develop and main through the existing parity and checkpoint workflow. Git writes require exact current-task authorization; this skill does not perform database or deployment operations.
 domain: workflow
-version: 2.2.1
+version: 2.2.2
 absorbed_skills: [release-prepare]
 when_to_use:
   - User asks to promote develop to main / fast-forward main / "promueve a main"

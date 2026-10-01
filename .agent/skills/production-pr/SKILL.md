@@ -3,7 +3,7 @@ name: production-pr
 description: |
   Prepare and open a production pull request with an explicit release range, current validation evidence, and task-scoped Git authorization. Stops before merge or deployment.
 domain: workflow
-version: 1.1.0
+version: 1.2.0
 when_to_use:
   - Prepare or open a pull request intended for production
   - Audit the scope and evidence for an existing production pull request
@@ -86,14 +86,15 @@ Read [validation procedures](../../../docs/core/validation-procedures.md) and av
 commits from new documentation edits. Record commands, exit results, checked SHA/range, skipped
 checks, and environment limitations.
 
-- Use `pnpm validate:changed` when working-tree files match the task; otherwise use explicit task
-  paths. Add structure and link validation for skill/governance changes. Apply TypeScript, domain,
-  browser, and visual checks when the actual changed surfaces require them.
-- Inspect the release classifier and use
-  `pnpm ops:classify-release -- --base <base-sha> --head <head-sha>` for advisory impact
-  classification. A tooling-only result does not waive required remote CI. Database-sensitive or
-  visual ranges retain their owning evidence and human gates; report missing evidence without
-  applying migrations, publishing content, or accepting images.
+- Evidence for a committed range is remote: `pnpm ops:release-checks <40-hex-sha>` for the exact
+  integrated SHA. `pnpm validate:changed` only covers working-tree edits made in this task (for
+  example new documentation); a clean tree gives it nothing to check. Add structure and link
+  validation for skill/governance changes.
+- Reuse the advisory `pnpm ops:classify-release -- --base <base-sha> --head <head-sha>` result
+  already produced for this range (release execution runs it once). A tooling-only result does not
+  waive required remote CI. Database-sensitive or visual ranges retain their owning evidence and
+  human gates; report missing evidence without applying migrations, publishing content, or accepting
+  images.
 - Before an authorized push, recheck scope, remote tips, fast-forward compatibility, and effective
   branch rules. Honor the normal pre-push checks, including exact-SHA visual certification when
   selected. Push only the intended source ref; never force, bypass hooks, merge, or push `main`.

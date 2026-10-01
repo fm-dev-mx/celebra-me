@@ -97,6 +97,8 @@ task authorization, target classification, and standard guard checks.
      lockfile, and Node.js version (`test` in parallel with `type-check` → `build:app`; ordinary
      preflight does not run the suite; matching evidence is reused, `--force` re-runs it).
      `prod:apply` verifies this evidence and exact-SHA CI checks before any backup or owner prompt.
+     Do not confuse it with `pnpm ops:release-checks <40-hex-sha>` (positional SHA), which reads
+     remote GitHub check evidence and runs no local suite.
   6. Verified pre-migration critical backup coverage (`.backups/prod/...`) with bounded RPO (default
      15 minutes). Reuse when project/artifacts/EFS/profile/migration-history match and age ≤ RPO;
      business-row drift after capture is allowed (online RSVP traffic). Otherwise capture a new set
@@ -181,7 +183,8 @@ task authorization, target classification, and standard guard checks.
   Production content apply is `pnpm prod:apply -- --slug <slug> --apply` (or `--all-ready`). The
   promotion orchestrator stays the domain primitive.
 - `pnpm db:migrate -- --target preview` preflights Preview (`PREVIEW_DB_URL`); `--apply` applies
-  pending migrations after Preview authorization (wrapper over `db:migrate -- --target preview`).
+  pending migrations after Preview authorization. Preflights never write; the guided TTY menu only
+  reviews the plan or prints the explicit `--apply` command.
 - Schema status evidence: `pnpm dbs` / observability use **migration_history_parity** (`CURRENT` /
   `BEHIND` are history-only). `pnpm db:*:audit` uses **object_audit_readiness** and must fail a
   `CURRENT` history when named public indexes, constraints, or contract routines drift. While
@@ -242,8 +245,8 @@ invent a healthy state, or acquire mutation authority.
   `pnpm db:local:refresh-from-prod-preserve-local` are blocked — they run `supabase db reset` which
   destroys the persistent-local database.
 - Need a schema change? Create a migration, test it on the disposable environment
-  (`tsx scripts/db/disposable-test-env.ts run-tests`), and use `pnpm prod:apply -- --schema` for the
-  reviewed Production owner path (primitive: `pnpm db:migrate -- --target production`).
+  (`pnpm db:disposable:test`), and use `pnpm prod:apply -- --schema` for the reviewed Production
+  owner path (primitive: `pnpm db:migrate -- --target production`).
 - Need a production recovery point? Use `pnpm db:prod:backup:critical` or the daily job
   `pnpm db:prod:backup:daily`. `pnpm db:prod:backup` is a public-schema dump for local refresh only
   — not a critical recovery set. Keep output gitignored. The guard verifies the target is a Supabase
@@ -251,8 +254,8 @@ invent a healthy state, or acquire mutation authority.
 - Need the Free-plan daily recovery point? Run `pnpm db:prod:backup:daily` from the authorized
   Windows operator account. Windows Task Scheduler may invoke it once every 24 hours; it must never
   run through CI, Vercel, Supabase scheduled compute, or application infrastructure.
-- Need to reset a database for tests? Use `tsx scripts/db/disposable-test-env.ts reset`. The guard
-  allows all operations on the disposable-test target.
+- Need to reset a database for tests? Use `pnpm db:disposable:reset`. The guard allows all
+  operations on the disposable-test target.
 - Need a manual production SQL patch? Require the [`manual SQL manifest`](manual-sql-manifest.md),
   run `pnpm db:prod:patch -- --dry-run --file <path>`, then use only
   `pnpm prod:apply -- --patch <path> --apply` for owner-confirmed specialized maintenance that

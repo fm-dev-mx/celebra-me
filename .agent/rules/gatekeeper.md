@@ -158,8 +158,8 @@ of the following commands, whether through pnpm wrappers or directly in the shel
 - `supabase db reset --local --yes` — destroys persistent local DB
 - `supabase db reset --linked` — destroys linked remote/production DB
 - `supabase db push --local` — overwrites local schema (use disposable)
-- `supabase db push --linked` — mutates production schema (use
-  `pnpm db:migrate -- --target production`)
+- `supabase db push --linked` — mutates production schema (owner path:
+  `pnpm prod:apply -- --schema`)
 - `docker volume rm supabase_db_celebra-me-rsvp` — deletes persistent Docker volume
 - `docker compose down -v` with the persistent Supabase project — deletes volumes
 

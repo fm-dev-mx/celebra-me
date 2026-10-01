@@ -3,7 +3,7 @@ name: database-parity
 description: |
   Validate migration identity, schema compatibility, and backup evidence for a database-sensitive branch/release range. Use standalone for an explicit parity audit or when branch-lane requires it; database access remains governed by database rules.
 domain: workflow
-version: 2.1.2
+version: 2.2.0
 when_to_use:
   - branch-lane sets requiresParityAudit or identityStatus fail handling
   - User asks for a database-parity audit between main and develop (standalone)
@@ -81,13 +81,22 @@ Otherwise record `Skipped` with explicit reason. Never claim pipeline pass witho
 
 ### 4. Remote audits (read-only)
 
+First confirm read-only availability for the targets in scope; an unavailable target is reported as
+unavailable, never as zero, aligned, or clean:
+
+```bash
+pnpm db:availability:verify -- --targets local,preview,production
+```
+
 When credentials **already resolve** and policy permits read-only access, run automatically:
 
 ```bash
 pnpm db:local:audit
 pnpm db:preview:audit
-pnpm db:prod:audit
+pnpm db:prod:audit   # only when the task scope includes Production (promote/release); else "No evaluado"
 ```
+
+Use `pnpm dbs -- --targets <local|preview|production>` for status limited to the targets in scope.
 
 - Missing credentials → `Needs manual action` (exact env/secret file locations; never print secrets)
 - Technical/command failure → `Fail` with remediation — then **immediately** run §5 diagnosis

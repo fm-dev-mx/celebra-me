@@ -35,7 +35,8 @@ implementing these skills is never a live-release invocation.
   merely because this is a release. Preserve normal pre-commit and pre-push hooks.
 - Run `pnpm db:branch:parity -- --base <base-sha> --head <head-sha> --json` for the relevant range.
   Use branch-lane/database-parity read-only diagnosis and its fingerprinted checkpoint/clearance
-  when sensitive. Do not inherit persistent DB or disposable mutation authority from those skills.
+  when sensitive. Do not inherit persistent DB mutation authority from those skills; their only
+  automatic write is the disposable-test reset that database-parity performs while diagnosing.
   Missing compatibility proof stops dependent deployment. Obtain separate scoped authority if a
   mutation is genuinely required, with its concrete plan already prepared.
 - Reuse successful evidence only for matching SHA/range, files/artifacts, configuration, runtime,

@@ -3,7 +3,7 @@ name: publish-preview
 description:
   Publish an identified code release to Preview through develop and verify its deployment.
 domain: workflow
-version: 1.0.0
+version: 1.0.1
 when_to_use:
   - User explicitly invokes publish-preview to execute a code release
 preconditions:
@@ -43,8 +43,9 @@ No Production promotion, tags, migration or persistent DB mutation, invitation c
 publication, fixture provisioning, destructive cleanup, history rewrites, hook bypasses, or remote
 settings changes. Visual-reference acceptance requires explicit human approval. Candidate generation
 is permitted as diagnostic review preparation: when visual impact is detected on changed paths,
-generate the candidate with `pnpm visual:parity:candidate:certified -- --sha <HEAD>`, present the
-concise summary and `changes.html` link, and obtain explicit human approval before accepting
+generate the candidate with `pnpm visual:parity:candidate:certified -- --sha <full-sha>` (the 40-hex
+value of `git rev-parse HEAD`; abbreviations are rejected), present the concise summary and
+`changes.html` link, and obtain explicit human approval before accepting
 (`pnpm visual:parity:accept`) and pushing.
 
 Finish only after the exact integrated SHA has required CI, a ready Preview deployment in the
