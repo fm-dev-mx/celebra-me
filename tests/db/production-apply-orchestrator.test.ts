@@ -135,6 +135,7 @@ function baseDeps(options?: {
 		},
 		revalidateInvitationPlan: async () => undefined,
 		getProductionDbUrl: () => ({ url: PROD_URL }),
+		assertReleaseReadiness: () => ({ sha: 'a'.repeat(40) }),
 		preparePatch: (file) => ({
 			file,
 			path: file,
@@ -897,6 +898,33 @@ describe('production apply execution', () => {
 			delete process.env.PROD_SUPABASE_URL;
 		}
 		expect(ensurePatchBackup).not.toHaveBeenCalled();
+	});
+
+	it('fails on invalid release evidence before any backup or owner prompt', async () => {
+		const ensureSharedBackup = jest.fn(() => ({ manifestPath: '.tmp/test-backup.json' }));
+		const requireOwnerApply = jest.fn(async () => undefined);
+		const assertReleaseReadiness = jest.fn<
+			NonNullable<ProductionApplyExecuteDeps['assertReleaseReadiness']>
+		>(() => {
+			throw new OperatorError({
+				title: 'Release no verificado',
+				cause: 'checks pendientes',
+				code: 'RELEASE_CHECK_INVALID',
+				remediation: [],
+			});
+		});
+		await expect(
+			applyProductionApplyPlan(cli(['--schema', '--apply']), {
+				...baseDeps(),
+				ensureSharedBackup:
+					ensureSharedBackup as unknown as ProductionApplyExecuteDeps['ensureSharedBackup'],
+				requireOwnerApply,
+				assertReleaseReadiness,
+			}),
+		).rejects.toMatchObject({ code: 'RELEASE_CHECK_INVALID' });
+		expect(assertReleaseReadiness).toHaveBeenCalledWith({ remote: true });
+		expect(ensureSharedBackup).not.toHaveBeenCalled();
+		expect(requireOwnerApply).not.toHaveBeenCalled();
 	});
 
 	it('requires and revalidates a current critical backup before applying a patch', async () => {

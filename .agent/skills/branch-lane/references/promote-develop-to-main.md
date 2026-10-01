@@ -43,28 +43,23 @@ Select local checks through validation procedures and reuse matching completed e
 `pnpm ops:release-checks <exact-integrated-sha>` before opening the release PR. Local CI does not
 replace the required integration and PR checks; red or missing required CI stops promotion.
 
-3. Create or update a pull request from `develop` to `main` — source `develop@<sha>`, target
-   `main@<sha>`. Do not switch to or commit on `main` locally.
-
-```bash
-gh pr create --base main --head develop
-```
-
-If the branch is not up to date or the pull request cannot be merged without violating repository
-rules: `Hard blocked` / `Needs decision` — suggest `sync-main-into-develop`.
-
-4. Tag only if separately authorized:
-
-```bash
-git tag -a vX.Y.Z -m "vX.Y.Z <theme>"
-```
-
-5. Push `develop` only if authorized. Merge the pull request only after required checks and any
-   required review pass:
+3. Push `develop` only if authorized, then wait for `Repository Policy` and `Application Suite` on
+   that exact SHA (`pnpm ops:release-checks <40-hex-sha>`):
 
 ```bash
 git push origin develop
-# if tag authorized:
+```
+
+4. Open the release pull request through the `production-pr` skill (source `develop@<sha>`, target
+   `main@<sha>`); do not create it here. Do not switch to or commit on `main` locally. If the branch
+   is not up to date or the pull request cannot be merged without violating repository rules:
+   `Hard blocked` / `Needs decision` — suggest `sync-main-into-develop`.
+
+5. Tag only if separately authorized, and push the tag only after that authorization. Merge the pull
+   request only after required checks and any required review pass:
+
+```bash
+git tag -a vX.Y.Z -m "vX.Y.Z <theme>"
 git push origin vX.Y.Z
 ```
 

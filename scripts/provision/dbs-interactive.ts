@@ -30,13 +30,15 @@ async function loadState(): Promise<InteractiveState> {
 	const { buildCanonicalStatusView, refineCanonicalStatusViewPromotions } =
 		await import('./canonical-status.ts');
 	const fast = await buildCanonicalStatusView({ includeProductionPreflight: false });
-	let view = fast;
-	try {
-		view = await refineCanonicalStatusViewPromotions(fast);
-	} catch {
-		// Keep the read-only base view; its existing evidence markers remain visible.
-	}
-	const media = readMediaReferencesStatus();
+	const refine = async () => {
+		try {
+			return await refineCanonicalStatusViewPromotions(fast, { resetSession: false });
+		} catch {
+			// Keep the read-only base view; its existing evidence markers remain visible.
+			return fast;
+		}
+	};
+	const [view, media] = await Promise.all([refine(), readMediaReferencesStatus()]);
 	return {
 		view,
 		media,

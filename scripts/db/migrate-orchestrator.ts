@@ -17,6 +17,7 @@ import {
 	MIGRATE_CONCURRENCY_RESIDUAL_RISK,
 	type MigrateEnvironmentPolicy,
 	type MigratePolicyContext,
+	type MigratePolicySession,
 } from './migrate-policy.ts';
 import { localMigratePolicy } from './migrate-policy-local.ts';
 import { previewMigratePolicy } from './migrate-policy-preview.ts';
@@ -70,6 +71,11 @@ export interface OrchestrateMigrateInput {
 	authorizedPermitOperationType?: string;
 	/** Shared critical backup from prod:apply; never a CLI flag. */
 	preparedCriticalBackupManifestPath?: string;
+	/** Evidence prod:apply already verified in this process; never a CLI flag. */
+	sessionSeed?: Pick<
+		MigratePolicySession,
+		'releaseCheckCompleted' | 'releaseEvidenceSha' | 'productionAuditCompleted'
+	>;
 }
 
 export interface OrchestrateMigrateResult {
@@ -127,7 +133,7 @@ function withSeams(
 ): MigratePolicyContext {
 	return {
 		...ctx,
-		session: ctx.session ?? {},
+		session: { ...(ctx.session ?? {}), ...(input.sessionSeed ?? {}) },
 		readConfirmationLine: input.readConfirmationLine ?? ctx.readConfirmationLine,
 		isInteractive: input.isInteractive ?? ctx.isInteractive,
 		authorizedPlanBindingHex: input.authorizedPlanBindingHex ?? ctx.authorizedPlanBindingHex,
@@ -192,6 +198,7 @@ export function preflightMigrate(input: OrchestrateMigrateInput): MigrationPlan 
 /**
  * Full orchestration.
  * Apply: prepareApply → reviewed plan → beforeWrite (backup) → one rebuild → drift → authorize → write.
+ * The rebuild is skipped only when no backup ran and the plan was not supplied by the caller.
  */
 export async function orchestrateMigrate(
 	input: OrchestrateMigrateInput,
@@ -224,8 +231,13 @@ export async function orchestrateMigrate(
 	// Backup / coverage precede final plan rebuild and owner authorization.
 	policy.beforeWrite(reviewed, ctx);
 
+	// A plan built just above with no backup step in between is already fresh; rebuilding it
+	// immediately would only repeat every read. A caller-reviewed plan, or any target that takes a
+	// backup first, is revalidated before authorization; Production always is.
 	const skipPostBackupRebuild =
-		input.target === 'disposable-test' && reviewed.backupRequirement === 'none';
+		input.target !== 'production' &&
+		reviewed.backupRequirement === 'none' &&
+		(input.target === 'disposable-test' || input.reviewedPlan === undefined);
 	let plan = reviewed;
 	if (!skipPostBackupRebuild) {
 		writeHuman(`${operatorSymbol('info')} Revalidación: evidencia material del plan…`);

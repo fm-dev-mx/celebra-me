@@ -145,6 +145,18 @@ jobs:
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
+            # Content-keyed lint caches; a stale entry only re-lints the files whose content changed.
+            - name: Restore lint caches
+              if: matrix.tier == 'static'
+              uses: actions/cache@v6
+              with:
+                  path: |
+                      node_modules/.cache/eslint
+                      node_modules/.cache/stylelint
+                  key: lint-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', '.stylelintrc.json') }}-${{ github.sha }}
+                  restore-keys: |
+                      lint-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', '.stylelintrc.json') }}-
+
             - name: Static checks and build
               if: matrix.tier == 'static'
               run: pnpm ci:static

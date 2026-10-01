@@ -99,7 +99,7 @@ function formatTaskPromptCommand(
 	color: (value: string) => string,
 	suffix = '',
 ): string[] {
-	const display = displayOperatorCommand(command);
+	const display = displayOperatorCommand(command, { platform: process.platform });
 	if (display.surface === 'terminal') {
 		const lines = [`${indent}${label}:${suffix}`, `${indent}  Terminal`];
 		if (display.envAssignment) lines.push(`${indent}  ${color(display.envAssignment)}`);

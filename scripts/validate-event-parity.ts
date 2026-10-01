@@ -227,8 +227,10 @@ Options:
 	let dbEvents: DbEvent[];
 	let publishedSlugList: string[];
 	try {
-		dbEvents = await fetchDbEvents(supabaseUrl, serviceRoleKey);
-		publishedSlugList = await fetchPublishedContentSlugs(supabaseUrl, serviceRoleKey);
+		[dbEvents, publishedSlugList] = await Promise.all([
+			fetchDbEvents(supabaseUrl, serviceRoleKey),
+			fetchPublishedContentSlugs(supabaseUrl, serviceRoleKey),
+		]);
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		if (values.allowMissingDb && message === 'fetch failed') {

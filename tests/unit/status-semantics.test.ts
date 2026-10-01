@@ -9,6 +9,7 @@ import {
 	invitationAttentionRemediation,
 	publicationQueueRemediation,
 	publicationRemediation,
+	readinessRemediation,
 	readinessSemantic,
 	schemaLifecycleSemantic,
 	schemaRemediation,
@@ -174,6 +175,23 @@ describe('status semantics', () => {
 		);
 		expect(readinessSemantic('UNVERIFIED')).toBe('unverified');
 		expect(readinessSemantic('PENDING_MIGRATIONS')).toBe('blocked');
+	});
+
+	it('offers Production a single prod:apply plan/apply path for pending migrations', () => {
+		const production = {
+			...buildCanonicalStatusViewFixture().environments.production,
+			schemaLifecycle: 'BEHIND' as const,
+			schemaOperationReadiness: 'PENDING_MIGRATIONS' as const,
+			schemaNextAction: 'pnpm prod:apply -- --schema',
+			pendingMigrations: ['20260807120000'],
+			evidence: 'LIVE' as const,
+		};
+		const commands = readinessRemediation(production).steps.map((entry) => entry.command);
+		expect(commands).toEqual([
+			'pnpm prod:apply -- --schema',
+			'pnpm prod:apply -- --schema --apply',
+		]);
+		expect(commands.join(' ')).not.toContain('db:migrate -- --target production');
 	});
 
 	it('keeps BLOCKED publication distinct from PROMOTE and uses existing diagnostic commands', () => {

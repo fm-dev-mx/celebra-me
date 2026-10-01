@@ -183,11 +183,13 @@ function deriveSchemaOperationFields(
 				schemaNextAction: 'pnpm db:migrate -- --target disposable-test --apply',
 			};
 		}
-		const targetFlag =
-			env === 'production' ? 'production' : env === 'preview' ? 'preview' : 'local';
+		// Production has a single owner path: prod:apply plans read-only without --apply.
 		return {
 			schemaOperationReadiness: 'PENDING_MIGRATIONS',
-			schemaNextAction: `pnpm db:migrate -- --target ${targetFlag}`,
+			schemaNextAction:
+				env === 'production'
+					? 'pnpm prod:apply -- --schema'
+					: `pnpm db:migrate -- --target ${env === 'preview' ? 'preview' : 'local'}`,
 		};
 	}
 	return { schemaOperationReadiness: 'READY', schemaNextAction: null };
