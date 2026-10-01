@@ -10,12 +10,12 @@ import type { DemoShowroomEvent } from '@/interfaces/ui/sections/demo-showroom.i
 import type { EventType } from '@/lib/theme/theme-contract';
 import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
 
-import showroomBabyShowerHero from '@/assets/images/showroom/event-showroom-baby-shower-hero.webp';
-import showroomBautizoHero from '@/assets/images/showroom/event-showroom-bautizo-hero.webp';
-import showroomBodaHero from '@/assets/images/showroom/event-showroom-boda-hero.webp';
-import showroomCumpleanosHero from '@/assets/images/showroom/event-showroom-cumpleanos-hero.webp';
-import showroomXvHero from '@/assets/images/showroom/event-showroom-xv-hero.webp';
-import showroomPrimeraComunionHero from '@/assets/images/showroom/event-showroom-primera-comunion-hero.png';
+// First screen of each featured demo invitation, opened, at 390x844 @2x (fictitious names).
+import demoScreenBabyShower from '@/assets/images/showroom/demo-screen-baby-shower.webp';
+import demoScreenBautizo from '@/assets/images/showroom/demo-screen-bautizo.webp';
+import demoScreenBoda from '@/assets/images/showroom/demo-screen-boda.webp';
+import demoScreenCumple from '@/assets/images/showroom/demo-screen-cumple.webp';
+import demoScreenXv from '@/assets/images/showroom/demo-screen-xv.webp';
 
 import '@/styles/home/_event-selector.scss';
 
@@ -38,16 +38,15 @@ const getCtaLabel = (eventType: string, label: string) => {
 	return `Ver demo de ${label}`;
 };
 
-const previewImages: Partial<Record<EventType, ImageMetadata>> = {
-	xv: showroomXvHero,
-	boda: showroomBodaHero,
-	bautizo: showroomBautizoHero,
-	cumple: showroomCumpleanosHero,
-	'baby-shower': showroomBabyShowerHero,
-	'primera-comunion': showroomPrimeraComunionHero,
+const demoScreens: Partial<Record<EventType, ImageMetadata>> = {
+	xv: demoScreenXv,
+	boda: demoScreenBoda,
+	bautizo: demoScreenBautizo,
+	cumple: demoScreenCumple,
+	'baby-shower': demoScreenBabyShower,
 };
 
-const getPreviewImage = (eventType: EventType) => previewImages[eventType] || showroomXvHero;
+const getDemoScreen = (eventType: EventType) => demoScreens[eventType] ?? demoScreenXv;
 ---
 
 <section
@@ -92,9 +91,8 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 
 			<div class="event-showroom__panels">
 				{events.map((event, index) => {
-					const preview = event.homeSelector.preview;
 					const quote = event.homeSelector.quoteCta;
-					const previewImage = getPreviewImage(event.eventType);
+					const demoScreen = getDemoScreen(event.eventType);
 
 					return (
 					<div
@@ -125,35 +123,19 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 									data-track-intent="demo_showroom"
 									data-track-destination="demo-showroom"
 								>
-									<figure class="event-showroom__phone-frame">
-										<div class="event-showroom__phone-screen">
+									<figure class="landing-phone">
+										<div class="landing-phone__screen">
 											<Image
-												src={previewImage}
-												alt={preview.imageAlt}
-												class="event-showroom__phone-image"
-												width={360}
-												height={640}
-												quality={82}
-												loading={index === 0 ? "eager" : "lazy"}
+												src={demoScreen}
+												alt={event.homeSelector.screenAlt}
+												class="landing-phone__image"
+												widths={[280, 560, 780]}
+												sizes="(max-width: 767px) 62vw, 17.5rem"
+												quality={78}
+												loading="lazy"
 												decoding="async"
+												data-showroom-screen
 											/>
-											<div class="event-showroom__phone-overlay">
-												<div class="event-showroom__phone-copy">
-													<p class="event-showroom__card-kicker" data-showroom-kicker>{preview.eyebrow}</p>
-													<p class="event-showroom__card-title" data-showroom-title>{preview.title}</p>
-													<p class="event-showroom__card-subtitle">{preview.subtitle}</p>
-													<div class="event-showroom__card-details">
-														<span>{preview.date}</span>
-														<span>{preview.venue}</span>
-													</div>
-													<ul class="event-showroom__card-features" aria-label="Funciones incluidas">
-														{preview.chips.map((chip) => (
-															<li data-showroom-feature>{chip}</li>
-														))}
-													</ul>
-													<p class="event-showroom__card-action">{preview.actionLabel}</p>
-												</div>
-											</div>
 										</div>
 									</figure>
 								</a>

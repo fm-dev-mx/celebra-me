@@ -33,22 +33,8 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para XV años. Vi sus demos y quiero asesoría para elegir estilo.',
 		homeSelector: {
-			preview: {
-				eyebrow: 'XV AÑOS',
-				title: 'Sofía Valentina',
-				subtitle: 'Una noche para celebrar',
-				date: 'Sábado 28 de septiembre',
-				venue: 'Gran Salón del Triunfo',
-				chips: ['RSVP', 'PASES', 'WHATSAPP'],
-				actionLabel: 'Confirmar asistencia',
-				imageAlt: 'Quinceañera en salón elegante con flores y luz cálida',
-			},
-			showroom: {
-				kicker: 'XV años',
-				title: 'Una entrada luminosa para una noche de XV',
-				description:
-					'Diseñamos una invitación con RSVP, pases por familia, ubicación, música y galería para que cada invitado reciba una experiencia clara.',
-			},
+			screenAlt:
+				'Portada de la demo de XV años: foto de la quinceañera, nombre, fecha y lugar',
 			quoteCta: SHOWROOM_QUOTE_CTA,
 		},
 		sortOrder: 10,
@@ -66,22 +52,7 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para boda. Quiero conocer opciones similares a sus demos.',
 		homeSelector: {
-			preview: {
-				eyebrow: 'BODA',
-				title: 'Mariana & Rodrigo',
-				subtitle: 'Nos casamos',
-				date: 'Sábado 14 de diciembre',
-				venue: 'Hacienda San Miguel',
-				chips: ['RSVP', 'PASES', 'WHATSAPP'],
-				actionLabel: 'Confirmar asistencia',
-				imageAlt: 'Recepción de boda elegante al atardecer con mesa floral y velas',
-			},
-			showroom: {
-				kicker: 'Boda',
-				title: 'Una invitación elegante para guiar a cada invitado',
-				description:
-					'Comparte ceremonia, recepción, mesa de regalos, confirmaciones y pases digitales en una experiencia visual coherente con tu estilo.',
-			},
+			screenAlt: 'Portada de la demo de boda: foto de la pareja, nombres, fecha y lugar',
 			quoteCta: SHOWROOM_QUOTE_CTA,
 		},
 		sortOrder: 20,
@@ -100,22 +71,7 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para bautizo. Vi sus demos y quiero asesoría para mi celebración.',
 		homeSelector: {
-			preview: {
-				eyebrow: 'BAUTIZO',
-				title: 'Mateo Alejandro',
-				subtitle: 'Celebración familiar',
-				date: 'Domingo 6 de octubre',
-				venue: 'Parroquia de San Miguel',
-				chips: ['RSVP', 'PASES', 'WHATSAPP'],
-				actionLabel: 'Confirmar asistencia',
-				imageAlt: 'Detalle ceremonial de bautizo con vela, flores blancas y luz de iglesia',
-			},
-			showroom: {
-				kicker: 'Bautizo',
-				title: 'Una celebración familiar comunicada con claridad',
-				description:
-					'Organiza ceremonia, recepción, padrinos, ubicación y confirmaciones en una invitación clara y fácil de compartir.',
-			},
+			screenAlt: 'Portada de la demo de bautizo: foto del bebé, nombre, fecha y lugar',
 			quoteCta: SHOWROOM_QUOTE_CTA,
 		},
 		sortOrder: 30,
@@ -133,22 +89,7 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para baby shower. Quiero asesoría para una invitación personalizada.',
 		homeSelector: {
-			preview: {
-				eyebrow: 'BABY SHOWER',
-				title: 'Valentina',
-				subtitle: 'Bienvenida con amor',
-				date: 'Sábado 12 de octubre',
-				venue: 'La Casona del Lago',
-				chips: ['RSVP', 'MESA DE REGALOS', 'WHATSAPP'],
-				actionLabel: 'Confirmar asistencia',
-				imageAlt: 'Mesa de baby shower cálida con flores, regalos y decoración delicada',
-			},
-			showroom: {
-				kicker: 'Baby shower',
-				title: 'Una bienvenida clara y fácil de compartir',
-				description:
-					'Reúne ubicación, mesa de regalos, galería y confirmaciones en una experiencia clara para familiares y amigos.',
-			},
+			screenAlt: 'Portada de la demo de baby shower: cielo con luna, nombre, fecha y lugar',
 			quoteCta: SHOWROOM_QUOTE_CTA,
 		},
 		sortOrder: 40,
@@ -166,22 +107,8 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 		whatsAppMessage:
 			'Hola, me gustaría una invitación digital para cumpleaños. Vi sus demos y quiero conocer opciones.',
 		homeSelector: {
-			preview: {
-				eyebrow: 'CUMPLEAÑOS',
-				title: 'Regina',
-				subtitle: 'Una noche para brindar',
-				date: 'Viernes 18 de octubre',
-				venue: 'Casa Aurelia',
-				chips: ['RSVP', 'UBICACIÓN', 'WHATSAPP'],
-				actionLabel: 'Confirmar asistencia',
-				imageAlt: 'Pastel de cumpleaños elegante con velas y mesa de cena cálida',
-			},
-			showroom: {
-				kicker: 'Cumpleaños',
-				title: 'Una celebración clara desde el primer mensaje',
-				description:
-					'Comparte horario, ubicación, confirmaciones y detalles importantes en una invitación visualmente cuidada.',
-			},
+			screenAlt:
+				'Portada de la demo de cumpleaños: foto del festejado, nombre, fecha y lugar',
 			quoteCta: SHOWROOM_QUOTE_CTA,
 		},
 		sortOrder: 50,

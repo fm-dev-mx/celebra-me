@@ -14,23 +14,6 @@ export interface DemoShowroomThumbnail {
 	objectPosition?: string;
 }
 
-export interface DemoShowroomPhonePreview {
-	eyebrow: string;
-	title: string;
-	subtitle: string;
-	date: string;
-	venue: string;
-	chips: readonly string[];
-	actionLabel: string;
-	imageAlt: string;
-}
-
-export interface DemoShowroomSideCopy {
-	kicker: string;
-	title: string;
-	description: string;
-}
-
 export interface DemoShowroomQuoteCta {
 	label: string;
 	message: string;
@@ -41,8 +24,8 @@ export interface DemoShowroomQuoteCta {
 }
 
 export interface DemoShowroomHomeSelector {
-	preview: DemoShowroomPhonePreview;
-	showroom: DemoShowroomSideCopy;
+	/** Alt text for the real demo screen shown in the landing phone frame. */
+	screenAlt: string;
 	quoteCta: DemoShowroomQuoteCta;
 }
 

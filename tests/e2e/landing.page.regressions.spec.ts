@@ -258,12 +258,11 @@ test.describe('Landing page regressions', () => {
 		await expect(page.locator('.hero-prime .phone-mockup')).toHaveCount(0);
 		await expect(page.locator('.hero-prime__proof')).toHaveCount(0);
 		await expect(page.locator('#tipo-evento .event-showroom__tabs')).toBeVisible();
+		// The showroom phone shows a real demo screen, not overlay copy.
 		await expect(
-			page.locator('#tipo-evento [data-panel-event="xv"] [data-showroom-title]'),
-		).toContainText('Sofía Valentina');
-		await expect(
-			page.locator('#tipo-evento [data-panel-event="xv"] [data-showroom-feature]'),
-		).toHaveText(['RSVP', 'PASES', 'WHATSAPP']);
+			page.locator('#tipo-evento [data-panel-event="xv"] [data-showroom-screen]'),
+		).toHaveAttribute('alt', /demo de XV años/);
+		await expect(page.locator('#tipo-evento [data-showroom-title]')).toHaveCount(0);
 	});
 
 	test('keeps the hero CTA in reach on narrow mobile', async ({ page }) => {
@@ -318,11 +317,8 @@ test.describe('Landing page regressions', () => {
 		);
 		await expect(page.locator('[data-panel-event="boda"]')).toHaveClass(/active/);
 		await expect(
-			page.locator('[data-panel-event="boda"] [data-showroom-kicker]'),
-		).toContainText('Boda', { ignoreCase: true });
-		await expect(page.locator('[data-panel-event="boda"] [data-showroom-title]')).toContainText(
-			'Mariana & Rodrigo',
-		);
+			page.locator('[data-panel-event="boda"] [data-showroom-screen]'),
+		).toHaveAttribute('alt', /demo de boda/);
 		await expect(eventCta).toHaveAttribute('data-event-type', 'boda');
 		await expect(eventCta).toHaveAttribute('data-event-label', 'Boda');
 		await expect(eventCta).not.toHaveAttribute('data-package-interest');
