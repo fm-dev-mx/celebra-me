@@ -265,10 +265,10 @@ Visitor → `/{eventType}/{slug}` → `resolveInvitationContent()`:
 ### Asset Library
 
 Admin uploads through `/api/dashboard/intake/[id]/assets/**` create `invitation_assets` metadata
-rows for a specific invitation. In Local (`dev-local`), binaries are stored in Supabase Storage local
-(`invitation-assets` bucket); in Preview and Production, binaries are hosted on Cloudinary with SHA-256
-deduplication. Postgres stores provider, display names, alt text, object paths, MIME type, size,
-dimensions, secure URLs, and soft-delete state.
+rows for a specific invitation. In Local (`dev-local`), binaries are stored in Supabase Storage
+local (`invitation-assets` bucket); in Preview and Production, binaries are hosted on Cloudinary
+with SHA-256 deduplication. Postgres stores provider, display names, alt text, object paths, MIME
+type, size, dimensions, secure URLs, and soft-delete state.
 
 ### RSVP Linkage
 
@@ -335,8 +335,12 @@ active Dashboard workflow and must not be invoked for managed client creation.
 
 - **RLS enabled** on all application tables
 - **SECURITY DEFINER functions** hardened with `set search_path = 'public'` (migration 37)
-- **Server-side service_role**: All repository methods use `useServiceRole: true` to bypass RLS.
-  This is a documented tradeoff: defense-in-depth relies on server-side auth checks, not RLS.
+- **Host-scoped RLS for dashboard RSVP**: dashboard guest and event reads and edits send the host's
+  JWT and are authorized by RLS. Privileged guest writes (bulk import, public RSVP, soft delete) run
+  through service-role-only RPCs after BFF authorization; direct service-role guest DML is revoked.
+  See `docs/domains/rsvp/database.md`.
+- **Server-side service_role**: other server-only repositories (invitations, intake, assets) use
+  `useServiceRole: true` behind server-side auth checks.
 - **Public read access**: Only `published_invitation_content` has a public RLS select policy.
 - **Admin-only access**: `invitations`, `intake_*`, drafts are locked to `is_admin_user()`.
 - **Service-role only**: `audit_logs`, `deleted_*` views, archive/restore RPCs.
