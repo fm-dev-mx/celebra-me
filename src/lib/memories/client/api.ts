@@ -67,7 +67,12 @@ function unwrap<T>(result: ApiResult<T>): T {
 
 export type MemoriesReservation = {
 	item: MemoriesMediaPublicItem;
-	upload: { uploadUrl: string; requiredHeaders: Record<string, string>; expiresAt: string };
+	/** Null when a replayed request already uploaded its bytes: go straight to `complete`. */
+	upload: {
+		uploadUrl: string;
+		requiredHeaders: Record<string, string>;
+		expiresAt: string;
+	} | null;
 };
 
 export function createMemoriesGuestApi(publicSlug: string) {

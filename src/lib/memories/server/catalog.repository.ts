@@ -291,25 +291,45 @@ export async function finalizeMedia(input: {
 	return rows[0] ?? null;
 }
 
-export async function listStaleValidations(
-	cutoff: string,
-	limit: number,
-): Promise<{ id: string; event_id: string }[]> {
-	return supabaseRestRequest<{ id: string; event_id: string }[]>({
-		pathWithQuery: `${ITEMS}?select=id,event_id&status=eq.validating&updated_at=lt.${encodeURIComponent(cutoff)}&order=updated_at.asc&limit=${limit}`,
+export type StaleMediaCursor = { at: string; id: string };
+
+/**
+ * Resident in-flight items older than the cutoff, oldest first. Reservations age
+ * from `created_at`; validations from `updated_at`, which the claim refreshes.
+ * Keyset pagination lets the cleanup walk past rows it had to leave pending.
+ */
+export async function listStaleInFlightMedia(input: {
+	status: 'uploading' | 'validating';
+	cutoff: string;
+	limit: number;
+	after: StaleMediaCursor | null;
+}): Promise<MediaRow[]> {
+	const column = input.status === 'uploading' ? 'created_at' : 'updated_at';
+	const query = new URLSearchParams();
+	query.set('select', MEDIA_COLUMNS);
+	query.set('status', `eq.${input.status}`);
+	query.set('object_deleted_at', 'is.null');
+	query.append(column, `lt.${input.cutoff}`);
+	if (input.after) {
+		const at = `"${input.after.at}"`;
+		query.set('or', `(${column}.gt.${at},and(${column}.eq.${at},id.gt.${input.after.id}))`);
+	}
+	query.set('order', `${column}.asc,id.asc`);
+	query.set('limit', String(input.limit));
+	return supabaseRestRequest<MediaRow[]>({
+		pathWithQuery: `${ITEMS}?${query.toString()}`,
 		useServiceRole: true,
 	});
 }
 
-export async function expireReservations(input: {
-	uploadCutoff: string;
-	validationCutoff: string;
-}): Promise<number> {
-	const count = await rpc<number>('expire_event_memory_reservations', {
-		p_upload_cutoff: input.uploadCutoff,
-		p_validation_cutoff: input.validationCutoff,
+export async function listSessionInFlightMedia(
+	eventId: string,
+	sessionId: string,
+): Promise<MediaRow[]> {
+	return supabaseRestRequest<MediaRow[]>({
+		pathWithQuery: `${ITEMS}?select=${MEDIA_COLUMNS}&event_id=eq.${encodeURIComponent(eventId)}&session_id=eq.${encodeURIComponent(sessionId)}&status=in.(uploading,validating)&object_deleted_at=is.null&order=created_at.asc`,
+		useServiceRole: true,
 	});
-	return Number(count) || 0;
 }
 
 export async function expireContent(now: string): Promise<number> {

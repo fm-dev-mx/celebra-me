@@ -369,6 +369,17 @@ describe('PATCH /api/dashboard/memories/[eventId]/items/[itemId]', () => {
 		expect(mockMutationAccess).not.toHaveBeenCalled();
 	});
 
+	it.each([
+		['an array', []],
+		['a JSON null', 'null'],
+	])('rejects %s as the body with a 400 before moderating', async (_label, body) => {
+		const request = createMockRequest(body, undefined, ITEM_URL);
+		const response = await patchItem(createContext(request, itemParams()).context);
+		expect(response.status).toBe(400);
+		await expect(response.json()).resolves.toMatchObject({ error: { code: 'bad_request' } });
+		expect(mockUpdateItem).not.toHaveBeenCalled();
+	});
+
 	it('maps a forbidden transition to a JSON 409', async () => {
 		mockUpdateItem.mockRejectedValue(new ApiError(409, 'conflict', 'Transición no permitida.'));
 		const request = createMockRequest({ status: 'uploading' }, undefined, ITEM_URL);

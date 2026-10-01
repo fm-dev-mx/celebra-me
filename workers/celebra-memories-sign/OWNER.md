@@ -101,7 +101,11 @@ cookies, capabilities, signed URLs, object keys, checksums, request bodies, reco
 or secrets.
 
 Scheduled physical cleanup remains a separate read-only Vercel evidence gate and stays `UNVERIFIED`
-until invocation metadata proves its completion.
+until invocation metadata proves its completion. The cron runs daily at 15:17 UTC (Hobby fires it
+anywhere within that hour, 08:17–09:16 in Mazatlán) and delivery is best effort. Hobby keeps runtime
+logs for one hour: capture the `memories_cleanup_summary` line within that hour, or check the next
+day when it is absent. `cleanup_in_flight_backlog` means storage could not prove the state of some
+in-flight items; they are kept, never deleted blindly.
 
 ## Owner Staging apply order
 
@@ -115,9 +119,10 @@ until invocation metadata proves its completion.
 4. Run `wrangler login`, configure the Staging public verification keys and private bucket binding,
    then deploy the Retrieval Worker with `--env staging`. Verify unsigned, stale, wrong-audience,
    and guessed-key requests fail closed.
-5. Configure the Vercel Preview server-only values from the canonical cheatsheet, deploy the
-   app/backend, and enable the daily cleanup cron. Its endpoint must accept only
-   `Authorization: Bearer <CRON_SECRET>`.
+5. Configure the Vercel Preview server-only values from the canonical cheatsheet and deploy the
+   app/backend. Vercel schedules crons only on Production, so prove Staging cleanup with one
+   authorized `GET` carrying `Authorization: Bearer <CRON_SECRET>`; the endpoint must accept nothing
+   else.
 6. Configure the capability secret and Staging Sign Worker values, deploy it last with
    `--env staging`, and confirm the configured Staging rate-limiter namespace is available. Block
    rollout if Cloudflare rejects it. Then verify requests require a fresh ECDSA envelope and
@@ -161,11 +166,13 @@ protection; the reservation RPC remains the authoritative quota, window, and con
 
 Audit only actor type/opaque actor ID, action, media ID, status transition, and timestamp. Never log
 names, captions, request bodies, IP addresses, recovery codes, checksums, keys, capabilities,
-headers, or media. The daily job reconciles abandoned validations, expires stale reservations,
-schedules every resident object of a space whose retention ended, deletes scheduled objects in
-reclaimable batches within its time budget, anonymizes inactive guest profiles after their last
-object is gone, and purges audit rows after the canonical audit retention period. The bucket
-lifecycle rule (`events/`, maximum object lifetime) is the final bound, not immediate cleanup.
+headers, or media. The daily job settles stale in-flight items from storage evidence (it rejects a
+validation or releases a reservation only when the Retrieval Worker answers that the object is
+absent, and validates uploads whose browser never confirmed them), schedules every resident object
+of a space whose retention ended, deletes scheduled objects in reclaimable batches within its time
+budget, anonymizes inactive guest profiles after their last object is gone, and purges audit rows
+after the canonical audit retention period. The bucket lifecycle rule (`events/`, maximum object
+lifetime) is the final bound, not immediate cleanup.
 
 ## Failure, revocation, and rollback
 
@@ -198,7 +205,7 @@ success from repository files or local tests.
 | Guest isolation | Recovery, own accepted preview, edit, delete, quota, revocation, cross-session media ID denied        | UNVERIFIED    |
 | Owner isolation | Owner list/preview/download succeeds; manager, non-member, super-admin-only, anonymous denied         | UNVERIFIED    |
 | Retrieval       | Range seeking, attachment, deleted/rejected/duplicate denied, no signed GET or key exposure           | UNVERIFIED    |
-| Cleanup         | Expired reservation, duplicate, rejected, deleted and retention-expired objects physically removed    | UNVERIFIED    |
+| Cleanup         | Abandoned reservation, duplicate, rejected, deleted and retention-expired objects physically removed  | UNVERIFIED    |
 | Export          | All accepted objects emitted in bounded encrypted batches; Web Crypto absence fails closed            | UNVERIFIED    |
 | Phones          | Current iOS Safari and Android Chrome over mobile and shared Wi-Fi, including a 60-second video       | UNVERIFIED    |
 | Operations      | Aggregate request/storage budget, sampled PII-free logs, audit retention, key revocation              | UNVERIFIED    |

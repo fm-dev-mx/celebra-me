@@ -405,29 +405,6 @@ $function$;
 -- ---------------------------------------------------------------------------
 -- Lifecycle: expiry, cleanup leases, anonymization and audit purge.
 -- ---------------------------------------------------------------------------
-create function public.expire_event_memory_reservations(
-	p_upload_cutoff timestamptz,
-	p_validation_cutoff timestamptz
-) returns bigint
-language plpgsql
-security invoker
-set search_path = ''
-as $function$
-declare
-	v_count bigint;
-begin
-	update public.event_memory_items
-	set status = 'deleted', deleted_at = pg_catalog.now(), updated_at = pg_catalog.now(),
-		cleanup_after = pg_catalog.now()
-	where object_deleted_at is null and (
-		(status = 'uploading' and created_at < p_upload_cutoff)
-		or (status = 'validating' and created_at < p_validation_cutoff)
-	);
-	get diagnostics v_count = row_count;
-	return v_count;
-end;
-$function$;
-
 -- Every resident object of a space whose retention ended is scheduled for
 -- physical deletion. The R2 lifecycle rule remains the final backstop.
 create function public.expire_event_memory_content(
@@ -544,7 +521,6 @@ revoke all on function public.reserve_event_memory_item(uuid, uuid, text, text, 
 revoke all on function public.release_event_memory_reservation(uuid, uuid) from public, anon, authenticated;
 revoke all on function public.claim_event_memory_validation(uuid, uuid) from public, anon, authenticated;
 revoke all on function public.finalize_event_memory_item(uuid, uuid, text, timestamptz) from public, anon, authenticated;
-revoke all on function public.expire_event_memory_reservations(timestamptz, timestamptz) from public, anon, authenticated;
 revoke all on function public.expire_event_memory_content(timestamptz) from public, anon, authenticated;
 revoke all on function public.claim_event_memory_cleanup(uuid, integer, integer) from public, anon, authenticated;
 revoke all on function public.anonymize_event_memory_session(uuid, uuid, text, text, timestamptz) from public, anon, authenticated;
@@ -556,7 +532,6 @@ grant execute on function public.reserve_event_memory_item(uuid, uuid, text, tex
 grant execute on function public.release_event_memory_reservation(uuid, uuid) to service_role;
 grant execute on function public.claim_event_memory_validation(uuid, uuid) to service_role;
 grant execute on function public.finalize_event_memory_item(uuid, uuid, text, timestamptz) to service_role;
-grant execute on function public.expire_event_memory_reservations(timestamptz, timestamptz) to service_role;
 grant execute on function public.expire_event_memory_content(timestamptz) to service_role;
 grant execute on function public.claim_event_memory_cleanup(uuid, integer, integer) to service_role;
 grant execute on function public.anonymize_event_memory_session(uuid, uuid, text, text, timestamptz) to service_role;

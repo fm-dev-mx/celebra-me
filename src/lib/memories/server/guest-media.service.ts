@@ -12,7 +12,13 @@ import {
 	type MemoriesMediaPublicItem,
 	type MemoriesSpaceRecord,
 } from '@/lib/memories/contract/catalog';
-import { MEMORIES_SESSION_MAX_IN_FLIGHT } from '@/lib/memories/contract/limits';
+import {
+	MEMORIES_LATE_UPLOAD_GRACE_SECONDS,
+	MEMORIES_RESERVATION_TTL_SECONDS,
+	MEMORIES_SESSION_MAX_IN_FLIGHT,
+	MEMORIES_UPLOAD_ABANDON_SECONDS,
+	MEMORIES_VALIDATION_RETRY_DELAY_SECONDS,
+} from '@/lib/memories/contract/limits';
 import {
 	MEMORIES_MAX_VIDEO_DURATION_SECONDS,
 	getMemoriesMimePolicy,
@@ -27,6 +33,7 @@ import {
 	claimValidation,
 	findMediaById,
 	finalizeMedia,
+	listSessionInFlightMedia,
 	listSessionMedia,
 	patchMedia,
 	releaseReservation,
@@ -119,6 +126,13 @@ function mapReservationError(error: unknown): never {
 	throw error;
 }
 
+function isConcurrencyQuotaError(error: unknown): boolean {
+	return (
+		error instanceof SupabaseHttpError &&
+		error.body.includes('memories_session_concurrency_quota')
+	);
+}
+
 function requireOwnItem(row: MediaRow | null, session: SessionRow): MemoriesMediaItem {
 	if (!row || row.session_id !== session.id) {
 		throw new ApiError(404, 'not_found', 'Recuerdo no encontrado.');
@@ -181,32 +195,51 @@ export async function reserveGuestMemoryItem(input: {
 	checksumSha256: unknown;
 	durationSeconds?: unknown;
 	clientRequestId: unknown;
-}): Promise<{ item: MemoriesMediaPublicItem; upload: MemoriesUploadCapability }> {
+}): Promise<{ item: MemoriesMediaPublicItem; upload: MemoriesUploadCapability | null }> {
 	const { mimeType, policy, sizeBytes, durationSeconds, checksumSha256, clientRequestId } =
 		validateRegisterPayload(input);
-	const objectKey = buildMemoriesObjectKey(
-		input.space.eventId,
-		createMemoriesObjectId(),
-		policy.extension,
-	);
+	const reservation = {
+		eventId: input.space.eventId,
+		sessionId: input.session.id,
+		objectKey: buildMemoriesObjectKey(
+			input.space.eventId,
+			createMemoriesObjectId(),
+			policy.extension,
+		),
+		mimeType,
+		sizeBytes,
+		checksumSha256,
+		durationSeconds: policy.category === 'video' ? durationSeconds : null,
+		idempotencyKey: clientRequestId,
+		maxSessionInFlight: MEMORIES_SESSION_MAX_IN_FLIGHT,
+	};
 	let row: MediaRow | null = null;
 	try {
-		row = await reserveMedia({
-			eventId: input.space.eventId,
-			sessionId: input.session.id,
-			objectKey,
-			mimeType,
-			sizeBytes,
-			checksumSha256,
-			durationSeconds: policy.category === 'video' ? durationSeconds : null,
-			idempotencyKey: clientRequestId,
-			maxSessionInFlight: MEMORIES_SESSION_MAX_IN_FLIGHT,
-		});
+		row = await reserveMedia(reservation);
 	} catch (error) {
-		mapReservationError(error);
+		// The cleanup runs once a day: a session whose slots are held by uploads
+		// its browser abandoned settles them here and tries once more.
+		if (!isConcurrencyQuotaError(error)) mapReservationError(error);
+		const settled = await settleSessionInFlightItems(input.space, input.session).catch(() => 0);
+		if (settled === 0) mapReservationError(error);
+		try {
+			row = await reserveMedia(reservation);
+		} catch (retryError) {
+			mapReservationError(retryError);
+		}
 	}
 	if (!row) throw new ApiError(503, 'service_unavailable', 'No se pudo registrar el recuerdo.');
 	const item = mapMediaRow(row);
+	// A replayed request id returns the existing row. Only a pending upload may
+	// receive a new PUT capability; anything else must never reopen its key.
+	if (item.status === 'validating' || item.status === 'accepted' || item.status === 'duplicate')
+		return { item: toPublicItem(item), upload: null };
+	if (item.status !== 'uploading')
+		throw new ApiError(
+			409,
+			'conflict',
+			'La solicitud de carga anterior ya se cerró. Vuelva a subir el archivo.',
+		);
 	let upload: MemoriesUploadCapability;
 	try {
 		upload = await requestMemoriesUploadCapability({
@@ -259,9 +292,9 @@ export async function listGuestMemoryItems(
 
 function isInspectionSuccessful(
 	item: MemoriesMediaItem,
-	inspection: MemoriesInspectionResult | null,
+	inspection: MemoriesInspectionResult,
 ): boolean {
-	if (!inspection?.exists || !inspection.signatureValid || !inspection.checksumSha256)
+	if (!inspection.exists || !inspection.signatureValid || !inspection.checksumSha256)
 		return false;
 	const policy = getMemoriesMimePolicy(item.mimeType);
 	if (!policy || inspection.sizeBytes !== item.sizeBytes) return false;
@@ -328,35 +361,113 @@ export async function completeGuestMemoryItem(input: {
 			action: 'submitted_for_validation',
 		});
 	}
-	const inspection = await inspectMemoriesObject({
+	const outcome = await inspectMemoriesObject({
 		objectKey: item.objectKey,
 		mimeType: item.mimeType,
 	});
-	if (!inspection) {
+	if (outcome.kind === 'unavailable') {
 		throw new ApiError(
 			503,
 			'service_unavailable',
 			'La validación sigue pendiente. Intente de nuevo.',
 		);
 	}
-	return finalizeItem(item, isInspectionSuccessful(item, inspection) ? 'accepted' : 'rejected');
+	return finalizeItem(
+		item,
+		outcome.kind === 'found' && isInspectionSuccessful(item, outcome.inspection)
+			? 'accepted'
+			: 'rejected',
+	);
 }
 
-/** Used by the daily cleanup to finish validations the guest abandoned. */
-export async function reconcileMemoryValidation(
-	eventId: string,
-	mediaItemId: string,
-): Promise<boolean> {
-	const row = await findMediaById(eventId, mediaItemId);
-	if (!row || row.status !== 'validating') return true;
+export type MemoriesSettleResult = 'validated' | 'rescued' | 'rejected' | 'released' | 'pending';
+
+/**
+ * Settles one in-flight item from storage evidence. Nothing is rejected or
+ * released unless the Retrieval Worker answered that the object is absent; an
+ * unreachable Worker always leaves the item pending.
+ */
+export async function settleStaleMemoryItem(
+	row: MediaRow,
+	now = new Date(),
+): Promise<MemoriesSettleResult> {
 	const item = mapMediaRow(row);
-	const inspection = await inspectMemoriesObject({
+	const nowMs = now.getTime();
+	if (item.status === 'validating') {
+		if (nowMs - Date.parse(row.updated_at) < MEMORIES_VALIDATION_RETRY_DELAY_SECONDS * 1000)
+			return 'pending';
+		const outcome = await inspectMemoriesObject({
+			objectKey: item.objectKey,
+			mimeType: item.mimeType,
+		});
+		if (outcome.kind === 'unavailable') return 'pending';
+		if (outcome.kind === 'missing') {
+			await finalizeItem(item, 'rejected');
+			return 'rejected';
+		}
+		await finalizeItem(
+			item,
+			isInspectionSuccessful(item, outcome.inspection) ? 'accepted' : 'rejected',
+		);
+		return 'validated';
+	}
+	if (item.status !== 'uploading') return 'pending';
+	const ageMs = nowMs - Date.parse(row.created_at);
+	if (ageMs < MEMORIES_RESERVATION_TTL_SECONDS * 1000) return 'pending';
+	const outcome = await inspectMemoriesObject({
 		objectKey: item.objectKey,
 		mimeType: item.mimeType,
-	}).catch(() => null);
-	if (!inspection) return false;
-	await finalizeItem(item, isInspectionSuccessful(item, inspection) ? 'accepted' : 'rejected');
-	return true;
+	});
+	if (outcome.kind === 'unavailable') return 'pending';
+	if (outcome.kind === 'found') {
+		// The bytes arrived but the browser never confirmed them.
+		if (!(await claimValidation(item.id, item.sessionId))) return 'pending';
+		await appendMemoriesAudit({
+			eventId: item.eventId,
+			mediaItemId: item.id,
+			actorType: 'system',
+			action: 'submitted_for_validation',
+		});
+		await finalizeItem(
+			item,
+			isInspectionSuccessful(item, outcome.inspection) ? 'accepted' : 'rejected',
+		);
+		return 'rescued';
+	}
+	if (ageMs < MEMORIES_UPLOAD_ABANDON_SECONDS * 1000) return 'pending';
+	// A logical delete keeps the key scheduled, so a PUT that still lands is removed too.
+	const released = await patchMedia(
+		item.id,
+		{
+			status: 'deleted',
+			deleted_at: now.toISOString(),
+			cleanup_after: new Date(
+				nowMs + MEMORIES_LATE_UPLOAD_GRACE_SECONDS * 1000,
+			).toISOString(),
+		},
+		'&status=eq.uploading',
+	);
+	if (!released) return 'pending';
+	await appendMemoriesAudit({
+		eventId: item.eventId,
+		mediaItemId: item.id,
+		actorType: 'system',
+		action: 'reservation_abandoned',
+	});
+	return 'released';
+}
+
+/** Settles the session's own in-flight items; returns how many left the in-flight state. */
+async function settleSessionInFlightItems(
+	space: MemoriesSpaceRecord,
+	session: SessionRow,
+): Promise<number> {
+	const rows = await listSessionInFlightMedia(space.eventId, session.id);
+	let settled = 0;
+	for (const row of rows) {
+		if ((await settleStaleMemoryItem(row)) !== 'pending') settled += 1;
+	}
+	return settled;
 }
 
 export async function updateGuestMemoryCaption(input: {

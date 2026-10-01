@@ -2,9 +2,8 @@ jest.mock('@/lib/memories/server/catalog.repository', () => ({
 	anonymizeSession: jest.fn(),
 	claimCleanup: jest.fn(),
 	expireContent: jest.fn(),
-	expireReservations: jest.fn(),
 	listSessionsPendingAnonymization: jest.fn(),
-	listStaleValidations: jest.fn(),
+	listStaleInFlightMedia: jest.fn(),
 	markObjectDeleted: jest.fn(),
 	purgeAudit: jest.fn(),
 }));
@@ -14,7 +13,7 @@ jest.mock('@/lib/memories/server/worker-gateway', () => ({
 }));
 
 jest.mock('@/lib/memories/server/guest-media.service', () => ({
-	reconcileMemoryValidation: jest.fn(),
+	settleStaleMemoryItem: jest.fn(),
 }));
 
 jest.mock('@/lib/memories/server/audit', () => ({
@@ -25,7 +24,7 @@ import {
 	MEMORIES_CLEANUP_BATCH_SIZE,
 	MEMORIES_CLEANUP_LEASE_SECONDS,
 	MEMORIES_RESERVATION_TTL_SECONDS,
-	MEMORIES_VALIDATION_TTL_SECONDS,
+	MEMORIES_VALIDATION_RETRY_DELAY_SECONDS,
 } from '@/lib/memories/contract/limits';
 import { isMemoriesUuid } from '@/lib/memories/contract/catalog';
 import { appendMemoriesAudit } from '@/lib/memories/server/audit';
@@ -33,31 +32,27 @@ import {
 	anonymizeSession,
 	claimCleanup,
 	expireContent,
-	expireReservations,
 	listSessionsPendingAnonymization,
-	listStaleValidations,
+	listStaleInFlightMedia,
 	markObjectDeleted,
 	purgeAudit,
 } from '@/lib/memories/server/catalog.repository';
 import { runMemoriesCleanup } from '@/lib/memories/server/cleanup.service';
-import { reconcileMemoryValidation } from '@/lib/memories/server/guest-media.service';
+import { settleStaleMemoryItem } from '@/lib/memories/server/guest-media.service';
 import { deleteMemoriesObject } from '@/lib/memories/server/worker-gateway';
 import { EVENT_ID, NOW, OTHER_SESSION_ID, SESSION_ID, buildMediaRow } from './fixtures';
 
 const mockAnonymize = anonymizeSession as jest.MockedFunction<typeof anonymizeSession>;
 const mockClaim = claimCleanup as jest.MockedFunction<typeof claimCleanup>;
 const mockExpireContent = expireContent as jest.MockedFunction<typeof expireContent>;
-const mockExpireReservations = expireReservations as jest.MockedFunction<typeof expireReservations>;
 const mockPendingSessions = listSessionsPendingAnonymization as jest.MockedFunction<
 	typeof listSessionsPendingAnonymization
 >;
-const mockStale = listStaleValidations as jest.MockedFunction<typeof listStaleValidations>;
+const mockStale = listStaleInFlightMedia as jest.MockedFunction<typeof listStaleInFlightMedia>;
 const mockMarkDeleted = markObjectDeleted as jest.MockedFunction<typeof markObjectDeleted>;
 const mockPurge = purgeAudit as jest.MockedFunction<typeof purgeAudit>;
 const mockDeleteObject = deleteMemoriesObject as jest.MockedFunction<typeof deleteMemoriesObject>;
-const mockReconcile = reconcileMemoryValidation as jest.MockedFunction<
-	typeof reconcileMemoryValidation
->;
+const mockSettle = settleStaleMemoryItem as jest.MockedFunction<typeof settleStaleMemoryItem>;
 const mockAudit = appendMemoriesAudit as jest.MockedFunction<typeof appendMemoriesAudit>;
 
 const EXPIRED_SESSION_ID = 'a0000000-0000-4000-8000-0000000000e1';
@@ -77,10 +72,27 @@ function claimedRow(id: string, sessionId: string) {
 	});
 }
 
+function inFlightRow(
+	id: string,
+	status: 'uploading' | 'validating',
+	at = '2026-10-24T11:00:00.000Z',
+) {
+	return buildMediaRow({ id, status, created_at: at, updated_at: at });
+}
+
+function staleRowsFor(rowsByStatus: Partial<Record<'uploading' | 'validating', unknown[][]>>) {
+	const queues = {
+		uploading: [...(rowsByStatus.uploading ?? [])],
+		validating: [...(rowsByStatus.validating ?? [])],
+	};
+	mockStale.mockImplementation(
+		async ({ status }) => (queues[status].shift() ?? []) as ReturnType<typeof buildMediaRow>[],
+	);
+}
+
 function primeQuietRun() {
 	mockStale.mockResolvedValue([]);
-	mockReconcile.mockResolvedValue(true);
-	mockExpireReservations.mockResolvedValue(0);
+	mockSettle.mockResolvedValue('pending');
 	mockExpireContent.mockResolvedValue(0);
 	mockClaim.mockResolvedValue([]);
 	mockDeleteObject.mockResolvedValue(true);
@@ -96,41 +108,134 @@ describe('runMemoriesCleanup', () => {
 		primeQuietRun();
 	});
 
-	it('expires reservations and content with cutoffs derived from the global limits', async () => {
-		mockExpireReservations.mockResolvedValue(4);
+	it('looks for stale in-flight items with cutoffs derived from the global limits', async () => {
 		mockExpireContent.mockResolvedValue(2);
 
 		const result = await runMemoriesCleanup(NOW);
 
-		expect(mockExpireReservations).toHaveBeenCalledWith({
-			uploadCutoff: new Date(
-				NOW.getTime() - MEMORIES_RESERVATION_TTL_SECONDS * 1000,
+		expect(mockStale).toHaveBeenCalledWith({
+			status: 'validating',
+			cutoff: new Date(
+				NOW.getTime() - MEMORIES_VALIDATION_RETRY_DELAY_SECONDS * 1000,
 			).toISOString(),
-			validationCutoff: new Date(
-				NOW.getTime() - MEMORIES_VALIDATION_TTL_SECONDS * 1000,
-			).toISOString(),
+			limit: MEMORIES_CLEANUP_BATCH_SIZE,
+			after: null,
 		});
-		expect(mockExpireReservations.mock.calls[0][0].uploadCutoff).toBe(
-			'2026-10-24T11:50:00.000Z',
-		);
+		expect(mockStale).toHaveBeenCalledWith({
+			status: 'uploading',
+			cutoff: new Date(NOW.getTime() - MEMORIES_RESERVATION_TTL_SECONDS * 1000).toISOString(),
+			limit: MEMORIES_CLEANUP_BATCH_SIZE,
+			after: null,
+		});
 		expect(mockExpireContent).toHaveBeenCalledWith(NOW.toISOString());
 		expect(mockPurge).toHaveBeenCalledWith(NOW.toISOString());
-		expect(result).toMatchObject({ expiredReservations: 4, expiredContent: 2, claimed: 0 });
+		expect(result).toMatchObject({
+			expiredContent: 2,
+			claimed: 0,
+			inFlightPending: 0,
+			settleComplete: true,
+		});
 	});
 
-	it('reconciles stale validations and reports the pending ones', async () => {
-		mockStale.mockResolvedValue([
-			{ id: ITEM_A, event_id: EVENT_ID },
-			{ id: ITEM_B, event_id: EVENT_ID },
-		]);
-		mockReconcile.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+	it('settles every stale item from storage evidence and tallies each outcome', async () => {
+		staleRowsFor({
+			validating: [
+				[
+					inFlightRow(ITEM_A, 'validating'),
+					inFlightRow(ITEM_B, 'validating'),
+					inFlightRow(ITEM_C, 'validating'),
+				],
+			],
+			uploading: [
+				[
+					inFlightRow('b0000000-0000-4000-8000-0000000000d1', 'uploading'),
+					inFlightRow('b0000000-0000-4000-8000-0000000000d2', 'uploading'),
+				],
+			],
+		});
+		mockSettle
+			.mockResolvedValueOnce('validated')
+			.mockResolvedValueOnce('rejected')
+			.mockResolvedValueOnce('pending')
+			.mockResolvedValueOnce('rescued')
+			.mockResolvedValueOnce('released');
 
 		const result = await runMemoriesCleanup(NOW);
 
-		expect(mockStale).toHaveBeenCalledWith(expect.any(String), MEMORIES_CLEANUP_BATCH_SIZE);
-		expect(mockReconcile).toHaveBeenCalledWith(EVENT_ID, ITEM_A);
-		expect(mockReconcile).toHaveBeenCalledWith(EVENT_ID, ITEM_B);
-		expect(result).toMatchObject({ validationReconciled: 1, validationPending: 1 });
+		expect(mockSettle).toHaveBeenCalledTimes(5);
+		for (const [, now] of mockSettle.mock.calls) expect(now).toBe(NOW);
+		expect(result).toMatchObject({
+			validationSettled: 1,
+			validationRejected: 1,
+			uploadsRescued: 1,
+			uploadsReleased: 1,
+			inFlightPending: 1,
+			settleComplete: true,
+		});
+	});
+
+	it('walks past rows it had to leave pending with a keyset cursor', async () => {
+		const firstPage = Array.from({ length: MEMORIES_CLEANUP_BATCH_SIZE }, (_, index) =>
+			inFlightRow(
+				`c0000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+				'validating',
+				`2026-10-24T10:${String(index).padStart(2, '0')}:00.000Z`,
+			),
+		);
+		staleRowsFor({ validating: [firstPage, [inFlightRow(ITEM_A, 'validating')]] });
+
+		const result = await runMemoriesCleanup(NOW);
+
+		const validatingCalls = mockStale.mock.calls
+			.map(([input]) => input)
+			.filter((input) => input.status === 'validating');
+		expect(validatingCalls).toHaveLength(2);
+		const last = firstPage[firstPage.length - 1];
+		expect(validatingCalls[1].after).toEqual({ at: last.updated_at, id: last.id });
+		expect(mockSettle).toHaveBeenCalledTimes(MEMORIES_CLEANUP_BATCH_SIZE + 1);
+		expect(result).toMatchObject({
+			inFlightPending: MEMORIES_CLEANUP_BATCH_SIZE + 1,
+			settleComplete: true,
+		});
+	});
+
+	it('pages uploads by reservation age', async () => {
+		const firstPage = Array.from({ length: MEMORIES_CLEANUP_BATCH_SIZE }, (_, index) =>
+			buildMediaRow({
+				id: `d0000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+				status: 'uploading',
+				created_at: `2026-10-24T09:${String(index).padStart(2, '0')}:00.000Z`,
+				updated_at: '2026-10-24T11:59:00.000Z',
+			}),
+		);
+		staleRowsFor({ uploading: [firstPage, []] });
+
+		await runMemoriesCleanup(NOW);
+
+		const uploadingCalls = mockStale.mock.calls
+			.map(([input]) => input)
+			.filter((input) => input.status === 'uploading');
+		const last = firstPage[firstPage.length - 1];
+		expect(uploadingCalls[1].after).toEqual({ at: last.created_at, id: last.id });
+	});
+
+	it('stops settling at its budget share and reports the walk as incomplete', async () => {
+		let elapsed = 0;
+		const base = 1_700_000_000_000;
+		jest.spyOn(Date, 'now').mockImplementation(() => base + elapsed);
+		mockStale.mockImplementation(async ({ status }) => {
+			elapsed += 60;
+			return Array.from({ length: MEMORIES_CLEANUP_BATCH_SIZE }, (_, index) =>
+				inFlightRow(`e0000000-0000-4000-8000-${String(index).padStart(12, '0')}`, status),
+			);
+		});
+
+		const result = await runMemoriesCleanup(NOW, 100);
+
+		// Settle checks: 0 < 100, 60 < 100, 120 < 100 (stop); the upload walk never starts.
+		expect(mockStale).toHaveBeenCalledTimes(2);
+		expect(mockClaim).not.toHaveBeenCalled();
+		expect(result.settleComplete).toBe(false);
 	});
 
 	it('claims batches until one comes back empty and anonymizes touched and expired sessions', async () => {
@@ -190,9 +295,12 @@ describe('runMemoriesCleanup', () => {
 		}
 
 		expect(result).toEqual({
-			validationReconciled: 0,
-			validationPending: 0,
-			expiredReservations: 0,
+			validationSettled: 0,
+			validationRejected: 0,
+			uploadsRescued: 0,
+			uploadsReleased: 0,
+			inFlightPending: 0,
+			settleComplete: true,
 			expiredContent: 0,
 			claimed: 3,
 			deleted: 3,
@@ -261,9 +369,10 @@ describe('runMemoriesCleanup', () => {
 		expect(result).toMatchObject({ claimed: 3, deleted: 3, failed: 0 });
 	});
 
-	it('never claims when the budget is already exhausted', async () => {
+	it('never claims or settles when the budget is already exhausted', async () => {
 		const result = await runMemoriesCleanup(NOW, 0);
+		expect(mockStale).not.toHaveBeenCalled();
 		expect(mockClaim).not.toHaveBeenCalled();
-		expect(result).toMatchObject({ claimed: 0, deleted: 0, failed: 0 });
+		expect(result).toMatchObject({ claimed: 0, deleted: 0, failed: 0, settleComplete: false });
 	});
 });

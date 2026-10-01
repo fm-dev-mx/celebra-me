@@ -59,16 +59,22 @@ class CaptureError extends Error {
 
 function readCaptureIssue(error: unknown): MemoriesCaptureIssue {
 	if (error instanceof CaptureError) return error.issue;
+	// The server closed this request id (rejected or released): start over.
+	if (error instanceof MemoriesRequestError && error.status === 409 && error.code === 'conflict')
+		return 'upload_expired';
 	if (error instanceof MemoriesRequestError) return mapRequestIssue(error, 'sign_failed');
 	return classifyTransportIssue('sign_failed');
 }
 
-async function putOriginalFile(reservation: MemoriesReservation, file: File): Promise<void> {
+async function putOriginalFile(
+	upload: NonNullable<MemoriesReservation['upload']>,
+	file: File,
+): Promise<void> {
 	let response: Response;
 	try {
-		response = await fetch(reservation.upload.uploadUrl, {
+		response = await fetch(upload.uploadUrl, {
 			method: 'PUT',
-			headers: reservation.upload.requiredHeaders,
+			headers: upload.requiredHeaders,
 			body: file,
 		});
 	} catch {
@@ -237,13 +243,25 @@ export default function MemoriesCapture({
 			try {
 				const payload = await api.complete(itemId);
 				if (isMemoriesTerminalStatus(payload.item.status)) return payload.item.status;
-			} catch {
+			} catch (error) {
+				// The reservation was released after being abandoned; retrying cannot revive it.
+				if (error instanceof MemoriesRequestError && error.status === 404)
+					throw new CaptureError('upload_expired');
 				// A bounded idempotent retry handles transient completion failures.
 			}
 			if (attempt < COMPLETION_ATTEMPTS - 1)
 				await new Promise((resolve) => setTimeout(resolve, 300 * 3 ** attempt));
 		}
 		throw new CaptureError(classifyTransportIssue('put_failed'));
+	};
+
+	const failUpload = (error: unknown) => {
+		const captureIssue = readCaptureIssue(error);
+		// A closed request id can never be reused: the next attempt starts over.
+		if (captureIssue === 'upload_expired')
+			selectedRequestIdRef.current = createSecureClientRequestId();
+		setStatus('error');
+		setIssue(captureIssue);
 	};
 
 	const uploadSelectedFile = async (file: File) => {
@@ -318,8 +336,10 @@ export default function MemoriesCapture({
 				durationSeconds,
 				clientRequestId,
 			});
-			setProgressMessage(copy.uploading);
-			await putOriginalFile(reservation, uploadFile);
+			if (reservation.upload) {
+				setProgressMessage(copy.uploading);
+				await putOriginalFile(reservation.upload, uploadFile);
+			}
 			setProgressMessage(copy.confirming);
 			const completedStatus = await completeReservedUpload(reservation.item.id);
 			setCompletionMessage(completionCopy(completedStatus));
@@ -341,8 +361,7 @@ export default function MemoriesCapture({
 			setStatus('success');
 			setIssue(null);
 		} catch (error) {
-			setStatus('error');
-			setIssue(readCaptureIssue(error));
+			failUpload(error);
 		}
 	};
 

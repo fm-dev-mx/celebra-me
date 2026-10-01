@@ -380,14 +380,20 @@ describe('memories retrieve worker: inspect', () => {
 		});
 	});
 
-	it('answers 404 when the signed object does not exist', async () => {
+	it('reports an absent object with 200 so a 404 never means "missing"', async () => {
 		const response = await retrieve({
 			objectKey: JPEG_KEY,
 			mimeType: 'image/jpeg',
 			mode: 'inspect',
 		});
-		expect(response.status).toBe(404);
-		expect(await response.json()).toEqual({ error: { code: 'not_found' } });
+		expect(response.status).toBe(200);
+		expect(await response.json()).toEqual({
+			exists: false,
+			sizeBytes: 0,
+			checksumSha256: null,
+			signatureValid: false,
+			durationSeconds: null,
+		});
 	});
 });
 

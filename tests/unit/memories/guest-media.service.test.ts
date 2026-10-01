@@ -2,6 +2,7 @@ jest.mock('@/lib/memories/server/catalog.repository', () => ({
 	claimValidation: jest.fn(),
 	findMediaById: jest.fn(),
 	finalizeMedia: jest.fn(),
+	listSessionInFlightMedia: jest.fn(),
 	listSessionMedia: jest.fn(),
 	patchMedia: jest.fn(),
 	releaseReservation: jest.fn(),
@@ -17,7 +18,10 @@ jest.mock('@/lib/memories/server/audit', () => ({
 	appendMemoriesAudit: jest.fn().mockResolvedValue(undefined),
 }));
 
-import { MEMORIES_SESSION_MAX_IN_FLIGHT } from '@/lib/memories/contract/limits';
+import {
+	MEMORIES_LATE_UPLOAD_GRACE_SECONDS,
+	MEMORIES_SESSION_MAX_IN_FLIGHT,
+} from '@/lib/memories/contract/limits';
 import { parseMemoriesObjectKey } from '@/lib/memories/contract/object-key';
 import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import { appendMemoriesAudit } from '@/lib/memories/server/audit';
@@ -25,6 +29,7 @@ import {
 	claimValidation,
 	findMediaById,
 	finalizeMedia,
+	listSessionInFlightMedia,
 	listSessionMedia,
 	patchMedia,
 	releaseReservation,
@@ -36,6 +41,7 @@ import {
 	getMediaObjectForRetrieval,
 	listGuestMemoryItems,
 	reserveGuestMemoryItem,
+	settleStaleMemoryItem,
 	updateGuestMemoryCaption,
 } from '@/lib/memories/server/guest-media.service';
 import {
@@ -62,6 +68,9 @@ const mockFind = findMediaById as jest.MockedFunction<typeof findMediaById>;
 const mockClaim = claimValidation as jest.MockedFunction<typeof claimValidation>;
 const mockFinalize = finalizeMedia as jest.MockedFunction<typeof finalizeMedia>;
 const mockList = listSessionMedia as jest.MockedFunction<typeof listSessionMedia>;
+const mockInFlight = listSessionInFlightMedia as jest.MockedFunction<
+	typeof listSessionInFlightMedia
+>;
 const mockPatch = patchMedia as jest.MockedFunction<typeof patchMedia>;
 const mockInspect = inspectMemoriesObject as jest.MockedFunction<typeof inspectMemoriesObject>;
 const mockCapability = requestMemoriesUploadCapability as jest.MockedFunction<
@@ -88,10 +97,25 @@ function reservationFailure(token: string): SupabaseHttpError {
 	return new SupabaseHttpError(400, `{"code":"P0001","message":"${token}"}`, 'P0001');
 }
 
+function foundInspection(overrides: Record<string, unknown> = {}) {
+	return {
+		kind: 'found' as const,
+		inspection: {
+			exists: true,
+			sizeBytes: 1_048_576,
+			checksumSha256: CHECKSUM_SHA256,
+			signatureValid: true,
+			durationSeconds: null,
+			...overrides,
+		},
+	};
+}
+
 describe('reserveGuestMemoryItem', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		mockRelease.mockResolvedValue(true);
+		mockInFlight.mockResolvedValue([]);
 	});
 
 	it('reserves an event-scoped key, signs the upload and returns the public item', async () => {
@@ -181,6 +205,69 @@ describe('reserveGuestMemoryItem', () => {
 		const error = new SupabaseHttpError(500, 'connection reset', null);
 		mockReserve.mockRejectedValue(error);
 		await expect(reserveGuestMemoryItem(reservationInput())).rejects.toBe(error);
+	});
+
+	it.each(['validating', 'accepted', 'duplicate'] as const)(
+		'returns a replayed %s reservation without a new upload capability',
+		async (status) => {
+			mockReserve.mockResolvedValue(buildMediaRow({ status }));
+
+			const result = await reserveGuestMemoryItem(reservationInput());
+
+			expect(result.upload).toBeNull();
+			expect(result.item.status).toBe(status);
+			expect(mockCapability).not.toHaveBeenCalled();
+		},
+	);
+
+	it.each(['rejected', 'deleted'] as const)(
+		'refuses to reopen a replayed %s reservation',
+		async (status) => {
+			mockReserve.mockResolvedValue(buildMediaRow({ status }));
+
+			await expect(reserveGuestMemoryItem(reservationInput())).rejects.toMatchObject({
+				status: 409,
+				code: 'conflict',
+			});
+			expect(mockCapability).not.toHaveBeenCalled();
+		},
+	);
+
+	it('settles abandoned in-flight items and retries once when the session is at capacity', async () => {
+		mockReserve
+			.mockRejectedValueOnce(reservationFailure('memories_session_concurrency_quota'))
+			.mockResolvedValueOnce(buildMediaRow());
+		mockInFlight.mockResolvedValue([
+			buildMediaRow({
+				status: 'uploading',
+				created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+			}),
+		]);
+		mockInspect.mockResolvedValue(foundInspection());
+		mockClaim.mockResolvedValue(buildMediaRow({ status: 'validating' }));
+		mockFinalize.mockResolvedValue(buildMediaRow({ status: 'accepted' }));
+		mockCapability.mockResolvedValue(buildUploadCapability());
+
+		const result = await reserveGuestMemoryItem(reservationInput());
+
+		expect(mockInFlight).toHaveBeenCalledWith(EVENT_ID, SESSION_ID);
+		expect(mockReserve).toHaveBeenCalledTimes(2);
+		expect(mockReserve.mock.calls[1][0]).toEqual(mockReserve.mock.calls[0][0]);
+		expect(result.upload).toEqual(buildUploadCapability());
+	});
+
+	it('answers 429 without retrying when nothing in flight could be settled', async () => {
+		mockReserve.mockRejectedValue(reservationFailure('memories_session_concurrency_quota'));
+		mockInFlight.mockResolvedValue([
+			buildMediaRow({ status: 'uploading', created_at: new Date().toISOString() }),
+		]);
+
+		await expect(reserveGuestMemoryItem(reservationInput())).rejects.toMatchObject({
+			status: 429,
+			code: 'rate_limited',
+		});
+		expect(mockReserve).toHaveBeenCalledTimes(1);
+		expect(mockInspect).not.toHaveBeenCalled();
 	});
 
 	it('releases the reservation and answers 503 when the signer fails', async () => {
@@ -286,7 +373,7 @@ describe('completeGuestMemoryItem', () => {
 
 	it('fails with 503 when the inspection cannot be performed', async () => {
 		mockFind.mockResolvedValue(buildMediaRow({ status: 'validating' }));
-		mockInspect.mockResolvedValue(null);
+		mockInspect.mockResolvedValue({ kind: 'unavailable' });
 		await expect(
 			completeGuestMemoryItem({ space, session, mediaItemId: ITEM_ID }),
 		).rejects.toMatchObject({ status: 503, code: 'service_unavailable' });
@@ -296,13 +383,9 @@ describe('completeGuestMemoryItem', () => {
 	it('claims validation, inspects and accepts a matching upload', async () => {
 		mockFind.mockResolvedValue(buildMediaRow({ status: 'uploading' }));
 		mockClaim.mockResolvedValue(buildMediaRow({ status: 'validating' }));
-		mockInspect.mockResolvedValue({
-			exists: true,
-			sizeBytes: 1_048_576,
-			checksumSha256: CHECKSUM_SHA256.toUpperCase(),
-			signatureValid: true,
-			durationSeconds: null,
-		});
+		mockInspect.mockResolvedValue(
+			foundInspection({ checksumSha256: CHECKSUM_SHA256.toUpperCase() }),
+		);
 		mockFinalize.mockResolvedValue(
 			buildMediaRow({ status: 'accepted', accepted_at: '2026-10-24T11:05:00.000Z' }),
 		);
@@ -329,13 +412,18 @@ describe('completeGuestMemoryItem', () => {
 
 	it('rejects an upload whose checksum or size differ from the reservation', async () => {
 		mockFind.mockResolvedValue(buildMediaRow({ status: 'validating' }));
-		mockInspect.mockResolvedValue({
-			exists: true,
-			sizeBytes: 1_048_575,
-			checksumSha256: CHECKSUM_SHA256,
-			signatureValid: true,
-			durationSeconds: null,
-		});
+		mockInspect.mockResolvedValue(foundInspection({ sizeBytes: 1_048_575 }));
+		mockFinalize.mockResolvedValue(buildMediaRow({ status: 'rejected' }));
+
+		const item = await completeGuestMemoryItem({ space, session, mediaItemId: ITEM_ID });
+
+		expect(mockFinalize).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'rejected' }));
+		expect(item.status).toBe('rejected');
+	});
+
+	it('rejects a confirmed upload whose object the Worker reports absent', async () => {
+		mockFind.mockResolvedValue(buildMediaRow({ status: 'validating' }));
+		mockInspect.mockResolvedValue({ kind: 'missing' });
 		mockFinalize.mockResolvedValue(buildMediaRow({ status: 'rejected' }));
 
 		const item = await completeGuestMemoryItem({ space, session, mediaItemId: ITEM_ID });
@@ -441,5 +529,116 @@ describe('caption updates and deletion', () => {
 			deleteGuestMemoryItem({ space, session, mediaItemId: ITEM_ID }),
 		).resolves.toBeUndefined();
 		expect(mockPatch).not.toHaveBeenCalled();
+	});
+});
+
+describe('settleStaleMemoryItem', () => {
+	const now = new Date('2026-10-30T06:00:00.000Z');
+	const ago = (seconds: number) => new Date(now.getTime() - seconds * 1000).toISOString();
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+		mockFinalize.mockImplementation(async ({ outcome }) => buildMediaRow({ status: outcome }));
+	});
+
+	it('leaves a validation alone until its retry delay passed', async () => {
+		const row = buildMediaRow({ status: 'validating', updated_at: ago(30) });
+		await expect(settleStaleMemoryItem(row, now)).resolves.toBe('pending');
+		expect(mockInspect).not.toHaveBeenCalled();
+	});
+
+	it('accepts a stale validation whose object matches the reservation', async () => {
+		mockInspect.mockResolvedValue(foundInspection());
+		const row = buildMediaRow({ status: 'validating', updated_at: ago(120) });
+
+		await expect(settleStaleMemoryItem(row, now)).resolves.toBe('validated');
+		expect(mockFinalize).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'accepted' }));
+	});
+
+	it('rejects a stale validation only when the Worker reports the object absent', async () => {
+		mockInspect.mockResolvedValue({ kind: 'missing' });
+		const row = buildMediaRow({ status: 'validating', updated_at: ago(120) });
+
+		await expect(settleStaleMemoryItem(row, now)).resolves.toBe('rejected');
+		expect(mockFinalize).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'rejected' }));
+	});
+
+	it.each(['validating', 'uploading'] as const)(
+		'never settles a %s item when storage cannot be inspected',
+		async (status) => {
+			mockInspect.mockResolvedValue({ kind: 'unavailable' });
+			const row = buildMediaRow({ status, created_at: ago(7200), updated_at: ago(7200) });
+
+			await expect(settleStaleMemoryItem(row, now)).resolves.toBe('pending');
+			expect(mockFinalize).not.toHaveBeenCalled();
+			expect(mockPatch).not.toHaveBeenCalled();
+		},
+	);
+
+	it('leaves a young reservation to its browser', async () => {
+		const row = buildMediaRow({ status: 'uploading', created_at: ago(300) });
+		await expect(settleStaleMemoryItem(row, now)).resolves.toBe('pending');
+		expect(mockInspect).not.toHaveBeenCalled();
+	});
+
+	it('rescues an upload whose bytes arrived but whose browser never confirmed it', async () => {
+		mockInspect.mockResolvedValue(foundInspection());
+		mockClaim.mockResolvedValue(buildMediaRow({ status: 'validating' }));
+		const row = buildMediaRow({ status: 'uploading', created_at: ago(900) });
+
+		await expect(settleStaleMemoryItem(row, now)).resolves.toBe('rescued');
+		expect(mockClaim).toHaveBeenCalledWith(ITEM_ID, SESSION_ID);
+		expect(mockFinalize).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'accepted' }));
+		expect(mockAudit).toHaveBeenCalledWith(
+			expect.objectContaining({ action: 'submitted_for_validation', actorType: 'system' }),
+		);
+	});
+
+	it('leaves the rescue to the guest when the claim was already taken', async () => {
+		mockInspect.mockResolvedValue(foundInspection());
+		mockClaim.mockResolvedValue(null);
+		const row = buildMediaRow({ status: 'uploading', created_at: ago(900) });
+
+		await expect(settleStaleMemoryItem(row, now)).resolves.toBe('pending');
+		expect(mockFinalize).not.toHaveBeenCalled();
+	});
+
+	it('keeps an absent upload that may still be streaming on venue Wi-Fi', async () => {
+		mockInspect.mockResolvedValue({ kind: 'missing' });
+		const row = buildMediaRow({ status: 'uploading', created_at: ago(20 * 60) });
+
+		await expect(settleStaleMemoryItem(row, now)).resolves.toBe('pending');
+		expect(mockPatch).not.toHaveBeenCalled();
+	});
+
+	it('releases an abandoned upload with a grace period for a late PUT', async () => {
+		mockInspect.mockResolvedValue({ kind: 'missing' });
+		mockPatch.mockResolvedValue(buildMediaRow({ status: 'deleted' }));
+		const row = buildMediaRow({ status: 'uploading', created_at: ago(31 * 60) });
+
+		await expect(settleStaleMemoryItem(row, now)).resolves.toBe('released');
+		expect(mockPatch).toHaveBeenCalledWith(
+			ITEM_ID,
+			{
+				status: 'deleted',
+				deleted_at: now.toISOString(),
+				cleanup_after: new Date(
+					now.getTime() + MEMORIES_LATE_UPLOAD_GRACE_SECONDS * 1000,
+				).toISOString(),
+			},
+			'&status=eq.uploading',
+		);
+		expect(mockAudit).toHaveBeenCalledWith(
+			expect.objectContaining({ action: 'reservation_abandoned', actorType: 'system' }),
+		);
+	});
+
+	it('reports a release lost to a concurrent completion as pending', async () => {
+		mockInspect.mockResolvedValue({ kind: 'missing' });
+		mockPatch.mockResolvedValue(null);
+		const row = buildMediaRow({ status: 'uploading', created_at: ago(31 * 60) });
+
+		await expect(settleStaleMemoryItem(row, now)).resolves.toBe('pending');
+		expect(mockAudit).not.toHaveBeenCalled();
 	});
 });

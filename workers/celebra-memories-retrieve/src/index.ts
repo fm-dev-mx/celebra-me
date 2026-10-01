@@ -102,7 +102,19 @@ async function handleInspect(
 	const object = await env.MEMORIES_BUCKET.get(objectKey, {
 		range: { offset: 0, length: MEMORIES_INSPECTION_BYTES },
 	});
-	if (!object) return errorResponse('not_found', 404);
+	// An answered "absent" is the only proof of a missing object; a 404 can also
+	// mean a misrouted request, which must never reject or release an upload.
+	if (!object)
+		return jsonResponse(
+			{
+				exists: false,
+				sizeBytes: 0,
+				checksumSha256: null,
+				signatureValid: false,
+				durationSeconds: null,
+			},
+			200,
+		);
 	const firstBytes = await readBoundedBytes(object.body);
 	const isVideo = isMemoriesVideoMime(mimeType);
 	let durationSeconds = isVideo ? parseBoundedVideoDurationSeconds(firstBytes) : null;

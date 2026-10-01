@@ -12,10 +12,16 @@ const SECONDS_PER_DAY = 24 * 60 * 60;
 
 /** Short-lived PUT capability issued by the Sign Worker. */
 export const MEMORIES_PRESIGN_TTL_SECONDS = 300;
-/** A reservation whose upload never completed is released after this delay. */
+/** A reservation older than this is inspected in storage instead of waiting for its browser. */
 export const MEMORIES_RESERVATION_TTL_SECONDS = MEMORIES_PRESIGN_TTL_SECONDS * 2;
-/** A validation that never settled is released after this delay. */
-export const MEMORIES_VALIDATION_TTL_SECONDS = 1200;
+/**
+ * A reservation whose object is confirmed absent is released only after this
+ * delay: a 60-second video on venue Wi-Fi can keep its PUT open far past the
+ * capability expiry, which is checked only when the PUT starts.
+ */
+export const MEMORIES_UPLOAD_ABANDON_SECONDS = 30 * 60;
+/** A released reservation keeps its key scheduled this long so a late PUT is still deleted. */
+export const MEMORIES_LATE_UPLOAD_GRACE_SECONDS = 60 * 60;
 /** Maximum in-flight uploads per guest session (technical, not commercial). */
 export const MEMORIES_SESSION_MAX_IN_FLIGHT = 2;
 /** JSON bodies exchanged with the Workers. */
@@ -42,6 +48,8 @@ export const MEMORIES_CLEANUP_BATCH_SIZE = 25;
 export const MEMORIES_CLEANUP_LEASE_SECONDS = 15 * 60;
 /** The daily cleanup keeps claiming batches until this budget is spent. */
 export const MEMORIES_CLEANUP_TIME_BUDGET_MS = 20_000;
+/** Share of the cleanup budget for settling stale uploads, so deletion always gets the rest. */
+export const MEMORIES_CLEANUP_SETTLE_BUDGET_MS = 8_000;
 export const MEMORIES_CATALOG_PAGE_SIZE = 50;
 
 export const MEMORIES_DISPLAY_NAME_MIN_LENGTH = 1;

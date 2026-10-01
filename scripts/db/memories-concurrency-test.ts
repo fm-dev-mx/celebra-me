@@ -216,13 +216,12 @@ async function main(): Promise<void> {
 		runPsql(
 			`update public.event_memory_items set created_at = now() - interval '20 minutes' where id = '${recoveryId}';`,
 		);
-		const expired = Number(
-			runPsql(
-				`select public.expire_event_memory_reservations(now() - interval '10 minutes', now() - interval '150 days');`,
-			),
+		// Same guarded logical delete the app applies to a confirmed-abandoned upload.
+		const expired = runPsql(
+			`with released as (update public.event_memory_items set status = 'deleted', deleted_at = now(), cleanup_after = now(), updated_at = now() where id = '${recoveryId}' and status = 'uploading' returning id) select id from released;`,
 		);
-		if (expired < 1)
-			throw new Error('Expired signer-failure reservation was not scheduled for cleanup.');
+		if (expired !== recoveryId)
+			throw new Error('Abandoned signer-failure reservation was not scheduled for cleanup.');
 		const residentState = runPsql(
 			`select status || ':' || (object_deleted_at is null)::text from public.event_memory_items where id = '${recoveryId}';`,
 		);

@@ -24,8 +24,6 @@ export const PATCH: APIRoute = async ({ request, params }) => {
 		const { space, session } = await requireGuestContext(request, params, 'mutate');
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
-		if (!bodyResult || typeof bodyResult !== 'object')
-			return badRequest('Cuerpo de solicitud inválido.');
 		const item = await updateGuestMemoryCaption({
 			space,
 			session,
@@ -44,8 +42,6 @@ export const POST: APIRoute = async ({ request, params }) => {
 		const { space, session } = await requireGuestContext(request, params, 'mutate');
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
-		if (!bodyResult || typeof bodyResult !== 'object')
-			return badRequest('Cuerpo de solicitud inválido.');
 		if (bodyResult.action !== 'complete')
 			return badRequest('La acción de recuerdo no es válida.');
 		const item = await completeGuestMemoryItem({ space, session, mediaItemId });

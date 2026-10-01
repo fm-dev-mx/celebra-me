@@ -12,9 +12,12 @@ export const MEMORIES_CLEANUP_EVENT_NAME = 'memories_cleanup_summary';
 const CHECK = 'memories_cleanup';
 
 interface MemoriesCleanupMetrics {
-	validation_reconciled: number | null;
-	validation_pending: number | null;
-	expired_reservations: number | null;
+	validation_settled: number | null;
+	validation_rejected: number | null;
+	uploads_rescued: number | null;
+	uploads_released: number | null;
+	in_flight_pending: number | null;
+	settle_complete: boolean | null;
 	expired_content: number | null;
 	claimed: number | null;
 	deleted: number | null;
@@ -55,9 +58,12 @@ export function resolveMemoriesRuntimeEnvironment(
 }
 
 const EMPTY_PAYLOAD: MemoriesCleanupMetrics = {
-	validation_reconciled: null,
-	validation_pending: null,
-	expired_reservations: null,
+	validation_settled: null,
+	validation_rejected: null,
+	uploads_rescued: null,
+	uploads_released: null,
+	in_flight_pending: null,
+	settle_complete: null,
 	expired_content: null,
 	claimed: null,
 	deleted: null,
@@ -122,9 +128,12 @@ export function createMemoriesCleanupCompletedEvidence(
 	result: MemoriesCleanupResult,
 ): MemoriesCleanupEvidence {
 	const invariantValid = result.claimed === result.deleted + result.failed;
+	// Items left in flight mean storage could not prove their state (or the
+	// budget ran out); they are never deleted blindly, so they need a look.
+	const settleBacklog = !result.settleComplete || result.inFlightPending > 0;
 	const status: OperationalEvidenceStatus = !invariantValid
 		? 'FAILED'
-		: result.failed > 0
+		: result.failed > 0 || settleBacklog
 			? 'WARNING'
 			: 'VERIFIED';
 	return build(
@@ -134,14 +143,19 @@ export function createMemoriesCleanupCompletedEvidence(
 			? 'cleanup_count_invariant_failed'
 			: result.failed > 0
 				? 'cleanup_partial_failure'
-				: 'cleanup_completed',
+				: settleBacklog
+					? 'cleanup_in_flight_backlog'
+					: 'cleanup_completed',
 		status === 'VERIFIED'
 			? 'No se requiere acción; conserve la invocación como evidencia.'
 			: REVIEW_ACTION,
 		{
-			validation_reconciled: result.validationReconciled,
-			validation_pending: result.validationPending,
-			expired_reservations: result.expiredReservations,
+			validation_settled: result.validationSettled,
+			validation_rejected: result.validationRejected,
+			uploads_rescued: result.uploadsRescued,
+			uploads_released: result.uploadsReleased,
+			in_flight_pending: result.inFlightPending,
+			settle_complete: result.settleComplete,
 			expired_content: result.expiredContent,
 			claimed: result.claimed,
 			deleted: result.deleted,

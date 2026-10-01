@@ -1,6 +1,6 @@
 begin;
 
-select plan(43);
+select plan(41);
 
 -- Access boundary -----------------------------------------------------------
 select ok(
@@ -246,30 +246,6 @@ select throws_ok($sql$
 		10, '30000000-0000-4000-8000-000000000006', 2
 	)
 $sql$, 'P0001', 'memories_session_video_quota', 'sixth resident video is rejected');
-
--- Reservation expiry -----------------------------------------------------------
-insert into public.event_memory_items (
-	id, event_id, session_id, object_key, mime_type, size_bytes, checksum_sha256,
-	status, created_at, updated_at
-) values (
-	'20000000-0000-4000-8000-000000000010',
-	'e0000000-0000-0000-0000-000000000001',
-	'10000000-0000-4000-8000-000000000001',
-	'events/e0000000-0000-0000-0000-000000000001/20000000-0000-4000-8000-000000000010.jpg',
-	'image/jpeg', 10,
-	'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
-	'uploading', now() - interval '1 hour', now() - interval '1 hour'
-);
-select is(
-	public.expire_event_memory_reservations(now() - interval '10 minutes', now() - interval '30 days'),
-	1::bigint,
-	'expired upload reservation is scheduled for cleanup'
-);
-select is(
-	(select status from public.event_memory_items where id = '20000000-0000-4000-8000-000000000010'),
-	'deleted',
-	'expired reservation becomes unavailable immediately'
-);
 
 -- Retention expiry schedules every resident object of the space ---------------
 update public.event_memory_settings
