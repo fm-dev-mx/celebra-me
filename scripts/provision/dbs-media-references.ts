@@ -8,7 +8,8 @@ import type {
 	MediaReferenceFinding,
 	MediaReferencesStatus,
 } from '../../src/lib/status/media-reference-types.ts';
-import { runPsql, sqlLiteral, validateEnvironmentUrlsPreflight } from '../db/db-workflow-lib.ts';
+import { sqlLiteral, validateEnvironmentUrlsPreflight } from '../db/db-workflow-lib.ts';
+import { runPsqlAsync } from '../status-core/probe-runner.ts';
 import { useCliColor } from '../db/operator-cli-ux.ts';
 import { resolveDbUrlForEnv, type TargetEnv } from './dbs-status.ts';
 
@@ -95,10 +96,10 @@ export function inspectPublishedMediaReferences(
 	};
 }
 
-function readPublishedMediaInventory(
+async function readPublishedMediaInventory(
 	target: MediaReferenceEnvironment,
 	slug?: string,
-): PublishedMediaInventoryRow[] | null {
+): Promise<PublishedMediaInventoryRow[] | null> {
 	const { dbUrl } = resolveDbUrlForEnv(target);
 	if (!dbUrl) return null;
 	validateEnvironmentUrlsPreflight({ target, targetDbUrl: dbUrl });
@@ -114,9 +115,9 @@ function readPublishedMediaInventory(
 			where invitation_project_id = i.id and deleted_at is null order by version desc limit 1
 		) pub on true where i.kind = 'client' and i.archived_at is null ${slugFilter}
 	) t;`;
-	const result = runPsql(sql, dbUrl, {
+	const result = await runPsqlAsync(sql, dbUrl, {
 		tuplesOnly: true,
-		throwOnError: false,
+		readOnly: true,
 		timeoutMs: 15_000,
 	});
 	if (result.status !== 0 || !result.stdout.trim()) return null;
@@ -125,27 +126,34 @@ function readPublishedMediaInventory(
 	return parsed as PublishedMediaInventoryRow[];
 }
 
-export function readMediaReferencesStatus(
+/** Read Preview and Production inventories concurrently; any failure stays UNVERIFIED. */
+export async function readMediaReferencesStatus(
 	input: {
 		targets?: readonly TargetEnv[];
 		slug?: string;
 		readInventory?: (
 			target: MediaReferenceEnvironment,
 			slug?: string,
-		) => PublishedMediaInventoryRow[] | null;
+		) => PublishedMediaInventoryRow[] | null | Promise<PublishedMediaInventoryRow[] | null>;
 	} = {},
-): MediaReferencesStatus {
+): Promise<MediaReferencesStatus> {
 	const selected = input.targets ?? ['local', 'preview', 'production'];
 	const status: MediaReferencesStatus = { preview: null, production: null };
-	for (const target of ['preview', 'production'] as const) {
-		if (!selected.includes(target)) continue;
-		try {
-			const rows = (input.readInventory ?? readPublishedMediaInventory)(target, input.slug);
-			status[target] = rows ? inspectPublishedMediaReferences(rows) : { ...EMPTY_UNVERIFIED };
-		} catch {
-			status[target] = { ...EMPTY_UNVERIFIED };
-		}
-	}
+	const readInventory = input.readInventory ?? readPublishedMediaInventory;
+	await Promise.all(
+		(['preview', 'production'] as const)
+			.filter((target) => selected.includes(target))
+			.map(async (target) => {
+				try {
+					const rows = await readInventory(target, input.slug);
+					status[target] = rows
+						? inspectPublishedMediaReferences(rows)
+						: { ...EMPTY_UNVERIFIED };
+				} catch {
+					status[target] = { ...EMPTY_UNVERIFIED };
+				}
+			}),
+	);
 	return status;
 }
 

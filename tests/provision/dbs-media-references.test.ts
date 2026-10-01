@@ -128,9 +128,9 @@ describe('dbs media references', () => {
 		expect(formatMediaReferences(media)).not.toContain('--apply');
 	});
 
-	it('includes unregistered invitations and respects selected targets', () => {
+	it('includes unregistered invitations and respects selected targets', async () => {
 		const row = { ...published(oldUrl), slug: 'unregistered-client' };
-		const media = readMediaReferencesStatus({
+		const media = await readMediaReferencesStatus({
 			targets: ['production'],
 			readInventory: () => [row],
 		});
@@ -138,8 +138,8 @@ describe('dbs media references', () => {
 		expect(media.production?.findings[0]?.slug).toBe('unregistered-client');
 	});
 
-	it('reports query failure as UNVERIFIED without a green operational plan', () => {
-		const media = readMediaReferencesStatus({
+	it('reports query failure as UNVERIFIED without a green operational plan', async () => {
+		const media = await readMediaReferencesStatus({
 			targets: ['preview'],
 			readInventory: () => {
 				throw new Error('connection failed with credentials');

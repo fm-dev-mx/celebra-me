@@ -28,6 +28,12 @@ import {
 	type UploadedAssetRef,
 } from './invitations/invitation-definition.ts';
 import { resolveLocalEnv } from './local-provision-env.ts';
+import {
+	currentNormalizerFingerprint,
+	openSourceAssetDigestCache,
+	sourceAssetDigestKey,
+	type SourceAssetDigestCache,
+} from './source-asset-digest-cache.ts';
 
 export const RELEASE_SCHEMA_VERSION = '2.0.0';
 export const ASSET_KEY_PREFIX = '__INVITATION_ASSET_KEY__:';
@@ -275,15 +281,67 @@ export interface SourceAssetDigest {
  * Local source-dir asset digests for promotional status. Never downloads Storage
  * and never retains normalized bytes after hashing.
  */
+let digestCache: SourceAssetDigestCache | null = null;
+
+/**
+ * Normalized-asset digests for fingerprints. Unchanged sources reuse a content-addressed digest
+ * instead of re-encoding the image; any change to the source, its policy, or the normalizer misses.
+ */
 export async function loadSourceAssetDigests(
 	definition: InvitationDefinition,
 	sourceDir?: string,
+	options: { cache?: SourceAssetDigestCache | null } = {},
 ): Promise<SourceAssetDigest[]> {
-	const effectiveSourceDir = sourceDir || getInvitationAssetSourceDir(definition);
-	const assets = await loadSourceAssets(definition, effectiveSourceDir);
-	return assets
-		.map(({ key, sha256 }) => ({ key, sha256 }))
-		.sort((left, right) => left.key.localeCompare(right.key));
+	const root = resolve(sourceDir || getInvitationAssetSourceDir(definition));
+	if (!existsSync(root) || !statSync(root).isDirectory()) {
+		throw new Error(`Invitation asset root does not exist: ${root}`);
+	}
+	const cache =
+		options.cache === undefined
+			? (digestCache ??= openSourceAssetDigestCache())
+			: options.cache;
+	const normalizer = currentNormalizerFingerprint();
+	const digests: SourceAssetDigest[] = [];
+	for (const asset of definition.assets) {
+		const source = resolveDeclaredAssetSource(root, asset);
+		const sourceBytes = readFileSync(source);
+		const declaredMime = detectFileMimeType(asset.relativePath, sourceBytes);
+		const key = sourceAssetDigestKey(
+			{
+				sourceBytes,
+				declaredMime,
+				optimizationRole: asset.optimizationRole,
+				sourcePolicy: asset.sourcePolicy,
+			},
+			normalizer,
+		);
+		let sha256 = cache?.get(key);
+		if (!sha256) {
+			const normalized = await normalizeInvitationImage(
+				new Blob([sourceBytes], { type: declaredMime }),
+				declaredMime,
+				asset.optimizationRole,
+				asset.sourcePolicy,
+			);
+			const raw = await extractBlobRawBytes(normalized.blob);
+			if (!raw) throw new Error('Could not extract bytes from Blob.');
+			sha256 = hash(raw);
+			cache?.set(key, sha256);
+		}
+		digests.push({ key: asset.key, sha256 });
+	}
+	cache?.flush();
+	return digests.sort((left, right) => left.key.localeCompare(right.key));
+}
+
+function resolveDeclaredAssetSource(
+	root: string,
+	asset: InvitationDefinition['assets'][number],
+): string {
+	const source = resolve(root, asset.relativePath);
+	if (!source.startsWith(`${root}${sep}`) || !existsSync(source) || !statSync(source).isFile())
+		throw new Error(`Declared asset "${asset.key}" is missing or escapes the asset root.`);
+	return source;
 }
 
 async function loadSourceAssets(
@@ -296,13 +354,7 @@ async function loadSourceAssets(
 	}
 	const assets: NormalizedInvitationAsset[] = [];
 	for (const asset of definition.assets) {
-		const source = resolve(root, asset.relativePath);
-		if (
-			!source.startsWith(`${root}${sep}`) ||
-			!existsSync(source) ||
-			!statSync(source).isFile()
-		)
-			throw new Error(`Declared asset "${asset.key}" is missing or escapes the asset root.`);
+		const source = resolveDeclaredAssetSource(root, asset);
 		const sourceBytes = readFileSync(source);
 		const declaredMime = detectFileMimeType(asset.relativePath, sourceBytes);
 		const normalized = await normalizeInvitationImage(

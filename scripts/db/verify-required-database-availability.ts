@@ -1,6 +1,6 @@
 /** Fail-closed, read-only availability preflight for database-dependent operator tasks. */
 import { classifyDbTarget } from './db-guard.ts';
-import { runPsql } from './db-workflow-lib.ts';
+import { runPsqlAsync } from '../status-core/probe-runner.ts';
 import { resolveDbUrlForEnv, type TargetEnv } from '../provision/dbs-status.ts';
 
 const ALL_TARGETS: readonly TargetEnv[] = ['local', 'preview', 'production'];
@@ -22,7 +22,12 @@ export interface DatabaseAvailabilityResult {
 interface AvailabilityDependencies {
 	resolveUrl: (environment: TargetEnv) => string | null;
 	classify: (dbUrl: string) => string;
-	probe: (dbUrl: string, timeoutMs: number) => { status: number | null; stdout: string };
+	probe: (
+		dbUrl: string,
+		timeoutMs: number,
+	) =>
+		| { status: number | null; stdout: string }
+		| Promise<{ status: number | null; stdout: string }>;
 }
 
 const defaultDependencies: AvailabilityDependencies = {
@@ -33,46 +38,51 @@ const defaultDependencies: AvailabilityDependencies = {
 		return classifyDbTarget(dbUrl).target;
 	},
 	probe(dbUrl, timeoutMs) {
-		return runPsql(
+		// runPsqlAsync forces default_transaction_read_only=on for the session.
+		return runPsqlAsync(
 			`begin read only;
 select current_setting('transaction_read_only');
 rollback;`,
 			dbUrl,
-			{
-				tuplesOnly: true,
-				throwOnError: false,
-				timeoutMs,
-				env: { ...process.env, PGOPTIONS: '-c default_transaction_read_only=on' },
-			},
+			{ tuplesOnly: true, readOnly: true, timeoutMs },
 		);
 	},
 };
 
-export function verifyRequiredDatabaseAvailability(
+/** Probes run concurrently; results keep the requested target order. */
+export async function verifyRequiredDatabaseAvailability(
 	targets: readonly TargetEnv[],
 	options: { timeoutMs?: number; dependencies?: AvailabilityDependencies } = {},
-): DatabaseAvailabilityResult[] {
+): Promise<DatabaseAvailabilityResult[]> {
 	const timeoutMs = options.timeoutMs ?? 5_000;
 	const dependencies = options.dependencies ?? defaultDependencies;
-	return targets.map((environment) => {
-		const dbUrl = dependencies.resolveUrl(environment);
-		if (!dbUrl) return { environment, available: false, reasonCode: 'CREDENTIALS_REQUIRED' };
-		if (dependencies.classify(dbUrl) !== EXPECTED_CLASSIFICATION[environment]) {
-			return { environment, available: false, reasonCode: 'IDENTITY_CONFLICT' };
-		}
-		const result = dependencies.probe(dbUrl, timeoutMs);
-		if (result.status !== 0) {
-			return { environment, available: false, reasonCode: 'UNREACHABLE' };
-		}
-		if (!result.stdout.split(/\r?\n/).some((line) => line.trim() === 'on')) {
-			return {
-				environment,
-				available: false,
-				reasonCode: 'READ_ONLY_ENFORCEMENT_FAILED',
-			};
-		}
-		return { environment, available: true };
-	});
+	return Promise.all(
+		targets.map((environment) => probeTarget(environment, timeoutMs, dependencies)),
+	);
+}
+
+async function probeTarget(
+	environment: TargetEnv,
+	timeoutMs: number,
+	dependencies: AvailabilityDependencies,
+): Promise<DatabaseAvailabilityResult> {
+	const dbUrl = dependencies.resolveUrl(environment);
+	if (!dbUrl) return { environment, available: false, reasonCode: 'CREDENTIALS_REQUIRED' };
+	if (dependencies.classify(dbUrl) !== EXPECTED_CLASSIFICATION[environment]) {
+		return { environment, available: false, reasonCode: 'IDENTITY_CONFLICT' };
+	}
+	const result = await dependencies.probe(dbUrl, timeoutMs);
+	if (result.status !== 0) {
+		return { environment, available: false, reasonCode: 'UNREACHABLE' };
+	}
+	if (!result.stdout.split(/\r?\n/).some((line) => line.trim() === 'on')) {
+		return {
+			environment,
+			available: false,
+			reasonCode: 'READ_ONLY_ENFORCEMENT_FAILED',
+		};
+	}
+	return { environment, available: true };
 }
 
 export function parseTargets(argv: readonly string[]): TargetEnv[] {
@@ -89,9 +99,9 @@ export function parseTargets(argv: readonly string[]): TargetEnv[] {
 	return targets as TargetEnv[];
 }
 
-export function main(argv: readonly string[] = process.argv.slice(2)): void {
+export async function main(argv: readonly string[] = process.argv.slice(2)): Promise<void> {
 	const targets = parseTargets(argv);
-	const results = verifyRequiredDatabaseAvailability(targets);
+	const results = await verifyRequiredDatabaseAvailability(targets);
 	for (const result of results) {
 		console.info(
 			result.available
@@ -108,10 +118,8 @@ export function main(argv: readonly string[] = process.argv.slice(2)): void {
 }
 
 if (process.argv[1]?.endsWith('verify-required-database-availability.ts')) {
-	try {
-		main();
-	} catch (error) {
+	main().catch((error: unknown) => {
 		console.error(error instanceof Error ? error.message : 'Invalid availability preflight.');
 		process.exitCode = 1;
-	}
+	});
 }
