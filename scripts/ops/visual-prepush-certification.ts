@@ -154,20 +154,41 @@ function timedHostStep<T>(label: string, step: () => T): T {
 	}
 }
 
-function runDocker(
+/**
+ * Docker volume holding the content-addressed pnpm store. A Linux volume avoids reading every
+ * package file through the Docker Desktop file share; pnpm verifies store integrity itself.
+ */
+export const PNPM_STORE_VOLUME = 'celebra-me-visual-pnpm-store';
+
+/**
+ * Packs the isolated checkout into one archive. Extracting a single file inside the container is
+ * much faster than copying thousands of files (including LFS references) through the file share.
+ */
+export function sourceArchiveCommand(
 	checkout: string,
+	archive: string,
+	platform: NodeJS.Platform = process.platform,
+): [string, string[]] {
+	// Windows ships bsdtar; GNU tar from Git Bash would read "C:" as a remote host.
+	const tar =
+		platform === 'win32'
+			? join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe')
+			: 'tar';
+	return [tar, ['-cf', archive, '-C', checkout, '.']];
+}
+
+function runDocker(
+	sourceArchive: string,
 	evidence: string,
 	sha: string,
 	operation: 'candidate' | 'compare',
 ): number {
-	const pnpmStore = gitPath('visual-runtime-cache/pnpm');
 	const nodeStore = gitPath('visual-runtime-cache/node-v24.14.1');
-	mkdirSync(pnpmStore, { recursive: true });
 	mkdirSync(nodeStore, { recursive: true });
 	mkdirSync(evidence, { recursive: true });
 	const command = [
 		'set -eu',
-		timedContainerStep('copy-source', 'cp -a /source/. /work'),
+		timedContainerStep('extract-source', 'tar -xf /source.tar -C /work'),
 		'cd /work',
 		// A passing compare discards its evidence, so only failures and candidates copy the
 		// complete capture output to the host mount.
@@ -206,11 +227,11 @@ function runDocker(
 			'--rm',
 			'--ipc=host',
 			'--mount',
-			`type=bind,source=${checkout},target=/source,readonly`,
+			`type=bind,source=${sourceArchive},target=/source.tar,readonly`,
 			'--mount',
 			`type=bind,source=${evidence},target=/evidence`,
 			'--mount',
-			`type=bind,source=${pnpmStore},target=/pnpm-store`,
+			`type=volume,source=${PNPM_STORE_VOLUME},target=/pnpm-store`,
 			'--mount',
 			`type=bind,source=${nodeStore},target=/node-cache`,
 			'--workdir',
@@ -524,9 +545,14 @@ function main(): void {
 				`Isolated exact-SHA checkout is not clean after Git LFS materialization:\n${isolatedStatus}`,
 			);
 		}
+		const sourceArchive = join(temporaryRoot, 'source.tar');
+		timedHostStep('archive-source', () => {
+			const [tar, args] = sourceArchiveCommand(checkout, sourceArchive);
+			execFileSync(tar, args, { stdio: 'inherit' });
+		});
 		if (candidateMode) {
 			const exitCode = timedHostStep('docker', () =>
-				runDocker(checkout, evidence, sha, 'candidate'),
+				runDocker(sourceArchive, evidence, sha, 'candidate'),
 			);
 			if (exitCode !== 0) {
 				const category = classifyVisualFailure(evidence);
@@ -536,7 +562,7 @@ function main(): void {
 			return;
 		}
 		const exitCode = timedHostStep('docker', () =>
-			runDocker(checkout, evidence, sha, 'compare'),
+			runDocker(sourceArchive, evidence, sha, 'compare'),
 		);
 		if (exitCode !== 0) {
 			const category = classifyVisualFailure(evidence);
