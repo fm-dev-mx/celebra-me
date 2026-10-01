@@ -30,6 +30,20 @@ const EXECUTABLE_PUBLICATION_PATHS = [
 	'scripts/invitation/image-namespace-remap.ts',
 ] as const;
 
+const EVENT_MEMORIES_CAPABILITY = 'event_memories_client';
+/** The only executable modules that name memories tables and RPCs. */
+export const EXECUTABLE_MEMORIES_PATHS = [
+	'src/lib/memories/server/catalog.repository.ts',
+	'src/lib/memories/server/settings.repository.ts',
+	'scripts/db/memories-concurrency-test.ts',
+] as const;
+const REQUIRED_MEMORIES_RPCS = [
+	'reserve_event_memory_item',
+	'resolve_event_memory_session',
+	'expire_event_memory_content',
+] as const;
+const LEGACY_MEMORIES_OBJECT = /valentina_memor/;
+
 function read(root: string, relativePath: string, errors: string[]): string | null {
 	const path = resolve(root, relativePath);
 	if (!existsSync(path)) {
@@ -67,6 +81,28 @@ function validateCurrentPublicationClient(root: string): string[] {
 	return errors;
 }
 
+/**
+ * The replacement application uses only the event-neutral catalog: every
+ * executable memories path calls the new RPCs and none names a legacy object.
+ */
+function validateEventMemoriesClient(root: string): string[] {
+	const errors: string[] = [];
+	const catalogSource = read(root, EXECUTABLE_MEMORIES_PATHS[0], errors);
+	for (const rpc of REQUIRED_MEMORIES_RPCS) {
+		if (catalogSource && !catalogSource.includes(rpc)) {
+			errors.push(`Capability proof is missing ${rpc} in ${EXECUTABLE_MEMORIES_PATHS[0]}.`);
+		}
+	}
+	for (const path of EXECUTABLE_MEMORIES_PATHS) {
+		const source =
+			path === EXECUTABLE_MEMORIES_PATHS[0] ? catalogSource : read(root, path, errors);
+		if (source && LEGACY_MEMORIES_OBJECT.test(source)) {
+			errors.push(`Legacy memories object is still referenced by ${path}.`);
+		}
+	}
+	return errors;
+}
+
 export function validateDeployedAppCapabilities(root = process.cwd()): string[] {
 	const errors: string[] = [];
 	const manifestPath = resolve(root, 'supabase/deployed-app-capabilities.json');
@@ -86,6 +122,9 @@ export function validateDeployedAppCapabilities(root = process.cwd()): string[] 
 	}
 	if (capabilities.includes(CURRENT_PUBLICATION_CAPABILITY)) {
 		errors.push(...validateCurrentPublicationClient(root));
+	}
+	if (capabilities.includes(EVENT_MEMORIES_CAPABILITY)) {
+		errors.push(...validateEventMemoriesClient(root));
 	}
 	return errors;
 }

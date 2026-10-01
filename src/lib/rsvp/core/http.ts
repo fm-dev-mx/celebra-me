@@ -1,4 +1,5 @@
 import { ApiError, isApiError, isAuthRequestError } from '@/lib/rsvp/core/errors';
+import { isRecord } from '@/lib/shared/data-utils';
 import { PRIVATE_CACHE_CONTROL, withPrivateNoStore } from '@/lib/http/private-cache-path';
 import { sanitize } from '@/lib/rsvp/core/utils';
 
@@ -207,9 +208,13 @@ export async function parseJsonBody(
 		return {};
 	}
 
+	let parsed: unknown;
 	try {
-		return JSON.parse(rawText) as Record<string, unknown>;
+		parsed = JSON.parse(rawText);
 	} catch {
 		return badRequest('Invalid JSON format.');
 	}
+	// Every caller reads named fields: arrays, null and primitives are not a body.
+	if (!isRecord(parsed)) return badRequest('Request body must be a JSON object.');
+	return parsed;
 }

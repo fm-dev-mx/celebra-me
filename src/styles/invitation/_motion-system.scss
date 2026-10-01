@@ -136,7 +136,7 @@
 		.music-player__button
 	):hover,
 	.event-location__card:hover
-		:is(.event-location__card-image, .rustic-map-tiles, .rustic-map-pin),
+		:is(.event-location__card-image, .venue-map-illustration, .rustic-map-pin),
 	.gallery-grid__item:hover img {
 		/* stylelint-disable-next-line declaration-no-important */
 		transform: none !important;

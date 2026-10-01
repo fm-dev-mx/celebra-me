@@ -110,7 +110,7 @@ Usage:
   tsx scripts/db/disposable-test-env.ts run-application-flow  Run the real service retry flow through PostgREST
   tsx scripts/db/disposable-test-env.ts run-concurrency-test  Prove same-key publication contention publishes once
   tsx scripts/db/disposable-test-env.ts run-phase3-concurrency-test  Exercise Editor/managed/publication/asset contention
-  tsx scripts/db/disposable-test-env.ts run-memories-concurrency-test  Exercise Valentina media transaction races
+  tsx scripts/db/disposable-test-env.ts run-memories-concurrency-test  Exercise event memories transaction races
   tsx scripts/db/disposable-test-env.ts run-stale-baseline-test  Exercise public and contact-only baselines
   tsx scripts/db/disposable-test-env.ts stop        Stop the disposable container
   tsx scripts/db/disposable-test-env.ts cleanup     Full cleanup (stop + remove container)
@@ -557,8 +557,7 @@ function cmdRunTests(): void {
 		'atomic_invitation_publication.test.sql',
 		'invitation_original_image_delivery.test.sql',
 		'managed_identity_archive_cascade.test.sql',
-		'valentina_memories_production_readiness.test.sql',
-		'valentina_memory_session_anonymization.test.sql',
+		'event_memories_catalog.test.sql',
 	];
 	const testPaths = testFiles.map((file) => resolve(PROJECT_ROOT, 'supabase', 'tests', file));
 	if (!testPaths.some((testPath) => existsSync(testPath))) {
@@ -843,18 +842,14 @@ function cmdRunPhase3ConcurrencyTest(): void {
 }
 
 function cmdRunMemoriesConcurrencyTest(): void {
-	console.info('=== Disposable Test Environment: Valentina Memories Concurrency ===\n');
-	const result = runCommand('npx', [
-		'-y',
-		'tsx',
-		'scripts/db/valentina-memories-concurrency-test.ts',
-	]);
+	console.info('=== Disposable Test Environment: Event Memories Concurrency ===\n');
+	const result = runCommand('npx', ['-y', 'tsx', 'scripts/db/memories-concurrency-test.ts']);
 	console.info(result.stdout || '');
 	if (result.status !== 0) {
 		const cleanStderr = redactCredentials(result.stderr);
 		const cleanStdout = redactCredentials(result.stdout);
 		fail(
-			`Valentina Memories concurrency failure: ${cleanStderr || cleanStdout || `exit code ${result.status}`}`,
+			`Event memories concurrency failure: ${cleanStderr || cleanStdout || `exit code ${result.status}`}`,
 		);
 	}
 }

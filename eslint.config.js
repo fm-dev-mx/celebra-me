@@ -104,6 +104,27 @@ export default [
 					type: 'page',
 					pattern: 'src/pages/*',
 				},
+				// Event memories: contract (isomorphic) ← server / client / ui / workers.
+				{
+					type: 'memories-contract',
+					pattern: 'src/lib/memories/contract/*',
+				},
+				{
+					type: 'memories-server',
+					pattern: 'src/lib/memories/server/*',
+				},
+				{
+					type: 'memories-client',
+					pattern: 'src/lib/memories/client/*',
+				},
+				{
+					type: 'memories-ui',
+					pattern: ['src/components/memories/*', 'src/components/dashboard/memories/*'],
+				},
+				{
+					type: 'worker',
+					pattern: 'workers/*',
+				},
 			],
 		},
 		rules: {
@@ -125,6 +146,49 @@ export default [
 						{
 							from: { element: { type: 'adapter' } },
 							disallow: [{ to: { element: { type: 'page' } } }],
+						},
+						// The memories contract stays import-free so Workers can bundle it by path.
+						{
+							from: { element: { type: 'memories-contract' } },
+							disallow: [
+								{ to: { element: { type: 'memories-server' } } },
+								{ to: { element: { type: 'memories-client' } } },
+								{ to: { element: { type: 'memories-ui' } } },
+								{ to: { element: { type: 'page' } } },
+								{ to: { element: { type: 'domain' } } },
+							],
+						},
+						{
+							from: { element: { type: 'memories-client' } },
+							disallow: [
+								{ to: { element: { type: 'memories-server' } } },
+								{ to: { element: { type: 'page' } } },
+							],
+						},
+						{
+							from: { element: { type: 'memories-ui' } },
+							disallow: [
+								{ to: { element: { type: 'memories-server' } } },
+								{ to: { element: { type: 'page' } } },
+							],
+						},
+						{
+							from: { element: { type: 'memories-server' } },
+							disallow: [
+								{ to: { element: { type: 'memories-client' } } },
+								{ to: { element: { type: 'memories-ui' } } },
+								{ to: { element: { type: 'page' } } },
+							],
+						},
+						{
+							from: { element: { type: 'worker' } },
+							disallow: [
+								{ to: { element: { type: 'memories-server' } } },
+								{ to: { element: { type: 'memories-client' } } },
+								{ to: { element: { type: 'memories-ui' } } },
+								{ to: { element: { type: 'domain' } } },
+								{ to: { element: { type: 'page' } } },
+							],
 						},
 					],
 				},

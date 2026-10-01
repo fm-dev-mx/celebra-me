@@ -16,6 +16,7 @@ export type InvitationMusicPlayerProps = {
 	url: string;
 	autoPlay: boolean;
 	title?: string;
+	startAt?: number;
 	revealMode: 'envelope' | 'immediate';
 	variant?: string;
 };
@@ -52,6 +53,7 @@ export function resolveInvitationMusicPlayer(input: {
 		url?: string;
 		autoPlay?: boolean;
 		title?: string;
+		startAt?: number;
 		revealMode?: 'envelope' | 'immediate';
 	};
 	envelopeEnabled: boolean;
@@ -62,6 +64,7 @@ export function resolveInvitationMusicPlayer(input: {
 		url: url?.trim() ?? '',
 		autoPlay: input.music?.autoPlay ?? false,
 		title: input.music?.title,
+		startAt: input.music?.startAt,
 		revealMode: input.music?.revealMode ?? (input.envelopeEnabled ? 'envelope' : 'immediate'),
 		variant: 'standard',
 	};

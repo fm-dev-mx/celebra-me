@@ -40,7 +40,7 @@ function extractZodErrors(error: z.ZodError): ValidationError['errors'] {
  */
 export async function validateBody<T>(
 	request: Request,
-	schema: z.ZodSchema<T>,
+	schema: z.ZodType<T>,
 	maxBytes = 256 * 1024,
 ): Promise<ValidationOutcome<T>> {
 	let body: unknown;
@@ -98,7 +98,7 @@ export async function validateBody<T>(
  */
 export async function validateBodyOrRespond<T>(
 	request: Request,
-	schema: z.ZodSchema<T>,
+	schema: z.ZodType<T>,
 	maxBytes = 256 * 1024,
 ): Promise<T | Response> {
 	const result = await validateBody(request, schema, maxBytes);
@@ -122,7 +122,7 @@ export async function validateBodyOrRespond<T>(
  */
 export function validateQuery<T>(
 	searchParams: URLSearchParams,
-	schema: z.ZodSchema<T>,
+	schema: z.ZodType<T>,
 ): ValidationOutcome<T> {
 	const obj: Record<string, string> = {};
 
@@ -150,7 +150,7 @@ export function validateQuery<T>(
  */
 export function validateQueryOrRespond<T>(
 	searchParams: URLSearchParams,
-	schema: z.ZodSchema<T>,
+	schema: z.ZodType<T>,
 ): T | Response {
 	const result = validateQuery(searchParams, schema);
 
@@ -161,4 +161,3 @@ export function validateQueryOrRespond<T>(
 
 	return result.data;
 }
-

@@ -1,11 +1,4 @@
-@use '../../../tokens' as tokens;
 @use '../../../global/mixins' as mixins;
-
-/* --- GALLERY: EDITORIAL VARIANT --- */
-
-/* --- GALLERY: JEWELRY BOX VARIANT --- */
-
-/* --- GALLERY: LUXURY HACIENDA VARIANT --- */
 
 :where(.gallery-section) {
 	--gallery-section-bg: radial-gradient(
@@ -67,7 +60,7 @@
 	--gallery-overlay-bg: transparent;
 	--gallery-overlay-emphasis-opacity: 0;
 	--gallery-overlay-hover-opacity: 1;
-	--gallery-caption-font: 'Cormorant Garamond', serif;
+	--gallery-caption-font: 'Cormorant Garamond Variable', 'Cormorant Garamond', serif;
 	--gallery-caption-color: var(--color-action-accent);
 	--gallery-caption-size: 0.8rem;
 	--gallery-caption-style: normal;

@@ -1,402 +1,190 @@
 @use '../global/mixins' as mixins;
 
-// ---------------------------------------------------------------------------
-// Testimonials — compact editorial quote rotator
-// Warm espresso palette · one card at a time · boutique hotel mood
-// ---------------------------------------------------------------------------
-
+// Testimonials: real client quotes on the dark ink surface, one at a time.
 .testimonials-section {
 	position: relative;
-	background: linear-gradient(180deg, var(--color-ink) 0%, rgb(24 16 13) 100%), var(--color-ink);
-
-	// Reveal children when the landing scroll observer adds .is-visible.
-	// Kept in the global stylesheet so Vite/Lightning CSS never sees Astro :global().
-	&.is-visible {
-		.testimonials__left,
-		.testimonials__rotator {
-			opacity: 100%;
-			transform: translateY(0);
-		}
-
-		.testimonials__indicator {
-			opacity: 100%;
-		}
-	}
-
-	// Gold hairline top separator (matches other editorial bands)
-	&::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 1px;
-		background: linear-gradient(
-			90deg,
-			rgb(var(--color-action-accent-rgb) / 0%) 0%,
-			rgb(var(--color-action-accent-rgb) / 18%) 20%,
-			rgb(var(--color-action-accent-rgb) / 30%) 50%,
-			rgb(var(--color-action-accent-rgb) / 18%) 80%,
-			rgb(var(--color-action-accent-rgb) / 0%) 100%
-		);
-		pointer-events: none;
-	}
+	background: var(--color-ink);
 }
-
-// ===========================================================================
-// Main container
-// ===========================================================================
 
 .testimonials {
-	position: relative;
 	width: 100%;
-	max-width: min(1080px, calc(100% - 2rem));
+	max-width: min(var(--container-max), 100% - 2 * var(--container-padding-x));
 	margin-inline: auto;
-	padding-block: clamp(3rem, 7vw, 5rem) clamp(2.1rem, 5vw, 3rem);
 	display: grid;
-	grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
-	gap: clamp(2rem, 4vw, 3.5rem);
+	grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+	gap: clamp(2rem, 5vw, 4rem);
 	align-items: center;
 
-	// Subtle warm radial glow behind the card
-	&::after {
-		content: '';
-		position: absolute;
-		top: 10%;
-		right: 5%;
-		width: min(500px, 50%);
-		height: min(400px, 60%);
-		background: radial-gradient(
-			ellipse at center,
-			rgb(var(--color-action-accent-rgb) / 4%) 0%,
-			transparent 70%
-		);
-		pointer-events: none;
-		z-index: 0;
+	@include mixins.respond-below(lg) {
+		grid-template-columns: 1fr;
+		gap: 1.5rem;
 	}
 }
-
-// ===========================================================================
-// Left column — editorial copy
-// ===========================================================================
 
 .testimonials__left {
 	display: flex;
 	flex-direction: column;
-	gap: 0;
-	position: relative;
-	z-index: 1;
 }
 
 .testimonials__eyebrow {
-	margin: 0 0 0.6rem;
-	color: var(--color-champagne);
-	font-family: var(--font-body);
-	font-size: clamp(0.62rem, 0.85vw, 0.72rem);
-	font-weight: 700;
-	letter-spacing: 0.22em;
-	text-transform: uppercase;
-	line-height: 1.4;
+	margin: 0 0 0.75rem;
 }
 
 .testimonials__title {
-	@include mixins.typography(display-2);
-
 	margin: 0;
-	max-width: 25rem;
-	color: var(--testimonials-title-color, rgb(247 241 230 / 96%));
-	font-size: clamp(1.75rem, 3.6vw, 2.85rem);
-	line-height: 1.1;
-	letter-spacing: -0.02em;
-
-	// Fine gold underline
-	&::after {
-		content: '';
-		display: block;
-		width: clamp(50px, 6vw, 80px);
-		height: 1px;
-		margin-top: clamp(0.7rem, 1.2vw, 1rem);
-		background: linear-gradient(
-			90deg,
-			rgb(var(--color-action-accent-rgb) / 60%),
-			rgb(var(--color-action-accent-rgb) / 20%)
-		);
-	}
+	max-width: 22rem;
+	color: var(--color-ivory);
+	font-size: var(--landing-h2-size);
+	font-weight: 600;
+	line-height: var(--landing-h2-line-height);
 }
 
-.testimonials__desc {
-	margin: clamp(0.6rem, 1vw, 0.9rem) 0 0;
-	max-width: 26rem;
-	color: rgb(247 241 230 / 60%);
-	font-family: var(--font-body);
-	font-size: clamp(0.9rem, 1.15vw, 1rem);
-	line-height: 1.65;
-}
-
-// Proof line — refined dot-separated close
+.testimonials__desc,
 .testimonials__proof-line {
-	margin-top: auto;
-	padding-top: clamp(1rem, 1.8vw, 1.5rem);
-	color: rgb(247 241 230 / 45%);
+	margin: 1rem 0 0;
+	max-width: 26rem;
+	color: rgb(var(--color-ivory-rgb) / 64%);
 	font-family: var(--font-body);
-	font-size: clamp(0.72rem, 0.9vw, 0.8rem);
-	font-weight: 500;
-	letter-spacing: 0.04em;
-	line-height: 1.5;
+	font-size: var(--landing-lead-size);
+	line-height: var(--landing-lead-line-height);
 }
-
-// ===========================================================================
-// Right column — rotator
-// ===========================================================================
 
 .testimonials__right {
-	position: relative;
-	z-index: 1;
 	display: flex;
 	flex-direction: column;
 }
 
-// Card stack — only active card is visible
+// All cards share one grid cell, so the carousel takes the height of the tallest quote and
+// changing quotes never shifts the page.
 .testimonials__rotator {
 	position: relative;
+	display: grid;
 }
 
 .testimonials__card {
-	position: absolute;
-	inset: 0;
-	opacity: 0%;
-	visibility: hidden;
-	transition:
-		opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-		visibility 0s 0.5s;
-	pointer-events: none;
-	background: rgb(255 250 240 / 7%);
-	border: 1px solid rgb(var(--color-action-accent-rgb) / 16%);
-	border-radius: 8px;
-	padding: clamp(1.35rem, 2.8vw, 2.4rem);
-	box-shadow: 0 24px 60px rgb(0 0 0 / 24%);
+	grid-area: 1 / 1;
 	display: flex;
 	flex-direction: column;
-
-	// Thin champagne accent line at top
-	&::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 1px;
-		background: linear-gradient(
-			90deg,
-			rgb(var(--color-action-accent-rgb) / 0%) 5%,
-			rgb(var(--color-action-accent-rgb) / 30%) 30%,
-			rgb(var(--color-action-accent-rgb) / 20%) 70%,
-			rgb(var(--color-action-accent-rgb) / 0%) 95%
-		);
-		pointer-events: none;
-	}
+	padding: clamp(1.5rem, 3vw, 2.5rem);
+	border: 1px solid rgb(var(--color-border-gold-rgb) / 18%);
+	border-radius: var(--card-radius);
+	background: rgb(var(--color-ivory-rgb) / 5%);
+	opacity: 0%;
+	visibility: hidden;
+	pointer-events: none;
+	transition:
+		opacity 0.4s ease,
+		visibility 0s 0.4s;
 
 	&--active {
 		opacity: 100%;
 		visibility: visible;
-		transition:
-			opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-			visibility 0s 0s;
-		position: relative;
 		pointer-events: auto;
+		transition:
+			opacity 0.4s ease,
+			visibility 0s;
 	}
 }
 
-// Quote text
 .testimonials__text {
-	margin: 0;
-	font-family: var(--testimonials-text-font, var(--font-display, serif));
-	font-size: clamp(1.18rem, 2.25vw, 1.75rem);
-	line-height: 1.45;
-	color: rgb(247 241 230 / 88%);
-	font-style: italic;
 	flex: 1;
+	margin: 0;
+	color: rgb(var(--color-ivory-rgb) / 90%);
+	font-family: var(--font-display);
+	font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+	font-style: italic;
+	line-height: 1.45;
 }
 
-// Footer — name / role / guests
 .testimonials__footer {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: baseline;
 	gap: 0.35rem 0.7rem;
-	margin-top: clamp(1rem, 2vw, 1.4rem);
-	padding-top: clamp(0.8rem, 1.5vw, 1.05rem);
-	border-top: 1px solid rgb(var(--color-action-accent-rgb) / 10%);
+	margin-top: 1.25rem;
+	padding-top: 1rem;
+	border-top: 1px solid rgb(var(--color-border-gold-rgb) / 14%);
 }
 
 .testimonials__name {
-	font-family: var(--font-body);
-	font-weight: 600;
-	font-size: clamp(0.76rem, 0.9vw, 0.86rem);
-	letter-spacing: 0.06em;
 	color: var(--color-champagne);
+	font-family: var(--font-body);
+	font-size: 0.8rem;
+	font-weight: 600;
+	letter-spacing: 0.06em;
 	text-transform: uppercase;
 }
 
 .testimonials__role {
+	color: rgb(var(--color-ivory-rgb) / 55%);
 	font-family: var(--font-body);
-	font-size: clamp(0.68rem, 0.8vw, 0.75rem);
-	color: rgb(247 241 230 / 40%);
+	font-size: 0.75rem;
 	letter-spacing: 0.04em;
 }
 
-.testimonials__guests {
-	font-family: var(--font-body);
-	font-size: clamp(0.65rem, 0.75vw, 0.72rem);
-	color: rgb(var(--color-action-accent-rgb) / 45%);
-	letter-spacing: 0.03em;
-	margin-left: auto;
-
-	&::before {
-		content: '·';
-		margin-right: 0.35rem;
-		color: rgb(var(--color-action-accent-rgb) / 25%);
-	}
-}
-
-// ===========================================================================
-// Indicator — counter + dots
-// ===========================================================================
-
-.testimonials__indicator {
+.testimonials__controls {
 	display: flex;
 	align-items: center;
 	gap: 0.75rem;
-	margin-top: clamp(0.75rem, 1.2vw, 1rem);
-	user-select: none;
+	margin-top: 1rem;
+}
+
+.testimonials__nav {
+	display: grid;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	padding: 0;
+	border: 1px solid rgb(var(--color-border-gold-rgb) / 30%);
+	border-radius: 50%;
+	background: transparent;
+	color: var(--color-ivory);
+	cursor: pointer;
+	transition:
+		border-color 0.2s ease,
+		background 0.2s ease;
+
+	svg {
+		width: 1.1rem;
+		height: 1.1rem;
+		fill: none;
+		stroke: currentcolor;
+		stroke-width: 1.6;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	&:hover {
+		border-color: var(--color-champagne);
+		background: rgb(var(--color-champagne-rgb) / 10%);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--color-champagne);
+		outline-offset: 3px;
+	}
 }
 
 .testimonials__counter {
+	min-width: 4.5rem;
+	color: rgb(var(--color-ivory-rgb) / 64%);
 	font-family: var(--font-body);
-	font-size: clamp(0.68rem, 0.8vw, 0.75rem);
-	font-weight: 500;
+	font-size: 0.8rem;
 	letter-spacing: 0.08em;
-	color: rgb(var(--color-action-accent-rgb) / 55%);
-	line-height: 1;
+	text-align: center;
 }
 
-.testimonials__dots {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.4rem;
+.testimonials__notice {
+	margin: 1rem 0 0;
+	color: rgb(var(--color-ivory-rgb) / 55%);
+	font-family: var(--font-body);
+	font-size: 0.75rem;
+	line-height: 1.5;
 }
 
-.testimonials__dot {
-	display: inline-block;
-	width: 6px;
-	height: 6px;
-	border-radius: 999px;
-	background: rgb(var(--color-action-accent-rgb) / 15%);
-	transition: background 0.4s ease;
-
-	&--active {
-		background: rgb(var(--color-action-accent-rgb) / 60%);
-	}
-}
-
-// ===========================================================================
-// Tablet (md–lg)
-// ===========================================================================
-@include mixins.respond-below(lg) {
-	.testimonials {
-		gap: 2rem;
-		padding-block: 3rem 2.4rem;
-
-		&__title {
-			max-width: 20rem;
-			font-size: 1.8rem;
-		}
-	}
-}
-
-// ===========================================================================
-// Mobile (below md)
-// ===========================================================================
-@include mixins.respond-below(md) {
-	.testimonials {
-		grid-template-columns: 1fr;
-		gap: 1.25rem;
-		padding-block: clamp(2.5rem, 7vw, 3.25rem) clamp(1.4rem, 4vw, 1.8rem);
-		max-width: calc(100% - 1.25rem);
-
-		&::after {
-			right: auto;
-			left: 50%;
-			transform: translateX(-50%);
-			width: 80%;
-			height: 50%;
-			top: 20%;
-		}
-
-		// Left column
-		&__left {
-			max-width: 100%;
-		}
-
-		&__eyebrow {
-			margin-bottom: 0.4rem;
-		}
-
-		&__title {
-			font-size: 1.5rem;
-			max-width: 100%;
-
-			&::after {
-				width: 50px;
-				margin-top: 0.6rem;
-			}
-		}
-
-		&__desc {
-			font-size: 0.85rem;
-			margin-top: 0.5rem;
-		}
-
-		&__proof-line {
-			margin-top: 0.75rem;
-			padding-top: 0.6rem;
-			font-size: 0.72rem;
-		}
-
-		// Right column — card
-		&__card {
-			padding: 1.1rem 1.15rem;
-		}
-
-		&__text {
-			font-size: 1.02rem;
-			line-height: 1.55;
-		}
-
-		&__footer {
-			margin-top: 0.65rem;
-			padding-top: 0.65rem;
-		}
-
-		&__indicator {
-			margin-top: 0.65rem;
-		}
-	}
-}
-
-// ===========================================================================
-// Reduced motion
-// ===========================================================================
-@include mixins.reduced-motion {
-	.testimonials__card {
-		transition:
-			opacity 0.3s ease,
-			visibility 0s;
-
-		&--active {
-			transition:
-				opacity 0.3s ease,
-				visibility 0s;
-		}
+@media (prefers-reduced-motion: reduce) {
+	.testimonials__card,
+	.testimonials__nav {
+		transition: none;
 	}
 }

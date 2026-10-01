@@ -1,28 +1,41 @@
+/**
+ * Sign Worker: issues single-use upload capabilities for reservations the app
+ * signed, and receives the PUT bytes into the private R2 binding.
+ *
+ * Event-neutral by design: window, quotas and ownership are decided by the app
+ * and its database before the request is signed. This Worker only verifies the
+ * envelope, the global media policy and the capability it issued.
+ */
+
+import { MEMORIES_JSON_BODY_MAX_BYTES } from '../../../src/lib/memories/contract/limits';
 import {
-	VALENTINA_MEMORIES_JSON_BODY_MAX_BYTES,
-	VALENTINA_MEMORIES_SIGN_PATH,
-	VALENTINA_MEMORIES_UPLOAD_PATH,
-	getValentinaMemoriesMimePolicy,
-	getValentinaMemoriesStorageBucketName,
-	isAllowedValentinaMemoriesOrigin,
-	isWithinValentinaMemoriesUploadWindow,
-} from '../../../src/data/valentina-memories-upload.contract';
-import { isValentinaMemoriesObjectKeyForMime } from '../../../src/data/valentina-memories-media.contract';
+	MEMORIES_UUID_PATTERN,
+	isValidSha256Hex,
+} from '../../../src/lib/memories/contract/catalog';
 import {
-	MEMORIES_PRIVATE_REQUEST_HEADERS,
+	getMemoriesMimePolicy,
+	type MemoriesMimePolicy,
+} from '../../../src/lib/memories/contract/media-policy';
+import { isMemoriesObjectKeyForMime } from '../../../src/lib/memories/contract/object-key';
+import {
 	MEMORIES_PRIVATE_REQUEST_TTL_SECONDS,
+	MEMORIES_SIGN_PATH,
+	MEMORIES_UPLOAD_PATH,
 	MEMORIES_UPLOAD_REQUEST_AUDIENCE,
-} from '../../../src/data/valentina-memories-private-request.contract';
-import { verifyMemoriesPrivateRequest } from '../../shared/private-request';
+} from '../../../src/lib/memories/contract/private-request';
+import { readBoundedText } from '../../shared/bounded-body';
+import { sha256HexToArrayBuffer, sha256HexToBase64 } from '../../shared/encoding';
+import { privateRequestId, verifyMemoriesPrivateRequest } from '../../shared/private-request';
 import { consumeReplayKey } from '../../shared/replay-guard';
+import { createUploadCapability, verifyUploadCapability } from './capability';
 import {
+	allowedBrowserOrigins,
 	getMemoriesRateLimiter,
-	hasRequiredR2Secrets,
+	isSignEnvConfigured,
 	type MemoriesSignEnv,
 	type MemoriesSignHandlerOptions,
 } from './env';
 import { MEMORY_UPLOAD_CORS_HEADERS, errorResponse, jsonResponse } from './http';
-import { createUploadCapability, sha256HexToArrayBuffer, sha256HexToBase64, verifyUploadCapability } from './capability';
 
 const ALLOWED_SIGN_KEYS = new Set([
 	'objectKey',
@@ -31,18 +44,19 @@ const ALLOWED_SIGN_KEYS = new Set([
 	'sizeBytes',
 	'checksumSha256',
 ]);
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+/** A key that matches its MIME implies an allow-listed policy; the policy travels with the input. */
 function parseSignRequest(payload: unknown): {
 	objectKey: string;
 	sessionId: string;
 	mimeType: string;
 	sizeBytes: number;
 	checksumSha256: string;
+	policy: MemoriesMimePolicy;
 } | null {
 	if (!isRecord(payload)) return null;
 	const keys = Object.keys(payload);
@@ -52,72 +66,31 @@ function parseSignRequest(payload: unknown): {
 	if (
 		typeof objectKey !== 'string' ||
 		typeof sessionId !== 'string' ||
-		!UUID_PATTERN.test(sessionId) ||
+		!MEMORIES_UUID_PATTERN.test(sessionId) ||
 		typeof mimeType !== 'string' ||
 		typeof sizeBytes !== 'number' ||
 		!Number.isSafeInteger(sizeBytes) ||
 		sizeBytes <= 0 ||
-		typeof checksumSha256 !== 'string' ||
-		!/^[0-9a-f]{64}$/i.test(checksumSha256) ||
-		!isValentinaMemoriesObjectKeyForMime(objectKey, mimeType)
+		!isValidSha256Hex(checksumSha256) ||
+		!isMemoriesObjectKeyForMime(objectKey, mimeType)
 	) {
 		return null;
 	}
+	const policy = getMemoriesMimePolicy(mimeType);
+	if (!policy) return null;
 	return {
 		objectKey,
 		sessionId,
 		mimeType: mimeType.trim().toLowerCase(),
 		sizeBytes,
 		checksumSha256: checksumSha256.toLowerCase(),
+		policy,
 	};
 }
 
-async function readBoundedBody(request: Request): Promise<string | null> {
-	const rawLength = request.headers.get('Content-Length');
-	if (rawLength !== null) {
-		if (!/^\d+$/.test(rawLength.trim())) return null;
-		if (Number(rawLength) > VALENTINA_MEMORIES_JSON_BODY_MAX_BYTES) return null;
-	}
-	if (!request.body) return null;
-	const reader = request.body.getReader();
-	const chunks: Uint8Array[] = [];
-	let total = 0;
-	try {
-		while (true) {
-			const { done, value } = await reader.read();
-			if (done) break;
-			if (!value) continue;
-			total += value.byteLength;
-			if (total > VALENTINA_MEMORIES_JSON_BODY_MAX_BYTES) {
-				await reader.cancel('request body exceeds configured limit');
-				return null;
-			}
-			chunks.push(value);
-		}
-	} finally {
-		reader.releaseLock();
-	}
-	const body = new Uint8Array(total);
-	let offset = 0;
-	for (const chunk of chunks) {
-		body.set(chunk, offset);
-		offset += chunk.byteLength;
-	}
-	return new TextDecoder().decode(body);
-}
-
-function allowedOrigin(request: Request, target: string): string | null {
+function allowedOrigin(request: Request, env: MemoriesSignEnv): string | null {
 	const origin = request.headers.get('Origin');
-	return origin && isAllowedValentinaMemoriesOrigin(origin, target as never) ? origin : null;
-}
-
-async function consumePrivateRequest(env: MemoriesSignEnv, request: Request, now: Date): Promise<boolean> {
-	const requestId = request.headers.get(MEMORIES_PRIVATE_REQUEST_HEADERS.requestId);
-	return consumeReplayKey(
-		env.NONCE_GUARD,
-		`private:${requestId ?? ''}`,
-		now.getTime() + MEMORIES_PRIVATE_REQUEST_TTL_SECONDS * 1000,
-	);
+	return origin && allowedBrowserOrigins(env).has(origin) ? origin : null;
 }
 
 export async function handleMemoriesUploadRequest(
@@ -125,18 +98,15 @@ export async function handleMemoriesUploadRequest(
 	env: MemoriesSignEnv,
 	now = new Date(),
 ): Promise<Response> {
-	const origin = allowedOrigin(request, env.MEMORIES_STORAGE_TARGET);
-	if (!origin) return errorResponse('forbidden_origin', 'El origen no está autorizado.', 403, null);
+	const origin = allowedOrigin(request, env);
+	if (!origin) return errorResponse('unauthorized', 403, null);
 	if (request.method === 'OPTIONS')
 		return new Response(null, {
 			status: 204,
 			headers: { ...MEMORY_UPLOAD_CORS_HEADERS, 'Access-Control-Allow-Origin': origin },
 		});
-	if (request.method !== 'PUT')
-		return errorResponse('not_found', 'La ruta solicitada no existe.', 404, origin);
-	if (!env.MEMORIES_BUCKET || !env.MEMORIES_UPLOAD_CAPABILITY_SECRET || !env.NONCE_GUARD) {
-		return errorResponse('upload_failed', 'No se pudo recibir la carga.', 503, origin);
-	}
+	if (request.method !== 'PUT') return errorResponse('not_found', 404, origin);
+	if (!isSignEnvConfigured(env)) return errorResponse('unavailable', 503, origin);
 	const authorization = request.headers.get('Authorization') ?? '';
 	const token = authorization.startsWith('Bearer ') ? authorization.slice(7).trim() : '';
 	const claims = await verifyUploadCapability(token, env.MEMORIES_UPLOAD_CAPABILITY_SECRET, now);
@@ -144,21 +114,21 @@ export async function handleMemoriesUploadRequest(
 	const contentLength = request.headers.get('Content-Length');
 	if (
 		!claims ||
-		!isValentinaMemoriesObjectKeyForMime(claims.objectKey, claims.mimeType) ||
-		!getValentinaMemoriesMimePolicy(claims.mimeType) ||
+		!isMemoriesObjectKeyForMime(claims.objectKey, claims.mimeType) ||
+		!getMemoriesMimePolicy(claims.mimeType) ||
 		request.headers.get('Content-Type') !== claims.mimeType ||
 		checksum !== sha256HexToBase64(claims.checksumSha256) ||
 		contentLength !== String(claims.sizeBytes) ||
 		!request.body
 	) {
-		return errorResponse('capability_invalid', 'La capability de carga no es válida.', 400, origin);
+		return errorResponse('capability_invalid', 400, origin);
 	}
 	const claimed = await consumeReplayKey(
 		env.NONCE_GUARD,
 		`upload:${claims.nonce}`,
 		claims.expiresAt * 1000,
 	);
-	if (!claimed) return errorResponse('replay', 'La capability ya fue utilizada.', 409, origin);
+	if (!claimed) return errorResponse('replay', 409, origin);
 
 	const fixedLength = new FixedLengthStream(claims.sizeBytes);
 	const uploadPromise = env.MEMORIES_BUCKET.put(claims.objectKey, fixedLength.readable, {
@@ -168,8 +138,9 @@ export async function handleMemoriesUploadRequest(
 	});
 	const copyPromise = request.body.pipeTo(fixedLength.writable);
 	const results = await Promise.allSettled([uploadPromise, copyPromise]);
-	if (results.some((result) => result.status === 'rejected')) {
-		return errorResponse('upload_failed', 'La carga no cumple el tamaño o checksum declarado.', 400, origin);
+	const uploadResult = results[0].status === 'fulfilled' ? results[0].value : null;
+	if (results.some((result) => result.status === 'rejected') || !uploadResult) {
+		return errorResponse('upload_failed', 400, origin);
 	}
 	return jsonResponse({ uploaded: true }, 201, origin);
 }
@@ -180,63 +151,54 @@ export async function handleMemoriesSignRequest(
 	options: MemoriesSignHandlerOptions = {},
 ): Promise<Response> {
 	const url = new URL(request.url);
-	if (request.method !== 'POST' || url.pathname !== VALENTINA_MEMORIES_SIGN_PATH) {
-		return errorResponse('not_found', 'La ruta solicitada no existe.', 404, null);
+	if (request.method !== 'POST' || url.pathname !== MEMORIES_SIGN_PATH) {
+		return errorResponse('not_found', 404, null);
 	}
-	if (!hasRequiredR2Secrets(env)) {
-		return errorResponse('sign_failed', 'No se pudo firmar la subida.', 503, null);
-	}
-	const bucketName = getValentinaMemoriesStorageBucketName(env.MEMORIES_STORAGE_TARGET);
-	if (!bucketName) {
-		return errorResponse('sign_failed', 'No se pudo firmar la subida.', 503, null);
-	}
-	const rawBody = await readBoundedBody(request);
-	if (!rawBody) return errorResponse('invalid_request', 'La solicitud no es válida.', 400, null);
+	if (!isSignEnvConfigured(env)) return errorResponse('unavailable', 503, null);
+	const rawBody = await readBoundedText(request, MEMORIES_JSON_BODY_MAX_BYTES);
+	if (rawBody === null) return errorResponse('invalid_request', 400, null);
 	if (
 		!(await verifyMemoriesPrivateRequest({
 			request,
 			rawBody,
 			expectedAudience: MEMORIES_UPLOAD_REQUEST_AUDIENCE,
-			expectedPath: VALENTINA_MEMORIES_SIGN_PATH,
+			expectedPath: MEMORIES_SIGN_PATH,
 			publicKeyPem: env.MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY,
 			now: options.now,
 		}))
 	) {
-		return errorResponse('unauthorized', 'La solicitud no está autorizada.', 401, null);
+		return errorResponse('unauthorized', 401, null);
 	}
 	const now = options.now ?? new Date();
-	if (!(await consumePrivateRequest(env, request, now)))
-		return errorResponse('replay', 'La solicitud ya fue utilizada.', 409, null);
+	const claimed = await consumeReplayKey(
+		env.NONCE_GUARD,
+		`private:${privateRequestId(request)}`,
+		now.getTime() + MEMORIES_PRIVATE_REQUEST_TTL_SECONDS * 1000,
+	);
+	if (!claimed) return errorResponse('replay', 409, null);
 	let payload: unknown;
 	try {
 		payload = JSON.parse(rawBody) as unknown;
 	} catch {
-		return errorResponse('invalid_request', 'La solicitud no es válida.', 400, null);
+		return errorResponse('invalid_request', 400, null);
 	}
 	const input = parseSignRequest(payload);
-	if (!input) return errorResponse('invalid_request', 'La solicitud no es válida.', 400, null);
-	if (!isWithinValentinaMemoriesUploadWindow(now)) {
-		return errorResponse(
-			'upload_window_closed',
-			'La ventana de carga no está abierta.',
-			403,
-			null,
-		);
-	}
-	const policy = getValentinaMemoriesMimePolicy(input.mimeType);
-	if (!policy)
-		return errorResponse('unsupported_mime', 'Tipo de archivo no permitido.', 400, null);
-	if (input.sizeBytes > policy.maxBytes)
-		return errorResponse('file_too_large', 'El archivo supera el tamaño permitido.', 400, null);
+	if (!input) return errorResponse('invalid_request', 400, null);
+	if (input.sizeBytes > input.policy.maxBytes) return errorResponse('file_too_large', 400, null);
 	const limiter = getMemoriesRateLimiter(env);
 	if (!limiter || !(await limiter.limit({ key: input.sessionId })).success) {
-		return errorResponse('rate_limited', 'Intente de nuevo en un momento.', 429, null);
+		return errorResponse('rate_limited', 429, null);
 	}
 	try {
-		const capability = await createUploadCapability(input, env.MEMORIES_UPLOAD_CAPABILITY_SECRET, now);
+		// Only the named claims are sealed; the policy stays local to this request.
+		const capability = await createUploadCapability(
+			input,
+			env.MEMORIES_UPLOAD_CAPABILITY_SECRET,
+			now,
+		);
 		return jsonResponse(
 			{
-				uploadUrl: new URL(VALENTINA_MEMORIES_UPLOAD_PATH, request.url).toString(),
+				uploadUrl: new URL(MEMORIES_UPLOAD_PATH, request.url).toString(),
 				requiredHeaders: {
 					Authorization: `Bearer ${capability.token}`,
 					'Content-Type': input.mimeType,
@@ -248,13 +210,13 @@ export async function handleMemoriesSignRequest(
 			null,
 		);
 	} catch {
-		return errorResponse('sign_failed', 'No se pudo firmar la subida.', 500, null);
+		return errorResponse('sign_failed', 500, null);
 	}
 }
 
 export default {
 	async fetch(request: Request, env: MemoriesSignEnv): Promise<Response> {
-		if (new URL(request.url).pathname === VALENTINA_MEMORIES_UPLOAD_PATH)
+		if (new URL(request.url).pathname === MEMORIES_UPLOAD_PATH)
 			return handleMemoriesUploadRequest(request, env);
 		return handleMemoriesSignRequest(request, env);
 	},

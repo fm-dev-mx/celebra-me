@@ -99,21 +99,29 @@
 		}
 	}
 
-	&__cta {
-		font-family: var(--font-display);
-		font-size: 0.85rem;
-		font-weight: 500;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
+	// The header carries the same WhatsApp quote CTA as the page, in a compact outline style.
+	&__cta.whatsapp-button {
+		min-width: 0;
+		gap: 0.5rem;
+		padding: 0.6rem 1.15rem;
+		font-family: var(--font-body);
+		font-size: 0.82rem;
+		font-weight: 600;
+		letter-spacing: 0.02em;
 		text-decoration: none;
 		color: var(--header-nav-cta-color);
-		padding: var(--spacing-sm) var(--spacing-xl);
 		background: var(--header-nav-cta-bg);
 		backdrop-filter: blur(10px);
 		border: 1px solid var(--header-nav-cta-border);
 		border-radius: 999px;
 		box-shadow: var(--header-nav-cta-shadow);
 		transition: var(--transition-standard);
+
+		svg {
+			width: 16px;
+			height: 16px;
+			color: currentcolor;
+		}
 
 		&:hover {
 			transform: translateY(-2px);
@@ -123,6 +131,14 @@
 			box-shadow: 0 8px 25px rgb(0 0 0 / 20%);
 		}
 	}
+}
+
+#home-header .mobile-nav-actions__cta.whatsapp-button {
+	width: 100%;
+	text-transform: none;
+	letter-spacing: 0.02em;
+	font-size: 0.95rem;
+	font-weight: 700;
 }
 
 // --- State Overrides (scoped to #home-header, unified contract) ---

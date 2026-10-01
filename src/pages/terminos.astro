@@ -7,6 +7,13 @@ export const prerender = true;
 import Layout from '@/layouts/Layout.astro';
 import Footer from '@/components/home/Footer.astro';
 import { footerData } from '@/data/footer.data';
+import { formatMxn, getExpressDelivery, getPromoPackage } from '@/data/promo-campaign.data';
+
+const expressDelivery = getExpressDelivery();
+const expressDeliveryPackages = expressDelivery.appliesTo
+	.map((packageId) => getPromoPackage(packageId).name)
+	.join(' y ');
+const atelierName = getPromoPackage('atelier').name;
 ---
 
 <Layout title="Términos y Condiciones | Celebra-me" description="Términos y condiciones de uso de la plataforma Celebra-me">
@@ -14,7 +21,7 @@ import { footerData } from '@/data/footer.data';
 		<div class="legal-page__container">
 			<header class="legal-page__header">
 				<h1>Términos y Condiciones</h1>
-				<p class="legal-page__updated">Última actualización: Enero 2026</p>
+				<p class="legal-page__updated">Última actualización: Septiembre 2026</p>
 			</header>
 
 			<section class="legal-page__content">
@@ -38,24 +45,39 @@ import { footerData } from '@/data/footer.data';
 					Todo el contenido, diseños, logos y elementos visuales proporcionados por Celebra-me son propiedad exclusiva de la empresa. El cliente recibe una licencia de uso personal y no comercial para sus invitaciones digitales.
 				</p>
 
-				<h2>5. Pagos y Reembolsos</h2>
+				<h2>5. Pago</h2>
 				<p>
-					Los precios de nuestros servicios se muestran en pesos mexicanos (MXN). Los pagos son procesados de forma segura. En caso de solicitar un reembolso, este será evaluado caso por caso según el estado del proyecto.
+					Los precios de nuestros servicios se muestran en pesos mexicanos (MXN) y se cubren en un pago único. No solicitamos anticipo: usted revisa su invitación 100 % terminada con un Invitado de prueba y paga al aprobarla; en ese momento se activa su panel de invitados. En caso de solicitar un reembolso, este será evaluado caso por caso según el estado del proyecto.
 				</p>
 
-				<h2>6. Limitación de Responsabilidad</h2>
+				<h2>6. Entrega</h2>
+				<p>
+					La entrega estándar es de 3 a 5 días hábiles a partir de que recibimos la información completa de su evento. En el paquete {atelierName}, la entrega es de 48 horas. Para los paquetes {expressDeliveryPackages} puede solicitar la {expressDelivery.name.toLowerCase()} por {formatMxn(expressDelivery.price)} MXN adicionales.
+				</p>
+
+				<h2>7. Cambios y Correcciones</h2>
+				<p>
+					Realizamos los cambios necesarios hasta que usted apruebe su invitación. Una vez aprobada, las correcciones de fecha, lugar u horario no tienen costo.
+				</p>
+
+				<h2>8. Vigencia de la Invitación</h2>
+				<p>
+					Su invitación permanece en línea durante un año garantizado a partir de la fecha de su evento.
+				</p>
+
+				<h2>9. Limitación de Responsabilidad</h2>
 				<p>
 					Celebra-me no será responsable por daños indirectos, incidentales o consecuentes que surjan del uso de nuestros servicios. Nuestra responsabilidad máxima se limita al monto pagado por el servicio.
 				</p>
 
-				<h2>7. Modificaciones</h2>
+				<h2>10. Modificaciones</h2>
 				<p>
 					Nos reservamos el derecho de modificar estos términos en cualquier momento. Las modificaciones entrarán en vigor inmediatamente después de su publicación en esta página.
 				</p>
 
-				<h2>8. Contacto</h2>
+				<h2>11. Contacto</h2>
 				<p>
-					Para cualquier consulta sobre estos términos, puede contactarnos a través de nuestro formulario de contacto o vía WhatsApp.
+					Para cualquier consulta sobre estos términos, puede escribirnos a <a href="mailto:contacto@celebra-me.com">contacto@celebra-me.com</a> o contactarnos a través de nuestro formulario de contacto o vía WhatsApp.
 				</p>
 			</section>
 
@@ -112,6 +134,10 @@ import { footerData } from '@/data/footer.data';
 		color: var(--color-text-secondary);
 		line-height: 1.8;
 		margin-bottom: 1rem;
+	}
+
+	.legal-page__content a {
+		color: var(--color-action-accent);
 	}
 
 	.legal-page__back {

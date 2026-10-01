@@ -42,6 +42,10 @@ const RATE_LIMITS = {
 	'claimcodes:update': { maxHits: 30, windowSec: 60 },
 	'claimcodes:delete': { maxHits: 10, windowSec: 60 },
 	'claimcodes:validate': { maxHits: 30, windowSec: 60 },
+	// Event memory spaces (guest photo/video QR) administration.
+	'memories:list': { maxHits: 60, windowSec: 60 },
+	'memories:create': { maxHits: 20, windowSec: 60 },
+	'memories:update': { maxHits: 30, windowSec: 60 },
 	'intake:list': { maxHits: 60, windowSec: 60 },
 	'intake:create': { maxHits: 20, windowSec: 60 },
 	'intake:update': { maxHits: 30, windowSec: 60 },

@@ -15,100 +15,51 @@ interface Props {
 
 const { data } = Astro.props;
 const phone = getContactPhone();
-const ctaMessage = data.cta?.message || 'Hola, quiero empezar mi invitación digital con panel de invitados.';
 ---
 
-<Section id="como-funciona" class="how-it-works" data-track-section="how-it-works" data-screenshot="landing-process">
-	<div class="how-it-works__top-separator" aria-hidden="true"></div>
-
+<Section
+	id="como-funciona"
+	class="how-it-works"
+	data-track-section="how-it-works"
+	data-screenshot="landing-process"
+	aria-labelledby="how-it-works-title"
+>
 	<Container class="how-it-works__container">
-		<div class="how-it-works__narrative">
-			<header class="how-it-works__header">
-				{data.eyebrow && <p class="how-it-works__eyebrow reveal-fade-up stagger-1">{data.eyebrow}</p>}
-				<h2 class="how-it-works__title reveal-fade-up stagger-2">{data.title}</h2>
-				<p class="how-it-works__subtitle reveal-fade-up stagger-3">{data.subtitle}</p>
+		<header class="how-it-works__header">
+			{data.eyebrow && <p class="how-it-works__eyebrow reveal-fade-up stagger-1">{data.eyebrow}</p>}
+			<h2 id="how-it-works-title" class="how-it-works__title reveal-fade-up stagger-2">{data.title}</h2>
+			{data.subtitle && <p class="how-it-works__subtitle reveal-fade-up stagger-3">{data.subtitle}</p>}
+		</header>
 
-				{data.cta && (
-					<div class="how-it-works__actions how-it-works__actions--desktop reveal-fade-up stagger-4">
-						<WhatsAppButton
-							className="how-it-works__cta"
-							phone={phone}
-							message={ctaMessage}
-							label={data.cta.label}
-							trackSection="how-it-works"
-							trackCta="whatsapp-process"
-							ariaLabel="Empezar mi invitación por WhatsApp"
-						/>
-					</div>
-				)}
-			</header>
-		</div>
-
-		<div class="how-it-works__visual reveal-fade-up stagger-5">
+		<ol class="how-it-works__steps reveal-fade-up stagger-3" role="list">
 			{
-				data.deliveryDossier && (
-					<article class="how-it-works__dossier" aria-label="Resumen de entrega preparada">
-						<header class="how-it-works__dossier-head">
-							<span class="how-it-works__dossier-eyebrow">Resumen de entrega</span>
-							<h3 class="how-it-works__dossier-title">{data.deliveryDossier.title}</h3>
-							{data.deliveryDossier.subtitle && (
-								<p class="how-it-works__dossier-subtitle">{data.deliveryDossier.subtitle}</p>
-							)}
-						</header>
-
-						<ul class="how-it-works__dossier-list" role="list">
-							{data.deliveryDossier.rows.map((row) => (
-								<li class="how-it-works__dossier-row">
-									<span class="how-it-works__dossier-check" aria-hidden="true">
-										<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-											<path d="M3 8.5L6.5 12L13 4.5" />
-										</svg>
-									</span>
-									<span class="how-it-works__dossier-label">{row.label}</span>
-									<span class="how-it-works__dossier-status">{row.status}</span>
-								</li>
-							))}
-						</ul>
-
-						{data.deliveryDossier.footnote && (
-							<footer class="how-it-works__dossier-foot">
-								<span class="how-it-works__dossier-foot-mark" aria-hidden="true"></span>
-								<span>{data.deliveryDossier.footnote}</span>
-							</footer>
-						)}
-					</article>
-				)
+				data.steps.map((step, index) => (
+					<li class="how-it-works__step" data-step={index + 1}>
+						<span class="how-it-works__step-number" aria-hidden="true">
+							{String(index + 1).padStart(2, '0')}
+						</span>
+						<div class="how-it-works__step-content">
+							<h3 class="how-it-works__step-title">{step.title}</h3>
+							{step.description && <p class="how-it-works__step-description">{step.description}</p>}
+						</div>
+					</li>
+				))
 			}
+		</ol>
 
-			<ol class="how-it-works__steps" role="list">
-				{
-					data.steps.map((step, index) => (
-						<li class="how-it-works__step" data-step={index + 1}>
-							<span class="how-it-works__step-number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-							<div class="how-it-works__step-content">
-								<h3 class="how-it-works__step-title">{step.title}</h3>
-								<p class="how-it-works__step-description">{step.description}</p>
-							</div>
-						</li>
-					))
-				}
-			</ol>
-
-			{
-				data.cta && (
-					<div class="how-it-works__actions how-it-works__actions--mobile">
-						<WhatsAppButton
-							className="how-it-works__cta"
-							phone={phone}
-							message={ctaMessage}
-							label={data.cta.label}
-							trackSection="how-it-works"
-							trackCta="whatsapp-process"
-							ariaLabel="Empezar mi invitación por WhatsApp"
-						/>
-					</div>
-				)
-			}
-		</div>
+		{
+			data.cta && (
+				<div class="how-it-works__actions reveal-fade-up stagger-4">
+					<WhatsAppButton
+						className="how-it-works__cta"
+						phone={phone}
+						label={data.cta.label}
+						trackSection="how-it-works"
+						trackCta="whatsapp-process"
+						campaignSection="PROCESS"
+					/>
+				</div>
+			)
+		}
 	</Container>
 </Section>

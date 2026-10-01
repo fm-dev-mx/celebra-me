@@ -1,14 +1,14 @@
 {
     "rules": [
         {
-            "id": "expire-valentina-pilot",
+            "id": "expire-event-memories",
             "enabled": true,
             "conditions": {
-                "prefix": "events/valentina/"
+                "prefix": "events/"
             },
             "deleteObjectsTransition": {
                 "condition": {
-                    "maxAge": 2592000,
+                    "maxAge": 12960000,
                     "type": "Age"
                 }
             },

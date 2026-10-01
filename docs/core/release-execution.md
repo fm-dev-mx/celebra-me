@@ -46,12 +46,15 @@ implementing these skills is never a live-release invocation.
   `pnpm validate:prepush -- --sha <head-sha> --base-sha <base-sha> --target-ref refs/heads/develop`.
   Always provide the base. Its existing cache is evidence, never authorization. Do not replace
   remote Repository CI with a local cache or substitute PR merge-SHA evidence for develop evidence.
-- Coverage changes require a complete new candidate and exact hash-bound human acceptance. Existing
-  approval must match reference SHA, matrix hash and candidate-manifest hash. Do not transfer
-  approval after regeneration or infer it from this invocation. Accepted files and their recorded
-  integrity must match. Use `visual:parity:candidate:certified -- --sha <sha>` for missing review
-  evidence; retain the returned attempt directory. Human acceptance stays outside these skills.
-  Never edit a manifest to manufacture coverage or relax comparison thresholds.
+- Coverage changes or visual modifications require a complete new candidate and exact hash-bound
+  human acceptance. Existing approval must match reference SHA, matrix hash and candidate-manifest
+  hash. Do not transfer approval after regeneration or infer it from this invocation. Accepted files
+  and their recorded integrity must match. Use
+  `pnpm visual:parity:candidate:certified -- --sha <sha>` for missing review evidence; inspect the
+  concise summary and `.tmp/visual-parity/candidate/changes.html` in the workspace. Acceptance uses
+  `pnpm visual:parity:accept` (which validates that candidate artifacts match the clean HEAD and
+  verifies manifest integrity without manual hash copying). Human acceptance stays outside automated
+  invocation. Never edit a manifest to manufacture coverage or relax comparison thresholds.
 
 ## Preview integration
 

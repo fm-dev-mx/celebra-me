@@ -62,12 +62,27 @@ describe('migration-rollout-registry integrity', () => {
 		).toBe(true);
 	});
 
+	it('registers the event memories catalog and the client capability it unlocks', () => {
+		const registry = JSON.parse(readFileSync(registryPath, 'utf8')) as {
+			migrations: Record<string, { phase: string; provides?: string[]; revokes?: string[] }>;
+			appCapabilities: Record<string, { requiresDbCapabilities: string[] }>;
+		};
+		expect(registry.migrations['20260930180000']).toMatchObject({
+			phase: 'contract',
+			provides: ['event_memories_catalog'],
+			revokes: expect.arrayContaining(['event_memories_public_rpc_execute']),
+		});
+		expect(registry.appCapabilities.event_memories_client).toEqual({
+			requiresDbCapabilities: ['event_memories_catalog'],
+		});
+		expect(
+			existsSync(resolve(migrationsDir, '20260930180000_event_memories_catalog.sql')),
+		).toBe(true);
+	});
+
 	it('registers the Valentina Memories contract migrations with explicit revocations', () => {
 		const registry = JSON.parse(readFileSync(registryPath, 'utf8')) as {
-			migrations: Record<
-				string,
-				{ phase: string; provides?: string[]; revokes?: string[] }
-			>;
+			migrations: Record<string, { phase: string; provides?: string[]; revokes?: string[] }>;
 		};
 		for (const version of [
 			'20260828000000',

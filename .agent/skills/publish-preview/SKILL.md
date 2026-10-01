@@ -40,9 +40,12 @@ CI on `develop`. Do not operate in another checkout or silently change an assign
 ## Exclusions and completion
 
 No Production promotion, tags, migration or persistent DB mutation, invitation content/assets
-publication, fixture provisioning, visual-reference acceptance, destructive cleanup, history
-rewrites, hook bypasses, or remote settings changes. Candidate generation is permitted only as
-diagnostic review preparation; it cannot approve itself.
+publication, fixture provisioning, destructive cleanup, history rewrites, hook bypasses, or remote
+settings changes. Visual-reference acceptance requires explicit human approval. Candidate generation
+is permitted as diagnostic review preparation: when visual impact is detected on changed paths,
+generate the candidate with `pnpm visual:parity:candidate:certified -- --sha <HEAD>`, present the
+concise summary and `changes.html` link, and obtain explicit human approval before accepting
+(`pnpm visual:parity:accept`) and pushing.
 
 Finish only after the exact integrated SHA has required CI, a ready Preview deployment in the
 correct project, and passing applicable read-only smoke. Report the SHA, deployment ID/URL,

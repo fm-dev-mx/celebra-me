@@ -180,3 +180,38 @@ describe('bounded request body readers', () => {
 		}
 	});
 });
+
+describe('parseJsonBody', () => {
+	const jsonRequest = (body: string) =>
+		new NodeRequest('http://localhost/api/test', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body,
+		} as unknown as NodeRequestInit) as unknown as Request;
+
+	it.each([
+		['an array', '[]'],
+		['null', 'null'],
+		['a number', '1'],
+		['a string', '"text"'],
+		['a boolean', 'true'],
+	])('rejects %s with a 400 because every caller reads named fields', async (_label, body) => {
+		const result = await parseJsonBody(jsonRequest(body));
+
+		expect(result).toBeInstanceOf(Response);
+		if (result instanceof Response) {
+			expect(result.status).toBe(400);
+			expect((await result.json()).error.code).toBe('bad_request');
+		}
+	});
+
+	it('returns a JSON object as is', async () => {
+		await expect(parseJsonBody(jsonRequest('{"action":"reserve"}'))).resolves.toEqual({
+			action: 'reserve',
+		});
+	});
+
+	it('keeps treating an empty body as an empty object', async () => {
+		await expect(parseJsonBody(jsonRequest('  '))).resolves.toEqual({});
+	});
+});

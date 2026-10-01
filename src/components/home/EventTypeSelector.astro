@@ -10,12 +10,12 @@ import type { DemoShowroomEvent } from '@/interfaces/ui/sections/demo-showroom.i
 import type { EventType } from '@/lib/theme/theme-contract';
 import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
 
-import showroomBabyShowerHero from '@/assets/images/showroom/event-showroom-baby-shower-hero.webp';
-import showroomBautizoHero from '@/assets/images/showroom/event-showroom-bautizo-hero.webp';
-import showroomBodaHero from '@/assets/images/showroom/event-showroom-boda-hero.webp';
-import showroomCumpleanosHero from '@/assets/images/showroom/event-showroom-cumpleanos-hero.webp';
-import showroomXvHero from '@/assets/images/showroom/event-showroom-xv-hero.webp';
-import showroomPrimeraComunionHero from '@/assets/images/showroom/event-showroom-primera-comunion-hero.png';
+// First screen of each featured demo invitation, opened, at 390x844 @2x (fictitious names).
+import demoScreenBabyShower from '@/assets/images/showroom/demo-screen-baby-shower.webp';
+import demoScreenBautizo from '@/assets/images/showroom/demo-screen-bautizo.webp';
+import demoScreenBoda from '@/assets/images/showroom/demo-screen-boda.webp';
+import demoScreenCumple from '@/assets/images/showroom/demo-screen-cumple.webp';
+import demoScreenXv from '@/assets/images/showroom/demo-screen-xv.webp';
 
 import '@/styles/home/_event-selector.scss';
 
@@ -38,16 +38,15 @@ const getCtaLabel = (eventType: string, label: string) => {
 	return `Ver demo de ${label}`;
 };
 
-const previewImages: Partial<Record<EventType, ImageMetadata>> = {
-	xv: showroomXvHero,
-	boda: showroomBodaHero,
-	bautizo: showroomBautizoHero,
-	cumple: showroomCumpleanosHero,
-	'baby-shower': showroomBabyShowerHero,
-	'primera-comunion': showroomPrimeraComunionHero,
+const demoScreens: Partial<Record<EventType, ImageMetadata>> = {
+	xv: demoScreenXv,
+	boda: demoScreenBoda,
+	bautizo: demoScreenBautizo,
+	cumple: demoScreenCumple,
+	'baby-shower': demoScreenBabyShower,
 };
 
-const getPreviewImage = (eventType: EventType) => previewImages[eventType] || showroomXvHero;
+const getDemoScreen = (eventType: EventType) => demoScreens[eventType] ?? demoScreenXv;
 ---
 
 <section
@@ -65,7 +64,7 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 				{es?.title || 'Explora una experiencia diseñada para cada celebración'}
 			</h2>
 			<p class="event-selector__subtitle reveal-fade-up stagger-3">
-				{es?.description || 'Elige tu tipo de evento y mira cómo se adaptan la invitación, el RSVP, los pases y la cotización.'}
+				{es?.description || 'Elija su tipo de evento y vea cómo se adaptan la invitación, el RSVP, los pases y la cotización.'}
 			</p>
 		</header>
 
@@ -92,9 +91,8 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 
 			<div class="event-showroom__panels">
 				{events.map((event, index) => {
-					const preview = event.homeSelector.preview;
 					const quote = event.homeSelector.quoteCta;
-					const previewImage = getPreviewImage(event.eventType);
+					const demoScreen = getDemoScreen(event.eventType);
 
 					return (
 					<div
@@ -109,8 +107,6 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 						data-quote-message={quote.message}
 						data-quote-promo={quote.promoCode}
 						data-quote-value={quote.trackValue}
-						data-quote-package={quote.packageInterest || ""}
-						data-quote-package-name={quote.packageName || ""}
 						aria-hidden={index === 0 ? "false" : "true"}
 						{...(index === 0 ? {} : { inert: true })}
 					>
@@ -127,35 +123,19 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 									data-track-intent="demo_showroom"
 									data-track-destination="demo-showroom"
 								>
-									<figure class="event-showroom__phone-frame">
-										<div class="event-showroom__phone-screen">
+									<figure class="landing-phone">
+										<div class="landing-phone__screen">
 											<Image
-												src={previewImage}
-												alt={preview.imageAlt}
-												class="event-showroom__phone-image"
-												width={360}
-												height={640}
-												quality={82}
-												loading={index === 0 ? "eager" : "lazy"}
+												src={demoScreen}
+												alt={event.homeSelector.screenAlt}
+												class="landing-phone__image"
+												widths={[280, 560, 780]}
+												sizes="(max-width: 767px) 62vw, 17.5rem"
+												quality={78}
+												loading="lazy"
 												decoding="async"
+												data-showroom-screen
 											/>
-											<div class="event-showroom__phone-overlay">
-												<div class="event-showroom__phone-copy">
-													<p class="event-showroom__card-kicker" data-showroom-kicker>{preview.eyebrow}</p>
-													<p class="event-showroom__card-title" data-showroom-title>{preview.title}</p>
-													<p class="event-showroom__card-subtitle">{preview.subtitle}</p>
-													<div class="event-showroom__card-details">
-														<span>{preview.date}</span>
-														<span>{preview.venue}</span>
-													</div>
-													<ul class="event-showroom__card-features" aria-label="Funciones incluidas">
-														{preview.chips.map((chip) => (
-															<li data-showroom-feature>{chip}</li>
-														))}
-													</ul>
-													<p class="event-showroom__card-action">{preview.actionLabel}</p>
-												</div>
-											</div>
 										</div>
 									</figure>
 								</a>
@@ -188,15 +168,11 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 					label={events[0].homeSelector.quoteCta.label}
 					trackSection="event-types"
 					trackCta={`showroom_quote_${events[0].eventType}`}
-					trackCampaign="DEMO-LANZAMIENTO-899"
+					campaignSection="DEMO"
 					trackValue={events[0].homeSelector.quoteCta.trackValue}
-					trackCurrency="MXN"
 					promoCode={events[0].homeSelector.quoteCta.promoCode}
-					trackPackage={events[0].homeSelector.quoteCta.packageInterest}
-					packageName={events[0].homeSelector.quoteCta.packageName}
 					eventType={events[0].eventType}
 					eventLabel={events[0].label}
-					ariaLabel="Cotizar esta invitación"
 				/>
 			</div>
 		</div>
@@ -320,8 +296,6 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 			const message = panel.getAttribute("data-quote-message") || "";
 			const promo = panel.getAttribute("data-quote-promo") || "";
 			const value = panel.getAttribute("data-quote-value") || "";
-			const pkg = panel.getAttribute("data-quote-package") || "";
-			const pkgName = panel.getAttribute("data-quote-package-name") || "";
 
 			if (demoLink) {
 				demoLink.href = href;
@@ -351,11 +325,7 @@ const getPreviewImage = (eventType: EventType) => previewImages[eventType] || sh
 				quoteLink.setAttribute("data-track-value", value);
 				quoteLink.setAttribute("data-event-type", panel.getAttribute("data-panel-event") || "");
 				quoteLink.setAttribute("data-event-label", label);
-				if (pkg) quoteLink.setAttribute("data-package-interest", pkg);
-				else quoteLink.removeAttribute("data-package-interest");
-				if (pkgName) quoteLink.setAttribute("data-package-name", pkgName);
-				else quoteLink.removeAttribute("data-package-name");
-				quoteLink.setAttribute("aria-label", "Cotizar esta invitación");
+				quoteLink.setAttribute("aria-label", "Cotizar por WhatsApp");
 			}
 
 		};

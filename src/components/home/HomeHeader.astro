@@ -9,6 +9,8 @@
 import HeaderBase from '@components/common/HeaderBase.astro';
 import NavBarMobile from '@components/ui/header/NavBarMobile.astro';
 import Logo from '@components/ui/Logo.astro';
+import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
+import { getContactPhone } from '@/utils/whatsapp';
 import '@styles/home/_home-header.scss';
 
 interface Props {
@@ -20,11 +22,11 @@ const { transparentOnHero = true } = Astro.props;
 const navLinks = [
     { label: 'Demos', href: '#tipo-evento' },
     { label: 'Planes', href: '#pricing' },
-    { label: 'Nosotros', href: '#experiencia-invitados' },
+    { label: 'Nosotros', href: '#nosotros' },
 ];
 
 const loginLink = '/login?next=%2Fdashboard%2Finvitados';
-const ctaLink = '#contacto';
+const phone = getContactPhone();
 ---
 
 <HeaderBase
@@ -50,9 +52,13 @@ const ctaLink = '#contacto';
             <a href={loginLink} class="home-nav-actions__login">
                 Iniciar sesión
             </a>
-            <a href={ctaLink} class="home-nav-actions__cta">
-                Crear Invitación
-            </a>
+            <WhatsAppButton
+                className="home-nav-actions__cta"
+                phone={phone}
+                trackSection="header"
+                trackCta="whatsapp-header"
+                campaignSection="HEADER"
+            />
         </div>
     </div>
 
@@ -61,11 +67,17 @@ const ctaLink = '#contacto';
             links={navLinks}
             headerId="home-header"
             loginLink={loginLink}
-            ctaLink={ctaLink}
             loginLabel="Iniciar sesión"
-            ctaLabel="Crear Invitación"
         >
             <Logo class="mobile-nav-logo" />
+            <WhatsAppButton
+                slot="cta"
+                className="mobile-nav-actions__cta"
+                phone={phone}
+                trackSection="header"
+                trackCta="whatsapp-header-menu"
+                campaignSection="HEADER"
+            />
         </NavBarMobile>
     </div>
 

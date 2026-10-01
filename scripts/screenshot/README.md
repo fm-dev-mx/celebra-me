@@ -441,14 +441,16 @@ optional elements produce warnings, not errors.
 
 ### Landing page recommended data-screenshot attributes
 
+Sections in page order (`src/pages/index.astro`); each one also has an `id` fallback.
+
 ```html
 <section data-screenshot="landing-hero">
   <section data-screenshot="landing-event-types">
-    <section data-screenshot="landing-includes">
-      <section data-screenshot="landing-essence">
+    <section data-screenshot="landing-product-proof">
+      <section data-screenshot="landing-guest-experience">
         <section data-screenshot="landing-testimonials">
-          <section data-screenshot="landing-process">
-            <section data-screenshot="landing-pricing">
+          <section data-screenshot="landing-pricing">
+            <section data-screenshot="landing-process">
               <section data-screenshot="landing-faq">
                 <section data-screenshot="landing-contact">
                   <footer data-screenshot="landing-footer"></footer>

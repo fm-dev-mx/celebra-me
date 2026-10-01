@@ -8,6 +8,12 @@ import {
 	type MetaAttribution,
 } from '@/lib/tracking/meta-attribution';
 import type { PublicTrackingEventName } from '@/lib/tracking/event-contract';
+import {
+	buildCampaignCode,
+	getGeneralPromoCode,
+	getStartingPrice,
+	PROMO_CAMPAIGN,
+} from '@/data/promo-campaign.data';
 
 type ConsentSnapshot = {
 	necessary: true;
@@ -56,11 +62,11 @@ const WHATSAPP_LEAD_KEY = 'cm_whatsapp_lead_code';
  */
 const SESSION_INIT_KEY = 'cm_session_initialized';
 
-// Default promo/price/campaign when no data-promo-code is set on the anchor.
-// Centralized so a campaign change touches one line, not four.
-const DEFAULT_PROMO_CODE = 'LANZAMIENTO-899';
-const DEFAULT_PROMO_PRICE = '899';
-const DEFAULT_PROMO_CAMPAIGN = 'FINAL-LANZAMIENTO-899';
+// Campaign defaults for events without a CTA-specific promo (contact form submissions).
+// Derived from the promo campaign module so a campaign change never touches this file.
+const DEFAULT_PROMO_CODE = getGeneralPromoCode();
+const DEFAULT_PROMO_PRICE = getStartingPrice();
+const DEFAULT_PROMO_CAMPAIGN = buildCampaignCode('FINAL', DEFAULT_PROMO_CODE);
 
 function randomId(prefix: string): string {
 	if (crypto.randomUUID) return `${prefix}_${crypto.randomUUID()}`;
@@ -344,27 +350,19 @@ function bindScrollDepth(): void {
 /**
  * Rewrite the WhatsApp URL to include the canonical lead_code in the message text.
  *
- * The canonical CM-XXXXXX lead_code is embedded directly in the WhatsApp message so
- * customers can quote it when contacting the host, and operators can search it in the CRM.
- * Previously a separate folio format (CM-899-XXXX) was used, which could not be resolved
- * back to the lead stored under the canonical code.
+ * The CTA message (which already carries its `Ref. <promo code>`) is kept verbatim and exactly
+ * one line `Folio CM-XXXXXX` is appended, so customers can quote it and operators can search it
+ * in the CRM. This is the only click-time rewriter of WhatsApp messages: the legacy price-suffix
+ * folio (CM-<price>-XXXX) could not be resolved back to the lead stored under the canonical code.
  */
-function updateWhatsAppUrl(anchor: HTMLAnchorElement, leadCode: string, promoCode: string): void {
+function updateWhatsAppUrl(anchor: HTMLAnchorElement, leadCode: string): void {
 	const url = new URL(anchor.href);
-	const baseMessage =
-		url.searchParams.get('text') || 'Hola, quiero información sobre una invitación digital.';
-	const messageParts = [baseMessage.trim()];
-	if (!baseMessage.includes(`Cupón: ${promoCode}`)) {
-		messageParts.push(`Cupón: ${promoCode}`);
-	}
-	// Embed the canonical lead_code so the customer's WhatsApp message and the CRM record
-	// share the same identifier. Pattern: CM-XXXXXX (6 alphanumeric chars, no price suffix).
+	const baseMessage = (url.searchParams.get('text') ?? '').trim();
+	// Pattern: CM-XXXXXX (6 alphanumeric chars, no price suffix).
 	const CANONICAL_LEAD_CODE_PATTERN = /CM-[A-Z0-9]{6}(?!\d)/i;
-	if (!CANONICAL_LEAD_CODE_PATTERN.test(baseMessage)) {
-		messageParts.push(`Folio: ${leadCode}`);
-	}
-	const message = messageParts.join('\n\n');
-	url.searchParams.set('text', message);
+	if (CANONICAL_LEAD_CODE_PATTERN.test(baseMessage)) return;
+	const folioLine = `Folio ${leadCode}`;
+	url.searchParams.set('text', baseMessage ? `${baseMessage}\n${folioLine}` : folioLine);
 	anchor.href = url.toString();
 }
 
@@ -475,10 +473,9 @@ function bindClicks(): void {
 				: '';
 
 		if (isWhatsAppClick && target instanceof HTMLAnchorElement && leadCode) {
-			const targetPromoCode = target.dataset.promoCode || DEFAULT_PROMO_CODE;
 			// Update the WhatsApp message to include the canonical lead_code so the customer
 			// can quote it and the operator can search it directly in the CRM.
-			updateWhatsAppUrl(target, leadCode, targetPromoCode);
+			updateWhatsAppUrl(target, leadCode);
 			setContactHiddenFields(leadCode);
 		}
 
@@ -517,8 +514,8 @@ function bindForms(): void {
 				source_area: 'contact',
 				promo_code: DEFAULT_PROMO_CODE,
 				campaign_code: DEFAULT_PROMO_CAMPAIGN,
-				value: Number(DEFAULT_PROMO_PRICE),
-				currency: 'MXN',
+				value: DEFAULT_PROMO_PRICE,
+				currency: PROMO_CAMPAIGN.currency,
 			});
 		});
 	});

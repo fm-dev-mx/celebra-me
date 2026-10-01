@@ -119,10 +119,10 @@ task authorization, target classification, and standard guard checks.
 - **Hosted identity vs environment selection**: Selecting Preview/Production and having credentials
   is not authorization. Production and Preview migrate derive release identity from clean `HEAD`
   (Production also requires `pnpm release-check`). Preview URL must match the canonical project ref
-  (`assertPreviewDbUrl`). Contract-phase migrations also require deployed-app evidence
-  (`CELEBRA_DEPLOYED_APP_SHA` / `CELEBRA_DEPLOYED_APP_CAPABILITIES`). Local is not gated by hosted
-  deployment identity. See `docs/database-workflow.md` → Migration / Deployment Compatibility
-  Contract.
+  (`assertPreviewDbUrl`). Contract-phase migrations on either hosted target also require the
+  smoke-checked Production deployment attestation (`scripts/db/contract-deployment-evidence.ts`); no
+  environment variable can stand in for it. Local is not gated by hosted deployment identity. See
+  `docs/database-workflow.md` → Migration / Deployment Compatibility Contract.
 - **Unified orchestration**: Local, Preview, and Production schema migrate share
   `scripts/db/migrate-orchestrator.ts` with isolated environment policies. Invitation promote,
   Preview content mirror, seeds, restores, and `db:prod:patch` remain outside that orchestrator.

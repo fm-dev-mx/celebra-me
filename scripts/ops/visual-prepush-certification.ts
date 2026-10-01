@@ -12,7 +12,12 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { visualImpactFiles } from './visual-impact.ts';
+import {
+	readCandidateReview,
+	type CandidateReview,
+} from '../screenshot/visual-candidate-review.ts';
 
 export const CERTIFICATION_SCHEMA_VERSION = 1;
 export const CERTIFICATION_COMMAND_VERSION = 3;
@@ -135,28 +140,68 @@ function gitPath(relativePath: string): string {
 	return resolve(git(['rev-parse', '--path-format=absolute', '--git-path', relativePath]));
 }
 
-function runDocker(
+/** Prints the duration of one container step so pre-push overhead can be measured per step. */
+export function timedContainerStep(label: string, command: string): string {
+	return `step_started=$(date +%s) && ${command} && echo "[visual-prepush] ${label} $(( $(date +%s) - step_started ))s"`;
+}
+
+function timedHostStep<T>(label: string, step: () => T): T {
+	const started = Date.now();
+	try {
+		return step();
+	} finally {
+		console.log(`[visual-prepush] ${label} ${Math.round((Date.now() - started) / 1000)}s`);
+	}
+}
+
+/**
+ * Docker volume holding the content-addressed pnpm store. A Linux volume avoids reading every
+ * package file through the Docker Desktop file share; pnpm verifies store integrity itself.
+ */
+export const PNPM_STORE_VOLUME = 'celebra-me-visual-pnpm-store';
+
+/**
+ * Packs the isolated checkout into one archive. Extracting a single file inside the container is
+ * much faster than copying thousands of files (including LFS references) through the file share.
+ */
+export function sourceArchiveCommand(
 	checkout: string,
+	archive: string,
+	platform: NodeJS.Platform = process.platform,
+): [string, string[]] {
+	// Windows ships bsdtar; GNU tar from Git Bash would read "C:" as a remote host.
+	const tar =
+		platform === 'win32'
+			? join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe')
+			: 'tar';
+	return [tar, ['-cf', archive, '-C', checkout, '.']];
+}
+
+function runDocker(
+	sourceArchive: string,
 	evidence: string,
 	sha: string,
 	operation: 'candidate' | 'compare',
 ): number {
-	const pnpmStore = gitPath('visual-runtime-cache/pnpm');
 	const nodeStore = gitPath('visual-runtime-cache/node-v24.14.1');
-	mkdirSync(pnpmStore, { recursive: true });
 	mkdirSync(nodeStore, { recursive: true });
 	mkdirSync(evidence, { recursive: true });
 	const command = [
 		'set -eu',
-		'cp -a /source/. /work',
+		timedContainerStep('extract-source', 'tar -xf /source.tar -C /work'),
 		'cd /work',
-		`trap 'if [ -d test-results ]; then cp -a test-results /evidence/; fi; if [ -f .tmp/visual-parity-failure.json ]; then cp .tmp/visual-parity-failure.json /evidence/; fi; if [ -d .tmp/visual-parity/${operation} ]; then mkdir -p /evidence/visual-parity; cp -a .tmp/visual-parity/${operation} /evidence/visual-parity/; fi; if [ -d .tmp/visual-parity/candidate-references ]; then mkdir -p /evidence/visual-parity; cp -a .tmp/visual-parity/candidate-references /evidence/visual-parity/; fi' EXIT`,
+		// A passing compare discards its evidence, so only failures and candidates copy the
+		// complete capture output to the host mount.
+		`trap 'status=$?; if [ "$status" -ne 0 ] || [ "${operation}" = candidate ]; then if [ -d test-results ]; then cp -a test-results /evidence/; fi; if [ -f .tmp/visual-parity-failure.json ]; then cp .tmp/visual-parity-failure.json /evidence/; fi; if [ -d .tmp/visual-parity/${operation} ]; then mkdir -p /evidence/visual-parity; cp -a .tmp/visual-parity/${operation} /evidence/visual-parity/; fi; for review in candidate-references candidate-diffs; do if [ -d .tmp/visual-parity/$review ]; then mkdir -p /evidence/visual-parity; cp -a .tmp/visual-parity/$review /evidence/visual-parity/; fi; done; fi' EXIT`,
 		`if [ ! -x /node-cache/bin/node ] || [ "$(/node-cache/bin/node --version 2>/dev/null || true)" != "v${NODE_VERSION}" ] || [ "$(cat /node-cache/.archive.sha256 2>/dev/null || true)" != "${NODE_ARCHIVE_SHA256}" ]; then find /node-cache -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +; curl -fsSL -o /tmp/node.tar.gz https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz; echo "${NODE_ARCHIVE_SHA256}  /tmp/node.tar.gz" | sha256sum -c -; tar -xzf /tmp/node.tar.gz -C /node-cache --strip-components=1; printf '%s' '${NODE_ARCHIVE_SHA256}' > /node-cache/.archive.sha256; rm /tmp/node.tar.gz; fi`,
 		'export PATH=/node-cache/bin:$PATH',
 		`test "$(node --version)" = "v${NODE_VERSION}"`,
 		'corepack enable',
-		`corepack prepare pnpm@${PNPM_VERSION} --activate`,
-		'pnpm install --frozen-lockfile --store-dir /pnpm-store',
+		timedContainerStep('corepack', `corepack prepare pnpm@${PNPM_VERSION} --activate`),
+		timedContainerStep(
+			'pnpm-install',
+			'pnpm install --frozen-lockfile --store-dir /pnpm-store',
+		),
 		'touch /evidence/prepush-runtime-ready',
 		// The isolated checkout may originate on Windows. Preserve its checkout
 		// normalization when Git evaluates cleanliness inside the Linux container.
@@ -168,9 +213,12 @@ function runDocker(
 			? "git ls-files -z 'tests/e2e/visual-baselines/*.png' 'tests/e2e/visual-baselines/**/*.png' | git update-index --assume-unchanged -z --stdin"
 			: 'true',
 		operation === 'candidate' ? 'git status --porcelain=v1 --untracked-files=all' : 'true',
-		operation === 'candidate'
-			? `pnpm visual:parity:candidate -- --sha ${sha}`
-			: CERTIFIED_BROWSER_COMMAND,
+		timedContainerStep(
+			'browser',
+			operation === 'candidate'
+				? `pnpm visual:parity:candidate -- --sha ${sha}`
+				: CERTIFIED_BROWSER_COMMAND,
+		),
 	].join(' && ');
 	const result = spawnSync(
 		'docker',
@@ -179,11 +227,11 @@ function runDocker(
 			'--rm',
 			'--ipc=host',
 			'--mount',
-			`type=bind,source=${checkout},target=/source,readonly`,
+			`type=bind,source=${sourceArchive},target=/source.tar,readonly`,
 			'--mount',
 			`type=bind,source=${evidence},target=/evidence`,
 			'--mount',
-			`type=bind,source=${pnpmStore},target=/pnpm-store`,
+			`type=volume,source=${PNPM_STORE_VOLUME},target=/pnpm-store`,
 			'--mount',
 			`type=bind,source=${nodeStore},target=/node-cache`,
 			'--workdir',
@@ -280,6 +328,172 @@ export function visualDifferenceFiles(root: string): string[] {
 	return [...files].sort();
 }
 
+interface CandidateCaptureEntry {
+	file: string;
+	sha256?: string;
+	kind?: string;
+	section?: string;
+	variant?: string;
+	preset?: string;
+	viewport?: string;
+}
+
+interface CombinedCandidateManifest {
+	status?: string;
+	mode?: string;
+	totalCaptures?: number;
+	referenceSha?: string;
+	matrixHash?: string;
+	candidateManifestSha256?: string;
+	captures?: CandidateCaptureEntry[];
+}
+
+function printCategoryList(title: string, items: string[], prefix = '*', max = 8): void {
+	if (items.length === 0) return;
+	console.log(`  - ${title} (${items.length}):`);
+	for (const item of items.slice(0, max)) {
+		console.log(`    ${prefix} ${item}`);
+	}
+	if (items.length > max) console.log(`    ... y ${items.length - max} más`);
+}
+
+function categorizeCandidateDiffs(
+	candidateManifest: CombinedCandidateManifest,
+	acceptedManifest: { captures?: CandidateCaptureEntry[] } | null,
+): { newPages: string[]; modifiedPages: string[]; variantDiffs: string[] } {
+	const acceptedMap = new Map<string, string>();
+	for (const capture of acceptedManifest?.captures ?? []) {
+		if (capture.file && capture.sha256) acceptedMap.set(capture.file, capture.sha256);
+	}
+
+	const newFiles: string[] = [];
+	const modifiedFiles: string[] = [];
+	for (const capture of candidateManifest.captures ?? []) {
+		if (!acceptedMap.has(capture.file)) {
+			newFiles.push(capture.file);
+		} else if (acceptedMap.get(capture.file) !== capture.sha256) {
+			modifiedFiles.push(capture.file);
+		}
+	}
+
+	const clean = (path: string): string => path.replace('pages/', '').replace('.png', '');
+	return {
+		newPages: newFiles.filter((f) => f.startsWith('pages/')).map(clean),
+		modifiedPages: modifiedFiles.filter((f) => f.startsWith('pages/')).map(clean),
+		variantDiffs: [...newFiles, ...modifiedFiles]
+			.filter((f) => !f.startsWith('pages/'))
+			.map(clean),
+	};
+}
+
+/** Review items already exclude gate-passing byte changes. */
+export function categorizeCandidateReview(review: CandidateReview): {
+	newPages: string[];
+	modifiedPages: string[];
+	variantDiffs: string[];
+} {
+	const clean = (path: string): string => path.replace('pages/', '').replace('.png', '');
+	const pages = review.items.filter((item) => item.kind === 'page');
+	return {
+		newPages: pages.filter((item) => item.status === 'new').map((item) => clean(item.file)),
+		modifiedPages: pages
+			.filter((item) => item.status === 'changed')
+			.map((item) => clean(item.file)),
+		variantDiffs: review.items
+			.filter((item) => item.kind === 'variant')
+			.map((item) => clean(item.file)),
+	};
+}
+
+function printVisualCandidateSummary(candidateDir: string, root: string, sha: string): void {
+	const combinedPath = join(candidateDir, 'combined-manifest.json');
+	const acceptedPath = join(root, ACCEPTED_MANIFEST);
+
+	if (!existsSync(combinedPath)) {
+		console.log(`Certified visual candidate generated for ${sha}: ${candidateDir}`);
+		return;
+	}
+
+	try {
+		const candidateManifest = JSON.parse(
+			readFileSync(combinedPath, 'utf8'),
+		) as CombinedCandidateManifest;
+		const acceptedManifest = existsSync(acceptedPath)
+			? (JSON.parse(readFileSync(acceptedPath, 'utf8')) as {
+					captures?: CandidateCaptureEntry[];
+				})
+			: null;
+
+		const review = readCandidateReview(candidateDir);
+		const { newPages, modifiedPages, variantDiffs } = review
+			? categorizeCandidateReview(review)
+			: categorizeCandidateDiffs(candidateManifest, acceptedManifest);
+		const totalDiffs = newPages.length + modifiedPages.length + variantDiffs.length;
+		const changesUrl = pathToFileURL(resolve(candidateDir, 'changes.html')).href;
+
+		console.log('\n' + '─'.repeat(72));
+		console.log(
+			`📊 RESUMEN DE CAMBIOS VISUALES (Candidato certificado para ${sha.slice(0, 9)})`,
+		);
+		console.log('─'.repeat(72));
+		console.log(
+			`• Total de capturas evaluadas: ${candidateManifest.totalCaptures ?? candidateManifest.captures?.length ?? 0}`,
+		);
+		console.log(`• Cambios que requieren revisión: ${totalDiffs}`);
+		if (review) {
+			console.log(
+				`• Ruido de render que pasa el gate (se conservan los bytes aceptados): ${review.renderNoise.length}`,
+			);
+		}
+
+		printCategoryList('Páginas nuevas provisionadas', newPages, '+');
+		printCategoryList('Páginas completas modificadas', modifiedPages, '~');
+		printCategoryList('Variantes de sección afectadas', variantDiffs, '*');
+
+		console.log('─'.repeat(72));
+		console.log(`🔗 Reporte visual interactivo (Antes vs Candidato):`);
+		console.log(`   ${changesUrl}`);
+		console.log('─'.repeat(72));
+		console.log(`✅ Para aceptar estos cambios tras tu revisión:`);
+		console.log(`   pnpm visual:parity:accept\n`);
+	} catch (error) {
+		console.log(`Certified visual candidate generated for ${sha}: ${candidateDir}`);
+		console.error('No se pudo generar el resumen visual:', error);
+	}
+}
+
+function assertHostPrerequisites(): void {
+	for (const command of [
+		['docker', ['version', '--format', '{{.Server.Version}}']],
+		['git', ['lfs', 'version']],
+	] as const) {
+		const result = spawnSync(command[0], command[1], { stdio: 'ignore', shell: false });
+		if ((result.status ?? 1) !== 0)
+			throw new Error(`${command[0]} ${command[1].join(' ')} is required.`);
+	}
+}
+
+function materializeCandidateWorkspace(evidence: string, root: string, sha: string): void {
+	preserveCandidateEvidence(evidence, sha);
+
+	const targetTmp = resolve(root, '.tmp/visual-parity');
+	mkdirSync(targetTmp, { recursive: true });
+
+	const sourceCandidate = join(evidence, 'visual-parity', 'candidate');
+	const targetCandidate = join(targetTmp, 'candidate');
+	if (existsSync(targetCandidate)) rmSync(targetCandidate, { recursive: true, force: true });
+	cpSync(sourceCandidate, targetCandidate, { recursive: true });
+
+	for (const sibling of ['candidate-references', 'candidate-diffs']) {
+		const source = join(evidence, 'visual-parity', sibling);
+		const target = join(targetTmp, sibling);
+		if (existsSync(target)) rmSync(target, { recursive: true, force: true });
+		if (existsSync(source)) cpSync(source, target, { recursive: true });
+	}
+
+	printVisualCandidateSummary(targetCandidate, root, sha);
+}
+
 function main(): void {
 	const sha = assertExactCommit(parseFlag('--sha') ?? '');
 	const repositoryRoot = git(['rev-parse', '--show-toplevel']);
@@ -298,32 +512,29 @@ function main(): void {
 		return;
 	}
 
-	for (const command of [
-		['docker', ['version', '--format', '{{.Server.Version}}']],
-		['git', ['lfs', 'version']],
-	] as const) {
-		const result = spawnSync(command[0], command[1], { stdio: 'ignore', shell: false });
-		if ((result.status ?? 1) !== 0)
-			throw new Error(`${command[0]} ${command[1].join(' ')} is required.`);
-	}
+	assertHostPrerequisites();
 
 	const temporaryRoot = mkdtempSync(join(tmpdir(), 'celebra-me-visual-prepush-'));
 	const checkout = join(temporaryRoot, 'checkout');
 	const evidence = join(temporaryRoot, 'evidence');
 	let cleanup = true;
 	try {
-		execFileSync('git', ['clone', '--no-checkout', repositoryRoot, checkout], {
-			stdio: 'inherit',
-			env: isolatedGitEnvironment({ GIT_LFS_SKIP_SMUDGE: '1' }),
-		});
+		timedHostStep('clone', () =>
+			execFileSync('git', ['clone', '--no-checkout', repositoryRoot, checkout], {
+				stdio: 'inherit',
+				env: isolatedGitEnvironment({ GIT_LFS_SKIP_SMUDGE: '1' }),
+			}),
+		);
 		execFileSync('git', ['-C', checkout, 'checkout', '--detach', sha], {
 			stdio: 'inherit',
 			env: isolatedGitEnvironment({ GIT_LFS_SKIP_SMUDGE: '1' }),
 		});
-		execFileSync('git', ['-C', checkout, 'lfs', 'pull'], {
-			stdio: 'inherit',
-			env: isolatedGitEnvironment(),
-		});
+		timedHostStep('lfs-pull', () =>
+			execFileSync('git', ['-C', checkout, 'lfs', 'pull'], {
+				stdio: 'inherit',
+				env: isolatedGitEnvironment(),
+			}),
+		);
 		const isolatedStatus = execFileSync(
 			'git',
 			['-C', checkout, 'status', '--porcelain=v1', '--untracked-files=all'],
@@ -334,20 +545,33 @@ function main(): void {
 				`Isolated exact-SHA checkout is not clean after Git LFS materialization:\n${isolatedStatus}`,
 			);
 		}
+		const sourceArchive = join(temporaryRoot, 'source.tar');
+		timedHostStep('archive-source', () => {
+			const [tar, args] = sourceArchiveCommand(checkout, sourceArchive);
+			execFileSync(tar, args, { stdio: 'inherit' });
+		});
 		if (candidateMode) {
-			const exitCode = runDocker(checkout, evidence, sha, 'candidate');
+			const exitCode = timedHostStep('docker', () =>
+				runDocker(sourceArchive, evidence, sha, 'candidate'),
+			);
 			if (exitCode !== 0) {
 				const category = classifyVisualFailure(evidence);
 				throw new Error(`${category}: candidate generation failed for ${sha}.`);
 			}
-			const candidatePath = preserveCandidateEvidence(evidence, sha);
-			console.log(`Certified visual candidate generated for ${sha}: ${candidatePath}`);
+			materializeCandidateWorkspace(evidence, repositoryRoot, sha);
 			return;
 		}
-		const exitCode = runDocker(checkout, evidence, sha, 'compare');
+		const exitCode = timedHostStep('docker', () =>
+			runDocker(sourceArchive, evidence, sha, 'compare'),
+		);
 		if (exitCode !== 0) {
+			const category = classifyVisualFailure(evidence);
+			const hint =
+				category === 'VISUAL_DIFF'
+					? `\n💡 Para generar el candidato certificado e inspeccionar visualmente los cambios:\n   pnpm visual:parity:candidate:certified -- --sha ${sha}`
+					: '';
 			throw new Error(
-				`${classifyVisualFailure(evidence)}: certification failed for ${sha}. Never accept references automatically.`,
+				`${category}: certification failed for ${sha}. Never accept references automatically.${hint}`,
 			);
 		}
 		mkdirSync(dirname(certificationPath), { recursive: true });

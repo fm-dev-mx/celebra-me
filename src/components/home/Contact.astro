@@ -1,114 +1,61 @@
 ---
 // src/components/home/Contact.astro
 import ContactForm from '@components/ui/ContactForm.astro';
-import ActionIcon from '@components/common/actions/ActionIcon.astro';
-import Icon from '@components/common/icons/Icon.astro';
+import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 import type { ContactData } from '@/interfaces/ui/sections/landing-page.interface';
-import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
+import { getContactPhone } from '@/utils/whatsapp';
 
-// Import stylesheet
 import '@/styles/home/_contact.scss';
 
 interface Props {
 	data: ContactData;
 }
 
-// Destructure the data prop
 const { data } = Astro.props;
-
-const contactPhone = getContactPhone();
-const isPlaceholder = isPlaceholderContactPhone(contactPhone);
-const hasValidWhatsApp = !isPlaceholder || import.meta.env.DEV;
-const displayPhone = (isPlaceholder && import.meta.env.DEV) ? '521234567890' : contactPhone;
-const whatsappMessage = data.cta?.message || 'Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\n\nCupón: LANZAMIENTO-899';
-const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(whatsappMessage)}`;
+const phone = getContactPhone();
 ---
 
 <!-- Contact Section -->
-<section id="contacto" class="contact-section" data-track-section="contact" data-screenshot="landing-contact">
-	<div class="contact-texture"></div>
-
-	<div class="container">
-		<header class="contact-header">
+<section
+	id="contacto"
+	class="contact-section"
+	data-track-section="contact"
+	data-screenshot="landing-contact"
+	aria-labelledby="contact-title"
+>
+	<div class="container contact-layout">
+		<div class="contact-intro">
+			<header class="contact-header">
 				{data.eyebrow && <p class="contact-eyebrow reveal-fade-up stagger-1">{data.eyebrow}</p>}
-				<h2 class="contact-title reveal-fade-up stagger-2">{data.title}</h2>
-				<p class="contact-subtitle reveal-fade-up stagger-3">{data.subtitle}</p>
-			<div class="contact-divider"></div>
-		</header>
+				<h2 id="contact-title" class="contact-title reveal-fade-up stagger-2">{data.title}</h2>
+				{data.subtitle && <p class="contact-subtitle reveal-fade-up stagger-3">{data.subtitle}</p>}
+			</header>
 
-		<div class="contact-grid">
-			<!-- Contact Information -->
-			<div class="contact-info reveal-fade-up stagger-4">
-				<div class="contact-info__content">
-					<h3 class="contact-info__title">{data.cta?.label || 'Cotizar por WhatsApp'}</h3>
-					<p class="contact-info__description">
-						{data.subtitle}
-					</p>
+			<WhatsAppButton
+				className="contact-intro__cta reveal-fade-up stagger-3"
+				phone={phone}
+				message={data.cta?.message}
+				label={data.cta?.label}
+				trackSection="contact"
+				trackCta="contact_whatsapp"
+				campaignSection="FINAL"
+			/>
 
-					<div class="contact-channels">
-						{hasValidWhatsApp && (
-							<a
-								href={whatsappUrl}
-								target="_blank"
-								class="channel-link channel-link--whatsapp"
-								data-track-event="whatsapp_contact_clicked"
-								data-track-section="contact"
-								data-track-cta="contact_whatsapp"
-								data-track-label="Cotizar por WhatsApp"
-								data-track-intent="whatsapp"
-								data-track-destination="whatsapp"
-								data-campaign-code="FINAL-LANZAMIENTO-899"
-								data-promo-code="LANZAMIENTO-899"
-								data-track-value="899"
-								data-track-currency="MXN"
-							>
-								<div class="channel-icon-wrapper">
-									<Icon name="WhatsApp" size={24} />
-								</div>
-								<div class="channel-text">
-									<span class="channel-label">{data.channelPrimary?.label || 'Principal'}</span>
-									<span class="channel-value">{data.channelPrimary?.value || 'Cotizar por WhatsApp'}</span>
-								</div>
-							</a>
-						)}
-
-						<a
-							href="mailto:contacto@celebra-me.com"
-							target="_blank"
-							class="channel-link channel-link--email"
-							data-track-event="cta_clicked"
-							data-track-section="contact"
-							data-track-cta="contact_email"
-							data-track-intent="email"
-						>
-							<div class="channel-icon-wrapper">
-								<Icon name="Message" size={24} />
-							</div>
-							<div class="channel-text">
-								<span class="channel-label">{data.channelSecondary?.label || 'Secundario'}</span>
-								<span class="channel-value">{data.channelSecondary?.value || 'Escribir por correo'}</span>
-							</div>
-						</a>
-					</div>
+			{data.about && (
+				<div id="nosotros" class="contact-about" data-screenshot="landing-about">
+					<h3 class="contact-about__title">{data.about.title}</h3>
+					<p class="contact-about__text">{data.about.text}</p>
+					<a class="contact-about__email" href={`mailto:${data.about.email}`}>
+						{data.about.email}
+					</a>
 				</div>
-			</div>
-
-			<div class="contact-form-wrapper reveal-fade-up stagger-4">
-				<p class="contact-form-wrapper__intro">{data.formIntro || 'O deja tus datos y le contactamos.'}</p>
-				<ContactForm />
-				{data.microcopy && <p class="contact-microcopy">{data.microcopy}</p>}
-			</div>
+			)}
 		</div>
 
-		<!-- Scroll Action -->
-		<div class="contact-footer">
-			<ActionIcon
-				icon="ArrowUpIcon"
-				variant="scroll"
-				href="#pricing"
-				color="secondary"
-				title="Regresar a los planes"
-			/>
+		<div class="contact-form-wrapper reveal-fade-up stagger-4">
+			{data.formIntro && <p class="contact-form-wrapper__intro">{data.formIntro}</p>}
+			<ContactForm />
+			{data.microcopy && <p class="contact-microcopy">{data.microcopy}</p>}
 		</div>
 	</div>
 </section>

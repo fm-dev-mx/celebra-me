@@ -65,7 +65,7 @@ describe('local render corpus regression sweep', () => {
 		},
 	);
 
-	it('registers exactly the 17 supported Production clients', () => {
+	it('registers exactly the expected supported Production clients', () => {
 		assertLocalRenderCorpusIntegrity();
 		assertCanonicalRegistryCoveredByCorpus();
 		expect(corpus).toHaveLength(EXPECTED_LOCAL_RENDER_CORPUS_SIZE);

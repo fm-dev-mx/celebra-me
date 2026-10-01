@@ -8,6 +8,11 @@ import {
 
 export type VisualParityMode = 'diagnostic' | 'candidate' | 'compare';
 
+export function resolveVisualParityMode(): VisualParityMode {
+	return (process.env.VISUAL_PARITY_MODE ??
+		(process.env.CI ? 'compare' : 'diagnostic')) as VisualParityMode;
+}
+
 interface AcceptedVisualCapture {
 	file?: unknown;
 	sha256?: unknown;

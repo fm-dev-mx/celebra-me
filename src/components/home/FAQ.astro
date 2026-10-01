@@ -1,69 +1,26 @@
 ---
-import ActionIcon from '@components/common/actions/ActionIcon.astro';
 import FAQList from '@components/ui/FAQList.astro';
-import WhatsAppButton from '@components/ui/WhatsAppButton.astro';
 
 import type { FAQData } from '@/interfaces/ui/sections/landing-page.interface';
-import { getContactPhone } from '@/utils/whatsapp';
 
 interface Props {
 	data: FAQData;
 }
 
-// Destructure the data prop
 const { data } = Astro.props;
-const phone = getContactPhone();
 ---
 
 <!-- FAQ Section -->
 <section id="faq-section" class="faq-section" data-screenshot="landing-faq">
-	<div class="faq-noise"></div>
-	<div class="faq-section__divider" aria-hidden="true">
-		<span>{data.divider || 'Dudas antes de cotizar'}</span>
-	</div>
-
 	<div class="container">
 		<header class="faq-header">
-			<span class="faq-pretitle reveal-fade-up stagger-1">{data.pretitle || 'Claridad antes de cotizar'}</span>
+			{data.pretitle && <span class="faq-pretitle reveal-fade-up stagger-1">{data.pretitle}</span>}
 			<h2 class="faq-title reveal-fade-up stagger-2">{data.title}</h2>
-			<p class="faq-subtitle reveal-fade-up stagger-3">
-				{data.subtitle || 'Las dudas más importantes sobre entrega, RSVP, pases digitales y personalización.'}
-			</p>
+			{data.subtitle && <p class="faq-subtitle reveal-fade-up stagger-3">{data.subtitle}</p>}
 		</header>
 
-		<div class="reveal-fade-up stagger-4">
+		<div class="reveal-fade-up stagger-3">
 			<FAQList faqs={data.faqs} />
-		</div>
-
-		<div class="faq-cta">
-			<h3 class="faq-cta__title">{data.helpSection?.title || '¿Prefiere resolverlo directamente?'}</h3>
-			<p class="faq-cta__text">
-				{data.helpSection?.description || 'Le ayudamos por WhatsApp a elegir el nivel adecuado según su evento, cantidad de invitados y estilo visual.'}
-			</p>
-			<WhatsAppButton
-				className="faq-cta__button"
-				phone={phone}
-				message={data.helpSection?.message || "Hola, quiero hacer válida la promo de lanzamiento de mi invitación digital premium.\\n\\nCupón: LANZAMIENTO-899"}
-				label={data.helpSection?.cta || "Hablar con un asesor"}
-				trackSection="faq"
-				trackCta="whatsapp-faq"
-				trackCampaign="FINAL-LANZAMIENTO-899"
-				trackValue={899}
-				trackCurrency="MXN"
-				promoCode="LANZAMIENTO-899"
-				ariaLabel="Hablar con un asesor"
-			/>
-		</div>
-
-		<!-- Scroll Action to return to contact section -->
-		<div class="faq-footer">
-			<ActionIcon
-				icon="ArrowDownIcon"
-				variant="scroll"
-				href="#contacto"
-				color="primary"
-				title="Ir a sección de Contacto"
-			/>
 		</div>
 	</div>
 </section>

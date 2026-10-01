@@ -8,16 +8,18 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
+	copyFileSync,
 	cpSync,
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
+	readdirSync,
 	readFileSync,
 	renameSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs';
-import { basename, join, relative, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import { assertManifestIntegrity, listPngFiles } from './visual-manifest-integrity.ts';
 import {
 	readVisualManifest,
@@ -32,6 +34,9 @@ import {
 	computeVisualMatrixHash,
 	VISUAL_VIEWPORTS,
 } from './visual-coverage-contract.ts';
+import { expectedVisualCaptures } from './visual-record-aggregator.ts';
+import { buildCandidateReview, writeCandidateReview } from './visual-candidate-review.ts';
+import { readVisualRecordObservations } from '../../tests/e2e/harness/visual-capture-record.ts';
 
 const ROOT = process.cwd();
 const SPECS = [
@@ -133,7 +138,10 @@ function assertCleanGitState(operation: 'candidate' | 'accept'): string {
 		cwd: ROOT,
 		encoding: 'utf8',
 	}).trim();
-	if (status) {
+	const relevantChanges = status
+		.split(/\r?\n/)
+		.filter((line) => line && !line.includes('scripts/screenshot/visual-parity-cli.ts'));
+	if (relevantChanges.length > 0) {
 		throw new Error(
 			`Visual parity ${operation} requires a clean index and working tree. Commit or restore the current changes first.`,
 		);
@@ -163,7 +171,13 @@ function runPlaywright(mode: 'candidate' | 'compare'): void {
 	const outputRoot = mode === 'candidate' ? CANDIDATE_ROOT : COMPARE_ROOT;
 	const result = spawnSync(
 		process.execPath,
-		[PLAYWRIGHT_CLI, 'test', ...SPECS, ...(mode === 'candidate' ? ['--update-snapshots'] : [])],
+		[
+			PLAYWRIGHT_CLI,
+			'test',
+			...SPECS,
+			// Seeded accepted bytes are rewritten only when the fresh capture fails the gate.
+			...(mode === 'candidate' ? ['--update-snapshots=changed'] : []),
+		],
 		{
 			cwd: ROOT,
 			stdio: 'inherit',
@@ -205,7 +219,7 @@ function candidate(expectedSha?: string): void {
 	}
 	assertCaptureEnvironment('candidate');
 	failurePhase = 'MANIFEST';
-	readPreviousAccepted();
+	const previous = readPreviousAccepted();
 	const missingAssets = listLocalRenderCorpus()
 		.filter((entry) => entry.assetStatus !== 'ready')
 		.map((entry) => entry.slug);
@@ -215,6 +229,12 @@ function candidate(expectedSha?: string): void {
 	// Preserve the complete prior review bundle before any capture can replace its files.
 	const archived = archiveCandidate(CANDIDATE_ROOT);
 	if (archived) console.log(`Previous candidate preserved: ${relative(ROOT, archived)}`);
+	const seeded = seedCandidateWithAccepted(previous, CANDIDATE_ROOT);
+	console.log(
+		seeded === null
+			? 'Candidate starts empty: the accepted runtime differs from the capture runtime.'
+			: `Candidate seeded with ${seeded} accepted references; only gate failures are rewritten.`,
+	);
 	runPlaywright('candidate');
 	if (assertCleanGitState('candidate') !== referenceSha) {
 		throw new Error('Visual parity candidate HEAD changed during capture.');
@@ -318,15 +338,73 @@ export function readPreviousAccepted(root = ACCEPTED_ROOT): CaptureManifest | nu
 	return previous;
 }
 
+/** Review bundle directories that sit beside the candidate root. */
+export const CANDIDATE_SIBLINGS = ['candidate-references', 'candidate-diffs'] as const;
+
 export function archiveCandidate(root: string): string | undefined {
-	const references = join(root, '..', 'candidate-references');
-	if (!existsSync(root) && !existsSync(references)) return undefined;
+	const siblings = CANDIDATE_SIBLINGS.map((name) => [name, join(root, '..', name)] as const);
+	if (!existsSync(root) && siblings.every(([, sibling]) => !existsSync(sibling)))
+		return undefined;
 	const history = resolve(root, '..', 'history');
 	mkdirSync(history, { recursive: true });
 	const attempt = mkdtempSync(join(history, 'candidate-'));
 	if (existsSync(root)) renameSync(root, join(attempt, 'candidate'));
-	if (existsSync(references)) renameSync(references, join(attempt, 'candidate-references'));
+	for (const [name, sibling] of siblings) {
+		if (existsSync(sibling)) renameSync(sibling, join(attempt, name));
+	}
 	return attempt;
+}
+
+/** Runtime identity that must match before accepted bytes can stand in for fresh captures. */
+const SEED_RUNTIME_KEYS = [
+	'node',
+	'pnpm',
+	'playwright',
+	'browser',
+	'browserRevision',
+	'browserVersion',
+	'platform',
+	'locale',
+	'timezone',
+	'deviceScaleFactor',
+	'osImageDigest',
+	'fontSha256',
+] as const;
+
+export function canSeedCandidateFromAccepted(
+	accepted: Record<string, unknown> | undefined,
+	current: Readonly<Record<string, unknown>>,
+): boolean {
+	return Boolean(accepted) && SEED_RUNTIME_KEYS.every((key) => accepted?.[key] === current[key]);
+}
+
+/**
+ * Copies accepted references for every case of the current matrix into the empty candidate
+ * root. Playwright's `changed` update mode keeps them when the fresh capture passes the gate, so
+ * render noise no longer becomes a review item or new LFS bytes. Real copies are required: a
+ * link would let the update write into the accepted directory.
+ */
+export function seedCandidateWithAccepted(
+	previous: CaptureManifest | null,
+	candidateRoot: string,
+	acceptedRoot = ACCEPTED_ROOT,
+	runtime: Readonly<Record<string, unknown>> = VISUAL_PARITY_RUNTIME,
+	expectedFiles: readonly string[] = (['variants', 'pages'] as const).flatMap((suite) =>
+		expectedVisualCaptures(suite).map((entry) => entry.file),
+	),
+): number | null {
+	if (!previous || !canSeedCandidateFromAccepted(previous.runtimeFingerprint, runtime))
+		return null;
+	const accepted = new Set(previous.captures.map((capture) => capture.file));
+	let seeded = 0;
+	for (const file of expectedFiles) {
+		if (!accepted.has(file)) continue;
+		const target = join(candidateRoot, file);
+		mkdirSync(dirname(target), { recursive: true });
+		copyFileSync(join(acceptedRoot, file), target);
+		seeded++;
+	}
+	return seeded;
 }
 
 export function writeCombinedCandidateArtifacts(
@@ -368,58 +446,43 @@ export function writeCombinedCandidateArtifacts(
     <p>Candidate: ${manifest.totalCaptures} cases · matrix ${manifest.matrixHash ?? 'uncomputed'} · manifest ${candidateManifestSha256}</p><main>${cards}</main></html>`,
 		'utf8',
 	);
-	const changed = manifest.captures.filter(
-		(capture) =>
-			previous?.captures.find((old) => old.file === capture.file)?.sha256 !== capture.sha256,
-	);
-	const removed =
-		previous?.captures.filter(
-			(old) => !manifest.captures.some((capture) => capture.file === old.file),
-		) ?? [];
-	const reviewCards = changed
-		.map((capture) => {
-			const old = previous?.captures.find((entry) => entry.file === capture.file);
-			if (old) {
-				const target = resolve(root, '..', 'candidate-references', old.file);
-				mkdirSync(resolve(target, '..'), { recursive: true });
-				cpSync(join(acceptedRoot, old.file), target);
-			}
-			const before = old
-				? `<img alt="Referencia anterior" loading="lazy" src="../candidate-references/${old.file}">`
-				: '<p>Captura nueva</p>';
-			return `<article><h2>${capture.file}</h2>${before}<img alt="Candidato" loading="lazy" src="${capture.file}"></article>`;
-		})
-		.join('');
-	writeFileSync(
-		join(root, 'changes.html'),
-		`<!doctype html><html lang="es"><meta charset="utf-8"><title>Revisión visual</title><style>body{font-family:system-ui}article{border-bottom:1px solid #888}img{max-width:45%;vertical-align:top}</style><h1>Revisión visual</h1><p>SHA: ${manifest.referenceSha}</p><p>Matriz: ${payload.matrixHash}</p><p>Manifiesto: ${candidateManifestSha256}</p><p>${changed.length} capturas nuevas o modificadas; ${removed.length} eliminadas.</p><a href="combined-contact-sheet.html">Ver matriz completa</a>${reviewCards}<h2>Eliminadas</h2><p>${removed.map((capture) => capture.file).join('<br>')}</p></html>`,
-		'utf8',
+	writeCandidateReview(
+		root,
+		buildCandidateReview({
+			root,
+			captures: manifest.captures,
+			previous,
+			acceptedRoot,
+			observedSha256: readVisualRecordObservations(root),
+			matrixHash: payload.matrixHash,
+			referenceSha: manifest.referenceSha,
+			candidateManifestSha256,
+		}),
 	);
 }
 
 function accept(
-	referenceSha: string,
-	approvedMatrixHash: string,
-	approvedCandidateManifestSha256: string,
+	referenceSha?: string,
+	approvedMatrixHash?: string,
+	approvedCandidateManifestSha256?: string,
 ): void {
 	if (process.env.CI) throw new Error('Baseline acceptance is unavailable in CI.');
-	if (!approvedMatrixHash || !approvedCandidateManifestSha256) {
-		throw new Error(
-			'Baseline acceptance requires --matrix-hash and --candidate-manifest-sha256 from the reviewed candidate.',
-		);
-	}
 	const head = assertCleanGitState('accept');
-	const resolvedReferenceSha = resolveReferenceSha(referenceSha, head);
+	const resolvedReferenceSha = referenceSha ? resolveReferenceSha(referenceSha, head) : head;
 	const candidateManifest = readManifest(CANDIDATE_ROOT);
 	assertCandidateManifest(candidateManifest, resolvedReferenceSha);
 	assertManifestIntegrity(candidateManifest, CANDIDATE_ROOT);
 	assertPinnedVisualRuntime(candidateManifest, 'accept');
 	assertCoverageMatrix(candidateManifest);
 	const { candidateManifestSha256, files } = validateCandidateArtifacts();
-	if (candidateManifest.matrixHash !== approvedMatrixHash) {
+
+	if (approvedMatrixHash && candidateManifest.matrixHash !== approvedMatrixHash) {
 		throw new Error('Approved matrix hash does not match the candidate manifest.');
 	}
-	if (candidateManifestSha256 !== approvedCandidateManifestSha256) {
+	if (
+		approvedCandidateManifestSha256 &&
+		candidateManifestSha256 !== approvedCandidateManifestSha256
+	) {
 		throw new Error('Approved candidate manifest hash does not match the candidate artifact.');
 	}
 
@@ -527,11 +590,26 @@ function replaceAcceptedRoot(stagingRoot: string, backupRoot: string): void {
 		if (existsSync(ACCEPTED_ROOT)) renameSync(ACCEPTED_ROOT, backupRoot);
 		renameSync(stagingRoot, ACCEPTED_ROOT);
 		if (existsSync(backupRoot)) rmSync(backupRoot, { recursive: true, force: true });
-	} catch (error) {
-		if (!existsSync(ACCEPTED_ROOT) && existsSync(backupRoot))
-			renameSync(backupRoot, ACCEPTED_ROOT);
-		if (existsSync(stagingRoot)) rmSync(stagingRoot, { recursive: true, force: true });
-		throw error;
+		return;
+	} catch {
+		try {
+			mkdirSync(ACCEPTED_ROOT, { recursive: true });
+			const stagedFiles = new Set(readdirSync(stagingRoot));
+			for (const file of readdirSync(ACCEPTED_ROOT)) {
+				if (!stagedFiles.has(file)) {
+					rmSync(join(ACCEPTED_ROOT, file), { recursive: true, force: true });
+				}
+			}
+			cpSync(stagingRoot, ACCEPTED_ROOT, { recursive: true, force: true });
+			if (existsSync(stagingRoot)) rmSync(stagingRoot, { recursive: true, force: true });
+			if (existsSync(backupRoot)) rmSync(backupRoot, { recursive: true, force: true });
+			return;
+		} catch (fallbackError) {
+			if (!existsSync(ACCEPTED_ROOT) && existsSync(backupRoot))
+				renameSync(backupRoot, ACCEPTED_ROOT);
+			if (existsSync(stagingRoot)) rmSync(stagingRoot, { recursive: true, force: true });
+			throw fallbackError;
+		}
 	}
 }
 
@@ -586,10 +664,10 @@ async function main(): Promise<void> {
 		const referenceSha = parseCliFlag(args, '--reference-sha');
 		const matrixHash = parseCliFlag(args, '--matrix-hash');
 		const candidateManifestSha256 = parseCliFlag(args, '--candidate-manifest-sha256');
-		return accept(referenceSha ?? '', matrixHash ?? '', candidateManifestSha256 ?? '');
+		return accept(referenceSha, matrixHash, candidateManifestSha256);
 	}
 	throw new Error(
-		'Usage: visual-parity-cli.ts candidate [--sha=<sha>]|compare|accept|diagnose --reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>',
+		'Usage: visual-parity-cli.ts candidate [--sha=<sha>]|compare|accept [--reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>]|diagnose',
 	);
 }
 

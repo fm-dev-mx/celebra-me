@@ -120,6 +120,12 @@
             "requiresDeployedAppCapabilities": ["current_atomic_publication_client"],
             "revokes": ["seven_argument_publication_overload"],
             "notes": "Drops the drained seven-argument publication overload after all application and provisioning callers moved to the concurrency-safe current contract."
+        },
+        "20260930180000": {
+            "phase": "contract",
+            "provides": ["event_memories_catalog"],
+            "revokes": ["event_memories_public_rpc_execute"],
+            "notes": "Creates the event-neutral guest memories catalog (settings, sessions, items, audit) with service-role-only access and per-event window, retention and quotas enforced inside the reservation RPC. Additive for the application: legacy valentina_* objects stay until the separately authorized retirement migration, which requires the event_memories_client capability."
         }
     },
     "appCapabilities": {
@@ -140,6 +146,9 @@
         },
         "current_atomic_publication_client": {
             "requiresDbCapabilities": []
+        },
+        "event_memories_client": {
+            "requiresDbCapabilities": ["event_memories_catalog"]
         }
     }
 }

@@ -137,6 +137,24 @@ export function buildVisualPageCases(): VisualPageCase[] {
 	];
 }
 
+/** Snapshot file of a variant case, relative to the snapshot or output root. */
+export function visualVariantCaseFile(entry: {
+	preset: string;
+	viewport: string;
+	section: string;
+	variant: string;
+}): string {
+	return `${entry.preset}-${entry.viewport}-${entry.section}-${entry.variant}.png`;
+}
+
+/** Snapshot file of a complete-page case, relative to the snapshot or output root. */
+export function visualPageCaseFile(
+	entry: Pick<VisualPageCase, 'kind' | 'eventType' | 'slug'>,
+	viewport: string,
+): string {
+	return `pages/${entry.kind}-${entry.eventType}-${entry.slug}-${viewport}.png`;
+}
+
 export function buildVisualCoverageCases(): {
 	variantCases: VisualVariantCase[];
 	pageCases: VisualPageCase[];

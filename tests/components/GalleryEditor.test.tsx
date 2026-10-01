@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import GalleryEditor from '@/components/dashboard/intake/editor/GalleryEditor';
 import FocalPointControl from '@/components/dashboard/intake/editor/FocalPointControl';
 
@@ -341,7 +341,7 @@ describe('GalleryEditor', () => {
 		expect(screen.getByDisplayValue('Web')).toBeInTheDocument();
 	});
 
-	it('clicks Seleccionar imagen and triggers picker (picker opens via state)', () => {
+	it('clicks Seleccionar imagen and triggers picker (picker opens via state)', async () => {
 		const value = {
 			title: 'Test',
 			items: [{ image: 'gallery01', caption: 'Test' }],
@@ -361,6 +361,9 @@ describe('GalleryEditor', () => {
 		fireEvent.click(screen.getByText('Seleccionar imagen'));
 		// The AssetPicker overlay has role="dialog"
 		expect(screen.getByRole('dialog')).toBeInTheDocument();
+		await waitFor(() => {
+			expect(screen.queryByText(/Cargando biblioteca/i)).not.toBeInTheDocument();
+		});
 	});
 
 	it('updates percentage focal point from direct pointer selection', () => {

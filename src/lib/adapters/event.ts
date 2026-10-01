@@ -161,8 +161,7 @@ function pickPreset(candidate: string | undefined): ThemePreset {
 }
 
 function buildHero(context: AdaptationContext): HeroViewModel {
-	const { data, eventSlug, normalizedPreset } = context;
-	const preset = normalizedPreset;
+	const { data, eventSlug, normalizedPreset: preset } = context;
 	return {
 		ornament: resolveAsset(eventSlug, data.hero.ornament, ''),
 		accentOrnament: resolveAsset(eventSlug, data.hero.accentOrnament, ''),
@@ -193,6 +192,8 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		focalPointTablet: data.hero.focalPointTablet,
 		focalPointDesktop: data.hero.focalPointDesktop,
 		scrollLabel: data.hero.scrollLabel,
+		tagline: data.hero.tagline,
+		photoCredit: data.hero.photoCredit,
 	};
 }
 
@@ -263,6 +264,7 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			coverEdition: data.envelope.coverEdition,
 			coverVolume: data.envelope.coverVolume,
 			coverIssue: data.envelope.coverIssue,
+			coverExperience: data.envelope.coverExperience,
 			revealVariant: data.envelope.revealVariant,
 		},
 	};
@@ -590,6 +592,7 @@ export function adaptEvent(
 					url: playableMusicUrl,
 					autoPlay: adapterData.music?.autoPlay ?? false,
 					title: adapterData.music?.title,
+					startAt: adapterData.music?.startAt,
 					revealMode: envelope.enabled ? 'envelope' : 'immediate',
 				}
 			: undefined,

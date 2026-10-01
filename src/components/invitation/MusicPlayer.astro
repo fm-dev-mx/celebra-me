@@ -8,6 +8,8 @@ interface Props {
 	title?: string;
 	revealMode?: 'envelope' | 'immediate';
 	variant?: string;
+	/** Second at which playback starts and loops back to (skips an intro). */
+	startAt?: number;
 }
 
 const {
@@ -16,9 +18,13 @@ const {
 	title = 'Reproducir música',
 	revealMode = 'envelope',
 	variant,
+	startAt = 0,
 } = Astro.props;
 
 const hasAudio = Boolean(url.trim());
+const startSeconds = Number.isFinite(startAt) && startAt > 0 ? startAt : 0;
+// A media fragment starts the first play at the offset; looping back is handled in the script.
+const audioSrc = hasAudio && startSeconds > 0 ? `${url}#t=${startSeconds}` : url;
 const promptText = 'Reproducir música';
 ---
 
@@ -31,8 +37,11 @@ const promptText = 'Reproducir música';
 	data-has-audio={hasAudio ? 'true' : 'false'}
 	data-title={title || promptText}
 	data-pending-label={promptText}
+	data-start-at={startSeconds > 0 ? String(startSeconds) : undefined}
 >
-	{hasAudio ? <audio src={url} loop preload="none" data-music-audio></audio> : null}
+	{hasAudio ? (
+		<audio src={audioSrc} loop={startSeconds === 0} preload="none" data-music-audio></audio>
+	) : null}
 
 	<span class="music-player__prompt" data-music-prompt>{promptText}</span>
 
@@ -67,6 +76,22 @@ const promptText = 'Reproducir música';
 		const revealMode = player.dataset.revealMode || 'envelope';
 		const hasAudio = player.dataset.hasAudio === 'true';
 		const audioTitle = player.dataset.title || 'Reproducir música';
+		const startAt = Number(player.dataset.startAt || 0);
+
+		// Offset playback: make sure the first play starts at `startAt` and every loop returns there.
+		if (audio instanceof HTMLAudioElement && startAt > 0) {
+			audio.addEventListener(
+				'loadedmetadata',
+				() => {
+					if (audio.currentTime < startAt - 0.5) audio.currentTime = startAt;
+				},
+				{ once: true },
+			);
+			audio.addEventListener('ended', () => {
+				audio.currentTime = startAt;
+				void audio.play().catch(() => undefined);
+			});
+		}
 		const pendingTitle = player.dataset.pendingLabel || 'La canción se anunciará pronto';
 
 		if (

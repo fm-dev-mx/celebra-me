@@ -1,0 +1,3286 @@
+@use '../global/mixins' as mixins;
+@use '@fontsource-variable/bodoni-moda/opsz.css' as bodoni-moda-opsz;
+@use '@fontsource-variable/bodoni-moda/opsz-italic.css' as bodoni-moda-opsz-italic;
+
+// Event-scoped CSS override for Destenid Sofía XV
+// Ported from the valentina-hernandez editorial profile (the client's chosen reference) and
+// recolored to the client's black, beige, and gold palette. Documented local exception in
+// docs/invitations/destenid-sofia.md; keep changes here scoped to this invitation.
+// Palette:
+//   --ds-beige:       beige paper (primary light surface; dress color)
+//   --ds-paper:       ivory (secondary light surface)
+//   --ds-white:       warm white (text on dark)
+//   --ds-ink:         warm black (dark chapters, primary text)
+//   --ds-accent:      antique gold (accents, numbers, dividers)
+//   --ds-gold:        deep gold (readable gold on light surfaces)
+//   --ds-muted:       warm gray (metadata)
+// Scope: .event--destenid-sofia.theme-preset--editorial-magazine
+
+.event--destenid-sofia.theme-preset--editorial-magazine {
+	// ==========================================================================
+	// 1. PALETTE TOKENS
+	// ==========================================================================
+	--ds-beige-rgb: 239 230 216;
+	--ds-beige: rgb(var(--ds-beige-rgb));
+	--ds-paper-rgb: 251 248 242;
+	--ds-paper: rgb(var(--ds-paper-rgb));
+	--ds-white-rgb: 253 251 247;
+	--ds-white: rgb(var(--ds-white-rgb));
+	--ds-ink-rgb: 20 18 16;
+	--ds-ink: rgb(var(--ds-ink-rgb));
+	--ds-accent-rgb: 176 141 87;
+	--ds-accent: rgb(var(--ds-accent-rgb));
+	--ds-gold-rgb: 128 98 52;
+	--ds-gold: rgb(var(--ds-gold-rgb));
+	--ds-muted-rgb: 110 101 88;
+	--ds-muted: rgb(var(--ds-muted-rgb));
+
+	// ==========================================================================
+	// 2. THEME CORE OVERRIDES (remapping editorial-magazine variables)
+	// ==========================================================================
+	--editorial-magazine-ink: var(--ds-ink);
+	--editorial-magazine-ink-rgb: var(--ds-ink-rgb);
+	--editorial-magazine-paper: var(--ds-beige);
+	--editorial-magazine-paper-rgb: var(--ds-beige-rgb);
+	--editorial-magazine-white: var(--ds-white);
+	--editorial-magazine-white-rgb: var(--ds-white-rgb);
+	--editorial-magazine-red: var(--ds-accent);
+	--editorial-magazine-red-rgb: var(--ds-accent-rgb);
+	--editorial-magazine-muted: var(--ds-muted);
+	--editorial-magazine-muted-rgb: var(--ds-muted-rgb);
+
+	// Remap core color variables explicitly for specificity and reliability
+	--color-surface-primary: var(--editorial-magazine-paper);
+	--color-surface-primary-rgb: var(--editorial-magazine-paper-rgb);
+	--color-surface-secondary: var(--editorial-magazine-white);
+	--color-surface-secondary-rgb: var(--editorial-magazine-white-rgb);
+	--color-surface-elevated: var(--editorial-magazine-white);
+	--color-surface-elevated-rgb: var(--editorial-magazine-white-rgb);
+	--color-surface-soft: rgb(var(--editorial-magazine-ink-rgb) / 6%);
+	--color-surface-dark: var(--editorial-magazine-ink);
+	--color-surface-dark-rgb: var(--editorial-magazine-ink-rgb);
+	--color-action-primary: var(--editorial-magazine-ink);
+	--color-action-primary-rgb: var(--editorial-magazine-ink-rgb);
+	--color-action-accent: var(--editorial-magazine-red);
+	--color-action-accent-rgb: var(--editorial-magazine-red-rgb);
+	--color-text-primary: var(--editorial-magazine-ink);
+	--color-text-primary-rgb: var(--editorial-magazine-ink-rgb);
+	--color-text-secondary: rgb(var(--editorial-magazine-ink-rgb) / 82%);
+	--color-text-muted: rgb(var(--editorial-magazine-ink-rgb) / 68%);
+	--color-text-on-dark: var(--editorial-magazine-white);
+	--color-text-on-dark-rgb: var(--editorial-magazine-white-rgb);
+	--color-border-light: rgb(var(--editorial-magazine-ink-rgb) / 14%);
+	--color-border-medium: rgb(var(--editorial-magazine-ink-rgb) / 34%);
+	--color-border-strong: var(--editorial-magazine-ink);
+	--color-glass-bg: rgb(var(--editorial-magazine-white-rgb) / 72%);
+	--color-glass-border: rgb(var(--editorial-magazine-ink-rgb) / 24%);
+
+	// ==========================================================================
+	// 3. EDITORIAL COVER REVEAL — COLLECTOR EDITION
+	// ==========================================================================
+	// envelope.coverExperience = 'collector': geometry, printed layout, ribbon, and the page-turn
+	// mechanics live in src/styles/invitation/_editorial-cover-collector.scss. This block only
+	// dresses the table and print in the Destenid palette. Cover copy sits on the WA0034 sky
+	// and sill; the forbidden zone (face, crown, arms, bouquet, tulle: x 9–77 %, y 58–90 %) is
+	// guarded by tests/e2e/destenid-face-safety.spec.ts. --ec-* live on the wrapper itself
+	// because the component declares them there.
+	.editorial-cover-wrapper {
+		--ec-bg:
+			radial-gradient(ellipse at 50% 42%, rgb(var(--ds-accent-rgb) / 16%), transparent 60%),
+			linear-gradient(160deg, rgb(38 33 27), var(--ds-ink) 64%);
+		--ec-face-ink: var(--ds-ink);
+		--ec-face-ink-soft: rgb(var(--ds-ink-rgb) / 80%);
+		--ec-face-rule: rgb(var(--ds-ink-rgb) / 40%);
+		--ec-gold: var(--ds-accent);
+		--ec-gold-dark: var(--ds-gold);
+	}
+
+	// The magazine cover carries the brand; the hero does not repeat it.
+	.invitation-hero__credits {
+		display: none;
+	}
+
+	// ==========================================================================
+	// Hero / Cover variables
+	--hero-portrait-filter: none; // Disable desaturation filter to keep the photographs in full color
+	--hero-image-filter: none;
+
+	// Family variables
+	--family-image-filter: none;
+	--family-text-muted: rgb(var(--ds-ink-rgb) / 74%);
+
+	// Location / indications variables
+	--location-image-filter: none;
+	--location-hour-color: rgb(var(--ds-ink-rgb) / 76%);
+	--location-address-color: rgb(var(--ds-ink-rgb) / 76%);
+	--location-indication-text-color: rgb(var(--ds-ink-rgb) / 82%);
+	--section-card-border-alt: 1px solid rgb(var(--ds-accent-rgb) / 88%);
+
+	// RSVP
+	--rsvp-bg: var(--ds-ink);
+
+	// Gifts
+	--gifts-icon-color: var(--ds-accent);
+	--gifts-subtitle-color: rgb(var(--ds-ink-rgb) / 78%);
+
+	// Gallery
+	--gallery-image-filter: none;
+
+	// Divider tokens: invitation-only page architecture, not a global transition system.
+	--ds-divider-depth: clamp(3.5rem, 6vw, 5.5rem);
+	--ds-divider-soft-depth: clamp(2.5rem, 4vw, 3.75rem);
+	--ds-divider-shadow: 0 -0.35rem 1.35rem rgb(0 0 0 / 10%);
+
+	.invitation-section-wrapper[data-section-id$='-family'],
+	.invitation-section-wrapper[data-section-id$='-rsvp'] {
+		position: relative;
+		isolation: isolate;
+	}
+
+	.invitation-section-wrapper[data-section-id$='-family'] {
+		z-index: 2;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: calc(-1 * var(--ds-divider-depth)) 0 auto;
+			z-index: 0;
+			height: var(--ds-divider-depth);
+			background: linear-gradient(
+				180deg,
+				var(--ds-paper) 0%,
+				var(--ds-paper) 54%,
+				var(--ds-beige) 100%
+			);
+			clip-path: polygon(
+				0 58%,
+				30% 58%,
+				43% 22%,
+				57% 22%,
+				70% 58%,
+				100% 58%,
+				100% 100%,
+				0 100%
+			);
+			filter: drop-shadow(var(--ds-divider-shadow));
+			pointer-events: none;
+		}
+
+		> .family {
+			position: relative;
+			z-index: 1;
+		}
+
+		&.has-motion:not(.is-visible) .family__media-frame {
+			clip-path: inset(100% 0 0);
+		}
+	}
+
+	// Thank-you: the photograph wipes in, then the signature writes itself left to right.
+	.invitation-section-wrapper[data-section-id$='-thankYou'] {
+		&.has-motion:not(.is-visible) .thank-you-editorial__media.photo-frame {
+			clip-path: inset(100% 0 0);
+		}
+
+		&.has-motion:not(.is-visible) .closing-name {
+			clip-path: inset(-50% 110% -50% -10%);
+		}
+	}
+
+	.invitation-section-wrapper[data-section-id$='-rsvp'] {
+		z-index: 2;
+
+		> .rsvp-section {
+			position: relative;
+			z-index: 1;
+		}
+	}
+
+	// Gallery — ensure interactive states respect no-filter
+	.gallery-section {
+		@include mixins.respond-below(md) {
+			padding-inline: 0;
+		}
+
+		@include mixins.respond-to(md) {
+			padding-inline: clamp(1.5rem, 4vw, 3rem);
+		}
+
+		.gallery-section__header {
+			@include mixins.respond-below(md) {
+				padding-inline: clamp(1rem, 5vw, 1.35rem);
+			}
+
+			position: relative;
+
+			&::after {
+				content: none;
+				display: none;
+			}
+		}
+
+		// Mobile rail geometry is owned by gallery.presentationOptions.mobileBrowse=rail.
+		.gallery-section__swipe-hint {
+			color: var(--ds-gold);
+		}
+
+		// Antique gold is below 3:1 on beige; the deep gold keeps the display title readable.
+		.gallery-section__title {
+			color: var(--ds-gold);
+		}
+
+		&::before {
+			content: 'GALERÍA / MIS XV';
+		}
+
+		.gallery-grid {
+			&::-webkit-scrollbar-track {
+				background: rgb(var(--ds-ink-rgb) / 6%);
+			}
+
+			&::-webkit-scrollbar-thumb {
+				background: var(--ds-accent);
+			}
+		}
+
+		.gallery-grid__item {
+			position: relative;
+
+			img {
+				filter: var(--gallery-image-filter);
+				transition: filter 0.5s ease;
+			}
+
+			&.is-in-view img,
+			&:hover img {
+				filter: var(--gallery-image-filter);
+			}
+		}
+
+		.gallery-grid__item[data-gallery-index='0'] {
+			position: relative;
+			z-index: 2;
+
+			// Overflow visible so the swipe arrow ::after is not clipped
+			overflow: visible;
+
+			@media (width >= 768px) {
+				grid-column: 1 / span 7;
+				grid-row: span 2;
+				height: 100%;
+
+				img {
+					height: 100%;
+					max-height: none;
+					aspect-ratio: auto;
+					object-fit: cover;
+				}
+			}
+		}
+
+		@media (width >= 768px) {
+			.gallery-grid__item[data-gallery-index='1'],
+			.gallery-grid__item[data-gallery-index='2'] {
+				grid-column: 8 / span 5;
+			}
+
+			.gallery-grid__item[data-gallery-index='4'],
+			.gallery-grid__item[data-gallery-index='5'] {
+				grid-column: span 6;
+			}
+
+			.gallery-grid__item[data-gallery-index='6'],
+			.gallery-grid__item[data-gallery-index='7'] {
+				grid-column: span 6;
+			}
+		}
+
+		.gallery-grid__item[data-gallery-index='0']::after {
+			content: '→';
+			position: absolute;
+			top: 50%;
+			right: -0.85rem;
+
+			// Matches animation 0%/100% state to prevent initial jump (also opacity)
+			transform: translateY(-50%) translateX(-2px);
+			opacity: 30%;
+			font-family: var(--font-label);
+			font-size: 1.2rem;
+			font-weight: 800;
+			color: var(--ds-ink);
+			pointer-events: none;
+			z-index: 10;
+			background: rgb(var(--ds-paper-rgb) / 72%);
+			padding: 0.15rem 0.3rem 0.1rem;
+			border-radius: 2px;
+			backdrop-filter: blur(4px);
+			animation: dsGalleryArrowPulse 1.8s infinite ease-in-out;
+
+			@media (width >= 768px) {
+				display: none;
+			}
+		}
+
+		.gallery-grid__caption {
+			color: rgb(var(--ds-ink-rgb) / 78%);
+		}
+
+		.gallery-grid__caption::before {
+			color: var(--ds-accent);
+		}
+
+		.gallery-grid__editorial-label {
+			position: absolute;
+			left: 0.85rem;
+			top: 0.85rem;
+			z-index: 3;
+			padding: 0.3rem 0.45rem;
+			background: rgb(var(--ds-paper-rgb) / 84%);
+			color: var(--ds-ink);
+			font-family: var(--font-label);
+			font-size: 0.58rem;
+			font-weight: 800;
+			letter-spacing: 0.16em;
+			text-transform: uppercase;
+			backdrop-filter: blur(8px);
+		}
+	}
+
+	// Hero photograph grade: calmer hydrangeas, warmer skin, a touch more depth.
+	--ds-hero-grade: saturate(0.84) sepia(0.07) contrast(1.05) brightness(0.98);
+
+	// Music
+	--music-player-prompt-bg: rgb(var(--ds-ink-rgb) / 94%);
+	--music-player-prompt-color: var(--ds-beige);
+	--music-player-prompt-border: 1px solid rgb(var(--ds-accent-rgb) / 55%);
+	--music-player-prompt-accent: var(--ds-accent);
+	--music-player-button-bg: rgb(var(--ds-ink-rgb) / 90%);
+	--music-player-button-color: var(--ds-accent);
+	--music-player-button-border: 1px solid rgb(var(--ds-accent-rgb) / 75%);
+	--music-player-ring-color: rgb(var(--ds-accent-rgb) / 55%);
+
+	// Opened hero — mobile editorial spread composition.
+	.invitation-hero {
+		// Avoid overlap with top header menu across all viewport sizes
+		.invitation-hero__folio-header {
+			top: clamp(4.5rem, 7svh, 5.5rem);
+		}
+
+		// Display cut of Bodoni (optical sizing), ivory capitals with a true gold italic
+		// signature — distinct from the cover's centred italic ink name.
+		.invitation-hero__title,
+		.invitation-hero__first-name,
+		.invitation-hero__last-name,
+		.invitation-hero__deck,
+		.invitation-hero__venue .calligraphy-accent {
+			font-optical-sizing: auto;
+			font-feature-settings: 'lnum', 'kern', 'liga';
+		}
+
+		.invitation-hero__first-name {
+			position: relative;
+			z-index: 1;
+			color: var(--ds-white);
+			font-weight: 600;
+			letter-spacing: 0.01em;
+		}
+
+		// Solid ivory capitals at every size: drop the theme's gold gradient-clipped glint, which
+		// it only strips below md.
+		.invitation-hero__title,
+		.invitation-hero__first-name,
+		.invitation-hero__last-name {
+			background: none;
+			-webkit-text-fill-color: currentcolor;
+		}
+
+		// The theme's 3 % "XV" watermark is anchored off the edge and clipped: in Bodoni only the
+		// thick diagonals survive, reading as "\ \". It is replaced by a composed outline "XV" on
+		// the desktop panel (see respond-to(lg) below); phones have no free spot for it.
+		.invitation-hero__watermark {
+			display: none;
+		}
+
+		// Parallax: the photograph drifts slower than the page while scrolling away. It starts at
+		// zero offset, so the collector hand-off still lands exactly on it. No support → static.
+		.invitation-hero__background picture {
+			animation: dsHeroParallax linear both;
+			animation-timeline: scroll(root);
+			animation-range: 0 100svh;
+		}
+
+		.invitation-hero__background img,
+		.invitation-hero__portrait img {
+			filter: var(--ds-hero-grade);
+		}
+
+		.invitation-hero__portrait {
+			position: relative;
+		}
+
+		// Film grain over the photograph, barely there.
+		.invitation-hero__background::before,
+		.invitation-hero__portrait::before {
+			position: absolute;
+			inset: 0;
+			z-index: 1;
+			content: '';
+			background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+			opacity: 9%;
+			mix-blend-mode: overlay;
+			pointer-events: none;
+		}
+
+		// A single band of warm light crosses the photograph after it appears.
+		.invitation-hero__portrait::after {
+			position: absolute;
+			inset: 0;
+			z-index: 1;
+			content: '';
+			background: linear-gradient(
+					105deg,
+					transparent 40%,
+					rgb(255 236 200 / 20%) 50%,
+					transparent 60%
+				) -60%
+				0 / 250% 100% no-repeat;
+			pointer-events: none;
+		}
+
+		// Scroll cue: a short gold line that runs down and fades, in a slow loop (no copy).
+		.invitation-hero__content::after {
+			position: absolute;
+			bottom: clamp(1.1rem, 3svh, 1.75rem);
+
+			// Aligned with the copy's left edge on phones, clear of the music prompt.
+			left: clamp(1.5rem, 6vw, 2.5rem);
+			z-index: 5;
+			width: 1px;
+			height: 2.4rem;
+			content: '';
+			background: linear-gradient(180deg, transparent, var(--ds-accent));
+			transform-origin: top;
+			animation: dsHeroScrollCue 2.6s 2s cubic-bezier(0.65, 0, 0.35, 1) infinite both;
+			pointer-events: none;
+		}
+
+		// The second name is a gold Pinyon signature that crosses the foot of the capitals.
+		.invitation-hero__last-name {
+			position: relative;
+			z-index: 2;
+			color: var(--ds-accent);
+			font-family: var(--font-calligraphy);
+			font-style: normal;
+			font-weight: 400;
+			letter-spacing: 0;
+			text-transform: none;
+			text-shadow: 0 0.04em 0.14em rgb(var(--ds-ink-rgb) / 85%);
+			rotate: -4deg;
+		}
+
+		.invitation-hero__deck {
+			font-family: var(--font-display);
+			font-style: italic;
+			font-weight: 400;
+			letter-spacing: 0;
+		}
+
+		.invitation-hero__date {
+			letter-spacing: 0.22em;
+		}
+
+		// Details: the date as a spaced label; time and place set in Bodoni, lowercase "p. m."
+		// (matching the location card), with the connecting "en" dropped for a gold dot.
+		.invitation-hero__venue .calligraphy-accent {
+			display: none;
+		}
+
+		.invitation-hero__details .invitation-hero__time,
+		.invitation-hero__details .invitation-hero__venue {
+			color: var(--ds-beige);
+			font-family: var(--font-display);
+			font-size: clamp(1rem, 3.9vw, 1.15rem);
+			font-style: normal;
+			font-weight: 400;
+			letter-spacing: 0.01em;
+			text-transform: none;
+			font-optical-sizing: auto;
+		}
+
+		@include mixins.respond-to(lg) {
+			// The desktop portrait is the client's chosen photograph; the wider 58 % column draws it
+			// larger, so frame it lower to keep headroom between the crown and the page folio.
+			.invitation-hero__portrait img {
+				object-position: 45% 16%;
+			}
+
+			// The page folio collides with the fixed navigation on desktop.
+			.invitation-hero__folio-page {
+				display: none;
+			}
+
+			// The photograph takes the larger share of the spread.
+			.invitation-hero__content {
+				grid-template-columns: 58% 42%;
+			}
+
+			// Scroll cue centred under the text panel, not on the seam.
+			.invitation-hero__content::after {
+				left: 79%;
+			}
+
+			// The text panel reads as a magazine page: gold seam, thin inner frame, copy anchored
+			// low, and a composed outline "XV" in the upper corner.
+			// Solid ink panel also blocks the duplicate background portrait behind it.
+			.invitation-hero__text-column {
+				position: relative;
+				z-index: 2;
+				justify-content: center;
+				padding: clamp(6.5rem, 12svh, 8rem) clamp(3rem, 5vw, 5.5rem)
+					clamp(5rem, 11svh, 7rem);
+				border-left: 1px solid rgb(var(--ds-accent-rgb) / 38%);
+				background: var(--ds-ink);
+			}
+
+			.invitation-hero__text-column::before {
+				position: absolute;
+
+				// Starts below the fixed navigation so its top rule never crosses the menu.
+				inset: 5.75rem clamp(1.25rem, 2vw, 1.75rem) clamp(1.25rem, 2vw, 1.75rem);
+				content: '';
+				border: 1px solid rgb(var(--ds-accent-rgb) / 20%);
+				pointer-events: none;
+			}
+
+			// A giant outline "XV" set behind the name, as a layer of the page.
+			.invitation-hero__text-column::after {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				z-index: 0;
+				content: 'XV';
+				color: transparent;
+				font-family: var(--font-display);
+				font-size: clamp(15rem, 25vw, 25rem);
+				font-weight: 400;
+				font-variation-settings: 'opsz' 11;
+				line-height: 0.8;
+				letter-spacing: 0.02em;
+				-webkit-text-stroke: 1px rgb(var(--ds-accent-rgb) / 30%);
+				translate: -50% -58%;
+				pointer-events: none;
+			}
+
+			.invitation-hero__text-column > * {
+				position: relative;
+				z-index: 1;
+			}
+
+			.invitation-hero__title {
+				display: flex;
+				flex-direction: column;
+				width: fit-content;
+			}
+
+			.invitation-hero__first-name {
+				font-size: clamp(4rem, 5.8vw, 6.6rem);
+				white-space: nowrap;
+			}
+
+			.invitation-hero__details {
+				display: flex;
+				flex-flow: row wrap;
+				gap: 0.5rem 0.8rem;
+				align-items: baseline;
+				justify-content: flex-start;
+			}
+
+			.invitation-hero__date {
+				flex-basis: 100%;
+			}
+
+			.invitation-hero__time + .invitation-hero__venue::before {
+				margin-right: 0.8rem;
+				content: '·';
+				color: var(--ds-accent);
+				font-weight: 800;
+			}
+
+			.invitation-hero__last-name {
+				align-self: flex-end;
+				margin-top: -0.24em;
+				font-size: clamp(3.4rem, 5vw, 5rem);
+				line-height: 1;
+			}
+
+			.invitation-hero__deck {
+				font-size: clamp(1.1rem, 1.35vw, 1.35rem);
+				color: rgb(var(--ds-white-rgb) / 86%);
+			}
+		}
+
+		// Below lg the hero is a two-part spread: the photograph on top, the copy on an ink
+		// panel underneath, so no text ever sits on the celebrant (see
+		// tests/e2e/destenid-face-safety.spec.ts).
+		@include mixins.respond-below(lg) {
+			--ds-hero-photo-h: 63svh;
+
+			min-height: 100svh;
+			padding: clamp(0.75rem, 3vw, 1rem);
+			background: var(--ds-ink);
+
+			&::before {
+				inset: clamp(0.7rem, 3vw, 1rem);
+				border-color: rgb(var(--ds-white-rgb) / 18%);
+			}
+
+			.invitation-hero__background {
+				inset: 0 0 auto;
+				height: var(--ds-hero-photo-h);
+				overflow: hidden;
+				opacity: 100%;
+			}
+
+			.invitation-hero__background img {
+				object-fit: cover;
+				object-position: var(--hero-focal-point-mobile, 50% 32%);
+				filter: var(--ds-hero-grade);
+			}
+
+			// A long, soft dissolve into the ink panel (no copy sits on the photograph), plus the
+			// single band of warm light that crosses it once.
+			.invitation-hero__background::after {
+				z-index: 1;
+				background:
+					linear-gradient(
+							105deg,
+							transparent 40%,
+							rgb(255 236 200 / 20%) 50%,
+							transparent 60%
+						) -60%
+						0 / 250% 100% no-repeat,
+					linear-gradient(
+						to bottom,
+						transparent 55%,
+						rgb(var(--ds-ink-rgb) / 45%) 80%,
+						var(--ds-ink) 100%
+					);
+				opacity: 100%;
+			}
+
+			.invitation-hero__folio-header {
+				display: none;
+			}
+
+			.invitation-hero__portrait {
+				display: none;
+			}
+
+			.invitation-hero__content {
+				display: flex;
+				flex-direction: column;
+				align-items: flex-start;
+				justify-content: flex-start;
+				gap: clamp(0.72rem, 1.8svh, 1.05rem);
+				min-height: calc(100svh - 1.5rem);
+				padding-inline: clamp(1.5rem, 5vw, 2.5rem);
+				padding-block: calc(var(--ds-hero-photo-h) + 0.25rem) clamp(2rem, 5svh, 3rem);
+			}
+
+			.invitation-hero__text-column {
+				align-items: flex-start;
+				gap: clamp(0.5rem, 1.2svh, 0.85rem);
+				width: 100%;
+			}
+
+			.invitation-hero__label {
+				max-width: 100%;
+				font-size: clamp(0.62rem, 1.9vw, 0.74rem);
+				letter-spacing: 0.22em;
+				background: transparent;
+				backdrop-filter: none;
+				border-top: 1px solid rgb(var(--ds-white-rgb) / 20%);
+				margin-bottom: 0;
+				transform: none;
+				padding-top: 0.5rem;
+				align-self: flex-start;
+				text-align: left;
+			}
+
+			// The title hugs the name so the italic signature tucks under its right edge.
+			.invitation-hero__title {
+				width: fit-content;
+				max-width: 100%;
+				display: flex;
+				flex-direction: column;
+			}
+
+			// The name spans the full measure of the panel.
+			.invitation-hero__first-name {
+				display: block;
+				text-align: left;
+				font-size: clamp(3.2rem, 14.4vw, 5.4rem);
+				line-height: 0.86;
+				white-space: nowrap;
+			}
+
+			.invitation-hero__last-name {
+				display: block;
+				text-align: right;
+				align-self: flex-end;
+
+				// The signature crosses the foot of the capitals.
+				font-size: clamp(2.7rem, 12vw, 3.8rem);
+				line-height: 1;
+				margin-top: -0.26em;
+				padding-right: 0.05em;
+				width: auto;
+			}
+
+			.invitation-hero__deck {
+				text-align: left;
+				font-size: clamp(1rem, 4vw, 1.2rem);
+				line-height: 1.3;
+				color: rgb(var(--ds-white-rgb) / 88%);
+				border-left: 2px solid var(--ds-accent);
+				padding-left: 0.75rem;
+				margin-block: 0.5rem 0.25rem;
+				width: 100%;
+			}
+
+			.invitation-hero__portrait + .invitation-hero__text-column {
+				margin-top: 0;
+			}
+
+			.invitation-hero__divider {
+				display: none;
+			}
+
+			.invitation-hero__details {
+				bottom: auto;
+				align-self: flex-start;
+				text-align: left;
+				width: 100%;
+				display: flex;
+				flex-flow: row wrap;
+				gap: 0.4rem 0.7rem;
+				align-items: baseline;
+				justify-content: flex-start;
+				border-top: 1px solid rgb(var(--ds-white-rgb) / 14%);
+				padding-top: 0.75rem;
+			}
+
+			.invitation-hero__date {
+				flex-basis: 100%;
+			}
+
+			.invitation-hero__time + .invitation-hero__venue::before {
+				margin-right: 0.7rem;
+				content: '·';
+				color: var(--ds-accent);
+				font-weight: 800;
+			}
+
+			.invitation-hero__details p {
+				text-align: left;
+				font-size: clamp(0.7rem, 2.2vw, 0.78rem);
+				letter-spacing: 0.15em;
+				color: rgb(var(--ds-white-rgb) / 78%);
+				white-space: normal;
+			}
+
+			// Tablet sub-breakpoint (768-991px): larger portrait, larger text,
+			// adjusted background focal point for the wider full-bleed canvas.
+			@media (width >= 768px) {
+				.invitation-hero__first-name {
+					font-size: clamp(4.4rem, 11vw, 6.2rem);
+				}
+
+				.invitation-hero__last-name {
+					font-size: clamp(3rem, 7vw, 4.4rem);
+				}
+
+				.invitation-hero__title-wrapper,
+				.invitation-hero__title {
+					max-width: min(100%, 30rem);
+				}
+
+				.invitation-hero__deck {
+					font-size: clamp(1.05rem, 1.8vw, 1.25rem);
+				}
+
+				.invitation-hero__label {
+					font-size: clamp(0.68rem, 1.2vw, 0.78rem);
+				}
+
+				.invitation-hero__background img {
+					object-position: var(--hero-focal-point, 50% 38%);
+				}
+
+				.invitation-hero__details p {
+					font-size: clamp(0.74rem, 1.2vw, 0.82rem);
+				}
+
+				.invitation-hero__content {
+					gap: clamp(0.85rem, 1.5svh, 1.25rem);
+				}
+			}
+
+			// Landscape phones: a 62svh strip would crop to her face under the fixed header, so the
+			// spread turns sideways — photograph on the left, copy on the right.
+			@media (orientation: landscape) and (height <= 600px) {
+				.invitation-hero__background {
+					inset: 0 auto 0 0;
+					width: 50%;
+					height: 100%;
+				}
+
+				.invitation-hero__background img {
+					object-position: 42% 8%;
+				}
+
+				.invitation-hero__background::after {
+					background: linear-gradient(to right, transparent 86%, var(--ds-ink) 100%);
+				}
+
+				.invitation-hero__content {
+					justify-content: center;
+					padding-block: clamp(1.5rem, 6svh, 2.5rem);
+					padding-inline: calc(50% + 1.5rem) 1.5rem;
+				}
+
+				.invitation-hero__content::after {
+					left: calc(50% + 1.5rem);
+				}
+			}
+		}
+	}
+
+	// The magazine's first-page photograph becomes the hero: grade it the same so the colour
+	// never shifts during the hand-off.
+	img.ec-page__photo,
+	.ec-page__photo img {
+		filter: var(--ds-hero-grade);
+	}
+
+	// Behind the collector hand-off the copy waits, so it can enter after the photograph lands.
+	// The selectors carry the hero variant so they outrank the theme's editorialCoverHeroReveal.
+	&[data-editorial-reveal-phase='revealing'] .invitation-hero[data-variant='editorial-cover'] {
+		.invitation-hero__title {
+			opacity: 100%;
+			animation: none;
+		}
+
+		.invitation-hero__first-name,
+		.invitation-hero__last-name,
+		.invitation-hero__deck,
+		.invitation-hero__details {
+			opacity: 0%;
+			animation: none;
+		}
+	}
+
+	&[data-reveal-state='revealed'] .invitation-hero[data-variant='editorial-cover'] {
+		// Push-in from scale 1, so a photograph that has just landed never jumps.
+		.invitation-hero__background img,
+		.invitation-hero__portrait img {
+			transform-origin: 44% 30%;
+			animation: dsHeroPushIn 9s cubic-bezier(0.22, 0.61, 0.36, 1) 0.2s both;
+		}
+
+		// Desktop: anchored at the top edge, so the crown moves away from the page folio.
+		.invitation-hero__portrait img {
+			transform-origin: 44% 0%;
+			animation:
+				dsHeroParallax linear both,
+				dsHeroPushIn 9s cubic-bezier(0.22, 0.61, 0.36, 1) 0.2s both;
+			animation-timeline: scroll(root), auto;
+			animation-range:
+				0 100svh,
+				normal;
+		}
+
+		.invitation-hero__background::after,
+		.invitation-hero__portrait::after {
+			animation: dsHeroLightSweep 2.6s 0.9s cubic-bezier(0.45, 0, 0.2, 1) both;
+		}
+
+		.invitation-hero__title,
+		.invitation-hero__title-wrapper {
+			opacity: 100%;
+			transform: none;
+			animation: none;
+		}
+
+		.invitation-hero__first-name {
+			opacity: 100%;
+			animation: dsHeroNameRise 1.15s cubic-bezier(0.2, 0.7, 0.15, 1) 0.15s both;
+		}
+
+		.invitation-hero__last-name {
+			opacity: 100%;
+			animation: dsHeroSign 1.4s cubic-bezier(0.45, 0, 0.2, 1) 0.8s both;
+		}
+
+		.invitation-hero__deck {
+			animation: dsHeroFadeUp 0.8s cubic-bezier(0.2, 0.7, 0.15, 1) 1.35s both;
+		}
+
+		.invitation-hero__details {
+			animation: dsHeroFadeUp 0.8s cubic-bezier(0.2, 0.7, 0.15, 1) 1.55s both;
+		}
+	}
+
+	// Music: an ink-and-gold seal that reads on the photograph, the ink chapters and the paper
+	// pages alike. Paused → a slow gold halo breathes around it; playing → a thin gold arc turns
+	// like a record. The prompt is a tag with a pointer aimed at the seal.
+	.music-player {
+		gap: 0.85rem;
+	}
+
+	.music-player__button--play {
+		width: 3.25rem;
+		height: 3.25rem;
+		box-shadow:
+			0 0.6rem 1.6rem rgb(0 0 0 / 28%),
+			inset 0 1px 0 rgb(var(--ds-white-rgb) / 10%);
+		backdrop-filter: blur(6px);
+		transition:
+			scale 200ms ease,
+			border-color 200ms ease,
+			color 200ms ease;
+
+		svg {
+			filter: none;
+		}
+
+		// Inner hairline, like the rim of a coin.
+		&::after {
+			inset: 4px;
+			border: 1px solid rgb(var(--ds-accent-rgb) / 38%);
+			opacity: 100%;
+		}
+
+		&:focus {
+			transform: none;
+		}
+
+		&:focus-visible {
+			scale: 1.05;
+			color: var(--ds-beige);
+			outline: 2px solid var(--ds-accent);
+			outline-offset: 4px;
+		}
+
+		&:hover::after {
+			transform: none;
+		}
+
+		// Hover only where a pointer hovers; on touch it would stick after a tap.
+		@media (hover: hover) {
+			&:hover {
+				scale: 1.05;
+				color: var(--ds-beige);
+			}
+
+			&:hover::after {
+				border-color: rgb(var(--ds-accent-rgb) / 70%);
+			}
+		}
+
+		&:active {
+			transform: none;
+			scale: 0.96;
+		}
+	}
+
+	.music-player__button--pulsing::before {
+		inset: -6px;
+		border-color: rgb(var(--ds-accent-rgb) / 60%);
+	}
+
+	// Playing: a gold arc turns around the seal.
+	.music-player__button--play:not(.music-player__button--pulsing)::before {
+		position: absolute;
+		inset: -5px;
+		content: '';
+		border-radius: 50%;
+		background: conic-gradient(
+			from 0deg,
+			transparent 0 45%,
+			rgb(var(--ds-accent-rgb) / 25%) 60%,
+			var(--ds-accent) 97%,
+			transparent 97%
+		);
+		mask: radial-gradient(
+			farthest-side,
+			transparent calc(100% - 2.5px),
+			rgb(0 0 0) calc(100% - 2px)
+		);
+		animation: dsRecordSpin 3.2s linear infinite;
+		pointer-events: none;
+	}
+
+	.music-player__prompt {
+		position: relative;
+		padding: 0.6rem 1.05rem 0.6rem 0.95rem;
+		border-radius: 999px;
+		font-family: var(--font-label);
+		font-size: 0.62rem;
+		font-weight: 800;
+		letter-spacing: 0.18em;
+		white-space: nowrap;
+		box-shadow: 0 0.5rem 1.4rem rgb(0 0 0 / 28%);
+
+		// Pointer toward the seal.
+		&::after {
+			position: absolute;
+			top: 50%;
+			right: -5px;
+			width: 8px;
+			height: 8px;
+			content: '';
+			border-top: 1px solid rgb(var(--ds-accent-rgb) / 55%);
+			border-right: 1px solid rgb(var(--ds-accent-rgb) / 55%);
+			background: rgb(var(--ds-ink-rgb) / 94%);
+			transform: translateY(-50%) rotate(45deg);
+		}
+	}
+
+	// Phones: the tag sits above the seal, pointing down, clear of the hero details.
+	@include mixins.respond-below(md) {
+		.music-player {
+			flex-direction: column;
+			align-items: flex-end;
+			gap: 0.7rem;
+		}
+
+		.music-player__button--play {
+			width: 2.9rem;
+			height: 2.9rem;
+		}
+
+		.music-player__prompt {
+			max-width: none;
+			padding: 0.5rem 0.85rem;
+			font-size: 0.58rem;
+			line-height: 1.2;
+			text-align: left;
+			white-space: nowrap;
+
+			&::after {
+				top: auto;
+				right: 1.2rem;
+				bottom: -5px;
+				transform: rotate(135deg);
+			}
+		}
+	}
+
+	// Countdown as a dark chapter: breaks the run of light sections between the prayer and the
+	// location. The folio layout reads its colors from the magazine ink token, so invert it here.
+	.countdown-section {
+		--editorial-magazine-ink: var(--ds-beige);
+		--editorial-magazine-ink-rgb: var(--ds-beige-rgb);
+		--countdown-bg: var(--ds-ink);
+		--countdown-title-color: var(--ds-beige);
+		--countdown-value-color: var(--ds-white);
+
+		.countdown-title {
+			font-size: clamp(1.8rem, 5vw, 3rem);
+			line-height: 0.96;
+		}
+
+		.countdown__label {
+			color: var(--ds-accent);
+			opacity: 100%;
+		}
+
+		// Date and venue lines use the page text color, which is ink; lift them onto the dark chapter.
+		.countdown-footer,
+		.event-date-desktop,
+		.event-date-mobile-weekday,
+		.event-date-mobile-full,
+		.countdown-invitation-text {
+			color: rgb(var(--ds-beige-rgb) / 82%);
+		}
+
+		&::before {
+			content: '13 · XI · 2026 / CUAUTITLÁN IZCALLI';
+			color: rgb(var(--ds-beige-rgb) / 62%);
+		}
+	}
+
+	// The night's program as a gold timeline: a line that draws itself as the section enters,
+	// a round node per moment with its icon, the hour as the protagonist, and the moment as an
+	// italic caption. Local exception to the editorial-program grid (documented in
+	// docs/invitations/destenid-sofia.md).
+	.itinerary[data-variant='editorial-program'] {
+		--editorial-program-paper: var(--ds-paper);
+		--editorial-program-ink: var(--ds-ink);
+		--editorial-program-ink-rgb: var(--ds-ink-rgb);
+		--editorial-program-accent: var(--ds-gold);
+		--ds-program-node: clamp(2.8rem, 9vw, 3.5rem);
+
+		background:
+			linear-gradient(90deg, rgb(var(--ds-ink-rgb) / 3.5%) 0 1px, transparent 1px 100%),
+			var(--ds-paper);
+		background-size: clamp(3rem, 6vw, 5rem) 100%;
+
+		// Running head: double rule over "La noche" and the page folio, like a magazine page.
+		.itinerary__container {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			align-items: start;
+			max-width: min(46rem, 100%);
+			margin-inline: auto;
+
+			&::before,
+			&::after {
+				grid-area: 1 / 1 / 2 / -1;
+				padding: 0.7rem 0 0.6rem;
+				color: var(--ds-gold);
+				font-family: var(--font-label);
+				font-size: 0.68rem;
+				font-weight: 800;
+				letter-spacing: 0.26em;
+				text-transform: uppercase;
+			}
+
+			&::before {
+				content: 'La noche';
+				border-top: 3px double rgb(var(--ds-accent-rgb) / 80%);
+				border-bottom: 1px solid rgb(var(--ds-ink-rgb) / 12%);
+			}
+
+			&::after {
+				justify-self: end;
+				content: 'pág. 07';
+				color: rgb(var(--ds-ink-rgb) / 48%);
+				letter-spacing: 0.18em;
+				text-transform: none;
+			}
+		}
+
+		.itinerary__header {
+			margin: clamp(1.75rem, 5vw, 2.5rem) 0 clamp(2.25rem, 6vw, 3.5rem);
+		}
+
+		.itinerary__title {
+			font-optical-sizing: auto;
+			font-size: clamp(3rem, 9vw, 5.6rem);
+			font-weight: 600;
+			letter-spacing: 0.01em;
+		}
+
+		.itinerary__subtitle {
+			max-width: 26rem;
+			margin: 0.75rem 0 0;
+
+			&::after {
+				display: block;
+				width: 3rem;
+				height: 1px;
+				margin-top: 1.25rem;
+				content: '';
+				background: var(--ds-accent);
+			}
+
+			color: rgb(var(--ds-ink-rgb) / 72%);
+			font-family: var(--font-display);
+			font-size: clamp(1.15rem, 3.4vw, 1.45rem);
+			font-style: italic;
+			line-height: 1.3;
+			font-optical-sizing: auto;
+		}
+
+		.itinerary__items {
+			position: relative;
+			border-top: 0;
+
+			// The gold thread: drawn top to bottom once the moments come into view.
+			&::before {
+				position: absolute;
+				top: calc(var(--ds-program-node) / 2 + 1.1rem);
+				bottom: calc(var(--ds-program-node) / 2 + 1.1rem);
+				left: calc(var(--ds-program-node) / 2 - 0.5px);
+				width: 1px;
+				content: '';
+				background: linear-gradient(
+					180deg,
+					rgb(var(--ds-accent-rgb) / 20%),
+					var(--ds-accent) 12%,
+					var(--ds-accent) 88%,
+					rgb(var(--ds-accent-rgb) / 20%)
+				);
+				transform: scaleY(0);
+				transform-origin: top;
+				transition: transform 1200ms cubic-bezier(0.65, 0, 0.35, 1);
+			}
+
+			&:has(.is-visible)::before {
+				transform: scaleY(1);
+			}
+		}
+
+		.itinerary__item {
+			position: relative;
+			grid-template-columns: var(--ds-program-node) minmax(0, 1fr);
+			column-gap: clamp(1rem, 4vw, 2.25rem);
+			align-items: center;
+			padding-block: 1.1rem;
+			border-bottom: 0;
+
+			// Magazine folio (01…05) in the corner of each moment, set in italic Bodoni.
+			&::before {
+				grid-area: 1 / 2;
+				place-self: start end;
+				content: counter(editorial-program, decimal-leading-zero);
+				color: var(--ds-gold);
+				font-family: var(--font-display);
+				font-size: 1.05rem;
+				font-style: italic;
+				font-feature-settings: 'lnum';
+				font-optical-sizing: auto;
+			}
+
+			// Dotted leader between moments, starting at the text column (the thread stays clean).
+			&:not(:last-child)::after {
+				position: absolute;
+				right: 0;
+				bottom: 0;
+				left: calc(var(--ds-program-node) + clamp(1rem, 4vw, 2.25rem));
+				content: '';
+				border-bottom: 1px dotted rgb(var(--ds-accent-rgb) / 55%);
+			}
+		}
+
+		// The two defining moments of a XV carry a small gold kicker.
+		.itinerary__item:nth-child(2) .itinerary__item-label::after,
+		.itinerary__item:nth-child(4) .itinerary__item-label::after {
+			display: block;
+			margin-top: 0.45rem;
+			content: 'Momento estelar';
+			color: var(--ds-gold);
+			font-family: var(--font-label);
+			font-size: 0.62rem;
+			font-style: normal;
+			font-weight: 800;
+			letter-spacing: 0.24em;
+			text-transform: uppercase;
+		}
+
+		// Desktop: a two-page spread — sticky title with an outline "05" on the left, the
+		// night's moments on the right.
+		@include mixins.respond-to(lg) {
+			.itinerary__container {
+				grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+				column-gap: clamp(3rem, 6vw, 6rem);
+				max-width: 72rem;
+			}
+
+			.itinerary__header {
+				position: sticky;
+				top: 7rem;
+				grid-area: 2 / 1;
+				margin-bottom: 0;
+			}
+
+			.itinerary__title {
+				font-size: clamp(3.2rem, 5vw, 4.8rem);
+			}
+
+			.itinerary__title::after {
+				display: block;
+				margin-top: 2.5rem;
+				content: '05' / '';
+				color: transparent;
+				font-size: clamp(8rem, 13vw, 12rem);
+				font-weight: 400;
+				font-variation-settings: 'opsz' 11;
+				line-height: 0.8;
+				-webkit-text-stroke: 1px rgb(var(--ds-accent-rgb) / 62%);
+			}
+
+			.itinerary__timeline {
+				grid-area: 2 / 2;
+				margin-top: clamp(1.75rem, 5vw, 2.5rem);
+			}
+		}
+
+		.itinerary__item--left .itinerary__item-content,
+		.itinerary__item--right .itinerary__item-content {
+			grid-area: 1 / 2;
+		}
+
+		.itinerary__item-icon-wrapper {
+			position: relative;
+			inset: auto;
+			z-index: 1;
+			display: grid;
+			grid-area: 1 / 1;
+			place-items: center;
+			width: var(--ds-program-node);
+			height: var(--ds-program-node);
+			margin: 0;
+			border: 1px solid var(--ds-accent);
+			border-radius: 50%;
+			background: var(--ds-paper);
+			color: var(--ds-gold);
+			transform: none;
+		}
+
+		.itinerary__item-icon-inner {
+			display: grid;
+			place-items: center;
+			width: 56%;
+			height: 56%;
+			margin: 0;
+			padding: 0;
+			border: 0;
+			background: none;
+			box-shadow: none;
+			color: inherit;
+			transform: none;
+
+			svg {
+				width: 100%;
+				height: 100%;
+			}
+		}
+
+		// The two defining moments of a XV — presentation and waltz — get a double ring.
+		.itinerary__item:nth-child(2) .itinerary__item-icon-wrapper,
+		.itinerary__item:nth-child(4) .itinerary__item-icon-wrapper {
+			box-shadow:
+				0 0 0 4px var(--ds-paper),
+				0 0 0 5px rgb(var(--ds-accent-rgb) / 70%);
+		}
+
+		.itinerary__item-time {
+			color: var(--ds-ink);
+			font-family: var(--font-display);
+			font-size: clamp(1.9rem, 6.5vw, 3rem);
+			font-weight: 500;
+			font-feature-settings: 'lnum', 'tnum';
+			line-height: 1;
+			letter-spacing: 0;
+			font-optical-sizing: auto;
+		}
+
+		.itinerary__item-label {
+			margin-top: 0.3rem;
+			color: var(--ds-gold);
+			font-family: var(--font-display);
+			font-size: clamp(1.1rem, 3.6vw, 1.5rem);
+			font-style: italic;
+			font-weight: 400;
+			line-height: 1.2;
+			font-optical-sizing: auto;
+		}
+	}
+
+	.family {
+		--family-panel-border: none;
+		--family-panel-bg: transparent;
+		--family-panel-shadow: none;
+		--family-panel-spacing: 0;
+		--family-group-text-align: left;
+
+		background: var(--ds-paper);
+		overflow-x: clip;
+
+		.family__header {
+			position: relative;
+			text-align: left;
+
+			&::before {
+				content: 'pág. 04';
+				display: block;
+				font-family: var(--font-label);
+				font-size: 0.72rem;
+				font-weight: 800;
+				letter-spacing: 0.2em;
+				color: var(--ds-gold);
+				margin-bottom: 0.75rem;
+			}
+		}
+
+		.family__header-inner {
+			align-items: flex-start;
+			text-align: left;
+		}
+
+		.family__title {
+			margin-inline: 0;
+			max-width: 9ch;
+			text-transform: uppercase;
+			font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+			font-weight: 800;
+			line-height: 0.9;
+			letter-spacing: -0.01em;
+		}
+
+		.family__header-divider {
+			width: 3rem;
+			height: 1px;
+			margin: 1.4rem 0 0;
+			background: var(--ds-accent);
+		}
+
+		.family__message {
+			font-family: var(--font-display);
+			font-style: italic;
+			font-size: clamp(1.05rem, 1.8vw, 1.25rem);
+			line-height: 1.7;
+			color: rgb(var(--ds-ink-rgb) / 82%);
+			border-left: none;
+			padding-left: 0;
+			text-align: left;
+			hyphens: none;
+			margin: 1.4rem 0 0;
+			max-width: min(100%, 34ch);
+			font-optical-sizing: auto;
+
+			// Upright gold Bodoni initial opens the prayer.
+			&::first-letter {
+				float: left;
+				margin: 0.08em 0.1em 0 0;
+				color: var(--ds-gold);
+				font-size: 3.6em;
+				font-style: normal;
+				font-weight: 500;
+				line-height: 0.8;
+			}
+		}
+
+		.family__panel {
+			position: relative;
+			display: block;
+		}
+
+		.family__panel::before {
+			content: none;
+			display: none;
+		}
+
+		// No family groups in this invitation: never reserve an empty column.
+		.family__groups:not(:has(*)) {
+			display: none;
+		}
+
+		// A printed plate: 4:5 crop closer on the celebrant, ivory mat, a gold rule set off
+		// behind it, and a short italic caption under the photograph (never over it).
+		.family__media {
+			position: relative;
+			isolation: isolate;
+			margin: 0;
+
+			&::before {
+				position: absolute;
+				inset: 1rem -1rem 2.4rem 1rem;
+				z-index: -1;
+				content: '';
+				border: 1px solid rgb(var(--ds-accent-rgb) / 70%);
+			}
+
+			&::after {
+				display: block;
+				margin-top: 0.85rem;
+				content: '— Con fe';
+				color: var(--ds-gold);
+				font-family: var(--font-display);
+				font-size: 1.05rem;
+				font-style: italic;
+				text-align: right;
+				font-optical-sizing: auto;
+			}
+		}
+
+		.family__media-frame {
+			aspect-ratio: 4 / 5;
+			overflow: hidden;
+			border: 0;
+			border-radius: 0;
+			background: var(--ds-white);
+			box-shadow: 0 1.5rem 3rem rgb(var(--ds-ink-rgb) / 12%);
+			clip-path: inset(0);
+			transition: clip-path 1300ms cubic-bezier(0.65, 0, 0.35, 1);
+
+			img {
+				width: 100%;
+				height: 100%;
+				border-radius: 0;
+				object-fit: cover;
+				object-position: var(--family-focal-point, center);
+				scale: 1.3;
+				transform-origin: var(--family-focal-point, center);
+			}
+		}
+
+		&::before {
+			content: 'ORACIÓN / MIS XV';
+		}
+
+		@include mixins.respond-below(lg) {
+			padding-block: clamp(3rem, 6vw, 4.5rem);
+
+			.family__header {
+				margin-bottom: 2.25rem;
+			}
+
+			.family__media::before {
+				inset: 0.75rem -0.6rem 2.4rem 0.6rem;
+			}
+		}
+
+		// Desktop: photograph left, title and prayer right — one magazine page.
+		@include mixins.respond-to(lg) {
+			.family__container {
+				display: grid;
+				grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+				column-gap: clamp(3.5rem, 7vw, 7rem);
+				align-items: center;
+				max-width: 72rem;
+			}
+
+			.family__header {
+				grid-area: 1 / 2;
+				max-width: none;
+				margin: 0;
+			}
+
+			.family__panel {
+				grid-area: 1 / 1;
+			}
+
+			.family__media-frame {
+				max-height: 82svh;
+			}
+		}
+	}
+
+	.event-location {
+		background:
+			linear-gradient(90deg, rgb(var(--ds-ink-rgb) / 4%) 0 1px, transparent 1px 100%),
+			var(--ds-paper);
+		background-size: clamp(3rem, 6vw, 5rem) 100%;
+
+		&::before {
+			content: 'LUGAR / MIS XV';
+		}
+
+		.event-location__eyebrow,
+		.event-location__access-label,
+		.event-location__card-title {
+			color: rgb(var(--ds-ink-rgb) / 62%);
+			font-family: var(--font-label);
+			font-weight: 800;
+			letter-spacing: 0.22em;
+			text-transform: uppercase;
+		}
+
+		.event-location__heading {
+			max-width: 13ch;
+			margin-inline: auto;
+			color: var(--ds-ink);
+			font-family: var(--font-display);
+			font-size: clamp(2.2rem, 5vw, 3.6rem);
+			font-weight: 800;
+			line-height: 0.94;
+			letter-spacing: 0;
+			text-transform: uppercase;
+		}
+
+		.event-location__lede {
+			max-width: 34rem;
+			margin-inline: auto;
+			color: rgb(var(--ds-ink-rgb) / 76%);
+		}
+
+		.event-location__container {
+			align-items: stretch;
+			gap: clamp(1.25rem, 3vw, 2rem);
+			max-width: min(1120px, calc(100% - 2rem));
+		}
+
+		// Reception is the only venue: a centered, bounded card instead of a full-width strip.
+		.event-location__container--single {
+			justify-content: center;
+			max-width: min(44rem, calc(100% - 2rem));
+			margin-inline: auto;
+
+			.event-location__card-wrapper {
+				width: 100%;
+			}
+
+			.event-location__card-content-place {
+				margin-inline: auto;
+				text-align: center;
+			}
+		}
+
+		.event-location__card-wrapper {
+			position: relative;
+			align-items: stretch;
+			max-width: none;
+		}
+
+		.event-location__access-label {
+			align-self: flex-start;
+			margin: 0 0 0.65rem;
+			padding-bottom: 0.35rem;
+			border-bottom: 1px solid rgb(var(--ds-ink-rgb) / 22%);
+			font-size: 0.68rem;
+		}
+
+		.event-location__card-title {
+			position: absolute;
+			top: clamp(1.1rem, 2vw, 1.45rem);
+			right: clamp(1rem, 2vw, 1.35rem);
+			z-index: 2;
+			max-width: 10rem;
+			margin: 0;
+			padding: 0.35rem 0.5rem;
+			background: var(--ds-paper);
+			border: 1px solid rgb(var(--ds-ink-rgb) / 18%);
+			font-size: 0.6rem;
+			text-align: right;
+		}
+
+		.event-location__card {
+			min-height: 100%;
+			overflow: hidden;
+			border: 1px solid rgb(var(--ds-ink-rgb) / 34%);
+			background:
+				linear-gradient(
+					180deg,
+					rgb(var(--ds-white-rgb) / 86%),
+					rgb(var(--ds-paper-rgb) / 96%)
+				),
+				var(--ds-paper);
+			box-shadow: 0 1.25rem 3rem rgb(var(--ds-ink-rgb) / 8%);
+		}
+
+		.event-location__card::before {
+			background-image: linear-gradient(
+				90deg,
+				transparent 0,
+				transparent calc(100% - 4.75rem),
+				rgb(var(--ds-ink-rgb) / 12%) calc(100% - 4.75rem),
+				rgb(var(--ds-ink-rgb) / 12%) calc(100% - 4.68rem),
+				transparent calc(100% - 4.68rem)
+			);
+			z-index: 1;
+		}
+
+		.event-location__card::after {
+			inset: 0.55rem;
+			border: 1px solid rgb(var(--ds-gold-rgb) / 46%);
+			background:
+				radial-gradient(
+					circle at calc(100% - 4.72rem) 0,
+					transparent 0 0.62rem,
+					rgb(var(--ds-ink-rgb) / 10%) 0.66rem 0.7rem,
+					transparent 0.74rem
+				),
+				radial-gradient(
+					circle at calc(100% - 4.72rem) 100%,
+					transparent 0 0.62rem,
+					rgb(var(--ds-ink-rgb) / 10%) 0.66rem 0.7rem,
+					transparent 0.74rem
+				);
+			z-index: 1;
+		}
+
+		.event-location__card-content-place {
+			position: relative;
+			z-index: 2;
+			max-width: 13ch;
+			margin-bottom: 1.2rem;
+			font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+			line-height: 0.96;
+			overflow-wrap: anywhere;
+		}
+
+		.event-location__card-content-date,
+		.event-location__card-content-hour {
+			position: relative;
+			z-index: 2;
+			color: rgb(var(--ds-ink-rgb) / 72%);
+			font-family: var(--font-label);
+			font-weight: 800;
+			letter-spacing: 0.18em;
+		}
+
+		.event-location__card-content-itinerary {
+			position: relative;
+			z-index: 2;
+			border-top: 1px solid rgb(var(--ds-ink-rgb) / 14%);
+			border-bottom: 1px solid rgb(var(--ds-ink-rgb) / 14%);
+			margin-block: 1rem;
+			padding-block: 1rem;
+		}
+
+		.event-location__card-content-itinerary-list {
+			list-style: none;
+			padding: 0;
+			display: flex;
+			flex-direction: column;
+			gap: 0.75rem;
+			margin: 0;
+		}
+
+		.event-location__card-content-itinerary-item {
+			display: flex;
+			align-items: center;
+			gap: 0.75rem;
+		}
+
+		.event-location__card-content-itinerary-dot {
+			width: 5px;
+			height: 5px;
+			background: var(--ds-accent);
+			border-radius: 50%;
+			display: block;
+			flex: 0 0 auto;
+		}
+
+		.event-location__card-content-itinerary-label {
+			font-family: var(--font-body);
+			font-size: 0.95rem;
+			font-weight: 500;
+			color: var(--ds-ink);
+			text-align: left;
+		}
+
+		.event-location__card-content-itinerary-time {
+			margin-left: auto;
+			font-family: var(--font-label);
+			font-size: 0.85rem;
+			font-weight: 800;
+			letter-spacing: 0.05em;
+			color: rgb(var(--ds-ink-rgb) / 72%);
+			font-variant-numeric: tabular-nums;
+			white-space: nowrap;
+		}
+
+		.event-location__card-content-address {
+			position: relative;
+			z-index: 2;
+			align-items: flex-start;
+			border-top-color: rgb(var(--ds-ink-rgb) / 18%);
+			text-align: left;
+		}
+
+		.event-location__card-content-address-text {
+			max-width: 100%;
+		}
+
+		.event-location__card-content-copy-button {
+			min-width: 2.65rem;
+			min-height: 2.65rem;
+			margin-right: 0;
+			border: 1px solid rgb(var(--ds-ink-rgb) / 28%);
+			border-radius: 0;
+			flex: 0 0 auto;
+
+			&:focus-visible {
+				outline: 2px solid rgb(var(--ds-gold-rgb) / 68%);
+				outline-offset: 3px;
+			}
+		}
+
+		.event-location__card-navigation-buttons {
+			position: relative;
+			z-index: 2;
+		}
+
+		.event-location__nav-button {
+			min-height: 2.85rem;
+			border-color: rgb(var(--ds-ink-rgb) / 34%);
+			background: var(--ds-ink);
+			color: var(--ds-white);
+		}
+
+		.event-location__nav-button:hover,
+		.event-location__nav-button:focus-visible {
+			border-color: var(--ds-gold);
+			background: transparent;
+			color: var(--ds-ink);
+			outline: 2px solid rgb(var(--ds-gold-rgb) / 68%);
+			outline-offset: 3px;
+		}
+
+		.event-location__indications-container {
+			max-width: min(980px, calc(100% - 2rem));
+			margin-top: clamp(2.5rem, 5vw, 4rem);
+			padding: clamp(1.5rem, 3vw, 2.25rem);
+			background: var(--ds-ink);
+			color: var(--ds-white);
+			border: 1px solid rgb(var(--ds-white-rgb) / 18%);
+		}
+
+		.event-location__indications-heading {
+			max-width: 12ch;
+			margin: 0 0 clamp(1.2rem, 3vw, 2rem);
+			color: var(--ds-white);
+			font-family: var(--font-display);
+			font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+			font-weight: 800;
+			line-height: 0.96;
+			letter-spacing: 0;
+			text-align: left;
+			text-transform: uppercase;
+		}
+
+		.event-location__indications {
+			gap: 0;
+			border-top: 1px solid rgb(var(--ds-white-rgb) / 18%);
+		}
+
+		.event-location__indication-item {
+			display: grid;
+			grid-template-columns: minmax(4rem, 0.22fr) minmax(0, 1fr);
+			gap: clamp(1rem, 3vw, 2rem);
+			padding: clamp(1.15rem, 3vw, 1.7rem) 0;
+			border-top: 0;
+			border-bottom: 1px solid rgb(var(--ds-white-rgb) / 16%);
+		}
+
+		.event-location__indication-item:last-child {
+			border-bottom: 0;
+		}
+
+		.event-location__indication-icon {
+			display: none;
+		}
+
+		.event-location__indication-copy {
+			grid-column: 1 / -1;
+			display: grid;
+			grid-template-columns: minmax(4rem, 0.22fr) minmax(0, 1fr);
+			align-items: start;
+		}
+
+		.event-location__indication-title {
+			display: contents;
+			margin: 0;
+			color: var(--ds-white);
+			font-family: var(--font-label);
+			font-weight: 800;
+			letter-spacing: 0.14em;
+			text-transform: uppercase;
+		}
+
+		.event-location__indication-number {
+			display: block;
+			color: var(--ds-accent);
+			font-family: var(--font-display);
+			font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+			font-weight: 800;
+			line-height: 0.78;
+		}
+
+		.event-location__indication-title span:last-child {
+			display: block;
+			padding-top: 0.25rem;
+			font-size: clamp(0.78rem, 1.6vw, 0.95rem);
+		}
+
+		.event-location__indication-text {
+			grid-column: 2;
+			margin-top: 0.55rem;
+			color: rgb(var(--ds-white-rgb) / 76%);
+			font-size: clamp(0.95rem, 2.7vw, 1.08rem);
+		}
+
+		.event-location__indication-text::before {
+			content: none;
+			display: none;
+		}
+
+		.event-location__indication-text strong {
+			color: var(--ds-white);
+		}
+
+		.event-location__indication-text a[href*='instagram.com'] {
+			display: inline-flex;
+			gap: 0.35em;
+			align-items: center;
+			color: var(--ds-white);
+			text-decoration: underline;
+			text-decoration-color: rgb(var(--ds-accent-rgb) / 55%);
+			text-underline-offset: 0.25em;
+			transition: text-decoration-color 200ms ease;
+
+			&::before {
+				flex: 0 0 auto;
+				width: 1.1em;
+				height: 1.1em;
+				content: '';
+				background: var(--ds-accent);
+				mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='5'/%3E%3Ccircle cx='12' cy='12' r='4.2'/%3E%3Ccircle cx='17.4' cy='6.6' r='0.9' fill='black' stroke='none'/%3E%3C/svg%3E")
+					center / contain no-repeat;
+			}
+
+			&:hover,
+			&:focus-visible {
+				text-decoration-color: var(--ds-accent);
+			}
+
+			&:focus-visible {
+				outline: 2px solid rgb(var(--ds-accent-rgb) / 72%);
+				outline-offset: 3px;
+			}
+		}
+	}
+
+	.gifts-section {
+		background:
+			linear-gradient(180deg, var(--ds-paper), rgb(var(--ds-beige-rgb) / 62%)),
+			var(--ds-paper);
+
+		&::before {
+			content: 'REGALOS / MIS XV';
+		}
+
+		.gifts-section__header {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			gap: 0.85rem;
+			margin-bottom: clamp(2rem, 4vw, 3rem);
+		}
+
+		// Balanced heading wrapping down to 320 px without mid-word breaks.
+		.gifts-section__title {
+			max-width: 100%;
+			font-size: clamp(1.7rem, 8.4vw, 3.6rem);
+			line-height: 0.94;
+			overflow-wrap: normal;
+			hyphens: manual;
+			text-wrap: balance;
+		}
+
+		.gifts-section__subtitle {
+			max-width: 36rem;
+			margin: 0;
+			padding-left: 1rem;
+			border-left: 2px solid var(--ds-gold);
+		}
+
+		.gifts-section__subtitle,
+		.gift-card__description {
+			color: rgb(var(--ds-ink-rgb) / 78%);
+		}
+
+		.gifts-grid[data-count='1'] {
+			max-width: 560px;
+			margin-inline: auto;
+		}
+
+		.gifts-grid {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: clamp(1rem, 2.5vw, 1.4rem);
+			border: 0;
+
+			@media (width >= 768px) {
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+				align-items: stretch;
+			}
+
+			// Fewer cards than columns: let each card use the full row instead of a third of it.
+			&[data-count='1'] {
+				grid-template-columns: minmax(0, 1fr);
+			}
+
+			&[data-count='2'] {
+				@media (width >= 768px) {
+					grid-template-columns: repeat(2, minmax(0, 1fr));
+				}
+			}
+		}
+
+		.gift-card {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			min-height: 100%;
+			background:
+				linear-gradient(
+					180deg,
+					rgb(var(--ds-white-rgb) / 96%),
+					rgb(var(--ds-paper-rgb) / 92%)
+				),
+				var(--ds-paper);
+			border: 1px solid rgb(var(--ds-ink-rgb) / 34%);
+			box-shadow: 0 1.1rem 2.6rem rgb(var(--ds-ink-rgb) / 8%);
+		}
+
+		.gift-card::before {
+			content: '';
+			position: absolute;
+			inset: 0.55rem;
+			border: 1px solid rgb(var(--ds-gold-rgb) / 46%);
+			pointer-events: none;
+		}
+
+		.gift-card__inner {
+			position: relative;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			height: 100%;
+			align-items: stretch;
+			gap: 1.25rem;
+			padding: clamp(1.75rem, 4vw, 2.5rem) clamp(1.4rem, 3.5vw, 2rem);
+			text-align: left;
+		}
+
+		.gift-card__content-head {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			width: 100%;
+			text-align: left;
+			gap: 0.5rem;
+		}
+
+		.gift-card__folio {
+			width: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 1rem;
+			color: rgb(var(--ds-ink-rgb) / 68%);
+			font-family: var(--font-label);
+			font-size: 0.62rem;
+			font-weight: 800;
+			letter-spacing: 0.18em;
+			text-transform: uppercase;
+			padding-bottom: 0.5rem;
+			border-bottom: 1px solid rgb(var(--ds-ink-rgb) / 10%);
+			margin-bottom: 0.45rem;
+		}
+
+		.gift-card__issue-label {
+			display: flex;
+			align-items: baseline;
+			gap: 0.6rem;
+			margin: 0;
+			color: var(--ds-ink);
+			font-family: var(--font-label);
+			font-size: 0.68rem;
+			font-weight: 800;
+			letter-spacing: 0.14em;
+			text-transform: uppercase;
+
+			span:first-child {
+				color: var(--ds-gold);
+				font-family: var(--font-display);
+				font-size: clamp(2rem, 5vw, 2.75rem);
+				line-height: 0.9;
+				letter-spacing: 0;
+			}
+		}
+
+		.gift-card__icon-medallion {
+			display: none;
+		}
+
+		.gift-card__title {
+			margin: 0;
+			font-size: clamp(1.4rem, 4vw, 1.9rem);
+			line-height: 1.1;
+		}
+
+		// The shared catalog repeats the bank title under its issue label ("02 Transferencia bancaria");
+		// keep the heading for assistive tech and hide it visually.
+		.gift-card--bank .gift-card__title {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
+		}
+
+		// Transfer data as a subtle card object — generic, no bank branding: warm ink body,
+		// faint gold guilloché, a gold chip and a "Copiar" pill on top, the number centred, the
+		// holder bottom left and the bank where a card network mark sits. Field labels stay for
+		// assistive tech only.
+		.bank-details {
+			position: relative;
+			isolation: isolate;
+			display: grid;
+			grid-template:
+				'chip copy' auto
+				'number number' 1fr
+				'holder bank' auto / minmax(0, 1fr) auto;
+			gap: 0.55rem 0.75rem;
+			align-items: center;
+			width: 100%;
+			max-width: 22rem;
+			aspect-ratio: 1.586;
+			margin: 0.35rem 0 0;
+			padding: 1.1rem 1.15rem 1rem;
+			border: 1px solid rgb(var(--ds-accent-rgb) / 30%);
+			border-radius: 14px;
+			background:
+				linear-gradient(
+						110deg,
+						transparent 38%,
+						rgb(var(--ds-white-rgb) / 16%) 50%,
+						transparent 62%
+					) -150%
+					0 / 250% 100% no-repeat,
+				linear-gradient(
+					135deg,
+					var(--ds-ink) 0%,
+					color-mix(in srgb, var(--ds-ink) 84%, var(--ds-accent)) 55%,
+					var(--ds-ink) 100%
+				);
+			box-shadow:
+				0 1.1rem 2.2rem rgb(var(--ds-ink-rgb) / 22%),
+				inset 0 1px 0 rgb(var(--ds-white-rgb) / 8%);
+			color: var(--ds-white);
+			container-type: inline-size;
+			transition:
+				translate 300ms ease,
+				box-shadow 300ms ease;
+
+			// Chip: gold plate with fine contact lines.
+			&::before {
+				grid-area: chip;
+				width: clamp(2.1rem, 16cqi, 2.8rem);
+				aspect-ratio: 1.3;
+				content: '';
+				border-radius: 5px;
+				background:
+					linear-gradient(
+						90deg,
+						transparent 0 31%,
+						rgb(var(--ds-ink-rgb) / 30%) 31% 33%,
+						transparent 33% 67%,
+						rgb(var(--ds-ink-rgb) / 30%) 67% 69%,
+						transparent 69%
+					),
+					linear-gradient(
+						0deg,
+						transparent 0 47%,
+						rgb(var(--ds-ink-rgb) / 30%) 47% 53%,
+						transparent 53%
+					),
+					linear-gradient(135deg, var(--ds-beige), var(--ds-accent) 55%, var(--ds-gold));
+				box-shadow: inset 0 0 0 1px rgb(var(--ds-ink-rgb) / 18%);
+			}
+
+			// Guilloché: concentric hairlines from the lower right corner.
+			&::after {
+				position: absolute;
+				inset: 0;
+				z-index: -1;
+				content: '';
+				border-radius: inherit;
+				background: repeating-radial-gradient(
+					circle at 108% 118%,
+					transparent 0 9px,
+					rgb(var(--ds-accent-rgb) / 9%) 9px 10px
+				);
+				pointer-events: none;
+			}
+
+			@media (hover: hover) {
+				&:hover {
+					translate: 0 -3px;
+					box-shadow:
+						0 1.5rem 2.8rem rgb(var(--ds-ink-rgb) / 28%),
+						inset 0 1px 0 rgb(var(--ds-white-rgb) / 8%);
+				}
+			}
+		}
+
+		.gift-card.is-visible .bank-details {
+			animation: dsCardSheen 1700ms 600ms cubic-bezier(0.45, 0, 0.2, 1) both;
+		}
+
+		.bank-details__item {
+			margin: 0;
+			color: var(--ds-white);
+			font-size: 0.9rem;
+		}
+
+		.bank-details__item strong {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
+		}
+
+		.bank-details > .bank-details__item:first-child {
+			grid-area: bank;
+			place-self: end end;
+			font-family: var(--font-label);
+			font-size: 0.8rem;
+			font-weight: 800;
+			letter-spacing: 0.24em;
+			text-transform: uppercase;
+		}
+
+		.bank-details > .bank-details__item:nth-child(2) {
+			grid-area: holder;
+			color: rgb(var(--ds-white-rgb) / 82%);
+			font-family: var(--font-label);
+			font-size: 0.6rem;
+			font-weight: 700;
+			line-height: 1.45;
+			letter-spacing: 0.16em;
+			text-transform: uppercase;
+		}
+
+		.bank-details__clabe-wrapper {
+			display: contents;
+		}
+
+		.bank-details__clabe-wrapper .bank-details__item {
+			grid-area: number;
+		}
+
+		.bank-details .clabe-number {
+			padding: 0;
+			border-radius: 0;
+			background: none;
+
+			// Embossed card numerals: OCR-A where installed, otherwise the platform monospace
+			// (SF Mono / Menlo / Consolas), in champagne with a raised edge.
+			color: color-mix(in srgb, var(--ds-white) 78%, var(--ds-accent));
+			font-family:
+				'OCR A Extended', 'OCR A Std', OCR-A, ui-monospace, 'SF Mono', menlo, consolas,
+				monospace;
+			font-size: clamp(0.9rem, 7cqi, 1.35rem);
+			font-weight: 500;
+			font-variant-numeric: tabular-nums;
+			word-spacing: 0.35em;
+			letter-spacing: 0.06em;
+			white-space: nowrap;
+			text-shadow:
+				0 1px 0 rgb(0 0 0 / 75%),
+				0 -1px 0 rgb(var(--ds-white-rgb) / 22%);
+		}
+
+		.bank-details .copy-icon-button {
+			grid-area: copy;
+			justify-self: end;
+			gap: 0.4rem;
+			min-height: 2.5rem;
+			padding: 0 0.9rem;
+			border: 1px solid rgb(var(--ds-accent-rgb) / 70%);
+			border-radius: 999px;
+			background: rgb(var(--ds-accent-rgb) / 8%);
+			color: var(--ds-accent);
+			opacity: 100%;
+			font-family: var(--font-label);
+			font-size: 0.6rem;
+			font-weight: 800;
+			letter-spacing: 0.18em;
+			text-transform: uppercase;
+			transition:
+				background-color 200ms ease,
+				color 200ms ease;
+
+			&::after {
+				content: 'Copiar';
+			}
+
+			&:hover {
+				background: rgb(var(--ds-accent-rgb) / 18%);
+				color: var(--ds-beige);
+				transform: none;
+			}
+
+			&:focus-visible {
+				outline: 2px solid var(--ds-accent);
+				outline-offset: 3px;
+			}
+		}
+
+		.bank-details .copy-icon-button.copy-success {
+			background: rgb(var(--ds-accent-rgb) / 22%);
+			color: var(--ds-beige);
+
+			&::after {
+				content: 'Copiado';
+			}
+		}
+
+		// Phones and two-column tablets: the card borrows the gift card's side padding so the
+		// number keeps one line. The card grows past its 1.586 ratio when the holder wraps.
+		@include mixins.respond-below(lg) {
+			.bank-details {
+				width: calc(100% + 2.5rem);
+				max-width: none;
+				margin-inline: -1.25rem;
+			}
+		}
+
+		// Very narrow cards (320 px phones): break the number between its groups, never inside.
+		@container (width < 15.5rem) {
+			.bank-details .clabe-number {
+				white-space: normal;
+				text-wrap: balance;
+			}
+
+			.bank-details .copy-icon-button {
+				padding-inline: 0.7rem;
+			}
+
+			.bank-details > .bank-details__item:nth-child(2) {
+				letter-spacing: 0.1em;
+			}
+		}
+
+		.gift-card__description,
+		.gift-card__store-label {
+			max-width: 24rem;
+			margin: 0;
+		}
+
+		.gift-card__table-number-wrapper {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			margin-top: 0.25rem;
+		}
+
+		.gift-card__table-number-label {
+			font-family: var(--font-label);
+			font-size: 0.65rem;
+			font-weight: 800;
+			letter-spacing: 0.1em;
+			text-transform: uppercase;
+			color: rgb(var(--ds-ink-rgb) / 65%);
+		}
+
+		.gift-card__number-pill {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.4rem;
+			background: rgb(var(--ds-ink-rgb) / 4%);
+			border: 1px solid rgb(var(--ds-ink-rgb) / 14%);
+			padding: 0.25rem 0.6rem;
+			border-radius: 100px;
+		}
+
+		.gift-card__table-number-code {
+			font-family: var(--font-mono, monospace);
+			font-size: 0.85rem;
+			font-weight: 700;
+			letter-spacing: 0.06em;
+			color: var(--ds-ink);
+		}
+
+		.gift-card__actions {
+			display: flex;
+			width: 100%;
+			margin-top: 0.5rem;
+		}
+
+		.gift-card__button {
+			width: 100%;
+			min-height: 2.85rem;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0.75rem 1.15rem;
+			border: 1px solid var(--ds-ink);
+			background: var(--ds-ink);
+			color: var(--ds-white);
+			font-family: var(--font-label);
+			font-size: 0.76rem;
+			font-weight: 800;
+			letter-spacing: 0.2em;
+			text-transform: uppercase;
+			text-decoration: none;
+			border-radius: 2px;
+			transition: all 0.25s ease;
+		}
+
+		.gift-card__button:hover,
+		.gift-card__button:focus-visible {
+			border-color: var(--ds-gold);
+			background: transparent;
+			color: var(--ds-ink);
+			outline: 2px solid rgb(var(--ds-gold-rgb) / 68%);
+			outline-offset: 3px;
+		}
+	}
+
+	@media (width <= 480px) {
+		.itinerary,
+		.event-location,
+		.gifts-section {
+			padding-inline: clamp(1rem, 5vw, 1.35rem);
+		}
+	}
+
+	.rsvp {
+		outline: 1px solid rgb(var(--ds-white-rgb) / 14%);
+		outline-offset: -1.25rem;
+		overflow: visible;
+		isolation: isolate;
+		border-color: rgb(var(--ds-white-rgb) / 28%);
+		background:
+			linear-gradient(90deg, rgb(var(--ds-white-rgb) / 5%) 0 1px, transparent 1px 100%),
+			radial-gradient(circle at 86% 12%, rgb(var(--ds-accent-rgb) / 16%), transparent 22rem),
+			var(--ds-ink);
+		background-size:
+			clamp(4rem, 14vw, 8rem) 100%,
+			auto,
+			auto;
+
+		&::before {
+			content: 'MIS XV / 13 · XI · 2026';
+			position: relative;
+			z-index: 1;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: calc(-1 * var(--ds-divider-soft-depth)) 0 auto;
+			z-index: -1;
+			height: var(--ds-divider-soft-depth);
+			background: linear-gradient(
+				180deg,
+				rgb(var(--ds-ink-rgb) / 0%) 0%,
+				rgb(var(--ds-ink-rgb) / 78%) 54%,
+				var(--ds-ink) 100%
+			);
+			clip-path: polygon(
+				0 62%,
+				30% 62%,
+				42% 18%,
+				58% 18%,
+				70% 62%,
+				100% 62%,
+				100% 100%,
+				0 100%
+			);
+			filter: drop-shadow(0 -0.25rem 0.85rem rgb(0 0 0 / 8%));
+			pointer-events: none;
+		}
+
+		.rsvp__header {
+			position: relative;
+			padding-bottom: clamp(1.1rem, 3vw, 1.7rem);
+			border-bottom: 1px solid rgb(var(--ds-white-rgb) / 18%);
+		}
+
+		.rsvp__access-kicker,
+		.rsvp__edition-label,
+		.rsvp__response-heading {
+			font-family: var(--font-label);
+			font-weight: 800;
+			letter-spacing: 0.18em;
+			text-transform: uppercase;
+		}
+
+		// One gold kicker over the title at every size. The component's "Confirmación de
+		// asistencia", "RSVP privado" and "Acceso privado · Edición XV" repeated the title and the
+		// card's own "Edición XV".
+		.rsvp__access-kicker,
+		.rsvp__separator,
+		.rsvp__edition-label {
+			display: none;
+		}
+
+		.rsvp__eyebrow {
+			font-size: 0;
+		}
+
+		.rsvp__eyebrow::before {
+			content: 'Acceso privado';
+			color: var(--ds-accent);
+			font-size: 0.68rem;
+			letter-spacing: 0.2em;
+		}
+
+		.rsvp__subcopy {
+			max-width: 38rem;
+			margin-inline: auto;
+			color: rgb(var(--ds-white-rgb) / 72%);
+		}
+
+		.rsvp__form {
+			display: grid;
+			gap: clamp(1.15rem, 3vw, 1.75rem);
+			margin-top: clamp(1.5rem, 4vw, 2.5rem);
+			background:
+				radial-gradient(
+					circle at 86% 12%,
+					rgb(var(--ds-accent-rgb) / 8%),
+					transparent 18rem
+				),
+				var(--ds-ink);
+		}
+
+		.rsvp__response-heading {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 1rem;
+			padding: 0.8rem 0;
+			border-block: 1px solid rgb(var(--ds-white-rgb) / 18%);
+			color: rgb(var(--ds-white-rgb) / 74%);
+			font-size: 0.68rem;
+		}
+
+		.rsvp__response-heading span:last-child {
+			color: var(--ds-accent);
+			white-space: nowrap;
+		}
+
+		.rsvp__legend {
+			color: var(--ds-white);
+			font-size: 0.76rem;
+		}
+
+		.rsvp__radio-group {
+			gap: 0.8rem;
+		}
+
+		.rsvp__radio-card {
+			min-height: 4.75rem;
+			padding: 1.1rem 1.2rem;
+			border-color: rgb(var(--ds-white-rgb) / 26%);
+			background:
+				linear-gradient(180deg, rgb(var(--ds-white-rgb) / 7%), transparent),
+				rgb(var(--ds-white-rgb) / 3%);
+			color: var(--ds-white);
+		}
+
+		.rsvp__radio-card:hover,
+		.rsvp__radio-card:focus-within {
+			border-color: rgb(var(--ds-accent-rgb) / 86%);
+			background: rgb(var(--ds-white-rgb) / 8%);
+			outline: 2px solid rgb(var(--ds-accent-rgb) / 42%);
+			outline-offset: 3px;
+		}
+
+		.rsvp__radio-card:has(input:checked) {
+			border-color: var(--ds-accent);
+			background: rgb(var(--ds-accent-rgb) / 14%);
+		}
+
+		.rsvp__radio-label {
+			color: var(--ds-white);
+			font-family: var(--font-label);
+			font-size: clamp(0.86rem, 2vw, 1rem);
+			font-weight: 800;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+		}
+
+		.rsvp__radio-indicator {
+			border-color: rgb(var(--ds-white-rgb) / 62%);
+		}
+
+		input[type='text'],
+		input[type='tel'],
+		input[type='number'],
+		textarea,
+		select {
+			min-height: 3rem;
+		}
+
+		.rsvp__button {
+			min-height: 3.35rem;
+			border-color: var(--ds-white);
+			background: var(--ds-white);
+			color: var(--ds-ink);
+			letter-spacing: 0.25em;
+			padding-block: 0.9rem;
+		}
+
+		.rsvp__button:hover:not(:disabled),
+		.rsvp__button:focus-visible {
+			border-color: var(--ds-accent);
+			background: transparent;
+			color: var(--ds-white);
+			outline: 2px solid rgb(var(--ds-accent-rgb) / 62%);
+			outline-offset: 3px;
+		}
+
+		.rsvp__whatsapp-cta,
+		.rsvp__secondary-button {
+			min-height: 3rem;
+		}
+
+		// Invitation-scoped: WhatsApp CTA is redundant because the invitation
+		// is already distributed through WhatsApp.
+		.rsvp__contact-host {
+			display: none;
+		}
+
+		// Cancelar text link — low-emphasis, matches dark editorial card
+		.rsvp__cancel-link {
+			color: rgb(var(--ds-white-rgb) / 48%);
+			font-size: 0.65rem;
+			text-decoration-color: rgb(var(--ds-white-rgb) / 20%);
+
+			&:hover,
+			&:focus-visible {
+				color: rgb(var(--ds-white-rgb) / 78%);
+			}
+		}
+
+		// Attendance summary row — compact inline card after selection
+		.rsvp__attendance-summary {
+			border: 1px solid rgb(var(--ds-white-rgb) / 22%);
+			border-radius: 0;
+			background: rgb(var(--ds-white-rgb) / 5%);
+		}
+
+		.rsvp__attendance-summary-label {
+			color: rgb(var(--ds-white-rgb) / 52%);
+			font-size: 0.62rem;
+		}
+
+		.rsvp__attendance-summary-value {
+			font-family: var(--font-label);
+			font-size: 0.72rem;
+			font-weight: 700;
+			letter-spacing: 0.12em;
+			color: var(--ds-white);
+		}
+
+		.rsvp__attendance-change {
+			border: 1px solid rgb(var(--ds-white-rgb) / 28%);
+			border-radius: 0;
+			color: rgb(var(--ds-white-rgb) / 68%);
+			font-size: 0.6rem;
+
+			&:hover,
+			&:focus-visible {
+				border-color: var(--ds-accent);
+				color: var(--ds-accent);
+			}
+
+			&:focus-visible {
+				outline: 2px solid rgb(var(--ds-accent-rgb) / 72%);
+				outline-offset: 3px;
+			}
+		}
+
+		.rsvp__field {
+			input,
+			textarea {
+				background-color: rgb(var(--ds-white-rgb) / 8%);
+				border-color: rgb(var(--ds-white-rgb) / 28%);
+			}
+
+			input::placeholder,
+			textarea::placeholder {
+				color: rgb(var(--ds-white-rgb) / 60%);
+			}
+
+			// Phone country-code prefix — visually distinct from the phone input.
+			// Reads as a muted label prefix rather than a user-entered value.
+			.rsvp__country-code {
+				border: none;
+				border-right: 1px solid rgb(var(--ds-white-rgb) / 15%);
+				border-radius: 0;
+				background-color: transparent;
+				color: rgb(var(--ds-white-rgb) / 48%);
+				font-size: 0.78rem;
+				letter-spacing: 0.03em;
+				width: auto;
+				min-width: 0;
+				padding: 0.75rem 0.65rem 0.75rem 0.25rem;
+			}
+
+			.rsvp__country-code:hover {
+				color: rgb(var(--ds-white-rgb) / 72%);
+			}
+
+			.rsvp__country-code:focus-visible {
+				color: var(--ds-white);
+				outline: 2px solid rgb(var(--ds-accent-rgb) / 72%);
+				outline-offset: 2px;
+			}
+
+			.rsvp__country-code option {
+				background: var(--ds-ink);
+				color: var(--ds-white);
+			}
+		}
+
+		@media (width <= 640px) {
+			// ── RSVP header compression ──
+			.rsvp__header {
+				padding-bottom: 0.65rem;
+			}
+
+			.rsvp__eyebrow::before {
+				font-size: 0.6rem;
+			}
+
+			.rsvp__title {
+				font-size: clamp(1.25rem, 5.5vw, 1.55rem);
+				margin: 0.2rem 0;
+			}
+
+			.rsvp__subcopy {
+				font-size: 0.75rem;
+				max-width: 24rem;
+				padding-inline: 1rem;
+			}
+
+			// ── End RSVP header compression ──
+
+			.rsvp__form {
+				gap: 0.85rem;
+			}
+
+			.rsvp__response-heading {
+				padding: 0.55rem 0;
+				font-size: 0.6rem;
+			}
+
+			// Reduce label visual weight on mobile — they were too dominant
+			.rsvp__legend {
+				font-size: 0.68rem;
+				letter-spacing: 0.14em;
+			}
+
+			label,
+			legend {
+				font-size: 0.62rem;
+				letter-spacing: 0.14em;
+			}
+
+			.rsvp__attendance-summary {
+				padding: 0.5rem 0.6rem;
+			}
+
+			.rsvp__attendance-summary-value {
+				font-size: 0.68rem;
+			}
+
+			.rsvp__attendance-change {
+				font-size: 0.58rem;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				min-height: 44px;
+				padding-block: 0.5rem;
+				line-height: 1;
+			}
+
+			.rsvp__radio-card {
+				min-height: 3.8rem;
+				padding: 0.85rem 1rem;
+			}
+
+			.rsvp__radio-group {
+				gap: 0.6rem;
+			}
+
+			input[type='text'],
+			input[type='tel'],
+			input[type='number'],
+			textarea,
+			select {
+				min-height: 2.6rem;
+			}
+
+			.rsvp__button {
+				min-height: 3rem;
+			}
+		}
+	}
+
+	// Back cover of the collector's edition: photograph and quote side by side (never over each
+	// other), gold signature, and a barcode colophon echoing the magazine cover.
+	.thank-you-section[data-variant='editorial-back-cover'] {
+		position: relative;
+		overflow-x: clip;
+		background:
+			radial-gradient(ellipse at 78% 20%, rgb(var(--ds-accent-rgb) / 10%), transparent 60%),
+			var(--ds-ink);
+
+		.thank-you-editorial {
+			position: relative;
+			max-width: 72rem;
+			row-gap: clamp(2.5rem, 7vw, 4rem);
+
+			@include mixins.respond-to(md) {
+				grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+				column-gap: clamp(3rem, 7vw, 7rem);
+			}
+
+			// Colophon strip across the page foot: barcode + edition line.
+			&::after {
+				grid-column: 1 / -1;
+				padding: 1.1rem 0 0 5.25rem;
+				content: 'Edición de colección · Cuautitlán Izcalli · MMXXVI';
+				border-top: 1px solid rgb(var(--ds-accent-rgb) / 30%);
+				color: rgb(var(--ds-white-rgb) / 58%);
+				font-family: var(--font-label);
+				font-size: 0.62rem;
+				font-weight: 700;
+				line-height: 1.6rem;
+				letter-spacing: 0.22em;
+				text-transform: uppercase;
+				background: linear-gradient(
+						90deg,
+						var(--ds-accent) 0 2px,
+						transparent 2px 4px,
+						var(--ds-accent) 4px 5px,
+						transparent 5px 8px,
+						var(--ds-accent) 8px 11px,
+						transparent 11px 12px,
+						var(--ds-accent) 12px 13px,
+						transparent 13px 16px,
+						var(--ds-accent) 16px 17px,
+						transparent 17px 18px,
+						var(--ds-accent) 18px 21px,
+						transparent 21px 24px,
+						var(--ds-accent) 24px 25px,
+						transparent 25px 27px,
+						var(--ds-accent) 27px 29px,
+						transparent 29px 31px,
+						var(--ds-accent) 31px 32px,
+						transparent 32px 35px,
+						var(--ds-accent) 35px 38px,
+						transparent 38px 39px,
+						var(--ds-accent) 39px 40px,
+						transparent 40px 43px,
+						var(--ds-accent) 43px 44px,
+						transparent 44px 46px,
+						var(--ds-accent) 46px 49px,
+						transparent 49px 50px,
+						var(--ds-accent) 50px 52px,
+						transparent 52px 55px,
+						var(--ds-accent) 55px 56px,
+						transparent 56px
+					)
+					0 calc(100% - 0.1rem) / 4.25rem 1.6rem no-repeat;
+			}
+		}
+
+		// The template's decorative layer must not take a grid cell.
+		.thank-you-editorial__ambient {
+			position: absolute;
+			inset: 0;
+			pointer-events: none;
+		}
+
+		.thank-you-editorial__media.photo-frame {
+			max-width: 30rem;
+			aspect-ratio: 4 / 5;
+			border: 0;
+			outline: 1px solid rgb(var(--ds-accent-rgb) / 55%);
+			outline-offset: 0.9rem;
+			clip-path: inset(-2rem);
+			transition: clip-path 1300ms cubic-bezier(0.65, 0, 0.35, 1);
+
+			.photo-image {
+				object-position: var(--thank-you-focal-point, center);
+			}
+		}
+
+		.thank-you-editorial__copy {
+			gap: 1.75rem;
+
+			&::before {
+				content: 'Hasta pronto';
+				color: var(--ds-accent);
+				font-family: var(--font-label);
+				font-size: 0.7rem;
+				font-weight: 800;
+				letter-spacing: 0.28em;
+				text-transform: uppercase;
+			}
+		}
+
+		.thank-you-message {
+			max-width: 30ch;
+			color: rgb(var(--ds-white-rgb) / 90%);
+			font-family: var(--font-display);
+			font-size: clamp(1.4rem, 3.2vw, 2.05rem);
+			font-style: italic;
+			line-height: 1.35;
+			letter-spacing: 0;
+			font-optical-sizing: auto;
+
+			.drop-cap {
+				color: var(--ds-accent);
+				font-style: normal;
+				font-size: 2.9em;
+				line-height: 0.82;
+			}
+		}
+
+		.signature-block {
+			margin-top: 0;
+		}
+
+		.closing-name {
+			color: var(--ds-accent);
+			clip-path: inset(-50% -10% -50% -10%);
+			transition: clip-path 1500ms cubic-bezier(0.45, 0, 0.2, 1) 450ms;
+		}
+
+		.closing-date {
+			width: fit-content;
+			margin-top: 0.9rem;
+			padding-top: 0.9rem;
+			border-top: 1px solid rgb(var(--ds-accent-rgb) / 40%);
+			color: rgb(var(--ds-white-rgb) / 70%);
+		}
+
+		// Phones: the photograph runs edge to edge above the quote.
+		@include mixins.respond-below(md) {
+			.thank-you-editorial__media.photo-frame {
+				width: 100vw;
+				max-width: none;
+				margin-inline: calc(50% - 50vw);
+				outline: 0;
+			}
+
+			.thank-you-editorial::after {
+				font-size: 0.56rem;
+				letter-spacing: 0.16em;
+			}
+		}
+	}
+
+	// Colophon: gold monogram, a rule, the edition line, then the service row set quietly.
+	.invitation-footer {
+		padding: clamp(3rem, 8vw, 4.5rem) 1rem calc(2rem + env(safe-area-inset-bottom, 0px));
+		border-top: 1px solid rgb(var(--ds-accent-rgb) / 22%);
+		background: linear-gradient(180deg, var(--ds-ink), rgb(var(--ds-ink-rgb) / 96%));
+		box-shadow: none;
+		backdrop-filter: none;
+		text-align: center;
+
+		&::before {
+			display: block;
+			content: 'D·S';
+			color: var(--ds-accent);
+			font-family: var(--font-display);
+			font-size: clamp(2.6rem, 8vw, 3.4rem);
+			font-weight: 500;
+			line-height: 1;
+			letter-spacing: 0.04em;
+			font-optical-sizing: auto;
+		}
+
+		.footer__divider {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 0.9rem;
+			width: auto;
+			height: auto;
+			margin: 1.1rem 0 2rem;
+			background: none;
+
+			&::before {
+				width: 3rem;
+				height: 1px;
+				content: '';
+				background: var(--ds-accent);
+			}
+
+			&::after {
+				content: 'Mis XV';
+				color: rgb(var(--ds-white-rgb) / 72%);
+				font-family: var(--font-label);
+				font-size: 0.66rem;
+				font-weight: 700;
+				letter-spacing: 0.28em;
+				text-transform: uppercase;
+			}
+		}
+
+		.footer__content {
+			flex-direction: column;
+			gap: 1.1rem;
+			max-width: 40rem;
+			padding-top: 1.75rem;
+			border-top: 1px solid rgb(var(--ds-white-rgb) / 10%);
+		}
+
+		.footer__primary-row {
+			gap: 1rem 2rem;
+			opacity: 82%;
+		}
+
+		.footer__info .powered-by {
+			color: rgb(var(--ds-white-rgb) / 60%);
+			font-size: 0.6rem;
+		}
+
+		// The dark script logo disappears on the ink footer; render it as a light beige mark.
+		.footer-brand-logo.logo {
+			width: 7.25rem;
+			filter: invert(1) sepia(0.35) brightness(0.95);
+		}
+
+		.whatsapp-button {
+			padding: 0.55rem 1.3rem;
+			font-size: 0.62rem;
+		}
+
+		.footer__replay-link {
+			gap: 0.55rem;
+			color: rgb(var(--ds-white-rgb) / 80%);
+			text-decoration: underline;
+			text-decoration-color: transparent;
+			text-underline-offset: 0.35em;
+			transition:
+				color 200ms ease,
+				text-decoration-color 200ms ease;
+
+			&::before {
+				content: '↺' / '';
+				color: var(--ds-accent);
+				font-size: 1.1rem;
+				letter-spacing: 0;
+			}
+
+			&:hover,
+			&:focus-visible {
+				color: var(--ds-white);
+				text-decoration-color: var(--ds-accent);
+				transform: none;
+			}
+		}
+	}
+
+	.quote-section {
+		// The opening phrase is long; a reading size keeps it from becoming a nine-line headline.
+		--quote-content-size: clamp(1.45rem, 5.4vw, 2.6rem);
+		--quote-content-line-height: 1.22;
+
+		&::before {
+			display: none;
+		}
+
+		.quote-line {
+			margin: 0 auto;
+
+			&::before {
+				display: block;
+				width: 4rem;
+				height: 1px;
+				margin: 1rem 0 1.5rem;
+				content: '';
+				background: var(--editorial-magazine-red);
+			}
+		}
+
+		.quote-divider-top,
+		.quote-divider-bottom {
+			position: relative;
+			left: auto;
+			right: auto;
+			display: block;
+			margin: 0 auto;
+			letter-spacing: 0.22em;
+			color: rgb(var(--ds-white-rgb) / 28%);
+		}
+	}
+
+	.invitation-interlude {
+		--interlude-focal-point-desktop: 50% 52%;
+	}
+}
+
+// The hand-off flies a copy of that photograph appended to <body>, outside the invitation's
+// scope; it takes the same grade (value mirrors --ds-hero-grade).
+body:has(.event--destenid-sofia) > img[aria-hidden='true'] {
+	filter: saturate(0.84) sepia(0.07) contrast(1.05) brightness(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.event--destenid-sofia.theme-preset--editorial-magazine {
+		.gifts-section .bank-details {
+			animation: none;
+			transition: none;
+		}
+
+		.music-player__button--play::before {
+			animation: none;
+		}
+
+		.invitation-hero__background picture,
+		.invitation-hero__portrait img,
+		.invitation-hero__content::after {
+			animation: none;
+		}
+
+		&[data-reveal-state='revealed'] .invitation-hero[data-variant='editorial-cover'] {
+			.invitation-hero__background img,
+			.invitation-hero__portrait img,
+			.invitation-hero__background::after,
+			.invitation-hero__portrait::after,
+			.invitation-hero__first-name,
+			.invitation-hero__last-name,
+			.invitation-hero__deck,
+			.invitation-hero__details {
+				opacity: 100%;
+				animation: none;
+			}
+		}
+
+		.gallery-section {
+			.gallery-grid__item[data-gallery-index='0']::after {
+				animation: none;
+				opacity: 60%;
+				transform: translateY(-50%);
+			}
+		}
+
+		.rsvp,
+		.event-location,
+		.gifts-section {
+			*,
+			*::before,
+			*::after {
+				transition-duration: 0.01ms;
+				animation-duration: 0.01ms;
+				animation-iteration-count: 1;
+			}
+		}
+	}
+}
+
+// dsGalleryArrowPulse is globally emitted; this file loads only for the destenid-sofia
+// visualProfileId, and the prefixed name avoids clashing with other profiles.
+// ~0.5 KB overhead across all pages; acceptable for this exclusive scope.
+@keyframes dsGalleryArrowPulse {
+	0%,
+	100% {
+		opacity: 30%;
+		transform: translateY(-50%) translateX(-2px);
+	}
+
+	50% {
+		opacity: 80%;
+		transform: translateY(-50%) translateX(4px);
+	}
+}
+
+@keyframes dsHeroParallax {
+	from {
+		translate: 0 0;
+	}
+
+	to {
+		translate: 0 22svh;
+	}
+}
+
+@keyframes dsHeroScrollCue {
+	0% {
+		opacity: 0%;
+		transform: scaleY(0);
+	}
+
+	35% {
+		opacity: 100%;
+		transform: scaleY(1);
+	}
+
+	75%,
+	100% {
+		opacity: 0%;
+		transform: scaleY(1) translateY(0.6rem);
+	}
+}
+
+@keyframes dsCardSheen {
+	from {
+		background-position:
+			-150% 0,
+			0 0;
+	}
+
+	to {
+		background-position:
+			250% 0,
+			0 0;
+	}
+}
+
+@keyframes dsHeroPushIn {
+	from {
+		scale: 1;
+	}
+
+	to {
+		scale: 1.07;
+	}
+}
+
+@keyframes dsHeroLightSweep {
+	from {
+		background-position:
+			-60% 0,
+			0 0;
+	}
+
+	to {
+		background-position:
+			160% 0,
+			0 0;
+	}
+}
+
+@keyframes dsHeroNameRise {
+	from {
+		clip-path: inset(0 0 100% 0);
+		letter-spacing: 0.09em;
+		translate: 0 0.28em;
+	}
+
+	to {
+		clip-path: inset(-20% -5% -20% -5%);
+		letter-spacing: 0.01em;
+		translate: 0 0;
+	}
+}
+
+@keyframes dsHeroSign {
+	from {
+		clip-path: inset(-50% 100% -50% -12%);
+	}
+
+	to {
+		clip-path: inset(-50% -12% -50% -12%);
+	}
+}
+
+@keyframes dsHeroFadeUp {
+	from {
+		opacity: 0%;
+		translate: 0 0.8rem;
+	}
+
+	to {
+		opacity: 100%;
+		translate: 0 0;
+	}
+}
+
+@keyframes dsRecordSpin {
+	to {
+		rotate: 1turn;
+	}
+}

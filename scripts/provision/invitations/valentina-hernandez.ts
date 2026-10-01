@@ -197,6 +197,7 @@ export function buildValentinaPublishedContent(
 			variant: 'editorial-cover',
 			focalPoint: '50% 38%',
 			focalPointMobile: '50% 32%',
+			tagline: 'Una noche entre moda, memoria y celebración.',
 		},
 		quote: {
 			text: 'Dicen que la moda es temporal, pero los recuerdos son eternos. Acompáñame a escribir el primer capítulo de mi nueva historia...',
@@ -332,7 +333,8 @@ export function buildValentinaPublishedContent(
 			],
 		},
 		gifts: {
-			title: 'Regalos',
+			title: 'Mesa de cortesía',
+			folioMark: 'VH',
 			subtitle:
 				'Su presencia es mi mejor regalo, pero si desean tener un detalle conmigo, les comparto estas opciones.',
 			variant: 'editorial-catalog',

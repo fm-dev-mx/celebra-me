@@ -7,6 +7,7 @@ export function initGitRepo(repoRoot: string, userName: string, userEmail: strin
 	runCommand('git', ['config', 'user.name', userName], { cwd: repoRoot, env: sanitizeEnv() });
 	runCommand('git', ['config', 'user.email', userEmail], { cwd: repoRoot, env: sanitizeEnv() });
 	runCommand('git', ['config', 'commit.gpgsign', 'false'], { cwd: repoRoot, env: sanitizeEnv() });
+	runCommand('git', ['config', 'core.autocrlf', 'false'], { cwd: repoRoot, env: sanitizeEnv() });
 }
 
 export function cleanupFixture(repoRoot: string) {

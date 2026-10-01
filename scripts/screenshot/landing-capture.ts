@@ -40,23 +40,8 @@ const LANDING_FULLPAGE_SECTIONS: ReadonlyArray<{
 		keepHeader: false,
 	},
 	{
-		id: 'services',
-		selector: '[data-screenshot="landing-includes"], #servicios',
-		keepHeader: false,
-	},
-	{
-		id: 'interlude',
-		selector: '[data-screenshot="landing-interlude"], .photo-interlude',
-		keepHeader: false,
-	},
-	{
 		id: 'guest-experience',
 		selector: '[data-screenshot="landing-guest-experience"], #experiencia-invitados',
-		keepHeader: false,
-	},
-	{
-		id: 'how-it-works',
-		selector: '[data-screenshot="landing-process"], #como-funciona',
 		keepHeader: false,
 	},
 	{
@@ -67,6 +52,11 @@ const LANDING_FULLPAGE_SECTIONS: ReadonlyArray<{
 	{
 		id: 'pricing',
 		selector: '[data-screenshot="landing-pricing"], #pricing',
+		keepHeader: false,
+	},
+	{
+		id: 'how-it-works',
+		selector: '[data-screenshot="landing-process"], #como-funciona',
 		keepHeader: false,
 	},
 	{

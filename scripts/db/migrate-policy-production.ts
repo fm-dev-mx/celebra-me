@@ -51,13 +51,8 @@ import { extractSupabaseProjectRef } from './db-target-config.ts';
 import { matchProductionWritePermit } from './production-write-permit.ts';
 import { assertCleanGitWorktree, readGitWorktreeState } from './release-check.ts';
 import { loadMigrationRolloutRegistry } from './migration-deployment-compatibility.ts';
-import {
-	isRemoteEvidenceUnavailable,
-	loadLatestProductionDeployment,
-	loadRemoteChecks,
-	requireReleaseChecks,
-} from '../ops/release-readiness.ts';
-import { readDeployedApplicationAttestation } from './deployed-app-attestation.ts';
+import { loadRemoteChecks, requireReleaseChecks } from '../ops/release-readiness.ts';
+import { resolveContractDeploymentEvidence } from './contract-deployment-evidence.ts';
 
 export const PRODUCTION_MIGRATION_OPERATION_TYPE = 'production_migration';
 
@@ -243,41 +238,6 @@ function validatePendingVersions(
 		} else {
 			writeHuman(`${operatorSymbol('info')} Pendientes: ${pendingVersions.join(', ')}`);
 		}
-	}
-}
-
-function resolveContractDeploymentEvidence(input: {
-	candidateVersions: readonly string[];
-	registry: ReturnType<typeof loadMigrationRolloutRegistry>;
-	targetReleaseSha: string;
-	mode: 'preflight' | 'apply';
-}): {
-	deployedAppIdentity: { sha: string; capabilities: string[] } | null;
-	remoteEvidenceUnavailable: string | null;
-} {
-	const requiresContractEvidence = input.candidateVersions.some(
-		(version) => input.registry.migrations[version]?.phase === 'contract',
-	);
-	if (!requiresContractEvidence) {
-		return { deployedAppIdentity: null, remoteEvidenceUnavailable: null };
-	}
-	try {
-		const deployment = loadLatestProductionDeployment();
-		return {
-			deployedAppIdentity: readDeployedApplicationAttestation({
-				deployedSha: deployment.sha,
-				targetReleaseSha: input.targetReleaseSha,
-				checks: loadRemoteChecks(deployment.sha),
-			}),
-			remoteEvidenceUnavailable: null,
-		};
-	} catch (error: unknown) {
-		if (input.mode === 'apply' || !isRemoteEvidenceUnavailable(error)) throw error;
-		const message = error instanceof Error ? error.message : String(error);
-		return {
-			deployedAppIdentity: null,
-			remoteEvidenceUnavailable: `UNVERIFIED: Production deployment evidence unavailable (${message}).`,
-		};
 	}
 }
 

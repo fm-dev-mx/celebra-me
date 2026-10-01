@@ -5,7 +5,8 @@
     "workers_dev": true,
     "preview_urls": false,
     "vars": {
-        "MEMORIES_STORAGE_TARGET": "production"
+        "MEMORIES_STORAGE_TARGET": "production",
+        "MEMORIES_ALLOWED_ORIGINS": "https://www.celebra-me.com"
     },
     "observability": {
         "enabled": true,
@@ -63,7 +64,8 @@
                 ]
             },
             "vars": {
-                "MEMORIES_STORAGE_TARGET": "local"
+                "MEMORIES_STORAGE_TARGET": "local",
+                "MEMORIES_ALLOWED_ORIGINS": "http://localhost:4321,http://127.0.0.1:4321"
             },
             "ratelimits": [
                 {
@@ -96,7 +98,8 @@
                 ]
             },
             "vars": {
-                "MEMORIES_STORAGE_TARGET": "staging"
+                "MEMORIES_STORAGE_TARGET": "staging",
+                "MEMORIES_ALLOWED_ORIGINS": "https://celebra-me.vercel.app"
             },
             "ratelimits": [
                 {

@@ -96,6 +96,15 @@ describe('Valentina Hernández managed definition', () => {
 		expect(parsed.visualProfileId).toBe('valentina-hernandez');
 	});
 
+	it('sets editorial-cover and editorial-catalog copy explicitly', () => {
+		const parsed = eventContentSchema.parse(buildValentinaPublishedContent(buildTestAssets()));
+		expect(parsed.hero.tagline).toBe('Una noche entre moda, memoria y celebración.');
+		// Real invitation: no fictional photographer credit.
+		expect(parsed.hero.photoCredit).toBeUndefined();
+		expect(parsed.gifts?.title).toBe('Mesa de cortesía');
+		expect(parsed.gifts?.folioMark).toBe('VH');
+	});
+
 	it('does not expose placeholder or admin copy', () => {
 		const content = buildValentinaPublishedContent(buildTestAssets());
 		expect(collectPlaceholderStrings(content)).toEqual([]);

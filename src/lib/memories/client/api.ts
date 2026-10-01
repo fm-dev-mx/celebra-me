@@ -1,0 +1,279 @@
+/**
+ * Browser-side API client for event memories. Guests use same-origin fetch;
+ * organizer and admin surfaces go through the dashboard client so every
+ * mutation carries the CSRF token.
+ */
+
+import { dashboardApi, type ApiResult } from '@/lib/dashboard/api-client';
+import type {
+	MemoriesGuestProfile,
+	MemoriesGuestQuota,
+	MemoriesMediaPublicItem,
+	MemoriesOrganizerListResponse,
+	MemoriesSpaceRecord,
+	MemoriesSpaceSummary,
+} from '@/lib/memories/contract/catalog';
+import {
+	MEMORIES_ADMIN_API_PATH,
+	buildMemoriesGuestApiPath,
+	buildMemoriesOrganizerApiPath,
+} from '@/lib/memories/contract/private-request';
+
+export class MemoriesRequestError extends Error {
+	readonly status: number | null;
+	readonly code: string | undefined;
+
+	constructor(status: number | null, code?: string) {
+		super('memories_request_failed');
+		this.name = 'MemoriesRequestError';
+		this.status = status;
+		this.code = code;
+	}
+}
+
+function readErrorCode(payload: unknown): string | undefined {
+	if (typeof payload !== 'object' || payload === null) return undefined;
+	const error = (payload as { error?: { code?: unknown } }).error;
+	return typeof error?.code === 'string' ? error.code : undefined;
+}
+
+async function guestRequest<T>(url: string, init?: RequestInit): Promise<T> {
+	let response: Response;
+	try {
+		response = await fetch(url, {
+			...init,
+			headers: {
+				Accept: 'application/json',
+				...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+				...init?.headers,
+			},
+		});
+	} catch {
+		throw new MemoriesRequestError(null);
+	}
+	const payload = (await response.json().catch(() => null)) as T | null;
+	if (!response.ok || payload === null) {
+		throw new MemoriesRequestError(response.status, readErrorCode(payload));
+	}
+	return payload;
+}
+
+function unwrap<T>(result: ApiResult<T>): T {
+	if (!result.ok) throw new MemoriesRequestError(result.status, result.code);
+	return result.data;
+}
+
+// Guest -------------------------------------------------------------------------
+
+export type MemoriesReservation = {
+	item: MemoriesMediaPublicItem;
+	/** Null when a replayed request already uploaded its bytes: go straight to `complete`. */
+	upload: {
+		uploadUrl: string;
+		requiredHeaders: Record<string, string>;
+		expiresAt: string;
+	} | null;
+};
+
+export function createMemoriesGuestApi(publicSlug: string) {
+	const base = buildMemoriesGuestApiPath(publicSlug);
+	const sessionUrl = `${base}/session`;
+	const itemsUrl = `${base}/items`;
+	const itemUrl = (itemId: string) => `${itemsUrl}/${encodeURIComponent(itemId)}`;
+
+	return {
+		itemsUrl,
+		itemMediaUrl: itemUrl,
+		async getSession(): Promise<MemoriesGuestProfile | null> {
+			const payload = await guestRequest<{ profile: MemoriesGuestProfile | null }>(
+				sessionUrl,
+			);
+			return payload.profile;
+		},
+		async createSession(displayName: string): Promise<{
+			profile: MemoriesGuestProfile;
+			recoveryCode: string | null;
+		}> {
+			const payload = await guestRequest<{
+				profile: MemoriesGuestProfile;
+				recoveryCode?: string;
+			}>(sessionUrl, {
+				method: 'POST',
+				body: JSON.stringify({ action: 'create', displayName }),
+			});
+			return { profile: payload.profile, recoveryCode: payload.recoveryCode ?? null };
+		},
+		async recoverSession(recoveryCode: string): Promise<MemoriesGuestProfile> {
+			const payload = await guestRequest<{ profile: MemoriesGuestProfile }>(sessionUrl, {
+				method: 'POST',
+				body: JSON.stringify({ action: 'recover', recoveryCode }),
+			});
+			return payload.profile;
+		},
+		async updateProfile(displayName: string): Promise<MemoriesGuestProfile> {
+			const payload = await guestRequest<{ profile: MemoriesGuestProfile }>(sessionUrl, {
+				method: 'PATCH',
+				body: JSON.stringify({ displayName }),
+			});
+			return payload.profile;
+		},
+		listItems(): Promise<{ items: MemoriesMediaPublicItem[]; quota: MemoriesGuestQuota }> {
+			return guestRequest(itemsUrl);
+		},
+		reserve(input: {
+			mimeType: string;
+			sizeBytes: number;
+			checksumSha256: string;
+			durationSeconds: number | undefined;
+			clientRequestId: string;
+		}): Promise<MemoriesReservation> {
+			return guestRequest(itemsUrl, {
+				method: 'POST',
+				body: JSON.stringify({ action: 'reserve', ...input }),
+			});
+		},
+		complete(itemId: string): Promise<{ item: MemoriesMediaPublicItem }> {
+			return guestRequest(itemUrl(itemId), {
+				method: 'POST',
+				body: JSON.stringify({ action: 'complete' }),
+			});
+		},
+		updateCaption(itemId: string, caption: string): Promise<{ item: MemoriesMediaPublicItem }> {
+			return guestRequest(itemUrl(itemId), {
+				method: 'PATCH',
+				body: JSON.stringify({ caption }),
+			});
+		},
+		deleteItem(itemId: string): Promise<{ success: boolean }> {
+			return guestRequest(itemUrl(itemId), { method: 'DELETE' });
+		},
+	};
+}
+
+export type MemoriesGuestApi = ReturnType<typeof createMemoriesGuestApi>;
+
+// Organizer ---------------------------------------------------------------------
+
+export type OrganizerSpaceItem = MemoriesSpaceSummary & { eventId: string };
+
+export type OrganizerCatalogFilters = {
+	status: string;
+	uploader: string;
+	createdFrom: string;
+	createdTo: string;
+};
+
+export function buildOrganizerCatalogUrl(
+	eventId: string,
+	page: number,
+	filters: Partial<OrganizerCatalogFilters>,
+): string {
+	const params = new URLSearchParams({ page: String(page) });
+	if (filters.status && filters.status !== 'all') params.set('status', filters.status);
+	const uploader = (filters.uploader ?? '').replace(/\s+/g, ' ').trim();
+	if (uploader) params.set('uploader', uploader);
+	if (filters.createdFrom) params.set('createdFrom', filters.createdFrom);
+	if (filters.createdTo) params.set('createdTo', filters.createdTo);
+	return `${buildMemoriesOrganizerApiPath(eventId)}?${params.toString()}`;
+}
+
+export const memoriesOrganizerApi = {
+	async listItems(
+		eventId: string,
+		page: number,
+		filters: Partial<OrganizerCatalogFilters>,
+		signal?: AbortSignal,
+	): Promise<MemoriesOrganizerListResponse & { space: MemoriesSpaceSummary }> {
+		return unwrap(
+			await dashboardApi.get<MemoriesOrganizerListResponse & { space: MemoriesSpaceSummary }>(
+				buildOrganizerCatalogUrl(eventId, page, filters),
+				{ signal },
+			),
+		);
+	},
+	itemMediaUrl(eventId: string, itemId: string, mode?: 'preview'): string {
+		const base = `${buildMemoriesOrganizerApiPath(eventId)}/items/${encodeURIComponent(itemId)}`;
+		return mode ? `${base}?mode=${mode}` : base;
+	},
+	async updateItem(
+		eventId: string,
+		itemId: string,
+		body: { caption?: string; status?: string },
+	): Promise<MemoriesMediaPublicItem> {
+		const payload = unwrap(
+			await dashboardApi.patch<{ item: MemoriesMediaPublicItem }>(
+				`${buildMemoriesOrganizerApiPath(eventId)}/items/${encodeURIComponent(itemId)}`,
+				body,
+			),
+		);
+		return payload.item;
+	},
+	async deleteItem(eventId: string, itemId: string): Promise<void> {
+		unwrap(
+			await dashboardApi.delete<{ success: boolean }>(
+				`${buildMemoriesOrganizerApiPath(eventId)}/items/${encodeURIComponent(itemId)}`,
+			),
+		);
+	},
+	async revokeUploader(eventId: string, guestAlias: string): Promise<void> {
+		unwrap(
+			await dashboardApi.post<{ success: boolean }>(buildMemoriesOrganizerApiPath(eventId), {
+				action: 'revoke_session',
+				guestAlias,
+			}),
+		);
+	},
+	async fetchItemBlob(eventId: string, itemId: string): Promise<Blob> {
+		const response = await fetch(memoriesOrganizerApi.itemMediaUrl(eventId, itemId));
+		if (!response.ok) throw new MemoriesRequestError(response.status);
+		return response.blob();
+	},
+};
+
+// Admin ---------------------------------------------------------------------------
+
+export type AdminSpaceCandidate = {
+	eventId: string;
+	eventSlug: string;
+	eventTitle: string;
+	defaults: {
+		publicSlug: string;
+		timeZone: string;
+		uploadStartsLocal: string;
+		uploadEndsLocal: string;
+		retentionEndsLocal: string;
+		limits: {
+			maxEventObjects: number;
+			maxEventBytes: number;
+			maxSessionFiles: number;
+			maxSessionVideos: number;
+			maxSessionBytes: number;
+		};
+	};
+};
+
+export const memoriesAdminApi = {
+	async list(): Promise<{ items: MemoriesSpaceRecord[]; candidates: AdminSpaceCandidate[] }> {
+		return unwrap(
+			await dashboardApi.get<{
+				items: MemoriesSpaceRecord[];
+				candidates: AdminSpaceCandidate[];
+			}>(MEMORIES_ADMIN_API_PATH),
+		);
+	},
+	async create(body: Record<string, unknown>): Promise<MemoriesSpaceRecord> {
+		const payload = unwrap(
+			await dashboardApi.post<{ item: MemoriesSpaceRecord }>(MEMORIES_ADMIN_API_PATH, body),
+		);
+		return payload.item;
+	},
+	async update(eventId: string, body: Record<string, unknown>): Promise<MemoriesSpaceRecord> {
+		const payload = unwrap(
+			await dashboardApi.patch<{ item: MemoriesSpaceRecord }>(
+				`${MEMORIES_ADMIN_API_PATH}/${encodeURIComponent(eventId)}`,
+				body,
+			),
+		);
+		return payload.item;
+	},
+};

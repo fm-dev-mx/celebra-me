@@ -199,6 +199,7 @@ export const giftsSchema = z
 		variant: z.enum(GIFTS_VARIANTS).optional(),
 		title: optionalText(200),
 		subtitle: optionalText(500),
+		folioMark: optionalText(12),
 		presentation: z.enum(GIFTS_PRESENTATIONS).optional(),
 		items: z.array(giftItemSchema).optional(),
 	})
@@ -296,6 +297,7 @@ export const envelopeSchema = z
 		coverEdition: z.string().trim().max(80).optional(),
 		coverVolume: z.string().trim().max(40).optional(),
 		coverIssue: z.string().trim().max(40).optional(),
+		coverExperience: z.enum(['standard', 'collector']).optional(),
 		closedPalette: z
 			.object({
 				primary: ColorTokenSchema.optional(),

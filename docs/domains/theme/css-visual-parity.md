@@ -1,9 +1,8 @@
 # CSS Visual Parity Gate
 
-**Status:** The accepted reference is `b68f378b75c7004922cb32ae54b26fe5f348b21d`, approved with the
-public pinned CI runtime and the corrected Ximena mobile hero. The remaining captures passed the
-existing pixel comparison. Exact approval identity is recorded in the accepted manifest. Acceptance
-does not replace comparison or final CI. **Related:**
+**Status:** The accepted reference SHA, matrix hash and candidate-manifest hash are recorded in
+`tests/e2e/visual-baselines/manifest.json`; that manifest is the only source of approval identity.
+Acceptance does not replace comparison or final CI. **Related:**
 [`architecture.md`](architecture.md#invitation-css-ownership-normative)
 
 ## Rule
@@ -26,15 +25,17 @@ operations:
 ```bash
 pnpm visual:parity:candidate
 pnpm visual:parity:compare
-pnpm visual:parity:accept -- --reference-sha=<approved-commit-sha> --matrix-hash=<candidate-matrix-hash> --candidate-manifest-sha256=<candidate-manifest-hash>
+pnpm visual:parity:accept [-- --reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>]
 ```
 
 `candidate` writes ignored files under `.tmp/visual-parity/candidate/`. `compare` never updates
-accepted files and fails when the accepted manifest is missing or a case differs. `accept` is a
-human-only operation and is rejected in CI. Accepted PNGs live under `tests/e2e/visual-baselines/`
-and use Git LFS. The manifest records the reference commit, runtime, viewport, case identity, and
-hashes. Baselines may not contain database payloads, guest personalization, cookies, credentials,
-signed URLs, or external requests.
+accepted files and fails when the accepted manifest is missing or a case differs; it runs with
+`updateSnapshots: 'none'`, so a missing reference is never written. `accept` is a human-only
+operation and is rejected in CI. It requires a clean HEAD equal to the candidate reference SHA and
+verifies the candidate manifest hash and integrity; optional hash flags are checked when given.
+Accepted PNGs live under `tests/e2e/visual-baselines/` and use Git LFS. The manifest records the
+reference commit, runtime, viewport, case identity, and hashes. Baselines may not contain database
+payloads, guest personalization, cookies, credentials, signed URLs, or external requests.
 
 Only the browser validation job downloads Git LFS references, through its checkout step. Other
 validation jobs keep LFS pointers and must not download image objects. Do not add a second
@@ -63,26 +64,32 @@ changing pages still fail. It does not retry a failed comparison, widen pixel to
 accepted images. This prevents a single transitional frame from becoming candidate evidence.
 
 Complete-page tests allow sixty seconds for navigation, deferred media, PNG encoding and audits on
-shared CI runners; the stabilization loop retains its separate bounded timeout. Each
-manifest-producing suite runs serially without retries. A failed capture stops that suite;
-continuing it in a replacement worker would discard the earlier in-memory manifest entries. CI
-retains actual/diff PNGs and diagnostic JSON on failure for three days, without traces or credential
-artifacts. A stabilization timeout preserves the last two available frames and their capture times;
-it does not take replacement screenshots after the failure.
+shared CI runners; the stabilization loop retains its separate bounded timeout. Each capture writes
+its own record under `<output root>/records/`; the Playwright global teardown rebuilds
+`manifest.json` and `pages-manifest.json` from the records of the current run, asserts complete
+coverage, PNG geometry and a single runtime fingerprint, and fails the run on any missing capture or
+pixel difference. Global setup resets the records directory, so earlier runs never fill coverage
+gaps. Capture suites run serially without retries by default; `VISUAL_PARITY_PARALLEL=1` selects
+parallel capture only for the paired trials required by the release process. CI retains actual/diff
+PNGs and diagnostic JSON on failure for three days, without traces or credential artifacts. A
+stabilization timeout preserves the last two available frames and their capture times; it does not
+take replacement screenshots after the failure.
 
 GitHub CI runs static/build, unit, browser, and disposable database checks independently. The
 required `Application Suite` status succeeds only when every application tier succeeds; cancelled,
 failed, or skipped tiers cannot authorize release. New runs cancel superseded runs for the same
 branch or pull request. Browser CI uses two workers across files and stops after five failed tests,
 remaining failed overall. Each capture suite remains sequential so its manifest stays complete.
-Pixel mismatches are recorded per capture and fail the aggregate comparison after the full matrix.
-Capture-case success means capture completion, not parity acceptance. Reports retain FAIL entries
-and a FAILED manifest when any pixel comparison differs. Navigation, missing/corrupt baselines, and
-capture integrity errors remain immediate failures.
+Pixel and size mismatches are recorded per capture and fail the aggregate comparison after the full
+matrix. A capture byte-identical to its accepted reference passes without decoding; this is stricter
+than the pixel comparison and does not change its tolerance. Capture-case success means capture
+completion, not parity acceptance. Reports retain FAIL entries and a FAILED manifest when any pixel
+comparison differs. Navigation, missing/corrupt baselines, and capture integrity errors remain
+immediate failures.
 
-Visual suites do not retry individual captures: worker restarts lose the accumulated complete-matrix
-manifest and can hide the first failure behind incomplete-capture errors. An explicitly reviewed
-whole-suite rerun remains possible without updating references or changing tolerances.
+Visual suites do not retry individual captures: a retry could replace the first failing evidence. An
+explicitly reviewed whole-suite rerun remains possible without updating references or changing
+tolerances.
 
 Browser CI checks the accepted runtime and registry-derived route availability before starting
 capture workers. `PLAYWRIGHT_USE_CANONICAL_FIXTURES=true` starts a loopback-only, read-only
@@ -98,6 +105,15 @@ explicit acceptance of its new runtime fingerprint before CI can certify it. Do 
 Production, inject personal Local credentials, or downgrade comparison to diagnostic mode to obtain
 a green status. The accepted image must be available to the runner; a local image ID alone is not a
 portable CI setup. Passing local comparison does not establish hosted CI readiness.
+
+Candidate generation seeds the candidate root with copies of the accepted references for every case
+of the current matrix when the rendering runtime (versions, browser, OS image and fonts) is
+unchanged, then runs Playwright with `--update-snapshots=changed`. A fresh capture that passes the
+unchanged comparison keeps the accepted bytes; only failing and new captures are rewritten. Each
+record keeps `observedSha256` for the bytes actually rendered. `changes.html` lists only gate
+failures (with accepted, candidate and diff images) and new captures, and counts gate-passing byte
+changes separately. Review data is written to `review.json`; diff images live in the sibling
+`candidate-diffs/` directory. A runtime change starts from an empty candidate root.
 
 For regenerated candidates, the per-suite `manifest.json` and `pages-manifest.json` are the source
 of truth. A retained `combined-manifest.json` must not override those fresh captures or mask
@@ -181,11 +197,12 @@ changing tolerances, or downgrading compare mode.
   acceptance only after explicit approval of its exact SHA, matrix hash and candidate-manifest hash.
   Then compare and run complete CI on the final revision.
 
-Venue previews use `StaticVenueMap`, preserving the public Production CARTO Voyager tile URLs and
-geographic framing without introducing an API key. Appearance follows the explicit map style and
-inherited color tokens; the shared renderer owns the tile grid and marker. Google Maps, Apple Maps
-and Waze navigation links remain independent. Remote tile changes or failures must be reported by
-visual diagnostics, not silently replaced or accepted as parity.
+Venue previews use `StaticVenueMap`, an in-house illustration (street grid, blocks, park and pin)
+styled with theme tokens and the explicit map style. It uses no basemap provider, credential or
+network request: CARTO's terms require a per-customer key and on-map attribution for commercial use
+and forbid caching tiles. Coordinates only vary the illustration's street angle and park side.
+Google Maps, Apple Maps and Waze navigation links remain the way guests reach the venue. Capture
+specs allow no external map origin.
 
 ## Current asset evidence
 

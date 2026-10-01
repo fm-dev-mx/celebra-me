@@ -7,6 +7,11 @@ import {
 	getDemoShowroomByPublicSlug,
 	getFeaturedDemoShowroomItems,
 } from '@/data/demo-showroom.data';
+import {
+	buildGeneralMessage,
+	getGeneralPromoCode,
+	getStartingPrice,
+} from '@/data/promo-campaign.data';
 
 const projectRoot = process.cwd();
 const demosRoot = path.join(projectRoot, 'src/content/event-demos');
@@ -164,5 +169,16 @@ describe('showroom interaction model', () => {
 
 	it('single-demo customization copy is accurate', () => {
 		expect(getFeaturedDemoShowroomItems('boda').length).toBe(1);
+	});
+
+	it('quotes every event with the current promo and no retired package', () => {
+		for (const event of DEMO_SHOWROOM_EVENTS) {
+			const quote = event.homeSelector.quoteCta;
+			expect(quote.message).toBe(buildGeneralMessage());
+			expect(quote.promoCode).toBe(getGeneralPromoCode());
+			expect(quote.trackValue).toBe(getStartingPrice());
+			expect(quote.packageName).toBeUndefined();
+			expect(quote.packageInterest).toBeUndefined();
+		}
 	});
 });

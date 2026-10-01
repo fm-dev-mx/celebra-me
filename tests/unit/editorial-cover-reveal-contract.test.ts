@@ -25,6 +25,26 @@ describe('editorial cover reveal transition contract', () => {
 		expect(componentSource).toContain('openButton.setAttribute');
 	});
 
+	it('prefers a dedicated cover photograph over the hero images', () => {
+		const pageSource = readSource('src/pages/[eventType]/[slug].astro');
+		const previewSource = readSource('src/pages/dashboard/invitaciones/[id]/preview.astro');
+		expect(componentSource).toContain(
+			'[dedicatedCoverImage, backgroundImage, portrait].find(hasImageSource)',
+		);
+		expect(pageSource).toContain('coverImage={page.envelope.backdropImage}');
+		expect(previewSource).toContain('coverImage={pageCtx.envelope.backdropImage}');
+	});
+
+	it('keeps the collector edition opt-in and wired through both pages', () => {
+		const pageSource = readSource('src/pages/[eventType]/[slug].astro');
+		const previewSource = readSource('src/pages/dashboard/invitaciones/[id]/preview.astro');
+		expect(componentSource).toContain("coverExperience = 'standard'");
+		expect(componentSource).toContain("this.dataset.coverExperience === 'collector'");
+		expect(componentSource).toContain('setupCollectorReveal');
+		expect(pageSource).toContain('coverExperience={page.envelope.coverExperience}');
+		expect(previewSource).toContain('coverExperience={pageCtx.envelope.coverExperience}');
+	});
+
 	it('uses the approved editorial CTA copy', () => {
 		expect(componentSource).toContain('ABRIR INVITACIÓN');
 		expect(componentSource).not.toContain('ENTRAR A LA');

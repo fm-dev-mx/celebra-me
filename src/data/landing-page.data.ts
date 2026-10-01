@@ -1,334 +1,198 @@
 import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
+import { DEMO_SHOWROOM_ITEMS } from '@/data/demo-showroom.data';
+import {
+	formatMxn,
+	getExpressDelivery,
+	getPromoPackage,
+	getStartingPrice,
+} from '@/data/promo-campaign.data';
+import { CLIENT_TESTIMONIALS } from '@/data/testimonials.data';
+
+const PRIMARY_CTA_LABEL = 'Cotizar por WhatsApp';
+
+/** Featured demo opened by the hero secondary action ("Ver una invitación"). */
+const HERO_DEMO_SLUG = 'demo-xv-celestial-blue';
+const heroDemo = DEMO_SHOWROOM_ITEMS.find((item) => item.slug === HERO_DEMO_SLUG);
+if (!heroDemo) throw new Error(`Missing hero demo: ${HERO_DEMO_SLUG}`);
+
+const expressDelivery = getExpressDelivery();
+const expressDeliveryPackages = expressDelivery.appliesTo
+	.map((packageId) => getPromoPackage(packageId).name)
+	.join(' y ');
+const expressDeliveryPrice = `+${formatMxn(expressDelivery.price)} MXN`;
+const esencialName = getPromoPackage('esencial').name;
+const signatureName = getPromoPackage('signature').name;
+const atelierName = getPromoPackage('atelier').name;
 
 export const landingData: LandingPageData = {
+	seo: {
+		title: 'Celebra-me | Invitaciones Digitales Premium',
+		description: `Invitaciones digitales con pase y confirmación para cada invitado. Diseño único, panel de invitados y envío por WhatsApp. Desde ${formatMxn(getStartingPrice())} MXN, sin anticipo.`,
+	},
 	hero: {
-		eyebrow: 'INVITACIONES DIGITALES',
-		title: 'Con pases y confirmación, personalizada para cada invitado',
-		subtitle: 'Agrega tus invitados, asigna pases y lleva el control de confirmaciones.',
-		primaryCtaLabel: 'Cotizar mi invitación',
-		secondaryCtaLabel: 'Ver demos de invitaciones',
-		secondaryCtaUrl: '#tipo-evento',
-		whatsappPhone: import.meta.env.CONTACT_WHATSAPP || '521000000000',
-		whatsappMessage:
-			'Hola, quiero hacer válido el cupón: LANZAMIENTO-899 para mi invitación digital.',
-		proofLine: 'RSVP · Pases digitales · Galería',
+		title: 'Invitaciones digitales con pase y confirmación para cada invitado',
+		subtitle: 'Usted la envía por WhatsApp y ve quién confirmó.',
+		priceLine: {
+			prefix: 'Desde',
+			suffix: 'MXN, pago único.',
+		},
+		paymentNote: 'Sin anticipo: paga al recibir su invitación terminada.',
+		primaryCtaLabel: PRIMARY_CTA_LABEL,
+		secondaryCtaLabel: 'Ver una invitación',
+		secondaryCtaUrl: heroDemo.href,
+		secondaryCtaDemoSlug: heroDemo.slug,
 	},
 	eventSelector: {
 		eyebrow: 'DEMOS POR EVENTO',
-		title: 'Revisa cómo puede verse tu invitación',
-		description:
-			'Explora demos para boda, XV años, cumpleaños y otros eventos. El diseño se adapta al estilo de tu celebración.',
+		title: 'Vea cómo puede lucir su invitación',
+		description: 'Elija su evento y abra la demo completa.',
 	},
 	productProof: {
-		eyebrow: 'NO ES UN PDF, TAMPOCO ES UN ENLACE IGUAL PARA TODOS',
-		title: 'La invitación también organiza tu evento',
-		description:
-			'Puedes agregar invitados, asignar pases y enviar una invitación personal para cada persona o familia.',
-		items: [
+		eyebrow: 'SU PANEL DE INVITADOS',
+		title: 'La invitación también organiza su evento',
+		description: 'Organice a sus invitados desde un solo panel, sin perseguir respuestas.',
+		features: [
+			{ title: 'Lista desde Excel', text: 'Importe a sus invitados en un paso.' },
 			{
-				title: 'Lista de invitados',
-				description: 'Organiza personas, familias o grupos desde un solo lugar.',
+				title: 'Envío por WhatsApp',
+				text: 'Mensaje editable y recordatorios a quien no ha confirmado.',
 			},
 			{
-				title: 'Pases claros',
-				description: 'Define cuántos accesos tiene cada invitado.',
+				title: 'Vistas y confirmaciones',
+				text: 'Quién ya vio su invitación y quién confirmó.',
 			},
-			{
-				title: 'Invitación personal',
-				description:
-					'Cada invitado recibe su una invitación con su nombre o el de su familia.',
-			},
-			{
-				title: 'Confirmaciones ordenadas',
-				description: 'Revisa quién confirmó sin perderte entre mensajes.',
-			},
+			{ title: 'Exportación', text: 'Descargue su lista con las respuestas.' },
 		],
 		cta: {
-			label: 'Iniciar mi invitación',
-			message: 'Hola, quiero empezar mi invitación digital premium.',
-		},
-	},
-	services: {
-		eyebrow: 'LO QUE PUEDE INCLUIR',
-		title: 'Todo claro para sus invitados, todo bajo control para usted',
-		subtitle: 'Presenta cada detalle de forma clara.',
-		dossierSubtext: 'Activamos solo lo que tu evento necesita.',
-		dossierTag: 'SECCIONES A MEDIDA',
-		closingStatement: '',
-		items: [
-			{
-				title: 'Confirmación RSVP',
-				description: 'Cada invitado puede confirmar asistencia desde su invitación.',
-			},
-			{
-				title: 'Pases digitales',
-				description: 'Define cuántos lugares tiene cada invitado o familia.',
-			},
-			{
-				title: 'Ubicación y mesa de regalos',
-				description: 'Incluye dirección con Maps, mesa de regalos y código de vestimenta.',
-			},
-			{
-				title: 'Itinerario, música y galería',
-				description:
-					'Muestra horarios, agrega tu canción favorita e incluye tu sesión de fotos.',
-			},
-		],
-		cta: {
-			label: 'Quiero cotizar por WhatsApp',
-			href: '#contacto',
+			label: PRIMARY_CTA_LABEL,
 		},
 	},
 	guestExperience: {
-		eyebrow: 'PARA TUS INVITADOS',
+		eyebrow: 'PARA SUS INVITADOS',
 		title: 'Una invitación clara desde el primer mensaje',
 		description:
-			'Al abrirla, cada invitado puede ver sus pases, consultar los detalles del evento y confirmar asistencia.',
+			'Todo lo que necesitan para llegar, confirmar y celebrar con usted, en un solo enlace.',
 		values: [
 			{
-				name: 'Su nombre',
-				description: 'Cada invitación muestra el nombre del invitado o familia.',
+				name: 'Su nombre y sus pases',
+				description: 'Cada invitación muestra a quién va dirigida y cuántos lugares tiene.',
 			},
 			{
-				name: 'Sus pases',
-				description: 'El invitado sabe cuántos lugares tiene asignados.',
-			},
-			{
-				name: 'Detalles del evento',
-				description:
-					'Fecha, ubicación, itinerario, música, galería o información especial.',
-			},
-			{
-				name: 'Confirmación fácil',
+				name: 'Confirmación en un toque',
 				description: 'Responden desde la misma invitación.',
 			},
+			{
+				name: 'Cómo llegar',
+				description:
+					'Google Maps, Waze y Apple Maps. La ubicación se muestra a quienes confirman.',
+			},
+			{
+				name: 'Calendario y mesa de regalos',
+				description:
+					'Guardan la fecha con un toque y ven su mesa de regalos en la invitación.',
+			},
 		],
-		closingLine: '',
 		cta: {
-			label: 'Solicitar invitaciones personalizadas',
-			message: 'Hola, quiero solicitar invitaciones personalizadas para mi evento.',
+			label: PRIMARY_CTA_LABEL,
 		},
 	},
 	testimonials: {
-		eyebrow: 'RESULTADOS REALES',
-		title: 'Más claridad antes del evento',
-		subtitle:
-			'Nuestros clientes no solo buscan una invitación bonita. También valoran saber quién confirmó, cuántos pases tiene cada invitado y qué información recibió cada persona.',
-		testimonials: [
-			{
-				name: 'Mariana G.',
-				text: 'Nos ayudó mucho tener los pases claros por familia. La invitación se veía formal y las confirmaciones quedaron más ordenadas.',
-				role: 'Boda',
-				guests: '72 invitados',
-			},
-			{
-				name: 'Laura M.',
-				text: 'Cada invitado recibió su invitación y ya no tuvimos que explicar ubicación, horarios y accesos por separado.',
-				role: 'XV años',
-			},
-			{
-				name: 'Fernanda C.',
-				text: 'Fue mucho más fácil enviar todo y saber quién ya había confirmado.',
-				role: 'Cumpleaños',
-			},
-			{
-				name: 'Andrea R.',
-				text: 'Nos ayudó a ordenar la lista sin estar preguntando uno por uno.',
-				role: 'Bautizo',
-			},
-		],
-		proofLine: '',
+		title: 'Lo que dicen nuestros clientes',
+		testimonials: CLIENT_TESTIMONIALS,
+		notice: 'Testimonios reales de clientes. Omitimos sus nombres por privacidad.',
 	},
 	pricing: {
-		eyebrow: 'INVERSIÓN PARA SU CELEBRACIÓN',
-		title: 'Elija con una recomendación clara',
-		intro: 'Elige el nivel de diseño que necesita tu evento. Todas las invitaciones pueden integrar confirmación, pases, ubicación, música, galería y detalles importantes; los paquetes superiores elevan la dirección visual, el grado de personalización y el acompañamiento.',
-		note: 'Promoción de lanzamiento desde $899 MXN. Pago único.',
-		decisionGuide: {
-			title: '¿No sabes cuál elegir?',
-			rows: [
-				'Te recomendamos el paquete ideal por WhatsApp según tu evento, invitados y estilo.',
-			],
-			cta: 'Recibir recomendación personalizada',
-			message: 'Hola, quiero que me ayuden a elegir el mejor paquete para mi evento.',
-		},
+		title: 'Elija su paquete',
 		tiers: [
 			{
-				id: 'signature',
-				title: 'Signature',
-				description: 'Diseño con personalización editorial media y refinamiento estético.',
-				badge: 'MÁS RECOMENDADO',
+				packageId: 'esencial',
+				includes: [
+					'Diseño único, pases, confirmación y panel de invitados',
+					'Agregar al calendario',
+					'Cambios y correcciones sin costo',
+				],
+				details: [
+					{ label: 'Entrega', value: '3 a 5 días hábiles' },
+					{ label: expressDelivery.name, value: expressDeliveryPrice },
+				],
+			},
+			{
+				packageId: 'signature',
+				badge: 'RECOMENDADO',
 				isPrimary: true,
-				price: { amount: '1,699', currency: 'MXN', period: 'pago único' },
-				regularPrice: 'Precio regular: $2,299 MXN',
-				idealFor:
-					'Para quienes buscan un diseño más personalizado y adaptado a su paleta de colores.',
-				sections: [
-					{
-						title: 'Incluye',
-						items: [
-							'Personalización editorial del diseño',
-							'Confirmación RSVP & Pases digitales',
-							'Secciones con estructura flexible',
-							'Adaptación de paleta de colores',
-							'Soporte para detalles especiales',
-						],
-					},
+				includesFrom: `Todo lo de ${esencialName}, más:`,
+				includes: ['QR de recuerdos'],
+				details: [
+					{ label: 'Entrega', value: '3 a 5 días hábiles' },
+					{ label: expressDelivery.name, value: expressDeliveryPrice },
 				],
-				cta: 'Elegir Signature',
-				ctaMessage:
-					'Hola, quiero elegir el paquete Signature de $1,699 MXN con personalización editorial.',
 			},
 			{
-				id: 'coleccion',
-				title: 'Colección',
-				description:
-					'Diseño esencial sobre plantilla preestablecida con toda la funcionalidad activa.',
-				price: { amount: '899', currency: 'MXN', period: 'pago único' },
-				regularPrice: 'Precio regular: $1,299 MXN',
-				idealFor: 'Para eventos que buscan una invitación impecable, clara y funcional.',
-				sections: [
-					{
-						title: 'Incluye',
-						items: [
-							'Invitación con diseño de catálogo',
-							'Confirmación RSVP & Pases digitales',
-							'Detalles de recepción y ceremonia',
-							'Ubicaciones y mesa de regalos',
-							'Galería de fotos y música de fondo',
-						],
-					},
-				],
-				cta: 'Elegir Colección',
-				ctaMessage:
-					'Hola, quiero elegir el paquete Colección de $899 MXN para mi invitación digital.',
-			},
-			{
-				id: 'atelier',
-				title: 'Atelier',
-				description: 'Diseño a la medida con dirección visual avanzada y acompañamiento.',
+				packageId: 'atelier',
 				isExclusive: true,
-				price: { amount: '2,899', currency: 'MXN', period: 'pago único' },
-				regularPrice: 'Precio regular: $3,899 MXN',
-				idealFor:
-					'Para eventos premium que exigen una identidad visual única y dirección editorial experta.',
-				sections: [
-					{
-						title: 'Incluye',
-						items: [
-							'Dirección visual avanzada a la medida',
-							'Confirmación RSVP & Pases digitales',
-							'Mayor detalle editorial y narrativa',
-							'Animaciones y tipografía curada',
-							'Acompañamiento y asesoría prioritaria',
-						],
-					},
+				includesFrom: `Todo lo de ${signatureName}, más:`,
+				includes: [
+					'Entrega en 48 horas',
+					'Celebra-me carga su lista de invitados (Excel o legible)',
+					'Su invitación a su nombre, sin la firma de Celebra-me',
 				],
-				cta: 'Elegir Atelier',
-				ctaMessage:
-					'Hola, quiero elegir el paquete Atelier de $2,899 MXN con dirección visual avanzada.',
+				details: [],
 			},
 		],
 	},
 	faq: {
-		pretitle: 'Claridad antes de cotizar',
 		title: 'Preguntas frecuentes',
-		subtitle:
-			'Las dudas más importantes sobre entrega, invitaciones personalizadas, pases y confirmaciones.',
-		divider: 'Dudas antes de cotizar',
 		faqs: [
 			{
-				question: '¿La invitación se envía por WhatsApp?',
-				answer: 'Sí. Desde tu panel puedes enviar las invitaciones a tus invitados. Cada persona recibe su propia invitación, no un enlace genérico para todos.',
+				question: '¿Cómo y cuándo pago?',
+				answer: 'Sin anticipo. Usted revisa su invitación 100 % terminada con un Invitado de prueba y paga al aprobarla; en ese momento se activa su panel de invitados.',
 			},
 			{
-				question: '¿Cada invitado recibe una invitación diferente?',
-				answer: 'Sí. Cada invitado puede recibir una invitación personal con su nombre, sus pases y su opción para confirmar asistencia.',
+				question: '¿Cuánto tarda?',
+				answer: `De 3 a 5 días hábiles desde que recibimos la información completa. ${atelierName} se entrega en 48 horas. En ${expressDeliveryPackages} puede agregar la ${expressDelivery.name.toLowerCase()} por ${expressDeliveryPrice}.`,
 			},
 			{
-				question: '¿Qué es el panel de invitados?',
-				answer: 'Es el espacio donde puedes organizar tu lista, asignar pases, enviar invitaciones y revisar confirmaciones.',
+				question: '¿Puedo pedir cambios?',
+				answer: 'Sí. Hacemos los cambios necesarios hasta que apruebe su invitación. Después, las correcciones de fecha, lugar u horario no tienen costo.',
 			},
 			{
-				question: '¿Es una plantilla, PDF o imagen?',
-				answer: 'No. Es una invitación digital interactiva. Todos los paquetes incluyen la capacidad de organizar invitados, pases digitales y confirmaciones en tiempo real; los paquetes superiores elevan el diseño y la dirección visual.',
+				question: '¿La invitación lleva publicidad?',
+				answer: `No. ${esencialName} y ${signatureName} llevan una firma discreta de Celebra-me al pie. En ${atelierName}, su invitación va a su nombre, sin la firma de Celebra-me.`,
 			},
 			{
-				question: '¿Puedo asignar pases por familia?',
-				answer: 'Sí. Puedes asignar pases por persona, pareja, familia o grupo.',
+				question: '¿Cuánto tiempo estará disponible?',
+				answer: 'Su invitación permanece en línea durante un año garantizado a partir de la fecha de su evento.',
 			},
 			{
-				question: '¿Cómo veo quién confirmó?',
-				answer: 'Las respuestas quedan ordenadas para que puedas revisar quién confirmó y quién sigue pendiente.',
+				question: '¿Qué necesito enviar?',
+				answer: `Fecha, lugar, nombres, fotos y detalles del evento, además de su lista de invitados. En ${atelierName}, nosotros la cargamos a partir de su lista en Excel o legible.`,
 			},
 		],
-		helpSection: {
-			title: '¿Prefieres resolverlo directamente?',
-			description:
-				'Te ayudamos por WhatsApp a elegir el nivel adecuado según tu evento, cantidad de invitados y estilo.',
-			cta: 'Hablar con un asesor',
-			message: 'Hola, quiero asesoría para elegir el paquete ideal de invitación digital.',
-		},
 	},
 	howItWorks: {
-		eyebrow: 'PROCESO SIMPLE',
-		title: 'Nosotros la diseñamos. Tú la envías desde tu panel.',
-		subtitle:
-			'Te entregamos una invitación lista para usar, con una forma clara de organizar invitados, pases y confirmaciones.',
-		deliveryDossier: {
-			title: 'Entrega preparada',
-			subtitle: 'Lo que recibes al final del proceso',
-			rows: [
-				{ label: 'Invitación personalizada', status: 'Lista' },
-				{ label: 'Panel de invitados', status: 'Activo' },
-				{ label: 'Invitaciones listas para enviar', status: 'Listas' },
-				{ label: 'Revisión final', status: 'Incluida' },
-			],
-			footnote: 'Cada elemento revisado antes de la entrega.',
-		},
+		eyebrow: 'PROCESO',
+		title: 'Nosotros la diseñamos. Usted la envía desde su panel.',
 		steps: [
-			{
-				title: 'Nos compartes los datos',
-				description: 'Fecha, lugar, nombres, fotos y detalles del evento.',
-			},
-			{
-				title: 'Diseñamos tu invitación',
-				description: 'Adaptamos el estilo y las secciones según tu celebración.',
-			},
-			{
-				title: 'Agregas tus invitados',
-				description: 'Puedes organizar personas, familias o grupos.',
-			},
-			{
-				title: 'Envías y revisas confirmaciones',
-				description:
-					'Cada invitado recibe su propia invitación y puedes ver quién ya respondió.',
-			},
+			{ title: 'Nos envía los datos de su evento.' },
+			{ title: 'Diseñamos su invitación.' },
+			{ title: 'La revisa terminada y paga al aprobarla.' },
+			{ title: 'La envía por WhatsApp y ve quién confirmó.' },
 		],
 		cta: {
-			label: 'Quiero iniciar mi invitación',
-			message: 'Hola, quiero empezar mi invitación digital premium.',
+			label: PRIMARY_CTA_LABEL,
 		},
 	},
 	contact: {
-		eyebrow: 'COTIZA TU INVITACIÓN',
-		title: 'Cuéntanos qué evento estás preparando',
-		subtitle:
-			'Te ayudamos a elegir el paquete adecuado según el nivel de personalización, diseño y acompañamiento que necesita tu evento.',
+		eyebrow: 'COTIZACIÓN',
+		title: 'Cuéntenos de su evento',
 		cta: {
-			label: 'Cotizar por WhatsApp',
-			message: 'Hola, quiero cotizar una invitación digital para mi evento.',
+			label: PRIMARY_CTA_LABEL,
 		},
-		microcopy:
-			'Te asesoraremos para elegir la estructura y el nivel de diseño ideal para tu celebración.',
-		formIntro: 'O déjanos tus datos y te contactamos.',
-		channelPrimary: {
-			label: 'Principal',
-			value: 'Cotizar por WhatsApp',
-		},
-		channelSecondary: {
-			label: 'Secundario',
-			value: 'Escribir por correo',
+		formIntro: 'O déjenos sus datos y le contactamos.',
+		about: {
+			title: 'Nosotros',
+			text: 'Celebra-me es atendido por Francisco Mendoza desde Los Mochis, Sinaloa.',
+			email: 'contacto@celebra-me.com',
 		},
 	},
 };

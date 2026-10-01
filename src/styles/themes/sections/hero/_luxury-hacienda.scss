@@ -1,13 +1,11 @@
-@use '../../../tokens' as tokens;
-@use '../../../global/mixins' as mixins;
-
 // ==========================================================================
 // LUXURY HACIENDA HERO
 // ==========================================================================
 
 .theme-preset--luxury-hacienda .invitation-hero[data-variant='standard'] {
 	.invitation-hero__background::after {
-		background:
+		background: var(
+			--hero-hacienda-veil,
 			radial-gradient(
 				circle at 50% 40%,
 				transparent 0%,
@@ -20,7 +18,8 @@
 				transparent 40%,
 				rgb(var(--color-surface-dark-rgb) / 75%) 75%,
 				rgb(var(--color-surface-dark-rgb) / 95%) 100%
-			);
+			)
+		);
 	}
 
 	.invitation-hero__content {
@@ -69,6 +68,10 @@
 		font-size: clamp(2rem, 8vw, 4.5rem);
 		margin: 0;
 
+		@media (width <= 540px) {
+			letter-spacing: 0.08em;
+		}
+
 		@media (width <= 480px) {
 			font-size: clamp(1.8rem, 10vw, 2.4rem);
 			letter-spacing: 0.06em;
@@ -100,6 +103,10 @@
 		line-height: var(--hero-label-line-height, 1.4);
 		text-shadow: 0 2px 8px rgb(0 0 0 / 40%);
 		margin-bottom: 1.25rem;
+
+		@media (width <= 540px) {
+			letter-spacing: var(--hero-label-tracking, 0.4em);
+		}
 
 		@media (width <= 480px) {
 			font-size: var(--hero-label-size, clamp(0.8rem, 4vw, 0.9rem));
@@ -233,16 +240,6 @@
 		@media (width <= 540px) {
 			transform: scale(0.8);
 			opacity: 60%;
-		}
-	}
-
-	@media (width <= 540px) {
-		.invitation-hero__title {
-			letter-spacing: 0.08em;
-		}
-
-		.invitation-hero__label {
-			letter-spacing: var(--hero-label-tracking, 0.4em);
 		}
 	}
 }

@@ -27,16 +27,22 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
   manual review, with an in-progress filter and protected, concurrent updates. Publication and
   technical acceptance remain independent. Requires the administrative workflow schema migration.
 
-- **Valentina Memories capture**: Guests can upload a supported photo or short video from
-  `/r/valentina` through a direct, private R2 upload flow; the page confirms the upload without
-  exposing a public gallery or object listing.
-- **Valentina Memories lifecycle**: Added opaque guest sessions with recovery codes, a
-  session-scoped media catalog and moderation states, private previews, and an organizer-only
-  dashboard workspace. Downloads stream through a short-lived HMAC-authenticated retrieval Worker;
-  no public bucket, listing, object key, or permanent download URL is exposed.
+- **Event memories (guest photo/video QR)**: The single-event pilot became a canonical per-event
+  feature. A super admin activates a private memory space per published event
+  (`/dashboard/admin/recuerdos`) with its own public slug, upload window, retention, quotas and
+  commercial entitlement; guests upload from `/r/<slug>` through an opaque, single-use capability
+  into private R2 under `events/<event uuid>/`; owners moderate and download from
+  `/dashboard/memories`. The Cloudflare Workers no longer know about events, so adding an event
+  never requires a deployment. Requires the `event_memories_catalog` migration; the legacy
+  `valentina_*` objects stay until the separately authorized retirement migration.
 
 ### Fixed
 
+- Memory spaces now expire their catalog rows together with the objects when retention ends, so
+  guest sessions are anonymized instead of lingering behind objects R2 already removed.
+- Organizer moderation requests carry the CSRF token through the dashboard API client.
+- Upload capabilities are sealed (AES-GCM) instead of signed in clear text, so the browser cannot
+  read object keys or session identifiers; branch-specific preview origins left the source tree.
 - Make Memories session anonymization atomic and idempotent, including audit writes and concurrent
   upload reservations.
 
