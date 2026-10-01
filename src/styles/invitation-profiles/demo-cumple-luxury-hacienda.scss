@@ -1,0 +1,28 @@
+// Luxury Hacienda cumpleaños demo — the honoree stands centered in a charcoal suit, directly behind
+// the name. A warmer veil darkens the lower half (face and arcade stay clear) and the title keeps a
+// luminous gold so it separates from the suit instead of sinking into it.
+
+.event--demo-cumple-luxury-hacienda.theme-preset--luxury-hacienda {
+	--hero-hacienda-veil:
+		radial-gradient(
+			circle at 50% 30%,
+			transparent 0%,
+			rgb(var(--color-surface-dark-rgb) / 16%) 58%,
+			rgb(var(--color-surface-dark-rgb) / 80%) 100%
+		),
+		linear-gradient(
+			to bottom,
+			transparent 0%,
+			transparent 30%,
+			rgb(var(--color-surface-dark-rgb) / 58%) 48%,
+			rgb(var(--color-surface-dark-rgb) / 84%) 66%,
+			rgb(var(--color-surface-dark-rgb) / 96%) 100%
+		);
+
+	// Declared on the hero itself: the shared hero theme base sets these tokens at that level.
+	.invitation-hero {
+		--hero-title-color-start: rgb(226 190 122);
+		--hero-title-color-mid: rgb(248 234 204);
+		--hero-title-color-end: rgb(208 165 94);
+	}
+}
