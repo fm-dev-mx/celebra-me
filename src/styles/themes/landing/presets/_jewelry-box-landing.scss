@@ -35,7 +35,6 @@
 	// Core Spacing System Clamps
 	// One vertical rhythm for every landing section: 56px on phones, 112px on wide screens.
 	--section-padding-y: clamp(3.5rem, 8vw, 7rem);
-	--section-padding-y-compact: clamp(2.5rem, 6vw, 4.5rem);
 	--container-max: 1120px;
 	--container-padding-x: clamp(1.25rem, 5vw, 4rem);
 	--card-radius: 1.25rem;
@@ -80,8 +79,6 @@
 	// Shadows
 	--shadow-subtle: 0 4px 15px rgb(0 0 0 / 10%);
 	--shadow-emphasis: 0 10px 30px rgb(0 0 0 / 20%);
-	--hero-overlay-alpha: 0.4;
-	--hero-title-text-shadow: 0 2px 20px rgb(0 0 0 / 30%);
 
 	// Shared Dark Slate Surface (for FAQ, Footer, Pricing Exclusive)
 	--color-surface-dark-slate: var(--color-ink);
@@ -100,18 +97,8 @@
 	// Landing Page Section-Specific Tokens
 	// ==========================================
 
-	// Services Section
-	--services-title-color: var(--color-text-primary);
-	--services-description-color: var(--color-text-secondary);
-
 	// Header Section
-	--header-bg-transparent: transparent;
 	--header-bg-scrolled: rgb(8 7 6 / 78%);
-	--header-text-transparent: var(--color-ivory);
-	--header-text-scrolled: var(--color-ivory);
-	--header-accent-scrolled: var(--color-champagne);
-	--header-shadow-scrolled: 0 4px 30px rgb(0 0 0 / 40%);
-	--header-backdrop-blur: 16px;
 	--header-nav-shadow-transparent: 0 1px 2px rgb(0 0 0 / 60%), 0 1px 12px rgb(0 0 0 / 30%);
 	--header-border-scrolled: var(--border-fine-gold, 1px solid var(--color-glass-border));
 	--header-cta-glow: 0 0 20px rgb(var(--color-action-accent-rgb) / 20%);
@@ -165,30 +152,11 @@
 
 	// Pricing Section
 	--pricing-section-bg: var(--color-surface-primary);
-	--pricing-noise-opacity: 0.03;
-	--pricing-card-bg: rgb(var(--color-overlay-light-rgb) / 70%);
-	--pricing-card-backdrop-blur: 12px;
-	--pricing-card-border: #{color.change(sys.$sys-color-gold-400, $alpha: 0.2)};
-	--pricing-card-border-radius: 4px;
-	--pricing-card-hover-shadow: 0 20px 40px rgb(0 0 0 / 5%);
-	--pricing-primary-border: var(--color-action-accent);
-	--pricing-primary-shadow: 0 0 30px #{color.change(sys.$sys-color-gold-400, $alpha: 0.15)};
-	--pricing-primary-glow: 0 0 20px #{color.change(sys.$sys-color-gold-400, $alpha: 0.1)};
-	--pricing-primary-scale: 1.04;
-	--pricing-tier-name-color: var(--color-surface-dark);
-	--pricing-tier-desc-color: var(--color-text-primary);
-	--pricing-tier-price-color: var(--color-surface-dark);
-	--pricing-tier-currency-color: var(--color-action-accent);
-	--pricing-cta-border: var(--color-action-accent);
-	--pricing-cta-color: var(--color-action-accent);
-	--pricing-cta-hover-bg: #{color.change(sys.$sys-color-gold-400, $alpha: 0.05)};
-	--pricing-cta-hover-color: var(--color-surface-dark);
 
 	// FAQ Section
 	--faq-section-bg: var(--color-faq-bg);
 	--faq-section-color: var(--color-text-on-dark-slate);
 	--faq-item-bg: rgb(var(--color-overlay-light-rgb) / 3%);
-	--faq-item-backdrop-blur: 10px;
 	--faq-item-border: rgb(var(--color-overlay-light-rgb) / 5%);
 	--faq-item-border-radius: 8px;
 	--faq-item-hover-bg: rgb(var(--color-overlay-light-rgb) / 5%);
@@ -202,15 +170,12 @@
 	--faq-question-color: #{sys.$sys-color-champagne-200};
 	--faq-question-hover-color: var(--color-text-on-dark-slate);
 	--faq-answer-color: rgb(var(--color-overlay-light-rgb) / 60%);
-	--faq-chevron-color: rgb(var(--color-overlay-light-rgb) / 60%);
 	--faq-chevron-open-color: var(--color-action-accent);
-	--faq-transition-duration: 0.5s;
 	--faq-transition-easing: cubic-bezier(0.19, 1, 0.22, 1);
 
 	// Footer Section
 	--footer-section-bg: var(--color-surface-dark-slate);
 	--footer-section-color: var(--color-text-on-dark-slate);
-	--footer-noise-opacity: 0.05;
 	--footer-slogan-opacity: 0.7;
 	--footer-slogan-color: var(--color-text-on-dark-slate);
 	--footer-group-title-color: var(--color-surface-secondary);
@@ -231,48 +196,15 @@
 	--footer-transition-easing: ease;
 
 	// Contact Section
-	--contact-section-bg: var(--color-surface-primary);
 	--contact-section-color: var(--color-surface-dark);
-	--contact-pretitle-color: var(--color-text-emphasis);
 	--contact-title-color: var(--color-text-primary);
 	--contact-info-title-color: var(--color-text-primary);
 	--contact-info-description-color: var(--color-text-secondary);
-	--contact-form-bg: rgb(var(--color-surface-primary-rgb) / 70%);
-	--contact-form-backdrop-blur: 20px;
 	--contact-form-border: var(--color-border-subtle);
-	--contact-form-shadow: var(--shadow-emphasis);
-	--contact-form-accent-line: var(--color-border-emphasis);
 	--contact-input-border: var(--color-border-subtle);
 	--contact-input-color: var(--color-text-primary);
 	--contact-input-focus-border: var(--color-action-accent);
 	--contact-label-color: rgb(var(--color-text-secondary-rgb) / 50%);
 	--contact-label-focus-color: var(--color-action-accent);
 	--contact-submit-bg: var(--color-action-primary);
-	--contact-submit-color: var(--color-text-on-dark);
-	--contact-submit-hover-bg: var(--color-action-accent);
-	--contact-submit-hover-transform: translateY(-2px);
-	--contact-submit-hover-shadow: var(--shadow-subtle);
-
-	// Testimonials Section — warm editorial quote rotator
-	--testimonials-title-font: var(--font-display, 'Playfair Display', serif);
-	--testimonials-title-color: rgb(247 241 230 / 96%);
-	--testimonials-title-letter-spacing: -0.02em;
-	--testimonials-text-font: var(--font-display, serif);
-	--testimonials-text-size: clamp(0.9rem, 1.2vw, 1.05rem);
-	--testimonials-text-line-height: 1.7;
-	--testimonials-text-color: rgb(247 241 230 / 80%);
-	--testimonials-text-style: italic;
-	--testimonials-card-bg: rgb(var(--color-overlay-light-rgb) / 3%);
-	--testimonials-card-border: rgb(var(--color-action-accent-rgb) / 12%);
-	--testimonials-card-border-radius: 2px;
-	--testimonials-card-hover-bg: rgb(var(--color-overlay-light-rgb) / 5%);
-	--testimonials-card-hover-border: rgb(var(--color-action-accent-rgb) / 20%);
-	--testimonials-footer-border: rgb(var(--color-action-accent-rgb) / 10%);
-	--testimonials-author-name-weight: 600;
-	--testimonials-author-name-transform: uppercase;
-	--testimonials-author-name-letter-spacing: 0.06em;
-	--testimonials-author-name-size: clamp(0.75rem, 0.9vw, 0.85rem);
-	--testimonials-author-name-color: var(--color-action-accent, #d8a73a);
-	--testimonials-author-role-size: clamp(0.68rem, 0.8vw, 0.75rem);
-	--testimonials-author-role-color: rgb(247 241 230 / 40%);
 }

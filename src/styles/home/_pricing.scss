@@ -1,79 +1,40 @@
 /* stylelint-disable color-no-hex */
 .pricing-section {
 	position: relative;
-	padding: var(--section-padding-y) 0;
 	background: var(--pricing-section-bg);
-	margin-bottom: 0;
-	overflow: hidden;
-
-	&::before {
-		content: '';
-		position: absolute;
-		inset: clamp(0.85rem, 2vw, 1.4rem);
-		border: 1px solid var(--pricing-noise-border);
-		pointer-events: none;
-	}
-
-	.pricing-noise {
-		position: absolute;
-		inset: 0;
-		background-image: var(
-			--noise-texture,
-			url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")
-		);
-		opacity: 4%;
-		pointer-events: none;
-		z-index: 1;
-	}
 
 	.container {
-		position: relative;
-		z-index: 2;
-		max-width: 1220px;
-		margin: 0 auto;
-		padding: 0 var(--spacing-md);
+		width: min(var(--container-max), 100% - 2 * var(--container-padding-x));
+		margin-inline: auto;
+		padding: 0;
 	}
-}
-
-.pricing-panel {
-	background: color-mix(in srgb, var(--color-surface-primary) 94%, #fff 6%);
-	border: 1px solid var(--pricing-card-border);
-	box-shadow: var(--pricing-card-shadow);
-	padding: clamp(1.25rem, 3.5vw, 2.8rem);
 }
 
 .pricing-header {
 	text-align: center;
 	max-width: 780px;
-	margin: 0 auto clamp(1rem, 2.4vw, 1.5rem);
+	margin: 0 auto clamp(1.5rem, 3vw, 2.25rem);
 
 	.pricing-eyebrow {
 		display: block;
-		margin-bottom: var(--spacing-sm);
-		color: var(--color-action-accent);
-		font-family: var(--font-body);
-		font-size: clamp(0.7rem, 1.3vw, 0.78rem);
-		font-weight: 700;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
 	}
 
 	.pricing-title {
-		margin: 0 0 0.7rem;
+		margin: 0 0 1rem;
 		color: var(--color-text-primary);
 		font-family: var(--font-display);
-		font-size: clamp(2rem, 4.6vw, 3.1rem);
-		line-height: 1.04;
+		font-size: var(--landing-h2-size);
+		font-weight: 600;
+		line-height: var(--landing-h2-line-height);
 	}
 
 	.pricing-intro {
-		max-width: 650px;
-		margin: 0 auto 0.9rem;
-		color: var(--color-text-primary);
+		max-width: 40rem;
+		margin: 0 auto 1rem;
+		color: var(--color-text-secondary);
 		font-family: var(--font-body);
-		font-size: clamp(0.98rem, 1.8vw, 1.08rem);
-		line-height: 1.68;
-		opacity: 86%;
+		font-size: var(--landing-lead-size);
+		line-height: var(--landing-lead-line-height);
 	}
 
 	.pricing-note {
@@ -104,7 +65,6 @@
 	grid-template-columns: 1fr;
 	gap: clamp(0.9rem, 2vw, 1.25rem);
 	align-items: stretch;
-	margin-bottom: clamp(1.2rem, 3vw, 1.8rem);
 
 	@media (width >= 992px) {
 		grid-template-columns: 0.92fr 1.15fr 0.92fr;
@@ -367,12 +327,11 @@
 	border: 1px solid var(--color-border-gold);
 	border-radius: 9999px;
 	box-shadow: none;
-	font-size: 0.78rem;
-	font-weight: 800;
-	letter-spacing: 0.08em;
+	font-size: 0.9rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
 	text-align: center;
 	text-decoration: none;
-	text-transform: uppercase;
 	white-space: normal;
 	transition:
 		background-color var(--duration-snappy) ease,
@@ -437,34 +396,7 @@
 }
 
 @media (width <= 767px) {
-	.pricing-section {
-		padding-block: clamp(2.75rem, 9vw, 4rem);
-
-		&::before {
-			inset: 0.65rem;
-		}
-	}
-
-	.pricing-panel {
-		padding: clamp(1rem, 4vw, 1.25rem);
-	}
-
-	.pricing-header {
-		text-align: left;
-		margin-bottom: 1rem;
-
-		.pricing-note {
-			display: flex;
-			justify-content: flex-start;
-			text-align: left;
-		}
-	}
-
 	.pricing-card {
-		padding: 1rem;
-
-		.cta-button {
-			font-size: 0.74rem;
-		}
+		padding: 1.25rem;
 	}
 }

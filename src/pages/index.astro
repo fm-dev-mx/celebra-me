@@ -17,8 +17,8 @@ import StickyWhatsAppBar from '@/components/home/StickyWhatsAppBar.astro';
 import { DEMO_SHOWROOM_EVENTS } from '@/data/demo-showroom.data';
 import { landingData } from '@/data/landing-page.data';
 import { footerData } from '@/data/footer.data';
-import heroBrideDesktop from '@/assets/images/hero/hero-bride-desktop.webp';
-import heroBrideMobile from '@/assets/images/hero/hero-bride-mobile.webp';
+import heroDesktop from '@/assets/images/hero/hero-detail-desktop.webp';
+import heroMobile from '@/assets/images/hero/hero-detail-mobile.webp';
 import '@/styles/landing.scss';
 
 ---
@@ -31,7 +31,7 @@ import '@/styles/landing.scss';
 		{
 			rel: 'preload',
 			as: 'image',
-			href: heroBrideMobile.src,
+			href: heroMobile.src,
 			type: 'image/webp',
 			media: '(max-width: 767px)',
 			fetchpriority: 'high',
@@ -39,7 +39,7 @@ import '@/styles/landing.scss';
 		{
 			rel: 'preload',
 			as: 'image',
-			href: heroBrideDesktop.src,
+			href: heroDesktop.src,
 			type: 'image/webp',
 			media: '(min-width: 768px)',
 			fetchpriority: 'high',

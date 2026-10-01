@@ -21,14 +21,12 @@ const validityNote = getValidityNote();
 const currency = PROMO_CAMPAIGN.currency;
 ---
 
-<section id="pricing" class="pricing-section" data-track-section="pricing" data-screenshot="landing-pricing">
-	<div class="pricing-noise"></div>
-
+<section id="pricing" class="pricing-section" data-track-section="pricing" data-screenshot="landing-pricing" aria-labelledby="pricing-title">
 	<div class="container">
 		<div class="pricing-panel">
 			<header class="pricing-header">
 				{data.eyebrow && <span class="pricing-eyebrow reveal-fade-up stagger-1">{data.eyebrow}</span>}
-				<h2 class="pricing-title reveal-fade-up stagger-2">{data.title}</h2>
+				<h2 id="pricing-title" class="pricing-title reveal-fade-up stagger-2">{data.title}</h2>
 				{data.intro && <p class="pricing-intro reveal-fade-up stagger-3">{data.intro}</p>}
 				<p class="pricing-note reveal-fade-up stagger-4" data-promo-only>
 					<span>{validityNote}</span>

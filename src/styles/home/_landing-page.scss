@@ -107,3 +107,13 @@ html[data-promo-state='expired'] [data-promo-only] {
 		order: 2;
 	}
 }
+
+// Hover lifts are decorative; keep controls still when the visitor asks for less motion.
+@media (prefers-reduced-motion: reduce) {
+	.landing-sections-wrapper .whatsapp-button:hover,
+	.landing-sections-wrapper .pricing-card:hover,
+	#home-header .home-nav-actions__cta:hover,
+	.sticky-cta .whatsapp-button:hover {
+		transform: none;
+	}
+}

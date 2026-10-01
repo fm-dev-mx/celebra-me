@@ -3,7 +3,7 @@
 // Shared phone frame for product screens on the landing (demo captures and the guest panel).
 // One device language keeps every product proof consistent across sections.
 .landing-phone {
-	--landing-phone-width: clamp(15rem, 23vw, 17.5rem);
+	--landing-phone-width: clamp(13.5rem, 23vw, 17.5rem);
 	--landing-phone-radius: 2.35rem;
 	--landing-phone-bezel: 0.45rem;
 

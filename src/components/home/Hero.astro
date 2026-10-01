@@ -16,14 +16,9 @@ import {
 } from '@/data/promo-campaign.data';
 import { getContactPhone } from '@/utils/whatsapp';
 
-import heroBrideDesktop from '@/assets/images/hero/hero-bride-desktop.webp';
-import heroBrideMobile from '@/assets/images/hero/hero-bride-mobile.webp';
-import heroQuinceaneraDesktop from '@/assets/images/hero/hero-quinceanera-desktop.webp';
-import heroQuinceaneraMobile from '@/assets/images/hero/hero-quinceanera-mobile.webp';
-import heroDetailDesktop from '@/assets/images/hero/hero-detail-desktop.webp';
-import heroDetailMobile from '@/assets/images/hero/hero-detail-mobile.webp';
-import heroFamilyDesktop from '@/assets/images/hero/hero-family-desktop.webp';
-import heroFamilyMobile from '@/assets/images/hero/hero-family-mobile.webp';
+// One static, event-neutral image: a laid table with a place card, the "pass for every guest".
+import heroDesktop from '@/assets/images/hero/hero-detail-desktop.webp';
+import heroMobile from '@/assets/images/hero/hero-detail-mobile.webp';
 
 import '@/styles/components/_hero.scss';
 
@@ -34,35 +29,22 @@ interface Props {
 const { data } = Astro.props;
 const phone = getContactPhone();
 
-const heroImages = [
-	{ desktop: heroBrideDesktop, mobile: heroBrideMobile },
-	{ desktop: heroQuinceaneraDesktop, mobile: heroQuinceaneraMobile },
-	{ desktop: heroDetailDesktop, mobile: heroDetailMobile },
-	{ desktop: heroFamilyDesktop, mobile: heroFamilyMobile },
-];
 ---
 
 <section class="hero-prime" id="inicio" role="region" aria-labelledby="hero-title" data-track-section="hero" data-screenshot="landing-hero">
 	<div class="hero-prime__bg" aria-hidden="true">
-		{
-			heroImages.map((image, index) => (
-				<picture
-					class={`hero-prime__bg-picture${index === 0 ? ' hero-prime__bg-picture--active' : ''}`}
-					data-hero-bg={index}
-				>
-					<source media="(min-width: 768px)" srcset={image.desktop.src} width={image.desktop.width} height={image.desktop.height} />
-					<img
-						src={image.mobile.src}
-						alt=""
-						width={image.mobile.width}
-						height={image.mobile.height}
-						loading={index === 0 ? 'eager' : 'lazy'}
-						decoding={index === 0 ? 'sync' : 'async'}
-						fetchpriority={index === 0 ? 'high' : 'auto'}
-					/>
-				</picture>
-			))
-		}
+		<picture>
+			<source media="(min-width: 768px)" srcset={heroDesktop.src} width={heroDesktop.width} height={heroDesktop.height} />
+			<img
+				src={heroMobile.src}
+				alt=""
+				width={heroMobile.width}
+				height={heroMobile.height}
+				loading="eager"
+				decoding="sync"
+				fetchpriority="high"
+			/>
+		</picture>
 	</div>
 
 	<div class="hero-prime__overlay" aria-hidden="true"></div>
@@ -122,61 +104,3 @@ const heroImages = [
 		</div>
 	</div>
 </section>
-
-<script>
-	/**
-	 * Hero background crossfade — subtle autoplay rotation
-	 * through event photography images.
-	 * Respects prefers-reduced-motion; no user interaction needed.
-	 */
-	const initHeroBgRotation = () => {
-		const hero = document.getElementById('inicio');
-		if (!(hero instanceof HTMLElement)) return;
-
-		const pictures = hero.querySelectorAll<HTMLElement>('.hero-prime__bg-picture[data-hero-bg]');
-		if (pictures.length < 2) return;
-
-		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-		let intervalId = 0;
-		let currentIndex = 0;
-		const controller = new AbortController();
-
-		const advance = () => {
-			pictures.forEach((pic, i) => {
-				pic.classList.toggle('hero-prime__bg-picture--active', i === currentIndex);
-			});
-			currentIndex = (currentIndex + 1) % pictures.length;
-		};
-
-		const start = () => {
-			stop();
-			if (prefersReducedMotion.matches) {
-				// Show first image only, no rotation
-				pictures.forEach((pic, i) => {
-					pic.classList.toggle('hero-prime__bg-picture--active', i === 0);
-				});
-				currentIndex = 0;
-				return;
-			}
-			// Ensure first frame is visible.
-			pictures[0].classList.add('hero-prime__bg-picture--active');
-			currentIndex = 1;
-			intervalId = window.setInterval(advance, 8000);
-		};
-
-		const stop = () => {
-			if (intervalId) {
-				clearInterval(intervalId);
-				intervalId = 0;
-			}
-		};
-
-		prefersReducedMotion.addEventListener('change', start, { signal: controller.signal });
-
-		// Delay start slightly to not compete with initial paint
-		requestAnimationFrame(() => requestAnimationFrame(start));
-	};
-
-	initHeroBgRotation();
-</script>
