@@ -43,13 +43,43 @@ describe('Production migration helpers', () => {
 	});
 
 	it('requires exact expected-set match for pending migrations', () => {
+		expect(comparePendingSetToExpected(['20260802090000'], ['20260802090000'])).toEqual({
+			ok: true,
+			alreadyApplied: [],
+		});
+		expect(comparePendingSetToExpected(['20260802090000'], ['20260730220544']).ok).toBe(false);
+		expect(comparePendingSetToExpected([], ['20260802090000']).ok).toBe(false);
+		expect(comparePendingSetToExpected([], ['none'])).toEqual({ ok: true, alreadyApplied: [] });
+		expect(comparePendingSetToExpected(['20260802090000'], ['none']).ok).toBe(false);
+	});
+
+	it('treats re-running a pin whose versions are already applied as idempotent', () => {
 		expect(
-			comparePendingSetToExpected(['20260802090000'], ['20260802090000']),
-		).toEqual({ ok: true });
-		expect(comparePendingSetToExpected(['20260802090000'], ['20260730220544']).ok).toBe(
+			comparePendingSetToExpected(
+				[],
+				['20260802090000'],
+				['20260730220544', '20260802090000'],
+			),
+		).toEqual({ ok: true, alreadyApplied: ['20260802090000'] });
+		expect(
+			comparePendingSetToExpected(
+				['20260803090000'],
+				['20260802090000', '20260803090000'],
+				['20260802090000'],
+			),
+		).toEqual({ ok: true, alreadyApplied: ['20260802090000'] });
+	});
+
+	it('still fails closed for pending versions outside the pin or unknown expected versions', () => {
+		expect(
+			comparePendingSetToExpected(
+				['20260803090000', '20260804090000'],
+				['20260803090000'],
+				['20260802090000'],
+			).ok,
+		).toBe(false);
+		expect(comparePendingSetToExpected([], ['20260809090000'], ['20260802090000']).ok).toBe(
 			false,
 		);
-		expect(comparePendingSetToExpected([], ['20260802090000']).ok).toBe(false);
-		expect(comparePendingSetToExpected([], ['none'])).toEqual({ ok: true });
 	});
 });

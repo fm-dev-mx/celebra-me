@@ -41,12 +41,14 @@ export function verifyPersistentLocalTarget(dbUrl = LOCAL_DB_URL): void {
 	}
 }
 
-function discoverLocalPending(dbUrl: string): string[] {
+function discoverLocalMigrationState(dbUrl: string): { applied: string[]; pending: string[] } {
 	ensureSchemaMigrationsTable(dbUrl);
-	const applied = new Set(readAppliedMigrationVersions(dbUrl));
-	return getValidatedMigrationFiles()
-		.filter((f) => !applied.has(f.version))
+	const applied = readAppliedMigrationVersions(dbUrl);
+	const appliedSet = new Set(applied);
+	const pending = getValidatedMigrationFiles()
+		.filter((f) => !appliedSet.has(f.version))
 		.map((f) => f.version);
+	return { applied, pending };
 }
 
 export const localMigratePolicy: MigrateEnvironmentPolicy = {
@@ -65,18 +67,16 @@ export const localMigratePolicy: MigrateEnvironmentPolicy = {
 	buildPlan(ctx, mode) {
 		requireCurrentDisposableMigrationProof(fail);
 		const worktree = readGitWorktreeState();
-		let pendingVersions = discoverLocalPending(ctx.dbUrl);
+		const { applied, pending: pendingVersions } = discoverLocalMigrationState(ctx.dbUrl);
 		if (ctx.expectedPin) {
-			const compare = comparePendingSetToExpected(pendingVersions, ctx.expectedPin);
+			const compare = comparePendingSetToExpected(pendingVersions, ctx.expectedPin, applied);
 			if (!compare.ok) {
 				fail(
 					`Local pending set does not match --expected:\n- ${compare.errors.join('\n- ')}`,
 				);
 			}
-			pendingVersions = [...ctx.expectedPin].filter((v) => v !== 'none');
 		}
 
-		const applied = readAppliedMigrationVersions(ctx.dbUrl);
 		const registry = loadMigrationRolloutRegistry();
 		const compatibility = evaluateMigrationDeploymentCompatibility({
 			target: 'local',

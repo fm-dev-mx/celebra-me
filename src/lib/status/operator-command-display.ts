@@ -51,15 +51,29 @@ function hasFlag(args: string, flag: string): boolean {
 	return new RegExp(`(?:^|\\s)${flag}(?:\\s|$)`).test(` ${args} `);
 }
 
-function previewMigrateScope(args: string): string | null {
-	if (!hasFlag(args, '--apply')) return null;
-	if (flagFromArgs(args, '--target') !== 'preview') return null;
-	return '$env:CELEBRA_TASK_SCOPE="preview:schema:migrate"';
+export const PREVIEW_MIGRATE_TASK_SCOPE = 'preview:schema:migrate';
+
+/**
+ * Shell statement that sets an environment variable for the following command line.
+ * Defaults to PowerShell (the operator console); pass the host platform from CLIs.
+ */
+export function formatEnvAssignment(
+	name: string,
+	value: string,
+	platform: NodeJS.Platform = 'win32',
+): string {
+	return platform === 'win32' ? `$env:${name}="${value}"` : `export ${name}="${value}"`;
 }
 
-function previewWriteScope(script: string, rest: string): string | null {
+function previewMigrateScope(args: string, platform: NodeJS.Platform): string | null {
+	if (!hasFlag(args, '--apply')) return null;
+	if (flagFromArgs(args, '--target') !== 'preview') return null;
+	return formatEnvAssignment('CELEBRA_TASK_SCOPE', PREVIEW_MIGRATE_TASK_SCOPE, platform);
+}
+
+function previewWriteScope(script: string, rest: string, platform: NodeJS.Platform): string | null {
 	if (script !== 'db:migrate') return null;
-	return previewMigrateScope(stripPnpmSeparator(rest));
+	return previewMigrateScope(stripPnpmSeparator(rest), platform);
 }
 
 function terminalCommand(command: string, envAssignment: string | null): OperatorCommandDisplay {
@@ -72,7 +86,10 @@ function terminalCommand(command: string, envAssignment: string | null): Operato
 	};
 }
 
-export function displayOperatorCommand(command: string): OperatorCommandDisplay {
+export function displayOperatorCommand(
+	command: string,
+	options: { platform?: NodeJS.Platform } = {},
+): OperatorCommandDisplay {
 	const trimmed = command.trim();
 	const match = PNPM_COMMAND_RE.exec(trimmed);
 	if (!match) {
@@ -83,7 +100,7 @@ export function displayOperatorCommand(command: string): OperatorCommandDisplay 
 	if (!isOperatorTaskScript(script)) {
 		return terminalCommand(trimmed, null);
 	}
-	const envAssignment = previewWriteScope(script, rest);
+	const envAssignment = previewWriteScope(script, rest, options.platform ?? 'win32');
 	if (envAssignment) {
 		return terminalCommand(trimmed, envAssignment);
 	}

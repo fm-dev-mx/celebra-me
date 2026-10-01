@@ -128,6 +128,70 @@ describe('migrate CLI behavioral contracts', () => {
 		expect(stderr).toMatch(/Cancelado/);
 	});
 
+	it('guided menu offers no apply action and only prints the explicit --apply command', async () => {
+		Object.defineProperty(process.stdin, 'isTTY', { value: true, configurable: true });
+		Object.defineProperty(process.stderr, 'isTTY', { value: true, configurable: true });
+		mockPreflightMigrate.mockReturnValue({
+			target: 'local',
+			mode: 'preflight',
+			pendingVersions: ['20260806120000'],
+			planId: 'plan-local-1',
+		});
+		mockSelect.mockResolvedValueOnce('review').mockResolvedValueOnce('hint');
+
+		const { runMigrateCli } = await import('../../scripts/db/migrate-cli.ts');
+		await runMigrateCli(['node', 'migrate-cli.ts', '--target', 'local']);
+
+		const menu = mockSelect.mock.calls[0]?.[0] as { choices: { value: string }[] };
+		expect(menu.choices.map((choice) => choice.value)).toEqual(['cancel', 'review', 'hint']);
+		expect(mockSelect).toHaveBeenCalledTimes(2);
+		expect(mockOrchestrateMigrate).not.toHaveBeenCalled();
+		expect(stderr).toContain('pnpm db:migrate -- --target local --apply');
+	});
+
+	it('--interactive with --apply never routes the write through the guided menu', async () => {
+		Object.defineProperty(process.stdin, 'isTTY', { value: true, configurable: true });
+		Object.defineProperty(process.stderr, 'isTTY', { value: true, configurable: true });
+		mockOrchestrateMigrate.mockResolvedValue({
+			plan: { target: 'local', mode: 'apply', pendingVersions: [], planId: 'plan-local-2' },
+			wrote: false,
+		});
+
+		const { runMigrateCli } = await import('../../scripts/db/migrate-cli.ts');
+		await runMigrateCli([
+			'node',
+			'migrate-cli.ts',
+			'--target',
+			'local',
+			'--apply',
+			'--interactive',
+		]);
+
+		expect(mockSelect).not.toHaveBeenCalled();
+		expect(mockPreflightMigrate).not.toHaveBeenCalled();
+		expect(mockOrchestrateMigrate).toHaveBeenCalledWith(
+			expect.objectContaining({ mode: 'apply', target: 'local' }),
+		);
+	});
+
+	it('skips the menu when nothing is pending and points disposable-test at proof recording', async () => {
+		Object.defineProperty(process.stdin, 'isTTY', { value: true, configurable: true });
+		Object.defineProperty(process.stderr, 'isTTY', { value: true, configurable: true });
+		mockPreflightMigrate.mockReturnValue({
+			target: 'disposable-test',
+			mode: 'preflight',
+			pendingVersions: [],
+			planId: 'plan-disposable-1',
+		});
+
+		const { runMigrateCli } = await import('../../scripts/db/migrate-cli.ts');
+		await runMigrateCli(['node', 'migrate-cli.ts', '--target', 'disposable-test']);
+
+		expect(mockSelect).not.toHaveBeenCalled();
+		expect(mockOrchestrateMigrate).not.toHaveBeenCalled();
+		expect(stderr).toContain('pnpm db:migrate -- --target disposable-test --apply');
+	});
+
 	it('redirects Production --apply to prod:apply --schema and never orchestrates migrate apply', async () => {
 		mockApplyProductionApplyPlan.mockResolvedValue({
 			plan: { planId: 'plan-prod', items: [], scope: { schema: true, slugs: [] } },
