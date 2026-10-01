@@ -87,13 +87,16 @@ task authorization, target classification, and standard guard checks.
   preflight; mutation requires `--apply`. The schema primitive sequence:
   1. Production perimeter + exact project-ref identity (in-policy; equivalent to db-guard)
   2. Read-only production schema audit (BEHIND without drift is ready-to-migrate)
-  3. Dry-run pending set (optional `--expected` pin must match exactly when provided)
+  3. Dry-run pending set (optional `--expected` pin: every pending version must be pinned; pinned
+     versions already in history are reported as already applied, so re-running is idempotent)
   4. Migration / deployment compatibility using current clean `HEAD` + rollout registry
      (`supabase/migration-rollout-registry.json`; SSOT
      `scripts/db/migration-deployment-compatibility.ts`). Hosted candidates without an explicit
      registry phase fail closed.
-  5. Apply `prepareApply`: valid `pnpm release-check` evidence for the current clean `HEAD` (`test`
-     in parallel with `type-check` → `build:app`; ordinary preflight does not run the suite)
+  5. Apply `prepareApply`: valid `pnpm release-check` evidence for the current clean `HEAD`,
+     lockfile, and Node.js version (`test` in parallel with `type-check` → `build:app`; ordinary
+     preflight does not run the suite; matching evidence is reused, `--force` re-runs it).
+     `prod:apply` verifies this evidence and exact-SHA CI checks before any backup or owner prompt.
   6. Verified pre-migration critical backup coverage (`.backups/prod/...`) with bounded RPO (default
      15 minutes). Reuse when project/artifacts/EFS/profile/migration-history match and age ≤ RPO;
      business-row drift after capture is allowed (online RSVP traffic). Otherwise capture a new set

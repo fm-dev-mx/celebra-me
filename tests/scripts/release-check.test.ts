@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import {
 	assertValidReleaseCheckEvidence,
 	clearReleaseCheckEvidence,
+	currentReleaseCheckEnvironment,
 	ensureValidReleaseCheckEvidence,
 	readReleaseCheckEvidence,
 	writeReleaseCheckEvidence,
@@ -22,7 +23,8 @@ afterEach(() => {
 
 function evidence(sha: string): ReleaseCheckEvidence {
 	return {
-		version: 1,
+		version: 2,
+		...currentReleaseCheckEnvironment(),
 		status: 'pass',
 		sha,
 		clean: true,
@@ -111,6 +113,29 @@ describe('release-check evidence', () => {
 		});
 		expect(result.sha).toBe('abc1234deadbeef');
 		expect(runner).not.toHaveBeenCalled();
+	});
+
+	it('re-runs validation when evidence came from a different lockfile or Node.js', () => {
+		const dir = mkdtempSync(join(tmpdir(), 'release-check-'));
+		tempDirs.push(dir);
+		const path = join(dir, 'evidence.json');
+		writeReleaseCheckEvidence({ ...evidence('abc1234deadbeef'), nodeVersion: 'v0.0.0' }, path);
+		jest.spyOn(console, 'info').mockImplementation(() => undefined);
+		jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+		jest.spyOn(process, 'exit').mockImplementation(((code?: string | number | null) => {
+			throw new Error(`process.exit:${code ?? ''}`);
+		}) as never);
+		const runner = jest.fn(() => ({ status: 1, stdout: '', stderr: 'failed' }));
+		expect(() =>
+			ensureValidReleaseCheckEvidence({
+				evidencePath: path,
+				worktree: { sha: 'abc1234deadbeef', clean: true, dirtySummary: '' },
+				runner: runner as never,
+			}),
+		).toThrow('process.exit:1');
+		expect(runner).toHaveBeenCalled();
+		expect(readReleaseCheckEvidence(path)).toBeNull();
 	});
 
 	it('clears evidence when a runner step fails', () => {

@@ -8,6 +8,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import {
@@ -23,8 +24,13 @@ export const RELEASE_CHECK_EVIDENCE_PATH = resolve(
 	'.agent/tmp/release-check-evidence.json',
 );
 
-export interface ReleaseCheckEvidence {
-	version: 1;
+export interface ReleaseCheckEnvironment {
+	lockfileSha256: string;
+	nodeVersion: string;
+}
+
+export interface ReleaseCheckEvidence extends ReleaseCheckEnvironment {
+	version: 2;
 	status: 'pass';
 	sha: string;
 	clean: true;
@@ -32,6 +38,27 @@ export interface ReleaseCheckEvidence {
 	test: 'pass';
 	build: 'pass';
 	createdAt: string;
+}
+
+/** Inputs besides HEAD that change what test/type-check/build prove: dependencies and runtime. */
+export function currentReleaseCheckEnvironment(): ReleaseCheckEnvironment {
+	const lockfile = resolve(process.cwd(), 'pnpm-lock.yaml');
+	return {
+		lockfileSha256: existsSync(lockfile)
+			? createHash('sha256').update(readFileSync(lockfile)).digest('hex')
+			: 'missing',
+		nodeVersion: process.version,
+	};
+}
+
+function matchesEnvironment(
+	evidence: ReleaseCheckEvidence,
+	environment: ReleaseCheckEnvironment,
+): boolean {
+	return (
+		evidence.lockfileSha256 === environment.lockfileSha256 &&
+		evidence.nodeVersion === environment.nodeVersion
+	);
 }
 
 export interface GitWorktreeState {
@@ -127,7 +154,9 @@ export function readReleaseCheckEvidence(
 	try {
 		const parsed = JSON.parse(readFileSync(path, 'utf8')) as ReleaseCheckEvidence;
 		if (
-			parsed?.version !== 1 ||
+			parsed?.version !== 2 ||
+			typeof parsed.lockfileSha256 !== 'string' ||
+			typeof parsed.nodeVersion !== 'string' ||
 			parsed.status !== 'pass' ||
 			parsed.clean !== true ||
 			parsed.typeCheck !== 'pass' ||
@@ -169,6 +198,12 @@ export function assertValidReleaseCheckEvidence(
 			`RELEASE_CHECK_STALE: Evidence SHA ${evidence.sha} does not match current clean HEAD ${sha}. Re-run \`pnpm release-check\`.`,
 		);
 	}
+	if (!matchesEnvironment(evidence, currentReleaseCheckEnvironment())) {
+		clearReleaseCheckEvidence(path);
+		fail(
+			'RELEASE_CHECK_STALE: Evidence was produced with a different lockfile or Node.js version. Re-run `pnpm release-check`.',
+		);
+	}
 	return evidence;
 }
 
@@ -188,10 +223,14 @@ export function ensureValidReleaseCheckEvidence(
 	const sha = assertCleanGitWorktree(worktree);
 	const path = options.evidencePath ?? RELEASE_CHECK_EVIDENCE_PATH;
 	const evidence = readReleaseCheckEvidence(path);
-	if (evidence && evidence.sha === sha) {
+	if (
+		evidence &&
+		evidence.sha === sha &&
+		matchesEnvironment(evidence, currentReleaseCheckEnvironment())
+	) {
 		return evidence;
 	}
-	if (evidence && evidence.sha !== sha) {
+	if (evidence) {
 		clearReleaseCheckEvidence(path);
 	}
 	return runReleaseCheck({
@@ -280,7 +319,8 @@ export function runReleaseCheck(
 	}
 
 	const evidence: ReleaseCheckEvidence = {
-		version: 1,
+		version: 2,
+		...currentReleaseCheckEnvironment(),
 		status: 'pass',
 		sha,
 		clean: true,
@@ -295,8 +335,18 @@ export function runReleaseCheck(
 	return evidence;
 }
 
-function main(): void {
-	runReleaseCheck();
+function main(argv: readonly string[] = process.argv.slice(2)): void {
+	if (argv.includes('--force')) {
+		runReleaseCheck();
+		return;
+	}
+	const before = readReleaseCheckEvidence();
+	const evidence = ensureValidReleaseCheckEvidence();
+	if (before && before.createdAt === evidence.createdAt) {
+		console.info(
+			`✅ release-check evidence reused for HEAD ${evidence.sha} (use --force to re-run).`,
+		);
+	}
 }
 
 if (process.argv[1]?.endsWith('release-check.ts')) {
