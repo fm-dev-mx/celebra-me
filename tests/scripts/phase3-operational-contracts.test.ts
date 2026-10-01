@@ -83,6 +83,7 @@ describe('Phase 3 operational contracts', () => {
 		const workflow = read('scripts/db/migrate-policy-preview.ts');
 		expect(workflow).toContain('executeSupabaseDryRun');
 		expect(workflow).toContain('evaluateHostedCompatibilityForPlan');
+		expect(workflow).toContain('resolveContractDeploymentEvidence');
 		expect(workflow).toContain('runMutationContractVerify');
 		expect(workflow).toContain('slug: PREVIEW_MIGRATE_AUTH_SLUG');
 	});

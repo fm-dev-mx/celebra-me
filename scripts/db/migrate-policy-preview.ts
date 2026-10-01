@@ -24,6 +24,8 @@ import { buildMigrationPlan } from './migration-plan.ts';
 import { comparePendingSetToExpected } from './migration-pending-set.ts';
 import { authorizePreviewWriteApply } from '../provision/preview-write-auth.ts';
 import { assertCleanGitWorktree, readGitWorktreeState } from './release-check.ts';
+import { resolveContractDeploymentEvidence } from './contract-deployment-evidence.ts';
+import { loadMigrationRolloutRegistry } from './migration-deployment-compatibility.ts';
 import { operatorSymbol, writeHuman } from './operator-cli-ux.ts';
 
 const PREVIEW_MIGRATE_AUTH_SLUG = 'schema';
@@ -66,16 +68,31 @@ export const previewMigratePolicy: MigrateEnvironmentPolicy = {
 				? pendingVersions
 				: (ctx.expectedPin ?? []).filter((v) => v !== 'none');
 
+		// Contract migrations need the same smoke-checked Production deployment
+		// evidence on Preview as on Production.
+		const { deployedAppIdentity, remoteEvidenceUnavailable } =
+			resolveContractDeploymentEvidence({
+				candidateVersions,
+				registry: loadMigrationRolloutRegistry(),
+				targetReleaseSha: releaseSha,
+				mode,
+			});
 		const compat = evaluateHostedCompatibilityForPlan({
 			target: 'preview',
 			candidateVersions,
 			dbAppliedVersions,
 			env: ctx.env,
 			targetReleaseShaOverride: releaseSha,
+			deployedAppIdentity,
 		});
-		assertHostedCompatibilityOrFail(compat, fail);
+		if (!remoteEvidenceUnavailable) assertHostedCompatibilityOrFail(compat, fail);
 		logHostedCompatibility(compat);
-		const planCompat = toPlanCompatibility(compat);
+		const planCompat = remoteEvidenceUnavailable
+			? {
+					compatibilityStatus: 'environment_not_ready' as const,
+					compatibilityReasons: [remoteEvidenceUnavailable],
+				}
+			: toPlanCompatibility(compat);
 
 		return buildMigrationPlan({
 			target: 'preview',
