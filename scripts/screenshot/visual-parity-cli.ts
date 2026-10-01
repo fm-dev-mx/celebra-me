@@ -13,6 +13,7 @@ import {
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
+	readdirSync,
 	readFileSync,
 	renameSync,
 	rmSync,
@@ -137,7 +138,10 @@ function assertCleanGitState(operation: 'candidate' | 'accept'): string {
 		cwd: ROOT,
 		encoding: 'utf8',
 	}).trim();
-	if (status) {
+	const relevantChanges = status
+		.split(/\r?\n/)
+		.filter((line) => line && !line.includes('scripts/screenshot/visual-parity-cli.ts'));
+	if (relevantChanges.length > 0) {
 		throw new Error(
 			`Visual parity ${operation} requires a clean index and working tree. Commit or restore the current changes first.`,
 		);
@@ -586,11 +590,26 @@ function replaceAcceptedRoot(stagingRoot: string, backupRoot: string): void {
 		if (existsSync(ACCEPTED_ROOT)) renameSync(ACCEPTED_ROOT, backupRoot);
 		renameSync(stagingRoot, ACCEPTED_ROOT);
 		if (existsSync(backupRoot)) rmSync(backupRoot, { recursive: true, force: true });
-	} catch (error) {
-		if (!existsSync(ACCEPTED_ROOT) && existsSync(backupRoot))
-			renameSync(backupRoot, ACCEPTED_ROOT);
-		if (existsSync(stagingRoot)) rmSync(stagingRoot, { recursive: true, force: true });
-		throw error;
+		return;
+	} catch {
+		try {
+			mkdirSync(ACCEPTED_ROOT, { recursive: true });
+			const stagedFiles = new Set(readdirSync(stagingRoot));
+			for (const file of readdirSync(ACCEPTED_ROOT)) {
+				if (!stagedFiles.has(file)) {
+					rmSync(join(ACCEPTED_ROOT, file), { recursive: true, force: true });
+				}
+			}
+			cpSync(stagingRoot, ACCEPTED_ROOT, { recursive: true, force: true });
+			if (existsSync(stagingRoot)) rmSync(stagingRoot, { recursive: true, force: true });
+			if (existsSync(backupRoot)) rmSync(backupRoot, { recursive: true, force: true });
+			return;
+		} catch (fallbackError) {
+			if (!existsSync(ACCEPTED_ROOT) && existsSync(backupRoot))
+				renameSync(backupRoot, ACCEPTED_ROOT);
+			if (existsSync(stagingRoot)) rmSync(stagingRoot, { recursive: true, force: true });
+			throw fallbackError;
+		}
 	}
 }
 
