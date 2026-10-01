@@ -14,6 +14,10 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { visualImpactFiles } from './visual-impact.ts';
+import {
+	readCandidateReview,
+	type CandidateReview,
+} from '../screenshot/visual-candidate-review.ts';
 
 export const CERTIFICATION_SCHEMA_VERSION = 1;
 export const CERTIFICATION_COMMAND_VERSION = 3;
@@ -136,6 +140,20 @@ function gitPath(relativePath: string): string {
 	return resolve(git(['rev-parse', '--path-format=absolute', '--git-path', relativePath]));
 }
 
+/** Prints the duration of one container step so pre-push overhead can be measured per step. */
+export function timedContainerStep(label: string, command: string): string {
+	return `step_started=$(date +%s) && ${command} && echo "[visual-prepush] ${label} $(( $(date +%s) - step_started ))s"`;
+}
+
+function timedHostStep<T>(label: string, step: () => T): T {
+	const started = Date.now();
+	try {
+		return step();
+	} finally {
+		console.log(`[visual-prepush] ${label} ${Math.round((Date.now() - started) / 1000)}s`);
+	}
+}
+
 function runDocker(
 	checkout: string,
 	evidence: string,
@@ -149,15 +167,20 @@ function runDocker(
 	mkdirSync(evidence, { recursive: true });
 	const command = [
 		'set -eu',
-		'cp -a /source/. /work',
+		timedContainerStep('copy-source', 'cp -a /source/. /work'),
 		'cd /work',
-		`trap 'if [ -d test-results ]; then cp -a test-results /evidence/; fi; if [ -f .tmp/visual-parity-failure.json ]; then cp .tmp/visual-parity-failure.json /evidence/; fi; if [ -d .tmp/visual-parity/${operation} ]; then mkdir -p /evidence/visual-parity; cp -a .tmp/visual-parity/${operation} /evidence/visual-parity/; fi; if [ -d .tmp/visual-parity/candidate-references ]; then mkdir -p /evidence/visual-parity; cp -a .tmp/visual-parity/candidate-references /evidence/visual-parity/; fi' EXIT`,
+		// A passing compare discards its evidence, so only failures and candidates copy the
+		// complete capture output to the host mount.
+		`trap 'status=$?; if [ "$status" -ne 0 ] || [ "${operation}" = candidate ]; then if [ -d test-results ]; then cp -a test-results /evidence/; fi; if [ -f .tmp/visual-parity-failure.json ]; then cp .tmp/visual-parity-failure.json /evidence/; fi; if [ -d .tmp/visual-parity/${operation} ]; then mkdir -p /evidence/visual-parity; cp -a .tmp/visual-parity/${operation} /evidence/visual-parity/; fi; for review in candidate-references candidate-diffs; do if [ -d .tmp/visual-parity/$review ]; then mkdir -p /evidence/visual-parity; cp -a .tmp/visual-parity/$review /evidence/visual-parity/; fi; done; fi' EXIT`,
 		`if [ ! -x /node-cache/bin/node ] || [ "$(/node-cache/bin/node --version 2>/dev/null || true)" != "v${NODE_VERSION}" ] || [ "$(cat /node-cache/.archive.sha256 2>/dev/null || true)" != "${NODE_ARCHIVE_SHA256}" ]; then find /node-cache -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +; curl -fsSL -o /tmp/node.tar.gz https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz; echo "${NODE_ARCHIVE_SHA256}  /tmp/node.tar.gz" | sha256sum -c -; tar -xzf /tmp/node.tar.gz -C /node-cache --strip-components=1; printf '%s' '${NODE_ARCHIVE_SHA256}' > /node-cache/.archive.sha256; rm /tmp/node.tar.gz; fi`,
 		'export PATH=/node-cache/bin:$PATH',
 		`test "$(node --version)" = "v${NODE_VERSION}"`,
 		'corepack enable',
-		`corepack prepare pnpm@${PNPM_VERSION} --activate`,
-		'pnpm install --frozen-lockfile --store-dir /pnpm-store',
+		timedContainerStep('corepack', `corepack prepare pnpm@${PNPM_VERSION} --activate`),
+		timedContainerStep(
+			'pnpm-install',
+			'pnpm install --frozen-lockfile --store-dir /pnpm-store',
+		),
 		'touch /evidence/prepush-runtime-ready',
 		// The isolated checkout may originate on Windows. Preserve its checkout
 		// normalization when Git evaluates cleanliness inside the Linux container.
@@ -169,9 +192,12 @@ function runDocker(
 			? "git ls-files -z 'tests/e2e/visual-baselines/*.png' 'tests/e2e/visual-baselines/**/*.png' | git update-index --assume-unchanged -z --stdin"
 			: 'true',
 		operation === 'candidate' ? 'git status --porcelain=v1 --untracked-files=all' : 'true',
-		operation === 'candidate'
-			? `pnpm visual:parity:candidate -- --sha ${sha}`
-			: CERTIFIED_BROWSER_COMMAND,
+		timedContainerStep(
+			'browser',
+			operation === 'candidate'
+				? `pnpm visual:parity:candidate -- --sha ${sha}`
+				: CERTIFIED_BROWSER_COMMAND,
+		),
 	].join(' && ');
 	const result = spawnSync(
 		'docker',
@@ -339,6 +365,25 @@ function categorizeCandidateDiffs(
 	};
 }
 
+/** Review items already exclude gate-passing byte changes. */
+export function categorizeCandidateReview(review: CandidateReview): {
+	newPages: string[];
+	modifiedPages: string[];
+	variantDiffs: string[];
+} {
+	const clean = (path: string): string => path.replace('pages/', '').replace('.png', '');
+	const pages = review.items.filter((item) => item.kind === 'page');
+	return {
+		newPages: pages.filter((item) => item.status === 'new').map((item) => clean(item.file)),
+		modifiedPages: pages
+			.filter((item) => item.status === 'changed')
+			.map((item) => clean(item.file)),
+		variantDiffs: review.items
+			.filter((item) => item.kind === 'variant')
+			.map((item) => clean(item.file)),
+	};
+}
+
 function printVisualCandidateSummary(candidateDir: string, root: string, sha: string): void {
 	const combinedPath = join(candidateDir, 'combined-manifest.json');
 	const acceptedPath = join(root, ACCEPTED_MANIFEST);
@@ -358,10 +403,10 @@ function printVisualCandidateSummary(candidateDir: string, root: string, sha: st
 				})
 			: null;
 
-		const { newPages, modifiedPages, variantDiffs } = categorizeCandidateDiffs(
-			candidateManifest,
-			acceptedManifest,
-		);
+		const review = readCandidateReview(candidateDir);
+		const { newPages, modifiedPages, variantDiffs } = review
+			? categorizeCandidateReview(review)
+			: categorizeCandidateDiffs(candidateManifest, acceptedManifest);
 		const totalDiffs = newPages.length + modifiedPages.length + variantDiffs.length;
 		const changesUrl = pathToFileURL(resolve(candidateDir, 'changes.html')).href;
 
@@ -373,7 +418,12 @@ function printVisualCandidateSummary(candidateDir: string, root: string, sha: st
 		console.log(
 			`• Total de capturas evaluadas: ${candidateManifest.totalCaptures ?? candidateManifest.captures?.length ?? 0}`,
 		);
-		console.log(`• Cambios detectados: ${totalDiffs}`);
+		console.log(`• Cambios que requieren revisión: ${totalDiffs}`);
+		if (review) {
+			console.log(
+				`• Ruido de render que pasa el gate (se conservan los bytes aceptados): ${review.renderNoise.length}`,
+			);
+		}
 
 		printCategoryList('Páginas nuevas provisionadas', newPages, '+');
 		printCategoryList('Páginas completas modificadas', modifiedPages, '~');
@@ -413,11 +463,11 @@ function materializeCandidateWorkspace(evidence: string, root: string, sha: stri
 	if (existsSync(targetCandidate)) rmSync(targetCandidate, { recursive: true, force: true });
 	cpSync(sourceCandidate, targetCandidate, { recursive: true });
 
-	const sourceReferences = join(evidence, 'visual-parity', 'candidate-references');
-	const targetReferences = join(targetTmp, 'candidate-references');
-	if (existsSync(targetReferences)) rmSync(targetReferences, { recursive: true, force: true });
-	if (existsSync(sourceReferences)) {
-		cpSync(sourceReferences, targetReferences, { recursive: true });
+	for (const sibling of ['candidate-references', 'candidate-diffs']) {
+		const source = join(evidence, 'visual-parity', sibling);
+		const target = join(targetTmp, sibling);
+		if (existsSync(target)) rmSync(target, { recursive: true, force: true });
+		if (existsSync(source)) cpSync(source, target, { recursive: true });
 	}
 
 	printVisualCandidateSummary(targetCandidate, root, sha);
@@ -448,18 +498,22 @@ function main(): void {
 	const evidence = join(temporaryRoot, 'evidence');
 	let cleanup = true;
 	try {
-		execFileSync('git', ['clone', '--no-checkout', repositoryRoot, checkout], {
-			stdio: 'inherit',
-			env: isolatedGitEnvironment({ GIT_LFS_SKIP_SMUDGE: '1' }),
-		});
+		timedHostStep('clone', () =>
+			execFileSync('git', ['clone', '--no-checkout', repositoryRoot, checkout], {
+				stdio: 'inherit',
+				env: isolatedGitEnvironment({ GIT_LFS_SKIP_SMUDGE: '1' }),
+			}),
+		);
 		execFileSync('git', ['-C', checkout, 'checkout', '--detach', sha], {
 			stdio: 'inherit',
 			env: isolatedGitEnvironment({ GIT_LFS_SKIP_SMUDGE: '1' }),
 		});
-		execFileSync('git', ['-C', checkout, 'lfs', 'pull'], {
-			stdio: 'inherit',
-			env: isolatedGitEnvironment(),
-		});
+		timedHostStep('lfs-pull', () =>
+			execFileSync('git', ['-C', checkout, 'lfs', 'pull'], {
+				stdio: 'inherit',
+				env: isolatedGitEnvironment(),
+			}),
+		);
 		const isolatedStatus = execFileSync(
 			'git',
 			['-C', checkout, 'status', '--porcelain=v1', '--untracked-files=all'],
@@ -471,7 +525,9 @@ function main(): void {
 			);
 		}
 		if (candidateMode) {
-			const exitCode = runDocker(checkout, evidence, sha, 'candidate');
+			const exitCode = timedHostStep('docker', () =>
+				runDocker(checkout, evidence, sha, 'candidate'),
+			);
 			if (exitCode !== 0) {
 				const category = classifyVisualFailure(evidence);
 				throw new Error(`${category}: candidate generation failed for ${sha}.`);
@@ -479,7 +535,9 @@ function main(): void {
 			materializeCandidateWorkspace(evidence, repositoryRoot, sha);
 			return;
 		}
-		const exitCode = runDocker(checkout, evidence, sha, 'compare');
+		const exitCode = timedHostStep('docker', () =>
+			runDocker(checkout, evidence, sha, 'compare'),
+		);
 		if (exitCode !== 0) {
 			const category = classifyVisualFailure(evidence);
 			const hint =
