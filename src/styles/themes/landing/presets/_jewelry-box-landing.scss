@@ -112,7 +112,7 @@
 	--landing-header-nav-color-scrolled: var(--color-text-on-dark);
 	--landing-header-nav-shadow: none;
 	--landing-header-nav-shadow-transparent:
-	0 1px 2px rgb(0 0 0 / 60%), 0 1px 12px rgb(0 0 0 / 30%);
+		0 1px 2px rgb(0 0 0 / 60%), 0 1px 12px rgb(0 0 0 / 30%);
 	--landing-header-nav-underline: var(--color-text-on-dark);
 	--landing-header-nav-underline-transparent: var(--color-text-on-dark);
 	--landing-header-nav-underline-scrolled: var(--color-action-accent);
@@ -134,10 +134,10 @@
 	--landing-header-menu-open-border: 1px solid rgb(var(--color-action-accent-rgb) / 30%);
 	--mobile-drawer-bg: rgb(7 8 9 / 98%);
 	--mobile-drawer-sheen: linear-gradient(
-	180deg,
-	rgb(255 255 255 / 3%),
-	transparent 36%,
-	rgb(210 170 88 / 4%) 100%
+		180deg,
+		rgb(255 255 255 / 3%),
+		transparent 36%,
+		rgb(210 170 88 / 4%) 100%
 	);
 	--mobile-drawer-border: rgb(210 170 88 / 24%);
 	--mobile-drawer-link-color: rgb(248 244 236);
@@ -183,7 +183,6 @@
 	// FAQ Section
 	--faq-section-bg: var(--color-faq-bg);
 	--faq-section-color: var(--color-text-on-dark-slate);
-	--faq-noise-opacity: 0.02;
 	--faq-item-bg: rgb(var(--color-overlay-light-rgb) / 3%);
 	--faq-item-backdrop-blur: 10px;
 	--faq-item-border: rgb(var(--color-overlay-light-rgb) / 5%);

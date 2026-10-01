@@ -25,7 +25,7 @@ const phone = getContactPhone();
 			<header class="how-it-works__header">
 				{data.eyebrow && <p class="how-it-works__eyebrow reveal-fade-up stagger-1">{data.eyebrow}</p>}
 				<h2 class="how-it-works__title reveal-fade-up stagger-2">{data.title}</h2>
-				<p class="how-it-works__subtitle reveal-fade-up stagger-3">{data.subtitle}</p>
+				{data.subtitle && <p class="how-it-works__subtitle reveal-fade-up stagger-3">{data.subtitle}</p>}
 
 				{data.cta && (
 					<div class="how-it-works__actions how-it-works__actions--desktop reveal-fade-up stagger-4">
@@ -85,7 +85,7 @@ const phone = getContactPhone();
 							<span class="how-it-works__step-number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
 							<div class="how-it-works__step-content">
 								<h3 class="how-it-works__step-title">{step.title}</h3>
-								<p class="how-it-works__step-description">{step.description}</p>
+								{step.description && <p class="how-it-works__step-description">{step.description}</p>}
 							</div>
 						</li>
 					))

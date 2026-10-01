@@ -40,7 +40,7 @@ const whatsappUrl = `https://wa.me/${displayPhone}?text=${encodeURIComponent(wha
 		<header class="contact-header">
 				{data.eyebrow && <p class="contact-eyebrow reveal-fade-up stagger-1">{data.eyebrow}</p>}
 				<h2 class="contact-title reveal-fade-up stagger-2">{data.title}</h2>
-				<p class="contact-subtitle reveal-fade-up stagger-3">{data.subtitle}</p>
+				{data.subtitle && <p class="contact-subtitle reveal-fade-up stagger-3">{data.subtitle}</p>}
 			<div class="contact-divider"></div>
 		</header>
 

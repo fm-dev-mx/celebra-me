@@ -4,23 +4,8 @@ export const footerData: FooterProps = {
 	siteInfo: {
 		slogan: 'Celebre cada momento, diseñe cada recuerdo.',
 	},
-	linkGroups: [
-		{
-			title: 'Compañía',
-			links: [
-				{ label: 'Sobre Nosotros', href: '/#nosotros' },
-				{ label: 'Demos', href: '/#tipo-evento' },
-				{ label: 'Planes', href: '/#pricing' },
-			],
-		},
-		{
-			title: 'Legal',
-			links: [
-				{ label: 'Términos', href: '/terminos' },
-				{ label: 'Privacidad', href: '/privacidad' },
-			],
-		},
-	],
+	// Navigation lives in the header and the legal links in the footer's bottom row.
+	linkGroups: [],
 	contact: {
 		title: 'Contacto',
 		whatsappLabel: 'WhatsApp',

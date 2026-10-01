@@ -27,9 +27,9 @@ const currency = PROMO_CAMPAIGN.currency;
 	<div class="container">
 		<div class="pricing-panel">
 			<header class="pricing-header">
-				<span class="pricing-eyebrow reveal-fade-up stagger-1">{data.eyebrow}</span>
+				{data.eyebrow && <span class="pricing-eyebrow reveal-fade-up stagger-1">{data.eyebrow}</span>}
 				<h2 class="pricing-title reveal-fade-up stagger-2">{data.title}</h2>
-				<p class="pricing-intro reveal-fade-up stagger-3">{data.intro}</p>
+				{data.intro && <p class="pricing-intro reveal-fade-up stagger-3">{data.intro}</p>}
 				<p class="pricing-note reveal-fade-up stagger-4" data-promo-only>
 					<span>{validityNote}</span>
 					<span class="pricing-note__countdown" data-promo-days-left></span>
@@ -101,14 +101,16 @@ const currency = PROMO_CAMPAIGN.currency;
 										</ul>
 									</div>
 
-									<dl class="tier-details">
-										{tier.details.map((detail) => (
-											<div class="tier-details__row">
-												<dt>{detail.label}</dt>
-												<dd>{detail.value}</dd>
-											</div>
-										))}
-									</dl>
+									{tier.details.length > 0 && (
+										<dl class="tier-details">
+											{tier.details.map((detail) => (
+												<div class="tier-details__row">
+													<dt>{detail.label}</dt>
+													<dd>{detail.value}</dd>
+												</div>
+											))}
+										</dl>
+									)}
 
 									<WhatsAppButton
 										className="cta-button"
@@ -127,14 +129,16 @@ const currency = PROMO_CAMPAIGN.currency;
 				}
 			</div>
 
-			<aside class="pricing-guide pricing-extras reveal-fade-up stagger-5" aria-labelledby="pricing-extras-title">
-				<div>
-					<h3 id="pricing-extras-title">{data.extras.title}</h3>
-					<ul>
-						{data.extras.items.map((item) => <li>{item}</li>)}
-					</ul>
-				</div>
-			</aside>
+			{data.extras && (
+				<aside class="pricing-guide pricing-extras reveal-fade-up stagger-5" aria-labelledby="pricing-extras-title">
+					<div>
+						<h3 id="pricing-extras-title">{data.extras.title}</h3>
+						<ul>
+							{data.extras.items.map((item) => <li>{item}</li>)}
+						</ul>
+					</div>
+				</aside>
+			)}
 		</div>
 	</div>
 </section>

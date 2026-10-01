@@ -17,15 +17,6 @@
 		pointer-events: none;
 	}
 
-	.faq-noise {
-		position: absolute;
-		inset: 0;
-		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-		opacity: var(--faq-noise-opacity);
-		pointer-events: none;
-		z-index: 1;
-	}
-
 	.container {
 		position: relative;
 		z-index: 2;
@@ -171,45 +162,6 @@
 		font-size: 0.96rem;
 		font-family: var(--font-body);
 		max-width: 95%;
-	}
-}
-
-.faq-footer {
-	margin-top: var(--spacing-xl);
-	display: flex;
-	justify-content: center;
-}
-
-.faq-cta {
-	max-width: 760px;
-	margin: clamp(1.25rem, 3vw, 2rem) auto 0;
-	padding: clamp(1.25rem, 2.5vw, 2rem);
-	text-align: center;
-	border: 1px solid rgb(216 167 58 / 20%);
-	border-radius: 8px;
-	background: var(--faq-item-bg);
-	backdrop-filter: blur(12px);
-	box-shadow:
-		0 20px 50px rgb(0 0 0 / 40%),
-		inset 0 1px 0 rgb(255 255 255 / 5%);
-
-	&__title {
-		margin: 0;
-		font-family: var(--font-display);
-		font-size: clamp(1.35rem, 3vw, 1.85rem);
-		color: var(--faq-title-color);
-	}
-
-	&__text {
-		max-width: 34rem;
-		margin: 0.6rem auto 1.2rem;
-		color: var(--faq-subtitle-color);
-		font-family: var(--font-body);
-		line-height: 1.65;
-	}
-
-	&__button {
-		justify-content: center;
 	}
 }
 

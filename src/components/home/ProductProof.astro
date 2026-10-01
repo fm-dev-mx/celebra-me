@@ -95,7 +95,7 @@ const phone = getContactPhone();
 		</div>
 
 		<div class="product-proof__mobile-footer">
-			<p class="product-proof__proof-line">{data.proofLine}</p>
+			{data.proofLine && <p class="product-proof__proof-line">{data.proofLine}</p>}
 			<WhatsAppButton
 				className="product-proof__cta"
 				phone={phone}

@@ -226,7 +226,8 @@ test.describe('Landing page regressions', () => {
 		await expect(page.locator('#hero-title')).toContainText(
 			'Invitaciones digitales con pase y confirmación para cada invitado',
 		);
-		await expect(page.locator('.hero-prime__eyebrow')).toContainText('INVITACIONES DIGITALES');
+		// The headline already names the product; the hero carries no eyebrow.
+		await expect(page.locator('.hero-prime__eyebrow')).toHaveCount(0);
 		await expect(page.locator('.hero-prime__subtitle')).toContainText(
 			landingData.hero.subtitle,
 		);
@@ -352,7 +353,7 @@ test.describe('Landing page regressions', () => {
 		);
 		await expect(page.locator('.proof-rail-flow__item')).toHaveCount(4);
 		await expect(page.locator('.proof-rail-flow__item').first()).toContainText(
-			'Quién ya abrió su invitación',
+			'Quién ya vio su invitación',
 		);
 		await expect(page.locator('#prueba-producto')).toHaveAttribute(
 			'data-track-section',
@@ -494,12 +495,7 @@ test.describe('Landing page regressions', () => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto('/', { waitUntil: 'load' });
 
-		for (const selector of [
-			'.hero-prime__eyebrow',
-			'#hero-title',
-			'.hero-prime__subtitle',
-			'.hero-prime__actions',
-		]) {
+		for (const selector of ['#hero-title', '.hero-prime__subtitle', '.hero-prime__actions']) {
 			await expect
 				.poll(async () =>
 					page

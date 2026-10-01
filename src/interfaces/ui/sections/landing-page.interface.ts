@@ -32,7 +32,7 @@ export interface ProductProofData {
 		title: string;
 		text: string;
 	}>;
-	proofLine: string;
+	proofLine?: string;
 	cta: {
 		label: string;
 		message?: string;
@@ -91,10 +91,10 @@ export interface PricingTier {
 }
 
 export interface PricingData {
-	eyebrow: string;
+	eyebrow?: string;
 	title: string;
-	intro: string;
-	extras: {
+	intro?: string;
+	extras?: {
 		title: string;
 		items: string[];
 	};
@@ -135,7 +135,7 @@ export interface FAQData {
 export interface ContactData {
 	eyebrow?: string;
 	title: string;
-	subtitle: string;
+	subtitle?: string;
 	cta?: {
 		label: string;
 		message?: string;
@@ -158,7 +158,7 @@ export interface ContactData {
 export interface HowItWorksData {
 	eyebrow?: string;
 	title: string;
-	subtitle: string;
+	subtitle?: string;
 	deliveryDossier?: {
 		title: string;
 		subtitle?: string;
@@ -167,7 +167,7 @@ export interface HowItWorksData {
 	};
 	steps: Array<{
 		title: string;
-		description: string;
+		description?: string;
 	}>;
 	cta?: {
 		label: string;

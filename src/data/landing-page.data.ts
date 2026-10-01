@@ -30,9 +30,8 @@ export const landingData: LandingPageData = {
 		description: `Invitaciones digitales con pase y confirmación para cada invitado. Diseño único, panel de invitados y envío por WhatsApp. Desde ${formatMxn(getStartingPrice())} MXN, sin anticipo.`,
 	},
 	hero: {
-		eyebrow: 'INVITACIONES DIGITALES',
 		title: 'Invitaciones digitales con pase y confirmación para cada invitado',
-		subtitle: 'Diseño único para su evento. Usted la envía por WhatsApp y ve quién confirmó.',
+		subtitle: 'Usted la envía por WhatsApp y ve quién confirmó.',
 		priceLine: {
 			prefix: 'Desde',
 			suffix: 'MXN, pago único.',
@@ -42,13 +41,11 @@ export const landingData: LandingPageData = {
 		secondaryCtaLabel: 'Ver una invitación',
 		secondaryCtaUrl: heroDemo.href,
 		secondaryCtaDemoSlug: heroDemo.slug,
-		proofLine: 'Pases · Confirmación · Panel de invitados',
 	},
 	eventSelector: {
 		eyebrow: 'DEMOS POR EVENTO',
 		title: 'Vea cómo puede lucir su invitación',
-		description:
-			'Explore demos para boda, XV años, cumpleaños y otros eventos. El diseño se adapta al estilo de su celebración.',
+		description: 'Elija su evento y abra la demo completa.',
 	},
 	productProof: {
 		eyebrow: 'SU PANEL DE INVITADOS',
@@ -75,12 +72,11 @@ export const landingData: LandingPageData = {
 		],
 		railTitle: 'Lo que ve en su panel',
 		railItems: [
-			{ title: 'Abiertas', text: 'Quién ya abrió su invitación' },
+			{ title: 'Vistas', text: 'Quién ya vio su invitación' },
 			{ title: 'Confirmadas', text: 'Quién confirmó asistencia' },
 			{ title: 'Asistentes', text: 'Total de asistentes confirmados' },
 			{ title: 'Exportación', text: 'Descargue su lista con las respuestas' },
 		],
-		proofLine: 'Invitaciones, pases y confirmaciones desde un solo lugar.',
 		cta: {
 			label: PRIMARY_CTA_LABEL,
 		},
@@ -144,24 +140,12 @@ export const landingData: LandingPageData = {
 		},
 	},
 	testimonials: {
-		eyebrow: 'RESULTADOS REALES',
 		title: 'Lo que dicen nuestros clientes',
-		subtitle:
-			'Nuestros clientes no solo buscan una invitación bonita. También valoran la atención, los tiempos de entrega y saber quién confirmó.',
 		testimonials: CLIENT_TESTIMONIALS,
 		notice: 'Testimonios reales de clientes. Omitimos sus nombres por privacidad.',
-		proofLine: '',
 	},
 	pricing: {
-		eyebrow: 'INVERSIÓN PARA SU CELEBRACIÓN',
-		title: 'Elija con una recomendación clara',
-		intro: 'Todos los paquetes incluyen diseño único, pases, confirmación y panel de invitados, agregar al calendario y cambios y correcciones sin costo. Pago único.',
-		extras: {
-			title: 'Extras',
-			items: [
-				`${expressDelivery.name}: ${expressDeliveryPrice}, disponible para ${expressDeliveryPackages}.`,
-			],
-		},
+		title: 'Elija su paquete',
 		tiers: [
 			{
 				packageId: 'esencial',
@@ -172,8 +156,6 @@ export const landingData: LandingPageData = {
 				],
 				details: [
 					{ label: 'Entrega', value: '3 a 5 días hábiles' },
-					{ label: 'Carga de la lista de invitados', value: 'La realiza usted' },
-					{ label: 'Firma de Celebra-me al pie', value: 'Discreta' },
 					{ label: expressDelivery.name, value: expressDeliveryPrice },
 				],
 			},
@@ -185,8 +167,6 @@ export const landingData: LandingPageData = {
 				includes: ['QR de recuerdos'],
 				details: [
 					{ label: 'Entrega', value: '3 a 5 días hábiles' },
-					{ label: 'Carga de la lista de invitados', value: 'La realiza usted' },
-					{ label: 'Firma de Celebra-me al pie', value: 'Discreta' },
 					{ label: expressDelivery.name, value: expressDeliveryPrice },
 				],
 			},
@@ -196,25 +176,15 @@ export const landingData: LandingPageData = {
 				includesFrom: `Todo lo de ${signatureName}, más:`,
 				includes: [
 					'Entrega en 48 horas',
-					'Celebra-me carga su lista de invitados',
+					'Celebra-me carga su lista de invitados (Excel o legible)',
 					'Su invitación a su nombre, sin la firma de Celebra-me',
 				],
-				details: [
-					{ label: 'Entrega', value: '48 horas' },
-					{
-						label: 'Carga de la lista de invitados',
-						value: 'Celebra-me, con lista en Excel o legible',
-					},
-					{ label: 'Firma de Celebra-me al pie', value: 'Se retira' },
-					{ label: expressDelivery.name, value: 'No aplica' },
-				],
+				details: [],
 			},
 		],
 	},
 	faq: {
-		pretitle: 'Claridad antes de cotizar',
 		title: 'Preguntas frecuentes',
-		subtitle: 'Pago, tiempos de entrega, cambios y lo que necesita enviarnos.',
 		faqs: [
 			{
 				question: '¿Cómo y cuándo pago?',
@@ -241,62 +211,26 @@ export const landingData: LandingPageData = {
 				answer: `Fecha, lugar, nombres, fotos y detalles del evento, además de su lista de invitados. En ${atelierName}, nosotros la cargamos a partir de su lista en Excel o legible.`,
 			},
 		],
-		helpSection: {
-			title: '¿Prefiere resolverlo directamente?',
-			description:
-				'Le ayudamos por WhatsApp a elegir el paquete adecuado según su evento, cantidad de invitados y estilo.',
-			cta: PRIMARY_CTA_LABEL,
-		},
 	},
 	howItWorks: {
-		eyebrow: 'PROCESO SIMPLE',
+		eyebrow: 'PROCESO',
 		title: 'Nosotros la diseñamos. Usted la envía desde su panel.',
-		subtitle:
-			'Le entregamos una invitación lista para usar, con una forma clara de organizar invitados, pases y confirmaciones.',
-		deliveryDossier: {
-			title: 'Entrega preparada',
-			subtitle: 'Lo que recibe al final del proceso',
-			rows: [
-				{ label: 'Invitación personalizada', status: 'Lista' },
-				{ label: 'Revisión con Invitado de prueba', status: 'Incluida' },
-				{ label: 'Panel de invitados', status: 'Activo al pagar' },
-				{ label: 'Invitaciones listas para enviar', status: 'Listas' },
-			],
-			footnote: 'Cada elemento revisado antes de la entrega.',
-		},
 		steps: [
-			{
-				title: 'Nos comparte los datos',
-				description: 'Fecha, lugar, nombres, fotos y detalles del evento.',
-			},
-			{
-				title: 'Diseñamos su invitación',
-				description: 'En 3 a 5 días hábiles desde que recibimos la información completa.',
-			},
-			{
-				title: 'La revisa y paga al aprobarla',
-				description:
-					'Revisa su invitación terminada con un Invitado de prueba. Sin anticipo: al pagar se activa su panel.',
-			},
-			{
-				title: 'Envía y ve quién confirmó',
-				description: 'Agrega a sus invitados, envía por WhatsApp y ve quién ya respondió.',
-			},
+			{ title: 'Nos envía los datos de su evento.' },
+			{ title: 'Diseñamos su invitación.' },
+			{ title: 'La revisa terminada y paga al aprobarla.' },
+			{ title: 'La envía por WhatsApp y ve quién confirmó.' },
 		],
 		cta: {
 			label: PRIMARY_CTA_LABEL,
 		},
 	},
 	contact: {
-		eyebrow: 'COTICE SU INVITACIÓN',
-		title: 'Cuéntenos qué evento está preparando',
-		subtitle:
-			'Le ayudamos a elegir el paquete adecuado según el nivel de personalización, diseño y acompañamiento que necesita su evento.',
+		eyebrow: 'COTIZACIÓN',
+		title: 'Cuéntenos de su evento',
 		cta: {
 			label: PRIMARY_CTA_LABEL,
 		},
-		microcopy:
-			'Le asesoramos para elegir la estructura y el nivel de diseño ideal para su celebración.',
 		formIntro: 'O déjenos sus datos y le contactamos.',
 		channelPrimary: {
 			value: PRIMARY_CTA_LABEL,

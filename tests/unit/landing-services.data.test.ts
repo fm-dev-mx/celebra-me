@@ -16,9 +16,8 @@ describe('landing services product value data', () => {
 		expect(hero.title).toBe(
 			'Invitaciones digitales con pase y confirmación para cada invitado',
 		);
-		expect(hero.subtitle).toBe(
-			'Diseño único para su evento. Usted la envía por WhatsApp y ve quién confirmó.',
-		);
+		expect(hero.subtitle).toBe('Usted la envía por WhatsApp y ve quién confirmó.');
+		expect(hero.eyebrow).toBeUndefined();
 		expect(hero.paymentNote).toBe('Sin anticipo: paga al recibir su invitación terminada.');
 		expect(hero.secondaryCtaLabel).toBe('Ver una invitación');
 		expect(DEMO_SHOWROOM_ITEMS.some((item) => item.href === hero.secondaryCtaUrl)).toBe(true);
@@ -72,8 +71,9 @@ describe('landing package catalog', () => {
 
 		expect(expressValue(esencial)).toBe(expressPrice);
 		expect(expressValue(signature)).toBe(expressPrice);
-		expect(expressValue(atelier)).toBe('No aplica');
-		expect(landingData.pricing.extras.items.join(' ')).toContain(expressPrice);
+		// Atelier already ships in 48 hours, so its card does not repeat the extra.
+		expect(expressValue(atelier)).toBeUndefined();
+		expect(landingData.pricing.extras).toBeUndefined();
 	});
 
 	it('keeps the compact high-intent FAQ and process steps', () => {
@@ -97,7 +97,6 @@ describe('landing primary CTA and trust copy', () => {
 			landingData.services.cta.label,
 			landingData.guestExperience.cta.label,
 			landingData.howItWorks.cta?.label,
-			landingData.faq.helpSection?.cta,
 			landingData.contact.cta?.label,
 		];
 		expect(new Set(labels)).toEqual(new Set(['Cotizar por WhatsApp']));
