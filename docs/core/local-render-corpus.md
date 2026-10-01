@@ -6,7 +6,8 @@ definitions. It is not an invitation inventory, does not own lifecycle, and has 
 ## Authority
 
 The only invitation inventory is `scripts/provision/invitations/registry.ts`. The projection in
-`scripts/provision/local-render-corpus/registry.ts` is derived from that registry and is consumed by:
+`scripts/provision/local-render-corpus/registry.ts` is derived from that registry and is consumed
+by:
 
 - `pnpm invitation:local-corpus` (persistent-local only, guarded pipeline)
 - `pnpm test:local-render-corpus`
@@ -24,8 +25,8 @@ pnpm invitation:local-corpus --dry-run
 pnpm invitation:local-corpus --apply --slug <slug>
 ```
 
-Every entry uses the definition and its declared delivery scope through `applyLocalInvitation`.
-The command rejects Preview and Production, never clones databases, and never imports Auth users,
+Every entry uses the definition and its declared delivery scope through `applyLocalInvitation`. The
+command rejects Preview and Production, never clones databases, and never imports Auth users,
 guests, RSVP responses, analytics, or tracking data. Apply remains a separately authorized write.
 Definitions with `managedIdentityProvenance: owner-approved` remain render/schema inputs only;
 release/package generation fails closed until each target identity preflight is verified.
@@ -37,7 +38,7 @@ pnpm test:local-render-corpus
 pnpm screenshot:local-render-corpus
 pnpm visual:parity:candidate
 pnpm visual:parity:compare
-pnpm visual:parity:accept -- --reference-sha=<approved-commit-sha> --matrix-hash=<candidate-matrix-hash> --candidate-manifest-sha256=<candidate-manifest-hash>
+pnpm visual:parity:accept [-- --reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>]
 ```
 
 Candidate files are ignored under `.tmp/visual-parity/candidate/`. Compare never modifies accepted

@@ -13,6 +13,10 @@ import {
 	classifyVisualFailure,
 	preserveEvidenceAttempt,
 	hasReusableCertification,
+	categorizeCandidateReview,
+	timedContainerStep,
+	sourceArchiveCommand,
+	PNPM_STORE_VOLUME,
 } from '../../scripts/ops/visual-prepush-certification.ts';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -156,5 +160,61 @@ describe('visual pre-push certification', () => {
 			if (originalGitWorkTree === undefined) delete process.env.GIT_WORK_TREE;
 			else process.env.GIT_WORK_TREE = originalGitWorkTree;
 		}
+	});
+});
+
+describe('certification reporting', () => {
+	it('times a container step without hiding its exit status', () => {
+		const step = timedContainerStep('pnpm-install', 'pnpm install --frozen-lockfile');
+		expect(
+			step.startsWith('step_started=$(date +%s) && pnpm install --frozen-lockfile && echo '),
+		).toBe(true);
+		expect(step).toContain('[visual-prepush] pnpm-install');
+	});
+
+	it('summarizes only review items, never gate-passing render noise', () => {
+		const item = (file: string, kind: 'variant' | 'page', status: 'changed' | 'new') => ({
+			file,
+			kind,
+			status,
+			label: file,
+			viewport: 'mobile',
+			preset: 'p',
+			sha256: 'x',
+		});
+		expect(
+			categorizeCandidateReview({
+				candidateManifestSha256: 'm',
+				items: [
+					item('pages/demo-xv-a-mobile.png', 'page', 'new'),
+					item('pages/invitation-xv-b-mobile.png', 'page', 'changed'),
+					item('jewelry-box-mobile-hero-standard.png', 'variant', 'changed'),
+				],
+				renderNoise: ['pages/invitation-xv-c-mobile.png'],
+				removed: [],
+			}),
+		).toEqual({
+			newPages: ['demo-xv-a-mobile'],
+			modifiedPages: ['invitation-xv-b-mobile'],
+			variantDiffs: ['jewelry-box-mobile-hero-standard'],
+		});
+	});
+});
+
+describe('certification container inputs', () => {
+	it('archives the checkout with bsdtar on Windows and tar elsewhere', () => {
+		expect(sourceArchiveCommand('/tmp/checkout', '/tmp/source.tar', 'linux')).toEqual([
+			'tar',
+			['-cf', '/tmp/source.tar', '-C', '/tmp/checkout', '.'],
+		]);
+		const [windowsTar, args] = sourceArchiveCommand('C:/checkout', 'C:/s.tar', 'win32');
+		expect(windowsTar.replaceAll('\\', '/').toLowerCase().endsWith('/system32/tar.exe')).toBe(
+			true,
+		);
+		expect(args).toEqual(['-cf', 'C:/s.tar', '-C', 'C:/checkout', '.']);
+	});
+
+	it('keeps the pnpm store in a named Docker volume', () => {
+		expect(PNPM_STORE_VOLUME).toMatch(/^[a-z0-9][a-z0-9_.-]+$/u);
 	});
 });

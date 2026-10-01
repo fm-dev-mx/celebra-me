@@ -217,6 +217,7 @@ jobs:
                   path: |
                       .tmp/visual-parity/candidate
                       .tmp/visual-parity/candidate-references
+                      .tmp/visual-parity/candidate-diffs
                   include-hidden-files: true
                   retention-days: 7
 

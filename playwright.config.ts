@@ -44,6 +44,7 @@ const visualParitySnapshotRoot =
 
 export default defineConfig({
 	globalSetup: './tests/e2e/harness/visual-environment-preflight.ts',
+	globalTeardown: './tests/e2e/harness/visual-record-teardown.ts',
 	testDir: './tests/e2e',
 	fullyParallel: false,
 	forbidOnly: !!process.env.CI,
@@ -62,6 +63,9 @@ export default defineConfig({
 		viewport: { width: 1280, height: 720 },
 	},
 	snapshotPathTemplate: `${visualParitySnapshotRoot.replace(/\\/g, '/')}/{arg}{ext}`,
+	// Compare reads accepted references only; the default `missing` mode would write a new file
+	// into tests/e2e/visual-baselines when a reference is absent.
+	...(visualParityMode === 'compare' ? { updateSnapshots: 'none' as const } : {}),
 	projects: [
 		{
 			name: 'chromium',

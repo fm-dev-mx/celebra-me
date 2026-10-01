@@ -43,12 +43,15 @@ describe('Phase 3 operational contracts', () => {
 				'tests/e2e/section-presentation-measurement.spec.ts',
 			]),
 		);
-		expect(read('tests/e2e/structural-variant-portability.spec.ts')).toContain(
-			"process.env.CI ? 'compare' : 'diagnostic'",
+		expect(read('tests/e2e/harness/visual-baseline-policy.ts')).toContain(
+			"(process.env.CI ? 'compare' : 'diagnostic')",
 		);
-		expect(read('tests/e2e/canonical-invitation-page-parity.spec.ts')).toContain(
-			"process.env.CI ? 'compare' : 'diagnostic'",
-		);
+		for (const spec of [
+			'tests/e2e/structural-variant-portability.spec.ts',
+			'tests/e2e/canonical-invitation-page-parity.spec.ts',
+		]) {
+			expect(read(spec)).toContain('const VISUAL_PARITY_MODE = resolveVisualParityMode();');
+		}
 	});
 
 	it('keeps complete Production recovery coverage around migration', () => {

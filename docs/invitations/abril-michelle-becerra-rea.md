@@ -153,7 +153,7 @@ Storage mutations when content is unchanged.
     `events_slug_key`.
   - `invitation-update-plan.ts`: Guarded array recursion prevents stack overflow when comparing
     against `undefined` targets.
-  - `StaticVenueMap.astro`: Deterministic venue map is derived from canonical coordinates without
+  - `StaticVenueMap.astro`: In-house illustrated venue map, seeded by canonical coordinates, with no
     network requests.
 - **Media Provider Strategy:** Cloudinary for invitation images (shared server adapter). Music
   remains a content URL. Legacy Supabase binaries are pruned in a later managed step.

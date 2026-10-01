@@ -204,8 +204,10 @@ Worker settings currently differ intentionally by execution entry point: Playwri
 one worker, while the remote browser job explicitly selects two. This documents the existing
 behavior, not a measured optimum. Before changing it, compare the same code, cases, runtime image,
 fixtures and visual mode across repeated runs, including retries and server preparation. Do not
-infer remote savings from local diagnostic timings. Retain serial execution within suites that
-aggregate captures and require complete coverage.
+infer remote savings from local diagnostic timings. Capture suites aggregate per-capture records
+after the run, so they no longer depend on one worker; they still run serially by default.
+`VISUAL_PARITY_PARALLEL=1` selects parallel capture only for the paired trials defined in the
+release process; parallel capture becomes the default only after those trials pass.
 
 The aggregate application check requires policy, application and browser jobs to succeed; failed,
 cancelled or incomplete jobs must never become aggregate approval. Failure artifacts retain

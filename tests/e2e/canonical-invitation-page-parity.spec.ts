@@ -1,4 +1,3 @@
-import { recordVisualComparison } from './harness/deferred-visual-comparison';
 import { auditCriticalLayout } from './harness/critical-layout-audit';
 import {
 	initializeVisualCapture,
@@ -8,56 +7,39 @@ import {
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
-import crypto from 'node:crypto';
 import { listInvitationDefinitions } from '../../scripts/provision/invitations/registry';
 import {
 	hashAssetDirectory,
 	hashAssetFiles,
 	hashVisualValue,
-	VISUAL_PARITY_RUNTIME,
 } from './harness/visual-parity-metadata';
 import { buildSemanticAssetMap } from '../../scripts/provision/normalized-invitation-release';
 import {
 	assertVisualComparisonReady,
-	shouldCompareVisualSnapshots,
-	visualComparisonResult,
+	resolveVisualParityMode,
 } from './harness/visual-baseline-policy';
+import {
+	markVisualSuiteStarted,
+	resolveVisualOutputRoot,
+	visualSuiteMode,
+} from './harness/visual-capture-record';
+import { recordVisualCapture, settleVisualCapture } from './harness/visual-capture-settlement';
 import {
 	buildVisualPageCases,
 	VISUAL_VIEWPORTS,
-	computeVisualMatrixHash,
+	visualPageCaseFile,
 	type VisualPageCase,
 } from '../../scripts/screenshot/visual-coverage-contract';
 
 const VIEWPORTS = VISUAL_VIEWPORTS;
-const VISUAL_PARITY_MODE = (process.env.VISUAL_PARITY_MODE ??
-	(process.env.CI ? 'compare' : 'diagnostic')) as 'diagnostic' | 'candidate' | 'compare';
+const VISUAL_PARITY_MODE = resolveVisualParityMode();
 const ACCEPTED_BASELINES_MANIFEST = path.resolve(
 	process.cwd(),
 	'tests/e2e/visual-baselines/manifest.json',
 );
 assertVisualComparisonReady(VISUAL_PARITY_MODE, ACCEPTED_BASELINES_MANIFEST);
-const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-
-interface PageCapture {
-	kind: VisualPageCase['kind'];
-	slug: string;
-	eventType: string;
-	preset?: string;
-	viewport: string;
-	file: string;
-	sha256: string;
-	contentHash: string;
-	assetHash: string;
-	comparisonResult: 'PASS' | 'FAIL' | 'CANDIDATE';
-}
 
 const PAGE_CASES: VisualPageCase[] = buildVisualPageCases();
-
-const EXPECTED_CAPTURE_COUNT = PAGE_CASES.length * VIEWPORTS.length;
-const visualDifferences: Array<{ file: string; message: string }> = [];
-const captures: PageCapture[] = [];
-let captureCaseFailed = false;
 
 function isAllowedVisualAssetUrl(rawUrl: string, baseOrigin: string): boolean {
 	let url: URL;
@@ -92,16 +74,13 @@ function isAllowedVisualAssetUrl(rawUrl: string, baseOrigin: string): boolean {
 		return true;
 	}
 
-	return /^(?:a|b|c)\.basemaps\.cartocdn\.com$/u.test(url.hostname);
+	return false;
 }
 
 test.describe('Canonical invitation complete-page visual parity', () => {
-	test.describe.configure({ mode: 'serial', retries: 0 });
-	// Playwright requires fixture destructuring even when only testInfo is used.
-	// eslint-disable-next-line no-empty-pattern
-	test.afterEach(({}, testInfo) => {
-		if (testInfo.status !== testInfo.expectedStatus) captureCaseFailed = true;
-	});
+	// Captures are independent; each writes its own record and the run teardown aggregates them.
+	test.describe.configure({ mode: visualSuiteMode(), retries: 0 });
+	test.beforeAll(() => markVisualSuiteStarted(resolveVisualOutputRoot(), 'pages'));
 	for (const entry of PAGE_CASES) {
 		for (const viewport of VIEWPORTS) {
 			test(`capture ${entry.kind}: ${entry.eventType}/${entry.slug} @ ${viewport.name}`, async ({
@@ -238,23 +217,16 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 				}
 
 				await page.waitForTimeout(100);
-				const snapshotName = `pages/${entry.kind}-${entry.eventType}-${entry.slug}-${viewport.name}.png`;
+				const snapshotName = visualPageCaseFile(entry, viewport.name);
+				const captureStarted = Date.now();
 				const image = await captureCompletePage(page);
-				let comparisonResult: PageCapture['comparisonResult'] =
-					visualComparisonResult(VISUAL_PARITY_MODE);
-				if (shouldCompareVisualSnapshots(VISUAL_PARITY_MODE)) {
-					const compare = () =>
-						expect(image).toMatchSnapshot(snapshotName.split('/'), {
-							maxDiffPixelRatio: 0.001,
-						});
-					if (VISUAL_PARITY_MODE === 'compare')
-						comparisonResult = recordVisualComparison(
-							compare,
-							snapshotName,
-							visualDifferences,
-						);
-					else compare();
-				}
+				const captureMs = Date.now() - captureStarted;
+				const settlement = settleVisualCapture({
+					testInfo,
+					mode: VISUAL_PARITY_MODE,
+					file: snapshotName,
+					image,
+				});
 				const contentHash = definition
 					? hashVisualValue(
 							definition.buildPublishedContent(buildSemanticAssetMap(definition)),
@@ -289,101 +261,26 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 									`Demo ${entry.slug} is missing _assetSlug for visual asset hashing.`,
 								);
 							})();
-				const outputRoot = path.resolve(
-					process.cwd(),
-					process.env.VISUAL_PARITY_OUTPUT_ROOT ??
-						'output/screenshots/variant-portability',
+				recordVisualCapture(
+					'pages',
+					{
+						kind: entry.kind,
+						slug: entry.slug,
+						eventType: entry.eventType,
+						preset: entry.preset,
+						viewport: viewport.name,
+						file: snapshotName,
+						sha256: settlement.storedSha256,
+						contentHash,
+						assetHash,
+						comparisonResult: settlement.comparisonResult,
+					},
+					settlement,
+					captureMs,
 				);
-				const outputPath = path.join(outputRoot, snapshotName);
-				fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-				fs.writeFileSync(outputPath, image);
-				captures.push({
-					kind: entry.kind,
-					slug: entry.slug,
-					eventType: entry.eventType,
-					preset: entry.preset,
-					viewport: viewport.name,
-					file: snapshotName,
-					sha256: crypto.createHash('sha256').update(image).digest('hex'),
-					contentHash,
-					assetHash,
-					comparisonResult,
-				});
 			});
 		}
 	}
-
-	test.afterAll(async ({ browserName }, testInfo) => {
-		const expectedFiles = PAGE_CASES.flatMap((entry) =>
-			VIEWPORTS.map(
-				(viewport) =>
-					`pages/${entry.kind}-${entry.eventType}-${entry.slug}-${viewport.name}.png`,
-			),
-		);
-		const completedFiles = new Set(captures.map((capture) => capture.file));
-		await testInfo.attach('page-capture-coverage', {
-			body: Buffer.from(
-				JSON.stringify({
-					browser: browserName,
-					expected: expectedFiles.length,
-					completed: [...completedFiles],
-					missing: expectedFiles.filter((file) => !completedFiles.has(file)),
-				}),
-			),
-			contentType: 'application/json',
-		});
-		if (VISUAL_PARITY_MODE !== 'diagnostic' && !captureCaseFailed) {
-			expect(captures.length).toBe(EXPECTED_CAPTURE_COUNT);
-			expect([...completedFiles].sort()).toEqual([...expectedFiles].sort());
-		}
-		if (captures.length === 0) return;
-		const outputRoot = path.resolve(
-			process.cwd(),
-			process.env.VISUAL_PARITY_OUTPUT_ROOT ?? 'output/screenshots/variant-portability',
-		);
-		for (const capture of captures) {
-			const filePath = path.join(outputRoot, capture.file);
-			expect(fs.existsSync(filePath)).toBe(true);
-			const buffer = fs.readFileSync(filePath);
-			expect(buffer.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)).toBe(true);
-			expect(buffer.length).toBeGreaterThanOrEqual(24);
-			const width = buffer.readUInt32BE(16);
-			const viewport = VIEWPORTS.find((candidate) => candidate.name === capture.viewport)!;
-			expect(width).toBe(viewport.width);
-		}
-		fs.writeFileSync(
-			path.join(outputRoot, 'pages-manifest.json'),
-			JSON.stringify(
-				{
-					generatedAt: new Date().toISOString(),
-					runtimeFingerprint: VISUAL_PARITY_RUNTIME,
-					status:
-						captureCaseFailed || visualDifferences.length
-							? 'FAILED'
-							: VISUAL_PARITY_MODE === 'compare'
-								? 'COMPARED'
-								: 'CANDIDATE',
-					mode: VISUAL_PARITY_MODE,
-					totalCaptures: captures.length,
-					matrixHash: computeVisualMatrixHash(
-						captures as unknown as Array<Record<string, unknown>>,
-					),
-					cases: PAGE_CASES.length,
-					captures,
-				},
-				null,
-				2,
-			),
-			'utf8',
-		);
-		await testInfo.attach('visual-comparison-results', {
-			body: Buffer.from(
-				JSON.stringify({ captures: captures.length, differences: visualDifferences }),
-			),
-			contentType: 'application/json',
-		});
-		expect(visualDifferences, 'Complete-page visual comparisons must all pass').toEqual([]);
-	});
 });
 test.describe('Reported invitation public-route regressions', () => {
 	test.use({ viewport: { width: 414, height: 896 } });
