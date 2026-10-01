@@ -224,6 +224,18 @@ export function evaluateMigrationSqlRisk(options: {
 	return { blocked: reasons.length > 0, reasons, risk };
 }
 
+/** Per-version content digests, used to detect in-place edits of already-applied migrations. */
+export function computeMigrationFileDigests(
+	files: readonly { version: string; filename: string }[],
+): Record<string, string> {
+	return Object.fromEntries(
+		files.map((file) => [
+			file.version,
+			contentDigestOf(readFileSync(resolve(MIGRATIONS_DIR, file.filename), 'utf8')),
+		]),
+	);
+}
+
 /**
  * Digest of ordered migration file contents for disposable proof binding.
  */
