@@ -1,4 +1,3 @@
-import { recordVisualComparison } from './harness/deferred-visual-comparison';
 import {
 	hideOperationalTooling,
 	assertNoOperationalTooling,
@@ -11,7 +10,6 @@ import { auditCriticalLayout } from './harness/critical-layout-audit';
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
-import crypto from 'node:crypto';
 import {
 	CANONICAL_VARIANT_REGISTRY,
 	type CanonicalVariantSection,
@@ -20,25 +18,24 @@ import {
 import { buildSyntheticVariantEvent } from '../fixtures/structural-variants/synthetic-variant-fixtures';
 import {
 	CROSS_PRESET_REPRESENTATIVE_VARIANTS,
-	buildVisualVariantCases,
 	VISUAL_VIEWPORTS,
-	computeVisualMatrixHash,
+	visualVariantCaseFile,
 } from '../../scripts/screenshot/visual-coverage-contract';
-import { hashVisualValue, VISUAL_PARITY_RUNTIME } from './harness/visual-parity-metadata';
+import { hashVisualValue } from './harness/visual-parity-metadata';
 import {
 	assertVisualComparisonReady,
-	shouldCompareVisualSnapshots,
-	visualComparisonResult,
+	resolveVisualParityMode,
 } from './harness/visual-baseline-policy';
+import {
+	markVisualSuiteStarted,
+	resolveVisualOutputRoot,
+	visualSuiteMode,
+} from './harness/visual-capture-record';
+import { recordVisualCapture, settleVisualCapture } from './harness/visual-capture-settlement';
 
 const VIEWPORTS = VISUAL_VIEWPORTS;
 
-const EXPECTED_CAPTURE_COUNT =
-	(CANONICAL_VARIANT_REGISTRY.length + CROSS_PRESET_REPRESENTATIVE_VARIANTS.length) *
-	VIEWPORTS.length;
-const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-const VISUAL_PARITY_MODE = (process.env.VISUAL_PARITY_MODE ??
-	(process.env.CI ? 'compare' : 'diagnostic')) as 'diagnostic' | 'candidate' | 'compare';
+const VISUAL_PARITY_MODE = resolveVisualParityMode();
 const ACCEPTED_BASELINES_MANIFEST = path.resolve(
 	process.cwd(),
 	'tests/e2e/visual-baselines/manifest.json',
@@ -61,24 +58,6 @@ function getSectionLocator(page: Page, section: CanonicalVariantSection) {
 	const componentName = section === 'personalizedAccess' ? 'personalized-access' : section;
 	return page.locator(`.invitation-section-wrapper[data-section-kind="${componentName}"]`);
 }
-
-interface CapturedSnapshotInfo {
-	kind: 'variant';
-	section: string;
-	variant: string;
-	preset: string;
-	viewport: string;
-	cssOwner: string;
-	fixtureIdentity: string;
-	file: string;
-	sha256: string;
-	contentHash: string;
-	assetHash: string;
-	comparisonResult: string;
-}
-
-const visualDifferences: Array<{ file: string; message: string }> = [];
-const capturedSnapshots: CapturedSnapshotInfo[] = [];
 
 test('gift registry event identifier geometry stays fixed during the first complete-page capture', async ({
 	page,
@@ -117,7 +96,8 @@ test('certified comparison rejects a deliberately different rendered page', asyn
 });
 
 test.describe('Registry-Driven Visual Portability Suite', () => {
-	test.describe.configure({ mode: 'serial', retries: 0 });
+	test.describe.configure({ mode: visualSuiteMode(), retries: 0 });
+	test.beforeAll(() => markVisualSuiteStarted(resolveVisualOutputRoot(), 'variants'));
 	// Baseline Preset: jewelry-box (all registered canonical variants)
 	for (const entry of CANONICAL_VARIANT_REGISTRY) {
 		for (const vp of VIEWPORTS) {
@@ -166,92 +146,6 @@ test.describe('Registry-Driven Visual Portability Suite', () => {
 			});
 		}
 	}
-
-	test.afterAll(async ({ browserName }, testInfo) => {
-		const identity = (entry: {
-			section: string;
-			variant: string;
-			preset: string;
-			viewport: string;
-		}) => `${entry.section}.${entry.variant}/${entry.preset}/${entry.viewport}`;
-		const expected = buildVisualVariantCases().map(identity);
-		const completed = new Set(capturedSnapshots.map(identity));
-		await testInfo.attach('variant-capture-coverage', {
-			body: Buffer.from(
-				JSON.stringify({
-					browser: browserName,
-					expected: expected.length,
-					completed: [...completed],
-					missing: expected.filter((entry) => !completed.has(entry)),
-				}),
-			),
-			contentType: 'application/json',
-		});
-
-		const outputDir = path.resolve(
-			process.cwd(),
-			process.env.VISUAL_PARITY_OUTPUT_ROOT ?? 'output/screenshots/variant-portability',
-		);
-		fs.mkdirSync(outputDir, { recursive: true });
-
-		// Full candidate/compare runs must cover the complete registry. Diagnostic
-		// runs may select a focused case without weakening CI or acceptance gates.
-		if (VISUAL_PARITY_MODE !== 'diagnostic') {
-			expect(capturedSnapshots.length).toBe(EXPECTED_CAPTURE_COUNT);
-			expect([...completed].sort()).toEqual([...expected].sort());
-		}
-		if (capturedSnapshots.length === 0) return;
-		for (const capture of capturedSnapshots) {
-			const filePath = path.join(outputDir, capture.file);
-			expect(fs.existsSync(filePath)).toBe(true);
-			const buffer = fs.readFileSync(filePath);
-			expect(buffer.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)).toBe(true);
-			expect(buffer.length).toBeGreaterThanOrEqual(24);
-			const width = buffer.readUInt32BE(16);
-			const height = buffer.readUInt32BE(20);
-			const expectedVp = VIEWPORTS.find((v) => v.name === capture.viewport);
-			expect(expectedVp).toBeDefined();
-			if (!expectedVp) continue;
-			expect(width).toBe(expectedVp.width);
-			expect(height).toBe(expectedVp.height);
-		}
-
-		const manifest = {
-			generatedAt: new Date().toISOString(),
-			runtimeFingerprint: VISUAL_PARITY_RUNTIME,
-			status: visualDifferences.length
-				? 'FAILED'
-				: VISUAL_PARITY_MODE === 'compare'
-					? 'COMPARED'
-					: 'CANDIDATE',
-			mode: VISUAL_PARITY_MODE,
-			totalCaptures: capturedSnapshots.length,
-			matrixHash: computeVisualMatrixHash(
-				capturedSnapshots as unknown as Array<Record<string, unknown>>,
-			),
-			baselinePreset: 'jewelry-box',
-			crossPreset: 'celestial-blue',
-			captures: capturedSnapshots,
-		};
-
-		fs.writeFileSync(
-			path.join(outputDir, 'manifest.json'),
-			JSON.stringify(manifest, null, 2),
-			'utf8',
-		);
-
-		generateContactSheet(outputDir, manifest);
-		await testInfo.attach('visual-comparison-results', {
-			body: Buffer.from(
-				JSON.stringify({
-					captures: capturedSnapshots.length,
-					differences: visualDifferences,
-				}),
-			),
-			contentType: 'application/json',
-		});
-		expect(visualDifferences, 'Variant visual comparisons must all pass').toEqual([]);
-	});
 });
 
 async function runVariantVisualTest(
@@ -607,21 +501,17 @@ async function runVariantVisualTest(
 
 	await waitForVisualHydration(page);
 
-	// 8. Capture diagnostic viewport image for contact sheet / manifest
-	const snapshotName = `${preset}-${vp.name}-${section}-${variant}.png`;
+	// 8. Capture the viewport image, compare it and record it for the run manifest
+	const snapshotName = visualVariantCaseFile({ preset, viewport: vp.name, section, variant });
+	const captureStarted = Date.now();
 	const viewportSnapshotBuffer = await captureStablePage(page);
-	let comparisonResult: 'PASS' | 'FAIL' | 'CANDIDATE' =
-		visualComparisonResult(VISUAL_PARITY_MODE);
-	if (shouldCompareVisualSnapshots(VISUAL_PARITY_MODE)) {
-		const compare = () =>
-			expect(viewportSnapshotBuffer).toMatchSnapshot(snapshotName, {
-				maxDiffPixelRatio: 0.001,
-			});
-		if (VISUAL_PARITY_MODE === 'compare')
-			comparisonResult = recordVisualComparison(compare, snapshotName, visualDifferences);
-		else compare();
-	}
-	const hash = crypto.createHash('sha256').update(viewportSnapshotBuffer).digest('hex');
+	const captureMs = Date.now() - captureStarted;
+	const settlement = settleVisualCapture({
+		testInfo: test.info(),
+		mode: VISUAL_PARITY_MODE,
+		file: snapshotName,
+		image: viewportSnapshotBuffer,
+	});
 	const syntheticEvent = buildSyntheticVariantEvent({
 		section,
 		variant,
@@ -630,176 +520,25 @@ async function runVariantVisualTest(
 	const contentHash = hashVisualValue(syntheticEvent.data);
 	const assetHash = hashVisualValue({ source: 'synthetic-variant-fixture', preset });
 
-	const outputSnapshotPath = path.resolve(
-		process.cwd(),
-		process.env.VISUAL_PARITY_OUTPUT_ROOT ?? 'output/screenshots/variant-portability',
-		snapshotName,
+	recordVisualCapture(
+		'variants',
+		{
+			kind: 'variant',
+			section,
+			variant,
+			preset,
+			viewport: vp.name,
+			cssOwner,
+			fixtureIdentity: `synthetic:${section}.${variant}`,
+			file: snapshotName,
+			sha256: settlement.storedSha256,
+			contentHash,
+			assetHash,
+			comparisonResult: settlement.comparisonResult,
+		},
+		settlement,
+		captureMs,
 	);
-	fs.mkdirSync(path.dirname(outputSnapshotPath), { recursive: true });
-	fs.writeFileSync(outputSnapshotPath, viewportSnapshotBuffer);
-
-	capturedSnapshots.push({
-		kind: 'variant',
-		section,
-		variant,
-		preset,
-		viewport: vp.name,
-		cssOwner,
-		fixtureIdentity: `synthetic:${section}.${variant}`,
-		file: snapshotName,
-		sha256: hash,
-		contentHash,
-		assetHash,
-		comparisonResult,
-	});
-}
-
-function generateContactSheet(
-	outputDir: string,
-	manifest: {
-		generatedAt: string;
-		status: string;
-		totalCaptures: number;
-		captures: CapturedSnapshotInfo[];
-	},
-) {
-	const html = `<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <title>Canonical Variant Visual Portability — Candidate Baselines</title>
-  <style>
-    :root {
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --border: #334155;
-      --accent: #38bdf8;
-      --success: #4ade80;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding: 2rem;
-      line-height: 1.5;
-    }
-    header {
-      margin-bottom: 2rem;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 1rem;
-    }
-    h1 { font-size: 1.75rem; color: var(--text); margin-bottom: 0.5rem; }
-    .status-badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.875rem;
-      font-weight: 600;
-      background: #0284c7;
-      color: #fff;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-      gap: 1.5rem;
-    }
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    .card-header {
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .card-title {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--accent);
-    }
-    .card-meta {
-      font-size: 0.75rem;
-      color: var(--muted);
-      padding: 0.5rem 1rem;
-    }
-    .card-meta code {
-      background: rgba(0,0,0,0.3);
-      padding: 2px 4px;
-      border-radius: 4px;
-      font-size: 0.7rem;
-    }
-    .img-container {
-      padding: 1rem;
-      background: #0b0f19;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      flex-grow: 1;
-      max-height: 450px;
-      overflow: auto;
-    }
-    img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 4px;
-      border: 1px solid var(--border);
-    }
-    .digest {
-      font-family: monospace;
-      font-size: 0.65rem;
-      color: var(--muted);
-      padding: 0.5rem 1rem;
-      border-top: 1px solid var(--border);
-      word-break: break-all;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>Canonical Variant Visual Portability — Candidate Baselines</h1>
-    <p style="color: var(--muted); margin-bottom: 0.75rem;">
-      Status: <span class="status-badge">${manifest.status}</span> &bull;
-      Total Visual Test Points: <strong>${manifest.totalCaptures}</strong> &bull;
-      Generated: <strong>${manifest.generatedAt}</strong>
-    </p>
-  </header>
-  <div class="grid">
-    ${manifest.captures
-		.map(
-			(c) => `
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">${c.section}.${c.variant}</span>
-          <span style="font-size: 0.75rem; color: var(--success); font-weight: 600;">${c.preset} / ${c.viewport}</span>
-        </div>
-        <div class="card-meta">
-          <div>CSS Owner: <code>${c.cssOwner}</code></div>
-          <div>Fixture: <code>${c.fixtureIdentity}</code></div>
-        </div>
-        <div class="img-container">
-          <a href="${c.file}" target="_blank">
-            <img src="${c.file}" alt="${c.section}.${c.variant} (${c.preset} ${c.viewport})" loading="lazy" />
-          </a>
-        </div>
-        <div class="digest">SHA-256: ${c.sha256}</div>
-      </div>
-    `,
-		)
-		.join('')}
-  </div>
-</body>
-</html>`;
-
-	fs.writeFileSync(path.join(outputDir, 'contact-sheet.html'), html, 'utf8');
 }
 
 test('portrait-letter preserves the production mobile portrait and serif letter geometry', async ({

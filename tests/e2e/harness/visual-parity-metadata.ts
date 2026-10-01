@@ -77,43 +77,68 @@ function readChromiumVersion(): { revision: string; browserVersion: string } {
 }
 
 const projectRoot = process.cwd();
-const chromium = readChromiumVersion();
+
+/** Set by Playwright global setup so workers reuse one fingerprint instead of rehashing sources. */
+export const VISUAL_PARITY_RUNTIME_ENV = 'VISUAL_PARITY_RUNTIME_JSON';
+
+function readInheritedRuntime(): VisualParityRuntime | undefined {
+	const raw = process.env[VISUAL_PARITY_RUNTIME_ENV];
+	if (!raw) return undefined;
+	try {
+		const parsed = JSON.parse(raw) as { root?: unknown; runtime?: VisualParityRuntime };
+		return parsed.root === projectRoot ? parsed.runtime : undefined;
+	} catch {
+		return undefined;
+	}
+}
+
+function computeRuntime() {
+	const chromium = readChromiumVersion();
+	return {
+		node: process.version,
+		pnpm: process.env.npm_config_user_agent?.match(/pnpm\/(\S+)/u)?.[1] ?? 'unknown',
+		playwright: readPackageVersion(
+			path.join(projectRoot, 'node_modules/@playwright/test/package.json'),
+		),
+		browser: 'chromium',
+		browserRevision: chromium.revision,
+		browserVersion: chromium.browserVersion,
+		platform: `${process.platform}-${process.arch}`,
+		locale: 'en-US',
+		timezone: 'UTC',
+		deviceScaleFactor: 1,
+		lockfileSha256: hashAssetFiles(projectRoot, ['pnpm-lock.yaml']),
+		cssSha256: hashDirectoryFiles(
+			path.join(projectRoot, 'src/styles'),
+			/\.(?:css|scss)$/iu,
+			'CSS',
+		),
+		assetSha256: hashDirectoryFiles(
+			path.join(projectRoot, 'src/assets'),
+			/\.(?:avif|gif|jpe?g|png|svg|webp)$/iu,
+			'asset',
+		),
+		fontSha256: hashVisualValue({
+			standard: hashDirectoryFiles(
+				path.join(projectRoot, 'node_modules/@fontsource'),
+				/\.(?:css|otf|ttf|woff2?)$/iu,
+				'standard font',
+			),
+			variable: hashDirectoryFiles(
+				path.join(projectRoot, 'node_modules/@fontsource-variable'),
+				/\.(?:css|otf|ttf|woff2?)$/iu,
+				'variable font',
+			),
+		}),
+		osImageDigest: process.env.VISUAL_PARITY_OS_IMAGE_DIGEST ?? 'unverified',
+	} as const;
+}
+
+type VisualParityRuntime = ReturnType<typeof computeRuntime>;
 
 /** Runtime and source identity recorded with every visual candidate and accepted baseline. */
-export const VISUAL_PARITY_RUNTIME = {
-	node: process.version,
-	pnpm: process.env.npm_config_user_agent?.match(/pnpm\/(\S+)/u)?.[1] ?? 'unknown',
-	playwright: readPackageVersion(
-		path.join(projectRoot, 'node_modules/@playwright/test/package.json'),
-	),
-	browser: 'chromium',
-	browserRevision: chromium.revision,
-	browserVersion: chromium.browserVersion,
-	platform: `${process.platform}-${process.arch}`,
-	locale: 'en-US',
-	timezone: 'UTC',
-	deviceScaleFactor: 1,
-	lockfileSha256: hashAssetFiles(projectRoot, ['pnpm-lock.yaml']),
-	cssSha256: hashDirectoryFiles(path.join(projectRoot, 'src/styles'), /\.(?:css|scss)$/iu, 'CSS'),
-	assetSha256: hashDirectoryFiles(
-		path.join(projectRoot, 'src/assets'),
-		/\.(?:avif|gif|jpe?g|png|svg|webp)$/iu,
-		'asset',
-	),
-	fontSha256: hashVisualValue({
-		standard: hashDirectoryFiles(
-			path.join(projectRoot, 'node_modules/@fontsource'),
-			/\.(?:css|otf|ttf|woff2?)$/iu,
-			'standard font',
-		),
-		variable: hashDirectoryFiles(
-			path.join(projectRoot, 'node_modules/@fontsource-variable'),
-			/\.(?:css|otf|ttf|woff2?)$/iu,
-			'variable font',
-		),
-	}),
-	osImageDigest: process.env.VISUAL_PARITY_OS_IMAGE_DIGEST ?? 'unverified',
-} as const;
+export const VISUAL_PARITY_RUNTIME: VisualParityRuntime =
+	readInheritedRuntime() ?? computeRuntime();
 
 /** Hash every versioned binary in a local asset directory in stable path order. */
 export function hashAssetDirectory(root: string): string {

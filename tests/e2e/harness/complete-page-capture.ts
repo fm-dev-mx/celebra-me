@@ -6,6 +6,11 @@ import {
 	presentationFailures,
 } from '../../../scripts/screenshot/presentation-evidence';
 import { getOperationalToolbarSelectors } from '../../../scripts/screenshot/utils';
+import { visualSuiteMode } from './visual-capture-record';
+
+// libvips defaults to one thread per core in every worker; parallel capture workers would
+// oversubscribe the CPU that Chromium needs for rasterization.
+if (visualSuiteMode() === 'parallel') sharp.concurrency(2);
 
 export async function initializeVisualCapture(
 	page: Page,
