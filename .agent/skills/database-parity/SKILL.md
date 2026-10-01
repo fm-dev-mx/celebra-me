@@ -3,7 +3,7 @@ name: database-parity
 description: |
   Validate migration identity, schema compatibility, and backup evidence for a database-sensitive branch/release range. Use standalone for an explicit parity audit or when branch-lane requires it; database access remains governed by database rules.
 domain: workflow
-version: 2.2.0
+version: 2.3.0
 when_to_use:
   - branch-lane sets requiresParityAudit or identityStatus fail handling
   - User asks for a database-parity audit between main and develop (standalone)
@@ -156,7 +156,9 @@ disposable remediation + re-audit) completes.
 
 Pending Production/Preview migrations required by app/tests:
 
-- Recommend approved migrate path → `Needs authorization` (after diagnosis is stable)
+- Recommend approved migrate path → `Needs authorization` (after diagnosis is stable). For Local and
+  Preview the path is `pnpm ship:preview` (plan) and `pnpm ship:preview -- --apply` once authorized;
+  Production stays on the owner `pnpm prod:apply -- --schema` path.
 - **Git-only promote** without applying those migrations: run `evaluateGitOnlyPromotionAlternative`.
   If head depends on pending schema (or compatibility is unknown while schema-changing migrations
   exist) → `Hard blocked` — **not** an owner-acceptable exception. Offer Git-only only when

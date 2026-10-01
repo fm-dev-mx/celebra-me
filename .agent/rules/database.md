@@ -185,6 +185,11 @@ task authorization, target classification, and standard guard checks.
 - `pnpm db:migrate -- --target preview` preflights Preview (`PREVIEW_DB_URL`); `--apply` applies
   pending migrations after Preview authorization. Preflights never write; the guided TTY menu only
   reviews the plan or prints the explicit `--apply` command.
+- `pnpm ship:preview` runs the Local → Preview schema path in one process: availability →
+  disposable-test → Local → `db:local:audit` → Preview → `db:preview:audit` → `dbs` summary. Without
+  `-- --apply` every step is a read-only preflight; with it each write keeps its own authorization
+  (Preview task scope or typed YES) and the first failure stops the sequence. Production stays on
+  `pnpm prod:apply -- --schema`.
 - Schema status evidence: `pnpm dbs` / observability use **migration_history_parity** (`CURRENT` /
   `BEHIND` are history-only). `pnpm db:*:audit` uses **object_audit_readiness** and must fail a
   `CURRENT` history when named public indexes, constraints, or contract routines drift. While
