@@ -26,9 +26,12 @@ const context: MemoriesCleanupContext & { completedAt: string } = {
 };
 
 const completed: MemoriesCleanupResult = {
-	validationReconciled: 2,
-	validationPending: 1,
-	expiredReservations: 3,
+	validationSettled: 2,
+	validationRejected: 1,
+	uploadsRescued: 1,
+	uploadsReleased: 3,
+	inFlightPending: 0,
+	settleComplete: true,
 	expiredContent: 1,
 	claimed: 4,
 	deleted: 4,
@@ -54,9 +57,12 @@ describe('completed cleanup evidence', () => {
 		expect(evidence.status).toBe('VERIFIED');
 		expect(evidence.reasonCode).toBe('cleanup_completed');
 		expect(evidence.payload).toMatchObject({
-			validation_reconciled: 2,
-			validation_pending: 1,
-			expired_reservations: 3,
+			validation_settled: 2,
+			validation_rejected: 1,
+			uploads_rescued: 1,
+			uploads_released: 3,
+			in_flight_pending: 0,
+			settle_complete: true,
 			expired_content: 1,
 			claimed: 4,
 			deleted: 4,
@@ -67,6 +73,19 @@ describe('completed cleanup evidence', () => {
 			invocation_id: 'sfo1::abc-123',
 			duration_ms: 3000,
 		});
+	});
+
+	it.each([
+		['items left in flight', { inFlightPending: 2 }],
+		['an unfinished settle walk', { settleComplete: false }],
+	])('is WARNING with %s, which are never deleted blindly', (_label, overrides) => {
+		const evidence = createMemoriesCleanupCompletedEvidence(context, {
+			...completed,
+			...overrides,
+		});
+		expect(evidence.status).toBe('WARNING');
+		expect(evidence.reasonCode).toBe('cleanup_in_flight_backlog');
+		expect(evidence.payload.count_invariant_valid).toBe(true);
 	});
 
 	it('is WARNING when some deletions failed but counts still add up', () => {

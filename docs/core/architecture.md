@@ -474,8 +474,13 @@ deployment.
 - **Workers:** `celebra-memories-sign` (`/sign`, `/upload`) and `celebra-memories-retrieve`
   (`/retrieve`) verify ECDSA-signed app requests, enforce the global media policy and never learn
   about events. Upload capabilities are AES-GCM sealed so the browser cannot read object keys.
-- **Cleanup:** `GET /api/cron/memories-cleanup` (Vercel cron, bearer secret) reconciles abandoned
-  validations, expires reservations and retention-ended spaces, deletes scheduled objects in leased
-  batches within a time budget, anonymizes inactive guest sessions after their last object is gone,
-  and purges audit rows. Anonymization is a service-role-only, security-invoker RPC that locks the
-  event and session in the same order as reservation; a missing RPC fails closed.
+- **Cleanup:** `GET /api/cron/memories-cleanup` (Vercel cron at 15:17 UTC, an off-hour for events in
+  Mexico; bearer secret) settles stale in-flight items from storage evidence, expires
+  retention-ended spaces, deletes scheduled objects in leased batches within a time budget,
+  anonymizes inactive guest sessions after their last object is gone, and purges audit rows.
+  Settling never deletes blindly: a validation is rejected and an abandoned reservation released
+  only when the Retrieval Worker answers that the object is absent; an upload whose bytes arrived
+  without a browser confirmation is validated instead. Because the cron runs once a day, a guest at
+  the in-flight limit settles their own items before the reservation is refused. Anonymization is a
+  service-role-only, security-invoker RPC that locks the event and session in the same order as
+  reservation; a missing RPC fails closed.

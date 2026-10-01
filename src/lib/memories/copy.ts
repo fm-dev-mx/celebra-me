@@ -154,6 +154,8 @@ export const memoriesCaptureCopy = {
 	signFailed: 'No se pudo preparar la subida. Intente de nuevo.',
 	putFailed: 'No pudimos subir el archivo. Revise su conexión e intente de nuevo.',
 	networkFailed: 'No tiene conexión. Intente de nuevo cuando vuelva a estar en línea.',
+	uploadExpired:
+		'La subida anterior ya no es válida. Toque «Intentar de nuevo» para subir el archivo otra vez.',
 	unavailable: 'La carga de recuerdos no está disponible en este momento.',
 	recoveryCodeTitle: 'Guarde su código de recuperación',
 	recoveryCodeHint:

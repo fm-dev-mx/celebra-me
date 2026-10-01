@@ -26,6 +26,7 @@ export type MemoriesCaptureIssue =
 	| 'sign_failed'
 	| 'put_failed'
 	| 'network_failed'
+	| 'upload_expired'
 	| 'unavailable';
 
 const ISSUE_COPY: Record<MemoriesCaptureIssue, keyof typeof memoriesCaptureCopy> = {
@@ -39,6 +40,7 @@ const ISSUE_COPY: Record<MemoriesCaptureIssue, keyof typeof memoriesCaptureCopy>
 	sign_failed: 'signFailed',
 	put_failed: 'putFailed',
 	network_failed: 'networkFailed',
+	upload_expired: 'uploadExpired',
 	unavailable: 'unavailable',
 };
 

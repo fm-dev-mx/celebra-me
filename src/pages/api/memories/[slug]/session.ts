@@ -49,8 +49,6 @@ export const POST: APIRoute = async ({ request, params, cookies }) => {
 		await requireMemoriesRateLimit(request, 'session');
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
-		if (!bodyResult || typeof bodyResult !== 'object')
-			return badRequest('Cuerpo de solicitud inválido.');
 		const space = await requirePublicMemorySpace(params.slug);
 		assertMemorySpaceAcceptsGuests(space);
 		if (bodyResult.action === 'recover') {
@@ -84,8 +82,6 @@ export const PATCH: APIRoute = async ({ request, params }) => {
 		const { space, session } = await requireGuestContext(request, params, 'mutate');
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
-		if (!bodyResult || typeof bodyResult !== 'object')
-			return badRequest('Cuerpo de solicitud inválido.');
 		const profile = await updateGuestProfile(space, session, bodyResult.displayName);
 		return withPrivateCache(jsonResponse({ profile }));
 	} catch (error) {

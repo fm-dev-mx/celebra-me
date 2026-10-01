@@ -472,6 +472,11 @@ EXPAND (RPC / portable capability)
 → CONTRACT (revoke legacy direct DML paths)
 ```
 
+The `contract` rule applies to Preview and Production alike: both migrate policies resolve the same
+attestation of the latest smoke-checked Production deployment
+(`scripts/db/contract-deployment-evidence.ts`). A preflight without reachable GitHub evidence
+reports `UNVERIFIED`; an apply fails closed.
+
 When the deployed application requires a DB capability the database (including pending candidates)
 does not provide, the gate reports `ENVIRONMENT NOT READY` rather than treating the environment as
 healthy.

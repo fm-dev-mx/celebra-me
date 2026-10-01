@@ -1,37 +1,41 @@
 /**
- * Daily lifecycle pass over every event memory space. Physical deletion goes
- * through the Retrieval Worker; the R2 lifecycle rule remains the final backstop.
+ * Daily lifecycle pass over every event memory space. In-flight uploads are
+ * settled only from storage evidence; physical deletion goes through the
+ * Retrieval Worker; the R2 lifecycle rule remains the final backstop.
  */
 
 import {
 	MEMORIES_AUDIT_RETENTION_SECONDS,
 	MEMORIES_CLEANUP_BATCH_SIZE,
 	MEMORIES_CLEANUP_LEASE_SECONDS,
+	MEMORIES_CLEANUP_SETTLE_BUDGET_MS,
 	MEMORIES_CLEANUP_TIME_BUDGET_MS,
 	MEMORIES_RESERVATION_TTL_SECONDS,
 	MEMORIES_VALIDATION_RETRY_DELAY_SECONDS,
-	MEMORIES_VALIDATION_TTL_SECONDS,
 } from '@/lib/memories/contract/limits';
 import { appendMemoriesAudit } from './audit';
 import {
 	anonymizeSession,
 	claimCleanup,
 	expireContent,
-	expireReservations,
 	listSessionsPendingAnonymization,
-	listStaleValidations,
+	listStaleInFlightMedia,
 	markObjectDeleted,
 	purgeAudit,
 	type MediaRow,
+	type StaleMediaCursor,
 } from './catalog.repository';
-import { reconcileMemoryValidation } from './guest-media.service';
+import { settleStaleMemoryItem, type MemoriesSettleResult } from './guest-media.service';
 import { createMemoriesLeaseId, createMemoriesSessionToken, hashMemoriesSecret } from './secrets';
 import { deleteMemoriesObject } from './worker-gateway';
 
 export interface MemoriesCleanupResult {
-	validationReconciled: number;
-	validationPending: number;
-	expiredReservations: number;
+	validationSettled: number;
+	validationRejected: number;
+	uploadsRescued: number;
+	uploadsReleased: number;
+	inFlightPending: number;
+	settleComplete: boolean;
 	expiredContent: number;
 	claimed: number;
 	deleted: number;
@@ -40,18 +44,62 @@ export interface MemoriesCleanupResult {
 	auditPurged: number;
 }
 
-async function reconcilePendingValidations(): Promise<{ reconciled: number; pending: number }> {
-	const cutoff = new Date(
-		Date.now() - MEMORIES_VALIDATION_RETRY_DELAY_SECONDS * 1000,
-	).toISOString();
-	const rows = await listStaleValidations(cutoff, MEMORIES_CLEANUP_BATCH_SIZE);
-	let reconciled = 0;
-	let pending = 0;
-	for (const row of rows) {
-		if (await reconcileMemoryValidation(row.event_id, row.id)) reconciled += 1;
-		else pending += 1;
+type SettleTally = Record<MemoriesSettleResult, number> & { complete: boolean };
+
+async function settleStaleInFlight(input: {
+	status: 'uploading' | 'validating';
+	cutoff: string;
+	now: Date;
+	deadline: number;
+	tally: SettleTally;
+}): Promise<void> {
+	let after: StaleMediaCursor | null = null;
+	while (Date.now() < input.deadline) {
+		const rows = await listStaleInFlightMedia({
+			status: input.status,
+			cutoff: input.cutoff,
+			limit: MEMORIES_CLEANUP_BATCH_SIZE,
+			after,
+		});
+		for (const row of rows) {
+			input.tally[await settleStaleMemoryItem(row, input.now)] += 1;
+		}
+		if (rows.length < MEMORIES_CLEANUP_BATCH_SIZE) return;
+		const last = rows[rows.length - 1];
+		after = {
+			at: input.status === 'uploading' ? last.created_at : last.updated_at,
+			id: last.id,
+		};
 	}
-	return { reconciled, pending };
+	input.tally.complete = false;
+}
+
+async function settleInFlightItems(now: Date, deadline: number): Promise<SettleTally> {
+	const tally: SettleTally = {
+		validated: 0,
+		rescued: 0,
+		rejected: 0,
+		released: 0,
+		pending: 0,
+		complete: true,
+	};
+	await settleStaleInFlight({
+		status: 'validating',
+		cutoff: new Date(
+			now.getTime() - MEMORIES_VALIDATION_RETRY_DELAY_SECONDS * 1000,
+		).toISOString(),
+		now,
+		deadline,
+		tally,
+	});
+	await settleStaleInFlight({
+		status: 'uploading',
+		cutoff: new Date(now.getTime() - MEMORIES_RESERVATION_TTL_SECONDS * 1000).toISOString(),
+		now,
+		deadline,
+		tally,
+	});
+	return tally;
 }
 
 async function anonymizeSessions(
@@ -112,15 +160,10 @@ export async function runMemoriesCleanup(
 ): Promise<MemoriesCleanupResult> {
 	const startedAt = Date.now();
 	const nowIso = now.toISOString();
-	const validation = await reconcilePendingValidations();
-	const expiredReservations = await expireReservations({
-		uploadCutoff: new Date(
-			now.getTime() - MEMORIES_RESERVATION_TTL_SECONDS * 1000,
-		).toISOString(),
-		validationCutoff: new Date(
-			now.getTime() - MEMORIES_VALIDATION_TTL_SECONDS * 1000,
-		).toISOString(),
-	});
+	const settled = await settleInFlightItems(
+		now,
+		startedAt + Math.min(MEMORIES_CLEANUP_SETTLE_BUDGET_MS, timeBudgetMs),
+	);
 	const expiredContent = await expireContent(nowIso);
 
 	let claimed = 0;
@@ -153,9 +196,12 @@ export async function runMemoriesCleanup(
 	const auditPurged = await purgeAudit(nowIso);
 
 	return {
-		validationReconciled: validation.reconciled,
-		validationPending: validation.pending,
-		expiredReservations,
+		validationSettled: settled.validated,
+		validationRejected: settled.rejected,
+		uploadsRescued: settled.rescued,
+		uploadsReleased: settled.released,
+		inFlightPending: settled.pending,
+		settleComplete: settled.complete,
 		expiredContent,
 		claimed,
 		deleted,

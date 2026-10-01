@@ -28,8 +28,6 @@ export const POST: APIRoute = async ({ request, params }) => {
 		const { space, session } = await requireGuestContext(request, params, 'register');
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
-		if (!bodyResult || typeof bodyResult !== 'object')
-			return badRequest('Cuerpo de solicitud inválido.');
 		if (bodyResult.action !== 'reserve')
 			return badRequest('La acción de recuerdo no es válida.');
 		const reservation = await reserveGuestMemoryItem({

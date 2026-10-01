@@ -16,9 +16,12 @@ const CRON_SECRET = 'cron-test-secret';
 const ROUTE_URL = 'https://celebra-me.com/api/cron/memories-cleanup';
 
 const healthyResult: MemoriesCleanupResult = {
-	validationReconciled: 1,
-	validationPending: 0,
-	expiredReservations: 2,
+	validationSettled: 1,
+	validationRejected: 0,
+	uploadsRescued: 0,
+	uploadsReleased: 2,
+	inFlightPending: 0,
+	settleComplete: true,
 	expiredContent: 1,
 	claimed: 3,
 	deleted: 3,

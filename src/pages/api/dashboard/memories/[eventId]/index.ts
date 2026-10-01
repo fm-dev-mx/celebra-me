@@ -55,7 +55,6 @@ export const POST: APIRoute = async ({ request, locals, params, cookies }) => {
 		const space = await requireOrganizerMemorySpace(eventId, session);
 		const body = await parseJsonBody(request);
 		if (body instanceof Response) return body;
-		if (!body || typeof body !== 'object') return badRequest('Cuerpo de solicitud inválido.');
 		if (body.action !== 'revoke_session') return badRequest('La acción no es válida.');
 		await revokeGuestMemorySession({
 			space,

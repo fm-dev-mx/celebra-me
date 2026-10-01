@@ -82,7 +82,9 @@ function buildItem(overrides: Partial<MemoriesMediaPublicItem> = {}): MemoriesMe
 	};
 }
 
-function buildReservation(): MemoriesReservation {
+function buildReservation(): MemoriesReservation & {
+	upload: NonNullable<MemoriesReservation['upload']>;
+} {
 	return {
 		item: buildItem(),
 		upload: {
@@ -256,6 +258,58 @@ describe('MemoriesCapture island', () => {
 		expect(await screen.findByRole('alert')).toHaveTextContent(copy.fileTooLarge);
 		expect(guestApi.reserve).not.toHaveBeenCalled();
 		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it('confirms a replayed upload whose bytes already arrived without sending them again', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.reserve.mockResolvedValue({
+			item: buildItem({ status: 'validating' }),
+			upload: null,
+		});
+		guestApi.complete.mockResolvedValue({ item: buildItem({ status: 'accepted' }) });
+		const fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(200));
+
+		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		await screen.findByText(PROFILE.displayName);
+
+		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
+		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+
+		expect(await screen.findByText(copy.success)).toBeInTheDocument();
+		expect(fetchMock).not.toHaveBeenCalled();
+		expect(guestApi.complete).toHaveBeenCalledWith('item-1');
+	});
+
+	it.each([
+		['a closed reservation', 'reserve'],
+		['a released reservation', 'complete'],
+	] as const)('starts over with a new request id after %s', async (_label, failingStep) => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		if (failingStep === 'reserve') {
+			guestApi.reserve.mockRejectedValueOnce(new MemoriesRequestError(409, 'conflict'));
+		} else {
+			guestApi.reserve.mockResolvedValueOnce(buildReservation());
+			guestApi.complete.mockRejectedValueOnce(new MemoriesRequestError(404, 'not_found'));
+			jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(200));
+		}
+
+		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		await screen.findByText(PROFILE.displayName);
+
+		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
+		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+
+		expect(await screen.findByRole('alert')).toHaveTextContent(copy.uploadExpired);
+		expect(guestApi.complete).toHaveBeenCalledTimes(failingStep === 'complete' ? 1 : 0);
+
+		guestApi.reserve.mockRejectedValueOnce(new MemoriesRequestError(429, 'rate_limited'));
+		await user.click(screen.getByRole('button', { name: copy.retry }));
+
+		await waitFor(() => expect(guestApi.reserve).toHaveBeenCalledTimes(2));
+		const [first, second] = guestApi.reserve.mock.calls.map(([input]) => input);
+		expect(second.clientRequestId).not.toBe(first.clientRequestId);
 	});
 
 	it('maps a 429 reservation failure to the rate-limited copy', async () => {

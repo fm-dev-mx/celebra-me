@@ -32,6 +32,15 @@ export interface MemoriesInspectionResult {
 	durationSeconds: number | null;
 }
 
+/**
+ * `missing` is reported only when the Worker answered that the object is absent;
+ * any transport, configuration or routing failure is `unavailable`.
+ */
+export type MemoriesInspectionOutcome =
+	| { kind: 'found'; inspection: MemoriesInspectionResult }
+	| { kind: 'missing' }
+	| { kind: 'unavailable' };
+
 const REQUIRED_UPLOAD_HEADERS = new Set(['authorization', 'content-type', 'x-amz-checksum-sha256']);
 const CAPABILITY_TOKEN_PATTERN = /^Bearer [A-Za-z0-9_-]{16,4096}$/;
 const BASE64_SHA256_PATTERN = /^[A-Za-z0-9+/]{43}=$/;
@@ -190,14 +199,20 @@ export async function retrieveMemoriesObject(input: {
 export async function inspectMemoriesObject(input: {
 	objectKey: string;
 	mimeType: string;
-}): Promise<MemoriesInspectionResult | null> {
-	const response = await retrieveMemoriesObject({ ...input, mode: 'inspect' });
-	if (!response.ok) return null;
+}): Promise<MemoriesInspectionOutcome> {
+	let payload: unknown;
 	try {
-		return (await response.json()) as MemoriesInspectionResult;
+		const response = await retrieveMemoriesObject({ ...input, mode: 'inspect' });
+		if (response.status !== 200) return { kind: 'unavailable' };
+		payload = await response.json();
 	} catch {
-		return null;
+		return { kind: 'unavailable' };
 	}
+	if (typeof payload !== 'object' || payload === null) return { kind: 'unavailable' };
+	const inspection = payload as MemoriesInspectionResult;
+	if (inspection.exists === false) return { kind: 'missing' };
+	if (inspection.exists !== true) return { kind: 'unavailable' };
+	return { kind: 'found', inspection };
 }
 
 export async function deleteMemoriesObject(input: {
