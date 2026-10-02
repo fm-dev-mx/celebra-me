@@ -43,7 +43,6 @@ export interface InvitationCssLoadItem {
 const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'satin-filigree': 'satin-filigree',
 	'premiere-floral': 'premiere-floral',
-	editorial: 'editorial',
 	'luxury-hacienda': 'luxury-hacienda',
 	'jewelry-box': 'shared-light',
 	'jewelry-box-wedding': 'shared-light',

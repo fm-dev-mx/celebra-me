@@ -122,8 +122,7 @@ function checkPresetIsolation() {
 	const violations = [];
 
 	for (const file of files) {
-		if (!file.endsWith('.scss') || file === '_all.scss' || file === '_invitation.scss')
-			continue;
+		if (!file.endsWith('.scss') || file === '_all.scss') continue;
 
 		const filePath = path.join(presetsDir, file);
 		const content = fs.readFileSync(filePath, 'utf8');

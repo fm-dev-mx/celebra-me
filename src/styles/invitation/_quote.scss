@@ -149,42 +149,6 @@
 	color: var(--quote-author-color);
 }
 
-// Existing one-off decorative rule: luxury-hacienda uses a top hairline that is not
-// a useful section contract value for other themes.
-.quote-section[data-variant='luxury-hacienda']::after {
-	content: '';
-	position: absolute;
-	inset-inline: clamp(1.5rem, 8vw, 7rem);
-	top: clamp(2rem, 4vw, 3.5rem);
-	height: 1px;
-	background: linear-gradient(
-		90deg,
-		transparent,
-		rgb(var(--color-action-accent-rgb) / 28%),
-		transparent
-	);
-	pointer-events: none;
-}
-
-// Existing one-off motion detail: angelic-presence uses a softer visible-state fade.
-.quote-section[data-variant='angelic-presence'] {
-	.quote-line.is-visible {
-		animation: angelic-quote-fade 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-	}
-}
-
-@keyframes angelic-quote-fade {
-	0% {
-		opacity: 0%;
-		transform: translateY(12px);
-	}
-
-	100% {
-		opacity: 100%;
-		transform: translateY(0);
-	}
-}
-
 @media (prefers-reduced-motion: reduce) {
 	.quote-line,
 	.quote-line.is-visible {

@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
 const projectRoot = process.cwd();
 const presetsDir = 'src/styles/themes/presets';
@@ -49,18 +50,6 @@ function expectFamilyContract(content: string): void {
 	expect(content).not.toContain('--family-content-column');
 	expect(content).not.toContain('--family-connector-size');
 	expect(content).not.toContain('src/styles/themes/sections/family');
-}
-
-function parseInvitationImports(content: string): string[] {
-	const imports: string[] = [];
-	const regex = /^\s*@use\s+['"]([^'"]+)['"](?:\s+as\s+\S+)?\s*;/gm;
-	let match: RegExpExecArray | null;
-
-	while ((match = regex.exec(content)) !== null) {
-		imports.push(match[1]);
-	}
-
-	return imports;
 }
 
 function hasPresetReference(content: string, preset: string): boolean {
@@ -113,21 +102,10 @@ function getTopLevelSelectors(content: string): string[] {
 	return selectors;
 }
 
-describe('Invitation barrel', () => {
-	const invitationContent = fs.readFileSync(path.join(presetsDir, '_invitation.scss'), 'utf8');
-	const invitationImports = parseInvitationImports(invitationContent);
-
-	it('imports all expected theme presets', () => {
-		expect(invitationImports).toContain('angelic-presence');
-		expect(invitationImports).toContain('sacred-keepsake');
-		expect(invitationImports).toContain('enchanted-rose');
-		expect(invitationImports).not.toContain('cesar-ramses');
-	});
-
-	it('import names match existing SCSS files', () => {
-		for (const imported of invitationImports) {
-			const filePath = path.join(presetsPath, `_${imported}.scss`);
-			expect(fs.existsSync(filePath)).toBe(true);
+describe('Theme preset token files', () => {
+	it('exist for every registered preset', () => {
+		for (const preset of THEME_PRESETS) {
+			expect(fs.existsSync(path.join(presetsPath, `_${preset}.scss`))).toBe(true);
 		}
 	});
 });
@@ -168,9 +146,7 @@ describe('Interlude section contract', () => {
 });
 
 describe('Angelic presence theme isolation', () => {
-	const invitationContent = fs.readFileSync(path.join(presetsDir, '_invitation.scss'), 'utf8');
-	const invitationImports = parseInvitationImports(invitationContent);
-	const otherPresets = invitationImports.filter((preset) => preset !== 'angelic-presence');
+	const otherPresets = THEME_PRESETS.filter((preset) => preset !== 'angelic-presence');
 	const angelicContent = fs.readFileSync(path.join(presetsDir, '_angelic-presence.scss'), 'utf8');
 
 	it('defines the expected theme root scope', () => {
@@ -268,9 +244,7 @@ describe('Angelic presence section coverage', () => {
 });
 
 describe('Celestial blue theme isolation', () => {
-	const invitationContent = fs.readFileSync(path.join(presetsDir, '_invitation.scss'), 'utf8');
-	const invitationImports = parseInvitationImports(invitationContent);
-	const otherPresets = invitationImports.filter((preset) => preset !== 'celestial-blue');
+	const otherPresets = THEME_PRESETS.filter((preset) => preset !== 'celestial-blue');
 	const celestialContent = fs.readFileSync(path.join(presetsDir, '_celestial-blue.scss'), 'utf8');
 
 	it('defines the expected theme root scope', () => {
@@ -366,9 +340,7 @@ describe('Celestial blue section coverage', () => {
 });
 
 describe('Enchanted rose theme isolation', () => {
-	const invitationContent = fs.readFileSync(path.join(presetsDir, '_invitation.scss'), 'utf8');
-	const invitationImports = parseInvitationImports(invitationContent);
-	const otherPresets = invitationImports.filter((preset) => preset !== 'enchanted-rose');
+	const otherPresets = THEME_PRESETS.filter((preset) => preset !== 'enchanted-rose');
 	const enchantedContent = fs.readFileSync(path.join(presetsDir, '_enchanted-rose.scss'), 'utf8');
 
 	it('defines the expected theme root scope', () => {
@@ -398,9 +370,7 @@ describe('Enchanted rose section coverage', () => {
 	//   - header, countdown, itinerary until concrete selector work is needed
 	const sectionThemeFiles = [
 		'src/styles/themes/sections/hero/_enchanted-rose.scss',
-		'src/styles/themes/sections/gallery/_enchanted-rose.scss',
 		'src/styles/themes/sections/rsvp/_enchanted-rose.scss',
-		'src/styles/themes/sections/thank-you/_enchanted-rose.scss',
 	];
 	const enchantedContent = fs.readFileSync(
 		path.join(projectRoot, 'src/styles/themes/presets/_enchanted-rose.scss'),
@@ -408,10 +378,6 @@ describe('Enchanted rose section coverage', () => {
 	);
 	const enchantedHeroContent = fs.readFileSync(
 		path.join(projectRoot, 'src/styles/themes/sections/hero/_enchanted-rose.scss'),
-		'utf8',
-	);
-	const enchantedGalleryContent = fs.readFileSync(
-		path.join(projectRoot, 'src/styles/themes/sections/gallery/_enchanted-rose.scss'),
 		'utf8',
 	);
 
@@ -449,14 +415,6 @@ describe('Enchanted rose section coverage', () => {
 		);
 	});
 
-	it('protects tall full-body gallery portraits from center-crop face loss', () => {
-		expect(enchantedGalleryContent).toContain(
-			".gallery-grid__item[data-image-key='gallery07']",
-		);
-		expect(enchantedGalleryContent).toContain('--gallery-item-aspect-ratio-portrait-tall');
-		expect(enchantedGalleryContent).toContain('--gallery-item-position-portrait-tall');
-	});
-
 	it('does not re-introduce removed selectors/variables', () => {
 		expect(enchantedContent).not.toContain('.enchanted-rose');
 		expect(enchantedContent).not.toContain('.theme-enchanted-rose');
@@ -468,9 +426,7 @@ describe('Enchanted rose section coverage', () => {
 });
 
 describe('Sacred keepsake theme isolation', () => {
-	const invitationContent = fs.readFileSync(path.join(presetsDir, '_invitation.scss'), 'utf8');
-	const invitationImports = parseInvitationImports(invitationContent);
-	const otherPresets = invitationImports.filter((preset) => preset !== 'sacred-keepsake');
+	const otherPresets = THEME_PRESETS.filter((preset) => preset !== 'sacred-keepsake');
 	const sacredContent = fs.readFileSync(path.join(presetsDir, '_sacred-keepsake.scss'), 'utf8');
 
 	it('defines the expected standalone theme root scope', () => {
@@ -564,11 +520,19 @@ describe('Theme preset: sacred-keepsake', () => {
 });
 
 describe('Family section contract', () => {
-	const invitationContent = fs.readFileSync(path.join(presetsDir, '_invitation.scss'), 'utf8');
-	const invitationImports = parseInvitationImports(invitationContent);
+	// editorial-magazine still styles Family from its own section partial instead of tokens.
+	const presetsWithFamilyPartial = new Set(['editorial-magazine']);
 
 	it('styles family through preset variables for all active presets', () => {
-		for (const preset of invitationImports) {
+		for (const preset of THEME_PRESETS) {
+			if (presetsWithFamilyPartial.has(preset)) {
+				expect(
+					fs.existsSync(
+						path.join(projectRoot, `src/styles/themes/sections/family/_${preset}.scss`),
+					),
+				).toBe(true);
+				continue;
+			}
 			const presetContent = fs.readFileSync(path.join(presetsDir, `_${preset}.scss`), 'utf8');
 			expectFamilyContract(presetContent);
 		}

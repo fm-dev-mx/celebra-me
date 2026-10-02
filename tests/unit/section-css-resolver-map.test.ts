@@ -129,7 +129,7 @@ describe('section-css-resolver-map', () => {
 			'/src/styles/themes/sections/gallery/_single-keepsake.scss': {
 				default: '/_astro/gallery-single-keepsake.css',
 			},
-			'/src/styles/themes/sections/gallery/_jewelry-box.scss': {
+			'/src/styles/themes/sections/gallery/_jewelry-box-wedding.scss': {
 				default: '/_astro/gallery-jewelry-box.css',
 			},
 		});
