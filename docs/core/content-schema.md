@@ -9,7 +9,9 @@ point) from modular Zod definitions under `src/lib/schemas/content`.
 
 - `base-event.schema.ts`: top-level event assembly
 - `hero.schema.ts`: hero and celebrant metadata
-- `location.schema.ts`: canonical venue array (`venues[]`), map, indication, and structural variant schemas (`standard`, `split-map`, `stacked-venue-plates`). Legacy `ceremony` and `reception` root properties are rejected in canonical content and converted exclusively at ingress.
+- `location.schema.ts`: canonical venue array (`venues[]`), map, indication, and structural variant
+  schemas (`standard`, `split-map`, `stacked-venue-plates`). Legacy `ceremony` and `reception` root
+  properties are rejected in canonical content and converted exclusively at ingress.
 - `family.schema.ts`: family and relationship groups
 - `rsvp.schema.ts`: RSVP payload, canonical section variant, and label overrides
 - `gifts.schema.ts`: gift option variants
@@ -22,6 +24,7 @@ point) from modular Zod definitions under `src/lib/schemas/content`.
 ## Deprecation Policy
 
 RSVP copy overrides live under `rsvp.labels`.
+
 - `labels.name`
 - `labels.guestCount`
 - `labels.attendance`
@@ -81,25 +84,20 @@ The optional `sectionOrder` field controls the render order of invitation sectio
 `shared.schema.ts` via `INVITATION_RENDER_SECTION_KEYS` (exported from `theme-contract.ts`).
 
 ```jsonc
-// Example custom section order (all keys optional; `personalizedAccess` must be explicit)
+// Example section order (`personalizedAccess` must be explicit)
 "sectionOrder": ["quote", "location", "countdown", "family", "itinerary", "gallery", "gifts", "personalizedAccess", "rsvp", "thankYou"]
 ```
 
 ### Rules
 
-- **Optional**. If omitted, present sections follow `CONTENT_SECTION_KEYS`. When guest context or
-  demo-preview context exists, `personalizedAccess` is inserted immediately before `rsvp`.
-- Without guest or demo-preview context, an omitted order does not create a personalized-access
-  section.
-- When present, the renderer follows the array verbatim — `personalizedAccess` must be explicitly
+- **Required**. The renderer follows the array verbatim; `personalizedAccess` must be explicitly
   listed to appear.
 - Interludes are appended after their `afterSection` parent regardless of the section's position in
   the order.
 - Only listed sections are rendered. Unlisted sections with data are silently skipped.
 
-### When to use explicit ordering
+### Choosing an order
 
-- A demo needs a specific section progression (e.g., countdown → itinerary before gallery).
-- The conversion path (Gifts → PersonalizedAccess → RSVP → ThankYou) must be contiguous without
-  interludes.
-- The default order does not match the event narrative.
+- Order follows the event narrative; there is no implicit default.
+- Keeping Gifts → PersonalizedAccess → RSVP → ThankYou together is a recommendation, not a schema
+  rule: some demos deliberately open with the access pass.

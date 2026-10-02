@@ -38,23 +38,34 @@ Three homes. Exclusive ownership. Do not collapse looks into one SCSS file per i
 
 - **Path / marker:** `invitation-profiles/{visualProfileId}.scss` (`visualProfileId` is required for
   every managed invitation)
-- **Owns:** Client palette token remap and rhythm/intersection overrides that differ from the
-  preset.
-- **Must not:** Re-declare section layout; set `font-family` / `background` directly on section
-  element classes (use tokens); duplicate active variant or preset rules.
+- **Owns:** Custom-property declarations only: client palette token remap and rhythm/intersection
+  token overrides that differ from the preset.
+- **Must not:** Declare any non-custom property; re-declare section layout; style one section
+  relative to another; render client text through `content:`; select by position or by data such as
+  an image key; duplicate active variant or preset rules.
+- **Demos:** A demo is styled only by a demo-owned profile (`demo-*`). A client profile never styles
+  a demo, and `pnpm validate:no-pii` rejects it.
+- **Enforcement:** `tests/unit/invitation-profile-boundary.test.ts`.
+
+### Frozen delivered profiles
+
+Profiles delivered before the token-only rule are closed deliverables, listed with their digest in
+`tests/unit/invitation-profile-boundary.test.ts`. They are not edited, reused or extended, and each
+is deleted together with its invitation. The list only shrinks. A look that a new invitation needs
+is built as a registered section variant, an intersection pattern or preset tokens, proven on a
+demo, and then selected with data; it never starts in a profile.
 
 Shared structural base `src/styles/invitation/` is out of scope for ownership moves in this
 contract.
 
 ### Transitional ownership exceptions
 
-The current migration is not yet ownership-clean. Existing files under
-`src/styles/invitation-profiles/**` and `src/styles/invitation-sections-by-preset/**` still contain
-historical section selectors and layout rules. These rules are tracked as temporary exceptions, not
-as valid architecture: no new identity- or preset-specific structural selectors may be added, and an
-existing rule may be removed or moved only with the CSS visual-parity gate. The exception ends after
-every affected invitation has a reviewed before/after capture and the rule is owned by a section
-base, a registered semantic variant, or a token-only profile.
+Files under `src/styles/invitation-sections-by-preset/**` still contain preset-named section
+selectors and layout rules. They are temporary exceptions, not valid architecture: no new preset-
+specific structural selector may be added, and an existing rule may be removed or moved only with
+the CSS visual-parity gate. The exception ends when every rule is owned by a section base, a
+registered semantic variant, or preset tokens. Frozen delivered profiles follow their own rule
+above.
 
 ### Optional stationery treatments
 

@@ -22,7 +22,7 @@ function loadFixture(relativePath: string) {
 }
 
 describe('buildInvitationRenderPlan', () => {
-	it('inserts interludes after their specified sections using DEFAULT_SECTION_ORDER', () => {
+	it('inserts interludes after their specified sections', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-enchanted-rose',
 			data: loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),

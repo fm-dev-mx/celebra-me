@@ -621,22 +621,6 @@ describe('Style boundary governance', () => {
 		expect(split).toContain('var(--hero-split-title-font, var(--font-display))');
 	});
 
-	it('romina profile reasserts split-cover title tokens and clears base gradient chrome', () => {
-		const romina = read('src/styles/invitation-profiles/romina-rios-chaparro.scss');
-		expect(romina).toContain(".invitation-hero[data-variant='split-cover']");
-		expect(romina).toContain("@use '@fontsource/parisienne/400.css'");
-		expect(romina).toContain("--hero-split-title-font: 'Parisienne', cursive");
-		expect(romina).toContain('-webkit-text-fill-color: var(--romina-ivory)');
-		expect(romina).toContain('background: none');
-	});
-
-	it('alba thank-you restores circular photo-frame geometry', () => {
-		const alba = read('src/styles/invitation-profiles/alba-rosa-quinonez.scss');
-		const thankYou = alba.slice(alba.indexOf('.thank-you-section {'));
-		expect(thankYou).toContain('border-radius: 50%');
-		expect(thankYou).toContain('clip-path: circle(');
-	});
-
 	it('preset bundles do not reintroduce theme-base imports', () => {
 		const bundleDir = 'src/styles/invitation-sections-by-preset';
 		const absoluteDir = path.join(projectRoot, bundleDir);
