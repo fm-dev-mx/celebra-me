@@ -12,24 +12,15 @@
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import QRCode from 'qrcode';
 import sharp from 'sharp';
 import jsQR from 'jsqr';
 import {
 	buildMemoriesPublicUrl,
 	isMemoriesPublicSlug,
 } from '../../src/lib/memories/contract/private-request.ts';
+import { MEMORIES_QR_PARAMS, generateMemoriesQrSvg } from '../../src/lib/memories/qr.ts';
 
-/** Fixed rendering parameters: changing them changes every printed code. */
-export const MEMORIES_QR_PARAMS = {
-	errorCorrectionLevel: 'H' as const,
-	/** Quiet-zone modules around the QR matrix (QR Code Model 2). */
-	marginModules: 4,
-	foregroundColor: '#000000',
-	backgroundColor: '#FFFFFF',
-	svgWidthPx: 1024,
-	pngSizePx: 2000,
-} as const;
+export { MEMORIES_QR_PARAMS, generateMemoriesQrSvg };
 
 const OUTPUT_DIRECTORY = path.join('.tmp', 'memories-qr');
 
@@ -64,20 +55,6 @@ export function parseQrArgs(argv: readonly string[]): { slug: string; check: boo
 		throw new Error('A valid --slug <public-slug> (lowercase kebab-case) is required.');
 	}
 	return { slug, check };
-}
-
-export async function generateMemoriesQrSvg(targetUrl: string): Promise<string> {
-	const svg = await QRCode.toString(targetUrl, {
-		type: 'svg',
-		errorCorrectionLevel: MEMORIES_QR_PARAMS.errorCorrectionLevel,
-		margin: MEMORIES_QR_PARAMS.marginModules,
-		width: MEMORIES_QR_PARAMS.svgWidthPx,
-		color: {
-			dark: MEMORIES_QR_PARAMS.foregroundColor,
-			light: MEMORIES_QR_PARAMS.backgroundColor,
-		},
-	});
-	return `${svg.replace(/\r\n/g, '\n').trim()}\n`;
 }
 
 async function rasterize(svg: string): Promise<Buffer> {

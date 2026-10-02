@@ -83,6 +83,9 @@ importers:
       nodemailer:
         specifier: ^10.0.3
         version: 10.0.3
+      qrcode:
+        specifier: ^1.5.4
+        version: 1.5.4
       react:
         specifier: ^19.3.0
         version: 19.3.0
@@ -210,9 +213,6 @@ importers:
       prettier-plugin-astro:
         specifier: ^1.0.0
         version: 1.0.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(prettier@3.9.6)
-      qrcode:
-        specifier: ^1.5.4
-        version: 1.5.4
       sass-embedded:
         specifier: ^1.104.0
         version: 1.104.0
