@@ -11,7 +11,6 @@ import type { EventType } from '@/lib/theme/theme-contract';
 import type { LandingPageData } from '@/interfaces/ui/sections/landing-page.interface';
 
 // First screen of each featured demo invitation, opened, at 390x844 @2x (fictitious names).
-import demoScreenBabyShower from '@/assets/images/showroom/demo-screen-baby-shower.webp';
 import demoScreenBautizo from '@/assets/images/showroom/demo-screen-bautizo.webp';
 import demoScreenBoda from '@/assets/images/showroom/demo-screen-boda.webp';
 import demoScreenCumple from '@/assets/images/showroom/demo-screen-cumple.webp';
@@ -33,7 +32,6 @@ const getCtaLabel = (eventType: string, label: string) => {
 	if (eventType === 'boda') return 'Ver demo de boda';
 	if (eventType === 'bautizo') return 'Ver demo de bautizo';
 	if (eventType === 'primera-comunion') return 'Ver demo de primera comunión';
-	if (eventType === 'baby-shower') return 'Ver demo de baby shower';
 	if (eventType === 'cumple') return 'Ver demo de cumpleaños';
 	return `Ver demo de ${label}`;
 };
@@ -43,7 +41,6 @@ const demoScreens: Partial<Record<EventType, ImageMetadata>> = {
 	boda: demoScreenBoda,
 	bautizo: demoScreenBautizo,
 	cumple: demoScreenCumple,
-	'baby-shower': demoScreenBabyShower,
 };
 
 const getDemoScreen = (eventType: EventType) => demoScreens[eventType] ?? demoScreenXv;

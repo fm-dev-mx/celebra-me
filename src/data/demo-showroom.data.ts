@@ -77,24 +77,6 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 		sortOrder: 30,
 	},
 	{
-		eventType: 'baby-shower',
-		publicSlug: 'baby-shower',
-		label: 'Baby shower',
-		description: 'Ubicación, regalos y confirmación en una invitación clara.',
-		icon: 'Sparkles',
-		showroomHref: '/demos/baby-shower',
-		heroTitle: 'Demos de invitaciones para baby shower',
-		heroDescription:
-			'Descubre diseños digitales para anunciar una celebración con detalles claros.',
-		whatsAppMessage:
-			'Hola, me gustaría una invitación digital para baby shower. Quiero asesoría para una invitación personalizada.',
-		homeSelector: {
-			screenAlt: 'Portada de la demo de baby shower: cielo con luna, nombre, fecha y lugar',
-			quoteCta: SHOWROOM_QUOTE_CTA,
-		},
-		sortOrder: 40,
-	},
-	{
 		eventType: 'cumple',
 		publicSlug: 'cumpleanos',
 		label: 'Cumpleaños y eventos',
@@ -281,25 +263,6 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 			assetSlug: 'demo-bautismo-angelic-presence',
 			key: 'hero',
 			alt: 'Vista principal del demo de bautizo estilo Angelic Presence',
-		},
-	},
-	{
-		eventType: 'baby-shower',
-		publicSlug: 'baby-shower',
-		slug: 'demo-baby-shower-celestial',
-		href: '/baby-shower/demo-baby-shower-celestial',
-		title: 'Baby shower estilo Celestial',
-		description: 'Suave, celestial y emotiva.',
-		styleTags: ['celestial', 'suave'],
-		visibility: 'featured',
-		reviewStatus: 'approved',
-		sortOrder: 10,
-		ctaMessage:
-			'Hola, me gustaría una invitación digital para baby shower similar al demo Celestial.',
-		thumbnail: {
-			assetSlug: 'demo-baby-shower-celestial',
-			key: 'hero',
-			alt: 'Vista principal del demo de baby shower estilo Celestial',
 		},
 	},
 	{

@@ -80,10 +80,9 @@ consistently.
 
 Dashboard-selectable demos are not inferred from routable static JSON alone. A demo becomes a
 dashboard preset only when it is added to `DEMO_PRESET_CATALOG` and has explicit render-safe asset
-resolution through an approved demo-owned namespace. `demo-baby-shower-celestial` is promoted this
-way with `_assetSlug` set to `demo-baby-shower-celestial`, separate from the Leah Lexa client asset
-folder. `demo-primera-comunion-illustrated` follows the same contract with `_assetSlug` set to
-`demo-primera-comunion-illustrated`.
+resolution through an approved demo-owned namespace. `demo-primera-comunion-illustrated` is promoted
+this way with `_assetSlug` set to `demo-primera-comunion-illustrated`. A demo namespace must never
+hold client-provided media.
 
 ## Validation
 

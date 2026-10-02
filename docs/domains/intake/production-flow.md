@@ -182,11 +182,10 @@ Check collisions in existing invitations, published content, and RSVP events. Do
 
 Reference selection is concern-specific; no invitation is universally canonical.
 
-| Reference                       | Use it for                                                  | Reusable patterns                                                                    | Do not copy                                                    |
-| ------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
-| `demo-xv-jewelry-box`           | Asset organization and a complete XV baseline               | Namespace layout, internal asset keys, ceremony/reception, standard section contract | Names, copy, dates, colors, crop decisions                     |
-| `demo-baby-shower-celestial`    | Optional-section and intentionally omitted-section coverage | Compact section order, sparse content, grouped family/location/gifts behavior        | Baby-shower-specific narrative or the Leah Lexa client profile |
-| `demo-boda-jewelry-box-wedding` | Non-XV and wedding structure                                | Couple naming, ceremony/reception separation, wedding theme compatibility            | Wedding-only semantics for other event types                   |
+| Reference                       | Use it for                                    | Reusable patterns                                                                    | Do not copy                                  |
+| ------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------- |
+| `demo-xv-jewelry-box`           | Asset organization and a complete XV baseline | Namespace layout, internal asset keys, ceremony/reception, standard section contract | Names, copy, dates, colors, crop decisions   |
+| `demo-boda-jewelry-box-wedding` | Non-XV and wedding structure                  | Couple naming, ceremony/reception separation, wedding theme compatibility            | Wedding-only semantics for other event types |
 
 These are reference recommendations. Runtime collection lookup, static eligibility, editor presets
 and showroom approval have separate owners listed in

@@ -42,7 +42,6 @@ describe('demo showroom public metadata', () => {
 			'/demos/xv',
 			'/demos/boda',
 			'/demos/bautizo',
-			'/demos/baby-shower',
 			'/demos/cumpleanos',
 		]);
 
@@ -56,7 +55,7 @@ describe('demo showroom public metadata', () => {
 	it('renders only demos explicitly approved for public showroom exposure', () => {
 		const featuredItems = getFeaturedDemoShowroomItems();
 
-		expect(featuredItems).toHaveLength(8);
+		expect(featuredItems).toHaveLength(7);
 		expect(featuredItems.every((item) => item.visibility === 'featured')).toBe(true);
 		expect(featuredItems.every((item) => item.reviewStatus === 'approved')).toBe(true);
 		expect(featuredItems.map((item) => item.slug)).not.toContain('demo-xv-valentina-profile');

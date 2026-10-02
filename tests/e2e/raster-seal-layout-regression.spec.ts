@@ -23,15 +23,46 @@ function doBoxesIntersect(r1: Rect, r2: Rect): boolean {
 }
 
 const INVENTORIED_ROUTES = [
-	{ route: '/baby-shower/leah-lexa?forceEnvelope=true', name: 'Leah Lexa (Real)', renderer: 'raster' },
-	{ route: '/baby-shower/demo-baby-shower-celestial?forceEnvelope=true', name: 'Celestial (Demo)', renderer: 'raster' },
-	{ route: '/xv/demo-xv-enchanted-rose?forceEnvelope=true', name: 'Enchanted Rose (Demo)', renderer: 'wax-organic' },
-	{ route: '/xv/demo-xv-celestial-blue?forceEnvelope=true', name: 'Celestial Blue (Demo)', renderer: 'wax-medallion' },
-	{ route: '/bautismo/demo-bautismo-angelic-presence?forceEnvelope=true', name: 'Angelic Presence (Demo)', renderer: 'monogram' },
-	{ route: '/xv/demo-xv-jewelry-box?forceEnvelope=true', name: 'Jewelry Box (Demo)', renderer: 'vector-icon' },
-	{ route: '/boda/demo-boda-jewelry-box-wedding?forceEnvelope=true', name: 'Jewelry Box Wedding (Demo)', renderer: 'vector-icon' },
-	{ route: '/cumple/demo-cumple-luxury-hacienda?forceEnvelope=true', name: 'Luxury Hacienda (Demo)', renderer: 'wax-organic' },
-	{ route: '/primera-comunion/demo-primera-comunion-illustrated?forceEnvelope=true', name: 'Illustrated Communion (Demo)', renderer: 'wax-organic' },
+	{
+		route: '/baby-shower/leah-lexa?forceEnvelope=true',
+		name: 'Leah Lexa (Real)',
+		renderer: 'raster',
+	},
+	{
+		route: '/xv/demo-xv-enchanted-rose?forceEnvelope=true',
+		name: 'Enchanted Rose (Demo)',
+		renderer: 'wax-organic',
+	},
+	{
+		route: '/xv/demo-xv-celestial-blue?forceEnvelope=true',
+		name: 'Celestial Blue (Demo)',
+		renderer: 'wax-medallion',
+	},
+	{
+		route: '/bautismo/demo-bautismo-angelic-presence?forceEnvelope=true',
+		name: 'Angelic Presence (Demo)',
+		renderer: 'monogram',
+	},
+	{
+		route: '/xv/demo-xv-jewelry-box?forceEnvelope=true',
+		name: 'Jewelry Box (Demo)',
+		renderer: 'vector-icon',
+	},
+	{
+		route: '/boda/demo-boda-jewelry-box-wedding?forceEnvelope=true',
+		name: 'Jewelry Box Wedding (Demo)',
+		renderer: 'vector-icon',
+	},
+	{
+		route: '/cumple/demo-cumple-luxury-hacienda?forceEnvelope=true',
+		name: 'Luxury Hacienda (Demo)',
+		renderer: 'wax-organic',
+	},
+	{
+		route: '/primera-comunion/demo-primera-comunion-illustrated?forceEnvelope=true',
+		name: 'Illustrated Communion (Demo)',
+		renderer: 'wax-organic',
+	},
 ];
 
 const VIEWPORTS = [
@@ -103,7 +134,9 @@ test.describe('Seal Sizing, Tier Selection & Layout Contract Regression', () => 
 				// 2. Closure anchor vertical alignment within max(2px, 1% of seal width)
 				const containerCenterY = rects.container.top + rects.container.height / 2;
 				const tolerance = Math.max(2, rects.visual.width * 0.01);
-				expect(Math.abs(rects.visual.centerY - containerCenterY)).toBeLessThanOrEqual(tolerance);
+				expect(Math.abs(rects.visual.centerY - containerCenterY)).toBeLessThanOrEqual(
+					tolerance,
+				);
 			}
 
 			// 3. Collision Assertions
@@ -127,21 +160,30 @@ test.describe('Seal Sizing, Tier Selection & Layout Contract Regression', () => 
 
 			// Test click opening
 			await trigger.click();
-			await expect(page.locator('.envelope-wrapper')).toHaveClass(/is-opening|is-preview-opened|is-letter-held/);
+			await expect(page.locator('.envelope-wrapper')).toHaveClass(
+				/is-opening|is-preview-opened|is-letter-held/,
+			);
 		});
 	}
 
 	// Expanded Responsive Viewport Matrix on representative consumer routes
 	const REPRESENTATIVE_ROUTES = [
 		{ route: '/baby-shower/leah-lexa?forceEnvelope=true', name: 'Leah Lexa (Raster)' },
-		{ route: '/baby-shower/demo-baby-shower-celestial?forceEnvelope=true', name: 'Celestial (Raster Demo)' },
-		{ route: '/xv/demo-xv-enchanted-rose?forceEnvelope=true', name: 'Enchanted Rose (Wax Organic)' },
-		{ route: '/xv/demo-xv-celestial-blue?forceEnvelope=true', name: 'Celestial Blue (Wax Medallion)' },
+		{
+			route: '/xv/demo-xv-enchanted-rose?forceEnvelope=true',
+			name: 'Enchanted Rose (Wax Organic)',
+		},
+		{
+			route: '/xv/demo-xv-celestial-blue?forceEnvelope=true',
+			name: 'Celestial Blue (Wax Medallion)',
+		},
 	];
 
 	for (const target of REPRESENTATIVE_ROUTES) {
 		for (const vp of VIEWPORTS) {
-			test(`${target.name} responsive matrix at ${vp.name} (${vp.width}x${vp.height})`, async ({ page }) => {
+			test(`${target.name} responsive matrix at ${vp.name} (${vp.width}x${vp.height})`, async ({
+				page,
+			}) => {
 				await page.setViewportSize({ width: vp.width, height: vp.height });
 				const response = await page.goto(target.route, { waitUntil: 'networkidle' });
 				expect(response?.ok()).toBeTruthy();
@@ -178,7 +220,9 @@ test.describe('Seal Sizing, Tier Selection & Layout Contract Regression', () => 
 				if (rects.visual && rects.container) {
 					const containerCenterY = rects.container.top + rects.container.height / 2;
 					const tolerance = Math.max(2, rects.visual.width * 0.01);
-					expect(Math.abs(rects.visual.centerY - containerCenterY)).toBeLessThanOrEqual(tolerance);
+					expect(Math.abs(rects.visual.centerY - containerCenterY)).toBeLessThanOrEqual(
+						tolerance,
+					);
 				}
 
 				if (rects.visual && rects.name) {

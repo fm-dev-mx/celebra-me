@@ -42,7 +42,8 @@ export function discoverCanonicalEnvelopeRoutes(): DiscoveredEnvelopeRoute[] {
 			} else if (entry.isFile() && entry.name.endsWith('.json')) {
 				try {
 					const content: RawEventJson = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
-					const showEnvelope = content.showEnvelope ?? content.envelope?.showEnvelope ?? true;
+					const showEnvelope =
+						content.showEnvelope ?? content.envelope?.showEnvelope ?? true;
 					if (!showEnvelope) continue;
 
 					const slug = content.slug || path.basename(entry.name, '.json');
@@ -54,7 +55,9 @@ export function discoverCanonicalEnvelopeRoutes(): DiscoveredEnvelopeRoute[] {
 						sealIcon: content.envelope?.sealIcon as any,
 						sealInitials: content.envelope?.sealInitials,
 						sealVariant: content.envelope?.sealVariant,
-						sealImage: content.envelope?.sealImage ? { src: content.envelope.sealImage, alt: 'Sello' } : undefined,
+						sealImage: content.envelope?.sealImage
+							? { src: content.envelope.sealImage, alt: 'Sello' }
+							: undefined,
 					});
 
 					routes.push({
@@ -84,7 +87,6 @@ describe('Canonical Envelope Route Inventory Audit', () => {
 		expect(inventory.length).toBeGreaterThan(0);
 		// Confirm key routes are present
 		const slugs = inventory.map((i) => i.slug);
-		expect(slugs).toContain('demo-baby-shower-celestial');
 		expect(slugs).toContain('demo-xv-enchanted-rose');
 		expect(slugs).toContain('demo-xv-celestial-blue');
 		expect(slugs).toContain('demo-bautismo-angelic-presence');
@@ -92,16 +94,22 @@ describe('Canonical Envelope Route Inventory Audit', () => {
 	});
 
 	it('assigns every inventoried route a valid renderer type', () => {
-		const validRenderers: SealRendererType[] = ['raster', 'wax-organic', 'wax-medallion', 'monogram', 'vector-icon'];
+		const validRenderers: SealRendererType[] = [
+			'raster',
+			'wax-organic',
+			'wax-medallion',
+			'monogram',
+			'vector-icon',
+		];
 		for (const route of inventory) {
 			expect(validRenderers).toContain(route.renderer);
 		}
 	});
 
 	it('validates that real client routes with raster seals resolve their image assets', () => {
-		const leahLexaPng = path.resolve('src/assets/images/events/leah-lexa-baby-shower/rose-wax-seal-ll.png');
-		const celestialWebp = path.resolve('src/assets/images/events/demo-baby-shower-celestial/rose-wax-seal-lc.webp');
+		const leahLexaPng = path.resolve(
+			'src/assets/images/events/leah-lexa-baby-shower/rose-wax-seal-ll.png',
+		);
 		expect(fs.existsSync(leahLexaPng)).toBe(true);
-		expect(fs.existsSync(celestialWebp)).toBe(true);
 	});
 });

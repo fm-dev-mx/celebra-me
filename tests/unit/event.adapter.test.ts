@@ -221,23 +221,6 @@ describe('adaptEvent', () => {
 		expect(viewModel.hero.name).toBe(fixture.hero.name);
 	});
 
-	it('resolves the Baby Shower catalog demo through its explicit asset slug', () => {
-		const event = {
-			id: 'event-demos/baby-shower/demo-baby-shower-celestial',
-			data: loadFixture(
-				'src/content/event-demos/baby-shower/demo-baby-shower-celestial.json',
-			),
-		} as Parameters<typeof adaptEvent>[0];
-
-		const viewModel = adaptEvent(event);
-
-		expect(viewModel.id).toBe('demo-baby-shower-celestial');
-		expect(viewModel.theme.preset).toBe('celestial-blue');
-		expect(viewModel.sections.rsvp?.eventSlug).toBe('demo-baby-shower-celestial');
-		expect(viewModel.hero.backgroundImage.src).toEqual(expect.any(String));
-		expect(viewModel.sections.family?.featuredImage?.src).toEqual(expect.any(String));
-	});
-
 	it('resolves the Primera Comunión catalog demo through its explicit asset slug', () => {
 		const event = {
 			id: 'event-demos/primera-comunion/demo-primera-comunion-illustrated',

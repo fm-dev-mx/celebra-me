@@ -33,7 +33,6 @@ const COMMERCIAL_DEMO_SHOWROOM_PATHS = new Set([
 	'/demos/xv',
 	'/demos/boda',
 	'/demos/bautizo',
-	'/demos/baby-shower',
 	'/demos/cumpleanos',
 ]);
 const EVENT_TYPES = new Set(['xv', 'boda', 'bautizo', 'cumple', 'baby-shower', 'primera-comunion']);
