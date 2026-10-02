@@ -170,16 +170,20 @@ export async function updateGuestById(
 	);
 }
 
-
-export async function softDeleteGuestById(guestId: string, hostAccessToken: string): Promise<void> {
-	await updateSingle(
-		TABLE,
-		GUEST_COLUMNS,
-		`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`,
-		{ deleted_at: new Date().toISOString() },
-		toGuestRecord,
-		{ authToken: hostAccessToken },
-	);
+/**
+ * Soft-deletes an active guest. Client sessions cannot do this through RLS
+ * (the SELECT policy hides deleted rows), so the privileged RPC re-checks that
+ * the actor owns, manages or administers the guest's event. Returns false when
+ * the guest is missing or already deleted.
+ */
+export async function softDeleteGuestById(guestId: string, actorUserId: string): Promise<boolean> {
+	const deleted = await supabaseRestRequest<boolean>({
+		pathWithQuery: 'rpc/soft_delete_guest_invitation_v1',
+		method: 'POST',
+		useServiceRole: true,
+		body: { p_guest_id: guestId, p_actor_user_id: actorUserId },
+	});
+	return deleted === true;
 }
 
 export async function findGuestByInviteIdPublic(

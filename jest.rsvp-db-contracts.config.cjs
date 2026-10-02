@@ -10,6 +10,7 @@ module.exports = {
 	testPathIgnorePatterns: (base.testPathIgnorePatterns || []).filter(
 		(pattern) =>
 			!pattern.includes('public-guest-rsvp-db-boundary') &&
-			!pattern.includes('public-rsvp-http-wiring-db'),
+			!pattern.includes('public-rsvp-http-wiring-db') &&
+			!pattern.includes('dashboard-guest-soft-delete-db'),
 	),
 };

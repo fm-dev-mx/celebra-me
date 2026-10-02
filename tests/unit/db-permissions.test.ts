@@ -316,3 +316,35 @@ describe('Least-privilege migration: RLS coverage verification', () => {
 		}
 	});
 });
+
+describe('Dashboard guest soft-delete RPC privileges', () => {
+	const sql = fs.readFileSync(
+		path.resolve('supabase/migrations/20261001120000_guest_invitation_soft_delete_rpc.sql'),
+		'utf8',
+	);
+
+	it('is a security definer function with a pinned search_path', () => {
+		expect(sql).toMatch(/security\s+definer/i);
+		expect(sql).toMatch(/set\s+search_path\s*=\s*'public'/i);
+	});
+
+	it('revokes client execution and grants it only to service_role', () => {
+		expect(sql).toMatch(
+			/revoke\s+all\s+on\s+function\s+public\.soft_delete_guest_invitation_v1\(uuid,\s*uuid\)\s+from\s+public,\s*anon,\s*authenticated;/i,
+		);
+		expect(sql).toMatch(
+			/grant\s+execute\s+on\s+function\s+public\.soft_delete_guest_invitation_v1\(uuid,\s*uuid\)\s+to\s+service_role;/i,
+		);
+		expect(sql).not.toMatch(/\bto\s+(public|anon|authenticated)\b/i);
+	});
+
+	it('re-checks event access for the actor and leaves table grants and policies untouched', () => {
+		expect(sql).toMatch(/e\.owner_user_id\s*=\s*p_actor_user_id/);
+		expect(sql).toMatch(/em\.user_id\s*=\s*p_actor_user_id/);
+		expect(sql).toMatch(/errcode\s*=\s*'42501'/);
+		expect(sql).not.toMatch(
+			/\b(grant|revoke)\b[^;]*\bon\s+(table\s+)?public\.guest_invitations\b/i,
+		);
+		expect(sql).not.toMatch(/\b(create|alter)\s+policy\b/i);
+	});
+});

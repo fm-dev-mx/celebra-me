@@ -89,6 +89,19 @@ function matchPublicRsvpRpcError(errorMessage: string) {
 function parseSupabaseError(error: unknown): SupabaseErrorResponse | null {
 	if (typeof error !== 'object' || error === null) return null;
 
+	// SupabaseHttpError keeps the raw PostgREST JSON body separately from its
+	// prefixed message; parse it so constraint names are not hidden by escaping.
+	if ('body' in error && typeof error.body === 'string') {
+		try {
+			const parsed = JSON.parse(error.body);
+			if (typeof parsed === 'object' && parsed !== null) {
+				return parsed as SupabaseErrorResponse;
+			}
+		} catch {
+			// Fall through to message parsing.
+		}
+	}
+
 	if (error instanceof Error) {
 		try {
 			const parsed = JSON.parse(error.message);
@@ -104,6 +117,22 @@ function parseSupabaseError(error: unknown): SupabaseErrorResponse | null {
 	}
 
 	return null;
+}
+
+// PostgreSQL insufficient_privilege: missing grant or row-level security denial.
+const INSUFFICIENT_PRIVILEGE_CODE = '42501';
+
+function isInsufficientPrivilegeError(
+	error: unknown,
+	supabaseError: SupabaseErrorResponse | null,
+): boolean {
+	if (supabaseError?.code === INSUFFICIENT_PRIVILEGE_CODE) return true;
+	return (
+		typeof error === 'object' &&
+		error !== null &&
+		'code' in error &&
+		error.code === INSUFFICIENT_PRIVILEGE_CODE
+	);
 }
 
 export function mapSupabaseErrorToApiError(error: unknown): ApiError {
@@ -152,6 +181,12 @@ export function mapSupabaseErrorToApiError(error: unknown): ApiError {
 				errorCode: 'check_constraint_violation',
 			},
 		);
+	}
+
+	if (isInsufficientPrivilegeError(error, supabaseError)) {
+		return new ApiError(403, 'forbidden', 'No tiene permisos para realizar esta acción.', {
+			errorCode: 'insufficient_privilege',
+		});
 	}
 
 	if (errorMessage.includes('PGRST')) {

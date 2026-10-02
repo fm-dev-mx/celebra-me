@@ -558,6 +558,7 @@ function cmdRunTests(): void {
 		'invitation_original_image_delivery.test.sql',
 		'managed_identity_archive_cascade.test.sql',
 		'event_memories_catalog.test.sql',
+		'guest_invitation_rls.test.sql',
 	];
 	const testPaths = testFiles.map((file) => resolve(PROJECT_ROOT, 'supabase', 'tests', file));
 	if (!testPaths.some((testPath) => existsSync(testPath))) {
@@ -741,6 +742,7 @@ async function cmdRunRsvpDbContracts(): Promise<void> {
 			'jest.rsvp-db-contracts.config.cjs',
 			'tests/db/public-guest-rsvp-db-boundary.test.ts',
 			'tests/db/public-rsvp-http-wiring-db.test.ts',
+			'tests/db/dashboard-guest-soft-delete-db.test.ts',
 		],
 		{
 			throwOnError: false,

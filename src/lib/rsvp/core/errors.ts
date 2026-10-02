@@ -95,10 +95,14 @@ export function isRejectedAuthCredential(error: unknown): error is AuthRequestEr
 
 export function isApiError(error: unknown): error is ApiError {
 	if (error instanceof ApiError) return true;
+	// Match only by name (e.g. an ApiError from another module instance). Provider
+	// errors such as SupabaseHttpError also carry numeric `status` and string
+	// `code`; treating them as ApiErrors would skip mapping and send raw database
+	// messages to clients.
 	if (typeof error === 'object' && error !== null) {
 		const err = error as Record<string, unknown>;
 		return (
-			(err.name === 'ApiError' || 'code' in err) &&
+			err.name === 'ApiError' &&
 			typeof err.status === 'number' &&
 			typeof err.code === 'string'
 		);

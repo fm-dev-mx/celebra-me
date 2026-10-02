@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireAuthenticatedMutationAccess } from '@/lib/rsvp/auth/authorization';
-import { badRequest, errorResponse, getIp, jsonResponse, forbidden } from '@/lib/rsvp/core/http';
+import { errorResponse, getIp, jsonResponse, forbidden } from '@/lib/rsvp/core/http';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { formatPhoneError, normalizeOptionalNationalPhone } from '@/lib/rsvp/core/utils';
@@ -8,6 +8,7 @@ import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { findEventById, findEventByIdService } from '@/lib/rsvp/repositories/event.repository';
 import { ApiError, isApiError } from '@/lib/rsvp/core/errors';
+import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
 import { z } from 'zod';
 import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 
@@ -111,14 +112,24 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 		if (isApiError(err)) {
 			return errorResponse(err);
 		}
+		// Never echo provider/database messages to the client; they stay in the log above.
 		const message = err instanceof Error ? err.message : String(err);
 		const supabaseMatch = message.match(/^Supabase error \((\d+)\):/);
 		if (supabaseMatch) {
 			const supabaseStatus = parseInt(supabaseMatch[1], 10);
 			if (supabaseStatus >= 400 && supabaseStatus < 500) {
-				return badRequest(message);
+				const mapped = mapSupabaseErrorToApiError(err);
+				return errorResponse(
+					mapped.status < 500
+						? mapped
+						: new ApiError(
+								400,
+								'bad_request',
+								'No se pudo procesar la importación de invitados.',
+							),
+				);
 			}
 		}
-		return errorResponse(new ApiError(500, 'internal_error', message));
+		return errorResponse(new ApiError(500, 'internal_error', 'Internal server error.'));
 	}
 };
