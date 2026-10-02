@@ -15,8 +15,8 @@ jest.mock('@/lib/intake/storage', () => ({
 	uploadToStorage: jest.fn(),
 }));
 
-jest.mock('@/lib/intake/services/demo-asset.service', () => ({
-	getDemoPresetAssets: jest.fn().mockReturnValue([]),
+jest.mock('@/lib/intake/services/bundled-asset.service', () => ({
+	getBundledEventAssets: jest.fn().mockReturnValue([]),
 }));
 
 jest.mock('@/lib/intake/services/asset-usage.service', () => ({
@@ -57,11 +57,11 @@ describe('listAssets with archive filter', () => {
 		expect(result[0]).toMatchObject({
 			id: 'archived-1',
 			displayName: 'Foto archivada',
-			isDemo: false,
+			isBundled: false,
 		});
 	});
 
-	it('does not return demo assets in archived filter', async () => {
+	it('does not return bundled assets in archived filter', async () => {
 		mockFindArchived.mockResolvedValue([]);
 
 		const result = await listAssets('inv-1', 'demo-xv-test', 'archived');

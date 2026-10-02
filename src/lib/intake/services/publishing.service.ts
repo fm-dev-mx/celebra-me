@@ -6,6 +6,7 @@ import {
 } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
+import { PublishedContentContractError } from '@/lib/intake/mappers/canonical-variant-source';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { getPublicSlug } from '@/lib/intake/slug';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
@@ -18,25 +19,15 @@ import {
 	isSupabaseStorageUrl,
 } from '@/lib/intake/services/cloudinary-era-hosting';
 import { resolveEffectiveTarget } from '@/lib/intake/services/storage-provider';
-import type {
-	Invitation,
-	InvitationAsset,
-	InvitationContentDraft,
-	DemoPreset,
-} from '@/lib/intake/types';
+import type { Invitation, InvitationAsset, InvitationContentDraft } from '@/lib/intake/types';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
-import { loadDemoContent } from '@/lib/intake/editor-api';
 import { isEventAssetKey } from '@/lib/assets/asset-keys';
 import { isValidEvent, getEventAsset } from '@/lib/assets/asset-registry';
 import { resolveAssetSlug } from '@/lib/assets/asset-slug';
 import { computeEffectiveContent } from '@/lib/intake/services/merge-content.service';
 import { DraftNormalizationError } from '@/lib/intake/services/draft-content-mapper';
-import {
-	checkPublishGuard,
-	resolveInvitationTheme,
-} from '@/lib/intake/services/invitation-preset-resolver';
+import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { findPlaceholderTokensInValue } from '@/lib/invitation-preparation/placeholders';
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import {
 	commitAtomicPublication,
 	replayAtomicPublication,
@@ -193,52 +184,40 @@ function normalizePublishedProjection(content: Record<string, unknown>): Record<
 }
 
 function resolvePublicationConfiguration(invitation: Invitation) {
-	const guardResult = checkPublishGuard(invitation);
-	if (!guardResult.ok) throw new ApiError(422, 'config_error', guardResult.errors.join(' '));
-	const snapshot = findDemoPreset(invitation.baseDemoId) ?? invitation.snapshot;
-	if (!snapshot) {
+	const themePreset = resolveInvitationTheme(invitation);
+	if (!themePreset) {
 		throw new ApiError(
 			422,
-			'bad_request',
-			'No se encontró la configuración de la invitación para publicar.',
+			'config_error',
+			`El tema configurado "${invitation.themeId}" no es un tema válido. Contacta a soporte para corregir la invitación.`,
 		);
 	}
-	if (invitation.kind === 'client' && !invitation.createdBy) {
+	if (!invitation.createdBy) {
 		throw new ApiError(
 			422,
 			'bad_request',
 			'No se puede publicar sin un propietario asignado a la invitación. Asigna un propietario antes de publicar.',
 		);
 	}
-	return {
-		publishSlug: getPublicSlug(invitation),
-		resolvedTheme: resolveInvitationTheme(invitation),
-		snapshot,
-	};
+	return { publishSlug: getPublicSlug(invitation), themePreset };
 }
 
-async function resolvePublicationValidationContext(
+function resolvePublicationValidationContext(
 	invitation: Invitation,
 	priorPublished: Awaited<ReturnType<typeof findPublishedByInvitationId>>,
-	stage: 'preflight' | 'publish',
 ) {
-	const configuration = resolvePublicationConfiguration(invitation);
-	const demoContent = await loadDemoContent(configuration.snapshot.previewSlug);
-	const assetSlug = resolveAssetSlug(invitation, priorPublished?.content, demoContent);
-
-	if (!assetSlug) throwVisualResolutionError(invitation.id, assetSlug, stage);
-
-	return { ...configuration, assetSlug, demoContent };
+	return {
+		...resolvePublicationConfiguration(invitation),
+		assetSlug: resolveAssetSlug(invitation, priorPublished?.content),
+	};
 }
 
 interface ValidatePublicationOptions {
 	invitation: Invitation;
 	draft: InvitationContentDraft;
 	priorPublished: Awaited<ReturnType<typeof findPublishedByInvitationId>> | undefined | null;
-	assetSlug: string;
-	resolvedTheme: string;
-	snapshot: DemoPreset;
-	demoContent: Record<string, unknown>;
+	assetSlug: string | undefined;
+	themePreset: string;
 	stage: 'preflight' | 'publish';
 }
 
@@ -251,8 +230,7 @@ async function validatePublication(
 	frozenContent: Record<string, unknown>;
 	publishedContent: Record<string, unknown>;
 }> {
-	const { invitation, draft, priorPublished, assetSlug, resolvedTheme, snapshot, demoContent } =
-		options;
+	const { invitation, draft, priorPublished, assetSlug, themePreset } = options;
 
 	let effectiveDraftContent;
 	try {
@@ -272,18 +250,26 @@ async function validatePublication(
 		throw new ApiError(422, 'bad_request', 'El borrador no tiene contenido para publicar.');
 	}
 
-	const mappedContent = mapDraftToPublished({
-		invitation: {
-			title: invitation.title,
-			eventType: invitation.eventType,
-			snapshot: { ...snapshot, themeId: resolvedTheme as DemoPreset['themeId'] },
-		},
-		assetSlug,
-		draftContent: effectiveDraftContent,
-		demoContent,
-		priorPublishedContent: priorPublished?.content,
-		isDemo: invitation.kind === 'demo',
-	});
+	let mappedContent: Record<string, unknown>;
+	try {
+		mappedContent = mapDraftToPublished({
+			invitation: { title: invitation.title, eventType: invitation.eventType },
+			themePreset,
+			assetSlug,
+			draftContent: effectiveDraftContent,
+			priorPublishedContent: priorPublished?.content,
+		});
+	} catch (error) {
+		if (error instanceof PublishedContentContractError) {
+			throw new ApiError(
+				422,
+				'bad_request',
+				'La invitación no tiene la estructura completa para publicarse (orden de secciones, composición o variantes). Revise la versión publicada o complete las secciones nuevas.',
+				{ reason: 'published_content_contract', detail: error.message },
+			);
+		}
+		throw error;
+	}
 
 	const publicationProjection = parsePublicationProjection(mappedContent);
 
@@ -336,17 +322,14 @@ export async function getPublicationPreflight(invitationId: string): Promise<Pub
 		throw new ApiError(409, 'conflict', 'No hay un borrador disponible para revisar.');
 	}
 
-	const { assetSlug, snapshot, resolvedTheme, demoContent } =
-		await resolvePublicationValidationContext(invitation, published, 'preflight');
+	const { assetSlug, themePreset } = resolvePublicationValidationContext(invitation, published);
 
 	const { publicationProjection } = await validatePublication(invitationId, {
 		invitation,
 		draft,
 		priorPublished: published,
 		assetSlug,
-		resolvedTheme,
-		snapshot,
-		demoContent,
+		themePreset,
 		stage: 'preflight',
 	});
 
@@ -689,17 +672,22 @@ function collectPublishedAssetRefs(content: Record<string, unknown>): AssetRefEn
  */
 function assertAllAssetsResolvable(
 	publishedContent: Record<string, unknown>,
-	context: { assetSlug: string; invitationId: string; stage: 'preflight' | 'publish' },
+	context: {
+		assetSlug: string | undefined;
+		invitationId: string;
+		stage: 'preflight' | 'publish';
+	},
 ): void {
 	const refs = collectPublishedAssetRefs(publishedContent);
 	if (refs.length === 0) return;
-	if (!isValidEvent(context.assetSlug)) {
-		throwVisualResolutionError(context.invitationId, context.assetSlug, context.stage);
+	const { assetSlug } = context;
+	if (!assetSlug || !isValidEvent(assetSlug)) {
+		throwVisualResolutionError(context.invitationId, assetSlug, context.stage);
 	}
 	const unresolved: AssetRefEntry[] = [];
 
 	for (const ref of refs) {
-		if (isEventAssetKey(ref.key) && !getEventAsset(context.assetSlug, ref.key)) {
+		if (isEventAssetKey(ref.key) && !getEventAsset(assetSlug, ref.key)) {
 			unresolved.push(ref);
 		}
 	}
@@ -788,17 +776,17 @@ export async function publishDraft(
 	}
 
 	const priorPublished = await findPublishedByInvitationId(invitationId);
-	const { assetSlug, publishSlug, resolvedTheme, snapshot, demoContent } =
-		await resolvePublicationValidationContext(invitation, priorPublished, 'publish');
+	const { assetSlug, publishSlug, themePreset } = resolvePublicationValidationContext(
+		invitation,
+		priorPublished,
+	);
 
 	const { publicationProjection, publishedContent } = await validatePublication(invitationId, {
 		invitation,
 		draft,
 		priorPublished,
 		assetSlug,
-		resolvedTheme,
-		snapshot,
-		demoContent,
+		themePreset,
 		stage: 'publish',
 	});
 
@@ -839,7 +827,7 @@ export async function publishDraft(
 		idempotencyKey: reviewedPreflight.idempotencyKey,
 		slug: publishSlug,
 		eventType: invitation.eventType,
-		isDemo: invitation.kind === 'demo',
+		isDemo: false,
 		content: publishedContent,
 	});
 

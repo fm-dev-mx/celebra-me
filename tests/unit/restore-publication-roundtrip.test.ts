@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import {
 	ROMINA_ASSET_SPECS,
 	ROMINA_EVENT,
@@ -10,10 +8,6 @@ import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-map
 import { computeEffectiveContent } from '@/lib/intake/services/merge-content.service';
 import { createPublicationComparison } from '@/lib/intake/services/publication-diff.service';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
-
-const demoContent = JSON.parse(
-	readFileSync(resolve(process.cwd(), 'tests/fixtures/content/xv-jewelry-box.json'), 'utf8'),
-) as Record<string, unknown>;
 
 const assets = Object.fromEntries(
 	ROMINA_ASSET_SPECS.map((asset, index) => [
@@ -27,30 +21,16 @@ const assets = Object.fromEntries(
 );
 
 const published = buildRominaPublishedContent(assets as never);
-const preset = {
-	id: ROMINA_EVENT.baseDemoId,
-	eventType: ROMINA_EVENT.eventType,
-	displayName: 'XV Años — Premiere Floral',
-	themeId: ROMINA_EVENT.themeId,
-	defaultSections: [],
-	supportedBlocks: [],
-	recommendedBlocks: [],
-	requiredAssets: [],
-	previewSlug: 'demo-xv-jewelry-box',
-};
-
 function compareDraft(draftContent: ReturnType<typeof mapNestedToDraftContent>) {
 	const mapped = mapDraftToPublished({
 		invitation: {
 			title: ROMINA_EVENT.title,
 			eventType: ROMINA_EVENT.eventType,
-			snapshot: preset as never,
 		},
+		themePreset: ROMINA_EVENT.themeId,
 		assetSlug: ROMINA_EVENT.assetSlug,
 		draftContent: computeEffectiveContent(draftContent, published),
-		demoContent,
 		priorPublishedContent: published,
-		isDemo: false,
 	});
 	const projected = eventContentSchema.parse(mapped);
 	return createPublicationComparison({
@@ -101,13 +81,11 @@ describe('published restore round-trip', () => {
 				invitation: {
 					title: ROMINA_EVENT.title,
 					eventType: ROMINA_EVENT.eventType,
-					snapshot: preset as never,
 				},
+				themePreset: ROMINA_EVENT.themeId,
 				assetSlug: ROMINA_EVENT.assetSlug,
 				draftContent: effective,
-				demoContent,
 				priorPublishedContent: round,
-				isDemo: false,
 			});
 			round = eventContentSchema.parse(mapped) as unknown as Record<string, unknown>;
 		}

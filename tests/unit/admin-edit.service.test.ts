@@ -28,7 +28,7 @@ import {
 	saveInternalComments,
 } from '@/lib/intake/services/admin-edit.service';
 import { hashIntakeToken } from '@/lib/intake/services/intake-token.service';
-import type { Invitation } from '@/lib/intake/types';
+import { INTAKE_BLOCK_TYPES, type Invitation } from '@/lib/intake/types';
 
 const mockFindProject = findInvitationById as jest.MockedFunction<typeof findInvitationById>;
 const mockFindRequests = findIntakeRequestsByInvitationId as jest.MockedFunction<
@@ -143,7 +143,7 @@ describe('ensureAdminEditContext', () => {
 			tokenHash: hashIntakeToken('internal-edit:proj-1'),
 			tokenCiphertext: null,
 			origin: 'internal',
-			enabledBlocks: ['event-details', 'photos'],
+			enabledBlocks: [...INTAKE_BLOCK_TYPES],
 			expiresAt: null,
 		});
 		expect(mockCreateSubmission).toHaveBeenCalledWith({

@@ -4,8 +4,8 @@ export interface AssetItem {
 	id: string;
 	displayName: string;
 	src: string;
-	isDemo?: boolean;
-	demoKey?: string;
+	isBundled?: boolean;
+	bundledKey?: string;
 	width?: number;
 	height?: number;
 	fileSize?: number;

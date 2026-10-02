@@ -156,7 +156,7 @@ export interface InvitationEditorContextDTO {
 		| 'captureUrl'
 		| 'captureLinkStatus'
 	> & { snapshot: { previewSlug: string } };
-	assetLookupSlug: string;
+	assetLookupSlug?: string;
 	content: DraftContent;
 	draftUpdatedAt: string | null;
 	draftStatus: 'draft' | 'reviewed' | 'approved' | null;
@@ -165,8 +165,8 @@ export interface InvitationEditorContextDTO {
 		status: 'linked' | 'unlinked_slug_match' | 'missing';
 		eventId: string | null;
 	};
-	contentSource: 'draft' | 'published' | 'demo' | 'empty' | 'mixed';
-	sectionStates: Record<string, 'draft' | 'published' | 'demo' | 'empty'>;
+	contentSource: 'draft' | 'published' | 'empty' | 'mixed';
+	sectionStates: Record<string, 'draft' | 'published' | 'empty'>;
 	divergence: {
 		state:
 			| 'CLEAN'

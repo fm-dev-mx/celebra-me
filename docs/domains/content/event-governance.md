@@ -17,8 +17,7 @@ asset namespace.
 
 ## Naming and capability rules
 
-- Route slug is public identity; `_assetSlug` is the asset-registry namespace; `previewSlug` is
-  demo/template reference metadata. They may differ.
+- Route slug is public identity; `_assetSlug` is the asset-registry namespace. They may differ.
 - Public demo slugs are unique across `event-demos`. Production client slugs must not collide with
   static demo or development-template routes.
 - Theme presets and event types come from `src/lib/theme/theme-contract.ts`; editor compatibility

@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireEditorMutationAccess, requireInvitationId } from '@/lib/intake/editor-api';
-import { importDemoAsset } from '@/lib/intake/services/asset.service';
+import { importBundledAsset } from '@/lib/intake/services/asset.service';
 import { errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
@@ -11,16 +11,16 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 
 		const bodyResult = await parseJsonBody(request);
 		if (bodyResult instanceof Response) return bodyResult;
-		const body = bodyResult as { demoKey?: string };
-		if (!body.demoKey) {
+		const body = bodyResult as { bundledKey?: string };
+		if (!body.bundledKey) {
 			throw new ApiError(
 				400,
 				'bad_request',
-				'No se especificó la clave de la imagen de demo.',
+				'No se especificó la clave de la imagen incluida.',
 			);
 		}
 
-		const result = await importDemoAsset(invitationId, body.demoKey, request.url);
+		const result = await importBundledAsset(invitationId, body.bundledKey, request.url);
 
 		return jsonResponse({
 			assetId: result.asset.id,

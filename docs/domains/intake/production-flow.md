@@ -162,21 +162,17 @@ Before creating a record, collect:
   reception, itinerary, gallery, gifts, music, quote, thank-you message, envelope, map providers,
   WhatsApp templates, personalized passes, location gating, and sharing metadata.
 
-Choose the event type from `EVENT_TYPES` and a compatible editor preset from `DEMO_PRESET_CATALOG`
-(or the managed definition's `baseDemoId`). The preset's `eventType` must match the invitation event
-type. Managed definitions are validated by the `invitation:release` dry-run before apply. Low-level
-`createInvitation()` still enforces the same preset invariant for demos, tests, and internal callers
-— not for Dashboard client creates.
+Choose the event type from `EVENT_TYPES` and a theme preset from `THEME_PRESETS`. Managed
+definitions are validated by the `invitation:release` dry-run before apply.
 
 Choose slug roles independently:
 
 - The route slug identifies `/{eventType}/{slug}` and is unique with event type.
-- `previewSlug` identifies the static demo used by the editor.
 - `_assetSlug` identifies the asset registry namespace.
 - `visualProfileId`, when present, selects invitation-specific CSS without changing the URL.
 
 Check collisions in existing invitations, published content, and RSVP events. Do not infer that
-`slug`, `previewSlug`, and `_assetSlug` are equal.
+`slug` and `_assetSlug` are equal.
 
 ## 2. Canonical references
 

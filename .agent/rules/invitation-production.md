@@ -30,8 +30,8 @@ Obsolete one-shot tooling (`ops optimize-assets`, `ops new-invitation`, `ops ado
   structure. Reuse contracts and shared components, not design-specific copy or client styling.
 - Preserve Astro server/client boundaries. Code, identifiers, comments, migrations, and technical
   documentation are English; visible UI copy is Spanish.
-- Enforce event-type/preset compatibility before persistence. Keep route slug, `_assetSlug`, and
-  `previewSlug` distinct when their roles differ. Treat path casing as Linux-sensitive.
+- Enforce event-type/preset compatibility before persistence. Keep route slug and `_assetSlug`
+  distinct when their roles differ. Treat path casing as Linux-sensitive.
 - Real/client invitations are DB-published. Static demos remain independent showcase content;
   development templates are not production routes.
 

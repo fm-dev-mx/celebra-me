@@ -866,29 +866,4 @@ describe('InvitationEditor', () => {
 			),
 		).toBeInTheDocument();
 	});
-
-	it('hides no-draft warning for demo invitations without a draft', () => {
-		mockContext = createContext({
-			invitation: {
-				...createContext().invitation,
-				kind: 'demo',
-			},
-			draftStatus: null,
-			contentSource: 'published',
-			publication: {
-				hasPublishedContent: true,
-				version: 1,
-				publishedAt: '',
-				hasUnpublishedChanges: false,
-			},
-		});
-
-		render(<InvitationEditor initialContext={mockContext} />);
-
-		expect(
-			screen.queryByText(
-				'Esta invitación aún no tiene un borrador. Al guardar cualquier sección se creará un borrador a partir del contenido existente.',
-			),
-		).not.toBeInTheDocument();
-	});
 });

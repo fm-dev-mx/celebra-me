@@ -4,7 +4,6 @@ jest.mock('@/lib/intake/repositories/invitation-content-draft.repository', () =>
 }));
 
 jest.mock('@/lib/intake/repositories/published-invitation-content.repository', () => ({
-	upsertPublishedContent: jest.fn(),
 	findPublishedBySlugAndEventType: jest.fn(),
 	findPublishedByInvitationId: jest.fn(),
 }));
@@ -12,10 +11,6 @@ jest.mock('@/lib/intake/repositories/published-invitation-content.repository', (
 jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
 	findInvitationById: jest.fn(),
 	updateInvitation: jest.fn(),
-}));
-
-jest.mock('astro:content', () => ({
-	getCollection: jest.fn(),
 }));
 
 jest.mock('@/lib/intake/repositories/asset.repository', () => ({
@@ -55,11 +50,7 @@ jest.mock('@/lib/intake/services/mutation-operation.service', () => ({
 
 jest.mock('@/lib/assets/asset-registry', () => {
 	const actual = jest.requireActual('@/lib/assets/asset-registry');
-	const eventSlugs = new Set([
-		'ana-sofia-cota-guillen',
-		'demo-xv-editorial',
-		'demo-xv-jewelry-box',
-	]);
+	const eventSlugs = new Set(['ana-sofia-cota-guillen', 'test-project-xv']);
 	return {
 		...actual,
 		isValidEvent: jest.fn((event: string) => eventSlugs.has(event)),
@@ -76,7 +67,6 @@ import {
 	updateDraftStatus,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import {
-	upsertPublishedContent,
 	findPublishedBySlugAndEventType,
 	findPublishedByInvitationId,
 } from '@/lib/intake/repositories/published-invitation-content.repository';
@@ -93,7 +83,6 @@ import {
 import { getPublicationPreflight, publishDraft } from '@/lib/intake/services/publishing.service';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
 import * as assetRegistry from '@/lib/assets/asset-registry';
-import { getCollection } from 'astro:content';
 import {
 	commitAtomicPublication,
 	replayAtomicPublication,
@@ -107,26 +96,23 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { ROLE_AWARE_ASSET_POLICY_VERSION } from '@/lib/intake/services/asset-policy';
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
 import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
-import type { DemoPreset, Invitation } from '@/lib/intake/types';
+import type { Invitation } from '@/lib/intake/types';
 import {
 	buildRominaPublishedContent,
 	ROMINA_ASSET_SPECS,
 	ROMINA_EVENT,
 	type RominaAssetMap,
 } from '../../scripts/provision/invitations/romina-rios-chaparro.ts';
-import { buildEventDemoEntry } from '../helpers/event-content-fixture';
+import { buildEventContentData } from '../helpers/event-content-fixture';
 
 const mockGetProject = findInvitationById as jest.MockedFunction<typeof findInvitationById>;
-const mockGetCollection = getCollection as jest.MockedFunction<typeof getCollection>;
 
 const VALID_UUID_1 = '550e8400-e29b-41d4-a716-446655440001';
 const VALID_UUID_2 = '550e8400-e29b-41d4-a716-446655440002';
 const MISSING_UUID = '550e8400-e29b-41d4-a716-446655449999';
-const KNOWN_EVENT_SLUGS = new Set([
-	'ana-sofia-cota-guillen',
-	'demo-xv-editorial',
-	'demo-xv-jewelry-box',
-]);
+/** The invitation's own registry asset namespace, recorded in its published content. */
+const PRIOR_ASSET_SLUG = 'test-project-xv';
+const KNOWN_EVENT_SLUGS = new Set(['ana-sofia-cota-guillen', PRIOR_ASSET_SLUG]);
 const COMMAND_CONTEXT = {
 	operationId: VALID_UUID_1,
 	environment: 'local' as const,
@@ -136,39 +122,48 @@ const COMMAND_CONTEXT = {
 	origin: 'editor' as const,
 };
 
-const MINIMAL_DEMO_ENTRY = buildEventDemoEntry(
-	{
-		eventType: 'xv',
-		title: 'Demo Jewelry Box',
-		theme: { fontFamily: 'serif', preset: 'jewelry-box' },
-		envelope: { disabled: true },
-		hero: {
-			name: 'Lucía García',
-			label: 'Mis XV Años',
-			date: '2026-06-15T20:00:00.000Z',
-			backgroundImage: 'hero',
-			variant: 'standard',
-		},
-		location: {
-			venues: [
-				{
-					id: 'ceremony',
-					type: 'ceremony',
-					venueEvent: 'Misa',
-					venueName: 'Iglesia',
-					address: 'Centro',
-					date: '15 jun',
-					time: '18:00',
-					image: 'ceremony',
-				},
-			],
-		},
-		countdown: { variant: 'standard', title: 'Faltan días', footerText: 'Nos vemos' },
-		quote: { text: 'Demo quote', author: 'Author' },
-		gallery: { eyebrow: 'Galería', title: 'Galería', items: [] },
+/**
+ * The invitation's current publication. Every managed client invitation already has
+ * one, and it is the only source of structure (sectionOrder, composition, variants)
+ * the draft does not carry.
+ */
+const PRIOR_PUBLISHED_CONTENT = buildEventContentData({
+	eventType: 'xv',
+	title: 'Test Project',
+	theme: { fontFamily: 'serif', preset: 'jewelry-box' },
+	envelope: { disabled: true },
+	hero: {
+		name: 'Lucía García',
+		label: 'Mis XV Años',
+		date: '2026-06-15T20:00:00.000Z',
+		backgroundImage: 'hero',
+		variant: 'standard',
 	},
-	'xv/demo-xv-jewelry-box.json',
-);
+	location: {
+		venues: [
+			{
+				id: 'ceremony',
+				type: 'ceremony',
+				venueEvent: 'Misa',
+				venueName: 'Iglesia',
+				address: 'Centro',
+				date: '15 jun',
+				time: '18:00',
+				image: 'ceremony',
+			},
+		],
+	},
+	countdown: { variant: 'standard', title: 'Faltan días', footerText: 'Nos vemos' },
+	quote: { text: 'Prior quote', author: 'Author' },
+	gallery: { eyebrow: 'Galería', title: 'Galería', items: [] },
+	_assetSlug: PRIOR_ASSET_SLUG,
+});
+
+function withoutAssetSlug(content: Record<string, unknown>): Record<string, unknown> {
+	const copy = { ...content };
+	delete copy._assetSlug;
+	return copy;
+}
 const mockFindAssets = findAssetsByInvitationId as jest.MockedFunction<
 	typeof findAssetsByInvitationId
 >;
@@ -177,9 +172,6 @@ const mockFindDraft = findDraftByInvitationId as jest.MockedFunction<
 	typeof findDraftByInvitationId
 >;
 const mockUpdateDraftStatus = updateDraftStatus as jest.MockedFunction<typeof updateDraftStatus>;
-const mockUpsertPublished = upsertPublishedContent as jest.MockedFunction<
-	typeof upsertPublishedContent
->;
 const mockFindPublishedBySlugAndEventType = findPublishedBySlugAndEventType as jest.MockedFunction<
 	typeof findPublishedBySlugAndEventType
 >;
@@ -264,6 +256,19 @@ const baseProject = {
 
 const projectNoOwner = { ...baseProject, createdBy: null };
 
+/** Projects a draft over the prior publication the same way publishing does. */
+function projectPublication(
+	draftContent: Parameters<typeof mapDraftToPublished>[0]['draftContent'],
+): Record<string, unknown> {
+	return mapDraftToPublished({
+		invitation: { title: baseProject.title, eventType: baseProject.eventType },
+		themePreset: baseProject.themeId,
+		assetSlug: PRIOR_ASSET_SLUG,
+		draftContent,
+		priorPublishedContent: PRIOR_PUBLISHED_CONTENT,
+	});
+}
+
 const validDraft = {
 	id: 'draft-1',
 	invitationId: 'proj-1',
@@ -302,7 +307,7 @@ const publishedRow = {
 	slug: 'xv-proj-1a2b3c4d',
 	eventType: 'xv',
 	isDemo: false,
-	content: { ...MINIMAL_DEMO_ENTRY.data, title: 'Test Event' },
+	content: PRIOR_PUBLISHED_CONTENT as Record<string, unknown>,
 	version: 1,
 	publishedAt: '2026-05-28T15:00:00Z',
 	createdAt: '2026-05-28T15:00:00Z',
@@ -322,53 +327,51 @@ beforeEach(() => {
 			: undefined,
 	);
 	mockFindAssets.mockResolvedValue([]);
-	mockGetCollection.mockResolvedValue([MINIMAL_DEMO_ENTRY]);
 	mockFindEventByProjectId.mockResolvedValue(undefined as any);
-	mockFindPublishedByInvitationId.mockResolvedValue(null);
+	mockFindPublishedByInvitationId.mockResolvedValue(publishedRow as never);
 	mockFindEventBySlug.mockResolvedValue(undefined as any);
+	// Simulates the atomic publication RPC: RSVP event linkage, content write, and
+	// invitation/draft status transitions happen inside one database transaction.
 	mockCommitAtomic.mockImplementation(async (input) => {
-		if (!input.isDemo) {
-			const [linkedEvent, slugEvent] = await Promise.all([
-				mockFindEventByProjectId(input.invitationId),
-				mockFindEventBySlug(input.slug),
-			]);
-			if (linkedEvent && slugEvent && linkedEvent.id !== slugEvent.id) {
-				throw new ApiError(409, 'conflict', 'El slug ya está asociado a otro evento.');
-			}
-			const event = linkedEvent ?? slugEvent;
-			if (event?.eventType && event.eventType !== input.eventType) {
-				throw new ApiError(409, 'conflict', 'El evento tiene un tipo diferente.');
-			}
-			if (event) {
-				await mockUpdateEvent({
-					eventId: event.id,
-					title: baseProject.title,
-					slug: input.slug,
-					status: 'published',
-					invitationId: input.invitationId,
-				});
-			} else {
-				await mockCreateEvent({
-					ownerUserId: baseProject.createdBy,
-					slug: input.slug,
-					eventType: input.eventType as 'xv',
-					title: baseProject.title,
-					status: 'published',
-					invitationId: input.invitationId,
-				});
-			}
+		const [linkedEvent, slugEvent] = await Promise.all([
+			mockFindEventByProjectId(input.invitationId),
+			mockFindEventBySlug(input.slug),
+		]);
+		if (linkedEvent && slugEvent && linkedEvent.id !== slugEvent.id) {
+			throw new ApiError(409, 'conflict', 'El slug ya está asociado a otro evento.');
 		}
-		const published = await mockUpsertPublished(input);
+		const event = linkedEvent ?? slugEvent;
+		if (event?.eventType && event.eventType !== input.eventType) {
+			throw new ApiError(409, 'conflict', 'El evento tiene un tipo diferente.');
+		}
+		if (event) {
+			await mockUpdateEvent({
+				eventId: event.id,
+				title: baseProject.title,
+				slug: input.slug,
+				status: 'published',
+				invitationId: input.invitationId,
+			});
+		} else {
+			await mockCreateEvent({
+				ownerUserId: baseProject.createdBy,
+				slug: input.slug,
+				eventType: input.eventType as 'xv',
+				title: baseProject.title,
+				status: 'published',
+				invitationId: input.invitationId,
+			});
+		}
 		await mockUpdateProject(input.invitationId, { status: 'published' });
 		const draft = await mockUpdateDraftStatus(input.draftId, 'approved');
 		return {
 			draft,
 			publishedContent: {
-				id: published.id,
-				slug: published.slug,
-				eventType: published.eventType,
-				version: published.version,
-				publishedAt: published.publishedAt,
+				id: publishedRow.id,
+				slug: publishedRow.slug,
+				eventType: publishedRow.eventType,
+				version: publishedRow.version,
+				publishedAt: publishedRow.publishedAt,
 			},
 		};
 	});
@@ -379,7 +382,6 @@ describe('publishDraft', () => {
 		mockGetProject.mockResolvedValue(baseProject as never);
 		mockFindDraft.mockResolvedValue(validDraft as never);
 		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
-		mockUpsertPublished.mockResolvedValue(publishedRow as never);
 		mockUpdateProject.mockResolvedValue(baseProject as never);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as never);
 		mockClearManagedProjection.mockRejectedValueOnce(new Error('provenance unavailable'));
@@ -431,17 +433,7 @@ describe('publishDraft', () => {
 	it('creates a canonical preflight that groups an envelope edit under its editor section', async () => {
 		const rominaProject = { ...baseProject, slug: 'romina' };
 		mockGetProject.mockResolvedValue(rominaProject as never);
-		const mappedPublishedContent = mapDraftToPublished({
-			invitation: {
-				title: baseProject.title,
-				eventType: baseProject.eventType,
-				snapshot: baseProject.snapshot as any,
-			},
-			assetSlug: baseProject.snapshot.previewSlug,
-			draftContent: validDraft.content,
-			demoContent: MINIMAL_DEMO_ENTRY.data,
-			isDemo: false,
-		});
+		const mappedPublishedContent = projectPublication(validDraft.content);
 		mockFindDraft.mockResolvedValue({
 			...validDraft,
 			content: {
@@ -471,17 +463,7 @@ describe('publishDraft', () => {
 
 	it('reports no pending sections when the persisted draft matches the public projection', async () => {
 		mockGetProject.mockResolvedValue({ ...baseProject, slug: publishedRow.slug } as never);
-		const projectedContent = mapDraftToPublished({
-			invitation: {
-				title: baseProject.title,
-				eventType: baseProject.eventType,
-				snapshot: baseProject.snapshot as DemoPreset,
-			},
-			assetSlug: baseProject.snapshot.previewSlug,
-			draftContent: validDraft.content,
-			demoContent: MINIMAL_DEMO_ENTRY.data,
-			isDemo: false,
-		});
+		const projectedContent = projectPublication(validDraft.content);
 		mockFindDraft.mockResolvedValue(validDraft as never);
 		mockFindPublishedByInvitationId.mockResolvedValue({
 			...publishedRow,
@@ -535,7 +517,6 @@ describe('publishDraft', () => {
 	it('publishes successfully from a valid draft', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
@@ -543,7 +524,7 @@ describe('publishDraft', () => {
 
 		expect(result.draft.status).toBe('approved');
 		expect(result.publishedContent.slug).toBe('xv-proj-1a2b3c4d');
-		expect(mockUpsertPublished).toHaveBeenCalledWith(
+		expect(mockCommitAtomic).toHaveBeenCalledWith(
 			expect.objectContaining({
 				invitationId: 'proj-1',
 				eventType: 'xv',
@@ -557,7 +538,6 @@ describe('publishDraft', () => {
 	it('still returns success when clearing managed projection fails after commit', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 		mockClearManagedProjection.mockRejectedValueOnce(new Error('provenance unavailable'));
@@ -598,13 +578,12 @@ describe('publishDraft', () => {
 				},
 			},
 		} as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
 
-		const publishedContent = mockUpsertPublished.mock.calls[0][0].content;
+		const publishedContent = mockCommitAtomic.mock.calls[0][0].content;
 		expect(publishedContent.eventTiming).toEqual({
 			localDateTime: '2026-08-01T20:00',
 			timeZone: 'America/Mazatlan',
@@ -630,7 +609,7 @@ describe('publishDraft', () => {
 			code: 'bad_request',
 			message: expect.stringContaining('cuenta regresiva'),
 		});
-		expect(mockUpsertPublished).not.toHaveBeenCalled();
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
 	});
 
 	it('allows a draft placeholder during preflight but blocks the final publication', async () => {
@@ -649,7 +628,7 @@ describe('publishDraft', () => {
 			code: 'validation_error',
 			message: expect.stringContaining('datos pendientes'),
 		});
-		expect(mockUpsertPublished).not.toHaveBeenCalled();
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
 	});
 
 	it('allows publish with incomplete eventTiming when countdown is not renderable', async () => {
@@ -664,13 +643,12 @@ describe('publishDraft', () => {
 				sectionOrder: ['quote', 'location', 'rsvp'],
 			},
 		} as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
 
-		expect(mockUpsertPublished).toHaveBeenCalled();
+		expect(mockCommitAtomic).toHaveBeenCalled();
 	});
 
 	it('preflight blocks with Spanish error when renderable countdown has incomplete eventTiming', async () => {
@@ -706,7 +684,6 @@ describe('publishDraft', () => {
 				},
 			},
 		} as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
@@ -716,7 +693,7 @@ describe('publishDraft', () => {
 
 		// Publish succeeds
 		await publishDraft('proj-1');
-		expect(mockUpsertPublished).toHaveBeenCalled();
+		expect(mockCommitAtomic).toHaveBeenCalled();
 	});
 
 	it('preflight reports only the envelope section and publish succeeds on envelope-only change without countdown', async () => {
@@ -733,19 +710,9 @@ describe('publishDraft', () => {
 			},
 		} as any);
 
-		const basePublishedContent = mapDraftToPublished({
-			invitation: {
-				title: baseProject.title,
-				eventType: baseProject.eventType,
-				snapshot: { ...baseProject.snapshot, themeId: 'jewelry-box' } as any,
-			},
-			assetSlug: 'demo-xv-jewelry-box',
-			draftContent: {
-				...validDraft.content,
-				sectionOrder: ['quote', 'location', 'rsvp', 'gifts', 'thankYou'],
-			},
-			demoContent: MINIMAL_DEMO_ENTRY.data,
-			isDemo: false,
+		const basePublishedContent = projectPublication({
+			...validDraft.content,
+			sectionOrder: ['quote', 'location', 'rsvp', 'gifts', 'thankYou'],
 		});
 
 		mockFindPublishedByInvitationId.mockResolvedValue({
@@ -767,7 +734,6 @@ describe('publishDraft', () => {
 				},
 			},
 		} as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
@@ -783,7 +749,7 @@ describe('publishDraft', () => {
 
 		// Publish succeeds and the new envelope name is present in published content
 		await publishDraft('proj-1');
-		const publishedContent = mockUpsertPublished.mock.calls[0][0].content as any;
+		const publishedContent = mockCommitAtomic.mock.calls[0][0].content as any;
 		expect(publishedContent.envelope.envelopeName).toBe('Nuevo Sobre Especial');
 		// Countdown was never enabled, so it should not be present
 		expect(publishedContent.countdown).toBeUndefined();
@@ -802,17 +768,7 @@ describe('publishDraft', () => {
 			},
 		} as any);
 
-		const basePublishedContent = mapDraftToPublished({
-			invitation: {
-				title: baseProject.title,
-				eventType: baseProject.eventType,
-				snapshot: { ...baseProject.snapshot, themeId: 'jewelry-box' } as any,
-			},
-			assetSlug: 'demo-xv-jewelry-box',
-			draftContent: validDraft.content,
-			demoContent: MINIMAL_DEMO_ENTRY.data,
-			isDemo: false,
-		});
+		const basePublishedContent = projectPublication(validDraft.content);
 
 		mockFindPublishedByInvitationId.mockResolvedValue({
 			id: 'pub-prior',
@@ -838,12 +794,11 @@ describe('publishDraft', () => {
 				},
 			},
 		} as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
-		const publishedContent = mockUpsertPublished.mock.calls[0][0].content as any;
+		const publishedContent = mockCommitAtomic.mock.calls[0][0].content as any;
 		expect(publishedContent.envelope.envelopeName).toBe('Nuevo Sobre Especial');
 		expect(publishedContent.countdown).toEqual({
 			title: '¡Cada día falta menos!',
@@ -854,7 +809,6 @@ describe('publishDraft', () => {
 
 	it('preflight and publish semantic validation cannot drift and produce equivalent results from the same candidate', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
-		mockFindPublishedByInvitationId.mockResolvedValue(null);
 
 		const draftWithInvalidTiming = {
 			...validDraft,
@@ -885,7 +839,7 @@ describe('publishDraft', () => {
 			publishError = err;
 		}
 
-		expect(preflightError).toBeDefined();
+		expect(preflightError).toMatchObject({ status: 422, code: 'bad_request' });
 		expect(publishError).toBeDefined();
 		expect(preflightError.status).toBe(publishError.status);
 		expect(preflightError.message).toBe(publishError.message);
@@ -899,7 +853,7 @@ describe('publishDraft', () => {
 			status: 404,
 			code: 'not_found',
 		});
-		expect(mockUpsertPublished).not.toHaveBeenCalled();
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
 		expect(mockClearManagedProjection).not.toHaveBeenCalled();
 	});
 
@@ -920,7 +874,7 @@ describe('publishDraft', () => {
 			status: 422,
 			code: 'invalid_draft_status',
 		});
-		expect(mockUpsertPublished).not.toHaveBeenCalled();
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
 	});
 
 	it('rejects when draft content is empty', async () => {
@@ -931,7 +885,28 @@ describe('publishDraft', () => {
 			status: 422,
 			code: 'bad_request',
 		});
-		expect(mockUpsertPublished).not.toHaveBeenCalled();
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
+	});
+
+	it('refuses to publish without a prior publication to source the composition from', async () => {
+		mockGetProject.mockResolvedValue(baseProject as any);
+		mockFindDraft.mockResolvedValue({
+			...validDraft,
+			content: { ...validDraft.content, sectionOrder: ['quote', 'rsvp'] },
+		} as any);
+		mockFindPublishedByInvitationId.mockResolvedValue(null);
+
+		const contractError = {
+			status: 422,
+			code: 'bad_request',
+			details: {
+				reason: 'published_content_contract',
+				detail: 'Published content requires an explicit composition.',
+			},
+		};
+		await expect(getPublicationPreflight('proj-1')).rejects.toMatchObject(contractError);
+		await expect(publishDraft('proj-1')).rejects.toMatchObject(contractError);
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
 	});
 
 	it('merges sparse draft content with prior published content when prior exists', async () => {
@@ -956,6 +931,7 @@ describe('publishDraft', () => {
 			content: {
 				sectionOrder: ['gallery', 'itinerary'],
 				composition: { intersections: {} },
+				_assetSlug: PRIOR_ASSET_SLUG,
 				hero: { variant: 'standard' },
 				eventTiming: {
 					localDateTime: '2026-08-01T20:00',
@@ -966,7 +942,6 @@ describe('publishDraft', () => {
 				itinerary: { variant: 'standard', title: 'Programa', items: [] },
 			},
 		} as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
@@ -976,8 +951,7 @@ describe('publishDraft', () => {
 			hero?: { name?: string };
 			gallery?: { title?: string };
 		};
-		const publishedContent = mockUpsertPublished.mock.calls[0][0]
-			.content as PublishedContentShape;
+		const publishedContent = mockCommitAtomic.mock.calls[0][0].content as PublishedContentShape;
 		// Draft hero.name is preserved through the merge
 		expect(publishedContent.hero?.name).toBe('Ana');
 		// Non-edited sections from prior published content are preserved
@@ -1016,6 +990,7 @@ describe('publishDraft', () => {
 				title: 'Test Event',
 				sectionOrder: ['gallery', 'itinerary'],
 				composition: { intersections: {} },
+				_assetSlug: PRIOR_ASSET_SLUG,
 				hero: {
 					name: 'Ana Sofia',
 					label: 'Mis XV Anos',
@@ -1049,13 +1024,12 @@ describe('publishDraft', () => {
 				itinerary: { variant: 'standard', title: 'Programa', items: [] },
 			},
 		} as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
 
-		const publishedContent = mockUpsertPublished.mock.calls[0][0].content;
+		const publishedContent = mockCommitAtomic.mock.calls[0][0].content;
 		const envelope = publishedContent.envelope as Record<string, unknown>;
 
 		expect(envelope.sealVariant).toBe('premium-rose');
@@ -1071,35 +1045,36 @@ describe('publishDraft', () => {
 		expect(envelope.sealInitials).toBe('AS');
 	});
 
-	it('upserts published content idempotently', async () => {
+	it('commits an atomic publication for every publish request', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
 		await publishDraft('proj-1');
 
-		expect(mockUpsertPublished).toHaveBeenCalledTimes(2);
+		expect(mockCommitAtomic).toHaveBeenCalledTimes(2);
 		expect(mockUpdateDraftStatus).toHaveBeenCalledTimes(2);
 	});
 
 	it('maps draft content to published format', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
 
-		expect(mockUpsertPublished).toHaveBeenCalledWith(
+		expect(mockCommitAtomic).toHaveBeenCalledWith(
 			expect.objectContaining({
+				isDemo: false,
 				content: expect.objectContaining({
 					title: 'Test Project',
 					theme: expect.objectContaining({ preset: 'jewelry-box' }),
 					eventType: 'xv',
+					isDemo: false,
+					_assetSlug: PRIOR_ASSET_SLUG,
 					hero: expect.objectContaining({
 						name: 'Ana Sofia',
 						backgroundImage: { type: 'internal', key: 'hero' },
@@ -1124,7 +1099,6 @@ describe('publishDraft', () => {
 				},
 			},
 		} as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
@@ -1132,20 +1106,19 @@ describe('publishDraft', () => {
 			status: 422,
 			code: 'bad_request',
 		});
-		expect(mockUpsertPublished).not.toHaveBeenCalled();
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
 	});
 
 	it('uses invitation slug when available', async () => {
 		const projectWithSlug = { ...baseProject, slug: 'my-invitation' };
 		mockGetProject.mockResolvedValue(projectWithSlug as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(projectWithSlug as any);
 
 		await publishDraft('proj-1');
 
-		expect(mockUpsertPublished).toHaveBeenCalledWith(
+		expect(mockCommitAtomic).toHaveBeenCalledWith(
 			expect.objectContaining({ slug: 'my-invitation' }),
 		);
 	});
@@ -1160,40 +1133,12 @@ describe('publishDraft', () => {
 		});
 
 		expect(mockCreateEvent).not.toHaveBeenCalled();
-		expect(mockUpsertPublished).not.toHaveBeenCalled();
-	});
-
-	it('publishes a demo without creating an RSVP event or requiring an owner', async () => {
-		const demoInvitation = {
-			...baseProject,
-			kind: 'demo' as const,
-			createdBy: null,
-			slug: 'demo-xv-jewelry-box',
-		};
-		mockGetProject.mockResolvedValue(demoInvitation as any);
-		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockUpsertPublished.mockResolvedValue({ ...publishedRow, isDemo: true } as any);
-		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
-		mockUpdateProject.mockResolvedValue(demoInvitation as any);
-
-		await publishDraft('proj-1');
-
-		expect(mockFindEventByProjectId).not.toHaveBeenCalled();
-		expect(mockFindEventBySlug).not.toHaveBeenCalled();
-		expect(mockCreateEvent).not.toHaveBeenCalled();
-		expect(mockUpdateEvent).not.toHaveBeenCalled();
-		expect(mockUpsertPublished).toHaveBeenCalledWith(
-			expect.objectContaining({
-				isDemo: true,
-				content: expect.objectContaining({ isDemo: true }),
-			}),
-		);
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
 	});
 
 	it('creates event when no existing event exists', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
@@ -1213,7 +1158,6 @@ describe('publishDraft', () => {
 	it('updates event when event exists with matching slug and type', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 		mockFindEventBySlug.mockResolvedValue({
@@ -1237,7 +1181,6 @@ describe('publishDraft', () => {
 		const projectWithSlug = { ...baseProject, slug: 'nuevo-slug' };
 		mockGetProject.mockResolvedValue(projectWithSlug as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(projectWithSlug as any);
 		mockFindEventByProjectId.mockResolvedValue({
@@ -1273,7 +1216,10 @@ describe('publishDraft', () => {
 
 		expect(mockUpdateEvent).not.toHaveBeenCalled();
 		expect(mockCreateEvent).not.toHaveBeenCalled();
-		expect(mockUpsertPublished).not.toHaveBeenCalled();
+		// The atomic transaction aborts before any status transition is written.
+		expect(mockUpdateProject).not.toHaveBeenCalled();
+		expect(mockUpdateDraftStatus).not.toHaveBeenCalled();
+		expect(mockClearManagedProjection).not.toHaveBeenCalled();
 	});
 
 	it('blocks publishing when slug collides with published content from another invitation', async () => {
@@ -1292,13 +1238,12 @@ describe('publishDraft', () => {
 		});
 
 		expect(mockCreateEvent).not.toHaveBeenCalled();
-		expect(mockUpsertPublished).not.toHaveBeenCalled();
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
 	});
 
 	it('allows publishing when published content exists for the same invitation', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 		mockFindPublishedBySlugAndEventType.mockResolvedValue({
@@ -1315,13 +1260,16 @@ describe('publishDraft', () => {
 		const projectWithSlug = { ...baseProject, slug: 'ana-sofia-cota-guillen' };
 		mockGetProject.mockResolvedValue(projectWithSlug as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
+		mockFindPublishedByInvitationId.mockResolvedValue({
+			...publishedRow,
+			content: withoutAssetSlug(PRIOR_PUBLISHED_CONTENT),
+		} as never);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(projectWithSlug as any);
 
 		await publishDraft('proj-1');
 
-		expect(mockUpsertPublished).toHaveBeenCalledWith(
+		expect(mockCommitAtomic).toHaveBeenCalledWith(
 			expect.objectContaining({
 				content: expect.objectContaining({
 					_assetSlug: 'ana-sofia-cota-guillen',
@@ -1330,61 +1278,31 @@ describe('publishDraft', () => {
 		);
 	});
 
-	it('falls back to previewSlug as _assetSlug for client invitations without a matching asset directory', async () => {
-		const projectWithSlug = { ...baseProject, slug: 'ayrin-samantha-lerma-castro' };
+	it('keeps the asset namespace recorded by the prior publication over the public slug', async () => {
+		const projectWithSlug = { ...baseProject, slug: 'ana-sofia-cota-guillen' };
 		mockGetProject.mockResolvedValue(projectWithSlug as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(projectWithSlug as any);
 
 		await publishDraft('proj-1');
 
-		expect(mockUpsertPublished).toHaveBeenCalledWith(
+		expect(mockCommitAtomic).toHaveBeenCalledWith(
 			expect.objectContaining({
-				content: expect.objectContaining({
-					_assetSlug: 'demo-xv-jewelry-box',
-				}),
-			}),
-		);
-	});
-
-	it('uses previewSlug as _assetSlug for demo invitations', async () => {
-		const demoInvitation = {
-			...baseProject,
-			kind: 'demo' as const,
-			slug: 'demo-xv-jewelry-box',
-			createdBy: null,
-		};
-		mockGetProject.mockResolvedValue(demoInvitation as any);
-		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockUpsertPublished.mockResolvedValue({ ...publishedRow, isDemo: true } as any);
-		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
-		mockUpdateProject.mockResolvedValue(demoInvitation as any);
-
-		await publishDraft('proj-1');
-
-		expect(mockUpsertPublished).toHaveBeenCalledWith(
-			expect.objectContaining({
-				content: expect.objectContaining({
-					_assetSlug: 'demo-xv-jewelry-box',
-				}),
+				content: expect.objectContaining({ _assetSlug: PRIOR_ASSET_SLUG }),
 			}),
 		);
 	});
 
 	it('rejects publish when asset slug does not resolve to a valid event directory', async () => {
 		const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
-		const projectUnknownSlug = {
-			...baseProject,
-			slug: 'invitacion-desconocida',
-			snapshot: {
-				...baseProject.snapshot,
-				previewSlug: 'inexistent-asset-slug',
-			},
-		};
+		const projectUnknownSlug = { ...baseProject, slug: 'invitacion-desconocida' };
 		mockGetProject.mockResolvedValue(projectUnknownSlug as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockFindPublishedByInvitationId.mockResolvedValue({
+			...publishedRow,
+			content: withoutAssetSlug(PRIOR_PUBLISHED_CONTENT),
+		} as never);
 
 		try {
 			await expect(publishDraft('proj-1')).rejects.toMatchObject({
@@ -1392,6 +1310,7 @@ describe('publishDraft', () => {
 				code: 'bad_request',
 				details: {
 					section: 'visual',
+					assetSlug: null,
 					catalog: 'event-asset-registry',
 					stage: 'publish',
 				},
@@ -1403,47 +1322,41 @@ describe('publishDraft', () => {
 					stage: 'publish',
 				}),
 			);
-			expect(mockUpsertPublished).not.toHaveBeenCalled();
+			expect(mockCommitAtomic).not.toHaveBeenCalled();
 		} finally {
 			warn.mockRestore();
 		}
 	});
 
-	it('uses the demo visual asset fallback for editorial-magazine preflight and publish', async () => {
-		const editorialMagazineProject = {
-			...baseProject,
-			baseDemoId: 'demo-xv-editorial-magazine',
-			themeId: 'editorial-magazine',
-			snapshot: {
-				...baseProject.snapshot,
-				id: 'demo-xv-editorial-magazine',
-				themeId: 'editorial-magazine',
-				previewSlug: 'demo-xv-editorial-magazine',
-			},
-		};
-		mockGetProject.mockResolvedValue(editorialMagazineProject as any);
+	it('rejects preflight and publish when the invitation theme is not a known preset', async () => {
+		mockGetProject.mockResolvedValue({ ...baseProject, themeId: 'unknown-theme' } as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockGetCollection.mockResolvedValue([
-			{
-				...MINIMAL_DEMO_ENTRY,
-				id: 'xv/demo-xv-editorial-magazine.json',
-				data: {
-					...MINIMAL_DEMO_ENTRY.data,
-					_assetSlug: 'demo-xv-editorial',
-				},
-			},
-		] as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
-		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
-		mockUpdateProject.mockResolvedValue(editorialMagazineProject as any);
 
-		const preflight = await getPublicationPreflight('proj-1');
-		expect(preflight.projectionHash).toMatch(/^[a-f0-9]{32}$/);
+		await expect(getPublicationPreflight('proj-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'config_error',
+		});
+		await expect(publishDraft('proj-1')).rejects.toMatchObject({
+			status: 422,
+			code: 'config_error',
+		});
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
+	});
+
+	it('publishes with the theme preset configured on the invitation', async () => {
+		const editorialProject = { ...baseProject, themeId: 'editorial-magazine' };
+		mockGetProject.mockResolvedValue(editorialProject as any);
+		mockFindDraft.mockResolvedValue(validDraft as any);
+		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
+		mockUpdateProject.mockResolvedValue(editorialProject as any);
 
 		await publishDraft('proj-1');
-		expect(mockUpsertPublished).toHaveBeenCalledWith(
+
+		expect(mockCommitAtomic).toHaveBeenCalledWith(
 			expect.objectContaining({
-				content: expect.objectContaining({ _assetSlug: 'demo-xv-editorial' }),
+				content: expect.objectContaining({
+					theme: expect.objectContaining({ preset: 'editorial-magazine' }),
+				}),
 			}),
 		);
 	});
@@ -1490,7 +1403,6 @@ describe('publishDraft', () => {
 			content: mapNestedToDraftContent(rominaPublishedContent),
 		} as any);
 		mockFindAssets.mockResolvedValue(rominaStoredAssets as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(rominaProject as any);
 
@@ -1498,7 +1410,7 @@ describe('publishDraft', () => {
 		expect(preflight.projectionHash).toMatch(/^[a-f0-9]{32}$/);
 
 		await publishDraft('proj-1');
-		expect(mockUpsertPublished).toHaveBeenCalledWith(
+		expect(mockCommitAtomic).toHaveBeenCalledWith(
 			expect.objectContaining({
 				content: expect.objectContaining({ _assetSlug: ROMINA_EVENT.assetSlug }),
 			}),
@@ -1517,52 +1429,38 @@ describe('publishDraft', () => {
 				status: 422,
 				code: 'bad_request',
 			});
-			expect(mockUpsertPublished).not.toHaveBeenCalled();
+			expect(mockCommitAtomic).not.toHaveBeenCalled();
 		} finally {
 			spy.mockRestore();
 		}
 	});
 
 	it('allows publish when hero backgroundImage is an external URL', async () => {
-		mockGetCollection.mockResolvedValue([
-			buildEventDemoEntry(
-				{
-					...MINIMAL_DEMO_ENTRY.data,
-					hero: {
-						...MINIMAL_DEMO_ENTRY.data.hero,
-						date: '2026-06-15T20:00:00.000Z',
-						backgroundImage: {
-							type: 'external',
-							src: 'https://images.example.com/hero.jpg',
-						},
-						variant: 'standard',
+		mockFindPublishedByInvitationId.mockResolvedValue({
+			...publishedRow,
+			content: {
+				...PRIOR_PUBLISHED_CONTENT,
+				hero: {
+					...PRIOR_PUBLISHED_CONTENT.hero,
+					backgroundImage: {
+						type: 'external',
+						src: 'https://images.example.com/hero.jpg',
 					},
-					sectionOrder: [
-						'quote',
-						'family',
-						'gallery',
-						'countdown',
-						'location',
-						'itinerary',
-						'rsvp',
-						'gifts',
-						'thankYou',
-					],
-					interludes: [],
-					navigation: [],
 				},
-				'xv/demo-xv-jewelry-box.json',
-			),
-		]);
+			},
+		} as never);
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		const result = await publishDraft('proj-1');
 		expect(result.draft.status).toBe('approved');
-		expect(mockUpsertPublished).toHaveBeenCalled();
+		const hero = mockCommitAtomic.mock.calls[0][0].content.hero as Record<string, unknown>;
+		expect(hero.backgroundImage).toEqual({
+			type: 'external',
+			src: 'https://images.example.com/hero.jpg',
+		});
 	});
 
 	// ─── Freeze/publish contract tests ───
@@ -1599,13 +1497,12 @@ describe('publishDraft', () => {
 				updatedAt: '2026-01-01T00:00:00.000Z',
 			},
 		]);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
 
-		const publishedContent = mockUpsertPublished.mock.calls[0][0].content;
+		const publishedContent = mockCommitAtomic.mock.calls[0][0].content;
 		const gallery = publishedContent.gallery as Record<string, unknown>;
 		const items = gallery.items as Array<Record<string, unknown>>;
 		expect(items[0].image).toMatchObject({
@@ -1632,7 +1529,6 @@ describe('publishDraft', () => {
 			},
 		} as any);
 		// No mockFindAssets setup — returns [] from beforeEach, asset not found
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
@@ -1641,7 +1537,7 @@ describe('publishDraft', () => {
 			code: 'bad_request',
 			message: expect.stringContaining('No se pudo resolver la imagen'),
 		});
-		expect(mockUpsertPublished).not.toHaveBeenCalled();
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
 	});
 
 	it('blocks publication when a validated asset is missing delivery metadata', async () => {
@@ -1886,9 +1782,9 @@ describe('publishDraft', () => {
 		mockFindPublishedByInvitationId.mockResolvedValue({
 			...publishedRow,
 			content: {
-				...MINIMAL_DEMO_ENTRY.data,
+				...PRIOR_PUBLISHED_CONTENT,
 				hero: {
-					...MINIMAL_DEMO_ENTRY.data.hero,
+					...PRIOR_PUBLISHED_CONTENT.hero,
 					backgroundImageMobile: { type: 'uploaded', assetId: VALID_UUID_1 },
 				},
 			},
@@ -1935,14 +1831,14 @@ describe('publishDraft', () => {
 	it('preserves existing {type:internal} refs through publish unchanged', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
 
-		const publishedContent = mockUpsertPublished.mock.calls[0][0].content;
-		// Hero backgroundImage should still be internal (from demo fallback)
+		const publishedContent = mockCommitAtomic.mock.calls[0][0].content;
+		// Hero backgroundImage stays the internal ref carried by the prior publication
+
 		const hero = publishedContent.hero as Record<string, unknown>;
 		expect(hero.backgroundImage).toEqual(
 			expect.objectContaining({ type: 'internal', key: 'hero' }),
@@ -1950,23 +1846,6 @@ describe('publishDraft', () => {
 	});
 
 	it('preserves external src refs through publish unchanged', async () => {
-		mockGetCollection.mockResolvedValue([
-			buildEventDemoEntry(
-				{
-					...MINIMAL_DEMO_ENTRY.data,
-					hero: {
-						...MINIMAL_DEMO_ENTRY.data.hero,
-						date: '2026-06-15T20:00:00.000Z',
-						backgroundImage: {
-							type: 'external',
-							src: 'https://images.example.com/hero.jpg',
-						},
-						variant: 'standard',
-					},
-				},
-				'xv/demo-xv-jewelry-box.json',
-			),
-		]);
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue({
 			...validDraft,
@@ -1981,13 +1860,12 @@ describe('publishDraft', () => {
 				},
 			},
 		} as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
 
-		const publishedContent = mockUpsertPublished.mock.calls[0][0].content;
+		const publishedContent = mockCommitAtomic.mock.calls[0][0].content;
 		const hero = publishedContent.hero as Record<string, unknown>;
 		expect(hero.backgroundImage).toEqual({
 			type: 'external',
@@ -2006,7 +1884,7 @@ describe('publishDraft', () => {
 					items: [
 						{
 							image: { type: 'internal' as const, key: 'gallery01' as const },
-							caption: 'Demo',
+							caption: 'Internal',
 						},
 						{
 							image: { type: 'uploaded' as const, assetId: VALID_UUID_1 },
@@ -2035,13 +1913,12 @@ describe('publishDraft', () => {
 				updatedAt: '2026-01-01T00:00:00.000Z',
 			},
 		]);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
 
-		const publishedContent = mockUpsertPublished.mock.calls[0][0].content;
+		const publishedContent = mockCommitAtomic.mock.calls[0][0].content;
 		const gallery = publishedContent.gallery as Record<string, unknown>;
 		const items = gallery.items as Array<Record<string, unknown>>;
 
@@ -2088,13 +1965,12 @@ describe('publishDraft', () => {
 				updatedAt: '2026-01-01T00:00:00.000Z',
 			},
 		]);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		// First publish
 		await publishDraft('proj-1');
-		const v1Content = mockUpsertPublished.mock.calls[0][0].content;
+		const v1Content = mockCommitAtomic.mock.calls[0][0].content;
 		const v1Gallery = v1Content.gallery as Record<string, unknown>;
 		const v1Items = v1Gallery.items as Array<Record<string, unknown>>;
 		expect(v1Items[0].image).toMatchObject({ src: expect.stringContaining('v1.webp') });
@@ -2131,9 +2007,9 @@ describe('publishDraft', () => {
 		]);
 
 		// Second publish
-		mockUpsertPublished.mockClear();
+		mockCommitAtomic.mockClear();
 		await publishDraft('proj-1');
-		const v2Content = mockUpsertPublished.mock.calls[0][0].content;
+		const v2Content = mockCommitAtomic.mock.calls[0][0].content;
 		const v2Gallery = v2Content.gallery as Record<string, unknown>;
 		const v2Items = v2Gallery.items as Array<Record<string, unknown>>;
 		expect(v2Items[0].image).toMatchObject({ src: expect.stringContaining('v2.webp') });
@@ -2142,15 +2018,20 @@ describe('publishDraft', () => {
 	it('removing uploaded image from draft does not mutate existing published content (no re-publish)', async () => {
 		mockGetProject.mockResolvedValue(baseProject as any);
 		mockFindDraft.mockResolvedValue(validDraft as any); // No uploaded refs in draft
+		const priorWithoutGallery: Record<string, unknown> = { ...PRIOR_PUBLISHED_CONTENT };
+		delete priorWithoutGallery.gallery;
+		mockFindPublishedByInvitationId.mockResolvedValue({
+			...publishedRow,
+			content: priorWithoutGallery,
+		} as never);
 		mockFindAssets.mockResolvedValue([]);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
 
-		const publishedContent = mockUpsertPublished.mock.calls[0][0].content;
-		// Client invites omit empty optional galleries when the draft never set one.
+		const publishedContent = mockCommitAtomic.mock.calls[0][0].content;
+		// Neither the draft nor the prior publication has a gallery, so none is invented.
 		expect(publishedContent.gallery).toBeUndefined();
 	});
 
@@ -2184,12 +2065,11 @@ describe('publishDraft', () => {
 				updatedAt: '2026-01-01T00:00:00.000Z',
 			},
 		]);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
-		const content = mockUpsertPublished.mock.calls[0][0].content;
+		const content = mockCommitAtomic.mock.calls[0][0].content;
 		const hero = content.hero as Record<string, unknown>;
 		expect(hero.backgroundImage).toEqual({
 			type: 'uploaded',
@@ -2226,12 +2106,11 @@ describe('publishDraft', () => {
 				updatedAt: '2026-01-01T00:00:00.000Z',
 			},
 		]);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
-		const content = mockUpsertPublished.mock.calls[0][0].content;
+		const content = mockCommitAtomic.mock.calls[0][0].content;
 		const hero = content.hero as Record<string, unknown>;
 		expect(hero.portrait).toEqual({
 			type: 'uploaded',
@@ -2282,12 +2161,11 @@ describe('publishDraft', () => {
 				updatedAt: '2026-01-01T00:00:00.000Z',
 			},
 		]);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
-		const content = mockUpsertPublished.mock.calls[0][0].content;
+		const content = mockCommitAtomic.mock.calls[0][0].content;
 		const hero = content.hero as Record<string, unknown>;
 		expect(hero.backgroundImage).toEqual({
 			type: 'uploaded',
@@ -2299,64 +2177,6 @@ describe('publishDraft', () => {
 			assetId: VALID_UUID_2,
 			src: expect.stringContaining('hero-mobile.webp'),
 		});
-	});
-
-	it('does not publish demo mobile fallback when draft has only desktop image', async () => {
-		mockGetProject.mockResolvedValue(baseProject as any);
-		mockFindDraft.mockResolvedValue({
-			...validDraft,
-			content: {
-				...validDraft.content,
-				hero: {
-					name: 'Test',
-					date: '2026-06-15T20:00:00.000Z',
-					backgroundImage: { type: 'uploaded' as const, assetId: VALID_UUID_1 },
-				},
-			},
-		} as any);
-		mockGetCollection.mockResolvedValue([
-			{
-				...MINIMAL_DEMO_ENTRY,
-				data: {
-					...MINIMAL_DEMO_ENTRY.data,
-					hero: {
-						...MINIMAL_DEMO_ENTRY.data.hero,
-						backgroundImageMobile: {
-							type: 'external',
-							src: 'https://cdn.test/demo-mobile.webp',
-						},
-					},
-				},
-			},
-		] as any);
-		mockFindAssets.mockResolvedValue([
-			{
-				id: VALID_UUID_1,
-				invitationId: 'proj-1',
-				displayName: 'Hero desktop',
-				bucket: 'invitation-assets',
-				storagePath: 'invitations/proj-1/original/hero-desktop.webp',
-				mimeType: 'image/webp',
-				width: 1920,
-				height: 1080,
-				fileSize: 50000,
-				createdAt: '2026-01-01T00:00:00.000Z',
-				updatedAt: '2026-01-01T00:00:00.000Z',
-			},
-		]);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
-		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
-		mockUpdateProject.mockResolvedValue(baseProject as any);
-
-		await publishDraft('proj-1');
-		const content = mockUpsertPublished.mock.calls[0][0].content;
-		const hero = content.hero as Record<string, unknown>;
-		expect(hero.backgroundImage).toEqual({
-			type: 'uploaded',
-			assetId: VALID_UUID_1,
-			src: expect.stringContaining('hero-desktop.webp'),
-		});
-		expect(hero).toHaveProperty('backgroundImageMobile', undefined);
 	});
 
 	it('rejects publish when hero backgroundImageMobile key does not resolve in the asset registry', async () => {
@@ -2373,7 +2193,6 @@ describe('publishDraft', () => {
 				},
 			},
 		} as any);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
@@ -2381,7 +2200,7 @@ describe('publishDraft', () => {
 			status: 422,
 			code: 'bad_request',
 		});
-		expect(mockUpsertPublished).not.toHaveBeenCalled();
+		expect(mockCommitAtomic).not.toHaveBeenCalled();
 	});
 
 	it('published venue image is frozen with src when uploaded', async () => {
@@ -2421,12 +2240,11 @@ describe('publishDraft', () => {
 				updatedAt: '2026-01-01T00:00:00.000Z',
 			},
 		]);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
-		const content = mockUpsertPublished.mock.calls[0][0].content;
+		const content = mockCommitAtomic.mock.calls[0][0].content;
 		const location = content.location as Record<string, unknown>;
 		const ceremony = (location.venues as Array<Record<string, unknown>>).find(
 			(venue) => venue.type === 'ceremony',
@@ -2467,12 +2285,11 @@ describe('publishDraft', () => {
 				updatedAt: '2026-01-01T00:00:00.000Z',
 			},
 		]);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
-		const content = mockUpsertPublished.mock.calls[0][0].content;
+		const content = mockCommitAtomic.mock.calls[0][0].content;
 		const family = content.family as Record<string, unknown>;
 		expect(family.featuredImage).toEqual({
 			type: 'uploaded',
@@ -2510,12 +2327,11 @@ describe('publishDraft', () => {
 				updatedAt: '2026-01-01T00:00:00.000Z',
 			},
 		]);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
-		const content = mockUpsertPublished.mock.calls[0][0].content;
+		const content = mockCommitAtomic.mock.calls[0][0].content;
 		const thankYou = content.thankYou as Record<string, unknown>;
 		expect(thankYou.image).toEqual({
 			type: 'uploaded',
@@ -2562,12 +2378,11 @@ describe('publishDraft', () => {
 				updatedAt: '2026-01-01T00:00:00.000Z',
 			},
 		]);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
 		await publishDraft('proj-1');
-		const content = mockUpsertPublished.mock.calls[0][0].content;
+		const content = mockCommitAtomic.mock.calls[0][0].content;
 		const quote = content.quote as Record<string, unknown>;
 		expect(quote.text).toBe('Keep this');
 	});
@@ -2603,7 +2418,6 @@ describe('publishDraft', () => {
 				updatedAt: '2026-01-01T00:00:00.000Z',
 			},
 		]);
-		mockUpsertPublished.mockResolvedValue(publishedRow as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
 		mockUpdateProject.mockResolvedValue(baseProject as any);
 
@@ -2613,7 +2427,7 @@ describe('publishDraft', () => {
 		expect(draftAfter).toBeDefined();
 
 		// Published content should still have the frozen ref with src
-		const pubContent = mockUpsertPublished.mock.calls[0][0].content as Record<string, unknown>;
+		const pubContent = mockCommitAtomic.mock.calls[0][0].content as Record<string, unknown>;
 		const pubGallery = pubContent.gallery as Record<string, unknown>;
 		const pubItems = pubGallery.items as Array<Record<string, unknown>>;
 		expect(pubItems[0].image).toMatchObject({

@@ -82,7 +82,6 @@ type PickerField =
 const SOURCE_LABELS: Record<string, string> = {
 	draft: 'Borrador',
 	published: 'Versión pública',
-	demo: 'Demo',
 	empty: 'Vacío',
 };
 
@@ -456,7 +455,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 			const key = definition?.saveSectionKey ?? section;
 			const keys = EDITOR_SECTION_KEYS[section] ?? EDITOR_SECTION_KEYS[key];
 			if (!keys) return undefined;
-			for (const source of ['draft', 'published', 'demo'] as const) {
+			for (const source of ['draft', 'published'] as const) {
 				if (keys.some((key) => editor.context.sectionStates[key] === source)) {
 					return { source, label: SOURCE_LABELS[source] };
 				}
@@ -482,9 +481,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 	const hasDraft = editor.context.draftStatus !== null;
 	const noDraftWarning =
-		hasDraft ||
-		editor.context.contentSource === 'empty' ||
-		editor.context.invitation.kind === 'demo'
+		hasDraft || editor.context.contentSource === 'empty'
 			? null
 			: 'Esta invitación aún no tiene un borrador. Al guardar cualquier sección se creará un borrador a partir del contenido existente.';
 
@@ -519,7 +516,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 	}, [editor.context.sectionStates, criticalSections, content.sectionOrder]);
 
 	const publishWarning = useMemo(() => {
-		if (editor.context.invitation.kind === 'client' && !editor.context.invitation.createdBy) {
+		if (!editor.context.invitation.createdBy) {
 			return 'No se puede publicar sin un propietario asignado a la invitación. Asigna un propietario antes de publicar.';
 		}
 		if (editor.context.contentSource === 'empty') return 'No hay contenido para publicar.';
@@ -537,7 +534,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 		}
 		return null;
 	}, [
-		editor.context.invitation.kind,
 		editor.context.invitation.createdBy,
 		editor.context.contentSource,
 		emptySectionsDetail,
@@ -628,7 +624,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 			editor.context.draftStatus !== 'draft' ||
 			editor.context.contentSource === 'empty' ||
 			emptySectionsDetail.critical.length > 0 ||
-			(editor.context.invitation.kind === 'client' && !editor.context.invitation.createdBy),
+			!editor.context.invitation.createdBy,
 		[
 			editor.operation.type,
 			savingAll,
@@ -636,7 +632,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 			editor.context.draftStatus,
 			editor.context.contentSource,
 			emptySectionsDetail.critical.length,
-			editor.context.invitation.kind,
 			editor.context.invitation.createdBy,
 		],
 	);
@@ -782,11 +777,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 							{CONTENT_SOURCE_LABELS[editor.context.contentSource] ??
 								editor.context.contentSource}
 						</span>
-						{editor.context.invitation.kind === 'demo' && (
-							<span className="invitation-editor__content-badge invitation-editor__content-badge--demo-tag">
-								Demo
-							</span>
-						)}
 					</div>
 					<h1>{metadata.title}</h1>
 					<div className="invitation-editor__header-meta">
@@ -909,7 +899,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 					>
 						<MetadataSection
 							value={metadata}
-							kind={editor.context.invitation.kind}
 							onChange={(value) => {
 								setMetadata(value);
 								markDirty('metadata');
@@ -1253,7 +1242,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 								assetLookupSlug={assetLookupSlug}
 								assets={editorAssets}
 								onOpenLibrary={() => setPickerField('thankYou.image')}
-								isDefaultImage={editor.context.sectionStates.thankYou === 'demo'}
 							/>
 						)}
 					</SectionCard>

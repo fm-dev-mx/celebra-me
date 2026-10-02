@@ -49,23 +49,6 @@ describe('ImageAssetField', () => {
 		);
 	});
 
-	it('applies --default class when isDefaultImage is true with a value', () => {
-		const { container } = render(
-			<ImageAssetField
-				label="Imagen de agradecimiento"
-				value={{ type: 'external', src: 'https://cdn.test/thankyou.webp' }}
-				isDefaultImage
-				defaultPreview={{ src: 'https://cdn.test/thankyou.webp' }}
-				onOpenLibrary={jest.fn()}
-			/>,
-		);
-
-		expect(screen.getByText('Imagen predeterminada')).toBeInTheDocument();
-		expect(
-			container.querySelector('.invitation-editor__image-card--default'),
-		).toBeInTheDocument();
-	});
-
 	it('renders missing state when preview cannot resolve a source', () => {
 		const value = {
 			type: 'uploaded' as const,

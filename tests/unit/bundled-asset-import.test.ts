@@ -59,7 +59,7 @@ jest.mock('@/lib/intake/services/asset-policy', () => ({
 	}),
 }));
 
-import { importDemoAsset } from '@/lib/intake/services/asset.service';
+import { importBundledAsset } from '@/lib/intake/services/asset.service';
 
 const INVITATION_ID = 'inv-1';
 const DEFAULT_METADATA = { src: '/assets/hero.webp', width: 1080, height: 1920, format: 'webp' };
@@ -100,12 +100,12 @@ afterEach(() => {
 	globalThis.fetch = originalFetch;
 });
 
-describe('importDemoAsset', () => {
-	it('rejects invalid demoKey', async () => {
+describe('importBundledAsset', () => {
+	it('rejects invalid bundledKey', async () => {
 		mockIsEventAssetKey.mockReturnValue(false);
 
-		await expect(importDemoAsset(INVITATION_ID, 'invalid-key')).rejects.toThrow(
-			'La clave de imagen de demo no es válida.',
+		await expect(importBundledAsset(INVITATION_ID, 'invalid-key')).rejects.toThrow(
+			'La clave de imagen incluida no es válida.',
 		);
 	});
 
@@ -113,7 +113,7 @@ describe('importDemoAsset', () => {
 		mockIsEventAssetKey.mockReturnValue(true);
 		mockFindInvitation.mockResolvedValue(null);
 
-		await expect(importDemoAsset(INVITATION_ID, 'hero')).rejects.toThrow(
+		await expect(importBundledAsset(INVITATION_ID, 'hero')).rejects.toThrow(
 			'No se encontró la invitación.',
 		);
 	});
@@ -129,8 +129,8 @@ describe('importDemoAsset', () => {
 		mockResolveAssetSlug.mockReturnValue('demo-xv-test');
 		mockGetEventAsset.mockReturnValue(undefined);
 
-		await expect(importDemoAsset(INVITATION_ID, 'nonexistent-key')).rejects.toThrow(
-			'No se encontró la imagen de demo',
+		await expect(importBundledAsset(INVITATION_ID, 'nonexistent-key')).rejects.toThrow(
+			'No se encontró la imagen incluida',
 		);
 	});
 
@@ -156,7 +156,7 @@ describe('importDemoAsset', () => {
 			mockFetch();
 		});
 
-		it('imports a demo asset with basic invitation', async () => {
+		it('imports a bundled asset with basic invitation', async () => {
 			mockFindInvitation.mockResolvedValue({
 				id: INVITATION_ID,
 				eventType: 'xv',
@@ -167,7 +167,7 @@ describe('importDemoAsset', () => {
 			mockGetEventAsset.mockReturnValue(DEFAULT_METADATA);
 			mockCreateAsset.mockResolvedValue(createMockAssetResult({ displayName: 'hero' }));
 
-			const result = await importDemoAsset(INVITATION_ID, 'hero');
+			const result = await importBundledAsset(INVITATION_ID, 'hero');
 
 			expect(result.asset.id).toBe('new-asset-id');
 			expect(result.asset.displayName).toBe('hero');
@@ -185,7 +185,7 @@ describe('importDemoAsset', () => {
 			);
 		});
 
-		it('imports a demo asset to Cloudinary when in preview environment', async () => {
+		it('imports a bundled asset to Cloudinary when in preview environment', async () => {
 			process.env.CELEBRA_RUNTIME_TARGET = 'preview';
 			mockFindInvitation.mockResolvedValue({
 				id: INVITATION_ID,
@@ -197,7 +197,7 @@ describe('importDemoAsset', () => {
 			mockGetEventAsset.mockReturnValue(DEFAULT_METADATA);
 			mockCreateAsset.mockResolvedValue(createMockAssetResult({ displayName: 'hero' }));
 
-			const result = await importDemoAsset(INVITATION_ID, 'hero');
+			const result = await importBundledAsset(INVITATION_ID, 'hero');
 
 			expect(result.asset.id).toBe('new-asset-id');
 			expect(mockUploadOrReconcile).toHaveBeenCalled();
@@ -236,7 +236,7 @@ describe('importDemoAsset', () => {
 				createMockAssetResult({ displayName: 'interlude02' }),
 			);
 
-			const result = await importDemoAsset(INVITATION_ID, 'interlude02');
+			const result = await importBundledAsset(INVITATION_ID, 'interlude02');
 
 			expect(result.asset.id).toBe('new-asset-id');
 			expect(mockFindPublishedContent).toHaveBeenCalledWith(INVITATION_ID);
@@ -266,7 +266,7 @@ describe('importDemoAsset', () => {
 				createMockAssetResult({ displayName: 'interlude02' }),
 			);
 
-			const result = await importDemoAsset(INVITATION_ID, 'interlude02');
+			const result = await importBundledAsset(INVITATION_ID, 'interlude02');
 
 			expect(result.asset.id).toBe('new-asset-id');
 			expect(mockResolveAssetSlug).toHaveBeenCalled();

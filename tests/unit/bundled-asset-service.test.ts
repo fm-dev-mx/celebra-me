@@ -6,16 +6,16 @@ jest.mock('@/lib/assets/asset-registry', () => ({
 	getEventAsset: mockGetEventAsset,
 }));
 
-import { getDemoPresetAssets } from '@/lib/intake/services/demo-asset.service';
+import { getBundledEventAssets } from '@/lib/intake/services/bundled-asset.service';
 
 beforeEach(() => {
 	jest.clearAllMocks();
 });
 
-describe('getDemoPresetAssets', () => {
+describe('getBundledEventAssets', () => {
 	it('returns empty array when slug is not valid', () => {
 		mockIsValidEvent.mockReturnValue(false);
-		const result = getDemoPresetAssets('nonexistent');
+		const result = getBundledEventAssets('nonexistent');
 		expect(result).toEqual([]);
 		expect(mockIsValidEvent).toHaveBeenCalledWith('nonexistent');
 	});
@@ -31,7 +31,7 @@ describe('getDemoPresetAssets', () => {
 			return undefined;
 		});
 
-		const result = getDemoPresetAssets('demo-xv-enchanted-rose');
+		const result = getBundledEventAssets('demo-xv-enchanted-rose');
 
 		expect(result).toHaveLength(3);
 		expect(result[0]).toMatchObject({
@@ -61,7 +61,7 @@ describe('getDemoPresetAssets', () => {
 		mockIsValidEvent.mockReturnValue(true);
 		mockGetEventAsset.mockReturnValue({ src: '/asset.webp', width: 100, height: 100 });
 
-		const result = getDemoPresetAssets('demo-xv-enchanted-rose');
+		const result = getBundledEventAssets('demo-xv-enchanted-rose');
 
 		for (const entry of result) {
 			expect(mockGetEventAsset).toHaveBeenCalledWith('demo-xv-enchanted-rose', entry.key);
@@ -72,7 +72,7 @@ describe('getDemoPresetAssets', () => {
 		mockIsValidEvent.mockReturnValue(true);
 		mockGetEventAsset.mockReturnValue(undefined);
 
-		const result = getDemoPresetAssets('demo-xv-enchanted-rose');
+		const result = getBundledEventAssets('demo-xv-enchanted-rose');
 		expect(result).toEqual([]);
 	});
 });

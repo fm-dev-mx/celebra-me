@@ -25,58 +25,33 @@ interface MergeResult {
 	sectionStates: Record<string, SectionSource>;
 }
 
-interface MergeOptions {
-	allowDemoFallback?: boolean;
-	demoContent?: DraftContent | Record<string, unknown>;
-}
-
-// eslint-disable-next-line complexity -- Section merging has several branching paths for obj vs scalar and allowDemoFallback.
 export function mergePublishedWithDraft(
 	publishedContent: DraftContent | Record<string, unknown>,
 	draftContent: DraftContent | Record<string, unknown>,
-	options: MergeOptions = {},
 ): MergeResult {
 	const publishedFlat = mapNestedToDraftContent(publishedContent as Record<string, unknown>);
 	const draftFlat = normalizeDraftContent(draftContent as Record<string, unknown>);
-	const demoFlat = options.demoContent
-		? mapNestedToDraftContent(options.demoContent as Record<string, unknown>)
-		: ({} as DraftContent);
 
 	const result: DraftContent = {};
 	const sectionStates: Record<string, SectionSource> = {};
-	const { allowDemoFallback = false } = options;
 
 	for (const key of ALL_EDITOR_KEYS) {
 		const draftVal = draftFlat[key as keyof DraftContent];
 		const publishedVal = publishedFlat[key as keyof DraftContent];
-		const demoVal = demoFlat[key as keyof DraftContent];
 
-		if (
-			OBJECT_SECTION_KEYS.has(key) &&
-			(isRecord(draftVal) || isRecord(publishedVal) || isRecord(demoVal))
-		) {
-			if (isRecord(draftVal) || isRecord(publishedVal)) {
-				const merged = shallowMergeDefined(publishedVal, draftVal);
-				if (merged !== undefined) {
-					const normalized =
-						key === 'family' ? ensureFamilyGodparentExclusivity(merged) : merged;
-					result[key as keyof DraftContent] = structuredClone(
-						normalized,
-					) as DraftContent[keyof DraftContent];
-				}
-			} else if (allowDemoFallback && isRecord(demoVal)) {
+		if (OBJECT_SECTION_KEYS.has(key) && (isRecord(draftVal) || isRecord(publishedVal))) {
+			const merged = shallowMergeDefined(publishedVal, draftVal);
+			if (merged !== undefined) {
+				const normalized =
+					key === 'family' ? ensureFamilyGodparentExclusivity(merged) : merged;
 				result[key as keyof DraftContent] = structuredClone(
-					demoVal,
+					normalized,
 				) as DraftContent[keyof DraftContent];
 			}
-		} else {
-			if (draftVal !== undefined) {
-				result[key as keyof DraftContent] = structuredClone(draftVal);
-			} else if (publishedVal !== undefined) {
-				result[key as keyof DraftContent] = structuredClone(publishedVal);
-			} else if (allowDemoFallback && demoVal !== undefined) {
-				result[key as keyof DraftContent] = structuredClone(demoVal);
-			}
+		} else if (draftVal !== undefined) {
+			result[key as keyof DraftContent] = structuredClone(draftVal);
+		} else if (publishedVal !== undefined) {
+			result[key as keyof DraftContent] = structuredClone(publishedVal);
 		}
 
 		const resultVal = result[key as keyof DraftContent];
@@ -84,8 +59,6 @@ export function mergePublishedWithDraft(
 			sectionStates[key] = 'draft';
 		} else if (publishedVal !== undefined && resultVal !== undefined) {
 			sectionStates[key] = 'published';
-		} else if (allowDemoFallback && demoVal !== undefined && resultVal !== undefined) {
-			sectionStates[key] = 'demo';
 		} else {
 			sectionStates[key] = 'empty';
 		}
@@ -95,11 +68,8 @@ export function mergePublishedWithDraft(
 	// Interludes are not in ALL_EDITOR_KEYS (they are not editable section values),
 	// so they are never processed by the loop above. We must pass them through
 	// explicitly so preview, publish, and render plan can access them from the
-	// effective content. Priority: draft > published > demo.
-	const interludeVal =
-		draftFlat.interludes ??
-		publishedFlat.interludes ??
-		(allowDemoFallback ? demoFlat.interludes : undefined);
+	// effective content. Priority: draft > published.
+	const interludeVal = draftFlat.interludes ?? publishedFlat.interludes;
 	if (interludeVal !== undefined) {
 		result.interludes = structuredClone(interludeVal);
 	}

@@ -6,9 +6,8 @@ import IntakeLinkPanel from '@/components/dashboard/intake/IntakeLinkPanel';
 import DraftSection from '@/components/dashboard/intake/DraftSection';
 import SubmissionSection from '@/components/dashboard/intake/SubmissionSection';
 import InvitationRsvpPanel from '@/components/dashboard/intake/InvitationRsvpPanel';
-import type { IntakeBlockType } from '@/lib/intake/types';
+import { INTAKE_BLOCK_TYPES, type IntakeBlockType } from '@/lib/intake/types';
 import { INVITATION_STATUS_LABELS } from '@/lib/intake/labels';
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { hasInconsistency, resolveRepairAction } from '@/lib/intake/display-status';
 
 interface Props {
@@ -46,11 +45,10 @@ const InvitationDetail: FC<Props> = ({ invitationId }) => {
 	useEffect(() => {
 		if (currentRequest?.enabledBlocks) {
 			setSelectedBlocks(currentRequest.enabledBlocks);
-		} else if (currentInvitation) {
-			const p = findDemoPreset(currentInvitation.baseDemoId);
-			if (p) setSelectedBlocks(p.recommendedBlocks);
+		} else {
+			setSelectedBlocks([...INTAKE_BLOCK_TYPES]);
 		}
-	}, [currentRequest, currentInvitation]);
+	}, [currentRequest]);
 
 	const handleCreateRequest = async () => {
 		if (selectedBlocks.length === 0) {
@@ -138,8 +136,6 @@ const InvitationDetail: FC<Props> = ({ invitationId }) => {
 		return <div className="intake-detail__empty">Invitación no encontrada.</div>;
 	}
 
-	const preset = findDemoPreset(currentInvitation.baseDemoId);
-
 	const inconsistencyDetected = hasInconsistency(currentInvitation);
 	const repairAction = resolveRepairAction(currentInvitation);
 
@@ -158,7 +154,6 @@ const InvitationDetail: FC<Props> = ({ invitationId }) => {
 							currentInvitation.status}
 					</span>
 					<span className="intake-detail__type">{currentInvitation.eventType}</span>
-					{preset && <span className="intake-detail__demo">{preset.displayName}</span>}
 				</div>
 
 				{inconsistencyDetected && repairAction && (
@@ -218,7 +213,6 @@ const InvitationDetail: FC<Props> = ({ invitationId }) => {
 						</p>
 						<BlockSelector
 							selectedBlocks={selectedBlocks}
-							recommendedBlocks={preset?.recommendedBlocks}
 							onChange={setSelectedBlocks}
 							disabled={Boolean(currentRequest)}
 						/>

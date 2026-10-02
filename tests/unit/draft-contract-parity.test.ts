@@ -1,6 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-
 import {
 	DANIELA_ASSET_SPECS,
 	DANIELA_EVENT,
@@ -32,10 +29,6 @@ import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft
 import { toEditorDate } from '@/lib/shared/data-utils';
 import { normalizeTime } from '@/lib/time/time-format';
 
-const demoContent = JSON.parse(
-	readFileSync(resolve(process.cwd(), 'tests/fixtures/content/xv-jewelry-box.json'), 'utf8'),
-) as Record<string, unknown>;
-
 const assets = Object.fromEntries(
 	ROMINA_ASSET_SPECS.map((asset, index) => [
 		asset.key,
@@ -58,30 +51,6 @@ const danielaAssets = Object.fromEntries(
 	]),
 );
 
-const preset = {
-	id: ROMINA_EVENT.baseDemoId,
-	eventType: ROMINA_EVENT.eventType,
-	displayName: 'XV Años — Premiere Floral',
-	themeId: ROMINA_EVENT.themeId,
-	defaultSections: [],
-	supportedBlocks: [],
-	recommendedBlocks: [],
-	requiredAssets: [],
-	previewSlug: 'demo-xv-jewelry-box',
-};
-
-const danielaPreset = {
-	id: DANIELA_EVENT.baseDemoId,
-	eventType: DANIELA_EVENT.eventType,
-	displayName: 'Boda — Jewelry Box',
-	themeId: DANIELA_EVENT.themeId,
-	defaultSections: [],
-	supportedBlocks: [],
-	recommendedBlocks: [],
-	requiredAssets: [],
-	previewSlug: 'demo-boda-jewelry-box-wedding',
-};
-
 function published(): Record<string, unknown> {
 	return buildRominaPublishedContent(assets as never) as unknown as Record<string, unknown>;
 }
@@ -101,36 +70,24 @@ function compare(
 		slug: string;
 		eventType: string;
 		assetSlug: string;
-		snapshot: {
-			id: string;
-			eventType: string;
-			displayName: string;
-			themeId: string;
-			defaultSections: unknown[];
-			supportedBlocks: unknown[];
-			recommendedBlocks: unknown[];
-			requiredAssets: unknown[];
-			previewSlug: string;
-		};
+		themePreset: string;
 	} = {
 		title: ROMINA_EVENT.title,
 		slug: ROMINA_EVENT.slug,
 		eventType: ROMINA_EVENT.eventType,
 		assetSlug: ROMINA_EVENT.assetSlug,
-		snapshot: preset,
+		themePreset: ROMINA_EVENT.themeId,
 	},
 ) {
 	const mapped = mapDraftToPublished({
 		invitation: {
 			title: meta.title,
 			eventType: meta.eventType,
-			snapshot: meta.snapshot as never,
 		},
+		themePreset: meta.themePreset,
 		assetSlug: meta.assetSlug,
 		draftContent: computeEffectiveContent(draftContent, pub),
-		demoContent,
 		priorPublishedContent: pub,
-		isDemo: false,
 	});
 	return createPublicationComparison({
 		draftProjection: {
@@ -454,7 +411,7 @@ describe('Fecha y ubicaciones editor-consumable Draft state', () => {
 			slug: DANIELA_EVENT.slug,
 			eventType: DANIELA_EVENT.eventType,
 			assetSlug: DANIELA_EVENT.assetSlug,
-			snapshot: danielaPreset,
+			themePreset: DANIELA_EVENT.themeId,
 		});
 		expect(
 			comparison.changedPaths.filter(

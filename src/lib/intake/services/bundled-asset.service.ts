@@ -1,6 +1,6 @@
 import { isValidEvent, getEventAsset } from '@/lib/assets/asset-registry';
 import { EVENT_KEYS } from '@/lib/assets/asset-keys';
-import type { DemoAssetEntry } from '@/lib/intake/types';
+import type { BundledAssetEntry } from '@/lib/intake/types';
 
 const KEY_LABELS: Record<string, string> = {
 	hero: 'Portada',
@@ -30,13 +30,13 @@ const KEY_LABELS: Record<string, string> = {
 	thankYouPortrait: 'Retrato de agradecimiento',
 };
 
-export function getDemoPresetAssets(previewSlug: string): DemoAssetEntry[] {
-	if (!isValidEvent(previewSlug)) return [];
+export function getBundledEventAssets(assetSlug: string): BundledAssetEntry[] {
+	if (!isValidEvent(assetSlug)) return [];
 
-	const results: DemoAssetEntry[] = [];
+	const results: BundledAssetEntry[] = [];
 
 	for (const key of EVENT_KEYS) {
-		const metadata = getEventAsset(previewSlug, key);
+		const metadata = getEventAsset(assetSlug, key);
 		if (!metadata) continue;
 
 		const src = metadata.src;

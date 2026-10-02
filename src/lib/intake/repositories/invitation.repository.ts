@@ -70,13 +70,14 @@ export async function listInvitations(
 	return rows.map(toInvitation);
 }
 
+/** Client invitations only; legacy demo mirror rows are not editable or publishable. */
 export async function findInvitationById(
 	id: string,
 	includeArchived = false,
 ): Promise<Invitation | null> {
 	const archiveFilter = includeArchived ? '' : '&archived_at=is.null';
 	const rows = await supabaseRestRequest<InvitationRow[]>({
-		pathWithQuery: `invitations?select=${SELECT_COLUMNS}&id=eq.${encodeURIComponent(id)}${archiveFilter}&limit=1`,
+		pathWithQuery: `invitations?select=${SELECT_COLUMNS}&id=eq.${encodeURIComponent(id)}&kind=eq.client${archiveFilter}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toInvitation(rows[0]) : null;

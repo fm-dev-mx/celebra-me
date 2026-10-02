@@ -7,7 +7,7 @@ const MOCK_ASSETS = [
 		displayName: 'Foto 1',
 		defaultAltText: 'Alt text 1',
 		src: 'https://cdn.test/foto1.webp',
-		isDemo: false,
+		isBundled: false,
 		mimeType: 'image/webp',
 		usage: {
 			usedInDraft: true,
@@ -20,8 +20,8 @@ const MOCK_ASSETS = [
 		id: 'demo:test-slug:hero',
 		displayName: 'Portada',
 		src: 'https://cdn.test/hero.webp',
-		isDemo: true,
-		demoKey: 'hero',
+		isBundled: true,
+		bundledKey: 'hero',
 		mimeType: 'image/webp',
 		usage: {
 			usedInDraft: true,
@@ -35,7 +35,7 @@ const MOCK_ASSETS = [
 		displayName: 'Foto 2',
 		defaultAltText: '',
 		src: 'https://cdn.test/foto2.webp',
-		isDemo: false,
+		isBundled: false,
 		mimeType: 'image/webp',
 		usage: {
 			usedInDraft: false,
@@ -68,7 +68,7 @@ describe('AssetLibraryPanel', () => {
 		await screen.findByText('Foto 1');
 	});
 
-	it('renders uploaded and demo assets', async () => {
+	it('renders uploaded and bundled assets', async () => {
 		render(<AssetLibraryPanel invitationId="test-id" />);
 
 		await waitFor(() => {
@@ -78,11 +78,11 @@ describe('AssetLibraryPanel', () => {
 		});
 	});
 
-	it('shows demo badge on demo assets', async () => {
+	it('shows demo badge on bundled assets', async () => {
 		render(<AssetLibraryPanel invitationId="test-id" />);
 
 		await waitFor(() => {
-			expect(screen.getAllByText('Imagen de demo').length).toBeGreaterThan(0);
+			expect(screen.getAllByText('Imagen incluida').length).toBeGreaterThan(0);
 		});
 	});
 
