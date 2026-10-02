@@ -11,10 +11,7 @@ import {
 import { resolveInvitationCssUrls } from '../helpers/invitation-css-urls';
 import { prepareInvitationPageContext } from '@/lib/invitation/page-data';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
-import {
-	CANONICAL_VARIANT_REGISTRY,
-	CANONICAL_VARIANT_CUTOVER_MANIFEST,
-} from '@/lib/invitation/section-variants';
+import { CANONICAL_VARIANT_REGISTRY } from '@/lib/invitation/section-variants';
 import {
 	buildSyntheticVariantEvent,
 	buildIncompatiblePrerequisiteEvent,
@@ -217,7 +214,7 @@ describe('registry-driven canonical variant portability', () => {
 	});
 
 	it('rejects incompatible canonical prerequisites with exact path and actionable error message', () => {
-		for (const entry of CANONICAL_VARIANT_CUTOVER_MANIFEST) {
+		for (const entry of CANONICAL_VARIANT_REGISTRY.filter((candidate) => !candidate.default)) {
 			const badData = buildIncompatiblePrerequisiteEvent(entry);
 			const result = eventContentSchema.safeParse(badData);
 			expect(

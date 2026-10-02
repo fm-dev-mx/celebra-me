@@ -1,10 +1,5 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
-import {
-	CANONICAL_VARIANT_REGISTRY,
-	CANONICAL_VARIANT_CUTOVER_MANIFEST,
-} from '@/lib/invitation/section-variants';
+import { CANONICAL_VARIANT_REGISTRY } from '@/lib/invitation/section-variants';
 
 const baseInput = {
 	eventType: 'xv',
@@ -28,7 +23,6 @@ const baseInput = {
 describe('canonical section variant contracts', () => {
 	it('keeps the complete closed vocabulary in one registry', () => {
 		expect(CANONICAL_VARIANT_REGISTRY).toHaveLength(45);
-		expect(CANONICAL_VARIANT_CUTOVER_MANIFEST).toHaveLength(35);
 		expect(CANONICAL_VARIANT_REGISTRY.filter((entry) => entry.default)).toHaveLength(10);
 		expect(
 			CANONICAL_VARIANT_REGISTRY.map((entry) => `${entry.section}.${entry.variant}`),
@@ -39,17 +33,6 @@ describe('canonical section variant contracts', () => {
 				'thankYou.full-bleed-photo',
 			]),
 		);
-	});
-
-	it('keeps the Goal 2 handoff manifest derived from every non-default entry', () => {
-		const manifest = fs.readFileSync(
-			path.join(process.cwd(), 'docs/domains/theme/variant-cutover-manifest.md'),
-			'utf8',
-		);
-
-		for (const entry of CANONICAL_VARIANT_CUTOVER_MANIFEST) {
-			expect(manifest).toContain(`\`${entry.section}.${entry.variant}\``);
-		}
 	});
 
 	it('rejects legacy aliases and unknown canonical variants', () => {

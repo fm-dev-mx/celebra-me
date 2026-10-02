@@ -1,9 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {
-	CANONICAL_VARIANT_CUTOVER_MANIFEST,
-	CANONICAL_VARIANT_REGISTRY,
-} from '@/lib/invitation/section-variants';
+import { CANONICAL_VARIANT_REGISTRY } from '@/lib/invitation/section-variants';
 
 const read = (relativePath: string) =>
 	fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8');
@@ -36,16 +33,6 @@ const reusableRendererSurfaces = [
 const originIdentity =
 	/romina|rios|chaparro|alba|quinonez|daniela|martin|victoria|roberto|abril|michelle|becerra|valentina|xareni/iu;
 
-const normalizeManifestCell = (value: string) =>
-	value.replaceAll('`', '').replace(/\s+/gu, ' ').trim();
-
-function readCutoverManifestRows() {
-	return read('docs/domains/theme/variant-cutover-manifest.md')
-		.split(/\r?\n/u)
-		.filter((line) => line.startsWith('| `'))
-		.map((line) => line.split('|').slice(1, -1).map(normalizeManifestCell));
-}
-
 const canonicalVariantRenderers = [
 	'src/components/invitation/Hero.astro',
 	'src/components/invitation/EditorialCoverHero.astro',
@@ -68,25 +55,12 @@ describe('canonical variant governance', () => {
 		const compatibility = read('docs/domains/theme/variant-compatibility.md');
 		const creationContract = read('docs/core/invitation-creation-contract.md');
 		const rominaReference = read('docs/invitations/romina-rios-chaparro.md');
-		const manifestRows = readCutoverManifestRows();
 
 		for (const { variant: identifier } of CANONICAL_VARIANT_REGISTRY) {
 			expect(inventory).toContain(identifier);
 		}
 
-		expect(manifestRows).toHaveLength(CANONICAL_VARIANT_CUTOVER_MANIFEST.length);
-		expect(manifestRows).toEqual(
-			CANONICAL_VARIANT_CUTOVER_MANIFEST.map((entry) => [
-				`${entry.section}.${entry.variant}`,
-				entry.prerequisites.join(', '),
-				entry.cssOwner,
-				entry.unresolvedVisualVerification,
-				entry.requiredPersistedContentTransformation,
-			]),
-		);
-
 		expect(compatibility).toContain('Removed compatibility inputs');
-		expect(compatibility).toContain('Deployment blocked');
 		expect(compatibility).toContain('rejected rather than converted');
 
 		expect(inventory).toContain(

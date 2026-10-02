@@ -120,7 +120,7 @@ reuse it without per-invitation comparison rules.
     `scripts/provision/promotion-comparison.ts`
 - **Concern:** Canonical variant fields
   - **Owner:** `eventContentSchema` and the adapter consume only declared section variants; legacy
-    aliases are ingress-only during cutover
+    aliases are rejected
 - **Concern:** Publication projection
   - **Owner:** `preparePublicationProjection` / `canonicalizePublicationValue`
 

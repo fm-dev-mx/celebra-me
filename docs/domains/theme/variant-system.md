@@ -3,7 +3,6 @@
 **Status:** Active architecture contract
 
 **Related:** [`variant-compatibility.md`](variant-compatibility.md),
-[`variant-cutover-manifest.md`](variant-cutover-manifest.md),
 [`section-intersections.md`](section-intersections.md), and
 [`../content/section-contracts.md`](../content/section-contracts.md)
 
