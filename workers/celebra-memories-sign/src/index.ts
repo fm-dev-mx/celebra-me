@@ -27,7 +27,11 @@ import { readBoundedText } from '../../shared/bounded-body';
 import { sha256HexToArrayBuffer, sha256HexToBase64 } from '../../shared/encoding';
 import { privateRequestId, verifyMemoriesPrivateRequest } from '../../shared/private-request';
 import { consumeReplayKey } from '../../shared/replay-guard';
-import { createUploadCapability, verifyUploadCapability } from './capability';
+import {
+	createUploadCapability,
+	verifyUploadCapability,
+	type UploadCapabilityClaims,
+} from './capability';
 import {
 	allowedBrowserOrigins,
 	getMemoriesRateLimiter,
@@ -130,19 +134,32 @@ export async function handleMemoriesUploadRequest(
 	);
 	if (!claimed) return errorResponse('replay', 409, origin);
 
+	const outcome = await storeUpload(env, claims, request.body);
+	if (outcome === 'already_uploaded') return errorResponse('already_uploaded', 412, origin);
+	if (outcome === 'failed') return errorResponse('upload_failed', 400, origin);
+	return jsonResponse({ uploaded: true }, 201, origin);
+}
+
+/** Streams the PUT body into R2 under the sealed key, length and checksum. */
+async function storeUpload(
+	env: MemoriesSignEnv,
+	claims: UploadCapabilityClaims,
+	body: ReadableStream<Uint8Array>,
+): Promise<'stored' | 'already_uploaded' | 'failed'> {
 	const fixedLength = new FixedLengthStream(claims.sizeBytes);
 	const uploadPromise = env.MEMORIES_BUCKET.put(claims.objectKey, fixedLength.readable, {
 		httpMetadata: { contentType: claims.mimeType },
 		sha256: sha256HexToArrayBuffer(claims.checksumSha256),
 		onlyIf: { etagDoesNotMatch: '*' },
 	});
-	const copyPromise = request.body.pipeTo(fixedLength.writable);
-	const results = await Promise.allSettled([uploadPromise, copyPromise]);
-	const uploadResult = results[0].status === 'fulfilled' ? results[0].value : null;
-	if (results.some((result) => result.status === 'rejected') || !uploadResult) {
-		return errorResponse('upload_failed', 400, origin);
-	}
-	return jsonResponse({ uploaded: true }, 201, origin);
+	const copyPromise = body.pipeTo(fixedLength.writable);
+	const [uploadOutcome, copyOutcome] = await Promise.allSettled([uploadPromise, copyPromise]);
+	// R2 answers a failed `onlyIf` with null: an earlier PUT of this reservation
+	// already stored the object and its response never reached the browser.
+	if (uploadOutcome.status === 'fulfilled' && uploadOutcome.value === null)
+		return 'already_uploaded';
+	if (uploadOutcome.status === 'rejected' || copyOutcome.status === 'rejected') return 'failed';
+	return 'stored';
 }
 
 export async function handleMemoriesSignRequest(
