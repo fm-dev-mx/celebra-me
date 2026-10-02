@@ -192,7 +192,7 @@ hero doorway. All other boundaries are neutral.
 | interlude           | after personalized access (photo 5), `tall`                   |
 | family              | `ceremonial-family`, `text-only`                              |
 | gallery             | `paired-feature-band`; photos 2, 3, feature 10, then 4, 7     |
-| countdown           | `standard`, with the Jewelry Box `jeweled-panel` skin         |
+| countdown           | `standard`, with the Jewelry Box countdown skin               |
 | interlude           | after countdown (photo 8), `tall`                             |
 | location            | `stacked-venue-plates`                                        |
 | itinerary           | `editorial-ledger`                                            |
