@@ -40,10 +40,9 @@ describe('resolveInvitationContent Integration Fallback tests', () => {
 
 		expect(result).toBeNull();
 		expect(mockGetCollection).toHaveBeenCalledWith('event-demos');
-		expect(mockGetCollection).toHaveBeenCalledWith('event-templates');
 	});
 
-	it('Supabase credentials missing falls back to search static demos/templates and returns null if not found', async () => {
+	it('Supabase credentials missing falls back to static demos and returns null if not found', async () => {
 		const mockFindPublished = findPublishedBySlugAndEventType as jest.Mock;
 		const mockFindInv = isInvitationArchivedBySlug as jest.Mock;
 		const mockGetCollection = getCollection as jest.Mock;
@@ -56,7 +55,6 @@ describe('resolveInvitationContent Integration Fallback tests', () => {
 
 		expect(result).toBeNull();
 		expect(mockGetCollection).toHaveBeenCalledWith('event-demos');
-		expect(mockGetCollection).toHaveBeenCalledWith('event-templates');
 	});
 
 	it('valid static demo entry resolves correctly when Supabase credentials are missing', async () => {

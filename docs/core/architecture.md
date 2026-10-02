@@ -228,7 +228,6 @@ They are not a temporary fallback for real/client invitations.
 ### Active Collection Layout
 
 - `src/content/event-demos/**.json` for showcase demos
-- `src/content/event-templates/**.json` for internal master templates
 
 ### Rules
 

@@ -326,6 +326,6 @@ When a real invitation uses local routed media:
 4. **Verify the content and theme contract** with the narrow relevant commands from
    `docs/domains/content/event-governance.md`.
 
-Demos and templates remain under `src/content/event-demos` and `src/content/event-templates`.
+Demos remain under `src/content/event-demos`.
 
 Conventions are agreements to reduce friction, not obstacles to progress.

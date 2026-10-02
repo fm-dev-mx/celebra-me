@@ -15,16 +15,15 @@ invitation source-of-truth contract.
 
 ## Active Collections
 
-| Collection        | Path                             | Purpose                           |
-| ----------------- | -------------------------------- | --------------------------------- |
-| `event-demos`     | `src/content/event-demos/**`     | public showcase demos             |
-| `event-templates` | `src/content/event-templates/**` | development-only reusable masters |
+| Collection    | Path                         | Purpose               |
+| ------------- | ---------------------------- | --------------------- |
+| `event-demos` | `src/content/event-demos/**` | public showcase demos |
 
-`src/lib/content/events.ts` looks up both collections. The static eligibility gate belongs to
-`src/lib/invitation/content-resolver.ts`: demo content is eligible, while non-demo templates require
-development mode. DB-published client content from `published_invitation_content` is the only source
-for real/client invitations. Editor presets belong to `src/lib/intake/demo-preset-catalog.ts` and
-public showroom approval to `src/data/demo-showroom.data.ts`; these are intentionally distinct sets.
+`src/lib/content/events.ts` looks up the collection. The static eligibility gate belongs to
+`src/lib/invitation/content-resolver.ts`: only demo content (`isDemo: true`) is eligible.
+DB-published client content from `published_invitation_content` is the only source for real/client
+invitations. Editor presets belong to `src/lib/intake/demo-preset-catalog.ts` and public showroom
+approval to `src/data/demo-showroom.data.ts`; these are intentionally distinct sets.
 
 ## Event Type Contract
 

@@ -12,7 +12,7 @@ export interface DiscoveredInvitation {
 	route: string;
 	slug: string;
 	eventType: string;
-	source: 'published' | 'provisioned' | 'demo' | 'template';
+	source: 'published' | 'provisioned' | 'demo';
 }
 
 /**
@@ -61,51 +61,6 @@ export function discoverStaticDemos(): DiscoveredInvitation[] {
 }
 
 /**
- * Discover static event templates from src/content/event-templates
- */
-export function discoverStaticTemplates(): DiscoveredInvitation[] {
-	const templatesDir = path.join(process.cwd(), 'src/content/event-templates');
-	const results: DiscoveredInvitation[] = [];
-
-	if (!syncFs.existsSync(templatesDir)) return results;
-
-	const folders = syncFs.readdirSync(templatesDir);
-	for (const folder of folders) {
-		const folderPath = path.join(templatesDir, folder);
-		if (!syncFs.statSync(folderPath).isDirectory()) continue;
-
-		const files = syncFs.readdirSync(folderPath);
-		for (const file of files) {
-			if (!file.endsWith('.json') || file.startsWith('_')) continue;
-
-			try {
-				const contentStr = syncFs.readFileSync(path.join(folderPath, file), 'utf8');
-				const content = JSON.parse(contentStr);
-
-				const eventType = content.eventType || folder;
-				const slug = file.replace(/\.json$/, '');
-				const route = `/${eventType}/${slug}`;
-
-				results.push({
-					name: content.title || `Template ${eventType}: ${slug}`,
-					route,
-					slug,
-					eventType,
-					source: 'template',
-				});
-			} catch (error) {
-				throw new Error(
-					`Invalid static template file "${path.join(folderPath, file)}": ${error instanceof Error ? error.message : String(error)}`,
-					{ cause: error },
-				);
-			}
-		}
-	}
-
-	return results;
-}
-
-/**
  * Discover canonical provisioned invitations from scripts/provision/invitations/registry.ts
  */
 export function discoverProvisionedInvitations(): DiscoveredInvitation[] {
@@ -120,7 +75,7 @@ export function discoverProvisionedInvitations(): DiscoveredInvitation[] {
 }
 
 /**
- * Discover all invitations from static demos, templates, provisioned registry,
+ * Discover all invitations from static demos, provisioned registry,
  * and database-published invitations if available.
  * Validates and returns every discovered invitation. Route collisions are
  * configuration errors rather than silently selected by source priority.
@@ -129,7 +84,6 @@ export function discoverAllInvitations(): DiscoveredInvitation[] {
 	const all: DiscoveredInvitation[] = [
 		...discoverProvisionedInvitations(),
 		...discoverStaticDemos(),
-		...discoverStaticTemplates(),
 	];
 
 	assertInvitationCatalogIntegrity(all);

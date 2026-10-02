@@ -28,11 +28,7 @@ import {
 	getViewportProfileSummary,
 	resolveScreenshotLaneContext,
 } from './utils.js';
-import {
-	discoverAllInvitations,
-	discoverStaticDemos,
-	discoverStaticTemplates,
-} from './discovery.js';
+import { discoverAllInvitations, discoverStaticDemos } from './discovery.js';
 
 // =============================================================================
 // Interactive CLI Entry
@@ -174,10 +170,8 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 					value: 'select-all-discovered',
 				},
 				{ name: 'Select from Event Demos...', value: 'select-demo' },
-				{ name: 'Select from Invitation Templates...', value: 'select-template' },
 				{ name: 'Capture ALL Discovered Invitations', value: 'all-discovered' },
 				{ name: 'Capture ALL Event Demos', value: 'all-demos' },
-				{ name: 'Capture ALL Templates', value: 'all-templates' },
 				{ name: 'Enter route/URL manually', value: 'manual' },
 			],
 			default: 'select-all-discovered',
@@ -208,17 +202,6 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 				choices: demos.map((d) => ({ name: d.name, value: d.route })),
 			});
 			resolvedUrls = [{ name: createPageSlug(chosenRoute), url: chosenRoute }];
-		} else if (selectionMode === 'select-template') {
-			const templates = discoverStaticTemplates();
-			if (templates.length === 0) {
-				console.warn('  ⚠ No templates found in src/content/event-templates.');
-				return null;
-			}
-			const chosenRoute = await select<string>({
-				message: 'Which invitation template?',
-				choices: templates.map((t) => ({ name: t.name, value: t.route })),
-			});
-			resolvedUrls = [{ name: createPageSlug(chosenRoute), url: chosenRoute }];
 		} else if (selectionMode === 'all-discovered') {
 			const discovered = discoverAllInvitations();
 			if (discovered.length === 0) {
@@ -233,13 +216,6 @@ export async function runInteractiveFlow(): Promise<ScreenshotJob | ScreenshotJo
 				return null;
 			}
 			resolvedUrls = demos.map((d) => ({ name: d.slug, url: d.route }));
-		} else if (selectionMode === 'all-templates') {
-			const templates = discoverStaticTemplates();
-			if (templates.length === 0) {
-				console.warn('  ⚠ No templates found in src/content/event-templates.');
-				return null;
-			}
-			resolvedUrls = templates.map((t) => ({ name: t.slug, url: t.route }));
 		} else {
 			const urlInput = await input({
 				message: 'URL or route to capture:',

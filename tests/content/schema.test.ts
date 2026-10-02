@@ -6,7 +6,7 @@ import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
 import { isEventAssetKey, type EventAssetKey } from '@/lib/assets/asset-keys';
 import { eventContentSchema as eventSchema } from '@/lib/schemas/content/base-event.schema';
 
-const contentRoots = ['src/content/event-demos', 'src/content/event-templates'];
+const contentRoots = ['src/content/event-demos'];
 const primeraComunionDemoPath = path.resolve(
 	process.cwd(),
 	'src/content/event-demos/primera-comunion/demo-primera-comunion-illustrated.json',
