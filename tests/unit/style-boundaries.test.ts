@@ -530,7 +530,6 @@ describe('Style boundary governance', () => {
 			'angelic-presence',
 			'celestial-blue',
 			'editorial',
-			'editorial-rose',
 			'editorial-magazine',
 			'enchanted-rose',
 			'jewelry-box',

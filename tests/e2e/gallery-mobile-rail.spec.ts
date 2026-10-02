@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * Goal C — Gallery mobileBrowse=rail on magazine-spread (Valentina profile demo).
+ * Gallery mobileBrowse=rail on magazine-spread (published Valentina Hernández invitation).
  * Desktop retains the magazine grid; mobile becomes a horizontal scroll-snap rail.
  */
-const DEMO = '/xv/demo-xv-valentina-profile?skipEnvelope=true';
+const ROUTE = '/xv/valentina-hernandez?skipEnvelope=true';
 
 test.describe('Gallery mobile rail presentation', () => {
 	test('mobile uses scroll-snap rail without Valentina-only structural CSS ownership', async ({
@@ -14,10 +14,10 @@ test.describe('Gallery mobile rail presentation', () => {
 		page.on('pageerror', (error) => errors.push(error.message));
 
 		await page.addInitScript(() => {
-			window.localStorage.setItem('envelope-opened-demo-xv-valentina-profile', 'true');
+			window.localStorage.setItem('envelope-opened-valentina-hernandez', 'true');
 		});
 		await page.setViewportSize({ width: 390, height: 844 });
-		await page.goto(DEMO, { waitUntil: 'domcontentloaded' });
+		await page.goto(ROUTE, { waitUntil: 'domcontentloaded' });
 
 		const gallery = page.locator('#galeria');
 		await expect(gallery).toBeVisible();
@@ -80,10 +80,10 @@ test.describe('Gallery mobile rail presentation', () => {
 
 	test('desktop restores magazine grid and hides the swipe hint', async ({ page }) => {
 		await page.addInitScript(() => {
-			window.localStorage.setItem('envelope-opened-demo-xv-valentina-profile', 'true');
+			window.localStorage.setItem('envelope-opened-valentina-hernandez', 'true');
 		});
 		await page.setViewportSize({ width: 1280, height: 800 });
-		await page.goto(DEMO, { waitUntil: 'domcontentloaded' });
+		await page.goto(ROUTE, { waitUntil: 'domcontentloaded' });
 
 		const gallery = page.locator('#galeria');
 		await gallery.scrollIntoViewIfNeeded();

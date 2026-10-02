@@ -50,7 +50,6 @@ Theme presets come from `src/lib/theme/theme-contract.ts`:
 - `premiere-floral`
 - `editorial`
 - `editorial-magazine`
-- `editorial-rose`
 - `angelic-presence`
 
 Section variant enums are consumed through `src/lib/theme/theme-contract.ts`. Do not duplicate

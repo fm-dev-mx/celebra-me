@@ -285,46 +285,6 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 			alt: 'Vista principal del demo de cumpleaños estilo Luxury Hacienda',
 		},
 	},
-	{
-		eventType: 'xv',
-		publicSlug: 'xv',
-		slug: 'demo-xv-valentina-profile',
-		href: '/xv/demo-xv-valentina-profile',
-		title: 'XV años edición Valentina',
-		description:
-			'Variante de perfil pendiente de revisión editorial antes de exposición pública.',
-		styleTags: ['perfil', 'editorial'],
-		visibility: 'hidden',
-		reviewStatus: 'needs-review',
-		sortOrder: 900,
-		ctaMessage:
-			'Hola, me gustaría una invitación digital para XV años. Quiero conocer opciones editoriales.',
-		thumbnail: {
-			assetSlug: 'demo-xv-editorial',
-			key: 'hero',
-			alt: 'Vista principal de variante editorial de XV años',
-		},
-	},
-	{
-		eventType: 'xv',
-		publicSlug: 'xv',
-		slug: 'demo-xv-xareni-profile',
-		href: '/xv/demo-xv-xareni-profile',
-		title: 'XV años edición Xareni',
-		description:
-			'Variante de perfil pendiente de revisión editorial antes de exposición pública.',
-		styleTags: ['perfil', 'celestial'],
-		visibility: 'hidden',
-		reviewStatus: 'needs-review',
-		sortOrder: 910,
-		ctaMessage:
-			'Hola, me gustaría una invitación digital para XV años. Quiero conocer opciones celestiales.',
-		thumbnail: {
-			assetSlug: 'demo-xv-celestial-blue',
-			key: 'hero',
-			alt: 'Vista principal de variante celestial de XV años',
-		},
-	},
 ] as const;
 
 export function getDemoShowroomByPublicSlug(publicSlug: string): DemoShowroomEvent | undefined {

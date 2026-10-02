@@ -38,7 +38,6 @@ export const THEME_PRESETS = [
 	'jewelry-box-wedding',
 	'luxury-hacienda',
 	'editorial',
-	'editorial-rose',
 	'editorial-magazine',
 	'premiere-floral',
 	'celestial-blue',

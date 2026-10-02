@@ -48,7 +48,6 @@ const THEME_PRESET_SKINS = new Set([
 	'angelic-presence',
 	'celestial-blue',
 	'editorial',
-	'editorial-rose',
 	'editorial-magazine',
 	'enchanted-rose',
 	'jewelry-box',

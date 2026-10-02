@@ -9,7 +9,7 @@ contract:** [`architecture.md`](architecture.md#invitation-css-ownership-normati
 ## Consumers (all)
 
 `leslie-perez`, `america-johana`, `xareni-iyarit`, `leah-lexa`, `ana-sofia-cota-guillen`,
-`demo-xv-celestial-blue`, `demo-xv-xareni-profile`.
+`demo-xv-celestial-blue`.
 
 ## Classification
 

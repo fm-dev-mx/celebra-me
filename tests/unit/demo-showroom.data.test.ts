@@ -58,8 +58,6 @@ describe('demo showroom public metadata', () => {
 		expect(featuredItems).toHaveLength(7);
 		expect(featuredItems.every((item) => item.visibility === 'featured')).toBe(true);
 		expect(featuredItems.every((item) => item.reviewStatus === 'approved')).toBe(true);
-		expect(featuredItems.map((item) => item.slug)).not.toContain('demo-xv-valentina-profile');
-		expect(featuredItems.map((item) => item.slug)).not.toContain('demo-xv-xareni-profile');
 		expect(featuredItems.map((item) => item.slug)).not.toContain(
 			'demo-primera-comunion-illustrated',
 		);
@@ -93,13 +91,13 @@ describe('demo showroom public metadata', () => {
 		]);
 	});
 
-	it('keeps raw metadata available for excluded manual-review demos', () => {
-		expect(
-			DEMO_SHOWROOM_ITEMS.find((item) => item.slug === 'demo-xv-valentina-profile'),
-		).toMatchObject({
-			visibility: 'hidden',
-			reviewStatus: 'needs-review',
-		});
+	it('excludes a hidden or unreviewed item from the public showroom', () => {
+		const hidden = DEMO_SHOWROOM_ITEMS.filter(
+			(item) => item.visibility !== 'featured' || item.reviewStatus !== 'approved',
+		);
+		const featuredSlugs = getFeaturedDemoShowroomItems().map((item) => item.slug);
+
+		for (const item of hidden) expect(featuredSlugs).not.toContain(item.slug);
 	});
 });
 

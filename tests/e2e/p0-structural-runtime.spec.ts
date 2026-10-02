@@ -17,7 +17,7 @@ test.describe('P0 structural variants render through the live invitation route',
 			page,
 		}) => {
 			await page.setViewportSize(viewport);
-			const response = await page.goto('/xv/demo-xv-xareni-profile?skipEnvelope=true', {
+			const response = await page.goto('/xv/demo-xv-celestial-blue?skipEnvelope=true', {
 				waitUntil: 'networkidle',
 			});
 			expect(response?.status()).toBe(200);
@@ -29,17 +29,14 @@ test.describe('P0 structural variants render through the live invitation route',
 			await expect(itinerary.locator('.itinerary__items-wrapper')).toHaveCount(0);
 
 			const thankYou = page.locator('#thank-you-section');
-			await expect(thankYou).toHaveAttribute(
-				'data-variant',
-				'portrait-keepsake',
-			);
+			await expect(thankYou).toHaveAttribute('data-variant', 'portrait-keepsake');
 			await expect(thankYou.locator('.thank-you-editorial')).toBeVisible();
 			await expect(thankYou.locator('.thank-you-content')).toHaveCount(0);
 
 			const stylesheets = (await stylesheetHrefs(page)).join('\n');
 			expect(stylesheets).toMatch(/celestial-blue/);
 			expect(stylesheets).toMatch(/timeline-paper/);
-			expect(stylesheets).toMatch(/index-choreography/);
+			expect(stylesheets).toMatch(/feature-stack/);
 			expect(stylesheets).not.toMatch(/editorial-ledger|editorial-program|split-cover/);
 		});
 	}

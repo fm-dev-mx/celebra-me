@@ -16,7 +16,7 @@ describe('list schedule projection', () => {
 			{ id: 'draft', kind: 'client' },
 			{ id: 'visible', kind: 'demo', eventType: 'xv', slug: 'demo-xv-celestial-blue' },
 			{ id: 'hidden', kind: 'demo', eventType: 'xv', slug: 'demo-xv-jewelry-box' },
-			{ id: 'pending', kind: 'demo', eventType: 'xv', slug: 'demo-xv-valentina-profile' },
+			{ id: 'pending', kind: 'demo', eventType: 'xv', slug: 'demo-xv-pending-review' },
 			{ id: 'absent', kind: 'demo', eventType: 'xv', slug: 'unregistered' },
 		] as Invitation[]);
 		jest.mocked(supabaseRestRequest)
