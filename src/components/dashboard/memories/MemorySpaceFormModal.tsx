@@ -1,118 +1,25 @@
 import { useId, useMemo, useState, type FormEvent } from 'react';
 import ModalShell from '@/components/dashboard/ModalShell';
-import MemoriesCapacityExamples from '@/components/dashboard/memories/MemoriesCapacityExamples';
-import type { MemoriesSpaceRecord } from '@/lib/memories/contract/catalog';
 import {
-	MEMORIES_ENTITLEMENTS,
-	MEMORIES_LIMIT_PROFILES,
-	type MemoriesEntitlement,
-	type MemoriesLimitProfile,
-	type MemoriesSpaceLimits,
-} from '@/lib/memories/contract/limits';
-import { buildMemoriesPublicUrl } from '@/lib/memories/contract/private-request';
-import {
-	MEMORIES_BINARY_MB,
-	MEMORIES_DECIMAL_GB,
-	MEMORIES_ENTITLEMENT_LABEL,
-	formatMemoriesStorage,
-	memoriesFormCopy as copy,
-} from '@/lib/memories/dashboard-copy';
+	MemoryNoteFieldset,
+	MemoryPlanFieldset,
+	MemoryScheduleFieldset,
+} from '@/components/dashboard/memories/MemorySpaceFormFields';
+import { CLOUDFLARE_FREE_TIER } from '@/lib/memories/contract/limits';
+import { formatMemoriesEventDate, memoriesFormCopy as copy } from '@/lib/memories/dashboard-copy';
 import type { AdminSpaceCandidate } from '@/lib/memories/client/api';
+import { checkMemoriesSchedule } from '@/lib/memories/client/schedule-check';
+import {
+	formFromCandidate,
+	projectMemoriesCommitment,
+	type MemorySpaceCommitment,
+	type MemorySpaceFormState,
+} from '@/lib/memories/client/space-form';
 
-export type MemorySpaceFormState = {
-	eventId: string;
-	eventTitle: string;
-	publicSlug: string;
-	timeZone: string;
-	uploadStartsLocal: string;
-	uploadEndsLocal: string;
-	retentionEndsLocal: string;
-	entitlement: MemoriesEntitlement;
-	limits: MemoriesSpaceLimits;
-};
-
-/** Zones used by current clients; any other stored zone is kept as an extra option. */
-const COMMON_TIME_ZONES = [
-	'America/Mexico_City',
-	'America/Mazatlan',
-	'America/Tijuana',
-	'America/Hermosillo',
-	'America/Chihuahua',
-	'America/Monterrey',
-	'America/Cancun',
-];
-
-const PROFILE_LABEL: Record<MemoriesLimitProfile, string> = {
-	standard: copy.profileStandard,
-	extended: copy.profileExtended,
-};
-
-export function formFromCandidate(candidate: AdminSpaceCandidate): MemorySpaceFormState {
-	return {
-		eventId: candidate.eventId,
-		eventTitle: candidate.eventTitle,
-		publicSlug: candidate.defaults.publicSlug,
-		timeZone: candidate.defaults.timeZone,
-		uploadStartsLocal: candidate.defaults.uploadStartsLocal,
-		uploadEndsLocal: candidate.defaults.uploadEndsLocal,
-		retentionEndsLocal: candidate.defaults.retentionEndsLocal,
-		entitlement: 'addon',
-		limits: { ...candidate.defaults.limits },
-	};
-}
-
-function toLocalInput(iso: string, timeZone: string): string {
-	try {
-		const parts = new Intl.DateTimeFormat('en-CA', {
-			timeZone,
-			year: 'numeric',
-			month: '2-digit',
-			day: '2-digit',
-			hour: '2-digit',
-			minute: '2-digit',
-			hourCycle: 'h23',
-		}).formatToParts(new Date(iso));
-		const part = (type: string) => parts.find((entry) => entry.type === type)?.value ?? '00';
-		return `${part('year')}-${part('month')}-${part('day')}T${part('hour')}:${part('minute')}`;
-	} catch {
-		return iso.slice(0, 16);
-	}
-}
-
-export function formFromSpace(space: MemoriesSpaceRecord): MemorySpaceFormState {
-	return {
-		eventId: space.eventId,
-		eventTitle: space.eventTitle,
-		publicSlug: space.publicSlug,
-		timeZone: space.timeZone,
-		uploadStartsLocal: toLocalInput(space.uploadStartsAt, space.timeZone),
-		uploadEndsLocal: toLocalInput(space.uploadEndsAt, space.timeZone),
-		retentionEndsLocal: toLocalInput(space.retentionEndsAt, space.timeZone),
-		entitlement: space.entitlement,
-		limits: {
-			maxEventObjects: space.maxEventObjects,
-			maxEventBytes: space.maxEventBytes,
-			maxSessionFiles: space.maxSessionFiles,
-			maxSessionVideos: space.maxSessionVideos,
-			maxSessionBytes: space.maxSessionBytes,
-		},
-	};
-}
-
-function matchProfile(limits: MemoriesSpaceLimits): MemoriesLimitProfile | 'custom' {
-	const entries = Object.entries(MEMORIES_LIMIT_PROFILES) as Array<
-		[MemoriesLimitProfile, MemoriesSpaceLimits]
-	>;
-	const match = entries.find(([, preset]) =>
-		(Object.keys(preset) as Array<keyof MemoriesSpaceLimits>).every(
-			(key) => preset[key] === limits[key],
-		),
-	);
-	return match ? match[0] : 'custom';
-}
+const DIACRITICS = new RegExp('\\p{Diacritic}', 'gu');
 
 function normalizeSearch(value: string): string {
-	return value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+	return value.normalize('NFD').replace(DIACRITICS, '').toLowerCase().trim();
 }
 
 interface PickerProps {
@@ -170,7 +77,11 @@ function CandidatePicker({ candidates, today, onPick }: PickerProps) {
 							onClick={() => onPick(candidate)}
 						>
 							<span>{candidate.eventTitle}</span>
-							<small>{candidate.eventDate ?? 'Fecha sin definir'}</small>
+							<small>
+								{candidate.eventDate
+									? formatMemoriesEventDate(candidate.eventDate)
+									: copy.pickerNoDate}
+							</small>
 						</button>
 					</li>
 				))}
@@ -184,10 +95,83 @@ function CandidatePicker({ candidates, today, onPick }: PickerProps) {
 	);
 }
 
+interface FormProps {
+	form: MemorySpaceFormState;
+	mode: 'create' | 'edit';
+	formId: string;
+	commitment: MemorySpaceCommitment;
+	acknowledged: boolean;
+	error: string | null;
+	onChange: (patch: Partial<MemorySpaceFormState>) => void;
+	onAcknowledge: (value: boolean) => void;
+	onSubmit: () => void;
+}
+
+function SpaceForm({
+	form,
+	mode,
+	formId,
+	commitment,
+	acknowledged,
+	error,
+	onChange,
+	onAcknowledge,
+	onSubmit,
+}: FormProps) {
+	const idFor = (name: string) => `${formId}-${name}`;
+	const submit = (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		onSubmit();
+	};
+	return (
+		<form id={formId} className="memories-form" onSubmit={submit}>
+			<MemoryScheduleFieldset
+				form={form}
+				schedule={checkMemoriesSchedule(form)}
+				slugLocked={mode === 'edit'}
+				idFor={idFor}
+				onChange={onChange}
+			/>
+			<MemoryPlanFieldset
+				form={form}
+				projectedBytes={projectMemoriesCommitment(commitment, form.limits.maxEventBytes)}
+				acknowledged={acknowledged}
+				idFor={idFor}
+				onChange={onChange}
+				onAcknowledge={onAcknowledge}
+			/>
+			<MemoryNoteFieldset form={form} idFor={idFor} onChange={onChange} />
+			{error ? (
+				<p className="dashboard-error" role="alert">
+					{error}
+				</p>
+			) : null}
+		</form>
+	);
+}
+
+/** A save needs a valid schedule and, past the free tier, an explicit acknowledgement. */
+function canSubmitForm(
+	form: MemorySpaceFormState,
+	commitment: MemorySpaceCommitment,
+	acknowledged: boolean,
+): boolean {
+	const over =
+		projectMemoriesCommitment(commitment, form.limits.maxEventBytes) >
+		CLOUDFLARE_FREE_TIER.r2StorageBytes;
+	return checkMemoriesSchedule(form).valid && (!over || acknowledged);
+}
+
+function submitLabel(mode: 'create' | 'edit', busy: boolean): string {
+	if (busy) return copy.saving;
+	return mode === 'create' ? copy.submitCreate : copy.submitEdit;
+}
+
 interface Props {
 	mode: 'create' | 'edit';
 	candidates: AdminSpaceCandidate[];
 	initial: MemorySpaceFormState | null;
+	commitment: MemorySpaceCommitment;
 	busy: boolean;
 	error: string | null;
 	onSubmit: (form: MemorySpaceFormState) => void;
@@ -198,32 +182,17 @@ export default function MemorySpaceFormModal({
 	mode,
 	candidates,
 	initial,
+	commitment,
 	busy,
 	error,
 	onSubmit,
 	onClose,
 }: Props) {
 	const [form, setForm] = useState<MemorySpaceFormState | null>(initial);
+	const [acknowledged, setAcknowledged] = useState(false);
 	const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
-	const fieldId = useId();
-	const id = (name: string) => `${fieldId}-${name}`;
-
-	const submit = (event: FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-		if (form) onSubmit(form);
-	};
-
-	const setLimit = (key: keyof MemoriesSpaceLimits, value: number) =>
-		setForm((current) =>
-			current ? { ...current, limits: { ...current.limits, [key]: value } } : current,
-		);
-
-	const title = mode === 'create' ? copy.createTitle : copy.editTitle;
-	const profile = form ? matchProfile(form.limits) : 'custom';
-	const timeZones =
-		form && !COMMON_TIME_ZONES.includes(form.timeZone)
-			? [form.timeZone, ...COMMON_TIME_ZONES]
-			: COMMON_TIME_ZONES;
+	const formId = useId();
+	const canSubmit = form !== null && canSubmitForm(form, commitment, acknowledged);
 
 	const footer = form ? (
 		<>
@@ -240,284 +209,51 @@ export default function MemorySpaceFormModal({
 			<button type="button" className="btn-secondary" disabled={busy} onClick={onClose}>
 				{copy.cancel}
 			</button>
-			<button type="submit" form={id('form')} className="btn-primary" disabled={busy}>
-				{busy ? copy.saving : mode === 'create' ? copy.submitCreate : copy.submitEdit}
+			<button
+				type="submit"
+				form={formId}
+				className="btn-primary"
+				disabled={busy || !canSubmit}
+			>
+				{submitLabel(mode, busy)}
 			</button>
 		</>
 	) : undefined;
 
+	const subtitle = form?.eventDate
+		? copy.eventOn(form.eventTitle, formatMemoriesEventDate(form.eventDate))
+		: form?.eventTitle;
+
 	return (
 		<ModalShell
-			title={title}
-			subtitle={form?.eventTitle}
+			title={mode === 'create' ? copy.createTitle : copy.editTitle}
+			subtitle={subtitle}
 			onClose={onClose}
 			disableClose={busy}
 			size="lg"
 			footer={footer}
 		>
 			<div className="dashboard-modal__content">
-				{!form ? (
+				{form ? (
+					<SpaceForm
+						form={form}
+						mode={mode}
+						formId={formId}
+						commitment={commitment}
+						acknowledged={acknowledged}
+						error={error}
+						onChange={(patch) => setForm({ ...form, ...patch })}
+						onAcknowledge={setAcknowledged}
+						onSubmit={() => {
+							if (canSubmit) onSubmit(form);
+						}}
+					/>
+				) : (
 					<CandidatePicker
 						candidates={candidates}
 						today={today}
 						onPick={(candidate) => setForm(formFromCandidate(candidate))}
 					/>
-				) : (
-					<form id={id('form')} className="memories-form" onSubmit={submit}>
-						<fieldset>
-							<legend>{copy.windowSection}</legend>
-							<div className="dashboard-form-grid">
-								<div className="dashboard-form-field">
-									<label htmlFor={id('slug')}>{copy.slug}</label>
-									<input
-										id={id('slug')}
-										value={form.publicSlug}
-										disabled={mode === 'edit'}
-										onChange={(event) =>
-											setForm({ ...form, publicSlug: event.target.value })
-										}
-									/>
-									<small className="dashboard-form-help">
-										{buildMemoriesPublicUrl(form.publicSlug || '…')}
-										{mode === 'create' ? ` · ${copy.slugHelp}` : null}
-									</small>
-								</div>
-								<div className="dashboard-form-field">
-									<label htmlFor={id('tz')}>{copy.timeZone}</label>
-									<select
-										id={id('tz')}
-										value={form.timeZone}
-										onChange={(event) =>
-											setForm({ ...form, timeZone: event.target.value })
-										}
-									>
-										{timeZones.map((zone) => (
-											<option key={zone} value={zone}>
-												{zone}
-											</option>
-										))}
-									</select>
-								</div>
-								<div className="dashboard-form-field">
-									<label htmlFor={id('starts')}>{copy.uploadStarts}</label>
-									<input
-										id={id('starts')}
-										type="datetime-local"
-										value={form.uploadStartsLocal}
-										onChange={(event) =>
-											setForm({
-												...form,
-												uploadStartsLocal: event.target.value,
-											})
-										}
-									/>
-								</div>
-								<div className="dashboard-form-field">
-									<label htmlFor={id('ends')}>{copy.uploadEnds}</label>
-									<input
-										id={id('ends')}
-										type="datetime-local"
-										value={form.uploadEndsLocal}
-										onChange={(event) =>
-											setForm({
-												...form,
-												uploadEndsLocal: event.target.value,
-											})
-										}
-									/>
-								</div>
-								<div className="dashboard-form-field">
-									<label htmlFor={id('retention')}>{copy.retentionEnds}</label>
-									<input
-										id={id('retention')}
-										type="datetime-local"
-										value={form.retentionEndsLocal}
-										onChange={(event) =>
-											setForm({
-												...form,
-												retentionEndsLocal: event.target.value,
-											})
-										}
-									/>
-									<small className="dashboard-form-help">
-										{copy.retentionHelp}
-									</small>
-								</div>
-							</div>
-						</fieldset>
-
-						<fieldset>
-							<legend>{copy.planSection}</legend>
-							<div className="dashboard-form-grid">
-								<div className="dashboard-form-field">
-									<label htmlFor={id('entitlement')}>{copy.entitlement}</label>
-									<select
-										id={id('entitlement')}
-										value={form.entitlement}
-										onChange={(event) =>
-											setForm({
-												...form,
-												entitlement: event.target
-													.value as MemoriesEntitlement,
-											})
-										}
-									>
-										{MEMORIES_ENTITLEMENTS.map((entitlement) => (
-											<option key={entitlement} value={entitlement}>
-												{MEMORIES_ENTITLEMENT_LABEL[entitlement]}
-											</option>
-										))}
-									</select>
-								</div>
-								<div className="dashboard-form-field">
-									<label htmlFor={id('profile')}>{copy.profile}</label>
-									<select
-										id={id('profile')}
-										value={profile}
-										onChange={(event) => {
-											const next = event.target.value;
-											if (next in MEMORIES_LIMIT_PROFILES) {
-												setForm({
-													...form,
-													limits: {
-														...MEMORIES_LIMIT_PROFILES[
-															next as MemoriesLimitProfile
-														],
-													},
-												});
-											}
-										}}
-									>
-										{(
-											Object.keys(
-												MEMORIES_LIMIT_PROFILES,
-											) as MemoriesLimitProfile[]
-										).map((key) => (
-											<option key={key} value={key}>
-												{PROFILE_LABEL[key]}
-											</option>
-										))}
-										<option value="custom" disabled={profile !== 'custom'}>
-											{copy.profileCustom}
-										</option>
-									</select>
-								</div>
-							</div>
-							<p className="dashboard-form-help">
-								{copy.limitsSummary({
-									eventStorage: formatMemoriesStorage(form.limits.maxEventBytes),
-									eventObjects: form.limits.maxEventObjects,
-									sessionFiles: form.limits.maxSessionFiles,
-									sessionVideos: form.limits.maxSessionVideos,
-									sessionStorage: formatMemoriesStorage(
-										form.limits.maxSessionBytes,
-									),
-								})}
-							</p>
-							<MemoriesCapacityExamples limits={form.limits} />
-							<details className="memories-form__custom" open={profile === 'custom'}>
-								<summary>{copy.customLimits}</summary>
-								<div className="dashboard-form-grid">
-									<div className="dashboard-form-field">
-										<label htmlFor={id('event-gb')}>{copy.maxEventBytes}</label>
-										<input
-											id={id('event-gb')}
-											type="number"
-											min={0.1}
-											step={0.1}
-											value={form.limits.maxEventBytes / MEMORIES_DECIMAL_GB}
-											onChange={(event) =>
-												setLimit(
-													'maxEventBytes',
-													Math.round(
-														Number(event.target.value) *
-															MEMORIES_DECIMAL_GB,
-													),
-												)
-											}
-										/>
-									</div>
-									<div className="dashboard-form-field">
-										<label htmlFor={id('event-objects')}>
-											{copy.maxEventObjects}
-										</label>
-										<input
-											id={id('event-objects')}
-											type="number"
-											min={1}
-											value={form.limits.maxEventObjects}
-											onChange={(event) =>
-												setLimit(
-													'maxEventObjects',
-													Number(event.target.value),
-												)
-											}
-										/>
-									</div>
-									<div className="dashboard-form-field">
-										<label htmlFor={id('session-files')}>
-											{copy.maxSessionFiles}
-										</label>
-										<input
-											id={id('session-files')}
-											type="number"
-											min={1}
-											value={form.limits.maxSessionFiles}
-											onChange={(event) =>
-												setLimit(
-													'maxSessionFiles',
-													Number(event.target.value),
-												)
-											}
-										/>
-									</div>
-									<div className="dashboard-form-field">
-										<label htmlFor={id('session-videos')}>
-											{copy.maxSessionVideos}
-										</label>
-										<input
-											id={id('session-videos')}
-											type="number"
-											min={0}
-											value={form.limits.maxSessionVideos}
-											onChange={(event) =>
-												setLimit(
-													'maxSessionVideos',
-													Number(event.target.value),
-												)
-											}
-										/>
-									</div>
-									<div className="dashboard-form-field">
-										<label htmlFor={id('session-mb')}>
-											{copy.maxSessionBytes}
-										</label>
-										<input
-											id={id('session-mb')}
-											type="number"
-											min={1}
-											value={Math.round(
-												form.limits.maxSessionBytes / MEMORIES_BINARY_MB,
-											)}
-											onChange={(event) =>
-												setLimit(
-													'maxSessionBytes',
-													Math.round(Number(event.target.value)) *
-														MEMORIES_BINARY_MB,
-												)
-											}
-										/>
-									</div>
-								</div>
-							</details>
-						</fieldset>
-
-						{error ? (
-							<p className="dashboard-error" role="alert">
-								{error}
-							</p>
-						) : null}
-					</form>
 				)}
 			</div>
 		</ModalShell>

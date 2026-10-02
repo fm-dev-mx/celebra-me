@@ -19,7 +19,9 @@ import type {
 	MemoriesSpaceRecord,
 } from '@/lib/memories/contract/catalog';
 import {
+	MEMORIES_ADMIN_NOTE_MAX_LENGTH,
 	MEMORIES_ENTITLEMENTS,
+	MEMORIES_EXPECTED_GUESTS_MAX,
 	MEMORIES_LIMIT_PROFILES,
 	MEMORIES_OBJECT_MAX_LIFETIME_DAYS,
 	type MemoriesSpaceLimits,
@@ -63,7 +65,19 @@ const scheduleSchema = z.object({
 	retentionEndsLocal: localDateTime,
 });
 
-const createSchema = scheduleSchema.extend({
+/** Blank notes are stored as NULL so "no note" has a single representation. */
+const planningSchema = z.object({
+	expectedGuests: z.number().int().min(1).max(MEMORIES_EXPECTED_GUESTS_MAX).nullable().optional(),
+	adminNote: z
+		.string()
+		.trim()
+		.max(MEMORIES_ADMIN_NOTE_MAX_LENGTH)
+		.transform((value) => (value === '' ? null : value))
+		.nullable()
+		.optional(),
+});
+
+const createSchema = scheduleSchema.extend(planningSchema.shape).extend({
 	eventId: z.string().uuid(),
 	publicSlug: z
 		.string()
@@ -75,11 +89,14 @@ const createSchema = scheduleSchema.extend({
 	enabled: z.boolean().default(true),
 });
 
-const updateSchema = scheduleSchema.partial().extend({
-	entitlement: z.enum(MEMORIES_ENTITLEMENTS).optional(),
-	limits: limitsSchema.optional(),
-	enabled: z.boolean().optional(),
-});
+const updateSchema = scheduleSchema
+	.partial()
+	.extend(planningSchema.shape)
+	.extend({
+		entitlement: z.enum(MEMORIES_ENTITLEMENTS).optional(),
+		limits: limitsSchema.optional(),
+		enabled: z.boolean().optional(),
+	});
 
 export type MemorySpaceCreateInput = z.input<typeof createSchema>;
 
@@ -174,7 +191,24 @@ function mapPersistenceError(error: unknown): never {
 export async function listMemorySpacesAdmin(
 	now = new Date(),
 ): Promise<{ items: MemoriesAdminSpaceItem[]; totals: MemoriesAdminTotals }> {
-	return listMemorySpacesWithUsage(await listAllMemorySpaces(), now);
+	const [spaces, events] = await Promise.all([listAllMemorySpaces(), listAllEventsService()]);
+	const invitationByEvent = new Map(events.map((event) => [event.id, event.invitationId]));
+	const dated = await Promise.all(
+		spaces.map(async (space) => ({
+			...space,
+			eventDate: await resolveEventDate(invitationByEvent.get(space.eventId), now),
+		})),
+	);
+	return listMemorySpacesWithUsage(dated, now);
+}
+
+async function resolveEventDate(
+	invitationId: string | null | undefined,
+	now: Date,
+): Promise<string | null> {
+	if (!invitationId) return null;
+	const published = await findPublishedByInvitationId(invitationId);
+	return resolveInvitationSchedule('client', published?.content, now).eventDate ?? null;
 }
 
 /**
@@ -241,6 +275,8 @@ export async function createMemorySpaceAdmin(
 			...schedule,
 			...input.limits,
 			entitlement: input.entitlement,
+			expectedGuests: input.expectedGuests ?? null,
+			adminNote: input.adminNote ?? null,
 			createdBy: adminUserId,
 		});
 	} catch (error) {
@@ -285,6 +321,8 @@ export async function updateMemorySpaceAdmin(
 		...(input.limits ?? {}),
 		...(input.entitlement !== undefined ? { entitlement: input.entitlement } : {}),
 		...(input.enabled !== undefined ? { enabled: input.enabled } : {}),
+		...(input.expectedGuests !== undefined ? { expectedGuests: input.expectedGuests } : {}),
+		...(input.adminNote !== undefined ? { adminNote: input.adminNote } : {}),
 	};
 	let updated: MemoriesSpaceRecord | null;
 	try {

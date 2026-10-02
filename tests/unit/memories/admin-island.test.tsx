@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import MemoriesAdmin from '@/components/dashboard/memories/MemoriesAdmin';
 import {
@@ -7,6 +7,7 @@ import {
 	type AdminSpaceCandidate,
 } from '@/lib/memories/client/api';
 import type { MemoriesAdminSpaceItem, MemoriesSpaceRecord } from '@/lib/memories/contract/catalog';
+import { MEMORIES_LIMIT_PROFILES } from '@/lib/memories/contract/limits';
 
 jest.mock('@/lib/memories/client/api', () => {
 	const actual = jest.requireActual<typeof import('@/lib/memories/client/api')>(
@@ -25,6 +26,7 @@ jest.mock('@/lib/memories/client/api', () => {
 });
 
 const adminApi = memoriesAdminApi as jest.Mocked<typeof memoriesAdminApi>;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const CANDIDATE: AdminSpaceCandidate = {
 	eventId: 'event-1',
@@ -34,17 +36,20 @@ const CANDIDATE: AdminSpaceCandidate = {
 	defaults: {
 		publicSlug: 'victoria-y-roberto',
 		timeZone: 'America/Mazatlan',
-		uploadStartsLocal: '2026-10-30T12:00',
-		uploadEndsLocal: '2026-11-01T23:59',
-		retentionEndsLocal: '2027-01-30T00:00',
-		limits: {
-			maxEventObjects: 2000,
-			maxEventBytes: 8_000_000_000,
-			maxSessionFiles: 20,
-			maxSessionVideos: 5,
-			maxSessionBytes: 512 * 1024 * 1024,
-		},
+		uploadStartsLocal: '2099-10-23T00:00',
+		uploadEndsLocal: '2099-11-07T00:00',
+		retentionEndsLocal: '2100-01-06T00:00',
+		limits: { ...MEMORIES_LIMIT_PROFILES.standard },
 	},
+};
+
+const PAST_CANDIDATE: AdminSpaceCandidate = {
+	...CANDIDATE,
+	eventId: 'event-past',
+	eventSlug: 'xv-de-leslie',
+	eventTitle: 'XV años de Leslie',
+	eventDate: '2020-05-01',
+	defaults: { ...CANDIDATE.defaults, publicSlug: 'xv-de-leslie' },
 };
 
 const OPEN_SPACE: MemoriesSpaceRecord = {
@@ -58,6 +63,8 @@ const OPEN_SPACE: MemoriesSpaceRecord = {
 	uploadEndsAt: '2099-01-01T06:00:00.000Z',
 	retentionEndsAt: '2099-06-01T06:00:00.000Z',
 	entitlement: 'package',
+	expectedGuests: null,
+	adminNote: null,
 	createdAt: '2020-01-01T00:00:00.000Z',
 	updatedAt: '2020-01-01T00:00:00.000Z',
 	maxEventObjects: 2000,
@@ -65,27 +72,6 @@ const OPEN_SPACE: MemoriesSpaceRecord = {
 	maxSessionFiles: 20,
 	maxSessionVideos: 5,
 	maxSessionBytes: 512 * 1024 * 1024,
-};
-
-function createdSpace(): MemoriesSpaceRecord {
-	return {
-		...OPEN_SPACE,
-		eventId: CANDIDATE.eventId,
-		eventSlug: CANDIDATE.eventSlug,
-		eventTitle: CANDIDATE.eventTitle,
-		publicSlug: CANDIDATE.defaults.publicSlug,
-		timeZone: CANDIDATE.defaults.timeZone,
-		entitlement: 'addon',
-	};
-}
-
-const PAST_CANDIDATE: AdminSpaceCandidate = {
-	...CANDIDATE,
-	eventId: 'event-past',
-	eventSlug: 'xv-de-leslie',
-	eventTitle: 'XV años de Leslie',
-	eventDate: '2020-05-01',
-	defaults: { ...CANDIDATE.defaults, publicSlug: 'xv-de-leslie' },
 };
 
 const EMPTY_USAGE: MemoriesAdminSpaceItem['usage'] = {
@@ -103,11 +89,49 @@ const EMPTY_USAGE: MemoriesAdminSpaceItem['usage'] = {
 function adminItem(
 	space: MemoriesSpaceRecord,
 	usage: Partial<MemoriesAdminSpaceItem['usage']> = {},
+	extra: Partial<Pick<MemoriesAdminSpaceItem, 'eventDate' | 'lastHostDownloadAt'>> = {},
 ): MemoriesAdminSpaceItem {
-	return { ...space, usage: { ...EMPTY_USAGE, ...usage } };
+	return {
+		...space,
+		usage: { ...EMPTY_USAGE, ...usage },
+		eventDate: null,
+		lastHostDownloadAt: null,
+		...extra,
+	};
 }
 
-const TOTALS = { residentBytes: 0, committedBytes: 8_000_000_000 };
+function createdSpace(): MemoriesSpaceRecord {
+	return {
+		...OPEN_SPACE,
+		...MEMORIES_LIMIT_PROFILES.standard,
+		eventId: CANDIDATE.eventId,
+		eventSlug: CANDIDATE.eventSlug,
+		eventTitle: CANDIDATE.eventTitle,
+		publicSlug: CANDIDATE.defaults.publicSlug,
+		timeZone: CANDIDATE.defaults.timeZone,
+		entitlement: 'addon',
+	};
+}
+
+/** A closed space whose retention ends in `days`, so the deletion warning applies. */
+function closingSpace(days: number): MemoriesSpaceRecord {
+	const now = Date.now();
+	return {
+		...OPEN_SPACE,
+		uploadStartsAt: new Date(now - 60 * DAY_MS).toISOString(),
+		uploadEndsAt: new Date(now - 40 * DAY_MS).toISOString(),
+		retentionEndsAt: new Date(now + days * DAY_MS - 60_000).toISOString(),
+	};
+}
+
+const NO_COMMITMENT = { residentBytes: 0, committedBytes: 0 };
+
+async function openFormFor(user: ReturnType<typeof userEvent.setup>, title: RegExp) {
+	await user.click(await screen.findByRole('button', { name: 'Activar evento' }));
+	const dialog = await screen.findByRole('dialog');
+	await user.click(await within(dialog).findByRole('button', { name: title }));
+	return within(dialog);
+}
 
 describe('MemoriesAdmin island', () => {
 	beforeEach(() => {
@@ -118,17 +142,17 @@ describe('MemoriesAdmin island', () => {
 		adminApi.platformUsage.mockResolvedValue({ kind: 'unconfigured' });
 	});
 
-	it('activates a space from the event picker with the prefilled window and plan', async () => {
+	it('activates a space from the event picker with the planning inputs', async () => {
 		const user = userEvent.setup();
 		adminApi.list
 			.mockResolvedValueOnce({
 				items: [],
-				totals: TOTALS,
+				totals: NO_COMMITMENT,
 				candidates: [CANDIDATE, PAST_CANDIDATE],
 			})
 			.mockResolvedValueOnce({
 				items: [adminItem(createdSpace())],
-				totals: TOTALS,
+				totals: NO_COMMITMENT,
 				candidates: [],
 			});
 		adminApi.create.mockResolvedValue(createdSpace());
@@ -136,51 +160,54 @@ describe('MemoriesAdmin island', () => {
 		render(<MemoriesAdmin />);
 
 		await user.click(await screen.findByRole('button', { name: 'Activar evento' }));
-		const dialog = await screen.findByRole('dialog');
-		expect(within(dialog).queryByText('XV años de Leslie')).not.toBeInTheDocument();
-		await user.click(
-			within(dialog).getByRole('button', { name: /Mostrar eventos anteriores/ }),
-		);
-		expect(within(dialog).getByText('XV años de Leslie')).toBeInTheDocument();
+		const dialog = within(await screen.findByRole('dialog'));
+		expect(dialog.queryByText('XV años de Leslie')).not.toBeInTheDocument();
+		await user.click(dialog.getByRole('button', { name: /Mostrar eventos anteriores/ }));
+		expect(dialog.getByText('XV años de Leslie')).toBeInTheDocument();
 
-		await user.type(within(dialog).getByLabelText('Buscar evento publicado'), 'victoria');
-		expect(within(dialog).queryByText('XV años de Leslie')).not.toBeInTheDocument();
-		await user.click(
-			within(dialog).getByRole('button', { name: /Boda de Victoria y Roberto/ }),
-		);
+		await user.type(dialog.getByLabelText('Buscar evento publicado'), 'victoria');
+		expect(dialog.queryByText('XV años de Leslie')).not.toBeInTheDocument();
+		await user.click(dialog.getByRole('button', { name: /Boda de Victoria y Roberto/ }));
 
-		expect(within(dialog).getByLabelText('Slug público')).toHaveValue('victoria-y-roberto');
-		expect(within(dialog).getByLabelText('Zona horaria')).toHaveValue('America/Mazatlan');
-		expect(within(dialog).getByLabelText('Apertura de carga')).toHaveValue('2026-10-30T12:00');
-		expect(within(dialog).getByLabelText('Cierre de carga')).toHaveValue('2026-11-01T23:59');
-		expect(within(dialog).getByLabelText('Fin de retención')).toHaveValue('2027-01-30T00:00');
-		expect(within(dialog).getByLabelText('Origen comercial')).toHaveValue('addon');
-		expect(within(dialog).getByLabelText('Perfil de cupo')).toHaveValue('standard');
-		expect(within(dialog).getByLabelText('Almacenamiento del evento (GB)')).toHaveValue(8);
-		expect(within(dialog).getByLabelText('Almacenamiento por invitado (MB)')).toHaveValue(512);
 		expect(
-			within(dialog).getByText(/https:\/\/celebra-me\.com\/r\/victoria-y-roberto/),
+			dialog.getByText('Boda de Victoria y Roberto · 30 de octubre de 2099'),
 		).toBeInTheDocument();
+		expect(dialog.getByLabelText('Slug público')).toHaveValue('victoria-y-roberto');
+		expect(dialog.getByLabelText('Zona horaria')).toHaveValue('America/Mazatlan');
+		expect(dialog.getByLabelText('Apertura de carga')).toHaveValue('2099-10-23T00:00');
+		expect(dialog.getByLabelText('Origen comercial')).toHaveValue('addon');
+		expect(dialog.getByLabelText('Perfil de cupo')).toHaveValue('standard');
+		expect(dialog.getByLabelText('Almacenamiento del evento (GB)')).toHaveValue(5);
+		expect(dialog.getByLabelText('Almacenamiento por invitado (MB)')).toHaveValue(300);
+		expect(
+			dialog.getByText(/Abre 7 días antes del evento y cierra 8 días después\./),
+		).toBeInTheDocument();
+		expect(dialog.getByText(/se conservan 75 días desde la apertura/)).toBeInTheDocument();
+		expect(dialog.getByText(/cada video: hasta 60 s y 80 MB/)).toBeInTheDocument();
+		expect(dialog.getByText(/quedarían comprometidos 5 GB de los 10 GB/)).toBeInTheDocument();
+		expect(dialog.queryByRole('checkbox')).not.toBeInTheDocument();
 
-		await user.click(within(dialog).getByRole('button', { name: 'Activar espacio' }));
+		await user.type(dialog.getByLabelText('Invitados esperados (opcional)'), '150');
+		expect(
+			dialog.getByText(/alcanza para unos 100 invitados con uso típico y usted espera 150/),
+		).toBeInTheDocument();
+		await user.type(dialog.getByLabelText('Nota'), 'Pago sintético 001');
+
+		await user.click(dialog.getByRole('button', { name: 'Activar espacio' }));
 
 		await waitFor(() => expect(adminApi.create).toHaveBeenCalledTimes(1));
 		expect(adminApi.create).toHaveBeenCalledWith({
 			eventId: 'event-1',
 			publicSlug: 'victoria-y-roberto',
 			timeZone: 'America/Mazatlan',
-			uploadStartsLocal: '2026-10-30T12:00',
-			uploadEndsLocal: '2026-11-01T23:59',
-			retentionEndsLocal: '2027-01-30T00:00',
+			uploadStartsLocal: '2099-10-23T00:00',
+			uploadEndsLocal: '2099-11-07T00:00',
+			retentionEndsLocal: '2100-01-06T00:00',
 			entitlement: 'addon',
 			enabled: true,
-			limits: {
-				maxEventObjects: 2000,
-				maxEventBytes: 8_000_000_000,
-				maxSessionFiles: 20,
-				maxSessionVideos: 5,
-				maxSessionBytes: 512 * 1024 * 1024,
-			},
+			limits: { ...MEMORIES_LIMIT_PROFILES.standard },
+			expectedGuests: 150,
+			adminNote: 'Pago sintético 001',
 		});
 		expect(
 			await screen.findByText(
@@ -191,21 +218,80 @@ describe('MemoriesAdmin island', () => {
 		expect(adminApi.list).toHaveBeenCalledTimes(2);
 	});
 
+	it('requires an acknowledgement before committing past the free storage', async () => {
+		const user = userEvent.setup();
+		adminApi.list.mockResolvedValue({
+			items: [adminItem(OPEN_SPACE)],
+			totals: { residentBytes: 0, committedBytes: 8_000_000_000 },
+			candidates: [CANDIDATE],
+		});
+		adminApi.create.mockResolvedValue(createdSpace());
+
+		render(<MemoriesAdmin />);
+		const dialog = await openFormFor(user, /Boda de Victoria y Roberto/);
+
+		expect(dialog.getByText(/quedarían comprometidos 13 GB de los 10 GB/)).toBeInTheDocument();
+		const submit = dialog.getByRole('button', { name: 'Activar espacio' });
+		expect(submit).toBeDisabled();
+
+		await user.click(
+			dialog.getByLabelText('Entiendo que puede generar cargos de almacenamiento'),
+		);
+		expect(submit).toBeEnabled();
+		await user.click(submit);
+
+		await waitFor(() => expect(adminApi.create).toHaveBeenCalledTimes(1));
+	});
+
+	it('explains schedule problems next to the field and blocks the save', async () => {
+		const user = userEvent.setup();
+		adminApi.list.mockResolvedValue({
+			items: [],
+			totals: NO_COMMITMENT,
+			candidates: [CANDIDATE],
+		});
+
+		render(<MemoriesAdmin />);
+		const dialog = await openFormFor(user, /Boda de Victoria y Roberto/);
+		const submit = dialog.getByRole('button', { name: 'Activar espacio' });
+
+		fireEvent.change(dialog.getByLabelText('Fin de retención'), {
+			target: { value: '2100-06-01T00:00' },
+		});
+		expect(
+			dialog.getByText('La retención no puede superar 150 días desde la apertura.'),
+		).toBeInTheDocument();
+		expect(submit).toBeDisabled();
+
+		fireEvent.change(dialog.getByLabelText('Fin de retención'), {
+			target: { value: '2100-01-06T00:00' },
+		});
+		fireEvent.change(dialog.getByLabelText('Cierre de carga'), {
+			target: { value: '2099-10-22T00:00' },
+		});
+		expect(dialog.getByText('El cierre debe ser posterior a la apertura.')).toBeInTheDocument();
+		expect(submit).toBeDisabled();
+		expect(adminApi.create).not.toHaveBeenCalled();
+	});
+
 	it('shows each space with its state, usage and QR, and pauses only after confirmation', async () => {
 		const user = userEvent.setup();
 		adminApi.list.mockResolvedValue({
 			items: [
-				adminItem(OPEN_SPACE, {
-					photos: 40,
-					videos: 6,
-					guestsWithUploads: 12,
-					sessions: 15,
-					residentBytes: 2_000_000_000,
-					residentObjects: 46,
-					rejected: 2,
-				}),
+				adminItem(
+					{ ...OPEN_SPACE, expectedGuests: 150, adminNote: 'Pago sintético 001' },
+					{
+						photos: 40,
+						videos: 6,
+						guestsWithUploads: 12,
+						sessions: 15,
+						residentBytes: 2_000_000_000,
+						residentObjects: 46,
+						rejected: 2,
+					},
+				),
 			],
-			totals: TOTALS,
+			totals: NO_COMMITMENT,
 			candidates: [],
 		});
 		adminApi.update.mockResolvedValue({ ...OPEN_SPACE, enabled: false });
@@ -219,6 +305,10 @@ describe('MemoriesAdmin island', () => {
 		expect(card.getByText(/de 15 registrados/)).toBeInTheDocument();
 		expect(card.getByText('2 GB')).toBeInTheDocument();
 		expect(card.getByText(/2 rechazados/)).toBeInTheDocument();
+		expect(card.getByText(/12 de 150 invitados esperados/)).toBeInTheDocument();
+		expect(card.getByText(/El anfitrión aún no descarga/)).toBeInTheDocument();
+		expect(card.getByText('Pago sintético 001')).toBeInTheDocument();
+		expect(card.queryByRole('alert')).not.toBeInTheDocument();
 		expect(card.getByRole('link', { name: 'Descargar QR: XV de Sofía' })).toHaveAttribute(
 			'href',
 			'/api/dashboard/admin/memories/event-2/qr',
@@ -238,22 +328,94 @@ describe('MemoriesAdmin island', () => {
 		await waitFor(() => expect(adminApi.list).toHaveBeenCalledTimes(2));
 	});
 
-	it('keeps the form open with the conflict message when activation returns 409', async () => {
-		const user = userEvent.setup();
-		adminApi.list.mockResolvedValue({ items: [], totals: TOTALS, candidates: [CANDIDATE] });
-		adminApi.create.mockRejectedValue(new MemoriesRequestError(409, 'conflict'));
+	it('flags spaces about to be deleted whose host never downloaded, and lists them first', async () => {
+		adminApi.list.mockResolvedValue({
+			items: [
+				adminItem(OPEN_SPACE),
+				adminItem(
+					{ ...closingSpace(5), eventId: 'event-3', eventTitle: 'Boda sin descargar' },
+					{ photos: 3 },
+				),
+				adminItem(
+					{ ...closingSpace(5), eventId: 'event-4', eventTitle: 'Boda ya descargada' },
+					{ photos: 3 },
+					{ lastHostDownloadAt: '2026-11-10T18:00:00.000Z' },
+				),
+			],
+			totals: NO_COMMITMENT,
+			candidates: [],
+		});
 
 		render(<MemoriesAdmin />);
 
-		await user.click(await screen.findByRole('button', { name: 'Activar evento' }));
-		await user.click(await screen.findByRole('button', { name: /Boda de Victoria y Roberto/ }));
-		await user.click(screen.getByRole('button', { name: 'Activar espacio' }));
+		const pending = within(await screen.findByRole('article', { name: 'Boda sin descargar' }));
+		expect(pending.getByRole('alert')).toHaveTextContent('Se borra en 5 días · sin descargar');
+		const downloaded = within(screen.getByRole('article', { name: 'Boda ya descargada' }));
+		expect(downloaded.queryByRole('alert')).not.toBeInTheDocument();
+		expect(downloaded.getByText(/El anfitrión descargó por última vez/)).toBeInTheDocument();
+		expect(
+			screen.getByText(/1 espacio se borra pronto y su anfitrión aún no descarga/),
+		).toBeInTheDocument();
+		expect(screen.getAllByRole('article')[0]).toHaveAccessibleName('Boda sin descargar');
+	});
+
+	it('keeps the form open with the conflict message when activation returns 409', async () => {
+		const user = userEvent.setup();
+		adminApi.list.mockResolvedValue({
+			items: [],
+			totals: NO_COMMITMENT,
+			candidates: [CANDIDATE],
+		});
+		adminApi.create.mockRejectedValue(new MemoriesRequestError(409, 'conflict'));
+
+		render(<MemoriesAdmin />);
+		const dialog = await openFormFor(user, /Boda de Victoria y Roberto/);
+		await user.click(dialog.getByRole('button', { name: 'Activar espacio' }));
 
 		expect(
 			await screen.findByText('El evento ya tiene recuerdos o el slug público está en uso.'),
 		).toBeInTheDocument();
 		expect(adminApi.list).toHaveBeenCalledTimes(1);
 		expect(screen.getByLabelText('Slug público')).toHaveValue('victoria-y-roberto');
+	});
+
+	it('edits a space with its stored planning inputs and can clear them', async () => {
+		const user = userEvent.setup();
+		const stored = {
+			...OPEN_SPACE,
+			uploadStartsAt: '2099-01-01T06:00:00.000Z',
+			uploadEndsAt: '2099-01-15T06:00:00.000Z',
+			retentionEndsAt: '2099-03-01T06:00:00.000Z',
+			expectedGuests: 150,
+			adminNote: 'Pago sintético 001',
+		};
+		adminApi.list.mockResolvedValue({
+			items: [adminItem(stored, {}, { eventDate: '2099-01-08' })],
+			totals: { residentBytes: 0, committedBytes: 8_000_000_000 },
+			candidates: [],
+		});
+		adminApi.update.mockResolvedValue(stored);
+
+		render(<MemoriesAdmin />);
+		const card = within(await screen.findByRole('article', { name: 'XV de Sofía' }));
+		await user.click(card.getByRole('button', { name: 'Editar' }));
+		const dialog = within(await screen.findByRole('dialog'));
+
+		expect(dialog.getByLabelText('Slug público')).toBeDisabled();
+		expect(dialog.getByLabelText('Invitados esperados (opcional)')).toHaveValue(150);
+		expect(dialog.getByLabelText('Nota')).toHaveValue('Pago sintético 001');
+		// Its own 8 GB is not counted twice against the allowance.
+		expect(dialog.getByText(/quedarían comprometidos 8 GB de los 10 GB/)).toBeInTheDocument();
+
+		await user.clear(dialog.getByLabelText('Invitados esperados (opcional)'));
+		await user.clear(dialog.getByLabelText('Nota'));
+		await user.click(dialog.getByRole('button', { name: 'Guardar cambios' }));
+
+		await waitFor(() => expect(adminApi.update).toHaveBeenCalledTimes(1));
+		expect(adminApi.update).toHaveBeenCalledWith(
+			'event-2',
+			expect.objectContaining({ expectedGuests: null, adminNote: null }),
+		);
 	});
 
 	it('falls back to the recorded storage and warns when commitments exceed the free tier', async () => {
@@ -275,7 +437,7 @@ describe('MemoriesAdmin island', () => {
 	});
 
 	it('renders live Cloudflare meters with their warning level', async () => {
-		adminApi.list.mockResolvedValue({ items: [], totals: TOTALS, candidates: [] });
+		adminApi.list.mockResolvedValue({ items: [], totals: NO_COMMITMENT, candidates: [] });
 		adminApi.platformUsage.mockResolvedValue({
 			kind: 'ok',
 			fetchedAt: '2026-10-24T12:00:00.000Z',

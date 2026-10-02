@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import type { MemoriesSpaceHostSummary } from '@/lib/memories/contract/catalog';
+import {
+	resolveMemoriesRetentionWarningDays,
+	type MemoriesSpaceHostSummary,
+} from '@/lib/memories/contract/catalog';
+import { MEMORIES_RETENTION_WARNING_DAYS } from '@/lib/memories/contract/limits';
 import { formatMemoriesDateTime } from '@/lib/memories/copy';
 import {
 	MEMORIES_WINDOW_BADGE,
@@ -38,6 +42,16 @@ export default function MemoriesHostSummary({ eventId, refreshKey }: Props) {
 	if (error) return <p className="dashboard-memories__error">{error}</p>;
 	if (!summary) return null;
 
+	// Only worth an alert when there is something left to download.
+	const deletionDays =
+		summary.photos + summary.videos > 0
+			? resolveMemoriesRetentionWarningDays(
+					summary,
+					new Date(),
+					MEMORIES_RETENTION_WARNING_DAYS,
+				)
+			: null;
+
 	const copyUrl = async () => {
 		try {
 			await navigator.clipboard.writeText(summary.publicUrl);
@@ -55,6 +69,11 @@ export default function MemoriesHostSummary({ eventId, refreshKey }: Props) {
 				</span>
 				<p>{buildMemoriesHostStatusCopy(summary)}</p>
 			</div>
+			{deletionDays !== null ? (
+				<p className="memories-host-summary__alert" role="alert">
+					{copy.deletionCountdown(deletionDays)}
+				</p>
+			) : null}
 			<dl className="memories-space__stats">
 				<div>
 					<dt>{copy.photos}</dt>

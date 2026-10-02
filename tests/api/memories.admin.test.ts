@@ -61,6 +61,8 @@ const adminSession: SessionContext = {
 
 const adminItem = {
 	...space,
+	eventDate: '2026-10-30',
+	lastHostDownloadAt: null,
 	usage: {
 		photos: 0,
 		videos: 0,

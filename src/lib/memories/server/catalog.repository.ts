@@ -455,6 +455,17 @@ export async function insertAudit(input: {
 	});
 }
 
+/** When a host last downloaded a file of the event; null if never. */
+export async function findLastOrganizerDownloadAt(eventId: string): Promise<string | null> {
+	const rows = await supabaseRestRequest<Array<{ created_at: string }>>({
+		pathWithQuery:
+			`${AUDIT}?select=created_at&event_id=eq.${encodeURIComponent(eventId)}` +
+			`&action=eq.download_requested&actor_type=eq.organizer&order=created_at.desc&limit=1`,
+		useServiceRole: true,
+	});
+	return rows[0]?.created_at ?? null;
+}
+
 export async function purgeAudit(cutoff: string): Promise<number> {
 	const count = await rpc<number>('purge_event_memory_audit', { p_cutoff: cutoff });
 	return Number(count) || 0;

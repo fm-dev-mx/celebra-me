@@ -1,9 +1,11 @@
 jest.mock('@/lib/memories/server/catalog.repository', () => ({
+	findLastOrganizerDownloadAt: jest.fn(),
 	listResidentMediaUsage: jest.fn(),
 	listSessionEventIds: jest.fn(),
 }));
 
 import {
+	findLastOrganizerDownloadAt,
 	listResidentMediaUsage,
 	listSessionEventIds,
 	type MediaUsageRow,
@@ -17,6 +19,13 @@ import { EVENT_ID, NOW, OTHER_SESSION_ID, SESSION_ID, buildSpace } from './fixtu
 
 const mockResident = listResidentMediaUsage as jest.MockedFunction<typeof listResidentMediaUsage>;
 const mockSessions = listSessionEventIds as jest.MockedFunction<typeof listSessionEventIds>;
+const mockLastDownload = findLastOrganizerDownloadAt as jest.MockedFunction<
+	typeof findLastOrganizerDownloadAt
+>;
+
+function dated(overrides: Parameters<typeof buildSpace>[0] = {}, eventDate: string | null = null) {
+	return { ...buildSpace(overrides), eventDate };
+}
 
 const OTHER_EVENT_ID = 'e0000000-0000-4000-8000-0000000000c2';
 
@@ -36,6 +45,7 @@ function row(overrides: Partial<MediaUsageRow>): MediaUsageRow {
 beforeEach(() => {
 	jest.clearAllMocks();
 	mockSessions.mockResolvedValue([EVENT_ID, EVENT_ID, EVENT_ID]);
+	mockLastDownload.mockResolvedValue(null);
 	mockResident.mockResolvedValue([
 		row({ size_bytes: 3_000 }),
 		row({ mime_type: 'video/mp4', accepted_at: '2026-10-25T09:00:00.000Z' }),
@@ -83,8 +93,8 @@ describe('summarizeMemorySpaceUsage', () => {
 
 describe('listMemorySpacesWithUsage', () => {
 	it('commits the full quota only for spaces that can still receive uploads', async () => {
-		const open = buildSpace();
-		const paused = buildSpace({ eventId: OTHER_EVENT_ID, enabled: false });
+		const open = dated();
+		const paused = dated({ eventId: OTHER_EVENT_ID, enabled: false });
 		mockResident.mockResolvedValue([row({ event_id: OTHER_EVENT_ID, size_bytes: 5_000 })]);
 		mockSessions.mockResolvedValue([]);
 
@@ -98,7 +108,7 @@ describe('listMemorySpacesWithUsage', () => {
 	});
 
 	it('never exposes session ids or guest identity in the admin projection', async () => {
-		const { items } = await listMemorySpacesWithUsage([buildSpace()], NOW);
+		const { items } = await listMemorySpacesWithUsage([dated()], NOW);
 		const serialized = JSON.stringify(items);
 
 		expect(serialized).not.toContain(SESSION_ID);
@@ -115,6 +125,29 @@ describe('listMemorySpacesWithUsage', () => {
 				'videos',
 			].sort(),
 		);
+	});
+});
+
+describe('host download evidence', () => {
+	it('reports the latest host download and the event date of each live space', async () => {
+		mockLastDownload.mockResolvedValue('2026-11-10T18:00:00.000Z');
+
+		const { items } = await listMemorySpacesWithUsage([dated({}, '2026-10-30')], NOW);
+
+		expect(mockLastDownload).toHaveBeenCalledWith(EVENT_ID);
+		expect(items[0]).toMatchObject({
+			eventDate: '2026-10-30',
+			lastHostDownloadAt: '2026-11-10T18:00:00.000Z',
+		});
+	});
+
+	it('does not read the audit trail of an expired space', async () => {
+		const expired = dated({ retentionEndsAt: '2026-10-20T07:00:00.000Z' });
+
+		const { items } = await listMemorySpacesWithUsage([expired], NOW);
+
+		expect(mockLastDownload).not.toHaveBeenCalled();
+		expect(items[0].lastHostDownloadAt).toBeNull();
 	});
 });
 

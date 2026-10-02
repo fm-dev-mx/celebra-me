@@ -208,6 +208,10 @@ export interface MemoriesSpaceRecord extends MemoriesSpaceLimits {
 	uploadEndsAt: string;
 	retentionEndsAt: string;
 	entitlement: MemoriesEntitlement;
+	/** Planning input for capacity estimates. Administrator-only. */
+	expectedGuests: number | null;
+	/** Free-text internal note. Administrator-only; never audited or sent to hosts. */
+	adminNote: string | null;
 	createdAt: string;
 	updatedAt: string;
 }
@@ -230,6 +234,10 @@ export interface MemoriesSpaceAdminUsage {
 
 export interface MemoriesAdminSpaceItem extends MemoriesSpaceRecord {
 	usage: MemoriesSpaceAdminUsage;
+	/** Local event date from the published invitation, when readable. */
+	eventDate: string | null;
+	/** Latest file download by a host; proves a download happened, not that it was complete. */
+	lastHostDownloadAt: string | null;
 }
 
 export interface MemoriesAdminTotals {
@@ -267,6 +275,21 @@ export type MemoriesPlatformUsage =
 	  }
 	| { kind: 'unconfigured' }
 	| { kind: 'unavailable' };
+
+/**
+ * Whole days until retention ends while the deletion warning applies, else null.
+ * Shared by both dashboards so the countdown reads the same for admin and host.
+ */
+export function resolveMemoriesRetentionWarningDays(
+	space: { retentionEndsAt: string },
+	now: Date,
+	warningDays: number,
+): number | null {
+	const remainingMs = Date.parse(space.retentionEndsAt) - now.getTime();
+	if (!(remainingMs > 0)) return null;
+	const days = Math.ceil(remainingMs / (24 * 60 * 60 * 1000));
+	return days <= warningDays ? days : null;
+}
 
 export function resolveMemoriesWindowState(
 	space: {

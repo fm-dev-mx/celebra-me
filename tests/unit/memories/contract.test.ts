@@ -310,11 +310,21 @@ describe('media status transitions', () => {
 describe('limit profiles', () => {
 	it('pins the standard profile', () => {
 		expect(MEMORIES_LIMIT_PROFILES.standard).toEqual({
-			maxEventObjects: 2000,
-			maxEventBytes: 8000000000,
-			maxSessionFiles: 20,
-			maxSessionVideos: 5,
-			maxSessionBytes: 536870912,
+			maxEventObjects: 1500,
+			maxEventBytes: 5000000000,
+			maxSessionFiles: 15,
+			maxSessionVideos: 3,
+			maxSessionBytes: 314572800,
+		});
+	});
+
+	it('pins the extended profile at twice the standard one', () => {
+		expect(MEMORIES_LIMIT_PROFILES.extended).toEqual({
+			maxEventObjects: 3000,
+			maxEventBytes: 10000000000,
+			maxSessionFiles: 30,
+			maxSessionVideos: 6,
+			maxSessionBytes: 629145600,
 		});
 	});
 });

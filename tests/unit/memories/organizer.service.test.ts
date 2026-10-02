@@ -172,7 +172,7 @@ describe('listOrganizerMemoryItems', () => {
 	});
 
 	it('derives the maximum page from the event object quota', () => {
-		expect(organizerMaxPage(space)).toBe(39);
+		expect(organizerMaxPage(space)).toBe(29);
 		expect(organizerMaxPage(buildSpace({ maxEventObjects: 50 }))).toBe(0);
 		expect(organizerMaxPage(buildSpace({ maxEventObjects: 51 }))).toBe(1);
 	});

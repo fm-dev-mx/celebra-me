@@ -1,19 +1,23 @@
-import { estimateMemoriesCapacity } from '@/lib/memories/contract/capacity';
+import {
+	committedMemoriesBytes,
+	estimateMemoriesCapacity,
+	estimateMemoriesGuestFit,
+} from '@/lib/memories/contract/capacity';
 import { MEMORIES_LIMIT_PROFILES } from '@/lib/memories/contract/limits';
 
 describe('estimateMemoriesCapacity', () => {
 	it('reads the standard profile as photos, videos and guests', () => {
 		expect(estimateMemoriesCapacity(MEMORIES_LIMIT_PROFILES.standard)).toEqual({
-			// 8 GB would hold 4,000 reference photos; the 2,000-file limit stops it first.
-			photosOnly: 2_000,
+			// 5 GB would hold 2,500 reference photos; the 1,500-file limit stops it first.
+			photosOnly: 1_500,
 			photosBoundByFiles: true,
-			videosOnly: 200,
-			videosAtMaxSize: 95,
-			mixPhotos: 1_330,
-			mixVideos: 133,
-			guestPhotos: 15,
-			guestVideos: 5,
-			// 5 videos + 15 photos ≈ 230 MB per guest: storage, not files, is the bound.
+			videosOnly: 125,
+			videosAtMaxSize: 59,
+			mixPhotos: 830,
+			mixVideos: 83,
+			guestPhotos: 12,
+			guestVideos: 3,
+			// 3 videos + 12 photos ≈ 144 MB per guest: storage, not files, is the bound.
 			guestsAtFullAllowance: 34,
 		});
 	});
@@ -21,11 +25,11 @@ describe('estimateMemoriesCapacity', () => {
 	it('doubles with the extended profile except where a per-guest allowance grows too', () => {
 		const estimate = estimateMemoriesCapacity(MEMORIES_LIMIT_PROFILES.extended);
 		expect(estimate).toMatchObject({
-			photosOnly: 4_000,
-			videosOnly: 400,
-			mixVideos: 266,
-			guestPhotos: 30,
-			guestVideos: 10,
+			photosOnly: 3_000,
+			videosOnly: 250,
+			mixVideos: 166,
+			guestPhotos: 24,
+			guestVideos: 6,
 			guestsAtFullAllowance: 34,
 		});
 	});
@@ -49,5 +53,41 @@ describe('estimateMemoriesCapacity', () => {
 				maxSessionBytes: 0,
 			}),
 		).toMatchObject({ photosOnly: 0, videosOnly: 0, mixVideos: 0, guestsAtFullAllowance: 0 });
+	});
+});
+
+describe('estimateMemoriesGuestFit', () => {
+	it('flags a quota that is short for the expected attendance at typical use', () => {
+		// Typical guest: 5 photos + 1 video ≈ 50 MB, so 5 GB holds about 100 of them.
+		expect(estimateMemoriesGuestFit(MEMORIES_LIMIT_PROFILES.standard, 150)).toEqual({
+			filesPerGuest: 10,
+			bytesPerGuest: 33_333_333,
+			typicalGuestsSupported: 100,
+			shortForTypicalUse: true,
+		});
+	});
+
+	it('accepts an attendance the quota covers', () => {
+		expect(estimateMemoriesGuestFit(MEMORIES_LIMIT_PROFILES.standard, 80)).toMatchObject({
+			typicalGuestsSupported: 100,
+			shortForTypicalUse: false,
+		});
+	});
+
+	it('returns nothing without a usable guest count', () => {
+		expect(estimateMemoriesGuestFit(MEMORIES_LIMIT_PROFILES.standard, null)).toBeNull();
+		expect(estimateMemoriesGuestFit(MEMORIES_LIMIT_PROFILES.standard, 0)).toBeNull();
+		expect(estimateMemoriesGuestFit(MEMORIES_LIMIT_PROFILES.standard, 12.5)).toBeNull();
+	});
+});
+
+describe('committedMemoriesBytes', () => {
+	it('commits the whole quota only while the space can still receive uploads', () => {
+		expect(committedMemoriesBytes('before', 5_000, 0)).toBe(5_000);
+		expect(committedMemoriesBytes('open', 5_000, 1_200)).toBe(5_000);
+		expect(committedMemoriesBytes('open', 5_000, 6_000)).toBe(6_000);
+		expect(committedMemoriesBytes('closed', 5_000, 1_200)).toBe(1_200);
+		expect(committedMemoriesBytes('disabled', 5_000, 1_200)).toBe(1_200);
+		expect(committedMemoriesBytes('expired', 5_000, 0)).toBe(0);
 	});
 });

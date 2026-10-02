@@ -79,6 +79,15 @@ export function memoriesUsageLevel(ratio: number): MemoriesUsageLevel {
 	return 'normal';
 }
 
+/** `YYYY-MM-DD` event date as a long Spanish date; the raw value if unreadable. */
+export function formatMemoriesEventDate(eventDate: string): string {
+	const instant = Date.parse(`${eventDate}T00:00:00Z`);
+	if (Number.isNaN(instant)) return eventDate;
+	return new Intl.DateTimeFormat('es-MX', { dateStyle: 'long', timeZone: 'UTC' }).format(
+		new Date(instant),
+	);
+}
+
 export function pluralize(count: number, singular: string, plural: string): string {
 	return `${count.toLocaleString('es-MX')} ${count === 1 ? singular : plural}`;
 }
@@ -139,6 +148,16 @@ export const memoriesAdminCopy = {
 	retention: (date: string) => `Se conserva hasta ${date}`,
 	lastUpload: (date: string) => `Última subida: ${date}`,
 	noUploads: 'Sin subidas todavía',
+	expectedParticipation: (guests: number, expected: number) =>
+		`${guests.toLocaleString('es-MX')} de ${expected.toLocaleString('es-MX')} invitados esperados`,
+	hostDownloaded: (date: string) => `El anfitrión descargó por última vez: ${date}`,
+	hostNeverDownloaded: 'El anfitrión aún no descarga',
+	deletionSoon: (days: number) => `Se borra en ${pluralize(days, 'día', 'días')} · sin descargar`,
+	deletionNotice: (count: number) =>
+		count === 1
+			? '1 espacio se borra pronto y su anfitrión aún no descarga. Conviene avisarle.'
+			: `${count} espacios se borran pronto y sus anfitriones aún no descargan. Conviene avisarles.`,
+	noteLabel: 'Nota interna',
 	inFlight: (count: number) => pluralize(count, 'en proceso', 'en proceso'),
 	rejected: (count: number) => pluralize(count, 'rechazado', 'rechazados'),
 	pauseTitle: 'Pausar espacio de recuerdos',
@@ -161,6 +180,7 @@ export const memoriesFormCopy = {
 	pickerPlaceholder: 'Nombre del evento',
 	pickerEmpty: 'No hay eventos publicados pendientes de activar.',
 	pickerNoMatch: 'Ningún evento coincide con la búsqueda.',
+	pickerNoDate: 'Fecha sin definir',
 	showPast: (count: number) => `Mostrar eventos anteriores (${count})`,
 	choose: 'Configurar',
 	back: 'Elegir otro evento',
@@ -192,6 +212,31 @@ export const memoriesFormCopy = {
 		sessionStorage: string;
 	}) =>
 		`Hasta ${input.eventStorage} y ${input.eventObjects.toLocaleString('es-MX')} archivos; cada invitado sube hasta ${input.sessionFiles} archivos (${input.sessionVideos} videos, ${input.sessionStorage}).`,
+	eventOn: (title: string, date: string) => `${title} · ${date}`,
+	scheduleAroundEvent: (before: number, after: number) =>
+		`Abre ${pluralize(Math.abs(before), 'día', 'días')} ${before >= 0 ? 'antes' : 'después'} del evento y cierra ${pluralize(Math.abs(after), 'día', 'días')} ${after >= 0 ? 'después' : 'antes'}.`,
+	retentionSpan: (days: number, max: number) =>
+		`Los archivos se conservan ${pluralize(days, 'día', 'días')} desde la apertura (máximo ${max}).`,
+	scheduleIssue: {
+		missing: 'Indique fecha y hora.',
+		ends_before_start: 'El cierre debe ser posterior a la apertura.',
+		retention_before_end: 'La retención no puede terminar antes del cierre.',
+		retention_too_long: (max: number) =>
+			`La retención no puede superar ${max} días desde la apertura.`,
+	},
+	expectedGuests: 'Invitados esperados (opcional)',
+	expectedGuestsHelp: 'Sirve para estimar si el cupo alcanza; no limita las subidas.',
+	fileLimits: (photo: string, seconds: number, video: string) =>
+		`Cada foto: hasta ${photo} · cada video: hasta ${seconds} s y ${video}. Iguales para todos los eventos.`,
+	noteSection: 'Nota interna',
+	note: 'Nota',
+	noteHelp: 'Solo visible para administración. Ejemplo: referencia de pago o acuerdos.',
+	noteCounter: (length: number, max: number) => `${length} / ${max}`,
+	commitment: (projected: string, limit: string) =>
+		`Con este espacio quedarían comprometidos ${projected} de los ${limit} gratuitos de Cloudflare.`,
+	commitmentOver:
+		'Supera el almacenamiento gratuito: si los espacios se llenan, Cloudflare cobraría el excedente.',
+	commitmentAcknowledge: 'Entiendo que puede generar cargos de almacenamiento',
 	submitCreate: 'Activar espacio',
 	submitEdit: 'Guardar cambios',
 	saving: 'Guardando…',
@@ -212,6 +257,14 @@ export const memoriesCapacityCopy = {
 	mixValue: (photos: string, videos: string) => `${photos} fotos + ${videos} videos`,
 	guests: (photos: number, videos: number) =>
 		`Invitados que caben si cada uno sube su máximo (${photos} fotos + ${videos} videos)`,
+	perExpectedGuest: (expected: number) =>
+		`Por cada uno de los ${expected.toLocaleString('es-MX')} invitados esperados`,
+	perExpectedGuestValue: (files: number, storage: string) =>
+		`≈ ${files.toLocaleString('es-MX')} archivos · ${storage}`,
+	typicalFit: (photos: number, videos: number) =>
+		`Invitados que caben con un uso típico (${photos} fotos + ${videos} video)`,
+	shortForExpected: (supported: number, expected: number) =>
+		`El cupo alcanza para unos ${supported.toLocaleString('es-MX')} invitados con uso típico y usted espera ${expected.toLocaleString('es-MX')}. Si casi todos participan, conviene ampliar el cupo o reducir los videos por invitado.`,
 	disclaimer: (photo: string, video: string, seconds: number, maxVideo: string) =>
 		`Estimación con fotos de ${photo} y videos de ${video} (unos 30 s). No son mediciones reales: cada video puede durar hasta ${seconds} s y pesar hasta ${maxVideo}.`,
 } as const;
@@ -228,6 +281,10 @@ export const memoriesHostCopy = {
 	copyUrl: 'Copiar enlace',
 	copied: 'Enlace copiado.',
 	loadError: 'No se pudo cargar el resumen.',
+	deletionCountdown: (days: number) =>
+		days === 1
+			? 'Sus recuerdos se eliminan mañana. Descárguelos ahora.'
+			: `Sus recuerdos se eliminan en ${days} días. Descárguelos ahora.`,
 } as const;
 
 export { DECIMAL_GB as MEMORIES_DECIMAL_GB, BINARY_MB as MEMORIES_BINARY_MB };

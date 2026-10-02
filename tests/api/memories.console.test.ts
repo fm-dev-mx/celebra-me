@@ -235,12 +235,14 @@ describe('GET /api/dashboard/memories/[eventId]/summary', () => {
 				'windowState',
 			].sort(),
 		);
+		expect(summary).not.toHaveProperty('adminNote');
+		expect(summary).not.toHaveProperty('expectedGuests');
 		expect(summary).toMatchObject({
 			photos: 1,
 			videos: 0,
 			guestsWithUploads: 1,
 			publicUrl: `https://celebra-me.com/r/${PUBLIC_SLUG}`,
-			capacityRemainingPercent: 74,
+			capacityRemainingPercent: 59,
 		});
 		expect(JSON.stringify(summary)).not.toContain(SESSION_ID);
 		expect(mockRequireOwnedSpace).toHaveBeenCalledWith(EVENT_ID, hostSession);

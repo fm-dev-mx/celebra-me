@@ -5,6 +5,7 @@
  * This module must stay free of imports beyond sibling contract files.
  */
 
+import type { MemoriesWindowState } from './catalog';
 import type { MemoriesSpaceLimits } from './limits';
 import { MEMORIES_MAX_VIDEO_BYTES } from './media-policy';
 
@@ -15,6 +16,9 @@ export const MEMORIES_CAPACITY_REFERENCE = {
 	videoBytes: 40_000_000,
 	/** Mixed album: photos shared per video. */
 	photosPerVideo: 10,
+	/** What a typical participating guest shares. */
+	typicalGuestPhotos: 5,
+	typicalGuestVideos: 1,
 } as const;
 
 export interface MemoriesCapacityEstimate {
@@ -31,6 +35,15 @@ export interface MemoriesCapacityEstimate {
 	guestVideos: number;
 	/** Guests that fit if each one uses that whole allowance. */
 	guestsAtFullAllowance: number;
+}
+
+export interface MemoriesGuestFit {
+	filesPerGuest: number;
+	bytesPerGuest: number;
+	/** Guests the quota holds if each shares the typical amount. */
+	typicalGuestsSupported: number;
+	/** True when every expected guest sharing the typical amount would not fit. */
+	shortForTypicalUse: boolean;
 }
 
 function wholeUnits(total: number, unit: number): number {
@@ -69,4 +82,41 @@ export function estimateMemoriesCapacity(limits: MemoriesSpaceLimits): MemoriesC
 			wholeUnits(bytes, guestBytes),
 		),
 	};
+}
+
+/** Reads a quota against the expected attendance. Null without a usable guest count. */
+export function estimateMemoriesGuestFit(
+	limits: Pick<MemoriesSpaceLimits, 'maxEventObjects' | 'maxEventBytes'>,
+	expectedGuests: number | null,
+): MemoriesGuestFit | null {
+	if (expectedGuests === null || !Number.isInteger(expectedGuests) || expectedGuests <= 0) {
+		return null;
+	}
+	const { photoBytes, videoBytes, typicalGuestPhotos, typicalGuestVideos } =
+		MEMORIES_CAPACITY_REFERENCE;
+	const typicalFiles = typicalGuestPhotos + typicalGuestVideos;
+	const typicalBytes = typicalGuestPhotos * photoBytes + typicalGuestVideos * videoBytes;
+	const typicalGuestsSupported = Math.min(
+		wholeUnits(limits.maxEventObjects, typicalFiles),
+		wholeUnits(limits.maxEventBytes, typicalBytes),
+	);
+	return {
+		filesPerGuest: wholeUnits(limits.maxEventObjects, expectedGuests),
+		bytesPerGuest: wholeUnits(limits.maxEventBytes, expectedGuests),
+		typicalGuestsSupported,
+		shortForTypicalUse: typicalGuestsSupported < expectedGuests,
+	};
+}
+
+/**
+ * Storage a space commits against the shared allowance: its whole quota while it
+ * can still receive uploads, otherwise only what it already stores.
+ */
+export function committedMemoriesBytes(
+	windowState: MemoriesWindowState,
+	maxEventBytes: number,
+	residentBytes: number,
+): number {
+	const live = windowState === 'before' || windowState === 'open';
+	return live ? Math.max(maxEventBytes, residentBytes) : residentBytes;
 }

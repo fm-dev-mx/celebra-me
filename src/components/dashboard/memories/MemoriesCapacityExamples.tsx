@@ -1,16 +1,18 @@
 import {
 	MEMORIES_CAPACITY_REFERENCE,
 	estimateMemoriesCapacity,
+	estimateMemoriesGuestFit,
 } from '@/lib/memories/contract/capacity';
 import type { MemoriesSpaceLimits } from '@/lib/memories/contract/limits';
 import {
 	MEMORIES_MAX_VIDEO_BYTES,
 	MEMORIES_MAX_VIDEO_DURATION_SECONDS,
 } from '@/lib/memories/contract/media-policy';
-import { memoriesCapacityCopy as copy } from '@/lib/memories/dashboard-copy';
+import { formatMemoriesStorage, memoriesCapacityCopy as copy } from '@/lib/memories/dashboard-copy';
 
 interface Props {
 	limits: MemoriesSpaceLimits;
+	expectedGuests: number | null;
 }
 
 function approx(value: number): string {
@@ -18,8 +20,9 @@ function approx(value: number): string {
 }
 
 /** Reads a quota as photos, videos and guests; recomputed as the limits change. */
-export default function MemoriesCapacityExamples({ limits }: Props) {
+export default function MemoriesCapacityExamples({ limits, expectedGuests }: Props) {
 	const estimate = estimateMemoriesCapacity(limits);
+	const fit = estimateMemoriesGuestFit(limits, expectedGuests);
 	const megabytes = (bytes: number) => `${Math.round(bytes / 1_000_000)} MB`;
 	const maxVideo = `${Math.round(MEMORIES_MAX_VIDEO_BYTES / (1024 * 1024))} MB`;
 
@@ -56,7 +59,34 @@ export default function MemoriesCapacityExamples({ limits }: Props) {
 					<dt>{copy.guests(estimate.guestPhotos, estimate.guestVideos)}</dt>
 					<dd>{approx(estimate.guestsAtFullAllowance)}</dd>
 				</div>
+				{fit && expectedGuests !== null ? (
+					<>
+						<div>
+							<dt>
+								{copy.typicalFit(
+									MEMORIES_CAPACITY_REFERENCE.typicalGuestPhotos,
+									MEMORIES_CAPACITY_REFERENCE.typicalGuestVideos,
+								)}
+							</dt>
+							<dd>{approx(fit.typicalGuestsSupported)}</dd>
+						</div>
+						<div>
+							<dt>{copy.perExpectedGuest(expectedGuests)}</dt>
+							<dd>
+								{copy.perExpectedGuestValue(
+									fit.filesPerGuest,
+									formatMemoriesStorage(fit.bytesPerGuest),
+								)}
+							</dd>
+						</div>
+					</>
+				) : null}
 			</dl>
+			{fit?.shortForTypicalUse && expectedGuests !== null ? (
+				<p className="memories-form__capacity-warning" role="status">
+					{copy.shortForExpected(fit.typicalGuestsSupported, expectedGuests)}
+				</p>
+			) : null}
 			<p>
 				{copy.disclaimer(
 					megabytes(MEMORIES_CAPACITY_REFERENCE.photoBytes),

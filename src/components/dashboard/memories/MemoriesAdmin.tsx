@@ -19,14 +19,20 @@ import {
 	type AdminSpaceCandidate,
 } from '@/lib/memories/client/api';
 import MemoriesPlatformUsage from '@/components/dashboard/memories/MemoriesPlatformUsage';
-import MemorySpaceCard from '@/components/dashboard/memories/MemorySpaceCard';
-import MemorySpaceFormModal, {
+import MemorySpaceCard, {
+	resolveUndownloadedDeletionDays,
+} from '@/components/dashboard/memories/MemorySpaceCard';
+import { committedMemoriesBytes } from '@/lib/memories/contract/capacity';
+import MemorySpaceFormModal from '@/components/dashboard/memories/MemorySpaceFormModal';
+import {
 	formFromSpace,
+	type MemorySpaceCommitment,
 	type MemorySpaceFormState,
-} from '@/components/dashboard/memories/MemorySpaceFormModal';
+} from '@/lib/memories/client/space-form';
 
 type FormModal =
-	{ mode: 'create'; initial: null } | { mode: 'edit'; initial: MemorySpaceFormState };
+	| { mode: 'create'; initial: null; item: null }
+	| { mode: 'edit'; initial: MemorySpaceFormState; item: MemoriesAdminSpaceItem };
 
 const EMPTY_TOTALS: MemoriesAdminTotals = { residentBytes: 0, committedBytes: 0 };
 
@@ -87,8 +93,12 @@ function MemoriesAdmin() {
 			item,
 			state: resolveMemoriesWindowState(item, now),
 		}));
+		// Spaces about to be deleted without a host download lead the list.
+		const urgency = (item: MemoriesAdminSpaceItem) =>
+			resolveUndownloadedDeletionDays(item, now) === null ? 1 : 0;
 		withState.sort(
 			(left, right) =>
+				urgency(left.item) - urgency(right.item) ||
 				MEMORIES_WINDOW_ORDER[left.state] - MEMORIES_WINDOW_ORDER[right.state] ||
 				left.item.uploadStartsAt.localeCompare(right.item.uploadStartsAt),
 		);
@@ -102,16 +112,32 @@ function MemoriesAdmin() {
 		};
 	}, [items, now]);
 
+	const deletionCount = current.filter(
+		(item) => resolveUndownloadedDeletionDays(item, now) !== null,
+	).length;
+
+	const commitment = useMemo((): MemorySpaceCommitment => {
+		const item = modal?.item;
+		if (!item) return { otherBytes: totals.committedBytes, ownResidentBytes: 0, ownLive: true };
+		const state = resolveMemoriesWindowState(item, now);
+		const own = committedMemoriesBytes(state, item.maxEventBytes, item.usage.residentBytes);
+		return {
+			otherBytes: Math.max(0, totals.committedBytes - own),
+			ownResidentBytes: item.usage.residentBytes,
+			ownLive: state === 'before' || state === 'open',
+		};
+	}, [modal, totals, now]);
+
 	const openCreate = () => {
 		setFormError(null);
 		setNotice(null);
-		setModal({ mode: 'create', initial: null });
+		setModal({ mode: 'create', initial: null, item: null });
 	};
 
 	const openEdit = (item: MemoriesAdminSpaceItem) => {
 		setFormError(null);
 		setNotice(null);
-		setModal({ mode: 'edit', initial: formFromSpace(item) });
+		setModal({ mode: 'edit', initial: formFromSpace(item), item });
 	};
 
 	const submit = async (form: MemorySpaceFormState) => {
@@ -125,6 +151,8 @@ function MemoriesAdmin() {
 			retentionEndsLocal: form.retentionEndsLocal,
 			entitlement: form.entitlement,
 			limits: form.limits,
+			expectedGuests: form.expectedGuests,
+			adminNote: form.adminNote.trim() === '' ? null : form.adminNote.trim(),
 		};
 		try {
 			if (modal.mode === 'create') {
@@ -204,6 +232,12 @@ function MemoriesAdmin() {
 				</p>
 			) : null}
 
+			{deletionCount > 0 ? (
+				<p className="memories-admin__deletion" role="alert">
+					{copy.deletionNotice(deletionCount)}
+				</p>
+			) : null}
+
 			<MemoriesPlatformUsage usage={platform} totals={totals} />
 
 			{loading && items.length === 0 ? <p className="dashboard-status">Cargando…</p> : null}
@@ -227,6 +261,7 @@ function MemoriesAdmin() {
 					mode={modal.mode}
 					candidates={candidates}
 					initial={modal.initial}
+					commitment={commitment}
 					busy={busy}
 					error={formError}
 					onSubmit={(form) => void submit(form)}

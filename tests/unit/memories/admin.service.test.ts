@@ -18,6 +18,12 @@ jest.mock('@/lib/memories/server/audit', () => ({
 	appendMemoriesAudit: jest.fn().mockResolvedValue(undefined),
 }));
 
+jest.mock('@/lib/memories/server/catalog.repository', () => ({
+	findLastOrganizerDownloadAt: jest.fn().mockResolvedValue(null),
+	listResidentMediaUsage: jest.fn().mockResolvedValue([]),
+	listSessionEventIds: jest.fn().mockResolvedValue([]),
+}));
+
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { MEMORIES_LIMIT_PROFILES } from '@/lib/memories/contract/limits';
@@ -25,6 +31,7 @@ import { appendMemoriesAudit } from '@/lib/memories/server/audit';
 import {
 	createMemorySpaceAdmin,
 	listMemorySpaceCandidatesAdmin,
+	listMemorySpacesAdmin,
 	updateMemorySpaceAdmin,
 	type MemorySpaceCreateInput,
 } from '@/lib/memories/server/admin.service';
@@ -174,6 +181,8 @@ describe('createMemorySpaceAdmin', () => {
 			retentionEndsAt: '2026-12-30T07:00:00.000Z',
 			...MEMORIES_LIMIT_PROFILES.standard,
 			entitlement: 'package',
+			expectedGuests: null,
+			adminNote: null,
 			createdBy: ADMIN_USER_ID,
 		});
 		expect(created).toEqual(buildSpace());
@@ -184,6 +193,38 @@ describe('createMemorySpaceAdmin', () => {
 			action: 'space_created',
 			metadata: { entitlement: 'package' },
 		});
+	});
+
+	it('stores the planning inputs and keeps the note out of the audit trail', async () => {
+		await createMemorySpaceAdmin(
+			createPayload({ expectedGuests: 150, adminNote: '  Synthetic payment reference  ' }),
+			ADMIN_USER_ID,
+		);
+
+		expect(mockInsert).toHaveBeenCalledWith(
+			expect.objectContaining({
+				expectedGuests: 150,
+				adminNote: 'Synthetic payment reference',
+			}),
+		);
+		expect(JSON.stringify(mockAudit.mock.calls)).not.toContain('Synthetic payment reference');
+	});
+
+	it('stores a blank note as null and rejects out-of-range planning inputs', async () => {
+		await createMemorySpaceAdmin(createPayload({ adminNote: '   ' }), ADMIN_USER_ID);
+		expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({ adminNote: null }));
+
+		for (const invalid of [
+			{ expectedGuests: 0 },
+			{ expectedGuests: 5001 },
+			{ expectedGuests: 12.5 },
+			{ adminNote: 'x'.repeat(501) },
+		]) {
+			await expect(
+				createMemorySpaceAdmin(createPayload(invalid), ADMIN_USER_ID),
+			).rejects.toMatchObject({ status: 400, code: 'validation_error' });
+		}
+		expect(mockInsert).toHaveBeenCalledTimes(1);
 	});
 
 	it('honours a different zone when deriving instants', async () => {
@@ -340,6 +381,23 @@ describe('updateMemorySpaceAdmin', () => {
 		);
 	});
 
+	it('clears planning inputs with null and leaves them untouched when omitted', async () => {
+		await updateMemorySpaceAdmin(
+			EVENT_ID,
+			{ expectedGuests: null, adminNote: null },
+			ADMIN_USER_ID,
+		);
+		expect(mockUpdate).toHaveBeenLastCalledWith(
+			EVENT_ID,
+			expect.objectContaining({ expectedGuests: null, adminNote: null }),
+		);
+
+		await updateMemorySpaceAdmin(EVENT_ID, { enabled: true }, ADMIN_USER_ID);
+		const [, patch] = mockUpdate.mock.calls.at(-1) ?? [];
+		expect(patch).not.toHaveProperty('expectedGuests');
+		expect(patch).not.toHaveProperty('adminNote');
+	});
+
 	it('re-derives instants for the provided local values and validates the schedule', async () => {
 		await updateMemorySpaceAdmin(
 			EVENT_ID,
@@ -360,5 +418,41 @@ describe('updateMemorySpaceAdmin', () => {
 				ADMIN_USER_ID,
 			),
 		).rejects.toMatchObject({ status: 400, code: 'validation_error' });
+	});
+});
+
+describe('listMemorySpacesAdmin', () => {
+	it('attaches the published event date and the usage of each space', async () => {
+		mockListSpaces.mockResolvedValue([buildSpace()]);
+		mockListEvents.mockResolvedValue([
+			{ id: EVENT_ID, invitationId: INVITATION_ID } as EventRecord,
+		]);
+		mockFindPublished.mockResolvedValue({
+			content: {
+				eventTiming: { localDateTime: '2026-10-30T17:00', timeZone: 'America/Mazatlan' },
+			},
+		} as unknown as Awaited<ReturnType<typeof findPublishedByInvitationId>>);
+
+		const { items, totals } = await listMemorySpacesAdmin(new Date('2026-10-24T12:00:00.000Z'));
+
+		expect(items).toHaveLength(1);
+		expect(items[0]).toMatchObject({
+			eventId: EVENT_ID,
+			eventDate: '2026-10-30',
+			lastHostDownloadAt: null,
+			usage: { photos: 0, residentBytes: 0 },
+		});
+		expect(totals.committedBytes).toBe(MEMORIES_LIMIT_PROFILES.standard.maxEventBytes);
+	});
+
+	it('leaves the event date empty when the event has no invitation', async () => {
+		mockListSpaces.mockResolvedValue([buildSpace()]);
+		mockListEvents.mockResolvedValue([{ id: EVENT_ID, invitationId: null } as EventRecord]);
+		mockFindPublished.mockClear();
+
+		const { items } = await listMemorySpacesAdmin();
+
+		expect(items[0].eventDate).toBeNull();
+		expect(mockFindPublished).not.toHaveBeenCalled();
 	});
 });

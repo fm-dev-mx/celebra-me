@@ -13,7 +13,7 @@ const EVENT_EMBED = 'event:events!inner(slug,title,deleted_at)';
 const SELECT =
 	`event_id,public_slug,enabled,time_zone,upload_starts_at,upload_ends_at,retention_ends_at,` +
 	`max_event_objects,max_event_bytes,max_session_files,max_session_videos,max_session_bytes,` +
-	`entitlement,created_at,updated_at,${EVENT_EMBED}`;
+	`entitlement,expected_guests,admin_note,created_at,updated_at,${EVENT_EMBED}`;
 const ACTIVE_EVENT_FILTER = 'event.deleted_at=is.null';
 
 type SettingsRow = {
@@ -30,6 +30,8 @@ type SettingsRow = {
 	max_session_videos: number;
 	max_session_bytes: number;
 	entitlement: MemoriesEntitlement;
+	expected_guests: number | null;
+	admin_note: string | null;
 	created_at: string;
 	updated_at: string;
 	event: { slug: string; title: string; deleted_at: string | null } | null;
@@ -52,6 +54,8 @@ function toRecord(row: SettingsRow): MemoriesSpaceRecord {
 		maxSessionVideos: Number(row.max_session_videos),
 		maxSessionBytes: Number(row.max_session_bytes),
 		entitlement: row.entitlement,
+		expectedGuests: row.expected_guests === null ? null : Number(row.expected_guests),
+		adminNote: row.admin_note,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 	};
@@ -106,6 +110,8 @@ export interface MemorySpaceInsert extends MemoriesSpaceLimits {
 	uploadEndsAt: string;
 	retentionEndsAt: string;
 	entitlement: MemoriesEntitlement;
+	expectedGuests?: number | null;
+	adminNote?: string | null;
 	createdBy: string;
 }
 
@@ -126,6 +132,9 @@ function toColumns(input: MemorySpaceUpdate): Record<string, unknown> {
 	if (input.maxSessionVideos !== undefined) body.max_session_videos = input.maxSessionVideos;
 	if (input.maxSessionBytes !== undefined) body.max_session_bytes = input.maxSessionBytes;
 	if (input.entitlement !== undefined) body.entitlement = input.entitlement;
+	// `null` clears the stored value; `undefined` leaves it untouched.
+	if (input.expectedGuests !== undefined) body.expected_guests = input.expectedGuests;
+	if (input.adminNote !== undefined) body.admin_note = input.adminNote;
 	return body;
 }
 

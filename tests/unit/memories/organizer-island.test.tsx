@@ -421,4 +421,25 @@ describe('MemoriesOrganizer island', () => {
 		expect(scoped.queryByText(/GB|Cloudflare|Complemento/)).not.toBeInTheDocument();
 		expect(organizerApi.summary).toHaveBeenCalledWith('event-1', expect.any(AbortSignal));
 	});
+	it('warns the host with a countdown when deletion is near and files remain', async () => {
+		organizerApi.listItems.mockResolvedValue(listPayload([acceptedItem]));
+		organizerApi.summary.mockResolvedValue({
+			...summaryOf(SPACES[0]),
+			windowState: 'closed',
+			retentionEndsAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000 - 60_000).toISOString(),
+			publicUrl: 'https://celebra-me.com/r/victoria-y-roberto',
+			photos: 12,
+			videos: 3,
+			guestsWithUploads: 7,
+			lastAcceptedAt: null,
+			capacityRemainingPercent: 88,
+		});
+
+		render(<MemoriesOrganizer spaces={SPACES} initialEventId="event-1" />);
+
+		const summary = within(await screen.findByLabelText('Resumen'));
+		expect(await summary.findByRole('alert')).toHaveTextContent(
+			'Sus recuerdos se eliminan en 3 días. Descárguelos ahora.',
+		);
+	});
 });

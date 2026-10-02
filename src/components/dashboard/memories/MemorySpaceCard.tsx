@@ -1,7 +1,9 @@
 import {
+	resolveMemoriesRetentionWarningDays,
 	resolveMemoriesWindowState,
 	type MemoriesAdminSpaceItem,
 } from '@/lib/memories/contract/catalog';
+import { MEMORIES_RETENTION_WARNING_DAYS } from '@/lib/memories/contract/limits';
 import {
 	buildMemoriesPublicPath,
 	buildMemoriesPublicUrl,
@@ -28,6 +30,19 @@ interface Props {
 	onCopy: (url: string) => void;
 }
 
+/**
+ * Days left before deletion for a space whose host has files but never downloaded
+ * any; null when no warning applies. A recorded download proves one happened, not
+ * that it was complete, so the warning only clears on evidence, never on a guess.
+ */
+export function resolveUndownloadedDeletionDays(
+	item: MemoriesAdminSpaceItem,
+	now: Date,
+): number | null {
+	if (item.lastHostDownloadAt || item.usage.photos + item.usage.videos === 0) return null;
+	return resolveMemoriesRetentionWarningDays(item, now, MEMORIES_RETENTION_WARNING_DAYS);
+}
+
 export default function MemorySpaceCard({ item, now, busy, onEdit, onToggle, onCopy }: Props) {
 	const state = resolveMemoriesWindowState(item, now);
 	const publicUrl = buildMemoriesPublicUrl(item.publicSlug);
@@ -38,6 +53,7 @@ export default function MemorySpaceCard({ item, now, busy, onEdit, onToggle, onC
 	);
 	const percent = Math.min(100, Math.round(ratio * 100));
 	const expired = state === 'expired';
+	const deletionDays = resolveUndownloadedDeletionDays(item, now);
 
 	return (
 		<article className="dashboard-card memories-space" aria-label={item.eventTitle}>
@@ -59,6 +75,12 @@ export default function MemorySpaceCard({ item, now, busy, onEdit, onToggle, onC
 					{MEMORIES_WINDOW_LABEL[state]}
 				</span>
 			</header>
+
+			{deletionDays !== null ? (
+				<p className="memories-space__alert" role="alert">
+					{copy.deletionSoon(deletionDays)}
+				</p>
+			) : null}
 
 			<div className="memories-space__url">
 				<code>{publicUrl}</code>
@@ -119,7 +141,26 @@ export default function MemorySpaceCard({ item, now, busy, onEdit, onToggle, onC
 					: copy.noUploads}
 				{usage.inFlight > 0 ? ` · ${copy.inFlight(usage.inFlight)}` : null}
 				{usage.rejected > 0 ? ` · ${copy.rejected(usage.rejected)}` : null}
+				{item.expectedGuests !== null
+					? ` · ${copy.expectedParticipation(usage.guestsWithUploads, item.expectedGuests)}`
+					: null}
+				{expired ? null : (
+					<>
+						<br />
+						{item.lastHostDownloadAt
+							? copy.hostDownloaded(
+									formatMemoriesDateTime(item.lastHostDownloadAt, item.timeZone),
+								)
+							: copy.hostNeverDownloaded}
+					</>
+				)}
 			</p>
+
+			{item.adminNote ? (
+				<p className="memories-space__note">
+					<strong>{copy.noteLabel}:</strong> {item.adminNote}
+				</p>
+			) : null}
 
 			<div className="memories-space__actions">
 				<div>

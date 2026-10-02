@@ -13,8 +13,10 @@ import {
 	type MemoriesSpaceHostSummary,
 	type MemoriesSpaceRecord,
 } from '@/lib/memories/contract/catalog';
+import { committedMemoriesBytes } from '@/lib/memories/contract/capacity';
 import { buildMemoriesPublicUrl } from '@/lib/memories/contract/private-request';
 import {
+	findLastOrganizerDownloadAt,
 	listResidentMediaUsage,
 	listSessionEventIds,
 	type MediaUsageRow,
@@ -74,27 +76,42 @@ export async function summarizeMemorySpaceUsage(
 	return usage;
 }
 
-/** Quota a live space may still fill; anything else only holds what it already stores. */
-function committedBytesFor(item: MemoriesAdminSpaceItem, now: Date): number {
-	const state = resolveMemoriesWindowState(item, now);
-	const live = state === 'before' || state === 'open';
-	return live ? Math.max(item.maxEventBytes, item.usage.residentBytes) : item.usage.residentBytes;
-}
+export type MemorySpaceWithEventDate = MemoriesSpaceRecord & { eventDate: string | null };
 
 export async function listMemorySpacesWithUsage(
-	spaces: readonly MemoriesSpaceRecord[],
+	spaces: readonly MemorySpaceWithEventDate[],
 	now = new Date(),
 ): Promise<{ items: MemoriesAdminSpaceItem[]; totals: MemoriesAdminTotals }> {
-	const usage = await summarizeMemorySpaceUsage(spaces.map((space) => space.eventId));
-	const items = spaces.map((space) => ({
+	// Expired spaces hold no downloadable content, so their audit trail is not read.
+	const [usage, downloads] = await Promise.all([
+		summarizeMemorySpaceUsage(spaces.map((space) => space.eventId)),
+		Promise.all(
+			spaces.map((space) =>
+				resolveMemoriesWindowState(space, now) === 'expired'
+					? null
+					: findLastOrganizerDownloadAt(space.eventId),
+			),
+		),
+	]);
+	const items = spaces.map((space, index) => ({
 		...space,
 		usage: usage.get(space.eventId) ?? emptyUsage(),
+		lastHostDownloadAt: downloads[index],
 	}));
 	return {
 		items,
 		totals: {
 			residentBytes: items.reduce((total, item) => total + item.usage.residentBytes, 0),
-			committedBytes: items.reduce((total, item) => total + committedBytesFor(item, now), 0),
+			committedBytes: items.reduce(
+				(total, item) =>
+					total +
+					committedMemoriesBytes(
+						resolveMemoriesWindowState(item, now),
+						item.maxEventBytes,
+						item.usage.residentBytes,
+					),
+				0,
+			),
 		},
 	};
 }
