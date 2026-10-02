@@ -1,6 +1,6 @@
 begin;
 
-select plan(41);
+select plan(45);
 
 -- Access boundary -----------------------------------------------------------
 select ok(
@@ -76,6 +76,28 @@ select throws_ok($sql$
 	set retention_ends_at = upload_starts_at + interval '151 days'
 	where public_slug = 'space-open'
 $sql$, '23514', null, 'retention cannot exceed the object lifetime bound');
+
+-- Planning inputs -------------------------------------------------------------
+select lives_ok($sql$
+	update public.event_memory_settings
+	set expected_guests = 150, admin_note = 'Synthetic note'
+	where public_slug = 'space-open'
+$sql$, 'planning inputs accept an attendance and a note');
+
+select is(
+	(select count(*) from public.event_memory_settings
+		where public_slug = 'space-closed' and expected_guests is null and admin_note is null),
+	1::bigint,
+	'planning inputs default to null'
+);
+
+select throws_ok($sql$
+	update public.event_memory_settings set expected_guests = 0 where public_slug = 'space-open'
+$sql$, '23514', null, 'expected guests must be positive');
+
+select throws_ok($sql$
+	update public.event_memory_settings set admin_note = repeat('x', 501) where public_slug = 'space-open'
+$sql$, '23514', null, 'admin note is bounded');
 
 insert into public.event_memory_sessions (
 	id, event_id, token_hash, recovery_code_hash, expires_at, display_name, guest_alias

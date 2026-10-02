@@ -131,6 +131,11 @@
             "phase": "expand",
             "provides": ["guest_invitation_soft_delete_rpc"],
             "notes": "Creates the service-role-only soft_delete_guest_invitation_v1 RPC used by the dashboard guest delete. The only revoke initializes privileges of the new function; table grants and RLS policies are unchanged. Apply before deploying the application that calls it."
+        },
+        "20261002012428": {
+            "phase": "expand",
+            "provides": ["event_memory_settings_planning"],
+            "notes": "Adds nullable administrator-only planning columns (expected_guests, admin_note) to event_memory_settings. The reservation RPC and the access boundary are unchanged. Must be applied before the application that selects these columns."
         }
     },
     "appCapabilities": {
