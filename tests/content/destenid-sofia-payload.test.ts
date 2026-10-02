@@ -161,4 +161,16 @@ describe('Destenid Sofía managed definition', () => {
 		const memories = parsed.location?.indications?.find((item) => item.title === 'Recuerdos');
 		expect(memories?.text).toContain('href="https://www.instagram.com/desteny_ts/"');
 	});
+
+	it('closes the program with the client note and states the dress-code colors', () => {
+		const parsed = eventContentSchema.parse(buildDestenidPublishedContent(buildTestAssets()));
+		expect(parsed.itinerary?.closingNote).toMatch(/^Habrá muchas sorpresas\./);
+		expect(parsed.itinerary?.closingNote).toContain('hasta que el cuerpo diga ¡ya!');
+		const dressCode = parsed.location?.indications?.find(
+			(item) => item.iconName === 'DressCode',
+		);
+		expect(dressCode?.title).toBe('Código de vestimenta');
+		expect(dressCode?.text).toContain('beige y dorado');
+		expect(dressCode?.text).toContain('negro está reservado para la quinceañera y su mamá');
+	});
 });
