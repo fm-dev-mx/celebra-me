@@ -83,7 +83,7 @@ export function canonicalizeLocationDraft(
 }
 
 /**
- * Draft itinerary owns title/subtitle/presentation/items only.
+ * Draft itinerary owns title/subtitle/presentation/items/closingNote only.
  * Legacy `items[].icon` is obsolete; Draft requires `iconName`. When only the
  * legacy key is present, report rather than inventing a mapping.
  */
@@ -119,6 +119,7 @@ export function canonicalizeItineraryDraft(
 		...(str(itinerary.subtitle) ? { subtitle: str(itinerary.subtitle) } : {}),
 		...(itinerary.variant !== undefined ? { variant: itinerary.variant } : {}),
 		...(items !== undefined ? { items } : {}),
+		...(str(itinerary.closingNote) ? { closingNote: str(itinerary.closingNote) } : {}),
 	};
 }
 
