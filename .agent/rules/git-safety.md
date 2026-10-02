@@ -151,9 +151,9 @@ agent:git-safety:start once before edits, and pnpm agent:git-safety:finish at cl
 replaces an existing baseline only when it shows no protected drift; a drifted baseline is evidence
 and is never overwritten. Read-only check never removes it.
 
-Protected state is current HEAD, branch/detached state, and semantic index metadata. Other local
-heads/tags/stashes are diagnostic only. On unexpected protected drift, incompatible baseline, or
-missing baseline, preserve evidence and report; never reset state to manufacture a pass. On PASS,
+Protected state is current HEAD, branch/detached state, and staged changes relative to HEAD. Other
+local heads/tags/stashes are diagnostic only. On unexpected protected drift, incompatible baseline,
+or missing baseline, preserve evidence and report; never reset state to manufacture a pass. On PASS,
 finish removes its baseline. CI does not run this interactive lifecycle.
 
 The detector does not prove absence of remote pushes or transient mutate-then-restore activity.

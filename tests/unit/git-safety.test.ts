@@ -36,7 +36,7 @@ describe('git-safety start/finish lifecycle', () => {
 			expect(start.status).toBe(0);
 			expect(existsSync(baselinePath(repoRoot))).toBe(true);
 			const baseline = JSON.parse(readFileSync(baselinePath(repoRoot), 'utf8'));
-			expect(baseline.version).toBe(2);
+			expect(baseline.version).toBe(3);
 			expect(baseline.head).toMatch(/^[0-9a-f]{40}$/);
 			expect(baseline.branch).toBeTruthy();
 			expect(typeof baseline.indexFingerprint).toBe('string');
@@ -230,10 +230,14 @@ describe('git-safety start/finish lifecycle', () => {
 		}
 	});
 
-	it('accepts authorized branch-switch when index is unchanged', () => {
+	it('accepts authorized branch-switch to a branch with a different tree', () => {
 		const repoRoot = createRepo();
 		try {
-			runCommand('git', ['branch', 'feature'], { cwd: repoRoot, env: sanitizeEnv() });
+			runCommand('git', ['switch', '-c', 'feature'], { cwd: repoRoot, env: sanitizeEnv() });
+			writeFileSync(path.join(repoRoot, 'feature.txt'), 'f\n', 'utf8');
+			runCommand('git', ['add', 'feature.txt'], { cwd: repoRoot, env: sanitizeEnv() });
+			runCommand('git', ['commit', '-m', 'feature'], { cwd: repoRoot, env: sanitizeEnv() });
+			runCommand('git', ['switch', '-'], { cwd: repoRoot, env: sanitizeEnv() });
 			expect(runGitSafety(repoRoot, ['start']).status).toBe(0);
 			runCommand('git', ['checkout', 'feature'], { cwd: repoRoot, env: sanitizeEnv() });
 			const finish = runGitSafety(repoRoot, [
