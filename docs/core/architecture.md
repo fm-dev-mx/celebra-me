@@ -481,6 +481,16 @@ deployment.
   storage. Free-plan allowances live in `CLOUDFLARE_FREE_TIER` (`contract/limits.ts`).
 - **QR:** `src/lib/memories/qr.ts` renders the printable SVG for both dashboard routes and the
   `memories:qr` CLI; a test pins the SHA-256 of the SVG already printed.
+- **Planning and warnings:** `event_memory_settings.expected_guests` and `admin_note` are
+  administrator-only planning inputs; the reservation RPC never reads them, the note is never
+  audited, and neither reaches the host projection. `contract/capacity.ts` turns a quota into photo,
+  video and guest estimates from declared reference sizes (assumptions, not measurements) and
+  computes the storage a space commits against the shared R2 allowance; the admin form asks for an
+  explicit acknowledgement before committing past it. Both dashboards warn
+  `MEMORIES_RETENTION_WARNING_DAYS` before retention ends: the host sees a countdown, and the admin
+  console flags spaces with accepted files and no recorded host download (`download_requested` audit
+  rows by an organizer). That evidence proves a download happened, not that it was complete. No
+  automatic email is sent.
 - **Data:** `event_memory_settings` (window, retention, quotas, entitlement; `on delete restrict` to
   `events`), `event_memory_sessions`, `event_memory_items`, `event_memory_audit_events`. The
   reservation RPC decides availability, window and every quota under one advisory lock; a single

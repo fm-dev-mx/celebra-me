@@ -150,6 +150,13 @@ Production). Never reuse a Wrangler deploy token. Without them the console shows
 recorded by the app and states that Cloudflare data is unavailable. The meters are approximate
 (analytics lag by minutes); the Cloudflare dashboard remains the billing authority.
 
+The form presets are sized for that allowance: Standard is 5 GB / 1,500 files (15 files, 3 videos
+and 300 MB per guest), so two Standard spaces fit side by side in the 10 GB free tier; Extended is
+10 GB / 3,000 files (30 files, 6 videos and 600 MB per guest). Presets only pre-fill the form: the
+stored row is the enforced quota and can be raised from the console at any time without changing the
+printed QR. Saving a space that takes the committed total past 10 GB requires an explicit
+acknowledgement in the form.
+
 ## Organizer retrieval procedure
 
 1. The organizer signs in through the existing dashboard session and selects an event with an active
