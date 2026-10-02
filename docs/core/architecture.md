@@ -469,15 +469,21 @@ deployment.
   limits, commercial origin or rejection counts.
 - **Admin API:** `GET|POST /api/dashboard/admin/memories` (the list carries per-space usage and the
   committed-capacity total), `PATCH /api/dashboard/admin/memories/:eventId` (edit, pause, resume;
-  audited with the previous and new `enabled`), `GET /api/dashboard/admin/memories/:eventId/qr`, and
-  `GET /api/dashboard/admin/memories/platform-usage`. Admin usage is aggregate only (counts, bytes,
-  dates): administrators never see guest names, aliases, object keys, captions or media.
+  audited with the previous and new `enabled`), and `GET /api/dashboard/admin/memories/:eventId/qr`.
+  Admin usage is aggregate only (counts, bytes, dates): administrators never see guest names,
+  aliases, object keys, captions or media.
 - **Usage sources:** per-space figures come from `event_memory_items` rows that still hold an R2
-  object (the same set the reservation quota counts) and from session counts. Account-wide figures
-  (R2 storage and Class A/B operations, Workers and Durable Objects requests) come from the
-  Cloudflare GraphQL Analytics API through a read-only token (`MEMORIES_CLOUDFLARE_*`), one query
-  per dataset, cached for five minutes; without the token the console falls back to the recorded
-  storage. Free-plan allowances live in `CLOUDFLARE_FREE_TIER` (`contract/limits.ts`).
+  object (the same set the reservation quota counts) and from session counts; the committed-capacity
+  total compares them with the shared R2 allowance in `CLOUDFLARE_FREE_TIER`
+  (`src/lib/platform/contract/limits.ts`). Account-wide consumption is not part of this domain: the
+  super-admin platform console (`/dashboard/admin/plataforma`, `src/lib/platform/`) aggregates
+  Cloudflare, Supabase, Vercel and Cloudinary limit and cost metrics from read-only credentials
+  (`MEMORIES_CLOUDFLARE_*`, `SUPABASE_MANAGEMENT_TOKEN`, `VERCEL_API_TOKEN`, optional
+  `CLOUDINARY_USAGE_*`), one query per provider dataset cached for minutes. Shared quotas are
+  labeled "de la cuenta" or "del proyecto", never as a single environment; every provider card
+  degrades on its own (`ok` / `unconfigured` / `unavailable`) and the report carries aggregates
+  only. Free-plan allowances and the 70 %/90 % warning thresholds live in
+  `src/lib/platform/contract/limits.ts`.
 - **QR:** `src/lib/memories/qr.ts` renders the printable SVG for both dashboard routes and the
   `memories:qr` CLI; a test pins the SHA-256 of the SVG already printed.
 - **Planning and warnings:** `event_memory_settings.expected_guests` and `admin_note` are
