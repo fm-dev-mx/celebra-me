@@ -7,16 +7,15 @@ import { resolve } from 'node:path';
 
 describe('gallery presentation', () => {
 	it('reuses public layout roles for editor previews', () => {
-		expect(getGalleryPreviewRole(0, 'luxury-hacienda')).toBe('feature');
-		expect(getGalleryPreviewRole(1, 'luxury-hacienda')).toBe('wide');
-		expect(getGalleryPreviewRole(4, 'luxury-hacienda')).toBe('standard');
+		expect(getGalleryPreviewRole(0, 'feature-mosaic')).toBe('feature');
+		expect(getGalleryPreviewRole(1, 'feature-mosaic')).toBe('wide');
+		expect(getGalleryPreviewRole(4, 'feature-mosaic')).toBe('standard');
 	});
 
-	it('falls back to standard for themes without explicit layout strategies', () => {
-		expect(getGalleryPreviewRole(0, 'angelic-presence')).toBe('standard');
-		expect(getGalleryPreviewRole(1, 'sacred-keepsake')).toBe('standard');
-		expect(getGalleryPreviewRole(2, 'editorial')).toBe('standard');
-		expect(getGalleryPreviewRole(0, 'premiere-floral')).toBe('standard');
+	it('falls back to standard for variants without a position pattern', () => {
+		expect(getGalleryPreviewRole(0, 'uniform-grid')).toBe('standard');
+		expect(getGalleryPreviewRole(1, 'single-keepsake')).toBe('standard');
+		expect(getGalleryPreviewRole(2, undefined)).toBe('standard');
 	});
 
 	it('uses distinct mobile, tablet, and desktop crop frames', () => {

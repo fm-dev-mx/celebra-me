@@ -6,8 +6,8 @@ import { adaptEvent } from '@/lib/adapters/event';
 import {
 	buildSectionBundleUrlMap,
 	buildSectionUrlMap,
-	resolveInvitationCssUrls,
 } from '@/lib/invitation/section-css-resolver-map';
+import { resolveInvitationCssUrls } from '../helpers/invitation-css-urls';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import {
 	ABRIL_ASSET_SPECS,

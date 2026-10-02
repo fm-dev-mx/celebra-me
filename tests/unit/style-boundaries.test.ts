@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
 const projectRoot = process.cwd();
 
@@ -228,21 +229,6 @@ describe('Style boundary governance', () => {
 		expect(premiereFloral.indexOf(editorialHeroImport)).toBeLessThan(
 			premiereFloral.indexOf(premiereHeroImport),
 		);
-	});
-
-	it('footer override discovery targets only canonical footer variants', () => {
-		const resolver = read('src/lib/invitation/section-css-resolver.ts');
-
-		expect(resolver).not.toContain('/src/styles/invitation-sections/');
-		for (const variant of [
-			'angelic-presence',
-			'editorial',
-			'enchanted-rose',
-			'premiere-floral',
-		]) {
-			expect(resolver).toContain(`/src/styles/themes/sections/footer/_${variant}.scss`);
-		}
-		expect(resolver).not.toContain('/src/styles/themes/sections/footer/*.scss');
 	});
 
 	it('invitation components avoid direct section-theme imports', () => {
@@ -526,18 +512,6 @@ describe('Style boundary governance', () => {
 	});
 
 	it('in-scope sections do not use ThemePreset names as data-variant', () => {
-		const themePresets = [
-			'angelic-presence',
-			'celestial-blue',
-			'editorial',
-			'editorial-magazine',
-			'enchanted-rose',
-			'jewelry-box',
-			'jewelry-box-wedding',
-			'luxury-hacienda',
-			'premiere-floral',
-			'sacred-keepsake',
-		];
 		const dirs = [
 			'header',
 			'quote',
@@ -555,7 +529,7 @@ describe('Style boundary governance', () => {
 			getFilesRecursively(`src/styles/themes/sections/${dir}`, ['.scss']),
 		);
 		const joined = files.map(read).join('\n');
-		for (const preset of themePresets) {
+		for (const preset of THEME_PRESETS) {
 			expect(joined).not.toContain(`[data-variant='${preset}']`);
 		}
 	});

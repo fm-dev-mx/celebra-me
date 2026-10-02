@@ -49,7 +49,6 @@ const RATE_LIMITS = {
 	'memories:usage': { maxHits: 30, windowSec: 60 },
 	'memories:qr': { maxHits: 30, windowSec: 60 },
 	'intake:list': { maxHits: 60, windowSec: 60 },
-	'intake:create': { maxHits: 20, windowSec: 60 },
 	'intake:update': { maxHits: 30, windowSec: 60 },
 	'intake:edit': { maxHits: 30, windowSec: 60 },
 	'intake:assign-owner': { maxHits: 10, windowSec: 60 },

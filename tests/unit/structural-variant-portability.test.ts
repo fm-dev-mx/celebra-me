@@ -7,8 +7,8 @@ import { buildInvitationSectionRenderDescriptors } from '@/lib/invitation/sectio
 import {
 	buildSectionBundleUrlMap,
 	buildSectionUrlMap,
-	resolveInvitationCssUrls,
 } from '@/lib/invitation/section-css-resolver-map';
+import { resolveInvitationCssUrls } from '../helpers/invitation-css-urls';
 import { prepareInvitationPageContext } from '@/lib/invitation/page-data';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import {

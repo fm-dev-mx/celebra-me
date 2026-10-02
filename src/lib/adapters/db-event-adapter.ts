@@ -16,5 +16,5 @@ export function adaptDbEvent(source: DbEventSource): InvitationViewModel {
 		data: source.content,
 	};
 
-	return adaptEvent(pseudoEntry as unknown as EventContentEntry, undefined, source.assetSlug);
+	return adaptEvent(pseudoEntry as unknown as EventContentEntry, source.assetSlug);
 }

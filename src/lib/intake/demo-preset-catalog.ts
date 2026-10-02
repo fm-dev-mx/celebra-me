@@ -286,7 +286,3 @@ export const DEMO_PRESET_CATALOG: readonly DemoPreset[] = [
 export function findDemoPreset(id: string): DemoPreset | undefined {
 	return DEMO_PRESET_CATALOG.find((preset) => preset.id === id);
 }
-
-export function findDemoPresetsByEventType(eventType: string): DemoPreset[] {
-	return DEMO_PRESET_CATALOG.filter((preset) => preset.eventType === eventType);
-}

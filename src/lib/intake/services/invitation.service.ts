@@ -8,7 +8,7 @@ import {
 	updateInvitationConditionally,
 	assignInvitationOwner,
 } from '@/lib/intake/repositories/invitation.repository';
-import { DEMO_PRESET_CATALOG, findDemoPreset } from '@/lib/intake/demo-preset-catalog';
+import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { getFeaturedDemoShowroomItems } from '@/data/demo-showroom.data';
 import {
@@ -25,10 +25,7 @@ import {
 	findPublishedByInvitationId,
 	upsertPublishedContent,
 } from '@/lib/intake/repositories/published-invitation-content.repository';
-import {
-	findDraftByInvitationId,
-	upsertDraft,
-} from '@/lib/intake/repositories/invitation-content-draft.repository';
+import { findDraftByInvitationId } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import type { UpdateInvitationInput } from '@/lib/intake/schemas/invitation.schema';
 import type { InvitationMutationCommandContext } from '@/lib/intake/mutations/command-context';
@@ -172,69 +169,6 @@ export async function getEnrichedInvitationList(
 	});
 }
 
-export function assertCreateInvitationPreset(input: {
-	eventType: string;
-	baseDemoId: string;
-}): NonNullable<ReturnType<typeof findDemoPreset>> {
-	const preset = findDemoPreset(input.baseDemoId);
-	if (
-		!preset ||
-		typeof preset.eventType !== 'string' ||
-		preset.eventType.length === 0 ||
-		typeof preset.themeId !== 'string' ||
-		preset.themeId.length === 0
-	) {
-		throw new ApiError(
-			422,
-			'validation_error',
-			'El demo base seleccionado no existe o tiene una configuración inválida.',
-			{ reason: 'invalid_base_demo', baseDemoId: input.baseDemoId },
-		);
-	}
-
-	if (preset.eventType !== input.eventType) {
-		throw new ApiError(
-			422,
-			'validation_error',
-			'El demo base seleccionado no corresponde al tipo de evento.',
-			{
-				reason: 'base_demo_event_type_mismatch',
-				baseDemoId: input.baseDemoId,
-				expectedEventType: preset.eventType,
-				submittedEventType: input.eventType,
-			},
-		);
-	}
-
-	return preset;
-}
-
-export async function createInvitation(input: {
-	title: string;
-	eventType: string;
-	baseDemoId: string;
-	slug?: string | null;
-	clientName?: string;
-	clientEmail?: string;
-	clientWhatsapp?: string;
-	createdBy?: string | null;
-}): Promise<Invitation> {
-	const preset = assertCreateInvitationPreset(input);
-
-	return createInvitationRecord({
-		title: input.title,
-		eventType: input.eventType,
-		baseDemoId: input.baseDemoId,
-		themeId: preset.themeId,
-		snapshot: preset,
-		slug: input.slug,
-		clientName: input.clientName,
-		clientEmail: input.clientEmail,
-		clientWhatsapp: input.clientWhatsapp,
-		createdBy: input.createdBy,
-	});
-}
-
 export async function synchronizeDemoInvitations(createdBy: string): Promise<void> {
 	const demoEntries = await getCollection('event-demos');
 
@@ -292,59 +226,6 @@ export async function synchronizeDemoInvitations(createdBy: string): Promise<voi
 		});
 		await updateInvitation(invitation.id, { status: 'published' });
 	}
-}
-
-export async function duplicateInvitationFromDemo(
-	demoInvitationId: string,
-	input: {
-		title: string;
-		clientName?: string;
-		clientEmail?: string;
-		clientWhatsapp?: string;
-		createdBy: string;
-	},
-): Promise<Invitation> {
-	const demo = await findInvitationById(demoInvitationId);
-	if (!demo || demo.kind !== 'demo') {
-		throw new ApiError(404, 'not_found', 'Demo no encontrado.');
-	}
-
-	const preset = findDemoPreset(demo.baseDemoId);
-	if (!preset) {
-		throw new ApiError(
-			422,
-			'bad_request',
-			'No se encontró el preset asociado a la invitación demo.',
-		);
-	}
-	const freshSnapshot = { ...preset };
-
-	const invitation = await createInvitationRecord({
-		title: input.title,
-		eventType: demo.eventType,
-		baseDemoId: demo.baseDemoId,
-		themeId: freshSnapshot.themeId,
-		snapshot: freshSnapshot,
-		kind: 'client',
-		sourceInvitationId: demo.id,
-		clientName: input.clientName,
-		clientEmail: input.clientEmail,
-		clientWhatsapp: input.clientWhatsapp,
-		createdBy: input.createdBy,
-	});
-
-	// Seed a minimal draft with metadata only — full demo content is not
-	// cloned into client invitations. The editor will show empty sections
-	// and the user populates their own data.
-	await upsertDraft({
-		invitationId: invitation.id,
-		submissionId: null,
-		content: {
-			title: input.title,
-		},
-	});
-
-	return invitation;
 }
 
 export async function assignInvitationOwnerService(

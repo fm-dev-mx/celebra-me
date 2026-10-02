@@ -16,7 +16,6 @@ export const COLOR_TOKENS = [
 ] as const;
 
 export type ColorToken = (typeof COLOR_TOKENS)[number];
-export const VALID_COLOR_TOKENS = [...COLOR_TOKENS] as string[];
 
 function toKebabCase(token: ColorToken): string {
 	return token.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);

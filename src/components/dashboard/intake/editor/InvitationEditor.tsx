@@ -688,11 +688,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 				restoring: editor.operation.type === 'restoring',
 			};
 		},
-		[
-			editor.context.publication.hasPublishedContent,
-			editor.operation.type,
-			sectionSource,
-		],
+		[editor.context.publication.hasPublishedContent, editor.operation.type, sectionSource],
 	);
 
 	const requestPreview = useCallback(() => {
@@ -1197,10 +1193,52 @@ export default function InvitationEditor({ initialContext }: Props) {
 							}
 						/>
 						<div className="invitation-editor__field-grid">
-							<Field label="Frase de cierre" value={messages.thankYou.closingPhrase ?? ''} onChange={(value) => updateContent('thankYou', { ...messages.thankYou, closingPhrase: value })} />
-							<Field label="Fecha visible" value={messages.thankYou.date ?? ''} onChange={(value) => updateContent('thankYou', { ...messages.thankYou, date: value })} />
-							<Field label="Punto focal" value={messages.thankYou.focalPoint ?? ''} onChange={(value) => updateContent('thankYou', { ...messages.thankYou, focalPoint: value || undefined })} />
-							<label className="invitation-editor__field"><span>Ancla del texto</span><select value={messages.thankYou.overlayAnchor ?? ''} onChange={(event) => updateContent('thankYou', { ...messages.thankYou, overlayAnchor: (event.target.value || undefined) as 'left' | 'right' | 'top' | 'bottom' | undefined })}><option value="">Automática</option><option value="left">Izquierda</option><option value="right">Derecha</option><option value="top">Arriba</option><option value="bottom">Abajo</option></select></label>
+							<Field
+								label="Frase de cierre"
+								value={messages.thankYou.closingPhrase ?? ''}
+								onChange={(value) =>
+									updateContent('thankYou', {
+										...messages.thankYou,
+										closingPhrase: value,
+									})
+								}
+							/>
+							<Field
+								label="Fecha visible"
+								value={messages.thankYou.date ?? ''}
+								onChange={(value) =>
+									updateContent('thankYou', { ...messages.thankYou, date: value })
+								}
+							/>
+							<Field
+								label="Punto focal"
+								value={messages.thankYou.focalPoint ?? ''}
+								onChange={(value) =>
+									updateContent('thankYou', {
+										...messages.thankYou,
+										focalPoint: value || undefined,
+									})
+								}
+							/>
+							<label className="invitation-editor__field">
+								<span>Ancla del texto</span>
+								<select
+									value={messages.thankYou.overlayAnchor ?? ''}
+									onChange={(event) =>
+										updateContent('thankYou', {
+											...messages.thankYou,
+											overlayAnchor: (event.target.value || undefined) as
+												'left' | 'right' | 'top' | 'bottom' | undefined,
+										})
+									}
+								>
+									<option value="">Automática</option>
+									<option value="left">Izquierda</option>
+									<option value="right">Derecha</option>
+									<option value="top">Arriba</option>
+									<option value="bottom">Abajo</option>
+								</select>
+							</label>
 						</div>
 						<OverlaySafeAreaFields
 							value={messages.thankYou.overlaySafeArea}
@@ -1234,7 +1272,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						<GalleryEditor
 							value={content.gallery ?? { items: [] }}
 							assetLookupSlug={assetLookupSlug}
-							variant={editor.context.invitation.themeId}
+							variant={content.gallery?.variant}
 							invitationId={invitationId}
 							onChange={(value) => updateContent('gallery', value)}
 							photoNotes={photoNotes}

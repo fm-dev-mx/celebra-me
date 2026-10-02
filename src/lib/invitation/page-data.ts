@@ -1,11 +1,10 @@
 import { adaptEvent } from '@/lib/adapters/event';
 import { resolveBrandingVisibility } from '@/lib/adapters/branding';
-import type { InvitationViewModel, ThemeConfig } from '@/lib/adapters/types';
+import type { InvitationViewModel } from '@/lib/adapters/types';
 import type { EventContentEntry } from '@/lib/content/events';
 import type { RevealCardData } from '@/lib/invitation/reveal-card';
 import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import { resolveShareDescription } from '@/lib/rsvp/services/shared/share-message-defaults';
-import type { ThemePreset } from '@/lib/theme/theme-contract';
 import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';
 import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
 import {
@@ -52,7 +51,6 @@ export interface InvitationPageContext {
 				card: RevealCardData;
 		  })
 		| undefined;
-	footerVariant: ThemePreset;
 	/** Footer closing phrase; defaults to product phrase. */
 	footerClosingPhrase: string;
 	musicPlayer?: InvitationMusicPlayerProps;
@@ -181,7 +179,6 @@ export function buildPageContextFromViewModel(input: {
 		heroTime,
 		heroVenueName,
 		envelope: envelopeData,
-		footerVariant: theme.preset,
 		footerClosingPhrase:
 			renderViewModel.sections.thankYou?.closingPhrase?.trim() ||
 			DEFAULT_FOOTER_CLOSING_PHRASE,
@@ -195,9 +192,8 @@ export function prepareInvitationPageContext(input: {
 	eventEntry: EventContentEntry;
 	slug: string;
 	guestContext?: InvitationGuestContext | null;
-	previewTheme?: ThemeConfig['preset'];
 }): InvitationPageContext {
-	const viewModel = adaptEvent(input.eventEntry, input.previewTheme);
+	const viewModel = adaptEvent(input.eventEntry);
 
 	return buildPageContextFromViewModel({
 		viewModel,
