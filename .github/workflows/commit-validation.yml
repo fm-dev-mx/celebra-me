@@ -173,6 +173,10 @@ jobs:
               if: matrix.tier == 'database'
               run: pnpm test:db:managed-contracts
 
+            - name: Event memories disposable DB contracts
+              if: matrix.tier == 'database'
+              run: pnpm test:db:memories-contracts
+
     browser-validation:
         name: Application / browser
         outputs:

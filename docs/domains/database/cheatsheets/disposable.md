@@ -12,6 +12,7 @@ pnpm db:disposable:reset
 pnpm db:disposable:test
 pnpm test:db:rsvp-contracts
 pnpm test:db:managed-contracts
+pnpm test:db:memories-contracts
 pnpm db:validate:pipeline
 pnpm db:branch:remediate-disposable -- --verify-only
 pnpm db:branch:remediate-disposable -- --execute

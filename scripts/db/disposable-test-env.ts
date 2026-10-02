@@ -111,6 +111,7 @@ Usage:
   tsx scripts/db/disposable-test-env.ts run-concurrency-test  Prove same-key publication contention publishes once
   tsx scripts/db/disposable-test-env.ts run-phase3-concurrency-test  Exercise Editor/managed/publication/asset contention
   tsx scripts/db/disposable-test-env.ts run-memories-concurrency-test  Exercise event memories transaction races
+  tsx scripts/db/disposable-test-env.ts run-memories-db-contracts  Reset disposable DB, run event memories pgTAP files and races
   tsx scripts/db/disposable-test-env.ts run-stale-baseline-test  Exercise public and contact-only baselines
   tsx scripts/db/disposable-test-env.ts stop        Stop the disposable container
   tsx scripts/db/disposable-test-env.ts cleanup     Full cleanup (stop + remove container)
@@ -528,6 +529,10 @@ export function cmdReset(): void {
 
 	// Public RSVP RPCs use unqualified gen_random_bytes() with search_path=public.
 	// Supabase installs pgcrypto in `extensions`; expose a public wrapper for disposable parity.
+	ensurePgcryptoWrapper();
+}
+
+function ensurePgcryptoWrapper(): void {
 	console.info('Ensuring public.gen_random_bytes wrapper for pgcrypto (extensions schema)...');
 	const pgcryptoWrapper = runCommand(
 		'psql',
@@ -548,18 +553,26 @@ as $fn$ select extensions.gen_random_bytes($1) $fn$;
 	}
 }
 
+const MEMORIES_PGTAP_FILES = [
+	'event_memories_catalog.test.sql',
+	'event_memories_lifecycle.test.sql',
+];
+
 function cmdRunTests(): void {
 	console.info('=== Disposable Test Environment: Run Tests ===\n');
-
-	const testFiles = [
+	runPgTapFiles([
 		'account_role_sync.test.sql',
 		'invitation_workflow.test.sql',
 		'atomic_invitation_publication.test.sql',
 		'invitation_original_image_delivery.test.sql',
 		'managed_identity_archive_cascade.test.sql',
-		'event_memories_catalog.test.sql',
+		'managed_identity_archive_cascade.test.sql',
+		...MEMORIES_PGTAP_FILES,
 		'guest_invitation_rls.test.sql',
-	];
+	]);
+}
+
+function runPgTapFiles(testFiles: string[]): void {
 	const testPaths = testFiles.map((file) => resolve(PROJECT_ROOT, 'supabase', 'tests', file));
 	if (!testPaths.some((testPath) => existsSync(testPath))) {
 		console.info('No pgTAP test files found.');
@@ -571,24 +584,7 @@ function cmdRunTests(): void {
 		input: 'CREATE EXTENSION IF NOT EXISTS pgtap;',
 	});
 
-	console.info('Ensuring public.gen_random_bytes wrapper for pgcrypto (extensions schema)...');
-	const pgcryptoWrapper = runCommand(
-		'psql',
-		['--set', 'ON_ERROR_STOP=1', '--dbname', DISPOSABLE_DB_URL],
-		{
-			input: `
-create extension if not exists pgcrypto with schema extensions;
-create or replace function public.gen_random_bytes(integer)
-returns bytea
-language sql
-stable
-as $fn$ select extensions.gen_random_bytes($1) $fn$;
-`,
-		},
-	);
-	if (pgcryptoWrapper.status !== 0) {
-		fail(`pgcrypto public wrapper failure: ${pgcryptoWrapper.stderr}`);
-	}
+	ensurePgcryptoWrapper();
 
 	console.info('Running pgTAP tests...');
 	for (const testPath of testPaths) {
@@ -856,6 +852,19 @@ function cmdRunMemoriesConcurrencyTest(): void {
 	}
 }
 
+/**
+ * Reset the disposable database and run every event memories database contract:
+ * the pgTAP catalog and lifecycle files, then the transaction races.
+ */
+function cmdRunMemoriesDbContracts(): void {
+	console.info('=== Disposable Test Environment: Event Memories DB Contracts ===\n');
+	ensureDisposableReset(
+		'Event memories DB contracts require a reachable disposable database on port 54332.',
+	);
+	runPgTapFiles(MEMORIES_PGTAP_FILES);
+	cmdRunMemoriesConcurrencyTest();
+}
+
 function cmdRunStaleBaselineTest(): void {
 	console.info('=== Disposable Test Environment: Publication Stale Baselines ===\n');
 	const result = runCommand('npx', [
@@ -939,6 +948,9 @@ async function main(): Promise<void> {
 			break;
 		case 'run-memories-concurrency-test':
 			cmdRunMemoriesConcurrencyTest();
+			break;
+		case 'run-memories-db-contracts':
+			cmdRunMemoriesDbContracts();
 			break;
 		case 'run-stale-baseline-test':
 			cmdRunStaleBaselineTest();
