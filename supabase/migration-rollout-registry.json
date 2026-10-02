@@ -128,9 +128,8 @@
             "notes": "Creates the event-neutral guest memories catalog (settings, sessions, items, audit) with service-role-only access and per-event window, retention and quotas enforced inside the reservation RPC. Additive for the application: legacy valentina_* objects stay until the separately authorized retirement migration, which requires the event_memories_client capability."
         },
         "20261001120000": {
-            "phase": "contract",
+            "phase": "expand",
             "provides": ["guest_invitation_soft_delete_rpc"],
-            "revokes": ["guest_invitation_soft_delete_rpc_client_execute"],
             "notes": "Creates the service-role-only soft_delete_guest_invitation_v1 RPC used by the dashboard guest delete. The only revoke initializes privileges of the new function; table grants and RLS policies are unchanged. Apply before deploying the application that calls it."
         }
     },

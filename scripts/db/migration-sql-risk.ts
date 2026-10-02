@@ -87,12 +87,43 @@ export function classifySqlText(sql: string): MigrationSqlRiskFinding[] {
 	return findings;
 }
 
+function matchCreatedObject(
+	text: string,
+	createTable: RegExp,
+	createFunction: RegExp,
+): string | undefined {
+	return (text.match(createTable) ?? text.match(createFunction))?.[1]?.toLowerCase();
+}
+
+function matchRevokedObject(
+	text: string,
+	revokeTable: RegExp,
+	revokeFunction: RegExp,
+): string | undefined {
+	return (text.match(revokeTable) ?? text.match(revokeFunction))?.[1]?.toLowerCase();
+}
+
+function matchPreservedObject(text: string, patterns: readonly RegExp[]): string | undefined {
+	for (const pattern of patterns) {
+		const matched = text.match(pattern)?.[1]?.toLowerCase();
+		if (matched) return matched;
+	}
+	return undefined;
+}
+
 /** Narrow proof, not a general SQL parser: unsupported syntax retains the original guard. */
 function excludeNewTablePermissionInitialization(sql: string, scanned: string): string {
+	// Strip function definition bodies (AS $tag$ ... $tag$) so standard function definitions
+	// are not rejected merely for containing dollar quotes. Other dollar quotes (like DO $$ ... $$)
+	// remain and fail closed.
+	const sqlWithoutFunctionBodies = sql.replace(
+		/\bas\s+\$([A-Za-z_][A-Za-z0-9_]*|)\$[\s\S]*?\$\1\$/gi,
+		'as ',
+	);
 	// Do not infer object identity or statement boundaries through quoted/dynamic SQL.
-	const literals = sql.match(/'(?:''|[^'])*'/g) ?? [];
+	const literals = sqlWithoutFunctionBodies.match(/'(?:''|[^'])*'/g) ?? [];
 	if (
-		/"|\$[A-Za-z_]*\$|\/\*|\\/.test(sql) ||
+		/"|\$[A-Za-z_]*\$|\/\*|\\/.test(sqlWithoutFunctionBodies) ||
 		literals.some((literal) => /;|--|\/\*/.test(literal))
 	) {
 		return scanned;
@@ -100,8 +131,16 @@ function excludeNewTablePermissionInitialization(sql: string, scanned: string): 
 	const identifier = '[a-z_][a-z0-9_]*';
 	const qualified = `(${identifier}\\.${identifier})`;
 	const createTable = new RegExp(`^create\\s+table\\s+${qualified}\\s*\\([\\s\\S]*\\)$`, 'i');
-	const revoke = new RegExp(
+	const createFunction = new RegExp(
+		`^create\\s+(?:or\\s+replace\\s+)?function\\s+${qualified}\\s*\\([\\s\\S]*\\)\\s*returns\\b[\\s\\S]*$`,
+		'i',
+	);
+	const revokeTable = new RegExp(
 		`^revoke\\s+all(?:\\s+privileges)?\\s+on\\s+(?:table\\s+)?${qualified}\\s+from\\s+${identifier}(?:\\s*,\\s*${identifier})*$`,
+		'i',
+	);
+	const revokeFunction = new RegExp(
+		`^revoke\\s+all(?:\\s+privileges)?\\s+on\\s+function\\s+${qualified}(?:\\s*\\([^()]*\\))?\\s+from\\s+${identifier}(?:\\s*,\\s*${identifier})*$`,
 		'i',
 	);
 	const alterRls = new RegExp(
@@ -112,6 +151,15 @@ function excludeNewTablePermissionInitialization(sql: string, scanned: string): 
 		`^create\\s+(?:unique\\s+)?index\\s+${identifier}\\s+on\\s+${qualified}\\s*\\([^()]*\\)$`,
 		'i',
 	);
+	const grantFunction = new RegExp(
+		`^grant\\s+execute\\s+on\\s+function\\s+${qualified}(?:\\s*\\([^()]*\\))?\\s+to\\s+${identifier}(?:\\s*,\\s*${identifier})*$`,
+		'i',
+	);
+	const commentFunction = new RegExp(
+		`^comment\\s+on\\s+function\\s+${qualified}(?:\\s*\\([^()]*\\))?\\s+is\\s+.*$`,
+		'i',
+	);
+	const preservedPatterns = [alterRls, createIndex, grantFunction, commentFunction] as const;
 	let inTransaction = false;
 	const created = new Set<string>();
 	return scanned
@@ -123,16 +171,19 @@ function excludeNewTablePermissionInitialization(sql: string, scanned: string): 
 				created.clear();
 				return statement;
 			}
-			const table = text.match(createTable)?.[1]?.toLowerCase();
-			if (inTransaction && table) {
-				created.add(table);
+			if (!inTransaction) return statement;
+
+			const createdObj = matchCreatedObject(text, createTable, createFunction);
+			if (createdObj) {
+				created.add(createdObj);
 				return statement;
 			}
-			const revokedTable = text.match(revoke)?.[1]?.toLowerCase();
-			if (inTransaction && revokedTable && created.has(revokedTable)) return '';
-			const preservedTable = (text.match(alterRls) ??
-				text.match(createIndex))?.[1]?.toLowerCase();
-			if (inTransaction && preservedTable && created.has(preservedTable)) return statement;
+			const revokedObj = matchRevokedObject(text, revokeTable, revokeFunction);
+			if (revokedObj && created.has(revokedObj)) return '';
+
+			const preservedObj = matchPreservedObject(text, preservedPatterns);
+			if (preservedObj && created.has(preservedObj)) return statement;
+
 			// Includes COMMIT, ROLLBACK, savepoints, renames, dynamic calls and unknown operations.
 			inTransaction = false;
 			created.clear();
