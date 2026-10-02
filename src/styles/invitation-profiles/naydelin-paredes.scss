@@ -130,6 +130,7 @@
 	.gallery-section__eyebrow,
 	.event-location__eyebrow,
 	.event-location__card-title,
+	.event-location__indications-heading,
 	.family__group-title,
 	.access-card__eyebrow {
 		display: block;
@@ -726,6 +727,25 @@
 		--location-nav-font-size: 0.68rem;
 		--location-nav-letter-spacing: 0.2em;
 
+		// Guest notes: gold line icons without discs, Cormorant copy in espresso ink, and the
+		// date in gold ink.
+		--location-divider-display: none;
+		--location-indications-spacing: clamp(3rem, 6vw, 4rem);
+		--location-indications-heading-margin-bottom: 1.75rem;
+		--location-indication-icon-bg: transparent;
+		--location-indication-icon-border: none;
+		--location-indication-icon-color: rgb(var(--naydelin-gold-rgb));
+		--location-indication-icon-opacity: 100%;
+		--location-indication-icon-svg-size: 22px;
+		--location-indication-icon-svg-stroke: 1px;
+		--location-indication-text-font-family: var(--font-display);
+		--location-indication-text-font-size: clamp(1.15rem, 2.6vw, 1.3rem);
+		--location-indication-text-line-height: 1.4;
+		--location-indication-text-letter-spacing: 0;
+		--location-indication-text-color: rgb(var(--naydelin-espresso-rgb));
+		--location-indication-strong-color: rgb(var(--naydelin-gold-ink-rgb));
+		--location-indication-strong-font-weight: 600;
+
 		// The itinerary title follows directly; a "next section" cue would repeat it.
 		.nav-button-container {
 			display: none;
@@ -741,6 +761,73 @@
 			flex: 0 1 auto;
 			padding-inline: 1.75rem;
 			font-weight: 500;
+		}
+
+		// Guest notes read as a stationery postscript: foil rules frame a centered list set in
+		// Cormorant, replacing the variant's sand box, square border, and circled icons.
+		.event-location__indications-container {
+			max-width: 30rem;
+			padding: 2.25rem 1rem 2.5rem;
+			border: 0;
+			background: none;
+			text-align: center;
+
+			&::before,
+			&::after {
+				content: '';
+				position: absolute;
+				left: 50%;
+				width: min(14rem, 70%);
+				height: 1px;
+				background: var(--naydelin-foil-rule);
+				transform: translateX(-50%);
+			}
+
+			&::before {
+				top: 0;
+			}
+
+			&::after {
+				bottom: 0;
+			}
+		}
+
+		.event-location__indication-item {
+			position: relative;
+			overflow: visible;
+			flex-direction: column;
+			align-items: center;
+			gap: 0.65rem;
+			padding: 0;
+			border-top: 0;
+			text-align: center;
+		}
+
+		// A small foil lozenge separates the notes instead of a full-width rule.
+		.event-location__indication-item + .event-location__indication-item {
+			margin-top: 1.75rem;
+			padding-top: 1.75rem;
+
+			&::before {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 50%;
+				width: 6px;
+				height: 6px;
+				background: var(--naydelin-foil);
+				transform: translate(-50%, -50%) rotate(45deg);
+			}
+		}
+
+		.event-location__indication-icon {
+			flex: none;
+		}
+
+		.event-location__indication-text {
+			max-width: 22rem;
+			text-align: center;
+			text-wrap: balance;
 		}
 	}
 
