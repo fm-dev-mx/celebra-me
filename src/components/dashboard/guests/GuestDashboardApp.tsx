@@ -256,6 +256,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				<ShareMessagesModal
 					eventId={eventId}
 					eventTitle={currentEvent.title}
+					eventType={currentEvent.eventType}
 					initialTemplates={shareTemplates}
 					initialReminderSettings={reminderSettings}
 					shareDateContext={shareDateContext}

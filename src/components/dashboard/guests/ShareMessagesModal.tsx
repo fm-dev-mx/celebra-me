@@ -2,15 +2,23 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import ModalShell from '@/components/dashboard/ModalShell';
 import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-renderer';
 import {
-	DEFAULT_INVITATION_MESSAGE,
-	DEFAULT_REMINDER_MESSAGE,
 	DEFAULT_PREVIEW_CONTEXT,
 	SHARE_MESSAGE_VARIABLES,
 	SHARE_MESSAGE_VARIABLE_LABELS,
+	SHARE_MESSAGE_VARIABLE_TOOLTIPS,
+	INVITATION_TAB_VARIABLES,
+	REMINDER_TAB_VARIABLES,
+	getDefaultInvitationTemplate,
+	getDefaultReminderTemplate,
+	getSuggestedPresets,
+	smartInsertVariable,
 	type ShareMessagesConfig,
 	type ReminderSettings,
 	type ReminderAudience,
+	type ShareMessageVariable,
+	type MessagePreset,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
+import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import { guestsApi } from '@/lib/dashboard/guests-api';
 import { useConfirmAction } from '@/hooks/use-confirm-action';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
@@ -18,6 +26,7 @@ import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-m
 interface ShareMessagesModalProps {
 	eventId: string;
 	eventTitle: string;
+	eventType?: EventRecord['eventType'];
 	initialTemplates: ShareMessagesConfig;
 	initialReminderSettings: ReminderSettings;
 	shareDateContext: ShareMessageDateContext;
@@ -138,15 +147,118 @@ const ReminderSettingsPanel: React.FC<ReminderSettingsPanelProps> = ({
 	</div>
 );
 
+interface ShareMessagesPresetsProps {
+	presets: MessagePreset[];
+	onApplyPreset: (preset: MessagePreset) => void;
+}
+
+const ShareMessagesPresets: React.FC<ShareMessagesPresetsProps> = ({ presets, onApplyPreset }) => (
+	<div className="share-messages-modal__presets">
+		<span className="share-messages-modal__presets-label">Estilos sugeridos:</span>
+		<div
+			className="share-messages-modal__preset-chips"
+			role="group"
+			aria-label="Estilos sugeridos"
+		>
+			{presets.map((preset) => (
+				<button
+					type="button"
+					key={preset.id}
+					className="share-messages-modal__preset-btn"
+					title={preset.description}
+					onClick={() => onApplyPreset(preset)}
+				>
+					<span className="share-messages-modal__preset-icon" aria-hidden="true">
+						{preset.id === 'recommended' ? '🌟' : preset.id === 'warm' ? '💬' : '⚡'}
+					</span>
+					<span>{preset.label}</span>
+				</button>
+			))}
+		</div>
+	</div>
+);
+
+interface ShareMessagesVariablesProps {
+	primaryVariables: ShareMessageVariable[];
+	duplicateNotice: string | null;
+	onInsertVariable: (variable: ShareMessageVariable) => void;
+}
+
+const ShareMessagesVariables: React.FC<ShareMessagesVariablesProps> = ({
+	primaryVariables,
+	duplicateNotice,
+	onInsertVariable,
+}) => (
+	<div className="share-messages-modal__variables">
+		<div className="share-messages-modal__variables-header">
+			<span className="share-messages-modal__variables-label">Insertar variable:</span>
+			<span className="share-messages-modal__variables-help">
+				Toque una variable para insertarla con espaciado automático donde esté su cursor.
+			</span>
+		</div>
+		<div className="share-messages-modal__variables-grid">
+			{SHARE_MESSAGE_VARIABLES.map((v) => {
+				const isPrimary = primaryVariables.includes(v);
+				return (
+					<button
+						key={v}
+						type="button"
+						className={`share-messages-modal__variable ${isPrimary ? 'share-messages-modal__variable--primary' : 'share-messages-modal__variable--secondary'}`}
+						title={SHARE_MESSAGE_VARIABLE_TOOLTIPS[v] ?? v}
+						onClick={() => onInsertVariable(v)}
+					>
+						<span className="share-messages-modal__variable-plus" aria-hidden="true">
+							+
+						</span>
+						<span>{SHARE_MESSAGE_VARIABLE_LABELS[v]}</span>
+					</button>
+				);
+			})}
+		</div>
+		{duplicateNotice && (
+			<p className="share-messages-modal__variables-notice" role="status">
+				ℹ️ {duplicateNotice}
+			</p>
+		)}
+	</div>
+);
+
+interface ShareMessagesPreviewProps {
+	previewText: string;
+}
+
+const ShareMessagesPreview: React.FC<ShareMessagesPreviewProps> = ({ previewText }) => (
+	<div className="share-messages-modal__preview">
+		<div className="share-messages-modal__preview-header">
+			<span className="share-messages-modal__preview-label">Vista previa:</span>
+			<span className="share-messages-modal__preview-badge">Así se verá en WhatsApp</span>
+		</div>
+		<div className="share-messages-modal__preview-bubble">
+			<pre className="share-messages-modal__preview-text">{previewText}</pre>
+			<div className="share-messages-modal__preview-meta" aria-hidden="true">
+				<span className="share-messages-modal__preview-time">12:00 p. m.</span>
+				<span className="share-messages-modal__preview-check">✓✓</span>
+			</div>
+		</div>
+	</div>
+);
+
 const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 	eventId,
 	eventTitle,
+	eventType,
 	initialTemplates,
 	initialReminderSettings,
 	shareDateContext,
 	onClose,
 	onSave,
 }) => {
+	const defaultInvitation = useMemo(() => getDefaultInvitationTemplate(eventType), [eventType]);
+	const defaultReminder = useMemo(
+		() => getDefaultReminderTemplate('pending', eventType),
+		[eventType],
+	);
+
 	const [invitation, setInvitation] = useState(initialTemplates.invitation);
 	const [reminder, setReminder] = useState(initialTemplates.reminder);
 	const [reminderEnabled, setReminderEnabled] = useState(initialReminderSettings.enabled);
@@ -158,34 +270,58 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 	);
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [duplicateNotice, setDuplicateNotice] = useState<string | null>(null);
 	const [activeTab, setActiveTab] = useState<ModalTab>('invitation');
+
+	const presets = useMemo(() => getSuggestedPresets(eventType), [eventType]);
+
 	const resetConfirm = useConfirmAction(() => {
-		setInvitation(DEFAULT_INVITATION_MESSAGE);
-		setReminder(DEFAULT_REMINDER_MESSAGE);
+		setInvitation(defaultInvitation);
+		setReminder(defaultReminder);
 	});
 
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
 	const handleInsertVariable = useCallback(
-		(variable: string) => {
+		(variable: ShareMessageVariable) => {
 			const textarea = textareaRef.current;
 			if (!textarea) return;
 			const start = textarea.selectionStart;
 			const end = textarea.selectionEnd;
-			const newText =
-				textarea.value.substring(0, start) + variable + textarea.value.substring(end);
-			if (activeTab === 'invitation') {
-				setInvitation(newText);
-			} else {
-				setReminder(newText);
+			const currentVal = activeTab === 'invitation' ? invitation : reminder;
+
+			const result = smartInsertVariable(currentVal, start, end, variable);
+
+			if (result.wasDuplicate) {
+				setDuplicateNotice(
+					`"${SHARE_MESSAGE_VARIABLE_LABELS[variable]}" ya se encuentra agregado en esa posición.`,
+				);
+				setTimeout(() => setDuplicateNotice(null), 3000);
+				return;
 			}
+
+			setDuplicateNotice(null);
+			if (activeTab === 'invitation') {
+				setInvitation(result.newText);
+			} else {
+				setReminder(result.newText);
+			}
+
 			requestAnimationFrame(() => {
 				textarea.focus();
-				textarea.setSelectionRange(start + variable.length, start + variable.length);
+				textarea.setSelectionRange(result.newCursorPos, result.newCursorPos);
 			});
 		},
-		[activeTab],
+		[activeTab, invitation, reminder],
 	);
+
+	const handleApplyPreset = (preset: MessagePreset) => {
+		if (activeTab === 'invitation') {
+			setInvitation(preset.invitation);
+		} else if (activeTab === 'reminder') {
+			setReminder(preset.reminder);
+		}
+	};
 
 	const previewContext = useMemo(
 		() => ({
@@ -232,6 +368,15 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 			audience: reminderAudience,
 		}),
 		[reminderEnabled, reminderDays, reminderAudience],
+	);
+
+	const currentText = activeTab === 'invitation' ? invitation : reminder;
+	const missingLink = !currentText.includes('{{enlace}}') && !currentText.includes('{inviteUrl}');
+	const hasGluedVariables = useMemo(() => /\}\}\{\{/.test(currentText), [currentText]);
+
+	const primaryVariables = useMemo(
+		() => (activeTab === 'invitation' ? INVITATION_TAB_VARIABLES : REMINDER_TAB_VARIABLES),
+		[activeTab],
 	);
 
 	const handleSave = useCallback(async () => {
@@ -310,6 +455,8 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 
 				{activeTab !== 'settings' && (
 					<div className="share-messages-modal__editor-section">
+						<ShareMessagesPresets presets={presets} onApplyPreset={handleApplyPreset} />
+
 						<div
 							className="dashboard-form-field dashboard-form-field--full"
 							role="tabpanel"
@@ -338,9 +485,7 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 									}
 								}}
 								placeholder={
-									activeTab === 'invitation'
-										? DEFAULT_INVITATION_MESSAGE
-										: DEFAULT_REMINDER_MESSAGE
+									activeTab === 'invitation' ? defaultInvitation : defaultReminder
 								}
 							/>
 							<span className="share-messages-modal__char-count">
@@ -348,36 +493,31 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 							</span>
 						</div>
 
-						<div className="share-messages-modal__variables">
-							<span className="share-messages-modal__variables-label">
-								Insertar variable:
-							</span>
-							{SHARE_MESSAGE_VARIABLES.map((v) => (
-								<code
-									key={v}
-									className="share-messages-modal__variable"
-									title={v}
-									onClick={() => handleInsertVariable(v)}
-									onKeyDown={(e) => {
-										if (e.key === 'Enter' || e.key === ' ')
-											handleInsertVariable(v);
-									}}
-									role="button"
-									tabIndex={0}
-								>
-									{SHARE_MESSAGE_VARIABLE_LABELS[v]}
-								</code>
-							))}
-						</div>
+						{missingLink && (
+							<p className="share-messages-modal__hint-alert" role="status">
+								💡 Se recomienda incluir el dato{' '}
+								<strong>Enlace a la invitación</strong> para que sus invitados
+								puedan abrirla.
+							</p>
+						)}
 
-						<div
-							className={`share-messages-modal__preview${activeTab === 'reminder' ? ' share-messages-modal__preview--reminder' : ''}`}
-						>
-							<span className="share-messages-modal__preview-label">
-								Vista previa:
-							</span>
-							<pre className="share-messages-modal__preview-text">{previewText}</pre>
-						</div>
+						{hasGluedVariables && (
+							<p
+								className="share-messages-modal__hint-alert share-messages-modal__hint-alert--warning"
+								role="status"
+							>
+								⚠️ Se detectaron datos automáticos pegados sin espacio. Se
+								recomienda separarlos con un espacio o salto de línea.
+							</p>
+						)}
+
+						<ShareMessagesVariables
+							primaryVariables={primaryVariables}
+							duplicateNotice={duplicateNotice}
+							onInsertVariable={handleInsertVariable}
+						/>
+
+						<ShareMessagesPreview previewText={previewText} />
 
 						{!resetConfirm.pending ? (
 							<button

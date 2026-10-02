@@ -224,4 +224,35 @@ describe('ShareMessagesModal', () => {
 		expect(screen.getByText('Hora del evento')).toBeInTheDocument();
 		expect(screen.getByText('Límite de confirmación')).toBeInTheDocument();
 	});
+
+	it('renders style presets and applies selected preset on click', () => {
+		createModal();
+		expect(screen.getByText('Elegante')).toBeInTheDocument();
+		expect(screen.getByText('Cálido')).toBeInTheDocument();
+		expect(screen.getByText('Breve')).toBeInTheDocument();
+
+		fireEvent.click(screen.getByText('Breve'));
+		const textarea = screen.getByLabelText(/mensaje de invitación/i);
+		expect(textarea).toHaveValue(
+			'Hola {{invitado}}, le comparto la invitación a {{evento}}:\n\n{{enlace}}\n\nFavor de abrir el enlace para ver los detalles y confirmar su asistencia.',
+		);
+	});
+
+	it('shows warning when invitation link is missing from text', () => {
+		createModal();
+		const textarea = screen.getByLabelText(/mensaje de invitación/i);
+		fireEvent.change(textarea, { target: { value: 'Mensaje sin enlace' } });
+
+		expect(screen.getByText(/se recomienda incluir el dato/i)).toBeInTheDocument();
+	});
+
+	it('shows warning when glued variables are detected', () => {
+		createModal();
+		const textarea = screen.getByLabelText(/mensaje de invitación/i);
+		fireEvent.change(textarea, { target: { value: '{{evento}}{{invitado}}' } });
+
+		expect(
+			screen.getByText(/se detectaron datos automáticos pegados sin espacio/i),
+		).toBeInTheDocument();
+	});
 });
