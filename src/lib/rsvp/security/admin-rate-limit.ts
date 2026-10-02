@@ -46,6 +46,8 @@ const RATE_LIMITS = {
 	'memories:list': { maxHits: 60, windowSec: 60 },
 	'memories:create': { maxHits: 20, windowSec: 60 },
 	'memories:update': { maxHits: 30, windowSec: 60 },
+	'memories:usage': { maxHits: 30, windowSec: 60 },
+	'memories:qr': { maxHits: 30, windowSec: 60 },
 	'intake:list': { maxHits: 60, windowSec: 60 },
 	'intake:create': { maxHits: 20, windowSec: 60 },
 	'intake:update': { maxHits: 30, windowSec: 60 },

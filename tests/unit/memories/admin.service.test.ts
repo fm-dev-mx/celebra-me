@@ -277,6 +277,7 @@ describe('listMemorySpaceCandidatesAdmin', () => {
 			eventId: EVENT_ID,
 			eventSlug: PUBLIC_SLUG,
 			eventTitle: 'Victoria y Roberto',
+			eventDate: '2026-10-30',
 			defaults: {
 				publicSlug: PUBLIC_SLUG,
 				timeZone: 'America/Mazatlan',
@@ -291,6 +292,7 @@ describe('listMemorySpaceCandidatesAdmin', () => {
 			timeZone: 'America/Chihuahua',
 		});
 		expect(candidates[1].defaults.uploadStartsLocal).toMatch(/^\d{4}-\d{2}-\d{2}T00:00$/);
+		expect(candidates[1].eventDate).toBeNull();
 	});
 
 	it('returns nothing when every published event already has a space', async () => {
@@ -330,7 +332,11 @@ describe('updateMemorySpaceAdmin', () => {
 		});
 		expect(updated.enabled).toBe(false);
 		expect(mockAudit).toHaveBeenCalledWith(
-			expect.objectContaining({ action: 'space_updated', actorId: ADMIN_USER_ID }),
+			expect.objectContaining({
+				action: 'space_updated',
+				actorId: ADMIN_USER_ID,
+				metadata: { enabled: false, previousEnabled: true },
+			}),
 		);
 	});
 

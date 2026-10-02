@@ -77,7 +77,6 @@ export const MEMORIES_APP_RATE_LIMITS = {
 	mutate: { maxHits: 30, windowSec: 60 },
 	/** Authenticated host, per user id. Sized for gallery browsing and ZIP batch downloads (up to 100 items). */
 	organizer: { maxHits: 300, windowSec: 60 },
-	admin: { maxHits: 30, windowSec: 60 },
 } as const;
 
 export type MemoriesRateLimitOperation = keyof typeof MEMORIES_APP_RATE_LIMITS;
@@ -112,3 +111,22 @@ export type MemoriesLimitProfile = keyof typeof MEMORIES_LIMIT_PROFILES;
 
 export const MEMORIES_ENTITLEMENTS = ['package', 'addon', 'courtesy'] as const;
 export type MemoriesEntitlement = (typeof MEMORIES_ENTITLEMENTS)[number];
+
+/**
+ * Cloudflare Free-plan allowances that bound every memory space at once.
+ * Account-wide, not per event; the admin console compares live usage against them.
+ */
+export const CLOUDFLARE_FREE_TIER = {
+	/** R2 Standard storage, GB-month (decimal GB). */
+	r2StorageBytes: 10_000_000_000,
+	r2ClassAOperationsPerMonth: 1_000_000,
+	r2ClassBOperationsPerMonth: 10_000_000,
+	/** Workers requests, reset at 00:00 UTC. */
+	workersRequestsPerDay: 100_000,
+	/** Durable Objects requests, reset at 00:00 UTC. */
+	durableObjectsRequestsPerDay: 100_000,
+} as const;
+
+/** Share of an allowance at which the console warns, then flags as critical. */
+export const CLOUDFLARE_USAGE_WARNING_RATIO = 0.7;
+export const CLOUDFLARE_USAGE_CRITICAL_RATIO = 0.9;

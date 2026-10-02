@@ -6,10 +6,14 @@
 
 import { dashboardApi, type ApiResult } from '@/lib/dashboard/api-client';
 import type {
+	MemoriesAdminSpaceItem,
+	MemoriesAdminTotals,
 	MemoriesGuestProfile,
 	MemoriesGuestQuota,
 	MemoriesMediaPublicItem,
 	MemoriesOrganizerListResponse,
+	MemoriesPlatformUsage,
+	MemoriesSpaceHostSummary,
 	MemoriesSpaceRecord,
 	MemoriesSpaceSummary,
 } from '@/lib/memories/contract/catalog';
@@ -18,6 +22,7 @@ import {
 	buildMemoriesGuestApiPath,
 	buildMemoriesOrganizerApiPath,
 } from '@/lib/memories/contract/private-request';
+import type { MemoriesSpaceLimits } from '@/lib/memories/contract/limits';
 
 export class MemoriesRequestError extends Error {
 	readonly status: number | null;
@@ -223,6 +228,18 @@ export const memoriesOrganizerApi = {
 			}),
 		);
 	},
+	async summary(eventId: string, signal?: AbortSignal): Promise<MemoriesSpaceHostSummary> {
+		const payload = unwrap(
+			await dashboardApi.get<{ summary: MemoriesSpaceHostSummary }>(
+				`${buildMemoriesOrganizerApiPath(eventId)}/summary`,
+				{ signal },
+			),
+		);
+		return payload.summary;
+	},
+	qrUrl(eventId: string): string {
+		return `${buildMemoriesOrganizerApiPath(eventId)}/qr`;
+	},
 	async fetchItemBlob(eventId: string, itemId: string): Promise<Blob> {
 		const response = await fetch(memoriesOrganizerApi.itemMediaUrl(eventId, itemId));
 		if (!response.ok) throw new MemoriesRequestError(response.status);
@@ -236,30 +253,37 @@ export type AdminSpaceCandidate = {
 	eventId: string;
 	eventSlug: string;
 	eventTitle: string;
+	eventDate: string | null;
 	defaults: {
 		publicSlug: string;
 		timeZone: string;
 		uploadStartsLocal: string;
 		uploadEndsLocal: string;
 		retentionEndsLocal: string;
-		limits: {
-			maxEventObjects: number;
-			maxEventBytes: number;
-			maxSessionFiles: number;
-			maxSessionVideos: number;
-			maxSessionBytes: number;
-		};
+		limits: MemoriesSpaceLimits;
 	};
 };
 
+export type AdminSpaceList = {
+	items: MemoriesAdminSpaceItem[];
+	totals: MemoriesAdminTotals;
+	candidates: AdminSpaceCandidate[];
+};
+
 export const memoriesAdminApi = {
-	async list(): Promise<{ items: MemoriesSpaceRecord[]; candidates: AdminSpaceCandidate[] }> {
-		return unwrap(
-			await dashboardApi.get<{
-				items: MemoriesSpaceRecord[];
-				candidates: AdminSpaceCandidate[];
-			}>(MEMORIES_ADMIN_API_PATH),
+	async list(): Promise<AdminSpaceList> {
+		return unwrap(await dashboardApi.get<AdminSpaceList>(MEMORIES_ADMIN_API_PATH));
+	},
+	async platformUsage(): Promise<MemoriesPlatformUsage> {
+		const payload = unwrap(
+			await dashboardApi.get<{ usage: MemoriesPlatformUsage }>(
+				`${MEMORIES_ADMIN_API_PATH}/platform-usage`,
+			),
 		);
+		return payload.usage;
+	},
+	qrUrl(eventId: string): string {
+		return `${MEMORIES_ADMIN_API_PATH}/${encodeURIComponent(eventId)}/qr`;
 	},
 	async create(body: Record<string, unknown>): Promise<MemoriesSpaceRecord> {
 		const payload = unwrap(

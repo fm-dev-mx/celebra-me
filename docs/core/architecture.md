@@ -464,8 +464,23 @@ deployment.
 - **Organizer API:** `GET /api/dashboard/memories`, `GET|POST /api/dashboard/memories/:eventId`,
   `GET|PATCH|DELETE /api/dashboard/memories/:eventId/items/:itemId` (owner membership required;
   mutations are CSRF-protected through the dashboard client).
-- **Admin API:** `GET|POST /api/dashboard/admin/memories`,
-  `PATCH /api/dashboard/admin/memories/:eventId`.
+- **Organizer summary:** `GET /api/dashboard/memories/:eventId/summary` (window state, accepted
+  photo/video totals, distinct uploaders, remaining capacity as a percentage) and
+  `GET /api/dashboard/memories/:eventId/qr` (printable SVG). The host projection never carries
+  limits, commercial origin or rejection counts.
+- **Admin API:** `GET|POST /api/dashboard/admin/memories` (the list carries per-space usage and the
+  committed-capacity total), `PATCH /api/dashboard/admin/memories/:eventId` (edit, pause, resume;
+  audited with the previous and new `enabled`), `GET /api/dashboard/admin/memories/:eventId/qr`, and
+  `GET /api/dashboard/admin/memories/platform-usage`. Admin usage is aggregate only (counts, bytes,
+  dates): administrators never see guest names, aliases, object keys, captions or media.
+- **Usage sources:** per-space figures come from `event_memory_items` rows that still hold an R2
+  object (the same set the reservation quota counts) and from session counts. Account-wide figures
+  (R2 storage and Class A/B operations, Workers and Durable Objects requests) come from the
+  Cloudflare GraphQL Analytics API through a read-only token (`MEMORIES_CLOUDFLARE_*`), one query
+  per dataset, cached for five minutes; without the token the console falls back to the recorded
+  storage. Free-plan allowances live in `CLOUDFLARE_FREE_TIER` (`contract/limits.ts`).
+- **QR:** `src/lib/memories/qr.ts` renders the printable SVG for both dashboard routes and the
+  `memories:qr` CLI; a test pins the SHA-256 of the SVG already printed.
 - **Data:** `event_memory_settings` (window, retention, quotas, entitlement; `on delete restrict` to
   `events`), `event_memory_sessions`, `event_memory_items`, `event_memory_audit_events`. The
   reservation RPC decides availability, window and every quota under one advisory lock; a single

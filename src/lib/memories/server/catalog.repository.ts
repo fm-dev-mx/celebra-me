@@ -332,6 +332,69 @@ export async function listSessionInFlightMedia(
 	});
 }
 
+/** Minimal columns for usage aggregates: no keys, captions or checksums. */
+export type MediaUsageRow = {
+	id: string;
+	event_id: string;
+	session_id: string;
+	status: MemoriesMediaStatus;
+	mime_type: string;
+	size_bytes: number;
+	accepted_at: string | null;
+};
+
+const USAGE_PAGE_SIZE = 1000;
+
+function eventIdFilter(eventIds: readonly string[]): string {
+	return `in.(${eventIds.map((id) => encodeURIComponent(id)).join(',')})`;
+}
+
+/**
+ * Every row still holding an R2 object, the same set the reservation quota counts.
+ * Bounded by `max_event_objects` per space; keyset-paged past PostgREST's row cap.
+ */
+export async function listResidentMediaUsage(
+	eventIds: readonly string[],
+): Promise<MediaUsageRow[]> {
+	if (eventIds.length === 0) return [];
+	const rows: MediaUsageRow[] = [];
+	let after: string | null = null;
+	for (;;) {
+		const page: MediaUsageRow[] = await supabaseRestRequest<MediaUsageRow[]>({
+			pathWithQuery:
+				`${ITEMS}?select=id,event_id,session_id,status,mime_type,size_bytes,accepted_at` +
+				`&event_id=${eventIdFilter(eventIds)}&object_deleted_at=is.null` +
+				(after ? `&id=gt.${encodeURIComponent(after)}` : '') +
+				`&order=id.asc&limit=${USAGE_PAGE_SIZE}`,
+			useServiceRole: true,
+		});
+		rows.push(...page);
+		if (page.length < USAGE_PAGE_SIZE) return rows;
+		after = page[page.length - 1].id;
+	}
+}
+
+/** Event id of every guest session, for registration counts. */
+export async function listSessionEventIds(eventIds: readonly string[]): Promise<string[]> {
+	if (eventIds.length === 0) return [];
+	const eventIdsOut: string[] = [];
+	let after: string | null = null;
+	for (;;) {
+		const page: Array<{ id: string; event_id: string }> = await supabaseRestRequest<
+			Array<{ id: string; event_id: string }>
+		>({
+			pathWithQuery:
+				`${SESSIONS}?select=id,event_id&event_id=${eventIdFilter(eventIds)}` +
+				(after ? `&id=gt.${encodeURIComponent(after)}` : '') +
+				`&order=id.asc&limit=${USAGE_PAGE_SIZE}`,
+			useServiceRole: true,
+		});
+		eventIdsOut.push(...page.map((row) => row.event_id));
+		if (page.length < USAGE_PAGE_SIZE) return eventIdsOut;
+		after = page[page.length - 1].id;
+	}
+}
+
 export async function expireContent(now: string): Promise<number> {
 	const count = await rpc<number>('expire_event_memory_content', { p_now: now });
 	return Number(count) || 0;

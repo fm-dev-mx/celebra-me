@@ -23,6 +23,7 @@ import {
 	type BulkExportProgress,
 } from '@/lib/memories/client/export';
 import { zonedDayBounds } from '@/lib/memories/client/zoned-date';
+import MemoriesHostSummary from '@/components/dashboard/memories/MemoriesHostSummary';
 
 const EVENT_STORAGE_KEY = 'memories-dashboard-event-id';
 
@@ -30,7 +31,7 @@ type OrganizerItem = MemoriesOrganizerItem;
 type ExportScope = 'all' | 'selected';
 type ExportStep = 'confirm' | 'password' | 'processing' | 'complete';
 
-export type MemoriesOrganizerCatalogFilters = {
+type MemoriesOrganizerCatalogFilters = {
 	status: 'all' | MemoriesMediaStatus;
 	uploader: string;
 	createdOn: string;
@@ -123,6 +124,7 @@ export default function MemoriesOrganizer({ spaces, initialEventId = '' }: Memor
 	const [caption, setCaption] = useState('');
 	const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
 	const [actionBusy, setActionBusy] = useState(false);
+	const [summaryRefresh, setSummaryRefresh] = useState(0);
 
 	const [exportScope, setExportScope] = useState<ExportScope | null>(null);
 	const [exportStep, setExportStep] = useState<ExportStep>('confirm');
@@ -465,6 +467,7 @@ export default function MemoriesOrganizer({ spaces, initialEventId = '' }: Memor
 
 	return (
 		<section className="dashboard-card dashboard-memories" aria-label="Catálogo de recuerdos">
+			<MemoriesHostSummary eventId={space.eventId} refreshKey={summaryRefresh} />
 			<div className="dashboard-memories__topbar">
 				<div>
 					<p className="dashboard-memories__eyebrow">Catálogo privado</p>
@@ -492,7 +495,14 @@ export default function MemoriesOrganizer({ spaces, initialEventId = '' }: Memor
 					) : (
 						<strong>{space.eventTitle}</strong>
 					)}
-					<button type="button" className="btn-secondary" onClick={() => void load()}>
+					<button
+						type="button"
+						className="btn-secondary"
+						onClick={() => {
+							setSummaryRefresh((value) => value + 1);
+							void load();
+						}}
+					>
 						Actualizar
 					</button>
 					<button

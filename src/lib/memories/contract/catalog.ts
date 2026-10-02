@@ -212,6 +212,62 @@ export interface MemoriesSpaceRecord extends MemoriesSpaceLimits {
 	updatedAt: string;
 }
 
+/**
+ * Aggregate usage of one space for the super-admin console. Counts and bytes
+ * only: never guest names, aliases, object keys or captions.
+ */
+export interface MemoriesSpaceAdminUsage {
+	photos: number;
+	videos: number;
+	guestsWithUploads: number;
+	sessions: number;
+	residentObjects: number;
+	residentBytes: number;
+	inFlight: number;
+	rejected: number;
+	lastAcceptedAt: string | null;
+}
+
+export interface MemoriesAdminSpaceItem extends MemoriesSpaceRecord {
+	usage: MemoriesSpaceAdminUsage;
+}
+
+export interface MemoriesAdminTotals {
+	/** Bytes the database tracks as resident in R2 across every space. */
+	residentBytes: number;
+	/** Bytes live spaces may still reach: quota while enabled, resident bytes otherwise. */
+	committedBytes: number;
+}
+
+/** Host projection: progress without limits, commercial origin or diagnostics. */
+export interface MemoriesSpaceHostSummary extends MemoriesSpaceSummary {
+	publicUrl: string;
+	photos: number;
+	videos: number;
+	guestsWithUploads: number;
+	lastAcceptedAt: string | null;
+	/** 0–100, the tighter of the byte and file quotas. */
+	capacityRemainingPercent: number;
+}
+
+export interface MemoriesPlatformMeter {
+	used: number | null;
+	limit: number;
+}
+
+export type MemoriesPlatformUsage =
+	| {
+			kind: 'ok';
+			fetchedAt: string;
+			r2StorageBytes: MemoriesPlatformMeter;
+			r2ClassAOperations: MemoriesPlatformMeter;
+			r2ClassBOperations: MemoriesPlatformMeter;
+			workersRequests: MemoriesPlatformMeter;
+			durableObjectsRequests: MemoriesPlatformMeter;
+	  }
+	| { kind: 'unconfigured' }
+	| { kind: 'unavailable' };
+
 export function resolveMemoriesWindowState(
 	space: {
 		enabled: boolean;

@@ -409,3 +409,394 @@
 		}
 	}
 }
+
+// Super-admin console and host summary --------------------------------------------
+
+.memories-admin {
+	display: grid;
+	gap: 1rem;
+
+	a.btn-primary,
+	a.btn-secondary,
+	button {
+		min-height: 44px;
+	}
+
+	&__toolbar {
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	&__spaces {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 26rem), 1fr));
+		gap: 1rem;
+	}
+
+	&__expired > summary {
+		cursor: pointer;
+		font-weight: 600;
+		color: var(--color-text-muted);
+		margin-bottom: 1rem;
+	}
+}
+
+.memories-platform {
+	display: grid;
+	gap: 0.85rem;
+
+	&__header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.5rem;
+
+		h2 {
+			margin: 0;
+			font-size: 1.1rem;
+		}
+	}
+
+	&__stamp,
+	&__notice,
+	&__committed {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+	}
+
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+		gap: 0.85rem 1.25rem;
+	}
+
+	&__committed--over {
+		padding: 0.6rem 0.75rem;
+		border: 1px solid var(--color-state-warning-border);
+		border-radius: 0.5rem;
+		background: var(--color-state-warning-bg);
+		color: var(--color-state-warning-text);
+	}
+}
+
+.memories-meter {
+	--memories-meter-fill: var(--color-state-success-text);
+
+	display: grid;
+	gap: 0.35rem;
+
+	&--warning {
+		--memories-meter-fill: var(--color-state-warning-text);
+	}
+
+	&--critical {
+		--memories-meter-fill: var(--color-state-danger-text);
+	}
+
+	&__label {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.5rem;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+
+		strong {
+			color: var(--color-text-primary);
+			white-space: nowrap;
+		}
+	}
+
+	&__limit {
+		font-weight: 400;
+		color: var(--color-text-muted);
+	}
+
+	&__track {
+		display: block;
+		height: 0.4rem;
+		overflow: hidden;
+		border-radius: 999px;
+		background: var(--dashboard-card-border);
+
+		> span {
+			display: block;
+			width: 0;
+			height: 100%;
+			border-radius: inherit;
+			background: var(--memories-meter-fill);
+		}
+
+		@for $step from 1 through 20 {
+			> span[data-fill='#{$step * 5}'] {
+				width: #{$step * 5}%;
+			}
+		}
+	}
+}
+
+.memories-space {
+	display: grid;
+	gap: 0.85rem;
+	align-content: start;
+
+	&__header {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 0.75rem;
+
+		h3 {
+			margin: 0;
+			font-size: 1.05rem;
+		}
+	}
+
+	&__dates,
+	&__activity {
+		margin: 0.25rem 0 0;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+	}
+
+	&__url {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
+
+		code {
+			overflow-wrap: anywhere;
+		}
+	}
+
+	&__stats {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+		gap: 0.75rem;
+		margin: 0;
+
+		div {
+			padding: 0.65rem 0.75rem;
+			border: 1px solid var(--dashboard-card-border);
+			border-radius: 0.6rem;
+		}
+
+		dt {
+			font-size: 0.75rem;
+			color: var(--color-text-muted);
+		}
+
+		dd {
+			margin: 0.15rem 0 0;
+			font-size: 1.15rem;
+			font-weight: 700;
+		}
+	}
+
+	&__capacity dd {
+		display: grid;
+		gap: 0.35rem;
+	}
+
+	&__sub {
+		font-size: 0.8rem;
+		font-weight: 400;
+		color: var(--color-text-muted);
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 0.5rem;
+
+		> div {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.5rem;
+		}
+	}
+}
+
+.memories-picker {
+	display: grid;
+	gap: 0.75rem;
+
+	.dashboard-form-grid {
+		grid-template-columns: 1fr;
+	}
+
+	&__list {
+		display: grid;
+		gap: 0.4rem;
+		max-height: 22rem;
+		margin: 0;
+		padding: 0;
+		overflow-y: auto;
+		list-style: none;
+	}
+
+	&__option {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		width: 100%;
+		min-height: 44px;
+		padding: 0.6rem 0.8rem;
+		border: 1px solid var(--dashboard-card-border);
+		border-radius: 0.6rem;
+		background: transparent;
+		color: var(--color-text-primary);
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+
+		small {
+			color: var(--color-text-muted);
+			white-space: nowrap;
+		}
+
+		&:hover,
+		&:focus-visible {
+			border-color: var(--color-state-info-border);
+			background: var(--dashboard-card-bg-soft);
+		}
+	}
+}
+
+.memories-form {
+	display: grid;
+	gap: 1rem;
+
+	.dashboard-form-grid {
+		align-items: start;
+		gap: 0.85rem 0.75rem;
+
+		> .dashboard-form-field {
+			margin-top: 0;
+		}
+	}
+
+	fieldset {
+		margin: 0;
+		padding: 0;
+		border: 0;
+	}
+
+	legend {
+		margin-bottom: 0.5rem;
+		font-weight: 700;
+	}
+
+	&__capacity {
+		margin: 0.75rem 0;
+		padding: 0.75rem 0.9rem;
+		border: 1px solid var(--dashboard-card-border);
+		border-radius: 0.6rem;
+
+		h4 {
+			margin: 0 0 0.5rem;
+			font-size: 0.85rem;
+		}
+
+		dl {
+			display: grid;
+			gap: 0.35rem;
+			margin: 0;
+		}
+
+		dl > div {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-between;
+			gap: 0.15rem 0.75rem;
+			font-size: 0.85rem;
+		}
+
+		dt {
+			color: var(--color-text-muted);
+		}
+
+		dd {
+			margin: 0;
+			font-weight: 600;
+			text-align: right;
+		}
+
+		small {
+			display: block;
+			font-weight: 400;
+			color: var(--color-text-muted);
+		}
+
+		p {
+			margin: 0.6rem 0 0;
+			font-size: 0.75rem;
+			color: var(--color-text-muted);
+		}
+	}
+
+	&__custom > summary {
+		cursor: pointer;
+		margin: 0.5rem 0;
+		font-weight: 600;
+	}
+}
+
+.memories-host-summary {
+	display: grid;
+	gap: 0.85rem;
+	padding-bottom: 1rem;
+	border-bottom: 1px solid var(--dashboard-card-border);
+
+	&__status {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.6rem;
+
+		p {
+			margin: 0;
+		}
+	}
+
+	&__meta {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+	}
+
+	&__share {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.6rem;
+
+		> span {
+			font-weight: 600;
+		}
+
+		code {
+			overflow-wrap: anywhere;
+		}
+	}
+
+	.memories-space__stats {
+		grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+	}
+}
+
+@media (width <= 640px) {
+	.memories-admin__toolbar > .btn-primary,
+	.memories-space__actions > div,
+	.memories-space__actions > div > * {
+		width: 100%;
+	}
+
+	.memories-space__actions > div > * {
+		justify-content: center;
+	}
+}

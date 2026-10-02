@@ -59,10 +59,27 @@ const adminSession: SessionContext = {
 	isSuperAdmin: true,
 };
 
+const adminItem = {
+	...space,
+	usage: {
+		photos: 0,
+		videos: 0,
+		guestsWithUploads: 0,
+		sessions: 0,
+		residentObjects: 0,
+		residentBytes: 0,
+		inFlight: 0,
+		rejected: 0,
+		lastAcceptedAt: null,
+	},
+};
+const totals = { residentBytes: 0, committedBytes: space.maxEventBytes };
+
 const candidate = {
 	eventId: 'e0000000-0000-4000-8000-0000000000b1',
 	eventSlug: 'ana-y-luis',
 	eventTitle: 'Ana y Luis',
+	eventDate: '2026-11-20',
 	defaults: {
 		publicSlug: 'ana-y-luis',
 		timeZone: 'America/Mazatlan',
@@ -103,7 +120,7 @@ beforeEach(() => {
 	mockAdminRateLimit.mockResolvedValue(undefined);
 	mockStrongSession.mockResolvedValue(adminSession);
 	mockMutationAccess.mockResolvedValue(adminSession);
-	mockListSpaces.mockResolvedValue([space]);
+	mockListSpaces.mockResolvedValue({ items: [adminItem], totals });
 	mockCandidates.mockResolvedValue([candidate]);
 });
 
@@ -114,7 +131,11 @@ describe('GET /api/dashboard/admin/memories', () => {
 		const response = await getSpaces(createContext(request).context);
 
 		expect(response.status).toBe(200);
-		await expect(response.json()).resolves.toEqual({ items: [space], candidates: [candidate] });
+		await expect(response.json()).resolves.toEqual({
+			items: [adminItem],
+			totals,
+			candidates: [candidate],
+		});
 		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 		expect(mockAdminRateLimit).toHaveBeenCalledWith(request, 'memories:list');
 		expect(mockStrongSession).toHaveBeenCalledWith(request);

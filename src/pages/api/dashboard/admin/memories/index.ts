@@ -17,11 +17,11 @@ export const GET: APIRoute = async ({ request }) => {
 	try {
 		await requireAdminRateLimit(request, 'memories:list');
 		await requireAdminStrongSession(request);
-		const [items, candidates] = await Promise.all([
+		const [{ items, totals }, candidates] = await Promise.all([
 			listMemorySpacesAdmin(),
 			listMemorySpaceCandidatesAdmin(),
 		]);
-		return withPrivateCache(jsonResponse({ items, candidates }));
+		return withPrivateCache(jsonResponse({ items, totals, candidates }));
 	} catch (error) {
 		return errorResponse(error);
 	}

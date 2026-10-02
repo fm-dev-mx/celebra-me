@@ -28,6 +28,8 @@ jest.mock('@/lib/memories/client/api', () => {
 			deleteItem: jest.fn(),
 			revokeUploader: jest.fn(),
 			fetchItemBlob: jest.fn(),
+			summary: jest.fn(),
+			qrUrl: jest.fn(),
 		},
 	};
 });
@@ -121,6 +123,19 @@ function resetOrganizerApi(): void {
 	organizerApi.itemMediaUrl.mockImplementation((eventId, itemId, mode) => {
 		const base = `/api/dashboard/memories/${eventId}/items/${encodeURIComponent(itemId)}`;
 		return mode ? `${base}?mode=${mode}` : base;
+	});
+	organizerApi.qrUrl.mockImplementation((eventId) => `/api/dashboard/memories/${eventId}/qr`);
+	organizerApi.summary.mockImplementation(async (eventId) => {
+		const space = SPACES.find((entry) => entry.eventId === eventId) ?? SPACES[0];
+		return {
+			...summaryOf(space),
+			publicUrl: `https://celebra-me.com/r/${space.publicSlug}`,
+			photos: 12,
+			videos: 3,
+			guestsWithUploads: 7,
+			lastAcceptedAt: null,
+			capacityRemainingPercent: 88,
+		};
 	});
 }
 
@@ -381,10 +396,29 @@ describe('MemoriesOrganizer island', () => {
 				/^recuerdos-victoria-y-roberto-\d{4}-\d{2}-\d{2}-parte-2\.zip$/,
 			);
 		} finally {
+			anchorClick.mockRestore();
 			if (createDescriptor) Object.defineProperty(URL, 'createObjectURL', createDescriptor);
 			else delete (URL as { createObjectURL?: unknown }).createObjectURL;
 			if (revokeDescriptor) Object.defineProperty(URL, 'revokeObjectURL', revokeDescriptor);
 			else delete (URL as { revokeObjectURL?: unknown }).revokeObjectURL;
 		}
+	});
+	it('shows the host summary with totals, the share link and the QR download, without limits', async () => {
+		organizerApi.listItems.mockResolvedValue(listPayload([acceptedItem]));
+
+		render(<MemoriesOrganizer spaces={SPACES} initialEventId="event-1" />);
+
+		const summary = await screen.findByLabelText('Resumen');
+		const scoped = within(summary);
+		expect(await scoped.findByText('Abierto')).toBeInTheDocument();
+		expect(scoped.getByText('12')).toBeInTheDocument();
+		expect(scoped.getByText('88 %')).toBeInTheDocument();
+		expect(scoped.getByText('https://celebra-me.com/r/victoria-y-roberto')).toBeInTheDocument();
+		expect(scoped.getByRole('link', { name: 'Descargar QR' })).toHaveAttribute(
+			'href',
+			'/api/dashboard/memories/event-1/qr',
+		);
+		expect(scoped.queryByText(/GB|Cloudflare|Complemento/)).not.toBeInTheDocument();
+		expect(organizerApi.summary).toHaveBeenCalledWith('event-1', expect.any(AbortSignal));
 	});
 });

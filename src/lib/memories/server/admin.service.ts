@@ -13,7 +13,11 @@ import {
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { resolveInvitationSchedule } from '@/lib/intake/invitation-validity';
 import { deriveStartsAtUtc, isValidIanaTimeZone } from '@/lib/time/event-time';
-import type { MemoriesSpaceRecord } from '@/lib/memories/contract/catalog';
+import type {
+	MemoriesAdminSpaceItem,
+	MemoriesAdminTotals,
+	MemoriesSpaceRecord,
+} from '@/lib/memories/contract/catalog';
 import {
 	MEMORIES_ENTITLEMENTS,
 	MEMORIES_LIMIT_PROFILES,
@@ -32,6 +36,7 @@ import {
 	updateMemorySpace,
 	type MemorySpaceUpdate,
 } from './settings.repository';
+import { listMemorySpacesWithUsage } from './usage.service';
 
 const DEFAULT_DAYS_BEFORE_EVENT = 7;
 const DEFAULT_DAYS_AFTER_EVENT = 8;
@@ -82,6 +87,8 @@ export interface MemorySpaceCandidate {
 	eventId: string;
 	eventSlug: string;
 	eventTitle: string;
+	/** Local event date from the published invitation, when readable. */
+	eventDate: string | null;
 	defaults: {
 		publicSlug: string;
 		timeZone: string;
@@ -164,8 +171,10 @@ function mapPersistenceError(error: unknown): never {
 	throw error;
 }
 
-export async function listMemorySpacesAdmin(): Promise<MemoriesSpaceRecord[]> {
-	return listAllMemorySpaces();
+export async function listMemorySpacesAdmin(
+	now = new Date(),
+): Promise<{ items: MemoriesAdminSpaceItem[]; totals: MemoriesAdminTotals }> {
+	return listMemorySpacesWithUsage(await listAllMemorySpaces(), now);
 }
 
 /**
@@ -190,6 +199,7 @@ export async function listMemorySpaceCandidatesAdmin(
 				eventId: event.id,
 				eventSlug: event.slug,
 				eventTitle: event.title,
+				eventDate: schedule.eventDate ?? null,
 				defaults: {
 					publicSlug: event.slug,
 					timeZone: schedule.eventTimeZone,
@@ -288,7 +298,7 @@ export async function updateMemorySpaceAdmin(
 		actorType: 'admin',
 		actorId: adminUserId,
 		action: 'space_updated',
-		metadata: { enabled: updated.enabled },
+		metadata: { enabled: updated.enabled, previousEnabled: current.enabled },
 	});
 	return updated;
 }
