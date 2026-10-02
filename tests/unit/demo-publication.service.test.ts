@@ -6,7 +6,7 @@ import {
 	updatePublishedContentSnapshot,
 } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
-import demoJson from '@/content/event-demos/xv/demo-xv-jewelry-box.json';
+import demoJson from '../fixtures/content/xv-jewelry-box.json';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 
 jest.mock('@/lib/intake/repositories/published-invitation-content.repository', () => ({

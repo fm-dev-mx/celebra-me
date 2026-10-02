@@ -55,7 +55,7 @@ describe('demo showroom public metadata', () => {
 	it('renders only demos explicitly approved for public showroom exposure', () => {
 		const featuredItems = getFeaturedDemoShowroomItems();
 
-		expect(featuredItems).toHaveLength(7);
+		expect(featuredItems).toHaveLength(6);
 		expect(featuredItems.every((item) => item.visibility === 'featured')).toBe(true);
 		expect(featuredItems.every((item) => item.reviewStatus === 'approved')).toBe(true);
 		expect(featuredItems.map((item) => item.slug)).not.toContain(
@@ -82,7 +82,6 @@ describe('demo showroom public metadata', () => {
 	it('groups featured demos by internal event type in editorial order', () => {
 		expect(getFeaturedDemoShowroomItems('xv').map((item) => item.slug)).toEqual([
 			'demo-xv-celestial-blue',
-			'demo-xv-editorial-magazine',
 			'demo-xv-enchanted-rose',
 			'demo-xv-editorial',
 		]);
@@ -108,10 +107,9 @@ describe('showroom interaction model', () => {
 		expect(xvItems[0].slug).toBe('demo-xv-celestial-blue');
 	});
 
-	it('XV: featured list contains exactly 4 approved demos in canonical order', () => {
+	it('XV: featured list contains exactly 3 approved demos in canonical order', () => {
 		expect(xvItems.map((i) => i.slug)).toEqual([
 			'demo-xv-celestial-blue',
-			'demo-xv-editorial-magazine',
 			'demo-xv-enchanted-rose',
 			'demo-xv-editorial',
 		]);
@@ -121,22 +119,20 @@ describe('showroom interaction model', () => {
 		const activeSlug = 'demo-xv-celestial-blue';
 		const selectorItems = xvItems.filter((i) => i.slug !== activeSlug);
 		expect(selectorItems.map((i) => i.slug)).toEqual([
-			'demo-xv-editorial-magazine',
 			'demo-xv-enchanted-rose',
 			'demo-xv-editorial',
 		]);
-		expect(selectorItems).toHaveLength(3);
+		expect(selectorItems).toHaveLength(2);
 	});
 
 	it('XV: when a different demo is active, its entry is removed and the previous active returns', () => {
-		const activeSlug = 'demo-xv-editorial-magazine';
+		const activeSlug = 'demo-xv-enchanted-rose';
 		const selectorItems = xvItems.filter((i) => i.slug !== activeSlug);
 		expect(selectorItems.map((i) => i.slug)).toEqual([
 			'demo-xv-celestial-blue',
-			'demo-xv-enchanted-rose',
 			'demo-xv-editorial',
 		]);
-		expect(selectorItems).toHaveLength(3);
+		expect(selectorItems).toHaveLength(2);
 	});
 
 	it('XV: users can return to demo-xv-celestial-blue when another demo is active', () => {

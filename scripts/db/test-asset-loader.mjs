@@ -4,10 +4,8 @@
 // Cross-platform file URL for the demo JSON used in the astro:content virtual
 // module. Derived from the loader's own location so it works on any OS, any
 // checkout directory, and any GitHub Actions workspace path.
-const demoJsonUrl = new URL(
-	'../../src/content/event-demos/xv/demo-xv-jewelry-box.json',
-	import.meta.url,
-).href;
+const demoJsonUrl = new URL('../../tests/fixtures/content/xv-jewelry-box.json', import.meta.url)
+	.href;
 
 export async function resolve(specifier, context, nextResolve) {
 	if (specifier === 'astro:content') return { url: 'astro:content', shortCircuit: true };

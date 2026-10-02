@@ -370,18 +370,15 @@ describe('test-asset-loader — portable demo-json URL', () => {
 		const source = readFileSync(LOADER_PATH, 'utf8');
 		expect(source).toContain('import.meta.url');
 		// Must reference the correct relative path
-		expect(source).toContain('../../src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		expect(source).toContain('../../tests/fixtures/content/xv-jewelry-box.json');
 	});
 
 	it('produces a file URL pointing to the actual demo JSON', () => {
 		// Simulate what the loader does: resolve relative to its own location
 		const loaderUrl = new URL(`file://${LOADER_PATH.replace(/\\/g, '/')}`);
-		const resolved = new URL(
-			'../../src/content/event-demos/xv/demo-xv-jewelry-box.json',
-			loaderUrl,
-		);
+		const resolved = new URL('../../tests/fixtures/content/xv-jewelry-box.json', loaderUrl);
 		// Verify the resolved URL ends with the expected relative path
-		expect(resolved.href).toMatch(/src\/content\/event-demos\/xv\/demo-xv-jewelry-box\.json$/);
+		expect(resolved.href).toMatch(/tests\/fixtures\/content\/xv-jewelry-box\.json$/);
 	});
 
 	it('uses a template literal for the generated source', () => {
@@ -403,12 +400,7 @@ describe('test-asset-loader — portable demo-json URL', () => {
 		// Simulate what the loader would produce on a Linux POSIX environment
 		const linuxPath = '/workspace/scripts/db/test-asset-loader.mjs';
 		const linuxUrl = new URL(`file://${linuxPath}`);
-		const resolved = new URL(
-			'../../src/content/event-demos/xv/demo-xv-jewelry-box.json',
-			linuxUrl,
-		);
-		expect(resolved.href).toBe(
-			'file:///workspace/src/content/event-demos/xv/demo-xv-jewelry-box.json',
-		);
+		const resolved = new URL('../../tests/fixtures/content/xv-jewelry-box.json', linuxUrl);
+		expect(resolved.href).toBe('file:///workspace/tests/fixtures/content/xv-jewelry-box.json');
 	});
 });

@@ -52,7 +52,7 @@ import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/publi
 import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
-import validPublishedContentJson from '@/content/event-demos/xv/demo-xv-jewelry-box.json';
+import validPublishedContentJson from '../fixtures/content/xv-jewelry-box.json';
 import {
 	ANONYMOUS_PUBLISHED_CONTENT_READS,
 	assertObservedOperationCount,

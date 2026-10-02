@@ -32,7 +32,7 @@ test.describe('RSVP v2 Flow', () => {
 		});
 
 		await page.goto(
-			'/xv/demo-xv-jewelry-box?invite=00000000-0000-0000-0000-000000000000&forceEnvelope=true',
+			'/xv/demo-xv-enchanted-rose?invite=00000000-0000-0000-0000-000000000000&forceEnvelope=true',
 			{ waitUntil: 'domcontentloaded' },
 		);
 

@@ -19,9 +19,9 @@
             "outputFormat": "png"
         },
         {
-            "name": "XV Demo Jewelry Box",
+            "name": "XV Demo Celestial Blue",
             "pageType": "invitation",
-            "route": "/xv/demo-xv-jewelry-box",
+            "route": "/xv/demo-xv-celestial-blue",
             "profile": "full",
             "target": "critical-qa",
             "revealHandling": "force-open",

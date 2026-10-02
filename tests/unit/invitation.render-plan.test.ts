@@ -44,7 +44,7 @@ describe('buildInvitationRenderPlan', () => {
 	it('renders all interludes from the event interludes array', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
+			data: loadFixture('tests/fixtures/content/xv-jewelry-box.json'),
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);

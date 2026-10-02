@@ -299,9 +299,7 @@ export function ensurePreviewE2eFixture(options: {
 		if (options.repairPublication) {
 			// Repair only this synthetic publication from the versioned demo contract.
 			const content = eventContentSchema.parse(
-				JSON.parse(
-					readFileSync('src/content/event-demos/xv/demo-xv-jewelry-box.json', 'utf8'),
-				),
+				JSON.parse(readFileSync('tests/fixtures/content/xv-jewelry-box.json', 'utf8')),
 			);
 			if (apply) {
 				const result = runPsql(

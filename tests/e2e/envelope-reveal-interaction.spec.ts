@@ -36,7 +36,9 @@ test.describe('shared envelope reveal interaction', () => {
 			await route.continue();
 		});
 		try {
-			await page.goto('/xv/demo-xv-jewelry-box?forceEnvelope=true', { waitUntil: 'commit' });
+			await page.goto('/xv/demo-xv-enchanted-rose?forceEnvelope=true', {
+				waitUntil: 'commit',
+			});
 			const seal = page.getByRole('button', { name: 'Abrir sobre de la invitación' });
 			await expect(seal).toBeVisible();
 			await expect(seal).toBeDisabled();

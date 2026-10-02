@@ -12,10 +12,7 @@ import { createPublicationComparison } from '@/lib/intake/services/publication-d
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 
 const demoContent = JSON.parse(
-	readFileSync(
-		resolve(process.cwd(), 'src/content/event-demos/xv/demo-xv-jewelry-box.json'),
-		'utf8',
-	),
+	readFileSync(resolve(process.cwd(), 'tests/fixtures/content/xv-jewelry-box.json'), 'utf8'),
 ) as Record<string, unknown>;
 
 const assets = Object.fromEntries(

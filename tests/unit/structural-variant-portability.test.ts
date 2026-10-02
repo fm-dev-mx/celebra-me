@@ -64,7 +64,7 @@ type PortableOverrides = {
  * Victoria / Abril / Valentina). Only canonical structural/behavior selectors are applied in memory.
  */
 function buildPortableJewelryBoxEvent(overrides: PortableOverrides = {}) {
-	const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+	const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 	const data = {
 		...fixture,
 		...(overrides.themePreset
@@ -431,10 +431,7 @@ describe('registry-driven canonical variant portability', () => {
 
 	it('ports gallery layouts via adaptEvent on non-origin demos/overrides', () => {
 		const magazine = adaptEvent(
-			loadDemoEvent(
-				'src/content/event-demos/xv/demo-xv-editorial-magazine.json',
-				'event-demos/xv/demo-xv-editorial-magazine',
-			),
+			buildPortableJewelryBoxEvent({ galleryVariant: 'magazine-spread' }),
 		);
 		expect(magazine.sections.gallery?.variant).toBe('magazine-spread');
 

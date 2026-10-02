@@ -31,7 +31,7 @@ asset namespace.
 
 Use the [canonical production runbook](../intake/production-flow.md). The current reference set is:
 
-- `demo-xv-jewelry-box` for asset organization;
+- `demo-xv-celestial-blue` for asset organization;
 - `demo-boda-jewelry-box-wedding` for non-XV structure.
 
 Do not copy client-specific media, copy, overrides, or design decisions. Validate schema, descriptor

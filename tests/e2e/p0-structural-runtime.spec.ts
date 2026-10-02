@@ -45,7 +45,7 @@ test.describe('P0 structural variants render through the live invitation route',
 		page,
 	}) => {
 		await page.setViewportSize({ width: 1440, height: 900 });
-		const response = await page.goto('/xv/demo-xv-jewelry-box?skipEnvelope=true', {
+		const response = await page.goto('/cumple/demo-cumple-luxury-hacienda?skipEnvelope=true', {
 			waitUntil: 'networkidle',
 		});
 		expect(response?.status()).toBe(200);
@@ -61,7 +61,7 @@ test.describe('P0 structural variants render through the live invitation route',
 		await expect(thankYou.locator('.thank-you-editorial')).toHaveCount(0);
 
 		const stylesheets = (await stylesheetHrefs(page)).join('\n');
-		expect(stylesheets).toMatch(/jewelry-box/);
+		expect(stylesheets).toMatch(/luxury-hacienda/);
 		expect(stylesheets).not.toMatch(
 			/timeline-paper|index-choreography|editorial-ledger|editorial-program/,
 		);

@@ -39,10 +39,7 @@ import { datesSemanticallyEqual } from '@/lib/shared/data-utils';
 import { timesSemanticallyEqual } from '@/lib/time/time-format';
 
 const demoContent = JSON.parse(
-	readFileSync(
-		resolve(process.cwd(), 'src/content/event-demos/xv/demo-xv-jewelry-box.json'),
-		'utf8',
-	),
+	readFileSync(resolve(process.cwd(), 'tests/fixtures/content/xv-jewelry-box.json'), 'utf8'),
 ) as Record<string, unknown>;
 
 const rominaAssets = Object.fromEntries(
