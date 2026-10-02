@@ -440,36 +440,6 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'countdown',
-		variant: 'jeweled-panel',
-		default: false,
-		prerequisites: ['countdown'],
-		cssOwner: 'src/styles/themes/sections/countdown/_jeweled-panel.scss',
-		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
-		requiredPersistedContentTransformation:
-			'Set countdown.variant to jeweled-panel and remove legacy variant fields.',
-	},
-	{
-		section: 'countdown',
-		variant: 'rose-ornament',
-		default: false,
-		prerequisites: ['countdown'],
-		cssOwner: 'src/styles/themes/sections/countdown/_rose-ornament.scss',
-		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
-		requiredPersistedContentTransformation:
-			'Set countdown.variant to rose-ornament and remove legacy variant fields.',
-	},
-	{
-		section: 'countdown',
-		variant: 'hacienda-ornament',
-		default: false,
-		prerequisites: ['countdown'],
-		cssOwner: 'src/styles/themes/sections/countdown/_hacienda-ornament.scss',
-		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
-		requiredPersistedContentTransformation:
-			'Set countdown.variant to hacienda-ornament and remove legacy variant fields.',
-	},
-	{
-		section: 'countdown',
 		variant: 'clock-face',
 		default: false,
 		prerequisites: ['countdown'],
@@ -504,18 +474,6 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		cssOwner: 'src/styles/themes/sections/family/_ceremonial-family.scss',
 		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
 		requiredPersistedContentTransformation: 'Set family.variant to ceremonial-family.',
-	},
-	{
-		section: 'family',
-		variant: 'portrait-register',
-		default: false,
-		prerequisites: [
-			'Family photograph with original delivery, width, height, and family names',
-		],
-		cssOwner: 'src/styles/themes/sections/family/_portrait-register.scss',
-		unresolvedVisualVerification: PENDING_VISUAL_BASELINE,
-		requiredPersistedContentTransformation:
-			'Set family.variant to portrait-register and provide featuredImage.',
 	},
 ] as const satisfies readonly CanonicalVariantRegistryEntry[];
 

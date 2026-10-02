@@ -31,9 +31,8 @@ field. Hero accepts `standard`, `editorial-cover`, or `split-cover`; Thank You a
 preset remains the visual skin. Legacy aliases are rejected by the canonical schema and are tracked
 only as deployment migration work.
 
-Countdown variants are section-owned (`standard`, `editorial-folio`, `magazine-folio`,
-`jeweled-panel`, `rose-ornament`, and `hacienda-ornament`). Footer remains a visual theme surface
-and has no independent section variant.
+Countdown variants are section-owned (`standard`, `editorial-folio`, `magazine-folio`, and
+`clock-face`). Footer remains a visual theme surface and has no independent section variant.
 
 ---
 

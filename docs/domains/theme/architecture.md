@@ -89,20 +89,14 @@ into the shared `arch` intersection with `source: hero`. The arch uses the prima
 restrained 1.5–2.75rem height, and an asymmetric mask; other quote boundaries remain neutral unless
 selected in composition data.
 
-Family's `portrait-register` variant centers a complete photograph above separate name registers:
-parents use two columns and godparents use an adaptive row on desktop; mobile keeps a single reading
-column. Its canonical stylesheet owns the card-free geometry and typography, while profiles supply
-palette and rhythm tokens. It requires a photograph with explicit original delivery, width and
-height, and does not accept `text-only` presentation. Existing variants retain their original
-geometry and image defaults. `family.featuredImageAlt` supplies a descriptive image alternative
-through the existing `ImageAsset`; omission retains the celebrant-name fallback. Source preservation
-uses the existing image `delivery` contract, independently of the CSS crop. The shared Family media
-contract exposes `--family-media-aspect-ratio` (fallback `3 / 4`), `--family-media-image-height`
-(fallback `100%`), and `--family-media-image-fit` (fallback `cover`). Profiles can preserve an
-uncropped photograph with `auto`, `auto`, and `contain` without replacing the canonical layout;
-existing media defaults remain unchanged. `--family-item-align` controls member alignment (fallback
-`center`); it complements the existing group text alignment, padding, and parent-margin tokens
-without changing the standard split layout.
+`family.featuredImageAlt` supplies a descriptive image alternative through the existing
+`ImageAsset`; omission retains the celebrant-name fallback. Source preservation uses the existing
+image `delivery` contract, independently of the CSS crop. The shared Family media contract exposes
+`--family-media-aspect-ratio` (fallback `3 / 4`), `--family-media-image-height` (fallback `100%`),
+and `--family-media-image-fit` (fallback `cover`). Profiles can preserve an uncropped photograph
+with `auto`, `auto`, and `contain` without replacing the canonical layout. `--family-item-align`
+controls member alignment (fallback `center`); it complements the existing group text alignment,
+padding, and parent-margin tokens without changing the standard split layout.
 
 Gallery subtitles expose `--gallery-subtitle-max-width` (fallback `none`) and
 `--gallery-subtitle-margin-inline` (fallback `0`) for bounded text measures and optional centering
@@ -372,7 +366,7 @@ Bounded controls retain their canonical section owner:
   consumers retain one mobile column, 4:5 portraits, and an 8:5 feature band; the variant owns the
   paired desktop grid and full-width `feature` role.
 - `ceremonial-family` consumes `--family-filigree-display` with a `block` fallback.
-- The retained `jeweled-panel` skin consumes existing `--countdown-segment-inset`,
+- The jewelry-box countdown skin consumes existing `--countdown-segment-inset`,
   `--countdown-label-size`, `--countdown-label-spacing`, and `--countdown-label-color` controls,
   plus `--countdown-label-opacity` (default `60%`). Existing visual defaults remain unchanged.
 

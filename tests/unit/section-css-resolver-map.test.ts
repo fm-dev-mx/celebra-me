@@ -9,40 +9,6 @@ import {
 import { resolveInvitationCssUrls } from '../helpers/invitation-css-urls';
 
 describe('section-css-resolver-map', () => {
-	it.each(['jewelry-box', 'celestial-blue'])(
-		'delivers the portrait register only when selected in %s',
-		(preset) => {
-			const bundles = { [preset]: '/_astro/preset.css' };
-			const sections = buildSectionUrlMap({
-				'/src/styles/themes/sections/family/_portrait-register.scss': {
-					default: '/_astro/portrait-register.css',
-				},
-			});
-			expect(
-				resolveInvitationCssUrls(bundles, sections, {
-					themePreset: preset,
-					sectionVariants: { family: 'portrait-register' },
-				}),
-			).toEqual(['/_astro/preset.css', '/_astro/portrait-register.css']);
-			expect(
-				resolveInvitationCssUrls(bundles, sections, {
-					themePreset: preset,
-					sectionVariants: { family: 'standard' },
-				}),
-			).toEqual(['/_astro/preset.css']);
-			expect(() =>
-				resolveInvitationCssUrls(
-					bundles,
-					{},
-					{
-						themePreset: preset,
-						sectionVariants: { family: 'portrait-register' },
-					},
-				),
-			).toThrow();
-		},
-	);
-
 	const modules = {
 		'/src/styles/themes/sections/footer/_editorial.scss': {
 			default: '/_astro/footer-editorial.css',

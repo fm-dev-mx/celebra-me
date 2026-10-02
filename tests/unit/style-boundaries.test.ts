@@ -492,7 +492,6 @@ describe('Style boundary governance', () => {
 			'split-groups',
 			'asymmetric-groups',
 			'ceremonial-family',
-			'portrait-register',
 		];
 
 		for (const name of existing) {

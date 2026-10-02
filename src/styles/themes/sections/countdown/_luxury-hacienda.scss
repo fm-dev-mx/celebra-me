@@ -1,7 +1,6 @@
 @use '../../../global/mixins' as mixins;
 
-.theme-preset--luxury-hacienda .countdown-section,
-.countdown-section[data-variant='hacienda-ornament'] {
+.theme-preset--luxury-hacienda .countdown-section {
 	--countdown-grid-columns-mobile: 2;
 	--countdown-grid-columns-tablet: 4;
 	--countdown-segment-padding-mobile: clamp(1.4rem, 5vw, 2rem) 0.8rem;
@@ -176,8 +175,7 @@
 // ==========================================================================
 
 @media (prefers-reduced-motion: reduce) {
-	.theme-preset--luxury-hacienda .countdown-section,
-	.countdown-section[data-variant='hacienda-ornament'] {
+	.theme-preset--luxury-hacienda .countdown-section {
 		.countdown-title {
 			animation: none;
 			background: var(--countdown-reduced-title-bg, var(--color-action-accent));

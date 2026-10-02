@@ -18,18 +18,6 @@ export interface IncompatiblePrerequisiteExpectation {
 	expectedMessageSubstring?: string;
 }
 
-function buildFamilyPortraitFixture(section: CanonicalVariantSection, variant: string) {
-	if (section !== 'family' || variant !== 'portrait-register') return {};
-	return {
-		featuredImage: {
-			type: 'internal',
-			key: 'family',
-			delivery: { mode: 'original', width: 1024, height: 1024 },
-		},
-		featuredImageAlt: 'Retrato familiar de la celebración.',
-	};
-}
-
 export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides): {
 	id: string;
 	data: Record<string, unknown>;
@@ -85,7 +73,6 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 		},
 		family: {
 			variant: section === 'family' ? variant : 'standard',
-			...buildFamilyPortraitFixture(section, variant),
 			...(section === 'family' &&
 			(variant === 'split-groups' || variant === 'asymmetric-groups')
 				? {
@@ -328,8 +315,6 @@ export function buildIncompatiblePrerequisiteEvent(
 			}
 			break;
 		case 'family':
-			if (entry.variant === 'portrait-register')
-				delete (data.family as Record<string, unknown>).featuredImage;
 			if (entry.variant === 'ceremonial-family')
 				delete (data.family as Record<string, unknown>).variant;
 			if (entry.variant === 'split-groups' || entry.variant === 'asymmetric-groups') {
@@ -425,8 +410,6 @@ export function getIncompatiblePrerequisiteExpectation(
 		case 'hero':
 			return { expectedPath: ['hero', 'backgroundImage'] };
 		case 'family':
-			if (entry.variant === 'portrait-register')
-				return { expectedPath: ['family', 'featuredImage'] };
 			if (entry.variant === 'ceremonial-family')
 				return { expectedPath: ['family', 'variant'] };
 			return {

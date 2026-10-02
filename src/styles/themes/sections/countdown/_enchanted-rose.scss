@@ -1,7 +1,6 @@
 @use '../../../global/mixins' as mixins;
 
-.theme-preset--enchanted-rose .countdown-section,
-.countdown-section[data-variant='rose-ornament'] {
+.theme-preset--enchanted-rose .countdown-section {
 	--countdown-grid-columns-mobile: 2;
 	--countdown-grid-columns-tablet: 4;
 	--countdown-segment-padding-mobile: clamp(1.25rem, 4.5vw, 1.65rem) 0.75rem;

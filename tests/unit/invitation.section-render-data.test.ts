@@ -67,20 +67,7 @@ function setupDemoPageContext(fixtureSlug = 'demo-xv-editorial') {
 }
 
 describe('buildInvitationSectionRenderDescriptors', () => {
-	it('uses a section fade for the portrait register without changing standard family motion', () => {
-		const portraitContext = setupDemoPageContext('demo-xv-celestial-blue');
-		const family = portraitContext.viewModel.sections.family;
-		if (!family) throw new Error('Family fixture is required');
-		// Select the canonical variant explicitly; live demo styling is not a motion contract.
-		family.variant = 'portrait-register';
-		const portrait = buildInvitationSectionRenderDescriptors(portraitContext).find(
-			(descriptor) => descriptor.component === 'family',
-		);
-		expect(portrait).toMatchObject({
-			intersection: 'arch',
-			reveal: 'fade',
-			props: { variant: 'portrait-register' },
-		});
+	it('keeps standard family motion as a staggered group', () => {
 		const standard = buildInvitationSectionRenderDescriptors(
 			setupDemoPageContext('demo-xv-jewelry-box'),
 		).find((descriptor) => descriptor.component === 'family');
