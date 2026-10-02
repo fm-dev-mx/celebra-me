@@ -404,10 +404,10 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 	it('passes thank-you overlay composition metadata to the render descriptor', () => {
 		const fixture = loadFixture(
-			'src/content/event-demos/bautismo/demo-bautismo-angelic-presence.json',
+			'src/content/event-demos/bautizo/demo-bautismo-angelic-presence.json',
 		);
 		const eventEntry = {
-			id: 'event-demos/bautismo/demo-bautismo-angelic-presence',
+			id: 'event-demos/bautizo/demo-bautismo-angelic-presence',
 			data: {
 				...fixture,
 				thankYou: {

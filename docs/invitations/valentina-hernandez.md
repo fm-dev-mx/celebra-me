@@ -14,8 +14,6 @@ The live repository is authoritative where this record and historical plans diff
   [`valentina-hernandez.scss`](../../src/styles/invitation-profiles/valentina-hernandez.scss)
 - Asset registry (draft WhatsApp JPEGs until remastered):
   [`index.ts`](../../src/assets/images/events/xv-valentina-hernandez/index.ts)
-- Historical SQL patch (no longer the content owner):
-  [`20260626_valentina_hernandez_xv.sql`](../../scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql)
 
 ## Current implementation state
 

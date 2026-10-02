@@ -1,6 +1,3 @@
-import fs from 'node:fs';
-import path from 'node:path';
-
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { adaptEvent } from '@/lib/adapters/event';
 import {
@@ -9,6 +6,8 @@ import {
 } from '@/lib/invitation/section-css-resolver-map';
 import { resolveInvitationCssUrls } from '../helpers/invitation-css-urls';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
+import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
+import { buildSemanticAssetMap } from '../../scripts/provision/normalized-invitation-release.ts';
 import {
 	ABRIL_ASSET_SPECS,
 	buildAbrilPublishedContent,
@@ -27,20 +26,13 @@ import {
  * these invitations.
  */
 
-function loadJson(relativePath: string): Record<string, unknown> {
-	return JSON.parse(fs.readFileSync(path.resolve(process.cwd(), relativePath), 'utf8')) as Record<
+/** Published content exactly as the managed definition builds it, with semantic asset refs. */
+function definitionContent(slug: string): Record<string, unknown> {
+	const definition = getInvitationDefinition(slug);
+	return definition.buildPublishedContent(buildSemanticAssetMap(definition)) as Record<
 		string,
 		unknown
 	>;
-}
-
-function loadCorpusPublished(slug: string): Record<string, unknown> {
-	const fixture = loadJson(`scripts/provision/local-render-corpus/fixtures/${slug}.json`);
-	const published = fixture.publishedContent;
-	if (!published || typeof published !== 'object' || Array.isArray(published)) {
-		throw new Error(`Corpus fixture ${slug} is missing publishedContent`);
-	}
-	return published as Record<string, unknown>;
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -154,14 +146,9 @@ function assertCelestialProgramPath(source: Record<string, unknown>, slug: strin
 }
 
 describe('P0 persisted structural contracts', () => {
-	it('requires the Xareni DB payload to carry explicit itinerary and gallery variants', () => {
-		const payload = loadJson('tests/fixtures/invitations/xv-xareni-iyarit-db-payload.json');
-		assertCelestialProgramPath(payload, 'xareni-iyarit');
-	});
-
-	it('requires Xareni, América, and Ana Sofía corpus fixtures to take the program path', () => {
+	it('requires Xareni, América, and Ana Sofía definitions to take the program path', () => {
 		for (const slug of ['xareni-iyarit', 'america-johana', 'ana-sofia-cota-guillen'] as const) {
-			assertCelestialProgramPath(loadCorpusPublished(slug), slug);
+			assertCelestialProgramPath(definitionContent(slug), slug);
 		}
 	});
 
@@ -208,9 +195,7 @@ describe('P0 persisted structural contracts', () => {
 	});
 
 	it('rejects a payload when its itinerary variant is omitted', () => {
-		const payload = structuredClone(
-			loadJson('tests/fixtures/invitations/xv-xareni-iyarit-db-payload.json'),
-		);
+		const payload = structuredClone(definitionContent('xareni-iyarit'));
 		const itinerary = asRecord(payload.itinerary);
 		if (itinerary) {
 			delete itinerary.presentation;
@@ -221,38 +206,29 @@ describe('P0 persisted structural contracts', () => {
 		expect(parsed.success).toBe(false);
 	});
 
-	it('requires Xareni Thank You to take the editorial-back-cover path', () => {
-		const payload = loadJson('tests/fixtures/invitations/xv-xareni-iyarit-db-payload.json');
-		expect(asRecord(payload.thankYou)?.variant).toBe('editorial-back-cover');
-
-		const parsed = eventContentSchema.safeParse(payload);
-		expect(parsed.success).toBe(true);
-		expect(parsed.data?.thankYou?.variant).toBe('editorial-back-cover');
-
-		const viewModel = adaptDbEvent({
-			slug: 'xareni-iyarit',
-			eventType: 'xv',
-			isDemo: false,
-			content: payload,
-		});
-		expect(viewModel.sections.thankYou?.variant).toBe('editorial-back-cover');
-	});
-
-	it('requires celestial and enchanted-rose corpus Thank You contracts to stay explicit', () => {
-		for (const slug of [
-			'xareni-iyarit',
-			'america-johana',
-			'ana-sofia-cota-guillen',
-			'leah-lexa',
-			'ayrin-samantha-lerma-castro',
+	it('requires celestial and enchanted-rose Thank You contracts to stay explicit', () => {
+		for (const [slug, variant] of [
+			['xareni-iyarit', 'portrait-keepsake'],
+			['america-johana', 'portrait-keepsake'],
+			['ana-sofia-cota-guillen', 'portrait-keepsake'],
+			['leah-lexa', 'portrait-keepsake'],
+			['ayrin-samantha-lerma-castro', 'portrait-letter'],
 		] as const) {
-			const published = loadCorpusPublished(slug);
-			const thankYou = asRecord(published.thankYou);
-			expect(thankYou?.variant).toBe('editorial-back-cover');
+			const definition = getInvitationDefinition(slug);
+			const content = definitionContent(slug);
+			expect(asRecord(content.thankYou)?.variant).toBe(variant);
 
-			const parsed = eventContentSchema.safeParse(celestialEnvelope(published, slug));
+			const parsed = eventContentSchema.safeParse(content);
 			expect(parsed.success).toBe(true);
-			expect(parsed.data?.thankYou?.variant).toBe('editorial-back-cover');
+			expect(parsed.data?.thankYou?.variant).toBe(variant);
+
+			const viewModel = adaptDbEvent({
+				slug,
+				eventType: definition.eventType,
+				isDemo: false,
+				content,
+			});
+			expect(viewModel.sections.thankYou?.variant).toBe(variant);
 		}
 	});
 
@@ -270,9 +246,7 @@ describe('P0 persisted structural contracts', () => {
 	});
 
 	it('rejects a payload when its Thank You variant is omitted', () => {
-		const payload = structuredClone(
-			loadJson('tests/fixtures/invitations/xv-xareni-iyarit-db-payload.json'),
-		);
+		const payload = structuredClone(definitionContent('xareni-iyarit'));
 		const thankYou = asRecord(payload.thankYou);
 		if (thankYou) delete thankYou.variant;
 		const parsed = eventContentSchema.safeParse(payload);

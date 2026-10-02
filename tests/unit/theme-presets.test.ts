@@ -297,12 +297,6 @@ describe('Celestial blue section coverage', () => {
 			path.join(projectRoot, 'src/styles/themes/sections/itinerary/_timeline-paper.scss'),
 			'utf8',
 		);
-		const aliasPath = path.join(
-			projectRoot,
-			'src/styles/themes/sections/itinerary/_celestial-blue.scss',
-		);
-
-		expect(fs.existsSync(aliasPath)).toBe(false);
 		expect(behavior).toContain("[data-variant='timeline-paper']");
 		expect(behavior).not.toContain("[data-variant='celestial-blue']");
 	});

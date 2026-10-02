@@ -1,9 +1,8 @@
-import fs from 'node:fs';
-import path from 'node:path';
-
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { adaptEvent } from '@/lib/adapters/event';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
+import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
+import { buildSemanticAssetMap } from '../../scripts/provision/normalized-invitation-release.ts';
 import {
 	buildAlbaPublishedContent,
 	ALBA_ASSET_SPECS,
@@ -37,14 +36,13 @@ import {
  * structural/behavior contracts that must not regress after encapsulation.
  */
 
-function loadCorpusFixture(slug: string) {
-	const filePath = path.resolve(
-		process.cwd(),
-		`scripts/provision/local-render-corpus/fixtures/${slug}.json`,
-	);
-	return JSON.parse(fs.readFileSync(filePath, 'utf8')) as {
-		publishedContent?: Record<string, unknown>;
-	};
+/** Published content exactly as the managed definition builds it, with semantic asset refs. */
+function definitionContent(slug: string): Record<string, unknown> {
+	const definition = getInvitationDefinition(slug);
+	return definition.buildPublishedContent(buildSemanticAssetMap(definition)) as Record<
+		string,
+		unknown
+	>;
 }
 
 function assetMapFromSpecs<T extends Record<string, unknown>>(
@@ -157,55 +155,37 @@ describe('canonical corpus structural/behavior contracts', () => {
 		expect(viewModel.sections.gallery?.variant).toBe('paired-feature-band');
 	});
 
-	it('locks Luna revealSurface rsvp from the local-render corpus fixture', () => {
-		const fixture = loadCorpusFixture('luna-y-estrella');
-		const published = fixture.publishedContent ?? {};
-		expect(published.location).toMatchObject({
-			presentationOptions: { revealSurface: 'rsvp' },
+	it('locks Luna location reveal inside RSVP through the access policy', () => {
+		const content = definitionContent('luna-y-estrella');
+		expect(content.location).toMatchObject({
+			accessPolicy: { visibility: 'after-rsvp', revealPlacement: 'rsvp' },
 		});
+		expect(eventContentSchema.safeParse(content).success).toBe(true);
 	});
 
-	it('locks Leah explicit navigation from the local-render corpus fixture', () => {
-		const fixture = loadCorpusFixture('leah-lexa');
-		const published = fixture.publishedContent ?? {};
-		expect(published.navigation).toEqual([
+	it('locks Leah explicit navigation', () => {
+		const content = definitionContent('leah-lexa');
+		expect(content.navigation).toEqual([
 			{ label: 'Ubicación', href: '#event-location' },
 			{ label: 'Fecha', href: '#inicio' },
 			{ label: 'Regalos', href: '#regalos' },
 			{ label: 'Confirmar', href: '#rsvp' },
 		]);
-		const result = eventContentSchema.safeParse({
-			eventType: 'baby-shower',
-			isDemo: false,
-			title: 'Baby Shower de Leah Lexa',
-			theme: { preset: 'celestial-blue' },
-			hero: { name: 'Leah Lexa', date: '2026-06-21T20:00:00.000Z', backgroundImage: 'hero' },
-			...published,
-		});
+		const result = eventContentSchema.safeParse(content);
 		expect(result.success).toBe(true);
-		expect(result.data?.navigation).toEqual(published.navigation);
+		expect(result.data?.navigation).toEqual(content.navigation);
 	});
 
-	it('locks Ana Sofía itinerary timeline-paper from the local-render corpus fixture', () => {
-		const fixture = loadCorpusFixture('ana-sofia-cota-guillen');
-		const published = fixture.publishedContent ?? {};
-		expect(published.itinerary).toMatchObject({ variant: 'timeline-paper' });
+	it('locks Ana Sofía itinerary timeline-paper', () => {
+		const content = definitionContent('ana-sofia-cota-guillen');
+		expect(content.itinerary).toMatchObject({ variant: 'timeline-paper' });
 
-		const viewModel = adaptEvent({
-			id: 'events/ana-sofia-cota-guillen',
-			data: {
-				eventType: 'xv',
-				isDemo: false,
-				title: 'Ana Sofía',
-				theme: { preset: 'celestial-blue' },
-				hero: {
-					name: 'Ana Sofía',
-					date: '2026-05-23T00:00:00.000Z',
-					backgroundImage: { type: 'external', src: '/images/test-bg.jpg' },
-				},
-				...published,
-			},
-		} as Parameters<typeof adaptEvent>[0]);
+		const viewModel = adaptDbEvent({
+			slug: 'ana-sofia-cota-guillen',
+			eventType: 'xv',
+			isDemo: false,
+			content,
+		});
 		expect(viewModel.sections.itinerary?.variant).toBe('timeline-paper');
 	});
 });

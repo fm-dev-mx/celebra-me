@@ -39,7 +39,7 @@ const INVENTORIED_ROUTES = [
 		renderer: 'wax-medallion',
 	},
 	{
-		route: '/bautismo/demo-bautismo-angelic-presence?forceEnvelope=true',
+		route: '/bautizo/demo-bautismo-angelic-presence?forceEnvelope=true',
 		name: 'Angelic Presence (Demo)',
 		renderer: 'monogram',
 	},

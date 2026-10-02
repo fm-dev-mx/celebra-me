@@ -17,7 +17,6 @@ const INPUT_PATHS = [
 	'scripts/provision/local-render-corpus/registry.ts',
 	'scripts/provision/local-render-corpus/content.ts',
 	'scripts/provision/local-render-corpus/screenshot-pages.ts',
-	'scripts/provision/local-render-corpus/fixtures',
 	'tests/provision/local-render-corpus-regression.test.ts',
 ] as const;
 

@@ -79,6 +79,7 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 	{
 		eventType: 'cumple',
 		publicSlug: 'cumpleanos',
+		alternatePublicSlugs: ['cumple'],
 		label: 'Cumpleaños y eventos',
 		description: 'Celebraciones sociales con invitación digital y confirmación.',
 		icon: 'Cake',

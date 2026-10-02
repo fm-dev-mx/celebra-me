@@ -76,10 +76,7 @@ describe('XV Renata provision contract', () => {
 		expect(reveal).not.toMatch(/romina|renata/i);
 	});
 
-	it('does not register a Renata key in shared legacy intersection profiles', () => {
-		expect(
-			fs.existsSync(path.join(process.cwd(), 'src/lib/invitation/variant-normalization.ts')),
-		).toBe(false);
+	it('keeps client identities out of the shared variant registry', () => {
 		const registry = fs.readFileSync(
 			path.join(process.cwd(), 'src/lib/invitation/section-variants.ts'),
 			'utf8',

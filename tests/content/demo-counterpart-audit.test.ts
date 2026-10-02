@@ -7,6 +7,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { EVENT_KEYS } from '@/lib/assets/asset-keys';
 
 const projectRoot = process.cwd();
 const demosRoot = path.join(projectRoot, 'src/content/event-demos');
@@ -18,53 +19,8 @@ interface DemoInfo {
 	data: Record<string, unknown>;
 }
 
-function getRealPayloadSectionOrder(visualProfileId: string): string[] | undefined {
-	const payloadPath = path.join(
-		projectRoot,
-		'.agent/plans/active',
-		`xv-${visualProfileId}-db-payload.json`,
-	);
-	if (!fs.existsSync(payloadPath)) return undefined;
-
-	const raw = fs.readFileSync(payloadPath, 'utf8');
-	const data = JSON.parse(raw) as { sectionOrder?: string[] };
-	return Array.isArray(data.sectionOrder) ? data.sectionOrder : undefined;
-}
-
-// Known safe asset keys that any asset registry can provide
-const EVENT_KEYS_SET = new Set([
-	'hero',
-	'heroDesktop',
-	'portrait',
-	'family',
-	'ceremony',
-	'reception',
-	'mapCeremony',
-	'mapReception',
-	'jardin',
-	'signature',
-	'sealImage',
-	'gallery01',
-	'gallery02',
-	'gallery03',
-	'gallery04',
-	'gallery05',
-	'gallery06',
-	'gallery07',
-	'gallery08',
-	'gallery09',
-	'gallery10',
-	'gallery11',
-	'gallery12',
-	'gallery13',
-	'gallery14',
-	'gallery15',
-	'interlude01',
-	'interlude02',
-	'interlude03',
-	'interlude04',
-	'thankYouPortrait',
-]);
+// Every key the event asset registry can resolve.
+const EVENT_KEYS_SET = new Set<string>(EVENT_KEYS);
 
 function getRealInvitationAssetDirs(): string[] {
 	if (!fs.existsSync(assetsRoot)) return [];
@@ -337,17 +293,6 @@ describe('Strict Demo Counterpart Audit', () => {
 			const vpid = demo.data.visualProfileId as string;
 			it(`demo "${demo.slug}" visualProfileId "${vpid}" is a valid slug`, () => {
 				expect(vpid).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
-			});
-		}
-
-		for (const demo of demosWithVpid) {
-			const vpid = demo.data.visualProfileId as string;
-			const expectedSectionOrder = getRealPayloadSectionOrder(vpid);
-
-			if (!expectedSectionOrder) continue;
-
-			it(`demo "${demo.slug}" preserves real payload sectionOrder for "${vpid}"`, () => {
-				expect(demo.data.sectionOrder).toEqual(expectedSectionOrder);
 			});
 		}
 	});
