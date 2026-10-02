@@ -73,7 +73,8 @@ Classification: `verified` | `inferred` | `ambiguous` | `missing` | `not_applica
 | rsvpGuestCap          | 1                                                                                                                     | verified       | product-default | `rsvpSchema` default per confirmation; no guest-list capacity inferred                                       |
 | rsvpWhatsappPhone     | —                                                                                                                     | not_applicable | owner-session   | Website/API RSVP only; no phone is included                                                                  |
 | musicUrl              | `https://res.cloudinary.com/dusxvauvj/video/upload/v1790729635/Imagine_-_John_Lennon_The_Plastic_Ono_Band_ndhjjv.mp3` | verified       | owner-session   | Imagine - John Lennon; configured with autoPlay and profile safe-area styling                                |
-| rsvpDeadline          | —                                                                                                                     | missing        | wa-export       | No deadline confirmed; omit it rather than invent one                                                        |
+| rsvpDeadline          | 2026-10-10                                                                                                            | verified       | wa-export       | Client request 2026-10-01; shown in the RSVP subcopy as "sábado 10 de octubre"                               |
+| childrenPolicy        | Celebración sin niños                                                                                                 | verified       | wa-export       | Client request 2026-10-01; shown as a location indication                                                    |
 | specialMessages       | `[[PENDIENTE:SPECIAL_MESSAGES]]`                                                                                      | missing        | wa-export       | No personal quote was confirmed                                                                              |
 
 ## Event Completeness
@@ -94,8 +95,7 @@ XV contract maturity: `evidence-backed`.
   - **status:** satisfied except specialMessages (non-blocking)
 - **requirement:** optional
   - **fields:** dressCode, gifts, musicUrl, rsvpDeadline, clientColors
-  - **status:** satisfied (musicUrl, gifts, clientColors); dressCode, rsvpDeadline omitted/not
-    applicable
+  - **status:** satisfied (musicUrl, gifts, clientColors, rsvpDeadline); dressCode not applicable
 
 **Is the available information sufficient to prepare this invitation?** `yes` —
 `evaluateEventCompleteness` reports no blocking gaps. The missing personal quote is non-blocking and
@@ -138,7 +138,7 @@ No unresolved blocking owner decisions for this Local draft.
   - **section keys:** Unconfirmed quote, sample phone number, sample addresses/dates/text, guest
     dress code, unconfirmed program items
 - **bucket:** unresolved
-  - **section keys:** Personal quote: `[[PENDIENTE:SPECIAL_MESSAGES]]`; RSVP deadline is not shown
+  - **section keys:** Personal quote: `[[PENDIENTE:SPECIAL_MESSAGES]]`
 
 The itinerary lists the confirmed ceremony (19:00) and reception (21:00) plus waltz (22:00), dinner
 (22:30), and closing (02:00). **The last three times are estimates pending owner confirmation.** The
@@ -217,9 +217,11 @@ the family left/right group alignment and two-column grid, the gallery inner hai
 prints and wider feature band, the centered hero scroll cue (eyebrow label with an animated foil
 thread instead of the arrow, wrapped into two lines below 420px), the music player's safe-area
 offsets and its prompt pill hidden below 768px so it cannot cover the cue, and the closing drop cap,
-grain, message ink, and split signature lines. The motion signature is a single CSS foil sweep (700
-ms) on the dark-band titles and the closing signature, triggered by the coordinator's `is-visible`
-class and disabled under reduced motion.
+grain, message ink, and split signature lines. The location notes replace the variant's sand box and
+circled icons with a postscript framed by foil rules: Cormorant copy, gold line icons, a foil
+lozenge between notes, and the deadline date in gold ink. The motion signature is a single CSS foil
+sweep (700 ms) on the dark-band titles and the closing signature, triggered by the coordinator's
+`is-visible` class and disabled under reduced motion.
 
 Known canonical follow-ups (not changed here): the `jewelry-box` envelope shows ~1 s of blank paper
 and a grey flap interior while opening; `REVEAL_RECIPES` assigns adjacent `stagger-group` recipes
@@ -277,7 +279,10 @@ its role budget.
   in the invitation registry and the Local render corpus.
 - RSVP is `personalized-only` with `api` confirmation; host passes assign seats per guest, and
   `guestCap: 1` is the content default.
-- Omit guest dress code, RSVP deadline, extra itinerary stops, and unapproved quotation.
+- Omit guest dress code, extra itinerary stops, and unapproved quotation.
+- 2026-10-01 client corrections: RSVP deadline (Saturday 10 October) in `rsvp.subcopy` and in
+  `location.indications` ("Para tomar en cuenta"), next to the adults-only note. The client declined
+  a dress-code line.
 - Preview and Production releases follow `docs/domains/intake/production-flow.md` and require their
   own explicit authorization.
 

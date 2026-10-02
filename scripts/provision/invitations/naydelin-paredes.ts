@@ -135,7 +135,15 @@ const content: CanonicalEventContentInput = {
 		introEyebrow: 'Los Mochis, Sinaloa',
 		introHeading: 'Ceremonia y recepción',
 		mapStyle: 'dark',
-		indications: [],
+		indicationsHeading: 'Para tomar en cuenta',
+		indications: [
+			{ iconName: 'Forbidden', styleVariant: 'default', text: 'Celebración sin niños.' },
+			{
+				iconName: 'Calendar',
+				styleVariant: 'default',
+				text: 'Confirme su asistencia a más tardar el <strong>sábado 10 de octubre</strong>.',
+			},
+		],
 		venues: [
 			{
 				type: 'ceremony',
@@ -200,7 +208,7 @@ const content: CanonicalEventContentInput = {
 	rsvp: {
 		variant: 'formal-register',
 		title: 'Confirme su asistencia',
-		subcopy: 'Su confirmación me ayudará a preparar cada detalle con cariño.',
+		subcopy: 'Le agradeceré confirmar su asistencia a más tardar el sábado 10 de octubre.',
 		guestCap: 1,
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',

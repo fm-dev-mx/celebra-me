@@ -191,6 +191,7 @@ export const itinerarySchema = z
 					.strict(),
 			)
 			.optional(),
+		closingNote: optionalText(500),
 	})
 	.strict();
 

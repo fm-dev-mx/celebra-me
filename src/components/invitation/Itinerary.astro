@@ -11,9 +11,10 @@ interface Props {
 	items: ItineraryItem[];
 	variant: ItineraryVariant;
 	monogram?: string;
+	closingNote?: string;
 }
 
-const { title = "Itinerario", items, variant, monogram, subtitle } = Astro.props;
+const { title = "Itinerario", items, variant, monogram, subtitle, closingNote } = Astro.props;
 ---
 
 <section class="itinerary" id="itinerary" data-screenshot-section="itinerary" data-variant={variant}>
@@ -43,5 +44,9 @@ const { title = "Itinerario", items, variant, monogram, subtitle } = Astro.props
 
 			<div class="itinerary__line-end" aria-hidden="true"></div>
 		</div>
+
+		{closingNote && (
+			<p class="itinerary__closing-note" data-itinerary-closing-note>{closingNote}</p>
+		)}
 	</div>
 </section>

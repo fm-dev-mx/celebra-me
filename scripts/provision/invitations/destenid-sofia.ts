@@ -273,6 +273,9 @@ export function buildDestenidPublishedContent(
 				// The client wrote "Cierre 2,pm"; read as 2:00 a.m. after the 10 p.m. waltz.
 				{ iconName: 'Party', label: 'Cierre', time: '02:00' },
 			],
+			// Client wording (tú voice kept on request); only orthography and punctuation were fixed.
+			closingNote:
+				'Habrá muchas sorpresas.\nLa fiesta más cool, la que siempre recordarás ❤️\nBaila, canta, disfruta… y queda prohibido quedarse sentado: esto es hasta que el cuerpo diga ¡ya!',
 		},
 		location: {
 			accessPolicy: { visibility: 'public' },
@@ -300,6 +303,12 @@ export function buildDestenidPublishedContent(
 					iconName: 'Enveloped',
 					styleVariant: 'default',
 					text: 'Agradezco que confirme su asistencia con anticipación para preparar cada detalle con cariño.',
+				},
+				{
+					title: 'Código de vestimenta',
+					iconName: 'DressCode',
+					styleVariant: 'default',
+					text: 'Le pedimos evitar los tonos beige y dorado. El color negro está reservado para la quinceañera y su mamá.',
 				},
 				{
 					title: 'Puntualidad',
