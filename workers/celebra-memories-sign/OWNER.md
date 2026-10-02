@@ -140,6 +140,16 @@ owner must confirm account-wide R2 storage and operations plus Workers daily req
 below the then-current provider limits. The Cloudflare rate-limiter binding is eventual abuse
 protection; the reservation RPC remains the authoritative quota, window, and concurrency boundary.
 
+The super-admin console (`/dashboard/admin/recuerdos`) shows that budget: R2 storage, Class A/B
+operations for the month, and Workers and Durable Objects requests for the UTC day against the Free
+allowances, plus the storage committed by live spaces. To enable the live meters, create a
+Cloudflare API token with only **Account → Account Analytics → Read** for this account and set
+`MEMORIES_CLOUDFLARE_ACCOUNT_ID`, `MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN` and
+`MEMORIES_R2_BUCKET_NAME` in the matching Vercel environment (independent tokens for Preview and
+Production). Never reuse a Wrangler deploy token. Without them the console shows the storage
+recorded by the app and states that Cloudflare data is unavailable. The meters are approximate
+(analytics lag by minutes); the Cloudflare dashboard remains the billing authority.
+
 ## Organizer retrieval procedure
 
 1. The organizer signs in through the existing dashboard session and selects an event with an active

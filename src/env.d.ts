@@ -29,6 +29,12 @@ interface ImportMetaEnv {
 	readonly MEMORIES_PRIVATE_RETRIEVAL_ORIGIN: string;
 	/** Server-only bearer secret injected by Vercel Cron. */
 	readonly CRON_SECRET: string;
+	/** Server-only Cloudflare account id for the memories usage console (optional). */
+	readonly MEMORIES_CLOUDFLARE_ACCOUNT_ID: string;
+	/** Server-only read-only token (Account Analytics: Read) for the usage console (optional). */
+	readonly MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN: string;
+	/** Server-only R2 bucket name whose usage the console reports (optional). */
+	readonly MEMORIES_R2_BUCKET_NAME: string;
 	readonly META_CAPI_DELIVERY_MODE: string;
 	readonly META_CAPI_ACCESS_TOKEN: string;
 	readonly META_PIXEL_ID: string;
