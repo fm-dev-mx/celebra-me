@@ -15,6 +15,7 @@ export const itinerarySchema = z
 		subtitle: z.string().optional(),
 		variant: z.enum(ITINERARY_VARIANTS),
 		items: z.array(itineraryItemSchema),
+		closingNote: z.string().optional(),
 	})
 	.strict()
 	.optional();

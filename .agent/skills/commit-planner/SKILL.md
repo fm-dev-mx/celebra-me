@@ -4,7 +4,7 @@ description:
   Plan atomic commits from staged/unstaged changes, draft repository-compliant messages, and execute
   only exact Git operations explicitly authorized for the approved plan.
 domain: meta
-version: 2.6.0
+version: 2.7.0
 absorbed_skills: [commit-staged]
 when_to_use:
   - Preparing commits or evaluating atomicity
@@ -14,6 +14,7 @@ when_to_use:
 preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
+  - Read .agent/rules/git-safety.md
   - Read .agent/templates/agent-report-contract.md
 related_skills:
   - staged-code-review
@@ -122,9 +123,9 @@ Treat these as commit-hygiene red flags:
   (agent never runs it),
 - bundling frontend markup/attribute changes with backend interface or data-layer changes.
 
-Treat audit-only warnings as review prompts, not hard gates: `3+` files with no body, non-bulleted
-bodies on multi-file commits, commits spanning multiple top-level areas, and very broad `10+` file
-changes all deserve an explicit atomicity check.
+Treat advisory hygiene warnings as review prompts, not hard gates: `3+` files with no body,
+non-bulleted bodies on multi-file commits, commits spanning multiple top-level areas, and very broad
+`10+` file changes all deserve an explicit atomicity check.
 
 ## Draft Repository-Compliant Messages
 
@@ -195,7 +196,8 @@ Follow the shared contract. Shape:
 
 **Intent:** <one sentence> **Incluye:** <paths or hunk boundaries> **Fuera:** <exclusions + why> |
 No exclusions for this commit (only after full partition confirmed) **Usuario stagea:**
-`git add <exact paths>` or `git add -p <file>` (user runs these — agent does not)
+`git add <exact paths>` or `git add -p <file>` (user runs these unless Option A authorizes the agent
+to stage the exact paths)
 
 ```text
 type(scope): subject
@@ -244,6 +246,11 @@ commits):
 
 ### Per-commit procedure (Option A)
 
+Run inside a Git Safety session: `pnpm agent:git-safety:start` before staging and
+`pnpm agent:git-safety:finish --authorized-operation=commit` after the last commit. If the session
+also created the task branch, declare both:
+`--authorized-operation=branch-switch,commit --branch=<name>`.
+
 1. **Partition Index** — inspect the staged set before each commit. Preserve unrelated staged paths
    and partially staged hunks. If partitioning needs unstaging, use
    `git restore --staged -- <exact authorized paths>` only when that operation and those paths are
@@ -256,7 +263,7 @@ commits):
 2. **Verify staged set** — read-only confirmation (`git diff --cached --name-only`).
 3. **Pre-validate & Commit**:
    ```sh
-   echo "type(scope): subject" | pnpm exec commitlint --verbose 2>/dev/null \
+   echo "type(scope): subject" | node node_modules/@commitlint/cli/cli.js --verbose \
      || { echo "❌ Commit message fails commitlint — fix before retrying"; exit 1; }
    git commit -m "type(scope): subject" \
      -m "- path/file: change"

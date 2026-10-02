@@ -6,7 +6,9 @@
  * backups, receipts, or SQL execution.
  */
 import { getProdDbUrl } from './db-workflow-lib.ts';
-import { OperatorError } from './operator-cli-ux.ts';
+import { OperatorError, operatorSymbol, writeHuman } from './operator-cli-ux.ts';
+import { ensureValidReleaseCheckEvidence } from './release-check.ts';
+import { loadRemoteChecks, requireReleaseChecks } from '../ops/release-readiness.ts';
 import {
 	MigrateApplyError,
 	orchestrateMigrate,
@@ -109,6 +111,28 @@ export interface ProductionApplyExecuteDeps extends ProductionApplyAssemblerDeps
 	}) => unknown;
 	ensureSharedBackup?: typeof ensureCriticalProductionBackup;
 	preparedCriticalBackupManifestPath?: string;
+	/** Release evidence gate; runs before any backup or owner prompt. */
+	assertReleaseReadiness?: (options: { remote: boolean }) => ReleaseReadiness;
+	/** Internal: release evidence already verified for this apply; never a CLI flag. */
+	verifiedReleaseSha?: string;
+}
+
+export interface ReleaseReadiness {
+	sha: string;
+}
+
+/**
+ * Fail before a backup or the owner prompt when the release is not provably ready: local
+ * release-check evidence for the clean HEAD, plus trusted CI checks on that exact SHA for schema.
+ * The owner gate and the schema policy still verify the same evidence; they now reuse it.
+ */
+function defaultAssertReleaseReadiness(options: { remote: boolean }): ReleaseReadiness {
+	writeHuman(`${operatorSymbol('info')} Release: verificando evidencia antes del respaldo…`);
+	const evidence = ensureValidReleaseCheckEvidence();
+	if (options.remote) {
+		requireReleaseChecks(evidence.sha, loadRemoteChecks(evidence.sha));
+	}
+	return { sha: evidence.sha };
 }
 
 export interface ProductionApplyOutcomeRow {
@@ -390,6 +414,15 @@ async function applySchemaMutation(
 					authorizedPlanBindingHex: input.authorizedPlanBindingHex,
 					authorizedPermitOperationType: PRODUCTION_APPLY_OPERATION_TYPE,
 					preparedCriticalBackupManifestPath: deps.preparedCriticalBackupManifestPath,
+					// Release evidence was verified before the backup, and the post-authorization
+					// drift rebuild just re-ran the object audit; the pre-write rebuild still runs.
+					sessionSeed: deps.verifiedReleaseSha
+						? {
+								releaseCheckCompleted: true,
+								releaseEvidenceSha: deps.verifiedReleaseSha,
+								productionAuditCompleted: true,
+							}
+						: undefined,
 				}));
 		const result = await applySchema({ authorizedPlanBindingHex: reviewed.planId });
 		replaceOutcome(outcomes, 'schema', {
@@ -688,6 +721,9 @@ export async function applyProductionApplyPlan(
 
 	const hasSchema = mutations.some((item) => item.domain === 'schema');
 	const hasPatch = mutations.some((item) => item.domain === 'patch');
+	const release = (deps.assertReleaseReadiness ?? defaultAssertReleaseReadiness)({
+		remote: hasSchema,
+	});
 	const shouldPrepareSharedBackup =
 		(hasSchema || hasPatch) &&
 		Boolean(
@@ -727,6 +763,7 @@ export async function applyProductionApplyPlan(
 		...deps,
 		preparedCriticalBackupManifestPath:
 			sharedBackupManifest ?? deps.preparedCriticalBackupManifestPath,
+		verifiedReleaseSha: release.sha,
 	};
 
 	try {

@@ -6,7 +6,7 @@ description: |
   production, or governance docs. Never stages, unstages, or commits — user owns the index for
   visualization. Respects prior review MCQ scope choices.
 domain: workflow
-version: 1.5.0
+version: 1.6.0
 when_to_use:
   - Immediately after a staged-code-review report when the user says proceed / apply / adelante
   - User explicitly asks to apply staged-code-review fixes
@@ -153,12 +153,14 @@ interleave per-file delete prompts.
 
 ## Verify
 
+Select checks by tier from [validation procedures](../../../docs/core/validation-procedures.md):
+
 | Change                       | Command                                                                        |
 | ---------------------------- | ------------------------------------------------------------------------------ |
-| TypeScript                   | `pnpm type-check` (or project equivalent)                                      |
-| Lint / SCSS                  | `pnpm lint` / style lint scripts                                               |
-| Mixed / deletions            | `pnpm build` when appropriate                                                  |
-| Content schema               | `pnpm ops validate-schema` when available                                      |
+| Any applied edit (Tier A)    | `pnpm validate:changed` (lint, styles, related tests on changed files)         |
+| Shared contracts (Tier B)    | add `pnpm type-check`                                                          |
+| Mixed / deletions            | `pnpm build:app` when appropriate (`pnpm build` repeats `type-check`)          |
+| Theme contract variants      | `pnpm ops validate-schema` (theme-contract vs section-theme selectors)         |
 | Touched `.agent/` or `docs/` | Doc integrity: escaped backticks, broken fences, truncated operational phrases |
 
 Triage: fix regressions in files you modified; do not refactor untouched files for complex

@@ -79,7 +79,6 @@ function checkGitWorktreeState(
 		name: lane.displayName,
 		path: cwd,
 		runtimeDefault: lane.runtimeDefault,
-		defaultBranch: lane.id === 'integration' ? 'develop' : 'ephemeral',
 	});
 
 	if (status.inspection === 'unavailable') {

@@ -314,6 +314,7 @@ export interface InvitationViewModel {
 			subtitle?: string;
 			items: ItineraryItem[];
 			variant: ItineraryVariant;
+			closingNote?: string;
 		};
 		rsvp?: {
 			eventSlug: string;

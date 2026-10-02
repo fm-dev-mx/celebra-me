@@ -42,9 +42,9 @@ describe('required database availability preflight', () => {
 		]);
 	});
 
-	it('accepts only a reachable, correctly classified, read-only target', () => {
+	it('accepts only a reachable, correctly classified, read-only target', async () => {
 		expect(
-			verifyRequiredDatabaseAvailability(['local', 'preview', 'production'], {
+			await verifyRequiredDatabaseAvailability(['local', 'preview', 'production'], {
 				dependencies: dependencies({}),
 			}),
 		).toEqual([
@@ -54,10 +54,10 @@ describe('required database availability preflight', () => {
 		]);
 	});
 
-	it('reports missing credentials without probing', () => {
+	it('reports missing credentials without probing', async () => {
 		const probe = jest.fn(() => ({ status: 0, stdout: 'on\n' }));
 		const result = only(
-			verifyRequiredDatabaseAvailability(['preview'], {
+			await verifyRequiredDatabaseAvailability(['preview'], {
 				dependencies: { ...dependencies({ urls: { preview: null } }), probe },
 			}),
 		);
@@ -85,13 +85,30 @@ describe('required database availability preflight', () => {
 			dependencies({ probes: { 'production-url': { status: 0, stdout: 'off\n' } } }),
 			'READ_ONLY_ENFORCEMENT_FAILED',
 		],
-	] as const)('fails closed for a %s', (_label, deps, reasonCode) => {
+	] as const)('fails closed for a %s', async (_label, deps, reasonCode) => {
 		expect(
 			only(
-				verifyRequiredDatabaseAvailability(['production'], {
+				await verifyRequiredDatabaseAvailability(['production'], {
 					dependencies: deps,
 				}),
 			),
 		).toEqual({ environment: 'production', available: false, reasonCode });
+	});
+
+	it('probes targets concurrently and keeps the requested order', async () => {
+		let inFlight = 0;
+		let maxInFlight = 0;
+		const probe = async () => {
+			inFlight += 1;
+			maxInFlight = Math.max(maxInFlight, inFlight);
+			await new Promise((resolve) => setTimeout(resolve, 5));
+			inFlight -= 1;
+			return { status: 0, stdout: 'on\n' };
+		};
+		const results = await verifyRequiredDatabaseAvailability(['production', 'local'], {
+			dependencies: { ...dependencies({}), probe },
+		});
+		expect(results.map((result) => result.environment)).toEqual(['production', 'local']);
+		expect(maxInFlight).toBe(2);
 	});
 });

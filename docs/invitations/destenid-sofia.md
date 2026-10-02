@@ -62,7 +62,7 @@ given names by explicit owner decision (no surname supplied or requested for pub
 | fatherName           | —                                                                                                 | not_applicable | wa-export         | Client explicitly does not want parents' names                                                         |
 | motherName           | —                                                                                                 | not_applicable | wa-export         | Client explicitly does not want parents' names                                                         |
 | godparents           | —                                                                                                 | not_applicable | wa-export         | Client explicitly does not want godparents                                                             |
-| dressCode            | —                                                                                                 | missing        | —                 | Not supplied; omitted rather than invented                                                             |
+| dressCode            | Avoid beige and gold; black reserved for the celebrant and her mother                             | verified       | owner (client)    | Supplied in client review; rendered as a `DressCode` guest indication                                  |
 | gifts                | lluvia de sobres; transferencia                                                                   | verified       | wa-export         | Envelopes published; transfer held until a CLABE is supplied (see GIFTS-BANK)                          |
 | musicUrl             | —                                                                                                 | missing        | wa-export         | RBD track from a YouTube link, starting at 0:39; a direct audio file is required                       |
 | clientColors         | beige, dorado, negro                                                                              | verified       | wa-export         | Dress is beige with gold; celebrant requested black as well                                            |
@@ -99,7 +99,7 @@ Contract maturity for this event type: `evidence-backed` (`xv`).
   - **fields:** fatherName, motherName, godparents, ceremonyMapUrl
   - **status:** not_applicable
 - **requirement:** optional
-  - **fields:** dressCode, musicUrl
+  - **fields:** musicUrl
   - **status:** missing (non-blocking)
 
 ### Missing blockers
@@ -110,7 +110,6 @@ Contract maturity for this event type: `evidence-backed` (`xv`).
 
 - Bank-transfer item needs an 18-digit CLABE; the client sent a debit card number.
 - Music audio file pending.
-- Dress code not supplied.
 
 Deterministic question: **Is the available information sufficient to prepare this invitation?**  
 Answer: `yes` (`evaluateEventCompleteness`).
@@ -154,12 +153,12 @@ their data exists.
 
 ## Sections
 
-| bucket                 | section keys                                                                          |
-| ---------------------- | ------------------------------------------------------------------------------------- |
-| requested              | quote, family (prayer), gallery, gifts, personalizedAccess, rsvp, thankYou            |
-| inferred / recommended | countdown, itinerary, location, one interlude (after location)                        |
-| omitted                | parents, godparents, ceremony venue, dress code, music (until audio exists), photo QR |
-| unresolved             | bank CLABE, music                                                                     |
+| bucket                 | section keys                                                               |
+| ---------------------- | -------------------------------------------------------------------------- |
+| requested              | quote, family (prayer), gallery, gifts, personalizedAccess, rsvp, thankYou |
+| inferred / recommended | countdown, itinerary, location, one interlude (after family)               |
+| omitted                | parents, godparents, ceremony venue, music (until audio exists), photo QR  |
+| unresolved             | bank CLABE, music                                                          |
 
 ---
 
@@ -191,7 +190,7 @@ local exception to the token-remap-only guidance.
 | Vertical rhythm and density                              | Preset rhythm retained                                    | pending    |
 | Surface hierarchy (open flow vs cards/containers)        | Beige paper surfaces with black quote and RSVP chapters   | pending    |
 | Photographic treatment (role, crop, focal point, filter) | Full color (preset desaturation disabled); unique roles   | pending    |
-| Section-intersection intent and narrative cadence        | Reference dividers ported; one interlude after location   | pending    |
+| Section-intersection intent and narrative cadence        | Reference dividers ported; one interlude after family     | pending    |
 | Local exceptions to the selected preset                  | Ported reference section overrides (see Design Direction) | documented |
 
 ### Creative acceptance record
@@ -263,6 +262,11 @@ crops so the full dress is not revealed.
   "refugio de mis sueños" became ". Te doy", and the stray closing quote after the thank-you phrase
   was dropped. Owner-authored copy (tagline, location intro, envelope gift text) is in the "usted"
   register and approved by the owner.
+- Client review corrections: the itinerary ends with the client's own closing note
+  (`itinerary.closingNote`, tú voice kept at the client's request, orthography fixed only); the
+  dress code is a `DressCode` guest indication; countdown digits use a lighter Bodoni weight so the
+  "4" stays legible on the dark chapter; the interlude photo is brightened and the prayer is set
+  darker and larger (profile SCSS only).
 - The reveal is a magazine object: `envelope.backdropImage` (WA0034) is the cover photograph, shown
   as a 2:3 cover on a dark table with a spine-hinged page turn (profile SCSS only). This required a
   shared, backward-compatible change: `EditorialCoverReveal` accepts an optional `coverImage`, wired

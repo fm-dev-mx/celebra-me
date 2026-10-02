@@ -15,7 +15,6 @@ export interface LaneConfig {
 	name: string;
 	path: string;
 	runtimeDefault: 'local' | 'preview';
-	defaultBranch: string;
 }
 
 export interface LaneStatus {
@@ -40,7 +39,6 @@ export const LANES: LaneConfig[] = listExpectedLanePaths(REPO_ROOT).map((lane) =
 	name: lane.displayName,
 	path: lane.path,
 	runtimeDefault: lane.runtimeDefault,
-	defaultBranch: lane.id === 'integration' ? 'develop' : 'ephemeral',
 }));
 
 function runGit(args: string[], cwd: string): GitCommandResult {

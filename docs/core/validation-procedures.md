@@ -167,7 +167,8 @@ pnpm agent:git-safety:finish # Interactive session close — not part of CI
 ```
 
 `pnpm run ci` is the canonical full-pipeline equivalent of Tier C. It runs `pnpm type-check`,
-`pnpm validate:structure`, `pnpm lint`, `pnpm lint:styles`, `pnpm validate:ui-governance`,
+`pnpm validate:structure`, `pnpm validate:deployed-app-capabilities`, `pnpm lint`,
+`pnpm lint:styles` (both content-cached under `node_modules/.cache`), `pnpm validate:ui-governance`,
 `pnpm validate:event-parity`, `pnpm validate:no-pii`, `pnpm validate:invitation-preparation`,
 `pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. It does **not** invoke interactive Git Safety
 (that requires a same-session baseline). Use `pnpm validate:changed` for focused feedback; run
@@ -177,8 +178,8 @@ not replace these repository-wide checks or the full release pipeline.
 Close the mutable agent session with `pnpm agent:git-safety:finish` after Tier C when a session was
 started. See `.agent/rules/git-safety.md`.
 
-The pre-push hook retains the main guard, commit-range validation and Git LFS handoff; do not move
-tests or type-checks into pre-push.
+The pre-push hook keeps commit-range validation, visual certification for `develop`/`main` pushes
+and the Git LFS handoff; do not move tests or type-checks into pre-push.
 
 #### Remote CI coverage and efficiency
 

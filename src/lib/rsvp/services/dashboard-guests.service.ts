@@ -468,12 +468,22 @@ export async function updateDashboardGuest(input: {
 export async function deleteDashboardGuest(input: {
 	guestId: string;
 	hostAccessToken: string;
-	actorUserId?: string;
+	actorUserId: string;
 	isSuperAdmin?: boolean;
 }): Promise<void> {
 	const existing = await getGuestAccessOrThrow(input.guestId, input.hostAccessToken);
 
-	if (input.isSuperAdmin && input.actorUserId) {
+	let deleted: boolean;
+	try {
+		deleted = await softDeleteGuestById(input.guestId, input.actorUserId);
+	} catch (error) {
+		throw mapSupabaseErrorToApiError(error);
+	}
+	if (!deleted) {
+		throw new ApiError(404, 'not_found', 'Guest not found.');
+	}
+
+	if (input.isSuperAdmin) {
 		await logAdminAction({
 			actorId: input.actorUserId,
 			action: 'delete_guest',
@@ -483,8 +493,6 @@ export async function deleteDashboardGuest(input: {
 			newData: null,
 		});
 	}
-
-	await softDeleteGuestById(input.guestId, input.hostAccessToken);
 }
 
 export async function markGuestShared(input: {

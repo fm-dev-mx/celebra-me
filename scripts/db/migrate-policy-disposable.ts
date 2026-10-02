@@ -5,11 +5,11 @@
  */
 
 import { DISPOSABLE_DB_URL, redactDbUrl } from './db-target-config.ts';
+import { enforceDisposableTargetOnly, getValidatedMigrationFiles } from './apply-migrations.ts';
 import {
-	enforceDisposableTargetOnly,
-	getValidatedMigrationFiles,
-} from './apply-migrations.ts';
-import { writeDisposableMigrationProof } from './disposable-migration-proof.ts';
+	foreignAppliedVersions,
+	writeDisposableMigrationProof,
+} from './disposable-migration-proof.ts';
 import {
 	assertCompatibilityOrFail,
 	evaluateMigrationDeploymentCompatibility,
@@ -46,18 +46,31 @@ export const disposableMigratePolicy: MigrateEnvironmentPolicy = {
 		ensureSchemaMigrationsTable(ctx.dbUrl);
 		const applied = new Set(readAppliedMigrationVersions(ctx.dbUrl));
 		const maxVersion = ctx.maxVersion ?? undefined;
-		let pendingVersions = getValidatedMigrationFiles(maxVersion)
-			.filter((f) => !applied.has(f.version))
-			.map((f) => f.version);
+		const files = getValidatedMigrationFiles(maxVersion);
+		if (!maxVersion) {
+			// The container is shared across worktrees; refuse a reference built from another branch.
+			const foreign = foreignAppliedVersions(
+				[...applied],
+				files.map((f) => f.version),
+			);
+			if (foreign.length > 0) {
+				fail(
+					`Disposable database contains migrations absent from this checkout (${foreign.join(', ')}). ` +
+						'Reset it first: pnpm db:disposable:reset',
+				);
+			}
+		}
+		const pendingVersions = files.filter((f) => !applied.has(f.version)).map((f) => f.version);
 
 		if (ctx.expectedPin) {
-			const compare = comparePendingSetToExpected(pendingVersions, ctx.expectedPin);
+			const compare = comparePendingSetToExpected(pendingVersions, ctx.expectedPin, [
+				...applied,
+			]);
 			if (!compare.ok) {
 				fail(
 					`Disposable pending set does not match --expected:\n- ${compare.errors.join('\n- ')}`,
 				);
 			}
-			pendingVersions = [...ctx.expectedPin].filter((v) => v !== 'none');
 		}
 
 		const registry = loadMigrationRolloutRegistry();

@@ -212,10 +212,11 @@ function assertPreBackupCoverageBeforeAuthorize(ctx: {
 function validatePendingVersions(
 	pendingVersions: string[],
 	expectedPin: readonly string[] | null | undefined,
+	appliedVersions: readonly string[],
 	quiet: boolean,
 ): void {
 	if (expectedPin) {
-		const compare = comparePendingSetToExpected(pendingVersions, expectedPin);
+		const compare = comparePendingSetToExpected(pendingVersions, expectedPin, appliedVersions);
 		if (!compare.ok) {
 			throw new OperatorError({
 				title: 'El dry-run no coincide con --expected',
@@ -225,12 +226,16 @@ function validatePendingVersions(
 					'Revise el conjunto pendiente real con un preflight.',
 					'Ajuste --expected al conjunto exacto o omita el pin.',
 				],
-				retryCommand: 'pnpm db:migrate -- --target production',
+				retryCommand: 'pnpm prod:apply -- --schema',
 				affected: { label: 'Detalles', items: [...compare.errors] },
 			});
 		}
 		if (!quiet) {
-			writeHuman(`${operatorSymbol('ok')} Dry-run coincide exactamente con --expected.`);
+			writeHuman(
+				compare.alreadyApplied.length > 0
+					? `${operatorSymbol('ok')} --expected satisfecho; ya aplicadas: ${compare.alreadyApplied.join(', ')}.`
+					: `${operatorSymbol('ok')} Dry-run coincide exactamente con --expected.`,
+			);
 		}
 	} else if (!quiet) {
 		if (pendingVersions.length === 0) {
@@ -285,7 +290,8 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 		}
 		const dryRun = executeSupabaseDryRun(ctx.dbUrl);
 		const pendingVersions = dryRun.pendingVersions;
-		validatePendingVersions(pendingVersions, ctx.expectedPin, quiet);
+		const dbAppliedVersions = readAppliedMigrationVersions(ctx.dbUrl);
+		validatePendingVersions(pendingVersions, ctx.expectedPin, dbAppliedVersions, quiet);
 
 		const worktree = readGitWorktreeState();
 		const releaseSha = worktree.sha;
@@ -294,11 +300,7 @@ export const productionMigratePolicy: MigrateEnvironmentPolicy = {
 				`${operatorSymbol('info')} Preflight: compatibilidad de despliegue (release = HEAD)…`,
 			);
 		}
-		const dbAppliedVersions = readAppliedMigrationVersions(ctx.dbUrl);
-		const candidateVersions =
-			pendingVersions.length > 0
-				? pendingVersions
-				: (ctx.expectedPin ?? []).filter((v) => v !== 'none');
+		const candidateVersions = pendingVersions;
 		const registry = loadMigrationRolloutRegistry();
 		const { deployedAppIdentity, remoteEvidenceUnavailable } =
 			resolveContractDeploymentEvidence({

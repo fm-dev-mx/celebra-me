@@ -1,6 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import {
 	displayOperatorCommand,
+	formatEnvAssignment,
 	operatorCommandCopyValue,
 	operatorCommandWriteLabel,
 } from '@/lib/status/operator-command-display';
@@ -58,6 +59,19 @@ describe('displayOperatorCommand', () => {
 		expect(display.surface).toBe('terminal');
 		expect(display.envAssignment).toBe('$env:CELEBRA_TASK_SCOPE="preview:schema:migrate"');
 		expect(display.prompt).toBe(command);
+	});
+
+	it('emits a POSIX export for the migrate task scope when the host is not Windows', () => {
+		const display = displayOperatorCommand('pnpm db:migrate -- --target preview --apply', {
+			platform: 'linux',
+		});
+		expect(display.envAssignment).toBe('export CELEBRA_TASK_SCOPE="preview:schema:migrate"');
+	});
+
+	it('formats environment assignments per shell', () => {
+		expect(formatEnvAssignment('A', 'b', 'win32')).toBe('$env:A="b"');
+		expect(formatEnvAssignment('A', 'b', 'darwin')).toBe('export A="b"');
+		expect(formatEnvAssignment('A', 'b')).toBe('$env:A="b"');
 	});
 
 	it('splits prod:apply plan and patch apply', () => {

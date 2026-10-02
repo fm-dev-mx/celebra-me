@@ -68,8 +68,13 @@ async function formatGeneralView(
 		environments: targets,
 		includeProductionPreflight: false,
 	});
-	const view = await refineOrKeep(fast, () => refineCanonicalStatusViewPromotions(fast));
-	const mediaReferences = readMediaReferencesStatus({ targets });
+	// Media inventories do not depend on the promotion refine; read them concurrently.
+	const [view, mediaReferences] = await Promise.all([
+		refineOrKeep(fast, () =>
+			refineCanonicalStatusViewPromotions(fast, { resetSession: false }),
+		),
+		readMediaReferencesStatus({ targets }),
+	]);
 	const operationalPlan = buildMediaOperationalPlan(
 		buildOperationalActionPlan(view),
 		mediaReferences,
@@ -111,10 +116,12 @@ async function formatInvitationView(
 		environments: targets,
 		includeProductionPreflight: false,
 	});
-	const view = await refineOrKeep(fast, () =>
-		refineCanonicalStatusViewPromotions(fast, { slugs: [slug] }),
-	);
-	const mediaReferences = readMediaReferencesStatus({ targets, slug });
+	const [view, mediaReferences] = await Promise.all([
+		refineOrKeep(fast, () =>
+			refineCanonicalStatusViewPromotions(fast, { slugs: [slug], resetSession: false }),
+		),
+		readMediaReferencesStatus({ targets, slug }),
+	]);
 	const operationalPlan = buildMediaOperationalPlan(
 		buildOperationalActionPlan(view),
 		mediaReferences,

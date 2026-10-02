@@ -6,7 +6,6 @@ const lane = {
 	name: 'Test lane',
 	path: process.cwd(),
 	runtimeDefault: 'local' as const,
-	defaultBranch: 'ephemeral',
 };
 
 describe('worktree status contract', () => {
@@ -46,7 +45,8 @@ describe('worktree status contract', () => {
 				return { status: 0, stdout: 'feature/test', stderr: '' };
 			if (args[0] === 'rev-parse' && args[1] === '--short' && args[2] === 'HEAD')
 				return { status: 0, stdout: 'abc123', stderr: '' };
-			if (args[0] === 'rev-parse') return { status: 1, stdout: '', stderr: 'ref unavailable' };
+			if (args[0] === 'rev-parse')
+				return { status: 1, stdout: '', stderr: 'ref unavailable' };
 			if (args[0] === 'status') return { status: 0, stdout: '', stderr: '' };
 			return { status: 1, stdout: '', stderr: 'relation unavailable' };
 		});
@@ -58,7 +58,10 @@ describe('worktree status contract', () => {
 	});
 
 	it('returns unavailable for a missing expected lane', () => {
-		const result = inspectLane({ ...lane, path: path.join(process.cwd(), '.missing-worktree-for-test') });
+		const result = inspectLane({
+			...lane,
+			path: path.join(process.cwd(), '.missing-worktree-for-test'),
+		});
 
 		expect(result.exists).toBe(false);
 		expect(result.inspection).toBe('unavailable');

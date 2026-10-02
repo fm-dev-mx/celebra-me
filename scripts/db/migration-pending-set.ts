@@ -19,32 +19,42 @@ export function extractPendingMigrationVersions(dryRunOutput: string): string[] 
 	];
 }
 
+export type PendingSetComparison =
+	{ ok: true; alreadyApplied: string[] } | { ok: false; errors: string[] };
+
+/**
+ * Compare the live pending set to an explicit --expected pin.
+ *
+ * Re-running the same pinned command after a successful apply is idempotent: expected versions that
+ * are already recorded in the target's migration history are reported as `alreadyApplied` instead
+ * of failing. A pending version outside the pin, or an expected version that is neither pending nor
+ * applied, still fails closed. `none` pins an empty pending set.
+ */
 export function comparePendingSetToExpected(
 	pendingVersions: readonly string[],
 	expectedVersions: readonly string[],
-): { ok: true } | { ok: false; errors: string[] } {
+	appliedVersions: readonly string[] = [],
+): PendingSetComparison {
 	const errors: string[] = [];
-	const expectedSet = new Set(expectedVersions);
+	const expectedSet = new Set(expectedVersions.filter((version) => version !== 'none'));
 	const pendingSet = new Set(pendingVersions);
+	const appliedSet = new Set(appliedVersions);
+	const alreadyApplied: string[] = [];
 
-	if (pendingVersions.length === 0) {
-		if (expectedVersions.length > 0 && expectedVersions[0] !== 'none') {
-			errors.push(
-				`Expected migrations to apply: ${expectedVersions.join(', ')}, but dry-run shows 0 migrations.`,
-			);
-		}
-		return errors.length === 0 ? { ok: true } : { ok: false, errors };
-	}
-
-	for (const version of expectedVersions) {
-		if (!pendingSet.has(version)) {
-			errors.push(`Expected migration "${version}" is not in the dry-run pending set.`);
-		}
-	}
 	for (const version of pendingVersions) {
 		if (!expectedSet.has(version)) {
 			errors.push(`Dry-run pending migration "${version}" is not in the expected set.`);
 		}
 	}
-	return errors.length === 0 ? { ok: true } : { ok: false, errors };
+	for (const version of expectedSet) {
+		if (pendingSet.has(version)) continue;
+		if (appliedSet.has(version)) {
+			alreadyApplied.push(version);
+			continue;
+		}
+		errors.push(
+			`Expected migration "${version}" is neither pending in the dry-run nor recorded as applied.`,
+		);
+	}
+	return errors.length === 0 ? { ok: true, alreadyApplied } : { ok: false, errors };
 }

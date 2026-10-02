@@ -54,19 +54,20 @@ export const previewMigratePolicy: MigrateEnvironmentPolicy = {
 		const dryRun = executeSupabaseDryRun(ctx.dbUrl);
 		const pendingVersions = dryRun.pendingVersions;
 
+		const dbAppliedVersions = readAppliedMigrationVersions(ctx.dbUrl);
 		if (ctx.expectedPin) {
-			const compare = comparePendingSetToExpected(pendingVersions, ctx.expectedPin);
+			const compare = comparePendingSetToExpected(
+				pendingVersions,
+				ctx.expectedPin,
+				dbAppliedVersions,
+			);
 			if (!compare.ok) {
 				for (const error of compare.errors) console.error(`❌ ERROR: ${error}`);
 				fail('Migration dry-run does not match the explicit --expected set. Aborting.');
 			}
 		}
 
-		const dbAppliedVersions = readAppliedMigrationVersions(ctx.dbUrl);
-		const candidateVersions =
-			pendingVersions.length > 0
-				? pendingVersions
-				: (ctx.expectedPin ?? []).filter((v) => v !== 'none');
+		const candidateVersions = pendingVersions;
 
 		// Contract migrations need the same smoke-checked Production deployment
 		// evidence on Preview as on Production.

@@ -171,7 +171,15 @@ for backward compatibility and marked with `[DEPRECATED]` in their comments:
   MFA safeguards.
 - Service-role reads remain server-only. Direct service-role guest and guest-audit writes are
   revoked; narrow RSVP RPC execution is the only privileged public mutation boundary. Authenticated
-  dashboard guest operations continue through host-scoped RLS.
+  dashboard guest reads, creates, and edits continue through host-scoped RLS.
+- Dashboard guest soft delete cannot run through RLS: the `guest_invitations` SELECT policy only
+  exposes active rows, and PostgreSQL requires the updated row of a filtered UPDATE to remain
+  visible, so a client `PATCH deleted_at` fails with `42501`. The BFF first checks access with the
+  host session, then calls the service-role-only `soft_delete_guest_invitation_v1(guest, actor)`
+  RPC, which re-checks that the actor owns, actively manages, or administers the active event.
+  Soft-deleted guests stay invisible to client sessions and cannot be restored or edited from them
+  (`supabase/tests/guest_invitation_rls.test.sql`,
+  `tests/db/dashboard-guest-soft-delete-db.test.ts`).
 
 ## Environment Variables
 

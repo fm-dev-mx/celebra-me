@@ -41,6 +41,11 @@ describe('worktree lane detection', () => {
 	it('does not recognize paths outside the canonical external layout', () => {
 		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/dev-local').id).toBe('unknown');
 		expect(detectWorktreeLane('/mock/celebra-me/.worktrees/dev-lane').id).toBe('unknown');
+		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-local2').id).toBe('unknown');
+	});
+
+	it('detects lanes from subdirectories of a lane checkout', () => {
+		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-extra/src').id).toBe('dev-extra');
 	});
 
 	it('lists expected lane paths under the repository root', () => {

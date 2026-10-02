@@ -1,7 +1,7 @@
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
 import {
 	CRITICAL_BACKUP_KINDS,
 	createArtifactManifest,
@@ -18,9 +18,7 @@ import {
 	type RecoveryIntegritySnapshot,
 } from '../../scripts/db/recovery-integrity.ts';
 
-function integrity(
-	overrides: Partial<RecoveryIntegritySnapshot> = {},
-): RecoveryIntegritySnapshot {
+function integrity(overrides: Partial<RecoveryIntegritySnapshot> = {}): RecoveryIntegritySnapshot {
 	return {
 		version: 1,
 		profile: 'phase3',
@@ -93,7 +91,8 @@ describe('evaluateCriticalBackupCoverage', () => {
 			businessStateSha256: 'e'.repeat(64),
 		});
 		const result = evaluateCriticalBackupCoverage({
-			prodDbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
+			prodDbUrl:
+				'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 			backupRoot: root,
 			nowMs: Date.parse('2026-08-06T12:05:00.000Z'),
 			captureIntegrity: () => live,
@@ -114,7 +113,8 @@ describe('evaluateCriticalBackupCoverage', () => {
 		const root = mkdtempSync(join(tmpdir(), 'critical-reuse-'));
 		writeManifest(root, 'critical-2026-08-06T120000Z');
 		const result = evaluateCriticalBackupCoverage({
-			prodDbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
+			prodDbUrl:
+				'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 			backupRoot: root,
 			nowMs: Date.parse('2026-08-06T12:05:00.000Z'),
 			captureIntegrity: () =>
@@ -135,17 +135,21 @@ describe('evaluateCriticalBackupCoverage', () => {
 		expect(result.reason).toBe('structural_drift');
 	});
 
-	it('rejects coverage when the backup exceeds RPO', () => {
+	it('rejects coverage when the backup exceeds RPO without re-hashing its artifacts', () => {
 		const root = mkdtempSync(join(tmpdir(), 'critical-reuse-'));
 		writeManifest(root, 'critical-2026-08-06T120000Z', {
 			createdAt: '2026-08-06T12:00:00.000Z',
 		});
+		const assertEncrypted = jest.fn(() => undefined);
+		const validateManifest = jest.fn(() => undefined);
 		const result = evaluateCriticalBackupCoverage({
-			prodDbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
+			prodDbUrl:
+				'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 			backupRoot: root,
 			nowMs: Date.parse('2026-08-06T12:20:00.000Z'),
 			captureIntegrity: () => integrity(),
-			assertEncrypted: () => undefined,
+			assertEncrypted,
+			validateManifest,
 			listBackups: () => [
 				{
 					path: join(root, 'critical-2026-08-06T120000Z'),
@@ -155,6 +159,8 @@ describe('evaluateCriticalBackupCoverage', () => {
 		});
 		expect(result.covered).toBe(false);
 		expect(result.reason).toBe('expired');
+		expect(validateManifest).not.toHaveBeenCalled();
+		expect(assertEncrypted).not.toHaveBeenCalled();
 	});
 
 	it('rejects manifests without integrity', () => {
@@ -164,7 +170,8 @@ describe('evaluateCriticalBackupCoverage', () => {
 			stateDigest: undefined,
 		});
 		const result = evaluateCriticalBackupCoverage({
-			prodDbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
+			prodDbUrl:
+				'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 			backupRoot: root,
 			nowMs: Date.parse('2026-08-06T12:05:00.000Z'),
 			captureIntegrity: () => integrity(),
@@ -186,7 +193,8 @@ describe('evaluateCriticalBackupCoverage', () => {
 			projectRef: 'iwipdvisoyerfdytuhwi',
 		});
 		const result = evaluateCriticalBackupCoverage({
-			prodDbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
+			prodDbUrl:
+				'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 			backupRoot: root,
 			nowMs: Date.parse('2026-08-06T12:05:00.000Z'),
 			captureIntegrity: () => integrity(),
@@ -205,14 +213,19 @@ describe('evaluateCriticalBackupCoverage', () => {
 	it('returns no_candidate when the backup root is empty', () => {
 		const root = mkdtempSync(join(tmpdir(), 'critical-reuse-'));
 		const result = evaluateCriticalBackupCoverage({
-			prodDbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
+			prodDbUrl:
+				'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 			backupRoot: root,
 			captureIntegrity: () => {
 				throw new Error('should not capture without candidates');
 			},
 			listBackups: () => [],
 		});
-		expect(result).toEqual({ covered: false, reason: 'no_candidate', maxAgeMs: CRITICAL_BACKUP_RPO_MS });
+		expect(result).toEqual({
+			covered: false,
+			reason: 'no_candidate',
+			maxAgeMs: CRITICAL_BACKUP_RPO_MS,
+		});
 	});
 
 	it('prefers the newest matching candidate by createdAt', () => {
@@ -224,14 +237,21 @@ describe('evaluateCriticalBackupCoverage', () => {
 			createdAt: '2026-08-06T15:00:00.000Z',
 		});
 		const result = evaluateCriticalBackupCoverage({
-			prodDbUrl: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
+			prodDbUrl:
+				'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 			backupRoot: root,
 			nowMs: Date.parse('2026-08-06T15:05:00.000Z'),
 			captureIntegrity: () => integrity(),
 			assertEncrypted: () => undefined,
 			listBackups: () => [
-				{ path: join(root, 'critical-2026-08-05T120000Z'), createdAt: new Date('2026-08-05') },
-				{ path: join(root, 'critical-2026-08-06T150000Z'), createdAt: new Date('2026-08-06') },
+				{
+					path: join(root, 'critical-2026-08-05T120000Z'),
+					createdAt: new Date('2026-08-05'),
+				},
+				{
+					path: join(root, 'critical-2026-08-06T150000Z'),
+					createdAt: new Date('2026-08-06'),
+				},
 			],
 		});
 		expect(result.covered).toBe(true);

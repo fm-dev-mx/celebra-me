@@ -292,14 +292,6 @@ export function readinessRemediation(row: CanonicalEnvSummary): OperatorRemediat
 					...(row.environment === 'production'
 						? [
 								step(
-									'Plan',
-									'pnpm prod:apply -- --schema',
-									'Preflight sin mutaciones aprobado.',
-									true,
-									false,
-									'Planificar apply',
-								),
-								step(
 									'Apply',
 									'pnpm prod:apply -- --schema --apply',
 									'Plan revisado; requiere TTY del propietario.',

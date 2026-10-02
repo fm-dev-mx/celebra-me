@@ -4,12 +4,12 @@
  * Interactive Agent OS Git Safety lifecycle.
  *
  * Commands:
- *   start   — establish a mutable-session baseline (fails if one already exists)
+ *   start   — establish a mutable-session baseline (replaces one only when nothing drifted)
  *   finish  — verify protected state, then clean up on PASS (preserve on FAIL)
  *
  * Authorization remains Task Contract / current-task user authority.
- * Optional `--authorized-operation=` only communicates that authority to the
- * detector for one invocation; it is never persisted and never proves human consent.
+ * Optional `--authorized-operation=` (comma-separated) only communicates that authority
+ * to the detector for one invocation; it is never persisted and never proves human consent.
  */
 
 import { createHash } from 'node:crypto';
@@ -22,9 +22,11 @@ import process from 'node:process';
 export const BASELINE_VERSION = 2;
 export const BASELINE_FILE_NAME = 'git-safety-baseline.json';
 
-/** @typedef {'stage' | 'unstage' | 'commit' | 'branch-switch'} AuthorizedOperation */
+/** @typedef {'stage' | 'unstage' | 'commit' | 'history' | 'branch-switch'} AuthorizedOperation */
+/** @typedef {{ operations: AuthorizedOperation[], paths: string[], branch: string | null }} Authorization */
 
-const SUPPORTED_OPERATIONS = new Set(['stage', 'unstage', 'commit', 'branch-switch']);
+const SUPPORTED_OPERATIONS = new Set(['stage', 'unstage', 'commit', 'history', 'branch-switch']);
+const NO_AUTHORIZATION = Object.freeze({ operations: [], paths: [], branch: null });
 
 /**
  * @param {string} [repoRoot]
@@ -206,32 +208,36 @@ function parsePathsOption(value) {
 }
 
 /**
+ * @param {string | undefined} value
+ * @returns {AuthorizedOperation[]}
+ */
+function parseOperationsOption(value) {
+	const operations = parsePathsOption(value ?? '');
+	const unknown = operations.filter((operation) => !SUPPORTED_OPERATIONS.has(operation));
+	if (operations.length === 0 || unknown.length > 0) {
+		throw new Error(
+			`Unknown authorized operation "${unknown.join(',') || value || ''}". Supported: ${[...SUPPORTED_OPERATIONS].join(', ')}`,
+		);
+	}
+	return /** @type {AuthorizedOperation[]} */ (operations);
+}
+
+/**
  * @param {string[]} argv
  */
 export function parseFinishArgs(argv) {
-	/** @type {{ operation: AuthorizedOperation | null, paths: string[], branch: string | null }} */
-	const result = { operation: null, paths: [], branch: null };
+	/** @type {Authorization} */
+	const result = { operations: [], paths: [], branch: null };
 
 	for (let i = 0; i < argv.length; i++) {
 		const arg = argv[i];
+		if (arg === '--') continue;
 		if (arg.startsWith('--authorized-operation=')) {
-			const value = arg.slice('--authorized-operation='.length);
-			if (!SUPPORTED_OPERATIONS.has(value)) {
-				throw new Error(
-					`Unknown authorized operation "${value}". Supported: ${[...SUPPORTED_OPERATIONS].join(', ')}`,
-				);
-			}
-			result.operation = /** @type {AuthorizedOperation} */ (value);
+			result.operations = parseOperationsOption(arg.slice('--authorized-operation='.length));
 			continue;
 		}
 		if (arg === '--authorized-operation') {
-			const value = argv[++i];
-			if (!value || !SUPPORTED_OPERATIONS.has(value)) {
-				throw new Error(
-					`Unknown or missing authorized operation. Supported: ${[...SUPPORTED_OPERATIONS].join(', ')}`,
-				);
-			}
-			result.operation = /** @type {AuthorizedOperation} */ (value);
+			result.operations = parseOperationsOption(argv[++i]);
 			continue;
 		}
 		if (arg.startsWith('--paths=')) {
@@ -270,7 +276,7 @@ export function parseFinishArgs(argv) {
  *   diagnosticRefs: { localHeadsFingerprint: string, tagsFingerprint: string, stashFingerprint: string },
  * }} baseline
  * @param {ReturnType<typeof captureProtectedState>} current
- * @param {{ operation: AuthorizedOperation | null, paths: string[], branch: string | null }} auth
+ * @param {Authorization} auth
  */
 export function evaluateProtectedDrift(baseline, current, auth) {
 	const headChanged = baseline.head !== current.head;
@@ -287,25 +293,15 @@ export function evaluateProtectedDrift(baseline, current, auth) {
 		);
 	}
 
-	const failures = auth.operation
-		? evaluateAuthorizedOperation(auth, {
-				baseline,
-				current,
-				headChanged,
-				branchChanged,
-				detachedChanged,
-				indexChanged,
-				changedPaths,
-			})
-		: evaluateUnauthorizedDrift({
-				baseline,
-				current,
-				headChanged,
-				branchChanged,
-				detachedChanged,
-				indexChanged,
-				changedPaths,
-			});
+	const failures = evaluateDrift(auth, {
+		baseline,
+		current,
+		headChanged,
+		branchChanged,
+		detachedChanged,
+		indexChanged,
+		changedPaths,
+	});
 
 	return { failures, notes, headChanged, branchChanged, indexChanged, changedPaths };
 }
@@ -323,6 +319,10 @@ function diagnosticRefsChanged(before, after) {
 }
 
 /**
+ * Every protected drift must be covered by an authorized operation:
+ * commit/history cover HEAD and index, stage/unstage cover the listed index paths,
+ * branch-switch covers HEAD and a move to exactly --branch.
+ * @param {Authorization} auth
  * @param {{
  *   baseline: { head: string | null, branch: string | null, detached: boolean },
  *   current: { head: string | null, branch: string | null, detached: boolean },
@@ -333,133 +333,64 @@ function diagnosticRefsChanged(before, after) {
  *   changedPaths: string[],
  * }} state
  */
-function evaluateUnauthorizedDrift(state) {
+function evaluateDrift(auth, state) {
+	const operations = new Set(auth.operations);
+	const movesHead = operations.has('commit') || operations.has('history');
+	const stagesPaths = operations.has('stage') || operations.has('unstage');
+	const switchesBranch = operations.has('branch-switch');
 	/** @type {string[]} */
 	const failures = [];
-	if (state.headChanged) {
+
+	if (stagesPaths !== auth.paths.length > 0) {
+		failures.push('--paths is required by, and only accepted with, stage/unstage');
+	}
+	if (switchesBranch !== Boolean(auth.branch)) {
+		failures.push('--branch is required by, and only accepted with, branch-switch');
+	}
+	if (failures.length > 0) return failures;
+
+	if (!movesHead) failures.push(...uncoveredIndexDrift(auth, state));
+	if (operations.has('commit') && !state.headChanged) {
+		failures.push(
+			'authorized commit requires HEAD to change (index-only drift is staging, not commit)',
+		);
+	}
+	if (state.headChanged && !movesHead && !switchesBranch) {
 		failures.push(
 			`HEAD changed from ${state.baseline.head ?? '(unborn)'} to ${state.current.head ?? '(unborn)'} without authorization`,
 		);
 	}
-	if (state.branchChanged || state.detachedChanged) {
-		failures.push(
-			`branch/detached state changed from ${formatBranch(state.baseline)} to ${formatBranch(state.current)} without authorization`,
-		);
-	}
-	if (state.indexChanged) {
-		failures.push('index (staged) state changed without authorization');
-		if (state.changedPaths.length > 0) {
-			failures.push(`changed index paths: ${state.changedPaths.join(', ')}`);
-		}
-	}
-	return failures;
-}
-
-/**
- * @param {{ operation: AuthorizedOperation, paths: string[], branch: string | null }} auth
- * @param {{
- *   baseline: { head: string | null, branch: string | null, detached: boolean },
- *   current: { head: string | null, branch: string | null, detached: boolean },
- *   headChanged: boolean,
- *   branchChanged: boolean,
- *   detachedChanged: boolean,
- *   indexChanged: boolean,
- *   changedPaths: string[],
- * }} state
- */
-function evaluateAuthorizedOperation(auth, state) {
-	/** @type {string[]} */
-	const failures = [];
-	if (auth.operation === 'stage' || auth.operation === 'unstage') {
-		return evaluateStageLikeAuthorization(auth, state);
-	}
-	if (auth.operation === 'commit') {
-		if (auth.paths.length > 0) {
-			failures.push('--authorized-operation=commit does not accept --paths');
-		}
-		if (!state.headChanged) {
-			failures.push(
-				'authorized commit requires HEAD to change (index-only drift is staging, not commit)',
-			);
-		}
-		if (state.branchChanged || state.detachedChanged) {
-			failures.push(
-				'authorized commit must not change branch/detached state (adjacent unauthorized drift)',
-			);
-		}
-		return failures;
-	}
-	if (auth.operation === 'branch-switch') {
-		return evaluateBranchSwitchAuthorization(auth, state);
-	}
-	failures.push(`Unsupported authorized operation: ${auth.operation}`);
-	return failures;
-}
-
-/**
- * @param {{ operation: AuthorizedOperation, paths: string[] }} auth
- * @param {{
- *   headChanged: boolean,
- *   branchChanged: boolean,
- *   detachedChanged: boolean,
- *   indexChanged: boolean,
- *   changedPaths: string[],
- * }} state
- */
-function evaluateStageLikeAuthorization(auth, state) {
-	/** @type {string[]} */
-	const failures = [];
-	if (auth.paths.length === 0) {
-		failures.push(`--authorized-operation=${auth.operation} requires --paths`);
-		return failures;
-	}
-	if (state.headChanged || state.branchChanged || state.detachedChanged) {
-		failures.push(
-			`authorized ${auth.operation} must not change HEAD/branch (adjacent unauthorized drift)`,
-		);
-	}
-	const allowed = new Set(auth.paths);
-	const outside = state.changedPaths.filter((path) => !allowed.has(path));
-	if (outside.length > 0) {
-		failures.push(
-			`index paths outside authorized scope for ${auth.operation}: ${outside.join(', ')}`,
-		);
-	}
-	return failures;
-}
-
-/**
- * @param {{ branch: string | null, paths: string[] }} auth
- * @param {{
- *   current: { head: string | null, branch: string | null, detached: boolean },
- *   indexChanged: boolean,
- *   changedPaths: string[],
- * }} state
- */
-function evaluateBranchSwitchAuthorization(auth, state) {
-	/** @type {string[]} */
-	const failures = [];
-	if (!auth.branch) {
-		failures.push('--authorized-operation=branch-switch requires --branch');
-		return failures;
-	}
-	if (auth.paths.length > 0) {
-		failures.push('--authorized-operation=branch-switch does not accept --paths');
-	}
-	if (state.current.branch !== auth.branch) {
+	if (switchesBranch && state.current.branch !== auth.branch) {
 		failures.push(
 			`authorized branch-switch expected branch "${auth.branch}", current is ${formatBranch(state.current)}`,
 		);
 	}
-	if (state.indexChanged) {
+	if (!switchesBranch && (state.branchChanged || state.detachedChanged)) {
 		failures.push(
-			'authorized branch-switch must not change index state (adjacent unauthorized drift)',
+			`branch/detached state changed from ${formatBranch(state.baseline)} to ${formatBranch(state.current)} without authorization`,
 		);
-		if (state.changedPaths.length > 0) {
-			failures.push(`changed index paths: ${state.changedPaths.join(', ')}`);
-		}
 	}
 	return failures;
+}
+
+/**
+ * Index drift not covered by the `--paths` of stage/unstage.
+ * @param {Authorization} auth
+ * @param {{ indexChanged: boolean, changedPaths: string[] }} state
+ */
+function uncoveredIndexDrift(auth, state) {
+	if (!state.indexChanged) return [];
+	const allowed = new Set(auth.paths);
+	const outside = state.changedPaths.filter((path) => !allowed.has(path));
+	if (outside.length > 0) {
+		return [
+			'index (staged) state changed without authorization',
+			`index paths outside authorized scope: ${outside.join(', ')}`,
+		];
+	}
+	return state.changedPaths.length === 0
+		? ['index (staged) state changed without authorization']
+		: [];
 }
 
 /**
@@ -513,7 +444,11 @@ export function classifyBaselineFile(baselineFile) {
 		if (!raw || typeof raw !== 'object') {
 			return { kind: 'invalid', versionLabel: 'invalid', detail: 'not a JSON object' };
 		}
-		if (raw.version === BASELINE_VERSION) {
+		if (
+			raw.version === BASELINE_VERSION &&
+			typeof raw.indexFingerprint === 'string' &&
+			Array.isArray(raw.indexEntries)
+		) {
 			return { kind: 'v2', versionLabel: String(raw.version) };
 		}
 		return {
@@ -577,23 +512,44 @@ export function cmdStart(options = {}) {
 	const paths = resolvePaths(options.repoRoot);
 	console.log('agent:git-safety:start');
 
+	const state = captureProtectedState(paths.repoRoot);
+
 	if (existsSync(paths.baselineFile)) {
-		console.error('FAILED');
-		console.error(`active baseline already exists: ${paths.baselineFile}`);
-		const classification = classifyBaselineFile(paths.baselineFile);
+		let classification = classifyBaselineFile(paths.baselineFile);
+		/** @type {string[]} */
+		let drift = [];
 		if (classification.kind === 'v2') {
-			console.error(
-				'Refusing to overwrite. Close the prior session with finish, or remove the baseline only with operator intent, then retry start.',
-			);
-		} else {
-			console.error('Refusing to overwrite.');
-			printInvalidBaseline(paths.baselineFile, classification);
+			try {
+				drift = evaluateProtectedDrift(
+					readBaseline(paths.baselineFile),
+					state,
+					NO_AUTHORIZATION,
+				).failures;
+			} catch (error) {
+				classification = {
+					kind: 'invalid',
+					versionLabel: classification.versionLabel,
+					detail: error instanceof Error ? error.message : String(error),
+				};
+			}
 		}
-		process.exitCode = 1;
-		return { ok: false, reason: 'baseline-exists', classification };
+		if (classification.kind !== 'v2' || drift.length > 0) {
+			console.error('FAILED');
+			console.error(`active baseline already exists: ${paths.baselineFile}`);
+			if (classification.kind === 'v2') {
+				for (const failure of drift) console.error(`  ${failure}`);
+				console.error(
+					'Refusing to overwrite drifted evidence. Close the prior session with finish first.',
+				);
+			} else {
+				printInvalidBaseline(paths.baselineFile, classification);
+			}
+			process.exitCode = 1;
+			return { ok: false, reason: 'baseline-exists', classification };
+		}
+		console.log('  replacing a prior baseline with no protected drift');
 	}
 
-	const state = captureProtectedState(paths.repoRoot);
 	const baseline = writeBaseline(paths, state);
 
 	console.log(`  version:              ${baseline.version}`);
@@ -608,19 +564,19 @@ export function cmdStart(options = {}) {
 }
 
 /**
- * @param {{ operation: AuthorizedOperation | null, paths: string[], branch: string | null }} auth
+ * @param {Authorization} auth
  */
 function formatAuthorizedOperation(auth) {
-	if (!auth.operation) return 'none';
+	if (auth.operations.length === 0) return 'none';
 	const pathPart = auth.paths.length ? ` paths=${auth.paths.join(',')}` : '';
 	const branchPart = auth.branch ? ` branch=${auth.branch}` : '';
-	return `${auth.operation}${pathPart}${branchPart}`;
+	return `${auth.operations.join(',')}${pathPart}${branchPart}`;
 }
 
 /**
  * @param {ReturnType<typeof readBaseline>} baseline
  * @param {ReturnType<typeof captureProtectedState>} current
- * @param {{ operation: AuthorizedOperation | null, paths: string[], branch: string | null }} auth
+ * @param {Authorization} auth
  * @param {ReturnType<typeof evaluateProtectedDrift>} verdict
  */
 function printFinishSummary(baseline, current, auth, verdict) {
@@ -728,11 +684,7 @@ export function cmdCheck(options = {}) {
 	}
 
 	const current = captureProtectedState(paths.repoRoot);
-	const verdict = evaluateProtectedDrift(baseline, current, {
-		operation: null,
-		paths: [],
-		branch: null,
-	});
+	const verdict = evaluateProtectedDrift(baseline, current, NO_AUTHORIZATION);
 	console.log(`  baseline createdAt: ${baseline.createdAt || '(unknown)'}`);
 	console.log(`  current HEAD:      ${current.head ?? '(unborn)'}`);
 	console.log(`  current branch:    ${formatBranch(current)}`);
@@ -754,12 +706,13 @@ function printUsage() {
 	console.error(`Usage:
   node scripts/agent/git-safety.mjs start
   node scripts/agent/git-safety.mjs check
-  node scripts/agent/git-safety.mjs finish [--authorized-operation=<op>] [--paths=a,b] [--branch=name]
+  node scripts/agent/git-safety.mjs finish [--authorized-operation=<op>[,<op>...]] [--paths=a,b] [--branch=name]
 
-Supported authorized operations (ephemeral, non-persistent, not proof of consent):
+Supported authorized operations (ephemeral, non-persistent, not proof of consent; combinable):
   stage          requires --paths
   unstage        requires --paths
-  commit
+  commit         HEAD must move
+  history        HEAD may move (rebase, merge, pull)
   branch-switch  requires --branch`);
 }
 

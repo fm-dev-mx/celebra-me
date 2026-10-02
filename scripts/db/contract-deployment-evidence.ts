@@ -21,6 +21,18 @@ export interface ContractDeploymentEvidence {
 	remoteEvidenceUnavailable: string | null;
 }
 
+/**
+ * Plan rebuilds within one command re-request the same evidence seconds apart. Successful lookups
+ * are reused briefly so a rebuild does not repeat every GitHub call, while a later revalidation
+ * (or a new process) still observes a changed Production deployment.
+ */
+const EVIDENCE_REUSE_MS = 60_000;
+const evidenceCache = new Map<string, { at: number; evidence: ContractDeploymentEvidence }>();
+
+export function resetContractDeploymentEvidenceCache(): void {
+	evidenceCache.clear();
+}
+
 export function resolveContractDeploymentEvidence(input: {
 	candidateVersions: readonly string[];
 	registry: ReturnType<typeof loadMigrationRolloutRegistry>;
@@ -33,9 +45,11 @@ export function resolveContractDeploymentEvidence(input: {
 	if (!requiresContractEvidence) {
 		return { deployedAppIdentity: null, remoteEvidenceUnavailable: null };
 	}
+	const cached = evidenceCache.get(input.targetReleaseSha);
+	if (cached && Date.now() - cached.at < EVIDENCE_REUSE_MS) return cached.evidence;
 	try {
 		const deployment = loadLatestProductionDeployment();
-		return {
+		const evidence: ContractDeploymentEvidence = {
 			deployedAppIdentity: readDeployedApplicationAttestation({
 				deployedSha: deployment.sha,
 				targetReleaseSha: input.targetReleaseSha,
@@ -43,6 +57,8 @@ export function resolveContractDeploymentEvidence(input: {
 			}),
 			remoteEvidenceUnavailable: null,
 		};
+		evidenceCache.set(input.targetReleaseSha, { at: Date.now(), evidence });
+		return evidence;
 	} catch (error: unknown) {
 		if (input.mode === 'apply' || !isRemoteEvidenceUnavailable(error)) throw error;
 		const message = error instanceof Error ? error.message : String(error);

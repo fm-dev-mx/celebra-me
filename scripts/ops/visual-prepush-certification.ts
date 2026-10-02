@@ -45,11 +45,13 @@ export interface CertificationIdentity {
 	runtimeContractHash: string;
 }
 
+const CERTIFIED_REFS = new Set(['refs/heads/develop', 'refs/heads/main']);
+
 export function shouldRequireVisualCertification(
-	_targetRef: string,
+	targetRef: string,
 	changedPaths: string[],
 ): boolean {
-	return visualImpactFiles(changedPaths).length > 0;
+	return CERTIFIED_REFS.has(targetRef) && visualImpactFiles(changedPaths).length > 0;
 }
 
 export function certificationMatches(

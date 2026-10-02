@@ -115,26 +115,19 @@ export function findRepoRoot(cwd?: string): string {
 // ─── Detection helpers (extracted for complexity limits) ───────────────────────
 
 function detectExternalPath(lower: string, externalRoots: string[]): WorktreeLaneDefinition | null {
-	// Check if cwd directly contains any expected segment under celebre-me-worktrees
-	const worktreesDirPattern = /celebra-me-worktrees/i;
-	if (worktreesDirPattern.test(lower)) {
-		for (const lane of WORKTREE_LANES) {
-			if (!lane.segment) continue;
-			const seg = lane.segment.toLowerCase();
-			if (
-				lower.includes(`/celebra-me-worktrees/${seg}`) ||
-				lower.endsWith(`/celebra-me-worktrees/${seg}`)
-			) {
-				return lane;
-			}
+	// Without a repo root hint, match the canonical sibling directory by exact segment.
+	for (const lane of WORKTREE_LANES) {
+		if (!lane.segment) continue;
+		const laneDir = `/celebra-me-worktrees/${lane.segment.toLowerCase()}`;
+		if (lower.endsWith(laneDir) || lower.includes(`${laneDir}/`)) {
+			return lane;
 		}
 	}
 	// Specific external root match
 	for (const ext of externalRoots) {
-		const extNormalized = ext.replaceAll('\\', '/');
 		for (const lane of WORKTREE_LANES) {
 			if (!lane.segment) continue;
-			const expected = `${extNormalized}/${lane.segment}`.toLowerCase();
+			const expected = `${ext}/${lane.segment}`.toLowerCase();
 			if (lower === expected || lower.startsWith(expected + '/')) {
 				return lane;
 			}
@@ -167,14 +160,7 @@ export function detectWorktreeLane(
 	if (externalMatch) return externalMatch;
 
 	// Fallback: Integration lane guess by basename
-	if (root && lower === root.toLowerCase()) {
-		return WORKTREE_LANES[0]!;
-	}
-	const leaf = basename(normalized);
-	if (
-		leaf.toLowerCase() === 'celebra-me' ||
-		leaf === basename(resolve(normalized, '..', '..', 'package.json'))
-	) {
+	if (basename(normalized).toLowerCase() === 'celebra-me') {
 		return WORKTREE_LANES[0]!;
 	}
 

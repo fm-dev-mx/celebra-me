@@ -1,6 +1,6 @@
 # dev-local worktree
 
-**Path:** `<worktrees-root>\dev-local` (sibling `<repo-dir>-worktrees/` directory of the repository root; see `docs/core/git-governance.md` for the reference-machine example)  
+**Path:** `<worktrees-root>\dev-local`  
 **Executable SSOT:** [`scripts/shared/worktree-lane.ts`](../../../scripts/shared/worktree-lane.ts)  
 **Policy SSOTs:** [`git-governance.md`](../git-governance.md),
 [`env-workflow.md`](../../env-workflow.md),
@@ -28,11 +28,6 @@ See [`git-governance.md`](../git-governance.md) for the canonical lane lifecycle
 
 - Feature/fix implementation, Local `pnpm dev`, unit tests
 
-## Restrictions
-
-- Path ≠ privilege
-- No Preview/Production mutations from path alone
-
 ## Agents
 
-Explicit `cwd` to this path. Human navigation: `lane local` (after `$PROFILE` install).
+Explicit `cwd`.

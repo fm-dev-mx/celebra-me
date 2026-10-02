@@ -28,9 +28,9 @@ prove absence of remote pushes or of transient mutate-then-restore activity.
 pnpm agent:git-safety:start
 ```
 
-Fails closed if a baseline already exists (never overwrites). Writes
-`.agent/tmp/git-safety-baseline.json` with schema version, creation time, HEAD, branch/detached
-state, and index fingerprint. Underlying command:
+Replaces an existing baseline only when it shows no protected drift; a drifted or invalid baseline
+fails closed and is preserved. Writes `.agent/tmp/git-safety-baseline.json` with schema version,
+creation time, HEAD, branch/detached state, and index fingerprint. Underlying command:
 
 ```
 node scripts/agent/git-safety.mjs start
@@ -71,19 +71,19 @@ When `finish` must interpret an already-authorized mutation for detection only, 
 declaration for that invocation:
 
 ```sh
-pnpm agent:git-safety:finish -- --authorized-operation=stage --paths=path/a,path/b
-pnpm agent:git-safety:finish -- --authorized-operation=unstage --paths=path/a
-pnpm agent:git-safety:finish -- --authorized-operation=commit
-pnpm agent:git-safety:finish -- --authorized-operation=branch-switch --branch=feature/x
+pnpm agent:git-safety:finish --authorized-operation=stage --paths=path/a,path/b
+pnpm agent:git-safety:finish --authorized-operation=commit
+pnpm agent:git-safety:finish --authorized-operation=history
+pnpm agent:git-safety:finish --authorized-operation=branch-switch,commit --branch=feat/x
 ```
 
 Rules:
 
-- Supported operations are exactly: `stage`, `unstage`, `commit`, `branch-switch`.
+- Supported operations: `stage` / `unstage` (index paths in `--paths`), `commit` (HEAD must move),
+  `history` (HEAD may move: rebase, merge, pull) and `branch-switch` (current branch must equal
+  `--branch`). Combine them with commas when one session performs several.
 - Unknown operations fail closed.
-- One operation never implies adjacent operations.
-- Path scope is required and enforced for `stage` / `unstage`.
-- Extra protected drift outside the permitted operation fails.
+- Every protected drift must be covered by a declared operation; anything else fails.
 - The CLI declaration is **not** proof of human authorization — only a detector hint for authority
   already granted by the Task Contract.
 - Nothing from this declaration is persisted.
@@ -103,7 +103,7 @@ Invariant).
 | Authorized operation with only permitted drift     | PASS — baseline removed                        |
 | Authorized operation plus adjacent protected drift | FAIL — baseline preserved                      |
 | No active session (no baseline)                    | FAIL                                           |
-| Active baseline already present at `start`         | FAIL — refuse overwrite                        |
+| Drifted baseline already present at `start`        | FAIL — refuse overwrite                        |
 | Invalid baseline                                   | FAIL — preserve file; explicit operator remove |
 
 ### Invalid baseline

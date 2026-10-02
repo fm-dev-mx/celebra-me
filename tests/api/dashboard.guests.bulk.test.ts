@@ -72,7 +72,7 @@ function buildRequest(guests: unknown[]) {
 	} as unknown as Parameters<typeof POST>[0]);
 }
 
-	describe('POST /api/dashboard/guests/bulk', () => {
+describe('POST /api/dashboard/guests/bulk', () => {
 	beforeEach(() => {
 		supabaseRestRequestMock.mockReset();
 		findEventByIdMock.mockReset();
@@ -559,7 +559,7 @@ function buildRequest(guests: unknown[]) {
 		it('returns 400 for Supabase 400 errors (bad request/data shape)', async () => {
 			mockEventAccess();
 			const supabaseError = new Error(
-				'Supabase error (400): {"code":"42703","message":"column "phone_e164" does not exist"}',
+				'Supabase error (400): {"code":"42703","message":"column \\"phone_e164\\" does not exist"}',
 			);
 			supabaseRestRequestMock.mockRejectedValueOnce(supabaseError);
 
@@ -568,6 +568,9 @@ function buildRequest(guests: unknown[]) {
 			]);
 
 			expect(response.status).toBe(400);
+			const body = await response.json();
+			expect(JSON.stringify(body)).not.toContain('phone_e164');
+			expect(JSON.stringify(body)).not.toContain('Supabase error');
 		});
 
 		it('returns 500 for Supabase 5xx errors', async () => {
@@ -593,6 +596,8 @@ function buildRequest(guests: unknown[]) {
 			]);
 
 			expect(response.status).toBe(500);
+			const body = await response.json();
+			expect(body.error.message).toBe('Internal server error.');
 		});
 	});
 });

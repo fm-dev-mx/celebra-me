@@ -11,7 +11,10 @@ jest.mock('../../scripts/db/deployed-app-attestation.ts', () => ({
 	readDeployedApplicationAttestation: jest.fn(),
 }));
 
-import { resolveContractDeploymentEvidence } from '../../scripts/db/contract-deployment-evidence.ts';
+import {
+	resetContractDeploymentEvidenceCache,
+	resolveContractDeploymentEvidence,
+} from '../../scripts/db/contract-deployment-evidence.ts';
 import { readDeployedApplicationAttestation } from '../../scripts/db/deployed-app-attestation.ts';
 import {
 	RemoteEvidenceError,
@@ -39,6 +42,7 @@ const registry = {
 describe('resolveContractDeploymentEvidence', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		resetContractDeploymentEvidenceCache();
 		mockDeployment.mockReturnValue({ id: 42, sha: DEPLOYED_SHA });
 		mockChecks.mockReturnValue([]);
 		mockAttest.mockReturnValue({ sha: DEPLOYED_SHA, capabilities: ['event_memories_client'] });
@@ -74,6 +78,21 @@ describe('resolveContractDeploymentEvidence', () => {
 			deployedAppIdentity: { sha: DEPLOYED_SHA, capabilities: ['event_memories_client'] },
 			remoteEvidenceUnavailable: null,
 		});
+	});
+
+	it('reuses successful evidence for a rebuilt plan within the same command', () => {
+		const input = {
+			candidateVersions: ['20260930180000'],
+			registry,
+			targetReleaseSha: TARGET_SHA,
+			mode: 'apply' as const,
+		};
+		const first = resolveContractDeploymentEvidence(input);
+		const second = resolveContractDeploymentEvidence(input);
+
+		expect(second).toEqual(first);
+		expect(mockDeployment).toHaveBeenCalledTimes(1);
+		expect(mockChecks).toHaveBeenCalledTimes(1);
 	});
 
 	it('reports unreachable evidence as UNVERIFIED during a preflight', () => {

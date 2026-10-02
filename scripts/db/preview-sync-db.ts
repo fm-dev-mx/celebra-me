@@ -45,7 +45,19 @@ export function queryTableJson(
 	}
 }
 
+// Column lists cannot change during one sync run; each table was queried up to twice.
+const columnCache = new Map<string, string[]>();
+
 export function resolveColumns(dbUrl: string, table: string): string[] {
+	const key = `${dbUrl}\0${table}`;
+	const cached = columnCache.get(key);
+	if (cached) return [...cached];
+	const columns = readColumns(dbUrl, table);
+	columnCache.set(key, columns);
+	return [...columns];
+}
+
+function readColumns(dbUrl: string, table: string): string[] {
 	const result = runPsql(
 		`select column_name from information_schema.columns
 		 where table_schema = 'public' and table_name = ${sqlLiteral(table)}

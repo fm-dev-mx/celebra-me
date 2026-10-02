@@ -177,8 +177,7 @@ function scanContentForProdStorageUrls(prodCtx: ProdContext): {
 	return { rows: found, total: found.length };
 }
 
-function scanInvitationAssetsForStoragePaths(prodCtx: ProdContext): string[] {
-	const rows = queryTableJson(prodCtx.dbUrl, 'invitation_assets');
+function storagePathsOf(rows: readonly Record<string, unknown>[]): string[] {
 	return rows.map((r) => r.storage_path as string).filter(Boolean);
 }
 
@@ -289,12 +288,16 @@ function buildPhases(
 	previewCtx: PreviewContext,
 	report: SyncReport,
 ): Phase[] {
+	// Production invitation_assets is read once per run and shared by every phase.
+	let productionAssets: ReturnType<typeof queryTableJson> | undefined;
+	const readProductionAssets = () =>
+		(productionAssets ??= queryTableJson(prodCtx.dbUrl, 'invitation_assets', 'id'));
 	return [
 		// Phase 0: Storage credential preflight (fail closed before mutation when assets need transfer)
 		{
 			name: 'Storage credential preflight',
 			action: () => {
-				const assets = queryTableJson(prodCtx.dbUrl, 'invitation_assets', 'id');
+				const assets = readProductionAssets();
 				const transferable = assets.filter(
 					(asset) =>
 						typeof asset.storage_path === 'string' && Boolean(asset.storage_path),
@@ -332,7 +335,7 @@ function buildPhases(
 				console.info('\n📋 Phase 2: Scanning content for Production Storage URLs');
 
 				const referencedPaths = scanContentReferencedStoragePaths(prodCtx);
-				const assetPaths = new Set(scanInvitationAssetsForStoragePaths(prodCtx));
+				const assetPaths = new Set(storagePathsOf(readProductionAssets()));
 				const unregistered = [...referencedPaths].filter((p) => !assetPaths.has(p));
 
 				if (unregistered.length > 0) {
@@ -501,7 +504,7 @@ function buildPhases(
 			name: 'Storage sync',
 			action: async () => {
 				console.info('\n📋 Phase 6: Syncing Storage binaries');
-				const assets = queryTableJson(prodCtx.dbUrl, 'invitation_assets', 'id');
+				const assets = readProductionAssets();
 				const transferable = assets.filter(
 					(asset) => typeof asset.storage_path === 'string' && asset.storage_path,
 				);

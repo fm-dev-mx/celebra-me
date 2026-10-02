@@ -1,15 +1,17 @@
-# Recovery mode — `sync-main-into-develop`
+# Back-merge mode — `sync-main-into-develop`
 
-Load after `.agent/skills/branch-lane/SKILL.md`. Policy background:
-[`docs/core/git-governance.md`](../../../../docs/core/git-governance.md) (Production tip recovery).
+Load after `.agent/skills/branch-lane/SKILL.md`. Policy:
+[`docs/core/git-governance.md`](../../../../docs/core/git-governance.md#production-promotion).
 Orchestration and statuses live in the parent skill.
 
 ## Intent
 
-**Recovery only** — merge commits that exist on `main` but not on `develop` when `main` ⊂ `develop`
-is already broken. Prefer landing hotfixes on `develop` and **`promote-develop-to-main`** instead.
+Bring commits that exist on `main` but not on `develop` back into `develop`. The normal case is the
+release PR merge commit, which fast-forwards. A true divergence (for example a hotfix committed on
+`main`) is recovery and uses a `--no-ff` merge.
 
-Integration: **merge only** (not rebase, not reset-hard, not automatic `ours`/`theirs`).
+Integration: **merge only** (not rebase, not reset-hard, not automatic `ours`/`theirs`). Run from
+Integration, which keeps `develop` checked out.
 
 ## Preconditions
 
@@ -22,12 +24,11 @@ Integration: **merge only** (not rebase, not reset-hard, not automatic `ours`/`t
 
 ## Procedure
 
-1. Confirm with consolidated authorization prompt (detected divergence, recommended merge `--no-ff`,
-   push yes/no, exact commands that will run).
-2. With authorization:
+1. Confirm with consolidated authorization prompt (detected divergence, FF or `--no-ff`, push
+   yes/no, exact commands that will run).
+2. With authorization, in Integration:
 
 ```bash
-git switch develop
 git pull --ff-only origin develop
 ```
 
@@ -36,11 +37,14 @@ If `pull --ff-only` fails → `Hard blocked` / `Fail` — do not force.
 3. Merge:
 
 ```bash
-git merge --no-ff origin/main -m "chore(git): sync production tip from main into develop"
+git merge --ff-only origin/main
 ```
 
-Prefer `--no-ff`. If the user explicitly requests FF when Git can fast-forward,
-`git merge origin/main` is acceptable.
+If Git refuses the fast-forward, the branches diverged:
+
+```bash
+git merge --no-ff origin/main -m "chore(git): sync production tip from main into develop"
+```
 
 4. On conflicts: **Hard blocked** until human disposition. List conflicted files. No automatic
    `ours`/`theirs`. Ask: continue assisted resolution **or** `git merge --abort`. Provide resume

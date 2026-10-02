@@ -44,12 +44,12 @@ Please follow these steps to have your contribution considered by the maintainer
    > [`docs/core/git-governance.md`](docs/core/git-governance.md) for the full commit policy,
    > including atomic-commit expectations and commit-body guidance.
 5. Push to the branch (`git push origin feature-name`).
-   > [!TIP] A `pre-push` hook runs audit-only commit validation so you can review commit-quality
-   > warnings before opening a pull request.
+   > [!TIP] A `pre-push` hook replays commit-message validation over the pushed range and prints
+   > advisory commit-quality warnings.
 6. Create a new pull request, following the pull request template provided.
 
 > [!NOTE] This project uses **Husky** and **lint-staged** to ensure code quality. A pre-commit hook
-> blocks direct commits to protected branches and runs staged-file checks before the commit is
+> blocks commits on `main` or a detached HEAD and runs staged-file checks before the commit is
 > created.
 
 ### Sensitive Data

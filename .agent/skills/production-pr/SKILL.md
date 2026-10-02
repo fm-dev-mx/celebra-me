@@ -3,7 +3,7 @@ name: production-pr
 description: |
   Prepare and open a production pull request with an explicit release range, current validation evidence, and task-scoped Git authorization. Stops before merge or deployment.
 domain: workflow
-version: 1.1.0
+version: 1.2.0
 when_to_use:
   - Prepare or open a pull request intended for production
   - Audit the scope and evidence for an existing production pull request
@@ -47,8 +47,7 @@ preparation. Do not activate those broader operations merely to write a PR descr
    the initial state and ownership before writes. Stop on unrelated work, ambiguous ownership,
    unexpected drift, or an occupied checkout; never stash, reset, clean, or unstage to make room.
 3. Read the [session procedure](../../../docs/core/git-safety-session.md). Start Git Safety before
-   edits. Reuse a baseline only when this same task started it; an existing baseline from another
-   task or a failed start blocks mutations and must be preserved.
+   edits. A failed start (drifted or invalid baseline) blocks mutations; preserve that baseline.
 4. Resolve the production base and allowed source from current
    [Git governance](../../../docs/core/git-governance.md) and
    [release policy](../../../docs/core/release-process.md). The documented release comparison is
@@ -74,10 +73,9 @@ preparation. Do not activate those broader operations merely to write a PR descr
 - When commits are authorized, use explicit file paths and the commit-planner boundary. Inspect the
   staged diff before committing; preserve meaningful prior commits and run the normal hooks. Stop if
   mixed hunks, unrelated staged work, or a hook failure requires additional authority.
-- Git Safety declarations describe one already-authorized operation, not a general bypass. A branch
-  switch and a commit cannot share one `--authorized-operation` declaration. Close the branch-switch
-  session with its exact branch, then start the commit session before continuing. Use the existing
-  lifecycle; never overwrite a baseline or change the detector to get a pass.
+- Git Safety declarations describe already-authorized operations, not a general bypass. Declare
+  every authorized operation of the session in one comma-separated `--authorized-operation` (for
+  example `branch-switch,commit --branch=<name>`). Never change the detector to get a pass.
 
 ## Collect evidence for the exact range
 
@@ -86,14 +84,15 @@ Read [validation procedures](../../../docs/core/validation-procedures.md) and av
 commits from new documentation edits. Record commands, exit results, checked SHA/range, skipped
 checks, and environment limitations.
 
-- Use `pnpm validate:changed` when working-tree files match the task; otherwise use explicit task
-  paths. Add structure and link validation for skill/governance changes. Apply TypeScript, domain,
-  browser, and visual checks when the actual changed surfaces require them.
-- Inspect the release classifier and use
-  `pnpm ops:classify-release -- --base <base-sha> --head <head-sha>` for advisory impact
-  classification. A tooling-only result does not waive required remote CI. Database-sensitive or
-  visual ranges retain their owning evidence and human gates; report missing evidence without
-  applying migrations, publishing content, or accepting images.
+- Evidence for a committed range is remote: `pnpm ops:release-checks <40-hex-sha>` for the exact
+  integrated SHA. `pnpm validate:changed` only covers working-tree edits made in this task (for
+  example new documentation); a clean tree gives it nothing to check. Add structure and link
+  validation for skill/governance changes.
+- Reuse the advisory `pnpm ops:classify-release -- --base <base-sha> --head <head-sha>` result
+  already produced for this range (release execution runs it once). A tooling-only result does not
+  waive required remote CI. Database-sensitive or visual ranges retain their owning evidence and
+  human gates; report missing evidence without applying migrations, publishing content, or accepting
+  images.
 - Before an authorized push, recheck scope, remote tips, fast-forward compatibility, and effective
   branch rules. Honor the normal pre-push checks, including exact-SHA visual certification when
   selected. Push only the intended source ref; never force, bypass hooks, merge, or push `main`.

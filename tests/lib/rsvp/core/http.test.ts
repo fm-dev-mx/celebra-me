@@ -1,5 +1,6 @@
 import { errorResponse, parseJsonBody, readBoundedRequestBytes } from '@/lib/rsvp/core/http';
-import { ApiError } from '@/lib/rsvp/core/errors';
+import { ApiError, isApiError } from '@/lib/rsvp/core/errors';
+import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import { Request as NodeRequest } from 'undici';
 
 type NodeRequestInit = ConstructorParameters<typeof NodeRequest>[1];
@@ -72,6 +73,36 @@ describe('errorResponse — stack trace / secret exposure regression (CodeQL: In
 		expect(body.success).toBe(false);
 		expect(body.error.code).toBe('bad_request');
 		expect(body.error.message).toBe('Internal server error.');
+	});
+
+	it('does not treat an unmapped Supabase HTTP error as an ApiError', async () => {
+		const rawBody = JSON.stringify({
+			code: '42501',
+			details: null,
+			hint: null,
+			message: 'new row violates row-level security policy for table "guest_invitations"',
+		});
+		const providerError = new SupabaseHttpError(403, rawBody, '42501');
+
+		expect(isApiError(providerError)).toBe(false);
+
+		const response = errorResponse(providerError);
+		const body = await response.json();
+
+		expect(response.status).toBe(500);
+		expect(body.error).toEqual({ code: 'internal_error', message: 'Internal server error.' });
+		expect(JSON.stringify(body)).not.toContain('row-level security');
+		expect(JSON.stringify(body)).not.toContain('Supabase error');
+	});
+
+	it('still recognizes ApiError instances by name across module boundaries', () => {
+		const foreign = Object.assign(new Error('Prohibido.'), {
+			name: 'ApiError',
+			status: 403,
+			code: 'forbidden',
+		});
+		expect(isApiError(foreign)).toBe(true);
+		expect(isApiError({ status: 403, code: '42501' })).toBe(false);
 	});
 
 	it('does not expose ApiError diagnostics for server errors', async () => {

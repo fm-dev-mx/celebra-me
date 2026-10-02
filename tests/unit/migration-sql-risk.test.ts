@@ -24,6 +24,17 @@ describe('migration SQL risk classification', () => {
 		expect(classifySqlText(sql).map((finding) => finding.kind)).toEqual(['ordinary']);
 	});
 
+	it('allows initial permissions on a newly created function in the same transaction', () => {
+		const sql = `BEGIN;
+		CREATE FUNCTION public.new_fn(p_id uuid) RETURNS boolean
+		LANGUAGE plpgsql SECURITY DEFINER SET search_path = 'public'
+		AS $$ BEGIN RETURN true; END; $$;
+		REVOKE ALL ON FUNCTION public.new_fn(uuid) FROM PUBLIC, anon, authenticated;
+		GRANT EXECUTE ON FUNCTION public.new_fn(uuid) TO service_role;
+		COMMIT;`;
+		expect(classifySqlText(sql).map((finding) => finding.kind)).toEqual(['ordinary']);
+	});
+
 	it.each([
 		'CREATE TABLE public.t (id int); REVOKE ALL ON public.t FROM PUBLIC;',
 		'BEGIN; CREATE TABLE IF NOT EXISTS public.t (id int); REVOKE ALL ON public.t FROM PUBLIC;',
@@ -67,6 +78,17 @@ describe('migration SQL risk classification', () => {
 
 	it('allows the committed expand migration without changing its registry or SQL', () => {
 		const version = '20260925182713';
+		const registry = JSON.parse(
+			fs.readFileSync(path.resolve('supabase/migration-rollout-registry.json'), 'utf8'),
+		) as MigrationRolloutRegistry;
+		const result = evaluateMigrationSqlRisk({ version, registry });
+		expect(registry.migrations[version].phase).toBe('expand');
+		expect(result.blocked).toBe(false);
+		expect(result.risk.isDestructive).toBe(false);
+	});
+
+	it('allows the guest invitation soft-delete RPC as an expand migration', () => {
+		const version = '20261001120000';
 		const registry = JSON.parse(
 			fs.readFileSync(path.resolve('supabase/migration-rollout-registry.json'), 'utf8'),
 		) as MigrationRolloutRegistry;

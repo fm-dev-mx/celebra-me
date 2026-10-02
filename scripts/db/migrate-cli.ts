@@ -9,6 +9,10 @@ import { select } from '@inquirer/prompts';
 import { parseMigrateCliArgs, printMigrateHelp, type MigrateCliArgs } from './migrate-cli-args.ts';
 import { planToJson, type MigrationPlan } from './migration-plan.ts';
 import {
+	formatEnvAssignment,
+	PREVIEW_MIGRATE_TASK_SCOPE,
+} from '../../src/lib/status/operator-command-display.ts';
+import {
 	formatOperatorFailure,
 	inquirerTheme,
 	operatorSymbol,
@@ -35,14 +39,15 @@ function writeError(error: unknown, target: MigrateCliArgs['target'] = null): vo
 	process.exitCode = 1;
 }
 
-async function promptAction(): Promise<'run' | 'review' | 'cancel'> {
+// The guided menu is read-only: applying always requires an explicit --apply invocation.
+async function promptAction(): Promise<'hint' | 'review' | 'cancel'> {
 	return select({
 		message: 'Seleccione una acción',
 		default: 'cancel',
 		choices: [
 			{ name: 'Cancelar', value: 'cancel' as const },
 			{ name: 'Revisar cambios', value: 'review' as const },
-			{ name: 'Aplicar', value: 'run' as const },
+			{ name: 'Mostrar comando de apply', value: 'hint' as const },
 		],
 		theme: inquirerTheme(),
 	});
@@ -73,8 +78,15 @@ function writeApplyHint(
 		return;
 	}
 	if (target === 'preview') {
+		const scope = formatEnvAssignment(
+			'CELEBRA_TASK_SCOPE',
+			PREVIEW_MIGRATE_TASK_SCOPE,
+			process.platform,
+		);
 		writeHuman(
-			`Para aplicar: CELEBRA_TASK_SCOPE=preview:schema:migrate pnpm db:migrate -- --target preview --apply${expectedSuffix}`,
+			`Para aplicar:
+  ${scope}
+  pnpm db:migrate -- --target preview --apply${expectedSuffix}`,
 		);
 		return;
 	}
@@ -114,12 +126,14 @@ function writeApplyCompleted(wrote: boolean): void {
 function shouldUseGuidedMenu(parsed: MigrateCliArgs, isTty: boolean): boolean {
 	// Production authorization lives solely in requireOwnerProductionApply — no outer menu.
 	if (parsed.target === 'production') return false;
+	// An explicit --apply is the only write path; the guided menu never replaces it.
+	if (parsed.mode !== 'preflight') return false;
 	if (parsed.interactiveForced === true) return true;
 	if (parsed.interactiveForced === false) return false;
-	return isTty && !parsed.json && parsed.mode === 'preflight';
+	return isTty && !parsed.json;
 }
 
-async function runGuidedApply(options: {
+async function runGuidedReview(options: {
 	orchestrator: OrchestratorModule;
 	plan: MigrationPlan;
 	baseInput: BaseMigrateInput;
@@ -137,13 +151,7 @@ async function runGuidedApply(options: {
 			emitPlan(options.orchestrator, options.plan, options.json, false);
 			continue;
 		}
-		const result = await options.orchestrator.orchestrateMigrate({
-			...options.baseInput,
-			mode: 'apply',
-			reviewedPlan: options.plan,
-		});
-		emitPlan(options.orchestrator, result.plan, options.json, true);
-		writeApplyCompleted(result.wrote);
+		writeApplyHint(options.baseInput.target, options.baseInput.expectedPin);
 		return;
 	}
 }
@@ -159,8 +167,21 @@ async function runPreflightOrGuided(options: {
 		mode: 'preflight',
 	});
 	emitPlan(options.orchestrator, plan, options.json, true);
+	writeHuman(
+		`${operatorSymbol('ok')} Preflight de solo lectura completado. No se escribió schema.`,
+	);
+	if (plan.pendingVersions.length === 0) {
+		writeHuman(`${operatorSymbol('info')} No hay migraciones pendientes.`);
+		if (options.baseInput.target === 'disposable-test') {
+			// A no-op disposable apply records the migration proof without executing SQL.
+			writeHuman(
+				`${operatorSymbol('info')} Para registrar la prueba disposable: pnpm db:migrate -- --target disposable-test --apply`,
+			);
+		}
+		return;
+	}
 	if (options.guided) {
-		await runGuidedApply({
+		await runGuidedReview({
 			orchestrator: options.orchestrator,
 			plan,
 			baseInput: options.baseInput,
@@ -168,14 +189,7 @@ async function runPreflightOrGuided(options: {
 		});
 		return;
 	}
-	writeHuman(
-		`${operatorSymbol('ok')} Preflight de solo lectura completado. No se escribió schema.`,
-	);
-	if (plan.pendingVersions.length === 0) {
-		writeHuman(`${operatorSymbol('info')} No hay migraciones pendientes.`);
-	} else {
-		writeApplyHint(options.baseInput.target, options.baseInput.expectedPin);
-	}
+	writeApplyHint(options.baseInput.target, options.baseInput.expectedPin);
 }
 
 async function runProductionApply(options: {
@@ -221,7 +235,7 @@ function writeMissingTargetFailure(): void {
 			code: 'TARGET_REQUIRED',
 			remediation: [
 				'En terminal interactiva: pnpm db:migrate (selector con Cancelar por defecto)',
-				'Para Production: pnpm db:migrate -- --target production (preflight) o pnpm prod:apply -- --schema',
+				'Para Production: pnpm prod:apply -- --schema (plan de solo lectura)',
 				'Ayuda: pnpm db:migrate -- --help',
 			],
 			retryCommand: 'pnpm db:migrate -- --help',
@@ -292,7 +306,7 @@ export async function runMigrateCli(argv: string[] = process.argv): Promise<void
 	};
 
 	try {
-		if (parsed.mode === 'preflight' || guided) {
+		if (parsed.mode === 'preflight') {
 			await runPreflightOrGuided({
 				orchestrator,
 				baseInput,
