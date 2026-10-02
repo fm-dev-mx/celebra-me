@@ -14,7 +14,11 @@ import type {
 	MemoriesMediaPublicItem,
 	MemoriesSpaceSummary,
 } from '@/lib/memories/contract/catalog';
-import { MEMORIES_MAX_IMAGE_BYTES } from '@/lib/memories/contract/media-policy';
+import {
+	MEMORIES_ALLOWED_MIME_TYPES,
+	MEMORIES_MAX_IMAGE_BYTES,
+	MEMORIES_MAX_VIDEO_BYTES,
+} from '@/lib/memories/contract/media-policy';
 import { memoriesCaptureCopy as copy } from '@/lib/memories/copy';
 
 jest.mock('@/lib/memories/client/api', () => {
@@ -327,5 +331,221 @@ describe('MemoriesCapture island', () => {
 		expect(guestApi.reserve).toHaveBeenCalledTimes(1);
 		expect(guestApi.complete).not.toHaveBeenCalled();
 		expect(screen.getByRole('button', { name: copy.retry })).toBeInTheDocument();
+	});
+
+	it.each([
+		['a throttled request', new MemoriesRequestError(429, 'rate_limited'), copy.rateLimited],
+		['an unavailable space', new MemoriesRequestError(404, 'not_found'), copy.unavailable],
+		['a dropped connection', new MemoriesRequestError(null), copy.unavailable],
+	])('says why the session could not start after %s', async (_label, failure, message) => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(null);
+		guestApi.createSession.mockRejectedValueOnce(failure);
+
+		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		await user.type(screen.getByLabelText(copy.displayNameLabel), PROFILE.displayName);
+		await user.click(screen.getByRole('button', { name: copy.continueLabel }));
+
+		expect(await screen.findByRole('alert')).toHaveTextContent(message);
+
+		guestApi.createSession.mockResolvedValueOnce({ profile: PROFILE, recoveryCode: null });
+		await user.click(screen.getByRole('button', { name: copy.continueLabel }));
+
+		expect(await screen.findByLabelText(copy.chooseFile)).toBeEnabled();
+		expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+	});
+
+	it('says that the session lookup failed on arrival instead of staying silent', async () => {
+		guestApi.getSession.mockRejectedValue(new MemoriesRequestError(503, 'service_unavailable'));
+
+		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+
+		expect(await screen.findByRole('alert')).toHaveTextContent(copy.unavailable);
+		expect(screen.getByLabelText(copy.displayNameLabel)).toBeInTheDocument();
+	});
+
+	it('says why the display name could not be saved', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.updateProfile.mockRejectedValue(new MemoriesRequestError(401, 'unauthorized'));
+
+		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		await user.click(await screen.findByRole('button', { name: copy.changeName }));
+		await user.click(screen.getByRole('button', { name: copy.saveLabel }));
+
+		expect(await screen.findByRole('alert')).toHaveTextContent(copy.sessionLost);
+	});
+
+	it('treats a file the storage already holds as sent and goes on to confirm it', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.reserve.mockResolvedValue(buildReservation());
+		guestApi.complete.mockResolvedValue({ item: buildItem({ status: 'accepted' }) });
+		// The first PUT stored the object but its response was lost; the retry gets 412.
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(412));
+
+		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		await screen.findByText(PROFILE.displayName);
+		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
+		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+
+		expect(await screen.findByText(copy.success)).toBeInTheDocument();
+		expect(guestApi.complete).toHaveBeenCalledWith('item-1');
+	});
+
+	it('retries a failed video upload with the same request id and duration', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.reserve.mockResolvedValue(buildReservation());
+		guestApi.complete.mockResolvedValue({ item: buildItem({ status: 'accepted' }) });
+		jest.spyOn(globalThis, 'fetch')
+			.mockRejectedValueOnce(new TypeError('Load failed'))
+			.mockResolvedValue(httpResponse(201));
+
+		render(
+			<MemoriesCapture
+				space={buildSpace('open')}
+				maxSessionVideos={5}
+				readVideoDurationSeconds={async () => 12.345678}
+			/>,
+		);
+		await screen.findByText(PROFILE.displayName);
+		await user.upload(
+			screen.getByLabelText(copy.chooseFile),
+			new File([new Uint8Array([1, 2, 3, 4])], 'baile.mov', { type: 'video/quicktime' }),
+		);
+		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+		expect(await screen.findByRole('alert')).toHaveTextContent(copy.putFailed);
+
+		await user.click(screen.getByRole('button', { name: copy.retry }));
+
+		expect(await screen.findByText(copy.success)).toBeInTheDocument();
+		const [first, second] = guestApi.reserve.mock.calls.map(([input]) => input);
+		expect(second).toEqual(first);
+		expect(first).toMatchObject({ mimeType: 'video/quicktime', durationSeconds: 12.345678 });
+	});
+
+	it.each([
+		['the per-guest file limit', 'session_files', copy.sessionFilesReached],
+		['the per-guest video limit', 'session_videos', copy.sessionVideosReached],
+		['the per-guest storage limit', 'session_bytes', copy.sessionBytesReached],
+		['the event capacity', 'event_capacity', copy.eventFull],
+	])('names %s when the reservation is refused', async (_label, reason, message) => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.reserve.mockRejectedValue(new MemoriesRequestError(409, 'limit_reached', reason));
+
+		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		await screen.findByText(PROFILE.displayName);
+		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
+		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+
+		expect(await screen.findByRole('alert')).toHaveTextContent(message);
+	});
+
+	it('stops confirming and asks to reload when the session is gone', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.reserve.mockResolvedValue(buildReservation());
+		guestApi.complete.mockRejectedValue(new MemoriesRequestError(401, 'unauthorized'));
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(201));
+
+		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		await screen.findByText(PROFILE.displayName);
+		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
+		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+
+		expect(await screen.findByRole('alert')).toHaveTextContent(copy.sessionLost);
+		expect(guestApi.complete).toHaveBeenCalledTimes(1);
+	});
+
+	it('explains an upload that failed validation instead of a bare status word', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.reserve.mockResolvedValue(buildReservation());
+		guestApi.complete.mockResolvedValue({ item: buildItem({ status: 'rejected' }) });
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(201));
+
+		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		await screen.findByText(PROFILE.displayName);
+		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
+		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+
+		expect(await screen.findByText(copy.completionRejected)).toBeInTheDocument();
+		expect(screen.queryByText(copy.success)).not.toBeInTheDocument();
+	});
+
+	it('tells a guest who lost signal to wait for the connection, and resumes on retry', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.reserve.mockResolvedValue(buildReservation());
+		guestApi.complete.mockResolvedValue({ item: buildItem({ status: 'accepted' }) });
+		const online = jest.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+		jest.spyOn(globalThis, 'fetch')
+			.mockRejectedValueOnce(new TypeError('Failed to fetch'))
+			.mockResolvedValue(httpResponse(201));
+
+		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		await screen.findByText(PROFILE.displayName);
+		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
+		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+
+		expect(await screen.findByRole('alert')).toHaveTextContent(copy.networkFailed);
+
+		online.mockReturnValue(true);
+		await user.click(screen.getByRole('button', { name: copy.retry }));
+
+		expect(await screen.findByText(copy.success)).toBeInTheDocument();
+		// The file is prepared once: the retry reuses the reservation instead of starting over.
+		const [first, second] = guestApi.reserve.mock.calls.map(([input]) => input);
+		expect(second.clientRequestId).toBe(first.clientRequestId);
+	});
+
+	it('after a reload mid-upload, shows the pending file and explains why a new upload must wait', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		// The page was reloaded while two files were uploading: the server still holds both slots.
+		guestApi.listItems.mockResolvedValue({
+			items: [
+				buildItem({ id: 'pending-1', status: 'uploading' }),
+				buildItem({ id: 'pending-2', status: 'uploading' }),
+			],
+			quota: { ...QUOTA, inFlight: { used: 2, remaining: 0, limit: 2 } },
+		});
+		guestApi.reserve.mockRejectedValue(
+			new MemoriesRequestError(429, 'rate_limited', 'uploads_in_progress'),
+		);
+
+		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+
+		expect(await screen.findAllByText(copy.validationPending)).toHaveLength(2);
+		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
+		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+
+		expect(await screen.findByRole('alert')).toHaveTextContent(copy.uploadsInProgress);
+	});
+
+	it('offers the file picker every format the upload policy accepts, and nothing else', async () => {
+		guestApi.getSession.mockResolvedValue(PROFILE);
+
+		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+
+		const accept = (await screen.findByLabelText(copy.chooseFile)).getAttribute('accept');
+		expect(accept?.split(',').sort()).toEqual(Object.keys(MEMORIES_ALLOWED_MIME_TYPES).sort());
+	});
+
+	it('rejects an oversized video locally with advice on how to make it fit', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		const oversized = new File([new Uint8Array(4)], 'baile.mp4', { type: 'video/mp4' });
+		Object.defineProperty(oversized, 'size', { value: MEMORIES_MAX_VIDEO_BYTES + 1 });
+
+		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		await screen.findByText(PROFILE.displayName);
+		await user.upload(screen.getByLabelText(copy.chooseFile), oversized);
+		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+
+		expect(await screen.findByRole('alert')).toHaveTextContent(copy.videoTooLarge);
+		expect(guestApi.reserve).not.toHaveBeenCalled();
 	});
 });

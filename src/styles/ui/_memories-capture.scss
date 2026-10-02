@@ -257,6 +257,11 @@
 	p {
 		margin: 0;
 	}
+
+	.status-page__status {
+		max-width: none;
+		margin-top: 0.5rem;
+	}
 }
 
 .status-page__text-button {

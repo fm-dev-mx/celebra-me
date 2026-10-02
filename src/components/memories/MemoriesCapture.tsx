@@ -59,11 +59,7 @@ class CaptureError extends Error {
 
 function readCaptureIssue(error: unknown): MemoriesCaptureIssue {
 	if (error instanceof CaptureError) return error.issue;
-	// The server closed this request id (rejected or released): start over.
-	if (error instanceof MemoriesRequestError && error.status === 409 && error.code === 'conflict')
-		return 'upload_expired';
-	if (error instanceof MemoriesRequestError) return mapRequestIssue(error, 'sign_failed');
-	return classifyTransportIssue('sign_failed');
+	return mapRequestIssue(error, 'sign_failed');
 }
 
 async function putOriginalFile(
@@ -85,7 +81,7 @@ async function putOriginalFile(
 
 function completionCopy(status: MemoriesMediaStatus): string {
 	if (status === 'duplicate') return copy.duplicate;
-	if (status === 'rejected') return copy.rejected;
+	if (status === 'rejected') return copy.completionRejected;
 	if (status === 'deleted') return copy.deleted;
 	return copy.success;
 }
@@ -143,6 +139,8 @@ export default function MemoriesCapture({
 	const [isOptimizing, setIsOptimizing] = useState(false);
 	const [completionMessage, setCompletionMessage] = useState<string>(copy.success);
 	const [issue, setIssue] = useState<MemoriesCaptureIssue | null>(null);
+	// Shown beside the name form: a failed session request is not an upload error.
+	const [sessionIssue, setSessionIssue] = useState<MemoriesCaptureIssue | null>(null);
 	const [profile, setProfile] = useState<MemoriesGuestProfile | null>(null);
 	const [displayNameDraft, setDisplayNameDraft] = useState('');
 	const [editingName, setEditingName] = useState(false);
@@ -159,6 +157,11 @@ export default function MemoriesCapture({
 		null,
 	);
 	const message = issue ? memoriesIssueCopy(issue) : null;
+	const sessionMessage = sessionIssue ? (
+		<p className="status-page__status status-page__status--error" role="alert">
+			{memoriesIssueCopy(sessionIssue)}
+		</p>
+	) : null;
 
 	const loadItems = async () => {
 		try {
@@ -181,7 +184,7 @@ export default function MemoriesCapture({
 				sessionReadyRef.current = true;
 				await loadItems();
 			} catch {
-				setIssue(classifyTransportIssue('unavailable'));
+				setSessionIssue(classifyTransportIssue('unavailable'));
 			}
 		})();
 		return () => optimizationAbortRef.current?.abort();
@@ -205,10 +208,11 @@ export default function MemoriesCapture({
 			setDisplayNameDraft(created.profile.displayName);
 			sessionReadyRef.current = true;
 			setIssue(null);
+			setSessionIssue(null);
 			if (created.recoveryCode) setRecoveryCode(created.recoveryCode);
 			await loadItems();
 		} catch (error) {
-			setIssue(mapRequestIssue(error, 'unavailable'));
+			setSessionIssue(mapRequestIssue(error, 'unavailable'));
 		}
 	};
 
@@ -218,8 +222,9 @@ export default function MemoriesCapture({
 			setProfile(nextProfile);
 			setDisplayNameDraft(nextProfile.displayName);
 			setEditingName(false);
+			setSessionIssue(null);
 		} catch (error) {
-			setIssue(mapRequestIssue(error, 'unavailable'));
+			setSessionIssue(mapRequestIssue(error, 'unavailable'));
 		}
 	};
 
@@ -239,20 +244,24 @@ export default function MemoriesCapture({
 	};
 
 	const completeReservedUpload = async (itemId: string): Promise<MemoriesMediaStatus> => {
+		let lastError: unknown;
 		for (let attempt = 0; attempt < COMPLETION_ATTEMPTS; attempt += 1) {
 			try {
 				const payload = await api.complete(itemId);
 				if (isMemoriesTerminalStatus(payload.item.status)) return payload.item.status;
 			} catch (error) {
+				lastError = error;
 				// The reservation was released after being abandoned; retrying cannot revive it.
 				if (error instanceof MemoriesRequestError && error.status === 404)
 					throw new CaptureError('upload_expired');
+				if (error instanceof MemoriesRequestError && error.status === 401)
+					throw new CaptureError('session_lost');
 				// A bounded idempotent retry handles transient completion failures.
 			}
 			if (attempt < COMPLETION_ATTEMPTS - 1)
 				await new Promise((resolve) => setTimeout(resolve, 300 * 3 ** attempt));
 		}
-		throw new CaptureError(classifyTransportIssue('put_failed'));
+		throw new CaptureError(mapRequestIssue(lastError, 'put_failed'));
 	};
 
 	const failUpload = (error: unknown) => {
@@ -494,6 +503,7 @@ export default function MemoriesCapture({
 							</button>
 						</p>
 					)}
+					{sessionMessage}
 				</section>
 			) : (
 				<section
@@ -516,6 +526,7 @@ export default function MemoriesCapture({
 					>
 						{copy.continueLabel}
 					</button>
+					{sessionMessage}
 				</section>
 			)}
 

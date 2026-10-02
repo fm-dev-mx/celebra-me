@@ -144,13 +144,27 @@ export const memoriesCaptureCopy = {
 	uploadAnother: 'Subir otro recuerdo',
 	viewMemories: 'Ver mis recuerdos',
 	retry: 'Intentar de nuevo',
+	completionRejected: 'No pudimos validar este archivo y no se guardó. Intente con otro archivo.',
 	unsupportedType: 'Este tipo de archivo no está permitido.',
-	fileTooLarge: 'El archivo supera el tamaño permitido.',
+	fileTooLarge: 'El archivo supera el tamaño permitido. Intente con otro archivo.',
+	videoTooLarge:
+		'El video pesa más de lo permitido. Intente con uno más corto o grabado en menor calidad.',
 	videoTooLong: buildMemoriesVideoTooLongCopy(),
 	videoUnreadable: 'No se pudo leer el video. Intente con otro archivo.',
 	windowClosed: 'La ventana para subir recuerdos no está abierta.',
-	rateLimited: 'Hay demasiadas solicitudes. Intente de nuevo en un momento.',
+	rateLimited: 'Hay demasiadas solicitudes. Espere un minuto e intente de nuevo.',
+	uploadsInProgress:
+		'Todavía hay subidas suyas en proceso. Espere unos minutos e intente de nuevo.',
 	quotaReached: 'Esta sesión o el evento ya no tienen espacio para otro archivo.',
+	sessionFilesReached:
+		'Ya alcanzó el máximo de archivos por invitado. Si elimina alguno, el espacio se libera al día siguiente.',
+	sessionVideosReached: 'Ya alcanzó el máximo de videos por invitado. Todavía puede subir fotos.',
+	sessionBytesReached:
+		'Este archivo ya no cabe en su espacio como invitado. Intente con uno más pequeño.',
+	eventFull:
+		'El espacio de recuerdos de este evento está lleno. Avise a quien organiza el evento.',
+	sessionLost:
+		'Su sesión ya no está activa. Recargue la página; si no aparecen sus recuerdos, use «Recuperar mis recuerdos».',
 	signFailed: 'No se pudo preparar la subida. Intente de nuevo.',
 	putFailed: 'No pudimos subir el archivo. Revise su conexión e intente de nuevo.',
 	networkFailed: 'No tiene conexión. Intente de nuevo cuando vuelva a estar en línea.',
@@ -181,5 +195,3 @@ export const memoriesCaptureCopy = {
 	confirmDelete: '¿Desea eliminar este recuerdo?',
 	noMemories: 'Todavía no ha registrado recuerdos en este dispositivo.',
 } as const;
-
-export type MemoriesCaptureCopy = typeof memoriesCaptureCopy;

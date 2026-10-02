@@ -3,10 +3,15 @@ jest.mock('@/lib/memories/server/private-request', () => ({
 	createMemoriesPrivateRequestHeaders: () => ({}),
 }));
 
-import { inspectMemoriesObject } from '@/lib/memories/server/worker-gateway';
-import { CHECKSUM_SHA256, OBJECT_KEY } from './fixtures';
+import {
+	inspectMemoriesObject,
+	isMemoriesSignerRateLimit,
+	requestMemoriesUploadCapability,
+} from '@/lib/memories/server/worker-gateway';
+import { CHECKSUM_SHA256, OBJECT_KEY, SESSION_ID } from './fixtures';
 
 const target = { objectKey: OBJECT_KEY, mimeType: 'image/jpeg' };
+const originalFetch = global.fetch;
 const mockFetch = jest.fn<Promise<Response>, Parameters<typeof fetch>>();
 
 function json(status: number, body: unknown): Response {
@@ -52,5 +57,41 @@ describe('inspectMemoriesObject', () => {
 	it('treats a transport failure as unavailable', async () => {
 		mockFetch.mockRejectedValue(new TypeError('fetch failed'));
 		await expect(inspectMemoriesObject(target)).resolves.toEqual({ kind: 'unavailable' });
+	});
+});
+
+describe('requestMemoriesUploadCapability', () => {
+	const reservation = {
+		objectKey: OBJECT_KEY,
+		sessionId: SESSION_ID,
+		mimeType: 'image/jpeg',
+		sizeBytes: 10,
+		checksumSha256: CHECKSUM_SHA256,
+	};
+
+	beforeEach(() => {
+		mockFetch.mockReset();
+		global.fetch = mockFetch as unknown as typeof fetch;
+	});
+
+	it('tells a per-session throttle apart from any other signer failure', async () => {
+		mockFetch.mockResolvedValueOnce(json(429, { error: { code: 'rate_limited' } }));
+		const throttled = await requestMemoriesUploadCapability(reservation).catch(
+			(error: unknown) => error,
+		);
+		mockFetch.mockResolvedValueOnce(json(503, { error: { code: 'unavailable' } }));
+		const unavailable = await requestMemoriesUploadCapability(reservation).catch(
+			(error: unknown) => error,
+		);
+
+		expect(throttled).toMatchObject({ name: 'MemoriesSignerError', status: 429 });
+		expect(isMemoriesSignerRateLimit(throttled)).toBe(true);
+		expect(unavailable).toMatchObject({ name: 'MemoriesSignerError', status: 503 });
+		expect(isMemoriesSignerRateLimit(unavailable)).toBe(false);
+		expect(isMemoriesSignerRateLimit(new TypeError('fetch failed'))).toBe(false);
+	});
+
+	afterAll(() => {
+		global.fetch = originalFetch;
 	});
 });

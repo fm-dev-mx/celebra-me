@@ -22,10 +22,7 @@ export const MEMORIES_MEDIA_STATUSES = [
 ] as const;
 export type MemoriesMediaStatus = (typeof MEMORIES_MEDIA_STATUSES)[number];
 
-export const MEMORIES_MEDIA_TRANSITIONS: Record<
-	MemoriesMediaStatus,
-	readonly MemoriesMediaStatus[]
-> = {
+const MEMORIES_MEDIA_TRANSITIONS: Record<MemoriesMediaStatus, readonly MemoriesMediaStatus[]> = {
 	uploading: ['validating', 'deleted'],
 	validating: ['accepted', 'rejected', 'deleted', 'duplicate'],
 	accepted: ['rejected', 'deleted'],
@@ -42,6 +39,19 @@ export const MEMORIES_TERMINAL_STATUSES: readonly MemoriesMediaStatus[] = [
 ];
 
 export type MemoriesMediaActor = 'guest' | 'organizer' | 'admin' | 'system';
+
+/**
+ * Why a reservation was refused, sent as `error.details.reason`. Several causes
+ * share one HTTP code; the guest copy needs the cause to say what to do next.
+ */
+export const MEMORIES_RESERVATION_REFUSALS = [
+	'session_files',
+	'session_videos',
+	'session_bytes',
+	'event_capacity',
+	'uploads_in_progress',
+] as const;
+export type MemoriesReservationRefusal = (typeof MEMORIES_RESERVATION_REFUSALS)[number];
 
 export function isMemoriesMediaStatus(value: unknown): value is MemoriesMediaStatus {
 	return (

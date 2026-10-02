@@ -27,19 +27,25 @@ import type { MemoriesSpaceLimits } from '@/lib/memories/contract/limits';
 export class MemoriesRequestError extends Error {
 	readonly status: number | null;
 	readonly code: string | undefined;
+	/** Machine-readable cause of a refusal (`error.details.reason`), when the server names one. */
+	readonly reason: string | undefined;
 
-	constructor(status: number | null, code?: string) {
+	constructor(status: number | null, code?: string, reason?: string) {
 		super('memories_request_failed');
 		this.name = 'MemoriesRequestError';
 		this.status = status;
 		this.code = code;
+		this.reason = reason;
 	}
 }
 
-function readErrorCode(payload: unknown): string | undefined {
-	if (typeof payload !== 'object' || payload === null) return undefined;
-	const error = (payload as { error?: { code?: unknown } }).error;
-	return typeof error?.code === 'string' ? error.code : undefined;
+function readErrorBody(payload: unknown): { code?: string; reason?: string } {
+	if (typeof payload !== 'object' || payload === null) return {};
+	const error = (payload as { error?: { code?: unknown; details?: { reason?: unknown } } }).error;
+	return {
+		code: typeof error?.code === 'string' ? error.code : undefined,
+		reason: typeof error?.details?.reason === 'string' ? error.details.reason : undefined,
+	};
 }
 
 async function guestRequest<T>(url: string, init?: RequestInit): Promise<T> {
@@ -58,7 +64,8 @@ async function guestRequest<T>(url: string, init?: RequestInit): Promise<T> {
 	}
 	const payload = (await response.json().catch(() => null)) as T | null;
 	if (!response.ok || payload === null) {
-		throw new MemoriesRequestError(response.status, readErrorCode(payload));
+		const { code, reason } = readErrorBody(payload);
+		throw new MemoriesRequestError(response.status, code, reason);
 	}
 	return payload;
 }

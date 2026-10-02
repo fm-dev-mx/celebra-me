@@ -112,6 +112,21 @@ describe('memories client api', () => {
 			});
 		});
 
+		it('carries the refusal cause the server names in error.details', async () => {
+			jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+				jsonResponse(
+					{ error: { code: 'limit_reached', details: { reason: 'session_videos' } } },
+					409,
+				),
+			);
+
+			await expect(createMemoriesGuestApi('slug').listItems()).rejects.toMatchObject({
+				status: 409,
+				code: 'limit_reached',
+				reason: 'session_videos',
+			});
+		});
+
 		it('reports a null status when the network request itself fails', async () => {
 			jest.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('Failed to fetch'));
 			const api = createMemoriesGuestApi('slug');
@@ -332,6 +347,38 @@ describe('memories client api', () => {
 			['404', new MemoriesRequestError(404), 'unavailable'],
 			['503', new MemoriesRequestError(503), 'unavailable'],
 			['500', new MemoriesRequestError(500), 'sign_failed'],
+			['401', new MemoriesRequestError(401, 'unauthorized'), 'session_lost'],
+			['409 conflict', new MemoriesRequestError(409, 'conflict'), 'upload_expired'],
+			[
+				'the file quota cause',
+				new MemoriesRequestError(409, 'limit_reached', 'session_files'),
+				'session_files_reached',
+			],
+			[
+				'the video quota cause',
+				new MemoriesRequestError(409, 'limit_reached', 'session_videos'),
+				'session_videos_reached',
+			],
+			[
+				'the per-guest storage cause',
+				new MemoriesRequestError(409, 'limit_reached', 'session_bytes'),
+				'session_bytes_reached',
+			],
+			[
+				'the event capacity cause',
+				new MemoriesRequestError(409, 'limit_reached', 'event_capacity'),
+				'event_full',
+			],
+			[
+				'uploads still in progress, ahead of the plain 429',
+				new MemoriesRequestError(429, 'rate_limited', 'uploads_in_progress'),
+				'uploads_in_progress',
+			],
+			[
+				'an unknown cause, by its code',
+				new MemoriesRequestError(409, 'limit_reached', 'toString'),
+				'quota_reached',
+			],
 		] as const)('maps %s', (_label, error, expected) => {
 			expect(mapRequestIssue(error, 'sign_failed')).toBe(expected);
 		});

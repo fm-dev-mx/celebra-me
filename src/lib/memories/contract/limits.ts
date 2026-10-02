@@ -30,6 +30,8 @@ export const MEMORIES_JSON_BODY_MAX_BYTES = 2048;
 export const MEMORIES_INSPECTION_BYTES = 65_536;
 /** Browser-side hashing chunk. */
 export const MEMORIES_HASH_CHUNK_BYTES = 2 * 1024 * 1024;
+/** How long the browser may take to read a video's duration before the file is reported unreadable. */
+export const MEMORIES_VIDEO_METADATA_TIMEOUT_MS = 15_000;
 
 /**
  * Hard cap on how long any object may live in R2, measured from its upload.

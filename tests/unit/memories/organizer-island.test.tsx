@@ -403,6 +403,94 @@ describe('MemoriesOrganizer island', () => {
 			else delete (URL as { revokeObjectURL?: unknown }).revokeObjectURL;
 		}
 	});
+	it.each([
+		[
+			'a download cut by the connection',
+			() => new TypeError('Failed to fetch'),
+			'La descarga de un recuerdo se interrumpió. Revise su conexión y reintente este lote.',
+			[acceptedItem, largeAcceptedItem],
+		],
+		[
+			'a gateway timeout on a large video',
+			() => new MemoriesRequestError(504),
+			'La descarga de un recuerdo se interrumpió. Revise su conexión y reintente este lote.',
+			[acceptedItem, largeAcceptedItem],
+		],
+		[
+			'a file the host deleted meanwhile',
+			() => new MemoriesRequestError(404),
+			'Un recuerdo dejó de estar disponible. Revise el alcance y reintente este lote.',
+			[acceptedItem],
+		],
+	])(
+		'keeps the batch intact after %s, dropping only files that no longer exist',
+		async (_label, failure, message, retriedItems) => {
+			const user = userEvent.setup();
+			const smallVideo = { ...largeAcceptedItem, sizeBytes: 2048 };
+			const expectedRetry = retriedItems.map((item) =>
+				item.id === largeAcceptedItem.id ? smallVideo : item,
+			);
+			organizerApi.listItems.mockResolvedValue(listPayload([acceptedItem, smallVideo]));
+			organizerApi.fetchItemBlob.mockImplementation(async (_eventId, itemId) => {
+				if (itemId === smallVideo.id) throw failure();
+				return new Blob(['photo']);
+			});
+			// The real archive builder fetches each file in turn and fails on the first error.
+			mockedCreateZip.mockImplementation(async (input) => {
+				for (const item of input.items) await input.fetchItemBlob(item);
+				return new Blob(['zip'], { type: 'application/zip' });
+			});
+
+			render(<MemoriesOrganizer spaces={SPACES} initialEventId="event-1" />);
+			await screen.findByText('Tía Ana');
+			await user.click(screen.getByRole('button', { name: 'Descargar todos los aprobados' }));
+			const dialog = await screen.findByRole('dialog', {
+				name: 'Descargar recuerdos cifrados',
+			});
+			await user.click(
+				await within(dialog).findByRole('button', { name: 'Continuar y crear contraseña' }),
+			);
+			await user.click(
+				within(dialog).getByLabelText(
+					'Confirmo que guardé la contraseña en un lugar seguro.',
+				),
+			);
+			await user.click(within(dialog).getByRole('button', { name: 'Generar ZIP' }));
+
+			expect(await within(dialog).findByRole('alert')).toHaveTextContent(message);
+			expect(mockedCreateZip).toHaveBeenCalledTimes(1);
+
+			organizerApi.fetchItemBlob.mockResolvedValue(new Blob(['media']));
+			const createObjectURL = jest.fn(() => 'blob:memories-export');
+			const createDescriptor = Object.getOwnPropertyDescriptor(URL, 'createObjectURL');
+			const revokeDescriptor = Object.getOwnPropertyDescriptor(URL, 'revokeObjectURL');
+			Object.defineProperty(URL, 'createObjectURL', {
+				configurable: true,
+				value: createObjectURL,
+			});
+			Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: jest.fn() });
+			const anchorClick = jest
+				.spyOn(HTMLAnchorElement.prototype, 'click')
+				.mockImplementation(() => undefined);
+			try {
+				await user.click(within(dialog).getByRole('button', { name: 'Reintentar lote 1' }));
+
+				expect(await within(dialog).findByText('Descarga preparada')).toBeInTheDocument();
+				expect(mockedCreateZip).toHaveBeenLastCalledWith(
+					expect.objectContaining({ items: expectedRetry }),
+				);
+			} finally {
+				anchorClick.mockRestore();
+				if (createDescriptor)
+					Object.defineProperty(URL, 'createObjectURL', createDescriptor);
+				else delete (URL as { createObjectURL?: unknown }).createObjectURL;
+				if (revokeDescriptor)
+					Object.defineProperty(URL, 'revokeObjectURL', revokeDescriptor);
+				else delete (URL as { revokeObjectURL?: unknown }).revokeObjectURL;
+			}
+		},
+	);
+
 	it('shows the host summary with totals, the share link and the QR download, without limits', async () => {
 		organizerApi.listItems.mockResolvedValue(listPayload([acceptedItem]));
 

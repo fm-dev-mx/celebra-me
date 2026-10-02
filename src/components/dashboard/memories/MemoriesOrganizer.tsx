@@ -15,7 +15,11 @@ import {
 } from '@/lib/memories/contract/limits';
 import { isMemoriesVideoMime } from '@/lib/memories/contract/media-policy';
 import { formatMemoriesDateTime, formatMemoriesFileSize } from '@/lib/memories/copy';
-import { memoriesOrganizerApi, type OrganizerSpaceItem } from '@/lib/memories/client/api';
+import {
+	MemoriesRequestError,
+	memoriesOrganizerApi,
+	type OrganizerSpaceItem,
+} from '@/lib/memories/client/api';
 import {
 	createEncryptedMemoriesZip,
 	generateBulkZipPassphrase,
@@ -380,10 +384,19 @@ export default function MemoriesOrganizer({ spaces, initialEventId = '' }: Memor
 					fetchItemBlob: async (item) => {
 						try {
 							return await memoriesOrganizerApi.fetchItemBlob(space.eventId, item.id);
-						} catch {
-							unavailableItemId = item.id;
+						} catch (caught) {
+							// Only a file the server no longer has leaves the export. A download
+							// cut by the connection keeps its place so the retry fetches it again.
+							if (caught instanceof MemoriesRequestError && caught.status === 404) {
+								unavailableItemId = item.id;
+								throw new Error(
+									'Un recuerdo dejó de estar disponible. Revise el alcance y reintente este lote.',
+									{ cause: caught },
+								);
+							}
 							throw new Error(
-								'Un recuerdo dejó de estar disponible. Revise el alcance y reintente este lote.',
+								'La descarga de un recuerdo se interrumpió. Revise su conexión y reintente este lote.',
+								{ cause: caught },
 							);
 						}
 					},

@@ -4,7 +4,11 @@
  */
 
 import { sha256 } from '@noble/hashes/sha2.js';
-import { MEMORIES_HASH_CHUNK_BYTES } from '@/lib/memories/contract/limits';
+import type { MemoriesReservationRefusal } from '@/lib/memories/contract/catalog';
+import {
+	MEMORIES_HASH_CHUNK_BYTES,
+	MEMORIES_VIDEO_METADATA_TIMEOUT_MS,
+} from '@/lib/memories/contract/limits';
 import {
 	MEMORIES_IMAGE_OPTIMIZATION_MAX_DIMENSION_PX,
 	MEMORIES_IMAGE_OPTIMIZATION_QUALITY,
@@ -18,11 +22,18 @@ import { MemoriesRequestError } from './api';
 export type MemoriesCaptureIssue =
 	| 'unsupported_type'
 	| 'file_too_large'
+	| 'video_too_large'
 	| 'video_too_long'
 	| 'video_unreadable'
 	| 'window_closed'
 	| 'rate_limited'
+	| 'uploads_in_progress'
 	| 'quota_reached'
+	| 'session_files_reached'
+	| 'session_videos_reached'
+	| 'session_bytes_reached'
+	| 'event_full'
+	| 'session_lost'
 	| 'sign_failed'
 	| 'put_failed'
 	| 'network_failed'
@@ -32,16 +43,32 @@ export type MemoriesCaptureIssue =
 const ISSUE_COPY: Record<MemoriesCaptureIssue, keyof typeof memoriesCaptureCopy> = {
 	unsupported_type: 'unsupportedType',
 	file_too_large: 'fileTooLarge',
+	video_too_large: 'videoTooLarge',
 	video_too_long: 'videoTooLong',
 	video_unreadable: 'videoUnreadable',
 	window_closed: 'windowClosed',
 	rate_limited: 'rateLimited',
+	uploads_in_progress: 'uploadsInProgress',
 	quota_reached: 'quotaReached',
+	session_files_reached: 'sessionFilesReached',
+	session_videos_reached: 'sessionVideosReached',
+	session_bytes_reached: 'sessionBytesReached',
+	event_full: 'eventFull',
+	session_lost: 'sessionLost',
 	sign_failed: 'signFailed',
 	put_failed: 'putFailed',
 	network_failed: 'networkFailed',
 	upload_expired: 'uploadExpired',
 	unavailable: 'unavailable',
+};
+
+/** The cause the server names for a refused reservation, and the issue the guest sees for it. */
+const REFUSAL_ISSUES: Record<MemoriesReservationRefusal, MemoriesCaptureIssue> = {
+	session_files: 'session_files_reached',
+	session_videos: 'session_videos_reached',
+	session_bytes: 'session_bytes_reached',
+	event_capacity: 'event_full',
+	uploads_in_progress: 'uploads_in_progress',
 };
 
 export function memoriesIssueCopy(issue: MemoriesCaptureIssue): string {
@@ -62,6 +89,12 @@ export function mapRequestIssue(
 ): MemoriesCaptureIssue {
 	if (!(error instanceof MemoriesRequestError)) return classifyTransportIssue(fallback);
 	if (error.status === null) return classifyTransportIssue(fallback);
+	if (error.reason && Object.hasOwn(REFUSAL_ISSUES, error.reason))
+		return REFUSAL_ISSUES[error.reason as MemoriesReservationRefusal];
+	// Retrying cannot bring a lost or revoked session back.
+	if (error.status === 401) return 'session_lost';
+	// The server closed this request id (rejected or released): start over.
+	if (error.status === 409 && error.code === 'conflict') return 'upload_expired';
 	if (error.status === 429 || error.code === 'rate_limited') return 'rate_limited';
 	if (error.code === 'limit_reached') return 'quota_reached';
 	if (error.status === 403) return 'window_closed';
@@ -148,21 +181,30 @@ export function validateMemoriesFile(file: File): MemoriesCaptureIssue | null {
 	const mimeType = resolveMemoriesFileMimeType(file);
 	const policy = mimeType ? getMemoriesMimePolicy(mimeType) : null;
 	if (!policy) return 'unsupported_type';
-	if (file.size <= 0 || file.size > policy.maxBytes) return 'file_too_large';
+	if (file.size > policy.maxBytes)
+		return policy.category === 'video' ? 'video_too_large' : 'file_too_large';
+	if (file.size <= 0) return 'file_too_large';
 	return null;
 }
 
-export async function measureVideoDurationSeconds(file: File): Promise<number> {
+export async function measureVideoDurationSeconds(
+	file: File,
+	timeoutMs = MEMORIES_VIDEO_METADATA_TIMEOUT_MS,
+): Promise<number> {
 	const objectUrl = URL.createObjectURL(file);
+	let timer: ReturnType<typeof setTimeout> | undefined;
 	try {
 		return await new Promise((resolve, reject) => {
 			const video = document.createElement('video');
+			// A browser that cannot read the container may fire neither event.
+			timer = setTimeout(() => reject(new Error('video_metadata_timeout')), timeoutMs);
 			video.preload = 'metadata';
 			video.onloadedmetadata = () => resolve(video.duration);
 			video.onerror = () => reject(new Error('video_metadata'));
 			video.src = objectUrl;
 		});
 	} finally {
+		clearTimeout(timer);
 		URL.revokeObjectURL(objectUrl);
 	}
 }

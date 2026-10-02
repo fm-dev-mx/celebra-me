@@ -11,6 +11,8 @@
 export const MEMORIES_MAX_IMAGE_BYTES = 20 * 1024 * 1024;
 export const MEMORIES_MAX_VIDEO_BYTES = 80 * 1024 * 1024;
 export const MEMORIES_MAX_VIDEO_DURATION_SECONDS = 60;
+/** Scale of `event_memory_items.duration_seconds` (`numeric(10, 3)`). */
+export const MEMORIES_VIDEO_DURATION_DECIMALS = 3;
 export const MEMORIES_IMAGE_OPTIMIZATION_MAX_DIMENSION_PX = 2560;
 export const MEMORIES_IMAGE_OPTIMIZATION_QUALITY = 0.85;
 
@@ -55,6 +57,16 @@ export function getMemoriesMimePolicy(mimeType: string): MemoriesMimePolicy | nu
 		return MEMORIES_ALLOWED_MIME_TYPES[normalized as MemoriesAllowedMimeType];
 	}
 	return null;
+}
+
+/**
+ * Browsers report durations with more decimals than the catalog stores. The
+ * reservation RPC compares a replayed request against the stored row, so the
+ * value must already be at the stored scale when it is first reserved.
+ */
+export function roundMemoriesVideoDurationSeconds(durationSeconds: number): number {
+	const factor = 10 ** MEMORIES_VIDEO_DURATION_DECIMALS;
+	return Math.round(durationSeconds * factor) / factor;
 }
 
 /** Mirrors the SQL rule `mime_type like 'video/%'` used by the reservation RPC. */

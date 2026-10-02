@@ -49,6 +49,21 @@ function invalidSignerResponse(): Error {
 	return new Error('Invalid upload signer response.');
 }
 
+/** The Sign Worker refused the request; the status tells a throttle apart from an outage. */
+export class MemoriesSignerError extends Error {
+	readonly status: number;
+
+	constructor(status: number) {
+		super(`Memories upload signer failed (${status}).`);
+		this.name = 'MemoriesSignerError';
+		this.status = status;
+	}
+}
+
+export function isMemoriesSignerRateLimit(error: unknown): boolean {
+	return error instanceof MemoriesSignerError && error.status === 429;
+}
+
 function requireUploadUrl(value: unknown, signerUrl: URL): URL {
 	if (typeof value !== 'string') throw invalidSignerResponse();
 	let url: URL;
@@ -130,7 +145,7 @@ export async function requestMemoriesUploadCapability(input: {
 		body,
 		signal: AbortSignal.timeout(10_000),
 	});
-	if (!response.ok) throw new Error(`Memories upload signer failed (${response.status}).`);
+	if (!response.ok) throw new MemoriesSignerError(response.status);
 	const payload: unknown = await response.json();
 	if (typeof payload !== 'object' || payload === null) throw invalidSignerResponse();
 	const candidate = payload as Record<string, unknown>;
