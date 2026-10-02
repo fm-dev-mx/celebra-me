@@ -70,22 +70,26 @@ its own record under `<output root>/records/`; the Playwright global teardown re
 coverage, PNG geometry and a single runtime fingerprint, and fails the run on any missing capture or
 pixel difference. Global setup resets the records directory, so earlier runs never fill coverage
 gaps. Capture suites run serially without retries by default; `VISUAL_PARITY_PARALLEL=1` selects
-parallel capture only for the paired trials required by the release process. CI retains actual/diff
-PNGs and diagnostic JSON on failure for three days, without traces or credential artifacts. A
-stabilization timeout preserves the last two available frames and their capture times; it does not
-take replacement screenshots after the failure.
+parallel capture only for the paired trials required by the release process, which a manual
+Repository CI dispatch starts through its `capture_execution` and `browser_workers` inputs. CI
+retains actual/diff PNGs and diagnostic JSON on failure for three days, without traces or credential
+artifacts. A stabilization timeout preserves the last two available frames and their capture times;
+it does not take replacement screenshots after the failure.
 
 GitHub CI runs static/build, unit, browser, and disposable database checks independently. The
 required `Application Suite` status succeeds only when every application tier succeeds; cancelled,
-failed, or skipped tiers cannot authorize release. New runs cancel superseded runs for the same
-branch or pull request. Browser CI uses two workers across files and stops after five failed tests,
-remaining failed overall. Each capture suite remains sequential so its manifest stays complete.
-Pixel and size mismatches are recorded per capture and fail the aggregate comparison after the full
-matrix. A capture byte-identical to its accepted reference passes without decoding; this is stricter
-than the pixel comparison and does not change its tolerance. Capture-case success means capture
-completion, not parity acceptance. Reports retain FAIL entries and a FAILED manifest when any pixel
-comparison differs. Navigation, missing/corrupt baselines, and capture integrity errors remain
-immediate failures.
+failed, or skipped tiers cannot authorize release. The single exception is the `develop` → `main`
+pull request whose merge candidate holds the tree a complete `develop` run already validated: its
+tiers are skipped and the status reuses that run
+([validation procedures](../../core/validation-procedures.md)). New runs cancel superseded runs for
+the same branch or pull request. Browser CI uses two workers across files and stops after five
+failed tests, remaining failed overall. Each capture suite remains sequential so its manifest stays
+complete. Pixel and size mismatches are recorded per capture and fail the aggregate comparison after
+the full matrix. A capture byte-identical to its accepted reference passes without decoding; this is
+stricter than the pixel comparison and does not change its tolerance. Capture-case success means
+capture completion, not parity acceptance. Reports retain FAIL entries and a FAILED manifest when
+any pixel comparison differs. Navigation, missing/corrupt baselines, and capture integrity errors
+remain immediate failures.
 
 Visual suites do not retry individual captures: a retry could replace the first failing evidence. An
 explicitly reviewed whole-suite rerun remains possible without updating references or changing

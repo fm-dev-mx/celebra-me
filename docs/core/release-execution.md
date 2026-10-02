@@ -92,7 +92,10 @@ implementing these skills is never a live-release invocation.
 3. Find the existing open PR for `develop` → `main` before creating/updating it. Use production-pr
    for scope, template and evidence; this invocation continues beyond that helper's PR-only end.
    Attach the PR when the host supports it. Wait for required checks/reviews for the current PR head
-   and merge candidate; recheck source/base before merge. Never use admin/bypass/force options.
+   and merge candidate; recheck source/base before merge. Never use admin/bypass/force options. When
+   the `Evidence reuse` job confirms the completed `develop` run for an identical tree, the
+   application tiers report skipped and `Application Suite` still passes; a declined reuse runs them
+   in full.
 4. Merge through the permitted PR method, pinned to the reviewed head (for example the supported CLI
    head-match option). Read the merge result and actual main SHA; do not assume SHA equality. Then
    fast-forward `develop` to `origin/main` from Integration

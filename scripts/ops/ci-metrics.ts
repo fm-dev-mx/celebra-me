@@ -61,6 +61,10 @@ const retryInfrastructure = shouldRetryInfrastructure(primaryCause, runAttempt);
 const evidence = {
 	sha: GITHUB_SHA,
 	mode: process.env.VISUAL_PARITY_MODE,
+	captureExecution: process.env.CAPTURE_EXECUTION || 'serial',
+	browserWorkers: Number(process.env.BROWSER_WORKERS || 2),
+	// Set when this run skipped the application tiers in favor of an integration run.
+	evidenceSourceRunId: process.env.EVIDENCE_SOURCE_RUN_ID || null,
 	runId: GITHUB_RUN_ID,
 	attempt: runAttempt,
 	primaryCause,

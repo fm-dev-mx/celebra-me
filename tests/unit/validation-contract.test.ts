@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { EVIDENCE_WORKFLOW_FILE } from '../../scripts/ops/ci-evidence-reuse.ts';
+import { CERTIFIED_BROWSER_COMMAND } from '../../scripts/ops/visual-prepush-certification.ts';
 
 type PackageManifest = {
 	scripts?: Record<string, string>;
@@ -152,12 +154,12 @@ describe('canonical validation contract', () => {
 			for (const command of [
 				'pnpm ci:static',
 				'pnpm test',
-				'pnpm test:e2e:ci --max-failures=5 --workers=2',
+				'pnpm test:e2e:ci --max-failures=5 --workers="$BROWSER_WORKERS"',
 			]) {
 				expect(workflowLines).toContain(`run: ${command}`);
 			}
 			expect(workflow).toContain(
-				'needs: [policy-validation, application-checks, browser-validation]',
+				'needs: [evidence-reuse, policy-validation, application-checks, browser-validation]',
 			);
 			expect(workflow).toContain('tier: [static, unit, database]');
 			expect(workflow).toContain('cancel-in-progress: true');
@@ -179,4 +181,59 @@ describe('canonical validation contract', () => {
 			expect(workflow).not.toContain('name: Validate PR Commits');
 		},
 	);
+
+	it('keeps the default browser run identical to the locally certified command', () => {
+		const workflow = fs.readFileSync(
+			path.resolve(process.cwd(), '.github/workflows/commit-validation.yml'),
+			'utf8',
+		);
+		const workflowCommand = workflow.match(/run: (pnpm test:e2e:ci .*)/)?.[1];
+
+		expect(workflow).toContain(
+			"BROWSER_WORKERS: ${{ github.event.inputs.browser_workers || '2' }}",
+		);
+		expect(workflow).toContain(
+			"VISUAL_PARITY_PARALLEL: ${{ github.event.inputs.capture_execution == 'parallel' && '1' || '0' }}",
+		);
+		expect(workflow).toMatch(/capture_execution:[\s\S]*?default: serial/);
+		expect(workflow).toMatch(/browser_workers:[\s\S]*?default: '2'/);
+		expect(workflowCommand?.replace('"$BROWSER_WORKERS"', '2')).toBe(CERTIFIED_BROWSER_COMMAND);
+	});
+
+	it('skips application tiers only for confirmed integration evidence', () => {
+		const workflow = fs
+			.readFileSync(
+				path.resolve(process.cwd(), '.github/workflows/commit-validation.yml'),
+				'utf8',
+			)
+			.replace(/\r\n/g, '\n');
+		const job = (name: string): string =>
+			workflow.match(
+				new RegExp(`\\n    ${name}:\\n[\\s\\S]*?(?=\\n    [a-z-]+:\\n|$)`),
+			)?.[0] ?? '';
+
+		const evidence = job('evidence-reuse');
+		expect(evidence).toContain("github.event_name == 'pull_request'");
+		expect(evidence).toContain("github.head_ref == 'develop'");
+		expect(evidence).toContain(
+			'github.event.pull_request.head.repo.full_name == github.repository',
+		);
+		expect(evidence).toContain('run: node scripts/ops/ci-evidence-reuse.ts');
+		expect(fs.existsSync(path.resolve('.github/workflows', EVIDENCE_WORKFLOW_FILE))).toBe(true);
+
+		for (const name of ['application-checks', 'browser-validation']) {
+			expect(job(name)).toContain('needs: evidence-reuse');
+			expect(job(name)).toContain('!cancelled()');
+			expect(job(name)).toContain("needs.evidence-reuse.outputs.reuse != 'true'");
+		}
+		// Policy always validates the promotion range itself.
+		expect(job('policy-validation')).not.toContain('evidence-reuse');
+
+		const suite = job('application-validation');
+		expect(suite).toContain('test "$POLICY_RESULT" = success');
+		expect(suite).toContain('if [ "$EVIDENCE_REUSE" = true ]; then');
+		expect(suite).toContain(
+			'test "$APPLICATION_RESULT" = skipped && test "$BROWSER_RESULT" = skipped',
+		);
+	});
 });

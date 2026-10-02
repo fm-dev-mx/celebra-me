@@ -150,12 +150,16 @@ reuse, recovery and verified deployment completion. Neither includes database or
   provider-side Preview protection is configured. Never call a release ready from CI alone.
 - Avoid repeating successful complete suites for unchanged evidence. A final integration SHA,
   changed inputs or an unresolved failure justifies revalidation. Do not reuse PR merge-SHA evidence
-  as if it certified a different final commit.
-- CI records `validation-metrics` artifacts with SHA, mode, attempt, completed job durations, wall
-  time and aggregate runner minutes. These exclude queue time, billing multipliers and the metrics
-  job; they do not estimate token usage. Compare like-for-like runs before adopting sharding. Keep
-  serial coverage until three paired trials meet the agreed 30% wall-time saving and at most 50%
-  runner-minute increase, with identical coverage and passing results.
+  as if it certified a different final commit. The promotion pull request reuses the complete
+  `develop` run only when its merge candidate holds the identical tree; see
+  [validation procedures](validation-procedures.md#remote-ci-coverage-and-efficiency).
+- CI records `validation-metrics` artifacts with SHA, mode, capture execution, browser workers,
+  attempt, completed job durations, wall time and aggregate runner minutes. These exclude queue
+  time, billing multipliers and the metrics job; they do not estimate token usage. Compare
+  like-for-like runs before adopting sharding. Keep serial coverage until three paired trials meet
+  the agreed 30% wall-time saving and at most 50% runner-minute increase, with identical coverage
+  and passing results. Dispatch each pair through the Repository CI `capture_execution` and
+  `browser_workers` inputs.
 
 This document owns release checkpoints and the layered CHANGELOG policy for the Celebra-me
 repository. Checkpoints use Git tags, `package.json` version bumps, and a changelog entry — no
