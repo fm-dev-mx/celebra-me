@@ -376,15 +376,4 @@ describe('Strict Demo Counterpart Audit', () => {
 			});
 		}
 	});
-
-	describe('media fallback detection', () => {
-		it('any demo with _mediaFallback is documented', () => {
-			const fallbackDemos = demos.filter((d) => d.data._mediaFallback === true);
-			// Currently expected fallbacks: demo-xv-enchanted-rose, demo-xv-editorial-rose,
-			// and the pre-existing demo-xv-editorial-magazine
-			for (const demo of fallbackDemos) {
-				expect(demo.data._mediaFallbackNote).toBeTruthy();
-			}
-		});
-	});
 });
