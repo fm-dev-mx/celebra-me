@@ -268,24 +268,6 @@ export interface MemoriesSpaceHostSummary extends MemoriesSpaceSummary {
 	capacityRemainingPercent: number;
 }
 
-export interface MemoriesPlatformMeter {
-	used: number | null;
-	limit: number;
-}
-
-export type MemoriesPlatformUsage =
-	| {
-			kind: 'ok';
-			fetchedAt: string;
-			r2StorageBytes: MemoriesPlatformMeter;
-			r2ClassAOperations: MemoriesPlatformMeter;
-			r2ClassBOperations: MemoriesPlatformMeter;
-			workersRequests: MemoriesPlatformMeter;
-			durableObjectsRequests: MemoriesPlatformMeter;
-	  }
-	| { kind: 'unconfigured' }
-	| { kind: 'unavailable' };
-
 /**
  * Whole days until retention ends while the deletion warning applies, else null.
  * Shared by both dashboards so the countdown reads the same for admin and host.

@@ -5,7 +5,7 @@ import {
 	MemoryPlanFieldset,
 	MemoryScheduleFieldset,
 } from '@/components/dashboard/memories/MemorySpaceFormFields';
-import { CLOUDFLARE_FREE_TIER } from '@/lib/memories/contract/limits';
+import { CLOUDFLARE_FREE_TIER } from '@/lib/platform/contract/limits';
 import { formatMemoriesEventDate, memoriesFormCopy as copy } from '@/lib/memories/dashboard-copy';
 import type { AdminSpaceCandidate } from '@/lib/memories/client/api';
 import { checkMemoriesSchedule } from '@/lib/memories/client/schedule-check';

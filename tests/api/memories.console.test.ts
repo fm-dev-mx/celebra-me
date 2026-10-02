@@ -25,10 +25,6 @@ jest.mock('@/lib/memories/server/catalog.repository', () => ({
 	listSessionEventIds: jest.fn(),
 }));
 
-jest.mock('@/lib/memories/server/cloudflare-usage', () => ({
-	getCloudflarePlatformUsage: jest.fn(),
-}));
-
 import { createHash } from 'node:crypto';
 import type { SessionContext } from '@/lib/rsvp/auth/auth';
 import {
@@ -41,11 +37,9 @@ import {
 	listResidentMediaUsage,
 	listSessionEventIds,
 } from '@/lib/memories/server/catalog.repository';
-import { getCloudflarePlatformUsage } from '@/lib/memories/server/cloudflare-usage';
 import { requireOrganizerMemorySpace } from '@/lib/memories/server/organizer.service';
 import { requireMemoriesRateLimit } from '@/lib/memories/server/rate-limit';
 import { requireMemorySpaceByEventId } from '@/lib/memories/server/space.service';
-import { GET as getPlatformUsage } from '@/pages/api/dashboard/admin/memories/platform-usage';
 import { GET as getAdminQr } from '@/pages/api/dashboard/admin/memories/[eventId]/qr';
 import { GET as getHostSummary } from '@/pages/api/dashboard/memories/[eventId]/summary';
 import { GET as getHostQr } from '@/pages/api/dashboard/memories/[eventId]/qr';
@@ -76,9 +70,6 @@ const mockRequireOwnedSpace = requireOrganizerMemorySpace as jest.MockedFunction
 >;
 const mockRequireSpace = requireMemorySpaceByEventId as jest.MockedFunction<
 	typeof requireMemorySpaceByEventId
->;
-const mockPlatform = getCloudflarePlatformUsage as jest.MockedFunction<
-	typeof getCloudflarePlatformUsage
 >;
 const mockResident = listResidentMediaUsage as jest.MockedFunction<typeof listResidentMediaUsage>;
 const mockSessions = listSessionEventIds as jest.MockedFunction<typeof listSessionEventIds>;
@@ -145,30 +136,6 @@ beforeEach(() => {
 			accepted_at: null,
 		},
 	]);
-});
-
-describe('GET /api/dashboard/admin/memories/platform-usage', () => {
-	it('throttles, requires a strong admin session and returns the usage', async () => {
-		mockPlatform.mockResolvedValue({ kind: 'unconfigured' });
-		const response = await getPlatformUsage(context(`${ADMIN_URL}/platform-usage`));
-
-		expect(response.status).toBe(200);
-		await expect(response.json()).resolves.toEqual({ usage: { kind: 'unconfigured' } });
-		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
-		expect(mockAdminRateLimit).toHaveBeenCalledWith(
-			expect.objectContaining({ url: expect.any(String) }),
-			'memories:usage',
-		);
-		expect(mockStrongSession).toHaveBeenCalled();
-	});
-
-	it('answers a host or weak session with 403 without reaching Cloudflare', async () => {
-		mockStrongSession.mockRejectedValue(new ApiError(403, 'forbidden', 'Sin acceso.'));
-		const response = await getPlatformUsage(context(`${ADMIN_URL}/platform-usage`));
-
-		expect(response.status).toBe(403);
-		expect(mockPlatform).not.toHaveBeenCalled();
-	});
 });
 
 describe('GET /api/dashboard/admin/memories/[eventId]/qr', () => {

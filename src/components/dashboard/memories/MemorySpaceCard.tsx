@@ -122,7 +122,7 @@ export default function MemorySpaceCard({ item, now, busy, onEdit, onToggle, onC
 							de {formatMemoriesStorage(item.maxEventBytes)}
 						</span>
 						<span
-							className={`memories-meter memories-meter__track memories-meter--${memoriesUsageLevel(ratio)}`}
+							className={`usage-meter usage-meter__track usage-meter--${memoriesUsageLevel(ratio)}`}
 							role="meter"
 							aria-label="Cupo usado"
 							aria-valuemin={0}

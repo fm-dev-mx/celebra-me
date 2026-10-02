@@ -120,22 +120,3 @@ export const MEMORIES_RETENTION_WARNING_DAYS = 14;
 
 export const MEMORIES_ENTITLEMENTS = ['package', 'addon', 'courtesy'] as const;
 export type MemoriesEntitlement = (typeof MEMORIES_ENTITLEMENTS)[number];
-
-/**
- * Cloudflare Free-plan allowances that bound every memory space at once.
- * Account-wide, not per event; the admin console compares live usage against them.
- */
-export const CLOUDFLARE_FREE_TIER = {
-	/** R2 Standard storage, GB-month (decimal GB). */
-	r2StorageBytes: 10_000_000_000,
-	r2ClassAOperationsPerMonth: 1_000_000,
-	r2ClassBOperationsPerMonth: 10_000_000,
-	/** Workers requests, reset at 00:00 UTC. */
-	workersRequestsPerDay: 100_000,
-	/** Durable Objects requests, reset at 00:00 UTC. */
-	durableObjectsRequestsPerDay: 100_000,
-} as const;
-
-/** Share of an allowance at which the console warns, then flags as critical. */
-export const CLOUDFLARE_USAGE_WARNING_RATIO = 0.7;
-export const CLOUDFLARE_USAGE_CRITICAL_RATIO = 0.9;

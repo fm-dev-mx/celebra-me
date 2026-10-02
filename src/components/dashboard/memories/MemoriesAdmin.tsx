@@ -5,11 +5,11 @@ import {
 	resolveMemoriesWindowState,
 	type MemoriesAdminSpaceItem,
 	type MemoriesAdminTotals,
-	type MemoriesPlatformUsage as PlatformUsage,
 } from '@/lib/memories/contract/catalog';
 import { buildMemoriesPublicUrl } from '@/lib/memories/contract/private-request';
 import {
 	MEMORIES_WINDOW_ORDER,
+	formatMemoriesStorage,
 	memoriesAdminCopy as copy,
 	memoriesFormCopy,
 } from '@/lib/memories/dashboard-copy';
@@ -18,7 +18,7 @@ import {
 	memoriesAdminApi,
 	type AdminSpaceCandidate,
 } from '@/lib/memories/client/api';
-import MemoriesPlatformUsage from '@/components/dashboard/memories/MemoriesPlatformUsage';
+import { CLOUDFLARE_FREE_TIER } from '@/lib/platform/contract/limits';
 import MemorySpaceCard, {
 	resolveUndownloadedDeletionDays,
 } from '@/components/dashboard/memories/MemorySpaceCard';
@@ -50,7 +50,6 @@ function MemoriesAdmin() {
 	const [items, setItems] = useState<MemoriesAdminSpaceItem[]>([]);
 	const [totals, setTotals] = useState<MemoriesAdminTotals>(EMPTY_TOTALS);
 	const [candidates, setCandidates] = useState<AdminSpaceCandidate[]>([]);
-	const [platform, setPlatform] = useState<PlatformUsage | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [notice, setNotice] = useState<string | null>(null);
@@ -75,19 +74,9 @@ function MemoriesAdmin() {
 		}
 	};
 
-	const loadPlatform = async () => {
-		try {
-			setPlatform(await memoriesAdminApi.platformUsage());
-		} catch {
-			setPlatform({ kind: 'unavailable' });
-		}
-	};
-
 	useEffect(() => {
 		void load();
-		void loadPlatform();
 	}, []);
-
 	const { current, expired } = useMemo(() => {
 		const withState = items.map((item) => ({
 			item,
@@ -115,6 +104,8 @@ function MemoriesAdmin() {
 	const deletionCount = current.filter(
 		(item) => resolveUndownloadedDeletionDays(item, now) !== null,
 	).length;
+
+	const committedOver = totals.committedBytes > CLOUDFLARE_FREE_TIER.r2StorageBytes;
 
 	const commitment = useMemo((): MemorySpaceCommitment => {
 		const item = modal?.item;
@@ -238,7 +229,16 @@ function MemoriesAdmin() {
 				</p>
 			) : null}
 
-			<MemoriesPlatformUsage usage={platform} totals={totals} />
+			<p
+				className={`memories-admin__committed${committedOver ? ' memories-admin__committed--over' : ''}`}
+				role={committedOver ? 'alert' : undefined}
+			>
+				{copy.committed(
+					formatMemoriesStorage(totals.committedBytes),
+					formatMemoriesStorage(CLOUDFLARE_FREE_TIER.r2StorageBytes),
+				)}
+				{committedOver ? ` ${copy.committedOver}` : null}
+			</p>
 
 			{loading && items.length === 0 ? <p className="dashboard-status">Cargando…</p> : null}
 			{!loading && items.length === 0 && !error ? (

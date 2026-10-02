@@ -4,12 +4,20 @@
  */
 
 import type { MemoriesWindowState } from './contract/catalog';
+import { type MemoriesEntitlement } from './contract/limits';
 import {
-	CLOUDFLARE_USAGE_CRITICAL_RATIO,
-	CLOUDFLARE_USAGE_WARNING_RATIO,
-	type MemoriesEntitlement,
-} from './contract/limits';
+	BINARY_MB,
+	DECIMAL_GB,
+	formatPlatformStorage as formatMemoriesStorage,
+} from '@/lib/platform/dashboard-copy';
+import {
+	platformMeterStep as memoriesMeterStep,
+	platformUsageLevel as memoriesUsageLevel,
+	platformUsageRatio as memoriesUsageRatio,
+} from '@/lib/platform/contract/meters';
 import { formatMemoriesDate } from './copy';
+
+export { formatMemoriesStorage, memoriesMeterStep, memoriesUsageLevel, memoriesUsageRatio };
 
 export const MEMORIES_WINDOW_LABEL: Record<MemoriesWindowState, string> = {
 	before: 'Programado',
@@ -41,43 +49,6 @@ export const MEMORIES_ENTITLEMENT_LABEL: Record<MemoriesEntitlement, string> = {
 	addon: 'Complemento',
 	courtesy: 'Cortesía',
 };
-
-const DECIMAL_GB = 1_000_000_000;
-const BINARY_MB = 1024 * 1024;
-
-export function formatMemoriesStorage(bytes: number): string {
-	if (bytes >= DECIMAL_GB) {
-		const gigabytes = bytes / DECIMAL_GB;
-		return `${gigabytes.toLocaleString('es-MX', { maximumFractionDigits: gigabytes < 10 ? 1 : 0 })} GB`;
-	}
-	if (bytes >= BINARY_MB) return `${Math.round(bytes / BINARY_MB).toLocaleString('es-MX')} MB`;
-	if (bytes > 0) return `${Math.max(1, Math.round(bytes / 1024)).toLocaleString('es-MX')} KB`;
-	return '0 MB';
-}
-
-export function formatMemoriesCount(value: number): string {
-	return new Intl.NumberFormat('es-MX', { notation: 'compact', maximumFractionDigits: 1 }).format(
-		value,
-	);
-}
-
-export function memoriesUsageRatio(used: number, limit: number): number {
-	return limit > 0 ? Math.max(0, used / limit) : 0;
-}
-
-/** Meter fill in 5 % steps, rendered by CSS (`[data-fill]`) instead of inline styles. */
-export function memoriesMeterStep(percent: number): number {
-	const clamped = Math.max(0, Math.min(100, percent));
-	return clamped > 0 && clamped < 5 ? 5 : Math.round(clamped / 5) * 5;
-}
-
-export type MemoriesUsageLevel = 'normal' | 'warning' | 'critical';
-
-export function memoriesUsageLevel(ratio: number): MemoriesUsageLevel {
-	if (ratio >= CLOUDFLARE_USAGE_CRITICAL_RATIO) return 'critical';
-	if (ratio >= CLOUDFLARE_USAGE_WARNING_RATIO) return 'warning';
-	return 'normal';
-}
 
 /** `YYYY-MM-DD` event date as a long Spanish date; the raw value if unreadable. */
 export function formatMemoriesEventDate(eventDate: string): string {
@@ -119,19 +90,6 @@ export const memoriesAdminCopy = {
 	empty: 'Todavía no hay espacios de recuerdos. Use «Activar evento» para crear el primero.',
 	loadError: 'No se pudieron cargar los espacios de recuerdos.',
 	expiredSummary: (count: number) => `Vencidos (${count})`,
-	platformTitle: 'Capacidad de Cloudflare (plan gratuito)',
-	platformApprox: (time: string) => `Aproximado · actualizado ${time}`,
-	platformUnconfigured:
-		'Sin datos de Cloudflare: falta configurar el token de solo lectura. El almacenamiento se estima con los registros de la plataforma.',
-	platformUnavailable:
-		'Cloudflare no respondió. El almacenamiento se estima con los registros de la plataforma.',
-	platformLoading: 'Consultando Cloudflare…',
-	storage: 'Almacenamiento R2',
-	storageEstimated: 'Almacenamiento registrado',
-	classA: 'Escrituras R2 (mes)',
-	classB: 'Lecturas R2 (mes)',
-	workers: 'Solicitudes Workers (hoy)',
-	durableObjects: 'Durable Objects (hoy)',
 	committed: (committed: string, limit: string) =>
 		`Comprometido por espacios vigentes: ${committed} de ${limit}.`,
 	committedOver:

@@ -1,6 +1,5 @@
 import MemoriesCapacityExamples from '@/components/dashboard/memories/MemoriesCapacityExamples';
 import {
-	CLOUDFLARE_FREE_TIER,
 	MEMORIES_ADMIN_NOTE_MAX_LENGTH,
 	MEMORIES_ENTITLEMENTS,
 	MEMORIES_EXPECTED_GUESTS_MAX,
@@ -10,6 +9,7 @@ import {
 	type MemoriesLimitProfile,
 	type MemoriesSpaceLimits,
 } from '@/lib/memories/contract/limits';
+import { CLOUDFLARE_FREE_TIER } from '@/lib/platform/contract/limits';
 import {
 	MEMORIES_MAX_IMAGE_BYTES,
 	MEMORIES_MAX_VIDEO_BYTES,
