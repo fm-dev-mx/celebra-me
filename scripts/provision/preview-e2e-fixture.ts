@@ -7,9 +7,6 @@
  */
 
 import { createHash, randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
-import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
-import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
 import {
 	PREVIEW_FIXTURE_DEMO_ID,
 	PREVIEW_FIXTURE_EVENT_TYPE,
@@ -25,6 +22,7 @@ import {
 } from '../db/db-workflow-lib.ts';
 import { resolvePreviewAdminUser, PREVIEW_ADMIN_EMAIL } from '../db/preview-sync-guards.ts';
 import { verifyPreviewWriteAuthorization } from './preview-write-auth.ts';
+import { buildPreviewFixtureContent } from './preview-e2e-fixture-content.ts';
 
 export const PREVIEW_E2E_FIXTURE_OPERATION = 'e2e-fixture';
 /** The fixture remains publishable without letting E2E mutate real invitation content. */
@@ -140,7 +138,7 @@ function assertCanonicalExisting(
 }
 
 function ensureDraft(dbUrl: string, invitationId: string, apply: boolean): void {
-	/** Intentional divergence marker vs demo-derived published content. */
+	/** Intentional divergence marker vs the versioned published content. */
 	const divergentDraft = JSON.stringify({
 		title: PREVIEW_FIXTURE_TITLE,
 		_e2eFixtureDraftMarker: 'unpublished-divergence',
@@ -200,21 +198,18 @@ function ensurePublishedContent(dbUrl: string, invitationId: string, apply: bool
 	if (hasPublishedContent(dbUrl, invitationId)) return;
 	if (!apply) return;
 
+	const content = JSON.stringify(buildPreviewFixtureContent());
 	const insert = runPsql(
 		`insert into public.published_invitation_content (
 			invitation_project_id, slug, event_type, is_demo, content, version
-		)
-		select
+		) values (
 			${sqlLiteral(invitationId)}::uuid,
 			${sqlLiteral(PREVIEW_FIXTURE_SLUG)},
 			${sqlLiteral(PREVIEW_FIXTURE_EVENT_TYPE)},
 			false,
-			content,
+			${sqlLiteral(content)}::jsonb,
 			1
-		from public.published_invitation_content
-		where event_type = ${sqlLiteral(PREVIEW_FIXTURE_EVENT_TYPE)}
-			and slug = ${sqlLiteral(PREVIEW_FIXTURE_DEMO_ID)}
-			and deleted_at is null
+		)
 		on conflict (event_type, slug) do nothing;`,
 		dbUrl,
 		{ tuplesOnly: true, throwOnError: false },
@@ -230,7 +225,6 @@ function createFixtureRow(input: {
 	dbUrl: string;
 	invitationId: string;
 	ownerUserId: string;
-	snapshot: Record<string, unknown>;
 	themeId: string;
 }): void {
 	const insert = runPsql(
@@ -246,7 +240,7 @@ function createFixtureRow(input: {
 			${sqlLiteral(PREVIEW_FIXTURE_DEMO_ID)},
 			${sqlLiteral(input.themeId)},
 			'client',
-			${sqlLiteral(JSON.stringify(input.snapshot))}::jsonb,
+			'{}'::jsonb,
 			'',
 			'',
 			'',
@@ -297,10 +291,8 @@ export function ensurePreviewE2eFixture(options: {
 	if (existing) {
 		assertCanonicalExisting(existing, ownerUserId);
 		if (options.repairPublication) {
-			// Repair only this synthetic publication from the versioned demo contract.
-			const content = eventContentSchema.parse(
-				JSON.parse(readFileSync('tests/fixtures/content/xv-jewelry-box.json', 'utf8')),
-			);
+			// Repair only this synthetic publication from its versioned content.
+			const content = buildPreviewFixtureContent();
 			if (apply) {
 				const result = runPsql(
 					`update public.published_invitation_content
@@ -339,13 +331,6 @@ export function ensurePreviewE2eFixture(options: {
 	}
 
 	if (options.repairPublication) throw new Error('PREVIEW_E2E_FIXTURE_REPAIR_REQUIRES_EXISTING');
-	const preset = findDemoPreset(PREVIEW_FIXTURE_DEMO_ID);
-	if (!preset) {
-		throw new Error(
-			`PREVIEW_E2E_FIXTURE_DEMO_MISSING: Demo preset ${PREVIEW_FIXTURE_DEMO_ID} is not in the catalog.`,
-		);
-	}
-
 	if (!apply) {
 		return {
 			action: 'dry_run_create',
@@ -361,8 +346,7 @@ export function ensurePreviewE2eFixture(options: {
 		dbUrl,
 		invitationId,
 		ownerUserId,
-		snapshot: { ...preset },
-		themeId: preset.themeId,
+		themeId: String((buildPreviewFixtureContent().theme as { preset: string }).preset),
 	});
 	ensureDraft(dbUrl, invitationId, true);
 	ensurePublishedContent(dbUrl, invitationId, true);
