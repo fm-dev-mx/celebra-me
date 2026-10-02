@@ -13,7 +13,6 @@ const allowedHydratedComponents = new Set([
 	'EventsAdminTable',
 	'UsersAdminTable',
 	'InvitationEditor',
-	'ContentSyncPanel',
 	'MemoriesOrganizer',
 	'MemoriesAdmin',
 	// Local-only canonical status dashboard — read-only fetch via

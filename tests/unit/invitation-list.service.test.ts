@@ -10,14 +10,10 @@ import type { Invitation } from '@/lib/intake/types';
 
 describe('list schedule projection', () => {
 	beforeEach(() => jest.clearAllMocks());
-	it('uses five bulk reads, published precedence, and the existing showroom selection', async () => {
+	it('uses five bulk reads and published precedence', async () => {
 		jest.mocked(listInvitations).mockResolvedValue([
 			{ id: 'published', kind: 'client' },
 			{ id: 'draft', kind: 'client' },
-			{ id: 'visible', kind: 'demo', eventType: 'xv', slug: 'demo-xv-celestial-blue' },
-			{ id: 'hidden', kind: 'demo', eventType: 'xv', slug: 'demo-xv-jewelry-box' },
-			{ id: 'pending', kind: 'demo', eventType: 'xv', slug: 'demo-xv-pending-review' },
-			{ id: 'absent', kind: 'demo', eventType: 'xv', slug: 'unregistered' },
 		] as Invitation[]);
 		jest.mocked(supabaseRestRequest)
 			.mockResolvedValueOnce([])
@@ -33,8 +29,6 @@ describe('list schedule projection', () => {
 		const items = await getEnrichedInvitationList('all');
 		expect(items[0]).toMatchObject({ eventDate: null, validity: 'unknown' });
 		expect(items[1]).toMatchObject({ eventDate: '2099-02-01', validity: 'upcoming' });
-		expect(items[2].demoShowroomOrder).toEqual(expect.any(Number));
-		expect(items.slice(3).every((item) => item.demoShowroomOrder === null)).toBe(true);
 		expect(supabaseRestRequest).toHaveBeenCalledTimes(5);
 		for (const [query] of jest.mocked(supabaseRestRequest).mock.calls) {
 			expect(query.pathWithQuery).not.toMatch(/select=\*|[,=]content(?:,|&)/);

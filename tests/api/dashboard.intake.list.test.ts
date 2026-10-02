@@ -1,4 +1,3 @@
-jest.mock('astro:content', () => ({ getCollection: jest.fn() }));
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminStrongSession: jest
 		.fn()
@@ -10,21 +9,14 @@ jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({
 }));
 jest.mock('@/lib/intake/services/invitation.service', () => ({
 	getEnrichedInvitationList: jest.fn(),
-	synchronizeDemoInvitations: jest.fn(),
 }));
 
 import { GET } from '@/pages/api/dashboard/intake/index';
-import {
-	getEnrichedInvitationList,
-	synchronizeDemoInvitations,
-} from '@/lib/intake/services/invitation.service';
+import { getEnrichedInvitationList } from '@/lib/intake/services/invitation.service';
 import { createMockRequest } from '../helpers/api-mocks';
 
 const getEnrichedInvitationListMock = getEnrichedInvitationList as jest.MockedFunction<
 	typeof getEnrichedInvitationList
->;
-const synchronizeDemoInvitationsMock = synchronizeDemoInvitations as jest.MockedFunction<
-	typeof synchronizeDemoInvitations
 >;
 
 describe('GET /api/dashboard/intake', () => {
@@ -32,7 +24,7 @@ describe('GET /api/dashboard/intake', () => {
 		jest.clearAllMocks();
 	});
 
-	it('returns enriched invitations fast without syncing demos by default', async () => {
+	it('returns enriched active invitations by default', async () => {
 		const mockItems = [
 			{
 				id: 'inv-1',
@@ -44,7 +36,6 @@ describe('GET /api/dashboard/intake', () => {
 				eventDate: '2026-09-09',
 				eventTimeZone: 'America/Chihuahua',
 				validity: 'upcoming',
-				demoShowroomOrder: null,
 			},
 		];
 		getEnrichedInvitationListMock.mockResolvedValue(mockItems as never);
@@ -59,7 +50,6 @@ describe('GET /api/dashboard/intake', () => {
 
 		expect(response.status).toBe(200);
 		expect(await response.json()).toEqual({ items: mockItems, canReviewManually: false });
-		expect(synchronizeDemoInvitationsMock).not.toHaveBeenCalled();
 		expect(getEnrichedInvitationListMock).toHaveBeenCalledWith('active');
 	});
 
@@ -75,24 +65,6 @@ describe('GET /api/dashboard/intake', () => {
 		} as never);
 
 		expect(response.status).toBe(200);
-		expect(synchronizeDemoInvitationsMock).not.toHaveBeenCalled();
 		expect(getEnrichedInvitationListMock).toHaveBeenCalledWith('all');
-	});
-
-	it('keeps syncDemos=true read-only and does not synchronize during GET', async () => {
-		getEnrichedInvitationListMock.mockResolvedValue([] as never);
-		synchronizeDemoInvitationsMock.mockResolvedValue(undefined);
-
-		const response = await GET({
-			request: createMockRequest(
-				undefined,
-				undefined,
-				'http://localhost/api/dashboard/intake?syncDemos=true',
-			),
-		} as never);
-
-		expect(response.status).toBe(200);
-		expect(synchronizeDemoInvitationsMock).not.toHaveBeenCalled();
-		expect(getEnrichedInvitationListMock).toHaveBeenCalledWith('active');
 	});
 });

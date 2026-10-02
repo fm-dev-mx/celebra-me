@@ -213,11 +213,9 @@ Production promotion → pnpm prod:apply -- --slug <slug> --apply (owner-only)
 4. Open the Editor from `/dashboard/invitaciones/{id}/editar` for environment overrides; those edits
    are divergence against the managed package and must be reconciled deliberately.
 
-`POST /api/dashboard/intake` and Dashboard demo-duplicate reject client creation so the API cannot
-bypass this workflow. Demo showroom rows continue to sync via list load
-(`synchronizeDemoInvitations`). Low-level `createInvitation` repository/service primitives remain
-for demos, provision, and tests — not for Dashboard-managed client creates. Do not create client
-records through manual SQL.
+The Dashboard exposes no create or duplicate endpoint, so the API cannot bypass this workflow, and
+it lists and edits only `kind = 'client'` rows. Demos are versioned content rendered from Git and
+are not mirrored into the database. Do not create client records through manual SQL.
 
 Preview E2E publication fixture bootstrap (slug `e2e-preview-publication`) is separate from managed
 client creation: use `pnpm invitation:preview-fixture --apply` (Preview-only; Production rejected),

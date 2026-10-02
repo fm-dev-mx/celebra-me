@@ -57,13 +57,14 @@ function toInvitation(row: InvitationRow): Invitation {
 const SELECT_COLUMNS =
 	'work_status,owner_reviewed_at,owner_reviewed_by,id,kind,source_invitation_id,slug,title,event_type,status,base_demo_id,theme_id,snapshot,client_name,client_email,client_whatsapp,photos_received,created_by,archived_at,created_at,updated_at';
 
+/** Client invitations only; legacy demo mirror rows are not part of the production surface. */
 export async function listInvitations(
 	scope: 'active' | 'archived' | 'all' = 'active',
 ): Promise<Invitation[]> {
 	const archiveFilter =
 		scope === 'all' ? '' : `&archived_at=${scope === 'active' ? 'is.null' : 'not.is.null'}`;
 	const rows = await supabaseRestRequest<InvitationRow[]>({
-		pathWithQuery: `invitations?select=${SELECT_COLUMNS}${archiveFilter}&order=updated_at.desc`,
+		pathWithQuery: `invitations?select=${SELECT_COLUMNS}&kind=eq.client${archiveFilter}&order=updated_at.desc`,
 		useServiceRole: true,
 	});
 	return rows.map(toInvitation);
@@ -100,49 +101,6 @@ export async function findInvitationBySlug(
 		useServiceRole: true,
 	});
 	return rows[0] ? toInvitation(rows[0]) : null;
-}
-
-export async function createInvitation(input: {
-	title: string;
-	eventType: string;
-	baseDemoId: string;
-	themeId: string;
-	snapshot: DemoPreset;
-	kind?: Invitation['kind'];
-	sourceInvitationId?: string | null;
-	slug?: string | null;
-	clientName?: string;
-	clientEmail?: string;
-	clientWhatsapp?: string;
-	createdBy?: string | null;
-}): Promise<Invitation> {
-	const body: Record<string, unknown> = {
-		title: input.title,
-		event_type: input.eventType,
-		base_demo_id: input.baseDemoId,
-		theme_id: input.themeId,
-		snapshot: input.snapshot,
-		kind: input.kind ?? 'client',
-	};
-
-	if (input.sourceInvitationId !== undefined)
-		body.source_invitation_id = input.sourceInvitationId;
-	if (input.slug !== undefined) body.slug = input.slug;
-	if (input.clientName !== undefined) body.client_name = input.clientName;
-	if (input.clientEmail !== undefined) body.client_email = input.clientEmail;
-	if (input.clientWhatsapp !== undefined) body.client_whatsapp = input.clientWhatsapp;
-	if (input.createdBy !== undefined) body.created_by = input.createdBy;
-
-	const rows = await supabaseRestRequest<InvitationRow[]>({
-		pathWithQuery: `invitations?select=${SELECT_COLUMNS}`,
-		method: 'POST',
-		useServiceRole: true,
-		prefer: 'return=representation',
-		body,
-	});
-
-	if (!rows[0]) throw new Error('Failed to create invitation.');
-	return toInvitation(rows[0]);
 }
 
 function buildUpdateBody(input: {

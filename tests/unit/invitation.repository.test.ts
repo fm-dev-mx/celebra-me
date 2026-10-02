@@ -1,7 +1,6 @@
 import {
 	findInvitationById,
 	isInvitationArchivedBySlug,
-	createInvitation,
 	updateInvitation,
 	assignInvitationOwner,
 } from '@/lib/intake/repositories/invitation.repository';
@@ -98,129 +97,6 @@ describe('invitation repository', () => {
 			expect(result?.clientEmail).toBe('john@example.com');
 			expect(result?.clientWhatsapp).toBe('+521234567890');
 			expect(result?.photosReceived).toBe(false);
-		});
-	});
-
-	describe('createInvitation', () => {
-		it('creates a new invitation with all fields', async () => {
-			const mockRow = {
-				id: 'new-proj-id',
-				slug: 'new-event',
-				title: 'New Event',
-				event_type: 'boda',
-				status: 'draft',
-				base_demo_id: 'demo-boda-jewelry-box-wedding',
-				theme_id: 'jewelry-box-wedding',
-				snapshot: {
-					id: 'demo-boda-jewelry-box-wedding',
-					eventType: 'boda',
-					displayName: 'Boda — Jewelry Box Wedding',
-					themeId: 'jewelry-box-wedding',
-					defaultSections: ['quote'],
-					supportedBlocks: ['event-details'],
-					recommendedBlocks: ['event-details'],
-					requiredAssets: ['hero'],
-					previewSlug: 'demo-boda-jewelry-box-wedding',
-				} satisfies DemoPreset,
-				client_name: 'Jane Doe',
-				client_email: 'jane@example.com',
-				client_whatsapp: '+521987654321',
-				photos_received: false,
-				created_by: 'user-789',
-				created_at: '2026-05-28T00:00:00Z',
-				updated_at: '2026-05-28T00:00:00Z',
-			};
-
-			mockSupabaseRequest.mockResolvedValue([mockRow]);
-
-			const result = await createInvitation({
-				title: 'New Event',
-				eventType: 'boda',
-				baseDemoId: 'demo-boda-jewelry-box-wedding',
-				themeId: 'jewelry-box-wedding',
-				snapshot: mockRow.snapshot,
-				slug: 'new-event',
-				clientName: 'Jane Doe',
-				clientEmail: 'jane@example.com',
-				clientWhatsapp: '+521987654321',
-				createdBy: 'user-789',
-			});
-
-			expect(result.id).toBe('new-proj-id');
-			expect(result.title).toBe('New Event');
-			expect(result.eventType).toBe('boda');
-			expect(result.clientName).toBe('Jane Doe');
-			expect(result.clientWhatsapp).toBe('+521987654321');
-
-			expect(mockSupabaseRequest).toHaveBeenCalledWith({
-				pathWithQuery: expect.stringContaining('invitations'),
-				method: 'POST',
-				useServiceRole: true,
-				prefer: 'return=representation',
-				body: {
-					kind: 'client',
-					title: 'New Event',
-					event_type: 'boda',
-					base_demo_id: 'demo-boda-jewelry-box-wedding',
-					theme_id: 'jewelry-box-wedding',
-					snapshot: mockRow.snapshot,
-					slug: 'new-event',
-					client_name: 'Jane Doe',
-					client_email: 'jane@example.com',
-					client_whatsapp: '+521987654321',
-					created_by: 'user-789',
-				},
-			});
-		});
-
-		it('creates a invitation without optional fields', async () => {
-			const mockRow = {
-				id: 'new-proj-id',
-				slug: null,
-				title: 'Minimal Event',
-				event_type: 'xv',
-				status: 'draft',
-				base_demo_id: 'demo-xv-jewelry-box',
-				theme_id: 'jewelry-box',
-				snapshot: {},
-				client_name: '',
-				client_email: '',
-				client_whatsapp: '',
-				photos_received: false,
-				created_by: null,
-				created_at: '2026-05-28T00:00:00Z',
-				updated_at: '2026-05-28T00:00:00Z',
-			};
-
-			mockSupabaseRequest.mockResolvedValue([mockRow]);
-
-			const result = await createInvitation({
-				title: 'Minimal Event',
-				eventType: 'xv',
-				baseDemoId: 'demo-xv-jewelry-box',
-				themeId: 'jewelry-box',
-				snapshot: {} as never,
-			});
-
-			expect(result.id).toBe('new-proj-id');
-			expect(result.slug).toBeNull();
-			expect(result.clientName).toBe('');
-			expect(result.clientWhatsapp).toBe('');
-			expect(result.photosReceived).toBe(false);
-		});
-
-		it('throws an error when creation fails', async () => {
-			mockSupabaseRequest.mockResolvedValue([]);
-
-			await expect(
-				createInvitation({
-					title: 'Test',
-					eventType: 'xv',
-					baseDemoId: 'demo',
-					themeId: 'theme',
-					snapshot: {} as never,
-				}),
-			).rejects.toThrow('Failed to create invitation.');
 		});
 	});
 

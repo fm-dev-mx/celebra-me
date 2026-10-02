@@ -227,9 +227,9 @@ erDiagram
 
 Managed client invitations are created only through the definition registry +
 `pnpm invitation:release` (Local/Preview). Owner Production apply is
-`pnpm prod:apply -- --slug <slug> --apply`. `POST /api/dashboard/intake` and Dashboard duplicate
-reject client creation (`403`). Demo rows are synchronized by `synchronizeDemoInvitations`, not by
-Dashboard create.
+`pnpm prod:apply -- --slug <slug> --apply`. The Dashboard has no create or duplicate endpoint, and
+it lists and edits only `kind = 'client'` rows. Demos are versioned content
+(`src/content/event-demos/**`) rendered from Git; they are not mirrored into the database.
 
 ### Internal Admin Editing
 

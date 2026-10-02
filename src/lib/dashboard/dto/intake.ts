@@ -44,7 +44,6 @@ export interface InvitationListItemDTO extends InvitationDTO {
 	eventDate: string | null;
 	eventTimeZone: string;
 	validity: InvitationValidity;
-	demoShowroomOrder: number | null;
 }
 
 export interface InvitationListResponse {
