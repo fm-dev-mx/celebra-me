@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import process from 'node:process';
 
-export const BASELINE_VERSION = 2;
+export const BASELINE_VERSION = 3;
 export const BASELINE_FILE_NAME = 'git-safety-baseline.json';
 
 /** @typedef {'stage' | 'unstage' | 'commit' | 'history' | 'branch-switch'} AuthorizedOperation */
@@ -81,12 +81,13 @@ function sha256(text) {
 }
 
 /**
- * Semantic index fingerprint from `git ls-files --stage` metadata.
+ * Fingerprint of staged changes relative to HEAD (`git diff --cached --raw`), so a
+ * branch switch or commit that leaves nothing staged does not read as index drift.
  * Uses blob OIDs / modes / paths — never buffers staged binary contents.
  * @param {string} repoRoot
  */
 export function indexFingerprint(repoRoot) {
-	const { stdout } = git(repoRoot, ['ls-files', '--stage']);
+	const { stdout } = git(repoRoot, ['diff', '--cached', '--raw', '--no-renames', '--no-abbrev']);
 	const lines = stdout
 		? stdout
 				.split('\n')
@@ -436,7 +437,7 @@ export function writeBaseline(paths, state) {
 /**
  * Classify an on-disk baseline without mutating it.
  * @param {string} baselineFile
- * @returns {{ kind: 'v2' | 'invalid', versionLabel: string, detail?: string }}
+ * @returns {{ kind: 'valid' | 'invalid', versionLabel: string, detail?: string }}
  */
 export function classifyBaselineFile(baselineFile) {
 	try {
@@ -449,7 +450,7 @@ export function classifyBaselineFile(baselineFile) {
 			typeof raw.indexFingerprint === 'string' &&
 			Array.isArray(raw.indexEntries)
 		) {
-			return { kind: 'v2', versionLabel: String(raw.version) };
+			return { kind: 'valid', versionLabel: String(raw.version) };
 		}
 		return {
 			kind: 'invalid',
@@ -477,7 +478,7 @@ function printInvalidBaseline(baselineFile, classification) {
  */
 export function readBaseline(baselineFile) {
 	const classification = classifyBaselineFile(baselineFile);
-	if (classification.kind !== 'v2') {
+	if (classification.kind !== 'valid') {
 		throw new Error(
 			`invalid baseline (version ${classification.versionLabel}); remove it deliberately after inspecting evidence, then run start`,
 		);
@@ -518,7 +519,7 @@ export function cmdStart(options = {}) {
 		let classification = classifyBaselineFile(paths.baselineFile);
 		/** @type {string[]} */
 		let drift = [];
-		if (classification.kind === 'v2') {
+		if (classification.kind === 'valid') {
 			try {
 				drift = evaluateProtectedDrift(
 					readBaseline(paths.baselineFile),
@@ -533,10 +534,10 @@ export function cmdStart(options = {}) {
 				};
 			}
 		}
-		if (classification.kind !== 'v2' || drift.length > 0) {
+		if (classification.kind !== 'valid' || drift.length > 0) {
 			console.error('FAILED');
 			console.error(`active baseline already exists: ${paths.baselineFile}`);
-			if (classification.kind === 'v2') {
+			if (classification.kind === 'valid') {
 				for (const failure of drift) console.error(`  ${failure}`);
 				console.error(
 					'Refusing to overwrite drifted evidence. Close the prior session with finish first.',
@@ -620,7 +621,7 @@ export function cmdFinish(options = {}) {
 	}
 
 	const classification = classifyBaselineFile(paths.baselineFile);
-	if (classification.kind !== 'v2') {
+	if (classification.kind !== 'valid') {
 		console.error('FAILED');
 		printInvalidBaseline(paths.baselineFile, classification);
 		console.error(`baseline preserved at ${paths.baselineFile}`);

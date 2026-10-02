@@ -12,8 +12,9 @@ Protected hard-fail state is limited to the current mutable task/session:
 
 - current HEAD (including unborn/null HEAD);
 - current symbolic branch / detached state;
-- index (staged) state via semantic index metadata (blob OIDs / modes / paths — never buffered
-  binary patch contents).
+- staged changes relative to HEAD, via `git diff --cached --raw` metadata (blob OIDs / modes / paths
+  — never buffered binary patch contents). A branch switch or commit that leaves nothing staged is
+  not index drift.
 
 Other local heads, tags, and stash refs may be recorded as diagnostics only. Unrelated
 multi-worktree or concurrent-task mutation of those global refs must **not** cause an unconditional

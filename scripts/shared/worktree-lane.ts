@@ -12,6 +12,7 @@
  */
 
 import { execSync } from 'node:child_process';
+import { statSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 
 export type WorktreeLaneId = 'integration' | 'dev-local' | 'dev-preview' | 'dev-extra' | 'unknown';
@@ -88,7 +89,7 @@ export function getExternalWorktreeRoot(repoRoot: string): string {
  * Integration returns the repo root; development lanes return paths under
  * the external worktree root.
  */
-export function getExpectedLanePath(lane: WorktreeLaneDefinition, repoRoot: string): string {
+function getExpectedLanePath(lane: WorktreeLaneDefinition, repoRoot: string): string {
 	if (!lane.segment) return resolve(repoRoot);
 	const externalRoot = getExternalWorktreeRoot(repoRoot);
 	return resolve(externalRoot, lane.segment);
@@ -159,8 +160,12 @@ export function detectWorktreeLane(
 	const externalMatch = detectExternalPath(lower, externalRoots);
 	if (externalMatch) return externalMatch;
 
-	// Fallback: Integration lane guess by basename
-	if (basename(normalized).toLowerCase() === 'celebra-me') {
+	// Fallback: Integration lane guess by basename. A `.git` file marks a linked
+	// worktree (for example a tool-managed checkout), which is never Integration.
+	const linkedWorktree = statSync(resolve(normalized, '.git'), {
+		throwIfNoEntry: false,
+	})?.isFile();
+	if (basename(normalized).toLowerCase() === 'celebra-me' && !linkedWorktree) {
 		return WORKTREE_LANES[0]!;
 	}
 
