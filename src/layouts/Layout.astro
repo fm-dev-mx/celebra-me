@@ -25,6 +25,8 @@ interface Props {
 	title: string;
 	description?: string;
 	image?: string | ImageMetadata;
+	imageAlt?: string;
+	robots?: string;
 	hideHeader?: boolean;
 	className?: string;
 	isDemo?: boolean;
@@ -44,7 +46,9 @@ interface Props {
 const {
 	title,
 	description = 'Celebra-me - Invitaciones digitales',
-	image = '/images/og-image.webp',
+	image = '/images/og/og-home.jpg',
+	imageAlt,
+	robots,
 	hideHeader = false,
 	className,
 	isDemo = false,
@@ -82,6 +86,7 @@ const speedInsightsConfig = resolveSpeedInsightsConfig(Astro.url, {
 		<meta charset="UTF-8" />
 		<meta name="description" content={description} />
 		<meta name="viewport" content="width=device-width" />
+		{robots && <meta name="robots" content={robots} />}
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
@@ -97,7 +102,7 @@ const speedInsightsConfig = resolveSpeedInsightsConfig(Astro.url, {
 		<meta property="og:image:width" content={String(socialImage.width)} />
 		<meta property="og:image:height" content={String(socialImage.height)} />
 		<meta property="og:image:type" content={socialImage.type} />
-		<meta property="og:image:alt" content={title} />
+		<meta property="og:image:alt" content={imageAlt ?? title} />
 		<link rel="canonical" href={canonicalUrl} />
 		<meta property="og:locale" content="es_MX" />
 		<meta property="og:site_name" content="Celebra-me" />
@@ -108,6 +113,7 @@ const speedInsightsConfig = resolveSpeedInsightsConfig(Astro.url, {
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImage} />
+		<meta name="twitter:image:alt" content={imageAlt ?? title} />
 
 		{
 			headLinks.map((l) => (

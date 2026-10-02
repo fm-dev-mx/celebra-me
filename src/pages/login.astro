@@ -4,22 +4,25 @@ import Logo from '@/components/ui/Logo.astro';
 import LoginFlowBehavior from '@/components/behavior/LoginFlowBehavior';
 import { resolveNextPath } from '@/lib/rsvp/auth/login';
 import '@/styles/auth.scss';
-import '@styles/auth/_login.scss';
+import '@/styles/auth/_login.scss';
 
 const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/invitados');
 ---
 
 <Layout
-	title="Acceso de anfitrion"
-	description="Inicia sesion para administrar invitados RSVP"
+	title="Acceso de Anfitrión | Celebra-me"
+	description="Espacio privado de gestión para su evento. Inicie sesión para administrar sus invitados y confirmar asistencias en tiempo real."
+	image="/images/og/og-login.jpg"
+	imageAlt="Acceso de Anfitrión - Espacio privado de gestión para su evento"
+	robots="noindex, nofollow"
 	hideHeader={true}
 	className="theme-preset--auth-dark"
 >
 	<section class="auth-shell" data-next={next} data-variant="dark">
 		<header class="auth-local-header">
-			<a class="auth-brand" href="/" aria-label="Volver al inicio de Celebra.me">
-				<Logo variant="white" class="auth-brand__logo" altText="Celebra.me" />
-				<span class="auth-brand__caption">Panel de anfitrion</span>
+			<a class="auth-brand" href="/" aria-label="Volver al inicio de Celebra-me">
+				<Logo variant="white" class="auth-brand__logo" altText="Celebra-me" />
+				<span class="auth-brand__caption">Panel de anfitrión</span>
 			</a>
 			<a class="auth-back-link" href="/">Volver al inicio</a>
 		</header>
@@ -30,11 +33,11 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 			)}
 			<div class="auth-copy">
 				<p class="auth-kicker">Acceso seguro para anfitriones</p>
-				<h1 id="auth-title">Accede a tu panel</h1>
-				<p>Gestiona tu evento en un solo lugar.</p>
+				<h1 id="auth-title">Acceda a su panel</h1>
+				<p>Gestione su evento en un solo lugar.</p>
 			</div>
 
-			<div class="auth-tabs" role="tablist" aria-label="Opciones de autenticacion">
+			<div class="auth-tabs" role="tablist" aria-label="Opciones de autenticación">
 				<button
 					id="tab-login"
 					class="is-active"
@@ -59,28 +62,28 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 			<section id="panel-login" class="auth-panel" role="tabpanel" aria-labelledby="tab-login">
 				<form id="login-form" class="auth-form" method="post" novalidate>
 					<div class="auth-field">
-						<label for="login-method">Como quieres entrar</label>
+						<label for="login-method">¿Cómo desea ingresar?</label>
 						<select id="login-method" name="method">
-							<option value="password">Correo o usuario + contrasena</option>
+							<option value="password">Correo o usuario + contraseña</option>
 							<option value="magic_link">Magic Link</option>
 						</select>
 						<p id="login-method-help" class="auth-hint" aria-live="polite"></p>
 					</div>
 
 					<div class="auth-field">
-						<label for="login-email">Correo electronico o usuario</label>
+						<label for="login-email">Correo electrónico o usuario</label>
 						<input
 							id="login-email"
 							name="email"
 							type="text"
 							autocomplete="username"
-							placeholder="tu-correo@ejemplo.com o tu-usuario"
+							placeholder="su-correo@ejemplo.com o su-usuario"
 						/>
 						<p id="login-email-error" class="field-error" aria-live="polite"></p>
 					</div>
 
 					<div id="login-password-wrap" class="auth-field">
-						<label for="login-password">Contrasena</label>
+						<label for="login-password">Contraseña</label>
 						<input
 							id="login-password"
 							name="password"
@@ -103,28 +106,28 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 			>
 				<form id="register-form" class="auth-form" method="post" novalidate>
 					<div class="auth-field">
-						<label for="register-method">Como quieres entrar</label>
+						<label for="register-method">¿Cómo desea ingresar?</label>
 						<select id="register-method" name="method">
-							<option value="password">Email + contrasena</option>
+							<option value="password">Correo electrónico + contraseña</option>
 							<option value="magic_link">Magic Link</option>
 						</select>
 						<p id="register-method-help" class="auth-hint" aria-live="polite"></p>
 					</div>
 
 					<div class="auth-field">
-						<label for="register-email">Correo electronico</label>
+						<label for="register-email">Correo electrónico</label>
 						<input
 							id="register-email"
 							name="email"
 							type="email"
 							autocomplete="email"
-							placeholder="tu-correo@ejemplo.com"
+							placeholder="su-correo@ejemplo.com"
 						/>
 						<p id="register-email-error" class="field-error" aria-live="polite"></p>
 					</div>
 
 					<div id="register-password-wrap" class="auth-field">
-						<label for="register-password">Contrasena</label>
+						<label for="register-password">Contraseña</label>
 						<input
 							id="register-password"
 							name="password"
@@ -135,7 +138,7 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 					</div>
 
 					<div class="auth-field">
-						<label for="register-claim-code">claimCode</label>
+						<label for="register-claim-code">Código de acceso</label>
 						<input
 							id="register-claim-code"
 							name="claimCode"
@@ -143,7 +146,7 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 							placeholder="Ejemplo: CLAIM-2026"
 						/>
 						<p class="auth-hint">
-							Codigo compartido por el equipo de Celebra.me.
+							Código compartido por el equipo de Celebra-me.
 						</p>
 						<p id="register-claim-code-error" class="field-error" aria-live="polite"></p>
 					</div>
