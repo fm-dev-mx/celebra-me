@@ -499,6 +499,16 @@ deployment.
 - **Workers:** `celebra-memories-sign` (`/sign`, `/upload`) and `celebra-memories-retrieve`
   (`/retrieve`) verify ECDSA-signed app requests, enforce the global media policy and never learn
   about events. Upload capabilities are AES-GCM sealed so the browser cannot read object keys.
+  `/upload` answers 412 when the object already exists, so a PUT retried after a lost response goes
+  on to confirm instead of failing. Video inspection follows the container's top-level boxes with
+  ranged reads to the `moov` atom, because phones write it after the media data and its size is
+  unbounded; a fixed tail window is only the last resort.
+- **Retries and refusals:** the app rounds a video duration to the catalog scale
+  (`MEMORIES_VIDEO_DURATION_DECIMALS`) before reserving, so a retried request replays the same row
+  instead of conflicting with it. A refused reservation carries `error.details.reason`
+  (`MEMORIES_RESERVATION_REFUSALS`) and a Sign Worker throttle surfaces as 429, so the guest copy
+  names the limit and what to do. Quota is counted on rows that still hold an R2 object: a deleted,
+  rejected, duplicate or abandoned file keeps its slot until the daily cleanup removes the object.
 - **Cleanup:** `GET /api/cron/memories-cleanup` (Vercel cron at 15:17 UTC, an off-hour for events in
   Mexico; bearer secret) settles stale in-flight items from storage evidence, expires
   retention-ended spaces, deletes scheduled objects in leased batches within a time budget,

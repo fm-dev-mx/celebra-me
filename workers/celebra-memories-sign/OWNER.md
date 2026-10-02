@@ -65,6 +65,21 @@ evidence.
 5. Disable a space from the same admin surface to stop uploads immediately; retention and cleanup
    continue unchanged.
 
+## Read-only Production preflight
+
+Before the canary, and again on the day a window opens, check that a guest who scans the printed QR
+reaches a page that can talk to the app and to the Sign Worker:
+
+```text
+pnpm preflight:memories -- --slug=<public-slug> --upload-origin=<Sign Worker origin>
+```
+
+It sends `GET` and `OPTIONS` only: no session is created and nothing is reserved or uploaded. It
+checks the apex-to-`www` redirect with the path preserved, the guest page (200, `no-store`), an
+unknown slug (404), the anonymous session read, and the CORS preflight of `/upload` for the app
+origin and for a foreign one. `--upload-origin` is optional; without it the Worker check is reported
+as `SKIPPED`. Any `FAIL` blocks the canary.
+
 ## Owner-run Production canary
 
 This is a manual, single-use Production transaction. Repository readiness, a passing test, or a
@@ -227,6 +242,45 @@ success from repository files or local tests.
 | Phones          | Current iOS Safari and Android Chrome over mobile and shared Wi-Fi, including a 60-second video       | UNVERIFIED    |
 | Operations      | Aggregate request/storage budget, sampled PII-free logs, audit retention, key revocation              | UNVERIFIED    |
 
+### Phone rehearsal checklist
+
+Automated tests cannot decode phone video codecs or reproduce the embedded browsers of messaging
+apps, so the `Phones` row is proven by hand, in Staging, with synthetic non-PII media. Record
+device, OS and browser version, and `VERIFIED` or `FAILED` per step.
+
+Devices: one current iPhone (Safari) and one current Android phone (Chrome), each also opening the
+space link from inside WhatsApp, Instagram and Facebook. Repeat the upload steps once on mobile data
+and once on a weak shared Wi-Fi.
+
+1. Scan the printed QR with the camera app: the page opens at `www`, shows the event title, and the
+   name form starts a session. Note which browser the camera opened.
+2. Photo taken with the phone camera at default settings (HEIC on iPhone): upload, accepted, visible
+   in "Mis recuerdos". In the host dashboard on a Windows or Android browser, check whether the
+   preview renders and what file type the download has.
+3. Video of 20 seconds at default settings: accepted. Note the file size shown before uploading.
+4. Video of 55 to 60 seconds at default settings, then at 4K and at 60 fps when the phone offers
+   them: record which are accepted, which are refused for size, and the exact message. A file
+   accepted by the page but shown as not validated afterwards is a `FAILED` step: keep the device
+   model and recording settings.
+5. Video longer than 60 seconds: refused before uploading, with the duration message.
+6. During a video upload, lock the screen for 20 seconds, then unlock: note whether the upload
+   continues, and that "Intentar de nuevo" finishes it without consuming a second video slot.
+7. During a video upload, switch to airplane mode: the page says there is no connection; back
+   online, "Intentar de nuevo" finishes the same upload.
+8. Reload the page during an upload: the session and "Mis recuerdos" come back; a new upload either
+   starts or explains that uploads are still in progress.
+9. Upload photos quickly one after another until a limit message appears: the message names the
+   limit and says what to do.
+10. Reach the per-guest video limit: the message says videos are exhausted and photos still work.
+11. From WhatsApp, Instagram and Facebook: open the link, start a session, upload one photo and one
+    short video. Then open the same link in Safari or Chrome and confirm what the guest sees (a new
+    session is expected) and that the recovery code restores the first one.
+12. Copy the recovery code with the button and by selecting it; recover the session on the other
+    phone.
+13. Host: download everything as encrypted ZIP batches on a home connection, open one batch on
+    Windows and one on macOS with the passphrase, and compare one photo and one video with the
+    originals on the phone.
+
 Allowed evidence: command name and status, migration version, redacted deployment revision,
 aggregate metrics, browser/device version, HTTP status/code, and audit action name. Prohibited
 evidence: guest media, PII, object keys, signed URLs, recovery codes, request bodies, tokens,
@@ -241,13 +295,19 @@ pnpm test:memories
 pnpm type-check
 pnpm build:app
 pnpm validate:changed
-pnpm db:disposable:reset
-pnpm db:disposable:test
-pnpm db:disposable:memories-concurrency
+pnpm test:db:memories-contracts
+pnpm test:e2e:memories
 pnpm worker:memories:types
 pnpm worker:memories:dry-run
 git diff --check
 ```
+
+`pnpm test:db:memories-contracts` resets the disposable database, then runs the catalog and
+lifecycle pgTAP files and the transaction races. `pnpm test:e2e:memories` runs the guest flow on
+desktop, Android and iOS engines with every guest API mocked; it needs a memory space to render the
+page (`PLAYWRIGHT_USE_CANONICAL_FIXTURES=true`, which requires port 54321 to be free, or
+`MEMORIES_E2E_SLUG` naming an activated space with an open window) and the Playwright WebKit browser
+for the iOS projects. Without a space the flow is skipped, which is not a pass.
 
 A successful repository handoff may be `REPOSITORY_READY`; only owner-operated Staging proof may be
 `STAGING_VERIFIED`. Production requires independent P-256 pairs and capability secret, explicit
