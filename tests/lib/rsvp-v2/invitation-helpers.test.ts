@@ -57,7 +57,7 @@ describe('buildShareMessage', () => {
 			includeLink: true,
 		});
 		expect(result).toContain('Hola Francisco Prueba');
-		expect(result).toContain('XV Años de Ayrin Samantha');
+		expect(result).toContain('mis XV años');
 		expect(result).toContain('https://www.celebra-me.com/i/GBOER6UK');
 	});
 
@@ -67,7 +67,7 @@ describe('buildShareMessage', () => {
 			includeLink: true,
 		});
 		expect(result).toContain('Francisco Prueba');
-		expect(result).toContain('XV Años de Ayrin Samantha');
+		expect(result).toContain('mis XV años');
 		expect(result).toContain('https://www.celebra-me.com/i/GBOER6UK');
 	});
 
@@ -81,15 +81,16 @@ describe('buildShareMessage', () => {
 		expect(result).toContain('Confirma tu asistencia lo antes posible');
 	});
 
-	it('uses the real event title when shareMessages is null', () => {
+	it('uses the real event title when fallback template contains {{evento}}', () => {
 		const result = buildShareMessage({
 			...baseInput,
-			eventTitle: 'XV Años de Ayrin Samantha',
+			eventType: undefined,
+			eventTitle: 'Graduación 2026',
 			shareMessages: null,
 			includeLink: true,
 		});
 
-		expect(result).toContain('XV Años de Ayrin Samantha');
+		expect(result).toContain('Graduación 2026');
 	});
 
 	it('strips {inviteUrl} when includeLink is false', () => {
@@ -170,7 +171,7 @@ describe('buildShareMessage', () => {
 				attendanceStatus: 'confirmed',
 				includeLink: true,
 			});
-			expect(result).toContain('Ya tenemos registrada tu asistencia');
+			expect(result).toMatch(/Ya tenemos registrada (su|tu) asistencia/);
 			expect(result).not.toContain('Confirma tu asistencia');
 		});
 
@@ -185,7 +186,7 @@ describe('buildShareMessage', () => {
 				},
 				includeLink: true,
 			});
-			expect(result).toContain('Ya tenemos registrada tu asistencia');
+			expect(result).toMatch(/Ya tenemos registrada (su|tu) asistencia/);
 			expect(result).not.toContain('Confirma tu asistencia');
 		});
 
@@ -200,7 +201,7 @@ describe('buildShareMessage', () => {
 				},
 				includeLink: true,
 			});
-			expect(result).toContain('Ya tenemos registrada tu asistencia');
+			expect(result).toMatch(/Ya tenemos registrada (su|tu) asistencia/);
 		});
 
 		it('respects truly custom reminder template for confirmed guests', () => {
@@ -287,7 +288,7 @@ describe('buildShareMessage', () => {
 				},
 				includeLink: true,
 			});
-			expect(result).toContain('Ya tenemos registrada tu asistencia');
+			expect(result).toMatch(/Ya tenemos registrada (su|tu) asistencia/);
 			expect(result).not.toContain('Por favor confirma tu asistencia aquí');
 		});
 

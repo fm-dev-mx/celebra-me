@@ -4,11 +4,17 @@ import {
 	DEFAULT_REMINDER_MESSAGE_CONFIRMED,
 	DEFAULT_REMINDER_SETTINGS,
 	LEGACY_REMINDER_TEMPLATE_V1,
+	getDefaultInvitationTemplate,
 	getDefaultReminderTemplate,
+	getSuggestedPresets,
+	smartInsertVariable,
 	isDefaultReminderTemplate,
 	resolveReminderTemplate,
 	resolveReminderSettings,
 	resolveShareDescription,
+	EVENT_SPECIFIC_INVITATION_MESSAGES,
+	EVENT_SPECIFIC_REMINDER_MESSAGES,
+	EVENT_SPECIFIC_REMINDER_CONFIRMED,
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 
 describe('DEFAULT_INVITATION_MESSAGE', () => {
@@ -270,5 +276,122 @@ describe('resolveReminderSettings', () => {
 			DEFAULT_REMINDER_SETTINGS.showWhenDaysBeforeEvent,
 		);
 		expect(result.audience).toBe(DEFAULT_REMINDER_SETTINGS.audience);
+	});
+});
+
+describe('getDefaultInvitationTemplate (event-specific)', () => {
+	it('returns wedding-specific copy for "boda"', () => {
+		const template = getDefaultInvitationTemplate('boda');
+		expect(template).toBe(EVENT_SPECIFIC_INVITATION_MESSAGES.boda);
+		expect(template).toContain('invitación a nuestra boda');
+		expect(template).toContain('{{enlace}}');
+		expect(template).toContain('confirmar su asistencia');
+	});
+
+	it('returns xv-specific copy for "xv"', () => {
+		const template = getDefaultInvitationTemplate('xv');
+		expect(template).toBe(EVENT_SPECIFIC_INVITATION_MESSAGES.xv);
+		expect(template).toContain('mis XV años');
+	});
+
+	it('returns baptism-specific copy for "bautizo"', () => {
+		const template = getDefaultInvitationTemplate('bautizo');
+		expect(template).toBe(EVENT_SPECIFIC_INVITATION_MESSAGES.bautizo);
+		expect(template).toContain('Bautismo');
+	});
+
+	it('returns baby shower copy for "baby-shower"', () => {
+		const template = getDefaultInvitationTemplate('baby-shower');
+		expect(template).toBe(EVENT_SPECIFIC_INVITATION_MESSAGES['baby-shower']);
+		expect(template).toContain('Baby Shower');
+	});
+
+	it('returns first communion copy for "primera-comunion"', () => {
+		const template = getDefaultInvitationTemplate('primera-comunion');
+		expect(template).toBe(EVENT_SPECIFIC_INVITATION_MESSAGES['primera-comunion']);
+		expect(template).toContain('Primera Comunión');
+	});
+
+	it('returns birthday copy for "cumple"', () => {
+		const template = getDefaultInvitationTemplate('cumple');
+		expect(template).toBe(EVENT_SPECIFIC_INVITATION_MESSAGES.cumple);
+		expect(template).toContain('cumpleaños');
+	});
+
+	it('does not include {{evento}} in any event-specific invitation templates to avoid redundant titles', () => {
+		for (const msg of Object.values(EVENT_SPECIFIC_INVITATION_MESSAGES)) {
+			expect(msg).not.toContain('{{evento}}');
+		}
+	});
+
+	it('falls back to DEFAULT_INVITATION_MESSAGE for undefined or unknown type', () => {
+		expect(getDefaultInvitationTemplate(undefined)).toBe(DEFAULT_INVITATION_MESSAGE);
+		expect(getDefaultInvitationTemplate('evento-desconocido')).toBe(DEFAULT_INVITATION_MESSAGE);
+	});
+});
+
+describe('getDefaultReminderTemplate (event-specific)', () => {
+	it('returns event-specific pending reminder for "boda"', () => {
+		const template = getDefaultReminderTemplate('pending', 'boda');
+		expect(template).toBe(EVENT_SPECIFIC_REMINDER_MESSAGES.boda);
+		expect(template).toContain('nuestro matrimonio');
+	});
+
+	it('returns event-specific confirmed reminder for "boda"', () => {
+		const template = getDefaultReminderTemplate('confirmed', 'boda');
+		expect(template).toBe(EVENT_SPECIFIC_REMINDER_CONFIRMED.boda);
+		expect(template).toContain('nuestro matrimonio');
+		expect(template).toContain('Ya tenemos registrada su asistencia');
+	});
+
+	it('returns event-specific pending reminder for "xv"', () => {
+		const template = getDefaultReminderTemplate('pending', 'xv');
+		expect(template).toBe(EVENT_SPECIFIC_REMINDER_MESSAGES.xv);
+		expect(template).toContain('mis XV años');
+	});
+
+	it('returns event-specific confirmed reminder for "xv"', () => {
+		const template = getDefaultReminderTemplate('confirmed', 'xv');
+		expect(template).toBe(EVENT_SPECIFIC_REMINDER_CONFIRMED.xv);
+		expect(template).toContain('la cuenta regresiva para mis XV años');
+	});
+});
+
+describe('smartInsertVariable', () => {
+	it('adds leading space when inserting after a word without space', () => {
+		const result = smartInsertVariable('Hola', 4, 4, '{{invitado}}');
+		expect(result.newText).toBe('Hola {{invitado}}');
+		expect(result.wasDuplicate).toBe(false);
+	});
+
+	it('does not add double space if space is already present', () => {
+		const result = smartInsertVariable('Hola ', 5, 5, '{{invitado}}');
+		expect(result.newText).toBe('Hola {{invitado}}');
+		expect(result.wasDuplicate).toBe(false);
+	});
+
+	it('adds trailing space if following text is immediately adjacent', () => {
+		const result = smartInsertVariable('Holaamigos', 4, 4, '{{invitado}}');
+		expect(result.newText).toBe('Hola {{invitado}} amigos');
+	});
+
+	it('does not add trailing space if followed by punctuation or newline', () => {
+		const result = smartInsertVariable('Hola,', 4, 4, '{{invitado}}');
+		expect(result.newText).toBe('Hola {{invitado}},');
+	});
+
+	it('prevents consecutive duplicate insertions', () => {
+		const result = smartInsertVariable('Hola {{invitado}}', 17, 17, '{{invitado}}');
+		expect(result.newText).toBe('Hola {{invitado}}');
+		expect(result.wasDuplicate).toBe(true);
+	});
+});
+
+describe('getSuggestedPresets', () => {
+	it('returns recommended, warm, and brief presets for given eventType', () => {
+		const presets = getSuggestedPresets('boda');
+		expect(presets).toHaveLength(3);
+		expect(presets.map((p) => p.id)).toEqual(['recommended', 'warm', 'brief']);
+		expect(presets[0].invitation).toBe(EVENT_SPECIFIC_INVITATION_MESSAGES.boda);
 	});
 });

@@ -44,12 +44,12 @@ function resolveDaysUntilEventString(dateStr: string | null, today: Date): strin
 	return String(days);
 }
 
-function resolveEventTimingText(dateStr: string | null, eventTitle: string, today: Date): string {
+function resolveEventTimingText(dateStr: string | null, _eventTitle: string, today: Date): string {
 	const days = resolveDaysUntilEvent(dateStr, today);
-	if (days === null) return '';
-	if (days > 1) return `Te recordamos que faltan ${days} días para ${eventTitle}.`;
-	if (days === 1) return `Te recordamos que falta 1 día para ${eventTitle}.`;
-	return `Te recordamos que hoy es ${eventTitle}.`;
+	if (days === null || days < 0) return '';
+	if (days > 1) return `Faltan ${days} días para la celebración.`;
+	if (days === 1) return `Falta 1 día para la celebración.`;
+	return `¡Hoy es el gran día de la celebración!`;
 }
 
 function resolveRsvpDeadlineText(deadlineStr: string | null): string {
