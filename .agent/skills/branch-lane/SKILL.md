@@ -7,7 +7,7 @@ version: 2.2.2
 absorbed_skills: [release-prepare]
 when_to_use:
   - User asks to promote develop to main / fast-forward main / "promueve a main"
-  - Solo trunk work on develop is ready for production
+  - Work integrated into develop is ready for production
   - User asks to prepare a release or release candidate (former release-prepare)
   - Version bump / changelog promotion for a checkpoint
   - Production hotfix already on main must be absorbed into develop (recovery)
@@ -169,7 +169,8 @@ Hard stops (`Hard blocked`) — non-bypassable until corrected:
 
 - Dirty working tree for Git write modes (unless the current task explicitly authorizes an
   exception)
-- Mid merge/rebase/cherry-pick/bisect or detached HEAD
+- Mid merge/rebase/cherry-pick/bisect, or detached HEAD for Git write modes (run them from
+  Integration)
 - Force-push / rebase / reset-based sync / automatic `ours`/`theirs`
 
 ### 2. Automatic mode selection
@@ -283,7 +284,7 @@ Always present:
 
 ## Shared hard constraints
 
-- No force-push. No history rewrite of `main` or `develop`. No rebase support.
+- No force-push. No history rewrite of `main` or `develop`; trunk sync is merge-only.
 - No commit/tag/push/deploy/publish unless the **current task** authorizes that exact operation.
 - User-owned working tree: never stash/discard/overwrite without authorization.
 - Branch/stash cleanup → `git-stash-branch-cleanup`, not this skill.
@@ -294,9 +295,10 @@ Always present:
 
 ## Cross-mode flow
 
-- Habitual: work on `develop` → (optional `release-prepare`) → push `develop` → parity → (auto
-  `database-parity` + diagnosis) → checkpoint → authorize → **promote**.
-- Recovery: parity → (auto `database-parity` if needed) → authorize → **merge** sync → later promote
-  when FF possible.
+- Habitual: task branches integrated into `develop` → (optional `release-prepare`) → push `develop`
+  → parity → (auto `database-parity` + diagnosis) → checkpoint → authorize → **promote** →
+  back-merge.
+- Back-merge / recovery: parity → (auto `database-parity` if needed) → authorize → **sync** (FF
+  after a release; `--no-ff` merge only when the branches diverged) → later promote.
 - Release-prepare: advisory parity only; require parity clearance before a later DB-sensitive
   promote.

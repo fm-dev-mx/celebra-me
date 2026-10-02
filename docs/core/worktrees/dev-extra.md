@@ -1,6 +1,6 @@
 # dev-extra worktree
 
-**Path:** `<worktrees-root>\dev-extra` (sibling `<repo-dir>-worktrees/` directory of the repository root; see `docs/core/git-governance.md` for the reference-machine example)  
+**Path:** `<worktrees-root>\dev-extra`  
 **Executable SSOT:** [`scripts/shared/worktree-lane.ts`](../../../scripts/shared/worktree-lane.ts)  
 **Policy SSOTs:** [`git-governance.md`](../git-governance.md),
 [`env-workflow.md`](../../env-workflow.md),
@@ -28,11 +28,6 @@ See [`git-governance.md`](../git-governance.md) for the canonical lane lifecycle
 - Parallel Local feature/fix work, Local `pnpm dev`
 - Dev URL: `http://localhost:4322/` (stable lane port; do not use `:4321` while `dev-local` is up)
 
-## Restrictions
-
-- Path ≠ privilege
-- Same mutation rules as other Local lanes
-
 ## Agents
 
-Explicit `cwd`. Human navigation: `lane extra`.
+Explicit `cwd`.

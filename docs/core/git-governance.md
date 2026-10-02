@@ -1,189 +1,83 @@
-# Git Governance: Commit Policy
+# Git Governance: Branch, Commit and Release Policy
 
 **Status:** Active
 
-**Last Updated:** 2026-08-24
+**Last Updated:** 2026-10-01
 
-**Change Note:** Aligns the protected-branch rulesets and CI triggers with PR-only integration on
-`develop` and checked fast-forward promotion to `main`.
+**Change Note:** Consolidates one integration model: task branches in development lanes,
+fast-forward integration into `develop` from Integration, release pull request into `main`, and a
+fast-forward back-merge after each release.
 
 ## Overview
 
-This document owns the human branch, commit, release, and production-promotion policy. Validation
-tiers are owned by [`.agent/rules/gatekeeper.md`](../../.agent/rules/gatekeeper.md); agent execution
-rules are owned by [`.agent/rules/workflow.md`](../../.agent/rules/workflow.md).
+This document is the single owner of branch, lane lifecycle, commit, integration and
+production-promotion policy. Validation tiers are owned by
+[`.agent/rules/gatekeeper.md`](../../.agent/rules/gatekeeper.md); Git-write authorization and
+`path ≠ privilege` are owned by [`.agent/rules/git-safety.md`](../../.agent/rules/git-safety.md);
+release versioning and changelog policy are owned by [`release-process.md`](release-process.md).
 
-The repository uses a **linear two-branch workflow** with annotated tags for releases and a
-**four-lane worktree model**:
+## Branches
 
-- `develop` is the active protected trunk for daily development. Changes land through pull requests
-  after the required checks pass.
-- `main` is the protected production branch, updated only via fast-forward from `develop`.
-- Persistent native Git worktrees (repository root `celebra-me` plus sibling `<repo-dir>-worktrees/`
-  development lanes `dev-local`, `dev-preview`, `dev-extra`) isolate Integration and three
-  development lanes.
-- Ephemeral task branches (`feat/*`, `fix/*`, `candidate/*`) are checked out in development lanes.
-  Permanent lane branches are forbidden.
-- Worktree location grants no environment privilege (`path ≠ privilege`).
-- Runtime defaults: Integration / `dev-local` / `dev-extra` → Local Supabase; `dev-preview` →
-  Preview Supabase via `.env.preview.local`. Runtime connectivity is not mutation authorization.
-- Annotated tags (`vX.Y.Z`) mark versions/checkpoints.
-- Release history is documented in `CHANGELOG.md`. Layered changelog policy (system vs invitation vs
-  database) is owned by [`release-process.md`](release-process.md).
-
-The repository relies on conventional commits, hook-based branch protection, local validation, and
-CI push/PR validation. Planning records under `.agent/plans/` remain useful for human coordination,
-but commits are no longer staged or created through a dedicated governance runner.
-
-The goal is to keep hard gates narrow and objective while still giving developers useful feedback
-about commit hygiene.
+- `develop` is the trunk. It accepts direct fast-forward pushes from Integration; Repository CI runs
+  on every push and is the integration gate. It blocks deletion and non-fast-forward updates.
+- `main` is production. It changes only through the release pull request from `develop`, which
+  requires `Repository Policy` and `Application Suite`. Direct commits and pushes are blocked.
+- Task branches (`feat/*`, `fix/*`, `candidate/*`) are ephemeral. Persistent lane branches are
+  forbidden.
+- Annotated tags (`vX.Y.Z`) mark releases.
 
 ## Four-Lane Worktree Model
 
-Celebra-me uses native Git worktrees to establish four persistent, reusable operational lanes:
+Persistent native Git worktrees isolate parallel work. `<worktrees-root>` is the sibling
+`<repo-dir>-worktrees/` directory, derived by
+[`scripts/shared/worktree-lane.ts`](../../scripts/shared/worktree-lane.ts).
 
-1. **Integration** (repository root): Canonical worktree on `develop`. Integration, release
-   preparation, trunk operations. Runtime default: Local.
-2. **dev-local** (`<worktrees-root>\dev-local`): Primary feature/fix development on ephemeral task
-   branches. Runtime default: Local.
-3. **dev-preview** (`<worktrees-root>\dev-preview`): Preview development and hosted-validation
-   affinity lane on ephemeral task branches. Runtime default: Preview Supabase via
-   `.env.preview.local`. Preferred lane for authorized Preview operations; path still grants no
-   mutation privilege.
-4. **dev-extra** (`<worktrees-root>\dev-extra`): Additional parallel Local development lane on
-   ephemeral task branches. Runtime default: Local.
+| Lane          | Path                           | Purpose                                     | Runtime | Port |
+| ------------- | ------------------------------ | ------------------------------------------- | ------- | ---- |
+| Integration   | repository root                | Stays on `develop`: integration and release | Local   | 4321 |
+| `dev-local`   | `<worktrees-root>/dev-local`   | Primary feature/fix lane                    | Local   | 4321 |
+| `dev-extra`   | `<worktrees-root>/dev-extra`   | Parallel Local lane                         | Local   | 4322 |
+| `dev-preview` | `<worktrees-root>/dev-preview` | Preview validation lane                     | Preview | 4323 |
 
-`<worktrees-root>` is the sibling `<repo-dir>-worktrees/` directory next to the repository root —
-the tooling derives it from the checkout root and does not require any particular parent directory
-(see `scripts/shared/worktree-lane.ts`).
+Lane cards with environment-file facts live in [`docs/core/worktrees/`](worktrees/). Runtime
+defaults are described in [`docs/env-workflow.md`](../env-workflow.md); runtime connectivity is not
+mutation authorization.
 
-Lane-specific operational cards (facts only; policy stays centralized):
-[`docs/core/worktrees/`](worktrees/).
+## Task Lifecycle
 
-### Core Invariants
-
-- **Worktrees are persistent**: Canonical directory locations (root for Integration; sibling
-  `celebra-me-worktrees/` directory for development lanes) remain on disk.
-- **Task branches are ephemeral**: Development lanes operate on normal task-scoped branches
-  (`feat/*`, `fix/*`, `candidate/*`). Persistent lane branches are forbidden.
-- **Worktree location does NOT grant environment authorization**: Being inside `dev-preview` does
-  not give permission to mutate Preview or Production databases. Environment access is determined
-  solely by explicit task scope, target environment, operation risk, and safety rules.
-- **Runtime defaults are lane-specific**: Local lanes load `.env` / `.env.local`. The Preview lane
-  overlays `.env.preview.local` and sets `CELEBRA_RUNTIME_TARGET=preview`. See
-  [`docs/env-workflow.md`](../env-workflow.md).
-- **Preview remains a validation environment for mutations**: Preview migrations, syncs, invitation
-  updates, and E2E provision/publish still require explicit authorization and existing guards.
-- **Production remains explicitly restricted**: Production mutations require explicit approval and
-  must follow the fast-forward promotion workflow from `develop`.
-
-### Canonical Lane Lifecycle
-
-Every task assigned to a development lane (`dev-local`, `dev-preview`, `dev-extra`) follows this
-lifecycle:
-
-1. **Assign Task**: Verify that the targeted lane is idle (in `detached HEAD`) and clean. Create the
-   task branch explicitly from `develop`:
+1. **Start** in an idle development lane (detached HEAD on `develop`, clean):
 
    ```bash
    git switch -c <task-branch> develop
    ```
 
-   _Never create a task branch implicitly from a lane's detached HEAD._
+   One active task = one branch = one worktree. Never switch, stash, reset, clean or repurpose
+   another active lane.
 
-2. **Active Work**: Enforce the rule: `1 active task = 1 branch = 1 worktree`. An agent or developer
-   must not switch, stash, reset, clean, or repurpose another active lane.
+2. **Stay current** when needed: `pnpm lane:sync` previews and `pnpm lane:sync -- --apply` fetches
+   `origin/develop` and rebases (or `--ff-only` merges) the task branch.
 
-3. **Release Lane**: Once work is merged or preserved, detach the lane back to `develop`:
+3. **Integrate** from Integration, which keeps `develop` checked out (Git does not allow the same
+   branch in two worktrees):
+
+   ```bash
+   git pull --ff-only origin develop
+   git merge --ff-only <task-branch>
+   git push origin develop
+   ```
+
+   Rebase the task branch first if the fast-forward is refused. Pushing a task branch to `origin` is
+   optional; CI does not run on task branches.
+
+4. **Release the lane** after integration:
+
    ```bash
    git switch --detach develop
-   ```
-   Delete the task branch only after Git confirms it has been integrated:
-   ```bash
    git branch -d <task-branch>
    ```
 
-### Human Developer Ergonomics & Navigation
-
-To navigate between worktrees efficiently in PowerShell, add the following function to your
-PowerShell profile (`$PROFILE`). It is a **reference-machine example** (this repo's current
-development machine) — adjust `$root`/`$worktrees` to your own clone's parent directory:
-
-```powershell
-function lane {
-  param(
-    [ValidateSet('main', 'local', 'preview', 'extra')]
-    [string]$Name = 'main'
-  )
-
-  $root = Resolve-Path (Join-Path $PSScriptRoot "..")
-  $worktrees = Resolve-Path (Join-Path $root "..\celebra-me-worktrees")
-  $paths = @{
-    main    = $root
-    local   = "$worktrees\dev-local"
-    preview = "$worktrees\dev-preview"
-    extra   = "$worktrees\dev-extra"
-  }
-
-  Set-Location $paths[$Name]
-  git status -sb
-}
-```
-
-Install / verify:
-
-1. Open `$PROFILE` (`notepad $PROFILE` or your editor).
-2. Paste the `lane` function above (update `$root`/`$worktrees` to your clone path).
-3. Reload: `. $PROFILE`
-4. Verify: `Get-Command lane`, then `lane preview` and confirm `pwd` / `git status -sb`.
-
-_Note: Agents do not use shell functions and must always specify explicit working directory paths
-(`cwd`)._
-
-### Lane synchronization observability
-
-Git hooks do not query database status. Use `pnpm dbs` for a manual read. The explicitly invoked
-lane-sync command retains its bounded status output.
-
-Canonical deterministic path after aligning a lane with `develop`:
-
-```bash
-pnpm lane:sync                 # read-only synchronization preview
-pnpm lane:sync -- --apply      # authorized synchronization after preflight
-```
-
-With `--apply`, this fetches `origin/develop`, rebases (or `--ff-only` merges) the current branch,
-then runs compact managed status unless `CELEBRA_SKIP_MANAGED_STATUS=1` or `--skip-status` is set.
-Remote DB unavailability never fails the Git synchronization step.
-
-### Worktree Inspection Tooling
-
-Inspect the state, active branch, detached HEAD, clean/dirty status, runtime default, and alignment
-with `develop` across all four lanes at any time:
-
-```bash
-pnpm ops worktree-status
-```
-
-This command is strictly read-only and will never mutate Git history, worktrees, environment
-variables, or database state.
-
-### Concurrent Local Operations
-
-To support concurrent work across worktrees without friction or collision:
-
-- **Server Ports**: Astro binds a stable lane port (`4321` Integration/`dev-local`, `4322`
-  `dev-extra`, `4323` `dev-preview`) with `strictPort`, so parallel worktrees do not silently share
-  `:4321` and then 403 absolute `/@fs/` asset paths from another lane. Override with `PORT` /
-  `ASTRO_PORT` when needed.
-- **Local Database**: Local-runtime worktrees share the persistent Local Supabase instance
-  (`127.0.0.1:54322`).
-- **Preview runtime**: `dev-preview` talks to the hosted Preview Supabase project by default; it
-  does not share Local DB application state.
-- **Disposable Test Database**: Ephemeral test operations spin up the disposable container
-  (`127.0.0.1:54332`) on demand without affecting persistent local state.
-- **Preview Mutations**: Concurrent Preview mutations and Vercel Preview deployments must be
-  authorized per-task and coordinated to prevent environment collision.
+`pnpm ops worktree-status` reports every lane read-only. Astro uses the lane port with `strictPort`;
+override it with `ASTRO_PORT`. Local-runtime lanes share the persistent Local Supabase database.
 
 ## Commit Contract
 
@@ -237,7 +131,7 @@ Examples:
 ```text
 feat(rsvp): add guest dietary restrictions to submission flow
 fix(theme-editor): prevent duplicate palette saves
-docs(git): document audit-only commit warnings
+docs(git): document advisory commit warnings
 refactor(theme): split invitation token parsing from page loader
 ```
 
@@ -302,7 +196,7 @@ chore(repo): tweak project files
 - more fixes
 ```
 
-## Audit-Only Warnings
+## Advisory Warnings
 
 Subjective quality checks remain advisory. The repository warns, but does not block, when a commit:
 
@@ -321,108 +215,59 @@ judgment.
 | ----------------------------------------- | ----------------------------------------------------------------------------------- |
 | `.agent/plans/README.md`                  | Task Contract, Goal protocol, Handoff Contract, durable tracked plans               |
 | `.agent/rules/gatekeeper.md`              | Validation tiers and review/remediation gates                                       |
-| `.agent/rules/workflow.md`                | Agent operating procedure and authorization handoff                                 |
+| `.agent/rules/git-safety.md`              | Git-write authorization and `path ≠ privilege`                                      |
 | `commitlint.config.cjs`                   | Commit message validation and quality rules                                         |
-| `scripts/validate-commits.mjs`            | Audit-only validation and commit-hygiene warnings for commit ranges                 |
-| `.husky/pre-commit`                       | Branch protection and staged-file checks                                            |
-| `.husky/pre-push`                         | Commit-range validation, conditional visual certification and Git LFS handoff       |
+| `scripts/validate-commits.mjs`            | Commit-range commitlint replay plus advisory hygiene warnings                       |
+| `.husky/pre-commit`                       | Detached-HEAD and `main` guard, staged-file checks                                  |
+| `.husky/pre-push`                         | Commit-range validation, visual certification for `develop`/`main`, Git LFS handoff |
 | `.github/workflows/commit-validation.yml` | Policy, static/build, unit, database and browser jobs, aggregate result and metrics |
 
 ## Active Hooks and CI Sequence
 
-1. `pre-commit` blocks detached HEAD and direct commits to `main` (subject to the existing main
-   exception), then runs `pnpm lint-staged` and `pnpm test:changed`. Failures propagate.
+1. `pre-commit` blocks detached HEAD and direct commits to `main`, then runs `pnpm lint-staged` and
+   `pnpm test:changed`.
 2. `commit-msg` runs `commitlint` against the pending commit message on all branches.
-3. `pre-push` validates the pushed commit range with `scripts/validate-commits.mjs` in audit-only
-   mode, runs exact-SHA visual certification only for visual-impact ranges, then passes the same ref
-   updates and remote arguments to Git LFS. New task branches pushed to `origin` use the common
-   ancestor with `origin/develop`, the repository's default integration target. Existing remote
-   branches use the common ancestor with their remote SHA. New `main`/`develop` refs, tags and other
-   remotes retain the main-first fallback; unavailable develop ancestry falls back to main, develop,
-   then the root as before. This does not infer a future PR's target from its branch name.
-4. CI workflow `Repository CI` (`.github/workflows/commit-validation.yml`) runs on pushes to
-   `develop`, on pull requests targeting `main`, and by manual dispatch. The `develop` push is the
-   integration gate and the later `develop` to `main` pull request is the release gate. Comparison
-   mode runs **Repository Policy**, the **Application** static/unit/database matrix and
-   **Application / browser**. **Application Suite** aggregates all three dependencies; **Validation
-   metrics** records their results. Candidate mode prepares visual evidence and deliberately skips
-   policy/application certification. It is not a release check. See the canonical
-   [validation procedure](validation-procedures.md#remote-ci-coverage-and-efficiency) for commands,
-   validation scope and the distinction from `pnpm run ci`.
-5. No post-commit, post-merge or post-rewrite hook queries invitation status. Use `pnpm dbs`
-   manually.
+3. `pre-push` replays commitlint over the pushed range with `scripts/validate-commits.mjs` (hygiene
+   warnings stay advisory), runs exact-SHA visual certification only when a visual-impact range is
+   pushed to `develop` or `main`, then hands the ref updates to Git LFS. New task branches use the
+   common ancestor with `origin/develop` as the range base.
+4. `Repository CI` (`.github/workflows/commit-validation.yml`) runs on pushes to `develop`, on pull
+   requests targeting `main`, and by manual dispatch. See the
+   [validation procedure](validation-procedures.md#remote-ci-coverage-and-efficiency) for scope and
+   the distinction from `pnpm run ci`.
 
-## Guarantees
-
-- Commit messages must follow conventional-commit structure.
-- Subjects must describe the actual change with a concrete target.
-- Commit hygiene warnings stay non-blocking so developers still get feedback without hidden
-  automation side effects.
-- Direct commits and pushes to `main` are blocked. Direct fast-forward pushes to `develop` are the
-  integration path and run Repository CI after arrival. Required remote enforcement is:
-  - `develop` blocks deletion and non-fast-forward updates; a red integration remains in Preview and
-    cannot satisfy the release pull request.
-  - `main` requires a pull request, `Repository Policy`, and `Application Suite`.
-  - both branches block deletion and non-fast-forward updates.
-- Verify the live rulesets before each production promotion; documentation is not proof that remote
-  enforcement is active.
-- Atomicity is expected by policy, but enforced through warnings and review rather than a rigid
-  local gate.
-
-### Observed remote enforcement (2026-09-13)
-
-Read-only `gh api repos/fm-dev-mx/celebra-me/rules/branches/<branch>` showed deletion and
-non-fast-forward protection on both branches, and required status checks on `main`. `develop`
-returned no pull-request or required-status-check rule. This is an enforcement gap against the
-policy above, not permission to bypass it. Repairing remote protection is a separate authorized
-operation; re-query effective rules before promotion rather than relying on this dated observation.
+Hooks never query database status; use `pnpm dbs` manually.
 
 ## Production Promotion
 
-Agent-facing procedure (interactive orchestrator: default FF promote, optional release prep, sync
-recovery, auto database-parity routing):
-[`.agent/skills/branch-lane/SKILL.md`](../../.agent/skills/branch-lane/SKILL.md). Database-sensitive
-ranges automatically invoke
-[`.agent/skills/database-parity/SKILL.md`](../../.agent/skills/database-parity/SKILL.md) before
-remote integration or promotion. This section remains the human Git policy SSOT.
-
-### Pull-request promotion flow
-
-When a release is ready:
+Agents use [`.agent/skills/branch-lane/SKILL.md`](../../.agent/skills/branch-lane/SKILL.md);
+database-sensitive ranges route through
+[`.agent/skills/database-parity/SKILL.md`](../../.agent/skills/database-parity/SKILL.md). Run every
+step from Integration:
 
 ```bash
-# 1. Ensure develop is current
-git checkout develop
+# 1. Open the release PR from a current develop and wait for the required checks
 git pull --ff-only origin develop
-
-# 2. Open a PR from develop to main and wait for the required checks
 gh pr create --base main --head develop --title "release: <primary outcome>"
 
-# 3. Merge in GitHub, verify the automatic deployment, then tag the deployed main SHA
+# 2. Merge it in GitHub (merge commit), verify the deployment, then back-merge
+git pull --ff-only origin develop
+git merge --ff-only origin/main
+git push origin develop
+
+# 3. Tag the deployed main SHA
 git tag -a vX.Y.Z -m "Release vX.Y.Z — summary"
 git push origin vX.Y.Z
 ```
 
 Rules:
 
-- Release PR titles describe the primary shipped outcome rather than the mechanical branch
-  promotion. Their bodies list included PRs, material risks, visual/schema/content impact,
-  separately authorized operations, and expected CI/smoke evidence without ceremonial repetition.
-- Tags are annotated (`-a`) to carry release metadata.
-- Never rewrite or force-push `main` without explicit approval.
-- `develop` permits direct fast-forward integration pushes; `main` requires the release pull request
-  and canonical checks. Inspect effective remote rules before writing; never use a bypass.
-- Rollback: create a revert branch, validate it through a PR, and merge it normally.
-- Direct commits on `main` remain blocked by `pre-commit`; direct pushes are rejected remotely.
-
-### Production tip recovery (when `main` drifted)
-
-If `main` already contains commits that are not on `develop` (for example an emergency hotfix
-committed directly to production), restore the invariant before the next FF promote:
-
-1. Merge `main` into `develop` (no rebase, no reset-hard of trunk).
-2. Resolve conflicts deliberately on `develop`.
-3. Validate on `develop`, then resume the Fast-Forward Flow.
-
-Agents use `branch-lane` mode `sync-main-into-develop` for that recovery. Prefer avoiding this path
-by landing hotfixes on `develop` first.
+- The back-merge is a fast-forward because `develop` already contains everything except the release
+  merge commit. If it is refused, `develop` and `main` diverged: merge `origin/main` into `develop`
+  (no rebase, no reset), resolve deliberately, validate, and push (`branch-lane` mode
+  `sync-main-into-develop`).
+- Release PR titles describe the primary shipped outcome. Bodies list included changes, material
+  risks, visual/schema/content impact and separately authorized operations.
+- Never rewrite or force-push `main` or `develop`; never use a bypass.
+- Land hotfixes on `develop` first, then release.
+- Rollback: revert on a task branch, integrate into `develop`, and release normally.

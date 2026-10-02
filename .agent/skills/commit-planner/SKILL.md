@@ -123,9 +123,9 @@ Treat these as commit-hygiene red flags:
   (agent never runs it),
 - bundling frontend markup/attribute changes with backend interface or data-layer changes.
 
-Treat audit-only warnings as review prompts, not hard gates: `3+` files with no body, non-bulleted
-bodies on multi-file commits, commits spanning multiple top-level areas, and very broad `10+` file
-changes all deserve an explicit atomicity check.
+Treat advisory hygiene warnings as review prompts, not hard gates: `3+` files with no body,
+non-bulleted bodies on multi-file commits, commits spanning multiple top-level areas, and very broad
+`10+` file changes all deserve an explicit atomicity check.
 
 ## Draft Repository-Compliant Messages
 
@@ -247,8 +247,9 @@ commits):
 ### Per-commit procedure (Option A)
 
 Run inside a Git Safety session: `pnpm agent:git-safety:start` before staging and
-`pnpm agent:git-safety:finish --authorized-operation commit` after the last commit. A session
-verifies one authorized operation; switch branches in a separate session.
+`pnpm agent:git-safety:finish --authorized-operation=commit` after the last commit. If the session
+also created the task branch, declare both:
+`--authorized-operation=branch-switch,commit --branch=<name>`.
 
 1. **Partition Index** — inspect the staged set before each commit. Preserve unrelated staged paths
    and partially staged hunks. If partitioning needs unstaging, use

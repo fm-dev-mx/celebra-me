@@ -1,6 +1,6 @@
 # Integration worktree
 
-**Path:** `<repo-root>` (repository root; see `docs/core/git-governance.md` for the reference-machine example)  
+**Path:** `<repo-root>`  
 **Executable SSOT:** [`scripts/shared/worktree-lane.ts`](../../../scripts/shared/worktree-lane.ts)  
 **Policy SSOTs:** [`git-governance.md`](../git-governance.md),
 [`env-workflow.md`](../../env-workflow.md), [`database-workflow.md`](../../database-workflow.md),
@@ -29,14 +29,9 @@ Local Supabase (`CELEBRA_RUNTIME_TARGET=local`).
 
 ## Common operations
 
-- Trunk commits on `develop`, release prep, `pnpm ops worktree-status`
+- Fast-forward integration into `develop`, release prep, `pnpm ops worktree-status`
 - Authorized Local DB workflows; authorized Preview/Production ops when tasked
-
-## Restrictions
-
-- Path ≠ privilege
-- Production mutations require explicit authorization and Production workflows
 
 ## Agents
 
-Use an explicit `cwd` of this root. Do not rely on the human `lane` helper.
+Use an explicit `cwd` of this root.

@@ -1,6 +1,6 @@
 # dev-preview worktree
 
-**Path:** `<worktrees-root>\dev-preview` (sibling `<repo-dir>-worktrees/` directory of the repository root; see `docs/core/git-governance.md` for the reference-machine example)  
+**Path:** `<worktrees-root>\dev-preview`  
 **Executable SSOT:** [`scripts/shared/worktree-lane.ts`](../../../scripts/shared/worktree-lane.ts)  
 **Policy SSOTs:** [`git-governance.md`](../git-governance.md),
 [`env-workflow.md`](../../env-workflow.md), [`database-workflow.md`](../../database-workflow.md),
@@ -39,13 +39,6 @@ See [`git-governance.md`](../git-governance.md) for the canonical lane lifecycle
 - Preferred lane for authorized `pnpm db:preview:*`, Preview `invitation:release`, Preview E2E
 - Read-only `pnpm db:preview:audit` when credentials resolve
 
-## Restrictions
-
-- Runtime connectivity ≠ mutate privilege
-- `db:migrate -- --target preview`, sync-invitations, invitation apply, E2E provision/publish still need
-  existing flags, guards, and task authorization
-- Never treat this path as Production access
-
 ## Agents
 
-Explicit `cwd`. Human navigation: `lane preview`.
+Explicit `cwd`.

@@ -178,8 +178,8 @@ not replace these repository-wide checks or the full release pipeline.
 Close the mutable agent session with `pnpm agent:git-safety:finish` after Tier C when a session was
 started. See `.agent/rules/git-safety.md`.
 
-The pre-push hook retains the main guard, commit-range validation and Git LFS handoff; do not move
-tests or type-checks into pre-push.
+The pre-push hook keeps commit-range validation, visual certification for `develop`/`main` pushes
+and the Git LFS handoff; do not move tests or type-checks into pre-push.
 
 #### Remote CI coverage and efficiency
 
