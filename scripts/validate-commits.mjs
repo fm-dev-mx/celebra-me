@@ -168,7 +168,7 @@ function validateCommit(commitHash) {
 			console.warn(`  ⚠️  ${warning}`);
 		}
 		console.log('  ⚠️  Commit passed hard validation with audit warnings');
-		return false;
+		return true;
 	}
 	console.log('  ✅ Commit valid');
 	return true;
@@ -186,7 +186,12 @@ function main() {
 		console.error('❌ Unable to list commits in the provided range');
 		process.exit(1);
 	}
-	const hashes = commitsOutput.stdout ? commitsOutput.stdout.split('\n').filter(Boolean) : [];
+	const hashes = commitsOutput.stdout
+		? commitsOutput.stdout
+				.split(/\r?\n/)
+				.map((line) => line.trim())
+				.filter(Boolean)
+		: [];
 	if (!hashes.length) {
 		console.log('No commits found in range');
 		process.exit(0);
@@ -200,13 +205,11 @@ function main() {
 	}
 
 	if (!allValid) {
-		console.log('\n🔍 Commit validation found issues (audit-only mode).');
-		console.log('💡 Note: These findings do not block the push, but they should be fixed.');
-	} else {
-		console.log('\n✅ Commit validation completed');
+		console.error('\n❌ Commit validation failed; hygiene warnings stay advisory.');
+		process.exit(1);
 	}
 
-	process.exit(0);
+	console.log('\n✅ Commit validation completed');
 }
 
 const isMain =
@@ -216,5 +219,3 @@ const isMain =
 if (isMain) {
 	main();
 }
-
-export { validateCommit, validateCommitMessage };

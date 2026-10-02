@@ -81,23 +81,10 @@ current task.
 
 ---
 
-## Four-Lane Worktree Structure & Path Privilege Invariant
+## Worktree Lanes & Path Privilege Invariant
 
-The repository operates with four native Git worktree lanes:
-
-- **Integration**: canonical root worktree (the repository root, trunk `develop`). Runtime default:
-  Local.
-- **dev-local**: persistent reusable worktree in the sibling `<repo-dir>-worktrees/` directory
-  (segment `dev-local`) using ephemeral task branches. Runtime default: Local.
-- **dev-preview**: persistent reusable worktree in the sibling `<repo-dir>-worktrees/` directory
-  (segment `dev-preview`) using ephemeral task branches. Runtime default: Preview Supabase via
-  `.env.preview.local`.
-- **dev-extra**: persistent reusable worktree in the sibling `<repo-dir>-worktrees/` directory
-  (segment `dev-extra`) using ephemeral task branches. Runtime default: Local.
-
-The tooling derives lane paths from the checkout root (`scripts/shared/worktree-lane.ts`) and does
-not require any specific parent directory. See `docs/core/git-governance.md` for the labeled
-reference-machine example layout.
+The four lanes and the task lifecycle are owned by
+[`docs/core/git-governance.md`](../../docs/core/git-governance.md#four-lane-worktree-model).
 
 ### Task Checkout Boundary
 
@@ -149,8 +136,8 @@ lane, agents **must** establish the following state:
 **Lane Invariants:**
 
 - `1 active task = 1 branch = 1 worktree`
-- An agent can claim a lane only if it is **idle (clean persistent lane branch aligned with develop,
-  or detached HEAD on develop)** and **clean**, or already assigned to the **current task**.
+- An agent can claim a lane only if it is **idle (detached HEAD on `develop`) and clean**, or
+  already assigned to the **current task**.
 - If a lane is occupied by another active task or contains pre-existing/unrelated dirty changes:
   **STOP** — do not switch, stash, reset, clean, overwrite, or repurpose the lane. Use another
   available lane or report the conflict to the user.
@@ -160,9 +147,9 @@ lane, agents **must** establish the following state:
 ## Agent Session Lifecycle
 
 Read [session procedures](../../docs/core/git-safety-session.md) before a mutable session. Run pnpm
-agent:git-safety:start once before edits, and pnpm agent:git-safety:finish at closure. An existing
-baseline must never be overwritten or adopted from another task. Read-only check never removes it.
-The commands and executable implementation remain unchanged.
+agent:git-safety:start once before edits, and pnpm agent:git-safety:finish at closure. start
+replaces an existing baseline only when it shows no protected drift; a drifted baseline is evidence
+and is never overwritten. Read-only check never removes it.
 
 Protected state is current HEAD, branch/detached state, and semantic index metadata. Other local
 heads/tags/stashes are diagnostic only. On unexpected protected drift, incompatible baseline, or
@@ -174,5 +161,5 @@ Working-tree edits remain allowed only within the task scope.
 
 An ephemeral --authorized-operation declaration only describes an exact current-task authorization.
 It grants no authority and must not hide adjacent drift; path scope is required for stage/unstage.
-Supported operations and fail-closed behavior stay in the linked procedure. Filesystem markers are
-never authorization sources.
+Operations are combinable in one finish; supported operations and fail-closed behavior stay in the
+linked procedure. Filesystem markers are never authorization sources.

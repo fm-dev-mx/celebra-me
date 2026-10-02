@@ -57,7 +57,6 @@ shift
 				LFS_TEST_STATUS: lfsStatus,
 				MISSING_REFS: missingRefs,
 				POLICY_STATUS: policyStatus,
-				SKIP_COMMIT_RANGE_VALIDATION: '',
 			},
 			timeout: 10000,
 		},
@@ -102,7 +101,6 @@ shift
 					encoding: 'utf8',
 					timeout: 10000,
 					input: `refs/heads/task ${head} refs/heads/task ${'0'.repeat(40)}\n`,
-					env: { ...process.env, SKIP_COMMIT_RANGE_VALIDATION: '' },
 				},
 			);
 			expect(result.error).toBeUndefined();

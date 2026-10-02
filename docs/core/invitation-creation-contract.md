@@ -191,18 +191,8 @@ comes from `pnpm dbs` / `pnpm dbs <slug>` via `classifyLiveInvitation` and `deci
 not from package-hash compact output.
 
 Git hooks do not query managed invitation status. Run `pnpm dbs` explicitly when status evidence is
-needed. The separately invoked lane-sync command retains its bounded read-only status option:
-
-```bash
-pnpm lane:sync            # read-only synchronization preview from local refs
-pnpm lane:sync -- --apply # fetch + rebase onto origin/develop after Git Safety preflight
-pnpm lane:sync -- --ff-only
-pnpm lane:sync -- --skip-status
-```
-
-The default `pnpm lane:sync` is read-only and does not fetch. `--apply` is required for Git mutation
-and fails unless the lane is clean, non-protected, and covered by a matching Git Safety baseline.
-Remote managed status remains read-only and bounded; opt out via `--skip-status` or
+needed. `pnpm lane:sync` (see [`git-governance.md`](git-governance.md#task-lifecycle)) prints the
+same bounded read-only status after synchronization; opt out via `--skip-status` or
 `CELEBRA_SKIP_MANAGED_STATUS=1`.
 
 ### PowerShell Helper

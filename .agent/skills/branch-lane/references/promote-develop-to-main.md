@@ -1,8 +1,9 @@
 # Default mode — `promote-develop-to-main`
 
-Load after `.agent/skills/branch-lane/SKILL.md`. **Follow the Fast-Forward Flow in**
-[`docs/core/git-governance.md`](../../../../docs/core/git-governance.md) — do not invent a parallel
-promotion policy. Orchestration, statuses, and parity routing live in the parent skill.
+Load after `.agent/skills/branch-lane/SKILL.md`. **Follow Production Promotion in**
+[`docs/core/git-governance.md`](../../../../docs/core/git-governance.md#production-promotion) — do
+not invent a parallel promotion policy. Orchestration, statuses, and parity routing live in the
+parent skill.
 
 ## Intent
 
@@ -11,7 +12,7 @@ request. GitHub branch rules are the authoritative write boundary.
 
 State every planned Git action with exact direction, for example:
 
-`fast-forward main@<mainSha> to develop@<developSha> (source develop, target main)`.
+`release PR develop@<developSha> into main@<mainSha>, then back-merge main into develop`.
 
 ## Preconditions
 
@@ -32,10 +33,9 @@ State every planned Git action with exact direction, for example:
 
 1. Confirm checkpoint then clearance fingerprints still match (parent handles). If invalidated,
    re-run affected checks — do not treat staleness alone as failure.
-2. On `develop`, update and validate before touching `main`:
+2. In Integration (on `develop`), update and validate before touching `main`:
 
 ```bash
-git switch develop
 git pull --ff-only origin develop
 ```
 
@@ -63,7 +63,8 @@ git tag -a vX.Y.Z -m "vX.Y.Z <theme>"
 git push origin vX.Y.Z
 ```
 
-Never push directly to `main`, use `--force` / `--force-with-lease`, or commit on `main`.
+After the merge, run the `sync-main-into-develop` back-merge (a fast-forward). Never push directly
+to `main`, use `--force` / `--force-with-lease`, or commit on `main`.
 
 ## Report
 

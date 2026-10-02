@@ -47,8 +47,7 @@ preparation. Do not activate those broader operations merely to write a PR descr
    the initial state and ownership before writes. Stop on unrelated work, ambiguous ownership,
    unexpected drift, or an occupied checkout; never stash, reset, clean, or unstage to make room.
 3. Read the [session procedure](../../../docs/core/git-safety-session.md). Start Git Safety before
-   edits. Reuse a baseline only when this same task started it; an existing baseline from another
-   task or a failed start blocks mutations and must be preserved.
+   edits. A failed start (drifted or invalid baseline) blocks mutations; preserve that baseline.
 4. Resolve the production base and allowed source from current
    [Git governance](../../../docs/core/git-governance.md) and
    [release policy](../../../docs/core/release-process.md). The documented release comparison is
@@ -74,10 +73,9 @@ preparation. Do not activate those broader operations merely to write a PR descr
 - When commits are authorized, use explicit file paths and the commit-planner boundary. Inspect the
   staged diff before committing; preserve meaningful prior commits and run the normal hooks. Stop if
   mixed hunks, unrelated staged work, or a hook failure requires additional authority.
-- Git Safety declarations describe one already-authorized operation, not a general bypass. A branch
-  switch and a commit cannot share one `--authorized-operation` declaration. Close the branch-switch
-  session with its exact branch, then start the commit session before continuing. Use the existing
-  lifecycle; never overwrite a baseline or change the detector to get a pass.
+- Git Safety declarations describe already-authorized operations, not a general bypass. Declare
+  every authorized operation of the session in one comma-separated `--authorized-operation` (for
+  example `branch-switch,commit --branch=<name>`). Never change the detector to get a pass.
 
 ## Collect evidence for the exact range
 

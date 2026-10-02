@@ -182,8 +182,8 @@ Keep one history owner per change type. Do not dump every commit, migration, or 
 - Add a bullet under `CHANGELOG.md` → `[Unreleased]` when a **product-visible** or
   **operator-visible** change lands and is intended for the next checkpoint.
 - Do **not** require a changelog entry for every commit.
-- Prefer updating `[Unreleased]` in the same milestone PR/work unit that ships the behavior, not
-  only at tag time.
+- Prefer updating `[Unreleased]` in the same task branch that ships the behavior, not only at tag
+  time.
 - If continuous notes were missed and `[Unreleased]` is empty at release preparation, stop and
   reconstruct it from the audited latest-tag-to-HEAD range before cutting the version section.
 - Per-client operational detail stays in `docs/invitations/<slug>.md`; link or summarize in
@@ -281,9 +281,10 @@ git add package.json CHANGELOG.md
 git commit -m "chore(release): publish vX.Y.Z checkpoint"
 ```
 
-Integrate the candidate into current `develop` without rewriting shared history, then push
-`develop`. Wait for `Repository Policy` and `Application Suite` on that exact SHA before opening the
-release pull request. Preserve preceding atomic commits when they remain meaningful.
+Integrate the candidate into `develop` from Integration with a fast-forward (see
+[`git-governance.md`](git-governance.md#task-lifecycle)), then push `develop`. Wait for
+`Repository Policy` and `Application Suite` on that exact SHA before opening the release pull
+request. Preserve preceding atomic commits when they remain meaningful.
 
 ### 5. Promote the validated commit to `main`
 
@@ -294,9 +295,9 @@ or a `published` lifecycle change that adds a route to the canonical matrix), ob
 release-time visual confirmation. The confirmation reviews the candidate produced with the pinned
 runtime and identifies the exact source SHA, matrix hash, and candidate-manifest SHA-256. Record
 that acceptance through `pnpm visual:parity:accept` before this step, land the accepted references
-on `develop` through the same pull-request and checks flow as step 4, and wait for
-`Application Suite` on that resulting `develop` SHA. This is a human release decision, not an
-automatic action performed by CI or Vercel after a deployment begins.
+on `develop` through the same fast-forward integration as step 4, and wait for `Application Suite`
+on that resulting `develop` SHA. This is a human release decision, not an automatic action performed
+by CI or Vercel after a deployment begins.
 
 If visual confirmation is missing or rejected, the candidate is not eligible for promotion or
 deployment. Do not reduce visual coverage, relax comparison, or treat a Preview build as approval.
@@ -305,13 +306,15 @@ Open a pull request from `develop` to `main`, wait for `Repository Policy` and `
 then merge through GitHub. Title the PR for its primary outcome (for example,
 `release: simplify validation and deployment`), not for the mechanical promotion. Keep the body to
 included PRs, material risks, visual/schema/content impact, separately authorized operations, and
-the expected CI and smoke evidence. Direct pushes are not part of the release path.
+the expected CI and smoke evidence. Direct pushes to `main` are not part of the release path. After
+the merge, fast-forward `develop` to `origin/main` from Integration as described in
+[`git-governance.md`](git-governance.md#production-promotion).
 
 ### 6. Verify the promoted deployment
 
 Verify the automatic Production deployment and critical smoke routes for the merged `main` SHA. If
-the deployment fails, create a revert branch and use the same pull-request flow; never rewrite
-`main`.
+the deployment fails, revert on a task branch, integrate it into `develop`, and release again; never
+rewrite `main`.
 
 ### 7. Create and push the annotated tag
 

@@ -51,13 +51,20 @@ describe('git-safety start/finish lifecycle', () => {
 		}
 	});
 
-	it('fails start when a baseline already exists without overwriting', () => {
+	it('replaces an existing baseline only when nothing drifted', () => {
 		const repoRoot = createRepo();
 		try {
 			expect(runGitSafety(repoRoot, ['start']).status).toBe(0);
+			expect(runGitSafety(repoRoot, ['start']).status).toBe(0);
+
+			writeFileSync(path.join(repoRoot, 'drift.txt'), 'd\n', 'utf8');
+			runCommand('git', ['add', 'drift.txt'], { cwd: repoRoot, env: sanitizeEnv() });
 			const before = readFileSync(baselinePath(repoRoot), 'utf8');
-			const second = runGitSafety(repoRoot, ['start']);
-			expect(second.status).toBe(1);
+			const drifted = runGitSafety(repoRoot, ['start']);
+			expect(drifted.status).toBe(1);
+			expect(`${drifted.stdout}\n${drifted.stderr}`).toContain(
+				'index (staged) state changed',
+			);
 			expect(readFileSync(baselinePath(repoRoot), 'utf8')).toBe(before);
 		} finally {
 			cleanupFixture(repoRoot);
@@ -184,9 +191,7 @@ describe('git-safety start/finish lifecycle', () => {
 			runCommand('git', ['checkout', '-b', 'side'], { cwd: repoRoot, env: sanitizeEnv() });
 			const finish = runGitSafety(repoRoot, ['finish', '--authorized-operation=commit']);
 			expect(finish.status).toBe(1);
-			expect(`${finish.stdout}\n${finish.stderr}`).toContain(
-				'must not change branch/detached state',
-			);
+			expect(`${finish.stdout}\n${finish.stderr}`).toContain('branch/detached state changed');
 			expect(existsSync(baselinePath(repoRoot))).toBe(true);
 		} finally {
 			cleanupFixture(repoRoot);
@@ -238,6 +243,42 @@ describe('git-safety start/finish lifecycle', () => {
 			]);
 			expect(finish.status).toBe(0);
 			expect(existsSync(baselinePath(repoRoot))).toBe(false);
+		} finally {
+			cleanupFixture(repoRoot);
+		}
+	});
+
+	it('accepts a combined branch-switch and commit in one session', () => {
+		const repoRoot = createRepo();
+		try {
+			expect(runGitSafety(repoRoot, ['start']).status).toBe(0);
+			runCommand('git', ['switch', '-c', 'feat/task'], { cwd: repoRoot, env: sanitizeEnv() });
+			writeFileSync(path.join(repoRoot, 'task.txt'), 't\n', 'utf8');
+			runCommand('git', ['add', 'task.txt'], { cwd: repoRoot, env: sanitizeEnv() });
+			runCommand('git', ['commit', '-m', 'task'], { cwd: repoRoot, env: sanitizeEnv() });
+			const finish = runGitSafety(repoRoot, [
+				'finish',
+				'--authorized-operation=branch-switch,commit',
+				'--branch=feat/task',
+			]);
+			expect(finish.status).toBe(0);
+			expect(existsSync(baselinePath(repoRoot))).toBe(false);
+		} finally {
+			cleanupFixture(repoRoot);
+		}
+	});
+
+	it('accepts history rewrites without requiring a new commit', () => {
+		const repoRoot = createRepo();
+		try {
+			writeFileSync(path.join(repoRoot, 'extra.txt'), 'e\n', 'utf8');
+			runCommand('git', ['add', 'extra.txt'], { cwd: repoRoot, env: sanitizeEnv() });
+			runCommand('git', ['commit', '-m', 'extra'], { cwd: repoRoot, env: sanitizeEnv() });
+			expect(runGitSafety(repoRoot, ['start']).status).toBe(0);
+			runCommand('git', ['reset', '--hard', 'HEAD~1'], { cwd: repoRoot, env: sanitizeEnv() });
+			expect(runGitSafety(repoRoot, ['finish']).status).toBe(1);
+			const finish = runGitSafety(repoRoot, ['finish', '--authorized-operation=history']);
+			expect(finish.status).toBe(0);
 		} finally {
 			cleanupFixture(repoRoot);
 		}

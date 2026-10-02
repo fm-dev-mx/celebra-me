@@ -1,11 +1,7 @@
 /**
  * lane-sync.ts — Canonical lane synchronization + managed-status observability.
  *
- * Git hooks (post-commit / post-merge / post-rewrite) remain fail-open and may
- * miss fast-forward / already-aligned syncs that perform no meaningful rewrite.
- * This command is the deterministic path:
- *
- *   sync lane against develop → Git succeeds → pnpm dbs --compact
+ *   sync task branch against develop → Git succeeds → pnpm dbs --compact
  *
  * Never blocks Git success on remote DB availability. Honors CELEBRA_SKIP_MANAGED_STATUS.
  *
@@ -100,15 +96,29 @@ function syncOntoDevelop(input: {
 	if (!dryRun) {
 		const fetch = runGit(['fetch', 'origin', 'develop'], cwd);
 		if (fetch.status !== 0) {
-			lines.push(fetch.stderr.trim() || fetch.stdout.trim() || 'git fetch origin develop failed');
-			return { gitOk: false, gitMode: 'skipped', statusSkippedReason: 'git-fetch-failed', lines };
+			lines.push(
+				fetch.stderr.trim() || fetch.stdout.trim() || 'git fetch origin develop failed',
+			);
+			return {
+				gitOk: false,
+				gitMode: 'skipped',
+				statusSkippedReason: 'git-fetch-failed',
+				lines,
+			};
 		}
 	}
 
 	const behind = runGit(['rev-list', '--count', 'HEAD..origin/develop'], cwd);
 	if (behind.status !== 0) {
-		lines.push('UNVERIFIED: origin/develop is unavailable locally; no synchronization performed');
-		return { gitOk: false, gitMode: 'skipped', statusSkippedReason: 'develop-ref-unavailable', lines };
+		lines.push(
+			'UNVERIFIED: origin/develop is unavailable locally; no synchronization performed',
+		);
+		return {
+			gitOk: false,
+			gitMode: 'skipped',
+			statusSkippedReason: 'develop-ref-unavailable',
+			lines,
+		};
 	}
 	const behindCount = Number((behind.stdout || '0').trim() || '0');
 
@@ -162,9 +172,7 @@ function appendManagedStatus(
 
 	const status = runStatus(cwd);
 	const statusText = (status.stdout || status.stderr || '').trim();
-	lines.push(
-		statusText || '[lane:sync] managed status produced no output (read-only; ignored)',
-	);
+	lines.push(statusText || '[lane:sync] managed status produced no output (read-only; ignored)');
 	return { statusRan: true };
 }
 
@@ -197,7 +205,7 @@ function checkApplyPreconditions(
 		};
 	}
 	const branchName = branch.stdout.trim();
-	if (branchName === 'main' || branchName === 'develop' || branchName.startsWith('dev-')) {
+	if (branchName === 'main' || branchName === 'develop') {
 		return {
 			ok: false,
 			reason: 'protected-branch',
@@ -221,7 +229,8 @@ function checkApplyPreconditions(
 		const head = runGit(['rev-parse', 'HEAD'], cwd);
 		const expectedBaselineBranch = branchName === 'HEAD' ? null : branchName;
 		if (
-			(head.status !== 0 || !head.stdout.trim()) ||
+			head.status !== 0 ||
+			!head.stdout.trim() ||
 			baseline.branch !== expectedBaselineBranch ||
 			baseline.head !== head.stdout.trim()
 		) {

@@ -15,10 +15,9 @@ implementing these skills is never a live-release invocation.
    Task Contract. Infer only an unambiguous scope from the current task. Stop on unrelated staged
    files, mixed ownership, unexpected drift or an incompatible assigned lane. Do not stash/reset/
    clean, overwrite work, enumerate sibling checkouts or create another checkout automatically.
-3. Read [Git Safety sessions](git-safety-session.md). Start before edits; an existing baseline is
-   reusable only if this task created it. Keep branch-switch and commit sessions separate. Close
-   staging with its exact paths before starting the commit session; close a same-branch integration
-   that changes HEAD using the commit declaration. Recheck the full diff after hooks/integration. A
+3. Read [Git Safety sessions](git-safety-session.md). Start before edits and close with one combined
+   declaration that covers every authorized operation (for example `branch-switch,commit` or
+   `history` for an integration that moves HEAD). Recheck the full diff after hooks/integration. A
    failed command that changed state requires inspection before any retry. Declarations describe
    existing authority and never grant it; preserve a failed baseline.
 4. Fetch origin, resolve exact remote base/source SHAs and ancestry, and inspect the complete range.
@@ -95,7 +94,9 @@ implementing these skills is never a live-release invocation.
    Attach the PR when the host supports it. Wait for required checks/reviews for the current PR head
    and merge candidate; recheck source/base before merge. Never use admin/bypass/force options.
 4. Merge through the permitted PR method, pinned to the reviewed head (for example the supported CLI
-   head-match option). Read the merge result and actual main SHA; do not assume SHA equality.
+   head-match option). Read the merge result and actual main SHA; do not assume SHA equality. Then
+   fast-forward `develop` to `origin/main` from Integration
+   ([back-merge](git-governance.md#production-promotion)).
 5. Verify Vercel project, actual main SHA/ref, Production environment, READY result, promotion and
    production alias routing. Require the trusted `Vercel - celebra-me production smoke` result for
    this deployed SHA and correlate its deployment ID/URL. The existing Post-deploy Smoke workflow
