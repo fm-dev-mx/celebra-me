@@ -94,14 +94,15 @@ describe('visual pre-push certification', () => {
 		expect(NODE_ARCHIVE_SHA256).toMatch(/^[0-9a-f]{64}$/u);
 	});
 
-	it('requires certification for cumulative visual impact on every branch', () => {
+	it('requires certification only for visual impact pushed to develop or main', () => {
 		expect(
-			shouldRequireVisualCertification('refs/heads/feature/example', ['src/styles/app.scss']),
+			shouldRequireVisualCertification('refs/heads/develop', ['src/styles/app.scss']),
 		).toBe(true);
+		expect(shouldRequireVisualCertification('refs/heads/main', ['src/styles/app.scss'])).toBe(
+			true,
+		);
 		expect(
-			shouldRequireVisualCertification('refs/heads/feature/example', [
-				'scripts/ops/ci-metrics.ts',
-			]),
+			shouldRequireVisualCertification('refs/heads/feat/example', ['src/styles/app.scss']),
 		).toBe(false);
 	});
 

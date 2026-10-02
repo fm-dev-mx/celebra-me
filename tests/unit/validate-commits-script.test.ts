@@ -77,10 +77,11 @@ describeRangeValidation('validate-commits script', () => {
 			}).stdout.trim();
 			const invalid = runCommand('node', [SCRIPT_PATH, headSha, invalidHead], {
 				cwd: repoRoot,
+				allowFailure: true,
 				env: { ...process.env, pnpm_config_verify_deps_before_run: 'warn' },
 			});
+			expect(invalid.status).toBe(1);
 			expect(invalid.stderr).toContain('Commit validation failed');
-			expect(invalid.stdout).toContain('Commit validation found issues (audit-only mode)');
 		} finally {
 			cleanupFixture(repoRoot);
 		}
