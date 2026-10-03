@@ -81,7 +81,7 @@ const currentSectionLabel =
 
 	</head>
 
-	<body class="theme-preset--dashboard-dark dashboard-shell-body">
+	<body class="theme-preset--dashboard-ivory dashboard-shell-body">
 		<div class="dashboard-shell">
 			<div class="dashboard-shell__backdrop" data-dashboard-backdrop aria-hidden="true"></div>
 			<DashboardSidebar
@@ -101,10 +101,13 @@ const currentSectionLabel =
 						aria-controls="dashboard-sidebar"
 						aria-expanded="false"
 					>
-						<span class="dashboard-topbar__menu-line"></span>
-						<span class="dashboard-topbar__menu-line"></span>
-						<span class="dashboard-topbar__menu-line"></span>
-						<span class="sr-only">Abrir navegación del panel</span>
+						<span class="dashboard-topbar__menu-icon" aria-hidden="true">
+							<span class="dashboard-topbar__menu-line"></span>
+							<span class="dashboard-topbar__menu-line"></span>
+							<span class="dashboard-topbar__menu-line"></span>
+						</span>
+						<span class="dashboard-topbar__menu-label">Menú</span>
+						<span class="sr-only">: abrir navegación del panel</span>
 					</button>
 
 					<div class="dashboard-topbar__meta">

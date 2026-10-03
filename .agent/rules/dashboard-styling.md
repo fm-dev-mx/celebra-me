@@ -29,6 +29,18 @@ version: 1.1.0
 - `--dashboard-focus-ring` and `--dashboard-focus-glow` defined in `_common.scss` with light-mode
   defaults, overridden by theme preset.
 
+## Theme and Typography
+
+- The dashboard runs on the light `theme-preset--dashboard-ivory` preset (ivory ground, warm
+  charcoal chrome, antique gold accents). The sidebar and topbar are charcoal islands; use the
+  `--dashboard-topbar-*` tokens there instead of surface tokens.
+- `--color-border-control` is the 3:1 border for inputs, chips and outlined controls;
+  `--color-border-subtle` is for dividers only.
+- Display serif (`--font-display-elegant`, Playfair Display) is allowed only for the page title and
+  large numerals (counts ≥ 24px). Never italic, never for body copy, labels or buttons.
+- Guest-facing dashboard copy targets older hosts: body ≥ 16px, primary labels ≥ 17px, primary touch
+  targets ≥ 52px.
+
 ## Surface Aliases
 
 - `_common.scss` owns dashboard-level aliases (`--dashboard-*`).

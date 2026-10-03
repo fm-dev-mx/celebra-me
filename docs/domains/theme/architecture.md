@@ -180,7 +180,7 @@ Invitation presets are reusable atmosphere packs (catalog SKUs), not per-invitat
 Non-invitation presets are separate:
 
 - `auth-dark` for auth surfaces
-- `dashboard-dark` for dashboard surfaces
+- `dashboard-ivory` for dashboard surfaces (light ivory ground, charcoal chrome)
 - `invitation` for shared invitation base tokens
 
 Preset files may override semantic color, type, surface, shadow, and motion intent. They may also

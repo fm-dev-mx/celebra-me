@@ -354,9 +354,9 @@
 	gap: 1rem;
 	min-height: 72px;
 	padding: 1rem 2rem;
-	background: var(--color-surface-warm-ivory);
-	backdrop-filter: blur(8px) saturate(150%);
-	border-bottom: 1px solid var(--dashboard-card-border);
+	background: var(--dashboard-topbar-bg, var(--color-surface-warm-ivory));
+	color: var(--dashboard-topbar-text, var(--color-text-primary));
+	border-bottom: 1px solid var(--dashboard-topbar-border, var(--dashboard-card-border));
 	box-shadow: 0 4px 20px rgb(var(--color-surface-dark-rgb) / 4%);
 	transition:
 		transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
@@ -368,7 +368,7 @@
 	}
 
 	&--scrolled {
-		background: var(--color-surface-premium-card);
+		background: var(--dashboard-topbar-bg, var(--color-surface-premium-card));
 		box-shadow: 0 4px 24px rgb(0 0 0 / 6%);
 	}
 
@@ -376,23 +376,40 @@
 		display: none;
 		align-items: center;
 		justify-content: center;
+		gap: 0.5rem;
+		min-width: 44px;
+		min-height: 48px;
+		padding: 0 0.75rem 0 0.25rem;
+		border: 0;
+		border-radius: 10px;
+		background: transparent;
+		color: var(--dashboard-topbar-text, var(--color-text-secondary));
+		font-family: var(--font-ui);
+		font-size: 1.0625rem;
+		font-weight: 600;
+		cursor: pointer;
+
+		&:focus-visible {
+			outline: 2px solid var(--dashboard-topbar-accent, var(--dashboard-focus-ring));
+			outline-offset: 2px;
+		}
+	}
+
+	&__menu-icon {
+		display: inline-flex;
 		flex-direction: column;
 		gap: 4px;
-		width: 44px;
-		height: 44px;
-		padding: 0;
-		border: 1px solid var(--color-border-subtle);
-		border-radius: 10px;
-		background: var(--dashboard-card-bg-soft);
-		color: var(--color-text-secondary);
-		cursor: pointer;
-		box-shadow: var(--shadow-subtle);
+		color: var(--dashboard-topbar-accent, currentcolor);
+	}
+
+	&__menu-label {
+		line-height: 1;
 	}
 
 	&__menu-line {
 		display: block;
-		width: 14px;
-		height: 1.5px;
+		width: 20px;
+		height: 2px;
 		background: currentcolor;
 		border-radius: 2px;
 	}
@@ -405,21 +422,22 @@
 	}
 
 	&__eyebrow {
-		color: var(--color-text-muted);
+		color: var(--dashboard-topbar-accent, var(--color-text-muted));
 		font-family: var(--font-ui);
-		font-size: 0.7rem;
+		font-size: 0.75rem;
 		font-weight: 600;
-		font-variant: small-caps;
-		letter-spacing: 0.08em;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
 	}
 
 	h1 {
 		margin: 0;
-		color: var(--color-text-primary);
+		color: var(--dashboard-topbar-text, var(--color-text-primary));
 		font-family: var(--font-display-elegant);
-		font-size: clamp(1.2rem, 1.8vw, 1.5rem);
-		font-weight: 500;
-		letter-spacing: -0.02em;
+		font-size: clamp(1.5rem, 2vw, 1.75rem);
+		font-weight: 600;
+		line-height: 1.1;
+		letter-spacing: 0;
 	}
 }
 
@@ -929,7 +947,7 @@
 	}
 
 	.dashboard-topbar h1 {
-		font-size: 1.1rem;
+		font-size: 1.5rem;
 	}
 
 	/* --- Main content --- */
@@ -955,8 +973,9 @@
 /* --- Environment banner --- */
 .dashboard-env-banner {
 	width: 100%;
-	padding: 0.5rem 1rem;
+	padding: 0.25rem 1rem;
 	text-align: center;
+	line-height: 1.4;
 	font-size: 0.75rem;
 	font-weight: 600;
 	letter-spacing: 0.05em;

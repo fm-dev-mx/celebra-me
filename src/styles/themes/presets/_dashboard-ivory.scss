@@ -1,0 +1,140 @@
+/* stylelint-disable color-no-hex */
+@use 'sass:color';
+@use '../../tools/functions' as tools;
+@use '../../tokens/system/type' as sys-type;
+
+.theme-preset--dashboard-ivory {
+	// ==========================================================================
+	// Ivory Charcoal — Accessible Light Dashboard Theme
+	// Ivory ground, warm charcoal chrome and antique gold accents. Tuned for
+	// older hosts on small phones: body text >= 7:1, controls >= 3:1.
+	// ==========================================================================
+
+	// --- Surfaces ---
+	--color-surface-primary: #f5f0e6;
+	--color-surface-primary-rgb: #{tools.rgb-channels(#f5f0e6)};
+	--color-surface-secondary: #fbf7ee;
+	--color-surface-secondary-rgb: #{tools.rgb-channels(#fbf7ee)};
+	--color-surface-soft: #ede5d3;
+	--color-surface-elevated: #fffdf9;
+	--color-surface-elevated-rgb: #{tools.rgb-channels(#fffdf9)};
+	--color-surface-dark: #151412;
+	--color-surface-dark-rgb: #{tools.rgb-channels(#151412)};
+	--color-surface-canvas: var(--color-surface-primary);
+	--color-surface-warm-ivory: #fffdf9;
+	--color-surface-premium-card: #fffdf9;
+	--color-glass-bg: #fffdf9;
+
+	// --- Text ---
+	--color-text-primary: #1b1a17;
+	--color-text-primary-rgb: #{tools.rgb-channels(#1b1a17)};
+	--color-text-secondary: #4f4a40;
+	--color-text-secondary-rgb: #{tools.rgb-channels(#4f4a40)};
+	--color-text-emphasis: #7a5c17;
+	--color-text-on-dark: #f8f3e8;
+	--color-text-on-dark-rgb: #{tools.rgb-channels(#f8f3e8)};
+	--color-text-on-light: #1b1a17;
+	--color-text-muted: #5b564b;
+	--color-text-muted-rgb: #{tools.rgb-channels(#5b564b)};
+
+	// --- Actions (global) ---
+	--color-action-primary: #1f1d1a;
+	--color-action-primary-rgb: #{tools.rgb-channels(#1f1d1a)};
+	--color-action-secondary: #ede5d3;
+	--color-action-secondary-rgb: #{tools.rgb-channels(#ede5d3)};
+	--color-action-accent: #c6a04e;
+	--color-action-accent-rgb: #{tools.rgb-channels(#c6a04e)};
+
+	// --- Dashboard-specific focus tokens ---
+	--dashboard-focus-ring: rgb(122 92 23 / 85%);
+	--dashboard-focus-glow: rgb(198 160 78 / 28%);
+
+	// --- Charcoal chrome (topbar, dock accents) ---
+	--dashboard-topbar-bg: #151412;
+	--dashboard-topbar-text: #f8f3e8;
+	--dashboard-topbar-accent: #e8d3a0;
+	--dashboard-topbar-border: #c6a04e;
+
+	// --- Unified button hierarchy ---
+	// Primary (warm charcoal with champagne edge)
+	--dashboard-button-primary-bg: #1f1d1a;
+	--dashboard-button-primary-bg-hover: #34302b;
+	--dashboard-button-primary-bg-active: #0d0c0b;
+	--dashboard-button-primary-text: #fffdf9;
+	--dashboard-button-primary-border: #1f1d1a;
+	--dashboard-button-primary-accent: #e8d3a0;
+
+	// Secondary (outlined charcoal)
+	--dashboard-button-secondary-bg: transparent;
+	--dashboard-button-secondary-bg-hover: rgb(31 29 26 / 6%);
+	--dashboard-button-secondary-border: #1f1d1a;
+	--dashboard-button-secondary-border-hover: #000;
+	--dashboard-button-secondary-text: #1f1d1a;
+
+	// Success
+	--dashboard-button-success-bg: #dfeee2;
+	--dashboard-button-success-bg-hover: #d0e6d5;
+	--dashboard-button-success-border: #9cc7a6;
+	--dashboard-button-success-text: #1e5c33;
+
+	// Danger
+	--dashboard-button-danger-bg: transparent;
+	--dashboard-button-danger-bg-hover: rgb(142 42 28 / 8%);
+	--dashboard-button-danger-border: rgb(142 42 28 / 45%);
+	--dashboard-button-danger-border-hover: #8e2a1c;
+	--dashboard-button-danger-text: #8e2a1c;
+	--dashboard-button-danger-cta-bg: #8e2a1c;
+	--dashboard-button-danger-cta-bg-hover: #{color.change(#8e2a1c, $blackness: 30%)};
+	--dashboard-button-danger-cta-text: #fffdf9;
+
+	// --- Borders ---
+	--color-border-subtle: #e3d9c4;
+	--color-border-subtle-rgb: #{tools.rgb-channels(#e3d9c4)};
+	--color-border-control: #a08f6c;
+	--color-border-premium: #{color.change(#c6a04e, $alpha: 0.55)};
+	--color-border-emphasis: #c6a04e;
+
+	// --- Dashboard surface roles ---
+	--dashboard-surface-sidebar: #151412;
+
+	// --- State colors (light ground, AA text) ---
+	--color-state-success: #1e5c33;
+	--color-state-success-rgb: #{tools.rgb-channels(#1e5c33)};
+	--color-state-success-bg: #dfeee2;
+	--color-state-success-border: #9cc7a6;
+	--color-state-success-text: #1e5c33;
+	--color-state-warning: #8a6414;
+	--color-state-warning-rgb: #{tools.rgb-channels(#8a6414)};
+	--color-state-warning-bg: #f4e8c8;
+	--color-state-warning-border: #e3c77e;
+	--color-state-warning-text: #5a410c;
+	--color-state-danger: #8e2a1c;
+	--color-state-danger-rgb: #{tools.rgb-channels(#8e2a1c)};
+	--color-state-danger-bg: #f6e1dc;
+	--color-state-danger-border: #e2a99f;
+	--color-state-danger-text: #8e2a1c;
+	--color-state-info: #1d3f73;
+	--color-state-info-rgb: #{tools.rgb-channels(#1d3f73)};
+	--color-state-info-bg: #e3eaf5;
+	--color-state-info-border: #a9bedd;
+	--color-state-info-text: #1d3f73;
+
+	// Neutral state — warm gray for "no response" / "declined"
+	--color-state-neutral: #4f4a40;
+	--color-state-neutral-rgb: #{tools.rgb-channels(#4f4a40)};
+	--color-state-neutral-bg: #ece8e1;
+	--color-state-neutral-border: #cfc7b8;
+	--color-state-neutral-text: #4f4a40;
+
+	// --- Shadows ---
+	--shadow-subtle: 0 1px 2px rgb(30 26 18 / 6%), 0 4px 12px rgb(30 26 18 / 6%);
+	--shadow-emphasis: 0 12px 32px rgb(30 26 18 / 14%);
+	--shadow-warm: 0 1px 2px rgb(30 26 18 / 5%), 0 10px 28px rgb(30 26 18 / 7%);
+	--shadow-warm-emphasis: 0 16px 40px rgb(30 26 18 / 12%);
+
+	// --- Typography ---
+	--font-display-elegant: #{sys-type.$sys-font-display-elegant};
+	--font-label: #{sys-type.$sys-font-ui};
+	--font-calligraphy: #{sys-type.$sys-font-calligraphy};
+}
+/* stylelint-enable color-no-hex */

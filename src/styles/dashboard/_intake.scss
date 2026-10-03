@@ -23,12 +23,12 @@
 	border-top: 1px solid var(--color-border-subtle);
 
 	.btn-primary--danger {
-		background: var(--color-state-danger-text);
-		border-color: var(--color-state-danger-text);
-		color: var(--color-text-on-dark);
+		background: var(--dashboard-button-danger-cta-bg);
+		border-color: var(--dashboard-button-danger-cta-bg);
+		color: var(--dashboard-button-danger-cta-text);
 
 		&:hover {
-			background: var(--color-state-danger-border);
+			background: var(--dashboard-button-danger-cta-bg-hover);
 		}
 	}
 }
@@ -358,12 +358,12 @@
 }
 
 .intake-detail__generate-btn--danger {
-	background: var(--color-state-danger-text);
-	color: var(--color-text-on-dark);
-	border: 1px solid var(--color-state-danger-text);
+	background: var(--dashboard-button-danger-cta-bg);
+	color: var(--dashboard-button-danger-cta-text);
+	border: 1px solid var(--dashboard-button-danger-cta-bg);
 
 	&:hover:not(:disabled) {
-		background: var(--color-state-danger-border);
+		background: var(--dashboard-button-danger-cta-bg-hover);
 	}
 }
 
