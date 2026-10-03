@@ -85,10 +85,91 @@ export function buildMemoriesHostStatusCopy(input: {
 	}
 }
 
+export interface MemoriesLoadErrorGuide {
+	title: string;
+	steps: readonly string[];
+}
+
+/**
+ * Turns a failed admin list request into a cause and the steps that resolve it.
+ * Only the stable status/code pair is read; provider details never reach the browser.
+ */
+export function describeMemoriesLoadError(failure: {
+	status: number | null;
+	code?: string;
+}): MemoriesLoadErrorGuide {
+	const { status, code } = failure;
+	if (code === 'schema_out_of_date') {
+		return {
+			title: 'La base de datos de este entorno no tiene las migraciones más recientes.',
+			steps: [
+				'Local: ejecute «pnpm db:migrate -- --target local».',
+				'Preview: ejecute «pnpm db:migrate -- --target preview».',
+				'Producción: el responsable aplica la migración con «pnpm prod:apply».',
+				'Recargue esta página al terminar.',
+			],
+		};
+	}
+	if (status === 401 || code === 'unauthorized') {
+		return {
+			title: 'Su sesión expiró.',
+			steps: ['Cierre sesión, vuelva a iniciarla y regrese a esta página.'],
+		};
+	}
+	if (status === 403 || code === 'forbidden') {
+		return {
+			title: 'Esta sección requiere una cuenta de superadministrador con verificación en dos pasos.',
+			steps: [
+				'Inicie sesión con una cuenta de superadministrador.',
+				'Complete la verificación en dos pasos o use un dispositivo de confianza.',
+			],
+		};
+	}
+	if (status === 429 || code === 'rate_limited') {
+		return {
+			title: 'Se hicieron demasiadas consultas seguidas.',
+			steps: ['Espere un minuto y use «Reintentar».'],
+		};
+	}
+	if (status === 408 || code === 'timeout') {
+		return {
+			title: 'El servidor tardó demasiado en responder.',
+			steps: [
+				'Confirme que Supabase y Cloudflare estén disponibles para este entorno.',
+				'Use «Reintentar».',
+			],
+		};
+	}
+	if (code === 'upstream_error') {
+		return {
+			title: 'El servicio de autenticación rechazó la solicitud.',
+			steps: ['Cierre sesión, vuelva a iniciarla y regrese a esta página.'],
+		};
+	}
+	if (code === 'service_unavailable') {
+		return {
+			title: 'Un servicio externo no respondió.',
+			steps: [
+				'Local: confirme que Supabase esté en marcha («pnpm db:start»).',
+				'Use «Reintentar» en unos segundos.',
+			],
+		};
+	}
+	return {
+		title: 'El servidor respondió con un error inesperado.',
+		steps: [
+			'Confirme que el servidor de desarrollo y Supabase estén en marcha («pnpm db:start»).',
+			'Revise la terminal de «pnpm dev» (o los registros de Vercel) y busque «[rsvp]» para ver la causa.',
+			'Use «Reintentar» después de corregirla.',
+		],
+	};
+}
+
 export const memoriesAdminCopy = {
 	activate: 'Activar evento',
 	empty: 'Todavía no hay espacios de recuerdos. Use «Activar evento» para crear el primero.',
 	loadError: 'No se pudieron cargar los espacios de recuerdos.',
+	retry: 'Reintentar',
 	expiredSummary: (count: number) => `Vencidos (${count})`,
 	committed: (committed: string, limit: string) =>
 		`Comprometido por espacios vigentes: ${committed} de ${limit}.`,
