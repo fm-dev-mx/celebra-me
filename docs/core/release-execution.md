@@ -65,24 +65,26 @@ implementing these skills is never a live-release invocation.
    fast-forwarded; never author it directly on `develop`.
 2. Push only the validated `develop` ref with normal hooks and Git LFS. If origin already points at
    the intended SHA, skip the push and discover the existing CI/deployment.
-3. Run `pnpm ops:release-status -- --sha <exact-sha> --target preview --smoke skip --wait` once, in
-   the background, and act on its single JSON result. It is read-only and polls silently (up to 20
+3. Run `pnpm ops:release-status -- --sha <exact-sha> --target preview --wait` once, in the
+   background, and act on its single JSON result. It is read-only and polls silently (up to 20
    minutes) for:
    - trusted Repository Policy, Application Suite and Application / static results on the exact SHA
      (task-branch CI is insufficient);
    - the Preview deployment Vercel recorded on GitHub for that SHA: success state and an immutable
      Preview URL;
+   - the `Vercel - celebra-me preview smoke` check. The Post-deploy Smoke workflow runs it on
+     `vercel.deployment.ready` for `develop`. It checks the dispatch, the `/api/health` SHA,
+     published invitation images (browserless) and `test:e2e:preview:public`;
    - `/api/health` build identity on that URL, which must not report another SHA.
 
    `VERIFIED` is the only success. `PENDING` after the timeout is unverified, and `FAILED` names its
    blockers. Do not synthesize evidence or redeploy to make it pass.
 
-4. Run the read-only Preview smoke with `pnpm test:e2e:preview:public`, using the URL reported in
-   step 3 as `PLAYWRIGHT_BASE_URL` and `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`.
-   `scripts/playwright/preview-environment.ts` owns the host, project and bypass prerequisites.
-   Never run provisioning or publication suites to make smoke pass. Reuse prior smoke only when its
-   SHA, deployment and URL still match. Once the `Vercel - celebra-me preview smoke` CI check
-   exists, use `--smoke ci` in step 3 instead and skip this local step.
+4. Only when the CI smoke cannot run (for example a failed dispatch), use `--smoke skip` and run
+   `pnpm test:e2e:preview:public` locally against the reported URL, as both `PLAYWRIGHT_BASE_URL`
+   and `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`. `scripts/playwright/preview-environment.ts`
+   owns the host, project and bypass prerequisites. Never run provisioning or publication suites to
+   make smoke pass.
 
 ## Production promotion
 

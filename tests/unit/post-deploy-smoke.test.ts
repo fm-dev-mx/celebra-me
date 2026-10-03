@@ -329,7 +329,8 @@ describe('post-deploy smoke', () => {
 			'utf8',
 		);
 
-		expect(workflow).not.toContain("'vercel.deployment.ready'");
+		// Preview smoke reacts to ready; Production smoke reacts to promotion only.
+		expect(workflow).toContain("'vercel.deployment.ready'");
 		expect(workflow).not.toContain("'vercel.deployment.success'");
 		expect(workflow).toContain("'vercel.deployment.promoted'");
 		expect(workflow).toContain('ref: ${{ github.event.client_payload.git.sha }}');
@@ -347,7 +348,7 @@ describe('post-deploy smoke', () => {
 			workflow.match(
 				/vercel\/repository-dispatch\/actions\/status@44f4d342ebc265c58167a2aa77d5a0d5a6eb20fd/gu,
 			),
-		).toHaveLength(1);
+		).toHaveLength(2);
 		expect(workflow).not.toContain('vercel/repository-dispatch/actions/status@v1');
 		expect(workflow).toContain('VERCEL_DISPATCH_EXPECTED_PROJECT_ID');
 		expect(workflow).not.toContain('upload-artifact');

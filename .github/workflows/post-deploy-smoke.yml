@@ -7,6 +7,7 @@ permissions:
 on:
     repository_dispatch:
         types:
+            - 'vercel.deployment.ready'
             - 'vercel.deployment.promoted'
 
 concurrency:
@@ -14,6 +15,81 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
+    preview-smoke:
+        name: Vercel preview smoke
+        if: >-
+            (github.event.action == 'vercel.deployment.ready' &&
+             github.event.client_payload.environment == 'preview' &&
+             github.event.client_payload.git.ref == 'develop')
+        environment: Preview
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        env:
+            VERCEL_DISPATCH_EVENT: ${{ github.event.action }}
+            VERCEL_DISPATCH_ENVIRONMENT: ${{ github.event.client_payload.environment }}
+            VERCEL_DISPATCH_PROJECT_ID: ${{ github.event.client_payload.project.id }}
+            VERCEL_DISPATCH_EXPECTED_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+            VERCEL_DISPATCH_DEPLOYMENT_ID: ${{ github.event.client_payload.id }}
+            VERCEL_DISPATCH_URL: ${{ github.event.client_payload.url }}
+            VERCEL_DISPATCH_COMMIT_SHA: ${{ github.event.client_payload.git.sha }}
+            VERCEL_DISPATCH_GIT_REF: ${{ github.event.client_payload.git.ref }}
+            PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING: 'false'
+            PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION: 'false'
+            PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS: 'false'
+            PLAYWRIGHT_PREVIEW_SUPABASE_URL: ${{ secrets.PLAYWRIGHT_PREVIEW_SUPABASE_URL }}
+            VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+            PREVIEW_DB_URL: ${{ secrets.PREVIEW_DB_URL }}
+            PREVIEW_PUBLIC_ROUTES_MANIFEST: .tmp/playwright/preview-public-routes.json
+
+        steps:
+            - name: Checkout exact deployment SHA
+              uses: actions/checkout@v7
+              with:
+                  ref: ${{ github.event.client_payload.git.sha }}
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
+                  cache: 'pnpm'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Validate dispatch scope and correlation
+              run: pnpm ops:post-deploy -- validate
+
+            - name: Publish Vercel deployment check
+              # Official Node 24 runtime update from vercel/repository-dispatch#18.
+              uses: vercel/repository-dispatch/actions/status@44f4d342ebc265c58167a2aa77d5a0d5a6eb20fd
+              with:
+                  name: Vercel - celebra-me ${{ env.POST_DEPLOY_ENVIRONMENT }} smoke
+
+            - name: Verify serving build identity
+              run: |
+                  served=$(curl -fsS -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET"                       "$POST_DEPLOY_BASE_URL/api/health" | jq -r '.build.commitSha // empty')
+                  if [ "$served" != "$POST_DEPLOY_COMMIT_SHA" ]; then
+                      echo "Serving build reports '${served:-unreported}', expected $POST_DEPLOY_COMMIT_SHA." >&2
+                      exit 1
+                  fi
+
+            - name: Verify published invitation images
+              run: pnpm invitation:media:verify -- --target preview --all --json > /dev/null
+
+            - name: Install Preview browser
+              run: pnpm exec playwright install --with-deps chromium
+
+            - name: Run public Preview smoke
+              env:
+                  PLAYWRIGHT_BASE_URL: ${{ env.POST_DEPLOY_BASE_URL }}
+              run: |
+                  export PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST="${POST_DEPLOY_BASE_URL#https://}"
+                  pnpm exec tsx scripts/invitation/preview-public-routes.ts "$PREVIEW_PUBLIC_ROUTES_MANIFEST"
+                  pnpm test:e2e:preview:public
+
     smoke:
         name: Vercel post-deploy smoke
         if: >-
