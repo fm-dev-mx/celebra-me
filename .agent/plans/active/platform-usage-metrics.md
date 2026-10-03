@@ -253,11 +253,13 @@ Owner-approved additions (decision round of 2026-10-03):
    "compartido por ambos entornos" (R2 operations, Workers, Durable Objects, R2 account storage
    total, Vercel, Cloudinary): hiding them would misanswer "am I running out of quota".
 3. **Missing-credential notices** show variable name + brief description + the official link where
-   to generate it (verified 2026-10-02: Cloudflare `dash.cloudflare.com/profile/api-tokens/`,
-   Supabase `supabase.com/dashboard/account/tokens` with Usage Analytics + Disk Config Read scopes,
-   Vercel `vercel.com/account/tokens`, Cloudinary `console.cloudinary.com/settings/api-keys`). Names
-   only, never values; non-blocking gaps also render on `ok` cards (Supabase with one ref missing,
-   Cloudinary falling back to the upload key).
+   to generate it (verified 2026-10-02/03: Cloudflare account API token template URL
+   `dash.cloudflare.com/?to=/:account/api-tokens` with the `account_analytics: read` permission
+   pre-filled - Manage account > Account API tokens, a service token not tied to a user, not the
+   empty User API Tokens page; Supabase `supabase.com/dashboard/account/tokens` with Usage
+   Analytics + Disk Config Read scopes; Vercel `vercel.com/account/tokens`; Cloudinary
+   `console.cloudinary.com/settings/api-keys`). Names only, never values; non-blocking gaps also
+   render on `ok` cards (Supabase with one ref missing, Cloudinary falling back to the upload key).
 4. **Per-environment config resolution:** in Local each section reads `NAME_PREVIEW` /
    `NAME_PRODUCTION` and falls back to plain `NAME` (shared values). Deployments read only their
    plain names. Local-only suffixed names (names only, optional):

@@ -71,6 +71,13 @@ describe('missing-credential guidance', () => {
 			platformMissingInfo('VERCEL_API_TOKEN'),
 		);
 	});
+
+	it('sends Cloudflare to the account token flow, not the empty user token page', () => {
+		const info = platformMissingInfo('MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN');
+		expect(info.setupUrl).toContain('/:account/api-tokens');
+		expect(info.setupUrl).not.toContain('/profile/api-tokens');
+		expect(info.description).toMatch(/Account API Token/);
+	});
 });
 
 describe('no credential values in provider payloads', () => {

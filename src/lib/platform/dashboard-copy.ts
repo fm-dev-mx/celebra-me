@@ -26,7 +26,7 @@ export function formatPlatformStorage(bytes: number): string {
 	return '0 MB';
 }
 
-export function formatPlatformCount(value: number): string {
+function formatPlatformCount(value: number): string {
 	return new Intl.NumberFormat('es-MX', { notation: 'compact', maximumFractionDigits: 1 }).format(
 		value,
 	);
@@ -37,7 +37,7 @@ export function formatPlatformMoney(usd: number): string {
 }
 
 /** Freshness stamp and projection times read in the business time zone. */
-export function formatPlatformTime(iso: string): string {
+function formatPlatformTime(iso: string): string {
 	return new Intl.DateTimeFormat('es-MX', {
 		dateStyle: 'short',
 		timeStyle: 'short',
@@ -118,8 +118,9 @@ interface MissingInfo {
 const MISSING_INFO: Record<string, MissingInfo> = {
 	MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN: {
 		description:
-			'Token de solo lectura de analítica de Cloudflare (permiso Account → Analytics: Read).',
-		setupUrl: 'https://dash.cloudflare.com/profile/api-tokens/',
+			'Token de solo lectura de analítica de Cloudflare: cree un Account API Token (Manage account → Account API tokens, no asociado a un usuario) con permiso Account → Analytics: Read.',
+		setupUrl:
+			'https://dash.cloudflare.com/?to=/:account/api-tokens&permissionGroupKeys=%5B%7B%22key%22%3A%22account_analytics%22%2C%22type%22%3A%22read%22%7D%5D&name=Celebra-me%20platform%20usage',
 	},
 	MEMORIES_CLOUDFLARE_ACCOUNT_ID: {
 		description: 'Identificador de la cuenta de Cloudflare (32 caracteres hexadecimales).',
