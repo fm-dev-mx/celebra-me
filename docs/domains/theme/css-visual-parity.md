@@ -60,8 +60,8 @@ unsuitable for Chromium's repeated rasterization of rotated rounded corners. The
 comparison tolerances remain unchanged. Stabilization is bounded to five seconds for viewports and
 twenty seconds for complete pages: large desktop PNGs can require 4–5 seconds each, and an initial
 height adjustment requires a third frame. The loop returns immediately once stable; continuously
-changing pages still fail. It does not retry a failed comparison, widen pixel tolerances, or update
-accepted images. This prevents a single transitional frame from becoming candidate evidence.
+changing pages still fail. It does not widen pixel tolerances or update accepted images. This
+prevents a single transitional frame from becoming candidate evidence.
 
 Complete-page tests allow sixty seconds for navigation, deferred media, PNG encoding and audits on
 shared CI runners; the stabilization loop retains its separate bounded timeout. Each capture writes
@@ -91,7 +91,14 @@ capture completion, not parity acceptance. Reports retain FAIL entries and a FAI
 any pixel comparison differs. Navigation, missing/corrupt baselines, and capture integrity errors
 remain immediate failures.
 
-Visual suites do not retry individual captures: a retry could replace the first failing evidence. An
+In compare mode a capture whose pixels differ gets exactly one in-run re-capture of the same,
+already settled page (owner decision of 2026-10-03). It passes only if the re-capture is within the
+unchanged tolerance; otherwise the re-capture's difference fails the run. The first attempt stays
+visible: its mismatch is kept as `recapturedDifference` in the capture record, its actual and diff
+PNGs remain in the test output, and teardown prints a `VISUAL_RECAPTURE` line listing every such
+capture. These are nondeterminism to fix at the source, not accepted noise. Candidate and diagnostic
+runs never re-capture, Playwright-level test retries stay disabled, and references are never
+updated. Before capture, hydration also decodes every loaded image, which changes timing only. An
 explicitly reviewed whole-suite rerun remains possible without updating references or changing
 tolerances.
 

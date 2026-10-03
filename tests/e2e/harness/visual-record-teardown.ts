@@ -2,6 +2,7 @@ import type { FullConfig } from '@playwright/test';
 import {
 	aggregateVisualSuite,
 	describeVisualAggregationFailures,
+	describeVisualRecaptures,
 	type VisualSuiteAggregation,
 } from '../../../scripts/screenshot/visual-record-aggregator';
 import { resolveVisualParityMode } from './visual-baseline-policy';
@@ -30,6 +31,8 @@ export default async function visualRecordTeardown(config: FullConfig): Promise<
 			}),
 		)
 		.filter((result): result is VisualSuiteAggregation => result !== undefined);
+	for (const notice of describeVisualRecaptures(results))
+		console.warn(`VISUAL_RECAPTURE ${notice}`);
 	const failures = describeVisualAggregationFailures(results);
 	if (failures.length) {
 		throw new Error(`Visual capture aggregation failed:\n${failures.join('\n')}`);

@@ -23,7 +23,10 @@ import {
 	resolveVisualOutputRoot,
 	visualSuiteMode,
 } from './harness/visual-capture-record';
-import { recordVisualCapture, settleVisualCapture } from './harness/visual-capture-settlement';
+import {
+	recordVisualCapture,
+	settleVisualCaptureWithRecapture,
+} from './harness/visual-capture-settlement';
 import {
 	buildVisualPageCases,
 	VISUAL_VIEWPORTS,
@@ -221,11 +224,15 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 				const captureStarted = Date.now();
 				const image = await captureCompletePage(page);
 				const captureMs = Date.now() - captureStarted;
-				const settlement = settleVisualCapture({
+				const settlement = await settleVisualCaptureWithRecapture({
 					testInfo,
 					mode: VISUAL_PARITY_MODE,
 					file: snapshotName,
 					image,
+					recapture: async () => {
+						await page.waitForTimeout(500);
+						return captureCompletePage(page);
+					},
 				});
 				const contentHash = definition
 					? hashVisualValue(

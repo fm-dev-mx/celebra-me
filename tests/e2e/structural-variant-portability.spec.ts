@@ -31,7 +31,10 @@ import {
 	resolveVisualOutputRoot,
 	visualSuiteMode,
 } from './harness/visual-capture-record';
-import { recordVisualCapture, settleVisualCapture } from './harness/visual-capture-settlement';
+import {
+	recordVisualCapture,
+	settleVisualCaptureWithRecapture,
+} from './harness/visual-capture-settlement';
 
 const VIEWPORTS = VISUAL_VIEWPORTS;
 
@@ -504,11 +507,16 @@ async function runVariantVisualTest(
 	const captureStarted = Date.now();
 	const viewportSnapshotBuffer = await captureStablePage(page);
 	const captureMs = Date.now() - captureStarted;
-	const settlement = settleVisualCapture({
+	const settlement = await settleVisualCaptureWithRecapture({
 		testInfo: test.info(),
 		mode: VISUAL_PARITY_MODE,
 		file: snapshotName,
 		image: viewportSnapshotBuffer,
+		recapture: async () => {
+			await page.waitForTimeout(500);
+			await waitForVisualHydration(page);
+			return captureStablePage(page);
+		},
 	});
 	const syntheticEvent = buildSyntheticVariantEvent({
 		section,

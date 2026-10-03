@@ -5,6 +5,7 @@ import sharp from 'sharp';
 import {
 	aggregateVisualSuite,
 	describeVisualAggregationFailures,
+	describeVisualRecaptures,
 } from '../../scripts/screenshot/visual-record-aggregator';
 import {
 	beginVisualRecordRun,
@@ -40,7 +41,10 @@ describe('visual capture records', () => {
 		else process.env.VISUAL_PARITY_RUN_ID = previousRunId;
 	});
 
-	async function record(file: string, options: { difference?: string; height?: number } = {}) {
+	async function record(
+		file: string,
+		options: { difference?: string; height?: number; recapturedDifference?: string } = {},
+	) {
 		writeFileSync(join(root, file), await mobilePng(options.height));
 		writeVisualCaptureRecord(root, {
 			suite: 'variants',
@@ -55,6 +59,9 @@ describe('visual capture records', () => {
 			runtimeSha: visualRuntimeSha(runtime),
 			captureMs: 10,
 			...(options.difference ? { difference: options.difference } : {}),
+			...(options.recapturedDifference
+				? { recapturedDifference: options.recapturedDifference }
+				: {}),
 		});
 	}
 
@@ -109,6 +116,28 @@ describe('visual capture records', () => {
 		})!;
 		expect(result.status).toBe('COMPARED');
 		expect(describeVisualAggregationFailures([result])).toEqual([]);
+	});
+
+	it('passes a recaptured capture but reports it as a flake', async () => {
+		beginVisualRecordRun(root);
+		markVisualSuiteStarted(root, 'variants');
+		await record('a.png', { recapturedDifference: '9120 pixels (ratio 0.03) are different.' });
+		await record('b.png');
+		await record('c.png');
+		const result = aggregateVisualSuite({
+			outputRoot: root,
+			suite: 'variants',
+			runId: process.env.VISUAL_PARITY_RUN_ID!,
+			mode: 'compare',
+			runtimeFingerprint: runtime,
+			expected,
+		})!;
+		expect(result.status).toBe('COMPARED');
+		expect(result.recaptured).toEqual(['a.png']);
+		expect(describeVisualAggregationFailures([result])).toEqual([]);
+		expect(describeVisualRecaptures([result])).toEqual([
+			expect.stringContaining('[variants] 1 captures passed only after one re-capture'),
+		]);
 	});
 
 	it('resets earlier records when a new run begins', async () => {
