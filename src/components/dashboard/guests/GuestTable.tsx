@@ -1,8 +1,11 @@
 import React from 'react';
 import GuestCard from '@/components/dashboard/guests/GuestCard';
+import GuestListRow from '@/components/dashboard/guests/GuestListRow';
+import type { GuestListView } from '@/components/dashboard/guests/use-guest-list-view';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import {
 	getGuestInviteUrl,
+	groupGuestsByStatus,
 	type GuestSaveCallback,
 } from '@/components/dashboard/guests/guest-presenter';
 import GuestTableRow from '@/components/dashboard/guests/GuestTableRow';
@@ -29,6 +32,8 @@ interface GuestTableProps {
 	isBrandingRemovalEligible?: boolean;
 	onToggleBrandingRemoval?: (guestId: string, hideCelebraMeBranding: boolean) => void;
 	onSaveGuest?: GuestSaveCallback;
+	/** Compact-screen presentation; the desktop table is unaffected. */
+	view?: GuestListView;
 }
 
 export const GUEST_TABLE_COL_COUNT = 7;
@@ -53,6 +58,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	isBrandingRemovalEligible,
 	onToggleBrandingRemoval,
 	onSaveGuest,
+	view = 'cards',
 }) => {
 	if (items.length === 0) {
 		return (
@@ -62,35 +68,84 @@ const GuestTable: React.FC<GuestTableProps> = ({
 		);
 	}
 
+	const renderCard = (item: DashboardGuestItem, index: number) => (
+		<GuestCard
+			key={item.guestId}
+			item={item}
+			index={index}
+			inviteUrl={getGuestInviteUrl(item, inviteBaseUrl)}
+			eventTitle={eventTitle}
+			shareTemplates={shareTemplates}
+			shareDateContext={shareDateContext}
+			isCelebrating={celebratingGuestId === item.guestId}
+			isHighlighted={highlightedGuestId === item.guestId}
+			isExpanded={expandedGuestId === item.guestId}
+			reminderMode={reminderMode}
+			isReminderEligible={eligibleGuestIds?.has(item.guestId) ?? false}
+			onReminderSent={onReminderSent}
+			onToggleExpanded={() => onToggleExpanded?.(item.guestId)}
+			onEdit={onEdit}
+			onDelete={onDelete}
+			onMarkShared={onMarkShared}
+			onRevertShared={onRevertShared}
+			isBrandingRemovalEligible={isBrandingRemovalEligible}
+			onToggleBrandingRemoval={onToggleBrandingRemoval}
+			onSaveGuest={onSaveGuest}
+		/>
+	);
+
 	return (
 		<>
-			<div className="dashboard-guests__cards">
-				{items.map((item, index) => (
-					<GuestCard
-						key={item.guestId}
-						item={item}
-						index={index}
-						inviteUrl={getGuestInviteUrl(item, inviteBaseUrl)}
-						eventTitle={eventTitle}
-						shareTemplates={shareTemplates}
-						shareDateContext={shareDateContext}
-						isCelebrating={celebratingGuestId === item.guestId}
-						isHighlighted={highlightedGuestId === item.guestId}
-						isExpanded={expandedGuestId === item.guestId}
-						reminderMode={reminderMode}
-						isReminderEligible={eligibleGuestIds?.has(item.guestId) ?? false}
-						onReminderSent={onReminderSent}
-						onToggleExpanded={() => onToggleExpanded?.(item.guestId)}
-						onEdit={onEdit}
-						onDelete={onDelete}
-						onMarkShared={onMarkShared}
-						onRevertShared={onRevertShared}
-						isBrandingRemovalEligible={isBrandingRemovalEligible}
-						onToggleBrandingRemoval={onToggleBrandingRemoval}
-						onSaveGuest={onSaveGuest}
-					/>
-				))}
-			</div>
+			{view === 'list' ? (
+				<div className="dashboard-guests__list">
+					{groupGuestsByStatus(items).map((section) => {
+						const headingId = `guest-section-${section.bucket}`;
+						return (
+							<section
+								key={section.bucket}
+								className={`guest-list-section guest-list-section--${section.bucket}`}
+								aria-labelledby={headingId}
+							>
+								<h2 id={headingId} className="guest-list-section__title">
+									<span>{section.title}</span>
+									<span className="guest-list-section__count">
+										{section.items.length}
+									</span>
+								</h2>
+								<ul className="guest-list-section__items">
+									{section.items.map((item) => {
+										const isOpen = expandedGuestId === item.guestId;
+										const detailsId = `guest-row-details-${item.guestId}`;
+										return (
+											<li
+												key={item.guestId}
+												className="guest-list-section__item"
+											>
+												<GuestListRow
+													item={item}
+													isOpen={isOpen}
+													detailsId={detailsId}
+													onOpen={() => onToggleExpanded?.(item.guestId)}
+												/>
+												{isOpen && (
+													<div
+														id={detailsId}
+														className="guest-row__details"
+													>
+														{renderCard(item, items.indexOf(item))}
+													</div>
+												)}
+											</li>
+										);
+									})}
+								</ul>
+							</section>
+						);
+					})}
+				</div>
+			) : (
+				<div className="dashboard-guests__cards">{items.map(renderCard)}</div>
+			)}
 
 			<div className="dashboard-guests__table-wrap">
 				<table className="dashboard-guests__table">

@@ -30,7 +30,7 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 	const segments: StatusSegment[] = [
 		{ filter: 'delivery-pending', label: 'Por enviar', count: counts.toSend },
 		{ filter: 'confirmation-pending', label: 'Esperando', count: counts.waiting },
-		{ filter: 'confirmed', label: 'Confirmados', count: counts.confirmed },
+		{ filter: 'confirmed', label: 'Vienen', count: counts.confirmed },
 	];
 	const isSegmentFilter = segments.some((segment) => segment.filter === activeFilter);
 

@@ -9,6 +9,8 @@ import { getVisibleTags } from '@/lib/guests/guest-tags';
 import GuestFormModal from '@/components/dashboard/guests/GuestFormModal';
 import GuestMobileDock from '@/components/dashboard/guests/GuestMobileDock';
 import GuestTable from '@/components/dashboard/guests/GuestTable';
+import GuestViewToggle from '@/components/dashboard/guests/GuestViewToggle';
+import { useGuestListView } from '@/components/dashboard/guests/use-guest-list-view';
 import ImportMagic from '@/components/dashboard/guests/ImportMagic';
 import SendInvitationModal from '@/components/dashboard/guests/SendInvitationModal';
 import ShareMessagesModal from '@/components/dashboard/guests/ShareMessagesModal';
@@ -50,6 +52,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const [expandedGuestId, setExpandedGuestId] = useState<string | null>(null);
 	const [reviewFilter, setReviewFilter] = useState<GuestReviewFilter>('all');
 	const [shareMessagesModalOpen, setShareMessagesModalOpen] = useState(false);
+	const [listView, setListView] = useGuestListView();
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const {
 		error,
@@ -364,6 +367,12 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onGroupChange={setGroup}
 				/>
 
+				{items.length > 0 && (
+					<div className="dashboard-guests__view-toggle">
+						<GuestViewToggle view={listView} onChange={setListView} />
+					</div>
+				)}
+
 				{loading && <p className="dashboard-status">Cargando invitados...</p>}
 				{error && <p className="dashboard-error">{error}</p>}
 
@@ -388,6 +397,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					isBrandingRemovalEligible={isBrandingRemovalEligible}
 					onToggleBrandingRemoval={handleToggleBrandingRemoval}
 					onSaveGuest={handleSaveInvitation}
+					view={listView}
 				/>
 
 				{modals}

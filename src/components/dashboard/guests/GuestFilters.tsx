@@ -62,7 +62,7 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 							type="search"
 							value={search}
 							onChange={(event) => onSearchChange(event.target.value)}
-							placeholder="Escriba un nombre o teléfono"
+							placeholder="Nombre o teléfono"
 						/>
 					</div>
 				</div>

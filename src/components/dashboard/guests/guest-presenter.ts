@@ -133,6 +133,16 @@ export interface GuestStatusCounts {
 	confirmedPeople: number;
 }
 
+export type GuestStatusBucket = 'to-send' | 'waiting' | 'confirmed' | 'declined';
+
+/** One bucket per guest: RSVP answers win over delivery state. */
+export function getGuestStatusBucket(item: DashboardGuestItem): GuestStatusBucket {
+	if (item.attendanceStatus === 'confirmed') return 'confirmed';
+	if (item.attendanceStatus === 'declined') return 'declined';
+	if (item.deliveryStatus === 'generated') return 'to-send';
+	return 'waiting';
+}
+
 export function computeGuestStatusCounts(items: DashboardGuestItem[]): GuestStatusCounts {
 	const counts: GuestStatusCounts = {
 		total: items.length,
@@ -143,18 +153,88 @@ export function computeGuestStatusCounts(items: DashboardGuestItem[]): GuestStat
 		confirmedPeople: 0,
 	};
 	for (const item of items) {
-		if (item.attendanceStatus === 'confirmed') {
-			counts.confirmed++;
-			counts.confirmedPeople += item.attendeeCount;
-		} else if (item.attendanceStatus === 'declined') {
-			counts.declined++;
-		} else if (item.deliveryStatus === 'generated') {
-			counts.toSend++;
-		} else if (isUnconfirmedSharedGuest(item)) {
-			counts.waiting++;
+		switch (getGuestStatusBucket(item)) {
+			case 'confirmed':
+				counts.confirmed++;
+				counts.confirmedPeople += item.attendeeCount;
+				break;
+			case 'declined':
+				counts.declined++;
+				break;
+			case 'to-send':
+				counts.toSend++;
+				break;
+			case 'waiting':
+				counts.waiting++;
+				break;
 		}
 	}
 	return counts;
+}
+
+export interface GuestStatusSection {
+	bucket: GuestStatusBucket;
+	title: string;
+	items: DashboardGuestItem[];
+}
+
+const STATUS_SECTION_TITLES: Record<GuestStatusBucket, string> = {
+	'to-send': 'Por enviar',
+	waiting: 'Esperando respuesta',
+	confirmed: 'Confirmados',
+	declined: 'No asistirán',
+};
+
+const STATUS_SECTION_ORDER: GuestStatusBucket[] = ['to-send', 'waiting', 'confirmed', 'declined'];
+
+/** Non-empty status sections in journey order, guests sorted by name inside each. */
+export function groupGuestsByStatus(items: DashboardGuestItem[]): GuestStatusSection[] {
+	const buckets = new Map<GuestStatusBucket, DashboardGuestItem[]>();
+	for (const item of items) {
+		const bucket = getGuestStatusBucket(item);
+		const list = buckets.get(bucket) ?? [];
+		list.push(item);
+		buckets.set(bucket, list);
+	}
+	return STATUS_SECTION_ORDER.filter((bucket) => buckets.has(bucket)).map((bucket) => ({
+		bucket,
+		title: STATUS_SECTION_TITLES[bucket],
+		items: [...(buckets.get(bucket) ?? [])].sort((a, b) =>
+			a.fullName.localeCompare(b.fullName, 'es', { sensitivity: 'base' }),
+		),
+	}));
+}
+
+function formatPeople(count: number): string {
+	return `${count} ${count === 1 ? 'persona' : 'personas'}`;
+}
+
+function formatDaysAgo(iso: string | null | undefined, now: Date): string | null {
+	if (!iso) return null;
+	const sent = new Date(iso);
+	if (isNaN(sent.getTime())) return null;
+	const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+	const days = Math.round((startOfDay(now) - startOfDay(sent)) / 86_400_000);
+	if (days <= 0) return 'hoy';
+	if (days === 1) return 'ayer';
+	return `hace ${days} días`;
+}
+
+/** Second line of a compact guest row, phrased for the guest's current status. */
+export function getGuestListSubtitle(item: DashboardGuestItem, now: Date = new Date()): string {
+	switch (getGuestStatusBucket(item)) {
+		case 'confirmed':
+			return `${item.attendeeCount === 1 ? 'Viene' : 'Vienen'} ${item.attendeeCount} de ${item.maxAllowedAttendees}`;
+		case 'declined':
+			return 'Avisó que no podrá ir';
+		case 'to-send':
+			return `${formatPeople(item.maxAllowedAttendees)} · Sin enviar`;
+		case 'waiting': {
+			if (item.isViewed) return `${formatPeople(item.maxAllowedAttendees)} · Ya la abrió`;
+			const sentAgo = formatDaysAgo(item.firstSharedAt, now);
+			return `${formatPeople(item.maxAllowedAttendees)} · ${sentAgo ? `Enviada ${sentAgo}` : 'Enviada'}`;
+		}
+	}
 }
 
 export type GuestSummaryTone = 'empty' | 'pending' | 'waiting' | 'done';
