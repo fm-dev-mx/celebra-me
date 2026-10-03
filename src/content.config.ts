@@ -7,12 +7,6 @@ const eventDemosCollection = defineCollection({
 	schema: eventContentSchema,
 });
 
-const eventTemplatesCollection = defineCollection({
-	loader: glob({ pattern: '**/[^_]*.json', base: './src/content/event-templates' }),
-	schema: eventContentSchema,
-});
-
 export const collections = {
 	'event-demos': eventDemosCollection,
-	'event-templates': eventTemplatesCollection,
 };

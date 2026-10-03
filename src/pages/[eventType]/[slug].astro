@@ -186,7 +186,7 @@ const activePresetUrl = viewModel?.theme?.preset
 
 const activeSectionCssPlan =
 	page && viewModel?.theme?.preset
-		? resolveInvitationCssLoadPlan(buildInvitationCssResolverInput({ page, viewModel, slug }))
+		? resolveInvitationCssLoadPlan(buildInvitationCssResolverInput({ page, viewModel }))
 		: [];
 
 const forceBlockingInvitationCss =

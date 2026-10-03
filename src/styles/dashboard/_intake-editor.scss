@@ -73,12 +73,6 @@
 	color: var(--color-state-info-text);
 }
 
-.invitation-editor__content-badge--demo,
-.invitation-editor__content-badge--demo-tag {
-	background: var(--color-surface-secondary);
-	color: var(--color-text-muted);
-}
-
 .invitation-editor__content-badge--mixed {
 	background: var(--dashboard-accent-soft-bg);
 	color: var(--color-action-accent);
@@ -289,10 +283,6 @@
 
 .invitation-editor__nav-dot--published {
 	background: var(--color-state-info-text);
-}
-
-.invitation-editor__nav-dot--demo {
-	background: var(--color-text-muted);
 }
 
 .invitation-editor__nav-dot--empty {
@@ -578,11 +568,6 @@
 .invitation-editor__source-badge--published {
 	background: var(--color-state-info-bg);
 	color: var(--color-state-info-text);
-}
-
-.invitation-editor__source-badge--demo {
-	background: var(--color-surface-secondary);
-	color: var(--color-text-muted);
 }
 
 .invitation-editor__source-badge--empty {

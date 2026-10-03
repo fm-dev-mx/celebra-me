@@ -1,7 +1,6 @@
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import {
 	buildSectionUrlMap,
-	mergeSectionUrlMaps,
 	buildSectionBundleUrlMap,
 	buildInvitationProfileUrlMap,
 	resolveInvitationCssLoadPlan as resolveInvitationCssLoadPlanFromMaps,
@@ -9,23 +8,10 @@ import {
 	type InvitationCssResolverInput,
 } from '@/lib/invitation/section-css-resolver-map';
 
-const footerVariantModules = import.meta.glob(
-	[
-		'/src/styles/themes/sections/footer/_angelic-presence.scss',
-		'/src/styles/themes/sections/footer/_editorial.scss',
-		'/src/styles/themes/sections/footer/_enchanted-rose.scss',
-		'/src/styles/themes/sections/footer/_premiere-floral.scss',
-	],
-	{
-		query: '?url',
-		eager: true,
-	},
-) as Record<string, { default: string }>;
-
-const sectionVariantModules = import.meta.glob(
-	'/src/styles/themes/sections/*/_*.scss',
-	{ query: '?url', eager: true },
-) as Record<string, { default: string }>;
+const sectionVariantModules = import.meta.glob('/src/styles/themes/sections/*/_*.scss', {
+	query: '?url',
+	eager: true,
+}) as Record<string, { default: string }>;
 
 const sectionBundleModules = import.meta.glob('/src/styles/invitation-sections-by-preset/*.scss', {
 	query: '?url',
@@ -37,11 +23,9 @@ const invitationProfileModules = import.meta.glob('/src/styles/invitation-profil
 	eager: true,
 }) as Record<string, { default: string }>;
 
-const footerVariantUrlMap = buildSectionUrlMap(footerVariantModules);
 const sectionVariantUrlMap = buildSectionUrlMap(sectionVariantModules);
 const sectionBundleUrlMap = buildSectionBundleUrlMap(sectionBundleModules);
 const invitationProfileUrlMap = buildInvitationProfileUrlMap(invitationProfileModules);
-const invitationSectionUrlMap = mergeSectionUrlMaps(footerVariantUrlMap, sectionVariantUrlMap);
 
 if (import.meta.env.DEV) {
 	const map = new Map(Object.entries(sectionBundleUrlMap));
@@ -59,7 +43,7 @@ export function resolveInvitationCssLoadPlan(
 ): InvitationCssLoadItem[] {
 	return resolveInvitationCssLoadPlanFromMaps(
 		sectionBundleUrlMap,
-		invitationSectionUrlMap,
+		sectionVariantUrlMap,
 		input,
 		invitationProfileUrlMap,
 	);

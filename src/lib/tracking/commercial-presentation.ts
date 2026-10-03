@@ -22,7 +22,6 @@ const ATTRIBUTION_LABELS: Record<string, string> = {
 	'event-types': 'Tipos de evento',
 	event_types: 'Tipos de evento',
 	'demo-xv-editorial': 'Demo XV editorial',
-	'demo-xv-jewelry-box': 'Demo XV · Jewelry Box',
 };
 
 const ATTRIBUTION_TERMS: Record<string, string> = {

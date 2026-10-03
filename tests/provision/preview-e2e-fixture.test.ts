@@ -27,15 +27,6 @@ jest.mock('../../scripts/provision/preview-write-auth.ts', () => ({
 	})),
 }));
 
-jest.mock('../../src/lib/intake/demo-preset-catalog.ts', () => ({
-	findDemoPreset: jest.fn(() => ({
-		id: 'demo-xv-jewelry-box',
-		eventType: 'xv',
-		themeId: 'jewelry-box',
-		displayName: 'XV Años — Jewelry Box',
-	})),
-}));
-
 import { classifyDbTarget } from '../../scripts/db/db-guard.ts';
 import { runPsql } from '../../scripts/db/db-workflow-lib.ts';
 import { verifyPreviewWriteAuthorization } from '../../scripts/provision/preview-write-auth.ts';
@@ -112,7 +103,7 @@ describe('preview-e2e-fixture', () => {
 		mockedPsql.mockReturnValueOnce({ status: 0, stdout: '', stderr: '' });
 		// published content lookup (missing)
 		mockedPsql.mockReturnValueOnce({ status: 0, stdout: '', stderr: '' });
-		// published content copy from canonical demo
+		// published content insert from the versioned fixture file
 		mockedPsql.mockReturnValueOnce({ status: 0, stdout: '', stderr: '' });
 		// published content postcondition verification
 		mockedPsql.mockReturnValueOnce({ status: 0, stdout: 'published-id', stderr: '' });
@@ -141,9 +132,11 @@ describe('preview-e2e-fixture', () => {
 		expect(created.action).toBe('created');
 		expect(created.postcondition).toBe(PREVIEW_E2E_FIXTURE_POSTCONDITION);
 		expect(mockedAuth).toHaveBeenCalled();
-		expect(
-			mockedPsql.mock.calls.some(([sql]) => String(sql).includes('demo-xv-jewelry-box')),
-		).toBe(true);
+		const publicationInsert = mockedPsql.mock.calls
+			.map(([sql]) => String(sql))
+			.find((sql) => sql.includes('insert into public.published_invitation_content'));
+		expect(publicationInsert).toContain('"isDemo":false');
+		expect(publicationInsert).not.toContain('from public.published_invitation_content');
 
 		mockedPsql.mockReset();
 		mockedPsql

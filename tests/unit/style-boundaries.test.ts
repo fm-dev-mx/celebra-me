@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
 const projectRoot = process.cwd();
 
@@ -228,21 +229,6 @@ describe('Style boundary governance', () => {
 		expect(premiereFloral.indexOf(editorialHeroImport)).toBeLessThan(
 			premiereFloral.indexOf(premiereHeroImport),
 		);
-	});
-
-	it('footer override discovery targets only canonical footer variants', () => {
-		const resolver = read('src/lib/invitation/section-css-resolver.ts');
-
-		expect(resolver).not.toContain('/src/styles/invitation-sections/');
-		for (const variant of [
-			'angelic-presence',
-			'editorial',
-			'enchanted-rose',
-			'premiere-floral',
-		]) {
-			expect(resolver).toContain(`/src/styles/themes/sections/footer/_${variant}.scss`);
-		}
-		expect(resolver).not.toContain('/src/styles/themes/sections/footer/*.scss');
 	});
 
 	it('invitation components avoid direct section-theme imports', () => {
@@ -506,7 +492,6 @@ describe('Style boundary governance', () => {
 			'split-groups',
 			'asymmetric-groups',
 			'ceremonial-family',
-			'portrait-register',
 		];
 
 		for (const name of existing) {
@@ -526,19 +511,6 @@ describe('Style boundary governance', () => {
 	});
 
 	it('in-scope sections do not use ThemePreset names as data-variant', () => {
-		const themePresets = [
-			'angelic-presence',
-			'celestial-blue',
-			'editorial',
-			'editorial-rose',
-			'editorial-magazine',
-			'enchanted-rose',
-			'jewelry-box',
-			'jewelry-box-wedding',
-			'luxury-hacienda',
-			'premiere-floral',
-			'sacred-keepsake',
-		];
 		const dirs = [
 			'header',
 			'quote',
@@ -556,7 +528,7 @@ describe('Style boundary governance', () => {
 			getFilesRecursively(`src/styles/themes/sections/${dir}`, ['.scss']),
 		);
 		const joined = files.map(read).join('\n');
-		for (const preset of themePresets) {
+		for (const preset of THEME_PRESETS) {
 			expect(joined).not.toContain(`[data-variant='${preset}']`);
 		}
 	});
@@ -647,22 +619,6 @@ describe('Style boundary governance', () => {
 		);
 		expect(defaultsBlock).not.toMatch(/--hero-split-title-font:\s*var\(--font-display\)/);
 		expect(split).toContain('var(--hero-split-title-font, var(--font-display))');
-	});
-
-	it('romina profile reasserts split-cover title tokens and clears base gradient chrome', () => {
-		const romina = read('src/styles/invitation-profiles/romina-rios-chaparro.scss');
-		expect(romina).toContain(".invitation-hero[data-variant='split-cover']");
-		expect(romina).toContain("@use '@fontsource/parisienne/400.css'");
-		expect(romina).toContain("--hero-split-title-font: 'Parisienne', cursive");
-		expect(romina).toContain('-webkit-text-fill-color: var(--romina-ivory)');
-		expect(romina).toContain('background: none');
-	});
-
-	it('alba thank-you restores circular photo-frame geometry', () => {
-		const alba = read('src/styles/invitation-profiles/alba-rosa-quinonez.scss');
-		const thankYou = alba.slice(alba.indexOf('.thank-you-section {'));
-		expect(thankYou).toContain('border-radius: 50%');
-		expect(thankYou).toContain('clip-path: circle(');
 	});
 
 	it('preset bundles do not reintroduce theme-base imports', () => {

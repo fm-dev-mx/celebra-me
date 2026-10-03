@@ -14,25 +14,23 @@ function makeDbSource(slug: string, eventType: string, fixturePath: string) {
 	return {
 		slug,
 		eventType,
-		isDemo: fixturePath.includes('event-demos'),
+		isDemo: data.isDemo === true,
 		content: data,
 	};
 }
 
-function loadDemo(slug: string, subdir: string) {
-	return loadFixture(`src/content/event-demos/${subdir}/${slug}.json`);
-}
+const JEWELRY_BOX_FIXTURE = 'tests/fixtures/content/xv-jewelry-box.json';
 
 describe('adaptDbEvent', () => {
 	it('produces InvitationViewModel matching adaptEvent for demos', () => {
 		const slug = 'demo-xv-jewelry-box';
-		const source = makeDbSource(slug, 'xv', `src/content/event-demos/xv/${slug}.json`);
+		const source = makeDbSource(slug, 'xv', JEWELRY_BOX_FIXTURE);
 
 		const dbResult = adaptDbEvent(source);
 
 		const event = {
 			id: `event-demos/xv/${slug}`,
-			data: loadDemo(slug, 'xv'),
+			data: loadFixture(JEWELRY_BOX_FIXTURE),
 		} as Parameters<typeof adaptEvent>[0];
 		const fileResult = adaptEvent(event);
 
@@ -47,13 +45,13 @@ describe('adaptDbEvent', () => {
 
 	it('produces InvitationViewModel matching adaptEvent for demos', () => {
 		const slug = 'demo-xv-jewelry-box';
-		const source = makeDbSource(slug, 'xv', `src/content/event-demos/xv/${slug}.json`);
+		const source = makeDbSource(slug, 'xv', JEWELRY_BOX_FIXTURE);
 
 		const dbResult = adaptDbEvent(source);
 
 		const event = {
 			id: `event-demos/xv/${slug}`,
-			data: loadDemo(slug, 'xv'),
+			data: loadFixture(JEWELRY_BOX_FIXTURE),
 		} as Parameters<typeof adaptEvent>[0];
 		const fileResult = adaptEvent(event);
 
@@ -69,7 +67,7 @@ describe('adaptDbEvent', () => {
 		const source = makeDbSource(
 			'demo-xv-jewelry-box',
 			'xv',
-			'src/content/event-demos/xv/demo-xv-jewelry-box.json',
+			'tests/fixtures/content/xv-jewelry-box.json',
 		);
 		const result = adaptDbEvent(source);
 
@@ -85,19 +83,21 @@ describe('adaptDbEvent', () => {
 		const source = makeDbSource(
 			'demo-xv-jewelry-box',
 			'xv',
-			'src/content/event-demos/xv/demo-xv-jewelry-box.json',
+			'tests/fixtures/content/xv-jewelry-box.json',
 		);
 		const result = adaptDbEvent(source);
 
 		expect(result.sections.location).toBeDefined();
-		expect(result.sections.location?.venues?.find((venue) => venue.type === 'ceremony')).toBeDefined();
+		expect(
+			result.sections.location?.venues?.find((venue) => venue.type === 'ceremony'),
+		).toBeDefined();
 	});
 
 	it('preserves music section when present in content', () => {
 		const source = makeDbSource(
 			'demo-xv-jewelry-box',
 			'xv',
-			'src/content/event-demos/xv/demo-xv-jewelry-box.json',
+			'tests/fixtures/content/xv-jewelry-box.json',
 		);
 		const result = adaptDbEvent(source);
 
@@ -123,7 +123,7 @@ describe('adaptDbEvent', () => {
 		const demoSoure = makeDbSource(
 			'demo-xv-jewelry-box',
 			'xv',
-			'src/content/event-demos/xv/demo-xv-jewelry-box.json',
+			'tests/fixtures/content/xv-jewelry-box.json',
 		);
 		expect(adaptDbEvent(demoSoure).isDemo).toBe(true);
 	});
@@ -143,7 +143,7 @@ describe('adaptDbEvent', () => {
 		const source = makeDbSource(
 			'demo-xv-jewelry-box',
 			'xv',
-			'src/content/event-demos/xv/demo-xv-jewelry-box.json',
+			'tests/fixtures/content/xv-jewelry-box.json',
 		);
 		const result = adaptDbEvent(source);
 
@@ -155,7 +155,7 @@ describe('adaptDbEvent', () => {
 		const source = makeDbSource(
 			'demo-xv-jewelry-box',
 			'xv',
-			'src/content/event-demos/xv/demo-xv-jewelry-box.json',
+			'tests/fixtures/content/xv-jewelry-box.json',
 		);
 		const result = adaptDbEvent(source);
 

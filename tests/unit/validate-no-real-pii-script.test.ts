@@ -5,9 +5,6 @@ import { runCommand } from '../helpers/run-command';
 
 const ROOT = process.cwd();
 const SCRIPT = 'scripts/validate-no-real-pii-in-content.mjs';
-const SHOWROOM = 'src/data/demo-showroom.data.ts';
-
-type ShowroomItem = { slug: string; visibility: string; reviewStatus: string };
 
 const fixtureRoots: string[] = [];
 
@@ -17,25 +14,6 @@ afterEach(() => {
 
 function demoEntry(overrides: Record<string, unknown> = {}): string {
 	return JSON.stringify({ eventType: 'xv', isDemo: true, title: 'Demo', ...overrides });
-}
-
-function showroomSource(items: ShowroomItem[]): string {
-	const entries = items.map((item) =>
-		[
-			'\t{',
-			"\t\t// Client's profile variants stay hidden until review.",
-			`\t\tslug: '${item.slug}',`,
-			`\t\tvisibility: '${item.visibility}',`,
-			`\t\treviewStatus: '${item.reviewStatus}',`,
-			"\t\tthumbnail: { assetSlug: 'demo-xv-editorial', key: 'hero', alt: 'Vista' },",
-			'\t},',
-		].join('\n'),
-	);
-	return [
-		'export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [',
-		...entries,
-		'] as const;',
-	].join('\n');
 }
 
 /** Copies the guard into a temp repo so it resolves the fixture tree as the project root. */
@@ -101,7 +79,7 @@ describe('validate-no-real-pii-in-content script', () => {
 	});
 
 	it('fails when the demo collection is missing', () => {
-		const root = createFixture({ 'src/content/event-templates/xv/master.json': '{}' });
+		const root = createFixture({ 'src/content/README.md': '# Content\n' });
 
 		const result = runGuard(root);
 
@@ -131,25 +109,8 @@ describe('validate-no-real-pii-in-content script', () => {
 		);
 	});
 
-	it('keeps rejecting non-demo files if the legacy events collection reappears', () => {
-		const root = createFixture({
-			'src/content/event-demos/xv/demo-xv-ok.json': demoEntry(),
-			'src/content/events/xv/xv-real-client.json': demoEntry({ isDemo: false }),
-		});
-
-		const result = runGuard(root);
-
-		expect(result.status).toBe(1);
-		expect(result.output).toContain(
-			'[PII] src/content/events/xv/xv-real-client.json is not marked isDemo=true',
-		);
-	});
-
-	describe('demos reusing a client visual profile', () => {
-		const demoPath = 'src/content/event-demos/xv/demo-xv-client-profile.json';
-		const clientProfileDemo = demoEntry({ visualProfileId: 'valentina-hernandez' });
-
-		it('accepts demo-owned profiles without a showroom entry', () => {
+	describe('demo visual profiles', () => {
+		it('accepts demo-owned profiles', () => {
 			const root = createFixture({
 				'src/content/event-demos/xv/demo-xv-celestial-blue.json': demoEntry({
 					visualProfileId: 'demo-xv-celestial-blue',
@@ -159,88 +120,19 @@ describe('validate-no-real-pii-in-content script', () => {
 			const result = runGuard(root);
 
 			expect(result.status).toBe(0);
-			expect(result.output).not.toContain('quarantined');
 		});
 
-		it('accepts client profiles quarantined as hidden/needs-review', () => {
+		it('rejects a demo styled by a client profile', () => {
+			const demoPath = 'src/content/event-demos/xv/demo-xv-client-profile.json';
 			const root = createFixture({
-				[demoPath]: clientProfileDemo,
-				[SHOWROOM]: showroomSource([
-					{ slug: 'demo-xv-editorial', visibility: 'featured', reviewStatus: 'approved' },
-					{
-						slug: 'demo-xv-client-profile',
-						visibility: 'hidden',
-						reviewStatus: 'needs-review',
-					},
-				]),
+				[demoPath]: demoEntry({ visualProfileId: 'valentina-hernandez' }),
 			});
-
-			const result = runGuard(root);
-
-			expect(result.status).toBe(0);
-			expect(result.output).toContain('1 demo(s) reusing client visual profiles');
-		});
-
-		it.each([
-			[
-				'featured/approved',
-				'featured',
-				'approved',
-				'visibility=featured, reviewStatus=approved',
-			],
-			['hidden/approved', 'hidden', 'approved', 'visibility=hidden, reviewStatus=approved'],
-			[
-				'featured/needs-review',
-				'featured',
-				'needs-review',
-				'visibility=featured, reviewStatus=needs-review',
-			],
-		])(
-			'rejects client profiles exposed as %s',
-			(_scenario, visibility, reviewStatus, state) => {
-				const root = createFixture({
-					[demoPath]: clientProfileDemo,
-					[SHOWROOM]: showroomSource([
-						{ slug: 'demo-xv-client-profile', visibility, reviewStatus },
-					]),
-				});
-
-				const result = runGuard(root);
-
-				expect(result.status).toBe(1);
-				expect(result.output).toContain(
-					`[PII] ${demoPath} reuses client visual profile "valentina-hernandez"`,
-				);
-				expect(result.output).toContain(`"demo-xv-client-profile" is ${state}`);
-			},
-		);
-
-		it('rejects client profiles without a showroom entry', () => {
-			const root = createFixture({
-				[demoPath]: clientProfileDemo,
-				[SHOWROOM]: showroomSource([
-					{
-						slug: 'demo-xv-editorial',
-						visibility: 'hidden',
-						reviewStatus: 'needs-review',
-					},
-				]),
-			});
-
-			const result = runGuard(root);
-
-			expect(result.status).toBe(1);
-			expect(result.output).toContain('"demo-xv-client-profile" is missing');
-		});
-
-		it('fails closed when the showroom data cannot be read', () => {
-			const root = createFixture({ [demoPath]: clientProfileDemo });
 
 			const result = runGuard(root);
 
 			expect(result.status).toBe(1);
 			expect(result.output).toContain(
-				`[PII] Cannot read DEMO_SHOWROOM_ITEMS from ${SHOWROOM}`,
+				`[PII] ${demoPath} uses client visual profile "valentina-hernandez"`,
 			);
 		});
 	});

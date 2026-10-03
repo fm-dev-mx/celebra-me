@@ -3,47 +3,12 @@ import {
 	buildInvitationProfileUrlMap,
 	buildSectionUrlMap,
 	resolveInvitationCssLoadPlan,
-	resolveInvitationCssUrls,
 	resolveSectionBundleCssUrl,
 	resolveSectionCssUrl,
-	resolveSectionCssUrls,
 } from '@/lib/invitation/section-css-resolver-map';
+import { resolveInvitationCssUrls } from '../helpers/invitation-css-urls';
 
 describe('section-css-resolver-map', () => {
-	it.each(['jewelry-box', 'celestial-blue'])(
-		'delivers the portrait register only when selected in %s',
-		(preset) => {
-			const bundles = { [preset]: '/_astro/preset.css' };
-			const sections = buildSectionUrlMap({
-				'/src/styles/themes/sections/family/_portrait-register.scss': {
-					default: '/_astro/portrait-register.css',
-				},
-			});
-			expect(
-				resolveInvitationCssUrls(bundles, sections, {
-					themePreset: preset,
-					sectionVariants: { family: 'portrait-register' },
-				}),
-			).toEqual(['/_astro/preset.css', '/_astro/portrait-register.css']);
-			expect(
-				resolveInvitationCssUrls(bundles, sections, {
-					themePreset: preset,
-					sectionVariants: { family: 'standard' },
-				}),
-			).toEqual(['/_astro/preset.css']);
-			expect(() =>
-				resolveInvitationCssUrls(
-					bundles,
-					{},
-					{
-						themePreset: preset,
-						sectionVariants: { family: 'portrait-register' },
-					},
-				),
-			).toThrow();
-		},
-	);
-
 	const modules = {
 		'/src/styles/themes/sections/footer/_editorial.scss': {
 			default: '/_astro/footer-editorial.css',
@@ -87,28 +52,6 @@ describe('section-css-resolver-map', () => {
 		).toBeUndefined();
 	});
 
-	it('resolves available section URLs without emitting base-only fallbacks', () => {
-		const sectionUrlMap = buildSectionUrlMap(modules);
-		const configs = [
-			{
-				section: 'footer',
-				presetToEntrypoint: {
-					'enchanted-rose': 'enchanted-rose',
-				},
-			},
-			{
-				section: 'missing',
-				presetToEntrypoint: {
-					'enchanted-rose': 'enchanted-rose',
-				},
-			},
-		];
-
-		expect(resolveSectionCssUrls(sectionUrlMap, configs, 'enchanted-rose')).toEqual([
-			'/_astro/footer-enchanted-rose.css',
-		]);
-	});
-
 	it('builds preset section bundle maps from glob module defaults', () => {
 		const bundleModules = {
 			'/src/styles/invitation-sections-by-preset/jewelry-box.scss': {
@@ -139,29 +82,6 @@ describe('section-css-resolver-map', () => {
 		expect(typeof resolveSectionBundleCssUrl(bundleUrlMap, 'jewelry-box')).toBe('string');
 	});
 
-	it('adds footer variant CSS when the rendered footer variant differs from the theme preset', () => {
-		const bundleUrlMap = buildSectionBundleUrlMap({
-			'/src/styles/invitation-sections-by-preset/editorial.scss': {
-				default: '/_astro/editorial-bundle.css',
-			},
-		});
-		const sectionUrlMap = buildSectionUrlMap({
-			'/src/styles/themes/sections/footer/_editorial.scss': {
-				default: '/_astro/footer-editorial.css',
-			},
-			'/src/styles/themes/sections/footer/_enchanted-rose.scss': {
-				default: '/_astro/footer-enchanted-rose.css',
-			},
-		});
-
-		expect(
-			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
-				themePreset: 'editorial',
-				footerVariant: 'enchanted-rose',
-			}),
-		).toEqual(['/_astro/editorial-bundle.css', '/_astro/footer-enchanted-rose.css']);
-	});
-
 	it('loads Gallery variant CSS independently from the active theme bundle', () => {
 		const bundleUrlMap = buildSectionBundleUrlMap({
 			'/src/styles/invitation-sections-by-preset/luxury-hacienda.scss': {
@@ -175,7 +95,7 @@ describe('section-css-resolver-map', () => {
 			'/src/styles/themes/sections/gallery/_single-keepsake.scss': {
 				default: '/_astro/gallery-single-keepsake.css',
 			},
-			'/src/styles/themes/sections/gallery/_jewelry-box.scss': {
+			'/src/styles/themes/sections/gallery/_jewelry-box-wedding.scss': {
 				default: '/_astro/gallery-jewelry-box.css',
 			},
 		});
@@ -520,26 +440,6 @@ describe('section-css-resolver-map', () => {
 				envelopeVariant: 'jewelry-box',
 			}),
 		).toEqual(['/_astro/jewelry-bundle.css', '/_astro/reveal-shared-light.css']);
-	});
-
-	it('does not add duplicate footer CSS when the footer follows the theme preset', () => {
-		const bundleUrlMap = buildSectionBundleUrlMap({
-			'/src/styles/invitation-sections-by-preset/editorial.scss': {
-				default: '/_astro/editorial-bundle.css',
-			},
-		});
-		const sectionUrlMap = buildSectionUrlMap({
-			'/src/styles/themes/sections/footer/_editorial.scss': {
-				default: '/_astro/footer-editorial.css',
-			},
-		});
-
-		expect(
-			resolveInvitationCssUrls(bundleUrlMap, sectionUrlMap, {
-				themePreset: 'editorial',
-				footerVariant: 'editorial',
-			}),
-		).toEqual(['/_astro/editorial-bundle.css']);
 	});
 
 	it('loads only the active visual profile and deduplicates repeated URLs', () => {

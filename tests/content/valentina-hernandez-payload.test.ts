@@ -1,6 +1,6 @@
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
-import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resolver';
+import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import {
 	VALENTINA_ASSET_SPECS,
 	VALENTINA_EVENT,
@@ -61,12 +61,9 @@ describe('Valentina Hernández managed definition', () => {
 			eventType: 'xv',
 			themeId: 'editorial-magazine',
 		});
-		expect(
-			checkPublishGuard({
-				baseDemoId: VALENTINA_EVENT.baseDemoId,
-				themeId: VALENTINA_EVENT.themeId,
-			}),
-		).toEqual({ ok: true });
+		expect(resolveInvitationTheme({ themeId: VALENTINA_EVENT.themeId })).toBe(
+			VALENTINA_EVENT.themeId,
+		);
 	});
 
 	it('builds schema-valid published content with authored editorial variants', () => {

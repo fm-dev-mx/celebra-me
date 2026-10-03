@@ -4,10 +4,7 @@ import { z } from 'zod';
 import { collections } from '@/content.config';
 
 const projectRoot = process.cwd();
-const demoContentPath = path.join(
-	projectRoot,
-	'src/content/event-demos/xv/demo-xv-jewelry-box.json',
-);
+const demoContentPath = path.join(projectRoot, 'tests/fixtures/content/xv-jewelry-box.json');
 
 const rawSchema = collections['event-demos'].schema;
 if (!rawSchema) {

@@ -1,5 +1,5 @@
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
-import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resolver';
+import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
@@ -31,12 +31,9 @@ describe('Romina local invitation content', () => {
 			eventType: 'xv',
 			themeId: 'premiere-floral',
 		});
-		expect(
-			checkPublishGuard({
-				baseDemoId: ROMINA_EVENT.baseDemoId,
-				themeId: ROMINA_EVENT.themeId,
-			}),
-		).toEqual({ ok: true });
+		expect(resolveInvitationTheme({ themeId: ROMINA_EVENT.themeId })).toBe(
+			ROMINA_EVENT.themeId,
+		);
 	});
 
 	it('builds schema-valid published content without visible pending placeholders', () => {

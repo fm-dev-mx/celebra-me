@@ -173,7 +173,7 @@ describe('GalleryEditor', () => {
 					items: [{ image: { type: 'external', src: '/uploads/photo.jpg' } }],
 				}}
 				assetLookupSlug="demo-xv-luxury-hacienda"
-				variant="luxury-hacienda"
+				variant="feature-mosaic"
 				onChange={jest.fn()}
 			/>,
 		);

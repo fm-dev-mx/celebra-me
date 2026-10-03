@@ -15,7 +15,7 @@ import {
 	collectAssetUsage,
 	collectAssetUsagesByInvitation,
 } from '@/lib/intake/services/asset-usage.service';
-import { getDemoPresetAssets } from '@/lib/intake/services/demo-asset.service';
+import { getBundledEventAssets } from '@/lib/intake/services/bundled-asset.service';
 import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { resolveAssetSlug } from '@/lib/assets/asset-slug';
@@ -157,24 +157,24 @@ export interface AssetUsageInfo {
 
 export interface AssetWithUsage extends InvitationAsset {
 	src: string;
-	isDemo?: false;
+	isBundled?: false;
 	usage: AssetUsageInfo;
 }
 
-export interface DemoAssetWithUsage {
+export interface BundledAssetWithUsage {
 	id: string;
 	invitationId?: string;
 	displayName: string;
 	src: string;
-	isDemo: true;
-	demoKey: string;
+	isBundled: true;
+	bundledKey: string;
 	width?: number;
 	height?: number;
 	mimeType: string;
 	usage: AssetUsageInfo;
 }
 
-export type LibraryAssetItem = AssetWithUsage | DemoAssetWithUsage;
+export type LibraryAssetItem = AssetWithUsage | BundledAssetWithUsage;
 
 const MAX_DISPLAY_NAME_LENGTH = 200;
 const MAX_ALT_TEXT_LENGTH = 500;
@@ -245,7 +245,7 @@ export async function updateAssetMetadata(
 
 export async function listAssets(
 	invitationId: string,
-	previewSlug?: string,
+	assetSlug?: string,
 	filter?: 'active' | 'archived',
 ): Promise<LibraryAssetItem[]> {
 	if (filter === 'archived') {
@@ -255,7 +255,7 @@ export async function listAssets(
 			return {
 				...asset,
 				src,
-				isDemo: false,
+				isBundled: false,
 				usage: {
 					usedInDraft: false,
 					usedInPublished: false,
@@ -278,7 +278,7 @@ export async function listAssets(
 		return {
 			...asset,
 			src,
-			isDemo: false,
+			isBundled: false,
 			usage: {
 				usedInDraft: usage?.usedInDraft ?? false,
 				usedInPublished: usage?.usedInPublished ?? false,
@@ -288,17 +288,17 @@ export async function listAssets(
 		};
 	});
 
-	if (!previewSlug) return uploaded;
+	if (!assetSlug) return uploaded;
 
-	const demoAssets = getDemoPresetAssets(previewSlug);
-	const demo: DemoAssetWithUsage[] = demoAssets.map((entry) => {
+	const bundledAssets = getBundledEventAssets(assetSlug);
+	const bundled: BundledAssetWithUsage[] = bundledAssets.map((entry) => {
 		const usage = usageByAssetId.get(entry.key);
 		return {
-			id: `demo:${previewSlug}:${entry.key}`,
+			id: `bundled:${assetSlug}:${entry.key}`,
 			displayName: entry.displayName,
 			src: entry.src,
-			isDemo: true,
-			demoKey: entry.key,
+			isBundled: true,
+			bundledKey: entry.key,
 			width: entry.width,
 			height: entry.height,
 			mimeType: 'image/webp',
@@ -311,16 +311,16 @@ export async function listAssets(
 		};
 	});
 
-	return [...uploaded, ...demo];
+	return [...uploaded, ...bundled];
 }
 
-export async function importDemoAsset(
+export async function importBundledAsset(
 	invitationId: string,
-	demoKey: string,
+	bundledKey: string,
 	requestUrl?: string,
 ): Promise<UploadAssetResult> {
-	if (!isEventAssetKey(demoKey)) {
-		throw new ApiError(400, 'bad_request', 'La clave de imagen de demo no es válida.');
+	if (!isEventAssetKey(bundledKey)) {
+		throw new ApiError(400, 'bad_request', 'La clave de imagen incluida no es válida.');
 	}
 
 	const invitation = await findInvitationById(invitationId);
@@ -331,20 +331,16 @@ export async function importDemoAsset(
 	const published = await findPublishedByInvitationId(invitationId);
 	const assetSlug = resolveAssetSlug(invitation, published?.content);
 
-	if (!isValidEvent(assetSlug)) {
-		throw new ApiError(
-			422,
-			'bad_request',
-			'La invitación no tiene configuración visual asociada.',
-		);
+	if (!assetSlug || !isValidEvent(assetSlug)) {
+		throw new ApiError(422, 'bad_request', 'La invitación no tiene imágenes incluidas.');
 	}
 
-	const metadata = getEventAsset(assetSlug, demoKey);
+	const metadata = getEventAsset(assetSlug, bundledKey);
 	if (!metadata) {
 		throw new ApiError(
 			404,
 			'not_found',
-			`No se encontró la imagen de demo "${demoKey}" para esta invitación.`,
+			`No se encontró la imagen incluida "${bundledKey}" para esta invitación.`,
 		);
 	}
 
@@ -365,7 +361,7 @@ export async function importDemoAsset(
 		throw new ApiError(
 			502,
 			'internal_error',
-			'No se pudo leer la imagen de demo para copiarla a la biblioteca.',
+			'No se pudo leer la imagen incluida para copiarla a la biblioteca.',
 		);
 	}
 
@@ -379,8 +375,8 @@ export async function importDemoAsset(
 		invitationId,
 		eventType: invitation.eventType,
 		slug: deliverySlug,
-		key: `demo-${demoKey}-${assetId.slice(0, 8)}`,
-		displayName: demoKey,
+		key: `bundled-${bundledKey}-${assetId.slice(0, 8)}`,
+		displayName: bundledKey,
 		normalized,
 	});
 }

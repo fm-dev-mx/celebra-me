@@ -6,12 +6,10 @@ import type { InvitationCssResolverInput } from '@/lib/invitation/section-css-re
 export function buildInvitationCssResolverInput(input: {
 	page: InvitationPageContext;
 	viewModel: InvitationViewModel;
-	slug?: string;
 }): InvitationCssResolverInput {
 	const { page, viewModel } = input;
 	return {
 		themePreset: viewModel.theme.preset,
-		footerVariant: page.footerVariant,
 		sectionVariants: {
 			hero: viewModel.hero.variant,
 			thankYou: viewModel.sections.thankYou?.variant,
@@ -24,8 +22,10 @@ export function buildInvitationCssResolverInput(input: {
 			gallery: viewModel.sections.gallery?.variant,
 			countdown: viewModel.sections.countdown?.variant,
 		},
-		envelopeVariant: page.envelope?.revealVariant === 'satin-filigree' ? 'satin-filigree' : page.envelope?.variant,
+		envelopeVariant:
+			page.envelope?.revealVariant === 'satin-filigree'
+				? 'satin-filigree'
+				: page.envelope?.variant,
 		visualProfileId: viewModel.visualProfileId,
-		slug: input.slug,
 	};
 }

@@ -31,10 +31,10 @@ function canonicalContent(overrides: Record<string, unknown> = {}) {
 describe('canonical section variants', () => {
 	it('preserves explicit semantic variants without normalization', () => {
 		const parsed = eventContentSchema.parse(
-			canonicalContent({ countdown: { title: 'Cuenta', variant: 'hacienda-ornament' } }),
+			canonicalContent({ countdown: { title: 'Cuenta', variant: 'clock-face' } }),
 		);
 
-		expect(parsed.countdown?.variant).toBe('hacienda-ornament');
+		expect(parsed.countdown?.variant).toBe('clock-face');
 	});
 
 	it('rejects theme-named and legacy variant inputs', () => {
@@ -51,9 +51,9 @@ describe('canonical section variants', () => {
 	});
 
 	it('rejects a visible countdown without its explicit section variant', () => {
-		expect(() =>
-			eventContentSchema.parse(canonicalContent({ countdown: undefined })),
-		).toThrow(/countdown\.variant is required/);
+		expect(() => eventContentSchema.parse(canonicalContent({ countdown: undefined }))).toThrow(
+			/countdown\.variant is required/,
+		);
 	});
 
 	it('rejects theme-named interlude variants instead of ignoring them', () => {
@@ -69,7 +69,9 @@ describe('canonical section variants', () => {
 	it('rejects the old gallery single alias instead of translating it', () => {
 		expect(() =>
 			eventContentSchema.parse(
-				canonicalContent({ gallery: { variant: 'single', items: [{ image: 'gallery01' }] } }),
+				canonicalContent({
+					gallery: { variant: 'single', items: [{ image: 'gallery01' }] },
+				}),
 			),
 		).toThrow();
 	});
@@ -78,7 +80,11 @@ describe('canonical section variants', () => {
 		expect(() =>
 			eventContentSchema.parse(
 				canonicalContent({
-					thankYou: { variant: 'full-bleed-photo', message: 'Gracias', closingName: 'Nombre' },
+					thankYou: {
+						variant: 'full-bleed-photo',
+						message: 'Gracias',
+						closingName: 'Nombre',
+					},
 				}),
 			),
 		).toThrow(/full-bleed-photo/);

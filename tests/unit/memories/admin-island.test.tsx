@@ -19,7 +19,6 @@ jest.mock('@/lib/memories/client/api', () => {
 			list: jest.fn(),
 			create: jest.fn(),
 			update: jest.fn(),
-			platformUsage: jest.fn(),
 			qrUrl: (eventId: string) => `/api/dashboard/admin/memories/${eventId}/qr`,
 		},
 	};
@@ -138,8 +137,6 @@ describe('MemoriesAdmin island', () => {
 		adminApi.list.mockReset();
 		adminApi.create.mockReset();
 		adminApi.update.mockReset();
-		adminApi.platformUsage.mockReset();
-		adminApi.platformUsage.mockResolvedValue({ kind: 'unconfigured' });
 	});
 
 	it('activates a space from the event picker with the planning inputs', async () => {
@@ -418,7 +415,7 @@ describe('MemoriesAdmin island', () => {
 		);
 	});
 
-	it('falls back to the recorded storage and warns when commitments exceed the free tier', async () => {
+	it('warns when commitments exceed the free tier', async () => {
 		adminApi.list.mockResolvedValue({
 			items: [adminItem(OPEN_SPACE)],
 			totals: { residentBytes: 1_200_000_000, committedBytes: 16_000_000_000 },
@@ -427,38 +424,8 @@ describe('MemoriesAdmin island', () => {
 
 		render(<MemoriesAdmin />);
 
-		expect(
-			await screen.findByText(/falta configurar el token de solo lectura/),
-		).toBeInTheDocument();
-		expect(screen.getByText('Almacenamiento registrado')).toBeInTheDocument();
-		expect(screen.getByRole('alert')).toHaveTextContent(
+		expect(await screen.findByRole('alert')).toHaveTextContent(
 			/Comprometido por espacios vigentes: 16 GB de 10 GB/,
 		);
-	});
-
-	it('renders live Cloudflare meters with their warning level', async () => {
-		adminApi.list.mockResolvedValue({ items: [], totals: NO_COMMITMENT, candidates: [] });
-		adminApi.platformUsage.mockResolvedValue({
-			kind: 'ok',
-			fetchedAt: '2026-10-24T12:00:00.000Z',
-			r2StorageBytes: { used: 9_500_000_000, limit: 10_000_000_000 },
-			r2ClassAOperations: { used: 3_100, limit: 1_000_000 },
-			r2ClassBOperations: { used: 12_000, limit: 10_000_000 },
-			workersRequests: { used: 75_000, limit: 100_000 },
-			durableObjectsRequests: { used: null, limit: 100_000 },
-		});
-
-		render(<MemoriesAdmin />);
-
-		const storage = await screen.findByRole('meter', { name: 'Almacenamiento R2' });
-		expect(storage).toHaveAttribute('aria-valuenow', '95');
-		expect(storage.closest('.memories-meter')).toHaveClass('memories-meter--critical');
-		expect(
-			screen
-				.getByRole('meter', { name: 'Solicitudes Workers (hoy)' })
-				.closest('.memories-meter'),
-		).toHaveClass('memories-meter--warning');
-		expect(screen.getByText('Sin dato')).toBeInTheDocument();
-		expect(screen.getByText(/Todavía no hay espacios/)).toBeInTheDocument();
 	});
 });

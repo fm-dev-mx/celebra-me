@@ -1,8 +1,4 @@
-import {
-	buildDraftPreviewPageContext,
-	hasMeaningfulDraftContent,
-	selectPreviewContent,
-} from '@/lib/invitation/draft-preview-helper';
+import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-helper';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { findAssetsByInvitationId } from '@/lib/intake/repositories/asset.repository';
@@ -32,65 +28,30 @@ const mockBuildPageContext = buildPageContextFromViewModel as jest.MockedFunctio
 	typeof buildPageContextFromViewModel
 >;
 
-const demoPreset: DemoPreset = {
-	id: 'demo-xv-enchanted-rose',
+// Required by the Invitation type; the preview helper does not read it.
+const snapshot: DemoPreset = {
+	id: 'xv-enchanted-rose',
 	eventType: 'xv',
 	displayName: 'XV Años — Enchanted Rose',
 	themeId: 'enchanted-rose',
-	defaultSections: [
-		'quote',
-		'location',
-		'countdown',
-		'family',
-		'itinerary',
-		'gallery',
-		'gifts',
-		'rsvp',
-		'thankYou',
-	],
-	supportedBlocks: [
-		'event-details',
-		'main-people',
-		'date-locations',
-		'photos',
-		'rsvp-config',
-		'music',
-		'gifts',
-		'special-messages',
-	],
-	recommendedBlocks: [
-		'event-details',
-		'main-people',
-		'date-locations',
-		'photos',
-		'rsvp-config',
-		'music',
-		'gifts',
-		'special-messages',
-	],
-	requiredAssets: [
-		'hero',
-		'portrait',
-		'gallery01',
-		'gallery02',
-		'gallery03',
-		'interlude01',
-		'interlude02',
-	],
-	previewSlug: 'demo-xv-enchanted-rose',
+	defaultSections: ['quote'],
+	supportedBlocks: [],
+	recommendedBlocks: [],
+	requiredAssets: [],
+	previewSlug: 'xv-enchanted-rose',
 };
 
 const makeProject = (overrides?: Partial<Invitation>): Invitation => ({
 	id: 'test-invitation-id',
 	kind: 'client',
 	sourceInvitationId: null,
-	slug: 'demo-xv-enchanted-rose',
+	slug: 'ayrin-samantha',
 	title: 'XV Años — Ayrin Samantha',
 	eventType: 'xv',
 	status: 'in_production',
-	baseDemoId: 'demo-xv-enchanted-rose',
+	baseDemoId: 'xv-enchanted-rose',
 	themeId: 'enchanted-rose',
-	snapshot: demoPreset,
+	snapshot,
 	clientName: '',
 	clientEmail: '',
 	clientWhatsapp: '',
@@ -116,15 +77,20 @@ const validDraftContent = {
 	},
 } satisfies Parameters<typeof buildDraftPreviewPageContext>[1];
 
-const validDemoContent = {
+const validPublishedContent = {
 	sectionOrder: ['quote'],
 	composition: { intersections: {} },
 	hero: {
-		name: 'Demo Celebrant',
+		name: 'Prior Celebrant',
 		backgroundImage: 'hero',
 		portrait: 'portrait',
 		variant: 'standard',
 	},
+};
+
+const previewOptions = {
+	themePreset: 'enchanted-rose',
+	priorPublishedContent: validPublishedContent,
 } satisfies Parameters<typeof buildDraftPreviewPageContext>[2];
 
 const mockViewModel = {
@@ -158,13 +124,13 @@ beforeEach(() => {
 });
 
 describe('buildDraftPreviewPageContext', () => {
-	it('builds a preview context from draft + demo content', async () => {
+	it('builds a preview context from draft and prior published content', async () => {
 		const invitation = makeProject();
 
 		const result = await buildDraftPreviewPageContext(
 			invitation,
 			validDraftContent,
-			validDemoContent,
+			previewOptions,
 		);
 
 		expect(result.ok).toBe(true);
@@ -175,21 +141,24 @@ describe('buildDraftPreviewPageContext', () => {
 		}
 	});
 
-	it('keeps demo rsvp.variant when seeding personalizedAccess from the demo contract', async () => {
+	it('keeps prior published rsvp.variant and personalizedAccess when the draft omits them', async () => {
 		const invitation = makeProject();
 		const draftWithRsvp = {
 			...validDraftContent,
 			rsvp: { title: 'Confirma tu asistencia' },
 		};
-		const demoWithRsvp = {
-			...validDemoContent,
+		const priorWithRsvp = {
+			...validPublishedContent,
 			rsvp: {
 				variant: 'editorial-press-pass',
 				personalizedAccess: { variant: 'editorial-pass' },
 			},
 		};
 
-		const result = await buildDraftPreviewPageContext(invitation, draftWithRsvp, demoWithRsvp);
+		const result = await buildDraftPreviewPageContext(invitation, draftWithRsvp, {
+			...previewOptions,
+			priorPublishedContent: priorWithRsvp,
+		});
 
 		expect(result.ok).toBe(true);
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
@@ -203,26 +172,34 @@ describe('buildDraftPreviewPageContext', () => {
 	it('passes correct args to adaptDbEvent', async () => {
 		const invitation = makeProject();
 
-		await buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
+		await buildDraftPreviewPageContext(invitation, validDraftContent, {
+			...previewOptions,
+			assetLookupSlug: 'ayrin-samantha',
+		});
 
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
+		expect(callArgs.slug).toBe('ayrin-samantha');
 		expect(callArgs.eventType).toBe('xv');
 		expect(callArgs.isDemo).toBe(false);
-		expect(callArgs.assetSlug).toBe('demo-xv-enchanted-rose');
-		expect(callArgs.content).toBeDefined();
+		expect(callArgs.assetSlug).toBe('ayrin-samantha');
+		expect(callArgs.content).toMatchObject({
+			isDemo: false,
+			theme: { preset: 'enchanted-rose' },
+			_assetSlug: 'ayrin-samantha',
+		});
 	});
 
 	it('calls buildPageContextFromViewModel with the adapted view model', async () => {
 		const invitation = makeProject();
 
-		await buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
+		await buildDraftPreviewPageContext(invitation, validDraftContent, previewOptions);
 
 		expect(mockBuildPageContext).toHaveBeenCalledTimes(1);
 		const callArgs = mockBuildPageContext.mock.calls[0][0];
 		expect(callArgs.viewModel).toBe(mockViewModel);
 		expect(callArgs.eventType).toBe('xv');
-		expect(callArgs.slug).toBeDefined();
+		expect(callArgs.slug).toBe('ayrin-samantha');
 	});
 
 	it('returns RENDER_FAILED when adaptDbEvent throws', async () => {
@@ -234,7 +211,7 @@ describe('buildDraftPreviewPageContext', () => {
 		const result = await buildDraftPreviewPageContext(
 			invitation,
 			validDraftContent,
-			validDemoContent,
+			previewOptions,
 		);
 
 		expect(result.ok).toBe(false);
@@ -243,22 +220,20 @@ describe('buildDraftPreviewPageContext', () => {
 		}
 	});
 
-	it('uses invitation slug for content identity and default asset resolution', async () => {
+	it('uses the invitation slug for content identity and no asset slug without a lookup slug', async () => {
 		const invitation = makeProject({ slug: 'ana-sofia-cota-guillen' });
 
-		await buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
+		await buildDraftPreviewPageContext(invitation, validDraftContent, previewOptions);
 
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
 		expect(callArgs.slug).toBe('ana-sofia-cota-guillen');
-		expect(callArgs.assetSlug).toBe('ana-sofia-cota-guillen');
+		expect(callArgs.assetSlug).toBeUndefined();
+		expect(callArgs.content).not.toHaveProperty('_assetSlug');
 	});
 
-	it('uses current content _assetSlug for asset resolution when it differs from previewSlug', async () => {
-		const invitation = makeProject({
-			slug: 'ana-sofia-cota-guillen',
-			snapshot: { ...demoPreset, previewSlug: 'demo-xv-jewelry-box' },
-		});
+	it('prefers the draft _assetSlug over the asset lookup slug', async () => {
+		const invitation = makeProject({ slug: 'ana-sofia-cota-guillen' });
 
 		await buildDraftPreviewPageContext(
 			invitation,
@@ -267,7 +242,7 @@ describe('buildDraftPreviewPageContext', () => {
 				_assetSlug: 'ana-sofia-cota-guillen',
 				hero: { name: 'Ana Sofía', backgroundImage: 'hero', portrait: 'portrait' },
 			},
-			validDemoContent,
+			{ ...previewOptions, assetLookupSlug: 'other-asset-slug' },
 		);
 
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
@@ -277,16 +252,12 @@ describe('buildDraftPreviewPageContext', () => {
 	});
 
 	it('uses an explicit asset lookup slug for non-empty draft content', async () => {
-		const invitation = makeProject({
-			slug: 'ximena-meza-trasvina',
-			snapshot: { ...demoPreset, previewSlug: 'demo-xv-jewelry-box' },
-		});
+		const invitation = makeProject({ slug: 'ximena-meza-trasvina' });
 
 		await buildDraftPreviewPageContext(
 			invitation,
 			{ ...validDraftContent, hero: { name: 'Ximena', backgroundImage: 'hero' } },
-			validDemoContent,
-			{ assetLookupSlug: 'ximena-meza-trasvina' },
+			{ ...previewOptions, assetLookupSlug: 'ximena-meza-trasvina' },
 		);
 
 		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
@@ -294,36 +265,23 @@ describe('buildDraftPreviewPageContext', () => {
 		expect((callArgs.content.hero as Record<string, unknown>).name).toBe('Ximena');
 	});
 
-	it('falls back to demo previewSlug for client invitations without a slug', async () => {
+	it('derives the public slug from eventType and id when the invitation has no slug', async () => {
 		const invitation = makeProject({ slug: null });
 
-		await buildDraftPreviewPageContext(invitation, validDraftContent, validDemoContent);
+		await buildDraftPreviewPageContext(invitation, validDraftContent, previewOptions);
 
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
-		expect(callArgs.assetSlug).toBe('demo-xv-enchanted-rose');
+		expect(callArgs.slug).toBe('xv-test-inv');
+		expect(callArgs.assetSlug).toBeUndefined();
 	});
 
-	it('uses the demo visual fallback when previewSlug is not an asset registry key', async () => {
-		const invitation = makeProject({
-			kind: 'demo',
-			slug: null,
-			snapshot: { ...demoPreset, previewSlug: 'demo-xv-editorial-magazine' },
-		});
-
-		await buildDraftPreviewPageContext(invitation, validDraftContent, {
-			...validDemoContent,
-			_assetSlug: 'demo-xv-editorial',
-		});
-
-		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
-		expect(callArgs.assetSlug).toBe('demo-xv-editorial');
-	});
-
-	it('fails closed with empty demo content (missing event-demos entry)', async () => {
+	it('fails closed without prior published content (no composition)', async () => {
 		const invitation = makeProject();
 
-		const result = await buildDraftPreviewPageContext(invitation, validDraftContent, {});
+		const result = await buildDraftPreviewPageContext(invitation, validDraftContent, {
+			themePreset: 'enchanted-rose',
+		});
 
 		expect(result.ok).toBe(false);
 		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
@@ -332,87 +290,26 @@ describe('buildDraftPreviewPageContext', () => {
 	it('succeeds with empty draft content (no draft saved yet)', async () => {
 		const invitation = makeProject();
 
-		const result = await buildDraftPreviewPageContext(invitation, {}, validDemoContent);
+		const result = await buildDraftPreviewPageContext(invitation, {}, previewOptions);
 
 		expect(result.ok).toBe(true);
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 	});
 
-	it('fails closed when both draft and demo content are empty', async () => {
+	it('fails closed when both draft and prior published content are empty', async () => {
 		const invitation = makeProject();
 
-		const result = await buildDraftPreviewPageContext(invitation, {}, {});
+		const result = await buildDraftPreviewPageContext(
+			invitation,
+			{},
+			{
+				themePreset: 'enchanted-rose',
+				priorPublishedContent: null,
+			},
+		);
 
 		expect(result.ok).toBe(false);
 		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
-	});
-});
-
-describe('preview content selection', () => {
-	it('treats an empty draft object as non-meaningful', () => {
-		expect(hasMeaningfulDraftContent(null)).toBe(false);
-		expect(hasMeaningfulDraftContent(undefined)).toBe(false);
-		expect(hasMeaningfulDraftContent({})).toBe(false);
-		expect(hasMeaningfulDraftContent({ hero: { name: 'Ximena' } })).toBe(true);
-	});
-
-	it('rejects non-object types as meaningful content', () => {
-		expect(hasMeaningfulDraftContent('string')).toBe(false);
-		expect(hasMeaningfulDraftContent(42)).toBe(false);
-		expect(hasMeaningfulDraftContent(true)).toBe(false);
-	});
-
-	it('rejects arrays even if they contain valid keys', () => {
-		expect(hasMeaningfulDraftContent(['hero', 'title'])).toBe(false);
-		expect(hasMeaningfulDraftContent([{ hero: { name: 'Test' } }])).toBe(false);
-	});
-
-	it('treats objects with only underscore/internal keys as non-meaningful', () => {
-		expect(hasMeaningfulDraftContent({ _assetSlug: 'test-slug' })).toBe(false);
-		expect(hasMeaningfulDraftContent({ _meta: { version: 1 } })).toBe(false);
-	});
-
-	it('treats objects with all values undefined as non-meaningful', () => {
-		expect(hasMeaningfulDraftContent({ title: undefined, hero: undefined })).toBe(false);
-	});
-
-	it('uses published content when a draft row exists but content is empty', () => {
-		const publishedContent = {
-			_assetSlug: 'ximena-meza-trasvina',
-			hero: { name: 'Ximena', backgroundImage: 'hero' },
-		};
-
-		const result = selectPreviewContent({
-			draftContent: {},
-			publishedContent,
-		});
-
-		expect(result).toEqual({
-			content: publishedContent,
-			label: 'Versión pública',
-			assetLookupSlug: 'ximena-meza-trasvina',
-		});
-	});
-
-	it('uses non-empty draft content before published content while keeping published asset slug', () => {
-		const draftContent = {
-			hero: { name: 'Ximena editada', backgroundImage: 'hero' },
-		};
-		const publishedContent = {
-			_assetSlug: 'ximena-meza-trasvina',
-			hero: { name: 'Ximena', backgroundImage: 'hero' },
-		};
-
-		const result = selectPreviewContent({
-			draftContent,
-			publishedContent,
-		});
-
-		expect(result).toEqual({
-			content: draftContent,
-			label: 'Borrador',
-			assetLookupSlug: 'ximena-meza-trasvina',
-		});
 	});
 });
 
@@ -423,7 +320,7 @@ describe('content mapping behavior', () => {
 		const result = await buildDraftPreviewPageContext(
 			invitation,
 			validDraftContent,
-			validDemoContent,
+			previewOptions,
 		);
 
 		expect(result.ok).toBe(true);
@@ -441,7 +338,7 @@ describe('content mapping behavior', () => {
 		const result = await buildDraftPreviewPageContext(
 			invitation,
 			validDraftContent,
-			validDemoContent,
+			previewOptions,
 		);
 		expect(result.ok).toBe(false);
 		if (!result.ok) {
@@ -455,39 +352,9 @@ describe('content mapping behavior', () => {
 		const result = await buildDraftPreviewPageContext(
 			invitation,
 			{ hero: { name: 'Published Hero' } },
-			validDemoContent,
+			previewOptions,
 		);
 		expect(result.ok).toBe(true);
-	});
-
-	it('fails closed when the event-demos entry is missing', async () => {
-		const invitation = makeProject();
-
-		const result = await buildDraftPreviewPageContext(invitation, validDraftContent, {});
-
-		expect(result.ok).toBe(false);
-		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
-	});
-
-	it('handles empty previewSlug without crashing', async () => {
-		const invitation = makeProject({
-			slug: null,
-			snapshot: { ...demoPreset, previewSlug: '' },
-		});
-
-		const result = await buildDraftPreviewPageContext(invitation, {}, {});
-
-		expect(result.ok).toBe(false);
-		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
-	});
-
-	it('renders default preview when neither draft nor published content exists', async () => {
-		const invitation = makeProject();
-
-		const result = await buildDraftPreviewPageContext(invitation, {}, {});
-
-		expect(result.ok).toBe(false);
-		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
 	});
 
 	it('resolves uploaded asset refs before mapping', async () => {
@@ -495,6 +362,7 @@ describe('content mapping behavior', () => {
 		const draftWithUploaded = {
 			...validDraftContent,
 			gallery: {
+				variant: 'uniform-grid',
 				items: [
 					{
 						image: {
@@ -522,7 +390,7 @@ describe('content mapping behavior', () => {
 			},
 		]);
 
-		await buildDraftPreviewPageContext(invitation, draftWithUploaded, validDemoContent);
+		await buildDraftPreviewPageContext(invitation, draftWithUploaded, previewOptions);
 
 		expect(mockFindAssets).toHaveBeenCalledWith(invitation.id);
 	});
@@ -532,13 +400,6 @@ describe('content mapping behavior', () => {
 			kind: 'client',
 			slug: 'alba-rosa-quinonez',
 			themeId: 'luxury-hacienda',
-			snapshot: {
-				...demoPreset,
-				id: 'demo-cumple-luxury-hacienda',
-				eventType: 'cumple',
-				themeId: 'luxury-hacienda',
-				previewSlug: 'demo-cumple-luxury-hacienda',
-			},
 			eventType: 'cumple',
 			title: '70 años de Alba Rosa Quiñónez López',
 		});
@@ -573,18 +434,16 @@ describe('content mapping behavior', () => {
 			},
 		};
 
-		const withoutPrior = await buildDraftPreviewPageContext(invitation, editableDraft, {});
+		const withoutPrior = await buildDraftPreviewPageContext(invitation, editableDraft, {
+			themePreset: 'luxury-hacienda',
+		});
 		expect(withoutPrior.ok).toBe(false);
 		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
 
-		const withPrior = await buildDraftPreviewPageContext(
-			invitation,
-			editableDraft,
-			{},
-			{
-				priorPublishedContent,
-			},
-		);
+		const withPrior = await buildDraftPreviewPageContext(invitation, editableDraft, {
+			themePreset: 'luxury-hacienda',
+			priorPublishedContent,
+		});
 		expect(withPrior.ok).toBe(true);
 		const contentWithPrior = mockAdaptDbEvent.mock.calls.at(-1)?.[0].content as Record<
 			string,

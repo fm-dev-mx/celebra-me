@@ -7,6 +7,10 @@
  * provide Supabase's /rest/v1 gateway prefix.
  */
 import { createHmac, randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+
+/** Seeded super admin in supabase/test/seed-test-data.sql. */
+const OWNER_USER_ID = 'a0000000-0000-0000-0000-000000000001';
 
 const apiOrigin = 'http://127.0.0.1:54331';
 const jwtSecret = 'super-secret-jwt-token-with-at-least-32-characters-long';
@@ -65,11 +69,29 @@ async function main(): Promise<void> {
 		status: 'in_production',
 		base_demo_id: 'demo-xv-jewelry-box',
 		theme_id: 'jewelry-box',
-		snapshot: { previewSlug: 'demo-xv-jewelry-box' },
-		kind: 'demo',
+		snapshot: {},
+		kind: 'client',
+		created_by: OWNER_USER_ID,
 	});
 	if (!invitationResponse.ok)
 		throw new Error(`Application setup invitation failed: ${await invitationResponse.text()}`);
+	// Managed invitations always carry their own published baseline before dashboard publishing.
+	const baseline = JSON.parse(
+		readFileSync(
+			new URL('../../tests/fixtures/content/xv-jewelry-box.json', import.meta.url),
+			'utf8',
+		),
+	) as Record<string, unknown>;
+	const baselineResponse = await request('published_invitation_content', 'POST', {
+		invitation_project_id: invitationId,
+		slug,
+		event_type: 'xv',
+		is_demo: false,
+		content: { ...baseline, isDemo: false, title: 'Prueba de reintento' },
+		version: 1,
+	});
+	if (!baselineResponse.ok)
+		throw new Error(`Application setup baseline failed: ${await baselineResponse.text()}`);
 	const draftResponse = await request('invitation_content_drafts', 'POST', {
 		id: draftId,
 		invitation_project_id: invitationId,
@@ -97,7 +119,7 @@ async function main(): Promise<void> {
 		);
 	}
 	const replay = await publishDraft(invitationId, { ...preflight, idempotencyKey });
-	assert(replay.publishedContent.version === 1, 'Retry incremented the published version.');
+	assert(replay.publishedContent.version === 2, 'Retry incremented the published version.');
 	assert(replay.idempotent === false, 'Replay changed the persisted idempotency indicator.');
 
 	const publishedResponse = await request(
@@ -108,8 +130,8 @@ async function main(): Promise<void> {
 		throw new Error(`Application verification read failed: ${await publishedResponse.text()}`);
 	const published = (await publishedResponse.json()) as Array<{ version: number }>;
 	assert(
-		published.length === 1 && published[0]?.version === 1,
-		'Expected exactly one published version.',
+		published.length === 1 && published[0]?.version === 2,
+		'Expected exactly one publication on top of the baseline.',
 	);
 
 	console.info('Application publication retry flow passed.');

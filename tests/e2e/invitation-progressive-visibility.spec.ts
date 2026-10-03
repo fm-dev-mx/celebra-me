@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const ROUTE = '/xv/demo-xv-jewelry-box';
+const ROUTE = '/xv/demo-xv-enchanted-rose';
 
 test.describe('public invitation progressive visibility', () => {
 	test.describe('without JavaScript', () => {

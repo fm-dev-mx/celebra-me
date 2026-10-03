@@ -1,0 +1,17 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
+import PlatformUsagePanel from '@/components/dashboard/platform/PlatformUsagePanel';
+
+if (!Astro.locals.session?.isSuperAdmin) {
+	return Astro.redirect('/dashboard/invitados');
+}
+---
+
+<DashboardLayout title="Plataforma">
+	<DashboardPageHeader
+		title="Consumo de la plataforma"
+		subtitle="Límites y costos de Cloudflare, Supabase, Vercel y Cloudinary, con el alcance de cada cuota."
+	/>
+	<PlatformUsagePanel client:load />
+</DashboardLayout>

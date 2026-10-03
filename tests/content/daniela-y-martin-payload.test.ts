@@ -1,5 +1,5 @@
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
-import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resolver';
+import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptEvent } from '@/lib/adapters/event';
 import { resolveLocationShowNavigationButtons } from '@/lib/invitation/presentation-options';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
@@ -42,12 +42,9 @@ describe('Boda Daniela y Martín provision contract', () => {
 			eventType: 'boda',
 			themeId: 'jewelry-box-wedding',
 		});
-		expect(
-			checkPublishGuard({
-				baseDemoId: DANIELA_EVENT.baseDemoId,
-				themeId: DANIELA_EVENT.themeId,
-			}),
-		).toEqual({ ok: true });
+		expect(resolveInvitationTheme({ themeId: DANIELA_EVENT.themeId })).toBe(
+			DANIELA_EVENT.themeId,
+		);
 	});
 
 	it('ships a Lane A profile scoped to jewelry-box-wedding', () => {

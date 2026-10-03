@@ -47,9 +47,6 @@ it('keeps the family portrait complete and the approved open composition scoped 
 			path.join(process.cwd(), 'src/assets/images/events/demo-xv-celestial-blue/family.webp'),
 		),
 	).toBe(true);
-	const sibling = JSON.parse(read('src/content/event-demos/xv/demo-xv-xareni-profile.json'));
-	expect(sibling.family.featuredImage).toBeUndefined();
-	expect(sibling.visualProfileId).not.toBe(demo.visualProfileId);
 });
 
 it('keeps the configured date, coherent identity and only the family interlude', () => {

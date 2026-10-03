@@ -3,9 +3,9 @@ import { expect, test, type Page } from '@playwright/test';
 const representativeRoutes = [
 	'/cumple/demo-cumple-luxury-hacienda',
 	'/boda/demo-boda-jewelry-box-wedding',
-	'/xv/demo-xv-xareni-profile',
+	'/xv/demo-xv-celestial-blue',
 	'/bautizo/demo-bautismo-angelic-presence',
-	'/baby-shower/demo-baby-shower-celestial',
+	'/baby-shower/leah-lexa',
 ] as const;
 
 const sealSizingRoutes = [
@@ -13,7 +13,7 @@ const sealSizingRoutes = [
 	'/boda/demo-boda-jewelry-box-wedding',
 	'/boda/daniela-y-martin',
 	'/cumple/alba-rosa-quinonez',
-	'/baby-shower/demo-baby-shower-celestial',
+	'/baby-shower/leah-lexa',
 ] as const;
 
 async function expectRevealed(page: Page) {
@@ -36,7 +36,9 @@ test.describe('shared envelope reveal interaction', () => {
 			await route.continue();
 		});
 		try {
-			await page.goto('/xv/demo-xv-jewelry-box?forceEnvelope=true', { waitUntil: 'commit' });
+			await page.goto('/xv/demo-xv-enchanted-rose?forceEnvelope=true', {
+				waitUntil: 'commit',
+			});
 			const seal = page.getByRole('button', { name: 'Abrir sobre de la invitación' });
 			await expect(seal).toBeVisible();
 			await expect(seal).toBeDisabled();
@@ -153,7 +155,7 @@ test.describe('shared envelope reveal interaction', () => {
 
 	test('transfers focus and preserves reduced-motion behavior', async ({ page }) => {
 		await page.emulateMedia({ reducedMotion: 'reduce' });
-		await page.goto('/xv/demo-xv-xareni-profile', { waitUntil: 'domcontentloaded' });
+		await page.goto('/xv/demo-xv-celestial-blue', { waitUntil: 'domcontentloaded' });
 		const seal = page.getByRole('button', { name: 'Abrir sobre de la invitación' });
 		await seal.focus();
 		await seal.click();

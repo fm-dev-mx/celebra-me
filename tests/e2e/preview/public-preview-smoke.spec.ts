@@ -1,10 +1,11 @@
 import { expect, test } from './public-preview-test';
 import {
-	PREVIEW_FIXTURE_DEMO_ID,
 	PREVIEW_FIXTURE_EVENT_TYPE,
 	PREVIEW_FIXTURE_SLUG,
 } from '../../../scripts/playwright/preview-environment';
 
+/** Static showroom demo served from the content collection, independent of the fixture row. */
+const STATIC_DEMO_ROUTE = '/xv/demo-xv-celestial-blue';
 const relevantResourceTypes = new Set(['stylesheet', 'script', 'image', 'font']);
 
 test('public routes and representative invitation assets load without runtime errors', async ({
@@ -42,12 +43,7 @@ test('public routes and representative invitation assets load without runtime er
 	const healthPayload = (await health.json()) as { status?: unknown };
 	expect(healthPayload.status).toBe('healthy');
 
-	const invitation = await page.goto(
-		`/${PREVIEW_FIXTURE_EVENT_TYPE}/${PREVIEW_FIXTURE_DEMO_ID}`,
-		{
-			waitUntil: 'networkidle',
-		},
-	);
+	const invitation = await page.goto(STATIC_DEMO_ROUTE, { waitUntil: 'networkidle' });
 	expect(invitation?.status()).toBe(200);
 	await expect(page.locator('main')).toBeVisible();
 

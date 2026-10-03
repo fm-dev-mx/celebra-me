@@ -6,16 +6,7 @@ import { DEMO_PRESET_CATALOG } from '@/lib/intake/demo-preset-catalog';
 import { isEventAssetKey, type EventAssetKey } from '@/lib/assets/asset-keys';
 import { eventContentSchema as eventSchema } from '@/lib/schemas/content/base-event.schema';
 
-const contentRoots = ['src/content/event-demos', 'src/content/event-templates'];
-const babyShowerDemoRoot = path.resolve(process.cwd(), 'src/content/event-demos/baby-shower');
-const babyShowerDemoPath = path.resolve(
-	process.cwd(),
-	'src/content/event-demos/baby-shower/demo-baby-shower-celestial.json',
-);
-const babyShowerAssetIndexPath = path.resolve(
-	process.cwd(),
-	'src/assets/images/events/demo-baby-shower-celestial/index.ts',
-);
+const contentRoots = ['src/content/event-demos'];
 const primeraComunionDemoPath = path.resolve(
 	process.cwd(),
 	'src/content/event-demos/primera-comunion/demo-primera-comunion-illustrated.json',
@@ -23,14 +14,6 @@ const primeraComunionDemoPath = path.resolve(
 const primeraComunionAssetIndexPath = path.resolve(
 	process.cwd(),
 	'src/assets/images/events/demo-primera-comunion-illustrated/index.ts',
-);
-const editorialMagazineDemoPath = path.resolve(
-	process.cwd(),
-	'src/content/event-demos/xv/demo-xv-editorial-magazine.json',
-);
-const editorialMagazineAssetIndexPath = path.resolve(
-	process.cwd(),
-	'src/assets/images/events/demo-xv-editorial/index.ts',
 );
 
 function getJsonContentFiles(root: string): string[] {
@@ -261,33 +244,7 @@ describe('Event content schema (real contract)', () => {
 		}
 	});
 
-	it('routes the static baby-shower demo through a fictitious slug only', () => {
-		const leahDemoPath = path.join(babyShowerDemoRoot, 'leah-lexa-baby-shower.json');
-		const babyShowerPreset = DEMO_PRESET_CATALOG.find(
-			(preset) => preset.eventType === 'baby-shower',
-		);
-
-		expect(fs.existsSync(babyShowerDemoPath)).toBe(true);
-		expect(fs.existsSync(leahDemoPath)).toBe(false);
-		expect(babyShowerPreset).toMatchObject({
-			id: 'demo-baby-shower-celestial',
-			displayName: 'Baby Shower — Celestial Demo',
-			previewSlug: 'demo-baby-shower-celestial',
-		});
-	});
-
-	it('keeps real Leah Lexa details out of static baby-shower demo content', () => {
-		const content = fs.readFileSync(babyShowerDemoPath, 'utf8');
-
-		expect(content).toContain('Luna Celeste');
-		expect(content).toContain('Mateo y Valeria');
-		expect(content).toContain('"_assetSlug": "demo-baby-shower-celestial"');
-		expect(content).not.toMatch(
-			/Leah Lexa|Hugo y Fernanda|Guadalupe Proletaria|51975133|Liverpool/,
-		);
-	});
-
-	it('registers the Baby Shower catalog demo in the preset catalog', () => {
+	it('keeps the Baby Shower preset record that the Leah Lexa invitation references', () => {
 		const preset = DEMO_PRESET_CATALOG.find((item) => item.id === 'demo-baby-shower-celestial');
 
 		expect(preset).toMatchObject({
@@ -297,44 +254,6 @@ describe('Event content schema (real contract)', () => {
 			themeId: 'celestial-blue',
 			previewSlug: 'demo-baby-shower-celestial',
 		});
-	});
-
-	it('aligns Baby Shower demo content fields with the preset catalog', () => {
-		const content = JSON.parse(fs.readFileSync(babyShowerDemoPath, 'utf8'));
-		const preset = DEMO_PRESET_CATALOG.find((item) => item.id === 'demo-baby-shower-celestial');
-
-		expect(content.eventType).toBe(preset?.eventType);
-		expect(content.theme?.preset).toBe(preset?.themeId);
-	});
-
-	it('uses demo-owned asset slug, not the Leah Lexa client folder', () => {
-		const content = JSON.parse(fs.readFileSync(babyShowerDemoPath, 'utf8'));
-
-		expect(content._assetSlug).toBe('demo-baby-shower-celestial');
-		expect(content._assetSlug).not.toBe('leah-lexa-baby-shower');
-	});
-
-	it('has an asset index file for the Baby Shower catalog demo', () => {
-		expect(fs.existsSync(babyShowerAssetIndexPath)).toBe(true);
-	});
-
-	it('includes all referenced assets in the Baby Shower demo asset index', () => {
-		const content = JSON.parse(fs.readFileSync(babyShowerDemoPath, 'utf8'));
-		const preset = DEMO_PRESET_CATALOG.find((item) => item.id === 'demo-baby-shower-celestial');
-
-		const referencedAssetKeys = [
-			content.hero?.backgroundImage,
-			content.family?.featuredImage,
-			...(content.gallery?.items ?? []).map((item: { image?: string }) => item.image),
-			content.thankYou?.image,
-		].filter((key): key is EventAssetKey => typeof key === 'string' && isEventAssetKey(key));
-
-		const assetIndexSource = fs.readFileSync(babyShowerAssetIndexPath, 'utf8');
-		for (const key of [
-			...new Set([...referencedAssetKeys, ...(preset?.requiredAssets ?? [])]),
-		]) {
-			expect(assetIndexSource).toContain(key);
-		}
 	});
 
 	it('registers the Primera Comunión demo in the preset catalog', () => {
@@ -352,7 +271,7 @@ describe('Event content schema (real contract)', () => {
 		expect(preset?.requiredAssets).toEqual(['hero', 'family', 'gallery01', 'gallery02']);
 	});
 
-	it('registers the Editorial Magazine XV demo in the preset catalog', () => {
+	it('keeps the Editorial Magazine preset record that published invitations reference', () => {
 		const preset = DEMO_PRESET_CATALOG.find((item) => item.id === 'demo-xv-editorial-magazine');
 
 		expect(preset).toMatchObject({
@@ -370,34 +289,6 @@ describe('Event content schema (real contract)', () => {
 			'gallery02',
 			'gallery03',
 		]);
-	});
-
-	it('uses existing demo-owned assets for the Editorial Magazine XV demo', () => {
-		const content = JSON.parse(fs.readFileSync(editorialMagazineDemoPath, 'utf8'));
-		const preset = DEMO_PRESET_CATALOG.find((item) => item.id === 'demo-xv-editorial-magazine');
-
-		expect(content._assetSlug).toBe('demo-xv-editorial');
-		expect(content.theme?.preset).toBe('editorial-magazine');
-		expect(content.envelope?.revealVariant).toBe('editorial-cover');
-		expect(fs.existsSync(editorialMagazineAssetIndexPath)).toBe(true);
-
-		const referencedAssetKeys = [
-			content.hero?.backgroundImage,
-			content.hero?.portrait,
-			content.location?.venues?.find((venue: { type?: string }) => venue.type === 'reception')
-				?.image,
-			content.family?.featuredImage,
-			...(content.gallery?.items ?? []).map((item: { image?: string }) => item.image),
-			content.thankYou?.image,
-			...(content.interludes ?? []).map((item: { image?: string }) => item.image),
-		].filter((key): key is EventAssetKey => typeof key === 'string' && isEventAssetKey(key));
-
-		const assetIndexSource = fs.readFileSync(editorialMagazineAssetIndexPath, 'utf8');
-		for (const key of [
-			...new Set([...referencedAssetKeys, ...(preset?.requiredAssets ?? [])]),
-		]) {
-			expect(assetIndexSource).toContain(key);
-		}
 	});
 
 	it('resolves Primera Comunión demo assets through its explicit asset slug', () => {

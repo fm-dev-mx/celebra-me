@@ -20,6 +20,10 @@ const showroom = getDemoShowroomByPublicSlug(publicSlug);
 if (!showroom) {
 	return Astro.redirect('/', 302);
 }
+// Alternate public slugs are inbound aliases; the showroom has one canonical address.
+if (publicSlug !== showroom.publicSlug) {
+	return Astro.redirect(showroom.showroomHref, 301);
+}
 
 const featuredItems = getFeaturedDemoShowroomItems(showroom.eventType).filter((item) =>
 	Boolean(getEventAsset(item.thumbnail.assetSlug, item.thumbnail.key)),
@@ -31,10 +35,7 @@ const eventDisplayNameBySlug: Record<string, string> = {
 	xv: 'XV años',
 	boda: 'boda',
 	bautizo: 'bautizo',
-	bautismo: 'bautizo',
-	'baby-shower': 'baby shower',
 	cumpleanos: 'cumpleaños',
-	'primera-comunion': 'primera comunión',
 };
 
 const eventDisplayName = eventDisplayNameBySlug[publicSlug] ?? showroom.label.toLowerCase();

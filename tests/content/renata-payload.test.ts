@@ -1,5 +1,5 @@
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
-import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resolver';
+import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { deriveStartsAtUtc } from '@/lib/time/event-time';
 import fs from 'node:fs';
@@ -57,12 +57,9 @@ describe('XV Renata provision contract', () => {
 			eventType: 'xv',
 			themeId: 'editorial',
 		});
-		expect(
-			checkPublishGuard({
-				baseDemoId: RENATA_EVENT.baseDemoId,
-				themeId: RENATA_EVENT.themeId,
-			}),
-		).toEqual({ ok: true });
+		expect(resolveInvitationTheme({ themeId: RENATA_EVENT.themeId })).toBe(
+			RENATA_EVENT.themeId,
+		);
 	});
 
 	it('consumes shared premiere-floral reveal tokens instead of reconstructing them', () => {
@@ -76,10 +73,7 @@ describe('XV Renata provision contract', () => {
 		expect(reveal).not.toMatch(/romina|renata/i);
 	});
 
-	it('does not register a Renata key in shared legacy intersection profiles', () => {
-		expect(
-			fs.existsSync(path.join(process.cwd(), 'src/lib/invitation/variant-normalization.ts')),
-		).toBe(false);
+	it('keeps client identities out of the shared variant registry', () => {
 		const registry = fs.readFileSync(
 			path.join(process.cwd(), 'src/lib/invitation/section-variants.ts'),
 			'utf8',

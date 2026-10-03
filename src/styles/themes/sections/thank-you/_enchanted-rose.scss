@@ -1,6 +1,0 @@
-@use './portrait-letter-layout' as letter;
-
-// Retained skin for existing published variants; explicit portrait-letter owns its layout.
-.theme-preset--enchanted-rose .thank-you-section:where(:not([data-variant='portrait-letter'])) {
-	@include letter.composition;
-}

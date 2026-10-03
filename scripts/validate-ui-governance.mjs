@@ -13,9 +13,12 @@ const allowedHydratedComponents = new Set([
 	'EventsAdminTable',
 	'UsersAdminTable',
 	'InvitationEditor',
-	'ContentSyncPanel',
 	'MemoriesOrganizer',
 	'MemoriesAdmin',
+	// Platform usage console — read-only fetch via @/lib/platform/client/api
+	// (browser-safe @/lib/dashboard/api-client). No mutations, no server-only
+	// modules in the island: provider tokens stay on the server.
+	'PlatformUsagePanel',
 	// Local-only canonical status dashboard — read-only fetch via
 	// @/lib/dashboard/api-client. No mutations, no server-only modules in the island.
 	'CanonicalStatusPanel',

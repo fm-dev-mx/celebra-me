@@ -1,6 +1,6 @@
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
-import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resolver';
+import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import {
 	DESTENID_ASSET_SPECS,
 	DESTENID_EVENT,
@@ -61,12 +61,9 @@ describe('Destenid Sofía managed definition', () => {
 			eventType: 'xv',
 			themeId: 'editorial-magazine',
 		});
-		expect(
-			checkPublishGuard({
-				baseDemoId: DESTENID_EVENT.baseDemoId,
-				themeId: DESTENID_EVENT.themeId,
-			}),
-		).toEqual({ ok: true });
+		expect(resolveInvitationTheme({ themeId: DESTENID_EVENT.themeId })).toBe(
+			DESTENID_EVENT.themeId,
+		);
 	});
 
 	it('builds schema-valid published content with authored editorial variants', () => {

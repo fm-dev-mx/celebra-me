@@ -8,31 +8,19 @@ export function getAssetSlugFromContent(
 	return typeof value === 'string' && value.trim() ? value : undefined;
 }
 
+/**
+ * The invitation's own versioned asset namespace: the published `_assetSlug`, or a
+ * registry namespace named after the invitation. Undefined when the invitation only
+ * uses uploaded assets.
+ */
 export function resolveAssetSlug(
-	invitation: Invitation,
+	invitation: Pick<Invitation, 'slug' | 'eventType'>,
 	publishedContent?: Record<string, unknown> | null,
-	visualConfiguration?: Record<string, unknown> | null,
-): string {
+): string | undefined {
 	const publishedSlug = getAssetSlugFromContent(publishedContent);
 	if (publishedSlug) return publishedSlug;
-
-	if (invitation.kind === 'client' && invitation.slug) {
-		if (isValidEvent(invitation.slug)) {
-			return invitation.slug;
-		}
-		if (invitation.eventType) {
-			const derived = `${invitation.slug}-${invitation.eventType}`;
-			if (isValidEvent(derived)) {
-				return derived;
-			}
-		}
-	}
-
-	// A demo's route/content slug can intentionally differ from the asset-registry
-	// namespace while it reuses a curated media set. Keep this after a real
-	// invitation's own asset namespace, but before the legacy previewSlug fallback.
-	const configuredSlug = getAssetSlugFromContent(visualConfiguration);
-	if (configuredSlug) return configuredSlug;
-
-	return invitation.snapshot.previewSlug;
+	if (!invitation.slug) return undefined;
+	if (isValidEvent(invitation.slug)) return invitation.slug;
+	const derived = `${invitation.slug}-${invitation.eventType}`;
+	return isValidEvent(derived) ? derived : undefined;
 }

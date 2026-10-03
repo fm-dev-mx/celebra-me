@@ -1,7 +1,5 @@
 import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 
-const FALLBACK_PRESET = 'jewelry-box';
-
 const presetModules = import.meta.glob('/src/styles/invitation-presets/*.scss', {
 	query: '?url',
 	eager: true,
@@ -27,6 +25,8 @@ if (import.meta.env.DEV) {
 	}
 }
 
-export function resolvePresetCssUrl(preset: string): string | undefined {
-	return presetUrlMap[preset] ?? presetUrlMap[FALLBACK_PRESET];
+export function resolvePresetCssUrl(preset: string): string {
+	const url = presetUrlMap[preset];
+	if (!url) throw new Error(`Missing preset stylesheet entrypoint for "${preset}".`);
+	return url;
 }

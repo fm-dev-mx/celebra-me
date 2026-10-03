@@ -1,0 +1,56 @@
+// Shared usage meter bars (platform console and memories capacity meters).
+
+.usage-meter {
+	--usage-meter-fill: var(--color-state-success-text);
+
+	display: grid;
+	gap: 0.35rem;
+
+	&--warning {
+		--usage-meter-fill: var(--color-state-warning-text);
+	}
+
+	&--critical {
+		--usage-meter-fill: var(--color-state-danger-text);
+	}
+
+	&__label {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.5rem;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+
+		strong {
+			color: var(--color-text-primary);
+			white-space: nowrap;
+		}
+	}
+
+	&__limit {
+		font-weight: 400;
+		color: var(--color-text-muted);
+	}
+
+	&__track {
+		display: block;
+		height: 0.4rem;
+		overflow: hidden;
+		border-radius: 999px;
+		background: var(--dashboard-card-border);
+
+		> span {
+			display: block;
+			width: 0;
+			height: 100%;
+			border-radius: inherit;
+			background: var(--usage-meter-fill);
+		}
+
+		@for $step from 1 through 20 {
+			> span[data-fill='#{$step * 5}'] {
+				width: #{$step * 5}%;
+			}
+		}
+	}
+}

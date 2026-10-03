@@ -1,10 +1,6 @@
 import type { InvitationEditorMetadata } from '@/lib/dashboard/dto/intake';
 import { INVITATION_STATUS_LABELS } from '@/lib/intake/labels';
-import {
-	INVITATION_STATUSES,
-	type InvitationKind,
-	type InvitationStatus,
-} from '@/lib/intake/types';
+import { INVITATION_STATUSES, type InvitationStatus } from '@/lib/intake/types';
 
 function formatOwner(value: string | null): string {
 	if (!value) return 'No asignado';
@@ -13,12 +9,11 @@ function formatOwner(value: string | null): string {
 
 interface Props {
 	value: InvitationEditorMetadata;
-	kind: InvitationKind;
 	onChange: (value: InvitationEditorMetadata) => void;
 	onAssignOwner?: () => void;
 }
 
-export default function MetadataSection({ value, kind, onChange, onAssignOwner }: Props) {
+export default function MetadataSection({ value, onChange, onAssignOwner }: Props) {
 	const set = <Key extends keyof InvitationEditorMetadata>(
 		key: Key,
 		nextValue: InvitationEditorMetadata[Key],
@@ -88,7 +83,7 @@ export default function MetadataSection({ value, kind, onChange, onAssignOwner }
 						value={formatOwner(value.createdBy)}
 						tabIndex={-1}
 					/>
-					{kind === 'client' && !value.createdBy && onAssignOwner && (
+					{!value.createdBy && onAssignOwner && (
 						<button
 							type="button"
 							className="invitation-editor__primary-action"

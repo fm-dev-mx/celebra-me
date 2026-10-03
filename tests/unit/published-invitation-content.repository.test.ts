@@ -3,7 +3,6 @@ import {
 	findPublishedBySlugAndEventType,
 	listPublishedByEventTypes,
 	updatePublishedContentSnapshot,
-	upsertPublishedContent,
 } from '@/lib/intake/repositories/published-invitation-content.repository';
 
 jest.mock('@/lib/rsvp/repositories/supabase', () => ({
@@ -37,13 +36,6 @@ describe('published invitation content repository', () => {
 		await findPublishedByInvitationId('invitation-123');
 		await findPublishedBySlugAndEventType('maria-y-jose', 'boda');
 		await listPublishedByEventTypes(['boda']);
-		await upsertPublishedContent({
-			invitationId: 'invitation-123',
-			slug: 'maria-y-jose',
-			eventType: 'boda',
-			isDemo: false,
-			content: { title: 'Maria y Jose' },
-		});
 		await updatePublishedContentSnapshot({
 			id: 'published-123',
 			content: { title: 'Maria y Jose' },

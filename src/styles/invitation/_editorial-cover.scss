@@ -772,20 +772,6 @@
 	}
 }
 
-.editorial-cover-wrapper[data-variant='editorial-rose'] {
-	--ec-bg:
-		radial-gradient(ellipse at 18% 16%, rgb(128 82 96 / 28%), transparent 36%),
-		linear-gradient(135deg, rgb(43 29 34), rgb(24 15 20) 64%, rgb(45 28 34));
-	--ec-text-primary: rgb(252 242 245);
-	--ec-text-secondary: rgb(252 242 245 / 74%);
-	--ec-text-muted: rgb(252 242 245 / 48%);
-	--ec-accent: rgb(226 166 186);
-	--ec-accent-strong: rgb(245 207 220);
-	--ec-rule: rgb(245 207 220 / 38%);
-	--ec-rule-soft: rgb(252 242 245 / 14%);
-	--ec-panel: rgb(252 242 245 / 4%);
-}
-
 .editorial-cover-wrapper[data-variant='editorial-magazine'] {
 	--ec-bg:
 		linear-gradient(90deg, rgb(215 25 32 / 78%) 0 18%, transparent 22%),

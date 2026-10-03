@@ -104,60 +104,6 @@ describe('Theme Delivery Integration', () => {
 		expect(styles).toContain('--env-text-primary: var(--color-surface-primary);');
 	});
 
-	it('should allow previewTheme to override only the delivered preset for premiere-family invitations', () => {
-		const data = buildEventContentData({
-			...baseData,
-			eventType: 'xv',
-			title: 'Ximena',
-			theme: {
-				preset: 'premiere-floral',
-			},
-			hero: {
-				name: 'Ximena',
-				date: '2026-04-11T20:00:00.000Z',
-				backgroundImage: '/assets/hero.jpg',
-				variant: 'standard',
-			},
-			location: {
-				presentationOptions: {
-					showFlourishes: false,
-				},
-				venues: [
-					{
-						id: 'reception',
-						type: 'reception',
-						venueEvent: 'Recepción',
-						venueName: 'Venue',
-						address: 'Centro',
-						city: 'Los Mochis',
-						date: '11 abr 2026',
-						time: '20:00',
-					},
-				],
-			},
-			envelope: {
-				disabled: false,
-				sealStyle: 'wax',
-				microcopy: 'Abrir',
-				closedPalette: {
-					accent: 'surfaceDark',
-				},
-			},
-		});
-
-		const pageContext = prepareInvitationPageContext({
-			eventEntry: makeEventEntry(data, 'events/ximena-meza-trasvina'),
-			slug: 'ximena-meza-trasvina',
-			previewTheme: 'editorial',
-		});
-
-		expect(pageContext.wrapper.dataAttributes['data-theme-preset']).toBe('editorial');
-		expect(pageContext.viewModel.theme.preset).toBe('editorial');
-		expect(pageContext.viewModel.envelope.data?.variant).toBe('editorial');
-		expect(pageContext.footerVariant).toBe('editorial');
-		expect(pageContext.viewModel.sections.location?.variant).toBe('standard');
-	});
-
 	it('should deliver angelic-presence preset with correct wrapper attributes', () => {
 		const data = buildEventContentData({
 			...baseData,

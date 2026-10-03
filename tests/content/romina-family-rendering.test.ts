@@ -40,7 +40,6 @@ describe('Romina Family Eyebrow & Title Pipeline Contract', () => {
 			renderPlan,
 			layout: { title: '', description: '', image: '' },
 			wrapper: { className: '', showEnvelope: false, dataAttributes: {}, scopedStyles: '' },
-			footerVariant: 'premiere-floral',
 			footerClosingPhrase: 'Con cariño',
 		});
 

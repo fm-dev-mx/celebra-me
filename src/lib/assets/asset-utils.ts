@@ -12,13 +12,13 @@ export function resolveFrozenSrc(value: Record<string, unknown>): string | undef
 
 export function resolveAssetSrc(
 	value: string | EditableAssetSource | undefined | null,
-	previewSlug?: string,
+	assetSlug?: string,
 	assets?: { id: string; src: string }[],
 ): string | undefined {
 	if (!value) return undefined;
 	if (typeof value === 'string') {
 		if (value.startsWith('/') || value.startsWith('https://')) return value;
-		if (isEventAssetKey(value)) return getEventAsset(previewSlug ?? '', value)?.src;
+		if (isEventAssetKey(value)) return getEventAsset(assetSlug ?? '', value)?.src;
 		if (isCommonAssetKey(value)) return resolveSrc(getCommonAsset(value));
 		return undefined;
 	}
@@ -30,6 +30,6 @@ export function resolveAssetSrc(
 		);
 	}
 	if (isEventAssetKey(value.key))
-		return previewSlug ? getEventAsset(previewSlug, value.key)?.src : undefined;
+		return assetSlug ? getEventAsset(assetSlug, value.key)?.src : undefined;
 	return resolveSrc(getCommonAsset(value.key));
 }

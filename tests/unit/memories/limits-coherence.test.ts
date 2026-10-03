@@ -6,7 +6,6 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import {
-	CLOUDFLARE_FREE_TIER,
 	MEMORIES_APP_RATE_LIMITS,
 	MEMORIES_ARCHIVE_MAX_BYTES,
 	MEMORIES_CLEANUP_SETTLE_BUDGET_MS,
@@ -20,6 +19,7 @@ import {
 	MEMORIES_SIGN_RATE_LIMIT,
 	MEMORIES_UPLOAD_ABANDON_SECONDS,
 } from '@/lib/memories/contract/limits';
+import { CLOUDFLARE_FREE_TIER } from '@/lib/platform/contract/limits';
 import {
 	MEMORIES_ALLOWED_EXTENSIONS,
 	MEMORIES_ALLOWED_MIME_TYPES,

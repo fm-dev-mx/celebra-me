@@ -18,7 +18,6 @@ import {
 	findEventBySlugService,
 	updateEventService,
 } from '@/lib/rsvp/repositories/event.repository';
-import { loadDemoContent } from '@/lib/intake/editor-api';
 import { hasRsvpContent } from '@/lib/intake/utils';
 import {
 	DraftNormalizationError,
@@ -58,7 +57,8 @@ type RsvpLinkState = {
 
 export interface InvitationEditorContext {
 	invitation: Invitation & { rsvpSectionHasContent: boolean };
-	assetLookupSlug: string;
+	/** Undefined when the invitation only uses uploaded assets. */
+	assetLookupSlug?: string;
 	content: DraftContent;
 	currentDraftId: string | null;
 	draftUpdatedAt: string | null;
@@ -73,14 +73,9 @@ export interface InvitationEditorContext {
 function hydrateEditableContent(
 	draftContent: Record<string, unknown>,
 	publishedContent: Record<string, unknown>,
-	demoContent: Record<string, unknown>,
-	options: { allowDemoFallback?: boolean } = {},
 ): { content: DraftContent; sectionStates: Record<string, SectionSource> } {
 	try {
-		return mergePublishedWithDraft(publishedContent, draftContent, {
-			allowDemoFallback: options.allowDemoFallback,
-			demoContent,
-		});
+		return mergePublishedWithDraft(publishedContent, draftContent);
 	} catch (error) {
 		if (error instanceof DraftNormalizationError) {
 			throw new ApiError(
@@ -144,16 +139,13 @@ export async function getInvitationEditorContext(
 		throw new ApiError(404, 'not_found', 'No se encontró la invitación.');
 	}
 
-	const demoContent = await loadDemoContent(invitation.snapshot.previewSlug);
 	const { content, sectionStates } = hydrateEditableContent(
 		draft?.content ?? {},
 		published?.content ?? {},
-		demoContent,
-		{ allowDemoFallback: invitation.kind === 'demo' },
 	);
 
 	const contentSource = resolveContentSource(sectionStates);
-	const assetLookupSlug = resolveAssetSlug(invitation, published?.content, demoContent);
+	const assetLookupSlug = resolveAssetSlug(invitation, published?.content);
 
 	const linkedEvent = await findEventByInvitationIdService(invitationId);
 	const slugEvent =
@@ -340,9 +332,7 @@ export async function saveInvitationEditorMetadata(
 		status: atomic.idempotent ? 'replayed' : 'applied',
 		completedSteps,
 		result: { invitationUpdatedAt: atomic.invitationUpdatedAt },
-		...(atomic.idempotent
-			? { replayedFromOperationId: commandContext.operationId }
-			: {}),
+		...(atomic.idempotent ? { replayedFromOperationId: commandContext.operationId } : {}),
 	});
 
 	return {

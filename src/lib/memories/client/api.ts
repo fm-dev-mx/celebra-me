@@ -12,7 +12,6 @@ import type {
 	MemoriesGuestQuota,
 	MemoriesMediaPublicItem,
 	MemoriesOrganizerListResponse,
-	MemoriesPlatformUsage,
 	MemoriesSpaceHostSummary,
 	MemoriesSpaceRecord,
 	MemoriesSpaceSummary,
@@ -280,14 +279,6 @@ export type AdminSpaceList = {
 export const memoriesAdminApi = {
 	async list(): Promise<AdminSpaceList> {
 		return unwrap(await dashboardApi.get<AdminSpaceList>(MEMORIES_ADMIN_API_PATH));
-	},
-	async platformUsage(): Promise<MemoriesPlatformUsage> {
-		const payload = unwrap(
-			await dashboardApi.get<{ usage: MemoriesPlatformUsage }>(
-				`${MEMORIES_ADMIN_API_PATH}/platform-usage`,
-			),
-		);
-		return payload.usage;
 	},
 	qrUrl(eventId: string): string {
 		return `${MEMORIES_ADMIN_API_PATH}/${encodeURIComponent(eventId)}/qr`;

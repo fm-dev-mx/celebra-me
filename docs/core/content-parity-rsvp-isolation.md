@@ -44,8 +44,8 @@ Content parity is **semantic**, not raw database equality.
 
 Use `pnpm dbs` for read-only managed status, `pnpm invitation:release` for Local/Preview managed
 content, `pnpm prod:apply` for owner Production apply, and `pnpm db:migrate` for non-Production
-schema. Demo Content Sync, Git lane sync, Preview mirror, and `pnpm db:local:restore-from-dump`
-remain separate systems.
+schema. Git lane sync, Preview mirror, and `pnpm db:local:restore-from-dump` remain separate
+systems.
 
 Canonical workflow: managed creation via definition registry → Local/Preview with
 `pnpm invitation:release` → Production dry-run with
@@ -120,7 +120,7 @@ reuse it without per-invitation comparison rules.
     `scripts/provision/promotion-comparison.ts`
 - **Concern:** Canonical variant fields
   - **Owner:** `eventContentSchema` and the adapter consume only declared section variants; legacy
-    aliases are ingress-only during cutover
+    aliases are rejected
 - **Concern:** Publication projection
   - **Owner:** `preparePublicationProjection` / `canonicalizePublicationValue`
 

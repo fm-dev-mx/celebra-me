@@ -1,5 +1,5 @@
 import type { IntakeRequest, IntakeSubmission, Invitation } from '@/lib/intake/types';
-import { INTAKE_BLOCK_TYPES, type IntakeBlockType } from '@/lib/intake/types';
+import { INTAKE_BLOCK_TYPES } from '@/lib/intake/types';
 import { ensureAdminEditContext } from '@/lib/intake/services/admin-edit.service';
 
 jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
@@ -105,10 +105,8 @@ describe('ensureAdminEditContext enabledBlocks fallback', () => {
 		jest.clearAllMocks();
 	});
 
-	it('falls back to all block types when recommendedBlocks is empty', async () => {
-		const invitation = makeProject({
-			snapshot: { ...makeProject().snapshot, recommendedBlocks: [] },
-		});
+	it('falls back to all block types without a client request', async () => {
+		const invitation = makeProject();
 		mockFindProject.mockResolvedValue(invitation);
 		mockFindRequests.mockResolvedValue([]);
 		mockCreateRequest.mockResolvedValue(makeRequest());
@@ -144,9 +142,7 @@ describe('ensureAdminEditContext enabledBlocks fallback', () => {
 	});
 
 	it('never returns empty enabledBlocks', async () => {
-		const invitation = makeProject({
-			snapshot: { ...makeProject().snapshot, recommendedBlocks: [] as IntakeBlockType[] },
-		});
+		const invitation = makeProject();
 		mockFindProject.mockResolvedValue(invitation);
 		mockFindRequests.mockResolvedValue([]);
 		mockCreateRequest.mockResolvedValue(makeRequest());

@@ -249,8 +249,7 @@ Definition → normalized release → Local → immutable package → Preview �
 Command authority is `package.json`. Use `pnpm dbs` for read-only status,
 `pnpm db:migrate -- --target <target>` for schema, `pnpm invitation:release` for managed content,
 and `pnpm db:preview:sync-invitations` only for the separate Production-to-Preview regression
-mirror. Dashboard demo Content Sync, `pnpm lane:sync`, and `pnpm db:local:restore-from-dump` remain
-separate systems.
+mirror. `pnpm lane:sync` and `pnpm db:local:restore-from-dump` remain separate systems.
 
 Policy for mirror exclusions, RSVP reset, and Cloudinary vs Supabase Storage boundaries:
 [`docs/core/content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md).

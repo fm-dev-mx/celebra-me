@@ -72,31 +72,12 @@ const structuredFamilySchema = familyBaseSchema.extend({
 
 export const familySchema = z
 	.discriminatedUnion('variant', [
-		familyBaseSchema.strict().extend({
-			variant: z.literal('portrait-register'),
-			featuredImage: AssetSchema,
-			presentation: z.literal('with-photo').optional(),
-		}),
 		familyBaseSchema.strict().extend({ variant: z.literal('ceremonial-family') }),
 		familyBaseSchema.strict().extend({ variant: z.literal(FAMILY_VARIANTS[0]) }),
 		structuredFamilySchema.strict().extend({ variant: z.literal(FAMILY_VARIANTS[1]) }),
 		structuredFamilySchema.strict().extend({ variant: z.literal(FAMILY_VARIANTS[2]) }),
 	])
 	.superRefine((data, ctx) => {
-		const portraitDelivery = data.featuredImage?.delivery;
-		if (
-			data.variant === 'portrait-register' &&
-			(portraitDelivery?.mode !== 'original' ||
-				!portraitDelivery.width ||
-				!portraitDelivery.height)
-		) {
-			ctx.addIssue({
-				code: 'custom',
-				message:
-					'Portrait register requires original delivery with width and height to preserve the complete photograph without layout shifts',
-				path: ['featuredImage', 'delivery'],
-			});
-		}
 		if (data.godparents && data.godparentGroups) {
 			ctx.addIssue({
 				code: 'custom',

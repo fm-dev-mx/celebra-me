@@ -55,10 +55,9 @@ export async function ensureAdminEditContext(invitationId: string) {
 		? await findSubmissionByRequestId(clientRequest.id)
 		: null;
 
-	let enabledBlocks = clientRequest?.enabledBlocks ?? invitation.snapshot.recommendedBlocks;
-	if (!enabledBlocks || enabledBlocks.length === 0) {
-		enabledBlocks = [...INTAKE_BLOCK_TYPES];
-	}
+	const enabledBlocks = clientRequest?.enabledBlocks?.length
+		? clientRequest.enabledBlocks
+		: [...INTAKE_BLOCK_TYPES];
 
 	const request = await findOrCreateInternalRequest(invitationId, enabledBlocks);
 	const submission = await findOrCreateSubmission(request.id, clientSubmission?.blockData ?? {});

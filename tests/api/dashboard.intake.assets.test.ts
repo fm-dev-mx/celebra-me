@@ -1,7 +1,7 @@
 import { POST as uploadPost } from '@/pages/api/dashboard/intake/[id]/assets/upload';
-import { POST as importDemoPost } from '@/pages/api/dashboard/intake/[id]/assets/import-from-demo';
+import { POST as importDemoPost } from '@/pages/api/dashboard/intake/[id]/assets/import-bundled';
 import { requireEditorMutationAccess } from '@/lib/intake/editor-api';
-import { uploadAsset, importDemoAsset } from '@/lib/intake/services/asset.service';
+import { uploadAsset, importBundledAsset } from '@/lib/intake/services/asset.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { MAX_MULTIPART_BODY_BYTES } from '@/lib/intake/constants';
 import { FormData as NodeFormData, Request as NodeRequest } from 'undici';
@@ -13,7 +13,7 @@ jest.mock('@/lib/intake/editor-api', () => ({
 
 jest.mock('@/lib/intake/services/asset.service', () => ({
 	uploadAsset: jest.fn(),
-	importDemoAsset: jest.fn(),
+	importBundledAsset: jest.fn(),
 }));
 
 function createFormDataRequest(formData: NodeFormData): Request {
@@ -169,19 +169,19 @@ describe('/api/dashboard/intake/[id]/assets API routes', () => {
 		});
 	});
 
-	describe('POST /api/dashboard/intake/[id]/assets/import-from-demo', () => {
-		it('returns 200 on successful demo asset import', async () => {
-			(importDemoAsset as jest.Mock).mockResolvedValue({
+	describe('POST /api/dashboard/intake/[id]/assets/import-bundled', () => {
+		it('returns 200 on successful bundled asset import', async () => {
+			(importBundledAsset as jest.Mock).mockResolvedValue({
 				asset: { id: 'demo-asset-1', displayName: 'hero' },
 				src: 'http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/demo.webp',
 			});
 
 			const request = new Request(
-				'http://localhost/api/dashboard/intake/inv-1/assets/import-from-demo',
+				'http://localhost/api/dashboard/intake/inv-1/assets/import-bundled',
 				{
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ demoKey: 'hero' }),
+					body: JSON.stringify({ bundledKey: 'hero' }),
 				},
 			);
 
@@ -199,9 +199,9 @@ describe('/api/dashboard/intake/[id]/assets API routes', () => {
 			);
 		});
 
-		it('returns 400 when demoKey is missing', async () => {
+		it('returns 400 when bundledKey is missing', async () => {
 			const request = new Request(
-				'http://localhost/api/dashboard/intake/inv-1/assets/import-from-demo',
+				'http://localhost/api/dashboard/intake/inv-1/assets/import-bundled',
 				{
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
@@ -217,7 +217,7 @@ describe('/api/dashboard/intake/[id]/assets API routes', () => {
 
 			expect(response.status).toBe(400);
 			const json = (await response.json()) as { error: { message: string } };
-			expect(json.error.message).toContain('No se especificó la clave de la imagen de demo');
+			expect(json.error.message).toContain('No se especificó la clave de la imagen incluida');
 		});
 	});
 });

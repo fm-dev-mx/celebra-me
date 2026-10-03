@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
-import { resolveInvitationCssUrls } from '@/lib/invitation/section-css-resolver-map';
+import { resolveInvitationCssUrls } from '../helpers/invitation-css-urls';
 
 describe('Style and Schema Resolver Parity', () => {
 	describe('Zod Schema validation updates', () => {
@@ -27,10 +27,10 @@ describe('Style and Schema Resolver Parity', () => {
 			quote: { text: 'Una noche mágica' },
 			family: { variant: 'standard' },
 			rsvp: {
-			variant: 'standard',
-			personalizedAccess: { variant: 'standard' },
-			title: 'Confirma asistencia',
-		},
+				variant: 'standard',
+				personalizedAccess: { variant: 'standard' },
+				title: 'Confirma asistencia',
+			},
 		};
 
 		it('accepts hero.variant', () => {
@@ -118,47 +118,24 @@ describe('Style and Schema Resolver Parity', () => {
 			]);
 		});
 
-		it('does not fall back to slug when visualProfileId is absent', () => {
+		it('loads no profile when visualProfileId is absent', () => {
 			const urls = resolveInvitationCssUrls(
 				bundleUrlMap,
 				{},
-				{
-					themePreset: 'editorial-magazine',
-					slug: 'xareni-iyarit',
-				},
-				profileUrlMap,
-			);
-						expect(urls).toEqual(['/_astro/editorial-magazine-bundle.css']);
-		});
-
-		it('does not load arbitrary CSS for unknown slug or profile ID', () => {
-			const urls = resolveInvitationCssUrls(
-				bundleUrlMap,
-				{},
-				{
-					themePreset: 'editorial-magazine',
-					slug: 'unknown-slug',
-				},
+				{ themePreset: 'editorial-magazine' },
 				profileUrlMap,
 			);
 			expect(urls).toEqual(['/_astro/editorial-magazine-bundle.css']);
 		});
 
-		it('prioritizes explicit visualProfileId over slug when they differ', () => {
+		it('does not load arbitrary CSS for an unknown profile id', () => {
 			const urls = resolveInvitationCssUrls(
 				bundleUrlMap,
 				{},
-				{
-					themePreset: 'editorial-magazine',
-					visualProfileId: 'valentina-hernandez',
-					slug: 'xareni-iyarit',
-				},
+				{ themePreset: 'editorial-magazine', visualProfileId: 'unknown-profile' },
 				profileUrlMap,
 			);
-			expect(urls).toEqual([
-				'/_astro/editorial-magazine-bundle.css',
-				'/_astro/valentina-profile.css',
-			]);
+			expect(urls).toEqual(['/_astro/editorial-magazine-bundle.css']);
 		});
 	});
 

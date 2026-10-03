@@ -1,14 +1,12 @@
 ---
 export const prerender = false;
 
-import { getCollection } from 'astro:content';
 import { findDraftByInvitationId } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
-import { getContentEntrySlug } from '@/lib/content/events';
 import { buildDraftPreviewPageContext } from '@/lib/invitation/draft-preview-helper';
 import { computeEffectiveContent } from '@/lib/intake/services/merge-content.service';
-import { getAssetSlugFromContent } from '@/lib/assets/asset-slug';
+import { resolveAssetSlug } from '@/lib/assets/asset-slug';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import { resolvePresetCssUrl } from '@/lib/invitation/preset-css-resolver';
 import { resolveInvitationCssLoadPlan } from '@/lib/invitation/section-css-resolver';
@@ -29,7 +27,7 @@ import '@/styles/invitation.scss';
 import '@/styles/invitation/_preview-banner.scss';
 
 import { evaluatePreviewRevision } from '@/lib/editor/preview-revision';
-import { resolveInvitationTheme, resolvePreviewSlug } from '@/lib/intake/services/invitation-preset-resolver';
+import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { buildCoverContents } from '@/lib/invitation/cover-contents';
 
 const { id } = Astro.params;
@@ -44,37 +42,17 @@ if (!id) {
 	return Astro.redirect('/dashboard/invitaciones');
 }
 
-const invitationRecord = await findInvitationById(id);
+const invitation = await findInvitationById(id);
 
-if (!invitationRecord) {
+if (!invitation) {
 	errorMessage = 'Invitación no encontrada.';
 }
 
-const resolvedTheme = invitationRecord
-	? resolveInvitationTheme(invitationRecord)
-	: null;
+const themePreset = invitation ? resolveInvitationTheme(invitation) : null;
 
-const effectivePreviewSlug = invitationRecord
-	? resolvePreviewSlug(invitationRecord)
-	: '';
-
-const invitation = invitationRecord && resolvedTheme
-	? {
-			...invitationRecord,
-			themeId: resolvedTheme,
-			snapshot: {
-				...invitationRecord.snapshot,
-				themeId: resolvedTheme,
-				previewSlug: effectivePreviewSlug,
-			},
-		}
-	: null;
-
-const entries = !errorMessage ? await getCollection('event-demos') : [];
-const demoEntryForSlug = (slug: string) =>
-	entries.find(
-		(e: { id: string }) => getContentEntrySlug(e.id) === slug,
-	);
+if (invitation && !themePreset) {
+	errorMessage = `El tema configurado "${invitation.themeId}" no es un tema válido.`;
+}
 
 async function tryBuildContext(
 	content: Record<string, unknown>,
@@ -84,14 +62,10 @@ async function tryBuildContext(
 		priorPublishedContent?: Record<string, unknown> | null;
 	} = {},
 ): Promise<InvitationPageContext | null> {
-	if (!invitation) return null;
+	if (!invitation || !themePreset) return null;
 
-	const demoContent: Record<string, unknown> =
-		effectivePreviewSlug
-			? (demoEntryForSlug(effectivePreviewSlug)?.data as Record<string, unknown>) ?? {}
-			: {};
-
-	const result = await buildDraftPreviewPageContext(invitation, content, demoContent, {
+	const result = await buildDraftPreviewPageContext(invitation, content, {
+		themePreset,
 		assetLookupSlug: options.assetLookupSlug,
 		priorPublishedContent: options.priorPublishedContent,
 	});
@@ -120,7 +94,7 @@ const effectiveContent =
 		? {}
 		: computeEffectiveContent(draft?.content, published?.content);
 const hasAnyContent = Object.keys(effectiveContent).length > 0;
-const publishedAssetLookupSlug = getAssetSlugFromContent(published?.content);
+const assetLookupSlug = invitation ? resolveAssetSlug(invitation, published?.content) : undefined;
 const previewLabel = draft?.content
 	? requestedRevision
 		? `Borrador (revisión ${requestedRevision})`
@@ -134,13 +108,13 @@ if (!revisionMismatch && hasAnyContent && invitation) {
 		effectiveContent as unknown as Record<string, unknown>,
 		previewLabel,
 		{
-			assetLookupSlug: publishedAssetLookupSlug,
+			assetLookupSlug,
 			priorPublishedContent: published?.content,
 		},
 	);
 	if (!pageCtx && published?.content && !requestedRevision) {
 		pageCtx = await tryBuildContext(published.content, 'Versión pública', {
-			assetLookupSlug: publishedAssetLookupSlug,
+			assetLookupSlug,
 			priorPublishedContent: published.content,
 		});
 		if (pageCtx) {
@@ -154,6 +128,7 @@ if (!revisionMismatch && hasAnyContent && invitation) {
 
 if (!pageCtx && !errorMessage && invitation && !revisionMismatch) {
 	pageCtx = await tryBuildContext({}, 'Vacío', {
+		assetLookupSlug,
 		priorPublishedContent: published?.content,
 	});
 	if (!pageCtx) {
@@ -189,7 +164,6 @@ const activeSectionCssPlan =
 					buildInvitationCssResolverInput({
 						page: pageCtx,
 						viewModel: pageCtx.viewModel,
-						slug: invitationRecord?.slug ?? undefined,
 					}),
 				)
 		: [];
@@ -225,7 +199,7 @@ const headLinks = buildInvitationStylesheetHeadLinks({
 		>
 			<InvitationDeferredCssPromotion
 				slot="head"
-				eventSlug={invitationRecord?.slug ?? pageCtx.viewModel.id}
+				eventSlug={invitation?.slug ?? pageCtx.viewModel.id}
 				isDemo={false}
 			/>
 			<div class:list={['preview-banner', embeddedPreview && 'preview-banner--embedded']} role="banner">

@@ -1,5 +1,5 @@
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
-import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resolver';
+import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptEvent } from '@/lib/adapters/event';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
@@ -53,12 +53,9 @@ describe('Boda Victoria y Roberto provision contract', () => {
 			eventType: 'boda',
 			themeId: 'jewelry-box-wedding',
 		});
-		expect(
-			checkPublishGuard({
-				baseDemoId: VICTORIA_EVENT.baseDemoId,
-				themeId: VICTORIA_EVENT.themeId,
-			}),
-		).toEqual({ ok: true });
+		expect(resolveInvitationTheme({ themeId: VICTORIA_EVENT.themeId })).toBe(
+			VICTORIA_EVENT.themeId,
+		);
 	});
 
 	it('ships a Lane A terracotta profile scoped to jewelry-box-wedding', () => {

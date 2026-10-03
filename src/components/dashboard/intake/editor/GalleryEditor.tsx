@@ -18,7 +18,7 @@ type GalleryItem = Gallery['items'][number];
 
 interface Props {
 	value: Gallery;
-	assetLookupSlug: string;
+	assetLookupSlug?: string;
 	onChange: (value: Gallery) => void;
 	variant?: string;
 	invitationId?: string;
@@ -94,7 +94,9 @@ export default function GalleryEditor({
 								presentation,
 								items:
 									presentation === 'pet-keepsake'
-										? value.items.map(({ layoutRole: _layoutRole, ...item }) => item)
+										? value.items.map(
+												({ layoutRole: _layoutRole, ...item }) => item,
+											)
 										: value.items,
 							});
 						}}

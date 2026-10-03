@@ -34,7 +34,7 @@ describe('collectAssetUsagesByInvitation', () => {
 			invitationId: 'inv-1',
 			slug: 'test',
 			eventType: 'xv',
-			isDemo: false,
+			isBundled: false,
 			content: {
 				gallery: {
 					items: [
@@ -111,7 +111,7 @@ describe('collectAssetUsagesByInvitation', () => {
 			invitationId: 'inv-1',
 			slug: 'test',
 			eventType: 'xv',
-			isDemo: false,
+			isBundled: false,
 			content: {
 				gallery: {
 					items: [
@@ -203,7 +203,7 @@ describe('collectAssetUsage', () => {
 			invitationId: 'inv-1',
 			slug: 'test',
 			eventType: 'xv',
-			isDemo: false,
+			isBundled: false,
 			content: {
 				gallery: {
 					items: [

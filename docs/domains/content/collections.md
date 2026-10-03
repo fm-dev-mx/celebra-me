@@ -15,16 +15,15 @@ invitation source-of-truth contract.
 
 ## Active Collections
 
-| Collection        | Path                             | Purpose                           |
-| ----------------- | -------------------------------- | --------------------------------- |
-| `event-demos`     | `src/content/event-demos/**`     | public showcase demos             |
-| `event-templates` | `src/content/event-templates/**` | development-only reusable masters |
+| Collection    | Path                         | Purpose               |
+| ------------- | ---------------------------- | --------------------- |
+| `event-demos` | `src/content/event-demos/**` | public showcase demos |
 
-`src/lib/content/events.ts` looks up both collections. The static eligibility gate belongs to
-`src/lib/invitation/content-resolver.ts`: demo content is eligible, while non-demo templates require
-development mode. DB-published client content from `published_invitation_content` is the only source
-for real/client invitations. Editor presets belong to `src/lib/intake/demo-preset-catalog.ts` and
-public showroom approval to `src/data/demo-showroom.data.ts`; these are intentionally distinct sets.
+`src/lib/content/events.ts` looks up the collection. The static eligibility gate belongs to
+`src/lib/invitation/content-resolver.ts`: only demo content (`isDemo: true`) is eligible.
+DB-published client content from `published_invitation_content` is the only source for real/client
+invitations. Editor presets belong to `src/lib/intake/demo-preset-catalog.ts` and public showroom
+approval to `src/data/demo-showroom.data.ts`; these are intentionally distinct sets.
 
 ## Event Type Contract
 
@@ -50,7 +49,6 @@ Theme presets come from `src/lib/theme/theme-contract.ts`:
 - `premiere-floral`
 - `editorial`
 - `editorial-magazine`
-- `editorial-rose`
 - `angelic-presence`
 
 Section variant enums are consumed through `src/lib/theme/theme-contract.ts`. Do not duplicate
@@ -80,10 +78,9 @@ consistently.
 
 Dashboard-selectable demos are not inferred from routable static JSON alone. A demo becomes a
 dashboard preset only when it is added to `DEMO_PRESET_CATALOG` and has explicit render-safe asset
-resolution through an approved demo-owned namespace. `demo-baby-shower-celestial` is promoted this
-way with `_assetSlug` set to `demo-baby-shower-celestial`, separate from the Leah Lexa client asset
-folder. `demo-primera-comunion-illustrated` follows the same contract with `_assetSlug` set to
-`demo-primera-comunion-illustrated`.
+resolution through an approved demo-owned namespace. `demo-primera-comunion-illustrated` is promoted
+this way with `_assetSlug` set to `demo-primera-comunion-illustrated`. A demo namespace must never
+hold client-provided media.
 
 ## Validation
 

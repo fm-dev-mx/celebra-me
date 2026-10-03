@@ -15,8 +15,8 @@ by:
 - `pnpm invitation:inventory-audit` (read-only)
 
 Do not add independent slug lists to tests, seed scripts, screenshot configuration, or UI code.
-Historical sanitized JSON files may remain as authoring evidence for migrated definitions; they are
-not a runtime source and are never upserted by corpus tooling.
+Tests read a definition's published content through `buildPublishedContent`; there are no stored
+payload snapshots.
 
 ## Local bootstrap
 

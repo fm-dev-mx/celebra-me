@@ -1330,48 +1330,6 @@ describe('mergePublishedWithDraft — interlude preservation', () => {
 		expect(result.content.interludes).toEqual(draft.interludes);
 	});
 
-	it('does not inject demo interludes for a client invitation without allowDemoFallback', () => {
-		const published = {};
-		const draft = {};
-		const demo = {
-			interludes: [
-				{
-					image: { type: 'internal', key: 'demo-interlude' },
-					afterSection: 'quote',
-					height: 'screen',
-				},
-			],
-		};
-
-		const result = mergePublishedWithDraft(published, draft, {
-			demoContent: demo,
-			allowDemoFallback: false,
-		});
-
-		expect(result.content.interludes).toBeUndefined();
-	});
-
-	it('injects demo interludes only when allowDemoFallback is true', () => {
-		const published = {};
-		const draft = {};
-		const demo = {
-			interludes: [
-				{
-					image: { type: 'internal', key: 'demo-interlude' },
-					afterSection: 'quote',
-					height: 'screen',
-				},
-			],
-		};
-
-		const result = mergePublishedWithDraft(published, draft, {
-			demoContent: demo,
-			allowDemoFallback: true,
-		});
-
-		expect(result.content.interludes).toEqual(demo.interludes);
-	});
-
 	it('does not inject interludes when absent from both published and draft', () => {
 		const published = {};
 		const draft = {};

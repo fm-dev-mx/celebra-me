@@ -77,7 +77,7 @@ celebra-me/
 ├── src/
 │   ├── assets/              # Source images and icons consumed through the asset pipeline
 │   ├── components/          # Astro components and React islands
-│   ├── content/             # Astro content collections (`event-demos`, `event-templates`)
+│   ├── content/             # Astro content collection (`event-demos`)
 │   ├── data/                # Static marketing and supporting data modules
 │   ├── hooks/               # Shared React hooks
 │   ├── interfaces/          # Shared TS interfaces
