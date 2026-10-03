@@ -17,13 +17,25 @@
 		gap: 1rem;
 		align-items: start;
 	}
+
+	&__section {
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	&__section-title {
+		margin: 0;
+		font-size: 1rem;
+		color: var(--color-text-secondary);
+	}
 }
 
 .platform-card {
 	display: grid;
 	gap: 0.75rem;
 
-	h2 {
+	h2,
+	h3 {
 		margin: 0;
 		font-size: 1.05rem;
 	}
@@ -51,6 +63,30 @@
 		margin: 0;
 		padding: 0;
 		list-style: none;
+	}
+
+	&__missing {
+		display: grid;
+		gap: 0.75rem;
+		margin: 0;
+		padding: 0.6rem 0.75rem;
+		border: 1px solid var(--color-state-warning-border);
+		border-radius: 0.5rem;
+		background: var(--color-state-warning-bg);
+		list-style: none;
+
+		p {
+			margin: 0;
+		}
+	}
+
+	&__missing-head {
+		font-size: 0.85rem;
+		color: var(--color-state-warning-text);
+	}
+
+	&__missing-name {
+		font-size: 0.85em;
 	}
 
 	&__metric {

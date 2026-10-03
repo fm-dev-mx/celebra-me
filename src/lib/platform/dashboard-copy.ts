@@ -9,6 +9,7 @@ import type {
 	PlatformProjection,
 	PlatformProviderId,
 	PlatformScope,
+	PlatformSectionId,
 	PlatformWindow,
 } from './contract/types';
 
@@ -95,6 +96,84 @@ export const platformScopeLabel: Record<PlatformScope, string> = {
 	production: 'entorno Producción',
 };
 
+export const platformSectionTitle: Record<PlatformSectionId, string> = {
+	preview: 'Entorno Preview',
+	production: 'Entorno Producción',
+	shared: 'Compartido por ambos entornos',
+};
+
+export const platformMissingStateLabel: Record<'absent' | 'invalid', string> = {
+	absent: 'Falta configurar',
+	invalid: 'Valor no válido',
+};
+
+export const platformMissingLinkLabel = 'Generar o revisar la credencial';
+
+interface MissingInfo {
+	description: string;
+	setupUrl: string;
+}
+
+/** Setup guidance per environment variable name (names are not secrets). */
+const MISSING_INFO: Record<string, MissingInfo> = {
+	MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN: {
+		description:
+			'Token de solo lectura de analítica de Cloudflare (permiso Account → Analytics: Read).',
+		setupUrl: 'https://dash.cloudflare.com/profile/api-tokens/',
+	},
+	MEMORIES_CLOUDFLARE_ACCOUNT_ID: {
+		description: 'Identificador de la cuenta de Cloudflare (32 caracteres hexadecimales).',
+		setupUrl:
+			'https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/',
+	},
+	MEMORIES_R2_BUCKET_NAME: {
+		description:
+			'Bucket R2 de este entorno (consúltelo en el almacenamiento R2 de Cloudflare).',
+		setupUrl: 'https://dash.cloudflare.com/?to=/:account/r2',
+	},
+	SUPABASE_MANAGEMENT_TOKEN: {
+		description:
+			'Token personal de solo lectura de la Management API de Supabase (permisos Usage Analytics: Read y Disk Config: Read).',
+		setupUrl: 'https://supabase.com/dashboard/account/tokens',
+	},
+	SUPABASE_PROJECT_REF_PREVIEW: {
+		description: 'Referencia del proyecto Supabase de Preview (ajustes del proyecto).',
+		setupUrl: 'https://supabase.com/dashboard',
+	},
+	SUPABASE_PROJECT_REF_PRODUCTION: {
+		description: 'Referencia del proyecto Supabase de Producción (ajustes del proyecto).',
+		setupUrl: 'https://supabase.com/dashboard',
+	},
+	VERCEL_API_TOKEN: {
+		description: 'Token de solo lectura de facturación de Vercel.',
+		setupUrl: 'https://vercel.com/account/tokens',
+	},
+	CLOUDINARY_USAGE_API_KEY: {
+		description:
+			'Clave restringida de solo lectura para el informe de uso de Cloudinary (opcional; mientras falte se usa la clave de subida).',
+		setupUrl: 'https://console.cloudinary.com/settings/api-keys',
+	},
+	CLOUDINARY_USAGE_API_SECRET: {
+		description: 'Secreto de la clave restringida de uso de Cloudinary.',
+		setupUrl: 'https://console.cloudinary.com/settings/api-keys',
+	},
+	CLOUDINARY_CLOUD_NAME: {
+		description: 'Nombre del cloud de Cloudinary (ajustes de la consola).',
+		setupUrl: 'https://console.cloudinary.com/settings/api-keys',
+	},
+};
+
+/**
+ * Setup guidance for one variable. Exact names win; Local-only overrides
+ * (`NAME_PREVIEW` / `NAME_PRODUCTION`) reuse the base name's entry.
+ */
+export function platformMissingInfo(name: string): MissingInfo {
+	const exact = MISSING_INFO[name];
+	if (exact) return exact;
+	const base = MISSING_INFO[name.replace(/_(?:PREVIEW|PRODUCTION)$/, '')];
+	return base ?? { description: 'Configuración del panel de plataforma.', setupUrl: '' };
+}
+
 export const platformWindowLabel: Record<PlatformWindow, string> = {
 	dayUtc: 'día UTC · reinicia 00:00 UTC (17:00 en Mazatlán)',
 	monthUtc: 'mes calendario UTC',
@@ -104,7 +183,10 @@ export const platformWindowLabel: Record<PlatformWindow, string> = {
 };
 
 const METRIC_LABELS: Record<string, string | ((resource: string) => string)> = {
-	cfR2StorageBucket: (resource) => `Almacenamiento R2 · bucket «${resource}»`,
+	cfR2StorageBucket: (resource) =>
+		resource
+			? `Almacenamiento R2 · bucket «${resource}»`
+			: 'Almacenamiento R2 · bucket del entorno',
 	cfR2StorageAccount: 'Almacenamiento R2 · total de la cuenta',
 	cfR2ClassA: 'Operaciones R2 Clase A · total de la cuenta',
 	cfR2ClassB: 'Operaciones R2 Clase B · total de la cuenta',

@@ -241,3 +241,39 @@ Open, owner-side: provision the read-only credentials (`SUPABASE_MANAGEMENT_TOKE
 `VERCEL_API_TOKEN`, optional `CLOUDINARY_USAGE_*`) and the non-secret refs/team id per
 `docs/env-workflow.md`; confirm whether the menu entry "Publicacion de demos" (not found in code)
 maps to something else; decide later whether R2 operations get a per-bucket breakdown.
+
+## Amendment 2026-10-03 — environment-scoped panels and missing-credential notices
+
+Owner-approved additions (decision round of 2026-10-03):
+
+1. **Panel scoping:** Local shows both environments (Preview and Production); the Preview deployment
+   shows only Preview and the Production deployment only Production. Applies to both metrics and
+   credential-status notices.
+2. **Shared quotas stay visible** in every scoped panel as an explicit context section labeled
+   "compartido por ambos entornos" (R2 operations, Workers, Durable Objects, R2 account storage
+   total, Vercel, Cloudinary): hiding them would misanswer "am I running out of quota".
+3. **Missing-credential notices** show variable name + brief description + the official link where
+   to generate it (verified 2026-10-02: Cloudflare `dash.cloudflare.com/profile/api-tokens/`,
+   Supabase `supabase.com/dashboard/account/tokens` with Usage Analytics + Disk Config Read scopes,
+   Vercel `vercel.com/account/tokens`, Cloudinary `console.cloudinary.com/settings/api-keys`). Names
+   only, never values; non-blocking gaps also render on `ok` cards (Supabase with one ref missing,
+   Cloudinary falling back to the upload key).
+4. **Per-environment config resolution:** in Local each section reads `NAME_PREVIEW` /
+   `NAME_PRODUCTION` and falls back to plain `NAME` (shared values). Deployments read only their
+   plain names. Local-only suffixed names (names only, optional):
+   `MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW/_PRODUCTION`,
+   `MEMORIES_R2_BUCKET_NAME_PREVIEW/_PRODUCTION`, `SUPABASE_MANAGEMENT_TOKEN_PREVIEW/_PRODUCTION`.
+   Exception: the R2 bucket falls back to the suffix classifier over observed buckets (base ->
+   Production, `-staging`/`-preview` -> Preview, `-local` -> excluded), never to the plain Local
+   bucket. `MEMORIES_CLOUDFLARE_ACCOUNT_ID`, `VERCEL_API_TOKEN`, `VERCEL_TEAM_ID` and the
+   `CLOUDINARY_*` names stay shared (one account/project/cloud).
+5. Local reflects only what is loaded locally; to diagnose "Preview lacks the token" from Local,
+   leave the Preview-suffixed value unset. Vercel and Cloudinary have no per-environment split (not
+   verified); Workers/DO remain account totals.
+
+Implemented 2026-10-03: `src/lib/platform/server/env-profiles.ts` resolves per-environment profiles,
+`src/lib/platform/contract/environments.ts` attributes buckets by the repository naming convention,
+the report is assembled as sections (`PlatformUsageReport = PlatformSection[]`) and the panel
+renders one section per visible environment plus the shared one. Validation run locally: `pnpm test`
+(7192 passed, 1 pre-existing skip), `pnpm type-check`, `pnpm lint`, `pnpm lint:styles`,
+`pnpm validate:changed`, `pnpm build:app`. E2E suites intentionally left for CI.

@@ -15,6 +15,7 @@ import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
 import { getPlatformUsageReport } from '@/lib/platform/server/platform-usage.service';
+import type { PlatformUsageReport } from '@/lib/platform/contract/types';
 import { GET as getPlatformUsage } from '@/pages/api/dashboard/admin/platform/usage';
 import { createMockRequest } from '../helpers/api-mocks';
 
@@ -36,12 +37,23 @@ const adminSession: SessionContext = {
 	isSuperAdmin: true,
 };
 
-const REPORT = {
-	cloudflare: { kind: 'unconfigured' },
-	supabase: { kind: 'unconfigured' },
-	vercel: { kind: 'unconfigured' },
-	cloudinary: { kind: 'unconfigured' },
-} as const;
+const REPORT: PlatformUsageReport = [
+	{
+		id: 'production',
+		cards: [
+			{ provider: 'cloudflare', usage: { kind: 'unconfigured', missing: [] } },
+			{ provider: 'supabase', usage: { kind: 'unconfigured', missing: [] } },
+		],
+	},
+	{
+		id: 'shared',
+		cards: [
+			{ provider: 'cloudflare', usage: { kind: 'unconfigured', missing: [] } },
+			{ provider: 'vercel', usage: { kind: 'unconfigured', missing: [] } },
+			{ provider: 'cloudinary', usage: { kind: 'unconfigured', missing: [] } },
+		],
+	},
+];
 
 function context(url: string): RouteContext {
 	const request = createMockRequest(undefined, undefined, url);

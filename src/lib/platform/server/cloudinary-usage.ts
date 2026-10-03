@@ -8,9 +8,13 @@
  */
 
 import { buildPlatformMetric } from '@/lib/platform/contract/meters';
-import type { PlatformMetric, PlatformProviderUsage } from '@/lib/platform/contract/types';
-import { getEnv } from '@/lib/server/env';
+import type {
+	PlatformMetric,
+	PlatformMissingVar,
+	PlatformProviderUsage,
+} from '@/lib/platform/contract/types';
 import { PLATFORM_ENV } from './config';
+import { readSharedVar } from './env-profiles';
 
 const REQUEST_TIMEOUT_MS = 5_000;
 const CACHE_TTL_MS = 5 * 60 * 1000;
@@ -24,20 +28,32 @@ export function resetCloudinaryUsageCache(): void {
 }
 
 /**
- * Prefers the restricted usage key; falls back to the existing upload key so
+ * Prefers the restricted usage key and falls back to the existing upload key so
  * the card works without a second credential (higher privilege - documented
- * tradeoff, see the platform usage plan).
+ * tradeoff). The preferred names are still reported so the panel can recommend
+ * creating the restricted key; only names travel, never values.
  */
-function readConfig(): CloudinaryConfig | null {
-	const cloudName = getEnv(PLATFORM_ENV.cloudinaryCloudName).trim();
-	const apiKey =
-		getEnv(PLATFORM_ENV.cloudinaryUsageApiKey).trim() ||
-		getEnv(PLATFORM_ENV.cloudinaryApiKey).trim();
-	const apiSecret =
-		getEnv(PLATFORM_ENV.cloudinaryUsageApiSecret).trim() ||
-		getEnv(PLATFORM_ENV.cloudinaryApiSecret).trim();
-	if (!cloudName || !apiKey || !apiSecret) return null;
-	return { cloudName, apiKey, apiSecret };
+function readConfig(): { config: CloudinaryConfig | null; missing: PlatformMissingVar[] } {
+	const cloudName = readSharedVar(PLATFORM_ENV.cloudinaryCloudName, 'account');
+	const usageKey = readSharedVar(PLATFORM_ENV.cloudinaryUsageApiKey, 'account');
+	const usageSecret = readSharedVar(PLATFORM_ENV.cloudinaryUsageApiSecret, 'account');
+	const uploadKey = readSharedVar(PLATFORM_ENV.cloudinaryApiKey, 'account');
+	const uploadSecret = readSharedVar(PLATFORM_ENV.cloudinaryApiSecret, 'account');
+	const apiKey = usageKey.value ?? uploadKey.value;
+	const apiSecret = usageSecret.value ?? uploadSecret.value;
+	const missing: PlatformMissingVar[] = [];
+	if (cloudName.missing) missing.push(cloudName.missing);
+	if (!usageKey.value && uploadKey.value && usageKey.missing) missing.push(usageKey.missing);
+	if (!usageSecret.value && uploadSecret.value && usageSecret.missing) {
+		missing.push(usageSecret.missing);
+	}
+	if (!apiKey && usageKey.missing) missing.push(usageKey.missing);
+	if (!apiSecret && usageSecret.missing) missing.push(usageSecret.missing);
+	const config =
+		cloudName.value && apiKey && apiSecret
+			? { cloudName: cloudName.value, apiKey, apiSecret }
+			: null;
+	return { config, missing };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -77,7 +93,11 @@ export function readCreditsPair(payload: Record<string, unknown>): UsagePair {
 	};
 }
 
-export function parseCloudinaryUsage(payload: unknown, now: Date): PlatformProviderUsage {
+export function parseCloudinaryUsage(
+	payload: unknown,
+	now: Date,
+	missing: PlatformMissingVar[] = [],
+): PlatformProviderUsage {
 	if (!isRecord(payload)) return { kind: 'unavailable' };
 	const credits = readCreditsPair(payload);
 	const storage = readUsagePair(payload, 'storage');
@@ -94,11 +114,12 @@ export function parseCloudinaryUsage(payload: unknown, now: Date): PlatformProvi
 		buildPlatformMetric({ id, used, limit, window, scope: 'account', now }),
 	);
 	if (metrics.every((metric) => metric.meter.used === null)) return { kind: 'unavailable' };
-	return { kind: 'ok', fetchedAt: now.toISOString(), metrics, spendUsd: null };
+	return { kind: 'ok', fetchedAt: now.toISOString(), metrics, spendUsd: null, missing };
 }
 
 async function queryCloudinary(
 	config: CloudinaryConfig,
+	missing: PlatformMissingVar[],
 	now: Date,
 	fetchImpl: typeof fetch,
 ): Promise<PlatformProviderUsage> {
@@ -117,7 +138,7 @@ async function queryCloudinary(
 			},
 		);
 		if (!response.ok) return { kind: 'unavailable' };
-		return parseCloudinaryUsage(await response.json(), now);
+		return parseCloudinaryUsage(await response.json(), now, missing);
 	} catch {
 		return { kind: 'unavailable' };
 	} finally {
@@ -129,10 +150,10 @@ export async function getCloudinaryPlatformUsage(
 	now = new Date(),
 	fetchImpl: typeof fetch = fetch,
 ): Promise<PlatformProviderUsage> {
-	const config = readConfig();
-	if (!config) return { kind: 'unconfigured' };
+	const { config, missing } = readConfig();
+	if (!config) return { kind: 'unconfigured', missing };
 	if (cache && cache.expiresAt > now.getTime()) return cache.value;
-	const value = await queryCloudinary(config, now, fetchImpl);
+	const value = await queryCloudinary(config, missing, now, fetchImpl);
 	if (value.kind === 'ok') cache = { expiresAt: now.getTime() + CACHE_TTL_MS, value };
 	return value;
 }

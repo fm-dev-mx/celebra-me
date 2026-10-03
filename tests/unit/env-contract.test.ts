@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import { MEMORIES_ENV } from '@/lib/memories/server/config';
-import { PLATFORM_ENV } from '@/lib/platform/server/config';
+import { PLATFORM_ENV, PLATFORM_ENV_BY_ENVIRONMENT } from '@/lib/platform/server/config';
 
 const ROOT = process.cwd();
 const RUNTIME_SOURCE_EXTENSIONS = new Set(['.astro', '.ts', '.tsx']);
@@ -13,6 +13,7 @@ const BUILT_IN_IMPORT_META_ENV_NAMES = new Set(['BASE_URL', 'DEV', 'MODE', 'PROD
 const INDIRECT_RUNTIME_ENV_NAMES = new Set([
 	...Object.values(MEMORIES_ENV),
 	...Object.values(PLATFORM_ENV),
+	...Object.values(PLATFORM_ENV_BY_ENVIRONMENT).flatMap((entry) => Object.values(entry)),
 ]);
 
 function readProjectFile(relativePath: string): string {

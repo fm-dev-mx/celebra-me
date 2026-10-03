@@ -7,15 +7,16 @@
  * bodies.
  */
 
-import type { PlatformProviderUsage } from '@/lib/platform/contract/types';
+import type { PlatformProviderUsage, PlatformMissingVar } from '@/lib/platform/contract/types';
 import { getEnv } from '@/lib/server/env';
 import { PLATFORM_ENV } from './config';
+import { readSharedVar } from './env-profiles';
 
 const BILLING_ENDPOINT = 'https://api.vercel.com/v1/billing/charges';
 const REQUEST_TIMEOUT_MS = 5_000;
 const CACHE_TTL_MS = 15 * 60 * 1000;
 
-type VercelConfig = { token: string; teamId: string };
+type VercelConfig = { token: string; teamId: string; missing: PlatformMissingVar[] };
 
 let cache: { expiresAt: number; value: PlatformProviderUsage } | null = null;
 
@@ -23,10 +24,20 @@ export function resetVercelUsageCache(): void {
 	cache = null;
 }
 
-function readConfig(): VercelConfig | null {
-	const token = getEnv(PLATFORM_ENV.vercelApiToken).trim();
-	if (!token) return null;
-	return { token, teamId: getEnv(PLATFORM_ENV.vercelTeamId).trim() };
+function readConfig(): VercelConfig {
+	const token = readSharedVar(PLATFORM_ENV.vercelApiToken, 'project');
+	if (!token.value) {
+		return {
+			token: '',
+			teamId: '',
+			missing: token.missing ? [token.missing] : [],
+		};
+	}
+	return {
+		token: token.value,
+		teamId: getEnv(PLATFORM_ENV.vercelTeamId).trim(),
+		missing: [],
+	};
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -98,7 +109,13 @@ async function queryVercel(
 ): Promise<PlatformProviderUsage> {
 	const result = await queryBillingCharges(config, now, fetchImpl);
 	if (!result.ok) return { kind: 'unavailable' };
-	return { kind: 'ok', fetchedAt: now.toISOString(), metrics: [], spendUsd: result.spendUsd };
+	return {
+		kind: 'ok',
+		fetchedAt: now.toISOString(),
+		metrics: [],
+		spendUsd: result.spendUsd,
+		missing: [],
+	};
 }
 
 export async function getVercelPlatformUsage(
@@ -106,7 +123,7 @@ export async function getVercelPlatformUsage(
 	fetchImpl: typeof fetch = fetch,
 ): Promise<PlatformProviderUsage> {
 	const config = readConfig();
-	if (!config) return { kind: 'unconfigured' };
+	if (!config.token) return { kind: 'unconfigured', missing: config.missing };
 	if (cache && cache.expiresAt > now.getTime()) return cache.value;
 	const value = await queryVercel(config, now, fetchImpl);
 	if (value.kind === 'ok') cache = { expiresAt: now.getTime() + CACHE_TTL_MS, value };

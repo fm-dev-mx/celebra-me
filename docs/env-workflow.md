@@ -187,6 +187,12 @@ managed from the super-admin dashboard.
 | `VERCEL_TEAM_ID`                                 | Team id                            | Vercel Preview config                                                               | Vercel Production config                             | Non-secret team id for the billing usage query                              |
 | `CLOUDINARY_USAGE_API_KEY`                       | Optional; falls back to upload key | Vercel Preview secret (optional)                                                    | Vercel Production secret (optional)                  | Restricted read-only key for the Cloudinary usage report                    |
 | `CLOUDINARY_USAGE_API_SECRET`                    | Optional; falls back to upload key | Vercel Preview secret (optional)                                                    | Vercel Production secret (optional)                  | Secret of the restricted usage key                                          |
+| `MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW`    | Optional; Local-only override      | Not consulted                                                                       | Not consulted                                        | Per-environment token status for the local platform console                 |
+| `MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION` | Optional; Local-only override      | Not consulted                                                                       | Not consulted                                        | Per-environment token status for the local platform console                 |
+| `MEMORIES_R2_BUCKET_NAME_PREVIEW`                | Optional; Local-only override      | Not consulted                                                                       | Not consulted                                        | Preview bucket for the local platform console                               |
+| `MEMORIES_R2_BUCKET_NAME_PRODUCTION`             | Optional; Local-only override      | Not consulted                                                                       | Not consulted                                        | Production bucket for the local platform console                            |
+| `SUPABASE_MANAGEMENT_TOKEN_PREVIEW`              | Optional; Local-only override      | Not consulted                                                                       | Not consulted                                        | Per-environment token status for the local platform console                 |
+| `SUPABASE_MANAGEMENT_TOKEN_PRODUCTION`           | Optional; Local-only override      | Not consulted                                                                       | Not consulted                                        | Per-environment token status for the local platform console                 |
 | `MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY`      | Sign Worker `.dev.vars`            | Sign Worker Staging secret                                                          | Sign Worker Production secret                        | SPKI public key from the upload pair                                        |
 | `MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY`   | Retrieval Worker `.dev.vars`       | Retrieval Worker Staging secret                                                     | Retrieval Worker Production secret                   | SPKI public key from the retrieval pair                                     |
 | `MEMORIES_UPLOAD_CAPABILITY_SECRET`              | Sign Worker `.dev.vars`            | Sign Worker Staging secret                                                          | Independent Sign Worker Production secret            | Secret that seals one-use upload capabilities (AES-GCM)                     |
@@ -200,8 +206,12 @@ memories values in Cloudflare Secrets Store. The platform usage console reads it
 `MEMORIES_CLOUDFLARE_*` names so Wrangler never mistakes the read-only analytics token for deploy
 credentials; without them the console reports "sin configurar" and keeps working. The same console
 reads `SUPABASE_MANAGEMENT_TOKEN`, `VERCEL_API_TOKEN` and the optional `CLOUDINARY_USAGE_*` pair,
-each read-only and least-privilege. Interactive deployment authentication is owned by
-`wrangler login`; Worker runtime secrets are applied to the exact environment with
+each read-only and least-privilege. The console is scoped per environment: the Preview deployment
+shows only Preview, the Production deployment only Production, and Local shows both (the panel
+labels shared account/project quotas explicitly). To diagnose each environment's configuration from
+Local, load the optional `*_PREVIEW` / `*_PRODUCTION` overrides above in `.env.local`; Local only
+reflects what is loaded there. Interactive deployment authentication is owned by `wrangler login`;
+Worker runtime secrets are applied to the exact environment with
 `wrangler secret put --env <environment>`. Never place API tokens, capability secrets, object keys,
 signed URLs, or reusable secret values in tracked templates, documentation, logs, or evidence.
 

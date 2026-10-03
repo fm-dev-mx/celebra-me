@@ -11,8 +11,22 @@ export type PlatformProviderId = 'cloudflare' | 'supabase' | 'vercel' | 'cloudin
  */
 export type PlatformScope = 'account' | 'project' | 'preview' | 'production';
 
+/** Environment a panel section is scoped to; Local shows both. */
+export type PlatformEnvironmentId = 'preview' | 'production';
+
+/** Panel sections: one per visible environment, then the shared quotas. */
+export type PlatformSectionId = PlatformEnvironmentId | 'shared';
+
 /** Accumulation window of a `used` figure. */
 export type PlatformWindow = 'dayUtc' | 'monthUtc' | 'billingCycle' | 'creditCycle' | 'snapshot';
+
+/** Configuration gap to report: environment variable names only, never values. */
+export interface PlatformMissingVar {
+	name: string;
+	state: 'absent' | 'invalid';
+	/** Section the gap belongs to: an environment profile or the shared config. */
+	scope: PlatformScope;
+}
 
 export interface PlatformMeter {
 	used: number | null;
@@ -48,13 +62,27 @@ export interface PlatformProviderUsageOk {
 	metrics: PlatformMetric[];
 	/** Period spend in USD when the provider exposes it; null = not available. */
 	spendUsd: number | null;
+	/** Non-blocking configuration gaps (names only). */
+	missing: PlatformMissingVar[];
 }
 
 export type PlatformProviderUsage =
-	PlatformProviderUsageOk | { kind: 'unconfigured' } | { kind: 'unavailable' };
+	| PlatformProviderUsageOk
+	| { kind: 'unconfigured'; missing: PlatformMissingVar[] }
+	| { kind: 'unavailable' };
 
-/** One entry per provider; a failing provider only blanks its own card. */
-export type PlatformUsageReport = Record<PlatformProviderId, PlatformProviderUsage>;
+export interface PlatformProviderCard {
+	provider: PlatformProviderId;
+	usage: PlatformProviderUsage;
+}
+
+export interface PlatformSection {
+	id: PlatformSectionId;
+	cards: PlatformProviderCard[];
+}
+
+/** Ordered sections: visible environments first, shared quotas last. */
+export type PlatformUsageReport = PlatformSection[];
 
 export const PLATFORM_PROVIDER_IDS = [
 	'cloudflare',

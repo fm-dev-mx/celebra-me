@@ -479,11 +479,13 @@ deployment.
   super-admin platform console (`/dashboard/admin/plataforma`, `src/lib/platform/`) aggregates
   Cloudflare, Supabase, Vercel and Cloudinary limit and cost metrics from read-only credentials
   (`MEMORIES_CLOUDFLARE_*`, `SUPABASE_MANAGEMENT_TOKEN`, `VERCEL_API_TOKEN`, optional
-  `CLOUDINARY_USAGE_*`), one query per provider dataset cached for minutes. Shared quotas are
-  labeled "de la cuenta" or "del proyecto", never as a single environment; every provider card
-  degrades on its own (`ok` / `unconfigured` / `unavailable`) and the report carries aggregates
-  only. Free-plan allowances and the 70 %/90 % warning thresholds live in
-  `src/lib/platform/contract/limits.ts`.
+  `CLOUDINARY_USAGE_*`), one query per provider dataset cached for minutes. The console is scoped
+  per environment (Preview and Production deployments show only their own; Local shows both, with
+  optional `*_PREVIEW` / `*_PRODUCTION` Local-only overrides), while shared account/project quotas
+  stay visible in every panel labeled as shared. Missing credentials are reported by variable name
+  with a description and the provider's setup link - never values. Every provider card degrades on
+  its own (`ok` / `unconfigured` / `unavailable`) and the report carries aggregates only. Free-plan
+  allowances and the 70 %/90 % warning thresholds live in `src/lib/platform/contract/limits.ts`.
 - **QR:** `src/lib/memories/qr.ts` renders the printable SVG for both dashboard routes and the
   `memories:qr` CLI; a test pins the SHA-256 of the SVG already printed.
 - **Planning and warnings:** `event_memory_settings.expected_guests` and `admin_note` are

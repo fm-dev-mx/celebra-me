@@ -1,5 +1,6 @@
 import type {
 	PlatformMetric,
+	PlatformMissingVar,
 	PlatformProviderId,
 	PlatformProviderUsage,
 } from '@/lib/platform/contract/types';
@@ -9,23 +10,52 @@ import {
 	platformUsageRatio,
 } from '@/lib/platform/contract/meters';
 import {
+	formatPlatformMoney,
 	platformCopy,
 	platformMetricFormat,
 	platformMetricLabel,
+	platformMissingInfo,
+	platformMissingLinkLabel,
+	platformMissingStateLabel,
 	platformProjectionLabel,
 	platformProviderCostNote,
 	platformProviderLink,
 	platformProviderTitle,
 	platformScopeLabel,
 	platformWindowLabel,
-	formatPlatformMoney,
 } from '@/lib/platform/dashboard-copy';
 
-interface MeterProps {
-	metric: PlatformMetric;
+function MissingList({ missing }: { missing: PlatformMissingVar[] }) {
+	if (missing.length === 0) return null;
+	return (
+		<ul className="platform-card__missing">
+			{missing.map((entry) => {
+				const info = platformMissingInfo(entry.name);
+				return (
+					<li key={`${entry.name}:${entry.state}`}>
+						<p className="platform-card__missing-head">
+							<strong>{platformMissingStateLabel[entry.state]}:</strong>{' '}
+							<code className="platform-card__missing-name">{entry.name}</code>
+						</p>
+						<p className="platform-card__meta">{info.description}</p>
+						{info.setupUrl ? (
+							<a
+								className="platform-card__link"
+								href={info.setupUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								{platformMissingLinkLabel}
+							</a>
+						) : null}
+					</li>
+				);
+			})}
+		</ul>
+	);
 }
 
-function MetricRow({ metric }: MeterProps) {
+function MetricRow({ metric }: { metric: PlatformMetric }) {
 	const label = platformMetricLabel(metric);
 	const format = platformMetricFormat(metric);
 	const { used, limit } = metric.meter;
@@ -100,6 +130,7 @@ interface Props {
 
 export default function ProviderUsageCard({ provider, usage }: Props) {
 	const title = platformProviderTitle[provider];
+	const missing = usage.kind === 'unavailable' ? [] : usage.missing;
 	const cost =
 		usage.kind === 'ok' && usage.spendUsd !== null
 			? platformCopy.spend(formatPlatformMoney(usage.spendUsd))
@@ -107,7 +138,7 @@ export default function ProviderUsageCard({ provider, usage }: Props) {
 	return (
 		<section className="dashboard-card platform-card" aria-label={title}>
 			<header className="platform-card__header">
-				<h2>{title}</h2>
+				<h3>{title}</h3>
 				{usage.kind === 'ok' ? (
 					<span className="platform-card__stamp">
 						{platformCopy.approx(usage.fetchedAt)}
@@ -120,7 +151,8 @@ export default function ProviderUsageCard({ provider, usage }: Props) {
 			{usage.kind === 'unavailable' ? (
 				<p className="platform-card__notice">{platformCopy.unavailable}</p>
 			) : null}
-			{usage.kind === 'ok' && usage.metrics.length > 0 ? (
+			<MissingList missing={missing} />
+			{usage.kind === 'ok' ? (
 				<ul className="platform-card__metrics">
 					{usage.metrics.map((metric, index) => (
 						<MetricRow

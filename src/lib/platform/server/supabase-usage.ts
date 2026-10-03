@@ -2,42 +2,31 @@
  * Supabase project usage for the super-admin platform console, read from the
  * Management API with a read-only personal access token. One project per
  * environment (Preview and Production), each against its own Free-plan
- * allowance. Never throws to callers and never forwards provider response
- * bodies: failures collapse to `unavailable` or a blanked meter.
+ * allowance and its own credentials. Never throws to callers and never
+ * forwards provider response bodies: failures collapse to `unavailable` or a
+ * blanked meter.
  */
 
 import { SUPABASE_FREE_TIER } from '@/lib/platform/contract/limits';
 import { buildPlatformMetric } from '@/lib/platform/contract/meters';
-import type {
-	PlatformMetric,
-	PlatformProviderUsage,
-	PlatformScope,
-} from '@/lib/platform/contract/types';
-import { getEnv } from '@/lib/server/env';
+import type { PlatformEnvironmentId, PlatformProviderUsage } from '@/lib/platform/contract/types';
 import { PLATFORM_ENV } from './config';
+import { readProfileVar, readSharedVar } from './env-profiles';
 
 const MANAGEMENT_ENDPOINT = 'https://api.supabase.com/v1/projects';
 const REQUEST_TIMEOUT_MS = 5_000;
 /** Analytics endpoints are rate limited to 30 requests/minute; cache absorbs refreshes. */
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
-type SupabaseConfig = { token: string; projects: { scope: PlatformScope; ref: string }[] };
+const PROJECT_REF_ENV: Record<PlatformEnvironmentId, string> = {
+	preview: PLATFORM_ENV.supabaseProjectRefPreview,
+	production: PLATFORM_ENV.supabaseProjectRefProduction,
+};
 
-let cache: { expiresAt: number; value: PlatformProviderUsage } | null = null;
+let cache: Record<string, { expiresAt: number; value: PlatformProviderUsage }> = {};
 
 export function resetSupabaseUsageCache(): void {
-	cache = null;
-}
-
-function readConfig(): SupabaseConfig | null {
-	const token = getEnv(PLATFORM_ENV.supabaseManagementToken).trim();
-	const preview = getEnv(PLATFORM_ENV.supabaseProjectRefPreview).trim();
-	const production = getEnv(PLATFORM_ENV.supabaseProjectRefProduction).trim();
-	if (!token) return null;
-	const projects: { scope: PlatformScope; ref: string }[] = [];
-	if (preview) projects.push({ scope: 'preview', ref: preview });
-	if (production) projects.push({ scope: 'production', ref: production });
-	return projects.length > 0 ? { token, projects } : null;
+	cache = {};
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -86,39 +75,43 @@ async function queryProjectUsedBytes(
 	}
 }
 
-async function querySupabase(
-	config: SupabaseConfig,
-	now: Date,
-	fetchImpl: typeof fetch,
-): Promise<PlatformProviderUsage> {
-	const results = await Promise.all(
-		config.projects.map(async (project) => ({
-			scope: project.scope,
-			used: await queryProjectUsedBytes(project.ref, config.token, fetchImpl),
-		})),
-	);
-	const metrics: PlatformMetric[] = results.map((result) =>
-		buildPlatformMetric({
-			id: 'sbDatabase',
-			used: result.used,
-			limit: SUPABASE_FREE_TIER.databaseBytes,
-			window: 'snapshot',
-			scope: result.scope,
-			now,
-		}),
-	);
-	if (metrics.every((metric) => metric.meter.used === null)) return { kind: 'unavailable' };
-	return { kind: 'ok', fetchedAt: now.toISOString(), metrics, spendUsd: null };
-}
-
 export async function getSupabasePlatformUsage(
+	environment: PlatformEnvironmentId,
 	now = new Date(),
 	fetchImpl: typeof fetch = fetch,
 ): Promise<PlatformProviderUsage> {
-	const config = readConfig();
-	if (!config) return { kind: 'unconfigured' };
-	if (cache && cache.expiresAt > now.getTime()) return cache.value;
-	const value = await querySupabase(config, now, fetchImpl);
-	if (value.kind === 'ok') cache = { expiresAt: now.getTime() + CACHE_TTL_MS, value };
+	const token = readProfileVar('supabaseManagementToken', environment);
+	const projectRef = readSharedVar(PROJECT_REF_ENV[environment], environment);
+	const missing = [token.missing, projectRef.missing].filter(
+		(entry): entry is NonNullable<typeof entry> => entry !== null,
+	);
+	if (!token.value || !projectRef.value) {
+		return { kind: 'unconfigured', missing };
+	}
+	const cached = cache[environment];
+	if (cached && cached.expiresAt > now.getTime()) return cached.value;
+	const used = await queryProjectUsedBytes(projectRef.value, token.value, fetchImpl);
+	const value: PlatformProviderUsage =
+		used === null
+			? { kind: 'unavailable' }
+			: {
+					kind: 'ok',
+					fetchedAt: now.toISOString(),
+					spendUsd: null,
+					missing: [],
+					metrics: [
+						buildPlatformMetric({
+							id: 'sbDatabase',
+							used,
+							limit: SUPABASE_FREE_TIER.databaseBytes,
+							window: 'snapshot',
+							scope: environment,
+							now,
+						}),
+					],
+				};
+	if (value.kind === 'ok') {
+		cache = { ...cache, [environment]: { expiresAt: now.getTime() + CACHE_TTL_MS, value } };
+	}
 	return value;
 }

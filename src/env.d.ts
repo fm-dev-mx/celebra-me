@@ -37,6 +37,10 @@ interface ImportMetaEnv {
 	readonly MEMORIES_R2_BUCKET_NAME: string;
 	/** Server-only read-only Supabase Management PAT for the platform usage console. */
 	readonly SUPABASE_MANAGEMENT_TOKEN: string;
+	/** Local-only Preview override of the Management PAT (platform usage diagnostics). */
+	readonly SUPABASE_MANAGEMENT_TOKEN_PREVIEW: string;
+	/** Local-only Production override of the Management PAT (platform usage diagnostics). */
+	readonly SUPABASE_MANAGEMENT_TOKEN_PRODUCTION: string;
 	/** Non-secret Supabase project ref of the Preview environment. */
 	readonly SUPABASE_PROJECT_REF_PREVIEW: string;
 	/** Non-secret Supabase project ref of the Production environment. */
@@ -49,6 +53,14 @@ interface ImportMetaEnv {
 	readonly CLOUDINARY_USAGE_API_KEY: string;
 	/** Server-only restricted Cloudinary secret for the usage report. */
 	readonly CLOUDINARY_USAGE_API_SECRET: string;
+	/** Local-only Preview override of the Cloudflare analytics token. */
+	readonly MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW: string;
+	/** Local-only Production override of the Cloudflare analytics token. */
+	readonly MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION: string;
+	/** Local-only Preview override of the R2 bucket name. */
+	readonly MEMORIES_R2_BUCKET_NAME_PREVIEW: string;
+	/** Local-only Production override of the R2 bucket name. */
+	readonly MEMORIES_R2_BUCKET_NAME_PRODUCTION: string;
 	readonly META_CAPI_DELIVERY_MODE: string;
 	readonly META_CAPI_ACCESS_TOKEN: string;
 	readonly META_PIXEL_ID: string;
