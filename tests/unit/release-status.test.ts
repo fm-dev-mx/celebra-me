@@ -1,0 +1,172 @@
+import {
+	classifyCheck,
+	classifyDeployment,
+	collectReleaseStatus,
+	probeHealth,
+	waitForReleaseStatus,
+	type ReleaseStatus,
+} from '../../scripts/ops/release-status.ts';
+import {
+	PREVIEW_DEPLOYMENT_SMOKE,
+	REQUIRED_RELEASE_CHECKS,
+} from '../../scripts/ops/release-readiness.ts';
+
+const sha = 'a'.repeat(40);
+const previewUrl = 'https://celebra-abc123-francisco-mendoza-s-projects.vercel.app';
+
+function ghRunner(responses: Record<string, unknown>): (args: string[]) => string {
+	return (args) => {
+		if (args[0] === 'repo') return 'celebra-me/test\n';
+		const key = args[1]?.replace('repos/celebra-me/test/', '') ?? '';
+		if (!(key in responses)) throw new Error(`Unexpected GitHub API request: ${key}`);
+		return JSON.stringify(responses[key]);
+	};
+}
+
+function checkRuns(states: Record<string, string>) {
+	return {
+		total_count: Object.keys(states).length,
+		check_runs: Object.entries(states).map(([name, state], index) => ({
+			id: index + 1,
+			name,
+			head_sha: sha,
+			status: state === 'in_progress' ? 'in_progress' : 'completed',
+			conclusion: state === 'in_progress' ? null : state,
+			app: { id: 15368 },
+		})),
+	};
+}
+
+function responses(states: Record<string, string>, deploymentState = 'success') {
+	return {
+		'check-runs?filter=latest&per_page=100': checkRuns(states),
+		[`commits/${sha}/check-runs?filter=latest&per_page=100`]: checkRuns(states),
+		[`commits/${sha}/statuses?per_page=100`]: [],
+		[`deployments?sha=${sha}&per_page=100`]: [
+			{ id: 7, sha, environment: 'Preview' },
+			{ id: 3, sha, environment: 'Production' },
+		],
+		'deployments/7/statuses?per_page=100': [
+			{ state: deploymentState, environment_url: previewUrl },
+		],
+	};
+}
+
+const allPassed = Object.fromEntries(REQUIRED_RELEASE_CHECKS.map((name) => [name, 'success']));
+const healthy = (commitSha: string | null) => async () => ({
+	status: 200,
+	json: async () => ({ status: 'healthy', build: commitSha ? { commitSha } : undefined }),
+});
+
+describe('release status classification', () => {
+	it('separates pending, passed and failed checks', () => {
+		expect(classifyCheck(sha, undefined)).toBe('pending');
+		expect(classifyCheck(sha, { name: 'x', sha, state: 'in_progress', trusted: true })).toBe(
+			'pending',
+		);
+		expect(classifyCheck(sha, { name: 'x', sha, state: 'success', trusted: true })).toBe(
+			'passed',
+		);
+		expect(classifyCheck(sha, { name: 'x', sha, state: 'success', trusted: false })).toBe(
+			'failed',
+		);
+		expect(classifyCheck(sha, { name: 'x', sha, state: 'cancelled', trusted: true })).toBe(
+			'failed',
+		);
+	});
+
+	it('requires an immutable Preview host for a ready deployment', () => {
+		const ready = { id: 1, environment: 'Preview', state: 'success', url: previewUrl };
+		expect(classifyDeployment('preview', ready)).toBe('passed');
+		expect(classifyDeployment('preview', { ...ready, url: 'https://example.vercel.app' })).toBe(
+			'failed',
+		);
+		expect(classifyDeployment('preview', { ...ready, state: 'in_progress' })).toBe('pending');
+		expect(classifyDeployment('preview', { ...ready, state: 'failure' })).toBe('failed');
+	});
+
+	it('correlates the serving build with the release SHA', async () => {
+		expect((await probeHealth(previewUrl, sha, healthy(sha))).result).toBe('match');
+		expect((await probeHealth(previewUrl, sha, healthy('b'.repeat(40)))).result).toBe(
+			'mismatch',
+		);
+		expect((await probeHealth(previewUrl, sha, healthy(null))).result).toBe('unreported');
+		expect(
+			(
+				await probeHealth(previewUrl, sha, async () => {
+					throw new Error('offline');
+				})
+			).result,
+		).toBe('unreachable');
+	});
+});
+
+describe('collectReleaseStatus', () => {
+	it('verifies checks, the Preview deployment, its smoke and health in one result', async () => {
+		const status = await collectReleaseStatus(sha, 'preview', 'ci', {
+			run: ghRunner(responses({ ...allPassed, [PREVIEW_DEPLOYMENT_SMOKE]: 'success' })),
+			fetchImpl: healthy(sha),
+		});
+		expect(status.state).toBe('VERIFIED');
+		expect(status.deployment).toMatchObject({ id: 7, url: previewUrl });
+		expect(status.health[0].result).toBe('match');
+		expect(status.blockers).toEqual([]);
+	});
+
+	it('stays pending while CI or the smoke is still running', async () => {
+		const status = await collectReleaseStatus(sha, 'preview', 'ci', {
+			run: ghRunner(responses({ ...allPassed, 'Application Suite': 'in_progress' })),
+			fetchImpl: healthy(sha),
+		});
+		expect(status.state).toBe('PENDING');
+		expect(status.blockers).toEqual(
+			expect.arrayContaining([
+				'Application Suite: in_progress',
+				`${PREVIEW_DEPLOYMENT_SMOKE}: missing`,
+			]),
+		);
+	});
+
+	it('fails on a failed check or a serving build from another SHA', async () => {
+		const failed = await collectReleaseStatus(sha, 'preview', 'skip', {
+			run: ghRunner(responses({ ...allPassed, 'Repository Policy': 'failure' })),
+			fetchImpl: healthy(sha),
+		});
+		expect(failed.state).toBe('FAILED');
+		const mismatch = await collectReleaseStatus(sha, 'preview', 'skip', {
+			run: ghRunner(responses(allPassed)),
+			fetchImpl: healthy('b'.repeat(40)),
+		});
+		expect(mismatch.state).toBe('FAILED');
+	});
+});
+
+describe('waitForReleaseStatus', () => {
+	const status = (state: ReleaseStatus['state']) => ({ state }) as ReleaseStatus;
+
+	it('polls until a terminal state', async () => {
+		const results = [status('PENDING'), status('PENDING'), status('VERIFIED')];
+		const sleep = jest.fn(async () => undefined);
+		const result = await waitForReleaseStatus(async () => results.shift()!, {
+			timeoutMs: 60_000,
+			intervalMs: 1_000,
+			sleep,
+			now: () => 0,
+		});
+		expect(result.state).toBe('VERIFIED');
+		expect(sleep).toHaveBeenCalledTimes(2);
+	});
+
+	it('reports a timeout as pending instead of success', async () => {
+		let clock = 0;
+		const result = await waitForReleaseStatus(async () => status('PENDING'), {
+			timeoutMs: 3_000,
+			intervalMs: 1_000,
+			sleep: async (ms) => {
+				clock += ms;
+			},
+			now: () => clock,
+		});
+		expect(result.state).toBe('PENDING');
+	});
+});

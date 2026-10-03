@@ -155,6 +155,30 @@ describe('related Jest source selection', () => {
 			'docs/core/example.md',
 		]);
 	});
+
+	it('blocks visual-impact changes whose references no longer cover the matrix', () => {
+		const result = evaluateModuleScript<{ status: number; calls: string[][] }>(`
+			import { runValidation } from ${JSON.stringify(VALIDATION_RUNNER_MODULE)};
+			const calls = [];
+			console.log = () => {};
+			console.warn = () => {};
+			console.error = () => {};
+			const status = runValidation({
+				files: ['src/styles/app.scss'],
+				scope: 'changed',
+				scopeDescription: 'working-tree',
+				pathExists: () => true,
+				runStep: (_name, _command, args) => {
+					calls.push(args);
+					return args.includes('visual:matrix:check') ? 3 : 0;
+				},
+			});
+			process.stdout.write(JSON.stringify({ status, calls }));
+		`);
+
+		expect(result.status).toBe(3);
+		expect(result.calls).toContainEqual(['visual:matrix:check']);
+	});
 });
 
 describe('validation without a reliable import graph', () => {

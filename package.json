@@ -100,6 +100,7 @@
         "ops:backup:observe": "tsx scripts/ops/observe-backup-health.ts",
         "ops:post-deploy": "tsx scripts/ops/post-deploy-smoke.ts",
         "ops:release-checks": "tsx scripts/ops/release-readiness.ts",
+        "ops:release-status": "tsx scripts/ops/release-status.ts",
         "ops:classify-release": "tsx scripts/ops/classify-release.ts",
         "validate:deployed-app-capabilities": "tsx scripts/db/validate-deployed-app-capabilities.ts",
         "agent:git-safety:start": "node scripts/agent/git-safety.mjs start",
@@ -140,6 +141,7 @@
         "visual:parity:diagnose": "tsx scripts/screenshot/visual-parity-cli.ts diagnose",
         "visual:parity:compare": "tsx scripts/screenshot/visual-parity-cli.ts compare",
         "visual:parity:accept": "tsx scripts/screenshot/visual-parity-cli.ts accept",
+        "visual:matrix:check": "tsx scripts/screenshot/visual-parity-cli.ts check",
         "db:local:restore-from-dump": "tsx scripts/db/local-restore-from-dump.ts",
         "db:prod:export-auth": "tsx scripts/db/db-guard.ts check --target production --operation export-auth --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-auth-users.ts",
         "db:prod:export-storage": "tsx scripts/db/db-guard.ts check --target production --operation export-storage --db-url \"${PROD_DB_URL}\" && tsx scripts/db/export-storage.ts"

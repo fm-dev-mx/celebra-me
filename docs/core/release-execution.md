@@ -29,9 +29,10 @@ implementing these skills is never a live-release invocation.
 
 ## Checks and evidence reuse
 
-- Use `pnpm ops:classify-release -- --base <base-sha> --head <head-sha>` and the actual diff. Select
-  local checks through [validation procedures](validation-procedures.md). Do not run full local CI
-  merely because this is a release. Preserve normal pre-commit and pre-push hooks.
+- Inspect the actual diff; Repository Policy already runs `ops:classify-release` on the pushed SHA.
+  Select local checks through [validation procedures](validation-procedures.md), and run
+  `pnpm visual:matrix:check` (seconds, browserless) before pushing visual-impact paths. Do not run
+  full local CI merely because this is a release. Preserve normal pre-commit and pre-push hooks.
 - Run `pnpm db:branch:parity -- --base <base-sha> --head <head-sha> --json` for the relevant range.
   Use branch-lane/database-parity read-only diagnosis and its fingerprinted checkpoint/clearance
   when sensitive. Do not inherit persistent DB mutation authority from those skills; their only
@@ -59,28 +60,29 @@ implementing these skills is never a live-release invocation.
 ## Preview integration
 
 1. Stage only named scope, commit only when needed, and inspect resulting commit/working tree.
-   Already committed scope requires neither staging nor a new commit.
+   Already committed scope requires neither staging nor a new commit. A needed commit (for example
+   accepted visual baselines) goes on a task branch created from `develop` and is then
+   fast-forwarded; never author it directly on `develop`.
 2. Push only the validated `develop` ref with normal hooks and Git LFS. If origin already points at
    the intended SHA, skip the push and discover the existing CI/deployment.
-3. Wait for Repository CI on that exact integrated SHA. Use `pnpm ops:release-checks <exact-sha>`
-   for trusted policy/application/static evidence. Missing, skipped, cancelled, pending or failed
-   checks are not success. Task-branch CI is insufficient.
-4. Inspect Vercel through an available authenticated read-only connector/API/CLI. Resolve project,
-   deployment ID, Git SHA/ref, environment, readiness and immutable deployment URL from provider
-   evidence. Do not infer identity from URL spelling or a successful push. Require Preview,
-   `develop`, the expected SHA and READY. Compare any requested serving alias to that deployment.
-   Run `pnpm ops:post-deploy -- verify` with the provider-sourced `VERCEL_DISPATCH_EVENT`,
-   `VERCEL_DISPATCH_ENVIRONMENT`, `VERCEL_DISPATCH_PROJECT_ID`, independently resolved
-   `VERCEL_DISPATCH_EXPECTED_PROJECT_ID`, `VERCEL_DISPATCH_DEPLOYMENT_ID`, `VERCEL_DISPATCH_URL`,
-   `VERCEL_DISPATCH_COMMIT_SHA`, `VERCEL_DISPATCH_GIT_REF`, and `VERCEL_DEPLOYMENT_STATE`. Set
-   `RELEASE_EXPECTED_SHA` and `RELEASE_EXPECTED_ENVIRONMENT` from the Task Contract, not the
-   returned deployment. Use ready/Preview and promoted/Production dispatch transitions respectively.
-   The verifier checks correlation/readiness only; provider authenticity, alias and smoke are
-   independent requirements. Never synthesize provider evidence or set READY to make this pass.
-5. Run the read-only Preview smoke with `pnpm test:e2e:preview:public` against the verified URL. Use
-   `scripts/playwright/preview-environment.ts` for exact host/project/bypass prerequisites; never
-   run provisioning/publication suites to make smoke pass. Reuse prior smoke only when its SHA,
-   deployment ID, URL and relevant runtime configuration still match.
+3. Run `pnpm ops:release-status -- --sha <exact-sha> --target preview --smoke skip --wait` once, in
+   the background, and act on its single JSON result. It is read-only and polls silently (up to 20
+   minutes) for:
+   - trusted Repository Policy, Application Suite and Application / static results on the exact SHA
+     (task-branch CI is insufficient);
+   - the Preview deployment Vercel recorded on GitHub for that SHA: success state and an immutable
+     Preview URL;
+   - `/api/health` build identity on that URL, which must not report another SHA.
+
+   `VERIFIED` is the only success. `PENDING` after the timeout is unverified, and `FAILED` names its
+   blockers. Do not synthesize evidence or redeploy to make it pass.
+
+4. Run the read-only Preview smoke with `pnpm test:e2e:preview:public`, using the URL reported in
+   step 3 as `PLAYWRIGHT_BASE_URL` and `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`.
+   `scripts/playwright/preview-environment.ts` owns the host, project and bypass prerequisites.
+   Never run provisioning or publication suites to make smoke pass. Reuse prior smoke only when its
+   SHA, deployment and URL still match. Once the `Vercel - celebra-me preview smoke` CI check
+   exists, use `--smoke ci` in step 3 instead and skip this local step.
 
 ## Production promotion
 

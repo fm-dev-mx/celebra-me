@@ -146,6 +146,12 @@ independently of publication lifecycle. Do not maintain separate numeric invento
 invitation exclusions. A lifecycle change to `published` adds the invitation to the next candidate
 and requires new coverage and acceptance; an older matrix cannot certify the added route.
 
+`pnpm visual:matrix:check` proves in seconds, without a browser, that the accepted references still
+cover the current matrix and match their PNG hashes. `validate:changed` runs it for visual-impact
+paths, and a unit test pins the committed `matrixHash`. A branch that publishes, retires or adds a
+demo, invitation or variant must carry its approved candidate before integration; matrix drift must
+not reach a release.
+
 ### Release-time visual confirmation
 
 Visual acceptance is part of the owner's decision to release a candidate for deployment. It is not
