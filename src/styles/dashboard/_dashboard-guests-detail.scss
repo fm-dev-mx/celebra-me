@@ -1,0 +1,227 @@
+@use '../global/mixins' as mixins;
+
+/* ==========================================================================
+   Guest detail sheet — full screen on phones, centered dialog elsewhere
+   ========================================================================== */
+
+.guest-detail-sheet {
+	.dashboard-modal__header h3 {
+		font-size: 1.75rem;
+		font-weight: 600;
+		line-height: 1.15;
+		letter-spacing: 0;
+		overflow-wrap: anywhere;
+	}
+
+	.dashboard-modal__subtitle {
+		color: var(--color-text-secondary);
+		font-size: 1rem;
+	}
+
+	.dashboard-modal__header .btn-close {
+		min-width: 48px;
+		min-height: 48px;
+		color: var(--color-text-primary);
+	}
+
+	/* Reference data reads at body size inside the sheet */
+	.guest-detail-groups {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.guest-detail-group__title {
+		margin: 0 0 0.5rem;
+		color: var(--color-text-primary);
+		font-family: var(--font-ui);
+		font-size: 1.0625rem;
+		font-variant: normal;
+		font-weight: 700;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+
+	.guest-detail-group__row {
+		gap: 0.75rem;
+		padding: 0.375rem 0;
+	}
+
+	.guest-detail-group__label {
+		color: var(--color-text-secondary);
+		font-size: 1rem;
+	}
+
+	.guest-detail-group__value {
+		color: var(--color-text-primary);
+		font-size: 1rem;
+		font-weight: 600;
+	}
+
+	.guest-message-history {
+		font-size: 1rem;
+	}
+}
+
+.guest-detail-sheet__body {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.guest-detail-sheet__section-title {
+	margin: 0 0 0.75rem;
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	font-size: 1.0625rem;
+	font-weight: 700;
+}
+
+.guest-detail-sheet__progress {
+	padding: 1rem 1.125rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 18px;
+	background: var(--color-surface-elevated);
+}
+
+.guest-progress {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.guest-progress__step {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	color: var(--color-text-secondary);
+	font-size: 1.0625rem;
+}
+
+.guest-progress__marker {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 34px;
+	height: 34px;
+	border: 1px solid var(--color-border-control);
+	border-radius: 50%;
+	font-weight: 700;
+
+	.guest-progress__step--current & {
+		border-color: var(--dashboard-button-primary-bg);
+		background: var(--dashboard-button-primary-bg);
+		color: var(--dashboard-button-primary-accent, var(--dashboard-button-primary-text));
+	}
+
+	.guest-progress__step--done & {
+		border-color: var(--color-state-success-border);
+		background: var(--color-state-success-bg);
+		color: var(--color-state-success-text);
+	}
+}
+
+.guest-progress__text {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.guest-progress__label {
+	.guest-progress__step--current &,
+	.guest-progress__step--done & {
+		color: var(--color-text-primary);
+		font-weight: 700;
+	}
+}
+
+.guest-progress__note {
+	color: var(--color-text-secondary);
+	font-size: 0.9375rem;
+}
+
+.guest-progress__state {
+	flex-shrink: 0;
+	color: var(--color-text-secondary);
+	font-size: 0.875rem;
+	font-weight: 600;
+
+	.guest-progress__step--current & {
+		padding: 0.15rem 0.6rem;
+		border-radius: 999px;
+		background: var(--color-state-warning-bg);
+		color: var(--color-state-warning-text);
+	}
+}
+
+/* The next step is the most important control on the screen */
+.guest-detail-sheet__primary {
+	display: flex;
+
+	.dashboard-guests__share-button {
+		flex: 1;
+		justify-content: center;
+		min-height: 58px;
+		border-radius: 16px;
+		font-size: 1.125rem;
+		font-weight: 700;
+
+		&.btn-primary {
+			background: var(--dashboard-button-primary-bg);
+			border-color: var(--dashboard-button-primary-border);
+			color: var(--dashboard-button-primary-text);
+
+			.share-icon {
+				color: var(--dashboard-button-primary-accent, currentcolor);
+			}
+		}
+	}
+}
+
+.guest-detail-sheet__actions {
+	padding-top: 0.25rem;
+	border-top: 1px solid var(--color-border-subtle);
+
+	.guest-expanded-actions {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0.5rem;
+	}
+
+	.guest-expanded-actions__group {
+		justify-content: stretch;
+		gap: 0.5rem;
+
+		> * {
+			flex: 1 1 140px;
+		}
+
+		&:last-child {
+			margin-left: 0;
+		}
+	}
+
+	button {
+		min-height: 52px;
+		font-size: 1rem;
+	}
+}
+
+/* Details button on compact cards */
+.guest-card__details-btn {
+	min-height: 52px;
+	padding: 0 1rem;
+	border-radius: 14px;
+	font-size: 1rem;
+	font-weight: 700;
+	white-space: nowrap;
+
+	@include mixins.respond-below(xs) {
+		padding: 0 0.75rem;
+	}
+}

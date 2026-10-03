@@ -298,6 +298,36 @@ export function getGuestSummaryMessage(counts: GuestStatusCounts): GuestSummaryM
 	};
 }
 
+export type GuestProgressState = 'done' | 'current' | 'upcoming';
+
+export interface GuestProgressStep {
+	label: string;
+	state: GuestProgressState;
+	note?: string;
+}
+
+/** Three-step invitation journey shown in the guest detail screen. */
+export function getGuestProgressSteps(item: DashboardGuestItem): GuestProgressStep[] {
+	const bucket = getGuestStatusBucket(item);
+	const answered = bucket === 'confirmed' || bucket === 'declined';
+	const sent = hasBeenShared(item) || answered;
+	let answer: string | undefined;
+	if (bucket === 'confirmed') {
+		answer = `${item.attendeeCount === 1 ? 'Viene' : 'Vienen'} ${item.attendeeCount} de ${item.maxAllowedAttendees}`;
+	} else if (bucket === 'declined') {
+		answer = 'No podrán ir';
+	}
+	return [
+		{ label: 'Enviar la invitación', state: sent ? 'done' : 'current' },
+		{
+			label: 'Esperar su respuesta',
+			state: answered ? 'done' : sent ? 'current' : 'upcoming',
+			note: !answered && item.isViewed ? 'Ya la abrió' : undefined,
+		},
+		{ label: 'Saber si vienen y cuántos', state: answered ? 'done' : 'upcoming', note: answer },
+	];
+}
+
 export interface GroupMetric {
 	tag: string;
 	total: number;

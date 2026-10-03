@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
-import { ChevronDownIcon, CopyIcon, CheckIcon, MessageIcon } from '@/components/common/icons/ui';
+import React from 'react';
+import { ChevronDownIcon } from '@/components/common/icons/ui';
 import GuestDetailGroups from '@/components/dashboard/guests/GuestDetailGroups';
 import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
 import GuestMessageHistory from '@/components/dashboard/guests/GuestMessageHistory';
-import SendInvitationModal from '@/components/dashboard/guests/SendInvitationModal';
-import ShareAction from '@/components/dashboard/guests/ShareAction';
-import { useClipboard } from '@/hooks/use-clipboard';
+import GuestPrimaryAction from '@/components/dashboard/guests/GuestPrimaryAction';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
@@ -40,6 +38,8 @@ interface GuestCardProps {
 	isBrandingRemovalEligible?: boolean;
 	onToggleBrandingRemoval?: (guestId: string, hideCelebraMeBranding: boolean) => void;
 	onSaveGuest?: GuestSaveCallback;
+	/** When set, the details button opens the guest detail screen instead of expanding in place. */
+	onOpenDetails?: (item: DashboardGuestItem) => void;
 }
 
 const GuestCard: React.FC<GuestCardProps> = ({
@@ -63,10 +63,8 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	isBrandingRemovalEligible,
 	onToggleBrandingRemoval,
 	onSaveGuest,
+	onOpenDetails,
 }) => {
-	const { copied, copy: copyLink } = useClipboard();
-	const [reminderModalOpen, setReminderModalOpen] = useState(false);
-
 	const messageCount = getGuestMessageCount(item.guestComment);
 	const primaryStatus = getPrimaryStatus(item);
 	const primaryAction = getGuestPrimaryAction(item, reminderMode, isReminderEligible);
@@ -83,59 +81,6 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	]
 		.join(' ')
 		.trim();
-
-	const actionButton =
-		primaryAction.action === 'send-reminder' ? (
-			<>
-				<button
-					type="button"
-					className="btn-primary dashboard-guests__share-button guest-card__primary-action--reminder"
-					onClick={() => setReminderModalOpen(true)}
-					title="Enviar recordatorio"
-					aria-label={`Enviar recordatorio a ${item.fullName}`}
-				>
-					<MessageIcon className="share-icon" size={16} />
-					<span>Recordar</span>
-				</button>
-				{reminderModalOpen && (
-					<SendInvitationModal
-						key={item.guestId}
-						guest={item}
-						pendingGuests={[]}
-						inviteUrl={inviteUrl}
-						onClose={() => setReminderModalOpen(false)}
-						onSave={onSaveGuest ?? (async () => item)}
-						onMarkShared={async () => onMarkShared(item)}
-						onReminderSent={onReminderSent}
-						templates={shareTemplates}
-						shareDateContext={shareDateContext}
-						eventTitle={eventTitle}
-						mode="single-reminder"
-					/>
-				)}
-			</>
-		) : primaryAction.action === 'share' ? (
-			<ShareAction
-				guest={item}
-				inviteUrl={inviteUrl}
-				eventTitle={eventTitle}
-				shareTemplates={shareTemplates}
-				shareDateContext={shareDateContext}
-				onShared={() => onMarkShared(item)}
-				onSaveGuest={onSaveGuest}
-			/>
-		) : (
-			<button
-				type="button"
-				className="btn-primary dashboard-guests__share-button"
-				onClick={() => copyLink(inviteUrl)}
-				title="Copiar enlace de invitación"
-				aria-label={`Copiar enlace de invitación de ${item.fullName}`}
-			>
-				{copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
-				<span>{copied ? 'Copiado' : 'Copiar enlace'}</span>
-			</button>
-		);
 
 	return (
 		<article className={articleClass} data-guest-id={item.guestId}>
@@ -163,54 +108,78 @@ const GuestCard: React.FC<GuestCardProps> = ({
 			</div>
 
 			<footer className="guest-card__actions">
-				{actionButton}
-				<button
-					type="button"
-					className={`btn-icon guest-card__menu-btn ${isExpanded ? 'guest-card__menu-btn--open' : ''}`}
-					title={expandLabel}
-					aria-label={expandLabel}
-					aria-expanded={isExpanded}
-					aria-controls={expandId}
-					onClick={onToggleExpanded}
-				>
-					<ChevronDownIcon size={16} aria-hidden="true" />
-				</button>
+				<GuestPrimaryAction
+					item={item}
+					inviteUrl={inviteUrl}
+					eventTitle={eventTitle}
+					shareTemplates={shareTemplates}
+					shareDateContext={shareDateContext}
+					reminderMode={reminderMode}
+					isReminderEligible={isReminderEligible}
+					onReminderSent={onReminderSent}
+					onMarkShared={onMarkShared}
+					onSaveGuest={onSaveGuest}
+				/>
+				{onOpenDetails ? (
+					<button
+						type="button"
+						className="btn-secondary guest-card__details-btn"
+						aria-label={`Ver detalles de ${item.fullName}`}
+						onClick={() => onOpenDetails(item)}
+					>
+						Ver detalles
+					</button>
+				) : (
+					<button
+						type="button"
+						className={`btn-icon guest-card__menu-btn ${isExpanded ? 'guest-card__menu-btn--open' : ''}`}
+						title={expandLabel}
+						aria-label={expandLabel}
+						aria-expanded={isExpanded}
+						aria-controls={expandId}
+						onClick={onToggleExpanded}
+					>
+						<ChevronDownIcon size={16} aria-hidden="true" />
+					</button>
+				)}
 			</footer>
 
-			<section
-				id={expandId}
-				className={`guest-card__expanded ${isExpanded ? 'guest-card__expanded--open' : ''}`}
-				role="region"
-				aria-label={`Detalles de ${item.fullName}`}
-			>
-				<div className="guest-card__expanded-inner">
-					{messageCount > 0 && (
-						<GuestMessageHistory
-							guestComment={item.guestComment}
-							fallbackTimestampIso={getGuestMessageFallbackTimestamp(item)}
-						/>
-					)}
-					<GuestDetailGroups item={item} />
-					<div className="guest-card__expanded-actions">
-						<GuestExpandedActions
-							guestName={item.fullName}
-							inviteUrl={inviteUrl}
-							isShared={item.deliveryStatus === 'shared'}
-							hideCopyLink={primaryActionIsCopy}
-							onEdit={() => onEdit(item)}
-							onDelete={() => onDelete(item)}
-							onMarkShared={async () => onMarkShared(item)}
-							onRevertShared={
-								onRevertShared ? async () => onRevertShared(item) : undefined
-							}
-							guestId={item.guestId}
-							hideCelebraMeBranding={item.hideCelebraMeBranding ?? false}
-							isBrandingRemovalEligible={isBrandingRemovalEligible}
-							onToggleBrandingRemoval={onToggleBrandingRemoval}
-						/>
+			{!onOpenDetails && (
+				<section
+					id={expandId}
+					className={`guest-card__expanded ${isExpanded ? 'guest-card__expanded--open' : ''}`}
+					role="region"
+					aria-label={`Detalles de ${item.fullName}`}
+				>
+					<div className="guest-card__expanded-inner">
+						{messageCount > 0 && (
+							<GuestMessageHistory
+								guestComment={item.guestComment}
+								fallbackTimestampIso={getGuestMessageFallbackTimestamp(item)}
+							/>
+						)}
+						<GuestDetailGroups item={item} />
+						<div className="guest-card__expanded-actions">
+							<GuestExpandedActions
+								guestName={item.fullName}
+								inviteUrl={inviteUrl}
+								isShared={item.deliveryStatus === 'shared'}
+								hideCopyLink={primaryActionIsCopy}
+								onEdit={() => onEdit(item)}
+								onDelete={() => onDelete(item)}
+								onMarkShared={async () => onMarkShared(item)}
+								onRevertShared={
+									onRevertShared ? async () => onRevertShared(item) : undefined
+								}
+								guestId={item.guestId}
+								hideCelebraMeBranding={item.hideCelebraMeBranding ?? false}
+								isBrandingRemovalEligible={isBrandingRemovalEligible}
+								onToggleBrandingRemoval={onToggleBrandingRemoval}
+							/>
+						</div>
 					</div>
-				</div>
-			</section>
+				</section>
+			)}
 		</article>
 	);
 };

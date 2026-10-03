@@ -3,6 +3,7 @@ import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
 import type { GuestReviewFilter } from '@/components/dashboard/guests/GuestReviewBlock';
 import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
 import GuestDeleteConfirmModal from '@/components/dashboard/guests/GuestDeleteConfirmModal';
+import GuestDetailSheet from '@/components/dashboard/guests/GuestDetailSheet';
 import GuestFilters, { type GroupFilter } from '@/components/dashboard/guests/GuestFilters';
 import GuestStatusOverview from '@/components/dashboard/guests/GuestStatusOverview';
 import { getVisibleTags } from '@/lib/guests/guest-tags';
@@ -50,6 +51,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const [delivery, setDelivery] = useState<DeliveryFilter>('all');
 	const [group, setGroup] = useState<GroupFilter>('all');
 	const [expandedGuestId, setExpandedGuestId] = useState<string | null>(null);
+	const [detailGuestId, setDetailGuestId] = useState<string | null>(null);
 	const [reviewFilter, setReviewFilter] = useState<GuestReviewFilter>('all');
 	const [shareMessagesModalOpen, setShareMessagesModalOpen] = useState(false);
 	const [listView, setListView] = useGuestListView();
@@ -120,6 +122,10 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	);
 
 	const statusCounts = useMemo(() => computeGuestStatusCounts(items), [items]);
+	// Resolved from live items so the sheet follows edits and closes when the guest is removed.
+	const detailGuest = detailGuestId
+		? (items.find((item) => item.guestId === detailGuestId) ?? null)
+		: null;
 
 	const showReminderCta = useMemo(
 		() => shouldShowReminderCta(shareDateContext, reminderSettings, eligibleGuestIds.size),
@@ -398,7 +404,29 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onToggleBrandingRemoval={handleToggleBrandingRemoval}
 					onSaveGuest={handleSaveInvitation}
 					view={listView}
+					onOpenDetails={(item) => setDetailGuestId(item.guestId)}
 				/>
+
+				{detailGuest && (
+					<GuestDetailSheet
+						item={detailGuest}
+						inviteUrl={getGuestInviteUrl(detailGuest, inviteBaseUrl)}
+						eventTitle={currentEventTitle}
+						shareTemplates={shareTemplates}
+						shareDateContext={shareDateContext}
+						reminderMode={showReminderCta}
+						isReminderEligible={eligibleGuestIds.has(detailGuest.guestId)}
+						onReminderSent={handleReminderSent}
+						onClose={() => setDetailGuestId(null)}
+						onEdit={openEditModal}
+						onDelete={requestDelete}
+						onMarkShared={handleMarkShared}
+						onRevertShared={handleRevertShared}
+						isBrandingRemovalEligible={isBrandingRemovalEligible}
+						onToggleBrandingRemoval={handleToggleBrandingRemoval}
+						onSaveGuest={handleSaveInvitation}
+					/>
+				)}
 
 				{modals}
 				{notification && (

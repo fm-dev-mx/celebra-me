@@ -34,6 +34,8 @@ interface GuestTableProps {
 	onSaveGuest?: GuestSaveCallback;
 	/** Compact-screen presentation; the desktop table is unaffected. */
 	view?: GuestListView;
+	/** Opens the full-screen guest detail; when absent, compact rows expand in place. */
+	onOpenDetails?: (item: DashboardGuestItem) => void;
 }
 
 export const GUEST_TABLE_COL_COUNT = 7;
@@ -59,6 +61,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	onToggleBrandingRemoval,
 	onSaveGuest,
 	view = 'cards',
+	onOpenDetails,
 }) => {
 	if (items.length === 0) {
 		return (
@@ -91,6 +94,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 			isBrandingRemovalEligible={isBrandingRemovalEligible}
 			onToggleBrandingRemoval={onToggleBrandingRemoval}
 			onSaveGuest={onSaveGuest}
+			onOpenDetails={onOpenDetails}
 		/>
 	);
 
@@ -114,8 +118,11 @@ const GuestTable: React.FC<GuestTableProps> = ({
 								</h2>
 								<ul className="guest-list-section__items">
 									{section.items.map((item) => {
-										const isOpen = expandedGuestId === item.guestId;
-										const detailsId = `guest-row-details-${item.guestId}`;
+										const isOpen =
+											!onOpenDetails && expandedGuestId === item.guestId;
+										const detailsId = onOpenDetails
+											? undefined
+											: `guest-row-details-${item.guestId}`;
 										return (
 											<li
 												key={item.guestId}
@@ -125,7 +132,11 @@ const GuestTable: React.FC<GuestTableProps> = ({
 													item={item}
 													isOpen={isOpen}
 													detailsId={detailsId}
-													onOpen={() => onToggleExpanded?.(item.guestId)}
+													onOpen={() =>
+														onOpenDetails
+															? onOpenDetails(item)
+															: onToggleExpanded?.(item.guestId)
+													}
 												/>
 												{isOpen && (
 													<div

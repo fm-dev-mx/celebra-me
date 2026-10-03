@@ -1,6 +1,7 @@
 import { makeGuest } from '@tests/helpers/guest-factory';
 import {
 	getGuestListSubtitle,
+	getGuestProgressSteps,
 	getGuestStatusBucket,
 	groupGuestsByStatus,
 } from '@/components/dashboard/guests/guest-presenter';
@@ -88,5 +89,36 @@ describe('getGuestListSubtitle', () => {
 		expect(getGuestListSubtitle(makeGuest({ attendanceStatus: 'declined' }), NOW)).toBe(
 			'Avisó que no podrá ir',
 		);
+	});
+});
+
+describe('getGuestProgressSteps', () => {
+	const states = (overrides: Parameters<typeof makeGuest>[0]) =>
+		getGuestProgressSteps(makeGuest(overrides)).map((step) => step.state);
+
+	it('walks the three steps as the invitation advances', () => {
+		expect(states({ deliveryStatus: 'generated' })).toEqual([
+			'current',
+			'upcoming',
+			'upcoming',
+		]);
+		expect(states({ deliveryStatus: 'shared' })).toEqual(['done', 'current', 'upcoming']);
+		expect(states({ deliveryStatus: 'shared', attendanceStatus: 'declined' })).toEqual([
+			'done',
+			'done',
+			'done',
+		]);
+	});
+
+	it('adds plain-language notes for views and answers', () => {
+		const viewed = getGuestProgressSteps(
+			makeGuest({ deliveryStatus: 'shared', isViewed: true }),
+		);
+		expect(viewed[1].note).toBe('Ya la abrió');
+
+		const confirmed = getGuestProgressSteps(
+			makeGuest({ attendanceStatus: 'confirmed', attendeeCount: 2 }),
+		);
+		expect(confirmed[2].note).toBe('Vienen 2 de 4');
 	});
 });
