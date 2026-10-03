@@ -71,7 +71,8 @@ short code is available and emits the short URL when `shortId` exists.
 
 - `GET /api/captura/:token` — resolve intake request from raw token
 - `POST /api/captura/:token` — submit intake block data
-- `GET /api/dashboard/intake` — list invitation projects (`POST` create is rejected; use managed CLI)
+- `GET /api/dashboard/intake` — list invitation projects (`POST` create is rejected; use managed
+  CLI)
 - `GET /api/dashboard/intake/:id` — get project details
 - `POST /api/dashboard/intake/:id/request` — create intake request
 - `POST /api/dashboard/intake/:id/request/regenerate-token` — regenerate token
@@ -106,7 +107,9 @@ live tree.
 ### Guest Flow
 
 1. A guest enters through the direct invite URL or a short URL.
-2. The route resolves invitation context server-side.
+2. The route resolves invitation context server-side. An unknown or deleted `inviteId` redirects
+   (`302`) to the same route without `invite`; transient lookup failures render the public page
+   without redirect.
 3. The client fetches `/api/invitacion/:inviteId/context`.
 4. View telemetry posts to `/api/invitacion/:inviteId/view`.
 5. RSVP submissions post to `/api/invitacion/:inviteId/rsvp`.
@@ -147,17 +150,17 @@ must not be treated as active system entrypoints.
 
 ## Dashboard guest metrics
 
-| Metric | Code field | Definition |
-| --- | --- | --- |
-| Total invitations | `totalInvitations` | Count of unique guest invitation records |
-| Enviadas (sent) | `sharedInvitations` | Count of unique invitations with `deliveryStatus === 'shared'` |
-| Por confirmar (pending) | `unconfirmedShared` | Count of sent invitations without final RSVP |
-| Confirmadas | `confirmedInvitations` | Count of invitations with `attendanceStatus === 'confirmed'` |
-| Asistentes | `confirmedPeople` | Sum of `attendeeCount` for confirmed invitations only |
-| Vistas | `viewed` | Count of invitations with `firstViewedAt` set |
-| Denegadas | `declinedInvitations` | Count of invitations with `attendanceStatus === 'declined'` |
-| Por enviar | `generatedInvitations` | Count of invitations with `deliveryStatus === 'generated'` |
-| Total invited capacity | `totalPeople` | Sum of `maxAllowedAttendees` for all invitations (denominator only) |
+| Metric                  | Code field             | Definition                                                          |
+| ----------------------- | ---------------------- | ------------------------------------------------------------------- |
+| Total invitations       | `totalInvitations`     | Count of unique guest invitation records                            |
+| Enviadas (sent)         | `sharedInvitations`    | Count of unique invitations with `deliveryStatus === 'shared'`      |
+| Por confirmar (pending) | `unconfirmedShared`    | Count of sent invitations without final RSVP                        |
+| Confirmadas             | `confirmedInvitations` | Count of invitations with `attendanceStatus === 'confirmed'`        |
+| Asistentes              | `confirmedPeople`      | Sum of `attendeeCount` for confirmed invitations only               |
+| Vistas                  | `viewed`               | Count of invitations with `firstViewedAt` set                       |
+| Denegadas               | `declinedInvitations`  | Count of invitations with `attendanceStatus === 'declined'`         |
+| Por enviar              | `generatedInvitations` | Count of invitations with `deliveryStatus === 'generated'`          |
+| Total invited capacity  | `totalPeople`          | Sum of `maxAllowedAttendees` for all invitations (denominator only) |
 
 `totalPeople` is total invited capacity, not a confirmed attendee count.
 

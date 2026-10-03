@@ -4,6 +4,7 @@ import {
 } from '@/lib/invitation/route-personalization';
 import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import { trackInvitationView } from '@/lib/rsvp/services/rsvp-submission.service';
+import { ApiError } from '@/lib/rsvp/core/errors';
 import {
 	PERSONALIZED_CONTEXT_SERVICE_CALLS_ON_LOOKUP,
 	PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT,
@@ -28,6 +29,10 @@ const trackInvitationViewMock = trackInvitationView as jest.MockedFunction<
 describe('invitation route personalization', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+	});
+
+	afterEach(() => {
+		jest.restoreAllMocks();
 	});
 
 	it('redirects a valid invite to its canonical route when the route slug does not match', () => {
@@ -80,8 +85,10 @@ describe('invitation route personalization', () => {
 		expect(trackInvitationViewMock).not.toHaveBeenCalled();
 	});
 
-	it('strips personalization on invalid invites and does not record telemetry', async () => {
-		getInvitationContextByInviteIdMock.mockRejectedValue(new Error('Invitation not found.'));
+	it('redirects unknown or deleted invites to the public route without telemetry', async () => {
+		getInvitationContextByInviteIdMock.mockRejectedValue(
+			new ApiError(404, 'not_found', 'Invitation not found.'),
+		);
 
 		const result = await resolveRoutePersonalization({
 			inviteId: 'missing',
@@ -93,7 +100,7 @@ describe('invitation route personalization', () => {
 
 		expect(result).toEqual({
 			guestContext: null,
-			redirectPath: null,
+			redirectPath: '/xv/ximena-meza-trasvina',
 		});
 		assertObservedOperationCount(
 			getInvitationContextByInviteIdMock.mock.calls.length,
@@ -101,6 +108,70 @@ describe('invitation route personalization', () => {
 			'personalized-context-service',
 		);
 		expect(trackInvitationViewMock).not.toHaveBeenCalled();
+	});
+
+	it('keeps other query params when dropping an unusable invite', async () => {
+		getInvitationContextByInviteIdMock.mockRejectedValue(
+			new ApiError(400, 'bad_request', 'inviteId is invalid.'),
+		);
+
+		const result = await resolveRoutePersonalization({
+			inviteId: 'bad',
+			currentPathWithQuery: '/xv/ximena-meza-trasvina?invite=bad&skipEnvelope=true',
+			routeEventType: 'xv',
+			routeSlug: 'ximena-meza-trasvina',
+			routeIsDemo: false,
+		});
+
+		expect(result).toEqual({
+			guestContext: null,
+			redirectPath: '/xv/ximena-meza-trasvina?skipEnvelope=true',
+		});
+		expect(trackInvitationViewMock).not.toHaveBeenCalled();
+	});
+
+	it('avoids self-redirect when the current path does not contain an invite query param', async () => {
+		getInvitationContextByInviteIdMock.mockRejectedValue(
+			new ApiError(404, 'not_found', 'Invitation not found.'),
+		);
+
+		const result = await resolveRoutePersonalization({
+			inviteId: 'missing',
+			currentPathWithQuery: '/xv/ximena-meza-trasvina',
+			routeEventType: 'xv',
+			routeSlug: 'ximena-meza-trasvina',
+			routeIsDemo: false,
+		});
+
+		expect(result).toEqual({
+			guestContext: null,
+			redirectPath: null,
+		});
+		expect(trackInvitationViewMock).not.toHaveBeenCalled();
+	});
+
+	it('keeps the public fallback without redirect on transient lookup failures', async () => {
+		getInvitationContextByInviteIdMock.mockRejectedValue(new Error('timeout'));
+		const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+		try {
+			const result = await resolveRoutePersonalization({
+				inviteId: 'invite-1',
+				currentPathWithQuery: '/xv/ximena-meza-trasvina?invite=invite-1',
+				routeEventType: 'xv',
+				routeSlug: 'ximena-meza-trasvina',
+				routeIsDemo: false,
+			});
+
+			expect(result).toEqual({ guestContext: null, redirectPath: null });
+			expect(trackInvitationViewMock).not.toHaveBeenCalled();
+			expect(warnSpy).toHaveBeenCalledWith(
+				'[invitation][route-personalization] Unable to resolve invite context.',
+				expect.any(Error),
+			);
+		} finally {
+			warnSpy.mockRestore();
+		}
 	});
 
 	it('does not look up a guest when the invite id is empty', async () => {
