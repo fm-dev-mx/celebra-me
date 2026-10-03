@@ -29,6 +29,11 @@ prove absence of remote pushes or of transient mutate-then-restore activity.
 pnpm agent:git-safety:start
 ```
 
+When another agent session may work in the same checkout, pass `--session=<id>` (for example the
+task branch, or set `CELEBRA_GIT_SAFETY_SESSION`) to `start`, `check` and `finish`. Each session
+then keeps its own `.agent/tmp/git-safety-baseline.<id>.json`, so closing one session never consumes
+another session's evidence. Without it, sessions share the legacy baseline file.
+
 Replaces an existing baseline only when it shows no protected drift; a drifted or invalid baseline
 fails closed and is preserved. Writes `.agent/tmp/git-safety-baseline.json` with schema version,
 creation time, HEAD, branch/detached state, and index fingerprint. Underlying command:
