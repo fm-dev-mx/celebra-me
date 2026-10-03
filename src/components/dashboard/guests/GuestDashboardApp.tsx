@@ -4,7 +4,7 @@ import type { GuestReviewFilter } from '@/components/dashboard/guests/GuestRevie
 import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
 import GuestDeleteConfirmModal from '@/components/dashboard/guests/GuestDeleteConfirmModal';
 import GuestFilters, { type GroupFilter } from '@/components/dashboard/guests/GuestFilters';
-import GuestSummary from '@/components/dashboard/guests/GuestSummary';
+import GuestStatusOverview from '@/components/dashboard/guests/GuestStatusOverview';
 import { getVisibleTags } from '@/lib/guests/guest-tags';
 import GuestFormModal from '@/components/dashboard/guests/GuestFormModal';
 import GuestMobileDock from '@/components/dashboard/guests/GuestMobileDock';
@@ -14,7 +14,10 @@ import SendInvitationModal from '@/components/dashboard/guests/SendInvitationMod
 import ShareMessagesModal from '@/components/dashboard/guests/ShareMessagesModal';
 import ToolbarActionsMenu from '@/components/dashboard/guests/ToolbarActionsMenu';
 import Toast from '@/components/dashboard/guests/Toast';
-import { getGuestInviteUrl } from '@/components/dashboard/guests/guest-presenter';
+import {
+	computeGuestStatusCounts,
+	getGuestInviteUrl,
+} from '@/components/dashboard/guests/guest-presenter';
 import { guestsApi } from '@/lib/dashboard/guests-api';
 import { useGuestDashboardActions } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
@@ -113,6 +116,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		[setItems],
 	);
 
+	const statusCounts = useMemo(() => computeGuestStatusCounts(items), [items]);
+
 	const showReminderCta = useMemo(
 		() => shouldShowReminderCta(shareDateContext, reminderSettings, eligibleGuestIds.size),
 		[shareDateContext, reminderSettings, eligibleGuestIds.size],
@@ -125,6 +130,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 			return false;
 		if (reviewFilter === 'confirmation-pending' && !isUnconfirmedSharedGuest(item))
 			return false;
+		if (reviewFilter === 'confirmed' && item.attendanceStatus !== 'confirmed') return false;
 		if (reviewFilter === 'rsvp-pending' && item.attendanceStatus !== 'pending') return false;
 		if (reviewFilter === 'with-message' && (item.guestComment ?? '').trim().length === 0)
 			return false;
@@ -297,16 +303,20 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					reminderAudience={reminderSettings.audience}
 				/>
 
-				{/* Mobile-only compact summary — hidden on desktop via CSS */}
+				{/* Compact-screen overview — hidden on desktop via CSS */}
 				<div className="dashboard-guests__mobile-summary">
-					<GuestSummary totals={totals} variant="compact" />
+					<GuestStatusOverview
+						counts={statusCounts}
+						activeFilter={reviewFilter}
+						onFilterChange={setReviewFilter}
+					/>
 				</div>
 
 				<div className="dashboard-guests__toolbar">
 					<button
 						type="button"
 						onClick={openCreateModal}
-						className="btn-primary btn--compact"
+						className="btn-primary btn--compact dashboard-guests__toolbar-create"
 					>
 						Agregar invitado
 					</button>
@@ -346,6 +356,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					status={status}
 					delivery={delivery}
 					group={group}
+					reviewFilter={reviewFilter}
+					onReviewFilterChange={setReviewFilter}
 					onSearchChange={setSearch}
 					onStatusChange={setStatus}
 					onDeliveryChange={setDelivery}

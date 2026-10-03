@@ -30,10 +30,7 @@ export function formatGuestEntrySource(item: DashboardGuestItem) {
 }
 
 export type ShareFlowMode =
-	| 'pending-invitation'
-	| 'single-invitation'
-	| 'pending-reminder'
-	| 'single-reminder';
+	'pending-invitation' | 'single-invitation' | 'pending-reminder' | 'single-reminder';
 
 export type GuestSaveCallback = (
 	guestId: string,
@@ -125,6 +122,100 @@ export function getCompactGroupChips(
 	const chips = visible.slice(0, max);
 	const overflow = Math.max(0, visible.length - max);
 	return { chips, overflow };
+}
+
+export interface GuestStatusCounts {
+	total: number;
+	toSend: number;
+	waiting: number;
+	confirmed: number;
+	declined: number;
+	confirmedPeople: number;
+}
+
+export function computeGuestStatusCounts(items: DashboardGuestItem[]): GuestStatusCounts {
+	const counts: GuestStatusCounts = {
+		total: items.length,
+		toSend: 0,
+		waiting: 0,
+		confirmed: 0,
+		declined: 0,
+		confirmedPeople: 0,
+	};
+	for (const item of items) {
+		if (item.attendanceStatus === 'confirmed') {
+			counts.confirmed++;
+			counts.confirmedPeople += item.attendeeCount;
+		} else if (item.attendanceStatus === 'declined') {
+			counts.declined++;
+		} else if (item.deliveryStatus === 'generated') {
+			counts.toSend++;
+		} else if (isUnconfirmedSharedGuest(item)) {
+			counts.waiting++;
+		}
+	}
+	return counts;
+}
+
+export type GuestSummaryTone = 'empty' | 'pending' | 'waiting' | 'done';
+
+export interface GuestSummaryMessage {
+	/** Large leading number; null when the sentence carries no count. */
+	count: number | null;
+	title: string;
+	detail: string;
+	tone: GuestSummaryTone;
+}
+
+function plural(count: number, singular: string, pluralForm: string): string {
+	return count === 1 ? singular : pluralForm;
+}
+
+/** Plain-language status line for the host, written for non-technical readers. */
+export function getGuestSummaryMessage(counts: GuestStatusCounts): GuestSummaryMessage {
+	if (counts.total === 0) {
+		return {
+			count: null,
+			title: 'Todavía no tiene invitados',
+			detail: 'Agregue su primer invitado para empezar.',
+			tone: 'empty',
+		};
+	}
+	if (counts.toSend > 0) {
+		let detail = 'Todavía nadie ha respondido.';
+		if (counts.confirmed > 0) {
+			detail = `${counts.confirmed} ya ${plural(counts.confirmed, 'confirmó', 'confirmaron')}.`;
+		} else if (counts.waiting > 0) {
+			detail = `${counts.waiting} ${plural(counts.waiting, 'espera', 'esperan')} respuesta.`;
+		}
+		return {
+			count: counts.toSend,
+			title: plural(counts.toSend, 'invitación por enviar', 'invitaciones por enviar'),
+			detail,
+			tone: 'pending',
+		};
+	}
+	if (counts.waiting > 0) {
+		return {
+			count: counts.waiting,
+			title: plural(
+				counts.waiting,
+				'invitado no ha respondido',
+				'invitados no han respondido',
+			),
+			detail: 'Puede enviarles un recordatorio.',
+			tone: 'waiting',
+		};
+	}
+	return {
+		count: null,
+		title: 'Todos sus invitados ya respondieron',
+		detail:
+			counts.confirmedPeople === 1
+				? 'Viene 1 persona.'
+				: `Vienen ${counts.confirmedPeople} personas.`,
+		tone: 'done',
+	};
 }
 
 export interface GroupMetric {

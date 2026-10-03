@@ -10,6 +10,7 @@ export type GuestReviewFilter =
 	| 'delivery-pending'
 	| 'rsvp-pending'
 	| 'confirmation-pending'
+	| 'confirmed'
 	| 'with-message';
 
 interface GuestReviewBlockProps {
