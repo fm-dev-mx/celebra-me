@@ -1,4 +1,9 @@
-import { ApiError, isApiError, isAuthRequestError } from '@/lib/rsvp/core/errors';
+import {
+	ApiError,
+	isApiError,
+	isAuthRequestError,
+	isSchemaDriftError,
+} from '@/lib/rsvp/core/errors';
 import { isRecord } from '@/lib/shared/data-utils';
 import { PRIVATE_CACHE_CONTROL, withPrivateNoStore } from '@/lib/http/private-cache-path';
 import { sanitize } from '@/lib/rsvp/core/utils';
@@ -155,6 +160,24 @@ export function errorResponse(error: unknown): Response {
 			error.status,
 		);
 		if (error.status >= 500) response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
+		return response;
+	}
+
+	// Schema drift is an operator fix (apply migrations), so name it with a stable code
+	// while keeping the provider body server-side.
+	if (isSchemaDriftError(error)) {
+		console.error('[rsvp] Database schema is behind the application:', error);
+		const response = jsonResponse(
+			{
+				success: false,
+				error: {
+					code: 'schema_out_of_date',
+					message: 'Database schema is behind the application.',
+				},
+			},
+			503,
+		);
+		response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
 		return response;
 	}
 
