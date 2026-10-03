@@ -26,10 +26,7 @@ function PlatformUsagePanel() {
 
 	return (
 		<section className="platform-usage" aria-label={platformCopy.title}>
-			<header className="platform-usage__header">
-				<h1>{platformCopy.title}</h1>
-				<p className="platform-usage__intro">{platformCopy.intro}</p>
-			</header>
+			<p className="platform-usage__intro">{platformCopy.intro}</p>
 			{error ? (
 				<p className="dashboard-error" role="alert">
 					{platformCopy.loadError}
