@@ -478,6 +478,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					<GuestMobileDock
 						loading={loading}
 						hasPendingGenerated={pendingGuests.length > 0}
+						pendingCount={pendingGuests.length}
 						hasReminderCta={showReminderCta}
 						reminderCount={eligibleGuestIds.size}
 						createDisabled={!eventId}

@@ -33,3 +33,168 @@
 }
 
 // phone-input-group moved to src/styles/components/_phone-input-group.scss
+
+/* ==========================================================================
+   Guest form — labels above fields, plain hints, large controls
+   ========================================================================== */
+.guest-form-modal {
+	.dashboard-modal__header h3 {
+		font-size: 1.75rem;
+		font-weight: 600;
+		letter-spacing: 0;
+	}
+
+	/* The group draws one 14px frame; its prefix and number sit flush inside it */
+	.phone-input-group {
+		overflow: hidden;
+		border-color: var(--color-border-control);
+		border-radius: 14px;
+
+		.phone-prefix,
+		input:not([type='checkbox'], [type='radio'], [type='hidden']) {
+			border-top: 0;
+			border-bottom: 0;
+			border-left: 0;
+			border-radius: 0;
+		}
+
+		input:not([type='checkbox'], [type='radio'], [type='hidden']) {
+			border-right: 0;
+		}
+
+		.phone-prefix {
+			width: 5.75rem;
+			min-width: 5.75rem;
+			color: var(--color-text-primary);
+			font-size: 1.125rem;
+		}
+	}
+
+	.dashboard-form-field {
+		gap: 0.375rem;
+
+		> label,
+		.phone-input-group__label,
+		.phone-label {
+			color: var(--color-text-primary);
+			font-size: 1.0625rem;
+			font-weight: 700;
+			letter-spacing: 0;
+		}
+
+		input:not([type='checkbox'], [type='radio'], [type='hidden']),
+		select {
+			min-height: 56px;
+			border-radius: 14px;
+			font-size: 1.125rem;
+		}
+	}
+
+	.guest-field-hint {
+		margin-top: 0;
+		color: var(--color-text-secondary);
+		font-size: 1rem;
+	}
+
+	.guest-field-error {
+		color: var(--color-state-danger-text);
+		font-size: 1rem;
+		font-weight: 600;
+	}
+
+	.dashboard-form-section__title {
+		color: var(--color-text-primary);
+		font-family: var(--font-ui);
+		font-size: 1.0625rem;
+		font-weight: 700;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+
+	.guest-response-cards--tags .guest-response-card__content {
+		min-height: 48px;
+		font-size: 1rem;
+	}
+
+	.dashboard-modal__footer {
+		button {
+			min-height: 56px;
+			border-radius: 14px;
+			font-size: 1.0625rem;
+			font-weight: 700;
+		}
+	}
+}
+
+.guest-people-stepper {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	padding: 0.375rem;
+	border: 1px solid var(--color-border-control);
+	border-radius: 18px;
+	background: var(--color-surface-elevated);
+
+	&:focus-within {
+		box-shadow:
+			0 0 0 3px var(--dashboard-focus-ring),
+			0 0 12px var(--dashboard-focus-glow);
+	}
+}
+
+.guest-people-stepper__button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 60px;
+	height: 56px;
+	border: 1px solid var(--color-border-control);
+	border-radius: 14px;
+	background: var(--color-surface-soft);
+	color: var(--color-text-primary);
+	cursor: pointer;
+
+	&--add {
+		border-color: var(--dashboard-button-primary-bg);
+		background: var(--dashboard-button-primary-bg);
+		color: var(--dashboard-button-primary-accent, var(--dashboard-button-primary-text));
+	}
+
+	&:disabled {
+		opacity: 40%;
+		cursor: not-allowed;
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--dashboard-focus-ring);
+		outline-offset: 2px;
+	}
+}
+
+.guest-people-stepper input.guest-people-stepper__input[type='number'] {
+	flex: 1;
+	min-width: 0;
+	min-height: 56px;
+	border: 0;
+	background: transparent;
+	color: var(--color-text-emphasis);
+	font-family: var(--font-display-elegant);
+	font-size: 2.25rem;
+	font-weight: 700;
+	text-align: center;
+	appearance: textfield;
+	box-shadow: none;
+
+	&::-webkit-outer-spin-button,
+	&::-webkit-inner-spin-button {
+		margin: 0;
+		appearance: none;
+	}
+
+	&:focus {
+		outline: none;
+		box-shadow: none;
+	}
+}

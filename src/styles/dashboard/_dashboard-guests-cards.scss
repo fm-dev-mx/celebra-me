@@ -298,7 +298,7 @@
 
 	/* Bottom spacing so mobile dock doesn't cover last card */
 	@include mixins.respond-below(lg) {
-		padding-bottom: calc(var(--dashboard-dock-height, 76px) + var(--spacing-md, 1rem));
+		padding-bottom: calc(var(--dashboard-dock-height, 82px) + var(--spacing-md, 1rem));
 	}
 }
 

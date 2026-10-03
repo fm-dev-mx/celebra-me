@@ -409,15 +409,15 @@
 	}
 }
 
-// Dark form fields inside dashboard modals
+// Form fields inside dashboard modals
 // Narrowed to text-like inputs only — excludes native controls (checkbox, radio, hidden)
 .dashboard-modal
 	.dashboard-form-field
 	input:not([type='checkbox'], [type='radio'], [type='hidden']),
 .dashboard-modal .dashboard-form-field select,
 .dashboard-modal .dashboard-form-field textarea {
-	background: rgb(var(--color-text-primary-rgb) / 70%);
-	color: var(--color-text-on-light);
+	background: var(--color-surface-elevated);
+	color: var(--color-text-primary);
 	font-weight: 500;
 
 	&::placeholder {

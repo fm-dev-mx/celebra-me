@@ -91,7 +91,7 @@
 	}
 
 	@include mixins.respond-below(lg) {
-		margin-bottom: calc(var(--dashboard-dock-height, 76px) + var(--spacing-md, 1rem));
+		margin-bottom: calc(var(--dashboard-dock-height, 82px) + var(--spacing-md, 1rem));
 	}
 }
 
@@ -260,7 +260,12 @@
 	}
 
 	.dashboard-guests .guest-card__actions {
+		flex-wrap: wrap;
 		gap: 0.5rem;
+
+		.guest-card__details-btn {
+			flex: 1 0 auto;
+		}
 
 		.btn-primary,
 		.btn-icon {
