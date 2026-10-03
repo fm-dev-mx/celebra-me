@@ -2,16 +2,10 @@ import React from 'react';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import { getReminderEligibleGuests } from '@/components/dashboard/guests/reminder-eligibility';
 import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
+import type { GuestReviewFilterValue } from '@/components/dashboard/guests/guest-presenter';
 import type { ReminderAudience } from '@/lib/rsvp/services/shared/share-message-defaults';
 
-export type GuestReviewFilter =
-	| 'all'
-	| 'reminder-pending'
-	| 'delivery-pending'
-	| 'rsvp-pending'
-	| 'confirmation-pending'
-	| 'confirmed'
-	| 'with-message';
+export type GuestReviewFilter = GuestReviewFilterValue;
 
 interface GuestReviewBlockProps {
 	items: DashboardGuestItem[];

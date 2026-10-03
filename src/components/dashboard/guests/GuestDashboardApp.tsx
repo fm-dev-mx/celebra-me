@@ -4,14 +4,17 @@ import type { GuestReviewFilter } from '@/components/dashboard/guests/GuestRevie
 import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
 import GuestDeleteConfirmModal from '@/components/dashboard/guests/GuestDeleteConfirmModal';
 import GuestDetailSheet from '@/components/dashboard/guests/GuestDetailSheet';
+import GuestBatchConfirm from '@/components/dashboard/guests/GuestBatchConfirm';
+import GuestSelectionBar from '@/components/dashboard/guests/GuestSelectionBar';
 import GuestFilters, { type GroupFilter } from '@/components/dashboard/guests/GuestFilters';
 import GuestStatusOverview from '@/components/dashboard/guests/GuestStatusOverview';
-import { getVisibleTags } from '@/lib/guests/guest-tags';
 import GuestFormModal from '@/components/dashboard/guests/GuestFormModal';
 import GuestMobileDock from '@/components/dashboard/guests/GuestMobileDock';
 import GuestTable from '@/components/dashboard/guests/GuestTable';
-import GuestViewToggle from '@/components/dashboard/guests/GuestViewToggle';
+import GuestListControls from '@/components/dashboard/guests/GuestListControls';
 import { useGuestListView } from '@/components/dashboard/guests/use-guest-list-view';
+import { useGuestChangeNotice } from '@/components/dashboard/guests/use-guest-change-notice';
+import { useGuestBatchSelection } from '@/components/dashboard/guests/use-guest-batch-selection';
 import ImportMagic from '@/components/dashboard/guests/ImportMagic';
 import SendInvitationModal from '@/components/dashboard/guests/SendInvitationModal';
 import ShareMessagesModal from '@/components/dashboard/guests/ShareMessagesModal';
@@ -19,6 +22,8 @@ import ToolbarActionsMenu from '@/components/dashboard/guests/ToolbarActionsMenu
 import Toast from '@/components/dashboard/guests/Toast';
 import {
 	computeGuestStatusCounts,
+	filterGuestsForReview,
+	getBatchCandidates,
 	getGuestInviteUrl,
 } from '@/components/dashboard/guests/guest-presenter';
 import { guestsApi } from '@/lib/dashboard/guests-api';
@@ -29,7 +34,6 @@ import {
 	getReminderEligibleGuests,
 	shouldShowReminderCta,
 } from '@/components/dashboard/guests/reminder-eligibility';
-import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
 import type { DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { useShortcuts } from '@/hooks/use-shortcuts';
@@ -83,6 +87,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const isBrandingRemovalEligible =
 		currentEvent &&
 		isEventEligibleForBrandingRemoval(currentEvent.eventType, currentEvent.slug);
+	const { notice: changeNotice, dismissNotice } = useGuestChangeNotice(eventId, items);
 
 	const reminderEligibleGuests = useMemo(
 		() => getReminderEligibleGuests(items, reminderSettings.audience),
@@ -123,31 +128,17 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 
 	const statusCounts = useMemo(() => computeGuestStatusCounts(items), [items]);
 	// Resolved from live items so the sheet follows edits and closes when the guest is removed.
-	const detailGuest = detailGuestId
-		? (items.find((item) => item.guestId === detailGuestId) ?? null)
-		: null;
+	const detailGuest = items.find((item) => item.guestId === detailGuestId);
 
 	const showReminderCta = useMemo(
 		() => shouldShowReminderCta(shareDateContext, reminderSettings, eligibleGuestIds.size),
 		[shareDateContext, reminderSettings, eligibleGuestIds.size],
 	);
 
-	const visibleItems = items.filter((item) => {
-		if (reviewFilter === 'reminder-pending' && !eligibleGuestIds.has(item.guestId))
-			return false;
-		if (reviewFilter === 'delivery-pending' && item.deliveryStatus !== 'generated')
-			return false;
-		if (reviewFilter === 'confirmation-pending' && !isUnconfirmedSharedGuest(item))
-			return false;
-		if (reviewFilter === 'confirmed' && item.attendanceStatus !== 'confirmed') return false;
-		if (reviewFilter === 'rsvp-pending' && item.attendanceStatus !== 'pending') return false;
-		if (reviewFilter === 'with-message' && (item.guestComment ?? '').trim().length === 0)
-			return false;
-		if (group !== 'all') {
-			const itemTags = getVisibleTags(item.tags);
-			if (!itemTags.includes(group)) return false;
-		}
-		return true;
+	const visibleItems = filterGuestsForReview(items, {
+		reviewFilter,
+		group,
+		reminderEligibleIds: eligibleGuestIds,
 	});
 
 	const {
@@ -180,7 +171,9 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		openImportModal,
 		openNextGeneratedGuest,
 		openNextReminderGuest,
+		openBatchForGuests,
 		pendingGuests,
+		queueGuestIds,
 		requestDelete,
 		setImportModalOpen,
 		setNotification,
@@ -232,12 +225,16 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				: '';
 			const flowMode =
 				batchFlowKind === 'reminder' ? 'pending-reminder' : 'pending-invitation';
+			const queuedGuests = queueGuestIds
+				? getBatchCandidates(items, batchFlowKind, queueGuestIds)
+				: null;
 			return (
 				<SendInvitationModal
 					key={editingGuest?.guestId ?? 'empty'}
 					guest={editingGuest}
 					pendingGuests={
-						batchFlowKind === 'reminder' ? reminderEligibleGuests : pendingGuests
+						queuedGuests ??
+						(batchFlowKind === 'reminder' ? reminderEligibleGuests : pendingGuests)
 					}
 					inviteUrl={editingInviteUrl}
 					onClose={closeModal}
@@ -283,6 +280,15 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		return null;
 	}
 	const modals = renderModals();
+
+	const batchSelection = useGuestBatchSelection({
+		items,
+		pendingGuests,
+		reminderEligibleGuests,
+		openBatchForGuests,
+		openNextGeneratedGuest,
+		openNextReminderGuest: () => openNextReminderGuest(reminderSettings.audience),
+	});
 
 	useShortcuts(
 		{
@@ -373,11 +379,15 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onGroupChange={setGroup}
 				/>
 
-				{items.length > 0 && (
-					<div className="dashboard-guests__view-toggle">
-						<GuestViewToggle view={listView} onChange={setListView} />
-					</div>
-				)}
+				<GuestListControls
+					hasGuests={items.length > 0}
+					selectionMode={batchSelection.selectionMode}
+					view={listView}
+					onViewChange={setListView}
+					onStartSelection={batchSelection.startSelection}
+					changeNotice={changeNotice}
+					onDismissNotice={dismissNotice}
+				/>
 
 				{loading && <p className="dashboard-status">Cargando invitados...</p>}
 				{error && <p className="dashboard-error">{error}</p>}
@@ -405,6 +415,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onSaveGuest={handleSaveInvitation}
 					view={listView}
 					onOpenDetails={(item) => setDetailGuestId(item.guestId)}
+					selection={batchSelection.tableSelection}
 				/>
 
 				{detailGuest && (
@@ -429,6 +440,14 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				)}
 
 				{modals}
+				{batchSelection.batchRequest && batchSelection.batchGuests.length > 0 && (
+					<GuestBatchConfirm
+						kind={batchSelection.batchRequest.kind}
+						guests={batchSelection.batchGuests}
+						onConfirm={batchSelection.confirmBatch}
+						onClose={batchSelection.cancelBatch}
+					/>
+				)}
 				{notification && (
 					<Toast
 						message={notification.message}
@@ -437,16 +456,36 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					/>
 				)}
 
-				<GuestMobileDock
-					loading={loading}
-					hasPendingGenerated={items.some((item) => item.deliveryStatus === 'generated')}
-					hasReminderCta={showReminderCta}
-					reminderCount={eligibleGuestIds.size}
-					createDisabled={!eventId}
-					onCreate={openCreateModal}
-					onOpenNextAction={openNextGeneratedGuest}
-					onOpenReminder={() => openNextReminderGuest(reminderSettings.audience)}
-				/>
+				{batchSelection.selectionMode ? (
+					<GuestSelectionBar
+						selectedCount={batchSelection.selectedIds.size}
+						totalCount={visibleItems.length}
+						sendCount={batchSelection.selectedSendCount}
+						remindCount={batchSelection.selectedRemindCount}
+						onSelectAll={() =>
+							batchSelection.selectGuests(visibleItems.map((item) => item.guestId))
+						}
+						onClearSelection={() => batchSelection.selectGuests([])}
+						onSend={() =>
+							batchSelection.requestBatch('invitation', batchSelection.selectedIds)
+						}
+						onRemind={() =>
+							batchSelection.requestBatch('reminder', batchSelection.selectedIds)
+						}
+						onFinish={batchSelection.finishSelection}
+					/>
+				) : (
+					<GuestMobileDock
+						loading={loading}
+						hasPendingGenerated={pendingGuests.length > 0}
+						hasReminderCta={showReminderCta}
+						reminderCount={eligibleGuestIds.size}
+						createDisabled={!eventId}
+						onCreate={openCreateModal}
+						onOpenNextAction={() => batchSelection.requestBatch('invitation', null)}
+						onOpenReminder={() => batchSelection.requestBatch('reminder', null)}
+					/>
+				)}
 			</section>
 		</ErrorBoundary>
 	);

@@ -328,6 +328,64 @@ export function getGuestProgressSteps(item: DashboardGuestItem): GuestProgressSt
 	];
 }
 
+/** Guests a host-chosen batch can act on: unsent for invitations, sent and unanswered for reminders. */
+export function getBatchCandidates(
+	items: DashboardGuestItem[],
+	batchFlowKind: 'invitation' | 'reminder',
+	guestIds: ReadonlySet<string>,
+): DashboardGuestItem[] {
+	const bucket: GuestStatusBucket = batchFlowKind === 'reminder' ? 'waiting' : 'to-send';
+	return items.filter(
+		(item) => guestIds.has(item.guestId) && getGuestStatusBucket(item) === bucket,
+	);
+}
+
+export type GuestReviewFilterValue =
+	| 'all'
+	| 'reminder-pending'
+	| 'delivery-pending'
+	| 'rsvp-pending'
+	| 'confirmation-pending'
+	| 'confirmed'
+	| 'with-message';
+
+/** Client-side review and group filtering applied on top of the server-filtered list. */
+export function filterGuestsForReview(
+	items: DashboardGuestItem[],
+	{
+		reviewFilter,
+		group,
+		reminderEligibleIds,
+	}: {
+		reviewFilter: GuestReviewFilterValue;
+		group: string;
+		reminderEligibleIds: ReadonlySet<string>;
+	},
+): DashboardGuestItem[] {
+	const matchesReview = (item: DashboardGuestItem): boolean => {
+		switch (reviewFilter) {
+			case 'reminder-pending':
+				return reminderEligibleIds.has(item.guestId);
+			case 'delivery-pending':
+				return item.deliveryStatus === 'generated';
+			case 'confirmation-pending':
+				return isUnconfirmedSharedGuest(item);
+			case 'confirmed':
+				return item.attendanceStatus === 'confirmed';
+			case 'rsvp-pending':
+				return item.attendanceStatus === 'pending';
+			case 'with-message':
+				return (item.guestComment ?? '').trim().length > 0;
+			default:
+				return true;
+		}
+	};
+	return items.filter(
+		(item) =>
+			matchesReview(item) && (group === 'all' || getVisibleTags(item.tags).includes(group)),
+	);
+}
+
 export interface GroupMetric {
 	tag: string;
 	total: number;

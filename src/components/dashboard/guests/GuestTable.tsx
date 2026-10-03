@@ -1,6 +1,7 @@
 import React from 'react';
 import GuestCard from '@/components/dashboard/guests/GuestCard';
 import GuestListRow from '@/components/dashboard/guests/GuestListRow';
+import GuestSelectRow from '@/components/dashboard/guests/GuestSelectRow';
 import type { GuestListView } from '@/components/dashboard/guests/use-guest-list-view';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import {
@@ -36,6 +37,11 @@ interface GuestTableProps {
 	view?: GuestListView;
 	/** Opens the full-screen guest detail; when absent, compact rows expand in place. */
 	onOpenDetails?: (item: DashboardGuestItem) => void;
+	/** Selection mode: compact rows become checkboxes and the list view is forced. */
+	selection?: {
+		selectedIds: ReadonlySet<string>;
+		onToggle: (guestId: string) => void;
+	};
 }
 
 export const GUEST_TABLE_COL_COUNT = 7;
@@ -62,6 +68,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	onSaveGuest,
 	view = 'cards',
 	onOpenDetails,
+	selection,
 }) => {
 	if (items.length === 0) {
 		return (
@@ -100,7 +107,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 
 	return (
 		<>
-			{view === 'list' ? (
+			{view === 'list' || selection ? (
 				<div className="dashboard-guests__list">
 					{groupGuestsByStatus(items).map((section) => {
 						const headingId = `guest-section-${section.bucket}`;
@@ -128,17 +135,27 @@ const GuestTable: React.FC<GuestTableProps> = ({
 												key={item.guestId}
 												className="guest-list-section__item"
 											>
-												<GuestListRow
-													item={item}
-													isOpen={isOpen}
-													detailsId={detailsId}
-													onOpen={() =>
-														onOpenDetails
-															? onOpenDetails(item)
-															: onToggleExpanded?.(item.guestId)
-													}
-												/>
-												{isOpen && (
+												{selection ? (
+													<GuestSelectRow
+														item={item}
+														selected={selection.selectedIds.has(
+															item.guestId,
+														)}
+														onToggle={selection.onToggle}
+													/>
+												) : (
+													<GuestListRow
+														item={item}
+														isOpen={isOpen}
+														detailsId={detailsId}
+														onOpen={() =>
+															onOpenDetails
+																? onOpenDetails(item)
+																: onToggleExpanded?.(item.guestId)
+														}
+													/>
+												)}
+												{isOpen && !selection && (
 													<div
 														id={detailsId}
 														className="guest-row__details"

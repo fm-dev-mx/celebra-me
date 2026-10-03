@@ -11,8 +11,16 @@
 	display: none;
 
 	@include mixins.respond-below(xl) {
-		display: block;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
 		margin: 0 0 1rem;
+	}
+
+	.guest-view-toggle {
+		flex: 1 1 auto;
 	}
 }
 
