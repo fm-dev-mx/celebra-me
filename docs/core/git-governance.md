@@ -32,12 +32,12 @@ Persistent native Git worktrees isolate parallel work. `<worktrees-root>` is the
 `<repo-dir>-worktrees/` directory, derived by
 [`scripts/shared/worktree-lane.ts`](../../scripts/shared/worktree-lane.ts).
 
-| Lane          | Path                           | Purpose                                     | Runtime | Port |
-| ------------- | ------------------------------ | ------------------------------------------- | ------- | ---- |
-| Integration   | repository root                | Stays on `develop`: integration and release | Local   | 4321 |
-| `dev-local`   | `<worktrees-root>/dev-local`   | Primary feature/fix lane                    | Local   | 4321 |
-| `dev-extra`   | `<worktrees-root>/dev-extra`   | Parallel Local lane                         | Local   | 4322 |
-| `dev-preview` | `<worktrees-root>/dev-preview` | Preview validation lane                     | Preview | 4323 |
+| Lane          | Path                           | Purpose                                    | Runtime | Port |
+| ------------- | ------------------------------ | ------------------------------------------ | ------- | ---- |
+| Integration   | repository root                | Idle on `develop`: integration and release | Local   | 4321 |
+| `dev-local`   | `<worktrees-root>/dev-local`   | Primary feature/fix lane                   | Local   | 4321 |
+| `dev-extra`   | `<worktrees-root>/dev-extra`   | Parallel Local lane                        | Local   | 4322 |
+| `dev-preview` | `<worktrees-root>/dev-preview` | Preview validation lane                    | Preview | 4323 |
 
 Lane cards with environment-file facts live in [`docs/core/worktrees/`](worktrees/). Runtime
 defaults are described in [`docs/env-workflow.md`](../env-workflow.md); runtime connectivity is not
@@ -52,7 +52,9 @@ mutation authorization.
    ```
 
    One active task = one branch = one worktree. Never switch, stash, reset, clean or repurpose
-   another active lane.
+   another active lane. Integration may host a task assigned to it with the same command; return it
+   to `develop` before integrating ([lane card](worktrees/integration.md)). Commits are never
+   authored directly on `develop` or `main`.
 
 2. **Stay current** when needed: `pnpm lane:sync` previews and `pnpm lane:sync -- --apply` fetches
    `origin/develop` and rebases (or `--ff-only` merges) the task branch.

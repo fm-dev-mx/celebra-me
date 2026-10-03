@@ -17,8 +17,13 @@ Local Supabase (`CELEBRA_RUNTIME_TARGET=local`).
 
 ## Idle / active state
 
-- Integration stays on `develop` (not detached).
-- Do not use Integration as a disposable feature lane when a development worktree is available.
+- Idle state: `develop` checked out (not detached), clean.
+- Integration may host one task when it is assigned there. Create a task branch first
+  (`git switch -c <feat|fix|candidate>/<name> develop`); never author commits directly on `develop`
+  or `main`. `develop` only receives fast-forwards or merges of task branches.
+- Before integrating, return to `develop` with a clean tree (`git switch develop`), then follow the
+  Integrate step in [Git governance](../git-governance.md#task-lifecycle) and delete the task
+  branch.
 
 ## Environment files
 
