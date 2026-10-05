@@ -69,8 +69,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0(react@19.3.0)
       '@zip.js/zip.js':
-        specifier: ^2.14.0
-        version: 2.14.0
+        specifier: ^2.18.2
+        version: 2.18.2
       cloudinary:
         specifier: ^2.11.0
         version: 2.11.0
@@ -2610,8 +2610,8 @@ packages:
   '@vscode/l10n@0.0.18':
     resolution: {integrity: sha512-KYSIHVmslkaCDyw013pphY+d7x1qV8IZupYfeIfzNA+nsaWHbn5uPuQRvdRFsa9zFzGeudPuoGoZ1Op4jrJXIQ==}
 
-  '@zip.js/zip.js@2.14.0':
-    resolution: {integrity: sha512-7HIW+xGAl6LeTlgfLEKeRBPBskNtLSXRNXqb0QuUv6kYO7hhJvSda1UfYvyfyKJxod3q5GRvYZjjdtkxO1FMiQ==}
+  '@zip.js/zip.js@2.18.2':
+    resolution: {integrity: sha512-J1jwg0Kv5Aab50VlVZ6hp2rzGL/J0YLjBnkF6oJoIjmpxx9+tHgjRELGKryKnDZEcGXKjv7ibwxAziFiWHdR2A==}
     engines: {bun: '>=0.7.0', deno: '>=1.0.0', node: '>=18.0.0'}
 
   abbrev@3.0.1:
@@ -8070,7 +8070,7 @@ snapshots:
 
   '@vscode/l10n@0.0.18': {}
 
-  '@zip.js/zip.js@2.14.0': {}
+  '@zip.js/zip.js@2.18.2': {}
 
   abbrev@3.0.1: {}
 
