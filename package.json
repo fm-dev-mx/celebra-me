@@ -220,7 +220,7 @@
         "ts-jest": "^29.4.12",
         "tsx": "^4.23.13",
         "typescript": "npm:@typescript/typescript6@6.0.2",
-        "typescript-eslint": "^8.70.0"
+        "typescript-eslint": "^8.70.1"
     },
     "lint-staged": {
         "*.{ts,tsx,js,jsx,mjs,cjs}": ["eslint --fix --cache", "prettier --write"],
