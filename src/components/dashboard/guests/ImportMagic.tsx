@@ -98,7 +98,7 @@ function ImportColumnMapping({
 	return (
 		<div className="import-magic__column-mapping">
 			<p className="import-magic__mapping-message">
-				No pudimos identificar todas las columnas. Revisa la asignación antes de continuar.
+				No pudimos identificar todas las columnas. Revise la asignación antes de continuar.
 			</p>
 			<p className="dashboard-form-help">
 				Asigna las columnas del archivo a los campos esperados.
@@ -259,7 +259,7 @@ function handleImportError(err: unknown, setError: (msg: string | null) => void)
 	if (Array.isArray(rowErrors) && rowErrors.length > 0) {
 		setError('No se pudieron importar algunas filas:\n' + rowErrors.join('\n'));
 	} else {
-		setError('No pudimos importar los invitados. Revisa los datos e inténtalo de nuevo.');
+		setError('No pudimos importar los invitados. Revise los datos e inténtelo de nuevo.');
 	}
 }
 
@@ -509,7 +509,7 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 					<h3>Importación de invitados</h3>
 					<div className="dashboard-modal__content">
 						<p className="dashboard-modal__description">
-							Pega aquí tus invitados desde Excel o Google Sheets, o selecciona un
+							Pegue aquí sus invitados desde Excel o Google Sheets, o seleccione un
 							archivo CSV.
 						</p>
 						<p className="dashboard-modal__description">

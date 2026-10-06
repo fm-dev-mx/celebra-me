@@ -46,7 +46,7 @@ function submitForm(): void {
 	fireEvent.submit(form);
 }
 
-describe('GuestFormModal — custom attendees', () => {
+describe('GuestFormModal — party size stepper', () => {
 	const defaultProps = {
 		open: true,
 		mode: 'create' as const,
@@ -55,121 +55,67 @@ describe('GuestFormModal — custom attendees', () => {
 		onSubmit: jest.fn().mockResolvedValue(undefined),
 	};
 
+	const peopleInput = () => screen.getByLabelText('¿Cuántas personas vienen?');
+
+	function fillName(): void {
+		fireEvent.change(document.getElementById('fullName') as HTMLInputElement, {
+			target: { value: 'Test Guest' },
+		});
+	}
+
 	beforeEach(() => {
 		jest.clearAllMocks();
 	});
 
-	it('renders preset radios 1-5 and Otro button', () => {
+	it('starts at one person and explains who counts', () => {
 		render(<GuestFormModal {...defaultProps} />);
-		expect(screen.getByText('1')).toBeInTheDocument();
-		expect(screen.getByText('2')).toBeInTheDocument();
-		expect(screen.getByText('3')).toBeInTheDocument();
-		expect(screen.getByText('4')).toBeInTheDocument();
-		expect(screen.getByText('5')).toBeInTheDocument();
-		expect(screen.getByText('Otro')).toBeInTheDocument();
+		expect(peopleInput()).toHaveValue(1);
+		expect(screen.getByText('Incluya al invitado principal.')).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Una persona menos' })).toBeDisabled();
 	});
 
-	it('shows custom number input when Otro is selected', () => {
+	it('adds and removes people with the large buttons', () => {
 		render(<GuestFormModal {...defaultProps} />);
-		fireEvent.click(screen.getByText('Otro'));
-		const input = screen.getByRole('spinbutton');
-		expect(input).toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Una persona más' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Una persona más' }));
+		expect(peopleInput()).toHaveValue(3);
+		fireEvent.click(screen.getByRole('button', { name: 'Una persona menos' }));
+		expect(peopleInput()).toHaveValue(2);
 	});
 
-	it('hides custom number input when a preset is clicked after Otro', () => {
-		render(<GuestFormModal {...defaultProps} />);
-		fireEvent.click(screen.getByText('Otro'));
-		expect(screen.getByRole('spinbutton')).toBeInTheDocument();
-		fireEvent.click(screen.getByText('3'));
-		expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
-	});
-
-	it('renders the updated section title and helper text', () => {
-		render(<GuestFormModal {...defaultProps} />);
-		expect(screen.getByText('Número de pases')).toBeInTheDocument();
-		expect(screen.getByText('Incluye al invitado principal.')).toBeInTheDocument();
-	});
-
-	it('shows error for empty custom input on submit', async () => {
+	it.each([
+		['', 'Escriba cuántas personas vienen.'],
+		['0', 'Escriba cuántas personas vienen.'],
+		[String(MAX_CUSTOM_ATTENDEES + 1), `El máximo es ${MAX_CUSTOM_ATTENDEES} personas.`],
+	])('rejects %p on submit', async (value, message) => {
 		const onSubmit = jest.fn().mockResolvedValue(undefined);
 		render(<GuestFormModal {...defaultProps} onSubmit={onSubmit} />);
-		fireEvent.click(screen.getByText('Otro'));
-		const input = screen.getByRole('spinbutton');
-		fireEvent.change(input, { target: { value: '' } });
+		fillName();
+		fireEvent.change(peopleInput(), { target: { value } });
 		submitForm();
 		await waitFor(() => {
-			expect(screen.getByText('Ingresa un número de pases.')).toBeInTheDocument();
+			expect(screen.getByText(message)).toBeInTheDocument();
 		});
 		expect(onSubmit).not.toHaveBeenCalled();
 	});
 
-	it('shows error for custom value 0 on submit', async () => {
+	it.each([7, 15])('submits a typed party size of %i', async (size) => {
 		const onSubmit = jest.fn().mockResolvedValue(undefined);
 		render(<GuestFormModal {...defaultProps} onSubmit={onSubmit} />);
-		fireEvent.click(screen.getByText('Otro'));
-		const input = screen.getByRole('spinbutton');
-		fireEvent.change(input, { target: { value: '0' } });
-		submitForm();
-		await waitFor(() => {
-			expect(screen.getByText('Ingresa un número de pases.')).toBeInTheDocument();
-		});
-		expect(onSubmit).not.toHaveBeenCalled();
-	});
-
-	it(`shows error for custom value ${MAX_CUSTOM_ATTENDEES + 1} on submit`, async () => {
-		const onSubmit = jest.fn().mockResolvedValue(undefined);
-		render(<GuestFormModal {...defaultProps} onSubmit={onSubmit} />);
-		fireEvent.click(screen.getByText('Otro'));
-		const input = screen.getByRole('spinbutton');
-		fireEvent.change(input, { target: { value: String(MAX_CUSTOM_ATTENDEES + 1) } });
-		submitForm();
-		await waitFor(() => {
-			expect(
-				screen.getByText('El valor excede el límite técnico permitido.'),
-			).toBeInTheDocument();
-		});
-		expect(onSubmit).not.toHaveBeenCalled();
-	});
-
-	it('submits with custom value 7', async () => {
-		const onSubmit = jest.fn().mockResolvedValue(undefined);
-		render(<GuestFormModal {...defaultProps} onSubmit={onSubmit} />);
-		const nameInput = document.getElementById('fullName') as HTMLInputElement;
-		fireEvent.change(nameInput, { target: { value: 'Test Guest' } });
-		fireEvent.click(screen.getByText('Otro'));
-		const input = screen.getByRole('spinbutton');
-		fireEvent.change(input, { target: { value: '7' } });
+		fillName();
+		fireEvent.change(peopleInput(), { target: { value: String(size) } });
 		submitForm();
 		await waitFor(() => {
 			expect(onSubmit).toHaveBeenCalledWith(
-				expect.objectContaining({ maxAllowedAttendees: 7 }),
+				expect.objectContaining({ maxAllowedAttendees: size }),
 				expect.any(Boolean),
 			);
 		});
 	});
 
-	it('submits with custom value 15', async () => {
-		const onSubmit = jest.fn().mockResolvedValue(undefined);
-		render(<GuestFormModal {...defaultProps} onSubmit={onSubmit} />);
-		const nameInput = document.getElementById('fullName') as HTMLInputElement;
-		fireEvent.change(nameInput, { target: { value: 'Test Guest' } });
-		fireEvent.click(screen.getByText('Otro'));
-		const input = screen.getByRole('spinbutton');
-		fireEvent.change(input, { target: { value: '15' } });
-		submitForm();
-		await waitFor(() => {
-			expect(onSubmit).toHaveBeenCalledWith(
-				expect.objectContaining({ maxAllowedAttendees: 15 }),
-				expect.any(Boolean),
-			);
-		});
-	});
-
-	it('pre-selects Otro with populated value when editing a non-preset guest', () => {
+	it('loads the saved party size when editing', () => {
 		const guest = makeGuest({ maxAllowedAttendees: 10 });
 		render(<GuestFormModal {...defaultProps} mode="edit" initialGuest={guest} />);
-		const input = screen.getByRole('spinbutton');
-		expect(input).toBeInTheDocument();
-		expect(input).toHaveValue(10);
+		expect(peopleInput()).toHaveValue(10);
 	});
 });

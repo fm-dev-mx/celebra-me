@@ -29,6 +29,18 @@ version: 1.1.0
 - `--dashboard-focus-ring` and `--dashboard-focus-glow` defined in `_common.scss` with light-mode
   defaults, overridden by theme preset.
 
+## Theme and Typography
+
+- The dashboard runs on the light `theme-preset--dashboard-ivory` preset (ivory ground, warm
+  charcoal chrome, antique gold accents). The sidebar and topbar are charcoal islands; use the
+  `--dashboard-topbar-*` tokens there instead of surface tokens.
+- `--color-border-control` is the 3:1 border for inputs, chips and outlined controls;
+  `--color-border-subtle` is for dividers only.
+- Display serif (`--font-display-elegant`, Playfair Display) is allowed only for the page title and
+  large numerals (counts ≥ 24px). Never italic, never for body copy, labels or buttons.
+- Guest-facing dashboard copy targets older hosts: body ≥ 16px, primary labels ≥ 17px, primary touch
+  targets ≥ 52px.
+
 ## Surface Aliases
 
 - `_common.scss` owns dashboard-level aliases (`--dashboard-*`).
@@ -130,20 +142,24 @@ For `>=` breakpoints, use `respond-to()` with the same matching rules.
 
 ## Pre-commit Validation
 
-Run before merging any dashboard SCSS changes:
+Run before merging any dashboard SCSS changes (`ci:static` runs the first one):
 
 ```bash
-node scripts/check-dashboard-styles.mjs
+pnpm validate:dashboard-styles
 pnpm build
 ```
 
-The check script requires `rg` (ripgrep) on `PATH`. It checks for prohibited token patterns:
+The check covers the dashboard partials, the dashboard/auth presets and
+`invitation/_preview-banner.scss`; invitation profiles define their own tokens and are out of scope.
+It fails on:
 
 - `--color-state-error` → use `--color-state-danger`
 - `--color-text-inverse` → use `--color-text-on-dark` or `--color-text-on-light`
 - `--color-bg-subtle` → use `--color-surface-soft`
 - `--color-action-accent-contrast` → use `--color-text-on-light`
 - Bare `--color-text` without suffix → use `--color-text-primary`
+- Any `var(--x)` without fallback whose `--x` is not defined by a preset, a dashboard partial,
+  `global.scss`, the token files or a dashboard component (`style.setProperty('--x', …)`).
 
 Additional manual checks:
 
@@ -151,4 +167,12 @@ Additional manual checks:
 rg -- 'outline:.*var\(--color-action-accent\)' src/styles/dashboard  # should be 0
 ```
 
-Exit 0 = clean. Exit 1 = violations found. CI should fail on exit 1.
+Exit 0 = clean. Exit 1 = violations found.
+
+## Accessibility Audit
+
+`pnpm audit:dashboard-a11y --login` saves a dashboard session to `playwright/.auth/user.json`
+(ignored). `pnpm audit:dashboard-a11y --label=<name>` then runs axe (WCAG 2.x A/AA) on every
+dashboard route at 320, 375, 412 with 150 % text, 768 and 1366 px, records horizontal overflow and
+touch targets under 44 px, and writes `report.md`, `report.json` and full-page screenshots to
+`.agent/tmp/dashboard-a11y/<name>/`.

@@ -1,0 +1,269 @@
+@use '../global/mixins' as mixins;
+
+/* ==========================================================================
+   Selection mode, change notice and batch confirmation
+   ========================================================================== */
+
+.guest-select-toggle {
+	min-height: 48px;
+	padding: 0 0.25rem;
+	border: 0;
+	background: transparent;
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	font-size: 1rem;
+	font-weight: 700;
+	text-decoration: underline;
+	text-underline-offset: 4px;
+	cursor: pointer;
+
+	&:focus-visible {
+		@include mixins.focus-ring;
+	}
+}
+
+/* --- Selection rows --- */
+.guest-row--select {
+	cursor: pointer;
+	user-select: none;
+
+	&:focus-within {
+		outline: 2px solid var(--dashboard-focus-ring);
+		outline-offset: -2px;
+	}
+}
+
+.guest-row--selected {
+	background: var(--color-state-warning-bg);
+
+	&:hover {
+		background: var(--color-state-warning-bg);
+	}
+}
+
+.guest-row__checkbox {
+	flex-shrink: 0;
+	width: 28px;
+	height: 28px;
+	margin: 0 0.25rem 0 0;
+	accent-color: var(--dashboard-button-primary-bg);
+	cursor: pointer;
+}
+
+/* --- Selection bar (replaces the dock while selecting) --- */
+.guest-selection-bar {
+	position: fixed;
+	inset: auto 0 0;
+	z-index: var(--dashboard-z-mobile-dock);
+	display: flex;
+	flex-direction: column;
+	gap: 0.625rem;
+	padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+	border-top: 1px solid var(--color-border-subtle);
+	background: var(--color-surface-elevated);
+	box-shadow: 0 -8px 24px rgb(var(--color-surface-dark-rgb) / 8%);
+
+	@include mixins.respond-to(lg) {
+		position: sticky;
+		inset: auto;
+		bottom: 0;
+		margin-top: 1rem;
+		border: 1px solid var(--color-border-subtle);
+		border-radius: 18px;
+	}
+}
+
+.guest-selection-bar__summary {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.25rem 1rem;
+}
+
+.guest-selection-bar__count {
+	margin: 0;
+	color: var(--color-text-primary);
+	font-size: 1.0625rem;
+	font-weight: 700;
+}
+
+.guest-selection-bar__links {
+	display: flex;
+	gap: 1rem;
+}
+
+.guest-selection-bar__link {
+	min-height: 44px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	font-size: 1rem;
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 4px;
+	cursor: pointer;
+
+	&:focus-visible {
+		@include mixins.focus-ring;
+	}
+}
+
+.guest-selection-bar__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+
+	.btn-primary,
+	.btn-secondary {
+		flex: 1 1 150px;
+		gap: 0.5rem;
+		min-height: 56px;
+		border-radius: 16px;
+		font-size: 1.0625rem;
+		font-weight: 700;
+	}
+
+	.btn-primary svg {
+		color: var(--dashboard-button-primary-accent, currentcolor);
+	}
+}
+
+.guest-selection-bar__hint {
+	margin: 0;
+	color: var(--color-text-secondary);
+	font-size: 1rem;
+}
+
+/* Keep the last rows reachable above the fixed bar */
+@include mixins.respond-below(lg) {
+	.dashboard-guests:has(.guest-selection-bar) .dashboard-guests__list {
+		margin-bottom: 11rem;
+	}
+}
+
+/* --- Live change notice --- */
+.guest-change-notice {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.25rem 1rem;
+	margin: 0 0 1rem;
+	padding: 0.5rem 0.75rem 0.5rem 1rem;
+	border: 1px solid var(--color-state-success-border);
+	border-radius: 14px;
+	background: var(--color-state-success-bg);
+	color: var(--color-state-success-text);
+}
+
+.guest-change-notice__text {
+	font-size: 1rem;
+	font-weight: 700;
+}
+
+.guest-change-notice__dismiss {
+	min-height: 44px;
+	padding: 0 0.25rem;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font-family: var(--font-ui);
+	font-size: 1rem;
+	font-weight: 700;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	cursor: pointer;
+
+	&:focus-visible {
+		@include mixins.focus-ring;
+	}
+}
+
+/* --- Batch confirmation: a bottom sheet on phones --- */
+.guest-batch-confirm {
+	@include mixins.respond-below(sm) {
+		align-self: flex-end;
+		width: 100vw;
+		max-height: 92dvh;
+		padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+		border-radius: 24px 24px 0 0;
+	}
+
+	h3 {
+		font-size: 1.75rem;
+		font-weight: 600;
+		letter-spacing: 0;
+
+		/* Focus lands here for screen readers; a ring on static text only confuses */
+		&:focus {
+			outline: none;
+		}
+	}
+
+	.dashboard-modal__content {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		margin: 0;
+		padding: 0 0.25rem;
+	}
+
+	.dashboard-modal__footer {
+		flex-direction: column-reverse;
+		gap: 0.625rem;
+
+		button {
+			width: 100%;
+			min-height: 56px;
+			border-radius: 16px;
+			font-size: 1.0625rem;
+			font-weight: 700;
+		}
+	}
+}
+
+.guest-batch-confirm__help {
+	margin: 0;
+	color: var(--color-text-secondary);
+	font-size: 1.0625rem;
+	line-height: 1.45;
+}
+
+.guest-batch-confirm__list {
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 16px;
+	list-style: none;
+}
+
+.guest-batch-confirm__item {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	min-height: 52px;
+	padding: 0 1rem;
+	background: var(--color-surface-secondary);
+	color: var(--color-text-primary);
+	font-size: 1.0625rem;
+	font-weight: 600;
+
+	+ .guest-batch-confirm__item {
+		border-top: 1px solid var(--color-border-subtle);
+	}
+
+	svg {
+		flex-shrink: 0;
+		color: var(--color-state-success-text);
+	}
+}
+
+.guest-batch-confirm__more {
+	margin: 0;
+	color: var(--color-text-secondary);
+	font-size: 1rem;
+}

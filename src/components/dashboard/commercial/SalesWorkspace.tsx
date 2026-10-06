@@ -139,7 +139,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 		} catch (error) {
 			console.error('Error fetching orders:', error);
 			setCustomerOrders([]);
-			setOrdersError('No se pudieron cargar las órdenes. Intenta de nuevo.');
+			setOrdersError('No se pudieron cargar las órdenes. Intente de nuevo.');
 		} finally {
 			setLoadingOrders(false);
 		}
@@ -306,7 +306,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 				const result = response.data.data;
 				if (result.outcome === 'conflict') {
 					setErrorMessage(
-						'La identidad coincide con clientes diferentes. Revisa correo y teléfono antes de continuar.',
+						'La identidad coincide con clientes diferentes. Revise correo y teléfono antes de continuar.',
 					);
 					return;
 				}
@@ -334,7 +334,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 	const handleCreateOrder: React.SubmitEventHandler<HTMLFormElement> = async (event) => {
 		event.preventDefault();
 		if (!activeCustomer?.id) {
-			setErrorMessage('Selecciona un cliente antes de crear una orden.');
+			setErrorMessage('Seleccione un cliente antes de crear una orden.');
 			return;
 		}
 		const total = Number.parseFloat(orderTotalAmount);
@@ -458,7 +458,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 					<p className="sales-workspace__eyebrow">CRM comercial</p>
 					<h3>Personas y oportunidades que necesitan atención</h3>
 					<p>
-						Elige un registro para revisar su contexto, dinero pendiente y siguiente
+						Elija un registro para revisar su contexto, dinero pendiente y siguiente
 						acción.
 					</p>
 				</div>
@@ -499,7 +499,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 							<div className="sales-empty-state">
 								<strong>No hay leads recientes</strong>
 								<p>
-									Usa la búsqueda para localizar un cliente o crear una nueva
+									Use la búsqueda para localizar un cliente o crear una nueva
 									ficha.
 								</p>
 							</div>

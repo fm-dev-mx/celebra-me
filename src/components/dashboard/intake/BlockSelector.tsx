@@ -23,7 +23,7 @@ const BlockSelector: FC<Props> = ({ selectedBlocks, onChange, disabled = false }
 		<div className="block-selector">
 			<label className="intake-field__label">Bloques de captura</label>
 			<p className="block-selector__description">
-				Selecciona los bloques que el cliente debera completar.
+				Seleccione los bloques que el cliente deberá completar.
 				{disabled ? ' La configuración queda fija después de crear el enlace.' : ''}
 			</p>
 			<div className="block-selector__list">

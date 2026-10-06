@@ -1,4 +1,7 @@
+@use '../global/mixins' as mixins;
+
 .btn-primary,
+.btn-ghost,
 .btn-secondary,
 .btn-accent {
 	font-family: var(--font-ui);
@@ -6,12 +9,12 @@
 	padding: 0 0.875rem;
 	border-radius: 8px;
 	cursor: pointer;
-	font-size: 0.75rem;
+	font-size: 0.875rem;
 	border: 1px solid transparent;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	min-height: 38px;
+	min-height: 44px;
 	position: relative;
 	overflow: hidden;
 	transition:
@@ -110,8 +113,8 @@
 		transform 0.15s ease,
 		color 0.2s ease;
 	color: var(--color-text-secondary);
-	min-width: 38px;
-	min-height: 38px;
+	min-width: 44px;
+	min-height: 44px;
 	box-shadow: none;
 
 	&:hover {
@@ -150,14 +153,30 @@
 	}
 }
 
-.btn-secondary--active {
-	background: rgb(var(--color-action-accent-rgb) / 8%);
-	border-color: var(--color-border-premium);
-	color: var(--color-text-primary);
+.btn--compact {
+	min-height: 36px;
+	padding: 0 0.75rem;
+	font-size: 0.8125rem;
+
+	// Touch layouts keep the 44px target even for compact buttons.
+	@include mixins.respond-below(lg) {
+		min-height: 44px;
+	}
 }
 
-.btn--compact {
-	min-height: 34px;
-	padding: 0 0.75rem;
-	font-size: 0.72rem;
+.btn-ghost {
+	background: transparent;
+	border-color: transparent;
+	color: var(--color-text-secondary);
+	box-shadow: none;
+
+	&:hover {
+		background: var(--dashboard-button-secondary-bg-hover);
+		color: var(--color-text-primary);
+	}
+
+	&:disabled {
+		opacity: 50%;
+		cursor: not-allowed;
+	}
 }

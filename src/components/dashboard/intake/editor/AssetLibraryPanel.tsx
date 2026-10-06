@@ -32,7 +32,7 @@ function buildConflictMessage(
 	return [
 		'No se puede eliminar esta imagen porque está siendo utilizada.',
 		`Usos detectados: ${refs.join(', ')}.`,
-		'Primero quítala de esas secciones y vuelve a intentarlo.',
+		'Primero quítela de esas secciones y vuelva a intentarlo.',
 	].join('\n');
 }
 

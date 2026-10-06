@@ -81,7 +81,7 @@ const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({
 						required
 						disabled={invitationsWithRsvp.length === 0}
 					>
-						<option value="">Selecciona una invitación</option>
+						<option value="">Seleccione una invitación</option>
 						{invitationsWithRsvp.map((invitation) => (
 							<option key={invitation.id} value={invitation.id}>
 								{invitation.title} (
@@ -121,7 +121,7 @@ const ClaimCodeFormModal: React.FC<ClaimCodeFormModalProps> = ({
 					onChange={(event) => setExpiresAt(event.target.value)}
 					min={new Date().toISOString().slice(0, 16)}
 				/>
-				<p className="dashboard-form-help">Deja vacío para que no expire</p>
+				<p className="dashboard-form-help">Deje vacío para que no expire</p>
 			</div>
 			{error && <p className="dashboard-error dashboard-error--full">{error}</p>}
 			<div className="dashboard-actions dashboard-actions--full">

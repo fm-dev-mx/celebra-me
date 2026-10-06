@@ -1,0 +1,287 @@
+@use '../global/mixins' as mixins;
+
+/* ==========================================================================
+   Guest overview — every width
+   Plain-language summary + status segments that are the single review filter
+   of the list, plus the larger touch targets and type the compact guest
+   screen needs below lg.
+   ========================================================================== */
+
+.guest-overview {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	margin: 0 0 1.25rem;
+}
+
+.guest-overview__summary {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	max-width: 42rem;
+	padding: 1rem 1.125rem;
+	background: var(--color-surface-elevated);
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 18px;
+	box-shadow: var(--shadow-warm);
+}
+
+.guest-overview__count {
+	flex-shrink: 0;
+	min-width: 2ch;
+	color: var(--color-text-emphasis);
+	font-family: var(--font-display-elegant);
+	font-size: 3.25rem;
+	font-weight: 700;
+	line-height: 0.9;
+	text-align: center;
+}
+
+.guest-overview__text {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	min-width: 0;
+
+	.guest-overview__count + & {
+		padding-left: 1rem;
+		border-left: 1px solid var(--color-border-subtle);
+	}
+}
+
+.guest-overview__title {
+	margin: 0;
+	color: var(--color-text-primary);
+	font-size: 1.1875rem;
+	font-weight: 700;
+	line-height: 1.25;
+}
+
+.guest-overview__detail {
+	margin: 0;
+	color: var(--color-text-secondary);
+	font-size: 1rem;
+	line-height: 1.35;
+}
+
+.guest-overview__filters {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+
+	/* Measured in em so enlarged system text also switches to rows */
+	container-type: inline-size;
+}
+
+.guest-overview__label {
+	margin: 0;
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	font-size: 1.0625rem;
+	font-weight: 700;
+}
+
+.guest-overview__segments {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.5rem;
+
+	// Four or more segments: two columns, so no segment sits alone on a row
+	&--many {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	// Desktop: fixed-width segments instead of three stretched columns
+	@include mixins.respond-to(lg) {
+		grid-template-columns: repeat(auto-fit, minmax(150px, 200px));
+	}
+
+	/* Narrow phones or enlarged text: one segment per row */
+	@container (width < 20em) {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.guest-overview__segment {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.25rem;
+	min-width: 0;
+	min-height: 80px;
+	padding: 0.5rem 0.125rem;
+	border: 1px solid var(--color-border-control);
+	border-radius: 16px;
+	background: var(--color-surface-elevated);
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	cursor: pointer;
+	transition:
+		background-color 0.2s ease,
+		border-color 0.2s ease;
+
+	@container (width < 20em) {
+		flex-direction: row-reverse;
+		justify-content: space-between;
+		min-height: 52px;
+		padding: 0 1rem;
+	}
+
+	&:hover {
+		border-color: var(--color-text-primary);
+	}
+
+	&:focus-visible {
+		@include mixins.focus-ring;
+	}
+
+	&--active {
+		background: var(--dashboard-button-primary-bg);
+		border-color: var(--dashboard-button-primary-bg);
+		color: var(--dashboard-button-primary-text);
+
+		.guest-overview__segment-count {
+			color: var(--dashboard-button-primary-accent, var(--dashboard-button-primary-text));
+		}
+	}
+}
+
+.guest-overview__segment-count {
+	color: var(--color-text-emphasis);
+	font-family: var(--font-display-elegant);
+	font-size: 2rem;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.guest-overview__segment-label {
+	max-width: 100%;
+	font-size: 1rem;
+	font-weight: 600;
+	line-height: 1.2;
+	text-align: center;
+}
+
+.guest-overview__hint {
+	margin: 0;
+	color: var(--color-text-secondary);
+	font-size: 1rem;
+	line-height: 1.35;
+}
+
+.guest-overview__clear {
+	align-self: flex-start;
+	min-height: 44px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	font-size: 1rem;
+	font-weight: 700;
+	text-decoration: underline;
+	text-underline-offset: 4px;
+	cursor: pointer;
+
+	&:focus-visible {
+		@include mixins.focus-ring;
+	}
+}
+
+/* --- Compact-screen sizing for the existing header, toolbar and filters --- */
+@include mixins.respond-below(lg) {
+	.dashboard-guests {
+		/* dashboard-main already pads the page; avoid doubling the gutter */
+		padding: 0.25rem 0 0;
+
+		/* The select sizes to its longest option; keep it inside the viewport */
+		.dashboard-guests__title-area {
+			flex: 1;
+			min-width: 0;
+		}
+
+		.dashboard-guests__toolbar .header-event-selector {
+			width: 100%;
+			min-width: 0;
+
+			label {
+				color: var(--color-text-primary);
+				font-size: 1.0625rem;
+				font-weight: 700;
+				font-variant: normal;
+				letter-spacing: 0;
+				text-transform: none;
+			}
+
+			select {
+				width: 100%;
+				max-width: 100%;
+				min-height: 56px;
+				border: 1px solid var(--color-border-control);
+				border-radius: 14px;
+				font-size: 1.125rem;
+				font-weight: 600;
+				text-overflow: ellipsis;
+			}
+		}
+
+		/* The dock owns "Agregar" on compact screens */
+		.dashboard-guests__toolbar-create {
+			display: none;
+		}
+
+		.toolbar-actions-menu__trigger {
+			min-height: 52px;
+			padding: 0 1rem;
+			border-color: var(--color-border-control);
+			border-radius: 14px;
+			color: var(--color-text-primary);
+			font-size: 1rem;
+			font-weight: 600;
+		}
+
+		.dashboard-guests__filters {
+			.filter-group label {
+				color: var(--color-text-primary);
+				font-size: 1.0625rem;
+				font-weight: 700;
+				letter-spacing: 0;
+			}
+
+			.filter-group input[type='search'],
+			.filter-group select {
+				min-height: 56px;
+				border-color: var(--color-border-control);
+				border-radius: 14px;
+				font-size: 1.125rem;
+			}
+
+			.filter-group .filter-search-wrap input[type='search'] {
+				padding-left: 2.75rem;
+			}
+
+			/* With enlarged text "Filtros" wraps below instead of squeezing the search */
+			.filter-group--search {
+				min-width: min(100%, 12em);
+			}
+
+			.filter-search-icon {
+				left: 1rem;
+				width: 20px;
+				height: 20px;
+			}
+		}
+
+		.filter-advanced-toggle__btn,
+		.filter-clear-btn {
+			min-height: 56px;
+			padding: 0 1.1rem;
+			border-color: var(--color-border-control);
+			border-radius: 14px;
+			color: var(--color-text-primary);
+			font-size: 1.0625rem;
+			font-weight: 600;
+		}
+	}
+}

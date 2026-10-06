@@ -30,10 +30,7 @@ export function formatGuestEntrySource(item: DashboardGuestItem) {
 }
 
 export type ShareFlowMode =
-	| 'pending-invitation'
-	| 'single-invitation'
-	| 'pending-reminder'
-	| 'single-reminder';
+	'pending-invitation' | 'single-invitation' | 'pending-reminder' | 'single-reminder';
 
 export type GuestSaveCallback = (
 	guestId: string,
@@ -125,6 +122,269 @@ export function getCompactGroupChips(
 	const chips = visible.slice(0, max);
 	const overflow = Math.max(0, visible.length - max);
 	return { chips, overflow };
+}
+
+export interface GuestStatusCounts {
+	total: number;
+	toSend: number;
+	waiting: number;
+	confirmed: number;
+	declined: number;
+	confirmedPeople: number;
+}
+
+export type GuestStatusBucket = 'to-send' | 'waiting' | 'confirmed' | 'declined';
+
+/** One bucket per guest: RSVP answers win over delivery state. */
+export function getGuestStatusBucket(item: DashboardGuestItem): GuestStatusBucket {
+	if (item.attendanceStatus === 'confirmed') return 'confirmed';
+	if (item.attendanceStatus === 'declined') return 'declined';
+	if (item.deliveryStatus === 'generated') return 'to-send';
+	return 'waiting';
+}
+
+export function computeGuestStatusCounts(items: DashboardGuestItem[]): GuestStatusCounts {
+	const counts: GuestStatusCounts = {
+		total: items.length,
+		toSend: 0,
+		waiting: 0,
+		confirmed: 0,
+		declined: 0,
+		confirmedPeople: 0,
+	};
+	for (const item of items) {
+		switch (getGuestStatusBucket(item)) {
+			case 'confirmed':
+				counts.confirmed++;
+				counts.confirmedPeople += item.attendeeCount;
+				break;
+			case 'declined':
+				counts.declined++;
+				break;
+			case 'to-send':
+				counts.toSend++;
+				break;
+			case 'waiting':
+				counts.waiting++;
+				break;
+		}
+	}
+	return counts;
+}
+
+export interface GuestStatusSection {
+	bucket: GuestStatusBucket;
+	title: string;
+	items: DashboardGuestItem[];
+}
+
+const STATUS_SECTION_TITLES: Record<GuestStatusBucket, string> = {
+	'to-send': 'Por enviar',
+	waiting: 'Esperando respuesta',
+	confirmed: 'Confirmados',
+	declined: 'No asistirán',
+};
+
+const STATUS_SECTION_ORDER: GuestStatusBucket[] = ['to-send', 'waiting', 'confirmed', 'declined'];
+
+/** Non-empty status sections in journey order, guests sorted by name inside each. */
+export function groupGuestsByStatus(items: DashboardGuestItem[]): GuestStatusSection[] {
+	const buckets = new Map<GuestStatusBucket, DashboardGuestItem[]>();
+	for (const item of items) {
+		const bucket = getGuestStatusBucket(item);
+		const list = buckets.get(bucket) ?? [];
+		list.push(item);
+		buckets.set(bucket, list);
+	}
+	return STATUS_SECTION_ORDER.filter((bucket) => buckets.has(bucket)).map((bucket) => ({
+		bucket,
+		title: STATUS_SECTION_TITLES[bucket],
+		items: [...(buckets.get(bucket) ?? [])].sort((a, b) =>
+			a.fullName.localeCompare(b.fullName, 'es', { sensitivity: 'base' }),
+		),
+	}));
+}
+
+function formatPeople(count: number): string {
+	return `${count} ${count === 1 ? 'persona' : 'personas'}`;
+}
+
+function formatDaysAgo(iso: string | null | undefined, now: Date): string | null {
+	if (!iso) return null;
+	const sent = new Date(iso);
+	if (isNaN(sent.getTime())) return null;
+	const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+	const days = Math.round((startOfDay(now) - startOfDay(sent)) / 86_400_000);
+	if (days <= 0) return 'hoy';
+	if (days === 1) return 'ayer';
+	return `hace ${days} días`;
+}
+
+/** Second line of a compact guest row, phrased for the guest's current status. */
+export function getGuestListSubtitle(item: DashboardGuestItem, now: Date = new Date()): string {
+	switch (getGuestStatusBucket(item)) {
+		case 'confirmed':
+			return `${item.attendeeCount === 1 ? 'Viene' : 'Vienen'} ${item.attendeeCount} de ${item.maxAllowedAttendees}`;
+		case 'declined':
+			return 'Avisó que no podrá ir';
+		case 'to-send':
+			return `${formatPeople(item.maxAllowedAttendees)} · Sin enviar`;
+		case 'waiting': {
+			if (item.isViewed) return `${formatPeople(item.maxAllowedAttendees)} · Ya la abrió`;
+			const sentAgo = formatDaysAgo(item.firstSharedAt, now);
+			return `${formatPeople(item.maxAllowedAttendees)} · ${sentAgo ? `Enviada ${sentAgo}` : 'Enviada'}`;
+		}
+	}
+}
+
+export type GuestSummaryTone = 'empty' | 'pending' | 'waiting' | 'done';
+
+export interface GuestSummaryMessage {
+	/** Large leading number; null when the sentence carries no count. */
+	count: number | null;
+	title: string;
+	detail: string;
+	tone: GuestSummaryTone;
+}
+
+function plural(count: number, singular: string, pluralForm: string): string {
+	return count === 1 ? singular : pluralForm;
+}
+
+/** Plain-language status line for the host, written for non-technical readers. */
+export function getGuestSummaryMessage(counts: GuestStatusCounts): GuestSummaryMessage {
+	if (counts.total === 0) {
+		return {
+			count: null,
+			title: 'Todavía no tiene invitados',
+			detail: 'Agregue su primer invitado para empezar.',
+			tone: 'empty',
+		};
+	}
+	if (counts.toSend > 0) {
+		let detail = 'Todavía nadie ha respondido.';
+		if (counts.confirmed > 0) {
+			detail = `${counts.confirmed} ya ${plural(counts.confirmed, 'confirmó', 'confirmaron')}.`;
+		} else if (counts.waiting > 0) {
+			detail = `${counts.waiting} ${plural(counts.waiting, 'espera', 'esperan')} respuesta.`;
+		}
+		return {
+			count: counts.toSend,
+			title: plural(counts.toSend, 'invitación por enviar', 'invitaciones por enviar'),
+			detail,
+			tone: 'pending',
+		};
+	}
+	if (counts.waiting > 0) {
+		return {
+			count: counts.waiting,
+			title: plural(
+				counts.waiting,
+				'invitado no ha respondido',
+				'invitados no han respondido',
+			),
+			detail: 'Puede enviarles un recordatorio.',
+			tone: 'waiting',
+		};
+	}
+	return {
+		count: null,
+		title: 'Todos sus invitados ya respondieron',
+		detail:
+			counts.confirmedPeople === 1
+				? 'Viene 1 persona.'
+				: `Vienen ${counts.confirmedPeople} personas.`,
+		tone: 'done',
+	};
+}
+
+export type GuestProgressState = 'done' | 'current' | 'upcoming';
+
+export interface GuestProgressStep {
+	label: string;
+	state: GuestProgressState;
+	note?: string;
+}
+
+/** Three-step invitation journey shown in the guest detail screen. */
+export function getGuestProgressSteps(item: DashboardGuestItem): GuestProgressStep[] {
+	const bucket = getGuestStatusBucket(item);
+	const answered = bucket === 'confirmed' || bucket === 'declined';
+	const sent = hasBeenShared(item) || answered;
+	let answer: string | undefined;
+	if (bucket === 'confirmed') {
+		answer = `${item.attendeeCount === 1 ? 'Viene' : 'Vienen'} ${item.attendeeCount} de ${item.maxAllowedAttendees}`;
+	} else if (bucket === 'declined') {
+		answer = 'No podrán ir';
+	}
+	return [
+		{ label: 'Enviar la invitación', state: sent ? 'done' : 'current' },
+		{
+			label: 'Esperar su respuesta',
+			state: answered ? 'done' : sent ? 'current' : 'upcoming',
+			note: !answered && item.isViewed ? 'Ya la abrió' : undefined,
+		},
+		{ label: 'Saber si vienen y cuántos', state: answered ? 'done' : 'upcoming', note: answer },
+	];
+}
+
+/** Guests a host-chosen batch can act on: unsent for invitations, sent and unanswered for reminders. */
+export function getBatchCandidates(
+	items: DashboardGuestItem[],
+	batchFlowKind: 'invitation' | 'reminder',
+	guestIds: ReadonlySet<string>,
+): DashboardGuestItem[] {
+	const bucket: GuestStatusBucket = batchFlowKind === 'reminder' ? 'waiting' : 'to-send';
+	return items.filter(
+		(item) => guestIds.has(item.guestId) && getGuestStatusBucket(item) === bucket,
+	);
+}
+
+export type GuestReviewFilterValue =
+	| 'all'
+	| 'reminder-pending'
+	| 'delivery-pending'
+	| 'rsvp-pending'
+	| 'confirmation-pending'
+	| 'confirmed'
+	| 'with-message';
+
+/** Client-side review and group filtering applied on top of the server-filtered list. */
+export function filterGuestsForReview(
+	items: DashboardGuestItem[],
+	{
+		reviewFilter,
+		group,
+		reminderEligibleIds,
+	}: {
+		reviewFilter: GuestReviewFilterValue;
+		group: string;
+		reminderEligibleIds: ReadonlySet<string>;
+	},
+): DashboardGuestItem[] {
+	const matchesReview = (item: DashboardGuestItem): boolean => {
+		switch (reviewFilter) {
+			case 'reminder-pending':
+				return reminderEligibleIds.has(item.guestId);
+			case 'delivery-pending':
+				// Mirrors the overview count: an answered guest is never "por enviar".
+				return getGuestStatusBucket(item) === 'to-send';
+			case 'confirmation-pending':
+				return isUnconfirmedSharedGuest(item);
+			case 'confirmed':
+				return item.attendanceStatus === 'confirmed';
+			case 'rsvp-pending':
+				return item.attendanceStatus === 'pending';
+			case 'with-message':
+				return (item.guestComment ?? '').trim().length > 0;
+			default:
+				return true;
+		}
+	};
+	return items.filter(
+		(item) =>
+			matchesReview(item) && (group === 'all' || getVisibleTags(item.tags).includes(group)),
+	);
 }
 
 export interface GroupMetric {

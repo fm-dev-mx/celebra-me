@@ -5,6 +5,7 @@ import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { UpdateGuestDTO } from '@/lib/dashboard/dto/guests';
 import { getReminderEligibleGuests } from '@/components/dashboard/guests/reminder-eligibility';
+import { getBatchCandidates } from '@/components/dashboard/guests/guest-presenter';
 import type {
 	ReminderAudience,
 	ReminderSettings,
@@ -19,7 +20,13 @@ function findNextPendingGuest(
 	currentGuestId: string,
 	batchFlowKind: BatchFlowKind,
 	reminderAudience?: ReminderAudience,
+	queueGuestIds?: ReadonlySet<string> | null,
 ): DashboardGuestItem | undefined {
+	if (queueGuestIds) {
+		return getBatchCandidates(items, batchFlowKind, queueGuestIds).find(
+			(item) => item.guestId !== currentGuestId,
+		);
+	}
 	if (batchFlowKind === 'reminder') {
 		return getReminderEligibleGuests(items, reminderAudience ?? 'unconfirmed').find(
 			(item) => item.guestId !== currentGuestId,
@@ -70,6 +77,8 @@ export const useGuestDashboardActions = ({
 	const [celebratingGuestId, setCelebratingGuestId] = useState<string | null>(null);
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 	const [guestToDelete, setGuestToDelete] = useState<DashboardGuestItem | null>(null);
+	// Set when the host picks the batch; null means "every pending guest".
+	const [queueGuestIds, setQueueGuestIds] = useState<ReadonlySet<string> | null>(null);
 
 	const itemsRef = useRef(items);
 	itemsRef.current = items;
@@ -92,6 +101,7 @@ export const useGuestDashboardActions = ({
 		const currentItems = itemsRef.current;
 		const next = currentItems.find((item) => item.deliveryStatus === 'generated');
 		if (!next) return;
+		setQueueGuestIds(null);
 		setModalMode('send-pending');
 		setBatchFlowKind('invitation');
 		setEditingGuest(next);
@@ -102,9 +112,23 @@ export const useGuestDashboardActions = ({
 	const openNextReminderGuest = useCallback((audience: ReminderAudience) => {
 		const eligible = getReminderEligibleGuests(itemsRef.current, audience);
 		if (eligible.length === 0) return;
+		setQueueGuestIds(null);
 		setModalMode('send-pending');
 		setBatchFlowKind('reminder');
 		setEditingGuest(eligible[0]);
+		setIsNextActionActive(true);
+		setModalOpen(true);
+	}, []);
+
+	/** Starts the one-by-one send flow limited to the guests the host selected. */
+	const openBatchForGuests = useCallback((kind: BatchFlowKind, guestIds: Iterable<string>) => {
+		const queue = new Set(guestIds);
+		const [first] = getBatchCandidates(itemsRef.current, kind, queue);
+		if (!first) return;
+		setQueueGuestIds(queue);
+		setModalMode('send-pending');
+		setBatchFlowKind(kind);
+		setEditingGuest(first);
 		setIsNextActionActive(true);
 		setModalOpen(true);
 	}, []);
@@ -116,6 +140,7 @@ export const useGuestDashboardActions = ({
 	const closeModal = useCallback(() => {
 		setModalOpen(false);
 		setIsNextActionActive(false);
+		setQueueGuestIds(null);
 	}, []);
 
 	const requestDelete = useCallback(async (guest: DashboardGuestItem) => {
@@ -213,6 +238,7 @@ export const useGuestDashboardActions = ({
 				currentGuestId,
 				batchFlowKind,
 				reminderSettingsRef.current?.audience,
+				queueGuestIds,
 			);
 
 			if (next) {
@@ -233,7 +259,7 @@ export const useGuestDashboardActions = ({
 				});
 			}
 		},
-		[editingGuest, batchFlowKind, setNotification],
+		[editingGuest, batchFlowKind, queueGuestIds, setNotification],
 	);
 
 	const handleRevertShared = useCallback(
@@ -293,6 +319,7 @@ export const useGuestDashboardActions = ({
 				guestId,
 				batchFlowKind,
 				reminderSettingsRef.current?.audience,
+				queueGuestIds,
 			);
 
 			if (next) {
@@ -316,7 +343,7 @@ export const useGuestDashboardActions = ({
 				});
 			}
 		},
-		[editingGuest, batchFlowKind, setItems, setNotification],
+		[editingGuest, batchFlowKind, queueGuestIds, setItems, setNotification],
 	);
 
 	const handleSubmit = useCallback(
@@ -531,7 +558,9 @@ export const useGuestDashboardActions = ({
 		openImportModal,
 		openNextGeneratedGuest,
 		openNextReminderGuest,
+		openBatchForGuests,
 		pendingGuests,
+		queueGuestIds,
 		requestDelete,
 		setImportModalOpen,
 		setNotification,

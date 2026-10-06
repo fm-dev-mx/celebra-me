@@ -1,0 +1,296 @@
+@use '../global/mixins' as mixins;
+
+/* ==========================================================================
+   Compact guest list (< xl)
+   Status-grouped rows (default) or cards, chosen with the "Ver como" toggle.
+   The desktop table owns xl and up.
+   ========================================================================== */
+
+/* --- View toggle --- */
+.dashboard-guests__view-toggle {
+	display: none;
+
+	@include mixins.respond-below(xl) {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin: 0 0 1rem;
+	}
+
+	.guest-view-toggle {
+		flex: 1 1 auto;
+	}
+}
+
+.guest-view-toggle {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem 1rem;
+}
+
+.guest-view-toggle__label {
+	color: var(--color-text-primary);
+	font-size: 1.0625rem;
+	font-weight: 700;
+}
+
+.guest-view-toggle__options {
+	display: inline-flex;
+	gap: 2px;
+	padding: 3px;
+	border: 1px solid var(--color-border-control);
+	border-radius: 14px;
+	background: var(--color-surface-soft);
+}
+
+.guest-view-toggle__option {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	min-height: 44px;
+	padding: 0 1rem;
+	border: 0;
+	border-radius: 11px;
+	background: transparent;
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	font-size: 1rem;
+	font-weight: 700;
+	cursor: pointer;
+
+	&:focus-visible {
+		@include mixins.focus-ring;
+	}
+
+	&--active {
+		background: var(--dashboard-button-primary-bg);
+		color: var(--dashboard-button-primary-text);
+
+		svg {
+			color: var(--dashboard-button-primary-accent, currentcolor);
+		}
+	}
+}
+
+/* --- Grouped list --- */
+.dashboard-guests__list {
+	display: none;
+
+	@include mixins.respond-below(xl) {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		border: 1px solid var(--color-border-subtle);
+		border-radius: 18px;
+		background: var(--color-surface-elevated);
+		box-shadow: var(--shadow-warm);
+	}
+
+	@include mixins.respond-below(lg) {
+		margin-bottom: calc(var(--dashboard-dock-height, 82px) + var(--spacing-md, 1rem));
+	}
+}
+
+.guest-list-section__title {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+	margin: 0;
+	padding: 0.6rem 1rem;
+	background: var(--color-surface-soft);
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	font-size: 1rem;
+	font-weight: 700;
+}
+
+.guest-list-section__count {
+	color: var(--color-text-emphasis);
+	font-variant-numeric: tabular-nums;
+}
+
+.guest-list-section__items {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.guest-list-section__item + .guest-list-section__item {
+	border-top: 1px solid var(--color-border-subtle);
+}
+
+.guest-row {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	width: 100%;
+	min-height: 68px;
+	padding: 0.625rem 0.75rem 0.625rem 1rem;
+	border: 0;
+	background: transparent;
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	text-align: left;
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+
+	&:hover,
+	&--open {
+		background: var(--color-surface-secondary);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--dashboard-focus-ring);
+		outline-offset: -2px;
+	}
+}
+
+.guest-row__status {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+
+	.guest-row--to-send & {
+		background: var(--color-state-warning-bg);
+		color: var(--color-state-warning-text);
+	}
+
+	.guest-row--waiting & {
+		background: var(--color-state-info-bg);
+		color: var(--color-state-info-text);
+	}
+
+	.guest-row--confirmed & {
+		background: var(--color-state-success-bg);
+		color: var(--color-state-success-text);
+	}
+
+	.guest-row--declined & {
+		background: var(--color-state-neutral-bg);
+		color: var(--color-state-neutral-text);
+	}
+}
+
+.guest-row__text {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 0.125rem;
+	min-width: 0;
+}
+
+.guest-row__name {
+	color: var(--color-text-primary);
+	font-size: 1.125rem;
+	font-weight: 700;
+	line-height: 1.25;
+	overflow-wrap: anywhere;
+}
+
+.guest-row__subtitle {
+	color: var(--color-text-secondary);
+	font-size: 1rem;
+	line-height: 1.35;
+}
+
+.guest-row__message {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	color: var(--color-state-info-text);
+	font-size: 0.9375rem;
+	font-weight: 600;
+}
+
+.guest-row__chevron {
+	flex-shrink: 0;
+	color: var(--color-text-emphasis);
+	transition: transform 0.2s ease;
+}
+
+/* --- Cards on compact screens: larger type, wrapping names --- */
+@include mixins.respond-below(xl) {
+	.dashboard-guests .guest-card {
+		gap: 0.6rem;
+		padding: 1.125rem;
+		border-radius: 18px;
+		background: var(--color-surface-elevated);
+	}
+
+	.dashboard-guests .guest-card__header {
+		align-items: flex-start;
+	}
+
+	.dashboard-guests .guest-card__name {
+		font-size: 1.3125rem;
+		font-weight: 700;
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+
+	.dashboard-guests .guest-card__meta {
+		color: var(--color-text-secondary);
+		font-size: 1rem;
+		white-space: normal;
+	}
+
+	.dashboard-guests .guest-card .status-pill {
+		padding: 0.3rem 0.75rem;
+		border-radius: 999px;
+		font-size: 0.9375rem;
+		font-weight: 700;
+	}
+
+	.dashboard-guests .guest-card__actions {
+		flex-wrap: wrap;
+		gap: 0.5rem;
+
+		.guest-card__details-btn {
+			flex: 1 0 auto;
+		}
+
+		.btn-primary,
+		.btn-icon {
+			min-height: 52px;
+			border-radius: 14px;
+			font-size: 1.0625rem;
+		}
+
+		.btn-icon {
+			flex-shrink: 0;
+			min-width: 52px;
+		}
+
+		/* The card's main action fills the row as a solid charcoal button */
+		.dashboard-guests__share-button {
+			flex: 1 1 auto;
+			justify-content: center;
+			min-width: 0;
+			padding: 0.5rem 1rem;
+			font-weight: 700;
+
+			.share-label {
+				white-space: normal;
+			}
+
+			&.btn-primary {
+				background: var(--dashboard-button-primary-bg);
+				border-color: var(--dashboard-button-primary-border);
+				color: var(--dashboard-button-primary-text);
+
+				.share-icon {
+					color: var(--dashboard-button-primary-accent, currentcolor);
+				}
+			}
+		}
+	}
+}

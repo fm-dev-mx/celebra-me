@@ -46,7 +46,7 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 		<div className="dashboard-guests__filters">
 			<div className="filter-row">
 				<div className="filter-group filter-group--search">
-					<label htmlFor="guest-search">Buscar</label>
+					<label htmlFor="guest-search">Buscar invitado</label>
 					<div className="filter-search-wrap">
 						<SearchIcon className="filter-search-icon" size={16} />
 						<input

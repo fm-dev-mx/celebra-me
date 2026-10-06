@@ -513,7 +513,7 @@ const InvitationList: FC = () => {
 						archive: {
 							title: 'Archivar invitación',
 							message:
-								'La invitación dejará de aparecer en la lista activa. Puedes restaurarla después.',
+								'La invitación dejará de aparecer en la lista activa. Puede restaurarla después.',
 							confirmLabel: 'Archivar',
 						},
 						restore: {

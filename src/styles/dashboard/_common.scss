@@ -72,16 +72,6 @@
 	}
 }
 
-.dashboard-loading {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 0.5rem;
-	padding: 2rem;
-	color: var(--color-text-secondary);
-	font-size: 0.875rem;
-}
-
 .dashboard-error--full,
 .dashboard-actions--full,
 .dashboard-modal__actions--full {
@@ -111,12 +101,6 @@
 	border-radius: 999px;
 	background: var(--color-action-accent);
 	color: var(--color-text-on-light);
-}
-
-.dashboard-confirm-message {
-	text-align: center;
-	margin-bottom: var(--spacing-xl, 2rem);
-	color: var(--color-text-secondary);
 }
 
 // Placeholder for pill-shaped inline elements (chips, tags)

@@ -167,7 +167,7 @@ export default function EditorPreviewPane({
 				{device === 'desktop' && (
 					<>
 						{' '}
-						&middot; Escala limitada por el panel. Usa &ldquo;Abrir vista
+						&middot; Escala limitada por el panel. Use &ldquo;Abrir vista
 						completa&rdquo; para escritorio real.
 					</>
 				)}

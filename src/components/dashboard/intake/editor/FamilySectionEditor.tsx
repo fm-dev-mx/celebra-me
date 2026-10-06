@@ -355,7 +355,7 @@ export default function FamilySectionEditor({
 				groups={godparentGroups}
 				onUpdateGroups={(next) => onUpdateFamily({ godparentGroups: next })}
 				groupLabel="Grupo"
-				helperText="Usa estos grupos cuando cada festejada tenga padrinos distintos."
+				helperText="Use estos grupos cuando cada festejada tenga padrinos distintos."
 				addButtonLabel="Agregar grupo de padrinos"
 				fields={GODPARENT_GROUP_FIELDS}
 				createEmpty={() => ({ honoreeName: '', label: '', names: '' })}
@@ -373,7 +373,7 @@ export default function FamilySectionEditor({
 				groups={groups}
 				onUpdateGroups={(next) => onUpdateFamily({ groups: next })}
 				groupLabel="Grupo"
-				helperText="Usa grupos para padres de la novia, padrinos, abuelos u otros familiares. Cada nombre en una línea separada."
+				helperText="Use grupos para padres de la novia, padrinos, abuelos u otros familiares. Cada nombre en una línea separada."
 				addButtonLabel="Agregar grupo"
 				fields={GROUP_FIELDS}
 				createEmpty={() => ({ title: '', names: '' })}

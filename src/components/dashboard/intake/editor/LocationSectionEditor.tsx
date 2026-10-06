@@ -331,7 +331,7 @@ export default function LocationSectionEditor({
 								updateEventTiming({ timeZone: val === OTHER_OPTION ? '' : val });
 							}}
 						>
-							<option value="">Selecciona una zona</option>
+							<option value="">Seleccione una zona</option>
 							{MEXICO_TIME_ZONE_OPTIONS.map((option) => (
 								<option key={option.value} value={option.value}>
 									{option.label}
@@ -342,7 +342,7 @@ export default function LocationSectionEditor({
 					</label>
 					{!isKnownTimeZone && (
 						<Field
-							label="Escribe la zona horaria"
+							label="Escriba la zona horaria"
 							value={eventTiming.timeZone ?? ''}
 							placeholder="America/Mazatlan"
 							onChange={(value) => updateEventTiming({ timeZone: value })}
@@ -407,7 +407,7 @@ export default function LocationSectionEditor({
 							/>
 							<h4>Enlaces del mapa</h4>
 							<p className="invitation-editor__helper-text">
-								Deja solo uno o usa URLs específicas para cada plataforma. Se
+								Deje solo uno o use URLs específicas para cada plataforma. Se
 								mostrará el primero disponible.
 							</p>
 							<Field

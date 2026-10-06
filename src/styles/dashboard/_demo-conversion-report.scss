@@ -29,6 +29,14 @@
 		max-width: 100%;
 	}
 
+	select {
+		flex: 1 1 12rem;
+	}
+
+	button {
+		flex: 1 1 auto;
+	}
+
 	:focus-visible {
 		outline: 2px solid var(--dashboard-focus-ring);
 		outline-offset: 2px;

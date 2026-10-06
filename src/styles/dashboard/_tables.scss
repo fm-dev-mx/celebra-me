@@ -80,17 +80,6 @@
 	--dashboard-badge-border: var(--color-state-warning-border);
 }
 
-.dashboard-card-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 1rem;
-}
-
-.dashboard-card-header h2 {
-	margin: 0;
-}
-
 .dashboard-assigned-events {
 	display: flex;
 	flex-wrap: wrap;
@@ -125,7 +114,34 @@
 
 .dashboard-assign-event-row {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 0.5rem;
 	align-items: center;
 	margin-top: 0.5rem;
+}
+
+/* Wide admin tables scroll inside their card instead of the page */
+.dashboard-table-wrap {
+	overflow-x: auto;
+}
+
+.dashboard-assign-event-row select {
+	flex: 0 1 14rem;
+	min-width: 0;
+}
+
+.dashboard-assign-event-row span {
+	flex: 1 1 12rem;
+	color: var(--color-text-muted);
+	font-size: 0.8rem;
+}
+
+/* Users table: the events column wraps its chips so the actions column stays in view at 1366px */
+.dashboard-table--users td:nth-child(3) {
+	max-width: 22rem;
+}
+
+.dashboard-table--users .dashboard-event-chip {
+	max-width: 100%;
+	white-space: normal;
 }

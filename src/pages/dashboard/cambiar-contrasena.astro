@@ -11,7 +11,7 @@ const mustChange = session?.mustChangePassword === true;
 
 <Layout
 	title="Cambiar contraseña — Celebra.me"
-	description="Actualiza tu contraseña de acceso"
+	description="Actualice su contraseña de acceso"
 	hideHeader={true}
 	className="theme-preset--auth-dark"
 >
@@ -27,12 +27,12 @@ const mustChange = session?.mustChangePassword === true;
 			<div class="auth-copy">
 				{mustChange ? (
 					<p class="auth-kicker">Paso obligatorio de seguridad</p>
-					<h1 id="change-password-title">Crea tu contraseña personal</h1>
-					<p>Estás utilizando una contraseña temporal. Por tu seguridad, debes definir una nueva contraseña antes de ingresar a tu panel.</p>
+					<h1 id="change-password-title">Cree su contraseña personal</h1>
+					<p>Está utilizando una contraseña temporal. Por su seguridad, debe definir una nueva contraseña antes de ingresar a su panel.</p>
 				) : (
 					<p class="auth-kicker">Seguridad de la cuenta</p>
 					<h1 id="change-password-title">Cambiar contraseña</h1>
-					<p>Actualiza tu contraseña de acceso a Celebra.me.</p>
+					<p>Actualice su contraseña de acceso a Celebra.me.</p>
 				)}
 			</div>
 
@@ -44,7 +44,7 @@ const mustChange = session?.mustChangePassword === true;
 						name="currentPassword"
 						type="password"
 						autocomplete="current-password"
-						placeholder="Ingresa tu contraseña actual"
+						placeholder="Ingrese su contraseña actual"
 					/>
 					<p id="current-password-error" class="field-error" aria-live="polite"></p>
 				</div>
@@ -68,7 +68,7 @@ const mustChange = session?.mustChangePassword === true;
 						name="confirmPassword"
 						type="password"
 						autocomplete="new-password"
-						placeholder="Repite tu nueva contraseña"
+						placeholder="Repita su nueva contraseña"
 					/>
 					<p id="confirm-password-error" class="field-error" aria-live="polite"></p>
 				</div>

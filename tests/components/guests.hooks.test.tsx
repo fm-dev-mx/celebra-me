@@ -308,7 +308,7 @@ describe('active guest dashboard hooks', () => {
 		);
 
 		await waitFor(() => {
-			expect(result.current.error).toContain('Revisa RLS o migraciones');
+			expect(result.current.error).toContain('Revise RLS o migraciones');
 		});
 	});
 

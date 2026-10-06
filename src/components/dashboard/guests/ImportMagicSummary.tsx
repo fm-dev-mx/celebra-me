@@ -1,6 +1,6 @@
 function resultMessage(hasIssues: boolean, onlyCreated: boolean, allApplied: boolean): string {
 	if (hasIssues) {
-		return 'Revisa los detalles arriba. Los invitados omitidos, con conflicto o fallidos no se crearon.';
+		return 'Revise los detalles arriba. Los invitados omitidos, con conflicto o fallidos no se crearon.';
 	}
 	if (onlyCreated) return 'Los invitados nuevos se crearon correctamente.';
 	if (allApplied) return 'Los cambios seleccionados se aplicaron correctamente.';
