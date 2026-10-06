@@ -21,11 +21,12 @@ implementing these skills is never a live-release invocation.
    failed command that changed state requires inspection before any retry. Declarations describe
    existing authority and never grant it; preserve a failed baseline.
 4. Fetch origin, resolve exact remote base/source SHAs and ancestry, and inspect the complete range.
-   Fast-forward develop when possible. Integrate in-scope task commits without rewriting shared
-   history. If switching to develop would violate lane assignment or another checkout owns it, stop
-   and request assignment of that exact integration checkout. Do not evade the boundary with
-   alternate worktrees or refspecs. Conflicts with ambiguous intent require a decision; never choose
-   `ours`/`theirs` automatically. Recheck remote tips immediately before every write.
+   Integrate in-scope task branches into develop with merge commits as
+   [Git governance](git-governance.md#task-lifecycle) defines, without rewriting shared history. If
+   switching to develop would violate lane assignment or another checkout owns it, stop and request
+   assignment of that exact integration checkout. Do not evade the boundary with alternate worktrees
+   or refspecs. Conflicts with ambiguous intent require a decision; never choose `ours`/`theirs`
+   automatically. Recheck remote tips immediately before every write.
 
 ## Checks and evidence reuse
 
@@ -61,8 +62,8 @@ implementing these skills is never a live-release invocation.
 
 1. Stage only named scope, commit only when needed, and inspect resulting commit/working tree.
    Already committed scope requires neither staging nor a new commit. A needed commit (for example
-   accepted visual baselines) goes on a task branch created from `develop` and is then
-   fast-forwarded; never author it directly on `develop`.
+   accepted visual baselines) goes on a task branch created from `develop` and is then merged
+   (`--no-ff`); never author it directly on `develop`.
 2. Push only the validated `develop` ref with normal hooks and Git LFS. If origin already points at
    the intended SHA, skip the push and discover the existing CI/deployment.
 3. Run `pnpm ops:release-status -- --sha <exact-sha> --target preview --wait` once, in the
