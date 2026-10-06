@@ -90,7 +90,7 @@
 		border: 1px solid var(--dashboard-card-border);
 		border-radius: 0.75rem;
 		background: var(--dashboard-card-bg);
-		box-shadow: 0 0.35rem 1rem rgb(0 0 0 / 12%);
+		box-shadow: var(--shadow-warm);
 
 		p {
 			margin: 0;
@@ -270,7 +270,7 @@
 		margin: 0;
 		padding: 0.7rem;
 		border-radius: 0.5rem;
-		background: rgb(239 68 68 / 12%);
+		background: var(--color-state-danger-bg);
 		color: var(--color-status-danger, rgb(252 165 165));
 	}
 
