@@ -1,6 +1,4 @@
 import React from 'react';
-import GuestGroupMetrics from '@/components/dashboard/guests/GuestGroupMetrics';
-import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
 interface HostEventItem {
 	id: string;
@@ -12,16 +10,12 @@ interface HostEventItem {
 interface GuestDashboardHeaderProps {
 	eventId: string;
 	hostEvents: HostEventItem[];
-	items: DashboardGuestItem[];
 	onEventChange: (eventId: string) => void;
-	filteredItems?: DashboardGuestItem[];
 }
 
 const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 	eventId,
 	hostEvents,
-	items,
-	filteredItems,
 	onEventChange,
 }) => {
 	return (
@@ -45,8 +39,6 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 					</div>
 				</div>
 			</div>
-
-			<GuestGroupMetrics items={filteredItems ?? items} />
 		</>
 	);
 };

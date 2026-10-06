@@ -443,3 +443,23 @@
 		font-size: 0.6875rem;
 	}
 }
+
+/* Phones: workflow buttons wrap their label and fill the status cell instead of clipping */
+@media (width <= 600px) {
+	.intake-list__table .btn-secondary {
+		width: 100%;
+		height: auto;
+		padding-block: 0.5rem;
+		white-space: normal;
+		text-align: center;
+	}
+
+	.intake-list__table td {
+		overflow-wrap: anywhere;
+	}
+
+	.intake-list__table td,
+	.intake-list__status-group {
+		white-space: normal;
+	}
+}

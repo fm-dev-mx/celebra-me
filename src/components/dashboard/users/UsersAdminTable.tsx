@@ -49,7 +49,7 @@ const UsersAdminTable: React.FC = () => {
 			{error && !credentialsUser && <p className="dashboard-error">{error}</p>}
 			{loading && <p className="dashboard-status">Cargando...</p>}
 			<div className="dashboard-table-wrap">
-				<table className="dashboard-table">
+				<table className="dashboard-table dashboard-table--users">
 					<thead>
 						<tr>
 							<th>Acceso</th>

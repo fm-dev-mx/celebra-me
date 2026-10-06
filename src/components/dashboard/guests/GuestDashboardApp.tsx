@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
+import GuestGroupMetrics from '@/components/dashboard/guests/GuestGroupMetrics';
 import GuestDashboardHeader from '@/components/dashboard/guests/GuestDashboardHeader';
 import GuestDeleteConfirmModal from '@/components/dashboard/guests/GuestDeleteConfirmModal';
 import GuestDetailSheet from '@/components/dashboard/guests/GuestDetailSheet';
@@ -319,8 +320,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				<GuestDashboardHeader
 					eventId={eventId}
 					hostEvents={hostEvents}
-					items={items}
-					filteredItems={visibleItems}
 					onEventChange={setEventId}
 				/>
 
@@ -332,6 +331,9 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					withMessageCount={withMessageCount}
 					reminderHint={reminderHint}
 				/>
+
+				{/* Desktop-only secondary block; hidden below lg in _dashboard-guests-stats.scss */}
+				<GuestGroupMetrics items={visibleItems} />
 
 				<div className="dashboard-guests__toolbar">
 					<button

@@ -67,7 +67,7 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 						Mostrar
 					</h2>
 					<div
-						className="guest-overview__segments"
+						className={`guest-overview__segments${segments.length > 3 ? ' guest-overview__segments--many' : ''}`}
 						role="group"
 						aria-labelledby="guest-overview-show"
 					>
