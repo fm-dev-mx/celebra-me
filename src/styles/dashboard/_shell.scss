@@ -549,7 +549,7 @@
 }
 
 .dashboard-sidebar__account-label {
-	color: rgb(255 255 255 / 25%);
+	color: rgb(255 255 255 / 60%);
 	font-size: 0.62rem;
 	font-weight: 600;
 	font-variant: small-caps;
@@ -563,7 +563,7 @@
 }
 
 .dashboard-sidebar__account-email {
-	color: rgb(255 255 255 / 40%);
+	color: rgb(255 255 255 / 70%);
 	font-size: 0.72rem;
 	font-weight: 400;
 	overflow: hidden;
@@ -611,11 +611,11 @@
 }
 
 .dashboard-sidebar__account-error {
-	color: var(--color-state-danger-text);
+	color: var(--color-state-danger-border);
 	font-size: 0.72rem;
 	padding: 0.5rem;
-	background: rgb(var(--color-state-danger-rgb) / 10%);
-	border: 1px solid rgb(var(--color-state-danger-rgb) / 15%);
+	background: rgb(var(--color-state-danger-rgb) / 28%);
+	border: 1px solid rgb(var(--color-state-danger-rgb) / 55%);
 	border-radius: 6px;
 	text-align: center;
 }
@@ -889,7 +889,7 @@
 	}
 
 	.dashboard-sidebar__account-label {
-		color: rgb(255 255 255 / 25%);
+		color: rgb(255 255 255 / 60%);
 	}
 
 	.dashboard-sidebar__account-role {
@@ -898,7 +898,7 @@
 	}
 
 	.dashboard-sidebar__account-email {
-		color: rgb(255 255 255 / 35%);
+		color: rgb(255 255 255 / 70%);
 		font-size: 0.72rem;
 		max-width: 100%;
 	}
