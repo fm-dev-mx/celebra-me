@@ -1,9 +1,10 @@
 @use '../global/mixins' as mixins;
 
 /* ==========================================================================
-   Guest overview — compact screens (< lg)
-   Plain-language summary + status segments that filter the list, plus the
-   larger touch targets and type the compact guest screen needs.
+   Guest overview — every width
+   Plain-language summary + status segments that are the single review filter
+   of the list, plus the larger touch targets and type the compact guest
+   screen needs below lg.
    ========================================================================== */
 
 .guest-overview {
@@ -17,6 +18,7 @@
 	display: flex;
 	align-items: center;
 	gap: 1rem;
+	max-width: 42rem;
 	padding: 1rem 1.125rem;
 	background: var(--color-surface-elevated);
 	border: 1px solid var(--color-border-subtle);
@@ -84,6 +86,11 @@
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 0.5rem;
 
+	// Desktop: fixed-width segments instead of three stretched columns
+	@include mixins.respond-to(lg) {
+		grid-template-columns: repeat(auto-fit, minmax(150px, 200px));
+	}
+
 	/* Narrow phones or enlarged text: one segment per row */
 	@container (width < 20em) {
 		grid-template-columns: minmax(0, 1fr);
@@ -149,6 +156,13 @@
 	font-weight: 600;
 	line-height: 1.2;
 	text-align: center;
+}
+
+.guest-overview__hint {
+	margin: 0;
+	color: var(--color-text-secondary);
+	font-size: 1rem;
+	line-height: 1.35;
 }
 
 .guest-overview__clear {

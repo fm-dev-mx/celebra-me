@@ -1,14 +1,6 @@
 import React from 'react';
-import GuestReviewBlock, {
-	type GuestReviewFilter,
-} from '@/components/dashboard/guests/GuestReviewBlock';
 import GuestGroupMetrics from '@/components/dashboard/guests/GuestGroupMetrics';
-import GuestSummary from '@/components/dashboard/guests/GuestSummary';
-import type { ReminderAudience } from '@/lib/rsvp/services/shared/share-message-defaults';
-import type {
-	DashboardGuestItem,
-	DashboardGuestListResponse,
-} from '@/interfaces/dashboard/guest.interface';
+import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
 interface HostEventItem {
 	id: string;
@@ -21,12 +13,8 @@ interface GuestDashboardHeaderProps {
 	eventId: string;
 	hostEvents: HostEventItem[];
 	items: DashboardGuestItem[];
-	activeReviewFilter: GuestReviewFilter;
-	totals: DashboardGuestListResponse['totals'];
 	onEventChange: (eventId: string) => void;
-	onReviewFilterChange: (filter: GuestReviewFilter) => void;
 	filteredItems?: DashboardGuestItem[];
-	reminderAudience?: ReminderAudience;
 }
 
 const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
@@ -34,11 +22,7 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 	hostEvents,
 	items,
 	filteredItems,
-	activeReviewFilter,
-	totals,
 	onEventChange,
-	onReviewFilterChange,
-	reminderAudience,
 }) => {
 	return (
 		<>
@@ -62,14 +46,7 @@ const GuestDashboardHeader: React.FC<GuestDashboardHeaderProps> = ({
 				</div>
 			</div>
 
-			<GuestSummary totals={totals} />
 			<GuestGroupMetrics items={filteredItems ?? items} />
-			<GuestReviewBlock
-				items={items}
-				activeFilter={activeReviewFilter}
-				onFilterChange={onReviewFilterChange}
-				reminderAudience={reminderAudience}
-			/>
 		</>
 	);
 };

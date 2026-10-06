@@ -1,30 +1,39 @@
 import React from 'react';
-import type { GuestReviewFilter } from '@/components/dashboard/guests/GuestReviewBlock';
 import {
 	getGuestSummaryMessage,
+	type GuestReviewFilterValue,
 	type GuestStatusCounts,
 } from '@/components/dashboard/guests/guest-presenter';
 
 interface GuestStatusOverviewProps {
 	counts: GuestStatusCounts;
-	activeFilter: GuestReviewFilter;
-	onFilterChange: (filter: GuestReviewFilter) => void;
+	activeFilter: GuestReviewFilterValue;
+	onFilterChange: (filter: GuestReviewFilterValue) => void;
+	/** Guests eligible for a reminder; adds the "Por recordar" segment when above zero. */
+	reminderCount?: number;
+	/** Guests who left a message; adds the "Con mensaje" segment when above zero. */
+	withMessageCount?: number;
+	/** Context for the reminder segment, e.g. days left before the event. */
+	reminderHint?: string | null;
 }
 
 interface StatusSegment {
-	filter: GuestReviewFilter;
+	filter: GuestReviewFilterValue;
 	label: string;
 	count: number;
 }
 
 /**
- * Compact-screen overview: one plain-language sentence plus three status
- * segments that double as the list filter.
+ * Guest overview for every width: one plain-language sentence plus the status
+ * segments that double as the single review filter of the list.
  */
 const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 	counts,
 	activeFilter,
 	onFilterChange,
+	reminderCount = 0,
+	withMessageCount = 0,
+	reminderHint = null,
 }) => {
 	const message = getGuestSummaryMessage(counts);
 	const segments: StatusSegment[] = [
@@ -32,6 +41,12 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 		{ filter: 'confirmation-pending', label: 'Esperando', count: counts.waiting },
 		{ filter: 'confirmed', label: 'Vienen', count: counts.confirmed },
 	];
+	if (reminderCount > 0) {
+		segments.push({ filter: 'reminder-pending', label: 'Por recordar', count: reminderCount });
+	}
+	if (withMessageCount > 0) {
+		segments.push({ filter: 'with-message', label: 'Con mensaje', count: withMessageCount });
+	}
 	const isSegmentFilter = segments.some((segment) => segment.filter === activeFilter);
 
 	return (
@@ -63,6 +78,7 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 									key={segment.filter}
 									type="button"
 									className={`guest-overview__segment${active ? ' guest-overview__segment--active' : ''}`}
+									aria-label={`${segment.label}, ${segment.count}`}
 									aria-pressed={active}
 									onClick={() => onFilterChange(active ? 'all' : segment.filter)}
 								>
@@ -76,6 +92,9 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 							);
 						})}
 					</div>
+					{reminderCount > 0 && reminderHint && (
+						<p className="guest-overview__hint">{reminderHint}</p>
+					)}
 					{activeFilter !== 'all' && (
 						<button
 							type="button"

@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { SearchIcon } from '@/components/common/icons/ui';
 import { PREDEFINED_GUEST_TAGS } from '@/lib/guests/guest-tags';
 import type { DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
-import type { GuestReviewFilter } from '@/components/dashboard/guests/GuestReviewBlock';
 
 export type GroupFilter = string;
 
@@ -11,8 +10,6 @@ interface GuestFiltersProps {
 	status: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed';
 	delivery: DeliveryFilter;
 	group: GroupFilter;
-	reviewFilter?: GuestReviewFilter;
-	onReviewFilterChange?: (value: GuestReviewFilter) => void;
 	onSearchChange: (value: string) => void;
 	onStatusChange: (value: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed') => void;
 	onDeliveryChange: (value: DeliveryFilter) => void;
@@ -25,8 +22,6 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 	status,
 	delivery,
 	group,
-	reviewFilter = 'all',
-	onReviewFilterChange,
 	onSearchChange,
 	onStatusChange,
 	onDeliveryChange,
@@ -34,8 +29,7 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 	searchInputRef,
 }) => {
 	const [showAdvanced, setShowAdvanced] = useState(false);
-	const hasActiveFilters =
-		status !== 'all' || delivery !== 'all' || group !== 'all' || reviewFilter !== 'all';
+	const hasActiveFilters = status !== 'all' || delivery !== 'all' || group !== 'all';
 
 	useEffect(() => {
 		setShowAdvanced(hasActiveFilters);
@@ -46,8 +40,7 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 		onStatusChange('all');
 		onDeliveryChange('all');
 		onGroupChange('all');
-		onReviewFilterChange?.('all');
-	}, [onSearchChange, onStatusChange, onDeliveryChange, onGroupChange, onReviewFilterChange]);
+	}, [onSearchChange, onStatusChange, onDeliveryChange, onGroupChange]);
 
 	return (
 		<div className="dashboard-guests__filters">
@@ -91,27 +84,6 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 				className={`filter-advanced${showAdvanced ? ' filter-advanced--open' : ''}`}
 			>
 				<div className="filter-row">
-					{onReviewFilterChange && (
-						<div className="filter-group filter-group--compact">
-							<label htmlFor="review-filter">Revisar</label>
-							<select
-								id="review-filter"
-								value={reviewFilter}
-								onChange={(event) =>
-									onReviewFilterChange(event.target.value as GuestReviewFilter)
-								}
-							>
-								<option value="all">Todos</option>
-								<option value="delivery-pending">Por enviar</option>
-								<option value="confirmation-pending">Esperando respuesta</option>
-								<option value="reminder-pending">Por recordar</option>
-								<option value="confirmed">Confirmados</option>
-								<option value="rsvp-pending">Sin respuesta</option>
-								<option value="with-message">Con mensaje</option>
-							</select>
-						</div>
-					)}
-
 					<div className="filter-group filter-group--compact">
 						<label htmlFor="status-filter">Filtro</label>
 						<select

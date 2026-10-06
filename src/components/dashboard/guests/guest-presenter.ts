@@ -367,7 +367,8 @@ export function filterGuestsForReview(
 			case 'reminder-pending':
 				return reminderEligibleIds.has(item.guestId);
 			case 'delivery-pending':
-				return item.deliveryStatus === 'generated';
+				// Mirrors the overview count: an answered guest is never "por enviar".
+				return getGuestStatusBucket(item) === 'to-send';
 			case 'confirmation-pending':
 				return isUnconfirmedSharedGuest(item);
 			case 'confirmed':

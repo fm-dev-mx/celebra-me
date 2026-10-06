@@ -69,3 +69,45 @@ describe('GuestStatusOverview', () => {
 		expect(screen.queryByRole('group', { name: 'Mostrar' })).not.toBeInTheDocument();
 	});
 });
+
+describe('GuestStatusOverview — optional segments', () => {
+	it('adds reminder and message segments with the reminder hint when they apply', () => {
+		const onFilterChange = jest.fn();
+		render(
+			<GuestStatusOverview
+				counts={counts}
+				activeFilter="all"
+				onFilterChange={onFilterChange}
+				reminderCount={2}
+				withMessageCount={1}
+				reminderHint="Faltan 10 días · 2 invitados sin confirmar"
+			/>,
+		);
+
+		const group = screen.getByRole('group', { name: 'Mostrar' });
+		expect(group.querySelectorAll('button')).toHaveLength(5);
+		expect(screen.getByText('Faltan 10 días · 2 invitados sin confirmar')).toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole('button', { name: 'Por recordar, 2' }));
+		expect(onFilterChange).toHaveBeenLastCalledWith('reminder-pending');
+
+		fireEvent.click(screen.getByRole('button', { name: 'Con mensaje, 1' }));
+		expect(onFilterChange).toHaveBeenLastCalledWith('with-message');
+	});
+
+	it('omits the optional segments and hint when their counts are zero', () => {
+		render(
+			<GuestStatusOverview
+				counts={counts}
+				activeFilter="all"
+				onFilterChange={jest.fn()}
+				reminderCount={0}
+				withMessageCount={0}
+				reminderHint="Faltan 10 días"
+			/>,
+		);
+
+		expect(screen.queryByRole('button', { name: /Por recordar/ })).not.toBeInTheDocument();
+		expect(screen.queryByText('Faltan 10 días')).not.toBeInTheDocument();
+	});
+});
