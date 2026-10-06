@@ -64,9 +64,9 @@ reuse, recovery and verified deployment completion. Neither includes database or
 - `Post-deploy Smoke` validates the correlated Production deployment, SHA, approved host and
   critical HTTP behavior. The scheduled/manual `Production Image Audit` separately reports
   published-media drift and never determines deployment health.
-- The `develop` ruleset allows direct fast-forward pushes but blocks deletion and non-fast-forward
-  updates. The `main` ruleset requires a pull request and the two canonical checks, and also blocks
-  deletion and non-fast-forward updates.
+- The `develop` ruleset allows direct pushes that only add commits, merge commits included, but
+  blocks deletion and non-fast-forward (history-rewriting) updates. The `main` ruleset requires a
+  pull request and the two canonical checks, and also blocks deletion and non-fast-forward updates.
 
 #### Failure classification and retry
 
@@ -285,7 +285,7 @@ git add package.json CHANGELOG.md
 git commit -m "chore(release): publish vX.Y.Z checkpoint"
 ```
 
-Integrate the candidate into `develop` from Integration with a fast-forward (see
+Integrate the candidate into `develop` from Integration with a merge commit (see
 [`git-governance.md`](git-governance.md#task-lifecycle)), then push `develop`. Wait for
 `Repository Policy` and `Application Suite` on that exact SHA before opening the release pull
 request. Preserve preceding atomic commits when they remain meaningful.
@@ -299,9 +299,9 @@ or a `published` lifecycle change that adds a route to the canonical matrix), ob
 release-time visual confirmation. The confirmation reviews the candidate produced with the pinned
 runtime and identifies the exact source SHA, matrix hash, and candidate-manifest SHA-256. Record
 that acceptance through `pnpm visual:parity:accept` before this step, land the accepted references
-on `develop` through the same fast-forward integration as step 4, and wait for `Application Suite`
-on that resulting `develop` SHA. This is a human release decision, not an automatic action performed
-by CI or Vercel after a deployment begins.
+on `develop` through the same merge integration as step 4, and wait for `Application Suite` on that
+resulting `develop` SHA. This is a human release decision, not an automatic action performed by CI
+or Vercel after a deployment begins.
 
 If visual confirmation is missing or rejected, the candidate is not eligible for promotion or
 deployment. Do not reduce visual coverage, relax comparison, or treat a Preview build as approval.

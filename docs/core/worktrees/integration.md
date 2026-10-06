@@ -20,7 +20,7 @@ Local Supabase (`CELEBRA_RUNTIME_TARGET=local`).
 - Idle state: `develop` checked out (not detached), clean.
 - Integration may host one task when it is assigned there. Create a task branch first
   (`git switch -c <feat|fix|candidate>/<name> develop`); never author commits directly on `develop`
-  or `main`. `develop` only receives fast-forwards or merges of task branches.
+  or `main`. `develop` only receives merge commits of task branches (and the release back-merge).
 - Before integrating, return to `develop` with a clean tree (`git switch develop`), then follow the
   Integrate step in [Git governance](../git-governance.md#task-lifecycle) and delete the task
   branch.
@@ -34,7 +34,7 @@ Local Supabase (`CELEBRA_RUNTIME_TARGET=local`).
 
 ## Common operations
 
-- Fast-forward integration into `develop`, release prep, `pnpm ops worktree-status`
+- Merge integration into `develop`, release prep, `pnpm ops worktree-status`
 - Authorized Local DB workflows; authorized Preview/Production ops when tasked
 
 ## Agents

@@ -104,31 +104,94 @@ describe('lane:sync observability', () => {
 		expect(result.stdout).toContain('BLOCKED');
 	});
 
-	it('runs an authorized apply after matching preflight', () => {
+	function applyFixture(baselineName = 'git-safety-baseline.json') {
 		const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'lane-sync-apply-'));
 		fs.mkdirSync(path.join(cwd, '.agent', 'tmp'), { recursive: true });
 		fs.writeFileSync(
-			path.join(cwd, '.agent', 'tmp', 'git-safety-baseline.json'),
+			path.join(cwd, '.agent', 'tmp', baselineName),
 			JSON.stringify({ branch: 'feature/test', head: 'abc123' }),
 		);
+		return cwd;
+	}
+
+	function gitRunner(options: { published?: boolean; calls?: string[][] } = {}) {
+		return (args: string[]) => {
+			options.calls?.push(args);
+			if (args[0] === 'status') return { status: 0, stdout: '', stderr: '' };
+			if (args[0] === 'rev-parse' && args[1] === '--abbrev-ref')
+				return { status: 0, stdout: 'feature/test', stderr: '' };
+			if (args[0] === 'rev-parse' && args[1] === '--verify')
+				return { status: options.published ? 0 : 1, stdout: '', stderr: '' };
+			if (args[0] === 'rev-parse') return { status: 0, stdout: 'abc123', stderr: '' };
+			if (args[0] === 'fetch') return { status: 0, stdout: '', stderr: '' };
+			if (args[0] === 'rev-list') return { status: 0, stdout: '1', stderr: '' };
+			if (args[0] === 'merge') return { status: 0, stdout: 'merged', stderr: '' };
+			if (args[0] === 'rebase') return { status: 0, stdout: 'rebased', stderr: '' };
+			return { status: 1, stdout: '', stderr: `unexpected git ${args.join(' ')}` };
+		};
+	}
+
+	it('merges origin/develop by default after matching preflight', () => {
+		const calls: string[][] = [];
 		const result = runLaneSync({
 			apply: true,
-			cwd,
-			runGit: (args) => {
-				if (args[0] === 'status') return { status: 0, stdout: '', stderr: '' };
-				if (args[0] === 'rev-parse' && args[1] === '--abbrev-ref')
-					return { status: 0, stdout: 'feature/test', stderr: '' };
-				if (args[0] === 'rev-parse') return { status: 0, stdout: 'abc123', stderr: '' };
-				if (args[0] === 'fetch') return { status: 0, stdout: '', stderr: '' };
-				if (args[0] === 'rev-list') return { status: 0, stdout: '1', stderr: '' };
-				if (args[0] === 'rebase') return { status: 0, stdout: 'rebased', stderr: '' };
-				return { status: 1, stdout: '', stderr: `unexpected git ${args.join(' ')}` };
-			},
+			cwd: applyFixture(),
+			runGit: gitRunner({ calls }),
 			runStatus: () => ({ status: 0, stdout: 'status', stderr: '' }),
 		});
 		expect(result.gitOk).toBe(true);
-		expect(result.gitMode).toBe('rebase');
+		expect(result.gitMode).toBe('merge');
 		expect(result.statusRan).toBe(true);
+		expect(calls).toContainEqual(['merge', '--no-edit', 'origin/develop']);
+		expect(calls.some((args) => args[0] === 'rebase')).toBe(false);
+	});
+
+	it('accepts a per-session Git Safety baseline', () => {
+		const result = runLaneSync({
+			apply: true,
+			cwd: applyFixture('git-safety-baseline.feature-test.json'),
+			runGit: gitRunner(),
+			skipStatus: true,
+		});
+		expect(result.gitOk).toBe(true);
+		expect(result.gitMode).toBe('merge');
+	});
+
+	it('refuses an opt-in rebase of a branch that exists on origin', () => {
+		const calls: string[][] = [];
+		const result = runLaneSync({
+			apply: true,
+			rebase: true,
+			cwd: applyFixture(),
+			runGit: gitRunner({ published: true, calls }),
+			skipStatus: true,
+		});
+		expect(result.gitOk).toBe(false);
+		expect(result.statusSkippedReason).toBe('rebase-published');
+		expect(calls.some((args) => args[0] === 'rebase')).toBe(false);
+	});
+
+	it('rebases an unpublished branch only on request', () => {
+		const result = runLaneSync({
+			apply: true,
+			rebase: true,
+			cwd: applyFixture(),
+			runGit: gitRunner(),
+			skipStatus: true,
+		});
+		expect(result.gitOk).toBe(true);
+		expect(result.gitMode).toBe('rebase');
 		expect(result.stdout).toContain('rebased');
+	});
+
+	it('rejects conflicting sync modes', () => {
+		const result = runLaneSync({
+			apply: true,
+			rebase: true,
+			ffOnly: true,
+			cwd: applyFixture(),
+		});
+		expect(result.gitOk).toBe(false);
+		expect(result.statusSkippedReason).toBe('conflicting-sync-modes');
 	});
 });

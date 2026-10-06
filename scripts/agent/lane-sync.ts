@@ -11,10 +11,13 @@
  *   pnpm lane:sync -- --dry-run
  *   pnpm lane:sync -- --skip-status
  *   pnpm lane:sync -- --ff-only
+ *   pnpm lane:sync -- --rebase     # only for branches never pushed to origin
+ *
+ * The default merges origin/develop into the task branch, so published history is never rewritten.
  */
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 export interface LaneSyncOptions {
@@ -23,6 +26,8 @@ export interface LaneSyncOptions {
 	dryRun?: boolean;
 	skipStatus?: boolean;
 	ffOnly?: boolean;
+	/** Opt-in rebase; refused when the branch exists on origin. */
+	rebase?: boolean;
 	/** Injected for tests. */
 	runGit?: (args: string[], cwd: string) => { status: number; stdout: string; stderr: string };
 	runStatus?: (cwd: string) => { status: number; stdout: string; stderr: string };
@@ -30,7 +35,7 @@ export interface LaneSyncOptions {
 
 export interface LaneSyncResult {
 	gitOk: boolean;
-	gitMode: 'ff-only' | 'rebase' | 'already-aligned' | 'dry-run' | 'skipped';
+	gitMode: 'merge' | 'ff-only' | 'rebase' | 'already-aligned' | 'dry-run' | 'skipped';
 	statusRan: boolean;
 	statusSkippedReason?: string;
 	stdout: string;
@@ -81,16 +86,43 @@ function parseLaneSyncArgs(argv: string[]): LaneSyncOptions {
 		dryRun: !apply || argv.includes('--dry-run'),
 		skipStatus: argv.includes('--skip-status'),
 		ffOnly: argv.includes('--ff-only'),
+		rebase: argv.includes('--rebase'),
 	};
+}
+
+type SyncMode = 'merge' | 'ff-only' | 'rebase';
+
+const SYNC_COMMANDS: Record<SyncMode, { args: string[]; failure: string; success: string }> = {
+	merge: {
+		args: ['merge', '--no-edit', 'origin/develop'],
+		failure: 'git-merge-failed',
+		success: '[lane:sync] merged origin/develop',
+	},
+	'ff-only': {
+		args: ['merge', '--ff-only', 'origin/develop'],
+		failure: 'git-ff-failed',
+		success: '[lane:sync] fast-forwarded onto origin/develop',
+	},
+	rebase: {
+		args: ['rebase', 'origin/develop'],
+		failure: 'git-rebase-failed',
+		success: '[lane:sync] rebased onto origin/develop',
+	},
+};
+
+export function resolveSyncMode(options: { ffOnly?: boolean; rebase?: boolean }): SyncMode {
+	if (options.ffOnly && options.rebase)
+		throw new Error('Choose only one of --ff-only or --rebase.');
+	return options.ffOnly ? 'ff-only' : options.rebase ? 'rebase' : 'merge';
 }
 
 function syncOntoDevelop(input: {
 	cwd: string;
 	dryRun?: boolean;
-	ffOnly?: boolean;
+	mode: SyncMode;
 	runGit: GitRunner;
 }): Pick<LaneSyncResult, 'gitOk' | 'gitMode' | 'statusSkippedReason'> & { lines: string[] } {
-	const { cwd, dryRun = true, ffOnly, runGit } = input;
+	const { cwd, dryRun = true, mode, runGit } = input;
 	const lines: string[] = [];
 
 	if (!dryRun) {
@@ -136,25 +168,34 @@ function syncOntoDevelop(input: {
 		return { gitOk: true, gitMode: 'already-aligned', lines };
 	}
 
-	const gitMode = ffOnly ? 'ff-only' : 'rebase';
-	const sync = ffOnly
-		? runGit(['merge', '--ff-only', 'origin/develop'], cwd)
-		: runGit(['rebase', 'origin/develop'], cwd);
+	if (mode === 'rebase') {
+		// Rewriting history is only safe while the branch exists nowhere but this checkout.
+		const branch = runGit(['rev-parse', '--abbrev-ref', 'HEAD'], cwd).stdout.trim();
+		const published = runGit(
+			['rev-parse', '--verify', '--quiet', `refs/remotes/origin/${branch}`],
+			cwd,
+		);
+		if (published.status === 0) {
+			lines.push(
+				`BLOCKED: ${branch} exists on origin; --rebase would rewrite published history. Use the default merge.`,
+			);
+			return {
+				gitOk: false,
+				gitMode: 'rebase',
+				statusSkippedReason: 'rebase-published',
+				lines,
+			};
+		}
+	}
+
+	const command = SYNC_COMMANDS[mode];
+	const sync = runGit(command.args, cwd);
 	lines.push(sync.stdout.trim(), sync.stderr.trim());
 	if (sync.status !== 0) {
-		return {
-			gitOk: false,
-			gitMode,
-			statusSkippedReason: ffOnly ? 'git-ff-failed' : 'git-rebase-failed',
-			lines,
-		};
+		return { gitOk: false, gitMode: mode, statusSkippedReason: command.failure, lines };
 	}
-	lines.push(
-		ffOnly
-			? '[lane:sync] fast-forwarded onto origin/develop'
-			: '[lane:sync] rebased onto origin/develop',
-	);
-	return { gitOk: true, gitMode, lines };
+	lines.push(command.success);
+	return { gitOk: true, gitMode: mode, lines };
 }
 
 function appendManagedStatus(
@@ -213,50 +254,70 @@ function checkApplyPreconditions(
 		};
 	}
 
-	const baselinePath = resolve(cwd, '.agent', 'tmp', 'git-safety-baseline.json');
-	if (!existsSync(baselinePath)) {
+	// The shared baseline or any per-session baseline (`--session`) may own this checkout.
+	const baselineDir = resolve(cwd, '.agent', 'tmp');
+	const baselinePaths = existsSync(baselineDir)
+		? readdirSync(baselineDir)
+				.filter((name) => /^git-safety-baseline(?:\.[A-Za-z0-9._-]+)?\.json$/u.test(name))
+				.map((name) => resolve(baselineDir, name))
+		: [];
+	if (baselinePaths.length === 0) {
 		return {
 			ok: false,
 			reason: 'missing-git-safety-baseline',
 			message: 'BLOCKED: run agent:git-safety:start before --apply synchronization',
 		};
 	}
-	try {
-		const baseline = JSON.parse(readFileSync(baselinePath, 'utf8')) as {
-			branch?: string | null;
-			head?: string | null;
-		};
-		const head = runGit(['rev-parse', 'HEAD'], cwd);
-		const expectedBaselineBranch = branchName === 'HEAD' ? null : branchName;
-		if (
-			head.status !== 0 ||
-			!head.stdout.trim() ||
-			baseline.branch !== expectedBaselineBranch ||
-			baseline.head !== head.stdout.trim()
-		) {
-			return {
+	const head = runGit(['rev-parse', 'HEAD'], cwd);
+	const expectedBaselineBranch = branchName === 'HEAD' ? null : branchName;
+	let readable = false;
+	for (const baselinePath of baselinePaths) {
+		try {
+			const baseline = JSON.parse(readFileSync(baselinePath, 'utf8')) as {
+				branch?: string | null;
+				head?: string | null;
+			};
+			readable = true;
+			if (
+				head.status === 0 &&
+				head.stdout.trim() &&
+				baseline.branch === expectedBaselineBranch &&
+				baseline.head === head.stdout.trim()
+			)
+				return { ok: true };
+		} catch {
+			// An unreadable baseline belongs to no session; keep looking for a matching one.
+		}
+	}
+	return readable
+		? {
 				ok: false,
 				reason: 'git-safety-baseline-mismatch',
-				message: 'BLOCKED: Git Safety baseline does not match the current branch or HEAD',
+				message: 'BLOCKED: no Git Safety baseline matches the current branch and HEAD',
+			}
+		: {
+				ok: false,
+				reason: 'invalid-git-safety-baseline',
+				message: 'BLOCKED: Git Safety baseline is unreadable; refusing synchronization',
 			};
-		}
-	} catch {
-		return {
-			ok: false,
-			reason: 'invalid-git-safety-baseline',
-			message: 'BLOCKED: Git Safety baseline is unreadable; refusing synchronization',
-		};
-	}
-
-	return { ok: true };
 }
 
 /**
  * Describe synchronization using local refs by default. With --apply, fetch origin/develop and
- * fast-forward or rebase the current branch onto it, then print compact managed status.
+ * merge it into the current branch (or fast-forward / rebase on request), then print compact
+ * managed status.
  */
 export function runLaneSync(options: LaneSyncOptions = {}): LaneSyncResult {
 	const cwd = options.cwd ?? process.cwd();
+	if (options.ffOnly && options.rebase) {
+		return {
+			gitOk: false,
+			gitMode: 'skipped',
+			statusRan: false,
+			statusSkippedReason: 'conflicting-sync-modes',
+			stdout: 'BLOCKED: choose only one of --ff-only or --rebase',
+		};
+	}
 	if (options.dryRun === false && options.apply !== true) {
 		return {
 			gitOk: false,
@@ -282,7 +343,7 @@ export function runLaneSync(options: LaneSyncOptions = {}): LaneSyncResult {
 	const sync = syncOntoDevelop({
 		cwd,
 		dryRun,
-		ffOnly: options.ffOnly,
+		mode: resolveSyncMode(options),
 		runGit: options.runGit ?? defaultRunGit,
 	});
 	if (!sync.gitOk) {
