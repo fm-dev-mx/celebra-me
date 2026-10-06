@@ -57,6 +57,7 @@ _tmp_*
 .playwright-mcp/
 .playwright-cli/
 output/playwright/
+playwright/.auth/
 .cache/
 .jest/
 .npm/
