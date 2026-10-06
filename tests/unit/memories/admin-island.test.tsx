@@ -64,6 +64,8 @@ const OPEN_SPACE: MemoriesSpaceRecord = {
 	entitlement: 'package',
 	expectedGuests: null,
 	adminNote: null,
+	shareVersion: 0,
+	shareEnabledAt: null,
 	createdAt: '2020-01-01T00:00:00.000Z',
 	updatedAt: '2020-01-01T00:00:00.000Z',
 	maxEventObjects: 2000,

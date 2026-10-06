@@ -310,20 +310,67 @@ export const memoriesCapacityCopy = {
 
 export const memoriesHostCopy = {
 	eyebrow: 'Resumen',
+	statusTitle: 'Estado',
 	photos: 'Fotos',
 	videos: 'Videos',
-	guests: 'Invitados que compartieron',
-	capacity: 'Espacio disponible',
+	guests: 'Invitados',
+	spaceUsed: 'Espacio usado',
+	spaceUsedLabel: (percent: number) => `${percent} % del espacio usado`,
+	nearFull: (remaining: number) =>
+		`Queda ${remaining} % del espacio. Le recomendamos descargar lo recibido para tener una copia.`,
+	full: 'El álbum está lleno y sus invitados ya no pueden subir archivos. Todo lo recibido está a salvo; si necesita más espacio, escríbanos.',
+	timelineLabel: 'Fechas del espacio de recuerdos',
+	opens: (past: boolean) => (past ? 'Abrió' : 'Abre'),
+	closes: (past: boolean) => (past ? 'Cerró' : 'Cierra'),
+	deletes: 'Se borra',
 	lastUpload: (date: string) => `Última subida: ${date}`,
-	shareTitle: 'Enlace para sus invitados',
-	downloadQr: 'Descargar QR',
-	copyUrl: 'Copiar enlace',
-	copied: 'Enlace copiado.',
+	noUploads: 'Aún no hay subidas.',
 	loadError: 'No se pudo cargar el resumen.',
+	retry: 'Reintentar',
 	deletionCountdown: (days: number) =>
 		days === 1
 			? 'Sus recuerdos se eliminan mañana. Descárguelos ahora.'
 			: `Sus recuerdos se eliminan en ${days} días. Descárguelos ahora.`,
+} as const;
+
+export const memoriesShareCopy = {
+	title: 'Galería para sus invitados',
+	offBody:
+		'Comparta un enlace para que sus invitados vean las fotos y videos disponibles. Lo que usted oculte no aparece.',
+	onBody: 'Cualquier persona con este enlace puede ver la galería hasta que se borren los recuerdos.',
+	enable: 'Compartir galería',
+	copy: 'Copiar enlace',
+	copied: 'Enlace copiado.',
+	rotate: 'Generar enlace nuevo',
+	rotateHint: 'El enlace anterior dejará de funcionar.',
+	disable: 'Dejar de compartir',
+	open: 'Abrir galería',
+	error: 'No se pudo cambiar el enlace. Intente de nuevo.',
+	notConfigured: 'La galería compartida todavía no está disponible. Escríbanos para activarla.',
+} as const;
+
+export const memoriesQrCopy = {
+	title: 'QR para sus invitados',
+	alt: 'Código QR de la página de recuerdos',
+	viewAndPrint: 'Ver e imprimir',
+	copyUrl: 'Copiar enlace',
+	copied: 'Enlace copiado.',
+	downloadQr: 'Descargar QR',
+	print: 'Imprimir tarjeta',
+	modalSubtitle: 'Imprímalo y colóquelo donde sus invitados lo vean.',
+	placementTitle: 'Cómo colocarlo',
+	placementSteps: [
+		'Imprima la tarjeta en tamaño media carta o mayor; el código debe medir al menos 4 cm.',
+		'Colóquela donde la gente espera: en cada mesa, en la entrada y junto a la pista.',
+		'Pruébela antes del evento con dos teléfonos distintos, con la luz del salón.',
+		'Pida que lo anuncien el maestro de ceremonias o el DJ después del primer baile.',
+	],
+	printPreviewTitle: 'Tarjeta para imprimir',
+	printEyebrow: 'Comparta sus fotos',
+	printBody:
+		'Abra la cámara de su teléfono, apunte al código y suba las fotos y videos que tomó hoy.',
+	printNoApp: 'No necesita descargar ninguna aplicación.',
+	close: 'Cerrar',
 } as const;
 
 export { DECIMAL_GB as MEMORIES_DECIMAL_GB, BINARY_MB as MEMORIES_BINARY_MB };
