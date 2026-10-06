@@ -393,6 +393,7 @@ const shouldRenderHidden =
 
 <script>
 	import { setupCollectorReveal } from './editorial-cover/collector-reveal';
+	import { isVisualCaptureMode } from '@/lib/invitation/visual-capture-mode';
 
 	const EXIT_ANIMATION_MS = 1600;
 	const EXIT_COMPLETION_FALLBACK_MS = EXIT_ANIMATION_MS + 600;
@@ -491,6 +492,8 @@ const shouldRenderHidden =
 
 			// Check localStorage skip (same as envelope)
 			const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+			// Capture tooling must not meet a timer-scheduled idle cue mid-animation.
+			const collectorReducedMotion = motionPreference || isVisualCaptureMode();
 			const storageKey = 'envelope-opened-' + eventSlug;
 			const stored = (() => {
 				try {
@@ -530,7 +533,7 @@ const shouldRenderHidden =
 				setupCollectorReveal({
 					root: this,
 					openButton,
-					reducedMotion: motionPreference,
+					reducedMotion: collectorReducedMotion,
 					onCommit: () => {
 						focusWasInside = this.contains(document.activeElement);
 						if (openButton) {

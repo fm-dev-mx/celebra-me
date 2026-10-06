@@ -1,8 +1,9 @@
-import { useReducedMotion, AnimatePresence, motion } from 'framer-motion';
+import { useReducedMotion, AnimatePresence, motion, MotionGlobalConfig } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRsvpSubmission } from '@/hooks/use-rsvp-submission';
 import { useGatedLocation } from '@/hooks/use-gated-location';
 import { getCardAwareScrollTop, doubleRaf } from '@/lib/dom/viewport';
+import { isVisualCaptureMode } from '@/lib/invitation/visual-capture-mode';
 import '@/styles/invitation/_rsvp.scss';
 
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
@@ -22,6 +23,10 @@ import {
 	type RevealedLocation,
 } from '@/components/invitation/RSVPComponents';
 import type { RsvpVariant } from '@/lib/invitation/section-variants';
+
+// Reference captures need entrance motion settled; skipping it completes animations instantly
+// without changing server-rendered markup, so hydration stays identical.
+if (isVisualCaptureMode()) MotionGlobalConfig.skipAnimations = true;
 
 interface RSVPProps {
 	eventType: EventRecord['eventType'];

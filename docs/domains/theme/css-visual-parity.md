@@ -53,6 +53,12 @@ content. The persisted field `tableNumber` names this gift-registry event identi
 seating; it remains unchanged for compatibility. A regression check requires identifier geometry and
 document height to remain unchanged across the first PNG.
 
+Capture tooling marks the page as an audit capture (`__celebraScreenshotMode`). In that mode the app
+settles JS-driven motion that Playwright's `animations: 'disabled'` cannot reach: framer-motion
+completes animations instantly (`MotionGlobalConfig.skipAnimations`) and the editorial-cover
+collector schedules no idle cues. Styles and server markup are unchanged. Captured mid-flight, such
+motion shifted text by fractional or whole pixels between CI runs.
+
 Viewport and complete-page captures require two consecutive visually stable PNGs before baseline
 comparison. Stabilization requires identical dimensions and zero perceptually changed pixels using
 Playwright's default YIQ color threshold (0.2), without a changed-pixel allowance. Byte identity is
