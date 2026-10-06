@@ -48,116 +48,122 @@ const UsersAdminTable: React.FC = () => {
 			</div>
 			{error && !credentialsUser && <p className="dashboard-error">{error}</p>}
 			{loading && <p className="dashboard-status">Cargando...</p>}
-			<table className="dashboard-table">
-				<thead>
-					<tr>
-						<th>Acceso</th>
-						<th>Rol</th>
-						<th>Eventos asignados</th>
-						<th>Acciones</th>
-						<th>Creado</th>
-					</tr>
-				</thead>
-				<tbody>
-					{items.map((item) => (
-						<tr key={item.id}>
-							<td>{item.email}</td>
-							<td>
-								<select
-									value={item.role ?? ''}
-									onChange={(event) => {
-										const role = event.target.value as AppUserRole;
-										void updateUserRole(item.id, role);
-									}}
-									disabled={loading || updatingUserId === item.id}
-									aria-label={`Rol de ${item.email}`}
-								>
-									<option value="" disabled>
-										Sin rol asignado
-									</option>
-									<option value="host_client">Anfitrión</option>
-									<option value="super_admin">Administrador</option>
-								</select>
-							</td>
-							<td>
-								<div className="dashboard-assigned-events">
-									{item.assignedEvents.map((event) => (
-										<span key={event.eventId} className="dashboard-event-chip">
-											{event.title}
-											<button
-												type="button"
-												className="dashboard-event-chip__remove"
-												onClick={() => {
-													void updateUserEventMembership(item.id, {
-														eventId: event.eventId,
-														action: 'remove',
-													});
-												}}
-												disabled={loading || updatingUserId === item.id}
-												aria-label={`Quitar ${event.title} de ${item.email}`}
-											>
-												Quitar
-											</button>
-										</span>
-									))}
-									{item.assignedEvents.length === 0 && (
-										<span>Sin eventos asignados.</span>
-									)}
-								</div>
-								<div className="dashboard-assign-event-row">
-									<select
-										defaultValue=""
-										disabled={loading || updatingUserId === item.id}
-										onChange={(event) => {
-											const eventId = event.target.value;
-											if (!eventId) return;
-											void updateUserEventMembership(item.id, {
-												eventId,
-												action: 'assign',
-												membershipRole: 'manager',
-											});
-											event.currentTarget.value = '';
-										}}
-										aria-label={`Asignar evento a ${item.email}`}
-									>
-										<option value="">Asignar evento...</option>
-										{events
-											.filter(
-												(event) =>
-													!item.assignedEvents.some(
-														(assigned) => assigned.eventId === event.id,
-													),
-											)
-											.map((event) => (
-												<option key={event.id} value={event.id}>
-													{event.title} ({event.slug})
-												</option>
-											))}
-									</select>
-									<small>Se asigna como acceso de tipo manager.</small>
-								</div>
-							</td>
-							<td>
-								<button
-									type="button"
-									className="btn-secondary btn--compact"
-									disabled={loading || updatingUserId === item.id}
-									onClick={() => openCredentials(item)}
-									aria-label={`Credenciales de ${item.email}`}
-								>
-									Credenciales
-								</button>
-							</td>
-							<td>{new Date(item.createdAt).toLocaleString('es-MX')}</td>
-						</tr>
-					))}
-					{items.length === 0 && !loading && (
+			<div className="dashboard-table-wrap">
+				<table className="dashboard-table">
+					<thead>
 						<tr>
-							<td colSpan={5}>No hay usuarios registrados.</td>
+							<th>Acceso</th>
+							<th>Rol</th>
+							<th>Eventos asignados</th>
+							<th>Acciones</th>
+							<th>Creado</th>
 						</tr>
-					)}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						{items.map((item) => (
+							<tr key={item.id}>
+								<td>{item.email}</td>
+								<td>
+									<select
+										value={item.role ?? ''}
+										onChange={(event) => {
+											const role = event.target.value as AppUserRole;
+											void updateUserRole(item.id, role);
+										}}
+										disabled={loading || updatingUserId === item.id}
+										aria-label={`Rol de ${item.email}`}
+									>
+										<option value="" disabled>
+											Sin rol asignado
+										</option>
+										<option value="host_client">Anfitrión</option>
+										<option value="super_admin">Administrador</option>
+									</select>
+								</td>
+								<td>
+									<div className="dashboard-assigned-events">
+										{item.assignedEvents.map((event) => (
+											<span
+												key={event.eventId}
+												className="dashboard-event-chip"
+											>
+												{event.title}
+												<button
+													type="button"
+													className="dashboard-event-chip__remove"
+													onClick={() => {
+														void updateUserEventMembership(item.id, {
+															eventId: event.eventId,
+															action: 'remove',
+														});
+													}}
+													disabled={loading || updatingUserId === item.id}
+													aria-label={`Quitar ${event.title} de ${item.email}`}
+												>
+													Quitar
+												</button>
+											</span>
+										))}
+										{item.assignedEvents.length === 0 && (
+											<span>Sin eventos asignados.</span>
+										)}
+									</div>
+									<div className="dashboard-assign-event-row">
+										<select
+											defaultValue=""
+											disabled={loading || updatingUserId === item.id}
+											onChange={(event) => {
+												const eventId = event.target.value;
+												if (!eventId) return;
+												void updateUserEventMembership(item.id, {
+													eventId,
+													action: 'assign',
+													membershipRole: 'manager',
+												});
+												event.currentTarget.value = '';
+											}}
+											aria-label={`Asignar evento a ${item.email}`}
+										>
+											<option value="">Asignar evento...</option>
+											{events
+												.filter(
+													(event) =>
+														!item.assignedEvents.some(
+															(assigned) =>
+																assigned.eventId === event.id,
+														),
+												)
+												.map((event) => (
+													<option key={event.id} value={event.id}>
+														{event.title} ({event.slug})
+													</option>
+												))}
+										</select>
+										<small>Se asigna como acceso de tipo manager.</small>
+									</div>
+								</td>
+								<td>
+									<button
+										type="button"
+										className="btn-secondary btn--compact"
+										disabled={loading || updatingUserId === item.id}
+										onClick={() => openCredentials(item)}
+										aria-label={`Credenciales de ${item.email}`}
+									>
+										Credenciales
+									</button>
+								</td>
+								<td>{new Date(item.createdAt).toLocaleString('es-MX')}</td>
+							</tr>
+						))}
+						{items.length === 0 && !loading && (
+							<tr>
+								<td colSpan={5}>No hay usuarios registrados.</td>
+							</tr>
+						)}
+					</tbody>
+				</table>
+			</div>
 			{credentialsUser && !createdUser && (
 				<UserCredentialsModal
 					user={credentialsUser}

@@ -132,49 +132,49 @@ async function saveLoginState(options: CliOptions): Promise<void> {
 	console.log(`Storage state saved to ${options.storageState}`);
 }
 
+// The page-side script is a plain string: tsx/esbuild would otherwise inject a
+// `__name` helper into the inner arrow function, which does not exist in the page.
+const MEASURE_PAGE_SCRIPT = `(({ selector, minSize }) => {
+	const root = document.documentElement;
+	const viewportWidth = root.clientWidth;
+	const horizontalOverflow = root.scrollWidth > viewportWidth;
+	const describe = (el) => {
+		const text = (el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 40);
+		const firstClass = typeof el.className === 'string' ? el.className.split(/\\s+/)[0] : '';
+		const cls = firstClass ? '.' + firstClass : '';
+		return el.tagName.toLowerCase() + cls + (text ? ' "' + text + '"' : '');
+	};
+	const overflowingElements = [];
+	if (horizontalOverflow) {
+		for (const el of Array.from(document.body.querySelectorAll('*'))) {
+			const rect = el.getBoundingClientRect();
+			if (rect.width > 0 && rect.right > viewportWidth + 1) {
+				overflowingElements.push(describe(el));
+				if (overflowingElements.length >= 12) break;
+			}
+		}
+	}
+	const smallTargets = [];
+	for (const el of Array.from(document.querySelectorAll(selector))) {
+		const rect = el.getBoundingClientRect();
+		const style = getComputedStyle(el);
+		if (rect.width === 0 || rect.height === 0 || style.visibility === 'hidden') continue;
+		// Off-canvas controls (closed drawer) are not reachable targets.
+		if (rect.right <= 0 || rect.left >= viewportWidth) continue;
+		if (rect.width < minSize || rect.height < minSize) {
+			smallTargets.push({
+				element: describe(el),
+				width: Math.round(rect.width),
+				height: Math.round(rect.height),
+			});
+		}
+	}
+	return { horizontalOverflow, overflowingElements, smallTargets };
+})`;
+
 function measurePage(page: Page): Promise<PageMeasurements> {
-	return page.evaluate(
-		({ selector, minSize }) => {
-			const root = document.documentElement;
-			const viewportWidth = root.clientWidth;
-			const horizontalOverflow = root.scrollWidth > viewportWidth;
-			const describe = (el: Element) => {
-				const text = (el.getAttribute('aria-label') ?? el.textContent ?? '')
-					.trim()
-					.slice(0, 40);
-				const firstClass =
-					typeof el.className === 'string' ? el.className.split(/\s+/)[0] : '';
-				const cls = firstClass ? `.${firstClass}` : '';
-				return `${el.tagName.toLowerCase()}${cls}${text ? ` "${text}"` : ''}`;
-			};
-			const overflowingElements: string[] = [];
-			if (horizontalOverflow) {
-				for (const el of Array.from(document.body.querySelectorAll('*'))) {
-					const rect = el.getBoundingClientRect();
-					if (rect.width > 0 && rect.right > viewportWidth + 1) {
-						overflowingElements.push(describe(el));
-						if (overflowingElements.length >= 12) break;
-					}
-				}
-			}
-			const smallTargets: { element: string; width: number; height: number }[] = [];
-			for (const el of Array.from(document.querySelectorAll(selector))) {
-				const rect = el.getBoundingClientRect();
-				const style = getComputedStyle(el);
-				if (rect.width === 0 || rect.height === 0 || style.visibility === 'hidden')
-					continue;
-				if (rect.width < minSize || rect.height < minSize) {
-					smallTargets.push({
-						element: describe(el),
-						width: Math.round(rect.width),
-						height: Math.round(rect.height),
-					});
-				}
-			}
-			return { horizontalOverflow, overflowingElements, smallTargets };
-		},
-		{ selector: INTERACTIVE_SELECTOR, minSize: MIN_TOUCH_TARGET_PX },
-	);
+	const args = JSON.stringify({ selector: INTERACTIVE_SELECTOR, minSize: MIN_TOUCH_TARGET_PX });
+	return page.evaluate(`${MEASURE_PAGE_SCRIPT}(${args})`) as Promise<PageMeasurements>;
 }
 
 async function auditRoute(

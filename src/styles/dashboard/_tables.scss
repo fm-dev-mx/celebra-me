@@ -118,3 +118,8 @@
 	align-items: center;
 	margin-top: 0.5rem;
 }
+
+/* Wide admin tables scroll inside their card instead of the page */
+.dashboard-table-wrap {
+	overflow-x: auto;
+}

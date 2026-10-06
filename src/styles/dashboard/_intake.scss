@@ -912,3 +912,11 @@
 		font-weight: 600;
 	}
 }
+
+/* Touch layouts: list tabs and search reach the 44px target */
+@include mixins.respond-below(lg) {
+	.intake-list__tab,
+	.intake-list__search-input {
+		min-height: 44px;
+	}
+}

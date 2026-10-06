@@ -514,3 +514,11 @@
 		justify-content: start;
 	}
 }
+
+/* Touch layouts: tabs and search fields reach the 44px target */
+@include mixins.respond-below(lg) {
+	.tab-btn,
+	.commercial-dashboard input:not([type='checkbox'], [type='radio'], [type='hidden']) {
+		min-height: 44px;
+	}
+}

@@ -273,7 +273,7 @@
 	font-size: 1.15rem;
 }
 
-.canonical-status__environment-card dl {
+.canonical-status__environment-card .canonical-status__status-list {
 	display: grid;
 	gap: var(--spacing-xs);
 	margin: 0;
