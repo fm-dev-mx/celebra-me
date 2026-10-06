@@ -32,6 +32,11 @@ import {
 	visualSuiteMode,
 } from './harness/visual-capture-record';
 import {
+	collectCaptureGeometry,
+	shouldProbeCaptureGeometry,
+	writeCaptureGeometry,
+} from './harness/capture-geometry-probe';
+import {
 	recordVisualCapture,
 	settleVisualCaptureWithRecapture,
 } from './harness/visual-capture-settlement';
@@ -52,12 +57,14 @@ function isExpectedVisualDependency(rawUrl: string, documentOrigin: string): boo
 		return false;
 	}
 }
-function getSectionLocator(page: Page, section: CanonicalVariantSection) {
-	if (section === 'hero') {
-		return page.locator('#inicio, section.invitation-hero, [data-screenshot-section="hero"]');
-	}
+function getSectionSelector(section: CanonicalVariantSection): string {
+	if (section === 'hero')
+		return '#inicio, section.invitation-hero, [data-screenshot-section="hero"]';
 	const componentName = section === 'personalizedAccess' ? 'personalized-access' : section;
-	return page.locator(`.invitation-section-wrapper[data-section-kind="${componentName}"]`);
+	return `.invitation-section-wrapper[data-section-kind="${componentName}"]`;
+}
+function getSectionLocator(page: Page, section: CanonicalVariantSection) {
+	return page.locator(getSectionSelector(section));
 }
 
 test('gift registry event identifier geometry stays fixed during the first complete-page capture', async ({
@@ -504,6 +511,11 @@ async function runVariantVisualTest(
 
 	// 8. Capture the viewport image, compare it and record it for the run manifest
 	const snapshotName = visualVariantCaseFile({ preset, viewport: vp.name, section, variant });
+	// Layout inputs just before the first capture, recorded only for local probe loops.
+	const geometryBeforeCapture =
+		process.env.VISUAL_GEOMETRY_PROBE === '1'
+			? await collectCaptureGeometry(page, getSectionSelector(section))
+			: undefined;
 	const captureStarted = Date.now();
 	const viewportSnapshotBuffer = await captureStablePage(page);
 	const captureMs = Date.now() - captureStarted;
@@ -518,6 +530,15 @@ async function runVariantVisualTest(
 			return captureStablePage(page);
 		},
 	});
+	if (shouldProbeCaptureGeometry(settlement.comparisonResult)) {
+		await writeCaptureGeometry(
+			test.info(),
+			page,
+			getSectionSelector(section),
+			settlement.observedSha256,
+			geometryBeforeCapture,
+		);
+	}
 	const syntheticEvent = buildSyntheticVariantEvent({
 		section,
 		variant,

@@ -117,6 +117,16 @@ export async function waitForVisualHydration(page: Page): Promise<void> {
 				.filter((image) => image.complete && image.naturalWidth > 0)
 				.map((image) => image.decode().catch(() => undefined)),
 		);
+		// The fixed capture clock barely advances the animation timeline, so entrance animations
+		// are still running at capture time and each screenshot depended on Playwright
+		// fast-forwarding them in that instant. Finishing finite animations here makes the
+		// captured state their end state deterministically; infinite ones stay with Playwright.
+		for (const animation of document.getAnimations()) {
+			const { iterations } = animation.effect?.getComputedTiming() ?? {};
+			if (Number.isFinite(iterations) && animation.playState !== 'finished') {
+				animation.finish();
+			}
+		}
 		await new Promise<void>((resolve) =>
 			requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
 		);
