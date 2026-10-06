@@ -3,7 +3,7 @@
  * console and host summary). Guest-facing copy stays in `copy.ts`.
  */
 
-import type { MemoriesWindowState } from './contract/catalog';
+import type { MemoriesConfigKey, MemoriesWindowState, MemoriesWorkerKey } from './contract/catalog';
 import { type MemoriesEntitlement } from './contract/limits';
 import {
 	BINARY_MB,
@@ -161,6 +161,81 @@ export function describeMemoriesLoadError(failure: {
 			'Confirme que el servidor de desarrollo y Supabase estén en marcha («pnpm db:start»).',
 			'Revise la terminal de «pnpm dev» (o los registros de Vercel) y busque «[rsvp]» para ver la causa.',
 			'Use «Reintentar» después de corregirla.',
+		],
+	};
+}
+
+const SECRET_COMMAND =
+	"node -e \"console.log(require('crypto').randomBytes(32).toString('base64url'))\"";
+const KEY_PAIR_COMMAND =
+	"node -e \"const k=require('crypto').generateKeyPairSync('ec',{namedCurve:'prime256v1'});console.log(k.privateKey.export({type:'pkcs8',format:'pem'}));console.log(k.publicKey.export({type:'spki',format:'pem'}))\"";
+const STORE_IN_APP =
+	'Guárdela en .env.local (Local) o en Vercel → Settings → Environment Variables como Sensitive (Preview y Producción) y vuelva a desplegar la app.';
+
+/** One actionable notice per missing setting; names and commands only, never values. */
+export function describeMemoriesConfigGap(key: MemoriesConfigKey): MemoriesLoadErrorGuide {
+	switch (key) {
+		case 'shareSecret':
+			return {
+				title: 'Falta MEMORIES_SHARE_SECRET: la galería compartida está desactivada.',
+				steps: [
+					`Genere un valor de al menos 32 bytes: ${SECRET_COMMAND}`,
+					STORE_IN_APP,
+					'Cambiarlo invalida todos los enlaces de galería ya compartidos.',
+				],
+			};
+		case 'uploadOrigin':
+			return {
+				title: 'Falta MEMORIES_PRIVATE_UPLOAD_ORIGIN: los invitados no pueden subir recuerdos.',
+				steps: [
+					'Local: ejecute «pnpm worker:memories-sign:dev» y use http://127.0.0.1:8787.',
+					'Preview y Producción: use la URL que muestra «wrangler deploy» del Worker de firma (solo el origen, sin ruta).',
+					STORE_IN_APP,
+				],
+			};
+		case 'retrievalOrigin':
+			return {
+				title: 'Falta MEMORIES_PRIVATE_RETRIEVAL_ORIGIN: no se pueden ver, descargar ni limpiar recuerdos.',
+				steps: [
+					'Local: ejecute «pnpm worker:memories-retrieve:dev» y use http://127.0.0.1:8788.',
+					'Preview y Producción: use la URL que muestra «wrangler deploy» del Worker de lectura (solo el origen, sin ruta).',
+					STORE_IN_APP,
+				],
+			};
+		case 'uploadSigningKey':
+		case 'retrievalSigningKey': {
+			const upload = key === 'uploadSigningKey';
+			const name = upload
+				? 'MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY'
+				: 'MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY';
+			const worker = upload ? 'celebra-memories-sign' : 'celebra-memories-retrieve';
+			const publicName = upload
+				? 'MEMORIES_UPLOAD_REQUEST_VERIFY_PUBLIC_KEY'
+				: 'MEMORIES_RETRIEVAL_REQUEST_VERIFY_PUBLIC_KEY';
+			return {
+				title: `Falta o no es válida ${name}: la app no puede hablar con el Worker de ${upload ? 'firma' : 'lectura'}.`,
+				steps: [
+					`Genere un par P-256 nuevo: ${KEY_PAIR_COMMAND}`,
+					`La llave privada va a la app: ${STORE_IN_APP}`,
+					`La pública va al Worker: en Local, workers/${worker}/.dev.vars; en Preview y Producción, «wrangler secret put ${publicName} --env <entorno>».`,
+				],
+			};
+		}
+		case 'cronSecret':
+			return {
+				title: 'Falta CRON_SECRET: la limpieza diaria no borra los recuerdos vencidos.',
+				steps: [`Genere un valor aleatorio: ${SECRET_COMMAND}`, STORE_IN_APP],
+			};
+	}
+}
+
+export function describeMemoriesWorkerUnreachable(key: MemoriesWorkerKey): MemoriesLoadErrorGuide {
+	const upload = key === 'uploadOrigin';
+	return {
+		title: `El Worker de ${upload ? 'firma' : 'lectura'} no responde: ${upload ? 'las subidas' : 'las vistas, descargas y la limpieza'} fallan.`,
+		steps: [
+			`Local: ejecute «pnpm worker:memories-${upload ? 'sign' : 'retrieve'}:dev».`,
+			'Preview y Producción: revise el despliegue con «wrangler deployments list --env <entorno>» y que el origen configurado sea el del Worker.',
 		],
 	};
 }

@@ -194,6 +194,25 @@ export interface MemoriesOrganizerListQuery {
 	createdTo?: string;
 }
 
+/** Server configuration the memories module needs; names only, never values. */
+export const MEMORIES_CONFIG_KEYS = [
+	'uploadOrigin',
+	'retrievalOrigin',
+	'uploadSigningKey',
+	'retrievalSigningKey',
+	'shareSecret',
+	'cronSecret',
+] as const;
+export type MemoriesConfigKey = (typeof MEMORIES_CONFIG_KEYS)[number];
+export type MemoriesWorkerKey = 'uploadOrigin' | 'retrievalOrigin';
+
+/** Super-admin view of what is missing. It names settings and never carries their values. */
+export interface MemoriesReadiness {
+	missing: MemoriesConfigKey[];
+	/** Configured Worker origins that did not answer. */
+	unreachable: MemoriesWorkerKey[];
+}
+
 /** What a shared-gallery visitor sees of each file: no aliases, keys or status. */
 export type MemoriesGalleryItem = Pick<
 	MemoriesOrganizerItem,

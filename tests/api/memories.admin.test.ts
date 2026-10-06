@@ -7,6 +7,10 @@ jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({
 	requireAdminRateLimit: jest.fn(),
 }));
 
+jest.mock('@/lib/memories/server/readiness.service', () => ({
+	checkMemoriesReadiness: jest.fn(),
+}));
+
 jest.mock('@/lib/memories/server/admin.service', () => ({
 	createMemorySpaceAdmin: jest.fn(),
 	listMemorySpaceCandidatesAdmin: jest.fn(),
@@ -28,6 +32,7 @@ import {
 	listMemorySpacesAdmin,
 	updateMemorySpaceAdmin,
 } from '@/lib/memories/server/admin.service';
+import { checkMemoriesReadiness } from '@/lib/memories/server/readiness.service';
 import { GET as getSpaces, POST as postSpace } from '@/pages/api/dashboard/admin/memories/index';
 import { PATCH as patchSpace } from '@/pages/api/dashboard/admin/memories/[eventId]';
 import { createMockRequest } from '../helpers/api-mocks';
@@ -47,6 +52,7 @@ const mockCandidates = listMemorySpaceCandidatesAdmin as jest.MockedFunction<
 	typeof listMemorySpaceCandidatesAdmin
 >;
 const mockListSpaces = listMemorySpacesAdmin as jest.MockedFunction<typeof listMemorySpacesAdmin>;
+const mockReadiness = checkMemoriesReadiness as jest.MockedFunction<typeof checkMemoriesReadiness>;
 const mockUpdate = updateMemorySpaceAdmin as jest.MockedFunction<typeof updateMemorySpaceAdmin>;
 
 const BASE_URL = 'https://celebra-me.com/api/dashboard/admin/memories';
@@ -124,6 +130,7 @@ beforeEach(() => {
 	mockMutationAccess.mockResolvedValue(adminSession);
 	mockListSpaces.mockResolvedValue({ items: [adminItem], totals });
 	mockCandidates.mockResolvedValue([candidate]);
+	mockReadiness.mockResolvedValue({ missing: ['shareSecret'], unreachable: ['uploadOrigin'] });
 });
 
 describe('GET /api/dashboard/admin/memories', () => {
@@ -137,6 +144,7 @@ describe('GET /api/dashboard/admin/memories', () => {
 			items: [adminItem],
 			totals,
 			candidates: [candidate],
+			readiness: { missing: ['shareSecret'], unreachable: ['uploadOrigin'] },
 		});
 		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 		expect(mockAdminRateLimit).toHaveBeenCalledWith(request, 'memories:list');
@@ -157,6 +165,7 @@ describe('GET /api/dashboard/admin/memories', () => {
 		expect(mockStrongSession).not.toHaveBeenCalled();
 		expect(mockListSpaces).not.toHaveBeenCalled();
 		expect(mockCandidates).not.toHaveBeenCalled();
+		expect(mockReadiness).not.toHaveBeenCalled();
 	});
 
 	it('answers a weak or non-admin session with a 403 without listing', async () => {
@@ -170,6 +179,7 @@ describe('GET /api/dashboard/admin/memories', () => {
 		await expect(response.json()).resolves.toMatchObject({ error: { code: 'forbidden' } });
 		expect(mockListSpaces).not.toHaveBeenCalled();
 		expect(mockCandidates).not.toHaveBeenCalled();
+		expect(mockReadiness).not.toHaveBeenCalled();
 	});
 });
 

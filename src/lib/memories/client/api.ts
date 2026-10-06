@@ -13,6 +13,7 @@ import type {
 	MemoriesMediaPublicItem,
 	MemoriesOrganizerListResponse,
 	MemoriesOrganizerUploader,
+	MemoriesReadiness,
 	MemoriesSpaceHostSummary,
 	MemoriesSpaceRecord,
 	MemoriesSpaceSummary,
@@ -323,6 +324,8 @@ export type AdminSpaceList = {
 	items: MemoriesAdminSpaceItem[];
 	totals: MemoriesAdminTotals;
 	candidates: AdminSpaceCandidate[];
+	/** Settings the module is missing; absent from servers before readiness existed. */
+	readiness?: MemoriesReadiness;
 };
 
 export const memoriesAdminApi = {

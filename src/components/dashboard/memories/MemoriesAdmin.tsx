@@ -5,6 +5,7 @@ import {
 	resolveMemoriesWindowState,
 	type MemoriesAdminSpaceItem,
 	type MemoriesAdminTotals,
+	type MemoriesReadiness,
 } from '@/lib/memories/contract/catalog';
 import { buildMemoriesPublicUrl } from '@/lib/memories/contract/private-request';
 import {
@@ -26,6 +27,7 @@ import MemorySpaceCard, {
 } from '@/components/dashboard/memories/MemorySpaceCard';
 import { committedMemoriesBytes } from '@/lib/memories/contract/capacity';
 import MemorySpaceFormModal from '@/components/dashboard/memories/MemorySpaceFormModal';
+import MemoriesConfigNotices from '@/components/dashboard/memories/MemoriesConfigNotices';
 import {
 	formFromSpace,
 	type MemorySpaceCommitment,
@@ -55,6 +57,7 @@ function MemoriesAdmin() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [loadFailure, setLoadFailure] = useState<MemoriesLoadErrorGuide | null>(null);
+	const [readiness, setReadiness] = useState<MemoriesReadiness | null>(null);
 	const [notice, setNotice] = useState<string | null>(null);
 	const [modal, setModal] = useState<FormModal | null>(null);
 	const [formError, setFormError] = useState<string | null>(null);
@@ -69,6 +72,7 @@ function MemoriesAdmin() {
 			setItems(payload.items);
 			setTotals(payload.totals);
 			setCandidates(payload.candidates);
+			setReadiness(payload.readiness ?? null);
 			setLoadFailure(null);
 		} catch (failure) {
 			setLoadFailure(
@@ -239,6 +243,7 @@ function MemoriesAdmin() {
 					</button>
 				</div>
 			) : null}
+			<MemoriesConfigNotices readiness={readiness} />
 			{error ? (
 				<p className="dashboard-error" role="alert">
 					{error}

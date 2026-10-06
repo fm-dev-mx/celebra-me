@@ -1035,3 +1035,25 @@
 		font-size: 0.82rem;
 	}
 }
+
+.memories-config-notices {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.memories-config-notice {
+	display: grid;
+	justify-content: stretch;
+
+	&__title {
+		font-weight: 600;
+	}
+
+	&__steps {
+		display: grid;
+		gap: 0.3rem;
+		margin: 0;
+		padding-left: 1.25rem;
+		overflow-wrap: anywhere;
+	}
+}

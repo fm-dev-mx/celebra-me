@@ -172,6 +172,38 @@ stored row is the enforced quota and can be raised from the console at any time 
 printed QR. Saving a space that takes the committed total past 10 GB requires an explicit
 acknowledgement in the form.
 
+## Local stack (both Workers plus the app)
+
+Run each Worker in its own terminal; the ports are fixed by the scripts so they never collide:
+
+1. `pnpm worker:memories-sign:dev` serves the Sign Worker on `http://127.0.0.1:8787`.
+2. `pnpm worker:memories-retrieve:dev` serves the Retrieval Worker on `http://127.0.0.1:8788`.
+3. Generate one ECDSA P-256 pair per Worker and the capability secret with the commands the
+   super-admin console prints for each missing setting. Put the private keys,
+   `MEMORIES_PRIVATE_UPLOAD_ORIGIN=http://127.0.0.1:8787`,
+   `MEMORIES_PRIVATE_RETRIEVAL_ORIGIN=http://127.0.0.1:8788` and `MEMORIES_SHARE_SECRET` in
+   `.env.local`; put each public key (and, for the Sign Worker, the capability secret) in that
+   Worker's `.dev.vars`. Both files are gitignored and must never be committed.
+4. Start the app (`pnpm dev`, port 4321). `/dashboard/admin/recuerdos` lists any setting still
+   missing or any Worker that does not answer; an empty list means the stack is ready.
+
+## Thumbnail and shared-gallery rollout order
+
+Thumbnails (`events/<event>/thumbs/<object>.webp`) and the shared gallery are additive. A new app
+against old Workers only loses thumbnails (the old Workers reject the keys and the app falls back to
+originals); new Workers against an old app only accept one more key shape. The schema is the only
+hard dependency:
+
+1. Apply `20261006120000_event_memories_gallery_share` (Preview through `pnpm db:migrate`,
+   Production through `pnpm prod:apply -- --schema`) before the app that selects its columns.
+2. Deploy the Retrieval Worker, then the Sign Worker, for the target environment.
+3. Set `MEMORIES_SHARE_SECRET` in that Vercel environment, then deploy the app.
+4. Confirm `/dashboard/admin/recuerdos` shows no configuration notice.
+
+Rollback: Workers with `wrangler rollback --env <env>` (the app keeps working without thumbnails);
+the app with Vercel's instant rollback. The migration needs no down step: earlier app versions
+ignore the new columns.
+
 ## Organizer retrieval procedure
 
 1. The organizer signs in through the existing dashboard session and selects an event with an active

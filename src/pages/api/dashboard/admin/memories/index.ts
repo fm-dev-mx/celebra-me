@@ -10,6 +10,7 @@ import {
 	listMemorySpaceCandidatesAdmin,
 	listMemorySpacesAdmin,
 } from '@/lib/memories/server/admin.service';
+import { checkMemoriesReadiness } from '@/lib/memories/server/readiness.service';
 
 export const prerender = false;
 
@@ -17,11 +18,12 @@ export const GET: APIRoute = async ({ request }) => {
 	try {
 		await requireAdminRateLimit(request, 'memories:list');
 		await requireAdminStrongSession(request);
-		const [{ items, totals }, candidates] = await Promise.all([
+		const [{ items, totals }, candidates, readiness] = await Promise.all([
 			listMemorySpacesAdmin(),
 			listMemorySpaceCandidatesAdmin(),
+			checkMemoriesReadiness(),
 		]);
-		return withPrivateCache(jsonResponse({ items, totals, candidates }));
+		return withPrivateCache(jsonResponse({ items, totals, candidates, readiness }));
 	} catch (error) {
 		return errorResponse(error);
 	}

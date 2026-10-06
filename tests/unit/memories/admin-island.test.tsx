@@ -431,6 +431,48 @@ describe('MemoriesAdmin island', () => {
 		);
 	});
 
+	it('lists one notice per missing setting with the feature, command and destination', async () => {
+		adminApi.list.mockResolvedValue({
+			items: [adminItem(OPEN_SPACE)],
+			totals: NO_COMMITMENT,
+			candidates: [],
+			readiness: {
+				missing: ['shareSecret', 'uploadOrigin'],
+				unreachable: ['retrievalOrigin'],
+			},
+		});
+
+		render(<MemoriesAdmin />);
+
+		const region = await screen.findByRole('region', {
+			name: 'Configuración pendiente de Recuerdos',
+		});
+		const notices = within(region).getAllByRole('status');
+		expect(notices).toHaveLength(3);
+		expect(notices[0]).toHaveTextContent('Falta MEMORIES_SHARE_SECRET');
+		expect(notices[0]).toHaveTextContent('randomBytes(32)');
+		expect(notices[0]).toHaveTextContent('.env.local');
+		expect(notices[0]).toHaveTextContent('Vercel');
+		expect(notices[1]).toHaveTextContent('Falta MEMORIES_PRIVATE_UPLOAD_ORIGIN');
+		expect(notices[2]).toHaveTextContent('El Worker de lectura no responde');
+	});
+
+	it('shows no configuration notice when nothing is missing', async () => {
+		adminApi.list.mockResolvedValue({
+			items: [adminItem(OPEN_SPACE)],
+			totals: NO_COMMITMENT,
+			candidates: [],
+			readiness: { missing: [], unreachable: [] },
+		});
+
+		render(<MemoriesAdmin />);
+
+		await screen.findByRole('article', { name: 'XV de Sofía' });
+		expect(
+			screen.queryByRole('region', { name: 'Configuración pendiente de Recuerdos' }),
+		).not.toBeInTheDocument();
+	});
+
 	it('explains a failed load with its fix and recovers on retry', async () => {
 		const user = userEvent.setup();
 		adminApi.list
