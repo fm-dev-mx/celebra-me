@@ -37,6 +37,9 @@ const allowedHydratedComponents = new Set([
 	'RSVP',
 	'MemoriesCapture',
 	'MemoriesRecovery',
+	// Read-only shared gallery: fetches its own token-scoped API; imports only contract,
+	// copy and pure client helpers — no server modules.
+	'MemoriesSharedGallery',
 	'InvitationList',
 	'InvitationDetail',
 	'DraftReview',

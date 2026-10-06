@@ -1,6 +1,6 @@
 /**
- * Organizer export: encrypted ZIP batches built in the browser. The passphrase
- * is generated with Web Crypto and never leaves the device.
+ * Organizer export: ZIP batches built in the browser. Encryption is the default;
+ * its passphrase is generated with Web Crypto and never leaves the device.
  */
 
 import {
@@ -63,10 +63,11 @@ export function partitionMemoriesExport<T extends ExportableMediaItem>(items: T[
 	return batches;
 }
 
-export async function createEncryptedMemoriesZip(input: {
+/** Builds one ZIP batch; a null passphrase produces an unencrypted archive. */
+export async function createMemoriesZip(input: {
 	folderName: string;
 	items: ExportableMediaItem[];
-	passphrase: string;
+	passphrase: string | null;
 	fetchItemBlob: (item: ExportableMediaItem) => Promise<Blob>;
 	onProgress?: (progress: BulkExportProgress) => void;
 }): Promise<Blob> {
@@ -83,7 +84,9 @@ export async function createEncryptedMemoriesZip(input: {
 			`El lote supera el límite de ${MEMORIES_ARCHIVE_MAX_BYTES / 1024 / 1024} MiB por descarga masiva.`,
 		);
 	}
-	const encryption = { password: input.passphrase, encryptionStrength: 3 as const };
+	const encryption = input.passphrase
+		? { password: input.passphrase, encryptionStrength: 3 as const }
+		: {};
 	const zipWriter = new ZipWriter(new BlobWriter('application/zip'), {
 		...encryption,
 		zip64: false,

@@ -10,6 +10,9 @@ import {
 	buildMemoriesRecoveryPath,
 } from '@/lib/memories/contract/private-request';
 import { resolvePublicMemorySpace } from '@/lib/memories/server/space.service';
+import MemoriesEventHeader from '@/components/memories/MemoriesEventHeader.astro';
+import { resolveMemoriesEventIdentity } from '@/lib/memories/server/event-identity.service';
+import { resolveMemoriesThemeHead } from '@/lib/memories/server/theme-head';
 
 Astro.response.headers.set('Cache-Control', 'no-store, private');
 
@@ -19,13 +22,16 @@ if (!space) {
 }
 
 const copy = buildMemoriesRecoveryPageCopy({ eventTitle: space.eventTitle });
+const identity = await resolveMemoriesEventIdentity(space);
+const theme = resolveMemoriesThemeHead(identity.preset);
 ---
 
 <Layout
 	title={copy.title}
 	description={copy.description}
 	hideHeader={true}
-	className="theme-preset--jewelry-box-landing"
+	className={theme.className}
+	headLinks={theme.headLinks}
 >
 	<meta name="robots" content={copy.robots} slot="head" />
 
@@ -37,10 +43,12 @@ const copy = buildMemoriesRecoveryPageCopy({ eventTitle: space.eventTitle });
 		<div class="status-page__bg-decoration"></div>
 		<div class="status-page__container">
 			<section class="status-page__card" aria-labelledby="recovery-heading">
-				<header class="status-page__header">
-					<h1 id="recovery-heading" class="status-page__title">{copy.heading}</h1>
-					<p class="status-page__description">{copy.body}</p>
-				</header>
+				<MemoriesEventHeader
+					identity={{ ...identity, coverImage: null }}
+					eyebrow={copy.heading}
+					headingId="recovery-heading"
+					description={copy.body}
+				/>
 
 				<MemoriesRecovery client:load publicSlug={space.publicSlug} />
 

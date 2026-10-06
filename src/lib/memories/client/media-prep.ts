@@ -16,6 +16,11 @@ import {
 	getMemoriesMimePolicy,
 	resolveMemoriesFileMimeType,
 } from '@/lib/memories/contract/media-policy';
+import {
+	MEMORIES_THUMBNAIL_MAX_BYTES,
+	MEMORIES_THUMBNAIL_MAX_DIMENSION_PX,
+	MEMORIES_THUMBNAIL_MIME_TYPE,
+} from '@/lib/memories/contract/object-key';
 import { memoriesCaptureCopy } from '@/lib/memories/copy';
 import { MemoriesRequestError } from './api';
 
@@ -40,7 +45,12 @@ export type MemoriesCaptureIssue =
 	| 'upload_expired'
 	| 'unavailable';
 
-const ISSUE_COPY: Record<MemoriesCaptureIssue, keyof typeof memoriesCaptureCopy> = {
+type CaptureCopy = typeof memoriesCaptureCopy;
+type CaptureTextKey = {
+	[Key in keyof CaptureCopy]: CaptureCopy[Key] extends string ? Key : never;
+}[keyof CaptureCopy];
+
+const ISSUE_COPY: Record<MemoriesCaptureIssue, CaptureTextKey> = {
 	unsupported_type: 'unsupportedType',
 	file_too_large: 'fileTooLarge',
 	video_too_large: 'videoTooLarge',
@@ -245,4 +255,80 @@ export function createSecureClientRequestId(): string {
 	bytes[8] = (bytes[8] & 0x3f) | 0x80;
 	const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
 	return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+const THUMBNAIL_QUALITIES = [0.72, 0.55, 0.4] as const;
+const THUMBNAIL_VIDEO_TIMEOUT_MS = 8_000;
+
+async function captureVideoFrame(file: File): Promise<ImageBitmap> {
+	const objectUrl = URL.createObjectURL(file);
+	const video = document.createElement('video');
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	try {
+		video.muted = true;
+		video.playsInline = true;
+		video.preload = 'auto';
+		await new Promise<void>((resolve, reject) => {
+			timer = setTimeout(
+				() => reject(new Error('video_frame_timeout')),
+				THUMBNAIL_VIDEO_TIMEOUT_MS,
+			);
+			video.onloadeddata = () => {
+				// One second in skips the black first frame many phones record.
+				video.currentTime = Math.min(1, (video.duration || 0) / 2);
+			};
+			video.onseeked = () => resolve();
+			video.onerror = () => reject(new Error('video_frame'));
+			video.src = objectUrl;
+		});
+		return await globalThis.createImageBitmap(video);
+	} finally {
+		clearTimeout(timer);
+		video.removeAttribute('src');
+		video.load();
+		URL.revokeObjectURL(objectUrl);
+	}
+}
+
+/**
+ * Renders a WebP preview of at most 480 px and 96 KiB, or null when the browser
+ * cannot (no WebP encoder, unreadable file). Thumbnails are best effort.
+ */
+export async function createMemoriesThumbnail(file: File): Promise<File | null> {
+	if (typeof document === 'undefined' || typeof globalThis.createImageBitmap !== 'function')
+		return null;
+	const mimeType = resolveMemoriesFileMimeType(file);
+	const policy = mimeType ? getMemoriesMimePolicy(mimeType) : null;
+	if (!policy) return null;
+	let bitmap: ImageBitmap | null = null;
+	const canvas = document.createElement('canvas');
+	try {
+		bitmap =
+			policy.category === 'video'
+				? await captureVideoFrame(file)
+				: await globalThis.createImageBitmap(file, { imageOrientation: 'from-image' });
+		const scale = Math.min(
+			1,
+			MEMORIES_THUMBNAIL_MAX_DIMENSION_PX / Math.max(bitmap.width, bitmap.height),
+		);
+		canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+		canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+		const context = canvas.getContext('2d');
+		if (!context) return null;
+		context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+		for (const quality of THUMBNAIL_QUALITIES) {
+			const blob = await canvasToBlob(canvas, MEMORIES_THUMBNAIL_MIME_TYPE, quality);
+			// Browsers without a WebP encoder silently return PNG.
+			if (blob.type !== MEMORIES_THUMBNAIL_MIME_TYPE) return null;
+			if (blob.size <= MEMORIES_THUMBNAIL_MAX_BYTES)
+				return new File([blob], 'thumbnail.webp', { type: MEMORIES_THUMBNAIL_MIME_TYPE });
+		}
+		return null;
+	} catch {
+		return null;
+	} finally {
+		bitmap?.close();
+		canvas.width = 0;
+		canvas.height = 0;
+	}
 }

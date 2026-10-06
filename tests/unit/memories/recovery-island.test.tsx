@@ -65,8 +65,9 @@ describe('MemoriesRecovery island', () => {
 		await user.type(input, 'abcd-2345-efgh');
 		expect(input).toHaveValue('ABCD-2345-EFGH');
 
-		fireEvent.change(input, { target: { value: ' abcd-2345-efgh ' } });
-		expect(input).toHaveValue(' ABCD-2345-EFGH ');
+		// Pasted codes lose spaces and get their hyphens back.
+		fireEvent.change(input, { target: { value: ' abcd 2345efgh ' } });
+		expect(input).toHaveValue('ABCD-2345-EFGH');
 
 		await user.click(screen.getByRole('button', { name: copy.submit }));
 
