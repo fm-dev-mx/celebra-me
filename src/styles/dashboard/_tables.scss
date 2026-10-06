@@ -80,17 +80,6 @@
 	--dashboard-badge-border: var(--color-state-warning-border);
 }
 
-.dashboard-card-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 1rem;
-}
-
-.dashboard-card-header h2 {
-	margin: 0;
-}
-
 .dashboard-assigned-events {
 	display: flex;
 	flex-wrap: wrap;

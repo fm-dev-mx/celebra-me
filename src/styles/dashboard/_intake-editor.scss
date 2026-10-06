@@ -106,7 +106,6 @@
 	color: var(--color-text-muted);
 }
 
-.invitation-editor__header-actions,
 .invitation-editor__reorder {
 	display: flex;
 	flex-wrap: wrap;
@@ -463,8 +462,7 @@
 }
 
 .invitation-editor__card-header,
-.invitation-editor__card-footer,
-.invitation-editor__order-row {
+.invitation-editor__card-footer {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -500,16 +498,6 @@
 .invitation-editor__card-body {
 	display: grid;
 	gap: 0.85rem;
-}
-
-.invitation-editor__unsaved-indicator {
-	padding: 0.15rem 0.5rem;
-	border-radius: 999px;
-	background: var(--color-state-warning-bg);
-	color: var(--color-state-warning-text);
-	font-size: 0.6875rem;
-	font-weight: 700;
-	white-space: nowrap;
 }
 
 .invitation-editor__section-save {
@@ -774,18 +762,6 @@
 	color: var(--color-text-primary);
 }
 
-.invitation-editor__section-copy {
-	padding: 0.75rem;
-	margin-bottom: 1.25rem;
-	border: 1px solid var(--color-border-subtle);
-	border-radius: 8px;
-	background: var(--color-surface-soft);
-
-	.invitation-editor__helper-text {
-		margin-bottom: 0.65rem;
-	}
-}
-
 .invitation-editor__image-field {
 	display: grid;
 	gap: 0.35rem;
@@ -918,14 +894,6 @@
 		border-radius: 8px;
 		background: var(--color-surface-soft);
 		font-size: 0.8125rem;
-	}
-
-	.invitation-editor__countdown-preview-label {
-		color: var(--color-text-muted);
-		font-weight: 600;
-		font-size: 0.6875rem;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
 	}
 
 	.invitation-editor__countdown-preview-date {
@@ -1475,13 +1443,6 @@
 	max-width: 12rem;
 }
 
-.invitation-editor__gallery-crop--active {
-	padding: 0.25rem;
-	border: 1px solid var(--color-action-accent);
-	border-radius: 7px;
-	background: var(--dashboard-accent-soft-bg);
-}
-
 /* ── Section card state variants ── */
 
 .invitation-editor__card--dirty {
@@ -1926,16 +1887,6 @@
 	.invitation-editor__card-footer {
 		align-items: stretch;
 		flex-direction: column;
-	}
-
-	.invitation-editor__header-actions {
-		width: 100%;
-	}
-
-	.invitation-editor__header-actions .invitation-editor__primary-action,
-	.invitation-editor__header-actions .invitation-editor__secondary-action {
-		flex: 1;
-		text-align: center;
 	}
 }
 

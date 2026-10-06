@@ -67,52 +67,6 @@
 	}
 }
 
-/* Trigger button */
-.guest-actions-menu__trigger {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.2rem;
-	padding: 0.3rem 0.5rem;
-	border: 1px solid var(--color-border-subtle);
-	border-radius: 6px;
-	background: var(--color-surface-elevated);
-	color: var(--color-text-muted);
-	font-family: var(--font-ui);
-	font-size: 0.72rem;
-	font-weight: 500;
-	cursor: pointer;
-	transition:
-		background-color 0.15s ease,
-		border-color 0.15s ease,
-		color 0.15s ease;
-	white-space: nowrap;
-	min-height: 34px;
-	flex-shrink: 0;
-
-	&:hover {
-		background: rgb(var(--color-text-secondary-rgb) / 8%);
-		border-color: rgb(var(--color-text-secondary-rgb) / 18%);
-		color: var(--color-text-primary);
-	}
-
-	&:focus-visible {
-		@include mixins.focus-ring;
-	}
-
-	svg {
-		transition: transform 0.2s ease;
-	}
-
-	&--open {
-		border-color: rgb(var(--color-text-secondary-rgb) / 20%);
-		color: var(--color-text-primary);
-
-		svg {
-			transform: rotate(180deg);
-		}
-	}
-}
-
 /* Toolbar actions menu trigger */
 .toolbar-actions-menu__trigger {
 	display: inline-flex;

@@ -631,7 +631,7 @@
 .canonical-status__gap {
 	font-style: italic;
 	color: var(--color-state-warning-text);
-	margin: var(--spacing-2xs) 0;
+	margin: calc(var(--spacing-xs) / 2) 0;
 }
 
 .canonical-status__command {
