@@ -83,11 +83,7 @@ export async function updateMemoriesShare(input: {
 }): Promise<{ shareUrl: string | null }> {
 	const now = input.now ?? new Date();
 	if (input.action !== 'disable' && !readShareSecret()) {
-		throw new ApiError(
-			503,
-			'service_unavailable',
-			'La galería compartida no está configurada.',
-		);
+		throw new ApiError(503, 'config_error', 'La galería compartida no está configurada.');
 	}
 	if (input.action !== 'disable' && resolveMemoriesWindowState(input.space, now) === 'expired') {
 		throw new ApiError(

@@ -137,7 +137,7 @@ describe('updateMemoriesShare', () => {
 		mockEnv.mockReturnValue('');
 		await expect(
 			updateMemoriesShare({ space: buildSpace(), action: 'enable', actorId: OWNER_USER_ID }),
-		).rejects.toMatchObject({ status: 503 });
+		).rejects.toMatchObject({ status: 503, code: 'config_error' });
 
 		mockUpdate.mockResolvedValue({ ...sharedSpace, shareEnabledAt: null });
 		await expect(
