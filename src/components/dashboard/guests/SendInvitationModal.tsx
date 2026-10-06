@@ -3,10 +3,8 @@ import ModalShell from '@/components/dashboard/ModalShell';
 import PhoneInputGroup from '@/components/shared/PhoneInputGroup';
 import { WhatsAppIcon } from '@/components/common/icons/social/WhatsApp';
 import { CopyIcon } from '@/components/common/icons/ui';
-import {
-	ATTENDEE_OPTIONS,
-	MAX_CUSTOM_ATTENDEES,
-} from '@/components/dashboard/guests/guest-form-constants';
+import GuestPeopleStepper from '@/components/dashboard/guests/GuestPeopleStepper';
+import { MAX_CUSTOM_ATTENDEES } from '@/components/dashboard/guests/guest-form-constants';
 import { useSendInvitation } from '@/components/dashboard/guests/use-send-invitation';
 import type {
 	GuestSaveCallback,
@@ -57,7 +55,6 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 	const {
 		editName,
 		setEditName,
-		editMaxAttendees,
 		setEditMaxAttendees,
 		editPhone,
 		setEditPhone,
@@ -103,24 +100,26 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		mode,
 	});
 
-	const isPreset = (val: number) =>
-		(ATTENDEE_OPTIONS as readonly (number | 'other')[]).slice(0, -1).includes(val);
-
-	const [isCustomModeSend, setIsCustomModeSend] = useState(() =>
-		guest ? !isPreset(guest.maxAllowedAttendees) : false,
-	);
-	const [customInputValueSend, setCustomInputValueSend] = useState(() =>
-		guest && !isPreset(guest.maxAllowedAttendees) ? String(guest.maxAllowedAttendees) : '',
+	// Raw text so the host can clear the field while typing a larger number.
+	const [peopleInput, setPeopleInput] = useState(() =>
+		guest ? String(guest.maxAllowedAttendees) : '1',
 	);
 	const [customAttendeesError, setCustomAttendeesError] = useState<string | null>(null);
 
 	React.useEffect(() => {
 		if (!guest) return;
-		const nonPreset = !isPreset(guest.maxAllowedAttendees);
-		setIsCustomModeSend(nonPreset);
-		setCustomInputValueSend(nonPreset ? String(guest.maxAllowedAttendees) : '');
+		setPeopleInput(String(guest.maxAllowedAttendees));
 		setCustomAttendeesError(null);
 	}, [guest]);
+
+	const handlePeopleChange = (value: string) => {
+		setPeopleInput(value);
+		const parsed = parseInt(value, 10);
+		if (!isNaN(parsed) && parsed >= 1 && parsed <= MAX_CUSTOM_ATTENDEES) {
+			setEditMaxAttendees(parsed);
+			setCustomAttendeesError(null);
+		}
+	};
 
 	if (!guest) {
 		return (
@@ -177,75 +176,21 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 				/>
 			</div>
 
-			<div className="send-invitation__companion-section">
-				<h4 className="send-invitation__companion-title">Acompañantes permitidos</h4>
-				<div
-					className="guest-response-cards guest-response-cards--compact"
-					role="radiogroup"
-					aria-label="Acompañantes permitidos"
-				>
-					{ATTENDEE_OPTIONS.map((opt) =>
-						opt === 'other' ? (
-							<label key="other" className="guest-response-card">
-								<input
-									type="radio"
-									name="sendMaxAttendees"
-									value="other"
-									checked={isCustomModeSend}
-									onChange={() => {
-										setIsCustomModeSend(true);
-										setCustomInputValueSend(String(editMaxAttendees));
-									}}
-								/>
-								<div className="guest-response-card__content">Otro</div>
-							</label>
-						) : (
-							<label key={opt} className="guest-response-card">
-								<input
-									type="radio"
-									name="sendMaxAttendees"
-									value={opt}
-									checked={!isCustomModeSend && editMaxAttendees === opt}
-									onChange={() => {
-										setEditMaxAttendees(opt);
-										setIsCustomModeSend(false);
-										setCustomInputValueSend('');
-										setCustomAttendeesError(null);
-									}}
-								/>
-								<div className="guest-response-card__content">{opt}</div>
-							</label>
-						),
-					)}
-				</div>
-				{isCustomModeSend && (
-					<div className="dashboard-custom-attendees">
-						<input
-							type="number"
-							min={1}
-							max={MAX_CUSTOM_ATTENDEES}
-							value={customInputValueSend}
-							onChange={(e) => {
-								const val = e.target.value;
-								setCustomInputValueSend(val);
-								const parsed = parseInt(val, 10);
-								if (
-									val.trim() &&
-									!isNaN(parsed) &&
-									parsed >= 1 &&
-									parsed <= MAX_CUSTOM_ATTENDEES
-								) {
-									setEditMaxAttendees(parsed);
-									setCustomAttendeesError(null);
-								}
-							}}
-							placeholder="Más de 5"
-							autoFocus
-						/>
-						{customAttendeesError && (
-							<span className="guest-field-error">{customAttendeesError}</span>
-						)}
-					</div>
+			<div className="dashboard-form-field send-invitation__field send-invitation__companion-section">
+				<label htmlFor="send-people">¿Cuántas personas vienen?</label>
+				<span id="send-people-hint" className="guest-field-hint">
+					Incluya al invitado principal.
+				</span>
+				<GuestPeopleStepper
+					id="send-people"
+					value={peopleInput}
+					max={MAX_CUSTOM_ATTENDEES}
+					onChange={handlePeopleChange}
+					describedBy="send-people-hint"
+					invalid={Boolean(customAttendeesError)}
+				/>
+				{customAttendeesError && (
+					<span className="guest-field-error">{customAttendeesError}</span>
 				)}
 			</div>
 
@@ -385,25 +330,18 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		);
 
 	const handleSaveWithCustomValidation = React.useCallback(() => {
-		if (isCustomModeSend) {
-			const trimmed = customInputValueSend.trim();
-			if (!trimmed) {
-				setCustomAttendeesError('Ingresa un número de pases.');
-				return;
-			}
-			const parsed = parseInt(trimmed, 10);
-			if (isNaN(parsed) || parsed < 1) {
-				setCustomAttendeesError('Ingresa un número de pases.');
-				return;
-			}
-			if (parsed > MAX_CUSTOM_ATTENDEES) {
-				setCustomAttendeesError('El valor excede el límite técnico permitido.');
-				return;
-			}
+		const parsed = parseInt(peopleInput.trim(), 10);
+		if (isNaN(parsed) || parsed < 1) {
+			setCustomAttendeesError('Indique cuántas personas vienen.');
+			return;
+		}
+		if (parsed > MAX_CUSTOM_ATTENDEES) {
+			setCustomAttendeesError('El valor excede el límite técnico permitido.');
+			return;
 		}
 		setCustomAttendeesError(null);
 		handleSaveAndShare();
-	}, [isCustomModeSend, customInputValueSend, handleSaveAndShare]);
+	}, [peopleInput, handleSaveAndShare]);
 
 	const ctaLabel = isReminderMode
 		? 'Enviar recordatorio'

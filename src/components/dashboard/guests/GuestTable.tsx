@@ -21,6 +21,7 @@ interface GuestTableProps {
 	shareDateContext: ShareMessageDateContext;
 	celebratingGuestId?: string | null;
 	highlightedGuestId?: string | null;
+	/** Desktop table row expanded in place; compact layouts open the detail screen instead. */
 	expandedGuestId?: string | null;
 	reminderMode?: boolean;
 	eligibleGuestIds?: Set<string>;
@@ -35,8 +36,8 @@ interface GuestTableProps {
 	onSaveGuest?: GuestSaveCallback;
 	/** Compact-screen presentation; the desktop table is unaffected. */
 	view?: GuestListView;
-	/** Opens the full-screen guest detail; when absent, compact rows expand in place. */
-	onOpenDetails?: (item: DashboardGuestItem) => void;
+	/** Opens the full-screen guest detail from compact cards and rows. */
+	onOpenDetails: (item: DashboardGuestItem) => void;
 	/** Selection mode: compact rows become checkboxes and the list view is forced. */
 	selection?: {
 		selectedIds: ReadonlySet<string>;
@@ -89,17 +90,10 @@ const GuestTable: React.FC<GuestTableProps> = ({
 			shareDateContext={shareDateContext}
 			isCelebrating={celebratingGuestId === item.guestId}
 			isHighlighted={highlightedGuestId === item.guestId}
-			isExpanded={expandedGuestId === item.guestId}
 			reminderMode={reminderMode}
 			isReminderEligible={eligibleGuestIds?.has(item.guestId) ?? false}
 			onReminderSent={onReminderSent}
-			onToggleExpanded={() => onToggleExpanded?.(item.guestId)}
-			onEdit={onEdit}
-			onDelete={onDelete}
 			onMarkShared={onMarkShared}
-			onRevertShared={onRevertShared}
-			isBrandingRemovalEligible={isBrandingRemovalEligible}
-			onToggleBrandingRemoval={onToggleBrandingRemoval}
 			onSaveGuest={onSaveGuest}
 			onOpenDetails={onOpenDetails}
 		/>
@@ -124,48 +118,21 @@ const GuestTable: React.FC<GuestTableProps> = ({
 									</span>
 								</h2>
 								<ul className="guest-list-section__items">
-									{section.items.map((item) => {
-										const isOpen =
-											!onOpenDetails && expandedGuestId === item.guestId;
-										const detailsId = onOpenDetails
-											? undefined
-											: `guest-row-details-${item.guestId}`;
-										return (
-											<li
-												key={item.guestId}
-												className="guest-list-section__item"
-											>
-												{selection ? (
-													<GuestSelectRow
-														item={item}
-														selected={selection.selectedIds.has(
-															item.guestId,
-														)}
-														onToggle={selection.onToggle}
-													/>
-												) : (
-													<GuestListRow
-														item={item}
-														isOpen={isOpen}
-														detailsId={detailsId}
-														onOpen={() =>
-															onOpenDetails
-																? onOpenDetails(item)
-																: onToggleExpanded?.(item.guestId)
-														}
-													/>
-												)}
-												{isOpen && !selection && (
-													<div
-														id={detailsId}
-														className="guest-row__details"
-													>
-														{renderCard(item, items.indexOf(item))}
-													</div>
-												)}
-											</li>
-										);
-									})}
+									{section.items.map((item) => (
+										<li key={item.guestId} className="guest-list-section__item">
+											{selection ? (
+												<GuestSelectRow
+													item={item}
+													selected={selection.selectedIds.has(
+														item.guestId,
+													)}
+													onToggle={selection.onToggle}
+												/>
+											) : (
+												<GuestListRow item={item} onOpen={onOpenDetails} />
+											)}
+										</li>
+									))}
 								</ul>
 							</section>
 						);

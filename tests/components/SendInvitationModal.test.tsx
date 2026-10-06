@@ -77,7 +77,7 @@ describe('SendInvitationModal', () => {
 		renderModal(makeGuest());
 
 		expect(screen.getByDisplayValue('Guest One')).toBeInTheDocument();
-		expect(screen.getByText('4')).toBeInTheDocument();
+		expect(screen.getByLabelText('¿Cuántas personas vienen?')).toHaveValue(4);
 		expect(screen.getByDisplayValue('6691234567')).toBeInTheDocument();
 	});
 

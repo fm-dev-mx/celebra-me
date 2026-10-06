@@ -17,8 +17,6 @@ import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface'
 
 interface GuestListRowProps {
 	item: DashboardGuestItem;
-	isOpen?: boolean;
-	detailsId?: string;
 	onOpen: (item: DashboardGuestItem) => void;
 }
 
@@ -37,7 +35,7 @@ const STATUS_LABEL: Record<GuestStatusBucket, string> = {
 };
 
 /** One-line guest summary for compact screens; tapping it opens the guest's details. */
-const GuestListRow: React.FC<GuestListRowProps> = ({ item, isOpen, detailsId, onOpen }) => {
+const GuestListRow: React.FC<GuestListRowProps> = ({ item, onOpen }) => {
 	const bucket = getGuestStatusBucket(item);
 	const Icon = STATUS_ICON[bucket];
 	const subtitle = getGuestListSubtitle(item);
@@ -46,9 +44,7 @@ const GuestListRow: React.FC<GuestListRowProps> = ({ item, isOpen, detailsId, on
 	return (
 		<button
 			type="button"
-			className={`guest-row guest-row--${bucket}${isOpen ? ' guest-row--open' : ''}`}
-			aria-expanded={detailsId ? Boolean(isOpen) : undefined}
-			aria-controls={detailsId}
+			className={`guest-row guest-row--${bucket}`}
 			aria-label={`${item.fullName}. ${STATUS_LABEL[bucket]}. ${subtitle}${hasMessage ? '. Dejó un mensaje' : ''}`}
 			onClick={() => onOpen(item)}
 		>

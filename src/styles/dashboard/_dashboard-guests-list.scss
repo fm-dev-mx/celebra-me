@@ -215,15 +215,6 @@
 	flex-shrink: 0;
 	color: var(--color-text-emphasis);
 	transition: transform 0.2s ease;
-
-	.guest-row--open & {
-		transform: rotate(90deg);
-	}
-}
-
-.guest-row__details {
-	padding: 0 0.75rem 0.75rem;
-	background: var(--color-surface-secondary);
 }
 
 /* --- Cards on compact screens: larger type, wrapping names --- */
@@ -301,9 +292,5 @@
 				}
 			}
 		}
-	}
-
-	.dashboard-guests .guest-row__details .guest-card {
-		box-shadow: none;
 	}
 }

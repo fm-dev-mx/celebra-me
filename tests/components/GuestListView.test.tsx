@@ -16,12 +16,12 @@ describe('GuestListRow', () => {
 			isViewed: true,
 			guestComment: 'Ahí estaremos',
 		});
-		render(<GuestListRow item={guest} detailsId="details" onOpen={onOpen} />);
+		render(<GuestListRow item={guest} onOpen={onOpen} />);
 
 		const row = screen.getByRole('button', {
 			name: 'Familia Pérez López. Esperando respuesta. 4 personas · Ya la abrió. Dejó un mensaje',
 		});
-		expect(row).toHaveAttribute('aria-expanded', 'false');
+		expect(row).not.toHaveAttribute('aria-expanded');
 		fireEvent.click(row);
 		expect(onOpen).toHaveBeenCalledWith(guest);
 	});

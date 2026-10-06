@@ -8,11 +8,6 @@ jest.mock('@/components/dashboard/guests/ShareAction', () => ({
 	default: () => <div data-testid="share-action" />,
 }));
 
-jest.mock('@/components/dashboard/guests/GuestExpandedActions', () => ({
-	__esModule: true,
-	default: () => <div data-testid="expanded-actions" />,
-}));
-
 jest.mock('@/components/dashboard/guests/SendInvitationModal', () => ({
 	__esModule: true,
 	default: ({
@@ -41,9 +36,8 @@ describe('GuestCard status labels', () => {
 			reminder:
 				'Hola {guestName}, te comparto nuevamente tu invitación a {eventTitle}:\n\n{inviteUrl}',
 		},
-		onEdit: jest.fn(),
-		onDelete: jest.fn().mockResolvedValue(undefined),
 		onMarkShared: jest.fn().mockResolvedValue(undefined),
+		onOpenDetails: jest.fn(),
 		shareDateContext: defaultShareDateContext(),
 	};
 
@@ -98,13 +92,7 @@ describe('GuestCard status labels', () => {
 	});
 
 	it('shows delivery status in header pill when attendanceStatus is pending', () => {
-		render(
-			<GuestCard
-				item={makeGuest({ attendanceStatus: 'pending' })}
-				isExpanded={true}
-				{...baseProps}
-			/>,
-		);
+		render(<GuestCard item={makeGuest({ attendanceStatus: 'pending' })} {...baseProps} />);
 		// Header shows delivery-driven status for pending guests
 		expect(screen.getAllByText('Por enviar').length).toBeGreaterThanOrEqual(1);
 	});
@@ -237,122 +225,27 @@ describe('GuestCard status labels', () => {
 		expect(modal).toBeInTheDocument();
 		expect(modal.getAttribute('data-reminder-sent')).toBe('wired');
 	});
+});
 
-	it('shows branding toggle in expanded actions when eligible', () => {
+describe('GuestCard details', () => {
+	it('opens the detail screen instead of expanding in place', () => {
+		const onOpenDetails = jest.fn();
+		const guest = makeGuest({ fullName: 'Familia Ruiz' });
 		const { container } = render(
 			<GuestCard
-				item={makeGuest({ hideCelebraMeBranding: true })}
-				isExpanded={true}
-				isBrandingRemovalEligible={true}
-				onToggleBrandingRemoval={jest.fn()}
-				{...baseProps}
+				item={guest}
+				index={0}
+				inviteUrl="https://example.com/invite/1"
+				eventTitle="Test Event"
+				shareTemplates={{ invitation: '{inviteUrl}', reminder: '{inviteUrl}' }}
+				shareDateContext={defaultShareDateContext()}
+				onMarkShared={jest.fn().mockResolvedValue(undefined)}
+				onOpenDetails={onOpenDetails}
 			/>,
 		);
-		expect(container.querySelector('[data-testid="expanded-actions"]')).toBeInTheDocument();
-	});
 
-	it('shows view percentage in expanded state Actividad section', () => {
-		const { container, rerender } = render(
-			<GuestCard
-				item={makeGuest({ isViewed: true, viewPercentage: 100 })}
-				isExpanded={false}
-				{...baseProps}
-			/>,
-		);
-		// Content is in DOM but hidden via CSS when collapsed
-		expect(container.querySelector('.guest-card__expanded--open')).toBeNull();
-
-		rerender(
-			<GuestCard
-				item={makeGuest({ isViewed: true, viewPercentage: 100 })}
-				isExpanded={true}
-				{...baseProps}
-			/>,
-		);
-		expect(container.querySelector('.guest-card__expanded--open')).toBeInTheDocument();
-		expect(screen.getByText('100%')).toBeInTheDocument();
-	});
-
-	it('shows guest message in expanded panel with a formatted timestamp', () => {
-		const { container } = render(
-			<GuestCard
-				item={makeGuest({
-					guestComment: 'Nos vemos pronto',
-					respondedAt: '2026-03-22T12:30:00.000Z',
-				})}
-				isExpanded={true}
-				{...baseProps}
-			/>,
-		);
-		expect(container.querySelector('.guest-message-history')).toBeInTheDocument();
-		expect(container.querySelector('.guest-message-history__text')).toHaveTextContent(
-			'Nos vemos pronto',
-		);
-		const meta = container.querySelector('.guest-message-history__meta');
-		expect(meta).toHaveTextContent('22 mar 2026');
-		expect(meta).not.toHaveTextContent('Mensaje inicial');
-	});
-
-	it('does not show message block when no guest comment', () => {
-		const { container } = render(
-			<GuestCard item={makeGuest({ guestComment: '' })} isExpanded={true} {...baseProps} />,
-		);
-		expect(container.querySelector('.guest-message-history')).not.toBeInTheDocument();
-	});
-
-	it('renders group section titles in expanded state', () => {
-		render(
-			<GuestCard
-				item={makeGuest({
-					attendanceStatus: 'confirmed',
-					firstViewedAt: '2026-06-10T00:00:00.000Z',
-				})}
-				isExpanded={true}
-				{...baseProps}
-			/>,
-		);
-		expect(screen.getByText('Resumen')).toBeInTheDocument();
-		expect(screen.getByText('Actividad')).toBeInTheDocument();
-		expect(screen.getByText('Origen')).toBeInTheDocument();
-	});
-
-	it('shows first group tag chip when expanded', () => {
-		render(
-			<GuestCard
-				item={makeGuest({ tags: ['Familia', 'Amigos'] })}
-				isExpanded={true}
-				{...baseProps}
-			/>,
-		);
-		const familiaChips = screen.getAllByText('Familia');
-		expect(familiaChips.length).toBeGreaterThanOrEqual(1);
-	});
-
-	it('shows all tags when expanded', () => {
-		render(
-			<GuestCard
-				item={makeGuest({ tags: ['Familia', 'Amigos', 'VIP', 'Trabajo'] })}
-				isExpanded={true}
-				{...baseProps}
-			/>,
-		);
-		const familiaChips = screen.getAllByText('Familia');
-		expect(familiaChips.length).toBeGreaterThanOrEqual(1);
-		const amigoChips = screen.getAllByText('Amigos');
-		expect(amigoChips.length).toBeGreaterThanOrEqual(1);
-	});
-
-	it('does not show group chips when no tags and expanded', () => {
-		const { container } = render(
-			<GuestCard item={makeGuest({ tags: [] })} isExpanded={true} {...baseProps} />,
-		);
-		const chips = container.querySelectorAll('.guest-tag');
-		const groupChips = Array.from(chips).filter(
-			(c) =>
-				c.textContent === 'Familia' ||
-				c.textContent === 'Amigos' ||
-				c.textContent === 'VIP',
-		);
-		expect(groupChips.length).toBe(0);
+		fireEvent.click(screen.getByRole('button', { name: 'Ver detalles de Familia Ruiz' }));
+		expect(onOpenDetails).toHaveBeenCalledWith(guest);
+		expect(container.querySelector('[aria-expanded]')).toBeNull();
 	});
 });
