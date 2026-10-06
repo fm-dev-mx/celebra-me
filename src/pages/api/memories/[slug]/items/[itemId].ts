@@ -62,11 +62,13 @@ export const DELETE: APIRoute = async ({ request, params }) => {
 	}
 };
 
-export const GET: APIRoute = async ({ request, params }) => {
+export const GET: APIRoute = async ({ request, params, url }) => {
 	try {
 		const mediaItemId = requireItemId(params);
 		const { space, session } = await requireGuestContext(request, params, 'read');
-		const object = await getMediaObjectForRetrieval(space, mediaItemId, session.id);
+		const object = await getMediaObjectForRetrieval(space, mediaItemId, session.id, {
+			variant: url.searchParams.get('variant') === 'thumb' ? 'thumb' : 'original',
+		});
 		const response = await retrieveMemoriesObject({
 			...object,
 			mode: 'inline',

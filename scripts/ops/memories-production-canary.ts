@@ -525,7 +525,7 @@ async function uploadAcceptedMedia(
 	);
 
 	stage.current = 'reservation';
-	await page.getByRole('button', { name: memoriesCaptureCopy.confirmUpload }).click();
+	await page.getByRole('button', { name: memoriesCaptureCopy.confirmUploadCount(1) }).click();
 	const reservationResponse = await reservationResponsePromise;
 	if (reservationResponse.status() !== 201) fail('reservation', 'RESERVATION_STATUS_REJECTED');
 	const mediaId = readItemField(
@@ -589,12 +589,15 @@ async function deleteAndConfirmAbsence(
 	const absenceResponsePromise = page.waitForResponse((response) =>
 		isResponseFor(response, 'GET', invocation.itemsPath),
 	);
-	page.once('dialog', (dialog) => void dialog.accept());
 	await page
-		.locator(`img[src="${mediaPath}"]`)
-		.locator('xpath=ancestor::article')
-		.getByRole('button', { name: memoriesCaptureCopy.deleteMemory })
+		.locator(`#mis-recuerdos img[src="${mediaPath}"]`)
+		.first()
+		.locator('xpath=ancestor::button')
 		.click();
+	const sheet = page.getByRole('dialog');
+	// The first button asks for confirmation; the second deletes.
+	await sheet.getByRole('button', { name: memoriesCaptureCopy.deleteMemory }).click();
+	await sheet.getByRole('button', { name: memoriesCaptureCopy.deleteMemory }).click();
 	const deletionResponse = await deletionResponsePromise;
 	if (deletionResponse.status() !== 200) fail('deletion', 'DELETE_STATUS_REJECTED');
 	emit('deletion', 200, 'INFO', write);

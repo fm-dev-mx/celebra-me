@@ -12,6 +12,7 @@ import type {
 	MemoriesGuestQuota,
 	MemoriesMediaPublicItem,
 	MemoriesOrganizerListResponse,
+	MemoriesOrganizerUploader,
 	MemoriesSpaceHostSummary,
 	MemoriesSpaceRecord,
 	MemoriesSpaceSummary,
@@ -95,6 +96,8 @@ export function createMemoriesGuestApi(publicSlug: string) {
 	return {
 		itemsUrl,
 		itemMediaUrl: itemUrl,
+		/** The small preview when it exists; the server falls back to the original. */
+		itemThumbnailUrl: (itemId: string) => `${itemUrl(itemId)}?variant=thumb`,
 		async getSession(): Promise<MemoriesGuestProfile | null> {
 			const payload = await guestRequest<{ profile: MemoriesGuestProfile | null }>(
 				sessionUrl,
@@ -128,7 +131,12 @@ export function createMemoriesGuestApi(publicSlug: string) {
 			});
 			return payload.profile;
 		},
-		listItems(): Promise<{ items: MemoriesMediaPublicItem[]; quota: MemoriesGuestQuota }> {
+		listItems(): Promise<{
+			items: MemoriesMediaPublicItem[];
+			quota: MemoriesGuestQuota;
+			/** The space cannot take more files; absent from servers before this field existed. */
+			eventFull?: boolean;
+		}> {
 			return guestRequest(itemsUrl);
 		},
 		reserve(input: {
@@ -158,6 +166,21 @@ export function createMemoriesGuestApi(publicSlug: string) {
 		deleteItem(itemId: string): Promise<{ success: boolean }> {
 			return guestRequest(itemUrl(itemId), { method: 'DELETE' });
 		},
+		reserveThumbnail(
+			itemId: string,
+			input: { sizeBytes: number; checksumSha256: string },
+		): Promise<{ upload: MemoriesReservation['upload'] }> {
+			return guestRequest(`${itemUrl(itemId)}/thumbnail`, {
+				method: 'POST',
+				body: JSON.stringify({ action: 'reserve', ...input }),
+			});
+		},
+		confirmThumbnail(itemId: string): Promise<{ hasThumbnail: boolean }> {
+			return guestRequest(`${itemUrl(itemId)}/thumbnail`, {
+				method: 'POST',
+				body: JSON.stringify({ action: 'confirm' }),
+			});
+		},
 	};
 }
 
@@ -170,6 +193,9 @@ export type OrganizerSpaceItem = MemoriesSpaceSummary & { eventId: string };
 export type OrganizerCatalogFilters = {
 	status: string;
 	uploader: string;
+	uploaderAlias: string;
+	kind: string;
+	visibility: string;
 	createdFrom: string;
 	createdTo: string;
 };
@@ -183,6 +209,9 @@ export function buildOrganizerCatalogUrl(
 	if (filters.status && filters.status !== 'all') params.set('status', filters.status);
 	const uploader = (filters.uploader ?? '').replace(/\s+/g, ' ').trim();
 	if (uploader) params.set('uploader', uploader);
+	if (filters.uploaderAlias) params.set('uploaderAlias', filters.uploaderAlias);
+	if (filters.kind) params.set('kind', filters.kind);
+	if (filters.visibility) params.set('visibility', filters.visibility);
 	if (filters.createdFrom) params.set('createdFrom', filters.createdFrom);
 	if (filters.createdTo) params.set('createdTo', filters.createdTo);
 	return `${buildMemoriesOrganizerApiPath(eventId)}?${params.toString()}`;
@@ -202,14 +231,14 @@ export const memoriesOrganizerApi = {
 			),
 		);
 	},
-	itemMediaUrl(eventId: string, itemId: string, mode?: 'preview'): string {
+	itemMediaUrl(eventId: string, itemId: string, mode?: 'preview' | 'thumb'): string {
 		const base = `${buildMemoriesOrganizerApiPath(eventId)}/items/${encodeURIComponent(itemId)}`;
 		return mode ? `${base}?mode=${mode}` : base;
 	},
 	async updateItem(
 		eventId: string,
 		itemId: string,
-		body: { caption?: string; status?: string },
+		body: { caption?: string; status?: string; hidden?: boolean },
 	): Promise<MemoriesMediaPublicItem> {
 		const payload = unwrap(
 			await dashboardApi.patch<{ item: MemoriesMediaPublicItem }>(
@@ -245,6 +274,26 @@ export const memoriesOrganizerApi = {
 	},
 	qrUrl(eventId: string): string {
 		return `${buildMemoriesOrganizerApiPath(eventId)}/qr`;
+	},
+	async share(
+		eventId: string,
+		action: 'enable' | 'disable' | 'rotate',
+	): Promise<{ shareUrl: string | null }> {
+		return unwrap(
+			await dashboardApi.post<{ shareUrl: string | null }>(
+				`${buildMemoriesOrganizerApiPath(eventId)}/share`,
+				{ action },
+			),
+		);
+	},
+	async uploaders(eventId: string, signal?: AbortSignal): Promise<MemoriesOrganizerUploader[]> {
+		const payload = unwrap(
+			await dashboardApi.get<{ uploaders: MemoriesOrganizerUploader[] }>(
+				`${buildMemoriesOrganizerApiPath(eventId)}/uploaders`,
+				{ signal },
+			),
+		);
+		return payload.uploaders;
 	},
 	async fetchItemBlob(eventId: string, itemId: string): Promise<Blob> {
 		const response = await fetch(memoriesOrganizerApi.itemMediaUrl(eventId, itemId));

@@ -1,6 +1,7 @@
 jest.mock('@/lib/memories/server/catalog.repository', () => ({
 	findMediaById: jest.fn(),
 	listOrganizerMedia: jest.fn(),
+	listUploaderFileCounts: jest.fn(),
 	patchMedia: jest.fn(),
 	revokeSessionsByAlias: jest.fn(),
 }));
@@ -31,6 +32,7 @@ import { appendMemoriesAudit } from '@/lib/memories/server/audit';
 import {
 	findMediaById,
 	listOrganizerMedia,
+	listUploaderFileCounts,
 	patchMedia,
 	revokeSessionsByAlias,
 	type OrganizerMediaRow,
@@ -38,6 +40,7 @@ import {
 import {
 	listOrganizerMemoryItems,
 	listOrganizerMemorySpaces,
+	listOrganizerUploaders,
 	organizerMaxPage,
 	requireOrganizerMemorySpace,
 	revokeGuestMemorySession,
@@ -73,6 +76,9 @@ const mockListMedia = listOrganizerMedia as jest.MockedFunction<typeof listOrgan
 const mockFindMedia = findMediaById as jest.MockedFunction<typeof findMediaById>;
 const mockPatch = patchMedia as jest.MockedFunction<typeof patchMedia>;
 const mockRevoke = revokeSessionsByAlias as jest.MockedFunction<typeof revokeSessionsByAlias>;
+const mockUploaderCounts = listUploaderFileCounts as jest.MockedFunction<
+	typeof listUploaderFileCounts
+>;
 const mockAudit = appendMemoriesAudit as jest.MockedFunction<typeof appendMemoriesAudit>;
 
 const space = buildSpace();
@@ -374,6 +380,108 @@ describe('updateOrganizerMemoryItem', () => {
 		expect(mockAudit).toHaveBeenCalledWith(
 			expect.objectContaining({ action: 'caption_updated' }),
 		);
+	});
+});
+
+describe('host curation and guest filter', () => {
+	beforeEach(() => jest.clearAllMocks());
+
+	it('hides an available memory without touching its status or cleanup', async () => {
+		mockFindMedia.mockResolvedValue(buildMediaRow({ status: 'accepted' }));
+		mockPatch.mockResolvedValue(
+			buildMediaRow({ status: 'accepted', hidden_at: '2026-10-24T12:00:00.000Z' }),
+		);
+
+		await updateOrganizerMemoryItem({
+			space,
+			mediaItemId: ITEM_ID,
+			hidden: true,
+			actorId: OWNER_USER_ID,
+		});
+
+		const body = mockPatch.mock.calls[0][1];
+		expect(typeof body.hidden_at).toBe('string');
+		expect(body).not.toHaveProperty('status');
+		expect(body).not.toHaveProperty('cleanup_after');
+		expect(mockAudit).toHaveBeenCalledWith(
+			expect.objectContaining({ action: 'hidden_by_organizer' }),
+		);
+	});
+
+	it('shows a hidden memory again', async () => {
+		mockFindMedia.mockResolvedValue(
+			buildMediaRow({ status: 'accepted', hidden_at: '2026-10-24T12:00:00.000Z' }),
+		);
+		mockPatch.mockResolvedValue(buildMediaRow({ status: 'accepted' }));
+
+		await updateOrganizerMemoryItem({
+			space,
+			mediaItemId: ITEM_ID,
+			hidden: false,
+			actorId: OWNER_USER_ID,
+		});
+
+		expect(mockPatch.mock.calls[0][1]).toEqual({ hidden_at: null });
+		expect(mockAudit).toHaveBeenCalledWith(
+			expect.objectContaining({ action: 'shown_by_organizer' }),
+		);
+	});
+
+	it('refuses to hide a file that is not available', async () => {
+		mockFindMedia.mockResolvedValue(buildMediaRow({ status: 'validating' }));
+
+		await expect(
+			updateOrganizerMemoryItem({
+				space,
+				mediaItemId: ITEM_ID,
+				hidden: true,
+				actorId: OWNER_USER_ID,
+			}),
+		).rejects.toMatchObject({ status: 409 });
+		expect(mockPatch).not.toHaveBeenCalled();
+	});
+
+	it('forwards kind, visibility and exact guest filters', async () => {
+		mockListMedia.mockResolvedValue([]);
+
+		await listOrganizerMemoryItems(space, {
+			kind: 'video',
+			visibility: 'hidden',
+			uploaderAlias: GUEST_ALIAS,
+		});
+
+		expect(mockListMedia).toHaveBeenCalledWith(
+			expect.objectContaining({
+				kind: 'video',
+				visibility: 'hidden',
+				uploaderAlias: GUEST_ALIAS,
+			}),
+		);
+	});
+
+	it.each([[{ kind: 'audio' }], [{ visibility: 'secret' }], [{ uploaderAlias: 'not-an-alias' }]])(
+		'rejects an invalid filter %j',
+		async (filter) => {
+			await expect(
+				listOrganizerMemoryItems(
+					space,
+					filter as Parameters<typeof listOrganizerMemoryItems>[1],
+				),
+			).rejects.toMatchObject({ status: 400 });
+			expect(mockListMedia).not.toHaveBeenCalled();
+		},
+	);
+
+	it('lists guests with files alphabetically', async () => {
+		mockUploaderCounts.mockResolvedValue([
+			{ display_name: 'Zoe', guest_alias: 'invitado-zzzzzzzz', files: 2 },
+			{ display_name: 'Ángel', guest_alias: 'invitado-aaaaaaaa', files: 5 },
+		]);
+
+		await expect(listOrganizerUploaders(space)).resolves.toEqual([
+			{ displayName: 'Ángel', guestAlias: 'invitado-aaaaaaaa', files: 5 },
+			{ displayName: 'Zoe', guestAlias: 'invitado-zzzzzzzz', files: 2 },
+		]);
 	});
 });
 

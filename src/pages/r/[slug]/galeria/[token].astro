@@ -1,0 +1,76 @@
+---
+export const prerender = false;
+
+import Layout from '@/layouts/Layout.astro';
+import MemoriesEventHeader from '@/components/memories/MemoriesEventHeader.astro';
+import MemoriesSharedGallery from '@/components/memories/MemoriesSharedGallery';
+import { memoriesGalleryCopy as copy } from '@/lib/memories/copy';
+import { buildMemoriesGalleryPath } from '@/lib/memories/contract/private-request';
+import type { MemoriesSpaceRecord } from '@/lib/memories/contract/catalog';
+import { resolveMemoriesEventIdentity } from '@/lib/memories/server/event-identity.service';
+import { requireSharedGallerySpace } from '@/lib/memories/server/share.service';
+import { resolveMemoriesThemeHead } from '@/lib/memories/server/theme-head';
+
+// The link is the credential: never cache the page or let search engines keep it.
+Astro.response.headers.set('Cache-Control', 'no-store, private');
+Astro.response.headers.set('Referrer-Policy', 'no-referrer');
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+
+let space: MemoriesSpaceRecord | null = null;
+try {
+	space = await requireSharedGallerySpace(Astro.params.slug, Astro.params.token);
+} catch {
+	Astro.response.status = 404;
+}
+
+const identity = space ? await resolveMemoriesEventIdentity(space) : null;
+const theme = resolveMemoriesThemeHead(identity?.preset ?? 'jewelry-box');
+const title = identity ? `${copy.title} · ${identity.names} | Celebra-me` : `${copy.title} | Celebra-me`;
+---
+
+<Layout
+	title={title}
+	description={copy.intro}
+	hideHeader={true}
+	className={theme.className}
+	headLinks={theme.headLinks}
+>
+	<meta name="robots" content="noindex, nofollow" slot="head" />
+
+	<main
+		class="status-page status-page--memories status-page--gallery"
+		data-page="memories-gallery"
+		data-route={space && Astro.params.token ? buildMemoriesGalleryPath(space.publicSlug, Astro.params.token) : undefined}
+	>
+		<div class="status-page__bg-decoration"></div>
+		<div class="status-page__container">
+			<section class="status-page__card" aria-labelledby="gallery-heading">
+				{
+					space && identity && Astro.params.token ? (
+						<>
+							<MemoriesEventHeader
+								identity={identity}
+								eyebrow={copy.eyebrow}
+								headingId="gallery-heading"
+								description={copy.intro}
+							/>
+							<MemoriesSharedGallery
+								client:load
+								publicSlug={space.publicSlug}
+								token={Astro.params.token}
+								timeZone={space.timeZone}
+							/>
+						</>
+					) : (
+						<header class="status-page__header">
+							<h1 id="gallery-heading" class="status-page__title">
+								{copy.unavailableTitle}
+							</h1>
+							<p class="status-page__description">{copy.unavailableBody}</p>
+						</header>
+					)
+				}
+			</section>
+		</div>
+	</main>
+</Layout>

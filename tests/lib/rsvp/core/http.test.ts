@@ -95,6 +95,40 @@ describe('errorResponse — stack trace / secret exposure regression (CodeQL: In
 		expect(JSON.stringify(body)).not.toContain('Supabase error');
 	});
 
+	it('maps a missing column to schema_out_of_date without leaking the provider body', async () => {
+		const rawBody = JSON.stringify({
+			code: '42703',
+			details: null,
+			hint: null,
+			message: 'column event_memory_settings.expected_guests does not exist',
+		});
+		const response = errorResponse(new SupabaseHttpError(400, rawBody, '42703'));
+		const body = await response.json();
+
+		expect(response.status).toBe(503);
+		expect(body.error).toEqual({
+			code: 'schema_out_of_date',
+			message: 'Database schema is behind the application.',
+		});
+		expect(JSON.stringify(body)).not.toContain('expected_guests');
+	});
+
+	it('maps a PostgREST schema-cache miss to schema_out_of_date', async () => {
+		const response = errorResponse(new SupabaseHttpError(404, '{}', 'PGRST205'));
+		const body = await response.json();
+
+		expect(response.status).toBe(503);
+		expect(body.error.code).toBe('schema_out_of_date');
+	});
+
+	it('keeps codes a malformed request can raise as internal errors', async () => {
+		const response = errorResponse(new SupabaseHttpError(400, '{}', 'PGRST204'));
+		const body = await response.json();
+
+		expect(response.status).toBe(500);
+		expect(body.error.code).toBe('internal_error');
+	});
+
 	it('still recognizes ApiError instances by name across module boundaries', () => {
 		const foreign = Object.assign(new Error('Prohibido.'), {
 			name: 'ApiError',

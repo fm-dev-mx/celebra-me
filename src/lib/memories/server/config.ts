@@ -9,4 +9,6 @@ export const MEMORIES_ENV = {
 	uploadSigningPrivateKey: 'MEMORIES_UPLOAD_REQUEST_SIGNING_PRIVATE_KEY',
 	retrievalSigningPrivateKey: 'MEMORIES_RETRIEVAL_REQUEST_SIGNING_PRIVATE_KEY',
 	cronSecret: 'CRON_SECRET',
+	/** HMAC key for shared-gallery links; rotating it revokes every link at once. */
+	shareSecret: 'MEMORIES_SHARE_SECRET',
 } as const;

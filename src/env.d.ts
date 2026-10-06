@@ -27,6 +27,8 @@ interface ImportMetaEnv {
 	readonly MEMORIES_PRIVATE_UPLOAD_ORIGIN: string;
 	/** Server-only HTTPS origin for the private retrieval Worker. */
 	readonly MEMORIES_PRIVATE_RETRIEVAL_ORIGIN: string;
+	/** Server-only HMAC key for shared memories gallery links. */
+	readonly MEMORIES_SHARE_SECRET: string;
 	/** Server-only bearer secret injected by Vercel Cron. */
 	readonly CRON_SECRET: string;
 	/** Server-only Cloudflare account id for the platform usage console (optional). */

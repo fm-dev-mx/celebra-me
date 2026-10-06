@@ -1,0 +1,38 @@
+---
+import type { MemoriesEventIdentity } from '@/lib/memories/server/event-identity.service';
+import { formatMemoriesEventDate } from '@/lib/memories/dashboard-copy';
+
+interface Props {
+	identity: MemoriesEventIdentity;
+	eyebrow: string;
+	headingId: string;
+	description?: string | null;
+}
+
+const { identity, eyebrow, headingId, description = null } = Astro.props;
+---
+
+<header class="status-page__header memories-event-header">
+	{
+		identity.coverImage ? (
+			<div class="memories-event-header__cover">
+				<img
+					src={identity.coverImage}
+					alt=""
+					loading="eager"
+					decoding="async"
+				/>
+			</div>
+		) : null
+	}
+	<span class="status-page__subtitle">{eyebrow}</span>
+	<h1 id={headingId} class="status-page__title memories-event-header__names">
+		{identity.names}
+	</h1>
+	{
+		identity.eventDate ? (
+			<p class="memories-event-header__date">{formatMemoriesEventDate(identity.eventDate)}</p>
+		) : null
+	}
+	{description ? <p class="status-page__description">{description}</p> : null}
+</header>

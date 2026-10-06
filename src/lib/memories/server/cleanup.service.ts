@@ -27,6 +27,7 @@ import {
 } from './catalog.repository';
 import { settleStaleMemoryItem, type MemoriesSettleResult } from './guest-media.service';
 import { createMemoriesLeaseId, createMemoriesSessionToken, hashMemoriesSecret } from './secrets';
+import { MEMORIES_THUMBNAIL_MIME_TYPE } from '@/lib/memories/contract/object-key';
 import { deleteMemoriesObject } from './worker-gateway';
 
 export interface MemoriesCleanupResult {
@@ -140,6 +141,13 @@ async function deleteClaimedObjects(
 		if (!removed) {
 			failed += 1;
 			continue;
+		}
+		// The bucket lifecycle rule still catches a thumbnail this call misses.
+		if (row.thumbnail_object_key) {
+			await deleteMemoriesObject({
+				objectKey: row.thumbnail_object_key,
+				mimeType: MEMORIES_THUMBNAIL_MIME_TYPE,
+			}).catch(() => false);
 		}
 		await markObjectDeleted(row.id, leaseId);
 		sessions.set(row.session_id, { id: row.session_id, event_id: row.event_id });

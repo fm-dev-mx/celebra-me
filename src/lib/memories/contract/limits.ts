@@ -77,6 +77,13 @@ export const MEMORIES_APP_RATE_LIMITS = {
 	},
 	read: { maxHits: 60, windowSec: 60 },
 	mutate: { maxHits: 30, windowSec: 60 },
+	/** Thumbnail reserve and confirm: two calls per original, kept off the mutate budget. */
+	thumbnail: { maxHits: 30, windowSec: 60 },
+	/**
+	 * Anonymous, per IP: the shared gallery's listings and media. One page is a
+	 * listing plus up to 50 thumbnails, and relatives often share one network.
+	 */
+	gallery: { maxHits: 600, windowSec: 60 },
 	/** Authenticated host, per user id. Sized for gallery browsing and ZIP batch downloads (up to 100 items). */
 	organizer: { maxHits: 300, windowSec: 60 },
 } as const;

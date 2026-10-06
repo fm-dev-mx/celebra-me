@@ -115,6 +115,7 @@ const publicItem: MemoriesMediaPublicItem = {
 	acceptedAt: '2026-10-24T11:05:00.000Z',
 	rejectedAt: null,
 	deletedAt: null,
+	hasThumbnail: false,
 };
 
 type RouteContext = Parameters<typeof getList>[0];
@@ -185,7 +186,11 @@ describe('GET /api/dashboard/memories/[eventId]', () => {
 	it('forwards validated filters to the service and includes the space summary', async () => {
 		mockListItems.mockResolvedValue({
 			items: [
-				{ ...publicItem, uploader: { displayName: 'Tía Ana', guestAlias: GUEST_ALIAS } },
+				{
+					...publicItem,
+					hidden: false,
+					uploader: { displayName: 'Tía Ana', guestAlias: GUEST_ALIAS },
+				},
 			],
 			nextPage: 3,
 		});
@@ -426,7 +431,7 @@ describe('GET /api/dashboard/memories/[eventId]/items/[itemId]', () => {
 		expect(mockSessionFromLocals).toHaveBeenCalledWith(locals);
 		expect(mockMutationAccess).not.toHaveBeenCalled();
 		expect(mockRateLimit).toHaveBeenCalledWith(request, 'organizer', OWNER_USER_ID);
-		expect(mockObject).toHaveBeenCalledWith(space, ITEM_ID);
+		expect(mockObject).toHaveBeenCalledWith(space, ITEM_ID, undefined, { variant: 'original' });
 		expect(mockRetrieve).toHaveBeenCalledWith({ ...object, mode: 'attachment', range: null });
 		expect(mockAccess).toHaveBeenCalledWith({
 			eventId: EVENT_ID,

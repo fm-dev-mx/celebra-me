@@ -3,6 +3,7 @@ export const prerender = false;
 
 import Layout from '@/layouts/Layout.astro';
 import MemoriesCapture from '@/components/memories/MemoriesCapture';
+import MemoriesEventHeader from '@/components/memories/MemoriesEventHeader.astro';
 import { buildMemoriesPageCopy, buildMemoriesWindowCopy } from '@/lib/memories/copy';
 import {
 	MEMORIES_ORGANIZER_LOGIN_PATH,
@@ -14,6 +15,9 @@ import {
 	isMemorySpaceInteractive,
 	toMemorySpaceSummary,
 } from '@/lib/memories/server/space.service';
+import { resolveMemoriesEventIdentity } from '@/lib/memories/server/event-identity.service';
+import { resolveMemoriesThemeHead } from '@/lib/memories/server/theme-head';
+import { isMemorySpaceFull } from '@/lib/memories/server/usage.service';
 
 Astro.response.headers.set('Cache-Control', 'no-store, private');
 
@@ -25,6 +29,10 @@ if (!space) {
 
 const summary = toMemorySpaceSummary(space);
 const interactive = isMemorySpaceInteractive(summary.windowState);
+const identity = await resolveMemoriesEventIdentity(space);
+const eventFull =
+	summary.windowState === 'open' ? await isMemorySpaceFull(space).catch(() => false) : false;
+const theme = resolveMemoriesThemeHead(identity.preset);
 const copy = buildMemoriesPageCopy({ eventTitle: space.eventTitle });
 const windowCopy = buildMemoriesWindowCopy(summary);
 ---
@@ -33,7 +41,8 @@ const windowCopy = buildMemoriesWindowCopy(summary);
 	title={copy.title}
 	description={copy.description}
 	hideHeader={true}
-	className="theme-preset--jewelry-box-landing"
+	className={theme.className}
+	headLinks={theme.headLinks}
 >
 	<meta name="robots" content={copy.robots} slot="head" />
 
@@ -46,13 +55,14 @@ const windowCopy = buildMemoriesWindowCopy(summary);
 
 		<div class="status-page__container">
 			<section class="status-page__card" aria-labelledby="memories-heading">
-				<header class="status-page__header">
-					<span class="status-page__subtitle">{copy.subtitle}</span>
-					<h1 id="memories-heading" class="status-page__title">{copy.heading}</h1>
-					{interactive ? <p class="status-page__description">{copy.body}</p> : null}
-				</header>
+				<MemoriesEventHeader
+					identity={identity}
+					eyebrow={copy.subtitle}
+					headingId="memories-heading"
+					description={interactive ? copy.body : null}
+				/>
 
-				{windowCopy ? (
+				{windowCopy && summary.windowState !== 'before' ? (
 					<p class="status-page__status" role="status">{windowCopy}</p>
 				) : null}
 
@@ -62,6 +72,7 @@ const windowCopy = buildMemoriesWindowCopy(summary);
 							client:load
 							space={summary}
 							maxSessionVideos={space.maxSessionVideos}
+							eventFull={eventFull}
 						/>
 
 						<nav class="status-page__support-links" aria-label="Enlaces de ayuda">

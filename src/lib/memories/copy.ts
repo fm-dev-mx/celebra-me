@@ -49,10 +49,6 @@ export function buildMemoriesUploadLimitsCopy(maxSessionVideos: number): string 
 	return `Formatos: ${formats}. Fotos: máximo ${formatMiB(MEMORIES_MAX_IMAGE_BYTES)} MiB después de optimizar. Videos: máximo ${formatMiB(MEMORIES_MAX_VIDEO_BYTES)} MiB y ${MEMORIES_MAX_VIDEO_DURATION_SECONDS} segundos; hasta ${maxSessionVideos} videos por sesión.`;
 }
 
-export function buildMemoriesUploadSummaryCopy(maxSessionVideos: number): string {
-	return `Fotos hasta ${formatMiB(MEMORIES_MAX_IMAGE_BYTES)} MiB. Videos hasta ${MEMORIES_MAX_VIDEO_DURATION_SECONDS} segundos y ${formatMiB(MEMORIES_MAX_VIDEO_BYTES)} MiB. Máximo ${maxSessionVideos} videos.`;
-}
-
 export function buildMemoriesVideoTooLongCopy(): string {
 	return `El video no puede durar más de ${MEMORIES_MAX_VIDEO_DURATION_SECONDS} segundos.`;
 }
@@ -61,9 +57,9 @@ export function buildMemoriesPageCopy(input: { eventTitle: string }) {
 	return {
 		title: `Recuerdos · ${input.eventTitle} | Celebra-me`,
 		description: `Espacio temporal para subir fotos y videos de ${input.eventTitle}.`,
-		subtitle: `Recuerdos · ${input.eventTitle}`,
+		subtitle: 'Recuerdos de la celebración',
 		heading: 'Comparta sus fotos y videos',
-		body: 'Suba una foto o un video de la celebración de forma rápida y segura.',
+		body: 'Comparta las fotos y videos que tomó hoy. Solo los anfitriones podrán verlos.',
 		recoveryCtaLabel: 'Recuperar mis recuerdos',
 		organizerCtaLabel: 'Acceso del organizador',
 		footer: 'Celebra-me • Recuerdos digitales',
@@ -71,8 +67,35 @@ export function buildMemoriesPageCopy(input: { eventTitle: string }) {
 	} as const;
 }
 
+export const memoriesGalleryCopy = {
+	title: 'Galería',
+	eyebrow: 'Galería de recuerdos',
+	intro: 'Las fotos y videos que compartieron los invitados.',
+	empty: 'Todavía no hay recuerdos en la galería.',
+	loadError: 'No se pudo cargar la galería. Revise su conexión e intente de nuevo.',
+	retry: 'Intentar de nuevo',
+	loadMore: 'Ver más recuerdos',
+	loading: 'Cargando…',
+	photoBy: (name: string) => `Foto de ${name}`,
+	videoBy: (name: string) => `Video de ${name}`,
+	video: 'Video',
+	sharedBy: (name: string, time: string) => `Compartido por ${name} · ${time}`,
+	position: (index: number, total: number) => `Recuerdo ${index} de ${total}`,
+	previous: 'Anterior',
+	next: 'Siguiente',
+	download: 'Descargar',
+	close: 'Cerrar',
+	unavailableTitle: 'Esta galería no está disponible',
+	unavailableBody:
+		'El enlace cambió o la galería ya no se comparte. Pida el enlace nuevo a los anfitriones.',
+} as const;
+
 export const memoriesRecoveryFormCopy = {
 	inputLabel: 'Código de recuperación',
+	inputHint: '12 letras y números; los guiones se agregan solos.',
+	noCodeTitle: '¿No tiene el código?',
+	noCodeBody:
+		'Sin él no podemos mostrarle lo que subió desde otro teléfono, pero sus recuerdos siguen guardados para los anfitriones. Puede seguir compartiendo desde la página principal.',
 	submit: 'Recuperar recuerdos',
 	submitting: 'Recuperando…',
 	failed: 'No pudimos recuperar sus recuerdos. Revise el código e intente de nuevo.',
@@ -82,8 +105,8 @@ export function buildMemoriesRecoveryPageCopy(input: { eventTitle: string }) {
 	return {
 		title: `Recuperar recuerdos · ${input.eventTitle} | Celebra-me`,
 		description: `Recupere de forma segura los recuerdos que compartió para ${input.eventTitle}.`,
-		heading: 'Recupere sus recuerdos',
-		body: 'Escriba el código que guardó al comenzar.',
+		heading: 'Vuelva a ver sus recuerdos',
+		body: 'Escriba el código que recibió después de su primera subida.',
 		backLabel: 'Volver a compartir recuerdos',
 		organizerLabel: 'Acceso del organizador',
 		robots: 'noindex',
@@ -112,36 +135,73 @@ export function buildMemoriesWindowCopy(input: {
 }
 
 export const memoriesCaptureCopy = {
-	chooseFile: 'Elija una foto o un video',
-	chooseFileTitle: 'Comparta un recuerdo',
-	chooseFileBody: 'Toque para elegir una foto o un video desde su dispositivo.',
-	selectedFileTitle: 'Revise su recuerdo antes de subirlo',
-	selectedFileFallback: 'Archivo seleccionado',
-	selectedFileSize: 'Tamaño original',
-	selectedPreviewAlt: 'Vista previa del recuerdo seleccionado',
-	captionLabel: 'Descripción opcional',
+	chooseFile: 'Elegir fotos y videos',
+	chooseFileTitle: 'Comparta sus recuerdos',
+	chooseFileBody: 'Puede elegir varias fotos y videos a la vez.',
+	addMore: 'Agregar más',
+	reviewTitle: (count: number) =>
+		count === 1 ? 'Revise su recuerdo' : `Revise sus ${count} recuerdos`,
+	reviewBody: 'Toque la × para quitar alguno antes de subir.',
+	removeFile: (name: string) => `Quitar ${name}`,
+	invalidTile: {
+		unsupported_type: 'Formato no admitido',
+		file_too_large: 'Archivo muy pesado',
+		video_too_large: 'Video muy pesado',
+	} as Record<string, string>,
+	invalidTileFallback: 'No se puede subir',
+	invalidSummary: (count: number) =>
+		count === 1
+			? 'Un archivo no se puede subir; quítelo o elija otro.'
+			: `${count} archivos no se pueden subir; quítelos o elija otros.`,
+	confirmUploadCount: (count: number) =>
+		count === 1 ? 'Subir 1 recuerdo' : `Subir ${count} recuerdos`,
+	captionLabelAll: 'Descripción para estos recuerdos (opcional)',
+	captionToggle: 'Agregar una descripción (opcional)',
+	quotaRemaining: (remaining: number, limit: number) =>
+		`Le quedan ${remaining} de ${limit} archivos`,
+	quotaVideosRemaining: (remaining: number) =>
+		remaining === 1 ? '1 video disponible' : `${remaining} videos disponibles`,
+	progressTitle: (done: number, total: number) => `Subiendo ${done} de ${total}`,
+	keepOpen: 'Mantenga esta página abierta hasta que terminen.',
+	offline: 'Sin conexión. Las subidas seguirán solas cuando vuelva la señal.',
+	statusWaiting: 'En espera',
+	statusOptimizing: 'Optimizando…',
+	statusPreparing: 'Preparando…',
+	statusConfirming: 'Confirmando…',
+	statusDone: 'Guardado',
+	cancelPending: 'Cancelar las pendientes',
+	successCount: (count: number) =>
+		count === 1
+			? 'Se guardó. Gracias por compartir este momento.'
+			: `Se guardaron ${count} recuerdos. Gracias por compartir estos momentos.`,
+	thanks: (name: string) => `¡Gracias, ${name}!`,
+	failedCount: (count: number) =>
+		count === 1 ? 'Un archivo no se subió.' : `${count} archivos no se subieron.`,
+	noneSaved: 'No se pudo guardar ningún recuerdo',
+	addToCalendar: 'Agregar a mi calendario',
+	calendarTitle: (eventTitle: string) => `Compartir recuerdos · ${eventTitle}`,
+	memoryOptions: 'Opciones del recuerdo',
+	closeOptions: 'Cerrar',
+	deleteTitle: '¿Eliminar este recuerdo?',
+	deleteBody: 'Los anfitriones ya no podrán verlo. El espacio se libera al día siguiente.',
+	deleteFailed: 'No se pudo eliminar. Intente de nuevo.',
+	captionFailed: 'No se pudo guardar la descripción. Intente de nuevo.',
+	welcomeNameHelp: 'Así sabrán quién compartió cada recuerdo.',
+	eventFullTitle: 'El álbum está lleno',
+	eventFullBody:
+		'Los anfitriones recibieron todos los recuerdos que caben. Gracias por querer compartir.',
 	captionPlaceholder: 'Por ejemplo: Baile con la familia',
-	confirmUpload: 'Subir recuerdo',
-	changeFile: 'Elegir otro archivo',
 	cancelSelection: 'Cancelar',
-	stepOne: 'Paso 1 de 2',
-	stepTwo: 'Paso 2 de 2',
-	quotaLabel: 'Cupo disponible',
 	detailsLabel: 'Ver formatos, límites y privacidad',
 	privacyHint:
 		'Usted podrá ver sus recuerdos y solo la persona organizadora podrá verlos y descargarlos todos. Los formatos que no se puedan optimizar pueden conservar metadatos del teléfono.',
-	displayNameLabel: 'Su nombre o apodo',
+	displayNameLabel: '¿Cómo se llama?',
 	continueLabel: 'Continuar',
 	saveLabel: 'Guardar',
 	profileSectionLabel: 'Su perfil de recuerdos',
 	onboardingSectionLabel: 'Iniciar sesión de recuerdos',
-	preparing: 'Preparando su recuerdo…',
-	optimizing: 'Optimizando su foto…',
-	cancelOptimization: 'Cancelar optimización',
-	uploading: 'Subiendo su recuerdo…',
-	confirming: 'Confirmando que llegó correctamente…',
-	success: 'Se guardó. Gracias por compartir este momento.',
-	uploadAnother: 'Subir otro recuerdo',
+	uploadAnother: 'Subir más',
+	chooseOtherFiles: 'Elegir otros archivos',
 	viewMemories: 'Ver mis recuerdos',
 	retry: 'Intentar de nuevo',
 	completionRejected: 'No pudimos validar este archivo y no se guardó. Intente con otro archivo.',
@@ -171,15 +231,14 @@ export const memoriesCaptureCopy = {
 	uploadExpired:
 		'La subida anterior ya no es válida. Toque «Intentar de nuevo» para subir el archivo otra vez.',
 	unavailable: 'La carga de recuerdos no está disponible en este momento.',
-	recoveryCodeTitle: 'Guarde su código de recuperación',
+	recoveryCodeTitle: 'Guarde su código',
 	recoveryCodeHint:
-		'Permite recuperar sus recuerdos en otro dispositivo. No se envía al servidor en texto visible ni debe compartirse públicamente.',
-	recoveryCodeManualHint: 'También puede seleccionar el código y copiarlo manualmente.',
+		'Lo necesitará para ver o eliminar sus recuerdos si cambia de teléfono o de navegador. No lo comparta.',
+	recoveryCodeManualHint: 'También puede tomar una captura de pantalla.',
 	copyRecoveryCode: 'Copiar código',
 	recoveryCodeCopied: 'Código copiado',
 	captionSaveFailed:
 		'El recuerdo se guardó, pero la descripción no. Puede reintentar sólo la descripción.',
-	retryCaption: 'Reintentar descripción',
 	sharingAs: 'Compartiendo como',
 	changeName: 'Cambiar nombre',
 	cancelNameChange: 'Cancelar',
@@ -192,6 +251,5 @@ export const memoriesCaptureCopy = {
 	editCaption: 'Editar descripción',
 	saveCaption: 'Guardar',
 	deleteMemory: 'Eliminar recuerdo',
-	confirmDelete: '¿Desea eliminar este recuerdo?',
-	noMemories: 'Todavía no ha registrado recuerdos en este dispositivo.',
+	noMemories: 'Todavía no ha compartido recuerdos desde este dispositivo.',
 } as const;

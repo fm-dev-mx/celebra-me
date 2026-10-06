@@ -85,10 +85,91 @@ export function buildMemoriesHostStatusCopy(input: {
 	}
 }
 
+export interface MemoriesLoadErrorGuide {
+	title: string;
+	steps: readonly string[];
+}
+
+/**
+ * Turns a failed admin list request into a cause and the steps that resolve it.
+ * Only the stable status/code pair is read; provider details never reach the browser.
+ */
+export function describeMemoriesLoadError(failure: {
+	status: number | null;
+	code?: string;
+}): MemoriesLoadErrorGuide {
+	const { status, code } = failure;
+	if (code === 'schema_out_of_date') {
+		return {
+			title: 'La base de datos de este entorno no tiene las migraciones más recientes.',
+			steps: [
+				'Local: ejecute «pnpm db:migrate -- --target local».',
+				'Preview: ejecute «pnpm db:migrate -- --target preview».',
+				'Producción: el responsable aplica la migración con «pnpm prod:apply».',
+				'Recargue esta página al terminar.',
+			],
+		};
+	}
+	if (status === 401 || code === 'unauthorized') {
+		return {
+			title: 'Su sesión expiró.',
+			steps: ['Cierre sesión, vuelva a iniciarla y regrese a esta página.'],
+		};
+	}
+	if (status === 403 || code === 'forbidden') {
+		return {
+			title: 'Esta sección requiere una cuenta de superadministrador con verificación en dos pasos.',
+			steps: [
+				'Inicie sesión con una cuenta de superadministrador.',
+				'Complete la verificación en dos pasos o use un dispositivo de confianza.',
+			],
+		};
+	}
+	if (status === 429 || code === 'rate_limited') {
+		return {
+			title: 'Se hicieron demasiadas consultas seguidas.',
+			steps: ['Espere un minuto y use «Reintentar».'],
+		};
+	}
+	if (status === 408 || code === 'timeout') {
+		return {
+			title: 'El servidor tardó demasiado en responder.',
+			steps: [
+				'Confirme que Supabase y Cloudflare estén disponibles para este entorno.',
+				'Use «Reintentar».',
+			],
+		};
+	}
+	if (code === 'upstream_error') {
+		return {
+			title: 'El servicio de autenticación rechazó la solicitud.',
+			steps: ['Cierre sesión, vuelva a iniciarla y regrese a esta página.'],
+		};
+	}
+	if (code === 'service_unavailable') {
+		return {
+			title: 'Un servicio externo no respondió.',
+			steps: [
+				'Local: confirme que Supabase esté en marcha («pnpm db:start»).',
+				'Use «Reintentar» en unos segundos.',
+			],
+		};
+	}
+	return {
+		title: 'El servidor respondió con un error inesperado.',
+		steps: [
+			'Confirme que el servidor de desarrollo y Supabase estén en marcha («pnpm db:start»).',
+			'Revise la terminal de «pnpm dev» (o los registros de Vercel) y busque «[rsvp]» para ver la causa.',
+			'Use «Reintentar» después de corregirla.',
+		],
+	};
+}
+
 export const memoriesAdminCopy = {
 	activate: 'Activar evento',
 	empty: 'Todavía no hay espacios de recuerdos. Use «Activar evento» para crear el primero.',
 	loadError: 'No se pudieron cargar los espacios de recuerdos.',
+	retry: 'Reintentar',
 	expiredSummary: (count: number) => `Vencidos (${count})`,
 	committed: (committed: string, limit: string) =>
 		`Comprometido por espacios vigentes: ${committed} de ${limit}.`,
@@ -229,20 +310,67 @@ export const memoriesCapacityCopy = {
 
 export const memoriesHostCopy = {
 	eyebrow: 'Resumen',
+	statusTitle: 'Estado',
 	photos: 'Fotos',
 	videos: 'Videos',
-	guests: 'Invitados que compartieron',
-	capacity: 'Espacio disponible',
+	guests: 'Invitados',
+	spaceUsed: 'Espacio usado',
+	spaceUsedLabel: (percent: number) => `${percent} % del espacio usado`,
+	nearFull: (remaining: number) =>
+		`Queda ${remaining} % del espacio. Le recomendamos descargar lo recibido para tener una copia.`,
+	full: 'El álbum está lleno y sus invitados ya no pueden subir archivos. Todo lo recibido está a salvo; si necesita más espacio, escríbanos.',
+	timelineLabel: 'Fechas del espacio de recuerdos',
+	opens: (past: boolean) => (past ? 'Abrió' : 'Abre'),
+	closes: (past: boolean) => (past ? 'Cerró' : 'Cierra'),
+	deletes: 'Se borra',
 	lastUpload: (date: string) => `Última subida: ${date}`,
-	shareTitle: 'Enlace para sus invitados',
-	downloadQr: 'Descargar QR',
-	copyUrl: 'Copiar enlace',
-	copied: 'Enlace copiado.',
+	noUploads: 'Aún no hay subidas.',
 	loadError: 'No se pudo cargar el resumen.',
+	retry: 'Reintentar',
 	deletionCountdown: (days: number) =>
 		days === 1
 			? 'Sus recuerdos se eliminan mañana. Descárguelos ahora.'
 			: `Sus recuerdos se eliminan en ${days} días. Descárguelos ahora.`,
+} as const;
+
+export const memoriesShareCopy = {
+	title: 'Galería para sus invitados',
+	offBody:
+		'Comparta un enlace para que sus invitados vean las fotos y videos disponibles. Lo que usted oculte no aparece.',
+	onBody: 'Cualquier persona con este enlace puede ver la galería hasta que se borren los recuerdos.',
+	enable: 'Compartir galería',
+	copy: 'Copiar enlace',
+	copied: 'Enlace copiado.',
+	rotate: 'Generar enlace nuevo',
+	rotateHint: 'El enlace anterior dejará de funcionar.',
+	disable: 'Dejar de compartir',
+	open: 'Abrir galería',
+	error: 'No se pudo cambiar el enlace. Intente de nuevo.',
+	notConfigured: 'La galería compartida todavía no está disponible. Escríbanos para activarla.',
+} as const;
+
+export const memoriesQrCopy = {
+	title: 'QR para sus invitados',
+	alt: 'Código QR de la página de recuerdos',
+	viewAndPrint: 'Ver e imprimir',
+	copyUrl: 'Copiar enlace',
+	copied: 'Enlace copiado.',
+	downloadQr: 'Descargar QR',
+	print: 'Imprimir tarjeta',
+	modalSubtitle: 'Imprímalo y colóquelo donde sus invitados lo vean.',
+	placementTitle: 'Cómo colocarlo',
+	placementSteps: [
+		'Imprima la tarjeta en tamaño media carta o mayor; el código debe medir al menos 4 cm.',
+		'Colóquela donde la gente espera: en cada mesa, en la entrada y junto a la pista.',
+		'Pruébela antes del evento con dos teléfonos distintos, con la luz del salón.',
+		'Pida que lo anuncien el maestro de ceremonias o el DJ después del primer baile.',
+	],
+	printPreviewTitle: 'Tarjeta para imprimir',
+	printEyebrow: 'Comparta sus fotos',
+	printBody:
+		'Abra la cámara de su teléfono, apunte al código y suba las fotos y videos que tomó hoy.',
+	printNoApp: 'No necesita descargar ninguna aplicación.',
+	close: 'Cerrar',
 } as const;
 
 export { DECIMAL_GB as MEMORIES_DECIMAL_GB, BINARY_MB as MEMORIES_BINARY_MB };

@@ -141,7 +141,7 @@ async function startSession(page: Page): Promise<void> {
 	await page.goto(`/r/${SLUG}`);
 	await page.getByLabel(copy.displayNameLabel).fill(PROFILE.displayName);
 	await page.getByRole('button', { name: copy.continueLabel }).click();
-	await expect(page.getByText(copy.recoveryCodeTitle)).toBeVisible();
+	await expect(page.getByLabel(copy.chooseFile)).toBeAttached();
 }
 
 async function choosePhoto(page: Page, name = 'e2e.png', mimeType = 'image/png'): Promise<void> {
@@ -163,9 +163,10 @@ test.describe('memories guest flow', () => {
 		await startSession(page);
 
 		await choosePhoto(page);
-		await page.getByRole('button', { name: copy.confirmUpload }).click();
+		await page.getByRole('button', { name: copy.confirmUploadCount(1) }).click();
 
-		await expect(page.getByText(copy.success)).toBeVisible();
+		await expect(page.getByText(copy.successCount(1))).toBeVisible();
+		await expect(page.getByText(copy.recoveryCodeTitle)).toBeVisible();
 		expect(api.putAttempts).toBe(1);
 		const overflow = await page.evaluate(
 			() => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -192,9 +193,9 @@ test.describe('memories guest flow', () => {
 		await page.goto(`/r/${SLUG}`);
 
 		await choosePhoto(page, 'IMG_0001.HEIC', '');
-		await page.getByRole('button', { name: copy.confirmUpload }).click();
+		await page.getByRole('button', { name: copy.confirmUploadCount(1) }).click();
 
-		await expect(page.getByText(copy.success)).toBeVisible();
+		await expect(page.getByText(copy.successCount(1))).toBeVisible();
 		expect(api.reserveBodies[0].mimeType).toBe('image/heic');
 	});
 
@@ -204,7 +205,7 @@ test.describe('memories guest flow', () => {
 
 		// Not a real container: the engine must answer with an error, not silence.
 		await choosePhoto(page, 'IMG_0002.MOV', 'video/quicktime');
-		await page.getByRole('button', { name: copy.confirmUpload }).click();
+		await page.getByRole('button', { name: copy.confirmUploadCount(1) }).click();
 
 		await expect(page.getByRole('alert')).toHaveText(copy.videoUnreadable, { timeout: 20_000 });
 		expect(api.reserveBodies).toHaveLength(0);
@@ -230,12 +231,12 @@ test.describe('memories guest flow', () => {
 		await page.goto(`/r/${SLUG}`);
 
 		await choosePhoto(page);
-		await page.getByRole('button', { name: copy.confirmUpload }).click();
+		await page.getByRole('button', { name: copy.confirmUploadCount(1) }).click();
 		await expect(page.getByRole('alert')).toHaveText(copy.putFailed);
 
 		await page.getByRole('button', { name: copy.retry }).click();
 
-		await expect(page.getByText(copy.success)).toBeVisible();
+		await expect(page.getByText(copy.successCount(1))).toBeVisible();
 		expect(api.reserveBodies).toHaveLength(2);
 		expect(api.reserveBodies[1].clientRequestId).toBe(api.reserveBodies[0].clientRequestId);
 	});
@@ -255,9 +256,9 @@ test.describe('memories guest flow', () => {
 		await page.goto(`/r/${SLUG}`);
 
 		await choosePhoto(page);
-		await page.getByRole('button', { name: copy.confirmUpload }).click();
+		await page.getByRole('button', { name: copy.confirmUploadCount(1) }).click();
 
-		await expect(page.getByText(copy.success)).toBeVisible();
+		await expect(page.getByText(copy.successCount(1))).toBeVisible();
 	});
 
 	test('without signal, says so and resumes when the connection returns', async ({ page }) => {
@@ -286,7 +287,7 @@ test.describe('memories guest flow', () => {
 		});
 
 		await choosePhoto(page);
-		await page.getByRole('button', { name: copy.confirmUpload }).click();
+		await page.getByRole('button', { name: copy.confirmUploadCount(1) }).click();
 		await expect(page.getByRole('alert')).toHaveText(copy.networkFailed);
 
 		offline = false;
@@ -295,7 +296,7 @@ test.describe('memories guest flow', () => {
 		);
 		await page.getByRole('button', { name: copy.retry }).click();
 
-		await expect(page.getByText(copy.success)).toBeVisible();
+		await expect(page.getByText(copy.successCount(1))).toBeVisible();
 		expect(api.putAttempts).toBe(2);
 	});
 
@@ -313,8 +314,8 @@ test.describe('memories guest flow', () => {
 		});
 		await page.goto(`/r/${SLUG}`);
 		await choosePhoto(page);
-		await page.getByRole('button', { name: copy.confirmUpload }).click();
-		await expect(page.getByText(copy.uploading)).toBeVisible();
+		await page.getByRole('button', { name: copy.confirmUploadCount(1) }).click();
+		await expect(page.getByText(copy.progressTitle(1, 1))).toBeVisible();
 
 		await page.reload();
 		pendingPut.release();
@@ -343,7 +344,7 @@ test.describe('memories guest flow', () => {
 		await page.goto(`/r/${SLUG}`);
 
 		await choosePhoto(page);
-		await page.getByRole('button', { name: copy.confirmUpload }).click();
+		await page.getByRole('button', { name: copy.confirmUploadCount(1) }).click();
 
 		await expect(page.getByRole('alert')).toHaveText(copy.sessionVideosReached);
 	});

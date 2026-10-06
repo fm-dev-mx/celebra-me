@@ -1,6 +1,6 @@
 begin;
 
-select plan(45);
+select plan(52);
 
 -- Access boundary -----------------------------------------------------------
 select ok(
@@ -318,6 +318,54 @@ select is(
 insert into public.event_memory_audit_events (event_id, actor_type, action, expires_at)
 values ('e0000000-0000-0000-0000-000000000001', 'system', 'synthetic_expired', now() - interval '1 second');
 select is(public.purge_event_memory_audit(now()), 1::bigint, 'expired audit row is purged');
+
+-- Host curation, thumbnails and sharing (additive columns) -------------------
+select is(
+	(select share_version from public.event_memory_settings
+		where event_id = 'e0000000-0000-0000-0000-000000000001'),
+	0,
+	'share version defaults to zero'
+);
+select ok(
+	(select bool_and(hidden_at is null and thumbnail_object_key is null) from public.event_memory_items),
+	'items start visible and without a thumbnail'
+);
+select throws_ok(
+	$$update public.event_memory_items set thumbnail_object_key = 'events/a/thumbs/b.webp'
+		where id = (select id from public.event_memory_items order by created_at, id limit 1)$$,
+	'23514',
+	null,
+	'a thumbnail key needs its size'
+);
+select throws_ok(
+	$$update public.event_memory_items
+		set thumbnail_object_key = 'events/a/thumbs/b.webp', thumbnail_bytes = 98305
+		where id = (select id from public.event_memory_items order by created_at, id limit 1)$$,
+	'23514',
+	null,
+	'a thumbnail cannot exceed 96 KiB'
+);
+select throws_ok(
+	$$update public.event_memory_items
+		set thumbnail_object_key = 'events/a/b.jpg', thumbnail_bytes = 1000
+		where id = (select id from public.event_memory_items order by created_at, id limit 1)$$,
+	'23514',
+	null,
+	'a thumbnail key must live under thumbs/ as WebP'
+);
+select lives_ok(
+	$$update public.event_memory_items
+		set thumbnail_object_key = 'events/a/thumbs/b.webp', thumbnail_bytes = 1000, hidden_at = now()
+		where id = (select id from public.event_memory_items order by created_at, id limit 1)$$,
+	'a valid thumbnail pair and a hidden flag are accepted'
+);
+select throws_ok(
+	$$update public.event_memory_settings set share_version = -1
+		where event_id = 'e0000000-0000-0000-0000-000000000001'$$,
+	'23514',
+	null,
+	'share version cannot be negative'
+);
 
 select * from finish();
 rollback;

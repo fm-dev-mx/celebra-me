@@ -64,6 +64,8 @@ const OPEN_SPACE: MemoriesSpaceRecord = {
 	entitlement: 'package',
 	expectedGuests: null,
 	adminNote: null,
+	shareVersion: 0,
+	shareEnabledAt: null,
 	createdAt: '2020-01-01T00:00:00.000Z',
 	updatedAt: '2020-01-01T00:00:00.000Z',
 	maxEventObjects: 2000,
@@ -427,5 +429,30 @@ describe('MemoriesAdmin island', () => {
 		expect(await screen.findByRole('alert')).toHaveTextContent(
 			/Comprometido por espacios vigentes: 16 GB de 10 GB/,
 		);
+	});
+
+	it('explains a failed load with its fix and recovers on retry', async () => {
+		const user = userEvent.setup();
+		adminApi.list
+			.mockRejectedValueOnce(new MemoriesRequestError(503, 'schema_out_of_date'))
+			.mockResolvedValueOnce({
+				items: [adminItem(OPEN_SPACE)],
+				totals: NO_COMMITMENT,
+				candidates: [],
+			});
+
+		render(<MemoriesAdmin />);
+
+		const alert = await screen.findByText(/no tiene las migraciones más recientes/);
+		expect(alert.closest('[role="alert"]')).toHaveTextContent(
+			'pnpm db:migrate -- --target local',
+		);
+		expect(screen.queryByText(/Todavía no hay espacios/)).not.toBeInTheDocument();
+
+		await user.click(screen.getByRole('button', { name: 'Reintentar' }));
+
+		expect(await screen.findByRole('article', { name: 'XV de Sofía' })).toBeInTheDocument();
+		expect(screen.queryByText(/no tiene las migraciones/)).not.toBeInTheDocument();
+		expect(adminApi.list).toHaveBeenCalledTimes(2);
 	});
 });

@@ -9,7 +9,9 @@ import {
 import { buildMemoriesPublicUrl } from '@/lib/memories/contract/private-request';
 import {
 	MEMORIES_WINDOW_ORDER,
+	describeMemoriesLoadError,
 	formatMemoriesStorage,
+	type MemoriesLoadErrorGuide,
 	memoriesAdminCopy as copy,
 	memoriesFormCopy,
 } from '@/lib/memories/dashboard-copy';
@@ -52,6 +54,7 @@ function MemoriesAdmin() {
 	const [candidates, setCandidates] = useState<AdminSpaceCandidate[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [loadFailure, setLoadFailure] = useState<MemoriesLoadErrorGuide | null>(null);
 	const [notice, setNotice] = useState<string | null>(null);
 	const [modal, setModal] = useState<FormModal | null>(null);
 	const [formError, setFormError] = useState<string | null>(null);
@@ -66,9 +69,13 @@ function MemoriesAdmin() {
 			setItems(payload.items);
 			setTotals(payload.totals);
 			setCandidates(payload.candidates);
-			setError(null);
-		} catch {
-			setError(copy.loadError);
+			setLoadFailure(null);
+		} catch (failure) {
+			setLoadFailure(
+				describeMemoriesLoadError(
+					failure instanceof MemoriesRequestError ? failure : { status: null },
+				),
+			);
 		} finally {
 			setLoading(false);
 		}
@@ -212,6 +219,26 @@ function MemoriesAdmin() {
 				</button>
 			</div>
 
+			{loadFailure ? (
+				<div className="dashboard-error memories-admin__load-error" role="alert">
+					<p className="memories-admin__load-error-title">
+						{copy.loadError} {loadFailure.title}
+					</p>
+					<ol className="memories-admin__load-error-steps">
+						{loadFailure.steps.map((step) => (
+							<li key={step}>{step}</li>
+						))}
+					</ol>
+					<button
+						type="button"
+						className="btn-secondary"
+						disabled={loading}
+						onClick={() => void load()}
+					>
+						{copy.retry}
+					</button>
+				</div>
+			) : null}
 			{error ? (
 				<p className="dashboard-error" role="alert">
 					{error}
@@ -241,7 +268,7 @@ function MemoriesAdmin() {
 			</p>
 
 			{loading && items.length === 0 ? <p className="dashboard-status">Cargando…</p> : null}
-			{!loading && items.length === 0 && !error ? (
+			{!loading && items.length === 0 && !error && !loadFailure ? (
 				<div className="dashboard-card">
 					<p>{copy.empty}</p>
 				</div>

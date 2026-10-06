@@ -189,12 +189,14 @@ describe('GET /api/dashboard/memories/[eventId]/summary', () => {
 			[
 				'capacityRemainingPercent',
 				'eventTitle',
+				'expectedGuests',
 				'guestsWithUploads',
 				'lastAcceptedAt',
 				'photos',
 				'publicSlug',
 				'publicUrl',
 				'retentionEndsAt',
+				'shareUrl',
 				'timeZone',
 				'uploadEndsAt',
 				'uploadStartsAt',
@@ -203,7 +205,8 @@ describe('GET /api/dashboard/memories/[eventId]/summary', () => {
 			].sort(),
 		);
 		expect(summary).not.toHaveProperty('adminNote');
-		expect(summary).not.toHaveProperty('expectedGuests');
+		// Attendance planning is shared with the host; the internal note never is.
+		expect(summary).toHaveProperty('expectedGuests');
 		expect(summary).toMatchObject({
 			photos: 1,
 			videos: 0,

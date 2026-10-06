@@ -86,6 +86,7 @@ const publicItem: MemoriesMediaPublicItem = {
 	acceptedAt: null,
 	rejectedAt: null,
 	deletedAt: null,
+	hasThumbnail: false,
 };
 
 type RouteContext = Parameters<typeof getItems>[0];
@@ -141,6 +142,7 @@ describe('GET /api/memories/[slug]/items', () => {
 				bytes: { used: 1_048_576, remaining: 535_822_336, limit: 536_870_912 },
 				inFlight: { used: 1, remaining: 1, limit: 2 },
 			},
+			eventFull: false,
 		};
 		mockList.mockResolvedValue(payload);
 		const request = createMockRequest(undefined, undefined, ITEMS_URL);
@@ -237,7 +239,9 @@ describe('GET /api/memories/[slug]/items/[itemId]', () => {
 
 		expect(response).toBe(upstream);
 		expect(mockGuestContext).toHaveBeenCalledWith(request, itemParams(), 'read');
-		expect(mockObject).toHaveBeenCalledWith(space, ITEM_ID, SESSION_ID);
+		expect(mockObject).toHaveBeenCalledWith(space, ITEM_ID, SESSION_ID, {
+			variant: 'original',
+		});
 		expect(mockRetrieve).toHaveBeenCalledWith({
 			...object,
 			mode: 'inline',

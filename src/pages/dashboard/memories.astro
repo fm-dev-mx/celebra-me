@@ -21,12 +21,12 @@ const initialEventId = spaces.some((space) => space.eventId === requestedEventId
 <DashboardLayout title="Recuerdos">
 	<DashboardPageHeader
 		title="Recuerdos"
-		subtitle="Bandeja privada para revisar y descargar los recuerdos compartidos por invitados."
+		subtitle="Las fotos y videos que comparten sus invitados."
 	/>
 	{spaces.length === 0 ? (
 		<section class="dashboard-card">
 			<h2>Sin recuerdos activos</h2>
-			<p>Ninguno de sus eventos tiene un espacio de recuerdos habilitado.</p>
+			<p>Ninguno de sus eventos tiene recuerdos activados. Escríbanos si desea agregarlos.</p>
 		</section>
 	) : (
 		<MemoriesOrganizer client:load spaces={spaces} initialEventId={initialEventId} />

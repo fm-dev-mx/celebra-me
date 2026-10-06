@@ -1,5 +1,5 @@
 import { webcrypto } from 'node:crypto';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import MemoriesCapture from '@/components/memories/MemoriesCapture';
 import {
@@ -20,6 +20,7 @@ import {
 	MEMORIES_MAX_VIDEO_BYTES,
 } from '@/lib/memories/contract/media-policy';
 import { memoriesCaptureCopy as copy } from '@/lib/memories/copy';
+import { fetchPutTransport } from '@/lib/memories/client/upload-pipeline';
 
 jest.mock('@/lib/memories/client/api', () => {
 	const actual = jest.requireActual<typeof import('@/lib/memories/client/api')>(
@@ -82,6 +83,7 @@ function buildItem(overrides: Partial<MemoriesMediaPublicItem> = {}): MemoriesMe
 		acceptedAt: null,
 		rejectedAt: null,
 		deletedAt: null,
+		hasThumbnail: false,
 		...overrides,
 	};
 }
@@ -108,6 +110,9 @@ function createGuestApiFake(): jest.Mocked<MemoriesGuestApi> {
 	const fake = {
 		itemsUrl,
 		itemMediaUrl: jest.fn((itemId: string) => `${itemsUrl}/${encodeURIComponent(itemId)}`),
+		itemThumbnailUrl: jest.fn(
+			(itemId: string) => `${itemsUrl}/${encodeURIComponent(itemId)}?variant=thumb`,
+		),
 		getSession: jest.fn(),
 		createSession: jest.fn(),
 		recoverSession: jest.fn(),
@@ -144,16 +149,41 @@ describe('MemoriesCapture island', () => {
 		guestApi.listItems.mockResolvedValue({ items: [], quota: QUOTA });
 	});
 
+	type Space = MemoriesSpaceSummary['windowState'];
+	type User = ReturnType<typeof userEvent.setup>;
+
+	function renderCapture(
+		windowState: Space = 'open',
+		props: Partial<Parameters<typeof MemoriesCapture>[0]> = {},
+	) {
+		return render(
+			<MemoriesCapture
+				space={buildSpace(windowState)}
+				maxSessionVideos={5}
+				putFile={fetchPutTransport}
+				{...props}
+			/>,
+		);
+	}
+
+	async function pickFiles(user: User, ...files: File[]) {
+		await user.upload(await screen.findByLabelText(copy.chooseFile), files);
+	}
+
+	async function uploadPicked(user: User) {
+		await user.click(screen.getByRole('button', { name: /^Subir \d+ recuerdos?$/ }));
+	}
+
 	it('builds the guest API from the public slug received in the space summary', async () => {
 		guestApi.getSession.mockResolvedValue(null);
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 
 		await waitFor(() => expect(guestApi.getSession).toHaveBeenCalledTimes(1));
 		expect(mockedCreateGuestApi).toHaveBeenCalledWith(PUBLIC_SLUG);
 	});
 
-	it('onboards a fresh visitor with a display name and shows the recovery code card', async () => {
+	it('asks a fresh visitor for a name once before offering the file picker', async () => {
 		const user = userEvent.setup();
 		guestApi.getSession.mockResolvedValue(null);
 		guestApi.createSession.mockResolvedValue({
@@ -161,22 +191,44 @@ describe('MemoriesCapture island', () => {
 			recoveryCode: 'ABCD-EFGH-JKLM',
 		});
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 
 		const nameInput = screen.getByLabelText(copy.displayNameLabel);
-		expect(nameInput).toBeInTheDocument();
+		expect(screen.getByText(copy.welcomeNameHelp)).toBeInTheDocument();
 		expect(screen.queryByLabelText(copy.chooseFile)).not.toBeInTheDocument();
 		expect(screen.getByRole('button', { name: copy.continueLabel })).toBeDisabled();
 
 		await user.type(nameInput, PROFILE.displayName);
 		await user.click(screen.getByRole('button', { name: copy.continueLabel }));
 
-		expect(await screen.findByText('ABCD-EFGH-JKLM')).toBeInTheDocument();
+		expect(await screen.findByLabelText(copy.chooseFile)).toBeEnabled();
 		expect(guestApi.createSession).toHaveBeenCalledWith(PROFILE.displayName);
-		expect(screen.getByText(copy.recoveryCodeTitle)).toBeInTheDocument();
 		expect(screen.getByText(PROFILE.displayName)).toBeInTheDocument();
-		expect(screen.getByLabelText(copy.chooseFile)).toBeEnabled();
+		// The recovery code waits for the first saved memory, when it starts to matter.
+		expect(screen.queryByText('ABCD-EFGH-JKLM')).not.toBeInTheDocument();
 		expect(guestApi.listItems).toHaveBeenCalled();
+	});
+
+	it('shows the recovery code after the first saved memory', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(null);
+		guestApi.createSession.mockResolvedValue({
+			profile: PROFILE,
+			recoveryCode: 'ABCD-EFGH-JKLM',
+		});
+		guestApi.reserve.mockResolvedValue(buildReservation());
+		guestApi.complete.mockResolvedValue({ item: buildItem({ status: 'accepted' }) });
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(201));
+
+		renderCapture();
+		await user.type(screen.getByLabelText(copy.displayNameLabel), PROFILE.displayName);
+		await user.click(screen.getByRole('button', { name: copy.continueLabel }));
+		await pickFiles(user, pngFile());
+		await uploadPicked(user);
+
+		expect(await screen.findByText('ABCD-EFGH-JKLM')).toBeInTheDocument();
+		expect(screen.getByText(copy.recoveryCodeTitle)).toBeInTheDocument();
+		expect(screen.getByText(copy.thanks(PROFILE.displayName))).toBeInTheDocument();
 	});
 
 	it('reserves, PUTs the file to the signed upload URL with the required headers, then completes', async () => {
@@ -187,17 +239,17 @@ describe('MemoriesCapture island', () => {
 		guestApi.complete.mockResolvedValue({ item: buildItem({ status: 'accepted' }) });
 		const fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(200));
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 		await screen.findByText(PROFILE.displayName);
 
 		const file = pngFile();
-		await user.upload(screen.getByLabelText(copy.chooseFile), file);
+		await pickFiles(user, file);
 		expect(screen.getByText('familia.png')).toBeInTheDocument();
 		expect(guestApi.reserve).not.toHaveBeenCalled();
 
-		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+		await user.click(screen.getByRole('button', { name: copy.confirmUploadCount(1) }));
 
-		expect(await screen.findByText(copy.success)).toBeInTheDocument();
+		expect(await screen.findByText(copy.successCount(1))).toBeInTheDocument();
 
 		expect(guestApi.reserve).toHaveBeenCalledTimes(1);
 		const reserveInput = guestApi.reserve.mock.calls[0][0];
@@ -226,6 +278,49 @@ describe('MemoriesCapture island', () => {
 		expect(putOrder).toBeLessThan(completeOrder);
 	});
 
+	it('uploads several files with one caption and counts the saved ones', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		let next = 0;
+		guestApi.reserve.mockImplementation(async () => {
+			next += 1;
+			return { ...buildReservation(), item: buildItem({ id: `item-${next}` }) };
+		});
+		guestApi.complete.mockResolvedValue({ item: buildItem({ status: 'accepted' }) });
+		guestApi.updateCaption.mockResolvedValue({ item: buildItem() });
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(201));
+
+		renderCapture();
+		await screen.findByText(PROFILE.displayName);
+		await pickFiles(user, pngFile('uno.png'), pngFile('dos.png'), pngFile('tres.png'));
+		expect(screen.getByRole('heading', { name: copy.reviewTitle(3) })).toBeInTheDocument();
+
+		await user.click(screen.getByText(copy.captionToggle));
+		await user.type(screen.getByLabelText(copy.captionLabelAll), 'Primer baile');
+		await user.click(screen.getByRole('button', { name: copy.confirmUploadCount(3) }));
+
+		expect(await screen.findByText(copy.successCount(3))).toBeInTheDocument();
+		expect(guestApi.reserve).toHaveBeenCalledTimes(3);
+		expect(guestApi.updateCaption).toHaveBeenCalledTimes(3);
+		expect(guestApi.updateCaption).toHaveBeenCalledWith('item-2', 'Primer baile');
+		expect(
+			new Set(guestApi.reserve.mock.calls.map(([input]) => input.clientRequestId)).size,
+		).toBe(3);
+	});
+
+	it('lets the guest drop a picked file before uploading', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+
+		renderCapture();
+		await screen.findByText(PROFILE.displayName);
+		await pickFiles(user, pngFile('uno.png'), pngFile('dos.png'));
+		await user.click(screen.getByRole('button', { name: copy.removeFile('uno.png') }));
+
+		expect(screen.queryByText('uno.png')).not.toBeInTheDocument();
+		expect(screen.getByRole('button', { name: copy.confirmUploadCount(1) })).toBeEnabled();
+	});
+
 	it('hides the upload panel when the window is closed while keeping the guest catalog', async () => {
 		guestApi.getSession.mockResolvedValue(PROFILE);
 		guestApi.listItems.mockResolvedValue({
@@ -233,16 +328,44 @@ describe('MemoriesCapture island', () => {
 			quota: QUOTA,
 		});
 
-		render(<MemoriesCapture space={buildSpace('closed')} maxSessionVideos={5} />);
+		renderCapture('closed');
 
-		expect(await screen.findByRole('heading', { name: copy.myMemories })).toBeInTheDocument();
+		expect(await screen.findByRole('heading', { name: /Mis recuerdos/ })).toBeInTheDocument();
 		expect(await screen.findByRole('img', { name: 'Familia' })).toHaveAttribute(
 			'src',
-			`/api/memories/${PUBLIC_SLUG}/items/accepted-item`,
+			`/api/memories/${PUBLIC_SLUG}/items/accepted-item?variant=thumb`,
 		);
 		expect(screen.getByText(PROFILE.displayName)).toBeInTheDocument();
 		expect(screen.queryByLabelText(copy.chooseFile)).not.toBeInTheDocument();
-		expect(screen.queryByRole('button', { name: copy.confirmUpload })).not.toBeInTheDocument();
+	});
+
+	it('offers a calendar reminder instead of the form before the window opens', async () => {
+		guestApi.getSession.mockResolvedValue(null);
+
+		renderCapture('before');
+
+		expect(screen.getByRole('button', { name: copy.addToCalendar })).toBeInTheDocument();
+		expect(screen.queryByLabelText(copy.displayNameLabel)).not.toBeInTheDocument();
+	});
+
+	it('deletes one of the guest memories after confirming in its options', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.listItems.mockResolvedValue({
+			items: [buildItem({ id: 'accepted-item', status: 'accepted', caption: 'Familia' })],
+			quota: QUOTA,
+		});
+		guestApi.deleteItem.mockResolvedValue({ success: true });
+
+		renderCapture();
+		await user.click(await screen.findByRole('button', { name: /Familia/ }));
+		const sheet = screen.getByRole('dialog', { name: copy.memoryOptions });
+		await user.click(within(sheet).getByRole('button', { name: copy.deleteMemory }));
+		expect(within(sheet).getByText(copy.deleteBody)).toBeInTheDocument();
+		await user.click(within(sheet).getByRole('button', { name: copy.deleteMemory }));
+
+		await waitFor(() => expect(guestApi.deleteItem).toHaveBeenCalledWith('accepted-item'));
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 	});
 
 	it('rejects an oversized image locally without reserving capacity', async () => {
@@ -250,14 +373,14 @@ describe('MemoriesCapture island', () => {
 		guestApi.getSession.mockResolvedValue(PROFILE);
 		const fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(200));
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 		await screen.findByText(PROFILE.displayName);
 
 		const oversized = new File([new Uint8Array(MEMORIES_MAX_IMAGE_BYTES + 1)], 'grande.png', {
 			type: 'image/png',
 		});
-		await user.upload(screen.getByLabelText(copy.chooseFile), oversized);
-		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+		await pickFiles(user, oversized);
+		await uploadPicked(user);
 
 		expect(await screen.findByRole('alert')).toHaveTextContent(copy.fileTooLarge);
 		expect(guestApi.reserve).not.toHaveBeenCalled();
@@ -274,13 +397,12 @@ describe('MemoriesCapture island', () => {
 		guestApi.complete.mockResolvedValue({ item: buildItem({ status: 'accepted' }) });
 		const fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(200));
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 		await screen.findByText(PROFILE.displayName);
+		await pickFiles(user, pngFile());
+		await uploadPicked(user);
 
-		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
-		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
-
-		expect(await screen.findByText(copy.success)).toBeInTheDocument();
+		expect(await screen.findByText(copy.successCount(1))).toBeInTheDocument();
 		expect(fetchMock).not.toHaveBeenCalled();
 		expect(guestApi.complete).toHaveBeenCalledWith('item-1');
 	});
@@ -299,11 +421,10 @@ describe('MemoriesCapture island', () => {
 			jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(200));
 		}
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 		await screen.findByText(PROFILE.displayName);
-
-		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
-		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+		await pickFiles(user, pngFile());
+		await uploadPicked(user);
 
 		expect(await screen.findByRole('alert')).toHaveTextContent(copy.uploadExpired);
 		expect(guestApi.complete).toHaveBeenCalledTimes(failingStep === 'complete' ? 1 : 0);
@@ -321,11 +442,10 @@ describe('MemoriesCapture island', () => {
 		guestApi.getSession.mockResolvedValue(PROFILE);
 		guestApi.reserve.mockRejectedValue(new MemoriesRequestError(429, 'rate_limited'));
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 		await screen.findByText(PROFILE.displayName);
-
-		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile('rapido.png'));
-		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+		await pickFiles(user, pngFile('rapido.png'));
+		await uploadPicked(user);
 
 		expect(await screen.findByRole('alert')).toHaveTextContent(copy.rateLimited);
 		expect(guestApi.reserve).toHaveBeenCalledTimes(1);
@@ -342,7 +462,7 @@ describe('MemoriesCapture island', () => {
 		guestApi.getSession.mockResolvedValue(null);
 		guestApi.createSession.mockRejectedValueOnce(failure);
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 		await user.type(screen.getByLabelText(copy.displayNameLabel), PROFILE.displayName);
 		await user.click(screen.getByRole('button', { name: copy.continueLabel }));
 
@@ -358,7 +478,7 @@ describe('MemoriesCapture island', () => {
 	it('says that the session lookup failed on arrival instead of staying silent', async () => {
 		guestApi.getSession.mockRejectedValue(new MemoriesRequestError(503, 'service_unavailable'));
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 
 		expect(await screen.findByRole('alert')).toHaveTextContent(copy.unavailable);
 		expect(screen.getByLabelText(copy.displayNameLabel)).toBeInTheDocument();
@@ -369,7 +489,7 @@ describe('MemoriesCapture island', () => {
 		guestApi.getSession.mockResolvedValue(PROFILE);
 		guestApi.updateProfile.mockRejectedValue(new MemoriesRequestError(401, 'unauthorized'));
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 		await user.click(await screen.findByRole('button', { name: copy.changeName }));
 		await user.click(screen.getByRole('button', { name: copy.saveLabel }));
 
@@ -384,12 +504,12 @@ describe('MemoriesCapture island', () => {
 		// The first PUT stored the object but its response was lost; the retry gets 412.
 		jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(412));
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 		await screen.findByText(PROFILE.displayName);
-		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
-		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+		await pickFiles(user, pngFile());
+		await uploadPicked(user);
 
-		expect(await screen.findByText(copy.success)).toBeInTheDocument();
+		expect(await screen.findByText(copy.successCount(1))).toBeInTheDocument();
 		expect(guestApi.complete).toHaveBeenCalledWith('item-1');
 	});
 
@@ -402,24 +522,18 @@ describe('MemoriesCapture island', () => {
 			.mockRejectedValueOnce(new TypeError('Load failed'))
 			.mockResolvedValue(httpResponse(201));
 
-		render(
-			<MemoriesCapture
-				space={buildSpace('open')}
-				maxSessionVideos={5}
-				readVideoDurationSeconds={async () => 12.345678}
-			/>,
-		);
+		renderCapture('open', { readVideoDurationSeconds: async () => 12.345678 });
 		await screen.findByText(PROFILE.displayName);
-		await user.upload(
-			screen.getByLabelText(copy.chooseFile),
+		await pickFiles(
+			user,
 			new File([new Uint8Array([1, 2, 3, 4])], 'baile.mov', { type: 'video/quicktime' }),
 		);
-		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+		await uploadPicked(user);
 		expect(await screen.findByRole('alert')).toHaveTextContent(copy.putFailed);
 
 		await user.click(screen.getByRole('button', { name: copy.retry }));
 
-		expect(await screen.findByText(copy.success)).toBeInTheDocument();
+		expect(await screen.findByText(copy.successCount(1))).toBeInTheDocument();
 		const [first, second] = guestApi.reserve.mock.calls.map(([input]) => input);
 		expect(second).toEqual(first);
 		expect(first).toMatchObject({ mimeType: 'video/quicktime', durationSeconds: 12.345678 });
@@ -435,12 +549,35 @@ describe('MemoriesCapture island', () => {
 		guestApi.getSession.mockResolvedValue(PROFILE);
 		guestApi.reserve.mockRejectedValue(new MemoriesRequestError(409, 'limit_reached', reason));
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 		await screen.findByText(PROFILE.displayName);
-		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
-		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+		await pickFiles(user, pngFile());
+		await uploadPicked(user);
 
 		expect(await screen.findByRole('alert')).toHaveTextContent(message);
+	});
+
+	it('stops the rest of the batch once the guest file limit is reached', async () => {
+		const user = userEvent.setup();
+		guestApi.getSession.mockResolvedValue(PROFILE);
+		guestApi.reserve.mockRejectedValue(
+			new MemoriesRequestError(409, 'limit_reached', 'session_files'),
+		);
+
+		renderCapture('open', {});
+		await screen.findByText(PROFILE.displayName);
+		await pickFiles(
+			user,
+			pngFile('a.png'),
+			pngFile('b.png'),
+			pngFile('c.png'),
+			pngFile('d.png'),
+		);
+		await uploadPicked(user);
+
+		expect(await screen.findAllByText(copy.sessionFilesReached)).toHaveLength(4);
+		// Two ran at once; the two still waiting were not attempted.
+		expect(guestApi.reserve).toHaveBeenCalledTimes(2);
 	});
 
 	it('stops confirming and asks to reload when the session is gone', async () => {
@@ -450,10 +587,10 @@ describe('MemoriesCapture island', () => {
 		guestApi.complete.mockRejectedValue(new MemoriesRequestError(401, 'unauthorized'));
 		jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(201));
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 		await screen.findByText(PROFILE.displayName);
-		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
-		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+		await pickFiles(user, pngFile());
+		await uploadPicked(user);
 
 		expect(await screen.findByRole('alert')).toHaveTextContent(copy.sessionLost);
 		expect(guestApi.complete).toHaveBeenCalledTimes(1);
@@ -466,39 +603,44 @@ describe('MemoriesCapture island', () => {
 		guestApi.complete.mockResolvedValue({ item: buildItem({ status: 'rejected' }) });
 		jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(201));
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 		await screen.findByText(PROFILE.displayName);
-		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
-		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+		await pickFiles(user, pngFile());
+		await uploadPicked(user);
 
 		expect(await screen.findByText(copy.completionRejected)).toBeInTheDocument();
-		expect(screen.queryByText(copy.success)).not.toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: copy.noneSaved })).toBeInTheDocument();
+		expect(screen.queryByText(copy.successCount(1))).not.toBeInTheDocument();
 	});
 
-	it('tells a guest who lost signal to wait for the connection, and resumes on retry', async () => {
+	it('waits while the guest is offline and resumes on its own when the signal returns', async () => {
 		const user = userEvent.setup();
 		guestApi.getSession.mockResolvedValue(PROFILE);
 		guestApi.reserve.mockResolvedValue(buildReservation());
 		guestApi.complete.mockResolvedValue({ item: buildItem({ status: 'accepted' }) });
 		const online = jest.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
-		jest.spyOn(globalThis, 'fetch')
-			.mockRejectedValueOnce(new TypeError('Failed to fetch'))
-			.mockResolvedValue(httpResponse(201));
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue(httpResponse(201));
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
-		await screen.findByText(PROFILE.displayName);
-		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
-		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+		try {
+			renderCapture();
+			await screen.findByText(PROFILE.displayName);
+			await pickFiles(user, pngFile());
+			await uploadPicked(user);
 
-		expect(await screen.findByRole('alert')).toHaveTextContent(copy.networkFailed);
+			expect(await screen.findByText(copy.offline)).toBeInTheDocument();
+			expect(screen.getByText(copy.statusWaiting)).toBeInTheDocument();
+			expect(guestApi.reserve).not.toHaveBeenCalled();
 
-		online.mockReturnValue(true);
-		await user.click(screen.getByRole('button', { name: copy.retry }));
+			online.mockReturnValue(true);
+			act(() => {
+				window.dispatchEvent(new Event('online'));
+			});
 
-		expect(await screen.findByText(copy.success)).toBeInTheDocument();
-		// The file is prepared once: the retry reuses the reservation instead of starting over.
-		const [first, second] = guestApi.reserve.mock.calls.map(([input]) => input);
-		expect(second.clientRequestId).toBe(first.clientRequestId);
+			expect(await screen.findByText(copy.successCount(1))).toBeInTheDocument();
+			expect(guestApi.reserve).toHaveBeenCalledTimes(1);
+		} finally {
+			online.mockRestore();
+		}
 	});
 
 	it('after a reload mid-upload, shows the pending file and explains why a new upload must wait', async () => {
@@ -516,36 +658,39 @@ describe('MemoriesCapture island', () => {
 			new MemoriesRequestError(429, 'rate_limited', 'uploads_in_progress'),
 		);
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 
 		expect(await screen.findAllByText(copy.validationPending)).toHaveLength(2);
-		await user.upload(screen.getByLabelText(copy.chooseFile), pngFile());
-		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+		await pickFiles(user, pngFile());
+		await uploadPicked(user);
 
 		expect(await screen.findByRole('alert')).toHaveTextContent(copy.uploadsInProgress);
 	});
 
-	it('offers the file picker every format the upload policy accepts, and nothing else', async () => {
+	it('offers the file picker every format the upload policy accepts, several at a time', async () => {
 		guestApi.getSession.mockResolvedValue(PROFILE);
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 
-		const accept = (await screen.findByLabelText(copy.chooseFile)).getAttribute('accept');
-		expect(accept?.split(',').sort()).toEqual(Object.keys(MEMORIES_ALLOWED_MIME_TYPES).sort());
+		const input = await screen.findByLabelText(copy.chooseFile);
+		expect(input.getAttribute('accept')?.split(',').sort()).toEqual(
+			Object.keys(MEMORIES_ALLOWED_MIME_TYPES).sort(),
+		);
+		expect(input).toHaveAttribute('multiple');
 	});
 
-	it('rejects an oversized video locally with advice on how to make it fit', async () => {
+	it('flags an oversized video in the preview with advice, before anything is sent', async () => {
 		const user = userEvent.setup();
 		guestApi.getSession.mockResolvedValue(PROFILE);
 		const oversized = new File([new Uint8Array(4)], 'baile.mp4', { type: 'video/mp4' });
 		Object.defineProperty(oversized, 'size', { value: MEMORIES_MAX_VIDEO_BYTES + 1 });
 
-		render(<MemoriesCapture space={buildSpace('open')} maxSessionVideos={5} />);
+		renderCapture();
 		await screen.findByText(PROFILE.displayName);
-		await user.upload(screen.getByLabelText(copy.chooseFile), oversized);
-		await user.click(screen.getByRole('button', { name: copy.confirmUpload }));
+		await pickFiles(user, oversized);
 
 		expect(await screen.findByRole('alert')).toHaveTextContent(copy.videoTooLarge);
+		expect(screen.getByRole('button', { name: copy.confirmUploadCount(0) })).toBeDisabled();
 		expect(guestApi.reserve).not.toHaveBeenCalled();
 	});
 });

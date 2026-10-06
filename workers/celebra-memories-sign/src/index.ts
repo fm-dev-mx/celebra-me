@@ -16,7 +16,11 @@ import {
 	getMemoriesMimePolicy,
 	type MemoriesMimePolicy,
 } from '../../../src/lib/memories/contract/media-policy';
-import { isMemoriesObjectKeyForMime } from '../../../src/lib/memories/contract/object-key';
+import {
+	MEMORIES_THUMBNAIL_MAX_BYTES,
+	isMemoriesStorableKey,
+	isMemoriesThumbnailKey,
+} from '../../../src/lib/memories/contract/object-key';
 import {
 	MEMORIES_PRIVATE_REQUEST_TTL_SECONDS,
 	MEMORIES_SIGN_PATH,
@@ -76,10 +80,12 @@ function parseSignRequest(payload: unknown): {
 		!Number.isSafeInteger(sizeBytes) ||
 		sizeBytes <= 0 ||
 		!isValidSha256Hex(checksumSha256) ||
-		!isMemoriesObjectKeyForMime(objectKey, mimeType)
+		!isMemoriesStorableKey(objectKey, mimeType)
 	) {
 		return null;
 	}
+	// A thumbnail is a small preview: it never gets the full image allowance.
+	if (isMemoriesThumbnailKey(objectKey) && sizeBytes > MEMORIES_THUMBNAIL_MAX_BYTES) return null;
 	const policy = getMemoriesMimePolicy(mimeType);
 	if (!policy) return null;
 	return {
@@ -118,7 +124,7 @@ export async function handleMemoriesUploadRequest(
 	const contentLength = request.headers.get('Content-Length');
 	if (
 		!claims ||
-		!isMemoriesObjectKeyForMime(claims.objectKey, claims.mimeType) ||
+		!isMemoriesStorableKey(claims.objectKey, claims.mimeType) ||
 		!getMemoriesMimePolicy(claims.mimeType) ||
 		request.headers.get('Content-Type') !== claims.mimeType ||
 		checksum !== sha256HexToBase64(claims.checksumSha256) ||
@@ -203,7 +209,11 @@ export async function handleMemoriesSignRequest(
 	if (!input) return errorResponse('invalid_request', 400, null);
 	if (input.sizeBytes > input.policy.maxBytes) return errorResponse('file_too_large', 400, null);
 	const limiter = getMemoriesRateLimiter(env);
-	if (!limiter || !(await limiter.limit({ key: input.sessionId })).success) {
+	// Thumbnails follow their originals one to one, so they get their own budget.
+	const limiterKey = isMemoriesThumbnailKey(input.objectKey)
+		? `${input.sessionId}:thumb`
+		: input.sessionId;
+	if (!limiter || !(await limiter.limit({ key: limiterKey })).success) {
 		return errorResponse('rate_limited', 429, null);
 	}
 	try {

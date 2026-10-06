@@ -4,7 +4,11 @@ import {
 	MEMORIES_MAX_IMAGE_BYTES,
 	MEMORIES_MAX_VIDEO_BYTES,
 } from '@/lib/memories/contract/media-policy';
-import { buildMemoriesObjectKey } from '@/lib/memories/contract/object-key';
+import {
+	MEMORIES_THUMBNAIL_MAX_BYTES,
+	buildMemoriesObjectKey,
+	buildMemoriesThumbnailKey,
+} from '@/lib/memories/contract/object-key';
 import {
 	MEMORIES_SIGN_PATH,
 	MEMORIES_UPLOAD_PATH,
@@ -386,6 +390,31 @@ describe('memories sign worker: /sign', () => {
 		expect(oversizedVideo.status).toBe(400);
 		expect(await errorCode(oversizedVideo)).toEqual({ error: { code: 'file_too_large' } });
 		expect(videoAtLimit.status).toBe(200);
+	});
+
+	it('signs a WebP thumbnail next to its original on its own rate-limit budget', async () => {
+		const harness = createHarness();
+		const thumbnailKey = buildMemoriesThumbnailKey(OBJECT_KEY) as string;
+		const response = await sign(
+			{ ...validBody(), objectKey: thumbnailKey, mimeType: 'image/webp', sizeBytes: 40_000 },
+			{ harness },
+		);
+		expect(response.status).toBe(200);
+		expect(harness.limit).toHaveBeenCalledWith({ key: `${SESSION_ID}:thumb` });
+	});
+
+	it.each([
+		['larger than the thumbnail allowance', { sizeBytes: MEMORIES_THUMBNAIL_MAX_BYTES + 1 }],
+		['declared as JPEG', { mimeType: 'image/jpeg' }],
+	])('refuses a thumbnail %s', async (_label, override) => {
+		const response = await sign({
+			...validBody(),
+			objectKey: buildMemoriesThumbnailKey(OBJECT_KEY) as string,
+			mimeType: 'image/webp',
+			sizeBytes: 40_000,
+			...override,
+		});
+		expect(response.status).toBe(400);
 	});
 
 	it('rate limits with the authenticated session identifier and fails closed without a limiter', async () => {
