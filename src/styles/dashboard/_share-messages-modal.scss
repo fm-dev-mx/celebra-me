@@ -96,7 +96,7 @@
 	}
 
 	&--active {
-		background: var(--color-surface-raised, var(--color-surface-soft));
+		background: var(--color-surface-soft);
 		color: var(--color-text-primary);
 		font-weight: 600;
 	}
@@ -367,7 +367,7 @@
 	border-radius: 0.5rem 0.5rem 0.5rem 0.15rem;
 	padding: 0.75rem 0.85rem 0.4rem;
 	position: relative;
-	box-shadow: 0 1px 3px rgb(0 0 0 / 6%);
+	box-shadow: var(--shadow-subtle);
 }
 
 .share-messages-modal__preview-text {

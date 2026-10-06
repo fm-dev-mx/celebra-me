@@ -290,7 +290,7 @@
 	@include mixins.respond-below(sm) {
 		margin: 0.05rem;
 		border-radius: 1.2rem 1.2rem 0 0;
-		background: var(--dashboard-surface-bg);
+		background: var(--color-surface-elevated);
 	}
 
 	h3 {
