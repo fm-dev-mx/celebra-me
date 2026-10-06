@@ -10,7 +10,10 @@ import {
 	parseJsonBody,
 	withPrivateCache,
 } from '@/lib/rsvp/core/http';
-import { isMemoriesMediaStatus } from '@/lib/memories/contract/catalog';
+import {
+	isMemoriesMediaStatus,
+	type MemoriesOrganizerListQuery,
+} from '@/lib/memories/contract/catalog';
 import {
 	listOrganizerMemoryItems,
 	requireOrganizerMemorySpace,
@@ -38,6 +41,10 @@ export const GET: APIRoute = async ({ request, locals, params, url }) => {
 			page: Number(rawPage),
 			status: rawStatus ?? undefined,
 			uploader: url.searchParams.get('uploader') ?? undefined,
+			uploaderAlias: url.searchParams.get('uploaderAlias') ?? undefined,
+			kind: (url.searchParams.get('kind') ?? undefined) as MemoriesOrganizerListQuery['kind'],
+			visibility: (url.searchParams.get('visibility') ??
+				undefined) as MemoriesOrganizerListQuery['visibility'],
 			createdFrom: url.searchParams.get('createdFrom') ?? undefined,
 			createdTo: url.searchParams.get('createdTo') ?? undefined,
 		});

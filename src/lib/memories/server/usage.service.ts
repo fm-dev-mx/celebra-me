@@ -21,6 +21,7 @@ import {
 	listSessionEventIds,
 	type MediaUsageRow,
 } from './catalog.repository';
+import { resolveMemoriesShareUrl } from './share.service';
 import { toMemorySpaceSummary } from './space.service';
 
 function emptyUsage(): MemoriesSpaceAdminUsage {
@@ -132,6 +133,8 @@ function toHostSummary(
 		photos: usage.photos,
 		videos: usage.videos,
 		guestsWithUploads: usage.guestsWithUploads,
+		expectedGuests: space.expectedGuests,
+		shareUrl: resolveMemoriesShareUrl(space, now),
 		lastAcceptedAt: usage.lastAcceptedAt,
 		capacityRemainingPercent: Math.min(
 			remainingPercent(usage.residentBytes, space.maxEventBytes),
@@ -146,4 +149,16 @@ export async function getMemorySpaceHostSummary(
 ): Promise<MemoriesSpaceHostSummary> {
 	const usage = await summarizeMemorySpaceUsage([space.eventId]);
 	return toHostSummary(space, usage.get(space.eventId) ?? emptyUsage(), now);
+}
+
+/**
+ * True once the space cannot take another file: the same resident counts the
+ * reservation RPC enforces, so guests learn it before choosing files.
+ */
+export async function isMemorySpaceFull(space: MemoriesSpaceRecord): Promise<boolean> {
+	const usage =
+		(await summarizeMemorySpaceUsage([space.eventId])).get(space.eventId) ?? emptyUsage();
+	return (
+		usage.residentObjects >= space.maxEventObjects || usage.residentBytes >= space.maxEventBytes
+	);
 }

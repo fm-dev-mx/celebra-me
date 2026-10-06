@@ -90,10 +90,17 @@ export function isMemoriesUuid(value: unknown): value is string {
 export const MEMORIES_RECOVERY_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 export const MEMORIES_RECOVERY_CODE_GROUPS = 3;
 export const MEMORIES_RECOVERY_CODE_GROUP_LENGTH = 4;
-export const MEMORIES_RECOVERY_CODE_LENGTH =
-	MEMORIES_RECOVERY_CODE_GROUPS * MEMORIES_RECOVERY_CODE_GROUP_LENGTH +
-	(MEMORIES_RECOVERY_CODE_GROUPS - 1);
 export const MEMORIES_RECOVERY_CODE_PATTERN = /^[A-HJ-NP-Z2-9]{4}(?:-[A-HJ-NP-Z2-9]{4}){2}$/;
+
+/** Normalizes typed or pasted recovery input: uppercase, no separators, hyphen every group. */
+export function formatMemoriesRecoveryInput(value: string): string {
+	const raw = value
+		.toUpperCase()
+		.replace(/[^A-Z0-9]/g, '')
+		.slice(0, MEMORIES_RECOVERY_CODE_GROUPS * MEMORIES_RECOVERY_CODE_GROUP_LENGTH);
+	const groups = raw.match(new RegExp(`.{1,${MEMORIES_RECOVERY_CODE_GROUP_LENGTH}}`, 'g'));
+	return groups ? groups.join('-') : '';
+}
 
 export function formatMemoriesCodeGroups(raw: string, groups: number): string {
 	const parts: string[] = [];
@@ -138,6 +145,10 @@ export interface MemoriesMediaItem {
 	acceptedAt: string | null;
 	rejectedAt: string | null;
 	deletedAt: string | null;
+	/** Set while the host keeps the file out of the shared gallery and bulk downloads. */
+	hiddenAt: string | null;
+	thumbnailObjectKey: string | null;
+	thumbnailBytes: number | null;
 }
 
 /** Browser-facing projection: no keys, no session, no checksum. */
@@ -153,21 +164,47 @@ export interface MemoriesMediaPublicItem {
 	acceptedAt: string | null;
 	rejectedAt: string | null;
 	deletedAt: string | null;
+	/** A small preview exists; request it with the `thumb` variant. */
+	hasThumbnail: boolean;
 }
 
 export interface MemoriesOrganizerItem extends MemoriesMediaPublicItem {
+	/** Hidden by the host: still the guest's, but out of the shared gallery and "download all". */
+	hidden: boolean;
 	uploader: {
 		displayName: string;
 		guestAlias: string;
 	};
 }
 
+export const MEMORIES_MEDIA_KINDS = ['photo', 'video'] as const;
+export type MemoriesMediaKind = (typeof MEMORIES_MEDIA_KINDS)[number];
+export const MEMORIES_VISIBILITY_FILTERS = ['visible', 'hidden'] as const;
+export type MemoriesVisibilityFilter = (typeof MEMORIES_VISIBILITY_FILTERS)[number];
+
 export interface MemoriesOrganizerListQuery {
 	page?: number;
 	status?: MemoriesMediaStatus;
 	uploader?: string;
+	/** Exact guest, as listed by the uploaders endpoint; wins over the text search. */
+	uploaderAlias?: string;
+	kind?: MemoriesMediaKind;
+	visibility?: MemoriesVisibilityFilter;
 	createdFrom?: string;
 	createdTo?: string;
+}
+
+/** What a shared-gallery visitor sees of each file: no aliases, keys or status. */
+export type MemoriesGalleryItem = Pick<
+	MemoriesOrganizerItem,
+	'id' | 'mimeType' | 'durationSeconds' | 'caption' | 'createdAt' | 'hasThumbnail'
+> & { uploaderName: string };
+
+/** One guest who shared files, for the host's guest filter. Never carries keys or captions. */
+export interface MemoriesOrganizerUploader {
+	displayName: string;
+	guestAlias: string;
+	files: number;
 }
 
 export interface MemoriesOrganizerListResponse {
@@ -218,10 +255,14 @@ export interface MemoriesSpaceRecord extends MemoriesSpaceLimits {
 	uploadEndsAt: string;
 	retentionEndsAt: string;
 	entitlement: MemoriesEntitlement;
-	/** Planning input for capacity estimates. Administrator-only. */
+	/** Planning input for capacity estimates; the host sees it as «46 de 120 invitados». */
 	expectedGuests: number | null;
 	/** Free-text internal note. Administrator-only; never audited or sent to hosts. */
 	adminNote: string | null;
+	/** Bumped to revoke the shared-gallery link; the token itself is never stored. */
+	shareVersion: number;
+	/** Set while the host shares the gallery; null when sharing is off. */
+	shareEnabledAt: string | null;
 	createdAt: string;
 	updatedAt: string;
 }
@@ -263,7 +304,11 @@ export interface MemoriesSpaceHostSummary extends MemoriesSpaceSummary {
 	photos: number;
 	videos: number;
 	guestsWithUploads: number;
+	/** Planning input set by the administrator, shown as "46 of 120 guests". */
+	expectedGuests: number | null;
 	lastAcceptedAt: string | null;
+	/** The shared-gallery link while sharing is on. */
+	shareUrl: string | null;
 	/** 0–100, the tighter of the byte and file quotas. */
 	capacityRemainingPercent: number;
 }

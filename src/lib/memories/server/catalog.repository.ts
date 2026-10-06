@@ -4,7 +4,12 @@
  */
 
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-import type { MemoriesMediaActor, MemoriesMediaStatus } from '@/lib/memories/contract/catalog';
+import type {
+	MemoriesMediaActor,
+	MemoriesMediaKind,
+	MemoriesMediaStatus,
+	MemoriesVisibilityFilter,
+} from '@/lib/memories/contract/catalog';
 
 const SESSIONS = 'event_memory_sessions';
 const ITEMS = 'event_memory_items';
@@ -13,7 +18,7 @@ const AUDIT = 'event_memory_audit_events';
 const SESSION_COLUMNS =
 	'id,event_id,created_at,last_seen_at,expires_at,revoked_at,anonymized_at,display_name,guest_alias';
 const MEDIA_COLUMNS =
-	'id,event_id,session_id,object_key,mime_type,size_bytes,checksum_sha256,duration_seconds,caption,status,duplicate_of_id,created_at,updated_at,accepted_at,rejected_at,deleted_at,idempotency_key,cleanup_after,cleanup_claimed_at,cleanup_lease_id,object_deleted_at';
+	'id,event_id,session_id,object_key,mime_type,size_bytes,checksum_sha256,duration_seconds,caption,status,duplicate_of_id,created_at,updated_at,accepted_at,rejected_at,deleted_at,idempotency_key,cleanup_after,cleanup_claimed_at,cleanup_lease_id,object_deleted_at,hidden_at,thumbnail_object_key,thumbnail_bytes';
 
 export type SessionRow = {
 	id: string;
@@ -49,6 +54,9 @@ export type MediaRow = {
 	cleanup_claimed_at: string | null;
 	cleanup_lease_id: string | null;
 	object_deleted_at: string | null;
+	hidden_at: string | null;
+	thumbnail_object_key: string | null;
+	thumbnail_bytes: number | null;
 };
 
 export type OrganizerMediaRow = MediaRow & {
@@ -194,11 +202,15 @@ export async function listOrganizerMedia(input: {
 	offset: number;
 	status?: MemoriesMediaStatus;
 	uploader?: string;
+	uploaderAlias?: string;
+	kind?: MemoriesMediaKind;
+	visibility?: MemoriesVisibilityFilter;
 	createdFrom?: string;
 	createdTo?: string;
 }): Promise<OrganizerMediaRow[]> {
 	const query = new URLSearchParams();
-	const uploaderRelation = input.uploader
+	const filtersUploader = Boolean(input.uploader || input.uploaderAlias);
+	const uploaderRelation = filtersUploader
 		? `uploader:${SESSIONS}!inner(display_name,guest_alias)`
 		: `uploader:${SESSIONS}(display_name,guest_alias)`;
 	query.set('select', `${MEDIA_COLUMNS},${uploaderRelation}`);
@@ -209,12 +221,42 @@ export async function listOrganizerMedia(input: {
 	query.set('status', input.status ? `eq.${input.status}` : 'neq.deleted');
 	if (input.createdFrom) query.append('created_at', `gte.${input.createdFrom}`);
 	if (input.createdTo) query.append('created_at', `lt.${input.createdTo}`);
-	if (input.uploader) {
+	if (input.kind)
+		query.set('mime_type', input.kind === 'video' ? 'like.video/*' : 'like.image/*');
+	if (input.visibility)
+		query.set('hidden_at', input.visibility === 'hidden' ? 'not.is.null' : 'is.null');
+	if (input.uploaderAlias) {
+		query.set('uploader.guest_alias', `eq.${input.uploaderAlias}`);
+	} else if (input.uploader) {
 		query.set(
 			'uploader.or',
 			`(display_name.ilike.*${input.uploader}*,guest_alias.ilike.*${input.uploader}*)`,
 		);
 	}
+	return supabaseRestRequest<OrganizerMediaRow[]>({
+		pathWithQuery: `${ITEMS}?${query.toString()}`,
+		useServiceRole: true,
+	});
+}
+
+/**
+ * The shared gallery's page: available, visible files with the uploader's name only.
+ * Hidden, pending, rejected and deleted files never leave the server.
+ */
+export async function listGalleryMedia(input: {
+	eventId: string;
+	limit: number;
+	offset: number;
+}): Promise<OrganizerMediaRow[]> {
+	const query = new URLSearchParams();
+	query.set('select', `${MEDIA_COLUMNS},uploader:${SESSIONS}(display_name,guest_alias)`);
+	query.set('event_id', `eq.${input.eventId}`);
+	query.set('status', 'eq.accepted');
+	query.set('hidden_at', 'is.null');
+	query.set('object_deleted_at', 'is.null');
+	query.set('order', 'created_at.desc,id.desc');
+	query.set('limit', String(input.limit));
+	query.set('offset', String(input.offset));
 	return supabaseRestRequest<OrganizerMediaRow[]>({
 		pathWithQuery: `${ITEMS}?${query.toString()}`,
 		useServiceRole: true,
@@ -330,6 +372,59 @@ export async function listSessionInFlightMedia(
 		pathWithQuery: `${ITEMS}?select=${MEDIA_COLUMNS}&event_id=eq.${encodeURIComponent(eventId)}&session_id=eq.${encodeURIComponent(sessionId)}&status=in.(uploading,validating)&object_deleted_at=is.null&order=created_at.asc`,
 		useServiceRole: true,
 	});
+}
+
+/**
+ * Guests with at least one available file and how many they shared. Keyset-paged
+ * like the usage query; bounded by the space's object quota.
+ */
+export async function listUploaderFileCounts(
+	eventId: string,
+): Promise<Array<{ display_name: string; guest_alias: string; files: number }>> {
+	const counts = new Map<string, number>();
+	let after: string | null = null;
+	for (;;) {
+		const page: Array<{ id: string; session_id: string }> = await supabaseRestRequest<
+			Array<{ id: string; session_id: string }>
+		>({
+			pathWithQuery:
+				`${ITEMS}?select=id,session_id&event_id=eq.${encodeURIComponent(eventId)}` +
+				`&status=eq.accepted` +
+				(after ? `&id=gt.${encodeURIComponent(after)}` : '') +
+				`&order=id.asc&limit=${USAGE_PAGE_SIZE}`,
+			useServiceRole: true,
+		});
+		for (const row of page) counts.set(row.session_id, (counts.get(row.session_id) ?? 0) + 1);
+		if (page.length < USAGE_PAGE_SIZE) break;
+		after = page[page.length - 1].id;
+	}
+	if (counts.size === 0) return [];
+	// Paging the event's sessions keeps the URL short however many guests shared.
+	const uploaders: Array<{ display_name: string; guest_alias: string; files: number }> = [];
+	let afterSession: string | null = null;
+	for (;;) {
+		const page: Array<{ id: string; display_name: string; guest_alias: string }> =
+			await supabaseRestRequest<
+				Array<{ id: string; display_name: string; guest_alias: string }>
+			>({
+				pathWithQuery:
+					`${SESSIONS}?select=id,display_name,guest_alias&event_id=eq.${encodeURIComponent(eventId)}` +
+					(afterSession ? `&id=gt.${encodeURIComponent(afterSession)}` : '') +
+					`&order=id.asc&limit=${USAGE_PAGE_SIZE}`,
+				useServiceRole: true,
+			});
+		for (const session of page) {
+			const files = counts.get(session.id);
+			if (files)
+				uploaders.push({
+					display_name: session.display_name,
+					guest_alias: session.guest_alias,
+					files,
+				});
+		}
+		if (page.length < USAGE_PAGE_SIZE) return uploaders;
+		afterSession = page[page.length - 1].id;
+	}
 }
 
 /** Minimal columns for usage aggregates: no keys, captions or checksums. */

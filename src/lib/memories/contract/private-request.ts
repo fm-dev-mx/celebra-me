@@ -68,6 +68,21 @@ export function buildMemoriesPublicUrl(publicSlug: string): string {
 	return `${MEMORIES_PUBLIC_ORIGIN}${buildMemoriesPublicPath(publicSlug)}`;
 }
 
+/** HMAC-SHA256 in base64url: 43 characters, no padding. */
+export const MEMORIES_SHARE_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
+
+export function buildMemoriesGalleryPath(publicSlug: string, token: string): string {
+	return `${buildMemoriesPublicPath(publicSlug)}/galeria/${token}`;
+}
+
+export function buildMemoriesGalleryUrl(publicSlug: string, token: string): string {
+	return `${MEMORIES_PUBLIC_ORIGIN}${buildMemoriesGalleryPath(publicSlug, token)}`;
+}
+
+export function buildMemoriesGalleryApiPath(publicSlug: string, token: string): string {
+	return `${buildMemoriesGuestApiPath(publicSlug)}/gallery/${token}`;
+}
+
 export function buildMemoriesGuestApiPath(publicSlug: string): string {
 	return `/api/memories/${publicSlug}`;
 }

@@ -332,6 +332,26 @@ describe('runMemoriesCleanup', () => {
 		expect(result.claimed).toBe(result.deleted + result.failed);
 	});
 
+	it('deletes the thumbnail together with its original', async () => {
+		const thumbnailKey = 'events/e0000000-0000-4000-8000-000000000001/thumbs/thumb.webp';
+		mockClaim.mockResolvedValueOnce([
+			{
+				...claimedRow(ITEM_A, SESSION_ID),
+				thumbnail_object_key: thumbnailKey,
+				thumbnail_bytes: 4000,
+			},
+		]);
+		mockDeleteObject.mockResolvedValue(true);
+
+		await runMemoriesCleanup(NOW);
+
+		expect(mockDeleteObject).toHaveBeenCalledWith({
+			objectKey: thumbnailKey,
+			mimeType: 'image/webp',
+		});
+		expect(mockMarkDeleted).toHaveBeenCalledTimes(1);
+	});
+
 	it('counts a worker refusal as a failure without marking the row', async () => {
 		mockClaim.mockResolvedValueOnce([claimedRow(ITEM_A, SESSION_ID)]);
 		mockDeleteObject.mockResolvedValue(false);

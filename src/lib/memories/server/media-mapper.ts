@@ -35,6 +35,9 @@ export function mapMediaRow(row: MediaRow): MemoriesMediaItem {
 		acceptedAt: row.accepted_at,
 		rejectedAt: row.rejected_at,
 		deletedAt: row.deleted_at,
+		hiddenAt: row.hidden_at ?? null,
+		thumbnailObjectKey: row.thumbnail_object_key ?? null,
+		thumbnailBytes: row.thumbnail_bytes == null ? null : Number(row.thumbnail_bytes),
 	};
 }
 
@@ -51,13 +54,16 @@ export function toPublicItem(item: MemoriesMediaItem): MemoriesMediaPublicItem {
 		acceptedAt: item.acceptedAt,
 		rejectedAt: item.rejectedAt,
 		deletedAt: item.deletedAt,
+		hasThumbnail: Boolean(item.thumbnailObjectKey),
 	};
 }
 
 export function toOrganizerItem(row: OrganizerMediaRow): MemoriesOrganizerItem {
 	const relation = Array.isArray(row.uploader) ? row.uploader[0] : row.uploader;
+	const item = mapMediaRow(row);
 	return {
-		...toPublicItem(mapMediaRow(row)),
+		...toPublicItem(item),
+		hidden: item.hiddenAt !== null,
 		uploader: relation
 			? { displayName: relation.display_name, guestAlias: relation.guest_alias }
 			: RETIRED_UPLOADER,

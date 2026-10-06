@@ -43,6 +43,8 @@ export function buildSpace(overrides: Partial<MemoriesSpaceRecord> = {}): Memori
 		entitlement: 'package',
 		expectedGuests: null,
 		adminNote: null,
+		shareVersion: 0,
+		shareEnabledAt: null,
 		createdAt: '2026-09-01T15:00:00.000Z',
 		updatedAt: '2026-09-01T15:00:00.000Z',
 		...overrides,
@@ -87,6 +89,9 @@ export function buildMediaRow(overrides: Partial<MediaRow> = {}): MediaRow {
 		cleanup_claimed_at: null,
 		cleanup_lease_id: null,
 		object_deleted_at: null,
+		hidden_at: null,
+		thumbnail_object_key: null,
+		thumbnail_bytes: null,
 		...overrides,
 	};
 }

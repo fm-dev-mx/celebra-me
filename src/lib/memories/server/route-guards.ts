@@ -27,7 +27,7 @@ export function requireEventIdParam(params: Record<string, string | undefined>):
 export async function requireGuestContext(
 	request: Request,
 	params: Record<string, string | undefined>,
-	operation: 'read' | 'mutate' | 'register',
+	operation: 'read' | 'mutate' | 'register' | 'thumbnail',
 ): Promise<MemoriesGuestContext> {
 	const space = await requirePublicMemorySpace(params.slug);
 	assertMemorySpaceAcceptsGuests(space);

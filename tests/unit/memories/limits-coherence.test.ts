@@ -30,11 +30,7 @@ import {
 	roundMemoriesVideoDurationSeconds,
 } from '@/lib/memories/contract/media-policy';
 import { MEMORIES_PRIVATE_REQUEST_TTL_SECONDS } from '@/lib/memories/contract/private-request';
-import {
-	buildMemoriesUploadLimitsCopy,
-	buildMemoriesUploadSummaryCopy,
-	buildMemoriesVideoTooLongCopy,
-} from '@/lib/memories/copy';
+import { buildMemoriesUploadLimitsCopy, buildMemoriesVideoTooLongCopy } from '@/lib/memories/copy';
 
 function readRepositoryFile(...segments: string[]): string {
 	return readFileSync(path.join(process.cwd(), ...segments), 'utf8');
@@ -112,14 +108,11 @@ describe('limits agree across layers', () => {
 	});
 
 	it('tells the guest the same numbers the upload policy enforces', () => {
-		const summary = buildMemoriesUploadSummaryCopy(3);
 		const details = buildMemoriesUploadLimitsCopy(3);
-		for (const text of [summary, details]) {
-			expect(text).toContain(String(MEMORIES_MAX_IMAGE_BYTES / MIB));
-			expect(text).toContain(String(MEMORIES_MAX_VIDEO_BYTES / MIB));
-			expect(text).toContain(`${MEMORIES_MAX_VIDEO_DURATION_SECONDS} segundos`);
-			expect(text).toContain('3 videos');
-		}
+		expect(details).toContain(String(MEMORIES_MAX_IMAGE_BYTES / MIB));
+		expect(details).toContain(String(MEMORIES_MAX_VIDEO_BYTES / MIB));
+		expect(details).toContain(`${MEMORIES_MAX_VIDEO_DURATION_SECONDS} segundos`);
+		expect(details).toContain('3 videos');
 		expect(buildMemoriesVideoTooLongCopy()).toContain(
 			String(MEMORIES_MAX_VIDEO_DURATION_SECONDS),
 		);

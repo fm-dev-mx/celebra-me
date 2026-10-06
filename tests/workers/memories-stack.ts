@@ -279,6 +279,9 @@ class InMemoryCatalog {
 				cleanup_claimed_at: null,
 				cleanup_lease_id: null,
 				object_deleted_at: null,
+				hidden_at: null,
+				thumbnail_object_key: null,
+				thumbnail_bytes: null,
 			};
 			this.items.push(row);
 			return { ...row };

@@ -27,6 +27,7 @@ import {
 	roundMemoriesVideoDurationSeconds,
 } from '@/lib/memories/contract/media-policy';
 import {
+	MEMORIES_THUMBNAIL_MIME_TYPE,
 	buildMemoriesObjectKey,
 	isMemoriesObjectKeyForMime,
 } from '@/lib/memories/contract/object-key';
@@ -45,6 +46,7 @@ import {
 } from './catalog.repository';
 import { mapMediaRow, toPublicItem } from './media-mapper';
 import { createMemoriesObjectId } from './secrets';
+import { isMemorySpaceFull } from './usage.service';
 import {
 	inspectMemoriesObject,
 	isMemoriesSignerRateLimit,
@@ -295,9 +297,13 @@ export async function reserveGuestMemoryItem(input: {
 export async function listGuestMemoryItems(
 	space: MemoriesSpaceRecord,
 	session: SessionRow,
-): Promise<{ items: MemoriesMediaPublicItem[]; quota: MemoriesGuestQuota }> {
-	const rows = await listSessionMedia(space.eventId, session.id);
+): Promise<{ items: MemoriesMediaPublicItem[]; quota: MemoriesGuestQuota; eventFull: boolean }> {
+	const [rows, eventFull] = await Promise.all([
+		listSessionMedia(space.eventId, session.id),
+		isMemorySpaceFull(space).catch(() => false),
+	]);
 	return {
+		eventFull,
 		items: rows
 			.map(mapMediaRow)
 			.filter((item) => isMemoriesCatalogVisibleStatus(item.status))
@@ -552,14 +558,23 @@ export async function getMediaObjectForRetrieval(
 	space: MemoriesSpaceRecord,
 	mediaItemId: string,
 	ownerSessionId?: string,
+	options: { variant?: 'original' | 'thumb'; excludeHidden?: boolean } = {},
 ): Promise<{ objectKey: string; mimeType: string; downloadName: string }> {
 	const row = await findMediaById(space.eventId, mediaItemId);
 	if (!row || (ownerSessionId && row.session_id !== ownerSessionId)) {
 		throw new ApiError(404, 'not_found', 'Recuerdo no encontrado.');
 	}
 	const item = mapMediaRow(row);
-	if (item.deletedAt || item.status !== 'accepted') {
+	if (item.deletedAt || item.status !== 'accepted' || (options.excludeHidden && item.hiddenAt)) {
 		throw new ApiError(404, 'not_found', 'Recuerdo no disponible.');
+	}
+	// Files from before thumbnails existed fall back to the original.
+	if (options.variant === 'thumb' && item.thumbnailObjectKey) {
+		return {
+			objectKey: item.thumbnailObjectKey,
+			mimeType: MEMORIES_THUMBNAIL_MIME_TYPE,
+			downloadName: `vista-previa-${item.id.slice(0, 8)}.webp`,
+		};
 	}
 	if (!isMemoriesObjectKeyForMime(item.objectKey, item.mimeType)) {
 		throw new ApiError(500, 'internal_error', 'El recuerdo no tiene un identificador válido.');

@@ -4,14 +4,20 @@ import { getEventOwnerAccessOrThrow } from '@/lib/rsvp/services/shared/event-own
 import { isValidUtcIso } from '@/lib/time/event-time';
 import {
 	MEMORIES_GUEST_ALIAS_PATTERN,
+	MEMORIES_MEDIA_KINDS,
+	MEMORIES_VISIBILITY_FILTERS,
 	canTransitionMemoriesMedia,
 	isMemoriesCatalogVisibleStatus,
 	isMemoriesMediaStatus,
 	sanitizeMemoriesCaption,
 	type MemoriesMediaPublicItem,
 	type MemoriesOrganizerListQuery,
+	type MemoriesMediaItem,
+	type MemoriesMediaKind,
 	type MemoriesOrganizerListResponse,
+	type MemoriesOrganizerUploader,
 	type MemoriesSpaceRecord,
+	type MemoriesVisibilityFilter,
 } from '@/lib/memories/contract/catalog';
 import {
 	MEMORIES_CATALOG_PAGE_SIZE,
@@ -21,6 +27,7 @@ import { appendMemoriesAudit } from './audit';
 import {
 	findMediaById,
 	listOrganizerMedia,
+	listUploaderFileCounts,
 	patchMedia,
 	revokeSessionsByAlias,
 } from './catalog.repository';
@@ -68,6 +75,24 @@ function normalizeUploaderFilter(value: unknown): string | undefined {
 	return normalized;
 }
 
+function normalizeOption<T extends string>(
+	value: unknown,
+	options: readonly T[],
+	message: string,
+): T | undefined {
+	if (value === undefined || value === null || value === '') return undefined;
+	if (typeof value !== 'string' || !(options as readonly string[]).includes(value))
+		throw new ApiError(400, 'bad_request', message);
+	return value as T;
+}
+
+function normalizeUploaderAlias(value: unknown): string | undefined {
+	if (value === undefined || value === null || value === '') return undefined;
+	if (typeof value !== 'string' || !MEMORIES_GUEST_ALIAS_PATTERN.test(value))
+		throw new ApiError(400, 'bad_request', 'El invitado no es válido.');
+	return value;
+}
+
 export function organizerMaxPage(space: MemoriesSpaceRecord): number {
 	return Math.max(0, Math.ceil(space.maxEventObjects / MEMORIES_CATALOG_PAGE_SIZE) - 1);
 }
@@ -87,6 +112,17 @@ export async function listOrganizerMemoryItems(
 		throw new ApiError(400, 'bad_request', 'El estado no es válido.');
 	}
 	const uploader = normalizeUploaderFilter(input.uploader);
+	const uploaderAlias = normalizeUploaderAlias(input.uploaderAlias);
+	const kind = normalizeOption<MemoriesMediaKind>(
+		input.kind,
+		MEMORIES_MEDIA_KINDS,
+		'El tipo no es válido.',
+	);
+	const visibility = normalizeOption<MemoriesVisibilityFilter>(
+		input.visibility,
+		MEMORIES_VISIBILITY_FILTERS,
+		'La visibilidad no es válida.',
+	);
 	const createdFrom = normalizeDateBound(input.createdFrom, 'La fecha inicial');
 	const createdTo = normalizeDateBound(input.createdTo, 'La fecha final');
 	if (createdFrom && createdTo && Date.parse(createdFrom) >= Date.parse(createdTo)) {
@@ -98,6 +134,9 @@ export async function listOrganizerMemoryItems(
 		offset: page * MEMORIES_CATALOG_PAGE_SIZE,
 		status: input.status,
 		uploader,
+		uploaderAlias,
+		kind,
+		visibility,
 		createdFrom,
 		createdTo,
 	});
@@ -107,11 +146,42 @@ export async function listOrganizerMemoryItems(
 	};
 }
 
+function resolveHiddenAt(item: MemoriesMediaItem, hidden: unknown, now: string): string | null {
+	if (typeof hidden !== 'boolean')
+		throw new ApiError(400, 'bad_request', 'La visibilidad no es válida.');
+	if (item.status !== 'accepted')
+		throw new ApiError(409, 'conflict', 'Solo se pueden ocultar recuerdos disponibles.');
+	return hidden ? (item.hiddenAt ?? now) : null;
+}
+
+function resolveAuditAction(statusChanged: boolean, hidden: unknown): string {
+	if (statusChanged) return 'moderation_updated';
+	if (hidden === true) return 'hidden_by_organizer';
+	if (hidden === false) return 'shown_by_organizer';
+	return 'caption_updated';
+}
+
+/** Guests with available files, alphabetically, for the host's guest filter. */
+export async function listOrganizerUploaders(
+	space: MemoriesSpaceRecord,
+): Promise<MemoriesOrganizerUploader[]> {
+	const rows = await listUploaderFileCounts(space.eventId);
+	return rows
+		.map((row) => ({
+			displayName: row.display_name,
+			guestAlias: row.guest_alias,
+			files: row.files,
+		}))
+		.sort((a, b) => a.displayName.localeCompare(b.displayName, 'es-MX'));
+}
+
 export async function updateOrganizerMemoryItem(input: {
 	space: MemoriesSpaceRecord;
 	mediaItemId: string;
 	caption?: unknown;
 	status?: unknown;
+	/** True hides the file from the shared gallery and "download all"; false shows it again. */
+	hidden?: unknown;
 	actorId: string;
 }): Promise<MemoriesMediaPublicItem> {
 	const row = await findMediaById(input.space.eventId, input.mediaItemId);
@@ -127,6 +197,7 @@ export async function updateOrganizerMemoryItem(input: {
 	const now = new Date().toISOString();
 	const body: Record<string, unknown> = {};
 	if (input.caption !== undefined) body.caption = sanitizeMemoriesCaption(input.caption);
+	if (input.hidden !== undefined) body.hidden_at = resolveHiddenAt(item, input.hidden, now);
 	if (targetStatus !== item.status) {
 		body.status = targetStatus;
 		body.accepted_at = targetStatus === 'accepted' ? now : null;
@@ -142,7 +213,7 @@ export async function updateOrganizerMemoryItem(input: {
 		mediaItemId: item.id,
 		actorType: 'organizer',
 		actorId: input.actorId,
-		action: targetStatus !== item.status ? 'moderation_updated' : 'caption_updated',
+		action: resolveAuditAction(targetStatus !== item.status, input.hidden),
 		metadata: { fromStatus: item.status, toStatus: targetStatus },
 	});
 	return toPublicItem(mapMediaRow(updated));

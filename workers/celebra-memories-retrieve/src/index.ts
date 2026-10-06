@@ -12,7 +12,7 @@ import {
 	getMemoriesMimePolicy,
 	isMemoriesVideoMime,
 } from '../../../src/lib/memories/contract/media-policy';
-import { isMemoriesObjectKeyForMime } from '../../../src/lib/memories/contract/object-key';
+import { isMemoriesStorableKey } from '../../../src/lib/memories/contract/object-key';
 import {
 	MEMORIES_PRIVATE_REQUEST_TTL_SECONDS,
 	MEMORIES_RETRIEVAL_PATH,
@@ -224,7 +224,7 @@ function parseRetrievalRequest(rawBody: string): ParsedRetrievalRequest | null {
 		mode === 'inline' || mode === 'attachment' ? STREAM_REQUEST_KEYS : BASE_REQUEST_KEYS;
 	if (
 		Object.keys(body).some((key) => !allowedKeys.has(key)) ||
-		!isMemoriesObjectKeyForMime(body.objectKey, mimeType) ||
+		!isMemoriesStorableKey(body.objectKey, mimeType) ||
 		!['inline', 'attachment', 'inspect', 'delete'].includes(mode) ||
 		rangeStart === 'invalid' ||
 		rangeEnd === 'invalid' ||
