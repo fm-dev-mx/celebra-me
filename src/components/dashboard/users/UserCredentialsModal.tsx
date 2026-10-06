@@ -76,7 +76,7 @@ const UserCredentialsModal: React.FC<UserCredentialsModalProps> = ({
 					<h3 id="user-credentials-title">Credenciales de acceso</h3>
 					<p className="dashboard-modal__description">
 						{canEditAlias
-							? 'Actualiza el usuario de acceso o genera una contraseña temporal. El identificador interno del usuario no cambia.'
+							? 'Actualice el usuario de acceso o genere una contraseña temporal. El identificador interno del usuario no cambia.'
 							: 'Genera una contraseña temporal para este usuario. El identificador interno no cambia.'}
 					</p>
 

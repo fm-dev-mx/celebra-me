@@ -125,7 +125,7 @@ describe('AssetPicker', () => {
 
 		await waitFor(() => {
 			expect(
-				screen.getByText('Arrastra imágenes aquí o haz clic para subir'),
+				screen.getByText('Arrastre imágenes aquí o haga clic para subir'),
 			).toBeInTheDocument();
 		});
 	});

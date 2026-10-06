@@ -220,7 +220,7 @@ const ClaimCodesTable: React.FC<ClaimCodesTableProps> = ({ items, onDisable, onU
 										disabled={editModal.busy}
 									/>
 									<p className="dashboard-form-help">
-										Deja vacío para que no expire
+										Deje vacío para que no expire
 									</p>
 								</div>
 								{editModal.error && (

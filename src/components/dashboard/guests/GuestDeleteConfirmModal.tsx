@@ -39,8 +39,7 @@ const GuestDeleteConfirmModal: React.FC<GuestDeleteConfirmModalProps> = ({
 		>
 			<div className="dashboard-modal__content">
 				<p className="dashboard-modal__confirm-text">
-					¿Estás seguro de que deseas eliminar a <strong>{guestToDelete.fullName}</strong>
-					?
+					¿Está seguro de que desea eliminar a <strong>{guestToDelete.fullName}</strong>?
 				</p>
 
 				<p className="dashboard-modal__confirm-warning">

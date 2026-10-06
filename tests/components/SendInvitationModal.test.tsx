@@ -205,7 +205,7 @@ describe('SendInvitationModal', () => {
 
 		await waitFor(() => {
 			const errors = screen.getAllByText(
-				'Revisa el número de WhatsApp o déjalo vacío para elegir el contacto manualmente.',
+				'Revise el número de WhatsApp o déjelo vacío para elegir el contacto manualmente.',
 			);
 			expect(errors.length).toBeGreaterThanOrEqual(1);
 		});
@@ -563,7 +563,7 @@ describe('SendInvitationModal', () => {
 
 		expect(
 			screen.getByText(
-				'Sin teléfono registrado. Al compartir, WhatsApp te permitirá elegir el contacto.',
+				'Sin teléfono registrado. Al compartir, WhatsApp le permitirá elegir el contacto.',
 			),
 		).toBeInTheDocument();
 	});
@@ -573,7 +573,7 @@ describe('SendInvitationModal', () => {
 
 		expect(
 			screen.queryByText(
-				'Sin teléfono registrado. Al compartir, WhatsApp te permitirá elegir el contacto.',
+				'Sin teléfono registrado. Al compartir, WhatsApp le permitirá elegir el contacto.',
 			),
 		).not.toBeInTheDocument();
 	});

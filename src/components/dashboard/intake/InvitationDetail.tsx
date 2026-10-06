@@ -52,7 +52,7 @@ const InvitationDetail: FC<Props> = ({ invitationId }) => {
 
 	const handleCreateRequest = async () => {
 		if (selectedBlocks.length === 0) {
-			setActionError('Selecciona al menos un bloque de captura.');
+			setActionError('Seleccione al menos un bloque de captura.');
 			return;
 		}
 

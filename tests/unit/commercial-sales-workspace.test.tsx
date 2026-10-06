@@ -92,7 +92,9 @@ function createMockGetImplementation(opts: MockGetOpts = {}) {
 	};
 }
 
-function defaultPostResponse(overrides?: { conversionEvent?: { id: string; status: string } }): ApiResult<unknown> {
+function defaultPostResponse(overrides?: {
+	conversionEvent?: { id: string; status: string };
+}): ApiResult<unknown> {
 	return {
 		ok: true as const,
 		status: 200,
@@ -164,7 +166,7 @@ describe('SalesWorkspace', () => {
 		expect(screen.getByRole('button', { name: /María Ejemplo/ })).toHaveTextContent(
 			'Siguiente: Vincular o crear cliente',
 		);
-		expect(screen.getByText('Selecciona una persona u oportunidad')).toBeInTheDocument();
+		expect(screen.getByText('Seleccione una persona u oportunidad')).toBeInTheDocument();
 		expect(screen.getAllByText('Buscar prospecto o cliente')).toHaveLength(2);
 		expect(screen.queryByLabelText('Código de lead')).not.toBeVisible();
 	});
@@ -465,16 +467,18 @@ describe('SalesWorkspace — customer lookup & CAPI polling', () => {
 	it('polls conversion status and updates message on success', async () => {
 		jest.useFakeTimers();
 
-		getSpy.mockImplementation(createMockGetImplementation({
-			customerId: 'cust-1',
-			customerName: 'Test',
-			customerEmail: 't@c.com',
-			orderId: 'order-1',
-			orderNumber: 'ORD-001',
-			totalAmount: 10000,
-			depositAmount: 5000,
-			conversionStatus: 'sent',
-		}));
+		getSpy.mockImplementation(
+			createMockGetImplementation({
+				customerId: 'cust-1',
+				customerName: 'Test',
+				customerEmail: 't@c.com',
+				orderId: 'order-1',
+				orderNumber: 'ORD-001',
+				totalAmount: 10000,
+				depositAmount: 5000,
+				conversionStatus: 'sent',
+			}),
+		);
 
 		postSpy.mockResolvedValue(defaultPostResponse());
 
@@ -554,9 +558,11 @@ describe('SalesWorkspace — customer lookup & CAPI polling', () => {
 	it('failed status shows attention message', async () => {
 		jest.useFakeTimers();
 
-		getSpy.mockImplementation(createMockGetImplementation({
-			conversionStatus: (n) => (n >= 5 ? 'failed' : 'pending'),
-		}));
+		getSpy.mockImplementation(
+			createMockGetImplementation({
+				conversionStatus: (n) => (n >= 5 ? 'failed' : 'pending'),
+			}),
+		);
 
 		postSpy.mockResolvedValue(defaultPostResponse());
 

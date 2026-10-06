@@ -63,7 +63,7 @@ const ReminderSettingsPanel: React.FC<ReminderSettingsPanelProps> = ({
 		className="share-messages-modal__settings"
 	>
 		<p className="share-messages-modal__settings-description">
-			Configura cuándo mostrar recordatorios y a qué invitados enviarlos.
+			Configure cuándo mostrar recordatorios y a qué invitados enviarlos.
 		</p>
 
 		<div className="dashboard-form-field">
@@ -410,7 +410,7 @@ const ShareMessagesModal: React.FC<ShareMessagesModalProps> = ({
 		>
 			<div className="dashboard-modal__content">
 				<p className="dashboard-modal__description">
-					Personaliza los textos de invitación y recordatorio.
+					Personalice los textos de invitación y recordatorio.
 				</p>
 
 				<div

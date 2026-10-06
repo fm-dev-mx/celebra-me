@@ -208,7 +208,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 			/>
 			{!editPhone.trim() && !phoneError && (
 				<span className="guest-field-hint">
-					Sin teléfono registrado. Al compartir, WhatsApp te permitirá elegir el contacto.
+					Sin teléfono registrado. Al compartir, WhatsApp le permitirá elegir el contacto.
 				</span>
 			)}
 			<span className="guest-field-hint">
@@ -293,7 +293,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		fallbackGuest && (
 			<div className="dashboard-modal__fallback">
 				<p className="dashboard-modal__description">
-					No se pudo abrir el método de envío. Puedes copiar la
+					No se pudo abrir el método de envío. Puede copiar la
 					{isReminderMode ? ' mensaje de recordatorio' : ' invitación'}.
 				</p>
 				<div className="send-share-guest">

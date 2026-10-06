@@ -359,7 +359,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 			setPublicationFeedback({
 				state: 'success',
 				message:
-					'Los cambios se publicaron correctamente. Ya puedes abrir la invitación pública.',
+					'Los cambios se publicaron correctamente. Ya puede abrir la invitación pública.',
 			});
 		} catch (error) {
 			setPublicationFeedback(getPublicationFeedback(error));
@@ -524,13 +524,13 @@ export default function InvitationEditor({ initialContext }: Props) {
 			const labels = emptySectionsDetail.critical
 				.map((s) => EDITOR_SECTION_PRESENTATION[s]?.label ?? s)
 				.join(', ');
-			return `Secciones críticas vacías: ${labels}. Revisa el contenido antes de publicar.`;
+			return `Secciones críticas vacías: ${labels}. Revise el contenido antes de publicar.`;
 		}
 		if (emptySectionsDetail.optional.length > 0) {
-			return `${emptySectionsDetail.optional.length} sección(es) opcional(es) vacías. Puedes publicar sin ellas.`;
+			return `${emptySectionsDetail.optional.length} sección(es) opcional(es) vacías. Puede publicar sin ellas.`;
 		}
 		if (!hasDraft && editor.context.contentSource !== 'draft') {
-			return 'No hay cambios sin publicar. Guarda una sección primero.';
+			return 'No hay cambios sin publicar. Guarde una sección primero.';
 		}
 		return null;
 	}, [
@@ -832,8 +832,8 @@ export default function InvitationEditor({ initialContext }: Props) {
 								/{editor.context.invitation.eventType}/
 								{editor.context.invitation.slug ?? '...'}
 							</code>{' '}
-							no está disponible hasta que publiques. Usa{' '}
-							<strong>Vista previa</strong> para ver el borrador.
+							no está disponible hasta que publique. Use <strong>Vista previa</strong>{' '}
+							para ver el borrador.
 						</p>
 					</div>
 				)}
@@ -994,7 +994,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 							onChange={(value) => updateCountdown({ footerText: value })}
 						/>
 						<p className="invitation-editor__helper-text">
-							El texto inferior aparece debajo de la fecha. Usa este campo para
+							El texto inferior aparece debajo de la fecha. Use este campo para
 							mostrar lugar, ciudad o una frase corta. La fecha se toma
 							automáticamente de la Portada.
 						</p>
@@ -1381,7 +1381,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 							? 'Estamos revisando los cambios guardados antes de publicar.'
 							: editor.operation.type === 'publishing'
 								? 'Estamos publicando la revisión confirmada. No cierres esta ventana.'
-								: 'El borrador guardado reemplazará la versión pública actual. Revisa la vista previa antes de continuar.'
+								: 'El borrador guardado reemplazará la versión pública actual. Revise la vista previa antes de continuar.'
 					}
 					confirmLabel={
 						publicationFeedback.state === 'success' ||

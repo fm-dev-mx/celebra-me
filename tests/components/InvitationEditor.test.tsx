@@ -320,7 +320,7 @@ describe('InvitationEditor', () => {
 		await waitFor(() => {
 			expect(
 				within(dialog).getByText(
-					'Los cambios se publicaron correctamente. Ya puedes abrir la invitación pública.',
+					'Los cambios se publicaron correctamente. Ya puede abrir la invitación pública.',
 				),
 			).toBeInTheDocument();
 		});

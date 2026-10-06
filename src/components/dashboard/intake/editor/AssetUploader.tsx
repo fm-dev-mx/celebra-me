@@ -86,7 +86,7 @@ export default function AssetUploader({ invitationId, onUploaded }: Props) {
 			if (!response.ok) {
 				const message =
 					(result as { error?: { message?: string } })?.error?.message ||
-					'No se pudo subir la imagen. Intenta nuevamente.';
+					'No se pudo subir la imagen. Intente nuevamente.';
 				setErrorMessage(message);
 				setUploadState('error');
 				return;
@@ -96,7 +96,7 @@ export default function AssetUploader({ invitationId, onUploaded }: Props) {
 			setErrorMessage('');
 			onUploaded?.();
 		} catch {
-			setErrorMessage('No se pudo subir la imagen. Intenta nuevamente.');
+			setErrorMessage('No se pudo subir la imagen. Intente nuevamente.');
 			setUploadState('error');
 		} finally {
 			if (inputRef.current) inputRef.current.value = '';
@@ -144,7 +144,7 @@ export default function AssetUploader({ invitationId, onUploaded }: Props) {
 			? 'Subiendo imagen...'
 			: uploadState === 'success'
 				? 'Imagen subida correctamente.'
-				: 'Arrastra imágenes aquí o haz clic para subir';
+				: 'Arrastre imágenes aquí o haga clic para subir';
 
 	return (
 		<div
