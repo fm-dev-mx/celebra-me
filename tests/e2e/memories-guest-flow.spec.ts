@@ -261,43 +261,33 @@ test.describe('memories guest flow', () => {
 		await expect(page.getByText(copy.successCount(1))).toBeVisible();
 	});
 
-	test('without signal, says so and resumes when the connection returns', async ({ page }) => {
-		let offline = true;
-		const api = await mockGuestApi(page, {
-			hasSession: true,
-			put: async (route) => {
-				if (offline) {
-					await route.abort('internetdisconnected');
-					return;
-				}
-				await route.fulfill({
-					status: 201,
-					json: { uploaded: true },
-					headers: { 'Access-Control-Allow-Origin': '*' },
-				});
-			},
-		});
-		await page.goto(`/r/${SLUG}`);
-		await page.evaluate(() => {
+	test('without signal, waits and resumes on its own when the connection returns', async ({
+		page,
+	}) => {
+		const api = await mockGuestApi(page, { hasSession: true });
+		// The guest opens the page with no signal at all.
+		await page.addInitScript(() => {
 			let online = false;
 			Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => online });
 			(window as unknown as { setOnline: (value: boolean) => void }).setOnline = (value) => {
 				online = value;
+				window.dispatchEvent(new Event(value ? 'online' : 'offline'));
 			};
 		});
+		await page.goto(`/r/${SLUG}`);
 
 		await choosePhoto(page);
 		await page.getByRole('button', { name: copy.confirmUploadCount(1) }).click();
-		await expect(page.getByRole('alert')).toHaveText(copy.networkFailed);
+		await expect(page.getByText(copy.offline)).toBeVisible();
+		await expect(page.getByText(copy.statusWaiting)).toBeVisible();
+		expect(api.reserveBodies).toHaveLength(0);
 
-		offline = false;
 		await page.evaluate(() =>
 			(window as unknown as { setOnline: (value: boolean) => void }).setOnline(true),
 		);
-		await page.getByRole('button', { name: copy.retry }).click();
 
 		await expect(page.getByText(copy.successCount(1))).toBeVisible();
-		expect(api.putAttempts).toBe(2);
+		expect(api.putAttempts).toBe(1);
 	});
 
 	test('after a reload mid-upload, the session survives and the pending file is listed', async ({
@@ -316,6 +306,8 @@ test.describe('memories guest flow', () => {
 		await choosePhoto(page);
 		await page.getByRole('button', { name: copy.confirmUploadCount(1) }).click();
 		await expect(page.getByText(copy.progressTitle(1, 1))).toBeVisible();
+		// Reload only once the server holds the reservation.
+		await expect.poll(() => api.items.length).toBe(1);
 
 		await page.reload();
 		pendingPut.release();

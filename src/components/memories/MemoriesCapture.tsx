@@ -129,6 +129,12 @@ function Onboarding({
 }) {
 	const [name, setName] = useState('');
 	const [busy, setBusy] = useState(false);
+	const inputRef = useRef<HTMLInputElement>(null);
+	// A guest on a slow connection can type before the island hydrates; keep that text.
+	useEffect(() => {
+		const typed = inputRef.current?.value ?? '';
+		if (typed) setName(typed);
+	}, []);
 	return (
 		<form
 			className="status-page__onboarding"
@@ -142,6 +148,7 @@ function Onboarding({
 		>
 			<label htmlFor={`${inputId}-new-display-name`}>{copy.displayNameLabel}</label>
 			<input
+				ref={inputRef}
 				id={`${inputId}-new-display-name`}
 				value={name}
 				maxLength={MEMORIES_DISPLAY_NAME_MAX_LENGTH}

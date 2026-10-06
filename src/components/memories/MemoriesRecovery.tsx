@@ -1,4 +1,4 @@
-import { useId, useMemo, useState, type SyntheticEvent } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type SyntheticEvent } from 'react';
 import { formatMemoriesRecoveryInput } from '@/lib/memories/contract/catalog';
 import { buildMemoriesPublicPath } from '@/lib/memories/contract/private-request';
 import { memoriesRecoveryFormCopy as copy } from '@/lib/memories/copy';
@@ -16,6 +16,12 @@ export default function MemoriesRecovery({ publicSlug, onRecovered }: MemoriesRe
 	const api = useMemo(() => createMemoriesGuestApi(publicSlug), [publicSlug]);
 	const [recoveryCode, setRecoveryCode] = useState('');
 	const [status, setStatus] = useState<RecoveryStatus>('idle');
+	const inputRef = useRef<HTMLInputElement>(null);
+	// Keep a code typed or pasted before the island hydrated.
+	useEffect(() => {
+		const typed = inputRef.current?.value ?? '';
+		if (typed) setRecoveryCode(formatMemoriesRecoveryInput(typed));
+	}, []);
 
 	const recover = async (event: SyntheticEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -35,6 +41,7 @@ export default function MemoriesRecovery({ publicSlug, onRecovered }: MemoriesRe
 		<form className="status-page__recovery-form" onSubmit={recover} noValidate>
 			<label htmlFor={inputId}>{copy.inputLabel}</label>
 			<input
+				ref={inputRef}
 				id={inputId}
 				name="recoveryCode"
 				value={recoveryCode}
