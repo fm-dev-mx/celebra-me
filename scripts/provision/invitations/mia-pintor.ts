@@ -7,7 +7,7 @@ import type { CanonicalEventContentInput } from '../../../src/lib/schemas/conten
  * request). Marine direction uses the reusable `seaside-lineart` envelope and ornament set over
  * celestial-blue. Two session photographs act as chapter interludes: the lifeguard hut closes
  * the shore chapter after family, and the framed meadow opens the way to the venues.
- * Itinerary and music are omitted until the client supplies them.
+ * Itinerary and background music are configured from the client-confirmed salon schedule and audio track.
  */
 export const MIA_TIMING = {
 	localDateTime: '2026-12-06T17:00',
@@ -31,6 +31,7 @@ const content: CanonicalEventContentInput = {
 		'family',
 		'countdown',
 		'location',
+		'itinerary',
 		'gallery',
 		'gifts',
 		'personalizedAccess',
@@ -41,7 +42,8 @@ const content: CanonicalEventContentInput = {
 		ornaments: 'seaside-lineart',
 		intersections: {
 			family: { family: 'arch', source: 'quote' },
-			gallery: { family: 'atmospheric-blend', source: 'location' },
+			itinerary: { family: 'atmospheric-blend', source: 'location' },
+			gallery: { family: 'atmospheric-blend', source: 'itinerary' },
 			gifts: { family: 'atmospheric-blend', source: 'gallery' },
 			thankYou: { family: 'arch', source: 'rsvp' },
 		},
@@ -167,12 +169,66 @@ const content: CanonicalEventContentInput = {
 				address: 'Fco. I. Madero 171, Col. Emilio Carranza, Cd. Madero, Tamps.',
 				city: 'Ciudad Madero',
 				date: '2026-12-06',
-				time: '19:00',
+				time: '18:30',
 				googleMapsUrl:
 					'https://www.google.com/maps/search/?api=1&query=SOLEMIO+Sal%C3%B3n+de+Eventos+Francisco+I.+Madero+171+Emilio+Carranza+Ciudad+Madero+Tamaulipas',
 				isVisible: true,
 			},
 		],
+	},
+	itinerary: {
+		variant: 'timeline-paper',
+		title: 'Itinerario',
+		subtitle: 'Momentos especiales de nuestra celebración',
+		items: [
+			{
+				time: '17:00',
+				iconName: 'Church',
+				label: 'Misa de acción de gracias',
+				description: 'Parroquia Nuestra Señora de Lourdes',
+			},
+			{
+				time: '18:30',
+				iconName: 'Reception',
+				label: 'Recepción',
+				description: 'Bienvenida en Salón Solé Mío',
+			},
+			{
+				time: '19:15',
+				iconName: 'Sparkles',
+				label: 'Entrada de Mía',
+				description: 'Entrada triunfal al salón',
+			},
+			{
+				time: '20:00',
+				iconName: 'Waltz',
+				label: 'Vals y brindis',
+				description: 'Momentos especiales con su familia',
+			},
+			{
+				time: '21:00',
+				iconName: 'Dinner',
+				label: 'Cena',
+				description: 'Cena a tres tiempos acompañada de saxofón',
+			},
+			{
+				time: '22:00',
+				iconName: 'Party',
+				label: 'Baile y fiesta',
+				description: 'Baile sorpresa y música con Tracker Sound',
+			},
+			{
+				time: '00:00',
+				iconName: 'Calendar',
+				label: 'Conclusión',
+				description: 'Fin del evento (12:00 a. m.)',
+			},
+		],
+	},
+	music: {
+		url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1791406870/Dancing_Queen_hxqiaf.mp3',
+		title: 'Dancing Queen — ABBA',
+		autoPlay: false,
 	},
 	gallery: {
 		// Contact sheet: two mirrored blocks of a principal portrait and two stacked frames.
