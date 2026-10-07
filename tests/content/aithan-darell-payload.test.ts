@@ -80,18 +80,32 @@ describe('Aithan Darell managed definition', () => {
 		expect(parsed.visualProfileId).toBe('aithan-darell');
 		expect(parsed.hero.variant).toBe('editorial-cover');
 		expect(parsed.countdown?.variant).toBe('magazine-folio');
-		expect(parsed.gallery?.variant).toBe('feature-stack');
-		expect(parsed.gallery?.items).toHaveLength(3);
+		expect(parsed.gallery?.variant).toBe('paired-portraits');
+		expect(parsed.gallery?.items).toHaveLength(2);
 		expect(parsed.rsvp?.variant).toBe('formal-register');
 		expect(parsed.rsvp?.personalizedAccess?.variant).toBe('formal-pass');
 		expect(parsed.thankYou?.variant).toBe('editorial-back-cover');
 		expect(parsed.envelope?.revealVariant).toBe('editorial-cover');
-		expect(parsed.envelope?.coverEdition).toBe('3 años');
-		expect(parsed.envelope?.coverLines).toEqual([
-			'Una tarde de carreras',
-			'Retrato de un piloto',
-		]);
-		expect(parsed.hero.presentation).toEqual({ coverMark: '3', coverPage: 'PÁG. 3' });
+		expect(parsed.envelope?.coverExperience).toBe('collector');
+		expect(parsed.envelope?.coverEdition).toBe('3');
+		// The collector face does not print cover lines; none are published.
+		expect(parsed.envelope?.coverLines).toBeUndefined();
+		expect(parsed.gallery?.variantOptions).toEqual({ arrangement: 'overlap' });
+		expect(parsed.location?.presentationOptions).toEqual({
+			indicationsStyle: 'numbered-board',
+		});
+		// The brand is named once (cover masthead): no hero design credit.
+		expect(parsed.hero.presentation).toEqual({
+			coverMark: '3',
+			coverPage: 'POLE POSITION',
+			designCredit: false,
+		});
+		expect(parsed.composition.intersections).toEqual({
+			quote: { family: 'atmospheric-blend', source: 'hero' },
+			location: { family: 'pattern-band', source: 'countdown' },
+			'personalized-access': { family: 'overlap', source: 'gallery' },
+			thankYou: { family: 'pattern-band', source: 'rsvp' },
+		});
 	});
 
 	it('keeps the real party instant in eventTiming and a wall-clock hero date', () => {
@@ -134,16 +148,40 @@ describe('Aithan Darell managed definition', () => {
 		expect(strings.filter((entry) => XV_PATTERN.test(entry))).toEqual([]);
 	});
 
-	it('binds the client-chosen photograph to the cover and the desktop card', () => {
+	it('publishes every photograph in a single role', () => {
 		const specs = aithanInvitation.assets;
-		expect(specs.find((spec) => spec.key === 'hero')?.relativePath).toBe('hero.jpg');
-		expect(specs.find((spec) => spec.key === 'heroPortrait')?.relativePath).toBe('hero.jpg');
+		const pathOf = (key: string) => specs.find((spec) => spec.key === key)?.relativePath;
 		expect(specs.map((spec) => spec.key)).toEqual([
-			'hero',
+			'heroCanvas',
 			'heroPortrait',
 			'gallery01',
 			'gallery02',
-			'gallery03',
+			'coverGrid',
+			'thankYouTrophy',
 		]);
+		// Client photographs: car (hero portrait), race suit and jacket (gallery), one key each.
+		const photoPaths = ['hero.jpg', 'gallery-01.jpg', 'gallery-02.jpg'];
+		for (const photo of photoPaths) {
+			expect(specs.filter((spec) => spec.relativePath === photo)).toHaveLength(1);
+		}
+		expect(pathOf('heroPortrait')).toBe('hero.jpg');
+		// Original motif artwork fills the cover, the hero canvas and the back cover.
+		expect(pathOf('heroCanvas')).toBe('hero-canvas.jpg');
+		expect(pathOf('coverGrid')).toBe('cover-grid.jpg');
+		expect(pathOf('thankYouTrophy')).toBe('thankyou-trophy.jpg');
+
+		const parsed = eventContentSchema.parse(publishedContent());
+		const keyOf = (asset: unknown) =>
+			typeof asset === 'string' ? asset : JSON.stringify(asset);
+		expect(keyOf(parsed.hero.backgroundImage)).toContain('heroCanvas');
+		expect(keyOf(parsed.hero.portrait)).toContain('heroPortrait');
+		expect(keyOf(parsed.thankYou?.image)).toContain('thankYouTrophy');
+		expect(keyOf(parsed.envelope?.backdropImage)).toContain('coverGrid');
+		// The share preview is off-page: it reuses the client's chosen photograph.
+		expect(keyOf(parsed.sharing?.ogImage)).toContain('heroPortrait');
+	});
+
+	it('publishes no music until the owner hosts the track', () => {
+		expect(publishedContent()).not.toHaveProperty('music');
 	});
 });

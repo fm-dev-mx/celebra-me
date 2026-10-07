@@ -1,21 +1,367 @@
-// Event-scoped token remap for Aithan Darell — 3 años (Cars)
+// Event-scoped token remap for Aithan Darell — 3 años (Cars, "Gran Premio")
 // Scope: .event--aithan-darell.theme-preset--editorial-magazine
-// Keeps the preset's ink / paper / racing-red palette. The editorial desaturation is disabled so the
-// red car and race suit stay saturated, and the magazine folios are relabelled for a child's
-// birthday (the preset fallbacks carry an XV edition label).
+// Race-day magazine on the preset's ink / paper / racing red, with a "Piston" yellow used only as
+// an accent on dark surfaces. The editorial desaturation is disabled so the red car and race suit
+// stay saturated. Type roles: Montserrat italic for display, section titles and figures (round,
+// friendly forms with a sense of speed); Instrument Sans for eyebrows, labels and body. Race motifs
+// come from typed content (pattern-band intersections, numbered-board indications, overlapping
+// prints) and original image assets; this file only skins them.
 // Custom-property declarations only (tests/unit/invitation-profile-boundary.test.ts).
 
+@use '../fonts/montserrat-italic-display' as montserrat-italic-display;
+
+/* stylelint-disable color-no-hex */
+
 .event--aithan-darell.theme-preset--editorial-magazine {
+	--aithan-asphalt: #111;
+	--aithan-asphalt-rgb: 17 17 17;
+	--aithan-paper: #f7f5f0;
+	--aithan-paper-rgb: 247 245 240;
+	--aithan-red: #d71e28;
+	--aithan-red-rgb: 215 30 40;
+
+	// Red for text on light surfaces (6.3:1 on paper).
+	--aithan-red-ink: #b3141c;
+	--aithan-piston: #ffc529;
+	--aithan-piston-rgb: 255 197 41;
+	--editorial-magazine-ink: var(--aithan-asphalt);
+	--editorial-magazine-ink-rgb: var(--aithan-asphalt-rgb);
+	--editorial-magazine-paper: var(--aithan-paper);
+	--editorial-magazine-paper-rgb: var(--aithan-paper-rgb);
+	--editorial-magazine-red: var(--aithan-red);
+	--editorial-magazine-red-rgb: var(--aithan-red-rgb);
+
+	// Typography roles. Display / titles / figures: Montserrat italic (registered as an upright
+	// family by the shared opt-in font file above). Labels and body stay on Instrument Sans.
+	--font-display: 'Montserrat Italic Display', 'Montserrat Variable', system-ui, sans-serif;
+	--quote-content-font: var(--font-display);
+	--quote-content-letter-spacing: -0.01em;
+	--quote-content-line-height: 1.12;
+
+	// Photography: full colour.
 	--editorial-image-filter: none;
-	--hero-image-filter: none;
-	--hero-portrait-filter: none;
 	--family-image-filter: none;
 	--location-image-filter: none;
 	--gallery-image-filter: none;
-	--editorial-folio-countdown: 'CELEBRA-ME | MIS 3 AÑOS · CUENTA REGRESIVA';
-	--editorial-folio-family: 'CELEBRA-ME | MIS 3 AÑOS · MI FAMILIA';
-	--editorial-folio-location: 'CELEBRA-ME | MIS 3 AÑOS · LA PISTA';
-	--editorial-folio-gallery: 'CELEBRA-ME | MIS 3 AÑOS · GALERÍA';
-	--editorial-folio-gifts: 'CELEBRA-ME | MIS 3 AÑOS · REGALOS';
-	--editorial-folio-rsvp: 'CELEBRA-ME | MIS 3 AÑOS · CONFIRMACIÓN';
+	--hero-label-color: var(--aithan-piston);
+	--section-title-size: clamp(2.4rem, 6vw, 4.2rem);
+
+	// The closing signature uses the display face: a script reads too formal for a race party.
+	--font-calligraphy: var(--font-display);
+
+	// Countdown as the start-line scoreboard: white figures on asphalt, yellow heading.
+	--countdown-bg: var(--aithan-asphalt);
+	--countdown-title-color: var(--aithan-piston);
+	--countdown-value-color: var(--editorial-magazine-white);
+	--countdown-value-size-desktop: clamp(3rem, 5vw, 4.6rem);
+
+	// Register on the shared title scale; legend readable at phone width.
+	--formal-register-title-size: clamp(2.4rem, 5vw, 3.5rem);
+	--formal-register-label-size: 0.8rem;
+
+	// Music prompt (shown once the owner adds the track).
+	--music-player-prompt-accent: var(--aithan-red-ink);
+	--music-player-button-bg: var(--aithan-asphalt);
+	--music-player-button-color: var(--aithan-piston);
+
+	// Formal chapters (RSVP register + pass) on asphalt instead of terracotta.
+	--formal-chapter-band: var(--aithan-asphalt);
+	--formal-chapter-band-rgb: var(--aithan-asphalt-rgb);
+	--formal-chapter-cream: var(--aithan-paper);
+	--formal-chapter-cream-rgb: var(--aithan-paper-rgb);
+	--formal-chapter-sand: #fff;
+	--formal-chapter-sand-rgb: 255 255 255;
+	--formal-chapter-metal: var(--aithan-piston);
+	--formal-chapter-metal-rgb: var(--aithan-piston-rgb);
+	--formal-chapter-ink: var(--aithan-asphalt);
+	--formal-chapter-ink-rgb: var(--aithan-asphalt-rgb);
+	--formal-chapter-title: var(--aithan-asphalt);
+	--formal-chapter-muted: #55524c;
+	--formal-chapter-meta: var(--aithan-red-ink);
+	--formal-chapter-label-font: 'Instrument Sans Variable';
+
+	// Folios: race vocabulary (one term per section) instead of the preset's XV edition labels. The
+	// brand is named once, on the cover masthead; the folios carry only the issue name.
+	--editorial-folio-countdown: 'GRAN PREMIO · SEMÁFORO';
+	--editorial-folio-family: 'GRAN PREMIO · MI ESCUDERÍA';
+	--editorial-folio-location: 'GRAN PREMIO · EL CIRCUITO';
+	--editorial-folio-gallery: 'GRAN PREMIO · PITS';
+	--editorial-folio-gifts: 'GRAN PREMIO · REGALOS';
+	--editorial-folio-rsvp: 'GRAN PREMIO · INSCRIPCIÓN';
+
+	// Hero: the canvas is the original asphalt motif, so it needs no blur; the car photograph
+	// appears once, in the portrait card/panel. The desktop panel is capped at the source's native
+	// width (704 px) so it is never upscaled. The secondary name takes the yellow accent.
+	.invitation-hero[data-variant='editorial-cover'] {
+		--hero-image-filter: none;
+		--hero-portrait-filter: none;
+		--hero-portrait-panel-max-width: 704px;
+
+		// The canvas is printed at full strength (the 48% default plus the asphalt overlay turned the
+		// checkered strips grey); the motif image is already dark enough behind the copy.
+		--hero-canvas-opacity: 100%;
+		--hero-overlay: transparent;
+		--hero-watermark-opacity: 8%;
+
+		// White first name, yellow surname on every width; the surname gains weight against AITHAN.
+		--hero-first-name-fill: var(--editorial-magazine-white);
+		--hero-last-name-fill: var(--aithan-piston);
+		--hero-last-name-weight: 600;
+
+		// The connector "en" uses the display face in yellow instead of the preset's Pinyon Script.
+		--calligraphy-accent-font: var(--font-display);
+		--calligraphy-accent-color: var(--aithan-piston);
+		--color-action-accent: var(--aithan-piston);
+		--color-action-accent-rgb: var(--aithan-piston-rgb);
+
+		// On desktop the issue label sits over the photograph's pale sky: print it in asphalt
+		// (1.3:1 → 6:1). Below 992px it stays on the asphalt canvas.
+		@media (width >= 992px) {
+			.invitation-hero__folio-label {
+				--color-text-on-dark-rgb: var(--aithan-asphalt-rgb);
+			}
+		}
+	}
+
+	// Quote on the racing red (white copy 5.1:1); yellow rules as decoration only. The preset
+	// declares these on the section itself.
+	.quote-section {
+		--quote-bg: var(--aithan-red);
+		--quote-text-color: var(--editorial-magazine-white);
+		--quote-author-color: var(--editorial-magazine-white);
+		--quote-accent-color: var(--aithan-piston);
+		--quote-divider-color: var(--aithan-piston);
+
+		// The base quote restates line height, tracking and 30% rule opacity on the section, so
+		// the root values never arrive. Tighter display setting, solid yellow rules, a white
+		// label-face signature (80% opacity read pink on red: 3.7:1 → 5.1:1) and no empty em above
+		// the single line.
+		--quote-content-line-height: 1.15;
+		--quote-content-letter-spacing: -0.01em;
+		--quote-divider-opacity: 1;
+		--quote-ornament-opacity: 1;
+		--quote-author-opacity: 1;
+		--quote-author-font: var(--font-label);
+		--quote-author-weight: 600;
+		--quote-kicker-display: none;
+		--quote-line-margin-start: 0;
+		--quote-padding-block: clamp(3rem, 8vw, 4.5rem);
+	}
+
+	// The scoreboard prints its labels, rules and footer in the preset ink: flip it to white.
+	.countdown-section[data-variant='magazine-folio'] {
+		--editorial-magazine-ink: var(--editorial-magazine-white);
+		--editorial-magazine-ink-rgb: var(--editorial-magazine-white-rgb);
+		--color-text-primary: var(--editorial-magazine-white);
+		--color-text-primary-rgb: var(--editorial-magazine-white-rgb);
+
+		// Labels on asphalt without the variant's double dimming (2.3:1 → 9.2:1); upright footer.
+		--countdown-label-color: rgb(var(--aithan-paper-rgb) / 72%);
+		--countdown-label-opacity: 100%;
+		--countdown-footer-style: normal;
+
+		// The date is a label, not a display line: Instrument Sans like the other scoreboard labels.
+		.countdown-date {
+			--font-display: var(--font-label);
+		}
+	}
+
+	// The circuit keeps a phone-width gutter so the venue ticket and the pit boards do not touch
+	// the screen edge.
+	--location-padding-inline: clamp(1rem, 4vw, 3rem);
+
+	// The location tokens below are resolved in :root by the base stylesheet (coffee, gold, Cinzel),
+	// so the preset remap never reaches them: restate them on the event scope. Card title and pit
+	// board heading share the eyebrow scale (Instrument Sans 700, asphalt 72% = 7.3:1 on paper).
+	--location-title-color: rgb(var(--aithan-asphalt-rgb) / 72%);
+	--location-title-font-family: var(--font-label);
+	--location-title-font-size: 0.72rem;
+	--location-title-font-weight: 700;
+	--location-title-letter-spacing: 0.24em;
+	--location-indications-heading-color: rgb(var(--aithan-asphalt-rgb) / 72%);
+	--location-indications-heading-font-family: var(--font-label);
+	--location-indications-heading-font-size: 0.72rem;
+	--location-indications-heading-font-weight: 700;
+	--location-indications-heading-letter-spacing: 0.24em;
+	--location-flourish-color: var(--aithan-red);
+	--location-map-preview-line: rgb(var(--aithan-asphalt-rgb) / 14%);
+
+	// The date heading outranks the venue name again.
+	--location-intro-heading-size: clamp(1.7rem, 5vw, 2.75rem);
+	--location-intro-text-font-family: var(--font-body);
+	--location-eyebrow-color: rgb(var(--aithan-asphalt-rgb) / 72%);
+	--location-map-preview-link-color: var(--aithan-red-ink);
+
+	// Folios readable on paper (3.2:1 → 6.3:1) and on asphalt.
+	--editorial-folio-alpha: 68%;
+
+	// Venue ticket on asphalt: the card content flips the preset ink to paper (17:1); the map
+	// preview plate keeps its own light surface and ink.
+	.event-location__card {
+		--location-card-bg: var(--aithan-asphalt);
+	}
+
+	.event-location__card-content {
+		--editorial-magazine-ink: var(--aithan-paper);
+		--editorial-magazine-ink-rgb: var(--aithan-paper-rgb);
+		--editorial-magazine-white: var(--aithan-asphalt);
+		--location-place-color: var(--aithan-paper);
+		--location-address-color: rgb(var(--aithan-paper-rgb) / 82%);
+	}
+
+	// Pit boards: asphalt boards with a yellow ordinal (asphalt on yellow 12:1, paper on asphalt
+	// 17:1). The board declares its tokens on the list itself.
+	.event-location .event-location__indications[data-indications-style='numbered-board'] {
+		--location-board-bg: var(--aithan-asphalt);
+		--location-board-color: var(--aithan-paper);
+		--location-board-muted: rgb(var(--aithan-paper-rgb) / 84%);
+		--location-board-number-bg: var(--aithan-piston);
+		--location-board-number-color: var(--aithan-asphalt);
+		--location-board-icon-color: var(--aithan-piston);
+		--location-board-number-font: var(--font-display);
+		--location-board-radius: 0;
+	}
+
+	// Next-section button: the preset never defines the emphasis token, so it fell back to the
+	// base gold (2.6:1). Asphalt at rest, text red on hover/focus.
+	.section-nav-button--event-location {
+		--color-text-emphasis: var(--aithan-asphalt);
+		--section-nav-label-opacity: 100%;
+		--color-action-accent: var(--aithan-red-ink);
+	}
+
+	// Cover collector: the preset's gold foil becomes race red (seal, masthead sheen, accents,
+	// index page numbers 2.8:1 → 6.3:1); the "Abrir" ribbon over the dark table takes the yellow.
+	.editorial-cover-wrapper {
+		// Reveal table: the preset's soft-edged red band read as a blurred smear and the warm light
+		// pool tinted the asphalt brown. A crisp livery stripe (red with a yellow pinstripe), a
+		// neutral asphalt with a faint grain and a cool white pool of light.
+		// Stripe stays left of the magazine and the hint on phones (≈11px at 390, 96px on desktop).
+		--aithan-table-stripe: clamp(0.625rem, 9vw - 1.5rem, 6rem);
+		--ec-light-rgb: var(--aithan-paper-rgb);
+		--ec-bg:
+			linear-gradient(
+				90deg,
+				var(--aithan-red) 0 var(--aithan-table-stripe),
+				var(--aithan-piston) var(--aithan-table-stripe)
+					calc(var(--aithan-table-stripe) + 3px),
+				transparent calc(var(--aithan-table-stripe) + 3px)
+			),
+			repeating-linear-gradient(
+				115deg,
+				rgb(var(--aithan-paper-rgb) / 1.6%) 0 1px,
+				transparent 1px 6px
+			),
+			radial-gradient(ellipse at 70% 20%, rgb(var(--aithan-paper-rgb) / 7%), transparent 45%),
+			linear-gradient(160deg, rgb(26 26 26), var(--aithan-asphalt) 55%, rgb(10 10 10));
+
+		.ec-face__masthead {
+			--ec-gold-light: var(--aithan-red);
+		}
+
+		:is(.ec-face__kicker, .ec-face__teasers, .ec-inside__kicker) {
+			--ec-gold-dark: var(--aithan-red-ink);
+		}
+
+		.ec-face__teasers {
+			--ec-gold: var(--aithan-red);
+		}
+
+		.ec-inside__list {
+			--ec-gold: var(--aithan-red-ink);
+		}
+
+		.ec-face__seal {
+			--ec-gold-light: var(--aithan-red);
+			--ec-gold: var(--aithan-red-ink);
+			--ec-gold-dark: var(--aithan-red-ink);
+			--ec-face-ink: var(--aithan-paper);
+		}
+
+		.ec-face__seal-mark {
+			--ec-gold-dark: var(--aithan-paper);
+		}
+
+		.ec-ribbon-anchor {
+			--ec-gold-dark: color-mix(in srgb, var(--aithan-piston) 72%, var(--aithan-asphalt));
+			--ec-gold: var(--aithan-piston);
+			--ec-gold-light: var(--aithan-piston);
+		}
+	}
+
+	// Pattern bands: lane markings out of the scoreboard, a checkered flag before the back cover.
+	.invitation-section-wrapper[data-intersection='pattern-band'] {
+		--intersection-band-ink: var(--aithan-asphalt);
+		--intersection-band-paper: var(--aithan-paper);
+		--intersection-band-accent: var(--aithan-piston);
+	}
+
+	.invitation-section-wrapper[data-intersection='pattern-band'][data-intersection-source='countdown'] {
+		--intersection-band-pattern: var(--intersection-band-lane);
+	}
+
+	// Gallery prints: white frames with a light print finish that masks messaging-app compression.
+	.gallery-section[data-variant='paired-portraits'][data-arrangement='overlap'] {
+		--paired-print-bg: #fff;
+		--paired-print-filter: contrast(1.06) saturate(1.08);
+		--paired-caption-color: var(--aithan-asphalt);
+		--gallery-title-color: var(--aithan-red-ink);
+		--gallery-item-focus-outline: 2px solid var(--aithan-red-ink);
+
+		// Title on the shared section scale (the variant hard-coded 500 / 2.5rem / 0.06em).
+		--paired-title-weight: 800;
+		--paired-title-size: var(--section-title-size);
+		--paired-title-line-height: 1.02;
+		--paired-title-letter-spacing: -0.01em;
+		--paired-title-margin-top: 0.75rem;
+
+		// The pass overlaps 3rem: lift the folio and its rule clear of it.
+		--editorial-folio-lift: 3rem;
+	}
+
+	// The pass overlaps the gallery less, so the second print's caption stays visible on desktop.
+	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='gallery'] {
+		--intersection-depth: 3rem;
+	}
+
+	// The register and the pass declare their display face on the element itself.
+	.rsvp[data-variant='formal-register'],
+	.personalized-access[data-variant='formal-pass'] {
+		--formal-chapter-display: var(--font-display);
+	}
+
+	// Radio focus: an asphalt gap and a solid yellow ring (the default red halo was 1.1:1).
+	.rsvp[data-variant='formal-register'] {
+		--rsvp-radio-focus-ring: 0 0 0 2px var(--aithan-asphalt), 0 0 0 4px var(--aithan-piston);
+
+		// Hairlines between the choices: yellow at 22% read olive on asphalt; draw them in paper.
+		// The radio, legend and button resolve their metal tokens on .rsvp and keep the yellow.
+		:is(.rsvp__radio-card, .rsvp__attendance-summary) {
+			--formal-chapter-metal-rgb: var(--aithan-paper-rgb);
+		}
+	}
+
+	// White ticket: the low-alpha rules are drawn in asphalt (red at 20–45% read pink), the
+	// divider diamond keeps the text red, and the card ground is paper so no asphalt shows
+	// through the translucent finish.
+	.personalized-access[data-variant='formal-pass'] {
+		--formal-chapter-metal: var(--aithan-asphalt);
+		--formal-chapter-metal-rgb: var(--aithan-asphalt-rgb);
+		--pa-divider-diamond-border-color: var(--aithan-red-ink);
+		--pa-card-bg-color: var(--aithan-paper);
+	}
+
+	// The back cover shows the original trophy artwork: no photo finish. The editorial skin draws
+	// the frame line from the on-dark ink, so the figure alone resolves that ink to asphalt and the
+	// line disappears into the artwork's own ground.
+	.thank-you-section[data-variant='editorial-back-cover'] {
+		--editorial-image-filter: none;
+		--thank-you-closing-weight: 600;
+		--thank-you-image-hover-filter: none;
+		--thank-you-image-hover-transform: none;
+
+		.thank-you-editorial__media {
+			--color-text-on-dark-rgb: var(--aithan-asphalt-rgb);
+		}
+	}
 }

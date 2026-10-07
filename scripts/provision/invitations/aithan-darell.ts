@@ -2,14 +2,20 @@
  * aithan-darell.ts — Managed invitation definition for Aithan Darell's 3rd birthday
  *
  * Content owner for cumple/aithan-darell. Cars-themed children's party on the editorial-magazine
- * preset (ink, paper, racing red): the first birthday invitation on that preset, backed by the
- * catalog-only base demo `demo-cumple-editorial-magazine`. Variants with an XV edition label baked
- * into their markup (editorial-press-pass, editorial-pass, editorial-catalog) are intentionally not
- * used; the preset folios are relabelled through the aithan-darell visual profile.
+ * preset, told as a race-day magazine ("Gran Premio"): collector cover, editorial hero, paired
+ * portrait gallery, a dark registration chapter and a back cover with a photograph. The first
+ * birthday invitation on that preset, backed by the catalog-only base demo
+ * `demo-cumple-editorial-magazine`. Variants with an XV edition label baked into their markup
+ * (editorial-press-pass, editorial-pass, editorial-catalog) are intentionally not used; the preset
+ * folios, palette and display face are remapped through the aithan-darell visual profile.
  *
- * The four photographs are messaging-app JPEGs that the owner accepted as the definitive set; the
- * client chose the ride-on car photograph as the main image. Music is omitted until the owner hosts
- * the requested track ("Life Is a Highway").
+ * The photographs are messaging-app JPEGs that the owner accepted as the definitive set; the
+ * client chose the ride-on car photograph as the main image. Every photograph is published in a
+ * single role: the car in the hero portrait (and the off-page share image), the race suit and the
+ * jacket in the gallery. The collector cover, the hero canvas and the back-cover trophy are
+ * original race motifs (asphalt, checkered flag, race number "3", trophy) rendered as image
+ * assets — no third-party artwork; the low-light selfie (chat-052) appears only inside the cover's
+ * race roundel. Music is omitted until the owner hosts the requested track ("Life Is a Highway").
  */
 
 import { defineCanonicalInvitation } from './canonical-definition.ts';
@@ -47,10 +53,21 @@ export const AITHAN_EVENT = {
 
 const CELEBRANT_NAME = 'Aithan Darell';
 const VENUE_NAME = 'Jardín de Teresita';
-// Client text: "avenida Juárez 49 Atizapán centro"; the municipality follows from the Maps pin.
-const VENUE_ADDRESS = 'Avenida Juárez 49, Atizapán centro, Atizapán de Zaragoza, Estado de México';
-const VENUE_CITY = 'Atizapán de Zaragoza, Estado de México';
+// Client text: "avenida Juárez 49 Atizapán centro". The municipality and state were only inferred
+// from the Maps pin, so they are not printed; the map and the Google Maps button resolve the route.
+const VENUE_ADDRESS = 'Avenida Juárez 49, Atizapán centro';
+const VENUE_CITY = 'Atizapán';
 const MAPS_URL = 'https://maps.app.goo.gl/HZDDjkjo8QrPrD5Y9';
+
+/**
+ * Music: the client asked for "Life Is a Highway". The owner pastes the hosted audio URL here and,
+ * when the file is the full track, the second the song should start from. Nothing is published
+ * while the URL is empty.
+ */
+const MUSIC_URL = '';
+const MUSIC_START_SECONDS: number | undefined = undefined;
+
+const hasMusic = MUSIC_URL.trim().length > 0;
 
 const content: CanonicalEventContentInput = {
 	eventType: AITHAN_EVENT.eventType,
@@ -58,14 +75,34 @@ const content: CanonicalEventContentInput = {
 	templateId: 'cumple-editorial-magazine',
 	title: AITHAN_EVENT.title,
 	description:
-		'Invitación para celebrar los 3 años de Aithan Darell el sábado 24 de octubre de 2026 en Atizapán, Estado de México.',
+		'Invitación al Gran Premio de los 3 años de Aithan Darell: sábado 24 de octubre de 2026 en Jardín de Teresita, Atizapán.',
 	theme: { preset: AITHAN_EVENT.themeId, fontFamily: 'serif' },
 	eventTiming: {
 		localDateTime: AITHAN_EVENT.localDateTime,
 		timeZone: AITHAN_EVENT.timeZone,
 		startsAtUtc: AITHAN_EVENT.startsAtUtc,
 	},
-	composition: { intersections: {} },
+	// Race-day cadence: the cover bleeds into the quote, lane markings lead from the scoreboard into
+	// the circuit, the pass overlaps the gallery and a checkered band marks the finish line before
+	// the back cover. Remaining boundaries stay neutral.
+	composition: {
+		intersections: {
+			quote: { family: 'atmospheric-blend', source: 'hero' },
+			location: { family: 'pattern-band', source: 'countdown' },
+			'personalized-access': { family: 'overlap', source: 'gallery' },
+			thankYou: { family: 'pattern-band', source: 'rsvp' },
+		},
+	},
+	...(hasMusic
+		? {
+				music: {
+					url: MUSIC_URL,
+					title: 'Life Is a Highway',
+					autoPlay: true,
+					...(MUSIC_START_SECONDS !== undefined ? { startAt: MUSIC_START_SECONDS } : {}),
+				},
+			}
+		: {}),
 	sectionOrder: [
 		'quote',
 		'countdown',
@@ -80,36 +117,40 @@ const content: CanonicalEventContentInput = {
 		name: CELEBRANT_NAME,
 		label: 'Mis 3 años',
 		date: AITHAN_EVENT.heroDate,
-		backgroundImage: 'hero',
-		// The client's chosen photograph (the ride-on car) leads both the cover and the desktop card.
+		// Asphalt canvas (original motif) behind the copy; the client's chosen photograph (the ride-on
+		// car) appears once, in the portrait card (mobile) and panel (desktop).
+		backgroundImage: 'heroCanvas',
 		portrait: 'heroPortrait',
-		focalPoint: '50% 55%',
+		focalPoint: '50% 50%',
 		focalPointMobile: '50% 50%',
-		tagline: 'Tres años a toda velocidad.',
-		// Race-number watermark and page rail instead of the preset's XV folio marks.
-		presentation: { coverMark: '3', coverPage: 'PÁG. 3' },
+		tagline: '¡Cumplo 3 años! Venga a celebrar mi Gran Premio.',
+		// Race-number watermark and grid slot instead of the preset's XV folio marks.
+		// The brand is named once, on the collector cover masthead: no design credit in the hero.
+		presentation: { coverMark: '3', coverPage: 'POLE POSITION', designCredit: false },
 	},
 	quote: {
-		text: 'La pista está lista y los motores encendidos. Acompáñeme a celebrar mis primeros tres años.',
+		text: 'Motores encendidos y casco listo. ¡Acompáñeme a celebrar mis primeros tres años a toda velocidad!',
 		author: CELEBRANT_NAME,
 	},
 	countdown: {
 		variant: 'magazine-folio',
-		title: 'La carrera comienza en',
-		footerText: 'Jardín de Teresita, Atizapán',
+		title: 'Faltan para la salida',
+		footerText: 'Semáforo en verde · sábado 24 · 5:30 p. m.',
 	},
 	location: {
 		accessPolicy: { visibility: 'public' },
 		variant: 'standard',
 		mapStyle: 'dark',
-		introEyebrow: 'Le espero en Atizapán',
+		// Indications read as numbered pit boards.
+		presentationOptions: { indicationsStyle: 'numbered-board' },
+		introEyebrow: 'El circuito',
 		introHeading: 'Sábado, 24 de octubre',
-		introLede: 'Una tarde de carreras, pastel y diversión.',
-		indicationsHeading: 'Detalles para mis invitados',
+		introLede: 'Una tarde de juegos, amigos y mucha diversión.',
+		indicationsHeading: 'Antes del banderazo',
 		venues: [
 			{
 				type: 'reception',
-				venueEvent: 'Fiesta de cumpleaños',
+				venueEvent: 'Gran Premio de cumpleaños',
 				venueName: VENUE_NAME,
 				address: VENUE_ADDRESS,
 				city: VENUE_CITY,
@@ -121,81 +162,90 @@ const content: CanonicalEventContentInput = {
 		],
 		indications: [
 			{
-				title: 'Confirmación',
+				title: 'Aparte su lugar',
 				iconName: 'Enveloped',
 				styleVariant: 'default',
-				text: 'Le agradecemos confirmar su asistencia con anticipación para preparar cada detalle.',
+				text: 'Confirme su asistencia en la sección de inscripción.',
 			},
 			{
-				title: 'Puntualidad',
+				title: 'Llegue puntual',
 				iconName: 'Calendar',
 				styleVariant: 'default',
-				text: 'La fiesta arranca a las 5:30 p. m. Su puntualidad nos ayudará a disfrutar juntos cada momento.',
+				text: 'La salida es a las 5:30 p. m. ¡No se pierda el banderazo!',
 			},
 		],
 	},
 	gallery: {
-		variant: 'feature-stack',
-		eyebrow: 'Galería',
-		title: 'Mi equipo de carreras',
-		subtitle: 'Listo para la pista.',
+		// Two overlapping prints, each capped at its source's native width.
+		variant: 'paired-portraits',
+		variantOptions: { arrangement: 'overlap' },
+		eyebrow: 'Pits',
+		title: 'Listo para arrancar',
+		subtitle: 'Así me preparo para mi gran día.',
 		items: [
 			{
 				image: 'gallery01',
-				alt: 'Aithan sonriendo con su traje de piloto rojo junto a una pared blanca',
+				alt: 'Aithan sonríe con su traje de piloto rojo y blanco junto a una pared blanca',
+				// Non-breaking space keeps the race number on one line.
+				caption: 'Traje oficial del piloto Nº 3',
+				focalPoint: '52% 58%',
 			},
 			{
 				image: 'gallery02',
 				alt: 'Aithan de espaldas con su chamarra de Mate y Rayo McQueen frente a una pista ilustrada',
-			},
-			{
-				image: 'gallery03',
-				alt: 'Aithan sonriendo con su chamarra roja y blanca',
+				caption: 'En sus marcas, listos…',
+				focalPoint: '50% 40%',
 			},
 		],
 	},
 	rsvp: {
 		variant: 'formal-register',
-		title: 'Confirme su asistencia',
-		subcopy:
-			'Nos encantará contar con usted en la pista. Puede responder aquí mismo y dejarnos un mensaje.',
+		title: 'Inscripción al Gran Premio',
+		subcopy: '¿Me acompaña? Responda aquí y, si gusta, déjeme un mensaje.',
 		guestCap: 4,
 		accessMode: 'hybrid',
 		confirmationMode: 'api',
-		confirmationMessage: 'Gracias por confirmar. Nos dará mucha alegría celebrar con usted.',
+		confirmationMessage: '¡Inscripción recibida! Nos vemos el sábado 24.',
 		personalizedAccess: {
 			variant: 'formal-pass',
-			title: 'Su pase',
-			subtitle: 'Hemos reservado estos lugares para usted.',
-			footerText: 'Confirme su asistencia en la sección siguiente.',
+			title: 'Su lugar en la tribuna',
+			subtitle: 'Apartamos estos lugares para usted.',
+			footerText: 'Confirme su asistencia aquí abajo.',
 		},
 		labels: {
 			name: 'Su nombre',
-			notesPlaceholder: 'Escriba unas palabras para Aithan…',
+			attendance: '¿Asistirá a mi fiesta?',
+			guestCount: 'Personas que asistirán',
+			confirmButton: 'Enviar inscripción',
+			notesPlaceholder: 'Un mensaje para el piloto Aithan…',
 		},
 	},
 	thankYou: {
 		variant: 'editorial-back-cover',
-		message:
-			'Gracias por acompañarme en esta carrera tan especial. Su presencia es el mejor regalo.',
+		message: 'Gracias por acompañarme hasta la meta. ¡Su compañía es mi mejor trofeo!',
 		closingName: CELEBRANT_NAME,
 		date: '24 · X · 2026',
+		// Original trophy artwork with the race number: the issue closes without repeating a photo.
+		image: 'thankYouTrophy',
+		focalPoint: '50% 50%',
 	},
 	envelope: {
 		disabled: false,
 		revealVariant: 'editorial-cover',
-		// Explicit edition label: the cover falls back to an XV mark when it is omitted.
-		coverEdition: '3 años',
+		// Collector edition: the guest drags the cover open; the inner page hands the asphalt
+		// canvas to the hero. The cover face is the race motif (paper bands for the masthead,
+		// asphalt track, checkered bands) with the low-light selfie (chat-052) brightened inside the
+		// race roundel and a "3" badge: its only role, small enough to hide the compression.
+		coverExperience: 'collector',
+		backdropImage: { type: 'internal', key: 'coverGrid' },
+		// Issue number doubles as the race number ("NÚM. 3"); the cover falls back to XV when omitted.
+		coverEdition: '3',
 		coverVolume: '1',
 		coverIssue: '2026',
-		coverLines: ['Una tarde de carreras', 'Retrato de un piloto'],
 		sealStyle: 'wax',
 		sealIcon: 'monogram',
 		sealInitials: 'A·D',
 		microcopy: 'Abrir invitación',
-		documentLabel: 'Edición 3 años',
-		cardLabel: 'Mis 3 años',
-		cardTagline: 'Una fiesta a toda velocidad',
 		stampText: 'Aithan Darell',
 		stampYear: '2026',
 		closedPalette: {
@@ -206,11 +256,12 @@ const content: CanonicalEventContentInput = {
 	},
 	sharing: {
 		shareMessages: createShareMessages(
-			'Hola {name}, le comparto con mucha ilusión la invitación a los 3 años de Aithan Darell: {inviteUrl}',
+			'Hola {name}, le comparto con mucha ilusión la invitación al Gran Premio de los 3 años de Aithan Darell: {inviteUrl}',
 		),
-		ogImage: 'hero',
+		// Off-page share preview: the client's chosen photograph.
+		ogImage: 'heroPortrait',
 		ogDescription:
-			'Acompáñenos a celebrar los 3 años de Aithan Darell el sábado 24 de octubre de 2026 en Atizapán, Estado de México.',
+			'¡Arrancan motores! Celebre los 3 años de Aithan Darell el sábado 24 de octubre a las 5:30 p. m. en Jardín de Teresita.',
 	},
 };
 
@@ -232,13 +283,15 @@ export const aithanInvitation = defineCanonicalInvitation({
 	managedIdentityProvenance: 'owner-approved',
 	hostLoginAlias: 'aithan_ruiz',
 	assetDir: 'src/assets/invitations/aithan-darell',
+	// One binding per source: each photograph has a single visible role; the motif files are
+	// original artwork (asphalt canvas, collector cover, trophy).
 	assetFiles: {
-		hero: 'hero.jpg',
-		// Same source as the cover under its own key so each delivery role keeps a single binding.
+		heroCanvas: 'hero-canvas.jpg',
 		heroPortrait: 'hero.jpg',
 		gallery01: 'gallery-01.jpg',
 		gallery02: 'gallery-02.jpg',
-		gallery03: 'gallery-03.jpg',
+		coverGrid: 'cover-grid.jpg',
+		thankYouTrophy: 'thankyou-trophy.jpg',
 	},
 	deliveryScope: 'content-and-assets',
 });
