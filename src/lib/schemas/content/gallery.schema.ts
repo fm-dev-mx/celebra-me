@@ -45,7 +45,7 @@ function validateNarrativeStack(
 }
 
 function validatePairedFeatureBand(
-	items: readonly Array<{ layoutRole?: string }>,
+	items: readonly { layoutRole?: string }[],
 	context: z.RefinementCtx,
 ): void {
 	const hasFeatureRole = items.some((item) => item.layoutRole === 'feature');
