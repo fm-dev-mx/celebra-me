@@ -82,3 +82,41 @@ export function formatVenueTimeForDisplay(value: unknown): string | null {
 	}
 	return formatTimeSpanish(canonical);
 }
+
+const HOUR_WORDS = [
+	'doce',
+	'una',
+	'dos',
+	'tres',
+	'cuatro',
+	'cinco',
+	'seis',
+	'siete',
+	'ocho',
+	'nueve',
+	'diez',
+	'once',
+] as const;
+
+function dayPeriod(hour: number): string {
+	if (hour >= 5 && hour < 12) return 'de la mañana';
+	if (hour >= 12 && hour < 19) return 'de la tarde';
+	return 'de la noche';
+}
+
+/**
+ * Stationery wording for a venue time (`a las cinco de la tarde`). Only whole hours, quarter
+ * and half hours have a conventional written form; other minutes fall back to the numeric
+ * display so the time is never rounded.
+ */
+export function formatVenueTimeInWords(value: unknown): string | null {
+	const canonical = toCanonicalVenueTime(value);
+	if (!canonical) return formatVenueTimeForDisplay(value);
+	const [hour, minute] = canonical.split(':').map(Number);
+	const suffix =
+		minute === 0 ? '' : minute === 15 ? ' y cuarto' : minute === 30 ? ' y media' : null;
+	if (suffix === null) return formatVenueTimeForDisplay(value);
+	const word = HOUR_WORDS[hour % 12];
+	const article = hour % 12 === 1 ? 'a la' : 'a las';
+	return `${article} ${word}${suffix} ${dayPeriod(hour)}`;
+}
