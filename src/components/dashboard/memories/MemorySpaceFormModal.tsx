@@ -98,6 +98,7 @@ function CandidatePicker({ candidates, today, onPick }: PickerProps) {
 interface FormProps {
 	form: MemorySpaceFormState;
 	mode: 'create' | 'edit';
+	publicOrigin?: string;
 	formId: string;
 	commitment: MemorySpaceCommitment;
 	acknowledged: boolean;
@@ -110,6 +111,7 @@ interface FormProps {
 function SpaceForm({
 	form,
 	mode,
+	publicOrigin,
 	formId,
 	commitment,
 	acknowledged,
@@ -129,6 +131,7 @@ function SpaceForm({
 				form={form}
 				schedule={checkMemoriesSchedule(form)}
 				slugLocked={mode === 'edit'}
+				publicOrigin={publicOrigin}
 				idFor={idFor}
 				onChange={onChange}
 			/>
@@ -172,6 +175,7 @@ interface Props {
 	candidates: AdminSpaceCandidate[];
 	initial: MemorySpaceFormState | null;
 	commitment: MemorySpaceCommitment;
+	publicOrigin?: string;
 	busy: boolean;
 	error: string | null;
 	onSubmit: (form: MemorySpaceFormState) => void;
@@ -183,6 +187,7 @@ export default function MemorySpaceFormModal({
 	candidates,
 	initial,
 	commitment,
+	publicOrigin,
 	busy,
 	error,
 	onSubmit,
@@ -238,6 +243,7 @@ export default function MemorySpaceFormModal({
 					<SpaceForm
 						form={form}
 						mode={mode}
+						publicOrigin={publicOrigin}
 						formId={formId}
 						commitment={commitment}
 						acknowledged={acknowledged}

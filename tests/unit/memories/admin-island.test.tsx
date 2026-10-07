@@ -273,6 +273,20 @@ describe('MemoriesAdmin island', () => {
 		expect(adminApi.create).not.toHaveBeenCalled();
 	});
 
+	it('shows guest links on the origin the server reports for this environment', async () => {
+		adminApi.list.mockResolvedValue({
+			items: [adminItem(OPEN_SPACE)],
+			totals: NO_COMMITMENT,
+			candidates: [],
+			publicOrigin: 'http://localhost:4321',
+		});
+
+		render(<MemoriesAdmin />);
+
+		const card = within(await screen.findByRole('article', { name: 'XV de Sofía' }));
+		expect(card.getByText('http://localhost:4321/r/xv-de-sofia')).toBeInTheDocument();
+	});
+
 	it('shows each space with its state, usage and QR, and pauses only after confirmation', async () => {
 		const user = userEvent.setup();
 		adminApi.list.mockResolvedValue({

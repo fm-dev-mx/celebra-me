@@ -24,6 +24,8 @@ import { memoriesAdminApi } from '@/lib/memories/client/api';
 interface Props {
 	item: MemoriesAdminSpaceItem;
 	now: Date;
+	/** Origin of guest links in this environment. */
+	publicOrigin?: string;
 	busy: boolean;
 	onEdit: (item: MemoriesAdminSpaceItem) => void;
 	onToggle: (item: MemoriesAdminSpaceItem) => void;
@@ -43,9 +45,17 @@ export function resolveUndownloadedDeletionDays(
 	return resolveMemoriesRetentionWarningDays(item, now, MEMORIES_RETENTION_WARNING_DAYS);
 }
 
-export default function MemorySpaceCard({ item, now, busy, onEdit, onToggle, onCopy }: Props) {
+export default function MemorySpaceCard({
+	item,
+	now,
+	publicOrigin,
+	busy,
+	onEdit,
+	onToggle,
+	onCopy,
+}: Props) {
 	const state = resolveMemoriesWindowState(item, now);
-	const publicUrl = buildMemoriesPublicUrl(item.publicSlug);
+	const publicUrl = buildMemoriesPublicUrl(item.publicSlug, publicOrigin);
 	const { usage } = item;
 	const ratio = Math.max(
 		memoriesUsageRatio(usage.residentBytes, item.maxEventBytes),

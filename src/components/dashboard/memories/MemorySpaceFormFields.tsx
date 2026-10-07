@@ -99,6 +99,8 @@ interface ScheduleProps {
 	form: MemorySpaceFormState;
 	schedule: MemoriesScheduleCheck;
 	slugLocked: boolean;
+	/** Origin of guest links in this environment. */
+	publicOrigin?: string;
 	idFor: IdFor;
 	onChange: Change;
 }
@@ -107,6 +109,7 @@ export function MemoryScheduleFieldset({
 	form,
 	schedule,
 	slugLocked,
+	publicOrigin,
 	idFor,
 	onChange,
 }: ScheduleProps) {
@@ -128,7 +131,7 @@ export function MemoryScheduleFieldset({
 						onChange={(event) => onChange({ publicSlug: event.target.value })}
 					/>
 					<small className="dashboard-form-help">
-						{buildMemoriesPublicUrl(form.publicSlug || '…')}
+						{buildMemoriesPublicUrl(form.publicSlug || '…', publicOrigin)}
 						{slugLocked ? null : ` · ${copy.slugHelp}`}
 					</small>
 				</div>

@@ -58,6 +58,7 @@ function MemoriesAdmin() {
 	const [error, setError] = useState<string | null>(null);
 	const [loadFailure, setLoadFailure] = useState<MemoriesLoadErrorGuide | null>(null);
 	const [readiness, setReadiness] = useState<MemoriesReadiness | null>(null);
+	const [publicOrigin, setPublicOrigin] = useState<string | undefined>(undefined);
 	const [notice, setNotice] = useState<string | null>(null);
 	const [modal, setModal] = useState<FormModal | null>(null);
 	const [formError, setFormError] = useState<string | null>(null);
@@ -73,6 +74,7 @@ function MemoriesAdmin() {
 			setTotals(payload.totals);
 			setCandidates(payload.candidates);
 			setReadiness(payload.readiness ?? null);
+			setPublicOrigin(payload.publicOrigin);
 			setLoadFailure(null);
 		} catch (failure) {
 			setLoadFailure(
@@ -164,7 +166,7 @@ function MemoriesAdmin() {
 					publicSlug: form.publicSlug,
 					enabled: true,
 				});
-				setNotice(copy.created(buildMemoriesPublicUrl(created.publicSlug)));
+				setNotice(copy.created(buildMemoriesPublicUrl(created.publicSlug, publicOrigin)));
 			} else {
 				await memoriesAdminApi.update(form.eventId, body);
 				setNotice(copy.updated);
@@ -208,6 +210,7 @@ function MemoriesAdmin() {
 			key={item.eventId}
 			item={item}
 			now={now}
+			publicOrigin={publicOrigin}
 			busy={busy}
 			onEdit={openEdit}
 			onToggle={setConfirmToggle}
@@ -294,6 +297,7 @@ function MemoriesAdmin() {
 					candidates={candidates}
 					initial={modal.initial}
 					commitment={commitment}
+					publicOrigin={publicOrigin}
 					busy={busy}
 					error={formError}
 					onSubmit={(form) => void submit(form)}
