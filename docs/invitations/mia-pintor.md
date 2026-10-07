@@ -35,39 +35,39 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 
 ## Fact Register
 
-| field                 | value                                                                                  | classification | source        | notes                                                              |
-| --------------------- | -------------------------------------------------------------------------------------- | -------------- | ------------- | ------------------------------------------------------------------ |
-| slug                  | mia-pintor                                                                             | inferred       | owner-session | Surname taken from the photo-delivery label; confirm with client   |
-| celebrantName         | Mía                                                                                    | verified       | wa-export     | Client wrote "Mía" with accent; no surname shown in the invitation |
-| eventLabel            | Mis XV Años                                                                            | verified       | wa-export     | XV event                                                           |
-| eventDate             | 2026-12-06                                                                             | verified       | wa-export     | Sunday; also handwritten "06/12/26" on the main photograph         |
-| eventTime             | 17:00                                                                                  | verified       | wa-export     | Religious ceremony                                                 |
-| receptionTime         | 19:00                                                                                  | verified       | wa-export     | Reception                                                          |
-| timeZone              | America/Monterrey                                                                      | inferred       | wa-export     | Tampico / Cd. Madero, Tamaulipas                                   |
-| baseDemoId            | demo-xv-celestial-blue                                                                 | inferred       | owner-session | Technical base (preset provenance); client asked for blue          |
-| sourceAssetPath       | source:hr-photos                                                                       | verified       | owner-session | Opaque label only                                                  |
-| sectionOrder          | quote, family, countdown, location, gallery, gifts, personalizedAccess, rsvp, thankYou | inferred       | owner-session | Opening and hero precede these sections; itinerary inserted later  |
-| primaryVenueName      | Parroquia Nuestra Señora de Lourdes                                                    | verified       | wa-export     | Religious ceremony                                                 |
-| primaryVenueAddress   | Ébano 401, Petrolera, Tampico, Tamps.                                                  | verified       | wa-export     |                                                                    |
-| distinctVenues        | true                                                                                   | verified       | wa-export     | Ceremony and reception are different venues                        |
-| receptionVenueName    | SOLEMIO Salón de Eventos                                                               | verified       | wa-export     |                                                                    |
-| receptionVenueAddress | Fco. I. Madero 171, Emilio Carranza, Cd. Madero, Tamps.                                | verified       | wa-export     | Client wrote "Fco l madero"; normalized to "Fco. I. Madero"        |
-| ceremonyMapUrl        | Google Maps search by address                                                          | inferred       | owner-session | Generated search links; verify destination before release          |
-| fatherName            | —                                                                                      | not_applicable | wa-export     | Client: invitation is from her family, no parents' names           |
-| motherName            | —                                                                                      | not_applicable | wa-export     | Same as above                                                      |
-| godparents            | —                                                                                      | not_applicable | wa-export     | Client: godparents are not listed locally                          |
-| dressCode             | Caballeros: traje. Damas: vestido de noche.                                            | verified       | wa-export     |                                                                    |
-| reservedColor         | Azul cielo reservado para la quinceañera                                               | verified       | wa-export     |                                                                    |
-| adultsOnly            | No niños                                                                               | verified       | wa-export     |                                                                    |
-| gifts                 | Lluvia de sobres                                                                       | verified       | wa-export     | No registry or bank details                                        |
-| clientColors          | Azul cielo muy tenue, plata, motivos marinos                                           | verified       | wa-export     |                                                                    |
-| rsvpConfirmationMode  | api                                                                                    | verified       | owner-session | Personalized passes per guest                                      |
-| rsvpGuestCap          | 2                                                                                      | inferred       | owner-session | Fallback only; per-guest passes govern attendee counts             |
-| rsvpWhatsappPhone     | —                                                                                      | not_applicable | owner-session | No WhatsApp confirmation flow                                      |
-| rsvpDeadline          | —                                                                                      | missing        | wa-export     | Optional; omit until client provides it                            |
-| musicUrl              | —                                                                                      | missing        | wa-export     | Optional; added later as a content-only release                    |
-| itinerary             | —                                                                                      | missing        | wa-export     | Client requested it from the venue; section omitted until received |
-| specialMessages       | Copy proposed by agent                                                                 | inferred       | owner-session | Pending client approval                                            |
+| field                 | value                                                                                             | classification | source        | notes                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------- | -------------- | ------------- | ------------------------------------------------------------------- |
+| slug                  | mia-pintor                                                                                        | inferred       | owner-session | Surname taken from the photo-delivery label; confirm with client    |
+| celebrantName         | Mía                                                                                               | verified       | wa-export     | Client wrote "Mía" with accent; no surname shown in the invitation  |
+| eventLabel            | Mis XV Años                                                                                       | verified       | wa-export     | XV event                                                            |
+| eventDate             | 2026-12-06                                                                                        | verified       | wa-export     | Sunday; also handwritten "06/12/26" on the main photograph          |
+| eventTime             | 17:00                                                                                             | verified       | wa-export     | Religious ceremony                                                  |
+| receptionTime         | 18:30                                                                                             | verified       | wa-export     | Reception at Salón Solé Mío (corrected from initial 19:00 estimate) |
+| timeZone              | America/Monterrey                                                                                 | inferred       | wa-export     | Tampico / Cd. Madero, Tamaulipas                                    |
+| baseDemoId            | demo-xv-celestial-blue                                                                            | inferred       | owner-session | Technical base (preset provenance); client asked for blue           |
+| sourceAssetPath       | source:hr-photos                                                                                  | verified       | owner-session | Opaque label only                                                   |
+| sectionOrder          | quote, family, countdown, location, itinerary, gallery, gifts, personalizedAccess, rsvp, thankYou | verified       | wa-export     | Opening and hero precede these sections; timeline-paper itinerary   |
+| primaryVenueName      | Parroquia Nuestra Señora de Lourdes                                                               | verified       | wa-export     | Religious ceremony                                                  |
+| primaryVenueAddress   | Ébano 401, Petrolera, Tampico, Tamps.                                                             | verified       | wa-export     |                                                                     |
+| distinctVenues        | true                                                                                              | verified       | wa-export     | Ceremony and reception are different venues                         |
+| receptionVenueName    | SOLEMIO Salón de Eventos                                                                          | verified       | wa-export     |                                                                     |
+| receptionVenueAddress | Fco. I. Madero 171, Emilio Carranza, Cd. Madero, Tamps.                                           | verified       | wa-export     | Client wrote "Fco l madero"; normalized to "Fco. I. Madero"         |
+| ceremonyMapUrl        | Google Maps search by address                                                                     | inferred       | owner-session | Generated search links; verify destination before release           |
+| fatherName            | —                                                                                                 | not_applicable | wa-export     | Client: invitation is from her family, no parents' names            |
+| motherName            | —                                                                                                 | not_applicable | wa-export     | Same as above                                                       |
+| godparents            | —                                                                                                 | not_applicable | wa-export     | Client: godparents are not listed locally                           |
+| dressCode             | Caballeros: traje. Damas: vestido de noche.                                                       | verified       | wa-export     |                                                                     |
+| reservedColor         | Azul cielo reservado para la quinceañera                                                          | verified       | wa-export     |                                                                     |
+| adultsOnly            | No niños                                                                                          | verified       | wa-export     |                                                                     |
+| gifts                 | Lluvia de sobres                                                                                  | verified       | wa-export     | No registry or bank details                                         |
+| clientColors          | Azul cielo muy tenue, plata, motivos marinos                                                      | verified       | wa-export     |                                                                     |
+| rsvpConfirmationMode  | api                                                                                               | verified       | owner-session | Personalized passes per guest                                       |
+| rsvpGuestCap          | 2                                                                                                 | inferred       | owner-session | Fallback only; per-guest passes govern attendee counts              |
+| rsvpWhatsappPhone     | —                                                                                                 | not_applicable | owner-session | No WhatsApp confirmation flow                                       |
+| rsvpDeadline          | —                                                                                                 | missing        | wa-export     | Optional; omit until client provides it                             |
+| musicUrl              | Dancing Queen — ABBA (Cloudinary hosted)                                                          | verified       | wa-export     | Client selected track; autoPlay: false                              |
+| itinerary             | Official Salón Solé Mío schedule                                                                  | verified       | wa-export     | 7 milestones; timeline-paper variant                                |
+| specialMessages       | Copy proposed by agent                                                                            | inferred       | owner-session | Pending client approval                                             |
 
 ---
 
@@ -83,9 +83,7 @@ non-blocking and are omitted from the payload rather than represented by placeho
 
 ### Non-blocking gaps
 
-- Itinerary (venue schedule requested by the client).
-- Music track.
-- RSVP deadline.
+- RSVP deadline (optional; omitted from payload until client provides it).
 - Guest list and pass counts (loaded in the dashboard after release).
 - Photographs without the photographer watermark (optional).
 
@@ -123,12 +121,12 @@ No placeholder tokens are used; optional content is omitted until supplied.
 
 ## Sections
 
-| bucket                 | section keys                                                                   |
-| ---------------------- | ------------------------------------------------------------------------------ |
-| requested              | location (two venues + indications), gifts, rsvp, gallery                      |
-| inferred / recommended | quote, family (no parents/godparents), countdown, personalizedAccess, thankYou |
-| omitted                | itinerary (pending), music (pending)                                           |
-| unresolved             | —                                                                              |
+| bucket                 | section keys                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| requested              | location (two venues + indications), itinerary (timeline-paper), gifts, rsvp, gallery, music (Dancing Queen) |
+| inferred / recommended | quote, family (no parents/godparents), countdown, personalizedAccess, thankYou                               |
+| omitted                | —                                                                                                            |
+| unresolved             | —                                                                                                            |
 
 ---
 
@@ -289,13 +287,15 @@ hero-desktop 2560 px ladder start. Do not upscale; confirm role budgets with
 - New visual structure lives only in the reusable `seaside-lineart` envelope variant, `shell` seal
   and marine icons, proven on `demo-xv-seaside`; the `mia-pintor` profile declares custom properties
   only.
-- Music omitted until a track is selected. Itinerary omitted until the venue schedule arrives.
+- Music configured with client track (Dancing Queen — ABBA). Itinerary configured from official
+  venue schedule.
 - Photographer watermark is preserved; never crop it mid-mark or remove it.
 
 ---
 
 ## Preparation Readiness History
 
-| date       | readiness                  | helper basis                   | notes                                                    |
-| ---------- | -------------------------- | ------------------------------ | -------------------------------------------------------- |
-| 2026-10-07 | `READY_FOR_IMPLEMENTATION` | `evaluatePreparationReadiness` | Initial preparation; optional content omitted, not faked |
+| date       | readiness                  | helper basis                   | notes                                                                |
+| ---------- | -------------------------- | ------------------------------ | -------------------------------------------------------------------- |
+| 2026-10-07 | `READY_FOR_IMPLEMENTATION` | `evaluatePreparationReadiness` | Initial preparation; optional content omitted, not faked             |
+| 2026-10-07 | `READY_FOR_IMPLEMENTATION` | `evaluatePreparationReadiness` | Official salon schedule (18:30 reception) and audio track integrated |

@@ -50,12 +50,15 @@ describe('Mía managed definition', () => {
 		expect(findPlaceholderTokensInValue(content)).toEqual([]);
 	});
 
-	it('honors the family-hosted brief: no parents, godparents, or itinerary yet', () => {
+	it('honors the family-hosted brief and includes the official schedule and music', () => {
 		const parsed = eventContentSchema.parse(buildContent());
 		expect(parsed.family?.parents).toBeUndefined();
 		expect(parsed.family?.godparents ?? []).toHaveLength(0);
-		expect(parsed.itinerary).toBeUndefined();
-		expect(parsed.sectionOrder).not.toContain('itinerary');
+		expect(parsed.itinerary).toBeDefined();
+		expect(parsed.itinerary?.items).toHaveLength(7);
+		expect(parsed.music?.url).toContain('Dancing_Queen_hxqiaf.mp3');
+		expect(parsed.sectionOrder).toContain('itinerary');
+		expect(parsed.location?.venues?.[1]?.time).toBe('18:30');
 	});
 
 	it('states the client restrictions and the envelope shower', () => {
