@@ -1,0 +1,21 @@
+// Event-scoped token remap for Aithan Darell — 3 años (Cars)
+// Scope: .event--aithan-darell.theme-preset--editorial-magazine
+// Keeps the preset's ink / paper / racing-red palette. The editorial desaturation is disabled so the
+// red car and race suit stay saturated, and the magazine folios are relabelled for a child's
+// birthday (the preset fallbacks carry an XV edition label).
+// Custom-property declarations only (tests/unit/invitation-profile-boundary.test.ts).
+
+.event--aithan-darell.theme-preset--editorial-magazine {
+	--editorial-image-filter: none;
+	--hero-image-filter: none;
+	--hero-portrait-filter: none;
+	--family-image-filter: none;
+	--location-image-filter: none;
+	--gallery-image-filter: none;
+	--editorial-folio-countdown: 'CELEBRA-ME | MIS 3 AÑOS · CUENTA REGRESIVA';
+	--editorial-folio-family: 'CELEBRA-ME | MIS 3 AÑOS · MI FAMILIA';
+	--editorial-folio-location: 'CELEBRA-ME | MIS 3 AÑOS · LA PISTA';
+	--editorial-folio-gallery: 'CELEBRA-ME | MIS 3 AÑOS · GALERÍA';
+	--editorial-folio-gifts: 'CELEBRA-ME | MIS 3 AÑOS · REGALOS';
+	--editorial-folio-rsvp: 'CELEBRA-ME | MIS 3 AÑOS · CONFIRMACIÓN';
+}
