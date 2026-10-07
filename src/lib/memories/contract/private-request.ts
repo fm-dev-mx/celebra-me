@@ -40,8 +40,10 @@ export function buildMemoriesPrivateRequestPayload(input: {
 }
 
 /**
- * Printed QR contract. Never derived from BASE_URL, request origin, preview URLs
- * or environment variables: a printed code must resolve for years.
+ * Printed QR contract: Production always prints this origin, never BASE_URL or a
+ * deployment URL, because a printed code must resolve for years. Only Preview
+ * and local runs swap in their own serving origin, decided on the server by
+ * resolveMemoriesPublicOrigin.
  */
 export const MEMORIES_PUBLIC_ORIGIN = 'https://celebra-me.com' as const;
 export const MEMORIES_PUBLIC_ROUTE_PREFIX = '/r/' as const;
@@ -64,8 +66,11 @@ export function buildMemoriesRecoveryPath(publicSlug: string): string {
 	return `${buildMemoriesPublicPath(publicSlug)}/recuperar`;
 }
 
-export function buildMemoriesPublicUrl(publicSlug: string): string {
-	return `${MEMORIES_PUBLIC_ORIGIN}${buildMemoriesPublicPath(publicSlug)}`;
+export function buildMemoriesPublicUrl(
+	publicSlug: string,
+	origin: string = MEMORIES_PUBLIC_ORIGIN,
+): string {
+	return `${origin}${buildMemoriesPublicPath(publicSlug)}`;
 }
 
 /** HMAC-SHA256 in base64url: 43 characters, no padding. */
@@ -75,8 +80,12 @@ export function buildMemoriesGalleryPath(publicSlug: string, token: string): str
 	return `${buildMemoriesPublicPath(publicSlug)}/galeria/${token}`;
 }
 
-export function buildMemoriesGalleryUrl(publicSlug: string, token: string): string {
-	return `${MEMORIES_PUBLIC_ORIGIN}${buildMemoriesGalleryPath(publicSlug, token)}`;
+export function buildMemoriesGalleryUrl(
+	publicSlug: string,
+	token: string,
+	origin: string = MEMORIES_PUBLIC_ORIGIN,
+): string {
+	return `${origin}${buildMemoriesGalleryPath(publicSlug, token)}`;
 }
 
 export function buildMemoriesGalleryApiPath(publicSlug: string, token: string): string {

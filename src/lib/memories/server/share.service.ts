@@ -23,6 +23,7 @@ import { listGalleryMedia } from './catalog.repository';
 import { MEMORIES_ENV } from './config';
 import { toOrganizerItem } from './media-mapper';
 import { organizerMaxPage } from './organizer.service';
+import { resolveMemoriesPublicOrigin } from './public-origin';
 import { updateMemorySpaceShare } from './settings.repository';
 import { findPublicMemorySpace } from './space.service';
 
@@ -51,16 +52,25 @@ export function verifyMemoriesShareToken(
 	return expected.length === received.length && timingSafeEqual(expected, received);
 }
 
-/** The link while sharing is on and retention has not ended; null otherwise. */
+/**
+ * The link while sharing is on and retention has not ended; null otherwise. Each
+ * environment signs with its own secret, so the link uses that environment's
+ * origin (see resolveMemoriesPublicOrigin).
+ */
 export function resolveMemoriesShareUrl(
 	space: MemoriesSpaceRecord,
 	now = new Date(),
+	requestOrigin?: string,
 ): string | null {
 	if (!space.shareEnabledAt) return null;
 	if (resolveMemoriesWindowState(space, now) === 'expired') return null;
 	const secret = readShareSecret();
 	if (!secret) return null;
-	return buildMemoriesGalleryUrl(space.publicSlug, buildMemoriesShareToken(space, secret));
+	return buildMemoriesGalleryUrl(
+		space.publicSlug,
+		buildMemoriesShareToken(space, secret),
+		resolveMemoriesPublicOrigin(requestOrigin),
+	);
 }
 
 export type MemoriesShareAction = 'enable' | 'disable' | 'rotate';
@@ -79,6 +89,7 @@ export async function updateMemoriesShare(input: {
 	space: MemoriesSpaceRecord;
 	action: MemoriesShareAction;
 	actorId: string;
+	requestOrigin?: string;
 	now?: Date;
 }): Promise<{ shareUrl: string | null }> {
 	const now = input.now ?? new Date();
@@ -108,7 +119,7 @@ export async function updateMemoriesShare(input: {
 		action: SHARE_AUDIT_ACTION[input.action],
 		metadata: { shareVersion: updated.shareVersion },
 	});
-	return { shareUrl: resolveMemoriesShareUrl(updated, now) };
+	return { shareUrl: resolveMemoriesShareUrl(updated, now, input.requestOrigin) };
 }
 
 /** Resolves a visitor's link to its space, or a 404 that does not say which part failed. */

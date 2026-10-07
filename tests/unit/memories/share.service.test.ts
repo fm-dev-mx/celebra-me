@@ -30,6 +30,7 @@ import {
 	updateMemoriesShare,
 	verifyMemoriesShareToken,
 } from '@/lib/memories/server/share.service';
+import { resolveMemoriesPublicOrigin } from '@/lib/memories/server/public-origin';
 import { OWNER_USER_ID, buildMediaRow, buildSpace } from './fixtures';
 
 const mockEnv = getEnv as jest.MockedFunction<typeof getEnv>;
@@ -77,6 +78,40 @@ describe('resolveMemoriesShareUrl', () => {
 		expect(
 			resolveMemoriesShareUrl(sharedSpace, new Date('2027-06-01T00:00:00.000Z')),
 		).toBeNull();
+	});
+});
+
+describe('guest link origin', () => {
+	function runIn(vercelEnv: string) {
+		mockEnv.mockImplementation((name: string) => (name === 'VERCEL_ENV' ? vercelEnv : SECRET));
+	}
+
+	it('keeps the canonical domain in Production whatever host served the request', () => {
+		runIn('production');
+		expect(resolveMemoriesPublicOrigin('https://celebra-me.vercel.app')).toBe(
+			'https://celebra-me.com',
+		);
+		expect(
+			resolveMemoriesShareUrl(sharedSpace, NOW, 'https://celebra-me-abc.vercel.app'),
+		).toMatch(/^https:\/\/celebra-me\.com\/r\//);
+	});
+
+	it('uses the serving origin in Preview and local runs', () => {
+		runIn('preview');
+		expect(resolveMemoriesPublicOrigin('https://celebra-me-git-develop.vercel.app')).toBe(
+			'https://celebra-me-git-develop.vercel.app',
+		);
+		runIn('');
+		expect(resolveMemoriesShareUrl(sharedSpace, NOW, 'http://localhost:4321')).toBe(
+			`http://localhost:4321/r/${sharedSpace.publicSlug}/galeria/${buildMemoriesShareToken(sharedSpace, SECRET)}`,
+		);
+	});
+
+	it('falls back to the canonical domain without a usable origin', () => {
+		runIn('preview');
+		expect(resolveMemoriesPublicOrigin()).toBe('https://celebra-me.com');
+		expect(resolveMemoriesPublicOrigin('not a url')).toBe('https://celebra-me.com');
+		expect(resolveMemoriesPublicOrigin('javascript:alert(1)')).toBe('https://celebra-me.com');
 	});
 });
 

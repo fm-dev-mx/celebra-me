@@ -10,6 +10,10 @@ import {
 	listMemorySpaceCandidatesAdmin,
 	listMemorySpacesAdmin,
 } from '@/lib/memories/server/admin.service';
+import {
+	memoriesRequestOrigin,
+	resolveMemoriesPublicOrigin,
+} from '@/lib/memories/server/public-origin';
 import { checkMemoriesReadiness } from '@/lib/memories/server/readiness.service';
 
 export const prerender = false;
@@ -23,7 +27,10 @@ export const GET: APIRoute = async ({ request }) => {
 			listMemorySpaceCandidatesAdmin(),
 			checkMemoriesReadiness(),
 		]);
-		return withPrivateCache(jsonResponse({ items, totals, candidates, readiness }));
+		const publicOrigin = resolveMemoriesPublicOrigin(memoriesRequestOrigin(request));
+		return withPrivateCache(
+			jsonResponse({ items, totals, candidates, readiness, publicOrigin }),
+		);
 	} catch (error) {
 		return errorResponse(error);
 	}

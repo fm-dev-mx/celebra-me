@@ -145,6 +145,7 @@ describe('GET /api/dashboard/admin/memories', () => {
 			totals,
 			candidates: [candidate],
 			readiness: { missing: ['shareSecret'], unreachable: ['uploadOrigin'] },
+			publicOrigin: new URL(BASE_URL).origin,
 		});
 		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 		expect(mockAdminRateLimit).toHaveBeenCalledWith(request, 'memories:list');

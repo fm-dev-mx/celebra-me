@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { requireDashboardSessionFromLocals } from '@/lib/rsvp/auth/authorization';
 import { errorResponse, jsonResponse, withPrivateCache } from '@/lib/rsvp/core/http';
 import { requireOrganizerMemorySpace } from '@/lib/memories/server/organizer.service';
+import { memoriesRequestOrigin } from '@/lib/memories/server/public-origin';
 import { requireMemoriesRateLimit } from '@/lib/memories/server/rate-limit';
 import { requireEventIdParam } from '@/lib/memories/server/route-guards';
 import { getMemorySpaceHostSummary } from '@/lib/memories/server/usage.service';
@@ -15,7 +16,12 @@ export const GET: APIRoute = async ({ request, locals, params }) => {
 		const session = requireDashboardSessionFromLocals(locals);
 		await requireMemoriesRateLimit(request, 'organizer', session.userId);
 		const space = await requireOrganizerMemorySpace(eventId, session);
-		return withPrivateCache(jsonResponse({ summary: await getMemorySpaceHostSummary(space) }));
+		const summary = await getMemorySpaceHostSummary(
+			space,
+			new Date(),
+			memoriesRequestOrigin(request),
+		);
+		return withPrivateCache(jsonResponse({ summary }));
 	} catch (error) {
 		return errorResponse(error);
 	}

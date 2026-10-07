@@ -8,6 +8,7 @@ import {
 	withPrivateCache,
 } from '@/lib/rsvp/core/http';
 import { requireOrganizerMemorySpace } from '@/lib/memories/server/organizer.service';
+import { memoriesRequestOrigin } from '@/lib/memories/server/public-origin';
 import { requireMemoriesRateLimit } from '@/lib/memories/server/rate-limit';
 import { requireEventIdParam } from '@/lib/memories/server/route-guards';
 import { isMemoriesShareAction, updateMemoriesShare } from '@/lib/memories/server/share.service';
@@ -28,6 +29,7 @@ export const POST: APIRoute = async ({ request, locals, params, cookies }) => {
 			space,
 			action: body.action,
 			actorId: session.userId,
+			requestOrigin: memoriesRequestOrigin(request),
 		});
 		return withPrivateCache(jsonResponse(result));
 	} catch (error) {

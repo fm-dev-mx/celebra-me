@@ -169,4 +169,41 @@ describe('getMemorySpaceHostSummary', () => {
 		expect(summary).not.toHaveProperty('maxEventBytes');
 		expect(summary).not.toHaveProperty('entitlement');
 	});
+
+	describe('QR link origin', () => {
+		const savedVercelEnv = process.env.VERCEL_ENV;
+		afterEach(() => {
+			if (savedVercelEnv === undefined) delete process.env.VERCEL_ENV;
+			else process.env.VERCEL_ENV = savedVercelEnv;
+		});
+
+		it('keeps the printed canonical domain in Production', async () => {
+			process.env.VERCEL_ENV = 'production';
+			const summary = await getMemorySpaceHostSummary(
+				buildSpace(),
+				NOW,
+				'https://celebra-me-abc.vercel.app',
+			);
+			expect(summary.publicUrl).toBe('https://celebra-me.com/r/victoria-y-roberto');
+		});
+
+		it('points Preview and local QR links at the serving environment', async () => {
+			process.env.VERCEL_ENV = 'preview';
+			const preview = await getMemorySpaceHostSummary(
+				buildSpace(),
+				NOW,
+				'https://celebra-me-git-develop.vercel.app',
+			);
+			expect(preview.publicUrl).toBe(
+				'https://celebra-me-git-develop.vercel.app/r/victoria-y-roberto',
+			);
+			delete process.env.VERCEL_ENV;
+			const local = await getMemorySpaceHostSummary(
+				buildSpace(),
+				NOW,
+				'http://localhost:4321',
+			);
+			expect(local.publicUrl).toBe('http://localhost:4321/r/victoria-y-roberto');
+		});
+	});
 });

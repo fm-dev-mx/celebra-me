@@ -21,6 +21,7 @@ import {
 	listSessionEventIds,
 	type MediaUsageRow,
 } from './catalog.repository';
+import { resolveMemoriesPublicOrigin } from './public-origin';
 import { resolveMemoriesShareUrl } from './share.service';
 import { toMemorySpaceSummary } from './space.service';
 
@@ -126,15 +127,19 @@ function toHostSummary(
 	space: MemoriesSpaceRecord,
 	usage: MemoriesSpaceAdminUsage,
 	now = new Date(),
+	requestOrigin?: string,
 ): MemoriesSpaceHostSummary {
 	return {
 		...toMemorySpaceSummary(space, now),
-		publicUrl: buildMemoriesPublicUrl(space.publicSlug),
+		publicUrl: buildMemoriesPublicUrl(
+			space.publicSlug,
+			resolveMemoriesPublicOrigin(requestOrigin),
+		),
 		photos: usage.photos,
 		videos: usage.videos,
 		guestsWithUploads: usage.guestsWithUploads,
 		expectedGuests: space.expectedGuests,
-		shareUrl: resolveMemoriesShareUrl(space, now),
+		shareUrl: resolveMemoriesShareUrl(space, now, requestOrigin),
 		lastAcceptedAt: usage.lastAcceptedAt,
 		capacityRemainingPercent: Math.min(
 			remainingPercent(usage.residentBytes, space.maxEventBytes),
@@ -146,9 +151,10 @@ function toHostSummary(
 export async function getMemorySpaceHostSummary(
 	space: MemoriesSpaceRecord,
 	now = new Date(),
+	requestOrigin?: string,
 ): Promise<MemoriesSpaceHostSummary> {
 	const usage = await summarizeMemorySpaceUsage([space.eventId]);
-	return toHostSummary(space, usage.get(space.eventId) ?? emptyUsage(), now);
+	return toHostSummary(space, usage.get(space.eventId) ?? emptyUsage(), now, requestOrigin);
 }
 
 /**

@@ -40,6 +40,7 @@ import {
 import { requireOrganizerMemorySpace } from '@/lib/memories/server/organizer.service';
 import { requireMemoriesRateLimit } from '@/lib/memories/server/rate-limit';
 import { requireMemorySpaceByEventId } from '@/lib/memories/server/space.service';
+import { generateMemoriesQrSvg } from '@/lib/memories/qr';
 import { GET as getAdminQr } from '@/pages/api/dashboard/admin/memories/[eventId]/qr';
 import { GET as getHostSummary } from '@/pages/api/dashboard/memories/[eventId]/summary';
 import { GET as getHostQr } from '@/pages/api/dashboard/memories/[eventId]/qr';
@@ -243,6 +244,40 @@ describe('GET /api/dashboard/memories/[eventId]/qr', () => {
 		expect(response.status).toBe(200);
 		const svg = await response.text();
 		expect(createHash('sha256').update(svg, 'utf8').digest('hex')).toBe(PRINTED_SVG_SHA256);
+	});
+
+	describe('printed origin', () => {
+		const savedVercelEnv = process.env.VERCEL_ENV;
+		afterEach(() => {
+			if (savedVercelEnv === undefined) delete process.env.VERCEL_ENV;
+			else process.env.VERCEL_ENV = savedVercelEnv;
+		});
+
+		it('prints the identical canonical SVG in Production whatever host serves the panel', async () => {
+			process.env.VERCEL_ENV = 'production';
+			const response = await getHostQr(
+				context(`https://www.celebra-me.com/api/dashboard/memories/${EVENT_ID}/qr`, {
+					eventId: EVENT_ID,
+				}),
+			);
+
+			const svg = await response.text();
+			expect(createHash('sha256').update(svg, 'utf8').digest('hex')).toBe(PRINTED_SVG_SHA256);
+		});
+
+		it('encodes the Preview deployment in a Preview QR', async () => {
+			process.env.VERCEL_ENV = 'preview';
+			const previewOrigin = 'https://celebra-me-git-develop.vercel.app';
+			const response = await getAdminQr(
+				context(`${previewOrigin}/api/dashboard/admin/memories/${EVENT_ID}/qr`, {
+					eventId: EVENT_ID,
+				}),
+			);
+
+			expect(await response.text()).toBe(
+				await generateMemoriesQrSvg(`${previewOrigin}/r/${PUBLIC_SLUG}`),
+			);
+		});
 	});
 
 	it('does not serve a QR for an event the host does not own', async () => {

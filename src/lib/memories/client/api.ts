@@ -326,6 +326,8 @@ export type AdminSpaceList = {
 	candidates: AdminSpaceCandidate[];
 	/** Settings the module is missing; absent from servers before readiness existed. */
 	readiness?: MemoriesReadiness;
+	/** Origin of guest links in this environment; the canonical domain in Production. */
+	publicOrigin?: string;
 };
 
 export const memoriesAdminApi = {
