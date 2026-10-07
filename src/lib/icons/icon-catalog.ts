@@ -150,10 +150,28 @@ export const ICON_CATALOG = [
 		keywords: ['anillos', 'argollas', 'matrimonio', 'boda'],
 	},
 	{
+		name: 'Seashell',
+		label: 'Concha',
+		category: 'marine',
+		keywords: ['concha', 'mar', 'playa', 'marino'],
+	},
+	{
+		name: 'ShellSeal',
+		label: 'Sello concha',
+		category: 'marine',
+		keywords: ['concha', 'sello', 'mar', 'playa'],
+	},
+	{
 		name: 'Sparkles',
 		label: 'Destacado',
 		category: 'decorative',
 		keywords: ['brillos', 'destacado', 'especial', 'estrella'],
+	},
+	{
+		name: 'Starfish',
+		label: 'Estrella de mar',
+		category: 'marine',
+		keywords: ['estrella', 'mar', 'playa', 'marino'],
 	},
 	{
 		name: 'Taco',
@@ -178,6 +196,12 @@ export const ICON_CATALOG = [
 		label: 'Vals',
 		category: 'party',
 		keywords: ['vals', 'baile', 'danza', 'musica'],
+	},
+	{
+		name: 'Wave',
+		label: 'Ola',
+		category: 'marine',
+		keywords: ['ola', 'mar', 'playa', 'oceano'],
 	},
 	{
 		name: 'WesternHat',
