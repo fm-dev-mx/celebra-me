@@ -3,6 +3,7 @@ import {
 	CONTENT_SECTION_KEYS,
 	INVITATION_RENDER_SECTION_KEYS,
 	SECTION_INTERSECTION_FAMILIES,
+	SECTION_ORNAMENT_SETS,
 } from '@/lib/theme/theme-contract';
 
 export const RENDER_PLAN_TARGETS = [
@@ -29,6 +30,7 @@ export const invitationCompositionSchema = z
 		intersections: z
 			.partialRecord(z.enum(RENDER_PLAN_TARGETS), renderPlanIntersectionSchema)
 			.default({}),
+		ornaments: z.enum(SECTION_ORNAMENT_SETS).optional(),
 	})
 	.strict();
 

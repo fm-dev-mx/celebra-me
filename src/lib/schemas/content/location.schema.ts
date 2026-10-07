@@ -3,6 +3,7 @@ import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 import {
+	LOCATION_INDICATIONS_LAYOUTS,
 	LOCATION_MAP_STYLES,
 	LOCATION_PRESENTATIONS,
 } from '@/lib/invitation/location-presentation';
@@ -61,6 +62,8 @@ const locationBaseSchema = z.object({
 			showFlourishes: z.boolean().optional(),
 			showNavigationButtons: z.boolean().optional(),
 			revealSurface: z.enum(['section', 'rsvp']).optional(),
+			indicationsLayout: z.enum(LOCATION_INDICATIONS_LAYOUTS).optional(),
+			showCalendarLinks: z.boolean().optional(),
 		})
 		.strict()
 		.optional(),
@@ -90,6 +93,7 @@ export const locationSchema = z
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[0]) }),
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[1]) }),
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[2]) }),
+		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[3]) }),
 	])
 	.superRefine((location, context) => {
 		if (
@@ -138,6 +142,16 @@ export const locationSchema = z
 				path: ['variant'],
 				message:
 					'location.variant=stacked-venue-plates requires at least two visible venues',
+			});
+			return;
+		}
+
+		if (location.variant === 'program-sheet') {
+			if (collectVisibleVenues(location).length >= 1) return;
+			context.addIssue({
+				code: 'custom',
+				path: ['variant'],
+				message: 'location.variant=program-sheet requires at least one visible venue',
 			});
 		}
 	});

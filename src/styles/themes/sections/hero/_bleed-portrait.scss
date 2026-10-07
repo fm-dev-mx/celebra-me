@@ -1,0 +1,204 @@
+@use '../../../global/mixins' as mixins;
+
+// ==========================================================================
+// HERO — bleed-portrait
+// The portrait runs to the edges: on phones it takes the full width at its own proportion (no
+// crop, edge marks and handwriting stay), on wide screens it fills the left side at full height
+// and the letter sits on the right grid. The letter states the occasion, the name and the
+// written when/where; a silver line replaces the scroll phrase. Shares the framed-portrait
+// markup and its name/occasion tokens.
+// Tokens (all optional):
+//   --hero-bleed-focal-point          Desktop crop anchor (default 50% 85%)
+//   --hero-bleed-title-size-desktop   Name size on wide screens
+//   --hero-bleed-rule                 Facts hairline
+//   --hero-bleed-muted                Labels color
+//   --hero-bleed-facts-gap            Space between the name and the facts on wide screens
+//   --hero-bleed-scroll-line          Scroll line length on wide screens
+// ==========================================================================
+
+.invitation-hero.framed-portrait-hero[data-variant='bleed-portrait'] {
+	--hero-title-size: clamp(4.5rem, 24vw, 6.5rem);
+
+	position: relative;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	height: auto;
+	min-height: 100dvh;
+	padding: 0 0 2rem;
+	background: var(--color-surface-primary);
+	color: var(--color-text-primary);
+	overflow: hidden;
+
+	.framed-portrait-hero__layout {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		width: 100%;
+	}
+
+	.framed-portrait-hero__photograph {
+		flex: none;
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		padding: 0;
+		border-radius: 0;
+		overflow: hidden;
+
+		img {
+			display: block;
+			width: 100%;
+			height: auto;
+			object-fit: cover;
+		}
+	}
+
+	.framed-portrait-hero__letter {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: clamp(1.5rem, 6vw, 2.25rem) 1.5rem 0;
+		text-align: center;
+	}
+
+	.framed-portrait-hero__occasion {
+		margin: 0;
+		font: var(--hero-occasion-font, 400 1rem / 1.4 var(--font-label, var(--font-body)));
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.16em;
+		text-transform: none;
+		color: var(--hero-occasion-color, var(--color-text-secondary));
+	}
+
+	.framed-portrait-hero__name {
+		max-width: none;
+		margin: 0;
+		font: var(--hero-name-font-weight, 400) var(--hero-title-size) /
+			var(--hero-name-line-height, 1.15) var(--hero-name-font-family, var(--font-display));
+		letter-spacing: var(--hero-name-letter-spacing, 0);
+		text-wrap: balance;
+	}
+
+	.framed-portrait-hero__facts {
+		display: grid;
+		gap: 0.2rem;
+		margin: 0.4rem 0 0;
+		font-family: var(--font-body);
+		font-size: clamp(1.08rem, 2vw, 1.4rem);
+		font-variant-numeric: oldstyle-nums;
+		line-height: 1.45;
+
+		div {
+			display: block;
+		}
+
+		dt {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
+		}
+
+		dd {
+			margin: 0;
+			text-wrap: balance;
+		}
+
+		// Date and time each stay whole: the only break falls after the year.
+		.framed-portrait-hero__when {
+			white-space: nowrap;
+		}
+	}
+
+	.framed-portrait-hero__scroll-line {
+		display: block;
+		width: 1px;
+		height: 2.5rem;
+		margin: 1.5rem auto 0;
+		background: linear-gradient(
+			var(--hero-bleed-rule, rgb(var(--color-text-primary-rgb, 16 24 32) / 45%)),
+			transparent
+		);
+	}
+
+	@include mixins.respond-to(lg) {
+		flex-direction: row;
+		align-items: stretch;
+		padding: 0;
+
+		.framed-portrait-hero__layout {
+			flex-direction: row;
+			align-items: stretch;
+			min-height: 100dvh;
+		}
+
+		.framed-portrait-hero__photograph {
+			flex: none;
+			width: min(50vw, calc(100dvh * 2 / 3));
+			min-height: 100dvh;
+
+			img {
+				height: 100%;
+				object-position: var(--hero-bleed-focal-point, 50% 85%);
+			}
+		}
+
+		.framed-portrait-hero__letter {
+			flex: 1;
+			align-items: flex-start;
+			justify-content: center;
+			padding: 4rem clamp(3rem, 8vw, 8rem);
+			text-align: left;
+		}
+
+		.framed-portrait-hero__occasion {
+			font-size: 1.15rem;
+		}
+
+		.framed-portrait-hero__name {
+			margin-left: -0.06em;
+			font-size: var(--hero-bleed-title-size-desktop, clamp(7rem, 11vw, 11rem));
+		}
+
+		.framed-portrait-hero__facts {
+			gap: 0.65rem;
+			min-width: min(100%, 30rem);
+			margin-top: var(--hero-bleed-facts-gap, 1.25rem);
+			padding-top: 1.35rem;
+			border-top: 1px solid
+				var(--hero-bleed-rule, rgb(var(--color-text-primary-rgb, 16 24 32) / 22%));
+
+			div {
+				display: grid;
+				grid-template-columns: 7rem minmax(0, 1fr);
+				column-gap: 1.5rem;
+				align-items: baseline;
+			}
+
+			dt {
+				position: static;
+				width: auto;
+				height: auto;
+				overflow: visible;
+				clip-path: none;
+				font-family: var(--font-label, var(--font-body));
+				font-size: 1rem;
+				font-variant-caps: all-small-caps;
+				letter-spacing: 0.14em;
+				color: var(--hero-bleed-muted, var(--color-text-secondary));
+			}
+		}
+
+		.framed-portrait-hero__scroll-line {
+			position: absolute;
+			left: calc(min(50vw, 100dvh * 2 / 3) + clamp(3rem, 8vw, 8rem));
+			bottom: 2.5rem;
+			height: var(--hero-bleed-scroll-line, 2.5rem);
+			margin: 0;
+		}
+	}
+}

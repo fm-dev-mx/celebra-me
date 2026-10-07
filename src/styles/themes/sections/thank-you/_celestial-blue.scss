@@ -18,6 +18,7 @@
 	}
 
 	&::after {
+		display: var(--thank-you-floor-fog-display, block);
 		content: '';
 		position: absolute;
 		inset: auto 0 0;
@@ -41,6 +42,7 @@
 	}
 
 	.thank-you-editorial__ambient {
+		display: var(--thank-you-ambient-display, block);
 		position: absolute;
 		inset: -8% -8% -10%;
 		z-index: -1;
@@ -81,18 +83,26 @@
 		width: 100%;
 		height: 100%;
 		overflow: hidden;
-		border-radius: 0.75rem;
-		background: linear-gradient(
-			155deg,
-			rgb(var(--color-cool-ivory-rgb) / 92%) 0%,
-			rgb(var(--color-diamond-white-rgb) / 98%) 100%
+		box-sizing: border-box;
+		padding: var(--thank-you-print-border, 0);
+		border-radius: var(--thank-you-image-radius, 0.75rem);
+		background: var(
+			--thank-you-print-bg,
+			linear-gradient(
+				155deg,
+				rgb(var(--color-cool-ivory-rgb) / 92%) 0%,
+				rgb(var(--color-diamond-white-rgb) / 98%) 100%
+			)
 		);
-		box-shadow:
+		box-shadow: var(
+			--thank-you-print-shadow,
 			0 28px 64px -18px rgb(var(--color-deep-blue-graphite-rgb) / 22%),
 			0 2px 0 rgb(var(--color-diamond-white-rgb) / 60%),
-			inset 0 0 0 1px rgb(var(--color-liquid-silver-rgb) / 20%);
+			inset 0 0 0 1px rgb(var(--color-liquid-silver-rgb) / 20%)
+		);
 
 		&::before {
+			display: var(--thank-you-print-sheen-display, block);
 			content: '';
 			position: absolute;
 			inset: 0;
@@ -106,6 +116,7 @@
 		}
 
 		&::after {
+			display: var(--thank-you-print-inner-rule-display, block);
 			content: '';
 			position: absolute;
 			inset: 5px;
@@ -123,7 +134,7 @@
 			border-radius: 0;
 			object-fit: cover;
 			object-position: var(--thank-you-focal-point, var(--thank-you-image-position, center));
-			filter: saturate(0.94) contrast(0.96) brightness(1.04);
+			filter: var(--thank-you-photo-filter, saturate(0.94) contrast(0.96) brightness(1.04));
 			transform: scale(1.005);
 			transition:
 				transform var(--duration-premium) var(--ease-premium),
@@ -156,13 +167,13 @@
 		text-wrap: pretty;
 
 		.drop-cap {
-			float: left;
-			margin: 0.08em 0.18em 0 0;
+			float: var(--thank-you-drop-cap-float, left);
+			margin: var(--thank-you-drop-cap-margin, 0.08em 0.18em 0 0);
 			padding: 0;
 			font-family: var(--font-display);
-			font-size: clamp(3.3rem, 16vw, 5.25rem);
-			font-weight: 300;
-			line-height: 0.9;
+			font-size: var(--thank-you-drop-cap-size, clamp(3.3rem, 16vw, 5.25rem));
+			font-weight: var(--thank-you-drop-cap-weight, 300);
+			line-height: var(--thank-you-drop-cap-line-height, 0.9);
 			color: var(--thank-you-drop-cap-color, rgb(var(--color-deep-blue-graphite-rgb) / 78%));
 			text-shadow: var(
 				--thank-you-drop-cap-shadow,
@@ -228,7 +239,7 @@
 		}
 
 		.thank-you-message .drop-cap {
-			font-size: clamp(4.4rem, 7vw, 6.4rem);
+			font-size: var(--thank-you-drop-cap-size-desktop, clamp(4.4rem, 7vw, 6.4rem));
 		}
 
 		.closing-name {
@@ -257,7 +268,10 @@
 	@media (hover: hover) and (pointer: fine) {
 		.thank-you-editorial__image-shell:hover .photo-image {
 			transform: scale(1.03);
-			filter: saturate(0.98) contrast(1) brightness(1.04);
+			filter: var(
+				--thank-you-photo-filter-hover,
+				saturate(0.98) contrast(1) brightness(1.04)
+			);
 		}
 	}
 }

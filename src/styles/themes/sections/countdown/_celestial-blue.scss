@@ -31,7 +31,7 @@
 	}
 
 	.countdown-title {
-		max-width: 16ch;
+		max-width: var(--countdown-title-max-width, 16ch);
 		margin-inline: auto;
 		margin-bottom: clamp(1.8rem, 3.5vw, 2.8rem);
 		font-family: var(--font-display);
@@ -41,8 +41,10 @@
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 		color: var(--color-soft-graphite);
-		text-wrap: pretty;
-		hyphens: auto;
+		text-wrap: balance;
+
+		// Display caps never hyphenate: automatic breaks split words like "CELE-BRACIÓN".
+		hyphens: manual;
 	}
 
 	.countdown__timer {
@@ -56,12 +58,17 @@
 	}
 
 	.countdown__segment {
-		background: rgb(var(--color-diamond-white-rgb) / 54%);
-		border: 1px solid rgb(var(--color-liquid-silver-rgb) / 38%);
-		border-radius: 6px;
-		box-shadow:
+		background: var(--countdown-segment-bg, rgb(var(--color-diamond-white-rgb) / 54%));
+		border: var(
+			--countdown-segment-border,
+			1px solid rgb(var(--color-liquid-silver-rgb) / 38%)
+		);
+		border-radius: var(--countdown-segment-radius, 6px);
+		box-shadow: var(
+			--countdown-segment-shadow,
 			0 10px 26px rgb(var(--color-deep-blue-graphite-rgb) / 5%),
-			inset 0 1px 0 rgb(var(--color-diamond-white-rgb) / 80%);
+			inset 0 1px 0 rgb(var(--color-diamond-white-rgb) / 80%)
+		);
 		padding: var(--countdown-segment-padding-mobile);
 		display: flex;
 		flex-direction: column;
@@ -83,19 +90,25 @@
 				rgb(var(--color-diamond-white-rgb) / 60%) 0%,
 				transparent 40%
 			);
+			opacity: var(--countdown-segment-sheen-opacity, 100%);
 			pointer-events: none;
 		}
 
 		&:hover {
-			border-color: rgb(var(--color-satin-blue-rgb) / 65%);
-			box-shadow:
+			border-color: var(
+				--countdown-segment-hover-border-color,
+				rgb(var(--color-satin-blue-rgb) / 65%)
+			);
+			box-shadow: var(
+				--countdown-segment-hover-shadow,
 				0 14px 32px rgb(var(--color-deep-blue-graphite-rgb) / 8%),
-				inset 0 1px 0 rgb(var(--color-diamond-white-rgb) / 80%);
-			transform: translateY(-3px);
+				inset 0 1px 0 rgb(var(--color-diamond-white-rgb) / 80%)
+			);
+			transform: translateY(var(--countdown-segment-hover-lift, -3px));
 		}
 
 		@media (width >= 640px) {
-			border-radius: 8px;
+			border-radius: var(--countdown-segment-radius, 8px);
 			padding: var(--countdown-segment-padding-desktop);
 			gap: 0.5rem;
 		}
@@ -117,7 +130,7 @@
 		font-weight: 600;
 		letter-spacing: var(--countdown-label-letter-spacing, 0.22em);
 		text-transform: uppercase;
-		color: rgb(var(--color-soft-graphite-rgb) / 58%);
+		color: var(--countdown-label-color, rgb(var(--color-soft-graphite-rgb) / 58%));
 
 		@media (width >= 640px) {
 			font-size: 0.68rem;
@@ -154,7 +167,7 @@
 		font-weight: 500;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		color: rgb(var(--color-soft-graphite-rgb) / 52%);
+		color: var(--countdown-footer-text-color, rgb(var(--color-soft-graphite-rgb) / 52%));
 		max-inline-size: 32ch;
 		margin-inline: auto;
 	}

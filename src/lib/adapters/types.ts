@@ -23,6 +23,7 @@ import type { GiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import type {
 	LocationPresentation,
 	LocationMapStyle,
+	LocationIndicationsLayout,
 } from '@/lib/invitation/location-presentation';
 import type { z } from 'zod';
 import type { EnvelopeRevealVariant } from '@/lib/schemas/content/envelope.schema';
@@ -206,6 +207,7 @@ export interface Interlude {
 	afterSection: InvitationRenderSectionKey;
 	alt?: string;
 	height: 'screen' | 'tall' | 'medium';
+	presentation?: 'bleed' | 'framed';
 	focalPoint?: string;
 	focalPointDesktop?: string;
 	lightX?: string;
@@ -228,6 +230,8 @@ export interface LocationSection {
 		showFlourishes?: boolean;
 		showNavigationButtons?: boolean;
 		revealSurface?: 'section' | 'rsvp';
+		indicationsLayout?: LocationIndicationsLayout;
+		showCalendarLinks?: boolean;
 	};
 	isLocked?: boolean;
 	lockedTitle?: string;
@@ -241,6 +245,10 @@ export interface LocationSection {
 	introHeading?: string;
 	introLede?: string;
 	indicationsHeading?: string;
+	indicationsLayout?: LocationIndicationsLayout;
+	showCalendarLinks?: boolean;
+	calendarEventTitle?: string;
+	eventTimeZone?: string;
 }
 
 export interface InvitationViewModel {

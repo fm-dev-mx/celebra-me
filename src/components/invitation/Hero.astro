@@ -64,7 +64,7 @@ const {
 } = Astro.props;
 
 const isEditorialCover = variant === 'editorial-cover';
-const isFramedPortrait = variant === 'framed-portrait';
+const isFramedPortrait = variant === 'framed-portrait' || variant === 'bleed-portrait';
 const isCeremonialPortrait = variant === 'ceremonial-portrait';
 
 let displayLabel: string | undefined;
@@ -156,7 +156,7 @@ if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
 	isCeremonialPortrait ? (
 	<CeremonialPortraitHero {...Astro.props} />
 	) : isFramedPortrait ? (
-	<FramedPortraitHero {...Astro.props} />
+	<FramedPortraitHero {...Astro.props} variant={variant === 'bleed-portrait' ? 'bleed-portrait' : 'framed-portrait'} />
 	) : isEditorialCover ? (
 	<EditorialCoverHero {...Astro.props} />
 	) : (

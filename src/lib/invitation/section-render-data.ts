@@ -56,6 +56,7 @@ type DescriptorData =
 				image: InterludeBlock['image'];
 				alt: InterludeBlock['alt'];
 				height: InterludeBlock['height'];
+				presentation?: InterludeBlock['presentation'];
 				focalPoint?: string;
 				focalPointDesktop?: string;
 				lightX?: string;
@@ -141,6 +142,7 @@ function renderInterlude(block: InterludeBlock) {
 			image: block.image,
 			alt: block.alt,
 			height: block.height,
+			presentation: block.presentation,
 			focalPoint: block.focalPoint,
 			focalPointDesktop: block.focalPointDesktop,
 			lightX: block.lightX,

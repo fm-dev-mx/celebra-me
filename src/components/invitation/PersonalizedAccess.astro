@@ -40,7 +40,15 @@ const formattedNoteText = noteText
 const accessAriaLabel = `Pase de acceso para ${guestName}. ${maxAllowedAttendees} ${seatsLabel.toLowerCase()}.`;
 
 // Decorative ornaments are variant-specific
-const showOrnaments = variant !== 'standard';
+const isReplyCard = variant === 'reply-card';
+const showOrnaments = variant !== 'standard' && !isReplyCard;
+
+// The reply card writes the seats out ("dos lugares") under the numeral, as stationery does.
+const SEAT_WORDS = ['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez'];
+const writtenSeats =
+	maxAllowedAttendees >= 1 && maxAllowedAttendees < SEAT_WORDS.length
+		? `${SEAT_WORDS[maxAllowedAttendees]} ${maxAllowedAttendees === 1 ? 'lugar' : 'lugares'}`
+		: `${maxAllowedAttendees} ${maxAllowedAttendees === 1 ? 'lugar' : 'lugares'}`;
 ---
 
 <section
@@ -73,7 +81,7 @@ const showOrnaments = variant !== 'standard';
 				<span class="access-card__eyebrow" data-demo-label>
 					{isDemoPreview && variant !== 'editorial-pass' ? 'Vista previa' : null}
 				</span>
-				<div class="access-card__seal" aria-hidden="true">
+				{!isReplyCard && <div class="access-card__seal" aria-hidden="true">
 					<svg
 						viewBox="0 0 100 100"
 						fill="none"
@@ -98,7 +106,7 @@ const showOrnaments = variant !== 'standard';
 							opacity="0.3"></circle>
 						<circle cx="50" cy="50" r="2" fill="currentColor"></circle>
 					</svg>
-				</div>
+				</div>}
 				<h3 id="personalized-access-title" class="access-card__title">
 					{title}
 				</h3>
@@ -119,6 +127,7 @@ const showOrnaments = variant !== 'standard';
 					<div class="access-card__count-frame">
 						<span class="access-card__count">{maxAllowedAttendees}</span>
 					</div>
+					{isReplyCard && <span class="access-card__count-words">{writtenSeats}</span>}
 					{ticket && <span class="access-card__monogram" aria-hidden="true">{ticket.monogram}</span>}
 				</div>
 

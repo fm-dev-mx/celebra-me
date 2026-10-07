@@ -42,22 +42,23 @@ environment migration is applied and verified.
 
 ## Canonical inventory
 
-- **Hero:** `standard`, `editorial-cover`, `split-cover`, `framed-portrait`.
+- **Hero:** `standard`, `editorial-cover`, `split-cover`, `framed-portrait`, `bleed-portrait`,
+  `ceremonial-portrait`.
 - **Family:** `standard`, `split-groups`, `asymmetric-groups`, `ceremonial-family`; both group
   layouts require at least two explicit `groups`.
-- **Location:** `standard`, `split-map`, `stacked-venue-plates`; prerequisites are enforced by the
-  owning schema.
+- **Location:** `standard`, `split-map`, `stacked-venue-plates`, `program-sheet`; prerequisites are
+  enforced by the owning schema.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
   `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`,
-  `narrative-stack`. `single-keepsake` requires exactly one item; feature layouts enforce their item
-  requirements.
+  `narrative-stack`, `mirrored-mosaic`, `paired-portraits`. `single-keepsake` requires exactly one
+  item; feature layouts enforce their item requirements.
 - **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`, `editorial-program`.
 - **Gifts:** `standard`, `editorial-catalog`.
-- **RSVP:** `standard`, `editorial-press-pass`, `formal-register`.
-- **Personalized Access:** `standard`, `ornamented`, `editorial-pass`, `formal-pass`.
-- **Thank You:** `standard`, `editorial-back-cover`, `portrait-letter`, `full-bleed-photo`;
-  `full-bleed-photo` requires `thankYou.image`.
-- **Countdown:** `standard`, `editorial-folio`, `magazine-folio`, `clock-face`.
+- **RSVP:** `standard`, `editorial-press-pass`, `formal-register`, `reply-card`.
+- **Personalized Access:** `standard`, `ornamented`, `editorial-pass`, `formal-pass`, `reply-card`.
+- **Thank You:** `standard`, `editorial-back-cover`, `portrait-letter`, `full-bleed-photo`,
+  `portrait-keepsake`, `ceremonial-closing`; `full-bleed-photo` requires `thankYou.image`.
+- **Countdown:** `standard`, `editorial-folio`, `magazine-folio`, `clock-face`, `written-days`.
 
 Header, Quote, MusicPlayer, and Footer emit `standard` where applicable. Interlude emits a fixed
 `standard` DOM marker and accepts no variant input. Envelope/reveal is a theme design selector and
@@ -141,6 +142,43 @@ invitation profiles.
 - thankYou.ceremonial-closing: compact closing copy and optional decorative image.
 - envelope.revealVariant satin-filigree: triangular satin envelope, existing sealImage and optional
   backdropImage; preserves the shared reveal lifecycle.
+- envelope.revealVariant seaside-lineart: a shoreline letter. Flat sky field with a fine grain, a
+  clean envelope front (name, recipient, pearl wax `shell` seal), one instruction, a wave liner
+  shown while the flap opens, and a deckle-edged card with a single shell over a hand-drawn
+  shoreline. Keeps the shared card-rise lifecycle. Profiles tune it only through optional
+  `--seaside-*` tokens. Proven on the unlisted `demo-xv-seaside`.
+- composition.ornaments seaside-lineart: one hand-drawn shoreline (a ribbon of variable weight) at
+  four thresholds — quote opening, family close, location close and the closing signature, where a
+  shell rests on it. Generic dividers and flourishes are hidden rather than replaced by icons. CSS
+  pseudo-elements only; static and never announced. Tuned through `--ornament-*`.
+- interludes[].presentation framed: the whole photograph on paper inside a hairline double frame, so
+  edge marks (watermarks, handwritten dates) are never cropped. Tuned through
+  `--interlude-framed-*`.
+- location.presentationOptions.indicationsLayout band: indications as a titled band without per-item
+  cards; the first is featured and the rest follow a separator. `--location-band-*`.
+- location.presentationOptions.indicationsLayout enclosure: the details card of a suite — one small
+  card with an inner hairline, short notes without icons or numbering, and a single color swatch for
+  a `reserved` note. `--location-enclosure-*`.
+- location.program-sheet: venues as printed-program entries (line drawing for ceremony/reception,
+  label, time in words, venue, address, text links of 44 px for map, calendar and copy). No cards
+  and no section nav button; two columns with a vertical hairline on wide screens.
+  `--location-program-*`.
+- hero.bleed-portrait: framed-portrait markup with the photograph to the edges (full width at its
+  own proportion on phones, full-height left half on wide screens), written when/where facts and a
+  silver scroll line. `--hero-bleed-*`.
+- countdown.written-days: one composed fact — small-caps lead, a light display day count with an
+  italic "días", and the date in lowercase with old-style numerals; no tiles, the timer updates once
+  a minute. `--countdown-written-*`.
+- gallery.mirrored-mosaic: contact sheet in blocks of three (principal photograph over two thirds
+  plus two stacked), every second block mirrored; square corners, hairline gaps, per-item focal
+  points, captions only in the lightbox. Requires three items. `--gallery-mosaic-*`.
+- rsvp.reply-card + personalizedAccess.reply-card: a printed reply card split across both sections
+  and joined into one surface — seats written out above, then the heading, two 56 px answers in the
+  stationery formula ("Con gusto asistiré" / "Lamento no poder asistir"), message and one button; no
+  eyebrow or seal. `--reply-card-*`.
+- location.presentationOptions.showCalendarLinks: native `<details>` "Agendar en el calendario" per
+  venue (Google, .ics data URL, Outlook), resolved from the venue local date/time in
+  `eventTiming.timeZone`; works without JavaScript.
 
 These variants carry no client identity or profile dependency. The profile supplies color and
 rhythm; human visual acceptance remains separate from structural verification.

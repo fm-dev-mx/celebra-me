@@ -39,7 +39,11 @@ export const gallerySchema = z
 	.strict()
 	.superRefine((gallery, context) => {
 		if (gallery.variant === 'paired-portraits' && gallery.items.length !== 2) {
-			context.addIssue({ code: 'custom', path: ['items'], message: 'paired-portraits requires exactly two photographs' });
+			context.addIssue({
+				code: 'custom',
+				path: ['items'],
+				message: 'paired-portraits requires exactly two photographs',
+			});
 		}
 		if (gallery.variant === 'narrative-stack') {
 			if (gallery.items.length === 0) {
@@ -95,6 +99,14 @@ export const gallerySchema = z
 				code: 'custom',
 				path: ['items'],
 				message: 'gallery.variant=single-keepsake requires exactly one gallery item',
+			});
+		}
+
+		if (gallery.variant === 'mirrored-mosaic' && gallery.items.length < 3) {
+			context.addIssue({
+				code: 'custom',
+				path: ['items'],
+				message: 'gallery.variant=mirrored-mosaic requires at least three gallery items',
 			});
 		}
 

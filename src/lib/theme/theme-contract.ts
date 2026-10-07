@@ -108,6 +108,14 @@ export const SECTION_INTERSECTION_FAMILIES = [
 
 export type SectionIntersectionFamily = (typeof SECTION_INTERSECTION_FAMILIES)[number];
 
+/**
+ * Decorative line-art sets that sections pick up at fixed positions (heading emblems, rule
+ * separators, closing horizon). Purely presentational: CSS pseudo-elements, aria-hidden by nature.
+ */
+export const SECTION_ORNAMENT_SETS = ['seaside-lineart'] as const;
+
+export type SectionOrnamentSet = (typeof SECTION_ORNAMENT_SETS)[number];
+
 export type { LocationVariant, ItineraryVariant } from '@/lib/invitation/section-variants';
 export { ITINERARY_VARIANTS } from '@/lib/invitation/section-variants';
 

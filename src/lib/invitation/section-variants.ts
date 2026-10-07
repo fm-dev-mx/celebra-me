@@ -47,6 +47,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		cssOwner: 'src/styles/themes/sections/hero/_framed-portrait.scss',
 	},
 	{
+		section: 'hero',
+		variant: 'bleed-portrait',
+		default: false,
+		prerequisites: ['hero.backgroundImage'],
+		cssOwner: 'src/styles/themes/sections/hero/_bleed-portrait.scss',
+	},
+	{
 		section: 'gallery',
 		variant: 'narrative-stack',
 		default: false,
@@ -115,6 +122,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		default: false,
 		prerequisites: ['At least two visible venues'],
 		cssOwner: 'src/styles/themes/sections/location/_stacked-venue-plates.scss',
+	},
+	{
+		section: 'location',
+		variant: 'program-sheet',
+		default: false,
+		prerequisites: ['At least one visible venue'],
+		cssOwner: 'src/styles/themes/sections/location/_program-sheet.scss',
 	},
 	{
 		section: 'itinerary',
@@ -195,6 +209,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'gallery',
+		variant: 'mirrored-mosaic',
+		default: false,
+		prerequisites: ['gallery.items with at least three images'],
+		cssOwner: 'src/styles/themes/sections/gallery/_mirrored-mosaic.scss',
+	},
+	{
+		section: 'gallery',
 		variant: 'single-keepsake',
 		default: false,
 		prerequisites: ['gallery.items with exactly one item'],
@@ -230,6 +251,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'rsvp',
+		variant: 'reply-card',
+		default: false,
+		prerequisites: noSpecialPrerequisites,
+		cssOwner: 'src/styles/themes/sections/rsvp/_reply-card.scss',
+	},
+	{
+		section: 'rsvp',
 		variant: 'formal-register',
 		default: false,
 		prerequisites: ['rsvp.personalizedAccess'],
@@ -255,6 +283,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		default: false,
 		prerequisites: ['rsvp.personalizedAccess'],
 		cssOwner: 'src/styles/themes/sections/personalized-access/_editorial-pass.scss',
+	},
+	{
+		section: 'personalizedAccess',
+		variant: 'reply-card',
+		default: false,
+		prerequisites: noSpecialPrerequisites,
+		cssOwner: 'src/styles/themes/sections/personalized-access/_reply-card.scss',
 	},
 	{
 		section: 'personalizedAccess',
@@ -318,6 +353,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		default: false,
 		prerequisites: ['countdown'],
 		cssOwner: 'src/styles/themes/sections/countdown/_magazine-folio.scss',
+	},
+	{
+		section: 'countdown',
+		variant: 'written-days',
+		default: false,
+		prerequisites: noSpecialPrerequisites,
+		cssOwner: 'src/styles/themes/sections/countdown/_written-days.scss',
 	},
 	{
 		section: 'countdown',

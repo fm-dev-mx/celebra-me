@@ -3,13 +3,7 @@ export const LOCATION_PRESENTATIONS = ['simple', 'with-map', 'with-photo'] as co
 export type LocationPresentation = (typeof LOCATION_PRESENTATIONS)[number];
 export type LocationMediaMode = 'none' | 'map' | 'image';
 
-export const LOCATION_MAP_STYLES = [
-	'dark',
-	'colorful',
-	'minimal',
-	'satellite',
-	'rustic',
-] as const;
+export const LOCATION_MAP_STYLES = ['dark', 'colorful', 'minimal', 'satellite', 'rustic'] as const;
 
 export type LocationMapStyle = (typeof LOCATION_MAP_STYLES)[number];
 
@@ -31,7 +25,17 @@ export interface LocationPresentationOptions {
 	 * - `rsvp`: omit Location from the public plan and reveal via RSVP when confirmed
 	 */
 	revealSurface?: LocationRevealSurface;
+	/**
+	 * `list` (default) keeps indications as numbered notes; `band` presents them as their own
+	 * titled band: the first indication featured, the rest as notes under a separator.
+	 */
+	indicationsLayout?: LocationIndicationsLayout;
+	/** Adds a no-JS "Agendar en el calendario" disclosure to each venue with a date and time. */
+	showCalendarLinks?: boolean;
 }
+
+export const LOCATION_INDICATIONS_LAYOUTS = ['list', 'band', 'enclosure'] as const;
+export type LocationIndicationsLayout = (typeof LOCATION_INDICATIONS_LAYOUTS)[number];
 
 export function resolveLocationMediaMode(
 	presentation: LocationPresentation | undefined,
