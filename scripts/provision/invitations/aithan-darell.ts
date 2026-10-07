@@ -15,7 +15,7 @@
  * jacket in the gallery. The collector cover, the hero canvas and the back-cover trophy are
  * original race motifs (asphalt, checkered flag, race number "3", trophy) rendered as image
  * assets — no third-party artwork; the low-light selfie (chat-052) appears only inside the cover's
- * race roundel. Music is omitted until the owner hosts the requested track ("Life Is a Highway").
+ * race roundel. Music is hosted ("Life Is a Highway" by Rascal Flatts).
  */
 
 import { defineCanonicalInvitation } from './canonical-definition.ts';
@@ -24,7 +24,8 @@ import { deriveStartsAtUtc } from '../../../src/lib/time/event-time.ts';
 import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
 const TIME_ZONE = 'America/Mexico_City';
-// Party start confirmed by the client ("Hora 5:30" after an earlier 4:30).
+// Party start confirmed by the client: 5:30 p. m. ("Hora 5:30" after an earlier 4:30, then
+// re-confirmed as p. m.).
 const PARTY_LOCAL = '2026-10-24T17:30';
 const derivedStartsAtUtc = deriveStartsAtUtc(PARTY_LOCAL, TIME_ZONE);
 if (!derivedStartsAtUtc) {
@@ -57,14 +58,15 @@ const VENUE_NAME = 'Jardín de Teresita';
 // from the Maps pin, so they are not printed; the map and the Google Maps button resolve the route.
 const VENUE_ADDRESS = 'Avenida Juárez 49, Atizapán centro';
 const VENUE_CITY = 'Atizapán';
-const MAPS_URL = 'https://maps.app.goo.gl/HZDDjkjo8QrPrD5Y9';
+// Pinned link (Av. Juárez 49, Atizapán Centro).
+const MAPS_URL = 'https://maps.app.goo.gl/ebbpWEFK68LhuDm28';
 
 /**
- * Music: the client asked for "Life Is a Highway". The owner pastes the hosted audio URL here and,
- * when the file is the full track, the second the song should start from. Nothing is published
- * while the URL is empty.
+ * Music: the client asked for "Life Is a Highway" (Rascal Flatts). Hosted track on Cloudinary.
+ * When the file is the full track, MUSIC_START_SECONDS can specify the starting second.
  */
-const MUSIC_URL = '';
+const MUSIC_URL =
+	'https://res.cloudinary.com/dusxvauvj/video/upload/v1791406894/Rascal_Flatts_-_Life_Is_a_Highway_swt74a.mp3';
 const MUSIC_START_SECONDS: number | undefined = undefined;
 
 const hasMusic = MUSIC_URL.trim().length > 0;
@@ -123,7 +125,7 @@ const content: CanonicalEventContentInput = {
 		portrait: 'heroPortrait',
 		focalPoint: '50% 50%',
 		focalPointMobile: '50% 50%',
-		tagline: '¡Cumplo 3 años! Venga a celebrar mi Gran Premio.',
+		tagline: '¡Arrancan los motores! Acompáñeme a toda velocidad a celebrar mis 3 años.',
 		// Race-number watermark and grid slot instead of the preset's XV folio marks.
 		// The brand is named once, on the collector cover masthead: no design credit in the hero.
 		presentation: { coverMark: '3', coverPage: 'POLE POSITION', designCredit: false },
@@ -135,7 +137,7 @@ const content: CanonicalEventContentInput = {
 	countdown: {
 		variant: 'magazine-folio',
 		title: 'Faltan para la salida',
-		footerText: 'Semáforo en verde · sábado 24 · 5:30 p. m.',
+		footerText: 'Semáforo de salida · Pits listos para el arranque · Sábado 24 · 5:30 p. m.',
 	},
 	location: {
 		accessPolicy: { visibility: 'public' },
@@ -143,9 +145,10 @@ const content: CanonicalEventContentInput = {
 		mapStyle: 'dark',
 		// Indications read as numbered pit boards.
 		presentationOptions: { indicationsStyle: 'numbered-board' },
-		introEyebrow: 'El circuito',
+		introEyebrow: 'La ruta de Mack',
 		introHeading: 'Sábado, 24 de octubre',
-		introLede: 'Una tarde de juegos, amigos y mucha diversión.',
+		introLede:
+			'El transporte oficial de la escudería nos traslada a la pista. ¡Siga el mapa hasta el circuito!',
 		indicationsHeading: 'Antes del banderazo',
 		venues: [
 			{
@@ -171,7 +174,7 @@ const content: CanonicalEventContentInput = {
 				title: 'Llegue puntual',
 				iconName: 'Calendar',
 				styleVariant: 'default',
-				text: 'La salida es a las 5:30 p. m. ¡No se pierda el banderazo!',
+				text: 'La salida oficial es a las 5:30 p. m. ¡Llegue a tiempo para no perderse el banderazo!',
 			},
 		],
 	},
@@ -193,7 +196,7 @@ const content: CanonicalEventContentInput = {
 			{
 				image: 'gallery02',
 				alt: 'Aithan de espaldas con su chamarra de Mate y Rayo McQueen frente a una pista ilustrada',
-				caption: 'En sus marcas, listos…',
+				caption: 'Mate en los pits y McQueen en la pista: la mejor escudería',
 				focalPoint: '50% 40%',
 			},
 		],
@@ -201,16 +204,31 @@ const content: CanonicalEventContentInput = {
 	rsvp: {
 		variant: 'formal-register',
 		title: 'Inscripción al Gran Premio',
-		subcopy: '¿Me acompaña? Responda aquí y, si gusta, déjeme un mensaje.',
+		subcopy:
+			'El equipo de pits necesita confirmar su lugar en la parrilla de salida. ¿Nos acompaña?',
 		guestCap: 4,
 		accessMode: 'hybrid',
 		confirmationMode: 'api',
-		confirmationMessage: '¡Inscripción recibida! Nos vemos el sábado 24.',
+		confirmationMessage:
+			'¡Inscripción confirmada! Nos vemos el sábado 24 de octubre a las 5:30 p. m. en el circuito.',
+		responseMessages: {
+			confirmed: {
+				title: '¡Inscripción confirmada, {guestName}!',
+				subtitle:
+					'Su lugar en la tribuna está reservado para el sábado 24 de octubre a las 5:30 p. m.',
+			},
+			declined: {
+				title: 'Lamentamos que no pueda acompañarnos, {guestName}.',
+				subtitle: 'Agradecemos que nos haya avisado.',
+			},
+		},
 		personalizedAccess: {
 			variant: 'formal-pass',
 			title: 'Su lugar en la tribuna',
-			subtitle: 'Apartamos estos lugares para usted.',
-			footerText: 'Confirme su asistencia aquí abajo.',
+			subtitle: 'Toda la escudería le espera en primera fila para apoyar al piloto Aithan.',
+			noteText:
+				'Pase personal válido para {count} {personWord} · Sábado 24 de octubre de 2026, 5:30 p. m. en Jardín de Teresita.',
+			footerText: 'Favor de confirmar su asistencia en la sección de inscripción.',
 		},
 		labels: {
 			name: 'Su nombre',
@@ -222,7 +240,8 @@ const content: CanonicalEventContentInput = {
 	},
 	thankYou: {
 		variant: 'editorial-back-cover',
-		message: 'Gracias por acompañarme hasta la meta. ¡Su compañía es mi mejor trofeo!',
+		message:
+			'Gracias por cruzar la meta conmigo. Con la escudería reunida, ¡su compañía es mi mejor trofeo!',
 		closingName: CELEBRANT_NAME,
 		date: '24 · X · 2026',
 		// Original trophy artwork with the race number: the issue closes without repeating a photo.

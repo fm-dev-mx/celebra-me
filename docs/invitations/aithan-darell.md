@@ -18,9 +18,9 @@
 **Preparation Readiness (prepReadiness):** `READY_WITH_PLACEHOLDERS`
 
 Helper outcome: every required `cumple` field is resolved, the base demo is owner-selected, and the
-only placeholder (music) is non-blocking. All published photographs are messaging-app JPEGs, which
-the owner accepted as the definitive set; the original motif assets are production-ready, but the
-`provisional-whatsapp` photographs still cap readiness below `READY_FOR_IMPLEMENTATION`.
+music track is hosted ("Life Is a Highway"). All published photographs are messaging-app JPEGs,
+which the owner accepted as the definitive set; the original motif assets are production-ready, but
+the `provisional-whatsapp` photographs still cap readiness below `READY_FOR_IMPLEMENTATION`.
 Implementation may proceed.
 
 Technical Local/Preview/Production readiness (**envReadiness**) is **out of scope** for this
@@ -46,32 +46,136 @@ host alias keeps the contract form `{primer_nombre}_{primer_apellido}`.
 
 ## Fact Register
 
-| field                | value                                                                   | classification | source    | notes                                                                                                    |
-| -------------------- | ----------------------------------------------------------------------- | -------------- | --------- | -------------------------------------------------------------------------------------------------------- |
-| slug                 | aithan-darell                                                           | verified       | owner     | Owner decision; two given names, no eventType prefix                                                     |
-| hostLoginAlias       | aithan_ruiz                                                             | verified       | owner     | Contract form; owner may remap to `aithan_darell`                                                        |
-| celebrantName        | Aithan Darell Ruiz Salgado                                              | verified       | wa-export | Written twice ("aithan darell Ruiz Salgado", then "Aithan Darell"); display name "Aithan Darell"         |
-| eventLabel           | Mis 3 años                                                              | verified       | wa-export | Client copy: "Aithan Darell / Mis 3 años"                                                                |
-| eventDate            | 2026-10-24                                                              | verified       | wa-export | "24 de octubre", stated twice; Saturday 24 October 2026                                                  |
-| eventTime            | 17:30                                                                   | verified       | wa-export | First "4:30", corrected to "Hora 5:30"; p. m. follows from the party context (re-confirmation requested) |
-| timeZone             | America/Mexico_City                                                     | inferred       | geography | Atizapán de Zaragoza, Estado de México; not client-stated                                                |
-| baseDemoId           | demo-cumple-editorial-magazine                                          | verified       | owner     | Owner-selected catalog entry (new); no children's demo existed                                           |
-| sourceAssetPath      | source:client-photos                                                    | verified       | owner     | Repo asset dir `src/assets/invitations/aithan-darell`; originals from the chat                           |
-| sectionOrder         | quote, countdown, location, gallery, personalizedAccess, rsvp, thankYou | inferred       | owner     | Family, itinerary, and gifts omitted: no data supplied (asked in the client message)                     |
-| primaryVenueName     | Jardín de Teresita                                                      | verified       | wa-export |                                                                                                          |
-| primaryVenueAddress  | Avenida Juárez 49, Atizapán centro                                      | verified       | wa-export | Municipality and state (Atizapán de Zaragoza, Estado de México) inferred from the client's Maps link     |
-| venueMapsUrl         | client Maps short link                                                  | verified       | wa-export | Published as `googleMapsUrl` without the share tracking parameter                                        |
-| themeDescription     | Cars: carreras, McQueen, Mate, Mack                                     | verified       | wa-export | Client wrote "mcqueen, mate Mac todos los personas"; read as "todos los personajes"                      |
-| clientColors         | rojo, negro, blanco                                                     | verified       | wa-export | First "rojo y negro", later "roja y negra y blanca"                                                      |
-| heroPhoto            | ride-on car photograph                                                  | verified       | wa-export | "La imagen sería la que tiene el carro"; published once (hero card/panel) plus the off-page OG image     |
-| rsvpConfirmationMode | api                                                                     | inferred       | owner     | Owner offered dashboard guest control and passes; client agreed ("Ok super")                             |
-| rsvpGuestCap         | 4                                                                       | inferred       | owner     | Owner default, never discussed; passes are assigned per guest in the dashboard (asked in the message)    |
-| musicUrl             | —                                                                       | missing        | wa-export | Client asked for "Life Is a Highway" ("Life ls a highway canción"); a hosted audio file is required      |
-| dressCode            | —                                                                       | missing        | wa-export | Asked in the data list, not answered; optional, omitted                                                  |
-| gifts                | —                                                                       | missing        | wa-export | Never mentioned; optional, omitted (asked in the client message)                                         |
-| itinerary            | —                                                                       | missing        | wa-export | Never mentioned; optional, omitted (asked in the client message)                                         |
-| hostsNames           | —                                                                       | missing        | wa-export | Parents not named. The purchaser waits on "mi hermana", so she is likely the aunt (inferred)             |
-| clientContact        | Alin Salgado                                                            | verified       | wa-export | Purchaser; contact details stay outside this document                                                    |
+- **field:** slug
+  - **value:** aithan-darell
+  - **classification:** verified
+  - **source:** owner
+  - **notes:** Owner decision; two given names, no eventType prefix
+- **field:** hostLoginAlias
+  - **value:** aithan_ruiz
+  - **classification:** verified
+  - **source:** owner
+  - **notes:** Contract form; owner may remap to `aithan_darell`
+- **field:** celebrantName
+  - **value:** Aithan Darell Ruiz Salgado
+  - **classification:** verified
+  - **source:** wa-export
+  - **notes:** Written twice ("aithan darell Ruiz Salgado", then "Aithan Darell"); display name
+    "Aithan Darell"
+- **field:** eventLabel
+  - **value:** Mis 3 años
+  - **classification:** verified
+  - **source:** wa-export
+  - **notes:** Client copy: "Aithan Darell / Mis 3 años"
+- **field:** eventDate
+  - **value:** 2026-10-24
+  - **classification:** verified
+  - **source:** wa-export
+  - **notes:** "24 de octubre", stated twice; Saturday 24 October 2026
+- **field:** eventTime
+  - **value:** 17:30
+  - **classification:** verified
+  - **source:** wa-export
+  - **notes:** First "4:30", corrected to "Hora 5:30"; 5:30 p. m. confirmed by the client
+    (2026-10-07)
+- **field:** timeZone
+  - **value:** America/Mexico_City
+  - **classification:** inferred
+  - **source:** geography
+  - **notes:** Atizapán de Zaragoza, Estado de México; not client-stated
+- **field:** baseDemoId
+  - **value:** demo-cumple-editorial-magazine
+  - **classification:** verified
+  - **source:** owner
+  - **notes:** Owner-selected catalog entry (new); no children's demo existed
+- **field:** sourceAssetPath
+  - **value:** source:client-photos
+  - **classification:** verified
+  - **source:** owner
+  - **notes:** Repo asset dir `src/assets/invitations/aithan-darell`; originals from the chat
+- **field:** sectionOrder
+  - **value:** quote, countdown, location, gallery, personalizedAccess, rsvp, thankYou
+  - **classification:** inferred
+  - **source:** owner
+  - **notes:** Family, itinerary, and gifts omitted: no data supplied (asked in the client message)
+- **field:** primaryVenueName
+  - **value:** Jardín de Teresita
+  - **classification:** verified
+  - **source:** wa-export
+  - **notes:**
+- **field:** primaryVenueAddress
+  - **value:** Avenida Juárez 49, Atizapán centro
+  - **classification:** verified
+  - **source:** wa-export
+  - **notes:** Municipality and state (Atizapán de Zaragoza, Estado de México) inferred from the
+    client's Maps link
+- **field:** venueMapsUrl
+  - **value:** https://maps.app.goo.gl/ebbpWEFK68LhuDm28
+  - **classification:** verified
+  - **source:** wa-export
+  - **notes:** Client link (2026-10-07); pin at Av. Juárez 49, Atizapán Centro (19.5589908,
+    -99.2451091), replaces the Street View link without a pin
+- **field:** themeDescription
+  - **value:** Cars: carreras, McQueen, Mate, Mack, todos los personajes
+  - **classification:** verified
+  - **source:** wa-export
+  - **notes:** Client wrote "mcqueen, mate Mac todos los personas"; read as "todos los personajes";
+    distributed organically across sections
+- **field:** clientColors
+  - **value:** rojo, negro, blanco
+  - **classification:** verified
+  - **source:** wa-export
+  - **notes:** First "rojo y negro", later "roja y negra y blanca"
+- **field:** heroPhoto
+  - **value:** ride-on car photograph
+  - **classification:** verified
+  - **source:** wa-export
+  - **notes:** "La imagen sería la que tiene el carro"; published once (hero card/panel) plus the
+    off-page OG image
+- **field:** rsvpConfirmationMode
+  - **value:** api
+  - **classification:** inferred
+  - **source:** owner
+  - **notes:** Owner offered dashboard guest control and passes; client agreed ("Ok super")
+- **field:** rsvpGuestCap
+  - **value:** 4
+  - **classification:** inferred
+  - **source:** owner
+  - **notes:** Owner default, never discussed; passes are assigned per guest in the dashboard (asked
+    in the message)
+- **field:** musicUrl
+  - **value:**
+    https://res.cloudinary.com/dusxvauvj/video/upload/v1791406894/Rascal_Flatts_-_Life_Is_a_Highway_swt74a.mp3
+  - **classification:** verified
+  - **source:** owner
+  - **notes:** "Life Is a Highway" (Rascal Flatts); hosted Cloudinary track supplied by owner
+    (2026-10-07)
+- **field:** dressCode
+  - **value:** —
+  - **classification:** missing
+  - **source:** wa-export
+  - **notes:** Asked in the data list, not answered; optional, omitted
+- **field:** gifts
+  - **value:** —
+  - **classification:** missing
+  - **source:** wa-export
+  - **notes:** Never mentioned; optional, omitted (asked in the client message)
+- **field:** itinerary
+  - **value:** —
+  - **classification:** missing
+  - **source:** wa-export
+  - **notes:** Never mentioned; optional, omitted (asked in the client message)
+- **field:** hostsNames
+  - **value:** —
+  - **classification:** missing
+  - **source:** wa-export
+  - **notes:** Parents not named. The purchaser waits on "mi hermana", so she is likely the aunt
+    (inferred)
+- **field:** clientContact
+  - **value:** Alin Salgado
+  - **classification:** verified
+  - **source:** wa-export
+  - **notes:** Purchaser; contact details stay outside this document
 
 Rules:
 
@@ -85,38 +189,86 @@ Rules:
 
 Every published fact was re-read against the full chat and the Local payload.
 
-| fact                   | source                                              | payload                                           | status                                                       |
-| ---------------------- | --------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------ |
-| Name and spelling      | chat: "aithan darell Ruiz Salgado", "Aithan Darell" | "Aithan Darell" (hero, cover, closing)            | confirmed                                                    |
-| Age / label            | chat: "Cumple 3", "Mis 3 años"                      | "Mis 3 años", edition "3"                         | confirmed                                                    |
-| Date                   | chat: "24 de octubre" (twice)                       | 2026-10-24                                        | confirmed                                                    |
-| Time                   | chat: "4:30", then "Hora 5:30"                      | 5:30 p. m.                                        | confirmed by correction; p. m. re-confirmed                  |
-| Venue                  | chat: "Jardín de Teresita"                          | Jardín de Teresita                                | confirmed                                                    |
-| Address                | chat: "avenida Juárez 49 Atizapán centro"           | "Avenida Juárez 49, Atizapán centro" · "Atizapán" | confirmed; inferred municipality/state removed (iteration 3) |
-| Theme and characters   | chat: Cars, carreras, McQueen, Mate, Mack           | race vocabulary; no character artwork added       | confirmed (only the client photos show it)                   |
-| Colors                 | chat: rojo, negro, blanco                           | red / asphalt / paper, yellow accent only         | confirmed; yellow is an agent accent                         |
-| Main photograph        | chat: "la que tiene el carro"                       | hero card/panel and OG only                       | confirmed; no other page role                                |
-| Song                   | chat: "Life ls a highway canción"                   | music omitted until hosted                        | missing (file and start second)                              |
-| Parents / hosts        | not supplied                                        | family section omitted                            | missing                                                      |
-| Purchaser relationship | "mi hermana" (inferred aunt)                        | not published                                     | assumption                                                   |
-| Dress code             | asked, not answered                                 | omitted                                           | missing                                                      |
-| Gifts                  | never mentioned                                     | omitted                                           | missing                                                      |
-| Passes per guest       | never discussed                                     | 4 (dashboard-adjustable)                          | assumption                                                   |
-| Itinerary              | never mentioned                                     | omitted                                           | missing                                                      |
+- **fact:** Name and spelling
+  - **source:** chat: "aithan darell Ruiz Salgado", "Aithan Darell"
+  - **payload:** "Aithan Darell" (hero, cover, closing)
+  - **status:** confirmed
+- **fact:** Age / label
+  - **source:** chat: "Cumple 3", "Mis 3 años"
+  - **payload:** "Mis 3 años", edition "3"
+  - **status:** confirmed
+- **fact:** Date
+  - **source:** chat: "24 de octubre" (twice)
+  - **payload:** 2026-10-24
+  - **status:** confirmed
+- **fact:** Time
+  - **source:** chat: "4:30", then "Hora 5:30"
+  - **payload:** 5:30 p. m.
+  - **status:** confirmed by the client (2026-10-07)
+- **fact:** Venue
+  - **source:** chat: "Jardín de Teresita"
+  - **payload:** Jardín de Teresita
+  - **status:** confirmed
+- **fact:** Address / map
+  - **source:** chat: "avenida Juárez 49 Atizapán centro"; new pin
+  - **payload:** "Avenida Juárez 49, Atizapán centro" · "Atizapán";
+    `maps.app.goo.gl/ebbpWEFK68LhuDm28`
+  - **status:** confirmed; text literal, inferred municipality/state not printed; definitive pinned
+    link (2026-10-07)
+- **fact:** Theme and characters
+  - **source:** chat: Cars, carreras, McQueen, Mate, Mack
+  - **payload:** race vocabulary and organic character distribution across sections (McQueen, Mate,
+    Mack); no Disney/Pixar vector/art added
+  - **status:** confirmed
+- **fact:** Colors
+  - **source:** chat: rojo, negro, blanco
+  - **payload:** red / asphalt / paper, yellow accent only
+  - **status:** confirmed; yellow is an agent accent
+- **fact:** Main photograph
+  - **source:** chat: "la que tiene el carro"
+  - **payload:** hero card/panel and OG only
+  - **status:** confirmed; no other page role
+- **fact:** Song
+  - **source:** chat: "Life ls a highway canción"
+  - **payload:** "Life Is a Highway" (hosted Cloudinary mp3)
+  - **status:** confirmed (track hosted; start second defaults to 0)
+- **fact:** Parents / hosts
+  - **source:** not supplied
+  - **payload:** family section omitted
+  - **status:** missing
+- **fact:** Purchaser relationship
+  - **source:** "mi hermana" (inferred aunt)
+  - **payload:** not published
+  - **status:** assumption
+- **fact:** Dress code
+  - **source:** asked, not answered
+  - **payload:** omitted
+  - **status:** missing
+- **fact:** Gifts
+  - **source:** never mentioned
+  - **payload:** omitted
+  - **status:** missing
+- **fact:** Passes per guest
+  - **source:** never discussed
+  - **payload:** 4 (dashboard-adjustable)
+  - **status:** assumption
+- **fact:** Itinerary
+  - **source:** never mentioned
+  - **payload:** omitted
+  - **status:** missing
 
 Client message draft (single message, "usted" register):
 
 > Hola, Alin, buen día. Ya estamos afinando la invitación de Aithan Darell y quiero confirmar unos
 > detalles para dejarla perfecta:
 >
-> 1. ¿La fiesta empieza a las 5:30 p. m.?
-> 2. ¿Desean que aparezcan los nombres de los papás de Aithan? Si es así, ¿cómo los escribo?
-> 3. ¿Les gustaría incluir el itinerario de la fiesta (por ejemplo, llegada, pastel y piñata)? Si
+> 1. ¿Desean que aparezcan los nombres de los papás de Aithan? Si es así, ¿cómo los escribo?
+> 2. ¿Les gustaría incluir el itinerario de la fiesta (por ejemplo, llegada, pastel y piñata)? Si
 >    sí, compártame los horarios.
-> 4. ¿Habrá mesa de regalos o alguna sugerencia de regalo que quieran mencionar?
-> 5. ¿Hay algún código de vestimenta para los invitados?
-> 6. ¿Cuántos lugares desea asignar por invitación? Por ahora dejé 4 y se puede ajustar en su panel.
-> 7. Para la canción "Life Is a Highway", ¿desde qué parte le gustaría que empiece?
+> 3. ¿Habrá mesa de regalos o alguna sugerencia de regalo que quieran mencionar?
+> 4. ¿Hay algún código de vestimenta para los invitados?
+> 5. ¿Cuántos lugares desea asignar por invitación? Por ahora dejé 4 y se puede ajustar en su panel.
+> 6. Para la canción "Life Is a Highway", ¿desde qué parte le gustaría que empiece?
 >
 > Con eso la dejo lista. ¡Muchas gracias!
 
@@ -140,7 +292,7 @@ lockups are not standardized. No fields were invented beyond the contract.
   - **status:** missing (non-blocking, omitted)
 - **requirement:** optional
   - **fields:** musicUrl, clientColors
-  - **status:** musicUrl missing (non-blocking); clientColors verified
+  - **status:** resolved (hosted mp3 supplied; clientColors verified)
 
 ### Missing blockers
 
@@ -148,8 +300,8 @@ lockups are not standardized. No fields were invented beyond the contract.
 
 ### Non-blocking gaps
 
-- Music audio file and start second pending (owner hosts the requested track).
 - Parents' names, itinerary, gifts and dress code were never supplied; asked in one client message.
+- Music start second is optional (defaults to 0:00).
 
 Deterministic question: **Is the available information sufficient to prepare this invitation?**  
 Answer: `yes` (`evaluateEventCompleteness`).
@@ -158,36 +310,127 @@ Answer: `yes` (`evaluateEventCompleteness`).
 
 ## Placeholders
 
-| token                     | missing datum | blocking | reason                                           | replacement requirement                                                         |
-| ------------------------- | ------------- | -------- | ------------------------------------------------ | ------------------------------------------------------------------------------- |
-| `[[PENDIENTE:MUSIC_URL]]` | MUSIC_URL     | no       | Song named by the client, no audio file supplied | Fill `MUSIC_URL` (and `MUSIC_START_SECONDS` for a full track) in the definition |
-
-Tokens are not written into the published payload: the music block is built only when `MUSIC_URL` is
-filled.
+No placeholders remain. The music track is hosted and published (`https://res.cloudinary.com/...`).
 
 ---
 
 ## Owner Decisions
 
-| id               | category              | issue                                               | evidence                     | options                                                | recommendation                                                                                                |
-| ---------------- | --------------------- | --------------------------------------------------- | ---------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| PHOTO-ACCEPTANCE | photograph-acceptance | Only messaging-app JPEGs (518–768 px wide)          | Four chat photographs        | request originals / accept as provided                 | Resolved 2026-10-07: accepted as the definitive set                                                           |
-| SLUG             | demo-design-decisions | Public URL form                                     | Client copy "Aithan Darell"  | aithan-ruiz / aithan-darell                            | Resolved 2026-10-07: `aithan-darell`                                                                          |
-| BASE-DEMO        | demo-design-decisions | No children's or Cars demo exists                   | Catalog                      | editorial-magazine / hacienda remap / new demo         | Resolved 2026-10-07: new `demo-cumple-editorial-magazine` entry                                               |
-| DISPLAY-FONT     | demo-design-decisions | Flat hierarchy; nothing reads "racing" or "kids"    | Owner design review 3        | Podio / Vuelta rápida / Ancho 75                       | Resolved 2026-10-07: option 2 — Montserrat italic display, Instrument Sans body                               |
-| CARS-MOTIFS      | demo-design-decisions | Cars references without third-party artwork         | Owner design review 3        | shared typed option / local exception / asset          | Resolved 2026-10-07: shared options (a) + original image assets (c); no local exceptions (b)                  |
-| PHOTO-ROLES      | demo-design-decisions | Photographs repeated across cover, hero, back cover | Owner design review 3        | plan A / B / C                                         | Resolved 2026-10-07: plan B — every photograph in one role                                                    |
-| COVER-PHOTO      | demo-design-decisions | Collector masthead illegible over car scene         | Owner design review 3        | race-suit cover / original motif cover                 | Resolved 2026-10-07: original motif cover (D1)                                                                |
-| MOTIF-ASSETS     | demo-design-decisions | Hero canvas repeated the car (blurred)              | Owner design review 3 (D1)   | original image assets / blurred photo                  | Resolved 2026-10-07: heroCanvas, coverGrid, thankYouTrophy (original artwork)                                 |
-| OG-IMAGE         | demo-design-decisions | Share preview role                                  | Owner design review 3 (D7)   | car photograph / own OG card                           | Resolved 2026-10-07: car photograph, declared as an off-page role                                             |
-| START-LIGHTS     | demo-design-decisions | Countdown start-light motif                         | Owner design review 3 (D6)   | shared countdown option / postpone                     | Postponed 2026-10-07                                                                                          |
-| SELFIE-COVER     | demo-design-decisions | chat-052 unused; owner asked to consider the cover  | Owner request 2026-10-07     | full cover / roundel colour / roundel duotone / unused | Agent applied roundel colour in Local; full-bleed rejected (dark ink masthead, 518 px) — pending owner review |
-| BRAND-MENTIONS   | demo-design-decisions | "Celebra-me" printed six times in the content       | Owner request 2026-10-07     | keep / masthead only                                   | Applied: cover masthead only (plus site header logo); folios and hero credit drop it                          |
-| GUEST-CAP        | missing-client-facts  | Passes per guest not discussed                      | Client asked how passes work | 4 / other                                              | Default 4; adjustable in the dashboard; asked in the client message                                           |
-| HOSTS-NAMES      | missing-client-facts  | Parents not named                                   | Purchaser is likely the aunt | ask client / omit family section                       | Omit; add `family` if the client supplies names                                                               |
-| DRESS-CODE       | missing-client-facts  | Not answered                                        | Owner data list              | ask client / omit                                      | Omit; asked again in the client message                                                                       |
-| GIFTS            | missing-client-facts  | Not requested                                       | —                            | ask client / omit                                      | Omit; asked in the client message                                                                             |
-| MUSIC-FILE       | missing-client-facts  | Song named, no file                                 | "Life ls a highway canción"  | owner hosts audio / omit music                         | Owner hosts the audio; fill `MUSIC_URL` and `MUSIC_START_SECONDS`                                             |
+- **id:** PHOTO-ACCEPTANCE
+  - **category:** photograph-acceptance
+  - **issue:** Only messaging-app JPEGs (518–768 px wide)
+  - **evidence:** Four chat photographs
+  - **options:** request originals / accept as provided
+  - **recommendation:** Resolved 2026-10-07: accepted as the definitive set
+- **id:** SLUG
+  - **category:** demo-design-decisions
+  - **issue:** Public URL form
+  - **evidence:** Client copy "Aithan Darell"
+  - **options:** aithan-ruiz / aithan-darell
+  - **recommendation:** Resolved 2026-10-07: `aithan-darell`
+- **id:** BASE-DEMO
+  - **category:** demo-design-decisions
+  - **issue:** No children's or Cars demo exists
+  - **evidence:** Catalog
+  - **options:** editorial-magazine / hacienda remap / new demo
+  - **recommendation:** Resolved 2026-10-07: new `demo-cumple-editorial-magazine` entry
+- **id:** DISPLAY-FONT
+  - **category:** demo-design-decisions
+  - **issue:** Flat hierarchy; nothing reads "racing" or "kids"
+  - **evidence:** Owner design review 3
+  - **options:** Podio / Vuelta rápida / Ancho 75
+  - **recommendation:** Resolved 2026-10-07: option 2 — Montserrat italic display, Instrument Sans
+    body
+- **id:** CARS-MOTIFS
+  - **category:** demo-design-decisions
+  - **issue:** Cars references without third-party artwork
+  - **evidence:** Owner design review 3
+  - **options:** shared typed option / local exception / asset
+  - **recommendation:** Resolved 2026-10-07: shared options (a) + original image assets (c); no
+    local exceptions (b)
+- **id:** CARS-CHARACTERS-DISTRIBUTION
+  - **category:** demo-design-decisions
+  - **issue:** Characters distributed organically across sections
+  - **evidence:** Owner decision 2026-10-07
+  - **options:** organic distribution (text + photos + original motifs)
+  - **recommendation:** Resolved 2026-10-07: approved organic distribution across sections (McQueen,
+    Mate, Mack). No Disney/Pixar official artwork; copy in "usted" and celebrant 1st person.
+- **id:** PHOTO-ROLES
+  - **category:** demo-design-decisions
+  - **issue:** Photographs repeated across cover, hero, back cover
+  - **evidence:** Owner design review 3
+  - **options:** plan A / B / C
+  - **recommendation:** Resolved 2026-10-07: plan B — every photograph in one role
+- **id:** COVER-PHOTO
+  - **category:** demo-design-decisions
+  - **issue:** Collector masthead illegible over car scene
+  - **evidence:** Owner design review 3
+  - **options:** race-suit cover / original motif cover
+  - **recommendation:** Resolved 2026-10-07: original motif cover (D1)
+- **id:** MOTIF-ASSETS
+  - **category:** demo-design-decisions
+  - **issue:** Hero canvas repeated the car (blurred)
+  - **evidence:** Owner design review 3 (D1)
+  - **options:** original image assets / blurred photo
+  - **recommendation:** Resolved 2026-10-07: heroCanvas, coverGrid, thankYouTrophy (original
+    artwork)
+- **id:** OG-IMAGE
+  - **category:** demo-design-decisions
+  - **issue:** Share preview role
+  - **evidence:** Owner design review 3 (D7)
+  - **options:** car photograph / own OG card
+  - **recommendation:** Resolved 2026-10-07: car photograph, declared as an off-page role
+- **id:** START-LIGHTS
+  - **category:** demo-design-decisions
+  - **issue:** Countdown start-light motif
+  - **evidence:** Owner design review 3 (D6)
+  - **options:** shared countdown option / postpone
+  - **recommendation:** Postponed 2026-10-07
+- **id:** SELFIE-COVER
+  - **category:** demo-design-decisions
+  - **issue:** chat-052 unused; owner asked to consider the cover
+  - **evidence:** Owner request 2026-10-07
+  - **options:** full cover / roundel colour / roundel duotone / unused
+  - **recommendation:** Agent applied roundel colour in Local; full-bleed rejected (dark ink
+    masthead, 518 px) — pending owner review
+- **id:** BRAND-MENTIONS
+  - **category:** demo-design-decisions
+  - **issue:** "Celebra-me" printed six times in the content
+  - **evidence:** Owner request 2026-10-07
+  - **options:** keep / masthead only
+  - **recommendation:** Applied: cover masthead only (plus site header logo); folios and hero credit
+    drop it
+- **id:** GUEST-CAP
+  - **category:** missing-client-facts
+  - **issue:** Passes per guest not discussed
+  - **evidence:** Client asked how passes work
+  - **options:** 4 / other
+  - **recommendation:** Default 4; adjustable in the dashboard; asked in the client message
+- **id:** HOSTS-NAMES
+  - **category:** missing-client-facts
+  - **issue:** Parents not named
+  - **evidence:** Purchaser is likely the aunt
+  - **options:** ask client / omit family section
+  - **recommendation:** Omit; add `family` if the client supplies names
+- **id:** DRESS-CODE
+  - **category:** missing-client-facts
+  - **issue:** Not answered
+  - **evidence:** Owner data list
+  - **options:** ask client / omit
+  - **recommendation:** Omit; asked again in the client message
+- **id:** GIFTS
+  - **category:** missing-client-facts
+  - **issue:** Not requested
+  - **evidence:** —
+  - **options:** ask client / omit
+  - **recommendation:** Omit; asked in the client message
+- **id:** MUSIC-FILE
+  - **category:** missing-client-facts
+  - **issue:** Song named, no file
+  - **evidence:** "Life ls a highway canción"
+  - **options:** owner hosts audio / omit music
+  - **recommendation:** Resolved 2026-10-07: owner supplied hosted Cloudinary track for "Life Is a
+    Highway" (Rascal Flatts)
 
 ---
 
@@ -207,12 +450,12 @@ filled.
 
 ## Sections
 
-| bucket                 | section keys                                                             |
-| ---------------------- | ------------------------------------------------------------------------ |
-| requested              | hero (car photo), gallery, rsvp with passes, music (pending)             |
-| inferred / recommended | quote, countdown, location, personalizedAccess, thankYou                 |
-| omitted                | family, itinerary, gifts, interludes (no photograph supports one), music |
-| unresolved             | music file; family, itinerary and gifts if the client answers            |
+| bucket                 | section keys                                                      |
+| ---------------------- | ----------------------------------------------------------------- |
+| requested              | hero (car photo), gallery, rsvp with passes, music                |
+| inferred / recommended | quote, countdown, location, personalizedAccess, thankYou          |
+| omitted                | family, itinerary, gifts, interludes (no photograph supports one) |
+| unresolved             | family, itinerary and gifts if the client answers                 |
 
 ---
 
@@ -423,7 +666,8 @@ reintroduces a repetition.
   section (Gran Premio, pole position, motores, salida, circuito/banderazo, pits, tribuna,
   inscripción, meta/trofeo). No client facts were invented; the inferred municipality and state are
   not printed. Client phrases used literally: "Mis 3 años", venue, address.
-- Music: built only when `MUSIC_URL` is filled; `MUSIC_START_SECONDS` adds `startAt`.
+- Music: published with hosted track (`https://res.cloudinary.com/...`); `MUSIC_START_SECONDS` adds
+  `startAt` if needed.
 - The shorter folios ("GRAN PREMIO · INSCRIPCIÓN") fit on one line at 390 px, which also removes the
   earlier overlap with the RSVP demo notice.
 
@@ -431,10 +675,31 @@ reintroduces a repetition.
 
 ## Preparation Readiness History
 
-| date       | readiness                 | helper basis                                             | notes                                                                                         |
-| ---------- | ------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| 2026-10-07 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` + `summarizeAssetQuality` | Initial preparation; provisional photos accepted as definitive                                |
-| 2026-10-07 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` + `summarizeAssetQuality` | Second requirements review; design refinement; chat-052 dropped (Local v4)                    |
-| 2026-10-07 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` + `summarizeAssetQuality` | Iteration 3: one role per photograph, motif assets, Montserrat italic, copy review (Local v6) |
-| 2026-10-07 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` + `summarizeAssetQuality` | chat-052 inside the cover roundel; brand named once (cover masthead)                          |
-| 2026-10-07 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` + `summarizeAssetQuality` | Per-section finish refinement, profile tokens only (Local v8); creative outcome `PENDING`     |
+- **date:** 2026-10-07
+  - **readiness:** `READY_WITH_PLACEHOLDERS`
+  - **helper basis:** `evaluatePreparationReadiness` + `summarizeAssetQuality`
+  - **notes:** Initial preparation; provisional photos accepted as definitive
+- **date:** 2026-10-07
+  - **readiness:** `READY_WITH_PLACEHOLDERS`
+  - **helper basis:** `evaluatePreparationReadiness` + `summarizeAssetQuality`
+  - **notes:** Second requirements review; design refinement; chat-052 dropped (Local v4)
+- **date:** 2026-10-07
+  - **readiness:** `READY_WITH_PLACEHOLDERS`
+  - **helper basis:** `evaluatePreparationReadiness` + `summarizeAssetQuality`
+  - **notes:** Iteration 3: one role per photograph, motif assets, Montserrat italic, copy review
+    (Local v6)
+- **date:** 2026-10-07
+  - **readiness:** `READY_WITH_PLACEHOLDERS`
+  - **helper basis:** `evaluatePreparationReadiness` + `summarizeAssetQuality`
+  - **notes:** chat-052 inside the cover roundel; brand named once (cover masthead)
+- **date:** 2026-10-07
+  - **readiness:** `READY_WITH_PLACEHOLDERS`
+  - **helper basis:** `evaluatePreparationReadiness` + `summarizeAssetQuality`
+  - **notes:** Per-section finish refinement, profile tokens only (Local v8); creative outcome
+    `PENDING`
+- **date:** 2026-10-07
+  - **readiness:** `READY_WITH_PLACEHOLDERS`
+  - **helper basis:** `evaluatePreparationReadiness` + `summarizeAssetQuality`
+  - **notes:** Final client corrections applied: confirmed 5:30 p. m., pinned Maps link, Cars
+    characters distribution, personalized pass note with date/time/venue, RSVP "usted" response
+    messages, and hosted music track (Local v8)

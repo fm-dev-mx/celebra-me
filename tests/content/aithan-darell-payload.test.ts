@@ -124,6 +124,56 @@ describe('Aithan Darell managed definition', () => {
 		});
 	});
 
+	it('prints the client-confirmed 5:30 p. m. start wherever a time is shown', () => {
+		const parsed = eventContentSchema.parse(publishedContent());
+		const visibleTimes = [
+			parsed.countdown?.footerText,
+			parsed.sharing?.ogDescription,
+			...(parsed.location?.indications ?? []).map((indication) => indication.text),
+		].filter((text): text is string => typeof text === 'string');
+		expect(visibleTimes.some((text) => text.includes('5:30 p. m.'))).toBe(true);
+		// No other clock time (e.g. the superseded 4:30) may appear anywhere in the payload.
+		const otherTimes = collectStrings(publishedContent()).filter((entry) =>
+			/\b(?!5:30)\d{1,2}:\d{2}\s*(?:a|p)\.?\s*m\./i.test(entry),
+		);
+		expect(otherTimes).toEqual([]);
+	});
+
+	it('links the venue to the pinned Google Maps location', () => {
+		const parsed = eventContentSchema.parse(publishedContent());
+		expect(parsed.location?.venues?.[0]).toMatchObject({
+			// Client wording, printed literally; the pin resolves the municipality.
+			address: 'Avenida Juárez 49, Atizapán centro',
+			googleMapsUrl: 'https://maps.app.goo.gl/ebbpWEFK68LhuDm28',
+		});
+		expect(JSON.stringify(publishedContent())).not.toContain('HZDDjkjo8QrPrD5Y9');
+		expect(JSON.stringify(publishedContent())).not.toContain('Qyf8Da9khBt6vHrPA');
+	});
+
+	it('distributes Cars characters and escudería references organically across sections', () => {
+		const parsed = eventContentSchema.parse(publishedContent());
+		// Hero: call to action / race engines
+		expect(parsed.hero.tagline).toContain('Arrancan los motores');
+		// Location: Mack's route
+		expect(parsed.location?.introEyebrow).toBe('La ruta de Mack');
+		expect(parsed.location?.introLede).toContain('transporte oficial');
+		// Gallery: Mate and McQueen
+		expect(parsed.gallery?.items?.[1]?.caption).toBe(
+			'Mate en los pits y McQueen en la pista: la mejor escudería',
+		);
+		// Personalized access: escudería, count interpolation tokens, date, time and venue
+		const pass = parsed.rsvp?.personalizedAccess;
+		expect(pass?.title).toBe('Su lugar en la tribuna');
+		expect(pass?.subtitle).toContain('escudería');
+		expect(pass?.noteText).toContain('{count}');
+		expect(pass?.noteText).toContain('{personWord}');
+		expect(pass?.noteText).toContain('Sábado 24 de octubre de 2026');
+		expect(pass?.noteText).toContain('5:30 p. m.');
+		expect(pass?.noteText).toContain('Jardín de Teresita');
+		// Thank you: escudería and trophy
+		expect(parsed.thankYou?.message).toContain('escudería reunida');
+	});
+
 	it('omits the sections the client did not supply data for', () => {
 		const parsed = eventContentSchema.parse(publishedContent());
 		expect(parsed.sectionOrder).toEqual([
@@ -138,8 +188,6 @@ describe('Aithan Darell managed definition', () => {
 		expect(parsed.family).toBeUndefined();
 		expect(parsed.gifts).toBeUndefined();
 		expect(parsed.itinerary).toBeUndefined();
-		// Music waits for the owner-hosted track; no placeholder URL is published.
-		expect(parsed.music).toBeUndefined();
 	});
 
 	it('publishes no placeholders and no XV edition copy', () => {
@@ -181,7 +229,12 @@ describe('Aithan Darell managed definition', () => {
 		expect(keyOf(parsed.sharing?.ogImage)).toContain('heroPortrait');
 	});
 
-	it('publishes no music until the owner hosts the track', () => {
-		expect(publishedContent()).not.toHaveProperty('music');
+	it('publishes the hosted "Life Is a Highway" music track', () => {
+		const parsed = eventContentSchema.parse(publishedContent());
+		expect(parsed.music).toMatchObject({
+			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1791406894/Rascal_Flatts_-_Life_Is_a_Highway_swt74a.mp3',
+			title: 'Life Is a Highway',
+			autoPlay: true,
+		});
 	});
 });
