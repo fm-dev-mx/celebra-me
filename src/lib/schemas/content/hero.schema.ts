@@ -27,6 +27,10 @@ export const heroSchema = z
 				// Leading words of `name` set as the display line; the rest follows as a
 				// secondary line. Presentation only: `name` stays whole everywhere else.
 				nameLeadWords: z.number().int().min(1).max(4).optional(),
+				// Editorial-cover folio marks (watermark and page rail). The renderer keeps its
+				// XV defaults when they are omitted.
+				coverMark: z.string().trim().min(1).max(8).optional(),
+				coverPage: z.string().trim().min(1).max(16).optional(),
 			})
 			.strict()
 			.optional(),

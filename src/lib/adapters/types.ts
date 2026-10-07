@@ -52,6 +52,9 @@ export interface HeroViewModel {
 	ambience?: ImageAsset;
 	venueIndex?: number;
 	nameLeadWords?: number;
+	/** Editorial-cover folio marks; the renderer falls back to its XV defaults. */
+	coverMark?: string;
+	coverPage?: string;
 	name: string;
 	secondaryName?: string;
 	label: string;
@@ -194,6 +197,8 @@ export interface EnvelopeViewModel {
 		coverVolume?: string;
 		/** Editorial cover reveal: issue year (e.g. "2027"). */
 		coverIssue?: string;
+		/** Editorial cover reveal: one or two cover lines; defaults are the XV edition lines. */
+		coverLines?: string[];
 		/** Editorial cover reveal: 'collector' enables the drag-to-open bending magazine. */
 		coverExperience?: 'standard' | 'collector';
 		/** Explicit content reveal variant. Only 'editorial-cover' replaces the standard envelope. */

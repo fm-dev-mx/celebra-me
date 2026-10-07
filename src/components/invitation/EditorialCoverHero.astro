@@ -31,6 +31,9 @@ interface Props {
 	focalPointDesktop?: string;
 	tagline?: string;
 	photoCredit?: string;
+	/** Watermark behind the cover and the page rail label; XV editorial defaults. */
+	coverMark?: string;
+	coverPage?: string;
 	highPriority?: boolean;
 }
 
@@ -53,6 +56,8 @@ const {
 	focalPointDesktop,
 	tagline,
 	photoCredit,
+	coverMark = 'XV',
+	coverPage = 'PÁG. 15',
 	highPriority = true,
 } = Astro.props;
 
@@ -134,7 +139,7 @@ const fpDesktop = focalPointDesktop || fpDefault;
 	data-screenshot-section="hero"
 >
 	<!-- Graphic editorial watermark behind all content -->
-	<div class="invitation-hero__watermark" aria-hidden="true">XV</div>
+	<div class="invitation-hero__watermark" aria-hidden="true">{coverMark}</div>
 
 	<div class="invitation-hero__background">
 		<picture>
@@ -162,7 +167,7 @@ const fpDesktop = focalPointDesktop || fpDefault;
 	<div class="invitation-hero__folio-header">
 		<span class="invitation-hero__folio-label">{displayLabel}</span>
 		<div class="invitation-hero__folio-line"></div>
-		<span class="invitation-hero__folio-page">PÁG. 15</span>
+		<span class="invitation-hero__folio-page">{coverPage}</span>
 	</div>
 
 	<div class="invitation-hero__content">

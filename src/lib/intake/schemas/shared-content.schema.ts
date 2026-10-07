@@ -298,6 +298,7 @@ export const envelopeSchema = z
 		coverEdition: z.string().trim().max(80).optional(),
 		coverVolume: z.string().trim().max(40).optional(),
 		coverIssue: z.string().trim().max(40).optional(),
+		coverLines: z.array(z.string().trim().min(1).max(60)).min(1).max(2).optional(),
 		coverExperience: z.enum(['standard', 'collector']).optional(),
 		closedPalette: z
 			.object({
