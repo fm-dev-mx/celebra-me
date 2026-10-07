@@ -28,6 +28,12 @@ export const MEMORIES_SESSION_MAX_IN_FLIGHT = 2;
 export const MEMORIES_JSON_BODY_MAX_BYTES = 2048;
 /** Bytes read from R2 to inspect signatures and container headers. */
 export const MEMORIES_INSPECTION_BYTES = 65_536;
+/**
+ * How long the app waits for the Retrieval Worker to inspect an upload. Kept
+ * well under the serverless function limit so a slow Worker answers 503 and the
+ * guest can retry, instead of the platform cutting the request.
+ */
+export const MEMORIES_INSPECTION_TIMEOUT_MS = 8_000;
 /** Browser-side hashing chunk. */
 export const MEMORIES_HASH_CHUNK_BYTES = 2 * 1024 * 1024;
 /** How long the browser may take to read a video's duration before the file is reported unreadable. */

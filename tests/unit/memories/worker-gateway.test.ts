@@ -7,7 +7,10 @@ import {
 	inspectMemoriesObject,
 	isMemoriesSignerRateLimit,
 	requestMemoriesUploadCapability,
+	retrieveMemoriesObject,
 } from '@/lib/memories/server/worker-gateway';
+import { MEMORIES_INSPECTION_TIMEOUT_MS } from '@/lib/memories/contract/limits';
+import { MEMORIES_PRIVATE_REQUEST_TTL_SECONDS } from '@/lib/memories/contract/private-request';
 import { CHECKSUM_SHA256, OBJECT_KEY, SESSION_ID } from './fixtures';
 
 const target = { objectKey: OBJECT_KEY, mimeType: 'image/jpeg' };
@@ -57,6 +60,44 @@ describe('inspectMemoriesObject', () => {
 	it('treats a transport failure as unavailable', async () => {
 		mockFetch.mockRejectedValue(new TypeError('fetch failed'));
 		await expect(inspectMemoriesObject(target)).resolves.toEqual({ kind: 'unavailable' });
+	});
+
+	describe('waiting on a slow Worker', () => {
+		let timeoutSpy: jest.SpyInstance<AbortSignal, [number]>;
+		beforeEach(() => {
+			timeoutSpy = jest.spyOn(AbortSignal, 'timeout');
+		});
+		afterEach(() => timeoutSpy.mockRestore());
+
+		it('gives up on an inspection well before the platform cuts the request', async () => {
+			mockFetch.mockResolvedValue(json(200, { exists: false }));
+			await inspectMemoriesObject(target);
+
+			expect(timeoutSpy).toHaveBeenCalledWith(MEMORIES_INSPECTION_TIMEOUT_MS);
+			expect(MEMORIES_INSPECTION_TIMEOUT_MS).toBeLessThan(30_000);
+			expect(mockFetch.mock.calls[0][1]?.signal).toBeInstanceOf(AbortSignal);
+		});
+
+		it('treats an inspection that timed out as unavailable, never as missing', async () => {
+			mockFetch.mockRejectedValue(
+				new DOMException('The operation timed out.', 'TimeoutError'),
+			);
+			await expect(inspectMemoriesObject(target)).resolves.toEqual({ kind: 'unavailable' });
+		});
+
+		it('keeps the full signed lifetime for streamed downloads', async () => {
+			mockFetch.mockResolvedValue(new Response('bytes', { status: 200 }));
+			await retrieveMemoriesObject({
+				...target,
+				mode: 'attachment',
+				downloadName: 'foto.jpg',
+			});
+
+			expect(timeoutSpy).toHaveBeenCalledWith(
+				(MEMORIES_PRIVATE_REQUEST_TTL_SECONDS + 10) * 1000,
+			);
+			expect(timeoutSpy).not.toHaveBeenCalledWith(MEMORIES_INSPECTION_TIMEOUT_MS);
+		});
 	});
 });
 

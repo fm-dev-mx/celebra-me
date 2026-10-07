@@ -142,6 +142,83 @@ describe('MemoriesUploadQueue', () => {
 		]);
 	});
 
+	describe('when confirming waits on an unavailable Worker', () => {
+		const unavailable = () => new MemoriesRequestError(503, 'service_unavailable');
+
+		/** Completion retries back off on real timers (0.3 s, 0.9 s); wait for the outcome. */
+		async function until(check: () => boolean, timeoutMs = 4_000): Promise<void> {
+			const started = Date.now();
+			while (!check()) {
+				if (Date.now() - started > timeoutMs)
+					throw new Error('Queue did not settle in time.');
+				await new Promise((resolve) => setTimeout(resolve, 20));
+			}
+		}
+
+		function replayingApi() {
+			const api = fakeApi();
+			// A replayed request id finds the bytes already uploaded: straight to completion.
+			api.reserve.mockImplementation(
+				async () => ({ item: { id: 'item-1' }, upload: null }) as never,
+			);
+			return api;
+		}
+
+		it('retries a passing 503 and saves the file without a new reservation', async () => {
+			const api = replayingApi();
+			api.complete
+				.mockRejectedValueOnce(unavailable())
+				.mockResolvedValueOnce({ item: { status: 'accepted' } } as never);
+			const queue = new MemoriesUploadQueue({ deps: { api, ...passThrough } });
+			queue.add([png('a.png')]);
+			queue.start();
+
+			await until(() => statuses(queue.getSnapshot())[0] === 'done');
+			expect(api.complete).toHaveBeenCalledTimes(2);
+			expect(api.reserve).toHaveBeenCalledTimes(1);
+		});
+
+		it('stops at a retryable failure instead of confirming forever, and a retry saves the same item', async () => {
+			const api = replayingApi();
+			api.complete.mockRejectedValue(unavailable());
+			const queue = new MemoriesUploadQueue({ deps: { api, ...passThrough } });
+			queue.add([png('a.png')]);
+			queue.start();
+
+			await until(() => statuses(queue.getSnapshot())[0] === 'failed');
+			const [failed] = queue.getSnapshot().entries;
+			expect(failed.issue).toBe('unavailable');
+			expect(api.complete).toHaveBeenCalledTimes(3);
+
+			api.complete.mockResolvedValue({ item: { status: 'accepted' } } as never);
+			queue.retry(failed.id);
+			await until(() => statuses(queue.getSnapshot())[0] === 'done');
+			expect(api.complete).toHaveBeenLastCalledWith('item-1');
+		});
+
+		it('lets the waiting files go once a stuck confirmation gives up', async () => {
+			const api = fakeApi();
+			let reserved = 0;
+			api.reserve.mockImplementation(
+				async () => ({ item: { id: `item-${++reserved}` }, upload: null }) as never,
+			);
+			api.complete.mockImplementation(async (itemId: string) => {
+				if (itemId === 'item-1') throw unavailable();
+				return { item: { status: 'accepted' } } as never;
+			});
+			const queue = new MemoriesUploadQueue({ deps: { api, ...passThrough } });
+			queue.add([png('a.png'), png('b.png'), png('c.png')]);
+			queue.start();
+
+			await until(() =>
+				statuses(queue.getSnapshot()).every(
+					(status) => status === 'done' || status === 'failed',
+				),
+			);
+			expect(statuses(queue.getSnapshot())).toEqual(['failed', 'done', 'done']);
+		});
+	});
+
 	it('marks files it can judge before preparing them as invalid', () => {
 		const video = new File([new Uint8Array(4)], 'largo.mp4', { type: 'video/mp4' });
 		Object.defineProperty(video, 'size', { value: MEMORIES_MAX_VIDEO_BYTES + 1 });

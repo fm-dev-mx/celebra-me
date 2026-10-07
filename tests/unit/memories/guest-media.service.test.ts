@@ -445,6 +445,25 @@ describe('completeGuestMemoryItem', () => {
 		expect(mockFinalize).not.toHaveBeenCalled();
 	});
 
+	it('accepts on the retry an upload left validating after the Worker was unavailable', async () => {
+		mockFind.mockResolvedValue(buildMediaRow({ status: 'validating' }));
+		mockInspect.mockResolvedValueOnce({ kind: 'unavailable' });
+		await expect(
+			completeGuestMemoryItem({ space, session, mediaItemId: ITEM_ID }),
+		).rejects.toMatchObject({ status: 503 });
+
+		mockInspect.mockResolvedValueOnce(foundInspection());
+		mockFinalize.mockResolvedValue(
+			buildMediaRow({ status: 'accepted', accepted_at: '2026-10-24T11:05:00.000Z' }),
+		);
+		const item = await completeGuestMemoryItem({ space, session, mediaItemId: ITEM_ID });
+
+		expect(item.status).toBe('accepted');
+		expect(mockClaim).not.toHaveBeenCalled();
+		expect(mockFinalize).toHaveBeenCalledTimes(1);
+		expect(mockFinalize).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'accepted' }));
+	});
+
 	it('claims validation, inspects and accepts a matching upload', async () => {
 		mockFind.mockResolvedValue(buildMediaRow({ status: 'uploading' }));
 		mockClaim.mockResolvedValue(buildMediaRow({ status: 'validating' }));
