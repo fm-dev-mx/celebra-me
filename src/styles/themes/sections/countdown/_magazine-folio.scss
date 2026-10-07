@@ -53,11 +53,11 @@
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: var(--countdown-label-letter-spacing);
-		opacity: var(--countdown-label-opacity, 100%);
+		opacity: var(--countdown-label-opacity);
 	}
 
 	.countdown-invitation-text {
-		font-style: var(--countdown-footer-style, italic);
+		font-style: var(--countdown-footer-style);
 	}
 
 	.countdown-footer {
