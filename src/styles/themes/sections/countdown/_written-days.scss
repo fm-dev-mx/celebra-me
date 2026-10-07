@@ -44,7 +44,7 @@
 
 	.countdown-title {
 		max-width: none;
-		margin: 0;
+		margin: 0 0 0.5rem;
 		font-family: var(--font-label, var(--font-body));
 		font-size: 1.05rem;
 		font-weight: 400;
@@ -105,11 +105,11 @@
 		-webkit-text-fill-color: currentcolor;
 		text-shadow: none;
 		font-family: var(--font-display);
-		font-size: var(--countdown-written-numeral, clamp(5.5rem, 28vw, 10.5rem));
+		font-size: var(--countdown-written-numeral, clamp(5rem, 18vw, 8.5rem));
 		font-weight: 300;
 		font-variant-numeric: lining-nums;
 		letter-spacing: 0;
-		line-height: 1;
+		line-height: 1.05;
 		color: var(--countdown-written-ink);
 	}
 
@@ -157,7 +157,7 @@
 		.countdown-container {
 			grid-template-columns: auto 1px auto;
 			grid-template-rows: auto auto auto;
-			gap: 0.75rem var(--countdown-written-columns, clamp(3rem, 6vw, 5rem));
+			gap: 1.5rem var(--countdown-written-columns, clamp(3rem, 6vw, 5rem));
 			align-items: end;
 			justify-content: center;
 			text-align: left;
