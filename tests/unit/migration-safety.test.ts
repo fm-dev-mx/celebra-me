@@ -5,10 +5,6 @@ function readMigration(fileName: string): string {
 	return fs.readFileSync(path.resolve('supabase/migrations', fileName), 'utf8');
 }
 
-function readManualPatch(fileName: string): string {
-	return fs.readFileSync(path.resolve('scripts/manual/production-patches', fileName), 'utf8');
-}
-
 describe('release migration safety guards', () => {
 	it('restores the destructive event slug reconciliation guard to an exception', () => {
 		const migration = readMigration('20260402000100_reconcile_event_slug_parity.sql');
@@ -60,26 +56,5 @@ describe('release migration safety guards', () => {
 			const migration = readMigration(fileName);
 			expect(migration).not.toContain('ayrin-samantha-lerma-castro');
 		}
-	});
-
-	it('does not include the legacy Ayrin backfill as an automatic migration', () => {
-		const deletedMigration = path.resolve(
-			'supabase/migrations/20260607211553_backfill_legacy_itinerary_icons_and_ayrin_location.sql',
-		);
-		expect(fs.existsSync(deletedMigration)).toBe(false);
-	});
-
-	it('keeps the Ayrin repair as a guarded manual production patch', () => {
-		const patch = readManualPatch('20260607211553_backfill_ayrin_location.sql');
-
-		expect(patch).toContain('Manual production patch');
-		expect(patch).toContain('production DB backup');
-		expect(patch).toContain('expected_invitation_count');
-		expect(patch).toContain('expected_invitation_count <> 1');
-		expect(patch).toContain('PREFLIGHT_ABORT');
-		expect(patch).toContain("invitation.slug = 'ayrin-samantha-lerma-castro'");
-		expect(patch).toContain("invitation.base_demo_id = 'demo-xv-enchanted-rose'");
-		expect(patch).toContain('Ayrin location image preflight');
-		expect(patch).toContain('Ayrin location image verification');
 	});
 });

@@ -54,8 +54,8 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
 					{createdUser ? (
 						<div className="dashboard-form-grid">
 							<p className="dashboard-modal__description">
-								Entrega estas credenciales al cliente. Si no capturaste un correo
-								real, comparte este usuario de acceso tal como aparece aquí. La
+								Entregue estas credenciales al cliente. Si no capturó un correo
+								real, comparta este usuario de acceso tal como aparece aquí. La
 								contraseña se muestra solo en este momento.
 							</p>
 							<div className="dashboard-form-field dashboard-form-field--full">
@@ -79,9 +79,9 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
 									aria-label="Contraseña temporal"
 								/>
 								<p className="dashboard-form-help">
-									Formato corto y fácil de dictar (ej. Luna-4827!). No se volverá a
-									mostrar después de cerrar este modal; el cliente deberá crear su
-									propia contraseña al iniciar sesión.
+									Formato corto y fácil de dictar (ej. Luna-4827!). No se volverá
+									a mostrar después de cerrar este modal; el cliente deberá crear
+									su propia contraseña al iniciar sesión.
 								</p>
 							</div>
 							<div className="dashboard-modal__actions dashboard-modal__actions--full">
@@ -106,10 +106,10 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
 									disabled={busy}
 								/>
 								<p className="dashboard-form-help">
-									Puedes capturar un correo real, un alias simple como{' '}
-									<code>ximena_meza</code>, o dejarlo vacío. Si no incluyes
+									Puede capturar un correo real, un alias simple como{' '}
+									<code>ximena_meza</code>, o dejarlo vacío. Si no incluye
 									<code>@</code>, ese valor se usará como usuario de acceso; si lo
-									dejas vacío, generaremos uno por ti.
+									deja vacío, generaremos uno por usted.
 								</p>
 							</div>
 							<div className="dashboard-form-field dashboard-form-field--full">

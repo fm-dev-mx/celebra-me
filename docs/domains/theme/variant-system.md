@@ -3,7 +3,6 @@
 **Status:** Active architecture contract
 
 **Related:** [`variant-compatibility.md`](variant-compatibility.md),
-[`variant-cutover-manifest.md`](variant-cutover-manifest.md),
 [`section-intersections.md`](section-intersections.md), and
 [`../content/section-contracts.md`](../content/section-contracts.md)
 
@@ -44,10 +43,8 @@ environment migration is applied and verified.
 ## Canonical inventory
 
 - **Hero:** `standard`, `editorial-cover`, `split-cover`, `framed-portrait`.
-- **Family:** `standard`, `split-groups`, `asymmetric-groups`; both non-default group layouts
-  require at least two explicit `groups`. `portrait-register` places a complete photograph above the
-  family registers and uses a section fade. It requires `featuredImage` with original delivery and
-  explicit width and height; `text-only` is incompatible.
+- **Family:** `standard`, `split-groups`, `asymmetric-groups`, `ceremonial-family`; both group
+  layouts require at least two explicit `groups`.
 - **Location:** `standard`, `split-map`, `stacked-venue-plates`; prerequisites are enforced by the
   owning schema.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
@@ -60,8 +57,7 @@ environment migration is applied and verified.
 - **Personalized Access:** `standard`, `ornamented`, `editorial-pass`, `formal-pass`.
 - **Thank You:** `standard`, `editorial-back-cover`, `portrait-letter`, `full-bleed-photo`;
   `full-bleed-photo` requires `thankYou.image`.
-- **Countdown:** `standard`, `editorial-folio`, `magazine-folio`, `jeweled-panel`, `rose-ornament`,
-  `hacienda-ornament`.
+- **Countdown:** `standard`, `editorial-folio`, `magazine-folio`, `clock-face`.
 
 Header, Quote, MusicPlayer, and Footer emit `standard` where applicable. Interlude emits a fixed
 `standard` DOM marker and accepts no variant input. Envelope/reveal is a theme design selector and

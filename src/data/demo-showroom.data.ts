@@ -77,26 +77,9 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 		sortOrder: 30,
 	},
 	{
-		eventType: 'baby-shower',
-		publicSlug: 'baby-shower',
-		label: 'Baby shower',
-		description: 'Ubicación, regalos y confirmación en una invitación clara.',
-		icon: 'Sparkles',
-		showroomHref: '/demos/baby-shower',
-		heroTitle: 'Demos de invitaciones para baby shower',
-		heroDescription:
-			'Descubre diseños digitales para anunciar una celebración con detalles claros.',
-		whatsAppMessage:
-			'Hola, me gustaría una invitación digital para baby shower. Quiero asesoría para una invitación personalizada.',
-		homeSelector: {
-			screenAlt: 'Portada de la demo de baby shower: cielo con luna, nombre, fecha y lugar',
-			quoteCta: SHOWROOM_QUOTE_CTA,
-		},
-		sortOrder: 40,
-	},
-	{
 		eventType: 'cumple',
 		publicSlug: 'cumpleanos',
+		alternatePublicSlugs: ['cumple'],
 		label: 'Cumpleaños y eventos',
 		description: 'Celebraciones sociales con invitación digital y confirmación.',
 		icon: 'Cake',
@@ -116,26 +99,6 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 ] as const;
 
 export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
-	{
-		eventType: 'xv',
-		publicSlug: 'xv',
-		slug: 'demo-xv-jewelry-box',
-		href: '/xv/demo-xv-jewelry-box',
-		title: 'Jewelry Box',
-		description: 'Floral, luminosa y clásica.',
-		styleTags: ['floral', 'jardín'],
-		views: 0,
-		visibility: 'hidden',
-		reviewStatus: 'approved',
-		sortOrder: 100,
-		ctaMessage:
-			'Hola, me gustaría una invitación digital para XV años similar al demo Jewelry Box.',
-		thumbnail: {
-			assetSlug: 'demo-xv-jewelry-box',
-			key: 'hero',
-			alt: 'Vista principal del demo de XV años estilo Jewelry Box',
-		},
-	},
 	{
 		eventType: 'xv',
 		publicSlug: 'xv',
@@ -160,33 +123,6 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 			key: 'portrait',
 			alt: 'Retrato del demo de XV años estilo Celestial Blue',
 			objectPosition: '50% 20%',
-		},
-	},
-	{
-		eventType: 'xv',
-		publicSlug: 'xv',
-		slug: 'demo-xv-editorial-magazine',
-		href: '/xv/demo-xv-editorial-magazine',
-		title: 'Editorial Magazine',
-		description: 'Editorial, sofisticada y visual.',
-		styleTags: ['Sofisticada', 'Visual'],
-		views: 30,
-		visibility: 'featured',
-		reviewStatus: 'approved',
-		sortOrder: 20,
-		ctaMessage:
-			'Hola, me gustaría una invitación digital para XV años similar al demo Editorial Magazine.',
-		thumbnail: {
-			assetSlug: 'demo-xv-editorial',
-			key: 'portrait',
-			alt: 'Vista principal del demo de XV años estilo Editorial Magazine',
-			objectPosition: '50% 18%',
-		},
-		selectorThumbnail: {
-			assetSlug: 'demo-xv-editorial',
-			key: 'portrait',
-			alt: 'Retrato del demo de XV años estilo Editorial Magazine',
-			objectPosition: '50% 18%',
 		},
 	},
 	{
@@ -284,25 +220,6 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		},
 	},
 	{
-		eventType: 'baby-shower',
-		publicSlug: 'baby-shower',
-		slug: 'demo-baby-shower-celestial',
-		href: '/baby-shower/demo-baby-shower-celestial',
-		title: 'Baby shower estilo Celestial',
-		description: 'Suave, celestial y emotiva.',
-		styleTags: ['celestial', 'suave'],
-		visibility: 'featured',
-		reviewStatus: 'approved',
-		sortOrder: 10,
-		ctaMessage:
-			'Hola, me gustaría una invitación digital para baby shower similar al demo Celestial.',
-		thumbnail: {
-			assetSlug: 'demo-baby-shower-celestial',
-			key: 'hero',
-			alt: 'Vista principal del demo de baby shower estilo Celestial',
-		},
-	},
-	{
 		eventType: 'cumple',
 		publicSlug: 'cumpleanos',
 		slug: 'demo-cumple-luxury-hacienda',
@@ -320,46 +237,6 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 			assetSlug: 'demo-cumple-luxury-hacienda',
 			key: 'hero',
 			alt: 'Vista principal del demo de cumpleaños estilo Luxury Hacienda',
-		},
-	},
-	{
-		eventType: 'xv',
-		publicSlug: 'xv',
-		slug: 'demo-xv-valentina-profile',
-		href: '/xv/demo-xv-valentina-profile',
-		title: 'XV años edición Valentina',
-		description:
-			'Variante de perfil pendiente de revisión editorial antes de exposición pública.',
-		styleTags: ['perfil', 'editorial'],
-		visibility: 'hidden',
-		reviewStatus: 'needs-review',
-		sortOrder: 900,
-		ctaMessage:
-			'Hola, me gustaría una invitación digital para XV años. Quiero conocer opciones editoriales.',
-		thumbnail: {
-			assetSlug: 'demo-xv-editorial',
-			key: 'hero',
-			alt: 'Vista principal de variante editorial de XV años',
-		},
-	},
-	{
-		eventType: 'xv',
-		publicSlug: 'xv',
-		slug: 'demo-xv-xareni-profile',
-		href: '/xv/demo-xv-xareni-profile',
-		title: 'XV años edición Xareni',
-		description:
-			'Variante de perfil pendiente de revisión editorial antes de exposición pública.',
-		styleTags: ['perfil', 'celestial'],
-		visibility: 'hidden',
-		reviewStatus: 'needs-review',
-		sortOrder: 910,
-		ctaMessage:
-			'Hola, me gustaría una invitación digital para XV años. Quiero conocer opciones celestiales.',
-		thumbnail: {
-			assetSlug: 'demo-xv-celestial-blue',
-			key: 'hero',
-			alt: 'Vista principal de variante celestial de XV años',
 		},
 	},
 ] as const;

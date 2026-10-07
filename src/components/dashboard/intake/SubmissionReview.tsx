@@ -155,7 +155,7 @@ const SubmissionReview: FC<Props> = ({ invitationId }) => {
 
 	const handleAction = async (action: 'approve' | 'request_changes') => {
 		if (dirty || editing) {
-			setActionError('Guarda o cancela las correcciones antes de continuar.');
+			setActionError('Guarde o cancele las correcciones antes de continuar.');
 			return;
 		}
 		if (action === 'request_changes' && !reviewNotes.trim()) {

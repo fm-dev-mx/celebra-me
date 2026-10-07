@@ -11,8 +11,8 @@ jest.mock('@/lib/intake/services/asset-usage.service', () => ({
 	collectAssetUsagesByInvitation: mockCollectUsages,
 }));
 
-jest.mock('@/lib/intake/services/demo-asset.service', () => ({
-	getDemoPresetAssets: mockGetDemoAssets,
+jest.mock('@/lib/intake/services/bundled-asset.service', () => ({
+	getBundledEventAssets: mockGetDemoAssets,
 }));
 
 jest.mock('@/lib/intake/storage', () => ({
@@ -66,7 +66,7 @@ describe('listAssets', () => {
 			id: VALID_UUID,
 			displayName: 'Foto',
 			src: 'https://cdn.test/foto.webp',
-			isDemo: false,
+			isBundled: false,
 			usage: {
 				usedInDraft: true,
 				usedInPublished: false,
@@ -76,7 +76,7 @@ describe('listAssets', () => {
 		});
 	});
 
-	it('merges demo assets when previewSlug is provided', async () => {
+	it('merges bundled assets when an asset namespace is provided', async () => {
 		mockFindAssets.mockResolvedValue([]);
 		mockCollectUsages.mockResolvedValue([]);
 		mockGetPublicUrl.mockReturnValue('');
@@ -88,15 +88,15 @@ describe('listAssets', () => {
 
 		expect(result).toHaveLength(1);
 		expect(result[0]).toMatchObject({
-			id: 'demo:demo-xv-test:hero',
+			id: 'bundled:demo-xv-test:hero',
 			displayName: 'Portada',
 			src: '/hero.webp',
-			isDemo: true,
-			demoKey: 'hero',
+			isBundled: true,
+			bundledKey: 'hero',
 		});
 	});
 
-	it('does not merge demo assets when no previewSlug', async () => {
+	it('does not merge bundled assets without an asset namespace', async () => {
 		mockFindAssets.mockResolvedValue([]);
 		mockCollectUsages.mockResolvedValue([]);
 		mockGetPublicUrl.mockReturnValue('');

@@ -7,14 +7,11 @@ import { buildInvitationSectionRenderDescriptors } from '@/lib/invitation/sectio
 import {
 	buildSectionBundleUrlMap,
 	buildSectionUrlMap,
-	resolveInvitationCssUrls,
 } from '@/lib/invitation/section-css-resolver-map';
+import { resolveInvitationCssUrls } from '../helpers/invitation-css-urls';
 import { prepareInvitationPageContext } from '@/lib/invitation/page-data';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
-import {
-	CANONICAL_VARIANT_REGISTRY,
-	CANONICAL_VARIANT_CUTOVER_MANIFEST,
-} from '@/lib/invitation/section-variants';
+import { CANONICAL_VARIANT_REGISTRY } from '@/lib/invitation/section-variants';
 import {
 	buildSyntheticVariantEvent,
 	buildIncompatiblePrerequisiteEvent,
@@ -64,7 +61,7 @@ type PortableOverrides = {
  * Victoria / Abril / Valentina). Only canonical structural/behavior selectors are applied in memory.
  */
 function buildPortableJewelryBoxEvent(overrides: PortableOverrides = {}) {
-	const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+	const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 	const data = {
 		...fixture,
 		...(overrides.themePreset
@@ -145,93 +142,6 @@ function loadDemoEvent(relativePath: string, id: string) {
 }
 
 describe('registry-driven canonical variant portability', () => {
-	it('adds a family photograph only for the portrait-register family fixture', () => {
-		for (const overrides of [
-			{ section: 'family', variant: 'standard' },
-			{ section: 'hero', variant: 'portrait-register' },
-		] as const) {
-			const { data } = buildSyntheticVariantEvent(overrides);
-			expect(data.family).not.toHaveProperty('featuredImage');
-			expect(data.family).not.toHaveProperty('featuredImageAlt');
-		}
-	});
-
-	it.each(['jewelry-box', 'celestial-blue'])(
-		'preserves the portrait register image, names and reveal under %s without a profile',
-		(themePreset) => {
-			const candidate = buildSyntheticVariantEvent({
-				section: 'family',
-				variant: 'portrait-register',
-				themePreset,
-			});
-			const data = eventContentSchema.parse(candidate.data);
-			const event = { ...candidate, data } as Parameters<typeof adaptEvent>[0];
-			const family = adaptEvent(event).sections.family;
-			expect(data).not.toHaveProperty('visualProfileId');
-			expect(family).toMatchObject({
-				variant: 'portrait-register',
-				parents: data.family?.parents,
-				godparents: data.family?.godparents,
-				featuredImage: {
-					alt: data.family?.featuredImageAlt,
-					delivery: data.family?.featuredImage?.delivery,
-				},
-			});
-			const pageContext = prepareInvitationPageContext({
-				eventEntry: event as Parameters<
-					typeof prepareInvitationPageContext
-				>[0]['eventEntry'],
-				slug: 'demo-xv-jewelry-box',
-			});
-			expect(buildInvitationSectionRenderDescriptors(pageContext)).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						component: 'family',
-						reveal: 'fade',
-						props: expect.objectContaining({ variant: 'portrait-register' }),
-					}),
-				]),
-			);
-		},
-	);
-
-	it.each(['jewelry-box', 'celestial-blue'])(
-		'rejects cropped or dimensionless portrait-register delivery under %s',
-		(themePreset) => {
-			const candidate = buildSyntheticVariantEvent({
-				section: 'family',
-				variant: 'portrait-register',
-				themePreset,
-			});
-			const family = candidate.data.family as Record<string, unknown>;
-			const image = family.featuredImage as Record<string, unknown>;
-			for (const delivery of [
-				undefined,
-				{ mode: 'optimized', width: 1024, height: 1024 },
-				{ mode: 'original' },
-				{ mode: 'original', width: 1024 },
-				{ mode: 'original', height: 1024 },
-			]) {
-				const result = eventContentSchema.safeParse({
-					...candidate.data,
-					family: { ...family, featuredImage: { ...image, delivery } },
-				});
-				expect(result.success).toBe(false);
-				if (result.success) continue;
-				expect(result.error.issues).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							path: ['family', 'featuredImage', 'delivery'],
-							message: expect.stringContaining(
-								'original delivery with width and height',
-							),
-						}),
-					]),
-				);
-			}
-		},
-	);
-
 	it('validates all registered variants through schema, adapter, render plan, and DOM descriptors', () => {
 		for (const entry of CANONICAL_VARIANT_REGISTRY) {
 			const candidate = buildSyntheticVariantEvent({
@@ -304,7 +214,7 @@ describe('registry-driven canonical variant portability', () => {
 	});
 
 	it('rejects incompatible canonical prerequisites with exact path and actionable error message', () => {
-		for (const entry of CANONICAL_VARIANT_CUTOVER_MANIFEST) {
+		for (const entry of CANONICAL_VARIANT_REGISTRY.filter((candidate) => !candidate.default)) {
 			const badData = buildIncompatiblePrerequisiteEvent(entry);
 			const result = eventContentSchema.safeParse(badData);
 			expect(
@@ -431,10 +341,7 @@ describe('registry-driven canonical variant portability', () => {
 
 	it('ports gallery layouts via adaptEvent on non-origin demos/overrides', () => {
 		const magazine = adaptEvent(
-			loadDemoEvent(
-				'src/content/event-demos/xv/demo-xv-editorial-magazine.json',
-				'event-demos/xv/demo-xv-editorial-magazine',
-			),
+			buildPortableJewelryBoxEvent({ galleryVariant: 'magazine-spread' }),
 		);
 		expect(magazine.sections.gallery?.variant).toBe('magazine-spread');
 

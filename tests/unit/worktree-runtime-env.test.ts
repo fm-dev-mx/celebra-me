@@ -44,6 +44,19 @@ describe('worktree lane detection', () => {
 		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-local2').id).toBe('unknown');
 	});
 
+	it('does not treat a linked worktree named like the repository as Integration', () => {
+		const parent = mkdtempSync(join(tmpdir(), 'linked-worktree-'));
+		try {
+			const checkout = join(parent, 'celebra-me');
+			mkdirSync(checkout);
+			expect(detectWorktreeLane(checkout).id).toBe('integration');
+			writeFileSync(join(checkout, '.git'), 'gitdir: /elsewhere/.git/worktrees/x\n');
+			expect(detectWorktreeLane(checkout).id).toBe('unknown');
+		} finally {
+			rmSync(parent, { recursive: true, force: true });
+		}
+	});
+
 	it('detects lanes from subdirectories of a lane checkout', () => {
 		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-extra/src').id).toBe('dev-extra');
 	});

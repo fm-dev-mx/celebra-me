@@ -121,33 +121,6 @@ export const DEMO_PRESET_CATALOG: readonly DemoPreset[] = [
 		previewSlug: 'demo-xv-enchanted-rose',
 	},
 	{
-		id: 'demo-xv-editorial-rose',
-		eventType: 'xv',
-		displayName: 'XV Años — Editorial Rose',
-		themeId: 'editorial-rose',
-		defaultSections: [...DEFAULT_SECTIONS],
-		supportedBlocks: [...ALL_MVP_BLOCKS],
-		recommendedBlocks: [
-			'event-details',
-			'main-people',
-			'date-locations',
-			'photos',
-			'rsvp-config',
-			'music',
-			'gifts',
-			'special-messages',
-		],
-		requiredAssets: [
-			...COMMON_REQUIRED_ASSETS,
-			'gallery01',
-			'gallery02',
-			'gallery03',
-			'interlude01',
-			'interlude02',
-		],
-		previewSlug: 'demo-xv-editorial-rose',
-	},
-	{
 		id: 'demo-xv-editorial-magazine',
 		eventType: 'xv',
 		displayName: 'XV Años — Revista Editorial',
@@ -312,8 +285,4 @@ export const DEMO_PRESET_CATALOG: readonly DemoPreset[] = [
 
 export function findDemoPreset(id: string): DemoPreset | undefined {
 	return DEMO_PRESET_CATALOG.find((preset) => preset.id === id);
-}
-
-export function findDemoPresetsByEventType(eventType: string): DemoPreset[] {
-	return DEMO_PRESET_CATALOG.filter((preset) => preset.eventType === eventType);
 }

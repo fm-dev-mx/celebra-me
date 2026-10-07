@@ -28,8 +28,16 @@ export const MEMORIES_SESSION_MAX_IN_FLIGHT = 2;
 export const MEMORIES_JSON_BODY_MAX_BYTES = 2048;
 /** Bytes read from R2 to inspect signatures and container headers. */
 export const MEMORIES_INSPECTION_BYTES = 65_536;
+/**
+ * How long the app waits for the Retrieval Worker to inspect an upload. Kept
+ * well under the serverless function limit so a slow Worker answers 503 and the
+ * guest can retry, instead of the platform cutting the request.
+ */
+export const MEMORIES_INSPECTION_TIMEOUT_MS = 8_000;
 /** Browser-side hashing chunk. */
 export const MEMORIES_HASH_CHUNK_BYTES = 2 * 1024 * 1024;
+/** How long the browser may take to read a video's duration before the file is reported unreadable. */
+export const MEMORIES_VIDEO_METADATA_TIMEOUT_MS = 15_000;
 
 /**
  * Hard cap on how long any object may live in R2, measured from its upload.
@@ -75,9 +83,15 @@ export const MEMORIES_APP_RATE_LIMITS = {
 	},
 	read: { maxHits: 60, windowSec: 60 },
 	mutate: { maxHits: 30, windowSec: 60 },
+	/** Thumbnail reserve and confirm: two calls per original, kept off the mutate budget. */
+	thumbnail: { maxHits: 30, windowSec: 60 },
+	/**
+	 * Anonymous, per IP: the shared gallery's listings and media. One page is a
+	 * listing plus up to 50 thumbnails, and relatives often share one network.
+	 */
+	gallery: { maxHits: 600, windowSec: 60 },
 	/** Authenticated host, per user id. Sized for gallery browsing and ZIP batch downloads (up to 100 items). */
 	organizer: { maxHits: 300, windowSec: 60 },
-	admin: { maxHits: 30, windowSec: 60 },
 } as const;
 
 export type MemoriesRateLimitOperation = keyof typeof MEMORIES_APP_RATE_LIMITS;
@@ -92,23 +106,30 @@ export type MemoriesSpaceLimits = {
 
 /** Presets for the administrator form. The stored row is the source of truth. */
 export const MEMORIES_LIMIT_PROFILES = {
+	/** Two standard spaces fit side by side in the R2 free allowance. */
 	standard: {
-		maxEventObjects: 2_000,
-		maxEventBytes: 8_000_000_000,
-		maxSessionFiles: 20,
-		maxSessionVideos: 5,
-		maxSessionBytes: 512 * 1024 * 1024,
+		maxEventObjects: 1_500,
+		maxEventBytes: 5_000_000_000,
+		maxSessionFiles: 15,
+		maxSessionVideos: 3,
+		maxSessionBytes: 300 * 1024 * 1024,
 	},
 	extended: {
-		maxEventObjects: 4_000,
-		maxEventBytes: 16_000_000_000,
-		maxSessionFiles: 40,
-		maxSessionVideos: 10,
-		maxSessionBytes: 1024 * 1024 * 1024,
+		maxEventObjects: 3_000,
+		maxEventBytes: 10_000_000_000,
+		maxSessionFiles: 30,
+		maxSessionVideos: 6,
+		maxSessionBytes: 600 * 1024 * 1024,
 	},
 } as const satisfies Record<string, MemoriesSpaceLimits>;
 
 export type MemoriesLimitProfile = keyof typeof MEMORIES_LIMIT_PROFILES;
+
+/** Planning inputs stored with a space; never enforced by the reservation RPC. */
+export const MEMORIES_EXPECTED_GUESTS_MAX = 5_000;
+export const MEMORIES_ADMIN_NOTE_MAX_LENGTH = 500;
+/** Days before retention ends when the dashboards start warning about deletion. */
+export const MEMORIES_RETENTION_WARNING_DAYS = 14;
 
 export const MEMORIES_ENTITLEMENTS = ['package', 'addon', 'courtesy'] as const;
 export type MemoriesEntitlement = (typeof MEMORIES_ENTITLEMENTS)[number];

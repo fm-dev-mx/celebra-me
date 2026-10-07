@@ -1,12 +1,14 @@
 @use 'dashboard-guests-core';
 @use 'dashboard-guests-elements';
-@use 'dashboard-guests-header';
-@use 'dashboard-guests-meta';
 @use 'dashboard-guests-stats';
+@use 'dashboard-guests-overview';
 @use 'dashboard-guests-filters';
 @use 'dashboard-guests-table';
 @use 'dashboard-guests-mobile-dock';
 @use 'dashboard-guests-cards';
+@use 'dashboard-guests-list';
+@use 'dashboard-guests-detail';
+@use 'dashboard-guests-selection';
 @use 'dashboard-guests-response';
 @use 'dashboard-guests-form';
 @use 'dashboard-guests-actions';

@@ -3,7 +3,6 @@ import {
 	assertCanonicalPreviewFixture,
 	assertExpectedPreviewAccountEmail,
 	assertExpectedPreviewAccountRole,
-	PREVIEW_FIXTURE_DEMO_ID,
 	PREVIEW_FIXTURE_SLUG,
 	PreviewRequestWindowLimiter,
 	selectCanonicalPreviewFixture,
@@ -12,6 +11,8 @@ import { INVITATION_EDITOR_SECTION_KEYS } from '@/lib/intake/schemas/invitation-
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { applySectionValue, getSectionValue } from '@/lib/intake/services/section-content-mapper';
 import { stableStringify } from '@/lib/content-publication/normalize-content';
+import { mapNestedToDraftContent } from '@/lib/intake/services/draft-content-mapper';
+import { buildPreviewFixtureContent } from '../../../scripts/provision/preview-e2e-fixture-content';
 import {
 	loginAsPreviewAdmin,
 	mutateJson,
@@ -36,14 +37,7 @@ test('provisions or verifies the deterministic Preview-only publication fixture'
 	assertExpectedPreviewAccountRole(session.role);
 
 	const inventory = await readInvitationList(page);
-
-	const demos = inventory.filter(
-		(item) =>
-			item.kind === 'demo' &&
-			item.slug === PREVIEW_FIXTURE_DEMO_ID &&
-			item.baseDemoId === PREVIEW_FIXTURE_DEMO_ID,
-	);
-	expect(demos).toHaveLength(1);
+	expect(inventory.every((item) => item.kind === 'client')).toBe(true);
 
 	const fixture = selectCanonicalPreviewFixture(inventory) as InvitationSummary | undefined;
 	if (!fixture) {
@@ -59,9 +53,9 @@ test('provisions or verifies the deterministic Preview-only publication fixture'
 	}
 	assertCanonicalPreviewFixture(fixture, session.userId);
 
+	// The fixture's own versioned content is the reference; no other invitation is read.
+	const referenceContent = mapNestedToDraftContent(buildPreviewFixtureContent());
 	const draftRateLimiter = new PreviewRequestWindowLimiter();
-	await draftRateLimiter.beforeRequest();
-	const demoContext = await readEditorContext(page, demos[0].id);
 	await draftRateLimiter.beforeRequest();
 	const fixtureContext = await readEditorContext(page, fixture.id);
 	let fixtureContent = fixtureContext.content as DraftContent;
@@ -69,8 +63,8 @@ test('provisions or verifies the deterministic Preview-only publication fixture'
 		fixtureContext.draftUpdatedAt ?? fixtureContext.invitation.updatedAt;
 
 	for (const section of INVITATION_EDITOR_SECTION_KEYS) {
-		const sourceValue = getSectionValue(demoContext.content as DraftContent, section);
-		const demoValue =
+		const sourceValue = getSectionValue(referenceContent, section);
+		const referenceValue =
 			section === 'location'
 				? {
 						...(sourceValue as Record<string, unknown>),
@@ -82,7 +76,7 @@ test('provisions or verifies the deterministic Preview-only publication fixture'
 			fixtureContext.publication.hasPublishedContent && section === 'location';
 		if (
 			!shouldReopenPublishedDraft &&
-			stableStringify(demoValue) === stableStringify(fixtureValue)
+			stableStringify(referenceValue) === stableStringify(fixtureValue)
 		) {
 			continue;
 		}
@@ -94,18 +88,18 @@ test('provisions or verifies the deterministic Preview-only publication fixture'
 			'PATCH',
 			{
 				expectedUpdatedAt: expectedDraftRevision,
-				value: demoValue as Record<string, unknown>,
+				value: referenceValue as Record<string, unknown>,
 			},
 			`Synthetic fixture ${section} reconciliation`,
 		);
 		expectedDraftRevision = saved.draftUpdatedAt;
-		fixtureContent = applySectionValue(fixtureContent, section, demoValue);
+		fixtureContent = applySectionValue(fixtureContent, section, referenceValue);
 	}
 
 	await draftRateLimiter.beforeRequest();
 	const baselinePreflight = await readPublicationPreflight(page, fixture.id);
 	// Postcondition: published public version exists with intentional draft divergence.
-	// Proven without a third editor read (rate-limit contract: two readEditorContext calls).
+	// Proven without a second editor read (rate-limit contract).
 	expect(fixtureContext.publication.hasPublishedContent).toBe(true);
 	expect(baselinePreflight.changedPaths.length).toBeGreaterThan(0);
 	expect(baselinePreflight.projectionHash).toMatch(/^[a-f0-9]{32}$/);

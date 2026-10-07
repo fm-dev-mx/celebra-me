@@ -1,9 +1,14 @@
 import { buildInvitationPath } from '@/utils/invitation-link';
 import type { InvitationGuestContext } from '@/lib/invitation/page-data';
-import {
-	getInvitationContextByInviteId,
-} from '@/lib/rsvp/services/invitation-context.service';
+import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import { trackInvitationView } from '@/lib/rsvp/services/rsvp-submission.service';
+import { isApiError } from '@/lib/rsvp/core/errors';
+
+function stripInviteParam(pathWithQuery: string): string {
+	const url = new URL(pathWithQuery, 'http://local');
+	url.searchParams.delete('invite');
+	return url.pathname + url.search;
+}
 
 export interface InvitationRouteAccessDecision {
 	allowGuestContext: boolean;
@@ -79,6 +84,14 @@ export async function resolveRoutePersonalization(input: {
 			redirectPath: null,
 		};
 	} catch (error) {
+		// Unknown or deleted invites drop the param; transient failures keep the public fallback.
+		if (isApiError(error) && (error.status === 404 || error.status === 400)) {
+			const targetPath = stripInviteParam(input.currentPathWithQuery);
+			return {
+				guestContext: null,
+				redirectPath: targetPath !== input.currentPathWithQuery ? targetPath : null,
+			};
+		}
 		console.warn(
 			'[invitation][route-personalization] Unable to resolve invite context.',
 			error,

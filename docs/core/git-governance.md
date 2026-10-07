@@ -2,11 +2,12 @@
 
 **Status:** Active
 
-**Last Updated:** 2026-10-01
+**Last Updated:** 2026-10-06
 
-**Change Note:** Consolidates one integration model: task branches in development lanes,
-fast-forward integration into `develop` from Integration, release pull request into `main`, and a
-fast-forward back-merge after each release.
+**Change Note:** Integration into `develop` uses merge commits (`--no-ff`), so each task stays a
+separate, revertible unit and published history is never rewritten. Rebase is optional and only for
+branches that were never pushed. Release pull request into `main` and fast-forward back-merge are
+unchanged.
 
 ## Overview
 
@@ -18,8 +19,9 @@ release versioning and changelog policy are owned by [`release-process.md`](rele
 
 ## Branches
 
-- `develop` is the trunk. It accepts direct fast-forward pushes from Integration; Repository CI runs
-  on every push and is the integration gate. It blocks deletion and non-fast-forward updates.
+- `develop` is the trunk. It accepts direct pushes from Integration that only add commits (merge
+  commits included); Repository CI runs on every push and is the integration gate. It blocks
+  deletion and non-fast-forward (history-rewriting) updates.
 - `main` is production. It changes only through the release pull request from `develop`, which
   requires `Repository Policy` and `Application Suite`. Direct commits and pushes are blocked.
 - Task branches (`feat/*`, `fix/*`, `candidate/*`) are ephemeral. Persistent lane branches are
@@ -32,12 +34,12 @@ Persistent native Git worktrees isolate parallel work. `<worktrees-root>` is the
 `<repo-dir>-worktrees/` directory, derived by
 [`scripts/shared/worktree-lane.ts`](../../scripts/shared/worktree-lane.ts).
 
-| Lane          | Path                           | Purpose                                     | Runtime | Port |
-| ------------- | ------------------------------ | ------------------------------------------- | ------- | ---- |
-| Integration   | repository root                | Stays on `develop`: integration and release | Local   | 4321 |
-| `dev-local`   | `<worktrees-root>/dev-local`   | Primary feature/fix lane                    | Local   | 4321 |
-| `dev-extra`   | `<worktrees-root>/dev-extra`   | Parallel Local lane                         | Local   | 4322 |
-| `dev-preview` | `<worktrees-root>/dev-preview` | Preview validation lane                     | Preview | 4323 |
+| Lane          | Path                           | Purpose                                    | Runtime | Port |
+| ------------- | ------------------------------ | ------------------------------------------ | ------- | ---- |
+| Integration   | repository root                | Idle on `develop`: integration and release | Local   | 4321 |
+| `dev-local`   | `<worktrees-root>/dev-local`   | Primary feature/fix lane                   | Local   | 4321 |
+| `dev-extra`   | `<worktrees-root>/dev-extra`   | Parallel Local lane                        | Local   | 4322 |
+| `dev-preview` | `<worktrees-root>/dev-preview` | Preview validation lane                    | Preview | 4323 |
 
 Lane cards with environment-file facts live in [`docs/core/worktrees/`](worktrees/). Runtime
 defaults are described in [`docs/env-workflow.md`](../env-workflow.md); runtime connectivity is not
@@ -52,22 +54,32 @@ mutation authorization.
    ```
 
    One active task = one branch = one worktree. Never switch, stash, reset, clean or repurpose
-   another active lane.
+   another active lane. Integration may host a task assigned to it with the same command; return it
+   to `develop` before integrating ([lane card](worktrees/integration.md)). Commits are never
+   authored directly on `develop` or `main`.
 
 2. **Stay current** when needed: `pnpm lane:sync` previews and `pnpm lane:sync -- --apply` fetches
-   `origin/develop` and rebases (or `--ff-only` merges) the task branch.
+   `origin/develop` and merges it into the task branch. `--ff-only` is available; `--rebase` is
+   opt-in and refused once the branch exists on `origin`.
 
 3. **Integrate** from Integration, which keeps `develop` checked out (Git does not allow the same
    branch in two worktrees):
 
    ```bash
    git pull --ff-only origin develop
-   git merge --ff-only <task-branch>
+   git merge --no-ff <task-branch>
    git push origin develop
    ```
 
-   Rebase the task branch first if the fast-forward is refused. Pushing a task branch to `origin` is
-   optional; CI does not run on task branches.
+   Keep Git's default message (`Merge branch '<task-branch>' into develop`). Each merge commit is
+   one task: `git log --first-parent develop` lists tasks, and `git revert -m 1 <merge>` reverts one
+   as a unit. Resolve conflicts deliberately in the merge (never automatic `ours`/`theirs`), then
+   run the applicable checks before pushing. Pushing a task branch to `origin` is optional; CI does
+   not run on task branches.
+
+   History rules: never force-push or rewrite `develop`, `main` or any branch already on `origin`.
+   Rebase is allowed only for a branch that was never pushed. Squash merges are not used, because
+   they drop the task's commit history.
 
 4. **Release the lane** after integration:
 

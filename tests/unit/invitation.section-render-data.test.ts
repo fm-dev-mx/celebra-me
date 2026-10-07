@@ -47,10 +47,16 @@ function loadFixture(relativePath: string) {
 	return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+const JEWELRY_BOX_SLUG = 'demo-xv-jewelry-box';
+
 function setupDemoPageContext(fixtureSlug = 'demo-xv-editorial') {
 	const eventEntry = {
 		id: `event-demos/xv/${fixtureSlug}`,
-		data: loadFixture(`src/content/event-demos/xv/${fixtureSlug}.json`),
+		data: loadFixture(
+			fixtureSlug === JEWELRY_BOX_SLUG
+				? 'tests/fixtures/content/xv-jewelry-box.json'
+				: `src/content/event-demos/xv/${fixtureSlug}.json`,
+		),
 	} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
 
 	return prepareInvitationPageContext({
@@ -61,20 +67,7 @@ function setupDemoPageContext(fixtureSlug = 'demo-xv-editorial') {
 }
 
 describe('buildInvitationSectionRenderDescriptors', () => {
-	it('uses a section fade for the portrait register without changing standard family motion', () => {
-		const portraitContext = setupDemoPageContext('demo-xv-celestial-blue');
-		const family = portraitContext.viewModel.sections.family;
-		if (!family) throw new Error('Family fixture is required');
-		// Select the canonical variant explicitly; live demo styling is not a motion contract.
-		family.variant = 'portrait-register';
-		const portrait = buildInvitationSectionRenderDescriptors(portraitContext).find(
-			(descriptor) => descriptor.component === 'family',
-		);
-		expect(portrait).toMatchObject({
-			intersection: 'arch',
-			reveal: 'fade',
-			props: { variant: 'portrait-register' },
-		});
+	it('keeps standard family motion as a staggered group', () => {
 		const standard = buildInvitationSectionRenderDescriptors(
 			setupDemoPageContext('demo-xv-jewelry-box'),
 		).find((descriptor) => descriptor.component === 'family');
@@ -103,9 +96,13 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 	});
 
 	it('does not stagger magazine-spread gallery items', () => {
-		const magazine = buildInvitationSectionRenderDescriptors(
-			setupDemoPageContext('demo-xv-editorial-magazine'),
-		).find((descriptor) => descriptor.component === 'gallery');
+		const magazineContext = setupDemoPageContext(JEWELRY_BOX_SLUG);
+		const gallery = magazineContext.viewModel.sections.gallery;
+		if (!gallery) throw new Error('Gallery fixture is required');
+		gallery.variant = 'magazine-spread';
+		const magazine = buildInvitationSectionRenderDescriptors(magazineContext).find(
+			(descriptor) => descriptor.component === 'gallery',
+		);
 		expect(magazine).toMatchObject({
 			component: 'gallery',
 			reveal: 'none',
@@ -122,7 +119,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 	it('derives the next anchorable section for location navigation from the render plan', () => {
 		const eventEntry = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
+			data: loadFixture('tests/fixtures/content/xv-jewelry-box.json'),
 		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
 
 		const pageContext = prepareInvitationPageContext({
@@ -147,7 +144,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 	});
 
 	it('omits the location next-section cue when an interlude is the next visual plane', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 		const eventEntry = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
@@ -186,7 +183,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 	});
 
 	it('preserves section variants already resolved by the adapter', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 		const eventEntry = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
@@ -236,7 +233,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 	it('builds personalized RSVP descriptors next to quote', () => {
 		const eventEntry = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
+			data: loadFixture('tests/fixtures/content/xv-jewelry-box.json'),
 		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
 
 		const pageContext = prepareInvitationPageContext({
@@ -407,10 +404,10 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 	it('passes thank-you overlay composition metadata to the render descriptor', () => {
 		const fixture = loadFixture(
-			'src/content/event-demos/bautismo/demo-bautismo-angelic-presence.json',
+			'src/content/event-demos/bautizo/demo-bautismo-angelic-presence.json',
 		);
 		const eventEntry = {
-			id: 'event-demos/bautismo/demo-bautismo-angelic-presence',
+			id: 'event-demos/bautizo/demo-bautismo-angelic-presence',
 			data: {
 				...fixture,
 				thankYou: {
@@ -482,7 +479,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 	});
 
 	it('does not render personalized-access for events with accessMode other than hybrid', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 		const eventWithNoRsvp = {
 			...fixture,
 			rsvp: { ...fixture.rsvp, accessMode: 'personalized-only' },

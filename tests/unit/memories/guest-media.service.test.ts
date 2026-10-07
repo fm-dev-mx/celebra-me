@@ -10,6 +10,9 @@ jest.mock('@/lib/memories/server/catalog.repository', () => ({
 }));
 
 jest.mock('@/lib/memories/server/worker-gateway', () => ({
+	...jest.requireActual<typeof import('@/lib/memories/server/worker-gateway')>(
+		'@/lib/memories/server/worker-gateway',
+	),
 	inspectMemoriesObject: jest.fn(),
 	requestMemoriesUploadCapability: jest.fn(),
 }));
@@ -45,6 +48,7 @@ import {
 	updateGuestMemoryCaption,
 } from '@/lib/memories/server/guest-media.service';
 import {
+	MemoriesSignerError,
 	inspectMemoriesObject,
 	requestMemoriesUploadCapability,
 } from '@/lib/memories/server/worker-gateway';
@@ -184,6 +188,38 @@ describe('reserveGuestMemoryItem', () => {
 		expect(reservation.durationSeconds).toBe(42);
 	});
 
+	it('reserves a browser-reported duration at the stored scale so a retry replays the same row', async () => {
+		mockReserve.mockResolvedValue(
+			buildMediaRow({
+				mime_type: 'video/quicktime',
+				duration_seconds: 12.346,
+				object_key: OBJECT_KEY.replace('.jpg', '.mov'),
+			}),
+		);
+		mockCapability.mockResolvedValue(buildUploadCapability());
+		const video = {
+			mimeType: 'video/quicktime',
+			sizeBytes: 5_000_000,
+			durationSeconds: 12.345678,
+		};
+
+		await reserveGuestMemoryItem(reservationInput(video));
+		await reserveGuestMemoryItem(reservationInput(video));
+
+		// The catalog column is numeric(10, 3): an unrounded replay reads as another file.
+		expect(mockReserve.mock.calls[0][0].durationSeconds).toBe(12.346);
+		expect(mockReserve.mock.calls[1][0].durationSeconds).toBe(12.346);
+	});
+
+	it('judges the duration limit before rounding it', async () => {
+		await expect(
+			reserveGuestMemoryItem(
+				reservationInput({ mimeType: 'video/mp4', durationSeconds: 60.0004 }),
+			),
+		).rejects.toMatchObject({ status: 400, code: 'bad_request' });
+		expect(mockReserve).not.toHaveBeenCalled();
+	});
+
 	it.each([
 		['memories_upload_window_closed', 403, 'forbidden'],
 		['memories_event_byte_quota', 409, 'limit_reached'],
@@ -199,6 +235,20 @@ describe('reserveGuestMemoryItem', () => {
 			code,
 		});
 		expect(mockCapability).not.toHaveBeenCalled();
+	});
+
+	it.each([
+		['memories_session_file_quota', 'session_files'],
+		['memories_session_video_quota', 'session_videos'],
+		['memories_session_byte_quota', 'session_bytes'],
+		['memories_event_object_quota', 'event_capacity'],
+		['memories_event_byte_quota', 'event_capacity'],
+		['memories_session_concurrency_quota', 'uploads_in_progress'],
+	])('names the cause of a %s refusal for the guest copy', async (token, reason) => {
+		mockReserve.mockRejectedValue(reservationFailure(token));
+		await expect(reserveGuestMemoryItem(reservationInput())).rejects.toMatchObject({
+			details: { reason },
+		});
 	});
 
 	it('rethrows unknown persistence errors untouched', async () => {
@@ -281,6 +331,21 @@ describe('reserveGuestMemoryItem', () => {
 		});
 		expect(mockRelease).toHaveBeenCalledWith(ITEM_ID, SESSION_ID);
 		expect(mockAudit).not.toHaveBeenCalled();
+	});
+
+	it('answers 429, not an outage, when the signer throttles the session', async () => {
+		const logged = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		logged.mockClear();
+		mockReserve.mockResolvedValue(buildMediaRow());
+		mockCapability.mockRejectedValue(new MemoriesSignerError(429));
+
+		await expect(reserveGuestMemoryItem(reservationInput())).rejects.toMatchObject({
+			status: 429,
+			code: 'rate_limited',
+		});
+		// The slot is returned so the retry a minute later can reserve again.
+		expect(mockRelease).toHaveBeenCalledWith(ITEM_ID, SESSION_ID);
+		expect(logged).not.toHaveBeenCalled();
 	});
 
 	it.each([
@@ -378,6 +443,25 @@ describe('completeGuestMemoryItem', () => {
 			completeGuestMemoryItem({ space, session, mediaItemId: ITEM_ID }),
 		).rejects.toMatchObject({ status: 503, code: 'service_unavailable' });
 		expect(mockFinalize).not.toHaveBeenCalled();
+	});
+
+	it('accepts on the retry an upload left validating after the Worker was unavailable', async () => {
+		mockFind.mockResolvedValue(buildMediaRow({ status: 'validating' }));
+		mockInspect.mockResolvedValueOnce({ kind: 'unavailable' });
+		await expect(
+			completeGuestMemoryItem({ space, session, mediaItemId: ITEM_ID }),
+		).rejects.toMatchObject({ status: 503 });
+
+		mockInspect.mockResolvedValueOnce(foundInspection());
+		mockFinalize.mockResolvedValue(
+			buildMediaRow({ status: 'accepted', accepted_at: '2026-10-24T11:05:00.000Z' }),
+		);
+		const item = await completeGuestMemoryItem({ space, session, mediaItemId: ITEM_ID });
+
+		expect(item.status).toBe('accepted');
+		expect(mockClaim).not.toHaveBeenCalled();
+		expect(mockFinalize).toHaveBeenCalledTimes(1);
+		expect(mockFinalize).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'accepted' }));
 	});
 
 	it('claims validation, inspects and accepts a matching upload', async () => {

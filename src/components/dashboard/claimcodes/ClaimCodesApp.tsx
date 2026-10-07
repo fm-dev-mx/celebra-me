@@ -22,7 +22,7 @@ const ClaimCodesApp: React.FC = () => {
 			<div className="dashboard-card">
 				<h2>Generar código de acceso</h2>
 				<p>
-					El código plano se muestra una sola vez. Guarda el valor al momento de crearlo.
+					El código plano se muestra una sola vez. Guarde el valor al momento de crearlo.
 				</p>
 				<ClaimCodeFormModal
 					invitations={invitations}
@@ -31,7 +31,7 @@ const ClaimCodesApp: React.FC = () => {
 				/>
 				{lastPlainCode && (
 					<p>
-						Código generado (copia ahora): <strong>{lastPlainCode}</strong>
+						Código generado (cópielo ahora): <strong>{lastPlainCode}</strong>
 					</p>
 				)}
 				{error && <p className="dashboard-error">{error}</p>}

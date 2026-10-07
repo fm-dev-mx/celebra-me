@@ -5,7 +5,7 @@ import {
 	buildMemoriesPrivateRequestPayload,
 } from '@/lib/memories/contract/private-request';
 
-function normalizePem(value: string): string {
+export function normalizePem(value: string): string {
 	return value.trim().replace(/\\n/g, '\n');
 }
 

@@ -38,13 +38,7 @@ export interface ParsedGuest {
 }
 
 export type ColumnTarget =
-	| 'fullName'
-	| 'phone'
-	| 'phoneCountryCode'
-	| 'email'
-	| 'maxAllowedAttendees'
-	| 'tags'
-	| 'ignore';
+	'fullName' | 'phone' | 'phoneCountryCode' | 'email' | 'maxAllowedAttendees' | 'tags' | 'ignore';
 
 export interface ColumnAssignment {
 	sourceIndex: number;
@@ -60,7 +54,7 @@ export interface CsvParseResult {
 }
 
 export const IMPORT_FATAL_ERROR =
-	'Los datos son válidos, pero no se puede importar porque el evento no está disponible o no tienes permiso.';
+	'Los datos son válidos, pero no se puede importar porque el evento no está disponible o no tiene permiso.';
 
 export const KNOWN_IMPORT_HEADERS: Record<string, keyof ParsedGuest> = {
 	nombre: 'fullName',
@@ -158,7 +152,7 @@ function normalizeInternationalPhone(phone: string, countryCode: string): PhoneN
 			ok: false,
 			field: 'phone',
 			message:
-				'Código de país no reconocido. Escribe solo el número local y usa la columna clave_pais.',
+				'Código de país no reconocido. Escriba solo el número local y use la columna clave_pais.',
 		};
 	}
 	if (split.localPhone.length !== 10) {

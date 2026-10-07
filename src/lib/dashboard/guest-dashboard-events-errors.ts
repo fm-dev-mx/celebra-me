@@ -19,7 +19,7 @@ export const GUEST_DASHBOARD_NO_EVENTS_MESSAGE =
 	'No hay eventos asignados a esta cuenta. Si la invitación existe en contenido, falta sincronizar la tabla events o la membresía del host.';
 
 export const GUEST_DASHBOARD_MEMBERSHIP_UNRESOLVED_MESSAGE =
-	'La cuenta tiene membresias, pero el dashboard no puede resolver sus eventos. Revisa RLS o migraciones en Supabase.';
+	'La cuenta tiene membresias, pero el dashboard no puede resolver sus eventos. Revise RLS o migraciones en Supabase.';
 
 export const GUEST_DASHBOARD_NO_OWNERSHIP_MESSAGE =
 	'La sesion actual no tiene ownership ni membership sobre el evento solicitado.';
@@ -82,7 +82,7 @@ export function resolveEventsLoadError(
 			return GUEST_DASHBOARD_MEMBERSHIP_UNRESOLVED_MESSAGE;
 		}
 		if (debug?.requestedSlugCheck?.slugExistsInDb === false) {
-			return `El evento ${debug.requestedSlugCheck.requestedSlug} no existe en la base activa. Revisa la sincronizacion de la tabla events.`;
+			return `El evento ${debug.requestedSlugCheck.requestedSlug} no existe en la base activa. Revise la sincronizacion de la tabla events.`;
 		}
 		if (debug?.requestedSlugCheck?.slugExistsInDb) {
 			return GUEST_DASHBOARD_NO_OWNERSHIP_MESSAGE;

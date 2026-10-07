@@ -280,7 +280,7 @@ function EnvironmentCards({ view }: { view: CanonicalStatusView }) {
 									semantic={row.evidence === 'LIVE' ? 'verified' : 'unverified'}
 								/>
 							</header>
-							<dl>
+							<div className="canonical-status__status-list">
 								<StatusRow
 									label="Esquema"
 									semantic={schemaRemediation(row).semantic}
@@ -306,7 +306,7 @@ function EnvironmentCards({ view }: { view: CanonicalStatusView }) {
 									value={EVIDENCE_LABELS[row.evidence]}
 									detail={row.probedAt ? formatWhen(row.probedAt) : undefined}
 								/>
-							</dl>
+							</div>
 							<p className="canonical-status__attention-count">
 								Publicación: <strong>{row.invitationAttentionCount}</strong>{' '}
 								requiere(n) atención · conflictos: {row.identityConflictsCount}

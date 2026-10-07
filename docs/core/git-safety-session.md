@@ -12,8 +12,9 @@ Protected hard-fail state is limited to the current mutable task/session:
 
 - current HEAD (including unborn/null HEAD);
 - current symbolic branch / detached state;
-- index (staged) state via semantic index metadata (blob OIDs / modes / paths — never buffered
-  binary patch contents).
+- staged changes relative to HEAD, via `git diff --cached --raw` metadata (blob OIDs / modes / paths
+  — never buffered binary patch contents). A branch switch or commit that leaves nothing staged is
+  not index drift.
 
 Other local heads, tags, and stash refs may be recorded as diagnostics only. Unrelated
 multi-worktree or concurrent-task mutation of those global refs must **not** cause an unconditional
@@ -27,6 +28,11 @@ prove absence of remote pushes or of transient mutate-then-restore activity.
 ```sh
 pnpm agent:git-safety:start
 ```
+
+When another agent session may work in the same checkout, pass `--session=<id>` (for example the
+task branch, or set `CELEBRA_GIT_SAFETY_SESSION`) to `start`, `check` and `finish`. Each session
+then keeps its own `.agent/tmp/git-safety-baseline.<id>.json`, so closing one session never consumes
+another session's evidence. Without it, sessions share the legacy baseline file.
 
 Replaces an existing baseline only when it shows no protected drift; a drifted or invalid baseline
 fails closed and is preserved. Writes `.agent/tmp/git-safety-baseline.json` with schema version,

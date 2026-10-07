@@ -162,31 +162,26 @@ Before creating a record, collect:
   reception, itinerary, gallery, gifts, music, quote, thank-you message, envelope, map providers,
   WhatsApp templates, personalized passes, location gating, and sharing metadata.
 
-Choose the event type from `EVENT_TYPES` and a compatible editor preset from `DEMO_PRESET_CATALOG`
-(or the managed definition's `baseDemoId`). The preset's `eventType` must match the invitation event
-type. Managed definitions are validated by the `invitation:release` dry-run before apply. Low-level
-`createInvitation()` still enforces the same preset invariant for demos, tests, and internal callers
-— not for Dashboard client creates.
+Choose the event type from `EVENT_TYPES` and a theme preset from `THEME_PRESETS`. Managed
+definitions are validated by the `invitation:release` dry-run before apply.
 
 Choose slug roles independently:
 
 - The route slug identifies `/{eventType}/{slug}` and is unique with event type.
-- `previewSlug` identifies the static demo used by the editor.
 - `_assetSlug` identifies the asset registry namespace.
 - `visualProfileId`, when present, selects invitation-specific CSS without changing the URL.
 
 Check collisions in existing invitations, published content, and RSVP events. Do not infer that
-`slug`, `previewSlug`, and `_assetSlug` are equal.
+`slug` and `_assetSlug` are equal.
 
 ## 2. Canonical references
 
 Reference selection is concern-specific; no invitation is universally canonical.
 
-| Reference                       | Use it for                                                  | Reusable patterns                                                                    | Do not copy                                                    |
-| ------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
-| `demo-xv-jewelry-box`           | Asset organization and a complete XV baseline               | Namespace layout, internal asset keys, ceremony/reception, standard section contract | Names, copy, dates, colors, crop decisions                     |
-| `demo-baby-shower-celestial`    | Optional-section and intentionally omitted-section coverage | Compact section order, sparse content, grouped family/location/gifts behavior        | Baby-shower-specific narrative or the Leah Lexa client profile |
-| `demo-boda-jewelry-box-wedding` | Non-XV and wedding structure                                | Couple naming, ceremony/reception separation, wedding theme compatibility            | Wedding-only semantics for other event types                   |
+| Reference                       | Use it for                                    | Reusable patterns                                                                    | Do not copy                                  |
+| ------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------- |
+| `demo-xv-celestial-blue`        | Asset organization and a complete XV baseline | Namespace layout, internal asset keys, ceremony/reception, standard section contract | Names, copy, dates, colors, crop decisions   |
+| `demo-boda-jewelry-box-wedding` | Non-XV and wedding structure                  | Couple naming, ceremony/reception separation, wedding theme compatibility            | Wedding-only semantics for other event types |
 
 These are reference recommendations. Runtime collection lookup, static eligibility, editor presets
 and showroom approval have separate owners listed in
@@ -214,11 +209,9 @@ Production promotion → pnpm prod:apply -- --slug <slug> --apply (owner-only)
 4. Open the Editor from `/dashboard/invitaciones/{id}/editar` for environment overrides; those edits
    are divergence against the managed package and must be reconciled deliberately.
 
-`POST /api/dashboard/intake` and Dashboard demo-duplicate reject client creation so the API cannot
-bypass this workflow. Demo showroom rows continue to sync via list load
-(`synchronizeDemoInvitations`). Low-level `createInvitation` repository/service primitives remain
-for demos, provision, and tests — not for Dashboard-managed client creates. Do not create client
-records through manual SQL.
+The Dashboard exposes no create or duplicate endpoint, so the API cannot bypass this workflow, and
+it lists and edits only `kind = 'client'` rows. Demos are versioned content rendered from Git and
+are not mirrored into the database. Do not create client records through manual SQL.
 
 Preview E2E publication fixture bootstrap (slug `e2e-preview-publication`) is separate from managed
 client creation: use `pnpm invitation:preview-fixture --apply` (Preview-only; Production rejected),

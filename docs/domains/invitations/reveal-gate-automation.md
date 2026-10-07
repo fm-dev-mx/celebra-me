@@ -170,7 +170,7 @@ cross-check that a suspected hang is really an animation-timing problem.
 on later visits. Automation can seed that key, but there are three constraints:
 
 - `<eventSlug>` is the value of `data-event-slug` on the invitation root. Read it from the DOM.
-  Route slug, content slug, `previewSlug`, and `_assetSlug` are allowed to differ.
+  Route slug, content slug, and `_assetSlug` are allowed to differ.
 - **Demo invitations ignore the stored flag entirely.** When the root carries `data-is-demo="true"`,
   the gate is always shown so the demo experience stays intact. Seeding
   `envelope-opened-demo-xv-celestial-blue` leaves the page at `sealed` indefinitely — verified.
@@ -246,16 +246,33 @@ reported exactly that before the cause was understood.
 
 ## Troubleshooting: stuck at `sealed`
 
-| Symptom                                                            | Cause                                                                                           | Fix                                                                                                                                                                     |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Click reports success, state stays `sealed` for 2–3 s              | Normal: the open transition takes ~3.2–3.4 s                                                    | Wait with a bounded `waitForFunction`, not a fixed sleep                                                                                                                |
-| State reaches `preview-opened`, wait for `revealed` never resolves | Envelope `?screenshot=1&reveal=open` stops at letter preview until normalized                   | For content measurement use `?skipEnvelope=true`, or call `normalizeInvitationRevealedForCapture` (screenshot harness). Do not treat `preview-opened` as content-ready. |
-| `?reveal=open` alone does nothing                                  | `reveal` is only read when `screenshot` is present                                              | Use `?screenshot=1&reveal=open`                                                                                                                                         |
-| Seeded `envelope-opened-*`, page still `sealed`                    | Target is a demo (`data-is-demo="true"`), which ignores the stored flag                         | Use `?skipEnvelope=true`                                                                                                                                                |
-| Click lands but nothing happens at all                             | Clicked before `ds-envelope-reveal` was defined                                                 | Wait on `customElements.get('ds-envelope-reveal')`                                                                                                                      |
-| State never leaves `sealed` even after 10 s                        | The `envCardRise` animation never ran (stylesheet failed, animation interrupted, tab throttled) | The component now falls back to a bounded safety timer; if it still hangs, file a bug                                                                                   |
-| `.has-motion` count is `0`, everything already `.is-visible`       | The 8 s fail-open fired, or the context emulates `prefers-reduced-motion: reduce`               | Re-run with `?skipEnvelope=true` inside 8 s and with `reducedMotion: 'no-preference'`                                                                                   |
-| `.has-motion` count is `0`, nothing is `.is-visible`               | The observed elements never mounted, so no observer was ever created                            | Verify the reveal state and the selectors before blaming motion                                                                                                         |
+- **Symptom:** Click reports success, state stays `sealed` for 2–3 s
+  - **Cause:** Normal: the open transition takes ~3.2–3.4 s
+  - **Fix:** Wait with a bounded `waitForFunction`, not a fixed sleep
+- **Symptom:** State reaches `preview-opened`, wait for `revealed` never resolves
+  - **Cause:** Envelope `?screenshot=1&reveal=open` stops at letter preview until normalized
+  - **Fix:** For content measurement use `?skipEnvelope=true`, or call
+    `normalizeInvitationRevealedForCapture` (screenshot harness). Do not treat `preview-opened` as
+    content-ready.
+- **Symptom:** `?reveal=open` alone does nothing
+  - **Cause:** `reveal` is only read when `screenshot` is present
+  - **Fix:** Use `?screenshot=1&reveal=open`
+- **Symptom:** Seeded `envelope-opened-*`, page still `sealed`
+  - **Cause:** Target is a demo (`data-is-demo="true"`), which ignores the stored flag
+  - **Fix:** Use `?skipEnvelope=true`
+- **Symptom:** Click lands but nothing happens at all
+  - **Cause:** Clicked before `ds-envelope-reveal` was defined
+  - **Fix:** Wait on `customElements.get('ds-envelope-reveal')`
+- **Symptom:** State never leaves `sealed` even after 10 s
+  - **Cause:** The `envCardRise` animation never ran (stylesheet failed, animation interrupted, tab
+    throttled)
+  - **Fix:** The component now falls back to a bounded safety timer; if it still hangs, file a bug
+- **Symptom:** `.has-motion` count is `0`, everything already `.is-visible`
+  - **Cause:** The 8 s fail-open fired, or the context emulates `prefers-reduced-motion: reduce`
+  - **Fix:** Re-run with `?skipEnvelope=true` inside 8 s and with `reducedMotion: 'no-preference'`
+- **Symptom:** `.has-motion` count is `0`, nothing is `.is-visible`
+  - **Cause:** The observed elements never mounted, so no observer was ever created
+  - **Fix:** Verify the reveal state and the selectors before blaming motion
 
 ### Safety timer
 

@@ -16,6 +16,17 @@ on:
                 type: choice
                 options: [compare, candidate]
                 default: compare
+            # Paired-trial inputs: the defaults reproduce the certified serial comparison.
+            capture_execution:
+                description: 'Visual capture execution for a paired trial'
+                type: choice
+                options: [serial, parallel]
+                default: serial
+            browser_workers:
+                description: 'Playwright workers for a paired trial'
+                type: choice
+                options: ['2', '4']
+                default: '2'
     push:
         branches:
             - develop
@@ -27,6 +38,39 @@ on:
 # Independent tiers isolate browser and disposable database state.
 # The protected Application Suite status aggregates every application result.
 jobs:
+    # A promotion pull request whose merge candidate holds the tree already validated on develop
+    # reuses that run instead of repeating every application tier.
+    evidence-reuse:
+        name: Evidence reuse
+        if: >-
+            github.event_name == 'pull_request' &&
+            github.head_ref == 'develop' &&
+            github.event.pull_request.head.repo.full_name == github.repository
+        runs-on: ubuntu-24.04
+        timeout-minutes: 5
+        outputs:
+            reuse: ${{ steps.assessment.outputs.reuse }}
+            source-run-id: ${{ steps.assessment.outputs.source_run_id }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+              with:
+                  lfs: false
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
+
+            - name: Assess integration evidence for the merge candidate
+              id: assessment
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  PR_HEAD_REF: ${{ github.head_ref }}
+                  PR_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+                  PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+              run: node scripts/ops/ci-evidence-reuse.ts
+
     policy-validation:
         name: Repository Policy
         if: github.event.inputs.visual_mode != 'candidate'
@@ -119,7 +163,12 @@ jobs:
 
     application-checks:
         name: Application / ${{ matrix.tier }}
-        if: github.event.inputs.visual_mode != 'candidate'
+        needs: evidence-reuse
+        # A skipped or failed evidence job never blocks execution; only confirmed reuse skips a tier.
+        if: >-
+            !cancelled() &&
+            needs.evidence-reuse.outputs.reuse != 'true' &&
+            github.event.inputs.visual_mode != 'candidate'
         runs-on: ubuntu-24.04
         timeout-minutes: 30
         strategy:
@@ -173,8 +222,14 @@ jobs:
               if: matrix.tier == 'database'
               run: pnpm test:db:managed-contracts
 
+            - name: Event memories disposable DB contracts
+              if: matrix.tier == 'database'
+              run: pnpm test:db:memories-contracts
+
     browser-validation:
         name: Application / browser
+        needs: evidence-reuse
+        if: ${{ !cancelled() && needs.evidence-reuse.outputs.reuse != 'true' }}
         outputs:
             check-outcome: ${{ steps.browser-outcome.outputs.classification }}
         runs-on: ubuntu-24.04
@@ -208,7 +263,10 @@ jobs:
               id: browser-checks
               if: github.event.inputs.visual_mode != 'candidate'
               continue-on-error: true
-              run: pnpm test:e2e:ci --max-failures=5 --workers=2
+              env:
+                  BROWSER_WORKERS: ${{ github.event.inputs.browser_workers || '2' }}
+                  VISUAL_PARITY_PARALLEL: ${{ github.event.inputs.capture_execution == 'parallel' && '1' || '0' }}
+              run: pnpm test:e2e:ci --max-failures=5 --workers="$BROWSER_WORKERS"
 
             - name: Classify browser outcome
               id: browser-outcome
@@ -256,7 +314,7 @@ jobs:
     application-validation:
         name: Application Suite
         runs-on: ubuntu-24.04
-        needs: [policy-validation, application-checks, browser-validation]
+        needs: [evidence-reuse, policy-validation, application-checks, browser-validation]
         if: always() && github.event.inputs.visual_mode != 'candidate'
         steps:
             - name: Require every application tier to pass
@@ -264,11 +322,26 @@ jobs:
                   APPLICATION_RESULT: ${{ needs.application-checks.result }}
                   BROWSER_RESULT: ${{ needs.browser-validation.result }}
                   POLICY_RESULT: ${{ needs.policy-validation.result }}
-              run: test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = success && test "$POLICY_RESULT" = success
+                  EVIDENCE_REUSE: ${{ needs.evidence-reuse.outputs.reuse }}
+              run: |
+                  test "$POLICY_RESULT" = success
+                  if [ "$EVIDENCE_REUSE" = true ]; then
+                    # Reused integration evidence stands in for tiers that must not have executed.
+                    test "$APPLICATION_RESULT" = skipped && test "$BROWSER_RESULT" = skipped
+                  else
+                    test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = success
+                  fi
 
     validation-metrics:
         name: Validation metrics
-        needs: [policy-validation, application-checks, browser-validation, application-validation]
+        needs:
+            [
+                evidence-reuse,
+                policy-validation,
+                application-checks,
+                browser-validation,
+                application-validation,
+            ]
         if: always()
         runs-on: ubuntu-24.04
         steps:
@@ -283,6 +356,9 @@ jobs:
                   GH_TOKEN: ${{ github.token }}
                   VISUAL_PARITY_MODE: ${{ github.event.inputs.visual_mode || 'compare' }}
                   BROWSER_CHECK_OUTCOME: ${{ needs.browser-validation.outputs.check-outcome || 'code' }}
+                  CAPTURE_EXECUTION: ${{ github.event.inputs.capture_execution || 'serial' }}
+                  BROWSER_WORKERS: ${{ github.event.inputs.browser_workers || '2' }}
+                  EVIDENCE_SOURCE_RUN_ID: ${{ needs.evidence-reuse.outputs.source-run-id }}
               run: node scripts/ops/ci-metrics.ts
             - uses: actions/upload-artifact@v7
               with:

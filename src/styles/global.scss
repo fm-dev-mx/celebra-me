@@ -11,6 +11,7 @@
 @use 'tokens/semantic/type';
 @use 'ui/status-pages';
 @use 'ui/memories-capture';
+@use 'ui/memories-kit';
 
 :root {
 	--spacing-xs: var(--spacing-2);

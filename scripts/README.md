@@ -94,6 +94,8 @@ action before the configured Prettier formatter.
 | `pnpm db:disposable:test`                       | Human                | `scripts/db/`  | pgTAP + migration tests (also embedded in validate pipeline)            |
 | `pnpm test:db:rsvp-contracts`                   | CI                   | `scripts/db/`  | disposable RSVP DB/HTTP contracts                                       |
 | `pnpm test:db:managed-contracts`                | CI                   | `scripts/db/`  | disposable managed rekey contracts                                      |
+| `pnpm test:db:memories-contracts`               | CI                   | `scripts/db/`  | disposable event memories pgTAP files + transaction races               |
+| `pnpm preflight:memories`                       | Owner/agent          | `scripts/ops/` | read-only Production check of one memory space (GET/OPTIONS only)       |
 | `pnpm db:disposable:phase3-concurrency`         | Human                | `scripts/db/`  | concurrency/stale-plan scenarios                                        |
 | `pnpm db:validate:pipeline`                     | Human/agent          | `scripts/db/`  | full database validation pipeline                                       |
 | `pnpm db:local:restore-from-dump`               | Human                | `scripts/db/`  | import production dump into persistent local (PII)                      |

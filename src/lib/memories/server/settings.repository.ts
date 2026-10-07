@@ -13,7 +13,7 @@ const EVENT_EMBED = 'event:events!inner(slug,title,deleted_at)';
 const SELECT =
 	`event_id,public_slug,enabled,time_zone,upload_starts_at,upload_ends_at,retention_ends_at,` +
 	`max_event_objects,max_event_bytes,max_session_files,max_session_videos,max_session_bytes,` +
-	`entitlement,created_at,updated_at,${EVENT_EMBED}`;
+	`entitlement,expected_guests,admin_note,share_version,share_enabled_at,created_at,updated_at,${EVENT_EMBED}`;
 const ACTIVE_EVENT_FILTER = 'event.deleted_at=is.null';
 
 type SettingsRow = {
@@ -30,6 +30,10 @@ type SettingsRow = {
 	max_session_videos: number;
 	max_session_bytes: number;
 	entitlement: MemoriesEntitlement;
+	expected_guests: number | null;
+	admin_note: string | null;
+	share_version: number | null;
+	share_enabled_at: string | null;
 	created_at: string;
 	updated_at: string;
 	event: { slug: string; title: string; deleted_at: string | null } | null;
@@ -52,6 +56,10 @@ function toRecord(row: SettingsRow): MemoriesSpaceRecord {
 		maxSessionVideos: Number(row.max_session_videos),
 		maxSessionBytes: Number(row.max_session_bytes),
 		entitlement: row.entitlement,
+		expectedGuests: row.expected_guests === null ? null : Number(row.expected_guests),
+		adminNote: row.admin_note,
+		shareVersion: Number(row.share_version ?? 0),
+		shareEnabledAt: row.share_enabled_at ?? null,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 	};
@@ -106,6 +114,8 @@ export interface MemorySpaceInsert extends MemoriesSpaceLimits {
 	uploadEndsAt: string;
 	retentionEndsAt: string;
 	entitlement: MemoriesEntitlement;
+	expectedGuests?: number | null;
+	adminNote?: string | null;
 	createdBy: string;
 }
 
@@ -126,6 +136,9 @@ function toColumns(input: MemorySpaceUpdate): Record<string, unknown> {
 	if (input.maxSessionVideos !== undefined) body.max_session_videos = input.maxSessionVideos;
 	if (input.maxSessionBytes !== undefined) body.max_session_bytes = input.maxSessionBytes;
 	if (input.entitlement !== undefined) body.entitlement = input.entitlement;
+	// `null` clears the stored value; `undefined` leaves it untouched.
+	if (input.expectedGuests !== undefined) body.expected_guests = input.expectedGuests;
+	if (input.adminNote !== undefined) body.admin_note = input.adminNote;
 	return body;
 }
 
@@ -156,6 +169,28 @@ export async function updateMemorySpace(
 		useServiceRole: true,
 		prefer: 'return=representation',
 		body: { ...toColumns(input), updated_at: new Date().toISOString() },
+	});
+	return rows[0] ? toRecord(rows[0]) : null;
+}
+
+/**
+ * Turns the shared gallery on or off, or bumps its version to revoke the link.
+ * `expectedVersion` makes a rotation a compare-and-swap, so two clicks revoke once.
+ */
+export async function updateMemorySpaceShare(
+	eventId: string,
+	input: { shareEnabledAt: string | null; shareVersion: number; expectedVersion: number },
+): Promise<MemoriesSpaceRecord | null> {
+	const rows = await supabaseRestRequest<SettingsRow[]>({
+		pathWithQuery: `${TABLE}?event_id=eq.${encodeURIComponent(eventId)}&share_version=eq.${input.expectedVersion}&select=${SELECT}`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body: {
+			share_enabled_at: input.shareEnabledAt,
+			share_version: input.shareVersion,
+			updated_at: new Date().toISOString(),
+		},
 	});
 	return rows[0] ? toRecord(rows[0]) : null;
 }

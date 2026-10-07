@@ -42,8 +42,11 @@ function parseFocalPoint(value: string): { x: number; y: number } | null {
 	if (!value) return null;
 	const defaultCenter = { x: 50, y: 50 };
 	const keywordMap: Record<string, number> = {
-		left: 0, center: 50, right: 100,
-		top: 0, bottom: 100,
+		left: 0,
+		center: 50,
+		right: 100,
+		top: 0,
+		bottom: 100,
 	};
 	const parts = value.trim().split(/\s+/);
 	if (parts.length === 0) return defaultCenter;
@@ -60,8 +63,12 @@ function parseFocalPoint(value: string): { x: number; y: number } | null {
 		return defaultCenter;
 	}
 	if (parts.length >= 2) {
-		const x = parts[0].endsWith('%') ? Math.round(parseFloat(parts[0])) : (keywordMap[parts[0]] ?? 50);
-		const y = parts[1].endsWith('%') ? Math.round(parseFloat(parts[1])) : (keywordMap[parts[1]] ?? 50);
+		const x = parts[0].endsWith('%')
+			? Math.round(parseFloat(parts[0]))
+			: (keywordMap[parts[0]] ?? 50);
+		const y = parts[1].endsWith('%')
+			? Math.round(parseFloat(parts[1]))
+			: (keywordMap[parts[1]] ?? 50);
 		return { x, y };
 	}
 	return defaultCenter;
@@ -110,7 +117,15 @@ function resolveCurrentOnChange(
 	return onDesktopChange ?? sharedOnChange;
 }
 
-function ImagePreview({ imageSrc, alt, previewVar, focalPos, coords, dragging, updateFromPosition }: {
+function ImagePreview({
+	imageSrc,
+	alt,
+	previewVar,
+	focalPos,
+	coords,
+	dragging,
+	updateFromPosition,
+}: {
 	imageSrc: string;
 	alt: string;
 	previewVar: string;
@@ -184,12 +199,28 @@ export default function FocalPointControl({
 	const [activeDevice, setActiveDevice] = useState<DeviceKey>('mobile');
 	const [showCustomInput, setShowCustomInput] = useState(false);
 
-	const currentValue = resolveCurrentValue(mode, activeDevice, value, mobileValue, tabletValue, desktopValue);
+	const currentValue = resolveCurrentValue(
+		mode,
+		activeDevice,
+		value,
+		mobileValue,
+		tabletValue,
+		desktopValue,
+	);
 
-	const currentOnChange = resolveCurrentOnChange(mode, activeDevice, onChange, onMobileChange, onTabletChange, onDesktopChange);
+	const currentOnChange = resolveCurrentOnChange(
+		mode,
+		activeDevice,
+		onChange,
+		onMobileChange,
+		onTabletChange,
+		onDesktopChange,
+	);
 
-	const customMode = showCustomInput ||
-		(!!currentValue && !FOCAL_PRESETS.flat().includes(currentValue as (typeof FOCAL_PRESETS)[number][number]));
+	const customMode =
+		showCustomInput ||
+		(!!currentValue &&
+			!FOCAL_PRESETS.flat().includes(currentValue as (typeof FOCAL_PRESETS)[number][number]));
 
 	const isValid = !currentValue || isValidFocalPoint(currentValue);
 	const focalPos = isValid ? currentValue || 'center' : 'center';
@@ -210,9 +241,8 @@ export default function FocalPointControl({
 		setShowCustomInput(false);
 	};
 
-	const previewVar = mode === 'per-device'
-		? FOCAL_POINT_VARS[activeDevice]
-		: '--gallery-item-focal-point';
+	const previewVar =
+		mode === 'per-device' ? FOCAL_POINT_VARS[activeDevice] : '--gallery-item-focal-point';
 
 	return (
 		<div className="focal-point-control">
@@ -286,7 +316,7 @@ export default function FocalPointControl({
 						/>
 						{!isValid && (
 							<span className="focal-point-control__error">
-								Formato inválido. Usa porcentajes (50% 40%) o posiciones (center
+								Formato inválido. Use porcentajes (50% 40%) o posiciones (center
 								top).
 							</span>
 						)}

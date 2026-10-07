@@ -177,7 +177,7 @@ export const ProspectCommercialDetail: React.FC<ProspectCommercialDetailProps> =
 
 export const EmptyCommercialDetail: React.FC = () => (
 	<div className="sales-empty-state sales-empty-state--detail">
-		<strong>Selecciona una persona u oportunidad</strong>
+		<strong>Seleccione una persona u oportunidad</strong>
 		<p>Aquí verás su estado, órdenes, saldo, actividad y la acción recomendada.</p>
 		<ul aria-label="Información disponible en la ficha">
 			<li>Contacto y contexto</li>

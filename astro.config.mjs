@@ -136,8 +136,29 @@ export default defineConfig({
 
 	integrations: [
 		react(),
-		sitemap(),
-		robotsTxt(),
+		sitemap({
+			filter: (page) => {
+				const url = new URL(page);
+				const p = url.pathname;
+				const clean = p.replace(/\/+$/, '');
+				return (
+					!p.startsWith('/dashboard') &&
+					!p.startsWith('/api') &&
+					!p.startsWith('/r/') &&
+					!p.startsWith('/captura') &&
+					!['/login', '/under-construction', '/404'].includes(clean)
+				);
+			},
+		}),
+		robotsTxt({
+			policy: [
+				{
+					userAgent: '*',
+					allow: '/',
+					disallow: ['/dashboard/', '/api/', '/r/', '/captura/', '/under-construction'],
+				},
+			],
+		}),
 		testVariantHarnessIntegration(),
 		supabaseDevPreflightIntegration(),
 	],

@@ -36,7 +36,7 @@ describe('git-safety start/finish lifecycle', () => {
 			expect(start.status).toBe(0);
 			expect(existsSync(baselinePath(repoRoot))).toBe(true);
 			const baseline = JSON.parse(readFileSync(baselinePath(repoRoot), 'utf8'));
-			expect(baseline.version).toBe(2);
+			expect(baseline.version).toBe(3);
 			expect(baseline.head).toMatch(/^[0-9a-f]{40}$/);
 			expect(baseline.branch).toBeTruthy();
 			expect(typeof baseline.indexFingerprint).toBe('string');
@@ -77,6 +77,40 @@ describe('git-safety start/finish lifecycle', () => {
 			const finish = runGitSafety(repoRoot, ['finish']);
 			expect(finish.status).toBe(1);
 			expect(`${finish.stdout}\n${finish.stderr}`).toContain('no active session baseline');
+		} finally {
+			cleanupFixture(repoRoot);
+		}
+	});
+
+	it('keeps concurrent session baselines independent', () => {
+		const repoRoot = createRepo();
+		const sessionPath = (session: string) =>
+			path.join(repoRoot, '.agent', 'tmp', `git-safety-baseline.${session}.json`);
+		try {
+			expect(runGitSafety(repoRoot, ['start', '--session=feat-a']).status).toBe(0);
+			expect(runGitSafety(repoRoot, ['start', '--session', 'feat-b']).status).toBe(0);
+			expect(existsSync(baselinePath(repoRoot))).toBe(false);
+
+			const finishB = runGitSafety(repoRoot, ['finish', '--session=feat-b']);
+			expect(finishB.status).toBe(0);
+			expect(existsSync(sessionPath('feat-b'))).toBe(false);
+			expect(existsSync(sessionPath('feat-a'))).toBe(true);
+
+			expect(runGitSafety(repoRoot, ['finish']).status).toBe(1);
+			expect(runGitSafety(repoRoot, ['check', '--session=feat-a']).status).toBe(0);
+			expect(runGitSafety(repoRoot, ['finish', '--session=feat-a']).status).toBe(0);
+			expect(existsSync(sessionPath('feat-a'))).toBe(false);
+		} finally {
+			cleanupFixture(repoRoot);
+		}
+	});
+
+	it('rejects session ids that could escape the baseline directory', () => {
+		const repoRoot = createRepo();
+		try {
+			const start = runGitSafety(repoRoot, ['start', '--session=../escape']);
+			expect(start.status).toBe(1);
+			expect(`${start.stdout}\n${start.stderr}`).toContain('--session must match');
 		} finally {
 			cleanupFixture(repoRoot);
 		}
@@ -230,10 +264,14 @@ describe('git-safety start/finish lifecycle', () => {
 		}
 	});
 
-	it('accepts authorized branch-switch when index is unchanged', () => {
+	it('accepts authorized branch-switch to a branch with a different tree', () => {
 		const repoRoot = createRepo();
 		try {
-			runCommand('git', ['branch', 'feature'], { cwd: repoRoot, env: sanitizeEnv() });
+			runCommand('git', ['switch', '-c', 'feature'], { cwd: repoRoot, env: sanitizeEnv() });
+			writeFileSync(path.join(repoRoot, 'feature.txt'), 'f\n', 'utf8');
+			runCommand('git', ['add', 'feature.txt'], { cwd: repoRoot, env: sanitizeEnv() });
+			runCommand('git', ['commit', '-m', 'feature'], { cwd: repoRoot, env: sanitizeEnv() });
+			runCommand('git', ['switch', '-'], { cwd: repoRoot, env: sanitizeEnv() });
 			expect(runGitSafety(repoRoot, ['start']).status).toBe(0);
 			runCommand('git', ['checkout', 'feature'], { cwd: repoRoot, env: sanitizeEnv() });
 			const finish = runGitSafety(repoRoot, [

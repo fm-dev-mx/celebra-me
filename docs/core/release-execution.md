@@ -21,17 +21,19 @@ implementing these skills is never a live-release invocation.
    failed command that changed state requires inspection before any retry. Declarations describe
    existing authority and never grant it; preserve a failed baseline.
 4. Fetch origin, resolve exact remote base/source SHAs and ancestry, and inspect the complete range.
-   Fast-forward develop when possible. Integrate in-scope task commits without rewriting shared
-   history. If switching to develop would violate lane assignment or another checkout owns it, stop
-   and request assignment of that exact integration checkout. Do not evade the boundary with
-   alternate worktrees or refspecs. Conflicts with ambiguous intent require a decision; never choose
-   `ours`/`theirs` automatically. Recheck remote tips immediately before every write.
+   Integrate in-scope task branches into develop with merge commits as
+   [Git governance](git-governance.md#task-lifecycle) defines, without rewriting shared history. If
+   switching to develop would violate lane assignment or another checkout owns it, stop and request
+   assignment of that exact integration checkout. Do not evade the boundary with alternate worktrees
+   or refspecs. Conflicts with ambiguous intent require a decision; never choose `ours`/`theirs`
+   automatically. Recheck remote tips immediately before every write.
 
 ## Checks and evidence reuse
 
-- Use `pnpm ops:classify-release -- --base <base-sha> --head <head-sha>` and the actual diff. Select
-  local checks through [validation procedures](validation-procedures.md). Do not run full local CI
-  merely because this is a release. Preserve normal pre-commit and pre-push hooks.
+- Inspect the actual diff; Repository Policy already runs `ops:classify-release` on the pushed SHA.
+  Select local checks through [validation procedures](validation-procedures.md), and run
+  `pnpm visual:matrix:check` (seconds, browserless) before pushing visual-impact paths. Do not run
+  full local CI merely because this is a release. Preserve normal pre-commit and pre-push hooks.
 - Run `pnpm db:branch:parity -- --base <base-sha> --head <head-sha> --json` for the relevant range.
   Use branch-lane/database-parity read-only diagnosis and its fingerprinted checkpoint/clearance
   when sensitive. Do not inherit persistent DB mutation authority from those skills; their only
@@ -59,28 +61,31 @@ implementing these skills is never a live-release invocation.
 ## Preview integration
 
 1. Stage only named scope, commit only when needed, and inspect resulting commit/working tree.
-   Already committed scope requires neither staging nor a new commit.
+   Already committed scope requires neither staging nor a new commit. A needed commit (for example
+   accepted visual baselines) goes on a task branch created from `develop` and is then merged
+   (`--no-ff`); never author it directly on `develop`.
 2. Push only the validated `develop` ref with normal hooks and Git LFS. If origin already points at
    the intended SHA, skip the push and discover the existing CI/deployment.
-3. Wait for Repository CI on that exact integrated SHA. Use `pnpm ops:release-checks <exact-sha>`
-   for trusted policy/application/static evidence. Missing, skipped, cancelled, pending or failed
-   checks are not success. Task-branch CI is insufficient.
-4. Inspect Vercel through an available authenticated read-only connector/API/CLI. Resolve project,
-   deployment ID, Git SHA/ref, environment, readiness and immutable deployment URL from provider
-   evidence. Do not infer identity from URL spelling or a successful push. Require Preview,
-   `develop`, the expected SHA and READY. Compare any requested serving alias to that deployment.
-   Run `pnpm ops:post-deploy -- verify` with the provider-sourced `VERCEL_DISPATCH_EVENT`,
-   `VERCEL_DISPATCH_ENVIRONMENT`, `VERCEL_DISPATCH_PROJECT_ID`, independently resolved
-   `VERCEL_DISPATCH_EXPECTED_PROJECT_ID`, `VERCEL_DISPATCH_DEPLOYMENT_ID`, `VERCEL_DISPATCH_URL`,
-   `VERCEL_DISPATCH_COMMIT_SHA`, `VERCEL_DISPATCH_GIT_REF`, and `VERCEL_DEPLOYMENT_STATE`. Set
-   `RELEASE_EXPECTED_SHA` and `RELEASE_EXPECTED_ENVIRONMENT` from the Task Contract, not the
-   returned deployment. Use ready/Preview and promoted/Production dispatch transitions respectively.
-   The verifier checks correlation/readiness only; provider authenticity, alias and smoke are
-   independent requirements. Never synthesize provider evidence or set READY to make this pass.
-5. Run the read-only Preview smoke with `pnpm test:e2e:preview:public` against the verified URL. Use
-   `scripts/playwright/preview-environment.ts` for exact host/project/bypass prerequisites; never
-   run provisioning/publication suites to make smoke pass. Reuse prior smoke only when its SHA,
-   deployment ID, URL and relevant runtime configuration still match.
+3. Run `pnpm ops:release-status -- --sha <exact-sha> --target preview --wait` once, in the
+   background, and act on its single JSON result. It is read-only and polls silently (up to 20
+   minutes) for:
+   - trusted Repository Policy, Application Suite and Application / static results on the exact SHA
+     (task-branch CI is insufficient);
+   - the Preview deployment Vercel recorded on GitHub for that SHA: success state and an immutable
+     Preview URL;
+   - the `Vercel - celebra-me preview smoke` check. The Post-deploy Smoke workflow runs it on
+     `vercel.deployment.ready` for `develop`. It checks the dispatch, the `/api/health` SHA,
+     published invitation images (browserless) and `test:e2e:preview:public`;
+   - `/api/health` build identity on that URL, which must not report another SHA.
+
+   `VERIFIED` is the only success. `PENDING` after the timeout is unverified, and `FAILED` names its
+   blockers. Do not synthesize evidence or redeploy to make it pass.
+
+4. Only when the CI smoke cannot run (for example a failed dispatch), use `--smoke skip` and run
+   `pnpm test:e2e:preview:public` locally against the reported URL, as both `PLAYWRIGHT_BASE_URL`
+   and `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`. `scripts/playwright/preview-environment.ts`
+   owns the host, project and bypass prerequisites. Never run provisioning or publication suites to
+   make smoke pass.
 
 ## Production promotion
 
@@ -92,7 +97,10 @@ implementing these skills is never a live-release invocation.
 3. Find the existing open PR for `develop` → `main` before creating/updating it. Use production-pr
    for scope, template and evidence; this invocation continues beyond that helper's PR-only end.
    Attach the PR when the host supports it. Wait for required checks/reviews for the current PR head
-   and merge candidate; recheck source/base before merge. Never use admin/bypass/force options.
+   and merge candidate; recheck source/base before merge. Never use admin/bypass/force options. When
+   the `Evidence reuse` job confirms the completed `develop` run for an identical tree, the
+   application tiers report skipped and `Application Suite` still passes; a declined reuse runs them
+   in full.
 4. Merge through the permitted PR method, pinned to the reviewed head (for example the supported CLI
    head-match option). Read the merge result and actual main SHA; do not assume SHA equality. Then
    fast-forward `develop` to `origin/main` from Integration

@@ -1,5 +1,5 @@
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
-import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resolver';
+import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptEvent } from '@/lib/adapters/event';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
@@ -56,12 +56,9 @@ describe('Boda Melissa y Luis Osmar managed content regression', () => {
 			eventType: 'boda',
 			themeId: 'jewelry-box-wedding',
 		});
-		expect(
-			checkPublishGuard({
-				baseDemoId: MELISSA_EVENT.baseDemoId,
-				themeId: MELISSA_EVENT.themeId,
-			}),
-		).toEqual({ ok: true });
+		expect(resolveInvitationTheme({ themeId: MELISSA_EVENT.themeId })).toBe(
+			MELISSA_EVENT.themeId,
+		);
 	});
 
 	it('keeps the Mazatlan wall clock and canonical UTC instant aligned', () => {

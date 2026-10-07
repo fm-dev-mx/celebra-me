@@ -44,20 +44,20 @@ function collectScssFiles(dir) {
 	});
 }
 
-const THEME_PRESET_SKINS = new Set([
-	'angelic-presence',
-	'celestial-blue',
-	'editorial',
-	'editorial-rose',
-	'editorial-magazine',
-	'enchanted-rose',
-	'jewelry-box',
-	'jewelry-box-wedding',
-	'luxury-hacienda',
-	'premiere-floral',
-	'sacred-keepsake',
-	'single',
-]);
+/** Theme preset names, read from the theme contract so the list cannot drift. */
+function extractThemePresets() {
+	const source = fs.readFileSync(
+		path.join(__dirname, '..', 'src/lib/theme/theme-contract.ts'),
+		'utf8',
+	);
+	const declaration = /export const THEME_PRESETS = \[([\s\S]*?)\] as const;/.exec(source);
+	if (!declaration) throw new Error('THEME_PRESETS not found in theme-contract.ts');
+	const presets = [...declaration[1].matchAll(/'([^']+)'/g)].map((match) => match[1]);
+	if (presets.length === 0) throw new Error('THEME_PRESETS is empty in theme-contract.ts');
+	return new Set(presets);
+}
+
+const THEME_PRESET_SKINS = extractThemePresets();
 
 /** In-scope dirs scanned for forbidden theme-as-data-variant beyond the canonical registry. */
 const EXTRA_IN_SCOPE_VARIANT_DIRS = ['header', 'quote', 'music-player', 'footer'];
@@ -122,8 +122,7 @@ function checkPresetIsolation() {
 	const violations = [];
 
 	for (const file of files) {
-		if (!file.endsWith('.scss') || file === '_all.scss' || file === '_invitation.scss')
-			continue;
+		if (!file.endsWith('.scss') || file === '_all.scss') continue;
 
 		const filePath = path.join(presetsDir, file);
 		const content = fs.readFileSync(filePath, 'utf8');

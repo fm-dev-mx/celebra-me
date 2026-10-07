@@ -218,7 +218,7 @@ export function useSendInvitation({
 		const trimmed = editPhone.trim();
 		if (trimmed && !hasValidPhone(trimmed)) {
 			setPhoneError(
-				'Revisa el número de WhatsApp o déjalo vacío para elegir el contacto manualmente.',
+				'Revise el número de WhatsApp o déjelo vacío para elegir el contacto manualmente.',
 			);
 			return;
 		}

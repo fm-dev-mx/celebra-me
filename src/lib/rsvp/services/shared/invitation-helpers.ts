@@ -4,8 +4,8 @@ import { getRoutableEventEntry } from '@/lib/content/events';
 import { generateInvitationLink } from '@/utils/invitation-link';
 import { renderShareMessage } from '@/lib/rsvp/services/shared/share-message-renderer';
 import {
-	DEFAULT_INVITATION_MESSAGE,
 	DEFAULT_REMINDER_MESSAGE,
+	getDefaultInvitationTemplate,
 	resolveReminderTemplate,
 	resolveReminderSettings,
 	type ShareMessagesConfig,
@@ -53,14 +53,18 @@ function resolveTemplate(input: BuildShareMessageInput): string {
 	const messageType = input.messageType ?? 'invitation';
 
 	if (messageType === 'reminder') {
-		return resolveReminderTemplate(input.shareMessages?.reminder, input.attendanceStatus);
+		return resolveReminderTemplate(
+			input.shareMessages?.reminder,
+			input.attendanceStatus,
+			input.eventType,
+		);
 	}
 
 	if (input.shareMessages?.invitation) {
 		return input.shareMessages.invitation;
 	}
 
-	return DEFAULT_INVITATION_MESSAGE;
+	return getDefaultInvitationTemplate(input.eventType);
 }
 
 export function buildShareMessage(input: BuildShareMessageInput): string {

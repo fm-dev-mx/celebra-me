@@ -121,6 +121,23 @@ export default [
 					type: 'memories-ui',
 					pattern: ['src/components/memories/*', 'src/components/dashboard/memories/*'],
 				},
+				// Platform usage: contract (isomorphic) <- server / client / ui.
+				{
+					type: 'platform-contract',
+					pattern: 'src/lib/platform/contract/*',
+				},
+				{
+					type: 'platform-server',
+					pattern: 'src/lib/platform/server/*',
+				},
+				{
+					type: 'platform-client',
+					pattern: 'src/lib/platform/client/*',
+				},
+				{
+					type: 'platform-ui',
+					pattern: 'src/components/dashboard/platform/*',
+				},
 				{
 					type: 'worker',
 					pattern: 'workers/*',
@@ -154,6 +171,9 @@ export default [
 								{ to: { element: { type: 'memories-server' } } },
 								{ to: { element: { type: 'memories-client' } } },
 								{ to: { element: { type: 'memories-ui' } } },
+								{ to: { element: { type: 'platform-server' } } },
+								{ to: { element: { type: 'platform-client' } } },
+								{ to: { element: { type: 'platform-ui' } } },
 								{ to: { element: { type: 'page' } } },
 								{ to: { element: { type: 'domain' } } },
 							],
@@ -162,6 +182,7 @@ export default [
 							from: { element: { type: 'memories-client' } },
 							disallow: [
 								{ to: { element: { type: 'memories-server' } } },
+								{ to: { element: { type: 'platform-server' } } },
 								{ to: { element: { type: 'page' } } },
 							],
 						},
@@ -169,12 +190,55 @@ export default [
 							from: { element: { type: 'memories-ui' } },
 							disallow: [
 								{ to: { element: { type: 'memories-server' } } },
+								{ to: { element: { type: 'platform-server' } } },
 								{ to: { element: { type: 'page' } } },
 							],
 						},
 						{
 							from: { element: { type: 'memories-server' } },
 							disallow: [
+								{ to: { element: { type: 'memories-client' } } },
+								{ to: { element: { type: 'memories-ui' } } },
+								{ to: { element: { type: 'platform-client' } } },
+								{ to: { element: { type: 'platform-ui' } } },
+								{ to: { element: { type: 'page' } } },
+							],
+						},
+						// The platform contract stays import-free for the same bundling reason.
+						{
+							from: { element: { type: 'platform-contract' } },
+							disallow: [
+								{ to: { element: { type: 'platform-server' } } },
+								{ to: { element: { type: 'platform-client' } } },
+								{ to: { element: { type: 'platform-ui' } } },
+								{ to: { element: { type: 'memories-server' } } },
+								{ to: { element: { type: 'memories-client' } } },
+								{ to: { element: { type: 'memories-ui' } } },
+								{ to: { element: { type: 'page' } } },
+								{ to: { element: { type: 'domain' } } },
+							],
+						},
+						{
+							from: { element: { type: 'platform-client' } },
+							disallow: [
+								{ to: { element: { type: 'platform-server' } } },
+								{ to: { element: { type: 'memories-server' } } },
+								{ to: { element: { type: 'page' } } },
+							],
+						},
+						{
+							from: { element: { type: 'platform-ui' } },
+							disallow: [
+								{ to: { element: { type: 'platform-server' } } },
+								{ to: { element: { type: 'memories-server' } } },
+								{ to: { element: { type: 'page' } } },
+							],
+						},
+						{
+							from: { element: { type: 'platform-server' } },
+							disallow: [
+								{ to: { element: { type: 'platform-client' } } },
+								{ to: { element: { type: 'platform-ui' } } },
 								{ to: { element: { type: 'memories-client' } } },
 								{ to: { element: { type: 'memories-ui' } } },
 								{ to: { element: { type: 'page' } } },
@@ -186,6 +250,9 @@ export default [
 								{ to: { element: { type: 'memories-server' } } },
 								{ to: { element: { type: 'memories-client' } } },
 								{ to: { element: { type: 'memories-ui' } } },
+								{ to: { element: { type: 'platform-server' } } },
+								{ to: { element: { type: 'platform-client' } } },
+								{ to: { element: { type: 'platform-ui' } } },
 								{ to: { element: { type: 'domain' } } },
 								{ to: { element: { type: 'page' } } },
 							],

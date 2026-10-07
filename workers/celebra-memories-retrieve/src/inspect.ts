@@ -101,6 +101,86 @@ function parseMoovDuration(bytes: Uint8Array, moovOffset: number): number | null
 	return null;
 }
 
+type IsoBoxHeader = { type: string; size: number | null };
+
+/** Reads one top-level box header; `size` is null when the box runs to the end of the file. */
+function readIsoBoxHeader(bytes: Uint8Array, offset: number): IsoBoxHeader | null {
+	if (offset < 0 || offset + 8 > bytes.length) return null;
+	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+	const size = view.getUint32(offset);
+	const type = String.fromCharCode(
+		bytes[offset + 4],
+		bytes[offset + 5],
+		bytes[offset + 6],
+		bytes[offset + 7],
+	);
+	if (size === 0) return { type, size: null };
+	if (size === 1) {
+		if (offset + 16 > bytes.length) return null;
+		const largeSize = view.getUint32(offset + 8) * 4294967296 + view.getUint32(offset + 12);
+		return largeSize >= 16 && Number.isSafeInteger(largeSize)
+			? { type, size: largeSize }
+			: null;
+	}
+	return size >= 8 ? { type, size } : null;
+}
+
+/** Ranged reads the walk may spend before giving up on a malformed or unusual container. */
+const MAX_BOX_WALK_READS = 6;
+const LARGE_BOX_HEADER_BYTES = 16;
+
+type ReadObjectRange = (offset: number, length: number) => Promise<Uint8Array | null>;
+
+/**
+ * Follows the top-level boxes of an MP4/QuickTime object to its `moov` atom.
+ * Phone cameras write `moov` after the media data and its sample tables can
+ * outgrow any fixed tail window, so the walk jumps box by box with ranged reads.
+ */
+export async function locateVideoDurationSeconds(input: {
+	head: Uint8Array;
+	objectSize: number;
+	windowBytes: number;
+	readRange: ReadObjectRange;
+}): Promise<number | null> {
+	let window = input.head;
+	let windowStart = 0;
+	let position = 0;
+	let reads = 0;
+	const loadWindowAtPosition = async (): Promise<boolean> => {
+		if (reads >= MAX_BOX_WALK_READS) return false;
+		reads += 1;
+		const length = Math.min(input.windowBytes, input.objectSize - position);
+		const next = await input.readRange(position, length);
+		if (!next || next.length === 0) return false;
+		window = next;
+		windowStart = position;
+		return true;
+	};
+	while (position < input.objectSize) {
+		const headerBytes = Math.min(LARGE_BOX_HEADER_BYTES, input.objectSize - position);
+		const windowEnd = windowStart + window.length;
+		if (position < windowStart || position + headerBytes > windowEnd) {
+			if (!(await loadWindowAtPosition())) return null;
+		}
+		const header = readIsoBoxHeader(window, position - windowStart);
+		if (!header) return null;
+		if (header.type === 'moov') {
+			const wanted = Math.min(
+				header.size ?? input.windowBytes,
+				input.windowBytes,
+				input.objectSize - position,
+			);
+			if (windowStart !== position && windowStart + window.length < position + wanted) {
+				if (!(await loadWindowAtPosition())) return null;
+			}
+			return parseMoovDuration(window, position - windowStart);
+		}
+		if (header.size === null) return null;
+		position += header.size;
+	}
+	return null;
+}
+
 /** Extracts the duration from a bounded ISO BMFF buffer (head or tail range). */
 export function parseBoundedVideoDurationSeconds(bytes: Uint8Array): number | null {
 	if (bytes.length < 32) return null;

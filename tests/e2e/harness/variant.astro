@@ -78,7 +78,7 @@ if (fullPage) {
 		);
 		eventEntry = {
 			id: slug,
-			collection: 'event-templates',
+			collection: 'event-demos',
 			data,
 		} as unknown as EventContentEntry;
 	} else {
@@ -114,7 +114,7 @@ if (fullPage) {
 	if (syntheticGuestContext) builtPage.isDemoPreview = true;
 	const activePresetUrl = resolvePresetCssUrl(builtPage.viewModel.theme.preset);
 	const activeSectionCssPlan = resolveInvitationCssLoadPlan(
-		buildInvitationCssResolverInput({ page: builtPage, viewModel, slug }),
+		buildInvitationCssResolverInput({ page: builtPage, viewModel }),
 	);
 	fullPageHeadLinks = buildInvitationStylesheetHeadLinks({
 		presetUrl: activePresetUrl,
@@ -147,7 +147,7 @@ const viewModel = adaptEvent(eventEntry);
 
 const activePresetUrl = resolvePresetCssUrl(preset);
 const activeSectionCssPlan = resolveInvitationCssLoadPlan(
-	buildInvitationCssResolverInput({ page, viewModel, slug: 'test-synthetic-variant' }),
+	buildInvitationCssResolverInput({ page, viewModel }),
 );
 
 	headLinks = buildInvitationStylesheetHeadLinks({

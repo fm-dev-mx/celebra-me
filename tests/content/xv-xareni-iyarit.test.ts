@@ -4,13 +4,11 @@ import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { adaptEvent } from '@/lib/adapters/event';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import type { EventContentEntry } from '@/lib/content/events';
+import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
+import { buildSemanticAssetMap } from '../../scripts/provision/normalized-invitation-release.ts';
 
 const projectRoot = process.cwd();
 const assetDir = path.join(projectRoot, 'src/assets/images/events/xv-xareni-iyarit');
-const payloadPath = path.join(
-	projectRoot,
-	'tests/fixtures/invitations/xv-xareni-iyarit-db-payload.json',
-);
 const sectionsIndexPath = path.join(projectRoot, 'src/styles/themes/sections/_index.scss');
 const profilePath = path.join(projectRoot, 'src/styles/invitation-profiles/xareni-iyarit.scss');
 
@@ -67,14 +65,17 @@ describe('XV Xareni Iyarit client invitation preparation', () => {
 		});
 	});
 
-	describe('DB payload', () => {
-		it('validates the local DB payload artifact and renders the Xareni event selector', () => {
-			const payload = JSON.parse(fs.readFileSync(payloadPath, 'utf8'));
+	describe('published content', () => {
+		it('validates the published content and renders the Xareni event selector', () => {
+			const definition = getInvitationDefinition('xareni-iyarit');
+			const payload = definition.buildPublishedContent(
+				buildSemanticAssetMap(definition),
+			) as Record<string, Record<string, unknown>>;
 			const result = eventContentSchema.safeParse(payload);
 
 			if (!result.success) {
 				throw new Error(
-					`Xareni Iyarit DB payload failed schema validation:\n${JSON.stringify(result.error.issues, null, 2)}`,
+					`Xareni Iyarit published content failed schema validation:\n${JSON.stringify(result.error.issues, null, 2)}`,
 				);
 			}
 
@@ -82,17 +83,24 @@ describe('XV Xareni Iyarit client invitation preparation', () => {
 			expect(result.data.isDemo).toBe(false);
 			expect(result.data._assetSlug).toBe('xv-xareni-iyarit');
 			expect(result.data.theme.preset).toBe('celestial-blue');
-			expect(Object.hasOwn(result.data, 'music')).toBe(false);
-			expect(result.data.rsvp?.accessMode).toBe('hybrid');
+			expect(result.data.music).toMatchObject({
+				title: 'Bewitched - Laufey',
+				autoPlay: true,
+			});
+			expect(result.data.rsvp?.accessMode).toBe('personalized-only');
 			expect(result.data.rsvp?.confirmationMode).toBe('api');
-			expect(result.data.location?.venues?.find((venue) => venue.type === 'ceremony')?.image).toBeUndefined();
-			expect(result.data.location?.venues?.find((venue) => venue.type === 'reception')?.image).toBeUndefined();
+			expect(
+				result.data.location?.venues?.find((venue) => venue.type === 'ceremony')?.image,
+			).toBeUndefined();
+			expect(
+				result.data.location?.venues?.find((venue) => venue.type === 'reception')?.image,
+			).toBeUndefined();
 			expect(payload.itinerary.variant).toBe('timeline-paper');
 			expect(payload.gallery.variant).toBe('index-choreography');
-			expect(payload.thankYou.variant).toBe('editorial-back-cover');
+			expect(payload.thankYou.variant).toBe('portrait-keepsake');
 			expect(result.data.itinerary?.variant).toBe('timeline-paper');
 			expect(result.data.gallery?.variant).toBe('index-choreography');
-			expect(result.data.thankYou?.variant).toBe('editorial-back-cover');
+			expect(result.data.thankYou?.variant).toBe('portrait-keepsake');
 			expect(result.data.gifts?.title).toBe('Regalos');
 			expect(result.data.gifts?.items).toHaveLength(2);
 
@@ -137,7 +145,7 @@ describe('XV Xareni Iyarit client invitation preparation', () => {
 
 			expect(viewModel.sections.itinerary?.variant).toBe('timeline-paper');
 			expect(viewModel.sections.gallery?.variant).toBe('index-choreography');
-			expect(viewModel.sections.thankYou?.variant).toBe('editorial-back-cover');
+			expect(viewModel.sections.thankYou?.variant).toBe('portrait-keepsake');
 			expect(pageContext.wrapper.className.split(' ')).toEqual(
 				expect.arrayContaining([
 					'event-theme-wrapper',

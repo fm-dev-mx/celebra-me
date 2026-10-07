@@ -228,7 +228,6 @@ They are not a temporary fallback for real/client invitations.
 ### Active Collection Layout
 
 - `src/content/event-demos/**.json` for showcase demos
-- `src/content/event-templates/**.json` for internal master templates
 
 ### Rules
 
@@ -464,8 +463,41 @@ deployment.
 - **Organizer API:** `GET /api/dashboard/memories`, `GET|POST /api/dashboard/memories/:eventId`,
   `GET|PATCH|DELETE /api/dashboard/memories/:eventId/items/:itemId` (owner membership required;
   mutations are CSRF-protected through the dashboard client).
-- **Admin API:** `GET|POST /api/dashboard/admin/memories`,
-  `PATCH /api/dashboard/admin/memories/:eventId`.
+- **Organizer summary:** `GET /api/dashboard/memories/:eventId/summary` (window state, accepted
+  photo/video totals, distinct uploaders, remaining capacity as a percentage) and
+  `GET /api/dashboard/memories/:eventId/qr` (printable SVG). The host projection never carries
+  limits, commercial origin or rejection counts.
+- **Admin API:** `GET|POST /api/dashboard/admin/memories` (the list carries per-space usage and the
+  committed-capacity total), `PATCH /api/dashboard/admin/memories/:eventId` (edit, pause, resume;
+  audited with the previous and new `enabled`), and `GET /api/dashboard/admin/memories/:eventId/qr`.
+  Admin usage is aggregate only (counts, bytes, dates): administrators never see guest names,
+  aliases, object keys, captions or media.
+- **Usage sources:** per-space figures come from `event_memory_items` rows that still hold an R2
+  object (the same set the reservation quota counts) and from session counts; the committed-capacity
+  total compares them with the shared R2 allowance in `CLOUDFLARE_FREE_TIER`
+  (`src/lib/platform/contract/limits.ts`). Account-wide consumption is not part of this domain: the
+  super-admin platform console (`/dashboard/admin/plataforma`, `src/lib/platform/`) aggregates
+  Cloudflare, Supabase, Vercel and Cloudinary limit and cost metrics from read-only credentials
+  (`MEMORIES_CLOUDFLARE_*`, `SUPABASE_MANAGEMENT_TOKEN`, `VERCEL_API_TOKEN`, optional
+  `CLOUDINARY_USAGE_*`), one query per provider dataset cached for minutes. The console is scoped
+  per environment (Preview and Production deployments show only their own; Local shows both, with
+  optional `*_PREVIEW` / `*_PRODUCTION` Local-only overrides), while shared account/project quotas
+  stay visible in every panel labeled as shared. Missing credentials are reported by variable name
+  with a description and the provider's setup link - never values. Every provider card degrades on
+  its own (`ok` / `unconfigured` / `unavailable`) and the report carries aggregates only. Free-plan
+  allowances and the 70 %/90 % warning thresholds live in `src/lib/platform/contract/limits.ts`.
+- **QR:** `src/lib/memories/qr.ts` renders the printable SVG for both dashboard routes and the
+  `memories:qr` CLI; a test pins the SHA-256 of the SVG already printed.
+- **Planning and warnings:** `event_memory_settings.expected_guests` and `admin_note` are
+  administrator-only planning inputs; the reservation RPC never reads them, the note is never
+  audited, and neither reaches the host projection. `contract/capacity.ts` turns a quota into photo,
+  video and guest estimates from declared reference sizes (assumptions, not measurements) and
+  computes the storage a space commits against the shared R2 allowance; the admin form asks for an
+  explicit acknowledgement before committing past it. Both dashboards warn
+  `MEMORIES_RETENTION_WARNING_DAYS` before retention ends: the host sees a countdown, and the admin
+  console flags spaces with accepted files and no recorded host download (`download_requested` audit
+  rows by an organizer). That evidence proves a download happened, not that it was complete. No
+  automatic email is sent.
 - **Data:** `event_memory_settings` (window, retention, quotas, entitlement; `on delete restrict` to
   `events`), `event_memory_sessions`, `event_memory_items`, `event_memory_audit_events`. The
   reservation RPC decides availability, window and every quota under one advisory lock; a single
@@ -474,6 +506,16 @@ deployment.
 - **Workers:** `celebra-memories-sign` (`/sign`, `/upload`) and `celebra-memories-retrieve`
   (`/retrieve`) verify ECDSA-signed app requests, enforce the global media policy and never learn
   about events. Upload capabilities are AES-GCM sealed so the browser cannot read object keys.
+  `/upload` answers 412 when the object already exists, so a PUT retried after a lost response goes
+  on to confirm instead of failing. Video inspection follows the container's top-level boxes with
+  ranged reads to the `moov` atom, because phones write it after the media data and its size is
+  unbounded; a fixed tail window is only the last resort.
+- **Retries and refusals:** the app rounds a video duration to the catalog scale
+  (`MEMORIES_VIDEO_DURATION_DECIMALS`) before reserving, so a retried request replays the same row
+  instead of conflicting with it. A refused reservation carries `error.details.reason`
+  (`MEMORIES_RESERVATION_REFUSALS`) and a Sign Worker throttle surfaces as 429, so the guest copy
+  names the limit and what to do. Quota is counted on rows that still hold an R2 object: a deleted,
+  rejected, duplicate or abandoned file keeps its slot until the daily cleanup removes the object.
 - **Cleanup:** `GET /api/cron/memories-cleanup` (Vercel cron at 15:17 UTC, an off-hour for events in
   Mexico; bearer secret) settles stale in-flight items from storage evidence, expires
   retention-ended spaces, deletes scheduled objects in leased batches within a time budget,

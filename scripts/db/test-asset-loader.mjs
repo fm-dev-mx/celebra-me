@@ -1,13 +1,6 @@
 // Disposable service-flow tests import application modules directly, outside
-// Astro/Vite. Static event assets are irrelevant to this backend exercise.
-
-// Cross-platform file URL for the demo JSON used in the astro:content virtual
-// module. Derived from the loader's own location so it works on any OS, any
-// checkout directory, and any GitHub Actions workspace path.
-const demoJsonUrl = new URL(
-	'../../src/content/event-demos/xv/demo-xv-jewelry-box.json',
-	import.meta.url,
-).href;
+// Astro/Vite. Static event assets and content collections are irrelevant to this
+// backend exercise; the services publish from each invitation's own records.
 
 export async function resolve(specifier, context, nextResolve) {
 	if (specifier === 'astro:content') return { url: 'astro:content', shortCircuit: true };
@@ -31,7 +24,7 @@ export async function load(url, context, nextLoad) {
 		return {
 			format: 'module',
 			shortCircuit: true,
-			source: `import demo from '${demoJsonUrl}' with { type: 'json' }; export async function getCollection() { return [{ id: 'xv/demo-xv-jewelry-box', data: demo }]; }`,
+			source: 'export async function getCollection() { return []; }',
 		};
 	}
 	if (url === 'test:asset-registry') {

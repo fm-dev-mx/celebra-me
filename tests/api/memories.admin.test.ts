@@ -7,6 +7,10 @@ jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({
 	requireAdminRateLimit: jest.fn(),
 }));
 
+jest.mock('@/lib/memories/server/readiness.service', () => ({
+	checkMemoriesReadiness: jest.fn(),
+}));
+
 jest.mock('@/lib/memories/server/admin.service', () => ({
 	createMemorySpaceAdmin: jest.fn(),
 	listMemorySpaceCandidatesAdmin: jest.fn(),
@@ -28,6 +32,7 @@ import {
 	listMemorySpacesAdmin,
 	updateMemorySpaceAdmin,
 } from '@/lib/memories/server/admin.service';
+import { checkMemoriesReadiness } from '@/lib/memories/server/readiness.service';
 import { GET as getSpaces, POST as postSpace } from '@/pages/api/dashboard/admin/memories/index';
 import { PATCH as patchSpace } from '@/pages/api/dashboard/admin/memories/[eventId]';
 import { createMockRequest } from '../helpers/api-mocks';
@@ -47,6 +52,7 @@ const mockCandidates = listMemorySpaceCandidatesAdmin as jest.MockedFunction<
 	typeof listMemorySpaceCandidatesAdmin
 >;
 const mockListSpaces = listMemorySpacesAdmin as jest.MockedFunction<typeof listMemorySpacesAdmin>;
+const mockReadiness = checkMemoriesReadiness as jest.MockedFunction<typeof checkMemoriesReadiness>;
 const mockUpdate = updateMemorySpaceAdmin as jest.MockedFunction<typeof updateMemorySpaceAdmin>;
 
 const BASE_URL = 'https://celebra-me.com/api/dashboard/admin/memories';
@@ -59,10 +65,29 @@ const adminSession: SessionContext = {
 	isSuperAdmin: true,
 };
 
+const adminItem = {
+	...space,
+	eventDate: '2026-10-30',
+	lastHostDownloadAt: null,
+	usage: {
+		photos: 0,
+		videos: 0,
+		guestsWithUploads: 0,
+		sessions: 0,
+		residentObjects: 0,
+		residentBytes: 0,
+		inFlight: 0,
+		rejected: 0,
+		lastAcceptedAt: null,
+	},
+};
+const totals = { residentBytes: 0, committedBytes: space.maxEventBytes };
+
 const candidate = {
 	eventId: 'e0000000-0000-4000-8000-0000000000b1',
 	eventSlug: 'ana-y-luis',
 	eventTitle: 'Ana y Luis',
+	eventDate: '2026-11-20',
 	defaults: {
 		publicSlug: 'ana-y-luis',
 		timeZone: 'America/Mazatlan',
@@ -103,8 +128,9 @@ beforeEach(() => {
 	mockAdminRateLimit.mockResolvedValue(undefined);
 	mockStrongSession.mockResolvedValue(adminSession);
 	mockMutationAccess.mockResolvedValue(adminSession);
-	mockListSpaces.mockResolvedValue([space]);
+	mockListSpaces.mockResolvedValue({ items: [adminItem], totals });
 	mockCandidates.mockResolvedValue([candidate]);
+	mockReadiness.mockResolvedValue({ missing: ['shareSecret'], unreachable: ['uploadOrigin'] });
 });
 
 describe('GET /api/dashboard/admin/memories', () => {
@@ -114,7 +140,13 @@ describe('GET /api/dashboard/admin/memories', () => {
 		const response = await getSpaces(createContext(request).context);
 
 		expect(response.status).toBe(200);
-		await expect(response.json()).resolves.toEqual({ items: [space], candidates: [candidate] });
+		await expect(response.json()).resolves.toEqual({
+			items: [adminItem],
+			totals,
+			candidates: [candidate],
+			readiness: { missing: ['shareSecret'], unreachable: ['uploadOrigin'] },
+			publicOrigin: new URL(BASE_URL).origin,
+		});
 		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 		expect(mockAdminRateLimit).toHaveBeenCalledWith(request, 'memories:list');
 		expect(mockStrongSession).toHaveBeenCalledWith(request);
@@ -134,6 +166,7 @@ describe('GET /api/dashboard/admin/memories', () => {
 		expect(mockStrongSession).not.toHaveBeenCalled();
 		expect(mockListSpaces).not.toHaveBeenCalled();
 		expect(mockCandidates).not.toHaveBeenCalled();
+		expect(mockReadiness).not.toHaveBeenCalled();
 	});
 
 	it('answers a weak or non-admin session with a 403 without listing', async () => {
@@ -147,6 +180,7 @@ describe('GET /api/dashboard/admin/memories', () => {
 		await expect(response.json()).resolves.toMatchObject({ error: { code: 'forbidden' } });
 		expect(mockListSpaces).not.toHaveBeenCalled();
 		expect(mockCandidates).not.toHaveBeenCalled();
+		expect(mockReadiness).not.toHaveBeenCalled();
 	});
 });
 

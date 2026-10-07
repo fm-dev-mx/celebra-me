@@ -110,6 +110,23 @@ export async function waitForVisualHydration(page: Page): Promise<void> {
 	await page.evaluate(async (position) => {
 		window.scrollTo({ left: position.x, top: position.y, behavior: 'instant' });
 		await document.fonts.ready;
+		// Loaded images can still paint a partially decoded frame; decoding changes timing only.
+		// Unloaded (lazy, off-screen) images are skipped because decode() would wait for them.
+		await Promise.all(
+			Array.from(document.images)
+				.filter((image) => image.complete && image.naturalWidth > 0)
+				.map((image) => image.decode().catch(() => undefined)),
+		);
+		// The fixed capture clock barely advances the animation timeline, so entrance animations
+		// are still running at capture time and each screenshot depended on Playwright
+		// fast-forwarding them in that instant. Finishing finite animations here makes the
+		// captured state their end state deterministically; infinite ones stay with Playwright.
+		for (const animation of document.getAnimations()) {
+			const { iterations } = animation.effect?.getComputedTiming() ?? {};
+			if (Number.isFinite(iterations) && animation.playState !== 'finished') {
+				animation.finish();
+			}
+		}
 		await new Promise<void>((resolve) =>
 			requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
 		);

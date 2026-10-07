@@ -12,7 +12,7 @@ import {
 	getMemoriesMimePolicy,
 	isMemoriesVideoMime,
 } from '../../../src/lib/memories/contract/media-policy';
-import { isMemoriesObjectKeyForMime } from '../../../src/lib/memories/contract/object-key';
+import { isMemoriesStorableKey } from '../../../src/lib/memories/contract/object-key';
 import {
 	MEMORIES_PRIVATE_REQUEST_TTL_SECONDS,
 	MEMORIES_RETRIEVAL_PATH,
@@ -23,7 +23,11 @@ import { bytesToHex } from '../../shared/encoding';
 import { errorResponse, jsonResponse, parseStorageTarget } from '../../shared/http';
 import { privateRequestId, verifyMemoriesPrivateRequest } from '../../shared/private-request';
 import { consumeReplayKey } from '../../shared/replay-guard';
-import { isMediaSignatureValid, parseBoundedVideoDurationSeconds } from './inspect';
+import {
+	isMediaSignatureValid,
+	locateVideoDurationSeconds,
+	parseBoundedVideoDurationSeconds,
+} from './inspect';
 
 type RetrieveEnv = Omit<MemoriesRetrieveBindings, 'MEMORIES_STORAGE_TARGET'> & {
 	MEMORIES_STORAGE_TARGET: string;
@@ -119,15 +123,22 @@ async function handleInspect(
 	const isVideo = isMemoriesVideoMime(mimeType);
 	let durationSeconds = isVideo ? parseBoundedVideoDurationSeconds(firstBytes) : null;
 	if (isVideo && durationSeconds === null && object.size > firstBytes.length) {
-		const tail = await env.MEMORIES_BUCKET.get(objectKey, {
-			range: {
-				offset: Math.max(0, object.size - MEMORIES_INSPECTION_BYTES),
-				length: MEMORIES_INSPECTION_BYTES,
-			},
+		const readRange = async (offset: number, length: number): Promise<Uint8Array | null> => {
+			const part = await env.MEMORIES_BUCKET.get(objectKey, { range: { offset, length } });
+			return part ? readBoundedBytes(part.body) : null;
+		};
+		durationSeconds = await locateVideoDurationSeconds({
+			head: firstBytes,
+			objectSize: object.size,
+			windowBytes: MEMORIES_INSPECTION_BYTES,
+			readRange,
 		});
-		durationSeconds = tail
-			? parseBoundedVideoDurationSeconds(await readBoundedBytes(tail.body))
-			: null;
+		// Last resort for containers the walk cannot follow: a complete `moov` in the tail.
+		if (durationSeconds === null) {
+			const tailBytes = Math.min(MEMORIES_INSPECTION_BYTES, object.size);
+			const tail = await readRange(object.size - tailBytes, tailBytes);
+			durationSeconds = tail ? parseBoundedVideoDurationSeconds(tail) : null;
+		}
 	}
 	return jsonResponse(
 		{
@@ -163,6 +174,15 @@ async function handleStream(input: {
 		range ? { range } : undefined,
 	);
 	if (!object?.body) return errorResponse('not_found', 404);
+	if (input.rangeStart !== null && input.rangeStart >= object.size) {
+		return new Response(null, {
+			status: 416,
+			headers: {
+				'Content-Range': `bytes */${object.size}`,
+				'Cache-Control': 'private, no-store, max-age=0',
+			},
+		});
+	}
 	const extension = getMemoriesMimePolicy(input.mimeType)?.extension ?? 'bin';
 	const headers = new Headers({
 		'Content-Type': input.mimeType,
@@ -176,6 +196,8 @@ async function handleStream(input: {
 		const end = Math.min(input.rangeEnd ?? object.size - 1, object.size - 1);
 		headers.set('Content-Range', `bytes ${rangeStart}-${end}/${object.size}`);
 		headers.set('Content-Length', String(Math.max(0, end - rangeStart + 1)));
+	} else {
+		headers.set('Content-Length', String(object.size));
 	}
 	return new Response(object.body, { status: range ? 206 : 200, headers });
 }
@@ -202,7 +224,7 @@ function parseRetrievalRequest(rawBody: string): ParsedRetrievalRequest | null {
 		mode === 'inline' || mode === 'attachment' ? STREAM_REQUEST_KEYS : BASE_REQUEST_KEYS;
 	if (
 		Object.keys(body).some((key) => !allowedKeys.has(key)) ||
-		!isMemoriesObjectKeyForMime(body.objectKey, mimeType) ||
+		!isMemoriesStorableKey(body.objectKey, mimeType) ||
 		!['inline', 'attachment', 'inspect', 'delete'].includes(mode) ||
 		rangeStart === 'invalid' ||
 		rangeEnd === 'invalid' ||
@@ -259,7 +281,12 @@ export default {
 		if (!claimed) return errorResponse('replay', 409);
 		const body = parseRetrievalRequest(rawBody);
 		if (!body) return errorResponse('invalid_request', 400);
-		return handleRetrievalRequest(env, body);
+		try {
+			return await handleRetrievalRequest(env, body);
+		} catch (error) {
+			console.error('[memories-retrieve] Request failed:', error);
+			return errorResponse('unavailable', 503);
+		}
 	},
 };
 

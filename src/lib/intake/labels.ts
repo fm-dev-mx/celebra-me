@@ -242,7 +242,7 @@ export const EMPTY_ASSET_LIBRARY_COPY = {
 	subtext: 'Sube una imagen para usarla en la invitación.',
 } as const;
 
-export const DEMO_ASSET_LABEL = 'Imagen de demo';
+export const BUNDLED_ASSET_LABEL = 'Imagen incluida';
 export const ASSET_USAGE_LABEL = 'Usada en:';
 export const ASSET_EDIT_LABEL = 'Editar nombre';
 export const ASSET_SAVE_LABEL = 'Guardar';

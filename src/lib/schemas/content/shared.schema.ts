@@ -274,6 +274,4 @@ export const baseEventFieldsSchema = z.object({
 			'_assetSlug must be a valid slug (lowercase, hyphens allowed)',
 		)
 		.optional(),
-	_mediaFallback: z.boolean().optional(),
-	_mediaFallbackNote: z.string().optional(),
 });

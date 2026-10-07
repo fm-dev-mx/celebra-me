@@ -110,6 +110,24 @@ export function isApiError(error: unknown): error is ApiError {
 	return false;
 }
 
+/**
+ * Postgres/PostgREST codes raised when the application reads a table, column, or
+ * function the database does not have yet: pending migrations, not a request bug.
+ * Codes that a malformed request can also raise (e.g. `42883`, `PGRST204`) stay out.
+ */
+const SCHEMA_DRIFT_CODES = new Set(['42703', '42P01', 'PGRST202', 'PGRST205']);
+
+/** Matches `SupabaseHttpError` by name so core does not depend on the repository layer. */
+export function isSchemaDriftError(error: unknown): boolean {
+	if (typeof error !== 'object' || error === null) return false;
+	const err = error as Record<string, unknown>;
+	return (
+		err.name === 'SupabaseHttpError' &&
+		typeof err.code === 'string' &&
+		SCHEMA_DRIFT_CODES.has(err.code)
+	);
+}
+
 export function toErrorMessage(error: unknown, fallback: string): string {
 	return error instanceof Error ? error.message : fallback;
 }

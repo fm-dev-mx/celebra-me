@@ -14,7 +14,6 @@ describe('tracking route policy', () => {
 		['/demos/xv', 'commercial'],
 		['/demos/boda', 'commercial'],
 		['/demos/bautizo', 'commercial'],
-		['/demos/baby-shower', 'commercial'],
 		['/demos/cumpleanos', 'commercial'],
 		['/xv/demo-xv-editorial', 'demo'],
 		['/xv/valentina-hernandez', 'real_invitation'],

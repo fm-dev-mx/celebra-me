@@ -119,7 +119,7 @@ describe('useSendInvitation', () => {
 		});
 
 		expect(result.current.phoneError).toBe(
-			'Revisa el número de WhatsApp o déjalo vacío para elegir el contacto manualmente.',
+			'Revise el número de WhatsApp o déjelo vacío para elegir el contacto manualmente.',
 		);
 		expect(callbacks.onSave).not.toHaveBeenCalled();
 	});

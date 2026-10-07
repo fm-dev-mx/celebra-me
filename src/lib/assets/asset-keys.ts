@@ -4,7 +4,6 @@
  */
 
 /** Asset namespace for the Xareni client media registry (not a presentation authority). */
-export const XARENI_ASSET_SLUG = 'xv-xareni-iyarit';
 
 export const EVENT_KEYS = [
 	'hero',

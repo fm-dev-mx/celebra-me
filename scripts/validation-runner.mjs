@@ -88,6 +88,22 @@ export function buildValidationPlan(files, pathExists = existsSync) {
 	};
 }
 
+function reportBrowserCheckRequirement(files) {
+	if (
+		files.some((file) => file.startsWith('tests/e2e/') || /\.(?:astro|scss|css)$/u.test(file))
+	) {
+		console.log(
+			'Browser/layout behavior requires the applicable focused browser check; Jest and the Local Render Corpus do not certify visual parity.',
+		);
+	}
+}
+
+/** Browserless proof that accepted references still cover the matrix; seconds, not a render. */
+function runVisualReferenceGate(files, runStep) {
+	if (files.length === 0) return 0;
+	return runStep('Visual reference coverage (browserless)', 'pnpm', ['visual:matrix:check']);
+}
+
 function reportVisualCertificationRequirement(files) {
 	if (files.length === 0) return;
 	console.log('\nVISUAL_CERTIFICATION_REQUIRED');
@@ -199,15 +215,9 @@ export function runValidation({
 		);
 	}
 
-	if (
-		plan.files.some(
-			(file) => file.startsWith('tests/e2e/') || /\.(?:astro|scss|css)$/u.test(file),
-		)
-	) {
-		console.log(
-			'Browser/layout behavior requires the applicable focused browser check; Jest and the Local Render Corpus do not certify visual parity.',
-		);
-	}
+	reportBrowserCheckRequirement(plan.files);
+	const visualCode = runVisualReferenceGate(plan.visualImpactFiles, runStep);
+	if (visualCode !== 0) return fail('visual-matrix', visualCode);
 	reportVisualCertificationRequirement(plan.visualImpactFiles);
 	console.log(
 		`\n✓ validate:${scope} local checks passed; domain and release gates remain separate.`,

@@ -5,7 +5,7 @@ import { getCsrfToken } from '@/lib/csrf';
 import {
 	getAssetUsageLabel,
 	EMPTY_ASSET_LIBRARY_COPY,
-	DEMO_ASSET_LABEL,
+	BUNDLED_ASSET_LABEL,
 } from '@/lib/intake/labels';
 
 interface Props {
@@ -48,28 +48,28 @@ export default function AssetPicker({ invitationId, onSelect, onClose }: Props) 
 
 	async function handleSelect(asset: {
 		id: string;
-		isDemo?: boolean;
-		demoKey?: string;
+		isBundled?: boolean;
+		bundledKey?: string;
 		displayName: string;
 	}) {
-		if (asset.isDemo) {
+		if (asset.isBundled) {
 			setImportingId(asset.id);
 			try {
 				const csrfToken = getCsrfToken();
 				const response = await fetch(
-					`/api/dashboard/intake/${encodeURIComponent(invitationId)}/assets/import-from-demo`,
+					`/api/dashboard/intake/${encodeURIComponent(invitationId)}/assets/import-bundled`,
 					{
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json',
 							...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
 						},
-						body: JSON.stringify({ demoKey: asset.demoKey }),
+						body: JSON.stringify({ bundledKey: asset.bundledKey }),
 					},
 				);
 				const result = await response.json();
 				if (!response.ok) {
-					throw new Error(result?.error?.message || 'Error al importar imagen de demo.');
+					throw new Error(result?.error?.message || 'Error al importar imagen incluida.');
 				}
 				onSelect(result.assetId);
 			} catch (err) {
@@ -137,12 +137,12 @@ export default function AssetPicker({ invitationId, onSelect, onClose }: Props) 
 				{!loading && !error && assets.length > 0 && (
 					<ul className="asset-picker__grid" aria-label="Imágenes disponibles">
 						{assets.map((asset) => {
-							const isDemo = asset.isDemo ?? false;
+							const isBundled = asset.isBundled ?? false;
 							const isImporting = importingId === asset.id;
 							return (
 								<li key={asset.id} className="asset-picker__item-wrapper">
 									<button
-										className={`asset-picker__item${isDemo ? ' asset-picker__item--demo' : ''}`}
+										className={`asset-picker__item${isBundled ? ' asset-picker__item--bundled' : ''}`}
 										type="button"
 										onClick={() => handleSelect(asset)}
 										disabled={isImporting}
@@ -161,8 +161,8 @@ export default function AssetPicker({ invitationId, onSelect, onClose }: Props) 
 										</span>
 										<span
 											className={`asset-picker__badge asset-picker__badge--${
-												isDemo
-													? 'demo'
+												isBundled
+													? 'bundled'
 													: asset.usage.usedInDraft
 														? 'draft'
 														: asset.usage.usedInPublished
@@ -170,8 +170,8 @@ export default function AssetPicker({ invitationId, onSelect, onClose }: Props) 
 															: 'unused'
 											}`}
 										>
-											{isDemo
-												? DEMO_ASSET_LABEL
+											{isBundled
+												? BUNDLED_ASSET_LABEL
 												: getAssetUsageLabel(
 														asset.usage.usedInDraft,
 														asset.usage.usedInPublished,

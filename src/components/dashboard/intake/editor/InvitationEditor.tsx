@@ -82,7 +82,6 @@ type PickerField =
 const SOURCE_LABELS: Record<string, string> = {
 	draft: 'Borrador',
 	published: 'Versión pública',
-	demo: 'Demo',
 	empty: 'Vacío',
 };
 
@@ -360,7 +359,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 			setPublicationFeedback({
 				state: 'success',
 				message:
-					'Los cambios se publicaron correctamente. Ya puedes abrir la invitación pública.',
+					'Los cambios se publicaron correctamente. Ya puede abrir la invitación pública.',
 			});
 		} catch (error) {
 			setPublicationFeedback(getPublicationFeedback(error));
@@ -456,7 +455,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 			const key = definition?.saveSectionKey ?? section;
 			const keys = EDITOR_SECTION_KEYS[section] ?? EDITOR_SECTION_KEYS[key];
 			if (!keys) return undefined;
-			for (const source of ['draft', 'published', 'demo'] as const) {
+			for (const source of ['draft', 'published'] as const) {
 				if (keys.some((key) => editor.context.sectionStates[key] === source)) {
 					return { source, label: SOURCE_LABELS[source] };
 				}
@@ -482,9 +481,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 	const hasDraft = editor.context.draftStatus !== null;
 	const noDraftWarning =
-		hasDraft ||
-		editor.context.contentSource === 'empty' ||
-		editor.context.invitation.kind === 'demo'
+		hasDraft || editor.context.contentSource === 'empty'
 			? null
 			: 'Esta invitación aún no tiene un borrador. Al guardar cualquier sección se creará un borrador a partir del contenido existente.';
 
@@ -519,7 +516,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 	}, [editor.context.sectionStates, criticalSections, content.sectionOrder]);
 
 	const publishWarning = useMemo(() => {
-		if (editor.context.invitation.kind === 'client' && !editor.context.invitation.createdBy) {
+		if (!editor.context.invitation.createdBy) {
 			return 'No se puede publicar sin un propietario asignado a la invitación. Asigna un propietario antes de publicar.';
 		}
 		if (editor.context.contentSource === 'empty') return 'No hay contenido para publicar.';
@@ -527,17 +524,16 @@ export default function InvitationEditor({ initialContext }: Props) {
 			const labels = emptySectionsDetail.critical
 				.map((s) => EDITOR_SECTION_PRESENTATION[s]?.label ?? s)
 				.join(', ');
-			return `Secciones críticas vacías: ${labels}. Revisa el contenido antes de publicar.`;
+			return `Secciones críticas vacías: ${labels}. Revise el contenido antes de publicar.`;
 		}
 		if (emptySectionsDetail.optional.length > 0) {
-			return `${emptySectionsDetail.optional.length} sección(es) opcional(es) vacías. Puedes publicar sin ellas.`;
+			return `${emptySectionsDetail.optional.length} sección(es) opcional(es) vacías. Puede publicar sin ellas.`;
 		}
 		if (!hasDraft && editor.context.contentSource !== 'draft') {
-			return 'No hay cambios sin publicar. Guarda una sección primero.';
+			return 'No hay cambios sin publicar. Guarde una sección primero.';
 		}
 		return null;
 	}, [
-		editor.context.invitation.kind,
 		editor.context.invitation.createdBy,
 		editor.context.contentSource,
 		emptySectionsDetail,
@@ -628,7 +624,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 			editor.context.draftStatus !== 'draft' ||
 			editor.context.contentSource === 'empty' ||
 			emptySectionsDetail.critical.length > 0 ||
-			(editor.context.invitation.kind === 'client' && !editor.context.invitation.createdBy),
+			!editor.context.invitation.createdBy,
 		[
 			editor.operation.type,
 			savingAll,
@@ -636,7 +632,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 			editor.context.draftStatus,
 			editor.context.contentSource,
 			emptySectionsDetail.critical.length,
-			editor.context.invitation.kind,
 			editor.context.invitation.createdBy,
 		],
 	);
@@ -688,11 +683,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 				restoring: editor.operation.type === 'restoring',
 			};
 		},
-		[
-			editor.context.publication.hasPublishedContent,
-			editor.operation.type,
-			sectionSource,
-		],
+		[editor.context.publication.hasPublishedContent, editor.operation.type, sectionSource],
 	);
 
 	const requestPreview = useCallback(() => {
@@ -786,11 +777,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 							{CONTENT_SOURCE_LABELS[editor.context.contentSource] ??
 								editor.context.contentSource}
 						</span>
-						{editor.context.invitation.kind === 'demo' && (
-							<span className="invitation-editor__content-badge invitation-editor__content-badge--demo-tag">
-								Demo
-							</span>
-						)}
 					</div>
 					<h1>{metadata.title}</h1>
 					<div className="invitation-editor__header-meta">
@@ -846,8 +832,8 @@ export default function InvitationEditor({ initialContext }: Props) {
 								/{editor.context.invitation.eventType}/
 								{editor.context.invitation.slug ?? '...'}
 							</code>{' '}
-							no está disponible hasta que publiques. Usa{' '}
-							<strong>Vista previa</strong> para ver el borrador.
+							no está disponible hasta que publique. Use <strong>Vista previa</strong>{' '}
+							para ver el borrador.
 						</p>
 					</div>
 				)}
@@ -913,7 +899,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 					>
 						<MetadataSection
 							value={metadata}
-							kind={editor.context.invitation.kind}
 							onChange={(value) => {
 								setMetadata(value);
 								markDirty('metadata');
@@ -1009,7 +994,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 							onChange={(value) => updateCountdown({ footerText: value })}
 						/>
 						<p className="invitation-editor__helper-text">
-							El texto inferior aparece debajo de la fecha. Usa este campo para
+							El texto inferior aparece debajo de la fecha. Use este campo para
 							mostrar lugar, ciudad o una frase corta. La fecha se toma
 							automáticamente de la Portada.
 						</p>
@@ -1197,10 +1182,52 @@ export default function InvitationEditor({ initialContext }: Props) {
 							}
 						/>
 						<div className="invitation-editor__field-grid">
-							<Field label="Frase de cierre" value={messages.thankYou.closingPhrase ?? ''} onChange={(value) => updateContent('thankYou', { ...messages.thankYou, closingPhrase: value })} />
-							<Field label="Fecha visible" value={messages.thankYou.date ?? ''} onChange={(value) => updateContent('thankYou', { ...messages.thankYou, date: value })} />
-							<Field label="Punto focal" value={messages.thankYou.focalPoint ?? ''} onChange={(value) => updateContent('thankYou', { ...messages.thankYou, focalPoint: value || undefined })} />
-							<label className="invitation-editor__field"><span>Ancla del texto</span><select value={messages.thankYou.overlayAnchor ?? ''} onChange={(event) => updateContent('thankYou', { ...messages.thankYou, overlayAnchor: (event.target.value || undefined) as 'left' | 'right' | 'top' | 'bottom' | undefined })}><option value="">Automática</option><option value="left">Izquierda</option><option value="right">Derecha</option><option value="top">Arriba</option><option value="bottom">Abajo</option></select></label>
+							<Field
+								label="Frase de cierre"
+								value={messages.thankYou.closingPhrase ?? ''}
+								onChange={(value) =>
+									updateContent('thankYou', {
+										...messages.thankYou,
+										closingPhrase: value,
+									})
+								}
+							/>
+							<Field
+								label="Fecha visible"
+								value={messages.thankYou.date ?? ''}
+								onChange={(value) =>
+									updateContent('thankYou', { ...messages.thankYou, date: value })
+								}
+							/>
+							<Field
+								label="Punto focal"
+								value={messages.thankYou.focalPoint ?? ''}
+								onChange={(value) =>
+									updateContent('thankYou', {
+										...messages.thankYou,
+										focalPoint: value || undefined,
+									})
+								}
+							/>
+							<label className="invitation-editor__field">
+								<span>Ancla del texto</span>
+								<select
+									value={messages.thankYou.overlayAnchor ?? ''}
+									onChange={(event) =>
+										updateContent('thankYou', {
+											...messages.thankYou,
+											overlayAnchor: (event.target.value || undefined) as
+												'left' | 'right' | 'top' | 'bottom' | undefined,
+										})
+									}
+								>
+									<option value="">Automática</option>
+									<option value="left">Izquierda</option>
+									<option value="right">Derecha</option>
+									<option value="top">Arriba</option>
+									<option value="bottom">Abajo</option>
+								</select>
+							</label>
 						</div>
 						<OverlaySafeAreaFields
 							value={messages.thankYou.overlaySafeArea}
@@ -1215,7 +1242,6 @@ export default function InvitationEditor({ initialContext }: Props) {
 								assetLookupSlug={assetLookupSlug}
 								assets={editorAssets}
 								onOpenLibrary={() => setPickerField('thankYou.image')}
-								isDefaultImage={editor.context.sectionStates.thankYou === 'demo'}
 							/>
 						)}
 					</SectionCard>
@@ -1234,7 +1260,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						<GalleryEditor
 							value={content.gallery ?? { items: [] }}
 							assetLookupSlug={assetLookupSlug}
-							variant={editor.context.invitation.themeId}
+							variant={content.gallery?.variant}
 							invitationId={invitationId}
 							onChange={(value) => updateContent('gallery', value)}
 							photoNotes={photoNotes}
@@ -1355,7 +1381,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 							? 'Estamos revisando los cambios guardados antes de publicar.'
 							: editor.operation.type === 'publishing'
 								? 'Estamos publicando la revisión confirmada. No cierres esta ventana.'
-								: 'El borrador guardado reemplazará la versión pública actual. Revisa la vista previa antes de continuar.'
+								: 'El borrador guardado reemplazará la versión pública actual. Revise la vista previa antes de continuar.'
 					}
 					confirmLabel={
 						publicationFeedback.state === 'success' ||

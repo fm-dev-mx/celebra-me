@@ -1,110 +1,99 @@
 @use '../global/mixins' as mixins;
 
+/* Compact-screen action bar: two equal, labeled buttons (Agregar + next batch). */
 .dashboard-guests__mobile-dock {
-	--dashboard-dock-height: 76px;
+	--dashboard-dock-height: 82px;
 
 	display: none;
 	position: fixed;
 	bottom: 0;
 	left: 0;
 	width: 100%;
-	background: rgb(var(--color-surface-dark-rgb) / 88%);
-	backdrop-filter: blur(var(--glass-blur, 16px)) saturate(var(--glass-saturate, 180%));
-	border-top: 1px solid rgb(var(--color-action-accent-rgb) / 14%);
-	padding: 0.5rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom));
+	box-sizing: border-box;
+	background: var(--color-surface-elevated);
+	border-top: 1px solid var(--color-border-subtle);
+	box-shadow: 0 -8px 24px rgb(var(--color-surface-dark-rgb) / 8%);
+	padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
 	z-index: var(--dashboard-z-mobile-dock);
-	justify-content: center;
-	align-items: center;
-	gap: 0.75rem;
+	gap: 0.625rem;
 
 	@include mixins.respond-below(lg) {
-		display: flex;
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
 	body.modal-open &,
-	body.dashboard-shell-body--nav-open & {
+	body.dashboard-shell-body--nav-open &,
+	&--hidden {
 		display: none;
 	}
 
 	.dock-item {
-		display: flex;
-		flex-direction: column;
+		display: inline-flex;
 		align-items: center;
-		background: none;
-		border: none;
-		padding: 0.45rem 0.65rem;
-		color: rgb(var(--color-text-on-dark-rgb) / 60%);
+		justify-content: center;
+		gap: 0.5rem;
+		min-width: 0;
+		min-height: 58px;
+		padding: 0 0.75rem;
+		border: 1.5px solid var(--dashboard-button-secondary-border);
+		border-radius: 16px;
+		background: transparent;
+		color: var(--dashboard-button-secondary-text);
+		font-family: var(--font-ui);
 		cursor: pointer;
 		transition:
 			background-color 0.2s ease,
-			color 0.2s ease;
-		position: relative;
-		gap: 0.15rem;
-		border-radius: 8px;
-		min-width: 60px;
-		min-height: 44px;
+			border-color 0.2s ease;
 
 		&:hover {
-			background: rgb(var(--color-action-accent-rgb) / 10%);
-			color: rgb(var(--color-text-on-dark-rgb) / 90%);
+			background: var(--dashboard-button-secondary-bg-hover);
 		}
 
-		&:active {
-			background: rgb(var(--color-action-accent-rgb) / 16%);
+		&:focus-visible {
+			@include mixins.focus-ring;
 		}
 
 		&:disabled {
-			opacity: 35%;
+			opacity: 45%;
 			cursor: not-allowed;
 		}
 
 		.dock-icon {
 			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			width: 1.3rem;
-			height: 1.3rem;
+			flex-shrink: 0;
 		}
 
 		.dock-label {
-			font-size: 0.6rem;
-			font-weight: 500;
-			letter-spacing: 0.03em;
+			font-size: 1.0625rem;
+			font-weight: 700;
+			line-height: 1.15;
+			text-align: center;
 		}
 
 		&--main {
-			flex-direction: row;
-			gap: 0.35rem;
-			padding: 0.5rem 1rem;
-			min-height: 44px;
-			border-radius: 10px;
+			border-color: var(--dashboard-button-primary-border);
 			background: var(--dashboard-button-primary-bg);
 			color: var(--dashboard-button-primary-text);
-			border: none;
+			box-shadow: var(--shadow-subtle);
 
 			.dock-icon {
-				width: 1.1rem;
-				height: 1.1rem;
-			}
-
-			.dock-label {
-				font-size: 0.72rem;
-				font-weight: 600;
+				color: var(--dashboard-button-primary-accent, currentcolor);
 			}
 
 			&:hover {
 				background: var(--dashboard-button-primary-bg-hover);
-				border-color: color-mix(
-					in srgb,
-					var(--dashboard-button-primary-text) 20%,
-					transparent
-				);
 			}
 
 			&:disabled {
-				opacity: 45%;
-				background: rgb(var(--color-surface-dark-rgb) / 40%);
-				border-color: rgb(var(--color-border-subtle-rgb) / 30%);
+				border-color: var(--color-border-control);
+				background: var(--color-surface-soft);
+				color: var(--color-text-secondary);
+				box-shadow: none;
+			}
+
+			&:disabled .dock-icon {
+				color: currentcolor;
 			}
 		}
 	}

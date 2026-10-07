@@ -14,25 +14,33 @@ The live repository is authoritative where this record and historical plans diff
   [`valentina-hernandez.scss`](../../src/styles/invitation-profiles/valentina-hernandez.scss)
 - Asset registry (draft WhatsApp JPEGs until remastered):
   [`index.ts`](../../src/assets/images/events/xv-valentina-hernandez/index.ts)
-- Demo-safe visual counterpart:
-  [`demo-xv-valentina-profile.json`](../../src/content/event-demos/xv/demo-xv-valentina-profile.json)
-- Historical SQL patch (no longer the content owner):
-  [`20260626_valentina_hernandez_xv.sql`](../../scripts/manual/production-patches/20260626_valentina_hernandez_xv.sql)
 
 ## Current implementation state
 
-| Area                  | Current state                                                                                                                                     |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Route identity        | `xv/valentina-hernandez`                                                                                                                          |
-| Event kind            | Client XV invitation (`isDemo: false`)                                                                                                            |
-| Template              | `xv-editorial-magazine`                                                                                                                           |
-| Theme preset          | `editorial-magazine`                                                                                                                              |
-| Visual profile        | `valentina-hernandez`                                                                                                                             |
-| Asset namespace       | `xv-valentina-hernandez`                                                                                                                          |
-| Content source        | Managed definition `scripts/provision/invitations/valentina-hernandez.ts` (`deliveryScope: content-only` for Preview/Production; Local first populate may use `content-and-assets`) |
-| Schema evidence       | Jest parses `buildValentinaPublishedContent` through `eventContentSchema`                             |
-| Visual implementation | Editorial cover, responsive hero, section dividers, family/location treatment, gallery, gifts, RSVP, and footer passes are present in live source |
-| Publication authority | Preview variants applied; Production owner apply still pending. No production execution is implied by this record |
+- **Area:** Route identity
+  - **Current state:** `xv/valentina-hernandez`
+- **Area:** Event kind
+  - **Current state:** Client XV invitation (`isDemo: false`)
+- **Area:** Template
+  - **Current state:** `xv-editorial-magazine`
+- **Area:** Theme preset
+  - **Current state:** `editorial-magazine`
+- **Area:** Visual profile
+  - **Current state:** `valentina-hernandez`
+- **Area:** Asset namespace
+  - **Current state:** `xv-valentina-hernandez`
+- **Area:** Content source
+  - **Current state:** Managed definition `scripts/provision/invitations/valentina-hernandez.ts`
+    (`deliveryScope: content-only` for Preview/Production; Local first populate may use
+    `content-and-assets`)
+- **Area:** Schema evidence
+  - **Current state:** Jest parses `buildValentinaPublishedContent` through `eventContentSchema`
+- **Area:** Visual implementation
+  - **Current state:** Editorial cover, responsive hero, section dividers, family/location
+    treatment, gallery, gifts, RSVP, and footer passes are present in live source
+- **Area:** Publication authority
+  - **Current state:** Preview variants applied; Production owner apply still pending. No production
+    execution is implied by this record
 
 The historical implementation passes are complete or superseded by live source and this record.
 Future visual changes should start from the current profile and shared editorial contracts instead

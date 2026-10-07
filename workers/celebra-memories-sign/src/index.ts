@@ -16,7 +16,11 @@ import {
 	getMemoriesMimePolicy,
 	type MemoriesMimePolicy,
 } from '../../../src/lib/memories/contract/media-policy';
-import { isMemoriesObjectKeyForMime } from '../../../src/lib/memories/contract/object-key';
+import {
+	MEMORIES_THUMBNAIL_MAX_BYTES,
+	isMemoriesStorableKey,
+	isMemoriesThumbnailKey,
+} from '../../../src/lib/memories/contract/object-key';
 import {
 	MEMORIES_PRIVATE_REQUEST_TTL_SECONDS,
 	MEMORIES_SIGN_PATH,
@@ -27,7 +31,11 @@ import { readBoundedText } from '../../shared/bounded-body';
 import { sha256HexToArrayBuffer, sha256HexToBase64 } from '../../shared/encoding';
 import { privateRequestId, verifyMemoriesPrivateRequest } from '../../shared/private-request';
 import { consumeReplayKey } from '../../shared/replay-guard';
-import { createUploadCapability, verifyUploadCapability } from './capability';
+import {
+	createUploadCapability,
+	verifyUploadCapability,
+	type UploadCapabilityClaims,
+} from './capability';
 import {
 	allowedBrowserOrigins,
 	getMemoriesRateLimiter,
@@ -72,10 +80,12 @@ function parseSignRequest(payload: unknown): {
 		!Number.isSafeInteger(sizeBytes) ||
 		sizeBytes <= 0 ||
 		!isValidSha256Hex(checksumSha256) ||
-		!isMemoriesObjectKeyForMime(objectKey, mimeType)
+		!isMemoriesStorableKey(objectKey, mimeType)
 	) {
 		return null;
 	}
+	// A thumbnail is a small preview: it never gets the full image allowance.
+	if (isMemoriesThumbnailKey(objectKey) && sizeBytes > MEMORIES_THUMBNAIL_MAX_BYTES) return null;
 	const policy = getMemoriesMimePolicy(mimeType);
 	if (!policy) return null;
 	return {
@@ -114,7 +124,7 @@ export async function handleMemoriesUploadRequest(
 	const contentLength = request.headers.get('Content-Length');
 	if (
 		!claims ||
-		!isMemoriesObjectKeyForMime(claims.objectKey, claims.mimeType) ||
+		!isMemoriesStorableKey(claims.objectKey, claims.mimeType) ||
 		!getMemoriesMimePolicy(claims.mimeType) ||
 		request.headers.get('Content-Type') !== claims.mimeType ||
 		checksum !== sha256HexToBase64(claims.checksumSha256) ||
@@ -130,19 +140,32 @@ export async function handleMemoriesUploadRequest(
 	);
 	if (!claimed) return errorResponse('replay', 409, origin);
 
+	const outcome = await storeUpload(env, claims, request.body);
+	if (outcome === 'already_uploaded') return errorResponse('already_uploaded', 412, origin);
+	if (outcome === 'failed') return errorResponse('upload_failed', 400, origin);
+	return jsonResponse({ uploaded: true }, 201, origin);
+}
+
+/** Streams the PUT body into R2 under the sealed key, length and checksum. */
+async function storeUpload(
+	env: MemoriesSignEnv,
+	claims: UploadCapabilityClaims,
+	body: ReadableStream<Uint8Array>,
+): Promise<'stored' | 'already_uploaded' | 'failed'> {
 	const fixedLength = new FixedLengthStream(claims.sizeBytes);
 	const uploadPromise = env.MEMORIES_BUCKET.put(claims.objectKey, fixedLength.readable, {
 		httpMetadata: { contentType: claims.mimeType },
 		sha256: sha256HexToArrayBuffer(claims.checksumSha256),
 		onlyIf: { etagDoesNotMatch: '*' },
 	});
-	const copyPromise = request.body.pipeTo(fixedLength.writable);
-	const results = await Promise.allSettled([uploadPromise, copyPromise]);
-	const uploadResult = results[0].status === 'fulfilled' ? results[0].value : null;
-	if (results.some((result) => result.status === 'rejected') || !uploadResult) {
-		return errorResponse('upload_failed', 400, origin);
-	}
-	return jsonResponse({ uploaded: true }, 201, origin);
+	const copyPromise = body.pipeTo(fixedLength.writable);
+	const [uploadOutcome, copyOutcome] = await Promise.allSettled([uploadPromise, copyPromise]);
+	// R2 answers a failed `onlyIf` with null: an earlier PUT of this reservation
+	// already stored the object and its response never reached the browser.
+	if (uploadOutcome.status === 'fulfilled' && uploadOutcome.value === null)
+		return 'already_uploaded';
+	if (uploadOutcome.status === 'rejected' || copyOutcome.status === 'rejected') return 'failed';
+	return 'stored';
 }
 
 export async function handleMemoriesSignRequest(
@@ -186,7 +209,11 @@ export async function handleMemoriesSignRequest(
 	if (!input) return errorResponse('invalid_request', 400, null);
 	if (input.sizeBytes > input.policy.maxBytes) return errorResponse('file_too_large', 400, null);
 	const limiter = getMemoriesRateLimiter(env);
-	if (!limiter || !(await limiter.limit({ key: input.sessionId })).success) {
+	// Thumbnails follow their originals one to one, so they get their own budget.
+	const limiterKey = isMemoriesThumbnailKey(input.objectKey)
+		? `${input.sessionId}:thumb`
+		: input.sessionId;
+	if (!limiter || !(await limiter.limit({ key: limiterKey })).success) {
 		return errorResponse('rate_limited', 429, null);
 	}
 	try {

@@ -1,7 +1,3 @@
-jest.mock('astro:content', () => ({
-	getCollection: jest.fn(),
-}));
-
 jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
 	findInvitationById: jest.fn(),
 	findInvitationBySlug: jest.fn(),
@@ -29,7 +25,6 @@ jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
 	updateEventService: jest.fn(),
 }));
 
-import { getCollection } from 'astro:content';
 import {
 	findInvitationById,
 	findInvitationBySlug,
@@ -140,19 +135,6 @@ const published = {
 	},
 } as any;
 
-const demoContent = {
-	gallery: { title: 'Plantilla', items: [{ image: 'gallery02' }] },
-	itinerary: { title: 'Plantilla', items: [] },
-	sectionOrder: ['quote', 'gallery'],
-	location: { ceremony: { venueName: 'Demo Venue' }, dressCode: 'Demo Dress' },
-	rsvp: {
-		title: 'Confirma Demo',
-		guestCap: 2,
-		confirmationMode: 'whatsapp',
-		whatsappConfig: { phone: '5215551111' },
-	},
-};
-
 const COMMAND_CONTEXT = {
 	operationId: '11111111-1111-4111-8111-111111111111',
 	environment: 'local' as const,
@@ -188,12 +170,6 @@ beforeEach(() => {
 		idempotent: false,
 	});
 	(upsertDraft as jest.Mock).mockResolvedValue(null);
-	(getCollection as jest.Mock).mockResolvedValue([
-		{
-			id: 'xv/demo-xv-jewelry-box.json',
-			data: demoContent,
-		},
-	]);
 });
 
 describe('getInvitationEditorContext', () => {
@@ -202,7 +178,6 @@ describe('getInvitationEditorContext', () => {
 		(findInvitationById as jest.Mock).mockResolvedValue({
 			...invitation,
 			slug: 'ana-sofia-cota-guillen',
-			snapshot: { ...invitation.snapshot, previewSlug: 'demo-xv-jewelry-box' },
 		});
 		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
 			...published,
@@ -216,7 +191,6 @@ describe('getInvitationEditorContext', () => {
 		const result = await getInvitationEditorContext('proj-1');
 
 		expect(result.assetLookupSlug).toBe('ana-sofia-cota-guillen');
-		expect(result.invitation.snapshot.previewSlug).toBe('demo-xv-jewelry-box');
 	});
 
 	it('uses published _assetSlug as the editor asset lookup slug when an empty draft exists', async () => {
@@ -224,7 +198,6 @@ describe('getInvitationEditorContext', () => {
 		(findInvitationById as jest.Mock).mockResolvedValue({
 			...invitation,
 			slug: 'ximena-meza-trasvina',
-			snapshot: { ...invitation.snapshot, previewSlug: 'demo-xv-jewelry-box' },
 		});
 		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
 			...published,
@@ -240,54 +213,7 @@ describe('getInvitationEditorContext', () => {
 		expect(result.assetLookupSlug).toBe('ximena-meza-trasvina');
 	});
 
-	it('keeps the same asset lookup slug for Ayrin-like demo-backed content', async () => {
-		(findInvitationById as jest.Mock).mockResolvedValue({
-			...invitation,
-			slug: 'ayrin-samantha-lerma-castro',
-			snapshot: { ...invitation.snapshot, previewSlug: 'demo-xv-enchanted-rose' },
-		});
-		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
-			...published,
-			content: {
-				...published.content,
-				_assetSlug: 'demo-xv-enchanted-rose',
-				hero: {
-					backgroundImage: { type: 'internal', key: 'hero' },
-					portrait: { type: 'internal', key: 'portrait' },
-				},
-			},
-		});
-
-		const result = await getInvitationEditorContext('proj-1');
-
-		expect(result.assetLookupSlug).toBe('demo-xv-enchanted-rose');
-		expect(result.invitation.snapshot.previewSlug).toBe('demo-xv-enchanted-rose');
-	});
-
-	it('uses a demo visual fallback when its previewSlug is not an asset registry key', async () => {
-		(findInvitationById as jest.Mock).mockResolvedValue({
-			...invitation,
-			kind: 'demo',
-			slug: null,
-			snapshot: {
-				...invitation.snapshot,
-				previewSlug: 'demo-xv-editorial-magazine',
-			},
-		});
-		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
-		(getCollection as jest.Mock).mockResolvedValue([
-			{
-				id: 'xv/demo-xv-editorial-magazine.json',
-				data: { ...demoContent, _assetSlug: 'demo-xv-editorial' },
-			},
-		]);
-
-		const result = await getInvitationEditorContext('proj-1');
-
-		expect(result.assetLookupSlug).toBe('demo-xv-editorial');
-	});
-
-	it('hydrates all keys with draft priority over published over demo', async () => {
+	it('hydrates all keys with draft priority over published', async () => {
 		const result = await getInvitationEditorContext('proj-1');
 
 		expect(result.content).toMatchObject({
@@ -322,7 +248,7 @@ describe('getInvitationEditorContext', () => {
 		});
 	});
 
-	it('does not populate keys from demo for client invitations even when draft and published lack them', async () => {
+	it('leaves keys empty when draft and published lack them', async () => {
 		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
 			...draft,
 			content: { title: 'XV Ana', hero: { name: 'Ana' } },
@@ -345,17 +271,9 @@ describe('getInvitationEditorContext', () => {
 		expect(result.contentSource).toBe('published');
 	});
 
-	it('returns contentSource=empty when only demo content is available for client invitations', async () => {
-		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
-		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
-		const result = await getInvitationEditorContext('proj-1');
-		expect(result.contentSource).toBe('empty');
-	});
-
 	it('returns contentSource=empty when no content is available at all', async () => {
 		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
 		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
-		(getCollection as jest.Mock).mockResolvedValue([]);
 		const result = await getInvitationEditorContext('proj-1');
 		expect(result.contentSource).toBe('empty');
 	});
@@ -409,7 +327,7 @@ describe('hydration edge cases', () => {
 		expect(result.sectionStates.description).toBe('published');
 	});
 
-	it('merges eventTiming from draft, published, and demo using shallowMergeDefined', async () => {
+	it('merges eventTiming from draft and published using shallowMergeDefined', async () => {
 		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
 			...draft,
 			content: {
@@ -453,47 +371,19 @@ describe('hydration edge cases', () => {
 		expect(result.sectionStates.eventTiming).toBe('published');
 	});
 
-	it('does not inherit eventTiming from demo for client invitations even when draft and published lack it', async () => {
+	it('leaves eventTiming empty when draft and published lack it', async () => {
 		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
 			...draft,
 			content: { ...draft.content },
 		});
 		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
-		const demoWithTiming = {
-			...demoContent,
-			eventTiming: {
-				localDateTime: '2026-12-01T12:00',
-				timeZone: 'America/Cancun',
-			},
-		};
-		(getCollection as jest.Mock).mockResolvedValue([
-			{
-				id: 'xv/demo-xv-jewelry-box.json',
-				data: demoWithTiming,
-			},
-		]);
 
 		const result = await getInvitationEditorContext('proj-1');
 		expect(result.content.eventTiming).toBeUndefined();
 		expect(result.sectionStates.eventTiming).toBe('empty');
 	});
 
-	it('does not fill missing keys from demo for client invitations', async () => {
-		(findDraftByInvitationId as jest.Mock).mockResolvedValue({
-			...draft,
-			content: { title: 'XV Ana' },
-		});
-		(findPublishedByInvitationId as jest.Mock).mockResolvedValue(null);
-
-		const result = await getInvitationEditorContext('proj-1');
-		expect(result.content.gallery).toBeUndefined();
-		expect(result.content.sectionOrder).toBeUndefined();
-		expect(result.content.location?.venues?.find((venue) => venue.type === 'ceremony')?.venueName).toBeUndefined();
-		expect(result.sectionStates.gallery).toBe('empty');
-		expect(result.sectionStates.location).toBe('empty');
-	});
-
-	it('saves only the targeted section preserving existing draft content without bringing in published or demo data', async () => {
+	it('saves only the targeted section preserving existing draft content without bringing in published data', async () => {
 		(updateDraftContentConditionally as jest.Mock).mockResolvedValue({
 			...draft,
 			status: 'draft',
@@ -618,8 +508,12 @@ describe('hydration edge cases', () => {
 		const result = await getInvitationEditorContext('proj-1');
 
 		// Draft ceremony fields are preserved
-		expect(result.content.location?.venues?.find((venue) => venue.type === 'ceremony')?.venueName).toBe('Mi Iglesia');
-		expect(result.content.location?.venues?.find((venue) => venue.type === 'ceremony')?.address).toBe('Calle 123');
+		expect(
+			result.content.location?.venues?.find((venue) => venue.type === 'ceremony')?.venueName,
+		).toBe('Mi Iglesia');
+		expect(
+			result.content.location?.venues?.find((venue) => venue.type === 'ceremony')?.address,
+		).toBe('Calle 123');
 		// Published section copy fills in where draft is missing
 		expect(result.content.location?.introEyebrow).toBe('EL CAMINO AL PALACIO');
 		expect(result.content.location?.introHeading).toBe('Ubicación');
@@ -639,67 +533,12 @@ describe('hydration edge cases', () => {
 				},
 			},
 		});
-		(getCollection as jest.Mock).mockResolvedValue([
-			{
-				id: 'xv/demo-xv-jewelry-box.json',
-				data: {
-					...demoContent,
-					location: {
-						introEyebrow: 'DEMO EYEBROW',
-						introHeading: 'Demo Heading',
-						ceremony: { venueName: 'Demo Venue' },
-					},
-				},
-			},
-		]);
 
 		const result = await getInvitationEditorContext('proj-1');
 
-		// Published version wins over demo since both have it
 		expect(result.content.location?.introEyebrow).toBe('PUBLISHED EYEBROW');
-		// Demo is not used for client invitations — field is absent from published
+		// Fields absent from published stay empty.
 		expect(result.content.location?.introHeading).toBeUndefined();
-		expect(result.sectionStates.location).toBe('published');
-	});
-
-	it('does not fall back to demo section copy for client invitations when draft and published lack it', async () => {
-		(findInvitationById as jest.Mock).mockResolvedValue({
-			...invitation,
-			snapshot: { ...invitation.snapshot, previewSlug: 'demo-xv-enchanted-rose' },
-		});
-		(findDraftByInvitationId as jest.Mock).mockResolvedValue(null);
-		(findPublishedByInvitationId as jest.Mock).mockResolvedValue({
-			...published,
-			content: {
-				title: published.content.title,
-				location: {
-					ceremony: { venueName: 'Iglesia P' },
-				},
-			},
-		});
-		(getCollection as jest.Mock).mockResolvedValue([
-			{
-				id: 'xv/demo-xv-enchanted-rose.json',
-				data: {
-					...demoContent,
-					location: {
-						ceremony: { venueName: 'Demo Venue' },
-						introEyebrow: 'EL CAMINO AL PALACIO',
-						introHeading: 'Ubicación',
-						introLede: 'Guarda la ruta.',
-					},
-				},
-			},
-		]);
-
-		const result = await getInvitationEditorContext('proj-1');
-
-		// Demo is not used for client invitations — intro fields absent from published are left empty
-		expect(result.content.location?.introEyebrow).toBeUndefined();
-		expect(result.content.location?.introHeading).toBeUndefined();
-		expect(result.content.location?.introLede).toBeUndefined();
-		// Published ceremony still wins over demo
-		expect(result.content.location?.venues?.find((venue) => venue.type === 'ceremony')?.venueName).toBe('Iglesia P');
 		expect(result.sectionStates.location).toBe('published');
 	});
 
@@ -734,7 +573,9 @@ describe('hydration edge cases', () => {
 		// Published fills in field absent from draft
 		expect(result.content.location?.introHeading).toBe('Ubicación Publicada');
 		// Draft ceremony fields preserved
-		expect(result.content.location?.venues?.find((venue) => venue.type === 'ceremony')?.venueName).toBe('Mi Iglesia');
+		expect(
+			result.content.location?.venues?.find((venue) => venue.type === 'ceremony')?.venueName,
+		).toBe('Mi Iglesia');
 		expect(result.sectionStates.location).toBe('draft');
 	});
 });

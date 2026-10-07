@@ -26,7 +26,6 @@ function makeItem(overrides: Record<string, unknown> = {}): InvitationDTO {
 		eventDate: '2099-09-09',
 		eventTimeZone: 'America/Chihuahua',
 		validity: 'upcoming',
-		demoShowroomOrder: null,
 		id: 'proj-1',
 		kind: 'client',
 		sourceInvitationId: null,
@@ -104,35 +103,7 @@ describe('InvitationList', () => {
 		expect(publicadas.length).toBeGreaterThanOrEqual(1);
 	});
 
-	it('renders overflow menu with correct actions for a demo', () => {
-		mockUseInvitationAdmin.mockReturnValue(
-			makeMockAdmin({
-				items: [
-					makeItem({
-						id: 'demo-1',
-						kind: 'demo',
-						title: 'Demo XV',
-						published: true,
-						slug: 'demo-xv',
-					}),
-				],
-			}),
-		);
-
-		render(<InvitationList />);
-		fireEvent.click(screen.getByRole('button', { name: /^Demos(?: \d+)?$/ }));
-
-		const moreButton = screen.getByLabelText('Más acciones');
-		expect(moreButton).toBeInTheDocument();
-		expect(moreButton).toHaveAttribute('aria-expanded', 'false');
-
-		fireEvent.click(moreButton);
-		expect(screen.queryByText('Duplicar')).not.toBeInTheDocument();
-		expect(screen.getByText('Copiar enlace público')).toBeInTheDocument();
-		expect(screen.getByText('Archivar')).toBeInTheDocument();
-	});
-
-	it('renders overflow menu without duplicate for clients', () => {
+	it('renders overflow menu without duplicate', () => {
 		mockUseInvitationAdmin.mockReturnValue(
 			makeMockAdmin({
 				items: [
@@ -218,9 +189,7 @@ describe('InvitationList', () => {
 
 		render(<InvitationList />);
 
-		expect(
-			screen.getByText('No hay invitaciones vigentes ni demos autorizadas.'),
-		).toBeInTheDocument();
+		expect(screen.getByText('No hay invitaciones vigentes.')).toBeInTheDocument();
 		expect(screen.queryByRole('link', { name: 'Nueva invitación' })).not.toBeInTheDocument();
 	});
 
@@ -323,22 +292,14 @@ describe('InvitationList', () => {
 
 describe('invitation validity filters', () => {
 	afterEach(() => jest.useRealTimers());
-	it('shows upcoming clients followed by authorized demos, retaining other filters', () => {
+	it('shows upcoming invitations by event date, retaining other filters', () => {
 		jest.useFakeTimers().setSystemTime(new Date('2026-09-08T18:00:00Z'));
 		mockUseInvitationAdmin.mockReturnValue(
 			makeMockAdmin({
 				items: [
-					makeItem({
-						id: 'demo',
-						title: 'Authorized demo',
-						kind: 'demo',
-						eventDate: '2000-01-01',
-						demoShowroomOrder: 1,
-					}),
 					makeItem({ id: 'later', title: 'Later', eventDate: '2026-09-10' }),
 					makeItem({ id: 'past', title: 'Past event', eventDate: '2026-09-07' }),
 					makeItem({ id: 'today', title: 'Today event', eventDate: '2026-09-08' }),
-					makeItem({ id: 'hidden', title: 'Hidden demo', kind: 'demo' }),
 					makeItem({ id: 'unknown', title: 'Unknown date', eventDate: null }),
 					makeItem({ id: 'archived', title: 'Archived event', archivedAt: '2026-09-01' }),
 				],
@@ -349,14 +310,14 @@ describe('invitation validity filters', () => {
 			.getAllByRole('row')
 			.slice(1)
 			.map((row) => within(row).getAllByRole('link')[0].textContent);
-		expect(titles).toEqual(['Today event', 'Later', 'Authorized demo']);
-		expect(screen.queryByText('Hidden demo')).not.toBeInTheDocument();
+		expect(titles).toEqual(['Today event', 'Later']);
 		fireEvent.click(screen.getByRole('button', { name: /Pasadas/ }));
 		expect(screen.getByText('Past event')).toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: /Fecha por verificar/ }));
 		expect(screen.getByText('Unknown date')).toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: /Todas/ }));
-		expect(screen.getByText('Hidden demo')).toBeInTheDocument();
+		expect(screen.getByText('Past event')).toBeInTheDocument();
+		expect(screen.queryByText('Archived event')).not.toBeInTheDocument();
 	});
 	it.each(['focus', 'interval'])(
 		'updates after midnight through %s without archiving',

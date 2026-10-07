@@ -384,9 +384,6 @@ function isLockedRsvpDescriptor(descriptor: DescriptorData): boolean {
 
 function resolveSectionReveal(descriptor: DescriptorData): InvitationRevealRecipe {
 	if (isLockedRsvpDescriptor(descriptor)) return 'none';
-	if (descriptor.component === 'family' && descriptor.props.variant === 'portrait-register') {
-		return 'fade';
-	}
 	// Magazine-spread can be taller than the stagger observer threshold on mobile.
 	if (descriptor.component === 'gallery' && descriptor.props.variant === 'magazine-spread') {
 		return 'none';

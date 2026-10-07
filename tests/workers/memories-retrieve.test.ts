@@ -12,6 +12,7 @@ import {
 	isMediaSignatureValid,
 	parseBoundedVideoDurationSeconds,
 } from '../../workers/celebra-memories-retrieve/src/inspect';
+import { ascii, box, concat, streamOf } from './memories-stack';
 
 Object.defineProperty(globalThis, 'crypto', { configurable: true, value: webcrypto });
 Object.defineProperty(globalThis, 'ReadableStream', {
@@ -40,21 +41,32 @@ const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'prime
 const PRIVATE_KEY = privateKey.export({ type: 'pkcs8', format: 'pem' }).toString();
 const PUBLIC_KEY = publicKey.export({ type: 'spki', format: 'pem' }).toString();
 
-function ascii(text: string): number[] {
-	return Array.from(text, (character) => character.charCodeAt(0));
-}
-
-/** Minimal `moov` atom holding a version-0 `mvhd` with a millisecond timescale. */
-function moovWithDuration(durationSeconds: number): Uint8Array {
-	const bytes = new Uint8Array(48);
+/**
+ * `moov` atom holding a version-0 `mvhd` with a millisecond timescale. A larger
+ * `totalBytes` pads it with a `trak` box, like the sample tables of a real clip.
+ */
+function moovWithDuration(durationSeconds: number, totalBytes = 48): Uint8Array {
+	const bytes = new Uint8Array(totalBytes);
 	const view = new DataView(bytes.buffer);
-	view.setUint32(0, 48);
+	view.setUint32(0, totalBytes);
 	bytes.set(ascii('moov'), 4);
 	view.setUint32(8, 40);
 	bytes.set(ascii('mvhd'), 12);
 	view.setUint8(16, 0);
 	view.setUint32(28, 1000);
 	view.setUint32(32, durationSeconds * 1000);
+	if (totalBytes > 48) bytes.set(box('trak', totalBytes - 48), 48);
+	return bytes;
+}
+
+/** A box whose size travels in the 64-bit `largesize` field, as large media boxes do. */
+function largeBox(type: string, totalBytes: number): Uint8Array {
+	const bytes = new Uint8Array(totalBytes);
+	const view = new DataView(bytes.buffer);
+	view.setUint32(0, 1);
+	bytes.set(ascii(type), 4);
+	view.setUint32(8, 0);
+	view.setUint32(12, totalBytes);
 	return bytes;
 }
 
@@ -83,21 +95,12 @@ function ftypHeader(): Uint8Array {
 	return bytes;
 }
 
-function stream(bytes: Uint8Array): ReadableStream<Uint8Array> {
-	return new NodeReadableStream<Uint8Array>({
-		start(controller) {
-			controller.enqueue(bytes);
-			controller.close();
-		},
-	}) as unknown as ReadableStream<Uint8Array>;
-}
-
 function storedObject(
 	bytes: Uint8Array,
 	size = bytes.byteLength,
 	checksums: StoredObject['checksums'] = { toJSON: () => ({ sha256: SHA256 }) },
 ): StoredObject {
-	return { body: stream(bytes), size, checksums };
+	return { body: streamOf(bytes), size, checksums };
 }
 
 type GetMock = jest.Mock<Promise<StoredObject | null>, Parameters<Bucket['get']>>;
@@ -106,6 +109,17 @@ function getReturning(object: StoredObject | null): GetMock {
 	return jest.fn<Promise<StoredObject | null>, Parameters<Bucket['get']>>(() =>
 		Promise.resolve(object),
 	);
+}
+
+/** Serves ranged reads from real bytes, like R2 does for a stored object. */
+function rangedGet(file: Uint8Array): GetMock {
+	return jest.fn<Promise<StoredObject | null>, Parameters<Bucket['get']>>((_key, options) => {
+		const offset = options?.range?.offset ?? 0;
+		const length = options?.range?.length ?? file.byteLength - offset;
+		return Promise.resolve(
+			storedObject(file.subarray(offset, offset + length), file.byteLength),
+		);
+	});
 }
 
 function createBucket(overrides: Partial<Bucket> = {}): Bucket {
@@ -354,30 +368,91 @@ describe('memories retrieve worker: inspect', () => {
 		expect(get).toHaveBeenCalledTimes(1);
 	});
 
-	it('falls back to a bounded tail range when the header carries no moov atom', async () => {
-		const size = 100_000;
-		const get = jest.fn<Promise<StoredObject | null>, Parameters<Bucket['get']>>(
-			(_key, options) =>
-				Promise.resolve(
-					options?.range?.offset === 0
-						? storedObject(ftypHeader(), size)
-						: storedObject(moovWithDuration(42), size),
-				),
+	it.each([
+		['smaller than the inspection window', 40 * 1024],
+		['larger than the inspection window', 70 * 1024],
+		['several times the inspection window', 200 * 1024],
+	])('follows the boxes to a trailing moov atom %s', async (_label, moovBytes) => {
+		const mediaBytes = 300 * 1024;
+		const file = concat(
+			ftypHeader(),
+			box('wide', 8),
+			box('mdat', mediaBytes),
+			moovWithDuration(58, moovBytes),
 		);
+		const get = rangedGet(file);
 		const response = await retrieve(
 			{ objectKey: MP4_KEY, mimeType: 'video/mp4', mode: 'inspect' },
 			createEnv({ MEMORIES_BUCKET: createBucket({ get }) }),
 		);
 
 		expect(await response.json()).toMatchObject({
-			sizeBytes: size,
+			sizeBytes: file.byteLength,
+			signatureValid: true,
+			durationSeconds: 58,
+		});
+		// One read for the head, one landing exactly on the moov atom.
+		expect(get).toHaveBeenCalledTimes(2);
+		expect(get).toHaveBeenNthCalledWith(2, MP4_KEY, {
+			range: {
+				offset: 32 + 8 + mediaBytes,
+				length: Math.min(MEMORIES_INSPECTION_BYTES, moovBytes),
+			},
+		});
+	});
+
+	it('reads a 64-bit media box size on the way to the moov atom', async () => {
+		const mediaBytes = 90 * 1024;
+		const file = concat(ftypHeader(), largeBox('mdat', mediaBytes), moovWithDuration(21));
+		const response = await retrieve(
+			{ objectKey: MP4_KEY, mimeType: 'video/mp4', mode: 'inspect' },
+			createEnv({ MEMORIES_BUCKET: createBucket({ get: rangedGet(file) }) }),
+		);
+
+		expect(await response.json()).toMatchObject({ durationSeconds: 21 });
+	});
+
+	it('falls back to a bounded tail range when the boxes cannot be followed', async () => {
+		// The media box declares "until the end of the file", so the walk stops there.
+		const openEnded = box('mdat', 100 * 1024);
+		new DataView(openEnded.buffer).setUint32(0, 0);
+		const file = concat(ftypHeader(), openEnded, moovWithDuration(42));
+		const get = rangedGet(file);
+		const response = await retrieve(
+			{ objectKey: MP4_KEY, mimeType: 'video/mp4', mode: 'inspect' },
+			createEnv({ MEMORIES_BUCKET: createBucket({ get }) }),
+		);
+
+		expect(await response.json()).toMatchObject({
+			sizeBytes: file.byteLength,
 			signatureValid: true,
 			durationSeconds: 42,
 		});
-		expect(get).toHaveBeenCalledTimes(2);
-		expect(get).toHaveBeenNthCalledWith(2, MP4_KEY, {
-			range: { offset: size - MEMORIES_INSPECTION_BYTES, length: MEMORIES_INSPECTION_BYTES },
+		expect(get).toHaveBeenLastCalledWith(MP4_KEY, {
+			range: {
+				offset: file.byteLength - MEMORIES_INSPECTION_BYTES,
+				length: MEMORIES_INSPECTION_BYTES,
+			},
 		});
+	});
+
+	it('reports no duration for a video without a moov atom, with a bounded number of reads', async () => {
+		const file = concat(
+			ftypHeader(),
+			...Array.from({ length: 12 }, () => box('free', 70 * 1024)),
+		);
+		const get = rangedGet(file);
+		const response = await retrieve(
+			{ objectKey: MP4_KEY, mimeType: 'video/mp4', mode: 'inspect' },
+			createEnv({ MEMORIES_BUCKET: createBucket({ get }) }),
+		);
+
+		expect(await response.json()).toMatchObject({
+			signatureValid: true,
+			durationSeconds: null,
+		});
+		// Head, six walk reads and the tail.
+		expect(get).toHaveBeenCalledTimes(8);
 	});
 
 	it('reports an absent object with 200 so a 404 never means "missing"', async () => {
@@ -436,6 +511,17 @@ describe('memories retrieve worker: streaming', () => {
 		expect(response.headers.get('Content-Length')).toBe('2');
 	});
 
+	it('returns 416 Range Not Satisfiable when rangeStart is at or beyond object size', async () => {
+		const get = getReturning(storedObject(new Uint8Array([3, 4]), 4));
+		const response = await retrieve(
+			{ objectKey: JPEG_KEY, mimeType: 'image/jpeg', mode: 'inline', rangeStart: 4 },
+			createEnv({ MEMORIES_BUCKET: createBucket({ get }) }),
+		);
+
+		expect(response.status).toBe(416);
+		expect(response.headers.get('Content-Range')).toBe('bytes */4');
+	});
+
 	it('streams the whole object as an attachment named recuerdo.<ext> by default', async () => {
 		const get = getReturning(storedObject(JPEG_BYTES));
 		const response = await retrieve(
@@ -449,6 +535,7 @@ describe('memories retrieve worker: streaming', () => {
 			'attachment; filename="recuerdo.jpg"',
 		);
 		expect(response.headers.get('Content-Range')).toBeNull();
+		expect(response.headers.get('Content-Length')).toBe(String(JPEG_BYTES.byteLength));
 		expect(response.headers.get('Cache-Control')).toBe('private, no-store, max-age=0');
 		expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff');
 		expect(await readAll(response.body)).toEqual(Array.from(JPEG_BYTES));

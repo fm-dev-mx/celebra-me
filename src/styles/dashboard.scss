@@ -1,5 +1,5 @@
 @use 'global';
-@use 'themes/presets/dashboard-dark';
+@use 'themes/presets/dashboard-ivory';
 @use 'dashboard/common';
 @use 'dashboard/shell';
 @use 'dashboard/tables';
@@ -15,5 +15,7 @@
 @use 'dashboard/commercial-outbox';
 @use 'dashboard/commercial-dashboard';
 @use 'dashboard/canonical-status';
+@use 'dashboard/meter';
 @use 'dashboard/memories';
+@use 'dashboard/platform';
 @use 'intake/intake-form';

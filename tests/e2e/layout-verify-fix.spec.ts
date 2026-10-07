@@ -223,7 +223,7 @@ test('Editorial RSVP section visible after scrolling to #rsvp at smallest viewpo
 
 test('Non-editorial: scrolling to #rsvp positions section at top at 375x667', async ({ page }) => {
 	await page.setViewportSize({ width: 375, height: 667 });
-	await page.goto('/xv/demo-xv-jewelry-box', { waitUntil: 'networkidle' });
+	await page.goto('/xv/demo-xv-enchanted-rose', { waitUntil: 'networkidle' });
 	await openInvitation(page);
 
 	await page.evaluate(() => window.scrollTo({ top: 300 }));
@@ -315,7 +315,12 @@ const RSVP_EVENT_SLUGS = [
 	{ name: 'xv-editorial 414x896', slug: '/xv/demo-xv-editorial', width: 414, height: 896 },
 	{ name: 'xv-editorial 430x932', slug: '/xv/demo-xv-editorial', width: 430, height: 932 },
 	{ name: 'xv-editorial desktop', slug: '/xv/demo-xv-editorial', width: 1365, height: 768 },
-	{ name: 'xv-jewelry-box 375x667', slug: '/xv/demo-xv-jewelry-box', width: 375, height: 667 },
+	{
+		name: 'xv-enchanted-rose 375x667',
+		slug: '/xv/demo-xv-enchanted-rose',
+		width: 375,
+		height: 667,
+	},
 	{ name: 'cesar-ramses 375x667', slug: '/bautizo/cesar-ramses', width: 375, height: 667 },
 	{ name: 'cesar-ramses desktop', slug: '/bautizo/cesar-ramses', width: 1365, height: 768 },
 	{

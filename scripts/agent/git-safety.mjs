@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import process from 'node:process';
 
-export const BASELINE_VERSION = 2;
+export const BASELINE_VERSION = 3;
 export const BASELINE_FILE_NAME = 'git-safety-baseline.json';
 
 /** @typedef {'stage' | 'unstage' | 'commit' | 'history' | 'branch-switch'} AuthorizedOperation */
@@ -28,17 +28,59 @@ export const BASELINE_FILE_NAME = 'git-safety-baseline.json';
 const SUPPORTED_OPERATIONS = new Set(['stage', 'unstage', 'commit', 'history', 'branch-switch']);
 const NO_AUTHORIZATION = Object.freeze({ operations: [], paths: [], branch: null });
 
+const SESSION_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
+
+/**
+ * Concurrent agent sessions in one checkout keep separate baselines so that closing one session
+ * never consumes another session's evidence. Without a session id the shared legacy file is used.
+ * @param {string | null | undefined} session
+ */
+export function baselineFileName(session) {
+	if (!session) return BASELINE_FILE_NAME;
+	if (!SESSION_PATTERN.test(session))
+		throw new Error('--session must match [A-Za-z0-9._-]{1,64} (for example the task branch).');
+	return `git-safety-baseline.${session}.json`;
+}
+
 /**
  * @param {string} [repoRoot]
+ * @param {string | null} [session]
  */
-export function resolvePaths(repoRoot = process.env.CELEBRA_GIT_SAFETY_ROOT || defaultRepoRoot()) {
+export function resolvePaths(
+	repoRoot = process.env.CELEBRA_GIT_SAFETY_ROOT || defaultRepoRoot(),
+	session = process.env.CELEBRA_GIT_SAFETY_SESSION || null,
+) {
 	const root = resolve(repoRoot);
 	const tmpDir = join(root, '.agent', 'tmp');
 	return {
 		repoRoot: root,
 		tmpDir,
-		baselineFile: join(tmpDir, BASELINE_FILE_NAME),
+		session: session || null,
+		baselineFile: join(tmpDir, baselineFileName(session)),
 	};
+}
+
+/**
+ * Removes `--session` from argv; the remaining arguments keep their command-specific meaning.
+ * @param {string[]} argv
+ */
+export function extractSessionArg(argv) {
+	/** @type {string | null} */
+	let session = null;
+	const rest = [];
+	for (let i = 0; i < argv.length; i++) {
+		const arg = argv[i];
+		if (arg.startsWith('--session=')) session = arg.slice('--session='.length);
+		else if (arg === '--session') session = argv[++i] ?? '';
+		else rest.push(arg);
+	}
+	if (session !== null) baselineFileName(session || '-invalid-');
+	return { session, rest };
+}
+
+/** @param {string | null} session */
+function sessionFlag(session) {
+	return session ? ` --session=${session}` : '';
 }
 
 function defaultRepoRoot() {
@@ -81,12 +123,13 @@ function sha256(text) {
 }
 
 /**
- * Semantic index fingerprint from `git ls-files --stage` metadata.
+ * Fingerprint of staged changes relative to HEAD (`git diff --cached --raw`), so a
+ * branch switch or commit that leaves nothing staged does not read as index drift.
  * Uses blob OIDs / modes / paths — never buffers staged binary contents.
  * @param {string} repoRoot
  */
 export function indexFingerprint(repoRoot) {
-	const { stdout } = git(repoRoot, ['ls-files', '--stage']);
+	const { stdout } = git(repoRoot, ['diff', '--cached', '--raw', '--no-renames', '--no-abbrev']);
 	const lines = stdout
 		? stdout
 				.split('\n')
@@ -436,7 +479,7 @@ export function writeBaseline(paths, state) {
 /**
  * Classify an on-disk baseline without mutating it.
  * @param {string} baselineFile
- * @returns {{ kind: 'v2' | 'invalid', versionLabel: string, detail?: string }}
+ * @returns {{ kind: 'valid' | 'invalid', versionLabel: string, detail?: string }}
  */
 export function classifyBaselineFile(baselineFile) {
 	try {
@@ -449,7 +492,7 @@ export function classifyBaselineFile(baselineFile) {
 			typeof raw.indexFingerprint === 'string' &&
 			Array.isArray(raw.indexEntries)
 		) {
-			return { kind: 'v2', versionLabel: String(raw.version) };
+			return { kind: 'valid', versionLabel: String(raw.version) };
 		}
 		return {
 			kind: 'invalid',
@@ -477,7 +520,7 @@ function printInvalidBaseline(baselineFile, classification) {
  */
 export function readBaseline(baselineFile) {
 	const classification = classifyBaselineFile(baselineFile);
-	if (classification.kind !== 'v2') {
+	if (classification.kind !== 'valid') {
 		throw new Error(
 			`invalid baseline (version ${classification.versionLabel}); remove it deliberately after inspecting evidence, then run start`,
 		);
@@ -506,10 +549,10 @@ export function readBaseline(baselineFile) {
 }
 
 /**
- * @param {{ repoRoot?: string }} [options]
+ * @param {{ repoRoot?: string, session?: string | null }} [options]
  */
 export function cmdStart(options = {}) {
-	const paths = resolvePaths(options.repoRoot);
+	const paths = resolvePaths(options.repoRoot, options.session);
 	console.log('agent:git-safety:start');
 
 	const state = captureProtectedState(paths.repoRoot);
@@ -518,7 +561,7 @@ export function cmdStart(options = {}) {
 		let classification = classifyBaselineFile(paths.baselineFile);
 		/** @type {string[]} */
 		let drift = [];
-		if (classification.kind === 'v2') {
+		if (classification.kind === 'valid') {
 			try {
 				drift = evaluateProtectedDrift(
 					readBaseline(paths.baselineFile),
@@ -533,10 +576,10 @@ export function cmdStart(options = {}) {
 				};
 			}
 		}
-		if (classification.kind !== 'v2' || drift.length > 0) {
+		if (classification.kind !== 'valid' || drift.length > 0) {
 			console.error('FAILED');
 			console.error(`active baseline already exists: ${paths.baselineFile}`);
-			if (classification.kind === 'v2') {
+			if (classification.kind === 'valid') {
 				for (const failure of drift) console.error(`  ${failure}`);
 				console.error(
 					'Refusing to overwrite drifted evidence. Close the prior session with finish first.',
@@ -559,7 +602,9 @@ export function cmdStart(options = {}) {
 	console.log(`  index fingerprint:    ${baseline.indexFingerprint}`);
 	console.log(`  baseline file:        ${paths.baselineFile}`);
 	console.log('');
-	console.log('Session started. Run `pnpm agent:git-safety:finish` to verify and close.');
+	console.log(
+		`Session started. Run \`pnpm agent:git-safety:finish${sessionFlag(paths.session)}\` to verify and close.`,
+	);
 	return { ok: true, baseline, paths };
 }
 
@@ -595,10 +640,10 @@ function printFinishSummary(baseline, current, auth, verdict) {
 }
 
 /**
- * @param {{ repoRoot?: string, argv?: string[] }} [options]
+ * @param {{ repoRoot?: string, argv?: string[], session?: string | null }} [options]
  */
 export function cmdFinish(options = {}) {
-	const paths = resolvePaths(options.repoRoot);
+	const paths = resolvePaths(options.repoRoot, options.session);
 	console.log('agent:git-safety:finish');
 
 	let auth;
@@ -614,13 +659,15 @@ export function cmdFinish(options = {}) {
 	if (!existsSync(paths.baselineFile)) {
 		console.error('FAILED');
 		console.error('no active session baseline');
-		console.error('Run `pnpm agent:git-safety:start` before mutable work, then finish.');
+		console.error(
+			`Run \`pnpm agent:git-safety:start${sessionFlag(paths.session)}\` before mutable work, then finish.`,
+		);
 		process.exitCode = 1;
 		return { ok: false, reason: 'no-baseline' };
 	}
 
 	const classification = classifyBaselineFile(paths.baselineFile);
-	if (classification.kind !== 'v2') {
+	if (classification.kind !== 'valid') {
 		console.error('FAILED');
 		printInvalidBaseline(paths.baselineFile, classification);
 		console.error(`baseline preserved at ${paths.baselineFile}`);
@@ -661,10 +708,10 @@ export function cmdFinish(options = {}) {
 
 /**
  * Read-only status check for an active mutable-session baseline.
- * @param {{ repoRoot?: string }} [options]
+ * @param {{ repoRoot?: string, session?: string | null }} [options]
  */
 export function cmdCheck(options = {}) {
-	const paths = resolvePaths(options.repoRoot);
+	const paths = resolvePaths(options.repoRoot, options.session);
 	console.log('agent:git-safety:check');
 	if (!existsSync(paths.baselineFile)) {
 		console.error('NO_ACTIVE_SESSION');
@@ -704,9 +751,12 @@ export function cmdCheck(options = {}) {
 
 function printUsage() {
 	console.error(`Usage:
-  node scripts/agent/git-safety.mjs start
-  node scripts/agent/git-safety.mjs check
-  node scripts/agent/git-safety.mjs finish [--authorized-operation=<op>[,<op>...]] [--paths=a,b] [--branch=name]
+  node scripts/agent/git-safety.mjs start [--session=<id>]
+  node scripts/agent/git-safety.mjs check [--session=<id>]
+  node scripts/agent/git-safety.mjs finish [--session=<id>] [--authorized-operation=<op>[,<op>...]] [--paths=a,b] [--branch=name]
+
+--session keeps a separate baseline per concurrent agent session in one checkout
+(defaults to CELEBRA_GIT_SAFETY_SESSION, else the shared baseline).
 
 Supported authorized operations (ephemeral, non-persistent, not proof of consent; combinable):
   stage          requires --paths
@@ -723,25 +773,34 @@ function main() {
 		process.exit(1);
 	}
 
+	let parsed;
+	try {
+		parsed = extractSessionArg(process.argv.slice(3).filter((arg) => arg !== '--'));
+	} catch (error) {
+		console.error(error instanceof Error ? error.message : String(error));
+		process.exit(1);
+	}
+	const session = parsed.session ?? undefined;
+
 	if (cmd === 'start') {
-		if (process.argv.length > 3) {
+		if (parsed.rest.length > 0) {
 			console.error('start does not accept additional arguments');
 			process.exit(1);
 		}
-		cmdStart();
+		cmdStart({ session });
 		return;
 	}
 
 	if (cmd === 'check') {
-		if (process.argv.length > 3) {
+		if (parsed.rest.length > 0) {
 			console.error('check does not accept additional arguments');
 			process.exit(1);
 		}
-		cmdCheck();
+		cmdCheck({ session });
 		return;
 	}
 
-	cmdFinish({ argv: process.argv.slice(3) });
+	cmdFinish({ argv: parsed.rest, session });
 }
 
 const invokedFile = process.argv[1] ? resolve(process.argv[1]) : '';

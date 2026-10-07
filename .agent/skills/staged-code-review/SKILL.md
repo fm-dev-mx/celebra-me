@@ -168,7 +168,7 @@ finding → one total). If none: `~0`.
 - Client islands importing server-only code
 - Non-serializable values passed from server/BFF to client without serialization
 - Path casing (Vercel/Linux sensitive)
-- Invented slug equality (`previewSlug` / `_assetSlug` / route slug can differ)
+- Invented slug equality (`_assetSlug` and route slug can differ)
 - Secrets or server env reaching client bundles
 
 Also check naming and Celebra conventions when relevant (`@/*` in TSX, Spanish UI copy, English

@@ -1,17 +1,6 @@
 @media (prefers-reduced-motion: reduce) {
-	.progress-fill,
-	.dashboard-guests__mobile-dock,
-	.guest-note-indicator--active {
+	.dashboard-guests__mobile-dock {
 		animation: none;
 		transition: none;
-	}
-
-	.guest-card__message-block {
-		transition: none;
-	}
-
-	.guest-card__expanded {
-		transition: none;
-		transform: none;
 	}
 }

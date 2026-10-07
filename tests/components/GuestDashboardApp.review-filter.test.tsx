@@ -32,7 +32,7 @@ const guests = [
 		guestId: 'guest-delivery',
 		fullName: 'Delivery Pending Guest',
 		deliveryStatus: 'generated',
-		attendanceStatus: 'confirmed',
+		attendanceStatus: 'pending',
 		guestComment: '',
 	}),
 	makeGuest({
@@ -127,7 +127,9 @@ function setupDashboard() {
 		openImportModal: jest.fn(),
 		openNextGeneratedGuest: jest.fn(),
 		openNextReminderGuest: jest.fn(),
+		openBatchForGuests: jest.fn(),
 		pendingGuests: guests.filter((item) => item.deliveryStatus === 'generated'),
+		queueGuestIds: null,
 		requestDelete: jest.fn(),
 		setImportModalOpen: jest.fn(),
 		setNotification: jest.fn(),
@@ -146,7 +148,7 @@ function expectVisibleGuestNames(names: string[]) {
 	}
 }
 
-describe('GuestDashboardApp review filters', () => {
+describe('GuestDashboardApp overview filters', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		setupDashboard();
@@ -162,14 +164,14 @@ describe('GuestDashboardApp review filters', () => {
 			'true',
 		);
 
-		fireEvent.click(screen.getByRole('button', { name: 'Todos' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Ver todos los invitados (3)' }));
 		expectVisibleGuestNames(['Delivery Pending Guest', 'RSVP Pending Guest', 'Message Guest']);
 	});
 
-	it('filters visible guests by pending RSVP', () => {
+	it('filters visible guests waiting for an answer', () => {
 		render(<GuestDashboardApp initialEventId="event-1" />);
 
-		fireEvent.click(screen.getByRole('button', { name: 'Sin respuesta, 1' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Esperando, 1' }));
 
 		expectVisibleGuestNames(['RSVP Pending Guest']);
 	});
@@ -180,5 +182,20 @@ describe('GuestDashboardApp review filters', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'Con mensaje, 1' }));
 
 		expectVisibleGuestNames(['Message Guest']);
+	});
+});
+
+describe('GuestDashboardApp filter controls', () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+		setupDashboard();
+	});
+
+	it('exposes the review filter only through the overview segments', () => {
+		render(<GuestDashboardApp initialEventId="event-1" />);
+
+		expect(screen.queryByLabelText('Revisar')).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /^Por recordar \(/ })).not.toBeInTheDocument();
+		expect(screen.getByRole('group', { name: 'Mostrar' })).toBeInTheDocument();
 	});
 });

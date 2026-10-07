@@ -13,9 +13,12 @@ const allowedHydratedComponents = new Set([
 	'EventsAdminTable',
 	'UsersAdminTable',
 	'InvitationEditor',
-	'ContentSyncPanel',
 	'MemoriesOrganizer',
 	'MemoriesAdmin',
+	// Platform usage console — read-only fetch via @/lib/platform/client/api
+	// (browser-safe @/lib/dashboard/api-client). No mutations, no server-only
+	// modules in the island: provider tokens stay on the server.
+	'PlatformUsagePanel',
 	// Local-only canonical status dashboard — read-only fetch via
 	// @/lib/dashboard/api-client. No mutations, no server-only modules in the island.
 	'CanonicalStatusPanel',
@@ -34,6 +37,9 @@ const allowedHydratedComponents = new Set([
 	'RSVP',
 	'MemoriesCapture',
 	'MemoriesRecovery',
+	// Read-only shared gallery: fetches its own token-scoped API; imports only contract,
+	// copy and pure client helpers — no server modules.
+	'MemoriesSharedGallery',
 	'InvitationList',
 	'InvitationDetail',
 	'DraftReview',

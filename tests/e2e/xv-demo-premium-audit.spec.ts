@@ -105,10 +105,10 @@ for (const viewport of VIEWPORTS) {
 
 test('demo reveal ignores persisted opened state by default', async ({ page }) => {
 	await page.addInitScript(() => {
-		window.localStorage.setItem('envelope-opened-demo-xv-jewelry-box', 'true');
+		window.localStorage.setItem('envelope-opened-demo-xv-enchanted-rose', 'true');
 	});
 
-	await page.goto('/xv/demo-xv-jewelry-box', { waitUntil: 'domcontentloaded' });
+	await page.goto('/xv/demo-xv-enchanted-rose', { waitUntil: 'domcontentloaded' });
 
 	await expect(page.locator('.envelope-wrapper')).toBeVisible();
 	await expect(page.locator('.event-theme-wrapper')).toHaveAttribute(
@@ -122,7 +122,7 @@ test('reduced motion reveal exposes the hero without a staged card transition', 
 }) => {
 	await page.emulateMedia({ reducedMotion: 'reduce' });
 	await page.setViewportSize({ width: 390, height: 640 });
-	await page.goto('/xv/demo-xv-jewelry-box', { waitUntil: 'domcontentloaded' });
+	await page.goto('/xv/demo-xv-enchanted-rose', { waitUntil: 'domcontentloaded' });
 
 	await page.getByRole('button', { name: 'Abrir sobre de la invitación' }).click();
 
@@ -140,7 +140,7 @@ async function captureAuditFlow(page: Page, viewportName: string) {
 		fs.mkdirSync(viewportDir, { recursive: true });
 	}
 
-	await page.goto('/xv/demo-xv-jewelry-box', { waitUntil: 'domcontentloaded' });
+	await page.goto('/xv/demo-xv-enchanted-rose', { waitUntil: 'domcontentloaded' });
 
 	await expect(page.locator('.envelope-wrapper')).toBeVisible();
 	if (CAPTURE_AUDIT_SCREENSHOTS) {

@@ -4,10 +4,9 @@ This document specifies the purpose, required/optional inputs, data models, rend
 asset contracts, accessibility, and validation rules for all supported sections in Celebra-me
 digital invitations.
 
-The complete post-migration ownership matrix in
-[`.agent/ownership.yaml`](../../../.agent/ownership.yaml) for structural variants, presentation
-options, skins, and profile exceptions is maintained in
-[`docs/domains/theme/variant-system.md`](../theme/variant-system.md).
+Section variants, their prerequisites and their CSS owners come from one registry,
+`src/lib/invitation/section-variants.ts`; [`variant-system.md`](../theme/variant-system.md) lists
+them. This document does not repeat variant lists.
 
 ---
 
@@ -24,16 +23,9 @@ options, skins, and profile exceptions is maintained in
   image asset.
 
 Structural renderer selections are section-owned and bounded via each section's required `variant`
-field. Hero accepts `standard`, `editorial-cover`, or `split-cover`; Thank You accepts `standard`,
-`editorial-back-cover`, or `full-bleed-photo`; Gifts uses `editorial-catalog`; RSVP uses
-`editorial-press-pass` or `formal-register`. `rsvp.personalizedAccess` uses `standard`,
-`ornamented`, `editorial-pass`, or `formal-pass`. These fields select markup/layout only; Theme
-preset remains the visual skin. Legacy aliases are rejected by the canonical schema and are tracked
-only as deployment migration work.
-
-Countdown variants are section-owned (`standard`, `editorial-folio`, `magazine-folio`,
-`jeweled-panel`, `rose-ornament`, and `hacienda-ornament`). Footer remains a visual theme surface
-and has no independent section variant.
+field (`rsvp.personalizedAccess.variant` for the access pass). These fields select markup and layout
+only; the theme preset remains the visual skin. Legacy aliases are rejected by the canonical schema.
+Footer remains a visual theme surface and has no independent section variant.
 
 ---
 

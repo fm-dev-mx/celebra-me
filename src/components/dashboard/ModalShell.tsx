@@ -3,6 +3,8 @@ import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
 
 let activeModalShells = 0;
 let dashboardShellWasInert = false;
+// Open shells in mount order; only the top-most one handles Escape and Tab.
+const modalStack: symbol[] = [];
 
 interface ModalShellProps {
 	title: string;
@@ -42,6 +44,8 @@ const ModalShell: React.FC<ModalShellProps> = ({
 		onCloseRef.current = onClose;
 	}, [onClose]);
 	useEffect(() => {
+		const stackEntry = Symbol('modal-shell');
+		modalStack.push(stackEntry);
 		triggerRef.current =
 			document.activeElement instanceof HTMLElement ? document.activeElement : null;
 		const shell = document.querySelector<HTMLElement>('.dashboard-shell');
@@ -60,6 +64,7 @@ const ModalShell: React.FC<ModalShellProps> = ({
 			fallback?.focus();
 		}, 0);
 		const onKeyDown = (event: KeyboardEvent) => {
+			if (modalStack.at(-1) !== stackEntry) return;
 			if (event.key === 'Escape' && !disableClose) {
 				event.preventDefault();
 				onCloseRef.current();
@@ -80,6 +85,7 @@ const ModalShell: React.FC<ModalShellProps> = ({
 		return () => {
 			window.clearTimeout(focusTimer);
 			document.removeEventListener('keydown', onKeyDown);
+			modalStack.splice(modalStack.indexOf(stackEntry), 1);
 			activeModalShells = Math.max(0, activeModalShells - 1);
 			if (activeModalShells === 0 && !dashboardShellWasInert) shell?.removeAttribute('inert');
 			triggerRef.current?.focus();

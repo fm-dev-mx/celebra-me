@@ -1,16 +1,12 @@
 import type { Invitation, IntakeRequest } from '@/lib/intake/types';
 import {
 	listInvitations,
-	createInvitation as createInvitationRecord,
 	findInvitationById,
 	findInvitationBySlug,
-	updateInvitation,
 	updateInvitationConditionally,
 	assignInvitationOwner,
 } from '@/lib/intake/repositories/invitation.repository';
-import { DEMO_PRESET_CATALOG, findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-import { getFeaturedDemoShowroomItems } from '@/data/demo-showroom.data';
 import {
 	resolveInvitationSchedule,
 	type InvitationTimingProjection,
@@ -19,16 +15,6 @@ import type { InvitationListItemDTO, InvitationDTO } from '@/lib/dashboard/dto/i
 import { resolveCaptureLink } from '@/lib/intake/services/intake-request.service';
 import { toInvitationDTO } from '@/lib/dashboard/dto/intake-mapper';
 import { hasRsvpContent } from '@/lib/intake/utils';
-import { getCollection } from 'astro:content';
-import { getContentEntrySlug } from '@/lib/content/events';
-import {
-	findPublishedByInvitationId,
-	upsertPublishedContent,
-} from '@/lib/intake/repositories/published-invitation-content.repository';
-import {
-	findDraftByInvitationId,
-	upsertDraft,
-} from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import type { UpdateInvitationInput } from '@/lib/intake/schemas/invitation.schema';
 import type { InvitationMutationCommandContext } from '@/lib/intake/mutations/command-context';
@@ -136,7 +122,6 @@ export async function getEnrichedInvitationList(
 
 	const publishedByInvitation = new Map(pubRows.map((row) => [row.invitation_project_id, row]));
 	const draftsByInvitation = new Map(draftRows.map((row) => [row.invitation_project_id, row]));
-	const showroom = getFeaturedDemoShowroomItems();
 	const now = new Date();
 	return invitations.map((invitation) => {
 		const rawRequest =
@@ -144,14 +129,6 @@ export async function getEnrichedInvitationList(
 		const event = eventsByInvitation.get(invitation.id);
 		const content: InvitationTimingProjection | undefined =
 			publishedByInvitation.get(invitation.id) ?? draftsByInvitation.get(invitation.id);
-		const demoIndex =
-			invitation.kind === 'demo'
-				? showroom.findIndex(
-						(item) =>
-							item.slug === invitation.slug &&
-							item.eventType === invitation.eventType,
-					)
-				: -1;
 		return {
 			...toEnrichedInvitationDTO(invitation, {
 				request: rawRequest
@@ -167,184 +144,8 @@ export async function getEnrichedInvitationList(
 				rsvpSectionHasContent: rsvpContentInvitations.has(invitation.id),
 			}),
 			...resolveInvitationSchedule(invitation.kind, content, now),
-			demoShowroomOrder: demoIndex < 0 ? null : demoIndex,
 		};
 	});
-}
-
-export function assertCreateInvitationPreset(input: {
-	eventType: string;
-	baseDemoId: string;
-}): NonNullable<ReturnType<typeof findDemoPreset>> {
-	const preset = findDemoPreset(input.baseDemoId);
-	if (
-		!preset ||
-		typeof preset.eventType !== 'string' ||
-		preset.eventType.length === 0 ||
-		typeof preset.themeId !== 'string' ||
-		preset.themeId.length === 0
-	) {
-		throw new ApiError(
-			422,
-			'validation_error',
-			'El demo base seleccionado no existe o tiene una configuración inválida.',
-			{ reason: 'invalid_base_demo', baseDemoId: input.baseDemoId },
-		);
-	}
-
-	if (preset.eventType !== input.eventType) {
-		throw new ApiError(
-			422,
-			'validation_error',
-			'El demo base seleccionado no corresponde al tipo de evento.',
-			{
-				reason: 'base_demo_event_type_mismatch',
-				baseDemoId: input.baseDemoId,
-				expectedEventType: preset.eventType,
-				submittedEventType: input.eventType,
-			},
-		);
-	}
-
-	return preset;
-}
-
-export async function createInvitation(input: {
-	title: string;
-	eventType: string;
-	baseDemoId: string;
-	slug?: string | null;
-	clientName?: string;
-	clientEmail?: string;
-	clientWhatsapp?: string;
-	createdBy?: string | null;
-}): Promise<Invitation> {
-	const preset = assertCreateInvitationPreset(input);
-
-	return createInvitationRecord({
-		title: input.title,
-		eventType: input.eventType,
-		baseDemoId: input.baseDemoId,
-		themeId: preset.themeId,
-		snapshot: preset,
-		slug: input.slug,
-		clientName: input.clientName,
-		clientEmail: input.clientEmail,
-		clientWhatsapp: input.clientWhatsapp,
-		createdBy: input.createdBy,
-	});
-}
-
-export async function synchronizeDemoInvitations(createdBy: string): Promise<void> {
-	const demoEntries = await getCollection('event-demos');
-
-	const entryBySlug = new Map<string, (typeof demoEntries)[number]>();
-	for (const entry of demoEntries) {
-		entryBySlug.set(getContentEntrySlug(entry.id), entry);
-	}
-
-	for (const preset of DEMO_PRESET_CATALOG) {
-		const entry = entryBySlug.get(preset.previewSlug);
-		if (!entry) continue;
-
-		const existing = await findInvitationBySlug(preset.previewSlug, true);
-
-		if (existing) {
-			if (existing.kind !== 'demo') continue;
-
-			const draft = await findDraftByInvitationId(existing.id);
-			if (draft) continue;
-
-			const freshContent = { ...(entry.data as Record<string, unknown>), isDemo: true };
-
-			const published = await findPublishedByInvitationId(existing.id);
-			if (published && JSON.stringify(published.content) === JSON.stringify(freshContent))
-				continue;
-
-			await upsertPublishedContent({
-				invitationId: existing.id,
-				slug: preset.previewSlug,
-				eventType: preset.eventType,
-				isDemo: true,
-				content: freshContent,
-			});
-			await updateInvitation(existing.id, { status: 'published' });
-			continue;
-		}
-
-		const invitation = await createInvitationRecord({
-			title: preset.displayName,
-			eventType: preset.eventType,
-			baseDemoId: preset.id,
-			themeId: preset.themeId,
-			snapshot: preset,
-			slug: preset.previewSlug,
-			kind: 'demo',
-			createdBy,
-		});
-
-		await upsertPublishedContent({
-			invitationId: invitation.id,
-			slug: preset.previewSlug,
-			eventType: preset.eventType,
-			isDemo: true,
-			content: { ...(entry.data as Record<string, unknown>), isDemo: true },
-		});
-		await updateInvitation(invitation.id, { status: 'published' });
-	}
-}
-
-export async function duplicateInvitationFromDemo(
-	demoInvitationId: string,
-	input: {
-		title: string;
-		clientName?: string;
-		clientEmail?: string;
-		clientWhatsapp?: string;
-		createdBy: string;
-	},
-): Promise<Invitation> {
-	const demo = await findInvitationById(demoInvitationId);
-	if (!demo || demo.kind !== 'demo') {
-		throw new ApiError(404, 'not_found', 'Demo no encontrado.');
-	}
-
-	const preset = findDemoPreset(demo.baseDemoId);
-	if (!preset) {
-		throw new ApiError(
-			422,
-			'bad_request',
-			'No se encontró el preset asociado a la invitación demo.',
-		);
-	}
-	const freshSnapshot = { ...preset };
-
-	const invitation = await createInvitationRecord({
-		title: input.title,
-		eventType: demo.eventType,
-		baseDemoId: demo.baseDemoId,
-		themeId: freshSnapshot.themeId,
-		snapshot: freshSnapshot,
-		kind: 'client',
-		sourceInvitationId: demo.id,
-		clientName: input.clientName,
-		clientEmail: input.clientEmail,
-		clientWhatsapp: input.clientWhatsapp,
-		createdBy: input.createdBy,
-	});
-
-	// Seed a minimal draft with metadata only — full demo content is not
-	// cloned into client invitations. The editor will show empty sections
-	// and the user populates their own data.
-	await upsertDraft({
-		invitationId: invitation.id,
-		submissionId: null,
-		content: {
-			title: input.title,
-		},
-	});
-
-	return invitation;
 }
 
 export async function assignInvitationOwnerService(

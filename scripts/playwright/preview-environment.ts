@@ -22,7 +22,7 @@ const APPROVED_PREVIEW_ALIASES = new Set([
 	'celebra-me-fm-dev-mx-francisco-mendoza-s-projects.vercel.app',
 ]);
 const PRODUCTION_DOMAINS = new Set(['celebra-me.com', 'www.celebra-me.com']);
-const IMMUTABLE_PREVIEW_HOST_PATTERN =
+export const IMMUTABLE_PREVIEW_HOST_PATTERN =
 	/^celebra-[a-z0-9]+-francisco-mendoza-s-projects\.vercel\.app$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 

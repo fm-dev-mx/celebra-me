@@ -52,16 +52,19 @@ const navItems: DashboardNavItem[] = [
 	...(showMemoriesNav ? [{ label: 'Recuerdos', href: MEMORIES_ORGANIZER_PAGE_PATH }] : []),
 	{ label: 'Administración', href: '/dashboard/admin', adminOnly: true },
 	{ label: 'Espacios de recuerdos', href: '/dashboard/admin/recuerdos', adminOnly: true },
+	{ label: 'Plataforma', href: '/dashboard/admin/plataforma', adminOnly: true },
 	...(showCanonicalStatusNav
 		? [{ label: 'Estado', href: '/dashboard/estado', adminOnly: true }]
 		: []),
-	{ label: 'Publicación de demos', href: '/dashboard/admin/content-sync', adminOnly: true },
 	{ label: 'Códigos de acceso', href: '/dashboard/claimcodes', adminOnly: true },
 	{ label: 'Producción de invitaciones', href: '/dashboard/invitaciones', adminOnly: true },
 	{ label: 'Comercial', href: '/dashboard/commercial', adminOnly: true },
 	{ label: 'Usuarios', href: '/dashboard/usuarios', adminOnly: true },
 ];
-const currentSectionLabel = navItems.find((item) => isNavItemActive(item, Astro.url.pathname))?.label ?? title;
+const currentSectionLabel =
+	navItems.find((item) => item.href === Astro.url.pathname)?.label ??
+	navItems.find((item) => isNavItemActive(item, Astro.url.pathname))?.label ??
+	title;
 
 ---
 
@@ -73,11 +76,12 @@ const currentSectionLabel = navItems.find((item) => isNavItemActive(item, Astro.
 		<meta name="csrf-token" content={csrfToken} />
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 		<link rel="alternate icon" href="/favicon.ico" />
+		<meta name="robots" content="noindex, nofollow" />
 		<title>{title}</title>
 
 	</head>
 
-	<body class="theme-preset--dashboard-dark dashboard-shell-body">
+	<body class="theme-preset--dashboard-ivory dashboard-shell-body">
 		<div class="dashboard-shell">
 			<div class="dashboard-shell__backdrop" data-dashboard-backdrop aria-hidden="true"></div>
 			<DashboardSidebar
@@ -97,10 +101,13 @@ const currentSectionLabel = navItems.find((item) => isNavItemActive(item, Astro.
 						aria-controls="dashboard-sidebar"
 						aria-expanded="false"
 					>
-						<span class="dashboard-topbar__menu-line"></span>
-						<span class="dashboard-topbar__menu-line"></span>
-						<span class="dashboard-topbar__menu-line"></span>
-						<span class="sr-only">Abrir navegación del panel</span>
+						<span class="dashboard-topbar__menu-icon" aria-hidden="true">
+							<span class="dashboard-topbar__menu-line"></span>
+							<span class="dashboard-topbar__menu-line"></span>
+							<span class="dashboard-topbar__menu-line"></span>
+						</span>
+						<span class="dashboard-topbar__menu-label">Menú</span>
+						<span class="sr-only">: abrir navegación del panel</span>
 					</button>
 
 					<div class="dashboard-topbar__meta">

@@ -75,7 +75,7 @@ import { getRoutableEventEntry } from '@/lib/content/events';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
-import validPublishedContentJson from '@/content/event-demos/xv/demo-xv-jewelry-box.json';
+import validPublishedContentJson from '../fixtures/content/xv-jewelry-box.json';
 
 const validPublishedContent = {
 	...validPublishedContentJson,

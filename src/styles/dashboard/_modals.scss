@@ -254,31 +254,6 @@
 	}
 }
 
-.dashboard-modal-close,
-.dashboard-modal__header .btn-close {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	border: none;
-	background: none;
-	color: var(--color-text-secondary);
-	cursor: pointer;
-	line-height: 1;
-	transition: color 0.2s ease;
-
-	&:hover {
-		color: var(--color-text-emphasis);
-	}
-}
-
-.dashboard-modal-close {
-	position: absolute;
-	top: 1rem;
-	right: 1.2rem;
-	z-index: 1;
-	font-size: 1.8rem;
-}
-
 .dashboard-modal__header {
 	display: flex;
 	align-items: center;
@@ -290,7 +265,7 @@
 	@include mixins.respond-below(sm) {
 		margin: 0.05rem;
 		border-radius: 1.2rem 1.2rem 0 0;
-		background: var(--dashboard-surface-bg);
+		background: var(--color-surface-elevated);
 	}
 
 	h3 {
@@ -299,7 +274,20 @@
 	}
 
 	.btn-close {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border: none;
+		background: none;
+		color: var(--color-text-secondary);
 		font-size: 1.5rem;
+		line-height: 1;
+		cursor: pointer;
+		transition: color 0.2s ease;
+
+		&:hover {
+			color: var(--color-text-emphasis);
+		}
 	}
 }
 
@@ -409,15 +397,15 @@
 	}
 }
 
-// Dark form fields inside dashboard modals
+// Form fields inside dashboard modals
 // Narrowed to text-like inputs only — excludes native controls (checkbox, radio, hidden)
 .dashboard-modal
 	.dashboard-form-field
 	input:not([type='checkbox'], [type='radio'], [type='hidden']),
 .dashboard-modal .dashboard-form-field select,
 .dashboard-modal .dashboard-form-field textarea {
-	background: rgb(var(--color-text-primary-rgb) / 70%);
-	color: var(--color-text-on-light);
+	background: var(--color-surface-elevated);
+	color: var(--color-text-primary);
 	font-weight: 500;
 
 	&::placeholder {

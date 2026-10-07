@@ -7,6 +7,7 @@ export type WorkerErrorCode =
 	| 'sign_failed'
 	| 'capability_invalid'
 	| 'replay'
+	| 'already_uploaded'
 	| 'upload_failed'
 	| 'unavailable';
 

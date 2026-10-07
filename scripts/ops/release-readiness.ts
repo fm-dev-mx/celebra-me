@@ -4,6 +4,7 @@ import { assessExactEvidence } from './operational-evidence.ts';
 
 export const STATIC_CAPABILITY_CHECK = 'Application / static';
 export const PRODUCTION_DEPLOYMENT_SMOKE = 'Vercel - celebra-me production smoke';
+export const PREVIEW_DEPLOYMENT_SMOKE = 'Vercel - celebra-me preview smoke';
 export const REQUIRED_RELEASE_CHECKS = [
 	'Repository Policy',
 	'Application Suite',
@@ -16,7 +17,7 @@ export interface ReleaseCheck {
 	trusted: boolean;
 }
 export type RemoteCheckRun = ReleaseCheck;
-type GhRunner = (args: string[]) => string;
+export type GhRunner = (args: string[]) => string;
 export type RemoteEvidenceIssue = 'unavailable' | 'invalid';
 
 export class RemoteEvidenceError extends Error {
@@ -36,7 +37,7 @@ export function isRemoteEvidenceUnavailable(error: unknown): boolean {
 /** A stalled `gh` call must surface as unavailable evidence instead of hanging the operator. */
 const GH_TIMEOUT_MS = 30_000;
 
-function defaultGhRunner(args: string[]): string {
+export function defaultGhRunner(args: string[]): string {
 	return execFileSync('gh', args, { encoding: 'utf8', timeout: GH_TIMEOUT_MS });
 }
 
@@ -65,7 +66,7 @@ function resolveRepository(run: GhRunner): string {
 	return repository;
 }
 
-function createGitHubClient(run: GhRunner): {
+export function createGitHubClient(run: GhRunner): {
 	repository: string;
 	api: (suffix: string) => unknown;
 } {
@@ -144,7 +145,11 @@ export function loadRemoteChecks(sha: string, run: GhRunner = defaultGhRunner): 
 	}>;
 	if (!Array.isArray(statuses) || statuses.length >= 100)
 		throw new RemoteEvidenceError('unavailable', 'Status result page is incomplete.');
-	const names = new Set([...REQUIRED_RELEASE_CHECKS, PRODUCTION_DEPLOYMENT_SMOKE]);
+	const names = new Set([
+		...REQUIRED_RELEASE_CHECKS,
+		PRODUCTION_DEPLOYMENT_SMOKE,
+		PREVIEW_DEPLOYMENT_SMOKE,
+	]);
 	return [...names].flatMap((name) => {
 		const run = runs.check_runs
 			.filter((entry) => entry.name === name)

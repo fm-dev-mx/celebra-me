@@ -22,7 +22,7 @@ function loadFixture(relativePath: string) {
 }
 
 describe('buildInvitationRenderPlan', () => {
-	it('inserts interludes after their specified sections using DEFAULT_SECTION_ORDER', () => {
+	it('inserts interludes after their specified sections', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-enchanted-rose',
 			data: loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),
@@ -44,7 +44,7 @@ describe('buildInvitationRenderPlan', () => {
 	it('renders all interludes from the event interludes array', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
+			data: loadFixture('tests/fixtures/content/xv-jewelry-box.json'),
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
@@ -101,9 +101,9 @@ describe('buildInvitationRenderPlan', () => {
 
 	it('uses cinematic interludes in the baptism angelic presence demo', () => {
 		const event = {
-			id: 'event-demos/bautismo/demo-bautismo-angelic-presence',
+			id: 'event-demos/bautizo/demo-bautismo-angelic-presence',
 			data: loadFixture(
-				'src/content/event-demos/bautismo/demo-bautismo-angelic-presence.json',
+				'src/content/event-demos/bautizo/demo-bautismo-angelic-presence.json',
 			),
 		} as Parameters<typeof adaptEvent>[0];
 
@@ -216,7 +216,7 @@ describe('buildInvitationRenderPlan', () => {
 
 describe('published demo interlude placement', () => {
 	it.each([
-		'bautismo/demo-bautismo-angelic-presence',
+		'bautizo/demo-bautismo-angelic-presence',
 		'boda/demo-boda-jewelry-box-wedding',
 		'primera-comunion/demo-primera-comunion-illustrated',
 	])('keeps the first interlude after personalized access in %s', (fixture) => {

@@ -43,6 +43,8 @@ export interface VisualSuiteAggregation {
 	totalCaptures: number;
 	missing: string[];
 	differences: Array<{ file: string; message: string }>;
+	/** Captures that mismatched once and passed one in-run re-capture: flakes to fix, not hide. */
+	recaptured: string[];
 	errors: string[];
 }
 
@@ -144,6 +146,9 @@ export function aggregateVisualSuite(options: {
 	const differences = ordered
 		.filter((record) => record.difference !== undefined)
 		.map((record) => ({ file: record.capture.file, message: record.difference ?? '' }));
+	const recaptured = ordered
+		.filter((record) => record.recapturedDifference !== undefined)
+		.map((record) => record.capture.file);
 
 	const status =
 		differences.length || missing.length || errors.length
@@ -177,8 +182,18 @@ export function aggregateVisualSuite(options: {
 		totalCaptures: captures.length,
 		missing,
 		differences,
+		recaptured,
 		errors,
 	};
+}
+
+export function describeVisualRecaptures(results: readonly VisualSuiteAggregation[]): string[] {
+	return results
+		.filter((result) => result.recaptured.length > 0)
+		.map(
+			(result) =>
+				`[${result.suite}] ${result.recaptured.length} captures passed only after one re-capture (nondeterministic, fix the source): ${result.recaptured.join(', ')}`,
+		);
 }
 
 export function describeVisualAggregationFailures(

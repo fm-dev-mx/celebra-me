@@ -78,61 +78,6 @@ export async function listPublishedByEventTypes(
 	return rows.map(toRow);
 }
 
-export interface UpsertPublishedInput {
-	invitationId: string;
-	slug: string;
-	eventType: string;
-	isDemo: boolean;
-	content: Record<string, unknown>;
-}
-
-export async function upsertPublishedContent(
-	input: UpsertPublishedInput,
-): Promise<PublishedInvitationContent> {
-	const existing = await findPublishedByInvitationId(input.invitationId);
-
-	if (existing) {
-		const rows = await supabaseRestRequest<PublishedInvitationContentRow[]>({
-			pathWithQuery: `published_invitation_content?id=eq.${encodeURIComponent(existing.id)}&select=${SELECT_COLUMNS}`,
-			method: 'PATCH',
-			useServiceRole: true,
-			prefer: 'return=representation',
-			body: {
-				content: input.content,
-				slug: input.slug,
-				event_type: input.eventType,
-				is_demo: input.isDemo,
-				version: existing.version + 1,
-				published_at: new Date().toISOString(),
-			},
-		});
-		if (!rows[0])
-			throw new Error(`Failed to update published invitation content (id: ${existing.id}).`);
-		return toRow(rows[0]);
-	}
-
-	const rows = await supabaseRestRequest<PublishedInvitationContentRow[]>({
-		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS}`,
-		method: 'POST',
-		useServiceRole: true,
-		prefer: 'return=representation',
-		body: {
-			invitation_project_id: input.invitationId,
-			slug: input.slug,
-			event_type: input.eventType,
-			is_demo: input.isDemo,
-			content: input.content,
-			version: 1,
-			published_at: new Date().toISOString(),
-		},
-	});
-	if (!rows[0])
-		throw new Error(
-			`Failed to create published invitation content (invitation: ${input.invitationId}).`,
-		);
-	return toRow(rows[0]);
-}
-
 export async function updatePublishedContentSnapshot(input: {
 	id: string;
 	content: Record<string, unknown>;

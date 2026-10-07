@@ -15,14 +15,10 @@ import { toErrorMessage } from '@/lib/rsvp/core/errors';
 
 type FilterTab =
 	| 'work_in_progress'
-	| 'current'
 	| 'upcoming'
 	| 'past'
-	| 'authorized_demos'
 	| 'unknown'
 	| 'all'
-	| 'clients'
-	| 'demos'
 	| 'drafts'
 	| 'waiting_for_client'
 	| 'capture_received'
@@ -44,14 +40,6 @@ const FILTER_TABS: Array<{
 		isPrimary: true,
 	},
 	{
-		key: 'current',
-		label: 'Vigentes y demos',
-		match: (i) =>
-			!i.archivedAt &&
-			(i.validity === 'upcoming' || (i.kind === 'demo' && i.demoShowroomOrder != null)),
-		isPrimary: true,
-	},
-	{
 		key: 'upcoming',
 		label: 'Vigentes',
 		match: (i) => !i.archivedAt && i.validity === 'upcoming',
@@ -64,30 +52,12 @@ const FILTER_TABS: Array<{
 		isPrimary: false,
 	},
 	{
-		key: 'authorized_demos',
-		label: 'Demos autorizadas',
-		match: (i) => !i.archivedAt && i.kind === 'demo' && i.demoShowroomOrder != null,
-		isPrimary: true,
-	},
-	{
 		key: 'unknown',
 		label: 'Fecha por verificar',
 		match: (i) => !i.archivedAt && i.validity === 'unknown',
 		isPrimary: false,
 	},
 	{ key: 'all', label: 'Todas', match: (invitation) => !invitation.archivedAt, isPrimary: true },
-	{
-		key: 'clients',
-		label: 'Invitaciones',
-		match: (invitation) => invitation.kind === 'client' && !invitation.archivedAt,
-		isPrimary: true,
-	},
-	{
-		key: 'demos',
-		label: 'Demos',
-		match: (invitation) => invitation.kind === 'demo' && !invitation.archivedAt,
-		isPrimary: true,
-	},
 	{
 		key: 'drafts',
 		label: 'Borradores',
@@ -170,7 +140,6 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 	const displayInfo = resolveDisplayInfo(invitation);
 	const publishedUrl = publicUrl(invitation);
 	const isActive = !invitation.archivedAt;
-	const isDemo = invitation.kind === 'demo';
 
 	const copyPublicLink = useCallback(() => {
 		if (publishedUrl) {
@@ -185,19 +154,15 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 	}, [invitation.captureUrl]);
 
 	return (
-		<tr className={isDemo ? 'intake-list__row--demo' : ''}>
+		<tr>
 			<td className="intake-list__cell-title">
 				<a href={invitation.internalEditUrl} className="intake-list__title-link">
 					{invitation.title}
 				</a>
 				<div className="intake-list__event-date">
-					{isDemo
-						? invitation.demoShowroomOrder != null
-							? 'Demo autorizada'
-							: 'Fuera del showroom'
-						: invitation.eventDate
-							? `${invitation.eventDate.split('-').reverse().join('/')} - ${invitation.validity === 'past' ? 'Pasada' : 'Vigente'}`
-							: 'Fecha por verificar'}
+					{invitation.eventDate
+						? `${invitation.eventDate.split('-').reverse().join('/')} - ${invitation.validity === 'past' ? 'Pasada' : 'Vigente'}`
+						: 'Fecha por verificar'}
 				</div>
 			</td>
 			<td className="intake-list__cell-client">{invitation.clientName || '\u2014'}</td>
@@ -209,7 +174,6 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 				/>
 				<div className="intake-list__status-group">
 					<StatusBadge variant={displayInfo.variant} label={displayInfo.label} />
-					{isDemo && <span className="intake-list__demo-badge">Demo</span>}
 					{displayInfo.warning && (
 						<span className="intake-list__status-warning" title={displayInfo.warning}>
 							⚠
@@ -254,7 +218,7 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 							},
 							{
 								label: 'Link cliente',
-								hidden: isDemo || !isActive || Boolean(invitation.captureUrl),
+								hidden: !isActive || Boolean(invitation.captureUrl),
 								onClick: () => {
 									window.location.href = `/dashboard/invitaciones/${invitation.id}`;
 								},
@@ -285,15 +249,10 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 
 const EMPTY_STATE_MESSAGES: Record<FilterTab, string> = {
 	work_in_progress: 'No hay invitaciones en proceso.',
-	current: 'No hay invitaciones vigentes ni demos autorizadas.',
 	upcoming: 'No hay invitaciones vigentes.',
 	past: 'No hay invitaciones pasadas.',
-	authorized_demos: 'No hay demos autorizadas.',
 	unknown: 'No hay fechas pendientes de verificar.',
 	all: 'No hay invitaciones activas. Las invitaciones de cliente se crean con el flujo administrado (pnpm invitation:release).',
-	clients:
-		'No hay invitaciones de clientes activas. Use el flujo administrado para crear nuevas.',
-	demos: 'No hay demos disponibles.',
 	drafts: 'No hay borradores.',
 	waiting_for_client: 'No hay invitaciones esperando respuesta del cliente.',
 	capture_received: 'No hay capturas recibidas pendientes de revisión.',
@@ -340,7 +299,7 @@ const InvitationList: FC = () => {
 		[loadedItems, now],
 	);
 	const [actionError, setActionError] = useState('');
-	const [activeTab, setActiveTab] = useState<FilterTab>('current');
+	const [activeTab, setActiveTab] = useState<FilterTab>('upcoming');
 
 	const [searchQuery, setSearchQuery] = useState('');
 	const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -360,17 +319,10 @@ const InvitationList: FC = () => {
 	const tabFiltered = useMemo(() => {
 		const tab = FILTER_TABS.find((item) => item.key === activeTab);
 		const selected = tab ? items.filter(tab.match) : [...items];
-		if (
-			activeTab === 'current' ||
-			activeTab === 'upcoming' ||
-			activeTab === 'authorized_demos'
-		) {
+		if (activeTab === 'upcoming') {
 			selected.sort(
 				(a, b) =>
-					Number(a.kind === 'demo') - Number(b.kind === 'demo') ||
-					(a.kind === 'demo'
-						? (a.demoShowroomOrder ?? 0) - (b.demoShowroomOrder ?? 0)
-						: (a.eventDate ?? '').localeCompare(b.eventDate ?? '')) ||
+					(a.eventDate ?? '').localeCompare(b.eventDate ?? '') ||
 					a.id.localeCompare(b.id),
 			);
 		}
@@ -391,7 +343,6 @@ const InvitationList: FC = () => {
 		const active = items.filter((i) => !i.archivedAt);
 		return {
 			total: active.filter((i) => i.validity === 'upcoming').length,
-			demos: active.filter((i) => i.kind === 'demo' && i.demoShowroomOrder != null).length,
 			published: active.filter((i) => i.status === 'published').length,
 			drafts: active.filter((i) => i.status === 'draft').length,
 			archived: items.filter((i) => i.archivedAt).length,
@@ -448,8 +399,8 @@ const InvitationList: FC = () => {
 				<div>
 					<h2 className="intake-list__title">Producción de invitaciones</h2>
 					<p className="intake-list__subtitle">
-						Administra invitaciones y demos editables. Las nuevas invitaciones de
-						cliente se crean con el flujo administrado.
+						Administre las invitaciones de cliente. Las nuevas invitaciones se crean con
+						el flujo administrado.
 					</p>
 				</div>
 			</header>
@@ -463,10 +414,6 @@ const InvitationList: FC = () => {
 				<span className="intake-list__metric">
 					<span className="intake-list__metric-value">{metrics.total}</span>
 					<span className="intake-list__metric-label">Invitaciones vigentes</span>
-				</span>
-				<span className="intake-list__metric">
-					<span className="intake-list__metric-value">{metrics.demos}</span>
-					<span className="intake-list__metric-label">Demos autorizadas</span>
 				</span>
 				<span className="intake-list__metric">
 					<span className="intake-list__metric-value">{metrics.published}</span>
@@ -566,7 +513,7 @@ const InvitationList: FC = () => {
 						archive: {
 							title: 'Archivar invitación',
 							message:
-								'La invitación dejará de aparecer en la lista activa. Puedes restaurarla después.',
+								'La invitación dejará de aparecer en la lista activa. Puede restaurarla después.',
 							confirmLabel: 'Archivar',
 						},
 						restore: {

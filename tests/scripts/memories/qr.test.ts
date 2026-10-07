@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import {
 	MEMORIES_PUBLIC_ORIGIN,
 	buildMemoriesPublicUrl,
@@ -8,11 +9,17 @@ import {
 	generateMemoriesQrSvg,
 	parseQrArgs,
 } from '../../../scripts/memories/qr';
+import {
+	buildMemoriesQrFileName,
+	generateMemoriesQrSvg as generateSharedMemoriesQrSvg,
+} from '@/lib/memories/qr';
 
 const SLUG = 'victoria-y-roberto';
 const TARGET_URL = `https://celebra-me.com/r/${SLUG}`;
 const PNG_SIGNATURE = [137, 80, 78, 71, 13, 10, 26, 10];
 const RASTER_TIMEOUT_MS = 60_000;
+/** SHA-256 of the SVG delivered for printing on 2026-09-30. */
+const PRINTED_SVG_SHA256 = '3c28cfa2c9bb6cf497d641ce19bfbd3741bac804c6cc1af39904f6617596a2e2';
 
 describe('memories QR arguments', () => {
 	it('requires a valid public slug', () => {
@@ -72,6 +79,14 @@ describe('memories QR contract', () => {
 		expect(first).toMatch(/fill="#FFFFFF"/i);
 		expect(first).toMatch(/stroke="#000000"|fill="#000000"/i);
 		expect(await generateMemoriesQrSvg('https://celebra-me.com/r/otro-evento')).not.toBe(first);
+	});
+
+	it('keeps the already printed SVG byte-identical across the CLI and the dashboard module', async () => {
+		const shared = await generateSharedMemoriesQrSvg(TARGET_URL);
+
+		expect(createHash('sha256').update(shared, 'utf8').digest('hex')).toBe(PRINTED_SVG_SHA256);
+		expect(await generateMemoriesQrSvg(TARGET_URL)).toBe(shared);
+		expect(buildMemoriesQrFileName(SLUG)).toBe(`qr-recuerdos-${SLUG}.svg`);
 	});
 });
 

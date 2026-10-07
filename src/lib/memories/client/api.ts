@@ -6,10 +6,15 @@
 
 import { dashboardApi, type ApiResult } from '@/lib/dashboard/api-client';
 import type {
+	MemoriesAdminSpaceItem,
+	MemoriesAdminTotals,
 	MemoriesGuestProfile,
 	MemoriesGuestQuota,
 	MemoriesMediaPublicItem,
 	MemoriesOrganizerListResponse,
+	MemoriesOrganizerUploader,
+	MemoriesReadiness,
+	MemoriesSpaceHostSummary,
 	MemoriesSpaceRecord,
 	MemoriesSpaceSummary,
 } from '@/lib/memories/contract/catalog';
@@ -18,23 +23,30 @@ import {
 	buildMemoriesGuestApiPath,
 	buildMemoriesOrganizerApiPath,
 } from '@/lib/memories/contract/private-request';
+import type { MemoriesSpaceLimits } from '@/lib/memories/contract/limits';
 
 export class MemoriesRequestError extends Error {
 	readonly status: number | null;
 	readonly code: string | undefined;
+	/** Machine-readable cause of a refusal (`error.details.reason`), when the server names one. */
+	readonly reason: string | undefined;
 
-	constructor(status: number | null, code?: string) {
+	constructor(status: number | null, code?: string, reason?: string) {
 		super('memories_request_failed');
 		this.name = 'MemoriesRequestError';
 		this.status = status;
 		this.code = code;
+		this.reason = reason;
 	}
 }
 
-function readErrorCode(payload: unknown): string | undefined {
-	if (typeof payload !== 'object' || payload === null) return undefined;
-	const error = (payload as { error?: { code?: unknown } }).error;
-	return typeof error?.code === 'string' ? error.code : undefined;
+function readErrorBody(payload: unknown): { code?: string; reason?: string } {
+	if (typeof payload !== 'object' || payload === null) return {};
+	const error = (payload as { error?: { code?: unknown; details?: { reason?: unknown } } }).error;
+	return {
+		code: typeof error?.code === 'string' ? error.code : undefined,
+		reason: typeof error?.details?.reason === 'string' ? error.details.reason : undefined,
+	};
 }
 
 async function guestRequest<T>(url: string, init?: RequestInit): Promise<T> {
@@ -53,7 +65,8 @@ async function guestRequest<T>(url: string, init?: RequestInit): Promise<T> {
 	}
 	const payload = (await response.json().catch(() => null)) as T | null;
 	if (!response.ok || payload === null) {
-		throw new MemoriesRequestError(response.status, readErrorCode(payload));
+		const { code, reason } = readErrorBody(payload);
+		throw new MemoriesRequestError(response.status, code, reason);
 	}
 	return payload;
 }
@@ -84,6 +97,8 @@ export function createMemoriesGuestApi(publicSlug: string) {
 	return {
 		itemsUrl,
 		itemMediaUrl: itemUrl,
+		/** The small preview when it exists; the server falls back to the original. */
+		itemThumbnailUrl: (itemId: string) => `${itemUrl(itemId)}?variant=thumb`,
 		async getSession(): Promise<MemoriesGuestProfile | null> {
 			const payload = await guestRequest<{ profile: MemoriesGuestProfile | null }>(
 				sessionUrl,
@@ -117,7 +132,12 @@ export function createMemoriesGuestApi(publicSlug: string) {
 			});
 			return payload.profile;
 		},
-		listItems(): Promise<{ items: MemoriesMediaPublicItem[]; quota: MemoriesGuestQuota }> {
+		listItems(): Promise<{
+			items: MemoriesMediaPublicItem[];
+			quota: MemoriesGuestQuota;
+			/** The space cannot take more files; absent from servers before this field existed. */
+			eventFull?: boolean;
+		}> {
 			return guestRequest(itemsUrl);
 		},
 		reserve(input: {
@@ -147,6 +167,21 @@ export function createMemoriesGuestApi(publicSlug: string) {
 		deleteItem(itemId: string): Promise<{ success: boolean }> {
 			return guestRequest(itemUrl(itemId), { method: 'DELETE' });
 		},
+		reserveThumbnail(
+			itemId: string,
+			input: { sizeBytes: number; checksumSha256: string },
+		): Promise<{ upload: MemoriesReservation['upload'] }> {
+			return guestRequest(`${itemUrl(itemId)}/thumbnail`, {
+				method: 'POST',
+				body: JSON.stringify({ action: 'reserve', ...input }),
+			});
+		},
+		confirmThumbnail(itemId: string): Promise<{ hasThumbnail: boolean }> {
+			return guestRequest(`${itemUrl(itemId)}/thumbnail`, {
+				method: 'POST',
+				body: JSON.stringify({ action: 'confirm' }),
+			});
+		},
 	};
 }
 
@@ -159,6 +194,9 @@ export type OrganizerSpaceItem = MemoriesSpaceSummary & { eventId: string };
 export type OrganizerCatalogFilters = {
 	status: string;
 	uploader: string;
+	uploaderAlias: string;
+	kind: string;
+	visibility: string;
 	createdFrom: string;
 	createdTo: string;
 };
@@ -172,6 +210,9 @@ export function buildOrganizerCatalogUrl(
 	if (filters.status && filters.status !== 'all') params.set('status', filters.status);
 	const uploader = (filters.uploader ?? '').replace(/\s+/g, ' ').trim();
 	if (uploader) params.set('uploader', uploader);
+	if (filters.uploaderAlias) params.set('uploaderAlias', filters.uploaderAlias);
+	if (filters.kind) params.set('kind', filters.kind);
+	if (filters.visibility) params.set('visibility', filters.visibility);
 	if (filters.createdFrom) params.set('createdFrom', filters.createdFrom);
 	if (filters.createdTo) params.set('createdTo', filters.createdTo);
 	return `${buildMemoriesOrganizerApiPath(eventId)}?${params.toString()}`;
@@ -191,14 +232,14 @@ export const memoriesOrganizerApi = {
 			),
 		);
 	},
-	itemMediaUrl(eventId: string, itemId: string, mode?: 'preview'): string {
+	itemMediaUrl(eventId: string, itemId: string, mode?: 'preview' | 'thumb'): string {
 		const base = `${buildMemoriesOrganizerApiPath(eventId)}/items/${encodeURIComponent(itemId)}`;
 		return mode ? `${base}?mode=${mode}` : base;
 	},
 	async updateItem(
 		eventId: string,
 		itemId: string,
-		body: { caption?: string; status?: string },
+		body: { caption?: string; status?: string; hidden?: boolean },
 	): Promise<MemoriesMediaPublicItem> {
 		const payload = unwrap(
 			await dashboardApi.patch<{ item: MemoriesMediaPublicItem }>(
@@ -223,6 +264,38 @@ export const memoriesOrganizerApi = {
 			}),
 		);
 	},
+	async summary(eventId: string, signal?: AbortSignal): Promise<MemoriesSpaceHostSummary> {
+		const payload = unwrap(
+			await dashboardApi.get<{ summary: MemoriesSpaceHostSummary }>(
+				`${buildMemoriesOrganizerApiPath(eventId)}/summary`,
+				{ signal },
+			),
+		);
+		return payload.summary;
+	},
+	qrUrl(eventId: string): string {
+		return `${buildMemoriesOrganizerApiPath(eventId)}/qr`;
+	},
+	async share(
+		eventId: string,
+		action: 'enable' | 'disable' | 'rotate',
+	): Promise<{ shareUrl: string | null }> {
+		return unwrap(
+			await dashboardApi.post<{ shareUrl: string | null }>(
+				`${buildMemoriesOrganizerApiPath(eventId)}/share`,
+				{ action },
+			),
+		);
+	},
+	async uploaders(eventId: string, signal?: AbortSignal): Promise<MemoriesOrganizerUploader[]> {
+		const payload = unwrap(
+			await dashboardApi.get<{ uploaders: MemoriesOrganizerUploader[] }>(
+				`${buildMemoriesOrganizerApiPath(eventId)}/uploaders`,
+				{ signal },
+			),
+		);
+		return payload.uploaders;
+	},
 	async fetchItemBlob(eventId: string, itemId: string): Promise<Blob> {
 		const response = await fetch(memoriesOrganizerApi.itemMediaUrl(eventId, itemId));
 		if (!response.ok) throw new MemoriesRequestError(response.status);
@@ -236,30 +309,33 @@ export type AdminSpaceCandidate = {
 	eventId: string;
 	eventSlug: string;
 	eventTitle: string;
+	eventDate: string | null;
 	defaults: {
 		publicSlug: string;
 		timeZone: string;
 		uploadStartsLocal: string;
 		uploadEndsLocal: string;
 		retentionEndsLocal: string;
-		limits: {
-			maxEventObjects: number;
-			maxEventBytes: number;
-			maxSessionFiles: number;
-			maxSessionVideos: number;
-			maxSessionBytes: number;
-		};
+		limits: MemoriesSpaceLimits;
 	};
 };
 
+export type AdminSpaceList = {
+	items: MemoriesAdminSpaceItem[];
+	totals: MemoriesAdminTotals;
+	candidates: AdminSpaceCandidate[];
+	/** Settings the module is missing; absent from servers before readiness existed. */
+	readiness?: MemoriesReadiness;
+	/** Origin of guest links in this environment; the canonical domain in Production. */
+	publicOrigin?: string;
+};
+
 export const memoriesAdminApi = {
-	async list(): Promise<{ items: MemoriesSpaceRecord[]; candidates: AdminSpaceCandidate[] }> {
-		return unwrap(
-			await dashboardApi.get<{
-				items: MemoriesSpaceRecord[];
-				candidates: AdminSpaceCandidate[];
-			}>(MEMORIES_ADMIN_API_PATH),
-		);
+	async list(): Promise<AdminSpaceList> {
+		return unwrap(await dashboardApi.get<AdminSpaceList>(MEMORIES_ADMIN_API_PATH));
+	},
+	qrUrl(eventId: string): string {
+		return `${MEMORIES_ADMIN_API_PATH}/${encodeURIComponent(eventId)}/qr`;
 	},
 	async create(body: Record<string, unknown>): Promise<MemoriesSpaceRecord> {
 		const payload = unwrap(

@@ -20,7 +20,6 @@ interface Props {
 	assetLookupSlug?: string;
 	assets?: { id: string; src: string; displayName?: string }[];
 	defaultPreview?: DefaultPreviewInfo;
-	isDefaultImage?: boolean;
 }
 
 function resolvePreviewSrc(
@@ -54,9 +53,7 @@ function deriveDisplayState(
 	value: AssetField,
 	src: string | undefined,
 	defaultPreview: DefaultPreviewInfo | undefined,
-	isDefaultImage?: boolean,
 ): ImageDisplayState {
-	if (value && isDefaultImage) return 'default';
 	if (!value) {
 		if (defaultPreview) return 'default';
 		return 'empty';
@@ -88,13 +85,12 @@ export default function ImageAssetField({
 	assetLookupSlug,
 	assets = [],
 	defaultPreview,
-	isDefaultImage = false,
 }: Props) {
 	const hasValue = value != null;
 
 	const src = hasValue ? resolvePreviewSrc(value, assetLookupSlug, assets) : defaultPreview?.src;
 
-	const displayState = deriveDisplayState(value, src, defaultPreview, isDefaultImage);
+	const displayState = deriveDisplayState(value, src, defaultPreview);
 	const actionLabel = hasValue ? changeActionLabel : emptyActionLabel;
 
 	return (

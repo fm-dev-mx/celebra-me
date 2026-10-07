@@ -1,12 +1,9 @@
-import { isObject } from '@/lib/content-publication/_utils';
-
 export type CanonicalJson =
-	| null
-	| string
-	| number
-	| boolean
-	| CanonicalJson[]
-	| { [key: string]: CanonicalJson };
+	null | string | number | boolean | CanonicalJson[] | { [key: string]: CanonicalJson };
+
+function isObject(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 export function normalizeForPublication(value: unknown): CanonicalJson {
 	if (value === undefined) return null;

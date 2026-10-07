@@ -21,11 +21,51 @@ import heroDesktop from '@/assets/images/hero/hero-detail-desktop.webp';
 import heroMobile from '@/assets/images/hero/hero-detail-mobile.webp';
 import '@/styles/landing.scss';
 
+const siteOrigin = 'https://www.celebra-me.com';
+const schemaJsonLd = {
+	'@context': 'https://schema.org',
+	'@graph': [
+		{
+			'@type': 'Organization',
+			'@id': `${siteOrigin}/#organization`,
+			name: 'Celebra-me',
+			url: siteOrigin,
+			logo: `${siteOrigin}/favicon.svg`,
+			description:
+				'Invitaciones digitales interactivas de alta gama con confirmación de asistencia RSVP en tiempo real.',
+		},
+		{
+			'@type': 'WebSite',
+			'@id': `${siteOrigin}/#website`,
+			url: siteOrigin,
+			name: 'Celebra-me',
+			description: landingData.seo.description,
+			publisher: {
+				'@id': `${siteOrigin}/#organization`,
+			},
+			inLanguage: 'es-MX',
+		},
+		{
+			'@type': 'FAQPage',
+			'@id': `${siteOrigin}/#faq`,
+			mainEntity: landingData.faq.faqs.map((faq) => ({
+				'@type': 'Question',
+				name: faq.question,
+				acceptedAnswer: {
+					'@type': 'Answer',
+					text: faq.answer,
+				},
+			})),
+		},
+	],
+};
 ---
 
 <Layout
 	title={landingData.seo.title}
 	description={landingData.seo.description}
+	image="/images/og/og-home.jpg"
+	imageAlt="La invitación que su evento merece - Celebra-me"
 	className="theme-preset--jewelry-box-landing"
 	headLinks={[
 		{
@@ -46,6 +86,7 @@ import '@/styles/landing.scss';
 		},
 	]}
 >
+	<script is:inline type="application/ld+json" set:html={JSON.stringify(schemaJsonLd)} slot="head"></script>
 	<div class="landing-sections-wrapper">
 		<Hero data={landingData.hero} />
 		<EventTypeSelector events={DEMO_SHOWROOM_EVENTS} landingData={landingData} />

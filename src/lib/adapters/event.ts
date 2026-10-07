@@ -525,7 +525,6 @@ function buildThankYouSectionData(context: AdaptationContext) {
 
 export function adaptEvent(
 	event: EventContentEntry,
-	previewTheme?: ThemePreset,
 	assetSlugOverride?: string,
 ): InvitationViewModel {
 	const { data: rawData, id: contentEntryId } = event;
@@ -536,22 +535,15 @@ export function adaptEvent(
 		typeof originalData._assetSlug === 'string' ? originalData._assetSlug : undefined;
 	const eventSlug = assetSlugOverride ?? contentAssetSlug ?? entrySlug;
 
-	const adapterData = previewTheme
-		? {
-				...originalData,
-				theme: { ...originalData.theme, preset: previewTheme },
-			}
-		: originalData;
-
-	const normalizedPreset = pickPreset(adapterData.theme.preset);
+	const normalizedPreset = pickPreset(originalData.theme.preset);
 	const context: AdaptationContext = {
-		data: adapterData,
+		data: originalData,
 		eventSlug,
 		normalizedPreset,
 	};
 
 	const envelope = buildEnvelope(context);
-	const isDemo = adapterData.isDemo ?? false;
+	const isDemo = originalData.isDemo ?? false;
 
 	const sections = {
 		quote: buildQuoteSectionData(context),
@@ -569,14 +561,14 @@ export function adaptEvent(
 	// canonical schema requires it; derived section data must never opt a section
 	// back into an explicit configuration.
 
-	const playableMusicUrl = adapterData.music?.url?.trim() ?? '';
+	const playableMusicUrl = originalData.music?.url?.trim() ?? '';
 
 	return {
 		id: entrySlug,
 		isDemo,
-		visualProfileId: adapterData.visualProfileId,
-		title: adapterData.title,
-		description: adapterData.description,
+		visualProfileId: originalData.visualProfileId,
+		title: originalData.title,
+		description: originalData.description,
 		theme: {
 			preset: normalizedPreset,
 			themeClass: `theme-preset--${normalizedPreset}`,
@@ -584,30 +576,30 @@ export function adaptEvent(
 		hero: buildHero(context),
 		envelope,
 		brandingVisibility: DEFAULT_BRANDING_VISIBILITY,
-		sectionOrder: adapterData.sectionOrder,
-		composition: adapterData.composition,
+		sectionOrder: originalData.sectionOrder,
+		composition: originalData.composition,
 		sections,
 		music: hasPlayableMusicUrl(playableMusicUrl)
 			? {
 					url: playableMusicUrl,
-					autoPlay: adapterData.music?.autoPlay ?? false,
-					title: adapterData.music?.title,
-					startAt: adapterData.music?.startAt,
+					autoPlay: originalData.music?.autoPlay ?? false,
+					title: originalData.music?.title,
+					startAt: originalData.music?.startAt,
 					revealMode: envelope.enabled ? 'envelope' : 'immediate',
 				}
 			: undefined,
 		interludes: buildInterludes(context),
-		navigation: buildCanonicalNavigation(sections, adapterData.navigation),
-		sharing: adapterData.sharing
+		navigation: buildCanonicalNavigation(sections, originalData.navigation),
+		sharing: originalData.sharing
 			? {
-					whatsappTemplate: adapterData.sharing.whatsappTemplate,
-					shareMessages: adapterData.sharing.shareMessages,
-					ogImage: adapterData.sharing.ogImage
-						? resolveAsset(eventSlug, adapterData.sharing.ogImage, adapterData.title)
+					whatsappTemplate: originalData.sharing.whatsappTemplate,
+					shareMessages: originalData.sharing.shareMessages,
+					ogImage: originalData.sharing.ogImage
+						? resolveAsset(eventSlug, originalData.sharing.ogImage, originalData.title)
 						: undefined,
 					ogDescription:
-						typeof adapterData.sharing.ogDescription === 'string'
-							? adapterData.sharing.ogDescription
+						typeof originalData.sharing.ogDescription === 'string'
+							? originalData.sharing.ogDescription
 							: undefined,
 				}
 			: undefined,

@@ -208,12 +208,23 @@ fixtures and visual mode across repeated runs, including retries and server prep
 infer remote savings from local diagnostic timings. Capture suites aggregate per-capture records
 after the run, so they no longer depend on one worker; they still run serially by default.
 `VISUAL_PARITY_PARALLEL=1` selects parallel capture only for the paired trials defined in the
-release process; parallel capture becomes the default only after those trials pass.
+release process; parallel capture becomes the default only after those trials pass. Run a trial pair
+by dispatching Repository CI twice on the same SHA: once with the defaults and once with
+`capture_execution=parallel` and the `browser_workers` value under test. Push and pull request runs
+always use the defaults, which equal the locally certified command. Each `validation-metrics`
+artifact records `captureExecution` and `browserWorkers` for the comparison.
 
 The aggregate application check requires policy, application and browser jobs to succeed; failed,
-cancelled or incomplete jobs must never become aggregate approval. Failure artifacts retain
-actual/diff images and traces when produced for three days. No additional capture, retry, tolerance
-or acceptance policy is introduced for diagnostics.
+cancelled or incomplete jobs must never become aggregate approval. One case skips the application
+tiers instead of repeating them: a same-repository `develop` → `main` pull request whose merge
+candidate has the same Git tree as the `develop` head, when a push run of Repository CI on `develop`
+for that exact head completed with every tier successful. The `Evidence reuse` job
+(`scripts/ops/ci-evidence-reuse.ts`) verifies this, names the source run in its summary and in
+`evidenceSourceRunId`, and declines on any mismatch, unfinished run or unreadable evidence, in which
+case every tier runs. Repository Policy always validates the pull request range itself. Dispatch
+Repository CI on `develop` to force a complete execution. Failure artifacts retain actual/diff
+images and traces when produced for three days. No additional capture, retry, tolerance or
+acceptance policy is introduced for diagnostics.
 
 #### Documentation audit limits
 

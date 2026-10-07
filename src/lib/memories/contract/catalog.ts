@@ -22,10 +22,7 @@ export const MEMORIES_MEDIA_STATUSES = [
 ] as const;
 export type MemoriesMediaStatus = (typeof MEMORIES_MEDIA_STATUSES)[number];
 
-export const MEMORIES_MEDIA_TRANSITIONS: Record<
-	MemoriesMediaStatus,
-	readonly MemoriesMediaStatus[]
-> = {
+const MEMORIES_MEDIA_TRANSITIONS: Record<MemoriesMediaStatus, readonly MemoriesMediaStatus[]> = {
 	uploading: ['validating', 'deleted'],
 	validating: ['accepted', 'rejected', 'deleted', 'duplicate'],
 	accepted: ['rejected', 'deleted'],
@@ -42,6 +39,19 @@ export const MEMORIES_TERMINAL_STATUSES: readonly MemoriesMediaStatus[] = [
 ];
 
 export type MemoriesMediaActor = 'guest' | 'organizer' | 'admin' | 'system';
+
+/**
+ * Why a reservation was refused, sent as `error.details.reason`. Several causes
+ * share one HTTP code; the guest copy needs the cause to say what to do next.
+ */
+export const MEMORIES_RESERVATION_REFUSALS = [
+	'session_files',
+	'session_videos',
+	'session_bytes',
+	'event_capacity',
+	'uploads_in_progress',
+] as const;
+export type MemoriesReservationRefusal = (typeof MEMORIES_RESERVATION_REFUSALS)[number];
 
 export function isMemoriesMediaStatus(value: unknown): value is MemoriesMediaStatus {
 	return (
@@ -80,10 +90,17 @@ export function isMemoriesUuid(value: unknown): value is string {
 export const MEMORIES_RECOVERY_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 export const MEMORIES_RECOVERY_CODE_GROUPS = 3;
 export const MEMORIES_RECOVERY_CODE_GROUP_LENGTH = 4;
-export const MEMORIES_RECOVERY_CODE_LENGTH =
-	MEMORIES_RECOVERY_CODE_GROUPS * MEMORIES_RECOVERY_CODE_GROUP_LENGTH +
-	(MEMORIES_RECOVERY_CODE_GROUPS - 1);
 export const MEMORIES_RECOVERY_CODE_PATTERN = /^[A-HJ-NP-Z2-9]{4}(?:-[A-HJ-NP-Z2-9]{4}){2}$/;
+
+/** Normalizes typed or pasted recovery input: uppercase, no separators, hyphen every group. */
+export function formatMemoriesRecoveryInput(value: string): string {
+	const raw = value
+		.toUpperCase()
+		.replace(/[^A-Z0-9]/g, '')
+		.slice(0, MEMORIES_RECOVERY_CODE_GROUPS * MEMORIES_RECOVERY_CODE_GROUP_LENGTH);
+	const groups = raw.match(new RegExp(`.{1,${MEMORIES_RECOVERY_CODE_GROUP_LENGTH}}`, 'g'));
+	return groups ? groups.join('-') : '';
+}
 
 export function formatMemoriesCodeGroups(raw: string, groups: number): string {
 	const parts: string[] = [];
@@ -128,6 +145,10 @@ export interface MemoriesMediaItem {
 	acceptedAt: string | null;
 	rejectedAt: string | null;
 	deletedAt: string | null;
+	/** Set while the host keeps the file out of the shared gallery and bulk downloads. */
+	hiddenAt: string | null;
+	thumbnailObjectKey: string | null;
+	thumbnailBytes: number | null;
 }
 
 /** Browser-facing projection: no keys, no session, no checksum. */
@@ -143,21 +164,66 @@ export interface MemoriesMediaPublicItem {
 	acceptedAt: string | null;
 	rejectedAt: string | null;
 	deletedAt: string | null;
+	/** A small preview exists; request it with the `thumb` variant. */
+	hasThumbnail: boolean;
 }
 
 export interface MemoriesOrganizerItem extends MemoriesMediaPublicItem {
+	/** Hidden by the host: still the guest's, but out of the shared gallery and "download all". */
+	hidden: boolean;
 	uploader: {
 		displayName: string;
 		guestAlias: string;
 	};
 }
 
+export const MEMORIES_MEDIA_KINDS = ['photo', 'video'] as const;
+export type MemoriesMediaKind = (typeof MEMORIES_MEDIA_KINDS)[number];
+export const MEMORIES_VISIBILITY_FILTERS = ['visible', 'hidden'] as const;
+export type MemoriesVisibilityFilter = (typeof MEMORIES_VISIBILITY_FILTERS)[number];
+
 export interface MemoriesOrganizerListQuery {
 	page?: number;
 	status?: MemoriesMediaStatus;
 	uploader?: string;
+	/** Exact guest, as listed by the uploaders endpoint; wins over the text search. */
+	uploaderAlias?: string;
+	kind?: MemoriesMediaKind;
+	visibility?: MemoriesVisibilityFilter;
 	createdFrom?: string;
 	createdTo?: string;
+}
+
+/** Server configuration the memories module needs; names only, never values. */
+export const MEMORIES_CONFIG_KEYS = [
+	'uploadOrigin',
+	'retrievalOrigin',
+	'uploadSigningKey',
+	'retrievalSigningKey',
+	'shareSecret',
+	'cronSecret',
+] as const;
+export type MemoriesConfigKey = (typeof MEMORIES_CONFIG_KEYS)[number];
+export type MemoriesWorkerKey = 'uploadOrigin' | 'retrievalOrigin';
+
+/** Super-admin view of what is missing. It names settings and never carries their values. */
+export interface MemoriesReadiness {
+	missing: MemoriesConfigKey[];
+	/** Configured Worker origins that did not answer. */
+	unreachable: MemoriesWorkerKey[];
+}
+
+/** What a shared-gallery visitor sees of each file: no aliases, keys or status. */
+export type MemoriesGalleryItem = Pick<
+	MemoriesOrganizerItem,
+	'id' | 'mimeType' | 'durationSeconds' | 'caption' | 'createdAt' | 'hasThumbnail'
+> & { uploaderName: string };
+
+/** One guest who shared files, for the host's guest filter. Never carries keys or captions. */
+export interface MemoriesOrganizerUploader {
+	displayName: string;
+	guestAlias: string;
+	files: number;
 }
 
 export interface MemoriesOrganizerListResponse {
@@ -208,8 +274,77 @@ export interface MemoriesSpaceRecord extends MemoriesSpaceLimits {
 	uploadEndsAt: string;
 	retentionEndsAt: string;
 	entitlement: MemoriesEntitlement;
+	/** Planning input for capacity estimates; the host sees it as «46 de 120 invitados». */
+	expectedGuests: number | null;
+	/** Free-text internal note. Administrator-only; never audited or sent to hosts. */
+	adminNote: string | null;
+	/** Bumped to revoke the shared-gallery link; the token itself is never stored. */
+	shareVersion: number;
+	/** Set while the host shares the gallery; null when sharing is off. */
+	shareEnabledAt: string | null;
 	createdAt: string;
 	updatedAt: string;
+}
+
+/**
+ * Aggregate usage of one space for the super-admin console. Counts and bytes
+ * only: never guest names, aliases, object keys or captions.
+ */
+export interface MemoriesSpaceAdminUsage {
+	photos: number;
+	videos: number;
+	guestsWithUploads: number;
+	sessions: number;
+	residentObjects: number;
+	residentBytes: number;
+	inFlight: number;
+	rejected: number;
+	lastAcceptedAt: string | null;
+}
+
+export interface MemoriesAdminSpaceItem extends MemoriesSpaceRecord {
+	usage: MemoriesSpaceAdminUsage;
+	/** Local event date from the published invitation, when readable. */
+	eventDate: string | null;
+	/** Latest file download by a host; proves a download happened, not that it was complete. */
+	lastHostDownloadAt: string | null;
+}
+
+export interface MemoriesAdminTotals {
+	/** Bytes the database tracks as resident in R2 across every space. */
+	residentBytes: number;
+	/** Bytes live spaces may still reach: quota while enabled, resident bytes otherwise. */
+	committedBytes: number;
+}
+
+/** Host projection: progress without limits, commercial origin or diagnostics. */
+export interface MemoriesSpaceHostSummary extends MemoriesSpaceSummary {
+	publicUrl: string;
+	photos: number;
+	videos: number;
+	guestsWithUploads: number;
+	/** Planning input set by the administrator, shown as "46 of 120 guests". */
+	expectedGuests: number | null;
+	lastAcceptedAt: string | null;
+	/** The shared-gallery link while sharing is on. */
+	shareUrl: string | null;
+	/** 0–100, the tighter of the byte and file quotas. */
+	capacityRemainingPercent: number;
+}
+
+/**
+ * Whole days until retention ends while the deletion warning applies, else null.
+ * Shared by both dashboards so the countdown reads the same for admin and host.
+ */
+export function resolveMemoriesRetentionWarningDays(
+	space: { retentionEndsAt: string },
+	now: Date,
+	warningDays: number,
+): number | null {
+	const remainingMs = Date.parse(space.retentionEndsAt) - now.getTime();
+	if (!(remainingMs > 0)) return null;
+	const days = Math.ceil(remainingMs / (24 * 60 * 60 * 1000));
+	return days <= warningDays ? days : null;
 }
 
 export function resolveMemoriesWindowState(

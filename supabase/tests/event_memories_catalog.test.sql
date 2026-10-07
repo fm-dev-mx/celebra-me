@@ -1,6 +1,6 @@
 begin;
 
-select plan(41);
+select plan(52);
 
 -- Access boundary -----------------------------------------------------------
 select ok(
@@ -76,6 +76,28 @@ select throws_ok($sql$
 	set retention_ends_at = upload_starts_at + interval '151 days'
 	where public_slug = 'space-open'
 $sql$, '23514', null, 'retention cannot exceed the object lifetime bound');
+
+-- Planning inputs -------------------------------------------------------------
+select lives_ok($sql$
+	update public.event_memory_settings
+	set expected_guests = 150, admin_note = 'Synthetic note'
+	where public_slug = 'space-open'
+$sql$, 'planning inputs accept an attendance and a note');
+
+select is(
+	(select count(*) from public.event_memory_settings
+		where public_slug = 'space-closed' and expected_guests is null and admin_note is null),
+	1::bigint,
+	'planning inputs default to null'
+);
+
+select throws_ok($sql$
+	update public.event_memory_settings set expected_guests = 0 where public_slug = 'space-open'
+$sql$, '23514', null, 'expected guests must be positive');
+
+select throws_ok($sql$
+	update public.event_memory_settings set admin_note = repeat('x', 501) where public_slug = 'space-open'
+$sql$, '23514', null, 'admin note is bounded');
 
 insert into public.event_memory_sessions (
 	id, event_id, token_hash, recovery_code_hash, expires_at, display_name, guest_alias
@@ -296,6 +318,54 @@ select is(
 insert into public.event_memory_audit_events (event_id, actor_type, action, expires_at)
 values ('e0000000-0000-0000-0000-000000000001', 'system', 'synthetic_expired', now() - interval '1 second');
 select is(public.purge_event_memory_audit(now()), 1::bigint, 'expired audit row is purged');
+
+-- Host curation, thumbnails and sharing (additive columns) -------------------
+select is(
+	(select share_version from public.event_memory_settings
+		where event_id = 'e0000000-0000-0000-0000-000000000001'),
+	0,
+	'share version defaults to zero'
+);
+select ok(
+	(select bool_and(hidden_at is null and thumbnail_object_key is null) from public.event_memory_items),
+	'items start visible and without a thumbnail'
+);
+select throws_ok(
+	$$update public.event_memory_items set thumbnail_object_key = 'events/a/thumbs/b.webp'
+		where id = (select id from public.event_memory_items order by created_at, id limit 1)$$,
+	'23514',
+	null,
+	'a thumbnail key needs its size'
+);
+select throws_ok(
+	$$update public.event_memory_items
+		set thumbnail_object_key = 'events/a/thumbs/b.webp', thumbnail_bytes = 98305
+		where id = (select id from public.event_memory_items order by created_at, id limit 1)$$,
+	'23514',
+	null,
+	'a thumbnail cannot exceed 96 KiB'
+);
+select throws_ok(
+	$$update public.event_memory_items
+		set thumbnail_object_key = 'events/a/b.jpg', thumbnail_bytes = 1000
+		where id = (select id from public.event_memory_items order by created_at, id limit 1)$$,
+	'23514',
+	null,
+	'a thumbnail key must live under thumbs/ as WebP'
+);
+select lives_ok(
+	$$update public.event_memory_items
+		set thumbnail_object_key = 'events/a/thumbs/b.webp', thumbnail_bytes = 1000, hidden_at = now()
+		where id = (select id from public.event_memory_items order by created_at, id limit 1)$$,
+	'a valid thumbnail pair and a hidden flag are accepted'
+);
+select throws_ok(
+	$$update public.event_memory_settings set share_version = -1
+		where event_id = 'e0000000-0000-0000-0000-000000000001'$$,
+	'23514',
+	null,
+	'share version cannot be negative'
+);
 
 select * from finish();
 rollback;

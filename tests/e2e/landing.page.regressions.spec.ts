@@ -547,8 +547,8 @@ test.describe('Landing page regressions', () => {
 		}
 		await expect(page.locator('.hero-prime__selector')).toHaveCount(0);
 		await page.locator('#tipo-evento').scrollIntoViewIfNeeded();
-		await page.locator('[data-tab-event="baby-shower"]').click();
-		await expect(page.locator('[data-panel-event="baby-shower"]')).toHaveClass(/active/);
+		await page.locator('[data-tab-event="cumple"]').click();
+		await expect(page.locator('[data-panel-event="cumple"]')).toHaveClass(/active/);
 	});
 
 	test('does not create horizontal overflow on narrow mobile', async ({ page }) => {

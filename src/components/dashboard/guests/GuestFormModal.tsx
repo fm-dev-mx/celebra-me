@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import ModalShell from '@/components/dashboard/ModalShell';
 import PhoneInputGroup from '@/components/shared/PhoneInputGroup';
-import {
-	ATTENDEE_OPTIONS,
-	MAX_CUSTOM_ATTENDEES,
-} from '@/components/dashboard/guests/guest-form-constants';
+import GuestPeopleStepper from '@/components/dashboard/guests/GuestPeopleStepper';
+import { MAX_CUSTOM_ATTENDEES } from '@/components/dashboard/guests/guest-form-constants';
 import { resolvePhonePayload } from '@/lib/phone/resolve-phone-payload';
 import { PREDEFINED_GUEST_TAGS } from '@/lib/guests/guest-tags';
 import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
@@ -43,9 +41,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	const [fullName, setFullName] = useState('');
 	const [phone, setPhone] = useState('');
 	const [countryCode, setCountryCode] = useState('+52');
-	const [maxAllowedAttendees, setMaxAllowedAttendees] = useState(1);
-	const [isCustomMode, setIsCustomMode] = useState(false);
-	const [customInputValue, setCustomInputValue] = useState('');
+	const [peopleInput, setPeopleInput] = useState('1');
 	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>('pending');
 	const [attendeeCount, setAttendeeCount] = useState(0);
 	const [tags, setTags] = useState<string[]>([]);
@@ -61,9 +57,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setFullName('');
 		setPhone('');
 		setCountryCode('+52');
-		setMaxAllowedAttendees(1);
-		setIsCustomMode(false);
-		setCustomInputValue('');
+		setPeopleInput('1');
 		setAttendanceStatus('pending');
 		setAttendeeCount(0);
 		setTags([]);
@@ -89,10 +83,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setFullName(initialGuest.fullName);
 		setPhone(initialGuest.phone || '');
 		setCountryCode(initialGuest.countryCode || '+52');
-		setMaxAllowedAttendees(initialGuest.maxAllowedAttendees);
-		const isNonPreset = ![1, 2, 3, 4, 5].includes(initialGuest.maxAllowedAttendees);
-		setIsCustomMode(isNonPreset);
-		setCustomInputValue(isNonPreset ? String(initialGuest.maxAllowedAttendees) : '');
+		setPeopleInput(String(initialGuest.maxAllowedAttendees));
 		setAttendanceStatus(initialGuest.attendanceStatus);
 		setAttendeeCount(initialGuest.attendeeCount);
 		setTags(initialGuest.tags || []);
@@ -100,24 +91,17 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 
 	if (!open) return null;
 
-	const liveMaxAttendees = isCustomMode
-		? Math.max(
-				1,
-				Math.min(
-					parseInt(customInputValue, 10) || MAX_CUSTOM_ATTENDEES,
-					MAX_CUSTOM_ATTENDEES,
-				),
-			)
-		: maxAllowedAttendees;
+	const liveMaxAttendees = Math.max(
+		1,
+		Math.min(parseInt(peopleInput, 10) || MAX_CUSTOM_ATTENDEES, MAX_CUSTOM_ATTENDEES),
+	);
 
 	const resolveMaxAttendees = (): { value: number; error?: string } => {
-		if (!isCustomMode) return { value: maxAllowedAttendees };
-		const trimmed = customInputValue.trim();
-		if (!trimmed) return { value: 1, error: 'Ingresa un número de pases.' };
-		const parsed = parseInt(trimmed, 10);
-		if (isNaN(parsed) || parsed < 1) return { value: 1, error: 'Ingresa un número de pases.' };
+		const parsed = parseInt(peopleInput.trim(), 10);
+		if (isNaN(parsed) || parsed < 1)
+			return { value: 1, error: 'Escriba cuántas personas vienen.' };
 		if (parsed > MAX_CUSTOM_ATTENDEES)
-			return { value: 1, error: 'El valor excede el límite técnico permitido.' };
+			return { value: 1, error: `El máximo es ${MAX_CUSTOM_ATTENDEES} personas.` };
 		return { value: parsed };
 	};
 
@@ -125,7 +109,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		const errors: Record<string, string> = {};
 
 		if (!fullName.trim()) {
-			errors.fullName = 'El nombre es obligatorio.';
+			errors.fullName = 'Escriba el nombre del invitado.';
 		}
 
 		const phonePayload = resolvePhonePayload({
@@ -192,6 +176,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		<ModalShell
 			title={mode === 'create' ? 'Agregar invitado' : 'Editar invitado'}
 			size="lg"
+			className="guest-form-modal"
 			onClose={onClose}
 			footer={
 				<>
@@ -226,7 +211,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 									void handleFormSubmit(true);
 								}}
 							>
-								{saving ? '...' : 'Guardar y Nuevo'}
+								{saving ? '...' : 'Guardar y agregar otro'}
 							</button>
 						)}
 						<button
@@ -257,9 +242,13 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 					}}
 				>
 					<div className="dashboard-form-field">
-						<label htmlFor="fullName">Nombre completo</label>
+						<label htmlFor="fullName">Nombre del invitado</label>
+						<span id="fullName-hint" className="guest-field-hint">
+							Así aparecerá en la invitación.
+						</span>
 						<input
 							id="fullName"
+							aria-describedby="fullName-hint"
 							ref={nameInputRef}
 							value={fullName}
 							onChange={(event) => setFullName(event.target.value)}
@@ -270,7 +259,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 								}
 							}}
 							required
-							placeholder="Ej. Juan P&eacute;rez"
+							placeholder="Ej. Familia Pérez López"
 							autoFocus
 						/>
 						{fieldErrors.fullName && (
@@ -286,79 +275,36 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							onCountryCodeChange={setCountryCode}
 							onPhoneChange={setPhone}
 							error={fieldErrors.phone}
-							label="Tel&eacute;fono / WhatsApp"
+							label="Teléfono celular (WhatsApp)"
 							showOptional
 							inputRef={phoneInputRef}
 						/>
 					</div>
 
 					<div className="dashboard-form-section">
-						<h4 className="dashboard-form-section__title">N&uacute;mero de pases</h4>
 						<div className="dashboard-form-field dashboard-form-field--full">
-							<div className="guest-response-cards guest-response-cards--compact">
-								{ATTENDEE_OPTIONS.map((opt) =>
-									opt === 'other' ? (
-										<label key="other" className="guest-response-card">
-											<input
-												type="radio"
-												name="maxAllowedAttendees"
-												value="other"
-												checked={isCustomMode}
-												onChange={() => {
-													setIsCustomMode(true);
-													setCustomInputValue(
-														String(maxAllowedAttendees),
-													);
-												}}
-											/>
-											<div className="guest-response-card__content">Otro</div>
-										</label>
-									) : (
-										<label key={opt} className="guest-response-card">
-											<input
-												type="radio"
-												name="maxAllowedAttendees"
-												value={opt}
-												checked={
-													!isCustomMode && maxAllowedAttendees === opt
-												}
-												onChange={() => {
-													setMaxAllowedAttendees(opt);
-													setIsCustomMode(false);
-													setCustomInputValue('');
-												}}
-											/>
-											<div className="guest-response-card__content">
-												{opt}
-											</div>
-										</label>
-									),
-								)}
-							</div>
-							{isCustomMode && (
-								<div className="dashboard-custom-attendees">
-									<input
-										type="number"
-										min={1}
-										max={MAX_CUSTOM_ATTENDEES}
-										value={customInputValue}
-										onChange={(e) => setCustomInputValue(e.target.value)}
-										placeholder="Más de 5"
-										autoFocus
-									/>
-									{fieldErrors.customAttendees && (
-										<span className="guest-field-error">
-											{fieldErrors.customAttendees}
-										</span>
-									)}
-								</div>
+							<label htmlFor="guest-people">¿Cuántas personas vienen?</label>
+							<span id="guest-people-hint" className="guest-field-hint">
+								Incluya al invitado principal.
+							</span>
+							<GuestPeopleStepper
+								id="guest-people"
+								value={peopleInput}
+								max={MAX_CUSTOM_ATTENDEES}
+								onChange={setPeopleInput}
+								describedBy="guest-people-hint"
+								invalid={Boolean(fieldErrors.customAttendees)}
+							/>
+							{fieldErrors.customAttendees && (
+								<span className="guest-field-error">
+									{fieldErrors.customAttendees}
+								</span>
 							)}
-							<span className="guest-field-hint">Incluye al invitado principal.</span>
 						</div>
 					</div>
 
 					<div className="dashboard-form-section">
-						<h4 className="dashboard-form-section__title">Categor&iacute;as</h4>
+						<h4 className="dashboard-form-section__title">Grupo (opcional)</h4>
 						<div className="dashboard-form-field dashboard-form-field--full">
 							<div className="guest-response-cards guest-response-cards--tags">
 								{PREDEFINED_GUEST_TAGS.map((tag) => (

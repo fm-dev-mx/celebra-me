@@ -5,7 +5,7 @@ import { useAssetLibrary, type AssetItem } from '@/lib/intake/use-asset-library'
 import {
 	getAssetUsageLabel,
 	EMPTY_ASSET_LIBRARY_COPY,
-	DEMO_ASSET_LABEL,
+	BUNDLED_ASSET_LABEL,
 	ASSET_EDIT_LABEL,
 	ASSET_SAVE_LABEL,
 	ASSET_CANCEL_LABEL,
@@ -32,7 +32,7 @@ function buildConflictMessage(
 	return [
 		'No se puede eliminar esta imagen porque está siendo utilizada.',
 		`Usos detectados: ${refs.join(', ')}.`,
-		'Primero quítala de esas secciones y vuelve a intentarlo.',
+		'Primero quítela de esas secciones y vuelva a intentarlo.',
 	].join('\n');
 }
 
@@ -149,8 +149,8 @@ function AssetNameSection({
 	onRename: (assetId: string, newName: string) => Promise<void>;
 	onEditAltText: (assetId: string, newAltText: string) => Promise<void>;
 }) {
-	const isDemo = asset.isDemo ?? false;
-	if (isDemo || filter === 'archived') {
+	const isBundled = asset.isBundled ?? false;
+	if (isBundled || filter === 'archived') {
 		return <span className="asset-library__name">{asset.displayName}</span>;
 	}
 	return (
@@ -173,10 +173,10 @@ function AssetNameSection({
 
 function AssetUsageBadge({ asset, filter }: { asset: AssetItem; filter: 'active' | 'archived' }) {
 	const inUse = asset.usage.usedInDraft || asset.usage.usedInPublished;
-	const isDemo = asset.isDemo ?? false;
+	const isBundled = asset.isBundled ?? false;
 	let label: string;
-	if (isDemo) {
-		label = DEMO_ASSET_LABEL;
+	if (isBundled) {
+		label = BUNDLED_ASSET_LABEL;
 	} else if (filter === 'archived') {
 		label = ARCHIVED_DATE_LABEL;
 	} else {
@@ -206,8 +206,8 @@ function AssetActions({
 	onRestore: (asset: AssetItem) => Promise<void>;
 	onDelete: (asset: AssetItem) => Promise<void>;
 }) {
-	const isDemo = asset.isDemo ?? false;
-	if (isDemo) return null;
+	const isBundled = asset.isBundled ?? false;
+	if (isBundled) return null;
 
 	if (filter === 'archived') {
 		return (
@@ -272,7 +272,7 @@ function AssetListItem({
 	onDelete: (asset: AssetItem) => Promise<void>;
 }) {
 	const inUse = asset.usage.usedInDraft || asset.usage.usedInPublished;
-	const isDemo = asset.isDemo ?? false;
+	const isBundled = asset.isBundled ?? false;
 	const sectionRefs = [
 		...(asset.usage.draftSectionRefs ?? []),
 		...(asset.usage.publishedSectionRefs ?? []),
@@ -280,7 +280,7 @@ function AssetListItem({
 
 	return (
 		<li
-			className={`asset-library__item${inUse ? ' asset-library__item--in-use' : ''}${isDemo ? ' asset-library__item--demo' : ''}`}
+			className={`asset-library__item${inUse ? ' asset-library__item--in-use' : ''}${isBundled ? ' asset-library__item--bundled' : ''}`}
 		>
 			<img
 				src={asset.src}

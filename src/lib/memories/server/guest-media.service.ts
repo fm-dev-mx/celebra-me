@@ -10,6 +10,7 @@ import {
 	type MemoriesGuestQuota,
 	type MemoriesMediaItem,
 	type MemoriesMediaPublicItem,
+	type MemoriesReservationRefusal,
 	type MemoriesSpaceRecord,
 } from '@/lib/memories/contract/catalog';
 import {
@@ -23,8 +24,10 @@ import {
 	MEMORIES_MAX_VIDEO_DURATION_SECONDS,
 	getMemoriesMimePolicy,
 	normalizeMemoriesMimeType,
+	roundMemoriesVideoDurationSeconds,
 } from '@/lib/memories/contract/media-policy';
 import {
+	MEMORIES_THUMBNAIL_MIME_TYPE,
 	buildMemoriesObjectKey,
 	isMemoriesObjectKeyForMime,
 } from '@/lib/memories/contract/object-key';
@@ -43,8 +46,10 @@ import {
 } from './catalog.repository';
 import { mapMediaRow, toPublicItem } from './media-mapper';
 import { createMemoriesObjectId } from './secrets';
+import { isMemorySpaceFull } from './usage.service';
 import {
 	inspectMemoriesObject,
+	isMemoriesSignerRateLimit,
 	requestMemoriesUploadCapability,
 	type MemoriesInspectionResult,
 	type MemoriesUploadCapability,
@@ -62,37 +67,45 @@ const RESERVATION_ERRORS: Record<
 			| 'not_found'
 			| 'unauthorized';
 		message: string;
+		/** Sent to the browser so the guest copy can name the limit that was hit. */
+		reason?: MemoriesReservationRefusal;
 	}
 > = {
 	memories_session_file_quota: {
 		status: 409,
 		code: 'limit_reached',
 		message: 'Alcanzó el máximo de archivos para esta sesión.',
+		reason: 'session_files',
 	},
 	memories_session_video_quota: {
 		status: 409,
 		code: 'limit_reached',
 		message: 'Alcanzó el máximo de videos para esta sesión.',
+		reason: 'session_videos',
 	},
 	memories_session_byte_quota: {
 		status: 409,
 		code: 'limit_reached',
 		message: 'Alcanzó el máximo de almacenamiento para esta sesión.',
+		reason: 'session_bytes',
 	},
 	memories_event_object_quota: {
 		status: 409,
 		code: 'limit_reached',
 		message: 'El evento alcanzó su capacidad de archivos.',
+		reason: 'event_capacity',
 	},
 	memories_event_byte_quota: {
 		status: 409,
 		code: 'limit_reached',
 		message: 'El evento alcanzó su capacidad de almacenamiento.',
+		reason: 'event_capacity',
 	},
 	memories_session_concurrency_quota: {
 		status: 429,
 		code: 'rate_limited',
 		message: 'Espere a que terminen sus cargas actuales.',
+		reason: 'uploads_in_progress',
 	},
 	memories_idempotency_conflict: {
 		status: 409,
@@ -120,7 +133,12 @@ function mapReservationError(error: unknown): never {
 	if (error instanceof SupabaseHttpError) {
 		for (const [token, mapped] of Object.entries(RESERVATION_ERRORS)) {
 			if (error.body.includes(token))
-				throw new ApiError(mapped.status, mapped.code, mapped.message);
+				throw new ApiError(
+					mapped.status,
+					mapped.code,
+					mapped.message,
+					mapped.reason ? { reason: mapped.reason } : undefined,
+				);
 		}
 	}
 	throw error;
@@ -181,7 +199,8 @@ function validateRegisterPayload(input: {
 		mimeType,
 		policy,
 		sizeBytes,
-		durationSeconds,
+		durationSeconds:
+			durationSeconds === null ? null : roundMemoriesVideoDurationSeconds(durationSeconds),
 		checksumSha256,
 		clientRequestId: input.clientRequestId,
 	};
@@ -251,6 +270,14 @@ export async function reserveGuestMemoryItem(input: {
 		});
 	} catch (error) {
 		await releaseReservation(item.id, input.session.id).catch(() => undefined);
+		// The Sign Worker throttles per session: the guest must wait, nothing is broken.
+		if (isMemoriesSignerRateLimit(error)) {
+			throw new ApiError(
+				429,
+				'rate_limited',
+				'Demasiadas solicitudes. Intente de nuevo más tarde.',
+			);
+		}
 		console.error('[memories] Upload capability failed after reservation.', error);
 		throw new ApiError(
 			503,
@@ -270,9 +297,13 @@ export async function reserveGuestMemoryItem(input: {
 export async function listGuestMemoryItems(
 	space: MemoriesSpaceRecord,
 	session: SessionRow,
-): Promise<{ items: MemoriesMediaPublicItem[]; quota: MemoriesGuestQuota }> {
-	const rows = await listSessionMedia(space.eventId, session.id);
+): Promise<{ items: MemoriesMediaPublicItem[]; quota: MemoriesGuestQuota; eventFull: boolean }> {
+	const [rows, eventFull] = await Promise.all([
+		listSessionMedia(space.eventId, session.id),
+		isMemorySpaceFull(space).catch(() => false),
+	]);
 	return {
+		eventFull,
 		items: rows
 			.map(mapMediaRow)
 			.filter((item) => isMemoriesCatalogVisibleStatus(item.status))
@@ -527,14 +558,23 @@ export async function getMediaObjectForRetrieval(
 	space: MemoriesSpaceRecord,
 	mediaItemId: string,
 	ownerSessionId?: string,
+	options: { variant?: 'original' | 'thumb'; excludeHidden?: boolean } = {},
 ): Promise<{ objectKey: string; mimeType: string; downloadName: string }> {
 	const row = await findMediaById(space.eventId, mediaItemId);
 	if (!row || (ownerSessionId && row.session_id !== ownerSessionId)) {
 		throw new ApiError(404, 'not_found', 'Recuerdo no encontrado.');
 	}
 	const item = mapMediaRow(row);
-	if (item.deletedAt || item.status !== 'accepted') {
+	if (item.deletedAt || item.status !== 'accepted' || (options.excludeHidden && item.hiddenAt)) {
 		throw new ApiError(404, 'not_found', 'Recuerdo no disponible.');
+	}
+	// Files from before thumbnails existed fall back to the original.
+	if (options.variant === 'thumb' && item.thumbnailObjectKey) {
+		return {
+			objectKey: item.thumbnailObjectKey,
+			mimeType: MEMORIES_THUMBNAIL_MIME_TYPE,
+			downloadName: `vista-previa-${item.id.slice(0, 8)}.webp`,
+		};
 	}
 	if (!isMemoriesObjectKeyForMime(item.objectKey, item.mimeType)) {
 		throw new ApiError(500, 'internal_error', 'El recuerdo no tiene un identificador válido.');

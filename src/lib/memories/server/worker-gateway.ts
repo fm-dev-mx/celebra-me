@@ -4,7 +4,10 @@
  * the single PUT capability returned by `requestMemoriesUploadCapability`.
  */
 
-import { MEMORIES_PRESIGN_TTL_SECONDS } from '@/lib/memories/contract/limits';
+import {
+	MEMORIES_INSPECTION_TIMEOUT_MS,
+	MEMORIES_PRESIGN_TTL_SECONDS,
+} from '@/lib/memories/contract/limits';
 import {
 	MEMORIES_PRIVATE_REQUEST_TTL_SECONDS,
 	MEMORIES_RETRIEVAL_PATH,
@@ -47,6 +50,21 @@ const BASE64_SHA256_PATTERN = /^[A-Za-z0-9+/]{43}=$/;
 
 function invalidSignerResponse(): Error {
 	return new Error('Invalid upload signer response.');
+}
+
+/** The Sign Worker refused the request; the status tells a throttle apart from an outage. */
+export class MemoriesSignerError extends Error {
+	readonly status: number;
+
+	constructor(status: number) {
+		super(`Memories upload signer failed (${status}).`);
+		this.name = 'MemoriesSignerError';
+		this.status = status;
+	}
+}
+
+export function isMemoriesSignerRateLimit(error: unknown): boolean {
+	return error instanceof MemoriesSignerError && error.status === 429;
 }
 
 function requireUploadUrl(value: unknown, signerUrl: URL): URL {
@@ -130,7 +148,7 @@ export async function requestMemoriesUploadCapability(input: {
 		body,
 		signal: AbortSignal.timeout(10_000),
 	});
-	if (!response.ok) throw new Error(`Memories upload signer failed (${response.status}).`);
+	if (!response.ok) throw new MemoriesSignerError(response.status);
 	const payload: unknown = await response.json();
 	if (typeof payload !== 'object' || payload === null) throw invalidSignerResponse();
 	const candidate = payload as Record<string, unknown>;
@@ -166,6 +184,8 @@ export async function retrieveMemoriesObject(input: {
 	mode: MemoriesRetrievalMode;
 	downloadName?: string;
 	range?: string | null;
+	/** Defaults to the signed request lifetime, which streamed downloads need. */
+	timeoutMs?: number;
 }): Promise<Response> {
 	const retrievalUrl = resolveMemoriesWorkerUrl(
 		MEMORIES_ENV.retrievalOrigin,
@@ -192,7 +212,9 @@ export async function retrieveMemoriesObject(input: {
 			privateKeyEnvName: MEMORIES_ENV.retrievalSigningPrivateKey,
 		}),
 		body,
-		signal: AbortSignal.timeout((MEMORIES_PRIVATE_REQUEST_TTL_SECONDS + 10) * 1000),
+		signal: AbortSignal.timeout(
+			input.timeoutMs ?? (MEMORIES_PRIVATE_REQUEST_TTL_SECONDS + 10) * 1000,
+		),
 	});
 }
 
@@ -202,7 +224,11 @@ export async function inspectMemoriesObject(input: {
 }): Promise<MemoriesInspectionOutcome> {
 	let payload: unknown;
 	try {
-		const response = await retrieveMemoriesObject({ ...input, mode: 'inspect' });
+		const response = await retrieveMemoriesObject({
+			...input,
+			mode: 'inspect',
+			timeoutMs: MEMORIES_INSPECTION_TIMEOUT_MS,
+		});
 		if (response.status !== 200) return { kind: 'unavailable' };
 		payload = await response.json();
 	} catch {

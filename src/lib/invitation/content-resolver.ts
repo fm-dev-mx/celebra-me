@@ -4,7 +4,6 @@ import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation
 import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import type { InvitationViewModel } from '@/lib/adapters/types';
-import { isDevEnvironment } from '@/lib/environment';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { normalizeLegacyLocationInContent } from '@/lib/invitation/location-normalizer';
 
@@ -17,18 +16,10 @@ export type ContentResolution =
 			version: number;
 	  };
 
-function isDevTemplateEntry(collection?: string): boolean {
-	return collection === 'event-templates' && isDevEnvironment();
-}
-
 function isStaticDemoEntry(
 	entry: Awaited<ReturnType<typeof getRoutableEventEntry>> | null,
 ): boolean {
-	if (!entry?.data) return false;
-	return (
-		('isDemo' in entry.data && entry.data.isDemo === true) ||
-		isDevTemplateEntry(entry.collection)
-	);
+	return entry?.data?.isDemo === true;
 }
 
 function toStaticResolution(
@@ -65,7 +56,7 @@ function isMissingSupabaseCredentialsError(error: unknown): boolean {
  * Check whether the error is a network-level failure when trying to reach
  * the Supabase REST API (connection refused, DNS failure, timeout, etc.).
  * When Supabase is configured but unreachable we should fall through to
- * the static fallback so demos and templates still render.
+ * the static fallback so demos still render.
  */
 function isSupabaseNetworkError(error: unknown): boolean {
 	if (!(error instanceof Error)) return false;
@@ -103,7 +94,7 @@ export async function resolveInvitationContent(
 ): Promise<ContentResolution | null> {
 	// DB-published content first — this is the source of truth for real invitations.
 	// If Supabase credentials are not configured (CI, local without .env), skip DB
-	// and fall through to the static fallback so demos and templates still render.
+	// and fall through to the static fallback so demos still render.
 	if (eventType) {
 		try {
 			const publishedEntry = await findPublishedBySlugAndEventType(slug, eventType);
@@ -142,7 +133,7 @@ export async function resolveInvitationContent(
 				// Do not swallow other DB errors.
 			} else if (isSupabaseNetworkError(error)) {
 				// Supabase is configured but unreachable — fall back to static
-				// content so demos and templates still render.
+				// content so demos still render.
 			} else {
 				throw error;
 			}
@@ -156,13 +147,13 @@ export async function resolveInvitationContent(
 			// Credentials not configured — proceed to static fallback.
 		} else if (isSupabaseNetworkError(error)) {
 			// Supabase is configured but unreachable — fall through to
-			// static fallback so demos and templates still render.
+			// static fallback so demos still render.
 		} else if (!isMissingInvitationsTableError(error)) {
 			throw error;
 		}
 	}
 
-	// Static fallback — only for demos and templates
+	// Static fallback — only for demos
 	const staticEntry = await getRoutableEventEntry(slug, eventType);
 	if (staticEntry?.data) {
 		if (isStaticDemoEntry(staticEntry)) {

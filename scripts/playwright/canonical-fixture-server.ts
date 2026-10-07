@@ -10,6 +10,10 @@ import {
 	buildNormalizedInvitationRelease,
 	materializeAssetReferences,
 } from '../provision/normalized-invitation-release.ts';
+import {
+	CANONICAL_MEMORIES_SLUG,
+	buildCanonicalMemorySpaceRow,
+} from './canonical-memories-fixture.ts';
 
 if (process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES !== 'true') {
 	throw new Error('Canonical fixtures require explicit PLAYWRIGHT_USE_CANONICAL_FIXTURES=true.');
@@ -77,6 +81,9 @@ const server = createServer((request, response) => {
 		url.searchParams.get('select') === 'archived_at'
 	) {
 		result = [];
+	} else if (url.pathname === '/rest/v1/event_memory_settings') {
+		const slug = url.searchParams.get('public_slug')?.replace(/^eq\./, '');
+		result = slug === CANONICAL_MEMORIES_SLUG ? [buildCanonicalMemorySpaceRow()] : [];
 	} else {
 		response.writeHead(404).end('Unsupported fixture request.');
 		return;

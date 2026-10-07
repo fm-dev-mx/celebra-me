@@ -21,7 +21,7 @@ describe('prepareInvitationPageContext', () => {
 	it('builds a personalized context for premium invitation routes', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
+			data: loadFixture('tests/fixtures/content/xv-jewelry-box.json'),
 		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
 
 		const fixture = event.data;
@@ -64,33 +64,8 @@ describe('prepareInvitationPageContext', () => {
 		expect(describeRenderPlan(context.renderPlan)).toContain('personalized-access');
 	});
 
-	it('allows previewTheme overrides by rewriting the delivered theme preset in runtime only', () => {
-		const event = {
-			id: 'event-demos/xv/demo-xv-jewelry-box',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
-		} as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'];
-
-		const context = prepareInvitationPageContext({
-			eventEntry: event,
-			slug: 'ximena-meza-trasvina',
-			previewTheme: 'editorial',
-		});
-
-		expect(context.wrapper.dataAttributes['data-theme-preset']).toBe('editorial');
-		expect(context.viewModel.theme.preset).toBe('editorial');
-		expect(context.viewModel.hero.variant).toBe('standard');
-		expect(context.envelope?.variant).toBe('editorial');
-		expect(context.footerVariant).toBe('editorial');
-		expect(context.viewModel.sections.location?.variant).toBe('standard');
-		expect(context.renderPlan).toContainEqual(
-			expect.objectContaining({
-				type: 'interlude',
-			}),
-		);
-	});
-
 	it('builds the default context for demo events without guest context', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: fixture,
@@ -168,7 +143,7 @@ describe('prepareInvitationPageContext', () => {
 	});
 
 	it('derives envelope and reveal-card names from primary and secondary hero names', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
@@ -236,7 +211,7 @@ describe('prepareInvitationPageContext', () => {
 	});
 
 	it('preserves hybrid RSVP access mode for landing pages without guest context', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
@@ -262,7 +237,7 @@ describe('prepareInvitationPageContext', () => {
 	});
 
 	it('passes the location indications heading through to the view model', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
@@ -377,24 +352,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const plan = describeRenderPlan(context.renderPlan);
 		expect(plan).toEqual([]);
-	});
-
-	it('resolves footerVariant from theme.preset', () => {
-		const viewModel = {
-			...baseViewModel,
-			id: 'footer-test',
-			title: 'Footer Test',
-			theme: { preset: 'editorial' as const, themeClass: 'theme-preset--editorial' },
-			sections: {},
-		} as any;
-
-		const context = buildPageContextFromViewModel({
-			viewModel,
-			slug: 'footer-test',
-			eventType: 'xv',
-		});
-
-		expect(context.footerVariant).toBe('editorial');
 	});
 
 	it('sets data-reveal-state to sealed when envelope is enabled (non-embedded)', () => {

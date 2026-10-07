@@ -17,16 +17,11 @@ import {
 	type VisualSuite,
 } from './visual-capture-record';
 import { VISUAL_PARITY_RUNTIME } from './visual-parity-metadata';
+import { settleWithOneRecapture, type VisualCaptureSettlement } from './visual-recapture-policy';
 
 const RUNTIME_SHA = visualRuntimeSha(VISUAL_PARITY_RUNTIME);
 
-export interface VisualCaptureSettlement {
-	comparisonResult: 'PASS' | 'FAIL' | 'CANDIDATE';
-	/** SHA-256 of the PNG stored under the output root for this capture. */
-	storedSha256: string;
-	observedSha256: string;
-	difference?: string;
-}
+export type { VisualCaptureSettlement } from './visual-recapture-policy';
 
 /**
  * Compares one capture with the gate's tolerance and stores its PNG under the output root.
@@ -75,6 +70,23 @@ export function settleVisualCapture(options: {
 	};
 }
 
+/** Settles a capture with the single compare-mode re-capture of `settleWithOneRecapture`. */
+export async function settleVisualCaptureWithRecapture(options: {
+	testInfo: TestInfo;
+	mode: VisualParityMode;
+	file: string;
+	image: Buffer;
+	recapture: () => Promise<Buffer>;
+}): Promise<VisualCaptureSettlement> {
+	const { recapture, ...capture } = options;
+	return settleWithOneRecapture(
+		options.mode,
+		options.image,
+		(image) => settleVisualCapture({ ...capture, image }),
+		recapture,
+	);
+}
+
 export function recordVisualCapture(
 	suite: VisualSuite,
 	capture: VisualCaptureEntry,
@@ -88,5 +100,8 @@ export function recordVisualCapture(
 		runtimeSha: RUNTIME_SHA,
 		captureMs,
 		...(settlement.difference ? { difference: settlement.difference } : {}),
+		...(settlement.recapturedDifference
+			? { recapturedDifference: settlement.recapturedDifference }
+			: {}),
 	});
 }

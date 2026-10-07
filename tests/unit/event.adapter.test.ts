@@ -40,10 +40,7 @@ describe('adaptEvent', () => {
 	});
 
 	it('all events default to branding visible when called via adaptEvent (no guest context)', () => {
-		const demos = [
-			'event-demos/xv/demo-xv-jewelry-box',
-			'event-demos/xv/demo-xv-enchanted-rose',
-		];
+		const demos = ['event-demos/xv/demo-xv-editorial', 'event-demos/xv/demo-xv-enchanted-rose'];
 
 		for (const demoPath of demos) {
 			const event = {
@@ -61,7 +58,7 @@ describe('adaptEvent', () => {
 	it('preserves family godparents in the invitation view model', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
+			data: loadFixture('tests/fixtures/content/xv-jewelry-box.json'),
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
@@ -73,7 +70,7 @@ describe('adaptEvent', () => {
 	});
 
 	it('keeps godparents undefined when the event omits them', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
@@ -91,7 +88,7 @@ describe('adaptEvent', () => {
 	});
 
 	it('preserves grouped godparents in the invitation view model', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
@@ -124,7 +121,7 @@ describe('adaptEvent', () => {
 	it('resolves demo content blocks and venue data', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
+			data: loadFixture('tests/fixtures/content/xv-jewelry-box.json'),
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
@@ -138,9 +135,9 @@ describe('adaptEvent', () => {
 	});
 
 	it('treats gallery.variant as the canonical structural authority', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-editorial-magazine.json');
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-editorial.json');
 		const event = {
-			id: 'event-demos/xv/demo-xv-editorial-magazine',
+			id: 'event-demos/xv/demo-xv-editorial',
 			data: {
 				...fixture,
 				gallery: {
@@ -156,7 +153,7 @@ describe('adaptEvent', () => {
 	});
 
 	it('passes location intro copy through to the invitation view model', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
@@ -179,7 +176,7 @@ describe('adaptEvent', () => {
 		});
 	});
 	it('supports normalized object asset references from the schema layer', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
@@ -206,7 +203,7 @@ describe('adaptEvent', () => {
 	});
 
 	it('passes the hero name split through without altering the full name', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
@@ -219,23 +216,6 @@ describe('adaptEvent', () => {
 
 		expect(viewModel.hero.nameLeadWords).toBe(1);
 		expect(viewModel.hero.name).toBe(fixture.hero.name);
-	});
-
-	it('resolves the Baby Shower catalog demo through its explicit asset slug', () => {
-		const event = {
-			id: 'event-demos/baby-shower/demo-baby-shower-celestial',
-			data: loadFixture(
-				'src/content/event-demos/baby-shower/demo-baby-shower-celestial.json',
-			),
-		} as Parameters<typeof adaptEvent>[0];
-
-		const viewModel = adaptEvent(event);
-
-		expect(viewModel.id).toBe('demo-baby-shower-celestial');
-		expect(viewModel.theme.preset).toBe('celestial-blue');
-		expect(viewModel.sections.rsvp?.eventSlug).toBe('demo-baby-shower-celestial');
-		expect(viewModel.hero.backgroundImage.src).toEqual(expect.any(String));
-		expect(viewModel.sections.family?.featuredImage?.src).toEqual(expect.any(String));
 	});
 
 	it('resolves the Primera Comunión catalog demo through its explicit asset slug', () => {
@@ -258,7 +238,7 @@ describe('adaptEvent', () => {
 	});
 
 	it('resolves backgroundImageMobile when present in hero data', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
@@ -280,9 +260,9 @@ describe('adaptEvent', () => {
 	});
 
 	it('honors canonical location presentationOptions', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-editorial-magazine.json');
+		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-editorial.json');
 		const event = {
-			id: 'event-demos/xv/demo-xv-editorial-magazine',
+			id: 'event-demos/xv/demo-xv-editorial',
 			data: {
 				...fixture,
 				location: {
@@ -302,10 +282,10 @@ describe('adaptEvent', () => {
 
 	it('preserves thank-you overlay composition metadata', () => {
 		const fixture = loadFixture(
-			'src/content/event-demos/bautismo/demo-bautismo-angelic-presence.json',
+			'src/content/event-demos/bautizo/demo-bautismo-angelic-presence.json',
 		);
 		const event = {
-			id: 'event-demos/bautismo/demo-bautismo-angelic-presence',
+			id: 'event-demos/bautizo/demo-bautismo-angelic-presence',
 			data: {
 				...fixture,
 				thankYou: {
@@ -351,7 +331,7 @@ describe('adaptEvent', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
-				...loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
+				...loadFixture('tests/fixtures/content/xv-jewelry-box.json'),
 				eventTiming: {
 					localDateTime: '2026-04-25T18:00',
 					timeZone: 'America/Mazatlan',
@@ -370,7 +350,7 @@ describe('adaptEvent', () => {
 	it('countdown uses centralized legacy fallback when eventTiming is missing', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
-			data: loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json'),
+			data: loadFixture('tests/fixtures/content/xv-jewelry-box.json'),
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
@@ -381,7 +361,7 @@ describe('adaptEvent', () => {
 	});
 
 	it('does not build countdown data when legacy content has no sectionOrder', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
@@ -398,7 +378,7 @@ describe('adaptEvent', () => {
 	});
 
 	it('countdown is undefined when neither countdown content nor resolvable target exists', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
@@ -420,7 +400,7 @@ describe('adaptEvent', () => {
 	});
 
 	it('does not inject countdown into an explicit sectionOrder when eventTiming exists', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
@@ -447,7 +427,7 @@ describe('adaptEvent', () => {
 	});
 
 	it('does not inject countdown into sectionOrder when no resolvable target exists', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
@@ -479,7 +459,7 @@ describe('adaptEvent', () => {
 	});
 
 	it('throws for invalid theme presets instead of silently falling back', () => {
-		const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',
 			data: {
@@ -846,7 +826,7 @@ describe('adaptEvent', () => {
 
 	describe('envelope variant resolution', () => {
 		it('falls back to the invitation theme preset when envelope.variant is omitted', () => {
-			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+			const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 			const viewModel = adaptEvent({
 				id: 'event-demos/xv/demo-xv-jewelry-box',
 				data: fixture,
@@ -857,7 +837,7 @@ describe('adaptEvent', () => {
 		});
 
 		it('honors an explicit envelope.variant independently of the theme preset', () => {
-			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+			const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 			const viewModel = adaptEvent({
 				id: 'event-demos/xv/demo-xv-jewelry-box',
 				data: {
@@ -877,7 +857,7 @@ describe('adaptEvent', () => {
 
 	describe('envelope teaser derivation', () => {
 		it('derives a date and venue teaser when teaserDetails is omitted', () => {
-			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+			const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 			const viewModel = adaptEvent({
 				id: 'event-demos/xv/demo-xv-jewelry-box',
 				data: fixture,
@@ -889,7 +869,7 @@ describe('adaptEvent', () => {
 		});
 
 		it('honors an explicit empty teaser instead of deriving date and venue', () => {
-			const fixture = loadFixture('src/content/event-demos/xv/demo-xv-jewelry-box.json');
+			const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json');
 			const viewModel = adaptEvent({
 				id: 'event-demos/xv/demo-xv-jewelry-box',
 				data: {

@@ -114,7 +114,7 @@ test.describe('memories guest capture', () => {
 		await page.goto(`/r/${SLUG}`);
 		await page.getByLabel(memoriesCaptureCopy.displayNameLabel).fill('Invitado E2E');
 		await page.getByRole('button', { name: memoriesCaptureCopy.continueLabel }).click();
-		await expect(page.getByText(memoriesCaptureCopy.recoveryCodeTitle)).toBeVisible();
+		await expect(page.getByLabel(memoriesCaptureCopy.chooseFile)).toBeAttached();
 
 		await page.locator('[data-capture="memories"] input[type="file"]').setInputFiles({
 			name: 'e2e.png',
@@ -124,7 +124,9 @@ test.describe('memories guest capture', () => {
 				'base64',
 			),
 		});
-		await page.getByRole('button', { name: memoriesCaptureCopy.confirmUpload }).click();
-		await expect(page.getByText(memoriesCaptureCopy.success)).toBeVisible();
+		await page.getByRole('button', { name: memoriesCaptureCopy.confirmUploadCount(1) }).click();
+		await expect(page.getByText(memoriesCaptureCopy.successCount(1))).toBeVisible();
+		// The recovery code appears once the first memory is saved.
+		await expect(page.getByText(memoriesCaptureCopy.recoveryCodeTitle)).toBeVisible();
 	});
 });

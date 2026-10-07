@@ -54,10 +54,10 @@ describe('buildMemoriesWindowCopy', () => {
 });
 
 describe('buildMemoriesPageCopy', () => {
-	it('includes the event title in the title, subtitle and description', () => {
+	it('includes the event title in the title and description; the names head the page', () => {
 		const copy = buildMemoriesPageCopy({ eventTitle: 'Victoria y Roberto' });
 		expect(copy.title).toBe('Recuerdos · Victoria y Roberto | Celebra-me');
-		expect(copy.subtitle).toContain('Victoria y Roberto');
+		expect(copy.subtitle).toBe('Recuerdos de la celebración');
 		expect(copy.description).toContain('Victoria y Roberto');
 		expect(copy.robots).toBe('noindex');
 	});

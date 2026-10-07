@@ -12,6 +12,12 @@ updates:
           timezone: 'America/Chihuahua'
       open-pull-requests-limit: 5
       versioning-strategy: increase
+      ignore:
+          # The visual certification pins Playwright to its Docker image and accepted references;
+          # upgrading it is a deliberate runtime change with a reviewed visual candidate.
+          - dependency-name: '@playwright/test'
+          - dependency-name: 'playwright'
+          - dependency-name: 'playwright-core'
       cooldown:
           default-days: 3
           semver-major-days: 30

@@ -53,6 +53,12 @@ content. The persisted field `tableNumber` names this gift-registry event identi
 seating; it remains unchanged for compatibility. A regression check requires identifier geometry and
 document height to remain unchanged across the first PNG.
 
+Capture tooling marks the page as an audit capture (`__celebraScreenshotMode`). In that mode the app
+settles JS-driven motion that Playwright's `animations: 'disabled'` cannot reach: framer-motion
+completes animations instantly (`MotionGlobalConfig.skipAnimations`) and the editorial-cover
+collector schedules no idle cues. Styles and server markup are unchanged. Captured mid-flight, such
+motion shifted text by fractional or whole pixels between CI runs.
+
 Viewport and complete-page captures require two consecutive visually stable PNGs before baseline
 comparison. Stabilization requires identical dimensions and zero perceptually changed pixels using
 Playwright's default YIQ color threshold (0.2), without a changed-pixel allowance. Byte identity is
@@ -60,8 +66,8 @@ unsuitable for Chromium's repeated rasterization of rotated rounded corners. The
 comparison tolerances remain unchanged. Stabilization is bounded to five seconds for viewports and
 twenty seconds for complete pages: large desktop PNGs can require 4–5 seconds each, and an initial
 height adjustment requires a third frame. The loop returns immediately once stable; continuously
-changing pages still fail. It does not retry a failed comparison, widen pixel tolerances, or update
-accepted images. This prevents a single transitional frame from becoming candidate evidence.
+changing pages still fail. It does not widen pixel tolerances or update accepted images. This
+prevents a single transitional frame from becoming candidate evidence.
 
 Complete-page tests allow sixty seconds for navigation, deferred media, PNG encoding and audits on
 shared CI runners; the stabilization loop retains its separate bounded timeout. Each capture writes
@@ -70,24 +76,35 @@ its own record under `<output root>/records/`; the Playwright global teardown re
 coverage, PNG geometry and a single runtime fingerprint, and fails the run on any missing capture or
 pixel difference. Global setup resets the records directory, so earlier runs never fill coverage
 gaps. Capture suites run serially without retries by default; `VISUAL_PARITY_PARALLEL=1` selects
-parallel capture only for the paired trials required by the release process. CI retains actual/diff
-PNGs and diagnostic JSON on failure for three days, without traces or credential artifacts. A
-stabilization timeout preserves the last two available frames and their capture times; it does not
-take replacement screenshots after the failure.
+parallel capture only for the paired trials required by the release process, which a manual
+Repository CI dispatch starts through its `capture_execution` and `browser_workers` inputs. CI
+retains actual/diff PNGs and diagnostic JSON on failure for three days, without traces or credential
+artifacts. A stabilization timeout preserves the last two available frames and their capture times;
+it does not take replacement screenshots after the failure.
 
 GitHub CI runs static/build, unit, browser, and disposable database checks independently. The
 required `Application Suite` status succeeds only when every application tier succeeds; cancelled,
-failed, or skipped tiers cannot authorize release. New runs cancel superseded runs for the same
-branch or pull request. Browser CI uses two workers across files and stops after five failed tests,
-remaining failed overall. Each capture suite remains sequential so its manifest stays complete.
-Pixel and size mismatches are recorded per capture and fail the aggregate comparison after the full
-matrix. A capture byte-identical to its accepted reference passes without decoding; this is stricter
-than the pixel comparison and does not change its tolerance. Capture-case success means capture
-completion, not parity acceptance. Reports retain FAIL entries and a FAILED manifest when any pixel
-comparison differs. Navigation, missing/corrupt baselines, and capture integrity errors remain
-immediate failures.
+failed, or skipped tiers cannot authorize release. The single exception is the `develop` → `main`
+pull request whose merge candidate holds the tree a complete `develop` run already validated: its
+tiers are skipped and the status reuses that run
+([validation procedures](../../core/validation-procedures.md)). New runs cancel superseded runs for
+the same branch or pull request. Browser CI uses two workers across files and stops after five
+failed tests, remaining failed overall. Each capture suite remains sequential so its manifest stays
+complete. Pixel and size mismatches are recorded per capture and fail the aggregate comparison after
+the full matrix. A capture byte-identical to its accepted reference passes without decoding; this is
+stricter than the pixel comparison and does not change its tolerance. Capture-case success means
+capture completion, not parity acceptance. Reports retain FAIL entries and a FAILED manifest when
+any pixel comparison differs. Navigation, missing/corrupt baselines, and capture integrity errors
+remain immediate failures.
 
-Visual suites do not retry individual captures: a retry could replace the first failing evidence. An
+In compare mode a capture whose pixels differ gets exactly one in-run re-capture of the same,
+already settled page (owner decision of 2026-10-03). It passes only if the re-capture is within the
+unchanged tolerance; otherwise the re-capture's difference fails the run. The first attempt stays
+visible: its mismatch is kept as `recapturedDifference` in the capture record, its actual and diff
+PNGs remain in the test output, and teardown prints a `VISUAL_RECAPTURE` line listing every such
+capture. These are nondeterminism to fix at the source, not accepted noise. Candidate and diagnostic
+runs never re-capture, Playwright-level test retries stay disabled, and references are never
+updated. Before capture, hydration also decodes every loaded image, which changes timing only. An
 explicitly reviewed whole-suite rerun remains possible without updating references or changing
 tolerances.
 
@@ -141,6 +158,12 @@ active demos form the public matrix; structural fixtures cover every registered 
 independently of publication lifecycle. Do not maintain separate numeric inventories or hardcoded
 invitation exclusions. A lifecycle change to `published` adds the invitation to the next candidate
 and requires new coverage and acceptance; an older matrix cannot certify the added route.
+
+`pnpm visual:matrix:check` proves in seconds, without a browser, that the accepted references still
+cover the current matrix and match their PNG hashes. `validate:changed` runs it for visual-impact
+paths, and a unit test pins the committed `matrixHash`. A branch that publishes, retires or adds a
+demo, invitation or variant must carry its approved candidate before integration; matrix drift must
+not reach a release.
 
 ### Release-time visual confirmation
 

@@ -87,18 +87,11 @@
 	font-weight: 600;
 }
 
-.guest-card__chips,
 .guest-info__chips {
 	display: inline-flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 0.2rem;
-}
-
-.engagement-mini-wrap {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.4rem;
 }
 
 /* Native <progress> element — GuestCard expanded detail panel */

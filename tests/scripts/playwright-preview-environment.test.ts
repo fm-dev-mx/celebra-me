@@ -448,13 +448,14 @@ describe('Playwright Preview environment', () => {
 		expect(clock).toBe(PREVIEW_DRAFT_RATE_LIMIT_WINDOW_MS);
 	});
 
-	it('keeps reconciliation to two editor reads and updates content in memory', () => {
+	it('keeps reconciliation to one editor read against versioned content in memory', () => {
 		const source = readFileSync(
 			join(process.cwd(), 'tests/e2e/preview/provision-preview-fixture.spec.ts'),
 			'utf8',
 		);
-		expect((source.match(/readEditorContext\(/g) ?? []).length).toBe(2);
-		expect(source).toContain('applySectionValue(fixtureContent, section, demoValue)');
+		expect((source.match(/readEditorContext\(/g) ?? []).length).toBe(1);
+		expect(source).toContain('buildPreviewFixtureContent()');
+		expect(source).toContain('applySectionValue(fixtureContent, section, referenceValue)');
 		expect(source).toContain('draftRateLimiter.beforeRequest()');
 		expect(source).not.toContain('/editor/publish');
 	});

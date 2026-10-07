@@ -649,8 +649,24 @@ function parseCliFlag(args: string[], name: string): string | undefined {
 	return inline?.slice(name.length + 1) ?? (positional >= 0 ? args[positional + 1] : undefined);
 }
 
+/** Browserless gate: the accepted references cover the current matrix and match their PNGs. */
+export function checkAcceptedReferences(root = ACCEPTED_ROOT): void {
+	failurePhase = 'MANIFEST';
+	const accepted = readManifest(root);
+	if (accepted.status !== 'ACCEPTED')
+		throw new Error('Accepted manifest is not marked ACCEPTED.');
+	failurePhase = 'COVERAGE';
+	assertCoverageMatrix(accepted);
+	failurePhase = 'MANIFEST';
+	assertManifestIntegrity(accepted, root);
+	console.log(
+		`Visual references cover the current matrix: ${accepted.captures.length} captures.`,
+	);
+}
+
 async function main(): Promise<void> {
 	const [operation, ...args] = process.argv.slice(2);
+	if (operation === 'check') return checkAcceptedReferences();
 	if (operation === 'browser') return certifiedBrowser(args);
 	if (operation === 'diagnose') {
 		const { diagnoseSections } = await import('./section-visual-diagnosis.ts');

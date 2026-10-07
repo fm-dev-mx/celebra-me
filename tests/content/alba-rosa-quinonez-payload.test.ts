@@ -1,5 +1,5 @@
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
-import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resolver';
+import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
@@ -51,12 +51,7 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 			eventType: 'cumple',
 			themeId: 'luxury-hacienda',
 		});
-		expect(
-			checkPublishGuard({
-				baseDemoId: ALBA_EVENT.baseDemoId,
-				themeId: ALBA_EVENT.themeId,
-			}),
-		).toEqual({ ok: true });
+		expect(resolveInvitationTheme({ themeId: ALBA_EVENT.themeId })).toBe(ALBA_EVENT.themeId);
 	});
 
 	it('ships a Lane A profile scoped to the invitation event class', () => {

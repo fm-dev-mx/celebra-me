@@ -1,8 +1,6 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 
-export type EventContentEntry =
-	| CollectionEntry<'event-demos'>
-	| CollectionEntry<'event-templates'>;
+export type EventContentEntry = CollectionEntry<'event-demos'>;
 
 export function getContentEntrySlug(id: string): string {
 	const segments = id.split('/');
@@ -15,18 +13,8 @@ export async function getRoutableEventEntry(
 	expectedEventType?: string,
 ): Promise<EventContentEntry | null> {
 	const demoEntries = (await getCollection('event-demos')) ?? [];
-	const demoEntry = demoEntries.find((entry: CollectionEntry<'event-demos'>) => {
-		return (
-			getContentEntrySlug(entry.id) === slug &&
-			(!expectedEventType || entry.data.eventType === expectedEventType)
-		);
-	});
-
-	if (demoEntry) return demoEntry;
-
-	const templateEntries = (await getCollection('event-templates')) ?? [];
 	return (
-		templateEntries.find((entry: CollectionEntry<'event-templates'>) => {
+		demoEntries.find((entry: EventContentEntry) => {
 			return (
 				getContentEntrySlug(entry.id) === slug &&
 				(!expectedEventType || entry.data.eventType === expectedEventType)
@@ -34,5 +22,3 @@ export async function getRoutableEventEntry(
 		}) ?? null
 	);
 }
-
-

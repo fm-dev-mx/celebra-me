@@ -6,13 +6,11 @@ import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { buildInvitationSectionRenderDescriptors } from '@/lib/invitation/section-render-data';
 import type { InvitationSectionRenderDescriptor } from '@/lib/invitation/section-render-data';
 import type { EventContentEntry } from '@/lib/content/events';
+import { getInvitationDefinition } from '../../scripts/provision/invitations/registry.ts';
+import { buildSemanticAssetMap } from '../../scripts/provision/normalized-invitation-release.ts';
 
 const projectRoot = process.cwd();
 const assetDir = path.join(projectRoot, 'src/assets/images/events/xv-america-johana');
-const fixturePath = path.join(
-	projectRoot,
-	'tests/fixtures/invitations/xv-america-johana-db-payload.json',
-);
 const stylePath = path.join(projectRoot, 'src/styles/invitation-profiles/america-johana.scss');
 const sectionsIndexPath = path.join(projectRoot, 'src/styles/themes/sections/_index.scss');
 
@@ -22,7 +20,7 @@ type PersonalizedAccessDescriptor = Extract<
 >;
 
 const expectedPersonalizedAccess = {
-	variant: 'standard',
+	variant: 'ornamented',
 	title: 'Pase de acceso',
 	subtitle: 'Este pase muestra los accesos asignados para ingresar al evento.',
 	footerText: 'Acceso válido para adultos y niños. Preséntalo al llegar.',
@@ -30,8 +28,7 @@ const expectedPersonalizedAccess = {
 
 const expectedMusic = {
 	url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1783457980/Coldplay_-_Viva_La_Vida_dqvlpj.mp3',
-	autoPlay: false,
-	title: 'Viva la Vida — Coldplay',
+	autoPlay: true,
 };
 
 const expectedAssets = [
@@ -57,11 +54,13 @@ const expectedAssets = [
 ] as const;
 
 function loadAmericaJohanaPublishedPayload() {
-	const jsonContent = fs.readFileSync(fixturePath, 'utf8');
-	const result = eventContentSchema.safeParse(JSON.parse(jsonContent));
+	const definition = getInvitationDefinition('america-johana');
+	const result = eventContentSchema.safeParse(
+		definition.buildPublishedContent(buildSemanticAssetMap(definition)),
+	);
 	if (!result.success) {
 		throw new Error(
-			`America Johana DB payload failed schema validation:\n${JSON.stringify(result.error.issues, null, 2)}`,
+			`America Johana published content failed schema validation:\n${JSON.stringify(result.error.issues, null, 2)}`,
 		);
 	}
 	return result.data;
@@ -109,7 +108,7 @@ describe('XV America Johana client invitation preparation', () => {
 		});
 	});
 
-	it('validates the local DB payload artifact and renders the America event scope', () => {
+	it('validates the published content and renders the America event scope', () => {
 		const data = loadAmericaJohanaPublishedPayload();
 
 		expect(data.eventType).toBe('xv');
@@ -119,26 +118,33 @@ describe('XV America Johana client invitation preparation', () => {
 		expect(data.theme.preset).toBe('celestial-blue');
 		expect(data.templateId).toBe('xv-celestial-blue');
 		expect(data.hero.name).toBe('América');
-		expect(data.hero.backgroundImage).toMatchObject({ key: 'hero' });
-		expect(data.hero.backgroundImageDesktop).toMatchObject({ key: 'heroDesktop' });
-		expect(data.hero.portrait).toMatchObject({ key: 'portrait' });
+		expect(data.hero.backgroundImage).toMatchObject({
+			type: 'uploaded',
+			assetId: expect.stringMatching(/:hero$/),
+		});
+		expect(data.hero.backgroundImageDesktop).toMatchObject({ type: 'uploaded' });
+		expect(data.hero.portrait).toMatchObject({ type: 'uploaded' });
 		expect(data.music).toMatchObject(expectedMusic);
 		expect(data.rsvp?.accessMode).toBe('hybrid');
 		expect(data.rsvp?.confirmationMode).toBe('api');
 		expect(data.rsvp?.subcopy).toContain('Este pase corresponde a tu grupo.');
 		expect(data.rsvp?.subcopy).toContain('Preséntalo al ingresar al evento.');
 		expect(data.rsvp?.personalizedAccess).toEqual(expectedPersonalizedAccess);
-		expect(data.location?.venues?.find((venue) => venue.type === 'ceremony')?.googleMapsUrl).toBe(
-			'https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8',
-		);
-		expect(data.location?.venues?.find((venue) => venue.type === 'ceremony')?.coordinates).toEqual({
+		expect(
+			data.location?.venues?.find((venue) => venue.type === 'ceremony')?.googleMapsUrl,
+		).toBe('https://maps.app.goo.gl/ViMYiHRgQ5HLaqGe8');
+		expect(
+			data.location?.venues?.find((venue) => venue.type === 'ceremony')?.coordinates,
+		).toEqual({
 			lat: 19.2759461,
 			lng: -99.5176924,
 		});
-		expect(data.location?.venues?.find((venue) => venue.type === 'reception')?.googleMapsUrl).toBe(
-			'https://maps.app.goo.gl/6xwP3zGbBPEsrTjn9',
-		);
-		expect(data.location?.venues?.find((venue) => venue.type === 'reception')?.coordinates).toEqual({
+		expect(
+			data.location?.venues?.find((venue) => venue.type === 'reception')?.googleMapsUrl,
+		).toBe('https://maps.app.goo.gl/6xwP3zGbBPEsrTjn9');
+		expect(
+			data.location?.venues?.find((venue) => venue.type === 'reception')?.coordinates,
+		).toEqual({
 			lat: 19.291035,
 			lng: -99.1314772,
 		});
@@ -202,7 +208,7 @@ describe('XV America Johana client invitation preparation', () => {
 		};
 		const viewModelNoCustom = adaptEvent({
 			id: 'event-published/xv/america-johana',
-			collection: 'event-templates',
+			collection: 'event-demos',
 			data: eventContentSchema.parse(mockDataNoCustomCopy),
 		} as EventContentEntry);
 		const pageContextNoCustom = buildPageContextFromViewModel({

@@ -1,14 +1,14 @@
 import { generateKeyPairSync, webcrypto } from 'node:crypto';
-import {
-	ReadableStream as NodeReadableStream,
-	TransformStream as NodeTransformStream,
-} from 'node:stream/web';
 import { MEMORIES_PRESIGN_TTL_SECONDS } from '@/lib/memories/contract/limits';
 import {
 	MEMORIES_MAX_IMAGE_BYTES,
 	MEMORIES_MAX_VIDEO_BYTES,
 } from '@/lib/memories/contract/media-policy';
-import { buildMemoriesObjectKey } from '@/lib/memories/contract/object-key';
+import {
+	MEMORIES_THUMBNAIL_MAX_BYTES,
+	buildMemoriesObjectKey,
+	buildMemoriesThumbnailKey,
+} from '@/lib/memories/contract/object-key';
 import {
 	MEMORIES_SIGN_PATH,
 	MEMORIES_UPLOAD_PATH,
@@ -26,29 +26,9 @@ import {
 } from '../../workers/celebra-memories-sign/src/capability';
 import { decodeBase64, encodeBase64Url, sha256HexToBase64 } from '../../workers/shared/encoding';
 import { parseAllowedOrigins, parseStorageTarget } from '../../workers/shared/http';
+import { TestFixedLengthStream, streamOf } from './memories-stack';
 
 Object.defineProperty(globalThis, 'crypto', { configurable: true, value: webcrypto });
-
-class TestFixedLengthStream {
-	readable: ReadableStream<Uint8Array>;
-	writable: WritableStream<Uint8Array>;
-
-	constructor(expectedLength: number) {
-		let total = 0;
-		const transform = new NodeTransformStream<Uint8Array, Uint8Array>({
-			transform(chunk, controller) {
-				total += chunk.byteLength;
-				if (total > expectedLength) throw new Error('too many bytes');
-				controller.enqueue(chunk);
-			},
-			flush() {
-				if (total !== expectedLength) throw new Error('not enough bytes');
-			},
-		});
-		this.readable = transform.readable as unknown as ReadableStream<Uint8Array>;
-		this.writable = transform.writable as unknown as WritableStream<Uint8Array>;
-	}
-}
 
 Object.defineProperty(globalThis, 'FixedLengthStream', {
 	configurable: true,
@@ -116,16 +96,6 @@ function createHarness(options: { limitSuccess?: boolean; env?: Partial<Memories
 }
 
 type Harness = ReturnType<typeof createHarness>;
-
-function streamOf(data: Uint8Array | string): ReadableStream<Uint8Array> {
-	const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : data;
-	return new NodeReadableStream<Uint8Array>({
-		start(controller) {
-			controller.enqueue(bytes);
-			controller.close();
-		},
-	}) as unknown as ReadableStream<Uint8Array>;
-}
 
 function fakeRequest(init: {
 	method: string;
@@ -422,6 +392,31 @@ describe('memories sign worker: /sign', () => {
 		expect(videoAtLimit.status).toBe(200);
 	});
 
+	it('signs a WebP thumbnail next to its original on its own rate-limit budget', async () => {
+		const harness = createHarness();
+		const thumbnailKey = buildMemoriesThumbnailKey(OBJECT_KEY) as string;
+		const response = await sign(
+			{ ...validBody(), objectKey: thumbnailKey, mimeType: 'image/webp', sizeBytes: 40_000 },
+			{ harness },
+		);
+		expect(response.status).toBe(200);
+		expect(harness.limit).toHaveBeenCalledWith({ key: `${SESSION_ID}:thumb` });
+	});
+
+	it.each([
+		['larger than the thumbnail allowance', { sizeBytes: MEMORIES_THUMBNAIL_MAX_BYTES + 1 }],
+		['declared as JPEG', { mimeType: 'image/jpeg' }],
+	])('refuses a thumbnail %s', async (_label, override) => {
+		const response = await sign({
+			...validBody(),
+			objectKey: buildMemoriesThumbnailKey(OBJECT_KEY) as string,
+			mimeType: 'image/webp',
+			sizeBytes: 40_000,
+			...override,
+		});
+		expect(response.status).toBe(400);
+	});
+
 	it('rate limits with the authenticated session identifier and fails closed without a limiter', async () => {
 		const allowed = createHarness();
 		expect((await sign(validBody(), { harness: allowed })).status).toBe(200);
@@ -665,12 +660,32 @@ describe('memories sign worker: /upload', () => {
 		expect(await errorCode(short)).toEqual({ error: { code: 'upload_failed' } });
 	});
 
-	it('fails the upload when the R2 precondition fails (object already exists)', async () => {
+	it('answers 412 when the object already exists so a retried PUT can go on to confirm', async () => {
 		const harness = createHarness();
 		harness.put.mockImplementation(async (_key, stream) => {
 			const reader = (stream as ReadableStream<Uint8Array>).getReader();
 			while (!(await reader.read()).done);
 			return null;
+		});
+		const capability = await issueCapability();
+
+		const response = await handleMemoriesUploadRequest(
+			uploadRequest(capability.token),
+			harness.env,
+			NOW,
+		);
+
+		expect(response.status).toBe(412);
+		expect(await errorCode(response)).toEqual({ error: { code: 'already_uploaded' } });
+		expect(response.headers.get('Access-Control-Allow-Origin')).toBe(ALLOWED_ORIGIN);
+	});
+
+	it('fails the upload when the R2 write itself rejects', async () => {
+		const harness = createHarness();
+		harness.put.mockImplementation(async (_key, stream) => {
+			const reader = (stream as ReadableStream<Uint8Array>).getReader();
+			while (!(await reader.read()).done);
+			throw new Error('r2 unavailable');
 		});
 		const capability = await issueCapability();
 

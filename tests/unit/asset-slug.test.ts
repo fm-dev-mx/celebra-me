@@ -9,10 +9,9 @@ import { resolveAssetSlug, getAssetSlugFromContent } from '@/lib/assets/asset-sl
 function invitation(overrides: Record<string, unknown> = {}) {
 	return {
 		id: 'inv-1',
-		kind: 'demo',
+		kind: 'client',
 		slug: null,
 		eventType: 'xv-anos',
-		snapshot: { previewSlug: 'demo-default-fallback' },
 		...overrides,
 	} as any;
 }
@@ -44,70 +43,30 @@ describe('getAssetSlugFromContent', () => {
 });
 
 describe('resolveAssetSlug', () => {
-	it('uses published content _assetSlug when present (tier 1)', () => {
+	it('uses published content _assetSlug when present', () => {
 		mockIsValidEvent.mockReturnValue(false);
 
-		const result = resolveAssetSlug(
-			invitation({ snapshot: { previewSlug: 'fallback-slug' } }),
-			{ _assetSlug: 'published-slug' },
-		);
-
-		expect(result).toBe('published-slug');
+		expect(
+			resolveAssetSlug(invitation({ slug: 'my-event' }), { _assetSlug: 'published-slug' }),
+		).toBe('published-slug');
 	});
 
-	it('uses client slug directly when isValidEvent passes (tier 2a)', () => {
+	it('uses the invitation slug when it names a registry namespace', () => {
 		mockIsValidEvent.mockReturnValue(true);
 
-		const result = resolveAssetSlug(
-			invitation({ kind: 'client', slug: 'my-event', eventType: 'xv-anos' }),
-			null,
-		);
-
-		expect(result).toBe('my-event');
+		expect(resolveAssetSlug(invitation({ slug: 'my-event' }), null)).toBe('my-event');
 	});
 
-	it('uses client slug-eventType derivation when slug alone is invalid (tier 2b)', () => {
+	it('uses the slug-eventType namespace when the slug alone is not registered', () => {
 		mockIsValidEvent.mockImplementation((s: string) => s === 'my-event-xv-anos');
 
-		const result = resolveAssetSlug(
-			invitation({ kind: 'client', slug: 'my-event', eventType: 'xv-anos' }),
-			null,
-		);
-
-		expect(result).toBe('my-event-xv-anos');
+		expect(resolveAssetSlug(invitation({ slug: 'my-event' }), null)).toBe('my-event-xv-anos');
 	});
 
-	it('skips client derivation when kind is demo (tier 2 skipped)', () => {
-		mockIsValidEvent.mockReturnValue(true);
-
-		const result = resolveAssetSlug(invitation({ kind: 'demo', slug: 'my-event' }), null);
-
-		expect(result).toBe('demo-default-fallback');
-	});
-
-	it('falls back to snapshot.previewSlug when no published slug and no client derivation (tier 3)', () => {
+	it('returns undefined when the invitation has no versioned namespace', () => {
 		mockIsValidEvent.mockReturnValue(false);
 
-		const result = resolveAssetSlug(
-			invitation({ kind: 'demo', slug: null, snapshot: { previewSlug: 'demo-legacy-slug' } }),
-			null,
-		);
-
-		expect(result).toBe('demo-legacy-slug');
-	});
-
-	it('uses the demo visual configuration before the legacy previewSlug fallback', () => {
-		mockIsValidEvent.mockReturnValue(false);
-
-		const result = resolveAssetSlug(
-			invitation({
-				kind: 'demo',
-				snapshot: { previewSlug: 'demo-editorial-magazine' },
-			}),
-			null,
-			{ _assetSlug: 'demo-editorial' },
-		);
-
-		expect(result).toBe('demo-editorial');
+		expect(resolveAssetSlug(invitation({ slug: 'my-event' }), null)).toBeUndefined();
+		expect(resolveAssetSlug(invitation({ slug: null }), null)).toBeUndefined();
 	});
 });

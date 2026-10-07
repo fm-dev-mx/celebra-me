@@ -1,5 +1,5 @@
 import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
-import { checkPublishGuard } from '@/lib/intake/services/invitation-preset-resolver';
+import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
@@ -39,12 +39,7 @@ describe('Abril Michelle local invitation content', () => {
 			eventType: 'xv',
 			themeId: 'premiere-floral',
 		});
-		expect(
-			checkPublishGuard({
-				baseDemoId: ABRIL_EVENT.baseDemoId,
-				themeId: ABRIL_EVENT.themeId,
-			}),
-		).toEqual({ ok: true });
+		expect(resolveInvitationTheme({ themeId: ABRIL_EVENT.themeId })).toBe(ABRIL_EVENT.themeId);
 	});
 
 	it('loads the behavior-named paper itinerary with demo-parity tokens and Bodoni watermark', () => {
@@ -163,9 +158,7 @@ describe('Abril Michelle local invitation content', () => {
 		const ceremonyVenue = typedContent.location.venues.find((v) => v.type === 'ceremony')!;
 		const receptionVenue = typedContent.location.venues.find((v) => v.type === 'reception')!;
 
-		expect(ceremonyVenue.venueName).toBe(
-			'Templo y Ex Convento de Nuestra Señora de la Merced',
-		);
+		expect(ceremonyVenue.venueName).toBe('Templo y Ex Convento de Nuestra Señora de la Merced');
 		expect(receptionVenue.venueName).toBe('Garden Palace');
 		expect(receptionVenue.address).toContain('Macedio Ayala');
 

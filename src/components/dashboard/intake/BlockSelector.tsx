@@ -4,17 +4,11 @@ import { getAllBlockDefinitions } from '@/lib/intake/blocks';
 
 interface Props {
 	selectedBlocks: IntakeBlockType[];
-	recommendedBlocks?: IntakeBlockType[];
 	onChange: (blocks: IntakeBlockType[]) => void;
 	disabled?: boolean;
 }
 
-const BlockSelector: FC<Props> = ({
-	selectedBlocks,
-	recommendedBlocks = [],
-	onChange,
-	disabled = false,
-}) => {
+const BlockSelector: FC<Props> = ({ selectedBlocks, onChange, disabled = false }) => {
 	const availableBlocks = getAllBlockDefinitions();
 
 	const toggleBlock = (blockType: IntakeBlockType) => {
@@ -29,13 +23,12 @@ const BlockSelector: FC<Props> = ({
 		<div className="block-selector">
 			<label className="intake-field__label">Bloques de captura</label>
 			<p className="block-selector__description">
-				Selecciona los bloques que el cliente debera completar.
+				Seleccione los bloques que el cliente deberá completar.
 				{disabled ? ' La configuración queda fija después de crear el enlace.' : ''}
 			</p>
 			<div className="block-selector__list">
 				{availableBlocks.map((block) => {
 					const isSelected = selectedBlocks.includes(block.type);
-					const isRecommended = recommendedBlocks.includes(block.type);
 
 					return (
 						<label
@@ -58,9 +51,6 @@ const BlockSelector: FC<Props> = ({
 									{block.description}
 								</span>
 							</div>
-							{isRecommended && (
-								<span className="block-selector__badge">Recomendado</span>
-							)}
 						</label>
 					);
 				})}

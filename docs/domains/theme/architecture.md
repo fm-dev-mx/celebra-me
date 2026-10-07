@@ -10,9 +10,7 @@ Gallery section variants (as-is catalog, compatibility aliases, and the canonica
 contract) are documented in [`gallery-variants.md`](gallery-variants.md).
 
 CSS visual parity before profile LAYOUT deletion is gated by
-[`css-visual-parity.md`](css-visual-parity.md). Full invitation/preset ownership inventory:
-[`corpus-bundle-inventory.md`](corpus-bundle-inventory.md). Celestial-blue pilot detail:
-[`celestial-blue-bundle-inventory.md`](celestial-blue-bundle-inventory.md).
+[`css-visual-parity.md`](css-visual-parity.md).
 
 ## Invitation CSS ownership (normative)
 
@@ -40,23 +38,34 @@ Three homes. Exclusive ownership. Do not collapse looks into one SCSS file per i
 
 - **Path / marker:** `invitation-profiles/{visualProfileId}.scss` (`visualProfileId` is required for
   every managed invitation)
-- **Owns:** Client palette token remap and rhythm/intersection overrides that differ from the
-  preset.
-- **Must not:** Re-declare section layout; set `font-family` / `background` directly on section
-  element classes (use tokens); duplicate active variant or preset rules.
+- **Owns:** Custom-property declarations only: client palette token remap and rhythm/intersection
+  token overrides that differ from the preset.
+- **Must not:** Declare any non-custom property; re-declare section layout; style one section
+  relative to another; render client text through `content:`; select by position or by data such as
+  an image key; duplicate active variant or preset rules.
+- **Demos:** A demo is styled only by a demo-owned profile (`demo-*`). A client profile never styles
+  a demo, and `pnpm validate:no-pii` rejects it.
+- **Enforcement:** `tests/unit/invitation-profile-boundary.test.ts`.
+
+### Frozen delivered profiles
+
+Profiles delivered before the token-only rule are closed deliverables, listed with their digest in
+`tests/unit/invitation-profile-boundary.test.ts`. They are not edited, reused or extended, and each
+is deleted together with its invitation. The list only shrinks. A look that a new invitation needs
+is built as a registered section variant, an intersection pattern or preset tokens, proven on a
+demo, and then selected with data; it never starts in a profile.
 
 Shared structural base `src/styles/invitation/` is out of scope for ownership moves in this
 contract.
 
 ### Transitional ownership exceptions
 
-The current migration is not yet ownership-clean. Existing files under
-`src/styles/invitation-profiles/**` and `src/styles/invitation-sections-by-preset/**` still contain
-historical section selectors and layout rules. These rules are tracked as temporary exceptions, not
-as valid architecture: no new identity- or preset-specific structural selectors may be added, and an
-existing rule may be removed or moved only with the CSS visual-parity gate. The exception ends after
-every affected invitation has a reviewed before/after capture and the rule is owned by a section
-base, a registered semantic variant, or a token-only profile.
+Files under `src/styles/invitation-sections-by-preset/**` still contain preset-named section
+selectors and layout rules. They are temporary exceptions, not valid architecture: no new preset-
+specific structural selector may be added, and an existing rule may be removed or moved only with
+the CSS visual-parity gate. The exception ends when every rule is owned by a section base, a
+registered semantic variant, or preset tokens. Frozen delivered profiles follow their own rule
+above.
 
 ### Optional stationery treatments
 
@@ -89,20 +98,14 @@ into the shared `arch` intersection with `source: hero`. The arch uses the prima
 restrained 1.5–2.75rem height, and an asymmetric mask; other quote boundaries remain neutral unless
 selected in composition data.
 
-Family's `portrait-register` variant centers a complete photograph above separate name registers:
-parents use two columns and godparents use an adaptive row on desktop; mobile keeps a single reading
-column. Its canonical stylesheet owns the card-free geometry and typography, while profiles supply
-palette and rhythm tokens. It requires a photograph with explicit original delivery, width and
-height, and does not accept `text-only` presentation. Existing variants retain their original
-geometry and image defaults. `family.featuredImageAlt` supplies a descriptive image alternative
-through the existing `ImageAsset`; omission retains the celebrant-name fallback. Source preservation
-uses the existing image `delivery` contract, independently of the CSS crop. The shared Family media
-contract exposes `--family-media-aspect-ratio` (fallback `3 / 4`), `--family-media-image-height`
-(fallback `100%`), and `--family-media-image-fit` (fallback `cover`). Profiles can preserve an
-uncropped photograph with `auto`, `auto`, and `contain` without replacing the canonical layout;
-existing media defaults remain unchanged. `--family-item-align` controls member alignment (fallback
-`center`); it complements the existing group text alignment, padding, and parent-margin tokens
-without changing the standard split layout.
+`family.featuredImageAlt` supplies a descriptive image alternative through the existing
+`ImageAsset`; omission retains the celebrant-name fallback. Source preservation uses the existing
+image `delivery` contract, independently of the CSS crop. The shared Family media contract exposes
+`--family-media-aspect-ratio` (fallback `3 / 4`), `--family-media-image-height` (fallback `100%`),
+and `--family-media-image-fit` (fallback `cover`). Profiles can preserve an uncropped photograph
+with `auto`, `auto`, and `contain` without replacing the canonical layout. `--family-item-align`
+controls member alignment (fallback `center`); it complements the existing group text alignment,
+padding, and parent-margin tokens without changing the standard split layout.
 
 Gallery subtitles expose `--gallery-subtitle-max-width` (fallback `none`) and
 `--gallery-subtitle-margin-inline` (fallback `0`) for bounded text measures and optional centering
@@ -177,7 +180,7 @@ Invitation presets are reusable atmosphere packs (catalog SKUs), not per-invitat
 Non-invitation presets are separate:
 
 - `auth-dark` for auth surfaces
-- `dashboard-dark` for dashboard surfaces
+- `dashboard-ivory` for dashboard surfaces (light ivory ground, charcoal chrome)
 - `invitation` for shared invitation base tokens
 
 Preset files may override semantic color, type, surface, shadow, and motion intent. They may also
@@ -372,7 +375,7 @@ Bounded controls retain their canonical section owner:
   consumers retain one mobile column, 4:5 portraits, and an 8:5 feature band; the variant owns the
   paired desktop grid and full-width `feature` role.
 - `ceremonial-family` consumes `--family-filigree-display` with a `block` fallback.
-- The retained `jeweled-panel` skin consumes existing `--countdown-segment-inset`,
+- The jewelry-box countdown skin consumes existing `--countdown-segment-inset`,
   `--countdown-label-size`, `--countdown-label-spacing`, and `--countdown-label-color` controls,
   plus `--countdown-label-opacity` (default `60%`). Existing visual defaults remain unchanged.
 

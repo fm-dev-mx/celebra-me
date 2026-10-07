@@ -10,14 +10,8 @@ export type SectionUrlMap = Record<string, Record<string, string>> & {
 export type SectionBundleUrlMap = Record<string, string>;
 export type InvitationProfileUrlMap = Record<string, string>;
 
-type SectionCssConfig = {
-	section: string;
-	presetToEntrypoint: Record<string, string>;
-};
-
 export type InvitationCssResolverInput = {
 	themePreset: string;
-	footerVariant?: string;
 	sectionVariants?: {
 		hero?: string;
 		thankYou?: string;
@@ -32,15 +26,10 @@ export type InvitationCssResolverInput = {
 	};
 	envelopeVariant?: string;
 	visualProfileId?: string;
-	slug?: string;
 };
 
 export type InvitationCssOwner =
-	| 'section-bundle'
-	| 'footer-variant'
-	| 'envelope-reveal'
-	| 'section-variant'
-	| 'visual-profile';
+	'section-bundle' | 'envelope-reveal' | 'section-variant' | 'visual-profile';
 
 export interface InvitationCssLoadItem {
 	href: string;
@@ -51,19 +40,9 @@ export interface InvitationCssLoadItem {
 	canonicalPath?: string;
 }
 
-// Only presets with a dedicated footer/*.scss file go here.
-// All other presets fall back to the bundle default footer.
-const FOOTER_PRESET_TO_ENTRYPOINT: Record<string, string> = {
-	editorial: 'editorial',
-	'premiere-floral': 'premiere-floral',
-	'enchanted-rose': 'enchanted-rose',
-	'angelic-presence': 'angelic-presence',
-};
-
 const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'satin-filigree': 'satin-filigree',
 	'premiere-floral': 'premiere-floral',
-	editorial: 'editorial',
 	'luxury-hacienda': 'luxury-hacienda',
 	'jewelry-box': 'shared-light',
 	'jewelry-box-wedding': 'shared-light',
@@ -93,24 +72,6 @@ export function buildSectionUrlMap(modules: Record<string, CssModule>): SectionU
 		writable: false,
 	});
 	return sectionUrlMap;
-}
-
-export function mergeSectionUrlMaps(...maps: readonly SectionUrlMap[]): SectionUrlMap {
-	const merged: SectionUrlMap = {};
-	const canonicalPaths: Record<string, string> = {};
-	for (const map of maps) {
-		for (const [section, entries] of Object.entries(map)) {
-			if (section === '__canonicalPaths') continue;
-			merged[section] = { ...merged[section], ...entries };
-		}
-		Object.assign(canonicalPaths, map.__canonicalPaths ?? {});
-	}
-	Object.defineProperty(merged, '__canonicalPaths', {
-		value: canonicalPaths,
-		enumerable: false,
-		writable: false,
-	});
-	return merged;
 }
 
 export function buildSectionBundleUrlMap(modules: Record<string, CssModule>): SectionBundleUrlMap {
@@ -145,18 +106,6 @@ export function resolveSectionCssUrl(
 	const entrypoint = presetToEntrypoint[preset];
 	if (!entrypoint) return undefined;
 	return sectionUrlMap[section]?.[entrypoint];
-}
-
-/** @internal — re-exported for tests */
-export function resolveSectionCssUrls(
-	sectionUrlMap: SectionUrlMap,
-	configs: SectionCssConfig[],
-	preset: string,
-): string[] {
-	return configs.flatMap(({ section, presetToEntrypoint }) => {
-		const url = resolveSectionCssUrl(sectionUrlMap, section, presetToEntrypoint, preset);
-		return url ? [url] : [];
-	});
 }
 
 function resolveSectionVariantLoadItems(
@@ -204,17 +153,6 @@ export function resolveInvitationCssLoadPlan(
 	const bundleUrl = resolveSectionBundleCssUrl(sectionBundleUrlMap, input.themePreset);
 	push(bundleUrl ? { href: bundleUrl, owner: 'section-bundle', blocking: false } : undefined);
 
-	if (input.footerVariant && input.footerVariant !== input.themePreset) {
-		const footerUrl = resolveSectionCssUrl(
-			sectionUrlMap,
-			'footer',
-			FOOTER_PRESET_TO_ENTRYPOINT,
-			input.footerVariant,
-		);
-		push(footerUrl ? { href: footerUrl, owner: 'footer-variant', blocking: false } : undefined);
-	}
-
-
 	if (input.envelopeVariant) {
 		const revealUrl = resolveSectionCssUrl(
 			sectionUrlMap,
@@ -233,18 +171,4 @@ export function resolveInvitationCssLoadPlan(
 	push(profileUrl ? { href: profileUrl, owner: 'visual-profile', blocking: true } : undefined);
 
 	return items;
-}
-
-export function resolveInvitationCssUrls(
-	sectionBundleUrlMap: SectionBundleUrlMap,
-	sectionUrlMap: SectionUrlMap,
-	input: InvitationCssResolverInput,
-	profileUrlMap: InvitationProfileUrlMap = {},
-): string[] {
-	return resolveInvitationCssLoadPlan(
-		sectionBundleUrlMap,
-		sectionUrlMap,
-		input,
-		profileUrlMap,
-	).map((item) => item.href);
 }

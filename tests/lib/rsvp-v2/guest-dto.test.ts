@@ -69,7 +69,7 @@ describe('toGuestDto', () => {
 		});
 		const decodedWa = decodeURIComponent(dto.waShareUrl.split('?text=')[1]);
 		expect(decodedWa).toContain('Hola Test Guest');
-		expect(decodedWa).toContain('Test Event');
+		expect(decodedWa).toContain('mis XV años');
 	});
 
 	it('no-phone guest gets empty waShareUrl', () => {
@@ -78,7 +78,7 @@ describe('toGuestDto', () => {
 		expect(dto.waShareUrl).toBe('');
 	});
 
-	it('no-phone guest shareText contains event title for native share', () => {
+	it('no-phone guest shareText contains invitation message for native share', () => {
 		const guest = makeGuestRecord({ phone: '' });
 		const dto = toGuestDto(guest, {
 			origin: 'http://localhost',
@@ -86,7 +86,7 @@ describe('toGuestDto', () => {
 			eventType: 'xv',
 			eventSlug: 'test-slug',
 		});
-		expect(dto.shareText).toContain('Test Event');
+		expect(dto.shareText).toContain('mis XV años');
 	});
 
 	it('uses invitation template by default for both waShareUrl and shareText', () => {

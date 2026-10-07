@@ -27,8 +27,42 @@ interface ImportMetaEnv {
 	readonly MEMORIES_PRIVATE_UPLOAD_ORIGIN: string;
 	/** Server-only HTTPS origin for the private retrieval Worker. */
 	readonly MEMORIES_PRIVATE_RETRIEVAL_ORIGIN: string;
+	/** Server-only HMAC key for shared memories gallery links. */
+	readonly MEMORIES_SHARE_SECRET: string;
 	/** Server-only bearer secret injected by Vercel Cron. */
 	readonly CRON_SECRET: string;
+	/** Server-only Cloudflare account id for the platform usage console (optional). */
+	readonly MEMORIES_CLOUDFLARE_ACCOUNT_ID: string;
+	/** Server-only read-only token (Account Analytics: Read) for the usage console (optional). */
+	readonly MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN: string;
+	/** Server-only R2 bucket name whose usage the console reports (optional). */
+	readonly MEMORIES_R2_BUCKET_NAME: string;
+	/** Server-only read-only Supabase Management PAT for the platform usage console. */
+	readonly SUPABASE_MANAGEMENT_TOKEN: string;
+	/** Local-only Preview override of the Management PAT (platform usage diagnostics). */
+	readonly SUPABASE_MANAGEMENT_TOKEN_PREVIEW: string;
+	/** Local-only Production override of the Management PAT (platform usage diagnostics). */
+	readonly SUPABASE_MANAGEMENT_TOKEN_PRODUCTION: string;
+	/** Non-secret Supabase project ref of the Preview environment. */
+	readonly SUPABASE_PROJECT_REF_PREVIEW: string;
+	/** Non-secret Supabase project ref of the Production environment. */
+	readonly SUPABASE_PROJECT_REF_PRODUCTION: string;
+	/** Server-only read-only Vercel token (billing read) for the platform usage console. */
+	readonly VERCEL_API_TOKEN: string;
+	/** Non-secret Vercel team id used by the billing usage query. */
+	readonly VERCEL_TEAM_ID: string;
+	/** Server-only restricted Cloudinary key for the usage report (falls back to the upload key). */
+	readonly CLOUDINARY_USAGE_API_KEY: string;
+	/** Server-only restricted Cloudinary secret for the usage report. */
+	readonly CLOUDINARY_USAGE_API_SECRET: string;
+	/** Local-only Preview override of the Cloudflare analytics token. */
+	readonly MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW: string;
+	/** Local-only Production override of the Cloudflare analytics token. */
+	readonly MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION: string;
+	/** Local-only Preview override of the R2 bucket name. */
+	readonly MEMORIES_R2_BUCKET_NAME_PREVIEW: string;
+	/** Local-only Production override of the R2 bucket name. */
+	readonly MEMORIES_R2_BUCKET_NAME_PRODUCTION: string;
 	readonly META_CAPI_DELIVERY_MODE: string;
 	readonly META_CAPI_ACCESS_TOKEN: string;
 	readonly META_PIXEL_ID: string;

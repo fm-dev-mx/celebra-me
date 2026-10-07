@@ -1,6 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-
 import {
 	DANIELA_ASSET_SPECS,
 	DANIELA_EVENT,
@@ -38,13 +35,6 @@ import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft
 import { datesSemanticallyEqual } from '@/lib/shared/data-utils';
 import { timesSemanticallyEqual } from '@/lib/time/time-format';
 
-const demoContent = JSON.parse(
-	readFileSync(
-		resolve(process.cwd(), 'src/content/event-demos/xv/demo-xv-jewelry-box.json'),
-		'utf8',
-	),
-) as Record<string, unknown>;
-
 const rominaAssets = Object.fromEntries(
 	ROMINA_ASSET_SPECS.map((asset, index) => [
 		asset.key,
@@ -72,23 +62,11 @@ function compareRomina(draft: DraftContent, pub: Record<string, unknown>) {
 		invitation: {
 			title: ROMINA_EVENT.title,
 			eventType: ROMINA_EVENT.eventType,
-			snapshot: {
-				id: ROMINA_EVENT.baseDemoId,
-				eventType: ROMINA_EVENT.eventType,
-				displayName: 'x',
-				themeId: ROMINA_EVENT.themeId,
-				defaultSections: [],
-				supportedBlocks: [],
-				recommendedBlocks: [],
-				requiredAssets: [],
-				previewSlug: 'demo-xv-jewelry-box',
-			} as never,
 		},
+		themePreset: ROMINA_EVENT.themeId,
 		assetSlug: ROMINA_EVENT.assetSlug,
 		draftContent: computeEffectiveContent(draft, pub),
-		demoContent,
 		priorPublishedContent: pub,
-		isDemo: false,
 	});
 	return {
 		mapped,
@@ -229,23 +207,11 @@ describe('showFlourishes ownership', () => {
 			invitation: {
 				title: DANIELA_EVENT.title,
 				eventType: DANIELA_EVENT.eventType,
-				snapshot: {
-					id: DANIELA_EVENT.baseDemoId,
-					eventType: DANIELA_EVENT.eventType,
-					displayName: 'x',
-					themeId: DANIELA_EVENT.themeId,
-					defaultSections: [],
-					supportedBlocks: [],
-					recommendedBlocks: [],
-					requiredAssets: [],
-					previewSlug: 'demo-boda-jewelry-box-wedding',
-				} as never,
 			},
+			themePreset: DANIELA_EVENT.themeId,
 			assetSlug: DANIELA_EVENT.assetSlug,
 			draftContent: computeEffectiveContent(draft, pub),
-			demoContent,
 			priorPublishedContent: pub,
-			isDemo: false,
 		});
 		const styles = mapped.sectionStyles as
 			{ location?: { showFlourishes?: boolean } } | undefined;

@@ -7,6 +7,7 @@ import type { FamilyDraft } from '@/lib/intake/schemas/family-draft.schema';
 import { FAMILY_LABEL_KEYS, parseFamilyMemberLines } from '@/lib/invitation/family-contract';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { str, isNonEmptyObject } from '@/lib/shared/data-utils';
+import { PublishedContentContractError } from '@/lib/intake/mappers/canonical-variant-source';
 
 function definedFields(
 	prior: Record<string, unknown> | undefined,
@@ -142,17 +143,19 @@ function buildGodparentGroups(draftFamily: FamilyDraft):
 function resolveFamilyVariant(
 	family: FamilyDraft,
 	priorFamily: Record<string, unknown> | undefined,
-	demoFamily: Record<string, unknown> | undefined,
 ): string {
-	const variant = family.variant ?? str(priorFamily?.variant) ?? str(demoFamily?.variant);
-	if (!variant) throw new Error('Published content requires an explicit family.variant.');
+	const variant = family.variant ?? str(priorFamily?.variant);
+	if (!variant) {
+		throw new PublishedContentContractError(
+			'Published content requires an explicit family.variant.',
+		);
+	}
 	return variant;
 }
 
 export function mapFamilyFromDraft(
 	draftFamily: DraftContent['family'],
 	priorFamily?: Record<string, unknown>,
-	demoFamily?: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
 	if (!isNonEmptyObject(draftFamily)) return undefined;
 	assertCanonicalFamilyDraft(draftFamily);
@@ -197,7 +200,7 @@ export function mapFamilyFromDraft(
 
 	if (typeof family.visible === 'boolean') result.visible = family.visible;
 	if (family.presentation) result.presentation = family.presentation;
-	result.variant = resolveFamilyVariant(family, priorFamily, demoFamily);
+	result.variant = resolveFamilyVariant(family, priorFamily);
 	if (family.featuredImage) result.featuredImage = family.featuredImage;
 	return isNonEmptyObject(result) ? result : undefined;
 }

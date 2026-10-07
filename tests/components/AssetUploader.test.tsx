@@ -18,7 +18,7 @@ describe('AssetUploader', () => {
 	it('shows the dropzone label', () => {
 		render(<AssetUploader invitationId="test-id" onUploaded={jest.fn()} />);
 		expect(
-			screen.getByText('Arrastra imágenes aquí o haz clic para subir'),
+			screen.getByText('Arrastre imágenes aquí o haga clic para subir'),
 		).toBeInTheDocument();
 	});
 
@@ -125,7 +125,7 @@ describe('AssetUploader', () => {
 
 		await waitFor(() => {
 			expect(
-				screen.getByText('No se pudo subir la imagen. Intenta nuevamente.'),
+				screen.getByText('No se pudo subir la imagen. Intente nuevamente.'),
 			).toBeInTheDocument();
 		});
 	});

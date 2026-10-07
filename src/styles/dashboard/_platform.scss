@@ -1,0 +1,111 @@
+// Platform usage console (super-admin): provider cards and meter layout.
+
+.platform-usage {
+	display: grid;
+	gap: 1rem;
+
+	&__intro,
+	&__hint {
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--color-text-muted);
+	}
+
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+		gap: 1rem;
+		align-items: start;
+	}
+
+	&__section {
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	&__section-title {
+		margin: 0;
+		font-size: 1rem;
+		color: var(--color-text-secondary);
+	}
+}
+
+.platform-card {
+	display: grid;
+	gap: 0.75rem;
+
+	h2,
+	h3 {
+		margin: 0;
+		font-size: 1.05rem;
+	}
+
+	&__header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+
+	&__stamp,
+	&__notice,
+	&__meta,
+	&__cost {
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+	}
+
+	&__metrics {
+		display: grid;
+		gap: 0.85rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	&__missing {
+		display: grid;
+		gap: 0.75rem;
+		margin: 0;
+		padding: 0.6rem 0.75rem;
+		border: 1px solid var(--color-state-warning-border);
+		border-radius: 0.5rem;
+		background: var(--color-state-warning-bg);
+		list-style: none;
+
+		p {
+			margin: 0;
+		}
+	}
+
+	&__missing-head {
+		font-size: 0.85rem;
+		color: var(--color-state-warning-text);
+	}
+
+	&__missing-name {
+		font-size: 0.85em;
+	}
+
+	&__metric {
+		display: grid;
+		gap: 0.35rem;
+	}
+
+	&__cost {
+		padding-top: 0.35rem;
+		border-top: 1px solid var(--dashboard-card-border);
+	}
+
+	&__link {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--color-text-emphasis);
+		text-decoration: underline;
+	}
+}

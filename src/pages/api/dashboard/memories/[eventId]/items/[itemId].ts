@@ -30,6 +30,7 @@ export const PATCH: APIRoute = async ({ request, locals, params, cookies }) => {
 			mediaItemId,
 			caption: bodyResult.caption,
 			status: bodyResult.status,
+			hidden: bodyResult.hidden,
 			actorId: session.userId,
 		});
 		return withPrivateCache(jsonResponse({ item }));
@@ -45,9 +46,12 @@ export const GET: APIRoute = async ({ request, locals, params }) => {
 		const session = requireDashboardSessionFromLocals(locals);
 		await requireMemoriesRateLimit(request, 'organizer', session.userId);
 		const space = await requireOrganizerMemorySpace(eventId, session);
-		const mode =
-			new URL(request.url).searchParams.get('mode') === 'preview' ? 'inline' : 'attachment';
-		const object = await getMediaObjectForRetrieval(space, mediaItemId);
+		// `preview` streams the original inline; `thumb` streams the small WebP when it exists.
+		const requested = new URL(request.url).searchParams.get('mode');
+		const mode = requested === 'preview' || requested === 'thumb' ? 'inline' : 'attachment';
+		const object = await getMediaObjectForRetrieval(space, mediaItemId, undefined, {
+			variant: requested === 'thumb' ? 'thumb' : 'original',
+		});
 		const response = await retrieveMemoriesObject({
 			...object,
 			mode,

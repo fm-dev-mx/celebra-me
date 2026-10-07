@@ -27,6 +27,8 @@ export interface VisualCaptureRecord {
 	runtimeSha: string;
 	captureMs: number;
 	difference?: string;
+	/** Set when the first capture mismatched and one re-capture passed the gate. */
+	recapturedDifference?: string;
 }
 
 export const DEFAULT_VISUAL_OUTPUT_ROOT = 'output/screenshots/variant-portability';

@@ -1,5 +1,5 @@
-import { useId, useMemo, useState, type SyntheticEvent } from 'react';
-import { MEMORIES_RECOVERY_CODE_LENGTH } from '@/lib/memories/contract/catalog';
+import { useEffect, useId, useMemo, useRef, useState, type SyntheticEvent } from 'react';
+import { formatMemoriesRecoveryInput } from '@/lib/memories/contract/catalog';
 import { buildMemoriesPublicPath } from '@/lib/memories/contract/private-request';
 import { memoriesRecoveryFormCopy as copy } from '@/lib/memories/copy';
 import { createMemoriesGuestApi } from '@/lib/memories/client/api';
@@ -16,6 +16,12 @@ export default function MemoriesRecovery({ publicSlug, onRecovered }: MemoriesRe
 	const api = useMemo(() => createMemoriesGuestApi(publicSlug), [publicSlug]);
 	const [recoveryCode, setRecoveryCode] = useState('');
 	const [status, setStatus] = useState<RecoveryStatus>('idle');
+	const inputRef = useRef<HTMLInputElement>(null);
+	// Keep a code typed or pasted before the island hydrated.
+	useEffect(() => {
+		const typed = inputRef.current?.value ?? '';
+		if (typed) setRecoveryCode(formatMemoriesRecoveryInput(typed));
+	}, []);
 
 	const recover = async (event: SyntheticEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -35,19 +41,24 @@ export default function MemoriesRecovery({ publicSlug, onRecovered }: MemoriesRe
 		<form className="status-page__recovery-form" onSubmit={recover} noValidate>
 			<label htmlFor={inputId}>{copy.inputLabel}</label>
 			<input
+				ref={inputRef}
 				id={inputId}
 				name="recoveryCode"
 				value={recoveryCode}
-				maxLength={MEMORIES_RECOVERY_CODE_LENGTH}
+				aria-describedby={`${inputId}-hint`}
+				inputMode="text"
 				autoComplete="one-time-code"
 				autoCapitalize="characters"
 				spellCheck={false}
 				required
 				onChange={(event) => {
-					setRecoveryCode(event.target.value.toUpperCase());
+					setRecoveryCode(formatMemoriesRecoveryInput(event.target.value));
 					if (status === 'error') setStatus('idle');
 				}}
 			/>
+			<p id={`${inputId}-hint`} className="status-page__hint">
+				{copy.inputHint}
+			</p>
 			<button
 				type="submit"
 				className="status-page__btn"
@@ -60,6 +71,11 @@ export default function MemoriesRecovery({ publicSlug, onRecovered }: MemoriesRe
 					{copy.failed}
 				</p>
 			) : null}
+			<div className="memories-notice">
+				<p>
+					<strong>{copy.noCodeTitle}</strong> {copy.noCodeBody}
+				</p>
+			</div>
 		</form>
 	);
 }

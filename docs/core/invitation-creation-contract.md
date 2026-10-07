@@ -107,10 +107,10 @@ New managed content must follow the canonical
   derive variants from `theme.preset`.
 - Supply every variant-specific field required by its discriminated section schema. Unknown and
   incompatible configurations must fail publication validation.
-- Keep profile SCSS limited to client palette token remap and rhythm/intersection overrides. Do not
-  set `font-family` / `background` directly on section element classes (use tokens). Canonical grid,
-  order, required visibility, and structural breakpoints belong to the section variant's semantic
-  SCSS entrypoint. See
+- Keep profile SCSS to custom-property declarations: client palette token remap and
+  rhythm/intersection token overrides. Client text belongs in content data, never in CSS `content:`
+  or baked into an image. Canonical grid, order, required visibility, and structural breakpoints
+  belong to the section variant's semantic SCSS entrypoint. See
   [`docs/domains/theme/architecture.md`](../domains/theme/architecture.md#invitation-css-ownership-normative).
 - Reference client photographs and artwork through the invitation's typed semantic asset keys. Do
   not import another invitation's files from reusable code or styles.

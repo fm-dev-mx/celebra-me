@@ -1,43 +1,11 @@
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
-import type { DemoPreset } from '@/lib/intake/types';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { DEFAULT_REMINDER_MESSAGE } from '@/lib/rsvp/services/shared/share-message-defaults';
 
-const snapshot: DemoPreset = {
-	id: 'demo-xv-jewelry-box',
+const basePublishedContent = {
 	eventType: 'xv',
-	displayName: 'XV Años — Jewelry Box',
-	themeId: 'jewelry-box',
-	defaultSections: [
-		'quote',
-		'family',
-		'gallery',
-		'countdown',
-		'location',
-		'itinerary',
-		'rsvp',
-		'gifts',
-		'thankYou',
-	],
-	supportedBlocks: [
-		'event-details',
-		'main-people',
-		'date-locations',
-		'photos',
-		'rsvp-config',
-		'music',
-		'gifts',
-		'special-messages',
-	],
-	recommendedBlocks: [],
-	requiredAssets: ['hero', 'portrait'],
-	previewSlug: 'demo-xv-jewelry-box',
-};
-
-const baseDemoContent = {
-	eventType: 'xv',
-	title: 'Demo Jewelry Box',
-	description: 'Demo description',
+	title: 'Prior Published Title',
+	description: 'Prior published description',
 	theme: { fontFamily: 'serif', preset: 'jewelry-box' },
 	sectionOrder: [
 		'quote',
@@ -66,7 +34,7 @@ const baseDemoContent = {
 		microcopy: 'Toca para abrir',
 	},
 	gallery: { variant: 'uniform-grid', title: 'Galería', items: [] },
-	family: { variant: 'standard', parents: { father: 'Demo Father', mother: 'Demo Mother' } },
+	family: { variant: 'standard', parents: { father: 'Prior Father', mother: 'Prior Mother' } },
 	itinerary: { variant: 'standard', title: 'Itinerario', items: [] },
 	location: { variant: 'standard' },
 	countdown: { variant: 'standard', title: 'Falta poco', footerText: 'Prepárate' },
@@ -79,22 +47,20 @@ const baseDemoContent = {
 	},
 	interludes: [],
 	navigation: [{ label: 'Inicio', href: '#inicio' }],
-	sharing: { whatsappTemplate: '¡Hola!' },
 };
 
 const baseInput = {
 	invitation: {
 		title: 'Test Project',
 		eventType: 'xv',
-		snapshot,
 	},
+	themePreset: 'jewelry-box',
 	draftContent: {
 		title: 'Test Title',
 		description: 'Test Description',
 		hero: { name: 'Ana Sofia', label: 'Mis XV Anos', date: '2027-11-20' },
 	},
-	demoContent: baseDemoContent,
-	priorPublishedContent: { ...baseDemoContent, sharing: undefined },
+	priorPublishedContent: basePublishedContent,
 };
 
 function draftVenue(type: 'ceremony' | 'reception' | 'custom', value: Record<string, unknown>) {
@@ -149,65 +115,17 @@ describe('mapDraftToPublished', () => {
 		expect(result.hero).toHaveProperty('backgroundImageMobile', undefined);
 	});
 
-	it('does not publish demo mobile fallback for a real invitation when draft omits mobile image', () => {
-		const result = mapDraftToPublished({
-			...baseInput,
-			demoContent: {
-				...baseDemoContent,
-				hero: {
-					...baseDemoContent.hero,
-					backgroundImageMobile: {
-						type: 'external',
-						src: 'https://cdn.test/demo-mobile-bg.webp',
-					},
-				},
-			},
-		});
-
-		expect(result.hero).toHaveProperty('backgroundImageMobile', undefined);
-	});
-
-	it('preserves authored demo mobile images for demo publishing', () => {
-		const result = mapDraftToPublished({
-			...baseInput,
-			isDemo: true,
-			demoContent: {
-				...baseDemoContent,
-				hero: {
-					...baseDemoContent.hero,
-					backgroundImageMobile: {
-						type: 'external',
-						src: 'https://cdn.test/demo-mobile-bg.webp',
-					},
-				},
-			},
-		});
-
-		expect(result.hero).toMatchObject({
-			backgroundImageMobile: {
-				type: 'external',
-				src: 'https://cdn.test/demo-mobile-bg.webp',
-			},
-		});
-	});
-
-	it('sets theme from invitation snapshot', () => {
+	it('sets theme from the input themePreset only', () => {
 		const result = mapDraftToPublished(baseInput);
 
-		expect(result.theme).toMatchObject({ preset: 'jewelry-box' });
+		expect(result.theme).toEqual({ preset: 'jewelry-box' });
 	});
 
-	it('sets eventType and isDemo from input', () => {
+	it('sets eventType from input and always publishes non-demo content', () => {
 		const result = mapDraftToPublished(baseInput);
 
 		expect(result.eventType).toBe('xv');
 		expect(result.isDemo).toBe(false);
-	});
-
-	it('marks demo content when publishing a demo invitation', () => {
-		const result = mapDraftToPublished({ ...baseInput, isDemo: true });
-
-		expect(result.isDemo).toBe(true);
 	});
 
 	it('maps family godparents string to structured array', () => {
@@ -585,7 +503,7 @@ describe('mapDraftToPublished', () => {
 			priorPublishedContent: {
 				...baseInput.priorPublishedContent,
 				hero: {
-					...baseDemoContent.hero,
+					...basePublishedContent.hero,
 					tagline: 'Una noche inolvidable.',
 					photoCredit: 'Estudio Real',
 				},
@@ -695,8 +613,8 @@ describe('mapDraftToPublished', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
 			priorPublishedContent: {
-				sectionOrder: baseDemoContent.sectionOrder,
-				composition: baseDemoContent.composition,
+				sectionOrder: basePublishedContent.sectionOrder,
+				composition: basePublishedContent.composition,
 				countdown: { variant: 'standard' },
 				hero: { variant: 'standard' },
 				thankYou: {
@@ -865,21 +783,19 @@ describe('mapDraftToPublished', () => {
 		expect(eventContentSchema.safeParse(result).success).toBe(true);
 	});
 
-	it('merges venue image from demo content when isDemo is true', () => {
-		const demoWithLocation = {
-			...baseDemoContent,
-			location: {
-				variant: 'standard',
-				...draftVenues(
-					{ image: 'mapCeremony', venueEvent: 'Misa' },
-					{ image: 'mapReception', venueEvent: 'Fiesta' },
-				),
-			},
-		};
+	it('carries venue images from matching prior published venues', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
-			isDemo: true,
-			demoContent: demoWithLocation,
+			priorPublishedContent: {
+				...basePublishedContent,
+				location: {
+					variant: 'standard',
+					...draftVenues(
+						{ image: 'mapCeremony', venueEvent: 'Misa' },
+						{ image: 'mapReception', venueEvent: 'Fiesta' },
+					),
+				},
+			},
 			draftContent: {
 				...baseInput.draftContent,
 				location: draftVenues(
@@ -1205,23 +1121,21 @@ describe('mapDraftToPublished', () => {
 		expect(ceremony.coordinates).toBeUndefined();
 	});
 
-	it('does not reintroduce deleted ceremony from demo fallback when venues is present', () => {
-		const demoWithLocation = {
-			...baseDemoContent,
-			location: {
-				variant: 'standard',
-				ceremony: {
-					venueName: 'Demo Church',
-					address: 'Demo St',
-					date: '2026-01-01',
-					time: '10:00',
-				},
-			},
-		};
+	it('does not reintroduce a prior published ceremony deleted from draft venues', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
-			isDemo: true,
-			demoContent: demoWithLocation,
+			priorPublishedContent: {
+				...basePublishedContent,
+				location: {
+					variant: 'standard',
+					ceremony: {
+						venueName: 'Prior Church',
+						address: 'Prior St',
+						date: '2026-01-01',
+						time: '10:00',
+					},
+				},
+			},
 			draftContent: {
 				...baseInput.draftContent,
 				location: {
@@ -1256,13 +1170,13 @@ describe('mapDraftToPublished', () => {
 		expect(result.itinerary).toBeUndefined();
 	});
 
-	it('uses the explicit prior countdown contract for non-demo invitations', () => {
+	it('uses the prior published countdown variant when the draft omits countdown', () => {
 		const result = mapDraftToPublished(baseInput);
 
 		expect(result.countdown).toMatchObject({ variant: 'standard' });
 	});
 
-	it('uses editable countdown copy for real invitations when draft provides it', () => {
+	it('uses editable countdown copy when draft provides it', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
 			draftContent: {
@@ -1299,27 +1213,21 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
-	it('uses themed countdown text for demo invitations', () => {
-		const result = mapDraftToPublished({ ...baseInput, isDemo: true });
-
-		expect(result.countdown).toMatchObject({ title: 'Falta poco' });
-	});
-
-	it('does not inherit stale demo date/location text in countdown footerText for real invitations', () => {
-		const demoWithStaleFooter = {
-			...baseDemoContent,
-			countdown: {
-				title: 'La gala comienza en',
-				footerText: '20 de noviembre de 2027, Querétaro',
-			},
-		};
+	it('does not inherit stale prior published date/location text in countdown footerText', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
+			priorPublishedContent: {
+				...basePublishedContent,
+				countdown: {
+					variant: 'standard',
+					title: 'La gala comienza en',
+					footerText: '20 de noviembre de 2027, Querétaro',
+				},
+			},
 			draftContent: {
 				...baseInput.draftContent,
 				countdown: {},
 			},
-			demoContent: demoWithStaleFooter,
 		});
 
 		expect(result.countdown).toMatchObject({
@@ -1382,31 +1290,25 @@ describe('mapDraftToPublished', () => {
 		expect(result.location as Record<string, unknown>).not.toHaveProperty('indications');
 	});
 
-	it('maps location from demo content when draft location is sparse', () => {
-		const demoWithLocation = {
-			...baseDemoContent,
-			location: {
-				variant: 'standard',
-				introEyebrow: 'EL CAMINO AL PALACIO',
-				introHeading: 'Ubicación',
-				introLede: 'Guarda la ruta.',
-				indicationsHeading: 'Indicaciones',
-				ceremony: {
-					venueName: 'Iglesia Demo',
-					address: 'Calle Demo',
-					image: 'mapCeremony',
-				},
-				reception: {
-					venueName: 'Salon Demo',
-					address: 'Calle 2 Demo',
-					image: 'mapReception',
-				},
-			},
-		};
+	it('carries venue images from a legacy prior published location matched by venue type', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
-			isDemo: true,
-			demoContent: demoWithLocation,
+			priorPublishedContent: {
+				...basePublishedContent,
+				location: {
+					variant: 'standard',
+					ceremony: {
+						venueName: 'Iglesia Previa',
+						address: 'Calle Previa',
+						image: 'mapCeremony',
+					},
+					reception: {
+						venueName: 'Salon Previo',
+						address: 'Calle 2 Previa',
+						image: 'mapReception',
+					},
+				},
+			},
 			draftContent: {
 				...baseInput.draftContent,
 				location: draftVenues({ venueName: 'Iglesia', address: 'Calle 1' }),
@@ -1422,11 +1324,8 @@ describe('mapDraftToPublished', () => {
 					image: 'mapCeremony',
 				},
 			],
-			introEyebrow: 'EL CAMINO AL PALACIO',
-			introHeading: 'Ubicación',
-			introLede: 'Guarda la ruta.',
-			indicationsHeading: 'Indicaciones',
 		});
+		expect((result.location as Record<string, unknown>).venues).toHaveLength(1);
 	});
 
 	it('uses gallery from draft content when the admin edits captions or order', () => {
@@ -1456,40 +1355,11 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
-	it('materializes demo gallery and itinerary when client draft omits them', () => {
-		const demoGallery = {
-			variant: 'uniform-grid',
-			title: 'Galería demo',
-			items: [{ image: 'gallery01', caption: 'Demo' }],
-		};
-		const demoItinerary = {
-			variant: 'standard',
-			title: 'Programa demo',
-			items: [{ iconName: 'Calendar', label: 'Inicio', time: '18:00' }],
-		};
-		const result = mapDraftToPublished({
-			...baseInput,
-			isDemo: true,
-			demoContent: {
-				...baseDemoContent,
-				gallery: demoGallery,
-				itinerary: demoItinerary,
-			},
-			draftContent: {
-				...baseInput.draftContent,
-			},
-		});
-
-		expect(result.gallery).toEqual({ ...demoGallery, variant: 'uniform-grid' });
-		expect(result.itinerary).toEqual({ ...demoItinerary, variant: 'standard' });
-	});
-
-	it('passes through present-but-empty client gallery/itinerary shells', () => {
+	it('passes through present-but-empty gallery/itinerary shells', () => {
 		const emptyGallery = { title: 'Galería', items: [] as [] };
 		const emptyItinerary = { title: 'Itinerario', items: [] as [] };
 		const result = mapDraftToPublished({
 			...baseInput,
-			isDemo: false,
 			draftContent: {
 				...baseInput.draftContent,
 				gallery: emptyGallery,
@@ -1606,20 +1476,48 @@ describe('mapDraftToPublished', () => {
 		}
 	});
 
-	it('includes interludes and canonical section content when isDemo is true', () => {
-		const result = mapDraftToPublished({ ...baseInput, isDemo: true });
+	it('passes draft interludes through without legacy section styles', () => {
+		const interludes = [
+			{
+				image: { type: 'internal' as const, key: 'interlude01' as const },
+				afterSection: 'quote' as const,
+				height: 'screen' as const,
+			},
+		];
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: { ...baseInput.draftContent, interludes },
+		});
 
-		expect(Array.isArray(result.interludes)).toBe(true);
+		expect(result.interludes).toEqual(interludes);
 		expect(result.sectionStyles).toBeUndefined();
-		// With isDemo: true, demo sharing data (whatsappTemplate) is included
-		expect(result.sharing).toBeDefined();
 	});
 
-	it('includes theme and sectionOrder from demo content when isDemo is true', () => {
-		const result = mapDraftToPublished({ ...baseInput, isDemo: true });
+	it('carries sectionOrder, composition, and navigation from prior published content', () => {
+		const result = mapDraftToPublished(baseInput);
 
-		expect(result.theme).toMatchObject({ fontFamily: 'serif', preset: 'jewelry-box' });
-		expect(Array.isArray(result.sectionOrder)).toBe(true);
+		expect(result.sectionOrder).toEqual(basePublishedContent.sectionOrder);
+		expect(result.composition).toEqual(basePublishedContent.composition);
+		expect(result.navigation).toEqual(basePublishedContent.navigation);
+	});
+
+	it('throws when neither draft nor prior published content provides sectionOrder', () => {
+		expect(() =>
+			mapDraftToPublished({
+				...baseInput,
+				priorPublishedContent: { ...basePublishedContent, sectionOrder: undefined },
+			}),
+		).toThrow('Published content requires an explicit sectionOrder.');
+	});
+
+	it('throws when prior published content provides no composition', () => {
+		expect(() =>
+			mapDraftToPublished({
+				...baseInput,
+				draftContent: { ...baseInput.draftContent, sectionOrder: ['quote'] },
+				priorPublishedContent: undefined,
+			}),
+		).toThrow('Published content requires an explicit composition.');
 	});
 
 	it('uses draft sectionOrder when the admin configures visible sections', () => {
@@ -1634,7 +1532,7 @@ describe('mapDraftToPublished', () => {
 		expect(result.sectionOrder).toEqual(['quote', 'rsvp', 'thankYou']);
 	});
 
-	it('draft hero fields override demo defaults', () => {
+	it('draft hero fields override prior published hero fields', () => {
 		const result = mapDraftToPublished(baseInput);
 
 		expect((result.hero as Record<string, unknown>).name).toBe('Ana Sofia');
@@ -1642,22 +1540,16 @@ describe('mapDraftToPublished', () => {
 		expect((result.hero as Record<string, unknown>).date).toBe('2027-11-20T00:00:00.000Z');
 	});
 
-	it('draft title overrides demo title', () => {
+	it('uses the invitation title over the prior published title', () => {
 		const result = mapDraftToPublished(baseInput);
 
 		expect(result.title).toBe('Test Project');
 	});
 
-	it('draft description overrides demo description', () => {
+	it('draft description overrides prior published description', () => {
 		const result = mapDraftToPublished(baseInput);
 
 		expect(result.description).toBe('Test Description');
-	});
-
-	it('defaults isDemo to false', () => {
-		const result = mapDraftToPublished(baseInput);
-
-		expect(result.isDemo).toBe(false);
 	});
 
 	it('all enriched sections renderer-compatible', () => {
@@ -1677,20 +1569,19 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
-	it('uses demo previewSlug as _assetSlug when invitation has no explicit assetSlug', () => {
+	it('omits _assetSlug when no assetSlug is provided', () => {
 		const result = mapDraftToPublished(baseInput);
 
-		expect(result._assetSlug).toBe('demo-xv-jewelry-box');
+		expect(result).not.toHaveProperty('_assetSlug');
 	});
 
-	it('uses explicit assetSlug over snapshot.previewSlug when provided', () => {
+	it('emits _assetSlug from the explicit assetSlug', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
 			assetSlug: 'ana-sofia-cota-guillen',
 		});
 
 		expect(result._assetSlug).toBe('ana-sofia-cota-guillen');
-		expect(result._assetSlug).not.toBe('demo-xv-jewelry-box');
 	});
 
 	it('maps family section label fields into published labels object', () => {
@@ -1904,7 +1795,7 @@ describe('mapDraftToPublished', () => {
 		});
 	});
 
-	it('omits RSVP responseMessages when not provided in draft or demo', () => {
+	it('omits RSVP responseMessages when not provided in draft', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
 			draftContent: {
@@ -1941,50 +1832,6 @@ describe('mapDraftToPublished', () => {
 		});
 
 		expect(result.music).toMatchObject({ autoPlay: false });
-	});
-
-	it('allows draft envelope disabled to override demo envelope', () => {
-		const result = mapDraftToPublished({
-			...baseInput,
-			isDemo: true,
-			draftContent: {
-				...baseInput.draftContent,
-				envelope: { disabled: true },
-			},
-		});
-
-		expect(result.envelope).toMatchObject({ disabled: true });
-		expect(result.envelope).toMatchObject({ sealStyle: 'wax' });
-	});
-
-	it('preserves demo envelope when no draft override exists', () => {
-		const result = mapDraftToPublished({ ...baseInput, isDemo: true });
-
-		expect(result.envelope).toMatchObject({ disabled: false, sealStyle: 'wax' });
-	});
-
-	it('defaults envelope to disabled when no demo envelope and no draft override', () => {
-		const result = mapDraftToPublished({
-			...baseInput,
-			demoContent: { ...baseDemoContent, envelope: undefined },
-		});
-
-		expect(result.envelope).toMatchObject({ disabled: true });
-	});
-
-	it('allows draft sealInitials to override demo sealInitials', () => {
-		const result = mapDraftToPublished({
-			...baseInput,
-			isDemo: true,
-			draftContent: {
-				...baseInput.draftContent,
-				envelope: { sealInitials: 'A·L' },
-			},
-		});
-
-		expect(result.envelope).toMatchObject({ sealInitials: 'A·L' });
-		// Non-overridden demo fields must survive
-		expect(result.envelope).toMatchObject({ sealStyle: 'wax' });
 	});
 
 	it('publishes editable opening reveal fields from the draft envelope', () => {
@@ -2027,19 +1874,6 @@ describe('mapDraftToPublished', () => {
 			guestNameFallback: 'Familia invitada',
 			sealInitials: 'L·E',
 		});
-	});
-
-	it('treats empty draft sealInitials as no override, falling back to demo value', () => {
-		const result = mapDraftToPublished({
-			...baseInput,
-			isDemo: true,
-			draftContent: {
-				...baseInput.draftContent,
-				envelope: { sealInitials: '' },
-			},
-		});
-
-		expect(result.envelope).toMatchObject({ sealInitials: 'L·G' });
 	});
 });
 
@@ -2176,78 +2010,11 @@ describe('edge cases — blank/empty/null sections', () => {
 		expect(result.rsvp).toBeUndefined();
 	});
 
-	it('preserves demo envelope fields when draft envelope is empty and isDemo is true', () => {
-		const result = mapDraftToPublished({
-			...baseInput,
-			isDemo: true,
-			draftContent: { ...baseInput.draftContent, envelope: {} },
-		});
-		expect(result.envelope).toMatchObject({
-			disabled: false,
-			sealStyle: 'wax',
-			sealInitials: 'L·G',
-		});
-	});
-
-	it('preserves demo envelope fields when draft envelope has only some overrides', () => {
-		const result = mapDraftToPublished({
-			...baseInput,
-			isDemo: true,
-			draftContent: {
-				...baseInput.draftContent,
-				envelope: { disabled: true },
-			},
-		});
-		expect(result.envelope).toMatchObject({
-			disabled: true,
-			sealStyle: 'wax',
-			sealInitials: 'L·G',
-		});
-	});
-
-	it('falls back to demo hero when draft hero is undefined and isDemo is true', () => {
-		const result = mapDraftToPublished({
-			...baseInput,
-			isDemo: true,
-			draftContent: {
-				...baseInput.draftContent,
-				hero: undefined,
-			},
-		});
-		expect(result.hero).toMatchObject({
-			name: 'Lucía García',
-			label: 'Mis XV Años',
-			date: '2026-06-15',
-			backgroundImage: { type: 'internal', key: 'hero' },
-		});
-	});
-
-	it('falls back to demo hero when draft hero is an empty object and isDemo is true', () => {
-		const result = mapDraftToPublished({
-			...baseInput,
-			isDemo: true,
-			draftContent: {
-				...baseInput.draftContent,
-				hero: {},
-			},
-		});
-		expect(result.hero).toMatchObject({
-			name: 'Lucía García',
-			label: 'Mis XV Años',
-			date: '2026-06-15',
-			backgroundImage: { type: 'internal', key: 'hero' },
-		});
-	});
-
-	it('reuses prior hero when draft and demo hero are undefined', () => {
+	it('reuses prior hero when draft hero is undefined', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
 			draftContent: {
 				...baseInput.draftContent,
-				hero: undefined,
-			},
-			demoContent: {
-				...baseDemoContent,
 				hero: undefined,
 			},
 		});
@@ -2260,7 +2027,24 @@ describe('edge cases — blank/empty/null sections', () => {
 		});
 	});
 
-	it('throws when hero is missing from draft, demo, and prior', () => {
+	it('reuses prior hero when draft hero is an empty object', () => {
+		const result = mapDraftToPublished({
+			...baseInput,
+			draftContent: {
+				...baseInput.draftContent,
+				hero: {},
+			},
+		});
+		expect(result.hero).toMatchObject({
+			name: 'Lucía García',
+			label: 'Mis XV Años',
+			date: '2026-06-15',
+			backgroundImage: { type: 'internal', key: 'hero' },
+			variant: 'standard',
+		});
+	});
+
+	it('throws when hero is missing from draft and prior', () => {
 		expect(() =>
 			mapDraftToPublished({
 				...baseInput,
@@ -2268,14 +2052,9 @@ describe('edge cases — blank/empty/null sections', () => {
 					...baseInput.draftContent,
 					hero: undefined,
 				},
-				demoContent: {
-					...baseDemoContent,
-					hero: undefined,
-				},
 				priorPublishedContent: {
-					...baseDemoContent,
+					...basePublishedContent,
 					hero: undefined,
-					sharing: undefined,
 				},
 			}),
 		).toThrow('Published content requires an explicit hero.variant.');
@@ -2323,17 +2102,15 @@ describe('sharing section mapping', () => {
 		expect(shareMessages.reminder).toBe('Draft reminder: {eventTitle}');
 	});
 
-	it('falls back to demo shareMessages when draft has none and isDemo is true', () => {
+	it('carries prior published shareMessages when draft has none', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
-			isDemo: true,
-			demoContent: {
-				...baseDemoContent,
+			priorPublishedContent: {
+				...basePublishedContent,
 				sharing: {
-					whatsappTemplate: 'Demo template',
 					shareMessages: {
-						invitation: 'Demo invitation',
-						reminder: 'Demo reminder',
+						invitation: 'Prior invitation',
+						reminder: 'Prior reminder',
 					},
 				},
 			},
@@ -2341,47 +2118,14 @@ describe('sharing section mapping', () => {
 
 		const sharing = result.sharing as Record<string, unknown>;
 		const shareMessages = sharing.shareMessages as Record<string, string>;
-		expect(shareMessages.invitation).toBe('Demo invitation');
-		expect(shareMessages.reminder).toBe('Demo reminder');
+		expect(shareMessages.invitation).toBe('Prior invitation');
+		expect(shareMessages.reminder).toBe('Prior reminder');
 	});
 
-	it('does not preserve legacy demo whatsappTemplate for client publications', () => {
-		const result = mapDraftToPublished({
-			...baseInput,
-			demoContent: {
-				...baseDemoContent,
-				sharing: {
-					whatsappTemplate:
-						'Hola {name}, te comparto la invitación para los XV años de Isabella Rose: {inviteUrl}',
-				},
-			},
-		});
+	it('returns undefined sharing when no draft or prior published sharing exists', () => {
+		const result = mapDraftToPublished(baseInput);
 
 		expect(result.sharing).toBeUndefined();
-	});
-
-	it('returns undefined sharing when no draft or demo sharing exists', () => {
-		const result = mapDraftToPublished({
-			...baseInput,
-			demoContent: { ...baseDemoContent, sharing: undefined },
-		});
-
-		expect(result.sharing).toBeUndefined();
-	});
-
-	it('keeps legacy whatsappTemplate for actual demo publications', () => {
-		const result = mapDraftToPublished({
-			...baseInput,
-			isDemo: true,
-			demoContent: {
-				...baseDemoContent,
-				sharing: { whatsappTemplate: 'Only legacy template' },
-			},
-		});
-
-		const sharing = result.sharing as Record<string, unknown>;
-		expect(sharing.whatsappTemplate).toBe('Only legacy template');
-		expect(sharing.shareMessages).toBeUndefined();
 	});
 
 	it('preserves ogDescription from draft sharing', () => {
@@ -2414,24 +2158,6 @@ describe('sharing section mapping', () => {
 		expect(sharing.ogDescription).toBe('Custom social preview description.');
 		const shareMessages = sharing.shareMessages as Record<string, string>;
 		expect(shareMessages.invitation).toBe('Invitation: {guestName}');
-	});
-
-	it('does not copy any sharing from demo for non-demo publications', () => {
-		const result = mapDraftToPublished({
-			...baseInput,
-			demoContent: {
-				...baseDemoContent,
-				sharing: {
-					ogDescription: 'Demo social preview copy.',
-					shareMessages: {
-						invitation: 'Demo invitation',
-						reminder: 'Demo reminder',
-					},
-				},
-			},
-		});
-
-		expect(result.sharing).toBeUndefined();
 	});
 
 	it('defaults to DEFAULT_REMINDER_MESSAGE when reminder is missing from draft', () => {
@@ -2522,8 +2248,8 @@ describe('sharing section mapping', () => {
 		const result = mapDraftToPublished({
 			...baseInput,
 			priorPublishedContent: {
-				sectionOrder: baseDemoContent.sectionOrder,
-				composition: baseDemoContent.composition,
+				sectionOrder: basePublishedContent.sectionOrder,
+				composition: basePublishedContent.composition,
 				countdown: { variant: 'standard' },
 				hero: { variant: 'standard' },
 				location: {

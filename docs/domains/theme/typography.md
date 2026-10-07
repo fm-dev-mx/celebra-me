@@ -48,9 +48,9 @@ section variants and profiles come from `src/lib/invitation/section-css-resolver
 - **Playfair Display:** `/` (`landing.scss`); presets jewelry-box, jewelry-box-wedding, editorial
   and editorial-magazine; itinerary variant editorial-program.
 - **Cinzel:** presets editorial and premiere-floral; profile melissa-y-luis-osmar.
-- **Cormorant Garamond:** presets luxury-hacienda, celestial-blue, sacred-keepsake, enchanted-rose,
-  editorial-rose and angelic-presence; variants formal-register, formal-pass and
-  ceremonial-portrait; invitation profiles that `@use` it.
+- **Cormorant Garamond:** presets luxury-hacienda, celestial-blue, sacred-keepsake, enchanted-rose
+  and angelic-presence; variants formal-register, formal-pass and ceremonial-portrait; invitation
+  profiles that `@use` it.
 - **EB Garamond:** presets jewelry-box, jewelry-box-wedding, editorial, luxury-hacienda and
   celestial-blue.
 
