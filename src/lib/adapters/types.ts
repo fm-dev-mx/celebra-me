@@ -17,11 +17,13 @@ import type { FamilyPresentation } from '@/lib/invitation/family-presentation';
 import type {
 	GalleryLayoutRole,
 	GalleryMobileBrowseMode,
+	GalleryPairedArrangement,
 	GalleryPresentation,
 } from '@/lib/invitation/gallery-presentation';
 import type { GiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import type {
 	LocationPresentation,
+	LocationIndicationsStyle,
 	LocationMapStyle,
 } from '@/lib/invitation/location-presentation';
 import type { z } from 'zod';
@@ -55,6 +57,8 @@ export interface HeroViewModel {
 	/** Editorial-cover folio marks; the renderer falls back to its XV defaults. */
 	coverMark?: string;
 	coverPage?: string;
+	/** Editorial-cover design credit; shown when omitted. */
+	designCredit?: boolean;
 	name: string;
 	secondaryName?: string;
 	label: string;
@@ -233,6 +237,7 @@ export interface LocationSection {
 		showFlourishes?: boolean;
 		showNavigationButtons?: boolean;
 		revealSurface?: 'section' | 'rsvp';
+		indicationsStyle?: LocationIndicationsStyle;
 	};
 	isLocked?: boolean;
 	lockedTitle?: string;
@@ -242,6 +247,7 @@ export interface LocationSection {
 	indications?: Indication[];
 	showFlourishes?: boolean;
 	showNavigationButtons?: boolean;
+	indicationsStyle?: LocationIndicationsStyle;
 	introEyebrow?: string;
 	introHeading?: string;
 	introLede?: string;
@@ -312,7 +318,10 @@ export interface InvitationViewModel {
 			}>;
 			variant: GalleryVariant;
 			presentation?: GalleryPresentation;
-			variantOptions?: { mobileBrowse?: GalleryMobileBrowseMode };
+			variantOptions?: {
+				mobileBrowse?: GalleryMobileBrowseMode;
+				arrangement?: GalleryPairedArrangement;
+			};
 		};
 		itinerary?: {
 			title: string;

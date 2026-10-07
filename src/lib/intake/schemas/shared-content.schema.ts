@@ -13,6 +13,7 @@ import {
 	COUNTDOWN_UNITS,
 	GALLERY_LAYOUT_ROLES,
 	GALLERY_MOBILE_BROWSE_MODES,
+	GALLERY_PAIRED_ARRANGEMENTS,
 	GALLERY_PRESENTATIONS,
 	GIFTS_PRESENTATIONS,
 	assertSupportedGalleryPresentation,
@@ -87,6 +88,7 @@ export const gallerySchema = z
 		variantOptions: z
 			.object({
 				mobileBrowse: z.enum(GALLERY_MOBILE_BROWSE_MODES).optional(),
+				arrangement: z.enum(GALLERY_PAIRED_ARRANGEMENTS).optional(),
 			})
 			.strict()
 			.optional(),

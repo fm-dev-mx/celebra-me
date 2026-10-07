@@ -29,6 +29,7 @@ import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import { resolvePortraitEnabled } from '@/lib/invitation/hero-presentation';
 import { hasPlayableMusicUrl } from '@/lib/invitation/local-preview-config';
 import {
+	resolveLocationIndicationsStyle,
 	resolveLocationShowFlourishes,
 	resolveLocationShowNavigationButtons,
 } from '@/lib/invitation/location-presentation';
@@ -171,6 +172,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		nameLeadWords: data.hero.presentation?.nameLeadWords,
 		coverMark: data.hero.presentation?.coverMark,
 		coverPage: data.hero.presentation?.coverPage,
+		designCredit: data.hero.presentation?.designCredit,
 		secondaryName: data.hero.secondaryName,
 		label: data.hero.label || 'Invitación Especial',
 		nickname: data.hero.nickname,
@@ -401,6 +403,7 @@ function buildLocationSectionData(context: AdaptationContext) {
 		showNavigationButtons: resolveLocationShowNavigationButtons(
 			data.location.presentationOptions,
 		),
+		indicationsStyle: resolveLocationIndicationsStyle(data.location.presentationOptions),
 		introEyebrow: data.location.introEyebrow,
 		introHeading: data.location.introHeading,
 		introLede: data.location.introLede,

@@ -15,8 +15,11 @@ import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import type { IndicationStyleVariant } from '@/lib/theme/theme-contract';
-import type { LocationPresentation } from '@/lib/invitation/location-presentation';
-import type { LocationMapStyle } from '@/lib/invitation/location-presentation';
+import type {
+	LocationIndicationsStyle,
+	LocationMapStyle,
+	LocationPresentation,
+} from '@/lib/invitation/location-presentation';
 import type { LocationVariant } from '@/lib/invitation/section-variants';
 
 interface VenueData {
@@ -66,6 +69,7 @@ interface Props {
 	presentation?: LocationPresentation;
 	showFlourishes?: boolean;
 	showNavigationButtons?: boolean;
+	indicationsStyle?: LocationIndicationsStyle;
 	indicationsHeading?: string;
 	nextSectionLink?: {
 		href: string;
@@ -88,6 +92,7 @@ const {
 	presentation,
 	showFlourishes = true,
 	showNavigationButtons = true,
+	indicationsStyle = 'list',
 	indicationsHeading,
 	nextSectionLink,
 	introEyebrow,
@@ -140,7 +145,7 @@ const isSingleVenue = displayVenues.length === 1;
 			{indicationsHeading && (
 				<p class="event-location__indications-heading">{indicationsHeading}</p>
 			)}
-			<div class="event-location__indications">
+			<div class="event-location__indications" data-indications-style={indicationsStyle}>
 				{indications.map((indication, index) => {
 					const isReserved = indication.styleVariant === 'reserved';
 					const editorialNoteTitle = indication.title;
@@ -155,7 +160,7 @@ const isSingleVenue = displayVenues.length === 1;
 										<span class="event-location__indication-number">
 											{String(index + 1).padStart(2, '0')}
 										</span>
-										<span>{editorialNoteTitle}</span>
+										<span class="event-location__indication-label">{editorialNoteTitle}</span>
 									</p>
 								)}
 								<p

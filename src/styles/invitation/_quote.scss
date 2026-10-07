@@ -146,6 +146,7 @@
 	text-transform: var(--quote-author-transform, uppercase);
 	letter-spacing: var(--quote-author-tracking, 0.2em);
 	font-style: normal;
+	font-weight: var(--quote-author-weight, inherit);
 	color: var(--quote-author-color);
 }
 

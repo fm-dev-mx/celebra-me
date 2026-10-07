@@ -15,14 +15,14 @@
 .theme-preset--editorial-magazine .family,
 .theme-preset--editorial-magazine .rsvp {
 	position: relative;
-	padding-bottom: clamp(6.5rem, 15vw, 9.5rem);
+	padding-bottom: calc(clamp(6.5rem, 15vw, 9.5rem) + var(--editorial-folio-lift, 0rem));
 
 	&::after {
 		content: '';
 		position: absolute;
 		left: clamp(1rem, 5vw, 4.5rem);
 		right: clamp(1rem, 5vw, 4.5rem);
-		bottom: 3.5rem;
+		bottom: calc(3.5rem + var(--editorial-folio-lift, 0rem));
 		height: 1px;
 		background: rgb(var(--editorial-magazine-ink-rgb) / 14%);
 		pointer-events: none;
@@ -31,13 +31,13 @@
 	&::before {
 		position: absolute;
 		left: clamp(1.2rem, 5.2vw, 4.7rem);
-		bottom: 2.2rem;
+		bottom: calc(2.2rem + var(--editorial-folio-lift, 0rem));
 		font-family: var(--font-label);
 		font-size: 0.62rem;
 		font-weight: 700;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		color: rgb(var(--editorial-magazine-ink-rgb) / 48%);
+		color: rgb(var(--editorial-magazine-ink-rgb) / var(--editorial-folio-alpha, 48%));
 		pointer-events: none;
 		z-index: 5;
 	}
@@ -70,6 +70,6 @@
 
 	&::before {
 		content: var(--editorial-folio-rsvp, 'CELEBRA-ME | EDICIÓN XV · CONFIRMACIÓN');
-		color: rgb(var(--editorial-magazine-white-rgb) / 48%);
+		color: rgb(var(--editorial-magazine-white-rgb) / var(--editorial-folio-alpha, 48%));
 	}
 }

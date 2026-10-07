@@ -9,7 +9,10 @@ import {
 } from '@/lib/schemas/content/shared.schema';
 import { interludesSchema } from '@/lib/schemas/content/interludes.schema';
 import { LOCATION_PRESENTATIONS } from '@/lib/invitation/presentation-options';
-import { LOCATION_MAP_STYLES } from '@/lib/invitation/location-presentation';
+import {
+	LOCATION_INDICATIONS_STYLES,
+	LOCATION_MAP_STYLES,
+} from '@/lib/invitation/location-presentation';
 import {
 	HERO_VARIANTS,
 	LOCATION_VARIANTS,
@@ -110,6 +113,7 @@ export const InvitationContentDraftContentSchema = z
 						showFlourishes: z.boolean().optional(),
 						showNavigationButtons: z.boolean().optional(),
 						revealSurface: z.enum(['section', 'rsvp']).optional(),
+						indicationsStyle: z.enum(LOCATION_INDICATIONS_STYLES).optional(),
 					})
 					.strict()
 					.optional(),

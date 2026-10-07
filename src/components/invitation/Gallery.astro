@@ -3,9 +3,11 @@ import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import PhotoGallery from './PhotoGallery.astro';
 import GalleryLightbox from './GalleryLightbox.astro';
+import { resolveGalleryPairedArrangement } from '@/lib/invitation/gallery-presentation';
 import '@/styles/invitation/_gallery.scss';
 import type {
 	GalleryMobileBrowseMode,
+	GalleryPairedArrangement,
 	GalleryPresentation,
 } from '@/lib/invitation/gallery-presentation';
 import type { GalleryVariant } from '@/lib/invitation/section-variants';
@@ -26,7 +28,10 @@ interface Props {
 	items: GalleryItem[];
 	variant: GalleryVariant;
 	presentation?: GalleryPresentation;
-	variantOptions?: { mobileBrowse?: GalleryMobileBrowseMode };
+	variantOptions?: {
+		mobileBrowse?: GalleryMobileBrowseMode;
+		arrangement?: GalleryPairedArrangement;
+	};
 }
 
 const {
@@ -41,12 +46,15 @@ const {
 const isMagazineSpread = variant === 'magazine-spread';
 const resolvedMobileBrowse = variantOptions?.mobileBrowse ?? 'stack';
 const usesMobileRail = isMagazineSpread && resolvedMobileBrowse === 'rail';
+// Only paired-portraits declares an arrangement; other variants keep their markup unchanged.
+const pairedArrangement =
+	variant === 'paired-portraits' ? resolveGalleryPairedArrangement(variantOptions) : undefined;
 const hasLastItem = Astro.slots.has('last-item');
 
 if (!items || items.length === 0) return null;
 ---
 
-<section id="galeria" class="gallery-section" data-variant={variant} data-screenshot-section="gallery" {...(presentation && { 'data-presentation': presentation })} data-mobile-browse={resolvedMobileBrowse}>
+<section id="galeria" class="gallery-section" data-variant={variant} data-screenshot-section="gallery" {...(presentation && { 'data-presentation': presentation })} data-mobile-browse={resolvedMobileBrowse} {...(pairedArrangement && { 'data-arrangement': pairedArrangement })}>
 	<div class="gallery-section__container" data-gallery>
 		<header class="gallery-section__header">
 			{eyebrow && <span class="gallery-section__eyebrow">{eyebrow}</span>}

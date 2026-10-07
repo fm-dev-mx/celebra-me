@@ -34,6 +34,8 @@ interface Props {
 	/** Watermark behind the cover and the page rail label; XV editorial defaults. */
 	coverMark?: string;
 	coverPage?: string;
+	/** Shows the "DISEÑO / CELEBRA ME" credit line; on by default. */
+	designCredit?: boolean;
 	highPriority?: boolean;
 }
 
@@ -58,6 +60,7 @@ const {
 	photoCredit,
 	coverMark = 'XV',
 	coverPage = 'PÁG. 15',
+	designCredit = true,
 	highPriority = true,
 } = Astro.props;
 
@@ -219,15 +222,13 @@ const fpDesktop = focalPointDesktop || fpDefault;
 			</div>
 
 			<!-- Fashion/Publication credits block -->
-			<div class="invitation-hero__credits">
-				{photoCredit && (
-					<>
-						<span class="invitation-hero__credit-item">FOTOGRAFÍA / {photoCredit}</span>
-						<span class="invitation-hero__credit-divider">•</span>
-					</>
-				)}
-				<span class="invitation-hero__credit-item">DISEÑO / CELEBRA ME</span>
-			</div>
+			{(photoCredit || designCredit) && (
+				<div class="invitation-hero__credits">
+					{photoCredit && <span class="invitation-hero__credit-item">FOTOGRAFÍA / {photoCredit}</span>}
+					{photoCredit && designCredit && <span class="invitation-hero__credit-divider">•</span>}
+					{designCredit && <span class="invitation-hero__credit-item">DISEÑO / CELEBRA ME</span>}
+				</div>
+			)}
 		</div>
 	</div>
 </section>

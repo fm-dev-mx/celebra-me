@@ -9,6 +9,7 @@
  *     the frame variables to add padding, backgrounds, and shadows.
  */
 @use '../global/mixins' as mixins;
+@use 'location-indications';
 
 :root {
 	// ---------------------------------------------------------------------
@@ -374,6 +375,7 @@
 	}
 
 	&__lede {
+		font-family: var(--location-intro-text-font-family, inherit);
 		font-size: var(--location-intro-text-size, 1rem);
 		line-height: 1.6;
 	}

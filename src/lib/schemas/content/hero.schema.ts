@@ -31,6 +31,8 @@ export const heroSchema = z
 				// XV defaults when they are omitted.
 				coverMark: z.string().trim().min(1).max(8).optional(),
 				coverPage: z.string().trim().min(1).max(16).optional(),
+				// Editorial-cover design credit line; shown unless explicitly disabled.
+				designCredit: z.boolean().optional(),
 			})
 			.strict()
 			.optional(),

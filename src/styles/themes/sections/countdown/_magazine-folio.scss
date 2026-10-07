@@ -47,12 +47,17 @@
 	}
 
 	.countdown__label {
-		color: rgb(var(--editorial-magazine-ink-rgb) / 48%);
+		color: var(--countdown-label-color, rgb(var(--editorial-magazine-ink-rgb) / 48%));
 		font-family: var(--font-label);
 		font-size: clamp(0.6rem, 1.1vw, 0.72rem);
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: var(--countdown-label-letter-spacing);
+		opacity: var(--countdown-label-opacity, 55%);
+	}
+
+	.countdown-invitation-text {
+		font-style: var(--countdown-footer-style, italic);
 	}
 
 	.countdown-footer {

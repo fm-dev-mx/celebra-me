@@ -3,6 +3,7 @@ import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 import {
+	LOCATION_INDICATIONS_STYLES,
 	LOCATION_MAP_STYLES,
 	LOCATION_PRESENTATIONS,
 } from '@/lib/invitation/location-presentation';
@@ -61,6 +62,7 @@ const locationBaseSchema = z.object({
 			showFlourishes: z.boolean().optional(),
 			showNavigationButtons: z.boolean().optional(),
 			revealSurface: z.enum(['section', 'rsvp']).optional(),
+			indicationsStyle: z.enum(LOCATION_INDICATIONS_STYLES).optional(),
 		})
 		.strict()
 		.optional(),
