@@ -3,8 +3,10 @@ import InvitationRevealCard from '@/components/invitation/InvitationRevealCard.a
 import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
 import SealIcon from '@/components/common/icons/invitation/SealIcon.astro';
 import CeremonialFiligree from './CeremonialFiligree.astro';
+import SeasideLineArt from './SeasideLineArt.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import {
+	resolveEnvelopeDataVariant,
 	resolveSealPresentation,
 	type EnvelopeSealIcon,
 	type RevealCardData,
@@ -67,6 +69,7 @@ const sealPresentation = resolveSealPresentation({
 	sealImage,
 });
 
+const isSeaside = revealVariant === 'seaside-lineart';
 const isWaxRenderer = ['wax-organic', 'wax-medallion'].includes(sealPresentation.renderer);
 // Discrete seal-zone open cue (editorial, not a SaaS tooltip bubble).
 const sealHintText = tooltipText?.trim() || 'Toque el sello';
@@ -85,7 +88,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	]}
 	data-screenshot="reveal-section"
 	data-event-slug={eventSlug}
-	data-variant={revealVariant === 'satin-filigree' ? revealVariant : variant}
+	data-variant={resolveEnvelopeDataVariant(revealVariant, variant)}
 	data-seal-variant={sealVariant || ''}
 	data-seal-skin={sealPresentation.skin || ''}
 	data-audio-url={audioUrl || ''}
@@ -181,7 +184,9 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 		<InvitationRevealCard
 			card={card}
 			showGuest={guestPlacement !== 'outside-envelope'}
-		/>
+		>
+			{isSeaside && <SeasideLineArt slot="ornament" class="invitation-reveal-card__ornament" />}
+		</InvitationRevealCard>
 	</div>
 
 	{

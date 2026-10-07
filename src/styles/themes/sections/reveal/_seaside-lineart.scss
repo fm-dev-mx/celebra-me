@@ -1,0 +1,272 @@
+@use '../../../global/mixins' as mixins;
+
+// Seaside line-art reveal: a shoreline letter. Flat sky field with a fine paper grain, a clean
+// envelope front (only the recipient and a pearl wax seal), a single instruction, a wave liner
+// revealed as the flap opens and a deckle-edged cotton card carrying one shell over the
+// shoreline. Colors resolve through semantic tokens; profiles may override the optional
+// `--seaside-*` hooks, which are consumed here with fallbacks and never declared by this skin.
+
+$seaside-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.26 0 0 0 0 0.32 0 0 0 0.16 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url%28%23n%29'/%3E%3C/svg%3E");
+$seaside-liner: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='10'%3E%3Cpath d='M0 6C5 2 9 2 14 6S23 10 28 6' fill='none' stroke='%239fb0be' stroke-width='0.8'/%3E%3C/svg%3E");
+$seaside-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpath d='M0 2L13 4L25 3L43 0L62 0L81 0L94 3L119 0L134 4L162 4L180 7L191 6L207 1L220 2L246 1L267 4L285 3L297 0L311 4L330 2L351 3L367 5L391 1L412 3L438 5L454 7L467 3L492 1L511 0L534 5L555 6L572 5L593 4L612 6L640 3L663 0L686 4L715 5L731 2L753 0L773 1L785 0L810 0L825 2L852 0L871 4L897 5L924 2L942 2L969 6L982 1L997 1L997 0L992 15L995 33L999 54L996 78L997 100L999 111L999 136L995 161L993 179L993 202L994 214L995 227L992 239L993 253L993 270L997 296L994 310L995 327L998 340L996 369L993 388L995 401L998 416L993 430L996 458L996 471L996 483L999 511L994 534L994 552L996 577L995 601L998 616L998 645L998 670L994 694L995 714L993 726L994 741L999 765L999 784L999 812L994 829L994 844L997 859L998 886L997 905L993 930L999 953L998 978L994 997L1000 995L974 999L956 995L929 998L915 993L901 999L876 993L850 999L828 995L807 993L796 999L773 996L746 995L719 998L705 994L689 994L667 994L649 993L622 995L603 997L576 995L548 996L528 996L517 996L503 992L477 994L458 998L437 995L417 996L392 993L371 994L356 998L336 996L311 999L292 997L273 996L249 996L229 996L201 997L175 999L159 996L131 998L118 993L99 993L84 993L61 998L34 993L11 997L6 1000L1 971L2 943L7 924L1 898L3 879L1 863L5 846L4 835L0 816L4 799L0 779L5 751L0 723L0 707L1 682L3 669L5 642L1 626L4 599L0 576L5 564L0 545L4 518L0 492L0 466L3 440L4 423L1 395L3 382L0 367L0 354L2 339L5 323L3 307L2 293L1 282L5 271L1 250L6 231L5 218L3 199L2 173L5 153L2 125L5 99L2 77L0 60L0 47L1 23L0 9Z'/%3E%3C/svg%3E");
+
+.envelope-wrapper[data-variant='seaside-lineart'] {
+	--env-bg: #{$seaside-grain}, var(--seaside-sky, var(--color-surface-soft));
+	--env-paper-bg:
+		var(--seaside-paper-grain, #{$seaside-grain}),
+		var(--seaside-paper, var(--seaside-sky-light, var(--color-surface-elevated)));
+	--env-paper-border: color-mix(
+		in srgb,
+		var(--seaside-ink, var(--color-border-premium)) 55%,
+		transparent
+	);
+	--env-text-primary: var(--color-text-primary);
+	--env-text-secondary: var(
+		--seaside-ink-strong,
+		color-mix(in srgb, var(--color-text-primary) 72%, transparent)
+	);
+	--env-accent: var(--seaside-ink, var(--color-border-premium));
+	--env-seal-accent: var(--seaside-ink, var(--color-border-premium));
+	--env-seal-bg: radial-gradient(
+		circle at 36% 30%,
+		var(--color-surface-elevated) 0%,
+		var(
+				--seaside-seal,
+				color-mix(in srgb, var(--color-surface-soft) 70%, var(--color-surface-elevated))
+			)
+			48%,
+		color-mix(
+				in srgb,
+				var(--seaside-seal, var(--color-surface-soft)) 55%,
+				var(--seaside-ink, var(--color-text-primary))
+			)
+			100%
+	);
+	--env-seal-icon: var(
+		--seaside-ink-strong,
+		color-mix(in srgb, var(--color-text-primary) 72%, transparent)
+	);
+	--env-shadow-seal:
+		0 1px 0 color-mix(in srgb, var(--color-text-primary) 22%, transparent),
+		0 3px 6px color-mix(in srgb, var(--color-text-primary) 12%, transparent),
+		inset 1px 1px 0 color-mix(in srgb, var(--color-surface-elevated) 85%, transparent),
+		inset -1px -2px 3px color-mix(in srgb, var(--color-text-primary) 14%, transparent);
+	--env-shadow-container:
+		0 1px 2px color-mix(in srgb, var(--color-text-primary) 14%, transparent),
+		0 24px 48px -28px color-mix(in srgb, var(--color-text-primary) 26%, transparent);
+	--env-container-radius: 2px;
+	--env-container-width: min(86vw, 40rem);
+	--env-container-ratio: 1.18;
+	--env-container-max-height: 60svh;
+	--env-grid: 36% 24% 40%;
+	--env-seal-size-min: 68px;
+	--env-seal-size-max: 96px;
+	--env-seal-size-ratio: 17;
+	--env-seal-hint-display: none;
+	--env-title-size: clamp(2.4rem, 10cqw, 3.6rem);
+	--env-font-display: var(--font-calligraphy), cursive;
+	--env-identity-padding: 1.25rem;
+	--reveal-card-bg:
+		var(--seaside-paper-grain, #{$seaside-grain}),
+		var(--seaside-card-bg, var(--color-surface-elevated));
+	--reveal-card-text-primary: var(--color-text-primary);
+	--reveal-card-text-secondary: var(
+		--seaside-ink-strong,
+		color-mix(in srgb, var(--color-text-primary) 72%, transparent)
+	);
+	--reveal-card-border: transparent;
+	--reveal-card-accent: var(--seaside-ink, var(--color-border-premium));
+	--reveal-card-font-display: var(--font-calligraphy), cursive;
+	--reveal-card-radius: 0;
+	--reveal-card-shadow: 0 1px 2px color-mix(in srgb, var(--color-text-primary) 16%, transparent);
+	--reveal-card-grain-opacity: 0;
+	--reveal-card-width: var(--seaside-card-width, min(86vw, 380px));
+
+	.envelope-flap {
+		height: 54%;
+		clip-path: polygon(0 0, 100% 0, 50% 100%);
+		transition: background var(--duration-reveal, 900ms) var(--ease-premium);
+	}
+
+	// Silver edge along both flap diagonals.
+	.envelope-flap::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		height: auto;
+		background:
+			linear-gradient(
+					to top right,
+					transparent calc(50% - 0.7px),
+					var(--seaside-ink, var(--color-border-premium)) 50%,
+					transparent calc(50% + 0.7px)
+				)
+				left / 50% 100% no-repeat,
+			linear-gradient(
+					to top left,
+					transparent calc(50% - 0.7px),
+					var(--seaside-ink, var(--color-border-premium)) 50%,
+					transparent calc(50% + 0.7px)
+				)
+				right / 50% 100% no-repeat;
+	}
+
+	// The wave liner is the inside of the flap: it shows only while the flap turns open.
+	&.is-opening .envelope-flap {
+		background: $seaside-liner, var(--seaside-sky-light, var(--color-surface-elevated));
+	}
+
+	.envelope-pocket {
+		clip-path: polygon(0 28%, 50% 58%, 100% 28%, 100% 100%, 0 100%);
+	}
+
+	.envelope-tease {
+		padding-bottom: calc(1.25rem + 6cqw);
+	}
+
+	// Pearl wax: irregular rim, inner bevel, shell pressed in with light from the top left.
+	.envelope-seal-button__visual {
+		isolation: isolate;
+		border: 0;
+		border-radius: 50%;
+
+		// Wax spill: a slightly larger, irregular rim pressed out under the stamp.
+		&::before {
+			content: '';
+			position: absolute;
+			inset: var(--seaside-seal-rim-spread, -7%);
+			z-index: -1;
+			border-radius: var(--seaside-seal-rim-shape, 44% 56% 51% 49% / 56% 43% 57% 44%);
+			background: var(--seaside-seal-rim-bg, var(--env-seal-bg));
+			box-shadow:
+				0 1px 0 color-mix(in srgb, var(--color-text-primary) 20%, transparent),
+				0 3px 8px color-mix(in srgb, var(--color-text-primary) 12%, transparent);
+			transform: rotate(-8deg);
+		}
+	}
+
+	.envelope-seal-button__visual .seal-icon {
+		width: 58%;
+		height: 58%;
+		filter: drop-shadow(0.6px 0.8px 0 rgb(255 255 255 / 80%))
+			drop-shadow(-0.4px -0.5px 0 rgb(40 60 80 / 30%));
+	}
+
+	.envelope-seal-button__pulse {
+		display: none;
+	}
+
+	.envelope-name {
+		font-family: var(--font-calligraphy), cursive;
+		text-shadow: none;
+	}
+
+	.envelope-details,
+	.tease-divider {
+		display: none;
+	}
+
+	.personalized-label {
+		font-family: var(--font-label, var(--font-body));
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.16em;
+		text-transform: none;
+		color: var(--env-text-secondary);
+	}
+
+	.personalized-name {
+		font-family: var(--font-calligraphy), cursive;
+		font-size: clamp(1.9rem, 9cqw, 2.6rem);
+		font-style: normal;
+		font-weight: 400;
+		letter-spacing: 0;
+		text-transform: none;
+		color: var(--env-text-primary);
+	}
+
+	.envelope-external-instruction__button {
+		min-height: 44px;
+		font-family: var(--font-label, var(--font-body));
+		font-variant-caps: all-small-caps;
+		letter-spacing: var(--seaside-instruction-tracking, 0.18em);
+		text-transform: none;
+		color: var(--seaside-instruction-ink, var(--env-text-secondary));
+	}
+
+	.instruction-line {
+		display: none;
+	}
+
+	// Card: cotton paper with a deckle edge and an inner silver hairline. The mask clips the
+	// card's own shadow, so an optional contact shadow on the stage follows the deckle instead.
+	.envelope-reveal-stage {
+		filter: var(--seaside-card-edge-shadow, none);
+	}
+
+	.invitation-reveal-card {
+		mask: $seaside-deckle center / 100% 100% no-repeat;
+		border: 0;
+	}
+
+	.invitation-reveal-card__inner {
+		position: relative;
+		gap: 0.2rem;
+		padding-top: clamp(1.6rem, 5vw, 2.2rem);
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: clamp(0.65rem, 2.6vw, 0.9rem);
+			border: 1px solid
+				color-mix(in srgb, var(--seaside-ink, var(--color-border-premium)) 75%, transparent);
+			pointer-events: none;
+		}
+	}
+
+	.invitation-reveal-card__ornament {
+		width: min(62%, 11rem);
+		height: auto;
+		margin-bottom: 0.6rem;
+		color: var(--seaside-ink-strong, var(--color-border-premium));
+	}
+
+	.invitation-reveal-card__label {
+		font-family: var(--font-label, var(--font-body));
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.16em;
+		text-transform: none;
+	}
+
+	.invitation-reveal-card__name {
+		font-size: clamp(4rem, 22vw, 5.75rem);
+		font-weight: 400;
+		line-height: 1.15;
+	}
+
+	.invitation-reveal-card__date {
+		font-family: var(--font-body);
+		font-variant-numeric: oldstyle-nums;
+		letter-spacing: 0.06em;
+	}
+
+	.invitation-reveal-card__divider {
+		display: none;
+	}
+
+	@include mixins.respond-below(sm) {
+		--env-container-width: min(88vw, 344px);
+		--env-container-ratio: 0.74;
+		--env-container-max-height: min(74svh, 560px);
+		--env-grid: 38% 22% 40%;
+		--env-title-size: clamp(2.4rem, 13cqw, 3rem);
+
+		.envelope-flap {
+			height: 46%;
+		}
+
+		.envelope-pocket {
+			clip-path: polygon(0 24%, 50% 50%, 100% 24%, 100% 100%, 0 100%);
+		}
+	}
+}

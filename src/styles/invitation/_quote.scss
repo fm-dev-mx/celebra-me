@@ -107,6 +107,7 @@
 	letter-spacing: var(--quote-content-letter-spacing);
 	text-shadow: var(--quote-content-shadow, 0 2px 10px var(--color-glass-shadow));
 	max-width: var(--quote-content-max-width);
+	text-wrap: var(--quote-content-wrap, wrap);
 }
 
 .quote-line {
