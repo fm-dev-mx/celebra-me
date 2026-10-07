@@ -16,9 +16,11 @@
 //   --hero-bleed-scroll-line          Scroll line length on wide screens
 // ==========================================================================
 
-.invitation-hero.framed-portrait-hero[data-variant='bleed-portrait'] {
-	--hero-title-size: clamp(4.5rem, 24vw, 6.5rem);
+:where(.invitation-hero)[data-variant='bleed-portrait'] {
+	--hero-title-size: clamp(3.2rem, 10vw, 5.5rem);
+}
 
+.invitation-hero.framed-portrait-hero[data-variant='bleed-portrait'] {
 	position: relative;
 	box-sizing: border-box;
 	display: flex;
@@ -73,12 +75,13 @@
 	}
 
 	.framed-portrait-hero__name {
-		max-width: none;
+		max-width: 100%;
 		margin: 0;
 		font: var(--hero-name-font-weight, 400) var(--hero-title-size) /
 			var(--hero-name-line-height, 1.15) var(--hero-name-font-family, var(--font-display));
 		letter-spacing: var(--hero-name-letter-spacing, 0);
 		text-wrap: balance;
+		overflow-wrap: anywhere;
 	}
 
 	.framed-portrait-hero__facts {
@@ -161,7 +164,7 @@
 
 		.framed-portrait-hero__name {
 			margin-left: -0.06em;
-			font-size: var(--hero-bleed-title-size-desktop, clamp(7rem, 11vw, 11rem));
+			font-size: var(--hero-bleed-title-size-desktop, clamp(5rem, 8vw, 8rem));
 		}
 
 		.framed-portrait-hero__facts {
