@@ -16,9 +16,10 @@ import { buildVenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import type { IndicationStyleVariant } from '@/lib/theme/theme-contract';
 import type {
-	LocationPresentation,
-	LocationMapStyle,
 	LocationIndicationsLayout,
+	LocationIndicationsStyle,
+	LocationMapStyle,
+	LocationPresentation,
 } from '@/lib/invitation/location-presentation';
 import type { LocationVariant } from '@/lib/invitation/section-variants';
 
@@ -41,6 +42,7 @@ interface Props {
 	presentation?: LocationPresentation;
 	showFlourishes?: boolean;
 	showNavigationButtons?: boolean;
+	indicationsStyle?: LocationIndicationsStyle;
 	indicationsHeading?: string;
 	indicationsLayout?: LocationIndicationsLayout;
 	showCalendarLinks?: boolean;
@@ -67,6 +69,7 @@ const {
 	presentation,
 	showFlourishes = true,
 	showNavigationButtons = true,
+	indicationsStyle = 'list',
 	indicationsHeading,
 	indicationsLayout = 'list',
 	showCalendarLinks = false,
@@ -164,7 +167,7 @@ const venueType = (venue: GroupedVenue) =>
 			) : (
 				<p class="event-location__indications-heading">{indicationsHeading}</p>
 			))}
-			<div class="event-location__indications">
+			<div class="event-location__indications" data-indications-style={indicationsStyle}>
 				{indications.map((indication, index) => {
 					const isReserved = indication.styleVariant === 'reserved';
 					const editorialNoteTitle = indication.title;
@@ -185,7 +188,7 @@ const venueType = (venue: GroupedVenue) =>
 												{String(index + 1).padStart(2, '0')}
 											</span>
 										)}
-										<span>{editorialNoteTitle}</span>
+										<span class="event-location__indication-label">{editorialNoteTitle}</span>
 									</p>
 								)}
 								<p

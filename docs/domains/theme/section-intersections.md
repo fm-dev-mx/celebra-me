@@ -14,12 +14,13 @@ preserving clear section boundaries. They are hierarchy tools, not a requirement
 transition.
 
 This system distills approved visual directions into reusable guidance. The reusable closed set
-contains a neutral default and three primary patterns:
+contains a neutral default and four primary patterns:
 
 1. Neutral
 2. Editorial arch
 3. Layered overlap
 4. Atmospheric blend
+5. Pattern band
 
 A discontinuous champagne or golden thread may appear as a secondary detail. It must never become a
 continuous divider running through the full invitation.
@@ -85,6 +86,21 @@ geometric edge would be too literal.
   example with a shallow negative-margin overlap keyed by `data-intersection-source`), paint or open
   the top band on that child locally. Keep the treatment generic to the source attribute — do not
   hard-code a successor section kind.
+
+### Pattern band
+
+Use a pattern band when the theme has a literal, playful edge motif (a checkered flag, lane
+markings, a picnic gingham) that marks a narrative stop without a geometric climax.
+
+- The band is a short strip painted on the incoming wrapper `::before`; its height
+  (`--intersection-band-height`) is reserved as static `padding-top`, so it never covers content and
+  causes no layout shift.
+- Pick the pattern with `--intersection-band-pattern`: the shared defaults are
+  `--intersection-band-checker` and `--intersection-band-lane`. Recolor with
+  `--intersection-band-ink`, `--intersection-band-paper` and `--intersection-band-accent`.
+- Profiles select a pattern per boundary against stable attributes (`data-intersection-source`),
+  never against client identity.
+- Count it as a geometric treatment: use it at one or two meaningful boundaries at most.
 
 ## Secondary Golden Thread
 
@@ -182,7 +198,7 @@ Shared capabilities must remain generic and configurable:
 
 Reusable mechanics are selected before rendering and copied onto stable wrapper attributes:
 
-- `data-intersection`: `neutral`, `arch`, `overlap`, or `atmospheric-blend`;
+- `data-intersection`: `neutral`, `arch`, `overlap`, `atmospheric-blend`, or `pattern-band`;
 - `data-intersection-source`: explicit source identity from the selected composition profile;
 - `data-section-kind`: stable incoming section kind.
 

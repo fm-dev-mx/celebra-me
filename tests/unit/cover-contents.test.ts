@@ -46,4 +46,17 @@ describe('collector cover contents', () => {
 			{ label: 'Lugar', kicker: 'Lugar', page: '07' },
 		]);
 	});
+
+	it('uses the first visible venue as the location cover line unless the location is locked', () => {
+		const venues = [
+			{ venueName: 'Salón oculto', isVisible: false },
+			{ venueName: 'Jardín de Teresita' },
+		];
+		expect(buildCoverContents(viewModel({ location: { venues } }, ['location']))).toEqual([
+			{ label: 'Lugar', kicker: 'Lugar', deck: 'Jardín de Teresita', page: '04' },
+		]);
+		expect(
+			buildCoverContents(viewModel({ location: { venues, isLocked: true } }, ['location'])),
+		).toEqual([{ label: 'Lugar', kicker: 'Lugar', page: '04' }]);
+	});
 });

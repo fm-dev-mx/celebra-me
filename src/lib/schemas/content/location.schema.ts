@@ -4,6 +4,7 @@ import { INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 import {
 	LOCATION_INDICATIONS_LAYOUTS,
+	LOCATION_INDICATIONS_STYLES,
 	LOCATION_MAP_STYLES,
 	LOCATION_PRESENTATIONS,
 } from '@/lib/invitation/location-presentation';
@@ -63,6 +64,7 @@ const locationBaseSchema = z.object({
 			showNavigationButtons: z.boolean().optional(),
 			revealSurface: z.enum(['section', 'rsvp']).optional(),
 			indicationsLayout: z.enum(LOCATION_INDICATIONS_LAYOUTS).optional(),
+			indicationsStyle: z.enum(LOCATION_INDICATIONS_STYLES).optional(),
 			showCalendarLinks: z.boolean().optional(),
 		})
 		.strict()

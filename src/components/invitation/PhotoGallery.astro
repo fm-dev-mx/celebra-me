@@ -41,6 +41,9 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 	const delivery = 'delivery' in image ? image.delivery : undefined;
 	return { rawSource, src, width: delivery?.width ?? meta?.width ?? 800, height: delivery?.height ?? meta?.height ?? 1000 };
 };
+// paired-portraits caps each print at the source's native width (never upscaled).
+const nativeWidthStyleFor = (width: number) =>
+	variant === 'paired-portraits' ? `--gallery-item-native-width: ${width}px;` : '';
 ---
 
 <div class="gallery-grid" data-variant={variant}>
@@ -50,6 +53,7 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 			const layoutRole = getGalleryPreviewRole(index, variant, item.layoutRole);
 			const layoutClass = `gallery-grid__item--${layoutRole}`;
 			const aspectStyle = item.aspectRatio ? `aspect-ratio: ${item.aspectRatio};` : '';
+			const nativeWidthStyle = nativeWidthStyleFor(width);
 			return (
 			<div
 				class:list={['gallery-grid__item', layoutClass]}
@@ -61,7 +65,7 @@ const resolveImage = (image: ImageMetadata | ImageAsset) => {
 				data-image-key={item.key}
 				data-gallery-src={src}
 				data-gallery-caption={item.caption ?? ''}
-				style={`${aspectStyle}${item.focalPoint ? `--gallery-item-focal-point: ${item.focalPoint};` : ''}${item.focalPointMobile ? `--gallery-item-focal-point-mobile: ${item.focalPointMobile};` : ''}${item.focalPointTablet ? `--gallery-item-focal-point-tablet: ${item.focalPointTablet};` : ''}${item.focalPointDesktop ? `--gallery-item-focal-point-desktop: ${item.focalPointDesktop};` : ''}`}
+				style={`${aspectStyle}${nativeWidthStyle}${item.focalPoint ? `--gallery-item-focal-point: ${item.focalPoint};` : ''}${item.focalPointMobile ? `--gallery-item-focal-point-mobile: ${item.focalPointMobile};` : ''}${item.focalPointTablet ? `--gallery-item-focal-point-tablet: ${item.focalPointTablet};` : ''}${item.focalPointDesktop ? `--gallery-item-focal-point-desktop: ${item.focalPointDesktop};` : ''}`}
 				tabindex="0"
 				role="button"
 				aria-label={item.alt || (variant === 'narrative-stack' ? `Fotografía ${index + 1}` : item.caption) || `Ver imagen ${index + 1}`}

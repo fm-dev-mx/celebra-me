@@ -17,11 +17,13 @@ import type { FamilyPresentation } from '@/lib/invitation/family-presentation';
 import type {
 	GalleryLayoutRole,
 	GalleryMobileBrowseMode,
+	GalleryPairedArrangement,
 	GalleryPresentation,
 } from '@/lib/invitation/gallery-presentation';
 import type { GiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import type {
 	LocationPresentation,
+	LocationIndicationsStyle,
 	LocationMapStyle,
 	LocationIndicationsLayout,
 } from '@/lib/invitation/location-presentation';
@@ -53,6 +55,11 @@ export interface HeroViewModel {
 	ambience?: ImageAsset;
 	venueIndex?: number;
 	nameLeadWords?: number;
+	/** Editorial-cover folio marks; the renderer falls back to its XV defaults. */
+	coverMark?: string;
+	coverPage?: string;
+	/** Editorial-cover design credit; shown when omitted. */
+	designCredit?: boolean;
 	name: string;
 	secondaryName?: string;
 	label: string;
@@ -195,6 +202,8 @@ export interface EnvelopeViewModel {
 		coverVolume?: string;
 		/** Editorial cover reveal: issue year (e.g. "2027"). */
 		coverIssue?: string;
+		/** Editorial cover reveal: one or two cover lines; defaults are the XV edition lines. */
+		coverLines?: string[];
 		/** Editorial cover reveal: 'collector' enables the drag-to-open bending magazine. */
 		coverExperience?: 'standard' | 'collector';
 		/** Explicit content reveal variant. Only 'editorial-cover' replaces the standard envelope. */
@@ -231,6 +240,7 @@ export interface LocationSection {
 		showNavigationButtons?: boolean;
 		revealSurface?: 'section' | 'rsvp';
 		indicationsLayout?: LocationIndicationsLayout;
+		indicationsStyle?: LocationIndicationsStyle;
 		showCalendarLinks?: boolean;
 	};
 	isLocked?: boolean;
@@ -241,6 +251,7 @@ export interface LocationSection {
 	indications?: Indication[];
 	showFlourishes?: boolean;
 	showNavigationButtons?: boolean;
+	indicationsStyle?: LocationIndicationsStyle;
 	introEyebrow?: string;
 	introHeading?: string;
 	introLede?: string;
@@ -315,7 +326,10 @@ export interface InvitationViewModel {
 			}>;
 			variant: GalleryVariant;
 			presentation?: GalleryPresentation;
-			variantOptions?: { mobileBrowse?: GalleryMobileBrowseMode };
+			variantOptions?: {
+				mobileBrowse?: GalleryMobileBrowseMode;
+				arrangement?: GalleryPairedArrangement;
+			};
 		};
 		itinerary?: {
 			title: string;

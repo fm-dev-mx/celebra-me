@@ -10,6 +10,8 @@ interface Props {
 	coverEdition?: string;
 	coverVolume?: string;
 	coverIssue?: string;
+	/** One or two cover lines printed on the face; defaults to the XV edition lines. */
+	coverLines?: string[];
 	microcopy: string;
 	eventSlug: string;
 	variant?: string;
@@ -42,6 +44,7 @@ const {
 	coverEdition = 'I',
 	coverVolume,
 	coverIssue,
+	coverLines: coverLinesProp,
 	microcopy,
 	eventSlug,
 	variant,
@@ -105,7 +108,10 @@ const barcodeRects = Array.from(`${eventSlug}-celebra-me`)
 const barcodeWidth = barcodeX;
 
 const ctaText = coverEdition ? 'ABRIR INVITACIÓN' : 'DESCUBRIR';
-const coverLines = ['Una noche de estreno', 'Retrato de una celebración'];
+const coverLines =
+	coverLinesProp && coverLinesProp.length > 0
+		? coverLinesProp
+		: ['Una noche de estreno', 'Retrato de una celebración'];
 const coverKicker = coverEdition ? `Edición ${coverEdition}` : heroLabel;
 const formattedDate = heroDateValue.toLocaleDateString('es-MX', {
 	day: 'numeric',

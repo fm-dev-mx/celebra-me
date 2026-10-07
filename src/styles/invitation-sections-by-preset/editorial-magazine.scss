@@ -4,7 +4,10 @@
 @use '../themes/sections/header/editorial-magazine' as header-editorial-magazine;
 @use '../themes/sections/footer/editorial' as footer-editorial;
 
-/* Semantic Folios for Editorial Magazine Theme */
+/* Semantic Folios for Editorial Magazine Theme
+ * Folio labels resolve from per-section custom properties so a visual profile can relabel them
+ * (--editorial-folio-countdown | -family | -location | -gallery | -gifts | -rsvp). The fallbacks
+ * keep the original XV edition copy for profiles that do not override them. */
 .theme-preset--editorial-magazine .countdown-section,
 .theme-preset--editorial-magazine .event-location,
 .theme-preset--editorial-magazine .gifts-section,
@@ -12,14 +15,14 @@
 .theme-preset--editorial-magazine .family,
 .theme-preset--editorial-magazine .rsvp {
 	position: relative;
-	padding-bottom: clamp(6.5rem, 15vw, 9.5rem);
+	padding-bottom: calc(clamp(6.5rem, 15vw, 9.5rem) + var(--editorial-folio-lift, 0rem));
 
 	&::after {
 		content: '';
 		position: absolute;
 		left: clamp(1rem, 5vw, 4.5rem);
 		right: clamp(1rem, 5vw, 4.5rem);
-		bottom: 3.5rem;
+		bottom: calc(3.5rem + var(--editorial-folio-lift, 0rem));
 		height: 1px;
 		background: rgb(var(--editorial-magazine-ink-rgb) / 14%);
 		pointer-events: none;
@@ -28,36 +31,36 @@
 	&::before {
 		position: absolute;
 		left: clamp(1.2rem, 5.2vw, 4.7rem);
-		bottom: 2.2rem;
+		bottom: calc(2.2rem + var(--editorial-folio-lift, 0rem));
 		font-family: var(--font-label);
 		font-size: 0.62rem;
 		font-weight: 700;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		color: rgb(var(--editorial-magazine-ink-rgb) / 48%);
+		color: rgb(var(--editorial-magazine-ink-rgb) / var(--editorial-folio-alpha, 48%));
 		pointer-events: none;
 		z-index: 5;
 	}
 }
 
 .theme-preset--editorial-magazine .countdown-section::before {
-	content: 'CELEBRA-ME | EDICIÓN XV · SAVE THE DATE';
+	content: var(--editorial-folio-countdown, 'CELEBRA-ME | EDICIÓN XV · SAVE THE DATE');
 }
 
 .theme-preset--editorial-magazine .family::before {
-	content: 'CELEBRA-ME | EDICIÓN XV · CRÉDITOS';
+	content: var(--editorial-folio-family, 'CELEBRA-ME | EDICIÓN XV · CRÉDITOS');
 }
 
 .theme-preset--editorial-magazine .event-location::before {
-	content: 'CELEBRA-ME | EDICIÓN XV · CRÓNICA DE LA JORNADA';
+	content: var(--editorial-folio-location, 'CELEBRA-ME | EDICIÓN XV · CRÓNICA DE LA JORNADA');
 }
 
 .theme-preset--editorial-magazine .gallery-section::before {
-	content: 'CELEBRA-ME | EDICIÓN XV · EDITORIAL DE MODA';
+	content: var(--editorial-folio-gallery, 'CELEBRA-ME | EDICIÓN XV · EDITORIAL DE MODA');
 }
 
 .theme-preset--editorial-magazine .gifts-section::before {
-	content: 'CELEBRA-ME | EDICIÓN XV · GUÍA DE REGALOS';
+	content: var(--editorial-folio-gifts, 'CELEBRA-ME | EDICIÓN XV · GUÍA DE REGALOS');
 }
 
 .theme-preset--editorial-magazine .rsvp {
@@ -66,7 +69,7 @@
 	}
 
 	&::before {
-		content: 'CELEBRA-ME | EDICIÓN XV · CONFIRMACIÓN';
-		color: rgb(var(--editorial-magazine-white-rgb) / 48%);
+		content: var(--editorial-folio-rsvp, 'CELEBRA-ME | EDICIÓN XV · CONFIRMACIÓN');
+		color: rgb(var(--editorial-magazine-white-rgb) / var(--editorial-folio-alpha, 48%));
 	}
 }

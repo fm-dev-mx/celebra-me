@@ -63,6 +63,8 @@ export const envelopeSchema = z
 		coverEdition: z.string().optional(),
 		coverVolume: z.string().optional(),
 		coverIssue: z.string().optional(),
+		// Editorial cover: one or two short cover lines; the reveal keeps its defaults when omitted.
+		coverLines: z.array(z.string().trim().min(1).max(60)).min(1).max(2).optional(),
 		coverExperience: editorialCoverExperienceSchema.optional(),
 	})
 	.loose() // Preserva campos desconocidos del envelope (defensivo para datos DB legacy)
