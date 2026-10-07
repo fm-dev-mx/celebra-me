@@ -291,6 +291,21 @@ describe('Event content schema (real contract)', () => {
 		]);
 	});
 
+	it('registers the Cumpleaños Editorial Magazine preset record for managed birthdays', () => {
+		const preset = DEMO_PRESET_CATALOG.find(
+			(item) => item.id === 'demo-cumple-editorial-magazine',
+		);
+
+		expect(preset).toMatchObject({
+			id: 'demo-cumple-editorial-magazine',
+			eventType: 'cumple',
+			displayName: 'Cumpleaños — Revista Editorial',
+			themeId: 'editorial-magazine',
+			previewSlug: 'demo-cumple-editorial-magazine',
+		});
+		expect(preset?.requiredAssets).toEqual(['hero', 'portrait', 'gallery01', 'gallery02']);
+	});
+
 	it('resolves Primera Comunión demo assets through its explicit asset slug', () => {
 		const content = JSON.parse(fs.readFileSync(primeraComunionDemoPath, 'utf8'));
 		const preset = DEMO_PRESET_CATALOG.find(
