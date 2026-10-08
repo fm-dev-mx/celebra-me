@@ -126,6 +126,55 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 	--family-media-bg: rgb(255 255 255);
 	--family-media-shadow: 0 1px 1px rgb(40 60 80 / 16%), 0 10px 22px -16px rgb(40 60 80 / 30%);
 
+	// Motion: one calm voice. Durations 150 / 250 / 700 ms; a soft ease-out for entrances
+	// and the standard ease-in-out for state changes. Only opacity and transform move.
+	--mia-motion-fast: 150ms;
+	--mia-motion-quick: 250ms;
+	--mia-motion-slow: 700ms;
+	--mia-ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
+	--mia-ease-move: var(--ease-standard);
+
+	// Section reveals: a short rise without blur, a brief stagger, and no ambient zoom (framed
+	// photographs are shown whole, so a slow scale would crop them).
+	--motion-reveal-distance: 12px;
+	--motion-reveal-duration: var(--mia-motion-slow);
+	--motion-reveal-ease: var(--mia-ease-enter);
+	--motion-reveal-blur: 0;
+	--motion-stagger-step: 60ms;
+	--motion-stagger-cap: 240ms;
+	--motion-ambient-scale-to: 1;
+
+	// Hover, focus and tap feedback: 150 ms everywhere (the shared recipe resolves at the root,
+	// so it is restated with the shorter duration).
+	--duration-snappy: var(--mia-motion-fast);
+	--motion-interaction-duration: var(--mia-motion-fast);
+	--transition-snappy:
+		opacity var(--mia-motion-fast) var(--mia-ease-move),
+		transform var(--mia-motion-fast) var(--mia-ease-move),
+		border-color var(--mia-motion-fast) var(--mia-ease-move),
+		box-shadow var(--mia-motion-fast) var(--mia-ease-move);
+
+	// Hero entrance: occasion, name, when/where, then the scroll line; behind the envelope it
+	// waits for the fade.
+	--hero-bleed-entrance: hero-bleed-rise;
+	--hero-bleed-entrance-wait: 600ms;
+	--motion-hero-eyebrow-duration: var(--mia-motion-slow);
+	--motion-hero-eyebrow-delay: 0ms;
+	--motion-hero-title-duration: var(--mia-motion-slow);
+	--motion-hero-title-delay: 100ms;
+	--motion-hero-details-duration: var(--mia-motion-slow);
+	--motion-hero-details-delay: 200ms;
+	--motion-hero-affordance-duration: var(--mia-motion-slow);
+	--motion-hero-affordance-delay: 400ms;
+
+	// Music control: two breaths while paused instead of a permanent pulse; a 250 ms hint.
+	--music-player-pulse-iterations: 2;
+	--music-player-prompt-duration: var(--mia-motion-quick);
+
+	// Page scrollbar: silver thumb on a transparent track, so no white strip beside the paper or
+	// the envelope.
+	--page-scrollbar-color: rgb(138 154 168 / 70%) transparent;
+
 	// RSVP shell is transparent by default; keep the sky paper instead of the global canvas.
 	--rsvp-shell-background: var(--color-surface-primary);
 
@@ -286,6 +335,7 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 		--gallery-item-hover-transform: none;
 		--gallery-item-emphasis-transform: none;
 		--gallery-mosaic-gap: clamp(3px, 0.45vw, 6px);
+		--gallery-item-transition-duration: var(--mia-motion-quick);
 	}
 
 	.countdown-section {
@@ -347,6 +397,24 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 			rgb(var(--color-ice-blue-rgb) / 90%) 0%,
 			transparent 72%
 		);
+	}
+
+	// Envelope: flap 700 ms, the card rises from 450 ms (700 ms), a short hold to read it, then
+	// the envelope fades 700 ms (≈ 2.4 s in all, was ≈ 5.3 s). The flap shadow keeps a fixed blur
+	// and only fades; the open cue breathes three times, then rests.
+	.envelope-wrapper {
+		--duration-reveal: var(--mia-motion-slow);
+		--duration-long: var(--mia-motion-slow);
+		--duration-standard: var(--mia-motion-quick);
+		--env-phase-exit-duration: var(--mia-motion-slow);
+		--env-exit-delay: 500ms;
+		--env-flap-ease: var(--mia-ease-move);
+		--env-flap-shadow-filter: blur(36px);
+		--env-flap-shadow-keyframes: invitation-env-shadow-fade;
+		--env-card-rise-duration: var(--mia-motion-slow);
+		--env-card-rise-delay: 450ms;
+		--env-card-rise-ease: var(--mia-ease-enter);
+		--env-seal-pulse-iterations: 3;
 	}
 
 	.invitation-section-wrapper[data-section-kind='family'][data-intersection='arch'],

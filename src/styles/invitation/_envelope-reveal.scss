@@ -62,8 +62,8 @@
 	background: var(--env-bg);
 	perspective: 2000px;
 	transition:
-		opacity var(--duration-long) var(--ease-standard),
-		transform var(--env-phase-exit-duration) var(--ease-premium);
+		opacity var(--duration-long) var(--ease-standard) var(--env-exit-delay, 0s),
+		transform var(--env-phase-exit-duration) var(--ease-premium) var(--env-exit-delay, 0s);
 
 	&[hidden] {
 		display: none;
@@ -201,7 +201,7 @@
 	z-index: -1;
 	background: color-mix(in srgb, var(--color-surface-dark) 30%, transparent);
 	border-radius: inherit;
-	filter: blur(28px);
+	filter: var(--env-flap-shadow-filter, blur(28px));
 	opacity: 0%;
 	transform: scale(0.9);
 }
@@ -463,7 +463,7 @@
 	border-radius: 50%;
 	opacity: 0%;
 	pointer-events: none;
-	animation: invitation-seal-pulse 3.2s ease-out infinite;
+	animation: invitation-seal-pulse 3.2s ease-out var(--env-seal-pulse-iterations, infinite);
 }
 
 .envelope-seal-button__visual {
@@ -554,11 +554,15 @@
 
 	.envelope-flap {
 		z-index: 2;
-		animation: invitation-env-flap-open var(--duration-reveal) forwards var(--ease-premium);
+		animation: invitation-env-flap-open var(--duration-reveal) forwards
+			var(--env-flap-ease, var(--ease-premium));
 	}
 
+	// `--env-flap-shadow-keyframes: invitation-env-shadow-fade` keeps the blur static and moves
+	// only opacity and transform.
 	.envelope-flap-shadow {
-		animation: invitation-env-shadow-drop var(--duration-reveal) forwards var(--ease-premium);
+		animation: var(--env-flap-shadow-keyframes, invitation-env-shadow-drop)
+			var(--duration-reveal) forwards var(--env-flap-ease, var(--ease-premium));
 	}
 }
 
@@ -572,6 +576,23 @@
 @keyframes invitation-env-flap-open {
 	100% {
 		transform: rotateX(170deg);
+	}
+}
+
+@keyframes invitation-env-shadow-fade {
+	0% {
+		opacity: 0%;
+		transform: scale(0.95);
+	}
+
+	40% {
+		opacity: 100%;
+		transform: scale(1.08) translateY(32px);
+	}
+
+	100% {
+		opacity: 0%;
+		transform: scale(1.08) translateY(32px);
 	}
 }
 
