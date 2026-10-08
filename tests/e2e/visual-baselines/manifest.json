@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-07T20:57:26.590Z",
+    "generatedAt": "2026-10-08T00:18:15.721Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,8 +12,8 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
-        "cssSha256": "de5c7821b343d63d69c68b1285dc4a5da747ba156464071b4ec6178804cf1628",
-        "assetSha256": "17fe7036582aad4d5c2b2622c57f24ce981a7fde50750dd9e126988640a17a12",
+        "cssSha256": "4fa880fbe079db593ec4bf67fa15d36518beceda18fa2518317941518ba88903",
+        "assetSha256": "ff92fcf04af4cab85ac766eebd039fd30bfef76d4c0cafa00f843b46dfa9072b",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
@@ -1293,7 +1293,7 @@
             "cssOwner": "src/styles/themes/sections/countdown/_magazine-folio.scss",
             "fixtureIdentity": "synthetic:countdown.magazine-folio",
             "file": "jewelry-box-mobile-countdown-magazine-folio.png",
-            "sha256": "89f38ee02afda8de995eb8767619b4be020306535a29806e977ff9f4c0c6b374",
+            "sha256": "df33e4d047cf8e2fcf6b2d140291c20ce0a8a439935036af41fec157f1945a78",
             "contentHash": "593abfcd01088c723c7b78f9bc09a0d6bb78e7ad7c4f3e5e684fc6a5a55a0dbe",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -1307,7 +1307,7 @@
             "cssOwner": "src/styles/themes/sections/countdown/_magazine-folio.scss",
             "fixtureIdentity": "synthetic:countdown.magazine-folio",
             "file": "jewelry-box-desktop-countdown-magazine-folio.png",
-            "sha256": "05584a5b43e9aa4c79e2fbb2844ec21721e9f9e6f3a5a77d920d0281dd143a5e",
+            "sha256": "cf7fabb4b156f1f7a5a7e1464110e7c6361a3a51329faccbb0e493c7bb3bb660",
             "contentHash": "593abfcd01088c723c7b78f9bc09a0d6bb78e7ad7c4f3e5e684fc6a5a55a0dbe",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -1713,7 +1713,7 @@
             "cssOwner": "src/styles/themes/sections/countdown/_magazine-folio.scss",
             "fixtureIdentity": "synthetic:countdown.magazine-folio",
             "file": "celestial-blue-mobile-countdown-magazine-folio.png",
-            "sha256": "3ca75e13bc36a08653900bef212a17ab2566fbac7aa55a9cd9e8ca2cde37be2c",
+            "sha256": "e287821b257d442cf3d2f0fd2827cf2f8332d3f5044488b04762992969ab253c",
             "contentHash": "5beb5b49f11e8527a614c03ba8400112f65d8acf9ad52059674befcb9faf2a48",
             "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
             "comparisonResult": "ACCEPTED"
@@ -2405,9 +2405,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "58513e67fdbff1b36b2a5f15309c96c282dccf8e",
+    "referenceSha": "9156169167731162dc7fd6e720cb6a1c6e985e5a",
     "variantManifest": {
-        "generatedAt": "2026-10-07T20:57:26.590Z",
+        "generatedAt": "2026-10-08T00:18:15.721Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2420,8 +2420,8 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
-            "cssSha256": "de5c7821b343d63d69c68b1285dc4a5da747ba156464071b4ec6178804cf1628",
-            "assetSha256": "17fe7036582aad4d5c2b2622c57f24ce981a7fde50750dd9e126988640a17a12",
+            "cssSha256": "4fa880fbe079db593ec4bf67fa15d36518beceda18fa2518317941518ba88903",
+            "assetSha256": "ff92fcf04af4cab85ac766eebd039fd30bfef76d4c0cafa00f843b46dfa9072b",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -3701,7 +3701,7 @@
                 "cssOwner": "src/styles/themes/sections/countdown/_magazine-folio.scss",
                 "fixtureIdentity": "synthetic:countdown.magazine-folio",
                 "file": "jewelry-box-mobile-countdown-magazine-folio.png",
-                "sha256": "89f38ee02afda8de995eb8767619b4be020306535a29806e977ff9f4c0c6b374",
+                "sha256": "df33e4d047cf8e2fcf6b2d140291c20ce0a8a439935036af41fec157f1945a78",
                 "contentHash": "593abfcd01088c723c7b78f9bc09a0d6bb78e7ad7c4f3e5e684fc6a5a55a0dbe",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -3715,7 +3715,7 @@
                 "cssOwner": "src/styles/themes/sections/countdown/_magazine-folio.scss",
                 "fixtureIdentity": "synthetic:countdown.magazine-folio",
                 "file": "jewelry-box-desktop-countdown-magazine-folio.png",
-                "sha256": "05584a5b43e9aa4c79e2fbb2844ec21721e9f9e6f3a5a77d920d0281dd143a5e",
+                "sha256": "cf7fabb4b156f1f7a5a7e1464110e7c6361a3a51329faccbb0e493c7bb3bb660",
                 "contentHash": "593abfcd01088c723c7b78f9bc09a0d6bb78e7ad7c4f3e5e684fc6a5a55a0dbe",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -4121,7 +4121,7 @@
                 "cssOwner": "src/styles/themes/sections/countdown/_magazine-folio.scss",
                 "fixtureIdentity": "synthetic:countdown.magazine-folio",
                 "file": "celestial-blue-mobile-countdown-magazine-folio.png",
-                "sha256": "3ca75e13bc36a08653900bef212a17ab2566fbac7aa55a9cd9e8ca2cde37be2c",
+                "sha256": "e287821b257d442cf3d2f0fd2827cf2f8332d3f5044488b04762992969ab253c",
                 "contentHash": "5beb5b49f11e8527a614c03ba8400112f65d8acf9ad52059674befcb9faf2a48",
                 "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
                 "comparisonResult": "CANDIDATE"
@@ -4141,10 +4141,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "58513e67fdbff1b36b2a5f15309c96c282dccf8e"
+        "referenceSha": "9156169167731162dc7fd6e720cb6a1c6e985e5a"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-07T20:57:26.595Z",
+        "generatedAt": "2026-10-08T00:18:15.727Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4157,8 +4157,8 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
-            "cssSha256": "de5c7821b343d63d69c68b1285dc4a5da747ba156464071b4ec6178804cf1628",
-            "assetSha256": "17fe7036582aad4d5c2b2622c57f24ce981a7fde50750dd9e126988640a17a12",
+            "cssSha256": "4fa880fbe079db593ec4bf67fa15d36518beceda18fa2518317941518ba88903",
+            "assetSha256": "ff92fcf04af4cab85ac766eebd039fd30bfef76d4c0cafa00f843b46dfa9072b",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4841,9 +4841,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "58513e67fdbff1b36b2a5f15309c96c282dccf8e"
+        "referenceSha": "9156169167731162dc7fd6e720cb6a1c6e985e5a"
     },
-    "candidateManifestSha256": "1afe90e8ad687a4cde2f48a78a4855c12a627405742e8d9f364a486ccbb00ae7",
-    "acceptedFromCommit": "58513e67fdbff1b36b2a5f15309c96c282dccf8e",
-    "acceptedAt": "2026-10-07T21:02:25.834Z"
+    "candidateManifestSha256": "47b49476c50f64a092744f04da8df3a4c239c7d456b380ac288a64133fd23469",
+    "acceptedFromCommit": "9156169167731162dc7fd6e720cb6a1c6e985e5a",
+    "acceptedAt": "2026-10-08T00:22:52.284Z"
 }
