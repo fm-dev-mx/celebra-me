@@ -135,10 +135,12 @@
 			object-fit: cover;
 			object-position: var(--thank-you-focal-point, var(--thank-you-image-position, center));
 			filter: var(--thank-you-photo-filter, saturate(0.94) contrast(0.96) brightness(1.04));
-			transform: scale(1.005);
+			transform: scale(var(--thank-you-photo-rest-scale, 1.005));
 			transition:
-				transform var(--duration-premium) var(--ease-premium),
-				filter var(--duration-premium) var(--ease-premium);
+				transform var(--thank-you-photo-transition-duration, var(--duration-premium))
+					var(--thank-you-photo-transition-ease, var(--ease-premium)),
+				filter var(--thank-you-photo-transition-duration, var(--duration-premium))
+					var(--thank-you-photo-transition-ease, var(--ease-premium));
 		}
 	}
 
@@ -211,7 +213,10 @@
 	}
 
 	@include mixins.respond-to(lg) {
-		padding-block: clamp(5.5rem, 14svh, 8rem) clamp(6.25rem, 13svh, 9rem);
+		padding-block: var(
+			--thank-you-section-padding-block-lg,
+			clamp(5.5rem, 14svh, 8rem) clamp(6.25rem, 13svh, 9rem)
+		);
 		padding-inline: clamp(2.5rem, 6vw, 6rem);
 
 		.thank-you-editorial {
@@ -267,7 +272,7 @@
 
 	@media (hover: hover) and (pointer: fine) {
 		.thank-you-editorial__image-shell:hover .photo-image {
-			transform: scale(1.03);
+			transform: scale(var(--thank-you-photo-hover-scale, 1.03));
 			filter: var(
 				--thank-you-photo-filter-hover,
 				saturate(0.98) contrast(1) brightness(1.04)

@@ -101,7 +101,10 @@
 	}
 
 	@include mixins.respond-to(lg) {
-		padding-block: clamp(5.5rem, 14svh, 8rem) clamp(6.25rem, 13svh, 9rem);
+		padding-block: var(
+			--thank-you-keepsake-padding-block-lg,
+			clamp(5.5rem, 14svh, 8rem) clamp(6.25rem, 13svh, 9rem)
+		);
 		padding-inline: clamp(2.5rem, 6vw, 6rem);
 
 		.thank-you-editorial {
