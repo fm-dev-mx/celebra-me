@@ -3,6 +3,8 @@
  *
  * Default: read-only plan. --apply mutates through canonical domain primitives
  * after one owner TTY confirmation bound to the plan fingerprint.
+ * On a terminal without flags an interactive menu plans scopes; every flag below is also a
+ * menu option and apply is never preselected.
  */
 import {
 	parseProductionApplyCliArgs,
@@ -20,12 +22,21 @@ import {
 import { renderOperatorError, writeHuman } from './operator-cli-ux.ts';
 import { productionApplyHandoff } from './production-apply-plan.ts';
 import { runProductionImageNamespaceApply } from './production-image-namespace-apply.ts';
+import { isInteractiveSession } from '../lib/cli-prompts.ts';
+import { shouldOpenProductionApplyMenu } from './production-apply-menu-model.ts';
 
 function writeJson(value: unknown): void {
 	process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
 }
 
 async function main(): Promise<void> {
+	// Terminal without flags: interactive read-only plan menu. Agents and pipes keep the
+	// non-interactive read-only inspect-all plan below.
+	if (shouldOpenProductionApplyMenu(process.argv.slice(2), isInteractiveSession())) {
+		const { runProductionApplyInteractive } = await import('./production-apply-interactive.ts');
+		await runProductionApplyInteractive();
+		return;
+	}
 	let parsed;
 	try {
 		parsed = parseProductionApplyCliArgs(process.argv);

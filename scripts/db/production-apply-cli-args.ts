@@ -55,7 +55,7 @@ export function printProductionApplyHelp(): void {
 Canonical owner entry for Production mutation. Default is read-only planning.
 Absence of scope never means apply everything.
 
-  pnpm prod:apply
+  pnpm prod:apply                      (terminal: interactive read-only plan menu)
   pnpm prod:apply -- --schema
   pnpm prod:apply -- --slug <slug>
   pnpm prod:apply -- --slug <slug> --acknowledge-discard-unpublished-draft
