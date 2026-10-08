@@ -71,6 +71,35 @@ jobs:
                   PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
               run: node scripts/ops/ci-evidence-reuse.ts
 
+    # A develop push whose browser inputs equal the head of an earlier develop push with a passing
+    # browser job inherits that evidence instead of repeating the browser tier.
+    browser-scope:
+        name: Browser scope
+        # Only a develop push can inherit evidence; pull requests and dispatches always run the tier.
+        if: github.event_name == 'push'
+        runs-on: ubuntu-24.04
+        timeout-minutes: 5
+        outputs:
+            browser: ${{ steps.assessment.outputs.browser }}
+            source-run-id: ${{ steps.assessment.outputs.source_run_id }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+              with:
+                  fetch-depth: 0
+                  lfs: false
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: '24.14.1'
+
+            - name: Assess browser inputs against the last passing browser tier
+              id: assessment
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: node scripts/ops/ci-browser-scope.ts
+
     policy-validation:
         name: Repository Policy
         if: github.event.inputs.visual_mode != 'candidate'
@@ -228,8 +257,12 @@ jobs:
 
     browser-validation:
         name: Application / browser
-        needs: evidence-reuse
-        if: ${{ !cancelled() && needs.evidence-reuse.outputs.reuse != 'true' }}
+        needs: [evidence-reuse, browser-scope]
+        # A scope assessment that failed or never ran leaves its output empty, which runs the tier.
+        if: >-
+            !cancelled() &&
+            needs.evidence-reuse.outputs.reuse != 'true' &&
+            needs.browser-scope.outputs.browser != 'skip'
         outputs:
             check-outcome: ${{ steps.browser-outcome.outputs.classification }}
         runs-on: ubuntu-24.04
@@ -314,7 +347,14 @@ jobs:
     application-validation:
         name: Application Suite
         runs-on: ubuntu-24.04
-        needs: [evidence-reuse, policy-validation, application-checks, browser-validation]
+        needs:
+            [
+                evidence-reuse,
+                policy-validation,
+                application-checks,
+                browser-validation,
+                browser-scope,
+            ]
         if: always() && github.event.inputs.visual_mode != 'candidate'
         steps:
             - name: Require every application tier to pass
@@ -323,11 +363,15 @@ jobs:
                   BROWSER_RESULT: ${{ needs.browser-validation.result }}
                   POLICY_RESULT: ${{ needs.policy-validation.result }}
                   EVIDENCE_REUSE: ${{ needs.evidence-reuse.outputs.reuse }}
+                  BROWSER_SCOPE: ${{ needs.browser-scope.outputs.browser }}
               run: |
                   test "$POLICY_RESULT" = success
                   if [ "$EVIDENCE_REUSE" = true ]; then
                     # Reused integration evidence stands in for tiers that must not have executed.
                     test "$APPLICATION_RESULT" = skipped && test "$BROWSER_RESULT" = skipped
+                  elif [ "$BROWSER_SCOPE" = skip ]; then
+                    # Browser inputs are byte-identical to an earlier develop push whose browser tier passed.
+                    test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = skipped
                   else
                     test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = success
                   fi
@@ -337,6 +381,7 @@ jobs:
         needs:
             [
                 evidence-reuse,
+                browser-scope,
                 policy-validation,
                 application-checks,
                 browser-validation,
@@ -359,6 +404,8 @@ jobs:
                   CAPTURE_EXECUTION: ${{ github.event.inputs.capture_execution || 'serial' }}
                   BROWSER_WORKERS: ${{ github.event.inputs.browser_workers || '2' }}
                   EVIDENCE_SOURCE_RUN_ID: ${{ needs.evidence-reuse.outputs.source-run-id }}
+                  BROWSER_SCOPE: ${{ needs.browser-scope.outputs.browser || 'run' }}
+                  BROWSER_SCOPE_SOURCE_RUN_ID: ${{ needs.browser-scope.outputs.source-run-id }}
               run: node scripts/ops/ci-metrics.ts
             - uses: actions/upload-artifact@v7
               with:

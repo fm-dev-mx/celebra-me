@@ -158,8 +158,9 @@ describe('canonical validation contract', () => {
 			]) {
 				expect(workflowLines).toContain(`run: ${command}`);
 			}
-			expect(workflow).toContain(
-				'needs: [evidence-reuse, policy-validation, application-checks, browser-validation]',
+			// Prettier wraps this list; the aggregate must still wait for every tier and the scope job.
+			expect(workflow).toMatch(
+				/application-validation:[\s\S]*?needs:\s*\[\s*evidence-reuse,\s*policy-validation,\s*application-checks,\s*browser-validation,\s*browser-scope,?\s*\]/,
 			);
 			expect(workflow).toContain('tier: [static, unit, database]');
 			expect(workflow).toContain('cancel-in-progress: true');
@@ -221,11 +222,19 @@ describe('canonical validation contract', () => {
 		expect(evidence).toContain('run: node scripts/ops/ci-evidence-reuse.ts');
 		expect(fs.existsSync(path.resolve('.github/workflows', EVIDENCE_WORKFLOW_FILE))).toBe(true);
 
+		expect(job('application-checks')).toContain('needs: evidence-reuse');
+		expect(job('browser-validation')).toContain('needs: [evidence-reuse, browser-scope]');
 		for (const name of ['application-checks', 'browser-validation']) {
-			expect(job(name)).toContain('needs: evidence-reuse');
 			expect(job(name)).toContain('!cancelled()');
 			expect(job(name)).toContain("needs.evidence-reuse.outputs.reuse != 'true'");
 		}
+		// Browser scope may skip only the browser tier, and only on a develop push.
+		expect(job('browser-scope')).toContain('run: node scripts/ops/ci-browser-scope.ts');
+		expect(job('browser-scope')).toContain("if: github.event_name == 'push'");
+		expect(job('browser-validation')).toContain(
+			"needs.browser-scope.outputs.browser != 'skip'",
+		);
+		expect(job('application-checks')).not.toContain('browser-scope');
 		// Policy always validates the promotion range itself.
 		expect(job('policy-validation')).not.toContain('evidence-reuse');
 
@@ -234,6 +243,10 @@ describe('canonical validation contract', () => {
 		expect(suite).toContain('if [ "$EVIDENCE_REUSE" = true ]; then');
 		expect(suite).toContain(
 			'test "$APPLICATION_RESULT" = skipped && test "$BROWSER_RESULT" = skipped',
+		);
+		expect(suite).toContain('elif [ "$BROWSER_SCOPE" = skip ]; then');
+		expect(suite).toContain(
+			'test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = skipped',
 		);
 	});
 });
