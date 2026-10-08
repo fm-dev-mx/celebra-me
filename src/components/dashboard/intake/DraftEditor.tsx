@@ -4,12 +4,22 @@ import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { strFallback, boolFallback, numFallback, moveArrayItem } from '@/lib/shared/data-utils';
 import { SECTION_LABELS } from '@/lib/intake/labels';
-import { CONTENT_SECTION_KEYS, type ContentSectionKey } from '@/lib/theme/theme-contract';
+import {
+	CONTENT_SECTION_KEYS,
+	type ContentSectionKey,
+	type InvitationRenderSectionKey,
+} from '@/lib/theme/theme-contract';
+import { isManagedOnlySectionKey } from '@/lib/intake/invitation-section-registry';
 import { DEFAULT_ICON, type IconName } from '@/lib/icons/icon-catalog';
 import { RSVP_GUEST_CAP_MIN, RSVP_GUEST_CAP_TECHNICAL_MAX } from '@/lib/rsvp/guest-cap';
 import { validateDraftContent } from '@/lib/intake/validation/validate-draft-content';
 import type { ValidationError } from '@/lib/intake/validation/validate-draft-content';
 import FormField from '@/components/dashboard/intake/FormField';
+
+/** Sections an operator may toggle here; managed-only sections stay out of the list. */
+const EDITABLE_SECTION_KEYS: readonly ContentSectionKey[] = CONTENT_SECTION_KEYS.filter(
+	(section) => !isManagedOnlySectionKey(section),
+);
 
 interface Props {
 	invitationId: string;
@@ -79,12 +89,13 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 	const quote = content.quote ?? {};
 	const thankYou = content.thankYou ?? {};
 	const photoNotes = content.photoNotes ?? {};
-	const sectionOrder = (content.sectionOrder ?? [...CONTENT_SECTION_KEYS]).filter(
-		(section): section is ContentSectionKey =>
-			(CONTENT_SECTION_KEYS as readonly string[]).includes(section),
-	);
+	// The full persisted order: managed-only and config sections are kept in place so
+	// toggling or moving an editable section never drops them.
+	const sectionOrder: InvitationRenderSectionKey[] = content.sectionOrder ?? [
+		...EDITABLE_SECTION_KEYS,
+	];
 
-	const setSectionOrder = (nextOrder: ContentSectionKey[]) => {
+	const setSectionOrder = (nextOrder: InvitationRenderSectionKey[]) => {
 		setContent((prev) => ({ ...prev, sectionOrder: nextOrder }));
 		setSuccess('');
 	};
@@ -115,7 +126,7 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 				<p className="intake-editor__section-desc">
 					Activa, desactiva o cambia el orden de las secciones de la invitación.
 				</p>
-				{CONTENT_SECTION_KEYS.map((section) => {
+				{EDITABLE_SECTION_KEYS.map((section) => {
 					const enabled = sectionOrder.includes(section);
 					const index = sectionOrder.indexOf(section);
 					return (
@@ -374,7 +385,9 @@ const DraftEditor: FC<Props> = ({ invitationId, initialContent, onCancel }) => {
 										fieldKey={fieldKey}
 										label={label}
 										value={strFallback(
-											(venue as Record<string, unknown> | undefined)?.[fieldKey],
+											(venue as Record<string, unknown> | undefined)?.[
+												fieldKey
+											],
 										)}
 										onChange={(v) => {
 											const nextVenue = {

@@ -16,7 +16,8 @@ export type CanonicalVariantSection =
 	| 'rsvp'
 	| 'personalizedAccess'
 	| 'thankYou'
-	| 'countdown';
+	| 'countdown'
+	| 'memories';
 
 export type CanonicalVariantCssOwner =
 	`src/styles/themes/sections/${string}` | `section-base:${string}`;
@@ -389,6 +390,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		prerequisites: ['Family names'],
 		cssOwner: 'src/styles/themes/sections/family/_ceremonial-family.scss',
 	},
+	{
+		section: 'memories',
+		variant: 'card',
+		default: false,
+		prerequisites: ['memories.publicSlug'],
+		cssOwner: 'src/styles/themes/sections/memories/_card.scss',
+	},
 ] as const satisfies readonly CanonicalVariantRegistryEntry[];
 
 export const CANONICAL_VARIANT_REGISTRY = canonicalVariantRegistry;
@@ -421,6 +429,8 @@ export const THANK_YOU_VARIANTS = variantsFor('thankYou');
 export type ThankYouVariant = (typeof THANK_YOU_VARIANTS)[number];
 export const COUNTDOWN_VARIANTS = variantsFor('countdown');
 export type CountdownVariant = (typeof COUNTDOWN_VARIANTS)[number];
+export const MEMORIES_VARIANTS = variantsFor('memories');
+export type MemoriesVariant = (typeof MEMORIES_VARIANTS)[number];
 
 /** Sections without a layout/skin choice emit this closed value. */
 export const STANDARD_SECTION_VARIANTS = ['standard'] as const;

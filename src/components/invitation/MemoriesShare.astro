@@ -1,0 +1,65 @@
+---
+// Guest entry point to the event memory space. Static: no client island, no script.
+import {
+	buildMemoriesPublicPath,
+	buildMemoriesPublicUrl,
+} from '@/lib/memories/contract/private-request';
+import { buildMemoriesQrFileName, generateMemoriesQrSvg } from '@/lib/memories/qr';
+import type { MemoriesVariant } from '@/lib/invitation/section-variants';
+
+interface Props {
+	publicSlug: string;
+	title: string;
+	description: string;
+	actionLabel: string;
+	footerText: string;
+	downloadLabel: string;
+	qrAlt: string;
+	variant: MemoriesVariant;
+}
+
+const { publicSlug, title, description, actionLabel, footerText, downloadLabel, qrAlt, variant } =
+	Astro.props;
+
+// The printed contract: the code always encodes the canonical public origin, while the
+// button stays on the serving origin so Preview and local runs remain self-contained.
+const qrSvg = await generateMemoriesQrSvg(buildMemoriesPublicUrl(publicSlug));
+// Percent-encoded rather than base64: the URI appears twice and SVG text compresses better.
+const qrDataUri = `data:image/svg+xml,${encodeURIComponent(qrSvg)}`;
+---
+
+<section
+	id="memories"
+	class="memories-section"
+	data-screenshot-section="memories"
+	data-variant={variant}
+	aria-labelledby="memories-title"
+>
+	<div class="memories-section__inner">
+		<h2 id="memories-title" class="memories-section__title">{title}</h2>
+		<p class="memories-section__description">{description}</p>
+		<a class="memories-section__action" href={buildMemoriesPublicPath(publicSlug)}>
+			{actionLabel}
+		</a>
+		<figure class="memories-section__qr">
+			<span class="memories-section__qr-frame">
+				<img
+					class="memories-section__qr-image"
+					src={qrDataUri}
+					alt={qrAlt}
+					width="224"
+					height="224"
+					decoding="async"
+				/>
+			</span>
+			<figcaption class="memories-section__footer">{footerText}</figcaption>
+		</figure>
+		<a
+			class="memories-section__download"
+			href={qrDataUri}
+			download={buildMemoriesQrFileName(publicSlug)}
+		>
+			{downloadLabel}
+		</a>
+	</div>
+</section>

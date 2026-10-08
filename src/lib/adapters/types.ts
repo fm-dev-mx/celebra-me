@@ -40,6 +40,7 @@ import type {
 	RsvpVariant,
 	ThankYouVariant,
 	ItineraryVariant,
+	MemoriesVariant,
 } from '@/lib/invitation/section-variants';
 import type { InvitationComposition } from '@/lib/invitation/composition-contract';
 
@@ -412,6 +413,17 @@ export interface InvitationViewModel {
 				height: number;
 			};
 			variant: ThankYouVariant;
+		};
+		/** Guest entry point to the event memory space; copy is fully resolved. */
+		memories?: {
+			publicSlug: string;
+			title: string;
+			description: string;
+			actionLabel: string;
+			footerText: string;
+			downloadLabel: string;
+			qrAlt: string;
+			variant: MemoriesVariant;
 		};
 	};
 

@@ -44,16 +44,14 @@ import {
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { buildShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import { useConfirmAction } from '@/hooks/use-confirm-action';
-import { CONTENT_SECTION_KEYS } from '@/lib/theme/theme-contract';
+import { CONTENT_SECTION_KEYS, type ContentSectionKey } from '@/lib/theme/theme-contract';
 import {
 	getEditorSectionById,
+	isManagedOnlySectionKey,
+	EDITOR_SECTION_PRESENTATION,
 	type EditorSectionId,
 } from '@/lib/intake/invitation-section-registry';
-import {
-	EDITOR_SECTION_PRESENTATION,
-	INVITATION_STATUS_LABELS,
-	supportsEnvelopeSealColorOptions,
-} from '@/lib/intake/labels';
+import { INVITATION_STATUS_LABELS, supportsEnvelopeSealColorOptions } from '@/lib/intake/labels';
 import {
 	applySectionToBaseline,
 	buildSectionSaveValue,
@@ -121,6 +119,11 @@ function uniqueSectionPresentation(sections: string[]) {
 	}
 	return Array.from(presented.values());
 }
+
+/** Sections an operator may toggle here; managed-only sections stay out of the list. */
+const EDITABLE_SECTION_KEYS: readonly ContentSectionKey[] = CONTENT_SECTION_KEYS.filter(
+	(section) => !isManagedOnlySectionKey(section),
+);
 
 export function getCriticalSections(eventType: string, rsvpEnabled: boolean): Set<string> {
 	const critical = new Set<string>(['hero', 'location']);
@@ -408,7 +411,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const messages = { quote: content.quote ?? {}, thankYou: content.thankYou ?? {} };
 	const photoNotes = content.photoNotes ?? {};
 	const sharing = content.sharing ?? {};
-	const sectionOrder = content.sectionOrder ?? [...CONTENT_SECTION_KEYS];
+	const sectionOrder = content.sectionOrder ?? [...EDITABLE_SECTION_KEYS];
 
 	const updateGiftItem = (index: number, patch: Record<string, unknown>) => {
 		updateContent('gifts', {
@@ -504,16 +507,16 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const emptySectionsDetail = useMemo(() => {
 		const critical: string[] = [];
 		const optional: string[] = [];
-		const orderSet = new Set<string>(content.sectionOrder ?? []);
+		const orderSet = new Set<string>(sectionOrder);
 		for (const [section, state] of Object.entries(editor.context.sectionStates)) {
 			if (state !== 'empty') continue;
 			// Skip sections excluded from sectionOrder — they are intentionally absent.
-			if (!orderSet.has(section)) continue;
+			if (section !== 'hero' && !orderSet.has(section)) continue;
 			if (criticalSections.has(section)) critical.push(section);
 			else optional.push(section);
 		}
 		return { critical, optional };
-	}, [editor.context.sectionStates, criticalSections, content.sectionOrder]);
+	}, [editor.context.sectionStates, criticalSections, sectionOrder]);
 
 	const publishWarning = useMemo(() => {
 		if (!editor.context.invitation.createdBy) {

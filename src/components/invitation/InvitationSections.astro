@@ -8,6 +8,7 @@ import Gifts from '@/components/invitation/Gifts.astro';
 import Interlude from '@/components/invitation/Interlude.astro';
 import Itinerary from '@/components/invitation/Itinerary.astro';
 import LockedRsvpPreview from '@/components/invitation/LockedRsvpPreview.astro';
+import MemoriesShare from '@/components/invitation/MemoriesShare.astro';
 import PersonalizedAccess from '@/components/invitation/PersonalizedAccess.astro';
 import Quote from '@/components/invitation/Quote.astro';
 import RSVP from '@/components/invitation/RSVP';
@@ -37,12 +38,12 @@ const interludeIndices = new Map<number, number>();
 }
 
 const interludeId = (i: number) => {
-  const idx = interludeIndices.get(i);
-  return idx ? `interlude-${idx}` : 'interlude';
+	const idx = interludeIndices.get(i);
+	return idx ? `interlude-${idx}` : 'interlude';
 };
 
 const getScreenshotSection = (component: string, i: number) =>
-  component === 'interlude' ? interludeId(i) : component;
+	component === 'interlude' ? interludeId(i) : component;
 
 const expectedSectionIds = [
 	'hero',
@@ -89,6 +90,7 @@ const expectedSectionIds = [
 					{component === 'gifts' && <Gifts {...props} />}
 					{component === 'thankYou' && <ThankYou {...props} />}
 					{component === 'personalized-access' && <PersonalizedAccess {...props} />}
+					{component === 'memories' && <MemoriesShare {...props} />}
 				</div>
 			);
 		})

@@ -586,6 +586,14 @@ export const KNOWN_SECTIONS: KnownSection[] = [
 		outputSlug: 'thankYou',
 	},
 	{
+		id: 'memories',
+		label: 'Memories',
+		pageType: 'invitation',
+		selector: '[data-screenshot-section="memories"]',
+		fallbackSelectors: ['#memories'],
+		outputSlug: 'memories',
+	},
+	{
 		id: 'personalized-access',
 		label: 'Personalized Access',
 		pageType: 'invitation',

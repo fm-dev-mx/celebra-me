@@ -59,6 +59,8 @@ environment migration is applied and verified.
 - **Thank You:** `standard`, `editorial-back-cover`, `portrait-letter`, `full-bleed-photo`,
   `portrait-keepsake`, `ceremonial-closing`; `full-bleed-photo` requires `thankYou.image`.
 - **Countdown:** `standard`, `editorial-folio`, `magazine-folio`, `clock-face`, `written-days`.
+- **Memories:** `card`; requires `memories.publicSlug`. It has no default variant, because the
+  section exists only for invitations with a memory space.
 
 ### Gallery capabilities
 

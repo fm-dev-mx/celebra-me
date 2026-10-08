@@ -23,6 +23,7 @@ export type InvitationCssResolverInput = {
 		itinerary?: string;
 		gallery?: string;
 		countdown?: string;
+		memories?: string;
 	};
 	envelopeVariant?: string;
 	visualProfileId?: string;

@@ -1,6 +1,5 @@
 import type { EventType } from '@/lib/theme/theme-contract';
 import {
-	EDITOR_SECTION_PRESENTATION,
 	PUBLIC_SECTION_DEFINITIONS,
 	CONFIG_SECTION_DEFINITIONS,
 } from '@/lib/intake/invitation-section-registry';
@@ -11,8 +10,6 @@ import type {
 	IntakeBlockType,
 } from '@/lib/intake/types';
 import type { EnvelopeSealColor } from '@/lib/invitation/reveal-card';
-
-export { EDITOR_SECTION_PRESENTATION };
 
 export const ENVELOPE_SEAL_COLOR_LABELS: Record<EnvelopeSealColor, string> = {
 	roseGold: 'Oro rosado',
@@ -43,6 +40,7 @@ export const SECTION_LABELS: Record<string, string> = {
 	gifts: PUBLIC_SECTION_DEFINITIONS.gifts.label,
 	quote: PUBLIC_SECTION_DEFINITIONS.quote.label,
 	thankYou: PUBLIC_SECTION_DEFINITIONS.thankYou.label,
+	memories: PUBLIC_SECTION_DEFINITIONS.memories.label,
 	photoNotes: 'Notas de fotografías',
 };
 

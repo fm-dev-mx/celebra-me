@@ -23,6 +23,7 @@ import { buildOpeningViewModel } from '@/lib/invitation/reveal-card';
 import { DEFAULT_BRANDING_VISIBILITY } from '@/lib/adapters/branding';
 import { resolveCountdownTarget } from '@/lib/time/event-time';
 import { COUNTDOWN_DEFAULTS } from '@/lib/intake/constants';
+import { MEMORIES_SECTION_DEFAULTS } from '@/lib/memories/copy';
 import { resolveCountdownVisibleUnits } from '@/lib/invitation/countdown-presentation';
 import { resolveGalleryMobileBrowse } from '@/lib/invitation/gallery-presentation';
 import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
@@ -547,6 +548,23 @@ function buildThankYouSectionData(context: AdaptationContext) {
 	};
 }
 
+function buildMemoriesSectionData(context: AdaptationContext) {
+	const { data } = context;
+	// sectionOrder is the visibility authority: hidden memories data loads no CSS.
+	if (!data.memories || !data.sectionOrder.includes('memories')) return undefined;
+	const { variant, publicSlug, ...copy } = data.memories;
+	return {
+		publicSlug,
+		title: copy.title ?? MEMORIES_SECTION_DEFAULTS.title,
+		description: copy.description ?? MEMORIES_SECTION_DEFAULTS.description,
+		actionLabel: copy.actionLabel ?? MEMORIES_SECTION_DEFAULTS.actionLabel,
+		footerText: copy.footerText ?? MEMORIES_SECTION_DEFAULTS.footerText,
+		downloadLabel: copy.downloadLabel ?? MEMORIES_SECTION_DEFAULTS.downloadLabel,
+		qrAlt: copy.qrAlt ?? MEMORIES_SECTION_DEFAULTS.qrAlt,
+		variant,
+	};
+}
+
 export function adaptEvent(
 	event: EventContentEntry,
 	assetSlugOverride?: string,
@@ -579,6 +597,7 @@ export function adaptEvent(
 		rsvp: buildRsvpSectionData(context, entrySlug),
 		gifts: buildGiftsSectionData(context),
 		thankYou: buildThankYouSectionData(context),
+		memories: buildMemoriesSectionData(context),
 	};
 
 	// An explicit sectionOrder is the publication visibility authority. The

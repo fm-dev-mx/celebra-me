@@ -193,6 +193,29 @@ Footer remains a visual theme surface and has no independent section variant.
 
 ---
 
+## 11a. Memories (`memories`)
+
+- **Purpose**: Guest entry point to the event memory space. It shows one button to `/r/<publicSlug>`
+  on the serving origin, a black-on-white QR code and a link to download that code as SVG. It needs
+  no JavaScript.
+- **Required Inputs**: `variant`, `publicSlug`. The slug is the printed QR contract of an existing
+  memory space (`event_memory_settings.public_slug`), never derived from the invitation route.
+- **Optional Inputs**: `title`, `description`, `actionLabel`, `footerText`, `downloadLabel`,
+  `qrAlt`. Defaults are neutral and speak of the hosts. The copy carries no dates.
+- **Rendering & Omission**: `sectionOrder` decides visibility. If it lists `memories`, the
+  `memories` data is required. Data that `sectionOrder` does not list is allowed, and it then
+  renders nothing and loads no stylesheet. The QR always encodes the Production public origin, so a
+  code scanned from Preview opens Production. The section is not part of the navigation.
+- **Editing**: Managed-only. The dashboard never lists, toggles, or reorders it. Drafts drop the
+  `memories` data, and publish and preview carry it from the prior published revision. If a draft
+  order loses the key, it is put back at its prior position.
+- **Publication gate**: Managed releases read the target memory space before any write. A missing
+  space, a space owned by another event, or a target without an event blocks the release. A disabled
+  space or an ended retention only warns. The event is created by the first publication, so a new
+  invitation can add this section only in its second release.
+
+---
+
 ## 12. Interludes (`interludes`)
 
 - **Purpose**: Full-bleed background photo dividers between sections.

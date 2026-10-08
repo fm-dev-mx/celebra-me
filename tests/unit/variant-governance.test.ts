@@ -28,6 +28,7 @@ const reusableRendererSurfaces = [
 	'src/components/invitation/RSVPComponents.tsx',
 	'src/components/invitation/PersonalizedAccess.astro',
 	'src/components/invitation/ThankYou.astro',
+	'src/components/invitation/MemoriesShare.astro',
 ] as const;
 
 const originIdentity =
@@ -48,6 +49,7 @@ const canonicalVariantRenderers = [
 	'src/components/invitation/ThankYou.astro',
 	'src/components/invitation/PersonalizedAccess.astro',
 	'src/components/invitation/Quote.astro',
+	'src/components/invitation/MemoriesShare.astro',
 ] as const;
 describe('canonical variant governance', () => {
 	it('keeps documentation synchronized with the closed variant vocabulary', () => {

@@ -18,6 +18,7 @@ export const CONTENT_SECTION_KEYS = [
 	'rsvp',
 	'gifts',
 	'thankYou',
+	'memories',
 ] as const;
 
 export type ContentSectionKey = (typeof CONTENT_SECTION_KEYS)[number];

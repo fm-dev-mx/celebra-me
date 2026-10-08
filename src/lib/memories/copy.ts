@@ -67,6 +67,21 @@ export function buildMemoriesPageCopy(input: { eventTitle: string }) {
 	} as const;
 }
 
+/**
+ * Default copy for the invitation `memories` section. Neutral ("anfitriones") so any
+ * event type can enable it; invitation content may override each field. No dates:
+ * the section stays visible for the whole retention period.
+ */
+export const MEMORIES_SECTION_DEFAULTS = {
+	title: 'Comparta sus recuerdos',
+	description:
+		'Ayúdenos a guardar cada momento. Suba aquí sus fotos y videos; solo los anfitriones y usted podrán verlos.',
+	actionLabel: 'Compartir fotos y videos',
+	footerText: 'Escanéelo desde otro dispositivo o compártalo',
+	downloadLabel: 'Descargar código QR',
+	qrAlt: 'Código QR que abre la página para compartir fotos y videos del evento',
+} as const;
+
 export const memoriesGalleryCopy = {
 	title: 'Galería',
 	eyebrow: 'Galería de recuerdos',

@@ -23,6 +23,7 @@ import {
 	PublishedContentContractError,
 	requireCanonicalVariant as requireVariant,
 } from '@/lib/intake/mappers/canonical-variant-source';
+import { MANAGED_ONLY_SECTION_KEYS } from '@/lib/intake/invitation-section-registry';
 
 function priorFields(
 	prior: Record<string, unknown> | undefined,
@@ -479,6 +480,43 @@ function mapItineraryFromDraft(
 }
 
 /**
+ * Restores managed-only sections that a draft order lost, at their prior position:
+ * after the nearest earlier section the draft still keeps, else before the nearest
+ * later one, else at the end. The dashboard can reorder around them but never drop
+ * them. Pure and idempotent; publish and draft preview share it.
+ */
+export function reconcileManagedSectionOrder(
+	draftOrder: readonly string[],
+	priorOrder: readonly string[] | undefined,
+	managedKeys: readonly string[] = MANAGED_ONLY_SECTION_KEYS,
+): string[] {
+	const result = [...draftOrder];
+	if (!priorOrder) return result;
+
+	for (const key of managedKeys) {
+		const priorIndex = priorOrder.indexOf(key);
+		if (priorIndex === -1 || result.includes(key)) continue;
+
+		const before = priorOrder
+			.slice(0, priorIndex)
+			.reverse()
+			.find((section) => result.includes(section));
+		if (before !== undefined) {
+			result.splice(result.indexOf(before) + 1, 0, key);
+			continue;
+		}
+		const after = priorOrder.slice(priorIndex + 1).find((section) => result.includes(section));
+		if (after !== undefined) {
+			result.splice(result.indexOf(after), 0, key);
+			continue;
+		}
+		result.push(key);
+	}
+
+	return result;
+}
+
+/**
  * Maps the effective draft onto published content. The invitation is
  * self-sufficient: every value comes from the draft or from its own prior
  * published revision, never from a demo or catalog entry.
@@ -488,8 +526,13 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 	const priorPublished = input.priorPublishedContent;
 	const prior = (key: string) => priorPublished?.[key] as Record<string, unknown> | undefined;
 
-	const sectionOrder =
-		draftContent.sectionOrder ?? (priorPublished?.sectionOrder as string[] | undefined);
+	const priorSectionOrder = Array.isArray(priorPublished?.sectionOrder)
+		? (priorPublished.sectionOrder as string[])
+		: undefined;
+	const draftSectionOrder = draftContent.sectionOrder ?? priorSectionOrder;
+	const sectionOrder = Array.isArray(draftSectionOrder)
+		? reconcileManagedSectionOrder(draftSectionOrder, priorSectionOrder)
+		: draftSectionOrder;
 	const composition = priorPublished?.composition;
 	if (!Array.isArray(sectionOrder) || sectionOrder.length === 0) {
 		throw new PublishedContentContractError(
@@ -535,6 +578,8 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 		gifts: mapGiftsSection(draftContent.gifts, prior('gifts')),
 		quote: mapQuoteSection(draftContent.quote),
 		thankYou: mapThankYouSection(draftContent.thankYou, prior('thankYou')),
+		// Managed-only: never editable in a draft, always carried from the prior revision.
+		memories: prior('memories'),
 
 		interludes: draftContent.interludes,
 		composition,
