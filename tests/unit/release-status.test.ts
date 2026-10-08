@@ -2,17 +2,21 @@ import {
 	classifyCheck,
 	classifyDeployment,
 	collectReleaseStatus,
+	loadDeploymentForSha,
 	probeHealth,
 	waitForReleaseStatus,
 	type ReleaseStatus,
 } from '../../scripts/ops/release-status.ts';
 import {
 	PREVIEW_DEPLOYMENT_SMOKE,
+	PRODUCTION_DEPLOYMENT_SMOKE,
 	REQUIRED_RELEASE_CHECKS,
 } from '../../scripts/ops/release-readiness.ts';
 
 const sha = 'a'.repeat(40);
 const previewUrl = 'https://celebra-abc123-francisco-mendoza-s-projects.vercel.app';
+const productionUrl = 'https://celebra-ar4swgfjq-francisco-mendoza-s-projects.vercel.app';
+const vercelCreator = { login: 'vercel[bot]' };
 
 function ghRunner(responses: Record<string, unknown>): (args: string[]) => string {
 	return (args) => {
@@ -125,6 +129,96 @@ describe('collectReleaseStatus', () => {
 				`${PREVIEW_DEPLOYMENT_SMOKE}: missing`,
 			]),
 		);
+	});
+
+	it('verifies Production from the Vercel deployment when a workflow environment record is newer', async () => {
+		// Observed for a Production SHA: Vercel records the deployment, then the Post-deploy Smoke
+		// job (`environment: Production`) records a newer deployment with an empty environment_url
+		// that GitHub also attributes to vercel[bot].
+		const run = ghRunner({
+			...responses({ ...allPassed, [PRODUCTION_DEPLOYMENT_SMOKE]: 'success' }),
+			[`deployments?sha=${sha}&per_page=100`]: [
+				{ id: 6927490534, sha, environment: 'Production', creator: vercelCreator },
+				{ id: 6927490121, sha, environment: 'Production', creator: vercelCreator },
+			],
+			'deployments/6927490534/statuses?per_page=100': [
+				{ state: 'success', environment_url: '' },
+				{ state: 'in_progress', environment_url: '' },
+			],
+			'deployments/6927490121/statuses?per_page=100': [
+				{ state: 'success', environment_url: productionUrl },
+			],
+		});
+		expect(loadDeploymentForSha(sha, 'production', run)).toEqual({
+			id: 6927490121,
+			environment: 'Production',
+			state: 'success',
+			url: productionUrl,
+		});
+		const probes: Array<{ url: string; headers?: Record<string, string> }> = [];
+		const protectionHeaders = { 'x-vercel-protection-bypass': 'test-bypass' };
+		const status = await collectReleaseStatus(sha, 'production', 'ci', {
+			run,
+			protectionHeaders,
+			fetchImpl: async (url, init) => {
+				probes.push({ url, headers: init?.headers });
+				return healthy(sha)();
+			},
+		});
+		expect(status.state).toBe('VERIFIED');
+		expect(status.deployment).toMatchObject({ id: 6927490121, url: productionUrl });
+		expect(status.health.map((entry) => entry.result)).toEqual(['match', 'match']);
+		expect(status.blockers).toEqual([]);
+		// Vercel Authentication guards the immutable Production URL; the public alias needs no bypass.
+		expect(probes).toEqual([
+			{ url: `${productionUrl}/api/health`, headers: protectionHeaders },
+			{ url: 'https://www.celebra-me.com/api/health', headers: undefined },
+		]);
+	});
+
+	it('verifies Preview from the record with an environment_url behind newer smoke records', async () => {
+		// Observed for a Preview SHA: two newer vercel[bot] records with an empty environment_url.
+		const run = ghRunner({
+			...responses({ ...allPassed, [PREVIEW_DEPLOYMENT_SMOKE]: 'success' }),
+			[`deployments?sha=${sha}&per_page=100`]: [
+				{ id: 6927513471, sha, environment: 'Preview', creator: vercelCreator },
+				{ id: 6927617721, sha, environment: 'Preview', creator: vercelCreator },
+				{ id: 6927513812, sha, environment: 'Preview', creator: vercelCreator },
+			],
+			'deployments/6927617721/statuses?per_page=100': [
+				{ state: 'success', environment_url: '' },
+			],
+			'deployments/6927513812/statuses?per_page=100': [
+				{ state: 'success', environment_url: '' },
+			],
+			'deployments/6927513471/statuses?per_page=100': [
+				{ state: 'success', environment_url: previewUrl },
+			],
+		});
+		const status = await collectReleaseStatus(sha, 'preview', 'ci', {
+			run,
+			fetchImpl: healthy(sha),
+		});
+		expect(status.state).toBe('VERIFIED');
+		expect(status.deployment).toMatchObject({ id: 6927513471, url: previewUrl });
+	});
+
+	it('falls back to the newest deployment record while no candidate has an environment_url', () => {
+		const run = ghRunner({
+			[`deployments?sha=${sha}&per_page=100`]: [
+				{ id: 11, sha, environment: 'Production', creator: vercelCreator },
+				{ id: 10, sha, environment: 'Production', creator: vercelCreator },
+				{ id: 9, sha, environment: 'Preview', creator: vercelCreator },
+			],
+			'deployments/11/statuses?per_page=100': [],
+			'deployments/10/statuses?per_page=100': [{ state: 'in_progress' }],
+		});
+		expect(loadDeploymentForSha(sha, 'production', run)).toEqual({
+			id: 11,
+			environment: 'Production',
+			state: 'pending',
+			url: null,
+		});
 	});
 
 	it('fails on a failed check or a serving build from another SHA', async () => {

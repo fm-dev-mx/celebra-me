@@ -49,7 +49,14 @@ export interface DeploymentEvidence {
 	url: string | null;
 }
 
-/** Latest GitHub deployment Vercel recorded for this SHA and environment, with its latest status. */
+/**
+ * Provider deployment recorded on GitHub for this SHA and environment, with its latest status.
+ * A workflow job declaring `environment:` (e.g. the post-deploy smoke) adds a newer deployment
+ * record for the same SHA whose statuses carry an empty `environment_url`; GitHub attributes it to
+ * `vercel[bot]` as well, so neither the newest id nor the creator identifies the provider
+ * deployment. Candidates are inspected newest first and the first whose latest status carries an
+ * `environment_url` wins. Until one does, the newest record is reported and classifies as pending.
+ */
 export function loadDeploymentForSha(
 	sha: string,
 	target: ReleaseTarget,
@@ -62,7 +69,7 @@ export function loadDeploymentForSha(
 		environment?: unknown;
 	}>;
 	if (!Array.isArray(deployments)) return null;
-	const deployment = deployments
+	const candidates = deployments
 		.filter(
 			(entry) =>
 				typeof entry.id === 'number' &&
@@ -71,19 +78,27 @@ export function loadDeploymentForSha(
 				typeof entry.environment === 'string' &&
 				entry.environment.trim().toLowerCase() === target,
 		)
-		.sort((left, right) => (right.id as number) - (left.id as number))[0];
-	if (!deployment) return null;
-	const statuses = client.api(`deployments/${deployment.id}/statuses?per_page=100`) as Array<{
-		state?: unknown;
-		environment_url?: unknown;
-	}>;
-	const latest = Array.isArray(statuses) ? statuses[0] : undefined;
-	return {
-		id: deployment.id as number,
-		environment: deployment.environment as string,
-		state: typeof latest?.state === 'string' ? latest.state : 'pending',
-		url: typeof latest?.environment_url === 'string' ? latest.environment_url : null,
-	};
+		.sort((left, right) => (right.id as number) - (left.id as number));
+	let newest: DeploymentEvidence | null = null;
+	for (const candidate of candidates) {
+		const statuses = client.api(`deployments/${candidate.id}/statuses?per_page=100`) as Array<{
+			state?: unknown;
+			environment_url?: unknown;
+		}>;
+		const latest = Array.isArray(statuses) ? statuses[0] : undefined;
+		const evidence: DeploymentEvidence = {
+			id: candidate.id as number,
+			environment: candidate.environment as string,
+			state: typeof latest?.state === 'string' ? latest.state : 'pending',
+			url:
+				typeof latest?.environment_url === 'string' && latest.environment_url !== ''
+					? latest.environment_url
+					: null,
+		};
+		if (evidence.url !== null) return evidence;
+		newest ??= evidence;
+	}
+	return newest;
 }
 
 export function classifyDeployment(
@@ -175,6 +190,7 @@ export interface ReleaseStatus {
 export interface StatusDependencies {
 	run?: GhRunner;
 	fetchImpl?: FetchLike;
+	/** Sent to the immutable deployment URL only; Vercel Authentication guards it on both targets. */
 	protectionHeaders?: Record<string, string>;
 }
 
@@ -243,8 +259,9 @@ export async function collectReleaseStatus(
 
 	const health: HealthEvidence[] = [];
 	if (deployment?.progress === 'passed' && deployment.url) {
-		const headers = target === 'preview' ? dependencies.protectionHeaders : undefined;
-		health.push(await probeHealth(deployment.url, sha, fetchImpl, headers));
+		health.push(
+			await probeHealth(deployment.url, sha, fetchImpl, dependencies.protectionHeaders),
+		);
 		if (target === 'production')
 			health.push(await probeHealth(PRODUCTION_ALIAS_URL, sha, fetchImpl));
 	}
