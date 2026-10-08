@@ -26,8 +26,11 @@ const startSeconds = Number.isFinite(startAt) && startAt > 0 ? startAt : 0;
 // A media fragment starts the first play at the offset; looping back is handled in the script.
 const audioSrc = hasAudio && startSeconds > 0 ? `${url}#t=${startSeconds}` : url;
 const promptText = 'Reproducir música';
+const isVisualCapture =
+	Astro.url.searchParams.has('screenshot') || Astro.url.searchParams.has('skipEnvelope');
 // Music that starts with the envelope tap must be buffered by then; other tracks load on demand.
-const preload = hasAudio && autoPlay && revealMode === 'envelope' ? 'auto' : 'none';
+const preload =
+	!isVisualCapture && hasAudio && autoPlay && revealMode === 'envelope' ? 'auto' : 'none';
 ---
 
 <div
