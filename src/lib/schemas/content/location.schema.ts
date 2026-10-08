@@ -3,6 +3,8 @@ import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
 import {
+	LOCATION_INDICATIONS_LAYOUTS,
+	LOCATION_INDICATIONS_STYLES,
 	LOCATION_MAP_STYLES,
 	LOCATION_PRESENTATIONS,
 } from '@/lib/invitation/location-presentation';
@@ -61,12 +63,17 @@ const locationBaseSchema = z.object({
 			showFlourishes: z.boolean().optional(),
 			showNavigationButtons: z.boolean().optional(),
 			revealSurface: z.enum(['section', 'rsvp']).optional(),
+			indicationsLayout: z.enum(LOCATION_INDICATIONS_LAYOUTS).optional(),
+			indicationsStyle: z.enum(LOCATION_INDICATIONS_STYLES).optional(),
+			showCalendarLinks: z.boolean().optional(),
 		})
 		.strict()
 		.optional(),
 	introEyebrow: z.string().optional(),
 	introHeading: z.string().optional(),
 	introLede: z.string().optional(),
+	/** Decorative cutout (transparent image) printed after the intro; contained, never cropped. */
+	ornament: AssetSchema.optional(),
 	indicationsHeading: z.string().default(''),
 	venues: z.array(venueEntrySchema),
 	indications: z
@@ -90,6 +97,7 @@ export const locationSchema = z
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[0]) }),
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[1]) }),
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[2]) }),
+		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[3]) }),
 	])
 	.superRefine((location, context) => {
 		if (
@@ -138,6 +146,16 @@ export const locationSchema = z
 				path: ['variant'],
 				message:
 					'location.variant=stacked-venue-plates requires at least two visible venues',
+			});
+			return;
+		}
+
+		if (location.variant === 'program-sheet') {
+			if (collectVisibleVenues(location).length >= 1) return;
+			context.addIssue({
+				code: 'custom',
+				path: ['variant'],
+				message: 'location.variant=program-sheet requires at least one visible venue',
 			});
 		}
 	});

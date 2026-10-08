@@ -124,6 +124,8 @@ const segments = ALL_SEGMENTS.filter((segment) => resolvedUnits.includes(segment
 
 		updateCountdown();
 
-		window.setInterval(updateCountdown, 1000);
+		// Without a seconds segment nothing visible changes every second.
+		const ticksSeconds = (root.dataset.visibleUnits ?? '').split(',').includes('seconds');
+		window.setInterval(updateCountdown, ticksSeconds ? 1000 : 60000);
 	});
 </script>

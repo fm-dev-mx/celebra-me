@@ -21,7 +21,7 @@
 	}
 
 	.personalized-access__container {
-		width: min(100%, 28.5rem);
+		width: var(--pa-container-width, min(100%, 28.5rem));
 	}
 
 	.access-card {

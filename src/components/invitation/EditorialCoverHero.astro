@@ -24,6 +24,10 @@ interface Props {
 	backgroundImageDesktop?: { src: string; delivery?: ImageDelivery };
 	backgroundImageMobile?: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset;
+	/** Decorative emblem printed above the title (hero.ornament). */
+	ornament?: ImageAsset;
+	/** Decorative cutout printed below the details (hero.accentOrnament). */
+	accentOrnament?: ImageAsset;
 	variant: HeroVariant;
 	focalPoint?: string;
 	focalPointMobile?: string;
@@ -31,6 +35,11 @@ interface Props {
 	focalPointDesktop?: string;
 	tagline?: string;
 	photoCredit?: string;
+	/** Watermark behind the cover and the page rail label; XV editorial defaults. */
+	coverMark?: string;
+	coverPage?: string;
+	/** Shows the "DISEÑO / CELEBRA ME" credit line; on by default. */
+	designCredit?: boolean;
 	highPriority?: boolean;
 }
 
@@ -46,6 +55,8 @@ const {
 	backgroundImageDesktop,
 	backgroundImageMobile,
 	portrait,
+	ornament,
+	accentOrnament,
 	variant,
 	focalPoint,
 	focalPointMobile,
@@ -53,6 +64,9 @@ const {
 	focalPointDesktop,
 	tagline,
 	photoCredit,
+	coverMark = 'XV',
+	coverPage = 'PÁG. 15',
+	designCredit = true,
 	highPriority = true,
 } = Astro.props;
 
@@ -134,7 +148,7 @@ const fpDesktop = focalPointDesktop || fpDefault;
 	data-screenshot-section="hero"
 >
 	<!-- Graphic editorial watermark behind all content -->
-	<div class="invitation-hero__watermark" aria-hidden="true">XV</div>
+	<div class="invitation-hero__watermark" aria-hidden="true">{coverMark}</div>
 
 	<div class="invitation-hero__background">
 		<picture>
@@ -162,7 +176,7 @@ const fpDesktop = focalPointDesktop || fpDefault;
 	<div class="invitation-hero__folio-header">
 		<span class="invitation-hero__folio-label">{displayLabel}</span>
 		<div class="invitation-hero__folio-line"></div>
-		<span class="invitation-hero__folio-page">PÁG. 15</span>
+		<span class="invitation-hero__folio-page">{coverPage}</span>
 	</div>
 
 	<div class="invitation-hero__content">
@@ -182,6 +196,17 @@ const fpDesktop = focalPointDesktop || fpDefault;
 		)}
 
 		<div class="invitation-hero__text-column">
+			{ornament && (
+				<img
+					class="invitation-hero__ornament"
+					src={plainImgSrc(ornament.src)}
+					alt=""
+					width="240"
+					height="120"
+					loading="eager"
+					decoding="async"
+				/>
+			)}
 			<div class="invitation-hero__title-wrapper">
 				<h1 class="invitation-hero__title">
 					<span class="invitation-hero__first-name">{firstName}</span>
@@ -213,16 +238,26 @@ const fpDesktop = focalPointDesktop || fpDefault;
 				</p>}
 			</div>
 
+			{accentOrnament && (
+				<img
+					class="invitation-hero__accent-ornament"
+					src={plainImgSrc(accentOrnament.src)}
+					alt=""
+					width="320"
+					height="160"
+					loading="eager"
+					decoding="async"
+				/>
+			)}
+
 			<!-- Fashion/Publication credits block -->
-			<div class="invitation-hero__credits">
-				{photoCredit && (
-					<>
-						<span class="invitation-hero__credit-item">FOTOGRAFÍA / {photoCredit}</span>
-						<span class="invitation-hero__credit-divider">•</span>
-					</>
-				)}
-				<span class="invitation-hero__credit-item">DISEÑO / CELEBRA ME</span>
-			</div>
+			{(photoCredit || designCredit) && (
+				<div class="invitation-hero__credits">
+					{photoCredit && <span class="invitation-hero__credit-item">FOTOGRAFÍA / {photoCredit}</span>}
+					{photoCredit && designCredit && <span class="invitation-hero__credit-divider">•</span>}
+					{designCredit && <span class="invitation-hero__credit-item">DISEÑO / CELEBRA ME</span>}
+				</div>
+			)}
 		</div>
 	</div>
 </section>

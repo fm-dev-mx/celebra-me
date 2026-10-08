@@ -1,6 +1,7 @@
 ---
 // Editorial Cover Reveal — replaces the envelope when revealVariant === 'editorial-cover'.
 import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
+import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
 import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { EditorialCoverExperience } from '@/lib/schemas/content/envelope.schema';
@@ -8,8 +9,12 @@ import type { CoverContentsEntry } from '@/lib/invitation/cover-contents';
 
 interface Props {
 	coverEdition?: string;
+	/** Collector rail label printed before the edition; defaults to "NÚM.", '' prints the edition alone. */
+	coverEditionLabel?: string;
 	coverVolume?: string;
 	coverIssue?: string;
+	/** One or two cover lines printed on the face; defaults to the XV edition lines. */
+	coverLines?: string[];
 	microcopy: string;
 	eventSlug: string;
 	variant?: string;
@@ -36,12 +41,18 @@ interface Props {
 	coverContents?: CoverContentsEntry[];
 	/** Collector edition: photograph printed on the first inner page (hands off to the hero). */
 	spreadImage?: ImageMetadata | ImageAsset;
+	/** Collector edition: decorative cutout on the printed cover face. */
+	coverOrnament?: ImageAsset;
+	/** Collector edition: up to two decorative cutouts on the first inner page. */
+	spreadOrnaments?: ImageAsset[];
 }
 
 const {
 	coverEdition = 'I',
+	coverEditionLabel = 'NÚM.',
 	coverVolume,
 	coverIssue,
+	coverLines: coverLinesProp,
 	microcopy,
 	eventSlug,
 	variant,
@@ -61,6 +72,8 @@ const {
 	guestSeats,
 	coverContents = [],
 	spreadImage,
+	coverOrnament,
+	spreadOrnaments = [],
 } = Astro.props;
 
 const isCollector = coverExperience === 'collector';
@@ -73,7 +86,7 @@ const issueMonth = heroDateValue
 const issueYear = heroDateValue.getUTCFullYear();
 const issueRail = [
 	coverVolume && `VOL. ${coverVolume}`,
-	coverEdition && `NÚM. ${coverEdition}`,
+	coverEdition && `${coverEditionLabel} ${coverEdition}`.trim(),
 	`${issueMonth} ${issueYear}`,
 ].filter(Boolean) as string[];
 // Decorative ISSN built from the event day and month (e.g. 13 Nov 2026 → 1311-2026).
@@ -105,7 +118,10 @@ const barcodeRects = Array.from(`${eventSlug}-celebra-me`)
 const barcodeWidth = barcodeX;
 
 const ctaText = coverEdition ? 'ABRIR INVITACIÓN' : 'DESCUBRIR';
-const coverLines = ['Una noche de estreno', 'Retrato de una celebración'];
+const coverLines =
+	coverLinesProp && coverLinesProp.length > 0
+		? coverLinesProp
+		: ['Una noche de estreno', 'Retrato de una celebración'];
 const coverKicker = coverEdition ? `Edición ${coverEdition}` : heroLabel;
 const formattedDate = heroDateValue.toLocaleDateString('es-MX', {
 	day: 'numeric',
@@ -172,6 +188,18 @@ const shouldRenderHidden =
 								loading="eager"
 							/>
 						)}
+						{spreadOrnaments.slice(0, 2).map((ornament, index) => (
+							<img
+								class="ec-page__ornament"
+								data-ornament={index + 1}
+								src={plainImgSrc(ornament.src)}
+								alt=""
+								width="320"
+								height="160"
+								loading="eager"
+								decoding="async"
+							/>
+						))}
 						<span class="ec-page__folio">pág. 03</span>
 					</div>
 
@@ -188,6 +216,17 @@ const shouldRenderHidden =
 								quality={82}
 								loading="eager"
 								fetchpriority="high"
+							/>
+						)}
+						{coverOrnament && (
+							<img
+								class="ec-face__ornament"
+								src={plainImgSrc(coverOrnament.src)}
+								alt=""
+								width="320"
+								height="160"
+								loading="eager"
+								decoding="async"
 							/>
 						)}
 						<span class="ec-face__gloss"></span>

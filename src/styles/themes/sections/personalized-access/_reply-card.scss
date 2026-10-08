@@ -1,0 +1,169 @@
+// ==========================================================================
+// PERSONALIZED ACCESS — reply-card
+// The upper half of a printed reply card: the reserved seats for the guest, written out, on
+// cotton paper with an inner hairline. It joins the `reply-card` RSVP below it into one
+// surface (no gap, no bottom edge). No seal, no corner ornaments, no texture.
+// Shared tokens with the RSVP reply card (all optional):
+//   --reply-card-bg        Card paper
+//   --reply-card-rule      Hairlines
+//   --reply-card-ink       Main text
+//   --reply-card-muted     Labels
+//   --reply-card-accent    Seat numeral
+//   --reply-card-max-width Card width
+//   --reply-card-width     Explicit RSVP width (pair it with --pa-container-width so both
+//                          halves match when their parents shrink to fit)
+//   --reply-card-gutter    Section side padding
+//   --reply-card-subtitle-wrap  Pass subtitle wrapping (`balance` avoids a one-word line)
+// ==========================================================================
+
+.personalized-access[data-variant='reply-card'] {
+	padding: clamp(4.5rem, 12vw, 7rem) var(--reply-card-gutter, clamp(1.25rem, 5vw, 2rem)) 0;
+	background: none;
+
+	.personalized-access__container {
+		max-width: var(--reply-card-max-width, 36rem);
+		margin-inline: auto;
+		padding: 0;
+	}
+
+	.access-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		padding: clamp(2.5rem, 9vw, 3.25rem) clamp(1.5rem, 6vw, 2.75rem) clamp(1.5rem, 5vw, 2rem);
+		border: 0;
+		border-radius: 0;
+		background: var(--reply-card-bg, var(--color-surface-elevated));
+		box-shadow: 0 -1px 2px rgb(16 24 32 / 8%);
+		color: var(--reply-card-ink, var(--color-text-primary));
+		text-align: center;
+
+		// Inner hairline: top and sides here; the RSVP half draws the sides and bottom.
+		&::before {
+			content: '';
+			position: absolute;
+			inset: clamp(0.6rem, 2.4vw, 0.85rem) clamp(0.6rem, 2.4vw, 0.85rem) 0;
+			border: 1px solid var(--reply-card-rule, rgb(16 24 32 / 18%));
+			border-bottom: 0;
+			border-radius: 0;
+			background: none;
+			pointer-events: none;
+		}
+
+		&::after {
+			content: none;
+		}
+	}
+
+	.access-card__header,
+	.access-card__body {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.3rem;
+		width: 100%;
+		margin: 0;
+		padding: 0;
+		background: none;
+		border: 0;
+	}
+
+	.access-card__eyebrow:empty {
+		display: none;
+	}
+
+	.access-card__eyebrow,
+	.access-card__title,
+	.access-card__label {
+		margin: 0;
+		font-family: var(--font-label, var(--font-body));
+		font-size: 0.98rem;
+		font-weight: 400;
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.16em;
+		text-transform: none;
+		color: var(--reply-card-muted, var(--color-text-secondary));
+	}
+
+	.access-card__subtitle {
+		margin: 0.15rem 0 0;
+		font-family: var(--font-body);
+		font-size: clamp(1.05rem, 2vw, 1.2rem);
+		font-style: italic;
+		color: var(--reply-card-muted, var(--color-text-secondary));
+		text-wrap: var(--reply-card-subtitle-wrap, wrap);
+	}
+
+	.access-card__field {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin-top: 1rem;
+	}
+
+	.access-card__field .access-card__label,
+	.access-card__quota .access-card__label {
+		display: none;
+	}
+
+	.access-card__guest {
+		font-family: var(--font-display);
+		font-size: clamp(1.75rem, 7vw, 2.4rem);
+		font-weight: 500;
+		line-height: 1.15;
+		text-wrap: balance;
+		color: var(--reply-card-ink, var(--color-text-primary));
+	}
+
+	.access-card__divider {
+		width: 3rem;
+		height: 1px;
+		margin: 1rem 0 0.5rem;
+		background: var(--reply-card-rule, rgb(16 24 32 / 18%));
+
+		&::before,
+		&::after {
+			content: none;
+		}
+	}
+
+	.access-card__quota {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0;
+	}
+
+	.access-card__count-frame {
+		padding: 0;
+		border: 0;
+		background: none;
+		box-shadow: none;
+	}
+
+	.access-card__count {
+		font-family: var(--font-display);
+		font-size: clamp(3.5rem, 15vw, 4.75rem);
+		font-weight: 400;
+		line-height: 1;
+		color: var(--reply-card-accent, var(--color-text-primary));
+	}
+
+	.access-card__count-words {
+		font-family: var(--font-body);
+		font-size: 1.15rem;
+		font-style: italic;
+		color: var(--reply-card-ink, var(--color-text-primary));
+	}
+
+	.access-card__footer,
+	.access-card__note {
+		display: none;
+	}
+}

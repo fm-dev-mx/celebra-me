@@ -82,6 +82,11 @@ resolution through an approved demo-owned namespace. `demo-primera-comunion-illu
 this way with `_assetSlug` set to `demo-primera-comunion-illustrated`. A demo namespace must never
 hold client-provided media.
 
+A catalog entry may also exist before its routable demo JSON. `demo-cumple-editorial-magazine`
+(`cumple` on the `editorial-magazine` preset) is such a catalog-only record: it is the `baseDemoId`
+for managed birthday invitations on that preset, and its public demo route stays unpublished until a
+demo-owned JSON and asset namespace are added.
+
 ## Validation
 
 Use `pnpm ops validate-schema` for content schema checks and the proportional tiers in

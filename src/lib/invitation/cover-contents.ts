@@ -58,7 +58,14 @@ const BUILDERS: Partial<
 			: undefined,
 	gifts: ({ gifts }) =>
 		gifts ? { label: clean(gifts.title) ?? 'Regalos', kicker: 'Regalos' } : undefined,
-	location: generic('location', 'Lugar'),
+	location: ({ location }) => {
+		if (!location) return undefined;
+		// The cover line names the venue only when the location is public on the page.
+		const venueName = location.isLocked
+			? undefined
+			: clean(location.venues?.find((venue) => venue.isVisible !== false)?.venueName);
+		return { label: 'Lugar', kicker: 'Lugar', ...(venueName ? { deck: venueName } : {}) };
+	},
 	rsvp: generic('rsvp', 'Confirmación'),
 	thankYou: generic('thankYou', 'Agradecimiento'),
 };

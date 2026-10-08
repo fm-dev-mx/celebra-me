@@ -11,6 +11,7 @@ const { card, showGuest = true } = Astro.props;
 
 <article class="invitation-reveal-card" aria-label={card.label} data-screenshot="reveal-letter">
 	<div class="invitation-reveal-card__inner">
+		<slot name="ornament" />
 		<p class="invitation-reveal-card__label">{card.label}</p>
 		<h2 class="invitation-reveal-card__name">
 			<span>{card.primaryName}</span>

@@ -132,6 +132,8 @@ export const thankYouSchema = z
 		closingPhrase: z.string().optional(),
 		date: z.string().optional(),
 		image: AssetSchema.optional(),
+		/** Decorative cutout (transparent image) printed below the signature; contained, never cropped. */
+		ornament: AssetSchema.optional(),
 		focalPoint: focalPointSchema.optional(),
 		overlayAnchor: overlayAnchorSchema.optional(),
 		overlaySafeArea: overlaySafeAreaSchema.optional(),

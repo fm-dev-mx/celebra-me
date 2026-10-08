@@ -3,10 +3,68 @@ import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.sche
 import {
 	GALLERY_LAYOUT_ROLES,
 	GALLERY_MOBILE_BROWSE_MODES,
+	GALLERY_PAIRED_ARRANGEMENTS,
 	GALLERY_PRESENTATIONS,
 	assertSupportedGalleryPresentation,
 } from '@/lib/invitation/presentation-options';
 import { GALLERY_VARIANTS } from '@/lib/invitation/section-variants';
+
+interface GalleryItemRefinement {
+	caption?: string;
+	aspectRatio?: string;
+}
+
+function validateNarrativeStack(
+	items: readonly GalleryItemRefinement[],
+	context: z.RefinementCtx,
+): void {
+	if (items.length === 0) {
+		context.addIssue({
+			code: 'custom',
+			path: ['items'],
+			message: 'narrative-stack requires at least one photograph',
+		});
+	}
+	items.forEach((item, index) => {
+		if (!item.caption?.trim()) {
+			context.addIssue({
+				code: 'custom',
+				path: ['items', index, 'caption'],
+				message: 'narrative-stack requires a caption for every photograph',
+			});
+		}
+		if (item.aspectRatio !== undefined) {
+			context.addIssue({
+				code: 'custom',
+				path: ['items', index, 'aspectRatio'],
+				message:
+					'narrative-stack preserves the complete photograph without aspect-ratio cropping',
+			});
+		}
+	});
+}
+
+function validatePairedFeatureBand(
+	items: readonly { layoutRole?: string }[],
+	context: z.RefinementCtx,
+): void {
+	const hasFeatureRole = items.some((item) => item.layoutRole === 'feature');
+	if (!hasFeatureRole) {
+		context.addIssue({
+			code: 'custom',
+			path: ['items'],
+			message:
+				'gallery.variant=paired-feature-band requires at least one item with layoutRole=feature',
+		});
+	}
+	if (items.length < 3) {
+		context.addIssue({
+			code: 'custom',
+			path: ['items'],
+			message: 'gallery.variant=paired-feature-band requires at least three gallery items',
+		});
+	}
+}
 
 export const gallerySchema = z
 	.object({
@@ -18,6 +76,7 @@ export const gallerySchema = z
 		variantOptions: z
 			.object({
 				mobileBrowse: z.enum(GALLERY_MOBILE_BROWSE_MODES).optional(),
+				arrangement: z.enum(GALLERY_PAIRED_ARRANGEMENTS).optional(),
 			})
 			.strict()
 			.optional(),
@@ -39,33 +98,14 @@ export const gallerySchema = z
 	.strict()
 	.superRefine((gallery, context) => {
 		if (gallery.variant === 'paired-portraits' && gallery.items.length !== 2) {
-			context.addIssue({ code: 'custom', path: ['items'], message: 'paired-portraits requires exactly two photographs' });
+			context.addIssue({
+				code: 'custom',
+				path: ['items'],
+				message: 'paired-portraits requires exactly two photographs',
+			});
 		}
 		if (gallery.variant === 'narrative-stack') {
-			if (gallery.items.length === 0) {
-				context.addIssue({
-					code: 'custom',
-					path: ['items'],
-					message: 'narrative-stack requires at least one photograph',
-				});
-			}
-			gallery.items.forEach((item, index) => {
-				if (!item.caption?.trim()) {
-					context.addIssue({
-						code: 'custom',
-						path: ['items', index, 'caption'],
-						message: 'narrative-stack requires a caption for every photograph',
-					});
-				}
-				if (item.aspectRatio !== undefined) {
-					context.addIssue({
-						code: 'custom',
-						path: ['items', index, 'aspectRatio'],
-						message:
-							'narrative-stack preserves the complete photograph without aspect-ratio cropping',
-					});
-				}
-			});
+			validateNarrativeStack(gallery.items, context);
 		}
 		if (
 			gallery.variant !== 'magazine-spread' &&
@@ -75,6 +115,16 @@ export const gallerySchema = z
 				code: 'custom',
 				path: ['variantOptions', 'mobileBrowse'],
 				message: 'gallery.variantOptions.mobileBrowse is only valid for magazine-spread',
+			});
+		}
+		if (
+			gallery.variant !== 'paired-portraits' &&
+			gallery.variantOptions?.arrangement !== undefined
+		) {
+			context.addIssue({
+				code: 'custom',
+				path: ['variantOptions', 'arrangement'],
+				message: 'gallery.variantOptions.arrangement is only valid for paired-portraits',
 			});
 		}
 		try {
@@ -98,6 +148,14 @@ export const gallerySchema = z
 			});
 		}
 
+		if (gallery.variant === 'mirrored-mosaic' && gallery.items.length < 3) {
+			context.addIssue({
+				code: 'custom',
+				path: ['items'],
+				message: 'gallery.variant=mirrored-mosaic requires at least three gallery items',
+			});
+		}
+
 		if (gallery.variant === 'feature-stack' && gallery.items.length < 3) {
 			context.addIssue({
 				code: 'custom',
@@ -107,23 +165,7 @@ export const gallerySchema = z
 		}
 
 		if (gallery.variant === 'paired-feature-band') {
-			const hasFeatureRole = gallery.items.some((item) => item.layoutRole === 'feature');
-			if (!hasFeatureRole) {
-				context.addIssue({
-					code: 'custom',
-					path: ['items'],
-					message:
-						'gallery.variant=paired-feature-band requires at least one item with layoutRole=feature',
-				});
-			}
-			if (gallery.items.length < 3) {
-				context.addIssue({
-					code: 'custom',
-					path: ['items'],
-					message:
-						'gallery.variant=paired-feature-band requires at least three gallery items',
-				});
-			}
+			validatePairedFeatureBand(gallery.items, context);
 		}
 	})
 	.optional();

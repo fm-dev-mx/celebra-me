@@ -1,0 +1,148 @@
+/* Location indications — ordinal spacing and the opt-in numbered board.
+ *
+ * Loaded by _event-location.scss. The numbered board is selected through typed content
+ * (`location.presentationOptions.indicationsStyle: 'numbered-board'`), never by preset or slug;
+ * every visual value is a public `--location-board-*` token so presets and profiles skin it
+ * without layout overrides. The default list layout is untouched.
+ */
+
+// The ordinal and the title are two sibling spans; without a gap they render as "01Title".
+// Zero specificity: profiles that lay the two spans out themselves keep winning.
+:where(.event-location__indication-title) {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: var(--location-indication-number-gap, 0.6em);
+}
+
+// The board selector carries the section class so it outranks preset section skins
+// (e.g. editorial-magazine's flat "NOTA 0N" list) without !important.
+.event-location .event-location__indications[data-indications-style='numbered-board'] {
+	--location-board-bg: var(--color-text-primary);
+	--location-board-color: var(--color-text-on-dark);
+	--location-board-muted: rgb(var(--color-text-on-dark-rgb) / 82%);
+	--location-board-radius: 0.4rem;
+	--location-board-gap: 0.85rem;
+	--location-board-min-height: 7.5rem;
+	--location-board-number-bg: var(--color-action-accent);
+	--location-board-number-color: var(--color-text-primary);
+	--location-board-number-font: var(--font-display);
+	--location-board-number-size: clamp(2.5rem, 10vw, 3.4rem);
+	--location-board-number-width: clamp(4.75rem, 21vw, 6rem);
+	--location-board-icon-color: var(--color-action-accent);
+	--location-board-title-font: var(--font-body);
+	--location-board-title-size: clamp(1rem, 3.6vw, 1.15rem);
+	--location-indication-text-color: var(--location-board-muted);
+	--location-indication-strong-color: var(--location-board-color);
+
+	display: grid;
+	gap: var(--location-board-gap);
+	padding: 0;
+	background: none;
+	border: 0;
+	backdrop-filter: none;
+	text-align: left;
+
+	&::before {
+		display: none;
+	}
+
+	.event-location__indication-item {
+		display: grid;
+		grid-template-columns: var(--location-board-number-width) auto minmax(0, 1fr);
+		grid-template-rows: auto auto;
+		gap: 0.4rem 0.6rem;
+		align-items: center;
+		min-height: var(--location-board-min-height);
+		padding: 0;
+		color: var(--location-board-color);
+		background: var(--location-board-bg);
+		border: 0;
+		border-radius: var(--location-board-radius);
+		box-shadow: none;
+
+		&::before,
+		&::after {
+			display: none;
+		}
+
+		&:hover {
+			background: var(--location-board-bg);
+			box-shadow: none;
+			transform: none;
+		}
+	}
+
+	// Flatten the copy wrappers so the ordinal, icon, title and text share the board grid.
+	.event-location__indication-copy,
+	.event-location__indication-title {
+		display: contents;
+	}
+
+	.event-location__indication-number {
+		display: grid;
+		grid-row: 1 / span 2;
+		grid-column: 1;
+		place-items: center;
+		align-self: stretch;
+		color: var(--location-board-number-color);
+		background: var(--location-board-number-bg);
+		font-family: var(--location-board-number-font);
+		font-size: var(--location-board-number-size);
+		font-weight: 800;
+		font-variant-numeric: tabular-nums;
+		line-height: 1;
+	}
+
+	.event-location__indication-icon {
+		display: grid;
+		grid-row: 1;
+		grid-column: 2;
+		align-self: end;
+		width: auto;
+		height: auto;
+		padding-top: 1rem;
+		color: var(--location-board-icon-color);
+		background: none;
+		border: 0;
+		box-shadow: none;
+		opacity: 100%;
+
+		svg {
+			width: 1.25rem;
+			height: 1.25rem;
+			stroke-width: 2px;
+		}
+	}
+
+	.event-location__indication-label {
+		grid-row: 1;
+		grid-column: 3;
+		align-self: end;
+		padding: 1rem 1rem 0 0;
+		color: var(--location-board-color);
+		font-family: var(--location-board-title-font);
+		font-size: var(--location-board-title-size);
+		font-weight: 700;
+		line-height: 1.25;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+
+	.event-location__indication-text {
+		grid-row: 2;
+		grid-column: 2 / -1;
+		align-self: start;
+		padding: 0 1rem 1rem 0;
+		color: var(--location-board-muted);
+		font-family: var(--font-body);
+
+		&::before {
+			content: none;
+		}
+
+		strong {
+			color: var(--location-board-color);
+		}
+	}
+}

@@ -291,6 +291,32 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 	};
 }
 
+function makeLocationIncompatible(data: Record<string, unknown>, variant: string): void {
+	if (variant === 'split-map') {
+		const location = data.location as Record<string, unknown>;
+		location.venues = [
+			{
+				type: 'ceremony',
+				venueEvent: 'Ceremonia',
+				venueName: 'Parroquia',
+				address: 'Calle 1',
+				date: '2026-11-21',
+				time: '18:00',
+				isVisible: true,
+			},
+		];
+	} else if (variant === 'stacked-venue-plates') {
+		const location = data.location as Record<string, unknown>;
+		location.venues = [(location.venues as Array<unknown>)[0]];
+	} else if (variant === 'program-sheet') {
+		const location = data.location as Record<string, unknown>;
+		location.venues = (location.venues as Array<Record<string, unknown>>).map((venue) => ({
+			...venue,
+			isVisible: false,
+		}));
+	}
+}
+
 export function buildIncompatiblePrerequisiteEvent(
 	entry: CanonicalVariantRegistryEntry,
 ): Record<string, unknown> {
@@ -307,6 +333,7 @@ export function buildIncompatiblePrerequisiteEvent(
 					'editorial-cover',
 					'split-cover',
 					'framed-portrait',
+					'bleed-portrait',
 					'ceremonial-portrait',
 				].includes(entry.variant)
 			) {
@@ -323,23 +350,7 @@ export function buildIncompatiblePrerequisiteEvent(
 			}
 			break;
 		case 'location':
-			if (entry.variant === 'split-map') {
-				const location = data.location as Record<string, unknown>;
-				location.venues = [
-					{
-						type: 'ceremony',
-						venueEvent: 'Ceremonia',
-						venueName: 'Parroquia',
-						address: 'Calle 1',
-						date: '2026-11-21',
-						time: '18:00',
-						isVisible: true,
-					},
-				];
-			} else if (entry.variant === 'stacked-venue-plates') {
-				const location = data.location as Record<string, unknown>;
-				location.venues = [(location.venues as Array<unknown>)[0]];
-			}
+			makeLocationIncompatible(data, entry.variant);
 			break;
 		case 'itinerary':
 			if (
@@ -355,7 +366,7 @@ export function buildIncompatiblePrerequisiteEvent(
 			if (entry.variant === 'single-keepsake') {
 				const gallery = data.gallery as Record<string, unknown>;
 				gallery.items = [{ image: 'gallery01' }, { image: 'gallery02' }];
-			} else if (entry.variant === 'feature-stack') {
+			} else if (entry.variant === 'feature-stack' || entry.variant === 'mirrored-mosaic') {
 				const gallery = data.gallery as Record<string, unknown>;
 				gallery.items = [{ image: 'gallery01' }, { image: 'gallery02' }];
 			} else if (entry.variant === 'paired-feature-band') {
@@ -423,6 +434,12 @@ export function getIncompatiblePrerequisiteExpectation(
 					expectedMessageSubstring: 'split-map requires at least one visible venue',
 				};
 			}
+			if (entry.variant === 'program-sheet') {
+				return {
+					expectedPath: ['location', 'variant'],
+					expectedMessageSubstring: 'program-sheet requires at least one visible venue',
+				};
+			}
 			return {
 				expectedPath: ['location', 'variant'],
 				expectedMessageSubstring:
@@ -435,6 +452,13 @@ export function getIncompatiblePrerequisiteExpectation(
 				return {
 					expectedPath: ['gallery', 'items'],
 					expectedMessageSubstring: 'single-keepsake requires exactly one gallery item',
+				};
+			}
+			if (entry.variant === 'mirrored-mosaic') {
+				return {
+					expectedPath: ['gallery', 'items'],
+					expectedMessageSubstring:
+						'mirrored-mosaic requires at least three gallery items',
 				};
 			}
 			if (entry.variant === 'feature-stack') {

@@ -1,0 +1,356 @@
+// Mía — "orilla al amanecer": very pale sky paper, pearl and silver line work, a readable sea-blue
+// accent, and soft wave edges between sections. Tokens only; structure stays with the variants.
+
+$wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0 24V15C6 11.5 12.5 11.5 18.5 14.5S31 17.5 37.5 14.5S50 11 56.5 14S69 17.5 75.5 14.5S88 11.5 94 14.5C96 15.5 98 15.8 100 15.6V24Z'/%3E%3C/svg%3E");
+
+.event--mia-pintor.theme-preset--celestial-blue {
+	// Palette: sky paper replaces the preset's warm ivory; silver stays the line color.
+	--color-cool-ivory: rgb(243 248 252);
+	--color-cool-ivory-rgb: 243 248 252;
+	--color-pearl-gray: rgb(232 241 247);
+	--color-pearl-gray-rgb: 232 241 247;
+	--color-ice-blue: rgb(226 239 248);
+	--color-ice-blue-rgb: 226 239 248;
+	--color-envelope-paper-ivory: rgb(247 251 253);
+
+	// Sea-blue accent keeps the sky identity while meeting text contrast on pale paper.
+	--color-action-accent: rgb(58 108 142);
+	--color-action-accent-rgb: 58 108 142;
+	--color-border-subtle: rgb(var(--color-liquid-silver-rgb) / 40%);
+	--color-border-premium: rgb(138 154 168 / 62%);
+
+	// Seaside envelope hooks.
+	--seaside-sky: rgb(218 238 249);
+	--seaside-sky-light: rgb(246 251 254);
+	--seaside-ink: rgb(138 154 168);
+	--seaside-ink-strong: rgb(94 112 128);
+	--seaside-seal: rgb(230 242 249);
+
+	// Envelope microcopy readable on phones (was 8–10 px); the instruction in readable ink at the
+	// shared small-caps tracking.
+	--env-seal-hint-size: 0.72rem;
+	--env-open-label-size: 0.95rem;
+	--seaside-instruction-ink: var(--mia-ink-muted);
+	--seaside-instruction-tracking: 0.16em;
+
+	// Pearl wax: a wider, flatter spill with an uneven rim, so the stamp no longer reads as a disc.
+	--seaside-seal-rim-spread: -12%;
+	--seaside-seal-rim-shape: 41% 59% 46% 54% / 58% 40% 60% 42%;
+	--seaside-seal-rim-bg: radial-gradient(
+		circle at 40% 32%,
+		rgb(247 251 254) 0%,
+		rgb(224 237 246) 60%,
+		rgb(196 213 227) 100%
+	);
+
+	// Opened card: the envelope's paper grain, a larger card on wide screens and a contact shadow
+	// that follows the deckle edge.
+	--seaside-paper-grain: var(--mia-paper-grain);
+	--seaside-card-width: min(86vw, 27rem);
+	--seaside-card-edge-shadow: drop-shadow(0 1px 1px rgb(40 60 80 / 22%))
+		drop-shadow(0 6px 10px rgb(40 60 80 / 8%));
+
+	// Paper: a fine grain (7 % noise alpha, so cotton reads white, never gray) and a deckle edge
+	// for printed pieces.
+	--mia-paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.26 0 0 0 0 0.32 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url%28%23n%29'/%3E%3C/svg%3E");
+	--mia-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpath d='M0 2L13 4L25 3L43 0L62 0L81 0L94 3L119 0L134 4L162 4L180 7L191 6L207 1L220 2L246 1L267 4L285 3L297 0L311 4L330 2L351 3L367 5L391 1L412 3L438 5L454 7L467 3L492 1L511 0L534 5L555 6L572 5L593 4L612 6L640 3L663 0L686 4L715 5L731 2L753 0L773 1L785 0L810 0L825 2L852 0L871 4L897 5L924 2L942 2L969 6L982 1L997 1L997 0L992 15L995 33L999 54L996 78L997 100L999 111L999 136L995 161L993 179L993 202L994 214L995 227L992 239L993 253L993 270L997 296L994 310L995 327L998 340L996 369L993 388L995 401L998 416L993 430L996 458L996 471L996 483L999 511L994 534L994 552L996 577L995 601L998 616L998 645L998 670L994 694L995 714L993 726L994 741L999 765L999 784L999 812L994 829L994 844L997 859L998 886L997 905L993 930L999 953L998 978L994 997L1000 995L974 999L956 995L929 998L915 993L901 999L876 993L850 999L828 995L807 993L796 999L773 996L746 995L719 998L705 994L689 994L667 994L649 993L622 995L603 997L576 995L548 996L528 996L517 996L503 992L477 994L458 998L437 995L417 996L392 993L371 994L356 998L336 996L311 999L292 997L273 996L249 996L229 996L201 997L175 999L159 996L131 998L118 993L99 993L84 993L61 998L34 993L11 997L6 1000L1 971L2 943L7 924L1 898L3 879L1 863L5 846L4 835L0 816L4 799L0 779L5 751L0 723L0 707L1 682L3 669L5 642L1 626L4 599L0 576L5 564L0 545L4 518L0 492L0 466L3 440L4 423L1 395L3 382L0 367L0 354L2 339L5 323L3 307L2 293L1 282L5 271L1 250L6 231L5 218L3 199L2 173L5 153L2 125L5 99L2 77L0 60L0 47L1 23L0 9Z'/%3E%3C/svg%3E");
+
+	// Readable secondary ink for labels and metadata (6.6:1 on the sky paper).
+	--mia-ink-muted: rgb(74 90 104);
+
+	// One paper voice: Pinyon only for the name and the signature, Cormorant for display, EB
+	// Garamond for text and labels. Instrument Sans stays for form controls (--font-ui).
+	--font-body: 'EB Garamond Variable', 'EB Garamond', georgia, serif;
+	--font-label: 'EB Garamond Variable', 'EB Garamond', georgia, serif;
+	--mia-heading-font: var(--font-display);
+
+	// Hero (bleed-portrait): the mirror photograph to the edges, then a small-caps occasion,
+	// the script name and the written when/where.
+	--hero-occasion-font: 400 1.05rem / 1.4 var(--font-label);
+	--hero-occasion-color: var(--mia-ink-muted);
+	--hero-name-font-family: var(--font-calligraphy);
+	--hero-name-font-weight: 400;
+	--hero-name-letter-spacing: 0;
+	--hero-name-line-height: 1.2;
+	--hero-bleed-muted: var(--mia-ink-muted);
+	--hero-bleed-title-size-desktop: clamp(7rem, 10vw, 9.5rem);
+	--hero-bleed-facts-gap: 1.75rem;
+	--hero-bleed-scroll-line: 3.5rem;
+
+	// Tall wide screens crop the 2:3 photograph sideways: anchor right so DAYEZ stays whole.
+	--hero-bleed-focal-point: 92% 85%;
+
+	// Family: a deeper sky band under a wave edge, uncropped photograph, no nested card.
+	--family-bg: var(--color-ice-blue);
+	--family-title-font: var(--mia-heading-font);
+	--family-title-style: italic;
+	--family-title-weight: 400;
+	--family-title-size: clamp(2.05rem, 8vw, 3.4rem);
+	--family-title-line-height: 1.12;
+	--family-title-letter-spacing: 0;
+	--family-title-max-width: 16ch;
+	--family-title-text-shadow: none;
+	--family-message-font: var(--font-body);
+	--family-message-size: clamp(1.15rem, 2vw, 1.32rem);
+	--family-message-line-height: 1.6;
+	--family-message-color: rgb(36 50 62);
+	--family-message-max-width: 30ch;
+	--family-texture-opacity: 0;
+	--family-vignette-bg: none;
+	--family-panel-border: 0;
+	--family-panel-max-width: min(100%, 34rem);
+	--family-padding-block: clamp(5rem, 9vw, 8rem) clamp(4.25rem, 7vw, 5.5rem);
+
+	// Family copy sits above the panel (no parents list), so the photograph keeps one column.
+	--family-panel-columns-desktop: minmax(0, 1fr);
+	--family-panel-bg: transparent;
+	--family-panel-shadow: none;
+	--family-panel-shadow-extra-display: none;
+	--family-panel-surface-bg: transparent;
+	--family-panel-surface-after-bg: none;
+	--family-panel-surface-after-opacity: 0;
+	--family-panel-watermark-opacity: 0;
+	--family-panel-edge-border: none;
+	--family-panel-edge-shadow: none;
+	--family-media-aspect-ratio: auto;
+	--family-media-image-height: auto;
+	--family-media-image-fit: contain;
+	--family-media-border: 0;
+
+	// A white mat around the print with a silver hairline a few pixels off the photograph.
+	--family-media-padding: clamp(0.7rem, 2.6vw, 0.95rem);
+	--family-media-accent-inset: clamp(0.4rem, 1.5vw, 0.6rem);
+	--family-media-inner-border: 1px solid rgb(138 154 168 / 50%);
+	--family-media-radius: 0;
+	--family-media-image-radius: 0;
+	--family-media-bg: rgb(255 255 255);
+	--family-media-shadow: 0 1px 1px rgb(40 60 80 / 16%), 0 10px 22px -16px rgb(40 60 80 / 30%);
+
+	// RSVP shell is transparent by default; keep the sky paper instead of the global canvas.
+	--rsvp-shell-background: var(--color-surface-primary);
+
+	// Location: sea-blue dates (5.2:1), calendar links in the accent, script band heading.
+	--location-date-color: var(--color-action-accent);
+	--location-calendar-link-color: var(--color-action-accent);
+	--location-band-heading-color: var(--color-text-primary);
+	--location-bg: var(--color-surface-primary);
+	--location-intro-heading-font-family: var(--mia-heading-font);
+	--location-intro-heading-style: italic;
+	--location-intro-heading-size: clamp(2.4rem, 9vw, 3.75rem);
+	--location-intro-heading-font-synthesis: none;
+	--location-intro-heading-font-weight: 400;
+	--location-indications-heading-font-family: var(--mia-heading-font);
+	--location-indications-heading-style: italic;
+	--location-indications-heading-transform: none;
+	--location-indications-heading-letter-spacing: 0;
+	--location-indications-heading-font-weight: 400;
+	--location-program-link: var(--color-action-accent);
+	--location-program-drawing: var(--seaside-ink-strong);
+	--location-program-muted: var(--mia-ink-muted);
+
+	// Drawings at hairline weight and a calmer size; time and venue separated; links on one line
+	// on phones, aligned across both columns and more open on wide screens.
+	--location-program-drawing-size: clamp(6rem, 26vw, 8.5rem);
+	--location-program-drawing-stroke: 1;
+	--location-program-place-gap: 0.5rem;
+	--location-program-links-gap: clamp(1rem, 3vw, 2rem);
+	--location-program-links-align: auto;
+	--location-program-link-size: 1rem;
+	--location-program-link-tracking: 0.14em;
+	--location-enclosure-bg: var(--mia-paper-grain), rgb(251 253 254);
+	--location-enclosure-mask: var(--mia-deckle);
+	--location-enclosure-shadow: none;
+	--location-enclosure-edge-shadow: drop-shadow(0 1px 1px rgb(40 60 80 / 20%))
+		drop-shadow(0 8px 14px rgb(40 60 80 / 7%));
+	--location-enclosure-rule: rgb(138 154 168 / 55%);
+	--location-enclosure-muted: var(--mia-ink-muted);
+	--location-enclosure-swatch: rgb(169 210 238);
+
+	// Footer: the colophon leads in ink; controls follow smaller, in the text face.
+	--footer-closing-color: var(--color-text-primary);
+	--footer-divider-glow: none;
+	--footer-control-font-size: 0.9rem;
+	--footer-replay-font-size: 0.9rem;
+	--footer-control-letter-spacing: 0.04em;
+	--footer-control-text-transform: none;
+	--footer-replay-color: var(--mia-ink-muted);
+	--footer-replay-opacity: 100%;
+
+	// Reply card (pass + RSVP): cotton paper, silver hairline, readable labels.
+	--reply-card-bg: var(--mia-paper-grain), rgb(251 253 254);
+	--reply-card-rule: rgb(138 154 168 / 55%);
+	--reply-card-muted: var(--mia-ink-muted);
+	--reply-card-accent: var(--color-action-accent);
+
+	// Both halves share one explicit width (their parents shrink to fit) so they read as one card.
+	--reply-card-width: min(36rem, calc(100vw - 2 * clamp(1.25rem, 5vw, 2rem)));
+	--pa-container-width: var(--reply-card-width);
+	--reply-card-subtitle-wrap: balance;
+
+	// Pass: labels and the seat count in readable ink.
+
+	--pa-eyebrow-color: var(--mia-ink-muted);
+	--pa-label-color: var(--mia-ink-muted);
+	--pa-subtitle-color: var(--mia-ink-muted);
+	--pa-footer-text-color: var(--mia-ink-muted);
+	--pa-count-color: var(--color-action-accent);
+
+	// Closing: solid signature ink and an inline first letter instead of the floating drop cap.
+	--thank-you-closing-gradient: linear-gradient(
+		var(--color-deep-blue-graphite),
+		var(--color-deep-blue-graphite)
+	);
+	--thank-you-drop-cap-float: none;
+	--thank-you-drop-cap-margin: 0;
+	--thank-you-drop-cap-size: 1em;
+	--thank-you-drop-cap-size-desktop: 1em;
+	--thank-you-drop-cap-weight: 400;
+	--thank-you-drop-cap-line-height: 1.48;
+	--thank-you-drop-cap-shadow: none;
+
+	// Closing on the deeper sky band, without the graphite fog at the top.
+	--thank-you-section-background: var(--color-ice-blue);
+	--pa-section-background: none;
+	--thank-you-image-radius: 0;
+	--thank-you-print-border: clamp(0.6rem, 2.6vw, 0.85rem);
+	--thank-you-print-bg: rgb(255 255 255);
+	--thank-you-print-shadow: 0 1px 1px rgb(40 60 80 / 16%), 0 12px 24px -16px rgb(40 60 80 / 30%);
+
+	// The photograph is shown as delivered, and the page ends on clean paper: no ambient panel,
+	// no graphite floor.
+	--thank-you-photo-filter: none;
+	--thank-you-photo-filter-hover: none;
+	--thank-you-ambient-display: none;
+	--thank-you-floor-fog-display: none;
+	--ornament-closing-inset-wide: 0;
+	--thank-you-print-sheen-display: none;
+	--thank-you-print-inner-rule-display: none;
+	--thank-you-keepsake-copy-align: center;
+	--thank-you-keepsake-text-align: center;
+
+	// Framed interlude: a real passe-partout. Generous white mat, a silver hairline a few pixels
+	// off the photograph and a one-pixel contact shadow; no outer CSS double border.
+	--interlude-framed-bg: var(--color-surface-primary);
+	--interlude-framed-mat: clamp(1rem, 5%, 3rem) clamp(1rem, 5%, 3rem) clamp(1.35rem, 6.5%, 3.9rem);
+	--interlude-framed-mat-bg: rgb(255 255 255);
+	--interlude-image-filter: none;
+	--interlude-overlay: none;
+	--interlude-framed-border: 0;
+	--interlude-framed-outline: none;
+	--interlude-framed-shadow: 0 1px 2px rgb(40 60 80 / 14%);
+	--interlude-framed-image-rule: 1px solid rgb(138 154 168 / 55%);
+	--interlude-framed-image-rule-offset: 0.4rem;
+	--interlude-framed-max-width: 60rem;
+
+	// Hero, gallery and countdown declare their own section tokens; scope the overrides to them.
+	.invitation-hero {
+		--hero-title-size: clamp(5rem, 24vw, 6.75rem);
+	}
+
+	// Quote as an epigraph: Cormorant italic in full ink, no rules.
+	.quote-section {
+		--quote-content-font: var(--font-display);
+		--quote-content-style: italic;
+		--quote-content-weight: 400;
+		--quote-content-size: clamp(1.6rem, 6.6vw, 2.25rem);
+		--quote-content-line-height: 1.35;
+		--quote-content-letter-spacing: 0;
+		--quote-content-max-width: 30rem;
+		--quote-content-wrap: balance;
+		--quote-content-shadow: none;
+		--quote-text-color: var(--color-text-primary);
+		--quote-divider-display: none;
+		--quote-divider-bottom-display: none;
+	}
+
+	.gallery-section {
+		--gallery-section-bg: var(--color-surface-primary);
+		--gallery-title-font: var(--mia-heading-font);
+		--gallery-title-style: italic;
+		--gallery-title-transform: none;
+		--gallery-title-letter-spacing: 0;
+		--gallery-title-color: var(--color-text-primary);
+		--gallery-title-size: clamp(2.25rem, 8vw, 3.75rem);
+		--gallery-subtitle-font: var(--font-body);
+		--gallery-subtitle-transform: none;
+		--gallery-subtitle-letter-spacing: 0;
+		--gallery-subtitle-color: rgb(36 50 62);
+		--gallery-subtitle-size: clamp(1.1rem, 2vw, 1.3rem);
+		--gallery-item-radius: 0;
+		--gallery-item-image-radius: 0;
+		--gallery-item-border: 0;
+		--gallery-item-padding: 0;
+		--gallery-item-shadow: none;
+		--gallery-item-hover-shadow: none;
+		--gallery-item-emphasis-shadow: none;
+		--gallery-item-hover-transform: none;
+		--gallery-item-emphasis-transform: none;
+		--gallery-mosaic-gap: clamp(3px, 0.45vw, 6px);
+	}
+
+	.countdown-section {
+		--countdown-written-unit-gap: 0.4rem;
+		--countdown-written-columns: clamp(3rem, 5vw, 4rem);
+		--countdown-written-date-row: 2 / span 2;
+		--countdown-written-date-baseline: 1rem;
+	}
+
+	// Gifts: one flat suggestion on paper, no nested card.
+	.gifts-section {
+		--gifts-padding-block: clamp(3.75rem, 10vw, 5.5rem);
+		--gifts-title-style: italic;
+		--gifts-title-transform: none;
+		--gifts-title-letter-spacing: 0;
+		--gifts-title-size: clamp(2.1rem, 7vw, 3rem);
+		--gifts-subtitle-size: clamp(1.15rem, 2vw, 1.35rem);
+		--gifts-subtitle-color: rgb(36 50 62);
+
+		// "Lluvia de sobres": a closed envelope drawn like the venue line art (hairline, square
+		// corners, a dot of wax at the flap) leads the note; about 1.3x the title height.
+		--gifts-header-mark-display: block;
+		--gifts-header-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 32' fill='none' stroke='%23000' stroke-width='1.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1.5 1.5h45v29h-45z'/%3E%3Cpath d='M1.5 1.5 24 18 46.5 1.5'/%3E%3Cpath d='M1.5 30.5 18.5 14M46.5 30.5 29.5 14'/%3E%3Ccircle cx='24' cy='18' r='2.4' fill='%23000' stroke='none'/%3E%3C/svg%3E");
+		--gifts-header-mark-width: clamp(2.75rem, 6vw, 3.25rem);
+		--gifts-header-mark-color: var(--seaside-ink-strong);
+		--gifts-header-mark-gap: 1.1rem;
+	}
+
+	// Pass: no paper tilt, so it joins the reply below as one card.
+	.personalized-access {
+		--pa-paper-tilt: 0deg;
+	}
+
+	// Reply options: a readable ring at rest (3.7:1), a sea-blue ring and a pale sky ground when
+	// chosen, and a doubled ink edge instead of a soft halo.
+	.rsvp {
+		--rsvp-radio-indicator-border: rgb(118 134 150);
+		--rsvp-radio-selected-border: var(--color-action-accent);
+		--rsvp-radio-selected-bg: rgb(var(--color-ice-blue-rgb) / 70%);
+		--rsvp-radio-selected-halo: inset 0 0 0 1px var(--color-text-primary);
+		--rsvp-radio-focus-ring: 0 0 0 3px rgb(var(--color-action-accent-rgb) / 28%);
+	}
+
+	// Hut interlude: on phones the band takes the photograph's own 3:2 ratio, so nothing is
+	// cropped (figure and photographer mark both stay); wider screens anchor the crop to the
+	// bottom-right corner, where the mark sits, even before the focal observer runs.
+	.invitation-interlude[data-interlude-index='1'] {
+		--interlude-min-height-1-sm: calc(100vw * 2 / 3);
+		--interlude-focal-x: 100%;
+		--interlude-focal-y: 100%;
+	}
+
+	// Wave edges: arches become a soft shoreline against the deeper sky bands.
+	.invitation-section-wrapper[data-intersection] {
+		--intersection-surface: var(--color-surface-primary);
+		--intersection-arch-mask: #{$wave-mask};
+		--intersection-blend: radial-gradient(
+			ellipse 140% 100% at 50% 0%,
+			rgb(var(--color-ice-blue-rgb) / 90%) 0%,
+			transparent 72%
+		);
+	}
+
+	.invitation-section-wrapper[data-section-kind='family'][data-intersection='arch'],
+	.invitation-section-wrapper[data-section-kind='thankYou'][data-intersection='arch'] {
+		--intersection-surface: var(--color-ice-blue);
+	}
+}

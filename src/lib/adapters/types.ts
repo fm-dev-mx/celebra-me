@@ -17,12 +17,15 @@ import type { FamilyPresentation } from '@/lib/invitation/family-presentation';
 import type {
 	GalleryLayoutRole,
 	GalleryMobileBrowseMode,
+	GalleryPairedArrangement,
 	GalleryPresentation,
 } from '@/lib/invitation/gallery-presentation';
 import type { GiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import type {
 	LocationPresentation,
+	LocationIndicationsStyle,
 	LocationMapStyle,
+	LocationIndicationsLayout,
 } from '@/lib/invitation/location-presentation';
 import type { z } from 'zod';
 import type { EnvelopeRevealVariant } from '@/lib/schemas/content/envelope.schema';
@@ -52,6 +55,11 @@ export interface HeroViewModel {
 	ambience?: ImageAsset;
 	venueIndex?: number;
 	nameLeadWords?: number;
+	/** Editorial-cover folio marks; the renderer falls back to its XV defaults. */
+	coverMark?: string;
+	coverPage?: string;
+	/** Editorial-cover design credit; shown when omitted. */
+	designCredit?: boolean;
 	name: string;
 	secondaryName?: string;
 	label: string;
@@ -190,12 +198,20 @@ export interface EnvelopeViewModel {
 		};
 		/** Editorial cover reveal: edition label (e.g. "XV"). When set, triggers editorial-cover reveal instead of envelope. */
 		coverEdition?: string;
+		/** Collector rail label before the edition; "NÚM." when omitted, '' prints the edition alone. */
+		coverEditionLabel?: string;
 		/** Editorial cover reveal: volume number (e.g. "1"). */
 		coverVolume?: string;
 		/** Editorial cover reveal: issue year (e.g. "2027"). */
 		coverIssue?: string;
+		/** Editorial cover reveal: one or two cover lines; defaults are the XV edition lines. */
+		coverLines?: string[];
 		/** Editorial cover reveal: 'collector' enables the drag-to-open bending magazine. */
 		coverExperience?: 'standard' | 'collector';
+		/** Collector edition: decorative cutout on the printed cover face. */
+		coverOrnament?: ImageAsset;
+		/** Collector edition: up to two decorative cutouts on the first inner page. */
+		spreadOrnaments?: ImageAsset[];
 		/** Explicit content reveal variant. Only 'editorial-cover' replaces the standard envelope. */
 		revealVariant?: EnvelopeRevealVariant;
 	};
@@ -206,6 +222,7 @@ export interface Interlude {
 	afterSection: InvitationRenderSectionKey;
 	alt?: string;
 	height: 'screen' | 'tall' | 'medium';
+	presentation?: 'bleed' | 'framed';
 	focalPoint?: string;
 	focalPointDesktop?: string;
 	lightX?: string;
@@ -228,6 +245,9 @@ export interface LocationSection {
 		showFlourishes?: boolean;
 		showNavigationButtons?: boolean;
 		revealSurface?: 'section' | 'rsvp';
+		indicationsLayout?: LocationIndicationsLayout;
+		indicationsStyle?: LocationIndicationsStyle;
+		showCalendarLinks?: boolean;
 	};
 	isLocked?: boolean;
 	lockedTitle?: string;
@@ -237,10 +257,17 @@ export interface LocationSection {
 	indications?: Indication[];
 	showFlourishes?: boolean;
 	showNavigationButtons?: boolean;
+	indicationsStyle?: LocationIndicationsStyle;
 	introEyebrow?: string;
 	introHeading?: string;
 	introLede?: string;
+	/** Decorative cutout after the intro. */
+	ornament?: ImageAsset;
 	indicationsHeading?: string;
+	indicationsLayout?: LocationIndicationsLayout;
+	showCalendarLinks?: boolean;
+	calendarEventTitle?: string;
+	eventTimeZone?: string;
 }
 
 export interface InvitationViewModel {
@@ -307,7 +334,10 @@ export interface InvitationViewModel {
 			}>;
 			variant: GalleryVariant;
 			presentation?: GalleryPresentation;
-			variantOptions?: { mobileBrowse?: GalleryMobileBrowseMode };
+			variantOptions?: {
+				mobileBrowse?: GalleryMobileBrowseMode;
+				arrangement?: GalleryPairedArrangement;
+			};
 		};
 		itinerary?: {
 			title: string;
@@ -371,6 +401,8 @@ export interface InvitationViewModel {
 			closingPhrase?: string;
 			date?: string;
 			image?: ImageAsset;
+			/** Decorative cutout below the signature. */
+			ornament?: ImageAsset;
 			focalPoint?: string;
 			overlayAnchor?: 'left' | 'right' | 'top' | 'bottom';
 			overlaySafeArea?: {

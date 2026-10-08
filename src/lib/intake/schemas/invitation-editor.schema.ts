@@ -9,7 +9,11 @@ import {
 	closingNameLeadWordsSchema,
 } from '@/lib/schemas/content/shared.schema';
 import { LOCATION_PRESENTATIONS } from '@/lib/invitation/presentation-options';
-import { LOCATION_MAP_STYLES } from '@/lib/invitation/location-presentation';
+import {
+	LOCATION_INDICATIONS_LAYOUTS,
+	LOCATION_INDICATIONS_STYLES,
+	LOCATION_MAP_STYLES,
+} from '@/lib/invitation/location-presentation';
 import {
 	HERO_VARIANTS,
 	LOCATION_VARIANTS,
@@ -94,6 +98,9 @@ export const InvitationEditorSectionSchemas = {
 				showFlourishes: z.boolean().optional(),
 				showNavigationButtons: z.boolean().optional(),
 				revealSurface: z.enum(['section', 'rsvp']).optional(),
+				indicationsLayout: z.enum(LOCATION_INDICATIONS_LAYOUTS).optional(),
+				indicationsStyle: z.enum(LOCATION_INDICATIONS_STYLES).optional(),
+				showCalendarLinks: z.boolean().optional(),
 			})
 			.strict()
 			.optional(),

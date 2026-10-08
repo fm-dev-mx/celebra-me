@@ -4,7 +4,7 @@
 
 	.event-location__eyebrow,
 	.event-location__intro-eyebrow {
-		color: rgb(var(--editorial-magazine-ink-rgb) / 48%);
+		color: var(--location-eyebrow-color, rgb(var(--editorial-magazine-ink-rgb) / 48%));
 		font-family: var(--font-label);
 		font-weight: 700;
 		text-transform: uppercase;

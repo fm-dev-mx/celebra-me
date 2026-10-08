@@ -3,14 +3,14 @@
 /* Global Calligraphy Flourishes (Premium Brand Elements) */
 
 @mixin calligraphy-base {
-	font-family: 'Pinyon Script', cursive;
+	font-family: var(--calligraphy-accent-font, 'Pinyon Script', cursive);
 	font-style: normal;
 	text-transform: lowercase;
 	display: inline-block;
 	padding: 0 0.4em;
 	vertical-align: middle;
 	line-height: 0;
-	color: rgb(var(--color-action-accent-rgb) / 60%);
+	color: var(--calligraphy-accent-color, rgb(var(--color-action-accent-rgb) / 60%));
 }
 
 .calligraphy-accent {

@@ -28,7 +28,7 @@
 		height: 70%;
 		border-radius: 0 0 0 100%;
 		background: var(--color-surface-secondary);
-		opacity: 55%;
+		opacity: var(--hero-arc-opacity, 55%);
 		pointer-events: none;
 	}
 
@@ -48,7 +48,7 @@
 		box-sizing: border-box;
 		width: fit-content;
 		max-width: var(--hero-portrait-max-width, 76vw);
-		margin: 0 0 0 auto;
+		margin: var(--hero-portrait-margin, 0 0 0 auto);
 		padding: 0;
 		border-radius: var(--hero-portrait-radius, 50% 50% 0.75rem 0.75rem);
 		overflow: hidden;
@@ -70,20 +70,26 @@
 
 	.framed-portrait-hero__letter {
 		min-width: 0;
-		text-align: left;
+		text-align: var(--hero-letter-align, left);
 	}
 
 	.framed-portrait-hero__occasion {
 		margin: 0 0 0.5rem;
-		font: 500 var(--hero-label-size, clamp(2.75rem, 5vw, 3.5rem)) / 1.1 var(--font-display);
-		color: var(--color-action-accent);
+		font: var(
+			--hero-occasion-font,
+			500 var(--hero-label-size, clamp(2.75rem, 5vw, 3.5rem)) / 1.1 var(--font-display)
+		);
+		letter-spacing: var(--hero-occasion-letter-spacing, normal);
+		text-transform: var(--hero-occasion-text-transform, none);
+		color: var(--hero-occasion-color, var(--color-action-accent));
 	}
 
 	.framed-portrait-hero__name {
 		max-width: var(--hero-title-max-width, 9ch);
-		margin: 0;
-		font: 500 var(--hero-title-size) / 1 var(--font-display);
-		letter-spacing: -0.035em;
+		margin: var(--hero-name-margin, 0);
+		font: var(--hero-name-font-weight, 500) var(--hero-title-size) /
+			var(--hero-name-line-height, 1) var(--hero-name-font-family, var(--font-display));
+		letter-spacing: var(--hero-name-letter-spacing, -0.035em);
 		text-transform: none;
 		text-wrap: pretty;
 		overflow-wrap: anywhere;
@@ -98,7 +104,9 @@
 
 	.framed-portrait-hero__details {
 		margin-top: 0.5rem;
-		font: 400 clamp(1.125rem, 2vw, 1.25rem) / 1.6 var(--font-body);
+		font: var(--hero-details-font, 400 clamp(1.125rem, 2vw, 1.25rem) / 1.6 var(--font-body));
+		letter-spacing: var(--hero-details-letter-spacing, normal);
+		text-transform: var(--hero-details-text-transform, none);
 
 		p {
 			margin: 0.2rem 0;
@@ -109,7 +117,7 @@
 		width: 100%;
 		max-width: 70rem;
 		margin: 0 auto;
-		text-align: right;
+		text-align: var(--hero-scroll-align, right);
 		align-self: end;
 		font: 400 1.125rem / 1.5 var(--font-body);
 		color: var(--color-action-accent);

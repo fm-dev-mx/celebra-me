@@ -65,16 +65,22 @@ function RsvpVisibleHeader({
 	variant?: RsvpVariant;
 }) {
 	const isEditorialPressPass = variant === 'editorial-press-pass';
+	// The reply card is titled by its own heading; system eyebrows do not belong on it.
+	const isReplyCard = variant === 'reply-card';
 
 	return (
 		<>
 			{isEditorialPressPass && (
 				<p className="rsvp__access-kicker">CONFIRMACIÓN DE ASISTENCIA</p>
 			)}
-			<p className="rsvp__eyebrow">{eyebrow}</p>
-			<span className="rsvp__separator" aria-hidden="true">
-				◆
-			</span>
+			{!isReplyCard && (
+				<>
+					<p className="rsvp__eyebrow">{eyebrow}</p>
+					<span className="rsvp__separator" aria-hidden="true">
+						◆
+					</span>
+				</>
+			)}
 			<h2 className="rsvp__title">{title}</h2>
 			{isEditorialPressPass && (
 				<p className="rsvp__edition-label">ACCESO PRIVADO · EDICIÓN XV</p>
@@ -432,6 +438,9 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 		onBlur,
 	} = props;
 	const isEditorialPressPass = variant === 'editorial-press-pass';
+	// Printed reply cards use the stationery formula for both answers.
+	const confirmLabel = variant === 'reply-card' ? 'Con gusto asistiré' : 'Sí, asistiré';
+	const declineLabel = variant === 'reply-card' ? 'Lamento no poder asistir' : 'No podré asistir';
 	const [attendanceCollapsed, setAttendanceCollapsed] = useState(false);
 
 	const handleAttendanceCollapse = (status: Exclude<AttendanceStatus, null>) => {
@@ -472,7 +481,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 					<div className="rsvp__attendance-summary">
 						<span className="rsvp__attendance-summary-label">Respuesta</span>
 						<span className="rsvp__attendance-summary-value">
-							{attendanceStatus === 'confirmed' ? 'Sí, asistiré' : 'No podré asistir'}
+							{attendanceStatus === 'confirmed' ? confirmLabel : declineLabel}
 						</span>
 						<button
 							type="button"
@@ -492,6 +501,8 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 						prefersReducedMotion={prefersReducedMotion}
 						onAttendanceChange={handleAttendanceCollapse}
 						onBlur={onBlur}
+						confirmLabel={confirmLabel}
+						declineLabel={declineLabel}
 					/>
 				)}
 				{showIdentityFields && (

@@ -29,6 +29,7 @@ import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import { resolvePortraitEnabled } from '@/lib/invitation/hero-presentation';
 import { hasPlayableMusicUrl } from '@/lib/invitation/local-preview-config';
 import {
+	resolveLocationIndicationsStyle,
 	resolveLocationShowFlourishes,
 	resolveLocationShowNavigationButtons,
 } from '@/lib/invitation/location-presentation';
@@ -169,6 +170,9 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		name: data.hero.name,
 		venueIndex: data.hero.presentation?.venueIndex,
 		nameLeadWords: data.hero.presentation?.nameLeadWords,
+		coverMark: data.hero.presentation?.coverMark,
+		coverPage: data.hero.presentation?.coverPage,
+		designCredit: data.hero.presentation?.designCredit,
 		secondaryName: data.hero.secondaryName,
 		label: data.hero.label || 'Invitación Especial',
 		nickname: data.hero.nickname,
@@ -262,9 +266,17 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 					: undefined,
 			},
 			coverEdition: data.envelope.coverEdition,
+			coverEditionLabel: data.envelope.coverEditionLabel,
 			coverVolume: data.envelope.coverVolume,
 			coverIssue: data.envelope.coverIssue,
+			coverLines: data.envelope.coverLines,
 			coverExperience: data.envelope.coverExperience,
+			coverOrnament: data.envelope.coverOrnament
+				? resolveAsset(eventSlug, data.envelope.coverOrnament, data.title)
+				: undefined,
+			spreadOrnaments: data.envelope.spreadOrnaments
+				?.map((asset) => resolveAsset(eventSlug, asset, data.title))
+				.filter((asset): asset is ImageAsset => Boolean(asset)),
 			revealVariant: data.envelope.revealVariant,
 		},
 	};
@@ -287,6 +299,7 @@ function buildInterludes(context: AdaptationContext): Interlude[] {
 				afterSection: interlude.afterSection,
 				alt: interlude.alt,
 				height: interlude.height,
+				presentation: interlude.presentation,
 				focalPoint: interlude.focalPoint,
 				focalPointDesktop: interlude.focalPointDesktop,
 				lightX: interlude.lightX,
@@ -398,10 +411,18 @@ function buildLocationSectionData(context: AdaptationContext) {
 		showNavigationButtons: resolveLocationShowNavigationButtons(
 			data.location.presentationOptions,
 		),
+		indicationsStyle: resolveLocationIndicationsStyle(data.location.presentationOptions),
 		introEyebrow: data.location.introEyebrow,
 		introHeading: data.location.introHeading,
 		introLede: data.location.introLede,
+		ornament: data.location.ornament
+			? resolveAsset(eventSlug, data.location.ornament, data.title)
+			: undefined,
 		indicationsHeading: data.location.indicationsHeading ?? '',
+		indicationsLayout: data.location.presentationOptions?.indicationsLayout ?? 'list',
+		showCalendarLinks: data.location.presentationOptions?.showCalendarLinks ?? false,
+		calendarEventTitle: data.title,
+		eventTimeZone: data.eventTiming?.timeZone,
 	};
 }
 
@@ -518,6 +539,9 @@ function buildThankYouSectionData(context: AdaptationContext) {
 		...data.thankYou,
 		image: data.thankYou.image
 			? resolveAsset(eventSlug, data.thankYou.image, data.title)
+			: undefined,
+		ornament: data.thankYou.ornament
+			? resolveAsset(eventSlug, data.thankYou.ornament, data.title)
 			: undefined,
 		variant: data.thankYou.variant,
 	};

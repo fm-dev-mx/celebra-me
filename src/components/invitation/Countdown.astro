@@ -49,6 +49,19 @@ function formatCountdownDate(
 }
 
 const formattedDate = formatCountdownDate(targetIso, eventTimeZone);
+
+// written-days: a single day count and the date as stationery writes it, all lowercase, with
+// no leading zero (`domingo 6 de diciembre de 2026`).
+const isWrittenDays = variant === 'written-days';
+const timerUnits: CountdownUnit[] | undefined = isWrittenDays ? ['days'] : visibleUnits;
+function formatWrittenDate(dateString: string, timeZone = 'UTC'): string {
+	const date = new Date(dateString);
+	if (isNaN(date.getTime())) return '';
+	const part = (opts: Intl.DateTimeFormatOptions) =>
+		new Intl.DateTimeFormat('es-MX', { ...opts, timeZone }).format(date);
+	return `${part({ weekday: 'long' })} ${part({ day: 'numeric' })} de ${part({ month: 'long' })} de ${part({ year: 'numeric' })}`;
+}
+const writtenDate = isWrittenDays ? formatWrittenDate(targetIso, eventTimeZone) : '';
 ---
 
 <section class="countdown-section" id="countdown" data-screenshot-section="countdown" data-variant={variant}>
@@ -57,9 +70,12 @@ const formattedDate = formatCountdownDate(targetIso, eventTimeZone);
 		<h2 class="countdown-title">{title}</h2>
 
 		<div class="countdown-timer-wrapper">
-			<CountdownTimer targetIso={targetIso} isDemo={isDemo} visibleUnits={visibleUnits} />
+			<CountdownTimer targetIso={targetIso} isDemo={isDemo} visibleUnits={timerUnits} />
 		</div>
 
+		{isWrittenDays ? (
+		<p class="countdown-written-date">{writtenDate}</p>
+		) : (
 		<div class="countdown-date">
 			<div class="subtitle-line"></div>
 			<p class="event-date">
@@ -71,6 +87,7 @@ const formattedDate = formatCountdownDate(targetIso, eventTimeZone);
 			</p>
 			<div class="subtitle-line"></div>
 		</div>
+		)}
 
 		{ornament && (
 			<img

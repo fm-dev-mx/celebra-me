@@ -1,0 +1,310 @@
+{
+    "eventType": "xv",
+    "isDemo": true,
+    "templateId": "xv-celestial-blue",
+    "_assetSlug": "demo-xv-celestial-blue",
+    "visualProfileId": "demo-xv-seaside",
+    "title": "XV Años — Camila Torres Rivas (Seaside)",
+    "description": "Una invitación sofisticada para una noche de celebración en Cuernavaca. Elegancia, luz y momentos inolvidables.",
+    "theme": {
+        "fontFamily": "serif",
+        "preset": "celestial-blue"
+    },
+    "sectionOrder": [
+        "quote",
+        "family",
+        "gallery",
+        "countdown",
+        "location",
+        "itinerary",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
+    "hero": {
+        "presentation": {
+            "venueIndex": 1
+        },
+        "name": "Camila Torres Rivas",
+        "label": "Mis XV Años",
+        "date": "2027-09-12T19:00:00.000Z",
+        "backgroundImage": "portrait",
+        "focalPoint": "50% 40%",
+        "focalPointMobile": "50% 40%",
+        "variant": "bleed-portrait"
+    },
+    "location": {
+        "accessPolicy": {
+            "visibility": "public"
+        },
+        "indications": [
+            {
+                "iconName": "DressCode",
+                "styleVariant": "reserved",
+                "text": "El color <strong>azul cielo</strong> está reservado para la quinceañera.",
+                "title": "Formal"
+            },
+            {
+                "iconName": "Calendar",
+                "styleVariant": "default",
+                "text": "Confirme su asistencia <strong>antes del 29 de agosto de 2027</strong>.",
+                "title": "Confirmación"
+            }
+        ],
+        "variant": "program-sheet",
+        "venues": [
+            {
+                "venueEvent": "Misa de Acción de Gracias",
+                "venueName": "Catedral de la Asunción",
+                "address": "Av. Morelos 105, Centro, 62000 Cuernavaca, Mor.",
+                "city": "Cuernavaca",
+                "date": "12 de septiembre de 2027",
+                "time": "5:00 PM",
+                "image": "ceremony",
+                "type": "ceremony",
+                "isVisible": true
+            },
+            {
+                "venueEvent": "Recepción",
+                "venueName": "Hacienda Los Claustros",
+                "address": "Carretera Federal Cuernavaca-Tepoztlán Km 4.5, 62574 Cuernavaca, Mor.",
+                "city": "Cuernavaca",
+                "date": "12 de septiembre de 2027",
+                "time": "7:00 PM",
+                "image": "reception",
+                "type": "reception",
+                "isVisible": true
+            }
+        ],
+        "mapStyle": "dark",
+        "introLede": "Ubicación ilustrativa de la demo",
+        "presentationOptions": {
+            "showCalendarLinks": true,
+            "indicationsLayout": "enclosure"
+        },
+        "introHeading": "Dónde y cuándo",
+        "indicationsHeading": "Código de vestimenta"
+    },
+    "family": {
+        "featuredImage": {
+            "type": "internal",
+            "key": "family",
+            "delivery": {
+                "mode": "original",
+                "width": 1122,
+                "height": 1402
+            }
+        },
+        "featuredImageAlt": "Retrato ilustrativo de Camila con vestido azul, acompañada de su madre y su padre.",
+        "parents": {
+            "father": "Alejandro Torres Mendoza",
+            "mother": "Mariana Fernanda Rivas"
+        },
+        "labels": {
+            "sectionTitle": "Mi familia",
+            "sectionSubtitle": "Con amor y gratitud",
+            "parentsTitle": "Con la bendición de",
+            "godparentsTitle": "Padrinos",
+            "sectionMessage": "El cariño que me acompaña en cada paso."
+        },
+        "godparents": [
+            {
+                "name": "Ricardo Torres Mendoza",
+                "role": "Padrino"
+            },
+            {
+                "name": "Daniela Rivas Hernández",
+                "role": "Madrina"
+            },
+            {
+                "name": "Fernando Castillo López",
+                "role": "Padrino"
+            }
+        ],
+        "variant": "standard"
+    },
+    "gallery": {
+        "variant": "mirrored-mosaic",
+        "title": "Antes de la celebración",
+        "subtitle": "Retratos que guardan la ilusión de mis quince años.",
+        "items": [
+            {
+                "image": "gallery04",
+                "alt": "Camila con vestido azul entre los arcos de un corredor.",
+                "caption": "Azul entre los arcos"
+            },
+            {
+                "image": "gallery01",
+                "alt": "Retrato cercano de Camila con tiara.",
+                "caption": "La ilusión en una mirada"
+            },
+            {
+                "image": "gallery02",
+                "alt": "Camila de perfil en un balcón, con vestido azul y tiara.",
+                "caption": "Un instante en el balcón"
+            },
+            {
+                "image": "gallery06",
+                "alt": "Camila sentada en un banco de madera con vestido azul.",
+                "caption": "Detalles que cuentan una historia."
+            }
+        ]
+    },
+    "gifts": {
+        "title": "Lluvia de Sobres",
+        "subtitle": "Su presencia es el mejor regalo. Si desea tener un detalle adicional, contaremos con un buzón durante la recepción.",
+        "items": [
+            {
+                "type": "cash",
+                "title": "Lluvia de Sobres",
+                "text": "Contaremos con un buzón durante la recepción."
+            }
+        ],
+        "variant": "standard"
+    },
+    "rsvp": {
+        "title": "Confirme su asistencia",
+        "guestCap": 4,
+        "accessMode": "hybrid",
+        "confirmationMessage": "Gracias por confirmar. Le esperamos con alegría en esta noche tan especial.",
+        "confirmationMode": "api",
+        "personalizedAccess": {
+            "title": "Su lugar en la celebración",
+            "subtitle": "Reservado especialmente para usted",
+            "footerText": "Confirme a continuación para reservar sus lugares",
+            "variant": "reply-card"
+        },
+        "variant": "reply-card",
+        "subcopy": "Su respuesta nos ayuda a preparar cada detalle de esta celebración especial.",
+        "labels": {
+            "name": "Su nombre",
+            "notesPlaceholder": "Escriba un mensaje para Camila…"
+        }
+    },
+    "quote": {
+        "text": "La posibilidad de realizar un sueño es lo que hace que la vida sea interesante.",
+        "author": "Paulo Coelho"
+    },
+    "thankYou": {
+        "message": "Gracias por compartir esta noche conmigo. Su amor y compañía hacen de mis XV años un recuerdo que atesoraré para siempre.",
+        "closingName": "Camila Torres Rivas",
+        "image": "thankYouPortrait",
+        "focalPoint": "50% 30%",
+        "variant": "portrait-keepsake"
+    },
+    "itinerary": {
+        "title": "Programa",
+        "items": [
+            {
+                "iconName": "Church",
+                "label": "Misa",
+                "time": "17:00",
+                "description": "Ceremonia de Acción de Gracias en la Catedral."
+            },
+            {
+                "iconName": "Reception",
+                "label": "Recepción",
+                "time": "19:00",
+                "description": "Bienvenida en Hacienda Los Claustros."
+            },
+            {
+                "iconName": "Waltz",
+                "label": "Vals",
+                "time": "20:30",
+                "description": "Un momento de ensueño."
+            },
+            {
+                "iconName": "Dinner",
+                "label": "Cena",
+                "time": "21:30",
+                "description": "Cena de gala en familia."
+            },
+            {
+                "iconName": "Party",
+                "label": "Cierre",
+                "time": "00:00",
+                "description": "Gracias por celebrar con nosotros."
+            }
+        ],
+        "variant": "timeline-paper"
+    },
+    "countdown": {
+        "variant": "written-days",
+        "title": "Faltan"
+    },
+    "interludes": [
+        {
+            "image": {
+                "type": "internal",
+                "key": "gallery05",
+                "delivery": {
+                    "mode": "original",
+                    "width": 1080,
+                    "height": 1350
+                }
+            },
+            "afterSection": "family",
+            "alt": "Camila con vestido azul en un balcón al anochecer.",
+            "height": "medium",
+            "focalPoint": "50% 30%",
+            "focalPointDesktop": "50% 12%",
+            "lightX": "54%",
+            "lightY": "34%",
+            "presentation": "framed"
+        }
+    ],
+    "envelope": {
+        "sealStyle": "wax",
+        "sealIcon": "shell",
+        "revealVariant": "seaside-lineart",
+        "cardLabel": "Mis XV Años",
+        "cardName": "Camila",
+        "cardTagline": "Bajo el cielo, frente al mar",
+        "envelopeName": "Camila",
+        "microcopy": "Abra su invitación",
+        "tooltipText": "Toque el sello"
+    },
+    "sharing": {
+        "ogImage": "portrait",
+        "shareMessages": {
+            "invitation": "Hola {name}, le comparto la invitación para {eventTitle}: {inviteUrl}",
+            "reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}"
+        }
+    },
+    "music": {
+        "url": "https://res.cloudinary.com/dusxvauvj/video/upload/v1779331586/Ludovico_Einaudi_-_Nuvole_Bianche_z9ltlm.mp3",
+        "autoPlay": false,
+        "title": "Música de fondo"
+    },
+    "composition": {
+        "intersections": {
+            "quote": {
+                "family": "atmospheric-blend",
+                "source": "hero"
+            },
+            "family": {
+                "family": "arch",
+                "source": "quote"
+            },
+            "interlude-after-family": {
+                "family": "overlap",
+                "source": "family"
+            },
+            "gallery": {
+                "family": "atmospheric-blend",
+                "source": "interlude-after-family"
+            },
+            "gifts": {
+                "family": "atmospheric-blend",
+                "source": "itinerary"
+            }
+        },
+        "ornaments": "seaside-lineart"
+    },
+    "eventTiming": {
+        "localDateTime": "2027-09-12T19:00",
+        "timeZone": "America/Mexico_City",
+        "startsAtUtc": "2027-09-13T01:00:00.000Z"
+    }
+}

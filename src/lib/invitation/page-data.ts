@@ -140,7 +140,15 @@ export function buildPageContextFromViewModel(input: {
 	const isDemo = renderViewModel.isDemo;
 
 	const styles = generateThemeScopedStyles(theme, envelope, renderViewModel.id, isDemo);
-	const wrapperClassName = ['event-theme-wrapper', eventScopeClass, theme.themeClass]
+	const ornamentSetClass = renderViewModel.composition?.ornaments
+		? `ornament-set--${renderViewModel.composition.ornaments}`
+		: undefined;
+	const wrapperClassName = [
+		'event-theme-wrapper',
+		eventScopeClass,
+		theme.themeClass,
+		ornamentSetClass,
+	]
 		.filter(Boolean)
 		.join(' ');
 

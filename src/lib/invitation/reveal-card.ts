@@ -24,6 +24,7 @@ export type EnvelopeSealIcon =
 	| 'wax-organic'
 	| 'wax-medallion'
 	| 'flower'
+	| 'shell'
 	| 'special-edition';
 
 export const SEAL_ICON_MAP: Record<EnvelopeSealIcon, IconName> = {
@@ -34,6 +35,7 @@ export const SEAL_ICON_MAP: Record<EnvelopeSealIcon, IconName> = {
 	'wax-organic': 'WaxMonogramSeal',
 	'wax-medallion': 'WaxMonogramSeal',
 	flower: 'FlowerSeal',
+	shell: 'ShellSeal',
 	'special-edition': 'Diamond',
 };
 
@@ -65,6 +67,28 @@ export interface EnvelopeSealInput {
 	sealImage?: ImageAsset;
 }
 
+/**
+ * Reveal variants that own the whole envelope skin and therefore replace the preset-driven
+ * `data-variant` (and its reveal stylesheet) instead of layering on top of it.
+ */
+const STANDALONE_REVEAL_VARIANTS = ['satin-filigree', 'seaside-lineart'] as const;
+type StandaloneRevealVariant = (typeof STANDALONE_REVEAL_VARIANTS)[number];
+
+function isStandaloneRevealVariant(value: unknown): value is StandaloneRevealVariant {
+	return (
+		typeof value === 'string' &&
+		(STANDALONE_REVEAL_VARIANTS as readonly string[]).includes(value)
+	);
+}
+
+/** Resolve the envelope `data-variant` and reveal CSS entrypoint key. */
+export function resolveEnvelopeDataVariant(
+	revealVariant: string | undefined,
+	variant: string | undefined,
+): string | undefined {
+	return isStandaloneRevealVariant(revealVariant) ? revealVariant : variant;
+}
+
 export function resolveSealSkin(input: Pick<EnvelopeSealInput, 'sealColor' | 'sealVariant'> = {}) {
 	return input.sealColor || input.sealVariant;
 }
@@ -93,7 +117,10 @@ export function resolveSealStructure(input: EnvelopeSealInput = {}): SealStructu
 		return { renderer: 'monogram', initials, icon: 'monogram' };
 	}
 
-	if (input.sealIcon && ['boot', 'heart', 'flower', 'special-edition'].includes(input.sealIcon)) {
+	if (
+		input.sealIcon &&
+		['boot', 'heart', 'flower', 'shell', 'special-edition'].includes(input.sealIcon)
+	) {
 		return { renderer: 'vector-icon', icon: input.sealIcon, initials };
 	}
 

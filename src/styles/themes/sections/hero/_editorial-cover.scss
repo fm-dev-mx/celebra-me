@@ -7,6 +7,11 @@
 	box-sizing: border-box;
 	position: relative;
 	min-height: 100svh;
+
+	// The base hero fixes the section at one screen; a profile whose stacked phone content is
+	// taller (emblem and cutouts around the portrait) may let it grow so the portrait keeps its
+	// aspect ratio instead of shrinking. The default equals the base literal.
+	height: var(--hero-section-height, 100svh);
 	padding: 0;
 	background: var(--color-text-primary);
 	color: var(--color-text-on-dark);
@@ -20,11 +25,12 @@
 		right: -5%;
 		z-index: 1;
 		font-family: var(--font-display);
-		font-size: clamp(12rem, 36vw, 44rem);
+		font-size: var(--hero-watermark-size, clamp(12rem, 36vw, 44rem));
 		font-weight: 900;
 		line-height: 0.8;
+		white-space: var(--hero-watermark-white-space, normal);
 		color: var(--color-text-on-dark);
-		opacity: 3%;
+		opacity: var(--hero-watermark-opacity, 3%);
 		pointer-events: none;
 		user-select: none;
 		transition: opacity 1.2s var(--editorial-hero-ease-soft);
@@ -71,7 +77,7 @@
 	}
 
 	.invitation-hero__background {
-		opacity: 48%;
+		opacity: var(--hero-canvas-opacity, 48%);
 	}
 
 	.invitation-hero__background::after {
@@ -159,6 +165,31 @@
 		overflow: visible;
 	}
 
+	// Decorative emblem (hero.ornament) above the title: a contained, token-sized box; content
+	// without an ornament renders nothing.
+	.invitation-hero__ornament {
+		display: block;
+		align-self: var(--hero-ornament-align, center);
+		inline-size: min(100%, var(--hero-ornament-max-width, 7rem));
+		block-size: var(--hero-ornament-height, 4rem);
+		margin: var(--hero-ornament-margin, 0 0 1rem);
+		object-fit: contain;
+		object-position: var(--hero-ornament-position, center bottom);
+		filter: var(--hero-ornament-filter, none);
+	}
+
+	// Decorative cutout (hero.accentOrnament) below the details, same contained-box contract.
+	.invitation-hero__accent-ornament {
+		display: block;
+		align-self: var(--hero-accent-ornament-align, center);
+		inline-size: min(100%, var(--hero-accent-ornament-max-width, 12rem));
+		block-size: var(--hero-accent-ornament-height, 6rem);
+		margin: var(--hero-accent-ornament-margin, 1.25rem 0 0);
+		object-fit: contain;
+		object-position: var(--hero-accent-ornament-position, center bottom);
+		filter: var(--hero-accent-ornament-filter, none);
+	}
+
 	.invitation-hero__title {
 		margin: 0;
 		color: var(--color-text-on-dark);
@@ -176,6 +207,7 @@
 		line-height: 0.9;
 		letter-spacing: -0.01em;
 		text-transform: uppercase;
+		-webkit-text-fill-color: var(--hero-first-name-fill, inherit);
 	}
 
 	@media (width >= 992px) {
@@ -189,9 +221,10 @@
 		font-family: var(--font-display);
 		font-size: clamp(1.4rem, 2.4vw, 2.25rem);
 		font-style: italic;
-		font-weight: 400;
+		font-weight: var(--hero-last-name-weight, 400);
 		line-height: 1;
 		color: var(--color-action-accent);
+		-webkit-text-fill-color: var(--hero-last-name-fill, var(--color-action-accent));
 		margin-top: 0.45rem;
 		text-transform: none;
 		letter-spacing: 0.02em;
@@ -232,6 +265,8 @@
 
 	@media (width >= 992px) {
 		.invitation-hero__portrait {
+			// Profiles may cap the panel at the source's native width so it is never upscaled.
+			max-width: var(--hero-portrait-panel-max-width, 100%);
 			width: 100%;
 			height: 100vh;
 			min-height: 100svh;
@@ -426,7 +461,11 @@
 			justify-content: center;
 			gap: clamp(0.75rem, 1.8svh, 1.05rem);
 			min-height: calc(100svh - 1.6rem);
-			padding-block: clamp(2.8rem, 7svh, 4.25rem) clamp(3.2rem, 7svh, 4.75rem);
+
+			// Profiles whose stacked content fills the phone screen keep the first block clear of
+			// the absolute folio rail; the default equals the previous literal.
+			padding-block: var(--hero-content-padding-block-start, clamp(2.8rem, 7svh, 4.25rem))
+				clamp(3.2rem, 7svh, 4.75rem);
 		}
 
 		.invitation-hero__text-column {
@@ -515,7 +554,7 @@
 	}
 
 	to {
-		opacity: 48%;
+		opacity: var(--hero-canvas-opacity, 48%);
 	}
 }
 
@@ -549,7 +588,7 @@
 	}
 
 	to {
-		opacity: 3%;
+		opacity: var(--hero-watermark-opacity, 3%);
 	}
 }
 
@@ -577,7 +616,7 @@
 			}
 
 			.invitation-hero__watermark {
-				opacity: 3%;
+				opacity: var(--hero-watermark-opacity, 3%);
 			}
 		}
 	}

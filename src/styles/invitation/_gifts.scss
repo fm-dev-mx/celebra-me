@@ -60,6 +60,18 @@
 		margin-bottom: var(--gifts-header-margin-bottom);
 	}
 
+	// Optional line mark above the title (off by default): a profile supplies the drawing as a
+	// mask, so it takes the ink token like the ornament sets.
+	&__header::before {
+		content: '';
+		display: var(--gifts-header-mark-display, none);
+		width: var(--gifts-header-mark-width, 2.75rem);
+		aspect-ratio: var(--gifts-header-mark-ratio, 3 / 2);
+		margin: 0 auto var(--gifts-header-mark-gap, 1rem);
+		background-color: var(--gifts-header-mark-color, currentcolor);
+		mask: var(--gifts-header-mark, none) center / contain no-repeat;
+	}
+
 	&__eyebrow {
 		display: block;
 		margin-bottom: 0.5rem;
@@ -76,7 +88,8 @@
 		font-family: var(--font-display);
 		font-size: var(--gifts-title-size);
 		margin-bottom: var(--spacing-md);
-		text-transform: uppercase;
+		font-style: var(--gifts-title-style, inherit);
+		text-transform: var(--gifts-title-transform, uppercase);
 		letter-spacing: var(--gifts-title-letter-spacing);
 		color: var(--gifts-title-color);
 		overflow-wrap: anywhere;

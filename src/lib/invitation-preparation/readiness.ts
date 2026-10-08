@@ -1,5 +1,8 @@
 import type { CompletenessEvaluation } from '@/lib/invitation-preparation/event-completeness';
-import type { ImageQualityState } from '@/lib/invitation-preparation/image-optimization';
+import {
+	type ImageQualityState,
+	isProductionAuthoritativeImage,
+} from '@/lib/invitation-preparation/image-optimization';
 import type { InfoClassification } from '@/lib/invitation-preparation/classification';
 import {
 	type PlaceholderRecord,
@@ -22,7 +25,11 @@ export interface AssetPreparationSummary {
 	sourcePathProvided: boolean;
 	inventoried: boolean;
 	hasAssignableImages: boolean;
-	/** True when every assigned production role still relies on provisional/unusable material. */
+	/**
+	 * True while any assignable image still relies on provisional material. Production roles must be
+	 * fully production-authoritative before READY_FOR_IMPLEMENTATION (contract §9.1, hygiene A4), so
+	 * a mixed inventory (production-ready motifs plus provisional photographs) keeps this flag set.
+	 */
 	onlyNonProductionImages: boolean;
 	blockingIssues: string[];
 }
@@ -74,7 +81,7 @@ function collectAssetReasons(assets: AssetPreparationSummary): string[] {
 	reasons.push(...assets.blockingIssues);
 	if (assets.onlyNonProductionImages) {
 		reasons.push(
-			'Only provisional/non-production photographs are available; document replacements or obtain originals before READY_FOR_IMPLEMENTATION.',
+			'Provisional/non-production photographs remain in the inventory; document replacements or obtain originals before READY_FOR_IMPLEMENTATION.',
 		);
 	}
 	return reasons;
@@ -192,14 +199,18 @@ export function assertImplementationAllowed(readiness: PreparationReadiness): vo
 	}
 }
 
-/** Heuristic: treat WhatsApp-compressed inventory as non-production authoritative. */
+/**
+ * Heuristic: treat WhatsApp-compressed or placeholder inventory as non-production authoritative.
+ * One provisional image is enough to cap readiness: production-ready motif assets next to
+ * provisional photographs do not make the photographs production-authoritative.
+ */
 export function summarizeAssetQuality(
 	states: readonly ImageQualityState[],
 ): Pick<AssetPreparationSummary, 'hasAssignableImages' | 'onlyNonProductionImages'> {
 	const usable = states.filter((state) => state !== 'missing' && state !== 'unusable');
-	const production = usable.filter((state) => state === 'production-ready');
+	const nonProduction = usable.filter((state) => !isProductionAuthoritativeImage(state));
 	return {
 		hasAssignableImages: usable.length > 0,
-		onlyNonProductionImages: usable.length > 0 && production.length === 0,
+		onlyNonProductionImages: usable.length > 0 && nonProduction.length > 0,
 	};
 }

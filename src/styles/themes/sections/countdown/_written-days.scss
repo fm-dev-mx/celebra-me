@@ -1,0 +1,204 @@
+@use '../../../global/mixins' as mixins;
+
+// ==========================================================================
+// COUNTDOWN — written-days
+// One composed fact instead of a clock: the title reads as a small-caps lead ("Faltan"), the
+// day count is a light display numeral followed by an italic "días", and the date is written
+// in lowercase with old-style numerals. No tiles, no seconds, no ticking segments.
+// Tokens (all optional):
+//   --countdown-written-ink      Text color
+//   --countdown-written-muted    Lead and date color
+//   --countdown-written-rule     Desktop divider color
+//   --countdown-written-numeral  Numeral size
+//   --countdown-written-unit-gap Space between the numeral and "días"
+//   --countdown-written-columns  Column gap around the desktop divider
+//   --countdown-written-date-row Desktop grid row of the date (span 2 to sit on the numeral)
+//   --countdown-written-date-baseline Lift of the desktop date onto the numeral baseline
+// ==========================================================================
+
+// The section id keeps this layout above preset skins that style the default tiles.
+#countdown.countdown-section[data-variant='written-days'] {
+	--countdown-written-ink: var(--color-text-primary);
+	--countdown-written-muted: var(--color-text-secondary);
+	--countdown-written-rule: rgb(var(--color-text-primary-rgb, 16 24 32) / 18%);
+
+	padding-block: clamp(4.5rem, 12vw, 7.5rem);
+	background: var(--countdown-written-bg, transparent);
+
+	.countdown-texture,
+	.subtitle-line,
+	.countdown__unit,
+	.countdown__context {
+		display: none;
+	}
+
+	.countdown-container {
+		display: grid;
+		justify-items: center;
+		row-gap: 1.25rem;
+		max-width: 60rem;
+		margin-inline: auto;
+		padding-inline: 1.5rem;
+		text-align: center;
+	}
+
+	.countdown-title {
+		max-width: none;
+		margin: 0 0 0.5rem;
+		font-family: var(--font-label, var(--font-body));
+		font-size: 1.05rem;
+		font-weight: 400;
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.16em;
+		line-height: 1.3;
+		text-transform: none;
+		text-shadow: none;
+		color: var(--countdown-written-muted);
+	}
+
+	.countdown-timer-wrapper {
+		margin: 0;
+	}
+
+	.countdown__timer {
+		display: flex;
+		justify-content: center;
+		gap: 0;
+		margin: 0;
+	}
+
+	.countdown__segment {
+		display: flex;
+		flex-direction: row;
+		align-items: baseline;
+		gap: var(--countdown-written-unit-gap, 0.6rem);
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		background: none;
+		box-shadow: none;
+
+		&::before,
+		&::after {
+			content: none;
+		}
+	}
+
+	.countdown__value-wrapper {
+		display: block;
+		width: auto;
+		height: auto;
+		padding: 0;
+		border: 0;
+		background: none;
+		box-shadow: none;
+		overflow: visible;
+
+		&::before,
+		&::after {
+			content: none;
+		}
+	}
+
+	.countdown__value {
+		background: none;
+		-webkit-text-fill-color: currentcolor;
+		text-shadow: none;
+		font-family: var(--font-display);
+		font-size: var(--countdown-written-numeral, clamp(5rem, 18vw, 8.5rem));
+		font-weight: 300;
+		font-variant-numeric: lining-nums;
+		letter-spacing: 0;
+		line-height: 1.05;
+		color: var(--countdown-written-ink);
+	}
+
+	.countdown__label {
+		position: static;
+		font-family: var(--font-display);
+		font-size: clamp(1.9rem, 7vw, 3rem);
+		font-style: italic;
+		font-weight: 400;
+		letter-spacing: 0;
+		text-transform: lowercase;
+		color: var(--countdown-written-ink);
+		opacity: 100%;
+	}
+
+	.countdown-written-date {
+		margin: 0.6rem 0 0;
+		font-family: var(--font-body);
+		font-size: clamp(1.15rem, 2.2vw, 1.5rem);
+		font-variant-numeric: oldstyle-nums;
+		color: var(--countdown-written-ink);
+	}
+
+	.countdown-footer {
+		margin-top: 0.4rem;
+		padding: 0;
+		border: 0;
+
+		&::before,
+		&::after {
+			content: none;
+		}
+	}
+
+	.countdown-invitation-text {
+		font-family: var(--font-body);
+		font-style: italic;
+		font-size: 1.1rem;
+		letter-spacing: 0;
+		text-transform: none;
+		color: var(--countdown-written-muted);
+	}
+
+	@include mixins.respond-to(lg) {
+		.countdown-container {
+			grid-template-columns: auto 1px auto;
+			grid-template-rows: auto auto auto;
+			gap: 1.5rem var(--countdown-written-columns, clamp(3rem, 6vw, 5rem));
+			align-items: end;
+			justify-content: center;
+			text-align: left;
+		}
+
+		.countdown-title {
+			grid-column: 1;
+			grid-row: 1;
+			justify-self: start;
+		}
+
+		.countdown-timer-wrapper {
+			grid-column: 1;
+			grid-row: 2 / span 2;
+		}
+
+		.countdown-container::after {
+			content: '';
+			grid-column: 2;
+			grid-row: 1 / span 3;
+			align-self: stretch;
+			width: 1px;
+			background: var(--countdown-written-rule);
+		}
+
+		.countdown-written-date,
+		.countdown-footer {
+			grid-column: 3;
+			justify-self: start;
+		}
+
+		.countdown-written-date {
+			grid-row: var(--countdown-written-date-row, 2);
+			align-self: end;
+			margin: 0 0 var(--countdown-written-date-baseline, 0);
+		}
+
+		.countdown-footer {
+			grid-row: 3;
+			align-self: start;
+			margin: 0.35rem 0 1.4rem;
+		}
+	}
+}

@@ -1,0 +1,114 @@
+---
+/*
+  VenueProgramEntry
+  One venue of the `program-sheet` location variant: a printed-program entry instead of a card.
+  Label, written time, venue name and address, a line drawing for ceremony/reception venues, and
+  text links (map, calendar, copy address) with 44 px targets. The calendar keeps the native
+  <details> so it works without JavaScript.
+*/
+import { resolveVenueMapPreviewUrl } from '@/lib/invitation/location-helper';
+import { formatVenueTimeInWords } from '@/lib/invitation/venue-datetime';
+import type { VenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
+
+interface Props {
+	venue: {
+		venueEvent: string;
+		venueName: string;
+		address: string;
+		time: string;
+		mapUrl?: string;
+		googleMapsUrl?: string;
+		appleMapsUrl?: string;
+		wazeUrl?: string;
+		events?: { name: string; time: string }[];
+	};
+	type: 'ceremony' | 'reception' | 'custom' | 'grouped';
+	calendar?: VenueCalendarLinks | null;
+}
+
+const { venue, type, calendar } = Astro.props;
+const writtenTime = formatVenueTimeInWords(venue.time);
+const addressPending = /\[\[PENDIENTE:/u.test(venue.address);
+const displayAddress = addressPending ? 'Dirección pendiente de confirmar' : venue.address;
+const mapUrl = resolveVenueMapPreviewUrl(venue);
+---
+
+<article class="event-location__program-entry" data-venue-type={type} data-reveal-item>
+	{type === 'ceremony' && (
+		<svg
+			class="event-location__program-drawing"
+			data-venue-drawing="church"
+			viewBox="0 0 140 90"
+			aria-hidden="true"
+			focusable="false"
+		>
+			<path d="M4 86H136M24 86V46l32-16v56M84 86V30l32 16v40M56 86V22l14-12 14 12v64M70 10V2M66 5h8" />
+			<path d="M64 86V68q6-8 12 0v18M66 40q4-6 8 0v10h-8ZM36 58v12M44 56v14M96 56v14M104 58v12" />
+		</svg>
+	)}
+	{type === 'reception' && (
+		<svg
+			class="event-location__program-drawing"
+			data-venue-drawing="hall"
+			viewBox="0 0 140 90"
+			aria-hidden="true"
+			focusable="false"
+		>
+			<path d="M4 86H136M14 86V44l56-24 56 24v42M8 47l62-27 62 27M62 30h16" />
+			<path d="M58 86V60q12-12 24 0v26M26 76V56q5-6 10 0v20ZM104 76V56q5-6 10 0v20ZM42 76V58q4-5 8 0v18ZM90 76V58q4-5 8 0v18Z" />
+		</svg>
+	)}
+	<h3 class="event-location__program-label">{venue.venueEvent}</h3>
+	{venue.events && venue.events.length > 0 ? (
+		<ul class="event-location__program-schedule">
+			{venue.events.map((evt) => (
+				<li>
+					<span>{evt.name}</span> <span>{formatVenueTimeInWords(evt.time)}</span>
+				</li>
+			))}
+		</ul>
+	) : (
+		writtenTime && <p class="event-location__program-time">{writtenTime}</p>
+	)}
+	<p class="event-location__program-place">{venue.venueName}</p>
+	<p class="event-location__program-address">{displayAddress}</p>
+	<div class="event-location__program-actions">
+		{mapUrl && (
+			<a
+				class="event-location__program-link"
+				href={mapUrl}
+				target="_blank"
+				rel="noopener noreferrer"
+				aria-label={`Ver mapa de ${venue.venueName}`}
+			>
+				Ver mapa
+			</a>
+		)}
+		{calendar && (
+			<details class="event-location__calendar event-location__program-calendar">
+				<summary class="event-location__program-link">Agendar</summary>
+				<ul class="event-location__calendar-options">
+					<li>
+						<a href={calendar.googleUrl} target="_blank" rel="noopener noreferrer">Google Calendar</a>
+					</li>
+					<li>
+						<a href={calendar.icsHref} download={calendar.icsFileName}>Apple Calendar (.ics)</a>
+					</li>
+					<li>
+						<a href={calendar.outlookUrl} target="_blank" rel="noopener noreferrer">Outlook</a>
+					</li>
+				</ul>
+			</details>
+		)}
+		{!addressPending && (
+			<button
+				type="button"
+				class="event-location__program-link copy-button"
+				data-address={venue.address}
+				aria-label={`Copiar dirección de ${venue.venueName}`}
+			>
+				Copiar dirección
+			</button>
+		)}
+	</div>
+</article>
