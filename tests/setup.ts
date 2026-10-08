@@ -4,6 +4,11 @@
 import '@testing-library/jest-dom';
 import React from 'react';
 
+// jest-worker injects FORCE_COLOR=1 when the host terminal supports color. Operator CLI
+// presenters honor it, so pin NO_COLOR for deterministic plain-text assertions; tests that
+// verify colored output pass an explicit env object to the formatter instead.
+process.env.NO_COLOR ??= '1';
+
 if (typeof structuredClone === 'undefined') {
 	globalThis.structuredClone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 }
