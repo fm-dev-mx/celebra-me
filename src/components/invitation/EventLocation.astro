@@ -239,7 +239,48 @@ const venueType = (venue: GroupedVenue) =>
 	if (sections.length > 0) {
 		initCopyButtons('.copy-button', 'data-address');
 		revealIOSOnly('[data-apple-link]');
+		initCalendarMenus();
+	}
 
+	// The calendar menu is a native <details> (it works without JavaScript), which only closes
+	// from its own summary. Close it on a press outside, on Escape (focus returns to the summary),
+	// after choosing an option, and when another calendar menu opens.
+	function initCalendarMenus() {
+		const menus = Array.from(document.querySelectorAll<HTMLDetailsElement>('details.event-location__calendar'));
+		if (menus.length === 0) return;
+
+		const closeAll = (except?: HTMLDetailsElement) => {
+			for (const menu of menus) {
+				if (menu !== except && menu.open) menu.open = false;
+			}
+		};
+
+		for (const menu of menus) {
+			menu.addEventListener('toggle', () => {
+				if (menu.open) closeAll(menu);
+			});
+			menu.querySelectorAll('.event-location__calendar-options a').forEach((option) => {
+				option.addEventListener('click', () => {
+					menu.open = false;
+				});
+			});
+		}
+
+		document.addEventListener('pointerdown', (event) => {
+			const target = event.target;
+			if (!(target instanceof Node)) return;
+			for (const menu of menus) {
+				if (menu.open && !menu.contains(target)) menu.open = false;
+			}
+		});
+
+		document.addEventListener('keydown', (event) => {
+			if (event.key !== 'Escape') return;
+			const open = menus.find((menu) => menu.open);
+			if (!open) return;
+			open.open = false;
+			open.querySelector<HTMLElement>('summary')?.focus();
+		});
 	}
 
 	if (document.querySelector('[data-gated-location]')) {
