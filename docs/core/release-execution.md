@@ -44,7 +44,8 @@ implementing these skills is never a live-release invocation.
   command and target. Uncommitted input checks need matching content, not just HEAD. A new merge
   SHA, changed lockfile, baseline, matrix or runtime invalidates affected evidence. Do not repeat
   `test:changed` after `validate:changed`; the normal commit hook remains a separate index gate.
-- Let pre-push own exact-SHA visual certification, or precompute once with
+- Repository CI owns exact-SHA visual certification on the `develop` push. Optionally preview it
+  once with
   `pnpm validate:prepush -- --sha <head-sha> --base-sha <base-sha> --target-ref refs/heads/develop`.
   Always provide the base. Its existing cache is evidence, never authorization. Do not replace
   remote Repository CI with a local cache or substitute PR merge-SHA evidence for develop evidence.
