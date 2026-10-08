@@ -120,7 +120,8 @@ host alias keeps the contract form `{primer_nombre}_{primer_apellido}`.
   - **classification:** verified
   - **source:** wa-export
   - **notes:** Client wrote "mcqueen, mate Mac todos los personas"; read as "todos los personajes";
-    distributed organically across sections
+    distributed organically across sections, now also as character cutouts (McQueen, Mack, Mate, Doc
+    Hudson, Sally, Ramone) and the Cars emblem
 - **field:** clientColors
   - **value:** rojo, negro, blanco
   - **classification:** verified
@@ -151,10 +152,11 @@ host alias keeps the contract form `{primer_nombre}_{primer_apellido}`.
   - **notes:** "Life Is a Highway" (Rascal Flatts); hosted Cloudinary track supplied by owner
     (2026-10-07)
 - **field:** dressCode
-  - **value:** —
-  - **classification:** missing
-  - **source:** wa-export
-  - **notes:** Asked in the data list, not answered; optional, omitted
+  - **value:** Todas las personas en color rojo, negro y/o blanco
+  - **classification:** verified
+  - **source:** owner
+  - **notes:** Client instruction relayed by the owner (2026-10-07); published as the third location
+    pit board («Código de vestimenta»)
 - **field:** gifts
   - **value:** —
   - **classification:** missing
@@ -195,7 +197,7 @@ Every published fact was re-read against the full chat and the Local payload.
   - **status:** confirmed
 - **fact:** Age / label
   - **source:** chat: "Cumple 3", "Mis 3 años"
-  - **payload:** "Mis 3 años", edition "3"
+  - **payload:** "Mis 3 años"; edition, hero watermark, cover badge and trophy read "3 años"
   - **status:** confirmed
 - **fact:** Date
   - **source:** chat: "24 de octubre" (twice)
@@ -217,9 +219,12 @@ Every published fact was re-read against the full chat and the Local payload.
     link (2026-10-07)
 - **fact:** Theme and characters
   - **source:** chat: Cars, carreras, McQueen, Mate, Mack
-  - **payload:** race vocabulary and organic character distribution across sections (McQueen, Mate,
-    Mack); no Disney/Pixar vector/art added
-  - **status:** confirmed
+  - **payload:** race vocabulary and organic character distribution across sections, plus one
+    character cutout per surface: McQueen (collector cover, front view, and hero, side view), Sally
+    and Ramone (inner page), Doc Hudson (countdown), Mack (location, under «La ruta de Mack»), Mate
+    (back cover); the Cars emblem above the hero name
+  - **status:** confirmed; character artwork and emblem supplied by the owner (2026-10-07); the
+    owner asked for McQueen on both the reveal and the hero, so both McQueen files are used
 - **fact:** Colors
   - **source:** chat: rojo, negro, blanco
   - **payload:** red / asphalt / paper, yellow accent only
@@ -241,9 +246,10 @@ Every published fact was re-read against the full chat and the Local payload.
   - **payload:** not published
   - **status:** assumption
 - **fact:** Dress code
-  - **source:** asked, not answered
-  - **payload:** omitted
-  - **status:** missing
+  - **source:** owner relay: "todas las personas en color rojo, negro y/o blanco"
+  - **payload:** pit board 03 «Código de vestimenta»: "Todas las personas en color rojo, negro y/o
+    blanco."
+  - **status:** confirmed (2026-10-07)
 - **fact:** Gifts
   - **source:** never mentioned
   - **payload:** omitted
@@ -266,9 +272,8 @@ Client message draft (single message, "usted" register):
 > 2. ¿Les gustaría incluir el itinerario de la fiesta (por ejemplo, llegada, pastel y piñata)? Si
 >    sí, compártame los horarios.
 > 3. ¿Habrá mesa de regalos o alguna sugerencia de regalo que quieran mencionar?
-> 4. ¿Hay algún código de vestimenta para los invitados?
-> 5. ¿Cuántos lugares desea asignar por invitación? Por ahora dejé 4 y se puede ajustar en su panel.
-> 6. Para la canción "Life Is a Highway", ¿desde qué parte le gustaría que empiece?
+> 4. ¿Cuántos lugares desea asignar por invitación? Por ahora dejé 4 y se puede ajustar en su panel.
+> 5. Para la canción "Life Is a Highway", ¿desde qué parte le gustaría que empiece?
 >
 > Con eso la dejo lista. ¡Muchas gracias!
 
@@ -288,7 +293,10 @@ lockups are not standardized. No fields were invented beyond the contract.
   - **fields:** eventLabel, timeZone
   - **status:** resolved
 - **requirement:** optional
-  - **fields:** dressCode, gifts
+  - **fields:** dressCode
+  - **status:** resolved (client dress code, pit board 03)
+- **requirement:** optional
+  - **fields:** gifts
   - **status:** missing (non-blocking, omitted)
 - **requirement:** optional
   - **fields:** musicUrl, clientColors
@@ -300,7 +308,7 @@ lockups are not standardized. No fields were invented beyond the contract.
 
 ### Non-blocking gaps
 
-- Parents' names, itinerary, gifts and dress code were never supplied; asked in one client message.
+- Parents' names, itinerary and gifts were never supplied; asked in one client message.
 - Music start second is optional (defaults to 0:00).
 
 Deterministic question: **Is the available information sufficient to prepare this invitation?**  
@@ -354,7 +362,8 @@ No placeholders remain. The music track is hosted and published (`https://res.cl
   - **evidence:** Owner decision 2026-10-07
   - **options:** organic distribution (text + photos + original motifs)
   - **recommendation:** Resolved 2026-10-07: approved organic distribution across sections (McQueen,
-    Mate, Mack). No Disney/Pixar official artwork; copy in "usted" and celebrant 1st person.
+    Mate, Mack). Copy in "usted" and celebrant 1st person; character artwork later added by the
+    owner (see CHARACTER-ARTWORK).
 - **id:** PHOTO-ROLES
   - **category:** demo-design-decisions
   - **issue:** Photographs repeated across cover, hero, back cover
@@ -414,10 +423,20 @@ No placeholders remain. The music track is hosted and published (`https://res.cl
   - **recommendation:** Omit; add `family` if the client supplies names
 - **id:** DRESS-CODE
   - **category:** missing-client-facts
-  - **issue:** Not answered
-  - **evidence:** Owner data list
+  - **issue:** Not answered in the chat
+  - **evidence:** Owner relay 2026-10-07
   - **options:** ask client / omit
-  - **recommendation:** Omit; asked again in the client message
+  - **recommendation:** Resolved 2026-10-07: "Todas las personas en color rojo, negro y/o blanco"
+    (location pit board 03)
+- **id:** CHARACTER-ARTWORK
+  - **category:** demo-design-decisions
+  - **issue:** The client asked for the Cars characters; only text mentions existed
+  - **evidence:** Owner request 2026-10-07; owner-supplied files `mcqueen.jpg`, `mate.jpg`,
+    `mack.webp`
+  - **options:** original artwork / client images / owner-supplied official artwork / text only
+  - **recommendation:** Resolved 2026-10-07: owner-supplied artwork, background removed, one cutout
+    per section through the typed `ornament` fields. Third-party character artwork: usage rights are
+    the owner's decision and responsibility
 - **id:** GIFTS
   - **category:** missing-client-facts
   - **issue:** Not requested
@@ -436,26 +455,31 @@ No placeholders remain. The music track is hosted and published (`https://res.cl
 
 ## Agent Recommendations
 
-| topic       | recommendation                                                                      | basis                                             | status                    |
-| ----------- | ----------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------- |
-| demo        | editorial-magazine preset told as a race-day magazine ("Gran Premio")               | client colors red/black/white; no kids demo       | accepted by owner session |
-| palette     | asphalt / paper / racing red, "Piston" yellow only on dark surfaces                 | client colors; contrast ≥ 4.5:1 for body copy     | accepted by owner design  |
-| variants    | avoid press-pass, editorial-pass, and editorial-catalog (XV labels in markup)       | component literals                                | accepted by owner session |
-| display     | Montserrat italic via the opt-in `Montserrat Italic Display` face (no shared token) | profile cannot set `font-style`; +40 KB latin     | applied (iteration 3)     |
-| gallery     | `paired-portraits` + `arrangement: 'overlap'`; prints capped at native width        | 739–768 px sources                                | applied (iteration 3)     |
-| location    | `standard` + `indicationsStyle: 'numbered-board'`; venue ticket on asphalt (tokens) | split-map needs coordinates; plates need 2 venues | applied (iteration 3)     |
-| hero-mobile | no prepared mobile derivative: the 704 px source is smaller than any derivative     | delivery already serves the native width          | applied                   |
+| topic       | recommendation                                                                                                  | basis                                                                                 | status                    |
+| ----------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------- |
+| demo        | editorial-magazine preset told as a race-day magazine ("Gran Premio")                                           | client colors red/black/white; no kids demo                                           | accepted by owner session |
+| palette     | asphalt / paper / racing red, "Piston" yellow only on dark surfaces                                             | client colors; contrast ≥ 4.5:1 for body copy                                         | accepted by owner design  |
+| variants    | avoid press-pass, editorial-pass, and editorial-catalog (XV labels in markup)                                   | component literals                                                                    | accepted by owner session |
+| display     | Montserrat italic via the opt-in `Montserrat Italic Display` face (no shared token)                             | profile cannot set `font-style`; +40 KB latin                                         | applied (iteration 3)     |
+| gallery     | `paired-portraits` + `arrangement: 'overlap'`; prints capped at native width                                    | 739–768 px sources                                                                    | applied (iteration 3)     |
+| location    | `standard` + `indicationsStyle: 'numbered-board'`; venue ticket on asphalt (tokens)                             | split-map needs coordinates; plates need 2 venues                                     | applied (iteration 3)     |
+| characters  | typed `ornament` cutouts: Doc Hudson countdown, Mack location, Mate back cover                                  | client request; contained boxes, no profile layout                                    | applied (Local v10/v13)   |
+| age         | "3 años" wherever the figure stood alone (rail, inside mark, hero watermark, assets)                            | owner request 2026-10-07; the suit caption keeps the race number «Nº 3»               | applied (Local v11)       |
+| reveal      | McQueen on the cover face and under the hero details, Sally + Ramone on the inner page, Cars emblem in the hero | owner decision 2026-10-07 (McQueen on reveal and hero); typed envelope/hero ornaments | applied (Local v13)       |
+| dates       | back cover "Sábado 24 de octubre de 2026"; scoreboard footer drops its "Sábado 24"                              | legibility; the scoreboard already prints the full date                               | applied (Local v11)       |
+| footer      | race livery through shared `--footer-editorial-*` tokens (asphalt, red rule, paper)                             | contrast: CTA 3.9:1 red → 17:1 paper; brand credit kept                               | applied (Local v11)       |
+| hero-mobile | no prepared mobile derivative: the 704 px source is smaller than any derivative                                 | delivery already serves the native width                                              | applied                   |
 
 ---
 
 ## Sections
 
-| bucket                 | section keys                                                      |
-| ---------------------- | ----------------------------------------------------------------- |
-| requested              | hero (car photo), gallery, rsvp with passes, music                |
-| inferred / recommended | quote, countdown, location, personalizedAccess, thankYou          |
-| omitted                | family, itinerary, gifts, interludes (no photograph supports one) |
-| unresolved             | family, itinerary and gifts if the client answers                 |
+| bucket                 | section keys                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------- |
+| requested              | hero (car photo), gallery, rsvp with passes, music, Cars characters, dress code |
+| inferred / recommended | quote, countdown, location, personalizedAccess, thankYou                        |
+| omitted                | family, itinerary, gifts, interludes (no photograph supports one)               |
+| unresolved             | family, itinerary and gifts if the client answers                               |
 
 ---
 
@@ -500,8 +524,32 @@ Shared changes (minimal, backward compatible, defaults identical):
 - `hero.presentation.designCredit` (default shown): `false` drops the editorial-cover "DISEÑO /
   CELEBRA ME" credit line. Brand policy here: "Celebra-me" is named once, on the collector cover
   masthead (the site header logo stays); folios carry only "GRAN PREMIO · <sección>".
+- `location.ornament` and `thankYou.ornament` (new, optional) plus the existing
+  `countdown.ornament`: a transparent cutout in a fixed, contained box (`object-fit: contain`) after
+  the location intro, below the back-cover signature and between the countdown date and footer.
+  Location and thank-you rules use `:where()` and `--location-ornament-*` / `--thank-you-ornament-*`
+  tokens; the countdown rule lives in `magazine-folio` (`--countdown-ornament-*`). Content without
+  an ornament renders nothing new.
 - `src/styles/fonts/_montserrat-italic-display.scss`: opt-in face, only downloaded by profiles that
   `@use` it.
+- `envelope.coverEditionLabel` (new, optional): label printed before `coverEdition` on the collector
+  rail; `NÚM.` when omitted, `''` prints the edition alone. Here `coverEdition: '3 años'` prints
+  "VOL. 1 · 3 AÑOS · OCTUBRE 2026" and the inside-cover mark "3 años".
+- `--hero-watermark-size` (editorial-cover) and `--ec-inside-mark-size` (collector inside cover):
+  sizing tokens for multi-word marks, defaults equal to the previous literals; the marks no longer
+  wrap.
+- `--footer-editorial-*` tokens on the editorial footer skin (ground, rule, padding, gaps, brand
+  credit colour/logo filter, contact button rest/hover, replay link); every default equals the
+  previous literal.
+- `envelope.coverOrnament` and `envelope.spreadOrnaments` (new, optional, collector only): cutouts
+  on the printed face and the first inner page in token-anchored contained boxes
+  (`--ec-face-ornament-*`, `--ec-page-ornament-{1,2}-*`). The editorial-cover hero now renders the
+  existing `hero.ornament` as an emblem above the title (`--hero-ornament-*`) and
+  `hero.accentOrnament` as a cutout below the details (`--hero-accent-ornament-*`). Lazy cutouts
+  (location, back cover) declare `width`/`height`. `--hero-content-padding-block-start` (phone rule,
+  default equal to the previous literal) keeps the portrait clear of the folio rail now that the
+  emblem makes the stacked hero fill the screen; `--hero-section-height: auto` below 992 px lets the
+  hero grow past one screen so the portrait keeps its 4:5 frame (default `100svh`).
 - Tests: `tests/unit/presentation-option-portability.test.ts` (no-profile portability, defaults and
   incompatibility for the three options).
 
@@ -579,19 +627,42 @@ Profile-token pass with no redesign (2026-10-07):
   checkered strips at full strength; gallery title on the section scale with its folio visible;
   quote kicker removed; RSVP hairlines in paper instead of olive; closing signature 600.
 - Not addressed: «Pits» eyebrow (no token), venue card vs pit-board widths and the back-cover trophy
-  alignment on desktop (variant geometry), repeated «sábado 24» (approved copy), gold marks inside
-  `cover-grid.jpg` (asset).
+  alignment on desktop (variant geometry).
+
+### Age, dates and footer (Local v11)
+
+- «3 años» replaces every standalone «3»: collector rail (`coverEdition: '3 años'` with
+  `coverEditionLabel: ''`, so no "NÚM."), inside-cover watermark, hero watermark
+  (`coverMark: '3 años'`, sized by `--hero-watermark-size`), the cover badge (regenerated
+  `cover-grid.jpg`) and the trophy cup (regenerated `thankyou-trophy.jpg`). The suit caption keeps
+  «Nº 3»: it is the race number on the suit, not the age.
+- Back-cover date «Sábado 24 de octubre de 2026» instead of «24 · X · 2026». The scoreboard already
+  prints «SÁBADO 24 DE OCTUBRE DE 2026», so its footer line drops the duplicated «Sábado 24» and
+  keeps only the start time. The remaining «sábado 24» mentions (location heading, venue line, pass
+  note, RSVP messages) each sit in a different section.
+- Footer in the race livery (profile tokens only): asphalt ground under a 4 px red rule with a 2 px
+  yellow pinstripe, paper brand credit («Powered by» + Celebra-me logo inverted to paper, the
+  mandatory site credit), paper contact button that fills red on hover, paper replay link with a
+  yellow hover. Contrast: contact label 3.9:1 (red on asphalt) → 17:1; «Powered by» and the replay
+  link 8.6:1.
 
 ### Creative acceptance record
 
-| field                                       | value                                                                                                                   |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Mechanical render/capture result            | pass — Local v8 renders every section; full-page and per-section captures at mobile-standard and desktop (2026-10-07)   |
-| Whole-invitation responsive inspection      | 390×844 and 1440×900 captured and compared with xv/destenid-sofia (agent review, iteration 3)                           |
-| Section boundaries and narrative continuity | pending human review                                                                                                    |
-| Human creative outcome                      | `PENDING`                                                                                                               |
-| Reviewer and date                           | —                                                                                                                       |
-| Blocking reason or owner follow-up          | Music file; human review of iteration 3 and the v8 refinement; client answers (time, parents, itinerary, gifts, passes) |
+- **field:** Mechanical render/capture result
+  - **value:** pass — Local v8 renders every section; full-page and per-section captures at
+    mobile-standard and desktop (2026-10-07)
+- **field:** Whole-invitation responsive inspection
+  - **value:** 390×844 and 1440×900 captured and compared with xv/destenid-sofia (agent review,
+    iteration 3)
+- **field:** Section boundaries and narrative continuity
+  - **value:** pending human review
+- **field:** Human creative outcome
+  - **value:** `PENDING`
+- **field:** Reviewer and date
+  - **value:** —
+- **field:** Blocking reason or owner follow-up
+  - **value:** Human review of iteration 3, the v8 refinement and the character cutouts; client
+    answers (parents, itinerary, gifts, passes)
 
 ---
 
@@ -619,22 +690,60 @@ Original artwork authored for this invitation (asphalt, checkered flag, race num
 third-party artwork, logos or typefaces. Rendered from HTML/SVG with Montserrat (OFL) and stored as
 JPEG sources; publication re-encodes them to WebP.
 
-| source filename     | dims      | format | orientation | weight | quality              | role                         | duplicate | processing                                                                 | derivative          |
-| ------------------- | --------- | ------ | ----------- | ------ | -------------------- | ---------------------------- | --------- | -------------------------------------------------------------------------- | ------------------- |
-| hero-canvas.jpg     | 1920×1280 | jpeg   | landscape   | 0.4 MB | production-ready     | heroCanvas (hero background) | no        | asphalt, side lines, checker bands                                         | hero-canvas.jpg     |
-| cover-grid.jpg      | 1080×1920 | jpeg   | portrait    | 0.3 MB | provisional-whatsapp | coverGrid (collector cover)  | no        | paper bands for the masthead, track, roundel with chat-052 and a "3" badge | cover-grid.jpg      |
-| thankyou-trophy.jpg | 1200×1600 | jpeg   | portrait    | 0.3 MB | production-ready     | thankYouTrophy (back cover)  | no        | trophy with "3" and "Gran Premio 2026" plate                               | thankyou-trophy.jpg |
+| source filename     | dims      | format | orientation | weight  | quality              | role                         | duplicate | processing                                                                                               | derivative          |
+| ------------------- | --------- | ------ | ----------- | ------- | -------------------- | ---------------------------- | --------- | -------------------------------------------------------------------------------------------------------- | ------------------- |
+| hero-canvas.jpg     | 1920×1280 | jpeg   | landscape   | 0.4 MB  | production-ready     | heroCanvas (hero background) | no        | asphalt, side lines, checker bands                                                                       | hero-canvas.jpg     |
+| cover-grid.jpg      | 1080×1920 | jpeg   | portrait    | 0.2 MB  | provisional-whatsapp | coverGrid (collector cover)  | no        | paper bands for the masthead, track, roundel with chat-052 and a "3 AÑOS" badge (regenerated 2026-10-07) | cover-grid.jpg      |
+| thankyou-trophy.jpg | 1200×1600 | jpeg   | portrait    | 0.15 MB | production-ready     | thankYouTrophy (back cover)  | no        | trophy with "3 AÑOS" and "Gran Premio 2026" plate (regenerated 2026-10-07)                               | thankyou-trophy.jpg |
+
+### Character cutouts
+
+Cars characters requested by the client; artwork supplied by the owner (2026-10-07). White
+backgrounds were removed (edge flood fill, white un-matte and a light-fringe pass; Mate also lost
+the standee floor shadow and the enclosed white gaps), each file was trimmed and, where a side was
+under the 480 px intake minimum, enlarged once with Lanczos. Sources are lossless WebP with alpha;
+publication re-encodes them to WebP (alpha kept).
+
+| source filename              | dims     | format | orientation | weight | quality              | role                        | duplicate | processing                                                                    | published |
+| ---------------------------- | -------- | ------ | ----------- | ------ | -------------------- | --------------------------- | --------- | ----------------------------------------------------------------------------- | --------- |
+| character-mcqueen.webp       | 824×488  | webp   | landscape   | 333 KB | owner-supplied       | hero.accentOrnament         | no        | from 736×423 JPEG: background removed, trimmed, ×1.22                         | 61 KB     |
+| character-mack.webp          | 601×488  | webp   | landscape   | 177 KB | owner-supplied (low) | location.ornament           | no        | from 360×290 WebP (already transparent): trimmed, ×1.62                       | 46 KB     |
+| character-mate.webp          | 727×488  | webp   | landscape   | 296 KB | owner-supplied       | thankYou.ornament           | no        | from 736×786 JPEG: background, floor shadow and gaps removed                  | 71 KB     |
+| character-doc-hudson.webp    | 987×480  | webp   | landscape   | 276 KB | owner-supplied       | countdown.ornament          | no        | from 645×304 WebP: floor shadow removed, trimmed, ×1.68                       | see note  |
+| character-mcqueen-front.webp | 696×480  | webp   | landscape   | 220 KB | owner-supplied (low) | envelope.coverOrnament      | no        | from 360×360 WebP (cropped on its left): floor shadow removed, trimmed, ×1.94 | see note  |
+| character-sally.webp         | 892×480  | webp   | landscape   | 223 KB | owner-supplied (low) | envelope.spreadOrnaments[0] | no        | from 450×233 WebP: floor shadow removed, trimmed, ×2.25                       | see note  |
+| character-ramone.webp        | 1079×765 | webp   | landscape   | 455 KB | owner-supplied       | envelope.spreadOrnaments[1] | no        | from 1362×820 WebP: floor shadow removed, trimmed, native                     | see note  |
+| logo-cars.webp               | 754×480  | webp   | landscape   | 173 KB | owner-supplied       | hero.ornament               | no        | from 669×458 JPEG: white ground flood-filled, edge un-matted, ×1.24           | see note  |
+
+Second batch (2026-10-07, owner-approved placement): the semi-transparent floor shadows were dropped
+(semi-transparent pixels farther than 3 px from any opaque pixel). Published weights are listed in
+the Local release receipt (v12); every file re-encodes under the `standard-section` budget. Sally is
+a ×2.25 enlargement of a 450 px source and reads soft on dense screens. The front-view McQueen
+(`Lightning_McQueen.webp`, 358×247 usable, cut off on its left in the source) is placed flush with
+the cover's left edge so the cut reads as the car entering the page. Third-party artwork and the
+franchise emblem: usage rights are the owner's decision and responsibility.
+
+Mack's source is small (360 px); it is displayed at most 18rem wide and 9rem tall, but a larger
+source would sharpen it on high-density screens.
 
 ### Uniqueness table (required before READY_*)
 
-| role           | source           | derivative          | intentional multi-role?                            |
-| -------------- | ---------------- | ------------------- | -------------------------------------------------- |
-| heroPortrait   | chat-054         | hero.jpg            | yes, off-page only (OG share preview; D7)          |
-| gallery01      | chat-053         | gallery-01.jpg      | no                                                 |
-| gallery02      | chat-055         | gallery-02.jpg      | no                                                 |
-| heroCanvas     | motif            | hero-canvas.jpg     | yes (hero background and the collector inner page) |
-| coverGrid      | motif + chat-052 | cover-grid.jpg      | no (chat-052's only role)                          |
-| thankYouTrophy | motif            | thankyou-trophy.jpg | no                                                 |
+| role                  | source           | derivative                   | intentional multi-role?                            |
+| --------------------- | ---------------- | ---------------------------- | -------------------------------------------------- |
+| heroPortrait          | chat-054         | hero.jpg                     | yes, off-page only (OG share preview; D7)          |
+| gallery01             | chat-053         | gallery-01.jpg               | no                                                 |
+| gallery02             | chat-055         | gallery-02.jpg               | no                                                 |
+| heroCanvas            | motif            | hero-canvas.jpg              | yes (hero background and the collector inner page) |
+| coverGrid             | motif + chat-052 | cover-grid.jpg               | no (chat-052's only role)                          |
+| thankYouTrophy        | motif            | thankyou-trophy.jpg          | no                                                 |
+| characterMcQueen      | owner artwork    | character-mcqueen.webp       | no                                                 |
+| characterMack         | owner artwork    | character-mack.webp          | no                                                 |
+| characterMate         | owner artwork    | character-mate.webp          | no                                                 |
+| characterDocHudson    | owner artwork    | character-doc-hudson.webp    | no                                                 |
+| characterSally        | owner artwork    | character-sally.webp         | no                                                 |
+| characterRamone       | owner artwork    | character-ramone.webp        | no                                                 |
+| logoCars              | owner artwork    | logo-cars.webp               | no                                                 |
+| characterMcQueenFront | owner artwork    | character-mcqueen-front.webp | no                                                 |
 
 The client chose chat-054 (the ride-on car) as the main photograph; it is the only photograph in the
 hero (mobile card, desktop panel) and the share image. No photograph appears twice on the page.
@@ -656,12 +765,16 @@ reintroduces a repetition.
   variants print an XV edition label in their markup and are not used here.
 - Intersections: quote ← hero `atmospheric-blend`; location ← countdown `pattern-band` (lane);
   personalized-access ← gallery `overlap`; thankYou ← rsvp `pattern-band` (checker).
-- Envelope: `revealVariant: editorial-cover`, `coverExperience: collector`, `coverEdition: '3'`
-  (prints "NÚM. 3" and the inner "3" mark; omitted, it falls back to XV), and `backdropImage` →
-  `coverGrid`. Cover lines, card label/tagline and document label are not printed by the collector
-  face and are no longer published.
-- Hero folio marks: `hero.presentation.coverMark` ("3") and `coverPage` ("POLE POSITION");
+- Envelope: `revealVariant: editorial-cover`, `coverExperience: collector`, `coverEdition: '3 años'`
+  with `coverEditionLabel: ''` (rail "3 AÑOS" without "NÚM.", inside mark "3 años"; omitted, the
+  edition falls back to XV), and `backdropImage` → `coverGrid`. Cover lines, card label/tagline and
+  document label are not printed by the collector face and are no longer published.
+- Hero folio marks: `hero.presentation.coverMark` ("3 años") and `coverPage` ("POLE POSITION");
   `designCredit: false`.
+- Characters: one owner-supplied cutout per surface (`envelope.coverOrnament` McQueen front view,
+  `hero.accentOrnament` McQueen side view, `envelope.spreadOrnaments` Sally and Ramone,
+  `countdown.ornament` Doc Hudson, `location.ornament` Mack, `thankYou.ornament` Mate) and the Cars
+  emblem as `hero.ornament`; the profile only sizes and anchors them through tokens.
 - Copy is owner-authored in the "usted" register, in the celebrant's first person; one race term per
   section (Gran Premio, pole position, motores, salida, circuito/banderazo, pits, tribuna,
   inscripción, meta/trofeo). No client facts were invented; the inferred municipality and state are
@@ -703,3 +816,25 @@ reintroduces a repetition.
   - **notes:** Final client corrections applied: confirmed 5:30 p. m., pinned Maps link, Cars
     characters distribution, personalized pass note with date/time/venue, RSVP "usted" response
     messages, and hosted music track (Local v8)
+- **date:** 2026-10-07
+  - **readiness:** `READY_WITH_PLACEHOLDERS`
+  - **helper basis:** `evaluatePreparationReadiness` + `summarizeAssetQuality`
+  - **notes:** Cars character cutouts (McQueen, Mack, Mate) through typed `ornament` fields and the
+    client dress code as pit board 03 (Local v10)
+- **date:** 2026-10-07
+  - **readiness:** `READY_WITH_PLACEHOLDERS`
+  - **helper basis:** `evaluatePreparationReadiness` + `summarizeAssetQuality`
+  - **notes:** «3 años» on every standalone figure (rail, marks, regenerated cover badge and
+    trophy), legible back-cover date, scoreboard footer without the duplicated day, footer in the
+    race livery through shared tokens (Local v11)
+- **date:** 2026-10-07
+  - **readiness:** `READY_WITH_PLACEHOLDERS`
+  - **helper basis:** `evaluatePreparationReadiness` + `summarizeAssetQuality`
+  - **notes:** Owner-approved character placement: Doc Hudson on the collector cover, Sally and
+    Ramone on the inner page, Cars emblem above the hero name; typed envelope/hero ornaments with
+    portability tests (Local v12; Doc Hudson placement superseded in v13)
+- **date:** 2026-10-07
+  - **readiness:** `READY_WITH_PLACEHOLDERS`
+  - **helper basis:** `evaluatePreparationReadiness` + `summarizeAssetQuality`
+  - **notes:** Owner decision: McQueen on the reveal (cover face, front view) and in the hero
+    (`hero.accentOrnament`, side view); Doc Hudson moves to the scoreboard (Local v13)

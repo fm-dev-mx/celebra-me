@@ -301,10 +301,13 @@ export const envelopeSchema = z
 			.enum(['celestial-blue', 'editorial-cover', 'satin-filigree', 'seaside-lineart'])
 			.optional(),
 		coverEdition: z.string().trim().max(80).optional(),
+		coverEditionLabel: z.string().trim().max(16).optional(),
 		coverVolume: z.string().trim().max(40).optional(),
 		coverIssue: z.string().trim().max(40).optional(),
 		coverLines: z.array(z.string().trim().min(1).max(60)).min(1).max(2).optional(),
 		coverExperience: z.enum(['standard', 'collector']).optional(),
+		coverOrnament: editableAssetSchema.optional(),
+		spreadOrnaments: z.array(editableAssetSchema).min(1).max(2).optional(),
 		closedPalette: z
 			.object({
 				primary: ColorTokenSchema.optional(),

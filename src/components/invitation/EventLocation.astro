@@ -11,8 +11,10 @@ import { groupVenues, type GroupedVenue, type VenueEntry } from '@/lib/invitatio
 import Icon from '@/components/common/icons/Icon.astro';
 import SectionNavButton from '@/components/invitation/components/SectionNavButton.astro';
 import { sanitizeIndicationHtml } from '@/lib/invitation/indication-html';
+import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
 import { buildVenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
 
+import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import type { IndicationStyleVariant } from '@/lib/theme/theme-contract';
 import type {
@@ -55,6 +57,8 @@ interface Props {
 	introEyebrow?: string;
 	introHeading?: string;
 	introLede?: string;
+	/** Decorative cutout printed after the intro. */
+	ornament?: ImageAsset;
 }
 
 const {
@@ -79,6 +83,7 @@ const {
 	introEyebrow,
 	introHeading,
 	introLede,
+	ornament,
 } = Astro.props;
 
 const displayVenues = groupVenues(venueEntries);
@@ -106,6 +111,17 @@ const venueType = (venue: GroupedVenue) =>
 			{introHeading && <h2 class="event-location__heading">{introHeading}</h2>}
 			{introLede && <p class="event-location__lede">{introLede}</p>}
 		</header>
+	)}
+	{ornament && (
+		<img
+			class="event-location__ornament"
+			src={plainImgSrc(ornament.src)}
+			alt=""
+			width="288"
+			height="144"
+			loading="lazy"
+			decoding="async"
+		/>
 	)}
 	{!isLocked && sharedDate && <p class="event-location__shared-date">{sharedDate}</p>}
 	{isLocked ? (

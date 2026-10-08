@@ -1228,6 +1228,18 @@
 	}
 }
 
+// Decorative cutout (location.ornament): a transparent image contained in a fixed box, so it
+// never crops and reserves its height before loading. Zero specificity keeps profiles in charge.
+:where(.event-location__ornament) {
+	display: block;
+	inline-size: min(100%, var(--location-ornament-max-width, 18rem));
+	block-size: var(--location-ornament-height, 9rem);
+	margin: var(--location-ornament-margin, 1.5rem auto);
+	object-fit: contain;
+	object-position: var(--location-ornament-position, center bottom);
+	filter: var(--location-ornament-filter, none);
+}
+
 // ==========================================================================
 // CALENDAR DISCLOSURE — `presentationOptions.showCalendarLinks`.
 // Native <details>, so it opens with keyboard and without client JavaScript.

@@ -190,3 +190,15 @@
 	line-height: 1.25;
 	text-shadow: 0 2px 4px rgb(0 0 0 / 5%);
 }
+
+// Decorative cutout (thankYou.ornament) below the signature: contained in a fixed box, so it
+// never crops and reserves its height before loading. Zero specificity keeps profiles in charge.
+:where(.thank-you__ornament) {
+	display: block;
+	inline-size: min(100%, var(--thank-you-ornament-max-width, 16rem));
+	block-size: var(--thank-you-ornament-height, 8rem);
+	margin: var(--thank-you-ornament-margin, 1.75rem auto 0);
+	object-fit: contain;
+	object-position: var(--thank-you-ornament-position, center bottom);
+	filter: var(--thank-you-ornament-filter, none);
+}

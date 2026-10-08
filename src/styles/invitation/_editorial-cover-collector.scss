@@ -203,6 +203,41 @@ html.envelope-open:has(ds-editorial-cover[data-cover-experience='collector']:not
 		object-position: 42% 30%;
 	}
 
+	// Decorative cutouts (envelope.coverOrnament / spreadOrnaments): token-anchored contained
+	// boxes over the printed face and the first inner page. Content without them renders nothing.
+	.ec-face__ornament,
+	.ec-page__ornament {
+		position: absolute;
+		object-fit: contain;
+		pointer-events: none;
+	}
+
+	.ec-face__ornament {
+		inset: var(--ec-face-ornament-inset, auto auto 10% 4%);
+		width: var(--ec-face-ornament-width, 30%);
+		height: var(--ec-face-ornament-height, 12%);
+		object-position: var(--ec-face-ornament-position, left bottom);
+		filter: var(--ec-face-ornament-filter, drop-shadow(0 6px 10px rgb(0 0 0 / 45%)));
+	}
+
+	.ec-page__ornament {
+		filter: var(--ec-page-ornament-filter, drop-shadow(0 6px 10px rgb(0 0 0 / 45%)));
+	}
+
+	.ec-page__ornament[data-ornament='1'] {
+		inset: var(--ec-page-ornament-1-inset, auto auto 12% 4%);
+		width: var(--ec-page-ornament-1-width, 42%);
+		height: var(--ec-page-ornament-1-height, 20%);
+		object-position: var(--ec-page-ornament-1-position, left bottom);
+	}
+
+	.ec-page__ornament[data-ornament='2'] {
+		inset: var(--ec-page-ornament-2-inset, auto 3% 11% auto);
+		width: var(--ec-page-ornament-2-width, 46%);
+		height: var(--ec-page-ornament-2-height, 24%);
+		object-position: var(--ec-page-ornament-2-position, right bottom);
+	}
+
 	.ec-page__folio {
 		position: absolute;
 		right: 6%;
@@ -662,9 +697,10 @@ html.envelope-open:has(ds-editorial-cover[data-cover-experience='collector']:not
 		bottom: 5%;
 		color: rgb(20 18 16 / 5%);
 		font-family: var(--ec-font-display);
-		font-size: calc(var(--ec-book-w) * 0.26);
+		font-size: var(--ec-inside-mark-size, calc(var(--ec-book-w) * 0.26));
 		font-weight: 700;
 		line-height: 1;
+		white-space: var(--ec-inside-mark-white-space, normal);
 	}
 
 	.ec-inside__folio {

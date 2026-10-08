@@ -1,9 +1,13 @@
 /**
- * Portability and incompatibility contract for three typed presentation options:
+ * Portability and incompatibility contract for typed presentation options:
  * - location.presentationOptions.indicationsStyle ('list' | 'numbered-board')
  * - gallery.variantOptions.arrangement ('stacked' | 'overlap', paired-portraits only)
  * - the 'pattern-band' section intersection family
  * - hero.presentation.designCredit (editorial-cover credit line, on by default)
+ * - location.ornament and thankYou.ornament (decorative cutouts, absent by default)
+ * - envelope.coverEditionLabel (collector rail label, "NÚM." by default)
+ * - envelope.coverOrnament / spreadOrnaments and the editorial-cover hero.ornament and
+ *   hero.accentOrnament (absent by default)
  *
  * Each option is exercised on synthetic jewelry-box content with no visual profile, so none of
  * them depends on a client profile or slug. Defaults must leave existing content unchanged.
@@ -56,6 +60,7 @@ type PatchableContent = {
 		presentation?: Record<string, unknown>;
 		[key: string]: unknown;
 	};
+	envelope?: Record<string, unknown>;
 	[key: string]: unknown;
 };
 
@@ -222,5 +227,154 @@ describe('editorial-cover design credit', () => {
 		expect(readSource('src/components/invitation/EditorialCoverHero.astro')).toContain(
 			'designCredit = true',
 		);
+	});
+});
+
+describe('editorial-cover edition label', () => {
+	it('keeps the "NÚM." rail label unless content sets one', () => {
+		const view = adapt(
+			synthetic('hero', 'editorial-cover', (data) => {
+				data.envelope = {
+					...(data.envelope ?? {}),
+					revealVariant: 'editorial-cover',
+					coverEdition: 'XV',
+				};
+			}),
+		);
+		expect(view.envelope.data?.coverEdition).toBe('XV');
+		expect(view.envelope.data?.coverEditionLabel).toBeUndefined();
+	});
+
+	it('ports an empty label (edition printed alone) and a custom label without a profile', () => {
+		for (const label of ['', 'EDICIÓN']) {
+			const view = adapt(
+				synthetic('hero', 'editorial-cover', (data) => {
+					data.envelope = {
+						...(data.envelope ?? {}),
+						revealVariant: 'editorial-cover',
+						coverExperience: 'collector',
+						coverEdition: '3 años',
+						coverEditionLabel: label,
+					};
+				}),
+			);
+			expect(view.envelope.data?.coverEditionLabel).toBe(label);
+		}
+	});
+
+	it('rejects labels longer than the rail allows', () => {
+		const candidate = synthetic('hero', 'editorial-cover', (data) => {
+			data.envelope = {
+				...(data.envelope ?? {}),
+				revealVariant: 'editorial-cover',
+				coverEdition: '3 años',
+				coverEditionLabel: 'x'.repeat(17),
+			};
+		});
+		expect(eventContentSchema.safeParse(candidate.data).success).toBe(false);
+	});
+
+	it('keeps the mark and footer sizing tokens free of profile selectors', () => {
+		for (const file of [
+			'src/styles/themes/sections/hero/_editorial-cover.scss',
+			'src/styles/invitation/_editorial-cover-collector.scss',
+			'src/styles/themes/sections/footer/_editorial.scss',
+		]) {
+			expect(readSource(file)).not.toMatch(/event--|aithan/);
+		}
+	});
+});
+
+describe('decorative section ornaments', () => {
+	it('adds nothing to existing location and thank-you content', () => {
+		const location = adapt(synthetic('location', 'standard', () => {}));
+		expect(location.sections.location?.ornament).toBeUndefined();
+		const thankYou = adapt(synthetic('thankYou', 'editorial-back-cover', () => {}));
+		expect(thankYou.sections.thankYou?.ornament).toBeUndefined();
+	});
+
+	it('adds nothing to the collector cover or the editorial-cover hero by default', () => {
+		const view = adapt(
+			synthetic('hero', 'editorial-cover', (data) => {
+				data.envelope = {
+					...(data.envelope ?? {}),
+					revealVariant: 'editorial-cover',
+					coverExperience: 'collector',
+				};
+			}),
+		);
+		expect(view.envelope.data?.coverOrnament).toBeUndefined();
+		expect(view.envelope.data?.spreadOrnaments).toBeUndefined();
+		expect(view.hero.ornament).toBeUndefined();
+		expect(view.hero.accentOrnament).toBeUndefined();
+	});
+
+	it('resolves cover, spread and hero ornaments without a profile and caps the spread at two', () => {
+		const view = adapt(
+			synthetic('hero', 'editorial-cover', (data) => {
+				data.hero.ornament = { type: 'external', src: '/emblem.webp' };
+				data.hero.accentOrnament = { type: 'external', src: '/accent.webp' };
+				data.envelope = {
+					...(data.envelope ?? {}),
+					revealVariant: 'editorial-cover',
+					coverExperience: 'collector',
+					coverOrnament: { type: 'external', src: '/cover-a.webp' },
+					spreadOrnaments: [
+						{ type: 'external', src: '/spread-1.webp' },
+						{ type: 'external', src: '/spread-2.webp' },
+					],
+				};
+			}),
+		);
+		expect(String(view.hero.ornament?.src)).toContain('emblem.webp');
+		expect(String(view.hero.accentOrnament?.src)).toContain('accent.webp');
+		expect(String(view.envelope.data?.coverOrnament?.src)).toContain('cover-a.webp');
+		expect(view.envelope.data?.spreadOrnaments?.map((asset) => String(asset.src))).toEqual([
+			'/spread-1.webp',
+			'/spread-2.webp',
+		]);
+
+		const tooMany = synthetic('hero', 'editorial-cover', (data) => {
+			data.envelope = {
+				...(data.envelope ?? {}),
+				spreadOrnaments: [
+					{ type: 'external', src: '/1.webp' },
+					{ type: 'external', src: '/2.webp' },
+					{ type: 'external', src: '/3.webp' },
+				],
+			};
+		});
+		expect(eventContentSchema.safeParse(tooMany.data).success).toBe(false);
+	});
+
+	it('resolves a location and thank-you ornament without a profile', () => {
+		const location = adapt(
+			synthetic('location', 'standard', (data) => {
+				data.location.ornament = { type: 'external', src: '/ornament-a.webp' };
+			}),
+		);
+		expect(String(location.sections.location?.ornament?.src)).toContain('ornament-a.webp');
+
+		const thankYou = adapt(
+			synthetic('thankYou', 'editorial-back-cover', (data) => {
+				(data.thankYou as Record<string, unknown>).ornament = {
+					type: 'external',
+					src: '/ornament-b.webp',
+				};
+			}),
+		);
+		expect(String(thankYou.sections.thankYou?.ornament?.src)).toContain('ornament-b.webp');
+	});
+
+	it('keeps the cutout styles free of profile selectors', () => {
+		for (const file of [
+			'src/styles/invitation/_event-location.scss',
+			'src/styles/invitation/_thank-you.scss',
+			'src/styles/themes/sections/countdown/_magazine-folio.scss',
+			'src/styles/invitation/_editorial-cover-collector.scss',
+			'src/styles/themes/sections/hero/_editorial-cover.scss',
+		]) {
+			expect(readSource(file)).not.toMatch(/event--|aithan/);
+		}
 	});
 });

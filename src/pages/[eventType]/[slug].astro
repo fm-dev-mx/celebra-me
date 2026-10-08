@@ -296,6 +296,7 @@ const isDemoConversion = Boolean(
 							skipEnvelope ? null : page.envelope?.revealVariant === 'editorial-cover' ? (
 								<EditorialCoverReveal
 									coverEdition={page.envelope.coverEdition}
+									coverEditionLabel={page.envelope.coverEditionLabel}
 									coverVolume={page.envelope.coverVolume}
 									coverIssue={page.envelope.coverIssue}
 									coverLines={page.envelope.coverLines}
@@ -309,6 +310,8 @@ const isDemoConversion = Boolean(
 									heroVenueName={page.heroVenueName}
 									coverContents={buildCoverContents(page.viewModel)}
 									spreadImage={page.viewModel.hero.backgroundImage}
+									coverOrnament={page.envelope.coverOrnament}
+									spreadOrnaments={page.envelope.spreadOrnaments}
 									guestName={page.guestName}
 									guestSeats={page.guestContext?.guest.maxAllowedAttendees}
 									coverExperience={page.envelope.coverExperience}

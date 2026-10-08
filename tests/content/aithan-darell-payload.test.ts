@@ -87,16 +87,26 @@ describe('Aithan Darell managed definition', () => {
 		expect(parsed.thankYou?.variant).toBe('editorial-back-cover');
 		expect(parsed.envelope?.revealVariant).toBe('editorial-cover');
 		expect(parsed.envelope?.coverExperience).toBe('collector');
-		expect(parsed.envelope?.coverEdition).toBe('3');
+		// The edition is the age, printed alone on the rail (no "NÚM." label).
+		expect(parsed.envelope?.coverEdition).toBe('3 años');
+		expect(parsed.envelope?.coverEditionLabel).toBe('');
 		// The collector face does not print cover lines; none are published.
 		expect(parsed.envelope?.coverLines).toBeUndefined();
 		expect(parsed.gallery?.variantOptions).toEqual({ arrangement: 'overlap' });
 		expect(parsed.location?.presentationOptions).toEqual({
 			indicationsStyle: 'numbered-board',
 		});
+		// Client dress code: red, black and/or white for every guest.
+		expect(parsed.location?.indications).toContainEqual(
+			expect.objectContaining({
+				title: 'Código de vestimenta',
+				iconName: 'DressCode',
+				text: 'Todas las personas en color <strong>rojo, negro y/o blanco</strong>.',
+			}),
+		);
 		// The brand is named once (cover masthead): no hero design credit.
 		expect(parsed.hero.presentation).toEqual({
-			coverMark: '3',
+			coverMark: '3 años',
 			coverPage: 'POLE POSITION',
 			designCredit: false,
 		});
@@ -137,6 +147,26 @@ describe('Aithan Darell managed definition', () => {
 			/\b(?!5:30)\d{1,2}:\d{2}\s*(?:a|p)\.?\s*m\./i.test(entry),
 		);
 		expect(otherTimes).toEqual([]);
+	});
+
+	it('prints the age as "3 años" wherever the figure would stand alone', () => {
+		const parsed = eventContentSchema.parse(publishedContent());
+		// The race number on the suit caption is a number, not the age: it keeps "Nº 3".
+		expect(parsed.gallery?.items?.[0]?.caption).toBe('Traje oficial del piloto Nº 3');
+		// No other field prints a bare "3" (the number-only edition and cover mark are gone).
+		const bareThrees = collectStrings(publishedContent()).filter((entry) => /: 3$/.test(entry));
+		expect(bareThrees).toEqual([]);
+	});
+
+	it('prints a date anyone can read on the back cover without repeating the scoreboard date', () => {
+		const parsed = eventContentSchema.parse(publishedContent());
+		expect(parsed.thankYou?.date).toBe('Sábado 24 de octubre de 2026');
+		expect(JSON.stringify(publishedContent())).not.toContain('24 · X · 2026');
+		// The scoreboard prints the full date itself; its footer only adds the start time.
+		expect(parsed.countdown?.footerText).toBe(
+			'Semáforo de salida · Pits listos para el arranque · 5:30 p. m.',
+		);
+		expect(parsed.countdown?.footerText).not.toMatch(/sábado/i);
 	});
 
 	it('links the venue to the pinned Google Maps location', () => {
@@ -206,6 +236,14 @@ describe('Aithan Darell managed definition', () => {
 			'gallery02',
 			'coverGrid',
 			'thankYouTrophy',
+			'characterMcQueen',
+			'characterMack',
+			'characterMate',
+			'characterDocHudson',
+			'characterSally',
+			'characterRamone',
+			'characterMcQueenFront',
+			'logoCars',
 		]);
 		// Client photographs: car (hero portrait), race suit and jacket (gallery), one key each.
 		const photoPaths = ['hero.jpg', 'gallery-01.jpg', 'gallery-02.jpg'];
@@ -227,6 +265,43 @@ describe('Aithan Darell managed definition', () => {
 		expect(keyOf(parsed.envelope?.backdropImage)).toContain('coverGrid');
 		// The share preview is off-page: it reuses the client's chosen photograph.
 		expect(keyOf(parsed.sharing?.ogImage)).toContain('heroPortrait');
+		// Client-requested Cars characters: one transparent cutout per surface, one role each.
+		expect(keyOf(parsed.countdown?.ornament)).toContain('characterDocHudson');
+		expect(keyOf(parsed.location?.ornament)).toContain('characterMack');
+		expect(keyOf(parsed.thankYou?.ornament)).toContain('characterMate');
+		// Owner-approved placement: McQueen (front view) on the cover face and (side view) under the
+		// hero details, Sally and Ramone on the inner page, the Cars emblem above the hero name.
+		// Each file appears once.
+		expect(keyOf(parsed.envelope?.coverOrnament)).toContain('characterMcQueenFront');
+		expect(keyOf(parsed.hero.accentOrnament)).toContain('characterMcQueen');
+		const spread = parsed.envelope?.spreadOrnaments ?? [];
+		expect(spread).toHaveLength(2);
+		expect(keyOf(spread[0])).toContain('characterSally');
+		expect(keyOf(spread[1])).toContain('characterRamone');
+		expect(keyOf(parsed.hero.ornament)).toContain('logoCars');
+		const ornamentKeys = [
+			parsed.countdown?.ornament,
+			parsed.location?.ornament,
+			parsed.thankYou?.ornament,
+			parsed.envelope?.coverOrnament,
+			...(parsed.envelope?.spreadOrnaments ?? []),
+			parsed.hero.ornament,
+			parsed.hero.accentOrnament,
+		].map(keyOf);
+		expect(new Set(ornamentKeys).size).toBe(ornamentKeys.length);
+		const motifFiles: Record<string, string> = {
+			characterMcQueen: 'character-mcqueen.webp',
+			characterMcQueenFront: 'character-mcqueen-front.webp',
+			characterMack: 'character-mack.webp',
+			characterMate: 'character-mate.webp',
+			characterDocHudson: 'character-doc-hudson.webp',
+			characterSally: 'character-sally.webp',
+			characterRamone: 'character-ramone.webp',
+			logoCars: 'logo-cars.webp',
+		};
+		for (const [key, file] of Object.entries(motifFiles)) {
+			expect(pathOf(key)).toBe(file);
+		}
 	});
 
 	it('publishes the hosted "Life Is a Highway" music track', () => {

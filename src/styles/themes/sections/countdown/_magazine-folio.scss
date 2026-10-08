@@ -60,6 +60,18 @@
 		font-style: var(--countdown-footer-style);
 	}
 
+	// Decorative cutout (countdown.ornament): contained in a fixed box between the date and the
+	// footer, so a transparent image never crops or stretches to the 260x180 attributes.
+	.countdown__ornament {
+		display: block;
+		inline-size: min(100%, var(--countdown-ornament-max-width, 20rem));
+		block-size: var(--countdown-ornament-height, 10rem);
+		margin: var(--countdown-ornament-margin, clamp(1.5rem, 5vw, 2.5rem) auto 0);
+		object-fit: contain;
+		object-position: center bottom;
+		filter: var(--countdown-ornament-filter, none);
+	}
+
 	.countdown-footer {
 		color: rgb(var(--editorial-magazine-ink-rgb) / 56%);
 		font-family: var(--font-label);
