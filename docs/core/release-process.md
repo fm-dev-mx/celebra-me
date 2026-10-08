@@ -61,6 +61,11 @@ reuse, recovery and verified deployment completion. Neither includes database or
 - Vercel's Git integration owns deployments: pull requests and `develop` receive automatic Preview
   deployments, while `main` receives the automatic Production deployment. GitHub Actions does not
   build or deploy a second Preview.
+- Vercel builds with `pnpm build:app`; `astro check` and `tsc` belong to Repository CI
+  (`ci:static`), which gates `main` through the release pull request.
+  `scripts/ops/vercel-ignore-build.mjs` (`ignoreCommand`) skips a Preview build when no application
+  input (`src/`, `public/`, `scripts/shared/`, Astro/Vercel/package configuration) changed since the
+  previous deployed commit of that branch; Production always builds.
 - `Post-deploy Smoke` validates the correlated Production deployment, SHA, approved host and
   critical HTTP behavior. The scheduled/manual `Production Image Audit` separately reports
   published-media drift and never determines deployment health.
@@ -82,17 +87,21 @@ reuse, recovery and verified deployment completion. Neither includes database or
   Visual differences, code failures, deployment failures, and smoke failures are never retried.
 - Release classification marks conservative visual impact for application TypeScript/Astro, styles,
   rendered invitation builders/content/assets, fonts, Playwright fixtures/specs, the lockfile, and
-  screenshot infrastructure. The browser compare remains mandatory for every application run; this
-  signal explains when hash-bound human review is additionally required and never reduces coverage.
+  screenshot infrastructure. The browser tier runs on every pull request and dispatch; a `develop`
+  push may skip it only when `Browser scope` (`scripts/ops/ci-browser-scope.ts`) proves its browser
+  inputs are byte-identical to an earlier `develop` push whose browser job passed. This signal
+  explains when hash-bound human review is additionally required and never reduces coverage.
 
-#### Local visual certification before push
+#### Visual certification and the optional local preview
 
-- `pnpm validate:prepush -- --sha <exact-sha> --base-sha <base-sha>` certifies an isolated checkout
-  of the exact commit in the same digest-pinned Linux Playwright image used by Repository CI. Native
-  Windows captures are diagnostic only and do not satisfy this gate.
-- The pre-push hook requires this certification only when the cumulative pushed range intersects the
-  shared conservative visual-impact classifier, regardless of destination branch. Accepted
-  references, the visual matrix and capture infrastructure remain visual-impact inputs.
+- Exact-SHA visual certification is owned by the `Application / browser` job of Repository CI on the
+  `develop` push; the pre-push hook replays commit validation and hands off to Git LFS only.
+- `pnpm validate:prepush -- --sha <exact-sha> --base-sha <base-sha> --target-ref refs/heads/develop`
+  is an optional local preview of that certification: an isolated checkout of the exact commit in
+  the same digest-pinned Linux Playwright image. It applies the shared conservative visual-impact
+  classifier to the range (accepted references, the visual matrix and capture infrastructure remain
+  visual-impact inputs) and is a no-op for other target refs. Native Windows captures are diagnostic
+  only and do not satisfy the gate.
 - Successful evidence is cached under the worktree's internal Git path and is reusable only while
   SHA, visual matrix, accepted-manifest hash, lockfile hash, verified Node archive, Node/pnpm
   versions, image digest, certified command, and command schema all match. It is never committed.
@@ -100,8 +109,8 @@ reuse, recovery and verified deployment completion. Neither includes database or
   Failed evidence is retained per attempt under the internal Git path for local diagnosis and never
   changes accepted references. `VISUAL_DIFF` is derived from failed captures in the structured
   compare manifests; diagnostic `actual` images alone do not qualify.
-- `validate:changed` remains fast feedback. When it prints `VISUAL_CERTIFICATION_REQUIRED`, its
-  success is not permission to push; run the exact-SHA pre-push certification after committing.
+- `validate:changed` remains fast feedback. When it prints `VISUAL_IMPACT_DETECTED`, its success is
+  not visual certification; the `develop` push obtains that from Repository CI.
 - Candidate generation accepts `--sha` and fails when it does not equal the clean current HEAD.
   `pnpm visual:parity:candidate:certified -- --sha <exact-sha>` creates that candidate in the same
   checksum-verified Linux runtime and stores it in `visual-candidates/<sha>/attempt-*/candidate`
