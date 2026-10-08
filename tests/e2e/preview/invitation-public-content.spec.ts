@@ -83,6 +83,7 @@ for (const entry of buildVisualPageCases()) {
 
 			const delivered = await assertRenderedImageDelivery(page);
 			const failures = delivered.flatMap((image) => {
+				if (image.url.startsWith('data:')) return [];
 				const response = imageResponses.get(image.url);
 				if (!response)
 					return [
