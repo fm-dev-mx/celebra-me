@@ -3,6 +3,7 @@ import {
 	classifyDeployment,
 	collectReleaseStatus,
 	loadDeploymentForSha,
+	loadIgnoredPreviewBuild,
 	probeHealth,
 	waitForReleaseStatus,
 	type ReleaseStatus,
@@ -115,6 +116,85 @@ describe('collectReleaseStatus', () => {
 		expect(status.deployment).toMatchObject({ id: 7, url: previewUrl });
 		expect(status.health[0].result).toBe('match');
 		expect(status.blockers).toEqual([]);
+	});
+
+	describe('ignored Preview build', () => {
+		const skipped = (extra: Record<string, unknown>[] = []) => ({
+			[`commits/${sha}/statuses?per_page=100`]: [
+				...extra,
+				{
+					context: 'Vercel',
+					state: 'success',
+					description: 'Canceled by Ignored Build Step',
+					creator: vercelCreator,
+				},
+			],
+			[`deployments?sha=${sha}&per_page=100`]: [],
+		});
+
+		it('reports SKIPPED when CI passed and Vercel skipped the build', async () => {
+			const status = await collectReleaseStatus(sha, 'preview', 'ci', {
+				run: ghRunner({ ...responses(allPassed), ...skipped() }),
+				fetchImpl: healthy(sha),
+			});
+			expect(status.state).toBe('SKIPPED');
+			expect(status.ignoredBuild).toEqual({ description: 'Canceled by Ignored Build Step' });
+			expect(status.deployment).toBeNull();
+			expect(status.blockers).toEqual([]);
+		});
+
+		it('never skips past a failed or pending required check', async () => {
+			const failed = await collectReleaseStatus(sha, 'preview', 'ci', {
+				run: ghRunner({
+					...responses({ ...allPassed, 'Application Suite': 'failure' }),
+					...skipped(),
+				}),
+			});
+			expect(failed.state).toBe('FAILED');
+			const pending = await collectReleaseStatus(sha, 'preview', 'ci', {
+				run: ghRunner({
+					...responses({ ...allPassed, 'Application Suite': 'in_progress' }),
+					...skipped(),
+				}),
+			});
+			expect(pending.state).toBe('PENDING');
+		});
+
+		it('ignores a skip superseded by a newer build, a foreign creator and Production', () => {
+			const deploying = {
+				context: 'Vercel',
+				state: 'pending',
+				description: 'Vercel is deploying your app',
+				creator: vercelCreator,
+			};
+			const run = (extra: Record<string, unknown>[]) =>
+				ghRunner({ ...responses(allPassed), ...skipped(extra) });
+			expect(loadIgnoredPreviewBuild(sha, run([deploying]))).toBeNull();
+			expect(
+				loadIgnoredPreviewBuild(
+					sha,
+					ghRunner({
+						...responses(allPassed),
+						[`commits/${sha}/statuses?per_page=100`]: [
+							{
+								context: 'Vercel',
+								state: 'success',
+								description: 'Canceled by Ignored Build Step',
+								creator: { login: 'someone' },
+							},
+						],
+					}),
+				),
+			).toBeNull();
+		});
+
+		it('does not apply to Production', async () => {
+			const status = await collectReleaseStatus(sha, 'production', 'ci', {
+				run: ghRunner({ ...responses(allPassed), ...skipped() }),
+			});
+			expect(status.ignoredBuild).toBeNull();
+			expect(status.state).not.toBe('SKIPPED');
+		});
 	});
 
 	it('stays pending while CI or the smoke is still running', async () => {

@@ -176,14 +176,49 @@ export async function probeHealth(
 	}
 }
 
+export interface IgnoredBuildEvidence {
+	description: string;
+}
+
+/**
+ * Vercel records a successful commit status "Canceled by Ignored Build Step" when
+ * `scripts/ops/vercel-ignore-build.mjs` skips a Preview build because no application input
+ * changed. The latest `Vercel` status from `vercel[bot]` decides: a newer "deploying" status means
+ * a build did start, so the skip no longer applies.
+ */
+export function loadIgnoredPreviewBuild(
+	sha: string,
+	run: GhRunner = defaultGhRunner,
+): IgnoredBuildEvidence | null {
+	const client = createGitHubClient(run);
+	const statuses = client.api(`commits/${sha}/statuses?per_page=100`) as Array<{
+		context?: unknown;
+		state?: unknown;
+		description?: unknown;
+		creator?: { login?: unknown };
+	}>;
+	if (!Array.isArray(statuses)) return null;
+	const latest = statuses.find((entry) => entry.context === 'Vercel');
+	if (
+		latest?.creator?.login !== 'vercel[bot]' ||
+		latest.state !== 'success' ||
+		typeof latest.description !== 'string' ||
+		!/ignored build step/iu.test(latest.description)
+	)
+		return null;
+	return { description: latest.description };
+}
+
 export interface ReleaseStatus {
 	sha: string;
 	target: ReleaseTarget;
-	state: 'VERIFIED' | 'FAILED' | 'PENDING';
+	/** `SKIPPED`: CI passed and Vercel intentionally skipped the Preview build (no app inputs). */
+	state: 'VERIFIED' | 'SKIPPED' | 'FAILED' | 'PENDING';
 	checks: Array<{ name: string; state: string; progress: Progress }>;
 	deployment: (DeploymentEvidence & { progress: Progress }) | null;
 	smoke: { name: string; mode: SmokeMode; state: string; progress: Progress };
 	health: HealthEvidence[];
+	ignoredBuild: IgnoredBuildEvidence | null;
 	blockers: string[];
 }
 
@@ -207,10 +242,12 @@ function describeSmoke(
 }
 
 function listBlockers(status: Omit<ReleaseStatus, 'state' | 'blockers'>): string[] {
+	const checkBlockers = status.checks
+		.filter((check) => check.progress !== 'passed')
+		.map((check) => `${check.name}: ${check.state}`);
+	if (status.ignoredBuild) return checkBlockers;
 	return [
-		...status.checks
-			.filter((check) => check.progress !== 'passed')
-			.map((check) => `${check.name}: ${check.state}`),
+		...checkBlockers,
 		...(status.deployment?.progress === 'passed'
 			? []
 			: [`${status.target} deployment: ${status.deployment?.state ?? 'missing'}`]),
@@ -224,8 +261,13 @@ function listBlockers(status: Omit<ReleaseStatus, 'state' | 'blockers'>): string
 }
 
 function deriveState(status: Omit<ReleaseStatus, 'state' | 'blockers'>): ReleaseStatus['state'] {
+	const checkProgresses = status.checks.map((check) => check.progress);
+	if (status.ignoredBuild) {
+		if (checkProgresses.includes('failed')) return 'FAILED';
+		return checkProgresses.includes('pending') ? 'PENDING' : 'SKIPPED';
+	}
 	const progresses = [
-		...status.checks.map((check) => check.progress),
+		...checkProgresses,
 		status.deployment?.progress ?? 'pending',
 		status.smoke.progress,
 	];
@@ -266,6 +308,11 @@ export async function collectReleaseStatus(
 			health.push(await probeHealth(PRODUCTION_ALIAS_URL, sha, fetchImpl));
 	}
 
+	const ignoredBuild =
+		target === 'preview' && deployment?.progress !== 'passed'
+			? loadIgnoredPreviewBuild(sha, run)
+			: null;
+
 	const status = {
 		sha,
 		target,
@@ -273,6 +320,7 @@ export async function collectReleaseStatus(
 		deployment,
 		smoke: describeSmoke(sha, target, smokeMode, remote),
 		health,
+		ignoredBuild,
 	};
 	return { ...status, state: deriveState(status), blockers: listBlockers(status) };
 }
@@ -354,7 +402,7 @@ async function main(): Promise<void> {
 		? await waitForReleaseStatus(collect, { timeoutMs: options.timeoutMs, intervalMs: 30_000 })
 		: await collect();
 	console.log(JSON.stringify(status, null, 2));
-	if (status.state !== 'VERIFIED') process.exitCode = 1;
+	if (status.state !== 'VERIFIED' && status.state !== 'SKIPPED') process.exitCode = 1;
 }
 
 if (process.argv[1] && /^release-status\.(?:ts|js)$/.test(basename(process.argv[1]))) {
