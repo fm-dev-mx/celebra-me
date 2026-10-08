@@ -21,6 +21,7 @@ const CATEGORY_LABELS: Record<IconCategory, string> = {
 	info: 'Información',
 	decorative: 'Decorativo',
 	gifts: 'Regalos',
+	marine: 'Marino',
 };
 
 function IconPreview({ name, size = 24 }: { name: string; size?: number }) {

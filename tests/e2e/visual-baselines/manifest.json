@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-03T05:21:16.511Z",
+    "generatedAt": "2026-10-08T00:18:15.721Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,16 +11,16 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "2b7837541c3c6f5d861f8dc5f8a97095bb5382d3da938338080bfca214628b3c",
-        "cssSha256": "c1a19faf22f4eb370d5a36ea7ce353037025303cdff99ef2ca7dad4ad43ed68e",
-        "assetSha256": "5c4c0d25693b04dc1f4cea0943bf303a2a08eb9d5647c06eaca8eeea97b4e5dc",
+        "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
+        "cssSha256": "4fa880fbe079db593ec4bf67fa15d36518beceda18fa2518317941518ba88903",
+        "assetSha256": "ff92fcf04af4cab85ac766eebd039fd30bfef76d4c0cafa00f843b46dfa9072b",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 164,
-    "matrixHash": "a6f36c724a52c19674ed8c723e25606c6f86fbf54b7555b9975c73a02068f372",
+    "totalCaptures": 178,
+    "matrixHash": "4dc7605edcf7851911b2fa92eeaab8abbcc8d092feb8ca36b514dc9f1e722efe",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -77,6 +77,34 @@
             "file": "jewelry-box-desktop-hero-framed-portrait.png",
             "sha256": "b29e0e0c042f6897e75b7be7f91dc59f9d231bd3dbb5baf15d6b23db93432d6b",
             "contentHash": "af722167ea9e0a04e4fac3c7ea2cd289545b08192bf08e6c21b1414599b4114a",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "hero",
+            "variant": "bleed-portrait",
+            "preset": "jewelry-box",
+            "viewport": "mobile",
+            "cssOwner": "src/styles/themes/sections/hero/_bleed-portrait.scss",
+            "fixtureIdentity": "synthetic:hero.bleed-portrait",
+            "file": "jewelry-box-mobile-hero-bleed-portrait.png",
+            "sha256": "e6cbfe9bdd26eed21c036a2f87f4d82eaa87c69a731599f0252ab5b24c6977b3",
+            "contentHash": "c0566734aa39e8b829b77a4ca277d198d86d4e63429c9454e899308293d002fd",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "hero",
+            "variant": "bleed-portrait",
+            "preset": "jewelry-box",
+            "viewport": "desktop",
+            "cssOwner": "src/styles/themes/sections/hero/_bleed-portrait.scss",
+            "fixtureIdentity": "synthetic:hero.bleed-portrait",
+            "file": "jewelry-box-desktop-hero-bleed-portrait.png",
+            "sha256": "d22c3953312d03815b7227bd69d70c050833ffb6d3ae16c7186685502973bdf3",
+            "contentHash": "c0566734aa39e8b829b77a4ca277d198d86d4e63429c9454e899308293d002fd",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
         },
@@ -285,7 +313,7 @@
             "cssOwner": "section-base:location",
             "fixtureIdentity": "synthetic:location.standard",
             "file": "jewelry-box-mobile-location-standard.png",
-            "sha256": "8cf4a542535ba4d5291f27680cd887bbe94b1a0cbeace59de0bf752bdeb3435c",
+            "sha256": "4954e8fc81ff5879e6c9d7cda8050c27955614990e77e580229f6456b04ba2d6",
             "contentHash": "1eea290a2a8ec848c3fe8ad02644881019086ebc29881ba625322b473e641af9",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -299,7 +327,7 @@
             "cssOwner": "section-base:location",
             "fixtureIdentity": "synthetic:location.standard",
             "file": "jewelry-box-desktop-location-standard.png",
-            "sha256": "77cf39fad7908063b13f847577632ec0a3b413f377b50581262b45a9e1793c22",
+            "sha256": "2bb6a98cdf6235b8a9fc748aee67bd5a796bd03cb7218eef455049207446c21e",
             "contentHash": "1eea290a2a8ec848c3fe8ad02644881019086ebc29881ba625322b473e641af9",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -313,7 +341,7 @@
             "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
             "fixtureIdentity": "synthetic:location.split-map",
             "file": "jewelry-box-mobile-location-split-map.png",
-            "sha256": "294f5ed393c5da22abb3624b6a9d23028dd5184b7b95ee56c525677208969c53",
+            "sha256": "f3ec2882fc716caf90b19e80ed63d73b52409f037471bb7d80f8485611ab704a",
             "contentHash": "c1ffb614af4ebfbe876f3a53f754ef67a364be5adea407f43877b6f36727bccd",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -327,7 +355,7 @@
             "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
             "fixtureIdentity": "synthetic:location.split-map",
             "file": "jewelry-box-desktop-location-split-map.png",
-            "sha256": "e282975df8b32882086d4b51be6848214acacecb589046f133c1e1a8c22c92a0",
+            "sha256": "d327ffe179b672a79ff2aa44d06df3d0feac64adf585868f5f4bd6465d2d1126",
             "contentHash": "c1ffb614af4ebfbe876f3a53f754ef67a364be5adea407f43877b6f36727bccd",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -357,6 +385,34 @@
             "file": "jewelry-box-desktop-location-stacked-venue-plates.png",
             "sha256": "ecf40009e52d3f15dfbc310c3cc332c11bb1e7347637fe331d697058c7002dca",
             "contentHash": "53f71e4c9966acb4e68e60115e3e0e117400dbe09e92dac84bbc02d9885befee",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "location",
+            "variant": "program-sheet",
+            "preset": "jewelry-box",
+            "viewport": "mobile",
+            "cssOwner": "src/styles/themes/sections/location/_program-sheet.scss",
+            "fixtureIdentity": "synthetic:location.program-sheet",
+            "file": "jewelry-box-mobile-location-program-sheet.png",
+            "sha256": "2fb874db0ce9942016f5103a271ac0ef122801fe955dc4d02806c3182f46d136",
+            "contentHash": "ee125f707bc00bab6d8077566ea20462e77f40c96856e7ee5f7e2e2dc99330c4",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "location",
+            "variant": "program-sheet",
+            "preset": "jewelry-box",
+            "viewport": "desktop",
+            "cssOwner": "src/styles/themes/sections/location/_program-sheet.scss",
+            "fixtureIdentity": "synthetic:location.program-sheet",
+            "file": "jewelry-box-desktop-location-program-sheet.png",
+            "sha256": "f45466e96517b2ea6f02d9c9ec8709bef4c40083df83513b2dfb7b22e330c2e7",
+            "contentHash": "ee125f707bc00bab6d8077566ea20462e77f40c96856e7ee5f7e2e2dc99330c4",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
         },
@@ -671,6 +727,34 @@
         {
             "kind": "variant",
             "section": "gallery",
+            "variant": "mirrored-mosaic",
+            "preset": "jewelry-box",
+            "viewport": "mobile",
+            "cssOwner": "src/styles/themes/sections/gallery/_mirrored-mosaic.scss",
+            "fixtureIdentity": "synthetic:gallery.mirrored-mosaic",
+            "file": "jewelry-box-mobile-gallery-mirrored-mosaic.png",
+            "sha256": "65059ea7a191ed9280be31dbdc46ae62def0d56e2171940b729c9bd7ab9ca8dd",
+            "contentHash": "b85423dbba2ce2fce788c50957471a5821f046f32b7715de1f1e9b802a826042",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "gallery",
+            "variant": "mirrored-mosaic",
+            "preset": "jewelry-box",
+            "viewport": "desktop",
+            "cssOwner": "src/styles/themes/sections/gallery/_mirrored-mosaic.scss",
+            "fixtureIdentity": "synthetic:gallery.mirrored-mosaic",
+            "file": "jewelry-box-desktop-gallery-mirrored-mosaic.png",
+            "sha256": "cdd72b442816113b5f85275d187b77cdacbbae635c042fec4c43592c0b6eea50",
+            "contentHash": "b85423dbba2ce2fce788c50957471a5821f046f32b7715de1f1e9b802a826042",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "gallery",
             "variant": "single-keepsake",
             "preset": "jewelry-box",
             "viewport": "mobile",
@@ -811,6 +895,34 @@
         {
             "kind": "variant",
             "section": "rsvp",
+            "variant": "reply-card",
+            "preset": "jewelry-box",
+            "viewport": "mobile",
+            "cssOwner": "src/styles/themes/sections/rsvp/_reply-card.scss",
+            "fixtureIdentity": "synthetic:rsvp.reply-card",
+            "file": "jewelry-box-mobile-rsvp-reply-card.png",
+            "sha256": "9fb38fac87b58a5a445b59b24814f9c425172b043c4292dc73ee256f200cd563",
+            "contentHash": "67cbf2897aa17bab55c0e39d7ab30591034db11061d547b42d4dcc213c04d69e",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "rsvp",
+            "variant": "reply-card",
+            "preset": "jewelry-box",
+            "viewport": "desktop",
+            "cssOwner": "src/styles/themes/sections/rsvp/_reply-card.scss",
+            "fixtureIdentity": "synthetic:rsvp.reply-card",
+            "file": "jewelry-box-desktop-rsvp-reply-card.png",
+            "sha256": "574c12a6be0fcc48d23fa4fd2516071dcab1000fd4ed029b367f6f078862a6b0",
+            "contentHash": "67cbf2897aa17bab55c0e39d7ab30591034db11061d547b42d4dcc213c04d69e",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "rsvp",
             "variant": "formal-register",
             "preset": "jewelry-box",
             "viewport": "mobile",
@@ -917,6 +1029,34 @@
             "file": "jewelry-box-desktop-personalizedAccess-editorial-pass.png",
             "sha256": "935982406f40ee6140571ebb8f25e5bd1b18cf65759a70478fe0c52d96f703e7",
             "contentHash": "98e44f2958f6bf5ba7aa5f112e61c996e5bdc41c601e97ff3017b1e9c53473c9",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "personalizedAccess",
+            "variant": "reply-card",
+            "preset": "jewelry-box",
+            "viewport": "mobile",
+            "cssOwner": "src/styles/themes/sections/personalized-access/_reply-card.scss",
+            "fixtureIdentity": "synthetic:personalizedAccess.reply-card",
+            "file": "jewelry-box-mobile-personalizedAccess-reply-card.png",
+            "sha256": "4bdaa91e370a8d224e77282fafbda9105b6cbf606a62494ff01533db20cdf8de",
+            "contentHash": "947f28d6e5036453ce02a998df239e756c44ca972d3625a9f3897ca9bb61e47a",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "personalizedAccess",
+            "variant": "reply-card",
+            "preset": "jewelry-box",
+            "viewport": "desktop",
+            "cssOwner": "src/styles/themes/sections/personalized-access/_reply-card.scss",
+            "fixtureIdentity": "synthetic:personalizedAccess.reply-card",
+            "file": "jewelry-box-desktop-personalizedAccess-reply-card.png",
+            "sha256": "c17249913740f825c5a936ccd628e8cdbcb48db1075b89af54314ed904a35a0b",
+            "contentHash": "947f28d6e5036453ce02a998df239e756c44ca972d3625a9f3897ca9bb61e47a",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
         },
@@ -1153,7 +1293,7 @@
             "cssOwner": "src/styles/themes/sections/countdown/_magazine-folio.scss",
             "fixtureIdentity": "synthetic:countdown.magazine-folio",
             "file": "jewelry-box-mobile-countdown-magazine-folio.png",
-            "sha256": "89f38ee02afda8de995eb8767619b4be020306535a29806e977ff9f4c0c6b374",
+            "sha256": "df33e4d047cf8e2fcf6b2d140291c20ce0a8a439935036af41fec157f1945a78",
             "contentHash": "593abfcd01088c723c7b78f9bc09a0d6bb78e7ad7c4f3e5e684fc6a5a55a0dbe",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -1167,8 +1307,36 @@
             "cssOwner": "src/styles/themes/sections/countdown/_magazine-folio.scss",
             "fixtureIdentity": "synthetic:countdown.magazine-folio",
             "file": "jewelry-box-desktop-countdown-magazine-folio.png",
-            "sha256": "05584a5b43e9aa4c79e2fbb2844ec21721e9f9e6f3a5a77d920d0281dd143a5e",
+            "sha256": "cf7fabb4b156f1f7a5a7e1464110e7c6361a3a51329faccbb0e493c7bb3bb660",
             "contentHash": "593abfcd01088c723c7b78f9bc09a0d6bb78e7ad7c4f3e5e684fc6a5a55a0dbe",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "countdown",
+            "variant": "written-days",
+            "preset": "jewelry-box",
+            "viewport": "mobile",
+            "cssOwner": "src/styles/themes/sections/countdown/_written-days.scss",
+            "fixtureIdentity": "synthetic:countdown.written-days",
+            "file": "jewelry-box-mobile-countdown-written-days.png",
+            "sha256": "5b407df960f44e8ace31d9bff180f081df0feb1ad845a9a1359e0887ac86f6d7",
+            "contentHash": "526b659d4bad792653e24247ea3b5127d47fb32316e919ddbd0c7d2c82fdaac8",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "countdown",
+            "variant": "written-days",
+            "preset": "jewelry-box",
+            "viewport": "desktop",
+            "cssOwner": "src/styles/themes/sections/countdown/_written-days.scss",
+            "fixtureIdentity": "synthetic:countdown.written-days",
+            "file": "jewelry-box-desktop-countdown-written-days.png",
+            "sha256": "7053c5e0e0d7a1b0ee1f081ff54dca06ef233c8c2f8e4d033204f04a96d91030",
+            "contentHash": "526b659d4bad792653e24247ea3b5127d47fb32316e919ddbd0c7d2c82fdaac8",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
         },
@@ -1349,7 +1517,7 @@
             "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
             "fixtureIdentity": "synthetic:location.split-map",
             "file": "celestial-blue-mobile-location-split-map.png",
-            "sha256": "65d13aad55f82d9a1dcd0feeacde450bd43c435883df6362f32530268efcb7a2",
+            "sha256": "8ea654c3d0d483e86c05de2b3a6d29c13b10986e18112e6c14f439864a5a2a40",
             "contentHash": "483fe3c45e8629aae5a2344e4ad1c84071b5acd8a370e934748e675ada4b8f05",
             "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
             "comparisonResult": "ACCEPTED"
@@ -1363,7 +1531,7 @@
             "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
             "fixtureIdentity": "synthetic:location.split-map",
             "file": "celestial-blue-desktop-location-split-map.png",
-            "sha256": "d611f48ba567cb881fe911115ad8d11cb5702ab7e5cb92b86190b8c72961c7a1",
+            "sha256": "84c7dceef0a5a77bec16d1a7a1b11341d565302141bf737672053df4e0a501ba",
             "contentHash": "483fe3c45e8629aae5a2344e4ad1c84071b5acd8a370e934748e675ada4b8f05",
             "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
             "comparisonResult": "ACCEPTED"
@@ -1489,7 +1657,7 @@
             "cssOwner": "src/styles/themes/sections/rsvp/_editorial-press-pass.scss",
             "fixtureIdentity": "synthetic:rsvp.editorial-press-pass",
             "file": "celestial-blue-mobile-rsvp-editorial-press-pass.png",
-            "sha256": "56d4cd3a13c2824279e902f219bc480b1f85789acdaf96e711863fad0130ba4e",
+            "sha256": "def0b5f6c423c4b780e27e5a0e94aeca9ecfadc11172fb4446817ba492fb7c90",
             "contentHash": "d8af91779050050a38cea681f97a55aa88c1a30d5a892f2a389c453b2ecb9b32",
             "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
             "comparisonResult": "ACCEPTED"
@@ -1503,7 +1671,7 @@
             "cssOwner": "src/styles/themes/sections/rsvp/_editorial-press-pass.scss",
             "fixtureIdentity": "synthetic:rsvp.editorial-press-pass",
             "file": "celestial-blue-desktop-rsvp-editorial-press-pass.png",
-            "sha256": "6ee14df0705e90bc91bc2d4445328bba1a31a9e22e533f54b96412bb30f941c0",
+            "sha256": "a90c31073fe6e7ce986ac6871c42614b38d041c21b2f3bb4eb0bfcdc4225bb57",
             "contentHash": "d8af91779050050a38cea681f97a55aa88c1a30d5a892f2a389c453b2ecb9b32",
             "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
             "comparisonResult": "ACCEPTED"
@@ -1545,7 +1713,7 @@
             "cssOwner": "src/styles/themes/sections/countdown/_magazine-folio.scss",
             "fixtureIdentity": "synthetic:countdown.magazine-folio",
             "file": "celestial-blue-mobile-countdown-magazine-folio.png",
-            "sha256": "a713e2bc9bcf63e440db009a1170f3d25a4c48e29633f34929ffee7927076455",
+            "sha256": "e287821b257d442cf3d2f0fd2827cf2f8332d3f5044488b04762992969ab253c",
             "contentHash": "5beb5b49f11e8527a614c03ba8400112f65d8acf9ad52059674befcb9faf2a48",
             "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
             "comparisonResult": "ACCEPTED"
@@ -1559,7 +1727,7 @@
             "cssOwner": "src/styles/themes/sections/countdown/_magazine-folio.scss",
             "fixtureIdentity": "synthetic:countdown.magazine-folio",
             "file": "celestial-blue-desktop-countdown-magazine-folio.png",
-            "sha256": "dbc76e4d35a32a377f29840dbde9d147c853baaa35418066f63e8b90c93fd5eb",
+            "sha256": "bf17d920bc064545a4eef89763924c3c30b24c3bf3ef43b1b0b528b61ca79c06",
             "contentHash": "5beb5b49f11e8527a614c03ba8400112f65d8acf9ad52059674befcb9faf2a48",
             "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
             "comparisonResult": "ACCEPTED"
@@ -1595,7 +1763,7 @@
             "preset": "luxury-hacienda",
             "viewport": "mobile",
             "file": "pages/invitation-cumple-norma-hernandez-mobile.png",
-            "sha256": "52ad7d58738ac396d5d777ef91f005e8bd5bdab966129045b13e7841049bcd5b",
+            "sha256": "42a2f7e8d4fdd0326189f504ccee06dd6cf8db12890858826c8917734945102c",
             "contentHash": "4d24aec7f85ce306767bc7d6b4c319b02ab36d0aa430f0e813818919d70b7058",
             "assetHash": "4ac979503c3f2bdca049b79f5ff10741467923d4df972a35669a0ece1b8b4ca7",
             "comparisonResult": "ACCEPTED"
@@ -1607,7 +1775,7 @@
             "preset": "luxury-hacienda",
             "viewport": "desktop",
             "file": "pages/invitation-cumple-norma-hernandez-desktop.png",
-            "sha256": "a743b7e3ae67ea15bec32e448897cf33def482478a1de51eac235773dbd21480",
+            "sha256": "1bc5099de84e8ca2814dd7068e99a0ced58e3fd5a1bee5e78efe2a59c4cbef86",
             "contentHash": "4d24aec7f85ce306767bc7d6b4c319b02ab36d0aa430f0e813818919d70b7058",
             "assetHash": "4ac979503c3f2bdca049b79f5ff10741467923d4df972a35669a0ece1b8b4ca7",
             "comparisonResult": "ACCEPTED"
@@ -1619,7 +1787,7 @@
             "preset": "luxury-hacienda",
             "viewport": "mobile",
             "file": "pages/invitation-cumple-alba-rosa-quinonez-mobile.png",
-            "sha256": "a8dc3df9a78cc3c97de5481822bf5492a53856cfd0c8e0836a00e633390d2e50",
+            "sha256": "2062be6e69f3231e97230e0716b275b5d3edd837f1bed1c64c0ec395c4d4b838",
             "contentHash": "b0247a7a76566f4d315a8f0c20e275bb45acc9d2772f9784b59112cd68b5e89e",
             "assetHash": "7605737ade56e940db4536a2cdbd97e15bcd8e0e70c9de40b870b95e4a68b3e9",
             "comparisonResult": "ACCEPTED"
@@ -1631,7 +1799,7 @@
             "preset": "luxury-hacienda",
             "viewport": "desktop",
             "file": "pages/invitation-cumple-alba-rosa-quinonez-desktop.png",
-            "sha256": "f01dcf110b15225b48da87b0296297cbd67cd53eae0c4317e31ecc698521274f",
+            "sha256": "b20588424539d71a3927584f73b1bb6f3a89168973b188f616655abe936a2810",
             "contentHash": "b0247a7a76566f4d315a8f0c20e275bb45acc9d2772f9784b59112cd68b5e89e",
             "assetHash": "7605737ade56e940db4536a2cdbd97e15bcd8e0e70c9de40b870b95e4a68b3e9",
             "comparisonResult": "ACCEPTED"
@@ -1643,7 +1811,7 @@
             "preset": "premiere-floral",
             "viewport": "mobile",
             "file": "pages/invitation-xv-abril-michelle-becerra-rea-mobile.png",
-            "sha256": "dd988b46dee9df5e0946eccf9cf00a45a3aafc213dd89a483781225ac2df6f20",
+            "sha256": "57bc135cd30cd8e63c047f7a85e4a53d959bbf02bb9234f9579beefd113ca796",
             "contentHash": "d870bc85e2964aac4730450c048b526b35336df109efe42b7a8d7fc8f7285b4a",
             "assetHash": "9be5150137c574ef5e9f926fc4c03bb001ffe2921ef4c9adb39cc4e0aeed50f9",
             "comparisonResult": "ACCEPTED"
@@ -1655,7 +1823,7 @@
             "preset": "premiere-floral",
             "viewport": "desktop",
             "file": "pages/invitation-xv-abril-michelle-becerra-rea-desktop.png",
-            "sha256": "3f465c4c1d045053b49065044f1009f5d1592149e15a3da0bfd7cbd124df410d",
+            "sha256": "144a33224bc9d947249e879112212bc3ceb83bbc8b8cb6438902d34fdd43e5bf",
             "contentHash": "d870bc85e2964aac4730450c048b526b35336df109efe42b7a8d7fc8f7285b4a",
             "assetHash": "9be5150137c574ef5e9f926fc4c03bb001ffe2921ef4c9adb39cc4e0aeed50f9",
             "comparisonResult": "ACCEPTED"
@@ -1667,7 +1835,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/invitation-boda-daniela-y-martin-mobile.png",
-            "sha256": "5780b0053c287b9864dc165c2ac1d8c546263aeff611f4ad7d379b031528cdaf",
+            "sha256": "eb38092f1d9f79d8bc64abdea0a8055835dae17c6824e328eb699d48053da40e",
             "contentHash": "7a5bc22c8c496d49d74cab96b260b5a6a5059bd8cd99b3f58e275f5a58cc70a5",
             "assetHash": "a816d06e8bf2322f98066402b50857c34c8d4168b160b0cdee851993461c087f",
             "comparisonResult": "ACCEPTED"
@@ -1691,7 +1859,7 @@
             "preset": "premiere-floral",
             "viewport": "mobile",
             "file": "pages/invitation-xv-romina-rios-chaparro-mobile.png",
-            "sha256": "f53a91b4530c04eebde5785dc19ef5beebd3dc9081927703974b8d76a7532922",
+            "sha256": "914a237b6100c96986efb70efb685a11922f085b8d1f4819bb2b7a909d549de1",
             "contentHash": "0477217d01c1c1e30c297733829749a52c922e288d6b26242cd36e8cff0179bb",
             "assetHash": "ec84c16cb7db7945ad9a4c40f8a7a0fb6c5da933383c8a068e8682a3cc1228fb",
             "comparisonResult": "ACCEPTED"
@@ -1703,7 +1871,7 @@
             "preset": "premiere-floral",
             "viewport": "desktop",
             "file": "pages/invitation-xv-romina-rios-chaparro-desktop.png",
-            "sha256": "1d41a3ab4b83752419628ed2b2e5f16091ca8c6ced228be07f5716fb8302c0a8",
+            "sha256": "51010039e1a32a288bf29f7c2495879c3b3d2de1acaa5a05bbf67df460e581f9",
             "contentHash": "0477217d01c1c1e30c297733829749a52c922e288d6b26242cd36e8cff0179bb",
             "assetHash": "ec84c16cb7db7945ad9a4c40f8a7a0fb6c5da933383c8a068e8682a3cc1228fb",
             "comparisonResult": "ACCEPTED"
@@ -1715,7 +1883,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/invitation-boda-victoria-y-roberto-mobile.png",
-            "sha256": "23599b5882355015b1313ee95c152e2e1a3be512b1e10eb300e1d96b694fcfc5",
+            "sha256": "8ce334a870cb0ccb45c2c0be4f223cfaa0df19a0eb113587ed6b52df21c8acc1",
             "contentHash": "207e0256598d23e2509057acc7a14a10b50a13c2445939036d170206d45f9119",
             "assetHash": "6714935fa490f0cec53f80c0302089b08eaa8c8fe08db87034b3a794c1661871",
             "comparisonResult": "ACCEPTED"
@@ -1727,7 +1895,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
             "file": "pages/invitation-boda-victoria-y-roberto-desktop.png",
-            "sha256": "4cafdf51e3f8fccb2455656a0ca9f5994cab07506859c72d3e57d32cf8c1e026",
+            "sha256": "e35fa6d07ff7d6c554099c769c8b43187a98c9a6660e0100fafb0a4efa5ca7e0",
             "contentHash": "207e0256598d23e2509057acc7a14a10b50a13c2445939036d170206d45f9119",
             "assetHash": "6714935fa490f0cec53f80c0302089b08eaa8c8fe08db87034b3a794c1661871",
             "comparisonResult": "ACCEPTED"
@@ -1763,7 +1931,7 @@
             "preset": "editorial",
             "viewport": "mobile",
             "file": "pages/invitation-xv-renata-mobile.png",
-            "sha256": "be1e23e4f7a5c818f0202dce05413763c4d9341b2e60d05c23eaee2bdaa6c559",
+            "sha256": "666a2a7b79e8739c5d1738020346c6957c64a56a51e09ac6462b4c409bd08765",
             "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
             "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
             "comparisonResult": "ACCEPTED"
@@ -1775,7 +1943,7 @@
             "preset": "editorial",
             "viewport": "desktop",
             "file": "pages/invitation-xv-renata-desktop.png",
-            "sha256": "55aacb6c0d5e246b64189c47f4f0d3f58af8487cf03044edeea70e1b4022d7b7",
+            "sha256": "88e3594968361d1fdcf48a47be3bfead60391b0674407ed7f0b693a7a0fc68c7",
             "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
             "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
             "comparisonResult": "ACCEPTED"
@@ -1787,7 +1955,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/invitation-xv-leslie-perez-mobile.png",
-            "sha256": "b6c873b9cbf038de19c2bbe47987e4cbf0f60941dedf7350017ce86244c2b70c",
+            "sha256": "1d1a372710484e86511263c99d93cd6beb3bf6129f981dd3a150de92c03b4ccf",
             "contentHash": "977db5f5767196df554472024ebc8719528463d63342079ccea94bc34ec4f1ee",
             "assetHash": "369a8dbd64a7d56b191390ebd937a03c8fedd72e7f3fa79aa577e46dfe314445",
             "comparisonResult": "ACCEPTED"
@@ -1811,7 +1979,7 @@
             "preset": "editorial-magazine",
             "viewport": "mobile",
             "file": "pages/invitation-xv-valentina-hernandez-mobile.png",
-            "sha256": "03514b37719b19d2e8c1601034c7e709c3a07dc0a4778dee2e4fd99879f69c88",
+            "sha256": "7ec0c0f8533bfd6f2952df1e05d809623873a639c26baaeb2081a78cdfb2d7e8",
             "contentHash": "eb67417e137e311e5decbd57193fbb8e3c5a8b48cb71bf14963b3128fc924493",
             "assetHash": "5808e0044eda5d5caee731e22323c81b00e6f847376e926cbe1563c4253bb641",
             "comparisonResult": "ACCEPTED"
@@ -1823,7 +1991,7 @@
             "preset": "editorial-magazine",
             "viewport": "desktop",
             "file": "pages/invitation-xv-valentina-hernandez-desktop.png",
-            "sha256": "547af88cc5d299b9d765e8d894a86c27d92e0231e774ae320fb0e12a915782e1",
+            "sha256": "038f7a0ad3c0ed891bd880e218b38cd5979974cf18a5dc3d98866babf6643005",
             "contentHash": "eb67417e137e311e5decbd57193fbb8e3c5a8b48cb71bf14963b3128fc924493",
             "assetHash": "5808e0044eda5d5caee731e22323c81b00e6f847376e926cbe1563c4253bb641",
             "comparisonResult": "ACCEPTED"
@@ -1835,7 +2003,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/invitation-xv-america-johana-mobile.png",
-            "sha256": "974780844e3c2867080caa38f3b04e7e7a7e38b5eff4b032ebf979ed0d863cf6",
+            "sha256": "14a89c6256da5e08d011dda6e2f779a0b503bb8a7bdc9b24da495502e967240b",
             "contentHash": "c0e712c8bc932ec0e71585fb166c3a68432a088a2f53f62db21ee8639ad04186",
             "assetHash": "a4ec26854049e556cc12ba9902b3fece10065d59d5bb590056e37eb4e47cd2ef",
             "comparisonResult": "ACCEPTED"
@@ -1847,7 +2015,7 @@
             "preset": "celestial-blue",
             "viewport": "desktop",
             "file": "pages/invitation-xv-america-johana-desktop.png",
-            "sha256": "0e8412e7a1d5e9134390e5dcef0dbf9f3cbca6d63daf57de561024272371d7b6",
+            "sha256": "eaf6aabf24b5e30249c4068c4976008f3f9c0dfe273cbd3956f9be65a8392c27",
             "contentHash": "c0e712c8bc932ec0e71585fb166c3a68432a088a2f53f62db21ee8639ad04186",
             "assetHash": "a4ec26854049e556cc12ba9902b3fece10065d59d5bb590056e37eb4e47cd2ef",
             "comparisonResult": "ACCEPTED"
@@ -1859,7 +2027,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/invitation-xv-ana-sofia-cota-guillen-mobile.png",
-            "sha256": "19bd0c27fb6ac9b45468da75f1540ef23bc4ce80b08b256cf0d766d01ffe7449",
+            "sha256": "46a990e740542e37d8e2dfe9aeba66e5918a48da57946d7bd10b65010c52af53",
             "contentHash": "2474f1379d8f01ba2448797c921e96c580f827a72aeda527b21dc18263d0e2a2",
             "assetHash": "fb483d576ea64e6767001de4309f5438973f188caa4592482e332a0acf4fc9bd",
             "comparisonResult": "ACCEPTED"
@@ -1871,7 +2039,7 @@
             "preset": "celestial-blue",
             "viewport": "desktop",
             "file": "pages/invitation-xv-ana-sofia-cota-guillen-desktop.png",
-            "sha256": "88284996ebc7a25f3732c82ec8b95b9c9b75a101d6fc4b40fd9ad589f141be43",
+            "sha256": "2747b1fba0eaecff0bba9da10c453f203f73f9770f428a0f44b5e41606c78f2a",
             "contentHash": "2474f1379d8f01ba2448797c921e96c580f827a72aeda527b21dc18263d0e2a2",
             "assetHash": "fb483d576ea64e6767001de4309f5438973f188caa4592482e332a0acf4fc9bd",
             "comparisonResult": "ACCEPTED"
@@ -1883,7 +2051,7 @@
             "preset": "enchanted-rose",
             "viewport": "mobile",
             "file": "pages/invitation-xv-ayrin-samantha-lerma-castro-mobile.png",
-            "sha256": "f6b34aa017726c641b1ccce1d6434b5a185a1cde76a7ea9300a126ba2813bf54",
+            "sha256": "735875808b9b1c4ec0b7f2a497f8d5c0a2de26ea48d6b58eb3d9e16f528c1779",
             "contentHash": "ebacb4fc0aab2da89525adbbe9f2d136bdaf354b1b2c92c2b0a2b62e64e06886",
             "assetHash": "b17eaf6173b61e905fa324b10e61a24ba2f14bb62a2f37d04fff744880f3be94",
             "comparisonResult": "ACCEPTED"
@@ -1895,7 +2063,7 @@
             "preset": "enchanted-rose",
             "viewport": "desktop",
             "file": "pages/invitation-xv-ayrin-samantha-lerma-castro-desktop.png",
-            "sha256": "c1cd62b8348d4114d25665a5732e8aaf31a8e1ef2d0162cc76dfc36979358900",
+            "sha256": "4a4a0662a60e7fe145c74993d9c1984f080427df76d9359aa7e6f2b0a85c64cd",
             "contentHash": "ebacb4fc0aab2da89525adbbe9f2d136bdaf354b1b2c92c2b0a2b62e64e06886",
             "assetHash": "b17eaf6173b61e905fa324b10e61a24ba2f14bb62a2f37d04fff744880f3be94",
             "comparisonResult": "ACCEPTED"
@@ -1907,7 +2075,7 @@
             "preset": "sacred-keepsake",
             "viewport": "mobile",
             "file": "pages/invitation-bautizo-cesar-ramses-mobile.png",
-            "sha256": "47901607d1089961b5710bf309aeaa768dbe3bb53b0c5fce8ce8252310f6759b",
+            "sha256": "b9615b296758dd6af0ea331100f513881623dab4929e9f394feb76eacb636a81",
             "contentHash": "ead8267c574796e1114ff99a4d0736d0384e6272e9cc90fb1c79603382792bfb",
             "assetHash": "6a206d26d762ba5c4c9b6e8d052323062de772f04ba8ed3ec5d467626cb4f6e3",
             "comparisonResult": "ACCEPTED"
@@ -1919,7 +2087,7 @@
             "preset": "sacred-keepsake",
             "viewport": "desktop",
             "file": "pages/invitation-bautizo-cesar-ramses-desktop.png",
-            "sha256": "e3d865ba9d5cf7660517301ebf5c43dc297b8fbbe91a7de05a9ba2d4c0d72d1f",
+            "sha256": "486627c145b9b1eaf585230d958f7ec7fad248ddd22c079d10baf81252491292",
             "contentHash": "ead8267c574796e1114ff99a4d0736d0384e6272e9cc90fb1c79603382792bfb",
             "assetHash": "6a206d26d762ba5c4c9b6e8d052323062de772f04ba8ed3ec5d467626cb4f6e3",
             "comparisonResult": "ACCEPTED"
@@ -1931,7 +2099,7 @@
             "preset": "luxury-hacienda",
             "viewport": "mobile",
             "file": "pages/invitation-cumple-gerardo-sesenta-mobile.png",
-            "sha256": "e0d4a32ed6a815b84b1e2a60cb452dd150235d43497776f726a9c1b5cc7e52d8",
+            "sha256": "43823d1731303463d8ec95ee5f4bf60d634d5e5c9ada248f12e7023e941aacf6",
             "contentHash": "78f5ddfea98bc554252045deb58b7557c70a8d47572ce34aaad6d22d7484a067",
             "assetHash": "07c87119665441dcb0e00efc7ffceaad1fbfcca741bc2b6681405b6b4c7a79dc",
             "comparisonResult": "ACCEPTED"
@@ -1943,7 +2111,7 @@
             "preset": "luxury-hacienda",
             "viewport": "desktop",
             "file": "pages/invitation-cumple-gerardo-sesenta-desktop.png",
-            "sha256": "3ff04f62efa489a6185b2b7056aa78dd44a5f1bcf902bfafd8a22361fde1ec00",
+            "sha256": "1e9526f1154d30101ea3ffc0e414b261c1738e5be7bc9d532944771c581d88b0",
             "contentHash": "78f5ddfea98bc554252045deb58b7557c70a8d47572ce34aaad6d22d7484a067",
             "assetHash": "07c87119665441dcb0e00efc7ffceaad1fbfcca741bc2b6681405b6b4c7a79dc",
             "comparisonResult": "ACCEPTED"
@@ -1955,7 +2123,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/invitation-baby-shower-leah-lexa-mobile.png",
-            "sha256": "8850582c3780475e41e401e04f1ea03fba03eab691ade894523b5d3c32268265",
+            "sha256": "b05253f8d43f02afbf602cf2210fe064be7c62d0c790e8ce47e48d0608c11cdf",
             "contentHash": "0e8216d3991782fda03e171aa727f89b7dfbfdd500306d7ce989f48a264da874",
             "assetHash": "105735670692d2e869dc8572bbb0993c0bf0f6c85ba7e798470ebf130c47fb76",
             "comparisonResult": "ACCEPTED"
@@ -1967,7 +2135,7 @@
             "preset": "celestial-blue",
             "viewport": "desktop",
             "file": "pages/invitation-baby-shower-leah-lexa-desktop.png",
-            "sha256": "2fcbe1386cdf0373784340f74022882d4c606d4c2c150d5256da6c93c7d3e80b",
+            "sha256": "0e2fcef35a8c18ef9819768dfc76cf380b02493fbc25ada46216a023e91707b0",
             "contentHash": "0e8216d3991782fda03e171aa727f89b7dfbfdd500306d7ce989f48a264da874",
             "assetHash": "105735670692d2e869dc8572bbb0993c0bf0f6c85ba7e798470ebf130c47fb76",
             "comparisonResult": "ACCEPTED"
@@ -1979,7 +2147,7 @@
             "preset": "angelic-presence",
             "viewport": "mobile",
             "file": "pages/invitation-primera-comunion-luna-y-estrella-mobile.png",
-            "sha256": "6fb81eecab16e55c8d3238361ce4bc4881c25bd2c5e13d8dfffdcc96ddec5fce",
+            "sha256": "631e78ac17fc9080f2d8193da806f4ec48cf84175bec8c4eda483e175932e690",
             "contentHash": "43581db2d5c50f0e75502a4d54b3ea187fcf53a6a7cca512999c5a9eca2866f5",
             "assetHash": "75cb27f8c3e906857f41c8a440fcbc1c4a0c0f00fe4465a71fd6fab0a3380418",
             "comparisonResult": "ACCEPTED"
@@ -1991,7 +2159,7 @@
             "preset": "angelic-presence",
             "viewport": "desktop",
             "file": "pages/invitation-primera-comunion-luna-y-estrella-desktop.png",
-            "sha256": "63268e3c88a98c7bb81694860d8ce3a48e839d1b63fb2ea8120af87212c82e87",
+            "sha256": "4f312fa52f6ef55d7944ff630fe517e57841b106ff85504f354f045635c975b9",
             "contentHash": "43581db2d5c50f0e75502a4d54b3ea187fcf53a6a7cca512999c5a9eca2866f5",
             "assetHash": "75cb27f8c3e906857f41c8a440fcbc1c4a0c0f00fe4465a71fd6fab0a3380418",
             "comparisonResult": "ACCEPTED"
@@ -2003,7 +2171,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/invitation-xv-xareni-iyarit-mobile.png",
-            "sha256": "6e60f63577c2936d9ac429a293c9c139bf320c7c49f99dc42f5570b385dbb16f",
+            "sha256": "8bc1dfa16d04ca30f8da023e2214894ae508eb1fbf4f0133cbdefb0d73fff3f1",
             "contentHash": "681e70e6bb14a67d36679c31d2bf4adc7f16b67dcc419404a60677633f4d9e28",
             "assetHash": "86673c42feb861764c0c3e650a3617f2b29ea7664019151493f8080754444d9b",
             "comparisonResult": "ACCEPTED"
@@ -2015,7 +2183,7 @@
             "preset": "celestial-blue",
             "viewport": "desktop",
             "file": "pages/invitation-xv-xareni-iyarit-desktop.png",
-            "sha256": "1ed46a945af07b790343cd240af5cac7d041e46ab9bce13db2bfe770f6344013",
+            "sha256": "820a14de46f2b65d4ce800d59a8b37e80f3bc1f9ae48430eac168e2a1556299d",
             "contentHash": "681e70e6bb14a67d36679c31d2bf4adc7f16b67dcc419404a60677633f4d9e28",
             "assetHash": "86673c42feb861764c0c3e650a3617f2b29ea7664019151493f8080754444d9b",
             "comparisonResult": "ACCEPTED"
@@ -2027,7 +2195,7 @@
             "preset": "premiere-floral",
             "viewport": "mobile",
             "file": "pages/invitation-xv-ximena-meza-trasvina-mobile.png",
-            "sha256": "1dc69c2f6cc5e4851a520769fad7fb2442dc0938bcaa2bd7a83e3d49ba4a92aa",
+            "sha256": "a21c9187b2dfc05468efaf977409a82bbb022766377eb54b564afe6c0efc1f36",
             "contentHash": "63dee95dcfb80d38552644eaa9fe72a6b02f6f3776655cdb5e703ba63123bf36",
             "assetHash": "fa1dd03a925be03caa26611b1216ac7328a346d62f2f3609d90843840afdfc62",
             "comparisonResult": "ACCEPTED"
@@ -2039,7 +2207,7 @@
             "preset": "premiere-floral",
             "viewport": "desktop",
             "file": "pages/invitation-xv-ximena-meza-trasvina-desktop.png",
-            "sha256": "f8faa5e4d696251c400b1384ec8a717cf9229e619d82826c39f8821c899cead4",
+            "sha256": "f26e8630f91de4b4755a378727d5b1fb93a246e3c48823f833bb1736df0ca85b",
             "contentHash": "63dee95dcfb80d38552644eaa9fe72a6b02f6f3776655cdb5e703ba63123bf36",
             "assetHash": "fa1dd03a925be03caa26611b1216ac7328a346d62f2f3609d90843840afdfc62",
             "comparisonResult": "ACCEPTED"
@@ -2051,7 +2219,7 @@
             "preset": "angelic-presence",
             "viewport": "mobile",
             "file": "pages/demo-bautizo-demo-bautismo-angelic-presence-mobile.png",
-            "sha256": "3c278d0787f9a998a019aab9aafb4e76fbf590cf582c6484242bd0365a88b886",
+            "sha256": "537db45e275427e2b52bf678540c1373edf39c8dcd37eda1f014429341f38a74",
             "contentHash": "166d24a69e3703d1b3ce721f71e7eb9c42d6b513fb47f9f5edc791304f1a3c65",
             "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
             "comparisonResult": "ACCEPTED"
@@ -2063,7 +2231,7 @@
             "preset": "angelic-presence",
             "viewport": "desktop",
             "file": "pages/demo-bautizo-demo-bautismo-angelic-presence-desktop.png",
-            "sha256": "0e760fc6cd305d60cbcf8fac1c9c8891e2308aee08d82ae1f0c08b59d212d67c",
+            "sha256": "d77f649774e26fb20f960e2e76ec6900d9d86a8d6300ae4a03a45aac342e12e3",
             "contentHash": "166d24a69e3703d1b3ce721f71e7eb9c42d6b513fb47f9f5edc791304f1a3c65",
             "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
             "comparisonResult": "ACCEPTED"
@@ -2075,7 +2243,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-mobile.png",
-            "sha256": "3baeadd0e39231dcef544f663bd87ef613519f3abb914dc71abc64de81b7e1f1",
+            "sha256": "689b0ecb598bcba4db210ab1cf7437e680abe14b849df41a921b3896d84af925",
             "contentHash": "b7acf187588901fe448a8244ae4bdef0280ff4ff1166bf4f0bfb5635fc106630",
             "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
             "comparisonResult": "ACCEPTED"
@@ -2087,7 +2255,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
             "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-desktop.png",
-            "sha256": "cf71ebe0966191a5ab89cb122efe1c06ea80276f4650d1e2a30666a9af5cd0d5",
+            "sha256": "04bbc81dcdb4861b452f949f477a86475fe047eec93136ef06dd7d9dcf68398e",
             "contentHash": "b7acf187588901fe448a8244ae4bdef0280ff4ff1166bf4f0bfb5635fc106630",
             "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
             "comparisonResult": "ACCEPTED"
@@ -2099,7 +2267,7 @@
             "preset": "luxury-hacienda",
             "viewport": "mobile",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-            "sha256": "eda135b2a87fba680fb80cfe7da6bc2704ebc1db9dc3f289ea0eee284cf46e73",
+            "sha256": "4f737453e8a4e840cecda3ed860765c1fdadcc212b72b12a633b0c002be53a6c",
             "contentHash": "1398546ab70e59365d619d83c40ad5e66370792f914d7966b625b30030a4719c",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
@@ -2111,7 +2279,7 @@
             "preset": "luxury-hacienda",
             "viewport": "desktop",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-            "sha256": "6502ca4d8e20e700301f1e4dd40e0f0bdb3d57ed50c6010020fbeb914cb14660",
+            "sha256": "dd0e0dde92990328ba88663ab821729abdd2f733279f0448943ebfe32e4ed55a",
             "contentHash": "1398546ab70e59365d619d83c40ad5e66370792f914d7966b625b30030a4719c",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
@@ -2123,7 +2291,7 @@
             "preset": "angelic-presence",
             "viewport": "mobile",
             "file": "pages/demo-primera-comunion-demo-primera-comunion-illustrated-mobile.png",
-            "sha256": "c808b4ba8cbf1c1b5a7895f89c931660b02e6ad401fe63b70441b396e5fcc54b",
+            "sha256": "3045e7ffe28593ac318e3355c28d3ab3d218cbc2a68bbeebbeaecaf188b69644",
             "contentHash": "d5f7cad4fdec879f30d5e0de96e3f0fa4e685f0f415cdb4a8e5cde997ac345d9",
             "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
             "comparisonResult": "ACCEPTED"
@@ -2135,7 +2303,7 @@
             "preset": "angelic-presence",
             "viewport": "desktop",
             "file": "pages/demo-primera-comunion-demo-primera-comunion-illustrated-desktop.png",
-            "sha256": "72e5e194fe6f6ef69496cd626ff5e3257acc98294bae3821b0d294b8f304a8d2",
+            "sha256": "f81e4419afc457157f8a4b7b0bf82e897f1bb4a1f96eedb083807724ffecef46",
             "contentHash": "d5f7cad4fdec879f30d5e0de96e3f0fa4e685f0f415cdb4a8e5cde997ac345d9",
             "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
             "comparisonResult": "ACCEPTED"
@@ -2171,7 +2339,7 @@
             "preset": "editorial",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-            "sha256": "240cf1c4a1bf67fa9be76a710cd83c67ca736d17f7f3bb9f491c8f26420a8dbc",
+            "sha256": "b3d397d33336adfd50c999f32bedb7a2b165f91da75cef1b56fa0ddbe5cce53d",
             "contentHash": "102c3998f4dc9e091650fe5ad0347a3e89600e3efae68f0a9a6d15f91043a0e9",
             "assetHash": "404e6010bfc661639ebd1397e2362c4d39f0dddc41276fa6da53a1d019dc571a",
             "comparisonResult": "ACCEPTED"
@@ -2183,7 +2351,7 @@
             "preset": "editorial",
             "viewport": "desktop",
             "file": "pages/demo-xv-demo-xv-editorial-desktop.png",
-            "sha256": "a669f986ee0e04f5715135a1d81f9dfecd1d651aa4cfe675e9360da717896393",
+            "sha256": "89fcda5530d99e2b4b78602a05a39a3d037609ce838ec6d56222b05e405f94b3",
             "contentHash": "102c3998f4dc9e091650fe5ad0347a3e89600e3efae68f0a9a6d15f91043a0e9",
             "assetHash": "404e6010bfc661639ebd1397e2362c4d39f0dddc41276fa6da53a1d019dc571a",
             "comparisonResult": "ACCEPTED"
@@ -2195,7 +2363,7 @@
             "preset": "enchanted-rose",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-enchanted-rose-mobile.png",
-            "sha256": "63c2009e1867a2372e1b5610a415ade39909592a223bc1e70558ceefb4554b91",
+            "sha256": "16b2e8209ca122ca039234649e9d3118bc131223f2c3f809f00d838d00b5c34e",
             "contentHash": "794f056928090b03c15ca3d48b0a8cb04a5c2eab8a68e641e064fb2fb6a90c25",
             "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
             "comparisonResult": "ACCEPTED"
@@ -2207,15 +2375,39 @@
             "preset": "enchanted-rose",
             "viewport": "desktop",
             "file": "pages/demo-xv-demo-xv-enchanted-rose-desktop.png",
-            "sha256": "65caf7110a864b646543f83d12c011f0509093b354a1d21b3c27c861ae63c42a",
+            "sha256": "3c64112effec51f628141f1c09dec51ab5a88dec14edfd40a94cc3f6ff5f581e",
             "contentHash": "794f056928090b03c15ca3d48b0a8cb04a5c2eab8a68e641e064fb2fb6a90c25",
             "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
             "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-seaside",
+            "eventType": "xv",
+            "preset": "celestial-blue",
+            "viewport": "mobile",
+            "file": "pages/demo-xv-demo-xv-seaside-mobile.png",
+            "sha256": "9b2563349c582a44eea44d6b8f185d24c1416043c7687b9941a50fcd0928cbd3",
+            "contentHash": "b978a449a4a46063fe8abcada0a5f405192c8d3c3a9e4de272f894a568771a2b",
+            "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-seaside",
+            "eventType": "xv",
+            "preset": "celestial-blue",
+            "viewport": "desktop",
+            "file": "pages/demo-xv-demo-xv-seaside-desktop.png",
+            "sha256": "dba2d463833a7de17756b298402aeff2c4a70443475fa8a7f264449a2801fed1",
+            "contentHash": "b978a449a4a46063fe8abcada0a5f405192c8d3c3a9e4de272f894a568771a2b",
+            "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
+            "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "19846441436c98bc69cdc2180a0cc127cdbefb6c",
+    "referenceSha": "9156169167731162dc7fd6e720cb6a1c6e985e5a",
     "variantManifest": {
-        "generatedAt": "2026-10-03T05:21:16.511Z",
+        "generatedAt": "2026-10-08T00:18:15.721Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2227,16 +2419,16 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "2b7837541c3c6f5d861f8dc5f8a97095bb5382d3da938338080bfca214628b3c",
-            "cssSha256": "c1a19faf22f4eb370d5a36ea7ce353037025303cdff99ef2ca7dad4ad43ed68e",
-            "assetSha256": "5c4c0d25693b04dc1f4cea0943bf303a2a08eb9d5647c06eaca8eeea97b4e5dc",
+            "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
+            "cssSha256": "4fa880fbe079db593ec4bf67fa15d36518beceda18fa2518317941518ba88903",
+            "assetSha256": "ff92fcf04af4cab85ac766eebd039fd30bfef76d4c0cafa00f843b46dfa9072b",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 110,
-        "matrixHash": "3582b1f467732e0b77aa145d55b2bf7b7ef2b1e364ad5abe4602b8dd21228fd6",
+        "totalCaptures": 122,
+        "matrixHash": "19bb56924dd713552e2d8a5230dfd0f537754bafe7e33130602c9533fe04cd02",
         "baselinePreset": "jewelry-box",
         "crossPreset": "celestial-blue",
         "captures": [
@@ -2293,6 +2485,34 @@
                 "file": "jewelry-box-desktop-hero-framed-portrait.png",
                 "sha256": "b29e0e0c042f6897e75b7be7f91dc59f9d231bd3dbb5baf15d6b23db93432d6b",
                 "contentHash": "af722167ea9e0a04e4fac3c7ea2cd289545b08192bf08e6c21b1414599b4114a",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "hero",
+                "variant": "bleed-portrait",
+                "preset": "jewelry-box",
+                "viewport": "mobile",
+                "cssOwner": "src/styles/themes/sections/hero/_bleed-portrait.scss",
+                "fixtureIdentity": "synthetic:hero.bleed-portrait",
+                "file": "jewelry-box-mobile-hero-bleed-portrait.png",
+                "sha256": "e6cbfe9bdd26eed21c036a2f87f4d82eaa87c69a731599f0252ab5b24c6977b3",
+                "contentHash": "c0566734aa39e8b829b77a4ca277d198d86d4e63429c9454e899308293d002fd",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "hero",
+                "variant": "bleed-portrait",
+                "preset": "jewelry-box",
+                "viewport": "desktop",
+                "cssOwner": "src/styles/themes/sections/hero/_bleed-portrait.scss",
+                "fixtureIdentity": "synthetic:hero.bleed-portrait",
+                "file": "jewelry-box-desktop-hero-bleed-portrait.png",
+                "sha256": "d22c3953312d03815b7227bd69d70c050833ffb6d3ae16c7186685502973bdf3",
+                "contentHash": "c0566734aa39e8b829b77a4ca277d198d86d4e63429c9454e899308293d002fd",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
             },
@@ -2501,7 +2721,7 @@
                 "cssOwner": "section-base:location",
                 "fixtureIdentity": "synthetic:location.standard",
                 "file": "jewelry-box-mobile-location-standard.png",
-                "sha256": "8cf4a542535ba4d5291f27680cd887bbe94b1a0cbeace59de0bf752bdeb3435c",
+                "sha256": "4954e8fc81ff5879e6c9d7cda8050c27955614990e77e580229f6456b04ba2d6",
                 "contentHash": "1eea290a2a8ec848c3fe8ad02644881019086ebc29881ba625322b473e641af9",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2515,7 +2735,7 @@
                 "cssOwner": "section-base:location",
                 "fixtureIdentity": "synthetic:location.standard",
                 "file": "jewelry-box-desktop-location-standard.png",
-                "sha256": "77cf39fad7908063b13f847577632ec0a3b413f377b50581262b45a9e1793c22",
+                "sha256": "2bb6a98cdf6235b8a9fc748aee67bd5a796bd03cb7218eef455049207446c21e",
                 "contentHash": "1eea290a2a8ec848c3fe8ad02644881019086ebc29881ba625322b473e641af9",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2529,7 +2749,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
                 "fixtureIdentity": "synthetic:location.split-map",
                 "file": "jewelry-box-mobile-location-split-map.png",
-                "sha256": "294f5ed393c5da22abb3624b6a9d23028dd5184b7b95ee56c525677208969c53",
+                "sha256": "f3ec2882fc716caf90b19e80ed63d73b52409f037471bb7d80f8485611ab704a",
                 "contentHash": "c1ffb614af4ebfbe876f3a53f754ef67a364be5adea407f43877b6f36727bccd",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2543,7 +2763,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
                 "fixtureIdentity": "synthetic:location.split-map",
                 "file": "jewelry-box-desktop-location-split-map.png",
-                "sha256": "e282975df8b32882086d4b51be6848214acacecb589046f133c1e1a8c22c92a0",
+                "sha256": "d327ffe179b672a79ff2aa44d06df3d0feac64adf585868f5f4bd6465d2d1126",
                 "contentHash": "c1ffb614af4ebfbe876f3a53f754ef67a364be5adea407f43877b6f36727bccd",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -2573,6 +2793,34 @@
                 "file": "jewelry-box-desktop-location-stacked-venue-plates.png",
                 "sha256": "ecf40009e52d3f15dfbc310c3cc332c11bb1e7347637fe331d697058c7002dca",
                 "contentHash": "53f71e4c9966acb4e68e60115e3e0e117400dbe09e92dac84bbc02d9885befee",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "location",
+                "variant": "program-sheet",
+                "preset": "jewelry-box",
+                "viewport": "mobile",
+                "cssOwner": "src/styles/themes/sections/location/_program-sheet.scss",
+                "fixtureIdentity": "synthetic:location.program-sheet",
+                "file": "jewelry-box-mobile-location-program-sheet.png",
+                "sha256": "2fb874db0ce9942016f5103a271ac0ef122801fe955dc4d02806c3182f46d136",
+                "contentHash": "ee125f707bc00bab6d8077566ea20462e77f40c96856e7ee5f7e2e2dc99330c4",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "location",
+                "variant": "program-sheet",
+                "preset": "jewelry-box",
+                "viewport": "desktop",
+                "cssOwner": "src/styles/themes/sections/location/_program-sheet.scss",
+                "fixtureIdentity": "synthetic:location.program-sheet",
+                "file": "jewelry-box-desktop-location-program-sheet.png",
+                "sha256": "f45466e96517b2ea6f02d9c9ec8709bef4c40083df83513b2dfb7b22e330c2e7",
+                "contentHash": "ee125f707bc00bab6d8077566ea20462e77f40c96856e7ee5f7e2e2dc99330c4",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
             },
@@ -2887,6 +3135,34 @@
             {
                 "kind": "variant",
                 "section": "gallery",
+                "variant": "mirrored-mosaic",
+                "preset": "jewelry-box",
+                "viewport": "mobile",
+                "cssOwner": "src/styles/themes/sections/gallery/_mirrored-mosaic.scss",
+                "fixtureIdentity": "synthetic:gallery.mirrored-mosaic",
+                "file": "jewelry-box-mobile-gallery-mirrored-mosaic.png",
+                "sha256": "65059ea7a191ed9280be31dbdc46ae62def0d56e2171940b729c9bd7ab9ca8dd",
+                "contentHash": "b85423dbba2ce2fce788c50957471a5821f046f32b7715de1f1e9b802a826042",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "gallery",
+                "variant": "mirrored-mosaic",
+                "preset": "jewelry-box",
+                "viewport": "desktop",
+                "cssOwner": "src/styles/themes/sections/gallery/_mirrored-mosaic.scss",
+                "fixtureIdentity": "synthetic:gallery.mirrored-mosaic",
+                "file": "jewelry-box-desktop-gallery-mirrored-mosaic.png",
+                "sha256": "cdd72b442816113b5f85275d187b77cdacbbae635c042fec4c43592c0b6eea50",
+                "contentHash": "b85423dbba2ce2fce788c50957471a5821f046f32b7715de1f1e9b802a826042",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "gallery",
                 "variant": "single-keepsake",
                 "preset": "jewelry-box",
                 "viewport": "mobile",
@@ -3027,6 +3303,34 @@
             {
                 "kind": "variant",
                 "section": "rsvp",
+                "variant": "reply-card",
+                "preset": "jewelry-box",
+                "viewport": "mobile",
+                "cssOwner": "src/styles/themes/sections/rsvp/_reply-card.scss",
+                "fixtureIdentity": "synthetic:rsvp.reply-card",
+                "file": "jewelry-box-mobile-rsvp-reply-card.png",
+                "sha256": "9fb38fac87b58a5a445b59b24814f9c425172b043c4292dc73ee256f200cd563",
+                "contentHash": "67cbf2897aa17bab55c0e39d7ab30591034db11061d547b42d4dcc213c04d69e",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "rsvp",
+                "variant": "reply-card",
+                "preset": "jewelry-box",
+                "viewport": "desktop",
+                "cssOwner": "src/styles/themes/sections/rsvp/_reply-card.scss",
+                "fixtureIdentity": "synthetic:rsvp.reply-card",
+                "file": "jewelry-box-desktop-rsvp-reply-card.png",
+                "sha256": "574c12a6be0fcc48d23fa4fd2516071dcab1000fd4ed029b367f6f078862a6b0",
+                "contentHash": "67cbf2897aa17bab55c0e39d7ab30591034db11061d547b42d4dcc213c04d69e",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "rsvp",
                 "variant": "formal-register",
                 "preset": "jewelry-box",
                 "viewport": "mobile",
@@ -3133,6 +3437,34 @@
                 "file": "jewelry-box-desktop-personalizedAccess-editorial-pass.png",
                 "sha256": "935982406f40ee6140571ebb8f25e5bd1b18cf65759a70478fe0c52d96f703e7",
                 "contentHash": "98e44f2958f6bf5ba7aa5f112e61c996e5bdc41c601e97ff3017b1e9c53473c9",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "personalizedAccess",
+                "variant": "reply-card",
+                "preset": "jewelry-box",
+                "viewport": "mobile",
+                "cssOwner": "src/styles/themes/sections/personalized-access/_reply-card.scss",
+                "fixtureIdentity": "synthetic:personalizedAccess.reply-card",
+                "file": "jewelry-box-mobile-personalizedAccess-reply-card.png",
+                "sha256": "4bdaa91e370a8d224e77282fafbda9105b6cbf606a62494ff01533db20cdf8de",
+                "contentHash": "947f28d6e5036453ce02a998df239e756c44ca972d3625a9f3897ca9bb61e47a",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "personalizedAccess",
+                "variant": "reply-card",
+                "preset": "jewelry-box",
+                "viewport": "desktop",
+                "cssOwner": "src/styles/themes/sections/personalized-access/_reply-card.scss",
+                "fixtureIdentity": "synthetic:personalizedAccess.reply-card",
+                "file": "jewelry-box-desktop-personalizedAccess-reply-card.png",
+                "sha256": "c17249913740f825c5a936ccd628e8cdbcb48db1075b89af54314ed904a35a0b",
+                "contentHash": "947f28d6e5036453ce02a998df239e756c44ca972d3625a9f3897ca9bb61e47a",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
             },
@@ -3369,7 +3701,7 @@
                 "cssOwner": "src/styles/themes/sections/countdown/_magazine-folio.scss",
                 "fixtureIdentity": "synthetic:countdown.magazine-folio",
                 "file": "jewelry-box-mobile-countdown-magazine-folio.png",
-                "sha256": "89f38ee02afda8de995eb8767619b4be020306535a29806e977ff9f4c0c6b374",
+                "sha256": "df33e4d047cf8e2fcf6b2d140291c20ce0a8a439935036af41fec157f1945a78",
                 "contentHash": "593abfcd01088c723c7b78f9bc09a0d6bb78e7ad7c4f3e5e684fc6a5a55a0dbe",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -3383,8 +3715,36 @@
                 "cssOwner": "src/styles/themes/sections/countdown/_magazine-folio.scss",
                 "fixtureIdentity": "synthetic:countdown.magazine-folio",
                 "file": "jewelry-box-desktop-countdown-magazine-folio.png",
-                "sha256": "05584a5b43e9aa4c79e2fbb2844ec21721e9f9e6f3a5a77d920d0281dd143a5e",
+                "sha256": "cf7fabb4b156f1f7a5a7e1464110e7c6361a3a51329faccbb0e493c7bb3bb660",
                 "contentHash": "593abfcd01088c723c7b78f9bc09a0d6bb78e7ad7c4f3e5e684fc6a5a55a0dbe",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "countdown",
+                "variant": "written-days",
+                "preset": "jewelry-box",
+                "viewport": "mobile",
+                "cssOwner": "src/styles/themes/sections/countdown/_written-days.scss",
+                "fixtureIdentity": "synthetic:countdown.written-days",
+                "file": "jewelry-box-mobile-countdown-written-days.png",
+                "sha256": "5b407df960f44e8ace31d9bff180f081df0feb1ad845a9a1359e0887ac86f6d7",
+                "contentHash": "526b659d4bad792653e24247ea3b5127d47fb32316e919ddbd0c7d2c82fdaac8",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "countdown",
+                "variant": "written-days",
+                "preset": "jewelry-box",
+                "viewport": "desktop",
+                "cssOwner": "src/styles/themes/sections/countdown/_written-days.scss",
+                "fixtureIdentity": "synthetic:countdown.written-days",
+                "file": "jewelry-box-desktop-countdown-written-days.png",
+                "sha256": "7053c5e0e0d7a1b0ee1f081ff54dca06ef233c8c2f8e4d033204f04a96d91030",
+                "contentHash": "526b659d4bad792653e24247ea3b5127d47fb32316e919ddbd0c7d2c82fdaac8",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
             },
@@ -3565,7 +3925,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
                 "fixtureIdentity": "synthetic:location.split-map",
                 "file": "celestial-blue-mobile-location-split-map.png",
-                "sha256": "65d13aad55f82d9a1dcd0feeacde450bd43c435883df6362f32530268efcb7a2",
+                "sha256": "8ea654c3d0d483e86c05de2b3a6d29c13b10986e18112e6c14f439864a5a2a40",
                 "contentHash": "483fe3c45e8629aae5a2344e4ad1c84071b5acd8a370e934748e675ada4b8f05",
                 "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
                 "comparisonResult": "CANDIDATE"
@@ -3579,7 +3939,7 @@
                 "cssOwner": "src/styles/themes/sections/location/_split-map.scss",
                 "fixtureIdentity": "synthetic:location.split-map",
                 "file": "celestial-blue-desktop-location-split-map.png",
-                "sha256": "d611f48ba567cb881fe911115ad8d11cb5702ab7e5cb92b86190b8c72961c7a1",
+                "sha256": "84c7dceef0a5a77bec16d1a7a1b11341d565302141bf737672053df4e0a501ba",
                 "contentHash": "483fe3c45e8629aae5a2344e4ad1c84071b5acd8a370e934748e675ada4b8f05",
                 "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
                 "comparisonResult": "CANDIDATE"
@@ -3705,7 +4065,7 @@
                 "cssOwner": "src/styles/themes/sections/rsvp/_editorial-press-pass.scss",
                 "fixtureIdentity": "synthetic:rsvp.editorial-press-pass",
                 "file": "celestial-blue-mobile-rsvp-editorial-press-pass.png",
-                "sha256": "56d4cd3a13c2824279e902f219bc480b1f85789acdaf96e711863fad0130ba4e",
+                "sha256": "def0b5f6c423c4b780e27e5a0e94aeca9ecfadc11172fb4446817ba492fb7c90",
                 "contentHash": "d8af91779050050a38cea681f97a55aa88c1a30d5a892f2a389c453b2ecb9b32",
                 "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
                 "comparisonResult": "CANDIDATE"
@@ -3719,7 +4079,7 @@
                 "cssOwner": "src/styles/themes/sections/rsvp/_editorial-press-pass.scss",
                 "fixtureIdentity": "synthetic:rsvp.editorial-press-pass",
                 "file": "celestial-blue-desktop-rsvp-editorial-press-pass.png",
-                "sha256": "6ee14df0705e90bc91bc2d4445328bba1a31a9e22e533f54b96412bb30f941c0",
+                "sha256": "a90c31073fe6e7ce986ac6871c42614b38d041c21b2f3bb4eb0bfcdc4225bb57",
                 "contentHash": "d8af91779050050a38cea681f97a55aa88c1a30d5a892f2a389c453b2ecb9b32",
                 "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
                 "comparisonResult": "CANDIDATE"
@@ -3761,7 +4121,7 @@
                 "cssOwner": "src/styles/themes/sections/countdown/_magazine-folio.scss",
                 "fixtureIdentity": "synthetic:countdown.magazine-folio",
                 "file": "celestial-blue-mobile-countdown-magazine-folio.png",
-                "sha256": "a713e2bc9bcf63e440db009a1170f3d25a4c48e29633f34929ffee7927076455",
+                "sha256": "e287821b257d442cf3d2f0fd2827cf2f8332d3f5044488b04762992969ab253c",
                 "contentHash": "5beb5b49f11e8527a614c03ba8400112f65d8acf9ad52059674befcb9faf2a48",
                 "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
                 "comparisonResult": "CANDIDATE"
@@ -3775,16 +4135,16 @@
                 "cssOwner": "src/styles/themes/sections/countdown/_magazine-folio.scss",
                 "fixtureIdentity": "synthetic:countdown.magazine-folio",
                 "file": "celestial-blue-desktop-countdown-magazine-folio.png",
-                "sha256": "dbc76e4d35a32a377f29840dbde9d147c853baaa35418066f63e8b90c93fd5eb",
+                "sha256": "bf17d920bc064545a4eef89763924c3c30b24c3bf3ef43b1b0b528b61ca79c06",
                 "contentHash": "5beb5b49f11e8527a614c03ba8400112f65d8acf9ad52059674befcb9faf2a48",
                 "assetHash": "8b21e1ea40ba9824e39cbdf40491dc04677272a3738644a12dcaff20a2af4b5a",
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "19846441436c98bc69cdc2180a0cc127cdbefb6c"
+        "referenceSha": "9156169167731162dc7fd6e720cb6a1c6e985e5a"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-03T05:21:16.515Z",
+        "generatedAt": "2026-10-08T00:18:15.727Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -3796,17 +4156,17 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "2b7837541c3c6f5d861f8dc5f8a97095bb5382d3da938338080bfca214628b3c",
-            "cssSha256": "c1a19faf22f4eb370d5a36ea7ce353037025303cdff99ef2ca7dad4ad43ed68e",
-            "assetSha256": "5c4c0d25693b04dc1f4cea0943bf303a2a08eb9d5647c06eaca8eeea97b4e5dc",
+            "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
+            "cssSha256": "4fa880fbe079db593ec4bf67fa15d36518beceda18fa2518317941518ba88903",
+            "assetSha256": "ff92fcf04af4cab85ac766eebd039fd30bfef76d4c0cafa00f843b46dfa9072b",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 54,
-        "matrixHash": "57261fd0794648b54da6d224749ae3050723e8f283751605bc6e7b9d3e914687",
-        "cases": 27,
+        "totalCaptures": 56,
+        "matrixHash": "6ccaf3f9667e31ea5da28fb62580fa3f703dc762bb0e429d9f3e5415307b5a2f",
+        "cases": 28,
         "captures": [
             {
                 "kind": "invitation",
@@ -3839,7 +4199,7 @@
                 "preset": "luxury-hacienda",
                 "viewport": "mobile",
                 "file": "pages/invitation-cumple-norma-hernandez-mobile.png",
-                "sha256": "52ad7d58738ac396d5d777ef91f005e8bd5bdab966129045b13e7841049bcd5b",
+                "sha256": "42a2f7e8d4fdd0326189f504ccee06dd6cf8db12890858826c8917734945102c",
                 "contentHash": "4d24aec7f85ce306767bc7d6b4c319b02ab36d0aa430f0e813818919d70b7058",
                 "assetHash": "4ac979503c3f2bdca049b79f5ff10741467923d4df972a35669a0ece1b8b4ca7",
                 "comparisonResult": "CANDIDATE"
@@ -3851,7 +4211,7 @@
                 "preset": "luxury-hacienda",
                 "viewport": "desktop",
                 "file": "pages/invitation-cumple-norma-hernandez-desktop.png",
-                "sha256": "a743b7e3ae67ea15bec32e448897cf33def482478a1de51eac235773dbd21480",
+                "sha256": "1bc5099de84e8ca2814dd7068e99a0ced58e3fd5a1bee5e78efe2a59c4cbef86",
                 "contentHash": "4d24aec7f85ce306767bc7d6b4c319b02ab36d0aa430f0e813818919d70b7058",
                 "assetHash": "4ac979503c3f2bdca049b79f5ff10741467923d4df972a35669a0ece1b8b4ca7",
                 "comparisonResult": "CANDIDATE"
@@ -3863,7 +4223,7 @@
                 "preset": "luxury-hacienda",
                 "viewport": "mobile",
                 "file": "pages/invitation-cumple-alba-rosa-quinonez-mobile.png",
-                "sha256": "a8dc3df9a78cc3c97de5481822bf5492a53856cfd0c8e0836a00e633390d2e50",
+                "sha256": "2062be6e69f3231e97230e0716b275b5d3edd837f1bed1c64c0ec395c4d4b838",
                 "contentHash": "b0247a7a76566f4d315a8f0c20e275bb45acc9d2772f9784b59112cd68b5e89e",
                 "assetHash": "7605737ade56e940db4536a2cdbd97e15bcd8e0e70c9de40b870b95e4a68b3e9",
                 "comparisonResult": "CANDIDATE"
@@ -3875,7 +4235,7 @@
                 "preset": "luxury-hacienda",
                 "viewport": "desktop",
                 "file": "pages/invitation-cumple-alba-rosa-quinonez-desktop.png",
-                "sha256": "f01dcf110b15225b48da87b0296297cbd67cd53eae0c4317e31ecc698521274f",
+                "sha256": "b20588424539d71a3927584f73b1bb6f3a89168973b188f616655abe936a2810",
                 "contentHash": "b0247a7a76566f4d315a8f0c20e275bb45acc9d2772f9784b59112cd68b5e89e",
                 "assetHash": "7605737ade56e940db4536a2cdbd97e15bcd8e0e70c9de40b870b95e4a68b3e9",
                 "comparisonResult": "CANDIDATE"
@@ -3887,7 +4247,7 @@
                 "preset": "premiere-floral",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-abril-michelle-becerra-rea-mobile.png",
-                "sha256": "dd988b46dee9df5e0946eccf9cf00a45a3aafc213dd89a483781225ac2df6f20",
+                "sha256": "57bc135cd30cd8e63c047f7a85e4a53d959bbf02bb9234f9579beefd113ca796",
                 "contentHash": "d870bc85e2964aac4730450c048b526b35336df109efe42b7a8d7fc8f7285b4a",
                 "assetHash": "9be5150137c574ef5e9f926fc4c03bb001ffe2921ef4c9adb39cc4e0aeed50f9",
                 "comparisonResult": "CANDIDATE"
@@ -3899,7 +4259,7 @@
                 "preset": "premiere-floral",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-abril-michelle-becerra-rea-desktop.png",
-                "sha256": "3f465c4c1d045053b49065044f1009f5d1592149e15a3da0bfd7cbd124df410d",
+                "sha256": "144a33224bc9d947249e879112212bc3ceb83bbc8b8cb6438902d34fdd43e5bf",
                 "contentHash": "d870bc85e2964aac4730450c048b526b35336df109efe42b7a8d7fc8f7285b4a",
                 "assetHash": "9be5150137c574ef5e9f926fc4c03bb001ffe2921ef4c9adb39cc4e0aeed50f9",
                 "comparisonResult": "CANDIDATE"
@@ -3911,7 +4271,7 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
                 "file": "pages/invitation-boda-daniela-y-martin-mobile.png",
-                "sha256": "5780b0053c287b9864dc165c2ac1d8c546263aeff611f4ad7d379b031528cdaf",
+                "sha256": "eb38092f1d9f79d8bc64abdea0a8055835dae17c6824e328eb699d48053da40e",
                 "contentHash": "7a5bc22c8c496d49d74cab96b260b5a6a5059bd8cd99b3f58e275f5a58cc70a5",
                 "assetHash": "a816d06e8bf2322f98066402b50857c34c8d4168b160b0cdee851993461c087f",
                 "comparisonResult": "CANDIDATE"
@@ -3935,7 +4295,7 @@
                 "preset": "premiere-floral",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-romina-rios-chaparro-mobile.png",
-                "sha256": "f53a91b4530c04eebde5785dc19ef5beebd3dc9081927703974b8d76a7532922",
+                "sha256": "914a237b6100c96986efb70efb685a11922f085b8d1f4819bb2b7a909d549de1",
                 "contentHash": "0477217d01c1c1e30c297733829749a52c922e288d6b26242cd36e8cff0179bb",
                 "assetHash": "ec84c16cb7db7945ad9a4c40f8a7a0fb6c5da933383c8a068e8682a3cc1228fb",
                 "comparisonResult": "CANDIDATE"
@@ -3947,7 +4307,7 @@
                 "preset": "premiere-floral",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-romina-rios-chaparro-desktop.png",
-                "sha256": "1d41a3ab4b83752419628ed2b2e5f16091ca8c6ced228be07f5716fb8302c0a8",
+                "sha256": "51010039e1a32a288bf29f7c2495879c3b3d2de1acaa5a05bbf67df460e581f9",
                 "contentHash": "0477217d01c1c1e30c297733829749a52c922e288d6b26242cd36e8cff0179bb",
                 "assetHash": "ec84c16cb7db7945ad9a4c40f8a7a0fb6c5da933383c8a068e8682a3cc1228fb",
                 "comparisonResult": "CANDIDATE"
@@ -3959,7 +4319,7 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
                 "file": "pages/invitation-boda-victoria-y-roberto-mobile.png",
-                "sha256": "23599b5882355015b1313ee95c152e2e1a3be512b1e10eb300e1d96b694fcfc5",
+                "sha256": "8ce334a870cb0ccb45c2c0be4f223cfaa0df19a0eb113587ed6b52df21c8acc1",
                 "contentHash": "207e0256598d23e2509057acc7a14a10b50a13c2445939036d170206d45f9119",
                 "assetHash": "6714935fa490f0cec53f80c0302089b08eaa8c8fe08db87034b3a794c1661871",
                 "comparisonResult": "CANDIDATE"
@@ -3971,7 +4331,7 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "desktop",
                 "file": "pages/invitation-boda-victoria-y-roberto-desktop.png",
-                "sha256": "4cafdf51e3f8fccb2455656a0ca9f5994cab07506859c72d3e57d32cf8c1e026",
+                "sha256": "e35fa6d07ff7d6c554099c769c8b43187a98c9a6660e0100fafb0a4efa5ca7e0",
                 "contentHash": "207e0256598d23e2509057acc7a14a10b50a13c2445939036d170206d45f9119",
                 "assetHash": "6714935fa490f0cec53f80c0302089b08eaa8c8fe08db87034b3a794c1661871",
                 "comparisonResult": "CANDIDATE"
@@ -4007,7 +4367,7 @@
                 "preset": "editorial",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-renata-mobile.png",
-                "sha256": "be1e23e4f7a5c818f0202dce05413763c4d9341b2e60d05c23eaee2bdaa6c559",
+                "sha256": "666a2a7b79e8739c5d1738020346c6957c64a56a51e09ac6462b4c409bd08765",
                 "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
                 "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
                 "comparisonResult": "CANDIDATE"
@@ -4019,7 +4379,7 @@
                 "preset": "editorial",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-renata-desktop.png",
-                "sha256": "55aacb6c0d5e246b64189c47f4f0d3f58af8487cf03044edeea70e1b4022d7b7",
+                "sha256": "88e3594968361d1fdcf48a47be3bfead60391b0674407ed7f0b693a7a0fc68c7",
                 "contentHash": "86ef982cadd89f26065690a08c0876d358f34bf6e36aedef9f71ed74ac7cfd46",
                 "assetHash": "decc089627dcd3aa7c2f0618a339901b8f00fa1ec9f4463dee0128a15c3aaead",
                 "comparisonResult": "CANDIDATE"
@@ -4031,7 +4391,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-leslie-perez-mobile.png",
-                "sha256": "b6c873b9cbf038de19c2bbe47987e4cbf0f60941dedf7350017ce86244c2b70c",
+                "sha256": "1d1a372710484e86511263c99d93cd6beb3bf6129f981dd3a150de92c03b4ccf",
                 "contentHash": "977db5f5767196df554472024ebc8719528463d63342079ccea94bc34ec4f1ee",
                 "assetHash": "369a8dbd64a7d56b191390ebd937a03c8fedd72e7f3fa79aa577e46dfe314445",
                 "comparisonResult": "CANDIDATE"
@@ -4055,7 +4415,7 @@
                 "preset": "editorial-magazine",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-valentina-hernandez-mobile.png",
-                "sha256": "03514b37719b19d2e8c1601034c7e709c3a07dc0a4778dee2e4fd99879f69c88",
+                "sha256": "7ec0c0f8533bfd6f2952df1e05d809623873a639c26baaeb2081a78cdfb2d7e8",
                 "contentHash": "eb67417e137e311e5decbd57193fbb8e3c5a8b48cb71bf14963b3128fc924493",
                 "assetHash": "5808e0044eda5d5caee731e22323c81b00e6f847376e926cbe1563c4253bb641",
                 "comparisonResult": "CANDIDATE"
@@ -4067,7 +4427,7 @@
                 "preset": "editorial-magazine",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-valentina-hernandez-desktop.png",
-                "sha256": "547af88cc5d299b9d765e8d894a86c27d92e0231e774ae320fb0e12a915782e1",
+                "sha256": "038f7a0ad3c0ed891bd880e218b38cd5979974cf18a5dc3d98866babf6643005",
                 "contentHash": "eb67417e137e311e5decbd57193fbb8e3c5a8b48cb71bf14963b3128fc924493",
                 "assetHash": "5808e0044eda5d5caee731e22323c81b00e6f847376e926cbe1563c4253bb641",
                 "comparisonResult": "CANDIDATE"
@@ -4079,7 +4439,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-america-johana-mobile.png",
-                "sha256": "974780844e3c2867080caa38f3b04e7e7a7e38b5eff4b032ebf979ed0d863cf6",
+                "sha256": "14a89c6256da5e08d011dda6e2f779a0b503bb8a7bdc9b24da495502e967240b",
                 "contentHash": "c0e712c8bc932ec0e71585fb166c3a68432a088a2f53f62db21ee8639ad04186",
                 "assetHash": "a4ec26854049e556cc12ba9902b3fece10065d59d5bb590056e37eb4e47cd2ef",
                 "comparisonResult": "CANDIDATE"
@@ -4091,7 +4451,7 @@
                 "preset": "celestial-blue",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-america-johana-desktop.png",
-                "sha256": "0e8412e7a1d5e9134390e5dcef0dbf9f3cbca6d63daf57de561024272371d7b6",
+                "sha256": "eaf6aabf24b5e30249c4068c4976008f3f9c0dfe273cbd3956f9be65a8392c27",
                 "contentHash": "c0e712c8bc932ec0e71585fb166c3a68432a088a2f53f62db21ee8639ad04186",
                 "assetHash": "a4ec26854049e556cc12ba9902b3fece10065d59d5bb590056e37eb4e47cd2ef",
                 "comparisonResult": "CANDIDATE"
@@ -4103,7 +4463,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-ana-sofia-cota-guillen-mobile.png",
-                "sha256": "19bd0c27fb6ac9b45468da75f1540ef23bc4ce80b08b256cf0d766d01ffe7449",
+                "sha256": "46a990e740542e37d8e2dfe9aeba66e5918a48da57946d7bd10b65010c52af53",
                 "contentHash": "2474f1379d8f01ba2448797c921e96c580f827a72aeda527b21dc18263d0e2a2",
                 "assetHash": "fb483d576ea64e6767001de4309f5438973f188caa4592482e332a0acf4fc9bd",
                 "comparisonResult": "CANDIDATE"
@@ -4115,7 +4475,7 @@
                 "preset": "celestial-blue",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-ana-sofia-cota-guillen-desktop.png",
-                "sha256": "88284996ebc7a25f3732c82ec8b95b9c9b75a101d6fc4b40fd9ad589f141be43",
+                "sha256": "2747b1fba0eaecff0bba9da10c453f203f73f9770f428a0f44b5e41606c78f2a",
                 "contentHash": "2474f1379d8f01ba2448797c921e96c580f827a72aeda527b21dc18263d0e2a2",
                 "assetHash": "fb483d576ea64e6767001de4309f5438973f188caa4592482e332a0acf4fc9bd",
                 "comparisonResult": "CANDIDATE"
@@ -4127,7 +4487,7 @@
                 "preset": "enchanted-rose",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-ayrin-samantha-lerma-castro-mobile.png",
-                "sha256": "f6b34aa017726c641b1ccce1d6434b5a185a1cde76a7ea9300a126ba2813bf54",
+                "sha256": "735875808b9b1c4ec0b7f2a497f8d5c0a2de26ea48d6b58eb3d9e16f528c1779",
                 "contentHash": "ebacb4fc0aab2da89525adbbe9f2d136bdaf354b1b2c92c2b0a2b62e64e06886",
                 "assetHash": "b17eaf6173b61e905fa324b10e61a24ba2f14bb62a2f37d04fff744880f3be94",
                 "comparisonResult": "CANDIDATE"
@@ -4139,7 +4499,7 @@
                 "preset": "enchanted-rose",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-ayrin-samantha-lerma-castro-desktop.png",
-                "sha256": "c1cd62b8348d4114d25665a5732e8aaf31a8e1ef2d0162cc76dfc36979358900",
+                "sha256": "4a4a0662a60e7fe145c74993d9c1984f080427df76d9359aa7e6f2b0a85c64cd",
                 "contentHash": "ebacb4fc0aab2da89525adbbe9f2d136bdaf354b1b2c92c2b0a2b62e64e06886",
                 "assetHash": "b17eaf6173b61e905fa324b10e61a24ba2f14bb62a2f37d04fff744880f3be94",
                 "comparisonResult": "CANDIDATE"
@@ -4151,7 +4511,7 @@
                 "preset": "sacred-keepsake",
                 "viewport": "mobile",
                 "file": "pages/invitation-bautizo-cesar-ramses-mobile.png",
-                "sha256": "47901607d1089961b5710bf309aeaa768dbe3bb53b0c5fce8ce8252310f6759b",
+                "sha256": "b9615b296758dd6af0ea331100f513881623dab4929e9f394feb76eacb636a81",
                 "contentHash": "ead8267c574796e1114ff99a4d0736d0384e6272e9cc90fb1c79603382792bfb",
                 "assetHash": "6a206d26d762ba5c4c9b6e8d052323062de772f04ba8ed3ec5d467626cb4f6e3",
                 "comparisonResult": "CANDIDATE"
@@ -4163,7 +4523,7 @@
                 "preset": "sacred-keepsake",
                 "viewport": "desktop",
                 "file": "pages/invitation-bautizo-cesar-ramses-desktop.png",
-                "sha256": "e3d865ba9d5cf7660517301ebf5c43dc297b8fbbe91a7de05a9ba2d4c0d72d1f",
+                "sha256": "486627c145b9b1eaf585230d958f7ec7fad248ddd22c079d10baf81252491292",
                 "contentHash": "ead8267c574796e1114ff99a4d0736d0384e6272e9cc90fb1c79603382792bfb",
                 "assetHash": "6a206d26d762ba5c4c9b6e8d052323062de772f04ba8ed3ec5d467626cb4f6e3",
                 "comparisonResult": "CANDIDATE"
@@ -4175,7 +4535,7 @@
                 "preset": "luxury-hacienda",
                 "viewport": "mobile",
                 "file": "pages/invitation-cumple-gerardo-sesenta-mobile.png",
-                "sha256": "e0d4a32ed6a815b84b1e2a60cb452dd150235d43497776f726a9c1b5cc7e52d8",
+                "sha256": "43823d1731303463d8ec95ee5f4bf60d634d5e5c9ada248f12e7023e941aacf6",
                 "contentHash": "78f5ddfea98bc554252045deb58b7557c70a8d47572ce34aaad6d22d7484a067",
                 "assetHash": "07c87119665441dcb0e00efc7ffceaad1fbfcca741bc2b6681405b6b4c7a79dc",
                 "comparisonResult": "CANDIDATE"
@@ -4187,7 +4547,7 @@
                 "preset": "luxury-hacienda",
                 "viewport": "desktop",
                 "file": "pages/invitation-cumple-gerardo-sesenta-desktop.png",
-                "sha256": "3ff04f62efa489a6185b2b7056aa78dd44a5f1bcf902bfafd8a22361fde1ec00",
+                "sha256": "1e9526f1154d30101ea3ffc0e414b261c1738e5be7bc9d532944771c581d88b0",
                 "contentHash": "78f5ddfea98bc554252045deb58b7557c70a8d47572ce34aaad6d22d7484a067",
                 "assetHash": "07c87119665441dcb0e00efc7ffceaad1fbfcca741bc2b6681405b6b4c7a79dc",
                 "comparisonResult": "CANDIDATE"
@@ -4199,7 +4559,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/invitation-baby-shower-leah-lexa-mobile.png",
-                "sha256": "8850582c3780475e41e401e04f1ea03fba03eab691ade894523b5d3c32268265",
+                "sha256": "b05253f8d43f02afbf602cf2210fe064be7c62d0c790e8ce47e48d0608c11cdf",
                 "contentHash": "0e8216d3991782fda03e171aa727f89b7dfbfdd500306d7ce989f48a264da874",
                 "assetHash": "105735670692d2e869dc8572bbb0993c0bf0f6c85ba7e798470ebf130c47fb76",
                 "comparisonResult": "CANDIDATE"
@@ -4211,7 +4571,7 @@
                 "preset": "celestial-blue",
                 "viewport": "desktop",
                 "file": "pages/invitation-baby-shower-leah-lexa-desktop.png",
-                "sha256": "2fcbe1386cdf0373784340f74022882d4c606d4c2c150d5256da6c93c7d3e80b",
+                "sha256": "0e2fcef35a8c18ef9819768dfc76cf380b02493fbc25ada46216a023e91707b0",
                 "contentHash": "0e8216d3991782fda03e171aa727f89b7dfbfdd500306d7ce989f48a264da874",
                 "assetHash": "105735670692d2e869dc8572bbb0993c0bf0f6c85ba7e798470ebf130c47fb76",
                 "comparisonResult": "CANDIDATE"
@@ -4223,7 +4583,7 @@
                 "preset": "angelic-presence",
                 "viewport": "mobile",
                 "file": "pages/invitation-primera-comunion-luna-y-estrella-mobile.png",
-                "sha256": "6fb81eecab16e55c8d3238361ce4bc4881c25bd2c5e13d8dfffdcc96ddec5fce",
+                "sha256": "631e78ac17fc9080f2d8193da806f4ec48cf84175bec8c4eda483e175932e690",
                 "contentHash": "43581db2d5c50f0e75502a4d54b3ea187fcf53a6a7cca512999c5a9eca2866f5",
                 "assetHash": "75cb27f8c3e906857f41c8a440fcbc1c4a0c0f00fe4465a71fd6fab0a3380418",
                 "comparisonResult": "CANDIDATE"
@@ -4235,7 +4595,7 @@
                 "preset": "angelic-presence",
                 "viewport": "desktop",
                 "file": "pages/invitation-primera-comunion-luna-y-estrella-desktop.png",
-                "sha256": "63268e3c88a98c7bb81694860d8ce3a48e839d1b63fb2ea8120af87212c82e87",
+                "sha256": "4f312fa52f6ef55d7944ff630fe517e57841b106ff85504f354f045635c975b9",
                 "contentHash": "43581db2d5c50f0e75502a4d54b3ea187fcf53a6a7cca512999c5a9eca2866f5",
                 "assetHash": "75cb27f8c3e906857f41c8a440fcbc1c4a0c0f00fe4465a71fd6fab0a3380418",
                 "comparisonResult": "CANDIDATE"
@@ -4247,7 +4607,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-xareni-iyarit-mobile.png",
-                "sha256": "6e60f63577c2936d9ac429a293c9c139bf320c7c49f99dc42f5570b385dbb16f",
+                "sha256": "8bc1dfa16d04ca30f8da023e2214894ae508eb1fbf4f0133cbdefb0d73fff3f1",
                 "contentHash": "681e70e6bb14a67d36679c31d2bf4adc7f16b67dcc419404a60677633f4d9e28",
                 "assetHash": "86673c42feb861764c0c3e650a3617f2b29ea7664019151493f8080754444d9b",
                 "comparisonResult": "CANDIDATE"
@@ -4259,7 +4619,7 @@
                 "preset": "celestial-blue",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-xareni-iyarit-desktop.png",
-                "sha256": "1ed46a945af07b790343cd240af5cac7d041e46ab9bce13db2bfe770f6344013",
+                "sha256": "820a14de46f2b65d4ce800d59a8b37e80f3bc1f9ae48430eac168e2a1556299d",
                 "contentHash": "681e70e6bb14a67d36679c31d2bf4adc7f16b67dcc419404a60677633f4d9e28",
                 "assetHash": "86673c42feb861764c0c3e650a3617f2b29ea7664019151493f8080754444d9b",
                 "comparisonResult": "CANDIDATE"
@@ -4271,7 +4631,7 @@
                 "preset": "premiere-floral",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-ximena-meza-trasvina-mobile.png",
-                "sha256": "1dc69c2f6cc5e4851a520769fad7fb2442dc0938bcaa2bd7a83e3d49ba4a92aa",
+                "sha256": "a21c9187b2dfc05468efaf977409a82bbb022766377eb54b564afe6c0efc1f36",
                 "contentHash": "63dee95dcfb80d38552644eaa9fe72a6b02f6f3776655cdb5e703ba63123bf36",
                 "assetHash": "fa1dd03a925be03caa26611b1216ac7328a346d62f2f3609d90843840afdfc62",
                 "comparisonResult": "CANDIDATE"
@@ -4283,7 +4643,7 @@
                 "preset": "premiere-floral",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-ximena-meza-trasvina-desktop.png",
-                "sha256": "f8faa5e4d696251c400b1384ec8a717cf9229e619d82826c39f8821c899cead4",
+                "sha256": "f26e8630f91de4b4755a378727d5b1fb93a246e3c48823f833bb1736df0ca85b",
                 "contentHash": "63dee95dcfb80d38552644eaa9fe72a6b02f6f3776655cdb5e703ba63123bf36",
                 "assetHash": "fa1dd03a925be03caa26611b1216ac7328a346d62f2f3609d90843840afdfc62",
                 "comparisonResult": "CANDIDATE"
@@ -4295,7 +4655,7 @@
                 "preset": "angelic-presence",
                 "viewport": "mobile",
                 "file": "pages/demo-bautizo-demo-bautismo-angelic-presence-mobile.png",
-                "sha256": "3c278d0787f9a998a019aab9aafb4e76fbf590cf582c6484242bd0365a88b886",
+                "sha256": "537db45e275427e2b52bf678540c1373edf39c8dcd37eda1f014429341f38a74",
                 "contentHash": "166d24a69e3703d1b3ce721f71e7eb9c42d6b513fb47f9f5edc791304f1a3c65",
                 "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
                 "comparisonResult": "CANDIDATE"
@@ -4307,7 +4667,7 @@
                 "preset": "angelic-presence",
                 "viewport": "desktop",
                 "file": "pages/demo-bautizo-demo-bautismo-angelic-presence-desktop.png",
-                "sha256": "0e760fc6cd305d60cbcf8fac1c9c8891e2308aee08d82ae1f0c08b59d212d67c",
+                "sha256": "d77f649774e26fb20f960e2e76ec6900d9d86a8d6300ae4a03a45aac342e12e3",
                 "contentHash": "166d24a69e3703d1b3ce721f71e7eb9c42d6b513fb47f9f5edc791304f1a3c65",
                 "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
                 "comparisonResult": "CANDIDATE"
@@ -4319,7 +4679,7 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
                 "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-mobile.png",
-                "sha256": "3baeadd0e39231dcef544f663bd87ef613519f3abb914dc71abc64de81b7e1f1",
+                "sha256": "689b0ecb598bcba4db210ab1cf7437e680abe14b849df41a921b3896d84af925",
                 "contentHash": "b7acf187588901fe448a8244ae4bdef0280ff4ff1166bf4f0bfb5635fc106630",
                 "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
                 "comparisonResult": "CANDIDATE"
@@ -4331,7 +4691,7 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "desktop",
                 "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-desktop.png",
-                "sha256": "cf71ebe0966191a5ab89cb122efe1c06ea80276f4650d1e2a30666a9af5cd0d5",
+                "sha256": "04bbc81dcdb4861b452f949f477a86475fe047eec93136ef06dd7d9dcf68398e",
                 "contentHash": "b7acf187588901fe448a8244ae4bdef0280ff4ff1166bf4f0bfb5635fc106630",
                 "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
                 "comparisonResult": "CANDIDATE"
@@ -4343,7 +4703,7 @@
                 "preset": "luxury-hacienda",
                 "viewport": "mobile",
                 "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-                "sha256": "eda135b2a87fba680fb80cfe7da6bc2704ebc1db9dc3f289ea0eee284cf46e73",
+                "sha256": "4f737453e8a4e840cecda3ed860765c1fdadcc212b72b12a633b0c002be53a6c",
                 "contentHash": "1398546ab70e59365d619d83c40ad5e66370792f914d7966b625b30030a4719c",
                 "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
                 "comparisonResult": "CANDIDATE"
@@ -4355,7 +4715,7 @@
                 "preset": "luxury-hacienda",
                 "viewport": "desktop",
                 "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-                "sha256": "6502ca4d8e20e700301f1e4dd40e0f0bdb3d57ed50c6010020fbeb914cb14660",
+                "sha256": "dd0e0dde92990328ba88663ab821729abdd2f733279f0448943ebfe32e4ed55a",
                 "contentHash": "1398546ab70e59365d619d83c40ad5e66370792f914d7966b625b30030a4719c",
                 "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
                 "comparisonResult": "CANDIDATE"
@@ -4367,7 +4727,7 @@
                 "preset": "angelic-presence",
                 "viewport": "mobile",
                 "file": "pages/demo-primera-comunion-demo-primera-comunion-illustrated-mobile.png",
-                "sha256": "c808b4ba8cbf1c1b5a7895f89c931660b02e6ad401fe63b70441b396e5fcc54b",
+                "sha256": "3045e7ffe28593ac318e3355c28d3ab3d218cbc2a68bbeebbeaecaf188b69644",
                 "contentHash": "d5f7cad4fdec879f30d5e0de96e3f0fa4e685f0f415cdb4a8e5cde997ac345d9",
                 "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
                 "comparisonResult": "CANDIDATE"
@@ -4379,7 +4739,7 @@
                 "preset": "angelic-presence",
                 "viewport": "desktop",
                 "file": "pages/demo-primera-comunion-demo-primera-comunion-illustrated-desktop.png",
-                "sha256": "72e5e194fe6f6ef69496cd626ff5e3257acc98294bae3821b0d294b8f304a8d2",
+                "sha256": "f81e4419afc457157f8a4b7b0bf82e897f1bb4a1f96eedb083807724ffecef46",
                 "contentHash": "d5f7cad4fdec879f30d5e0de96e3f0fa4e685f0f415cdb4a8e5cde997ac345d9",
                 "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
                 "comparisonResult": "CANDIDATE"
@@ -4415,7 +4775,7 @@
                 "preset": "editorial",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-                "sha256": "240cf1c4a1bf67fa9be76a710cd83c67ca736d17f7f3bb9f491c8f26420a8dbc",
+                "sha256": "b3d397d33336adfd50c999f32bedb7a2b165f91da75cef1b56fa0ddbe5cce53d",
                 "contentHash": "102c3998f4dc9e091650fe5ad0347a3e89600e3efae68f0a9a6d15f91043a0e9",
                 "assetHash": "404e6010bfc661639ebd1397e2362c4d39f0dddc41276fa6da53a1d019dc571a",
                 "comparisonResult": "CANDIDATE"
@@ -4427,7 +4787,7 @@
                 "preset": "editorial",
                 "viewport": "desktop",
                 "file": "pages/demo-xv-demo-xv-editorial-desktop.png",
-                "sha256": "a669f986ee0e04f5715135a1d81f9dfecd1d651aa4cfe675e9360da717896393",
+                "sha256": "89fcda5530d99e2b4b78602a05a39a3d037609ce838ec6d56222b05e405f94b3",
                 "contentHash": "102c3998f4dc9e091650fe5ad0347a3e89600e3efae68f0a9a6d15f91043a0e9",
                 "assetHash": "404e6010bfc661639ebd1397e2362c4d39f0dddc41276fa6da53a1d019dc571a",
                 "comparisonResult": "CANDIDATE"
@@ -4439,7 +4799,7 @@
                 "preset": "enchanted-rose",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-enchanted-rose-mobile.png",
-                "sha256": "63c2009e1867a2372e1b5610a415ade39909592a223bc1e70558ceefb4554b91",
+                "sha256": "16b2e8209ca122ca039234649e9d3118bc131223f2c3f809f00d838d00b5c34e",
                 "contentHash": "794f056928090b03c15ca3d48b0a8cb04a5c2eab8a68e641e064fb2fb6a90c25",
                 "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
                 "comparisonResult": "CANDIDATE"
@@ -4451,15 +4811,39 @@
                 "preset": "enchanted-rose",
                 "viewport": "desktop",
                 "file": "pages/demo-xv-demo-xv-enchanted-rose-desktop.png",
-                "sha256": "65caf7110a864b646543f83d12c011f0509093b354a1d21b3c27c861ae63c42a",
+                "sha256": "3c64112effec51f628141f1c09dec51ab5a88dec14edfd40a94cc3f6ff5f581e",
                 "contentHash": "794f056928090b03c15ca3d48b0a8cb04a5c2eab8a68e641e064fb2fb6a90c25",
                 "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
                 "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "demo",
+                "slug": "demo-xv-seaside",
+                "eventType": "xv",
+                "preset": "celestial-blue",
+                "viewport": "mobile",
+                "file": "pages/demo-xv-demo-xv-seaside-mobile.png",
+                "sha256": "9b2563349c582a44eea44d6b8f185d24c1416043c7687b9941a50fcd0928cbd3",
+                "contentHash": "b978a449a4a46063fe8abcada0a5f405192c8d3c3a9e4de272f894a568771a2b",
+                "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "demo",
+                "slug": "demo-xv-seaside",
+                "eventType": "xv",
+                "preset": "celestial-blue",
+                "viewport": "desktop",
+                "file": "pages/demo-xv-demo-xv-seaside-desktop.png",
+                "sha256": "dba2d463833a7de17756b298402aeff2c4a70443475fa8a7f264449a2801fed1",
+                "contentHash": "b978a449a4a46063fe8abcada0a5f405192c8d3c3a9e4de272f894a568771a2b",
+                "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
+                "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "19846441436c98bc69cdc2180a0cc127cdbefb6c"
+        "referenceSha": "9156169167731162dc7fd6e720cb6a1c6e985e5a"
     },
-    "candidateManifestSha256": "bcd8cb41b50eda500c7731bbe63b9cc50ca7337a61913fdda546bdeae2f59153",
-    "acceptedFromCommit": "19846441436c98bc69cdc2180a0cc127cdbefb6c",
-    "acceptedAt": "2026-10-03T14:02:21.686Z"
+    "candidateManifestSha256": "47b49476c50f64a092744f04da8df3a4c239c7d456b380ac288a64133fd23469",
+    "acceptedFromCommit": "9156169167731162dc7fd6e720cb6a1c6e985e5a",
+    "acceptedAt": "2026-10-08T00:22:52.284Z"
 }

@@ -7,6 +7,7 @@ export const envelopeRevealVariantSchema = z.enum([
 	'celestial-blue',
 	'editorial-cover',
 	'satin-filigree',
+	'seaside-lineart',
 ]);
 export type EnvelopeRevealVariant = z.infer<typeof envelopeRevealVariantSchema>;
 
@@ -28,6 +29,7 @@ export const envelopeSchema = z
 				'wax-organic',
 				'wax-medallion',
 				'flower',
+				'shell',
 				'special-edition',
 			])
 			.optional(),

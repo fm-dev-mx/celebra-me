@@ -249,6 +249,20 @@ const isDemoConversion = Boolean(
 				)
 			}
 			<div class={page.wrapper.className} {...wrapperDataAttributes} data-screenshot="invitation-root">
+				<script is:inline>
+					// Overscroll and rubber-band areas show the document canvas: paint it with the
+					// invitation paper instead of the site default.
+					(function() {
+						const wrapper = document.currentScript ? document.currentScript.closest('.event-theme-wrapper') : null;
+						if (!wrapper) return;
+						const paint = () => {
+							const paper = getComputedStyle(wrapper).getPropertyValue('--color-surface-primary').trim();
+							if (paper) document.documentElement.style.backgroundColor = paper;
+						};
+						paint();
+						window.addEventListener('load', paint, { once: true });
+					})();
+				</script>
 				{
 					!skipEnvelope && page.envelope && page.envelope.revealVariant !== 'editorial-cover' && (
 						<script is:inline>

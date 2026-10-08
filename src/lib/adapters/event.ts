@@ -299,6 +299,7 @@ function buildInterludes(context: AdaptationContext): Interlude[] {
 				afterSection: interlude.afterSection,
 				alt: interlude.alt,
 				height: interlude.height,
+				presentation: interlude.presentation,
 				focalPoint: interlude.focalPoint,
 				focalPointDesktop: interlude.focalPointDesktop,
 				lightX: interlude.lightX,
@@ -418,6 +419,10 @@ function buildLocationSectionData(context: AdaptationContext) {
 			? resolveAsset(eventSlug, data.location.ornament, data.title)
 			: undefined,
 		indicationsHeading: data.location.indicationsHeading ?? '',
+		indicationsLayout: data.location.presentationOptions?.indicationsLayout ?? 'list',
+		showCalendarLinks: data.location.presentationOptions?.showCalendarLinks ?? false,
+		calendarEventTitle: data.title,
+		eventTimeZone: data.eventTiming?.timeZone,
 	};
 }
 

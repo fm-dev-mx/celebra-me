@@ -5,57 +5,31 @@
  */
 import '@/styles/invitation/_event-location.scss';
 import VenueCard from '@/components/invitation/components/VenueCard.astro';
+import VenueProgramEntry from '@/components/invitation/components/VenueProgramEntry.astro';
 import { formatVenueDateForDisplay } from '@/lib/invitation/venue-datetime';
-import { groupVenues, type GroupedVenue } from '@/lib/invitation/location-helper';
+import { groupVenues, type GroupedVenue, type VenueEntry } from '@/lib/invitation/location-helper';
 import Icon from '@/components/common/icons/Icon.astro';
 import SectionNavButton from '@/components/invitation/components/SectionNavButton.astro';
 import { sanitizeIndicationHtml } from '@/lib/invitation/indication-html';
 import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
+import { buildVenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
 
-import type { ImageMetadata } from 'astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import type { IndicationStyleVariant } from '@/lib/theme/theme-contract';
 import type {
+	LocationIndicationsLayout,
 	LocationIndicationsStyle,
 	LocationMapStyle,
 	LocationPresentation,
 } from '@/lib/invitation/location-presentation';
 import type { LocationVariant } from '@/lib/invitation/section-variants';
 
-interface VenueData {
-	venueEvent: string;
-	venueName: string;
-	address: string;
-	city?: string;
-	date: string;
-	time: string;
-	mapUrl?: string;
-	appleMapsUrl?: string;
-	googleMapsUrl?: string;
-	wazeUrl?: string;
-	image?: string | ImageMetadata | ImageAsset;
-	focalPoint?: string;
-	coordinates?: {
-		lat: number;
-		lng: number;
-		zoom?: number;
-	};
-}
-
 interface Indication {
 	iconName: IconName;
 	styleVariant: IndicationStyleVariant;
 	text: string;
 	title?: string;
-}
-
-interface VenueEntry extends VenueData {
-	id?: string;
-	type?: string;
-	label?: string;
-	isVisible?: boolean;
-	sortOrder?: number;
 }
 
 interface Props {
@@ -72,6 +46,10 @@ interface Props {
 	showNavigationButtons?: boolean;
 	indicationsStyle?: LocationIndicationsStyle;
 	indicationsHeading?: string;
+	indicationsLayout?: LocationIndicationsLayout;
+	showCalendarLinks?: boolean;
+	calendarEventTitle?: string;
+	eventTimeZone?: string;
 	nextSectionLink?: {
 		href: string;
 		label?: string;
@@ -97,6 +75,10 @@ const {
 	showNavigationButtons = true,
 	indicationsStyle = 'list',
 	indicationsHeading,
+	indicationsLayout = 'list',
+	showCalendarLinks = false,
+	calendarEventTitle,
+	eventTimeZone,
 	nextSectionLink,
 	introEyebrow,
 	introHeading,
@@ -108,6 +90,17 @@ const displayVenues = groupVenues(venueEntries);
 
 const sharedDate = displayVenues.length > 1 && displayVenues.every((venue) => venue.date === displayVenues[0].date) ? formatVenueDateForDisplay(displayVenues[0].date) : '';
 const isSingleVenue = displayVenues.length === 1;
+const calendarFor = (venue: GroupedVenue) =>
+	showCalendarLinks && calendarEventTitle
+		? buildVenueCalendarLinks(venue, { eventTitle: calendarEventTitle, timeZone: eventTimeZone })
+		: null;
+const isIndicationsBand = indicationsLayout === 'band';
+// Enclosure: the indications become a small details card of the suite, without icons.
+const isIndicationsEnclosure = indicationsLayout === 'enclosure';
+// The printed-program variant owns its rhythm: no venue cards and no section nav button.
+const isProgramSheet = variant === 'program-sheet';
+const venueType = (venue: GroupedVenue) =>
+	venue.type === 'ceremony' || venue.type === 'reception' || venue.type === 'grouped' ? venue.type : 'custom';
 ---
 
 <section class="event-location" id="event-location" data-screenshot-section="location" data-variant={variant} data-presentation={presentation}>
@@ -141,30 +134,64 @@ const isSingleVenue = displayVenues.length === 1;
 			<a class="event-location__locked-cta" href="#rsvp">{lockedCtaLabel}</a>
 		</div>
 	) : (
+		isProgramSheet ? (
+		<div class={`event-location__program ${isSingleVenue ? 'event-location__program--single' : ''}`}>
+			{displayVenues.map((venue: GroupedVenue) => (
+				<VenueProgramEntry venue={venue} type={venueType(venue)} calendar={calendarFor(venue)} />
+			))}
+		</div>
+		) : (
 		<div class={`event-location__container ${isSingleVenue ? 'event-location__container--single' : ''}`}>
 			{displayVenues.map((venue: GroupedVenue) => (
 				<VenueCard
 					venue={venue}
-					type={venue.type === 'ceremony' || venue.type === 'reception' || venue.type === 'grouped' ? venue.type : 'custom'}
+					type={venueType(venue)}
 					mapStyle={mapStyle}
 					presentation={presentation}
 					showFlourishes={showFlourishes}
 					showNavigationButtons={showNavigationButtons}
+					calendar={calendarFor(venue)}
 				/>
 			))}
 		</div>
+		)
 	)}
-	{indications && indications.length > 0 && (
-		<div class="event-location__indications-container">
-			<div class="event-location__divider" aria-hidden="true"></div>
-			{indicationsHeading && (
+	{indications && indications.length > 0 && isIndicationsEnclosure && (
+		<div class="event-location__indications-container" data-indications-layout="enclosure">
+			<div class="event-location__enclosure">
+				{indicationsHeading && <h2 class="event-location__indications-heading">{indicationsHeading}</h2>}
+				{indications.map((indication) => {
+					const isReserved = indication.styleVariant === 'reserved';
+					return (
+						<div class={`event-location__enclosure-note ${isReserved ? 'event-location__enclosure-note--reserved' : ''}`}>
+							{isReserved && <span class="event-location__enclosure-swatch" aria-hidden="true"></span>}
+							<div class="event-location__enclosure-copy">
+								{indication.title && <p class="event-location__enclosure-title">{indication.title}</p>}
+								<p class="event-location__enclosure-text" set:html={sanitizeIndicationHtml(indication.text)} />
+							</div>
+						</div>
+					);
+				})}
+			</div>
+		</div>
+	)}
+	{indications && indications.length > 0 && !isIndicationsEnclosure && (
+		<div class="event-location__indications-container" data-indications-layout={indicationsLayout}>
+			{!isIndicationsBand && <div class="event-location__divider" aria-hidden="true"></div>}
+			{indicationsHeading && (isIndicationsBand ? (
+				<h2 class="event-location__indications-heading">{indicationsHeading}</h2>
+			) : (
 				<p class="event-location__indications-heading">{indicationsHeading}</p>
-			)}
+			))}
 			<div class="event-location__indications" data-indications-style={indicationsStyle}>
 				{indications.map((indication, index) => {
 					const isReserved = indication.styleVariant === 'reserved';
 					const editorialNoteTitle = indication.title;
 					return (
+						<>
+						{isIndicationsBand && index === 1 && (
+							<div class="event-location__divider" aria-hidden="true"></div>
+						)}
 						<div class={`event-location__indication-item ${isReserved ? 'event-location__indication-item--reserved' : ''}`}>
 							<div class="event-location__indication-icon">
 								<Icon name={indication.iconName} size={24} />
@@ -172,9 +199,11 @@ const isSingleVenue = displayVenues.length === 1;
 							<div class="event-location__indication-copy">
 								{editorialNoteTitle && (
 									<p class="event-location__indication-title">
-										<span class="event-location__indication-number">
-											{String(index + 1).padStart(2, '0')}
-										</span>
+										{!isIndicationsBand && (
+											<span class="event-location__indication-number">
+												{String(index + 1).padStart(2, '0')}
+											</span>
+										)}
 										<span class="event-location__indication-label">{editorialNoteTitle}</span>
 									</p>
 								)}
@@ -184,13 +213,14 @@ const isSingleVenue = displayVenues.length === 1;
 								/>
 							</div>
 						</div>
+						</>
 					);
 				})}
 			</div>
 		</div>
 	)}
 
-	{nextSectionLink && (
+	{nextSectionLink && !isProgramSheet && (
 		<div class="nav-button-container">
 			<SectionNavButton
 				href={nextSectionLink.href}

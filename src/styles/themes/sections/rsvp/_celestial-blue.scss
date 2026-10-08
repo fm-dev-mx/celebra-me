@@ -100,7 +100,10 @@
 	.rsvp__radio-card:has(input:checked) {
 		background: var(--rsvp-radio-selected-bg);
 		border-color: var(--rsvp-radio-selected-border);
-		box-shadow: 0 0 0 2px rgb(var(--color-satin-blue-rgb) / 22%);
+		box-shadow: var(
+			--rsvp-radio-selected-halo,
+			0 0 0 2px rgb(var(--color-satin-blue-rgb) / 22%)
+		);
 	}
 
 	.rsvp__button {

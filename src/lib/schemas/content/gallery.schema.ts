@@ -9,6 +9,63 @@ import {
 } from '@/lib/invitation/presentation-options';
 import { GALLERY_VARIANTS } from '@/lib/invitation/section-variants';
 
+interface GalleryItemRefinement {
+	caption?: string;
+	aspectRatio?: string;
+}
+
+function validateNarrativeStack(
+	items: readonly GalleryItemRefinement[],
+	context: z.RefinementCtx,
+): void {
+	if (items.length === 0) {
+		context.addIssue({
+			code: 'custom',
+			path: ['items'],
+			message: 'narrative-stack requires at least one photograph',
+		});
+	}
+	items.forEach((item, index) => {
+		if (!item.caption?.trim()) {
+			context.addIssue({
+				code: 'custom',
+				path: ['items', index, 'caption'],
+				message: 'narrative-stack requires a caption for every photograph',
+			});
+		}
+		if (item.aspectRatio !== undefined) {
+			context.addIssue({
+				code: 'custom',
+				path: ['items', index, 'aspectRatio'],
+				message:
+					'narrative-stack preserves the complete photograph without aspect-ratio cropping',
+			});
+		}
+	});
+}
+
+function validatePairedFeatureBand(
+	items: readonly { layoutRole?: string }[],
+	context: z.RefinementCtx,
+): void {
+	const hasFeatureRole = items.some((item) => item.layoutRole === 'feature');
+	if (!hasFeatureRole) {
+		context.addIssue({
+			code: 'custom',
+			path: ['items'],
+			message:
+				'gallery.variant=paired-feature-band requires at least one item with layoutRole=feature',
+		});
+	}
+	if (items.length < 3) {
+		context.addIssue({
+			code: 'custom',
+			path: ['items'],
+			message: 'gallery.variant=paired-feature-band requires at least three gallery items',
+		});
+	}
+}
+
 export const gallerySchema = z
 	.object({
 		eyebrow: z.string().max(200).default('Galería'),
@@ -48,30 +105,7 @@ export const gallerySchema = z
 			});
 		}
 		if (gallery.variant === 'narrative-stack') {
-			if (gallery.items.length === 0) {
-				context.addIssue({
-					code: 'custom',
-					path: ['items'],
-					message: 'narrative-stack requires at least one photograph',
-				});
-			}
-			gallery.items.forEach((item, index) => {
-				if (!item.caption?.trim()) {
-					context.addIssue({
-						code: 'custom',
-						path: ['items', index, 'caption'],
-						message: 'narrative-stack requires a caption for every photograph',
-					});
-				}
-				if (item.aspectRatio !== undefined) {
-					context.addIssue({
-						code: 'custom',
-						path: ['items', index, 'aspectRatio'],
-						message:
-							'narrative-stack preserves the complete photograph without aspect-ratio cropping',
-					});
-				}
-			});
+			validateNarrativeStack(gallery.items, context);
 		}
 		if (
 			gallery.variant !== 'magazine-spread' &&
@@ -114,6 +148,14 @@ export const gallerySchema = z
 			});
 		}
 
+		if (gallery.variant === 'mirrored-mosaic' && gallery.items.length < 3) {
+			context.addIssue({
+				code: 'custom',
+				path: ['items'],
+				message: 'gallery.variant=mirrored-mosaic requires at least three gallery items',
+			});
+		}
+
 		if (gallery.variant === 'feature-stack' && gallery.items.length < 3) {
 			context.addIssue({
 				code: 'custom',
@@ -123,23 +165,7 @@ export const gallerySchema = z
 		}
 
 		if (gallery.variant === 'paired-feature-band') {
-			const hasFeatureRole = gallery.items.some((item) => item.layoutRole === 'feature');
-			if (!hasFeatureRole) {
-				context.addIssue({
-					code: 'custom',
-					path: ['items'],
-					message:
-						'gallery.variant=paired-feature-band requires at least one item with layoutRole=feature',
-				});
-			}
-			if (gallery.items.length < 3) {
-				context.addIssue({
-					code: 'custom',
-					path: ['items'],
-					message:
-						'gallery.variant=paired-feature-band requires at least three gallery items',
-				});
-			}
+			validatePairedFeatureBand(gallery.items, context);
 		}
 	})
 	.optional();

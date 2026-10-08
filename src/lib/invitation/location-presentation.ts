@@ -34,9 +34,19 @@ export interface LocationPresentationOptions {
 	 * - `rsvp`: omit Location from the public plan and reveal via RSVP when confirmed
 	 */
 	revealSurface?: LocationRevealSurface;
+	/**
+	 * `list` (default) keeps indications as numbered notes; `band` presents them as their own
+	 * titled band: the first indication featured, the rest as notes under a separator.
+	 */
+	indicationsLayout?: LocationIndicationsLayout;
 	/** Indications layout; `list` when omitted. */
 	indicationsStyle?: LocationIndicationsStyle;
+	/** Adds a no-JS "Agendar en el calendario" disclosure to each venue with a date and time. */
+	showCalendarLinks?: boolean;
 }
+
+export const LOCATION_INDICATIONS_LAYOUTS = ['list', 'band', 'enclosure'] as const;
+export type LocationIndicationsLayout = (typeof LOCATION_INDICATIONS_LAYOUTS)[number];
 
 export function resolveLocationMediaMode(
 	presentation: LocationPresentation | undefined,

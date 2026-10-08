@@ -1,0 +1,50 @@
+---
+/**
+ * Decorative marine line art for the `seaside-lineart` envelope card: one scallop shell drawn
+ * with ribs and hinge ears, resting above a hand-drawn shoreline of long uneven swells. A single
+ * motif, drawn at illustration scale; strokes inherit `currentColor` and a lighter offset copy
+ * reads as silver foil. Static and never announced.
+ */
+interface Props {
+	class?: string;
+}
+
+const { class: className } = Astro.props;
+const shell =
+	'M32 49C18 48 6 38 5 26 4 14 16 5 32 5s28 9 27 21c-1 12-13 22-27 23Z';
+const ribs = 'M32 49 11 15M32 49 19 9M32 49 27 6M32 49 37 6M32 49 45 9M32 49 53 15M32 49 6 25M32 49 58 25';
+const hinge = 'M26 49l-3 6h18l-3-6';
+// A hand-drawn shoreline: long, uneven swells rather than a regular sine.
+const shoreline = 'M8 76C30 72 46 79 70 76S112 70 132 74 176 79 192 74';
+---
+
+<svg
+	class:list={['seaside-lineart', className]}
+	viewBox="0 0 200 92"
+	fill="none"
+	aria-hidden="true"
+	focusable="false"
+	xmlns="http://www.w3.org/2000/svg"
+>
+	<g class="seaside-lineart__shell" transform="translate(68 0)" stroke-linecap="round" stroke-linejoin="round">
+		<g class="seaside-lineart__foil" stroke-width="1.15" transform="translate(0.6 0.6)">
+			<path d={shell} />
+			<path d={ribs} />
+		</g>
+		<g stroke="currentColor" stroke-width="0.95">
+			<path d={shell} />
+			<path d={ribs} />
+			<path d={hinge} />
+		</g>
+	</g>
+	<g class="seaside-lineart__shoreline" stroke-linecap="round" fill="none">
+		<path class="seaside-lineart__foil" stroke-width="1.3" transform="translate(0 0.7)" d={shoreline} />
+		<path stroke="currentColor" stroke-width="1.05" d={shoreline} />
+	</g>
+</svg>
+
+<style>
+	.seaside-lineart__foil {
+		stroke: var(--seaside-foil, rgb(255 255 255 / 85%));
+	}
+</style>

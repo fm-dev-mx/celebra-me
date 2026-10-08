@@ -17,6 +17,7 @@ export type InterludeRenderItem = RenderPlanMetadata & {
 	image: ImageAsset;
 	alt?: string;
 	height: 'screen' | 'tall' | 'medium';
+	presentation?: 'bleed' | 'framed';
 	focalPoint?: string;
 	focalPointDesktop?: string;
 	lightX?: string;
@@ -67,6 +68,7 @@ function interludeToRenderItem(
 		image: interlude.image,
 		alt: interlude.alt,
 		height: interlude.height,
+		presentation: interlude.presentation,
 		focalPoint: interlude.focalPoint,
 		focalPointDesktop: interlude.focalPointDesktop,
 		lightX: interlude.lightX,

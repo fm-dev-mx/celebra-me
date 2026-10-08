@@ -173,9 +173,11 @@
 	}
 
 	.event-location__heading {
-		font-family: var(--font-display);
-		font-size: clamp(2rem, 4.4vw, 3rem);
-		font-weight: 600;
+		font-family: var(--location-intro-heading-font-family, var(--font-display));
+		font-size: var(--location-intro-heading-size, clamp(2rem, 4.4vw, 3rem));
+		font-weight: var(--location-intro-heading-font-weight, 600);
+		font-style: var(--location-intro-heading-style, inherit);
+		font-synthesis: var(--location-intro-heading-font-synthesis, weight style);
 		line-height: 1.12;
 		color: var(--color-text-emphasis);
 		-webkit-text-fill-color: var(--color-text-emphasis);
@@ -404,8 +406,11 @@
 		max-width: 42rem;
 		margin-inline: auto;
 		padding: clamp(1.35rem, 3.5vw, 2rem) clamp(1rem, 3vw, 1.5rem);
-		border: 1px solid rgb(var(--color-action-accent-rgb) / 20%);
-		background: var(--color-surface-soft);
+		border: var(
+			--location-plates-notes-border,
+			1px solid rgb(var(--color-action-accent-rgb) / 20%)
+		);
+		background: var(--location-plates-notes-bg, var(--color-surface-soft));
 	}
 
 	.event-location__indications {

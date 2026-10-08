@@ -77,6 +77,7 @@
 		margin: var(--family-title-margin, 0 auto);
 		font-family: var(--family-title-font, var(--font-display));
 		font-size: var(--family-title-size, clamp(2rem, 5vw, 3.55rem));
+		font-style: var(--family-title-style, inherit);
 		font-weight: var(--family-title-weight, 400);
 		line-height: var(--family-title-line-height, 1.08);
 		letter-spacing: var(--family-title-letter-spacing, 0.02em);
@@ -473,7 +474,10 @@
 
 	@include mixins.respond-to(lg) {
 		&__panel:not(&__panel--no-media) {
-			grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
+			grid-template-columns: var(
+				--family-panel-columns-desktop,
+				minmax(0, 0.42fr) minmax(0, 0.58fr)
+			);
 			align-items: center;
 		}
 	}

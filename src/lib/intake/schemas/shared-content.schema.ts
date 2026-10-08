@@ -281,6 +281,7 @@ export const envelopeSchema = z
 				'wax-organic',
 				'wax-medallion',
 				'flower',
+				'shell',
 				'special-edition',
 			])
 			.optional(),
@@ -296,7 +297,9 @@ export const envelopeSchema = z
 		tooltipText: z.string().max(100).optional(),
 		teaserDetails: z.string().trim().max(500).optional(),
 		variant: z.enum(THEME_PRESETS).optional(),
-		revealVariant: z.enum(['celestial-blue', 'editorial-cover', 'satin-filigree']).optional(),
+		revealVariant: z
+			.enum(['celestial-blue', 'editorial-cover', 'satin-filigree', 'seaside-lineart'])
+			.optional(),
 		coverEdition: z.string().trim().max(80).optional(),
 		coverEditionLabel: z.string().trim().max(16).optional(),
 		coverVolume: z.string().trim().max(40).optional(),

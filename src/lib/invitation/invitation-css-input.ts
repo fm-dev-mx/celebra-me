@@ -1,6 +1,7 @@
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import type { InvitationCssResolverInput } from '@/lib/invitation/section-css-resolver-map';
+import { resolveEnvelopeDataVariant } from '@/lib/invitation/reveal-card';
 
 /** Build the single CSS resolver input shared by Public and Preview routes. */
 export function buildInvitationCssResolverInput(input: {
@@ -22,10 +23,10 @@ export function buildInvitationCssResolverInput(input: {
 			gallery: viewModel.sections.gallery?.variant,
 			countdown: viewModel.sections.countdown?.variant,
 		},
-		envelopeVariant:
-			page.envelope?.revealVariant === 'satin-filigree'
-				? 'satin-filigree'
-				: page.envelope?.variant,
+		envelopeVariant: resolveEnvelopeDataVariant(
+			page.envelope?.revealVariant,
+			page.envelope?.variant,
+		),
 		visualProfileId: viewModel.visualProfileId,
 	};
 }

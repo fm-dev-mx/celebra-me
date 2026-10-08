@@ -223,6 +223,8 @@ export function AttendanceField(props: {
 	prefersReducedMotion: boolean;
 	onAttendanceChange: (status: Exclude<AttendanceStatus, null>) => void;
 	onBlur: (field: string) => void;
+	confirmLabel?: string;
+	declineLabel?: string;
 }) {
 	const {
 		touched,
@@ -233,6 +235,8 @@ export function AttendanceField(props: {
 		prefersReducedMotion,
 		onAttendanceChange,
 		onBlur,
+		confirmLabel = 'Sí, asistiré',
+		declineLabel = 'No podré asistir',
 	} = props;
 
 	return (
@@ -259,7 +263,7 @@ export function AttendanceField(props: {
 						suppressHydrationWarning
 					/>
 					<span className="rsvp__radio-indicator" />
-					<span className="rsvp__radio-label">Sí, asistiré</span>
+					<span className="rsvp__radio-label">{confirmLabel}</span>
 				</label>
 				<label htmlFor="attendance-no" className="rsvp__radio-card">
 					<input
@@ -273,7 +277,7 @@ export function AttendanceField(props: {
 						suppressHydrationWarning
 					/>
 					<span className="rsvp__radio-indicator" />
-					<span className="rsvp__radio-label">No podré asistir</span>
+					<span className="rsvp__radio-label">{declineLabel}</span>
 				</label>
 			</div>
 			{touched.attendance && errors.attendance && (

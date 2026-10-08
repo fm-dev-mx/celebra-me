@@ -84,6 +84,7 @@
 	&__title {
 		font-family: var(--gallery-title-font);
 		font-size: var(--gallery-title-size);
+		font-style: var(--gallery-title-style, inherit);
 		color: var(--gallery-title-color);
 		margin-bottom: 0.75rem;
 		text-transform: var(--gallery-title-transform);

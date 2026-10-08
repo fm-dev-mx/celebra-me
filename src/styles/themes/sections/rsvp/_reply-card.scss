@@ -1,0 +1,219 @@
+// ==========================================================================
+// RSVP — reply-card
+// The lower half of a printed reply card, continuing the `reply-card` personalized access
+// above it: the heading, two answers as 56 px choices in the text face, the optional message
+// and one button. No eyebrow, no shadows between halves, readable demo note.
+// Tokens: see personalized-access/_reply-card.scss (--reply-card-*).
+// ==========================================================================
+
+.rsvp-section:has(.rsvp[data-variant='reply-card']) {
+	min-height: 0;
+	padding-top: 0;
+	padding-bottom: 0;
+	background: none;
+}
+
+.rsvp-section:has(> .rsvp[data-variant='reply-card']) {
+	padding: 0 var(--reply-card-gutter, clamp(1.25rem, 5vw, 2rem)) clamp(4.5rem, 12vw, 7rem);
+}
+
+.rsvp[data-variant='reply-card'] {
+	position: relative;
+	box-sizing: border-box;
+	width: var(--reply-card-width, 100%);
+	max-width: var(--reply-card-max-width, 36rem);
+	margin: 0 auto;
+	padding: clamp(1.75rem, 6vw, 2.25rem) clamp(1.5rem, 6vw, 2.75rem) clamp(2.5rem, 8vw, 3.25rem);
+	border: 0;
+	border-radius: 0;
+	background: var(--reply-card-bg, var(--color-surface-elevated));
+	box-shadow: 0 1px 2px rgb(16 24 32 / 14%);
+	color: var(--reply-card-ink, var(--color-text-primary));
+
+	// Inner hairline continues the sides from the pass half and closes the card.
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0 clamp(0.6rem, 2.4vw, 0.85rem) clamp(0.6rem, 2.4vw, 0.85rem);
+		border: 1px solid var(--reply-card-rule, rgb(16 24 32 / 18%));
+		border-top: 0;
+		pointer-events: none;
+	}
+
+	// Short rule between the pass and the reply.
+	&::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 50%;
+		width: min(60%, 14rem);
+		height: 1px;
+		background: var(--reply-card-rule, rgb(16 24 32 / 18%));
+		transform: translateX(-50%);
+	}
+
+	.rsvp__header {
+		position: relative;
+		margin: 0 0 1.5rem;
+		text-align: center;
+	}
+
+	.rsvp__title {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: clamp(1.9rem, 7vw, 2.5rem);
+		font-style: italic;
+		font-weight: 400;
+		line-height: 1.15;
+		letter-spacing: 0;
+		text-transform: none;
+		color: inherit;
+	}
+
+	.rsvp__subcopy {
+		max-width: 30ch;
+		margin: 0.6rem auto 0;
+		font-family: var(--font-body);
+		font-size: clamp(1.05rem, 2vw, 1.2rem);
+		line-height: 1.45;
+		color: var(--reply-card-muted, var(--color-text-secondary));
+		text-wrap: balance;
+	}
+
+	.rsvp__form {
+		position: relative;
+	}
+
+	.rsvp__legend {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	.rsvp__radio-group {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 0.65rem;
+	}
+
+	.rsvp__radio-card {
+		display: flex;
+		align-items: center;
+		gap: 0.9rem;
+		min-height: 56px;
+		padding: 0 1rem;
+		border: 1px solid var(--reply-card-rule, rgb(16 24 32 / 22%));
+		border-radius: 0;
+		background: rgb(255 255 255 / 70%);
+		box-shadow: none;
+		font-family: var(--font-body);
+		font-size: 1.2rem;
+		font-weight: 400;
+		letter-spacing: 0;
+		text-transform: none;
+		color: inherit;
+		cursor: pointer;
+
+		&:hover {
+			border-color: var(--reply-card-muted, var(--color-text-secondary));
+		}
+
+		&:has(input:checked) {
+			border-color: var(--reply-card-ink, var(--color-text-primary));
+		}
+
+		&:has(input:focus-visible) {
+			outline: 2px solid var(--reply-card-accent, var(--color-action-accent));
+			outline-offset: 2px;
+		}
+	}
+
+	.rsvp__radio-label {
+		font: inherit;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+
+	.rsvp__label,
+	.rsvp__notes-label {
+		font-family: var(--font-body);
+		font-size: 1.1rem;
+		font-weight: 400;
+		letter-spacing: 0;
+		text-transform: none;
+		color: var(--reply-card-ink, var(--color-text-primary));
+	}
+
+	input:not([type='radio']),
+	textarea {
+		border-radius: 0;
+		font-family: var(--font-ui, var(--font-body));
+		font-size: 1rem;
+	}
+
+	.rsvp__button {
+		min-height: 52px;
+		border-radius: 0;
+		background: var(--reply-card-ink, var(--color-text-primary));
+		color: rgb(255 255 255);
+		font-family: var(--font-label, var(--font-body));
+		font-size: 1.15rem;
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.16em;
+		text-transform: none;
+		box-shadow: none;
+	}
+
+	.rsvp__demo-footer {
+		position: relative;
+		margin: 1.5rem 0 0;
+		font-family: var(--font-body);
+		font-size: 0.95rem;
+		font-style: italic;
+		letter-spacing: 0;
+		text-transform: none;
+		text-align: center;
+		color: var(--reply-card-muted, var(--color-text-secondary));
+		opacity: 100%;
+	}
+}
+
+// Locked (public link, no pass above): the card stands alone, so it closes its own top edge and
+// sets the notice in the text face instead of the generic UI type.
+.rsvp-section:has(> .rsvp[data-variant='reply-card'][data-state='locked']) {
+	padding-top: clamp(4.5rem, 12vw, 7rem);
+}
+
+.rsvp[data-variant='reply-card'][data-state='locked'] {
+	text-align: center;
+
+	&::before {
+		inset: clamp(0.6rem, 2.4vw, 0.85rem);
+		border-top: 1px solid var(--reply-card-rule, rgb(16 24 32 / 18%));
+	}
+
+	&::after,
+	.rsvp__eyebrow,
+	.rsvp__separator {
+		display: none;
+	}
+
+	.rsvp__locked-message,
+	.rsvp__locked-detail {
+		max-width: 32ch;
+		margin: 0 auto;
+		font-family: var(--font-body);
+		font-size: clamp(1.05rem, 2vw, 1.2rem);
+		line-height: 1.5;
+		color: var(--reply-card-muted, var(--color-text-secondary));
+		text-wrap: balance;
+	}
+
+	.rsvp__locked-detail {
+		margin-top: 0.6rem;
+		font-style: italic;
+	}
+}

@@ -8,6 +8,9 @@ export const interludeSchema = z
 		afterSection: z.enum(INVITATION_RENDER_SECTION_KEYS),
 		alt: z.string().optional(),
 		height: z.enum(['screen', 'tall', 'medium']).default('screen'),
+		// `framed` shows the whole photograph inside a paper margin and hairline frame, so marks
+		// near the edges (photographer watermarks, handwritten dates) are never cropped.
+		presentation: z.enum(['bleed', 'framed']).optional(),
 		focalPoint: focalPointSchema.optional(),
 		focalPointDesktop: focalPointSchema.optional(),
 		lightX: z.string().optional(),
