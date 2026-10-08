@@ -6,8 +6,10 @@ import React from 'react';
 
 // jest-worker injects FORCE_COLOR=1 when the host terminal supports color. Operator CLI
 // presenters honor it, so pin NO_COLOR for deterministic plain-text assertions; tests that
-// verify colored output pass an explicit env object to the formatter instead.
+// verify colored output pass an explicit env object to the formatter instead. Drop FORCE_COLOR
+// too: child processes inherit this env, and Node warns on stderr when both are set.
 process.env.NO_COLOR ??= '1';
+delete process.env.FORCE_COLOR;
 
 if (typeof structuredClone === 'undefined') {
 	globalThis.structuredClone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
