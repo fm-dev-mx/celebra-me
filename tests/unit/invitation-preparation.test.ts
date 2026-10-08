@@ -520,6 +520,28 @@ describe('invitation preparation — assets and owner pack', () => {
 		expect(quality.onlyNonProductionImages).toBe(true);
 	});
 
+	it('keeps the provisional ceiling when production-ready motifs sit next to provisional photos', () => {
+		const mixed = summarizeAssetQuality([
+			'provisional-whatsapp',
+			'production-ready',
+			'production-ready',
+		]);
+		expect(mixed.hasAssignableImages).toBe(true);
+		expect(mixed.onlyNonProductionImages).toBe(true);
+
+		const production = summarizeAssetQuality([
+			'production-ready',
+			'production-ready',
+			'missing',
+		]);
+		expect(production.hasAssignableImages).toBe(true);
+		expect(production.onlyNonProductionImages).toBe(false);
+
+		const placeholderOnly = summarizeAssetQuality(['temporary-placeholder', 'unusable']);
+		expect(placeholderOnly.hasAssignableImages).toBe(true);
+		expect(placeholderOnly.onlyNonProductionImages).toBe(true);
+	});
+
 	it('emits one consolidated owner decision pack', () => {
 		const completeness = evaluateEventCompleteness('xv', xvFacts());
 		const pack = buildOwnerDecisionPack({
