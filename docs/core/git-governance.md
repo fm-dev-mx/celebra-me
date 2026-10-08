@@ -60,7 +60,9 @@ mutation authorization.
 
 2. **Stay current** when needed: `pnpm lane:sync` previews and `pnpm lane:sync -- --apply` fetches
    `origin/develop` and merges it into the task branch. `--ff-only` is available; `--rebase` is
-   opt-in and refused once the branch exists on `origin`.
+   opt-in and refused once the branch exists on `origin`. `--apply` requires an open git-safety
+   baseline matching the current branch and HEAD; the preview reports whether `--apply` would be
+   refused and why.
 
 3. **Integrate** from Integration, which keeps `develop` checked out (Git does not allow the same
    branch in two worktrees):

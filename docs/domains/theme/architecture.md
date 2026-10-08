@@ -6,8 +6,8 @@ Celebra-me uses a strict three-level styling architecture. The post-migration st
 presentation, skin, fallback, and profile inventory is maintained in
 [`variant-system.md`](variant-system.md).
 
-Gallery section variants (as-is catalog, compatibility aliases, and the canonical layout-role
-contract) are documented in [`gallery-variants.md`](gallery-variants.md).
+Gallery layouts and capabilities (layout roles, mobile browse, compatibility partials) are
+documented in [`variant-system.md`](variant-system.md#gallery-capabilities).
 
 CSS visual parity before profile LAYOUT deletion is gated by
 [`css-visual-parity.md`](css-visual-parity.md).
@@ -216,6 +216,7 @@ Invitation presets are reusable atmosphere packs (catalog SKUs), not per-invitat
 - `src/styles/themes/presets/_enchanted-rose.scss`
 - `src/styles/themes/presets/_sacred-keepsake.scss`
 - `src/styles/themes/presets/_angelic-presence.scss`
+- `src/styles/themes/presets/_editorial-magazine.scss`
 
 Non-invitation presets are separate:
 
@@ -443,8 +444,8 @@ Bounded controls retain their canonical section owner:
 Gallery CSS starts with the theme-preset bundle. When an explicit semantic `gallery.variant` differs
 from the active theme, the section CSS resolver emits the matching layout partial independently.
 Theme preset alone does not select gallery structure; the renderer always emits `data-variant` for
-the resolved layout ID. See [`gallery-variants.md`](gallery-variants.md) for the current map,
-compatibility boundary, and retained profile exceptions.
+the resolved layout ID. See [`variant-system.md`](variant-system.md#gallery-capabilities) for the
+current inventory and compatibility partials.
 
 ## Runtime Contract
 

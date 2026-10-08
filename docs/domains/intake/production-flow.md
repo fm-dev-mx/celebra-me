@@ -176,17 +176,17 @@ Check collisions in existing invitations, published content, and RSVP events. Do
 
 ## 2. Canonical references
 
-Reference selection is concern-specific; no invitation is universally canonical.
+Every invitation is self-sufficient; no demo or other invitation is a template to copy.
 
-| Reference                       | Use it for                                    | Reusable patterns                                                                    | Do not copy                                  |
-| ------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------- |
-| `demo-xv-celestial-blue`        | Asset organization and a complete XV baseline | Namespace layout, internal asset keys, ceremony/reception, standard section contract | Names, copy, dates, colors, crop decisions   |
-| `demo-boda-jewelry-box-wedding` | Non-XV and wedding structure                  | Couple naming, ceremony/reception separation, wedding theme compatibility            | Wedding-only semantics for other event types |
+- Theme: `invitations.theme_id`, per the
+  [preset source of truth](../../../.agent/rules/invitation-preset-source-of-truth.md).
+- Structure: the canonical [section contracts](../content/section-contracts.md) and the canonical
+  variant registry (`src/lib/invitation/section-variants.ts`, documented in the
+  [variant system](../theme/variant-system.md)).
+- Assets: the client-owned `_assetSlug` namespace and the asset registry.
 
-These are reference recommendations. Runtime collection lookup, static eligibility, editor presets
-and showroom approval have separate owners listed in
-[event content governance](../content/event-governance.md#source-roles); no shared descriptor
-registry encodes all four concerns.
+Runtime collection lookup, static eligibility, and showroom approval have separate owners listed in
+[event content governance](../content/event-governance.md#source-roles).
 
 ## 3. Create the invitation
 
@@ -246,8 +246,8 @@ validated by `eventContentSchema`.
   boundary until persisted rows and intake producers are converted.
 - Test long names, headings, addresses, gift descriptions, and WhatsApp copy. The editor limits are
   validation boundaries, not design targets.
-- Publication merges existing published content, draft changes, and the selected demo defaults, then
-  maps once through the canonical draft-to-published mapper.
+- Publication merges existing published content and draft changes, then maps once through the
+  canonical draft-to-published mapper. No value comes from a demo or catalog entry.
 
 ## 5. Prepare and upload assets
 

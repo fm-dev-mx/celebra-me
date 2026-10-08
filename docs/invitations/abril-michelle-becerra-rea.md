@@ -133,7 +133,7 @@ Storage mutations when content is unchanged.
   pairs + full-width feature band). Geometry lives in
   `src/styles/themes/sections/gallery/_paired-feature-band.scss`; the Abril profile may tint
   borders/filters only. See
-  [`docs/domains/theme/gallery-variants.md`](../domains/theme/gallery-variants.md).
+  [`docs/domains/theme/variant-system.md`](../domains/theme/variant-system.md#gallery-capabilities).
 - **Item contract:** at least three items with one `layoutRole: 'feature'` (confetti band).
 - **Narrative order (locked):** portrait pair → feature band (`thank-you-confetti`) → portrait pair.
 - **Intentionally outside gallery:** `gallery-02-bw-cake` (Family featured),
@@ -226,7 +226,7 @@ Storage mutations when content is unchanged.
 - **2026-07-26:** Gallery governance pass:
   - Documented Gallery curation (order, reserve confetti, explicit `gallery.variant`).
   - Set `gallery.variant: 'premiere-floral'` in provision (no silent inherit).
-  - Linked platform as-is / deferred layout-role target in `docs/domains/theme/gallery-variants.md`.
+  - Linked platform as-is / deferred layout-role target in `docs/domains/theme/variant-system.md`.
 
 ---
 
@@ -289,7 +289,7 @@ Storage mutations when content is unchanged.
 | -------------------------------------------------------------------------- | ------------ |
 | Create routable `demo-xv-premiere-floral` JSON + fix catalog `previewSlug` | P1 theme SKU |
 | Document family featured-image pattern in theme-architecture               | P3           |
-| Gallery layout-role enum independent of theme (see gallery-variants.md)    | P2 platform  |
+| Gallery layout-role enum independent of theme (see variant-system.md)      | P2 platform  |
 
 ---
 

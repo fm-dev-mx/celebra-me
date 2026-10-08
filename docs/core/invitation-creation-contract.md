@@ -61,7 +61,9 @@ Every managed digital invitation must define:
 - **Theme Preset** (`themeId`): A valid theme preset from `THEME_PRESETS` (e.g. `enchanted-rose`,
   `editorial-magazine`, `jewelry-box`).
 - **Visual Profile ID** (`visualProfileId`): Compatible visual profile.
-- **Base Demo ID** (`baseDemoId`): Pre-existing demo snapshot ID paired with the selected theme.
+- **Base Demo ID** (`baseDemoId`): Legacy, scheduled for removal. Provisioning still requires a demo
+  catalog entry with the same `themeId` and writes `base_demo_id`/`snapshot`; nothing at publish,
+  preview, or edit time reads them.
 - **Lifecycle** (`lifecycle`): `in_progress` while the definition is intentionally absent or not yet
   aligned through Production; `published` once Production alignment is expected. This metadata is
   explicit and is not inferred from timestamps or environment presence.

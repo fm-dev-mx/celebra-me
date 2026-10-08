@@ -163,38 +163,26 @@ backup, date of the latest successful restore drill, and restore duration. Measu
 before considering incremental Storage capture. Backups never route through Vercel and must not poll
 Production or download an object more than once within one recovery operation.
 
-## Production Reconciliation Status (historical point-in-time)
+## Hosted schema invariants
 
-Do **not** use the counts or heads in this section for migrate decisions. Obtain live pending sets
-from `pnpm db:prod:audit` / `pnpm db:preview:audit`.
+Never infer hosted migration status from documentation. Obtain live pending sets from
+`pnpm db:prod:audit` / `pnpm db:preview:audit` and verify with
+`pnpm db:contract:verify -- --target <production|preview>`.
 
-- **Reconciliation Complete**: Production migration-history reconciliation is complete.
-- **Phase 3 hosted alignment complete (2026-07-29)**: Preview was migrated and verified first, then
-  Production was migrated through the guarded canonical workflow. Both environments then reported
-  all **67** repository migrations with `20260729152113` latest. The hosted contract verifier passed
-  for both targets, including atomic Editor RPCs, managed baseline fields, append-only mutation
-  receipts, and revocation of `service_role` writes to guest confirmations and guest audit/history.
-- **Receipt-lock serialization (`20260730101500`)**: Atomic metadata/restore RPCs serialize on the
-  invitation row and must not row-lock append-only receipts. Promote that migration through Local →
-  Preview → Production; never grant receipt `UPDATE` via the dashboard to silence `42501`.
-- **Public Guest RSVP Atomic RPCs (`20260730113000`, fix `20260730164613`, portable pgcrypto
-  `20260730220544`)**: Public guest RSVP submission, guest auto-creation, and view telemetry
-  tracking use dedicated `SECURITY DEFINER` RPCs (`submit_guest_rsvp_public` and
-  `track_guest_invitation_view_public`). Hybrid create qualifies `extensions.gen_random_bytes` under
-  `search_path=public` (hosted Supabase does not expose unqualified `gen_random_bytes` in `public`).
+- **Receipt-lock serialization**: atomic metadata/restore RPCs serialize on the invitation row and
+  must not row-lock append-only receipts. Never grant receipt `UPDATE` via the dashboard to silence
+  `42501`.
+- **Public guest RSVP RPCs**: public submission, guest auto-creation, and view telemetry use the
+  `SECURITY DEFINER` RPCs `submit_guest_rsvp_public` and `track_guest_invitation_view_public`.
+  Hybrid create qualifies `extensions.gen_random_bytes` under `search_path=public`.
   `p_guest_comment` is an absolute SET when provided; `status_changed` audit is owned by
   `trg_guest_invitations_emit_audit`. Direct `INSERT`, `UPDATE`, and `DELETE` on protected guest
-  tables remain revoked from `service_role`. Telemetry updates degrade gracefully on error so
-  view-tracking issues never break the primary public invitation experience. Promote Local → Preview
-  → Production.
-- The Production cutover used verified EFS-encrypted pre/post DB/Auth/Storage recovery points and
-  preserved migration-before-code ordering. Never infer future hosted status from this point-in-time
-  record; rerun the read-only audit and `pnpm db:contract:verify -- --target <production|preview>`.
-- **Migration Ownership**: All schema changes must be introduced through versioned migrations in
-  `supabase/migrations/` and promoted Local → Preview → Production. Direct production SQL and manual
-  dashboard privilege repairs are prohibited as a normal workflow.
-- **One-Time Recovery Tool**: `scripts/db/reconcile-prod-baseline.ts` was a one-time recovery tool
-  and is no longer part of the repository.
+  tables stay revoked from `service_role`. Telemetry failures degrade gracefully and never break the
+  public invitation.
+- **Migration ownership**: every schema change is a versioned migration in `supabase/migrations/`,
+  promoted Local → Preview → Production with migration-before-code ordering and verified recovery
+  points. Direct Production SQL and manual dashboard privilege repairs are prohibited as a normal
+  workflow.
 
 ## Environments
 

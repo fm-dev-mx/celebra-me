@@ -40,51 +40,51 @@ Canonical route (creation contract): `/boda/victoria-y-roberto` — slug must no
 
 ## Fact Register
 
-| field                 | value                                                                                                   | classification | source            | notes                                                                                                      |
-| --------------------- | ------------------------------------------------------------------------------------------------------- | -------------- | ----------------- | ---------------------------------------------------------------------------------------------------------- |
-| slug                  | victoria-y-roberto                                                                                      | verified       | owner + creation  | Couple given names; no eventType prefix; orthography verified from WA text                                 |
-| hostLoginAlias        | victoria_armenta                                                                                        | verified       | wa-export + owner | `{primer_nombre}_{primer_apellido}` from partner A; Roberto surname unresolved — not invented              |
-| celebrantName         | Victoria                                                                                                | verified       | wa-export         | Guest-facing partner A; contact/family evidence also supports surname Armenta (see notes)                  |
-| celebrantSurname      | Armenta                                                                                                 | verified       | wa-export         | Contact identity + father Victor Armenta; not required to invent Roberto surname                           |
-| secondaryName         | Roberto                                                                                                 | verified       | wa-export         | Guest-facing partner B first name only                                                                     |
-| secondarySurname      | —                                                                                                       | missing        | wa-export         | Not provided; do not invent                                                                                |
-| displayCoupleNames    | Victoria & Roberto                                                                                      | verified       | wa-export + owner | Guest-facing lockup                                                                                        |
-| eventDate             | 2026-10-30                                                                                              | verified       | wa-export + owner | WA: “30 DE OCTUBRE”; year 2026 explicit owner decision for this preparation                                |
-| timeZone              | America/Mazatlan                                                                                        | inferred       | geography         | Los Mochis, Sinaloa (Pacific / Northwest MX); not client-stated                                            |
-| ceremonyTime          | 19:00                                                                                                   | verified       | wa-export         | “Nos damos el si parroquia 7:00 pm”                                                                        |
-| receptionTime         | 21:00                                                                                                   | verified       | wa-export         | “Recepción de invitados lugar 9:00pm”                                                                      |
-| coupleEntryTime       | 21:00                                                                                                   | verified       | wa-export         | “Entrada de los novios 9:00pm”                                                                             |
-| firstDanceTime        | 21:30                                                                                                   | verified       | wa-export         | “Baile de los novios 9:30pm”                                                                               |
-| dinnerTime            | 22:30                                                                                                   | verified       | wa-export         | “Cena 10:30 pm”                                                                                            |
-| bouquetTossTime       | 23:30                                                                                                   | verified       | wa-export         | “Lanzamiento de ramo 11:30pm”                                                                              |
-| partyTime             | 23:40                                                                                                   | verified       | wa-export         | “Hora loca/música 11:40 pm”                                                                                |
-| closingTime           | 02:00                                                                                                   | verified       | wa-export         | “Despedida de los novios 2:00 am”                                                                          |
-| primaryVenueName      | Parroquia Santo Niño                                                                                    | verified       | wa-export         | Ceremony venue                                                                                             |
-| primaryVenueAddress   | Lic. Benito Juárez S/N, Mochicahui, 81257 Los Mochis, Sin.                                              | verified       | wa-export         | Ceremony address                                                                                           |
-| ceremonyMapUrl        | [[PENDIENTE:CEREMONY_MAP_URL]]                                                                          | missing        | —                 | Navigation URL not verified; do not fabricate                                                              |
-| receptionVenueName    | Eventos Platinum LM                                                                                     | verified       | wa-export         | Reception venue                                                                                            |
-| receptionVenueAddress | Carretera Mochis - Topo Km8                                                                             | verified       | wa-export         | Reception address as written                                                                               |
-| receptionMapUrl       | [[PENDIENTE:RECEPTION_MAP_URL]]                                                                         | missing        | —                 | Navigation URL not verified; do not fabricate                                                              |
-| distinctVenues        | true                                                                                                    | verified       | wa-export         | Ceremony and reception are distinct                                                                        |
-| brideParents          | Madre: Argelia Valdez; Padre: Victor Armenta                                                            | verified       | wa-export         | Spelling preserved without inventing accents                                                               |
-| groomParents          | Madre: Socorro Palomares; Padre: Nicolas Luviano † (deceased)                                            | verified       | wa-export         | WA wrote “Socorro palomares”; capitalize only; no accent invented on Nicolas; client marked father deceased|
-| godparents            | Eric Montes; Rosario Soto                                                                               | verified       | wa-export         | Record as Padrinos only — do not infer “padrinos de velación” or other ceremonial role                     |
-| clientColors          | terracota                                                                                               | verified       | wa-export         | Sole client-requested color                                                                                |
-| dressCode             | formal                                                                                                  | verified       | wa-export         | “FORMAL”                                                                                                   |
-| photosRequested       | true                                                                                                    | verified       | wa-export         | Client: “Fotos … SIII”                                                                                     |
-| sourceAssetPath       | source:hr-photos                                                                                        | verified       | owner             | Opaque label; authorized folder is session-only                                                            |
-| baseDemoId            | demo-boda-jewelry-box-wedding                                                                           | verified       | owner             | Owner decision (client reacted positively to demo; did not explicitly select)                              |
-| themePreset           | jewelry-box-wedding                                                                                     | verified       | owner / catalog   | Corresponding preset for baseDemoId                                                                        |
-| sectionOrder          | hero, quote, countdown, location, itinerary, family, gallery, gifts, personalizedAccess, rsvp, thankYou | verified       | owner             | Full functional wedding set adapted to Victoria & Roberto; interludes planned separately (see Sections)    |
-| interludes            | 2 (roles: interlude01, interlude02)                                                                     | verified       | owner             | Count + photograph roles accepted; exact `afterSection` placement not owner-decided (Goal 2 art direction) |
-| rsvpConfirmationMode  | api                                                                                                     | verified       | owner             | Canonical product mechanism                                                                                |
-| rsvpAccessMode        | hybrid                                                                                                  | verified       | owner             | Personalized invitation access + guest/family identity + pass allowance via product mechanisms             |
-| giftsMode             | Lluvia de sobres                                                                                        | verified       | owner             | Do not inherit Liverpool / Amazon / registry URLs from demo                                                |
-| quoteReference        | Eclesiastés 4:9–12                                                                                      | verified       | owner             | Biblical reference resolved; exact guest-facing wording may refine in implementation; not Rut 1:16         |
-| familyPhoto           | none                                                                                                    | verified       | owner             | Do not plan a photograph for the `family` section                                                          |
-| musicUrl              | —                                                                                                       | not_applicable | owner scope       | Music not in planned section set                                                                           |
-| adultsOnly            | —                                                                                                       | not_applicable | —                 | Do not inherit demo adults-only restriction                                                                |
-| audioEvidence         | multiple WA audio attachments                                                                           | ambiguous      | wa-export         | Unavailable/unintelligible for preparation; contents not reconstructed from surrounding messages           |
+| field                 | value                                                                                                   | classification | source            | notes                                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------------------- | -------------- | ----------------- | ----------------------------------------------------------------------------------------------------------- |
+| slug                  | victoria-y-roberto                                                                                      | verified       | owner + creation  | Couple given names; no eventType prefix; orthography verified from WA text                                  |
+| hostLoginAlias        | victoria_armenta                                                                                        | verified       | wa-export + owner | `{primer_nombre}_{primer_apellido}` from partner A; Roberto surname unresolved — not invented               |
+| celebrantName         | Victoria                                                                                                | verified       | wa-export         | Guest-facing partner A; contact/family evidence also supports surname Armenta (see notes)                   |
+| celebrantSurname      | Armenta                                                                                                 | verified       | wa-export         | Contact identity + father Victor Armenta; not required to invent Roberto surname                            |
+| secondaryName         | Roberto                                                                                                 | verified       | wa-export         | Guest-facing partner B first name only                                                                      |
+| secondarySurname      | —                                                                                                       | missing        | wa-export         | Not provided; do not invent                                                                                 |
+| displayCoupleNames    | Victoria & Roberto                                                                                      | verified       | wa-export + owner | Guest-facing lockup                                                                                         |
+| eventDate             | 2026-10-30                                                                                              | verified       | wa-export + owner | WA: “30 DE OCTUBRE”; year 2026 explicit owner decision for this preparation                                 |
+| timeZone              | America/Mazatlan                                                                                        | inferred       | geography         | Los Mochis, Sinaloa (Pacific / Northwest MX); not client-stated                                             |
+| ceremonyTime          | 19:00                                                                                                   | verified       | wa-export         | “Nos damos el si parroquia 7:00 pm”                                                                         |
+| receptionTime         | 21:00                                                                                                   | verified       | wa-export         | “Recepción de invitados lugar 9:00pm”                                                                       |
+| coupleEntryTime       | 21:00                                                                                                   | verified       | wa-export         | “Entrada de los novios 9:00pm”                                                                              |
+| firstDanceTime        | 21:30                                                                                                   | verified       | wa-export         | “Baile de los novios 9:30pm”                                                                                |
+| dinnerTime            | 22:30                                                                                                   | verified       | wa-export         | “Cena 10:30 pm”                                                                                             |
+| bouquetTossTime       | 23:30                                                                                                   | verified       | wa-export         | “Lanzamiento de ramo 11:30pm”                                                                               |
+| partyTime             | 23:40                                                                                                   | verified       | wa-export         | “Hora loca/música 11:40 pm”                                                                                 |
+| closingTime           | 02:00                                                                                                   | verified       | wa-export         | “Despedida de los novios 2:00 am”                                                                           |
+| primaryVenueName      | Parroquia Santo Niño                                                                                    | verified       | wa-export         | Ceremony venue                                                                                              |
+| primaryVenueAddress   | Lic. Benito Juárez S/N, Mochicahui, 81257 Los Mochis, Sin.                                              | verified       | wa-export         | Ceremony address                                                                                            |
+| ceremonyMapUrl        | [[PENDIENTE:CEREMONY_MAP_URL]]                                                                          | missing        | —                 | Navigation URL not verified; do not fabricate                                                               |
+| receptionVenueName    | Eventos Platinum LM                                                                                     | verified       | wa-export         | Reception venue                                                                                             |
+| receptionVenueAddress | Carretera Mochis - Topo Km8                                                                             | verified       | wa-export         | Reception address as written                                                                                |
+| receptionMapUrl       | [[PENDIENTE:RECEPTION_MAP_URL]]                                                                         | missing        | —                 | Navigation URL not verified; do not fabricate                                                               |
+| distinctVenues        | true                                                                                                    | verified       | wa-export         | Ceremony and reception are distinct                                                                         |
+| brideParents          | Madre: Argelia Valdez; Padre: Victor Armenta                                                            | verified       | wa-export         | Spelling preserved without inventing accents                                                                |
+| groomParents          | Madre: Socorro Palomares; Padre: Nicolas Luviano † (deceased)                                           | verified       | wa-export         | WA wrote “Socorro palomares”; capitalize only; no accent invented on Nicolas; client marked father deceased |
+| godparents            | Eric Montes; Rosario Soto                                                                               | verified       | wa-export         | Record as Padrinos only — do not infer “padrinos de velación” or other ceremonial role                      |
+| clientColors          | terracota                                                                                               | verified       | wa-export         | Sole client-requested color                                                                                 |
+| dressCode             | formal                                                                                                  | verified       | wa-export         | “FORMAL”                                                                                                    |
+| photosRequested       | true                                                                                                    | verified       | wa-export         | Client: “Fotos … SIII”                                                                                      |
+| sourceAssetPath       | source:hr-photos                                                                                        | verified       | owner             | Opaque label; authorized folder is session-only                                                             |
+| baseDemoId            | demo-boda-jewelry-box-wedding                                                                           | verified       | owner             | Owner decision (client reacted positively to demo; did not explicitly select)                               |
+| themePreset           | jewelry-box-wedding                                                                                     | verified       | owner / catalog   | Corresponding preset for baseDemoId                                                                         |
+| sectionOrder          | hero, quote, countdown, location, itinerary, family, gallery, gifts, personalizedAccess, rsvp, thankYou | verified       | owner             | Full functional wedding set adapted to Victoria & Roberto; interludes planned separately (see Sections)     |
+| interludes            | 2 (roles: interlude01, interlude02)                                                                     | verified       | owner             | Count + photograph roles accepted; exact `afterSection` placement not owner-decided (Goal 2 art direction)  |
+| rsvpConfirmationMode  | api                                                                                                     | verified       | owner             | Canonical product mechanism                                                                                 |
+| rsvpAccessMode        | hybrid                                                                                                  | verified       | owner             | Personalized invitation access + guest/family identity + pass allowance via product mechanisms              |
+| giftsMode             | Lluvia de sobres                                                                                        | verified       | owner             | Do not inherit Liverpool / Amazon / registry URLs from demo                                                 |
+| quoteReference        | Eclesiastés 4:9–12                                                                                      | verified       | owner             | Biblical reference resolved; exact guest-facing wording may refine in implementation; not Rut 1:16          |
+| familyPhoto           | none                                                                                                    | verified       | owner             | Do not plan a photograph for the `family` section                                                           |
+| musicUrl              | —                                                                                                       | not_applicable | owner scope       | Music not in planned section set                                                                            |
+| adultsOnly            | —                                                                                                       | not_applicable | —                 | Do not inherit demo adults-only restriction                                                                 |
+| audioEvidence         | multiple WA audio attachments                                                                           | ambiguous      | wa-export         | Unavailable/unintelligible for preparation; contents not reconstructed from surrounding messages            |
 
 Rules:
 
@@ -99,12 +99,19 @@ Rules:
 
 Contract maturity for this event type: `partial` (`getEventCompletenessContract('boda')`)
 
-| requirement | fields                                                                                                                                                | status     |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| required    | slug, celebrantName, secondaryName, eventDate, baseDemoId, sourceAssetPath, sectionOrder, primaryVenueName, primaryVenueAddress, rsvpConfirmationMode | satisfied  |
-| conditional | receptionVenueName, receptionVenueAddress (`distinctVenues=true`)                                                                                     | satisfied  |
-| recommended | (boda partial gaps — family/gifts/maps/times live in Fact Register / sections)                                                                        | documented |
-| optional    | —                                                                                                                                                     | —          |
+- **requirement:** required
+  - **fields:** slug, celebrantName, secondaryName, eventDate, baseDemoId, sourceAssetPath,
+    sectionOrder, primaryVenueName, primaryVenueAddress, rsvpConfirmationMode
+  - **status:** satisfied
+- **requirement:** conditional
+  - **fields:** receptionVenueName, receptionVenueAddress (`distinctVenues=true`)
+  - **status:** satisfied
+- **requirement:** recommended
+  - **fields:** (boda partial gaps — family/gifts/maps/times live in Fact Register / sections)
+  - **status:** documented
+- **requirement:** optional
+  - **fields:** —
+  - **status:** —
 
 ### Missing blockers
 
@@ -211,19 +218,19 @@ an accepted owner placement decision.
 
 ### Itinerary preparation
 
-| item                    | time  | description                                         | classification |
-| ----------------------- | ----- | --------------------------------------------------- | -------------- |
-| Nos damos el sí         | 19:00 | Ceremonia en Parroquia Santo Niño.                  | verified       |
-| Recepción de invitados  | 21:00 | Recepción en Eventos Platinum LM.                   | verified       |
-| Entrada de los novios   | 21:00 | Abrimos la celebración con su llegada al salón.     | owner          |
-| Baile de los novios     | 21:30 | El primer vals de Victoria y Roberto.               | owner          |
-| Cena                    | 22:30 | Compartimos la mesa en un mismo brindis.            | owner          |
-| Lanzamiento de ramo     | 23:30 | Un momento especial para las solteras.              | owner          |
-| Hora loca / música      | 23:40 | La pista se enciende: música y baile.               | owner          |
-| Despedida de los novios | 02:00 | Cerramos la noche con su partida.                   | owner          |
+| item                    | time  | description                                     | classification |
+| ----------------------- | ----- | ----------------------------------------------- | -------------- |
+| Nos damos el sí         | 19:00 | Ceremonia en Parroquia Santo Niño.              | verified       |
+| Recepción de invitados  | 21:00 | Recepción en Eventos Platinum LM.               | verified       |
+| Entrada de los novios   | 21:00 | Abrimos la celebración con su llegada al salón. | owner          |
+| Baile de los novios     | 21:30 | El primer vals de Victoria y Roberto.           | owner          |
+| Cena                    | 22:30 | Compartimos la mesa en un mismo brindis.        | owner          |
+| Lanzamiento de ramo     | 23:30 | Un momento especial para las solteras.          | owner          |
+| Hora loca / música      | 23:40 | La pista se enciende: música y baile.           | owner          |
+| Despedida de los novios | 02:00 | Cerramos la noche con su partida.               | owner          |
 
-Times remain client-verified (`wa-export`). Secondary descriptions for celebration moments
-are owner-approved guest-facing copy (not client-dictated wording).
+Times remain client-verified (`wa-export`). Secondary descriptions for celebration moments are
+owner-approved guest-facing copy (not client-dictated wording).
 
 ### Semantic roles (copy constraints for Goal 2)
 
@@ -377,25 +384,46 @@ that upscales past native width.
 The Goal 3B visual review is closed within scope. This record distinguishes capture mechanics from
 the human creative decision and does not change `prepReadiness`.
 
-| concern                     | decision / evidence                                                                                                                                 | status     |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| Typography roles            | Display / label / body roles are explicit in the Victoria profile tokens and component selectors.                                                   | verified   |
-| Vertical rhythm and density | Open editorial cadence retained; Countdown, Gallery, Personalized Access, RSVP, and Thank You reviewed after Goal 3B.                               | verified   |
-| Surface hierarchy           | Open cream/terracotta flow with restrained low-chrome access/RSVP surfaces; remaining RSVP container presence is an accepted taste note.            | verified   |
-| Photographic treatment      | Five unique production-ready roles with face-safe hero, editorial interludes, single Gallery feature, and closing portrait.                         | verified   |
-| Section-intersection intent | Countdown→Location and Gifts→Personalized Access use overlap; Personalized Access→RSVP uses atmospheric blend; render-plan tests cover the profile. | verified   |
-| Local exceptions            | Scoped to `src/styles/invitation-profiles/victoria-y-roberto.scss`; no further Victoria redesign authorized by this goal.                           | documented |
+- **concern:** Typography roles
+  - **decision / evidence:** Display / label / body roles are explicit in the Victoria profile
+    tokens and component selectors.
+  - **status:** verified
+- **concern:** Vertical rhythm and density
+  - **decision / evidence:** Open editorial cadence retained; Countdown, Gallery, Personalized
+    Access, RSVP, and Thank You reviewed after Goal 3B.
+  - **status:** verified
+- **concern:** Surface hierarchy
+  - **decision / evidence:** Open cream/terracotta flow with restrained low-chrome access/RSVP
+    surfaces; remaining RSVP container presence is an accepted taste note.
+  - **status:** verified
+- **concern:** Photographic treatment
+  - **decision / evidence:** Five unique production-ready roles with face-safe hero, editorial
+    interludes, single Gallery feature, and closing portrait.
+  - **status:** verified
+- **concern:** Section-intersection intent
+  - **decision / evidence:** Countdown→Location and Gifts→Personalized Access use overlap;
+    Personalized Access→RSVP uses atmospheric blend; render-plan tests cover the profile.
+  - **status:** verified
+- **concern:** Local exceptions
+  - **decision / evidence:** Scoped to `src/styles/invitation-profiles/victoria-y-roberto.scss`; no
+    further Victoria redesign authorized by this goal.
+  - **status:** documented
 
 ### Final creative acceptance record
 
-| field                                       | value                                                                                                                                                                                               |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Mechanical render/capture result            | **pass** — Goal 3B reports passed capture/selector/section coverage at 390 × 844 and 1440 × 1200 (`output/playwright/goal-3b-after-sections/report.json`, plus reveal and RSVP reports).            |
-| Whole-invitation responsive inspection      | Human review covered the rendered invitation as a whole and the focused responsive evidence; section reports cover Countdown, Itinerary, Family, Gallery, Personalized Access, RSVP, and Thank You. |
-| Section boundaries and narrative continuity | **pass**; remaining Family/RSVP observations are accepted taste notes, not defects.                                                                                                                 |
-| Human creative outcome                      | **`ACCEPTED_WITH_BLOCKERS`**                                                                                                                                                                        |
-| Reviewer and date                           | Owner visual review, 2026-08-08                                                                                                                                                                     |
-| Blocking reason or owner follow-up          | Only the two owner-data map URL blockers below remain before Production: ceremony map URL, reception map URL. Itinerary times confirmed by client on 2026-08-12. |
+| field                                       | value                                                                               |
+| ------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Mechanical render/capture result            | **pass** — capture/selector/section coverage at 390 × 844 and 1440 × 1200           |
+| Whole-invitation responsive inspection      | **pass** — whole invitation plus focused responsive evidence reviewed               |
+| Section boundaries and narrative continuity | **pass**; remaining Family/RSVP observations are accepted taste notes, not defects. |
+| Human creative outcome                      | **`ACCEPTED_WITH_BLOCKERS`**                                                        |
+| Reviewer and date                           | Owner visual review, 2026-08-08                                                     |
+| Blocking reason or owner follow-up          | Owner-data map URLs remain before Production: ceremony map URL, reception map URL.  |
+
+Evidence notes: the Goal 3B capture report is
+`output/playwright/goal-3b-after-sections/report.json`, plus the reveal and RSVP reports. Section
+reports cover Countdown, Itinerary, Family, Gallery, Personalized Access, RSVP, and Thank You.
+Itinerary times were confirmed by the client on 2026-08-12.
 
 `ACCEPTED_WITH_BLOCKERS` here records an operational owner-data dependency, not an open visual
 correction. It must block the applicable Production boundary without blocking unrelated development.
@@ -425,8 +453,8 @@ opened during Goal 4.
 |  16 | ThankYou duplicated rendering               | **resolved by shared infrastructure** | Goal 2 duplicate-message guard; no Victoria workaround remains.                   |
 |  17 | ThankYou closing reading flow               | **resolved**                          | Goal 3B closing refinement; no disruptive drop-cap remains.                       |
 
-The only remaining owner-data blockers are the map URL placeholders listed above; none blocks unrelated
-implementation or shared-contract validation.
+The only remaining owner-data blockers are the map URL placeholders listed above; none blocks
+unrelated implementation or shared-contract validation.
 
 ---
 

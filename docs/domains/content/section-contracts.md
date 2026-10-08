@@ -127,9 +127,8 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Required Inputs**: `items` array of photo asset references with `image` and `alt`.
 - **Required Inputs**: `variant`.
 - **Optional Inputs**: `title`, `subtitle`, `presentation`, item `layoutRole`, and responsive
-  focal-point fields. Canonical layout values are `uniform-grid`, `editorial-mosaic`,
-  `magazine-spread`, `feature-mosaic`, `feature-stack`, `paired-feature-band`, `index-choreography`,
-  and `single-keepsake`.
+  focal-point fields. Layout values are listed in the
+  [variant system](../theme/variant-system.md#canonical-inventory).
 - **Precedence**: `gallery.variant` is the sole layout authority. Legacy `sectionStyles` values,
   theme-named values, and `single` are rejected by the canonical schema.
 - **Rendering & Omission**: Rendered if `items` contains 1 or more resolved photo assets; omitted if
@@ -143,9 +142,8 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Required Inputs**: `items` array with `time`, `title`.
 - **Required Inputs**: `variant`.
 - **Optional Inputs**: `subtitle`, `description`, `icon`.
-- **Variant Contract**: Canonical `itinerary.variant` values are `standard`, `timeline-paper`,
-  `editorial-ledger`, and `editorial-program`. `timeline-paper` selects `ItineraryProgram`;
-  `editorial-ledger`, `editorial-program`, and `standard` select `TimelineList`.
+- **Variant Contract**: `timeline-paper` selects `ItineraryProgram`; every other `itinerary.variant`
+  selects `TimelineList`.
 - **Rendering & Omission**: Optional section.
 
 ---
@@ -154,13 +152,14 @@ Footer remains a visual theme surface and has no independent section variant.
 
 - **Purpose**: Guest attendance confirmation form, attendee count selector, dietary notes, and
   WhatsApp/API submission.
-- **Required Inputs**: `confirmationMode` (`api` | `whatsapp`), `deadlineIso`, `guestCap`.
 - **Required Inputs**: `variant` and `personalizedAccess.variant`.
-- **Optional Inputs**: `title`, `subtitle`, `whatsappConfig`.
-- **Variant Contract**: Canonical `rsvp.variant` values are `standard`, `editorial-press-pass`, and
-  `formal-register`. `formal-register` keeps the shared RSVP renderer and owns the underline
-  confirmation-register presentation. `rsvp.personalizedAccess.variant` values are `standard`,
-  `ornamented`, `editorial-pass`, and `formal-pass`.
+- **Defaulted Inputs**: `confirmationMode` (`api` | `whatsapp` | `both`, default `api`), `guestCap`
+  (default 1), `accessMode` (`personalized-only` | `hybrid`, default `personalized-only`).
+- **Optional Inputs**: `title`, `subcopy`, `whatsappConfig`, `labels`, `calendar`.
+- **Variant Contract**: `formal-register` keeps the shared RSVP renderer and owns the underline
+  confirmation-register presentation. Values for `rsvp.variant` and
+  `rsvp.personalizedAccess.variant` are listed in the
+  [variant system](../theme/variant-system.md#canonical-inventory).
 - **Rendering & Omission**: Mandatory for invitations requiring RSVP confirmation. A public
   `personalized-only` RSVP without guest context renders a static locked Astro state; demo and
   guest-backed states render the interactive React island.

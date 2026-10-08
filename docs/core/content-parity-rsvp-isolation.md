@@ -181,7 +181,8 @@ Cross-environment “same content” means equal **semantic invitation-facing st
 - Managed uploaded refs and hosted content-only external representations at the same path are
   **NORMALIZATION_ARTIFACT** equivalents (bare semantic key strings or URL strings; same comparison
   owner; no slug-specific rules)
-- Invitation metadata: `event_type`, `base_demo_id`, `theme_id`, `kind`, `snapshot`
+- Invitation metadata: `event_type`, `base_demo_id`, `theme_id`, `kind`, `snapshot` (`base_demo_id`
+  and `snapshot` are legacy, scheduled for removal)
 - Draft and published content JSON
 - Referenced assets by semantic key + content digest (`sha256`), not environment asset UUIDs,
   Storage hosts, or Cloudinary vs local Supabase provider. Empty managed inventory paired with
