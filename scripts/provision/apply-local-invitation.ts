@@ -40,6 +40,7 @@ import {
 import { serializeInvitationPackage } from './invitation-package.ts';
 import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
 import { cleanupLocalResources, type TrackedResource } from './managed-invitation-cleanup.ts';
+import { assertManagedMemoriesReference } from './managed-memories-reference.ts';
 import { resolveLocalEnv } from './local-provision-env.ts';
 import { buildCloudinaryPublicId } from './cloudinary-adapter.ts';
 import {
@@ -869,6 +870,12 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	}
 	assertManagedDraftContentSchema(proposedContent);
 	assertManagedContentSchema(packagePublishedContent);
+	assertManagedMemoriesReference({
+		content: packagePublishedContent,
+		eventId: typeof existingEvent?.id === 'string' ? existingEvent.id : null,
+		dbUrl: env.dbUrl,
+		targetLabel: 'local',
+	});
 	const observedStorage: Record<string, ObservedStorageState> = {};
 	for (const state of currentAssetStates) {
 		observedStorage[String(state.storagePath)] = {
