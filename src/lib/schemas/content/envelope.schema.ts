@@ -59,11 +59,18 @@ export const envelopeSchema = z
 			.optional(),
 		revealVariant: envelopeRevealVariantSchema.optional(),
 		coverEdition: z.string().optional(),
+		// Collector rail label printed before coverEdition ("NÚM." when omitted); an empty string
+		// prints the edition alone, e.g. "3 años".
+		coverEditionLabel: z.string().trim().max(16).optional(),
 		coverVolume: z.string().optional(),
 		coverIssue: z.string().optional(),
 		// Editorial cover: one or two short cover lines; the reveal keeps its defaults when omitted.
 		coverLines: z.array(z.string().trim().min(1).max(60)).min(1).max(2).optional(),
 		coverExperience: editorialCoverExperienceSchema.optional(),
+		// Collector edition cutouts: one on the printed cover face, up to two on the first inner
+		// page. Transparent images in token-sized contained boxes; absent, nothing renders.
+		coverOrnament: AssetSchema.optional(),
+		spreadOrnaments: z.array(AssetSchema).min(1).max(2).optional(),
 	})
 	.loose() // Preserva campos desconocidos del envelope (defensivo para datos DB legacy)
 	.optional();

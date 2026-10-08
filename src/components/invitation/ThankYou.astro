@@ -12,6 +12,8 @@ interface Props {
 	closingNameLeadWords?: number;
 	date?: string;
 	image?: string | ImageAsset;
+	/** Decorative cutout printed below the signature. */
+	ornament?: ImageAsset;
 	variant: ThankYouVariant;
 	focalPoint?: string;
 	overlayAnchor?: 'left' | 'right' | 'top' | 'bottom';
@@ -29,6 +31,7 @@ const {
 	closingNameLeadWords,
 	date,
 	image,
+	ornament,
 	variant,
 	focalPoint,
 	overlayAnchor,
@@ -109,6 +112,9 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 						</p>
 						{date && <p class="closing-date">{date}</p>}
 					</div>
+					{ornament && (
+						<img class="thank-you__ornament" src={plainImgSrc(ornament.src)} alt="" width="256" height="128" loading="lazy" decoding="async" />
+					)}
 				</div>
 			</div>
 	) : (
@@ -134,6 +140,9 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 					</p>
 					{date && <p class="closing-date">{date}</p>}
 				</div>
+				{ornament && (
+					<img class="thank-you__ornament" src={plainImgSrc(ornament.src)} alt="" width="256" height="128" loading="lazy" decoding="async" />
+				)}
 			</div>
 	)
 }

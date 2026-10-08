@@ -24,6 +24,10 @@ interface Props {
 	backgroundImageDesktop?: { src: string; delivery?: ImageDelivery };
 	backgroundImageMobile?: ImageMetadata | ImageAsset;
 	portrait?: ImageMetadata | ImageAsset;
+	/** Decorative emblem printed above the title (hero.ornament). */
+	ornament?: ImageAsset;
+	/** Decorative cutout printed below the details (hero.accentOrnament). */
+	accentOrnament?: ImageAsset;
 	variant: HeroVariant;
 	focalPoint?: string;
 	focalPointMobile?: string;
@@ -51,6 +55,8 @@ const {
 	backgroundImageDesktop,
 	backgroundImageMobile,
 	portrait,
+	ornament,
+	accentOrnament,
 	variant,
 	focalPoint,
 	focalPointMobile,
@@ -190,6 +196,17 @@ const fpDesktop = focalPointDesktop || fpDefault;
 		)}
 
 		<div class="invitation-hero__text-column">
+			{ornament && (
+				<img
+					class="invitation-hero__ornament"
+					src={plainImgSrc(ornament.src)}
+					alt=""
+					width="240"
+					height="120"
+					loading="eager"
+					decoding="async"
+				/>
+			)}
 			<div class="invitation-hero__title-wrapper">
 				<h1 class="invitation-hero__title">
 					<span class="invitation-hero__first-name">{firstName}</span>
@@ -220,6 +237,18 @@ const fpDesktop = focalPointDesktop || fpDefault;
 					<span class="calligraphy-accent">en</span> {venueName}
 				</p>}
 			</div>
+
+			{accentOrnament && (
+				<img
+					class="invitation-hero__accent-ornament"
+					src={plainImgSrc(accentOrnament.src)}
+					alt=""
+					width="320"
+					height="160"
+					loading="eager"
+					decoding="async"
+				/>
+			)}
 
 			<!-- Fashion/Publication credits block -->
 			{(photoCredit || designCredit) && (

@@ -266,10 +266,17 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 					: undefined,
 			},
 			coverEdition: data.envelope.coverEdition,
+			coverEditionLabel: data.envelope.coverEditionLabel,
 			coverVolume: data.envelope.coverVolume,
 			coverIssue: data.envelope.coverIssue,
 			coverLines: data.envelope.coverLines,
 			coverExperience: data.envelope.coverExperience,
+			coverOrnament: data.envelope.coverOrnament
+				? resolveAsset(eventSlug, data.envelope.coverOrnament, data.title)
+				: undefined,
+			spreadOrnaments: data.envelope.spreadOrnaments
+				?.map((asset) => resolveAsset(eventSlug, asset, data.title))
+				.filter((asset): asset is ImageAsset => Boolean(asset)),
 			revealVariant: data.envelope.revealVariant,
 		},
 	};
@@ -407,6 +414,9 @@ function buildLocationSectionData(context: AdaptationContext) {
 		introEyebrow: data.location.introEyebrow,
 		introHeading: data.location.introHeading,
 		introLede: data.location.introLede,
+		ornament: data.location.ornament
+			? resolveAsset(eventSlug, data.location.ornament, data.title)
+			: undefined,
 		indicationsHeading: data.location.indicationsHeading ?? '',
 	};
 }
@@ -524,6 +534,9 @@ function buildThankYouSectionData(context: AdaptationContext) {
 		...data.thankYou,
 		image: data.thankYou.image
 			? resolveAsset(eventSlug, data.thankYou.image, data.title)
+			: undefined,
+		ornament: data.thankYou.ornament
+			? resolveAsset(eventSlug, data.thankYou.ornament, data.title)
 			: undefined,
 		variant: data.thankYou.variant,
 	};

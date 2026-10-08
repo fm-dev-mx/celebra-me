@@ -69,6 +69,8 @@ const locationBaseSchema = z.object({
 	introEyebrow: z.string().optional(),
 	introHeading: z.string().optional(),
 	introLede: z.string().optional(),
+	/** Decorative cutout (transparent image) printed after the intro; contained, never cropped. */
+	ornament: AssetSchema.optional(),
 	indicationsHeading: z.string().default(''),
 	venues: z.array(venueEntrySchema),
 	indications: z

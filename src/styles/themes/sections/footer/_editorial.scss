@@ -1,18 +1,29 @@
 @use '../../../global/mixins' as mixins;
 
+// Profiles restyle the footer through --footer-editorial-* tokens; every default below equals
+// the previous literal, so invitations without a profile value render unchanged.
 .theme-preset--editorial .invitation-footer,
 .theme-preset--editorial-magazine .invitation-footer {
-	padding: 1.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
-	background-color: var(--color-surface-dark);
-	background-image: linear-gradient(
-		180deg,
-		rgb(var(--color-surface-dark-rgb) / 0%) 0%,
-		rgb(var(--color-surface-dark-rgb) / 80%) 100%
+	padding: var(
+		--footer-editorial-padding,
+		1.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px))
 	);
-	border-top: 1px solid rgb(var(--color-action-accent-rgb) / 40%);
+	background-color: var(--footer-editorial-bg, var(--color-surface-dark));
+	background-image: var(
+		--footer-editorial-bg-image,
+		linear-gradient(
+			180deg,
+			rgb(var(--color-surface-dark-rgb) / 0%) 0%,
+			rgb(var(--color-surface-dark-rgb) / 80%) 100%
+		)
+	);
+	border-top: var(
+		--footer-editorial-border-top,
+		1px solid rgb(var(--color-action-accent-rgb) / 40%)
+	);
 	opacity: 100%;
 	backdrop-filter: blur(12px);
-	box-shadow: 0 -10px 40px rgb(0 0 0 / 30%);
+	box-shadow: var(--footer-editorial-shadow, 0 -10px 40px rgb(0 0 0 / 30%));
 
 	.footer__closing-phrase {
 		display: none;
@@ -27,14 +38,14 @@
 		flex-flow: row wrap;
 		align-items: center;
 		justify-content: center;
-		gap: 1.5rem 4rem;
+		gap: var(--footer-editorial-content-gap, 1.5rem 4rem);
 		max-width: 70rem;
 		margin: 0 auto;
 		opacity: 100%;
 		padding: 0;
 
 		@include mixins.respond-to(md) {
-			gap: 1rem 6rem;
+			gap: var(--footer-editorial-content-gap-md, 1rem 6rem);
 		}
 	}
 
@@ -58,14 +69,14 @@
 			font-weight: 500;
 			letter-spacing: 0.25em;
 			text-transform: uppercase;
-			color: var(--color-text-on-dark);
+			color: var(--footer-editorial-powered-color, var(--color-text-on-dark));
 		}
 
 		.footer-brand-logo.logo {
-			width: 8.5rem;
+			width: var(--footer-editorial-logo-width, 8.5rem);
 			height: auto;
 			transform: none;
-			filter: brightness(1.2);
+			filter: var(--footer-editorial-logo-filter, brightness(1.2));
 		}
 	}
 
@@ -80,9 +91,10 @@
 		gap: 0.75rem;
 		padding: 0.65rem 1.75rem;
 		border-radius: 999px;
-		border: 1px solid rgb(var(--color-action-accent-rgb) / 50%);
-		background: rgb(255 255 255 / 3%);
-		color: var(--color-action-accent);
+		border: 1px solid
+			var(--footer-editorial-cta-border, rgb(var(--color-action-accent-rgb) / 50%));
+		background: var(--footer-editorial-cta-bg, rgb(255 255 255 / 3%));
+		color: var(--footer-editorial-cta-color, var(--color-action-accent));
 		font-family: var(--font-body);
 		font-size: 0.68rem;
 		font-weight: 600;
@@ -95,18 +107,27 @@
 			height: 1.1rem;
 			opacity: 100%;
 			filter: var(
-				--filter-gold,
-				brightness(0) saturate(100%) invert(86%) sepia(21%) saturate(1021%)
-					hue-rotate(352deg) brightness(91%) contrast(83%)
+				--footer-editorial-cta-icon-filter,
+				var(
+					--filter-gold,
+					brightness(0) saturate(100%) invert(86%) sepia(21%) saturate(1021%)
+						hue-rotate(352deg) brightness(91%) contrast(83%)
+				)
 			);
 		}
 
 		&:hover {
-			border-color: var(--color-action-accent);
-			background: rgb(var(--color-action-accent-rgb) / 15%);
-			color: var(--color-text-on-dark);
+			border-color: var(--footer-editorial-cta-hover-border, var(--color-action-accent));
+			background: var(
+				--footer-editorial-cta-hover-bg,
+				rgb(var(--color-action-accent-rgb) / 15%)
+			);
+			color: var(--footer-editorial-cta-hover-color, var(--color-text-on-dark));
 			transform: scale(1.05) translateY(-2px);
-			box-shadow: 0 5px 20px rgb(var(--color-action-accent-rgb) / 20%);
+			box-shadow: var(
+				--footer-editorial-cta-hover-shadow,
+				0 5px 20px rgb(var(--color-action-accent-rgb) / 20%)
+			);
 		}
 	}
 
@@ -118,7 +139,7 @@
 		font-size: 0.65rem;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		color: var(--color-text-on-dark);
+		color: var(--footer-editorial-replay-color, var(--color-text-on-dark));
 		background: transparent;
 		border: none;
 		cursor: pointer;
@@ -126,7 +147,7 @@
 		transition: var(--transition-standard);
 
 		&:hover {
-			color: var(--color-action-accent);
+			color: var(--footer-editorial-replay-hover-color, var(--color-action-accent));
 			opacity: 100%;
 			transform: translateX(3px);
 		}

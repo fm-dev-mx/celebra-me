@@ -78,6 +78,46 @@ and row breathing room; defaults keep icons hidden and spacing unchanged.
 `--editorial-ledger-time-width` controls the desktop time column (default 7rem). The variant owns
 geometry; profiles supply values only.
 
+Decorative cutouts are typed content, not profile layout: `countdown.ornament`, `location.ornament`
+(after the intro) and `thankYou.ornament` (below the signature) take a transparent image that
+renders in a fixed, contained box (`object-fit: contain`), so it never crops and reserves its height
+before loading. Sizing tokens: `--location-ornament-{max-width,height,margin,position,filter}`
+(defaults `18rem`, `9rem`, `1.5rem auto`, `center bottom`, `none`),
+`--thank-you-ornament-{max-width,height,margin,position,filter}` (`16rem`, `8rem`, `1.75rem auto 0`,
+`center bottom`, `none`) and, on `magazine-folio`,
+`--countdown-ornament-{max-width,height,margin,filter}` (`20rem`, `10rem`,
+`clamp(1.5rem, 5vw, 2.5rem) auto 0`, `none`). Location and thank-you rules use `:where()`; content
+without an ornament renders nothing new.
+
+The editorial footer skin (`editorial` and `editorial-magazine`) resolves its ground, rule, brand
+credit, contact button and replay link through `--footer-editorial-*` tokens (`bg`, `bg-image`,
+`border-top`, `shadow`, `padding`, `content-gap`, `content-gap-md`, `powered-color`, `logo-width`,
+`logo-filter`, `cta-border`, `cta-bg`, `cta-color`, `cta-icon-filter`, `cta-hover-border`,
+`cta-hover-bg`, `cta-hover-color`, `cta-hover-shadow`, `replay-color`, `replay-hover-color`). Every
+default equals the previous literal, so profiles only restate what they change.
+
+Collector cutouts are typed content too: `envelope.coverOrnament` (one image on the printed cover
+face) and `envelope.spreadOrnaments` (one or two on the first inner page) render as contained,
+token-anchored boxes (`--ec-face-ornament-{inset,width,height,position,filter}`, defaults
+`auto auto 10% 4%`, `30%`, `12%`, `left bottom`, drop shadow;
+`--ec-page-ornament-{1,2}-{inset,width,height,position}` and `--ec-page-ornament-filter`, defaults
+left/right bottom corners above the folio strip). The editorial-cover hero renders `hero.ornament`
+as an emblem above the title (`--hero-ornament-{align,max-width,height,margin,position,filter}`,
+defaults `center`, `7rem`, `4rem`, `0 0 1rem`, `center bottom`, `none`) and `hero.accentOrnament` as
+a cutout below the details (`--hero-accent-ornament-*`, defaults `center`, `12rem`, `6rem`,
+`1.25rem 0 0`, `center bottom`, `none`). Content without these renders nothing new. Lazy cutouts
+declare `width`/`height` so the browser reserves their box. On phones,
+`--hero-content-padding-block-start` (default `clamp(2.8rem, 7svh, 4.25rem)`) lets a profile whose
+stacked hero fills the screen start the content below the absolute folio rail, and
+`--hero-section-height` (default `100svh`, the base hero's fixed height) set to `auto` lets the
+section grow so the portrait keeps its aspect ratio instead of flex-shrinking.
+
+Multi-word cover marks: `--hero-watermark-size` (editorial-cover, default
+`clamp(12rem, 36vw, 44rem)`) and `--ec-inside-mark-size` (collector inside cover, default
+`calc(var(--ec-book-w) * 0.26)`) size the watermark figures; both are `white-space: nowrap`.
+`envelope.coverEditionLabel` (typed content) replaces the collector rail's `NÚM.` label before
+`coverEdition`; an empty string prints the edition alone (e.g. `3 AÑOS`), omitted keeps `NÚM.`.
+
 Quote exposes `--quote-divider-bottom-display` for a closing ornament independently of the top
 divider. It falls back to `--quote-divider-display`, preserving other invitations. Its optional
 decorative SVG is controlled by `--quote-mark-display` (default `none`) and uses

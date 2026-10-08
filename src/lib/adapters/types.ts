@@ -197,6 +197,8 @@ export interface EnvelopeViewModel {
 		};
 		/** Editorial cover reveal: edition label (e.g. "XV"). When set, triggers editorial-cover reveal instead of envelope. */
 		coverEdition?: string;
+		/** Collector rail label before the edition; "NÚM." when omitted, '' prints the edition alone. */
+		coverEditionLabel?: string;
 		/** Editorial cover reveal: volume number (e.g. "1"). */
 		coverVolume?: string;
 		/** Editorial cover reveal: issue year (e.g. "2027"). */
@@ -205,6 +207,10 @@ export interface EnvelopeViewModel {
 		coverLines?: string[];
 		/** Editorial cover reveal: 'collector' enables the drag-to-open bending magazine. */
 		coverExperience?: 'standard' | 'collector';
+		/** Collector edition: decorative cutout on the printed cover face. */
+		coverOrnament?: ImageAsset;
+		/** Collector edition: up to two decorative cutouts on the first inner page. */
+		spreadOrnaments?: ImageAsset[];
 		/** Explicit content reveal variant. Only 'editorial-cover' replaces the standard envelope. */
 		revealVariant?: EnvelopeRevealVariant;
 	};
@@ -251,6 +257,8 @@ export interface LocationSection {
 	introEyebrow?: string;
 	introHeading?: string;
 	introLede?: string;
+	/** Decorative cutout after the intro. */
+	ornament?: ImageAsset;
 	indicationsHeading?: string;
 }
 
@@ -385,6 +393,8 @@ export interface InvitationViewModel {
 			closingPhrase?: string;
 			date?: string;
 			image?: ImageAsset;
+			/** Decorative cutout below the signature. */
+			ornament?: ImageAsset;
 			focalPoint?: string;
 			overlayAnchor?: 'left' | 'right' | 'top' | 'bottom';
 			overlaySafeArea?: {

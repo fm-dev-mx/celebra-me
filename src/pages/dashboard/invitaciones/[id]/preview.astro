@@ -224,6 +224,7 @@ const headLinks = buildInvitationStylesheetHeadLinks({
 							revealState !== 'internal' && pageCtx.envelope?.revealVariant === 'editorial-cover' ? (
 								<EditorialCoverReveal
 									coverEdition={pageCtx.envelope.coverEdition}
+									coverEditionLabel={pageCtx.envelope.coverEditionLabel}
 									coverVolume={pageCtx.envelope.coverVolume}
 									coverIssue={pageCtx.envelope.coverIssue}
 									coverLines={pageCtx.envelope.coverLines}
@@ -238,6 +239,8 @@ const headLinks = buildInvitationStylesheetHeadLinks({
 									previewState={revealState === 'opened' ? 'opened' : 'closed'}
 									coverContents={buildCoverContents(pageCtx.viewModel)}
 									spreadImage={pageCtx.viewModel.hero.backgroundImage}
+									coverOrnament={pageCtx.envelope.coverOrnament}
+									spreadOrnaments={pageCtx.envelope.spreadOrnaments}
 									coverExperience={pageCtx.envelope.coverExperience}
 									coverImage={pageCtx.envelope.backdropImage}
 									backgroundImage={pageCtx.viewModel.hero.backgroundImage}
