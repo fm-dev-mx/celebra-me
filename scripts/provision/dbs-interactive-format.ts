@@ -2,7 +2,7 @@
 import type { OperationalAction, OperationalActionPlan } from '../../src/lib/status/action-plan.ts';
 import type { CanonicalStatusView } from '../../src/lib/status/types.ts';
 import type { MediaReferencesStatus } from '../../src/lib/status/media-reference-types.ts';
-import { useCliColor } from '../db/operator-cli-ux.ts';
+import { colorEnabled, createTheme } from '../lib/cli-theme.ts';
 import {
 	buildInvitationChoices,
 	invitationEnvironmentStatus,
@@ -20,11 +20,6 @@ type DetailInput = {
 
 function paint(code: string, value: string, enabled: boolean): string {
 	return enabled ? `\x1b[${code}m${value}\x1b[0m` : value;
-}
-
-function colorEnabled(env: NodeJS.ProcessEnv): boolean {
-	if (env.NO_COLOR || env.FORCE_COLOR === '0' || env.FORCE_COLOR === 'false') return false;
-	return useCliColor(env) || Boolean(process.stdout.isTTY);
 }
 
 function wrap(value: string, width = 68): string[] {
@@ -45,17 +40,22 @@ function statusLabel(status: InvitationEnvironmentStatus): {
 	text: string;
 	code: string;
 } {
+	const glyph = createTheme().symbol;
 	switch (status) {
 		case 'CURRENT':
-			return { icon: '✓', text: 'Al día', code: '32' };
+			return { icon: glyph('ok'), text: 'Al día', code: '32' };
 		case 'UPDATE_PENDING':
-			return { icon: '●', text: 'Actualización pendiente', code: '33' };
+			return { icon: glyph('pending'), text: 'Actualización pendiente', code: '33' };
 		case 'MEDIA_REVIEW':
-			return { icon: '●', text: 'Referencias por revisar', code: '33' };
+			return { icon: glyph('pending'), text: 'Referencias por revisar', code: '33' };
 		case 'BOTH':
-			return { icon: '●', text: 'Publicación y referencias pendientes', code: '33' };
+			return {
+				icon: glyph('pending'),
+				text: 'Publicación y referencias pendientes',
+				code: '33',
+			};
 		case 'UNVERIFIED':
-			return { icon: '?', text: 'Sin verificar', code: '33' };
+			return { icon: glyph('warn'), text: 'Sin verificar', code: '33' };
 	}
 }
 
