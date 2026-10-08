@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 
-import { mkdtempSync, rmSync, unlinkSync, writeFileSync } from 'fs';
+import { existsSync } from 'fs';
 import { spawnSync } from 'child_process';
-import { tmpdir } from 'os';
-import { join } from 'path';
+import { resolve } from 'path';
 import process from 'process';
 
 const MULTI_FILE_BODY_THRESHOLD = 3;
@@ -17,7 +16,8 @@ function run(cmd, args, options = {}) {
 	const result = spawnSync(cmd, args, {
 		encoding: 'utf8',
 		stdio: 'pipe',
-		shell: options.shell ?? isWin,
+		// git is an executable; only the pnpm shim needs a shell on Windows.
+		shell: options.shell ?? (isWin && cmd === 'pnpm'),
 		env: options.env || process.env,
 		cwd: options.cwd || process.cwd(),
 	});
@@ -36,28 +36,21 @@ function getCommitMessage(commitHash) {
 	return { full: full.stdout, subject: subject.stdout || '' };
 }
 
-function validateCommitMessage(message, commitHash) {
-	const tmpDir = mkdtempSync(join(tmpdir(), 'commitlint-'));
-	const tmpFile = join(tmpDir, `${commitHash}.txt`);
-	try {
-		writeFileSync(tmpFile, `${String(message || '').trim()}\n`, 'utf8');
-		const result = run('pnpm', ['exec', 'commitlint', '--edit', tmpFile]);
-		return {
-			ok: result.status === 0,
-			output: [result.stdout, result.stderr].filter(Boolean).join('\n'),
-		};
-	} finally {
-		try {
-			unlinkSync(tmpFile);
-		} catch {
-			/* ignore */
-		}
-		try {
-			rmSync(tmpDir, { recursive: true, force: true });
-		} catch {
-			/* ignore */
-		}
-	}
+/**
+ * One commitlint process lints the whole range (`base..head`); a process per commit cost about
+ * 0.7 s each on every push and again in CI. The installed CLI runs through node directly because
+ * the corepack pnpm shim is unreliable under hook shells; pnpm remains the fallback.
+ */
+function validateCommitRange(baseSha, headSha) {
+	const cli = resolve(process.cwd(), 'node_modules/@commitlint/cli/cli.js');
+	const rangeArgs = ['--from', baseSha, '--to', headSha];
+	const result = existsSync(cli)
+		? run(process.execPath, [cli, ...rangeArgs])
+		: run('pnpm', ['exec', 'commitlint', ...rangeArgs]);
+	return {
+		ok: result.status === 0,
+		output: [result.stdout, result.stderr].filter(Boolean).join('\n'),
+	};
 }
 
 function getCommitBody(fullMessage) {
@@ -153,13 +146,6 @@ function validateCommit(commitHash) {
 		return false;
 	}
 
-	const conventional = validateCommitMessage(commit.full, commitHash);
-	if (!conventional.ok) {
-		console.error('  ❌ Commit validation failed');
-		if (conventional.output) console.error(`  ${conventional.output}`);
-		return false;
-	}
-
 	const audit = collectAuditWarnings({ ...commit, hash: commitHash });
 
 	console.log(`  Subject: ${commit.subject}`);
@@ -195,6 +181,13 @@ function main() {
 	if (!hashes.length) {
 		console.log('No commits found in range');
 		process.exit(0);
+	}
+
+	const conventional = validateCommitRange(baseSha, headSha);
+	if (!conventional.ok) {
+		console.error('❌ Commit validation failed');
+		if (conventional.output) console.error(conventional.output);
+		process.exit(1);
 	}
 
 	let allValid = true;
