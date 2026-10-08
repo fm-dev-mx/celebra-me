@@ -2,7 +2,8 @@
     "version": 2,
     "framework": "astro",
     "regions": ["sfo1"],
-    "buildCommand": "pnpm build",
+    "buildCommand": "pnpm build:app",
+    "ignoreCommand": "node scripts/ops/vercel-ignore-build.mjs",
     "devCommand": "astro dev",
     "installCommand": "corepack pnpm install --frozen-lockfile",
     "crons": [
