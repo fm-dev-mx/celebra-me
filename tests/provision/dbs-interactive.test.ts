@@ -1,6 +1,9 @@
 import { describe, expect, it } from '@jest/globals';
 import {
 	buildInvitationChoices,
+	dbsEnvironmentFacts,
+	dbsNextStep,
+	dbsRootMenu,
 	invitationEnvironmentStatus,
 	shouldOpenDbsMenu,
 } from '../../scripts/provision/dbs-interactive-model.ts';
@@ -164,5 +167,45 @@ describe('dbs interactive navigation', () => {
 			'shared-slug (boda)',
 			'shared-slug (xv)',
 		]);
+	});
+});
+
+describe('dbs menu model', () => {
+	it('starts on the overview and moves to invitations once pending work is known', () => {
+		const fresh = dbsRootMenu({ loaded: false, pendingCount: 0, lastAction: null });
+		expect(fresh.initial).toBe('overview');
+		expect(fresh.items[0]?.value).toBe('overview');
+		expect(fresh.items.at(-1)?.value).toBe('exit');
+		expect(fresh.items.some((item) => item.value === 'refresh')).toBe(false);
+		const loaded = dbsRootMenu({ loaded: true, pendingCount: 2, lastAction: 'overview' });
+		expect(loaded.initial).toBe('invitation');
+		expect(loaded.items.some((item) => item.value === 'refresh')).toBe(true);
+	});
+
+	it('suggests the next logical step after each action', () => {
+		expect(dbsNextStep({ loaded: true, pendingCount: 1, lastAction: 'overview' }).initial).toBe(
+			'invitation',
+		);
+		expect(dbsNextStep({ loaded: true, pendingCount: 0, lastAction: 'overview' }).initial).toBe(
+			'exit',
+		);
+		expect(
+			dbsNextStep({ loaded: true, pendingCount: 1, lastAction: 'invitation' }).initial,
+		).toBe('invitation');
+		expect(dbsNextStep({ loaded: true, pendingCount: 0, lastAction: 'compact' }).initial).toBe(
+			'overview',
+		);
+		expect(dbsNextStep({ loaded: true, pendingCount: 0, lastAction: 'json' }).initial).toBe(
+			'menu',
+		);
+	});
+
+	it('derives header facts from the canonical view without probing', () => {
+		const facts = dbsEnvironmentFacts(buildCanonicalStatusViewFixture());
+		expect(facts.map((fact) => fact.env)).toEqual(['local', 'preview', 'production']);
+		for (const fact of facts) {
+			expect(typeof fact.schema).toBe('string');
+			expect(typeof fact.attention).toBe('number');
+		}
 	});
 });
