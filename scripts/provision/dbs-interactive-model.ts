@@ -111,3 +111,119 @@ export function invitationEnvironmentStatus(
 export function shouldOpenDbsMenu(args: readonly string[], isTTY: boolean): boolean {
 	return isTTY && args.length === 0;
 }
+
+/* ── Menu model (pure; the interactive runner renders it) ─────────────────────────────── */
+
+export type DbsMenuAction =
+	'overview' | 'invitation' | 'compact' | 'options' | 'json' | 'refresh' | 'menu' | 'exit';
+
+export interface DbsMenuState {
+	loaded: boolean;
+	pendingCount: number;
+	lastAction: DbsMenuAction | null;
+}
+
+export interface DbsMenuItemSpec {
+	value: DbsMenuAction;
+	label: string;
+	hint?: string;
+}
+
+/** Root menu ordered by frequency; the default follows the detected state. */
+export function dbsRootMenu(state: DbsMenuState): {
+	items: DbsMenuItemSpec[];
+	initial: DbsMenuAction;
+} {
+	const items: DbsMenuItemSpec[] = [
+		{
+			value: 'overview',
+			label: 'Status overview',
+			hint: 'Schema parity, publication queue and next actions (read-only)',
+		},
+		{
+			value: 'invitation',
+			label: 'Invitation detail…',
+			hint: 'Search a pending invitation by slug',
+		},
+		{
+			value: 'compact',
+			label: 'Compact connectivity check',
+			hint: 'Content + schema connectivity only (dbs --compact)',
+		},
+		{
+			value: 'options',
+			label: 'View options…',
+			hint: 'Targets, verbose, in-sync list, diagnostics',
+		},
+		{ value: 'json', label: 'Print JSON', hint: 'Machine-readable status on stdout' },
+	];
+	if (state.loaded) {
+		items.push({
+			value: 'refresh',
+			label: 'Refresh evidence',
+			hint: 'Probe all targets again',
+		});
+	}
+	items.push({ value: 'exit', label: 'Exit' });
+	const initial: DbsMenuAction =
+		state.loaded && state.pendingCount > 0 && state.lastAction === 'overview'
+			? 'invitation'
+			: 'overview';
+	return { items, initial };
+}
+
+/** Next step offered after an action; never returns to the root menu by default. */
+export function dbsNextStep(state: DbsMenuState): {
+	items: DbsMenuItemSpec[];
+	initial: DbsMenuAction;
+} {
+	const invitation: DbsMenuItemSpec = {
+		value: 'invitation',
+		label:
+			state.lastAction === 'invitation'
+				? 'Another invitation…'
+				: `Invitation detail… (${state.pendingCount} pending)`,
+	};
+	const overview: DbsMenuItemSpec = {
+		value: 'overview',
+		label: state.lastAction === 'overview' ? 'Show status again' : 'Status overview',
+	};
+	const back: DbsMenuItemSpec = { value: 'menu', label: 'Back to menu' };
+	const exit: DbsMenuItemSpec = { value: 'exit', label: 'Exit' };
+	switch (state.lastAction) {
+		case 'overview':
+			return state.pendingCount > 0
+				? { items: [invitation, overview, back, exit], initial: 'invitation' }
+				: { items: [overview, back, exit], initial: 'exit' };
+		case 'invitation':
+			return state.pendingCount > 0
+				? { items: [invitation, overview, back, exit], initial: 'invitation' }
+				: { items: [overview, back, exit], initial: 'exit' };
+		case 'compact':
+			return { items: [overview, back, exit], initial: 'overview' };
+		default:
+			return { items: [back, exit], initial: 'menu' };
+	}
+}
+
+export interface DbsEnvironmentFact {
+	env: TargetEnv;
+	schema: string;
+	pending: number;
+	attention: number;
+	evidence: string;
+}
+
+/** Header facts per environment, derived from the canonical view (no extra probes). */
+export function dbsEnvironmentFacts(view: CanonicalStatusView): DbsEnvironmentFact[] {
+	return (view.selectedTargets ?? (['local', 'preview', 'production'] as const)).map((env) => {
+		const row = view.environments[env];
+		return {
+			env,
+			schema: row.schemaLifecycle,
+			pending: row.pendingMigrations.length,
+			attention: row.invitationAttentionCount,
+			evidence: row.evidence,
+		};
+	});
+}

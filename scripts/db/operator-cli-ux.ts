@@ -5,6 +5,8 @@
  * Spanish operator copy; English technical codes; NO_COLOR respected.
  */
 
+import { colorEnabled, createTheme, promptTheme } from '../lib/cli-theme.ts';
+
 export const NO_PRODUCTION_CHANGES = 'No changes were made to Production';
 
 export type OperatorSymbolKind = 'ok' | 'warn' | 'fail' | 'info';
@@ -64,40 +66,31 @@ export class OperatorError extends Error {
 	}
 }
 
-function streamIsTty(): boolean {
-	return Boolean(process.stderr.isTTY);
-}
-
+/** Shared color rule (NO_COLOR, FORCE_COLOR, stdout + stderr TTY) from the CLI theme. */
 export function useCliColor(env: NodeJS.ProcessEnv = process.env): boolean {
-	if (env.NO_COLOR) return false;
-	if (env.FORCE_COLOR === '0' || env.FORCE_COLOR === 'false') return false;
-	if (env.FORCE_COLOR !== undefined && env.FORCE_COLOR !== '') return true;
-	return streamIsTty();
+	return colorEnabled(env);
 }
 
 const ansi = {
 	bold: (s: string, color: boolean) => (color ? `\x1b[1m${s}\x1b[0m` : s),
 	dim: (s: string, color: boolean) => (color ? `\x1b[2m${s}\x1b[0m` : s),
-	red: (s: string, color: boolean) => (color ? `\x1b[31m${s}\x1b[0m` : s),
-	green: (s: string, color: boolean) => (color ? `\x1b[32m${s}\x1b[0m` : s),
-	yellow: (s: string, color: boolean) => (color ? `\x1b[33m${s}\x1b[0m` : s),
 };
 
-/** Semantic symbols that remain readable without color. */
+/** Semantic symbols from the shared theme (ASCII fallback when unicode is unsupported). */
 export function operatorSymbol(
 	kind: OperatorSymbolKind,
 	env: NodeJS.ProcessEnv = process.env,
 ): string {
-	const color = useCliColor(env);
+	const theme = createTheme({ env });
 	switch (kind) {
 		case 'ok':
-			return ansi.green('✓', color);
+			return theme.ok(theme.symbol('ok'));
 		case 'warn':
-			return ansi.yellow('!', color);
+			return theme.warn(theme.symbol('warn'));
 		case 'fail':
-			return ansi.red('×', color);
+			return theme.fail(theme.symbol('fail'));
 		case 'info':
-			return ansi.dim('·', color);
+			return theme.info(theme.symbol('info'));
 	}
 }
 
@@ -208,23 +201,11 @@ export function renderOperatorError(
 	);
 }
 
-/** Shared @inquirer theme that respects NO_COLOR. */
-export function inquirerTheme(env: NodeJS.ProcessEnv = process.env): {
-	style: {
-		message: (text: string) => string;
-		answer: (text: string) => string;
-		help: (text: string) => string;
-	};
-} {
-	const color = useCliColor(env);
-	const identity = (text: string) => text;
-	return {
-		style: {
-			message: color ? (text: string) => `\x1b[1m${text}\x1b[0m` : identity,
-			answer: color ? (text: string) => `\x1b[32m${text}\x1b[0m` : identity,
-			help: color ? (text: string) => `\x1b[2m${text}\x1b[0m` : identity,
-		},
-	};
+/** Shared @inquirer theme (palette, symbols, NO_COLOR) from the CLI theme module. */
+export function inquirerTheme(
+	env: NodeJS.ProcessEnv = process.env,
+): ReturnType<typeof promptTheme> {
+	return promptTheme(createTheme({ env }));
 }
 
 /** Friendly labels for plan enums shown in compact operator views. */
