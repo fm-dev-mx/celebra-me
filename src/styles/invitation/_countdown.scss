@@ -102,8 +102,8 @@
 	gap: 0.4rem;
 	position: relative;
 	transition:
-		border-color var(--motion-interaction-duration, 0.2s) ease,
-		box-shadow var(--motion-interaction-duration, 0.2s) ease;
+		border-color var(--motion-interaction-duration, 0.2s) var(--countdown-feedback-ease, ease),
+		box-shadow var(--motion-interaction-duration, 0.2s) var(--countdown-feedback-ease, ease);
 
 	@include mixins.respond-to(sm) {
 		padding: var(--countdown-segment-padding-desktop, 2rem 1.25rem);

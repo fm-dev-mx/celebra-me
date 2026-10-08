@@ -2,6 +2,8 @@
 // INTERLUDE — Section-level CSS variable contract
 // Contract variables (set as inherited theme tokens; base fallbacks live in usage):
 //   --interlude-bg                   Section background
+//   --interlude-pull-up              Negative top margin (rise under the previous section)
+//   --interlude-top-ink[-display|-height|-mask]  Ink line along the top edge (default none)
 //   --interlude-image-filter         Image CSS filter
 //   --interlude-overlay-opacity      ::after vignette darkness
 //   --interlude-overlay              ::after overlay background (multi-gradient)
@@ -46,6 +48,21 @@
 		var(--invitation-header-offset, calc(70px + 1.5rem)) + var(--preview-banner-height, 0px)
 	);
 	position: relative;
+	margin-top: var(--interlude-pull-up, 0);
+
+	// Optional ink line along the top edge (e.g. a shoreline the previous section ends on).
+	&::before {
+		content: '';
+		display: var(--interlude-top-ink-display, none);
+		position: absolute;
+		inset-inline: 0;
+		top: 0;
+		z-index: 3;
+		height: var(--interlude-top-ink-height, 0);
+		background-color: var(--interlude-top-ink, transparent);
+		mask: var(--interlude-top-ink-mask, none) center / 100% 100% no-repeat;
+		pointer-events: none;
+	}
 
 	// data-height resolves first; optional --interlude-min-height-N may override.
 	--interlude-min-height-resolved: var(--interlude-min-height);
@@ -89,7 +106,7 @@
 		transform-origin: var(--interlude-focal-point);
 		filter: var(--interlude-image-filter, saturate(0.96) contrast(1.02));
 		transform: none;
-		transition: filter 260ms ease-out;
+		transition: filter var(--interlude-image-transition, 260ms ease-out);
 
 		@media (width >= 992px) {
 			object-position: var(--interlude-focal-point-desktop, var(--interlude-focal-point));
@@ -99,8 +116,12 @@
 
 	@media (prefers-reduced-motion: no-preference) {
 		&.is-visible &__image {
-			animation: interlude-ambient var(--motion-ambient-duration, 14s) var(--ease-premium)
-				infinite alternate;
+			// `--interlude-ambient-animation: none` switches the slow drift off entirely.
+			animation: var(
+				--interlude-ambient-animation,
+				interlude-ambient var(--motion-ambient-duration, 14s) var(--ease-premium) infinite
+					alternate
+			);
 		}
 	}
 
@@ -247,6 +268,9 @@
 		width: 100%;
 		height: auto;
 		object-fit: contain;
+
+		// Print area while the photograph loads (default: the mat shows through).
+		background-color: var(--interlude-framed-image-bg, transparent);
 		animation: none;
 		transform: none;
 	}

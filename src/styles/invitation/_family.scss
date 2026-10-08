@@ -18,6 +18,7 @@
 	padding-block: var(--family-padding-block, clamp(5rem, 9vw, 8rem));
 	background: var(--family-bg, var(--color-surface-primary));
 	color: var(--family-text-primary, var(--color-text-primary));
+	mask: var(--family-section-mask, none);
 
 	&::before {
 		content: '';
@@ -263,6 +264,9 @@
 				calc(var(--family-media-radius, 12px) - 2px)
 			);
 			filter: var(--family-media-filter, none);
+
+			// Print area while the photograph loads (default: the frame shows through).
+			background-color: var(--family-media-image-bg, transparent);
 		}
 	}
 

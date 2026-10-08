@@ -1438,7 +1438,10 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		padding: clamp(2.5rem, 8vw, 3.5rem) clamp(1.75rem, 7vw, 3.5rem) clamp(2.25rem, 7vw, 3rem);
+		padding: var(
+			--location-enclosure-padding,
+			clamp(2.5rem, 8vw, 3.5rem) clamp(1.75rem, 7vw, 3.5rem) clamp(2.25rem, 7vw, 3rem)
+		);
 		background: var(--location-enclosure-bg, var(--color-surface-elevated));
 		box-shadow: var(--location-enclosure-shadow, 0 1px 2px rgb(16 24 32 / 14%));
 		outline: 1px solid var(--location-enclosure-rule, rgb(16 24 32 / 18%));
@@ -1467,10 +1470,21 @@
 		gap: 0.55rem;
 		align-items: center;
 		width: 100%;
-		padding-block: 1.1rem;
+		padding-block: var(--location-enclosure-note-padding, 1.1rem);
 
+		// Rule between notes; `--location-enclosure-note-rule-width` shortens it from the center
+		// (100% keeps the full-width hairline).
 		& + .event-location__enclosure-note {
 			border-top: 1px solid var(--location-enclosure-rule, rgb(16 24 32 / 18%));
+			border-image: linear-gradient(
+					90deg,
+					transparent calc(50% - var(--location-enclosure-note-rule-width, 100%) / 2),
+					var(--location-enclosure-rule, rgb(16 24 32 / 18%)) 0,
+					var(--location-enclosure-rule, rgb(16 24 32 / 18%))
+						calc(50% + var(--location-enclosure-note-rule-width, 100%) / 2),
+					transparent 0
+				)
+				1;
 		}
 	}
 
