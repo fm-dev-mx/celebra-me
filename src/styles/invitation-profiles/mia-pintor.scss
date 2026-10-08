@@ -1,8 +1,6 @@
 // Mía — "orilla al amanecer": very pale sky paper, pearl and silver line work, a readable sea-blue
 // accent, and soft wave edges between sections. Tokens only; structure stays with the variants.
 
-$wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0 24V15C6 11.5 12.5 11.5 18.5 14.5S31 17.5 37.5 14.5S50 11 56.5 14S69 17.5 75.5 14.5S88 11.5 94 14.5C96 15.5 98 15.8 100 15.6V24Z'/%3E%3C/svg%3E");
-
 .event--mia-pintor.theme-preset--celestial-blue {
 	// Palette: sky paper replaces the preset's warm ivory; silver stays the line color.
 	--color-cool-ivory: rgb(243 248 252);
@@ -12,6 +10,16 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 	--color-ice-blue: rgb(226 239 248);
 	--color-ice-blue-rgb: 226 239 248;
 	--color-envelope-paper-ivory: rgb(247 251 253);
+
+	// One sheet of grained sky paper under the whole invitation: sections on sky paper are
+	// transparent, so no texture seam appears between them; pearl and ice bands carry the same
+	// grain over their own color.
+	--invitation-paper: var(--mia-paper-grain), var(--color-surface-primary);
+
+	// Document canvas and scrollbar: the page script paints `html` with the paper (the envelope
+	// sky while it covers the page) and themes the scrollbar when this token is declared, so no
+	// pale strip shows in the gutter; silver thumb on a transparent track.
+	--page-scrollbar-color: rgb(138 154 168 / 70%) transparent;
 
 	// Sea-blue accent keeps the sky identity while meeting text contrast on pale paper.
 	--color-action-accent: rgb(58 108 142);
@@ -43,6 +51,17 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 		rgb(196 213 227) 100%
 	);
 
+	// The spill rests on the paper: a contact shadow at its foot, a light catch on the top rim
+	// and a shaded lower bevel; the shell is pressed a little deeper (sharper relief), and the
+	// instruction reads in full muted ink instead of the shared 72 % opacity.
+	--seaside-seal-rim-shadow:
+		0 1px 0 rgb(40 60 80 / 24%), 0 2px 3px rgb(40 60 80 / 16%),
+		0 10px 18px -6px rgb(40 60 80 / 24%), inset 0 1px 0 rgb(255 255 255 / 85%),
+		inset 0 -3px 5px rgb(40 60 80 / 10%);
+	--seaside-seal-icon-filter: drop-shadow(0.8px 1px 0 rgb(255 255 255 / 90%))
+		drop-shadow(-0.6px -0.7px 0 rgb(40 60 80 / 38%));
+	--env-open-label-opacity: 100%;
+
 	// Opened card: the envelope's paper grain, a larger card on wide screens and a contact shadow
 	// that follows the deckle edge.
 	--seaside-paper-grain: var(--mia-paper-grain);
@@ -64,24 +83,92 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 	--font-label: 'EB Garamond Variable', 'EB Garamond', georgia, serif;
 	--mia-heading-font: var(--font-display);
 
-	// Hero (bleed-portrait): the mirror photograph to the edges, then a small-caps occasion,
-	// the script name and the written when/where.
+	// Hero (bleed-portrait): the mirror photograph to the edges, then the letter on grained paper:
+	// the occasion in small caps between two silver rules, the script name close under it, the
+	// written date and hour in Cormorant italic over a silver rule, the venue in small caps, and a
+	// longer scroll line. A faint paper veil closes the photograph toward the letter on phones
+	// (the photographer mark stays legible through it).
+	--hero-bleed-bg: transparent;
+
+	// Phones: the photograph always takes the full width and the whole hero fits one screen. The
+	// figure gets `100svh` minus the letter's reserved height and the image is anchored at the
+	// bottom, so only sky is cropped (handwritten date and photographer mark stay). The mirror
+	// frame starts at 12 % of the print, so the crop is capped at 11.3 % (`133vw` of a 2:3
+	// print); where the screen is shorter than that, the hero grows instead of cutting the
+	// frame or the letter. The reserve is calibrated against the compact letter below.
+	--mia-hero-letter-reserve: calc(14rem + 24.3vw);
+	--hero-bleed-stack-height: auto;
+	--hero-bleed-stack-min-height: 100svh;
+	--hero-bleed-stack-padding-bottom: max(1rem, env(safe-area-inset-bottom));
+	--hero-bleed-photo-height-stack: clamp(
+		133vw,
+		calc(100svh - var(--mia-hero-letter-reserve)),
+		150vw
+	);
+	--hero-bleed-photo-img-width: 100%;
+	--hero-bleed-photo-img-height: 100%;
+	--hero-bleed-photo-position-stack: 50% 100%;
+	--hero-bleed-photo-veil: linear-gradient(to bottom, transparent 84%, rgb(243 248 252 / 28%));
+	--hero-bleed-letter-padding: 1.15rem 1.5rem 0;
 	--hero-occasion-font: 400 1.05rem / 1.4 var(--font-label);
 	--hero-occasion-color: var(--mia-ink-muted);
+	--hero-bleed-occasion-display: inline-flex;
+	--hero-bleed-occasion-rule: 2rem;
+	--hero-bleed-occasion-size-wide: 1.2rem;
 	--hero-name-font-family: var(--font-calligraphy);
 	--hero-name-font-weight: 400;
 	--hero-name-letter-spacing: 0;
-	--hero-name-line-height: 1.2;
+	--hero-name-line-height: 1.05;
+	--hero-bleed-name-margin: 0.1rem 0 0;
 	--hero-bleed-muted: var(--mia-ink-muted);
+	--hero-bleed-rule: rgb(138 154 168 / 55%);
 	--hero-bleed-title-size-desktop: clamp(7rem, 10vw, 9.5rem);
+	--hero-bleed-facts-margin: 0.35rem 0 0;
+	--hero-bleed-facts-padding-top: 0;
+	--hero-bleed-facts-rule-width: 0;
+
+	// Phones: a short silver rule (as long as the occasion's) replaces the full-width border, the
+	// date leads in Cormorant italic, the hour follows smaller in the muted text italic, and the
+	// venue closes in small caps narrow enough to keep clear of the margins.
+	--hero-bleed-facts-divider-display: block;
+	--hero-bleed-facts-divider-width: 3.25rem;
+	--hero-bleed-facts-divider-gap: 0.65rem;
+	--hero-bleed-facts-row-gap: 0.45rem;
+	--hero-bleed-time-display: block;
+	--hero-bleed-time-margin: 0;
+	--hero-bleed-time-font-family: var(--font-body);
+	--hero-bleed-time-size: clamp(1.02rem, 1.2vw, 1.15rem);
+	--hero-bleed-time-style: italic;
+	--hero-bleed-time-tracking: 0.01em;
+	--hero-bleed-time-color: var(--mia-ink-muted);
+
+	// Letter motion: the occasion rules and the divider draw out (700 ms, ease-enter) as the
+	// text rises; after the entrance a short segment runs down the scroll line three times.
+	--hero-bleed-rule-entrance: hero-bleed-rule-draw;
+	--hero-bleed-scroll-cue: hero-bleed-scroll-cue;
+	--hero-bleed-scroll-cue-duration: 1.8s;
+	--hero-bleed-scroll-cue-delay: 1.4s;
+	--hero-bleed-scroll-cue-ease: var(--mia-ease-move);
+	--hero-bleed-scroll-cue-iterations: 3;
+	--hero-bleed-scroll-cue-ink: var(--seaside-ink-strong);
 	--hero-bleed-facts-gap: 1.75rem;
+	--hero-bleed-when-font-family: var(--font-display);
+	--hero-bleed-when-size: clamp(1.4rem, 5.6vw, 1.75rem);
+	--hero-bleed-when-style: italic;
+	--hero-bleed-where-font-family: var(--font-label);
+	--hero-bleed-where-size: clamp(0.92rem, 1.1vw, 1.1rem);
+	--hero-bleed-where-caps: all-small-caps;
+	--hero-bleed-where-tracking: 0.11em;
+	--hero-bleed-where-color: var(--mia-ink-muted);
 	--hero-bleed-scroll-line: 3.5rem;
+	--hero-bleed-scroll-line-stack: 2rem;
+	--hero-bleed-scroll-line-margin: 0.75rem auto 0;
 
 	// Tall wide screens crop the 2:3 photograph sideways: anchor right so DAYEZ stays whole.
 	--hero-bleed-focal-point: 92% 85%;
 
 	// Family: a deeper sky band under a wave edge, uncropped photograph, no nested card.
-	--family-bg: var(--color-ice-blue);
+	--family-bg: var(--mia-paper-grain), var(--color-ice-blue);
 	--family-title-font: var(--mia-heading-font);
 	--family-title-style: italic;
 	--family-title-weight: 400;
@@ -99,7 +186,7 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 	--family-vignette-bg: none;
 	--family-panel-border: 0;
 	--family-panel-max-width: min(100%, 34rem);
-	--family-padding-block: clamp(5rem, 9vw, 8rem) clamp(4.25rem, 7vw, 5.5rem);
+	--family-padding-block: var(--mia-space-standard);
 
 	// Family copy sits above the panel (no parents list), so the photograph keeps one column.
 	--family-panel-columns-desktop: minmax(0, 1fr);
@@ -171,18 +258,14 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 	--music-player-pulse-iterations: 2;
 	--music-player-prompt-duration: var(--mia-motion-quick);
 
-	// Page scrollbar: silver thumb on a transparent track, so no white strip beside the paper or
-	// the envelope.
-	--page-scrollbar-color: rgb(138 154 168 / 70%) transparent;
-
 	// RSVP shell is transparent by default; keep the sky paper instead of the global canvas.
-	--rsvp-shell-background: var(--color-surface-primary);
+	--rsvp-shell-background: transparent;
 
 	// Location: sea-blue dates (5.2:1), calendar links in the accent, script band heading.
 	--location-date-color: var(--color-action-accent);
 	--location-calendar-link-color: var(--color-action-accent);
 	--location-band-heading-color: var(--color-text-primary);
-	--location-bg: var(--color-surface-primary);
+	--location-bg: var(--mia-paper-grain), var(--color-pearl-gray);
 	--location-intro-heading-font-family: var(--mia-heading-font);
 	--location-intro-heading-style: italic;
 	--location-intro-heading-size: clamp(2.4rem, 9vw, 3.75rem);
@@ -193,9 +276,10 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 	--location-indications-heading-transform: none;
 	--location-indications-heading-letter-spacing: 0;
 	--location-indications-heading-font-weight: 400;
-	--location-program-link: var(--color-action-accent);
-	--location-program-drawing: var(--seaside-ink-strong);
-	--location-program-muted: var(--mia-ink-muted);
+
+	// Program ink, links, drawings and rules are declared by the variant on its own element, so
+	// they are set below on that element (`.event-location[data-variant='program-sheet']`), not
+	// inherited from here.
 
 	// Drawings at hairline weight and a calmer size; time and venue separated; links on one line
 	// on phones, aligned across both columns and more open on wide screens.
@@ -215,6 +299,158 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 	--location-enclosure-muted: var(--mia-ink-muted);
 	--location-enclosure-swatch: rgb(169 210 238);
 
+	// Program entries: the venue leads (larger, heavier), the address follows in full ink, and
+	// the event label and the written hour sit smaller in muted ink; nothing under 1rem on phones.
+	--location-program-entry-gap: 0.35rem;
+	--location-program-label-size: 1rem;
+	--location-program-time-font: var(--font-body);
+	--location-program-time-size: clamp(1.12rem, 3.2vw, 1.25rem);
+	--location-program-time-style: italic;
+	--location-program-time-color: var(--mia-ink-muted);
+	--location-program-time-margin: 0 0 0.35rem;
+	--location-program-place-size: clamp(2rem, 7.2vw, 2.65rem);
+	--location-program-place-weight: 500;
+	--location-program-address-size: clamp(1.12rem, 2.1vw, 1.3rem);
+	--location-program-address-color: var(--color-text-primary);
+	--location-program-address-margin: 0.1rem 0 0.25rem;
+
+	// Details card: wider margins and short centered rules between the notes instead of
+	// full-width dividers, so it reads as a printed enclosure rather than a boxed list.
+	--location-enclosure-padding: clamp(2.75rem, 9vw, 3.75rem) clamp(2rem, 8vw, 4rem)
+		clamp(2.5rem, 8vw, 3.25rem);
+	--location-enclosure-note-rule-width: 3.5rem;
+	--location-enclosure-note-padding: 1.3rem;
+
+	// Itinerary (timeline-paper): the sheet lies flat and the ink keeps the browser's text
+	// rasterization. The SVG ink-bleed filter (a 0.3 px Gaussian blur merged over the glyphs), the
+	// -0.5deg sheet rotation and the `will-change: filter` layers together rendered every line
+	// soft; all three are off here. The deckle mask and grain of the other printed pieces replace
+	// the displacement edge, sky paper replaces the preset's cream, the monogram watermark and
+	// the flourishes are left out, and numbers, hours and notes sit at readable sizes.
+	--itinerary-paper-white: rgb(251 253 254);
+	--itinerary-cream: rgb(243 248 252);
+	--itinerary-ink-dark: rgb(16 24 32);
+	--itinerary-ink-dark-rgb: 16 24 32;
+	--itinerary-slate: rgb(74 90 104);
+	--itinerary-slate-rgb: 74 90 104;
+	--itinerary-paper-section-bg: transparent;
+	--itinerary-paper-tilt: 0deg;
+	--itinerary-paper-ink-filter: none;
+	--itinerary-paper-ink-will-change: auto;
+	--itinerary-paper-edge-filter: none;
+	--itinerary-paper-edge-will-change: auto;
+	--itinerary-paper-surface-bg: var(--mia-paper-grain), rgb(251 253 254);
+	--itinerary-paper-mask: var(--mia-deckle);
+	--itinerary-paper-radius: 0;
+	--itinerary-paper-radius-sm: 0;
+	--itinerary-paper-shadow: none;
+	--itinerary-paper-texture-display: none;
+	--itinerary-paper-rule: rgb(138 154 168 / 55%);
+	--itinerary-paper-rule-inset: clamp(0.6rem, 2.4vw, 0.85rem);
+	--itinerary-paper-edge-highlight: none;
+	--itinerary-paper-curl-display: none;
+	--itinerary-paper-monogram-display: none;
+	--itinerary-paper-corner-opacity: 0;
+	--itinerary-paper-flourish-display: none;
+	--itinerary-paper-title-style: italic;
+	--itinerary-paper-subtitle-size: clamp(1.1rem, 2vw, 1.25rem);
+	--itinerary-paper-subtitle-weight: 400;
+	--itinerary-paper-subtitle-style: normal;
+	--itinerary-paper-subtitle-tracking: 0;
+	--itinerary-paper-subtitle-transform: none;
+	--itinerary-paper-subtitle-color: rgb(36 50 62);
+	--itinerary-paper-num-opacity: 100%;
+	--itinerary-paper-num-opacity-sm: 100%;
+	--itinerary-paper-time-font: var(--font-body);
+	--itinerary-paper-time-weight: 400;
+	--itinerary-paper-time-transform: none;
+	--itinerary-paper-time-opacity: 100%;
+	--itinerary-paper-time-opacity-sm: 100%;
+	--itinerary-paper-title-size: clamp(2.4rem, 4.4vw, 3rem);
+	--itinerary-paper-title-size-sm: clamp(2.1rem, 9.5vw, 2.5rem);
+	--itinerary-paper-letterpress: none;
+	--itinerary-paper-desc-size: clamp(1rem, 1.5vw, 1.1rem);
+	--itinerary-paper-desc-color: var(--mia-ink-muted);
+	--itinerary-paper-desc-size-sm: 1rem;
+	--itinerary-paper-desc-color-sm: var(--mia-ink-muted);
+
+	// Itinerary as a shore log: the row numbers become marine markers in the shoreline's hand
+	// (shell, starfish, alga, wave, in turn) joined by a soft tide line; the hour sits above each
+	// title in small caps; no grey rules between rows. The heading loses the base 0.1em tracking.
+	--mia-itin-pad: 1.15rem;
+	--mia-itin-marker: 1.75rem;
+	--itinerary-paper-row-rule: transparent;
+	--itinerary-paper-row-padding: var(--mia-itin-pad);
+	--itinerary-paper-row-padding-sm: var(--mia-itin-pad);
+	--itinerary-paper-row-columns: 3rem 7.5rem minmax(0, 1fr);
+	--itinerary-paper-row-columns-xl: 3rem 7.5rem minmax(0, 1fr);
+	--itinerary-paper-row-columns-sm: 2.4rem minmax(0, 1fr);
+	--itinerary-paper-row-areas-sm: 'num time' 'num content';
+	--itinerary-paper-row-gap-sm: 0.15rem 0.85rem;
+	--itinerary-paper-time-align-sm: start;
+	--itinerary-paper-time-caps: all-small-caps;
+	--itinerary-paper-time-tracking: 0.14em;
+	--itinerary-paper-time-size: 1.25rem;
+	--itinerary-paper-time-size-sm: 1.02rem;
+	--itinerary-paper-title-margin-top: 0.1rem;
+	--itinerary-paper-title-line-height: 1.05;
+	--itinerary-paper-title-line-height-sm: 1.05;
+	--itinerary-paper-num-size: 0;
+	--itinerary-paper-num-size-sm: 0;
+	--itinerary-paper-num-box: var(--mia-itin-marker);
+	--itinerary-paper-num-align: start;
+	--itinerary-paper-num-margin: 0.05rem auto 0;
+	--itinerary-paper-num-ink: var(--seaside-ink-strong);
+	--itinerary-paper-rail-display: block;
+	--itinerary-paper-rail-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 24'%3E%3Cpath d='M4 0C6.6 6 1.4 6 4 12S6.6 18 4 24' fill='none' stroke='%23000' stroke-width='1.1' stroke-linecap='round'/%3E%3C/svg%3E");
+	--itinerary-paper-rail-ink: rgb(138 154 168 / 70%);
+	--itinerary-paper-rail-width: 0.5rem;
+	--itinerary-paper-rail-top: calc(var(--mia-itin-pad) + var(--mia-itin-marker) + 0.55rem);
+	--itinerary-paper-rail-bottom: calc(0.45rem - var(--mia-itin-pad));
+
+	.itinerary__program-row:nth-child(4n + 1) {
+		--itinerary-paper-num-mask: var(--ornament-motif-shell);
+	}
+
+	.itinerary__program-row:nth-child(4n + 2) {
+		--itinerary-paper-num-mask: var(--ornament-motif-starfish);
+	}
+
+	.itinerary__program-row:nth-child(4n + 3) {
+		--itinerary-paper-num-mask: var(--ornament-motif-alga);
+	}
+
+	.itinerary__program-row:nth-child(4n) {
+		--itinerary-paper-num-mask: var(--ornament-motif-wave);
+	}
+
+	// Seven moments read shell · starfish · alga · wave · starfish · alga · shell: no piece
+	// twice in a row, and the last moment closes on a shell, like the closing shoreline.
+	.itinerary__program-row:nth-child(5) {
+		--itinerary-paper-num-mask: var(--ornament-motif-starfish);
+	}
+
+	.itinerary__program-row:nth-child(6) {
+		--itinerary-paper-num-mask: var(--ornament-motif-alga);
+	}
+
+	.itinerary__program-row:last-child {
+		--itinerary-paper-num-mask: var(--ornament-motif-shell);
+	}
+
+	// Rail centered under each marker (half the marker column, minus half the rail).
+	.itinerary__program-list {
+		--itinerary-paper-rail-left: calc(1.2rem - 0.25rem);
+
+		@media (width >= 641px) {
+			--itinerary-paper-rail-left: calc(1.5rem - 0.25rem);
+		}
+	}
+
+	.itinerary__title {
+		--itinerary-title-tracking: 0;
+	}
+
 	// Footer: the colophon leads in ink; controls follow smaller, in the text face.
 	--footer-closing-color: var(--color-text-primary);
 	--footer-divider-glow: none;
@@ -225,11 +461,25 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 	--footer-replay-color: var(--mia-ink-muted);
 	--footer-replay-opacity: 100%;
 
-	// Reply card (pass + RSVP): cotton paper, silver hairline, readable labels.
+	// Reply card (pass + RSVP): cotton paper with one deckle around both halves (upper edge on the
+	// pass, lower edge on the reply), a contact shadow that follows it, a silver hairline inside,
+	// the guest name in Cormorant italic, old-style seat numeral and open (unfilled) answers.
 	--reply-card-bg: var(--mia-paper-grain), rgb(251 253 254);
 	--reply-card-rule: rgb(138 154 168 / 55%);
 	--reply-card-muted: var(--mia-ink-muted);
 	--reply-card-accent: var(--color-action-accent);
+	--reply-card-mask-upper: var(--mia-deckle);
+	--reply-card-mask-lower: var(--mia-deckle);
+	--reply-card-shadow-upper: none;
+	--reply-card-shadow-lower: none;
+	--reply-card-edge-shadow: drop-shadow(0 1px 1px rgb(40 60 80 / 20%))
+		drop-shadow(0 8px 14px rgb(40 60 80 / 7%));
+	--reply-card-option-bg: transparent;
+	--reply-card-guest-size: clamp(2rem, 8vw, 2.75rem);
+	--reply-card-guest-style: italic;
+	--reply-card-guest-weight: 400;
+	--reply-card-count-size: clamp(3.75rem, 16vw, 5rem);
+	--reply-card-count-numerals: oldstyle-nums;
 
 	// Both halves share one explicit width (their parents shrink to fit) so they read as one card.
 	--reply-card-width: min(36rem, calc(100vw - 2 * clamp(1.25rem, 5vw, 2rem)));
@@ -258,8 +508,7 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 	--thank-you-drop-cap-shadow: none;
 
 	// Closing on the deeper sky band, without the graphite fog at the top.
-	--thank-you-section-background: var(--color-ice-blue);
-	--pa-section-background: none;
+	--thank-you-section-background: var(--mia-paper-grain), var(--color-ice-blue);
 	--thank-you-image-radius: 0;
 	--thank-you-print-border: clamp(0.6rem, 2.6vw, 0.85rem);
 	--thank-you-print-bg: rgb(255 255 255);
@@ -277,9 +526,18 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 	--thank-you-keepsake-copy-align: center;
 	--thank-you-keepsake-text-align: center;
 
+	// Image placeholders: the full-bleed interlude sat on the preset's graphite until its lazy
+	// photograph arrived (a near-black block after the ice band); it now waits on the same ice.
+	// Framed photographs (family, meadow, closing) keep their white mats but the print area
+	// itself waits in pearl, never white.
+	--interlude-bg: var(--mia-paper-grain), var(--color-ice-blue);
+	--family-media-image-bg: var(--color-pearl-gray);
+	--interlude-framed-image-bg: var(--color-pearl-gray);
+	--thank-you-photo-bg: var(--color-pearl-gray);
+
 	// Framed interlude: a real passe-partout. Generous white mat, a silver hairline a few pixels
 	// off the photograph and a one-pixel contact shadow; no outer CSS double border.
-	--interlude-framed-bg: var(--color-surface-primary);
+	--interlude-framed-bg: transparent;
 	--interlude-framed-mat: clamp(1rem, 5%, 3rem) clamp(1rem, 5%, 3rem) clamp(1.35rem, 6.5%, 3.9rem);
 	--interlude-framed-mat-bg: rgb(255 255 255);
 	--interlude-image-filter: none;
@@ -293,11 +551,15 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 
 	// Hero, gallery and countdown declare their own section tokens; scope the overrides to them.
 	.invitation-hero {
-		--hero-title-size: clamp(5rem, 24vw, 6.75rem);
+		--hero-title-size: clamp(5.25rem, 24vw, 7rem);
 	}
 
 	// Quote as an epigraph: Cormorant italic in full ink, no rules.
 	.quote-section {
+		// Same sky paper as the hero (the wrapper paints it), so the opening shoreline sits between
+		// two sheets of one paper and its color band stays off.
+		--quote-bg: transparent;
+		--quote-padding-block: var(--mia-space-compact);
 		--quote-content-font: var(--font-display);
 		--quote-content-style: italic;
 		--quote-content-weight: 400;
@@ -313,7 +575,10 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 	}
 
 	.gallery-section {
-		--gallery-section-bg: var(--color-surface-primary);
+		--gallery-section-bg: var(--mia-paper-grain), var(--color-pearl-gray);
+		--gallery-section-padding-block: var(--mia-space-standard);
+		--gallery-header-gap: var(--mia-title-gap);
+		--gallery-item-transition-ease: var(--mia-ease-move);
 		--gallery-title-font: var(--mia-heading-font);
 		--gallery-title-style: italic;
 		--gallery-title-transform: none;
@@ -347,7 +612,9 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 
 	// Gifts: one flat suggestion on paper, no nested card.
 	.gifts-section {
-		--gifts-padding-block: clamp(3.75rem, 10vw, 5.5rem);
+		--gifts-bg: transparent;
+		--gifts-padding-block: var(--mia-space-compact);
+		--gifts-header-margin-bottom: var(--mia-title-gap);
 		--gifts-title-style: italic;
 		--gifts-title-transform: none;
 		--gifts-title-letter-spacing: 0;
@@ -364,9 +631,32 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 		--gifts-header-mark-gap: 1.1rem;
 	}
 
+	// Program sheet: sea-blue text links, hairline drawings in the stronger silver ink, labels and
+	// hours in the readable muted ink, and the same silver rule as every other hairline (the
+	// variant's own graphite rule showed as a second, darker tone).
+	.event-location[data-variant='program-sheet'] {
+		--location-program-link: var(--color-action-accent);
+		--location-program-drawing: var(--seaside-ink-strong);
+		--location-program-muted: var(--mia-ink-muted);
+		--location-program-rule: rgb(138 154 168 / 55%);
+		--location-program-link-radius: 0;
+	}
+
 	// Pass: no paper tilt, so it joins the reply below as one card.
 	.personalized-access {
 		--pa-paper-tilt: 0deg;
+	}
+
+	// Itinerary rows rise 8 px with a longer stagger (90 ms per row; all seven within 540 ms) and
+	// settle sharp. The pass only fades in: with no rise its two halves never part while it enters.
+	.invitation-section-wrapper[data-section-kind='itinerary'] {
+		--motion-reveal-distance: 8px;
+		--motion-stagger-step: 90ms;
+		--motion-stagger-cap: 540ms;
+	}
+
+	.invitation-section-wrapper[data-section-kind='personalized-access'] {
+		--motion-reveal-distance: 0;
 	}
 
 	// Reply options: a readable ring at rest (3.7:1), a sea-blue ring and a pale sky ground when
@@ -388,17 +678,6 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 		--interlude-focal-y: 100%;
 	}
 
-	// Wave edges: arches become a soft shoreline against the deeper sky bands.
-	.invitation-section-wrapper[data-intersection] {
-		--intersection-surface: var(--color-surface-primary);
-		--intersection-arch-mask: #{$wave-mask};
-		--intersection-blend: radial-gradient(
-			ellipse 140% 100% at 50% 0%,
-			rgb(var(--color-ice-blue-rgb) / 90%) 0%,
-			transparent 72%
-		);
-	}
-
 	// Envelope: flap 700 ms, the card rises from 450 ms (700 ms), a short hold to read it, then
 	// the envelope fades 700 ms (≈ 2.4 s in all, was ≈ 5.3 s). The flap shadow keeps a fixed blur
 	// and only fades; the open cue breathes three times, then rests.
@@ -417,8 +696,257 @@ $wave-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
 		--env-seal-pulse-iterations: 3;
 	}
 
+	// Vertical rhythm: one scale. Compact sections (quote, countdown, framed meadow, gifts),
+	// standard sections (family, location, itinerary, gallery, reply card) and the closing;
+	// titles sit 1.5 rem from their content on phones and 2.5 rem on wide screens.
+	--mia-space-compact: clamp(4.5rem, 9vw, 6rem);
+	--mia-space-standard: clamp(5.5rem, 11vw, 7.5rem);
+	--mia-space-closing: clamp(7rem, 13vw, 9rem);
+	--mia-title-gap: clamp(1.5rem, 3.5vw, 2.5rem);
+	--countdown-written-padding-block: var(--mia-space-compact);
+	--interlude-framed-padding: var(--mia-space-compact) clamp(1.5rem, 7vw, 4rem);
+	--location-program-padding-block: var(--mia-space-standard);
+	--location-program-margin-top: var(--mia-title-gap);
+	--itinerary-paper-padding-block: var(--mia-space-standard);
+	--itinerary-paper-header-gap: var(--mia-title-gap);
+	--reply-card-padding-block: var(--mia-space-standard);
+	--thank-you-keepsake-padding: var(--mia-space-closing) clamp(1.15rem, 5vw, 4.5rem);
+	--thank-you-keepsake-padding-block-lg: var(--mia-space-closing);
+
+	// Movement: every duration and curve comes from the profile's three durations and two
+	// curves. The closing print does not zoom on hover (only its filter settles), gallery
+	// feedback and the countdown use the standard curve, and the interludes' slow drift is off
+	// (it ran for 16 s with no visible change).
+	--thank-you-photo-rest-scale: 1;
+	--thank-you-photo-hover-scale: 1;
+	--thank-you-photo-transition-duration: var(--mia-motion-quick);
+	--thank-you-photo-transition-ease: var(--mia-ease-move);
+	--gallery-item-feedback-ease: var(--mia-ease-move);
+	--interlude-ambient-animation: none;
+	--interlude-image-transition: var(--mia-motion-quick) var(--mia-ease-move);
+	--countdown-feedback-ease: var(--mia-ease-move);
+
+	// Photographs fade in once loaded (the page marks each image with `is-loaded`, or with
+	// `is-instant` when it was already complete before the first paint); the pearl or ice
+	// placeholder stays underneath, so nothing pops and nothing moves. Reduced motion removes the
+	// animation through the motion system, so the image simply appears.
+	--image-fade-duration: var(--mia-motion-slow);
+	--image-fade-ease: var(--mia-ease-enter);
+	--image-fade-hidden-opacity: 0%;
+	--image-fade-animation: invitation-image-fade;
+
+	// Music control: the prompt as a small pearl label with square corners and the contact
+	// shadow of the printed pieces; the button carries the same shadow instead of a generic halo.
+	--music-player-prompt-bg: var(--color-pearl-gray);
+	--music-player-prompt-border: 1px solid rgb(138 154 168 / 55%);
+	--music-player-prompt-radius: 0;
+	--music-player-prompt-shadow:
+		0 1px 1px rgb(40 60 80 / 16%), 0 10px 22px -16px rgb(40 60 80 / 30%);
+	--music-player-button-shadow:
+		0 1px 1px rgb(40 60 80 / 16%), 0 10px 22px -16px rgb(40 60 80 / 30%),
+		inset 0 1px 0 var(--color-surface-elevated);
+
+	// Footer contact control with square corners, like every other edge.
+	--footer-contact-radius: 0;
+
+	// Ice bands open on the hand-drawn shoreline itself: the arch takes the shoreline's fill mask
+	// at the ribbon's height and draws the ink ribbon in the same box, so wave and line are one
+	// trace with sky paper above and ice below.
 	.invitation-section-wrapper[data-section-kind='family'][data-intersection='arch'],
 	.invitation-section-wrapper[data-section-kind='thankYou'][data-intersection='arch'] {
-		--intersection-surface: var(--color-ice-blue);
+		--intersection-surface: var(--mia-paper-grain), var(--color-ice-blue);
+		--intersection-arch-height: var(--ornament-shoreline-height);
+		--intersection-arch-mask: var(--ornament-shoreline-fill-below);
+		--intersection-arch-ink: var(--ornament-ink);
+		--intersection-arch-ink-mask: var(--ornament-shoreline-mask);
+	}
+
+	// Atmospheric blends only where the tone changes: the itinerary opens on the location
+	// shoreline (no blend); gallery (pearl) and gifts (sky) open with a short blend from the
+	// previous paper. The three repeated ice halos are gone.
+	.invitation-section-wrapper[data-section-kind='itinerary'][data-intersection] {
+		--intersection-blend: none;
+	}
+
+	.invitation-section-wrapper[data-section-kind='gallery'][data-intersection] {
+		--intersection-blend: linear-gradient(to bottom, var(--color-surface-primary), transparent);
+	}
+
+	.invitation-section-wrapper[data-section-kind='gifts'][data-intersection] {
+		--intersection-blend: linear-gradient(to bottom, var(--color-pearl-gray), transparent);
+	}
+
+	// Family close as a true edge: the family is cut along the shoreline's upper edge and the hut
+	// photograph rises underneath by the ribbon's height, so the photograph meets the ice exactly
+	// on the line; the ink is drawn over the photograph by the interlude. The family's own inset
+	// ribbon is off and the family wrapper paints no ice of its own (the arch keeps its surface).
+	--mia-shoreline-height: clamp(0.85rem, 1.6vw, 1.35rem);
+
+	.invitation-section-wrapper[data-section-kind='family'] {
+		--intersection-z: 2;
+		--intersection-surface-fill: transparent;
+	}
+
+	.family {
+		--ornament-shoreline-height: 0;
+		--family-section-mask:
+			linear-gradient(rgb(0 0 0) calc(100% - var(--mia-shoreline-height)), transparent 0),
+			var(--ornament-shoreline-fill-above) center bottom / 100% var(--mia-shoreline-height)
+				no-repeat;
+	}
+
+	.invitation-section-wrapper[data-section-kind='family']
+		+ .invitation-section-wrapper[data-section-kind='interlude'] {
+		--interlude-pull-up: calc(-1 * var(--mia-shoreline-height));
+		--interlude-top-ink-display: block;
+		--interlude-top-ink-height: var(--mia-shoreline-height);
+		--interlude-top-ink: var(--ornament-ink);
+		--interlude-top-ink-mask: var(--ornament-shoreline-mask);
+	}
+
+	// Marine motifs (ornament-set spots, off by default elsewhere): five hairline pieces in the
+	// shoreline's hand, composed in small groups so the marine thread is felt from the quote to
+	// the closing. Scale ladder xs 1.4 · s 2 · m 3.2 · l 5 rem (in-between steps only inside a
+	// group, for depth); strong silver ink, muted ink once on the ice band. Never on a face, a
+	// hand, the photographer mark, text or a control; never the same piece in two consecutive
+	// stretches: gulls (quote) → starfish + shell (family) → algae (countdown) → gulls (meadow) →
+	// shell + alga (location) → gulls (itinerary, wide screens) → wave (gallery) → alga + wave
+	// (pass, wide screens) → starfish, shell and gulls (closing). Static.
+	--mia-motif-gulls:
+		var(--ornament-motif-gull) 100% 0% / 2.6rem 2.6rem no-repeat,
+		var(--ornament-motif-gull) 0% 100% / 1.6rem 1.6rem no-repeat;
+
+	.quote-container {
+		--ornament-quote-motif-display: block;
+		--ornament-quote-motif-width: 4.6rem;
+		--ornament-quote-motif-height: 2.6rem;
+		--ornament-quote-motif-top: -2.75rem;
+		--ornament-quote-motif-right: 5%;
+		--ornament-quote-motif-layers: var(--mia-motif-gulls);
+	}
+
+	// Under the passe-partout, left-aligned with the mat: a starfish with a small shell tucked
+	// against its lower arm, read as one resting pair rather than two loose pieces.
+	.family__media {
+		--ornament-family-motif-display: block;
+		--ornament-family-motif-width: 5rem;
+		--ornament-family-motif-height: 3.3rem;
+		--ornament-family-motif-top: calc(100% + 0.7rem);
+		--ornament-family-motif-left: 0.15rem;
+		--ornament-family-motif-ink: var(--mia-ink-muted);
+		--ornament-family-motif-layers:
+			var(--ornament-motif-starfish) 0% 0% / 3.2rem 3.2rem no-repeat,
+			var(--ornament-motif-shell) 100% 100% / 1.9rem 1.9rem no-repeat;
+	}
+
+	.countdown-title {
+		--ornament-countdown-motif-display: inline-block;
+		--ornament-countdown-motif-size: 2.2rem;
+		--ornament-countdown-motif-gap: 1rem;
+		--ornament-countdown-motif-align: -0.75em;
+	}
+
+	.invitation-interlude[data-presentation='framed'] {
+		--ornament-meadow-motif-display: block;
+		--ornament-meadow-motif-width: 4.6rem;
+		--ornament-meadow-motif-height: 2.6rem;
+		--ornament-meadow-motif-top: calc(var(--mia-space-compact) - 3.5rem);
+		--ornament-meadow-motif-left: 7%;
+		--ornament-meadow-motif-layers:
+			var(--ornament-motif-gull) 0% 0% / 2.6rem 2.6rem no-repeat,
+			var(--ornament-motif-gull) 100% 100% / 1.5rem 1.5rem no-repeat;
+	}
+
+	.event-location__intro {
+		--ornament-location-intro-motif-display: block;
+		--ornament-location-intro-motif-size: 2.4rem;
+		--ornament-location-intro-motif-margin: 0.9rem auto 0;
+	}
+
+	// An alga at the foot of the divider between the venues once they sit side by side: the rule
+	// ends just above it, so the hairline never crosses the drawing.
+	.event-location__program {
+		--ornament-location-motif-size: 2.8rem;
+		--ornament-location-motif-top: calc(100% + 0.6rem);
+		--ornament-location-motif-left: 50%;
+		--ornament-location-motif-transform: translateX(-50%);
+		--ornament-location-motif-layers: var(--ornament-motif-alga) center / contain no-repeat;
+
+		@media (width >= 768px) {
+			--ornament-location-motif-display: block;
+		}
+	}
+
+	// Wide screens: gulls in the margin beside the top of the sheet (the row markers already carry
+	// the shell, starfish, alga and wave).
+	.itinerary__program {
+		--ornament-itinerary-margin-motif-width: auto;
+		--ornament-itinerary-margin-motif-height: auto;
+		--ornament-itinerary-margin-motif-top: 0;
+		--ornament-itinerary-margin-motif-right: 0;
+		--ornament-itinerary-margin-motif-bottom: 0;
+		--ornament-itinerary-margin-motif-left: 0;
+		--ornament-itinerary-margin-motif-z: 0;
+		--ornament-itinerary-margin-motif-layers:
+			var(--ornament-motif-gull) right 0.5rem top 7rem / 3.4rem 3.4rem no-repeat,
+			var(--ornament-motif-gull) right 3.6rem top 10rem / 2rem 2rem no-repeat;
+
+		@media (width >= 1200px) {
+			--ornament-itinerary-margin-motif-display: block;
+		}
+	}
+
+	.gallery-section__header {
+		--ornament-gallery-motif-display: block;
+		--ornament-gallery-motif-size: 3.2rem;
+		--ornament-gallery-motif-margin: 0.75rem auto 0;
+	}
+
+	// Wide screens: a tall alga beside the pass and a wave beside the reply, in the margins.
+	.personalized-access[data-variant='reply-card'] {
+		--ornament-pass-motif-width: auto;
+		--ornament-pass-motif-height: auto;
+		--ornament-pass-motif-top: 0;
+		--ornament-pass-motif-right: 0;
+		--ornament-pass-motif-bottom: 0;
+		--ornament-pass-motif-left: 0;
+		--ornament-pass-motif-z: 0;
+		--ornament-pass-motif-layers:
+			var(--ornament-motif-alga) left calc(50% - 27rem) bottom 1rem / 5rem 5rem no-repeat,
+			var(--ornament-motif-wave) right calc(50% - 27rem) bottom 0 / 3.4rem 3.4rem no-repeat;
+
+		@media (width >= 1200px) {
+			--ornament-pass-motif-display: block;
+		}
+	}
+
+	.thank-you-editorial {
+		--ornament-closing-gull-display: block;
+		--ornament-closing-gull-width: 4.6rem;
+		--ornament-closing-gull-height: 2.6rem;
+		--ornament-closing-gull-top: -3.6rem;
+		--ornament-closing-gull-right: 0;
+		--ornament-closing-gull-layers: var(--mia-motif-gulls);
+	}
+
+	// Shorelines as color edges: location closes in pearl over the itinerary's sky paper; the
+	// closing shoreline hands over to the footer paper. Both bands carry the paper grain.
+	.event-location {
+		--shoreline-lower: var(--mia-paper-grain), var(--color-surface-primary);
+	}
+
+	.signature-block {
+		--shoreline-lower: var(--mia-paper-grain), var(--color-surface-primary);
+
+		// A starfish rests on the closing shoreline, left of the shell (same strong silver).
+		--ornament-closing-extra-mask: var(--ornament-motif-starfish);
+		--ornament-closing-extra-size: 2.2rem 2.2rem;
+		--ornament-closing-extra-position: 20%
+			calc(100% - var(--ornament-shoreline-height) + 0.3rem);
+	}
+
+	// The footer sits on the same grained sheet (its own flat paper would end the grain).
+	.invitation-footer {
+		--footer-bg: transparent;
 	}
 }
