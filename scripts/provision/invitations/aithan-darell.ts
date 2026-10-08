@@ -62,12 +62,14 @@ const VENUE_CITY = 'Atizapán';
 const MAPS_URL = 'https://maps.app.goo.gl/ebbpWEFK68LhuDm28';
 
 /**
- * Music: the client asked for "Life Is a Highway" (Rascal Flatts). Hosted track on Cloudinary.
- * When the file is the full track, MUSIC_START_SECONDS can specify the starting second.
+ * Music: the client asked for "Life Is a Highway" (Rascal Flatts). Hosted track on Cloudinary
+ * (full track). Client request (2026-10-08): start where the vocals begin (~0:49), entering with a
+ * gentle volume ramp instead of cutting in mid-phrase.
  */
 const MUSIC_URL =
 	'https://res.cloudinary.com/dusxvauvj/video/upload/v1791406894/Rascal_Flatts_-_Life_Is_a_Highway_swt74a.mp3';
-const MUSIC_START_SECONDS: number | undefined = undefined;
+const MUSIC_START_SECONDS: number | undefined = 49;
+const MUSIC_FADE_IN_SECONDS = 3;
 
 const hasMusic = MUSIC_URL.trim().length > 0;
 
@@ -102,6 +104,7 @@ const content: CanonicalEventContentInput = {
 					title: 'Life Is a Highway',
 					autoPlay: true,
 					...(MUSIC_START_SECONDS !== undefined ? { startAt: MUSIC_START_SECONDS } : {}),
+					fadeInSeconds: MUSIC_FADE_IN_SECONDS,
 				},
 			}
 		: {}),
@@ -109,6 +112,7 @@ const content: CanonicalEventContentInput = {
 		'quote',
 		'countdown',
 		'location',
+		'gifts',
 		'gallery',
 		'personalizedAccess',
 		'rsvp',
@@ -135,7 +139,7 @@ const content: CanonicalEventContentInput = {
 		presentation: { coverMark: '3 años', coverPage: 'POLE POSITION', designCredit: false },
 	},
 	quote: {
-		text: 'Motores encendidos y casco listo. ¡Acompáñeme a celebrar mis primeros tres años a toda velocidad!',
+		text: 'Motores encendidos y casco listo. ¡Acompáñeme a celebrar mis tres años a toda velocidad!',
 		author: CELEBRANT_NAME,
 	},
 	countdown: {
@@ -177,7 +181,7 @@ const content: CanonicalEventContentInput = {
 				title: 'Aparte su lugar',
 				iconName: 'Enveloped',
 				styleVariant: 'default',
-				text: 'Confirme su asistencia en la sección de inscripción.',
+				text: 'Confirme su asistencia en el formulario al final de la invitación.',
 			},
 			{
 				title: 'Llegue puntual',
@@ -186,13 +190,22 @@ const content: CanonicalEventContentInput = {
 				text: 'La salida oficial es a las 5:30 p. m. ¡Llegue a tiempo para no perderse el banderazo!',
 			},
 			{
-				// Client dress code, published literally.
+				// Client dress code, published literally (Cars clarification added 2026-10-08).
 				title: 'Código de vestimenta',
 				iconName: 'DressCode',
 				styleVariant: 'default',
-				text: 'Todas las personas en color <strong>rojo, negro y/o blanco</strong>.',
+				text: 'Todas las personas en color <strong>rojo, negro y/o blanco</strong>.<br>Nada referente a Cars, no disfraz.',
 			},
 		],
+	},
+	// Client request (2026-10-08): a reminder to bring a gift, with no registry or account details.
+	// The legend sits under an original gift-on-wheels illustration instead of the envelope glyph.
+	gifts: {
+		variant: 'standard',
+		presentation: 'legend-only',
+		ornament: 'giftsOrnament',
+		title: '¡No olvide mi regalo!',
+		subtitle: 'Haga su parada en los pits con un detalle para el piloto Nº 3.',
 	},
 	gallery: {
 		// Two overlapping prints, each capped at its source's native width.
@@ -219,17 +232,19 @@ const content: CanonicalEventContentInput = {
 	},
 	rsvp: {
 		variant: 'formal-register',
-		title: 'Inscripción al Gran Premio',
+		// Owner request (2026-10-08): plain RSVP wording instead of the race "inscripción" metaphor,
+		// so guests understand they are confirming attendance.
+		title: 'Confirme su asistencia',
 		subcopy:
 			'El equipo de pits necesita confirmar su lugar en la parrilla de salida. ¿Nos acompaña?',
 		guestCap: 4,
 		accessMode: 'hybrid',
 		confirmationMode: 'api',
 		confirmationMessage:
-			'¡Inscripción confirmada! Nos vemos el sábado 24 de octubre a las 5:30 p. m. en el circuito.',
+			'¡Asistencia confirmada! Nos vemos el sábado 24 de octubre a las 5:30 p. m. en Jardín de Teresita.',
 		responseMessages: {
 			confirmed: {
-				title: '¡Inscripción confirmada, {guestName}!',
+				title: '¡Gracias por confirmar su asistencia, {guestName}!',
 				subtitle:
 					'Su lugar en la tribuna está reservado para el sábado 24 de octubre a las 5:30 p. m.',
 			},
@@ -240,17 +255,19 @@ const content: CanonicalEventContentInput = {
 		},
 		personalizedAccess: {
 			variant: 'formal-pass',
+			// Pit-lane credential: red band with a checkered flag, race-number plate for the seats.
+			presentationOptions: { passStyle: 'race-credential' },
 			title: 'Su lugar en la tribuna',
 			subtitle: 'Toda la escudería le espera en primera fila para apoyar al piloto Aithan.',
 			noteText:
 				'Pase personal válido para {count} {personWord} · Sábado 24 de octubre de 2026, 5:30 p. m. en Jardín de Teresita.',
-			footerText: 'Favor de confirmar su asistencia en la sección de inscripción.',
+			footerText: 'Por favor, confirme su asistencia en el formulario de abajo.',
 		},
 		labels: {
 			name: 'Su nombre',
 			attendance: '¿Asistirá a mi fiesta?',
 			guestCount: 'Personas que asistirán',
-			confirmButton: 'Enviar inscripción',
+			confirmButton: 'Confirmar asistencia',
 			notesPlaceholder: 'Un mensaje para el piloto Aithan…',
 		},
 	},
@@ -339,6 +356,7 @@ export const aithanInvitation = defineCanonicalInvitation({
 		gallery02: 'gallery-02.jpg',
 		coverGrid: 'cover-grid.jpg',
 		thankYouTrophy: 'thankyou-trophy.jpg',
+		giftsOrnament: 'gifts-ornament.webp',
 		// Cars characters requested by the client; owner-supplied artwork, background removed.
 		characterMcQueen: 'character-mcqueen.webp',
 		characterMack: 'character-mack.webp',

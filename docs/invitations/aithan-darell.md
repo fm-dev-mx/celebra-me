@@ -58,7 +58,7 @@ host alias keeps the contract form `{primer_nombre}_{primer_apellido}`.
 | timeZone             | America/Mexico_City                                                                                        | inferred       | geography | Atizapán de Zaragoza, Estado de México; not client-stated                                                           |
 | baseDemoId           | demo-cumple-editorial-magazine                                                                             | verified       | owner     | Owner-selected catalog entry (new); no children's demo existed                                                      |
 | sourceAssetPath      | source:client-photos                                                                                       | verified       | owner     | Repo asset dir `src/assets/invitations/aithan-darell`; originals from the chat                                      |
-| sectionOrder         | quote, countdown, location, gallery, personalizedAccess, rsvp, thankYou                                    | inferred       | owner     | Family, itinerary, and gifts omitted: no data supplied (asked in the client message)                                |
+| sectionOrder         | quote, countdown, location, gifts, gallery, personalizedAccess, rsvp, thankYou                             | inferred       | owner     | Family and itinerary omitted (client: "esto no va", 2026-10-08); gifts added as a legend                            |
 | primaryVenueName     | Jardín de Teresita                                                                                         | verified       | wa-export | —                                                                                                                   |
 | primaryVenueAddress  | Avenida Juárez 49, Atizapán centro                                                                         | verified       | wa-export | Municipality and state (Atizapán de Zaragoza, Estado de México) inferred from the client's Maps link                |
 | venueMapsUrl         | https://maps.app.goo.gl/ebbpWEFK68LhuDm28                                                                  | verified       | wa-export | Client link (2026-10-07); pinned at Av. Juárez 49 (19.5589908, -99.2451091); replaces the unpinned Street View link |
@@ -68,10 +68,11 @@ host alias keeps the contract form `{primer_nombre}_{primer_apellido}`.
 | rsvpConfirmationMode | api                                                                                                        | inferred       | owner     | Owner offered dashboard guest control and passes; client agreed ("Ok super")                                        |
 | rsvpGuestCap         | 4                                                                                                          | inferred       | owner     | Owner default, never discussed; passes are assigned per guest in the dashboard (asked in the message)               |
 | musicUrl             | https://res.cloudinary.com/dusxvauvj/video/upload/v1791406894/Rascal_Flatts_-_Life_Is_a_Highway_swt74a.mp3 | verified       | owner     | "Life Is a Highway" (Rascal Flatts); hosted Cloudinary track supplied by owner (2026-10-07)                         |
-| dressCode            | Todas las personas en color rojo, negro y/o blanco                                                         | verified       | owner     | Owner relay (2026-10-07); published as location pit board 03 («Código de vestimenta»)                               |
-| gifts                | —                                                                                                          | missing        | wa-export | Never mentioned; optional, omitted (asked in the client message)                                                    |
-| itinerary            | —                                                                                                          | missing        | wa-export | Never mentioned; optional, omitted (asked in the client message)                                                    |
-| hostsNames           | —                                                                                                          | missing        | wa-export | Parents not named. The purchaser waits on "mi hermana", so she is likely the aunt (inferred)                        |
+| musicStartAt         | 49 s, 3 s fade-in                                                                                          | verified       | owner     | Client asked to start where the vocals begin; owner gave ~0:49 and a gentle entry (2026-10-08)                      |
+| dressCode            | Rojo, negro y/o blanco; nada referente a Cars, no disfraz                                                  | verified       | wa-export | Owner relay (2026-10-07) plus client line (2026-10-08); location pit board 03                                       |
+| gifts                | ¡No olvide mi regalo! (legend only, gift-on-wheels illustration)                                           | verified       | wa-export | Client: "poner como no olviden mi regalo" (2026-10-08); no registry or account details                              |
+| itinerary            | —                                                                                                          | missing        | owner     | Not included: owner relay "esto no va" (2026-10-08)                                                                 |
+| hostsNames           | —                                                                                                          | missing        | owner     | Not included: owner relay "esto no va" (2026-10-08)                                                                 |
 | clientContact        | Alin Salgado                                                                                               | verified       | wa-export | Purchaser; contact details stay outside this document                                                               |
 
 Rules:
@@ -130,12 +131,12 @@ Every published fact was re-read against the full chat and the Local payload.
   - **status:** confirmed; no other page role
 - **fact:** Song
   - **source:** chat: "Life ls a highway canción"
-  - **payload:** "Life Is a Highway" (hosted Cloudinary mp3)
-  - **status:** confirmed (track hosted; start second defaults to 0)
+  - **payload:** "Life Is a Highway" (hosted Cloudinary mp3), `startAt: 49`, `fadeInSeconds: 3`
+  - **status:** confirmed (2026-10-08: client asked to start at the vocals; owner gave ~0:49)
 - **fact:** Parents / hosts
-  - **source:** not supplied
+  - **source:** not supplied; owner (2026-10-08): not included
   - **payload:** family section omitted
-  - **status:** missing
+  - **status:** closed
 - **fact:** Purchaser relationship
   - **source:** "mi hermana" (inferred aunt)
   - **payload:** not published
@@ -143,20 +144,21 @@ Every published fact was re-read against the full chat and the Local payload.
 - **fact:** Dress code
   - **source:** owner relay: "todas las personas en color rojo, negro y/o blanco"
   - **payload:** pit board 03 «Código de vestimenta»: "Todas las personas en color rojo, negro y/o
-    blanco."
-  - **status:** confirmed (2026-10-07)
+    blanco." plus "Nada referente a Cars, no disfraz."
+  - **status:** confirmed (2026-10-07; Cars clarification 2026-10-08)
 - **fact:** Gifts
-  - **source:** never mentioned
-  - **payload:** omitted
-  - **status:** missing
+  - **source:** chat (2026-10-08): "poner como no olviden mi regalo"
+  - **payload:** legend-only gifts section «¡No olvide mi regalo!» under an original gift-on-wheels
+    illustration (`gifts.ornament`), between location and gallery
+  - **status:** confirmed
 - **fact:** Passes per guest
   - **source:** never discussed
   - **payload:** 4 (dashboard-adjustable)
   - **status:** assumption
 - **fact:** Itinerary
-  - **source:** never mentioned
+  - **source:** never mentioned; owner (2026-10-08): not included
   - **payload:** omitted
-  - **status:** missing
+  - **status:** closed
 
 Client message draft (single message, "usted" register):
 
@@ -583,13 +585,15 @@ exceed their native width.
 
 Original artwork authored for this invitation (asphalt, checkered flag, race number "3", trophy); no
 third-party artwork, logos or typefaces. Rendered from HTML/SVG with Montserrat (OFL) and stored as
-JPEG sources; publication re-encodes them to WebP.
+JPEG sources; publication re-encodes them to WebP. The gift ornament is a transparent WebP cutout
+(option C of three presented to the owner, 2026-10-08).
 
 | source filename     | dims      | format | orientation | weight  | quality              | role                         | duplicate | processing                                                                                               | derivative          |
 | ------------------- | --------- | ------ | ----------- | ------- | -------------------- | ---------------------------- | --------- | -------------------------------------------------------------------------------------------------------- | ------------------- |
 | hero-canvas.jpg     | 1920×1280 | jpeg   | landscape   | 0.4 MB  | production-ready     | heroCanvas (hero background) | no        | asphalt, side lines, checker bands                                                                       | hero-canvas.jpg     |
 | cover-grid.jpg      | 1080×1920 | jpeg   | portrait    | 0.2 MB  | provisional-whatsapp | coverGrid (collector cover)  | no        | paper bands for the masthead, track, roundel with chat-052 and a "3 AÑOS" badge (regenerated 2026-10-07) | cover-grid.jpg      |
 | thankyou-trophy.jpg | 1200×1600 | jpeg   | portrait    | 0.15 MB | production-ready     | thankYouTrophy (back cover)  | no        | trophy with "3 AÑOS" and "Gran Premio 2026" plate (regenerated 2026-10-07)                               | thankyou-trophy.jpg |
+| gifts-ornament.webp | 960×719   | webp   | landscape   | 0.02 MB | production-ready     | giftsOrnament (gifts legend) | no        | gift box on racing wheels with a "3" roundel, transparent (added 2026-10-08)                             | gifts-ornament.webp |
 
 ### Character cutouts
 
@@ -631,6 +635,7 @@ source would sharpen it on high-density screens.
 | heroCanvas            | motif            | hero-canvas.jpg              | yes (hero background and the collector inner page) |
 | coverGrid             | motif + chat-052 | cover-grid.jpg               | no (chat-052's only role)                          |
 | thankYouTrophy        | motif            | thankyou-trophy.jpg          | no                                                 |
+| giftsOrnament         | motif            | gifts-ornament.webp          | no                                                 |
 | characterMcQueen      | owner artwork    | character-mcqueen.webp       | no                                                 |
 | characterMack         | owner artwork    | character-mack.webp          | no                                                 |
 | characterMate         | owner artwork    | character-mate.webp          | no                                                 |
@@ -741,3 +746,13 @@ reintroduces a repetition.
     `summarizeAssetQuality` now keeps the provisional ceiling for mixed inventories
     (production-ready motifs next to `provisional-whatsapp` photographs), matching contract §9.1 and
     hygiene A4.
+- **date:** 2026-10-08
+  - **readiness:** `READY_WITH_PLACEHOLDERS`
+  - **helper basis:** `evaluatePreparationReadiness` + `summarizeAssetQuality`
+  - **notes:** Client adjustments: quote without «primeros»; music from 0:49 with a 3 s ramp
+    (`music.fadeInSeconds`, also applied when the track loops back); legend-only gifts reminder with
+    a typed `gifts.ornament`; Cars clarification on pit board 03; race-credential pass
+    (`personalizedAccess.presentationOptions.passStyle`). Parents and itinerary closed as not
+    included (Local v14). RSVP wording: «Confirme su asistencia» / «Confirmar asistencia» replace
+    the «inscripción» metaphor everywhere (register, pass footer, pit board 01, folio), so guests
+    read it as an attendance confirmation (Local v15)
