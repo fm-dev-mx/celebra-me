@@ -178,8 +178,9 @@ not replace these repository-wide checks or the full release pipeline.
 Close the mutable agent session with `pnpm agent:git-safety:finish` after Tier C when a session was
 started. See `.agent/rules/git-safety.md`.
 
-The pre-push hook keeps commit-range validation, visual certification for `develop`/`main` pushes
-and the Git LFS handoff; do not move tests or type-checks into pre-push.
+The pre-push hook keeps commit-range validation and the Git LFS handoff; do not move tests,
+type-checks or visual certification into pre-push. Repository CI certifies visual parity on the
+`develop` push; `pnpm validate:prepush` is an optional local preview of that certification.
 
 #### Remote CI coverage and efficiency
 
@@ -225,6 +226,16 @@ case every tier runs. Repository Policy always validates the pull request range 
 Repository CI on `develop` to force a complete execution. Failure artifacts retain actual/diff
 images and traces when produced for three days. No additional capture, retry, tolerance or
 acceptance policy is introduced for diagnostics.
+
+A `develop` push may skip only the browser tier. The `Browser scope` job
+(`scripts/ops/ci-browser-scope.ts`) compares the head against the most recent successful `develop`
+push run whose `Application / browser` job itself succeeded, and skips the tier only when no browser
+input (application sources, served assets, `scripts/shared/`, the Playwright harness, fixtures,
+visual references, the workflow itself and the package/Astro/Playwright configuration) changed in
+between. Pull requests, manual dispatches, an unreadable history or API, and any changed browser
+input run the tier. A run that skipped the tier records a `skipped` browser job, so it is never a
+source for evidence reuse or for a later scope assessment; the release pull request then runs every
+tier.
 
 #### Documentation audit limits
 
