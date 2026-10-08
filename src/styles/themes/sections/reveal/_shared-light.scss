@@ -243,7 +243,7 @@
 
 	// Keep base `envCardRise` name — EnvelopeReveal completes on that animationend.
 	&.is-opening .envelope-reveal-stage {
-		animation-duration: calc(var(--duration-reveal) + 0.15s);
+		animation-duration: var(--env-card-rise-duration, calc(var(--duration-reveal) + 0.15s));
 	}
 
 	.envelope-container {

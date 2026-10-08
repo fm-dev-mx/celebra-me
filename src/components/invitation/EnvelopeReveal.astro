@@ -429,6 +429,11 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				if (isOpening) return;
 				isOpening = true;
 				setControlsDisabled(true);
+				// Synchronous, inside the tap: media started from this event keeps the user
+				// activation that Safari iOS requires (`envelope:opened` arrives seconds later).
+				window.dispatchEvent(
+					new CustomEvent('envelope:open-requested', { detail: { eventSlug } }),
+				);
 
 				manager.playOpenSound();
 				manager.setStoredFlag();

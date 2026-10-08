@@ -195,8 +195,9 @@
 .envelope-wrapper.is-opening {
 	.envelope-reveal-stage {
 		pointer-events: auto;
-		animation: envCardRise var(--duration-reveal) forwards var(--ease-premium);
-		animation-delay: var(--duration-reveal);
+		animation: envCardRise var(--env-card-rise-duration, var(--duration-reveal)) forwards
+			var(--env-card-rise-ease, var(--ease-premium));
+		animation-delay: var(--env-card-rise-delay, var(--duration-reveal));
 	}
 }
 

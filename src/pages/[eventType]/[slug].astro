@@ -252,15 +252,31 @@ const isDemoConversion = Boolean(
 				<script is:inline>
 					// Overscroll and rubber-band areas show the document canvas: paint it with the
 					// invitation paper instead of the site default.
+					// Opt-in `--page-scrollbar-color` ("thumb track") themes the page scrollbar; with a
+					// transparent track the canvas shows through, so while a solid envelope covers the
+					// page the canvas takes the envelope color and no light strip remains at the edge.
 					(function() {
 						const wrapper = document.currentScript ? document.currentScript.closest('.event-theme-wrapper') : null;
 						if (!wrapper) return;
+						const root = document.documentElement;
 						const paint = () => {
-							const paper = getComputedStyle(wrapper).getPropertyValue('--color-surface-primary').trim();
-							if (paper) document.documentElement.style.backgroundColor = paper;
+							const styles = getComputedStyle(wrapper);
+							const paper = styles.getPropertyValue('--color-surface-primary').trim();
+							const scrollbar = styles.getPropertyValue('--page-scrollbar-color').trim();
+							let canvas = paper;
+							if (scrollbar) {
+								root.style.scrollbarColor = scrollbar;
+								const envelope = wrapper.querySelector('ds-envelope-reveal');
+								if (envelope && !envelope.hidden && root.classList.contains('envelope-open')) {
+									const cover = getComputedStyle(envelope).backgroundColor;
+									if (cover && cover !== 'rgba(0, 0, 0, 0)') canvas = cover;
+								}
+							}
+							if (canvas) root.style.backgroundColor = canvas;
 						};
 						paint();
 						window.addEventListener('load', paint, { once: true });
+						window.addEventListener('envelope:opened', paint, { once: true });
 					})();
 				</script>
 				{
