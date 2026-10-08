@@ -209,6 +209,52 @@ export function loadIgnoredPreviewBuild(
 	return { description: latest.description };
 }
 
+export interface SmokeRerunEvidence {
+	runId: number;
+	attempt: number | null;
+	status: string;
+}
+
+const SMOKE_STATUS_CREATOR = 'github-actions[bot]';
+const WORKFLOW_RUN_URL_PATTERN = /\/actions\/runs\/(\d+)(?:\/|$)/u;
+
+/**
+ * The smoke commit status keeps the failed attempt's `failure` until a re-run's job publishes
+ * `pending` again, which happens only after the new attempt leaves the queue and reaches that step.
+ * The latest smoke status links to its workflow run (`target_url`); the dispatch workflow runs on
+ * the default branch, so the run's own `head_sha` cannot identify the release SHA. A run that is
+ * not completed means a newer attempt for this exact status is queued or running.
+ */
+export function loadSmokeRerun(
+	sha: string,
+	name: string,
+	run: GhRunner = defaultGhRunner,
+): SmokeRerunEvidence | null {
+	const client = createGitHubClient(run);
+	const statuses = client.api(`commits/${sha}/statuses?per_page=100`) as Array<{
+		context?: unknown;
+		target_url?: unknown;
+		creator?: { login?: unknown };
+	}>;
+	if (!Array.isArray(statuses)) return null;
+	const latest = statuses.find((entry) => entry.context === name);
+	if (latest?.creator?.login !== SMOKE_STATUS_CREATOR || typeof latest.target_url !== 'string')
+		return null;
+	const runId = WORKFLOW_RUN_URL_PATTERN.exec(latest.target_url)?.[1];
+	if (!runId) return null;
+	const workflowRun = client.api(`actions/runs/${runId}`) as {
+		id?: unknown;
+		status?: unknown;
+		run_attempt?: unknown;
+	} | null;
+	if (typeof workflowRun?.status !== 'string' || workflowRun.status === 'completed') return null;
+	return {
+		runId: Number(runId),
+		attempt: typeof workflowRun.run_attempt === 'number' ? workflowRun.run_attempt : null,
+		status: workflowRun.status,
+	};
+}
+
 export interface ReleaseStatus {
 	sha: string;
 	target: ReleaseTarget;
@@ -216,7 +262,14 @@ export interface ReleaseStatus {
 	state: 'VERIFIED' | 'SKIPPED' | 'FAILED' | 'PENDING';
 	checks: Array<{ name: string; state: string; progress: Progress }>;
 	deployment: (DeploymentEvidence & { progress: Progress }) | null;
-	smoke: { name: string; mode: SmokeMode; state: string; progress: Progress };
+	smoke: {
+		name: string;
+		mode: SmokeMode;
+		state: string;
+		progress: Progress;
+		/** Set while a re-run of the failed smoke workflow run is queued or in progress. */
+		rerun?: SmokeRerunEvidence;
+	};
 	health: HealthEvidence[];
 	ignoredBuild: IgnoredBuildEvidence | null;
 	blockers: string[];
@@ -234,11 +287,23 @@ function describeSmoke(
 	target: ReleaseTarget,
 	mode: SmokeMode,
 	remote: ReleaseCheck[],
-) {
+	run: GhRunner,
+): ReleaseStatus['smoke'] {
 	const name = target === 'preview' ? PREVIEW_DEPLOYMENT_SMOKE : PRODUCTION_DEPLOYMENT_SMOKE;
-	if (mode === 'skip') return { name, mode, state: 'skipped', progress: 'passed' as Progress };
+	if (mode === 'skip') return { name, mode, state: 'skipped', progress: 'passed' };
 	const check = remote.find((entry) => entry.name === name);
-	return { name, mode, state: check?.state ?? 'missing', progress: classifyCheck(sha, check) };
+	const smoke = {
+		name,
+		mode,
+		state: check?.state ?? 'missing',
+		progress: classifyCheck(sha, check),
+	};
+	// A failed attempt being re-run is not terminal: wait for the new attempt's result.
+	if (smoke.progress === 'failed' && check?.trusted && check.sha.toLowerCase() === sha) {
+		const rerun = loadSmokeRerun(sha, name, run);
+		if (rerun) return { ...smoke, state: `rerun ${rerun.status}`, progress: 'pending', rerun };
+	}
+	return smoke;
 }
 
 function listBlockers(status: Omit<ReleaseStatus, 'state' | 'blockers'>): string[] {
@@ -318,7 +383,7 @@ export async function collectReleaseStatus(
 		target,
 		checks,
 		deployment,
-		smoke: describeSmoke(sha, target, smokeMode, remote),
+		smoke: describeSmoke(sha, target, smokeMode, remote, run),
 		health,
 		ignoredBuild,
 	};
