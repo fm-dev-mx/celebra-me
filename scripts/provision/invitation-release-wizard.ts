@@ -1,35 +1,37 @@
 /**
- * Destination-driven interactive wizard for pnpm invitation:release.
- * Operator selects outcomes; this module owns package binding, ordering, and menus.
+ * Destination-driven interactive menu for pnpm invitation:release.
+ * The operator selects outcomes (Update Local → Prepare Preview → approve → Production dry-run);
+ * this module owns package binding, ordering, outcomes and next-step suggestions. Every write
+ * keeps its own gate: Local confirm (No default), Preview typed YES, approval Cancel default.
+ * Production apply is never here: it is pnpm prod:apply.
  */
-import { confirm, select } from '@inquirer/prompts';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { getProdDbUrl } from '../db/db-workflow-lib.ts';
-import { operatorSymbol, writeHuman } from '../db/operator-cli-ux.ts';
+import { writeHuman } from '../db/operator-cli-ux.ts';
+import { isPromptExit, menu, printLine, runInteractive, step, theme } from '../lib/cli-prompts.ts';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
-import {
-	planAndApplyLocalContent,
-	planAndApplyPreviewContent,
-} from './invitation-content-apply.ts';
+import { planAndApplyPreviewContent } from './invitation-content-apply.ts';
 import {
 	buildPreflightBlockedResults,
 	deriveLifecycleFinalStatus,
 	executeTargetPlans,
-	type LifecycleExecutionError,
-	type TargetExecutionOutcome,
 } from './invitation-lifecycle-execution.ts';
-import { getInvitationDefinition, listInvitationDefinitions } from './invitations/registry.ts';
+import { getInvitationDefinition } from './invitations/registry.ts';
 import { resolveInvitationPackageInput } from './invitation-package-input.ts';
 import type { InvitationPackageData } from './invitation-package.ts';
 import {
-	defaultDestinationFromPromotionAction,
 	describeDestination,
 	isStaleProvenanceBlockReason,
 	resolveDestinationReadiness,
 	type ReleaseDestination,
-	type WizardMenuDestination,
 } from './invitation-release-destination.ts';
+import {
+	releaseNextStep,
+	releaseRootMenu,
+	type ReleaseMenuAction,
+	type ReleaseMenuState,
+} from './invitation-release-menu-model.ts';
 import { approvePreviewArtifactFromLiveVerification } from './preview-approval-service.ts';
 import { getDefaultPreviewApprovalStore } from './preview-approval-store.ts';
 import {
@@ -45,24 +47,40 @@ import {
 	formatApplyResult,
 	formatDryRunPlan,
 	toOperationalPlanData,
-	type TargetApplyResultData,
 	type TargetPlanData,
 } from './invitation-update-presenter.ts';
-import type { OperationalPlan } from './invitation-update-plan.ts';
 import type { ConflictResolutions, UpdateScope } from './semantic-delta.ts';
 import type { AssetPolicy } from './asset-reconciliation.ts';
 import { defaultAssetPolicy, requireResolvedUpdateScope } from './invitation-update-options.ts';
 import { runPromotionPreflight } from './invitation-promote.ts';
 import { formatPromotionPlanCompact } from './invitation-promotion-format.ts';
-import { isTargetDivergenceConflictMessage } from './promotion-comparison.ts';
 import {
 	planLocal,
 	planPreview,
-	promptConflictResolutions,
-	resolvePromotionActionForSlug,
+	resolvePromotionStateForSlug,
 	reviewAndConfirm,
 	sumTargetResults,
 } from './wizard/wizard-planning.ts';
+import {
+	chooseSlug,
+	describePackage,
+	environmentStateLine,
+	printSessionHeader,
+	rootItems,
+	runStatus,
+	runTools,
+	type SessionDeps,
+	type SessionOverrides,
+} from './wizard/wizard-session.ts';
+import {
+	executeLocalStage,
+	executePreviewStage,
+	printResultSummary,
+} from './wizard/wizard-stages.ts';
+import {
+	maybeRecoverConflicts,
+	maybeRecoverUnpublishedDraftDivergence,
+} from './wizard/wizard-recovery.ts';
 
 export interface ReleaseWizardSession {
 	slug: string;
@@ -75,6 +93,15 @@ export interface ReleaseWizardSession {
 	pruneAssets?: boolean;
 	conflictResolutions?: ConflictResolutions;
 	acknowledgeDiscardUnpublishedDraft?: boolean;
+	/** Optional operator overrides (same meaning as the CLI flags). */
+	sourceDir?: string;
+	packageFile?: string;
+	allowStalePackage?: boolean;
+	rekeyFrom?: string;
+	ownerUserId?: string;
+	verbose: boolean;
+	/** Only what the operator chose; the rest is re-derived from the definition on rebuild. */
+	overrides: SessionOverrides;
 }
 
 function persistSessionPackage(packageData: InvitationPackageData): string {
@@ -85,72 +112,35 @@ function persistSessionPackage(packageData: InvitationPackageData): string {
 	return absolute;
 }
 
-async function maybeRecoverConflicts(
-	session: ReleaseWizardSession,
-	targetPlans: TargetPlanData[],
-): Promise<boolean> {
-	const conflicts = targetPlans.flatMap((tp) => tp.mergeConflicts ?? []);
-	const onlyMergeBlocks =
-		conflicts.length > 0 &&
-		targetPlans
-			.filter((tp) => tp.status === 'BLOQUEADO')
-			.every((tp) => (tp.mergeConflicts?.length ?? 0) > 0);
-	if (!onlyMergeBlocks) return false;
-
-	const action = await select({
-		message: 'El plan está bloqueado por conflictos. ¿Qué desea hacer?',
-		default: 'cancel',
-		choices: [
-			{ name: 'Cancelar', value: 'cancel' as const },
-			{ name: 'Resolver conflictos campo a campo', value: 'resolve' as const },
-			{ name: 'Volver', value: 'back' as const },
-		],
-	});
-	if (action !== 'resolve') return false;
-	session.conflictResolutions = await promptConflictResolutions(conflicts);
-	return true;
-}
-
-async function maybeRecoverUnpublishedDraftDivergence(
-	session: ReleaseWizardSession,
-	targetPlans: TargetPlanData[],
-): Promise<boolean> {
-	if (session.acknowledgeDiscardUnpublishedDraft) return false;
-	const blocked = targetPlans.filter((tp) => tp.status === 'BLOQUEADO');
-	if (blocked.length === 0) return false;
-	const allDivergence = blocked.every((tp) => isTargetDivergenceConflictMessage(tp.reason ?? ''));
-	if (!allDivergence) return false;
-
-	const confirmed = await confirm({
-		message:
-			'El destino tiene un borrador inédito distinto del paquete y de lo publicado. ¿Descartar esas ediciones y aplicar el paquete?',
-		default: false,
-	});
-	if (!confirmed) return false;
-	session.acknowledgeDiscardUnpublishedDraft = true;
-	return true;
-}
-
 async function maybeRecoverStaleProvenance(session: ReleaseWizardSession): Promise<boolean> {
 	if (!session.packagePath) return false;
+	const t = theme();
 	let diagnosis;
 	try {
-		diagnosis = await inspectPreviewProvenanceReceipt({ packagePath: session.packagePath });
+		diagnosis = await step('Diagnosing Preview provenance', () =>
+			inspectPreviewProvenanceReceipt({ packagePath: session.packagePath! }),
+		);
 	} catch (error) {
-		writeHuman(
-			`${operatorSymbol('warn')} No se pudo diagnosticar provenance: ${error instanceof Error ? error.message : String(error)}`,
+		printLine(
+			t.mark(
+				'warn',
+				`Provenance diagnosis failed: ${error instanceof Error ? error.message : String(error)}`,
+			),
 		);
 		return false;
 	}
 	if (diagnosis.status !== 'RECOVERABLE' || !diagnosis.recoveryEligible) {
-		writeHuman(
-			`${operatorSymbol('fail')} Provenance no recuperable automáticamente: ${diagnosis.message}`,
+		printLine(
+			t.mark('fail', `Provenance is not automatically recoverable: ${diagnosis.message}`),
 		);
 		return false;
 	}
 
-	writeHuman(
-		`${operatorSymbol('warn')} Baseline de Preview desfasado respecto a un receipt de verificación. Solo se actualizará metadata (sin contenido ni Storage).`,
+	printLine(
+		t.mark(
+			'warn',
+			'Preview baseline is stale against a verification receipt. Only metadata will be updated (no content, no Storage).',
+		),
 	);
 	try {
 		await authorizePreviewWriteApply({
@@ -162,7 +152,7 @@ async function maybeRecoverStaleProvenance(session: ReleaseWizardSession): Promi
 	} catch (error: unknown) {
 		const message = error instanceof Error ? error.message : String(error);
 		if (message.includes('PREVIEW_WRITE_CANCELLED')) {
-			writeHuman(`${operatorSymbol('info')} Reconciliación cancelada.`);
+			printLine(t.mark('info', 'Reconcile cancelled.'));
 			return false;
 		}
 		throw error;
@@ -173,21 +163,25 @@ async function maybeRecoverStaleProvenance(session: ReleaseWizardSession): Promi
 		apply: true,
 	});
 	if (!applied.applied || applied.status !== 'IN_SYNC') {
-		writeHuman(`${operatorSymbol('fail')} La reconciliación no dejó Preview en sincronía.`);
+		printLine(t.mark('fail', 'Reconcile did not leave Preview in sync.'));
 		return false;
 	}
-	writeHuman(`${operatorSymbol('ok')} Provenance de Preview reconciliada.`);
+	printLine(t.mark('ok', 'Preview provenance reconciled.'));
 	return true;
 }
 
 async function ensurePreviewApprovalForProduction(session: ReleaseWizardSession): Promise<boolean> {
+	const t = theme();
 	const alreadyReady = await resolveDestinationReadiness({
 		slug: session.slug,
 		packagePath: session.packagePath,
 	});
 	if (alreadyReady.productionReady) {
-		writeHuman(
-			`${operatorSymbol('ok')} Preview ya está aprobado exactamente para este packageHash. Production: pnpm prod:apply -- --slug ${session.slug} --apply`,
+		printLine(
+			t.mark(
+				'ok',
+				`Preview is already approved for this package. Production: pnpm prod:apply -- --slug ${session.slug} --apply`,
+			),
 		);
 		return true;
 	}
@@ -202,24 +196,27 @@ async function ensurePreviewApprovalForProduction(session: ReleaseWizardSession)
 		return readiness.productionReady;
 	}
 
-	writeHuman(
-		`${operatorSymbol('info')} Preview ya coincide con el canónico. Ejecutando verificación Preview para materializar la aprobación…`,
+	printLine(
+		t.mark(
+			'info',
+			'Preview already matches the canonical package. Running Preview verify to materialize the approval.',
+		),
 	);
-	const preview = await planPreview(session);
+	const preview = await step('Planning Preview', () => planPreview(session));
 	if (preview.targetPlan.status === 'BLOQUEADO') {
 		if (isStaleProvenanceBlockReason(preview.targetPlan.reason)) {
 			const recovered = await maybeRecoverStaleProvenance(session);
 			if (!recovered) return false;
 			return ensurePreviewApprovalForProduction(session);
 		}
-		writeHuman(
-			`${operatorSymbol('fail')} Preview bloqueado: ${preview.targetPlan.reason ?? 'motivo desconocido'}`,
+		printLine(
+			t.mark('fail', `Preview blocked: ${preview.targetPlan.reason ?? 'unknown reason'}`),
 		);
 		return false;
 	}
 
 	if (!preview.targetDbUrl || !preview.plan) {
-		writeHuman(`${operatorSymbol('fail')} No hay plan Preview para la verificación.`);
+		printLine(t.mark('fail', 'No Preview plan available for verification.'));
 		return false;
 	}
 
@@ -233,7 +230,7 @@ async function ensurePreviewApprovalForProduction(session: ReleaseWizardSession)
 	} catch (error: unknown) {
 		const message = error instanceof Error ? error.message : String(error);
 		if (message.includes('PREVIEW_WRITE_CANCELLED')) {
-			writeHuman(`${operatorSymbol('info')} Verificación cancelada.`);
+			printLine(t.mark('info', 'Verification cancelled.'));
 			return false;
 		}
 		throw error;
@@ -249,6 +246,8 @@ async function ensurePreviewApprovalForProduction(session: ReleaseWizardSession)
 		pruneAssets: session.pruneAssets,
 		conflictResolutions: session.conflictResolutions,
 		acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
+		rekeyFrom: session.rekeyFrom,
+		ownerUserId: session.ownerUserId,
 	});
 	await maybeCompletePreviewApproval(session);
 	const readiness = await resolveDestinationReadiness({
@@ -259,34 +258,34 @@ async function ensurePreviewApprovalForProduction(session: ReleaseWizardSession)
 }
 
 async function runLiveApproval(session: ReleaseWizardSession): Promise<void> {
+	const t = theme();
 	const pending = getDefaultPreviewApprovalStore().get(session.packageHash);
 	if (!pending) {
-		writeHuman(
-			`${operatorSymbol('warn')} No hay aprobación pendiente para este packageHash. Vuelva a aplicar Preview.`,
+		printLine(
+			t.mark('warn', 'No pending approval for this package hash. Apply Preview again first.'),
 		);
 		return;
 	}
-	const live = await verifyPreviewArtifactLive(pending);
-	writeHuman(`Verificación Preview en vivo · ${pending.slug}`);
+	const live = await step('Verifying Preview live', () => verifyPreviewArtifactLive(pending), {
+		done: (result) => (result.ok ? 'Live checklist passed' : 'Live checklist has failures'),
+	});
 	for (const key of PREVIEW_LIVE_CHECKLIST_KEYS) {
-		writeHuman(`  ${live.checklistResults[key] ? 'OK' : 'FALLO'}  ${key}`);
+		printLine(`  ${t.mark(live.checklistResults[key] ? 'ok' : 'fail', key)}`);
 	}
 	if (!live.ok) {
-		writeHuman(
-			`${operatorSymbol('fail')} La verificación en vivo falló. No se puede aprobar esta release.`,
-		);
+		printLine(t.mark('fail', 'Live verification failed. This release cannot be approved.'));
 		return;
 	}
-	const decision = await select({
-		message: `¿Aprobar la release verificada de Preview para "${session.slug}"?`,
-		default: 'cancel',
-		choices: [
-			{ name: 'Cancelar (no aprobar ahora)', value: 'cancel' as const },
-			{ name: 'Aprobar Preview para Production', value: 'approve' as const },
+	const decision = await menu<'cancel' | 'approve'>({
+		title: `Approve the verified Preview release of "${session.slug}" for Production?`,
+		items: [
+			{ value: 'cancel', label: 'Cancel (do not approve now)' },
+			{ value: 'approve', label: 'Approve Preview for Production', danger: true },
 		],
+		initial: 'cancel',
 	});
 	if (decision !== 'approve') {
-		writeHuman(`${operatorSymbol('info')} Aprobación omitida. Puede aprobar más tarde.`);
+		printLine(t.mark('info', 'Approval skipped. You can approve later.'));
 		return;
 	}
 	await authorizePreviewWriteApply({
@@ -301,8 +300,11 @@ async function runLiveApproval(session: ReleaseWizardSession): Promise<void> {
 		intendedProductionProjectRef: SUPABASE_PROJECT_REFS.production,
 		live,
 	});
-	writeHuman(
-		`${operatorSymbol('ok')} Aprobación completada · ${finalized.slug} · ${finalized.packageHash.slice(0, 16)}…`,
+	printLine(
+		t.mark(
+			'ok',
+			`Approval recorded · ${finalized.slug} · pkg ${finalized.packageHash.slice(0, 16)}…`,
+		),
 	);
 }
 
@@ -313,8 +315,11 @@ async function maybeCompletePreviewApproval(session: ReleaseWizardSession): Prom
 		packagePath: session.packagePath,
 	});
 	if (readiness.productionReady) {
-		writeHuman(
-			`${operatorSymbol('ok')} Preview ya tiene aprobación exacta para este packageHash. No se vuelve a verificar ni aprobar. Production: pnpm prod:apply -- --slug ${session.slug} --apply`,
+		printLine(
+			theme().mark(
+				'ok',
+				`Preview already has an exact approval for this package. No re-verify. Production: pnpm prod:apply -- --slug ${session.slug} --apply`,
+			),
 		);
 		return;
 	}
@@ -322,8 +327,11 @@ async function maybeCompletePreviewApproval(session: ReleaseWizardSession): Prom
 }
 
 async function applyLocalOutcome(session: ReleaseWizardSession): Promise<void> {
+	const t = theme();
 	for (;;) {
-		const { plan, targetPlan } = await planLocal(session);
+		const { plan, targetPlan } = await step('Planning Local', () => planLocal(session), {
+			done: (result) => `Local plan: ${result.targetPlan.status}`,
+		});
 		const planData = toOperationalPlanData(session.slug, ['local'], [targetPlan], {
 			updateScope: session.updateScope,
 			assetPolicy: session.assetPolicy,
@@ -333,78 +341,68 @@ async function applyLocalOutcome(session: ReleaseWizardSession): Promise<void> {
 			if (recovered) continue;
 			const discarded = await maybeRecoverUnpublishedDraftDivergence(session, [targetPlan]);
 			if (discarded) continue;
-			console.log(formatDryRunPlan(planData, { verbose: false }));
+			console.log(formatDryRunPlan(planData, { verbose: session.verbose }));
 			return;
 		}
 		if (targetPlan.status === 'SIN CAMBIOS') {
-			writeHuman(`${operatorSymbol('ok')} Local ya está sincronizado. No hay cambios.`);
+			printLine(t.mark('ok', 'Local is already in sync. Nothing to apply.'));
 			return;
 		}
-		const decision = await reviewAndConfirm(planData);
+		const decision = await reviewAndConfirm(planData, { verbose: session.verbose });
 		if (decision === 'cancel' || decision === 'back') return;
 		if (!plan) return;
 
-		const confirmed = await confirm({
-			message: `¿Aplicar la release administrada de "${session.slug}" en Local?`,
-			default: false,
-		});
-		if (!confirmed) {
-			writeHuman(`${operatorSymbol('info')} Cancelado. No se escribieron cambios.`);
-			return;
+		// Cancelling the No-default confirm throws OPERATOR_CANCELLED (reported by dispatchAction).
+		const { result } = await executeLocalStage(session, plan);
+		const targetResults = [result];
+		if (session.verbose) {
+			console.log(
+				formatApplyResult({
+					invitation: session.slug,
+					status: deriveLifecycleFinalStatus(targetResults),
+					environment: 'local',
+					completedOperations: result.completedOperations,
+					databaseWrites: result.databaseWrites,
+					storageMutations: result.storageMutations,
+					targetResults,
+					functionalChanges: result.functionalChanges,
+				}),
+			);
 		}
-		const executed = await planAndApplyLocalContent({
-			slug: session.slug,
-			apply: true,
-			plan,
-			updateScope: session.updateScope,
-			assetPolicy: session.assetPolicy,
-			pruneAssets: session.pruneAssets,
-			conflictResolutions: session.conflictResolutions,
-			acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
-			expectedSourceHash: session.sourceHash,
-			expectedPackageHash: session.packageHash,
+		printResultSummary({
+			session,
+			targets: t.env('local'),
+			results: targetResults,
+			next: describeDestination('prepare_preview'),
 		});
-		const targetResults: TargetApplyResultData[] = [
-			{
-				target: 'local',
-				planId: executed.plan.planId,
-				status: executed.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS APLICADOS',
-				completedOperations: executed.completedOperations,
-				databaseWrites: {
-					inserts: executed.databaseInserts,
-					updates: executed.databaseUpdates,
-					deletes: executed.databaseDeletes,
-				},
-				storageMutations: {
-					uploads: executed.storageUploads,
-					overwrites: executed.storageOverwrites,
-					moves: executed.storageMoves,
-					deletes: executed.storageDeletes,
-				},
-				publishedVersion: executed.publishedVersion,
-				functionalChanges: executed.functionalChanges,
-			},
-		];
-		console.log(
-			formatApplyResult({
-				invitation: session.slug,
-				status: deriveLifecycleFinalStatus(targetResults),
-				environment: 'local',
-				completedOperations: executed.completedOperations,
-				databaseWrites: targetResults[0]!.databaseWrites,
-				storageMutations: targetResults[0]!.storageMutations,
-				targetResults,
-				functionalChanges: executed.functionalChanges,
-			}),
-		);
 		return;
 	}
 }
 
+async function recoverPreparePreviewBlock(
+	session: ReleaseWizardSession,
+	targetPlans: TargetPlanData[],
+): Promise<boolean> {
+	if (await maybeRecoverConflicts(session, targetPlans)) return true;
+	if (await maybeRecoverUnpublishedDraftDivergence(session, targetPlans)) return true;
+	const previewBlocked = targetPlans.find(
+		(tp) => tp.target === 'preview' && tp.status === 'BLOQUEADO',
+	);
+	if (isStaleProvenanceBlockReason(previewBlocked?.reason)) {
+		return maybeRecoverStaleProvenance(session);
+	}
+	return false;
+}
+
 async function applyPreparePreviewOutcome(session: ReleaseWizardSession): Promise<void> {
+	const t = theme();
 	for (;;) {
-		const local = await planLocal(session);
-		const preview = await planPreview(session);
+		const local = await step('Planning Local', () => planLocal(session), {
+			done: (result) => `Local plan: ${result.targetPlan.status}`,
+		});
+		const preview = await step('Planning Preview', () => planPreview(session), {
+			done: (result) => `Preview plan: ${result.targetPlan.status}`,
+		});
 		const targetPlans = [local.targetPlan, preview.targetPlan];
 		const planData = toOperationalPlanData(session.slug, ['local', 'preview'], targetPlans, {
 			updateScope: session.updateScope,
@@ -412,184 +410,65 @@ async function applyPreparePreviewOutcome(session: ReleaseWizardSession): Promis
 		});
 
 		if (targetPlans.some((tp) => tp.status === 'BLOQUEADO')) {
-			const recovered = await maybeRecoverConflicts(session, targetPlans);
-			if (recovered) continue;
-			const discarded = await maybeRecoverUnpublishedDraftDivergence(session, targetPlans);
-			if (discarded) continue;
-			const previewBlocked = targetPlans.find(
-				(tp) => tp.target === 'preview' && tp.status === 'BLOQUEADO',
-			);
-			if (isStaleProvenanceBlockReason(previewBlocked?.reason)) {
-				const reconciled = await maybeRecoverStaleProvenance(session);
-				if (reconciled) continue;
-			}
-			const blocked = buildPreflightBlockedResults(['local', 'preview'], targetPlans);
-			console.log(formatDryRunPlan(planData, { verbose: false }));
-			if (blocked) {
-				console.log(
-					formatApplyResult({
-						invitation: session.slug,
-						status: 'BLOQUEADO',
-						environment: 'local, preview',
-						completedOperations: 0,
-						databaseWrites: { inserts: 0, updates: 0, deletes: 0 },
-						storageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
-						reason: targetPlans.find((tp) => tp.status === 'BLOQUEADO')?.reason,
-						targetResults: blocked,
-					}),
-				);
+			if (await recoverPreparePreviewBlock(session, targetPlans)) continue;
+			console.log(formatDryRunPlan(planData, { verbose: session.verbose }));
+			if (buildPreflightBlockedResults(['local', 'preview'], targetPlans)) {
+				const reason = targetPlans.find((tp) => tp.status === 'BLOQUEADO')?.reason;
+				printLine(t.mark('fail', `Blocked: ${reason ?? 'preflight incomplete'}`));
 			}
 			return;
 		}
 
-		const decision = await reviewAndConfirm(planData);
+		const decision = await reviewAndConfirm(planData, {
+			hosted: true,
+			verbose: session.verbose,
+		});
 		if (decision === 'cancel' || decision === 'back') return;
-
-		const executionPlans = new Map<'local' | 'preview', OperationalPlan>();
-		if (local.plan) executionPlans.set('local', local.plan);
-		if (preview.plan) executionPlans.set('preview', preview.plan);
 
 		const summary = await executeTargetPlans({
 			targets: ['local', 'preview'],
 			targetPlans,
 			sanitizeError: (error) => (error instanceof Error ? error.message : String(error)),
-			executeTarget: async (target): Promise<TargetExecutionOutcome> => {
-				if (target === 'local') {
-					const confirmed = await confirm({
-						message: `¿Aplicar Local para "${session.slug}"?`,
-						default: false,
-					});
-					if (!confirmed) {
-						throw Object.assign(new Error('OPERATOR_CANCELLED'), {
-							mutationStarted: false,
-							cancelled: true,
-						}) as LifecycleExecutionError;
-					}
-					const localPlan = executionPlans.get('local');
-					if (!localPlan) {
-						throw Object.assign(new Error('No existe plan Local.'), {
-							mutationStarted: false,
-						}) as LifecycleExecutionError;
-					}
-					const executed = await planAndApplyLocalContent({
-						slug: session.slug,
-						apply: true,
-						plan: localPlan,
-						updateScope: session.updateScope,
-						assetPolicy: session.assetPolicy,
-						pruneAssets: session.pruneAssets,
-						conflictResolutions: session.conflictResolutions,
-						acknowledgeDiscardUnpublishedDraft:
-							session.acknowledgeDiscardUnpublishedDraft,
-						expectedSourceHash: session.sourceHash,
-						expectedPackageHash: session.packageHash,
-					});
-					return {
-						executionPlanId: executed.plan.planId,
-						receiptPlanId: executed.receipt?.planId ?? '',
-						result: {
-							target: 'local',
-							planId: executed.plan.planId,
-							status: executed.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS APLICADOS',
-							completedOperations: executed.completedOperations,
-							databaseWrites: {
-								inserts: executed.databaseInserts,
-								updates: executed.databaseUpdates,
-								deletes: executed.databaseDeletes,
-							},
-							storageMutations: {
-								uploads: executed.storageUploads,
-								overwrites: executed.storageOverwrites,
-								moves: executed.storageMoves,
-								deletes: executed.storageDeletes,
-							},
-							publishedVersion: executed.publishedVersion,
-							functionalChanges: executed.functionalChanges,
-						},
-					};
-				}
-
-				if (!preview.targetDbUrl) {
-					throw Object.assign(new Error('Preview DB URL no disponible.'), {
-						mutationStarted: false,
-					}) as LifecycleExecutionError;
-				}
-				try {
-					await authorizePreviewWriteApply({
-						slug: session.slug,
-						operation: 'apply',
-						confirmPrompt: `Confirm Preview apply for "${session.slug}"? Type YES to proceed: `,
-						isInteractive: true,
-					});
-				} catch (error: unknown) {
-					const message = error instanceof Error ? error.message : String(error);
-					if (message.includes('PREVIEW_WRITE_CANCELLED')) {
-						throw Object.assign(new Error('OPERATOR_CANCELLED'), {
-							mutationStarted: false,
-							cancelled: true,
-						}) as LifecycleExecutionError;
-					}
-					throw error;
-				}
-				const previewPlan = executionPlans.get('preview');
-				if (!previewPlan) {
-					throw Object.assign(new Error('No existe plan Preview.'), {
-						mutationStarted: false,
-					}) as LifecycleExecutionError;
-				}
-				const executed = await planAndApplyPreviewContent({
-					packageData: session.packageData,
-					targetDbUrl: preview.targetDbUrl,
-					apply: true,
-					plan: previewPlan,
-					updateScope: session.updateScope,
-					assetPolicy: session.assetPolicy,
-					pruneAssets: session.pruneAssets,
-					conflictResolutions: session.conflictResolutions,
-					acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
-				});
-				const appliedPlan = executed.plan;
-				if (!appliedPlan) {
-					throw Object.assign(new Error('Preview apply returned no plan.'), {
-						mutationStarted: true,
-					}) as LifecycleExecutionError;
-				}
-				return {
-					executionPlanId: appliedPlan.planId,
-					receiptPlanId: executed.receipt?.planId ?? '',
-					result: {
-						target: 'preview',
-						planId: appliedPlan.planId,
-						status: executed.isZeroDrift ? 'SIN CAMBIOS' : 'CAMBIOS APLICADOS',
-						completedOperations: executed.executedMutations,
-						databaseWrites: appliedPlan.physicalDatabaseOps,
-						storageMutations: appliedPlan.storageOps,
-						publishedVersion: executed.publishedVersion,
-						functionalChanges: executed.functionalChanges,
-					},
-				};
-			},
+			executeTarget: (target) =>
+				target === 'local'
+					? executeLocalStage(session, local.plan)
+					: executePreviewStage(session, preview),
 		});
 
-		const finalStatus = deriveLifecycleFinalStatus(summary.targetResults);
-		const totals = sumTargetResults(summary.targetResults);
-		console.log(
-			formatApplyResult({
-				invitation: session.slug,
-				status: finalStatus,
-				environment: 'local, preview',
-				completedOperations: totals.completedOperations,
-				databaseWrites: totals.databaseWrites,
-				storageMutations: totals.storageMutations,
-				targetResults: summary.targetResults,
-			}),
-		);
+		if (
+			summary.targetResults.some((result) =>
+				(result.reason ?? '').includes('OPERATOR_CANCELLED'),
+			)
+		) {
+			printLine(t.mark('info', 'Cancelled. No further writes.'));
+			return;
+		}
+		if (session.verbose || summary.executionFailed) {
+			const totals = sumTargetResults(summary.targetResults);
+			console.log(
+				formatApplyResult({
+					invitation: session.slug,
+					status: deriveLifecycleFinalStatus(summary.targetResults),
+					environment: 'local, preview',
+					completedOperations: totals.completedOperations,
+					databaseWrites: totals.databaseWrites,
+					storageMutations: totals.storageMutations,
+					targetResults: summary.targetResults,
+				}),
+			);
+		}
 
 		const previewApplied = summary.targetResults.some(
 			(r) =>
 				r.target === 'preview' &&
 				(r.status === 'CAMBIOS APLICADOS' || r.status === 'SIN CAMBIOS'),
 		);
+		printResultSummary({
+			session,
+			targets: `${t.env('local')} + ${t.env('preview')}`,
+			results: summary.targetResults,
+			next: previewApplied ? 'Approve Preview (live checklist)' : 'Review the failure above',
+		});
 		if (!summary.executionFailed && previewApplied) {
 			await maybeCompletePreviewApproval(session);
 		}
@@ -597,99 +476,124 @@ async function applyPreparePreviewOutcome(session: ReleaseWizardSession): Promis
 	}
 }
 
-async function applyProductionOutcome(session: ReleaseWizardSession): Promise<void> {
-	let readiness = await resolveDestinationReadiness({
+/** Returns true when Production is ready after guiding the operator through Preview. */
+async function ensureProductionReadiness(session: ReleaseWizardSession): Promise<boolean> {
+	const t = theme();
+	const readiness = await resolveDestinationReadiness({
 		slug: session.slug,
 		packagePath: session.packagePath,
 	});
-	if (!readiness.productionReady) {
-		writeHuman(
-			`${operatorSymbol('warn')} Production no está lista: ${readiness.productionBlockReason ?? 'falta aprobación Preview exacta.'}`,
-		);
-		const promotionAction = await resolvePromotionActionForSlug(session.slug);
-		if (promotionAction === 'PROMOTE_PRODUCTION') {
-			const next = await select({
-				message: 'Preview ya coincide con el canónico. ¿Qué desea hacer?',
-				default: 'approve',
-				choices: [
-					{ name: 'Volver', value: 'back' as const },
-					{
-						name: 'Aprobar Preview ahora (sin reaplicar contenido)',
-						value: 'approve' as const,
-					},
-					{
-						name: 'Preparar Preview completo (Local + Preview)',
-						value: 'prepare' as const,
-					},
-				],
-			});
-			if (next === 'back') return;
-			if (next === 'prepare') {
-				await applyPreparePreviewOutcome(session);
-				return;
-			}
-			const approved = await ensurePreviewApprovalForProduction(session);
-			if (!approved) return;
-			readiness = await resolveDestinationReadiness({
-				slug: session.slug,
-				packagePath: session.packagePath,
-			});
-			if (!readiness.productionReady) {
-				writeHuman(
-					`${operatorSymbol('fail')} Sigue faltando aprobación Preview exacta tras la verificación.`,
-				);
-				return;
-			}
-		} else {
-			const next = await select({
-				message: 'Seleccione una acción',
-				default: 'back',
-				choices: [
-					{ name: 'Volver', value: 'back' as const },
-					{ name: 'Preparar Preview ahora', value: 'prepare' as const },
-				],
-			});
-			if (next === 'prepare') {
-				await applyPreparePreviewOutcome(session);
-			}
-			return;
-		}
+	if (readiness.productionReady) return true;
+	printLine(
+		t.mark(
+			'warn',
+			`Production is not ready: ${readiness.productionBlockReason ?? 'exact Preview approval missing.'}`,
+		),
+	);
+	const promotionAction = (await resolvePromotionStateForSlug(session.slug)).action;
+	if (promotionAction !== 'PROMOTE_PRODUCTION') {
+		const next = await menu<'back' | 'prepare'>({
+			title: 'Preview must be prepared and approved first',
+			items: [
+				{ value: 'prepare', label: `${describeDestination('prepare_preview')} now` },
+				{ value: 'back', label: 'Back' },
+			],
+			initial: 'back',
+		});
+		if (next === 'prepare') await applyPreparePreviewOutcome(session);
+		return false;
 	}
+	const next = await menu<'back' | 'approve' | 'prepare'>({
+		title: 'Preview already matches the canonical package',
+		items: [
+			{ value: 'approve', label: 'Approve Preview now (no content re-apply)' },
+			{ value: 'prepare', label: describeDestination('prepare_preview') },
+			{ value: 'back', label: 'Back' },
+		],
+		initial: 'approve',
+	});
+	if (next === 'back') return false;
+	if (next === 'prepare') {
+		await applyPreparePreviewOutcome(session);
+		return false;
+	}
+	if (!(await ensurePreviewApprovalForProduction(session))) return false;
+	const after = await resolveDestinationReadiness({
+		slug: session.slug,
+		packagePath: session.packagePath,
+	});
+	if (!after.productionReady) {
+		printLine(t.mark('fail', 'Exact Preview approval is still missing after verification.'));
+	}
+	return after.productionReady;
+}
+
+async function applyProductionOutcome(session: ReleaseWizardSession): Promise<void> {
+	const t = theme();
+	if (!(await ensureProductionReadiness(session))) return;
 
 	const definition = getInvitationDefinition(session.slug);
-	writeHuman(`${operatorSymbol('info')} Preflight Production…`);
 	// Match CLI dry-run: defer critical backup to the orchestrator recovery classifier.
-	const preflight = await runPromotionPreflight({
-		packageData: session.packageData,
-		updateScope: session.updateScope,
-		assetPolicy: session.assetPolicy,
-		requireBackup: false,
-		getProductionDbUrl: getProdDbUrl,
-	});
+	const preflight = await step(
+		'Production preflight (read-only)',
+		() =>
+			runPromotionPreflight({
+				packageData: session.packageData,
+				updateScope: session.updateScope,
+				assetPolicy: session.assetPolicy,
+				requireBackup: false,
+				getProductionDbUrl: getProdDbUrl,
+			}),
+		{ done: (report) => `Production preflight: ${report.status}` },
+	);
 	if (preflight.status === 'BLOCKED') {
-		writeHuman(
-			`${operatorSymbol('fail')} Production bloqueada: ${preflight.reason ?? preflight.blockCode}`,
+		printLine(
+			t.mark(
+				'fail',
+				`${t.env('production')} blocked: ${preflight.reason ?? preflight.blockCode}`,
+			),
 		);
 		return;
 	}
 	if (preflight.status === 'IN_SYNC') {
-		writeHuman(`${operatorSymbol('ok')} Production ya coincide con la release aprobada.`);
+		printLine(t.mark('ok', `${t.env('production')} already matches the approved release.`));
 		return;
 	}
 	writeHuman(formatPromotionPlanCompact(preflight, { title: definition.title }));
-	writeHuman(
-		`${operatorSymbol('info')} Para aplicar: pnpm prod:apply -- --slug ${session.slug} --apply`,
+	printLine();
+	printLine(
+		t.summary('Summary', [
+			['Invitation', session.slug],
+			['Target', t.env('production')],
+			['Preflight', preflight.status],
+			['Writes', 'none here (dry-run only)'],
+			['Next', `Owner apply: pnpm prod:apply -- --slug ${session.slug} --apply`],
+		]),
 	);
 }
 
-async function buildSession(slug: string): Promise<ReleaseWizardSession> {
-	const packageInput = await resolveInvitationPackageInput({ slug });
+async function buildSession(
+	slug: string,
+	overrides: SessionOverrides = {},
+): Promise<ReleaseWizardSession> {
+	const packageInput = await resolveInvitationPackageInput({
+		slug,
+		sourceDir: overrides.sourceDir,
+		packagePath: overrides.packageFile,
+		allowStalePackage: overrides.allowStalePackage,
+	});
 	const packagePath = persistSessionPackage(packageInput.packageData);
 	const definition = getInvitationDefinition(slug);
 	const updateScope = requireResolvedUpdateScope({
+		updateScope: overrides.updateScope,
 		deliveryScope: definition.deliveryScope,
 	});
-	const assetPolicy = defaultAssetPolicy(updateScope);
+	const assetPolicy = overrides.assetPolicy ?? defaultAssetPolicy(updateScope);
+	if (assetPolicy === 'preserve' && updateScope === 'content-and-assets') {
+		throw new Error(
+			'Asset policy "preserve" conflicts with update scope "content-and-assets". Choose verify, missing, or sync.',
+		);
+	}
 	return {
 		slug,
 		packageData: packageInput.packageData,
@@ -698,99 +602,175 @@ async function buildSession(slug: string): Promise<ReleaseWizardSession> {
 		packageHash: packageInput.packageData.packageHash,
 		updateScope,
 		assetPolicy,
-		pruneAssets: updateScope === 'content-and-assets',
+		pruneAssets: overrides.pruneAssets ?? updateScope === 'content-and-assets',
+		sourceDir: overrides.sourceDir,
+		packageFile: overrides.packageFile,
+		allowStalePackage: overrides.allowStalePackage,
+		rekeyFrom: overrides.rekeyFrom,
+		ownerUserId: overrides.ownerUserId,
+		verbose: overrides.verbose ?? false,
+		overrides: { ...overrides },
 	};
+}
+
+const sessionDeps: SessionDeps = {
+	buildSession,
+	reconcileStaleProvenance: maybeRecoverStaleProvenance,
+};
+
+/** Run one menu action; returns the (possibly rebuilt) session. Errors are reported inline. */
+async function dispatchAction(
+	action: ReleaseMenuAction,
+	session: ReleaseWizardSession,
+): Promise<ReleaseWizardSession> {
+	const t = theme();
+	try {
+		switch (action) {
+			case 'local':
+				await applyLocalOutcome(session);
+				break;
+			case 'prepare_preview':
+				await applyPreparePreviewOutcome(session);
+				break;
+			case 'approve_preview':
+				await runLiveApproval(session);
+				break;
+			case 'production':
+				await applyProductionOutcome(session);
+				break;
+			case 'status':
+				await runStatus(session);
+				break;
+			case 'tools':
+				return await runTools(session, sessionDeps);
+			default:
+				break;
+		}
+	} catch (error) {
+		if (isPromptExit(error)) throw error;
+		if (error instanceof Error && error.message === 'OPERATOR_CANCELLED') {
+			printLine(t.mark('info', 'Cancelled. No writes.'));
+		} else {
+			printLine(t.mark('fail', error instanceof Error ? error.message : String(error)));
+			if (session.verbose && error instanceof Error && error.stack)
+				printLine(t.dim(error.stack));
+		}
+	}
+	return session;
+}
+
+async function readMenuState(
+	session: ReleaseWizardSession,
+	previous: ReleaseMenuState,
+	options: { announce: boolean },
+): Promise<ReleaseMenuState> {
+	const [readiness, promotion] = await step(
+		'Reading publication state',
+		() =>
+			Promise.all([
+				resolveDestinationReadiness({
+					slug: session.slug,
+					packagePath: session.packagePath,
+				}),
+				resolvePromotionStateForSlug(session.slug),
+			]),
+		{ done: ([, promo]) => `Publication state: ${promo.action}` },
+	);
+	const state: ReleaseMenuState = {
+		...previous,
+		promotionAction: promotion.action,
+		productionReady: readiness.productionReady,
+		hasPendingPreviewApproval: readiness.hasPendingPreviewApproval,
+	};
+	if (options.announce) {
+		printSessionHeader(session, state);
+		printLine(environmentStateLine(promotion.environments));
+		printLine();
+	}
+	return state;
 }
 
 /**
  * Interactive destination-driven release session.
- * Returns after the operator cancels or finishes working with the invitation.
+ * Returns after the operator exits or finishes working with the invitation.
  */
-export async function runDestinationReleaseWizard(input?: { slug?: string }): Promise<void> {
-	writeHuman('=== Celebra-me · Asistente de publicación administrada ===\n');
+export async function runDestinationReleaseWizard(input?: {
+	slug?: string;
+	verbose?: boolean;
+}): Promise<void> {
+	await runInteractive(async () => {
+		const t = theme();
+		printLine(t.header('invitation:release', [t.dim('managed invitation release')]));
 
-	let slug = input?.slug;
-	if (!slug) {
-		slug = await select({
-			message: 'Selecciona la invitación administrada',
-			choices: listInvitationDefinitions()
-				.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-				.map((definition) => ({
-					name: `${definition.title} · ${definition.slug}`,
-					value: definition.slug,
-				})),
-		});
-	}
+		const firstSlug = input?.slug ?? (await chooseSlug());
+		if (!firstSlug) return;
+		let session = await step(
+			'Building package',
+			() => buildSession(firstSlug, { verbose: input?.verbose }),
+			{ done: describePackage },
+		);
 
-	let session = await buildSession(slug);
-	writeHuman(
-		`Release: ${session.packageHash.slice(0, 16)}… · alcance ${session.updateScope} · política ${session.assetPolicy}\n`,
-	);
+		let action: ReleaseMenuAction = 'menu';
+		let state: ReleaseMenuState = {
+			promotionAction: 'UNKNOWN',
+			productionReady: false,
+			hasPendingPreviewApproval: false,
+			lastAction: null,
+		};
 
-	for (;;) {
-		const readiness = await resolveDestinationReadiness({
-			slug: session.slug,
-			packagePath: session.packagePath,
-		});
-		const promotionAction = await resolvePromotionActionForSlug(session.slug);
-		const recommended = defaultDestinationFromPromotionAction(promotionAction);
-		const productionLabel =
-			readiness.productionReady || promotionAction === 'PROMOTE_PRODUCTION'
-				? `${describeDestination('production')}${promotionAction === 'PROMOTE_PRODUCTION' ? ' · recomendado' : ''} (Preview ${readiness.productionReady ? 'aprobado' : 'alineado'}; apply: pnpm prod:apply)`
-				: `${describeDestination('production')} (requiere Preview aprobado)`;
-		const prepareLabel =
-			recommended === 'prepare_preview'
-				? `${describeDestination('prepare_preview')} · recomendado`
-				: describeDestination('prepare_preview');
-
-		const destination = await select({
-			message: '¿Qué resultado desea?',
-			default: recommended,
-			choices: [
-				{ name: 'Cancelar', value: 'cancel' as WizardMenuDestination },
-				{ name: describeDestination('local'), value: 'local' as WizardMenuDestination },
-				{
-					name: prepareLabel,
-					value: 'prepare_preview' as WizardMenuDestination,
-				},
-				{ name: productionLabel, value: 'production' as WizardMenuDestination },
-				{
-					name: 'Actualizar paquete desde definición',
-					value: 'refresh' as WizardMenuDestination,
-				},
-			],
-		});
-
-		if (destination === 'cancel') {
-			writeHuman(`${operatorSymbol('info')} Sesión finalizada. No hay más escrituras.`);
-			return;
-		}
-		if (destination === 'refresh') {
-			session = await buildSession(session.slug);
-			writeHuman(
-				`${operatorSymbol('ok')} Paquete actualizado · ${session.packageHash.slice(0, 16)}…`,
-			);
-			continue;
-		}
-
-		try {
-			if (destination === 'local') {
-				await applyLocalOutcome(session);
-			} else if (destination === 'prepare_preview') {
-				await applyPreparePreviewOutcome(session);
-			} else {
-				await applyProductionOutcome(session);
+		for (;;) {
+			if (action === 'menu') {
+				state = await readMenuState(session, state, { announce: true });
+				const root = releaseRootMenu(state);
+				action = await menu({
+					title: 'What do you want to do?',
+					items: rootItems(root.order, state),
+					initial: root.initial,
+				});
 			}
-		} catch (error) {
-			if (error instanceof Error && error.message === 'OPERATOR_CANCELLED') {
-				writeHuman(`${operatorSymbol('info')} Cancelado. No se escribieron cambios.`);
+			if (action === 'exit') {
+				printLine(t.mark('info', 'Session finished. No further writes.'));
+				return;
+			}
+			if (action === 'change') {
+				const nextSlug = await chooseSlug();
+				if (!nextSlug) return;
+				try {
+					// Overrides are bound to the previous invitation (rekey, package file, scope).
+					session = await step(
+						'Building package',
+						() => buildSession(nextSlug, { verbose: session.verbose }),
+						{ done: describePackage },
+					);
+				} catch (error) {
+					if (isPromptExit(error)) throw error;
+					printLine(
+						t.mark('fail', error instanceof Error ? error.message : String(error)),
+					);
+				}
+				action = 'menu';
 				continue;
 			}
-			writeHuman(
-				`${operatorSymbol('fail')} ${error instanceof Error ? error.message : String(error)}`,
-			);
+
+			session = await dispatchAction(action, session);
+			state = { ...state, lastAction: action };
+			if (
+				action === 'local' ||
+				action === 'prepare_preview' ||
+				action === 'approve_preview'
+			) {
+				// Re-read readiness so the next-step default reflects what just happened.
+				state = await readMenuState(session, state, { announce: false });
+			}
+			const next = releaseNextStep(state);
+			printLine();
+			action = await menu({
+				title: 'Next step',
+				items: rootItems(next.order, state),
+				initial: next.initial,
+			});
 		}
-	}
+	});
 }
 
 export type { ReleaseDestination };

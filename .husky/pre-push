@@ -7,6 +7,8 @@ ZERO_SHA="0000000000000000000000000000000000000000"
 # Both policy and Git LFS consume the same ref updates from stdin.
 ref_updates=$(cat)
 
+# Visual certification is owned by Repository CI on the develop push. A local preview of that
+# certification remains available on demand through `pnpm validate:prepush`.
 echo "🧪 Running commit-range validation before push..."
 
 while read local_ref local_sha remote_ref remote_sha
@@ -37,9 +39,6 @@ do
 
   if [ -n "$BASE_SHA" ]; then
     node scripts/validate-commits.mjs "$BASE_SHA" "$local_sha"
-    pnpm validate:prepush -- --sha "$local_sha" --base-sha "$BASE_SHA" --target-ref "$remote_ref"
-  else
-    pnpm validate:prepush -- --sha "$local_sha" --target-ref "$remote_ref"
   fi
 done <<EOF
 $ref_updates

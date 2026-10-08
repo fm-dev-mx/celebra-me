@@ -2,212 +2,33 @@
  * dbs-cli.ts — Read-Only Unified Environment Status CLI (dbs)
  *
  * Usage:
- *   pnpm dbs                   # Canonical schema + publication + readiness
+ *   pnpm dbs                   # Interactive menu on a terminal; canonical matrix otherwise
  *   pnpm dbs <slug>            # One registry invitation
  *   pnpm dbs --verbose         # Migration IDs, env states, reasonCode
  *   pnpm dbs --in-sync         # Include NONE / in-sync slugs
  *   pnpm dbs --compact         # Connectivity CONTENT + schema (not publication)
  *   pnpm dbs --diagnostics     # Same decisions plus diagnostic enrichment
  *   pnpm dbs --json            # CanonicalStatusView JSON
+ *   pnpm dbs --targets local,preview   # Probe a subset of environments
+ *
+ * Most flags are also reachable from the interactive menu. Flags skip the menu (CI / automation).
  */
 
-import { readStatusTargets, statusScopeJson } from './dbs-options.ts';
-import type { TargetEnv } from './dbs-status.ts';
+import { readStatusTargets } from './dbs-options.ts';
 import { normalizeOperatorArgv } from '../lib/operator-argv.ts';
-import {
-	MANAGED_STATUS_DEFAULT_TIMEOUT_MS,
-	runCompactManagedStatusSafe,
-} from './managed-status.ts';
-import {
-	buildMediaOperationalPlan,
-	formatMediaReferences,
-	readMediaReferencesStatus,
-} from './dbs-media-references.ts';
+import { isInteractiveSession } from '../lib/cli-prompts.ts';
 import { shouldOpenDbsMenu } from './dbs-interactive-model.ts';
-import { buildOperationalActionPlan } from '../../src/lib/status/action-plan.ts';
-
-function readTimeoutMs(args: string[]): number {
-	const idx = args.indexOf('--timeout-ms');
-	if (idx === -1) return MANAGED_STATUS_DEFAULT_TIMEOUT_MS;
-	const raw = args[idx + 1];
-	const parsed = Number(raw);
-	if (!Number.isFinite(parsed) || parsed < 500 || parsed > 60_000) {
-		throw new Error('--timeout-ms must be a number between 500 and 60000.');
-	}
-	return Math.floor(parsed);
-}
-
-async function refineOrKeep<T extends { promotions: unknown }>(
-	fast: T,
-	refine: () => Promise<T>,
-): Promise<T> {
-	try {
-		return await refine();
-	} catch (error) {
-		console.error(
-			error instanceof Error
-				? `Production preflight did not finish: ${error.message}`
-				: 'Production preflight did not finish.',
-		);
-		return fast;
-	}
-}
-
-async function formatGeneralView(
-	jsonMode: boolean,
-	verbose: boolean,
-	includeInSync: boolean,
-	diagnostics: boolean,
-	targets?: TargetEnv[],
-): Promise<void> {
-	const { buildCanonicalStatusView, refineCanonicalStatusViewPromotions } =
-		await import('./canonical-status.ts');
-	const { formatCanonicalStatusView } = await import('./canonical-status-format.ts');
-	const fast = await buildCanonicalStatusView({
-		diagnostics,
-		environments: targets,
-		includeProductionPreflight: false,
-	});
-	// Media inventories do not depend on the promotion refine; read them concurrently.
-	const [view, mediaReferences] = await Promise.all([
-		refineOrKeep(fast, () =>
-			refineCanonicalStatusViewPromotions(fast, { resetSession: false }),
-		),
-		readMediaReferencesStatus({ targets }),
-	]);
-	const operationalPlan = buildMediaOperationalPlan(
-		buildOperationalActionPlan(view),
-		mediaReferences,
-	);
-	if (jsonMode) {
-		const { DbsStatusJsonSchema } = await import('../../src/lib/status/dbs-json.ts');
-		const excludedTargets = targets
-			? (['local', 'preview', 'production'] as const).filter((env) => !targets.includes(env))
-			: undefined;
-		const payload = DbsStatusJsonSchema.parse({
-			...view,
-			mediaReferences,
-			operationalPlan,
-			...(excludedTargets ? { excludedTargets } : {}),
-		});
-		console.log(statusScopeJson(payload, targets));
-		return;
-	}
-	process.stdout.write(
-		formatCanonicalStatusView(view, { verbose, includeInSync, diagnostics, operationalPlan }) +
-			`Estado operativo: ${operationalPlan.health.status}\n` +
-			formatMediaReferences(mediaReferences, { verbose }),
-	);
-}
-
-async function formatInvitationView(
-	slug: string,
-	jsonMode: boolean,
-	verbose: boolean,
-	diagnostics: boolean,
-	targets?: TargetEnv[],
-): Promise<void> {
-	const { buildCanonicalStatusView, refineCanonicalStatusViewPromotions } =
-		await import('./canonical-status.ts');
-	const { formatSlugStatusView } = await import('./canonical-status-format.ts');
-	const fast = await buildCanonicalStatusView({
-		slugs: [slug],
-		diagnostics,
-		environments: targets,
-		includeProductionPreflight: false,
-	});
-	const [view, mediaReferences] = await Promise.all([
-		refineOrKeep(fast, () =>
-			refineCanonicalStatusViewPromotions(fast, { slugs: [slug], resetSession: false }),
-		),
-		readMediaReferencesStatus({ targets, slug }),
-	]);
-	const operationalPlan = buildMediaOperationalPlan(
-		buildOperationalActionPlan(view),
-		mediaReferences,
-	);
-	if (jsonMode) {
-		const promotion = view.promotions.find((row) => row.slug === slug) ?? null;
-		console.log(
-			statusScopeJson(
-				{
-					slug,
-					selectedTargets: targets,
-					inSync: view.inSyncSlugs.includes(slug),
-					promotion,
-					mediaReferences,
-					operationalPlan,
-					environments: view.environments,
-					evidence: view.evidence,
-				},
-				targets,
-			),
-		);
-		return;
-	}
-	process.stdout.write(
-		formatSlugStatusView(view, slug, { verbose }) +
-			`Estado operativo: ${operationalPlan.health.status}\n` +
-			formatMediaReferences(mediaReferences, { verbose, slug }),
-	);
-}
-
-async function formatCompactView(
-	slug: string | undefined,
-	jsonMode: boolean,
-	timeoutMs: number,
-	aggregateContent: boolean,
-	targets?: TargetEnv[],
-): Promise<void> {
-	if (jsonMode) {
-		const result = await runCompactManagedStatusSafe({
-			slug,
-			timeoutMs,
-			aggregateContent,
-			environments: targets,
-		});
-		if (!result.ok) {
-			console.log(
-				JSON.stringify(
-					{
-						ok: false,
-						error: result.text.trim(),
-						readOnly: true,
-						mediaReferences: 'NOT_EVALUATED',
-					},
-					null,
-					2,
-				),
-			);
-			process.exit(0);
-		}
-		console.log(
-			statusScopeJson({ ...result.status, mediaReferences: 'NOT_EVALUATED' }, targets),
-		);
-		return;
-	}
-
-	const result = await runCompactManagedStatusSafe({
-		slug,
-		timeoutMs,
-		aggregateContent,
-		environments: targets,
-	});
-	process.stdout.write(result.text + '\nImágenes publicadas: no evaluadas en --compact.\n');
-	if (!result.ok) {
-		process.exit(0);
-	}
-}
+import { readTimeoutMs, runCompactView, runGeneralView, runInvitationView } from './dbs-views.ts';
 
 async function main(): Promise<void> {
 	const normalizedArgs = normalizeOperatorArgv(process.argv.slice(2));
-	if (shouldOpenDbsMenu(normalizedArgs, Boolean(process.stdin.isTTY && process.stdout.isTTY))) {
+	if (shouldOpenDbsMenu(normalizedArgs, isInteractiveSession())) {
 		const { runDbsInteractive } = await import('./dbs-interactive.ts');
 		await runDbsInteractive();
 		return;
 	}
 	const { args, targets } = readStatusTargets(normalizedArgs);
-	const jsonMode = args.includes('--json');
+	const json = args.includes('--json');
 	const compactMode = args.includes('--compact');
 	const verbose = args.includes('--verbose');
 	const includeInSync = args.includes('--in-sync');
@@ -220,14 +41,14 @@ async function main(): Promise<void> {
 	);
 
 	if (compactMode) {
-		await formatCompactView(slug, jsonMode, timeoutMs, aggregateContent, targets);
+		await runCompactView({ slug, json, timeoutMs, aggregateContent, targets });
 		return;
 	}
 
 	if (slug) {
-		await formatInvitationView(slug, jsonMode, verbose, diagnostics, targets);
+		await runInvitationView(slug, { json, verbose, diagnostics, targets });
 	} else {
-		await formatGeneralView(jsonMode, verbose, includeInSync, diagnostics, targets);
+		await runGeneralView({ json, verbose, includeInSync, diagnostics, targets });
 	}
 }
 

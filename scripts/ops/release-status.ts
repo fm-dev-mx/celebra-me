@@ -49,7 +49,14 @@ export interface DeploymentEvidence {
 	url: string | null;
 }
 
-/** Latest GitHub deployment Vercel recorded for this SHA and environment, with its latest status. */
+/**
+ * Provider deployment recorded on GitHub for this SHA and environment, with its latest status.
+ * A workflow job declaring `environment:` (e.g. the post-deploy smoke) adds a newer deployment
+ * record for the same SHA whose statuses carry an empty `environment_url`; GitHub attributes it to
+ * `vercel[bot]` as well, so neither the newest id nor the creator identifies the provider
+ * deployment. Candidates are inspected newest first and the first whose latest status carries an
+ * `environment_url` wins. Until one does, the newest record is reported and classifies as pending.
+ */
 export function loadDeploymentForSha(
 	sha: string,
 	target: ReleaseTarget,
@@ -62,7 +69,7 @@ export function loadDeploymentForSha(
 		environment?: unknown;
 	}>;
 	if (!Array.isArray(deployments)) return null;
-	const deployment = deployments
+	const candidates = deployments
 		.filter(
 			(entry) =>
 				typeof entry.id === 'number' &&
@@ -71,19 +78,27 @@ export function loadDeploymentForSha(
 				typeof entry.environment === 'string' &&
 				entry.environment.trim().toLowerCase() === target,
 		)
-		.sort((left, right) => (right.id as number) - (left.id as number))[0];
-	if (!deployment) return null;
-	const statuses = client.api(`deployments/${deployment.id}/statuses?per_page=100`) as Array<{
-		state?: unknown;
-		environment_url?: unknown;
-	}>;
-	const latest = Array.isArray(statuses) ? statuses[0] : undefined;
-	return {
-		id: deployment.id as number,
-		environment: deployment.environment as string,
-		state: typeof latest?.state === 'string' ? latest.state : 'pending',
-		url: typeof latest?.environment_url === 'string' ? latest.environment_url : null,
-	};
+		.sort((left, right) => (right.id as number) - (left.id as number));
+	let newest: DeploymentEvidence | null = null;
+	for (const candidate of candidates) {
+		const statuses = client.api(`deployments/${candidate.id}/statuses?per_page=100`) as Array<{
+			state?: unknown;
+			environment_url?: unknown;
+		}>;
+		const latest = Array.isArray(statuses) ? statuses[0] : undefined;
+		const evidence: DeploymentEvidence = {
+			id: candidate.id as number,
+			environment: candidate.environment as string,
+			state: typeof latest?.state === 'string' ? latest.state : 'pending',
+			url:
+				typeof latest?.environment_url === 'string' && latest.environment_url !== ''
+					? latest.environment_url
+					: null,
+		};
+		if (evidence.url !== null) return evidence;
+		newest ??= evidence;
+	}
+	return newest;
 }
 
 export function classifyDeployment(
@@ -161,20 +176,56 @@ export async function probeHealth(
 	}
 }
 
+export interface IgnoredBuildEvidence {
+	description: string;
+}
+
+/**
+ * Vercel records a successful commit status "Canceled by Ignored Build Step" when
+ * `scripts/ops/vercel-ignore-build.mjs` skips a Preview build because no application input
+ * changed. The latest `Vercel` status from `vercel[bot]` decides: a newer "deploying" status means
+ * a build did start, so the skip no longer applies.
+ */
+export function loadIgnoredPreviewBuild(
+	sha: string,
+	run: GhRunner = defaultGhRunner,
+): IgnoredBuildEvidence | null {
+	const client = createGitHubClient(run);
+	const statuses = client.api(`commits/${sha}/statuses?per_page=100`) as Array<{
+		context?: unknown;
+		state?: unknown;
+		description?: unknown;
+		creator?: { login?: unknown };
+	}>;
+	if (!Array.isArray(statuses)) return null;
+	const latest = statuses.find((entry) => entry.context === 'Vercel');
+	if (
+		latest?.creator?.login !== 'vercel[bot]' ||
+		latest.state !== 'success' ||
+		typeof latest.description !== 'string' ||
+		!/ignored build step/iu.test(latest.description)
+	)
+		return null;
+	return { description: latest.description };
+}
+
 export interface ReleaseStatus {
 	sha: string;
 	target: ReleaseTarget;
-	state: 'VERIFIED' | 'FAILED' | 'PENDING';
+	/** `SKIPPED`: CI passed and Vercel intentionally skipped the Preview build (no app inputs). */
+	state: 'VERIFIED' | 'SKIPPED' | 'FAILED' | 'PENDING';
 	checks: Array<{ name: string; state: string; progress: Progress }>;
 	deployment: (DeploymentEvidence & { progress: Progress }) | null;
 	smoke: { name: string; mode: SmokeMode; state: string; progress: Progress };
 	health: HealthEvidence[];
+	ignoredBuild: IgnoredBuildEvidence | null;
 	blockers: string[];
 }
 
 export interface StatusDependencies {
 	run?: GhRunner;
 	fetchImpl?: FetchLike;
+	/** Sent to the immutable deployment URL only; Vercel Authentication guards it on both targets. */
 	protectionHeaders?: Record<string, string>;
 }
 
@@ -191,10 +242,12 @@ function describeSmoke(
 }
 
 function listBlockers(status: Omit<ReleaseStatus, 'state' | 'blockers'>): string[] {
+	const checkBlockers = status.checks
+		.filter((check) => check.progress !== 'passed')
+		.map((check) => `${check.name}: ${check.state}`);
+	if (status.ignoredBuild) return checkBlockers;
 	return [
-		...status.checks
-			.filter((check) => check.progress !== 'passed')
-			.map((check) => `${check.name}: ${check.state}`),
+		...checkBlockers,
 		...(status.deployment?.progress === 'passed'
 			? []
 			: [`${status.target} deployment: ${status.deployment?.state ?? 'missing'}`]),
@@ -208,8 +261,13 @@ function listBlockers(status: Omit<ReleaseStatus, 'state' | 'blockers'>): string
 }
 
 function deriveState(status: Omit<ReleaseStatus, 'state' | 'blockers'>): ReleaseStatus['state'] {
+	const checkProgresses = status.checks.map((check) => check.progress);
+	if (status.ignoredBuild) {
+		if (checkProgresses.includes('failed')) return 'FAILED';
+		return checkProgresses.includes('pending') ? 'PENDING' : 'SKIPPED';
+	}
 	const progresses = [
-		...status.checks.map((check) => check.progress),
+		...checkProgresses,
 		status.deployment?.progress ?? 'pending',
 		status.smoke.progress,
 	];
@@ -243,11 +301,17 @@ export async function collectReleaseStatus(
 
 	const health: HealthEvidence[] = [];
 	if (deployment?.progress === 'passed' && deployment.url) {
-		const headers = target === 'preview' ? dependencies.protectionHeaders : undefined;
-		health.push(await probeHealth(deployment.url, sha, fetchImpl, headers));
+		health.push(
+			await probeHealth(deployment.url, sha, fetchImpl, dependencies.protectionHeaders),
+		);
 		if (target === 'production')
 			health.push(await probeHealth(PRODUCTION_ALIAS_URL, sha, fetchImpl));
 	}
+
+	const ignoredBuild =
+		target === 'preview' && deployment?.progress !== 'passed'
+			? loadIgnoredPreviewBuild(sha, run)
+			: null;
 
 	const status = {
 		sha,
@@ -256,6 +320,7 @@ export async function collectReleaseStatus(
 		deployment,
 		smoke: describeSmoke(sha, target, smokeMode, remote),
 		health,
+		ignoredBuild,
 	};
 	return { ...status, state: deriveState(status), blockers: listBlockers(status) };
 }
@@ -337,7 +402,7 @@ async function main(): Promise<void> {
 		? await waitForReleaseStatus(collect, { timeoutMs: options.timeoutMs, intervalMs: 30_000 })
 		: await collect();
 	console.log(JSON.stringify(status, null, 2));
-	if (status.state !== 'VERIFIED') process.exitCode = 1;
+	if (status.state !== 'VERIFIED' && status.state !== 'SKIPPED') process.exitCode = 1;
 }
 
 if (process.argv[1] && /^release-status\.(?:ts|js)$/.test(basename(process.argv[1]))) {

@@ -87,7 +87,6 @@ describe('pre-push LFS handoff', () => {
 					`
 git() { if [ "$1" = lfs ]; then cat >/dev/null; else command git "$@"; fi; }
 node() { printf 'PENDING:'; command git rev-list --count "$2..$3"; }
-pnpm() { printf 'CERT:%s\\n' "$*"; return 0; }
 hook=$1
 shift
 . "$hook"
@@ -119,9 +118,13 @@ shift
 	it('keeps the existing remote SHA as the base for branch updates', () => {
 		const output = run(updates).stdout;
 		expect(output).toContain(`POLICY:scripts/validate-commits.mjs ${'b'.repeat(40)} `);
-		expect(output).toContain(
-			`CERT:validate:prepush -- --sha ${'a'.repeat(40)} --base-sha ${'b'.repeat(40)} --target-ref refs/heads/task`,
-		);
+	});
+	it('never spawns visual certification; Repository CI owns it', () => {
+		for (const ref of ['refs/heads/task', 'refs/heads/develop', 'refs/heads/main']) {
+			const output = run(updates.replaceAll('refs/heads/task', ref)).stdout;
+			expect(output).not.toContain('CERT:');
+			expect(output).not.toContain('validate:prepush');
+		}
 	});
 	it.each([
 		['upstream', 'refs/heads/task'],
@@ -165,7 +168,6 @@ shift
 		const result = run(updates.replaceAll('refs/heads/task', 'refs/heads/main'));
 		expect(result.status).toBe(0);
 		expect(result.stdout).toContain('POLICY:');
-		expect(result.stdout).toContain('CERT:validate:prepush');
 		expect(result.stdout).toContain('LFS_ARGS');
 	});
 });

@@ -1,8 +1,7 @@
-import { select } from '@inquirer/prompts';
 import { LOCAL_DB_URL } from '../../db/db-target-config.ts';
 import { assertPreviewDbUrl, getPreviewDbUrl } from '../../db/db-workflow-lib.ts';
-import { operatorSymbol, writeHuman } from '../../db/operator-cli-ux.ts';
-import type { PromotionAction } from '../../../src/lib/status/types.ts';
+import { menu, printLine, theme } from '../../lib/cli-prompts.ts';
+import type { PromotionAction, TargetEnv } from '../../../src/lib/status/types.ts';
 import { getInvitationDefinition } from '../invitations/registry.ts';
 import { evaluateManagedPromotionStatus } from '../managed-promotion-status.ts';
 import {
@@ -15,10 +14,7 @@ import type {
 	TargetApplyResultData,
 	TargetPlanData,
 } from '../invitation-update-presenter.ts';
-import {
-	formatApplyConfirmation,
-	formatDryRunPlan,
-} from '../invitation-update-presenter.ts';
+import { formatApplyConfirmation, formatDryRunPlan } from '../invitation-update-presenter.ts';
 import type { OperationalPlan } from '../invitation-update-plan.ts';
 import { mergePathPolicies, suggestConflictResolutionsFile } from '../conflict-resolutions.ts';
 import {
@@ -53,24 +49,25 @@ export async function promptConflictResolutions(
 ): Promise<ConflictResolutions> {
 	const suggested = suggestConflictResolutionsFile(conflicts);
 	const resolutions: ConflictResolutions = {};
-	writeHuman(
-		`${operatorSymbol('warn')} Hay conflictos. Elija por campo (paquete canónico vs destino).`,
+	const t = theme();
+	printLine(
+		t.mark(
+			'warn',
+			`${conflicts.length} conflict(s). Choose per field: package (canonical) vs target.`,
+		),
 	);
 	for (const conflict of conflicts) {
-		const choice = await select({
-			message: `Conflicto en ${conflict.path}`,
-			default: 'package',
-			choices: [
+		const choice = await menu<'package' | 'target' | 'cancel'>({
+			title: `Conflict at ${conflict.path}`,
+			items: [
 				{
-					name: `Usar paquete (canónico): ${JSON.stringify(conflict.packageValue)}`,
-					value: 'package' as const,
+					value: 'package',
+					label: `Use package (canonical): ${JSON.stringify(conflict.packageValue)}`,
 				},
-				{
-					name: `Conservar destino: ${JSON.stringify(conflict.targetValue)}`,
-					value: 'target' as const,
-				},
-				{ name: 'Cancelar', value: 'cancel' as const },
+				{ value: 'target', label: `Keep target: ${JSON.stringify(conflict.targetValue)}` },
+				{ value: 'cancel', label: 'Cancel' },
 			],
+			initial: 'package',
 		});
 		if (choice === 'cancel') {
 			throw new Error('OPERATOR_CANCELLED');
@@ -88,6 +85,9 @@ export async function planLocal(
 		const result = await planAndApplyLocalContent({
 			slug: session.slug,
 			apply: false,
+			rekeyFrom: session.rekeyFrom,
+			sourceDir: session.sourceDir,
+			ownerUserId: session.ownerUserId,
 			updateScope: session.updateScope,
 			assetPolicy: session.assetPolicy,
 			pruneAssets: session.pruneAssets,
@@ -148,7 +148,7 @@ export async function planPreview(
 			targetPlan: {
 				target: 'preview',
 				status: 'BLOQUEADO',
-				reason: 'Credenciales de Preview no configuradas o perímetro inválido.',
+				reason: 'Preview credentials are not configured or the perimeter is invalid.',
 				plannedOperations: 0,
 				expectedDatabaseWrites: { inserts: 0, updates: 0, deletes: 0 },
 				expectedStorageMutations: { uploads: 0, overwrites: 0, moves: 0, deletes: 0 },
@@ -168,6 +168,8 @@ export async function planPreview(
 			pruneAssets: session.pruneAssets,
 			conflictResolutions: session.conflictResolutions,
 			acknowledgeDiscardUnpublishedDraft: session.acknowledgeDiscardUnpublishedDraft,
+			rekeyFrom: session.rekeyFrom,
+			ownerUserId: session.ownerUserId,
 		});
 		return {
 			plan: result.plan,
@@ -210,24 +212,42 @@ export async function planPreview(
 	}
 }
 
+/**
+ * Show the plan and ask what to do. Cancel is always the default; the apply item is red when
+ * the plan touches a hosted environment. "Review full diff" prints field-level changes.
+ */
 export async function reviewAndConfirm(
 	planData: OperationalPlanData,
+	options: { hosted?: boolean; verbose?: boolean } = {},
 ): Promise<'apply' | 'back' | 'cancel'> {
-	console.log(formatDryRunPlan(planData, { verbose: false }));
-	console.log('');
-	console.log(formatApplyConfirmation(planData, { verbose: false }));
-	return select({
-		message: 'Seleccione una acción',
-		default: 'cancel',
-		choices: [
-			{ name: 'Cancelar', value: 'cancel' as const },
-			{ name: 'Volver', value: 'back' as const },
-			{ name: 'Aplicar plan revisado', value: 'apply' as const },
-		],
-	});
+	console.log(formatDryRunPlan(planData, { verbose: options.verbose ?? false }));
+	const targets = planData.targets.join(' + ');
+	for (;;) {
+		const decision = await menu<'apply' | 'back' | 'cancel' | 'review'>({
+			title: `Apply the reviewed plan to ${targets}?`,
+			items: [
+				{ value: 'cancel', label: 'Cancel' },
+				{ value: 'review', label: 'Review full diff' },
+				{ value: 'back', label: 'Back' },
+				{ value: 'apply', label: `Apply to ${targets}`, danger: options.hosted },
+			],
+			initial: 'cancel',
+		});
+		if (decision === 'review') {
+			console.log(formatApplyConfirmation(planData, { verbose: true }));
+			continue;
+		}
+		return decision;
+	}
 }
 
-export async function resolvePromotionActionForSlug(slug: string): Promise<PromotionAction> {
+export interface PromotionStateForSlug {
+	action: PromotionAction;
+	environments?: Record<TargetEnv, string>;
+}
+
+/** Publication state for one slug from the same SSOT as pnpm dbs (read-only). */
+export async function resolvePromotionStateForSlug(slug: string): Promise<PromotionStateForSlug> {
 	try {
 		const definition = getInvitationDefinition(slug);
 		const status = await evaluateManagedPromotionStatus({
@@ -236,14 +256,21 @@ export async function resolvePromotionActionForSlug(slug: string): Promise<Promo
 			includeProductionPreflight: false,
 		});
 		const row = status.promotions.find((candidate) => candidate.slug === slug);
-		if (row) return row.action;
-		if (status.inSyncSlugs.includes(slug)) return 'NONE';
+		if (row) return { action: row.action, environments: row.environments };
+		if (status.inSyncSlugs.includes(slug))
+			return {
+				action: 'NONE',
+				environments: { local: 'match', preview: 'match', production: 'match' },
+			};
 	} catch (error) {
-		writeHuman(
-			`${operatorSymbol('warn')} No se pudo leer el estado de publicación (${error instanceof Error ? error.message : String(error)}). Se usa el menú sin recomendación.`,
+		printLine(
+			theme().mark(
+				'warn',
+				`Publication state unavailable (${error instanceof Error ? error.message : String(error)}). Menu shown without a recommendation.`,
+			),
 		);
 	}
-	return 'UNKNOWN';
+	return { action: 'UNKNOWN' };
 }
 
 export function sumTargetResults(targetResults: TargetApplyResultData[]): {

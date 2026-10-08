@@ -40,6 +40,7 @@ import {
 	operatorCommandWriteLabel,
 } from '../../src/lib/status/operator-command-display.ts';
 import { useCliColor } from '../db/operator-cli-ux.ts';
+import { createTheme, padVisible } from '../lib/cli-theme.ts';
 import {
 	evaluateCriticalBackupHealth,
 	type CriticalBackupHealth,
@@ -52,27 +53,17 @@ function styleBySemantic(
 	semantic: StatusSemantic,
 	text: string,
 ): string {
-	if (semantic === 'verified') return c.brightGreen(`✓ ${text}`);
-	if (semantic === 'blocked') return c.red(`✗ ${text}`);
+	const glyph = createTheme().symbol;
+	if (semantic === 'verified') return c.brightGreen(`${glyph('ok')} ${text}`);
+	if (semantic === 'blocked') return c.red(`${glyph('fail')} ${text}`);
 	if (semantic === 'neutral') return c.dim(text);
-	return c.brightYellow(`⚠ ${text}`);
+	return c.brightYellow(`${glyph('warn')} ${text}`);
 }
 
 function envLabel(env: TargetEnv): string {
 	if (env === 'local') return 'Local';
 	if (env === 'preview') return 'Preview';
 	return 'Production';
-}
-
-function visibleLength(str: string): number {
-	// eslint-disable-next-line no-control-regex
-	return str.replace(/\x1b\[[0-9;]*m/g, '').length;
-}
-
-function padVisible(value: string, width: number): string {
-	const len = visibleLength(value);
-	if (len >= width) return value;
-	return value + ' '.repeat(width - len);
 }
 
 function getColors(options?: { env?: NodeJS.ProcessEnv }) {
@@ -639,7 +630,7 @@ function formatOperationalActionPlan(
 		`  ${c.bold('NEXT ACTIONS')}`,
 	];
 	if (plan.actions.length === 0) {
-		lines.push(c.brightGreen('  ✓ No hay acciones pendientes.'));
+		lines.push(c.brightGreen(`  ${createTheme().symbol('ok')} No hay acciones pendientes.`));
 		return lines;
 	}
 	for (const [index, action] of plan.actions.entries()) {

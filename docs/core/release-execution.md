@@ -44,7 +44,8 @@ implementing these skills is never a live-release invocation.
   command and target. Uncommitted input checks need matching content, not just HEAD. A new merge
   SHA, changed lockfile, baseline, matrix or runtime invalidates affected evidence. Do not repeat
   `test:changed` after `validate:changed`; the normal commit hook remains a separate index gate.
-- Let pre-push own exact-SHA visual certification, or precompute once with
+- Repository CI owns exact-SHA visual certification on the `develop` push. Optionally preview it
+  once with
   `pnpm validate:prepush -- --sha <head-sha> --base-sha <base-sha> --target-ref refs/heads/develop`.
   Always provide the base. Its existing cache is evidence, never authorization. Do not replace
   remote Repository CI with a local cache or substitute PR merge-SHA evidence for develop evidence.
@@ -78,8 +79,13 @@ implementing these skills is never a live-release invocation.
      published invitation images (browserless) and `test:e2e:preview:public`;
    - `/api/health` build identity on that URL, which must not report another SHA.
 
-   `VERIFIED` is the only success. `PENDING` after the timeout is unverified, and `FAILED` names its
-   blockers. Do not synthesize evidence or redeploy to make it pass.
+   `VERIFIED` is the success for a built deployment. `SKIPPED` is the only other success, and only
+   for Preview: required CI passed and Vercel's latest `Vercel` status for the exact SHA is
+   "Canceled by Ignored Build Step" (`scripts/ops/vercel-ignore-build.mjs`: no application input
+   changed). No deployment or smoke exists for that SHA; report it as skipped, with the unchanged
+   application inputs, and never present it as a deployed Preview. Production never reports
+   `SKIPPED`. `PENDING` after the timeout is unverified, and `FAILED` names its blockers. Do not
+   synthesize evidence or redeploy to make it pass.
 
 4. Only when the CI smoke cannot run (for example a failed dispatch), use `--smoke skip` and run
    `pnpm test:e2e:preview:public` locally against the reported URL, as both `PLAYWRIGHT_BASE_URL`

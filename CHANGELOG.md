@@ -16,11 +16,11 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
   passes Repository CI, deploy one prebuilt Vercel artifact, and complete the canonical Preview
   smoke. CI evidence distinguishes code, visual, and infrastructure failures and permits only one
   automatic retry for a confirmed infrastructure-only failure.
-- **Exact-SHA local visual certification**: Protected-branch pushes now require the full browser
-  comparison in the digest-pinned Linux Playwright runtime, with hash-keyed reusable evidence and
-  fail-closed invalidation. Changed-file validation shares the same visual-impact classifier and
-  reports when this certification remains outstanding. Node archives are checksum-verified, runtime
-  identity includes the complete command contract, and structured manifests enumerate actual visual
+- **Exact-SHA visual certification tooling**: `pnpm validate:prepush` certifies an isolated checkout
+  of the exact commit in the digest-pinned Linux Playwright runtime, with hash-keyed reusable
+  evidence and fail-closed invalidation. Changed-file validation shares the same visual-impact
+  classifier and names the visual inputs. Node archives are checksum-verified, runtime identity
+  includes the complete command contract, and structured manifests enumerate actual visual
   differences without confusing diagnostic images with snapshot failures.
 
 - **Invitation work tracking**: The existing dashboard separates work completion from the owner's
@@ -35,6 +35,22 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
   `/dashboard/memories`. The Cloudflare Workers no longer know about events, so adding an event
   never requires a deployment. Requires the `event_memories_catalog` migration; the legacy
   `valentina_*` objects stay until the separately authorized retirement migration.
+
+### Changed
+
+- **Visual certification moved to Repository CI**: the pre-push hook now replays commit validation
+  and hands off to Git LFS only; the exact-SHA browser comparison runs in the
+  `Application / browser` job on every `develop` push. `pnpm validate:prepush` remains an optional
+  local preview of that certification, and `validate:changed` reports visual inputs as
+  `VISUAL_IMPACT_DETECTED`.
+- **Browser scope for `develop` pushes**: a new `Browser scope` job skips the browser tier only when
+  every browser input is byte-identical to an earlier `develop` push whose browser job passed; such
+  a run records a skipped browser job and never serves as evidence for promotion.
+- **Single-process commit-range validation**: `scripts/validate-commits.mjs` lints the whole range
+  with one commitlint invocation instead of one process per commit.
+- **Vercel builds without the repeated type-check**: `buildCommand` is `pnpm build:app`, and
+  `scripts/ops/vercel-ignore-build.mjs` skips Preview builds whose application inputs did not change
+  since the previous deployed commit; Production always builds.
 
 ### Fixed
 

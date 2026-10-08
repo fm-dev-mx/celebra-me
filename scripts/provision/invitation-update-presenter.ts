@@ -8,19 +8,16 @@
 
 import type { FunctionalChange } from './invitation-update-plan.ts';
 import { formatInvitationGuidance } from './invitation-operator-guidance.ts';
+import { createTheme } from '../lib/cli-theme.ts';
 
-const useColor = (): boolean => {
-	if (process.env.NO_COLOR || !process.stdout.isTTY) return false;
-	return true;
-};
-
+/** Shared palette (NO_COLOR / FORCE_COLOR / TTY) evaluated per call. */
 const colors = {
-	cyan: (str: string) => (useColor() ? `\x1b[36m${str}\x1b[0m` : str),
-	green: (str: string) => (useColor() ? `\x1b[32m${str}\x1b[0m` : str),
-	yellow: (str: string) => (useColor() ? `\x1b[33m${str}\x1b[0m` : str),
-	red: (str: string) => (useColor() ? `\x1b[31m${str}\x1b[0m` : str),
-	bold: (str: string) => (useColor() ? `\x1b[1m${str}\x1b[0m` : str),
-	dim: (str: string) => (useColor() ? `\x1b[2m${str}\x1b[0m` : str),
+	cyan: (str: string) => createTheme().cyan(str),
+	green: (str: string) => createTheme().green(str),
+	yellow: (str: string) => createTheme().yellow(str),
+	red: (str: string) => createTheme().red(str),
+	bold: (str: string) => createTheme().bold(str),
+	dim: (str: string) => createTheme().dim(str),
 };
 
 export interface StatusReportData {
@@ -711,10 +708,10 @@ export function formatDryRunPlan(plan: OperationalPlanData, options?: PresenterO
 	lines.push(
 		blocked
 			? colors.red(
-					'✖ Preflight incompleto. No se realizó ninguna modificación; resuelva los requisitos indicados y vuelva a planificar.',
+					`${createTheme().symbol('fail')} Preflight incompleto. No se realizó ninguna modificación; resuelva los requisitos indicados y vuelva a planificar.`,
 				)
 			: colors.green(
-					'✔ Simulación completada con éxito. Ninguna modificación fue realizada en la base de datos ni en Storage.',
+					`${createTheme().symbol('ok')} Simulación completada con éxito. Ninguna modificación fue realizada en la base de datos ni en Storage.`,
 				),
 	);
 	return lines.join('\n');

@@ -93,11 +93,19 @@ describe('invitation:release Production dispatch', () => {
 			resolve(process.cwd(), 'scripts/provision/invitation-release-wizard.ts'),
 			'utf8',
 		);
-		expect(wizard).toContain("describeDestination('local')");
-		expect(wizard).toContain("describeDestination('prepare_preview')");
-		expect(wizard).toContain("describeDestination('production')");
-		expect(wizard).toContain('expectedSourceHash');
-		expect(wizard).toContain('expectedPackageHash');
+		const sessionMenus = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/wizard/wizard-session.ts'),
+			'utf8',
+		);
+		expect(sessionMenus).toContain("describeDestination('local')");
+		expect(sessionMenus).toContain("describeDestination('prepare_preview')");
+		expect(sessionMenus).toContain("describeDestination('production')");
+		const stages = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/wizard/wizard-stages.ts'),
+			'utf8',
+		);
+		expect(stages).toContain('expectedSourceHash');
+		expect(stages).toContain('expectedPackageHash');
 		expect(wizard).toContain('runPromotionPreflight');
 		expect(wizard).toContain('pnpm prod:apply');
 		expect(wizard).not.toContain('orchestrateInvitationPromotion');
@@ -152,7 +160,7 @@ describe('invitation:release Production dispatch', () => {
 			'utf8',
 		);
 		const start = source.indexOf('async function executePreviewTargetPlan');
-		const end = source.indexOf('function formatPreviewReceiptDiagnosis');
+		const end = source.indexOf('export async function main(');
 		expect(start).toBeGreaterThan(-1);
 		expect(end).toBeGreaterThan(start);
 		const applyFn = source.slice(start, end);
