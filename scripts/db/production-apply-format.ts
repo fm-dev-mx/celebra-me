@@ -58,6 +58,24 @@ const READINESS_GROUPS: ReadonlyArray<{
 	{ readiness: 'UNKNOWN', label: 'Desconocido' },
 ];
 
+function invitationCountsLine(plan: ProductionApplyPlan): string | null {
+	const invitations = plan.items.filter((item) => item.domain === 'invitation');
+	const archived = plan.excluded?.archivedSlugs.length ?? 0;
+	if (invitations.length === 0 && archived === 0) return null;
+	const parts = READINESS_GROUPS.map(({ readiness }) => ({
+		readiness,
+		count: invitations.filter((item) => item.readiness === readiness).length,
+	}))
+		.filter(({ count }) => count > 0)
+		.map(({ readiness, count }) => `${count} ${readiness}`);
+	if (archived > 0) {
+		parts.push(
+			`${archived} archivada${archived === 1 ? '' : 's'} (excluida${archived === 1 ? '' : 's'})`,
+		);
+	}
+	return parts.join(' · ');
+}
+
 export function formatProductionApplyPlan(plan: ProductionApplyPlan): string {
 	const mutations = mutationItemsOf(plan);
 	const rows: Array<readonly [string, string]> = [
@@ -66,6 +84,8 @@ export function formatProductionApplyPlan(plan: ProductionApplyPlan): string {
 		['Mutaciones', String(mutations.length)],
 		['Alcance', plan.scope.inspectAll ? 'inspección (sin apply)' : describeScope(plan)],
 	];
+	const counts = invitationCountsLine(plan);
+	if (counts) rows.push(['Invitaciones', counts]);
 	const lines = [formatKeyValueBlock('Plan Production (solo lectura)', rows)];
 	const visible = plan.items.filter((item) => item.readiness !== 'NOT_APPLICABLE');
 	for (const group of READINESS_GROUPS) {
@@ -84,6 +104,14 @@ export function formatProductionApplyPlan(plan: ProductionApplyPlan): string {
 		for (const item of grouped) {
 			lines.push(`  ${itemLine(item)}`);
 		}
+	}
+	const archivedSlugs = plan.excluded?.archivedSlugs ?? [];
+	if (archivedSlugs.length > 0) {
+		lines.push('');
+		lines.push(
+			`${operatorSymbol('info')} Archivadas por decisión del propietario (fuera del plan): ${archivedSlugs.join(', ')}`,
+		);
+		lines.push('  Para revisar una archivada: pnpm prod:apply -- --slug <slug>');
 	}
 	if (plan.scope.allReady && visible.some((item) => item.readiness === 'READY_AFTER_DISCARD')) {
 		lines.push(
@@ -142,6 +170,7 @@ export function toPublicProductionApplyPlan(plan: ProductionApplyPlan): Producti
 	return {
 		planId: plan.planId,
 		scope: { ...plan.scope, slugs: [...plan.scope.slugs] },
+		excluded: { archivedSlugs: [...(plan.excluded?.archivedSlugs ?? [])] },
 		items: plan.items.map((item) => {
 			const { preflight: _preflight, ...rest } = item;
 			return rest;

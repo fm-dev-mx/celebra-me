@@ -1,9 +1,14 @@
 /**
- * Local-only critical backup health for operator status (pnpm dbs).
+ * Local-only critical backup health for operator status (pnpm dbs, pnpm prod:apply header).
  * Does not contact Supabase, Vercel, or Cloudinary.
+ *
+ * The backup store is `.backups/prod` under the current checkout, so every worktree reads its own
+ * store: the scheduled daily backup only refreshes the checkout it runs in, and critical sets taken
+ * by `prod:apply` land in the checkout that ran it. `checkoutLabel` names the store being read so
+ * two lanes reporting different ages are not mistaken for an inconsistency.
  */
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { DEFAULT_CRITICAL_BACKUP_ROOT } from './critical-backup-reuse.ts';
 import { listCriticalBackups } from './local-backup-operations.ts';
 
@@ -18,6 +23,13 @@ export interface CriticalBackupHealth {
 	orphanCount: number;
 	attention: boolean;
 	summary: string;
+	/** Checkout directory that owns the backup store read (e.g. `dev-local`). */
+	checkoutLabel?: string;
+}
+
+/** `<checkout>/.backups/prod` → `<checkout>` directory name. */
+export function backupStoreCheckoutLabel(backupRoot: string): string {
+	return basename(dirname(dirname(resolve(backupRoot))));
 }
 
 interface DailyBackupReportFile {
@@ -140,6 +152,7 @@ export function evaluateCriticalBackupHealth(input?: {
 	return {
 		...sets,
 		...daily,
+		checkoutLabel: backupStoreCheckoutLabel(backupRoot),
 		attention: dailyStale || sets.orphanCount > 0,
 		summary: formatHealthSummary({
 			newestAgeMs: sets.newestAgeMs,

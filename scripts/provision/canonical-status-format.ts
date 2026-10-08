@@ -303,6 +303,9 @@ function formatCriticalBackupHealthSection(
 		c.dim(
 			'  Daily = RPO 24h (pnpm db:prod:backup:daily). Mutation gates reuse a critical set ≤15m.',
 		),
+		...(health.checkoutLabel
+			? [c.dim(`  Store: .backups/prod of checkout ${health.checkoutLabel} (per worktree).`)]
+			: []),
 	];
 }
 

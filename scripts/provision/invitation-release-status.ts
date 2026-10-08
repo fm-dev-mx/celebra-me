@@ -7,7 +7,6 @@ import { evaluateInvitationReadiness } from './invitation-readiness.ts';
 import { readFastInvitationInventory } from './invitation-status-inventory.ts';
 import { buildStatusReport, type InvitationUpdateTarget } from './invitation-update-options.ts';
 import { formatStatusReport, type StatusReportData } from './invitation-update-presenter.ts';
-import { listInvitationDefinitions } from './invitations/registry.ts';
 import type { inspectPreviewProvenanceReceipt } from './preview-provenance-receipt-service.ts';
 
 export interface StatusReportRequest {
@@ -31,8 +30,8 @@ export async function printStatusReport(request: StatusReportRequest): Promise<v
 	}) as StatusReportData & Record<string, unknown>;
 
 	if (targets.includes('local')) {
-		const definitions = listInvitationDefinitions();
-		const definitionSlugs = slug ? [slug] : definitions.map((d) => d.slug);
+		// Archived definitions excluded from the report are not probed either.
+		const definitionSlugs = slug ? [slug] : report.definitions.map((d) => d.slug);
 		const fastInventory = readFastInvitationInventory(LOCAL_DB_URL, definitionSlugs, slug);
 		report.inventory = { local: fastInventory };
 

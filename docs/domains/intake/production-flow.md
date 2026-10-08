@@ -83,9 +83,23 @@ all targets.
 Production draft discard is never automatic. A target draft that diverges from both the selected
 package and published content requires an explicit selected `--slug`/`--slugs` scope plus
 `--acknowledge-discard-unpublished-draft`; the read-only plan and owner TTY confirmation identify
-which unpublished draft will be replaced. `--all-ready` excludes these items. Manual/editor managed
-baseline drift remains `BLOCKED`, even with the acknowledgement. Publication version/hash, partial
-operation, and newer managed-receipt guards remain mandatory.
+which unpublished draft will be replaced. `--all-ready` excludes these items and owner-archived
+definitions (see "Archived definitions" below). Manual/editor managed baseline drift remains
+`BLOCKED`, even with the acknowledgement. Publication version/hash, partial operation, and newer
+managed-receipt guards remain mandatory.
+
+### Archived definitions and approval-bound hashes
+
+- A past invitation leaves release planning only by owner decision: add
+  `archive: { decidedOn: 'YYYY-MM-DD', reason }` to its definition (published definitions only;
+  never inferred from the event date). `prod:apply` discovery, `invitation:release --status`
+  (`--include-archived` lists them) and the hash baseline skip it; database rows are untouched.
+- A Preview approval binds to the exact `packageHash`.
+  `scripts/provision/release-hash-baseline.json` pins the hash of every active definition;
+  `pnpm validate:changed` runs `pnpm invitation:hash-baseline` (advisory) for
+  provisioning/serializer changes and reports hashes that moved without the invitation's own files
+  changing. After the Preview release of those invitations, refresh it with
+  `pnpm invitation:hash-baseline -- --update`.
 
 ### Package freshness (definition vs `--package`)
 

@@ -20,7 +20,10 @@ pnpm db:branch:remediate-disposable -- --execute
 
 **Expected result:** Isolated container reset + seed; persistent Local sentinel untouched.
 
-**Failures:** Stale disposable vs repo migrations; Docker/port conflicts.
+**Failures:** Stale disposable vs repo migrations; Docker/port conflicts. A stopped container (for
+example `Exited (255)` after a Docker restart) is started automatically by
+`pnpm db:migrate -- --target disposable-test` and `db:*:audit` through the same helper as
+`pnpm db:disposable:start`; if it stays down they fail with that exact command.
 
 **Recovery:** `db:disposable:reset` or branch remediate after diagnosis. Do not run `db:local:reset`
 (blocked).

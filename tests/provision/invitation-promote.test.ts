@@ -97,18 +97,21 @@ function approval(overrides: Partial<PreviewApprovalArtifact> = {}): PreviewAppr
 	};
 }
 
-function writeApproval(artifact = approval()): string {
+function writeApproval(artifact = approval()): void {
 	setDefaultPreviewApprovalStoreForTests(createMemoryPreviewApprovalStore([artifact]));
-	const root = mkdtempSync(join(tmpdir(), 'invitation-promote-'));
-	dirs.push(root);
-	const approvalsDir = join(root, 'approvals');
-	mkdirSync(approvalsDir, { recursive: true });
-	writeFileSync(
-		join(approvalsDir, `preview-approval-${packageHash.slice(0, 16)}.json`),
-		JSON.stringify(artifact),
-	);
-	return approvalsDir;
 }
+
+/** No live Preview evidence: the stored approval is judged by its 7-day window. */
+const storedWindowOnly = async () => null;
+
+const currentSchema = () => ({
+	state: 'CURRENT' as const,
+	migrationHead: '2',
+	pendingMigrations: [],
+	extraMigrations: [],
+	compatible: true,
+	detail: 'ok',
+});
 
 function productionPlan(): OperationalPlan {
 	return {
@@ -417,18 +420,79 @@ describe('runPromotionPreflight / apply', () => {
 				compatible: true,
 				detail: 'ok',
 			}),
-			approvalsDirs: [join(tmpdir(), 'missing-approvals-dir')],
 			runEngine: async () => engineResult(),
 		});
 		expect(report.status).toBe('BLOCKED');
 		expect(report.blockCode).toBe('MISSING_PREVIEW_APPROVAL');
+		expect(report.approvalFailure?.reason).toBe('NEVER_APPROVED');
+		expect(report.reason).toMatch(/nunca aprobada en Preview/);
+		expect(report.reason).toContain(
+			'pnpm invitation:release -- --slug fixture --targets preview',
+		);
+	});
+
+	it('reports IN_SYNC without approval when Production already matches the package', async () => {
+		setDefaultPreviewApprovalStoreForTests(createMemoryPreviewApprovalStore());
+		const report = await runPromotionPreflight({
+			packageData: packageData(),
+			requireBackup: false,
+			now,
+			getProductionDbUrl: () => ({
+				url: 'postgresql://user@db.productionproject.supabase.co/postgres',
+			}),
+			evaluateSchema: currentSchema,
+			runEngine: async () =>
+				engineResult({ isZeroDrift: true, plannedMutations: 0, functionalChanges: [] }),
+		});
+		expect(report.status).toBe('IN_SYNC');
+		expect(report.blockCode).toBeUndefined();
+		expect(report.approval).toBeUndefined();
+		expect(report.approvalFailure?.reason).toBe('NEVER_APPROVED');
+		expect(report.engineResult?.isZeroDrift).toBe(true);
+	});
+
+	it('names an approval of another package hash for the same slug', async () => {
+		writeApproval(approval({ packageHash: 'f'.repeat(64) }));
+		const report = await runPromotionPreflight({
+			packageData: packageData(),
+			requireBackup: false,
+			now,
+			runLiveVerification: storedWindowOnly,
+			getProductionDbUrl: () => ({
+				url: 'postgresql://user@db.productionproject.supabase.co/postgres',
+			}),
+			evaluateSchema: currentSchema,
+			runEngine: async () => engineResult(),
+		});
+		expect(report.status).toBe('BLOCKED');
+		expect(report.blockCode).toBe('MISSING_PREVIEW_APPROVAL');
+		expect(report.approvalFailure?.reason).toBe('APPROVED_OTHER_HASH');
+		expect(report.reason).toMatch(/aprobación de otro hash/);
+	});
+
+	it('names an expired approval that needs a live recheck', async () => {
+		writeApproval();
+		const report = await runPromotionPreflight({
+			packageData: packageData(),
+			requireBackup: false,
+			now: new Date('2026-08-05T12:00:00.000Z'),
+			runLiveVerification: storedWindowOnly,
+			getProductionDbUrl: () => ({
+				url: 'postgresql://user@db.productionproject.supabase.co/postgres',
+			}),
+			evaluateSchema: currentSchema,
+			runEngine: async () => engineResult(),
+		});
+		expect(report.status).toBe('BLOCKED');
+		expect(report.approvalFailure?.reason).toBe('EXPIRED');
+		expect(report.reason).toMatch(/caducada/);
 	});
 
 	it('blocks package/hash mismatch against approval', async () => {
-		const approvalsDir = writeApproval(approval({ packageHash: 'f'.repeat(64) }));
+		writeApproval(approval({ packageHash: 'f'.repeat(64) }));
 		const report = await runPromotionPreflight({
 			packageData: packageData(),
-			approvalsDirs: [approvalsDir],
+			runLiveVerification: storedWindowOnly,
 			requireBackup: false,
 			now,
 			getProductionDbUrl: () => ({
@@ -449,12 +513,10 @@ describe('runPromotionPreflight / apply', () => {
 	});
 
 	it('blocks wrong intended Production target', async () => {
-		const approvalsDir = writeApproval(
-			approval({ intendedProductionProjectRef: 'otherprojectref' }),
-		);
+		writeApproval(approval({ intendedProductionProjectRef: 'otherprojectref' }));
 		const report = await runPromotionPreflight({
 			packageData: packageData(),
-			approvalsDirs: [approvalsDir],
+			runLiveVerification: storedWindowOnly,
 			requireBackup: false,
 			now,
 			getProductionDbUrl: () => ({
@@ -475,10 +537,10 @@ describe('runPromotionPreflight / apply', () => {
 	});
 
 	it('blocks managed divergence from merge conflicts', async () => {
-		const approvalsDir = writeApproval();
+		writeApproval();
 		const report = await runPromotionPreflight({
 			packageData: packageData(),
-			approvalsDirs: [approvalsDir],
+			runLiveVerification: storedWindowOnly,
 			requireBackup: false,
 			now,
 			getProductionDbUrl: () => ({
@@ -516,10 +578,10 @@ describe('runPromotionPreflight / apply', () => {
 	});
 
 	it('preserves managed baseline drift as MANAGED_DIVERGENCE', async () => {
-		const approvalsDir = writeApproval();
+		writeApproval();
 		const report = await runPromotionPreflight({
 			packageData: packageData(),
-			approvalsDirs: [approvalsDir],
+			runLiveVerification: storedWindowOnly,
 			requireBackup: false,
 			now,
 			getProductionDbUrl: () => ({
@@ -552,10 +614,10 @@ describe('runPromotionPreflight / apply', () => {
 	});
 
 	it('reports PROMOTABLE for approved exact release with CURRENT schema', async () => {
-		const approvalsDir = writeApproval();
+		writeApproval();
 		const report = await runPromotionPreflight({
 			packageData: packageData(),
-			approvalsDirs: [approvalsDir],
+			runLiveVerification: storedWindowOnly,
 			requireBackup: false,
 			now,
 			getProductionDbUrl: () => ({
@@ -583,10 +645,10 @@ describe('runPromotionPreflight / apply', () => {
 	});
 
 	it('uses managed writer on apply and returns APPLIED_BUT_VERIFICATION_FAILED on verify failure', async () => {
-		const approvalsDir = writeApproval();
+		writeApproval();
 		const preflight = await runPromotionPreflight({
 			packageData: packageData(),
-			approvalsDirs: [approvalsDir],
+			runLiveVerification: storedWindowOnly,
 			requireBackup: false,
 			now,
 			getProductionDbUrl: () => ({
@@ -646,10 +708,10 @@ describe('runPromotionPreflight / apply', () => {
 	});
 
 	it('returns PROMOTED when apply and verification succeed', async () => {
-		const approvalsDir = writeApproval();
+		writeApproval();
 		const preflight = await runPromotionPreflight({
 			packageData: packageData(),
-			approvalsDirs: [approvalsDir],
+			runLiveVerification: storedWindowOnly,
 			requireBackup: false,
 			now,
 			getProductionDbUrl: () => ({

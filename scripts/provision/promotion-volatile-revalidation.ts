@@ -29,7 +29,6 @@ export interface PromotionVolatileTargetState {
 export interface RevalidatePromotionVolatilePreconditionsInput {
 	reviewed: PromotionPreflightReport;
 	packageData: InvitationPackageData;
-	approvalsDirs?: string[];
 	now?: Date;
 	getProductionDbUrl?: () => { url: string };
 	evaluateSchema?: (input: { dbUrl: string }) => PromotionSchemaGateResult;
@@ -37,7 +36,6 @@ export interface RevalidatePromotionVolatilePreconditionsInput {
 		packageData: InvitationPackageData;
 		planId?: string;
 		productionProjectRef: string;
-		approvalsDirs?: string[];
 		now?: Date;
 		liveRecheck: PreviewLiveVerificationResult;
 	}) => PreviewApprovalArtifact;
@@ -102,7 +100,6 @@ function defaultVerifyApproval(input: {
 	packageData: InvitationPackageData;
 	planId?: string;
 	productionProjectRef: string;
-	approvalsDirs?: string[];
 	now?: Date;
 	liveRecheck: PreviewLiveVerificationResult;
 }): PreviewApprovalArtifact {
@@ -302,7 +299,6 @@ export async function revalidatePromotionVolatilePreconditions(
 			packageData: input.packageData,
 			planId: input.reviewed.approval.planId,
 			productionProjectRef,
-			approvalsDirs: input.approvalsDirs,
 			now: input.now,
 			liveRecheck,
 		});

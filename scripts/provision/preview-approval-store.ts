@@ -10,6 +10,8 @@ import type { PreviewApprovalArtifact } from './preview-approval-service.ts';
 export interface PreviewApprovalStore {
 	get(packageHash: string): PreviewApprovalArtifact | null;
 	upsert(artifact: PreviewApprovalArtifact): PreviewApprovalArtifact;
+	/** Most recent approved artifact for a slug (any package hash); diagnostics only. */
+	findLatestApprovedBySlug?(slug: string): PreviewApprovalArtifact | null;
 }
 
 type ApprovalRow = {
@@ -92,6 +94,14 @@ export function createMemoryPreviewApprovalStore(
 			map.set(copy.packageHash, copy);
 			return structuredClone(copy);
 		},
+		findLatestApprovedBySlug(slug) {
+			const latest = [...map.values()]
+				.filter(
+					(artifact) => artifact.slug === slug && artifact.approvalState === 'approved',
+				)
+				.sort((a, b) => (b.approvedAt ?? '').localeCompare(a.approvedAt ?? ''))[0];
+			return latest ? structuredClone(latest) : null;
+		},
 	};
 }
 
@@ -133,6 +143,19 @@ export function createPreviewDbApprovalStore(
            select ${SELECT_COLS}
            from public.preview_approval_artifacts
            where package_hash = ${sqlLiteral(packageHash)}
+           limit 1
+         ) t;`,
+				getDbUrl(),
+			);
+			return row ? rowToArtifact(row) : null;
+		},
+		findLatestApprovedBySlug(slug) {
+			const row = queryRow(
+				`select row_to_json(t) from (
+           select ${SELECT_COLS}
+           from public.preview_approval_artifacts
+           where slug = ${sqlLiteral(slug)} and approval_state = 'approved'
+           order by approved_at desc nulls last
            limit 1
          ) t;`,
 				getDbUrl(),
