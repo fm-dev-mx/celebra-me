@@ -28,7 +28,6 @@ routes:
           - '.agent/rules/invitation-preset-source-of-truth.md'
       skills:
           - 'theme-architecture'
-          - 'theme-architecture-governance'
       docs:
           - 'docs/domains/theme/architecture.md'
 
@@ -65,11 +64,6 @@ routes:
       description: 'Astro SSR, hydration, content loading, or image delivery'
       skills:
           - 'astro-patterns'
-
-    - task_type: 'demo_content'
-      description: 'Demo-only data transforms or cross-section demo date consistency'
-      skills:
-          - 'demo-content-consistency'
 
     - task_type: 'database_ops'
       description: 'Supabase operations or migrations; select parity/SQL patch routes only when needed'

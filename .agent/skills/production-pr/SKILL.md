@@ -25,6 +25,10 @@ related_docs:
 
 # Production PR
 
+This skill is the single canonical procedure for creating or updating the `develop` → `main` release
+PR. `publish-production` and `branch-lane` (`references/promote-develop-to-main.md`) grant or
+sequence that step but delegate the PR itself here; do not duplicate PR steps in them.
+
 When used inside explicitly invoked `publish-production`, its documented invocation authority covers
 scoped PR creation/update and subsequent merge. Reuse it without another approval prompt; return to
 that skill for deployment verification. Standalone PR preparation still ends at the PR.

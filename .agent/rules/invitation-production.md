@@ -26,14 +26,18 @@ Obsolete one-shot tooling (`ops optimize-assets`, `ops new-invitation`, `ops ado
 
 - Inspect the current resolver, descriptor, preset catalog, asset registry, and target event type
   before selecting a pattern. Do not copy an older invitation merely because it looks similar.
-- Use `demo-xv-celestial-blue` for asset organization and `demo-boda-jewelry-box-wedding` for non-XV
-  structure. Reuse contracts and shared components, not design-specific copy or client styling.
+- Invitations are self-sufficient: the theme comes from `theme_id` and the structure from the
+  canonical section contracts ([section contracts](../../docs/domains/content/section-contracts.md))
+  and the canonical variant registry (`src/lib/invitation/section-variants.ts`, documented in
+  [variant system](../../docs/domains/theme/variant-system.md)). Do not use a demo as a structural
+  or asset pattern. Reuse contracts and shared components, not design-specific copy or client
+  styling.
 - Preserve Astro server/client boundaries. Code, identifiers, comments, migrations, and technical
   documentation are English; visible UI copy is Spanish.
 - Enforce event-type/preset compatibility before persistence. Keep route slug and `_assetSlug`
   distinct when their roles differ. Treat path casing as Linux-sensitive.
-- Real/client invitations are DB-published. Static demos remain independent showcase content;
-  development templates are not production routes.
+- Real/client invitations are DB-published. Static demos remain independent showcase content and are
+  not production routes.
 
 ## Required gates
 
@@ -133,7 +137,9 @@ execution-boundary separation.
 ### Preview managed mutation
 
 - **Agent:** Yes, with explicit Preview task scope (`CELEBRA_TASK_SCOPE`) or the
-  `invitation:release` operator task (`CELEBRA_OPERATOR_TASK`).
+  `invitation:release` operator task (`CELEBRA_OPERATOR_TASK`). The scope is exact
+  (`preview:<slug>:<operation>`). `--dry-run` reports whether it is present, and a non-interactive
+  `--apply` without it fails before any planning or remote work.
 - **Owner:** Yes.
 
 ### Preview raw DB mutation

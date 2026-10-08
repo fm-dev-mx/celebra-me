@@ -1,10 +1,13 @@
 ---
 name: invitation-preparation
-description: Orchestrate interactive preparation for a new or resumed client invitation, from conversational intake through prepReadiness evaluation and canonical Markdown handoff.
+description:
+  Orchestrate interactive preparation for a new or resumed client invitation, from conversational
+  intake through prepReadiness evaluation and canonical Markdown handoff.
 domain: workflow
 version: 1.0.0
 when_to_use:
-  - Preparing or resuming a real client invitation before implementation
+  - Starting or resuming the conversational preparation of a real client invitation, until
+    prepReadiness is known and docs/invitations/<slug>.md is updated
 preconditions:
   - Read AGENTS.md
   - Read .agent/rules/gatekeeper.md
@@ -23,9 +26,9 @@ related_docs:
 **prepReadiness** is known (aligned to executable helpers) and the canonical Markdown state is
 updated; conversational intake UX checkpoints.
 
-**Does not own:** publication/apply semantics, dashboard intake publish state
-(`intake-publishing`), theme token architecture, copywriting voice, or technical
-Local/Preview/Production readiness (**envReadiness**). Downstream authorities remain unchanged.
+**Does not own:** publication/apply semantics, dashboard intake publish state (`intake-publishing`),
+theme token architecture, copywriting voice, or technical Local/Preview/Production readiness
+(**envReadiness**). Downstream authorities remain unchanged.
 
 ## Authority
 
@@ -33,8 +36,8 @@ Load in this order; do not copy semantics across layers:
 
 1. This skill — preparation sequence, conversational checkpoints, handoff boundary.
 2. `.agent/skills/client-invitation-audit` — reusable analysis + phase script references.
-3. `docs/core/invitation-preparation-contract.md` — classification, hygiene, placeholders,
-   readiness policy, Markdown schema.
+3. `docs/core/invitation-preparation-contract.md` — classification, hygiene, placeholders, readiness
+   policy, Markdown schema.
 4. Executable helpers — `src/lib/invitation-preparation/` (**SSOT** for completeness, readiness,
    placeholders, owner pack, image plan). Cite helpers when recording prepReadiness; confirm with
    `pnpm validate:invitation-preparation`.
@@ -53,13 +56,13 @@ Conceptual lifecycle:
 Preparation → Implementation → Managed lifecycle / publication
 ```
 
-Durable preparation state lives only at `docs/invitations/<slug>.md`. Do not create a parallel
-state tree under `.agent/`.
+Durable preparation state lives only at `docs/invitations/<slug>.md`. Do not create a parallel state
+tree under `.agent/`.
 
 ## Entry conditions
 
-Use this skill when preparing a **real** client invitation before payload/SCSS implementation,
-or when resuming preparation from an existing `docs/invitations/<slug>.md`.
+Use this skill when preparing a **real** client invitation before payload/SCSS implementation, or
+when resuming preparation from an existing `docs/invitations/<slug>.md`.
 
 Required inputs:
 
@@ -115,13 +118,12 @@ The review must:
 - verify section boundaries, intersection intent, rhythm/density, and continuity between sections;
 - review typography roles, surfaces, photographic treatment, and documented local exceptions;
 - separate mechanical render/capture status from aesthetic acceptance;
-- record reviewer, date, evidence, blockers, and one explicit human outcome:
-  `PENDING`, `ACCEPTED`, `ACCEPTED_WITH_BLOCKERS`, or `REJECTED`.
+- record reviewer, date, evidence, blockers, and one explicit human outcome: `PENDING`, `ACCEPTED`,
+  `ACCEPTED_WITH_BLOCKERS`, or `REJECTED`.
 
 Only `ACCEPTED` clears the creative gate. A non-creative owner-data dependency may be recorded as
 `ACCEPTED_WITH_BLOCKERS`, but it remains blocking for the applicable Production/release boundary
-without preventing unrelated implementation work. Successful rendering alone never clears this
-gate.
+without preventing unrelated implementation work. Successful rendering alone never clears this gate.
 
 ## Outputs
 

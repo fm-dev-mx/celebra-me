@@ -28,21 +28,47 @@ synthesis. Documentation implementation may use the builder role when it is a bo
 task. Research stays with the orchestrator unless it forms an independent, self-contained
 investigation.
 
-Use `.agent/skills/design-reference-to-build/SKILL.md` when supplied or cited visual references require
-interpretation before implementation. Do not impose it on a correction whose target and expected
-result are already objective (for example, an exact copy replacement or spacing/token value).
+Use `.agent/skills/design-reference-to-build/SKILL.md` when supplied or cited visual references
+require interpretation before implementation. Do not impose it on a correction whose target and
+expected result are already objective (for example, an exact copy replacement or spacing/token
+value).
 
 ## Reference-Driven Routing Decisions
 
-| Request                                                        | Route and roles                                                                                                                             | Block or escalate when                                                                                                                                        |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Build a new real invitation from visual references             | `design-reference-to-build` + `client-invitation-audit`; visual-director → builder → QA                                                     | Block on missing baseline, critical asset, Lane A/Lane B decision, or observable criteria; ask the user when intent or client facts are materially unresolved |
-| Build a new demo, landing, or dashboard from visual references | `design-reference-to-build`; visual-director → builder → QA                                                                                 | Block on an unusable reference, baseline, critical asset, or acceptance gap; ask the user when resolving it would change intent or scope                      |
-| Refine part of an existing surface                             | Direct builder + focused QA when the delta is explicit; otherwise `design-reference-to-build`                                               | Block when the intended delta cannot be observed or safely bounded; escalate material design choices to the user                                              |
-| Audit an already implemented invitation                        | QA using `creative-qa-report`; add `client-invitation-audit` only for pipeline, asset, or Lane A/Lane B discovery                           | Report `Blocked` when the route, environment, baseline, or evidence is unavailable; do not remediate unless the task authorizes it                            |
-| Create or extend a reusable theme, token, preset, or variant   | `theme-architecture-governance`; add `design-reference-to-build` and visual-director → builder → QA when references determine visual intent | Block on an unresolved live contract, resolver fallback, or missing cross-preset evidence; ask the user before materially expanding reusable scope            |
-| Implement visual work that changes copy or data                | Add copywriter for copy and the owning content/data workflow; builder implements the approved result and QA verifies it                     | Block on missing source data, invented client facts, or absent mutation authority; ask the user for the missing fact or authorization                         |
-| Work from incomplete, inconsistent, or low-quality references  | Visual-director records unsupported details in the brief; continue only when the remaining criteria are observable, then builder → QA       | Block when a missing decision prevents an observable criterion or requires invented content/assets; ask the user to resolve the material choice               |
+- **Request:** Build a new real invitation from visual references
+  - **Route and roles:** `design-reference-to-build` + `client-invitation-audit`; visual-director →
+    builder → QA
+  - **Block or escalate when:** Block on missing baseline, critical asset, Lane A/Lane B decision,
+    or observable criteria; ask the user when intent or client facts are materially unresolved
+- **Request:** Build a new demo, landing, or dashboard from visual references
+  - **Route and roles:** `design-reference-to-build`; visual-director → builder → QA
+  - **Block or escalate when:** Block on an unusable reference, baseline, critical asset, or
+    acceptance gap; ask the user when resolving it would change intent or scope
+- **Request:** Refine part of an existing surface
+  - **Route and roles:** Direct builder + focused QA when the delta is explicit; otherwise
+    `design-reference-to-build`
+  - **Block or escalate when:** Block when the intended delta cannot be observed or safely bounded;
+    escalate material design choices to the user
+- **Request:** Audit an already implemented invitation
+  - **Route and roles:** QA using `creative-qa-report`; add `client-invitation-audit` only for
+    pipeline, asset, or Lane A/Lane B discovery
+  - **Block or escalate when:** Report `Blocked` when the route, environment, baseline, or evidence
+    is unavailable; do not remediate unless the task authorizes it
+- **Request:** Create or extend a reusable theme, token, preset, or variant
+  - **Route and roles:** `theme-architecture` (Governance Audit); add `design-reference-to-build`
+    and visual-director → builder → QA when references determine visual intent
+  - **Block or escalate when:** Block on an unresolved live contract, resolver fallback, or missing
+    cross-preset evidence; ask the user before materially expanding reusable scope
+- **Request:** Implement visual work that changes copy or data
+  - **Route and roles:** Add copywriter for copy and the owning content/data workflow; builder
+    implements the approved result and QA verifies it
+  - **Block or escalate when:** Block on missing source data, invented client facts, or absent
+    mutation authority; ask the user for the missing fact or authorization
+- **Request:** Work from incomplete, inconsistent, or low-quality references
+  - **Route and roles:** Visual-director records unsupported details in the brief; continue only
+    when the remaining criteria are observable, then builder → QA
+  - **Block or escalate when:** Block when a missing decision prevents an observable criterion or
+    requires invented content/assets; ask the user to resolve the material choice
 
 The orchestrator may perform these roles directly. The sequence names decision ownership, not a
 requirement to create subagents.
@@ -69,8 +95,8 @@ same exploration again.
 
 ## Delegation Contract
 
-Every handoff must include these Delegation Contract fields and remain consistent with the parent Task
-Contract / Handoff Contract in `.agent/plans/README.md`:
+Every handoff must include these Delegation Contract fields and remain consistent with the parent
+Task Contract / Handoff Contract in `.agent/plans/README.md`:
 
 1. Objective and role contract.
 2. Allowed files or systems and explicit non-goals.

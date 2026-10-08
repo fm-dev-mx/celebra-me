@@ -50,10 +50,10 @@ replace the required integration and PR checks; red or missing required CI stops
 git push origin develop
 ```
 
-4. Open the release pull request through the `production-pr` skill (source `develop@<sha>`, target
-   `main@<sha>`); do not create it here. Do not switch to or commit on `main` locally. If the branch
-   is not up to date or the pull request cannot be merged without violating repository rules:
-   `Hard blocked` / `Needs decision` — suggest `sync-main-into-develop`.
+4. Open the release pull request through the `production-pr` skill, the canonical PR procedure
+   (source `develop@<sha>`, target `main@<sha>`); do not create it here. Do not switch to or commit
+   on `main` locally. If the branch is not up to date or the pull request cannot be merged without
+   violating repository rules: `Hard blocked` / `Needs decision` — suggest `sync-main-into-develop`.
 
 5. Tag only if separately authorized, and push the tag only after that authorization. Merge the pull
    request only after required checks and any required review pass:

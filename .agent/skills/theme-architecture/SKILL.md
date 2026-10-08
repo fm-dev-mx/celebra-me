@@ -8,6 +8,7 @@ version: 1.1.0
 when_to_use:
   - Editing SCSS tokens, presets, theme sections, or component styling architecture
   - Reviewing theme consistency, token usage, or preset isolation
+  - Auditing section variants, profile boundaries, or invitation CSS isolation
   - Adding a new theme preset through the full SSOT + CSS resolver chain
 preconditions:
   - Read AGENTS.md
@@ -22,7 +23,7 @@ related_skills:
 related_docs:
   - docs/domains/theme/architecture.md
   - docs/domains/theme/typography.md
-  - .agent/skills/theme-architecture-governance/SKILL.md
+  - docs/domains/theme/variant-system.md
   - .agent/skills/design-reference-to-build/SKILL.md
 ---
 
@@ -74,8 +75,11 @@ Invitation theme CSS ownership:
 - `src/styles/themes/presets/_<preset>.scss`: global theme tokens and theme-wide custom properties
   only.
 - `src/styles/themes/sections/<section>/_base.scss`: shared variant rules for that section only.
-- `src/styles/themes/sections/<section>/_<variant>.scss`: variant-specific section rules only when
-  tokens are not enough.
+- `src/styles/themes/sections/<section>/_<semantic-variant>.scss`: rules for one registered semantic
+  variant, only when tokens are not enough. The file is named after the variant, never after a
+  preset.
+- `src/styles/invitation-profiles/<visualProfileId>.scss`: custom-property declarations only (see
+  `docs/domains/theme/architecture.md`, Invitation profile).
 
 Decision rule:
 
@@ -120,14 +124,14 @@ not implementation contracts.
    responsive behavior.
 2. Map those decisions to existing semantic and public component tokens first.
 3. Put section structure and selector-aware behavior in the owning section base or variant.
-4. Use a preset only for reusable theme identity; use a slug-scoped override only for genuine
-   client-specific work.
+4. Use a preset only for reusable theme identity; client-specific work is limited to token
+   declarations in the invitation profile.
 5. Reject pasted generated CSS, arbitrary design-tool values, and new parallel token names until
    they are reconciled with the three-level architecture.
 
-If the reference requires a new live token, preset, variant, or isolation rule, run
-`.agent/skills/theme-architecture-governance/SKILL.md`. Update `docs/domains/theme/architecture.md`
-only when the live technical contract changes, not merely because a new visual brief exists.
+If the reference requires a new live token, preset, variant, or isolation rule, apply the Governance
+Audit below. Update `docs/domains/theme/architecture.md` only when the live technical contract
+changes, not merely because a new visual brief exists.
 
 ## Operational Rules for CSS Boundaries
 
@@ -155,24 +159,25 @@ by the live CSS graph.
 
 ### Required layers
 
-| Layer            | Typical path                                                                          |
-| ---------------- | ------------------------------------------------------------------------------------- |
-| Preset tokens    | `src/styles/themes/presets/_<preset>.scss`                                            |
-| CSS entrypoint   | `src/styles/invitation-presets/<preset>.scss`                                         |
-| Section bundle   | `src/styles/invitation-sections-by-preset/<preset>.scss`                              |
-| Section wrappers | `src/styles/invitation-sections/<section>/<preset>.scss` as needed                    |
-| Section variants | `src/styles/themes/sections/<section>/_<preset>.scss` only when tokens are not enough |
+| Layer          | Typical path                                             |
+| -------------- | -------------------------------------------------------- |
+| Preset tokens  | `src/styles/themes/presets/_<preset>.scss`               |
+| CSS entrypoint | `src/styles/invitation-presets/<preset>.scss`            |
+| Section bundle | `src/styles/invitation-sections-by-preset/<preset>.scss` |
 
-Not every section needs a variant file. Prefer hero/gallery when visual impact is high; skip
-symmetry-only files (see Sections above).
+A preset adds tokens only. It never adds a section file: structure comes from registered semantic
+variants (`src/styles/themes/sections/<section>/_<semantic-variant>.scss`, owned by
+`src/lib/invitation/section-variants.ts`; see `docs/domains/theme/variant-system.md`). Existing
+preset-named section partials and section-bundle selectors are transitional exceptions; do not add
+new ones (`docs/domains/theme/architecture.md`, Transitional ownership exceptions).
 
 ### SSOT propagation order
 
 1. `THEME_PRESETS` in `src/lib/theme/theme-contract.ts` (publish guard)
-2. Demo catalog (`DEMO_PRESET_CATALOG` or current equivalent)
-3. Demo JSON under `src/content/event-demos/`
-4. Preset SCSS + entrypoint + section bundle
-5. Demo asset registry under `src/assets/images/events/` when required
+2. Preset SCSS + entrypoint + section bundle
+3. Legacy, scheduled for removal: managed provisioning still requires a `DEMO_PRESET_CATALOG` entry
+   with the same `themeId` (`src/lib/intake/demo-preset-catalog.ts`)
+4. Optional showcase demo JSON under `src/content/event-demos/` and its asset registry
 
 Never skip the theme-contract registration step.
 
@@ -180,11 +185,33 @@ Never skip the theme-contract registration step.
 
 Preset/section CSS resolvers may silently fall back to a default preset (e.g. `jewelry-box`) when an
 entrypoint is missing. Treat any fallback as ship-blocking: verify file existence, glob coverage,
-loaded stylesheets, `[data-variant='<preset>']`, and computed tokens on `.theme-preset--<preset>`
-(wrapper element — not `:root`).
+loaded stylesheets, and computed tokens on `.theme-preset--<preset>` (wrapper element — not
+`:root`). `data-variant` is never a preset name.
 
-Also run `.agent/skills/theme-architecture-governance/SKILL.md` when contracts or isolation rules
-change.
+## Governance Audit
+
+Apply when contracts, variants, or isolation rules change:
+
+- **Canonical variant boundary:** structural renderer selection belongs to the owning section's
+  `variant`. Theme identity, slug, event type, and `visualProfileId` never select a renderer or
+  provide a compatibility fallback. Legacy identity behavior is allowed only in a named
+  compatibility boundary with an active consumer, owner, and removal condition.
+- **Variant independence:** changing one `[data-variant]` never affects components outside it.
+- **Data-driven text:** theme-specific labels (RSVP inputs, hero descriptors) live in content fields
+  such as `rsvp.labels`, not hardcoded in Astro or React components.
+- **Token discipline:** presets and profiles consume established component tokens
+  (`--<component>-*`); never invent parallel names when canonical tokens exist. Presets set
+  aesthetic values without invasive transforms (such as forced `uppercase`) that force profiles to
+  negate them.
+- **New variant:** first prove an existing variant or token cannot express the need; then add the
+  schema value, registry entry, CSS delivery, and focused valid/invalid tests together, and update
+  `docs/domains/theme/variant-system.md`.
+- **Removing a compatibility path:** search managed definitions, demos, fixtures, tests, schemas,
+  adapters, preview/publishing flows, and documentation first. Keep it and record the blocker while
+  any consumer remains.
+- **Verification:** test the section under at least two presets, run the structural resolver, CSS
+  delivery, and profile-boundary suites, then `pnpm run ci`. Use visual comparison only when
+  renderer selection, structural CSS, or layout changed.
 
 ## Review Checklist
 
