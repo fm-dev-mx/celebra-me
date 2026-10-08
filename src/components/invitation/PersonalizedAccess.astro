@@ -1,5 +1,6 @@
 ---
 import type { PersonalizedAccessVariant } from '@/lib/invitation/section-variants';
+import type { PersonalizedAccessPassStyle } from '@/lib/invitation/personalized-access-presentation';
 
 interface Props {
 	ticket?: { signature: string; monogram: string };
@@ -12,6 +13,7 @@ interface Props {
 	subtitle?: string;
 	footerText?: string;
 	noteText?: string;
+	passStyle?: PersonalizedAccessPassStyle;
 }
 
 const {
@@ -25,6 +27,7 @@ const {
 	subtitle = 'Este pase te identifica como invitado y muestra el número de lugares reservados.',
 	footerText = 'Confirma tu asistencia en la sección de RSVP al final de la invitación.',
 	noteText,
+	passStyle = 'classic',
 } = Astro.props;
 
 const seatsLabel =
@@ -41,7 +44,9 @@ const accessAriaLabel = `Pase de acceso para ${guestName}. ${maxAllowedAttendees
 
 // Decorative ornaments are variant-specific
 const isReplyCard = variant === 'reply-card';
-const showOrnaments = variant !== 'standard' && !isReplyCard;
+// The race credential swaps the seal for a checkered flag and draws its own edges.
+const isRaceCredential = variant === 'formal-pass' && passStyle === 'race-credential';
+const showOrnaments = variant !== 'standard' && !isReplyCard && !isRaceCredential;
 
 // The reply card writes the seats out ("dos lugares") under the numeral, as stationery does.
 const SEAT_WORDS = ['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez'];
@@ -57,6 +62,7 @@ const writtenSeats =
 	data-screenshot-section="personalized-access"
 	data-variant={variant}
 	data-presentation={ticket ? "admission-ticket" : undefined}
+	data-pass-style={isRaceCredential ? 'race-credential' : undefined}
 >
 	<div class="personalized-access__container">
 		{isDemoPreview && variant === 'editorial-pass' && (
@@ -81,7 +87,22 @@ const writtenSeats =
 				<span class="access-card__eyebrow" data-demo-label>
 					{isDemoPreview && variant !== 'editorial-pass' ? 'Vista previa' : null}
 				</span>
-				{!isReplyCard && <div class="access-card__seal" aria-hidden="true">
+				{isRaceCredential && <div class="access-card__seal access-card__seal--flag" aria-hidden="true">
+					<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+						<defs>
+							<clipPath id="access-card-flag-cloth">
+								<path d="M18 10c8-3 14 3 22 0s12-3 16-1v24c-4-2-8-2-16 1s-14-3-22 0Z"></path>
+							</clipPath>
+						</defs>
+						<rect x="13" y="8" width="3.5" height="50" rx="1.75" fill="currentColor"></rect>
+						<g clip-path="url(#access-card-flag-cloth)">
+							<rect x="16" y="6" width="42" height="30" fill="currentColor" opacity="0.18"></rect>
+							<path fill="currentColor" d="M18 6h8v7.5h-8zM34 6h8v7.5h-8zM50 6h8v7.5h-8zM26 13.5h8V21h-8zM42 13.5h8V21h-8zM18 21h8v7.5h-8zM34 21h8v7.5h-8zM50 21h8v7.5h-8zM26 28.5h8V36h-8zM42 28.5h8V36h-8z"></path>
+						</g>
+						<path d="M18 10c8-3 14 3 22 0s12-3 16-1v24c-4-2-8-2-16 1s-14-3-22 0Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+					</svg>
+				</div>}
+				{!isReplyCard && !isRaceCredential && <div class="access-card__seal" aria-hidden="true">
 					<svg
 						viewBox="0 0 100 100"
 						fill="none"
@@ -163,7 +184,7 @@ const writtenSeats =
 <script>
 	// Cut the paper itself at the responsive stub boundary; never paint over its edge.
 	const ticketObservers: ResizeObserver[] = [];
-	document.querySelectorAll<HTMLElement>('[data-presentation="admission-ticket"] .access-card').forEach((card) => {
+	document.querySelectorAll<HTMLElement>('[data-presentation="admission-ticket"] .access-card, [data-pass-style="race-credential"] .access-card').forEach((card) => {
 		const stub = card.querySelector<HTMLElement>('.access-card__quota');
 		if (!stub) return;
 		const updateNotch = () => {

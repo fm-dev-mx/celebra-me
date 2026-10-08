@@ -162,6 +162,8 @@ export const musicSchema = z
 		title: z.string().optional(),
 		/** Second at which playback starts (and loops back to), e.g. to skip an intro. */
 		startAt: z.number().min(0).optional(),
+		/** Seconds of volume ramp when playback starts or loops back (default 1.2). */
+		fadeInSeconds: z.number().min(0).max(10).optional(),
 	})
 	.optional();
 

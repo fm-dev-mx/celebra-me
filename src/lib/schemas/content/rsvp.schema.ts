@@ -2,6 +2,10 @@ import { z } from 'zod';
 import { rsvpResponseMessagesSchema } from '@/lib/intake/schemas/shared-content.schema';
 import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 import { PERSONALIZED_ACCESS_VARIANTS, RSVP_VARIANTS } from '@/lib/invitation/section-variants';
+import {
+	PASS_STYLE_VARIANTS,
+	PERSONALIZED_ACCESS_PASS_STYLES,
+} from '@/lib/invitation/personalized-access-presentation';
 
 export const rsvpLabelsSchema = z
 	.object({
@@ -49,8 +53,27 @@ export const rsvpSchema = z
 				subtitle: z.string().optional(),
 				footerText: z.string().optional(),
 				noteText: z.string().optional(),
+				presentationOptions: z
+					.object({
+						passStyle: z.enum(PERSONALIZED_ACCESS_PASS_STYLES).optional(),
+					})
+					.strict()
+					.optional(),
 			})
-			.strict(),
+			.strict()
+			.superRefine((access, ctx) => {
+				const passStyle = access.presentationOptions?.passStyle ?? 'classic';
+				if (
+					passStyle !== 'classic' &&
+					!(PASS_STYLE_VARIANTS as readonly string[]).includes(access.variant)
+				) {
+					ctx.addIssue({
+						code: 'custom',
+						path: ['presentationOptions', 'passStyle'],
+						message: `passStyle=${passStyle} requires variant ${PASS_STYLE_VARIANTS.join(' or ')}.`,
+					});
+				}
+			}),
 		labels: rsvpLabelsSchema.optional(),
 		calendar: z
 			.object({

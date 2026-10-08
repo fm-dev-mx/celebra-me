@@ -72,6 +72,13 @@
 		mask: var(--gifts-header-mark, none) center / contain no-repeat;
 	}
 
+	&__ornament {
+		display: block;
+		width: var(--gifts-ornament-width, clamp(8.5rem, 38vw, 13rem));
+		height: auto;
+		margin: 0 auto var(--gifts-ornament-gap, 1rem);
+	}
+
 	&__eyebrow {
 		display: block;
 		margin-bottom: 0.5rem;

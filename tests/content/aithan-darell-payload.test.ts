@@ -96,12 +96,12 @@ describe('Aithan Darell managed definition', () => {
 		expect(parsed.location?.presentationOptions).toEqual({
 			indicationsStyle: 'numbered-board',
 		});
-		// Client dress code: red, black and/or white for every guest.
+		// Client dress code: red, black and/or white for every guest, nothing Cars-themed.
 		expect(parsed.location?.indications).toContainEqual(
 			expect.objectContaining({
 				title: 'Código de vestimenta',
 				iconName: 'DressCode',
-				text: 'Todas las personas en color <strong>rojo, negro y/o blanco</strong>.',
+				text: 'Todas las personas en color <strong>rojo, negro y/o blanco</strong>.<br>Nada referente a Cars, no disfraz.',
 			}),
 		);
 		// The brand is named once (cover masthead): no hero design credit.
@@ -210,14 +210,41 @@ describe('Aithan Darell managed definition', () => {
 			'quote',
 			'countdown',
 			'location',
+			'gifts',
 			'gallery',
 			'personalizedAccess',
 			'rsvp',
 			'thankYou',
 		]);
 		expect(parsed.family).toBeUndefined();
-		expect(parsed.gifts).toBeUndefined();
 		expect(parsed.itinerary).toBeUndefined();
+	});
+
+	it('publishes the gift reminder as a legend without registry details', () => {
+		const parsed = eventContentSchema.parse(publishedContent());
+		expect(parsed.gifts).toMatchObject({
+			variant: 'standard',
+			presentation: 'legend-only',
+			title: '¡No olvide mi regalo!',
+		});
+		expect(JSON.stringify(parsed.gifts?.ornament)).toContain('giftsOrnament');
+		expect(parsed.gifts?.items).toBeUndefined();
+		// No folio mark: the editorial folio would print "EDICIÓN XV".
+		expect(parsed.gifts?.folioMark).toBeUndefined();
+	});
+
+	it('asks guests to confirm attendance in plain words', () => {
+		const parsed = eventContentSchema.parse(publishedContent());
+		expect(parsed.rsvp?.title).toBe('Confirme su asistencia');
+		expect(parsed.rsvp?.labels?.confirmButton).toBe('Confirmar asistencia');
+		const strings = collectStrings(publishedContent());
+		expect(strings.filter((entry) => /inscrip/i.test(entry))).toEqual([]);
+	});
+
+	it('celebrates the third birthday without "primeros"', () => {
+		const parsed = eventContentSchema.parse(publishedContent());
+		expect(parsed.quote?.text).toContain('celebrar mis tres años');
+		expect(parsed.quote?.text).not.toContain('primeros');
 	});
 
 	it('publishes no placeholders and no XV edition copy', () => {
@@ -236,6 +263,7 @@ describe('Aithan Darell managed definition', () => {
 			'gallery02',
 			'coverGrid',
 			'thankYouTrophy',
+			'giftsOrnament',
 			'characterMcQueen',
 			'characterMack',
 			'characterMate',
@@ -283,6 +311,7 @@ describe('Aithan Darell managed definition', () => {
 			parsed.countdown?.ornament,
 			parsed.location?.ornament,
 			parsed.thankYou?.ornament,
+			parsed.gifts?.ornament,
 			parsed.envelope?.coverOrnament,
 			...(parsed.envelope?.spreadOrnaments ?? []),
 			parsed.hero.ornament,
@@ -298,6 +327,7 @@ describe('Aithan Darell managed definition', () => {
 			characterSally: 'character-sally.webp',
 			characterRamone: 'character-ramone.webp',
 			logoCars: 'logo-cars.webp',
+			giftsOrnament: 'gifts-ornament.webp',
 		};
 		for (const [key, file] of Object.entries(motifFiles)) {
 			expect(pathOf(key)).toBe(file);
@@ -310,6 +340,9 @@ describe('Aithan Darell managed definition', () => {
 			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1791406894/Rascal_Flatts_-_Life_Is_a_Highway_swt74a.mp3',
 			title: 'Life Is a Highway',
 			autoPlay: true,
+			// Client request: start where the vocals begin, entering with a gentle ramp.
+			startAt: 49,
+			fadeInSeconds: 3,
 		});
 	});
 });

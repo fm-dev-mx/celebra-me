@@ -3,6 +3,7 @@ import type { InvitationRenderPlanItem } from '@/lib/invitation/render-plan';
 import type { ContentSectionKey } from '@/lib/theme/theme-contract';
 import type { InvitationRevealRecipe, SectionIntersectionFamily } from '@/lib/theme/theme-contract';
 import type { PersonalizedAccessVariant } from '@/lib/invitation/section-variants';
+import type { PersonalizedAccessPassStyle } from '@/lib/invitation/personalized-access-presentation';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 
 type Sections = InvitationPageContext['viewModel']['sections'];
@@ -32,6 +33,7 @@ type PersonalizedAccessProps = {
 	subtitle?: string;
 	footerText?: string;
 	noteText?: string;
+	passStyle?: PersonalizedAccessPassStyle;
 };
 
 export const DEMO_GUEST_NAME = 'María Fernanda Solís';
@@ -166,11 +168,12 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 		: undefined;
 
 	const rsvpSection = pageContext.viewModel.sections.rsvp;
+	const access = rsvpSection?.personalizedAccess;
 
 	return {
 		component: 'personalized-access' as const,
 		props: {
-			ticket: rsvpSection?.personalizedAccess?.ticket,
+			ticket: access?.ticket,
 			guestName: guestContext?.guest.fullName ?? DEMO_GUEST_NAME,
 			maxAllowedAttendees:
 				guestContext?.guest.maxAllowedAttendees ??
@@ -179,10 +182,11 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 			eventYear,
 			isDemoPreview,
 			variant,
-			title: rsvpSection?.personalizedAccess?.title,
-			subtitle: rsvpSection?.personalizedAccess?.subtitle,
-			footerText: rsvpSection?.personalizedAccess?.footerText,
-			noteText: rsvpSection?.personalizedAccess?.noteText,
+			title: access?.title,
+			subtitle: access?.subtitle,
+			footerText: access?.footerText,
+			noteText: access?.noteText,
+			passStyle: access?.passStyle,
 		},
 	};
 }
