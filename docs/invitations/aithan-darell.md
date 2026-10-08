@@ -19,9 +19,10 @@
 
 Helper outcome: every required `cumple` field is resolved, the base demo is owner-selected, and the
 music track is hosted ("Life Is a Highway"). All published photographs are messaging-app JPEGs,
-which the owner accepted as the definitive set; the original motif assets are production-ready, but
-the `provisional-whatsapp` photographs still cap readiness below `READY_FOR_IMPLEMENTATION`.
-Implementation may proceed.
+which the owner accepted as the definitive set and remain labelled `provisional-whatsapp`; the
+original motif assets are `production-ready`, but `summarizeAssetQuality` keeps the provisional
+ceiling while any assignable image is non-production (contract §9.1, hygiene A4), so readiness stays
+below `READY_FOR_IMPLEMENTATION`. Implementation may proceed.
 
 Technical Local/Preview/Production readiness (**envReadiness**) is **out of scope** for this
 document.
@@ -46,138 +47,32 @@ host alias keeps the contract form `{primer_nombre}_{primer_apellido}`.
 
 ## Fact Register
 
-- **field:** slug
-  - **value:** aithan-darell
-  - **classification:** verified
-  - **source:** owner
-  - **notes:** Owner decision; two given names, no eventType prefix
-- **field:** hostLoginAlias
-  - **value:** aithan_ruiz
-  - **classification:** verified
-  - **source:** owner
-  - **notes:** Contract form; owner may remap to `aithan_darell`
-- **field:** celebrantName
-  - **value:** Aithan Darell Ruiz Salgado
-  - **classification:** verified
-  - **source:** wa-export
-  - **notes:** Written twice ("aithan darell Ruiz Salgado", then "Aithan Darell"); display name
-    "Aithan Darell"
-- **field:** eventLabel
-  - **value:** Mis 3 años
-  - **classification:** verified
-  - **source:** wa-export
-  - **notes:** Client copy: "Aithan Darell / Mis 3 años"
-- **field:** eventDate
-  - **value:** 2026-10-24
-  - **classification:** verified
-  - **source:** wa-export
-  - **notes:** "24 de octubre", stated twice; Saturday 24 October 2026
-- **field:** eventTime
-  - **value:** 17:30
-  - **classification:** verified
-  - **source:** wa-export
-  - **notes:** First "4:30", corrected to "Hora 5:30"; 5:30 p. m. confirmed by the client
-    (2026-10-07)
-- **field:** timeZone
-  - **value:** America/Mexico_City
-  - **classification:** inferred
-  - **source:** geography
-  - **notes:** Atizapán de Zaragoza, Estado de México; not client-stated
-- **field:** baseDemoId
-  - **value:** demo-cumple-editorial-magazine
-  - **classification:** verified
-  - **source:** owner
-  - **notes:** Owner-selected catalog entry (new); no children's demo existed
-- **field:** sourceAssetPath
-  - **value:** source:client-photos
-  - **classification:** verified
-  - **source:** owner
-  - **notes:** Repo asset dir `src/assets/invitations/aithan-darell`; originals from the chat
-- **field:** sectionOrder
-  - **value:** quote, countdown, location, gallery, personalizedAccess, rsvp, thankYou
-  - **classification:** inferred
-  - **source:** owner
-  - **notes:** Family, itinerary, and gifts omitted: no data supplied (asked in the client message)
-- **field:** primaryVenueName
-  - **value:** Jardín de Teresita
-  - **classification:** verified
-  - **source:** wa-export
-  - **notes:**
-- **field:** primaryVenueAddress
-  - **value:** Avenida Juárez 49, Atizapán centro
-  - **classification:** verified
-  - **source:** wa-export
-  - **notes:** Municipality and state (Atizapán de Zaragoza, Estado de México) inferred from the
-    client's Maps link
-- **field:** venueMapsUrl
-  - **value:** https://maps.app.goo.gl/ebbpWEFK68LhuDm28
-  - **classification:** verified
-  - **source:** wa-export
-  - **notes:** Client link (2026-10-07); pin at Av. Juárez 49, Atizapán Centro (19.5589908,
-    -99.2451091), replaces the Street View link without a pin
-- **field:** themeDescription
-  - **value:** Cars: carreras, McQueen, Mate, Mack, todos los personajes
-  - **classification:** verified
-  - **source:** wa-export
-  - **notes:** Client wrote "mcqueen, mate Mac todos los personas"; read as "todos los personajes";
-    distributed organically across sections, now also as character cutouts (McQueen, Mack, Mate, Doc
-    Hudson, Sally, Ramone) and the Cars emblem
-- **field:** clientColors
-  - **value:** rojo, negro, blanco
-  - **classification:** verified
-  - **source:** wa-export
-  - **notes:** First "rojo y negro", later "roja y negra y blanca"
-- **field:** heroPhoto
-  - **value:** ride-on car photograph
-  - **classification:** verified
-  - **source:** wa-export
-  - **notes:** "La imagen sería la que tiene el carro"; published once (hero card/panel) plus the
-    off-page OG image
-- **field:** rsvpConfirmationMode
-  - **value:** api
-  - **classification:** inferred
-  - **source:** owner
-  - **notes:** Owner offered dashboard guest control and passes; client agreed ("Ok super")
-- **field:** rsvpGuestCap
-  - **value:** 4
-  - **classification:** inferred
-  - **source:** owner
-  - **notes:** Owner default, never discussed; passes are assigned per guest in the dashboard (asked
-    in the message)
-- **field:** musicUrl
-  - **value:**
-    https://res.cloudinary.com/dusxvauvj/video/upload/v1791406894/Rascal_Flatts_-_Life_Is_a_Highway_swt74a.mp3
-  - **classification:** verified
-  - **source:** owner
-  - **notes:** "Life Is a Highway" (Rascal Flatts); hosted Cloudinary track supplied by owner
-    (2026-10-07)
-- **field:** dressCode
-  - **value:** Todas las personas en color rojo, negro y/o blanco
-  - **classification:** verified
-  - **source:** owner
-  - **notes:** Client instruction relayed by the owner (2026-10-07); published as the third location
-    pit board («Código de vestimenta»)
-- **field:** gifts
-  - **value:** —
-  - **classification:** missing
-  - **source:** wa-export
-  - **notes:** Never mentioned; optional, omitted (asked in the client message)
-- **field:** itinerary
-  - **value:** —
-  - **classification:** missing
-  - **source:** wa-export
-  - **notes:** Never mentioned; optional, omitted (asked in the client message)
-- **field:** hostsNames
-  - **value:** —
-  - **classification:** missing
-  - **source:** wa-export
-  - **notes:** Parents not named. The purchaser waits on "mi hermana", so she is likely the aunt
-    (inferred)
-- **field:** clientContact
-  - **value:** Alin Salgado
-  - **classification:** verified
-  - **source:** wa-export
-  - **notes:** Purchaser; contact details stay outside this document
+| field                | value                                                                                                      | classification | source    | notes                                                                                                               |
+| -------------------- | ---------------------------------------------------------------------------------------------------------- | -------------- | --------- | ------------------------------------------------------------------------------------------------------------------- |
+| slug                 | aithan-darell                                                                                              | verified       | owner     | Owner decision; two given names, no eventType prefix                                                                |
+| hostLoginAlias       | aithan_ruiz                                                                                                | verified       | owner     | Contract form; owner may remap to `aithan_darell`                                                                   |
+| celebrantName        | Aithan Darell Ruiz Salgado                                                                                 | verified       | wa-export | Written twice ("aithan darell Ruiz Salgado", then "Aithan Darell"); display name "Aithan Darell"                    |
+| eventLabel           | Mis 3 años                                                                                                 | verified       | wa-export | Client copy: "Aithan Darell / Mis 3 años"                                                                           |
+| eventDate            | 2026-10-24                                                                                                 | verified       | wa-export | "24 de octubre", stated twice; Saturday 24 October 2026                                                             |
+| eventTime            | 17:30                                                                                                      | verified       | wa-export | First "4:30", corrected to "Hora 5:30"; 5:30 p. m. confirmed by the client (2026-10-07)                             |
+| timeZone             | America/Mexico_City                                                                                        | inferred       | geography | Atizapán de Zaragoza, Estado de México; not client-stated                                                           |
+| baseDemoId           | demo-cumple-editorial-magazine                                                                             | verified       | owner     | Owner-selected catalog entry (new); no children's demo existed                                                      |
+| sourceAssetPath      | source:client-photos                                                                                       | verified       | owner     | Repo asset dir `src/assets/invitations/aithan-darell`; originals from the chat                                      |
+| sectionOrder         | quote, countdown, location, gallery, personalizedAccess, rsvp, thankYou                                    | inferred       | owner     | Family, itinerary, and gifts omitted: no data supplied (asked in the client message)                                |
+| primaryVenueName     | Jardín de Teresita                                                                                         | verified       | wa-export | —                                                                                                                   |
+| primaryVenueAddress  | Avenida Juárez 49, Atizapán centro                                                                         | verified       | wa-export | Municipality and state (Atizapán de Zaragoza, Estado de México) inferred from the client's Maps link                |
+| venueMapsUrl         | https://maps.app.goo.gl/ebbpWEFK68LhuDm28                                                                  | verified       | wa-export | Client link (2026-10-07); pinned at Av. Juárez 49 (19.5589908, -99.2451091); replaces the unpinned Street View link |
+| themeDescription     | Cars: carreras, McQueen, Mate, Mack, todos los personajes                                                  | verified       | wa-export | Client wrote "mcqueen, mate Mac todos los personas"; read as "personajes"; cutouts listed in Photograph Inventory   |
+| clientColors         | rojo, negro, blanco                                                                                        | verified       | wa-export | First "rojo y negro", later "roja y negra y blanca"                                                                 |
+| heroPhoto            | ride-on car photograph                                                                                     | verified       | wa-export | "La imagen sería la que tiene el carro"; published once (hero card/panel) plus the off-page OG image                |
+| rsvpConfirmationMode | api                                                                                                        | inferred       | owner     | Owner offered dashboard guest control and passes; client agreed ("Ok super")                                        |
+| rsvpGuestCap         | 4                                                                                                          | inferred       | owner     | Owner default, never discussed; passes are assigned per guest in the dashboard (asked in the message)               |
+| musicUrl             | https://res.cloudinary.com/dusxvauvj/video/upload/v1791406894/Rascal_Flatts_-_Life_Is_a_Highway_swt74a.mp3 | verified       | owner     | "Life Is a Highway" (Rascal Flatts); hosted Cloudinary track supplied by owner (2026-10-07)                         |
+| dressCode            | Todas las personas en color rojo, negro y/o blanco                                                         | verified       | owner     | Owner relay (2026-10-07); published as location pit board 03 («Código de vestimenta»)                               |
+| gifts                | —                                                                                                          | missing        | wa-export | Never mentioned; optional, omitted (asked in the client message)                                                    |
+| itinerary            | —                                                                                                          | missing        | wa-export | Never mentioned; optional, omitted (asked in the client message)                                                    |
+| hostsNames           | —                                                                                                          | missing        | wa-export | Parents not named. The purchaser waits on "mi hermana", so she is likely the aunt (inferred)                        |
+| clientContact        | Alin Salgado                                                                                               | verified       | wa-export | Purchaser; contact details stay outside this document                                                               |
 
 Rules:
 
@@ -838,3 +733,11 @@ reintroduces a repetition.
   - **helper basis:** `evaluatePreparationReadiness` + `summarizeAssetQuality`
   - **notes:** Owner decision: McQueen on the reveal (cover face, front view) and in the hero
     (`hero.accentOrnament`, side view); Doc Hudson moves to the scoreboard (Local v13)
+- **date:** 2026-10-07
+  - **readiness:** `READY_WITH_PLACEHOLDERS`
+  - **helper basis:** `evaluatePreparationReadiness` + `summarizeAssetQuality`
+  - **notes:** Fact Register rewritten as the contract table so `parseFactRegisterFromMarkdown`
+    reads it (the bullet list parsed as zero facts and Repository CI reported `NOT_READY`).
+    `summarizeAssetQuality` now keeps the provisional ceiling for mixed inventories
+    (production-ready motifs next to `provisional-whatsapp` photographs), matching contract §9.1 and
+    hygiene A4.
