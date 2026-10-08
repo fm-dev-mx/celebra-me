@@ -1,6 +1,10 @@
 import { domainUnverified } from '../db/schema-lifecycle-state.ts';
 import type { AssetPolicy } from './asset-reconciliation.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
+import {
+	isArchivedInvitation,
+	type InvitationDefinition,
+} from './invitations/invitation-definition.ts';
 import type { UpdateScope } from './semantic-delta.ts';
 
 export type InvitationUpdateTarget = 'local' | 'preview' | 'production';
@@ -257,6 +261,11 @@ export interface StatusReportOptions {
 	includeDemos?: boolean;
 }
 
+/** Test seam: definitions source for the status report (defaults to the registry). */
+export interface StatusReportSources {
+	listDefinitions?: () => InvitationDefinition[];
+}
+
 export function parseStatusOptions(input: StatusReportOptions): StatusReportOptions {
 	return {
 		slug: input.slug,
@@ -267,7 +276,10 @@ export function parseStatusOptions(input: StatusReportOptions): StatusReportOpti
 	};
 }
 
-export function buildStatusReport(input: StatusReportOptions): Record<string, unknown> {
+export function buildStatusReport(
+	input: StatusReportOptions,
+	sources: StatusReportSources = {},
+): Record<string, unknown> {
 	const opts = parseStatusOptions(input);
 	const requestedSlug = opts.slug;
 	const targets =
@@ -282,8 +294,17 @@ export function buildStatusReport(input: StatusReportOptions): Record<string, un
 		'Local inventory not yet enriched; this report builder does not probe persistent-local.',
 	);
 
-	const definitions = listInvitationDefinitions()
-		.filter((definition) => !requestedSlug || definition.slug === requestedSlug)
+	const matching = (sources.listDefinitions ?? listInvitationDefinitions)().filter(
+		(definition) => !requestedSlug || definition.slug === requestedSlug,
+	);
+	// An explicit slug always resolves; otherwise archived definitions are counted apart.
+	const archivedSlugs = matching
+		.filter((definition) => isArchivedInvitation(definition))
+		.map((definition) => definition.slug)
+		.sort((a, b) => a.localeCompare(b));
+	const showArchived = Boolean(requestedSlug) || Boolean(opts.includeArchived);
+	const definitions = matching
+		.filter((definition) => showArchived || !isArchivedInvitation(definition))
 		.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 		.map((definition) => {
 			const envEntries = targets.map((target) => {
@@ -307,6 +328,7 @@ export function buildStatusReport(input: StatusReportOptions): Record<string, un
 				slug: definition.slug,
 				title: definition.title,
 				createdAt: definition.createdAt,
+				archived: isArchivedInvitation(definition),
 				classification: {
 					status: 'UNVERIFIED' as const,
 					domain: 'inventory' as const,
@@ -335,6 +357,11 @@ export function buildStatusReport(input: StatusReportOptions): Record<string, un
 			includeDemos: opts.includeDemos ?? false,
 		},
 		definitions,
+		archived: {
+			count: archivedSlugs.length,
+			slugs: archivedSlugs,
+			included: showArchived,
+		},
 		unmanaged: unmanagedUnprobed
 			? {
 					status: unmanagedUnprobed.status,

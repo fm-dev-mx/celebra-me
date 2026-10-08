@@ -46,7 +46,10 @@ import type {
 	PromotionApplyReport,
 	PromotionPreflightReport,
 } from '../provision/invitation-promote.ts';
-import { listInvitationDefinitions } from '../provision/invitations/registry.ts';
+import {
+	listActiveInvitationDefinitions,
+	listArchivedInvitationDefinitions,
+} from '../provision/invitations/registry.ts';
 import { revalidatePromotionVolatilePreconditions } from '../provision/promotion-volatile-revalidation.ts';
 import type { UpdateScope } from '../provision/semantic-delta.ts';
 import {
@@ -67,6 +70,8 @@ const PRODUCTION_APPLY_OPERATION_TYPE = 'production_apply';
 export interface ProductionApplyAssemblerDeps {
 	preflightSchema?: () => MigrationPlan;
 	listSlugs?: () => string[];
+	/** Owner-archived slugs reported apart from --all-ready / inspection plans. */
+	listArchivedSlugs?: () => string[];
 	resolvePackage?: (slug: string) => Promise<InvitationPackageData>;
 	resolveInvitationUpdateScope?: (slug: string) => UpdateScope | undefined;
 	getProductionDbUrl?: () => { url: string };
@@ -148,7 +153,13 @@ export interface ProductionApplyExecution {
 }
 
 function defaultListSlugs(): string[] {
-	return listInvitationDefinitions()
+	return listActiveInvitationDefinitions()
+		.map((definition) => definition.slug)
+		.sort((a, b) => a.localeCompare(b));
+}
+
+function defaultListArchivedSlugs(): string[] {
+	return listArchivedInvitationDefinitions()
 		.map((definition) => definition.slug)
 		.sort((a, b) => a.localeCompare(b));
 }
@@ -171,10 +182,12 @@ export async function buildProductionApplyPlan(
 	const schemaItem = await inspectSchema(scope.schema, deps, args.expectedPin);
 	const schemaReadyInPlan = schemaItem.readiness === 'READY';
 
-	const slugList =
-		scope.inspectAll || scope.allReady
-			? (deps.listSlugs ?? defaultListSlugs)()
-			: [...scope.slugs];
+	const discoversSlugs = scope.inspectAll || scope.allReady;
+	const slugList = discoversSlugs ? (deps.listSlugs ?? defaultListSlugs)() : [...scope.slugs];
+	// Explicit --slug keeps archived invitations addressable; only discovery leaves them out.
+	const archivedSlugs = discoversSlugs
+		? (deps.listArchivedSlugs ?? defaultListArchivedSlugs)()
+		: [];
 
 	const invitationItems: ProductionApplyPlanItem[] = [];
 	for (const slug of slugList) {
@@ -198,6 +211,7 @@ export async function buildProductionApplyPlan(
 			slugs: slugList,
 		},
 		items,
+		{ archivedSlugs },
 	);
 }
 
@@ -358,6 +372,16 @@ function isInvitationOnlyPlan(plan: ProductionApplyPlan): boolean {
 	);
 }
 
+/** IN_SYNC items never write (and may lack an approval); only mutations need volatile checks. */
+export function invitationItemsNeedingRevalidation(
+	plan: ProductionApplyPlan,
+): ProductionApplyPlanItem[] {
+	const mutationIds = new Set(mutationItemsOf(plan).map((entry) => entry.id));
+	return plan.items.filter(
+		(item) => item.domain === 'invitation' && item.preflight && mutationIds.has(item.id),
+	);
+}
+
 async function revalidateInvitationOnlyPlan(
 	reviewed: ProductionApplyPlan,
 	deps: ProductionApplyExecuteDeps,
@@ -372,6 +396,7 @@ async function revalidateInvitationOnlyPlan(
 			const resolved = await resolveInvitationPackageInput({ slug: target });
 			return resolved.packageData;
 		});
+	const revalidate = new Set(invitationItemsNeedingRevalidation(reviewed));
 	for (const item of reviewed.items.filter((entry) => entry.domain === 'invitation')) {
 		const packageData = await resolvePackage(item.id);
 		if (item.packageHash && packageData.packageHash !== item.packageHash) {
@@ -385,7 +410,7 @@ async function revalidateInvitationOnlyPlan(
 				],
 			});
 		}
-		if (!item.preflight) continue;
+		if (!item.preflight || !revalidate.has(item)) continue;
 		await revalidatePromotionVolatilePreconditions({
 			reviewed: item.preflight,
 			packageData,

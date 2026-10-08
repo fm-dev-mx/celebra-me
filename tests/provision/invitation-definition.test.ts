@@ -6,9 +6,14 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
-import { defineInvitation } from '../../scripts/provision/invitations/invitation-definition.ts';
+import {
+	defineInvitation,
+	isArchivedInvitation,
+} from '../../scripts/provision/invitations/invitation-definition.ts';
 import {
 	getInvitationDefinition,
+	listActiveInvitationDefinitions,
+	listArchivedInvitationDefinitions,
 	listInvitationDefinitions,
 } from '../../scripts/provision/invitations/registry.ts';
 import {
@@ -218,6 +223,77 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					buildPublishedContent: () => ({}),
 				}),
 			).toThrow(/lifecycle/);
+		});
+
+		describe('archive record', () => {
+			const publishedBase = {
+				slug: 'past-invitation',
+				managedIdentityId: TEST_MANAGED_IDENTITY_ID,
+				managedIdentityProvenance: 'persisted' as const,
+				createdAt: '2026-07-20T00:00:00.000Z',
+				lifecycle: 'published' as const,
+				deliveryScope: 'content-and-assets' as const,
+				eventType: 'xv',
+				title: 'Title',
+				clientName: 'Client',
+				hostLoginAlias: 'past_client',
+				baseDemoId: 'demo',
+				themeId: 'theme',
+				visualProfileId: 'profile',
+				eventTiming: {
+					localDateTime: '2026-06-20T19:00:00',
+					timeZone: 'America/Mexico_City',
+					startsAtUtc: '2026-06-21T01:00:00.000Z',
+				},
+				assets: [],
+				buildPublishedContent: () => ({}),
+			};
+
+			it('accepts an owner archive record on a published definition', () => {
+				expect(rominaInvitation.lifecycle).toBe('published');
+				const definition = defineInvitation({
+					...rominaInvitation,
+					archive: { decidedOn: '2026-10-08', reason: 'Reemplazada por demo' },
+				});
+				expect(isArchivedInvitation(definition)).toBe(true);
+				expect(isArchivedInvitation(rominaInvitation)).toBe(false);
+			});
+
+			it('rejects archiving an in-progress definition', () => {
+				expect(() =>
+					defineInvitation({
+						...publishedBase,
+						lifecycle: 'in_progress',
+						archive: { decidedOn: '2026-10-08', reason: 'x' },
+					}),
+				).toThrow(/Only published/);
+			});
+
+			it('requires a decision date and a reason', () => {
+				expect(() =>
+					defineInvitation({
+						...publishedBase,
+						archive: { decidedOn: '08/10/2026', reason: 'x' },
+					}),
+				).toThrow(/decidedOn/);
+				expect(() =>
+					defineInvitation({
+						...publishedBase,
+						archive: { decidedOn: '2026-10-08', reason: ' ' },
+					}),
+				).toThrow(/reason/);
+			});
+
+			it('partitions the registry into active and archived definitions', () => {
+				const all = listInvitationDefinitions()
+					.map((d) => d.slug)
+					.sort();
+				const split = [
+					...listActiveInvitationDefinitions().map((d) => d.slug),
+					...listArchivedInvitationDefinitions().map((d) => d.slug),
+				].sort();
+				expect(split).toEqual(all);
+			});
 		});
 
 		it('throws when previousSlugs includes current slug or duplicates', () => {

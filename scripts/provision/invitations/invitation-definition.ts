@@ -46,6 +46,14 @@ export interface InvitationEventTiming {
 }
 
 export type InvitationLifecycle = 'in_progress' | 'published';
+
+/** Owner decision that retires a past invitation from release planning. */
+export interface InvitationArchiveRecord {
+	/** Date of the owner decision (YYYY-MM-DD). */
+	decidedOn: string;
+	/** Short owner-facing reason, e.g. the demo that replaced it. */
+	reason: string;
+}
 export type InvitationDeliveryScope = 'content-only' | 'content-and-assets' | 'assets-only';
 export type ManagedIdentityProvenance = 'persisted' | 'owner-approved';
 
@@ -72,6 +80,13 @@ export interface InvitationDefinition<K extends string = string> {
 	createdAt: string;
 	/** Explicit delivery lifecycle. Observability must never infer this from age or placement. */
 	lifecycle: InvitationLifecycle;
+	/**
+	 * Release-planning state; absent means active. Set only by owner decision, never inferred from
+	 * the event date. Archived definitions are left out of `prod:apply --all-ready`/inspection plans,
+	 * release candidates and `invitation:release --status` (counted apart), but stay addressable by
+	 * explicit slug. It never mutates a database row.
+	 */
+	archive?: InvitationArchiveRecord;
 	/** Maximum managed scope authorized by the canonical definition. */
 	deliveryScope: InvitationDeliveryScope;
 	eventType: string;
@@ -230,10 +245,34 @@ function validateInvitationMetadata<K extends string>(definition: InvitationDefi
 	}
 }
 
+export function isArchivedInvitation(definition: Pick<InvitationDefinition, 'archive'>): boolean {
+	return definition.archive !== undefined;
+}
+
+function validateArchiveRecord<K extends string>(definition: InvitationDefinition<K>): void {
+	const archive = definition.archive;
+	if (archive === undefined) return;
+	if (definition.lifecycle !== 'published') {
+		throw new Error('Only published invitation definitions can be archived.');
+	}
+	if (
+		!archive ||
+		typeof archive.decidedOn !== 'string' ||
+		!/^\d{4}-\d{2}-\d{2}$/.test(archive.decidedOn) ||
+		!Number.isFinite(Date.parse(archive.decidedOn))
+	) {
+		throw new Error('Invitation archive record requires decidedOn as YYYY-MM-DD.');
+	}
+	if (typeof archive.reason !== 'string' || archive.reason.trim().length === 0) {
+		throw new Error('Invitation archive record requires a non-empty reason.');
+	}
+}
+
 function validateInvitationStructure<K extends string>(definition: InvitationDefinition<K>): void {
 	if (definition.lifecycle !== 'in_progress' && definition.lifecycle !== 'published') {
 		throw new Error('Invitation definition requires an explicit lifecycle.');
 	}
+	validateArchiveRecord(definition);
 	if (
 		definition.deliveryScope !== 'content-only' &&
 		definition.deliveryScope !== 'content-and-assets' &&

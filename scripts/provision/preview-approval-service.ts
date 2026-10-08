@@ -2,8 +2,7 @@
  * preview-approval-service.ts — Preview release approval contract + validation.
  *
  * Storage is delegated to PreviewApprovalStore (Preview DB by default) so all
- * worktrees share one SSOT. Approval is based on direct hosted Preview checks;
- * legacy filesystem artifacts remain migration-only.
+ * worktrees share one SSOT. Approval is based on direct hosted Preview checks.
  */
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import {
@@ -311,26 +310,60 @@ export function approvePreviewArtifactFromLiveVerification(
 }
 
 /**
- * Verify an exact approved Preview release from the shared store.
- *
- * Legacy signature `(identity, approvalsDirs?, now?)` remains for call-site
- * compatibility; filesystem dirs are no longer consulted. Pass `{ store }` in
- * tests. Runtime SSOT is Preview DB.
+ * Why an exact Preview approval could not be verified. Operators act differently on each:
+ * never approved → full Preview release; other hash → the definition changed since the last
+ * approval (re-release); pending → finish hosted validation; expired → live recheck.
  */
+export type PreviewApprovalFailureReason =
+	| 'NEVER_APPROVED'
+	| 'APPROVED_OTHER_HASH'
+	| 'PENDING_HOSTED_VALIDATION'
+	| 'EXPIRED'
+	| 'OBSOLETE_CONTRACT'
+	| 'IDENTITY_MISMATCH'
+	| 'INCOMPLETE_EVIDENCE';
+
+export class PreviewApprovalError extends Error {
+	constructor(
+		public readonly reason: PreviewApprovalFailureReason,
+		message: string,
+		/** Latest approved artifact for the slug when the exact package was never approved. */
+		public readonly latestApprovedForSlug?: Pick<
+			PreviewApprovalArtifact,
+			'packageHash' | 'approvedAt'
+		>,
+	) {
+		super(message);
+		this.name = 'PreviewApprovalError';
+	}
+}
+
+export const PREVIEW_APPROVAL_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** Verify an exact approved Preview release from the shared store (Preview DB at runtime). */
 export function verifyPreviewApprovalArtifact(
 	identity: ApprovedReleaseIdentity,
-	approvalsDirsOrOptions: string[] | PreviewApprovalServiceOptions = {},
-	nowArg?: Date,
+	options: PreviewApprovalServiceOptions = {},
 ): PreviewApprovalArtifact {
-	const options: PreviewApprovalServiceOptions = Array.isArray(approvalsDirsOrOptions)
-		? { now: nowArg }
-		: { ...approvalsDirsOrOptions, now: approvalsDirsOrOptions.now ?? nowArg };
 	const store = resolveStore(options);
 	const now = options.now ?? new Date();
 
 	const artifact = store.get(identity.packageHash);
 	if (!artifact) {
-		throw new Error(`No approved Preview artifact exists for package ${identity.packageHash}.`);
+		const latest = store.findLatestApprovedBySlug?.(identity.slug) ?? null;
+		if (latest) {
+			throw new PreviewApprovalError(
+				'APPROVED_OTHER_HASH',
+				`Preview approval exists for "${identity.slug}" but for another package ` +
+					`(${latest.packageHash.slice(0, 12)}…, approved ${latest.approvedAt ?? 'n/a'}); ` +
+					`current package ${identity.packageHash.slice(0, 12)}… was never approved.`,
+				{ packageHash: latest.packageHash, approvedAt: latest.approvedAt },
+			);
+		}
+		throw new PreviewApprovalError(
+			'NEVER_APPROVED',
+			`No approved Preview artifact exists for package ${identity.packageHash}.`,
+		);
 	}
 	return assertVerifiedApproval(artifact, identity, now, options);
 }
@@ -342,12 +375,20 @@ function assertVerifiedApproval(
 	options: PreviewApprovalServiceOptions,
 ): PreviewApprovalArtifact {
 	if (!isCurrentContract(artifact)) {
-		throw new Error(
+		throw new PreviewApprovalError(
+			'OBSOLETE_CONTRACT',
 			'Preview approval artifact uses an obsolete contract and must be regenerated (not migrated).',
 		);
 	}
+	if (artifact.approvalState !== 'approved') {
+		throw new PreviewApprovalError(
+			'PENDING_HOSTED_VALIDATION',
+			'Preview approval artifact is pending hosted validation and was never approved.',
+		);
+	}
 	if (!checkArtifactHashesAndFormat(artifact, identity)) {
-		throw new Error(
+		throw new PreviewApprovalError(
+			'IDENTITY_MISMATCH',
 			'Preview approval artifact is stale, incomplete, or does not match the exact release hashes.',
 		);
 	}
@@ -361,24 +402,28 @@ function assertVerifiedApproval(
 		}
 	} else {
 		const approvedAtMs = Date.parse(artifact.approvedAt!);
-		const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
 		if (
 			!Number.isFinite(approvedAtMs) ||
 			approvedAtMs > now.getTime() ||
-			now.getTime() - approvedAtMs > maxAgeMs
+			now.getTime() - approvedAtMs > PREVIEW_APPROVAL_MAX_AGE_MS
 		) {
-			throw new Error(
-				'Preview approval artifact is stale and requires a live Preview recheck.',
+			throw new PreviewApprovalError(
+				'EXPIRED',
+				`Preview approval artifact is stale (approved ${artifact.approvedAt}, older than 7 days) and requires a live Preview recheck.`,
 			);
 		}
 	}
 	if (identity.planId && artifact.planId && artifact.planId !== identity.planId) {
-		throw new Error(
+		throw new PreviewApprovalError(
+			'IDENTITY_MISMATCH',
 			`Preview approval artifact plan ID mismatch: artifact has "${artifact.planId}", release has "${identity.planId}".`,
 		);
 	}
 	validateStorageEvidence(artifact, artifact.hostedValidation!);
 	if (!Object.values(artifact.hostedValidation!.checklistResults).every(Boolean))
-		throw new Error('Preview approval evidence is incomplete.');
+		throw new PreviewApprovalError(
+			'INCOMPLETE_EVIDENCE',
+			'Preview approval evidence is incomplete.',
+		);
 	return artifact;
 }

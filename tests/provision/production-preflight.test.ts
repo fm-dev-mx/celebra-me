@@ -1,7 +1,4 @@
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import type { InvitationPackageData } from '../../scripts/provision/invitation-package.ts';
 import type {
 	ImportEngineOptions,
@@ -22,7 +19,6 @@ import {
 	setDefaultPreviewApprovalStoreForTests,
 } from '../../scripts/provision/preview-approval-store.ts';
 
-const dirs: string[] = [];
 const now = new Date('2026-07-23T12:00:00.000Z');
 const packageHash = 'a'.repeat(64);
 const sourceHash = 'b'.repeat(64);
@@ -34,7 +30,6 @@ const productionProjectRef = 'productionproject';
 
 afterEach(() => {
 	setDefaultPreviewApprovalStoreForTests(null);
-	dirs.splice(0).forEach((dir) => rmSync(dir, { recursive: true, force: true }));
 });
 
 function packageData(content: Record<string, unknown> = {}): InvitationPackageData {
@@ -84,17 +79,8 @@ function approval(overrides: Partial<PreviewApprovalArtifact> = {}): PreviewAppr
 	};
 }
 
-function writeApproval(artifact = approval()): string {
+function writeApproval(artifact = approval()): void {
 	setDefaultPreviewApprovalStoreForTests(createMemoryPreviewApprovalStore([artifact]));
-	const root = mkdtempSync(join(tmpdir(), 'production-preflight-'));
-	dirs.push(root);
-	const approvalsDir = join(root, 'approvals');
-	mkdirSync(approvalsDir, { recursive: true });
-	writeFileSync(
-		join(approvalsDir, `preview-approval-${packageHash.slice(0, 16)}.json`),
-		JSON.stringify(artifact),
-	);
-	return approvalsDir;
 }
 
 function productionPlan(): OperationalPlan {
@@ -168,14 +154,13 @@ describe('Production read-only preflight integration', () => {
 	});
 
 	it('verifies exact approval, intended target, credentials, inspection, and target plan', async () => {
-		const approvalsDir = writeApproval();
+		writeApproval();
 		const runEngine = jest.fn(async (...args: [ImportEngineOptions]) => {
 			void args;
 			return engineResult();
 		});
 		const result = await runProductionPreflight({
 			packageData: packageData(),
-			approvalsDirs: [approvalsDir],
 			now,
 			getProductionDbUrl: () => ({ url: 'postgresql://redacted@production.invalid/db' }),
 			runEngine,
@@ -195,7 +180,6 @@ describe('Production read-only preflight integration', () => {
 		const runEngine = jest.fn(async () => engineResult());
 		const result = await runProductionPreflight({
 			packageData: packageData(),
-			approvalsDirs: [join(tmpdir(), 'does-not-exist')],
 			now,
 			getProductionDbUrl: () => ({ url: 'postgresql://redacted@production.invalid/db' }),
 			runEngine,
@@ -206,11 +190,11 @@ describe('Production read-only preflight integration', () => {
 	});
 
 	it('blocks missing Production credentials without inspection', async () => {
+		writeApproval();
 		const runEngine = jest.fn(async () => engineResult());
 		await expect(
 			runProductionPreflight({
 				packageData: packageData(),
-				approvalsDirs: [writeApproval()],
 				now,
 				getProductionDbUrl: () => {
 					throw new Error('missing secret');
@@ -222,9 +206,9 @@ describe('Production read-only preflight integration', () => {
 	});
 
 	it('treats mismatched intended project ref as unverified approval evidence while allowing preflight', async () => {
+		writeApproval();
 		const result = await runProductionPreflight({
 			packageData: packageData(),
-			approvalsDirs: [writeApproval()],
 			now,
 			getProductionDbUrl: () => ({ url: 'postgresql://redacted@wrong.invalid/db' }),
 			runEngine: async () => engineResult({ projectRef: 'differentproject' }),
@@ -239,9 +223,9 @@ describe('Production read-only preflight integration', () => {
 		['inspection timeout', 'Remote inspection timed out'],
 		['authentication failure', 'authentication failed'],
 	])('sanitizes %s as a blocked inspection without mutation', async (_name, message) => {
+		writeApproval();
 		const error = await runProductionPreflight({
 			packageData: packageData(),
-			approvalsDirs: [writeApproval()],
 			now,
 			getProductionDbUrl: () => ({ url: 'postgresql://redacted@production.invalid/db' }),
 			runEngine: async () => {
@@ -254,10 +238,10 @@ describe('Production read-only preflight integration', () => {
 	});
 
 	it('rejects an empty or malformed inspection result', async () => {
+		writeApproval();
 		await expect(
 			runProductionPreflight({
 				packageData: packageData(),
-				approvalsDirs: [writeApproval()],
 				now,
 				getProductionDbUrl: () => ({ url: 'postgresql://redacted@production.invalid/db' }),
 				runEngine: async () => ({}) as ImportEngineResult,

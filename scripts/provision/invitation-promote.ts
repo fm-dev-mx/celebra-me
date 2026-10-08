@@ -30,10 +30,13 @@ import {
 	type ImportEngineResult,
 } from './invitation-import-engine.ts';
 import { assertEngineResult } from './invitation-engine-result.ts';
+import { type PreviewApprovalArtifact } from './preview-approval-service.ts';
 import {
-	verifyPreviewApprovalArtifact,
-	type PreviewApprovalArtifact,
-} from './preview-approval-service.ts';
+	describeApprovalFailure,
+	missingApprovalReason,
+	requireApprovedRelease,
+	type PromotionApprovalFailure,
+} from './promotion-approval-failure.ts';
 import { getDefaultPreviewApprovalStore } from './preview-approval-store.ts';
 import {
 	verifyPreviewArtifactLive,
@@ -56,6 +59,7 @@ import {
 } from './promotion-divergence.ts';
 
 export { classifyPromotionDifferences } from './promotion-divergence.ts';
+export { describeApprovalFailure, type PromotionApprovalFailure };
 
 export type PromotionTerminalStatus =
 	'PROMOTABLE' | 'PROMOTED' | 'IN_SYNC' | 'BLOCKED' | 'APPLIED_BUT_VERIFICATION_FAILED';
@@ -104,6 +108,8 @@ export interface PromotionPreflightReport {
 	projectionHash: string;
 	assetManifestHash: string;
 	approval?: PreviewApprovalArtifact;
+	/** Set when no exact approval was verified; an IN_SYNC report may still carry it. */
+	approvalFailure?: PromotionApprovalFailure;
 	productionProjectRef?: string;
 	schema: PromotionSchemaGateResult;
 	backup: PromotionBackupGateResult;
@@ -306,37 +312,6 @@ export function evaluatePromotionBackupGate(input: {
 	}
 }
 
-function requireApprovedRelease(
-	packageData: InvitationPackageData,
-	approvalsDirs?: string[],
-	now?: Date,
-	intendedProductionProjectRef?: string,
-	liveRecheck?: PreviewLiveVerificationResult,
-): PreviewApprovalArtifact {
-	try {
-		return verifyPreviewApprovalArtifact(
-			{
-				packageHash: packageData.packageHash,
-				sourceHash: packageData.sourceHash,
-				metadataHash: packageData.metadataHash,
-				projectionHash: packageData.projectionHash,
-				assetManifestHash: packageData.assetManifestHash,
-				slug: packageData.invitation.slug,
-				route: `/${packageData.invitation.eventType}/${packageData.invitation.slug}`,
-				intendedProductionProjectRef,
-			},
-			liveRecheck ? { now, liveRecheck } : approvalsDirs,
-			liveRecheck ? undefined : now,
-		);
-	} catch (error) {
-		throw new ProductionPreflightError(
-			'MISSING_PREVIEW_APPROVAL',
-			`MISSING_PREVIEW_APPROVAL: exact approved Preview release is required. ${error instanceof Error ? error.message : String(error)}`,
-			error,
-		);
-	}
-}
-
 /** The engine gate may arrive wrapped by the Production preflight error. */
 function findManagedMemoriesReferenceError(error: unknown): ManagedMemoriesReferenceError | null {
 	if (error instanceof ManagedMemoriesReferenceError) return error;
@@ -353,7 +328,6 @@ function findManagedMemoriesReferenceError(error: unknown): ManagedMemoriesRefer
 export async function runPromotionPreflight(input: {
 	packageData: InvitationPackageData;
 	ownerUserId?: string;
-	approvalsDirs?: string[];
 	now?: Date;
 	assetPolicy?: AssetPolicy;
 	pruneAssets?: boolean;
@@ -369,7 +343,10 @@ export async function runPromotionPreflight(input: {
 	evaluateSchema?: typeof evaluatePromotionSchemaGate;
 	evaluateBackup?: typeof evaluatePromotionBackupGate;
 	liveRecheck?: PreviewLiveVerificationResult;
-	runLiveVerification?: typeof verifyPreviewArtifactLive;
+	/** Live Preview recheck for a stored approval; `null` falls back to the 7-day approval window. */
+	runLiveVerification?: (
+		artifact: PreviewApprovalArtifact,
+	) => Promise<PreviewLiveVerificationResult | null>;
 	/** When true, an unpublished draft whose content diverges from the package is silently
 	 *  discarded in favour of the incoming package content. */
 	acknowledgeDiscardUnpublishedDraft?: boolean;
@@ -472,40 +449,25 @@ export async function runPromotionPreflight(input: {
 	}
 
 	let liveRecheck = input.liveRecheck;
-	if (!liveRecheck && !input.approvalsDirs) {
+	if (!liveRecheck) {
 		const storedApproval = getDefaultPreviewApprovalStore().get(input.packageData.packageHash);
 		if (storedApproval) {
-			liveRecheck = await (input.runLiveVerification ?? verifyPreviewArtifactLive)(
-				storedApproval,
-			);
+			liveRecheck =
+				(await (input.runLiveVerification ?? verifyPreviewArtifactLive)(storedApproval)) ??
+				undefined;
 		}
 	}
 
-	let approval: PreviewApprovalArtifact;
+	// Approval is evaluated here but enforced after the read-only Production dry-run: planning
+	// never writes, so an unapproved package that already matches Production reports IN_SYNC
+	// instead of a non-actionable block. Any package that would write still needs the exact
+	// approval (checked below and again by the volatile revalidation before apply).
+	let approval: PreviewApprovalArtifact | undefined;
+	let approvalFailure: PromotionApprovalFailure | undefined;
 	try {
-		approval = requireApprovedRelease(
-			input.packageData,
-			input.approvalsDirs,
-			input.now,
-			undefined,
-			liveRecheck,
-		);
+		approval = requireApprovedRelease(input.packageData, input.now, undefined, liveRecheck);
 	} catch (error) {
-		return {
-			...base,
-			status: 'BLOCKED',
-			blockCode: 'MISSING_PREVIEW_APPROVAL',
-			reason: error instanceof Error ? error.message : String(error),
-			schema,
-			backup: (input.evaluateBackup ?? evaluatePromotionBackupGate)({
-				manifestPath: input.backupManifestPath,
-				backupRoot: input.backupRoot,
-				required: input.requireBackup !== false,
-				now: input.now,
-			}),
-			divergence: emptyDivergence(),
-			targetDbUrl,
-		};
+		approvalFailure = describeApprovalFailure(error);
 	}
 
 	let preflight: ProductionPreflightResult;
@@ -513,7 +475,6 @@ export async function runPromotionPreflight(input: {
 		preflight = await runProductionPreflight({
 			packageData: input.packageData,
 			ownerUserId: input.ownerUserId,
-			approvalsDirs: input.approvalsDirs,
 			now: input.now,
 			assetPolicy: input.assetPolicy,
 			pruneAssets: input.pruneAssets,
@@ -535,11 +496,12 @@ export async function runPromotionPreflight(input: {
 				blockCode: 'MANAGED_DIVERGENCE',
 				reason: 'Unresolved Production managed divergence blocks promotion. Resolve semantically before apply; Production must not be blindly replaced by Preview.',
 				approval,
+				approvalFailure,
 				schema,
 				backup: (input.evaluateBackup ?? evaluatePromotionBackupGate)({
 					manifestPath: input.backupManifestPath,
 					backupRoot: input.backupRoot,
-					productionProjectRef: approval.intendedProductionProjectRef,
+					productionProjectRef: approval?.intendedProductionProjectRef,
 					required: input.requireBackup !== false,
 					now: input.now,
 				}),
@@ -555,11 +517,12 @@ export async function runPromotionPreflight(input: {
 				blockCode: 'MEMORIES_SPACE_REFERENCE',
 				reason: memoriesError.message,
 				approval,
+				approvalFailure,
 				schema,
 				backup: (input.evaluateBackup ?? evaluatePromotionBackupGate)({
 					manifestPath: input.backupManifestPath,
 					backupRoot: input.backupRoot,
-					productionProjectRef: approval.intendedProductionProjectRef,
+					productionProjectRef: approval?.intendedProductionProjectRef,
 					required: input.requireBackup !== false,
 					now: input.now,
 				}),
@@ -583,11 +546,12 @@ export async function runPromotionPreflight(input: {
 			blockCode: isDivergence ? 'MANAGED_DIVERGENCE' : code,
 			reason: message,
 			approval,
+			approvalFailure,
 			schema,
 			backup: (input.evaluateBackup ?? evaluatePromotionBackupGate)({
 				manifestPath: input.backupManifestPath,
 				backupRoot: input.backupRoot,
-				productionProjectRef: approval.intendedProductionProjectRef,
+				productionProjectRef: approval?.intendedProductionProjectRef,
 				required: input.requireBackup !== false,
 				now: input.now,
 			}),
@@ -596,11 +560,53 @@ export async function runPromotionPreflight(input: {
 		};
 	}
 
+	if (!approval) {
+		const failure = approvalFailure ?? describeApprovalFailure(undefined);
+		if (preflight.engineResult.isZeroDrift) {
+			// Nothing would be written, so approval is not required to report the match.
+			return {
+				...base,
+				status: 'IN_SYNC',
+				approvalFailure: failure,
+				productionProjectRef: preflight.engineResult.projectRef,
+				schema,
+				backup: (input.evaluateBackup ?? evaluatePromotionBackupGate)({
+					manifestPath: input.backupManifestPath,
+					backupRoot: input.backupRoot,
+					productionProjectRef: preflight.engineResult.projectRef,
+					required: false,
+					now: input.now,
+				}),
+				divergence: emptyDivergence(),
+				engineResult: preflight.engineResult,
+				targetDbUrl,
+			};
+		}
+		return {
+			...base,
+			status: 'BLOCKED',
+			blockCode: 'MISSING_PREVIEW_APPROVAL',
+			reason: missingApprovalReason(slug, failure),
+			approvalFailure: failure,
+			productionProjectRef: preflight.engineResult.projectRef,
+			schema,
+			backup: (input.evaluateBackup ?? evaluatePromotionBackupGate)({
+				manifestPath: input.backupManifestPath,
+				backupRoot: input.backupRoot,
+				productionProjectRef: preflight.engineResult.projectRef,
+				required: input.requireBackup !== false,
+				now: input.now,
+			}),
+			divergence: emptyDivergence(),
+			engineResult: preflight.engineResult,
+			targetDbUrl,
+		};
+	}
+
 	// Re-verify approval against the exact Production project discovered by planning.
 	try {
 		approval = requireApprovedRelease(
 			input.packageData,
-			input.approvalsDirs,
 			input.now,
 			preflight.engineResult.projectRef,
 			liveRecheck,
@@ -718,7 +724,7 @@ export async function runPromotionApply(input: {
 			applyResult: input.preflight.engineResult,
 			verification: {
 				ok: true,
-				detail: 'Production already matches the approved managed release; no mutation performed.',
+				detail: 'Production already matches the managed release; no mutation performed.',
 				schema: input.preflight.schema,
 				managedConflicts: 0,
 				provenancePackageHash: input.packageData.packageHash,

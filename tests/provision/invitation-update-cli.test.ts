@@ -1,4 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
+import type { InvitationDefinition } from '../../scripts/provision/invitations/invitation-definition.ts';
 import {
 	buildStatusReport,
 	parseStatusOptions,
@@ -8,6 +9,59 @@ import {
 	formatDryRunPlan,
 	formatApplyResult,
 } from '../../scripts/provision/invitation-update-presenter.ts';
+
+function statusDefinition(slug: string, archived: boolean): InvitationDefinition {
+	return {
+		slug,
+		title: slug,
+		createdAt: '2026-07-20T00:00:00.000Z',
+		lifecycle: 'published',
+		...(archived ? { archive: { decidedOn: '2026-10-08', reason: 'Demo publicado' } } : {}),
+	} as InvitationDefinition;
+}
+
+const statusSources = {
+	listDefinitions: () => [
+		statusDefinition('active-one', false),
+		statusDefinition('past-one', true),
+	],
+};
+
+describe('invitation:release --status archived definitions', () => {
+	type ArchivedReport = {
+		definitions: Array<{ slug: string; archived: boolean }>;
+		archived: { count: number; slugs: string[]; included: boolean };
+	};
+
+	it('leaves archived definitions out and counts them apart', () => {
+		const report = buildStatusReport({ targets: ['local'] }, statusSources) as ArchivedReport;
+		expect(report.definitions.map((d) => d.slug)).toEqual(['active-one']);
+		expect(report.archived).toEqual({ count: 1, slugs: ['past-one'], included: false });
+	});
+
+	it('lists them with --include-archived or an explicit slug', () => {
+		const included = buildStatusReport(
+			{ targets: ['local'], includeArchived: true },
+			statusSources,
+		) as ArchivedReport;
+		expect(included.definitions.map((d) => d.slug).sort()).toEqual(['active-one', 'past-one']);
+		const bySlug = buildStatusReport(
+			{ slug: 'past-one', targets: ['local'] },
+			statusSources,
+		) as ArchivedReport;
+		expect(bySlug.definitions).toEqual([
+			expect.objectContaining({ slug: 'past-one', archived: true }),
+		]);
+	});
+
+	it('prints the archived count in Spanish', () => {
+		const report = buildStatusReport({ targets: ['local'] }, statusSources);
+		const formatted = formatStatusReport(report as never);
+		expect(formatted).toContain(
+			'Archivadas            : 1 (excluidas; use --include-archived para listarlas) — past-one',
+		);
+	});
+});
 
 describe('Managed Invitation CLI Dispatcher & Presenter Contracts', () => {
 	it('preserves target and slug selection in options model', () => {

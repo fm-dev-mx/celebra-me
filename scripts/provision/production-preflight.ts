@@ -54,7 +54,6 @@ export function assertNoPendingPublishedPlaceholders(
 export async function runProductionPreflight(input: {
 	packageData: InvitationPackageData;
 	ownerUserId?: string;
-	approvalsDirs?: string[];
 	now?: Date;
 	assetPolicy?: AssetPolicy;
 	pruneAssets?: boolean;
@@ -83,13 +82,10 @@ export async function runProductionPreflight(input: {
 
 	let initialApproval: PreviewApprovalArtifact | undefined;
 	try {
-		initialApproval = verifyPreviewApprovalArtifact(
-			identity,
-			input.liveRecheck
-				? { now: input.now, liveRecheck: input.liveRecheck }
-				: input.approvalsDirs,
-			input.liveRecheck ? undefined : input.now,
-		);
+		initialApproval = verifyPreviewApprovalArtifact(identity, {
+			now: input.now,
+			liveRecheck: input.liveRecheck,
+		});
 	} catch {
 		initialApproval = undefined;
 	}
@@ -125,10 +121,7 @@ export async function runProductionPreflight(input: {
 			try {
 				finalApproval = verifyPreviewApprovalArtifact(
 					{ ...identity, intendedProductionProjectRef: engineResult.projectRef },
-					input.liveRecheck
-						? { now: input.now, liveRecheck: input.liveRecheck }
-						: input.approvalsDirs,
-					input.liveRecheck ? undefined : input.now,
+					{ now: input.now, liveRecheck: input.liveRecheck },
 				);
 			} catch {
 				finalApproval = undefined;

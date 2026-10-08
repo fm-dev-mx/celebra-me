@@ -4,7 +4,7 @@
  * Central sitemap/registry for single-file invitation definitions.
  */
 
-import type { InvitationDefinition } from './invitation-definition.ts';
+import { isArchivedInvitation, type InvitationDefinition } from './invitation-definition.ts';
 import { allisonInvitation } from './allison-scarlett.ts';
 import { normaInvitation } from './norma-hernandez.ts';
 import { albaInvitation } from './alba-rosa-quinonez.ts';
@@ -123,4 +123,14 @@ export function getInvitationDefinition(slug: string): InvitationDefinition {
  */
 export function listInvitationDefinitions(): InvitationDefinition[] {
 	return Array.from(registry.values());
+}
+
+/** Definitions that still take part in release planning (owner has not archived them). */
+export function listActiveInvitationDefinitions(): InvitationDefinition[] {
+	return listInvitationDefinitions().filter((definition) => !isArchivedInvitation(definition));
+}
+
+/** Owner-archived definitions, reported apart from release planning. */
+export function listArchivedInvitationDefinitions(): InvitationDefinition[] {
+	return listInvitationDefinitions().filter(isArchivedInvitation);
 }

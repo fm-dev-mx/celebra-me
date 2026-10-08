@@ -65,7 +65,12 @@ function headerFacts(): string[] {
 	);
 	try {
 		const backup = evaluateCriticalBackupHealth();
-		facts.push(t.mark(backup.attention ? 'warn' : 'ok', `backup ${backup.summary}`));
+		facts.push(
+			t.mark(
+				backup.attention ? 'warn' : 'ok',
+				`backup${backup.checkoutLabel ? ` [${backup.checkoutLabel}]` : ''} ${backup.summary}`,
+			),
+		);
 	} catch {
 		facts.push(t.mark('warn', 'backup health unknown'));
 	}

@@ -28,6 +28,7 @@ are no longer registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation 
 | `pnpm dbs`                           | Human / agent | `scripts/provision/dbs-cli.ts`                                | Canonical read-only matrix: schema, publication, readiness, Production authorization |
 | `pnpm dbs --compact`                 | Human / agent | `scripts/provision/managed-status.ts`                         | Connectivity CONTENT + SCHEMA only (not publication; Git-hook friendly)              |
 | `pnpm invitation:release`            | Human / agent | `scripts/provision/invitation-release-cli.ts`                 | Define, plan, apply, approve, and release managed invitations                        |
+| `pnpm invitation:hash-baseline`      | Human / agent | `scripts/provision/release-hash-baseline.ts`                  | Read-only packageHash guard for active invitations; `--update` after a release       |
 | `pnpm invitation:reconcile`          | Human / agent | `scripts/provision/invitation-reconcile-cli.ts`               | Guided Local/Preview managed divergence reconciliation                               |
 | `pnpm invitation:content-parity`     | Human / agent | `scripts/provision/content-parity-cli.ts`                     | Read-only semantic content parity (excludes RSVP/PII)                                |
 | `pnpm invitation:preview-fixture`    | Human / agent | `scripts/provision/preview-e2e-fixture-cli.ts`                | Preview-only E2E fixture bootstrap (not Dashboard create)                            |

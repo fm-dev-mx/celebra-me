@@ -199,8 +199,9 @@ execution-boundary separation.
 - **Owner-only Production apply:** Canonical human path is `pnpm prod:apply` (plan by default;
   `--schema` / `--slug` / `--slugs` / `--all-ready` / `--patch` + `--apply`). It delegates to
   `db:migrate` and `orchestrateInvitationPromotion`. Agents must not execute Production `--apply`.
-  Schema incompatibility is applied first in a mixed plan, or pointed to `--schema` (never
-  auto-migrated from `invitation:release`).
+  Owner-archived definitions are excluded from discovery plans; agents never add an `archive` record
+  without the owner's explicit choice. Schema incompatibility is applied first in a mixed plan, or
+  pointed to `--schema` (never auto-migrated from `invitation:release`).
 
 ## Schema lifecycle contract
 
