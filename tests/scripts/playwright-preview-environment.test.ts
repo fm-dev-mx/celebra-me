@@ -480,6 +480,16 @@ describe('Playwright Preview environment', () => {
 		const ignore = readFileSync(join(process.cwd(), '.gitignore'), 'utf8');
 		expect(ignore).toContain(`${PREVIEW_OUTPUT_ROOT}/`);
 
+		const factory = readFileSync(
+			join(process.cwd(), 'scripts', 'playwright', 'preview-config.ts'),
+			'utf8',
+		);
+		expect(factory).toContain("trace: 'off'");
+		expect(factory).toContain("screenshot: 'off'");
+		expect(factory).toContain("video: 'off'");
+		expect(factory).toContain('storageState: undefined');
+		expect(factory).toContain("preserveOutput: 'never'");
+
 		for (const config of [
 			'playwright.preview.config.ts',
 			'playwright.preview-public.config.ts',
@@ -487,11 +497,12 @@ describe('Playwright Preview environment', () => {
 			'playwright.preview-publication.config.ts',
 		]) {
 			const source = readFileSync(join(process.cwd(), config), 'utf8');
-			expect(source).toContain("trace: 'off'");
-			expect(source).toContain("screenshot: 'off'");
-			expect(source).toContain("video: 'off'");
-			expect(source).toContain('storageState: undefined');
-			expect(source).toContain("preserveOutput: 'never'");
+			// Every Preview config validates its own environment at load time, then delegates the
+			// shared artifact-free shape to the factory without overriding it.
+			expect(source).toContain('loadPlaywrightEnvironment();');
+			expect(source).toMatch(/validate(?:Authenticated|ReadOnly)PreviewEnvironment\(/u);
+			expect(source).toContain('export default definePreviewPlaywrightConfig({');
+			expect(source).not.toMatch(/defineConfig\(|trace:|screenshot:|video:|storageState:/u);
 		}
 	});
 });
