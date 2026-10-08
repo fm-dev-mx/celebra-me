@@ -279,6 +279,38 @@ const isDemoConversion = Boolean(
 						window.addEventListener('envelope:opened', paint, { once: true });
 					})();
 				</script>
+				<script is:inline>
+					// Photograph loading state: each image gets `is-loaded` once its bytes have arrived
+					// (`is-instant` as well when it was already complete before the first paint), and the
+					// wrapper gets `has-image-fade`, so a profile that declares `--image-fade-animation` fades
+					// late images in over its own placeholder. Without this script nothing is hidden.
+					(function() {
+						const wrapper = document.currentScript ? document.currentScript.closest('.event-theme-wrapper') : null;
+						if (!wrapper) return;
+						// Opt-in: only a profile that declares the fade animation hides late images.
+						if (!getComputedStyle(wrapper).getPropertyValue('--image-fade-animation').trim()) return;
+						const mark = (image, instant) => {
+							image.classList.add('is-loaded');
+							if (instant) image.classList.add('is-instant');
+						};
+						const settle = (event) => {
+							if (event.target instanceof HTMLImageElement) mark(event.target, document.readyState === 'loading');
+						};
+						wrapper.addEventListener('load', settle, true);
+						wrapper.addEventListener('error', settle, true);
+						const scan = () => {
+							wrapper.querySelectorAll('img:not(.is-loaded)').forEach((image) => {
+								if (image.complete) mark(image, true);
+							});
+						};
+						wrapper.classList.add('has-image-fade');
+						if (document.readyState === 'loading') {
+							document.addEventListener('DOMContentLoaded', scan, { once: true });
+						} else {
+							scan();
+						}
+					})();
+				</script>
 				{
 					!skipEnvelope && page.envelope && page.envelope.revealVariant !== 'editorial-cover' && (
 						<script is:inline>
