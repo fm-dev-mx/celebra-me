@@ -46,10 +46,10 @@ is: acquire invitation serialization → read receipt by `operation_id` → retu
 retry → otherwise mutate → insert exactly one receipt → commit. Unique `operation_id` is the final
 duplicate-receipt defense. Latest managed provenance is the reconciliation baseline, not a journal.
 Field authority is executable in `src/lib/intake/mutations/ownership.ts`: definitions manage event
-type, base demo, theme, kind, and snapshot; title, route slug, client metadata, owner, and login
-alias are seeds that become target-owned. Drafts/assets are reconciled, published content is
-publication-owned, event linkage is invitation-managed, and guest confirmations/audit are
-RSVP-owned.
+type, base demo and snapshot (legacy, scheduled for removal), theme, and kind; title, route slug,
+client metadata, owner, and login alias are seeds that become target-owned. Drafts/assets are
+reconciled, published content is publication-owned, event linkage is invitation-managed, and guest
+confirmations/audit are RSVP-owned.
 
 Structural reconciliation distinguishes absent, `null`, unchanged, and removed values. Managed
 assets carry explicit definition/key/hash/operation ownership; only reviewed, unreferenced assets
@@ -222,8 +222,8 @@ This keeps middleware authorization aligned with the elevated session state.
 
 ## 7) Content Collections
 
-Astro content collections (`src/content/**`) are used for public demos and internal event templates.
-They are not a temporary fallback for real/client invitations.
+Astro content collections (`src/content/**`) are used only for public demos (`event-demos`). They
+are not a temporary fallback for real/client invitations.
 
 ### Active Collection Layout
 

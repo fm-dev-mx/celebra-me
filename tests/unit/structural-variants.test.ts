@@ -22,7 +22,7 @@ const baseInput = {
 
 describe('canonical section variant contracts', () => {
 	it('keeps the complete closed vocabulary in one registry', () => {
-		expect(CANONICAL_VARIANT_REGISTRY).toHaveLength(51);
+		expect(CANONICAL_VARIANT_REGISTRY).toHaveLength(52);
 		expect(CANONICAL_VARIANT_REGISTRY.filter((entry) => entry.default)).toHaveLength(10);
 		expect(
 			CANONICAL_VARIANT_REGISTRY.map((entry) => `${entry.section}.${entry.variant}`),

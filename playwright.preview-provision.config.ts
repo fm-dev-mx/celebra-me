@@ -1,8 +1,7 @@
-import { defineConfig, devices } from '@playwright/test';
+import { definePreviewPlaywrightConfig } from './scripts/playwright/preview-config';
 import {
 	loadPlaywrightEnvironment,
 	PREVIEW_DRAFT_RATE_LIMIT_WINDOW_MS,
-	PREVIEW_OUTPUT_ROOT,
 	validateAuthenticatedPreviewEnvironment,
 } from './scripts/playwright/preview-environment';
 
@@ -12,24 +11,10 @@ const preview = validateAuthenticatedPreviewEnvironment(process.env, {
 });
 process.env.PLAYWRIGHT_PREVIEW_EXECUTION_MODE = 'provision';
 
-export default defineConfig({
-	testDir: './tests/e2e/preview',
+export default definePreviewPlaywrightConfig({
+	baseURL: preview.runtime.baseURL,
 	testMatch: ['provision-preview-fixture.spec.ts'],
 	timeout: PREVIEW_DRAFT_RATE_LIMIT_WINDOW_MS * 3,
-	fullyParallel: false,
-	forbidOnly: true,
-	retries: 0,
-	workers: 1,
-	reporter: 'list',
-	outputDir: `${PREVIEW_OUTPUT_ROOT}/preview-provision`,
-	preserveOutput: 'never',
-	use: {
-		...devices['Desktop Chrome'],
-		baseURL: preview.runtime.baseURL,
-		trace: 'off',
-		screenshot: 'off',
-		video: 'off',
-		storageState: undefined,
-	},
-	projects: [{ name: 'preview-fixture-provision' }],
+	outputName: 'preview-provision',
+	projectName: 'preview-fixture-provision',
 });

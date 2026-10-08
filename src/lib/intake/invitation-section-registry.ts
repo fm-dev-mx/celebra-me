@@ -10,6 +10,19 @@ import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation
 export const PUBLIC_SECTION_IDS = ['hero', ...INVITATION_RENDER_SECTION_KEYS] as const;
 
 export type PublicSectionId = (typeof PUBLIC_SECTION_IDS)[number];
+
+/**
+ * Sections owned by managed releases only. The dashboard never lists, toggles, or
+ * reorders them, and every draft round-trip must preserve them (see
+ * `reconcileManagedSectionOrder`).
+ */
+export const MANAGED_ONLY_SECTION_KEYS = ['memories'] as const;
+
+export type ManagedOnlySectionKey = (typeof MANAGED_ONLY_SECTION_KEYS)[number];
+
+export function isManagedOnlySectionKey(value: string): value is ManagedOnlySectionKey {
+	return (MANAGED_ONLY_SECTION_KEYS as readonly string[]).includes(value);
+}
 export type EditorSidebarGroup = 'public' | 'config';
 export type EditorSectionId =
 	| PublicSectionId
@@ -158,6 +171,18 @@ export const PUBLIC_SECTION_DEFINITIONS: Record<PublicSectionId, EditorSectionDe
 		isToggleable: true,
 		previewAnchor: '#thank-you-section',
 	},
+	memories: {
+		id: 'memories',
+		label: 'Recuerdos de invitados',
+		sidebarGroup: 'public',
+		editorCardId: undefined,
+		saveSectionKey: undefined,
+		draftContentKeys: [],
+		isRequired: false,
+		isOrderable: false,
+		isToggleable: false,
+		previewAnchor: '#memories',
+	},
 	personalizedAccess: {
 		id: 'personalizedAccess',
 		label: 'Acceso personalizado',
@@ -261,8 +286,11 @@ const CONFIG_SECTION_ORDER = [
 
 // ===== Helpers =====
 
+/** Editor-facing public sections; managed-only sections are never listed. */
 export function getPublicSectionDefinitions(): EditorSectionDefinition[] {
-	return PUBLIC_SECTION_IDS.map((id) => PUBLIC_SECTION_DEFINITIONS[id]);
+	return PUBLIC_SECTION_IDS.filter((id) => !isManagedOnlySectionKey(id)).map(
+		(id) => PUBLIC_SECTION_DEFINITIONS[id],
+	);
 }
 
 export function getConfigEditorSections(options?: {
@@ -327,7 +355,10 @@ export function deriveOrderedPublicSections(sectionOrder?: string[]): EditorSect
 		.map((id) => PUBLIC_SECTION_DEFINITIONS[id as InvitationRenderSectionKey])
 		.filter(
 			(def): def is EditorSectionDefinition =>
-				def !== undefined && def.sidebarGroup === 'public' && def.id !== 'hero',
+				def !== undefined &&
+				def.sidebarGroup === 'public' &&
+				def.id !== 'hero' &&
+				!isManagedOnlySectionKey(def.id),
 		);
 	return [heroDef, ...rest];
 }
@@ -352,5 +383,3 @@ export function getSectionVisibilityStatus(
 	if (!hasContent) return 'Vacía';
 	return sectionOrder.includes(sectionId) ? 'Visible' : 'Oculta';
 }
-
-// ===== Sidebar Grouping =====

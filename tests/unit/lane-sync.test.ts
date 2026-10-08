@@ -184,6 +184,61 @@ describe('lane:sync observability', () => {
 		expect(result.stdout).toContain('rebased');
 	});
 
+	it('reports in dry-run that --apply would be refused without a Git Safety baseline', () => {
+		const calls: string[][] = [];
+		const result = runLaneSync({
+			cwd: fs.mkdtempSync(path.join(os.tmpdir(), 'lane-sync-dry-run-baseline-')),
+			runGit: gitRunner({ calls }),
+			skipStatus: true,
+		});
+		expect(result.gitOk).toBe(true);
+		expect(result.gitMode).toBe('dry-run');
+		expect(result.applyPreflight).toEqual({
+			ok: false,
+			reason: 'missing-git-safety-baseline',
+		});
+		expect(result.stdout).toContain(
+			'--apply would be refused (missing-git-safety-baseline): BLOCKED: run agent:git-safety:start',
+		);
+		// Read-only: no fetch and no synchronization command.
+		expect(calls.some((args) => ['fetch', 'merge', 'rebase'].includes(args[0] ?? ''))).toBe(
+			false,
+		);
+	});
+
+	it('reports in dry-run a baseline that no longer matches HEAD', () => {
+		const cwd = applyFixture();
+		fs.writeFileSync(
+			path.join(cwd, '.agent', 'tmp', 'git-safety-baseline.json'),
+			JSON.stringify({ branch: 'feature/test', head: 'stale000' }),
+		);
+		const result = runLaneSync({ cwd, runGit: gitRunner(), skipStatus: true });
+		expect(result.gitOk).toBe(true);
+		expect(result.applyPreflight).toEqual({
+			ok: false,
+			reason: 'git-safety-baseline-mismatch',
+		});
+	});
+
+	it('reports in dry-run a passing --apply preflight', () => {
+		const result = runLaneSync({ cwd: applyFixture(), runGit: gitRunner(), skipStatus: true });
+		expect(result.gitOk).toBe(true);
+		expect(result.gitMode).toBe('dry-run');
+		expect(result.applyPreflight).toEqual({ ok: true });
+		expect(result.stdout).toContain('--apply preflight passes');
+	});
+
+	it('does not report a dry-run preflight on --apply', () => {
+		const result = runLaneSync({
+			apply: true,
+			cwd: applyFixture(),
+			runGit: gitRunner(),
+			skipStatus: true,
+		});
+		expect(result.applyPreflight).toBeUndefined();
+		expect(result.stdout).not.toContain('dry-run');
+	});
+
 	it('rejects conflicting sync modes', () => {
 		const result = runLaneSync({
 			apply: true,

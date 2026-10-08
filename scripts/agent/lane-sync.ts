@@ -6,7 +6,7 @@
  * Never blocks Git success on remote DB availability. Honors CELEBRA_SKIP_MANAGED_STATUS.
  *
  * Usage:
- *   pnpm lane:sync                 # read-only plan using local refs
+ *   pnpm lane:sync                 # read-only plan using local refs (+ --apply preflight report)
  *   pnpm lane:sync -- --apply      # fetch and synchronize (requires preflight)
  *   pnpm lane:sync -- --dry-run
  *   pnpm lane:sync -- --skip-status
@@ -38,6 +38,8 @@ export interface LaneSyncResult {
 	gitMode: 'merge' | 'ff-only' | 'rebase' | 'already-aligned' | 'dry-run' | 'skipped';
 	statusRan: boolean;
 	statusSkippedReason?: string;
+	/** Dry-run only: the read-only result of the --apply preflight (clean lane, branch, baseline). */
+	applyPreflight?: { ok: boolean; reason?: string };
 	stdout: string;
 }
 
@@ -328,8 +330,18 @@ export function runLaneSync(options: LaneSyncOptions = {}): LaneSyncResult {
 		};
 	}
 	const dryRun = options.apply !== true || options.dryRun === true;
+	const runGit = options.runGit ?? defaultRunGit;
+	// The preflight only reads Git state and baseline files, so a dry-run reports it too.
+	const preflight = checkApplyPreconditions(cwd, runGit);
+	const applyPreflight = dryRun
+		? preflight.ok
+			? { ok: true }
+			: { ok: false, reason: preflight.reason }
+		: undefined;
+	const preflightLine = preflight.ok
+		? '[lane:sync] dry-run: --apply preflight passes (clean lane, task branch, matching Git Safety baseline)'
+		: `[lane:sync] dry-run: --apply would be refused (${preflight.reason}): ${preflight.message}`;
 	if (!dryRun) {
-		const preflight = checkApplyPreconditions(cwd, options.runGit ?? defaultRunGit);
 		if (!preflight.ok) {
 			return {
 				gitOk: false,
@@ -344,14 +356,16 @@ export function runLaneSync(options: LaneSyncOptions = {}): LaneSyncResult {
 		cwd,
 		dryRun,
 		mode: resolveSyncMode(options),
-		runGit: options.runGit ?? defaultRunGit,
+		runGit,
 	});
+	if (dryRun) sync.lines.push(preflightLine);
 	if (!sync.gitOk) {
 		return {
 			gitOk: false,
 			gitMode: sync.gitMode,
 			statusRan: false,
 			statusSkippedReason: sync.statusSkippedReason,
+			...(applyPreflight ? { applyPreflight } : {}),
 			stdout: sync.lines.filter(Boolean).join('\n'),
 		};
 	}
@@ -364,6 +378,7 @@ export function runLaneSync(options: LaneSyncOptions = {}): LaneSyncResult {
 		gitMode: sync.gitMode,
 		statusRan: status.statusRan,
 		statusSkippedReason: status.statusSkippedReason,
+		...(applyPreflight ? { applyPreflight } : {}),
 		stdout: sync.lines.filter(Boolean).join('\n'),
 	};
 }

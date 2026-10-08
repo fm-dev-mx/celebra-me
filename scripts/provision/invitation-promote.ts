@@ -47,6 +47,7 @@ import {
 import { type ConflictResolutions, type UpdateScope } from './semantic-delta.ts';
 import type { AssetPolicy } from './asset-reconciliation.ts';
 import type { OperationalPlan } from './invitation-update-plan.ts';
+import { ManagedMemoriesReferenceError } from './managed-memories-reference.ts';
 import {
 	divergenceFromManagedBaseline,
 	divergenceFromMergeConflict,
@@ -69,7 +70,8 @@ export type PromotionBlockCode =
 	| 'MANAGED_DIVERGENCE'
 	| 'CONFIRMATION_REQUIRED'
 	| 'VERIFICATION_FAILED'
-	| 'CLOUDINARY_ERA_HOSTING';
+	| 'CLOUDINARY_ERA_HOSTING'
+	| 'MEMORIES_SPACE_REFERENCE';
 
 export interface PromotionSchemaGateResult {
 	state: SchemaLifecycleState;
@@ -335,6 +337,17 @@ function requireApprovedRelease(
 	}
 }
 
+/** The engine gate may arrive wrapped by the Production preflight error. */
+function findManagedMemoriesReferenceError(error: unknown): ManagedMemoriesReferenceError | null {
+	if (error instanceof ManagedMemoriesReferenceError) return error;
+	if (error instanceof ProductionPreflightError) {
+		return error.technicalCause instanceof ManagedMemoriesReferenceError
+			? error.technicalCause
+			: null;
+	}
+	return null;
+}
+
 /** Orchestrates approval, schema, backup, and Production dry-run planning. */
 // eslint-disable-next-line complexity -- Promotion preflight is intentionally a single ordered gate sequence.
 export async function runPromotionPreflight(input: {
@@ -531,6 +544,26 @@ export async function runPromotionPreflight(input: {
 					now: input.now,
 				}),
 				divergence,
+				targetDbUrl,
+			};
+		}
+		const memoriesError = findManagedMemoriesReferenceError(error);
+		if (memoriesError) {
+			return {
+				...base,
+				status: 'BLOCKED',
+				blockCode: 'MEMORIES_SPACE_REFERENCE',
+				reason: memoriesError.message,
+				approval,
+				schema,
+				backup: (input.evaluateBackup ?? evaluatePromotionBackupGate)({
+					manifestPath: input.backupManifestPath,
+					backupRoot: input.backupRoot,
+					productionProjectRef: approval.intendedProductionProjectRef,
+					required: input.requireBackup !== false,
+					now: input.now,
+				}),
+				divergence: emptyDivergence(),
 				targetDbUrl,
 			};
 		}

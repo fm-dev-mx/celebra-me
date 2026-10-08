@@ -31,7 +31,8 @@
 		box-shadow:
 			0 4px 12px rgb(var(--color-action-primary-rgb, 31 37 41) / 8%),
 			inset 0 0 0 1px rgb(255 255 255 / 50%);
-		animation: musicPlayerFadeInSlide var(--duration-slower) var(--ease-premium);
+		animation: musicPlayerFadeInSlide
+			var(--music-player-prompt-duration, var(--duration-slower)) var(--ease-premium);
 		white-space: nowrap;
 
 		&::before {
@@ -41,11 +42,14 @@
 		}
 
 		&.is-fading-in {
-			animation: musicPlayerFadeInSlide var(--duration-standard) forwards var(--ease-standard);
+			animation: musicPlayerFadeInSlide
+				var(--music-player-prompt-duration, var(--duration-standard)) forwards
+				var(--ease-standard);
 		}
 
 		&.is-fading-out {
-			animation: musicPlayerFadeOutSlide var(--duration-standard) forwards
+			animation: musicPlayerFadeOutSlide
+				var(--music-player-prompt-duration, var(--duration-standard)) forwards
 				var(--ease-standard);
 		}
 	}
@@ -119,7 +123,8 @@
 		}
 
 		&--pulsing {
-			animation: musicPlayerPulse 3s ease-in-out infinite;
+			animation: musicPlayerPulse 3s ease-in-out
+				var(--music-player-pulse-iterations, infinite);
 
 			&::before {
 				content: '';
@@ -127,7 +132,8 @@
 				inset: -8px;
 				border-radius: 50%;
 				border: 1px solid var(--music-player-ring-color, var(--color-border-subtle));
-				animation: musicPlayerRingPulse 3s ease-in-out infinite;
+				animation: musicPlayerRingPulse 3s ease-in-out
+					var(--music-player-pulse-iterations, infinite);
 			}
 		}
 	}

@@ -315,6 +315,101 @@ describe('collectReleaseStatus', () => {
 	});
 });
 
+describe('smoke re-run', () => {
+	// Observed shape: the dispatch workflow publishes the smoke as a commit status whose target_url
+	// links to its run; the run itself carries the default branch head_sha, not the release SHA.
+	const runId = 37714189056;
+	const targetUrl = `https://github.com/fm-dev-mx/celebra-me/actions/runs/${runId}/job/113112233445`;
+	const smokeStatus = (state: string, createdAt: string) => ({
+		context: PREVIEW_DEPLOYMENT_SMOKE,
+		state,
+		description: null,
+		target_url: targetUrl,
+		created_at: createdAt,
+		updated_at: createdAt,
+		creator: { login: 'github-actions[bot]' },
+	});
+	const workflowRun = (status: string, attempt: number, conclusion: string | null) => ({
+		id: runId,
+		name: 'Post-deploy Smoke',
+		event: 'repository_dispatch',
+		display_title: 'vercel.deployment.ready',
+		head_branch: 'main',
+		head_sha: 'c'.repeat(40),
+		status,
+		conclusion,
+		run_attempt: attempt,
+		run_started_at: '2026-10-08T01:45:02Z',
+	});
+	const failedAttempt = [
+		smokeStatus('failure', '2026-10-08T01:43:47Z'),
+		smokeStatus('pending', '2026-10-08T01:42:16Z'),
+	];
+	const run = (statuses: unknown[], workflow: unknown) =>
+		ghRunner({
+			...responses(allPassed),
+			[`commits/${sha}/statuses?per_page=100`]: statuses,
+			[`actions/runs/${runId}`]: workflow,
+		});
+
+	it('keeps waiting while attempt 2 of the failed smoke run is running, then passes', async () => {
+		const sequence = [
+			run(failedAttempt, workflowRun('queued', 2, null)),
+			run(failedAttempt, workflowRun('in_progress', 2, null)),
+			run(
+				[smokeStatus('success', '2026-10-08T01:49:10Z'), ...failedAttempt],
+				workflowRun('completed', 2, 'success'),
+			),
+		];
+		const observed: ReleaseStatus[] = [];
+		const sleep = jest.fn(async () => undefined);
+		const result = await waitForReleaseStatus(
+			async () => {
+				const status = await collectReleaseStatus(sha, 'preview', 'ci', {
+					run: sequence.shift()!,
+					fetchImpl: healthy(sha),
+				});
+				observed.push(status);
+				return status;
+			},
+			{ timeoutMs: 60_000, intervalMs: 1_000, sleep, now: () => 0 },
+		);
+		expect(observed.map((status) => status.state)).toEqual(['PENDING', 'PENDING', 'VERIFIED']);
+		expect(observed[0].smoke).toMatchObject({
+			state: 'rerun queued',
+			progress: 'pending',
+			rerun: { runId, attempt: 2, status: 'queued' },
+		});
+		expect(observed[1].blockers).toEqual([`${PREVIEW_DEPLOYMENT_SMOKE}: rerun in_progress`]);
+		expect(result.state).toBe('VERIFIED');
+		expect(result.smoke.rerun).toBeUndefined();
+		expect(sleep).toHaveBeenCalledTimes(2);
+	});
+
+	it('fails on a completed smoke failure with no newer attempt', async () => {
+		const result = await waitForReleaseStatus(
+			() =>
+				collectReleaseStatus(sha, 'preview', 'ci', {
+					run: run(failedAttempt, workflowRun('completed', 1, 'failure')),
+					fetchImpl: healthy(sha),
+				}),
+			{ timeoutMs: 60_000, intervalMs: 1_000, sleep: async () => undefined, now: () => 0 },
+		);
+		expect(result.state).toBe('FAILED');
+		expect(result.smoke).toMatchObject({ state: 'failure', progress: 'failed' });
+		expect(result.smoke.rerun).toBeUndefined();
+	});
+
+	it('ignores an untrusted smoke status even when its linked run is active', async () => {
+		const forged = failedAttempt.map((entry) => ({ ...entry, creator: { login: 'someone' } }));
+		const status = await collectReleaseStatus(sha, 'preview', 'ci', {
+			run: run(forged, workflowRun('in_progress', 2, null)),
+			fetchImpl: healthy(sha),
+		});
+		expect(status.state).toBe('FAILED');
+	});
+});
+
 describe('waitForReleaseStatus', () => {
 	const status = (state: ReleaseStatus['state']) => ({ state }) as ReleaseStatus;
 

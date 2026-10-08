@@ -10,7 +10,6 @@ const ACTIVE_MARKDOWN_PREFIXES = [
 	'AGENTS.md',
 	'README.md',
 	'.agent/index.md',
-	'.agent/README.md',
 	'.agent/load-skills.md',
 	'.agent/rules/',
 	'.agent/workflows/',
@@ -23,6 +22,36 @@ const ACTIVE_MARKDOWN_PREFIXES = [
 
 const TABLE_RECOMMENDATION =
 	'Convert narrative table content to a paragraph, list, or separate subsection.';
+
+const PARSED_TABLE_RECOMMENDATION =
+	'This table is read by the invitation preparation parser, so it is never converted automatically. Keep the cell short and move notes to prose below the table.';
+
+/**
+ * Headings whose tables are read row-by-row by the invitation preparation parser
+ * (`src/lib/invitation-preparation/markdown-state.ts`). Keep these aligned with
+ * the parser: converting such a table into a list silently drops its data.
+ */
+const MACHINE_PARSED_HEADINGS = [
+	{ pattern: /fact register/iu, label: 'Fact Register' },
+	{ pattern: /^placeholders\b/iu, label: 'Placeholders' },
+	{ pattern: /^photograph inventory\b/iu, label: 'Photograph Inventory' },
+	{
+		pattern: /uniqueness\s+table|photo-role\s+map|final photo-role map/iu,
+		label: 'uniqueness table',
+	},
+	{ pattern: /^identity\b/iu, label: 'Identity' },
+	{ pattern: /^design direction\b/iu, label: 'Design Direction' },
+];
+
+/** Row labels the parser matches anywhere in the document (Event Type, creative outcome, demo). */
+const MACHINE_PARSED_ROW_LABELS = new Set([
+	'event type',
+	'human creative outcome',
+	'client-selected demo',
+	'owner-selected base demo',
+]);
+
+const PLACEHOLDER_TOKEN = /^\[\[PENDIENTE:[A-Z0-9_]+\]\]$/u;
 
 function normalizePath(file) {
 	const candidate = path.isAbsolute(file) ? path.relative(process.cwd(), file) : file;
@@ -203,6 +232,67 @@ function getTableModel(table) {
 	};
 }
 
+function getHeadingLevel(token) {
+	if (token.type === 'atxHeading') {
+		return findChild(token, 'atxHeadingSequence')?.text.length ?? 1;
+	}
+	const underline = findChild(token, 'setextHeadingLineSequence')?.text ?? '=';
+	return underline.startsWith('=') ? 1 : 2;
+}
+
+function getHeadingText(token) {
+	const text = findChild(token, 'atxHeadingText') ?? findChild(token, 'setextHeadingText');
+	return getVisibleCellText(text);
+}
+
+/**
+ * Return the reason a table is machine-parsed (a label), or null for ordinary tables.
+ * Tables count as parsed when they sit under a parsed heading (at any nesting level) or
+ * when their shape matches a row the parser reads anywhere in the document.
+ */
+function getMachineParsedReason(model, headingStack) {
+	for (const heading of headingStack) {
+		const match = MACHINE_PARSED_HEADINGS.find(({ pattern }) => pattern.test(heading.text));
+		if (match) return match.label;
+	}
+
+	const headerCells = model.cells.filter((cell) => cell.rowType === 'header');
+	if (headerCells.some((cell) => /^classification$/iu.test(cell.visible))) {
+		return 'Fact Register';
+	}
+
+	const firstColumn = model.cells.filter((cell) => cell.index === 0);
+	if (firstColumn.some((cell) => PLACEHOLDER_TOKEN.test(cell.visible))) return 'Placeholders';
+	const labelCell = firstColumn.find((cell) =>
+		MACHINE_PARSED_ROW_LABELS.has(cell.visible.toLowerCase()),
+	);
+	return labelCell ? labelCell.visible : null;
+}
+
+/**
+ * List top-level tables with their model and, when applicable, the parsed-table reason.
+ */
+function getTables(params) {
+	const headingStack = [];
+	const tables = [];
+	for (const token of params.parsers.micromark.tokens) {
+		if (token.type === 'atxHeading' || token.type === 'setextHeading') {
+			const level = getHeadingLevel(token);
+			while (headingStack.length && headingStack.at(-1).level >= level) headingStack.pop();
+			headingStack.push({ level, text: getHeadingText(token) });
+			continue;
+		}
+		if (token.type !== 'table') continue;
+		const model = getTableModel(token);
+		tables.push({
+			table: token,
+			model,
+			parsedReason: getMachineParsedReason(model, headingStack),
+		});
+	}
+	return tables;
+}
+
 function getFixInfos(table, replacement, lines) {
 	const firstLine = lines[table.startLine - 1] ?? '';
 	return [
@@ -223,9 +313,7 @@ function reportTableWarnings(params, onError, config = {}) {
 	if (!isActiveMarkdownPath(params.name)) return;
 
 	const maxColumns = config.maxColumns ?? TABLE_RULES.maxColumns;
-	const tables = params.parsers.micromark.tokens.filter((token) => token.type === 'table');
-	for (const table of tables) {
-		const model = getTableModel(table);
+	for (const { table, model } of getTables(params)) {
 		if (model.columnCount > maxColumns) {
 			onError({
 				lineNumber: table.startLine,
@@ -240,9 +328,9 @@ function reportNarrativeCells(params, onError, config = {}) {
 	if (!isActiveMarkdownPath(params.name)) return;
 
 	const maxCharacters = config.maxCharacters ?? TABLE_RULES.warningMaxCellCharacters;
-	const tables = params.parsers.micromark.tokens.filter((token) => token.type === 'table');
-	for (const table of tables) {
-		const model = getTableModel(table);
+	for (const { table, model, parsedReason } of getTables(params)) {
+		// Parsed tables are never rewritten; celebra-table-hard-limit reports them as errors.
+		if (parsedReason) continue;
 		const offender = model.cells.find((cell) => cell.visible.length > maxCharacters);
 		if (!offender) continue;
 
@@ -278,15 +366,19 @@ function reportBlockingCells(params, onError, config = {}) {
 	if (!isActiveMarkdownPath(params.name)) return;
 
 	const maxCharacters = config.maxCharacters ?? TABLE_RULES.blockingMaxCellCharacters;
-	const tables = params.parsers.micromark.tokens.filter((token) => token.type === 'table');
-	for (const table of tables) {
-		const model = getTableModel(table);
-		const offender = model.cells.find((cell) => cell.visible.length > maxCharacters);
+	const parsedMaxCharacters =
+		config.parsedTableMaxCharacters ?? TABLE_RULES.warningMaxCellCharacters;
+	for (const { model, parsedReason } of getTables(params)) {
+		const limit = parsedReason ? parsedMaxCharacters : maxCharacters;
+		const offender = model.cells.find((cell) => cell.visible.length > limit);
 		if (!offender) continue;
 
+		const detail = parsedReason
+			? `Cell ${offender.index + 1} (${offender.header}) has ${offender.visible.length} visible characters in a machine-parsed table (${parsedReason}); the limit for parsed tables is ${limit}. ${PARSED_TABLE_RECOMMENDATION}`
+			: `Cell ${offender.index + 1} (${offender.header}) has ${offender.visible.length} visible characters; the blocking limit is ${limit}. ${TABLE_RECOMMENDATION}`;
 		onError({
 			lineNumber: offender.line,
-			detail: `Cell ${offender.index + 1} (${offender.header}) has ${offender.visible.length} visible characters; the blocking limit is ${maxCharacters}. ${TABLE_RECOMMENDATION}`,
+			detail,
 			context: params.lines[offender.line - 1],
 			range: [
 				offender.column,

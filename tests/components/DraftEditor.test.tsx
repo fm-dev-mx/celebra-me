@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import DraftEditor from '@/components/dashboard/intake/DraftEditor';
 
 const mockUpdateDraft = jest.fn();
@@ -255,5 +255,36 @@ describe('DraftEditor', () => {
 		expect(screen.getByRole('heading', { name: 'Mesa de regalos' })).toBeInTheDocument();
 		expect(screen.getByRole('heading', { name: 'Frase' })).toBeInTheDocument();
 		expect(screen.getByRole('heading', { name: 'Notas de fotografías' })).toBeInTheDocument();
+	});
+
+	it('keeps managed-only sections out of the list and in the saved order', async () => {
+		render(
+			<DraftEditor
+				{...defaultProps}
+				initialContent={{
+					...content,
+					sectionOrder: ['quote', 'rsvp', 'memories', 'thankYou'],
+				}}
+			/>,
+		);
+
+		expect(screen.queryByText('Recuerdos de invitados')).not.toBeInTheDocument();
+
+		const thankYouRow = screen
+			.getByRole('checkbox', { name: 'Agradecimiento' })
+			.closest('.intake-editor__field');
+		if (!(thankYouRow instanceof HTMLElement)) throw new Error('Missing thankYou row');
+		fireEvent.click(within(thankYouRow).getByText('Subir'));
+		fireEvent.click(screen.getByRole('checkbox', { name: 'Galería' }));
+		fireEvent.click(screen.getByText('Guardar cambios'));
+
+		await waitFor(() => {
+			expect(mockUpdateDraft).toHaveBeenCalledWith(
+				'proj-1',
+				expect.objectContaining({
+					sectionOrder: ['quote', 'rsvp', 'thankYou', 'memories', 'gallery'],
+				}),
+			);
+		});
 	});
 });

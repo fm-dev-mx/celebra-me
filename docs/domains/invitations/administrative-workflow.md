@@ -4,11 +4,11 @@ The dashboard invitation list separates work status from publication and manual 
 `in_progress` / `completed` are administrative decisions. Neither state changes publication, content
 parity, visual acceptance, RSVP, or the checks required for a release.
 
-Only the authenticated project owner (`celebra.me.com@gmail.com`), with the existing strong
-administrator authorization, may record or clear a manual review. Agents must never invoke these
-actions, including through browser automation. Work status may be changed by an agent within an
-authorized task. The recorded date is historical, not certification of the current deployment.
-Content changes do not invalidate it automatically.
+Only the authenticated owner account, with the existing strong administrator authorization, may
+record or clear a manual review. Agents must never invoke these actions, including through browser
+automation. Work status may be changed by an agent within an authorized task. The recorded date is
+historical, not certification of the current deployment. Content changes do not invalidate it
+automatically.
 
 Client database roles cannot insert or update these administrative fields directly. Existing column
 writes remain available under existing RLS; the server endpoint owns the identity check. This does

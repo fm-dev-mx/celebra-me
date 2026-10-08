@@ -8,6 +8,7 @@ import { familySchema } from '@/lib/schemas/content/family.schema';
 import { rsvpSchema } from '@/lib/schemas/content/rsvp.schema';
 import { giftsSchema } from '@/lib/schemas/content/gifts.schema';
 import { interludesSchema } from '@/lib/schemas/content/interludes.schema';
+import { memoriesSchema } from '@/lib/schemas/content/memories.schema';
 import {
 	baseEventFieldsSchema,
 	countdownSchema,
@@ -35,6 +36,7 @@ export const canonicalEventContentSchema = baseEventFieldsSchema
 		navigation: navigationSchema,
 		interludes: interludesSchema,
 		sharing: sharingSchema,
+		memories: memoriesSchema.optional(),
 	})
 	.strict()
 	.superRefine((content, context) => {
@@ -43,6 +45,14 @@ export const canonicalEventContentSchema = baseEventFieldsSchema
 				code: 'custom',
 				path: ['countdown', 'variant'],
 				message: 'sectionOrder includes countdown, so countdown.variant is required',
+			});
+		}
+		// One direction only: memories data may exist while hidden, never the reverse.
+		if (content.sectionOrder.includes('memories') && !content.memories) {
+			context.addIssue({
+				code: 'custom',
+				path: ['memories'],
+				message: 'sectionOrder includes memories, so memories is required',
 			});
 		}
 	});

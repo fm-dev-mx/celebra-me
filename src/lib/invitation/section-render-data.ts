@@ -46,6 +46,7 @@ const SECTION_NAV_TARGETS: Partial<Record<ContentSectionKey, { href: string; lab
 	itinerary: { href: '#itinerary', label: 'Itinerario' },
 	rsvp: { href: '#rsvp', label: 'Pases y Confirmación' },
 	gifts: { href: '#regalos', label: 'Regalos' },
+	memories: { href: '#memories', label: 'Recuerdos' },
 	thankYou: { href: '#thank-you-section', label: 'Despedida' },
 };
 
@@ -100,7 +101,8 @@ type DescriptorData =
 			component: 'thankYou';
 			props: Omit<SectionData<'thankYou'>, 'closingPhrase'>;
 	  }
-	| { component: 'personalized-access'; props: PersonalizedAccessProps };
+	| { component: 'personalized-access'; props: PersonalizedAccessProps }
+	| { component: 'memories'; props: SectionData<'memories'> };
 
 export type InvitationSectionRenderDescriptor = {
 	afterInterlude: boolean;
@@ -122,6 +124,7 @@ const REVEAL_RECIPES: Record<DescriptorData['component'], InvitationRevealRecipe
 	gifts: 'stagger-group',
 	thankYou: 'fade-up',
 	'personalized-access': 'fade-up',
+	memories: 'fade-up',
 };
 
 function resolvePersonalizedAccessConfig(pageContext: InvitationPageContext): {
@@ -336,6 +339,14 @@ function renderSection(
 					props: thankYouProps,
 				};
 			}
+
+		case 'memories':
+			return sections.memories
+				? {
+						component: 'memories' as const,
+						props: sections.memories,
+					}
+				: null;
 	}
 }
 

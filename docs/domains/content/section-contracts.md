@@ -127,9 +127,8 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Required Inputs**: `items` array of photo asset references with `image` and `alt`.
 - **Required Inputs**: `variant`.
 - **Optional Inputs**: `title`, `subtitle`, `presentation`, item `layoutRole`, and responsive
-  focal-point fields. Canonical layout values are `uniform-grid`, `editorial-mosaic`,
-  `magazine-spread`, `feature-mosaic`, `feature-stack`, `paired-feature-band`, `index-choreography`,
-  and `single-keepsake`.
+  focal-point fields. Layout values are listed in the
+  [variant system](../theme/variant-system.md#canonical-inventory).
 - **Precedence**: `gallery.variant` is the sole layout authority. Legacy `sectionStyles` values,
   theme-named values, and `single` are rejected by the canonical schema.
 - **Rendering & Omission**: Rendered if `items` contains 1 or more resolved photo assets; omitted if
@@ -143,9 +142,8 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Required Inputs**: `items` array with `time`, `title`.
 - **Required Inputs**: `variant`.
 - **Optional Inputs**: `subtitle`, `description`, `icon`.
-- **Variant Contract**: Canonical `itinerary.variant` values are `standard`, `timeline-paper`,
-  `editorial-ledger`, and `editorial-program`. `timeline-paper` selects `ItineraryProgram`;
-  `editorial-ledger`, `editorial-program`, and `standard` select `TimelineList`.
+- **Variant Contract**: `timeline-paper` selects `ItineraryProgram`; every other `itinerary.variant`
+  selects `TimelineList`.
 - **Rendering & Omission**: Optional section.
 
 ---
@@ -154,13 +152,14 @@ Footer remains a visual theme surface and has no independent section variant.
 
 - **Purpose**: Guest attendance confirmation form, attendee count selector, dietary notes, and
   WhatsApp/API submission.
-- **Required Inputs**: `confirmationMode` (`api` | `whatsapp`), `deadlineIso`, `guestCap`.
 - **Required Inputs**: `variant` and `personalizedAccess.variant`.
-- **Optional Inputs**: `title`, `subtitle`, `whatsappConfig`.
-- **Variant Contract**: Canonical `rsvp.variant` values are `standard`, `editorial-press-pass`, and
-  `formal-register`. `formal-register` keeps the shared RSVP renderer and owns the underline
-  confirmation-register presentation. `rsvp.personalizedAccess.variant` values are `standard`,
-  `ornamented`, `editorial-pass`, and `formal-pass`.
+- **Defaulted Inputs**: `confirmationMode` (`api` | `whatsapp` | `both`, default `api`), `guestCap`
+  (default 1), `accessMode` (`personalized-only` | `hybrid`, default `personalized-only`).
+- **Optional Inputs**: `title`, `subcopy`, `whatsappConfig`, `labels`, `calendar`.
+- **Variant Contract**: `formal-register` keeps the shared RSVP renderer and owns the underline
+  confirmation-register presentation. Values for `rsvp.variant` and
+  `rsvp.personalizedAccess.variant` are listed in the
+  [variant system](../theme/variant-system.md#canonical-inventory).
 - **Rendering & Omission**: Mandatory for invitations requiring RSVP confirmation. A public
   `personalized-only` RSVP without guest context renders a static locked Astro state; demo and
   guest-backed states render the interactive React island.
@@ -191,6 +190,29 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Editing**: Managed invitations own `date` / `closingPhrase` / section variant via the provision
   package and `pnpm invitation:release`. The dashboard Agradecimiento card edits message, firma, and
   image only; preview and publish preserve the remaining prior-published fields.
+
+---
+
+## 11a. Memories (`memories`)
+
+- **Purpose**: Guest entry point to the event memory space. It shows one button to `/r/<publicSlug>`
+  on the serving origin, a black-on-white QR code and a link to download that code as SVG. It needs
+  no JavaScript.
+- **Required Inputs**: `variant`, `publicSlug`. The slug is the printed QR contract of an existing
+  memory space (`event_memory_settings.public_slug`), never derived from the invitation route.
+- **Optional Inputs**: `title`, `description`, `actionLabel`, `footerText`, `downloadLabel`,
+  `qrAlt`. Defaults are neutral and speak of the hosts. The copy carries no dates.
+- **Rendering & Omission**: `sectionOrder` decides visibility. If it lists `memories`, the
+  `memories` data is required. Data that `sectionOrder` does not list is allowed, and it then
+  renders nothing and loads no stylesheet. The QR always encodes the Production public origin, so a
+  code scanned from Preview opens Production. The section is not part of the navigation.
+- **Editing**: Managed-only. The dashboard never lists, toggles, or reorders it. Drafts drop the
+  `memories` data, and publish and preview carry it from the prior published revision. If a draft
+  order loses the key, it is put back at its prior position.
+- **Publication gate**: Managed releases read the target memory space before any write. A missing
+  space, a space owned by another event, or a target without an event blocks the release. A disabled
+  space or an ended retention only warns. The event is created by the first publication, so a new
+  invitation can add this section only in its second release.
 
 ---
 

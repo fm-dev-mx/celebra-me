@@ -45,6 +45,9 @@ export async function assertRenderedImageDelivery(page: Page): Promise<RenderedI
 					if (!node.complete || node.naturalWidth <= 0) {
 						return { failure: section + '/' + altOrKey + ': unloaded ' + url };
 					}
+					if (url.startsWith('data:')) {
+						return {};
+					}
 					return {
 						delivery: {
 							url,

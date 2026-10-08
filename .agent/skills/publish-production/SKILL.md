@@ -35,9 +35,11 @@ pass, the resulting automatic Production deployment, and read-only deployment/sm
 Preserve meaningful commits and use the allowed merge method. Never push or commit directly to main.
 Supporting skills inherit this request; do not stop after opening the PR or ask again to merge it.
 
-Identify all included commits/files before acting. A release PR includes the entire branch range;
-unreviewed or out-of-scope changes block it. General review completion does not replace exact
-artifact-specific visual approval or required GitHub reviews.
+Create or update that PR only through [production-pr](../production-pr/SKILL.md), the canonical PR
+procedure; this skill adds the merge and deployment verification. Identify all included
+commits/files before acting. A release PR includes the entire branch range; unreviewed or
+out-of-scope changes block it. General review completion does not replace exact artifact-specific
+visual approval or required GitHub reviews.
 
 ## Exclusions and completion
 

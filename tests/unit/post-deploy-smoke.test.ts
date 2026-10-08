@@ -323,7 +323,7 @@ describe('post-deploy smoke', () => {
 		expect(summary).not.toMatch(/https?:\/\/|\?|cookie|body|token|secret/i);
 	});
 
-	it('keeps the workflow event-driven, SHA-pinned, single-browser, and artifact-free', () => {
+	it('keeps the workflow event-driven, SHA-pinned, single-browser, and free of browser artifacts', () => {
 		const workflow = readFileSync(
 			resolve('.github', 'workflows', 'post-deploy-smoke.yml'),
 			'utf8',
@@ -351,9 +351,36 @@ describe('post-deploy smoke', () => {
 		).toHaveLength(2);
 		expect(workflow).not.toContain('vercel/repository-dispatch/actions/status@v1');
 		expect(workflow).toContain('VERCEL_DISPATCH_EXPECTED_PROJECT_ID');
-		expect(workflow).not.toContain('upload-artifact');
+		// The only artifact is the Preview media-verification JSON (routes, asset keys, redacted
+		// URLs, fixed reasons); the Production job stays artifact-free.
+		const production = workflow.slice(workflow.indexOf('\n    smoke:'));
+		expect(production).not.toContain('upload-artifact');
+		expect(workflow.match(/uses: actions\/upload-artifact@/gu)).toHaveLength(1);
+		expect(workflow).not.toMatch(/playwright-report|test-results|trace\.zip/u);
+		expect(workflow).not.toMatch(/--json > \/dev\/null/u);
 		expect(workflow).not.toContain('schedule:');
 		expect(workflow).not.toMatch(/prod:apply|--apply|cloudinary.*secret/i);
+	});
+
+	it('keeps the Preview media-verification failure reason visible and the exit code intact', () => {
+		const workflow = readFileSync(
+			resolve('.github', 'workflows', 'post-deploy-smoke.yml'),
+			'utf8',
+		);
+		const preview = workflow.slice(
+			workflow.indexOf('preview-smoke:'),
+			workflow.indexOf('\n    smoke:'),
+		);
+		expect(preview).toContain(
+			'pnpm --silent invitation:media:verify -- --target preview --all --json > "$MEDIA_VERIFY_REPORT"',
+		);
+		expect(preview).toContain('tee -a "$GITHUB_STEP_SUMMARY"');
+		expect(preview).toContain('exit "$status"');
+		const upload = preview.slice(preview.indexOf('- name: Upload media verification report'));
+		expect(upload).toContain('if: always()');
+		expect(upload).toContain('uses: actions/upload-artifact@v7');
+		expect(upload).toContain('path: .tmp/media-verify/preview-media-verification.json');
+		expect(upload).toMatch(/retention-days: [1-7]\s*$/mu);
 	});
 
 	it('runs a separate daily read-only Production image audit', () => {

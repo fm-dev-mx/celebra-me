@@ -1,6 +1,6 @@
 # Database Overview
 
-**Last Updated:** 2026-07-25
+**Last Updated:** 2026-10-08
 
 **Owns:** current Supabase/Postgres schema overview, entity relationships, and major data flows.
 
@@ -272,9 +272,18 @@ type, size, dimensions, secure URLs, and soft-delete state.
 
 ### RSVP Linkage
 
-When a client invitation is published, `synchronizeClientRsvp()` checks for an existing `events` row
-by `invitation_project_id` or `slug`. Creates or updates the event. The partial unique index
-`idx_events_unique_invitation_project` enforces at most one event per project.
+When a client invitation is published, the atomic publication RPC (`publish_invitation_atomic()`)
+locks the `events` row linked by `invitation_project_id` or matching `slug`, then updates it or
+creates one. The partial unique index `idx_events_unique_invitation_project` enforces at most one
+event per project.
+
+### Guest Memories
+
+Guest photo/video spaces live in `event_memory_settings` (one per event; window, retention, quotas,
+entitlement), `event_memory_sessions`, `event_memory_items`, and `event_memory_audit_events`
+(`supabase/migrations/*event_memor*`). The legacy `valentina_memory_*` tables remain until their
+separately authorized retirement migration. Behavior, Workers, and quotas are owned by
+[`docs/core/architecture.md`](../../core/architecture.md) (Event memories).
 
 ### Archive / Restore
 
@@ -302,8 +311,7 @@ canonical/internal managed workflows (definition registry + provision CLIs), not
 | `POST /api/dashboard/invitation/[id]/duplicate` | 403 `canonical_creation_required` (`via: 'duplicate'`)                                 |
 | Managed create / Preview E2E fixture            | Canonical scripts (`invitation:release`, `invitation:preview-fixture`, import engines) |
 
-`duplicateInvitationFromDemo()` may still exist as an internal service primitive, but it is not an
-active Dashboard workflow and must not be invoked for managed client creation.
+No demo-duplication service remains; demos are never copied into client records.
 
 ## Index Strategy
 

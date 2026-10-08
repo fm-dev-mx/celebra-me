@@ -12,12 +12,12 @@ The canonical dependency direction is:
 
 The executable single source of truth is `src/lib/invitation/section-variants.ts`. Its registry owns
 the closed vocabulary, prerequisites, CSS owner, visual-verification status, and persisted-content
-transformation for every section variant. The cutover manifest is derived from that registry.
+transformation for every section variant.
 
 ## Boundary and authority
 
-Every repository-managed definition, demo, template, fixture, editor writer, and publication mapper
-must declare `sectionOrder`, `composition`, and each section-owned `variant` that it writes. The
+Every repository-managed definition, demo, fixture, editor writer, and publication mapper must
+declare `sectionOrder`, `composition`, and each section-owned `variant` that it writes. The
 canonical schema validates the complete content object before adaptation. Unknown variants, legacy
 aliases, missing required data, and incompatible discriminated inputs fail with explicit errors.
 
@@ -59,6 +59,22 @@ environment migration is applied and verified.
 - **Thank You:** `standard`, `editorial-back-cover`, `portrait-letter`, `full-bleed-photo`,
   `portrait-keepsake`, `ceremonial-closing`; `full-bleed-photo` requires `thankYou.image`.
 - **Countdown:** `standard`, `editorial-folio`, `magazine-folio`, `clock-face`, `written-days`.
+- **Memories:** `card`; requires `memories.publicSlug`. It has no default variant, because the
+  section exists only for invitations with a memory space.
+
+### Gallery capabilities
+
+`gallery.variant` is the only Gallery layout authority. `gallery.variantOptions.mobileBrowse`
+(`stack` or `rail`), item order, focal points, captions, and item `layoutRole` (`feature`, `wide`,
+or `standard`, from `src/lib/invitation/gallery-presentation.ts`) are orthogonal typed capabilities.
+`layoutRole` refines placement inside a compatible layout; the presentation validator rejects
+incompatible combinations (for example, `paired-feature-band` requires a `feature` item). Mobile
+`rail` is a browse mode and does not change the layout identifier. `Gallery.astro` and
+`PhotoGallery.astro` always emit the variant through `data-variant`.
+
+The preset-named partials under `src/styles/themes/sections/gallery/` (for example
+`_jewelry-box-wedding.scss`, `_celestial-blue.scss`) are visual compatibility paths, not layouts. Do
+not promote or delete one without a current consumer inventory and parity proof.
 
 Header, Quote, MusicPlayer, and Footer emit `standard` where applicable. Interlude emits a fixed
 `standard` DOM marker and accepts no variant input. Envelope/reveal is a theme design selector and
@@ -105,8 +121,7 @@ Before adding or promoting a variant:
 4. Provide a compatible non-origin fixture and a fail-closed incompatible case.
 5. Scan reusable code and CSS for client, slug, profile, historical-theme, and invitation-asset
    dependencies.
-6. Update the derived cutover manifest and run focused schema, portability, CSS, governance, and
-   corpus checks.
+6. Run focused schema, portability, CSS, governance, and corpus checks.
 
 The `portrait-letter` variant reuses editorial markup with an arched 2:3 portrait and display-font
 letter. It requires an image and owns its geometry independently of the preset. Existing published

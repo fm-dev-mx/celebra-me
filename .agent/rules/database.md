@@ -322,6 +322,12 @@ container. It is valid only while all of these hold, and fails closed otherwise:
 - the container holds no migration absent from the checkout and no applied migration was edited in
   place (both require `pnpm db:disposable:reset`).
 
+Digests identify committed content, not checkout bytes: SQL is normalized (BOM stripped, CRLF and
+lone CR → LF) before hashing, and `.gitattributes` pins `*.sql` to LF, so worktrees with different
+`core.autocrlf` or editor line endings share one receipt. The receipt format is version 3; older
+receipts are treated as missing. `pnpm db:disposable:reset` retires the receipt (kept as
+`disposable-migration-proof.json.superseded`) before re-applying, so a reset always recovers.
+
 Configuration:
 
 - Config directory: `supabase/test/config.toml`

@@ -26,6 +26,11 @@ const startSeconds = Number.isFinite(startAt) && startAt > 0 ? startAt : 0;
 // A media fragment starts the first play at the offset; looping back is handled in the script.
 const audioSrc = hasAudio && startSeconds > 0 ? `${url}#t=${startSeconds}` : url;
 const promptText = 'Reproducir música';
+const isVisualCapture =
+	Astro.url.searchParams.has('screenshot') || Astro.url.searchParams.has('skipEnvelope');
+// Music that starts with the envelope tap must be buffered by then; other tracks load on demand.
+const preload =
+	!isVisualCapture && hasAudio && autoPlay && revealMode === 'envelope' ? 'auto' : 'none';
 ---
 
 <div
@@ -40,7 +45,7 @@ const promptText = 'Reproducir música';
 	data-start-at={startSeconds > 0 ? String(startSeconds) : undefined}
 >
 	{hasAudio ? (
-		<audio src={audioSrc} loop={startSeconds === 0} preload="none" data-music-audio></audio>
+		<audio src={audioSrc} loop={startSeconds === 0} preload={preload} data-music-audio></audio>
 	) : null}
 
 	<span class="music-player__prompt" data-music-prompt>{promptText}</span>
@@ -102,7 +107,11 @@ const promptText = 'Reproducir música';
 			return;
 		}
 
+		const FADE_IN_MS = 1200;
+		const promptText = player.dataset.pendingLabel || 'Reproducir música';
 		let isPlaying = false;
+		let isStarting = false;
+		let fadeFrame: number | undefined = undefined;
 		let dismissTimer: number | undefined = undefined;
 
 		const syncState = () => {
@@ -138,27 +147,96 @@ const promptText = 'Reproducir música';
 			dismissTimer = window.setTimeout(fadeOutPrompt, delayMs);
 		};
 
-		const startAudio = () => {
-			if (!hasAudio || !(audio instanceof HTMLAudioElement) || isPlaying) {
+		const showPrompt = (text: string) => {
+			if (!(prompt instanceof HTMLElement)) {
 				return;
 			}
-			audio.play().then(() => {
+			prompt.textContent = text;
+			prompt.classList.remove('is-fading-out');
+			prompt.classList.add('is-fading-in');
+			prompt.hidden = false;
+		};
+
+		// Volume ramp after the first frame of sound. iOS ignores `volume` (always 1), so there the
+		// track simply starts at full level.
+		const fadeIn = (media: HTMLAudioElement) => {
+			if (media.paused) return;
+			window.cancelAnimationFrame(fadeFrame ?? 0);
+			const startedAt = performance.now();
+			media.volume = 0;
+			const step = (now: number) => {
+				const progress = Math.min(1, (now - startedAt) / FADE_IN_MS);
+				media.volume = progress * progress;
+				if (progress < 1 && !media.paused) {
+					fadeFrame = window.requestAnimationFrame(step);
+				} else {
+					media.volume = 1;
+				}
+			};
+			fadeFrame = window.requestAnimationFrame(step);
+		};
+
+		// `play()` runs synchronously in the caller's gesture; a rejection (autoplay policy, failed
+		// load) leaves the control paused and asks for one tap instead of logging an error.
+		const play = (withFade: boolean) => {
+			if (!hasAudio || !(audio instanceof HTMLAudioElement) || isPlaying || isStarting) {
+				return;
+			}
+			isStarting = true;
+			if (withFade) {
+				audio.volume = 0;
+			}
+			audio
+				.play()
+				.then(() => {
+					if (withFade) {
+						fadeIn(audio);
+						showPrompt('Pausar música');
+						hidePromptLater();
+					}
+				})
+				.catch(() => {
+					audio.volume = 1;
+					showPrompt(promptText);
+					hidePromptLater(6000);
+				})
+				.finally(() => {
+					isStarting = false;
+				});
+		};
+
+		// The button mirrors the element, whatever paused or resumed it (toggle, OS media controls,
+		// an interrupted stream).
+		if (audio instanceof HTMLAudioElement) {
+			audio.addEventListener('playing', () => {
 				isPlaying = true;
 				syncState();
-				if (prompt instanceof HTMLElement) {
-					prompt.textContent = 'Pausar música';
-					prompt.classList.remove('is-fading-out');
-					prompt.classList.add('is-fading-in');
-					prompt.hidden = false;
-					hidePromptLater();
-				}
-			}).catch(() => {
-				// Audio blocked — user can still use the manual toggle
 			});
+			audio.addEventListener('pause', () => {
+				isPlaying = false;
+				window.cancelAnimationFrame(fadeFrame ?? 0);
+				audio.volume = 1;
+				syncState();
+			});
+		}
+
+		const removeStartListeners = () => {
+			window.removeEventListener('envelope:open-requested', startAudio);
+			window.removeEventListener('envelope:opened', startAudio);
+			document.removeEventListener('click', startAudio);
+			document.removeEventListener('touchstart', startAudio);
+		};
+
+		const startAudio = () => {
+			removeStartListeners();
+			play(true);
 		};
 
 		if (hasAudio && autoPlay) {
 			if (revealMode === 'envelope') {
+				// Start inside the envelope tap; `envelope:opened` stays as a fallback for reveals that
+				// skip the tap (it may be refused without a gesture, which leaves the control paused).
+				window.addEventListener('envelope:open-requested', startAudio, { once: true });
 				window.addEventListener('envelope:opened', startAudio, { once: true });
 			} else {
 				document.addEventListener('click', startAudio, { once: true });
@@ -174,9 +252,7 @@ const promptText = 'Reproducir música';
 		const handleScrollDismiss = () => {
 			if (window.scrollY > 100 && prompt instanceof HTMLElement && !prompt.hidden) {
 				window.clearTimeout(dismissTimer);
-				dismissTimer = window.setTimeout(() => {
-					prompt.hidden = true;
-				}, 1500);
+				dismissTimer = window.setTimeout(fadeOutPrompt, 1500);
 				window.removeEventListener('scroll', handleScrollDismiss);
 			}
 		};
@@ -191,7 +267,8 @@ const promptText = 'Reproducir música';
 			}, { once: true });
 		}
 
-		toggle.addEventListener('click', async () => {
+		toggle.addEventListener('click', () => {
+			removeStartListeners();
 			if (!hasAudio || !(audio instanceof HTMLAudioElement)) {
 				if (prompt instanceof HTMLElement) {
 					prompt.hidden = false;
@@ -204,24 +281,14 @@ const promptText = 'Reproducir música';
 
 			if (isPlaying) {
 				audio.pause();
-				isPlaying = false;
-				if (prompt instanceof HTMLElement) {
-					prompt.textContent = 'Reproducir música';
-				}
-			} else {
-				try {
-					await audio.play();
-					isPlaying = true;
-				} catch (error) {
-					console.warn('No se pudo reproducir el audio:', error);
-				}
+				return;
 			}
 
-			syncState();
-			if (prompt instanceof HTMLElement && isPlaying) {
+			play(false);
+			if (prompt instanceof HTMLElement && !prompt.hidden) {
 				fadeOutPrompt();
-				window.removeEventListener('scroll', handleScrollDismiss);
 			}
+			window.removeEventListener('scroll', handleScrollDismiss);
 		});
 
 		syncState();

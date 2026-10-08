@@ -228,7 +228,8 @@ const content: CanonicalEventContentInput = {
 	music: {
 		url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1791406870/Dancing_Queen_hxqiaf.mp3',
 		title: 'Dancing Queen — ABBA',
-		autoPlay: false,
+		// Starts with the envelope tap (inside the gesture, so mobile browsers allow it).
+		autoPlay: true,
 	},
 	gallery: {
 		// Contact sheet: two mirrored blocks of a principal portrait and two stacked frames.

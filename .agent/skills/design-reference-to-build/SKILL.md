@@ -98,7 +98,7 @@ Classify the target before visual work:
 | Demo invitation  | Brand brief, `frontend-design`, `theme-architecture`                                  |
 | Landing          | Brand brief, `frontend-design`, affected component conventions                        |
 | Dashboard        | Brand brief when brand-facing, `frontend-design`, `dashboard-styling.md`              |
-| Token or variant | `frontend-design`, `theme-architecture`, `theme-architecture-governance`              |
+| Token or variant | `frontend-design`, `theme-architecture`                                               |
 
 For reference-driven redesigns, complete
 [`design-reference-brief.md`](../../templates/creative/design-reference-brief.md). Keep it in the
@@ -201,8 +201,9 @@ from the first proposal.
 
 ## Phase 6 — Sync and Handoff
 
-- Run `theme-architecture-governance` when a live token, preset, variant, or isolation contract
-  changes. Update `docs/domains/theme/architecture.md` only when that technical contract changes.
+- Apply the `theme-architecture` Governance Audit when a live token, preset, variant, or isolation
+  contract changes. Update `docs/domains/theme/architecture.md` only when that technical contract
+  changes.
 - For real invitations, continue through `docs/domains/intake/production-flow.md`; this skill grants
   no Preview or Production authorization.
 - Report the brief/baseline used, files changed, visual evidence, validations, skips, remaining

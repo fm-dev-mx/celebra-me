@@ -61,8 +61,17 @@ export function resolvePreviewWriteAuthToken(input: {
 	return undefined;
 }
 
-export function verifyPreviewWriteAuthorization(input: PreviewWriteAuthInput): PreviewWriteAuthResult {
-	const { slug, targets, apply = false, isInteractive = false, authToken, operation = 'apply' } = input;
+export function verifyPreviewWriteAuthorization(
+	input: PreviewWriteAuthInput,
+): PreviewWriteAuthResult {
+	const {
+		slug,
+		targets,
+		apply = false,
+		isInteractive = false,
+		authToken,
+		operation = 'apply',
+	} = input;
 
 	// If preview target is not being mutated, authorization is not required.
 	if (!targets.includes('preview') || !apply) {
@@ -105,6 +114,58 @@ export function verifyPreviewWriteAuthorization(input: PreviewWriteAuthInput): P
 		authorized: true,
 		actor: 'automated_scoped_token',
 	};
+}
+
+export interface PreviewWriteScopeAssessment {
+	/** `not-required`: an interactive apply asks for YES instead of a task scope. */
+	status: 'present' | 'missing' | 'invalid' | 'not-required';
+	expectedScope: string;
+	/** The PREVIEW_WRITE_AUTH_REQUIRED message a non-interactive apply would raise. */
+	error?: string;
+}
+
+/**
+ * Read-only preflight of the exact check `verifyPreviewWriteAuthorization` applies at write time,
+ * so a missing or mismatched task scope is reported before any planning or remote work.
+ */
+export function assessPreviewWriteScope(input: {
+	slug: string;
+	operation: string;
+	isInteractive: boolean;
+	env?: NodeJS.ProcessEnv;
+}): PreviewWriteScopeAssessment {
+	const expectedScope = `preview:${input.slug}:${input.operation}`;
+	if (input.isInteractive) return { status: 'not-required', expectedScope };
+	const token = resolvePreviewWriteAuthToken({
+		slug: input.slug,
+		operation: input.operation,
+		env: input.env,
+	});
+	try {
+		verifyPreviewWriteAuthorization({
+			slug: input.slug,
+			targets: ['preview'],
+			apply: true,
+			isInteractive: false,
+			authToken: token,
+			operation: input.operation,
+		});
+		return { status: 'present', expectedScope };
+	} catch (error: unknown) {
+		return {
+			status: token ? 'invalid' : 'missing',
+			expectedScope,
+			error: error instanceof Error ? error.message : String(error),
+		};
+	}
+}
+
+/** One-line operator report of `assessPreviewWriteScope`. */
+export function formatPreviewWriteScope(assessment: PreviewWriteScopeAssessment): string {
+	if (assessment.status === 'present') return 'Preview write scope: present';
+	if (assessment.status === 'not-required')
+		return 'Preview write scope: not required (interactive apply asks for YES)';
+	return `Preview write scope: ${assessment.status} — set CELEBRA_TASK_SCOPE=${assessment.expectedScope}`;
 }
 
 /**

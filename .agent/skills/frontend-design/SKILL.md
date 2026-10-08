@@ -272,6 +272,6 @@ Run visual iteration as a bounded loop:
    pass implicitly.
 
 Prefer approved client/product assets over generated placeholders. When a visual change alters a
-live token, preset, section variant, or isolation contract, run
-`.agent/skills/theme-architecture-governance/SKILL.md` and update the canonical theme documentation
-as required there.
+live token, preset, section variant, or isolation contract, run the Governance Audit in
+`.agent/skills/theme-architecture/SKILL.md` and update the canonical theme documentation as required
+there.

@@ -77,7 +77,46 @@ jobs:
                   fi
 
             - name: Verify published invitation images
-              run: pnpm invitation:media:verify -- --target preview --all --json > /dev/null
+              env:
+                  MEDIA_VERIFY_REPORT: .tmp/media-verify/preview-media-verification.json
+              run: |
+                  mkdir -p "$(dirname "$MEDIA_VERIFY_REPORT")"
+                  set +e
+                  # --silent keeps the pnpm banner out of the JSON report.
+                  pnpm --silent invitation:media:verify -- --target preview --all --json > "$MEDIA_VERIFY_REPORT"
+                  status=$?
+                  set -e
+                  if [ "$status" -ne 0 ]; then
+                      {
+                          echo "### Preview media verification failed (exit $status)"
+                          echo
+                          if jq -e '.rows | type == "array"' "$MEDIA_VERIFY_REPORT" > /dev/null 2>&1; then
+                              # Report rows carry only routes, asset keys, redacted URLs, and fixed reasons.
+                              jq -r '
+                                  ([.rows[] | select(.classification != "HEALTHY")]) as $failed
+                                  | "Invitations: \(.summary.invitations), assets: \(.summary.assets), failures: \(.summary.failures)",
+                                    "",
+                                    "| Route | Asset | Classification | Reasons |",
+                                    "| --- | --- | --- | --- |",
+                                    ($failed[:50][] | "| \(.route) | \(.assetKey) | \(.classification) | \(.reasons | join("; ") | gsub("[|]"; "/")) |"),
+                                    (if ($failed | length) > 50 then "", "_\(($failed | length) - 50) more failures in the media-verification artifact._" else empty end)
+                              ' "$MEDIA_VERIFY_REPORT"
+                          else
+                              echo "No JSON report was produced; see the step log for the error."
+                          fi
+                      } | tee -a "$GITHUB_STEP_SUMMARY"
+                  fi
+                  exit "$status"
+
+            - name: Upload media verification report
+              if: always()
+              uses: actions/upload-artifact@v7
+              with:
+                  name: preview-media-verification-${{ github.event.client_payload.git.sha }}
+                  path: .tmp/media-verify/preview-media-verification.json
+                  if-no-files-found: ignore
+                  include-hidden-files: true
+                  retention-days: 7
 
             - name: Install Preview browser
               run: pnpm exec playwright install --with-deps chromium

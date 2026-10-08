@@ -1,15 +1,14 @@
 ---
 name: client-invitation-audit
 description: |
-  Prepare or audit a real client invitation: classify supplied facts and assets, evaluate preparation readiness, and separate client-specific from reusable-theme work. Not for pure demos, performance audits, or staged review.
+  Audit a real client invitation: classify supplied facts and assets, evaluate preparation readiness, and separate client-specific from reusable-theme work. Starting or resuming preparation is triggered through invitation-preparation, which loads this skill as needed. Not for pure demos, performance audits, or staged review.
 domain: workflow
-version: 2.1.1
+version: 2.2.0
 when_to_use:
-  - Preparing a new real client invitation before implementation
-  - Resuming preparation from docs/invitations/<slug>.md
-  - Auditing a real client invitation before or during implementation
-  - Distinguishing placeholder blockers from real work
-  - Linking or verifying a demo counterpart for a real invitation
+  - Auditing an existing real client invitation before or during implementation (pipeline, assets,
+    sections)
+  - Classifying supplied facts and assets, or distinguishing placeholder blockers from real work,
+    after preparation has started
   - Creating a two-lane (client vs reusable theme) completion spec
 preconditions:
   - Read AGENTS.md
@@ -20,7 +19,6 @@ preconditions:
     validate:invitation-preparation`)
 related_skills:
   - theme-architecture
-  - demo-content-consistency
   - production-sql-patches
   - frontend-design
   - copywriting-es
@@ -68,29 +66,15 @@ Do not use for pure demos, performance audits, or staged code review.
 | Invitation slug                                         | when writing Markdown    | May be `requires_owner_decision` initially; freeze only with verified orthography |
 | Existing `docs/invitations/<slug>.md`                   | when resuming            | Canonical state; update in place                                                  |
 
-## Content profiles (demo counterpart)
+## Self-sufficiency
 
-Real and demo share visual identity; data and media stay separate.
-
-| Concept      | Rule                                                                        |
-| ------------ | --------------------------------------------------------------------------- |
-| `templateId` | Template SKU `{eventType}-{themePreset}`, **not** a FK to a real invitation |
-| Theme preset | Same on real and demo                                                       |
-| `_assetSlug` | **Different** — never point a demo at a real asset directory                |
-| `isDemo`     | `false` on real; `true` on demo                                             |
-
-Invariants:
-
-```
-real.templateId === demo.templateId
-real.theme.preset === demo.theme.preset
-real._assetSlug !== demo._assetSlug
-```
-
-`theme.preset` alone does not guarantee visual parity if the real invite has slug-scoped SCSS.
-Document either matching demo overrides or an explicit “demo = base template” decision.
+A real invitation has no demo counterpart. Its theme comes from `theme_id`, its structure from the
+canonical section contracts and variant registry, and its media from its own `_assetSlug` namespace
+(`.agent/rules/invitation-preset-source-of-truth.md`). `isDemo` is `false` on real content, and a
+demo never points at a real asset directory.
 
 Route slug, `_assetSlug`, and `baseDemoId` are distinct concepts — do not collapse them.
+`baseDemoId` is legacy, scheduled for removal; provisioning still requires it.
 
 ## Info-hygiene (prep)
 
@@ -188,12 +172,11 @@ preparation preconditions.
 Resolve how content reaches the browser (see live `content-resolver`):
 
 1. DB `published_invitation_content` (real)
-2. Legacy invitations fallback (migration window)
-3. Static `event-demos` (`isDemo: true` only)
+2. Static `event-demos` (`isDemo: true` only)
 
 Inventory for `<slug>`:
 
-- `src/content/events`, `src/content/event-demos`
+- `scripts/provision/invitations/<slug>.ts`, `src/content/event-demos`
 - `scripts/manual/production-patches`
 - `.agent/plans/active` payloads/specs
 - `src/assets/images/events` / `src/assets/invitations`

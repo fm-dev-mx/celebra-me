@@ -1,8 +1,8 @@
 /**
- * Disposable migration proof v2: shared receipt bound to the migration set, the live container
+ * Disposable migration proof v3: shared receipt bound to the migration set, the live container
  * instance, and its live history. Everything unverifiable fails closed.
  */
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
@@ -42,7 +42,7 @@ type Live = {
 
 const container = (id: string) => ({ name: 'celebra-me-test-db', id, createdAt: '2026-10-01' });
 
-describe('disposable migration proof v2', () => {
+describe('disposable migration proof v3', () => {
 	let dir: string;
 	let path: string;
 
@@ -157,20 +157,55 @@ describe('disposable migration proof v2', () => {
 		).toThrow(/absent from this checkout/);
 	});
 
-	it('treats a v1 receipt as missing', async () => {
+	it('lets a disposable reset recover from an in-place edit by retiring the receipt', async () => {
 		const proofModule = await load();
-		const { mkdirSync } = await import('node:fs');
+		const versions = ['20260101000000', '20260102000000'];
+		const live = liveReader({ container: container('c1'), appliedVersions: versions });
+		proofModule.writeDisposableMigrationProof({
+			appliedVersions: versions,
+			path,
+			readLive: live,
+		});
+
+		jest.resetModules();
+		fileDigests = { ...fileDigests, '20260101000000': 'd1-edited' };
+		const reloaded = await load();
+		expect(reloaded.invalidateDisposableMigrationProof({ path })).toBe(true);
+		expect(existsSync(`${path}.superseded`)).toBe(true);
+		expect(reloaded.invalidateDisposableMigrationProof({ path })).toBe(false);
+
+		reloaded.writeDisposableMigrationProof({ appliedVersions: versions, path, readLive: live });
+		expect(reloaded.assertCurrentDisposableMigrationProof({ path, readLive: live }).ok).toBe(
+			true,
+		);
+	});
+
+	it.each([1, 2])('treats a v%s receipt as missing', async (version) => {
+		const proofModule = await load();
+		const versions = ['20260101000000', '20260102000000'];
 		mkdirSync(join(dir, 'db-evidence'), { recursive: true });
 		writeFileSync(
 			path,
-			JSON.stringify({ version: 1, migrationSetDigest: 'x', appliedVersions: [] }),
+			JSON.stringify({
+				version,
+				migrationSetDigest: 'x',
+				migrationDigests: { '20260101000000': 'raw-crlf-bytes' },
+				appliedVersions: versions,
+				maxVersion: null,
+				container: container('c1'),
+			}),
 		);
-		const result = proofModule.assertCurrentDisposableMigrationProof({
-			path,
-			readLive: liveReader({ container: container('c1'), appliedVersions: [] }),
-		});
+		const live = liveReader({ container: container('c1'), appliedVersions: versions });
+		const result = proofModule.assertCurrentDisposableMigrationProof({ path, readLive: live });
 		expect(result.ok).toBe(false);
 		expect(result.reason).toMatch(/Missing disposable migration proof/);
+		expect(() =>
+			proofModule.writeDisposableMigrationProof({
+				appliedVersions: versions,
+				path,
+				readLive: live,
+			}),
+		).not.toThrow();
 	});
 
 	it('fails closed when the container is down', async () => {

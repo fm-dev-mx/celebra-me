@@ -337,6 +337,7 @@ function mapFamilyToDraft(
 const PUBLISHED_ONLY_DRAFT_KEYS = [
 	'_assetSlug',
 	'isDemo',
+	'memories',
 	'navigation',
 	'sectionStyles',
 	'templateId',

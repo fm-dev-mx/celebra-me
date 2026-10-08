@@ -55,6 +55,7 @@ for (const route of extra) {
 			expect(new URL(page.url()).pathname).toBe(`/${route.eventType}/${route.slug}`);
 			const images = await assertRenderedImageDelivery(page);
 			const failures = images.flatMap((image) => {
+				if (image.url.startsWith('data:')) return [];
 				const delivered = responses.get(image.url);
 				if (!delivered)
 					return [

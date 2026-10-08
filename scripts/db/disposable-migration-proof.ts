@@ -28,7 +28,11 @@ import { readGitWorktreeState } from './release-check.ts';
 export const DISPOSABLE_MIGRATION_PROOF_COMMON_RELATIVE =
 	'db-evidence/disposable-migration-proof.json';
 
-export const DISPOSABLE_MIGRATION_PROOF_VERSION = 2;
+/**
+ * v3: per-file digests are line-ending normalized (see `normalizeSqlForDigest`). v2 receipts
+ * hashed one worktree's checkout bytes, so they are treated as missing rather than compared.
+ */
+export const DISPOSABLE_MIGRATION_PROOF_VERSION = 3;
 
 const DISPOSABLE_APPLY_COMMAND = 'pnpm db:migrate -- --target disposable-test --apply';
 
@@ -112,9 +116,10 @@ export function computeCurrentMigrationSetDigest(maxVersion?: string): {
 
 let liveStateCache: DisposableLiveState | null = null;
 
-/** Drop the memoized live state (after a disposable write or reset in the same process). */
+/** Drop the memoized live state and cached migration set digests. */
 export function resetDisposableLiveStateCache(): void {
 	liveStateCache = null;
+	migrationSetDigestCache.clear();
 }
 
 /** Read the disposable container identity and live migration history once per process. */
@@ -211,6 +216,22 @@ export function readDisposableMigrationProof(
 	} catch {
 		return null;
 	}
+}
+
+/**
+ * Retire the receipt after the disposable history was dropped. A reset re-applies every
+ * migration, so the previous digests no longer describe what the container ran; keeping them
+ * would block the re-apply with a stale "edited in place" finding. The last retired receipt is
+ * kept next to the live one for diagnosis.
+ */
+export function invalidateDisposableMigrationProof(
+	options: Pick<DisposableProofOptions, 'path'> = {},
+): boolean {
+	const path = proofPath(options);
+	resetDisposableLiveStateCache();
+	if (!existsSync(path)) return false;
+	renameSync(path, `${path}.superseded`);
+	return true;
 }
 
 export function writeDisposableMigrationProof(

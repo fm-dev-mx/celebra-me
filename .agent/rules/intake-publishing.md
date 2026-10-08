@@ -8,7 +8,7 @@ All status enums are defined in `src/lib/intake/types.ts`:
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------- |
 | `InvitationStatus`             | `draft`, `waiting_for_client`, `client_submitted`, `in_review`, `in_production`, `preview_sent`, `approved`, `published`, `archived` | `invitations` table               |
 | `InvitationContentDraftStatus` | `draft`, `reviewed`, `approved`                                                                                                      | `invitation_content_drafts` table |
-| `ContentSource`                | `draft`, `published`, `demo`, `empty`, `mixed`                                                                                       | Derived, not persisted            |
+| `ContentSource`                | `draft`, `published`, `empty`, `mixed`                                                                                               | Derived, not persisted            |
 | `IntakeRequestStatus`          | `draft`, `active`, `submitted`, `closed`, `expired`                                                                                  | `intake_requests` table           |
 | `IntakeSubmissionStatus`       | `in_progress`, `submitted`, `needs_changes`, `approved`                                                                              | `intake_submissions` table        |
 
@@ -179,11 +179,8 @@ confirmation. A globally unique idempotency record binds the request to its resu
 retry returns the already-completed publication without a second version bump while a key reused
 with different parameters is rejected.
 
-### Demo publish
-
-Separate flow in `src/lib/content-publication/` with its own `DemoDriftStatus`. Dry-run → confirm
-two-phase. Protected by `assertSafeTarget()` (blocks if `prodRow.isDemo !== true`) and stale-content
-hash comparison.
+Demos have no publication flow: they are versioned JSON under `src/content/event-demos/`, rendered
+from Git and never mirrored into the database.
 
 ## Content Source Derivation
 
@@ -191,7 +188,7 @@ hash comparison.
 per-section `SectionSource`:
 
 ```
-Priority per section: draft > published > demo > empty
+Priority per section: draft > published > empty
 ```
 
 `ContentSource` is the aggregate:
@@ -212,10 +209,10 @@ Editor metadata-reopen and restore-from-published commit through atomic RPCs tha
 managed-mutation receipt contract in `docs/core/architecture.md` with `pnpm invitation:release`
 where applicable.
 
-The publication path does not rely on the non-transactional repository helpers
-(`upsertPublishedContent`, `updateDraftStatus`) for write safety; it commits through the atomic RPC.
-`upsertDraft` remains limited to draft initialization/reopening and must not be used as a substitute
-for publication concurrency protection.
+The publication path does not rely on the non-transactional repository helper `updateDraftStatus`
+for write safety; it commits through the atomic RPC. `upsertDraft` remains limited to draft
+initialization/reopening and must not be used as a substitute for publication concurrency
+protection.
 
 The conflict error message is:
 `"Otra persona guardó cambios antes que tú. Recarga los datos para continuar."`
@@ -233,8 +230,6 @@ The service layer relies on these implicit contracts from the repository layer:
 4. **`updateInvitationConditionally`** returns `null` on optimistic lock conflict
 5. **`ACTIVE_FILTER`** (`deleted_at IS NULL`) applies to all repository `find` queries —
    soft-deleted rows are invisible
-6. **`upsertPublishedContent`** finds existing row to branch between INSERT and UPDATE — no DB-side
-   upsert
 
 Repositories at `src/lib/intake/repositories/`.
 
@@ -253,4 +248,5 @@ is retained for the invitation/draft lifetime with `ON DELETE RESTRICT`: at most
 per successful confirmation, so growth is linear and no scheduled cleanup is justified. A retry
 reaches database receipt replay even after approval; non-identical approved-draft requests remain
 invalid. Public metadata includes slug, title, event type, base demo, theme, kind, snapshot, status,
-and archive availability; contact and operational fields are excluded.
+and archive availability; contact and operational fields are excluded. The base demo and snapshot
+entries mirror the legacy `base_demo_id`/`snapshot` columns, scheduled for removal.

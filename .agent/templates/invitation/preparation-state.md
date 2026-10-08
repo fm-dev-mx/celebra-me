@@ -44,6 +44,10 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 Classification must be one of: `verified` | `inferred` | `ambiguous` | `missing` | `not_applicable`
 | `requires_owner_decision`.
 
+Keep this a Markdown table with every cell at most 120 visible characters; move longer notes into
+prose below it. The preparation parser reads only table rows, so the table lint blocks longer cells
+instead of converting the table to a list.
+
 | field           | value | classification          | source | notes                                               |
 | --------------- | ----- | ----------------------- | ------ | --------------------------------------------------- |
 | celebrantName   |       | missing                 |        | Orthography must be verified before identity freeze |

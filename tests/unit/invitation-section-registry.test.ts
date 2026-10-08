@@ -4,8 +4,10 @@ import {
 	getConfigEditorSections,
 	getEditorSectionById,
 	getPreviewAnchorForSection,
+	getPublicSectionDefinitions,
 	deriveOrderedPublicSections,
 	getSectionVisibilityStatus,
+	isManagedOnlySectionKey,
 } from '@/lib/intake/invitation-section-registry';
 import { CONTENT_SECTION_KEYS, INVITATION_RENDER_SECTION_KEYS } from '@/lib/theme/theme-contract';
 
@@ -26,13 +28,23 @@ describe('invitation-section-registry', () => {
 	});
 
 	describe('editor-facing public sections', () => {
-		const editorPublicIds = ['hero', ...CONTENT_SECTION_KEYS];
+		const editorPublicIds = [
+			'hero',
+			...CONTENT_SECTION_KEYS.filter((key) => !isManagedOnlySectionKey(key)),
+		];
 
 		it('uses the public render contract order with hero first', () => {
 			expect(editorPublicIds[0]).toBe('hero');
 			for (const key of CONTENT_SECTION_KEYS) {
+				if (isManagedOnlySectionKey(key)) continue;
 				expect(editorPublicIds).toContain(key);
 			}
+		});
+
+		it('keeps managed-only content sections out of the editor', () => {
+			expect(CONTENT_SECTION_KEYS).toContain('memories');
+			expect(getPublicSectionDefinitions().map((s) => s.id)).not.toContain('memories');
+			expect(PUBLIC_SECTION_DEFINITIONS.memories.label).toBe('Recuerdos de invitados');
 		});
 
 		it('uses Spanish user-facing labels', () => {

@@ -22,6 +22,7 @@ export function buildInvitationCssResolverInput(input: {
 			itinerary: viewModel.sections.itinerary?.variant,
 			gallery: viewModel.sections.gallery?.variant,
 			countdown: viewModel.sections.countdown?.variant,
+			memories: viewModel.sections.memories?.variant,
 		},
 		envelopeVariant: resolveEnvelopeDataVariant(
 			page.envelope?.revealVariant,

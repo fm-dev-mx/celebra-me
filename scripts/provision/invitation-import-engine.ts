@@ -60,6 +60,7 @@ import {
 } from './normalized-invitation-release.ts';
 import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
 import { cleanupHostedPsqlResources, type TrackedResource } from './managed-invitation-cleanup.ts';
+import { assertManagedMemoriesReference } from './managed-memories-reference.ts';
 import {
 	buildSemanticFunctionalChanges,
 	computePlanId,
@@ -1562,6 +1563,12 @@ function analyzeTargetDrift(
 	}
 	assertManagedDraftContentSchema(targetDraftContent);
 	assertManagedContentSchema(targetPublishedContent);
+	assertManagedMemoriesReference({
+		content: targetPublishedContent,
+		eventId: typeof scanned.existingEvent?.id === 'string' ? scanned.existingEvent.id : null,
+		dbUrl: targetDbUrl,
+		targetLabel: 'hosted',
+	});
 
 	checkTargetDivergenceConflict(
 		slug,

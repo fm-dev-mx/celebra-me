@@ -5,6 +5,9 @@ import type {
 } from '@/lib/invitation/section-variants';
 export { CROSS_PRESET_REPRESENTATIVE_VARIANTS } from '../../../scripts/screenshot/visual-coverage-contract';
 
+/** Synthetic memory space slug; no client identity and never provisioned. */
+export const CANONICAL_MEMORIES_SLUG = 'recuerdos-sinteticos';
+
 export type SyntheticVariantOverrides = {
 	section: CanonicalVariantSection;
 	variant: string;
@@ -263,6 +266,9 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 			date: '21 de noviembre de 2026',
 			image: 'portrait',
 		},
+		...(section === 'memories'
+			? { memories: { variant, publicSlug: CANONICAL_MEMORIES_SLUG } }
+			: {}),
 		envelope: {
 			variant: envelopeVariant,
 		},
@@ -409,6 +415,9 @@ export function buildIncompatiblePrerequisiteEvent(
 		case 'personalizedAccess':
 			delete (data.rsvp as Record<string, unknown>).personalizedAccess;
 			break;
+		case 'memories':
+			delete (data.memories as Record<string, unknown>).publicSlug;
+			break;
 	}
 
 	return data;
@@ -491,5 +500,7 @@ export function getIncompatiblePrerequisiteExpectation(
 		case 'rsvp':
 		case 'personalizedAccess':
 			return { expectedPath: ['rsvp', 'personalizedAccess'] };
+		case 'memories':
+			return { expectedPath: ['memories', 'publicSlug'] };
 	}
 }

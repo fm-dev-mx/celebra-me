@@ -53,7 +53,7 @@ files. Acceptance is human-only and unavailable in CI. Accepted PNGs belong unde
 3. Run the Local dry-run and the render-contract regression suite.
 
 An invitation absent from the canonical registry is an audit failure. Demos remain discovered from
-`src/content/event-demos/**`; templates remain schema and structural-validation inputs.
+`src/content/event-demos/**`.
 
 ## Exclusions
 

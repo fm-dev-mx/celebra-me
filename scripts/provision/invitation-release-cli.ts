@@ -36,7 +36,10 @@ import {
 	type InvitationUpdateTarget,
 } from './invitation-update-options.ts';
 import {
+	assessPreviewWriteScope,
 	authorizePreviewWriteApply,
+	formatPreviewWriteScope,
+	type PreviewWriteScopeAssessment,
 	verifyPreviewWriteAuthorization,
 } from './preview-write-auth.ts';
 import { normalizeOperatorArgv } from '../lib/operator-argv.ts';
@@ -402,6 +405,14 @@ Options:
   --reconcile-stale             Plan or apply strict metadata-only stale provenance recovery (package local opcional)
   --help, -h                   Show this help message
 
+Preview write authorization:
+  A non-interactive Preview write (--apply --non-interactive, or no TTY) requires the exact task scope
+  CELEBRA_TASK_SCOPE=preview:<slug>:<operation> (apply for releases, approve for --approve,
+  provenance-recovery for --reconcile-stale --apply). No wildcard; lane or worktree is not authorization.
+  Releases check it before planning or remote work, --approve before live checks; --dry-run with
+  Preview reports it as "Preview write scope: present | missing | invalid".
+  Interactive TTY writes ask for YES instead.
+
 Legacy filesystem approval import is retired; approvals are created and finalized in the shared Preview store.
 Schema BEHIND/DRIFT: run pnpm db:migrate (never auto-migrates from this command).
 
@@ -739,6 +750,14 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			}
 			return;
 		}
+		// Fail fast on a missing task scope before the live Preview checks run.
+		verifyPreviewWriteAuthorization({
+			slug: pending.slug,
+			targets: ['preview'],
+			apply: true,
+			operation: 'approve',
+			isInteractive: !nonInteractive && isTTY,
+		});
 		const live = await verifyPreviewArtifactLive(pending);
 		if (!json) {
 			console.log(`Verificación Preview en vivo · ${pending.slug}`);
@@ -755,13 +774,6 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			const failed = PREVIEW_LIVE_CHECKLIST_KEYS.filter((key) => !live.checklistResults[key]);
 			throw new Error(`LIVE_PREVIEW_VERIFICATION_FAILED: ${failed.join(', ')}.`);
 		}
-		verifyPreviewWriteAuthorization({
-			slug: pending.slug,
-			targets: ['preview'],
-			apply: true,
-			operation: 'approve',
-			isInteractive: !nonInteractive && isTTY,
-		});
 		if (!nonInteractive && isTTY) {
 			const decision = await select({
 				message: `¿Aprobar la release verificada de Preview para "${pending.slug}"?`,
@@ -926,6 +938,29 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			verbose,
 		});
 		return;
+	}
+
+	// Preview write scope preflight, before any package resolution, planning or remote work:
+	// a non-interactive apply fails fast with the same error the write gate would raise later,
+	// and a dry-run reports what a non-interactive apply would need.
+	let previewWriteScope: PreviewWriteScopeAssessment | undefined;
+	if (targets.includes('preview')) {
+		if (apply) {
+			verifyPreviewWriteAuthorization({
+				slug,
+				targets: ['preview'],
+				apply: true,
+				operation: 'apply',
+				isInteractive: !nonInteractive && isTTY,
+			});
+		} else {
+			previewWriteScope = assessPreviewWriteScope({
+				slug,
+				operation: 'apply',
+				isInteractive: false,
+			});
+			if (!json) console.log(formatPreviewWriteScope(previewWriteScope));
+		}
 	}
 
 	const ownerUserId = value(args, '--owner-user-id');
@@ -1359,6 +1394,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						plan: planData,
 						status,
 						suggestedConflictResolutions: suggestedResolutions,
+						previewWriteScope,
 					},
 					null,
 					2,

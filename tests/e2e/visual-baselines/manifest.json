@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-08T00:18:15.721Z",
+    "generatedAt": "2026-10-08T18:36:03.304Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,15 +12,15 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
-        "cssSha256": "4fa880fbe079db593ec4bf67fa15d36518beceda18fa2518317941518ba88903",
-        "assetSha256": "ff92fcf04af4cab85ac766eebd039fd30bfef76d4c0cafa00f843b46dfa9072b",
+        "cssSha256": "ab8c2a4cb84ebde28cde4d98e65e1fa02481202ef71e6c83cd81fedd339381d1",
+        "assetSha256": "4962272183b7a8ad3dc74d17c3c6cdbc478779b00474232391fb21db1555b082",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 178,
-    "matrixHash": "4dc7605edcf7851911b2fa92eeaab8abbcc8d092feb8ca36b514dc9f1e722efe",
+    "totalCaptures": 180,
+    "matrixHash": "aeedd65dcbc2e6dce8742fea93bdf491741c4f0f427a984e062904358263a183",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -89,7 +89,7 @@
             "cssOwner": "src/styles/themes/sections/hero/_bleed-portrait.scss",
             "fixtureIdentity": "synthetic:hero.bleed-portrait",
             "file": "jewelry-box-mobile-hero-bleed-portrait.png",
-            "sha256": "e6cbfe9bdd26eed21c036a2f87f4d82eaa87c69a731599f0252ab5b24c6977b3",
+            "sha256": "8f15e6459daba3c45139600a3849b75692657621a9f93af8ed154b1f5c2780d3",
             "contentHash": "c0566734aa39e8b829b77a4ca277d198d86d4e63429c9454e899308293d002fd",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -1454,6 +1454,34 @@
         },
         {
             "kind": "variant",
+            "section": "memories",
+            "variant": "card",
+            "preset": "jewelry-box",
+            "viewport": "mobile",
+            "cssOwner": "src/styles/themes/sections/memories/_card.scss",
+            "fixtureIdentity": "synthetic:memories.card",
+            "file": "jewelry-box-mobile-memories-card.png",
+            "sha256": "b077659c1a2939ba175d574cf12b4340d818f0254acf7bd946fe2b1e4abaaec5",
+            "contentHash": "c2e1531ee7a04e525dfac047b0bf4854378af97b877d4f398b85d909b2327825",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "memories",
+            "variant": "card",
+            "preset": "jewelry-box",
+            "viewport": "desktop",
+            "cssOwner": "src/styles/themes/sections/memories/_card.scss",
+            "fixtureIdentity": "synthetic:memories.card",
+            "file": "jewelry-box-desktop-memories-card.png",
+            "sha256": "a3ead85ebfef18dc112c3a2ac016f5d4f551d2630f9e21e4ed63a3eb667bf8ef",
+            "contentHash": "c2e1531ee7a04e525dfac047b0bf4854378af97b877d4f398b85d909b2327825",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
             "section": "hero",
             "variant": "split-cover",
             "preset": "celestial-blue",
@@ -1883,8 +1911,8 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/invitation-boda-victoria-y-roberto-mobile.png",
-            "sha256": "8ce334a870cb0ccb45c2c0be4f223cfaa0df19a0eb113587ed6b52df21c8acc1",
-            "contentHash": "207e0256598d23e2509057acc7a14a10b50a13c2445939036d170206d45f9119",
+            "sha256": "b83bd73bbbbbf78f0263ccc53e29ea3b11ffdd073dac29badcf300ed392aa2a9",
+            "contentHash": "b470344a86821389fb1ed72f39ac57005519ff3838d6b6049f466d8c222e3bc5",
             "assetHash": "6714935fa490f0cec53f80c0302089b08eaa8c8fe08db87034b3a794c1661871",
             "comparisonResult": "ACCEPTED"
         },
@@ -1895,8 +1923,8 @@
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
             "file": "pages/invitation-boda-victoria-y-roberto-desktop.png",
-            "sha256": "e35fa6d07ff7d6c554099c769c8b43187a98c9a6660e0100fafb0a4efa5ca7e0",
-            "contentHash": "207e0256598d23e2509057acc7a14a10b50a13c2445939036d170206d45f9119",
+            "sha256": "36bb49e1c3c5ade2f67c9a6f211ee8ad13676c23f42fa067da4446e6e1f5ae35",
+            "contentHash": "b470344a86821389fb1ed72f39ac57005519ff3838d6b6049f466d8c222e3bc5",
             "assetHash": "6714935fa490f0cec53f80c0302089b08eaa8c8fe08db87034b3a794c1661871",
             "comparisonResult": "ACCEPTED"
         },
@@ -2387,7 +2415,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-seaside-mobile.png",
-            "sha256": "9b2563349c582a44eea44d6b8f185d24c1416043c7687b9941a50fcd0928cbd3",
+            "sha256": "617b9250676a40ce14cf71793abbe930fc26d89547a08b22f3b3cd896975bbbf",
             "contentHash": "b978a449a4a46063fe8abcada0a5f405192c8d3c3a9e4de272f894a568771a2b",
             "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
             "comparisonResult": "ACCEPTED"
@@ -2405,9 +2433,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "9156169167731162dc7fd6e720cb6a1c6e985e5a",
+    "referenceSha": "5732f7105ed5e082b2c047080ff2547a2fb78929",
     "variantManifest": {
-        "generatedAt": "2026-10-08T00:18:15.721Z",
+        "generatedAt": "2026-10-08T18:36:03.304Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2420,15 +2448,15 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
-            "cssSha256": "4fa880fbe079db593ec4bf67fa15d36518beceda18fa2518317941518ba88903",
-            "assetSha256": "ff92fcf04af4cab85ac766eebd039fd30bfef76d4c0cafa00f843b46dfa9072b",
+            "cssSha256": "ab8c2a4cb84ebde28cde4d98e65e1fa02481202ef71e6c83cd81fedd339381d1",
+            "assetSha256": "4962272183b7a8ad3dc74d17c3c6cdbc478779b00474232391fb21db1555b082",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 122,
-        "matrixHash": "19bb56924dd713552e2d8a5230dfd0f537754bafe7e33130602c9533fe04cd02",
+        "totalCaptures": 124,
+        "matrixHash": "41c10f08266e146ee5bebbcce534cea7e26039677eb3d3d6c4526b3c389417c1",
         "baselinePreset": "jewelry-box",
         "crossPreset": "celestial-blue",
         "captures": [
@@ -2497,7 +2525,7 @@
                 "cssOwner": "src/styles/themes/sections/hero/_bleed-portrait.scss",
                 "fixtureIdentity": "synthetic:hero.bleed-portrait",
                 "file": "jewelry-box-mobile-hero-bleed-portrait.png",
-                "sha256": "e6cbfe9bdd26eed21c036a2f87f4d82eaa87c69a731599f0252ab5b24c6977b3",
+                "sha256": "8f15e6459daba3c45139600a3849b75692657621a9f93af8ed154b1f5c2780d3",
                 "contentHash": "c0566734aa39e8b829b77a4ca277d198d86d4e63429c9454e899308293d002fd",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -3862,6 +3890,34 @@
             },
             {
                 "kind": "variant",
+                "section": "memories",
+                "variant": "card",
+                "preset": "jewelry-box",
+                "viewport": "mobile",
+                "cssOwner": "src/styles/themes/sections/memories/_card.scss",
+                "fixtureIdentity": "synthetic:memories.card",
+                "file": "jewelry-box-mobile-memories-card.png",
+                "sha256": "b077659c1a2939ba175d574cf12b4340d818f0254acf7bd946fe2b1e4abaaec5",
+                "contentHash": "c2e1531ee7a04e525dfac047b0bf4854378af97b877d4f398b85d909b2327825",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "memories",
+                "variant": "card",
+                "preset": "jewelry-box",
+                "viewport": "desktop",
+                "cssOwner": "src/styles/themes/sections/memories/_card.scss",
+                "fixtureIdentity": "synthetic:memories.card",
+                "file": "jewelry-box-desktop-memories-card.png",
+                "sha256": "a3ead85ebfef18dc112c3a2ac016f5d4f551d2630f9e21e4ed63a3eb667bf8ef",
+                "contentHash": "c2e1531ee7a04e525dfac047b0bf4854378af97b877d4f398b85d909b2327825",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
                 "section": "hero",
                 "variant": "split-cover",
                 "preset": "celestial-blue",
@@ -4141,10 +4197,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "9156169167731162dc7fd6e720cb6a1c6e985e5a"
+        "referenceSha": "5732f7105ed5e082b2c047080ff2547a2fb78929"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-08T00:18:15.727Z",
+        "generatedAt": "2026-10-08T18:36:03.312Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4157,8 +4213,8 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
-            "cssSha256": "4fa880fbe079db593ec4bf67fa15d36518beceda18fa2518317941518ba88903",
-            "assetSha256": "ff92fcf04af4cab85ac766eebd039fd30bfef76d4c0cafa00f843b46dfa9072b",
+            "cssSha256": "ab8c2a4cb84ebde28cde4d98e65e1fa02481202ef71e6c83cd81fedd339381d1",
+            "assetSha256": "4962272183b7a8ad3dc74d17c3c6cdbc478779b00474232391fb21db1555b082",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4319,8 +4375,8 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
                 "file": "pages/invitation-boda-victoria-y-roberto-mobile.png",
-                "sha256": "8ce334a870cb0ccb45c2c0be4f223cfaa0df19a0eb113587ed6b52df21c8acc1",
-                "contentHash": "207e0256598d23e2509057acc7a14a10b50a13c2445939036d170206d45f9119",
+                "sha256": "b83bd73bbbbbf78f0263ccc53e29ea3b11ffdd073dac29badcf300ed392aa2a9",
+                "contentHash": "b470344a86821389fb1ed72f39ac57005519ff3838d6b6049f466d8c222e3bc5",
                 "assetHash": "6714935fa490f0cec53f80c0302089b08eaa8c8fe08db87034b3a794c1661871",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4331,8 +4387,8 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "desktop",
                 "file": "pages/invitation-boda-victoria-y-roberto-desktop.png",
-                "sha256": "e35fa6d07ff7d6c554099c769c8b43187a98c9a6660e0100fafb0a4efa5ca7e0",
-                "contentHash": "207e0256598d23e2509057acc7a14a10b50a13c2445939036d170206d45f9119",
+                "sha256": "36bb49e1c3c5ade2f67c9a6f211ee8ad13676c23f42fa067da4446e6e1f5ae35",
+                "contentHash": "b470344a86821389fb1ed72f39ac57005519ff3838d6b6049f466d8c222e3bc5",
                 "assetHash": "6714935fa490f0cec53f80c0302089b08eaa8c8fe08db87034b3a794c1661871",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4823,7 +4879,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-seaside-mobile.png",
-                "sha256": "9b2563349c582a44eea44d6b8f185d24c1416043c7687b9941a50fcd0928cbd3",
+                "sha256": "617b9250676a40ce14cf71793abbe930fc26d89547a08b22f3b3cd896975bbbf",
                 "contentHash": "b978a449a4a46063fe8abcada0a5f405192c8d3c3a9e4de272f894a568771a2b",
                 "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
                 "comparisonResult": "CANDIDATE"
@@ -4841,9 +4897,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "9156169167731162dc7fd6e720cb6a1c6e985e5a"
+        "referenceSha": "5732f7105ed5e082b2c047080ff2547a2fb78929"
     },
-    "candidateManifestSha256": "47b49476c50f64a092744f04da8df3a4c239c7d456b380ac288a64133fd23469",
-    "acceptedFromCommit": "9156169167731162dc7fd6e720cb6a1c6e985e5a",
-    "acceptedAt": "2026-10-08T00:22:52.284Z"
+    "candidateManifestSha256": "5091c9045a97526b58e04fa086a4a6b9262ea3a71fc08232afb3208f52c05206",
+    "acceptedFromCommit": "5732f7105ed5e082b2c047080ff2547a2fb78929",
+    "acceptedAt": "2026-10-08T18:36:48.742Z"
 }

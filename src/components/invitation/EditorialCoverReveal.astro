@@ -574,6 +574,10 @@ const shouldRenderHidden =
 					openButton,
 					reducedMotion: collectorReducedMotion,
 					onCommit: () => {
+						// Runs inside the tap or drag release that commits the opening.
+						window.dispatchEvent(
+							new CustomEvent('envelope:open-requested', { detail: { eventSlug } }),
+						);
 						focusWasInside = this.contains(document.activeElement);
 						if (openButton) {
 							openButton.disabled = true;
@@ -592,6 +596,10 @@ const shouldRenderHidden =
 				event.preventDefault();
 				openButton.disabled = true;
 				openButton.setAttribute('aria-disabled', 'true');
+				// Inside the tap, so the music player can start with the user's activation.
+				window.dispatchEvent(
+					new CustomEvent('envelope:open-requested', { detail: { eventSlug } }),
+				);
 
 				rememberOpened();
 
