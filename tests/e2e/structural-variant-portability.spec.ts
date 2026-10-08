@@ -6,7 +6,7 @@ import {
 	waitForVisualHydration,
 	prepareCompletePage,
 } from './harness/complete-page-capture';
-import { auditCriticalLayout } from './harness/critical-layout-audit';
+import { auditCriticalLayout, CRITICAL_TEXT_SELECTORS } from './harness/critical-layout-audit';
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -474,7 +474,12 @@ async function runVariantVisualTest(
 		`Layout clipping/overlap audit failed for ${section}.${variant} @ ${vp.name} (${preset}):\n${layoutAudit.issues.join('\n')}`,
 	).toEqual([]);
 
-	expect(await target.evaluate(auditCriticalLayout)).toEqual([]);
+	expect(
+		await target.evaluate(auditCriticalLayout, {
+			criticalTextSelectors: CRITICAL_TEXT_SELECTORS,
+		}),
+		`Critical text audit failed for ${section}.${variant} @ ${vp.name} (${preset})`,
+	).toEqual([]);
 
 	// 5. Verify no horizontal document overflow
 	const hasOverflow = await page.evaluate(() => {
@@ -652,6 +657,40 @@ test('public celestial demo resolves portrait-keepsake from its content', async 
 	}));
 	expect(geometry.width).toBeCloseTo(256, 1);
 	expect(geometry.fontSize).toBeCloseTo(25.668, 2);
+});
+
+test('critical text audit rejects clipped numerals and overflowing section titles', async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.setContent(`<main>
+		<div style="width:40px;overflow:hidden;line-height:1"><span class="countdown__value" style="white-space:nowrap;font-size:32px;line-height:1">173173</span></div>
+		<h2 class="gifts-section__title" style="white-space:nowrap;width:120px;font-size:40px">Mesa de regalos para la celebración</h2>
+		<div style="height:12px;overflow:hidden"><h2 class="family__title" style="font-size:40px;line-height:1.2;margin:0">Familia</h2></div>
+	</main>
+	<section id="fine">
+		<span class="countdown__value sr-only">99</span>
+		<div style="height:32px;overflow:hidden"><span class="countdown__value" style="font-size:32px;line-height:1">12</span></div>
+	</section>`);
+	const issues = await page
+		.locator('main')
+		.evaluate(auditCriticalLayout, { criticalTextSelectors: CRITICAL_TEXT_SELECTORS });
+	expect(issues).toEqual(
+		expect.arrayContaining([
+			'Critical text .countdown__value clipped by ancestor',
+			'Critical text .gifts-section__title exceeds the viewport',
+			'Critical text .gifts-section__title overflows its own box',
+			'Critical text .family__title clipped by ancestor',
+		]),
+	);
+	// Screen-reader copies and a tight line box that only cuts empty ascender space pass.
+	expect(
+		await page
+			.locator('#fine')
+			.evaluate(auditCriticalLayout, { criticalTextSelectors: CRITICAL_TEXT_SELECTORS }),
+	).toEqual([]);
+	// Without the opt-in, only the hero checks run.
+	expect(await page.locator('main').evaluate(auditCriticalLayout)).toEqual([]);
 });
 
 test('section captures exclude a consent banner mounted after capture setup', async ({ page }) => {

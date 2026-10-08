@@ -1,5 +1,36 @@
+/**
+ * Critical text beyond the hero title: hero names across hero variants, countdown numerals and
+ * section titles. Curated here (rather than a component data attribute) so the audit does not
+ * depend on every section component opting in.
+ */
+export const CRITICAL_TEXT_SELECTORS: readonly string[] = Object.freeze([
+	'.invitation-hero__title',
+	'.ceremonial-portrait-hero__name',
+	'.framed-portrait-hero__name',
+	'.editorial-cover__headline',
+	'.countdown__value',
+	'.countdown-title',
+	'.family__title',
+	'.gallery-section__title',
+	'.gifts-section__title',
+	'.itinerary__title',
+	'.rsvp__title',
+	'.event-location__heading',
+	'.event-location__indications-heading',
+	'.access-card__title',
+]);
+
+export interface CriticalLayoutAuditOptions {
+	/**
+	 * Opt-in: also audit these selectors for viewport overflow, ancestor clipping and text that
+	 * spills out of its own box. Pass `CRITICAL_TEXT_SELECTORS`. Omitted, only the hero checks run.
+	 * Must be passed as the `evaluate` argument: this function is serialized into the page.
+	 */
+	criticalTextSelectors?: readonly string[];
+}
+
 /** Browser-side geometry shared by public routes and synthetic variants. */
-export function auditCriticalLayout(root: Element): string[] {
+export function auditCriticalLayout(root: Element, options?: CriticalLayoutAuditOptions): string[] {
 	const issues: string[] = [];
 	const visible = (element: Element): boolean => {
 		for (let node: Element | null = element; node; node = node.parentElement) {
@@ -92,5 +123,49 @@ export function auditCriticalLayout(root: Element): string[] {
 				issues.push('Music prompt overlaps ' + content.className);
 		}
 	}
+	// Nested so the function stays self-contained when serialized into the page.
+	const auditCriticalText = (selector: string, element: Element): void => {
+		if (!visible(element) || element.closest('[aria-hidden="true"], .sr-only')) return;
+		const own = element.getBoundingClientRect();
+		// Screen-reader-only copies are 1px boxes by design; they are not rendered text.
+		if (own.width <= 1 || own.height <= 1) return;
+		const rects = textRects(element);
+		if (rects.length === 0) return;
+		// Range rects span the font's full content area (ascender to descender), which exceeds a
+		// tight line box (e.g. `line-height: 1` countdown numerals in a 1em `overflow: hidden`
+		// wrapper) without any visible glyph being cut. Vertical clipping is therefore measured
+		// on the line box: trim the negative half-leading from each rect before comparing.
+		const lineHeight = Number.parseFloat(getComputedStyle(element).lineHeight);
+		const halfLeadingOvershoot = (rect: DOMRect): number =>
+			Number.isFinite(lineHeight) ? Math.max(0, (rect.height - lineHeight) / 2) : 0;
+		const viewportWidth = document.documentElement.clientWidth;
+		if (rects.some((rect) => rect.left < -2 || rect.right > viewportWidth + 2))
+			issues.push(`Critical text ${selector} exceeds the viewport`);
+		if (rects.some((rect) => rect.left < own.left - 2 || rect.right > own.right + 2))
+			issues.push(`Critical text ${selector} overflows its own box`);
+		for (
+			let ancestor: Element | null = element;
+			ancestor && ancestor !== document.body;
+			ancestor = ancestor.parentElement
+		) {
+			const style = getComputedStyle(ancestor),
+				bounds = ancestor.getBoundingClientRect();
+			const clipsX = /hidden|clip/.test(style.overflowX);
+			const clipsY = /hidden|clip/.test(style.overflowY);
+			const clipped = rects.some(
+				(rect) =>
+					(clipsX && (rect.left < bounds.left - 2 || rect.right > bounds.right + 2)) ||
+					(clipsY &&
+						(rect.top + halfLeadingOvershoot(rect) < bounds.top - 2 ||
+							rect.bottom - halfLeadingOvershoot(rect) > bounds.bottom + 2)),
+			);
+			if (clipped) {
+				issues.push(`Critical text ${selector} clipped by ancestor`);
+				return;
+			}
+		}
+	};
+	for (const selector of options?.criticalTextSelectors ?? [])
+		for (const element of root.querySelectorAll(selector)) auditCriticalText(selector, element);
 	return [...new Set(issues)];
 }
