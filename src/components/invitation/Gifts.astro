@@ -7,6 +7,8 @@ import { PayPalIcon } from '@/components/common/icons/social/PayPal';
 import { CopyIcon } from '@/components/common/icons/ui/Copy';
 import { CheckIcon } from '@/components/common/icons/ui/Check';
 import CatalogIcon from '@/components/common/icons/Icon.astro';
+import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
+import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { GiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import type { GiftsVariant } from '@/lib/invitation/section-variants';
 
@@ -60,6 +62,8 @@ interface Props {
 	title?: string;
 	subtitle?: string;
 	folioMark?: string;
+	/** Decorative cutout above the heading. */
+	ornament?: ImageAsset;
 	labels?: {
 		copy?: string;
 		copied?: string;
@@ -78,6 +82,7 @@ const {
 	eyebrow,
 	title = 'Mesa de Regalos',
 	folioMark,
+	ornament,
 	subtitle = 'Su presencia es nuestro mayor regalo, pero si desean tener un detalle, aquí les compartimos algunas opciones.',
 	labels = {
 		copy: 'Copiar',
@@ -181,6 +186,17 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 <section id="regalos" class="gifts-section" data-screenshot-section="gifts" data-variant={variant} data-presentation={presentation}>
 	<div class="gifts-section__container">
 		<header class="gifts-section__header">
+			{ornament && (
+				<img
+					class="gifts-section__ornament"
+					src={plainImgSrc(ornament.src)}
+					alt=""
+					width="240"
+					height="180"
+					loading="lazy"
+					decoding="async"
+				/>
+			)}
 			{eyebrow && <span class="gifts-section__eyebrow">{eyebrow}</span>}
 			<h2 class="gifts-section__title">{title}</h2>
 			{!isLegendOnly && (

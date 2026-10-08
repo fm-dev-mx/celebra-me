@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { GIFTS_PRESENTATIONS } from '@/lib/invitation/presentation-options';
 import { GIFTS_VARIANTS } from '@/lib/invitation/section-variants';
+import { AssetSchema } from '@/lib/schemas/content/shared.schema';
 
 export const safeHttpUrlSchema = z.url().refine(
 	(value) => {
@@ -84,6 +85,8 @@ export const giftsSchema = z
 		// Decorative monogram shown in the editorial-catalog card folio.
 		folioMark: z.string().max(12).optional(),
 		presentation: z.enum(GIFTS_PRESENTATIONS).optional(),
+		// Decorative cutout above the heading (e.g. an illustrated gift box).
+		ornament: AssetSchema.optional(),
 		items: z.array(giftItemSchema).optional(),
 	})
 	.strict()

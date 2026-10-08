@@ -27,6 +27,7 @@ import { MEMORIES_SECTION_DEFAULTS } from '@/lib/memories/copy';
 import { resolveCountdownVisibleUnits } from '@/lib/invitation/countdown-presentation';
 import { resolveGalleryMobileBrowse } from '@/lib/invitation/gallery-presentation';
 import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
+import { resolvePersonalizedAccessPassStyle } from '@/lib/invitation/personalized-access-presentation';
 import { resolvePortraitEnabled } from '@/lib/invitation/hero-presentation';
 import { hasPlayableMusicUrl } from '@/lib/invitation/local-preview-config';
 import {
@@ -508,6 +509,9 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 		personalizedAccess: {
 			...data.rsvp.personalizedAccess,
 			variant: data.rsvp.personalizedAccess.variant,
+			passStyle: resolvePersonalizedAccessPassStyle(
+				data.rsvp.personalizedAccess.presentationOptions,
+			),
 		},
 		eventSlug: entrySlug,
 		eventType: data.eventType,
@@ -522,11 +526,14 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 }
 
 function buildGiftsSectionData(context: AdaptationContext) {
-	const { data } = context;
+	const { data, eventSlug } = context;
 	if (!data.gifts) return undefined;
 	const presentation = resolveGiftsPresentation(data.gifts.presentation);
 	return {
 		...data.gifts,
+		ornament: data.gifts.ornament
+			? resolveAsset(eventSlug, data.gifts.ornament, data.title)
+			: undefined,
 		presentation,
 		items: presentation === 'legend-only' ? [] : (data.gifts.items ?? []),
 		variant: data.gifts.variant,
@@ -628,6 +635,7 @@ export function adaptEvent(
 					autoPlay: originalData.music?.autoPlay ?? false,
 					title: originalData.music?.title,
 					startAt: originalData.music?.startAt,
+					fadeInSeconds: originalData.music?.fadeInSeconds,
 					revealMode: envelope.enabled ? 'envelope' : 'immediate',
 				}
 			: undefined,

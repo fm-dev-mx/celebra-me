@@ -6,6 +6,7 @@ export * from './hero-presentation';
 export * from './countdown-presentation';
 export * from './gallery-presentation';
 export * from './gifts-presentation';
+export * from './personalized-access-presentation';
 export {
 	LOCATION_PRESENTATIONS,
 	resolveLocationMediaMode,
