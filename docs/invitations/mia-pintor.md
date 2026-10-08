@@ -1,8 +1,8 @@
 # Canonical Invitation Preparation State — `mia-pintor`
 
-> Schema owner: `docs/core/invitation-preparation-contract.md`  
-> Executable evaluation: `src/lib/invitation-preparation/` (**prepReadiness SSOT**)  
-> Skill: `.agent/skills/invitation-preparation/SKILL.md`
+> Schema owner: `docs/core/invitation-preparation-contract.md` Executable evaluation:
+> `src/lib/invitation-preparation/` (**prepReadiness SSOT**) Skill:
+> `.agent/skills/invitation-preparation/SKILL.md`
 
 ---
 
@@ -42,7 +42,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | eventLabel            | Mis XV Años                                                                                       | verified       | wa-export     | XV event                                                             |
 | eventDate             | 2026-12-06                                                                                        | verified       | wa-export     | Sunday; also handwritten "06/12/26" on the main photograph           |
 | eventTime             | 17:00                                                                                             | verified       | wa-export     | Religious ceremony                                                   |
-| receptionTime         | 18:30                                                                                             | verified       | wa-export     | Reception at Salón Solé Mío (corrected from initial 19:00 estimate)  |
+| receptionTime         | 18:30                                                                                             | verified       | wa-export     | Reception at Salón Sole Mio (corrected from initial 19:00 estimate)  |
 | timeZone              | America/Monterrey                                                                                 | inferred       | wa-export     | Tampico / Cd. Madero, Tamaulipas                                     |
 | baseDemoId            | demo-xv-celestial-blue                                                                            | inferred       | owner-session | Technical base (preset provenance); client asked for blue            |
 | sourceAssetPath       | source:hr-photos                                                                                  | verified       | owner-session | Opaque label only                                                    |
@@ -50,7 +50,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | primaryVenueName      | Parroquia Nuestra Señora de Lourdes                                                               | verified       | wa-export     | Religious ceremony                                                   |
 | primaryVenueAddress   | Ébano 401, Petrolera, Tampico, Tamps.                                                             | verified       | wa-export     |                                                                      |
 | distinctVenues        | true                                                                                              | verified       | wa-export     | Ceremony and reception are different venues                          |
-| receptionVenueName    | SOLEMIO Salón de Eventos                                                                          | verified       | wa-export     |                                                                      |
+| receptionVenueName    | Sole Mio Salón de Eventos                                                                         | verified       | wa-export     |                                                                      |
 | receptionVenueAddress | Fco. I. Madero 171, Emilio Carranza, Cd. Madero, Tamps.                                           | verified       | wa-export     | Client wrote "Fco l madero"; normalized to "Fco. I. Madero"          |
 | ceremonyMapUrl        | Google Maps search by address                                                                     | inferred       | owner-session | Generated search links; verify destination before release            |
 | fatherName            | —                                                                                                 | not_applicable | wa-export     | Client: invitation is from her family, no parents' names             |
@@ -66,7 +66,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | rsvpWhatsappPhone     | —                                                                                                 | not_applicable | owner-session | No WhatsApp confirmation flow                                        |
 | rsvpDeadline          | —                                                                                                 | missing        | wa-export     | Optional; omit until client provides it                              |
 | musicUrl              | Dancing Queen — ABBA (Cloudinary hosted)                                                          | verified       | wa-export     | Client selected track; autoPlay: true (starts with the envelope tap) |
-| itinerary             | Official Salón Solé Mío schedule                                                                  | verified       | wa-export     | 7 milestones; timeline-paper variant                                 |
+| itinerary             | Official Salón Sole Mio schedule                                                                  | verified       | wa-export     | 7 milestones; timeline-paper variant                                 |
 | specialMessages       | Copy proposed by agent                                                                            | inferred       | owner-session | Pending client approval                                              |
 
 ---
