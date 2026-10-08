@@ -103,6 +103,31 @@
 		--hero-overlay: transparent;
 		--hero-watermark-opacity: 8%;
 
+		// The watermark reads "3 años" instead of a single figure: a smaller size keeps it inside
+		// the canvas corner at every width.
+		--hero-watermark-size: clamp(6rem, 18vw, 20rem);
+		--hero-watermark-white-space: nowrap;
+
+		// Cars emblem above the name: centred on phones, on the text column's edge on desktop.
+		--hero-ornament-max-width: clamp(5.5rem, 24vw, 7.5rem);
+		--hero-ornament-height: 4.5rem;
+		--hero-ornament-margin: 0 0 1.25rem;
+
+		// McQueen (side view) under the date block, on the text column's edge on desktop.
+		--hero-accent-ornament-max-width: clamp(11rem, 46vw, 15rem);
+		--hero-accent-ornament-height: 7rem;
+		--hero-accent-ornament-margin: 1.5rem 0 0;
+
+		// With the emblem the stacked content fills a phone screen: start it below the folio rail
+		// (rail top + its line height) instead of the variant's shorter padding.
+		--hero-content-padding-block-start: calc(clamp(2rem, 5.5svh, 3.5rem) + 2.75rem);
+
+		// Emblem, portrait, copy and McQueen exceed one phone screen: let the section grow so the
+		// portrait keeps its 4:5 frame (the base hero otherwise shrinks it to fit 100svh).
+		@media (width < 992px) {
+			--hero-section-height: auto;
+		}
+
 		// White first name, yellow surname on every width; the surname gains weight against AITHAN.
 		--hero-first-name-fill: var(--editorial-magazine-white);
 		--hero-last-name-fill: var(--aithan-piston);
@@ -117,6 +142,9 @@
 		// On desktop the issue label sits over the photograph's pale sky: print it in asphalt
 		// (1.3:1 → 6:1). Below 992px it stays on the asphalt canvas.
 		@media (width >= 992px) {
+			--hero-ornament-align: flex-start;
+			--hero-accent-ornament-align: flex-start;
+
 			.invitation-hero__folio-label {
 				--color-text-on-dark-rgb: var(--aithan-asphalt-rgb);
 			}
@@ -287,6 +315,48 @@
 			--ec-gold: var(--aithan-piston);
 			--ec-gold-light: var(--aithan-piston);
 		}
+
+		// The inside-cover watermark prints the edition "3 años": half the single-figure size.
+		--ec-inside-mark-size: calc(var(--ec-book-w) * 0.13);
+		--ec-inside-mark-white-space: nowrap;
+
+		// McQueen crosses the lower checkered band (89.5% of the face) left of the roundel; the
+		// source is cropped on its left, so it sits flush with the page edge and enters the frame.
+		--ec-face-ornament-inset: auto auto 10.5% 0;
+		--ec-face-ornament-width: 34%;
+		--ec-face-ornament-height: 15%;
+
+		// Sally (left) and Ramone (right) on the inner page's asphalt, above the folio strip.
+		--ec-page-ornament-1-inset: auto auto 12% 4%;
+		--ec-page-ornament-1-width: 42%;
+		--ec-page-ornament-2-inset: auto 3% 11% auto;
+		--ec-page-ornament-2-width: 46%;
+	}
+
+	// Footer in the race livery: asphalt ground under a red rule with a yellow pinstripe, paper
+	// brand credit and replay link, and a paper-on-asphalt contact button that fills red on hover.
+	.invitation-footer {
+		--footer-editorial-bg: var(--aithan-asphalt);
+		--footer-editorial-bg-image: linear-gradient(var(--aithan-piston) 0 2px, transparent 2px);
+		--footer-editorial-border-top: 4px solid var(--aithan-red);
+		--footer-editorial-shadow: none;
+		--footer-editorial-padding: clamp(2rem, 5vw, 2.75rem) 1.25rem
+			calc(2rem + env(safe-area-inset-bottom, 0px));
+		--footer-editorial-content-gap: 1.25rem 3rem;
+		--footer-editorial-content-gap-md: 1rem 4rem;
+		--footer-editorial-powered-color: rgb(var(--aithan-paper-rgb) / 64%);
+		--footer-editorial-logo-width: 8rem;
+		--footer-editorial-logo-filter: brightness(0) invert(1) opacity(0.92);
+		--footer-editorial-cta-border: rgb(var(--aithan-paper-rgb) / 32%);
+		--footer-editorial-cta-bg: transparent;
+		--footer-editorial-cta-color: var(--aithan-paper);
+		--footer-editorial-cta-icon-filter: brightness(0) invert(1);
+		--footer-editorial-cta-hover-border: var(--aithan-red);
+		--footer-editorial-cta-hover-bg: var(--aithan-red);
+		--footer-editorial-cta-hover-color: #fff;
+		--footer-editorial-cta-hover-shadow: 0 6px 18px rgb(var(--aithan-red-rgb) / 35%);
+		--footer-editorial-replay-color: rgb(var(--aithan-paper-rgb) / 64%);
+		--footer-editorial-replay-hover-color: var(--aithan-piston);
 	}
 
 	// Pattern bands: lane markings out of the scoreboard, a checkered flag before the back cover.
@@ -359,6 +429,13 @@
 		--thank-you-closing-weight: 600;
 		--thank-you-image-hover-filter: none;
 		--thank-you-image-hover-transform: none;
+
+		// Mate's rust reads darker on asphalt than McQueen or Mack: a slightly larger cutout, set
+		// on the signature's left edge like the rest of the back-cover copy.
+		--thank-you-ornament-height: 9.5rem;
+		--thank-you-ornament-max-width: 18rem;
+		--thank-you-ornament-margin: 1.75rem 0 0;
+		--thank-you-ornament-position: left bottom;
 
 		.thank-you-editorial__media {
 			--color-text-on-dark-rgb: var(--aithan-asphalt-rgb);

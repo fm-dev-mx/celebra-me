@@ -123,12 +123,16 @@ const content: CanonicalEventContentInput = {
 		// car) appears once, in the portrait card (mobile) and panel (desktop).
 		backgroundImage: 'heroCanvas',
 		portrait: 'heroPortrait',
+		// Owner-supplied Cars emblem above the name (the film's own title lock-up order) and McQueen
+		// (side view) below the details: the star of the issue appears on the cover and the hero.
+		ornament: 'logoCars',
+		accentOrnament: { type: 'internal', key: 'characterMcQueen' },
 		focalPoint: '50% 50%',
 		focalPointMobile: '50% 50%',
 		tagline: '¡Arrancan los motores! Acompáñeme a toda velocidad a celebrar mis 3 años.',
-		// Race-number watermark and grid slot instead of the preset's XV folio marks.
+		// Age watermark ("3 años") and grid slot instead of the preset's XV folio marks.
 		// The brand is named once, on the collector cover masthead: no design credit in the hero.
-		presentation: { coverMark: '3', coverPage: 'POLE POSITION', designCredit: false },
+		presentation: { coverMark: '3 años', coverPage: 'POLE POSITION', designCredit: false },
 	},
 	quote: {
 		text: 'Motores encendidos y casco listo. ¡Acompáñeme a celebrar mis primeros tres años a toda velocidad!',
@@ -137,7 +141,10 @@ const content: CanonicalEventContentInput = {
 	countdown: {
 		variant: 'magazine-folio',
 		title: 'Faltan para la salida',
-		footerText: 'Semáforo de salida · Pits listos para el arranque · Sábado 24 · 5:30 p. m.',
+		// The scoreboard already prints the full date above; the footer adds only the start time.
+		footerText: 'Semáforo de salida · Pits listos para el arranque · 5:30 p. m.',
+		// Client-requested character, owner-supplied cutout: Doc Hudson on the starting grid.
+		ornament: 'characterDocHudson',
 	},
 	location: {
 		accessPolicy: { visibility: 'public' },
@@ -149,6 +156,8 @@ const content: CanonicalEventContentInput = {
 		introHeading: 'Sábado, 24 de octubre',
 		introLede:
 			'El transporte oficial de la escudería nos traslada a la pista. ¡Siga el mapa hasta el circuito!',
+		// Client-requested character, owner-supplied cutout: Mack under «La ruta de Mack».
+		ornament: 'characterMack',
 		indicationsHeading: 'Antes del banderazo',
 		venues: [
 			{
@@ -175,6 +184,13 @@ const content: CanonicalEventContentInput = {
 				iconName: 'Calendar',
 				styleVariant: 'default',
 				text: 'La salida oficial es a las 5:30 p. m. ¡Llegue a tiempo para no perderse el banderazo!',
+			},
+			{
+				// Client dress code, published literally.
+				title: 'Código de vestimenta',
+				iconName: 'DressCode',
+				styleVariant: 'default',
+				text: 'Todas las personas en color <strong>rojo, negro y/o blanco</strong>.',
 			},
 		],
 	},
@@ -243,9 +259,11 @@ const content: CanonicalEventContentInput = {
 		message:
 			'Gracias por cruzar la meta conmigo. Con la escudería reunida, ¡su compañía es mi mejor trofeo!',
 		closingName: CELEBRANT_NAME,
-		date: '24 · X · 2026',
+		date: 'Sábado 24 de octubre de 2026',
 		// Original trophy artwork with the race number: the issue closes without repeating a photo.
 		image: 'thankYouTrophy',
+		// Client-requested character, owner-supplied cutout: Mate at the finish line.
+		ornament: 'characterMate',
 		focalPoint: '50% 50%',
 	},
 	envelope: {
@@ -254,11 +272,21 @@ const content: CanonicalEventContentInput = {
 		// Collector edition: the guest drags the cover open; the inner page hands the asphalt
 		// canvas to the hero. The cover face is the race motif (paper bands for the masthead,
 		// asphalt track, checkered bands) with the low-light selfie (chat-052) brightened inside the
-		// race roundel and a "3" badge: its only role, small enough to hide the compression.
+		// race roundel and a "3 años" badge: its only role, small enough to hide the compression.
 		coverExperience: 'collector',
 		backdropImage: { type: 'internal', key: 'coverGrid' },
-		// Issue number doubles as the race number ("NÚM. 3"); the cover falls back to XV when omitted.
-		coverEdition: '3',
+		// The edition is the age: the rail prints "3 AÑOS" without the "NÚM." label and the inside
+		// cover repeats it as the watermark; the cover falls back to XV when omitted.
+		coverEdition: '3 años',
+		coverEditionLabel: '',
+		// Owner-approved character placement (2026-10-07): McQueen (front view, source cropped on
+		// its left, so it enters from the page edge) crosses the cover's lower checkered band left
+		// of the roundel; Sally and Ramone wait on the inner page's asphalt.
+		coverOrnament: { type: 'internal', key: 'characterMcQueenFront' },
+		spreadOrnaments: [
+			{ type: 'internal', key: 'characterSally' },
+			{ type: 'internal', key: 'characterRamone' },
+		],
 		coverVolume: '1',
 		coverIssue: '2026',
 		sealStyle: 'wax',
@@ -311,6 +339,15 @@ export const aithanInvitation = defineCanonicalInvitation({
 		gallery02: 'gallery-02.jpg',
 		coverGrid: 'cover-grid.jpg',
 		thankYouTrophy: 'thankyou-trophy.jpg',
+		// Cars characters requested by the client; owner-supplied artwork, background removed.
+		characterMcQueen: 'character-mcqueen.webp',
+		characterMack: 'character-mack.webp',
+		characterMate: 'character-mate.webp',
+		characterDocHudson: 'character-doc-hudson.webp',
+		characterSally: 'character-sally.webp',
+		characterRamone: 'character-ramone.webp',
+		characterMcQueenFront: 'character-mcqueen-front.webp',
+		logoCars: 'logo-cars.webp',
 	},
 	deliveryScope: 'content-and-assets',
 });
