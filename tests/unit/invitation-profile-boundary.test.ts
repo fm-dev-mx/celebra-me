@@ -64,12 +64,80 @@ function demoProfileIds(): Set<string> {
 	return ids;
 }
 
-/** Declarations that are not custom properties, ignoring comments and `@use`/`@include` lines. */
+const FONTS_DIR = path.join(process.cwd(), 'src/styles/fonts');
+
+/**
+ * Definitions that declare a `visualProfileId` with no profile file. The runtime resolves such an
+ * id to no stylesheet without failing, so each entry is a known gap, not an allowed pattern. These
+ * definitions are removed by the legacy-removal program; never add an entry.
+ */
+const KNOWN_PROFILELESS_DEFINITIONS = new Set([
+	'ana-sofia-cota-guillen',
+	'ayrin-samantha-lerma-castro',
+	'cesar-ramses',
+	'gerardo-sesenta',
+	'ximena-meza-trasvina',
+]);
+
+/** Wrapping at-rules a token-only profile may use; they scope tokens and emit no rules of their own. */
+const ALLOWED_WRAPPING_AT_RULES = new Set(['media', 'supports', 'container']);
+
+/** `@use` targets allowed in a token-only profile: shared modules that emit only `@font-face`. */
+const ALLOWED_USE_TARGET = /^\.\.\/fonts\/([a-z0-9-]+)$/u;
+
+const COMMENT_OR_STRING = /\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'/gu;
+
+/** Drop comments; blank string contents unless `keepStrings` (so `//` in URLs is not a comment). */
+function sanitize(source: string, keepStrings = false): string {
+	return source.replace(COMMENT_OR_STRING, (token) => {
+		if (token.startsWith('/')) return '';
+		return keepStrings ? token : '""';
+	});
+}
+
+/** True when a font module emits nothing but `@font-face` blocks. */
+function isFontFaceOnlyModule(name: string): boolean {
+	const file = path.join(FONTS_DIR, `_${name}.scss`);
+	if (!fs.existsSync(file)) return false;
+	const rest = sanitize(fs.readFileSync(file, 'utf8'))
+		.replace(/@font-face\s*\{[^{}]*\}/gu, '')
+		.trim();
+	return rest === '';
+}
+
+/**
+ * Everything in a profile that is not a custom-property declaration: plain or interpolated
+ * properties, `@include` (with or without a body), `@extend`, `@forward`, `@use` of anything but a
+ * font-face-only module, and any other emitting or control at-rule. SCSS `$variables`, selectors
+ * and the wrapping at-rules above are structure, not output, and stay allowed.
+ */
 function nonTokenDeclarations(source: string): string[] {
-	const stripped = source.replace(/\/\*[\s\S]*?\*\//gu, '').replace(/\/\/.*$/gmu, '');
-	return [...stripped.matchAll(/(?:^|[;{])\s*([a-z-]+)\s*:(?!:)/gimu)]
-		.map((match) => match[1])
-		.filter((property) => !property.startsWith('--'));
+	const stripped = sanitize(source);
+	const findings: string[] = [];
+
+	for (const match of stripped.matchAll(/(?:^|[;{}])\s*([a-z-]+)\s*:(?!:)/gimu)) {
+		if (!match[1].startsWith('--')) findings.push(match[1]);
+	}
+	for (const match of stripped.matchAll(
+		/(?:^|[;{}])\s*([a-z-]*#\{[^}]*\}[\w-]*(?:#\{[^}]*\}[\w-]*)*)\s*:(?!:)/gimu,
+	)) {
+		findings.push(`interpolated property ${match[1]}`);
+	}
+
+	const useTargets = [...sanitize(source, true).matchAll(/@use\s+(['"])([^'"]+)\1/gu)].map(
+		(match) => match[2],
+	);
+	for (const target of useTargets) {
+		const font = target.match(ALLOWED_USE_TARGET);
+		if (!font || !isFontFaceOnlyModule(font[1])) findings.push(`@use ${target}`);
+	}
+
+	for (const match of stripped.matchAll(/@([a-z-]+)/giu)) {
+		const name = match[1].toLowerCase();
+		if (name === 'use' || ALLOWED_WRAPPING_AT_RULES.has(name)) continue;
+		findings.push(`@${name}`);
+	}
+	return findings;
 }
 
 describe('invitation profile boundary', () => {
@@ -94,6 +162,62 @@ describe('invitation profile boundary', () => {
 				id,
 				nonToken: [],
 			});
+		}
+	});
+
+	it('rejects every non-token construct in the token-only detector', () => {
+		const wrap = (body: string) => `.event--x.theme-preset--y {\n\t--ok: 1px;\n${body}\n}\n`;
+		const cases: Record<string, string> = {
+			plainProperty: '\tcolor: red;',
+			bodylessInclude: '\t@include hide-scrollbar;',
+			includeWithBody: '\t@include respond-to(md) { --ok: 2px; }',
+			extend: '\t@extend %card;',
+			interpolatedProperty: '\t#{$prop}: red;',
+			interpolatedCustomProperty: '\t--#{$name}: red;',
+			partialUse: "@use './shared-profile';",
+			forward: "@forward './shared-profile';",
+			mixinDefinition: '@mixin skin { color: red; }',
+		};
+		for (const [name, body] of Object.entries(cases)) {
+			expect({ name, rejected: nonTokenDeclarations(wrap(body)).length > 0 }).toEqual({
+				name,
+				rejected: true,
+			});
+		}
+
+		const allowed = [
+			"@use '../fonts/montserrat-italic-display' as display;",
+			'$mask: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\'/%3E");',
+			wrap(
+				'\t--mask: #{$mask};\n\t@media (width < 992px) { --ok: 2px; }\n\t.child { --ok: 3px; }',
+			),
+		].join('\n');
+		expect(nonTokenDeclarations(allowed)).toEqual([]);
+	});
+
+	it('restricts profile-directory partials to frozen or token-only content', () => {
+		const partials = fs
+			.readdirSync(PROFILES_DIR)
+			.filter((name) => name.startsWith('_') && name.endsWith('.scss'));
+		for (const name of partials) {
+			const source = fs.readFileSync(path.join(PROFILES_DIR, name), 'utf8');
+			const id = name.replace(/\.scss$/u, '');
+			if (id in FROZEN_PROFILE_SHA256) continue;
+			expect({ name, nonToken: nonTokenDeclarations(source) }).toEqual({
+				name,
+				nonToken: [],
+			});
+		}
+	});
+
+	it('gives every declared visual profile a stylesheet', () => {
+		const dangling = [...managedProfiles].filter((id) => !ids.includes(id)).sort();
+
+		expect(dangling.filter((id) => !KNOWN_PROFILELESS_DEFINITIONS.has(id))).toEqual([]);
+		// A resolved gap must leave the allowlist so the list only shrinks.
+		expect([...KNOWN_PROFILELESS_DEFINITIONS].sort()).toEqual(dangling);
+		for (const id of demoProfiles) {
+			expect({ id, exists: ids.includes(id) }).toEqual({ id, exists: true });
 		}
 	});
 

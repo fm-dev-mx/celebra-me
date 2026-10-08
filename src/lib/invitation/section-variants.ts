@@ -3,7 +3,7 @@
  *
  * A section owns its variant. Theme presets provide atmosphere tokens only;
  * they never select or infer a section variant. The registry is also the
- * source for the cutover manifest and section CSS ownership metadata.
+ * source for section CSS ownership metadata.
  */
 
 export type CanonicalVariantSection =

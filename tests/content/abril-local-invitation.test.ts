@@ -16,7 +16,7 @@ const abrilProfilePath = path.join(
 	process.cwd(),
 	'src/styles/invitation-profiles/abril-michelle-becerra-rea.scss',
 );
-const galleryContractPath = path.join(process.cwd(), 'docs/domains/theme/gallery-variants.md');
+const galleryContractPath = path.join(process.cwd(), 'docs/domains/theme/variant-system.md');
 
 function buildTestAssets(): AbrilAssetMap {
 	return Object.fromEntries(
