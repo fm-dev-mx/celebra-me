@@ -312,9 +312,10 @@ tsx scripts/db/disposable-test-env.ts cleanup     # Full cleanup (stop + remove 
 
 Local, Preview, and Production schema actions require a current disposable migration proof. Only
 `pnpm db:migrate -- --target disposable-test --apply` writes it; with nothing pending it records the
-proof without executing SQL. The receipt lives in the common Git directory
-(`db-evidence/disposable-migration-proof.json`) because every worktree shares the same disposable
-container. It is valid only while all of these hold, and fails closed otherwise:
+proof without executing SQL. A stopped disposable container is started first
+(`ensureDisposableDbAvailable` in `scripts/db/disposable-availability.ts`). The receipt lives in the
+common Git directory (`db-evidence/disposable-migration-proof.json`) because every worktree shares
+the same disposable container. It is valid only while all of these hold, and fails closed otherwise:
 
 - the migration file set digest matches the current checkout;
 - the live container is the same instance (Docker id) that produced the receipt;

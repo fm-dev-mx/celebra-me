@@ -109,6 +109,10 @@ jest.mock('../../scripts/db/disposable-migration-proof', () => ({
 }));
 
 // Keep Preview tests off the Production policy → audit-db → disposable import chain.
+jest.mock('../../scripts/db/disposable-availability', () => ({
+	requireDisposableDbAvailable: () => undefined,
+}));
+
 jest.mock('../../scripts/db/migrate-policy-production.ts', () => ({
 	productionMigratePolicy: {
 		target: 'production',

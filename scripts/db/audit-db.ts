@@ -31,7 +31,7 @@ import {
 	classifyDbTarget,
 } from './db-workflow-lib.ts';
 import { fetchRemoteMigrationVersions } from '../status-core/migration-history-reader.ts';
-import { cmdStart, isDisposableDbReady } from './disposable-test-env.ts';
+import { ensureDisposableDbAvailable } from './disposable-availability.ts';
 import { assertCurrentDisposableMigrationProof } from './disposable-migration-proof.ts';
 import {
 	REFERENCE_INVALID_LIFECYCLE,
@@ -479,20 +479,7 @@ function loadDisposableReferenceEvidence(expectedVersions: readonly string[]): {
 	introspectionError?: string;
 } {
 	const classification = classifyDbTarget(DISPOSABLE_DB_URL);
-	let reachable = isDisposableDbReady();
-	let startError: string | undefined;
-	if (!reachable) {
-		console.log(
-			'Disposable reference database not running on port 54332. Starting disposable environment...',
-		);
-		try {
-			cmdStart();
-			reachable = isDisposableDbReady();
-		} catch (err) {
-			startError = err instanceof Error ? err.message : String(err);
-			reachable = false;
-		}
-	}
+	const { reachable, error: startError } = ensureDisposableDbAvailable();
 
 	const proof = assertCurrentDisposableMigrationProof();
 
