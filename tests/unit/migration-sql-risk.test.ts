@@ -4,6 +4,9 @@ import path from 'node:path';
 
 import {
 	classifySqlText,
+	computeMigrationFileDigests,
+	computeMigrationSetDigest,
+	contentDigestOf,
 	evaluateMigrationSqlRisk,
 	hasContractMetadata,
 	normalizeSqlForRiskScan,
@@ -194,6 +197,49 @@ $$;
 			expect(result.risk.isDestructive).toBe(true);
 		} finally {
 			fs.rmSync(tmpFilePath, { force: true });
+		}
+	});
+});
+
+describe('migration content digests', () => {
+	const lf = 'create table t (id int);\ncomment on table t is $$a\nb$$;\n';
+
+	it.each([
+		['CRLF', lf.replace(/\n/g, '\r\n')],
+		['mixed', lf.replace(/\n/, '\r\n')],
+		['lone CR', lf.replace(/\n/g, '\r')],
+		['BOM + CRLF', `\uFEFF${lf.replace(/\n/g, '\r\n')}`],
+	])('ignores %s line endings', (_label, variant) => {
+		expect(contentDigestOf(variant)).toBe(contentDigestOf(lf));
+	});
+
+	it('changes when the SQL content changes', () => {
+		expect(contentDigestOf(lf.replace('int', 'bigint'))).not.toBe(contentDigestOf(lf));
+		expect(contentDigestOf(`${lf}\n`)).not.toBe(contentDigestOf(lf));
+	});
+
+	it('gives identical file and set digests for LF and CRLF checkouts of the same migrations', () => {
+		const root = fs.mkdtempSync(path.join(os.tmpdir(), 'migration-digest-'));
+		try {
+			const files = [
+				{ version: '20260101000000', filename: '20260101000000_a.sql' },
+				{ version: '20260102000000', filename: '20260102000000_b.sql' },
+			];
+			const lfDir = path.join(root, 'lf');
+			const crlfDir = path.join(root, 'crlf');
+			for (const dir of [lfDir, crlfDir]) fs.mkdirSync(dir);
+			for (const file of files) {
+				fs.writeFileSync(path.join(lfDir, file.filename), lf);
+				fs.writeFileSync(path.join(crlfDir, file.filename), lf.replace(/\n/g, '\r\n'));
+			}
+			expect(computeMigrationFileDigests(files, crlfDir)).toEqual(
+				computeMigrationFileDigests(files, lfDir),
+			);
+			expect(computeMigrationSetDigest(files, crlfDir)).toBe(
+				computeMigrationSetDigest(files, lfDir),
+			);
+		} finally {
+			fs.rmSync(root, { recursive: true, force: true });
 		}
 	});
 });

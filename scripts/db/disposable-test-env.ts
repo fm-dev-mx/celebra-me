@@ -33,6 +33,7 @@ import {
 	redactCredentials,
 	runCommand,
 } from './db-workflow-lib.ts';
+import { invalidateDisposableMigrationProof } from './disposable-migration-proof.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -450,6 +451,9 @@ export function cmdReset(): void {
 	}
 
 	console.info('Disposable database reset complete.');
+	if (invalidateDisposableMigrationProof()) {
+		console.info('Previous disposable migration proof retired; the re-apply writes a new one.');
+	}
 
 	const storageSchemaPath = resolve(DISPOSABLE_DIR, 'storage-schema.sql');
 	if (existsSync(storageSchemaPath)) {
@@ -565,7 +569,6 @@ function cmdRunTests(): void {
 		'invitation_workflow.test.sql',
 		'atomic_invitation_publication.test.sql',
 		'invitation_original_image_delivery.test.sql',
-		'managed_identity_archive_cascade.test.sql',
 		'managed_identity_archive_cascade.test.sql',
 		...MEMORIES_PGTAP_FILES,
 		'guest_invitation_rls.test.sql',

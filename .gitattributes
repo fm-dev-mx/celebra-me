@@ -1,3 +1,5 @@
 tests/e2e/visual-baselines/**/*.png filter=lfs diff=lfs merge=lfs -text
 .husky/pre-commit text eol=lf
 .husky/pre-push text eol=lf
+# SQL is applied and digested by content; keep every checkout LF regardless of core.autocrlf.
+*.sql text eol=lf

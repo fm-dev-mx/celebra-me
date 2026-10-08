@@ -192,8 +192,17 @@ function excludeNewTablePermissionInitialization(sql: string, scanned: string): 
 		.join(';');
 }
 
+/**
+ * Canonical text for content digests. Git stores migrations with LF, but `core.autocrlf` and
+ * editors materialize them as CRLF, LF or mixed per worktree, and a leading BOM is equally
+ * insignificant. Digests must identify the committed content, not one checkout's bytes.
+ */
+export function normalizeSqlForDigest(sql: string): string {
+	return sql.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+}
+
 export function contentDigestOf(sql: string): string {
-	return createHash('sha256').update(sql).digest('hex');
+	return createHash('sha256').update(normalizeSqlForDigest(sql)).digest('hex');
 }
 
 export function resolveMigrationSqlPath(version: string): string | null {
@@ -278,11 +287,12 @@ export function evaluateMigrationSqlRisk(options: {
 /** Per-version content digests, used to detect in-place edits of already-applied migrations. */
 export function computeMigrationFileDigests(
 	files: readonly { version: string; filename: string }[],
+	dir: string = MIGRATIONS_DIR,
 ): Record<string, string> {
 	return Object.fromEntries(
 		files.map((file) => [
 			file.version,
-			contentDigestOf(readFileSync(resolve(MIGRATIONS_DIR, file.filename), 'utf8')),
+			contentDigestOf(readFileSync(resolve(dir, file.filename), 'utf8')),
 		]),
 	);
 }
@@ -292,10 +302,11 @@ export function computeMigrationFileDigests(
  */
 export function computeMigrationSetDigest(
 	files: readonly { version: string; filename: string }[],
+	dir: string = MIGRATIONS_DIR,
 ): string {
 	const hash = createHash('sha256');
 	for (const file of files) {
-		const path = resolve(MIGRATIONS_DIR, file.filename);
+		const path = resolve(dir, file.filename);
 		const sql = readFileSync(path, 'utf8');
 		hash.update(file.version);
 		hash.update('\0');
