@@ -166,6 +166,7 @@ export function buildVictoriaPublishedContent(
 			'gifts',
 			'personalizedAccess',
 			'rsvp',
+			'memories',
 			'thankYou',
 		],
 		composition: {
@@ -184,7 +185,7 @@ export function buildVictoriaPublishedContent(
 					source: 'interlude-after-gifts',
 				},
 				rsvp: { family: 'atmospheric-blend', source: 'personalized-access' },
-				thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
+				// memories and thankYou keep neutral boundaries (no intersection entry).
 			},
 		},
 		_assetSlug: VICTORIA_EVENT.assetSlug,
@@ -460,6 +461,13 @@ export function buildVictoriaPublishedContent(
 			date: EVENT_DATE_LONG,
 			image: assets['interlude-02'],
 			focalPoint: '56% 38%',
+		},
+		memories: {
+			variant: 'card',
+			// Printed QR contract of the existing memory space; independent of the route slug.
+			publicSlug: 'victoria-y-roberto',
+			description:
+				'Ayúdenos a guardar cada momento. Suba aquí sus fotos y videos; solo los novios y usted podrán verlos.',
 		},
 		sharing: {
 			ogImage: assets['hero-desktop'],

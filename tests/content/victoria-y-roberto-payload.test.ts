@@ -150,8 +150,15 @@ describe('Boda Victoria y Roberto provision contract', () => {
 			'gifts',
 			'personalizedAccess',
 			'rsvp',
+			'memories',
 			'thankYou',
 		]);
+		expect(content.memories).toEqual({
+			variant: 'card',
+			publicSlug: 'victoria-y-roberto',
+			description:
+				'Ayúdenos a guardar cada momento. Suba aquí sus fotos y videos; solo los novios y usted podrán verlos.',
+		});
 		expect(content).toHaveProperty('itinerary');
 		expect(content.music).toEqual({
 			url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1786656962/Stephen_Sanchez_-_Until_I_Found_You_ixnss9.mp3',
@@ -353,8 +360,15 @@ describe('Boda Victoria y Roberto provision contract', () => {
 			'interlude',
 			'personalized-access',
 			'rsvp',
+			'memories',
 			'thankYou',
 		]);
+		for (const section of ['memories', 'thankYou'] as const) {
+			expect(
+				renderPlan.find((item) => item.type === 'section' && item.section === section)
+					?.intersection,
+			).toEqual({ family: 'neutral', source: section });
+		}
 
 		const serialized = JSON.stringify(content);
 		expect(serialized).not.toMatch(/OneDrive|Clientes\\/i);
