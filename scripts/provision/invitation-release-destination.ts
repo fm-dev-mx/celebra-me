@@ -99,10 +99,10 @@ export async function resolveDestinationReadiness(input: {
 export function describeDestination(destination: ReleaseDestination): string {
 	switch (destination) {
 		case 'local':
-			return 'Actualizar Local';
+			return 'Update Local';
 		case 'prepare_preview':
-			return 'Preparar Preview (Local + Preview + verificación)';
+			return 'Prepare Preview (Local + Preview + verification)';
 		case 'production':
-			return 'Publicar en Production';
+			return 'Production dry-run (apply is prod:apply)';
 	}
 }

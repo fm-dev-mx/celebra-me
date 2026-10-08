@@ -19,12 +19,11 @@ import {
 	executeTargetPlans,
 	type LifecycleExecutionError,
 } from './invitation-lifecycle-execution.ts';
-import { getInvitationDefinition, listInvitationDefinitions } from './invitations/registry.ts';
+import { getInvitationDefinition } from './invitations/registry.ts';
 import { getInvitationAssetSourceDir } from './invitations/invitation-definition.ts';
 import { parseAssetPolicy } from './asset-reconciliation.ts';
 import type { UpdateScope } from './semantic-delta.ts';
 import {
-	buildStatusReport,
 	defaultAssetPolicy,
 	parseCliUpdateScope,
 	parseReleaseMutationTargets,
@@ -47,8 +46,6 @@ import {
 	translatePreconditionFailure,
 	translatePreviewNamespaceFailure,
 } from './invitation-operator-guidance.ts';
-import { readFastInvitationInventory } from './invitation-status-inventory.ts';
-import { evaluateInvitationReadiness } from './invitation-readiness.ts';
 import { LOCAL_DB_URL, redactCredentials } from '../db/db-target-config.ts';
 import { assertPreviewDbUrl, getPreviewDbUrl, getProdDbUrl } from '../db/db-workflow-lib.ts';
 import { approvePreviewArtifactFromLiveVerification } from './preview-approval-service.ts';
@@ -64,12 +61,10 @@ import {
 	planAndApplyPreviewContent,
 } from './invitation-content-apply.ts';
 import {
-	formatStatusReport,
 	formatDryRunPlan,
 	formatApplyConfirmation,
 	formatApplyResult,
 	consolidateTargetFunctionalChanges,
-	type StatusReportData,
 	type OperationalPlanData,
 	type TargetPlanData,
 	type TargetApplyResultData,
@@ -92,6 +87,8 @@ import {
 	type ConflictResolutions,
 } from './semantic-delta.ts';
 import { runDestinationReleaseWizard } from './invitation-release-wizard.ts';
+import { formatPreviewReceiptDiagnosis, printStatusReport } from './invitation-release-status.ts';
+import { isInteractiveSession, isPromptExit, NonInteractiveError } from '../lib/cli-prompts.ts';
 import { runPromotionPreflight } from './invitation-promote.ts';
 import {
 	formatPromotionPlanCompact,
@@ -360,7 +357,7 @@ export function printHelp(): void {
 invitation:release — Sole managed invitation release CLI
 
 Usage:
-  pnpm invitation:release                                             Interactive destination wizard (TTY): Update Local | Prepare Preview | Release to Production
+  pnpm invitation:release                                             Interactive menu (terminal): Update Local | Prepare Preview | Approve | Production dry-run | Status | Tools
   pnpm invitation:release --status [--slug <slug>] [--targets <targets>] [--json]
   pnpm invitation:release --slug <slug> --targets local|preview|local,preview --dry-run|--apply [--non-interactive] [--source-dir <dir>|--package <path>]
   pnpm invitation:release --slug <slug> --targets production --dry-run
@@ -618,28 +615,6 @@ async function executePreviewTargetPlan(input: {
 	};
 }
 
-function formatPreviewReceiptDiagnosis(
-	result: Awaited<ReturnType<typeof inspectPreviewProvenanceReceipt>>,
-): string {
-	const shortHash = (value: string | null): string => (value ? `${value.slice(0, 12)}…` : 'n/a');
-	const lines = [
-		`Diagnóstico de receipts Preview: ${result.status}.`,
-		`· Clasificación: ${result.classification} · código: ${result.reasonCode}.`,
-		`· Operación vinculada: ${result.linkedOperationId ?? 'ninguna'}.`,
-		`· Última operación: ${result.latestOperationId ?? 'ninguna'}.`,
-		`· Estado receipts: linked ${result.receipts.linked?.status ?? 'ninguno'} · latest ${result.receipts.latest?.status ?? 'ninguno'}.`,
-		`· Pasos latest: ${result.completedSteps.latest.join(', ') || 'ninguno'}.`,
-		`· Paridad contenido: draft ${result.parity.content.draft ? 'OK' : 'FALLO'}, publicación ${result.parity.content.publication ? 'OK' : 'FALLO'}, provenance ${result.parity.content.managedProjection ? 'OK' : 'FALLO'}.`,
-		`· Paridad assets metadata: ${result.parity.assets ? 'OK' : 'FALLO'} (sin descargas ni Storage).`,
-		`· Hashes comparables: publicación ${shortHash(result.parity.comparableHashes.currentPublication)}, draft ${shortHash(result.parity.comparableHashes.currentDraft)}, assets ${shortHash(result.parity.comparableHashes.currentAssetMetadata)}.`,
-		`· Escrituras previstas: contenido 0 · Storage 0 · metadata ${result.writes.metadata}.`,
-		`· ${result.message}`,
-		`· Siguiente paso: ${result.nextAction}`,
-	];
-	if (result.blockers.length > 0) lines.push(`· Bloqueos: ${result.blockers.join(', ')}.`);
-	return lines.join('\n');
-}
-
 // eslint-disable-next-line complexity -- CLI handles mode dispatch, interactive prompts, and hosted environment flow gates.
 export async function main(argv = process.argv.slice(2)): Promise<void> {
 	const args = normalizeOperatorArgv(argv);
@@ -831,8 +806,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		);
 	}
 
-	if (args.length === 0 && !isTTY) {
-		throw new Error('Non-TTY execution requires explicit options and --non-interactive.');
+	const interactive = isInteractiveSession() && !nonInteractive && !json;
+	if (args.length === 0 && !interactive) {
+		throw new NonInteractiveError('invitation:release', 'pnpm invitation:release -- --help');
 	}
 
 	const slug = value(args, '--slug');
@@ -843,17 +819,16 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 
 	// Interactive destination wizard (no --status/--dry-run/--apply). Automation keeps flags.
 	if (modeCount === 0) {
-		if (!isTTY && !nonInteractive) {
-			throw new Error(
-				'Non-TTY execution requires --non-interactive and explicit mode flags (--status, --dry-run, or --apply).',
+		if (!interactive) {
+			throw new NonInteractiveError(
+				'invitation:release',
+				'--non-interactive with --status, --dry-run or --apply',
 			);
 		}
 
-		if (isTTY && !nonInteractive && !json) {
-			// Ignore leftover --targets from shell history; destination menu owns the outcome.
-			await runDestinationReleaseWizard({ slug });
-			return;
-		}
+		// Ignore leftover --targets from shell history; destination menu owns the outcome.
+		await runDestinationReleaseWizard({ slug, verbose });
+		return;
 	}
 
 	const parsedScope = parseCliUpdateScope(args);
@@ -895,57 +870,14 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	});
 
 	if (statusMode) {
-		const statusReportOptions = {
+		await printStatusReport({
 			slug,
-			targets: targets.length > 0 ? targets : undefined,
+			targets,
 			includeUnmanaged: args.includes('--include-unmanaged'),
 			includeArchived: args.includes('--include-archived'),
 			includeDemos: args.includes('--include-demos'),
-		};
-		const report = buildStatusReport(statusReportOptions) as StatusReportData &
-			Record<string, unknown>;
-
-		if (targets.includes('local')) {
-			const definitions = listInvitationDefinitions();
-			const definitionSlugs = slug ? [slug] : definitions.map((d) => d.slug);
-			const fastInventory = readFastInvitationInventory(LOCAL_DB_URL, definitionSlugs, slug);
-			report.inventory = { local: fastInventory };
-
-			if (fastInventory.verified) {
-				for (const def of report.definitions) {
-					const match = fastInventory.rows.find((r) => r.slug === def.slug);
-					if (match) {
-						def.environments.local = {
-							status: match.status,
-							managedStatus:
-								match.status === 'MANAGED' ? 'MANAGED' : 'UNAPPLIED_DEFINITION',
-							syncStatus: 'UNEVALUATED',
-							reason:
-								match.status === 'MANAGED'
-									? 'Persistent-local database record and release provenance verified.'
-									: 'Persistent-local database record exists but lacks provenance.',
-						};
-						if (targets.length === 1 && targets[0] === 'local') {
-							def.classification = match.status;
-						}
-					}
-				}
-			}
-
-			if (slug) {
-				try {
-					report.readiness = await evaluateInvitationReadiness({ slug });
-				} catch {
-					// Readiness check failure is captured in inventory report without crashing status.
-				}
-			}
-		}
-
-		if (json) {
-			console.log(JSON.stringify(report, null, 2));
-		} else {
-			console.log(formatStatusReport(report));
-		}
+			json,
+		});
 		return;
 	}
 
@@ -1734,6 +1666,10 @@ if (
 	/invitation-release-cli\.(ts|js|mjs|cjs)$/.test(process.argv[1])
 ) {
 	main().catch((error: unknown) => {
+		if (isPromptExit(error)) {
+			process.exitCode = 130;
+			return;
+		}
 		const message = sanitizeMessage(error instanceof Error ? error.message : String(error));
 		const reasonCode =
 			error instanceof PreviewProvenanceRecoveryError

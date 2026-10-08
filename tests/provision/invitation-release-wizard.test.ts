@@ -24,7 +24,7 @@ describe('invitation-release destination readiness', () => {
 		setDefaultPreviewApprovalStoreForTests(null);
 	});
 
-	it('labels operator outcomes in Spanish destination language', () => {
+	it('labels operator outcomes by destination', () => {
 		expect(describeDestination('local')).toMatch(/Local/i);
 		expect(describeDestination('prepare_preview')).toMatch(/Preview/i);
 		expect(describeDestination('production')).toMatch(/Production/i);
@@ -67,8 +67,12 @@ describe('invitation-release wizard package binding', () => {
 			'utf8',
 		);
 		expect(wizard).toContain('persistSessionPackage');
-		expect(wizard).toContain('expectedSourceHash: session.sourceHash');
-		expect(wizard).toContain('expectedPackageHash: session.packageHash');
+		const stages = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/wizard/wizard-stages.ts'),
+			'utf8',
+		);
+		expect(stages).toContain('expectedSourceHash: session.sourceHash');
+		expect(stages).toContain('expectedPackageHash: session.packageHash');
 		expect(wizard).toContain("targets: ['local', 'preview']");
 		expect(wizard).toContain('runLiveApproval');
 		expect(wizard).toContain('applyProductionOutcome');
@@ -76,12 +80,16 @@ describe('invitation-release wizard package binding', () => {
 		expect(wizard).toContain('maybeRecoverUnpublishedDraftDivergence');
 		expect(wizard).toContain('maybeRecoverStaleProvenance');
 		expect(wizard).toContain('reconcileStalePreviewProvenance');
-		expect(wizard).toContain('defaultDestinationFromPromotionAction');
+		const sessionMenus = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/wizard/wizard-session.ts'),
+			'utf8',
+		);
+		expect(sessionMenus).toContain('defaultDestinationFromPromotionAction');
 		expect(wizard).toContain('ensurePreviewApprovalForProduction');
 		expect(wizard).toContain('maybeCompletePreviewApproval');
 		expect(wizard).toContain('acknowledgeDiscardUnpublishedDraft');
 		// Exact valid approval skips live verify / re-approve (productionReady authority).
-		expect(wizard).toContain('Preview ya tiene aprobación exacta');
+		expect(wizard).toContain('Preview already has an exact approval');
 		expect(wizard).toMatch(
 			/if \(readiness\.productionReady\)[\s\S]*?return;[\s\S]*?await runLiveApproval\(session\)/,
 		);
