@@ -203,10 +203,12 @@ $$;
 
 describe('migration content digests', () => {
 	const lf = 'create table t (id int);\ncomment on table t is $$a\nb$$;\n';
+	const firstNl = lf.indexOf('\n');
+	const mixedLf = firstNl >= 0 ? `${lf.slice(0, firstNl)}\r\n${lf.slice(firstNl + 1)}` : lf;
 
 	it.each([
 		['CRLF', lf.replace(/\n/g, '\r\n')],
-		['mixed', lf.replace(/\n/, '\r\n')],
+		['mixed', mixedLf],
 		['lone CR', lf.replace(/\n/g, '\r')],
 		['BOM + CRLF', `\uFEFF${lf.replace(/\n/g, '\r\n')}`],
 	])('ignores %s line endings', (_label, variant) => {

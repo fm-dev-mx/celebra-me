@@ -42,7 +42,10 @@ function materialize(checkout: Checkout, overrides: Record<string, string> = {})
 		const sql = overrides[version] ?? SQL[version];
 		let bytes = sql;
 		if (checkout === 'crlf') bytes = sql.replace(/\n/g, '\r\n');
-		if (checkout === 'mixed') bytes = sql.replace(/\n/, '\r\n');
+		if (checkout === 'mixed') {
+			const index = sql.indexOf('\n');
+			bytes = index >= 0 ? `${sql.slice(0, index)}\r\n${sql.slice(index + 1)}` : sql;
+		}
 		if (checkout === 'bom') bytes = `\uFEFF${sql.replace(/\n/g, '\r\n')}`;
 		writeFileSync(join(migrationsDir, `${version}_m.sql`), bytes, 'utf8');
 	}
