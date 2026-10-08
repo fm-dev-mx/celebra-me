@@ -94,9 +94,9 @@ checks, and environment limitations.
   human gates; report missing evidence without applying migrations, publishing content, or accepting
   images.
 - Before an authorized push, recheck scope, remote tips, fast-forward compatibility, and effective
-  branch rules. Honor the normal pre-push checks, including exact-SHA visual certification when
-  selected. Push only the intended source ref; never force, bypass hooks, merge, or push `main`.
-  Report automatic Preview/CI effects inherent in the authorized push or PR.
+  branch rules. Honor the normal pre-push checks (commit-range validation and the Git LFS handoff;
+  visual certification is remote). Push only the intended source ref; never force, bypass hooks,
+  merge, or push `main`. Report automatic Preview/CI effects inherent in the authorized push or PR.
 - Follow the release policy's integration gate: `Repository Policy` and `Application Suite` must
   pass on the exact integrated `develop` SHA before opening its release PR. Confirm trusted
   workflow/ref/SHA evidence; missing, pending, skipped, cancelled, or different-SHA results are not

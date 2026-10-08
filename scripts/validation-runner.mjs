@@ -104,11 +104,15 @@ function runVisualReferenceGate(files, runStep) {
 	return runStep('Visual reference coverage (browserless)', 'pnpm', ['visual:matrix:check']);
 }
 
-function reportVisualCertificationRequirement(files) {
+/** Certification itself belongs to Repository CI on the develop push; this only names the inputs. */
+function reportVisualImpact(files) {
 	if (files.length === 0) return;
-	console.log('\nVISUAL_CERTIFICATION_REQUIRED');
+	console.log('\nVISUAL_IMPACT_DETECTED');
 	console.log(
-		'Run pnpm validate:prepush -- --sha <exact-commit-sha> --base-sha <base-sha> before pushing.',
+		'Repository CI certifies these paths in the pinned Linux browser runtime once they reach develop; task-branch pushes run no certification.',
+	);
+	console.log(
+		'Optional local preview: pnpm validate:prepush -- --sha <exact-commit-sha> --base-sha <base-sha> --target-ref refs/heads/develop',
 	);
 	for (const file of files) console.log(`  - ${file}`);
 }
@@ -218,7 +222,7 @@ export function runValidation({
 	reportBrowserCheckRequirement(plan.files);
 	const visualCode = runVisualReferenceGate(plan.visualImpactFiles, runStep);
 	if (visualCode !== 0) return fail('visual-matrix', visualCode);
-	reportVisualCertificationRequirement(plan.visualImpactFiles);
+	reportVisualImpact(plan.visualImpactFiles);
 	console.log(
 		`\n✓ validate:${scope} local checks passed; domain and release gates remain separate.`,
 	);

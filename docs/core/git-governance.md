@@ -231,7 +231,7 @@ judgment.
 | `commitlint.config.cjs`                   | Commit message validation and quality rules                                         |
 | `scripts/validate-commits.mjs`            | Commit-range commitlint replay plus advisory hygiene warnings                       |
 | `.husky/pre-commit`                       | Detached-HEAD and `main` guard, staged-file checks                                  |
-| `.husky/pre-push`                         | Commit-range validation, visual certification for `develop`/`main`, Git LFS handoff |
+| `.husky/pre-push`                         | Commit-range validation and Git LFS handoff                                         |
 | `.github/workflows/commit-validation.yml` | Policy, static/build, unit, database and browser jobs, aggregate result and metrics |
 
 ## Active Hooks and CI Sequence
@@ -239,10 +239,11 @@ judgment.
 1. `pre-commit` blocks detached HEAD and direct commits to `main`, then runs `pnpm lint-staged` and
    `pnpm test:changed`.
 2. `commit-msg` runs `commitlint` against the pending commit message on all branches.
-3. `pre-push` replays commitlint over the pushed range with `scripts/validate-commits.mjs` (hygiene
-   warnings stay advisory), runs exact-SHA visual certification only when a visual-impact range is
-   pushed to `develop` or `main`, then hands the ref updates to Git LFS. New task branches use the
-   common ancestor with `origin/develop` as the range base.
+3. `pre-push` replays commitlint over the pushed range in one process with
+   `scripts/validate-commits.mjs` (hygiene warnings stay advisory), then hands the ref updates to
+   Git LFS. New task branches use the common ancestor with `origin/develop` as the range base.
+   Exact-SHA visual certification belongs to Repository CI on the `develop` push;
+   `pnpm validate:prepush` is an optional local preview.
 4. `Repository CI` (`.github/workflows/commit-validation.yml`) runs on pushes to `develop`, on pull
    requests targeting `main`, and by manual dispatch. See the
    [validation procedure](validation-procedures.md#remote-ci-coverage-and-efficiency) for scope and
