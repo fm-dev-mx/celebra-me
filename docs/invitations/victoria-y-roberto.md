@@ -34,7 +34,7 @@ Canonical route (creation contract): `/boda/victoria-y-roberto` — slug must no
 | ----------------------------- | --------------------------- | -------------------------------------------------------------------------------- |
 | WhatsApp / conversation       | `source:wa-export` (opaque) | Evidence only — never photo SoT; no chat-title dumps; audio not transcribed      |
 | High-res photos / assets root | `source:hr-photos` (opaque) | Owner-authorized authoritative session asset source; real path session-only      |
-| Owner session (Goal 1)        | `source:owner-session`      | Base demo, RSVP/access, gifts, quote, section scope, itinerary plan, photo roles |
+| Owner session                 | `source:owner-session`      | Base demo, RSVP/access, gifts, quote, section scope, itinerary plan, photo roles |
 
 ---
 
@@ -76,7 +76,7 @@ Canonical route (creation contract): `/boda/victoria-y-roberto` — slug must no
 | baseDemoId            | demo-boda-jewelry-box-wedding                                                                                     | verified       | owner             | Owner decision (client reacted positively to demo; did not explicitly select)                               |
 | themePreset           | jewelry-box-wedding                                                                                               | verified       | owner / catalog   | Corresponding preset for baseDemoId                                                                         |
 | sectionOrder          | hero, quote, countdown, location, itinerary, family, gallery, gifts, personalizedAccess, rsvp, memories, thankYou | verified       | owner             | Full functional wedding set; `memories` added by OD9; interludes planned separately (see Sections)          |
-| interludes            | 2 (roles: interlude01, interlude02)                                                                               | verified       | owner             | Count + photograph roles accepted; exact `afterSection` placement not owner-decided (Goal 2 art direction)  |
+| interludes            | 2 (roles: interlude01, interlude02)                                                                               | verified       | owner             | Count + photograph roles accepted; exact `afterSection` placement not owner-decided (art direction)         |
 | rsvpConfirmationMode  | api                                                                                                               | verified       | owner             | Canonical product mechanism                                                                                 |
 | rsvpAccessMode        | hybrid                                                                                                            | verified       | owner             | Personalized invitation access + guest/family identity + pass allowance via product mechanisms              |
 | giftsMode             | Lluvia de sobres                                                                                                  | verified       | owner             | Do not inherit Liverpool / Amazon / registry URLs from demo                                                 |
@@ -121,7 +121,7 @@ Contract maturity for this event type: `partial` (`getEventCompletenessContract(
 
 - None remaining.
 - Roberto legal surname (not required by current boda completeness matrix)
-- Exact guest-facing quote wording (reference resolved; copy in Goal 2)
+- Exact guest-facing quote wording (reference resolved; copy during implementation)
 - Supporting palette neutrals/gold/cream (agent recommendation only)
 
 ### Contract maturity gaps (from helper)
@@ -150,12 +150,12 @@ Resolved in this preparation task (do not re-ask):
 | id  | category              | issue                        | evidence                              | options                                              | recommendation                                          | status       |
 | --- | --------------------- | ---------------------------- | ------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------- | ------------ |
 | OD1 | demo-design-decisions | Base demo / theme preset     | WA positive reaction; catalog         | `demo-boda-jewelry-box-wedding`                      | Accept owner selection                                  | **accepted** |
-| OD2 | demo-design-decisions | Section scope + 2 interludes | Owner Goal 1                          | Full wedding functional set; 2 interlude photo roles | sectionOrder + interlude count/roles (not afterSection) | **accepted** |
+| OD2 | demo-design-decisions | Section scope + 2 interludes | Owner session                         | Full wedding functional set; 2 interlude photo roles | sectionOrder + interlude count/roles (not afterSection) | **accepted** |
 | OD3 | missing-client-facts  | RSVP / access                | Product mechanisms                    | `api` + `hybrid` + personalized access               | Use canonical product path                              | **accepted** |
-| OD4 | missing-client-facts  | Gifts                        | Owner Goal 1                          | Lluvia de sobres only                                | Include; no demo registries                             | **accepted** |
-| OD5 | missing-client-facts  | Quote                        | Owner Goal 1                          | Eclesiastés 4:9–12                                   | Include; not Rut 1:16                                   | **accepted** |
-| OD6 | photograph-acceptance | Authoritative photo source   | Owner Goal 1                          | `source:hr-photos` folder                            | Inventory + role map from that source                   | **accepted** |
-| OD7 | photograph-acceptance | Family section photo         | Owner Goal 1                          | none                                                 | Text-only family                                        | **accepted** |
+| OD4 | missing-client-facts  | Gifts                        | Owner session                         | Lluvia de sobres only                                | Include; no demo registries                             | **accepted** |
+| OD5 | missing-client-facts  | Quote                        | Owner session                         | Eclesiastés 4:9–12                                   | Include; not Rut 1:16                                   | **accepted** |
+| OD6 | photograph-acceptance | Authoritative photo source   | Owner session                         | `source:hr-photos` folder                            | Inventory + role map from that source                   | **accepted** |
+| OD7 | photograph-acceptance | Family section photo         | Owner session                         | none                                                 | Text-only family                                        | **accepted** |
 | OD8 | demo-design-decisions | Event date year              | WA day/month + owner                  | 2026-10-30                                           | Freeze                                                  | **accepted** |
 | OD9 | demo-design-decisions | Guest memories section       | Owner 2026-10-08; QR add-on purchased | `memories.card` after `rsvp`, before `thankYou`      | Slug `victoria-y-roberto`; copy names the couple        | **accepted** |
 
@@ -172,13 +172,13 @@ Optional future (non-blocking for prep): Roberto legal surname if ever needed fo
 
 Keep strictly separate from Fact Register and Owner Decisions.
 
-| topic               | recommendation                                                                                                     | basis                                                                                | status               |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ | -------------------- |
-| supporting palette  | Neutral cream / soft ink / restrained gold accents around client terracota                                         | jewelry-box-wedding + photography                                                    | recommendation only  |
-| gallery treatment   | One-item gallery as intentional editorial feature (`single-keepsake` / `layoutRole: feature`); not multi-grid fill | Canonical single-keepsake layout; legacy `single` is rejected at the schema boundary | recommendation only  |
-| interlude placement | Provisional pacing: after `countdown` and after `gallery`; finalize `afterSection` in Goal 2                       | Narrative flow / jewelry-box practice                                                | Goal 2 art direction |
-| hero crop           | Face-safe upper-body crop on `00000041`; prefer portrait derivatives                                               | Composition of selected hero                                                         | recommendation only  |
-| thankYou source     | Use `00000042` despite lower native resolution; careful crop; do not upscale beyond native                         | Only remaining unique composition                                                    | recommendation only  |
+| topic               | recommendation                                                                                                     | basis                                                                                | status              |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ | ------------------- |
+| supporting palette  | Neutral cream / soft ink / restrained gold accents around client terracota                                         | jewelry-box-wedding + photography                                                    | recommendation only |
+| gallery treatment   | One-item gallery as intentional editorial feature (`single-keepsake` / `layoutRole: feature`); not multi-grid fill | Canonical single-keepsake layout; legacy `single` is rejected at the schema boundary | recommendation only |
+| interlude placement | Provisional pacing: after `countdown` and after `gallery`; finalize `afterSection` during art direction            | Narrative flow / jewelry-box practice                                                | art direction       |
+| hero crop           | Face-safe upper-body crop on `00000041`; prefer portrait derivatives                                               | Composition of selected hero                                                         | recommendation only |
+| thankYou source     | Use `00000042` despite lower native resolution; careful crop; do not upscale beyond native                         | Only remaining unique composition                                                    | recommendation only |
 
 ---
 
@@ -187,7 +187,7 @@ Keep strictly separate from Fact Register and Owner Decisions.
 | bucket                | section keys                                                                                                      |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | requested (accepted)  | hero, quote, countdown, location, itinerary, family, gallery, gifts, personalizedAccess, rsvp, memories, thankYou |
-| interludes (accepted) | count: 2; photograph roles `interlude01` + `interlude02` (exact `afterSection` → Goal 2 art direction)            |
+| interludes (accepted) | count: 2; photograph roles `interlude01` + `interlude02` (exact `afterSection` → art direction)                   |
 | omitted               | music; multi-image gallery fill; demo-only content (Sofía/Alejandro, Puebla, adults-only, Liverpool, demo RSVP)   |
 | unresolved            | —                                                                                                                 |
 
@@ -213,8 +213,8 @@ section has no dates: it stays visible until a managed update removes it after t
 2027-01-06.
 
 Interludes remain in live `interludes[]` (jewelry-box demo pattern), not duplicated inside
-`sectionOrder`. Exact `afterSection` anchors are Agent Recommendations / Goal 2 art direction, not
-an accepted owner placement decision.
+`sectionOrder`. Exact `afterSection` anchors are Agent Recommendations / art direction, not an
+accepted owner placement decision.
 
 ### Itinerary preparation
 
@@ -232,7 +232,7 @@ an accepted owner placement decision.
 Times remain client-verified (`wa-export`). Secondary descriptions for celebration moments are
 owner-approved guest-facing copy (not client-dictated wording).
 
-### Semantic roles (copy constraints for Goal 2)
+### Semantic roles (copy constraints)
 
 | section            | narrative purpose                                   |
 | ------------------ | --------------------------------------------------- |
@@ -335,8 +335,7 @@ source.
   crop.
 - **Recommendation:** treat the one-item gallery as an intentional editorial feature, not a
   conventional multi-image gallery.
-- No component/style changes in Goal 1. If Goal 2 styling needs Lane A polish for a single frame,
-  that is implementation scope — schema itself does not block a one-item gallery.
+- The schema does not block a one-item gallery; any single-frame polish is implementation scope.
 
 ### Optimization plan (guidance targets)
 
@@ -355,8 +354,7 @@ that upscales past native width.
 
 ## Implementation Constraints
 
-- prepReadiness is `READY_FOR_IMPLEMENTATION` (helper-aligned) — payload / invitation-specific SCSS
-  implemented under Goal 2/3.
+- prepReadiness is `READY_FOR_IMPLEMENTATION` (helper-aligned); payload and profile are implemented.
 - Map URLs and itinerary times confirmed and resolved.
 - Dual-venue location: ceremony first (Parroquia Santo Niño), reception second (Eventos Platinum
   LM); `distinctVenues=true`.
@@ -369,9 +367,6 @@ that upscales past native width.
   preparation/implementation data seeds.
 - Do not copy demo-specific names, Puebla copy, adults-only, demo itinerary activities, demo family,
   or demo WhatsApp templates.
-- Lane A inheritance resets (list when implementing): any jewelry-box demo-specific absolute
-  positioning, demo asset focal points, and demo indication chips that conflict with Victoria &
-  Roberto facts.
 - Lane B: none required for prep; only if a reusable theme fix benefits both real and demo.
 - Music omitted.
 - envReadiness remains owned by invitation-release status — out of scope here.
@@ -380,8 +375,8 @@ that upscales past native width.
 
 ## Creative Direction & Acceptance
 
-The Goal 3B visual review is closed within scope. This record distinguishes capture mechanics from
-the human creative decision and does not change `prepReadiness`.
+The final visual review is closed within scope. This record distinguishes capture mechanics from the
+human creative decision and does not change `prepReadiness`.
 
 - **concern:** Typography roles
   - **decision / evidence:** Display / label / body roles are explicit in the Victoria profile
@@ -389,7 +384,7 @@ the human creative decision and does not change `prepReadiness`.
   - **status:** verified
 - **concern:** Vertical rhythm and density
   - **decision / evidence:** Open editorial cadence retained; Countdown, Gallery, Personalized
-    Access, RSVP, and Thank You reviewed after Goal 3B.
+    Access, RSVP, and Thank You reviewed in the final pass.
   - **status:** verified
 - **concern:** Surface hierarchy
   - **decision / evidence:** Open cream/terracotta flow with restrained low-chrome access/RSVP
@@ -405,7 +400,7 @@ the human creative decision and does not change `prepReadiness`.
   - **status:** verified
 - **concern:** Local exceptions
   - **decision / evidence:** Scoped to `src/styles/invitation-profiles/victoria-y-roberto.scss`; no
-    further Victoria redesign authorized by this goal.
+    further Victoria redesign authorized.
   - **status:** documented
 
 ### Final creative acceptance record
@@ -419,38 +414,36 @@ the human creative decision and does not change `prepReadiness`.
 | Reviewer and date                           | Owner visual review, 2026-08-08                                                     |
 | Blocking reason or owner follow-up          | Owner-data map URLs remain before Production: ceremony map URL, reception map URL.  |
 
-Evidence notes: the Goal 3B capture report is
-`output/playwright/goal-3b-after-sections/report.json`, plus the reveal and RSVP reports. Section
-reports cover Countdown, Itinerary, Family, Gallery, Personalized Access, RSVP, and Thank You.
-Itinerary times were confirmed by the client on 2026-08-12.
+Evidence notes: the capture reports were local and are not kept in the repository. Itinerary times
+were confirmed by the client on 2026-08-12.
 
 `ACCEPTED_WITH_BLOCKERS` here records an operational owner-data dependency, not an open visual
 correction. It must block the applicable Production boundary without blocking unrelated development.
 
-### Goal 4 audit disposition
+### Audit disposition
 
-The original Goal 1 visual findings remain the fixed audit set; no new subjective findings were
-opened during Goal 4.
+The initial visual findings remain the fixed audit set; no new subjective findings were opened in
+the final audit.
 
 |   # | finding area                                | final disposition                     | evidence / note                                                                   |
 | --: | ------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------- |
-|   1 | Cross-section editorial consistency         | **resolved**                          | Goal 3 editorial system plus Goal 3B whole-invitation review.                     |
+|   1 | Cross-section editorial consistency         | **resolved**                          | Editorial system plus final whole-invitation review.                              |
 |   2 | Typography roles and heterogeneity          | **resolved by shared infrastructure** | Semantic font roles/tokens and profile selectors; structural tests retained.      |
-|   3 | Vertical rhythm and density                 | **resolved**                          | Goal 2/3 rhythm corrections and focused responsive capture.                       |
+|   3 | Vertical rhythm and density                 | **resolved**                          | Rhythm corrections and focused responsive capture.                                |
 |   4 | Generic cards and bordered surfaces         | **resolved**                          | Open-flow/local surface hierarchy; residual RSVP container presence is accepted.  |
 |   5 | Photographic/content transitions            | **resolved by shared infrastructure** | Canonical intersection profiles and render-plan coverage.                         |
-|   6 | Reveal card-like opening                    | **resolved**                          | Victoria reveal refinement; reveal-open contract and Goal 3B reveal report.       |
-|   7 | Hero lower hierarchy                        | **resolved**                          | Goal 3 hero composition evidence; not reopened in Goal 3B.                        |
+|   6 | Reveal card-like opening                    | **resolved**                          | Victoria reveal refinement; reveal-open contract and reveal report.               |
+|   7 | Hero lower hierarchy                        | **resolved**                          | Hero composition evidence; not reopened later.                                    |
 |   8 | Quote/countdown empty space                 | **resolved**                          | Countdown composition and rhythm evidence in section report.                      |
 |   9 | Location refinement                         | **resolved**                          | Shared location semantics plus Victoria profile; no regression found.             |
 |  10 | Itinerary unfinished state                  | **resolved**                          | Visual pacing is corrected; itinerary items/times confirmed by client 2026-08-12. |
 |  11 | Family hierarchy                            | **intentionally unchanged**           | Accepted visual quality; further editorial exploration is optional.               |
 |  12 | Gallery sparse/provisional treatment        | **resolved**                          | Single-image editorial treatment; cross-preset `single` tests pass.               |
-|  13 | Gifts generic card stack                    | **resolved**                          | Goal 3 surface hierarchy and focused whole-page review.                           |
-|  14 | Personalized Access / RSVP density mismatch | **resolved**                          | Connected guest-action sequence in Goal 3B.                                       |
+|  13 | Gifts generic card stack                    | **resolved**                          | Surface hierarchy and focused whole-page review.                                  |
+|  14 | Personalized Access / RSVP density mismatch | **resolved**                          | Connected guest-action sequence in the final pass.                                |
 |  15 | RSVP incomplete initial state               | **resolved**                          | Initial/progression behavior retained; focused RSVP evidence passes.              |
-|  16 | ThankYou duplicated rendering               | **resolved by shared infrastructure** | Goal 2 duplicate-message guard; no Victoria workaround remains.                   |
-|  17 | ThankYou closing reading flow               | **resolved**                          | Goal 3B closing refinement; no disruptive drop-cap remains.                       |
+|  16 | ThankYou duplicated rendering               | **resolved by shared infrastructure** | Duplicate-message guard; no Victoria workaround remains.                          |
+|  17 | ThankYou closing reading flow               | **resolved**                          | Closing refinement; no disruptive drop-cap remains.                               |
 
 All owner-data items including map URLs are resolved.
 
@@ -458,7 +451,7 @@ All owner-data items including map URLs are resolved.
 
 ## Preparation Readiness History
 
-| date       | readiness                  | helper basis                   | notes                                                                  |
-| ---------- | -------------------------- | ------------------------------ | ---------------------------------------------------------------------- |
-| 2026-08-07 | `READY_WITH_PLACEHOLDERS`  | `evaluatePreparationReadiness` | Goal 1 canonical prep; 5 unique HR roles; non-blocking map/time tokens |
-| 2026-10-08 | `READY_FOR_IMPLEMENTATION` | `evaluatePreparationReadiness` | Map URLs confirmed and resolved; no placeholders remain                |
+| date       | readiness                  | helper basis                   | notes                                                           |
+| ---------- | -------------------------- | ------------------------------ | --------------------------------------------------------------- |
+| 2026-08-07 | `READY_WITH_PLACEHOLDERS`  | `evaluatePreparationReadiness` | Canonical prep; 5 unique HR roles; non-blocking map/time tokens |
+| 2026-10-08 | `READY_FOR_IMPLEMENTATION` | `evaluatePreparationReadiness` | Map URLs confirmed and resolved; no placeholders remain         |

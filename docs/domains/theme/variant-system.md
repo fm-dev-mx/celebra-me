@@ -10,9 +10,9 @@ The canonical dependency direction is:
 
 `Invitation source → canonical schema → adapter → render plan → section DOM + isolated CSS`
 
-The executable single source of truth is `src/lib/invitation/section-variants.ts`. Its registry owns
-the closed vocabulary, prerequisites, CSS owner, visual-verification status, and persisted-content
-transformation for every section variant.
+The executable single source of truth is `src/lib/invitation/section-variants.ts`. Each registry
+entry records section, variant, default flag, prerequisites, and CSS owner; together they form the
+closed vocabulary.
 
 ## Boundary and authority
 
@@ -36,9 +36,8 @@ The runtime path is intentionally linear:
    registry.
 
 There is no runtime variant normalizer, legacy alias registry, identity-specific variant branch, or
-silent compatibility fallback in this path. Pre-cutover persisted content may be inspected by
-migration and audit tooling, but deployment remains blocked until the separately authorized
-environment migration is applied and verified.
+silent compatibility fallback in this path. Older persisted content is inspected only by read-only
+audit tooling (`pnpm invitation:published-audit`).
 
 ## Canonical inventory
 

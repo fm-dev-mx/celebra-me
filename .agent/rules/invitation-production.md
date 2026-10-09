@@ -18,20 +18,15 @@ and `.agent/skills/invitation-preparation/SKILL.md`. Content promote/mirror vs R
 in [`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md).
 Do not begin invitation-specific implementation while preparation readiness is `NOT_READY`.
 
-Obsolete one-shot tooling (`ops optimize-assets`, `ops new-invitation`, `ops adopt-legacy-events`,
-`reorganize-cloudinary-assets.ts`) has been removed. Use preparation asset protocol +
-`normalizeInvitationImage` / provision release normalization for managed assets.
+Managed assets go through the preparation asset protocol and the provision release normalization.
 
 ## Required preflight
 
 - Inspect the current resolver, descriptor, preset catalog, asset registry, and target event type
   before selecting a pattern. Do not copy an older invitation merely because it looks similar.
-- Invitations are self-sufficient: the theme comes from `theme_id` and the structure from the
-  canonical section contracts ([section contracts](../../docs/domains/content/section-contracts.md))
-  and the canonical variant registry (`src/lib/invitation/section-variants.ts`, documented in
-  [variant system](../../docs/domains/theme/variant-system.md)). Do not use a demo as a structural
-  or asset pattern. Reuse contracts and shared components, not design-specific copy or client
-  styling.
+- Invitations are self-sufficient ([preset source of truth](invitation-preset-source-of-truth.md)):
+  never use a demo as a structural or asset pattern. Reuse contracts and shared components, not
+  design-specific copy or client styling.
 - Preserve Astro server/client boundaries. Code, identifiers, comments, migrations, and technical
   documentation are English; visible UI copy is Spanish.
 - Enforce event-type/preset compatibility before persistence. Keep route slug and `_assetSlug`
@@ -46,18 +41,16 @@ Obsolete one-shot tooling (`ops optimize-assets`, `ops new-invitation`, `ops ado
 - Verify required, optional, grouped-location, and long-copy cases. Verify reduced motion,
   no-JavaScript, and observer-failure behavior; public content must remain readable without motion
   initialization.
-- Keep anonymous responses public-cacheable only when no guest context is present. Personalized,
-  preview, invalid-content, and error responses must remain private/non-cacheable.
+- Keep cache headers as defined in
+  [`public-response-cache-policy.md`](../../docs/domains/invitations/public-response-cache-policy.md).
 - Publication must use the atomic RPC with stale-write protection. Never replace it with sequential
   public-state writes.
 - Validate required migrations locally and report both local and production status. Database
   migrations precede dependent application deployment. Never infer production alignment.
 - Run the narrow relevant checks plus production-oriented build/E2E checks proportional to risk. Do
   not stage, commit, deploy, or mutate production unless explicitly requested.
-- Treat creative acceptance as a separate human gate: the canonical invitation preparation record
-  must contain an explicit `ACCEPTED` outcome after whole-invitation responsive review before final
-  release. Render/screenshot success is mechanical evidence only; `ACCEPTED_WITH_BLOCKERS` remains
-  Production-blocking for its recorded owner-data or non-creative dependency.
+- Treat creative acceptance as a separate human gate (preparation contract §9.2); render or
+  screenshot success is mechanical evidence only.
 
 ## Managed updates
 

@@ -107,8 +107,7 @@ execution:
   `.cache/canonical-status.json`.
 - **Preview-only operational:** `PREVIEW_DB_URL`, `PREVIEW_SUPABASE_URL`, and
   `PREVIEW_SUPABASE_SERVICE_ROLE_KEY` are used by Preview DB workflows and never by Production. They
-  live in `.env.preview.local` (see `.env.preview.local.example`), not ordinary Local `.env.local`
-  files.
+  live in `.env.preview.local` (no tracked template), not ordinary Local `.env.local` files.
 - **Operational script-only:** Command confirmations (e.g. `CONFIRM_REMOTE_SERVICE_ROLE`), DB
   workflow inputs, and one-off script filters. These can use script-owned local file loaders and are
   intentionally omitted from `ImportMetaEnv`. `pnpm invitation:release` treats Preview and
@@ -123,13 +122,10 @@ execution:
   approved ignored secret files and are intentionally absent from `.env.example` and app typing. The
   local daily backup task resolves the same ignored sources under the interactive operator account;
   credentials are never copied into the scheduled-task definition.
-- **Production owner apply:** Requires interactive TTY confirmation via
-  `requireOwnerProductionApply` (arrow menu defaulting to Cancel, optional technical review, then
-  short bound code `<VERB> <8-hex>`). Default summary hides URLs, full hashes, executors, and
-  internal policy names. There is no approval-token, secret, or noninteractive confirmation env
-  alternative. `CELEBRA_AGENT_CONTEXT` rejects agent self-authorization and is injected by default
-  in agent sessions (Cursor hooks). It is not a substitute for owner TTY confirmation. Apply also
-  requires valid `pnpm release-check` evidence for the current clean `HEAD`.
+- **Production owner apply:** No environment variable authorizes it; the owner gate is an
+  interactive TTY confirmation with no approval-token, secret, or noninteractive alternative.
+  `CELEBRA_AGENT_CONTEXT` marks an agent session and makes the gate refuse; only the Cursor hooks
+  set it. Gate sequence: [`database-workflow.md`](database-workflow.md) (`pnpm db:migrate`).
 - **Hosted migrate identity:** clean Git `HEAD` is the target release. Production contract phases
   resolve the prior deployed SHA from GitHub/Vercel evidence, require its trusted Production smoke,
   and read `supabase/deployed-app-capabilities.json` from that exact Git tree. Shell variables never
@@ -138,8 +134,8 @@ execution:
   match the canonical Preview project ref.
 - **Test-only:** `PLAYWRIGHT_*`, audit run IDs, test fixture variables. The canonical local E2E
   server is isolated by default; `PLAYWRIGHT_REUSE_EXISTING_SERVER=true` is an explicit opt-in.
-- **Stale/manual-only:** `DATABASE_URL` and `RSVP_TOKEN_SECRET` are not active runtime inputs. Keep
-  them out of templates unless a future workflow reintroduces them intentionally.
+- **Retired:** `DATABASE_URL` and `RSVP_TOKEN_SECRET` are read nowhere. Keep them out of templates
+  unless a workflow reintroduces them intentionally.
 
 ### Contract Category Inventories
 
@@ -223,9 +219,10 @@ signed URLs, or reusable secret values in tracked templates, documentation, logs
 - `SUPABASE_SERVICE_ROLE_KEY` is server-only and must never be used by public health checks.
 - Service-role scripts must fail closed for remote Supabase unless they have a command-specific
   confirmation.
-- `pnpm invitation:release` requires `--non-interactive` in non-TTY automation and refuses divergent
-  overwrite without both `--allow-divergent-overwrite` and an exact
-  `--confirm-overwrite <target>:<slug>:<package-hash>` token.
+- `pnpm invitation:release` runs without prompts under `--non-interactive` (or without a TTY). A
+  non-interactive apply whose plan deletes or overwrites rows or Storage objects also requires
+  `--confirm-destructive`, and a non-interactive Preview write requires
+  `CELEBRA_TASK_SCOPE=preview:<slug>:<operation>`.
 - `PUBLIC_*` variables must be browser-safe.
 - `PROD_DB_URL` is only for Postgres workflows such as backups, refreshes, and reviewed migrations.
 - `PROD_SUPABASE_URL` and `PROD_SUPABASE_SERVICE_ROLE_KEY` are accepted only by the read-only
@@ -360,8 +357,7 @@ isolated behavior and must not depend on a previously running server.
 
 ## Cleanup Notes
 
-- `RSVP_ADMIN_USER` is still used as a local admin alias during production-to-local refresh.
-- `DATABASE_URL` and `RSVP_TOKEN_SECRET` only appear in historical notes/plans and should remain
-  deferred unless a concrete active owner is found.
+- `RSVP_ADMIN_USER` stays in `.env.example` and the runtime env allowlist, but no code reads it; it
+  is a retirement candidate.
 - When adding or retiring variables, reconcile the template, app/runtime typing, and category lists
   according to their roles. Script-only variables do not belong in `src/env.d.ts`.

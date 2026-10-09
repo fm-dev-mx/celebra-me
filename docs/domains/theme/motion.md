@@ -1,7 +1,6 @@
 # Invitation Motion System
 
-**Status:** Sole normative authority for invitation motion
-**Last updated:** 2026-08-17
+**Status:** Sole normative authority for invitation motion **Last updated:** 2026-08-17
 
 This document owns invitation motion categories, timing limits, reveal recipes, observer behavior,
 ambient decoration, hero sequencing, and reduced motion. Operational skills and other domain docs
@@ -29,6 +28,9 @@ Motion belongs to the semantic token layer in `src/styles/tokens/semantic/_motio
 - Use `--motion-interaction-duration` for direct feedback.
 - Use `--motion-reveal-duration`, `--motion-reveal-distance`, and `--motion-reveal-ease` for section
   recipes.
+- `--motion-reveal-distance` defaults to 18px (`src/styles/invitation/_motion-system.scss`). A
+  section entering through an atmospheric-blend boundary may reduce it to 10–13px, because the blend
+  already introduces the arrival.
 - Use `--motion-stagger-step` and `--motion-stagger-cap` only for CSS item staggering.
 - Use `--motion-ambient-duration` and `--motion-ambient-scale-to` only for decorative ambient media.
 - Hero role variables own duration and delay for `media`, `eyebrow`, `title`, `details`, and
@@ -49,9 +51,9 @@ The closed recipe set is:
 
 ### Stagger placement rule
 
-Assign `stagger-group` to at most one section in any consecutive pair. Two adjacent sections
-with `stagger-group` create compounded visual noise. Place at least one section using a
-different recipe between any two stagger groups.
+Assign `stagger-group` to at most one section in any consecutive pair. Two adjacent sections with
+`stagger-group` create compounded visual noise. Place at least one section using a different recipe
+between any two stagger groups.
 
 `InvitationSections.astro` publishes the selected recipe as `data-reveal`. Shared mechanics live in
 `src/styles/invitation/_motion-system.scss`. Sections may provide tokens and `data-reveal-item`

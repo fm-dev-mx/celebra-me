@@ -3,16 +3,15 @@ name: branch-lane
 description: |
   Prepare releases or promote/sync develop and main through the existing parity and diagnosis workflow. Git writes require exact current-task authorization; this skill does not perform database or deployment operations.
 domain: workflow
-version: 2.3.0
-absorbed_skills: [release-prepare]
+version: 2.4.0
 when_to_use:
-  - User asks to promote develop to main / fast-forward main / "promueve a main"
+  - User asks to promote develop to main through the release pull request / "promueve a main"
   - Work integrated into develop is ready for production
-  - User asks to prepare a release or release candidate (former release-prepare)
+  - User asks to prepare a release or release candidate
   - Version bump / changelog promotion for a checkpoint
-  - Production hotfix already on main must be absorbed into develop (recovery)
-  - Phrases like "fast-forward main", "promueve a main", "prepara release", "pasa main a develop",
-    "sincroniza develop con main"
+  - Commits that reached main outside develop must be absorbed into develop (recovery)
+  - Phrases like "promueve a main", "prepara release", "pasa main a develop", "sincroniza develop
+    con main"
   - Resume a previously interrupted branch-lane / database-parity flow
 preconditions:
   - Read AGENTS.md
@@ -45,7 +44,7 @@ redefine it.
 
 | Authority                   | Doc                                                                                                                  |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Branch model, FF, promotion | [`docs/core/git-governance.md`](../../../docs/core/git-governance.md)                                                |
+| Branch model, promotion     | [`docs/core/git-governance.md`](../../../docs/core/git-governance.md)                                                |
 | Versions, tags, changelog   | [`docs/core/release-process.md`](../../../docs/core/release-process.md)                                              |
 | Agent Git authorization     | [`.agent/rules/git-safety.md`](../../rules/git-safety.md)                                                            |
 | Database ops / parity audit | [`docs/database-workflow.md`](../../../docs/database-workflow.md) + [`database-parity`](../database-parity/SKILL.md) |
@@ -128,7 +127,7 @@ database contents in any report.
 
 | Priority | Mode                      | Direction                       | Load                                                                             |
 | -------- | ------------------------- | ------------------------------- | -------------------------------------------------------------------------------- |
-| Default  | `promote-develop-to-main` | `develop` → `main` (FF)         | [`references/promote-develop-to-main.md`](references/promote-develop-to-main.md) |
+| Default  | `promote-develop-to-main` | `develop` → `main` (release PR) | [`references/promote-develop-to-main.md`](references/promote-develop-to-main.md) |
 | Optional | `release-prepare`         | files only                      | [`references/release-prepare.md`](references/release-prepare.md)                 |
 | Recovery | `sync-main-into-develop`  | `main` → `develop` (merge only) | [`references/sync-main-into-develop.md`](references/sync-main-into-develop.md)   |
 

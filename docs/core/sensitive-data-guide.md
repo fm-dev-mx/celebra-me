@@ -1,98 +1,50 @@
-# Guía de Prevención de Datos Sensibles
+# Sensitive Data Guide
 
-**Última actualización:** 2026-05-29
+**Last updated:** 2026-10-09
 
-## ¿Qué constituye información sensible (PII)?
+This guide says which client data may live in the repository and which may not. Preparation-document
+hygiene is owned by
+[`invitation-preparation-contract.md`](invitation-preparation-contract.md#41-info-hygiene--persist-vs-session-only).
 
-En el contexto de Celebra-me, se considera información sensible todo aquello que pueda identificar
-directa o indirectamente a un cliente real:
+## Where real client data may live
 
-- **Nombres completos** reales de clientes, familiares, padrinos, invitados
-- **Direcciones físicas** reales (domicilios, venues, salones)
-- **Números de teléfono** reales de clientes o contactos
-- **Correos electrónicos** reales de clientes
-- **URLs de Cloudinary u otros assets** que expongan IDs de proyectos reales
-- **Preferencias o datos personales** que puedan vincularse a una persona real
-- **Tokens o enlaces de captura** reales que hayan sido compartidos con clientes
+Real invitations are managed content. Their event facts (celebrant and family names, dates, venues,
+copy) are authored in `scripts/provision/invitations/<slug>.ts`, recorded in
+`docs/invitations/<slug>.md`, and published to the database through the managed release workflow.
+That is intended and allowed.
 
-## Reglas para datos en el repositorio
+Real client data must never appear in:
 
-### Emails
+- the demo collection `src/content/event-demos/` (`isDemo: true` showcase content uses fictitious
+  data only; `pnpm validate:no-pii` enforces it, including that a demo uses only a `demo-*` visual
+  profile);
+- demo asset namespaces or reusable components, styles, and tests that are not scoped to that
+  invitation;
+- seed or fixture scripts outside the managed definitions.
 
-- Todo email en archivos de código, tests, fixtures, o contenido **debe** usar el dominio
-  `@example.com`.
-- Ejemplo: `cliente@example.com`, `invitado@example.com`
+## Never commit
 
-### Teléfonos
+- Client contact data the invitation does not publish, such as private email addresses. A WhatsApp
+  RSVP destination shown to guests is event content and belongs only to its managed definition.
+  Tests and fixtures use `@example.com` and `+521000000000` (synthetic patterns such as `0000000000`
+  are fine for format checks).
+- Guest data: guest names, RSVP responses, and personalized invite tokens.
+- Secrets: API keys, service credentials, capture tokens, and credential-bearing URLs. Configuration
+  lives in untracked `.env.local`; `src/env.d.ts` types the variables. The business WhatsApp number
+  comes from `CONTACT_WHATSAPP`, never a literal.
+- Raw client material: chat exports, absolute paths to client folders, and photo dumps.
+- Backup or temporary files (`.bak`, `.tmp`, `.log`) that may contain any of the above.
 
-- Todo número telefónico en archivos de prueba, demos, contenido mock, o placeholders **debe** usar
-  `+521000000000` (o `521000000000` sin prefijo).
-- Excepción: números usados en validación de formato (e.g., probar que 10 dígitos funciona) pueden
-  usar patrones sintéticos como `0000000000`.
+## Before committing
 
-### Nombres
+1. Is client contact, guest, or secret data present? Remove it.
+2. Is real client data outside a managed definition or its invitation doc? Move or remove it.
+3. Does a demo, fixture, or test reference a real client? Replace it with fictitious data.
+4. Run `pnpm validate:no-pii` when demo content changes and `pnpm validate:invitation-preparation`
+   when `docs/invitations/` changes.
 
-- En archivos de contenido (`src/content/event-demos/`) para eventos **no reales**, usar
-  placeholders como `Juan Pérez`, `María García`, `Ciudad de Prueba`.
-- En contenido de eventos reales en producción, los datos de clientes deben manejarse a través del
-  módulo intake, no hardcodearse en archivos JSON.
+## References
 
-### URLs de assets
-
-- URLs de Cloudinary que apunten a assets de clientes reales **nunca** deben committease.
-- En demos y tests, usar URLs de ejemplo (`https://res.cloudinary.com/example/...`) o de servicios
-  de stock images.
-
-## Prohibiciones explícitas
-
-1. **No hacer commit** de scripts con datos de clientes reales (ej. scripts de seed con nombres
-   verdaderos, direcciones reales).
-2. **No hardcodear** números de WhatsApp reales en componentes o data files. Usar siempre la
-   variable de entorno `CONTACT_WHATSAPP`.
-3. **No incluir** archivos `.bak`, `.tmp`, o copias de seguridad que contengan datos sensibles en el
-   repositorio.
-4. **No exponer** tokens de captura, API keys, o secrets en archivos de código.
-
-## Proceso de revisión pre-commit
-
-Antes de cada commit, verificar:
-
-1. **¿Contiene nombres reales de clientes?** → Reemplazar con placeholders.
-2. **¿Contiene teléfonos o emails reales?** → Reemplazar con `+521000000000` o `@example.com`.
-3. **¿Contiene URLs de Cloudinary con IDs reales?** → Reemplazar con URLs de ejemplo.
-4. **¿Es un script que crea datos en Supabase?** → Asegurarse de que usa datos mock.
-5. **¿El commit incluye archivos `.bak`, `.log`, `.tmp`?** → Excluirlos con `.gitignore` o no
-   incluirlos.
-
-### Uso de hooks
-
-El proyecto usa husky + lint-staged. Si se detectan archivos con extensión `.bak`, el equipo debe
-revisar manualmente si contienen datos sensibles antes de eliminarlos.
-
-## Uso de variables de entorno
-
-- Los secrets y datos de configuración sensible deben ir en `.env.local` (incluido en `.gitignore`).
-- `.env.example` contiene solo placeholders.
-- `src/env.d.ts` tipa las variables de entorno disponibles.
-- Nunca committear `.env.local` con valores reales.
-
-## Archivos de contenido (`src/content/event-demos/`)
-
-Los archivos JSON en `src/content/event-demos/` son parte del repositorio público. Por lo tanto:
-
-- Los eventos de demostración (`isDemo: true`) deben usar datos placeholder.
-- Los eventos reales (`isDemo: false`) deben contener solo la información mínima necesaria para el
-  funcionamiento técnico (nombres del festejado, fechas, venues). No deben incluir datos personales
-  sensibles de terceros (padrinos, invitados) que puedan ser considerados PII.
-
-Para manejar datos de clientes reales, el sistema debe usar el módulo intake:
-
-- `invitations` + `intake_requests` + `intake_submissions` en Supabase.
-- Los datos se almacenan en la base de datos, no en archivos del repositorio.
-
-## Referencias
-
-- `.env.example` — template de variables de entorno
-- `src/env.d.ts` — tipado de variables de entorno
-- `docs/core/git-governance.md` — política de commits
-- `CONTRIBUTING.md` — guía de contribución
+- `src/env.d.ts` — environment variable types
+- `docs/core/git-governance.md` — commit policy
+- `CONTRIBUTING.md` — contribution guide

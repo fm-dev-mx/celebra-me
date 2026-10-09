@@ -275,7 +275,7 @@ Image storage and delivery follows an environment-deterministic abstraction (`St
 - **Preview & Production:** Uses **Cloudinary** (`provider: 'cloudinary'`, `secure_url`). Client
   invitations published in Preview/Production must deliver referenced images from Cloudinary
   (publish and promote fail closed if local or Supabase Storage URLs are referenced).
-- **Demos / Templates:** Resolve through Astro/Vite static image pipeline across all environments.
+- **Demos:** Resolve through the Astro/Vite static image pipeline across all environments.
 
 | Flow                                   | Local (`dev-local`)                                                                           | Preview / Production                                                                                                        |
 | -------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -319,21 +319,6 @@ Worktree path, lane, `CELEBRA_RUNTIME_TARGET`, UI environment banner, and creden
 **not** mutation authorization. Authorization requires explicit task scope, classified target, and
 the repository’s guarded operation confirmations. See `docs/env-workflow.md` and
 `.agent/rules/database.md`.
-
----
-
-## Legacy / specialized paths
-
-| Path                               | Status                                                                                   |
-| ---------------------------------- | ---------------------------------------------------------------------------------------- |
-| `pnpm ops adopt-legacy-events`     | **REMOVED** — no longer registered                                                       |
-| `pnpm ops optimize-assets`         | **REMOVED** — no longer registered                                                       |
-| `pnpm ops new-invitation`          | **REMOVED** — no longer registered                                                       |
-| `pnpm ops dbs`                     | **REMOVED** alias — use canonical `pnpm dbs`                                             |
-| `--preview-provenance`             | `KEEP_SPECIALIZED` Preview receipt diagnose/recovery only                                |
-| `pnpm db:local:refresh-from-prod*` | Fail-closed — use backup + restore-from-dump                                             |
-| Manual production SQL patches      | Lint via `pnpm db:prod:patch -- --dry-run`; mutate only via `pnpm prod:apply -- --patch` |
-| `pnpm invitation:release`          | Local/Preview apply + Production dry-run; Production apply is `pnpm prod:apply`          |
 
 ---
 

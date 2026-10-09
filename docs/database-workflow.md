@@ -117,16 +117,14 @@ egress estimate, manifest verification, retention results, and the retained path
 a failed backup. The command is intentionally absent from CI, builds, deployments, application code,
 and ordinary development/test workflows.
 
-Production completed the `20260729140514`/`20260729152113` cutover, so backup **creation** always
-captures the standard `phase3` integrity profile; the legacy `--integrity-profile=pre-phase3`
-creation flag was removed. Restore-side tooling (`disposable-restore-verify`,
-`create-disposable-recovery-backup` drills) still reads the profile stored in each retained backup
-manifest, so historical `pre-phase3` recovery points remain restorable and verifiable until they age
-out of retention. Required Storage bytes are active Supabase-backed invitation assets plus objects
-referenced by published or draft content; stale, unreferenced `storage.objects` metadata is
-preserved in the metadata dump but is not misclassified as a required binary. The disposable restore
-rebuilds only through the manifest's last migration, so each recovery point is tested against its
-real schema rather than today's latest schema.
+Production backup **creation** always captures the standard `phase3` integrity profile. Restore-side
+tooling (`disposable-restore-verify`, `create-disposable-recovery-backup` drills) reads the profile
+stored in each retained backup manifest, so older `pre-phase3` recovery points remain restorable and
+verifiable until they age out of retention. Required Storage bytes are active Supabase-backed
+invitation assets plus objects referenced by published or draft content; stale, unreferenced
+`storage.objects` metadata is preserved in the metadata dump but is not misclassified as a required
+binary. The disposable restore rebuilds only through the manifest's last migration, so each recovery
+point is tested against its real schema rather than today's latest schema.
 
 Windows Task Scheduler owns the once-per-24-hours trigger; the repository owns capture, validation,
 reporting, exit status, and retention. The operator must review the newest report and the age of the
@@ -145,14 +143,11 @@ fingerprints, checks RSVP/ownership/orphan/uniqueness/phone invariants, and writ
 restore/verification/total timings. A synthetic complete set can be created with
 `pnpm db:backup:create-disposable-fixture -- --output-dir=<path>`.
 
-The 2026-07-29 Production-derived pre-migration drill restored 65 migrations, 18 applicable critical
-table fingerprints, 17 Auth users and identities, and 43 required Storage objects in 7,359 ms, with
-every relationship/business invariant at zero and all object hashes matching. The disposable
-database was reset to synthetic data and materialized Production-derived files were removed
-afterward. This demonstrates RTO ≤4 hours for the current Production data scale and proves the
-one-time recovery point. The daily OS schedule and newest successful report establish ongoing RPO
-evidence; planned mutations share the critical migrate RPO (`CRITICAL_BACKUP_RPO_MS`, 15 minutes).
-Treat an older recovery point as a blocking incident before promote/migrate apply.
+After a drill on Production-derived data, reset the disposable database to synthetic data and remove
+the materialized Production-derived files. A passing drill is the RTO evidence; the daily OS
+schedule and newest successful report establish ongoing RPO evidence. Planned mutations share the
+critical migrate RPO (`CRITICAL_BACKUP_RPO_MS`, 15 minutes). Treat an older recovery point as a
+blocking incident before promote/migrate apply.
 
 ### Free-tier recovery monitoring
 
@@ -194,12 +189,12 @@ categories, and precedence notes.
   on PATH; verify with `psql --version`.
 - `.env.local` must not point to production during normal development.
 - Production credentials must come from shell environment variables or the single canonical
-  gitignored secret file `.env.production.local` (template: `.env.production.local.example`).
+  gitignored secret file `.env.production.local` (no tracked template).
 - Preview credentials must come from `PREVIEW_DB_URL` or the single canonical gitignored secret file
-  `.env.preview.local` (template: `.env.preview.local.example`). On the `dev-preview` worktree,
-  `.env.preview.local` also supplies the Preview **application** runtime (`SUPABASE_*` /
-  `PUBLIC_SUPABASE_*`) via lane bootstrap; that runtime overlay does not authorize `db:preview:*` or
-  `invitation:release` mutations.
+  `.env.preview.local` (no tracked template). On the `dev-preview` worktree, `.env.preview.local`
+  also supplies the Preview **application** runtime (`SUPABASE_*` / `PUBLIC_SUPABASE_*`) via lane
+  bootstrap; that runtime overlay does not authorize `db:preview:*` or `invitation:release`
+  mutations.
 - `.tmp/` and `.backups/` are never committed.
 - Never print or paste a full production or preview connection string in logs, docs, issues, or
   chat.
@@ -334,16 +329,10 @@ PROVISIONED & HOSTED-VALIDATED
   (`supabase/test/seed-test-data.sql` or synthetic test fixtures) for non-invitation operational
   data. Production customer data must NEVER be copied into Preview.
 - **Invitation Content Exception**: Preview MAY mirror invitation-facing production content (names,
-  dates, locations, photographs) required for regression testing. The following categories remain
-  prohibited:
-  - Guest and RSVP data (`guest_invitations`, `guest_invitation_audit`)
-  - Auth users, credentials, sessions, MFA factors
-  - Intake submissions (`intake_requests`, `intake_submissions`)
-  - Audit logs
-  - Commercial/tracking data (`visitor_sessions`, `commercial_attribution_identity`,
-    `commercial_analytics`)
-  - Claim codes (`event_claim_codes`)
-  - RSVP tables (`rsvp_records`, `rsvp_audit_log`, `rsvp_channel_log`)
+  dates, locations, photographs) required for regression testing. Guest, RSVP, Auth, intake, audit,
+  commercial/tracking, and claim-code data stay prohibited; the list is owned by
+  [`content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md#strict-isolation-never-promote-or-mirror)
+  (executable: `EXCLUDED_TABLES` in `scripts/db/db-target-config.ts`).
 - **Ownership Remapping**: Copied invitations and events are owned by `preview@preview.com` (the
   dedicated Preview admin). Real Production auth users are never copied.
 - **Storage Mirroring**: Supabase Storage binaries under `invitation-assets` (rows with
@@ -412,11 +401,10 @@ Read-only evidence is not persisted: parity and diagnosis re-run for the current
 each invocation, and a write proceeds only on evidence for the exact SHAs it moves.
 
 Complete remote audits via `pnpm db:local:audit` / `db:preview:audit` / `db:prod:audit` when
-credentials resolve. Production migration safety creates a complete DB/Auth/Storage recovery point
-with the explicit predecessor integrity profile immediately before mutation. After applying
-migrations and verifying the application schema contract, `pnpm db:migrate -- --target production`
-creates the complete Phase 3 recovery point again under the current profile. Preview is never a
-Production backup.
+credentials resolve. Production migration safety requires a verified complete DB/Auth/Storage
+recovery point immediately before mutation and captures another after applying migrations and
+verifying the application schema contract; both use the standard `phase3` integrity profile. Preview
+is never a Production backup.
 
 ### Migration / Deployment Compatibility Contract
 
@@ -483,9 +471,9 @@ healthy.
 with a failure. They are not runnable refresh workflows and must not be bypassed with direct
 Supabase commands.
 
-Use `pnpm db:prod:backup` followed by `pnpm db:local:restore-from-dump` for a non-destructive
-import. The unresolved preserve-local enhancement remains tracked in
-`.agent/plans/active/preserve-local-refresh-workflow.md`.
+Use `pnpm db:prod:backup` followed by `pnpm db:local:restore-from-dump` for a non-destructive import
+(see
+[Refresh local from production](#refresh-local-from-production-blocked--use-restore-from-dump)).
 
 `pnpm db:local:backup-wip`
 
@@ -503,6 +491,7 @@ import. The unresolved preserve-local enhancement remains tracked in
 - Ensures `auth.users.raw_app_meta_data.role = 'super_admin'`, upserts
   `public.app_user_roles.role = 'super_admin'`, and verifies password login.
 - Use for initial local setup or to repair the local admin without resetting the database.
+- Never hardcode real emails or passwords in source or docs.
 
 ### Agent application identities (Local / Preview)
 
@@ -532,19 +521,19 @@ application login substitute. Host invitation flows continue to use real `host_c
 
 `pnpm db:prod:backup`
 
-- Reads production `public` data and writes a timestamped dump under `.backups/prod/`.
-- Touches production read-only.
-- Does not mutate production.
+- Reads production `public` data read-only and writes a timestamped dump under `.backups/prod/`
+  (`-- --schema-only` for a schema dump).
 - Use for local refresh / debug dump restore only. It is **not** the critical recovery set.
 - For migrate/patch/promote gates or the 24h RPO, use `pnpm db:prod:backup:critical` or
   `pnpm db:prod:backup:daily`.
-- Backups contain real customer data and must not be committed.
+- Backups contain real customer data: keep them only in gitignored storage, never commit them, and
+  delete them when no longer needed.
 
 `pnpm db:prod:backup:critical`
 
 - Reads Production only and creates the complete public/Auth/Storage metadata/object-byte set.
-- Always captures the Phase 3 recovery contract (the legacy pre-cutover profile flag was removed;
-  retained pre-cutover backups stay restorable via the profile stored in their manifests).
+- Always captures the standard `phase3` integrity profile (older retained backups stay restorable
+  via the profile stored in their manifests).
 - Verifies project identity, capture-window coherence, object size/hash, manifest completeness, and
   critical business integrity before success.
 - Creates and verifies an EFS-encrypted directory under ignored `.backups/prod/`.
@@ -597,9 +586,10 @@ application login substitute. Host invitation flows continue to use real `host_c
   a short bound code `<VERB> <8-hex>` (e.g. `APPLY` plus the first 8 hex characters of the current
   `planId`). Full SHA, pending versions, and fingerprints remain in the audit summary. Paste noise
   (bracketed-paste / zero-width) is sanitized. A single Yes/No confirm is never sufficient.
-- Rejects `CELEBRA_AGENT_CONTEXT`. Agent sessions receive that variable by default; it is not the
-  positive authorization boundary. No token, secret, env, or noninteractive confirmation
-  alternative.
+- Rejects sessions marked with `CELEBRA_AGENT_CONTEXT`. Only the Cursor session/preToolUse hooks set
+  it; other agent hosts do not, so it is a deny signal, not the positive authorization boundary, and
+  agent Production writes stay prohibited regardless of host enforcement. No token, secret, env, or
+  noninteractive confirmation alternative.
 - Successful Production schema apply writes a durable owner-apply record under
   `.backups/prod/owner-apply/` (gitignored). `pnpm dbs` reports `authorizationIntegrity` separately
   from schema CURRENT. Versions at or before `20260806120000` are grandfathered.
@@ -656,9 +646,6 @@ pnpm db:local:restore-from-dump --dump <path-to-dump>
 pnpm db:local:validate
 ```
 
-`pnpm db:prod:backup` reads production `public` data and writes a timestamped dump under
-`.backups/prod/`. It does not mutate production.
-
 `pnpm db:local:restore-from-dump` is an intentional **PII-bearing debugging exception**, not content
 synchronization. It may import unsanitized Production guests, intake, commercial data, and optional
 Auth/Storage dumps. “Non-destructive” means no `db reset` and no overwrite of existing primary keys
@@ -669,12 +656,8 @@ never seed Preview. Artifacts remain under gitignored `.backups/` / `.tmp/`. Ful
 If schema drift is detected during staging import, the script stops and reports the failure. Do not
 patch around drift manually; add or apply the missing migration locally.
 
-### Refresh local while preserving local-only data
-
-There is no dedicated runnable preserve-refresh command yet. Use the supported backup/restore path
-above. Existing local primary keys are preserved rather than overwritten. Schema drift or
-incompatible data stops the import. The broader preserve-bundle workflow remains blocked pending a
-guarded implementation; see `.agent/plans/active/preserve-local-refresh-workflow.md`.
+There is no preserve-refresh command. The restore above already keeps existing local primary keys
+rather than overwriting them, and schema drift or incompatible data stops the import.
 
 ### Preserve local WIP before refresh
 
@@ -694,7 +677,6 @@ The persistent local database (`celebra-me-rsvp`) is protected state. It must ne
 project workflows or automated agents.
 
 The `db:local:reset` alias is a fail-closed safety rail that always exits with an error.
-`db:local:reset:force` does not exist. Neither name is a runnable workflow.
 
 To perform destructive database testing (migration tests, schema drops, truncate, rollback), use the
 isolated disposable test environment:
@@ -706,32 +688,6 @@ tsx scripts/db/disposable-test-env.ts cleanup # Full disposable cleanup
 
 The disposable environment runs on port 54332 with a separate Docker container and synthetic test
 data only. It cannot affect the persistent local database.
-
-### Bootstrap or repair the local admin
-
-```bash
-pnpm db:local:bootstrap-admin
-```
-
-To bootstrap or repair the local admin without resetting the persistent database, run the command
-above. The first `SUPER_ADMIN_EMAILS` entry (see `.env.example`) is the local super-admin identity.
-The password must be set in `LOCAL_SUPER_ADMIN_PASSWORD` or `RSVP_ADMIN_PASSWORD`. Do not hardcode
-real emails or passwords in source or docs.
-
-### Backup production
-
-```bash
-PROD_DB_URL=... pnpm db:prod:backup
-```
-
-Backups contain real customer data. Keep them only in gitignored storage, rotate them manually, and
-delete them when they are no longer needed.
-
-For schema-only:
-
-```bash
-PROD_DB_URL=... pnpm db:prod:backup -- --schema-only
-```
 
 ### Push migrations to production
 
@@ -762,6 +718,64 @@ patch. `prod:apply` plans and, after owner confirmation, executes the exact revi
 production patch file without the [required manifest](../.agent/rules/manual-sql-manifest.md) is
 blocked.
 
+## Executable guard
+
+`scripts/db/db-guard.ts` implements the central target policy and runs inside every guarded
+`pnpm db:*` command. Direct invocation:
+
+```bash
+tsx scripts/db/db-guard.ts check --target <production|preview|persistent-local|disposable-test> --operation "<op>"
+tsx scripts/db/db-guard.ts classify --db-url <connection-string>      # Classify a DB URL
+tsx scripts/db/db-guard.ts redact --text "<text>"                     # Redact credentials
+```
+
+- **Production**: blocks all write, DDL, reset, push, drop, and truncate operations.
+- **Persistent-local**: blocks `supabase db reset`, `docker volume rm`, `docker compose down -v`,
+  `DROP ... CASCADE`, `TRUNCATE ... CASCADE`, and `db push`.
+- **Disposable-test**: permits all operations (warning issued).
+- **Unknown**: blocks all operations with a classification error.
+- **Credentials**: redacted from all logs and error messages.
+- **Local identity**: verified by port (54322), host (127.0.0.1), and project ID (`celebra-me-rsvp`
+  in `supabase/config.toml`).
+
+## Disposable test environment
+
+The disposable environment uses separate Docker containers, ports, and volumes:
+
+```bash
+tsx scripts/db/disposable-test-env.ts start       # Create and start the test environment
+tsx scripts/db/disposable-test-env.ts reset       # Reset the test database (destructive) + seed data
+tsx scripts/db/disposable-test-env.ts run-tests   # Run pgTAP and migration tests
+tsx scripts/db/disposable-test-env.ts stop        # Stop the test environment
+tsx scripts/db/disposable-test-env.ts cleanup     # Full cleanup (stop + remove config/data)
+```
+
+Configuration: `supabase/test/config.toml` (project ID `celebra-me-test`; ports API 54331, DB 54332,
+Studio 54333, Shadow 54330), seed data `supabase/test/seed-test-data.sql`, migrations copied from
+`supabase/migrations/` on first start.
+
+### Disposable migration proof
+
+Local, Preview, and Production schema actions require a current disposable migration proof. Only
+`pnpm db:migrate -- --target disposable-test --apply` writes it; with nothing pending it records the
+proof without executing SQL. A stopped disposable container is started first
+(`ensureDisposableDbAvailable` in `scripts/db/disposable-availability.ts`). The receipt lives in the
+common Git directory (`db-evidence/disposable-migration-proof.json`) because every worktree shares
+the same disposable container. It is valid only while all of these hold, and fails closed otherwise:
+
+- the migration file set digest matches the current checkout;
+- the live container is the same instance (Docker id) that produced the receipt;
+- the live `schema_migrations` history equals the recorded applied versions;
+- the container holds no migration absent from the checkout and no applied migration was edited in
+  place (both require `pnpm db:disposable:reset`).
+
+Digests identify committed content, not checkout bytes: SQL is normalized (BOM stripped, CRLF and
+lone CR → LF) before hashing, and `.gitattributes` pins text files (SQL included) to LF, so
+worktrees with different `core.autocrlf` or editor line endings share one receipt. The receipt
+format is version 3; older receipts are treated as missing. `pnpm db:disposable:reset` retires the
+receipt (kept as `disposable-migration-proof.json.superseded`) before re-applying, so a reset always
+recovers.
+
 ## Never Do This
 
 - Do not restore local DB dumps into production.
@@ -770,7 +784,6 @@ blocked.
 - Do not use production as the default target for local development.
 - Do not mutate production during local refresh.
 - Do not run `pnpm db:push`; it is blocked because raw Supabase push can target a linked remote.
-- Do not invoke `tsx scripts/db/apply-migrations.ts`; that CLI was removed. Use `pnpm db:migrate`.
 - Do not run `pnpm db:local:reset` — it is blocked. Use `pnpm db:disposable:reset` for destructive
   tests.
 - Do not run `pnpm db:local:refresh-from-prod` or `pnpm db:local:refresh-from-prod-preserve-local` —
@@ -779,9 +792,6 @@ blocked.
   database.
 - Do not delete persistent Docker volumes (`supabase_db_celebra-me-rsvp`).
 - Do not run `docker compose down -v` for the persistent Supabase project.
-- Do not run removed one-shot ops commands (`adopt-legacy-events`, `new-invitation`,
-  `optimize-assets`); they are no longer registered. Use managed invitation workflows and reviewed
-  versioned migrations / specialized owner patches instead.
 - Do not run ad-hoc `supabase db push --linked` outside the approved migration workflow.
 - Do not run `supabase link` casually.
 

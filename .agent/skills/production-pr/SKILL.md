@@ -92,10 +92,10 @@ checks, and environment limitations.
   integrated SHA. `pnpm validate:changed` only covers working-tree edits made in this task (for
   example new documentation); a clean tree gives it nothing to check. Add structure and link
   validation for skill/governance changes.
-- Reuse the advisory `pnpm ops:classify-release -- --base <base-sha> --head <head-sha>` result
-  already produced for this range (release execution runs it once). A tooling-only result does not
-  waive required remote CI. Database-sensitive or visual ranges retain their owning evidence and
-  human gates; report missing evidence without applying migrations, publishing content, or accepting
+- Reuse the advisory `ops:classify-release` result that Repository Policy already produced for the
+  pushed range (its `release-classification-<sha>` artifact). A tooling-only result does not waive
+  required remote CI. Database-sensitive or visual ranges retain their owning evidence and human
+  gates; report missing evidence without applying migrations, publishing content, or accepting
   images.
 - Before an authorized push, recheck scope, remote tips, fast-forward compatibility, and effective
   branch rules. Honor the normal pre-push checks (commit-range validation and the Git LFS handoff;

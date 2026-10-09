@@ -4,8 +4,7 @@ description:
   Plan atomic commits from staged/unstaged changes, draft repository-compliant messages, and execute
   only exact Git operations explicitly authorized for the approved plan.
 domain: meta
-version: 2.7.0
-absorbed_skills: [commit-staged]
+version: 2.8.0
 when_to_use:
   - Preparing commits or evaluating atomicity
   - Drafting or reviewing commit messages
@@ -141,9 +140,8 @@ Use `type(scope): specific subject`.
   exceeds this, trim it or choose a shorter scope.
 - Avoid vague language such as `misc`, `wip`, `fix stuff`, `quick fix`, `tweaks`, `improvements`,
   `changes`, `stuff`, or `things`.
-- Avoid process language such as `apply changes`, `record`, or `process`. ✅ The commitlint regex
-  was patched to allow `process.` (as in `process.env`), so Node.js runtime references no longer
-  trigger false positives. Still avoid bare `process` as a verb (e.g. `process the data`).
+- Avoid process language such as `apply changes`, `record`, `scope`, or `process` as a verb
+  (`process.env` is allowed).
 
 ## Apply the Body Policy
 
@@ -166,21 +164,17 @@ Use `type(scope): specific subject`.
     with technical/commercial separation
   ```
 
-  The commitlint rule `body-max-line-length: [2, 'always', 140]` is a **hard error** (severity 2).
-  It is enforced at push time even in audit mode. Use `wc -c` or your editor's column ruler to check
-  before committing. Each `-m` argument passed to `git commit` is a separate paragraph; lines within
-  it must individually stay under the limit.
+  The commitlint rule `body-max-line-length: [2, 'always', 140]` is a **hard error** (severity 2),
+  enforced by the `commit-msg` hook and again over the pushed range by `pre-push`. Use `wc -c` or
+  your editor's column ruler to check before committing. Each `-m` argument passed to `git commit`
+  is a separate paragraph; lines within it must individually stay under the limit.
 
 ## CHANGELOG Awareness (milestones only)
 
-Treat [`docs/core/release-process.md`](../../../docs/core/release-process.md) as the layered
-changelog policy. When planning commits for a **product-visible milestone** or release checkpoint:
-
-- Call out whether `CHANGELOG.md` `[Unreleased]` should gain a bullet in the same work unit.
-- Keep per-client invitation detail in `docs/invitations/<slug>.md`; do not dump ops notes into the
-  system changelog.
-- Keep schema history in `supabase/migrations/`; summarize product impact only in the changelog.
-- Do **not** require a changelog update for every atomic commit.
+For a **product-visible milestone** or release checkpoint, state whether `CHANGELOG.md`
+`[Unreleased]` should gain a bullet in the same work unit, following the layered policy in
+[`docs/core/release-process.md`](../../../docs/core/release-process.md#layered-changelog-policy). Do
+**not** require a changelog update for every atomic commit.
 
 ## Report template
 

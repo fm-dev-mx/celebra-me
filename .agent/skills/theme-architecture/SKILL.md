@@ -31,89 +31,26 @@ related_docs:
 
 This skill governs the styling infrastructure of Celebra-me.
 
-## Core Model
+## Contract
 
-Use the strict three-level token architecture:
+[`docs/domains/theme/architecture.md`](../../../docs/domains/theme/architecture.md) owns the token
+levels, the three CSS homes (section variant, theme preset, invitation profile), the frozen-profile
+rule, the decision table, and the token inheritance constraint. Read it before editing; this skill
+adds procedure only.
 
-1. **Foundation tokens**: `src/styles/tokens/system/**`, SCSS variables only, raw values only.
-2. **Semantic tokens**: `src/styles/tokens/semantic/**`, global CSS custom properties for reusable
-   system intent.
-3. **Component tokens**: scoped CSS custom properties in the component, layout, section, or surface
-   stylesheet that owns the contract.
+In short: presets expose tokens only, section variant files own structure and section DOM selectors,
+and profiles declare custom properties only (enforced by
+`tests/unit/invitation-profile-boundary.test.ts`). `src/lib/theme/theme-contract.ts` owns active
+event types and preset names.
 
-Themes and states are not token layers. Theme presets override semantic and public component tokens.
-States are represented inside component contracts, such as `--header-nav-color-scrolled` or
-`--button-bg-hover`.
+## Operational Rules for CSS Boundaries
 
-## Presets
-
-Theme identity belongs in `src/styles/themes/presets/**`.
-
-```scss
-.theme-preset--my-theme {
-  --color-surface-primary: var(--color-surface-secondary);
-  --color-action-accent: #c5a059;
-  --hero-card-bg: rgb(var(--color-surface-primary-rgb) / 86%);
-}
-```
-
-Preset files may define or override semantic intent and public component tokens. They must not own
-section layout, direct component selectors, or hidden theme-local token systems.
-
-Presets must not target concrete section DOM selectors, internal section classes, IDs, `[data-*]`
-selectors, or pseudo-elements. If a theme needs section DOM knowledge, move that rule to
-`src/styles/themes/sections/<section>/`.
-
-## Sections
-
-Base invitation styles live in `src/styles/invitation/**`. Section partials under
-`src/styles/themes/sections/**` are organization and presentation only.
-
-Invitation theme CSS ownership:
-
-- `src/styles/invitation/_<section>.scss`: shared structural and base styles for the section.
-- `src/styles/themes/presets/_<preset>.scss`: global theme tokens and theme-wide custom properties
-  only.
-- `src/styles/themes/sections/<section>/_base.scss`: shared variant rules for that section only.
-- `src/styles/themes/sections/<section>/_<semantic-variant>.scss`: rules for one registered semantic
-  variant, only when tokens are not enough. The file is named after the variant, never after a
-  preset.
-- `src/styles/invitation-profiles/<visualProfileId>.scss`: custom-property declarations only (see
-  `docs/domains/theme/architecture.md`, Invitation profile).
-
-Decision rule:
-
-- Values, tokens, and custom properties can live in presets or be consumed by section bases.
-- Selectors, layout rules, pseudo-elements, internal section classes, structural overrides, and
-  section DOM knowledge belong under `src/styles/themes/sections/<section>/`.
-- Rules for every variant of a section belong in `src/styles/invitation/_<section>.scss`.
-- Rules shared by multiple variants of one section belong in
-  `src/styles/themes/sections/<section>/_base.scss`.
-- Rules unique to one variant of one section belong in
-  `src/styles/themes/sections/<section>/_<variant>.scss`.
-
-Allowed section work:
-
-- consume semantic tokens,
-- expose or consume public component tokens,
-- define layout, responsive behavior, and section presentation,
-- scope concrete variant behavior with `[data-variant='...']`.
-
-Section variant files are optional. Do not create or keep files only for symmetry. Controlled
-exceptions are allowed when a variant has real layout, pseudo-element, responsive, or decorative
-behavior, and those exceptions must stay under `themes/sections/<section>/`. Countdown is a
-reference example after cleanup, not a required file-layout template for every section.
-
-Avoid hardcoded theme identity in section partials. If a color or mood belongs to a theme and does
-not require section DOM knowledge, move it to the preset and consume it through a semantic or
-component token.
-
-## Contracts
-
-The active theme and event contract is `src/lib/theme/theme-contract.ts`.
-
-`src/lib/theme/color-tokens.ts` is only a content color role contract. It maps approved content
-roles to semantic CSS custom properties and must not become a parallel color system.
+1. **Preserve visuals when relocating styles.** Moving a rule between a preset and a section file
+   must not change the rendered output. Verify before and after.
+2. **Avoid broad refactors when a local boundary fix is enough.** Fix the specific violation rather
+   than restructuring an entire section or preset.
+3. **Check existing conventions before creating new files.** Look at sibling sections and existing
+   variant files before introducing new organization. Do not create files only for symmetry.
 
 ## Design Reference Handoff
 
@@ -181,12 +118,12 @@ new ones (`docs/domains/theme/architecture.md`, Transitional ownership exception
 
 Never skip the theme-contract registration step.
 
-### Resolver fallback is a blocking failure
+### Missing CSS is a blocking failure
 
-Preset/section CSS resolvers may silently fall back to a default preset (e.g. `jewelry-box`) when an
-entrypoint is missing. Treat any fallback as ship-blocking: verify file existence, glob coverage,
-loaded stylesheets, and computed tokens on `.theme-preset--<preset>` (wrapper element — not
-`:root`). `data-variant` is never a preset name.
+The section CSS resolver never falls back to another preset: a missing bundle or entrypoint is
+simply omitted (`src/lib/invitation/section-css-resolver-map.ts`), so the page renders unstyled
+sections. Verify file existence, glob coverage, loaded stylesheets, and computed tokens on
+`.theme-preset--<preset>` (wrapper element — not `:root`). `data-variant` is never a preset name.
 
 ## Governance Audit
 
@@ -226,4 +163,4 @@ Apply when contracts, variants, or isolation rules change:
 - No state token layer is introduced; state values stay in component contracts.
 - Hardcoded reusable colors are moved to foundation, semantic, component, or email constants as
   appropriate.
-- New presets are registered in theme-contract and do not silently resolve to the fallback preset.
+- New presets are registered in theme-contract and their CSS entrypoints and section bundle load.

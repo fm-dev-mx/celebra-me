@@ -92,13 +92,8 @@ Short factual phrase for checkpoint summary. Avoid vague themes (`updates`, `imp
 
 ### 7. Validate
 
-Prefer gatekeeper-appropriate checks; typically:
-
-```bash
-pnpm type-check
-pnpm test
-pnpm build
-```
+Select checks through the gatekeeper tiers. Release files alone need `pnpm validate:changed`; the
+range itself is certified by Repository CI on `develop` and `pnpm ops:release-checks <exact-sha>`.
 
 Document pre-existing vs new failures with evidence. Do not recommend production deploy if
 validation is red without clear pre-existing caveats.
@@ -116,9 +111,9 @@ Confirm only approved release files changed.
 
 Report whether to:
 
-- commit release files (prefer `chore(release): vX.Y.Z <theme>` when that matches history; else
-  `docs/core/git-governance.md` + `commitlint.config.cjs`)
-- create annotated tag `vX.Y.Z`
+- commit release files on a `candidate/vX.Y.Z` task branch as
+  `chore(release): publish vX.Y.Z checkpoint` (release-process step 4)
+- create annotated tag `vX.Y.Z` only after the promoted Production deployment is verified
 - push / deploy / publish
 - run `promote-develop-to-main` after `develop` includes the release commit
 

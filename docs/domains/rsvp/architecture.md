@@ -1,7 +1,5 @@
 # RSVP Module Architecture
 
-**Last Updated:** 2026-04-01
-
 This document describes the current RSVP and host-dashboard architecture in the live repository.
 
 ## Scope

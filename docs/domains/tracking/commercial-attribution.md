@@ -497,11 +497,12 @@ records found, not proof of no WhatsApp conversations. CTR uses measured demo se
 click count separately includes showroom activations. Period stage counts are not a cohort
 conversion rate.
 
-Migration `20260925182713_commercial_demo_followups.sql` is **authored, not applied**. It adds an
-append-only milestone ledger linked to existing leads and authenticated actors. It does not create a
-new CRM, alter order/payment state, or emit provider events. Service-role SELECT/INSERT only;
-anonymous and authenticated direct access is denied by privileges and RLS. The existing admin
-authentication, CSRF, runtime mutation guard and rate limiting protect the POST endpoint.
+Migration `20260925182713_commercial_demo_followups.sql` is merged to `main`; read its apply state
+per environment from `pnpm dbs`, not from this document. It adds an append-only milestone ledger
+linked to existing leads and authenticated actors. It does not create a new CRM, alter order/payment
+state, or emit provider events. Service-role SELECT/INSERT only; anonymous and authenticated direct
+access is denied by privileges and RLS. The existing admin authentication, CSRF, runtime mutation
+guard and rate limiting protect the POST endpoint.
 
 A lead code selects an existing opportunity; only sharing/contact milestones can create a missing
 opportunity, with no personal fields or marketing consent. Operators reuse the same code for the

@@ -1,10 +1,10 @@
 # Content Collections
 
-**Last Updated:** 2026-06-19
+**Last Updated:** 2026-10-09
 
-Celebra-me uses Astro content collections for showcase demos and internal templates. Real/client
-invitations are DB-published content; see [`event-governance.md`](event-governance.md) for the real
-invitation source-of-truth contract.
+Celebra-me uses one Astro content collection, for showcase demos. Real/client invitations are
+DB-published content; see [`event-governance.md`](event-governance.md) for the real invitation
+source-of-truth contract.
 
 ## Source of Truth
 
@@ -22,8 +22,8 @@ invitation source-of-truth contract.
 `src/lib/content/events.ts` looks up the collection. The static eligibility gate belongs to
 `src/lib/invitation/content-resolver.ts`: only demo content (`isDemo: true`) is eligible.
 DB-published client content from `published_invitation_content` is the only source for real/client
-invitations. Editor presets belong to `src/lib/intake/demo-preset-catalog.ts` and public showroom
-approval to `src/data/demo-showroom.data.ts`; these are intentionally distinct sets.
+invitations. Public showroom approval belongs to `src/data/demo-showroom.data.ts`; a routable demo
+is not automatically showroom-approved.
 
 ## Event Type Contract
 
@@ -51,8 +51,8 @@ Theme presets come from `src/lib/theme/theme-contract.ts`:
 - `editorial-magazine`
 - `angelic-presence`
 
-Section variant enums are consumed through `src/lib/theme/theme-contract.ts`. Do not duplicate
-preset or variant literals in content-specific code.
+Section variants come from `src/lib/invitation/section-variants.ts`. Do not duplicate preset or
+variant literals in content-specific code.
 
 ## Routing Rules
 
@@ -70,22 +70,16 @@ Public invitation routes resolve as:
 Event-specific source assets live under `src/assets/images/events/<asset-slug>/`.
 
 Static routable slugs must remain globally unique across `event-demos`. Real/client route slugs live
-in DB publication rows and must stay distinct from demo/template slugs.
+in DB publication rows and must stay distinct from demo slugs.
 
 When a route depends on local event assets, keep the asset exports in
 `src/assets/images/events/<asset-slug>/index.ts` so the discovery/registry helpers can consume them
 consistently.
 
-Dashboard-selectable demos are not inferred from routable static JSON alone. A demo becomes a
-dashboard preset only when it is added to `DEMO_PRESET_CATALOG` and has explicit render-safe asset
-resolution through an approved demo-owned namespace. `demo-primera-comunion-illustrated` is promoted
-this way with `_assetSlug` set to `demo-primera-comunion-illustrated`. A demo namespace must never
-hold client-provided media.
-
-A catalog entry may also exist before its routable demo JSON. `demo-cumple-editorial-magazine`
-(`cumple` on the `editorial-magazine` preset) is such a catalog-only record: it is the `baseDemoId`
-for managed birthday invitations on that preset, and its public demo route stays unpublished until a
-demo-owned JSON and asset namespace are added.
+A demo namespace must never hold client-provided media. The legacy
+`src/lib/intake/demo-preset-catalog.ts` is read only by managed provisioning (`baseDemoId`); see
+[event governance](event-governance.md#source-roles). It may hold catalog-only ids with no routable
+demo JSON.
 
 ## Validation
 

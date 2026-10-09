@@ -91,39 +91,16 @@ Follow
 phases **C0–C8**. Skill analysis phases **P0–P5** implement the analytical work inside those
 checkpoints (do not invent a third phase numbering scheme).
 
-Summary:
-
-1. **C0** — Identify event type; slug or `requires_owner_decision`; baseline git note.
-2. **C1** — Receive chat evidence; classify; present classified-facts summary.
-3. **C2** — Receive HR URL / asset root; refuse inventory without it; persist opaque Sources only.
-4. **C3–C5** — Completeness (`evaluateEventCompleteness`), assets + uniqueness, demo/design,
-   identity spelling freeze.
-5. **C6** — One consolidated owner decision pack (`buildOwnerDecisionPack`).
-6. **C7** — Evaluate **prepReadiness** with `evaluatePreparationReadiness` /
-   `summarizeAssetQuality`; update Markdown to **match the helper** (never hand-promote to
-   `READY_FOR_IMPLEMENTATION` while only provisional assets remain).
-7. **C8** — Handoff by prepReadiness; envReadiness remains out of scope.
+Hard stops from the script: refuse asset inventory without an HR URL or asset root (C2), present one
+consolidated owner decision pack (C6), and write prepReadiness only as the helper outcome (C7;
+contract §9.1).
 
 ### Post-implementation creative acceptance handoff
 
 When implementation is authorized and complete, return to the same canonical
-`docs/invitations/<slug>.md` record before final acceptance or release. Do not create a second
-per-invitation design specification. Complete the existing Creative Direction & Acceptance section
-and, when useful, link the existing `creative-qa-report` for detailed evidence.
-
-The review must:
-
-- inspect the rendered invitation as one narrative at representative responsive viewports (default
-  pair: 390 × 844 and 1440 × 900; focused evidence is sufficient, not the full screenshot corpus);
-- verify section boundaries, intersection intent, rhythm/density, and continuity between sections;
-- review typography roles, surfaces, photographic treatment, and documented local exceptions;
-- separate mechanical render/capture status from aesthetic acceptance;
-- record reviewer, date, evidence, blockers, and one explicit human outcome: `PENDING`, `ACCEPTED`,
-  `ACCEPTED_WITH_BLOCKERS`, or `REJECTED`.
-
-Only `ACCEPTED` clears the creative gate. A non-creative owner-data dependency may be recorded as
-`ACCEPTED_WITH_BLOCKERS`, but it remains blocking for the applicable Production/release boundary
-without preventing unrelated implementation work. Successful rendering alone never clears this gate.
+`docs/invitations/<slug>.md` record and complete its Creative Direction & Acceptance section per the
+creative acceptance gate in contract §9.2 (optionally backed by `creative-qa-report`). Do not create
+a second per-invitation design specification.
 
 ## Outputs
 
