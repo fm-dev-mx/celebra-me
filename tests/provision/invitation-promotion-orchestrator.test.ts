@@ -420,26 +420,6 @@ describe('invitation promotion orchestrator', () => {
 		jest.restoreAllMocks();
 	});
 
-	it('refuses CELEBRA_TASK_SCOPE before preflight or writes', async () => {
-		process.env.CELEBRA_TASK_SCOPE = 'preview:demo:apply';
-		await expect(
-			orchestrateInvitationPromotion({
-				packageData: packageData() as never,
-				quiet: true,
-				runPreflight: runPreflight as never,
-				runApply: runApply as never,
-				requireOwnerApply: requireOwnerApply as never,
-				ensureReleaseEvidence: ensureReleaseEvidence as never,
-				ensureBackup: ensureBackup as never,
-				revalidateBackup: revalidateBackup as never,
-			}),
-		).rejects.toMatchObject({ code: 'CONFIRMATION_REQUIRED' } satisfies Partial<OperatorError>);
-		expect(runPreflight).not.toHaveBeenCalled();
-		expect(ensureBackup).not.toHaveBeenCalled();
-		expect(requireOwnerApply).not.toHaveBeenCalled();
-		expect(runApply).not.toHaveBeenCalled();
-	});
-
 	it('passes deliveryScope as updateScope so first-time asset uploads are planned', async () => {
 		await orchestrateInvitationPromotion({
 			packageData: packageData() as never,

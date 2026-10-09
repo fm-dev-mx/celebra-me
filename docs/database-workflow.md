@@ -245,7 +245,9 @@ Policy for mirror exclusions, RSVP reset, and Cloudinary vs Supabase Storage bou
 Production never imports from the Preview DB or Preview Storage. Mirror is never promotion. Use
 `invitation:release --targets local|preview` for content stages. `--targets production --dry-run` is
 Production preflight only. Owner apply is `pnpm prod:apply -- --slug <slug> --apply`. Credential
-presence, worktree path, runtime target, and UI banners do not authorize mutations.
+presence, worktree path, runtime target, and UI banners do not authorize mutations. A Preview
+automation scope (`CELEBRA_TASK_SCOPE`) is refused by `prod:apply --apply` before the owner
+confirmation and before any write, schema included; read-only plans still work with it set.
 
 ### Commands
 

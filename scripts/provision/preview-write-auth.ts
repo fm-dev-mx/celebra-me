@@ -14,10 +14,27 @@
  *    never migrate / sync-invitations / purge / other operations. No `*` wildcard.
  *  - Lane/worktree/branch/environment identity alone IS NOT AUTHORIZATION.
  *  - Production credentials are never inputs to this mechanism.
- *  - Production promotion uses invitation:release owner confirmation (orchestrator), not this API.
+ *  - Production never accepts this token: `prod:apply --apply` refuses it before the owner gate
+ *    and before any write (`assertNoPreviewScopeForProduction`).
  */
 
 import { createInterface } from 'node:readline/promises';
+import { OperatorError } from '../db/operator-cli-ux.ts';
+
+/** A Preview automation scope is not Production authority; refuse before planning any write. */
+export function assertNoPreviewScopeForProduction(
+	env: NodeJS.ProcessEnv = process.env,
+	retryCommand = 'pnpm prod:apply',
+): void {
+	if (!env.CELEBRA_TASK_SCOPE) return;
+	throw new OperatorError({
+		title: 'Autorización de Preview no válida en Production',
+		cause: 'CELEBRA_TASK_SCOPE autoriza automatización de Preview y no aprueba escrituras en Production.',
+		code: 'CONFIRMATION_REQUIRED',
+		remediation: ['Quite CELEBRA_TASK_SCOPE y ejecute en una TTY del propietario.'],
+		retryCommand,
+	});
+}
 
 export interface PreviewWriteAuthInput {
 	slug: string;

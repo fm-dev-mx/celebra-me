@@ -46,6 +46,7 @@ import type {
 	PromotionApplyReport,
 	PromotionPreflightReport,
 } from '../provision/invitation-promote.ts';
+import { assertNoPreviewScopeForProduction } from '../provision/preview-write-auth.ts';
 import { revalidatePromotionVolatilePreconditions } from '../provision/promotion-volatile-revalidation.ts';
 import type { UpdateScope } from '../provision/semantic-delta.ts';
 import {
@@ -729,6 +730,8 @@ export async function applyProductionApplyPlan(
 	args: ProductionApplyCliArgs,
 	deps: ProductionApplyExecuteDeps = {},
 ): Promise<ProductionApplyExecution> {
+	// Before the owner gate and before any write, schema included.
+	assertNoPreviewScopeForProduction();
 	const reviewed = await buildProductionApplyPlan(args, deps);
 	throwIfIneligible(reviewed);
 
