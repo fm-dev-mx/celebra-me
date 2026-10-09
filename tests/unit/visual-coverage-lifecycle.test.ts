@@ -37,7 +37,11 @@ describe('visual coverage lifecycle', () => {
 		expect(after.variantCases).toEqual(before.variantCases);
 		expect(after.matrixHash).not.toBe(before.matrixHash);
 	});
-	it('keeps the committed visual references aligned with the current matrix', () => {
+	// Branch-level pin: the accepted candidate can only be generated from the commit that changes
+	// the matrix, so the commit hook (CELEBRA_TEST_SCOPE=commit) skips it and `validate:changed`
+	// plus Repository CI enforce it before integration.
+	const branchLevel = process.env.CELEBRA_TEST_SCOPE === 'commit' ? it.skip : it;
+	branchLevel('keeps the committed visual references aligned with the current matrix', () => {
 		const manifest = JSON.parse(
 			readFileSync('tests/e2e/visual-baselines/manifest.json', 'utf8'),
 		) as { matrixHash: string };

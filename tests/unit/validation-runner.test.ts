@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { runCommand } from '../helpers/run-command';
@@ -178,6 +179,21 @@ describe('related Jest source selection', () => {
 
 		expect(result.status).toBe(3);
 		expect(result.calls).toContainEqual(['visual:matrix:check']);
+	});
+});
+
+describe('branch-level pins under the commit hook', () => {
+	it('lets the commit hook skip the visual matrix pin that validate:changed and CI enforce', () => {
+		const hookRunner = readFileSync(path.resolve('scripts', 'run-related-tests.mjs'), 'utf8');
+		expect(hookRunner).toContain("cleanEnv.CELEBRA_TEST_SCOPE = 'commit'");
+		const matrixPin = readFileSync(
+			path.resolve('tests', 'unit', 'visual-coverage-lifecycle.test.ts'),
+			'utf8',
+		);
+		expect(matrixPin).toContain("process.env.CELEBRA_TEST_SCOPE === 'commit' ? it.skip : it");
+		// validate:changed never sets the commit scope, so the pin stays a branch gate there.
+		const runner = readFileSync(path.resolve('scripts', 'validation-runner.mjs'), 'utf8');
+		expect(runner).not.toContain('CELEBRA_TEST_SCOPE');
 	});
 });
 
