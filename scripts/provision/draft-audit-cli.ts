@@ -1,5 +1,6 @@
 /** Read-only audit of persisted draft documents. */
 import { auditDraftContract } from '../../src/lib/intake/services/draft-contract-audit.service.ts';
+import { flagValue } from '../lib/cli-args.ts';
 import {
 	listDraftInvitationSlugs,
 	readPersistedInvitationContent,
@@ -11,8 +12,7 @@ const args = process.argv.slice(2);
 const json = args.includes('--json');
 
 function value(flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	return index >= 0 ? args[index + 1] : undefined;
+	return flagValue(args, flag);
 }
 
 function requireTarget(): PersistedContentTarget {

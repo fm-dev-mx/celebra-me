@@ -11,6 +11,7 @@
  *   pnpm invitation:draft-restore --slug <slug> --entire --target production --apply --backup-manifest <path>
  */
 import { createHash } from 'node:crypto';
+import { flagValue } from '../lib/cli-args.ts';
 
 import { InvitationEditorSectionKeySchema } from '../../src/lib/intake/schemas/invitation-editor.schema.ts';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
@@ -38,8 +39,7 @@ const apply = args.includes('--apply');
 const entire = args.includes('--entire');
 
 function value(flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	return index >= 0 ? args[index + 1] : undefined;
+	return flagValue(args, flag);
 }
 
 function requireSlug(): string {

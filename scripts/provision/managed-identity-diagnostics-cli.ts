@@ -6,6 +6,7 @@
  *   pnpm invitation:diagnose-identity -- --db-url <url>
  */
 
+import { flagValue as value } from '../lib/cli-args.ts';
 import {
 	classifyDbTarget,
 	getSecretFromEnvOrFiles,
@@ -14,17 +15,13 @@ import {
 } from '../db/db-workflow-lib.ts';
 import { runManagedIdentityDiagnostics } from './managed-identity-diagnostics.ts';
 
-function value(args: string[], flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	return index >= 0 ? args[index + 1] : undefined;
-}
-
 function resolveDbUrl(argv: string[]): string {
 	const explicit = value(argv, '--db-url');
 	if (explicit) return explicit;
 	const target = value(argv, '--target') ?? 'local';
 	if (target === 'local') return LOCAL_DB_URL;
-	if (target === 'disposable-test') return 'postgresql://postgres:postgres@127.0.0.1:54332/postgres';
+	if (target === 'disposable-test')
+		return 'postgresql://postgres:postgres@127.0.0.1:54332/postgres';
 	if (target === 'preview') {
 		const previewUrl = (
 			process.env.PREVIEW_DB_URL?.trim() ||

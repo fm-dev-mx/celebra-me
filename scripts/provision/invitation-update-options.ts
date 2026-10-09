@@ -1,4 +1,5 @@
 import { domainUnverified } from '../db/schema-lifecycle-state.ts';
+import { flagValue } from '../lib/cli-args.ts';
 import type { AssetPolicy } from './asset-reconciliation.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
 import {
@@ -8,11 +9,6 @@ import {
 import type { UpdateScope } from './semantic-delta.ts';
 
 export type InvitationUpdateTarget = 'local' | 'preview' | 'production';
-
-function flagValue(args: string[], flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	return index >= 0 ? args[index + 1] : undefined;
-}
 
 function isUpdateScope(value: string | undefined): value is UpdateScope {
 	return value === 'content-only' || value === 'content-and-assets' || value === 'assets-only';

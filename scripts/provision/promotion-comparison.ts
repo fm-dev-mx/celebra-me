@@ -416,10 +416,6 @@ export const TARGET_DIVERGENCE_ACKNOWLEDGE_HINT =
  *  Callers should match this constant rather than parsing the error message. */
 export const TARGET_DIVERGENCE_BLOCK_CODE = 'UNPUBLISHED_DRAFT_DIVERGENCE' as const;
 
-export function isTargetDivergenceConflictMessage(message: string): boolean {
-	return message.includes('Target divergence conflict for');
-}
-
 /** The target holds an unpublished draft that matches neither the package nor its last publication. */
 export class TargetDivergenceConflictError extends Error {
 	readonly code = TARGET_DIVERGENCE_BLOCK_CODE;

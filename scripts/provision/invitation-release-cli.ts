@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /** The sole public managed-invitation release command (Local → Preview → approve → Production). */
-/* eslint-disable max-lines, no-useless-assignment -- Managed release CLI handles mode dispatch, per-target planning, and interactive wizard. */
+/* eslint-disable max-lines, no-useless-assignment -- Managed release CLI handles mode dispatch and per-target planning. */
 import { confirm, select } from '@inquirer/prompts';
+import { flagValue as value } from '../lib/cli-args.ts';
 import { type LocalApplyResult } from './apply-local-invitation.ts';
 import { exportInvitationPackage, type InvitationPackageData } from './invitation-package.ts';
 import { runImportEngine } from './invitation-import-engine.ts';
@@ -90,7 +91,6 @@ import {
 	listDriftConflicts,
 	type ConflictResolutions,
 } from './semantic-delta.ts';
-import { runDestinationReleaseWizard } from './invitation-release-wizard.ts';
 import { formatPreviewReceiptDiagnosis, printStatusReport } from './invitation-release-status.ts';
 import { isInteractiveSession, isPromptExit, NonInteractiveError } from '../lib/cli-prompts.ts';
 import { runPromotionPreflight } from './invitation-promote.ts';
@@ -168,11 +168,6 @@ interface StageReport {
 	publishedVersion?: number;
 	packageHash?: string;
 	approvalState?: string;
-}
-
-function value(args: string[], flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	return index >= 0 ? args[index + 1] : undefined;
 }
 
 function assetCounts(actions: Array<{ resource: string; action: string }>): {
@@ -358,7 +353,7 @@ export function printHelp(): void {
 invitation:release — Sole managed invitation release CLI
 
 Usage:
-  pnpm invitation:release                                             Interactive menu (terminal): Update Local | Prepare Preview | Approve | Production dry-run | Status | Tools
+  pnpm dbs                                                            Interactive menu: reads every environment and prints the exact next command
   pnpm invitation:release --status [--slug <slug>] [--targets <targets>] [--json]
   pnpm invitation:release --slug <slug> --targets local|preview|local,preview --dry-run|--apply [--non-interactive] [--source-dir <dir>|--package <path>]
   pnpm invitation:release --slug <slug> --targets production --dry-run
@@ -822,7 +817,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	const sourceDir = value(args, '--source-dir');
 	const packagePath = value(args, '--package');
 
-	// Interactive destination wizard (no --status/--dry-run/--apply). Automation keeps flags.
+	// This CLI executes one explicit mode. `pnpm dbs` is the interactive entry point: it reads every
+	// environment and prints the exact next command, so no second menu lives here.
 	if (modeCount === 0) {
 		if (!interactive) {
 			throw new NonInteractiveError(
@@ -830,10 +826,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				'--non-interactive with --status, --dry-run or --apply',
 			);
 		}
-
-		// Ignore leftover --targets from shell history; destination menu owns the outcome.
-		await runDestinationReleaseWizard({ slug, verbose });
-		return;
+		throw new Error(
+			'Indique un modo: --status, --dry-run o --apply. El menú interactivo es pnpm dbs; imprime el comando exacto para cada invitación y entorno.',
+		);
 	}
 
 	const parsedScope = parseCliUpdateScope(args);

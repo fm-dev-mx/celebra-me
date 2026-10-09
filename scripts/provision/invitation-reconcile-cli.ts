@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /** Public, managed reconciliation entrypoint. Production is intentionally unsupported. */
 import { readFileSync } from 'node:fs';
+import { flagValue as value } from '../lib/cli-args.ts';
 import { planAndApplyLocalContent } from './invitation-content-apply.ts';
 import { resolveInvitationPackageInput } from './invitation-package-input.ts';
 import { runImportEngine } from './invitation-import-engine.ts';
@@ -9,9 +10,7 @@ import { getSecretFromEnvOrFiles, PREVIEW_SECRET_FILES } from '../db/db-workflow
 import { parseMutationTargets } from './invitation-update-options.ts';
 import { verifyPreviewWriteAuthorization } from './preview-write-auth.ts';
 import { runGuidedReconciliation } from './reconciliation-cli.ts';
-import {
-	buildReconciliationManagedApplyPlan,
-} from './reconciliation-persist.ts';
+import { buildReconciliationManagedApplyPlan } from './reconciliation-persist.ts';
 import type { ReconciliationDecisionOutcome } from './reconciliation-state.ts';
 import type { SemanticDelta } from './semantic-delta.ts';
 
@@ -21,16 +20,16 @@ interface DecisionsFile {
 	canonicalPackageHash?: string;
 }
 
-function value(args: string[], flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	return index >= 0 ? args[index + 1] : undefined;
-}
-
 function readDecisionsFile(path: string): DecisionsFile {
 	const parsed: unknown = JSON.parse(readFileSync(path, 'utf8'));
-	if (!parsed || typeof parsed !== 'object') throw new Error('DECISIONS_INVALID: Expected a JSON object.');
+	if (!parsed || typeof parsed !== 'object')
+		throw new Error('DECISIONS_INVALID: Expected a JSON object.');
 	const record = parsed as Record<string, unknown>;
-	if (!record.decisions || typeof record.decisions !== 'object' || !Array.isArray(record.deltas)) {
+	if (
+		!record.decisions ||
+		typeof record.decisions !== 'object' ||
+		!Array.isArray(record.deltas)
+	) {
 		throw new Error(
 			'DECISIONS_INVALID: Expected { "decisions": { "<path>": "KEEP_CANONICAL"|"KEEP_ENVIRONMENT"|"DEFER" }, "deltas": [...] }.',
 		);
@@ -61,7 +60,7 @@ Preview apply requires CELEBRA_TASK_SCOPE=preview:<slug>:apply.
 	const dryRun = argv.includes('--dry-run');
 	const nonInteractive = argv.includes('--non-interactive');
 	const isInteractive = !nonInteractive && Boolean(process.stdout.isTTY);
-	if (!slug || targets.length === 0 || !decisionsPath || (apply === dryRun)) {
+	if (!slug || targets.length === 0 || !decisionsPath || apply === dryRun) {
 		throw new Error(
 			'Usage requires --slug, --targets local|preview, --decisions <file.json>, and exactly one of --dry-run or --apply.',
 		);
@@ -87,7 +86,10 @@ Preview apply requires CELEBRA_TASK_SCOPE=preview:<slug>:apply.
 			'RECONCILIATION_PACKAGE_REQUIRED: KEEP_CANONICAL persistence requires --package <path> from the managed source.',
 		);
 	}
-	if (reconciliation.summary.unresolvedPaths.length > 0 || reconciliation.summary.sourceUpdatePlan) {
+	if (
+		reconciliation.summary.unresolvedPaths.length > 0 ||
+		reconciliation.summary.sourceUpdatePlan
+	) {
 		throw new Error(
 			'RECONCILIATION_DECISIONS_INCOMPLETE: Resolve DEFER and source-update decisions before managed persistence.',
 		);
@@ -119,7 +121,8 @@ Preview apply requires CELEBRA_TASK_SCOPE=preview:<slug>:apply.
 			dryRun: true,
 			conflictResolutions: managedPlan.conflictResolutions,
 		});
-		if (!planned.plan) throw new Error('RECONCILIATION_PLAN_MISSING: Preview managed plan was not created.');
+		if (!planned.plan)
+			throw new Error('RECONCILIATION_PLAN_MISSING: Preview managed plan was not created.');
 		await runPreviewApply({
 			packageData: packageInput.packageData,
 			targetDbUrl,
@@ -127,7 +130,9 @@ Preview apply requires CELEBRA_TASK_SCOPE=preview:<slug>:apply.
 			conflictResolutions: managedPlan.conflictResolutions,
 		});
 	}
-	console.log(JSON.stringify({ ...reconciliation, managedPlan, appliedTargets: targets }, null, 2));
+	console.log(
+		JSON.stringify({ ...reconciliation, managedPlan, appliedTargets: targets }, null, 2),
+	);
 }
 
 if (process.argv[1]?.endsWith('invitation-reconcile-cli.ts')) {
