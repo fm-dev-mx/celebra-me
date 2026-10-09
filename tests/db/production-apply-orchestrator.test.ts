@@ -628,6 +628,26 @@ describe('production apply execution', () => {
 		expect(isMediaVerificationFailure({ classification: 'MISSING' }, [])).toBe(true);
 	});
 
+	it('refuses a Preview automation scope before the owner gate and before any write', async () => {
+		process.env.CELEBRA_TASK_SCOPE = 'preview:demo:apply';
+		const applySchema = jest.fn(async () => undefined);
+		const requireOwnerApply = jest.fn(async () => undefined);
+		try {
+			await expect(
+				applyProductionApplyPlan(cli(['--schema', '--apply']), {
+					...baseDeps(),
+					applySchema: applySchema as never,
+					requireOwnerApply,
+				}),
+			).rejects.toMatchObject({ code: 'CONFIRMATION_REQUIRED' });
+		} finally {
+			delete process.env.CELEBRA_TASK_SCOPE;
+		}
+		// Schema is applied before invitations; the refusal must come before both.
+		expect(applySchema).not.toHaveBeenCalled();
+		expect(requireOwnerApply).not.toHaveBeenCalled();
+	});
+
 	it('does not prompt when everything is already applied', async () => {
 		const requireOwnerApply = jest.fn(async () => undefined);
 		const result = await applyProductionApplyPlan(cli(['--schema', '--apply']), {

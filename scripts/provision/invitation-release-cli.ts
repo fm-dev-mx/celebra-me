@@ -635,7 +635,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	const nonInteractive = args.includes('--non-interactive');
 	const verbose = args.includes('--verbose');
 	const presenterOptions = { verbose };
-	const isTTY = Boolean(process.stdout.isTTY);
+	// Same gate as the other operator CLIs: all three streams on a terminal and never an agent.
+	const isTTY = isInteractiveSession();
 
 	if (args.includes('--help') || args.includes('-h')) {
 		printHelp();
