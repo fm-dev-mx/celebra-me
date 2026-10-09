@@ -199,8 +199,11 @@ JSON/configuration fallback. Baseline PNGs are not Jest inputs. This exception d
 visual references: provenance, integrity, coverage, complete comparison and human acceptance still
 apply. Other JSON/YAML inputs outside `docs/`, including other JSON files in the baseline directory,
 require full Jest; deleted non-E2E sources do too. Mixed changes retain the union of these
-requirements. Changed Jest tests are passed directly to related-test selection. SCSS still requires
-its style and applicable rendering checks even when the Jest selector returns no inputs.
+requirements. Changed Jest tests are passed directly to related-test selection. Contract tests that
+read inputs from disk instead of importing them (profile token rules for `src/styles/**.scss`,
+migration contracts for `supabase/migrations/**.sql`, component contracts for `*.astro`) are
+selected by input kind (`CONTRACT_TESTS_BY_INPUT` in `scripts/related-test-files.mjs`), since the
+import graph can never reach them. SCSS still requires its style and applicable rendering checks.
 
 Worker settings currently differ intentionally by execution entry point: Playwright's CI default is
 one worker, while the remote browser job explicitly selects two. This documents the existing

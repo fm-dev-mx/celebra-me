@@ -4,11 +4,10 @@ import {
 	releasePromotions,
 	type OperationalAction,
 } from '../../src/lib/status/action-plan';
-import { ENV_LABELS, SEMANTIC_LABELS } from '../../src/lib/status/labels';
+import { ENV_LABELS, EVIDENCE_LABELS, SEMANTIC_LABELS } from '../../src/lib/status/labels';
 import type {
 	CanonicalPromotionRow,
 	CanonicalStatusView,
-	EvidenceState,
 	SchemaLifecycleState,
 	TargetEnv,
 } from '../../src/lib/status/types';
@@ -26,12 +25,6 @@ const SCHEMA_LABELS: Record<SchemaLifecycleState, string> = {
 	BEHIND: '! Atrasado',
 	SCHEMA_DRIFT: '! Divergente',
 	UNVERIFIED: '? Sin verificar',
-};
-
-const EVIDENCE_LABELS: Record<EvidenceState, string> = {
-	LIVE: 'En vivo',
-	CACHED: 'Caché',
-	UNVERIFIED: 'Sin verificar',
 };
 
 export function publicationStatusLabel(row: CanonicalPromotionRow): string {

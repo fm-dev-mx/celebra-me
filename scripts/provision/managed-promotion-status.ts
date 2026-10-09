@@ -25,6 +25,7 @@ import { decidePromotionAction } from '../../src/lib/status/decision.ts';
 import { presentPromotionRow } from '../../src/lib/status/presentation.ts';
 import { isAuthoringPromotion } from '../../src/lib/status/promotion-lifecycle.ts';
 import type { CanonicalPromotionRow, EvidenceState } from '../../src/lib/status/types.ts';
+import { verifyPreviewApprovalArtifact } from './preview-approval-service.ts';
 import { getDefaultPreviewApprovalStore } from './preview-approval-store.ts';
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
@@ -442,20 +443,21 @@ export async function refineManagedPromotionsWithPendingPreviewApproval(input: {
 		return { promotions: input.promotions, inSyncSlugs: input.inSyncSlugs };
 	}
 
-	const packageHashes = new Map<string, string>();
+	const packages = new Map<string, InvitationPackageData>();
 	await mapPool(candidates, PRODUCTION_PREFLIGHT_CONCURRENCY, async (row) => {
 		try {
 			const packageData = await input.resolvePackage(row.slug);
-			if (packageData.packageHash) packageHashes.set(row.slug, packageData.packageHash);
+			if (packageData.packageHash) packages.set(row.slug, packageData);
 		} catch {
 			// Keep PROMOTE_PREVIEW when the current package cannot be resolved.
 		}
 	});
 
 	const promotions = input.promotions.map((row) => {
-		const packageHash = packageHashes.get(row.slug);
-		if (row.action !== 'PROMOTE_PREVIEW' || !packageHash) return row;
-		const approvalState = previewApprovalState(packageHash);
+		const packageData = packages.get(row.slug);
+		if (row.action !== 'PROMOTE_PREVIEW' || !packageData) return row;
+		const packageHash = packageData.packageHash;
+		const approvalState = previewApprovalState(packageData);
 		if (approvalState === 'pending') {
 			return presentPromotionRow({
 				slug: row.slug,
@@ -498,21 +500,39 @@ function isProductionPreflightCandidate(row: CanonicalPromotionRow): boolean {
 	return row.action === 'PROMOTE_PRODUCTION';
 }
 
-function previewApprovalState(packageHash: string | undefined): 'pending' | 'approved' | null {
-	if (!packageHash) return null;
+/**
+ * Same verdict `prod:apply` reaches offline: `approved` only when the stored artifact passes the
+ * full identity, contract and age checks for this exact package, never on its state flag alone.
+ */
+function previewApprovalState(packageData: InvitationPackageData): 'pending' | 'approved' | null {
+	if (hasPendingPreviewApproval(packageData.packageHash)) return 'pending';
 	try {
-		const artifact = getDefaultPreviewApprovalStore().get(packageHash);
-		if (!artifact || artifact.packageHash !== packageHash) return null;
-		if (artifact.approvalState === 'pending_hosted_validation') return 'pending';
-		if (artifact.approvalState === 'approved') return 'approved';
-		return null;
+		verifyPreviewApprovalArtifact({
+			packageHash: packageData.packageHash,
+			sourceHash: packageData.sourceHash,
+			metadataHash: packageData.metadataHash,
+			projectionHash: packageData.projectionHash,
+			assetManifestHash: packageData.assetManifestHash,
+			slug: packageData.invitation.slug,
+			route: `/${packageData.invitation.eventType}/${packageData.invitation.slug}`,
+		});
+		return 'approved';
 	} catch {
 		return null;
 	}
 }
 
 function hasPendingPreviewApproval(packageHash: string | undefined): boolean {
-	return previewApprovalState(packageHash) === 'pending';
+	if (!packageHash) return false;
+	try {
+		const artifact = getDefaultPreviewApprovalStore().get(packageHash);
+		return (
+			artifact?.packageHash === packageHash &&
+			artifact.approvalState === 'pending_hosted_validation'
+		);
+	} catch {
+		return false;
+	}
 }
 
 function presentManagedPromotions(input: {

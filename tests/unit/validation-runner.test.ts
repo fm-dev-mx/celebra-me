@@ -198,13 +198,38 @@ describe('branch-level pins under the commit hook', () => {
 });
 
 describe('validation without a reliable import graph', () => {
-	it('retains stylesheet validation when visual references have no Jest inputs', () => {
+	it('runs the stylesheet contract tests for SCSS that no test imports', () => {
 		const plan = evaluateModuleScript<{ stylesheetFiles: string[]; jestArgs: string[] }>(`
 			import { buildValidationPlan } from ${JSON.stringify(VALIDATION_RUNNER_MODULE)};
-			process.stdout.write(JSON.stringify(buildValidationPlan(['tests/e2e/visual-baselines/manifest.json', 'src/styles/example.scss'], () => true)));
+			process.stdout.write(JSON.stringify(buildValidationPlan(['tests/e2e/visual-baselines/manifest.json', 'src/styles/invitation-profiles/example.scss'], () => true)));
 		`);
-		expect(plan.stylesheetFiles).toEqual(['src/styles/example.scss']);
-		expect(plan.jestArgs).toEqual([]);
+		expect(plan.stylesheetFiles).toEqual(['src/styles/invitation-profiles/example.scss']);
+		expect(plan.jestArgs.slice(0, 4)).toEqual([
+			'exec',
+			'jest',
+			'--findRelatedTests',
+			'--passWithNoTests',
+		]);
+		// The profile token rule reads the SCSS from disk; the import graph alone never ran it.
+		expect(plan.jestArgs).toContain('tests/unit/invitation-profile-boundary.test.ts');
+		expect(plan.jestArgs).toContain('tests/unit/style-boundaries.test.ts');
+	});
+
+	it.each([
+		['supabase/migrations/20260101000000_example.sql', 'tests/unit/migration-safety.test.ts'],
+		['src/components/invitation/Example.astro', 'tests/unit/style-boundaries.test.ts'],
+	])('selects the contract tests that read %s from disk', (file, expectedTest) => {
+		const args = evaluateModuleScript<string[]>(`
+			import { buildRelatedTestArgs } from ${JSON.stringify(RELATED_TEST_MODULE)};
+			process.stdout.write(JSON.stringify(buildRelatedTestArgs([${JSON.stringify(file)}], () => true)));
+		`);
+		expect(args).toContain(expectedTest);
+		// Tests that are not on disk are never passed to Jest.
+		const none = evaluateModuleScript<string[]>(`
+			import { getContractTestsForInputs } from ${JSON.stringify(RELATED_TEST_MODULE)};
+			process.stdout.write(JSON.stringify(getContractTestsForInputs([${JSON.stringify(file)}], () => false)));
+		`);
+		expect(none).toEqual([]);
 	});
 	it.each([
 		[
@@ -231,7 +256,7 @@ describe('validation without a reliable import graph', () => {
 				'tests/unit/direct.test.ts',
 			],
 		],
-		[['docs/guide.md', 'src/styles/example.scss'], []],
+		[['docs/guide.md', 'src/lib/example.md'], []],
 	])('preserves the required Jest union for %j', (files, expected) => {
 		const args = evaluateModuleScript<string[]>(`
 			import { buildRelatedTestArgs } from ${JSON.stringify(RELATED_TEST_MODULE)};
