@@ -5,10 +5,9 @@ import {
 	classifyCloudinaryPublicIdEnvironment,
 } from '../../src/lib/intake/services/cloudinary-assets.ts';
 import {
-	assertPreviewDbUrl,
 	assertProductionDbUrl,
-	getPreviewDbUrl,
 	getProdDbUrl,
+	requirePreviewDbUrl,
 	runPsql,
 } from '../db/db-workflow-lib.ts';
 import { redactCredentials } from '../db/db-target-config.ts';
@@ -516,9 +515,8 @@ export function buildHostedImageInventoryQuery(): string {
 }
 
 function readInventory(target: Target): InventoryInvitation[] {
-	const dbUrl = target === 'preview' ? getPreviewDbUrl().url : getProdDbUrl().url;
-	if (target === 'preview') assertPreviewDbUrl(dbUrl);
-	else assertProductionDbUrl(dbUrl);
+	const dbUrl = target === 'preview' ? requirePreviewDbUrl().url : getProdDbUrl().url;
+	if (target === 'production') assertProductionDbUrl(dbUrl);
 	const result = runPsql(buildHostedImageInventoryQuery(), dbUrl, {
 		tuplesOnly: true,
 		throwOnError: true,

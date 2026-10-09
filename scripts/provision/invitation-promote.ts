@@ -259,7 +259,7 @@ export function evaluatePromotionBackupGate(input: {
 			acceptable: false,
 			canonicalCommand,
 			blockCode: 'BACKUP_REQUIRED',
-			detail: `BACKUP_REQUIRED: no verified critical Production backup manifest found. Run ${canonicalCommand} and pass --backup-manifest <path>.`,
+			detail: `BACKUP_REQUIRED: no verified critical Production backup manifest found. Run ${canonicalCommand} and retry.`,
 		};
 	}
 

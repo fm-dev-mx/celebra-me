@@ -4,7 +4,7 @@
  * no Production backups.
  */
 
-import { assertPreviewDbUrl, fail, getPreviewDbUrl, redactDbUrl } from './db-workflow-lib.ts';
+import { fail, redactDbUrl, requirePreviewDbUrl } from './db-workflow-lib.ts';
 import { requireCurrentDisposableMigrationProof } from './disposable-migration-proof.ts';
 import {
 	assertHostedCompatibilityOrFail,
@@ -35,8 +35,7 @@ export const previewMigratePolicy: MigrateEnvironmentPolicy = {
 	target: 'preview',
 
 	resolveContext(input) {
-		const { url: dbUrl } = getPreviewDbUrl();
-		assertPreviewDbUrl(dbUrl);
+		const { url: dbUrl } = requirePreviewDbUrl();
 		return {
 			dbUrl,
 			expectedPin: input.expectedPin,

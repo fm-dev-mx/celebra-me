@@ -2,7 +2,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { assertPreviewDbUrl, getPreviewDbUrl, runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
+import { requirePreviewDbUrl, runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import {
 	canonicalize,
 	materializeAssetReferences,
@@ -652,8 +652,7 @@ export async function inspectPreviewProvenanceReceipt(input: {
 	packagePath: string;
 }): Promise<PreviewReceiptDiagnosis> {
 	const pkg = readPackage(input.packagePath);
-	const resolved = getPreviewDbUrl();
-	const dbUrl = assertPreviewDbUrl(resolved.url).toString();
+	const dbUrl = new URL(requirePreviewDbUrl().url).toString();
 	const state = queryPreviewReceiptState(pkg.invitation.slug, dbUrl);
 	return buildDiagnosis(pkg, state);
 }
@@ -777,8 +776,7 @@ export async function reconcileStalePreviewProvenance(input: {
 	apply?: boolean;
 }): Promise<PreviewReceiptDiagnosis & { applied?: boolean }> {
 	const pkg = readPackage(input.packagePath);
-	const resolved = getPreviewDbUrl();
-	const dbUrl = assertPreviewDbUrl(resolved.url).toString();
+	const dbUrl = new URL(requirePreviewDbUrl().url).toString();
 	const state = queryPreviewReceiptState(pkg.invitation.slug, dbUrl);
 	const diagnosis = buildDiagnosis(pkg, state);
 	if (!input.apply) return diagnosis;

@@ -4,7 +4,7 @@
  * Default runtime store is Preview DB (shared across worktrees). Tests inject
  * an in-memory store. No app runtime, Vercel, or Cloudinary involvement.
  */
-import { assertPreviewDbUrl, getPreviewDbUrl, runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
+import { requirePreviewDbUrl, runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import type { PreviewApprovalArtifact } from './preview-approval-service.ts';
 
 export interface PreviewApprovalStore {
@@ -106,9 +106,7 @@ export function createMemoryPreviewApprovalStore(
 }
 
 function resolvePreviewDbUrl(): string {
-	const { url } = getPreviewDbUrl();
-	assertPreviewDbUrl(url);
-	return url;
+	return requirePreviewDbUrl().url;
 }
 
 function queryRowJson(sql: string, dbUrl: string): ApprovalRow | null {

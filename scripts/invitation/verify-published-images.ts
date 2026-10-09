@@ -5,10 +5,9 @@ import { flagValue as option } from '../lib/cli-args.ts';
 import sharp from 'sharp';
 import { collectUploadedContentRefs } from '../../src/lib/invitation-preparation/uploaded-content-refs.ts';
 import {
-	assertPreviewDbUrl,
 	assertProductionDbUrl,
-	getPreviewDbUrl,
 	getProdDbUrl,
+	requirePreviewDbUrl,
 	runPsql,
 	sqlLiteral,
 } from '../db/db-workflow-lib.ts';
@@ -279,9 +278,8 @@ function readPublishedInvitations(
 	target: MediaVerificationTarget,
 	slug?: string,
 ): PublishedInvitation[] {
-	const dbUrl = target === 'preview' ? getPreviewDbUrl().url : getProdDbUrl().url;
-	if (target === 'preview') assertPreviewDbUrl(dbUrl);
-	else assertProductionDbUrl(dbUrl);
+	const dbUrl = target === 'preview' ? requirePreviewDbUrl().url : getProdDbUrl().url;
+	if (target === 'production') assertProductionDbUrl(dbUrl);
 	const slugFilter = slug ? `and i.slug = ${sqlLiteral(slug)}` : '';
 	const sql = `select coalesce(json_agg(row_to_json(t) order by t."eventType", t.slug), '[]'::json)::text from (
 		select i.event_type as "eventType", i.slug, pub.content,
