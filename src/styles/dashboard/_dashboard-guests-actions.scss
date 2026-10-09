@@ -81,174 +81,138 @@
 	}
 }
 
-/* Expanded actions strip — two groups separated by auto margin */
-.guest-expanded-actions {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 0.5rem;
-	width: 100%;
-	justify-content: space-between;
-
-	@include mixins.respond-below(xs) {
-		gap: 0.4rem;
-		flex-direction: column;
-		align-items: stretch;
-	}
-}
-
-.guest-expanded-actions__btn {
+/* --- Copy link: always visible, confirms the copy in place --- */
+.copy-link-button {
 	display: inline-flex;
 	align-items: center;
-	gap: 0.3rem;
-	padding: 0.35rem 0.65rem;
-	border: 1px solid var(--color-border-subtle);
-	border-radius: 7px;
-	background: rgb(var(--color-text-secondary-rgb) / 4%);
-	font-family: var(--font-ui);
-	font-size: 0.72rem;
-	font-weight: 500;
-	cursor: pointer;
-	transition:
-		background-color 0.15s ease,
-		border-color 0.15s ease,
-		color 0.15s ease,
-		box-shadow 0.15s ease;
+	justify-content: center;
+	gap: 0.4rem;
 	white-space: nowrap;
-	min-height: 32px;
-	color: var(--color-text-secondary);
-
-	svg {
-		flex-shrink: 0;
-		color: var(--color-text-muted);
-		transition: color 0.15s ease;
-	}
-
-	&:hover {
-		background: rgb(var(--color-text-secondary-rgb) / 10%);
-		border-color: rgb(var(--color-text-secondary-rgb) / 20%);
-		color: var(--color-text-primary);
-
-		svg {
-			color: var(--color-text-secondary);
-		}
-	}
+	cursor: pointer;
 
 	&:focus-visible {
 		@include mixins.focus-ring;
 	}
 
-	&:disabled {
-		opacity: 50%;
-		cursor: not-allowed;
+	&--icon {
+		width: 44px;
+		height: 44px;
+		padding: 0;
+		border: 1px solid var(--color-border-control);
+		border-radius: 12px;
+		background: var(--color-surface-elevated);
+		color: var(--color-text-primary);
 	}
 
-	@include mixins.respond-below(xs) {
-		padding: 0.3rem 0.55rem;
-		font-size: 0.7rem;
-		min-height: 32px;
+	&--copied {
+		border-color: var(--color-state-success-text);
+		background: var(--color-state-success-bg);
+		color: var(--color-state-success-text);
 	}
 }
 
-/* Copy link — neutral secondary */
-.guest-expanded-actions__btn--copy {
+.copy-link-fallback__body {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.copy-link-fallback__hint {
+	margin: 0;
 	color: var(--color-text-secondary);
+	font-size: 1rem;
+	line-height: 1.45;
+}
 
-	&:hover {
-		color: var(--color-text-primary);
-	}
+.copy-link-fallback__input {
+	width: 100%;
+	min-height: 48px;
+	box-sizing: border-box;
+	padding: 0 0.75rem;
+	border: 2px solid var(--color-border-control);
+	border-radius: 12px;
+	background: var(--color-surface-soft);
+	color: var(--color-text-primary);
+	font-family: var(--font-mono, monospace);
+	font-size: 0.9375rem;
 
-	svg {
-		color: var(--color-text-muted);
+	&:focus-visible {
+		@include mixins.focus-ring;
 	}
 }
 
-/* Mark as sent — muted success outline */
-.guest-expanded-actions__btn--mark-sent {
-	background: var(--dashboard-button-success-bg);
-	border-color: var(--dashboard-button-success-border);
-	color: var(--dashboard-button-success-text);
+.copy-link-fallback__actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 0.5rem;
 
-	svg {
-		color: color-mix(in srgb, var(--dashboard-button-success-text) 60%, transparent);
+	button {
+		min-height: 44px;
+	}
+}
+
+/* --- Desktop table: next step + copy, side by side --- */
+.guest-row__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.5rem;
+}
+
+/* --- List feedback: filtered count, errors --- */
+.dashboard-guests__result-count {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.25rem 1rem;
+	margin: 0 0 0.75rem;
+	color: var(--color-text-secondary);
+	font-size: 0.9375rem;
+
+	p {
+		margin: 0;
 	}
 
-	&:hover {
-		background: var(--dashboard-button-success-bg-hover);
-		border-color: color-mix(in srgb, var(--dashboard-button-success-text) 40%, transparent);
-		color: var(--dashboard-button-success-text);
+	button {
+		min-height: 44px;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		color: var(--color-text-primary);
+		font-family: var(--font-ui);
+		font-weight: 700;
+		text-decoration: underline;
+		text-underline-offset: 4px;
+		cursor: pointer;
 
-		svg {
-			color: var(--dashboard-button-success-text);
+		&:focus-visible {
+			@include mixins.focus-ring;
 		}
 	}
 }
 
-/* Revert — restrained notice */
-.guest-expanded-actions__btn--revert {
-	border-color: var(--color-border-subtle);
-	background: transparent;
-	color: var(--color-text-muted);
-
-	&:hover {
-		background: rgb(var(--color-text-secondary-rgb) / 6%);
-		border-color: rgb(var(--color-text-secondary-rgb) / 18%);
-		color: var(--color-text-secondary);
-	}
-}
-
-/* Confirming state — amber highlight for confirmation steps */
-.guest-expanded-actions__btn--confirm {
-	border-color: rgb(var(--color-state-warning-rgb) / 50%);
-	background: rgb(var(--color-state-warning-rgb) / 14%);
-	color: var(--color-state-warning-text);
-	font-weight: 600;
-
-	svg {
-		color: var(--color-state-warning-text);
-	}
-
-	&:hover {
-		background: rgb(var(--color-state-warning-rgb) / 22%);
-		border-color: var(--color-state-warning-border);
-	}
-}
-
-/* Edit + Branding — ghost, minimal footprint */
-.guest-expanded-actions__btn--branding,
-.guest-expanded-actions__btn--edit {
-	background: transparent;
-	border-color: transparent;
-	color: var(--color-text-muted);
-
-	&:hover {
-		background: rgb(var(--color-text-secondary-rgb) / 6%);
-		border-color: rgb(var(--color-text-secondary-rgb) / 14%);
-		color: var(--color-text-primary);
-
-		svg {
-			color: var(--color-text-secondary);
-		}
-	}
-}
-
-/* Delete — quiet danger */
-.guest-expanded-actions__btn--delete {
-	background: transparent;
-	border-color: transparent;
+.dashboard-guests__error {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem 1rem;
+	margin: 0 0 1rem;
+	padding: 0.875rem 1rem;
+	border: 1px solid var(--color-state-danger-text);
+	border-radius: 14px;
+	background: var(--color-state-danger-bg);
 	color: var(--color-state-danger-text);
 
-	svg {
-		color: color-mix(in srgb, var(--color-state-danger-text) 50%, transparent);
+	p {
+		margin: 0;
+		font-weight: 600;
 	}
 
-	&:hover {
-		background: var(--dashboard-button-danger-bg-hover);
-		border-color: var(--dashboard-button-danger-border-hover);
-		color: var(--color-state-danger-text);
-
-		svg {
-			color: var(--color-state-danger-text);
-		}
+	button {
+		min-height: 44px;
 	}
 }

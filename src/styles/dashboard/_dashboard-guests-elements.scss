@@ -8,8 +8,11 @@
 	border: 1px solid rgb(var(--color-action-accent-rgb) / 22%);
 	border-radius: 6px;
 	background: rgb(var(--color-action-accent-rgb) / 8%);
-	color: var(--color-action-accent);
-	font-size: 0.62rem;
+	align-self: flex-start;
+	min-height: 32px;
+	margin-top: 0.25rem;
+	color: var(--color-text-emphasis);
+	font-size: 0.8125rem;
 	font-weight: 600;
 	cursor: pointer;
 	transition:
@@ -44,6 +47,29 @@
 	&__phone {
 		font-size: 0.82rem;
 		color: var(--color-text-secondary);
+
+		&--missing {
+			color: var(--color-state-warning-text);
+			font-weight: 600;
+		}
+	}
+}
+
+/* "Personas" cell: what the invitation means in people */
+.guest-people {
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+
+	&__primary {
+		color: var(--color-text-primary);
+		font-size: 0.9375rem;
+		font-weight: 600;
+	}
+
+	&__secondary {
+		color: var(--color-text-secondary);
+		font-size: 0.8125rem;
 	}
 }
 
@@ -92,72 +118,6 @@
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 0.2rem;
-}
-
-/* Native <progress> element — GuestCard expanded detail panel */
-progress.engagement-mini {
-	appearance: none;
-	display: inline-block;
-	inline-size: 60px;
-	block-size: 4px;
-	border-radius: 999px;
-	background: rgb(var(--color-text-secondary-rgb) / 15%);
-	overflow: hidden;
-	vertical-align: middle;
-
-	&::-webkit-progress-bar {
-		background: rgb(var(--color-text-secondary-rgb) / 15%);
-		border-radius: 999px;
-	}
-
-	&::-webkit-progress-value {
-		background: var(--color-state-success-bg);
-		border-radius: 999px;
-		transition: inline-size 0.25s ease;
-	}
-
-	&::-moz-progress-bar {
-		background: var(--color-state-success-bg);
-		border-radius: 999px;
-		transition: inline-size 0.25s ease;
-	}
-}
-
-/* Div-based layout wrapper — GuestTableRow */
-.engagement-mini {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.5rem;
-	min-inline-size: 5.5rem;
-}
-
-.engagement-mini__bar {
-	position: relative;
-	flex: 1 1 3.75rem;
-	inline-size: 3.75rem;
-	block-size: 0.35rem;
-	overflow: hidden;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--color-state-success-bg) 18%, transparent);
-}
-
-.engagement-mini__progress {
-	display: block;
-	block-size: 100%;
-	inline-size: var(--progress-width, 0%);
-	border-radius: inherit;
-	background: var(--color-state-success-bg);
-	transition: inline-size 0.25s ease;
-}
-
-.engagement-mini__label {
-	flex: 0 0 auto;
-	min-inline-size: 2.25rem;
-	font-size: 0.75rem;
-	font-weight: 700;
-	line-height: 1;
-	color: var(--color-text-primary);
-	text-align: right;
 }
 
 .invitation-number {

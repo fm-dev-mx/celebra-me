@@ -1,12 +1,13 @@
 import React from 'react';
+import CopyLinkButton from '@/components/dashboard/guests/CopyLinkButton';
 import GuestPrimaryAction from '@/components/dashboard/guests/GuestPrimaryAction';
+import GuestStatusPill from '@/components/dashboard/guests/GuestStatusPill';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import {
-	getPrimaryStatus,
 	getGuestMessageCount,
-	formatGuestMetadataRow,
+	getGuestPeopleLabel,
 	formatGuestMessageCount,
 	type GuestSaveCallback,
 } from '@/components/dashboard/guests/guest-presenter';
@@ -46,7 +47,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	onOpenDetails,
 }) => {
 	const messageCount = getGuestMessageCount(item.guestComment);
-	const primaryStatus = getPrimaryStatus(item);
+	const people = getGuestPeopleLabel(item);
 	const articleClass = [
 		'guest-card',
 		item.deliveryStatus === 'shared' ? 'guest-card--shared' : '',
@@ -59,19 +60,14 @@ const GuestCard: React.FC<GuestCardProps> = ({
 		<article className={articleClass} data-guest-id={item.guestId}>
 			<header className="guest-card__header">
 				<span className="guest-card__name">{item.fullName}</span>
-				<span className={`status-pill status-pill--${primaryStatus.class}`}>
-					<span className="status-pill__dot" />
-					{primaryStatus.label}
-				</span>
+				<GuestStatusPill item={item} />
 			</header>
 
 			<div className="guest-card__meta-row">
 				<p className="guest-card__meta">
-					{formatGuestMetadataRow(
-						index + 1,
-						item.attendeeCount,
-						item.maxAllowedAttendees,
-					)}
+					#{String(index + 1).padStart(2, '0')} · {people.primary}
+					{people.secondary && ` · ${people.secondary}`}
+					{!item.phone && ' · Sin teléfono'}
 				</p>
 				{messageCount > 0 && (
 					<span className="guest-tag guest-tag--message">
@@ -92,6 +88,11 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					onReminderSent={onReminderSent}
 					onMarkShared={onMarkShared}
 					onSaveGuest={onSaveGuest}
+				/>
+				<CopyLinkButton
+					url={inviteUrl}
+					guestName={item.fullName}
+					className="btn-secondary guest-card__copy-btn"
 				/>
 				<button
 					type="button"

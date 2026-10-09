@@ -113,9 +113,6 @@ describe('active guest dashboard hooks', () => {
 		const { result } = renderHook(() =>
 			useGuestDashboardRealtime({
 				initialEventId: 'event-123',
-				search: '',
-				status: 'all',
-				delivery: 'all',
 			}),
 		);
 
@@ -126,9 +123,6 @@ describe('active guest dashboard hooks', () => {
 		expect(mockedGuestsApi.listEvents).toHaveBeenCalledTimes(1);
 		expect(mockedGuestsApi.list).toHaveBeenCalledWith({
 			eventId: 'event-123',
-			search: '',
-			status: 'all',
-			delivery: 'all',
 		});
 		expect(result.current.hostEvents).toHaveLength(1);
 		expect(result.current.eventId).toBe('event-123');
@@ -175,9 +169,6 @@ describe('active guest dashboard hooks', () => {
 		const { result } = renderHook(() =>
 			useGuestDashboardRealtime({
 				initialEventId: '',
-				search: '',
-				status: 'all',
-				delivery: 'all',
 			}),
 		);
 
@@ -214,9 +205,6 @@ describe('active guest dashboard hooks', () => {
 		const { result } = renderHook(() =>
 			useGuestDashboardRealtime({
 				initialEventId: '',
-				search: '',
-				status: 'all',
-				delivery: 'all',
 			}),
 		);
 
@@ -256,9 +244,6 @@ describe('active guest dashboard hooks', () => {
 		const { result } = renderHook(() =>
 			useGuestDashboardRealtime({
 				initialEventId: 'event-123',
-				search: '',
-				status: 'all',
-				delivery: 'all',
 			}),
 		);
 
@@ -301,9 +286,6 @@ describe('active guest dashboard hooks', () => {
 		const { result } = renderHook(() =>
 			useGuestDashboardRealtime({
 				initialEventId: '',
-				search: '',
-				status: 'all',
-				delivery: 'all',
 			}),
 		);
 
@@ -696,58 +678,4 @@ describe('active guest dashboard hooks', () => {
 			expect(result.current.modalOpen).toBe(true);
 		});
 	});
-
-	it.each([
-		{ delivery: 'generated' as const, search: '', status: 'all' as const },
-		{ delivery: 'shared' as const, search: '', status: 'all' as const },
-		{ delivery: 'generated' as const, search: 'Test', status: 'all' as const },
-		{ delivery: 'generated' as const, search: '', status: 'confirmed' as const },
-	])(
-		'passes delivery=$delivery with search=$search status=$status',
-		async ({ delivery, search, status }) => {
-			mockedGuestsApi.listEvents.mockResolvedValue({
-				items: [
-					{
-						id: 'event-123',
-						title: 'XV Ximena',
-						slug: 'ximena',
-						eventType: 'xv',
-						status: 'published',
-					},
-				],
-			});
-			mockedGuestsApi.list.mockResolvedValue({
-				eventId: 'event-123',
-				items: [sampleGuest],
-				totals: sampleTotals,
-				shareTemplates: {
-					invitation: DEFAULT_INVITATION_MESSAGE,
-					reminder: DEFAULT_REMINDER_MESSAGE,
-				},
-				reminderSettings: DEFAULT_REMINDER_SETTINGS_FIXTURE,
-				shareDateContext: defaultShareDateContext(),
-				updatedAt: '2026-03-22T00:00:00.000Z',
-			});
-
-			const { result } = renderHook(() =>
-				useGuestDashboardRealtime({
-					initialEventId: 'event-123',
-					search,
-					status,
-					delivery,
-				}),
-			);
-
-			await waitFor(() => {
-				expect(result.current.items).toEqual([sampleGuest]);
-			});
-
-			expect(mockedGuestsApi.list).toHaveBeenCalledWith({
-				eventId: 'event-123',
-				search,
-				status,
-				delivery,
-			});
-		},
-	);
 });

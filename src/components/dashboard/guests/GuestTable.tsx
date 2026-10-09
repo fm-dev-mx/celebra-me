@@ -10,6 +10,7 @@ import {
 	type GuestSaveCallback,
 } from '@/components/dashboard/guests/guest-presenter';
 import GuestTableRow from '@/components/dashboard/guests/GuestTableRow';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 
@@ -21,22 +22,16 @@ interface GuestTableProps {
 	shareDateContext: ShareMessageDateContext;
 	celebratingGuestId?: string | null;
 	highlightedGuestId?: string | null;
-	/** Desktop table row expanded in place; compact layouts open the detail screen instead. */
-	expandedGuestId?: string | null;
+	/** Guest whose details are open; the desktop row stays marked while the panel is open. */
+	selectedGuestId?: string | null;
 	reminderMode?: boolean;
 	eligibleGuestIds?: Set<string>;
 	onReminderSent?: (guestId: string) => void;
-	onToggleExpanded?: (guestId: string) => void;
-	onEdit: (item: DashboardGuestItem) => void;
-	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
-	onRevertShared?: (item: DashboardGuestItem) => Promise<void>;
-	isBrandingRemovalEligible?: boolean;
-	onToggleBrandingRemoval?: (guestId: string, hideCelebraMeBranding: boolean) => void;
 	onSaveGuest?: GuestSaveCallback;
 	/** Compact-screen presentation; the desktop table is unaffected. */
 	view?: GuestListView;
-	/** Opens the full-screen guest detail from compact cards and rows. */
+	/** Opens the guest detail: full screen on phones, side panel on desktop. */
 	onOpenDetails: (item: DashboardGuestItem) => void;
 	/** Selection mode: compact rows become checkboxes and the list view is forced. */
 	selection?: {
@@ -45,7 +40,10 @@ interface GuestTableProps {
 	};
 }
 
-export const GUEST_TABLE_COL_COUNT = 7;
+export const GUEST_TABLE_COL_COUNT = 5;
+
+/** Matches the SCSS `xl` breakpoint where the table replaces the compact list. */
+const DESKTOP_TABLE_QUERY = '(min-width: 1200px)';
 
 const GuestTable: React.FC<GuestTableProps> = ({
 	items,
@@ -55,29 +53,23 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	shareDateContext,
 	celebratingGuestId,
 	highlightedGuestId,
-	expandedGuestId,
+	selectedGuestId,
 	reminderMode,
 	eligibleGuestIds,
 	onReminderSent,
-	onToggleExpanded,
-	onEdit,
-	onDelete,
 	onMarkShared,
-	onRevertShared,
-	isBrandingRemovalEligible,
-	onToggleBrandingRemoval,
 	onSaveGuest,
 	view = 'cards',
 	onOpenDetails,
 	selection,
 }) => {
-	if (items.length === 0) {
-		return (
-			<div className="dashboard-guests__empty">
-				<p>No hay invitados que coincidan con los filtros seleccionados.</p>
-			</div>
-		);
-	}
+	// null until hydrated: both layouts render and CSS picks one. Afterwards only
+	// the visible layout mounts, which halves the DOM for long guest lists.
+	const isDesktop = useMediaQuery(DESKTOP_TABLE_QUERY);
+	const showCompact = isDesktop !== true;
+	const showTable = isDesktop !== false;
+
+	if (items.length === 0) return null;
 
 	const renderCard = (item: DashboardGuestItem, index: number) => (
 		<GuestCard
@@ -101,7 +93,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 
 	return (
 		<>
-			{view === 'list' || selection ? (
+			{showCompact && (view === 'list' || selection) ? (
 				<div className="dashboard-guests__list">
 					{groupGuestsByStatus(items).map((section) => {
 						const headingId = `guest-section-${section.bucket}`;
@@ -129,7 +121,14 @@ const GuestTable: React.FC<GuestTableProps> = ({
 													onToggle={selection.onToggle}
 												/>
 											) : (
-												<GuestListRow item={item} onOpen={onOpenDetails} />
+												<GuestListRow
+													item={item}
+													inviteUrl={getGuestInviteUrl(
+														item,
+														inviteBaseUrl,
+													)}
+													onOpen={onOpenDetails}
+												/>
 											)}
 										</li>
 									))}
@@ -139,53 +138,52 @@ const GuestTable: React.FC<GuestTableProps> = ({
 					})}
 				</div>
 			) : (
-				<div className="dashboard-guests__cards">{items.map(renderCard)}</div>
+				showCompact && (
+					<div className="dashboard-guests__cards">{items.map(renderCard)}</div>
+				)
 			)}
 
-			<div className="dashboard-guests__table-wrap">
-				<table className="dashboard-guests__table">
-					<thead>
-						<tr>
-							<th>Nombre / Teléfono</th>
-							<th>Nota</th>
-							<th>Estado</th>
-							<th>Asistentes</th>
-							<th>% Vista</th>
-							<th>Enviar</th>
-							<th>
-								<span className="sr-only">Ver más</span>
-							</th>
-						</tr>
-					</thead>
-					<tbody>
-						{items.map((item, index) => (
-							<GuestTableRow
-								key={item.guestId}
-								item={item}
-								index={index}
-								inviteUrl={getGuestInviteUrl(item, inviteBaseUrl)}
-								eventTitle={eventTitle}
-								shareTemplates={shareTemplates}
-								shareDateContext={shareDateContext}
-								celebratingGuestId={celebratingGuestId}
-								highlightedGuestId={highlightedGuestId}
-								isExpanded={expandedGuestId === item.guestId}
-								reminderMode={reminderMode}
-								isReminderEligible={eligibleGuestIds?.has(item.guestId) ?? false}
-								onReminderSent={onReminderSent}
-								onToggleExpanded={() => onToggleExpanded?.(item.guestId)}
-								onEdit={onEdit}
-								onDelete={onDelete}
-								onMarkShared={onMarkShared}
-								onRevertShared={onRevertShared}
-								isBrandingRemovalEligible={isBrandingRemovalEligible}
-								onToggleBrandingRemoval={onToggleBrandingRemoval}
-								onSaveGuest={onSaveGuest}
-							/>
-						))}
-					</tbody>
-				</table>
-			</div>
+			{showTable && (
+				<div className="dashboard-guests__table-wrap">
+					<table className="dashboard-guests__table">
+						<thead>
+							<tr>
+								<th scope="col">Invitación</th>
+								<th scope="col">Estado</th>
+								<th scope="col">Personas</th>
+								<th scope="col">Acciones</th>
+								<th scope="col">
+									<span className="sr-only">Ver más</span>
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							{items.map((item, index) => (
+								<GuestTableRow
+									key={item.guestId}
+									item={item}
+									index={index}
+									inviteUrl={getGuestInviteUrl(item, inviteBaseUrl)}
+									eventTitle={eventTitle}
+									shareTemplates={shareTemplates}
+									shareDateContext={shareDateContext}
+									celebratingGuestId={celebratingGuestId}
+									highlightedGuestId={highlightedGuestId}
+									isSelected={selectedGuestId === item.guestId}
+									reminderMode={reminderMode}
+									isReminderEligible={
+										eligibleGuestIds?.has(item.guestId) ?? false
+									}
+									onReminderSent={onReminderSent}
+									onOpenDetails={onOpenDetails}
+									onMarkShared={onMarkShared}
+									onSaveGuest={onSaveGuest}
+								/>
+							))}
+						</tbody>
+					</table>
+				</div>
+			)}
 		</>
 	);
 };

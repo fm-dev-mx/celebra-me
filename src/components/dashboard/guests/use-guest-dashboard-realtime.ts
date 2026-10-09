@@ -5,7 +5,7 @@ import type {
 	DashboardGuestListResponse,
 } from '@/interfaces/dashboard/guest.interface';
 import type { DashboardEventListDebug } from '@/interfaces/dashboard/admin.interface';
-import type { DeliveryFilter, EventRecord } from '@/interfaces/rsvp/domain.interface';
+import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import {
 	resolveShareTemplates,
 	resolveReminderSettings,
@@ -47,9 +47,6 @@ const DEFAULT_TOTALS: DashboardGuestListResponse['totals'] = {
 
 interface UseGuestDashboardRealtimeOptions {
 	initialEventId: string;
-	search: 'all' | string;
-	status: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed';
-	delivery: DeliveryFilter;
 }
 
 const DASHBOARD_POLLING_INTERVAL_MS = 25000; // 25 seconds is a safe, stable interval for Serverless tasks.
@@ -66,12 +63,11 @@ function shouldLogDashboardDebug(): boolean {
 	return new URLSearchParams(window.location.search).get('debug') === '1';
 }
 
-export const useGuestDashboardRealtime = ({
-	initialEventId,
-	search,
-	status,
-	delivery,
-}: UseGuestDashboardRealtimeOptions) => {
+/**
+ * Loads the event's full guest list. Search and filters run on the client so the
+ * overview totals always describe the whole event and typing never refetches.
+ */
+export const useGuestDashboardRealtime = ({ initialEventId }: UseGuestDashboardRealtimeOptions) => {
 	const [eventId, setEventId] = useState<string>(initialEventId || '');
 	const [hostEvents, setHostEvents] = useState<HostEventItem[]>([]);
 	const [items, setItems] = useState<DashboardGuestItem[]>([]);
@@ -131,7 +127,7 @@ export const useGuestDashboardRealtime = ({
 		setLoading(true);
 		setGuestsError('');
 		try {
-			const data = await guestsApi.list({ eventId, search, status, delivery });
+			const data = await guestsApi.list({ eventId });
 			setItems(data.items);
 			setTotals(data.totals);
 			if (data.shareTemplates) {
@@ -146,9 +142,6 @@ export const useGuestDashboardRealtime = ({
 			if (shouldLogDashboardDebug()) {
 				console.info('[dashboard][client][loadGuests:error]', {
 					eventId,
-					search,
-					status,
-					delivery,
 					error,
 					eventsDebug,
 				});
@@ -159,7 +152,7 @@ export const useGuestDashboardRealtime = ({
 		} finally {
 			setLoading(false);
 		}
-	}, [delivery, eventId, eventsDebug, search, status]);
+	}, [eventId, eventsDebug]);
 
 	const setupPolling = useCallback(() => {
 		if (!eventId) return () => {};

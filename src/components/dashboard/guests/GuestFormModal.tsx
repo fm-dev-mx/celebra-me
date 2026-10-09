@@ -4,7 +4,9 @@ import PhoneInputGroup from '@/components/shared/PhoneInputGroup';
 import GuestPeopleStepper from '@/components/dashboard/guests/GuestPeopleStepper';
 import { MAX_CUSTOM_ATTENDEES } from '@/components/dashboard/guests/guest-form-constants';
 import { resolvePhonePayload } from '@/lib/phone/resolve-phone-payload';
-import { PREDEFINED_GUEST_TAGS } from '@/lib/guests/guest-tags';
+import { getVisibleTags, isSystemTag } from '@/lib/guests/guest-tags';
+import GuestTagChips from '@/components/dashboard/guests/GuestTagChips';
+import { GuestFormFooter, GuestResponseFields } from '@/components/dashboard/guests/GuestFormParts';
 import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
@@ -179,63 +181,21 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 			className="guest-form-modal"
 			onClose={onClose}
 			footer={
-				<>
-					<button
-						type="button"
-						className="btn-secondary btn-secondary--modal"
-						onClick={onClose}
-						disabled={saving}
-					>
-						Cancelar
-					</button>
-
-					{isInvitationFactory && onPostpone && (
-						<button
-							type="button"
-							className="btn-secondary btn-secondary--postpone"
-							disabled={saving}
-							onClick={onPostpone}
-						>
-							Posponer
-						</button>
-					)}
-
-					<div className="footer-actions">
-						{mode === 'create' && (
-							<button
-								type="button"
-								className="btn-accent"
-								disabled={saving}
-								onClick={(e) => {
-									e.preventDefault();
-									void handleFormSubmit(true);
-								}}
-							>
-								{saving ? '...' : 'Guardar y agregar otro'}
-							</button>
-						)}
-						<button
-							type="submit"
-							form="guest-form"
-							className="btn-primary"
-							disabled={saving}
-						>
-							{saving
-								? 'Guardando...'
-								: isInvitationFactory
-									? 'Confirmar y enviar'
-									: mode === 'create'
-										? 'Guardar'
-										: 'Actualizar'}
-						</button>
-					</div>
-				</>
+				<GuestFormFooter
+					mode={mode}
+					saving={saving}
+					isInvitationFactory={isInvitationFactory}
+					onClose={onClose}
+					onPostpone={onPostpone}
+					onSaveAndAddAnother={() => void handleFormSubmit(true)}
+				/>
 			}
 		>
 			<div className="dashboard-modal__content">
+				{/* Order by importance: name → people → phone → group */}
 				<form
 					id="guest-form"
-					className="dashboard-form-grid"
+					className="guest-form"
 					onSubmit={(event) => {
 						event.preventDefault();
 						void handleFormSubmit(false);
@@ -243,12 +203,8 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 				>
 					<div className="dashboard-form-field">
 						<label htmlFor="fullName">Nombre del invitado</label>
-						<span id="fullName-hint" className="guest-field-hint">
-							Así aparecerá en la invitación.
-						</span>
 						<input
 							id="fullName"
-							aria-describedby="fullName-hint"
 							ref={nameInputRef}
 							value={fullName}
 							onChange={(event) => setFullName(event.target.value)}
@@ -259,7 +215,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 								}
 							}}
 							required
-							placeholder="Ej. Familia Pérez López"
+							placeholder="Así aparecerá en la invitación"
 							autoFocus
 						/>
 						{fieldErrors.fullName && (
@@ -267,7 +223,30 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 						)}
 					</div>
 
-					<div className="dashboard-form-field dashboard-form-field--full">
+					<div className="guest-form__people">
+						<div className="guest-form__people-text">
+							<label htmlFor="guest-people">¿Cuántas personas?</label>
+							<span id="guest-people-hint" className="guest-field-hint">
+								Incluya al invitado principal.
+							</span>
+						</div>
+						<GuestPeopleStepper
+							id="guest-people"
+							value={peopleInput}
+							max={MAX_CUSTOM_ATTENDEES}
+							onChange={setPeopleInput}
+							describedBy="guest-people-hint"
+							invalid={Boolean(fieldErrors.customAttendees)}
+							compact
+						/>
+						{fieldErrors.customAttendees && (
+							<span className="guest-field-error guest-form__people-error">
+								{fieldErrors.customAttendees}
+							</span>
+						)}
+					</div>
+
+					<div className="dashboard-form-field">
 						<PhoneInputGroup
 							id="guest"
 							countryCode={countryCode}
@@ -275,103 +254,44 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							onCountryCodeChange={setCountryCode}
 							onPhoneChange={setPhone}
 							error={fieldErrors.phone}
-							label="Teléfono celular (WhatsApp)"
+							label="Teléfono (WhatsApp)"
 							showOptional
 							inputRef={phoneInputRef}
 						/>
-					</div>
-
-					<div className="dashboard-form-section">
-						<div className="dashboard-form-field dashboard-form-field--full">
-							<label htmlFor="guest-people">¿Cuántas personas vienen?</label>
-							<span id="guest-people-hint" className="guest-field-hint">
-								Incluya al invitado principal.
+						{!fieldErrors.phone && !phone.trim() && (
+							<span className="guest-field-hint">
+								Sin teléfono, podrá elegir el contacto al enviar.
 							</span>
-							<GuestPeopleStepper
-								id="guest-people"
-								value={peopleInput}
-								max={MAX_CUSTOM_ATTENDEES}
-								onChange={setPeopleInput}
-								describedBy="guest-people-hint"
-								invalid={Boolean(fieldErrors.customAttendees)}
-							/>
-							{fieldErrors.customAttendees && (
-								<span className="guest-field-error">
-									{fieldErrors.customAttendees}
-								</span>
-							)}
-						</div>
+						)}
 					</div>
 
-					<div className="dashboard-form-section">
-						<h4 className="dashboard-form-section__title">Grupo (opcional)</h4>
-						<div className="dashboard-form-field dashboard-form-field--full">
-							<div className="guest-response-cards guest-response-cards--tags">
-								{PREDEFINED_GUEST_TAGS.map((tag) => (
-									<label key={tag} className="guest-response-card">
-										<input
-											type="checkbox"
-											className="hidden-input"
-											checked={tags.includes(tag)}
-											onChange={(e) => {
-												if (e.target.checked) {
-													setTags([...tags, tag]);
-												} else {
-													setTags(tags.filter((t) => t !== tag));
-												}
-											}}
-										/>
-										<div className="guest-response-card__content">{tag}</div>
-									</label>
-								))}
-							</div>
-						</div>
-					</div>
+					<fieldset className="guest-form__groups">
+						<legend>
+							Grupo <span className="guest-form__optional">· opcional</span>
+						</legend>
+						<GuestTagChips
+							value={getVisibleTags(tags)}
+							onChange={(groups) => setTags([...tags.filter(isSystemTag), ...groups])}
+							label="Grupo"
+						/>
+					</fieldset>
 
 					{mode === 'edit' && (
-						<div className="dashboard-form-section dashboard-form-field--full">
-							<h4 className="dashboard-form-section__title">
-								Respuesta del invitado
-							</h4>
-							<div className="dashboard-form-grid dashboard-form-grid--nested">
-								<div className="dashboard-form-field">
-									<label htmlFor="attendanceStatus">Estado de RSVP</label>
-									<select
-										id="attendanceStatus"
-										value={attendanceStatus}
-										onChange={(event) => {
-											const newStatus = event.target
-												.value as AttendanceStatus;
-											setAttendanceStatus(newStatus);
-											if (newStatus === 'confirmed') {
-												if (attendeeCount < 1) setAttendeeCount(1);
-											} else {
-												setAttendeeCount(0);
-											}
-										}}
-									>
-										<option value="pending">Pendiente</option>
-										<option value="confirmed">Confirmado</option>
-										<option value="declined">Declinado</option>
-									</select>
-								</div>
-								{attendanceStatus === 'confirmed' && (
-									<div className="dashboard-form-field">
-										<label htmlFor="attendeeCount">Asistentes reales</label>
-										<input
-											id="attendeeCount"
-											type="number"
-											min={1}
-											max={liveMaxAttendees}
-											value={attendeeCount}
-											onChange={(event) =>
-												setAttendeeCount(Number(event.target.value))
-											}
-										/>
-									</div>
-								)}
-							</div>
-						</div>
+						<GuestResponseFields
+							status={attendanceStatus}
+							attendeeCount={attendeeCount}
+							maxAttendees={liveMaxAttendees}
+							error={fieldErrors.attendeeCount}
+							onStatusChange={(newStatus) => {
+								setAttendanceStatus(newStatus);
+								if (newStatus === 'confirmed') {
+									if (attendeeCount < 1) setAttendeeCount(1);
+								} else {
+									setAttendeeCount(0);
+								}
+							}}
+							onAttendeeCountChange={setAttendeeCount}
+						/>
 					)}
 
 					{localError && <div className="dashboard-error">{localError}</div>}

@@ -117,6 +117,7 @@ function setupDashboard() {
 		handleSaveInvitation: jest.fn(),
 		handleSubmit: jest.fn(),
 		handleToggleBrandingRemoval: jest.fn(),
+		handleUpdateGroups: jest.fn(),
 		importModalOpen: false,
 		isNextActionActive: false,
 		modalMode: 'create',
@@ -164,14 +165,14 @@ describe('GuestDashboardApp overview filters', () => {
 			'true',
 		);
 
-		fireEvent.click(screen.getByRole('button', { name: 'Ver todos los invitados (3)' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Ver todas (3)' }));
 		expectVisibleGuestNames(['Delivery Pending Guest', 'RSVP Pending Guest', 'Message Guest']);
 	});
 
 	it('filters visible guests waiting for an answer', () => {
 		render(<GuestDashboardApp initialEventId="event-1" />);
 
-		fireEvent.click(screen.getByRole('button', { name: 'Esperando, 1' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Enviadas, sin abrir, 1' }));
 
 		expectVisibleGuestNames(['RSVP Pending Guest']);
 	});
@@ -196,6 +197,35 @@ describe('GuestDashboardApp filter controls', () => {
 
 		expect(screen.queryByLabelText('Revisar')).not.toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: /^Por recordar \(/ })).not.toBeInTheDocument();
-		expect(screen.getByRole('group', { name: 'Mostrar' })).toBeInTheDocument();
+		expect(
+			screen.getByRole('group', { name: 'Filtrar invitaciones por etapa' }),
+		).toBeInTheDocument();
+	});
+
+	it('keeps the overview totals while the search narrows the list', () => {
+		render(<GuestDashboardApp initialEventId="event-1" />);
+
+		fireEvent.change(screen.getByLabelText('Buscar invitado'), {
+			target: { value: 'Message' },
+		});
+
+		expectVisibleGuestNames(['Message Guest']);
+		expect(screen.getByText('Mostrando 1 de 3 invitaciones')).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Por enviar, 1' })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Respondidas, 1' })).toBeInTheDocument();
+	});
+
+	it('explains an empty search result and restores the full list', () => {
+		render(<GuestDashboardApp initialEventId="event-1" />);
+
+		fireEvent.change(screen.getByLabelText('Buscar invitado'), {
+			target: { value: 'Nadie' },
+		});
+		expect(
+			screen.getByText('Ninguna invitación coincide con la búsqueda o el filtro.'),
+		).toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole('button', { name: 'Ver todas las invitaciones' }));
+		expectVisibleGuestNames(['Delivery Pending Guest', 'RSVP Pending Guest', 'Message Guest']);
 	});
 });

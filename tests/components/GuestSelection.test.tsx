@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import GuestBatchConfirm, {
+	getBatchEditableItems,
 	getBatchConfirmCopy,
 } from '@/components/dashboard/guests/GuestBatchConfirm';
 import GuestSelectRow from '@/components/dashboard/guests/GuestSelectRow';
@@ -34,7 +35,7 @@ describe('GuestSelectRow', () => {
 
 		const checkbox = screen.getByRole('checkbox', { name: /Ana/ });
 		expect(checkbox).not.toBeChecked();
-		fireEvent.click(screen.getByText('4 personas · Sin enviar'));
+		fireEvent.click(screen.getByText('4 pases · Sin enviar'));
 		expect(onToggle).toHaveBeenCalledWith('a');
 	});
 });
@@ -103,6 +104,26 @@ describe('GuestBatchConfirm', () => {
 		expect(onConfirm).not.toHaveBeenCalled();
 		fireEvent.click(within(dialog).getByRole('button', { name: 'Sí, recordar ahora' }));
 		expect(onConfirm).toHaveBeenCalled();
+	});
+
+	it('lists what the host can change before each send', () => {
+		render(
+			<GuestBatchConfirm
+				kind="invitation"
+				guests={guests.slice(0, 2)}
+				onConfirm={jest.fn()}
+				onClose={jest.fn()}
+			/>,
+		);
+
+		const dialog = screen.getByRole('dialog', { name: '¿Enviar 2 invitaciones?' });
+		expect(within(dialog).getByText('Editar el mensaje')).toBeInTheDocument();
+		expect(within(dialog).getByText('Dejar a alguien para después')).toBeInTheDocument();
+	});
+
+	it('omits postponing when only one guest is queued', () => {
+		expect(getBatchEditableItems(1)).not.toContain('Dejar a alguien para después');
+		expect(getBatchEditableItems(1)).toContain('Ajustar cuántas personas vienen');
 	});
 
 	it('uses singular copy for one invitation', () => {

@@ -127,6 +127,20 @@
 	--color-state-neutral-border: #cfc7b8;
 	--color-state-neutral-text: #4f4a40;
 
+	// --- Guest data (passes bar, group bars) ---
+	// Measured on --dashboard-data-track: confirmed 6.90:1, declined 5.06:1,
+	// unused 3.40:1. Neighbouring slices also differ by pattern, never hue alone.
+	--dashboard-data-track: #f3eee4;
+	--dashboard-data-confirmed: #1e5c33;
+	--dashboard-data-declined: #6b6458;
+	--dashboard-data-unused: #8c7f66;
+
+	// Hints and secondary help text: 7.18:1 on elevated surfaces (no opacity tricks).
+	--dashboard-text-hint: #5b564b;
+
+	// "Enviada, sin abrir": outline-only pill, 3.87:1 border on elevated surfaces.
+	--dashboard-stage-unopened-border: #8c7f66;
+
 	// --- Shadows ---
 	--shadow-subtle: 0 1px 2px rgb(30 26 18 / 6%), 0 4px 12px rgb(30 26 18 / 6%);
 	--shadow-emphasis: 0 12px 32px rgb(30 26 18 / 14%);

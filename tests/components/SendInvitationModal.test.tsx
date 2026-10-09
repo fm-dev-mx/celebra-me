@@ -30,6 +30,11 @@ function createProps() {
 	};
 }
 
+/** Guest details start summarized; "Cambiar" opens the editable fields. */
+function openGuestDetails() {
+	fireEvent.click(screen.getByRole('button', { name: 'Cambiar' }));
+}
+
 function getMessageTextarea(): HTMLTextAreaElement {
 	const textareas = screen.getAllByRole('textbox');
 	return textareas[textareas.length - 1] as HTMLTextAreaElement;
@@ -73,12 +78,21 @@ beforeEach(() => {
 });
 
 describe('SendInvitationModal', () => {
-	it('renders guest name, max attendees, and phone fields', () => {
+	it('summarizes the guest and opens the editable fields on demand', () => {
 		renderModal(makeGuest());
+
+		expect(screen.getByText('Guest One')).toBeInTheDocument();
+		expect(screen.getByText('4 personas · +52 669 123 4567')).toBeInTheDocument();
+		expect(screen.queryByLabelText('¿Cuántas personas vienen?')).not.toBeInTheDocument();
+
+		openGuestDetails();
 
 		expect(screen.getByDisplayValue('Guest One')).toBeInTheDocument();
 		expect(screen.getByLabelText('¿Cuántas personas vienen?')).toHaveValue(4);
 		expect(screen.getByDisplayValue('6691234567')).toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole('button', { name: 'Listo' }));
+		expect(screen.queryByLabelText('¿Cuántas personas vienen?')).not.toBeInTheDocument();
 	});
 
 	it('shows empty state when guest is null', () => {
@@ -311,6 +325,7 @@ describe('SendInvitationModal', () => {
 		props.onSave.mockResolvedValue(makeGuest({ guestId: 'guest-1', fullName: 'Edited Name' }));
 		props.onMarkShared.mockResolvedValue(undefined);
 
+		openGuestDetails();
 		const nameInput = screen.getByDisplayValue('Original Name');
 		fireEvent.change(nameInput, { target: { value: 'Edited Name' } });
 
@@ -389,7 +404,7 @@ describe('SendInvitationModal', () => {
 
 		fireEvent.click(screen.getByText('Mantener pendiente'));
 
-		expect(screen.getByDisplayValue('Guest One')).toBeInTheDocument();
+		expect(screen.getByText('Guest One')).toBeInTheDocument();
 		expect(props.onAdvanceFromGuest).not.toHaveBeenCalled();
 	});
 
@@ -421,6 +436,7 @@ describe('SendInvitationModal', () => {
 		const { props } = renderModal(guest);
 		props.onSave.mockResolvedValue(makeGuest({ phone: '6691234567' }));
 
+		openGuestDetails();
 		const nameInput = screen.getByDisplayValue('Original');
 		fireEvent.change(nameInput, { target: { value: 'Edited' } });
 
@@ -441,6 +457,7 @@ describe('SendInvitationModal', () => {
 		const { props } = renderModal(guest);
 		props.onSave.mockResolvedValue(makeGuest({ phone: '' }));
 
+		openGuestDetails();
 		const nameInput = screen.getByDisplayValue('Original');
 		fireEvent.change(nameInput, { target: { value: 'Edited' } });
 		const phoneInput = screen.getByRole('textbox', { name: /Teléfono/ });
@@ -490,12 +507,12 @@ describe('SendInvitationModal', () => {
 
 		render(<Wrapper />);
 
-		expect(screen.getByDisplayValue('Ana López')).toBeInTheDocument();
+		expect(screen.getByText('Ana López')).toBeInTheDocument();
 
 		fireEvent.click(screen.getByRole('button', { name: /compartir/i }));
 
 		await waitFor(() => {
-			expect(screen.getByDisplayValue('María García')).toBeInTheDocument();
+			expect(screen.getByText('María García')).toBeInTheDocument();
 		});
 	});
 
@@ -532,7 +549,7 @@ describe('SendInvitationModal', () => {
 
 		render(<Wrapper />);
 
-		expect(screen.getByDisplayValue('Solo Invitado')).toBeInTheDocument();
+		expect(screen.getByText('Solo Invitado')).toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: /compartir/i }));
 
 		await waitFor(() => {
@@ -562,9 +579,7 @@ describe('SendInvitationModal', () => {
 		renderModal(makeGuest({ phone: '' }));
 
 		expect(
-			screen.getByText(
-				'Sin teléfono registrado. Al compartir, WhatsApp le permitirá elegir el contacto.',
-			),
+			screen.getByText('Sin teléfono: WhatsApp le pedirá elegir el contacto.'),
 		).toBeInTheDocument();
 	});
 
@@ -572,9 +587,7 @@ describe('SendInvitationModal', () => {
 		renderModal(makeGuest({ phone: '6691234567' }));
 
 		expect(
-			screen.queryByText(
-				'Sin teléfono registrado. Al compartir, WhatsApp le permitirá elegir el contacto.',
-			),
+			screen.queryByText('Sin teléfono: WhatsApp le pedirá elegir el contacto.'),
 		).not.toBeInTheDocument();
 	});
 

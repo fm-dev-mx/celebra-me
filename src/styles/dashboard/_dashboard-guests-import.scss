@@ -62,7 +62,7 @@
 	padding: 0;
 	border: none;
 	background: none;
-	color: var(--color-action-accent);
+	color: var(--color-text-emphasis);
 	font-size: 0.78rem;
 	font-weight: 500;
 	cursor: pointer;
@@ -110,7 +110,7 @@
 
 .import-magic__summary-chip--update {
 	background: rgb(var(--color-action-accent-rgb) / 10%);
-	color: var(--color-action-accent);
+	color: var(--color-text-emphasis);
 }
 
 .import-magic__summary-chip--review {
@@ -532,7 +532,7 @@
 
 	&--info {
 		background: rgb(var(--color-action-accent-rgb) / 8%);
-		color: var(--color-action-accent);
+		color: var(--color-text-emphasis);
 	}
 
 	&--warning {
