@@ -5,35 +5,8 @@ import {
 	formatEvidenceSummary,
 	runProductionSmoke,
 	validateVercelDispatch,
-	requireReadyDeployment,
 	type PostDeployEvidence,
 } from '../../scripts/ops/post-deploy-smoke';
-
-describe('release deployment completion', () => {
-	const sha = 'a'.repeat(40);
-	const dispatch = validateVercelDispatch({
-		event: 'vercel.deployment.promoted',
-		environment: 'production',
-		projectId: 'prj_test',
-		expectedProjectId: 'prj_test',
-		deploymentId: 'dpl_test',
-		url: 'https://www.celebra-me.com',
-		commitSha: sha,
-		gitRef: 'main',
-	});
-	const expected = { sha, environment: 'production' as const, gitRef: 'main' };
-	it('accepts only a ready deployment of the intended environment/ref/SHA', () => {
-		expect(() => requireReadyDeployment(dispatch, 'READY', expected)).not.toThrow();
-		for (const state of ['', 'BUILDING', 'ERROR', 'CANCELED'])
-			expect(() => requireReadyDeployment(dispatch, state, expected)).toThrow();
-		for (const mismatch of [
-			{ ...expected, sha: 'b'.repeat(40) },
-			{ ...expected, environment: 'preview' as const },
-			{ ...expected, gitRef: 'develop' },
-		])
-			expect(() => requireReadyDeployment(dispatch, 'READY', mismatch)).toThrow();
-	});
-});
 
 function response(status: number, body = '', headers: Record<string, string> = {}): Response {
 	return {

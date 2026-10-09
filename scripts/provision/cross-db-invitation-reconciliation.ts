@@ -1,8 +1,8 @@
 /**
  * cross-db-invitation-reconciliation.ts — Read-only invitation parity across DBs.
  *
- * Compares non-draft / non-in_progress invitations using the stable slug identifier.
- * Repo definitions with lifecycle draft/in_progress are excluded from expected scope.
+ * Compares non-draft invitations using the stable slug identifier.
+ * Repo definitions with lifecycle in_progress are excluded from expected scope.
  */
 
 import { listInvitationDefinitions } from './invitations/registry.ts';
@@ -10,7 +10,8 @@ import { resolveDbUrlForEnv, type TargetEnv } from './dbs-status.ts';
 import { classifyDbTarget, redactDbUrl, runPsql } from '../db/db-workflow-lib.ts';
 
 const ENVIRONMENTS: readonly TargetEnv[] = ['local', 'preview', 'production'];
-const EXCLUDED_STATUSES = new Set(['draft', 'in_progress']);
+// `invitations.status` never holds `in_progress`; that is the repo lifecycle, filtered separately.
+const EXCLUDED_STATUSES = new Set(['draft']);
 
 export interface CrossDbInvitationRow {
 	canonicalKey: string;
@@ -80,7 +81,10 @@ function parseJsonArray<T>(raw: string): T[] {
 	return Array.isArray(parsed) ? (parsed as T[]) : [];
 }
 
-function loadEnvironmentRows(dbUrl: string): { rows: CrossDbInvitationRow[]; excludedCount: number } {
+function loadEnvironmentRows(dbUrl: string): {
+	rows: CrossDbInvitationRow[];
+	excludedCount: number;
+} {
 	const sql = `
 select coalesce((
   select jsonb_agg(jsonb_build_object(
@@ -122,10 +126,7 @@ select coalesce((
 	return { rows, excludedCount };
 }
 
-function compareRow(
-	left: CrossDbInvitationRow,
-	right: CrossDbInvitationRow,
-): string[] {
+function compareRow(left: CrossDbInvitationRow, right: CrossDbInvitationRow): string[] {
 	const details: string[] = [];
 	if (left.title !== right.title) details.push(`title: ${left.title} vs ${right.title}`);
 	if (left.status !== right.status) details.push(`status: ${left.status} vs ${right.status}`);
@@ -169,7 +170,9 @@ function buildFindingForKey(
 	let kind: DivergenceKind = 'aligned';
 	if (presentRows.length === 0 && inPublishedRepo) {
 		kind = 'missing';
-		details.push(`Published repo slug absent from all reachable environments: ${reachableEnvs.join(', ') || 'none'}`);
+		details.push(
+			`Published repo slug absent from all reachable environments: ${reachableEnvs.join(', ') || 'none'}`,
+		);
 	} else if (!inPublishedRepo && present.length > 0) {
 		kind = 'extra';
 		details.push(`Present in ${present.join(', ')} but not a published repo definition.`);
@@ -271,8 +274,7 @@ export function runCrossDbInvitationReconciliation(options?: {
 				reachable: true,
 				dbUrlRedacted: redactDbUrl(resolved.dbUrl),
 				classification: classification.target,
-				excludedCount:
-					loaded.excludedCount + (loaded.rows.length - filteredRows.length),
+				excludedCount: loaded.excludedCount + (loaded.rows.length - filteredRows.length),
 				rows: filteredRows,
 			};
 		} catch (error) {

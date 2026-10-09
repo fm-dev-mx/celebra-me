@@ -189,7 +189,6 @@ const VALID_FLAGS = new Set([
 	'--apply',
 	'--non-interactive',
 	'--json',
-	'--technical',
 	'--owner-user-id',
 	'--package',
 	'--allow-stale-package',
@@ -211,9 +210,6 @@ const VALID_FLAGS = new Set([
 	'--conflict-resolutions',
 	'--field-selections',
 	'--verbose',
-	'--backup-manifest',
-	'--interactive',
-	'--no-interactive',
 	'--help',
 	'-h',
 ]);
@@ -240,7 +236,6 @@ export function checkUnknownFlags(args: string[]): void {
 					'--update-scope',
 					'--conflict-resolutions',
 					'--field-selections',
-					'--backup-manifest',
 				].includes(arg)
 			) {
 				i++;

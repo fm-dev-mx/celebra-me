@@ -77,16 +77,3 @@ export function buildPromotionTechnicalReview(
 		],
 	];
 }
-
-export function formatPromotionResult(report: PromotionApplyReport): string {
-	const verification = report.verification;
-	return formatKeyValueBlock('Resultado de promoción', [
-		['Invitación', report.slug],
-		['Estado', report.status],
-		['Plan', shortSha(report.applyResult?.plan.planId ?? report.engineResult?.plan.planId)],
-		['Operaciones', String(report.applyResult?.executedMutations ?? 0)],
-		['Versión publicada', String(report.applyResult?.publishedVersion ?? '(n/a)')],
-		['Verificación', verification?.ok ? 'Aprobada' : 'Fallida'],
-		['Detalle', verification?.detail ?? report.reason ?? '(sin detalle)'],
-	]);
-}

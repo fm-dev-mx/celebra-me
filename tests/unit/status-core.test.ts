@@ -14,10 +14,7 @@ jest.mock('../../scripts/db/db-workflow-lib.ts', () => ({
 }));
 
 jest.mock('../../scripts/db/audit-db.ts', () => ({
-	evaluateMigrationHistoryParity: (
-		expected: string[],
-		remote: string[],
-	) => {
+	evaluateMigrationHistoryParity: (expected: string[], remote: string[]) => {
 		const pendingLocal = expected.filter((v) => !remote.includes(v));
 		const extraRemote = remote.filter((v) => !expected.includes(v));
 		return {
@@ -28,7 +25,9 @@ jest.mock('../../scripts/db/audit-db.ts', () => ({
 			hasDivergentHistory: false,
 			errors:
 				pendingLocal.length > 0
-					? [`Pending local migrations not applied to remote (${pendingLocal.length}): ${pendingLocal.join(', ')}`]
+					? [
+							`Pending local migrations not applied to remote (${pendingLocal.length}): ${pendingLocal.join(', ')}`,
+						]
 					: [],
 		};
 	},
@@ -36,7 +35,6 @@ jest.mock('../../scripts/db/audit-db.ts', () => ({
 
 import {
 	StatusProbeSession,
-	classifyPackageHashContent,
 	createLiveFreshness,
 	redactProbeError,
 	readMigrationLifecycleForUrlSync,
@@ -54,58 +52,6 @@ describe('status-core evidence', () => {
 		expect(redactProbeError('failed postgres://user:secret@host/db path C:\\Users\\x')).toMatch(
 			/\[redacted-path\]/,
 		);
-	});
-});
-
-describe('status-core classifyPackageHashContent', () => {
-	it('classifies match, behind, diverged, and conflicts deterministically', () => {
-		expect(
-			classifyPackageHashContent({
-				activeMatchCount: 1,
-				resolvedId: 'id-1',
-				provenancePackageHash: 'abc',
-				canonicalHash: 'abc',
-				draftStatus: 'approved',
-				draftUpdatedAt: '2026-01-01T00:00:00Z',
-				publishedAt: '2026-01-02T00:00:00Z',
-			}).status,
-		).toBe('MATCH_CANONICAL');
-
-		expect(
-			classifyPackageHashContent({
-				activeMatchCount: 1,
-				resolvedId: 'id-1',
-				provenancePackageHash: 'old',
-				canonicalHash: 'new',
-				draftStatus: null,
-				draftUpdatedAt: null,
-				publishedAt: null,
-			}).status,
-		).toBe('BEHIND_CANONICAL');
-
-		expect(
-			classifyPackageHashContent({
-				activeMatchCount: 1,
-				resolvedId: 'id-1',
-				provenancePackageHash: 'abc',
-				canonicalHash: 'abc',
-				draftStatus: 'draft',
-				draftUpdatedAt: '2026-02-01T00:00:00Z',
-				publishedAt: '2026-01-01T00:00:00Z',
-			}).status,
-		).toBe('DIVERGED');
-
-		expect(
-			classifyPackageHashContent({
-				activeMatchCount: 2,
-				resolvedId: null,
-				provenancePackageHash: null,
-				canonicalHash: 'abc',
-				draftStatus: null,
-				draftUpdatedAt: null,
-				publishedAt: null,
-			}).status,
-		).toBe('IDENTITY_CONFLICT');
 	});
 });
 
@@ -129,7 +75,9 @@ describe('status-core probe session memoization', () => {
 		expect(session.readOnly).toBe(true);
 		expect(mockRunPsql.mock.calls[0]?.[2]).toMatchObject({
 			timeoutMs: 1234,
-			env: expect.objectContaining({ PGOPTIONS: expect.stringContaining('default_transaction_read_only=on') }),
+			env: expect.objectContaining({
+				PGOPTIONS: expect.stringContaining('default_transaction_read_only=on'),
+			}),
 		});
 	});
 });

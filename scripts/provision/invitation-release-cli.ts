@@ -206,7 +206,6 @@ async function runProductionPreflightDispatch(input: {
 	definition: ReturnType<typeof getInvitationDefinition>;
 	ownerUserId?: string;
 	pruneAssets: boolean;
-	backupManifestPath?: string;
 	json: boolean;
 	verbose: boolean;
 	packageInput: Awaited<ReturnType<typeof resolveInvitationPackageInput>>;
@@ -223,7 +222,6 @@ async function runProductionPreflightDispatch(input: {
 		updateScope: input.updateScope,
 		conflictResolutions: input.conflictResolutions,
 		acknowledgeDiscardUnpublishedDraft: input.acknowledgeDiscardUnpublishedDraft,
-		backupManifestPath: input.backupManifestPath,
 		requireBackup: false,
 		getProductionDbUrl: getProdDbUrl,
 	});
@@ -267,7 +265,6 @@ async function runProductionReleaseDispatch(input: {
 	pruneAssets: boolean;
 	updateScope?: UpdateScope;
 	conflictResolutionsPath?: string;
-	backupManifestPath?: string;
 	acknowledgeDiscardUnpublishedDraft: boolean;
 	apply: boolean;
 	json: boolean;
@@ -395,7 +392,6 @@ Options:
                                Discard unpublished target-draft edits that diverge from both the package and published content, then apply the package
   --conflict-resolutions <path> JSON { "resolutions": { "<path>": "package"|"target" } } (required when apply has merge conflicts)
   --field-selections <path>    JSON { "resolutions": { "<path>": "package"|"target" } } selective apply (deselected paths keep target)
-  --backup-manifest <path>     Optional critical backup manifest for Production promote
   --verbose                    Show full field values and plan IDs in terminal output
   --json                       Format output as JSON
   --owner-user-id <uuid>       Optional override/assertion; new invites default to a dedicated host ({hostLoginAlias}@clientes.celebra.invalid)
@@ -716,12 +712,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 
 	const packageHash = value(args, '--package-hash');
 	const approve = args.includes('--approve');
-	if (packageHash || approve || args.includes('--artifact')) {
-		if (args.includes('--artifact')) {
-			throw new Error(
-				'--artifact was removed. Import legacy approvals once, then use --package-hash <hash> --approve.',
-			);
-		}
+	if (packageHash || approve) {
 		if (!packageHash || !approve || args.includes('--apply')) {
 			throw new Error('Direct Preview approval requires --package-hash <hash> --approve.');
 		}
@@ -933,7 +924,6 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			pruneAssets,
 			updateScope: parsedScope,
 			conflictResolutionsPath: value(args, '--conflict-resolutions'),
-			backupManifestPath: value(args, '--backup-manifest'),
 			acknowledgeDiscardUnpublishedDraft,
 			apply: Boolean(apply),
 			json,
