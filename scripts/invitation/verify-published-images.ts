@@ -377,6 +377,15 @@ function assertValidOrigin(origin?: string): void {
 		throw new Error('--origin must be an HTTPS origin without a path.');
 }
 
+/**
+ * `--current-state` verifies only the objects the target already publishes. A pre-apply check uses
+ * it: comparing against the release package would report every image the apply is about to add or
+ * replace as a failure.
+ */
+export function comparesToReleasePackage(args: readonly string[]): boolean {
+	return !args.includes('--current-state');
+}
+
 export async function runPublishedImageVerification(args: readonly string[]): Promise<{
 	target: MediaVerificationTarget;
 	rows: MediaVerificationRow[];
@@ -398,10 +407,11 @@ export async function runPublishedImageVerification(args: readonly string[]): Pr
 		throw new Error('No published invitations matched the requested scope.');
 	}
 	const rows: MediaVerificationRow[] = [];
+	const comparePackage = comparesToReleasePackage(args);
 	for (const invitation of published) {
 		if (!invitation.slug || !invitation.eventType)
 			throw new Error('Published invitation route identity is incomplete.');
-		const definition = definitions.get(invitation.slug);
+		const definition = comparePackage ? definitions.get(invitation.slug) : undefined;
 		const release = definition
 			? await buildNormalizedInvitationRelease({ slug: invitation.slug, purpose: 'package' })
 			: null;
