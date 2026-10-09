@@ -96,6 +96,33 @@
 	}
 }
 
+// Photograph load fade (opt-in): the page adds `has-image-fade` only when the wrapper declares
+// `--image-fade-animation`, and marks images `is-loaded` (`is-instant` when they were complete
+// before the first paint). Late images wait at `--image-fade-hidden-opacity` over their own
+// placeholder and fade in; reduced motion removes the animation below.
+.event-theme-wrapper.has-image-fade
+	:is(.invitation-hero, #invitation-sections-container)
+	img:not(.is-loaded) {
+	opacity: var(--image-fade-hidden-opacity, 100%);
+}
+
+.event-theme-wrapper.has-image-fade
+	:is(.invitation-hero, #invitation-sections-container)
+	img.is-loaded:not(.is-instant) {
+	animation: var(--image-fade-animation) var(--image-fade-duration, 700ms)
+		var(--image-fade-ease, ease-out) both;
+}
+
+@keyframes invitation-image-fade {
+	from {
+		opacity: 0%;
+	}
+
+	to {
+		opacity: 100%;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.event-theme-wrapper.event-theme-wrapper *,
 	.event-theme-wrapper.event-theme-wrapper *::before,

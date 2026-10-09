@@ -26,12 +26,14 @@ export interface StatusReportData {
 		slug: string;
 		title: string;
 		createdAt: string;
+		archived?: boolean;
 		classification: string;
 		environments: Record<
 			string,
 			{ status: string; managedStatus?: string; syncStatus?: string; reason?: string }
 		>;
 	}>;
+	archived?: { count: number; slugs: string[]; included: boolean };
 	inventory?: Record<
 		string,
 		{
@@ -168,6 +170,14 @@ export function formatStatusReport(data: StatusReportData): string {
 		lines.push(`Filtro de Invitación : ${colors.bold(data.filters.slug)}`);
 	}
 	lines.push(`Entornos Seleccionados : ${data.filters.targets.join(', ')}`);
+	if (data.archived && data.archived.count > 0) {
+		const archivedSuffix = data.archived.included
+			? 'incluidas abajo'
+			: 'excluidas; use --include-archived para listarlas';
+		lines.push(
+			`Archivadas            : ${data.archived.count} (${archivedSuffix}) — ${data.archived.slugs.join(', ')}`,
+		);
+	}
 	lines.push('');
 
 	if (data.definitions.length === 0) {
@@ -180,7 +190,8 @@ export function formatStatusReport(data: StatusReportData): string {
 	}
 
 	for (const def of data.definitions) {
-		lines.push(`${colors.bold(def.title)} (${colors.dim(def.slug)})`);
+		const archivedTag = def.archived ? ` ${colors.yellow('[archivada]')}` : '';
+		lines.push(`${colors.bold(def.title)} (${colors.dim(def.slug)})${archivedTag}`);
 		lines.push(`   Definición Canónica : Encontrada (Creada: ${def.createdAt.slice(0, 10)})`);
 
 		for (const target of data.filters.targets) {

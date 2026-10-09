@@ -14,16 +14,21 @@
 //                          halves match when their parents shrink to fit)
 //   --reply-card-gutter    Section side padding
 //   --reply-card-subtitle-wrap  Pass subtitle wrapping (`balance` avoids a one-word line)
+//   --reply-card-padding-block  Space above the pass and below the reply
 // ==========================================================================
 
 .personalized-access[data-variant='reply-card'] {
-	padding: clamp(4.5rem, 12vw, 7rem) var(--reply-card-gutter, clamp(1.25rem, 5vw, 2rem)) 0;
+	padding: var(--reply-card-padding-block, clamp(4.5rem, 12vw, 7rem))
+		var(--reply-card-gutter, clamp(1.25rem, 5vw, 2rem)) 0;
 	background: none;
 
 	.personalized-access__container {
 		max-width: var(--reply-card-max-width, 36rem);
 		margin-inline: auto;
 		padding: 0;
+
+		// A masked (deckle) half clips its own shadow; `edge-shadow` follows the deckle instead.
+		filter: var(--reply-card-edge-shadow, none);
 	}
 
 	.access-card {
@@ -39,9 +44,13 @@
 		border: 0;
 		border-radius: 0;
 		background: var(--reply-card-bg, var(--color-surface-elevated));
-		box-shadow: 0 -1px 2px rgb(16 24 32 / 8%);
+		box-shadow: var(--reply-card-shadow-upper, 0 -1px 2px rgb(16 24 32 / 8%));
 		color: var(--reply-card-ink, var(--color-text-primary));
 		text-align: center;
+
+		// Upper half of one deckle: the mask is twice the card's height, anchored at the top, so
+		// the seam with the reply half stays straight and only the outer edges are torn.
+		mask: var(--reply-card-mask-upper, none) center top / 100% 200% no-repeat;
 
 		// Inner hairline: top and sides here; the RSVP half draws the sides and bottom.
 		&::before {
@@ -114,8 +123,9 @@
 
 	.access-card__guest {
 		font-family: var(--font-display);
-		font-size: clamp(1.75rem, 7vw, 2.4rem);
-		font-weight: 500;
+		font-size: var(--reply-card-guest-size, clamp(1.75rem, 7vw, 2.4rem));
+		font-style: var(--reply-card-guest-style, normal);
+		font-weight: var(--reply-card-guest-weight, 500);
 		line-height: 1.15;
 		text-wrap: balance;
 		color: var(--reply-card-ink, var(--color-text-primary));
@@ -149,8 +159,9 @@
 
 	.access-card__count {
 		font-family: var(--font-display);
-		font-size: clamp(3.5rem, 15vw, 4.75rem);
+		font-size: var(--reply-card-count-size, clamp(3.5rem, 15vw, 4.75rem));
 		font-weight: 400;
+		font-variant-numeric: var(--reply-card-count-numerals, normal);
 		line-height: 1;
 		color: var(--reply-card-accent, var(--color-text-primary));
 	}

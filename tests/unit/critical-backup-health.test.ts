@@ -1,9 +1,18 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { evaluateCriticalBackupHealth } from '../../scripts/db/critical-backup-health';
+import {
+	backupStoreCheckoutLabel,
+	evaluateCriticalBackupHealth,
+} from '../../scripts/db/critical-backup-health';
 
 describe('critical backup health', () => {
+	it('names the checkout that owns the backup store being read', () => {
+		expect(
+			backupStoreCheckoutLabel(join('repo-worktrees', 'dev-local', '.backups', 'prod')),
+		).toBe('dev-local');
+	});
+
 	it('flags a missing or stale daily report without treating a fresh standalone set as daily evidence', () => {
 		const root = mkdtempSync(join(tmpdir(), 'critical-health-'));
 		const complete = join(root, 'critical-2026-08-15T22-08-28-817Z');

@@ -165,13 +165,13 @@ const content: CanonicalEventContentInput = {
 			{
 				type: 'reception',
 				venueEvent: 'Recepción',
-				venueName: 'SOLEMIO Salón de Eventos',
+				venueName: 'Sole Mio Salón de Eventos',
 				address: 'Fco. I. Madero 171, Col. Emilio Carranza, Cd. Madero, Tamps.',
 				city: 'Ciudad Madero',
 				date: '2026-12-06',
 				time: '18:30',
 				googleMapsUrl:
-					'https://www.google.com/maps/search/?api=1&query=SOLEMIO+Sal%C3%B3n+de+Eventos+Francisco+I.+Madero+171+Emilio+Carranza+Ciudad+Madero+Tamaulipas',
+					'https://www.google.com/maps/search/?api=1&query=Sole+Mio+Sal%C3%B3n+de+Eventos+Francisco+I.+Madero+171+Emilio+Carranza+Ciudad+Madero+Tamaulipas',
 				isVisible: true,
 			},
 		],
@@ -191,7 +191,7 @@ const content: CanonicalEventContentInput = {
 				time: '18:30',
 				iconName: 'Reception',
 				label: 'Recepción',
-				description: 'Bienvenida en Salón Solé Mío',
+				description: 'Bienvenida en Salón Sole Mio',
 			},
 			{
 				time: '19:15',

@@ -51,7 +51,6 @@ const PROMOTION_OPERATION_TYPE = 'promotion';
 export interface OrchestrateInvitationPromotionInput {
 	packageData: InvitationPackageData;
 	ownerUserId?: string;
-	approvalsDirs?: string[];
 	assetPolicy?: AssetPolicy;
 	pruneAssets?: boolean;
 	updateScope?: UpdateScope;
@@ -132,7 +131,6 @@ export async function orchestrateInvitationPromotion(
 		(await runPreflight({
 			packageData: input.packageData,
 			ownerUserId: input.ownerUserId,
-			approvalsDirs: input.approvalsDirs,
 			assetPolicy: input.assetPolicy,
 			pruneAssets: input.pruneAssets,
 			updateScope,
@@ -154,7 +152,7 @@ export async function orchestrateInvitationPromotion(
 	if (reviewed.status === 'IN_SYNC') {
 		if (!quiet) {
 			writeHuman(
-				`${operatorSymbol('ok')} Production ya coincide con la release aprobada. No se escribió.`,
+				`${operatorSymbol('ok')} Production ya coincide con la release. No se escribió.`,
 			);
 		}
 		return {
@@ -163,7 +161,7 @@ export async function orchestrateInvitationPromotion(
 			applyResult: reviewed.engineResult,
 			verification: {
 				ok: true,
-				detail: 'Production already matches the approved managed release; no mutation performed.',
+				detail: 'Production already matches the managed release; no mutation performed.',
 				schema: reviewed.schema,
 				managedConflicts: 0,
 				provenancePackageHash: input.packageData.packageHash,
@@ -220,7 +218,6 @@ export async function orchestrateInvitationPromotion(
 	const revalidated = await revalidateVolatile({
 		reviewed,
 		packageData: input.packageData,
-		approvalsDirs: input.approvalsDirs,
 		getProductionDbUrl,
 	});
 

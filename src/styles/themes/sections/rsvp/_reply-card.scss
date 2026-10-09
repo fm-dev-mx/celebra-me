@@ -14,7 +14,17 @@
 }
 
 .rsvp-section:has(> .rsvp[data-variant='reply-card']) {
-	padding: 0 var(--reply-card-gutter, clamp(1.25rem, 5vw, 2rem)) clamp(4.5rem, 12vw, 7rem);
+	padding: 0 var(--reply-card-gutter, clamp(1.25rem, 5vw, 2rem))
+		var(--reply-card-padding-block, clamp(4.5rem, 12vw, 7rem));
+
+	// A masked (deckle) half clips its own shadow; `edge-shadow` follows the deckle instead.
+	filter: var(--reply-card-edge-shadow, none);
+}
+
+// The page wraps the RSVP island in a second `.rsvp-section`: the outer shell keeps the generic
+// inline padding, which pushed the reply half right of the pass. Only the inner section pads.
+.rsvp-section:has(.rsvp-section .rsvp[data-variant='reply-card']) {
+	padding: 0;
 }
 
 .rsvp[data-variant='reply-card'] {
@@ -27,8 +37,12 @@
 	border: 0;
 	border-radius: 0;
 	background: var(--reply-card-bg, var(--color-surface-elevated));
-	box-shadow: 0 1px 2px rgb(16 24 32 / 14%);
+	box-shadow: var(--reply-card-shadow-lower, 0 1px 2px rgb(16 24 32 / 14%));
 	color: var(--reply-card-ink, var(--color-text-primary));
+
+	// Lower half of one deckle: the mask is twice the card's height, anchored at the bottom, so
+	// the seam with the pass half stays straight and only the outer edges are torn.
+	mask: var(--reply-card-mask-lower, none) center bottom / 100% 200% no-repeat;
 
 	// Inner hairline continues the sides from the pass half and closes the card.
 	&::before {
@@ -107,7 +121,7 @@
 		padding: 0 1rem;
 		border: 1px solid var(--reply-card-rule, rgb(16 24 32 / 22%));
 		border-radius: 0;
-		background: rgb(255 255 255 / 70%);
+		background: var(--reply-card-option-bg, rgb(255 255 255 / 70%));
 		box-shadow: none;
 		font-family: var(--font-body);
 		font-size: 1.2rem;
@@ -184,7 +198,7 @@
 // Locked (public link, no pass above): the card stands alone, so it closes its own top edge and
 // sets the notice in the text face instead of the generic UI type.
 .rsvp-section:has(> .rsvp[data-variant='reply-card'][data-state='locked']) {
-	padding-top: clamp(4.5rem, 12vw, 7rem);
+	padding-top: var(--reply-card-padding-block, clamp(4.5rem, 12vw, 7rem));
 }
 
 .rsvp[data-variant='reply-card'][data-state='locked'] {

@@ -21,6 +21,7 @@ import type {
 	GalleryPresentation,
 } from '@/lib/invitation/gallery-presentation';
 import type { GiftsPresentation } from '@/lib/invitation/gifts-presentation';
+import type { PersonalizedAccessPassStyle } from '@/lib/invitation/personalized-access-presentation';
 import type {
 	LocationPresentation,
 	LocationIndicationsStyle,
@@ -385,12 +386,15 @@ export interface InvitationViewModel {
 				subtitle?: string;
 				footerText?: string;
 				noteText?: string;
+				passStyle: PersonalizedAccessPassStyle;
 			};
 		};
 		gifts?: {
 			title?: string;
 			subtitle?: string;
 			folioMark?: string;
+			/** Decorative cutout above the heading. */
+			ornament?: ImageAsset;
 			presentation: GiftsPresentation;
 			items: GiftItem[];
 			variant: GiftsVariant;
@@ -433,6 +437,8 @@ export interface InvitationViewModel {
 		title?: string;
 		/** Second at which playback starts and loops back to. */
 		startAt?: number;
+		/** Seconds of volume ramp when playback starts or loops back. */
+		fadeInSeconds?: number;
 		revealMode: 'envelope' | 'immediate';
 	};
 	interludes?: Interlude[];

@@ -132,8 +132,10 @@
 		opacity: 100%;
 		transform: translateY(0) var(--gallery-item-emphasis-transform, none);
 		transition:
-			border-color var(--gallery-item-transition-duration) ease,
-			box-shadow var(--gallery-item-transition-duration) ease;
+			border-color var(--gallery-item-transition-duration)
+				var(--gallery-item-feedback-ease, ease),
+			box-shadow var(--gallery-item-transition-duration)
+				var(--gallery-item-feedback-ease, ease);
 
 		img {
 			width: 100%;
@@ -149,7 +151,8 @@
 				filter var(--gallery-item-transition-duration) var(--gallery-item-transition-ease),
 				transform var(--gallery-item-transition-duration)
 					var(--gallery-item-transition-ease),
-				mix-blend-mode var(--gallery-item-transition-duration) ease;
+				mix-blend-mode var(--gallery-item-transition-duration)
+					var(--gallery-item-feedback-ease, ease);
 		}
 
 		&.is-in-view,

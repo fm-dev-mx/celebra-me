@@ -25,6 +25,16 @@ const MANAGED_INVITATION_RENDERING_SURFACES = [
 	/^tests\/provision\/(?:managed-invitation-regression|local-render-corpus-regression)\.test\.ts$/u,
 ];
 
+/** Edits here can move the packageHash bound by Preview approvals (scripts/provision/release-hash-baseline.ts). */
+const RELEASE_HASH_SURFACES = [
+	/^scripts\/provision\//u,
+	/^src\/lib\/(?:intake|invitation|schemas)\//u,
+	/^src\/assets\/invitations\//u,
+];
+/** Files that can make a hash move "expected" (an invitation's own definition or assets). */
+const RELEASE_HASH_OWNED_FILES =
+	/^(?:scripts\/provision\/invitations\/[^/]+\.ts|src\/assets\/invitations\/.+)$/u;
+
 function resolveCommand(command, args) {
 	if (command !== 'pnpm') {
 		return { command, args, shell: process.platform === 'win32' };
@@ -56,6 +66,15 @@ function runCommand(name, command, args) {
 	return result.status ?? 1;
 }
 
+export function releaseHashGuardArgs(files) {
+	const normalized = files.map((file) => file.replaceAll('\\', '/'));
+	if (!normalized.some((file) => RELEASE_HASH_SURFACES.some((pattern) => pattern.test(file)))) {
+		return null;
+	}
+	const owned = normalized.filter((file) => RELEASE_HASH_OWNED_FILES.test(file));
+	return ['invitation:hash-baseline', ...(owned.length > 0 ? ['--files', owned.join(',')] : [])];
+}
+
 function uniqueRelevantFiles(files) {
 	return [...new Set(files)].filter((file) => !IGNORE_FILES.test(file));
 }
@@ -84,6 +103,7 @@ export function buildValidationPlan(files, pathExists = existsSync) {
 		),
 		jestArgs: buildRelatedTestArgs(relevantFiles, pathExists),
 		requiresManagedInvitationRegression: requiresManagedInvitationRegression(relevantFiles),
+		releaseHashGuardArgs: releaseHashGuardArgs(relevantFiles),
 		visualImpactFiles: visualImpactFiles(relevantFiles),
 	};
 }
@@ -115,6 +135,15 @@ function reportVisualImpact(files) {
 		'Optional local preview: pnpm validate:prepush -- --sha <exact-commit-sha> --base-sha <base-sha> --target-ref refs/heads/develop',
 	);
 	for (const file of files) console.log(`  - ${file}`);
+}
+
+/** Advisory: a moved hash invalidates Preview approvals but is not a code defect. */
+function runReleaseHashGuard(args, runStep) {
+	if (!args) {
+		console.log(`\n→ Preview approval hash guard: no provisioning changes, skipping.`);
+		return;
+	}
+	runStep('Preview approval hash guard (advisory)', 'pnpm', args);
 }
 
 export function runValidation({
@@ -219,6 +248,7 @@ export function runValidation({
 		);
 	}
 
+	runReleaseHashGuard(plan.releaseHashGuardArgs, runStep);
 	reportBrowserCheckRequirement(plan.files);
 	const visualCode = runVisualReferenceGate(plan.visualImpactFiles, runStep);
 	if (visualCode !== 0) return fail('visual-matrix', visualCode);

@@ -259,3 +259,30 @@ describe('validation without a reliable import graph', () => {
 		expect(e2ePlan.relatedTestSources).toEqual([]);
 	});
 });
+
+describe('Preview approval hash guard trigger', () => {
+	it('runs the advisory guard for provisioning changes and passes only owned files', () => {
+		const args = evaluateModuleScript<Array<string[] | null>>(`
+			import { releaseHashGuardArgs } from ${JSON.stringify(VALIDATION_RUNNER_MODULE)};
+			process.stdout.write(JSON.stringify([
+				releaseHashGuardArgs(['src/components/Card.astro', 'README.md']),
+				releaseHashGuardArgs(['scripts/provision/invitation-package.ts']),
+				releaseHashGuardArgs([
+					'scripts/provision/invitations/renata.ts',
+					'src/assets/invitations/renata/hero.webp',
+					'src/lib/intake/schemas/draft.ts',
+				]),
+			]));
+		`);
+
+		expect(args).toEqual([
+			null,
+			['invitation:hash-baseline'],
+			[
+				'invitation:hash-baseline',
+				'--files',
+				'scripts/provision/invitations/renata.ts,src/assets/invitations/renata/hero.webp',
+			],
+		]);
+	});
+});

@@ -1,3 +1,8 @@
+// Optional paper under the whole invitation (`--invitation-paper`, default none).
+.event-theme-wrapper {
+	background: var(--invitation-paper, none);
+}
+
 .invitation-section-wrapper {
 	--intersection-depth: clamp(3rem, 7vw, 6.75rem);
 	--intersection-arch-height: clamp(2.75rem, 5vw, 5.5rem);
@@ -36,8 +41,9 @@
 
 .invitation-section-wrapper[data-intersection='arch'] {
 	position: relative;
+	z-index: var(--intersection-z, auto);
 	margin-top: var(--intersection-clearance, 0);
-	background: var(--intersection-surface);
+	background: var(--intersection-surface-fill, var(--intersection-surface));
 	clip-path: inset(calc(0px - var(--intersection-arch-height) - 2px) 0 0 0);
 
 	&::before {
@@ -49,6 +55,21 @@
 		height: calc(var(--intersection-arch-height) + 3px);
 		background: var(--intersection-surface);
 		mask: var(--intersection-arch-mask) center bottom / 100% 100% no-repeat;
+		pointer-events: none;
+	}
+
+	// Optional ink line along the arch edge: same box as the arch, so a mask that follows the
+	// same trace as `--intersection-arch-mask` draws exactly on the color edge. Profiles set
+	// `--intersection-arch-ink` and `--intersection-arch-ink-mask`; the default paints nothing.
+	&::after {
+		content: '';
+		position: absolute;
+		inset-inline: 0;
+		top: calc(0px - var(--intersection-arch-height) - 1px);
+		z-index: 2;
+		height: calc(var(--intersection-arch-height) + 3px);
+		background-color: var(--intersection-arch-ink, transparent);
+		mask: var(--intersection-arch-ink-mask, none) center bottom / 100% 100% no-repeat;
 		pointer-events: none;
 	}
 }

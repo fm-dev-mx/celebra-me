@@ -67,7 +67,7 @@
 
 		.itinerary__title {
 			color: var(--color-text-emphasis);
-			letter-spacing: 0.1em;
+			letter-spacing: var(--itinerary-title-tracking, 0.1em);
 		}
 	}
 

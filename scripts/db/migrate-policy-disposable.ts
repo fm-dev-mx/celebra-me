@@ -26,6 +26,7 @@ import { buildMigrationPlan } from './migration-plan.ts';
 import { comparePendingSetToExpected } from './migration-pending-set.ts';
 import { fail } from './db-workflow-lib.ts';
 import { readGitWorktreeState } from './release-check.ts';
+import { requireDisposableDbAvailable } from './disposable-availability.ts';
 
 export const disposableMigratePolicy: MigrateEnvironmentPolicy = {
 	target: 'disposable-test',
@@ -33,6 +34,8 @@ export const disposableMigratePolicy: MigrateEnvironmentPolicy = {
 	resolveContext(input) {
 		const dbUrl = DISPOSABLE_DB_URL;
 		enforceDisposableTargetOnly(dbUrl);
+		// A stopped container would otherwise surface as a bare "Connection refused".
+		requireDisposableDbAvailable();
 		return {
 			dbUrl,
 			expectedPin: input.expectedPin,

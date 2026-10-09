@@ -195,7 +195,11 @@ export async function inspectInvitation(
 			summary: draftDiscarded
 				? `El borrador inédito se reemplazará tras confirmación del propietario; ${preflight.reason ?? preflight.status}`
 				: (preflight.reason ?? preflight.status),
-			detail: preflight.reason ?? preflight.schema.detail,
+			detail:
+				preflight.reason ??
+				(preflight.status === 'IN_SYNC' && preflight.approvalFailure
+					? `Production ya coincide; ${preflight.approvalFailure.label} (no se requiere: no hay escrituras).`
+					: preflight.schema.detail),
 			blockCode: draftDiscarded ? TARGET_DIVERGENCE_BLOCK_CODE : preflight.blockCode,
 			binding: packageData.packageHash,
 			packageHash: packageData.packageHash,

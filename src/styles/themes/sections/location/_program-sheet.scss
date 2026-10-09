@@ -17,7 +17,10 @@
 //   --location-program-place-gap  Space above the venue name
 //   --location-program-links-gap  Space between text links
 //   --location-program-link-size / -tracking  Text link size and small-caps tracking
+//   --location-program-link-radius  Focus outline shape of the text links (default 4px)
 //   --location-program-links-align  Wide screens: `auto` aligns both entries' links
+//   --location-program-padding-block / --location-program-margin-top
+//                                 Section padding and heading-to-program gap
 // ==========================================================================
 
 .event-location[data-variant='program-sheet'] {
@@ -27,7 +30,10 @@
 	--location-program-drawing: var(--color-text-secondary);
 	--location-program-link: var(--color-text-primary);
 
-	padding-block: clamp(4.5rem, 12vw, 7.5rem) clamp(5rem, 12vw, 8rem);
+	padding-block: var(
+		--location-program-padding-block,
+		clamp(4.5rem, 12vw, 7.5rem) clamp(5rem, 12vw, 8rem)
+	);
 	padding-inline: clamp(1.5rem, 6vw, 4rem);
 	background: var(--location-bg, var(--color-surface-primary));
 
@@ -58,14 +64,14 @@
 		display: grid;
 		gap: clamp(2.25rem, 6vw, 3rem);
 		max-width: var(--location-program-max-width, 64rem);
-		margin: clamp(2.75rem, 8vw, 4.5rem) auto 0;
+		margin: var(--location-program-margin-top, clamp(2.75rem, 8vw, 4.5rem)) auto 0;
 	}
 
 	.event-location__program-entry {
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: 0.3rem;
+		gap: var(--location-program-entry-gap, 0.3rem);
 		padding-top: clamp(1.5rem, 5vw, 2rem);
 		border-top: 1px solid var(--location-program-rule);
 		color: var(--location-program-ink);
@@ -87,7 +93,7 @@
 	.event-location__program-label {
 		margin: 0;
 		font-family: var(--font-label, var(--font-body));
-		font-size: 0.98rem;
+		font-size: var(--location-program-label-size, 0.98rem);
 		font-weight: 400;
 		font-variant-caps: all-small-caps;
 		letter-spacing: 0.14em;
@@ -95,11 +101,12 @@
 	}
 
 	.event-location__program-time {
-		margin: 0;
-		font-family: var(--font-display);
-		font-size: clamp(1.45rem, 5vw, 1.9rem);
-		font-style: italic;
+		margin: var(--location-program-time-margin, 0);
+		font-family: var(--location-program-time-font, var(--font-display));
+		font-size: var(--location-program-time-size, clamp(1.45rem, 5vw, 1.9rem));
+		font-style: var(--location-program-time-style, italic);
 		line-height: 1.25;
+		color: var(--location-program-time-color, inherit);
 	}
 
 	.event-location__program-schedule {
@@ -114,18 +121,18 @@
 	.event-location__program-place {
 		margin: var(--location-program-place-gap, 0.2rem) 0 0;
 		font-family: var(--font-display);
-		font-size: clamp(1.7rem, 6vw, 2.3rem);
-		font-weight: 500;
+		font-size: var(--location-program-place-size, clamp(1.7rem, 6vw, 2.3rem));
+		font-weight: var(--location-program-place-weight, 500);
 		line-height: 1.15;
 		text-wrap: balance;
 	}
 
 	.event-location__program-address {
-		margin: 0;
+		margin: var(--location-program-address-margin, 0);
 		font-family: var(--font-body);
-		font-size: clamp(1.08rem, 2vw, 1.25rem);
+		font-size: var(--location-program-address-size, clamp(1.08rem, 2vw, 1.25rem));
 		line-height: 1.45;
-		color: var(--location-program-muted);
+		color: var(--location-program-address-color, var(--location-program-muted));
 		text-wrap: pretty;
 	}
 
@@ -143,6 +150,7 @@
 		min-height: 44px;
 		padding: 0;
 		border: 0;
+		border-radius: var(--location-program-link-radius, 4px);
 		background: none;
 		font-family: var(--font-label, var(--font-body));
 		font-size: var(--location-program-link-size, 1.05rem);

@@ -8,6 +8,10 @@
  * - envelope.coverEditionLabel (collector rail label, "NÚM." by default)
  * - envelope.coverOrnament / spreadOrnaments and the editorial-cover hero.ornament and
  *   hero.accentOrnament (absent by default)
+ * - gifts.ornament (decorative cutout above the gifts heading, absent by default)
+ * - rsvp.personalizedAccess.presentationOptions.passStyle ('classic' | 'race-credential',
+ *   formal-pass only)
+ * - music.fadeInSeconds (volume ramp on start and loop, 1.2 s by default)
  *
  * Each option is exercised on synthetic jewelry-box content with no visual profile, so none of
  * them depends on a client profile or slug. Defaults must leave existing content unchanged.
@@ -376,5 +380,103 @@ describe('decorative section ornaments', () => {
 		]) {
 			expect(readSource(file)).not.toMatch(/event--|aithan/);
 		}
+	});
+});
+
+describe('gifts ornament', () => {
+	it('adds nothing to existing gifts content', () => {
+		const view = adapt(synthetic('gifts', 'standard', () => {}));
+		expect(view.sections.gifts?.ornament).toBeUndefined();
+	});
+
+	it('resolves an ornament on a legend-only gifts section without a profile', () => {
+		const view = adapt(
+			synthetic('gifts', 'standard', (data) => {
+				const gifts = data.gifts as Record<string, unknown>;
+				gifts.presentation = 'legend-only';
+				delete gifts.items;
+				gifts.ornament = { type: 'external', src: '/gift-ornament.webp' };
+			}),
+		);
+		expect(view.sections.gifts?.presentation).toBe('legend-only');
+		expect(String(view.sections.gifts?.ornament?.src)).toContain('gift-ornament.webp');
+	});
+
+	it('keeps the cutout styles free of profile selectors', () => {
+		const markup = readSource('src/components/invitation/Gifts.astro');
+		expect(markup).toContain('gifts-section__ornament');
+		expect(readSource('src/styles/invitation/_gifts.scss')).not.toMatch(/event--|aithan/);
+	});
+});
+
+describe('personalized access passStyle', () => {
+	type RsvpPatch = { personalizedAccess: Record<string, unknown> };
+
+	it('defaults to the classic pass for existing content', () => {
+		const view = adapt(synthetic('personalizedAccess', 'formal-pass', () => {}));
+		expect(view.sections.rsvp?.personalizedAccess.passStyle).toBe('classic');
+	});
+
+	it('ports race-credential to the formal pass without a profile', () => {
+		const view = adapt(
+			synthetic('personalizedAccess', 'formal-pass', (data) => {
+				(data.rsvp as RsvpPatch).personalizedAccess.presentationOptions = {
+					passStyle: 'race-credential',
+				};
+			}),
+		);
+		expect(view.sections.rsvp?.personalizedAccess.passStyle).toBe('race-credential');
+	});
+
+	it('rejects race-credential on a variant that does not implement it', () => {
+		const candidate = synthetic('personalizedAccess', 'standard', (data) => {
+			(data.rsvp as RsvpPatch).personalizedAccess.presentationOptions = {
+				passStyle: 'race-credential',
+			};
+		});
+		const result = eventContentSchema.safeParse(candidate.data);
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error.issues[0]?.path).toEqual(
+				expect.arrayContaining(['personalizedAccess', 'presentationOptions', 'passStyle']),
+			);
+		}
+	});
+
+	it('keeps the credential styles isolated behind the typed attribute', () => {
+		const markup = readSource('src/components/invitation/PersonalizedAccess.astro');
+		expect(markup).toContain(
+			"data-pass-style={isRaceCredential ? 'race-credential' : undefined}",
+		);
+		const styles = readSource(
+			'src/styles/themes/sections/personalized-access/_formal-pass.scss',
+		);
+		expect(styles).toContain("[data-pass-style='race-credential']");
+		expect(styles).not.toMatch(/event--|aithan/);
+	});
+});
+
+describe('music fadeInSeconds', () => {
+	it('is absent by default and passes through when set', () => {
+		const base = adapt(synthetic('location', 'standard', () => {}));
+		expect(base.music?.fadeInSeconds).toBeUndefined();
+
+		const view = adapt(
+			synthetic('location', 'standard', (data) => {
+				data.music = {
+					url: 'https://example.com/track.mp3',
+					startAt: 49,
+					fadeInSeconds: 3,
+				};
+			}),
+		);
+		expect(view.music).toMatchObject({ startAt: 49, fadeInSeconds: 3 });
+	});
+
+	it('rejects ramps longer than ten seconds', () => {
+		const candidate = synthetic('location', 'standard', (data) => {
+			data.music = { url: 'https://example.com/track.mp3', fadeInSeconds: 30 };
+		});
+		expect(eventContentSchema.safeParse(candidate.data).success).toBe(false);
 	});
 });

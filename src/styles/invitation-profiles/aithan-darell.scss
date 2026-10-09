@@ -87,7 +87,7 @@
 	--editorial-folio-location: 'GRAN PREMIO · EL CIRCUITO';
 	--editorial-folio-gallery: 'GRAN PREMIO · PITS';
 	--editorial-folio-gifts: 'GRAN PREMIO · REGALOS';
-	--editorial-folio-rsvp: 'GRAN PREMIO · INSCRIPCIÓN';
+	--editorial-folio-rsvp: 'GRAN PREMIO · CONFIRMACIÓN';
 
 	// Hero: the canvas is the original asphalt motif, so it needs no blur; the car photograph
 	// appears once, in the portrait card/panel. The desktop panel is capped at the source's native
@@ -419,6 +419,28 @@
 		--formal-chapter-metal-rgb: var(--aithan-asphalt-rgb);
 		--pa-divider-diamond-border-color: var(--aithan-red-ink);
 		--pa-card-bg-color: var(--aithan-paper);
+
+		// Race credential: racing-red band (white copy 4.9:1), yellow race-number plate ringed in
+		// asphalt, asphalt/white checkers and an asphalt footer.
+		--pa-race-band: var(--aithan-red);
+		--pa-race-band-ink: #fff;
+		--pa-race-plate-bg: var(--aithan-piston);
+		--pa-race-plate-ink: var(--aithan-asphalt);
+		--pa-race-plate-ring: var(--aithan-asphalt);
+		--pa-race-checker-dark: var(--aithan-asphalt);
+		--pa-race-checker-light: #fff;
+		--pa-race-footer-bg: var(--aithan-asphalt);
+		--pa-race-footer-ink: var(--aithan-paper);
+	}
+
+	// Gift reminder: the heading follows the issue's section titles (asphalt display, no tracking)
+	// instead of the preset's spaced gold capitals. The section declares these tokens itself.
+	.gifts-section {
+		--gifts-title-color: var(--aithan-asphalt);
+		--gifts-title-letter-spacing: -0.01em;
+		--gifts-title-transform: none;
+		--gifts-title-size: clamp(2rem, 5vw, 3rem);
+		--gifts-subtitle-color: var(--aithan-asphalt);
 	}
 
 	// The back cover shows the original trophy artwork: no photo finish. The editorial skin draws

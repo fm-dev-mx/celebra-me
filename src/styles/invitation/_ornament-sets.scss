@@ -20,7 +20,44 @@
 // ==========================================================================
 
 $shoreline: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 40' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0.0 24.7L7.1 25.3L14.3 25.4L21.4 25.2L28.6 24.6L35.7 23.8L42.9 23.0L50.0 22.3L57.1 21.9L64.3 21.8L71.4 22.0L78.6 22.2L85.7 22.5L92.9 22.7L100.0 22.5L107.1 21.9L114.3 20.8L121.4 19.3L128.6 17.5L135.7 15.5L142.9 13.6L150.0 12.0L157.1 10.8L164.3 10.2L171.4 10.1L178.6 10.6L185.7 11.5L192.9 12.7L200.0 13.9L207.1 15.1L214.3 16.0L221.4 16.7L228.6 17.1L235.7 17.3L242.9 17.4L250.0 17.6L257.1 18.0L264.3 18.8L271.4 19.9L278.6 21.4L285.7 23.0L292.9 24.8L300.0 26.3L307.1 27.6L314.3 28.3L321.4 28.5L328.6 28.0L335.7 26.9L342.9 25.3L350.0 23.5L357.1 21.5L364.3 19.7L371.4 18.2L378.6 17.0L385.7 16.2L392.9 15.7L400.0 15.3L407.1 15.1L414.3 14.7L421.4 14.1L428.6 13.3L435.7 12.3L442.9 11.1L450.0 9.9L457.1 8.8L464.3 8.2L471.4 8.0L478.6 8.5L485.7 9.6L492.9 11.2L500.0 13.3L507.1 15.6L514.3 17.9L521.4 20.0L528.6 21.7L535.7 23.0L542.9 23.8L550.0 24.1L557.1 24.1L564.3 24.0L571.4 23.9L578.6 23.8L585.7 24.0L592.9 24.4L600.0 24.9L607.1 25.4L614.3 25.8L621.4 25.9L628.6 25.5L635.7 24.6L642.9 23.2L650.0 21.4L657.1 19.2L664.3 16.9L671.4 14.7L678.6 12.8L685.7 11.3L692.9 10.4L700.0 10.1L707.1 10.3L714.3 10.9L721.4 11.7L728.6 12.5L735.7 13.3L742.9 13.8L750.0 14.1L757.1 14.2L764.3 14.2L771.4 14.2L778.6 14.3L785.7 14.8L792.9 15.7L800.0 17.0L807.1 18.7L814.3 20.6L821.4 22.6L828.6 24.4L835.7 25.9L842.9 26.8L850.0 27.2L857.1 27.0L864.3 26.3L871.4 25.2L878.6 23.9L885.7 22.6L892.9 21.5L900.0 20.6L907.1 20.1L914.3 20.0L921.4 20.0L928.6 20.1L935.7 20.2L942.9 20.1L950.0 19.7L957.1 18.9L964.3 17.8L971.4 16.5L978.6 15.2L985.7 14.0L992.9 13.1L1000.0 12.7L1000.0 13.2L992.9 13.8L985.7 14.8L978.6 16.1L971.4 17.5L964.3 18.9L957.1 20.1L950.0 20.9L942.9 21.5L935.7 21.7L928.6 21.7L921.4 21.6L914.3 21.6L907.1 21.9L900.0 22.5L892.9 23.4L885.7 24.6L878.6 26.0L871.4 27.3L864.3 28.5L857.1 29.3L850.0 29.5L842.9 29.2L835.7 28.3L828.6 26.9L821.4 25.1L814.3 23.2L807.1 21.4L800.0 19.7L792.9 18.5L785.7 17.6L778.6 17.2L771.4 17.1L764.3 17.1L757.1 17.2L750.0 17.2L742.9 16.9L735.7 16.4L728.6 15.7L721.4 14.9L714.3 14.2L707.1 13.6L700.0 13.5L692.9 13.8L685.7 14.8L678.6 16.3L671.4 18.2L664.3 20.5L657.1 22.8L650.0 25.0L642.9 26.9L635.7 28.3L628.6 29.2L621.4 29.6L614.3 29.5L607.1 29.1L600.0 28.6L592.9 28.1L585.7 27.8L578.6 27.6L571.4 27.7L564.3 27.9L557.1 28.0L550.0 28.0L542.9 27.6L535.7 26.9L528.6 25.6L521.4 23.9L514.3 21.8L507.1 19.5L500.0 17.2L492.9 15.1L485.7 13.5L478.6 12.4L471.4 11.9L464.3 12.1L457.1 12.7L450.0 13.7L442.9 14.9L435.7 16.1L428.6 17.1L421.4 17.9L414.3 18.5L407.1 18.8L400.0 19.1L392.9 19.4L385.7 19.9L378.6 20.7L371.4 21.9L364.3 23.4L357.1 25.2L350.0 27.1L342.9 28.9L335.7 30.4L328.6 31.5L321.4 31.9L314.3 31.8L307.1 31.0L300.0 29.7L292.9 28.1L285.7 26.3L278.6 24.6L271.4 23.1L264.3 22.0L257.1 21.2L250.0 20.7L242.9 20.4L235.7 20.3L228.6 20.0L221.4 19.6L214.3 18.9L207.1 17.9L200.0 16.7L192.9 15.3L185.7 14.1L178.6 13.2L171.4 12.6L164.3 12.6L157.1 13.2L150.0 14.3L142.9 15.9L135.7 17.7L128.6 19.6L121.4 21.4L114.3 22.8L107.1 23.8L100.0 24.3L92.9 24.4L85.7 24.2L78.6 23.8L71.4 23.5L64.3 23.3L57.1 23.3L50.0 23.6L42.9 24.2L35.7 24.9L28.6 25.5L21.4 26.1L14.3 26.2L7.1 26.0L0.0 25.2Z'/%3E%3C/svg%3E");
+
+// The same trace as fills: everything below the ribbon's lower edge, or above its upper edge
+// (`preserveAspectRatio='none'`, so they scale exactly like the ribbon in the same box).
+$shoreline-fill-below: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 40' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0 25.2 L7.1 26 L14.3 26.2 L21.4 26.1 L28.6 25.5 L35.7 24.9 L42.9 24.2 L50 23.6 L57.1 23.3 L64.3 23.3 L71.4 23.5 L78.6 23.8 L85.7 24.2 L92.9 24.4 L100 24.3 L107.1 23.8 L114.3 22.8 L121.4 21.4 L128.6 19.6 L135.7 17.7 L142.9 15.9 L150 14.3 L157.1 13.2 L164.3 12.6 L171.4 12.6 L178.6 13.2 L185.7 14.1 L192.9 15.3 L200 16.7 L207.1 17.9 L214.3 18.9 L221.4 19.6 L228.6 20 L235.7 20.3 L242.9 20.4 L250 20.7 L257.1 21.2 L264.3 22 L271.4 23.1 L278.6 24.6 L285.7 26.3 L292.9 28.1 L300 29.7 L307.1 31 L314.3 31.8 L321.4 31.9 L328.6 31.5 L335.7 30.4 L342.9 28.9 L350 27.1 L357.1 25.2 L364.3 23.4 L371.4 21.9 L378.6 20.7 L385.7 19.9 L392.9 19.4 L400 19.1 L407.1 18.8 L414.3 18.5 L421.4 17.9 L428.6 17.1 L435.7 16.1 L442.9 14.9 L450 13.7 L457.1 12.7 L464.3 12.1 L471.4 11.9 L478.6 12.4 L485.7 13.5 L492.9 15.1 L500 17.2 L507.1 19.5 L514.3 21.8 L521.4 23.9 L528.6 25.6 L535.7 26.9 L542.9 27.6 L550 28 L557.1 28 L564.3 27.9 L571.4 27.7 L578.6 27.6 L585.7 27.8 L592.9 28.1 L600 28.6 L607.1 29.1 L614.3 29.5 L621.4 29.6 L628.6 29.2 L635.7 28.3 L642.9 26.9 L650 25 L657.1 22.8 L664.3 20.5 L671.4 18.2 L678.6 16.3 L685.7 14.8 L692.9 13.8 L700 13.5 L707.1 13.6 L714.3 14.2 L721.4 14.9 L728.6 15.7 L735.7 16.4 L742.9 16.9 L750 17.2 L757.1 17.2 L764.3 17.1 L771.4 17.1 L778.6 17.2 L785.7 17.6 L792.9 18.5 L800 19.7 L807.1 21.4 L814.3 23.2 L821.4 25.1 L828.6 26.9 L835.7 28.3 L842.9 29.2 L850 29.5 L857.1 29.3 L864.3 28.5 L871.4 27.3 L878.6 26 L885.7 24.6 L892.9 23.4 L900 22.5 L907.1 21.9 L914.3 21.6 L921.4 21.6 L928.6 21.7 L935.7 21.7 L942.9 21.5 L950 20.9 L957.1 20.1 L964.3 18.9 L971.4 17.5 L978.6 16.1 L985.7 14.8 L992.9 13.8 L1000 13.2 L1000 40 L0 40Z'/%3E%3C/svg%3E");
+$shoreline-fill-above: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 40' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0 24.7 L7.1 25.3 L14.3 25.4 L21.4 25.2 L28.6 24.6 L35.7 23.8 L42.9 23 L50 22.3 L57.1 21.9 L64.3 21.8 L71.4 22 L78.6 22.2 L85.7 22.5 L92.9 22.7 L100 22.5 L107.1 21.9 L114.3 20.8 L121.4 19.3 L128.6 17.5 L135.7 15.5 L142.9 13.6 L150 12 L157.1 10.8 L164.3 10.2 L171.4 10.1 L178.6 10.6 L185.7 11.5 L192.9 12.7 L200 13.9 L207.1 15.1 L214.3 16 L221.4 16.7 L228.6 17.1 L235.7 17.3 L242.9 17.4 L250 17.6 L257.1 18 L264.3 18.8 L271.4 19.9 L278.6 21.4 L285.7 23 L292.9 24.8 L300 26.3 L307.1 27.6 L314.3 28.3 L321.4 28.5 L328.6 28 L335.7 26.9 L342.9 25.3 L350 23.5 L357.1 21.5 L364.3 19.7 L371.4 18.2 L378.6 17 L385.7 16.2 L392.9 15.7 L400 15.3 L407.1 15.1 L414.3 14.7 L421.4 14.1 L428.6 13.3 L435.7 12.3 L442.9 11.1 L450 9.9 L457.1 8.8 L464.3 8.2 L471.4 8 L478.6 8.5 L485.7 9.6 L492.9 11.2 L500 13.3 L507.1 15.6 L514.3 17.9 L521.4 20 L528.6 21.7 L535.7 23 L542.9 23.8 L550 24.1 L557.1 24.1 L564.3 24 L571.4 23.9 L578.6 23.8 L585.7 24 L592.9 24.4 L600 24.9 L607.1 25.4 L614.3 25.8 L621.4 25.9 L628.6 25.5 L635.7 24.6 L642.9 23.2 L650 21.4 L657.1 19.2 L664.3 16.9 L671.4 14.7 L678.6 12.8 L685.7 11.3 L692.9 10.4 L700 10.1 L707.1 10.3 L714.3 10.9 L721.4 11.7 L728.6 12.5 L735.7 13.3 L742.9 13.8 L750 14.1 L757.1 14.2 L764.3 14.2 L771.4 14.2 L778.6 14.3 L785.7 14.8 L792.9 15.7 L800 17 L807.1 18.7 L814.3 20.6 L821.4 22.6 L828.6 24.4 L835.7 25.9 L842.9 26.8 L850 27.2 L857.1 27 L864.3 26.3 L871.4 25.2 L878.6 23.9 L885.7 22.6 L892.9 21.5 L900 20.6 L907.1 20.1 L914.3 20 L921.4 20 L928.6 20.1 L935.7 20.2 L942.9 20.1 L950 19.7 L957.1 18.9 L964.3 17.8 L971.4 16.5 L978.6 15.2 L985.7 14 L992.9 13.1 L1000 12.7 L1000 0 L0 0Z'/%3E%3C/svg%3E");
 $shell: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 58' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M32 49C18 48 6 38 5 26 4 14 16 5 32 5s28 9 27 21c-1 12-13 22-27 23Z'/%3E%3Cpath d='M32 49 11 15M32 49 19 9M32 49 27 6M32 49 37 6M32 49 45 9M32 49 53 15'/%3E%3Cpath d='M26 49l-3 6h18l-3-6'/%3E%3C/svg%3E");
+
+// Marine motifs in the shoreline's hand: a 1.8 contour and 1.15 detail strokes on a 64 grid, no
+// fills, used by the opt-in spots below.
+$starfish: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke-width='1.8'%3E%3Cpath d='M26.1 24.9 C27.5 16.8 31 12 31.9 7 Q34 4.7 35.7 7.3 C36 12.3 37.9 17.3 37.6 25.3 C44.6 22.9 49.2 23.7 54.1 22.5 Q57.1 23.4 55.5 26 C51 28.4 48.5 32.8 42 36.2 C45.1 43.5 44.6 49.2 46.7 53.8 Q46.4 56.9 43.5 55.8 C40.4 51.8 36.1 49.2 32 42.8 C27.7 48.5 23.5 50.1 20.2 53.9 Q17.2 54.9 17.1 51.8 C19.4 47.3 18.6 42.6 21.7 36.3 C15.2 32.7 12.5 28.2 8.1 25.9 Q6.4 23.2 9.4 22.3 C14.3 23.5 19 22.6 26.1 24.9Z'/%3E%3C/g%3E%3Cg stroke-width='1.15'%3E%3Ccircle cx='32' cy='33' r='2.6'/%3E%3Cpath d='M32.7 22.6h.1M33.1 17.6h.1M33.4 13.2h.1M41.2 29.5h.1M45.6 27.8h.1M49.5 26.3h.1M37.3 41.8h.1M39.8 46h.1M42 49.7h.1M26.6 41h.1M24 44.8h.1M21.7 48.2h.1M22.6 29.4h.1M18.1 27.7h.1M14.2 26.2h.1'/%3E%3C/g%3E%3C/svg%3E");
+$alga: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke-width='1.8'%3E%3Cpath d='M30 60C27 53 31.5 47 28.5 40S27 29 23 23C21.5 20.5 20 18 21.2 16.8C23.5 17.8 25.2 21 27 24C30.8 30 31 35 32.4 41S30.5 53 32.6 60M33 60C34.5 52 30.8 45 33.6 37S37.5 23 35.4 14C34.9 11 35.2 7.6 37 7C38.8 8.6 38.6 12 38.6 15C38.8 24 36.2 31 36.8 38S36.2 52 35.2 60M35.6 60C38.5 55 42.5 52 42 46S44.8 36 48.8 33.4C50.4 32.4 52.2 32.6 52.4 34C51.8 36 49.4 37.4 47.8 39.2C45.2 42.2 45.6 47.4 44.4 51.2S40.2 57.8 38 60M26 60.5C30 59.6 35 59.6 41 60.5'/%3E%3C/g%3E%3Cg stroke-width='1.15'%3E%3Ccircle cx='17.5' cy='33' r='1.6'/%3E%3Ccircle cx='15' cy='25.5' r='1'/%3E%3Cpath d='M30.2 47C29.6 41 29.2 34 25.4 26.4M35.2 46C34.8 38 37 28 36.8 17M41 52.5C43 48 43.4 42 47.6 37'/%3E%3C/g%3E%3C/svg%3E");
+$wave-short: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke-width='1.8'%3E%3Cpath d='M3 47C12 46 19 41 24 33S35 17 45 16 57 21 55 28 47 33 44 28 47 23 50 25M55 28C56 35 59 41 62 45M14 51C24 49.5 33 50.5 42 49.5S56 49 61 50'/%3E%3C/g%3E%3Cg stroke-width='1.15'%3E%3Cpath d='M11 47.5C17 45.5 22 40 25.5 35M30 27C33 23 37 20.5 41 20M58 15h.1M61 19.5h.1M54.5 11.5h.1M60.5 25h.1'/%3E%3C/g%3E%3C/svg%3E");
+$gull: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke-width='1.8'%3E%3Cpath d='M3 33.5L4.6 31.8C10.5 28.8 16 25.2 19.8 23.4C24 21.4 27.8 23.6 29.8 25.8C31 27.4 31.6 29.4 32 31.2C32.4 29.4 33 27.4 34.2 25.8C36.2 23.6 40 21.4 44.2 23.4C48 25.2 53.5 28.8 59.4 31.8L61 33.5'/%3E%3C/g%3E%3Cg stroke-width='1.15'%3E%3Cpath transform='translate%2837 4%29 scale%28.36%29' stroke-width='3.2' d='M3 33.5L4.6 31.8C10.5 28.8 16 25.2 19.8 23.4C24 21.4 27.8 23.6 29.8 25.8C31 27.4 31.6 29.4 32 31.2C32.4 29.4 33 27.4 34.2 25.8C36.2 23.6 40 21.4 44.2 23.4C48 25.2 53.5 28.8 59.4 31.8L61 33.5'/%3E%3C/g%3E%3C/svg%3E");
+
+// One opt-in motif spot: off unless `--ornament-<name>-display` is set. A profile sizes the box
+// (`-size`, or `-width` / `-height`), recolors it (`-ink`), transforms it (`-transform`) and may
+// replace the single default motif with a composition (`-layers`: a full mask list, one layer
+// per piece, each with its own position and size).
+@mixin motif-spot($name, $mask) {
+	content: '';
+	display: var(--ornament-#{$name}-display, none);
+	width: var(--ornament-#{$name}-width, var(--ornament-#{$name}-size, 2rem));
+	height: var(--ornament-#{$name}-height, var(--ornament-#{$name}-size, 2rem));
+	background-color: var(--ornament-#{$name}-ink, var(--ornament-ink));
+	mask: var(--ornament-#{$name}-layers, #{$mask} center / contain no-repeat);
+	transform: var(--ornament-#{$name}-transform, none);
+	pointer-events: none;
+}
+
+// The same spot taken out of flow, placed with `-top` / `-right` / `-bottom` / `-left`.
+@mixin motif-spot-absolute($name, $mask) {
+	@include motif-spot($name, $mask);
+
+	position: absolute;
+	z-index: var(--ornament-#{$name}-z, 1);
+	inset: var(--ornament-#{$name}-top, auto) var(--ornament-#{$name}-right, auto)
+		var(--ornament-#{$name}-bottom, auto) var(--ornament-#{$name}-left, auto);
+}
 
 @mixin shoreline-threshold($edge) {
 	content: '';
@@ -39,6 +76,74 @@ $shell: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 	--ornament-shoreline-height: clamp(0.85rem, 1.6vw, 1.35rem);
 	--ornament-shoreline-inset: clamp(1.25rem, 4vw, 2.5rem);
 	--ornament-hairline: rgb(var(--color-text-primary-rgb, 16 24 32) / 18%);
+
+	// The shoreline as a color edge (opt-in). The trace is exposed as masks, so a profile can
+	// paint the band above a top threshold with the previous section's paper
+	// (`--shoreline-upper`) and the band below a bottom threshold with the next section's paper
+	// (`--shoreline-lower`), following the curve; `transparent` (default) paints nothing. The
+	// same masks serve an `arch` intersection (`--intersection-arch-mask` / `-ink-mask`).
+	--ornament-shoreline-mask: #{$shoreline};
+	--ornament-shoreline-fill-below: #{$shoreline-fill-below};
+	--ornament-shoreline-fill-above: #{$shoreline-fill-above};
+	--shoreline-upper: transparent;
+	--shoreline-lower: transparent;
+
+	// Quote opening: the band above the shoreline.
+	.quote-section::after {
+		content: '';
+		position: absolute;
+		inset-inline: 0;
+		top: 0;
+		z-index: 0;
+		height: calc(var(--ornament-shoreline-inset) + var(--ornament-shoreline-height));
+		background: var(--shoreline-upper);
+		mask:
+			#{$shoreline-fill-above} center bottom / 100% var(--ornament-shoreline-height) no-repeat,
+			linear-gradient(rgb(0 0 0) var(--ornament-shoreline-inset), transparent 0) center / 100%
+				100% no-repeat;
+		pointer-events: none;
+	}
+
+	// Location close: the band below the shoreline.
+	.event-location::before {
+		content: '';
+		position: absolute;
+		inset-inline: 0;
+		bottom: 0;
+		z-index: 0;
+		height: calc(var(--ornament-shoreline-inset) + var(--ornament-shoreline-height));
+		background: var(--shoreline-lower);
+		mask:
+			#{$shoreline-fill-below} center top / 100% var(--ornament-shoreline-height) no-repeat,
+			linear-gradient(transparent var(--ornament-shoreline-height), rgb(0 0 0) 0) center /
+				100% 100% no-repeat;
+		pointer-events: none;
+	}
+
+	.signature-block {
+		position: relative;
+	}
+
+	// Closing: below the shoreline, the paper of what follows, down to the section's edge (the
+	// section clips the overflow).
+	.signature-block::before {
+		content: '';
+		position: absolute;
+		top: calc(100% + clamp(1.25rem, 4vw, 2.5rem) + 3rem);
+		inset-inline: calc((100% - 100vw) / 2);
+		z-index: 0;
+		height: 100vh;
+		background: var(--shoreline-lower);
+		mask:
+			#{$shoreline-fill-below} center top / 100% var(--ornament-shoreline-height) no-repeat,
+			linear-gradient(transparent var(--ornament-shoreline-height), rgb(0 0 0) 0) center /
+				100% 100% no-repeat;
+		pointer-events: none;
+
+		@include mixins.respond-to(lg) {
+			inset-inline: var(--ornament-closing-inset-wide, calc((100% - 100vw) / 2));
+		}
+	}
 
 	// Thresholds: quote opening, family close and location close.
 	.quote-section::before {
@@ -69,6 +174,95 @@ $shell: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 		opacity: 100%;
 	}
 
+	// Marine motifs (opt-in; every spot is a free pseudo-element with no content and is off by
+	// default). See `motif-spot` for the per-spot tokens. The masks are exposed as tokens so a
+	// profile can compose several pieces in one spot.
+	--ornament-motif-starfish: #{$starfish};
+	--ornament-motif-alga: #{$alga};
+	--ornament-motif-wave: #{$wave-short};
+	--ornament-motif-gull: #{$gull};
+	--ornament-motif-shell: #{$shell};
+
+	// Containing blocks for the absolute spots below (no visual change on their own).
+	.event-location__program,
+	.itinerary__program {
+		position: relative;
+	}
+
+	// Quote: gulls in the sky between the opening shoreline and the quote.
+	.quote-container::after {
+		@include motif-spot-absolute(quote-motif, $gull);
+	}
+
+	// Family: pieces resting on the ice by the passe-partout, never on the photograph.
+	.family__media::after {
+		@include motif-spot-absolute(family-motif, $starfish);
+	}
+
+	// Countdown: two algae flanking the title (the second one mirrored by default).
+	.countdown-title::before {
+		@include motif-spot(countdown-motif, $alga);
+
+		margin: 0 var(--ornament-countdown-motif-gap, 1rem);
+		vertical-align: var(--ornament-countdown-motif-align, -0.2em);
+	}
+
+	.countdown-title::after {
+		@include motif-spot(countdown-motif, $alga);
+
+		margin: 0 var(--ornament-countdown-motif-gap, 1rem);
+		vertical-align: var(--ornament-countdown-motif-align, -0.2em);
+		transform: scaleX(-1);
+	}
+
+	// Framed interlude: pieces in the paper margin above the mat.
+	.invitation-interlude[data-presentation='framed']::before {
+		@include motif-spot-absolute(meadow-motif, $gull);
+	}
+
+	// Location: one piece under the heading, and one on the divider between the two venues.
+	.event-location__intro::after {
+		@include motif-spot(location-intro-motif, $shell);
+
+		margin: var(--ornament-location-intro-motif-margin, 1rem auto 0);
+	}
+
+	.event-location__program::before {
+		@include motif-spot-absolute(location-motif, $shell);
+	}
+
+	// Itinerary: one piece under the header, and pieces in the side margins of the sheet.
+	.itinerary__header::after {
+		@include motif-spot(itinerary-motif, $starfish);
+
+		margin: var(--ornament-itinerary-motif-margin, 1rem auto 0);
+	}
+
+	.itinerary__program::after {
+		@include motif-spot-absolute(itinerary-margin-motif, $gull);
+	}
+
+	// Gallery: a short wave closing the header, centered on the grid.
+	.gallery-section__header::after {
+		@include motif-spot(gallery-motif, $wave-short);
+
+		margin: var(--ornament-gallery-motif-margin, 0.9rem auto 0);
+	}
+
+	// Pass: pieces in the side margins of the reply card (wide screens).
+	.personalized-access {
+		position: relative;
+	}
+
+	.personalized-access::after {
+		@include motif-spot-absolute(pass-motif, $alga);
+	}
+
+	// Closing: pieces in the ice above the print.
+	.thank-you-editorial::before {
+		@include motif-spot-absolute(closing-gull, $gull);
+	}
+
 	// Closing: the shoreline runs edge to edge under the signature with the shell resting on it.
 	// Anchored to the centered closing layout so it spans the viewport on every width.
 	.signature-block::after {
@@ -78,7 +272,12 @@ $shell: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 		inset-inline: calc((100% - 100vw) / 2);
 		height: calc(var(--ornament-shoreline-height) + 3rem);
 		background-color: var(--ornament-ink);
+
+		// `--ornament-closing-extra-mask` adds one more piece resting on the shoreline (same ink).
 		mask:
+			var(--ornament-closing-extra-mask, none)
+				var(--ornament-closing-extra-position, left bottom) /
+				var(--ornament-closing-extra-size, 0 0) no-repeat,
 			$shell center top / 3.2rem 2.9rem no-repeat,
 			$shoreline center bottom / 100% var(--ornament-shoreline-height) no-repeat;
 		pointer-events: none;

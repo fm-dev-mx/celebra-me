@@ -18,6 +18,40 @@
 //   --hero-bleed-scroll-line          Scroll line length on wide screens
 //   --hero-bleed-entrance             Letter entrance keyframes (default none; `hero-bleed-rise`)
 //   --hero-bleed-entrance-wait        Extra delay while an envelope is still fading (default 0s)
+//   --hero-bleed-bg                   Section paper (default the primary surface)
+//   --hero-bleed-photo-veil / -wide   Overlay on the photograph, stacked / side-by-side (default none)
+//   --hero-bleed-stack-height / -min-height / -padding-bottom
+//                                     Stacked hero height (default 100svh; `auto` + min-height
+//                                     lets it grow) and bottom padding
+//   --hero-bleed-photo-height-stack / -min-height
+//                                     Stacked figure height (default auto: shrinks to fit)
+//   --hero-bleed-photo-img-width / -img-height / --hero-bleed-photo-position-stack
+//                                     Stacked image fit (default whole print; `100%`/`100%`
+//                                     fills the figure, position picks the kept edge)
+//   --hero-bleed-letter-padding       Letter padding in the stacked layout
+//   --hero-bleed-occasion-display     `inline-flex` draws rules beside the occasion
+//   --hero-bleed-occasion-rule / -gap Rule length (default 0) and gap to the occasion
+//   --hero-bleed-occasion-size-wide   Occasion size on wide screens (default 1.15rem)
+//   --hero-bleed-name-margin          Name margins in the stacked layout
+//   --hero-bleed-facts-margin / -padding-top / -rule-width
+//                                     Stacked facts spacing and an optional hairline above them
+//   --hero-bleed-when-{font-family,size,style}, --hero-bleed-when-color
+//                                     Written date and time
+//   --hero-bleed-where-{font-family,size,caps,tracking,color}
+//                                     Venue line
+//   --hero-bleed-facts-divider-{display,width,gap}
+//                                     Short centered rule above the facts in the stacked layout
+//                                     (default none)
+//   --hero-bleed-facts-row-gap        Space between the date and the venue (default 0.2rem)
+//   --hero-bleed-time-{display,font-family,size,style,color,tracking,margin}
+//                                     The hour, when it should read below the date
+//   --hero-bleed-rule-entrance        Keyframes that draw the occasion rules and the divider
+//                                     (default none; `hero-bleed-rule-draw`)
+//   --hero-bleed-scroll-cue / -iterations
+//                                     A short segment travelling down the scroll line after the
+//                                     entrance (default none; `hero-bleed-scroll-cue`)
+//   --hero-bleed-scroll-line-stack / --hero-bleed-scroll-line-margin
+//                                     Scroll line length and margins in the stacked layout
 //   --motion-hero-{eyebrow,title,details,affordance}-{duration,delay}, --motion-reveal-ease
 //                                     Entrance timing for occasion, name, facts and scroll line
 // ==========================================================================
@@ -62,12 +96,16 @@
 		text-align: left;
 	}
 
+	.framed-portrait-hero__photograph::after {
+		background: var(--hero-bleed-photo-veil-wide, none);
+	}
+
 	.framed-portrait-hero__occasion {
-		font-size: 1.15rem;
+		font-size: var(--hero-bleed-occasion-size-wide, 1.15rem);
 	}
 
 	.framed-portrait-hero__name {
-		margin-left: -0.06em;
+		margin: 0 0 0 -0.06em;
 		font-size: var(--hero-bleed-title-size-desktop, clamp(5rem, 8vw, 8rem));
 	}
 
@@ -78,6 +116,10 @@
 		padding-top: 1.35rem;
 		border-top: 1px solid
 			var(--hero-bleed-rule, rgb(var(--color-text-primary-rgb, 16 24 32) / 22%));
+
+		&::before {
+			display: none;
+		}
 
 		div {
 			display: grid;
@@ -117,10 +159,12 @@
 	align-items: stretch;
 
 	// One small viewport: the photograph gives up height (never its proportion) so the letter
-	// and the scroll line always stay on the first screen.
-	height: 100svh;
-	padding: 0 0 max(1.5rem, env(safe-area-inset-bottom));
-	background: var(--color-surface-primary);
+	// and the scroll line always stay on the first screen. `--hero-bleed-stack-height: auto`
+	// lets the photograph keep the full width instead and the letter follow below the fold.
+	height: var(--hero-bleed-stack-height, 100svh);
+	min-height: var(--hero-bleed-stack-min-height, auto);
+	padding: 0 0 var(--hero-bleed-stack-padding-bottom, max(1.5rem, env(safe-area-inset-bottom)));
+	background: var(--hero-bleed-bg, var(--color-surface-primary));
 	color: var(--color-text-primary);
 	overflow: hidden;
 
@@ -134,24 +178,38 @@
 	}
 
 	.framed-portrait-hero__photograph {
+		position: relative;
 		display: flex;
 		flex: 0 1 auto;
 		justify-content: center;
 		width: 100%;
 		max-width: none;
-		min-height: 0;
+		height: var(--hero-bleed-photo-height-stack, auto);
+		min-height: var(--hero-bleed-photo-min-height, 0);
 		margin: 0;
 		padding: 0;
 		border-radius: 0;
 		overflow: hidden;
 
+		// Optional veil toward the letter; the photographer mark must stay readable through it.
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: var(--hero-bleed-photo-veil, none);
+			pointer-events: none;
+		}
+
+		// Default: the whole print, shrunk to fit. A profile may fill the figure instead
+		// (`100%`/`100%`) and choose which edge the crop keeps with the position token.
 		img {
 			display: block;
-			width: auto;
+			width: var(--hero-bleed-photo-img-width, auto);
 			max-width: 100%;
-			height: auto;
+			height: var(--hero-bleed-photo-img-height, auto);
 			max-height: 100%;
 			object-fit: cover;
+			object-position: var(--hero-bleed-photo-position-stack, 50% 50%);
 		}
 	}
 
@@ -160,22 +218,34 @@
 		flex: none;
 		flex-direction: column;
 		align-items: center;
-		padding: clamp(1.5rem, 6vw, 2.25rem) 1.5rem 0;
+		padding: var(--hero-bleed-letter-padding, clamp(1.5rem, 6vw, 2.25rem) 1.5rem 0);
 		text-align: center;
 	}
 
 	.framed-portrait-hero__occasion {
+		display: var(--hero-bleed-occasion-display, block);
+		align-items: center;
+		gap: var(--hero-bleed-occasion-gap, 0.85rem);
 		margin: 0;
 		font: var(--hero-occasion-font, 400 1rem / 1.4 var(--font-label, var(--font-body)));
 		font-variant-caps: all-small-caps;
 		letter-spacing: 0.16em;
 		text-transform: none;
 		color: var(--hero-occasion-color, var(--color-text-secondary));
+
+		// Short rules beside the occasion (only once the occasion is an inline-flex row).
+		&::before,
+		&::after {
+			content: '';
+			width: var(--hero-bleed-occasion-rule, 0);
+			height: 1px;
+			background: var(--hero-bleed-rule, rgb(var(--color-text-primary-rgb, 16 24 32) / 22%));
+		}
 	}
 
 	.framed-portrait-hero__name {
 		max-width: 100%;
-		margin: 0;
+		margin: var(--hero-bleed-name-margin, 0);
 		font: var(--hero-name-font-weight, 400) var(--hero-title-size) /
 			var(--hero-name-line-height, 1.15) var(--hero-name-font-family, var(--font-display));
 		letter-spacing: var(--hero-name-letter-spacing, 0);
@@ -185,8 +255,11 @@
 
 	.framed-portrait-hero__facts {
 		display: grid;
-		gap: 0.2rem;
-		margin: 0.4rem 0 0;
+		gap: var(--hero-bleed-facts-row-gap, 0.2rem);
+		margin: var(--hero-bleed-facts-margin, 0.4rem 0 0);
+		padding-top: var(--hero-bleed-facts-padding-top, 0);
+		border-top: var(--hero-bleed-facts-rule-width, 0) solid
+			var(--hero-bleed-rule, rgb(var(--color-text-primary-rgb, 16 24 32) / 22%));
 		font-family: var(--font-body);
 		font-size: clamp(1.08rem, 2vw, 1.4rem);
 		font-variant-numeric: oldstyle-nums;
@@ -194,6 +267,26 @@
 
 		div {
 			display: block;
+		}
+
+		// Optional short rule between the name and the facts (stacked layout only).
+		&::before {
+			content: '';
+			display: var(--hero-bleed-facts-divider-display, none);
+			justify-self: center;
+			width: var(--hero-bleed-facts-divider-width, 3rem);
+			height: 1px;
+			margin-bottom: var(--hero-bleed-facts-divider-gap, 0.75rem);
+			background: var(--hero-bleed-rule, rgb(var(--color-text-primary-rgb, 16 24 32) / 22%));
+		}
+
+		// Venue line (second fact).
+		div + div dd {
+			font-family: var(--hero-bleed-where-font-family, inherit);
+			font-size: var(--hero-bleed-where-size, inherit);
+			font-variant-caps: var(--hero-bleed-where-caps, normal);
+			letter-spacing: var(--hero-bleed-where-tracking, normal);
+			color: var(--hero-bleed-where-color, inherit);
 		}
 
 		dt {
@@ -213,15 +306,32 @@
 		// Date and time each stay whole: the only break falls after the year.
 		.framed-portrait-hero__when {
 			white-space: nowrap;
+			font-family: var(--hero-bleed-when-font-family, inherit);
+			font-size: var(--hero-bleed-when-size, inherit);
+			font-style: var(--hero-bleed-when-style, inherit);
+			color: var(--hero-bleed-when-color, inherit);
+		}
+
+		// The hour (second span): optionally its own, quieter line below the date.
+		.framed-portrait-hero__when + .framed-portrait-hero__when {
+			display: var(--hero-bleed-time-display, inline);
+			margin-top: var(--hero-bleed-time-margin, 0);
+			font-family: var(--hero-bleed-time-font-family, inherit);
+			font-size: var(--hero-bleed-time-size, inherit);
+			font-style: var(--hero-bleed-time-style, inherit);
+			letter-spacing: var(--hero-bleed-time-tracking, normal);
+			color: var(--hero-bleed-time-color, inherit);
 		}
 	}
 
 	.framed-portrait-hero__scroll-line {
+		position: relative;
 		display: block;
 		width: 1px;
-		height: 2.5rem;
+		height: var(--hero-bleed-scroll-line-stack, 2.5rem);
 		flex: none;
-		margin: 1.25rem auto 0;
+		margin: var(--hero-bleed-scroll-line-margin, 1.25rem auto 0);
+		overflow: hidden;
 		background: linear-gradient(
 			var(--hero-bleed-rule, rgb(var(--color-text-primary-rgb, 16 24 32) / 45%)),
 			transparent
@@ -301,11 +411,78 @@
 			animation-duration: var(--motion-hero-affordance-duration);
 			animation-delay: calc(var(--hero-bleed-wait, 0s) + var(--motion-hero-affordance-delay));
 		}
+
+		// The rules draw out from the text (occasion) and from the center (divider).
+		.framed-portrait-hero__occasion::before,
+		.framed-portrait-hero__occasion::after,
+		.framed-portrait-hero__facts::before {
+			animation: var(--hero-bleed-rule-entrance, none) var(--motion-hero-title-duration)
+				var(--motion-reveal-ease, var(--ease-premium)) backwards;
+		}
+
+		.framed-portrait-hero__occasion::before {
+			transform-origin: right center;
+			animation-delay: calc(var(--hero-bleed-wait, 0s) + var(--motion-hero-title-delay));
+		}
+
+		.framed-portrait-hero__occasion::after {
+			transform-origin: left center;
+			animation-delay: calc(var(--hero-bleed-wait, 0s) + var(--motion-hero-title-delay));
+		}
+
+		.framed-portrait-hero__facts::before {
+			animation-delay: calc(var(--hero-bleed-wait, 0s) + var(--motion-hero-details-delay));
+		}
+
+		// After the entrance, a short segment runs down the scroll line a few times, then rests.
+		.framed-portrait-hero__scroll-line::after {
+			content: '';
+			position: absolute;
+			inset: 0 0 auto;
+			height: 40%;
+			background: var(--hero-bleed-scroll-cue-ink, var(--color-text-primary));
+			opacity: 0%;
+			animation: var(--hero-bleed-scroll-cue, none)
+				var(--hero-bleed-scroll-cue-duration, 1.8s)
+				var(--hero-bleed-scroll-cue-ease, ease-in-out)
+				calc(var(--hero-bleed-wait, 0s) + var(--hero-bleed-scroll-cue-delay, 1.6s))
+				var(--hero-bleed-scroll-cue-iterations, 3) both;
+		}
 	}
 
 	.event-theme-wrapper[data-reveal-state='revealed']:has(> ds-envelope-reveal:not([hidden]))
 		.invitation-hero.framed-portrait-hero[data-variant='bleed-portrait'] {
 		--hero-bleed-wait: var(--hero-bleed-entrance-wait, 0s);
+	}
+}
+
+@keyframes hero-bleed-rule-draw {
+	from {
+		transform: scaleX(0);
+	}
+
+	to {
+		transform: none;
+	}
+}
+
+@keyframes hero-bleed-scroll-cue {
+	0% {
+		opacity: 0%;
+		transform: translateY(-100%);
+	}
+
+	25% {
+		opacity: 100%;
+	}
+
+	75% {
+		opacity: 100%;
+	}
+
+	100% {
+		opacity: 0%;
+		transform: translateY(250%);
 	}
 }
 

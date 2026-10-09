@@ -10,6 +10,8 @@ interface Props {
 	variant?: string;
 	/** Second at which playback starts and loops back to (skips an intro). */
 	startAt?: number;
+	/** Seconds of volume ramp when playback starts or loops back (default 1.2). */
+	fadeInSeconds?: number;
 }
 
 const {
@@ -19,10 +21,15 @@ const {
 	revealMode = 'envelope',
 	variant,
 	startAt = 0,
+	fadeInSeconds,
 } = Astro.props;
 
 const hasAudio = Boolean(url.trim());
 const startSeconds = Number.isFinite(startAt) && startAt > 0 ? startAt : 0;
+const fadeInMs =
+	typeof fadeInSeconds === 'number' && Number.isFinite(fadeInSeconds) && fadeInSeconds >= 0
+		? Math.round(fadeInSeconds * 1000)
+		: undefined;
 // A media fragment starts the first play at the offset; looping back is handled in the script.
 const audioSrc = hasAudio && startSeconds > 0 ? `${url}#t=${startSeconds}` : url;
 const promptText = 'Reproducir música';
@@ -43,6 +50,7 @@ const preload =
 	data-title={title || promptText}
 	data-pending-label={promptText}
 	data-start-at={startSeconds > 0 ? String(startSeconds) : undefined}
+	data-fade-in-ms={fadeInMs !== undefined ? String(fadeInMs) : undefined}
 >
 	{hasAudio ? (
 		<audio src={audioSrc} loop={startSeconds === 0} preload={preload} data-music-audio></audio>
@@ -65,6 +73,12 @@ const preload =
 
 <script>
 	const players = Array.from(document.querySelectorAll('[data-music-player]'));
+
+	// Volume ramp length; 1.2 s unless the content sets `music.fadeInSeconds`.
+	const readFadeInMs = (player: HTMLElement) => {
+		const value = Number(player.dataset.fadeInMs);
+		return Number.isFinite(value) && value >= 0 ? value : 1200;
+	};
 
 	players.forEach((player) => {
 		if (!(player instanceof HTMLElement)) {
@@ -92,10 +106,6 @@ const preload =
 				},
 				{ once: true },
 			);
-			audio.addEventListener('ended', () => {
-				audio.currentTime = startAt;
-				void audio.play().catch(() => undefined);
-			});
 		}
 		const pendingTitle = player.dataset.pendingLabel || 'La canción se anunciará pronto';
 
@@ -107,7 +117,7 @@ const preload =
 			return;
 		}
 
-		const FADE_IN_MS = 1200;
+		const FADE_IN_MS = readFadeInMs(player);
 		const promptText = player.dataset.pendingLabel || 'Reproducir música';
 		let isPlaying = false;
 		let isStarting = false;
@@ -160,7 +170,7 @@ const preload =
 		// Volume ramp after the first frame of sound. iOS ignores `volume` (always 1), so there the
 		// track simply starts at full level.
 		const fadeIn = (media: HTMLAudioElement) => {
-			if (media.paused) return;
+			if (media.paused || FADE_IN_MS === 0) return;
 			window.cancelAnimationFrame(fadeFrame ?? 0);
 			const startedAt = performance.now();
 			media.volume = 0;
@@ -178,19 +188,22 @@ const preload =
 
 		// `play()` runs synchronously in the caller's gesture; a rejection (autoplay policy, failed
 		// load) leaves the control paused and asks for one tap instead of logging an error.
-		const play = (withFade: boolean) => {
+		// `announce` shows the "Pausar música" hint (automatic start only).
+		const play = (withFade: boolean, announce = withFade) => {
 			if (!hasAudio || !(audio instanceof HTMLAudioElement) || isPlaying || isStarting) {
 				return;
 			}
 			isStarting = true;
-			if (withFade) {
+			if (withFade && FADE_IN_MS > 0) {
 				audio.volume = 0;
 			}
 			audio
 				.play()
 				.then(() => {
-					if (withFade) {
+					if (withFade && FADE_IN_MS > 0) {
 						fadeIn(audio);
+					}
+					if (announce) {
 						showPrompt('Pausar música');
 						hidePromptLater();
 					}
@@ -218,6 +231,13 @@ const preload =
 				audio.volume = 1;
 				syncState();
 			});
+			// An offset track loops back to `startAt` with the same ramp, so the restart lands softly.
+			if (startAt > 0) {
+				audio.addEventListener('ended', () => {
+					audio.currentTime = startAt;
+					play(true, false);
+				});
+			}
 		}
 
 		const removeStartListeners = () => {
@@ -284,7 +304,7 @@ const preload =
 				return;
 			}
 
-			play(false);
+			play(startAt > 0, false);
 			if (prompt instanceof HTMLElement && !prompt.hidden) {
 				fadeOutPrompt();
 			}

@@ -7,9 +7,13 @@ import { parseProductionApplyCliArgs } from '../../scripts/db/production-apply-c
 import {
 	applyProductionApplyPlan,
 	buildProductionApplyPlan,
+	invitationItemsNeedingRevalidation,
 	type ProductionApplyExecuteDeps,
 } from '../../scripts/db/production-apply-orchestrator.ts';
-import { toPublicProductionApplyPlan } from '../../scripts/db/production-apply-format.ts';
+import {
+	formatProductionApplyPlan,
+	toPublicProductionApplyPlan,
+} from '../../scripts/db/production-apply-format.ts';
 import {
 	clearProductionWritePermit,
 	getProductionWritePermit,
@@ -128,6 +132,7 @@ function baseDeps(options?: {
 	return {
 		preflightSchema: () => schemaPlan(options?.pending ?? ['20260807120000']),
 		listSlugs: () => Object.keys(preflights).sort((a, b) => a.localeCompare(b)),
+		listArchivedSlugs: () => [],
 		resolvePackage: async (slug) => pkg(slug),
 		runInvitationPreflight: async (packageData) => {
 			const slug = packageData.invitation.slug;
@@ -187,6 +192,50 @@ describe('production apply planning', () => {
 			/postgres(ql)?:\/\//i,
 		);
 		expect(JSON.stringify(toPublicProductionApplyPlan(plan))).not.toContain('super-secret');
+	});
+
+	it('leaves owner-archived invitations out of --all-ready and counts them apart', async () => {
+		const runInvitationPreflight = jest.fn(async (packageData: InvitationPackageData) =>
+			invitationPreflight(packageData.invitation.slug),
+		);
+		const plan = await buildProductionApplyPlan(cli(['--all-ready']), {
+			...baseDeps({ preflights: { alpha: invitationPreflight('alpha') } }),
+			listArchivedSlugs: () => ['past-event'],
+			runInvitationPreflight,
+		});
+		expect(plan.items.map((item) => item.id)).not.toContain('past-event');
+		expect(runInvitationPreflight).toHaveBeenCalledTimes(1);
+		expect(plan.excluded.archivedSlugs).toEqual(['past-event']);
+		expect(toPublicProductionApplyPlan(plan).excluded.archivedSlugs).toEqual(['past-event']);
+		const text = formatProductionApplyPlan(plan);
+		expect(text).toContain('1 archivada (excluida)');
+		expect(text).toContain(
+			'Archivadas por decisión del propietario (fuera del plan): past-event',
+		);
+	});
+
+	it('keeps an archived invitation addressable by explicit --slug', async () => {
+		const listArchivedSlugs = jest.fn(() => ['past-event']);
+		const plan = await buildProductionApplyPlan(cli(['--slug', 'past-event']), {
+			...baseDeps(),
+			listArchivedSlugs,
+		});
+		expect(plan.items.map((item) => item.id)).toContain('past-event');
+		expect(plan.excluded.archivedSlugs).toEqual([]);
+		expect(listArchivedSlugs).not.toHaveBeenCalled();
+	});
+
+	it('revalidates only invitations that would write, never IN_SYNC ones', async () => {
+		const plan = await buildProductionApplyPlan(
+			cli(['--all-ready']),
+			baseDeps({
+				preflights: {
+					alpha: invitationPreflight('alpha'),
+					beta: invitationPreflight('beta', { status: 'IN_SYNC', approval: undefined }),
+				},
+			}),
+		);
+		expect(invitationItemsNeedingRevalidation(plan).map((item) => item.id)).toEqual(['alpha']);
 	});
 
 	it('discovers pending schema for --schema', async () => {

@@ -7,6 +7,10 @@ import {
 	POSTGRES_IMAGE,
 	POSTGREST_IMAGE,
 } from '../../scripts/db/disposable-test-env.ts';
+import {
+	DISPOSABLE_START_COMMAND,
+	ensureDisposableDbAvailable,
+} from '../../scripts/db/disposable-availability.ts';
 
 // ---------------------------------------------------------------------------
 // Cross-platform CI fixes: curl.exe removal, Linux Docker --add-host,
@@ -379,5 +383,54 @@ describe('test-asset-loader', () => {
 		expect(source).toContain('test:event-content-schema');
 		expect(source).toContain('isValidEvent');
 		expect(source).toContain('eventContentSchema');
+	});
+});
+
+describe('ensureDisposableDbAvailable', () => {
+	const log = jest.fn();
+
+	it('does not start the container when the database already answers', () => {
+		const start = jest.fn();
+		expect(ensureDisposableDbAvailable({ isReady: () => true, start, log })).toEqual({
+			reachable: true,
+			started: false,
+		});
+		expect(start).not.toHaveBeenCalled();
+	});
+
+	it('starts a stopped container and reports it reachable', () => {
+		const states = [false, true];
+		const start = jest.fn();
+		const result = ensureDisposableDbAvailable({
+			isReady: () => states.shift() ?? true,
+			start,
+			log,
+		});
+		expect(start).toHaveBeenCalledTimes(1);
+		expect(result).toEqual({ reachable: true, started: true });
+	});
+
+	it('returns the start failure instead of throwing', () => {
+		const result = ensureDisposableDbAvailable({
+			isReady: () => false,
+			start: () => {
+				throw new Error('docker daemon not running');
+			},
+			log,
+		});
+		expect(result).toEqual({
+			reachable: false,
+			started: false,
+			error: 'docker daemon not running',
+		});
+	});
+
+	it('points operators at the package.json start script', () => {
+		expect(DISPOSABLE_START_COMMAND).toBe('pnpm db:disposable:start');
+		const source = readFileSync(
+			resolve(process.cwd(), 'scripts/db/migrate-policy-disposable.ts'),
+			'utf8',
+		);
+		expect(source).toContain('requireDisposableDbAvailable()');
 	});
 });

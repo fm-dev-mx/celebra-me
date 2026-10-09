@@ -22,7 +22,7 @@
 	--countdown-written-muted: var(--color-text-secondary);
 	--countdown-written-rule: rgb(var(--color-text-primary-rgb, 16 24 32) / 18%);
 
-	padding-block: clamp(4.5rem, 12vw, 7.5rem);
+	padding-block: var(--countdown-written-padding-block, clamp(4.5rem, 12vw, 7.5rem));
 	background: var(--countdown-written-bg, transparent);
 
 	.countdown-texture,
