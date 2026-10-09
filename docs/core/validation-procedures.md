@@ -164,13 +164,18 @@ pnpm agent:git-safety:finish # Interactive session close — not part of CI
 
 `pnpm run ci` is the canonical full-pipeline equivalent of Tier C. It runs `pnpm type-check`,
 `pnpm validate:structure`, `pnpm validate:deployed-app-capabilities`, `pnpm lint`,
-`pnpm lint:styles` (both content-cached under `node_modules/.cache`), `pnpm validate:ui-governance`,
-`pnpm validate:dashboard-styles`, `pnpm validate:event-parity`, `pnpm validate:no-pii`,
-`pnpm validate:invitation-preparation`, `pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. It
-does **not** invoke interactive Git Safety (that requires a same-session baseline). Use
-`pnpm validate:changed` for focused feedback; run `pnpm type-check` and `pnpm validate:structure`
-when required by the scope. Focused validation does not replace these repository-wide checks or the
-full release pipeline.
+`pnpm lint:dead-code`, `pnpm lint:styles` (lint caches live under `node_modules/.cache`),
+`pnpm validate:ui-governance`, `pnpm validate:dashboard-styles`, `pnpm validate:event-parity`,
+`pnpm validate:no-pii`, `pnpm validate:invitation-preparation`, `pnpm test`, `pnpm test:e2e:ci`, and
+`pnpm build:app`. It does **not** invoke interactive Git Safety (that requires a same-session
+baseline). Use `pnpm validate:changed` for focused feedback; run `pnpm type-check` and
+`pnpm validate:structure` when required by the scope. Focused validation does not replace these
+repository-wide checks or the full release pipeline.
+
+`pnpm lint:dead-code` runs knip (pinned version, `knip.json`). Unused files, dependencies, unlisted
+dependencies and binaries fail the check; unused exports, exported types and duplicate exports are
+reported as warnings. A file loaded only at runtime (spawned script, `import.meta.glob` target,
+Playwright setup) must be registered as a knip `entry` instead of being ignored.
 
 Opt-in browser suites outside `pnpm test:e2e:ci`: `pnpm test:e2e:extended` runs generic contracts
 (motion, progressive visibility, gallery rail, raster seal, managed countdown, location navigation,
