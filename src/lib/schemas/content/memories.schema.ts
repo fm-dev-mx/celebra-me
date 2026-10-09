@@ -23,5 +23,3 @@ export const memoriesSchema = z
 		qrAlt: memoriesCopySchema.optional(),
 	})
 	.strict();
-
-export type MemoriesContent = z.infer<typeof memoriesSchema>;

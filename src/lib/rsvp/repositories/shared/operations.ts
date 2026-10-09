@@ -76,17 +76,3 @@ export async function updateSingle<TRow, TRecord>(
 	}
 	return mapper(rows[0]);
 }
-
-export async function deleteByQuery(
-	table: string,
-	query: string,
-	options: RequestOptions = {},
-): Promise<void> {
-	await supabaseRestRequest({
-		pathWithQuery: `${table}?${query}`,
-		method: 'DELETE',
-		authToken: options.authToken,
-		useServiceRole: options.useServiceRole,
-		prefer: options.prefer || 'return=minimal',
-	});
-}

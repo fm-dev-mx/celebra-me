@@ -4,7 +4,7 @@
  * Also owns writers used by regression / screenshot command wrappers.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { computeObservabilityFingerprints } from './fingerprints.ts';
 import { readObservabilitySourceState } from './source-state.ts';
@@ -49,20 +49,6 @@ function isValidationEvidenceSnapshot(value: unknown): value is ValidationEviden
 		Array.isArray(v.failures)
 	);
 }
-
-export function readValidationEvidenceSnapshot(
-	type: ValidationEvidenceType,
-): ValidationEvidenceSnapshot | null {
-	const abs = validationEvidenceAbsolutePath(type);
-	if (!existsSync(abs)) return null;
-	try {
-		const parsed: unknown = JSON.parse(readFileSync(abs, 'utf8'));
-		return isValidationEvidenceSnapshot(parsed) ? parsed : null;
-	} catch {
-		return null;
-	}
-}
-
 /**
  * Persist a validation evidence snapshot.
  * May throw on filesystem errors — callers must catch write failures separately

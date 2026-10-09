@@ -96,9 +96,6 @@ export const AssetSchema = z.preprocess(
 	},
 	z.discriminatedUnion('type', [internalAssetSchema, externalAssetSchema, uploadedAssetSchema]),
 );
-
-export type ContentAssetSource = ReturnType<(typeof AssetSchema)['parse']>;
-
 export const ColorTokenSchema = z
 	.enum(COLOR_TOKENS, {
 		error: 'Must be a recognized semantic color role.',

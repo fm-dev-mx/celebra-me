@@ -37,7 +37,13 @@ export function getReconciliationArtifactPath(
 	projectRoot?: string,
 ): string {
 	const root = projectRoot ?? process.cwd();
-	return join(root, '.agent', 'runtime', 'reconciliation', `reconciliation-${slug}-${target}.json`);
+	return join(
+		root,
+		'.agent',
+		'runtime',
+		'reconciliation',
+		`reconciliation-${slug}-${target}.json`,
+	);
 }
 
 function sanitizeValue(value: unknown): unknown {
@@ -45,7 +51,11 @@ function sanitizeValue(value: unknown): unknown {
 		if (value.includes('postgres://') || value.includes('postgresql://')) {
 			return '[REDACTED_DB_URL]';
 		}
-		if (value.length > 32 && /^[a-zA-Z0-9+/=_-]+$/.test(value) && (value.includes('eyJ') || value.includes('sb-'))) {
+		if (
+			value.length > 32 &&
+			/^[a-zA-Z0-9+/=_-]+$/.test(value) &&
+			(value.includes('eyJ') || value.includes('sb-'))
+		) {
 			return '[REDACTED_SECRET_KEY]';
 		}
 	}
@@ -57,7 +67,11 @@ export function saveReconciliationArtifact(
 	canonicalPackageHash: string,
 	projectRoot?: string,
 ): string {
-	const filePath = getReconciliationArtifactPath(summary.slug, summary.targetEnvironment, projectRoot);
+	const filePath = getReconciliationArtifactPath(
+		summary.slug,
+		summary.targetEnvironment,
+		projectRoot,
+	);
 	const dirPath = dirname(filePath);
 	if (!existsSync(dirPath)) {
 		mkdirSync(dirPath, { recursive: true });
@@ -99,46 +113,4 @@ export function loadReconciliationArtifact(
 	} catch {
 		return null;
 	}
-}
-
-export function renderReconciliationArtifactMarkdown(artifact: ReconciliationArtifactData): string {
-	return `
-# Reconciliation Artifact: ${artifact.invitationSlug} (${artifact.targetEnvironment.toUpperCase()})
-
-- **Estado:** \`${artifact.reconciliationState}\`
-- **Fecha:** ${artifact.timestamp}
-- **Hash del Paquete Canónico:** \`${artifact.canonicalPackageHash.slice(0, 12)}…\`
-- **Bloquea Lanzamiento:** ${artifact.isReleaseBlocked ? 'SÍ (REQUERIDO)' : 'NO (CLEAN)'}
-
-## Decisiones por Ruta Semántica
-${
-	Object.keys(artifact.decisions).length === 0
-		? '_Sin decisiones registradas._'
-		: Object.entries(artifact.decisions)
-				.map(([path, outcome]) => `- \`${path}\`: **${outcome}**`)
-				.join('\n')
-}
-
-${
-	artifact.unresolvedPaths.length > 0
-		? `## Rutas Sin Resolver (${artifact.unresolvedPaths.length})\n` +
-			artifact.unresolvedPaths.map((p) => `- \`${p}\``).join('\n')
-		: ''
-}
-
-${
-	artifact.sourceUpdatePlan
-		? `## Plan de Actualización de Código Fonte
-- **Archivo Canónico:** \`${artifact.sourceUpdatePlan.canonicalFile}\`
-- **Campos a Actualizar Manualmente (${artifact.sourceUpdatePlan.items.length}):**
-` +
-			artifact.sourceUpdatePlan.items
-				.map(
-					(item) =>
-						`  - \`${item.semanticPath}\`: Valor actual canónico = \`${JSON.stringify(item.currentCanonicalValue)}\` → Valor seleccionado de ambiente = \`${JSON.stringify(item.selectedEnvironmentValue)}\``,
-				)
-				.join('\n')
-		: ''
-}
-`.trim();
 }

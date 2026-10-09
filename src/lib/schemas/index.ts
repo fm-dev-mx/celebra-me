@@ -81,10 +81,6 @@ export const UpdateEventSchema = CreateEventSchema.partial().extend({
 	// _version remains optional to support optimistic locking.
 	_version: TimestampSchema.optional(),
 });
-
-export type CreateEventInput = z.infer<typeof CreateEventSchema>;
-export type UpdateEventInput = z.infer<typeof UpdateEventSchema>;
-
 // =============================================================================
 // User/Role Schemas
 // =============================================================================
@@ -132,10 +128,6 @@ export const CreateUserSchema = z
 			message: 'Must be a valid email address or login alias',
 		},
 	);
-
-export type CreateUserInput = z.infer<typeof CreateUserSchema>;
-export type UpdateUserRoleInput = z.infer<typeof UpdateUserRoleSchema>;
-
 // =============================================================================
 // Guest Schemas
 // =============================================================================
@@ -235,6 +227,3 @@ export const UpdateUserLoginAliasSchema = z.object({
 	aliasOperationId: UuidSchema,
 	retryOfOperationId: UuidSchema.optional(),
 });
-
-export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
-export type ResetUserPasswordInput = z.infer<typeof ResetUserPasswordSchema>;

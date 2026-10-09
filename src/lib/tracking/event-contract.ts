@@ -166,6 +166,4 @@ export const TrackingEventSchema = z.object({
 export const PublicTrackingEventSchema = TrackingEventSchema.extend({
 	eventName: z.enum(PUBLIC_TRACKING_EVENT_NAMES),
 });
-
-export type TrackingEvent = z.output<typeof TrackingEventSchema>;
 export type PublicTrackingEvent = z.output<typeof PublicTrackingEventSchema>;

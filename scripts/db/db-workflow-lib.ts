@@ -21,7 +21,6 @@ export * from './db-target-config.ts';
 export const PROJECT_ROOT = process.cwd();
 export const BASELINE_CUTOFF_VERSION = '20260715210600';
 export const LOCAL_SUPABASE_URL = 'http://127.0.0.1:54321';
-export const STORAGE_BUCKET_SIZE_LIMIT = 10_485_760;
 export const REQUIRED_LOCAL_SUPER_ADMIN_EMAIL = 'celebra.me.com@gmail.com';
 export const PSQL_REQUIRED_MESSAGE =
 	'psql is required for local DB workflow scripts. Install PostgreSQL client tools and make sure `psql` is available on PATH. Verify with `psql --version`.';
@@ -333,9 +332,6 @@ export function assertNoProdCredentialsInLocalEnv(): void {
 		);
 	}
 }
-
-export type AllowedShellCommand = 'npx' | 'supabase' | 'pnpm' | 'npm';
-
 export const ALLOWED_SHELL_COMMANDS = new Set<string>(['npx', 'supabase', 'pnpm', 'npm']);
 
 export interface CommandJob {

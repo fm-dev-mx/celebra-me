@@ -209,21 +209,6 @@ export async function findGuestByShortIdPublic(
 		{ useServiceRole: true },
 	);
 }
-
-export async function findGuestByPhonePublic(
-	eventId: string,
-	countryCode: string,
-	phone: string,
-): Promise<GuestInvitationRecord | null> {
-	return findSingle(
-		TABLE,
-		`event_id=eq.${encodeURIComponent(eventId)}&country_code=eq.${encodeURIComponent(countryCode)}&phone=eq.${encodeURIComponent(phone)}&${ACTIVE_GUEST_FILTER}`,
-		GUEST_COLUMNS,
-		toGuestRecord,
-		{ useServiceRole: true },
-	);
-}
-
 export async function findGuestByPhoneAuth(
 	eventId: string,
 	countryCode: string,

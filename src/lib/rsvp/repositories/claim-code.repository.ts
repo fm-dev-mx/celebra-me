@@ -1,34 +1,6 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { ClaimCodeRecord } from '@/interfaces/rsvp/domain.interface';
 import { type ClaimCodeRow, toClaimCodeRecord } from '@/lib/rsvp/repositories/shared/rows';
-
-export async function findClaimCodeRecordService(input: {
-	eventId: string;
-	codeHash: string;
-}): Promise<{
-	id: string;
-	eventId: string;
-	active: boolean;
-	expiresAt: string | null;
-	maxUses: number;
-	usedCount: number;
-} | null> {
-	const rows = await supabaseRestRequest<ClaimCodeRow[]>({
-		pathWithQuery: `event_claim_codes?select=id,event_id,active,expires_at,max_uses,used_count&event_id=eq.${encodeURIComponent(input.eventId)}&code_hash=eq.${encodeURIComponent(input.codeHash)}&limit=1`,
-		useServiceRole: true,
-	});
-
-	if (!rows[0]) return null;
-	return {
-		id: rows[0].id,
-		eventId: rows[0].event_id,
-		active: rows[0].active,
-		expiresAt: rows[0].expires_at,
-		maxUses: rows[0].max_uses,
-		usedCount: rows[0].used_count,
-	};
-}
-
 export async function findClaimCodeRecordByKeyService(input: { codeKey: string }): Promise<{
 	id: string;
 	eventId: string;

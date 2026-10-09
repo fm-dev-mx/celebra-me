@@ -83,10 +83,3 @@ export interface PlatformSection {
 
 /** Ordered sections: visible environments first, shared quotas last. */
 export type PlatformUsageReport = PlatformSection[];
-
-export const PLATFORM_PROVIDER_IDS = [
-	'cloudflare',
-	'supabase',
-	'vercel',
-	'cloudinary',
-] as const satisfies readonly PlatformProviderId[];

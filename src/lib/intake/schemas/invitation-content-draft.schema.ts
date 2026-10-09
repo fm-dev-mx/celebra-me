@@ -198,5 +198,3 @@ export const UpdateDraftContentSchema = z.object({
 });
 
 export type DraftContent = z.infer<typeof InvitationContentDraftContentSchema>;
-export type GenerateDraftActionInput = z.infer<typeof DraftActionSchema>;
-export type UpdateDraftContentInput = z.infer<typeof UpdateDraftContentSchema>;

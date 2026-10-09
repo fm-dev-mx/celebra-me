@@ -616,6 +616,5 @@ export const DEFAULT_STORAGE_STATE_PATH = 'playwright/.auth/user.json';
 export const DEFAULT_NAVIGATION_TIMEOUT = 15_000;
 export const DEFAULT_NETWORK_IDLE_TIMEOUT = 5_000;
 export const DEFAULT_ELEMENT_TIMEOUT = 2_000;
-export const DEFAULT_FONT_TIMEOUT = 3_000;
 export const DEFAULT_IMAGE_TIMEOUT = 2_000;
 export const DEFAULT_STABILITY_DELAY = 300;

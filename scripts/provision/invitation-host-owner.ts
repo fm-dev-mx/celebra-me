@@ -6,14 +6,7 @@
 
 import { randomBytes, randomUUID } from 'node:crypto';
 import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
-import {
-	buildManagedHostEmail,
-	HOST_LOGIN_DOMAIN,
-	parseHostLoginAlias,
-} from '../../src/lib/auth/login-alias.ts';
-
-export const INVITATION_HOST_EMAIL_DOMAIN = HOST_LOGIN_DOMAIN;
-
+import { buildManagedHostEmail, parseHostLoginAlias } from '../../src/lib/auth/login-alias.ts';
 export type HostOwnerAction =
 	'OWNER_PRESERVE' | 'OWNER_EXPLICIT' | 'OWNER_REUSE' | 'OWNER_CREATE_PLANNED' | 'OWNER_CONFLICT';
 
@@ -276,75 +269,6 @@ export async function createInvitationHostAuthUser(input: {
 	}
 	return createdId;
 }
-
-/**
- * Remap an existing host Auth email + login_alias without changing invitation ownership UUIDs.
- * Does not print secrets. Fails if the target email is already used by another user.
- */
-export async function updateInvitationHostLogin(input: {
-	supabaseUrl: string;
-	serviceRoleKey: string;
-	targetDbUrl: string;
-	userId: string;
-	newHostLoginAlias: string;
-}): Promise<{ userId: string; hostEmail: string; hostLoginAlias: string }> {
-	const hostLoginAlias = normalizeHostLoginAlias(input.newHostLoginAlias);
-	const hostEmail = buildInvitationHostEmail(hostLoginAlias);
-	const existingForEmail = findAuthUserIdByEmail(input.targetDbUrl, hostEmail);
-	if (existingForEmail && existingForEmail !== input.userId) {
-		throw new Error(
-			`Cannot rekey host login: email "${hostEmail}" already belongs to another Auth user.`,
-		);
-	}
-
-	const getUrl = `${input.supabaseUrl.replace(/\/+$/, '')}/auth/v1/admin/users/${input.userId}`;
-	const existingResponse = await fetch(getUrl, {
-		method: 'GET',
-		headers: {
-			apikey: input.serviceRoleKey,
-			Authorization: `Bearer ${input.serviceRoleKey}`,
-		},
-	});
-	if (!existingResponse.ok) {
-		const body = await existingResponse.text().catch(() => '');
-		throw new Error(
-			`Failed to load invitation host Auth user (HTTP ${existingResponse.status}): ${body.slice(0, 200)}`,
-		);
-	}
-	const existingUser = (await existingResponse.json()) as {
-		id?: string;
-		user_metadata?: Record<string, unknown>;
-	};
-	if (!existingUser.id) {
-		throw new Error('Failed to load invitation host Auth user: missing id in response.');
-	}
-
-	const updateResponse = await fetch(getUrl, {
-		method: 'PUT',
-		headers: {
-			apikey: input.serviceRoleKey,
-			Authorization: `Bearer ${input.serviceRoleKey}`,
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({
-			email: hostEmail,
-			email_confirm: true,
-			user_metadata: {
-				...(existingUser.user_metadata || {}),
-				login_alias: hostLoginAlias,
-			},
-		}),
-	});
-	if (!updateResponse.ok) {
-		const body = await updateResponse.text().catch(() => '');
-		throw new Error(
-			`Failed to update invitation host login (HTTP ${updateResponse.status}): ${body.slice(0, 200)}`,
-		);
-	}
-
-	return { userId: input.userId, hostEmail, hostLoginAlias };
-}
-
 export async function resolveAndEnsureInvitationHostOwner(input: {
 	slug: string;
 	hostLoginAlias: string;

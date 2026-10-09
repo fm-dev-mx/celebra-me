@@ -22,7 +22,3 @@ $section-padding-v-desktop: clamp(6rem, 10vw, 8.5rem);
 @mixin normalized-section-spacing {
 	@include section-spacing($include-padding: true);
 }
-
-@mixin anchor-navigation-only {
-	@include section-spacing($include-padding: false);
-}
