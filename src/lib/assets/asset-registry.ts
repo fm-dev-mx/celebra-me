@@ -12,15 +12,7 @@ import type { ImageMetadata } from 'astro';
 import { EVENT_KEYS, type EventAssetKey, type CommonAssetKey } from '@/lib/assets/asset-keys';
 
 // Common Assets
-import avatar1 from '@images/hero/avatar1.png';
-import avatar2 from '@images/hero/avatar2.png';
-import avatar3 from '@images/hero/avatar3.png';
-import serviceXv from '@images/services/xv.png';
-import serviceWedding from '@images/services/wedding.png';
-import serviceBaptism from '@images/services/baptism.png';
-import serviceCumple from '@images/services/cumple.png';
 import headerLogo from '@images/header/horizontal-logo150x56.png';
-import partyToast from '@images/about/party-toast-premium.png';
 
 /**
  * Represents a processed image asset.
@@ -98,15 +90,7 @@ export const ImageRegistry: Registry = {
 			src: '/icons/favicon.svg',
 			alt: 'Logotipo de Celebra-me',
 		},
-		avatar1: { src: avatar1, alt: 'Usuario de Celebra-me' },
-		avatar2: { src: avatar2, alt: 'Usuario de Celebra-me' },
-		avatar3: { src: avatar3, alt: 'Usuario de Celebra-me' },
-		serviceXv: { src: serviceXv, alt: 'Servicio de XV Años' },
-		serviceWedding: { src: serviceWedding, alt: 'Servicio de Bodas' },
-		serviceBaptism: { src: serviceBaptism, alt: 'Servicio de Bautizos' },
-		serviceCumple: { src: serviceCumple, alt: 'Servicio de Cumpleaños' },
 		headerLogo: { src: headerLogo, alt: 'Celebra-me Logo' },
-		aboutToast: { src: partyToast, alt: 'Celebración elegante con brindis' },
 		heroBgDesktop: {
 			src: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
 			alt: 'Fondo Hero',
