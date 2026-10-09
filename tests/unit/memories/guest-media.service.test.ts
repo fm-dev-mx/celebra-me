@@ -251,6 +251,52 @@ describe('reserveGuestMemoryItem', () => {
 		});
 	});
 
+	it.each([
+		['memories_session_file_quota', 'session_files'],
+		['memories_event_byte_quota', 'event_capacity'],
+		['memories_session_concurrency_quota', 'uploads_in_progress'],
+		['memories_upload_window_closed', 'window_closed'],
+	])('records a %s refusal for the admin diagnostics', async (token, reason) => {
+		mockReserve.mockRejectedValue(reservationFailure(token));
+		await expect(reserveGuestMemoryItem(reservationInput())).rejects.toBeDefined();
+		expect(mockAudit).toHaveBeenCalledWith({
+			eventId: EVENT_ID,
+			actorType: 'system',
+			action: 'upload_refused',
+			metadata: { reason },
+		});
+	});
+
+	it('records no refusal for failures that are not an upload cause', async () => {
+		mockReserve.mockRejectedValue(reservationFailure('memories_idempotency_conflict'));
+		await expect(reserveGuestMemoryItem(reservationInput())).rejects.toMatchObject({
+			code: 'conflict',
+		});
+		expect(mockAudit).not.toHaveBeenCalled();
+	});
+
+	it('records a payload outside the upload policy and keeps the cause off the response', async () => {
+		const failure = reserveGuestMemoryItem(reservationInput({ mimeType: 'application/pdf' }));
+		await expect(failure).rejects.toMatchObject({ status: 400, code: 'bad_request' });
+		await expect(failure).rejects.not.toHaveProperty('details.reason');
+		expect(mockAudit).toHaveBeenCalledWith(
+			expect.objectContaining({
+				action: 'upload_refused',
+				metadata: { reason: 'file_policy' },
+			}),
+		);
+		expect(mockReserve).not.toHaveBeenCalled();
+	});
+
+	it('still refuses the upload when the diagnostics row cannot be written', async () => {
+		mockAudit.mockRejectedValueOnce(new Error('audit down'));
+		mockReserve.mockRejectedValue(reservationFailure('memories_session_file_quota'));
+		await expect(reserveGuestMemoryItem(reservationInput())).rejects.toMatchObject({
+			status: 409,
+			details: { reason: 'session_files' },
+		});
+	});
+
 	it('rethrows unknown persistence errors untouched', async () => {
 		const error = new SupabaseHttpError(500, 'connection reset', null);
 		mockReserve.mockRejectedValue(error);
@@ -514,6 +560,50 @@ describe('completeGuestMemoryItem', () => {
 
 		expect(mockFinalize).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'rejected' }));
 		expect(item.status).toBe('rejected');
+	});
+
+	it.each([
+		[{ sizeBytes: 1_048_575 }, 'size_mismatch'],
+		[{ checksumSha256: 'f'.repeat(64) }, 'checksum_mismatch'],
+		[{ signatureValid: false }, 'signature_invalid'],
+	])('records why a stored upload was rejected (%o)', async (inspection, reason) => {
+		mockFind.mockResolvedValue(buildMediaRow({ status: 'validating' }));
+		mockInspect.mockResolvedValue(foundInspection(inspection));
+		mockFinalize.mockResolvedValue(buildMediaRow({ status: 'rejected' }));
+
+		await completeGuestMemoryItem({ space, session, mediaItemId: ITEM_ID });
+
+		expect(mockAudit).toHaveBeenCalledWith(
+			expect.objectContaining({ action: 'validation_failed', metadata: { reason } }),
+		);
+	});
+
+	it('records an absent object as the cause of a rejection', async () => {
+		mockFind.mockResolvedValue(buildMediaRow({ status: 'validating' }));
+		mockInspect.mockResolvedValue({ kind: 'missing' });
+		mockFinalize.mockResolvedValue(buildMediaRow({ status: 'rejected' }));
+
+		await completeGuestMemoryItem({ space, session, mediaItemId: ITEM_ID });
+
+		expect(mockAudit).toHaveBeenCalledWith(
+			expect.objectContaining({
+				action: 'validation_failed',
+				metadata: { reason: 'object_missing' },
+			}),
+		);
+	});
+
+	it('adds no cause to an accepted upload', async () => {
+		mockFind.mockResolvedValue(buildMediaRow({ status: 'validating' }));
+		mockInspect.mockResolvedValue(foundInspection());
+		mockFinalize.mockResolvedValue(buildMediaRow({ status: 'accepted' }));
+
+		await completeGuestMemoryItem({ space, session, mediaItemId: ITEM_ID });
+
+		const call = mockAudit.mock.calls.find(
+			([entry]) => entry.action === 'validated_and_accepted',
+		);
+		expect(call?.[0]).not.toHaveProperty('metadata');
 	});
 
 	it('refuses to complete another session item', async () => {

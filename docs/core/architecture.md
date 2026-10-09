@@ -473,6 +473,16 @@ deployment.
   Each listed space carries `hasOwner`; a space whose event has no active `owner` membership shows a
   warning, since no host can open its organizer. Admin usage is aggregate only (counts, bytes,
   dates): administrators never see guest names, aliases, object keys, captions or media.
+- **Admin diagnostics:** `GET /api/dashboard/admin/memories/:eventId/diagnostics` (strong session,
+  rate limit `memories:diagnostics`) returns every catalog row by status (including rows already
+  cleaned up), stalled in-flight rows (uploading past the reservation TTL, validating past the retry
+  delay), upload failures by cause and reservations abandoned, from the newest 5,000 audit rows.
+  Causes come from audit metadata `reason`: `upload_refused` (quota, window, upload policy; recorded
+  before reserving) and `validation_failed` (missing object, signature, size, checksum, video
+  duration). Rejections recorded before causes existed are counted apart. `?live=1` also runs the
+  read-only reachability checks shared with `pnpm preflight:memories`
+  (`src/lib/memories/server/live-check.ts`): in Production the apex QR redirect and the canonical
+  `www` app, elsewhere the serving origin (Preview deployment protection can make them fail).
 - **Usage sources:** per-space figures come from `event_memory_items` rows that still hold an R2
   object (the same set the reservation quota counts) and from session counts; the committed-capacity
   total compares them with the shared R2 allowance in `CLOUDFLARE_FREE_TIER`

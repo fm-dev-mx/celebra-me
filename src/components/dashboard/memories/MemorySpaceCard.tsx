@@ -20,6 +20,7 @@ import {
 	memoriesUsageRatio,
 } from '@/lib/memories/dashboard-copy';
 import { memoriesAdminApi } from '@/lib/memories/client/api';
+import MemorySpaceDiagnostics from '@/components/dashboard/memories/MemorySpaceDiagnostics';
 
 interface Props {
 	item: MemoriesAdminSpaceItem;
@@ -171,6 +172,12 @@ export default function MemorySpaceCard({
 					</>
 				)}
 			</p>
+
+			<MemorySpaceDiagnostics
+				eventId={item.eventId}
+				eventTitle={item.eventTitle}
+				timeZone={item.timeZone}
+			/>
 
 			{item.adminNote ? (
 				<p className="memories-space__note">

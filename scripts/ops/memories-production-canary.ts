@@ -9,14 +9,14 @@ import path from 'node:path';
 import type { Page, Request, Response, Route } from '@playwright/test';
 import { MEMORIES_UUID_PATTERN } from '../../src/lib/memories/contract/catalog';
 import {
+	MEMORIES_CANONICAL_APP_ORIGIN,
 	buildMemoriesGuestApiPath,
 	buildMemoriesPublicPath,
 	isMemoriesPublicSlug,
 } from '../../src/lib/memories/contract/private-request';
 import { memoriesCaptureCopy } from '../../src/lib/memories/copy';
 
-/** Canonical app origin allowed by the Sign Worker in Production. */
-export const MEMORIES_CANONICAL_APP_ORIGIN = 'https://www.celebra-me.com' as const;
+export { MEMORIES_CANONICAL_APP_ORIGIN };
 export const MEMORIES_PRODUCTION_CONFIRMATION =
 	'I_AUTHORIZE_ONE_MEMORIES_PRODUCTION_CANARY' as const;
 

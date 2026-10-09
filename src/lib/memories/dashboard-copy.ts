@@ -3,7 +3,14 @@
  * console and host summary). Guest-facing copy stays in `copy.ts`.
  */
 
-import type { MemoriesConfigKey, MemoriesWindowState, MemoriesWorkerKey } from './contract/catalog';
+import type {
+	MemoriesConfigKey,
+	MemoriesLiveCheck,
+	MemoriesMediaStatus,
+	MemoriesUploadFailureReason,
+	MemoriesWindowState,
+	MemoriesWorkerKey,
+} from './contract/catalog';
 import { type MemoriesEntitlement } from './contract/limits';
 import {
 	BINARY_MB,
@@ -287,6 +294,77 @@ export const memoriesAdminCopy = {
 	toggleError: 'No se pudo cambiar el estado del espacio.',
 	created: (url: string) => `Espacio activado. URL pública: ${url}`,
 	updated: 'Espacio actualizado.',
+} as const;
+
+export const MEMORIES_STATUS_LABEL: Record<MemoriesMediaStatus, string> = {
+	uploading: 'Subiendo',
+	validating: 'Validando',
+	accepted: 'Aceptados',
+	rejected: 'Rechazados',
+	deleted: 'Eliminados',
+	duplicate: 'Duplicados',
+};
+
+export const MEMORIES_FAILURE_LABEL: Record<MemoriesUploadFailureReason, string> = {
+	session_files: 'Límite de archivos por invitado',
+	session_videos: 'Límite de videos por invitado',
+	session_bytes: 'Límite de almacenamiento por invitado',
+	event_capacity: 'Capacidad del evento agotada',
+	uploads_in_progress: 'Demasiadas cargas simultáneas',
+	window_closed: 'Fuera de la ventana de carga',
+	file_policy: 'Formato o tamaño no permitido',
+	video_duration: 'Duración de video no válida',
+	object_missing: 'El archivo no llegó al almacenamiento',
+	signature_invalid: 'Firma del archivo no válida',
+	size_mismatch: 'Tamaño distinto al declarado',
+	checksum_mismatch: 'Contenido distinto al declarado',
+};
+
+const LIVE_CHECK_LABEL: Record<string, string> = {
+	printed_qr_redirect: 'El QR impreso redirige al sitio',
+	guest_page: 'Página de invitados',
+	unknown_slug_fails_closed: 'Un espacio inexistente responde 404',
+	guest_api: 'API de invitados conectada a la base de datos',
+	upload_worker: 'Worker de subidas',
+	upload_worker_accepts_app_origin: 'El Worker de subidas acepta este sitio',
+	upload_worker_rejects_other_origins: 'El Worker de subidas rechaza otros sitios',
+};
+
+export function describeMemoriesLiveCheck(check: MemoriesLiveCheck): string {
+	return LIVE_CHECK_LABEL[check.check] ?? check.check;
+}
+
+export const MEMORIES_LIVE_CHECK_STATUS: Record<MemoriesLiveCheck['status'], string> = {
+	PASS: 'Correcto',
+	FAIL: 'Falla',
+	SKIPPED: 'Omitido',
+};
+
+export const memoriesDiagnosticsCopy = {
+	summary: 'Diagnóstico',
+	loading: 'Cargando diagnóstico…',
+	loadError: 'No se pudo cargar el diagnóstico.',
+	retry: 'Reintentar',
+	statusTitle: 'Archivos por estado',
+	stalledTitle: 'Cargas detenidas',
+	stalled: (uploading: number, validating: number) =>
+		`${pluralize(uploading, 'subida sin confirmar', 'subidas sin confirmar')} · ${pluralize(validating, 'validación pendiente', 'validaciones pendientes')}. La limpieza diaria las resuelve; si persisten, revise el Worker de lectura.`,
+	noStalled: 'Ninguna carga detenida.',
+	failuresTitle: 'Cargas fallidas por causa',
+	noFailures: 'Ninguna carga fallida registrada.',
+	withoutReason: (count: number) =>
+		`${pluralize(count, 'rechazo', 'rechazos')} sin causa registrada (anteriores a este diagnóstico)`,
+	abandoned: (count: number) =>
+		`${pluralize(count, 'reserva abandonada', 'reservas abandonadas')}: el archivo nunca llegó`,
+	truncated: 'Hay más registros de los que se leen; las cifras son un mínimo.',
+	lastAccepted: (when: string) => `Última subida aceptada: ${when}`,
+	noAccepted: 'Todavía no hay subidas aceptadas.',
+	liveTitle: 'Comprobación en vivo',
+	liveHint:
+		'Abre la página de invitados, la API y el Worker de subidas sin crear sesiones ni subir archivos.',
+	runLive: 'Comprobar ahora',
+	runningLive: 'Comprobando…',
+	generatedAt: (when: string) => `Actualizado: ${when}`,
 } as const;
 
 export const memoriesFormCopy = {

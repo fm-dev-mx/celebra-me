@@ -80,6 +80,9 @@ unknown slug (404), the anonymous session read, and the CORS preflight of `/uplo
 origin and for a foreign one. `--upload-origin` is optional; without it the Worker check is reported
 as `SKIPPED`. Any `FAIL` blocks the canary.
 
+The same checks run from `/dashboard/admin/recuerdos` → **Diagnóstico** → **Comprobar ahora**, which
+takes the Sign Worker origin from the app settings.
+
 ## Owner-run Production canary
 
 This is a manual, single-use Production transaction. Repository readiness, a passing test, or a

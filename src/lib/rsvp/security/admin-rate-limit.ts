@@ -47,6 +47,8 @@ const RATE_LIMITS = {
 	'memories:create': { maxHits: 20, windowSec: 60 },
 	'memories:update': { maxHits: 30, windowSec: 60 },
 	'memories:qr': { maxHits: 30, windowSec: 60 },
+	// Live checks send a few outbound requests each; keep them a manual action.
+	'memories:diagnostics': { maxHits: 12, windowSec: 60 },
 	// Platform usage console: one aggregate read per provider card refresh.
 	'platform:usage': { maxHits: 30, windowSec: 60 },
 	'intake:list': { maxHits: 60, windowSec: 60 },

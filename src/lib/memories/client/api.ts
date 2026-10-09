@@ -14,6 +14,7 @@ import type {
 	MemoriesOrganizerListResponse,
 	MemoriesOrganizerUploader,
 	MemoriesReadiness,
+	MemoriesSpaceDiagnostics,
 	MemoriesSpaceHostSummary,
 	MemoriesSpaceRecord,
 	MemoriesSpaceSummary,
@@ -336,6 +337,14 @@ export const memoriesAdminApi = {
 	},
 	qrUrl(eventId: string): string {
 		return `${MEMORIES_ADMIN_API_PATH}/${encodeURIComponent(eventId)}/qr`;
+	},
+	async diagnostics(eventId: string, live = false): Promise<MemoriesSpaceDiagnostics> {
+		const payload = unwrap(
+			await dashboardApi.get<{ diagnostics: MemoriesSpaceDiagnostics }>(
+				`${MEMORIES_ADMIN_API_PATH}/${encodeURIComponent(eventId)}/diagnostics${live ? '?live=1' : ''}`,
+			),
+		);
+		return payload.diagnostics;
 	},
 	async create(body: Record<string, unknown>): Promise<MemoriesSpaceRecord> {
 		const payload = unwrap(
