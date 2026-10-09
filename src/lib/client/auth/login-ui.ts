@@ -1,10 +1,6 @@
-import {
-	isCanonicalHostLoginAlias,
-} from '@/lib/auth/login-alias';
+import { isCanonicalHostLoginAlias } from '@/lib/auth/login-alias';
 
 export type AuthMethod = 'password' | 'magic_link';
-export type AuthPanel = 'login' | 'register';
-
 export interface LoginFormState {
 	method: AuthMethod;
 	email: string;

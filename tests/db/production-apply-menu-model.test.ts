@@ -136,14 +136,10 @@ describe('prod:apply menu model', () => {
 		// READY_AFTER_SCHEMA is covered by "Apply all READY"; no misleading per-slug offer.
 		expect(labels[0]).toContain('daniela-y-martin');
 		expect(labels.filter((label) => label.includes('daniela-y-martin'))).toHaveLength(1);
-		expect(labels).toContain('Apply aithan-darell discarding its unpublished draft');
+		// Discard readiness only exists in an explicit --slug plan that already carries the
+		// acknowledgement, so inspect-all never offers a per-slug discard.
+		expect(labels.some((label) => label.includes('discarding'))).toBe(false);
 		expect(labels.some((label) => label.includes('blocked-one'))).toBe(false);
-		const discard = offers.find((offer) => offer.label.includes('discarding'));
-		expect(discard?.selection).toEqual({
-			kind: 'invitations',
-			slugs: ['aithan-darell'],
-			acknowledgeDiscardUnpublishedDraft: true,
-		});
 	});
 
 	it('offers a scoped plan once and nothing when there is no mutation', () => {

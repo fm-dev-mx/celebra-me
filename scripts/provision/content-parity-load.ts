@@ -231,20 +231,3 @@ export function loadSemanticParitySnapshot(
 			: new Map(),
 	};
 }
-
-export function loadSemanticSnapshotsForParity(opts: {
-	slug: string;
-	eventType: string;
-	envs: ContentParityEnvironment[];
-}): Partial<Record<ContentParityEnvironment, SemanticInvitationSnapshot>> {
-	const snapshots: Partial<Record<ContentParityEnvironment, SemanticInvitationSnapshot>> = {};
-	for (const env of opts.envs) {
-		const loaded = loadSemanticParitySnapshot(env, opts.slug, opts.eventType, false, {
-			warnOnMissing: false,
-		});
-		if (loaded) {
-			snapshots[env] = loaded.snapshot;
-		}
-	}
-	return snapshots;
-}

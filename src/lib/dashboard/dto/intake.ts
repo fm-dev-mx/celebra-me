@@ -112,12 +112,6 @@ export interface InvitationDetailResponse {
 	submission: IntakeSubmissionDTO | null;
 	rsvpEvent: RsvpEventDTO | null;
 }
-
-export interface ReviewActionDTO {
-	action: 'approve' | 'request_changes';
-	reviewNotes?: string;
-}
-
 export interface CreateIntakeRequestDTO {
 	enabledBlocks: IntakeBlockType[];
 	expiresInDays?: number;

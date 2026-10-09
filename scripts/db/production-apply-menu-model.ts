@@ -173,9 +173,6 @@ export function applyOffersFromPlan(
 	const readyInvitations = visible.filter(
 		(item) => item.domain === 'invitation' && item.readiness === 'READY',
 	);
-	const discardInvitations = visible.filter(
-		(item) => item.domain === 'invitation' && item.readiness === 'READY_AFTER_DISCARD',
-	);
 
 	if (selection.kind === 'inspect_all') {
 		const mutations = mutationItemsOf({ ...plan, scope: { ...plan.scope, allReady: true } });
@@ -197,22 +194,6 @@ export function applyOffersFromPlan(
 			label: `Apply ${describeSelection(selection)}`,
 			selection: { ...selection },
 		});
-	}
-
-	if (
-		(selection.kind === 'invitations' || selection.kind === 'inspect_all') &&
-		discardInvitations.length > 0
-	) {
-		for (const item of discardInvitations) {
-			offers.push({
-				label: `Apply ${item.id} discarding its unpublished draft`,
-				selection: {
-					kind: 'invitations',
-					slugs: [item.id],
-					acknowledgeDiscardUnpublishedDraft: true,
-				},
-			});
-		}
 	}
 	return offers;
 }

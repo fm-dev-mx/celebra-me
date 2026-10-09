@@ -23,11 +23,6 @@ const BLOCK_REGISTRY: Record<IntakeBlockType, IntakeBlockDefinition> = {
 	gifts: giftsBlock,
 	'special-messages': specialMessagesBlock,
 };
-
-export function getBlockDefinition(type: IntakeBlockType): IntakeBlockDefinition {
-	return BLOCK_REGISTRY[type];
-}
-
 export function getAllBlockDefinitions(): IntakeBlockDefinition[] {
 	return Object.values(BLOCK_REGISTRY);
 }

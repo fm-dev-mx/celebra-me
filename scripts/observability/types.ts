@@ -47,10 +47,3 @@ export interface ValidationEvidenceSnapshot {
 	/** Repo-relative path only, e.g. `.tmp/observability/validation/regression.json`. */
 	artifactLocation: string;
 }
-
-export interface ValidationEvidenceView {
-	validationType: ValidationEvidenceType;
-	freshness: EvidenceFreshness;
-	snapshot: ValidationEvidenceSnapshot | null;
-	detail?: string;
-}

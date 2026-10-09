@@ -182,13 +182,6 @@ export const RSVP_EVENT_STATUS_LABELS: Record<string, string> = {
 	archived: 'Desactivado',
 	draft: 'Borrador',
 };
-
-export const RSVP_STATUS_LABELS: Record<string, string> = {
-	published: 'RSVP activo',
-	archived: 'RSVP desactivado',
-	draft: 'RSVP borrador',
-};
-
 export const GIFT_TYPE_LABELS: Record<string, string> = {
 	store: 'Tienda',
 	bank: 'Transferencia bancaria',
@@ -241,13 +234,11 @@ export const EMPTY_ASSET_LIBRARY_COPY = {
 } as const;
 
 export const BUNDLED_ASSET_LABEL = 'Imagen incluida';
-export const ASSET_USAGE_LABEL = 'Usada en:';
 export const ASSET_EDIT_LABEL = 'Editar nombre';
 export const ASSET_SAVE_LABEL = 'Guardar';
 export const ASSET_CANCEL_LABEL = 'Cancelar';
 export const ASSET_ALT_TEXT_LABEL = 'Texto alternativo';
 export const ASSET_ALT_SAVE_LABEL = 'Guardar texto alternativo';
-export const ASSET_NO_USAGE_LABEL = 'No utilizada';
 export const ASSET_SECTION_REFS_HEADER = 'Usos de esta imagen';
 
 export const ARCHIVED_TAB_LABEL = 'Archivadas';
@@ -255,4 +246,3 @@ export const ACTIVE_TAB_LABEL = 'Activas';
 export const RESTORE_LABEL = 'Restaurar';
 export const ARCHIVED_DATE_LABEL = 'Imagen archivada';
 export const ARCHIVED_HELP_LABEL = 'Las imágenes archivadas pueden restaurarse.';
-export const ARCHIVE_BLOCKED_LABEL = 'No puedes archivar una imagen que está en uso.';

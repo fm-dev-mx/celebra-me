@@ -27,6 +27,3 @@ export const UpdateIntakeRequestSchema = z.object({
 		.optional(),
 	expiresAt: z.iso.datetime().nullable().optional(),
 });
-
-export type CreateIntakeRequestInput = z.infer<typeof CreateIntakeRequestSchema>;
-export type UpdateIntakeRequestInput = z.infer<typeof UpdateIntakeRequestSchema>;
