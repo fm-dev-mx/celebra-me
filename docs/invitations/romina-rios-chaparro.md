@@ -1,53 +1,46 @@
-# Romina Ríos Chaparro — Canonical Variant Reference
+# Romina Ríos Chaparro — Delivered State
 
-**Status:** Canonical encapsulation reference
+The event took place on 2026-08-14. This record keeps only the delivered state and the variant
+reference role; earlier notes live in Git history.
 
-Romina is the approved reference used to prove the reusable `split-cover` Hero architecture. Her
-invitation is a consumer of that architecture, not its owner. No reusable identifier, renderer,
-stylesheet, primitive, or asset path may contain her name, slug, profile ID, or historical origin.
+## Identity
 
-## Explicit canonical configuration
+| Parameter            | Value                                    |
+| -------------------- | ---------------------------------------- |
+| **Slug**             | `romina-rios-chaparro`                   |
+| **Route**            | `/xv/romina-rios-chaparro`               |
+| **Event Type**       | `xv`                                     |
+| **Host Login Alias** | `romina_rios_chaparro` (legacy form)     |
+| **Event start**      | `2026-08-14T17:00` (`America/Chihuahua`) |
 
-- `hero.variant: 'split-cover'`
-- `location.variant: 'standard'`
-- `itinerary.variant: 'standard'`
-- `gallery.variant: 'editorial-mosaic'`
-- Remaining participating sections select their section-owned variants explicitly.
-- `composition.intersections` is explicitly present; neutral boundaries do not rely on an
-  identity-keyed render-plan map.
+## Preset and variants
 
-The Gallery layout is explicit to preserve the approved Premiere Floral mosaic after structural CSS
-was removed from the theme bundle. This is contract wiring, not a redesign.
+- Theme preset `premiere-floral`; visual profile `romina-rios-chaparro` (frozen by digest); legacy
+  `baseDemoId` `demo-xv-premiere-floral` (catalog-only).
+- Variants: hero `split-cover`, family `standard`, countdown `standard`, location `standard`,
+  itinerary `standard`, gallery `editorial-mosaic`, RSVP `standard` with personalized access
+  `ornamented`, thank-you `standard`. `composition.intersections` is explicit.
 
-## Ownership boundary
+## Variant reference role
 
-`_split-cover.scss` owns the two-plane desktop layout, responsive behavior, image containment,
-required title/details geometry, and reusable defaults. The Romina profile may set only her palette,
-typography, crop, overlay, decoration, timing, and documented `--hero-split-*` presentation tokens.
-It does not import the variant stylesheet or redefine the canonical grid, visibility, DOM order, or
-breakpoints.
+Romina is the approved reference used to prove the reusable `split-cover` hero. Her invitation is a
+consumer of that variant, not its owner: no reusable identifier, renderer, stylesheet, or asset path
+may contain her name, slug, or profile ID. `_split-cover.scss` owns the layout; the profile supplies
+only palette, crop, and documented `--hero-split-*` tokens. Portability is proven on a non-origin
+fixture without her profile or assets ([variant system](../domains/theme/variant-system.md)).
 
-Romina's photographs remain owned by her managed definition and asset map. The Hero receives a
-resolved semantic `backgroundImage`; the variant imports no invitation assets. Desktop and mobile
-hero paths use distinct uploaded keys (`hero` / `hero-mobile`) encoded from the same source
-photograph (`IMG_3263.jpeg`) so each path meets its delivery-role budget.
+## Delivered state
 
-## Encapsulation evidence
+- Managed definition `scripts/provision/invitations/romina-rios-chaparro.ts`,
+  `lifecycle: published`, `deliveryScope: content-and-assets`. Contract tests:
+  `tests/content/romina-local-invitation.test.ts` and
+  `tests/content/romina-family-rendering.test.ts`.
+- RSVP `accessMode: personalized-only`, `confirmationMode: api`, `guestCap: 4`.
+- Per-environment state comes from `pnpm dbs romina-rios-chaparro`; this record asserts none.
 
-- A non-origin Jewelry Box fixture selects `split-cover` in memory and propagates it through the
-  adapter and render descriptor without Romina slug, profile, or assets.
-- Browser portability checks apply the canonical stylesheet to that non-origin demo at mobile and
-  desktop sizes and assert no Romina profile stylesheet is loaded.
-- Reusable renderer/CSS governance scans reject client names, invitation slugs, historical theme
-  identities, profile references, and invitation asset imports. Romina's maps retain the generic
-  `premiere-floral` visual path; Location browser smoke remains a required verification because the
-  shared primitive changed.
+## Known constraints
 
-No database, Preview, Production, client copy, event facts, or photographic assets are changed by
-this encapsulation.
-## Established mappings
-
-- Venue mapping: historical `location.ceremony` / `location.reception` data is folded at ingress to canonical `location.venues[*]`; no runtime renderer consumes the legacy shape.
-- Seal monogram: `RC`.
-- Hero image focals: `50% 42%` (mobile/tablet), `58% 46%` (desktop).
-- Ceremony coordinates `lat: 30.4137, lng: -107.9125` and reception coordinates `lat: 30.4280, lng: -107.9250` are marked inferred.
+- Desktop and mobile hero use distinct uploaded keys (`hero` / `hero-mobile`) encoded from one
+  source photograph; focals `50% 42%` (mobile/tablet) and `58% 46%` (desktop).
+- Ceremony and reception coordinates are inferred, not client-stated.
+- Leaving release planning requires an owner `archive` record in the definition.

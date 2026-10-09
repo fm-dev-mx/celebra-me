@@ -219,18 +219,10 @@ Current explicit mappings:
 
 ## Required Proof
 
-Review every implemented intersection at all five repository viewports:
-
-| Viewport   | Required evidence                                                            |
-| ---------- | ---------------------------------------------------------------------------- |
-| `320×800`  | Narrow-mobile crop, content clearance, and no horizontal overflow            |
-| `360×800`  | Mobile crop, content clearance, focus visibility, and no horizontal overflow |
-| `390×844`  | Primary mobile composition and complete transition depth                     |
-| `430×932`  | Wide-mobile spacing, media focal safety, and stacking behavior               |
-| `1440×900` | Desktop scale, restraint, and bounded transition depth                       |
-
-Capture full-page screenshots at `390×844` and `1440×900`. Use the remaining three viewports for
-focused visual evidence. At every viewport, check:
+Review every implemented intersection on the canonical visual matrix (`390×844` and `1440×900`,
+defined in `scripts/screenshot/visual-coverage-contract.ts`). Add focused narrow-mobile (`320` or
+`360` wide) and wide-mobile (`430` wide) checks when the treatment depends on width. At every
+viewport, check:
 
 - no horizontal overflow;
 - no content, control, focus-ring, or image-subject collision;

@@ -204,10 +204,6 @@ contracts remain readable until their prepared replacements are published; new c
 references must not depend on this compatibility path. Bundled demo/template assets retain their
 separate Astro pipeline.
 
-For America's mobile hero, `hero-mobile-prepared.webp` is the 960x1440 WebP derivative (quality 84)
-of the retained `hero.webp` source. Preparation uses Sharp with auto-orientation, inside fitting and
-no enlargement. Publication validates and preserves those bytes instead of encoding them again.
-
 Existing `normalizeInvitationImage` and publish dimension gates remain the runtime enforcers.
 WhatsApp attachments never become managed assets without this protocol and explicit quality labels.
 
@@ -234,7 +230,7 @@ Independent from technical publication readiness (**envReadiness** — `invitati
 | `READY_WITH_PLACEHOLDERS`  | Structure resolved; only documented non-blocking placeholders and/or provisional asset replacements |
 | `READY_FOR_IMPLEMENTATION` | Required facts/assets/decisions resolved; production-authoritative assets; no placeholders remain   |
 
-### 9.1 Helper is SSOT (F01 / F17)
+### 9.1 Helper is SSOT
 
 Executable evaluation in `src/lib/invitation-preparation/readiness.ts` is the **only** authority for
 prepReadiness:

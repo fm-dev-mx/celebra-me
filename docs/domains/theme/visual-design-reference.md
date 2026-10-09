@@ -38,11 +38,8 @@ prescription. Detailed provenance and limitations belong in
 - Later polishing retained content and artwork hashes while reducing observed profile declarations
   from 1,040 to 489. This demonstrates possible simplification, not an automatic quality score.
 
-The existing ignored evidence sets are `melissa-transfer` and `melissa-polish` under
-`.tmp/visual-review/`. Only the latter's `before-full/after-full` pair includes the full harness
-presentation on both sides; its earlier profile was reconstructed on the later shared styles. Do not
-regenerate an "original" image and label it historical. If these local artifacts are absent, mark
-the visual comparison unavailable and retain the qualified written findings.
+The before/after captures were local and are not kept in the repository; do not regenerate an
+"original" image and label it historical.
 
 ## Aesthetic Directions
 
@@ -83,8 +80,9 @@ _Concept: Timeless tradition and strength._
 ## Invitation Hero Composition Contract
 
 Use this contract for every real invitation, demo, and hero polish pass. It defines **quality
-invariants**, not a single cloned look. Preset defaults are shared; **client essence lives in the
-invitation profile** (`src/styles/invitation-profiles/<slug>.scss`) plus payload focals.
+invariants**, not a single cloned look. Preset defaults are shared; **client essence lives in
+data**: the selected hero variant, typed composition, payload focals, and the profile's palette
+tokens (`src/styles/invitation-profiles/<slug>.scss`, custom properties only).
 
 ### Authority split
 
@@ -92,7 +90,7 @@ invitation profile** (`src/styles/invitation-profiles/<slug>.scss`) plus payload
 | -------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------- |
 | Quality invariants   | frontend-design + this reference                           | Face-safe composition, legibility, anti-clone essence, viewport proof |
 | Preset hero defaults | `theme-architecture` + `src/styles/themes/sections/hero/*` | Reusable section behavior                                             |
-| Client essence       | invitation profile SCSS + provision focals                 | Unique art direction per invite (Lane A)                              |
+| Client essence       | variant selection, profile tokens, provision focals        | Unique art direction per invite (Lane A)                              |
 
 Do **not** solve face/type conflicts by copying another invite’s hero SCSS wholesale.
 
@@ -110,9 +108,9 @@ Do **not** solve face/type conflicts by copying another invite’s hero SCSS who
    `focalPointTablet` / `focalPointDesktop`) only when the task explicitly requires reframing and
    visual evidence proves it. When reframing is authorized, drive it through `object-position` via
    `--hero-focal-point-*`; container `background-position` does not control the `<img>` crop.
-6. Audit the inherited preset hero rules before writing a profile override. Explicitly reset stale
-   `position`, `inset`, `grid-area`, `transform`, `mix-blend-mode`, background, and backdrop rules
-   that would fragment the client-specific composition.
+6. Audit the inherited hero variant rules first. If they fragment the composition, select another
+   hero variant or fix the variant itself (Lane B); a profile never resets `position`, `inset`,
+   `transform`, blend, or backdrop rules.
 
 ### Typography roles on hero
 
@@ -130,8 +128,8 @@ hardcoded viewport widths.
 
 ### Essence rule (anti-clone)
 
-Each invitation hero must state a short **essence sentence** in its profile comment or invitation
-doc (palette cue + type cue + composition cue). Examples of distinct essences:
+Each invitation hero must state a short **essence sentence** in its invitation doc (palette cue +
+type cue + composition cue). Examples of distinct essences:
 
 - Abril: dusty-rose directional veil, Cormorant display, compact stack in the photograph’s negative
   space, no glass card, approved crop preserved.
@@ -143,8 +141,8 @@ If two client heroes are visually interchangeable after swapping names, the prof
 
 ### Viewport proof matrix
 
-Verify hero acceptance on the invitation’s audit viewports (Abril reference set: `360×800`,
-`390×844` primary, `768×1024`, `1024×768`, `1440×900`). For each:
+Verify hero acceptance on the canonical visual matrix (`390×844` and `1440×900`) plus any narrow or
+tablet width the composition depends on. For each:
 
 - Face (or primary subject) remains readable.
 - Name / date / venue remain legible over the veil.
@@ -156,7 +154,7 @@ Verify hero acceptance on the invitation’s audit viewports (Abril reference se
 - ❌ Large display type centered over the honoree’s face.
 - ❌ Frosted / ivory content card on a full-bleed client portrait when the photo is the hero.
 - ❌ Low-contrast white meta text on mid-tone photo without a lower veil.
-- ❌ Cloning another slug’s hero SCSS instead of writing a Lane A essence.
+- ❌ Cloning another invitation’s hero styling instead of choosing a variant, focals and tokens.
 - ❌ Moving an approved crop when relocating/resizing the text solves the collision.
 - ❌ Allowing inherited preset absolute positioning to split the name from date/venue metadata.
 - ❌ Tuning crop with container `background-position` instead of authorized focals /

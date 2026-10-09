@@ -78,13 +78,8 @@ Route slug, `_assetSlug`, and `baseDemoId` are distinct concepts — do not coll
 
 ## Info-hygiene (prep)
 
-Follow contract §4.1. Summary:
-
-- Persist opaque source labels — not absolute OneDrive/`Clientes` paths or chat folder titles.
-- Chat media = evidence in session; do not commit raw exports or photo dumps.
-- HR **photo** URL = asset source (session may hold URL; Markdown uses opaque label).
-- Never persist payroll / HR-**portal** / credential-bearing / environment URLs.
-- WhatsApp attachments never become managed assets without the asset-preparation protocol.
+Follow the persist-versus-session table in contract §4.1. Chat media is session evidence; the HR
+photo URL is the asset source and is persisted only as an opaque label.
 
 ## Procedure
 
@@ -140,8 +135,8 @@ risk for managed WebP delivery.
 ### Phase P3 — Demo / design / identity freeze (script C5)
 
 - Client-selected demo → `verified`.
-- No selection → recommend from `DEMO_PRESET_CATALOG` + sections/assets; leave final selection as
-  `requires_owner_decision`.
+- No selection → recommend a theme preset (`THEME_PRESETS`) and section variants, citing routable
+  demos as visual references; leave final selection as `requires_owner_decision`.
 - Colors: preserve client colors; otherwise recommend separately.
 - **Identity spelling freeze:** slug + `hostLoginAlias` only after verified orthography (or recorded
   owner override).
@@ -153,11 +148,11 @@ Record recommendations only under Agent Recommendations.
 - Controlled tokens via `createPlaceholderToken` / `[[PENDIENTE:FIELD]]`.
 - Build **one** consolidated pack with `buildOwnerDecisionPack` / `formatOwnerDecisionPackMarkdown`.
 - Evaluate `evaluatePreparationReadiness` + `summarizeAssetQuality`.
-- Write Markdown prepReadiness to **match the helper**. Provisional-only assets ⇒ ceiling
-  `READY_WITH_PLACEHOLDERS`, never `READY_FOR_IMPLEMENTATION`.
+- Write Markdown prepReadiness to **match the helper** (contract §9.1, including the
+  provisional-asset ceiling).
 - **Hard stop:** if prepReadiness is `NOT_READY`, do not begin payload or invitation-specific SCSS
   (`assertImplementationAllowed`).
-- **F17:** Cite helper outcomes in session; confirm with `pnpm validate:invitation-preparation`.
+- Cite helper outcomes in session; confirm with `pnpm validate:invitation-preparation`.
 
 ### Phase P5 — Update canonical Markdown (script C7–C8)
 
@@ -189,12 +184,14 @@ SQL patch?, assets?, SCSS override?, current 404 risk.
 
 Read target preset tokens and section variants. For each visual gap, classify:
 
-- **Lane A** — client-scoped override (`.event--<slug>` / profile SCSS / client data/assets)
-- **Lane B** — reusable theme change (benefits real **and** matching demo)
+- **Lane A** — client data, assets, typed `composition`, variant selection, and profile custom
+  properties (palette and rhythm tokens only)
+- **Lane B** — reusable change: preset tokens or a registered section variant proven on a demo
 
-**Lane A inheritance reset:** When overriding a shared preset, list inherited properties that must
-be reset (e.g. absolute positioning, frosted bands, café/sepia filters, mix-blend) so profile SCSS
-does not fight the preset. Prefer face-safe hero composition guidance in `frontend-design`.
+A profile never resets inherited layout, positioning, or filters
+(`docs/domains/theme/architecture.md`, Invitation profile). When a preset behavior does not fit, the
+gap is Lane B: a token the variant exposes or a new semantic variant. Prefer face-safe hero
+composition guidance in `frontend-design`.
 
 ### Phase 3 — Section audit
 
@@ -212,7 +209,7 @@ focal issues. Template:
 
 Record a conversation-scoped or task-handoff spec with:
 
-- **Lane A** — client-specific completion (data, assets, scoped SCSS) + inheritance-reset list
+- **Lane A** — client-specific completion (data, assets, variant selection, profile tokens)
 - **Lane B** — reusable theme refinements only when both client and demo benefit
 
 Structure: [`references/two-lane-spec-structure.md`](references/two-lane-spec-structure.md). Create

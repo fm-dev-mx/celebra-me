@@ -3,12 +3,16 @@
 **Status:** The accepted reference SHA, matrix hash and candidate-manifest hash are recorded in
 `tests/e2e/visual-baselines/manifest.json`; that manifest is the only source of approval identity.
 Acceptance does not replace comparison or final CI. **Related:**
-[`architecture.md`](architecture.md#invitation-css-ownership-normative)
+[`architecture.md`](architecture.md#invitation-css-ownership-normative) and
+[section visual diagnosis](section-visual-diagnosis.md) (`pnpm visual:parity:diagnose`, diagnostic
+only, never a gate).
 
 ## Rule
 
 Deleting or moving **LAYOUT** rules from `src/styles/invitation-profiles/**` is forbidden unless the
-CSS visual parity harness passes for that invitation (or demo profile).
+CSS visual parity harness passes for that invitation (or demo profile). New profiles are token-only;
+the older profiles that still hold LAYOUT are frozen by digest in
+`tests/unit/invitation-profile-boundary.test.ts`, so any such change is a reviewed exception.
 
 LAYOUT means direct geometry/paint on section element classes (padding, margin, grid, flex,
 `background` / `font-family` on section DOM, decorative pseudo-elements), not palette token remaps
@@ -215,12 +219,9 @@ changing tolerances, or downgrading compare mode.
 - Geometry cannot establish photographic contrast, ornamental glyph quality or aesthetic acceptance.
   Human review must inspect the complete pages and representative long-content fixtures.
 - Exceptions identify route, viewport, element, reason and owner approval; they cannot bypass other
-  checks. Valentina's complete surname is intentional and must remain readable; it does not exempt
-  her first name from containment checks.
-- The viewport-only candidate at `39d527de` is withdrawn and must not be accepted. After the owner
-  commits corrections, regenerate the complete candidate with the pinned runtime. Register
-  acceptance only after explicit approval of its exact SHA, matrix hash and candidate-manifest hash.
-  Then compare and run complete CI on the final revision.
+  checks.
+- Register acceptance only after explicit approval of the exact SHA, matrix hash and
+  candidate-manifest hash, then compare and run complete CI on the final revision.
 
 Venue previews use `StaticVenueMap`, an in-house illustration (street grid, blocks, park and pin)
 styled with theme tokens and the explicit map style. It uses no basemap provider, credential or
@@ -235,10 +236,7 @@ specs allow no external map origin.
 contract: they derive dimensions, MIME type, file size, normalized SHA-256, `assetManifestHash`, and
 `sourceHash` from each registered definition. Do not maintain a second asset manifest.
 
-- Ximena's `hero.webp` and `gallery-01.webp` were restored from their exact historical Git objects.
-  SHA-256: `1e960bdc490b3daed64aa95ad5f6f1984e0c55c88f5106cb533d4e921a3a51ee` and
-  `7c183313fb79f5116eb4ce06005bebc9af9e92860919c3b5b124db7b346a2274`.
-- Ayrin's declared local set is byte-identical to the repository-owned enchanted-rose source set.
+## Profile LAYOUT parity harness
 
 ```bash
 # 1. Capture baseline (before LAYOUT deletion)
@@ -298,10 +296,3 @@ Baselines under `.tmp/css-visual-parity/**` are **local gate artifacts**, not re
   `tests/e2e/invitation-visual-contracts.spec.ts`.
 - After P0 recovery fixes, new baselines may be captured only as an owner-approved gate for future
   LAYOUT deletes — still do not commit `.tmp/` PNGs.
-
-### Scoped presentation decision
-
-For `/xv/valentina-hernandez` at 390×844, 414×896 and 1440×900, retain the complete text in
-`.invitation-hero__last-name`, as explicitly requested by the owner in the current task. This
-permits the necessary surname wrapping; it does not permit clipping, ellipsis, overlap, or an
-unreadable first name. This content decision is not approval of a screenshot baseline.

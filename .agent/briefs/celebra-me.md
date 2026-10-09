@@ -3,7 +3,7 @@ name: celebra-me
 kind: brand-brief
 status: active
 version: 1.0.0
-last_reviewed: 2026-06-29
+last_reviewed: 2026-10-09
 ---
 
 # Celebra-me — Brand Brief
@@ -32,13 +32,16 @@ The platform offers:
 
 ## Event Types Supported
 
-| Event                 | Demo examples                                 | Notes                         |
-| --------------------- | --------------------------------------------- | ----------------------------- |
-| XV Años (Quinceañera) | Valentina Hernández, Xareni Iyarit, Ana Sofía | Most premium tier             |
-| Wedding (Boda)        | Leah & Lexa (engagement transition)           | Jewelry Box, editorial themes |
-| Baby Shower           | Leah & Lexa baby shower                       | Warm, intimate                |
-| Birthday (Cumpleaños) | Don Gerardo                                   | Varies by age/segment         |
-| Baptism (Bautizo)     | César & Ramsés                                | Included in platform          |
+| Event                 | Routable demos                                                                             | Notes                       |
+| --------------------- | ------------------------------------------------------------------------------------------ | --------------------------- |
+| XV Años (Quinceañera) | `demo-xv-editorial`, `demo-xv-enchanted-rose`, `demo-xv-celestial-blue`, `demo-xv-seaside` | Most premium tier           |
+| Wedding (Boda)        | `demo-boda-jewelry-box-wedding`                                                            | Jewelry Box, editorial look |
+| Birthday (Cumpleaños) | `demo-cumple-luxury-hacienda`                                                              | Varies by age/segment       |
+| Baptism (Bautizo)     | `demo-bautismo-angelic-presence`                                                           | Included in platform        |
+| Primera Comunión      | `demo-primera-comunion-illustrated`                                                        | Illustrated, gentle         |
+
+Baby shower is a supported event type without a routable demo. Demos hold fictitious showcase
+content only (`src/content/event-demos/`); real client invitations are never demo examples.
 
 ## Visual Identity
 
@@ -67,11 +70,10 @@ The platform offers:
 
 ## Image and Visual Content
 
-- Invitations use real photography / generated editorial photography
-- Image generation should emphasize: warm lighting, natural skin texture, elegant composition
-- Preferred models (local ComfyUI): Juggernaut XL v9 for photorealism, Flux Dev fp8 for general
-- Avoid: plastic-looking skin, overly saturated colors, cartoon styles
-- See `.agent/templates/creative/` for prompt structures
+- Invitations use real client photography; derivatives follow the asset rules in
+  `docs/core/invitation-preparation-contract.md`
+- Prefer warm lighting, natural skin texture, and elegant composition
+- Avoid plastic-looking skin, overly saturated colors, and cartoon styles
 
 ## Key URLs
 
@@ -81,7 +83,7 @@ The platform offers:
 
 ## Related Files
 
-- `.agent/templates/creative/` — prompt and copy templates
+- `.agent/templates/creative/` — design reference brief and creative QA report templates
 - `.agent/skills/copywriting-es/SKILL.md` — Spanish copy guidance
 - `docs/core/project-conventions.md` — project-wide conventions
 - `docs/core/architecture.md` — architecture reference

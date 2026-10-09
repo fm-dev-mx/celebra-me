@@ -32,7 +32,7 @@ Production database mutations, deployments, and rollbacks require explicit human
 
 ## Single-File Invitation Provisioning & Promotion Workflow
 
-Version-controlled invitations (e.g. Romina) are defined as single TypeScript files under
+Version-controlled invitations are defined as single TypeScript files under
 `scripts/provision/invitations/<slug>.ts`.
 
 ```text
@@ -54,7 +54,6 @@ at plan time if any asset create, replace, or delete is planned.
 ```bash
 pnpm invitation:release -- --slug <slug> --targets local,preview --source-dir <path> --dry-run
 pnpm invitation:release -- --slug <slug> --targets local,preview --source-dir <path> --apply
-pnpm invitation:release
 pnpm invitation:release -- --slug <slug> --targets production --dry-run
 pnpm prod:apply -- --slug <slug>
 pnpm prod:apply -- --slug <slug> --apply
@@ -65,20 +64,19 @@ pnpm prod:apply -- --slug <slug> --apply
 
 Promotion requires an exact Preview-approved release identity from the **shared Preview DB store**
 (`public.preview_approval_artifacts`, read via `PREVIEW_DB_URL`), schema compatibility (`CURRENT`),
-critical backup coverage (shared prepare/revalidate; optional `--backup-manifest`), semantic
-comparison against current Production (target-owned state preserved; unresolved managed divergence
-blocks), typed owner confirmation (`APPLY <8-hex>` via `pnpm prod:apply`), managed
-import/publication apply, and mandatory post-apply verification. Worktree files under
-`.agent/tmp/approvals` are not the SSOT; use
-`pnpm invitation:release -- --package-hash <hash> --approve` for direct live Preview verification
-and approval. Legacy filesystem approval import is retired. The guided TTY path uses the shared
-promotion orchestrator. Existing target invitations resolve and preserve their owner by slug. New
-target invitations ensure a dedicated Auth host from the definition `hostLoginAlias`
-(`{alias}@clientes.celebra.invalid`) before plan/apply; `--owner-user-id` is an optional
-override/assertion, not required on the happy path. Dry-run reports owner action as `OWNER_REUSE`,
-`OWNER_CREATE_PLANNED`, or `OWNER_CONFLICT` (blocked). Every selected target is inspected and
-planned before any mutation; a blocked or unevaluated target aborts the complete apply phase across
-all targets.
+critical backup coverage (shared prepare/revalidate within the critical RPO), semantic comparison
+against current Production (target-owned state preserved; unresolved managed divergence blocks),
+typed owner confirmation (`APPLY <8-hex>` via `pnpm prod:apply`), managed import/publication apply,
+and mandatory post-apply verification. Worktree files under `.agent/tmp/approvals` are not the SSOT;
+use `pnpm invitation:release -- --package-hash <hash> --approve` for direct live Preview
+verification and approval. Legacy filesystem approval import is retired. Production promotion runs
+only through `pnpm prod:apply`, which uses the shared promotion orchestrator. Existing target
+invitations resolve and preserve their owner by slug. New target invitations ensure a dedicated Auth
+host from the definition `hostLoginAlias` (`{alias}@clientes.celebra.invalid`) before plan/apply;
+`--owner-user-id` is an optional override/assertion, not required on the happy path. Dry-run reports
+owner action as `OWNER_REUSE`, `OWNER_CREATE_PLANNED`, or `OWNER_CONFLICT` (blocked). Every selected
+target is inspected and planned before any mutation; a blocked or unevaluated target aborts the
+complete apply phase across all targets.
 
 Production draft discard is never automatic. A target draft that diverges from both the selected
 package and published content requires an explicit selected `--slug`/`--slugs` scope plus
@@ -130,6 +128,19 @@ delete-vs-edit races become explicit drift. Automatic merge requires provenance 
 receipt, exact draft revision, and exact published version/hash. Missing, legacy, partial, or stale
 evidence fails closed, except a matching partial managed operation may enter the supported resume
 path and is still reconciled against the prior verified ancestor.
+
+When the dry-run reports merge conflicts (an editor change and a package change on the same path
+since the managed ancestor), resolve them explicitly:
+
+1. Run `--dry-run --non-interactive --json`; each conflict lists path, ancestor, package, and target
+   values, and `suggestedConflictResolutions` proposes choices.
+2. Write `{ "resolutions": { "<path>": "package" | "target" } }` to a scratch file: `package`
+   applies the managed value, `target` keeps the editor value.
+3. Re-plan with `--conflict-resolutions <file> --dry-run`, then apply with the same file only after
+   target authorization (`--confirm-destructive` when the non-interactive plan deletes or
+   overwrites). A non-interactive apply with unresolved conflicts fails.
+4. Verify that provenance matches the applied content. A later editor publication clears the managed
+   ancestor for the next merge cycle.
 
 `--prune-assets` removes only assets explicitly owned by the same definition, absent from the
 package, and unreferenced by the resulting content. The reviewed plan records Storage and metadata
@@ -234,11 +245,9 @@ create.
 
 ## 3a. Managed observability (read-only)
 
-Canonical status entrypoint: `pnpm dbs` (detail) and `pnpm dbs --compact` (CONTENT + SCHEMA).
-Compact mode composes `dbs-status` content vocabulary and `classifySchemaLifecycle` — it does not
-introduce a parallel divergence model and never mutates. Git hooks do not query this status; run the
-command explicitly. See the
-[canonical status procedure](../../core/invitation-creation-contract.md).
+`pnpm dbs` is the read-only status entrypoint (`pnpm dbs --compact` for CONTENT + SCHEMA only). It
+never mutates and Git hooks do not query it. Flags and the interactive menu are documented in the
+[status diagnostics cheatsheet](../database/cheatsheets/status-diagnostics.md).
 
 ## 4. Edit content
 
@@ -296,21 +305,13 @@ Use both the internal preview (`/dashboard/invitaciones/{id}/preview`) and a dep
 preview. Internal preview proves editor mapping; only a deployment proves Linux casing, Vercel
 bundling, headers, Supabase connectivity, and real asset delivery.
 
-Minimum viewports:
+The canonical visual matrix is 390 × 844 and 1440 × 900
+(`scripts/screenshot/visual-coverage-contract.ts`); manual review may add other widths.
 
-- 360 × 800 small mobile.
-- 390 × 844 standard mobile.
-- 768 × 1024 tablet.
-- 1440 × 900 desktop.
-
-The technical checks below are not the creative acceptance decision. Before final acceptance or
-release, complete the Creative Direction & Acceptance record in `docs/invitations/<slug>.md`
-(optionally backed by `.agent/templates/creative/creative-qa-report.md`). The reviewer must inspect
-the invitation as a whole at representative responsive viewports, confirm section boundaries and
-narrative continuity, and record an explicit human outcome: `ACCEPTED`, `ACCEPTED_WITH_BLOCKERS`, or
-`REJECTED`. A successful screenshot or browser run proves capture/runtime integrity only; it does
-not imply aesthetic acceptance. `ACCEPTED_WITH_BLOCKERS` remains blocking for the applicable release
-boundary when the blocker is owner data or another non-creative dependency.
+The technical checks below are not the creative acceptance decision. Record the human outcome in
+`docs/invitations/<slug>.md` per the creative acceptance gate in the
+[preparation contract](../../core/invitation-preparation-contract.md). A successful screenshot or
+browser run proves capture/runtime integrity only.
 
 Required cases:
 
@@ -323,11 +324,8 @@ Required cases:
 - Keyboard navigation, visible focus, and correct reading/order semantics.
 - Maps, WhatsApp templates, personalized passes, RSVP, gallery navigation, image crops, and image
   loading priority.
-- Anonymous request and `?invite=` personalized request. Anonymous HTML uses the correctness-first
-  `public, max-age=0, s-maxage=0, must-revalidate` policy: browsers and shared caches may store it
-  but must revalidate before reuse. This prioritizes publication freshness over CDN cache-hit rate;
-  confirm the effective Vercel behavior after deployment. Personalized responses remain
-  `no-store, private`.
+- Anonymous request and `?invite=` personalized request, with the headers required by the
+  [cache policy](../invitations/public-response-cache-policy.md).
 
 ## 7. Publish
 
@@ -350,12 +348,7 @@ including the named guest. Any positive integer supported by the PostgreSQL `int
 valid. The editor, public RSVP runtime, dashboard guest operations, and database constraints share
 that contract without a smaller product-level clamp.
 
-| Route or response                                                                       | Cache-Control                                    |
-| --------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| Anonymous invitation                                                                    | `public, max-age=0, s-maxage=0, must-revalidate` |
-| Personalized invitation, metadata, token capture, dashboard preview                     | `no-store, private`                              |
-| Preflight, publication, RSVP/context/view APIs                                          | `no-store, private`                              |
-| Invalid type, missing invitation, authorization failure, validation/conflict, redirects | `no-store, private`                              |
+Cache headers follow the [cache policy](../invitations/public-response-cache-policy.md).
 
 `publishDraft()` performs these gates before the write:
 
@@ -422,15 +415,8 @@ RPC signatures, grants, append-only receipt contract, invitation-row serializati
 privilege revocations before dependent application code is deployed. Preview uses the same check.
 Schema fixes ship only as versioned migrations and promote Local → Preview → Production.
 
-The 2026-07-29 Phase 3 cutover is **historical point-in-time evidence** (both hosted targets then
-reported 67 migrations with `20260729152113` latest). Do not use those counts for migrate decisions.
-Obtain live pending sets from `pnpm db:preview:audit` / `pnpm db:prod:audit`. Direct hosted
-privilege inspection also confirmed that `service_role` has no `INSERT`, `UPDATE`, or `DELETE`
-privilege on `guest_invitations` or `guest_invitation_audit`; invitation mutation receipts remain
-select/insert-only and protected by their append-only trigger. The later receipt-lock serialization
-migration (`20260730101500`) must be audited and promoted through the same Local → Preview →
-Production process before dependent runtime reliance; rerun the canonical audit and contract
-verifier before a future dependent deployment.
+Obtain live pending sets from `pnpm db:preview:audit` / `pnpm db:prod:audit`; never infer them from
+earlier counts.
 
 Production migration state is never inferred from files or local state. If it was not checked with
 authorized production access, report it as **unverified/pending**. Do not apply production
@@ -443,9 +429,8 @@ IDs for each test.
 
 1. Open a managed invitation Editor route and confirm draft/editor access for the Local or Preview
    agent identity (`super_admin`).
-2. Assert `POST /api/dashboard/intake` and demo-duplicate return 403 `canonical_creation_required`
-   (managed create cannot bypass via Dashboard). Optionally validate an invalid managed definition
-   with `invitation:release --dry-run`.
+2. Optionally validate an invalid managed definition with `invitation:release --dry-run`; the
+   Dashboard has no create endpoint to test.
 3. Upload a valid JPEG/PNG/WebP and verify normalized WebP metadata.
 4. Upload a spoofed, undersized, oversized, or corrupt image; expect 422 and no asset row.
 5. Publish a valid new invitation and verify invitation, RSVP event, snapshot, and draft state.

@@ -2,7 +2,7 @@
 title: Event memories — canonical per-event guest photo/video QR
 status: active
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-09
 type: implementation
 supersedes:
   - valentina-memories-qr.md
@@ -66,16 +66,11 @@ capability, applied only after the replacement application is deployed and smoke
 
 ## Current status
 
-- Repository status: implementation complete pending `pnpm run ci`; see the handoff for the exact
-  validation results.
-- Lifecycle hardening (2026-10-01): the daily cleanup settles in-flight items only from storage
-  evidence (the Retrieval Worker answers `exists: false` instead of a 404), a guest at the in-flight
-  limit settles their own items, replayed reservations never reopen a closed key, and the cron moved
-  to 15:17 UTC. The blind `expire_event_memory_reservations` function was removed from
-  `20260930180000` while it was still unapplied on every persistent database.
-- Preview schema: contract-phase migrations now use the same smoke-checked Production deployment
-  attestation on Preview as on Production, so `20260930180000` can reach Preview before the
-  application is promoted.
-- Owner gates: Preview migration and Worker/app deploys, per-event activation, Production apply,
-  canary and phone proof remain `OWNER_ACTION_REQUIRED`; every live proof is `UNVERIFIED` until the
-  owner records it.
+- Repository: implementation merged. Migrations `20260930180000_event_memories_catalog`,
+  `20261002012428_event_memory_settings_planning`, and `20261006120000_event_memories_gallery_share`
+  reached `main` through PR #219 and PR #228. The app deploy must not precede `20261002012428`.
+- Remaining repository work: the `event_memories_legacy_retirement` migration described above. It
+  does not exist yet and needs separate authorization after the first wedding.
+- Owner gates: Production apply, per-event activation, Worker deploys, canary, and phone proof
+  remain `OWNER_ACTION_REQUIRED`; every live proof is `UNVERIFIED` until the owner records it in
+  `workers/celebra-memories-sign/OWNER.md`.

@@ -37,30 +37,30 @@ related_docs:
 Load [`docs/domains/theme/invitation-rhythm.md`](../../../docs/domains/theme/invitation-rhythm.md)
 before planning or reviewing the rhythm of an invitation. It is the sole normative authority for
 tonal bands, typographic hierarchy between sections, intersection cadence, geometric craft rules,
-shadow vocabulary, reveal coordination, and the rhythm validation protocol. This skill
-intentionally duplicates no normative values.
+shadow vocabulary, reveal coordination, and the rhythm validation protocol. This skill intentionally
+duplicates no normative values.
 
 ## Implementation workflow
 
-1. Read the invitation section order and preset. Identify the surface band for every section
-   (light / mid / dark / transition).
+1. Read the invitation section order and preset. Identify the surface band for every section (light
+   / mid / dark / transition).
 2. Name the tonal band pattern from the approved set (editorial-light, 3-band, ivory-olive,
    full-dark-finale, or document a named variant if genuinely distinct).
 3. Assign a cadence role (Neutral / Bridge / Climax) to every boundary using the assignment
-   protocol. Record the cadence map as a comment block in the profile SCSS before intersection
-   declarations.
+   protocol. Record the cadence map in `docs/invitations/<slug>.md` and author the non-neutral
+   boundaries in typed `composition.intersections`.
 4. Select the intersection pattern for each non-neutral boundary following
    `section-intersections.md` geometry rules and the craft rules in `invitation-rhythm.md`.
 5. Assign the reveal recipe for each section from the boundary role table.
-6. Declare shadow as profile tokens; verify shadow rules by surface context.
+6. Declare shadow values as profile custom properties; verify shadow rules by surface context.
 7. Apply the rhythm validation protocol before marking the profile complete.
 
 ## Authority boundary
 
 This skill orchestrates decisions across `animation-motion`, `section-intersections.md`, and
 `theme-architecture`. When a conflict arises between `invitation-rhythm.md` and any of those
-owned-domain documents, the domain document takes precedence. Raise the conflict before
-implementing either interpretation.
+owned-domain documents, the domain document takes precedence. Raise the conflict before implementing
+either interpretation.
 
 Use the `animation-motion` skill for reveal recipe implementation, timing verification, and
 reduced-motion compliance. Use `theme-architecture` for token placement decisions, preset

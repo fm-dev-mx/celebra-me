@@ -1,6 +1,6 @@
 # Theme And Token Architecture
 
-**Last Updated:** 2026-09-28
+**Last Updated:** 2026-10-09
 
 Celebra-me uses a strict three-level styling architecture. The post-migration structural,
 presentation, skin, fallback, and profile inventory is maintained in
@@ -222,7 +222,6 @@ Non-invitation presets are separate:
 
 - `auth-dark` for auth surfaces
 - `dashboard-ivory` for dashboard surfaces (light ivory ground, charcoal chrome)
-- `invitation` for shared invitation base tokens
 
 Preset files may override semantic color, type, surface, shadow, and motion intent. They may also
 override public component tokens when a theme needs specific behavior. They must not introduce
@@ -431,15 +430,16 @@ Bounded controls retain their canonical section owner:
   shrink to atmosphere/component-token modules; layout/skin must move to semantic variant
   entrypoints.
 - `src/lib/invitation/section-css-resolver.ts` emits one active section bundle plus requested
-  canonical Gallery/structural partials, a footer visual override, envelope reveal CSS, and the
-  active visual profile. Canonical section partials are not exposed through a general per-section
-  passthrough directory.
+  canonical Gallery/structural partials, envelope reveal CSS, and the active visual profile (load
+  owners in `section-css-resolver-map.ts`). A missing bundle is omitted, never replaced by a default
+  preset. Canonical section partials are not exposed through a general per-section passthrough
+  directory.
 - Invitation routes keep preset, envelope-reveal, and visual-profile stylesheets render-blocking for
-  the sealed-envelope first paint. Section bundles, gallery/footer overrides, and structural
-  partials start as `media="not all"` and are promoted after first paint, when `envelope:opened`
-  fires, after a bounded paint-observer fallback, or immediately when the envelope is skipped
-  (`skipEnvelope`, returning `envelope-opened-{slug}`, or no envelope). Document order is unchanged
-  so profile CSS still wins the cascade.
+  the sealed-envelope first paint. Section bundles, gallery overrides, and structural partials start
+  as `media="not all"` and are promoted after first paint, when `envelope:opened` fires, after a
+  bounded paint-observer fallback, or immediately when the envelope is skipped (`skipEnvelope`,
+  returning `envelope-opened-{slug}`, or no envelope). Document order is unchanged so profile CSS
+  still wins the cascade.
 
 Gallery CSS starts with the theme-preset bundle. When an explicit semantic `gallery.variant` differs
 from the active theme, the section CSS resolver emits the matching layout partial independently.
@@ -478,17 +478,8 @@ pnpm lint:styles
 Profile LAYOUT deletions additionally require the CSS visual parity harness in
 [`css-visual-parity.md`](css-visual-parity.md).
 
-### Portrait letter composition
-
-`thankYou.variant=portrait-letter` explicitly selects the narrow arched portrait and display-font
-letter composition. `ThankYou.astro` reuses editorial markup; `_portrait-letter.scss` owns delivery
-and `_portrait-letter-layout.scss` provides the shared implementation for its retained published
-skin. The preset supplies atmosphere tokens only and cannot select this variant.
-
-The `thankYou` variant `portrait-keepsake` owns the narrow rectangular portrait, serif letter,
-responsive grid and signature geometry. It reuses the editorial DOM without selecting by theme or
-invitation identity. It requires an explicit image. Managed definitions need canonical publication
-before public database-backed routes use this variant.
+The `portrait-letter` and `portrait-keepsake` thank-you variants are documented in
+[`variant-system.md`](variant-system.md).
 
 ## Image delivery and surface defaults
 
@@ -519,17 +510,6 @@ limited to 2560 pixels. Role transfer budgets still apply; do not remove a role 
 The personalized-access skin supplies its paper finish through `--pa-card-glow`. Generic variant
 fallbacks consume that same token so deferred stylesheet order cannot erase an authored texture. The
 single-keepsake gallery owns its 0.68rem label size; profiles supply label color and tracking.
-
-Section diagnosis measurement version 2 includes every visible text-owning HTML element, including
-labels and spans, and records font style and letter spacing. Earlier measurements that sampled only
-headings and paragraphs cannot certify complete typography coverage.
-
-The public diagnostic can include complete pages with `--full-pages true`, using the existing
-document-strip capture and crop-integrity checks. Visible Astro islands must hydrate before a
-capture is valid. Nested screenshot helpers restore only overlay state they changed. Image evidence
-retains delivered bytes and, for supported optimizer URLs, separately verifies the original input;
-matching inputs do not waive requested transformations, natural dimensions, crops or pixel checks.
-SVG identity normalizes only XML line endings while preserving the delivered-byte hash.
 
 RSVP skins that create absolute decorative pseudo-elements must establish their own positioning
 context on every matching RSVP shell, including the nested shells of the interactive island.
