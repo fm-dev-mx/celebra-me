@@ -4,7 +4,9 @@ Manual production SQL patch files first checked by `pnpm db:prod:patch -- --dry-
 must start with a manifest before any SQL statement. Direct production SQL is prohibited as a normal
 workflow; all schema changes must be introduced through versioned migrations in
 `supabase/migrations/`. The patch entrypoint is lint-only; this manifest does not authorize
-execution. Owner mutation is available only through `pnpm prod:apply -- --patch <path>`.
+execution. Owner mutation is available only through `pnpm prod:apply -- --patch <path> --apply`. The
+lint, plan, and apply sequence is owned by
+[`docs/database-workflow.md`](../../docs/database-workflow.md).
 
 Older non-manifest SQL files are historical records only. Do not copy them as templates for new
 production patches.
@@ -41,5 +43,6 @@ production patches.
 - `@rollback` must be actionable enough for review; if rollback is impossible, say why.
 
 Keep the SQL narrowly scoped. Broad destructive operations, schema changes, RLS changes,
-`SECURITY DEFINER`, and `CASCADE` belong in reviewed migrations or a future execution harness, not
-manual production patches.
+`SECURITY DEFINER`, and `CASCADE` belong in reviewed migrations, not manual production patches;
+`prod:apply -- --patch` rejects persistent DDL. Managed invitation content is never a patch: it goes
+through `pnpm prod:apply -- --slug <slug>`.

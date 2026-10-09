@@ -157,13 +157,12 @@ protection; the reservation RPC remains the authoritative quota, window, and con
 
 The super-admin console (`/dashboard/admin/recuerdos`) shows that budget: R2 storage, Class A/B
 operations for the month, and Workers and Durable Objects requests for the UTC day against the Free
-allowances, plus the storage committed by live spaces. To enable the live meters, create a
-Cloudflare API token with only **Account → Account Analytics → Read** for this account and set
-`MEMORIES_CLOUDFLARE_ACCOUNT_ID`, `MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN` and
-`MEMORIES_R2_BUCKET_NAME` in the matching Vercel environment (independent tokens for Preview and
-Production). Never reuse a Wrangler deploy token. Without them the console shows the storage
-recorded by the app and states that Cloudflare data is unavailable. The meters are approximate
-(analytics lag by minutes); the Cloudflare dashboard remains the billing authority.
+allowances, plus the storage committed by live spaces. The live meters need the read-only account
+analytics settings listed in the
+[environment cheatsheet](../../docs/env-workflow.md#event-memories-environment-cheatsheet); never
+reuse a Wrangler deploy token. Without them the console shows the storage recorded by the app and
+states that Cloudflare data is unavailable. The meters are approximate (analytics lag by minutes);
+the Cloudflare dashboard remains the billing authority.
 
 The form presets are sized for that allowance: Standard is 5 GB / 1,500 files (15 files, 3 videos
 and 300 MB per guest), so two Standard spaces fit side by side in the 10 GB free tier; Extended is

@@ -1,7 +1,5 @@
 # RSVP Database Operations
 
-**Last Updated:** 2026-06-05
-
 RSVP routes, APIs, and host/guest flow are owned by [`architecture.md`](architecture.md). This file
 is the RSVP table/schema inventory and database-specific operational notes.
 
@@ -13,30 +11,11 @@ invitation domains.
 The backend persists data in Supabase and is implemented through repositories and services under
 `src/lib/rsvp/**` and `src/lib/intake/**`.
 
-Current tables documented by the live code and migrations include:
-
-### Active application tables
-
-- `invitations` — primary domain entity (was `invitation_projects`)
-- `events` — RSVP events (linked to invitations via `invitation_project_id`)
-- `guest_invitations` — guest RSVP records
-- `guest_invitation_audit` — audit log for guest changes
-- `app_user_roles` — role assignments (`super_admin`, `host_client`)
-- `event_memberships` — user-to-event associations
-- `event_claim_codes` — claim codes for event access
-- `audit_logs` — admin audit trail
-- `host_profiles` — user display profiles
-- `intake_requests` — client capture-link configuration
-- `intake_submissions` — client-submitted data
-- `invitation_content_drafts` — draft content for publishing
-- `published_invitation_content` — published public content
-- `invitation_assets` — uploaded asset metadata for the invitation Asset Library
-
-### Legacy compatibility tables (not actively written)
-
-- `rsvp_records`
-- `rsvp_audit_log`
-- `rsvp_channel_log`
+The full table inventory, ERD, indexes, and constraints are owned by
+[`docs/domains/database/overview.md`](../database/overview.md). The RSVP-specific tables are
+`events`, `guest_invitations`, `guest_invitation_audit`, `event_memberships`, and
+`event_claim_codes`; the legacy `rsvp_records`, `rsvp_audit_log`, and `rsvp_channel_log` tables are
+no longer written.
 
 ## Migration Baseline
 
@@ -58,10 +37,10 @@ SELECT only on `guest_invitations` and `guest_invitation_audit`; mutations are e
 RSVP-specific authenticated RLS paths and RPCs remain authoritative. Invitation permanent deletion
 is service-owned and its RPC blocks events with guests, claim codes, or memberships; managed
 compensation also preflights guests and claim codes before removing an operation-created event. The
-Phase 2 editor RPCs touch only `invitations`, `invitation_content_drafts`,
-`published_invitation_content` (read/lock for restore), and append-only mutation receipts. They have
-service-role-only execute grants and no guest-table grants. Mutation receipts are an immutable
-idempotency ledger (`SELECT`+`INSERT` only); RPCs serialize on the invitation row and must not take
+editor RPCs touch only `invitations`, `invitation_content_drafts`, `published_invitation_content`
+(read/lock for restore), and append-only mutation receipts. They have service-role-only execute
+grants and no guest-table grants. Mutation receipts are an immutable idempotency ledger
+(`SELECT`+`INSERT` only); RPCs serialize on the invitation row and must not take
 `FOR SHARE`/`FOR UPDATE` locks on receipt rows.
 
 The complete disposable recovery drill in `docs/database-workflow.md` fingerprints guest rows and
@@ -101,7 +80,7 @@ The live tree does not expose `/admin/rsvp` or `/api/rsvp/*` as active operation
 For hybrid public RSVP:
 
 - `guest_invitations` remains the canonical RSVP table.
-- public submissions dedupe on the existing `(event_id, phone)` uniqueness behavior used by the
+- public submissions dedupe on the active `(event_id, country_code, phone)` uniqueness used by the
   service layer.
 - when a matching phone already exists, the existing guest row is updated instead of creating a
   duplicate.
@@ -119,31 +98,18 @@ policies that deny all access to anon and authenticated roles.
 **Deferred cleanup**: These tables should be dropped after verifying no external scripts, analytics
 pipelines, or data exports depend on them.
 
-### Invitation Domain Tables
+### Invitation domain tables
 
-The invitation/intake module (see `docs/domains/intake/production-flow.md`) adds:
+Invitation and intake tables (`invitations`, `intake_*`, drafts, published content,
+`invitation_assets`) are described in the overview. Child FK columns keep the historical name
+`invitation_project_id` (see Deferred Cleanup).
 
-- `invitations` — primary production entity (was `invitation_projects`). Uses `kind`
-  (`demo`|`client`), `archived_at` for archive state, and `source_invitation_id` for demo lineage.
-- `intake_requests` — token-backed client capture link configuration
-- `intake_submissions` — client-submitted form data
-- `invitation_content_drafts` — editable draft content
-- `published_invitation_content` — public snapshot resolved by `(event_type, slug)`
-- `invitation_assets` — metadata for uploaded Asset Library files. Actual image files live in the
-  Supabase Storage `invitation-assets` bucket. The table may be empty locally when all content uses
-  internal bundled assets instead of uploaded Storage objects.
-
-Child FK columns still use the name `invitation_project_id` for backward compatibility during the
-ongoing deployment rollout. They will be renamed to `invitation_id` after verification.
-
-### Asset Library
-
-The Asset Library is scoped to `invitations`. Upload APIs write metadata to `invitation_assets` and
-store binary files in Supabase Storage. The database row records the Storage bucket/path, display
-name, optional alt text, MIME type, dimensions, file size, and soft-delete state. Local refreshes
-can copy this metadata from production, but DB dumps do not copy Storage objects. Managed rows
-additionally record definition slug, semantic source key, SHA-256, and operation ID. Null managed
-ownership means target-owned: package absence alone can never prune that row.
+Asset binaries live in Supabase Storage locally and on Cloudinary in Preview/Production (see the
+Storage Provider Boundary in
+[`content-parity-rsvp-isolation.md`](../../core/content-parity-rsvp-isolation.md)). DB dumps copy
+`invitation_assets` metadata but not Storage objects. Managed rows additionally record definition
+slug, semantic source key, SHA-256, and operation ID. Null managed ownership means target-owned:
+package absence alone can never prune that row.
 
 ### Deprecated RPCs
 
@@ -162,8 +128,8 @@ for backward compatibility and marked with `[DEPRECATED]` in their comments:
 ## Security Model
 
 - RLS is enabled for all tables except Supabase Auth tables.
-- All SECURITY DEFINER functions have been hardened with `SET search_path = 'public'` (migration
-  37).
+- All SECURITY DEFINER functions have been hardened with `SET search_path = 'public'`
+  (`20260601000002_corrective_security.sql`).
 - Public guest flows run through server APIs. Personalized reads remain invite-scoped. View,
   personalized RSVP/decline, and hybrid event writes use service-role-only `SECURITY DEFINER` RPCs
   that validate the invite or published non-demo client event; browser roles cannot execute them.
@@ -183,33 +149,10 @@ for backward compatibility and marked with `[DEPRECATED]` in their comments:
 
 ## Environment Variables
 
-The repo currently types and documents these RSVP/Supabase-related variables:
-
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `PUBLIC_SUPABASE_URL`
-- `PUBLIC_SUPABASE_ANON_KEY`
-- `RSVP_CLAIM_CODE_PEPPER`
-- `TRUST_DEVICE_SECRET`
-- `TRUST_DEVICE_MAX_AGE_DAYS`
-- `REQUIRE_FRESH_MFA_FOR_ADMIN`
-
-The active runtime also uses these operational variables outside the narrow RSVP/Supabase contract:
-
-- `BASE_URL`
-- `NODE_ENV`
-- `UPSTASH_REDIS_REST_URL`
-- `UPSTASH_REDIS_REST_TOKEN`
-- `RSVP_V2_DISTRIBUTED_RATELIMIT`
-- `SUPER_ADMIN_EMAILS`
-- `GMAIL_USER`
-- `GMAIL_PASS`
-- `CONTACT_FORM_RECIPIENT_EMAIL`
-- `PUBLIC_GOOGLE_ANALYTICS_ID`
-
-Keep `.env.example` and `src/env.d.ts` aligned when one of these active operational variables is
-added, renamed, or retired.
+Variable categories, sources, and the template/typing contract are owned by
+[`docs/env-workflow.md`](../../env-workflow.md). RSVP security inputs include
+`RSVP_CLAIM_CODE_PEPPER`, `TRUST_DEVICE_SECRET`, `TRUST_DEVICE_MAX_AGE_DAYS`, and
+`REQUIRE_FRESH_MFA_FOR_ADMIN`.
 
 ## Deferred Cleanup
 
@@ -219,16 +162,16 @@ or invitation-domain changes.
 1. **Drop legacy RSVP tables**: `rsvp_records`, `rsvp_audit_log`, `rsvp_channel_log` after
    confirming no external dependency.
 2. **Rename child FK columns**: `invitation_project_id` → `invitation_id` on `events`,
-   `published_invitation_content`, `intake_requests`, `invitation_content_drafts` after the current
-   build deployment is verified.
+   `published_invitation_content`, `intake_requests`, `invitation_content_drafts`. No rename is in
+   progress; it needs its own expand/contract migration pair.
 3. **Drop deprecated RPCs**: `soft_delete_event`, `restore_event`, `soft_delete_invitation_project`,
    `restore_invitation_project`, `backfill_guest_invitations_from_legacy` after verifying no callers
    remain.
 4. **Drop deprecated views**: `deleted_events` — done in
    `20260726170000_drop_deleted_events_view.sql` (`deleted_invitation_projects` already dropped
    earlier).
-5. **Remove compatibility view**: `invitation_projects` view (created in migration 36) after the new
-   build is deployed and verified.
+5. **Remove compatibility view**: `invitation_projects` view (created in
+   `20260601000001_invitations_domain.sql`) once no caller reads it.
 6. **Add NOT NULL to `short_id`**: After verifying all rows have a value.
 
 ## Suggested Verification
@@ -239,10 +182,11 @@ Use current tests that map to the live surface, for example:
 pnpm test -- tests/api/dashboard.guests.happy.test.ts tests/api/dashboard.guests.export.test.ts tests/api/invitacion.happy.test.ts tests/api/invitacion.public.test.ts
 ```
 
-Run the schema verification queries before and after deploying migrations:
+Verify the hosted schema contract after migrations (preflight is
+`pnpm db:migrate -- --target <target>`):
 
 ```bash
-pnpm db:migrate -- --target production
+pnpm db:contract:verify -- --target <production|preview>
 ```
 
 The canonical schema verification script is `supabase/verification/full_schema_audit.sql`, which

@@ -18,7 +18,7 @@ pnpm dbs <slug>
 pnpm invitation:content-parity -- --slug <slug> --event-type <type> --envs local,preview,production
 pnpm invitation:cross-db-reconcile
 pnpm invitation:inventory-audit
-pnpm invitation:diagnose-identity -- --slug <slug>
+pnpm invitation:diagnose-identity -- --target <local|preview|disposable-test>  # never Production
 pnpm db:local:audit | db:preview:audit | db:prod:audit
 ```
 
@@ -38,26 +38,25 @@ Advanced diagnostics are enrichment only (`?diagnostics=1` / `pnpm dbs --diagnos
 missing Production owner-apply evidence, which is a first-class integrity finding (`MISSING`) and
 must not be presented as unqualified `CURRENT`.
 
-## Acción primero
+## Action first
 
-El dashboard muestra una sola cola priorizada: bloqueos confirmados, acciones aplicables,
-verificaciones pendientes y revisión manual. Cada paso expone comando, prerrequisito y si requiere
-Owner/HITL; los comandos solo se copian, nunca se ejecutan desde la UI. El bloque de alcance de
-revalidación (Entorno, Dominio y Diagnóstico avanzado) delimita la siguiente sonda, no filtra la
-información ya visible. Migraciones y parches son dominios distintos: `pnpm prod:apply -- --schema`
-opera el flujo de esquema, mientras `pnpm prod:apply -- --patch <file>` es el flujo de parche
-manual.
+The dashboard shows one prioritized queue: confirmed blockers, applicable actions, pending
+verifications, and manual review. Each step shows its command, prerequisite, and whether it needs
+the owner; commands are only copied, never executed from the UI. The revalidation scope block
+(Entorno, Dominio, Diagnóstico avanzado) bounds the next probe and does not filter evidence already
+shown. Migrations and patches are separate domains: `pnpm prod:apply -- --schema` is the schema flow
+and `pnpm prod:apply -- --patch <file>` is the manual patch flow.
 
-`Todo en orden` exige evidencia LIVE en los controles aplicables, disposable-test válido, ninguna
-promoción/migración/parche pendiente y autorización aplicable íntegra. `NOT_APPLICABLE` no bloquea;
-`NOT_NEEDED` significa «0 filas en el detector» y no prueba que un parche fue aplicado. La evidencia
-cached, stale o unverified mantiene el estado fuera de verde. Las secciones de historial y
-diagnósticos quedan colapsadas para que la primera acción sea visible.
+`Todo en orden` requires LIVE evidence on every applicable control, a valid disposable-test proof,
+no pending promotion/migration/patch, and intact applicable authorization. `NOT_APPLICABLE` does not
+block; `NOT_NEEDED` means zero detector rows and does not prove a patch was applied. Cached, stale,
+or unverified evidence keeps the state out of green. History and diagnostics sections stay collapsed
+so the first action is visible.
 
 **Expected result:** Typed availability and lifecycle/parity evidence. `UNVERIFIED` ≠ healthy.
 
-**Failures:** `CREDENTIALS_REQUIRED`, `IDENTITY_CONFLICT`, `UNREACHABLE`, incomplete evidence under
-`--strict`.
+**Failures:** `CREDENTIALS_REQUIRED`, `IDENTITY_CONFLICT`, `UNREACHABLE`,
+`READ_ONLY_ENFORCEMENT_FAILED`.
 
 **Recovery:** Fix credentials/identity; never invent zero-row health. Schema behind → migrate
 workflow. Content drift → update/reconcile — not audit alone.

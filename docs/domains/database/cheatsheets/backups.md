@@ -11,9 +11,9 @@ migrate/promote gates; daily job is the 24h catastrophic RPO.
 pnpm db:prod:backup:critical             # recovery point (DB/Auth/Storage)
 pnpm db:prod:backup:daily                # scheduled 24h operator capture
 pnpm db:prod:backup                      # public dump only — local refresh, not recovery
-pnpm db:backup:verify-manifest -- --manifest <path>
+pnpm db:backup:verify-manifest -- --manifest=<path>
 pnpm db:backup:create-manifest           # assemble manifest from artifacts (no integrity)
-pnpm db:restore:verify-disposable -- --manifest <path>
+pnpm db:restore:verify-disposable -- --manifest=<path> --target-db-url=<disposable-url>
 pnpm db:local:restore-from-dump -- …     # persistent-local only; never Preview
 ```
 
