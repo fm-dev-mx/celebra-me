@@ -78,8 +78,8 @@ export interface ProductionApplyPlan {
 	planId: string;
 	scope: ProductionApplyScope;
 	items: ProductionApplyPlanItem[];
-	/** Owner-archived invitations left out of discovery; never part of planId. */
-	excluded: { archivedSlugs: string[] };
+	/** Definitions left out of discovery (owner-archived, still in authoring); never part of planId. */
+	excluded: { archivedSlugs: string[]; authoringSlugs: string[] };
 }
 
 const PLAN_ID_VERSION = 3;
@@ -135,14 +135,17 @@ export function buildProductionApplyPlanId(
 export function assembleProductionApplyPlan(
 	scope: ProductionApplyScope,
 	items: readonly ProductionApplyPlanItem[],
-	excluded: { archivedSlugs?: readonly string[] } = {},
+	excluded: { archivedSlugs?: readonly string[]; authoringSlugs?: readonly string[] } = {},
 ): ProductionApplyPlan {
 	const planItems = [...items];
 	return {
 		planId: buildProductionApplyPlanId(planItems, scope),
 		scope,
 		items: planItems,
-		excluded: { archivedSlugs: [...(excluded.archivedSlugs ?? [])] },
+		excluded: {
+			archivedSlugs: [...(excluded.archivedSlugs ?? [])],
+			authoringSlugs: [...(excluded.authoringSlugs ?? [])],
+		},
 	};
 }
 

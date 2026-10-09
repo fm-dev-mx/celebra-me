@@ -23,6 +23,13 @@ describe('invitation publication transitions', () => {
 		]);
 	});
 
+	it('reads a definition without a lifecycle literal as in_progress', () => {
+		// Older revisions inherited the helper default; the first explicit `published` must still gate.
+		const parsed = parseCanonicalLifecycleSource(`
+			export const c = defineCanonicalInvitation({ slug: 'c', managedIdentityId: 'id-c', managedIdentityProvenance: 'owner-approved' });`);
+		expect(parsed).toEqual([expect.objectContaining({ slug: 'c', lifecycle: 'in_progress' })]);
+	});
+
 	it('accepts only a ready document with exact ACCEPTED outcome and managed provenance', () => {
 		expect(
 			assessPublicationTransition({

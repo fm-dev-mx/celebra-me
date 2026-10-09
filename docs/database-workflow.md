@@ -268,8 +268,10 @@ presence, worktree path, runtime target, and UI banners do not authorize mutatio
 
    No arguments prints a read-only Production plan and does not write. `--all-ready` includes only
    evidence-backed READY schema and invitations; it never includes draft discards. Definitions the
-   owner archived (`archive` record in the definition) are left out of no-argument and `--all-ready`
-   plans and counted apart in the summary; `--slug <slug>` still inspects one. The read-only
+   owner archived (`archive` record in the definition) and definitions still in authoring
+   (`lifecycle: 'in_progress'`) are left out of no-argument and `--all-ready` plans and counted
+   apart in the summary; `--slug <slug>` still inspects an archived one, while an authoring one is
+   `BLOCKED` with `LIFECYCLE_NOT_PUBLISHED` until its definition is published. The read-only
    Production dry-run runs before the approval is enforced: a package identical to Production is
    `IN_SYNC` without an approval, and a package that would write is `MISSING_PREVIEW_APPROVAL` with
    the reason (never approved, approval of another hash, pending, or expired after 7 days without a

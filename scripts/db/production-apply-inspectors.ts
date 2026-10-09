@@ -13,7 +13,16 @@ import {
 	runPromotionPreflight,
 	type PromotionPreflightReport,
 } from '../provision/invitation-promote.ts';
-import { listInvitationDefinitions } from '../provision/invitations/registry.ts';
+import {
+	LIFECYCLE_NOT_PUBLISHED,
+	lifecycleReleaseBlockFor,
+} from '../provision/invitations/lifecycle-gate.ts';
+import {
+	listArchivedInvitationDefinitions,
+	listAuthoringInvitationDefinitions,
+	listInvitationDefinitions,
+	listPublishedInvitationDefinitions,
+} from '../provision/invitations/registry.ts';
 import { resolvePromotionUpdateScope } from '../provision/invitation-update-options.ts';
 import type { UpdateScope } from '../provision/semantic-delta.ts';
 import {
@@ -139,12 +148,47 @@ export async function resolveWithDiscardIfDraftDivergence(
 	return runPreflight(packageData, updateScope, true);
 }
 
+function sortedSlugs(definitions: readonly { slug: string }[]): string[] {
+	return definitions.map((definition) => definition.slug).sort((a, b) => a.localeCompare(b));
+}
+
+/** Discovery (`--all-ready`, inspect-all): published definitions plan; the rest are reported apart. */
+export function discoverProductionApplySlugs(deps: ProductionApplyAssemblerDeps): {
+	slugs: string[];
+	archivedSlugs: string[];
+	authoringSlugs: string[];
+} {
+	return {
+		slugs: (deps.listSlugs ?? (() => sortedSlugs(listPublishedInvitationDefinitions())))(),
+		archivedSlugs: (
+			deps.listArchivedSlugs ?? (() => sortedSlugs(listArchivedInvitationDefinitions()))
+		)(),
+		authoringSlugs: (
+			deps.listAuthoringSlugs ?? (() => sortedSlugs(listAuthoringInvitationDefinitions()))
+		)(),
+	};
+}
+
 export async function inspectInvitation(
 	slug: string,
 	schemaReadyInPlan: boolean,
 	deps: ProductionApplyAssemblerDeps,
 	acknowledgeDiscardUnpublishedDraft = false,
 ): Promise<ProductionApplyPlanItem> {
+	const lifecycleBlock = (deps.lifecycleReleaseBlock ?? lifecycleReleaseBlockFor)(
+		slug,
+		'production',
+	);
+	if (lifecycleBlock) {
+		return {
+			domain: 'invitation',
+			id: slug,
+			readiness: 'BLOCKED',
+			summary: lifecycleBlock,
+			detail: lifecycleBlock,
+			blockCode: LIFECYCLE_NOT_PUBLISHED,
+		};
+	}
 	try {
 		const resolvePackage =
 			deps.resolvePackage ??

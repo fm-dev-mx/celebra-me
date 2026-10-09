@@ -69,7 +69,9 @@ export function parseCanonicalLifecycleSource(
 		) {
 			const object = node.arguments[0];
 			const slug = stringProperty(object, 'slug');
-			const lifecycle = stringProperty(object, 'lifecycle');
+			// Older revisions omitted the literal and inherited the helper's `in_progress` default;
+			// reading them the same way keeps the first explicit `published` a gated transition.
+			const lifecycle = stringProperty(object, 'lifecycle') ?? 'in_progress';
 			if (slug && (lifecycle === 'in_progress' || lifecycle === 'published')) {
 				snapshots.push({
 					slug,

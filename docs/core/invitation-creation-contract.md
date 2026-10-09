@@ -64,9 +64,13 @@ Every managed digital invitation must define:
 - **Base Demo ID** (`baseDemoId`): Legacy, scheduled for removal. Provisioning still requires a demo
   catalog entry with the same `themeId` and writes `base_demo_id`/`snapshot`; nothing at publish,
   preview, or edit time reads them.
-- **Lifecycle** (`lifecycle`): `in_progress` while the definition is intentionally absent or not yet
-  aligned through Production; `published` once Production alignment is expected. This metadata is
-  explicit and is not inferred from timestamps or environment presence.
+- **Lifecycle** (`lifecycle`, required, no default): `in_progress` while the definition is
+  intentionally absent or not yet aligned through Production; `published` once Production alignment
+  is expected. This metadata is explicit and is not inferred from timestamps or environment
+  presence. Hosted targets enforce it: `invitation:release --targets preview` and `prod:apply`
+  reject an `in_progress` definition with `LIFECYCLE_NOT_PUBLISHED`, and `prod:apply --all-ready`
+  leaves authoring definitions out of discovery (counted apart, like archived ones). Local remains
+  open for authoring.
 - **Delivery Scope** (`deliveryScope`): `content-only`, `content-and-assets`, or `assets-only`.
   Three-way reconciliation must use this declared scope and report out-of-scope changes rather than
   applying or hiding them. `pnpm invitation:release` inherits this value unless the operator passes
