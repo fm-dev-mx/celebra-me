@@ -118,6 +118,34 @@ describe('GuestDetailSheet', () => {
 		expect(onDelete).toHaveBeenCalledWith(guest);
 	});
 
+	it('marks as sent in one tap and offers "Deshacer"', async () => {
+		const onMarkShared = jest.fn().mockResolvedValue(undefined);
+		const onRevertShared = jest.fn().mockResolvedValue(undefined);
+		const guest = makeGuest({ deliveryStatus: 'generated' });
+		render(
+			<GuestDetailSheet
+				item={guest}
+				onClose={jest.fn()}
+				{...baseProps}
+				onMarkShared={onMarkShared}
+				onRevertShared={onRevertShared}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Más acciones' }));
+		await act(async () => {
+			fireEvent.click(screen.getByRole('menuitem', { name: 'Marcar como enviada' }));
+		});
+		expect(onMarkShared).toHaveBeenCalledWith(guest);
+		expect(screen.getByText('Marcada como enviada.')).toBeInTheDocument();
+
+		await act(async () => {
+			fireEvent.click(screen.getByRole('button', { name: 'Deshacer' }));
+		});
+		expect(onRevertShared).toHaveBeenCalledWith(guest);
+		expect(screen.queryByRole('button', { name: 'Deshacer' })).not.toBeInTheDocument();
+	});
+
 	it('closes the actions menu with Escape without closing the dialog', () => {
 		const onClose = jest.fn();
 		render(<GuestDetailSheet item={makeGuest()} onClose={onClose} {...baseProps} />);

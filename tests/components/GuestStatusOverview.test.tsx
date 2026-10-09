@@ -91,6 +91,41 @@ describe('GuestStatusOverview', () => {
 		expect(screen.getByRole('button', { name: 'Con mensaje, 1' })).toBeInTheDocument();
 	});
 
+	it('explains when the reminder reaches more invitations than the unanswered ones', () => {
+		render(
+			<GuestStatusOverview
+				summary={summary}
+				activeFilter="all"
+				onFilterChange={jest.fn()}
+				reminderCount={3}
+				onRemind={jest.fn()}
+			/>,
+		);
+
+		expect(
+			screen.getByText('El recordatorio llegará a 3 invitaciones según su configuración.'),
+		).toBeInTheDocument();
+	});
+
+	it('scopes the next step to the selected group', () => {
+		const groupSummary = computeGuestSummary([
+			makeGuest({ guestId: 'f1', deliveryStatus: 'shared', maxAllowedAttendees: 3 }),
+		]);
+		render(
+			<GuestStatusOverview
+				summary={summary}
+				activeFilter="all"
+				onFilterChange={jest.fn()}
+				reminderCount={2}
+				nextStepScope={{ label: 'Familia', summary: groupSummary, reminderCount: 1 }}
+				onRemind={jest.fn()}
+			/>,
+		);
+
+		expect(screen.getByText(/Familia: 1 invitación enviada sigue/)).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Recordar a 1 de Familia' })).toBeInTheDocument();
+	});
+
 	it('suggests sending pending invitations when no reminder applies', () => {
 		const onSendPending = jest.fn();
 		render(

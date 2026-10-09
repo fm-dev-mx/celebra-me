@@ -74,6 +74,7 @@ const GuestNextStep: React.FC<GuestNextStepProps> = ({
 	let lead: string;
 	let rest: string;
 	let action: { label: string; onClick?: () => void } | null = null;
+	let audienceNote = '';
 
 	if (reminderCount > 0 && awaitingAnswer.invitations > 0) {
 		tone = ' guest-overview__next--remind';
@@ -83,6 +84,10 @@ const GuestNextStep: React.FC<GuestNextStepProps> = ({
 			label: scopeLabel ? `Recordar a${ofScope(reminderCount)}` : 'Recordar por WhatsApp',
 			onClick: onRemind,
 		};
+		// The reminder audience is configurable and may include confirmed guests.
+		if (reminderCount !== awaitingAnswer.invitations) {
+			audienceNote = `El recordatorio llegará a ${reminderCount} ${plural(reminderCount, 'invitación', 'invitaciones')} según su configuración.`;
+		}
 	} else if (toSend.invitations > 0) {
 		lead = `${prefix}${toSend.invitations} ${plural(toSend.invitations, 'invitación por enviar', 'invitaciones por enviar')}`;
 		rest = ` (${passes(toSend.passes)}).`;
@@ -108,6 +113,7 @@ const GuestNextStep: React.FC<GuestNextStepProps> = ({
 				{tone.endsWith('remind') && reminderHint && (
 					<span className="guest-overview__next-hint">{reminderHint}</span>
 				)}
+				{audienceNote && <span className="guest-overview__next-hint">{audienceNote}</span>}
 			</p>
 			{action?.onClick && (
 				<button
