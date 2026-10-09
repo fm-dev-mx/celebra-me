@@ -26,6 +26,7 @@ import { presentPromotionRow } from '../../src/lib/status/presentation.ts';
 import { isAuthoringPromotion } from '../../src/lib/status/promotion-lifecycle.ts';
 import type { CanonicalPromotionRow, EvidenceState } from '../../src/lib/status/types.ts';
 import { verifyPreviewApprovalArtifact } from './preview-approval-service.ts';
+import { TARGET_DIVERGENCE_BLOCK_CODE } from './promotion-comparison.ts';
 import { getDefaultPreviewApprovalStore } from './preview-approval-store.ts';
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
@@ -374,7 +375,10 @@ export async function refineManagedPromotionsWithProductionPreflight(input: {
 			);
 			continue;
 		}
-		if (report.blockCode === 'MANAGED_DIVERGENCE') {
+		if (
+			report.blockCode === 'MANAGED_DIVERGENCE' ||
+			report.blockCode === TARGET_DIVERGENCE_BLOCK_CODE
+		) {
 			environments.production = 'diverged';
 			promotions.push(
 				presentPromotionRow({
@@ -383,7 +387,11 @@ export async function refineManagedPromotionsWithProductionPreflight(input: {
 					eventType: row.eventType,
 					lifecycle: row.lifecycle,
 					action: 'BLOCKED',
-					reasonCode: 'MANAGED_DIVERGENCE',
+					// An unpublished target draft has an owner recovery path; managed drift does not.
+					reasonCode:
+						report.blockCode === TARGET_DIVERGENCE_BLOCK_CODE
+							? 'UNPUBLISHED_DRAFT_DIVERGENCE'
+							: 'MANAGED_DIVERGENCE',
 					environments,
 					envEvidence: input.envEvidence,
 				}),

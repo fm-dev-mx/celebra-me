@@ -277,11 +277,13 @@ confirmation and before any write, schema included; read-only plans still work w
    Production dry-run runs before the approval is enforced: a package identical to Production is
    `IN_SYNC` without an approval, and a package that would write is `MISSING_PREVIEW_APPROVAL` with
    the reason (never approved, approval of another hash, pending, or expired after 7 days without a
-   live recheck). A divergent unpublished draft can be replaced only for explicitly selected
-   `--slug`/`--slugs` when the plan includes `--acknowledge-discard-unpublished-draft`;
-   manual/editor managed-baseline drift remains BLOCKED. Review the plan and its owner-confirmation
-   summary before applying. Domain dry-run remains available:
-   `pnpm invitation:release -- --slug <slug> --targets production --dry-run`.
+   live recheck). A divergent unpublished draft (`UNPUBLISHED_DRAFT_DIVERGENCE`; `pnpm dbs` prints
+   the exact discard command) can be replaced only for explicitly selected `--slug`/`--slugs` when
+   the plan includes `--acknowledge-discard-unpublished-draft`; manual/editor managed-baseline drift
+   (`MANAGED_DIVERGENCE`) remains BLOCKED. The hosted apply writes the draft, resets it and
+   publishes in one database transaction, so an interrupted apply never leaves such a draft behind.
+   Review the plan and its owner-confirmation summary before applying. Domain dry-run remains
+   available: `pnpm invitation:release -- --slug <slug> --targets production --dry-run`.
 
 3. **Semantic content parity (read-only)**:
    ```bash
