@@ -2,12 +2,12 @@
 
 **Status:** Active
 
-**Last Updated:** 2026-10-06
+**Last Updated:** 2026-10-09
 
-**Change Note:** Integration into `develop` uses merge commits (`--no-ff`), so each task stays a
-separate, revertible unit and published history is never rewritten. Rebase is optional and only for
-branches that were never pushed. Release pull request into `main` and fast-forward back-merge are
-unchanged.
+**Change Note:** Integration into `develop` keeps each task a separate, revertible unit and never
+rewrites published history: a single-commit task fast-forwards, a multi-commit task gets one merge
+commit (`--no-ff`). Rebase is optional and only for branches that were never pushed. Release pull
+request into `main` and fast-forward back-merge are unchanged.
 
 ## Overview
 
@@ -69,15 +69,20 @@ mutation authorization.
 
    ```bash
    git pull --ff-only origin develop
-   git merge --no-ff <task-branch>
+   git merge --ff-only <task-branch>   # task with exactly one commit
+   git merge --no-ff <task-branch>     # task with two or more commits
    git push origin develop
    ```
 
-   Keep Git's default message (`Merge branch '<task-branch>' into develop`). Each merge commit is
-   one task: `git log --first-parent develop` lists tasks, and `git revert -m 1 <merge>` reverts one
-   as a unit. Resolve conflicts deliberately in the merge (never automatic `ours`/`theirs`), then
-   run the applicable checks before pushing. Pushing a task branch to `origin` is optional; CI does
-   not run on task branches.
+   A single-commit task lands as that commit (rebase the never-pushed task branch onto `develop`
+   first if `--ff-only` is refused); a merge commit around one commit only adds noise. A
+   multi-commit task keeps Git's default merge message
+   (`Merge branch '<task-branch>' into develop`). Either way `git log --first-parent develop` lists
+   one entry per task, reverted as a unit with `git revert <commit>` or `git revert -m 1 <merge>`.
+   Group a multi-step program into one task branch per phase with several commits rather than one
+   task per commit. Resolve conflicts deliberately in the merge (never automatic `ours`/`theirs`),
+   then run the applicable checks before pushing. Pushing a task branch to `origin` is optional; CI
+   does not run on task branches.
 
    History rules: never force-push or rewrite `develop`, `main` or any branch already on `origin`.
    Rebase is allowed only for a branch that was never pushed. Squash merges are not used, because

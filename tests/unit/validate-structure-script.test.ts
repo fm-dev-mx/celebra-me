@@ -243,17 +243,23 @@ describe('validate-structure script', () => {
 		}
 	});
 
-	it('requires workflow frontmatter and registered provider adapters', () => {
+	it('rejects the retired workflow layer and requires registered provider adapters', () => {
 		const fixtureRoot = createFixture();
 		try {
 			writeFixtureFile(
 				fixtureRoot,
 				'.agent/workflows/example.md',
-				['---', 'description: Example', 'lifecycle: evergreen', 'domain: governance', '---'].join('\n'),
+				[
+					'---',
+					'description: Example',
+					'lifecycle: evergreen',
+					'domain: governance',
+					'---',
+				].join('\n'),
 			);
 			writeFixtureFile(fixtureRoot, '.cursor/hooks.json', '{}\n');
 			const errors = validateFixture(fixtureRoot, ['.cursor/hooks.json']).join('\n');
-			expect(errors).toContain('example.md: missing required frontmatter field "owner"');
+			expect(errors).toContain('.agent/workflows/example.md: .agent/workflows is retired');
 			expect(errors).toContain('provider_adapters is required');
 		} finally {
 			rmSync(fixtureRoot, { recursive: true, force: true });
@@ -281,9 +287,15 @@ describe('validate-structure script', () => {
 					'---',
 				].join('\n'),
 			);
-			writeFixtureFile(fixtureRoot, '.agent/agents/builder.yaml', ['---', 'name: builder'].join('\n'));
+			writeFixtureFile(
+				fixtureRoot,
+				'.agent/agents/builder.yaml',
+				['---', 'name: builder'].join('\n'),
+			);
 			const errors = validateFixture(fixtureRoot).join('\n');
-			expect(errors).toContain('precondition path "docs/missing-contract.md" does not resolve');
+			expect(errors).toContain(
+				'precondition path "docs/missing-contract.md" does not resolve',
+			);
 			expect(errors).toContain('missing required role field "purpose"');
 		} finally {
 			rmSync(fixtureRoot, { recursive: true, force: true });
