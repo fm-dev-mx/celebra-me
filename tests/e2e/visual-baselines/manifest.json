@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-09T00:25:29.671Z",
+    "generatedAt": "2026-10-09T01:25:59.639Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,15 +12,15 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
-        "cssSha256": "b69947816c21014a5a534fe71950e1de1575e7357e82c4a45f9bdba47a98aa0c",
+        "cssSha256": "4d7c0712f7250a5e7eb70c74f53c1bf55b07b57194c346b9067b6ddcc6c285f3",
         "assetSha256": "d3d792128ade372f34b19126206ac6e011f0112f3ff1e78fa5eb88abb88f0cad",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 180,
-    "matrixHash": "aeedd65dcbc2e6dce8742fea93bdf491741c4f0f427a984e062904358263a183",
+    "totalCaptures": 184,
+    "matrixHash": "f796398a7688ff3820fae041f67e1772a6e8ba9f291e0940250467a818f669de",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2241,6 +2241,54 @@
             "comparisonResult": "ACCEPTED"
         },
         {
+            "kind": "invitation",
+            "slug": "mia-pintor",
+            "eventType": "xv",
+            "preset": "celestial-blue",
+            "viewport": "mobile",
+            "file": "pages/invitation-xv-mia-pintor-mobile.png",
+            "sha256": "0aefa8a3741db14962e88f46c3f5971a5c8e2ac12c5eadb1e36155b96c454fd6",
+            "contentHash": "9d533dd729f72c7995e23b4cbda8e680e066ccc22065be7309cfeb7449d8754d",
+            "assetHash": "80a49e4dfe76963e7b4cad671f7a692e580740665906e015b4e6359517db33b5",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "mia-pintor",
+            "eventType": "xv",
+            "preset": "celestial-blue",
+            "viewport": "desktop",
+            "file": "pages/invitation-xv-mia-pintor-desktop.png",
+            "sha256": "4448ef8cb62aa5cf953abd8f2be786970dce7d5c628dbea377daf8089d9d4603",
+            "contentHash": "9d533dd729f72c7995e23b4cbda8e680e066ccc22065be7309cfeb7449d8754d",
+            "assetHash": "80a49e4dfe76963e7b4cad671f7a692e580740665906e015b4e6359517db33b5",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "aithan-darell",
+            "eventType": "cumple",
+            "preset": "editorial-magazine",
+            "viewport": "mobile",
+            "file": "pages/invitation-cumple-aithan-darell-mobile.png",
+            "sha256": "6492f4b0e1a1d39196a0e047207d3b9f21a856c8959e3a43b3bcaa3a6dc66c00",
+            "contentHash": "811d799559e3ae2f6a75d36ee497081c8da2f0228ee335fbe695d9308f0748a9",
+            "assetHash": "38e6a8701db01779d6f6fa1c6f0f69abf7d4ea06e588c27fce6ddbf2261875ce",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "aithan-darell",
+            "eventType": "cumple",
+            "preset": "editorial-magazine",
+            "viewport": "desktop",
+            "file": "pages/invitation-cumple-aithan-darell-desktop.png",
+            "sha256": "a5c977222ca3cb264a34701795d4d786116ad3c9d25ebdabb5ddc53bb2062344",
+            "contentHash": "811d799559e3ae2f6a75d36ee497081c8da2f0228ee335fbe695d9308f0748a9",
+            "assetHash": "38e6a8701db01779d6f6fa1c6f0f69abf7d4ea06e588c27fce6ddbf2261875ce",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
             "kind": "demo",
             "slug": "demo-bautismo-angelic-presence",
             "eventType": "bautizo",
@@ -2433,9 +2481,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "b62eff9ca562e9e9d86c06011cba215f06e28b6f",
+    "referenceSha": "ae108a41e84dcd8f67f358c77594265915b75e98",
     "variantManifest": {
-        "generatedAt": "2026-10-09T00:25:29.671Z",
+        "generatedAt": "2026-10-09T01:25:59.639Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2448,7 +2496,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
-            "cssSha256": "b69947816c21014a5a534fe71950e1de1575e7357e82c4a45f9bdba47a98aa0c",
+            "cssSha256": "4d7c0712f7250a5e7eb70c74f53c1bf55b07b57194c346b9067b6ddcc6c285f3",
             "assetSha256": "d3d792128ade372f34b19126206ac6e011f0112f3ff1e78fa5eb88abb88f0cad",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4197,10 +4245,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "b62eff9ca562e9e9d86c06011cba215f06e28b6f"
+        "referenceSha": "ae108a41e84dcd8f67f358c77594265915b75e98"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-09T00:25:29.676Z",
+        "generatedAt": "2026-10-09T01:25:59.645Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4213,16 +4261,16 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
-            "cssSha256": "b69947816c21014a5a534fe71950e1de1575e7357e82c4a45f9bdba47a98aa0c",
+            "cssSha256": "4d7c0712f7250a5e7eb70c74f53c1bf55b07b57194c346b9067b6ddcc6c285f3",
             "assetSha256": "d3d792128ade372f34b19126206ac6e011f0112f3ff1e78fa5eb88abb88f0cad",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 56,
-        "matrixHash": "6ccaf3f9667e31ea5da28fb62580fa3f703dc762bb0e429d9f3e5415307b5a2f",
-        "cases": 28,
+        "totalCaptures": 60,
+        "matrixHash": "849692cf483a8748fed8046699f0d40d503b3ec59e3d6f756cd5ce0b907a60bc",
+        "cases": 30,
         "captures": [
             {
                 "kind": "invitation",
@@ -4705,6 +4753,54 @@
                 "comparisonResult": "CANDIDATE"
             },
             {
+                "kind": "invitation",
+                "slug": "mia-pintor",
+                "eventType": "xv",
+                "preset": "celestial-blue",
+                "viewport": "mobile",
+                "file": "pages/invitation-xv-mia-pintor-mobile.png",
+                "sha256": "0aefa8a3741db14962e88f46c3f5971a5c8e2ac12c5eadb1e36155b96c454fd6",
+                "contentHash": "9d533dd729f72c7995e23b4cbda8e680e066ccc22065be7309cfeb7449d8754d",
+                "assetHash": "80a49e4dfe76963e7b4cad671f7a692e580740665906e015b4e6359517db33b5",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "mia-pintor",
+                "eventType": "xv",
+                "preset": "celestial-blue",
+                "viewport": "desktop",
+                "file": "pages/invitation-xv-mia-pintor-desktop.png",
+                "sha256": "4448ef8cb62aa5cf953abd8f2be786970dce7d5c628dbea377daf8089d9d4603",
+                "contentHash": "9d533dd729f72c7995e23b4cbda8e680e066ccc22065be7309cfeb7449d8754d",
+                "assetHash": "80a49e4dfe76963e7b4cad671f7a692e580740665906e015b4e6359517db33b5",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "aithan-darell",
+                "eventType": "cumple",
+                "preset": "editorial-magazine",
+                "viewport": "mobile",
+                "file": "pages/invitation-cumple-aithan-darell-mobile.png",
+                "sha256": "6492f4b0e1a1d39196a0e047207d3b9f21a856c8959e3a43b3bcaa3a6dc66c00",
+                "contentHash": "811d799559e3ae2f6a75d36ee497081c8da2f0228ee335fbe695d9308f0748a9",
+                "assetHash": "38e6a8701db01779d6f6fa1c6f0f69abf7d4ea06e588c27fce6ddbf2261875ce",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "aithan-darell",
+                "eventType": "cumple",
+                "preset": "editorial-magazine",
+                "viewport": "desktop",
+                "file": "pages/invitation-cumple-aithan-darell-desktop.png",
+                "sha256": "a5c977222ca3cb264a34701795d4d786116ad3c9d25ebdabb5ddc53bb2062344",
+                "contentHash": "811d799559e3ae2f6a75d36ee497081c8da2f0228ee335fbe695d9308f0748a9",
+                "assetHash": "38e6a8701db01779d6f6fa1c6f0f69abf7d4ea06e588c27fce6ddbf2261875ce",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
                 "kind": "demo",
                 "slug": "demo-bautismo-angelic-presence",
                 "eventType": "bautizo",
@@ -4897,9 +4993,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "b62eff9ca562e9e9d86c06011cba215f06e28b6f"
+        "referenceSha": "ae108a41e84dcd8f67f358c77594265915b75e98"
     },
-    "candidateManifestSha256": "3a44f4320e69c65e4fbff5b864ac7e681053d02b10f81becdea1e63bae8818cc",
-    "acceptedFromCommit": "b62eff9ca562e9e9d86c06011cba215f06e28b6f",
-    "acceptedAt": "2026-10-09T00:31:59.577Z"
+    "candidateManifestSha256": "0b501db349f2155158aa7b5a731a913d33f4d63ae1145ae19bcf74a742e6b7a1",
+    "acceptedFromCommit": "ae108a41e84dcd8f67f358c77594265915b75e98",
+    "acceptedAt": "2026-10-09T03:38:55.364Z"
 }
