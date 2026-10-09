@@ -48,11 +48,6 @@ $semantic-type: (
 	--font-body-hacienda: #{sys.$sys-font-body-hacienda};
 	--font-ui: #{sys.$sys-font-ui};
 	--font-label: #{sys.$sys-font-display-formal};
-	--font-size-h1: #{sys.$sys-size-h1};
-	--font-size-h2: #{sys.$sys-size-h2};
-	--font-size-h3: #{sys.$sys-size-h3};
-	--font-size-body: #{sys.$sys-size-body};
-	--font-size-ui: #{sys.$sys-size-ui};
 }
 
 @function font($token) {

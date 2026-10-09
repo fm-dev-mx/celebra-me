@@ -1,11 +1,6 @@
 @use '../../../global/mixins' as mixins;
 
 .theme-preset--enchanted-rose .header-base {
-	--header-bg: linear-gradient(
-		180deg,
-		rgb(var(--color-midnight-navy-rgb) / 38%) 0%,
-		rgb(var(--color-midnight-navy-rgb) / 0%) 100%
-	);
 	--header-bg-scrolled: linear-gradient(
 		180deg,
 		rgb(var(--color-midnight-navy-rgb) / 94%) 0%,

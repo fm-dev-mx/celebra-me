@@ -188,7 +188,6 @@ describe('Invitation header navigation contract', () => {
 
 		// Header atmosphere is owned by theme preset scope, never data-variant=theme.
 		expect(source).toMatch(/\.theme-preset--celestial-blue\s+\.header-base/);
-		expect(source).toMatch(/--header-bg:/);
 		expect(source).toMatch(/--header-bg-scrolled:/);
 		expect(source).toMatch(/--header-border-color:/);
 		expect(source).toMatch(/--mobile-drawer-bg:/);

@@ -134,14 +134,9 @@
 	// ---------------------------------------------------------------------
 	// Hero tokens
 	// ---------------------------------------------------------------------
-	--hero-card-bg: var(--color-glass-bg);
-	--hero-card-border-hairline: var(--color-glass-border);
-	--hero-card-shadow-ambient: var(--shadow-premium);
 	--hero-title-color-start: var(--color-action-accent);
 	--hero-title-color-mid: rgb(255 255 255);
 	--hero-title-color-end: var(--color-action-accent);
-	--hero-badge-bg: var(--color-glass-bg);
-	--hero-badge-border: var(--color-action-accent);
 	--hero-badge-text: var(--color-action-accent);
 	--hero-label-color: var(--color-text-emphasis);
 
@@ -153,10 +148,6 @@
 		rgb(var(--color-action-accent-rgb) / 5%) 0%,
 		var(--color-surface-primary) 100%
 	);
-	--gallery-card-bg: var(--color-glass-bg);
-	--gallery-card-radius: 12px;
-	--gallery-card-padding: 10px;
-	--gallery-image-radius: 4px;
 	--gallery-title-font: var(--font-display);
 	--gallery-title-color: var(--color-action-accent);
 	--gallery-subtitle-color: rgb(var(--color-surface-dark-rgb) / 72%);

@@ -2,8 +2,6 @@
 @use '../../../global/mixins' as mixins;
 
 .theme-preset--luxury-hacienda .rsvp {
-	--rsvp-emoji-yes: '🌵';
-	--rsvp-emoji-no: '🙏';
 	--color-glass-bg: rgb(var(--color-surface-primary-rgb) / 24%);
 	--color-glass-border: rgb(var(--color-action-accent-rgb) / 28%);
 	--color-glass-shadow: rgb(var(--color-action-accent-rgb) / 18%);
@@ -29,9 +27,6 @@
 	--rsvp-radio-selected-bg: rgb(var(--color-action-accent-rgb) / 18%);
 	--rsvp-radio-selected-border: rgb(var(--color-action-accent-rgb) / 78%);
 	--rsvp-radio-selected-shadow: 0 0 0 2px rgb(var(--color-action-accent-rgb) / 30%);
-	--rsvp-button-shadow-rest:
-		0 10px 22px rgb(var(--color-action-primary-rgb) / 34%),
-		0 1px 0 rgb(var(--color-action-accent-rgb) / 24%);
 	--rsvp-button-shadow-hover:
 		0 14px 28px rgb(var(--color-action-primary-rgb) / 42%),
 		0 0 18px rgb(var(--color-action-accent-rgb) / 20%);

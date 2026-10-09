@@ -150,17 +150,13 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 
 <style define:vars={{
 	safeX: overlaySafeArea ? `${overlaySafeArea.x * 100}%` : '0%',
-	safeY: overlaySafeArea ? `${overlaySafeArea.y * 100}%` : '0%',
 	safeW: overlaySafeArea ? `${overlaySafeArea.width * 100}%` : '0%',
-	safeH: overlaySafeArea ? `${overlaySafeArea.height * 100}%` : '0%',
 	thankYouFocalPoint: focalPoint || 'center',
 }}>
 	.thank-you-section {
 		--thank-you-focal-point: var(--thankYouFocalPoint);
 		--thank-you-safe-x: var(--safeX);
-		--thank-you-safe-y: var(--safeY);
 		--thank-you-safe-width: var(--safeW);
-		--thank-you-safe-height: var(--safeH);
 	}
 
 	.closing-date {

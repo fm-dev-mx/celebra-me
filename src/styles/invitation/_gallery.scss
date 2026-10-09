@@ -34,7 +34,6 @@
 	--gallery-item-border-color: rgb(var(--color-text-primary-rgb) / 8%);
 	--gallery-item-shadow: 0 6px 18px rgb(0 0 0 / 7%);
 	--gallery-item-backdrop-filter: none;
-	--gallery-item-transform: none;
 	--gallery-item-emphasis-transform: none;
 	--gallery-item-hover-transform: none;
 	--gallery-item-emphasis-border-color: var(--gallery-item-border-color);
@@ -54,9 +53,6 @@
 	--gallery-item-image-scale-rest: 1;
 	--gallery-item-image-scale-in-view: var(--gallery-item-image-scale-rest);
 	--gallery-item-image-scale-hover: var(--gallery-item-image-scale-in-view);
-	--gallery-item-image-base-filter: none;
-	--gallery-item-image-emphasis-filter: var(--gallery-item-image-base-filter);
-	--gallery-item-image-hover-filter: var(--gallery-item-image-emphasis-filter);
 	--gallery-item-image-base-blend: normal;
 	--gallery-item-image-emphasis-blend: var(--gallery-item-image-base-blend);
 	--gallery-item-image-hover-blend: var(--gallery-item-image-emphasis-blend);

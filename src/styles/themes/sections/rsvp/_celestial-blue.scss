@@ -1,6 +1,4 @@
 .theme-preset--celestial-blue .rsvp {
-	--rsvp-emoji-yes: 'Si';
-	--rsvp-emoji-no: 'No';
 	--color-glass-bg: var(--color-glass-bg, rgb(255 255 255 / 45%));
 	--color-glass-border: var(--color-glass-border, rgb(var(--color-action-accent-rgb) / 30%));
 	--color-glass-shadow: var(--color-glass-shadow, rgb(var(--color-action-accent-rgb) / 15%));
@@ -22,9 +20,6 @@
 	--rsvp-radio-selected-border: var(--color-satin-blue);
 	--rsvp-radius-card: 8px;
 	--rsvp-radius-field: 6px;
-	--rsvp-button-shadow-rest:
-		0 6px 18px rgb(var(--color-surface-dark-rgb) / 18%),
-		0 1px 0 rgb(var(--color-action-accent-rgb) / 16%);
 	--rsvp-button-shadow-hover:
 		0 10px 24px rgb(var(--color-surface-dark-rgb) / 24%),
 		0 0 14px rgb(var(--color-action-accent-rgb) / 14%);

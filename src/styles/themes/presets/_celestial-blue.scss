@@ -155,7 +155,6 @@
 		0 24px 62px rgb(var(--color-deep-blue-graphite-rgb) / 10%),
 		0 1px 0 rgb(var(--color-diamond-white-rgb) / 72%);
 	--shadow-editorial: 0 18px 46px rgb(var(--color-deep-blue-graphite-rgb) / 9%);
-	--border-fine-silver: 1px solid rgb(var(--color-liquid-silver-rgb) / 58%);
 	--border-image: 1px solid rgb(var(--color-satin-blue-rgb) / 62%);
 	--color-frame-bg: linear-gradient(
 		135deg,
@@ -386,18 +385,10 @@
 	--family-godparents-list-columns: repeat(2, 1fr);
 
 	// Animations
-	--family-reveal-duration: 1.2s;
-	--family-reveal-ease: cubic-bezier(0.22, 1, 0.36, 1);
-	--family-reveal-initial-filter: blur(1.5px);
-	--family-reveal-initial-translate-y: 8px;
-	--family-reveal-initial-opacity: 0%;
 
 	// ---------------------------------------------------------------------
 	// Hero section
 	// ---------------------------------------------------------------------
-	--hero-card-bg: transparent;
-	--hero-card-border-hairline: rgb(var(--color-liquid-silver-rgb) / 58%);
-	--hero-card-shadow-ambient: none;
 	--hero-split-plane-bg: var(--color-surface-dark);
 	--hero-split-overlay-strong: rgb(var(--color-deep-blue-graphite-rgb) / 94%);
 	--hero-split-overlay-mid: rgb(var(--color-deep-blue-graphite-rgb) / 72%);
@@ -405,8 +396,6 @@
 	--hero-title-color-start: rgb(var(--color-cool-ivory-rgb) / 92%);
 	--hero-title-color-mid: var(--color-satin-blue);
 	--hero-title-color-end: rgb(var(--color-pearl-gray-rgb) / 75%);
-	--hero-badge-bg: rgb(var(--color-diamond-white-rgb) / 12%);
-	--hero-badge-border: rgb(var(--color-liquid-silver-rgb) / 62%);
 	--hero-badge-text: var(--color-text-on-dark);
 	--hero-label-color: rgb(var(--color-diamond-white-rgb) / 58%);
 
@@ -419,10 +408,6 @@
 		var(--color-surface-primary) 56%,
 		rgb(var(--color-pearl-gray-rgb) / 72%) 100%
 	);
-	--gallery-card-bg: rgb(var(--color-diamond-white-rgb) / 64%);
-	--gallery-card-radius: 6px;
-	--gallery-card-padding: 7px;
-	--gallery-image-radius: 2px;
 	--gallery-title-font: var(--font-display);
 	--gallery-title-color: var(--color-text-primary);
 	--gallery-subtitle-color: rgb(var(--color-soft-graphite-rgb) / 72%);
@@ -490,14 +475,6 @@
 		rgb(var(--color-diamond-white-rgb) / 72%) 0%,
 		rgb(var(--color-ice-blue-rgb) / 42%) 46%,
 		rgb(var(--color-liquid-silver-rgb) / 34%) 100%
-	);
-	--metallic-silver: linear-gradient(
-		135deg,
-		var(--color-cold-silver) 0%,
-		var(--color-diamond-white) 38%,
-		var(--color-satin-blue) 54%,
-		var(--color-liquid-silver) 72%,
-		var(--color-soft-graphite) 100%
 	);
 	--satin-sheen: linear-gradient(
 		120deg,
@@ -836,7 +813,6 @@
 	--formal-chapter-band-rgb: var(--color-deep-blue-graphite-rgb);
 	--formal-chapter-cream: var(--color-cool-ivory);
 	--formal-chapter-cream-rgb: var(--color-cool-ivory-rgb);
-	--formal-chapter-sand: var(--color-pearl-gray);
 	--formal-chapter-sand-rgb: var(--color-pearl-gray-rgb);
 	--formal-chapter-metal: var(--color-satin-blue);
 	--formal-chapter-metal-rgb: var(--color-satin-blue-rgb);

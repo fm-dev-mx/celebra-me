@@ -32,7 +32,6 @@
 	--env-container-max-height: min(55svh, 400px);
 	--env-container-radius: 6px;
 	--env-grid: 35% 25% 40%;
-	--env-zone-width: 85cqw;
 
 	// The visual seal follows the envelope's inline size. Keep the fallback
 	// explicit for browsers without container query units; the button's hit
@@ -642,7 +641,6 @@
 		--env-container-ratio: 0.75;
 		--env-container-max-height: min(78svh, 580px);
 		--env-grid: 32% 28% 40%;
-		--env-zone-width: 100%;
 		--env-title-size: clamp(1.2rem, 5cqw, 1.85rem);
 	}
 

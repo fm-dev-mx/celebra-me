@@ -11,10 +11,7 @@
 	--duration-long: #{sys.$sys-duration-long};
 	--ease-out: #{sys.$sys-ease-out};
 	--ease-standard: #{sys.$sys-ease-in-out};
-	--ease-snappy: #{sys.$sys-ease-snappy};
 	--ease-premium: #{sys.$sys-ease-premium};
-	--ease-overshoot: #{sys.$sys-ease-overshoot};
-	--ease-bouncy: #{sys.$sys-ease-bouncy};
 	--transition-snappy:
 		opacity var(--duration-snappy) var(--ease-standard),
 		transform var(--duration-snappy) var(--ease-standard),

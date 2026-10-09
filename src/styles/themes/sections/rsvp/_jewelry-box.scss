@@ -2,8 +2,6 @@
 @use '../../../global/mixins' as mixins;
 
 .theme-preset--jewelry-box .rsvp {
-	--rsvp-emoji-yes: '💎';
-	--rsvp-emoji-no: '💌';
 	--color-glass-bg: var(--color-glass-bg, rgb(255 255 255 / 45%));
 	--color-glass-border: var(--color-glass-border, rgb(var(--color-action-accent-rgb) / 30%));
 	--color-glass-shadow: var(--color-glass-shadow, rgb(var(--color-action-accent-rgb) / 15%));
@@ -23,9 +21,6 @@
 	--rsvp-radio-border: var(--color-glass-border);
 	--rsvp-radio-selected-bg: rgb(var(--color-action-accent-rgb) / 12%);
 	--rsvp-radio-selected-border: rgb(var(--color-action-accent-rgb) / 55%);
-	--rsvp-button-shadow-rest:
-		0 6px 18px rgb(var(--color-surface-dark-rgb) / 18%),
-		0 1px 0 rgb(var(--color-action-accent-rgb) / 16%);
 	--rsvp-button-shadow-hover:
 		0 10px 24px rgb(var(--color-surface-dark-rgb) / 24%),
 		0 0 14px rgb(var(--color-action-accent-rgb) / 14%);

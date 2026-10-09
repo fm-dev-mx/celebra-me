@@ -5,10 +5,18 @@
 	--thank-you-overlay-width: 35.5rem;
 	--thank-you-ink: var(--color-surface-dark, rgb(var(--color-eternal-ink-rgb, 22 20 18)));
 	--thank-you-ink-rgb: var(--color-surface-dark-rgb, var(--color-eternal-ink-rgb, 22 20 18));
-	--thank-you-ivory: var(--color-surface-primary, rgb(var(--color-pure-ivory-rgb, 252 249 243)));
-	--thank-you-ivory-rgb: var(--color-surface-primary-rgb, var(--color-pure-ivory-rgb, 252 249 243));
-	--thank-you-ivory-warm-rgb: var(--color-surface-secondary-rgb, var(--color-ivory-warm-rgb, 244 241 234));
-	--thank-you-accent-rgb: var(--color-action-accent-rgb, var(--color-sacred-gold-rgb, 176 148 96));
+	--thank-you-ivory-rgb: var(
+		--color-surface-primary-rgb,
+		var(--color-pure-ivory-rgb, 252 249 243)
+	);
+	--thank-you-ivory-warm-rgb: var(
+		--color-surface-secondary-rgb,
+		var(--color-ivory-warm-rgb, 244 241 234)
+	);
+	--thank-you-accent-rgb: var(
+		--color-action-accent-rgb,
+		var(--color-sacred-gold-rgb, 176 148 96)
+	);
 
 	display: grid;
 	justify-content: stretch;

@@ -9,7 +9,6 @@
 	// ---------------------------------------------------------------------
 	// Base palette
 	// ---------------------------------------------------------------------
-	--color-blush-pink: rgb(234 183 200);
 	--color-blush-pink-rgb: 234 183 200;
 	--color-antique-gold: rgb(200 154 69);
 	--color-antique-gold-rgb: 200 154 69;
@@ -42,7 +41,6 @@
 	--color-surface-elevated: rgb(255 249 239);
 	--color-surface-elevated-rgb: 255 249 239;
 	--color-surface-canvas: var(--color-midnight-navy);
-	--color-surface-canvas-rgb: var(--color-midnight-navy-rgb);
 	--color-surface-dark: var(--color-midnight-navy);
 	--color-surface-dark-rgb: var(--color-midnight-navy-rgb);
 	--color-action-primary: var(--color-velvet-burgundy);
@@ -61,7 +59,6 @@
 	--color-border-subtle: rgb(var(--color-antique-gold-rgb) / 24%);
 	--color-border-subtle-rgb: var(--color-antique-gold-rgb);
 	--color-border-premium: rgb(var(--color-antique-gold-rgb) / 46%);
-	--color-border-premium-rgb: var(--color-antique-gold-rgb);
 
 	// ---------------------------------------------------------------------
 	// Typography
@@ -85,7 +82,6 @@
 		0 1px 0 rgb(var(--color-warm-ivory-rgb) / 82%);
 	--shadow-editorial: 0 20px 54px rgb(var(--color-rose-shadow-rgb) / 14%);
 	--border-fine-gold: 1px solid rgb(var(--color-antique-gold-rgb) / 42%);
-	--border-fine-gold-light: 1px solid rgb(var(--color-antique-gold-rgb) / 28%);
 	--border-image: 1px solid rgb(var(--color-antique-gold-rgb) / 46%);
 	--color-frame-bg: linear-gradient(
 		135deg,
@@ -153,14 +149,9 @@
 	// ---------------------------------------------------------------------
 	// Hero section
 	// ---------------------------------------------------------------------
-	--hero-card-bg: transparent;
-	--hero-card-border-hairline: rgb(var(--color-antique-gold-rgb) / 52%);
-	--hero-card-shadow-ambient: none;
 	--hero-title-color-start: rgb(255 245 235 / 96%);
 	--hero-title-color-mid: rgb(240 200 122 / 90%);
 	--hero-title-color-end: rgb(240 190 200 / 86%);
-	--hero-badge-bg: rgb(var(--color-velvet-burgundy-rgb) / 28%);
-	--hero-badge-border: rgb(var(--color-antique-gold-rgb) / 58%);
 	--hero-badge-text: var(--color-warm-ivory);
 	--hero-label-color: var(--color-candle-gold);
 	--hero-image-filter: saturate(1.02) contrast(1.18) brightness(1.02);
@@ -223,11 +214,6 @@
 	// ---------------------------------------------------------------------
 	// Family section
 	// ---------------------------------------------------------------------
-	--family-reveal-duration: 1s;
-	--family-reveal-ease: var(--ease-premium);
-	--family-reveal-initial-filter: blur(2px);
-	--family-reveal-initial-translate-y: 14px;
-	--family-reveal-initial-opacity: 0%;
 	--family-bg:
 		radial-gradient(
 			circle at 50% 0%,

@@ -3,15 +3,11 @@
 @use '../global/mixins' as mixins;
 
 .dashboard-shell-body {
-	--dashboard-shadow-premium: var(--shadow-warm);
-	--dashboard-shadow-emphasis: var(--shadow-warm-emphasis);
-
 	/* Layer scale */
 	--dashboard-z-base: 0;
 	--dashboard-z-content: 1;
 	--dashboard-z-topbar: 10;
 	--dashboard-z-backdrop: 40;
-	--dashboard-z-sidebar: 50;
 	--dashboard-z-mobile-dock: 60;
 	--dashboard-z-modal-backdrop: 70;
 	--dashboard-z-modal: 80;

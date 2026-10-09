@@ -10,11 +10,8 @@
 	--color-pure-ivory-rgb: 253 248 236;
 	--color-soft-sand: rgb(246 241 232);
 	--color-soft-sand-rgb: 246 241 232;
-	--color-angelic-blue: rgb(172 211 224);
 	--color-angelic-blue-rgb: 172 211 224;
-	--color-angelic-blue-soft: rgb(214 234 239);
 	--color-angelic-blue-soft-rgb: 214 234 239;
-	--color-angelic-mist: rgb(232 243 246);
 	--color-angelic-mist-rgb: 232 243 246;
 	--color-ivory-warm: rgb(253 248 238);
 	--color-ivory-warm-rgb: 253 248 238;
@@ -28,7 +25,6 @@
 	--color-sacred-gold-readable: hsl(39deg 55% 34%);
 	--color-eternal-ink: rgb(55 51 45);
 	--color-eternal-ink-rgb: 55 51 45;
-	--color-ethereal-gray: rgb(220 220 215);
 	--color-ethereal-gray-rgb: 220 220 215;
 
 	// ---------------------------------------------------------------------
@@ -41,7 +37,6 @@
 	--color-surface-soft: var(--color-pure-ivory);
 	--color-surface-elevated: var(--color-pure-ivory);
 	--color-surface-canvas: var(--color-pure-ivory);
-	--color-surface-canvas-rgb: var(--color-pure-ivory-rgb);
 	--color-surface-dark: var(--color-eternal-ink);
 	--color-surface-dark-rgb: var(--color-eternal-ink-rgb);
 	--color-action-primary: var(--color-eternal-ink);
@@ -59,20 +54,6 @@
 	--color-text-on-light: var(--color-eternal-ink);
 	--color-border-subtle: rgb(var(--color-ethereal-gray-rgb) / 34%);
 	--color-border-premium: rgb(var(--color-sacred-gold-rgb) / 44%);
-	--color-angelic-border: rgb(var(--color-angelic-blue-rgb) / 42%);
-	--color-angelic-border-soft: rgb(var(--color-angelic-blue-soft-rgb) / 34%);
-	--angelic-blue-wash: radial-gradient(
-		ellipse at 50% 50%,
-		rgb(var(--color-angelic-blue-rgb) / 18%) 0%,
-		rgb(var(--color-angelic-blue-soft-rgb) / 10%) 42%,
-		transparent 72%
-	);
-	--angelic-ivory-wash: linear-gradient(
-		180deg,
-		rgb(var(--color-pure-ivory-rgb) / 88%) 0%,
-		rgb(var(--color-ivory-warm-rgb) / 78%) 54%,
-		rgb(var(--color-angelic-mist-rgb) / 24%) 100%
-	);
 	--angelic-divider: linear-gradient(
 		90deg,
 		transparent 0%,
@@ -107,7 +88,6 @@
 		0 1px 0 rgb(var(--color-pure-ivory-rgb) / 80%);
 	--shadow-editorial: 0 16px 40px rgb(var(--color-eternal-ink-rgb) / 9%);
 	--border-fine-gold: 1px solid rgb(var(--color-sacred-gold-rgb) / 38%);
-	--border-fine-silver: 1px solid rgb(var(--color-ethereal-gray-rgb) / 58%);
 	--border-image: 1px solid rgb(var(--color-sacred-gold-rgb) / 42%);
 	--color-frame-bg: linear-gradient(
 		135deg,
@@ -159,15 +139,6 @@
 	// ---------------------------------------------------------------------
 	// Shared angelic architecture
 	// ---------------------------------------------------------------------
-	--angelic-shadow-soft:
-		0 24px 70px -46px rgb(var(--color-eternal-ink-rgb) / 30%),
-		0 1px 0 rgb(var(--color-pure-ivory-rgb) / 88%),
-		inset 0 0 0 1px rgb(var(--color-pure-ivory-rgb) / 58%);
-	--angelic-glass-bg: radial-gradient(
-		ellipse at 12% 14%,
-		rgb(var(--color-angelic-blue-rgb) / 18%) 0%,
-		transparent 42%
-	);
 	--angelic-surface-mist: linear-gradient(
 		145deg,
 		rgb(var(--color-pure-ivory-rgb) / 86%) 0%,
@@ -178,9 +149,6 @@
 	// ---------------------------------------------------------------------
 	// Hero section — angelic editorial split
 	// ---------------------------------------------------------------------
-	--hero-card-bg: transparent;
-	--hero-card-border-hairline: rgb(var(--color-sacred-gold-rgb) / 28%);
-	--hero-card-shadow-ambient: none;
 
 	// Less saturated gold in title: champagne/antique gold
 	--hero-title-gradient: linear-gradient(
@@ -192,8 +160,6 @@
 	--hero-title-shadow:
 		0 10px 28px rgb(var(--color-pure-ivory-rgb) / 46%),
 		0 18px 42px rgb(var(--color-eternal-ink-rgb) / 11%);
-	--hero-badge-bg: rgb(var(--color-pure-ivory-rgb) / 12%);
-	--hero-badge-border: rgb(var(--color-sacred-gold-rgb) / 42%);
 	--hero-badge-text: var(--color-text-on-dark);
 	--hero-label-color: rgb(var(--color-pure-ivory-rgb) / 72%);
 
@@ -259,10 +225,6 @@
 		var(--color-surface-primary) 56%,
 		rgb(var(--color-soft-sand-rgb) / 72%) 100%
 	);
-	--gallery-card-bg: rgb(var(--color-pure-ivory-rgb) / 74%);
-	--gallery-card-radius: 8px;
-	--gallery-card-padding: 8px;
-	--gallery-image-radius: 4px;
 	--gallery-title-font: var(--font-display);
 	--gallery-title-color: var(--color-text-primary);
 	--gallery-subtitle-color: rgb(var(--color-eternal-ink-rgb) / 72%);
