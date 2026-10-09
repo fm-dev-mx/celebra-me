@@ -10,6 +10,10 @@ jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
 	listAllEventsService: jest.fn(),
 }));
 
+jest.mock('@/lib/rsvp/repositories/role-membership.repository', () => ({
+	listEventMembershipsService: jest.fn().mockResolvedValue([]),
+}));
+
 jest.mock('@/lib/intake/repositories/published-invitation-content.repository', () => ({
 	findPublishedByInvitationId: jest.fn(),
 }));
@@ -46,6 +50,8 @@ import {
 	listAllEventsService,
 } from '@/lib/rsvp/repositories/event.repository';
 import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
+import { listEventMembershipsService } from '@/lib/rsvp/repositories/role-membership.repository';
+import type { EventMembershipRecord } from '@/interfaces/auth/session.interface';
 import { ADMIN_USER_ID, EVENT_ID, OWNER_USER_ID, PUBLIC_SLUG, buildSpace } from './fixtures';
 
 const mockInsert = insertMemorySpace as jest.MockedFunction<typeof insertMemorySpace>;
@@ -58,6 +64,9 @@ const mockFindEvent = findEventByIdService as jest.MockedFunction<typeof findEve
 const mockListEvents = listAllEventsService as jest.MockedFunction<typeof listAllEventsService>;
 const mockFindPublished = findPublishedByInvitationId as jest.MockedFunction<
 	typeof findPublishedByInvitationId
+>;
+const mockListMemberships = listEventMembershipsService as jest.MockedFunction<
+	typeof listEventMembershipsService
 >;
 const mockAudit = appendMemoriesAudit as jest.MockedFunction<typeof appendMemoriesAudit>;
 
@@ -454,5 +463,36 @@ describe('listMemorySpacesAdmin', () => {
 
 		expect(items[0].eventDate).toBeNull();
 		expect(mockFindPublished).not.toHaveBeenCalled();
+	});
+
+	function hostMembership(role: 'owner' | 'manager'): EventMembershipRecord {
+		return {
+			id: 'membership-1',
+			eventId: EVENT_ID,
+			userId: OWNER_USER_ID,
+			membershipRole: role,
+			createdAt: '2026-10-01T00:00:00.000Z',
+			updatedAt: '2026-10-01T00:00:00.000Z',
+		};
+	}
+
+	it('flags a space whose event only has a manager membership', async () => {
+		mockListSpaces.mockResolvedValue([buildSpace()]);
+		mockListEvents.mockResolvedValue([{ id: EVENT_ID, invitationId: null } as EventRecord]);
+		mockListMemberships.mockResolvedValueOnce([hostMembership('manager')]);
+
+		const { items } = await listMemorySpacesAdmin();
+
+		expect(items[0].hasOwner).toBe(false);
+	});
+
+	it('marks a space as owned when the event has an owner membership', async () => {
+		mockListSpaces.mockResolvedValue([buildSpace()]);
+		mockListEvents.mockResolvedValue([{ id: EVENT_ID, invitationId: null } as EventRecord]);
+		mockListMemberships.mockResolvedValueOnce([hostMembership('owner')]);
+
+		const { items } = await listMemorySpacesAdmin();
+
+		expect(items[0].hasOwner).toBe(true);
 	});
 });

@@ -266,6 +266,8 @@ export const memoriesAdminCopy = {
 		`${guests.toLocaleString('es-MX')} de ${expected.toLocaleString('es-MX')} invitados esperados`,
 	hostDownloaded: (date: string) => `El anfitrión descargó por última vez: ${date}`,
 	hostNeverDownloaded: 'El anfitrión aún no descarga',
+	noOwner:
+		'Ningún anfitrión principal puede ver este espacio. Asigne el rol «Anfitrión principal» en Usuarios.',
 	deletionSoon: (days: number) => `Se borra en ${pluralize(days, 'día', 'días')} · sin descargar`,
 	deletionNotice: (count: number) =>
 		count === 1

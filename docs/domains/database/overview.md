@@ -278,6 +278,16 @@ locks the `events` row linked by `invitation_project_id` or matching `slug`, the
 creates one. The partial unique index `idx_events_unique_invitation_project` enforces at most one
 event per project.
 
+### Event Memberships
+
+`event_memberships` links a host account to an event (one row per `event_id` + `user_id`, soft
+deleted). `membership_role` is `owner` (visible as "Anfitrión principal") or `manager`
+("Colaborador"). Both manage guests; only `owner` opens the guest memories organizer. Claim-code
+redemption creates `owner`. In `/dashboard/usuarios` the administrator picks the role when assigning
+an event (default `owner`) and can change it in place; assigning an event the user already holds
+updates the role and is audited as `change_event_membership_role` with the previous row. The
+membership API still defaults to `manager` when a caller omits the role.
+
 ### Guest Memories
 
 Guest photo/video spaces live in `event_memory_settings` (one per event; window, retention, quotas,

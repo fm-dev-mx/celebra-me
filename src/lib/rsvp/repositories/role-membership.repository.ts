@@ -82,6 +82,17 @@ export async function listEventMembershipsService(): Promise<EventMembershipReco
 	return rows.map(toMembershipRecord);
 }
 
+export async function findActiveEventMembershipService(input: {
+	eventId: string;
+	userId: string;
+}): Promise<EventMembershipRecord | null> {
+	const rows = await supabaseRestRequest<EventMembershipRow[]>({
+		pathWithQuery: `event_memberships?select=*&event_id=eq.${encodeURIComponent(input.eventId)}&user_id=eq.${encodeURIComponent(input.userId)}&${ACTIVE_MEMBERSHIP_FILTER}&limit=1`,
+		useServiceRole: true,
+	});
+	return rows[0] ? toMembershipRecord(rows[0]) : null;
+}
+
 export async function softDeleteEventMembershipService(input: {
 	eventId: string;
 	userId: string;

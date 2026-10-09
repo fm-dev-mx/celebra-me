@@ -86,6 +86,12 @@ export default function MemorySpaceCard({
 				</span>
 			</header>
 
+			{!item.hasOwner && !expired ? (
+				<p className="memories-space__alert" role="alert">
+					{copy.noOwner}
+				</p>
+			) : null}
+
 			{deletionDays !== null ? (
 				<p className="memories-space__alert" role="alert">
 					{copy.deletionSoon(deletionDays)}

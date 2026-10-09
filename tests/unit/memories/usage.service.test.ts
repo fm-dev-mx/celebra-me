@@ -24,7 +24,7 @@ const mockLastDownload = findLastOrganizerDownloadAt as jest.MockedFunction<
 >;
 
 function dated(overrides: Parameters<typeof buildSpace>[0] = {}, eventDate: string | null = null) {
-	return { ...buildSpace(overrides), eventDate };
+	return { ...buildSpace(overrides), eventDate, hasOwner: true };
 }
 
 const OTHER_EVENT_ID = 'e0000000-0000-4000-8000-0000000000c2';

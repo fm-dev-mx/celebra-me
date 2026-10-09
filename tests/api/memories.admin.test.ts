@@ -69,6 +69,7 @@ const adminItem = {
 	...space,
 	eventDate: '2026-10-30',
 	lastHostDownloadAt: null,
+	hasOwner: true,
 	usage: {
 		photos: 0,
 		videos: 0,

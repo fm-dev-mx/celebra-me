@@ -90,13 +90,16 @@ const EMPTY_USAGE: MemoriesAdminSpaceItem['usage'] = {
 function adminItem(
 	space: MemoriesSpaceRecord,
 	usage: Partial<MemoriesAdminSpaceItem['usage']> = {},
-	extra: Partial<Pick<MemoriesAdminSpaceItem, 'eventDate' | 'lastHostDownloadAt'>> = {},
+	extra: Partial<
+		Pick<MemoriesAdminSpaceItem, 'eventDate' | 'lastHostDownloadAt' | 'hasOwner'>
+	> = {},
 ): MemoriesAdminSpaceItem {
 	return {
 		...space,
 		usage: { ...EMPTY_USAGE, ...usage },
 		eventDate: null,
 		lastHostDownloadAt: null,
+		hasOwner: true,
 		...extra,
 	};
 }
@@ -370,6 +373,30 @@ describe('MemoriesAdmin island', () => {
 			screen.getByText(/1 espacio se borra pronto y su anfitrión aún no descarga/),
 		).toBeInTheDocument();
 		expect(screen.getAllByRole('article')[0]).toHaveAccessibleName('Boda sin descargar');
+	});
+
+	it('warns when no main host can see a space', async () => {
+		adminApi.list.mockResolvedValue({
+			items: [
+				adminItem(
+					{ ...OPEN_SPACE, eventId: 'event-5', eventTitle: 'Boda sin anfitrión' },
+					{},
+					{ hasOwner: false },
+				),
+				adminItem({ ...OPEN_SPACE, eventId: 'event-6', eventTitle: 'Boda con anfitrión' }),
+			],
+			totals: NO_COMMITMENT,
+			candidates: [],
+		});
+
+		render(<MemoriesAdmin />);
+
+		const orphan = within(await screen.findByRole('article', { name: 'Boda sin anfitrión' }));
+		expect(orphan.getByRole('alert')).toHaveTextContent(
+			'Ningún anfitrión principal puede ver este espacio',
+		);
+		const owned = within(screen.getByRole('article', { name: 'Boda con anfitrión' }));
+		expect(owned.queryByRole('alert')).not.toBeInTheDocument();
 	});
 
 	it('keeps the form open with the conflict message when activation returns 409', async () => {

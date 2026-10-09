@@ -470,8 +470,9 @@ deployment.
 - **Admin API:** `GET|POST /api/dashboard/admin/memories` (the list carries per-space usage and the
   committed-capacity total), `PATCH /api/dashboard/admin/memories/:eventId` (edit, pause, resume;
   audited with the previous and new `enabled`), and `GET /api/dashboard/admin/memories/:eventId/qr`.
-  Admin usage is aggregate only (counts, bytes, dates): administrators never see guest names,
-  aliases, object keys, captions or media.
+  Each listed space carries `hasOwner`; a space whose event has no active `owner` membership shows a
+  warning, since no host can open its organizer. Admin usage is aggregate only (counts, bytes,
+  dates): administrators never see guest names, aliases, object keys, captions or media.
 - **Usage sources:** per-space figures come from `event_memory_items` rows that still hold an R2
   object (the same set the reservation quota counts) and from session counts; the committed-capacity
   total compares them with the shared R2 allowance in `CLOUDFLARE_FREE_TIER`

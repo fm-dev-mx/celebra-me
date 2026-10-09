@@ -308,6 +308,8 @@ export interface MemoriesAdminSpaceItem extends MemoriesSpaceRecord {
 	eventDate: string | null;
 	/** Latest file download by a host; proves a download happened, not that it was complete. */
 	lastHostDownloadAt: string | null;
+	/** True when an active `owner` membership exists; only owners see the organizer surface. */
+	hasOwner: boolean;
 }
 
 export interface MemoriesAdminTotals {

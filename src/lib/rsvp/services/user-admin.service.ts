@@ -6,6 +6,7 @@ import {
 	findAppUserRoleByUserIdService,
 	listEventMembershipsService,
 	createEventMembershipService,
+	findActiveEventMembershipService,
 	softDeleteEventMembershipService,
 	listUserRolesService,
 	upsertUserRoleService,
@@ -701,6 +702,7 @@ export async function updateUserEventMembershipAdmin(input: {
 	eventId: string;
 	action: 'assign' | 'remove';
 	membershipRole: 'owner' | 'manager' | null;
+	previousMembershipRole: 'owner' | 'manager' | null;
 	changedAt: string;
 }> {
 	const userId = sanitize(input.userId, 120);
@@ -711,6 +713,9 @@ export async function updateUserEventMembershipAdmin(input: {
 
 	if (input.action === 'assign') {
 		const membershipRole = input.membershipRole === 'owner' ? 'owner' : 'manager';
+		// Assigning an event the user already holds changes the role in place (the upsert
+		// merges on event_id + user_id); the audit keeps the previous role.
+		const previous = await findActiveEventMembershipService({ eventId, userId });
 		const membership = await createEventMembershipService({
 			eventId,
 			userId,
@@ -719,10 +724,10 @@ export async function updateUserEventMembershipAdmin(input: {
 
 		await logAdminAction({
 			actorId: sanitize(input.actorUserId, 120),
-			action: 'assign_event_membership',
+			action: previous ? 'change_event_membership_role' : 'assign_event_membership',
 			targetTable: 'event_memberships',
 			targetId: membership.id,
-			oldData: null,
+			oldData: previous as unknown as Record<string, unknown> | null,
 			newData: membership as unknown as Record<string, unknown>,
 		});
 
@@ -731,6 +736,7 @@ export async function updateUserEventMembershipAdmin(input: {
 			eventId,
 			action: 'assign',
 			membershipRole: membership.membershipRole,
+			previousMembershipRole: previous?.membershipRole ?? null,
 			changedAt: membership.updatedAt,
 		};
 	}
@@ -760,6 +766,7 @@ export async function updateUserEventMembershipAdmin(input: {
 		eventId,
 		action: 'remove',
 		membershipRole: null,
+		previousMembershipRole: removed.membershipRole,
 		changedAt: new Date().toISOString(),
 	};
 }
