@@ -309,8 +309,10 @@ release-time visual confirmation. The confirmation reviews the candidate produce
 runtime and identifies the exact source SHA, matrix hash, and candidate-manifest SHA-256. Record
 that acceptance through `pnpm visual:parity:accept` before this step, land the accepted references
 on `develop` through the same merge integration as step 4, and wait for `Application Suite` on that
-resulting `develop` SHA. This is a human release decision, not an automatic action performed by CI
-or Vercel after a deployment begins.
+resulting `develop` SHA. The commit that changes the matrix (for example the `published` flip) is
+committed first with normal hooks; the matrix pin is a branch gate (`validate:changed`, CI), so the
+accepted references land in the following commit of the same task branch. This is a human release
+decision, not an automatic action performed by CI or Vercel after a deployment begins.
 
 If visual confirmation is missing or rejected, the candidate is not eligible for promotion or
 deployment. Do not reduce visual coverage, relax comparison, or treat a Preview build as approval.

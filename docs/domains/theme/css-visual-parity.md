@@ -161,7 +161,11 @@ and requires new coverage and acceptance; an older matrix cannot certify the add
 
 `pnpm visual:matrix:check` proves in seconds, without a browser, that the accepted references still
 cover the current matrix and match their PNG hashes. `validate:changed` runs it for visual-impact
-paths, and a unit test pins the committed `matrixHash`. A branch that publishes, retires or adds a
+paths, and a unit test pins the committed `matrixHash`. Both are branch gates, not commit gates: the
+accepted candidate can only be generated from the commit that changes the matrix, so the commit hook
+skips the pin (`CELEBRA_TEST_SCOPE=commit`) and the sequence is commit the lifecycle or variant
+change → `pnpm visual:parity:candidate:certified -- --sha <that commit>` → owner review →
+`pnpm visual:parity:accept` → commit the references. A branch that publishes, retires or adds a
 demo, invitation or variant must carry its approved candidate before integration; matrix drift must
 not reach a release.
 

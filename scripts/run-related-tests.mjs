@@ -32,6 +32,10 @@ if (jestArgs.length === 0) {
 console.log(`Validating staged inputs with Jest:\n- ${stagedFiles.join('\n- ')}`);
 
 const cleanEnv = { ...process.env };
+// Branch-level pins (for example the accepted visual matrix hash) skip under the commit hook: the
+// artifact they pin can only be produced after the commit that changes its input. `validate:changed`
+// and Repository CI still enforce them before integration.
+cleanEnv.CELEBRA_TEST_SCOPE = 'commit';
 for (const key of Object.keys(cleanEnv)) {
 	if (
 		/^GIT_(?:DIR|WORK_TREE|INDEX_FILE|OBJECT_DIRECTORY|ALTERNATE_OBJECT_DIRECTORIES|PREFIX)$/iu.test(
