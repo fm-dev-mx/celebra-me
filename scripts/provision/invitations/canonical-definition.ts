@@ -27,6 +27,8 @@ export interface CanonicalInvitationOptions {
 	>;
 	/** Explicit: hosted targets only receive `published` definitions, so no default is implied. */
 	lifecycle: InvitationDefinition['lifecycle'];
+	/** Owner-decided release-planning archive; never inferred from the event date. */
+	archive?: InvitationDefinition['archive'];
 	deliveryScope?: InvitationDefinition['deliveryScope'];
 }
 
@@ -97,6 +99,7 @@ export function defineCanonicalInvitation(
 		managedIdentityProvenance: options.managedIdentityProvenance,
 		createdAt: '2026-08-29T00:00:00.000Z',
 		lifecycle: options.lifecycle,
+		...(options.archive ? { archive: options.archive } : {}),
 		deliveryScope: options.deliveryScope ?? 'content-only',
 		eventType: options.eventType,
 		title: options.title,

@@ -398,4 +398,8 @@ export const ayrinInvitation = defineCanonicalInvitation({
 	},
 	deliveryScope: 'content-and-assets',
 	lifecycle: 'published',
+	archive: {
+		decidedOn: '2026-10-09',
+		reason: 'Evento concluido; demo-xv-enchanted-rose conserva su diseño como muestra.',
+	},
 });
