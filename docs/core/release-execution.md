@@ -90,7 +90,9 @@ implementing these skills is never a live-release invocation.
    While a smoke rerun is queued or in progress, `--wait` keeps the smoke `PENDING` (state
    `rerun <status>`, field `smoke.rerun`) instead of reporting the previous failed attempt. When the
    image verification step fails, the run summary lists each failing route, asset and reason, and
-   the full JSON is uploaded as a short-lived artifact.
+   the full JSON is uploaded as a short-lived artifact. Package images the target has not received
+   yet are listed as `PENDING_PUBLISH` and never fail the smoke: they are a content backlog that
+   `pnpm dbs` resolves, not a delivery problem of the deployment.
 
 4. Only when the CI smoke cannot run (for example a failed dispatch), use `--smoke skip` and run
    `pnpm test:e2e:preview:public` locally against the reported URL, as both `PLAYWRIGHT_BASE_URL`

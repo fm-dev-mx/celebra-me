@@ -478,12 +478,13 @@ function throwInvitationApplyFailure(report: PromotionApplyReport): never {
 	});
 }
 
-/** Pre-apply checks the live objects only; the package comparison runs after the apply. */
+/** Pre-apply checks the live objects only; after the apply every package image must be live. */
 export const PRE_APPLY_MEDIA_VERIFICATION_FLAGS = [
 	'--provider-only',
 	'--allow-empty',
 	'--current-state',
 ] as const;
+export const POST_APPLY_MEDIA_VERIFICATION_FLAGS = ['--strict'] as const;
 
 async function verifyMediaBeforeApply(
 	item: ProductionApplyPlanItem,
@@ -542,6 +543,7 @@ async function verifyMediaAfterApply(
 						'production',
 						'--slug',
 						slug,
+						...POST_APPLY_MEDIA_VERIFICATION_FLAGS,
 					]);
 				});
 	if (verify) {

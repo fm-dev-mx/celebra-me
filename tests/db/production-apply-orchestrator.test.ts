@@ -8,10 +8,14 @@ import {
 	applyProductionApplyPlan,
 	buildProductionApplyPlan,
 	invitationItemsNeedingRevalidation,
+	POST_APPLY_MEDIA_VERIFICATION_FLAGS,
 	PRE_APPLY_MEDIA_VERIFICATION_FLAGS,
 	type ProductionApplyExecuteDeps,
 } from '../../scripts/db/production-apply-orchestrator.ts';
-import { comparesToReleasePackage } from '../../scripts/invitation/verify-published-images.ts';
+import {
+	comparesToReleasePackage,
+	isMediaVerificationFailure,
+} from '../../scripts/invitation/verify-published-images.ts';
 import {
 	formatProductionApplyPlan,
 	toPublicProductionApplyPlan,
@@ -578,6 +582,15 @@ describe('production apply execution', () => {
 		// A package that adds or replaces an image would otherwise fail its own precheck.
 		expect(comparesToReleasePackage(PRE_APPLY_MEDIA_VERIFICATION_FLAGS)).toBe(false);
 		expect(comparesToReleasePackage(['--target', 'production', '--slug', 'demo'])).toBe(true);
+	});
+
+	it('treats a package image still pending as a failure only after the apply', () => {
+		const pending = { classification: 'PENDING_PUBLISH' as const };
+		expect(isMediaVerificationFailure(pending, POST_APPLY_MEDIA_VERIFICATION_FLAGS)).toBe(true);
+		expect(isMediaVerificationFailure(pending, ['--target', 'production', '--all'])).toBe(
+			false,
+		);
+		expect(isMediaVerificationFailure({ classification: 'MISSING' }, [])).toBe(true);
 	});
 
 	it('does not prompt when everything is already applied', async () => {

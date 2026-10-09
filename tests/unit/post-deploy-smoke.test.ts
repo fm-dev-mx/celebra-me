@@ -335,6 +335,10 @@ describe('post-deploy smoke', () => {
 		expect(workflow).toContain("'vercel.deployment.promoted'");
 		expect(workflow).toContain('ref: ${{ github.event.client_payload.git.sha }}');
 		expect(workflow).toContain('cancel-in-progress: true');
+		// `ready` and `promoted` dispatches for the same ref must not cancel each other.
+		expect(workflow).toContain(
+			'group: post-deploy-smoke-${{ github.event.action }}-${{ github.event.client_payload.environment }}-${{ github.event.client_payload.git.ref }}',
+		);
 		expect(workflow).toContain('environment: Production');
 		expect(workflow).toContain('PROD_DB_URL: ${{ secrets.PROD_DB_URL }}');
 		expect(workflow).toContain(
@@ -376,6 +380,9 @@ describe('post-deploy smoke', () => {
 		);
 		expect(preview).toContain('tee -a "$GITHUB_STEP_SUMMARY"');
 		expect(preview).toContain('exit "$status"');
+		// Content not yet published to Preview is listed, never counted as a failure.
+		expect(preview).toContain('.classification == "PENDING_PUBLISH"');
+		expect(preview).toContain('.classification != "PENDING_PUBLISH"');
 		const upload = preview.slice(preview.indexOf('- name: Upload media verification report'));
 		expect(upload).toContain('if: always()');
 		expect(upload).toContain('uses: actions/upload-artifact@v7');
