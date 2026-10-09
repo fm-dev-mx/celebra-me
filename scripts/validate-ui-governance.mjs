@@ -29,6 +29,9 @@ const allowedHydratedComponents = new Set([
 	// service-role helpers, Meta tokens, or node:* dependencies.
 	'SalesWorkspace',
 	'CapiOutboxPanel',
+	// Demo catalog — clipboard copy feedback only; receives serialized demo links as props
+	// and imports pure labels/types. No fetch, no server-only modules.
+	'DemoCatalog',
 	// Small behavior islands and public interactive surfaces.
 	'DashboardUserMenu',
 	'MfaSetupBehavior',
