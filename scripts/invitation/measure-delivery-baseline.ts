@@ -21,6 +21,7 @@ import {
 	type InvitationHtmlInventory,
 } from '../../src/lib/invitation/delivery-contract.ts';
 import { isMutableInPlaceMediaUrl } from '../../src/lib/assets/vercel-image-policy.ts';
+import { evaluateImageDeliveryBudget } from '../../src/lib/invitation-preparation/image-delivery-budget.ts';
 import {
 	assertDeliveryBudgets,
 	DELIVERY_BENCHMARK_SCENARIOS,
@@ -152,7 +153,9 @@ async function fetchDocument(url: string): Promise<{ sample: DocumentSample; htm
 		sample: {
 			ttfbMs,
 			htmlBytes: decodedHtmlUtf8ByteLength(html),
-			contentLengthHeader: contentLengthHeader ? Number.parseInt(contentLengthHeader, 10) : null,
+			contentLengthHeader: contentLengthHeader
+				? Number.parseInt(contentLengthHeader, 10)
+				: null,
 			contentEncoding: response.headers.get('content-encoding'),
 			cacheControl: response.headers.get('cache-control'),
 			vercelCache: response.headers.get('x-vercel-cache'),
@@ -319,6 +322,14 @@ function printScenario(report: ScenarioReport): void {
 	console.log(
 		`  hero kind=${report.hero.kind ?? 'n/a'} delivered=${report.hero.deliveredBytes ?? 'n/a'} origin=${report.hero.originBytes ?? 'n/a'} cache=${report.hero.cacheControl ?? 'n/a'}`,
 	);
+	// Advisory: the per-role image policy is checked against the delivered hero, never enforced here.
+	if (report.hero.deliveredBytes !== null) {
+		const warnings = evaluateImageDeliveryBudget(
+			{ identity: `${report.path} hero`, role: 'hero', bytes: report.hero.deliveredBytes },
+			'desktop',
+		);
+		for (const warning of warnings) console.log(`  WARN image budget: ${warning}`);
+	}
 }
 
 async function main(): Promise<void> {
