@@ -17,6 +17,8 @@ import {
 import SalesWorkspace from '@/components/dashboard/commercial/SalesWorkspace';
 import DemoConversionReport from '@/components/dashboard/commercial/DemoConversionReport.astro';
 import { loadDemoConversionReport } from '@/lib/tracking/demo-conversion-report.server';
+import DemoCatalog from '@/components/dashboard/commercial/DemoCatalog';
+import { loadDemoLinks } from '@/lib/commercial/demo-inventory.server';
 import CapiOutboxPanel from '@/components/dashboard/commercial/CapiOutboxPanel';
 import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLogList';
 import { getEnv } from '@/lib/server/env';
@@ -26,6 +28,7 @@ if (!Astro.locals.session?.isSuperAdmin) {
 	return Astro.redirect('/dashboard/invitados');
 }
 
+const demoLinks = await loadDemoLinks();
 let dashboardData: CommercialDashboardSummary | null = null;
 let demoReport: Awaited<ReturnType<typeof loadDemoConversionReport>> | null = null;
 try { demoReport = await loadDemoConversionReport(Astro.url.searchParams.get('days') === '60' ? 60 : 30); } catch {
@@ -123,6 +126,7 @@ const revenueAttribution = dashboardData
 			</div>
 		)}
 
+		<DemoCatalog client:load demos={demoLinks} />
 		<DemoConversionReport report={demoReport} />
 		{dashboardData && viewModel && (
 			<>
