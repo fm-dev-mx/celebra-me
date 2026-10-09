@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 /** Read-only published invitation media verification for Preview and Production. */
 import { createHash } from 'node:crypto';
+import { flagValue as option } from '../lib/cli-args.ts';
 import sharp from 'sharp';
 import { collectUploadedContentRefs } from '../../src/lib/invitation-preparation/uploaded-content-refs.ts';
 import {
@@ -296,11 +297,6 @@ function readPublishedInvitations(
 	) t;`;
 	const result = runPsql(sql, dbUrl, { tuplesOnly: true, throwOnError: true });
 	return JSON.parse(result.stdout.trim()) as PublishedInvitation[];
-}
-
-function option(args: readonly string[], name: string): string | undefined {
-	const index = args.indexOf(name);
-	return index >= 0 ? args[index + 1] : undefined;
 }
 
 async function verifyPublicRoute(

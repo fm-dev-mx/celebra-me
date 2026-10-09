@@ -81,35 +81,16 @@ describe('invitation:release Production dispatch', () => {
 		);
 	});
 
-	it('TTY modeCount===0 delegates to destination wizard (not next-action chain)', () => {
+	it('without a mode flag points the operator at pnpm dbs instead of a second menu', () => {
 		const cli = readFileSync(
 			resolve(process.cwd(), 'scripts/provision/invitation-release-cli.ts'),
 			'utf8',
 		);
-		expect(cli).toContain('runDestinationReleaseWizard');
-		expect(cli).toContain('Ignore leftover --targets');
+		// The release CLI executes explicit modes; dbs is the single interactive entry point.
+		expect(cli).not.toContain('runDestinationReleaseWizard');
+		expect(cli).not.toContain('invitation-release-wizard');
+		expect(cli).toContain('El menú interactivo es pnpm dbs');
 		expect(cli).not.toContain('deriveInvitationReleaseNextAction');
-		const wizard = readFileSync(
-			resolve(process.cwd(), 'scripts/provision/invitation-release-wizard.ts'),
-			'utf8',
-		);
-		const sessionMenus = readFileSync(
-			resolve(process.cwd(), 'scripts/provision/wizard/wizard-session.ts'),
-			'utf8',
-		);
-		expect(sessionMenus).toContain("describeDestination('local')");
-		expect(sessionMenus).toContain("describeDestination('prepare_preview')");
-		expect(sessionMenus).toContain("describeDestination('production')");
-		const stages = readFileSync(
-			resolve(process.cwd(), 'scripts/provision/wizard/wizard-stages.ts'),
-			'utf8',
-		);
-		expect(stages).toContain('expectedSourceHash');
-		expect(stages).toContain('expectedPackageHash');
-		expect(wizard).toContain('runPromotionPreflight');
-		expect(wizard).toContain('pnpm prod:apply');
-		expect(wizard).not.toContain('orchestrateInvitationPromotion');
-		expect(wizard).not.toContain('reviewedPreflight');
 	});
 
 	it('strips targetDbUrl from public JSON reports', () => {

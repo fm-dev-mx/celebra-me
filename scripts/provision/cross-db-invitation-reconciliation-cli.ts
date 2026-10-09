@@ -8,6 +8,7 @@
  */
 
 import type { TargetEnv } from './dbs-status.ts';
+import { flagValue as value } from '../lib/cli-args.ts';
 import { runCrossDbInvitationReconciliation } from './cross-db-invitation-reconciliation.ts';
 
 function parseTargets(raw: string | undefined): TargetEnv[] | undefined {
@@ -23,11 +24,6 @@ function parseTargets(raw: string | undefined): TargetEnv[] | undefined {
 		}
 	}
 	return parts as TargetEnv[];
-}
-
-function value(args: string[], flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	return index >= 0 ? args[index + 1] : undefined;
 }
 
 function printHelp(): void {

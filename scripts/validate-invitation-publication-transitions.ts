@@ -1,11 +1,7 @@
 #!/usr/bin/env node
 import { basename } from 'node:path';
+import { flagValue as value } from './lib/cli-args.ts';
 import { buildPublicationTransitionReport } from './provision/invitation-publication-transition.ts';
-
-function value(args: string[], flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	return index >= 0 ? args[index + 1] : undefined;
-}
 
 function main(): void {
 	const args = process.argv.slice(2);
