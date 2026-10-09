@@ -1,8 +1,6 @@
 #!/usr/bin/env tsx
 /** Read-only published invitation media verification for Preview and Production. */
 import { createHash } from 'node:crypto';
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
 import sharp from 'sharp';
 import { collectUploadedContentRefs } from '../../src/lib/invitation-preparation/uploaded-content-refs.ts';
 import {
@@ -68,8 +66,6 @@ export interface MediaVerificationRow {
 	url: string | null;
 	reasons: string[];
 }
-
-type RecoveryAction = 'NONE' | 'REPUBLISH_CONTENT_REFERENCE' | 'REUPLOAD_SAME_ID' | 'BLOCK';
 
 function redactedUrl(value: string | null): string | null {
 	if (!value) return null;
@@ -307,41 +303,6 @@ function option(args: readonly string[], name: string): string | undefined {
 	return index >= 0 ? args[index + 1] : undefined;
 }
 
-function recoveryAction(row: MediaVerificationRow): RecoveryAction {
-	if (row.classification === 'HEALTHY') return 'NONE';
-	if (
-		row.reasons.length > 0 &&
-		row.reasons.every((reason) => reason.startsWith('published content URL:'))
-	)
-		return 'REPUBLISH_CONTENT_REFERENCE';
-	if (row.classification === 'MISSING' && row.expectedHash) return 'REUPLOAD_SAME_ID';
-	return 'BLOCK';
-}
-
-function writeRecoveryManifests(
-	directory: string,
-	target: MediaVerificationTarget,
-	rows: readonly MediaVerificationRow[],
-): void {
-	const absolute = resolve(directory);
-	mkdirSync(absolute, { recursive: true });
-	const routes = [...new Set(rows.map((row) => row.route))].sort();
-	for (const route of routes) {
-		const assets = rows
-			.filter((row) => row.route === route)
-			.map((row) => ({ ...row, action: recoveryAction(row) }))
-			.sort((left, right) => left.assetKey.localeCompare(right.assetKey));
-		const identity = { schemaVersion: 1, target, route, assets };
-		const planId = createHash('sha256').update(JSON.stringify(identity)).digest('hex');
-		const slug = route.split('/').at(-1) ?? route.replaceAll('/', '-');
-		writeFileSync(
-			join(absolute, `${slug}.json`),
-			`${JSON.stringify({ ...identity, planId }, null, 2)}\n`,
-			{ flag: 'wx' },
-		);
-	}
-}
-
 async function verifyPublicRoute(
 	originValue: string,
 	published: PublishedInvitation,
@@ -456,8 +417,6 @@ export async function runPublishedImageVerification(args: readonly string[]): Pr
 			if (routeFailure) rows.push(routeFailure);
 		}
 	}
-	const manifestDir = option(args, '--manifest-dir');
-	if (manifestDir) writeRecoveryManifests(manifestDir, target, rows);
 	return { target, rows };
 }
 

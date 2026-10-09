@@ -32,7 +32,8 @@ function parseJsonObject<T>(raw: string, label: string): T {
 	}
 }
 
-const EXCLUDED_LIFECYCLE = new Set(['draft', 'in_progress']);
+// `invitations.status` never holds `in_progress`; repo lifecycle is a separate concept.
+const EXCLUDED_LIFECYCLE = new Set(['draft']);
 
 function classifyGuest(
 	fullName: string,
@@ -192,7 +193,9 @@ export function assessMigration(
 		classification: classifyGuest(guest.fullName, guest.hasEmail, guest.hasPhone),
 	}));
 	const notes: string[] = [];
-	const reviewGuests = guestCandidates.filter((g) => g.classification === 'requires_migration_review');
+	const reviewGuests = guestCandidates.filter(
+		(g) => g.classification === 'requires_migration_review',
+	);
 	if (deps.claimCodes > 0) {
 		notes.push('Exclusive access/claim codes exist on the incorrect invitation.');
 	}
@@ -200,10 +203,14 @@ export function assessMigration(
 		notes.push('Non-synthetic guest rows require explicit migration review before delete.');
 	}
 	if (guestCandidates.some((g) => g.classification === 'synthetic_test')) {
-		notes.push('Synthetic dashboard test guests are exclusive disposable fixtures; migration not required.');
+		notes.push(
+			'Synthetic dashboard test guests are exclusive disposable fixtures; migration not required.',
+		);
 	}
 	if (deps.memberships > 0) {
-		notes.push('Exclusive event memberships will be removed with the incorrect event (canonical host already exists).');
+		notes.push(
+			'Exclusive event memberships will be removed with the incorrect event (canonical host already exists).',
+		);
 	}
 	const required = reviewGuests.length > 0 || deps.claimCodes > 0;
 	return {
@@ -436,7 +443,10 @@ commit;
 `;
 	const result = runPsql(sql, dbUrl, { tuplesOnly: true, throwOnError: false });
 	if (result.status !== 0) {
-		return { ok: false, error: result.stderr.trim() || result.stdout.trim() || 'psql exit non-zero' };
+		return {
+			ok: false,
+			error: result.stderr.trim() || result.stdout.trim() || 'psql exit non-zero',
+		};
 	}
 	return { ok: true };
 }
@@ -589,10 +599,7 @@ export function collectPurgeBlockReasons(
 			'UNRESOLVED_GUESTS: Non-synthetic guest rows remain; migrate or disposition before purge.',
 		);
 	}
-	if (
-		input.requireCanonicalAssetHashEquivalence !== false &&
-		!assetHashEquivalence.ok
-	) {
+	if (input.requireCanonicalAssetHashEquivalence !== false && !assetHashEquivalence.ok) {
 		blockReasons.push(
 			`ASSET_HASH_EQUIVALENCE_FAILED: incorrect asset hashes missing on canonical: ${assetHashEquivalence.missingOnCanonical.join(', ')}`,
 		);

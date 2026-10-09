@@ -22,21 +22,6 @@ export {
 } from './migration-probe.ts';
 
 export {
-	classifyPackageHashContent,
-	type ContentStatusVocabulary,
-	type PackageHashContentInput,
-	type PackageHashContentResult,
-} from './classify-content.ts';
-
-export {
-	readManagedInvitationMeta,
-	readManagedInvitationMetaSync,
-	classifyManagedInvitationMeta,
-	type ManagedInvitationMeta,
-	type ClassifiedInvitationMeta,
-} from './invitation-meta.ts';
-
-export {
 	buildGroupedPromotionalEvidenceSql,
 	readGroupedPromotionalEvidence,
 	type GroupedPromotionalEvidence,

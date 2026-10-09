@@ -2,7 +2,7 @@
  * promotion-decision.test.ts — Goal 1 promotion matrix
  */
 import { describe, expect, it } from '@jest/globals';
-import { decidePromotionAction } from '../../scripts/provision/promotion-decision.ts';
+import { decidePromotionAction } from '../../src/lib/status/decision.ts';
 import type { EnvironmentPromotionState } from '../../scripts/provision/promotional-fingerprint.ts';
 
 function decide(

@@ -266,7 +266,7 @@ each image. All SHA-256 hashes differ. WhatsApp copies of the main photograph ar
 
 Sources are 1600 px on the long edge: sufficient for the framed portrait hero and gallery, below the
 hero-desktop 2560 px ladder start. Do not upscale; confirm role budgets with
-`pnpm invitation:media:audit`.
+`pnpm invitation:media:verify -- --target preview --slug mia-pintor`.
 
 ### Uniqueness table (required before READY_*)
 

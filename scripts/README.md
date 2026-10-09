@@ -26,7 +26,7 @@ are no longer registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation 
 | Command                              | Audience      | Canonical Script                                              | Purpose                                                                              |
 | ------------------------------------ | ------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | `pnpm dbs`                           | Human / agent | `scripts/provision/dbs-cli.ts`                                | Canonical read-only matrix: schema, publication, readiness, Production authorization |
-| `pnpm dbs --compact`                 | Human / agent | `scripts/provision/managed-status.ts`                         | Connectivity CONTENT + SCHEMA only (not publication; Git-hook friendly)              |
+| `pnpm dbs --compact`                 | Human / agent | `scripts/provision/dbs-cli.ts` (→ `managed-status.ts`)        | Connectivity CONTENT + SCHEMA only (not publication; Git-hook friendly)              |
 | `pnpm invitation:release`            | Human / agent | `scripts/provision/invitation-release-cli.ts`                 | Define, plan, apply, approve, and release managed invitations                        |
 | `pnpm invitation:hash-baseline`      | Human / agent | `scripts/provision/release-hash-baseline.ts`                  | Read-only packageHash guard for active invitations; `--update` after a release       |
 | `pnpm invitation:reconcile`          | Human / agent | `scripts/provision/invitation-reconcile-cli.ts`               | Guided Local/Preview managed divergence reconciliation                               |
@@ -43,9 +43,10 @@ Operator cards:
 
 The CLI resolves source/package input through `invitation-package-input.ts`, retains one immutable
 plan per target, and delegates mutation ordering/result synthesis to
-`invitation-lifecycle-execution.ts`. Preview apply uses `preview-apply.ts`. Production promotion
-uses `invitation-promote.ts` + `production-preflight.ts` + the managed import engine. Any blocked
-selected target aborts the complete mutation phase.
+`invitation-lifecycle-execution.ts`. Preview apply uses `preview-apply.ts`. Production is read-only
+here (`--targets production --dry-run` → `invitation-promote.ts` preflight); the owner applies with
+`pnpm prod:apply` (`scripts/db/production-apply-cli.ts`), which drives the same preflight plus the
+managed import engine. Any blocked selected target aborts the complete mutation phase.
 
 ## Validation Commands
 
