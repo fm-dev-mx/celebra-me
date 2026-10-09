@@ -18,11 +18,7 @@ import {
 	assertVisualComparisonReady,
 	resolveVisualParityMode,
 } from './harness/visual-baseline-policy';
-import {
-	markVisualSuiteStarted,
-	resolveVisualOutputRoot,
-	visualSuiteMode,
-} from './harness/visual-capture-record';
+import { markVisualSuiteStarted, resolveVisualOutputRoot } from './harness/visual-capture-record';
 import {
 	recordVisualCapture,
 	settleVisualCaptureWithRecapture,
@@ -82,7 +78,7 @@ function isAllowedVisualAssetUrl(rawUrl: string, baseOrigin: string): boolean {
 
 test.describe('Canonical invitation complete-page visual parity', () => {
 	// Captures are independent; each writes its own record and the run teardown aggregates them.
-	test.describe.configure({ mode: visualSuiteMode(), retries: 0 });
+	test.describe.configure({ mode: 'serial', retries: 0 });
 	test.beforeAll(() => markVisualSuiteStarted(resolveVisualOutputRoot(), 'pages'));
 	for (const entry of PAGE_CASES) {
 		for (const viewport of VIEWPORTS) {

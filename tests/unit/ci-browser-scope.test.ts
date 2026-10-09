@@ -24,7 +24,7 @@ describe('CI browser scope', () => {
 	it.each([
 		'docs/core/release-process.md',
 		'.agent/rules/gatekeeper.md',
-		'scripts/ops/ci-metrics.ts',
+		'scripts/ops/release-status.ts',
 		'scripts/db/migrate-cli.ts',
 		'tests/unit/example.test.ts',
 		'supabase/migrations/0001.sql',
@@ -84,7 +84,7 @@ describe('CI browser scope', () => {
 			eventName: 'push',
 			refName: 'develop',
 			proven,
-			changedPaths: ['docs/core/release-process.md', 'scripts/ops/ci-metrics.ts'],
+			changedPaths: ['docs/core/release-process.md', 'scripts/ops/release-status.ts'],
 		});
 		expect(decision.browser).toBe('skip');
 		expect(decision.sourceRunId).toBe(42);

@@ -16,23 +16,15 @@ on:
                 type: choice
                 options: [compare, candidate]
                 default: compare
-            # Paired-trial inputs: the defaults reproduce the certified serial comparison.
-            capture_execution:
-                description: 'Visual capture execution for a paired trial'
-                type: choice
-                options: [serial, parallel]
-                default: serial
-            browser_workers:
-                description: 'Playwright workers for a paired trial'
-                type: choice
-                options: ['2', '4']
-                default: '2'
     push:
         branches:
             - develop
+    # Pull requests into develop (for example Dependabot updates) are validated before they land;
+    # pull requests into main are release promotions.
     pull_request:
         types: [opened, synchronize, reopened]
         branches:
+            - develop
             - main
 
 # Independent tiers isolate browser and disposable database state.
@@ -239,6 +231,11 @@ jobs:
               if: matrix.tier == 'static'
               run: pnpm ci:static
 
+            # Bundles both memories Workers for every environment without deploying or authenticating.
+            - name: Memories Worker bundles
+              if: matrix.tier == 'static'
+              run: pnpm worker:memories:dry-run
+
             - name: Unit tests
               if: matrix.tier == 'unit'
               run: pnpm test
@@ -296,10 +293,7 @@ jobs:
               id: browser-checks
               if: github.event.inputs.visual_mode != 'candidate'
               continue-on-error: true
-              env:
-                  BROWSER_WORKERS: ${{ github.event.inputs.browser_workers || '2' }}
-                  VISUAL_PARITY_PARALLEL: ${{ github.event.inputs.capture_execution == 'parallel' && '1' || '0' }}
-              run: pnpm test:e2e:ci --max-failures=5 --workers="$BROWSER_WORKERS"
+              run: pnpm test:e2e:ci --max-failures=5 --workers=2
 
             - name: Classify browser outcome
               id: browser-outcome
@@ -375,40 +369,3 @@ jobs:
                   else
                     test "$APPLICATION_RESULT" = success && test "$BROWSER_RESULT" = success
                   fi
-
-    validation-metrics:
-        name: Validation metrics
-        needs:
-            [
-                evidence-reuse,
-                browser-scope,
-                policy-validation,
-                application-checks,
-                browser-validation,
-                application-validation,
-            ]
-        if: always()
-        runs-on: ubuntu-24.04
-        steps:
-            - uses: actions/checkout@v7
-            - name: Setup Node.js
-              uses: actions/setup-node@v7
-              with:
-                  node-version: '24.14.1'
-            - name: Record measured validation cost
-              id: validation-evidence
-              env:
-                  GH_TOKEN: ${{ github.token }}
-                  VISUAL_PARITY_MODE: ${{ github.event.inputs.visual_mode || 'compare' }}
-                  BROWSER_CHECK_OUTCOME: ${{ needs.browser-validation.outputs.check-outcome || 'code' }}
-                  CAPTURE_EXECUTION: ${{ github.event.inputs.capture_execution || 'serial' }}
-                  BROWSER_WORKERS: ${{ github.event.inputs.browser_workers || '2' }}
-                  EVIDENCE_SOURCE_RUN_ID: ${{ needs.evidence-reuse.outputs.source-run-id }}
-                  BROWSER_SCOPE: ${{ needs.browser-scope.outputs.browser || 'run' }}
-                  BROWSER_SCOPE_SOURCE_RUN_ID: ${{ needs.browser-scope.outputs.source-run-id }}
-              run: node scripts/ops/ci-metrics.ts
-            - uses: actions/upload-artifact@v7
-              with:
-                  name: validation-metrics-${{ github.run_id }}-${{ github.run_attempt }}
-                  path: .tmp/validation-metrics.json
-                  include-hidden-files: true

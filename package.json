@@ -26,6 +26,7 @@
         "test:e2e:preview:publish": "playwright test --config=playwright.preview-publication.config.ts",
         "test:e2e:infra": "node scripts/run-e2e-tier.mjs infra",
         "test:e2e:visual": "node scripts/run-e2e-tier.mjs visual",
+        "test:e2e:extended": "node scripts/run-e2e-tier.mjs extended",
         "type-check": "astro check && tsc --noEmit -p tsconfig.json",
         "release-check": "tsx scripts/db/release-check.ts",
         "ci": "pnpm ci:static && pnpm test && pnpm test:e2e:ci",

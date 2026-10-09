@@ -63,7 +63,7 @@ describe('related Jest source selection', () => {
 		const visualImpactFiles = evaluateModuleScript<string[]>(`
 			import { buildValidationPlan } from ${JSON.stringify(VALIDATION_RUNNER_MODULE)};
 			const plan = buildValidationPlan(
-				['src/styles/app.scss', 'scripts/ops/ci-metrics.ts'],
+				['src/styles/app.scss', 'scripts/ops/release-status.ts'],
 				() => true,
 			);
 			process.stdout.write(JSON.stringify(plan.visualImpactFiles));

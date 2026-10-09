@@ -142,7 +142,10 @@ describe('canonical validation contract', () => {
 			expect(workflow).toContain('pull_request:');
 			expect(workflow).toMatch(/^\s{4}push:\s*$/m);
 			expect(workflow).toMatch(/push:\s*\n\s+branches:\s*\n\s+- develop/);
-			expect(workflow).not.toMatch(/pull_request:[\s\S]*?branches:\s*\n\s+- develop/);
+			// Pull requests into develop (Dependabot) and into main (release) are both validated.
+			expect(workflow).toMatch(
+				/pull_request:[\s\S]*?branches:\s*\n\s+- develop\s*\n\s+- main/,
+			);
 			expect(workflow).toContain('            - main');
 			expect(workflow).toContain('policy-validation:');
 			expect(workflow).toContain('name: Repository Policy');
@@ -154,7 +157,7 @@ describe('canonical validation contract', () => {
 			for (const command of [
 				'pnpm ci:static',
 				'pnpm test',
-				'pnpm test:e2e:ci --max-failures=5 --workers="$BROWSER_WORKERS"',
+				'pnpm test:e2e:ci --max-failures=5 --workers=2',
 			]) {
 				expect(workflowLines).toContain(`run: ${command}`);
 			}
@@ -190,15 +193,8 @@ describe('canonical validation contract', () => {
 		);
 		const workflowCommand = workflow.match(/run: (pnpm test:e2e:ci .*)/)?.[1];
 
-		expect(workflow).toContain(
-			"BROWSER_WORKERS: ${{ github.event.inputs.browser_workers || '2' }}",
-		);
-		expect(workflow).toContain(
-			"VISUAL_PARITY_PARALLEL: ${{ github.event.inputs.capture_execution == 'parallel' && '1' || '0' }}",
-		);
-		expect(workflow).toMatch(/capture_execution:[\s\S]*?default: serial/);
-		expect(workflow).toMatch(/browser_workers:[\s\S]*?default: '2'/);
-		expect(workflowCommand?.replace('"$BROWSER_WORKERS"', '2')).toBe(CERTIFIED_BROWSER_COMMAND);
+		expect(workflow).not.toContain('VISUAL_PARITY_PARALLEL');
+		expect(workflowCommand).toBe(CERTIFIED_BROWSER_COMMAND);
 	});
 
 	it('skips application tiers only for confirmed integration evidence', () => {

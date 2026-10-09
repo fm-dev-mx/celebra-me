@@ -26,11 +26,7 @@ import {
 	assertVisualComparisonReady,
 	resolveVisualParityMode,
 } from './harness/visual-baseline-policy';
-import {
-	markVisualSuiteStarted,
-	resolveVisualOutputRoot,
-	visualSuiteMode,
-} from './harness/visual-capture-record';
+import { markVisualSuiteStarted, resolveVisualOutputRoot } from './harness/visual-capture-record';
 import {
 	collectCaptureGeometry,
 	shouldProbeCaptureGeometry,
@@ -104,7 +100,7 @@ test('certified comparison rejects a deliberately different rendered page', asyn
 });
 
 test.describe('Registry-Driven Visual Portability Suite', () => {
-	test.describe.configure({ mode: visualSuiteMode(), retries: 0 });
+	test.describe.configure({ mode: 'serial', retries: 0 });
 	test.beforeAll(() => markVisualSuiteStarted(resolveVisualOutputRoot(), 'variants'));
 	// Baseline Preset: jewelry-box (all registered canonical variants)
 	for (const entry of CANONICAL_VARIANT_REGISTRY) {
