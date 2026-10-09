@@ -1,9 +1,9 @@
 ---
 name: branch-lane
 description: |
-  Prepare releases or promote/sync develop and main through the existing parity and checkpoint workflow. Git writes require exact current-task authorization; this skill does not perform database or deployment operations.
+  Prepare releases or promote/sync develop and main through the existing parity and diagnosis workflow. Git writes require exact current-task authorization; this skill does not perform database or deployment operations.
 domain: workflow
-version: 2.2.2
+version: 2.3.0
 absorbed_skills: [release-prepare]
 when_to_use:
   - User asks to promote develop to main / fast-forward main / "promueve a main"
@@ -55,8 +55,6 @@ deployments. Those stay in `database-parity` / `docs/database-workflow.md`. Exec
 
 - `scripts/db/branch-lane-status.ts` — status + mode selection
 - `scripts/db/branch-migration-parity.ts` — `pnpm db:branch:parity`
-- `scripts/db/branch-lane-checkpoint.ts` — partial read-only progress (`.agent/tmp/`)
-- `scripts/db/branch-lane-clearance.ts` — write-ready clearance fingerprint (`.agent/tmp/`)
 - `scripts/db/branch-lane-diagnosis.ts` — read-only diagnosis / auth-plan helpers
 - `scripts/db/branch-lane-diagnose.ts` — `pnpm db:branch:diagnose` (evidence → JSON)
 - `scripts/db/branch-lane-disposable-remediate.ts` — verified disposable remediation
@@ -114,27 +112,17 @@ Helpers: `mayRequestUserInput`, `buildConsolidatedAuthorizationPlan` in
 `scripts/db/branch-lane-diagnosis.ts`. When the current Task Contract already authorizes the exact
 `laneDirection`, pass that direction as the ephemeral `alreadyAuthorizedGitDirection` input. This
 suppresses only the duplicate Git prompt; database permissions, decisions and blockers remain. Do
-not serialize it into checkpoints. The diagnosis CLI accepts it only through
+not persist it. The diagnosis CLI accepts it only through
 `--authorized-git-direction <exact-direction>`; match the reported `laneDirection` after checking
 full source/target SHAs against the Task Contract.
 
-## Checkpoint vs clearance
+## Evidence freshness
 
-| Artifact   | File                                     | Meaning                                                      |
-| ---------- | ---------------------------------------- | ------------------------------------------------------------ |
-| Checkpoint | `.agent/tmp/branch-lane-checkpoint.json` | Reusable **partial** read-only evidence; blockers may remain |
-| Clearance  | `.agent/tmp/branch-lane-clearance.json`  | Validated evidence permitting the **next authorized write**  |
-
-Fingerprint fields (both): `mode`, `baseSha`, `headSha`, `workingTreeFingerprint`,
-`sensitiveFileSetFingerprint`, `repoIdentityFingerprint`, `auditContractVersion`.
-
-Checkpoint also stores: `completedChecks`, `unresolvedFindings`, optional `diagnosis` snapshot.
-
-- Match → reuse unaffected completed checks; re-run only invalidated work.
-- Mismatch → invalidate silently and re-run (staleness alone is not a user-facing `Fail`).
-- Never store secrets, PII, credential-bearing URLs, or database contents.
-- Clearance `Pass` is written only after database-parity (when required) is clear for the planned
-  write. Checkpoint may be written earlier after meaningful read-only progress.
+Read-only evidence is not persisted between invocations. Each invocation re-runs
+`pnpm db:branch:parity --json` and `pnpm db:branch:diagnose` against the current base/head SHAs and
+working tree; both are fast and side-effect free. Evidence gathered for other SHAs or a different
+working tree is never reused for a write. Never store secrets, PII, credential-bearing URLs, or
+database contents in any report.
 
 ## Modes
 
@@ -209,21 +197,17 @@ Invoke immediately when:
 
 - database-sensitive files detected;
 - migration identity does not pass;
-- remote history/schema validation is required for clearance (head-only migrations, etc.).
+- remote history/schema validation is required before the write (head-only migrations, etc.).
 
 Do not dump parity procedure into this skill. Pass mode, base/head SHAs, and sensitive file list.
 Expect `database-parity` to diagnose local audit failures automatically before returning control for
 authorization.
 
-### 5. Resume: checkpoint then clearance
+### 5. Re-verify before writes
 
-Before writes, evaluate checkpoint then clearance:
-
-1. `evaluateResumeCheckpoint` — reuse completed read-only checks when valid.
-2. `evaluateResumeClearance` — only when write-ready evidence is required.
-
-Persist checkpoint after meaningful read-only progress. Persist clearance only when the next
-authorized write is fully validated.
+Immediately before an authorized write, re-run parity and diagnosis if HEAD, the base SHA or the
+working tree changed since they last ran. A write proceeds only on evidence for the exact SHAs it
+moves.
 
 ### 6. Authorization and decisions (after diagnosis is stable)
 
@@ -260,7 +244,7 @@ When the agent cannot complete a step, report `Needs manual action` with:
 - required environment/location
 - expected result
 - verification method
-- how to resume `/branch-lane` (re-invoke; checkpoint/clearance fingerprints will validate)
+- how to resume `/branch-lane` (re-invoke; read-only evidence is re-run for the current SHAs)
 
 State what the agent will do automatically on resume vs what the human must do.
 
@@ -296,9 +280,8 @@ Always present:
 ## Cross-mode flow
 
 - Habitual: task branches integrated into `develop` → (optional `release-prepare`) → push `develop`
-  → parity → (auto `database-parity` + diagnosis) → checkpoint → authorize → **promote** →
-  back-merge.
+  → parity → (auto `database-parity` + diagnosis) → authorize → **promote** → back-merge.
 - Back-merge / recovery: parity → (auto `database-parity` if needed) → authorize → **sync** (FF
   after a release; `--no-ff` merge only when the branches diverged) → later promote.
-- Release-prepare: advisory parity only; require parity clearance before a later DB-sensitive
+- Release-prepare: advisory parity only; require a passing parity run before a later DB-sensitive
   promote.

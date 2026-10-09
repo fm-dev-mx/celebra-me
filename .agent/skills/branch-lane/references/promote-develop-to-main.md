@@ -23,7 +23,7 @@ State every planned Git action with exact direction, for example:
 - `pnpm db:branch:parity -- --base origin/main --head origin/develop --json` completed.
   - `identityStatus: fail` → do not promote (`Hard blocked` / `Fail` per findings).
   - `requiresParityAudit: true` → parent already invoked `database-parity`; all blocking read-only
-    diagnosis finished; clearance fingerprint must be valid before writes.
+    diagnosis finished; parity and diagnosis must have run for the exact SHAs before writes.
 - Git-only promote without pending remote migrations is allowed only when compatibility is
   demonstrated; incompatible head↔remote schema is `Hard blocked`.
 - User explicitly authorized the planned Git writes in this task (`Needs authorization` until yes).
@@ -31,8 +31,8 @@ State every planned Git action with exact direction, for example:
 
 ## Procedure
 
-1. Confirm checkpoint then clearance fingerprints still match (parent handles). If invalidated,
-   re-run affected checks — do not treat staleness alone as failure.
+1. Confirm parity and diagnosis ran for the current SHAs (parent handles). If HEAD moved, re-run
+   affected checks — do not treat staleness alone as failure.
 2. In Integration (on `develop`), update and validate before touching `main`:
 
 ```bash
@@ -68,5 +68,5 @@ to `main`, use `--force` / `--force-with-lease`, or commit on `main`.
 
 ## Report
 
-Use the parent nine-section report. Include parity JSON summary, checkpoint/clearance validity,
+Use the parent nine-section report. Include parity JSON summary, the SHAs the evidence covers,
 lane-direction SHA wording, diagnosis outcomes, and each finding's status fields.

@@ -61,8 +61,9 @@ pnpm db:branch:parity -- --base <BASELINE> --head HEAD --json
 ```
 
 If `requiresParityAudit` is true, report findings with status `Skipped` for promote-time parity
-(file edits may continue) and require [`database-parity`](../../database-parity/SKILL.md) clearance
-before a later database-sensitive promote. Do not treat healthy sensitive detection as a failure.
+(file edits may continue) and require a passing [`database-parity`](../../database-parity/SKILL.md)
+run before a later database-sensitive promote. Do not treat healthy sensitive detection as a
+failure.
 
 Release-file edits themselves still require explicit authorization (`Needs authorization`) before
 writing `package.json` / `CHANGELOG.md`.
