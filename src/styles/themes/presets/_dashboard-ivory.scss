@@ -73,14 +73,8 @@
 	--dashboard-button-secondary-text: #1f1d1a;
 
 	// Success
-	--dashboard-button-success-bg: #dfeee2;
-	--dashboard-button-success-bg-hover: #d0e6d5;
-	--dashboard-button-success-border: #9cc7a6;
-	--dashboard-button-success-text: #1e5c33;
 
 	// Danger
-	--dashboard-button-danger-bg-hover: rgb(142 42 28 / 8%);
-	--dashboard-button-danger-border-hover: #8e2a1c;
 	--dashboard-button-danger-cta-bg: #8e2a1c;
 	--dashboard-button-danger-cta-bg-hover: #{color.change(#8e2a1c, $blackness: 30%)};
 	--dashboard-button-danger-cta-text: #fffdf9;
