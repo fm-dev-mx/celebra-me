@@ -52,11 +52,10 @@ jest.mock('../../scripts/db/db-workflow-lib', () => ({
 	runCommand: (...args: unknown[]) => mockRunCommand(...args),
 	runPsql: (...args: unknown[]) => mockRunPsql(...args),
 	redactDbUrl: (url: string) => url.replace(/:[^:@/]+@/, ':***@'),
-	getPreviewDbUrl: () => ({
+	requirePreviewDbUrl: () => ({
 		url: PREVIEW_DB_URL,
 		source: 'environment variable PREVIEW_DB_URL',
 	}),
-	assertPreviewDbUrl: (url: string) => new URL(url),
 }));
 
 jest.mock('../../scripts/db/db-guard', () => ({

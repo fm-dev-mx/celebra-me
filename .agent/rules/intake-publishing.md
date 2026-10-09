@@ -96,7 +96,8 @@ Rules:
   structures rather than silently dropping `groups`, `children` or `godparentGroups`.
 - Discard an obsolete draft with
   `pnpm invitation:draft-restore --slug <slug> --entire --target <env>`. (read-only dry-run by
-  default; Production writes require a backup manifest and owner confirmation).
+  default; Preview writes need YES on a TTY or `CELEBRA_TASK_SCOPE=preview:<slug>:draft-restore`;
+  Production writes require a backup manifest and owner confirmation).
 - Detect non-canonical persisted drafts (read-only) with
   `pnpm invitation:draft-audit --slug <slug> --target <env>` or inventory all drafts with
   `pnpm invitation:draft-audit --all --target <env>`.

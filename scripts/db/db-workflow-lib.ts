@@ -181,6 +181,13 @@ export function assertPreviewDbUrl(rawUrl: string): URL {
 	return new URL(rawUrl);
 }
 
+/** Resolve PREVIEW_DB_URL and fail closed unless it is the canonical hosted Preview project. */
+export function requirePreviewDbUrl(): { url: string; source: string } {
+	const resolved = getPreviewDbUrl();
+	assertPreviewDbUrl(resolved.url);
+	return resolved;
+}
+
 export function isSupabaseProductionHostname(hostname: string): boolean {
 	const host = hostname.toLowerCase();
 	return (

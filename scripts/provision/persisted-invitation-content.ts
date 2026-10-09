@@ -1,8 +1,8 @@
 /** Read-only access to the current draft and published invitation documents. */
 import {
-	getPreviewDbUrl,
 	getProdDbUrl,
 	LOCAL_DB_URL,
+	requirePreviewDbUrl,
 	runPsql,
 	sqlLiteral,
 } from '../db/db-workflow-lib.ts';
@@ -17,7 +17,7 @@ export interface PersistedInvitationContent {
 
 export function resolveTargetDbUrl(target: PersistedContentTarget): string {
 	if (target === 'production') return getProdDbUrl().url;
-	if (target === 'preview') return getPreviewDbUrl().url;
+	if (target === 'preview') return requirePreviewDbUrl().url;
 	return LOCAL_DB_URL;
 }
 

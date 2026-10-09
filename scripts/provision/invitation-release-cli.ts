@@ -52,7 +52,7 @@ import {
 	translatePreviewNamespaceFailure,
 } from './invitation-operator-guidance.ts';
 import { LOCAL_DB_URL, redactCredentials } from '../db/db-target-config.ts';
-import { assertPreviewDbUrl, getPreviewDbUrl, getProdDbUrl } from '../db/db-workflow-lib.ts';
+import { getProdDbUrl, requirePreviewDbUrl } from '../db/db-workflow-lib.ts';
 import { approvePreviewArtifactFromLiveVerification } from './preview-approval-service.ts';
 import { getDefaultPreviewApprovalStore } from './preview-approval-store.ts';
 import {
@@ -550,9 +550,7 @@ async function executePreviewTargetPlan(input: {
 	}
 	let dbUrl: string;
 	try {
-		const resolved = getPreviewDbUrl();
-		assertPreviewDbUrl(resolved.url);
-		dbUrl = resolved.url;
+		dbUrl = requirePreviewDbUrl().url;
 	} catch {
 		throw Object.assign(new Error('PREVIEW_DB_URL no configurada o perímetro inválido.'), {
 			mutationStarted: false,
@@ -1162,9 +1160,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			} else if (target === 'preview') {
 				let targetDbUrl: string | undefined;
 				try {
-					const resolved = getPreviewDbUrl();
-					assertPreviewDbUrl(resolved.url);
-					targetDbUrl = resolved.url;
+					targetDbUrl = requirePreviewDbUrl().url;
 				} catch {
 					targetDbUrl = undefined;
 				}
