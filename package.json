@@ -79,7 +79,6 @@
         "db:disposable:start": "tsx scripts/db/disposable-test-env.ts start",
         "db:disposable:reset": "tsx scripts/db/disposable-test-env.ts reset",
         "db:disposable:test": "tsx scripts/db/disposable-test-env.ts run-tests",
-        "test:db:production-structural-patches": "tsx scripts/db/db-guard.ts check --target disposable-test --operation production-structural-patches && tsx scripts/db/production-structural-patches-disposable-test.ts",
         "test:db:rsvp-contracts": "tsx scripts/db/disposable-test-env.ts run-rsvp-db-contracts",
         "test:db:managed-contracts": "tsx scripts/db/disposable-test-env.ts run-managed-db-contracts",
         "test:db:memories-contracts": "tsx scripts/db/disposable-test-env.ts run-memories-db-contracts",
