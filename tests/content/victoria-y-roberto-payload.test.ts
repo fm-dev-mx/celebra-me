@@ -85,19 +85,11 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		expect(profile).not.toContain('Clientes\\');
 	});
 
-	it('has source and derivative files for every declared asset path plus preserved originals', () => {
+	// Client originals live outside Git; only the prepared derivatives the definition declares ship.
+	it('has a prepared file for every declared asset path', () => {
 		const uniquePaths = new Set(VICTORIA_ASSET_SPECS.map((spec) => spec.relativePath));
 		for (const relativePath of uniquePaths) {
 			expect(fs.existsSync(path.join(assetDir, relativePath))).toBe(true);
-		}
-		for (const sourceName of [
-			'hero-source.jpg',
-			'gallery-01-source.jpg',
-			'interlude-01-source.jpg',
-			'interlude-02-source.jpg',
-			'thank-you-source.jpg',
-		]) {
-			expect(fs.existsSync(path.join(assetDir, sourceName))).toBe(true);
 		}
 	});
 
