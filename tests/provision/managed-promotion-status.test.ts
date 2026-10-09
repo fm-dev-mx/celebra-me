@@ -483,6 +483,7 @@ describe('canonical Production preflight refinement', () => {
 			definition('beta'),
 			definition('gamma'),
 			definition('delta'),
+			definition('epsilon'),
 		];
 		const environmentsBySlug = Object.fromEntries(
 			definitions.map((item) => [item.slug, { ...states }]),
@@ -503,6 +504,7 @@ describe('canonical Production preflight refinement', () => {
 			beta: productionReport('beta', 'BLOCKED', 'MISSING_PREVIEW_APPROVAL'),
 			gamma: productionReport('gamma', 'IN_SYNC'),
 			delta: productionReport('delta', 'BLOCKED', 'MANAGED_DIVERGENCE'),
+			epsilon: productionReport('epsilon', 'BLOCKED', 'UNPUBLISHED_DRAFT_DIVERGENCE'),
 		};
 
 		const result = await refineManagedPromotionsWithProductionPreflight({
@@ -537,6 +539,19 @@ describe('canonical Production preflight refinement', () => {
 			reasonCode: 'MANAGED_DIVERGENCE',
 			environments: { production: 'diverged' },
 			handoff: { applyCommand: null },
+		});
+		// An unpublished target draft is recoverable: dbs hands the owner the exact discard apply.
+		expect(result.promotions.find((row) => row.slug === 'epsilon')).toMatchObject({
+			action: 'BLOCKED',
+			reasonCode: 'UNPUBLISHED_DRAFT_DIVERGENCE',
+			environments: { production: 'diverged' },
+			handoff: {
+				dryRunCommand:
+					'pnpm prod:apply -- --slug epsilon --acknowledge-discard-unpublished-draft',
+				applyCommand:
+					'pnpm prod:apply -- --slug epsilon --acknowledge-discard-unpublished-draft --apply',
+				ownerApplyRequired: true,
+			},
 		});
 	});
 

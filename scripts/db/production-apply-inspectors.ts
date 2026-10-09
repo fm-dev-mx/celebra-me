@@ -25,10 +25,7 @@ import {
 } from '../provision/invitations/registry.ts';
 import { resolvePromotionUpdateScope } from '../provision/invitation-update-options.ts';
 import type { UpdateScope } from '../provision/semantic-delta.ts';
-import {
-	isTargetDivergenceConflictMessage,
-	TARGET_DIVERGENCE_BLOCK_CODE,
-} from '../provision/promotion-comparison.ts';
+import { TARGET_DIVERGENCE_BLOCK_CODE } from '../provision/promotion-comparison.ts';
 import {
 	classifyInvitationPreflight,
 	classifySchemaError,
@@ -141,7 +138,7 @@ export async function resolveWithDiscardIfDraftDivergence(
 	if (
 		!acknowledgeDiscardUnpublishedDraft ||
 		first.status !== 'BLOCKED' ||
-		!isTargetDivergenceConflictMessage(first.reason ?? '')
+		first.blockCode !== TARGET_DIVERGENCE_BLOCK_CODE
 	) {
 		return undefined;
 	}

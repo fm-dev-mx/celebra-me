@@ -152,52 +152,6 @@ describe('assertDraftRevisionUnchanged', () => {
 	});
 });
 
-describe('prepareDraftForPublication', () => {
-	beforeEach(() => {
-		jest.clearAllMocks();
-	});
-
-	it('happy: resets approved draft to draft then returns latest revision', async () => {
-		mockRunPsql.mockReturnValueOnce({ stdout: 'UPDATE 1\n' }).mockReturnValueOnce({
-			stdout: '11111111-1111-4111-8111-111111111111|2026-08-06T20:00:00.000Z\n',
-		});
-
-		const { prepareDraftForPublication } =
-			await import('../../scripts/provision/invitation-import-engine.ts');
-		const prepared = prepareDraftForPublication(
-			'postgresql://preview.invalid/db',
-			'22222222-2222-4222-8222-222222222222',
-		);
-
-		expect(prepared).toEqual({
-			draftId: '11111111-1111-4111-8111-111111111111',
-			draftUpdatedAt: '2026-08-06T20:00:00.000Z',
-		});
-		expect(String(mockRunPsql.mock.calls[0]?.[0])).toMatch(
-			/status = 'draft'[\s\S]*invitation_project_id = '22222222-2222-4222-8222-222222222222'/,
-		);
-		expect(String(mockRunPsql.mock.calls[1]?.[0])).toMatch(/order by updated_at desc limit 1/);
-		expect(mockRunPsql.mock.calls[0]?.[0]).not.toMatch(/publish_invitation_atomic/);
-	});
-
-	it('sad: missing draft row fails closed before publish RPC', async () => {
-		mockRunPsql
-			.mockReturnValueOnce({ stdout: 'UPDATE 0\n' })
-			.mockReturnValueOnce({ stdout: '' });
-		const { prepareDraftForPublication } =
-			await import('../../scripts/provision/invitation-import-engine.ts');
-		expect(() =>
-			prepareDraftForPublication(
-				'postgresql://preview.invalid/db',
-				'33333333-3333-4333-8333-333333333333',
-			),
-		).toThrow(/PUBLISH_DRAFT_MISSING/);
-		expect(
-			mockRunPsql.mock.calls.some((c) => String(c[0]).includes('publish_invitation_atomic')),
-		).toBe(false);
-	});
-});
-
 describe('managed invitation registry resolution', () => {
 	it('happy: resolves canonical slug without eventType prefix', async () => {
 		const { getInvitationDefinition, listInvitationDefinitions } =
@@ -280,8 +234,8 @@ describe('content-only asset mutation contract', () => {
 	});
 });
 
-describe('publish path ordering contract', () => {
-	it('resets draft before publish_invitation_atomic when republishing identical draft content', () => {
+describe('publish path atomicity contract', () => {
+	it('publishes draft upsert, draft reset and the RPC in one transaction', () => {
 		const source = readFileSync(
 			resolve(process.cwd(), 'scripts/provision/invitation-import-engine.ts'),
 			'utf8',
@@ -290,11 +244,79 @@ describe('publish path ordering contract', () => {
 			source.indexOf('if (shouldPublish)'),
 			source.indexOf('if (shouldUpsertEvent)'),
 		);
-		expect(publishBlock).toMatch(/prepareDraftForPublication/);
-		expect(publishBlock).toMatch(/executePublicationRpcCall/);
-		expect(publishBlock.indexOf('prepareDraftForPublication')).toBeLessThan(
-			publishBlock.indexOf('executePublicationRpcCall'),
-		);
+		expect(publishBlock).toMatch(/publishDraftAtomically\(params, shouldUpsertDraft\)/);
 		expect(publishBlock).not.toMatch(/randomUUID\(\)/);
+		const atomic = source.slice(
+			source.indexOf('export function publishDraftAtomically'),
+			source.indexOf('function buildPublicationRpcSql'),
+		);
+		// One psql script: begin → (upsert) → reset with \gset → RPC bound to that revision → commit.
+		expect(atomic.indexOf("'begin;'")).toBeLessThan(atomic.indexOf('upsertDraftSql('));
+		expect(atomic.indexOf('upsertDraftSql(')).toBeLessThan(atomic.indexOf('\\\\gset draft_'));
+		expect(atomic.indexOf('\\\\gset draft_')).toBeLessThan(atomic.indexOf('rpcSql,'));
+		expect(atomic.indexOf('rpcSql,')).toBeLessThan(atomic.indexOf("'commit;'"));
+		expect(atomic).toMatch(/runPsql\(script, targetDbUrl/);
+		expect(atomic).toMatch(/":'draft_id'", ":'draft_updated_at'"/);
+	});
+
+	it('binds the RPC to the draft revision produced inside the transaction', async () => {
+		mockRunPsql.mockReset();
+		mockRunPsql.mockImplementation((sql: unknown) => {
+			const text = String(sql);
+			if (text.includes('from public.invitations where id'))
+				return {
+					stdout: JSON.stringify({
+						id: 'inv',
+						slug: 'demo',
+						title: 'Demo',
+						event_type: 'xv',
+						status: 'published',
+						base_demo_id: 'demo-xv',
+						theme_id: 'jewelry-box',
+						kind: 'managed',
+						snapshot: {},
+						archived_at: null,
+					}),
+				};
+			if (text.includes('from public.published_invitation_content')) return { stdout: '' };
+			return { stdout: '{"publish_invitation_atomic": {"ok": true}}' };
+		});
+		const { publishDraftAtomically } =
+			await import('../../scripts/provision/invitation-import-engine.ts');
+		publishDraftAtomically(
+			{
+				targetDbUrl: 'postgresql://preview',
+				targetEnvironment: 'preview',
+				targetInvitationId: '00000000-0000-4000-8000-000000000001',
+				ownerUserId: 'owner',
+				slug: 'demo',
+				eventType: 'xv',
+				pkg: { sourceSlug: 'demo' } as never,
+				targetSnapshot: {},
+				targetDraftContent: { hero: { title: 'Demo' } },
+				targetPublishedContent: { hero: { title: 'Demo' } },
+				existingInv: { id: 'inv' },
+				existingDraft: null,
+				existingPub: null,
+				shouldUpsertInv: false,
+				assetsForDbUpsert: [],
+				shouldUpsertDraft: true,
+				shouldPublish: true,
+				shouldUpsertEvent: false,
+				assetRefs: {} as never,
+				operationId: 'op',
+			},
+			true,
+		);
+		const script = String(mockRunPsql.mock.calls.at(-1)?.[0]);
+		expect(script.startsWith('begin;')).toBe(true);
+		expect(script.trimEnd().endsWith('commit;')).toBe(true);
+		expect(script).toContain('insert into public.invitation_content_drafts');
+		expect(script).toContain('returning id, updated_at::text as updated_at \\gset draft_');
+		expect(script).toContain("p_draft_id => :'draft_id'::uuid");
+		expect(script).toContain("p_expected_draft_updated_at => :'draft_updated_at'::timestamptz");
+		expect(script.indexOf('\\gset draft_')).toBeLessThan(
+			script.indexOf('publish_invitation_atomic('),
+		);
 	});
 });

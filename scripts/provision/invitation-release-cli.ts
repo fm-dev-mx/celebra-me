@@ -104,7 +104,7 @@ import {
 	renderOperatorError,
 	writeHuman,
 } from '../db/operator-cli-ux.ts';
-import { isTargetDivergenceConflictMessage } from './promotion-comparison.ts';
+import { isTargetDivergenceConflict } from './promotion-comparison.ts';
 
 function mergeConflictsFromError(error: unknown): TargetPlanData['mergeConflicts'] {
 	let current: unknown = error;
@@ -1257,9 +1257,10 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 							error instanceof Error ? error.message : String(error),
 						);
 						const namespaceReason = translatePreviewNamespaceFailure(errMsg);
+						const draftDivergence = isTargetDivergenceConflict(error);
 						const previewReason =
 							namespaceReason ??
-							(isTargetDivergenceConflictMessage(errMsg)
+							(draftDivergence
 								? errMsg
 								: 'No fue posible inspeccionar Preview de forma segura. Revise credenciales, identidad del proyecto, conectividad y estado remoto antes de volver a planificar.');
 						reports.push({
@@ -1268,13 +1269,13 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 							status: 'BLOCKED',
 							reasonCode: namespaceReason
 								? 'PREVIEW_ASSET_NAMESPACE_MISMATCH'
-								: isTargetDivergenceConflictMessage(errMsg)
+								: draftDivergence
 									? 'TARGET_DIVERGENCE_CONFLICT'
 									: 'PREVIEW_PLAN_BLOCKED',
 							reason: previewReason,
 							remainingAction:
 								namespaceReason ??
-								(isTargetDivergenceConflictMessage(errMsg)
+								(draftDivergence
 									? errMsg
 									: `Detalle técnico sanitizado: ${errMsg}`),
 						});

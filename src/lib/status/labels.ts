@@ -95,7 +95,9 @@ export const PUBLICATION_REASON_LABELS: Record<PromotionReasonCode, string> = {
 		'No se pudo construir la huella canónica desde la definición del registro.',
 	IDENTITY_CONFLICT: 'Hay filas de invitación duplicadas o con conflicto de identidad.',
 	MANAGED_DIVERGENCE:
-		'El contenido publicado coincide con el canónico pero el borrador diverge, o hay conflicto administrado.',
+		'El contenido administrado del destino diverge del baseline (edición manual o del editor); resuélvalo semánticamente.',
+	UNPUBLISHED_DRAFT_DIVERGENCE:
+		'El destino tiene un borrador inédito que no coincide ni con el paquete ni con lo publicado; el propietario puede descartarlo al aplicar.',
 	PRODUCTION_AHEAD_OF_PREVIEW:
 		'Production coincide con el canónico mientras Preview no. No es una progresión válida.',
 	PREVIEW_ALIGNED_PRODUCTION_BEHIND:

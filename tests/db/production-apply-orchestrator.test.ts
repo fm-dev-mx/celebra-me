@@ -1216,7 +1216,8 @@ const DRAFT_DIVERGENCE_REASON =
 function blockedDraftDivergence(slug: string): PromotionPreflightReport {
 	return invitationPreflight(slug, {
 		status: 'BLOCKED',
-		blockCode: 'PRODUCTION_PLAN_BLOCKED',
+		// Typed by the preflight; the recovery path never parses the reason text.
+		blockCode: 'UNPUBLISHED_DRAFT_DIVERGENCE',
 		reason: DRAFT_DIVERGENCE_REASON,
 	});
 }
