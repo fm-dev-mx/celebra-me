@@ -139,6 +139,8 @@ function baseDeps(options?: {
 		preflightSchema: () => schemaPlan(options?.pending ?? ['20260807120000']),
 		listSlugs: () => Object.keys(preflights).sort((a, b) => a.localeCompare(b)),
 		listArchivedSlugs: () => [],
+		listAuthoringSlugs: () => [],
+		lifecycleReleaseBlock: () => null,
 		resolvePackage: async (slug) => pkg(slug),
 		runInvitationPreflight: async (packageData) => {
 			const slug = packageData.invitation.slug;
@@ -218,6 +220,39 @@ describe('production apply planning', () => {
 		expect(text).toContain(
 			'Archivadas por decisión del propietario (fuera del plan): past-event',
 		);
+	});
+
+	it('leaves authoring definitions out of --all-ready and counts them apart', async () => {
+		const runInvitationPreflight = jest.fn(async (packageData: InvitationPackageData) =>
+			invitationPreflight(packageData.invitation.slug),
+		);
+		const plan = await buildProductionApplyPlan(cli(['--all-ready']), {
+			...baseDeps({ preflights: { alpha: invitationPreflight('alpha') } }),
+			listAuthoringSlugs: () => ['draft-event'],
+			runInvitationPreflight,
+		});
+		expect(plan.items.map((item) => item.id)).not.toContain('draft-event');
+		expect(runInvitationPreflight).toHaveBeenCalledTimes(1);
+		expect(plan.excluded.authoringSlugs).toEqual(['draft-event']);
+		expect(toPublicProductionApplyPlan(plan).excluded.authoringSlugs).toEqual(['draft-event']);
+		const text = formatProductionApplyPlan(plan);
+		expect(text).toContain('1 en authoring (excluida)');
+		expect(text).toContain('En authoring (lifecycle in_progress, solo Local): draft-event');
+	});
+
+	it('blocks an explicit --slug whose definition is still in authoring', async () => {
+		const resolvePackage = jest.fn(async (slug: string) => pkg(slug));
+		const plan = await buildProductionApplyPlan(cli(['--slug', 'draft-event']), {
+			...baseDeps(),
+			resolvePackage,
+			lifecycleReleaseBlock: (slug, target) =>
+				`LIFECYCLE_NOT_PUBLISHED: ${slug} sigue en authoring para ${target}`,
+		});
+		const item = plan.items.find((candidate) => candidate.id === 'draft-event');
+		expect(item).toMatchObject({ readiness: 'BLOCKED', blockCode: 'LIFECYCLE_NOT_PUBLISHED' });
+		expect(item?.summary).toContain('para production');
+		// The gate runs before any package or remote work.
+		expect(resolvePackage).not.toHaveBeenCalled();
 	});
 
 	it('keeps an archived invitation addressable by explicit --slug', async () => {

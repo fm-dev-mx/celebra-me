@@ -61,7 +61,8 @@ const READINESS_GROUPS: ReadonlyArray<{
 function invitationCountsLine(plan: ProductionApplyPlan): string | null {
 	const invitations = plan.items.filter((item) => item.domain === 'invitation');
 	const archived = plan.excluded?.archivedSlugs.length ?? 0;
-	if (invitations.length === 0 && archived === 0) return null;
+	const authoring = plan.excluded?.authoringSlugs?.length ?? 0;
+	if (invitations.length === 0 && archived === 0 && authoring === 0) return null;
 	const parts = READINESS_GROUPS.map(({ readiness }) => ({
 		readiness,
 		count: invitations.filter((item) => item.readiness === readiness).length,
@@ -73,7 +74,31 @@ function invitationCountsLine(plan: ProductionApplyPlan): string | null {
 			`${archived} archivada${archived === 1 ? '' : 's'} (excluida${archived === 1 ? '' : 's'})`,
 		);
 	}
+	if (authoring > 0) {
+		parts.push(`${authoring} en authoring (excluida${authoring === 1 ? '' : 's'})`);
+	}
 	return parts.join(' · ');
+}
+
+function excludedDefinitionLines(plan: ProductionApplyPlan): string[] {
+	const lines: string[] = [];
+	const archivedSlugs = plan.excluded?.archivedSlugs ?? [];
+	if (archivedSlugs.length > 0) {
+		lines.push(
+			'',
+			`${operatorSymbol('info')} Archivadas por decisión del propietario (fuera del plan): ${archivedSlugs.join(', ')}`,
+			'  Para revisar una archivada: pnpm prod:apply -- --slug <slug>',
+		);
+	}
+	const authoringSlugs = plan.excluded?.authoringSlugs ?? [];
+	if (authoringSlugs.length > 0) {
+		lines.push(
+			'',
+			`${operatorSymbol('info')} En authoring (lifecycle in_progress, solo Local): ${authoringSlugs.join(', ')}`,
+			"  Para publicarlas: lifecycle: 'published' en su definición + candidato visual aceptado.",
+		);
+	}
+	return lines;
 }
 
 export function formatProductionApplyPlan(plan: ProductionApplyPlan): string {
@@ -105,14 +130,7 @@ export function formatProductionApplyPlan(plan: ProductionApplyPlan): string {
 			lines.push(`  ${itemLine(item)}`);
 		}
 	}
-	const archivedSlugs = plan.excluded?.archivedSlugs ?? [];
-	if (archivedSlugs.length > 0) {
-		lines.push('');
-		lines.push(
-			`${operatorSymbol('info')} Archivadas por decisión del propietario (fuera del plan): ${archivedSlugs.join(', ')}`,
-		);
-		lines.push('  Para revisar una archivada: pnpm prod:apply -- --slug <slug>');
-	}
+	lines.push(...excludedDefinitionLines(plan));
 	if (plan.scope.allReady && visible.some((item) => item.readiness === 'READY_AFTER_DISCARD')) {
 		lines.push(
 			`${operatorSymbol('info')} --all-ready omitió invitaciones con borradores inéditos; revíselas por slug con --acknowledge-discard-unpublished-draft.`,
@@ -170,7 +188,10 @@ export function toPublicProductionApplyPlan(plan: ProductionApplyPlan): Producti
 	return {
 		planId: plan.planId,
 		scope: { ...plan.scope, slugs: [...plan.scope.slugs] },
-		excluded: { archivedSlugs: [...(plan.excluded?.archivedSlugs ?? [])] },
+		excluded: {
+			archivedSlugs: [...(plan.excluded?.archivedSlugs ?? [])],
+			authoringSlugs: [...(plan.excluded?.authoringSlugs ?? [])],
+		},
 		items: plan.items.map((item) => {
 			const { preflight: _preflight, ...rest } = item;
 			return rest;

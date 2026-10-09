@@ -19,6 +19,7 @@ import {
 	executeTargetPlans,
 	type LifecycleExecutionError,
 } from './invitation-lifecycle-execution.ts';
+import { lifecycleReleaseBlockFor } from './invitations/lifecycle-gate.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
 import { getInvitationAssetSourceDir } from './invitations/invitation-definition.ts';
 import { parseAssetPolicy } from './asset-reconciliation.ts';
@@ -945,6 +946,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	// and a dry-run reports what a non-interactive apply would need.
 	let previewWriteScope: PreviewWriteScopeAssessment | undefined;
 	if (targets.includes('preview')) {
+		// Hosted targets only receive published definitions; Local stays open for authoring.
+		const lifecycleBlock = slug ? lifecycleReleaseBlockFor(slug, 'preview') : null;
+		if (lifecycleBlock) throw new Error(lifecycleBlock);
 		if (apply) {
 			verifyPreviewWriteAuthorization({
 				slug,

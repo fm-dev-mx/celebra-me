@@ -25,7 +25,8 @@ export interface CanonicalInvitationOptions {
 	assetPresentation?: Readonly<
 		Record<string, Pick<InvitationAssetSpec, 'delivery' | 'sourcePolicy'>>
 	>;
-	lifecycle?: InvitationDefinition['lifecycle'];
+	/** Explicit: hosted targets only receive `published` definitions, so no default is implied. */
+	lifecycle: InvitationDefinition['lifecycle'];
 	deliveryScope?: InvitationDefinition['deliveryScope'];
 }
 
@@ -95,7 +96,7 @@ export function defineCanonicalInvitation(
 		managedIdentityId: options.managedIdentityId,
 		managedIdentityProvenance: options.managedIdentityProvenance,
 		createdAt: '2026-08-29T00:00:00.000Z',
-		lifecycle: options.lifecycle ?? 'in_progress',
+		lifecycle: options.lifecycle,
 		deliveryScope: options.deliveryScope ?? 'content-only',
 		eventType: options.eventType,
 		title: options.title,

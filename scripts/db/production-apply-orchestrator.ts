@@ -46,10 +46,6 @@ import type {
 	PromotionApplyReport,
 	PromotionPreflightReport,
 } from '../provision/invitation-promote.ts';
-import {
-	listActiveInvitationDefinitions,
-	listArchivedInvitationDefinitions,
-} from '../provision/invitations/registry.ts';
 import { revalidatePromotionVolatilePreconditions } from '../provision/promotion-volatile-revalidation.ts';
 import type { UpdateScope } from '../provision/semantic-delta.ts';
 import {
@@ -63,7 +59,11 @@ import {
 } from './production-apply-plan.ts';
 import type { ProductionApplyCliArgs } from './production-apply-cli-args.ts';
 import { toPublicProductionApplyPlan } from './production-apply-format.ts';
-import { inspectInvitation, inspectSchema } from './production-apply-inspectors.ts';
+import {
+	discoverProductionApplySlugs,
+	inspectInvitation,
+	inspectSchema,
+} from './production-apply-inspectors.ts';
 
 const PRODUCTION_APPLY_OPERATION_TYPE = 'production_apply';
 
@@ -72,6 +72,10 @@ export interface ProductionApplyAssemblerDeps {
 	listSlugs?: () => string[];
 	/** Owner-archived slugs reported apart from --all-ready / inspection plans. */
 	listArchivedSlugs?: () => string[];
+	/** Definitions still in authoring (lifecycle in_progress); Local only. */
+	listAuthoringSlugs?: () => string[];
+	/** Block reason when a definition's lifecycle keeps it off a hosted target. */
+	lifecycleReleaseBlock?: (slug: string, target: 'preview' | 'production') => string | null;
 	resolvePackage?: (slug: string) => Promise<InvitationPackageData>;
 	resolveInvitationUpdateScope?: (slug: string) => UpdateScope | undefined;
 	getProductionDbUrl?: () => { url: string };
@@ -152,18 +156,6 @@ export interface ProductionApplyExecution {
 	outcomes: ProductionApplyOutcomeRow[];
 }
 
-function defaultListSlugs(): string[] {
-	return listActiveInvitationDefinitions()
-		.map((definition) => definition.slug)
-		.sort((a, b) => a.localeCompare(b));
-}
-
-function defaultListArchivedSlugs(): string[] {
-	return listArchivedInvitationDefinitions()
-		.map((definition) => definition.slug)
-		.sort((a, b) => a.localeCompare(b));
-}
-
 function scopeFromArgs(args: ProductionApplyCliArgs): ProductionApplyScope {
 	return {
 		schema: args.schema || args.inspectAll,
@@ -182,12 +174,12 @@ export async function buildProductionApplyPlan(
 	const schemaItem = await inspectSchema(scope.schema, deps, args.expectedPin);
 	const schemaReadyInPlan = schemaItem.readiness === 'READY';
 
-	const discoversSlugs = scope.inspectAll || scope.allReady;
-	const slugList = discoversSlugs ? (deps.listSlugs ?? defaultListSlugs)() : [...scope.slugs];
 	// Explicit --slug keeps archived invitations addressable; only discovery leaves them out.
-	const archivedSlugs = discoversSlugs
-		? (deps.listArchivedSlugs ?? defaultListArchivedSlugs)()
-		: [];
+	const discovered =
+		scope.inspectAll || scope.allReady ? discoverProductionApplySlugs(deps) : null;
+	const slugList = discovered?.slugs ?? [...scope.slugs];
+	const archivedSlugs = discovered?.archivedSlugs ?? [];
+	const authoringSlugs = discovered?.authoringSlugs ?? [];
 
 	const invitationItems: ProductionApplyPlanItem[] = [];
 	for (const slug of slugList) {
@@ -211,7 +203,7 @@ export async function buildProductionApplyPlan(
 			slugs: slugList,
 		},
 		items,
-		{ archivedSlugs },
+		{ archivedSlugs, authoringSlugs },
 	);
 }
 

@@ -278,6 +278,7 @@ export const naydelinInvitation = defineCanonicalInvitation({
 	content,
 	managedIdentityId: '69968615-42e9-4830-ab4a-67ada3ca90bf',
 	managedIdentityProvenance: 'owner-approved',
+	lifecycle: 'in_progress',
 	hostLoginAlias: 'naydelin_paredes',
 	assetDir: 'src/assets/invitations/naydelin-paredes',
 	assetFiles: {
