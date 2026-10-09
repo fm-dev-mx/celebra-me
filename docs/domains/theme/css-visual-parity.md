@@ -75,12 +75,10 @@ its own record under `<output root>/records/`; the Playwright global teardown re
 `manifest.json` and `pages-manifest.json` from the records of the current run, asserts complete
 coverage, PNG geometry and a single runtime fingerprint, and fails the run on any missing capture or
 pixel difference. Global setup resets the records directory, so earlier runs never fill coverage
-gaps. Capture suites run serially without retries by default; `VISUAL_PARITY_PARALLEL=1` selects
-parallel capture only for the paired trials required by the release process, which a manual
-Repository CI dispatch starts through its `capture_execution` and `browser_workers` inputs. CI
-retains actual/diff PNGs and diagnostic JSON on failure for three days, without traces or credential
-artifacts. A stabilization timeout preserves the last two available frames and their capture times;
-it does not take replacement screenshots after the failure.
+gaps. Capture suites run serially without retries. CI retains actual/diff PNGs and diagnostic JSON
+on failure for three days, without traces or credential artifacts. A stabilization timeout preserves
+the last two available frames and their capture times; it does not take replacement screenshots
+after the failure.
 
 GitHub CI runs static/build, unit, browser, and disposable database checks independently. The
 required `Application Suite` status succeeds only when every application tier succeeds; cancelled,

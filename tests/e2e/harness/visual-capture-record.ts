@@ -140,8 +140,3 @@ export function matchesAcceptedBytes(snapshotPath: string, image: Buffer): boole
 		return false;
 	}
 }
-
-/** Capture suites stay serial unless an explicit parallel trial selects otherwise. */
-export function visualSuiteMode(): 'parallel' | 'serial' {
-	return process.env.VISUAL_PARITY_PARALLEL === '1' ? 'parallel' : 'serial';
-}

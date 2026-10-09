@@ -81,10 +81,6 @@ reuse, recovery and verified deployment completion. Neither includes database or
 - Browser comparison writes `.tmp/browser-outcome.json` with the visual evidence filenames. A failed
   browser job after a successful browser test step is infrastructure-only; a snapshot diff is
   `VISUAL_DIFF`; other browser failures are `CODE`.
-- `.github/workflows/retry-ci-infrastructure.yml` retries only failed jobs, only on the first
-  attempt and only when the GitHub job/step evidence proves that browser checks passed before the
-  evidence upload failed. It does not depend on the artifact whose finalization may have failed.
-  Visual differences, code failures, deployment failures, and smoke failures are never retried.
 - Release classification marks conservative visual impact for application TypeScript/Astro, styles,
   rendered invitation builders/content/assets, fonts, Playwright fixtures/specs, the lockfile, and
   screenshot infrastructure. The browser tier runs on every pull request and dispatch; a `develop`
@@ -162,13 +158,9 @@ reuse, recovery and verified deployment completion. Neither includes database or
   as if it certified a different final commit. The promotion pull request reuses the complete
   `develop` run only when its merge candidate holds the identical tree; see
   [validation procedures](validation-procedures.md#remote-ci-coverage-and-efficiency).
-- CI records `validation-metrics` artifacts with SHA, mode, capture execution, browser workers,
-  attempt, completed job durations, wall time and aggregate runner minutes. These exclude queue
-  time, billing multipliers and the metrics job; they do not estimate token usage. Compare
-  like-for-like runs before adopting sharding. Keep serial coverage until three paired trials meet
-  the agreed 30% wall-time saving and at most 50% runner-minute increase, with identical coverage
-  and passing results. Dispatch each pair through the Repository CI `capture_execution` and
-  `browser_workers` inputs.
+- Visual capture runs serially with two browser workers. Three paired trials on 2026-10-06 measured
+  the browser job at 8.6 min serial against 9.1 min parallel (average), short of the 30% saving that
+  adoption required, so parallel capture and its trial inputs were removed.
 
 This document owns release checkpoints and the layered CHANGELOG policy for the Celebra-me
 repository. Checkpoints use Git tags, `package.json` version bumps, and a changelog entry — no

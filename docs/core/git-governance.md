@@ -21,7 +21,8 @@ release versioning and changelog policy are owned by [`release-process.md`](rele
 
 - `develop` is the trunk. It accepts direct pushes from Integration that only add commits (merge
   commits included); Repository CI runs on every push and is the integration gate. It blocks
-  deletion and non-fast-forward (history-rewriting) updates.
+  deletion and non-fast-forward (history-rewriting) updates. Pull requests into `develop`
+  (Dependabot updates) also run Repository CI before they are merged.
 - `main` is production. It changes only through the release pull request from `develop`, which
   requires `Repository Policy` and `Application Suite`. Direct commits and pushes are blocked.
 - Task branches (`feat/*`, `fix/*`, `candidate/*`) are ephemeral. Persistent lane branches are

@@ -8,11 +8,6 @@ import {
 import { getOperationalToolbarSelectors } from '../../../scripts/screenshot/utils';
 // Stabilization permits no above-threshold pixels; baseline comparison keeps its own budget.
 import { hasVisiblePixelChange } from '../../../scripts/screenshot/visual-yiq';
-import { visualSuiteMode } from './visual-capture-record';
-
-// libvips defaults to one thread per core in every worker; parallel capture workers would
-// oversubscribe the CPU that Chromium needs for rasterization.
-if (visualSuiteMode() === 'parallel') sharp.concurrency(2);
 
 export async function initializeVisualCapture(
 	page: Page,

@@ -169,11 +169,20 @@ pnpm agent:git-safety:finish # Interactive session close — not part of CI
 `pnpm run ci` is the canonical full-pipeline equivalent of Tier C. It runs `pnpm type-check`,
 `pnpm validate:structure`, `pnpm validate:deployed-app-capabilities`, `pnpm lint`,
 `pnpm lint:styles` (both content-cached under `node_modules/.cache`), `pnpm validate:ui-governance`,
-`pnpm validate:event-parity`, `pnpm validate:no-pii`, `pnpm validate:invitation-preparation`,
-`pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. It does **not** invoke interactive Git Safety
-(that requires a same-session baseline). Use `pnpm validate:changed` for focused feedback; run
-`pnpm type-check` and `pnpm validate:structure` when required by the scope. Focused validation does
-not replace these repository-wide checks or the full release pipeline.
+`pnpm validate:dashboard-styles`, `pnpm validate:event-parity`, `pnpm validate:no-pii`,
+`pnpm validate:invitation-preparation`, `pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. It
+does **not** invoke interactive Git Safety (that requires a same-session baseline). Use
+`pnpm validate:changed` for focused feedback; run `pnpm type-check` and `pnpm validate:structure`
+when required by the scope. Focused validation does not replace these repository-wide checks or the
+full release pipeline.
+
+Opt-in browser suites outside `pnpm test:e2e:ci`: `pnpm test:e2e:extended` runs generic contracts
+(motion, progressive visibility, gallery rail, raster seal, managed countdown, location navigation,
+RSVP flow, login labels) and the authoring guards of invitations that are still active or in
+progress. Run it when a change touches those surfaces or before publishing one of those invitations,
+and delete a client guard when its invitation is archived. `pnpm test:e2e:ga4` covers the consent
+banner and `gtag` loader (see
+[commercial attribution](../domains/tracking/commercial-attribution.md#ga4-status)).
 
 Close the mutable agent session with `pnpm agent:git-safety:finish` after Tier C when a session was
 started. See `.agent/rules/git-safety.md`.
@@ -210,13 +219,7 @@ one worker, while the remote browser job explicitly selects two. This documents 
 behavior, not a measured optimum. Before changing it, compare the same code, cases, runtime image,
 fixtures and visual mode across repeated runs, including retries and server preparation. Do not
 infer remote savings from local diagnostic timings. Capture suites aggregate per-capture records
-after the run, so they no longer depend on one worker; they still run serially by default.
-`VISUAL_PARITY_PARALLEL=1` selects parallel capture only for the paired trials defined in the
-release process; parallel capture becomes the default only after those trials pass. Run a trial pair
-by dispatching Repository CI twice on the same SHA: once with the defaults and once with
-`capture_execution=parallel` and the `browser_workers` value under test. Push and pull request runs
-always use the defaults, which equal the locally certified command. Each `validation-metrics`
-artifact records `captureExecution` and `browserWorkers` for the comparison.
+after the run and run serially; every remote run uses the locally certified command.
 
 The aggregate application check requires policy, application and browser jobs to succeed; failed,
 cancelled or incomplete jobs must never become aggregate approval. One case skips the application
