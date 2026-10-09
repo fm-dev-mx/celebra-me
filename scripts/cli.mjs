@@ -11,10 +11,6 @@ const SCRIPTS = {
 	'check-links': { script: 'check-links.mjs', runtime: 'node' },
 	'validate-schema': { script: 'validate-schema.mjs', runtime: 'node' },
 	'validate-commits': { script: 'validate-commits.mjs', runtime: 'node' },
-	'data-audit-events-invitations': {
-		script: 'data-audit-events-invitations.mjs',
-		runtime: 'node',
-	},
 	'worktree-status': { script: 'agent/worktree-status.ts', runtime: 'tsx' },
 	'worktree-doctor': { script: 'agent/worktree-doctor.ts', runtime: 'tsx' },
 };

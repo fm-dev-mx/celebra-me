@@ -12,14 +12,15 @@ owns the command inventory.
 
 ## Available Ops Commands
 
-| Command                     | Canonical Script               | Purpose                                                                 |
-| --------------------------- | ------------------------------ | ----------------------------------------------------------------------- |
-| `pnpm ops check-links`      | `scripts/check-links.mjs`      | validate relative links inside changed Markdown files                   |
-| `pnpm ops validate-schema`  | `scripts/validate-schema.mjs`  | compare theme-contract variants against modular section-theme selectors |
-| `pnpm ops validate-commits` | `scripts/validate-commits.mjs` | replay commitlint and commit-audit checks across a commit range         |
+| Command                     | Canonical Script                   | Purpose                                                                 |
+| --------------------------- | ---------------------------------- | ----------------------------------------------------------------------- |
+| `pnpm ops check-links`      | `scripts/check-links.mjs`          | validate relative links inside changed Markdown files                   |
+| `pnpm ops validate-schema`  | `scripts/validate-schema.mjs`      | compare theme-contract variants against modular section-theme selectors |
+| `pnpm ops validate-commits` | `scripts/validate-commits.mjs`     | replay commitlint and commit-audit checks across a commit range         |
+| `pnpm ops worktree-status`  | `scripts/agent/worktree-status.ts` | report every lane read-only                                             |
+| `pnpm ops worktree-doctor`  | `scripts/agent/worktree-doctor.ts` | detect worktree configuration problems read-only                        |
 
-Removed one-shot commands (`optimize-assets`, `new-invitation`, `adopt-legacy-events`, `ops dbs`)
-are no longer registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation operations.
+Use `pnpm dbs` and `pnpm invitation:*` for invitation operations.
 
 ## Invitation Provisioning & Promotion Commands
 

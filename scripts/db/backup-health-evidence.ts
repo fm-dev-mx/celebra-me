@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import {
 	OPERATIONAL_EVIDENCE_SCHEMA_VERSION,
@@ -7,20 +7,8 @@ import {
 	type OperationalEvidenceStatus,
 	type OperationalEvidenceV1,
 } from '../../src/lib/operations/operational-evidence.ts';
-import { validateCriticalBackupManifest, type CriticalBackupManifest } from './backup-manifest.ts';
-import {
-	DAILY_BACKUP_RPO_MS,
-	evaluateCriticalBackupHealth,
-	type CriticalBackupHealth,
-} from './critical-backup-health.ts';
 
 export const BACKUP_HEALTH_RECEIPT_PATH = resolve('.cache', 'operations', 'backup-health-v1.json');
-export const BACKUP_HEALTH_ALERT_STATE_PATH = resolve(
-	'.cache',
-	'operations',
-	'backup-health-alert-state-v1.json',
-);
-
 export interface BackupHealthPayload extends Record<string, string | number | boolean | null> {
 	exit_code: number | null;
 	recovery_point_at: string | null;
@@ -40,17 +28,6 @@ export interface BackupRunReportSnapshot {
 	recoveryPointTimestamp: string | null;
 	manifestVerified: boolean;
 }
-
-export interface BackupHealthObservation {
-	newestCreatedAt: string | null;
-	lastDailyReportAt: string | null;
-	lastDailyOutcome: 'succeeded' | 'failed' | null;
-	orphanCount: number;
-	manifestValid: boolean | null;
-}
-
-export type BackupHealthNotification = 'problem' | 'recovery' | 'none';
-
 const BACKUP_OWNER_ACTION =
 	'Ejecute manualmente el backup protegido o revise CelebraMe-Daily-Production-Backup en Windows Task Scheduler.';
 const BACKUP_VERIFIED_ACTION = 'No se requiere acción; conserve el recibo como evidencia local.';
@@ -131,151 +108,6 @@ export function createBackupRunEvidence(input: {
 	assertOperationalEvidenceSafe(evidence);
 	return evidence;
 }
-
-function isBackupHealthEvidence(value: unknown): value is BackupHealthEvidence {
-	if (!value || typeof value !== 'object') return false;
-	const candidate = value as Partial<BackupHealthEvidence>;
-	return (
-		candidate.schemaVersion === OPERATIONAL_EVIDENCE_SCHEMA_VERSION &&
-		candidate.check === 'critical_backup' &&
-		candidate.environment === 'production' &&
-		typeof candidate.runId === 'string' &&
-		typeof candidate.payload === 'object' &&
-		candidate.payload !== null
-	);
-}
-
-export function observeBackupHealth(input: {
-	receipt: unknown;
-	observation: BackupHealthObservation | null;
-	observedAt?: string;
-}): BackupHealthEvidence {
-	const observedAt = input.observedAt ?? new Date().toISOString();
-	if (!isBackupHealthEvidence(input.receipt)) {
-		return createUnverifiedBackupEvidence('backup_receipt_missing', observedAt);
-	}
-	try {
-		assertOperationalEvidenceSafe(input.receipt);
-	} catch {
-		return createUnverifiedBackupEvidence('backup_receipt_invalid', observedAt);
-	}
-	if (!input.observation) {
-		return {
-			...input.receipt,
-			observedAt,
-			status: 'UNVERIFIED',
-			reasonCode: 'backup_observation_unavailable',
-			ownerAction: BACKUP_OWNER_ACTION,
-			payload: buildPayload({
-				exitCode: input.receipt.payload.exit_code,
-				recoveryPointAt: null,
-				dailyReportAt: null,
-				manifestValid: null,
-				orphanCount: null,
-				nowMs: Date.parse(observedAt),
-			}),
-		};
-	}
-
-	const nowMs = Date.parse(observedAt);
-	const payload = buildPayload({
-		exitCode: input.receipt.payload.exit_code,
-		recoveryPointAt: input.observation.newestCreatedAt,
-		dailyReportAt: input.observation.lastDailyReportAt,
-		manifestValid: input.observation.manifestValid,
-		orphanCount: input.observation.orphanCount,
-		nowMs,
-	});
-	let status: OperationalEvidenceStatus = 'VERIFIED';
-	let reasonCode = 'backup_within_rpo';
-	if (payload.exit_code !== 0 || input.observation.lastDailyOutcome === 'failed') {
-		status = 'FAILED';
-		reasonCode = 'backup_command_failed';
-	} else if (payload.manifest_valid === false || (payload.orphan_count ?? 0) > 0) {
-		status = 'FAILED';
-		reasonCode = 'backup_integrity_failed';
-	} else if (payload.recovery_point_age_ms === null || payload.manifest_valid === null) {
-		status = 'UNVERIFIED';
-		reasonCode = 'backup_evidence_incomplete';
-	} else if (payload.recovery_point_age_ms > DAILY_BACKUP_RPO_MS) {
-		status = 'FAILED';
-		reasonCode = 'backup_rpo_expired';
-	} else if (payload.daily_report_age_ms === null) {
-		status = 'UNVERIFIED';
-		reasonCode = 'backup_daily_report_missing';
-	} else if (payload.daily_report_age_ms > DAILY_BACKUP_RPO_MS) {
-		status = 'WARNING';
-		reasonCode = 'backup_daily_report_stale';
-	}
-	const evidence: BackupHealthEvidence = {
-		...input.receipt,
-		observedAt,
-		status,
-		reasonCode,
-		ownerAction: status === 'VERIFIED' ? BACKUP_VERIFIED_ACTION : BACKUP_OWNER_ACTION,
-		payload,
-	};
-	assertOperationalEvidenceSafe(evidence);
-	return evidence;
-}
-
-function createUnverifiedBackupEvidence(
-	reasonCode: 'backup_receipt_missing' | 'backup_receipt_invalid',
-	observedAt: string,
-): BackupHealthEvidence {
-	const evidence: BackupHealthEvidence = {
-		schemaVersion: OPERATIONAL_EVIDENCE_SCHEMA_VERSION,
-		check: 'critical_backup',
-		environment: 'production',
-		runId: randomUUID(),
-		startedAt: observedAt,
-		completedAt: observedAt,
-		observedAt,
-		status: 'UNVERIFIED',
-		reasonCode,
-		source: 'local_backup_observer',
-		ownerAction: BACKUP_OWNER_ACTION,
-		payload: buildPayload({
-			exitCode: null,
-			recoveryPointAt: null,
-			dailyReportAt: null,
-			manifestValid: null,
-			orphanCount: null,
-			nowMs: Date.parse(observedAt),
-		}),
-	};
-	assertOperationalEvidenceSafe(evidence);
-	return evidence;
-}
-
-export function readBackupHealthObservation(backupRoot?: string): BackupHealthObservation | null {
-	let health: CriticalBackupHealth;
-	try {
-		health = evaluateCriticalBackupHealth({ backupRoot });
-	} catch {
-		return null;
-	}
-	let manifestValid: boolean | null = null;
-	if (health.newestManifestPath) {
-		try {
-			const manifest = JSON.parse(
-				readFileSync(health.newestManifestPath, 'utf8'),
-			) as CriticalBackupManifest;
-			validateCriticalBackupManifest(manifest);
-			manifestValid = true;
-		} catch {
-			manifestValid = false;
-		}
-	}
-	return {
-		newestCreatedAt: health.newestCreatedAt,
-		lastDailyReportAt: health.lastDailyReportAt,
-		lastDailyOutcome: health.lastDailyOutcome,
-		orphanCount: health.orphanCount,
-		manifestValid,
-	};
-}
-
 export function writeAtomicJson(path: string, value: unknown): void {
 	const absolutePath = resolve(path);
 	const directory = dirname(absolutePath);
@@ -294,23 +126,4 @@ export function writeAtomicJson(path: string, value: unknown): void {
 	} finally {
 		rmSync(temporaryPath, { force: true });
 	}
-}
-
-export function readJsonIfPresent(path: string): unknown {
-	try {
-		return JSON.parse(readFileSync(path, 'utf8')) as unknown;
-	} catch {
-		return null;
-	}
-}
-
-export function resolveBackupHealthNotification(
-	previous: OperationalEvidenceStatus | null,
-	current: OperationalEvidenceStatus,
-): BackupHealthNotification {
-	const previousProblem = previous !== null && previous !== 'VERIFIED';
-	const currentProblem = current !== 'VERIFIED';
-	if (currentProblem && previous !== current) return 'problem';
-	if (!currentProblem && previousProblem) return 'recovery';
-	return 'none';
 }

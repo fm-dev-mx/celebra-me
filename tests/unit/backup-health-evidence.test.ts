@@ -1,12 +1,7 @@
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import {
-	createBackupRunEvidence,
-	observeBackupHealth,
-	resolveBackupHealthNotification,
-	writeAtomicJson,
-} from '../../scripts/db/backup-health-evidence';
+import { createBackupRunEvidence, writeAtomicJson } from '../../scripts/db/backup-health-evidence';
 
 const runId = '018f7b77-80f8-7bd1-8f87-70d0b5312e2f';
 const startedAt = '2026-08-31T03:00:00.000Z';
@@ -56,54 +51,10 @@ describe('backup operational evidence', () => {
 		}
 	});
 
-	it('classifies fresh, stale-report, expired-RPO, and unavailable evidence', () => {
+	it('records a verified receipt for a completed backup', () => {
 		const receipt = successfulReceipt();
-		const observation = {
-			newestCreatedAt: '2026-08-31T03:04:30.000Z',
-			lastDailyReportAt: endedAt,
-			lastDailyOutcome: 'succeeded' as const,
-			orphanCount: 0,
-			manifestValid: true,
-		};
-
-		expect(
-			observeBackupHealth({
-				receipt,
-				observation,
-				observedAt: '2026-08-31T05:15:00.000Z',
-			}).status,
-		).toBe('VERIFIED');
-		expect(
-			observeBackupHealth({
-				receipt,
-				observation: {
-					...observation,
-					newestCreatedAt: '2026-09-01T04:00:00.000Z',
-				},
-				observedAt: '2026-09-01T05:15:00.000Z',
-			}).status,
-		).toBe('WARNING');
-		expect(
-			observeBackupHealth({
-				receipt,
-				observation,
-				observedAt: '2026-09-01T05:15:00.000Z',
-			}).reasonCode,
-		).toBe('backup_rpo_expired');
-		expect(
-			observeBackupHealth({
-				receipt,
-				observation: null,
-				observedAt: '2026-08-31T05:15:00.000Z',
-			}).status,
-		).toBe('UNVERIFIED');
-	});
-
-	it('deduplicates repeated problem alerts and emits recovery once', () => {
-		expect(resolveBackupHealthNotification(null, 'FAILED')).toBe('problem');
-		expect(resolveBackupHealthNotification('FAILED', 'FAILED')).toBe('none');
-		expect(resolveBackupHealthNotification('WARNING', 'FAILED')).toBe('problem');
-		expect(resolveBackupHealthNotification('FAILED', 'VERIFIED')).toBe('recovery');
-		expect(resolveBackupHealthNotification('VERIFIED', 'VERIFIED')).toBe('none');
+		expect(receipt.status).toBe('VERIFIED');
+		expect(receipt.reasonCode).toBe('backup_completed');
+		expect(receipt.payload.manifest_valid).toBe(true);
 	});
 });
