@@ -49,9 +49,9 @@ describe('Aithan Darell managed definition', () => {
 		expect(getInvitationDefinition('aithan-darell')).toBe(aithanInvitation);
 		expect(aithanInvitation.eventType).toBe('cumple');
 		expect(aithanInvitation.hostLoginAlias).toBe('aithan_ruiz');
-		expect(aithanInvitation.lifecycle).toBe('in_progress');
+		expect(aithanInvitation.lifecycle).toBe('published');
 		expect(aithanInvitation.deliveryScope).toBe('content-and-assets');
-		expect(aithanInvitation.managedIdentityProvenance).toBe('owner-approved');
+		expect(aithanInvitation.managedIdentityProvenance).toBe('persisted');
 	});
 
 	it('uses the cumple editorial-magazine catalog entry that matches its theme', () => {

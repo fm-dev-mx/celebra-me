@@ -326,6 +326,7 @@ export const miaInvitation = defineCanonicalInvitation({
 	content,
 	managedIdentityId: 'dfc141c1-7006-4621-a23c-e7a4e63122bc',
 	managedIdentityProvenance: 'persisted',
+	lifecycle: 'published',
 	hostLoginAlias: 'mia_pintor',
 	assetDir: 'src/assets/invitations/mia-pintor',
 	assetFiles: {
