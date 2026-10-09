@@ -552,7 +552,9 @@ high-priority `<img>`, which may be a `<picture>` fallback rather than `currentS
 sample.
 
 **Measurement.** Informational in `invitation:delivery:baseline` (`hero.deliveredBytes` is the HTML
-high-priority `<img>` GET). Displayed resource is `img.currentSrc` after layout. Opt-in:
+high-priority `<img>` GET) and is checked against the hero role in
+`src/lib/invitation-preparation/image-delivery-budget.ts` as an advisory `WARN image budget` line.
+Displayed resource is `img.currentSrc` after layout. Opt-in:
 `DELIVERY_DIAGNOSTICS_ORIGIN=… pnpm exec playwright test tests/e2e/invitation-delivery-media.diagnostic.spec.ts`.
 
 Distinguish: **markup `src`**, **responsive `currentSrc`**, **requested URL**. Do not label markup
