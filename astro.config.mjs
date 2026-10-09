@@ -146,7 +146,7 @@ export default defineConfig({
 					!p.startsWith('/api') &&
 					!p.startsWith('/r/') &&
 					!p.startsWith('/captura') &&
-					!['/login', '/under-construction', '/404'].includes(clean)
+					!['/login', '/404'].includes(clean)
 				);
 			},
 		}),
@@ -155,7 +155,7 @@ export default defineConfig({
 				{
 					userAgent: '*',
 					allow: '/',
-					disallow: ['/dashboard/', '/api/', '/r/', '/captura/', '/under-construction'],
+					disallow: ['/dashboard/', '/api/', '/r/', '/captura/'],
 				},
 			],
 		}),

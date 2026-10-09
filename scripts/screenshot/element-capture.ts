@@ -44,8 +44,6 @@ export async function hideFixedOverlaysForCapture(page: Page): Promise<() => Pro
 	      html.screenshot-hide-overlays [data-back-to-top],
 	      html.screenshot-hide-overlays .back-to-top,
 	      html.screenshot-hide-overlays .scroll-to-top,
-	      html.screenshot-hide-overlays .action-icon--scroll,
-	      html.screenshot-hide-overlays .action-icon--fixed-bottom-right,
 	      html.screenshot-hide-overlays :is(
 	        ${toolbarSelectors}
 	      ) {
