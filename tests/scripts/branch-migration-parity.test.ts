@@ -1,7 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { mkdtempSync, rmSync, mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { describe, it, expect } from '@jest/globals';
 import {
 	detectDatabaseSensitiveChanges,
 	filterDatabaseSensitivePaths,
@@ -19,23 +16,10 @@ import {
 	type GitRunner,
 } from '../../scripts/db/branch-migration-parity';
 import {
-	AUDIT_CONTRACT_VERSION,
 	selectBranchLaneMode,
 	BRANCH_LANE_STATUSES,
 	createFinding,
 } from '../../scripts/db/branch-lane-status';
-import {
-	buildClearanceFingerprint,
-	clearClearanceFingerprint,
-	compareClearanceFingerprint,
-	evaluateResumeClearance,
-	fingerprintSensitiveFileSet,
-	fingerprintWorkingTree,
-	readClearanceFingerprint,
-	writeClearanceFingerprint,
-	type ClearanceFingerprint,
-} from '../../scripts/db/branch-lane-clearance';
-
 function makeGit(opts: {
 	changed: string[];
 	baseFiles: Map<string, string>;
@@ -255,168 +239,6 @@ describe('branch-lane mode selection', () => {
 		]);
 	});
 });
-
-describe('clearance fingerprint resume safety', () => {
-	let root: string;
-	const repoId = 'test-repo-identity-aaa';
-
-	beforeEach(() => {
-		root = mkdtempSync(join(tmpdir(), 'branch-lane-clearance-'));
-		mkdirSync(join(root, '.agent', 'tmp'), { recursive: true });
-	});
-
-	afterEach(() => {
-		rmSync(root, { recursive: true, force: true });
-	});
-
-	it('reuses clearance when fingerprint is unchanged', () => {
-		const fp = buildClearanceFingerprint({
-			mode: 'promote-develop-to-main',
-			baseSha: 'aaa',
-			headSha: 'bbb',
-			workingTreeFingerprint: fingerprintWorkingTree(''),
-			sensitiveFiles: ['supabase/migrations/x.sql'],
-			clearanceStatus: 'Pass',
-			repoIdentityFingerprint: repoId,
-			completedSteps: ['parity', 'preview-audit'],
-		});
-		writeClearanceFingerprint(fp, root);
-		const match = evaluateResumeClearance({
-			mode: 'promote-develop-to-main',
-			baseSha: 'aaa',
-			headSha: 'bbb',
-			workingTreeFingerprint: fingerprintWorkingTree(''),
-			sensitiveFiles: ['supabase/migrations/x.sql'],
-			projectRoot: root,
-			repoIdentityFingerprint: repoId,
-		});
-		expect(match.valid).toBe(true);
-		expect(readClearanceFingerprint(root)?.completedSteps).toEqual(['parity', 'preview-audit']);
-	});
-
-	it('invalidates when head SHA changes (not a user-facing Fail by itself)', () => {
-		const fp = buildClearanceFingerprint({
-			mode: 'promote-develop-to-main',
-			baseSha: 'aaa',
-			headSha: 'bbb',
-			workingTreeFingerprint: fingerprintWorkingTree(''),
-			sensitiveFiles: [],
-			clearanceStatus: 'Pass',
-			repoIdentityFingerprint: repoId,
-		});
-		writeClearanceFingerprint(fp, root);
-		const match = evaluateResumeClearance({
-			mode: 'promote-develop-to-main',
-			baseSha: 'aaa',
-			headSha: 'ccc',
-			workingTreeFingerprint: fingerprintWorkingTree(''),
-			sensitiveFiles: [],
-			projectRoot: root,
-			repoIdentityFingerprint: repoId,
-		});
-		expect(match.valid).toBe(false);
-		expect(match.reason).toContain('SHA');
-	});
-
-	it('invalidates when working tree, file-set, contract version, or repo identity changes', () => {
-		const base = buildClearanceFingerprint({
-			mode: 'promote-develop-to-main',
-			baseSha: 'a',
-			headSha: 'b',
-			workingTreeFingerprint: fingerprintWorkingTree(''),
-			sensitiveFiles: ['supabase/migrations/a.sql'],
-			clearanceStatus: 'Pass',
-			repoIdentityFingerprint: repoId,
-		});
-		expect(
-			compareClearanceFingerprint(base, {
-				...base,
-				workingTreeFingerprint: fingerprintWorkingTree(' M src/x.ts'),
-			}).valid,
-		).toBe(false);
-		expect(
-			compareClearanceFingerprint(base, {
-				...base,
-				sensitiveFileSetFingerprint: fingerprintSensitiveFileSet([
-					'supabase/migrations/b.sql',
-				]),
-			}).valid,
-		).toBe(false);
-		expect(
-			compareClearanceFingerprint(base, {
-				...base,
-				auditContractVersion: '0.0.0',
-			}).valid,
-		).toBe(false);
-		expect(
-			compareClearanceFingerprint(base, {
-				...base,
-				repoIdentityFingerprint: 'other-worktree',
-			}).valid,
-		).toBe(false);
-		expect(base.auditContractVersion).toBe(AUDIT_CONTRACT_VERSION);
-	});
-
-	it('fails safely on missing or corrupt clearance files', () => {
-		expect(readClearanceFingerprint(root)).toBeNull();
-		const path = join(root, '.agent', 'tmp', 'branch-lane-clearance.json');
-		writeFileSync(path, '{not-json');
-		expect(readClearanceFingerprint(root)).toBeNull();
-		writeFileSync(path, JSON.stringify({ mode: 'promote-develop-to-main', baseSha: 'a' }));
-		expect(readClearanceFingerprint(root)).toBeNull();
-	});
-
-	it('writes clearance atomically and refuses secret-looking payloads', () => {
-		const fp = buildClearanceFingerprint({
-			mode: 'promote-develop-to-main',
-			baseSha: 'a',
-			headSha: 'b',
-			workingTreeFingerprint: fingerprintWorkingTree(''),
-			sensitiveFiles: [],
-			clearanceStatus: 'Pass',
-			repoIdentityFingerprint: repoId,
-		});
-		const path = writeClearanceFingerprint(fp, root);
-		expect(existsSync(path)).toBe(true);
-		const poisoned = {
-			...fp,
-			leak: 'postgresql://user:password@host/db',
-		} as ClearanceFingerprint;
-		expect(() => writeClearanceFingerprint(poisoned, root)).toThrow(/secrets/i);
-	});
-
-	it('clears stored fingerprint', () => {
-		const fp = buildClearanceFingerprint({
-			mode: 'sync-main-into-develop',
-			baseSha: 'a',
-			headSha: 'b',
-			workingTreeFingerprint: fingerprintWorkingTree(''),
-			sensitiveFiles: [],
-			clearanceStatus: 'Pass',
-			repoIdentityFingerprint: repoId,
-		});
-		writeClearanceFingerprint(fp, root);
-		clearClearanceFingerprint(root);
-		expect(readClearanceFingerprint(root)).toBeNull();
-	});
-
-	it('does not persist secrets in clearance files', () => {
-		const fp = buildClearanceFingerprint({
-			mode: 'promote-develop-to-main',
-			baseSha: 'a',
-			headSha: 'b',
-			workingTreeFingerprint: fingerprintWorkingTree(''),
-			sensitiveFiles: [],
-			clearanceStatus: 'Pass',
-			repoIdentityFingerprint: repoId,
-		});
-		const path = writeClearanceFingerprint(fp, root);
-		const raw = readFileSync(path, 'utf8');
-		expect(raw).not.toMatch(/postgres:\/\//i);
-		expect(raw).not.toMatch(/password/i);
-	});
-});
-
 describe('finding status mapping for interrupted paths', () => {
 	it('maps missing credentials style finding to Needs manual action', () => {
 		const finding = createFinding({

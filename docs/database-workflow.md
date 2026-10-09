@@ -408,12 +408,8 @@ Production. Unverified rebuild targets are `Hard blocked`. Preview / Production 
 writes still require explicit authorization. Git-only promote while remotes lack required migrations
 is `Hard blocked` unless compatibility is demonstrated.
 
-Resumable evidence (SHAs/hashes only; no credentials):
-
-- Checkpoint: `.agent/tmp/branch-lane-checkpoint.json` — partial read-only progress
-- Clearance: `.agent/tmp/branch-lane-clearance.json` — write-ready gate
-
-Stale fingerprints invalidate automatically and re-run affected checks.
+Read-only evidence is not persisted: parity and diagnosis re-run for the current base/head SHAs on
+each invocation, and a write proceeds only on evidence for the exact SHAs it moves.
 
 Complete remote audits via `pnpm db:local:audit` / `db:preview:audit` / `db:prod:audit` when
 credentials resolve. Production migration safety creates a complete DB/Auth/Storage recovery point

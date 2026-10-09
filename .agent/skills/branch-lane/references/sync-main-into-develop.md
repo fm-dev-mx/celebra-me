@@ -19,7 +19,7 @@ Integration, which keeps `develop` checked out.
 - Exclusive commits on `origin/main`. If none → `Pass` no-op (do not create an empty merge).
 - `pnpm db:branch:parity -- --base origin/develop --head origin/main --json` completed; route to
   `database-parity` when `requiresParityAudit` is true.
-- Clearance fingerprint valid before writes.
+- Parity and diagnosis ran for the exact SHAs before writes.
 - Merge/push authorized (`Needs authorization` until yes).
 
 ## Procedure

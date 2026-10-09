@@ -430,7 +430,7 @@ The active guest-facing patterns are:
 
 - `/{eventType}/{slug}?invite={inviteId}` for direct personalized access
 - `/{eventType}/{slug}/i/{shortId}` for short-link resolution
-- `/api/invitacion/:inviteId/context`
+- `/api/invitacion/:inviteId/location`
 - `/api/invitacion/:inviteId/rsvp`
 - `/api/invitacion/:inviteId/view`
 

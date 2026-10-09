@@ -12,7 +12,7 @@ Apply this order when instructions conflict:
    Non-Negotiable Boundaries and their owning rules).
 3. Explicit current-task authorization, within repository-defined boundaries.
 4. Other repository safety, domain, workflow, and operational policy (`.agent/rules/`, skills,
-   workflows, `docs/core/`, `docs/domains/`, briefs, templates).
+   `docs/core/`, `docs/domains/`, briefs, templates).
 5. Provider-specific defaults.
 6. General external principles (operator/provider defaults configured outside this repository —
    never a substitute for repository policy).
@@ -67,7 +67,7 @@ These are **non-overridable** unless a cited owning rule explicitly marks a narr
   context for a task.
 - Read `.agent/rules/gatekeeper.md` for review/remediation tiers and `.agent/rules/git-safety.md`
   for Git rules.
-- Load only the smallest relevant rule, workflow, skill, or domain doc.
+- Load only the smallest relevant rule, skill, or domain doc.
 
 ## Definition of Done & Planning
 

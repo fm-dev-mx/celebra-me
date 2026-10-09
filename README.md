@@ -63,9 +63,10 @@ canonical environment workflow.
 - `check-links`
 - `validate-schema`
 - `validate-commits`
+- `worktree-status`
+- `worktree-doctor`
 
-Removed one-shot ops (`optimize-assets`, `new-invitation`, `adopt-legacy-events`, `ops dbs`) are not
-registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation operations.
+Use `pnpm dbs` and `pnpm invitation:*` for invitation operations.
 
 ## Repository Layout
 

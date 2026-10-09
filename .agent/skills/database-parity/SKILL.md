@@ -45,15 +45,12 @@ Statuses match the branch-lane contract: `Pass` | `Needs decision` | `Needs auth
 | Mode                                  | promote / sync / release advisory                        |
 | Base / head refs + SHAs               | Lane range                                               |
 | `pnpm db:branch:parity --json` result | Already run by orchestrator; re-run if fingerprint stale |
-| Checkpoint                            | `.agent/tmp/branch-lane-checkpoint.json`                 |
-| Clearance fingerprint                 | `.agent/tmp/branch-lane-clearance.json`                  |
 
 ## Procedure
 
 ### 1. Confirm scope
 
-Reuse trustworthy parity JSON when the checkpoint/clearance fingerprint still matches. If stale,
-re-run:
+Reuse parity JSON only when it was produced for the current base/head SHAs. If stale, re-run:
 
 ```bash
 pnpm db:branch:parity -- --base <base> --head <head> --json
@@ -122,8 +119,8 @@ ask the user whether to investigate**. Automatically determine:
 5. The minimum safe remediation and validation sequence.
 
 Use `diagnoseLocalDisposableDrift` / `pnpm db:branch:diagnose -- --evidence-json <path>` with
-structured evidence (version lists, column diffs, migration SQL expectations). Persist a
-**checkpoint** after this diagnosis.
+structured evidence (version lists, column diffs, migration SQL expectations). Persist a **report**
+after this diagnosis.
 
 - **Classification:** `disposable_stale_or_incomplete`
   - **Status:** `Fail` (agent-owned)
@@ -174,19 +171,16 @@ a missing valid recovery set blocks readiness.
 
 ### 8. Preview completeness
 
-Migration-bearing promote without Preview audit → block clearance (`Needs authorization` to run
+Migration-bearing promote without Preview audit → block the write (`Needs authorization` to run
 Preview audit/migrate, or `Needs decision` to accept incomplete Preview as intentional non-critical
 limitation — only after compatibility rules in §6 are satisfied).
 
-### 9. Checkpoint and clearance back to branch-lane
+### 9. Hand back to branch-lane
 
-After meaningful read-only progress (parity, audits, diagnosis):
-
-1. Write/update **checkpoint** via `scripts/db/branch-lane-checkpoint.ts`.
-2. When all findings are `Pass` or explicitly accepted non-critical `Needs decision` items, write
-   **clearance** via `scripts/db/branch-lane-clearance.ts` (`clearanceStatus: Pass`).
-3. Return control to `branch-lane` for consolidated Git/DB authorization — only when
-   `mayRequestUserInput` is true (no remaining automatic steps).
+When all findings are `Pass` or explicitly accepted non-critical `Needs decision` items, return
+control to `branch-lane` for consolidated Git/DB authorization — only when `mayRequestUserInput` is
+true (no remaining automatic steps). The findings live in the report for the current SHAs; nothing
+is persisted.
 
 Do not silently continue promote/sync.
 
@@ -201,8 +195,8 @@ Do not silently continue promote/sync.
 ## Report
 
 Use the same nine-section structure as `branch-lane`. Include remote audit table, backup reasoning,
-owner-accepted findings, checkpoint/clearance paths (no secrets), diagnosis classification, and
-clearance yes/no. When no user action is required yet, say so and continue.
+owner-accepted findings, the base/head SHAs the evidence covers, diagnosis classification, and
+whether the planned write is clear. When no user action is required yet, say so and continue.
 
 ## Hard constraints
 

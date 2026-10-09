@@ -35,11 +35,11 @@ implementing these skills is never a live-release invocation.
   `pnpm visual:matrix:check` (seconds, browserless) before pushing visual-impact paths. Do not run
   full local CI merely because this is a release. Preserve normal pre-commit and pre-push hooks.
 - Run `pnpm db:branch:parity -- --base <base-sha> --head <head-sha> --json` for the relevant range.
-  Use branch-lane/database-parity read-only diagnosis and its fingerprinted checkpoint/clearance
-  when sensitive. Do not inherit persistent DB mutation authority from those skills; their only
-  automatic write is the disposable-test reset that database-parity performs while diagnosing.
-  Missing compatibility proof stops dependent deployment. Obtain separate scoped authority if a
-  mutation is genuinely required, with its concrete plan already prepared.
+  Use branch-lane/database-parity read-only diagnosis for the same SHAs when sensitive. Do not
+  inherit persistent DB mutation authority from those skills; their only automatic write is the
+  disposable-test reset that database-parity performs while diagnosing. Missing compatibility proof
+  stops dependent deployment. Obtain separate scoped authority if a mutation is genuinely required,
+  with its concrete plan already prepared.
 - Reuse successful evidence only for matching SHA/range, files/artifacts, configuration, runtime,
   command and target. Uncommitted input checks need matching content, not just HEAD. A new merge
   SHA, changed lockfile, baseline, matrix or runtime invalidates affected evidence. Do not repeat
@@ -63,8 +63,9 @@ implementing these skills is never a live-release invocation.
 
 1. Stage only named scope, commit only when needed, and inspect resulting commit/working tree.
    Already committed scope requires neither staging nor a new commit. A needed commit (for example
-   accepted visual baselines) goes on a task branch created from `develop` and is then merged
-   (`--no-ff`); never author it directly on `develop`.
+   accepted visual baselines) goes on a task branch created from `develop` and is then integrated
+   per [Git governance](git-governance.md#task-lifecycle) (a single commit fast-forwards); never
+   author it directly on `develop`.
 2. Push only the validated `develop` ref with normal hooks and Git LFS. If origin already points at
    the intended SHA, skip the push and discover the existing CI/deployment.
 3. Run `pnpm ops:release-status -- --sha <exact-sha> --target preview --wait` once, in the

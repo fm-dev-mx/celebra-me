@@ -42,7 +42,9 @@ short code is available and emits the short URL when `shortId` exists.
 - `GET /api/auth/session`
 - `POST /api/auth/logout`
 - `POST /api/auth/sync-session`
-- `POST /api/auth/refresh-session`
+
+The middleware refreshes an expiring session from the refresh-token cookie; there is no separate
+refresh endpoint.
 
 ### Dashboard APIs
 
@@ -62,7 +64,7 @@ short code is available and emits the short URL when `shortId` exists.
 
 ### Guest Invitation APIs
 
-- `GET /api/invitacion/:inviteId/context`
+- `GET /api/invitacion/:inviteId/location`
 - `POST /api/invitacion/:inviteId/rsvp`
 - `POST /api/invitacion/:inviteId/view`
 - `POST /api/invitacion/public/:eventType/:slug/rsvp`
@@ -110,9 +112,8 @@ live tree.
 2. The route resolves invitation context server-side. An unknown or deleted `inviteId` redirects
    (`302`) to the same route without `invite`; transient lookup failures render the public page
    without redirect.
-3. The client fetches `/api/invitacion/:inviteId/context`.
-4. View telemetry posts to `/api/invitacion/:inviteId/view`.
-5. RSVP submissions post to `/api/invitacion/:inviteId/rsvp`.
+3. View telemetry posts to `/api/invitacion/:inviteId/view`.
+4. RSVP submissions post to `/api/invitacion/:inviteId/rsvp`.
 
 ### Hybrid Public RSVP Flow
 

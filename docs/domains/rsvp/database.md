@@ -76,7 +76,7 @@ confirmations or guest audit rows.
 - direct invite URL: `/{eventType}/{slug}?invite={inviteId}`
 - short invite URL: `/{eventType}/{slug}/i/{shortId}`
 - landing RSVP URL: `/{eventType}/{slug}`
-- guest APIs: `/api/invitacion/:inviteId/context`, `/rsvp`, `/view`
+- guest APIs: `/api/invitacion/:inviteId/location`, `/rsvp`, `/view`
 - public RSVP API: `/api/invitacion/public/:eventType/:slug/rsvp`
 - host dashboard page: `/dashboard/invitados`
 - host dashboard APIs: `/api/dashboard/**`

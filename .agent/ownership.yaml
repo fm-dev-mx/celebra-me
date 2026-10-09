@@ -43,7 +43,6 @@ ownership:
       owner: '.agent/rules/gatekeeper.md'
       non_owners:
           - 'docs/core/git-governance.md'
-          - 'Workflows'
 
     - aspect: 'Detailed validation & review procedures'
       owner: 'docs/core/validation-procedures.md'

@@ -282,7 +282,6 @@ commands. Direct invocation:
 tsx scripts/db/db-guard.ts check --target <production|preview|persistent-local|disposable-test> --operation "<op>"
 tsx scripts/db/db-guard.ts classify --db-url <connection-string>      # Classify a DB URL
 tsx scripts/db/db-guard.ts redact --text "<text>"                     # Redact credentials
-tsx scripts/db/sentinel-check.ts <insert|check|remove>                # Sentinel management
 ```
 
 Key behaviours:
@@ -340,16 +339,9 @@ Configuration:
 ## Sentinel
 
 A sentinel row in the `public._db_sentinel` table proves the persistent local database was not
-reset. It must survive all normal CI and development workflows.
-
-```bash
-tsx scripts/db/sentinel-check.ts insert    # Create the sentinel (one-time)
-tsx scripts/db/sentinel-check.ts check     # Verify sentinel exists (exit 1 if missing)
-tsx scripts/db/sentinel-check.ts remove    # Remove sentinel (cleanup)
-```
-
-The sentinel test is part of the guard validation suite. Run it after CI to confirm the
-persistent-local database was preserved.
+reset. It must survive all normal CI and development workflows. `pnpm db:local:restore-from-dump`
+verifies it after a restore; to confirm it by hand, run the read-only query
+`select count(*) from public._db_sentinel` against persistent Local (expected: 1).
 
 ## Agent Rules
 
