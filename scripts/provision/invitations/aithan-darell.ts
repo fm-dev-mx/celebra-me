@@ -344,7 +344,8 @@ export const aithanInvitation = defineCanonicalInvitation({
 	},
 	content,
 	managedIdentityId: 'ff2c91a0-5fe5-4260-aef6-8c61da963fd6',
-	managedIdentityProvenance: 'owner-approved',
+	managedIdentityProvenance: 'persisted',
+	lifecycle: 'published',
 	hostLoginAlias: 'aithan_ruiz',
 	assetDir: 'src/assets/invitations/aithan-darell',
 	// One binding per source: each photograph has a single visible role; the motif files are
