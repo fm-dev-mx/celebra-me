@@ -20,7 +20,6 @@
  *   tsx scripts/db/disposable-test-env.ts run-stale-baseline-test
  *   tsx scripts/db/disposable-test-env.ts stop
  *   tsx scripts/db/disposable-test-env.ts cleanup
- *   tsx scripts/db/disposable-test-env.ts db-url
  */
 
 import { existsSync } from 'node:fs';
@@ -116,7 +115,6 @@ Usage:
   tsx scripts/db/disposable-test-env.ts run-stale-baseline-test  Exercise public and contact-only baselines
   tsx scripts/db/disposable-test-env.ts stop        Stop the disposable container
   tsx scripts/db/disposable-test-env.ts cleanup     Full cleanup (stop + remove container)
-  tsx scripts/db/disposable-test-env.ts db-url      Show the disposable DB URL
 `);
 }
 
@@ -914,10 +912,6 @@ function cmdCleanup(): void {
 	console.info('Disposable environment cleaned up.');
 }
 
-function cmdDbUrl(): void {
-	console.info(DISPOSABLE_DB_URL);
-}
-
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -963,9 +957,6 @@ async function main(): Promise<void> {
 			break;
 		case 'cleanup':
 			cmdCleanup();
-			break;
-		case 'db-url':
-			cmdDbUrl();
 			break;
 		default:
 			printUsage();
