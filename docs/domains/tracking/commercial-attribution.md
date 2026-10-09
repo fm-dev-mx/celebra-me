@@ -109,6 +109,11 @@ Future options to enable `generate_lead`:
 - Dispatch `lead_created` client-side (requires adding it to the client tracking pipeline)
 - Implement server-side GA4 Measurement Protocol to forward from the API route directly
 
+Verification: `tests/unit/ga4-forwarder.test.ts` pins the `gtag` command shape (native `Arguments`,
+`send_page_view: false`, exactly one `page_view`) in jsdom. `pnpm test:e2e:ga4` repeats both consent
+scenarios in a real browser against a production-mode server on port 4330, through the consent
+banner and the `gtag` loader. Run it when `src/lib/tracking/**` or the consent banner changes.
+
 ## Exclusions
 
 The following are explicitly excluded from commercial attribution:
