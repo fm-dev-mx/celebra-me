@@ -136,8 +136,9 @@ lane, agents **must** establish the following state:
 **Lane Invariants:**
 
 - `1 active task = 1 branch = 1 worktree`
-- An agent can claim a lane only if it is **idle (detached HEAD on `develop`) and clean**, or
-  already assigned to the **current task**.
+- An agent can claim a lane only if it is **idle and clean**, or already assigned to the **current
+  task**. Idle is detached HEAD on `develop` for a development lane and `develop` checked out for
+  Integration ([lane cards](../../docs/core/worktrees/)).
 - If a lane is occupied by another active task or contains pre-existing/unrelated dirty changes:
   **STOP** — do not switch, stash, reset, clean, overwrite, or repurpose the lane. Use another
   available lane or report the conflict to the user.
@@ -146,20 +147,9 @@ lane, agents **must** establish the following state:
 
 ## Agent Session Lifecycle
 
-Read [session procedures](../../docs/core/git-safety-session.md) before a mutable session. Run pnpm
-agent:git-safety:start once before edits, and pnpm agent:git-safety:finish at closure. start
-replaces an existing baseline only when it shows no protected drift; a drifted baseline is evidence
-and is never overwritten. Read-only check never removes it.
-
-Protected state is current HEAD, branch/detached state, and staged changes relative to HEAD. Other
-local heads/tags/stashes are diagnostic only. On unexpected protected drift, incompatible baseline,
-or missing baseline, preserve evidence and report; never reset state to manufacture a pass. On PASS,
-finish removes its baseline. CI does not run this interactive lifecycle.
-
-The detector does not prove absence of remote pushes or transient mutate-then-restore activity.
-Working-tree edits remain allowed only within the task scope.
-
-An ephemeral --authorized-operation declaration only describes an exact current-task authorization.
-It grants no authority and must not hide adjacent drift; path scope is required for stage/unstage.
-Operations are combinable in one finish; supported operations and fail-closed behavior stay in the
-linked procedure. Filesystem markers are never authorization sources.
+Run `pnpm agent:git-safety:start` once before edits and `pnpm agent:git-safety:finish` at closure,
+following the [session procedure](../../docs/core/git-safety-session.md), which owns protected
+state, baselines, `--authorized-operation` declarations and finish results. On unexpected protected
+drift, an incompatible baseline or a missing baseline, preserve evidence and report; never reset
+state to manufacture a pass. A declaration grants no authority, and filesystem markers are never
+authorization sources.

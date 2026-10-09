@@ -55,16 +55,17 @@ git push origin develop
    on `main` locally. If the branch is not up to date or the pull request cannot be merged without
    violating repository rules: `Hard blocked` / `Needs decision` — suggest `sync-main-into-develop`.
 
-5. Tag only if separately authorized, and push the tag only after that authorization. Merge the pull
-   request only after required checks and any required review pass:
+5. Merge the pull request (merge commit) only after required checks and any required review pass,
+   when the merge is authorized. Then run the `sync-main-into-develop` back-merge (a fast-forward).
+   Never push directly to `main`, use `--force` / `--force-with-lease`, or commit on `main`.
+6. Tag only when separately authorized, and only after the automatic Production deployment of the
+   merged `main` SHA is verified
+   ([release process](../../../../docs/core/release-process.md#7-create-and-push-the-annotated-tag)):
 
 ```bash
-git tag -a vX.Y.Z -m "vX.Y.Z <theme>"
+git tag -a vX.Y.Z -m "vX.Y.Z - Short description of checkpoint"
 git push origin vX.Y.Z
 ```
-
-After the merge, run the `sync-main-into-develop` back-merge (a fast-forward). Never push directly
-to `main`, use `--force` / `--force-with-lease`, or commit on `main`.
 
 ## Report
 

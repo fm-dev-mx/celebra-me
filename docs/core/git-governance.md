@@ -4,11 +4,6 @@
 
 **Last Updated:** 2026-10-09
 
-**Change Note:** Integration into `develop` keeps each task a separate, revertible unit and never
-rewrites published history: a single-commit task fast-forwards, a multi-commit task gets one merge
-commit (`--no-ff`). Rebase is optional and only for branches that were never pushed. Release pull
-request into `main` and fast-forward back-merge are unchanged.
-
 ## Overview
 
 This document is the single owner of branch, lane lifecycle, commit, integration and
@@ -253,7 +248,7 @@ judgment.
    Exact-SHA visual certification belongs to Repository CI on the `develop` push;
    `pnpm validate:prepush` is an optional local preview.
 4. `Repository CI` (`.github/workflows/commit-validation.yml`) runs on pushes to `develop`, on pull
-   requests targeting `main`, and by manual dispatch. See the
+   requests targeting `develop` or `main`, and by manual dispatch. See the
    [validation procedure](validation-procedures.md#remote-ci-coverage-and-efficiency) for scope and
    the distinction from `pnpm run ci`.
 
@@ -276,8 +271,8 @@ git pull --ff-only origin develop
 git merge --ff-only origin/main
 git push origin develop
 
-# 3. Tag the deployed main SHA
-git tag -a vX.Y.Z -m "Release vX.Y.Z — summary"
+# 3. Tag the deployed main SHA (checkpoint policy: release-process.md)
+git tag -a vX.Y.Z -m "vX.Y.Z - Short description of checkpoint"
 git push origin vX.Y.Z
 ```
 

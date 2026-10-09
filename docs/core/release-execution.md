@@ -6,6 +6,19 @@ remain in [Git governance](git-governance.md) and [release process](release-proc
 skills execute code delivery, not database migrations or managed invitation publication. Auditing or
 implementing these skills is never a live-release invocation.
 
+## Delivery model
+
+- Vercel's Git integration owns deployments: pull requests and `develop` receive automatic Preview
+  deployments, and `main` receives the automatic Production deployment. GitHub Actions does not
+  build or deploy a second Preview.
+- Vercel builds with `pnpm build:app`; `astro check` and `tsc` belong to Repository CI
+  (`ci:static`). `scripts/ops/vercel-ignore-build.mjs` (`ignoreCommand`) skips a Preview build when
+  no application input (`src/`, `public/`, `scripts/shared/`, Astro/Vercel/package configuration)
+  changed since the previous deployed commit of that branch; Production always builds.
+- `Post-deploy Smoke` validates the correlated deployment, SHA, approved host and critical HTTP
+  behavior. The scheduled/manual `Production Image Audit` separately reports published-media drift
+  and never determines deployment health.
+
 ## Preflight and scope
 
 1. Verify assigned checkout, symbolic branch, HEAD, origin identity, upstream, index, unstaged and
@@ -42,22 +55,14 @@ implementing these skills is never a live-release invocation.
   with its concrete plan already prepared.
 - Reuse successful evidence only for matching SHA/range, files/artifacts, configuration, runtime,
   command and target. Uncommitted input checks need matching content, not just HEAD. A new merge
-  SHA, changed lockfile, baseline, matrix or runtime invalidates affected evidence. Do not repeat
-  `test:changed` after `validate:changed`; the normal commit hook remains a separate index gate.
-- Repository CI owns exact-SHA visual certification on the `develop` push. Optionally preview it
-  once with
-  `pnpm validate:prepush -- --sha <head-sha> --base-sha <base-sha> --target-ref refs/heads/develop`.
-  Always provide the base. Its existing cache is evidence, never authorization. Do not replace
-  remote Repository CI with a local cache or substitute PR merge-SHA evidence for develop evidence.
-- Coverage changes or visual modifications require a complete new candidate and exact hash-bound
-  human acceptance. Existing approval must match reference SHA, matrix hash and candidate-manifest
-  hash. Do not transfer approval after regeneration or infer it from this invocation. Accepted files
-  and their recorded integrity must match. Use
-  `pnpm visual:parity:candidate:certified -- --sha <sha>` for missing review evidence; inspect the
-  concise summary and `.tmp/visual-parity/candidate/changes.html` in the workspace. Acceptance uses
-  `pnpm visual:parity:accept` (which validates that candidate artifacts match the clean HEAD and
-  verifies manifest integrity without manual hash copying). Human acceptance stays outside automated
-  invocation. Never edit a manifest to manufacture coverage or relax comparison thresholds.
+  SHA, changed lockfile, baseline, matrix or runtime invalidates affected evidence.
+- Repository CI owns exact-SHA visual certification on the `develop` push; the optional local
+  `pnpm validate:prepush` preview and its cache are evidence, never authorization or a substitute
+  for remote CI. Coverage changes or visual modifications require a complete new candidate and exact
+  hash-bound human acceptance, as
+  [visual certification](validation-procedures.md#visual-certification-and-candidates) defines.
+  Candidate generation is diagnostic preparation; acceptance stays outside automated invocation.
+  Never edit a manifest to manufacture coverage or relax comparison thresholds.
 
 ## Preview integration
 
@@ -134,9 +139,10 @@ hooks and resume only the invalidated steps. No speculative fix/commit chains.
 
 Allow one retry for a proven transient transport/infrastructure failure after checking remote state.
 For an uncertain push/PR/merge result, query the exact ref or PR before retrying; never duplicate an
-already completed operation. Respect the existing CI infrastructure retry workflow instead of
-triggering another full run. Pixel differences and approval gaps cannot be retried away. For code
-remediation use at most three diagnosed fix/verify cycles; stop if still failing.
+already completed operation. For a proven infrastructure failure, rerun only the failed jobs of that
+workflow run instead of triggering another full run. Pixel differences and approval gaps cannot be
+retried away. For code remediation use at most three diagnosed fix/verify cycles; stop if still
+failing.
 
 Poll boundedly (up to 20 minutes per CI/deployment phase, intervals up to 60 seconds). A timeout is
 pending/unverified, not success and not permission to redeploy. Missing credentials, required human

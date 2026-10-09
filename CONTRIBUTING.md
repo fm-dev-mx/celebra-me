@@ -43,10 +43,11 @@ Please follow these steps to have your contribution considered by the maintainer
    > [!NOTE] We use **Conventional Commits** with a required scope. See
    > [`docs/core/git-governance.md`](docs/core/git-governance.md) for the full commit policy,
    > including atomic-commit expectations and commit-body guidance.
-5. Push to the branch (`git push origin feature-name`).
+5. Push to the branch (`git push origin feat/short-description`).
    > [!TIP] A `pre-push` hook replays commit-message validation over the pushed range and prints
    > advisory commit-quality warnings.
-6. Create a new pull request, following the pull request template provided.
+6. Open a pull request into `develop`. Describe the change, why it is needed, and the checks you
+   ran; `Repository CI` validates it before merge.
 
 > [!NOTE] This project uses **Husky** and **lint-staged** to ensure code quality. A pre-commit hook
 > blocks commits on `main` or a detached HEAD and runs staged-file checks before the commit is
@@ -116,8 +117,9 @@ repetition for every PR.
 For Markdown changes, run `pnpm ops check-links` and the Markdown table check. Full `pnpm run ci`
 runs static/build, Jest and browser checks, including full Stylelint; it does not run interactive
 Git Safety, Repository Policy or disposable database contracts. Complete remote CI and correlated
-Preview smoke on the final SHA remain release requirements. Use
-[release process](docs/core/release-process.md) for certification and promotion.
+Preview smoke on the final SHA remain release requirements; see
+[validation procedures](docs/core/validation-procedures.md#visual-certification-and-candidates) for
+certification and [release process](docs/core/release-process.md) for promotion.
 
 For detailed repository conventions, see
 [`docs/core/project-conventions.md`](docs/core/project-conventions.md).

@@ -68,10 +68,9 @@ pnpm agent:git-safety:check
 
 ## Authorization
 
-Git write operations are authorized only when the user explicitly requests that exact Git operation
-in the current task (Task Contract). No filesystem marker provides standing Git-write authority.
-Explicit `publish-preview` / `publish-production` invocation is such a scoped request for their
-enumerated operations; see `.agent/rules/git-safety.md`. Do not request the same grant again.
+Authorization itself is owned by [`.agent/rules/git-safety.md`](../../.agent/rules/git-safety.md):
+only an explicit current-task request for the exact operation grants it, and no filesystem marker
+provides standing Git-write authority.
 
 When `finish` must interpret an already-authorized mutation for detection only, pass an ephemeral
 declaration for that invocation:
@@ -93,10 +92,6 @@ Rules:
 - The CLI declaration is **not** proof of human authorization — only a detector hint for authority
   already granted by the Task Contract.
 - Nothing from this declaration is persisted.
-
-Provider environments, worktrees, cloud execution, elevated modes, or external integrations do not
-imply additional Git authorization. Path is isolation, not privilege (see Path Authorization
-Invariant).
 
 ---
 

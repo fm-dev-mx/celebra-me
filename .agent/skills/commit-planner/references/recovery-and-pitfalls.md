@@ -88,7 +88,7 @@ git stash drop  # if stash was preserved
 ```
 
 Verify with `git diff --cached` before committing. After stash-pop, confirm the branch with
-`git branch --show-current` (husky rebase hooks can advance `develop`).
+`git branch --show-current`.
 
 ## Pitfalls
 
@@ -99,9 +99,9 @@ Verify with `git diff --cached` before committing. After stash-pop, confirm the 
 - **Re-stage after hook rejection**: pre-commit hooks (lint-staged, etc.) run on staged content. The
   **user** `git add`s fixed files before retrying — agents leave fixes unstaged unless staging was
   explicitly authorized.
-- **Hooks on the wrong branch**: `git stash` + branch switch + `git stash pop` can trigger husky
-  hooks (rebase, pre-commit). Always verify which branch you're on after stash-pop with
-  `git branch --show-current`.
+- **Wrong branch after stash-pop**: `git stash` + branch switch + `git stash pop` leaves you on
+  whatever branch you switched to. Always verify it with `git branch --show-current` before
+  committing; the `pre-commit` hook only blocks detached HEAD and `main`.
 - **Forbidden vocabulary**: avoid `wip`, `fix stuff`, `misc`, `various`, `tmp`, `temp`, `quick fix`,
   `minor changes`, `small fix`, `tweaks`, `improvements`, `adjustments`, `stuff`, `things` in commit
   messages. Also avoid process-oriented language: `record`, `scope`, `apply changes`, `process`. If
@@ -110,23 +110,19 @@ Verify with `git diff --cached` before committing. After stash-pop, confirm the 
 - **`git add -p` for shared files**: when a single file contains changes belonging to different
   commits, the **user** stages hunks with `git add -p`; agents only document which hunks belong
   where.
-- **Branch protection**: GitHub rules are authoritative for `develop` and `main`; both require pull
-  requests and required checks. Local hooks validate commits, Git LFS, and visual-impact ranges but
-  do not provide a branch-protection bypass. Administrative exceptions must be explicit in GitHub.
-- **Stash-pop / branch drift**: see “Stash-pop merge conflicts” above; if `develop` advanced via
-  husky, recover with `git reflog show develop` then
-  `git checkout develop && git reset --hard <prior-commit>`.
+- **Branch protection**: GitHub rules are authoritative. `develop` accepts direct pushes that only
+  add commits; `main` changes only through the release pull request
+  ([Git governance](../../../../docs/core/git-governance.md#branches)). Local hooks validate commit
+  messages and hand off to Git LFS; they are not a branch-protection bypass.
+- **Commit landed on `develop` by mistake**: commits are never authored on `develop`. If it is
+  unpushed, follow “Commit on wrong branch” above; if it reached `origin/develop`, revert it on a
+  task branch — published `develop` is never rewritten.
 - **`body-max-line-length` (hard error with `--no-verify`)**: commitlint enforces
   `body-max-line-length: [2, 'always', 140]`. The `--no-verify` flag bypasses the commit-msg hook
   that normally catches this at commit time, so the error only surfaces during pre-push validation.
   Always pre-validate the message with `echo <message> | pnpm exec commitlint` when using
   `--no-verify`. Split any body line that exceeds 140 characters into continuation lines (see body
   policy in `SKILL.md`).
-- **`process.env` false positive in `no-process-language`**: the subject rule previously flagged
-  `process` in `process.env` because the regex `\bprocess\b` matched any standalone occurrence. The
-  regex was patched in `commitlint.config.cjs` to exclude `process.` with a negative lookahead
-  `(?!\.)`. Avoid re-introducing this issue — if a new subject uses `process` as a verb, it's still
-  correctly flagged.
 - **SCSS pre-commit hooks (stylelint)**: lint-staged runs stylelint on staged SCSS files. Common
   rejections and fixes:
 
