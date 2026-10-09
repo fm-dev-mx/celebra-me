@@ -295,6 +295,7 @@
 		display: grid;
 		gap: 0.45rem;
 		width: min(100%, 34rem);
+		margin-top: var(--hero-details-margin-block-start, 0);
 		padding-top: clamp(0.7rem, 1.6svh, 1rem);
 		border-top: 1px solid rgb(var(--color-text-on-dark-rgb) / 24%);
 	}

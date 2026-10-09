@@ -22,7 +22,7 @@ describe('Mía managed definition', () => {
 	it('resolves from the managed registry with its host identity', () => {
 		expect(getInvitationDefinition('mia-pintor')).toBe(miaInvitation);
 		expect(miaInvitation.hostLoginAlias).toBe('mia_pintor');
-		expect(miaInvitation.lifecycle).toBe('in_progress');
+		expect(miaInvitation.lifecycle).toBe('published');
 		expect(miaInvitation.deliveryScope).toBe('content-and-assets');
 		expect(miaInvitation.themeId).toBe('celestial-blue');
 	});

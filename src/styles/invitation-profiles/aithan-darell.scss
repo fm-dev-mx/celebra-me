@@ -126,6 +126,10 @@
 		// portrait keeps its 4:5 frame (the base hero otherwise shrinks it to fit 100svh).
 		@media (width < 992px) {
 			--hero-section-height: auto;
+
+			// The copy ends on the fold, where the fixed music prompt covers the date: open the
+			// date block one prompt-height lower so the first screen ends on the tagline.
+			--hero-details-margin-block-start: 4rem;
 		}
 
 		// White first name, yellow surname on every width; the surname gains weight against AITHAN.
