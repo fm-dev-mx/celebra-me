@@ -138,7 +138,7 @@ describe('ShareAction', () => {
 		fireEvent.click(screen.getByRole('button'));
 
 		expect(screen.getByRole('dialog', { name: /compartir invitación/i })).toBeInTheDocument();
-		expect(screen.getByDisplayValue('Guest One')).toBeInTheDocument();
+		expect(screen.getByText('Guest One')).toBeInTheDocument();
 		expect(screen.getByText('Mensaje')).toBeInTheDocument();
 	});
 });

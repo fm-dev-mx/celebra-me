@@ -1,46 +1,43 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import { SearchIcon } from '@/components/common/icons/ui';
-import { PREDEFINED_GUEST_TAGS } from '@/lib/guests/guest-tags';
-import type { DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
+import { CheckGlyph } from '@/components/dashboard/guests/GuestGlyphs';
+import type { GroupMetric } from '@/components/dashboard/guests/guest-presenter';
 
 export type GroupFilter = string;
 
 interface GuestFiltersProps {
 	search: string;
-	status: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed';
-	delivery: DeliveryFilter;
 	group: GroupFilter;
+	/** Groups present in the event, with counts; drives the chip row. */
+	groupMetrics: GroupMetric[];
+	totalInvitations: number;
 	onSearchChange: (value: string) => void;
-	onStatusChange: (value: 'all' | 'pending' | 'confirmed' | 'declined' | 'viewed') => void;
-	onDeliveryChange: (value: DeliveryFilter) => void;
 	onGroupChange: (value: GroupFilter) => void;
 	searchInputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
+/**
+ * Search plus one row of group chips. Status filtering lives in the overview
+ * stages, so there is a single vocabulary for invitation states.
+ */
 const GuestFilters: React.FC<GuestFiltersProps> = ({
 	search,
-	status,
-	delivery,
 	group,
+	groupMetrics,
+	totalInvitations,
 	onSearchChange,
-	onStatusChange,
-	onDeliveryChange,
 	onGroupChange,
 	searchInputRef,
 }) => {
-	const [showAdvanced, setShowAdvanced] = useState(false);
-	const hasActiveFilters = status !== 'all' || delivery !== 'all' || group !== 'all';
-
-	useEffect(() => {
-		setShowAdvanced(hasActiveFilters);
-	}, [hasActiveFilters]);
-
-	const handleClearFilters = useCallback(() => {
-		onSearchChange('');
-		onStatusChange('all');
-		onDeliveryChange('all');
-		onGroupChange('all');
-	}, [onSearchChange, onStatusChange, onDeliveryChange, onGroupChange]);
+	const hasActiveFilters = search.trim() !== '' || group !== 'all';
+	const chips = [
+		{ value: 'all', label: 'Todos', count: totalInvitations },
+		...groupMetrics.map((metric) => ({
+			value: metric.value,
+			label: metric.label,
+			count: metric.invitations,
+		})),
+	];
 
 	return (
 		<div className="dashboard-guests__filters">
@@ -59,90 +56,40 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 						/>
 					</div>
 				</div>
-
-				<div className="filter-advanced-toggle">
+				{hasActiveFilters && (
 					<button
 						type="button"
-						className="filter-advanced-toggle__btn"
-						onClick={() => setShowAdvanced((prev) => !prev)}
-						aria-expanded={showAdvanced}
-						aria-controls="advanced-filters"
+						className="filter-clear-btn"
+						onClick={() => {
+							onSearchChange('');
+							onGroupChange('all');
+						}}
 					>
-						<span>Filtros</span>
-						{hasActiveFilters && (
-							<span
-								className="filter-active-indicator"
-								aria-label="Filtros activos"
-							/>
-						)}
+						Limpiar filtros
 					</button>
-				</div>
+				)}
 			</div>
 
-			<div
-				id="advanced-filters"
-				className={`filter-advanced${showAdvanced ? ' filter-advanced--open' : ''}`}
-			>
-				<div className="filter-row">
-					<div className="filter-group filter-group--compact">
-						<label htmlFor="status-filter">Filtro</label>
-						<select
-							id="status-filter"
-							value={status}
-							onChange={(event) =>
-								onStatusChange(event.target.value as typeof status)
-							}
-						>
-							<option value="all">Todos</option>
-							<option value="pending">En espera</option>
-							<option value="confirmed">Confirmados</option>
-							<option value="declined">No asistirán</option>
-							<option value="viewed">Vistos</option>
-						</select>
-					</div>
-
-					<div className="filter-group filter-group--compact">
-						<label htmlFor="delivery-filter">Entrega</label>
-						<select
-							id="delivery-filter"
-							value={delivery}
-							onChange={(event) =>
-								onDeliveryChange(event.target.value as typeof delivery)
-							}
-						>
-							<option value="all">Todas</option>
-							<option value="generated">No enviadas</option>
-							<option value="shared">Enviadas</option>
-						</select>
-					</div>
-
-					<div className="filter-group filter-group--compact">
-						<label htmlFor="group-filter">Grupo</label>
-						<select
-							id="group-filter"
-							value={group}
-							onChange={(event) => onGroupChange(event.target.value)}
-						>
-							<option value="all">Todos</option>
-							{PREDEFINED_GUEST_TAGS.map((tag) => (
-								<option key={tag} value={tag}>
-									{tag}
-								</option>
-							))}
-						</select>
-					</div>
-
-					{hasActiveFilters && (
-						<button
-							type="button"
-							className="filter-clear-btn"
-							onClick={handleClearFilters}
-						>
-							Limpiar filtros
-						</button>
-					)}
+			{groupMetrics.length > 0 && (
+				<div className="group-chips" role="group" aria-label="Grupo">
+					{chips.map((chip) => {
+						const active = group === chip.value;
+						return (
+							<button
+								key={chip.value}
+								type="button"
+								className={`group-chips__chip${active ? ' group-chips__chip--active' : ''}${chip.value !== 'all' && chip.label === 'Sin grupo' ? ' group-chips__chip--none' : ''}`}
+								aria-pressed={active}
+								onClick={() => onGroupChange(active ? 'all' : chip.value)}
+							>
+								{active && <CheckGlyph size={14} />}
+								{chip.label}
+								<span className="group-chips__count">{chip.count}</span>
+							</button>
+						);
+					})}
 				</div>
-			</div>
+			)}
 		</div>
 	);
 };

@@ -8,6 +8,12 @@ import {
 import { makeGuest } from '@tests/helpers/guest-factory';
 
 describe('GuestListRow', () => {
+	beforeEach(() => {
+		Object.assign(navigator, {
+			clipboard: { writeText: jest.fn().mockResolvedValue(undefined) },
+		});
+	});
+
 	it('announces the guest, status and summary, and opens on tap', () => {
 		const onOpen = jest.fn();
 		const guest = makeGuest({
@@ -16,14 +22,28 @@ describe('GuestListRow', () => {
 			isViewed: true,
 			guestComment: 'Ahí estaremos',
 		});
-		render(<GuestListRow item={guest} onOpen={onOpen} />);
+		render(<GuestListRow item={guest} inviteUrl="https://example.com/i/1" onOpen={onOpen} />);
 
 		const row = screen.getByRole('button', {
-			name: 'Familia Pérez López. Esperando respuesta. 4 personas · Ya la abrió. Dejó un mensaje',
+			name: 'Familia Pérez López. Abierta, sin responder. 4 pases · Ya la abrió. Dejó un mensaje',
 		});
 		expect(row).not.toHaveAttribute('aria-expanded');
 		fireEvent.click(row);
 		expect(onOpen).toHaveBeenCalledWith(guest);
+	});
+
+	it('copies the link from the row without opening the details', async () => {
+		const onOpen = jest.fn();
+		const guest = makeGuest({ fullName: 'Lucía', attendanceStatus: 'confirmed' });
+		render(<GuestListRow item={guest} inviteUrl="https://example.com/i/1" onOpen={onOpen} />);
+
+		await act(async () => {
+			fireEvent.click(screen.getByRole('button', { name: 'Copiar enlace de Lucía' }));
+		});
+
+		expect(navigator.clipboard.writeText).toHaveBeenCalledWith('https://example.com/i/1');
+		expect(onOpen).not.toHaveBeenCalled();
+		expect(screen.getByRole('button', { name: 'Enlace copiado de Lucía' })).toBeInTheDocument();
 	});
 });
 

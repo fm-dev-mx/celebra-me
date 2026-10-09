@@ -6,6 +6,10 @@ import { CopyIcon } from '@/components/common/icons/ui';
 import GuestPeopleStepper from '@/components/dashboard/guests/GuestPeopleStepper';
 import { MAX_CUSTOM_ATTENDEES } from '@/components/dashboard/guests/guest-form-constants';
 import { useSendInvitation } from '@/components/dashboard/guests/use-send-invitation';
+import {
+	SendGuestSummary,
+	SendMessagePreview,
+} from '@/components/dashboard/guests/SendInvitationParts';
 import type {
 	GuestSaveCallback,
 	ShareFlowMode,
@@ -105,11 +109,14 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		guest ? String(guest.maxAllowedAttendees) : '1',
 	);
 	const [customAttendeesError, setCustomAttendeesError] = useState<string | null>(null);
+	// Guest details stay summarized so review-and-send fits one screen; edits open on demand.
+	const [detailsOpen, setDetailsOpen] = useState(false);
 
 	React.useEffect(() => {
 		if (!guest) return;
 		setPeopleInput(String(guest.maxAllowedAttendees));
 		setCustomAttendeesError(null);
+		setDetailsOpen(false);
 	}, [guest]);
 
 	const handlePeopleChange = (value: string) => {
@@ -144,26 +151,19 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 	}
 
 	const subtitle = isQueueMode ? (
-		<>
-			{guest.fullName}
-			<br />
-			<span className="dashboard-modal__queue-count">
-				{pendingCount}{' '}
-				{isReminderMode
-					? 'recordatorios pendientes'
-					: pendingCount === 1
-						? 'pendiente'
-						: 'pendientes'}
-			</span>
-		</>
-	) : (
-		guest.fullName
-	);
+		<span className="dashboard-modal__queue-count">
+			{pendingCount}{' '}
+			{isReminderMode
+				? 'recordatorios pendientes'
+				: pendingCount === 1
+					? 'pendiente'
+					: 'pendientes'}
+		</span>
+	) : undefined;
 
 	const phoneValid = editPhone.trim().length > 0 && canSendToPhone;
-
-	const renderFormSection = () => (
-		<div className="send-invitation__form-section">
+	const renderFormSection = (hasDetailsError: boolean) => (
+		<div id="send-invitation-details" className="send-invitation__form-section">
 			<div className="dashboard-form-field send-invitation__field">
 				<label htmlFor="send-name">Nombre del invitado</label>
 				<input
@@ -206,17 +206,44 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 				label="Teléfono / WhatsApp"
 				showOptional
 			/>
-			{!editPhone.trim() && !phoneError && (
-				<span className="guest-field-hint">
-					Sin teléfono registrado. Al compartir, WhatsApp le permitirá elegir el contacto.
-				</span>
+			{!hasDetailsError && (
+				<button
+					type="button"
+					className="send-invitation__summary-edit send-invitation__details-done"
+					aria-expanded={true}
+					aria-controls="send-invitation-details"
+					onClick={() => setDetailsOpen(false)}
+				>
+					Listo
+				</button>
 			)}
-			<span className="guest-field-hint">
-				Tip: Al abrirse WhatsApp, espere un momento a que aparezca la foto antes de
-				presionar Enviar.
-			</span>
 		</div>
 	);
+
+	// Errors keep the fields open; otherwise they open only when the host asks.
+	const renderGuestDetails = () => {
+		const hasDetailsError = Boolean(customAttendeesError || phoneError) || !editName.trim();
+		return (
+			<>
+				{detailsOpen || hasDetailsError ? (
+					renderFormSection(hasDetailsError)
+				) : (
+					<SendGuestSummary
+						name={editName}
+						peopleInput={peopleInput}
+						phone={editPhone}
+						countryCode={editCountryCode}
+						onEdit={() => setDetailsOpen(true)}
+					/>
+				)}
+				{!editPhone.trim() && !phoneError && (
+					<p className="send-invitation__hint">
+						Sin teléfono: WhatsApp le pedirá elegir el contacto.
+					</p>
+				)}
+			</>
+		);
+	};
 
 	const renderMessageSection = () => (
 		<div className="send-invitation__message-section">
@@ -266,18 +293,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 				</>
 			) : (
 				<>
-					<div className="send-invitation__preview-card">
-						<pre className="send-invitation__preview-text">{activeMessage}</pre>
-					</div>
-					<div className="send-invitation__preview-actions">
-						<button
-							type="button"
-							className="send-invitation__preview-action"
-							onClick={handleEditMessage}
-						>
-							Editar
-						</button>
-					</div>
+					<SendMessagePreview message={activeMessage} onEdit={handleEditMessage} />
 				</>
 			)}
 
@@ -413,8 +429,11 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 					<div
 						className={`send-invitation${isReminderMode ? ' send-invitation--reminder' : ''}`}
 					>
-						{renderFormSection()}
+						{renderGuestDetails()}
 						{templates && renderMessageSection()}
+						<p className="send-invitation__hint">
+							Al abrirse WhatsApp, espere a que aparezca la foto antes de enviar.
+						</p>
 					</div>
 				)}
 				{shareStatus === 'fallback' && renderFallbackSection()}

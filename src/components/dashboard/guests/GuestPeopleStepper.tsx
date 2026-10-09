@@ -8,6 +8,8 @@ interface GuestPeopleStepperProps {
 	onChange: (value: string) => void;
 	describedBy?: string;
 	invalid?: boolean;
+	/** One 48px row for dense forms; the default is the large stepper. */
+	compact?: boolean;
 }
 
 /** Large −/+ control for party size; the number stays editable for big families. */
@@ -18,13 +20,14 @@ const GuestPeopleStepper: React.FC<GuestPeopleStepperProps> = ({
 	onChange,
 	describedBy,
 	invalid,
+	compact = false,
 }) => {
 	const current = parseInt(value, 10);
 	const safe = Number.isNaN(current) ? 1 : current;
 	const step = (delta: number) => onChange(String(Math.min(max, Math.max(1, safe + delta))));
 
 	return (
-		<div className="guest-people-stepper">
+		<div className={`guest-people-stepper${compact ? ' guest-people-stepper--compact' : ''}`}>
 			<button
 				type="button"
 				className="guest-people-stepper__button"

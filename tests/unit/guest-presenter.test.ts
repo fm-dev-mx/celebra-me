@@ -3,11 +3,11 @@ import { makeGuest } from '@tests/helpers/guest-factory';
 import {
 	formatGuestEntrySource,
 	formatGuestMessageCount,
-	formatGuestMetadataRow,
 	getCompactGroupChips,
 	computeGroupMetrics,
+	buildGuestGroupScope,
+	NO_GROUP_FILTER,
 	getPrimaryStatus,
-	getDeliveryStateLabel,
 	getGuestInviteUrl,
 	getShareCtaLabel,
 	hasBeenShared,
@@ -53,18 +53,18 @@ const primaryStatusCases = [
 	],
 
 	// Not yet sent
-	[{ deliveryStatus: 'generated' }, 'Por enviar', 'unshared'],
+	[{ deliveryStatus: 'generated' }, 'Por enviar', 'to-send'],
 
-	// Shared but awaiting confirmation — replaces "Enviada"/"Recibida" for pending guests
+	// Shared but awaiting an answer, split by whether the guest opened it
 	[
 		{ deliveryStatus: 'shared', attendanceStatus: 'pending', isViewed: false },
-		'Por confirmar',
-		'pending-confirmation',
+		'Enviada, sin abrir',
+		'unopened',
 	],
 	[
 		{ deliveryStatus: 'shared', attendanceStatus: 'pending', isViewed: true },
-		'Por confirmar',
-		'pending-confirmation',
+		'Abierta, sin responder',
+		'opened',
 	],
 ] satisfies readonly PrimaryStatusCase[];
 
@@ -101,14 +101,6 @@ describe('getGuestMessageCount', () => {
 
 	it('returns 2 for cumulative messages', () => {
 		expect(getGuestMessageCount('Hola\n\n[12 jun 2026, 10:34] Adios')).toBe(2);
-	});
-});
-
-describe('formatGuestMetadataRow', () => {
-	it('includes index and attendee count', () => {
-		const result = formatGuestMetadataRow(1, 2, 4);
-		expect(result).toContain('#01');
-		expect(result).toContain('2/4 asistentes');
 	});
 });
 
@@ -268,18 +260,6 @@ describe('parseGuestCommentHistory', () => {
 	});
 });
 
-describe('getDeliveryStateLabel', () => {
-	it('returns "Enviado" when shared', () => {
-		expect(getDeliveryStateLabel(makeGuest({ deliveryStatus: 'shared' }))).toBe('Enviado');
-	});
-
-	it('returns "Por enviar" when not shared', () => {
-		expect(getDeliveryStateLabel(makeGuest({ deliveryStatus: 'generated' }))).toBe(
-			'Por enviar',
-		);
-	});
-});
-
 describe('normalizeViewPercentage', () => {
 	it('returns the value as-is for a normal value', () => {
 		expect(normalizeViewPercentage(42)).toBe(42);
@@ -379,40 +359,47 @@ describe('getCompactGroupChips', () => {
 });
 
 describe('computeGroupMetrics', () => {
-	it('computes total and pending per group', () => {
+	it('totals people per group: confirmed, declined and unanswered passes', () => {
 		const items = [
-			makeGuest({ tags: ['Familia'], attendanceStatus: 'pending' }),
-			makeGuest({ tags: ['Familia'], attendanceStatus: 'confirmed' }),
-			makeGuest({ tags: ['VIP'], attendanceStatus: 'pending' }),
+			makeGuest({ tags: ['Familia'], maxAllowedAttendees: 4 }),
+			makeGuest({
+				tags: ['Familia'],
+				deliveryStatus: 'shared',
+				attendanceStatus: 'confirmed',
+				maxAllowedAttendees: 4,
+				attendeeCount: 3,
+			}),
+			makeGuest({ tags: ['VIP'], deliveryStatus: 'shared', maxAllowedAttendees: 2 }),
 		];
-		const metrics = computeGroupMetrics(items);
-		const familia: GroupMetric | undefined = metrics.find(
-			(m: GroupMetric) => m.tag === 'Familia',
-		);
-		expect(familia).toBeDefined();
-		expect(familia!.total).toBe(2);
-		expect(familia!.pending).toBe(1);
-		const vip: GroupMetric | undefined = metrics.find((m: GroupMetric) => m.tag === 'VIP');
-		expect(vip).toBeDefined();
-		expect(vip!.total).toBe(1);
-		expect(vip!.pending).toBe(1);
+		const familia = computeGroupMetrics(items).find((m: GroupMetric) => m.value === 'Familia');
+		expect(familia).toMatchObject({
+			label: 'Familia',
+			invitations: 2,
+			passes: 8,
+			confirmed: 3,
+			declined: 0,
+			noAnswer: 4,
+			awaiting: 0,
+		});
+		const vip = computeGroupMetrics(items).find((m: GroupMetric) => m.value === 'VIP');
+		expect(vip).toMatchObject({ invitations: 1, noAnswer: 2, awaiting: 1 });
 	});
 
-	it('groups guests with no visible tags under "Sin grupo"', () => {
-		const items = [makeGuest({ tags: [] }), makeGuest({ tags: ['system:public'] })];
-		const metrics = computeGroupMetrics(items);
-		const sinGrupo: GroupMetric | undefined = metrics.find(
-			(m: GroupMetric) => m.tag === 'Sin grupo',
-		);
-		expect(sinGrupo).toBeDefined();
-		expect(sinGrupo!.total).toBe(2);
+	it('groups guests with no visible tags under "Sin grupo", always last', () => {
+		const metrics = computeGroupMetrics([
+			makeGuest({ tags: [] }),
+			makeGuest({ tags: ['system:public'] }),
+			makeGuest({ tags: ['VIP'] }),
+		]);
+		expect(metrics.map((m) => m.label)).toEqual(['VIP', 'Sin grupo']);
+		expect(metrics[1]).toMatchObject({ value: NO_GROUP_FILTER, invitations: 2 });
 	});
 
 	it('returns empty array for empty guest list', () => {
 		expect(computeGroupMetrics([])).toEqual([]);
 	});
 
-	it('sorts by total descending', () => {
+	it('sorts groups by invitations, descending', () => {
 		const items = [
 			makeGuest({ tags: ['VIP'] }),
 			makeGuest({ tags: ['VIP'] }),
@@ -421,10 +408,37 @@ describe('computeGroupMetrics', () => {
 			makeGuest({ tags: ['Amigos'] }),
 			makeGuest({ tags: ['Familia'] }),
 		];
-		const metrics = computeGroupMetrics(items);
-		expect(metrics[0].tag).toBe('VIP');
-		expect(metrics[1].tag).toBe('Amigos');
-		expect(metrics[2].tag).toBe('Familia');
+		expect(computeGroupMetrics(items).map((m) => m.value)).toEqual([
+			'VIP',
+			'Amigos',
+			'Familia',
+		]);
+	});
+});
+
+describe('buildGuestGroupScope', () => {
+	it('scopes the next step to the selected group', () => {
+		const items = [
+			makeGuest({ guestId: 'a', tags: ['Familia'], deliveryStatus: 'shared' }),
+			makeGuest({ guestId: 'b', tags: ['Familia'] }),
+			makeGuest({ guestId: 'c', tags: ['VIP'], deliveryStatus: 'shared' }),
+		];
+		const scope = buildGuestGroupScope(items, 'Familia', new Set(['a', 'c']));
+		expect(scope?.label).toBe('Familia');
+		expect(scope?.reminderCount).toBe(1);
+		expect([...(scope?.reminderIds ?? [])]).toEqual(['a']);
+		expect([...(scope?.toSendIds ?? [])]).toEqual(['b']);
+		expect(buildGuestGroupScope(items, 'all', new Set())).toBeNull();
+	});
+
+	it('supports the "Sin grupo" filter', () => {
+		const scope = buildGuestGroupScope(
+			[makeGuest({ guestId: 'x', tags: [] }), makeGuest({ guestId: 'y', tags: ['VIP'] })],
+			NO_GROUP_FILTER,
+			new Set(),
+		);
+		expect(scope?.label).toBe('Sin grupo');
+		expect([...(scope?.toSendIds ?? [])]).toEqual(['x']);
 	});
 });
 

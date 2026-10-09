@@ -1,3 +1,5 @@
+@use '../global/mixins' as mixins;
+
 // phone-input-group moved to src/styles/components/_phone-input-group.scss
 
 /* ==========================================================================
@@ -5,7 +7,7 @@
    ========================================================================== */
 .guest-form-modal {
 	.dashboard-modal__header h3 {
-		font-size: 1.75rem;
+		font-size: 1.375rem;
 		font-weight: 600;
 		letter-spacing: 0;
 	}
@@ -29,10 +31,10 @@
 		}
 
 		.phone-prefix {
-			width: 5.75rem;
-			min-width: 5.75rem;
+			width: 5rem;
+			min-width: 5rem;
 			color: var(--color-text-primary);
-			font-size: 1.125rem;
+			font-size: 1rem;
 		}
 	}
 
@@ -42,52 +44,205 @@
 		> label,
 		.phone-input-group__label {
 			color: var(--color-text-primary);
-			font-size: 1.0625rem;
+			font-size: 0.9375rem;
 			font-weight: 700;
 			letter-spacing: 0;
 		}
 
+		/* 16px text keeps iOS from zooming; 48px keeps a comfortable target */
 		input:not([type='checkbox'], [type='radio'], [type='hidden']),
 		select {
-			min-height: 56px;
-			border-radius: 14px;
-			font-size: 1.125rem;
+			min-height: 48px;
+			border-radius: 12px;
+			font-size: 1rem;
 		}
 	}
 
 	.guest-field-hint {
 		margin-top: 0;
-		color: var(--color-text-secondary);
-		font-size: 1rem;
+		color: var(--dashboard-text-hint, var(--color-text-secondary));
+		font-size: 0.8125rem;
 	}
 
 	.guest-field-error {
 		color: var(--color-state-danger-text);
-		font-size: 1rem;
+		font-size: 0.9375rem;
 		font-weight: 600;
 	}
 
-	.dashboard-form-section__title {
-		color: var(--color-text-primary);
-		font-family: var(--font-ui);
-		font-size: 1.0625rem;
-		font-weight: 700;
-		letter-spacing: 0;
-		text-transform: none;
-	}
-
-	.guest-response-cards--tags .guest-response-card__content {
-		min-height: 48px;
-		font-size: 1rem;
-	}
-
 	.dashboard-modal__footer {
-		button {
-			min-height: 56px;
-			border-radius: 14px;
-			font-size: 1.0625rem;
-			font-weight: 700;
+		display: block;
+	}
+}
+
+/* --- Form layout: name → people → phone → group --- */
+.guest-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.guest-form__people {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 0.75rem;
+}
+
+.guest-form__people-text {
+	display: flex;
+	flex: 1 1 8rem;
+	flex-direction: column;
+	gap: 0.125rem;
+
+	label {
+		color: var(--color-text-primary);
+		font-size: 0.9375rem;
+		font-weight: 700;
+	}
+}
+
+.guest-form__people-error {
+	flex-basis: 100%;
+}
+
+.guest-form__groups {
+	margin: 0;
+	padding: 0;
+	border: 0;
+
+	legend {
+		margin-bottom: 0.5rem;
+		padding: 0;
+		color: var(--color-text-primary);
+		font-size: 0.9375rem;
+		font-weight: 700;
+	}
+
+	/* Four fixed groups fit one row at 360px; extra groups wrap */
+	.guest-tag-chips {
+		gap: 0.375rem;
+	}
+
+	.guest-tag-chips__chip {
+		padding: 0 0.75rem;
+	}
+}
+
+.guest-form__optional {
+	color: var(--dashboard-text-hint, var(--color-text-secondary));
+	font-weight: 400;
+}
+
+.guest-form__response {
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 12px;
+	background: var(--color-surface-elevated);
+}
+
+.guest-form__response-toggle {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.25rem 0.75rem;
+	width: 100%;
+	min-height: 48px;
+	padding: 0.5rem 0.875rem;
+	border: 0;
+	background: transparent;
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	font-size: 0.9375rem;
+	font-weight: 700;
+	text-align: left;
+	cursor: pointer;
+
+	svg {
+		margin-left: auto;
+	}
+
+	&[aria-expanded='true'] svg {
+		transform: rotate(180deg);
+	}
+
+	&:focus-visible {
+		@include mixins.focus-ring;
+	}
+}
+
+.guest-form__response-summary {
+	color: var(--color-text-secondary);
+	font-weight: 400;
+}
+
+.guest-form__response-fields {
+	display: grid;
+	gap: 0.75rem;
+	padding: 0 0.875rem 0.875rem;
+}
+
+/* Footer: primary save first and full width on phones; quiet text buttons below */
+.guest-form__footer {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+
+	> .btn-primary {
+		min-height: 48px;
+		border-radius: 12px;
+		font-size: 1rem;
+		font-weight: 700;
+	}
+
+	@include mixins.respond-to(sm) {
+		flex-direction: row-reverse;
+		align-items: center;
+		gap: 0.75rem;
+
+		> .btn-primary {
+			padding: 0 1.5rem;
 		}
+	}
+}
+
+.guest-form__footer-secondary {
+	display: flex;
+	flex: 1;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+
+	@include mixins.respond-to(sm) {
+		flex-direction: row-reverse;
+		justify-content: flex-start;
+	}
+}
+
+.guest-form__text-btn {
+	min-height: 44px;
+	white-space: nowrap;
+	padding: 0 0.5rem;
+	border: 0;
+	background: transparent;
+	color: var(--color-text-secondary);
+	font-family: var(--font-ui);
+	font-size: 0.9375rem;
+	cursor: pointer;
+
+	&--strong {
+		color: var(--color-text-primary);
+		font-weight: 600;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	&:focus-visible {
+		@include mixins.focus-ring;
+	}
+
+	&:disabled {
+		opacity: 50%;
+		cursor: not-allowed;
 	}
 }
 
@@ -144,7 +299,7 @@
 	min-height: 56px;
 	border: 0;
 	background: transparent;
-	color: var(--color-text-emphasis);
+	color: var(--color-text-primary);
 	font-family: var(--font-display-elegant);
 	font-size: 2.25rem;
 	font-weight: 700;
@@ -161,5 +316,44 @@
 	&:focus {
 		outline: none;
 		box-shadow: none;
+	}
+}
+
+/* Compact stepper: one 48px row (Agregar invitado) */
+.guest-people-stepper--compact {
+	flex: none;
+	gap: 0;
+	padding: 0;
+	overflow: hidden;
+	border-radius: 12px;
+
+	.guest-people-stepper__button {
+		width: 48px;
+		height: 48px;
+		border: 0;
+		border-radius: 0;
+	}
+
+	input.guest-people-stepper__input[type='number'] {
+		flex: none;
+		width: 3.25rem;
+		min-height: 48px;
+		color: var(--color-text-primary);
+		font-family: var(--font-ui);
+		font-size: 1.125rem;
+	}
+}
+
+/* The footer is a sibling of the content here, not an overlay: no reserve below */
+.guest-form-modal .dashboard-modal__content,
+.guest-detail-sheet .dashboard-modal__content {
+	padding-bottom: 1rem;
+}
+
+/* Very narrow phones: keep the four groups on one row */
+@media (width < 375px) {
+	.guest-form__groups .guest-tag-chips__chip {
+		padding: 0 0.625rem;
+		font-size: 0.875rem;
 	}
 }

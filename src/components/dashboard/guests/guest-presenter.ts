@@ -53,16 +53,21 @@ export function formatGuestDateShort(value: string | null): string {
 
 export type PrimaryStatus = {
 	label: string;
-	class: string;
+	class: GuestStage;
 };
 
+const STAGE_LABELS: Record<GuestStage, string> = {
+	'to-send': 'Por enviar',
+	unopened: 'Enviada, sin abrir',
+	opened: 'Abierta, sin responder',
+	confirmed: 'Confirmada',
+	declined: 'No asiste',
+};
+
+/** Status shown on rows, cards and the detail screen; the class doubles as the stage. */
 export function getPrimaryStatus(item: DashboardGuestItem): PrimaryStatus {
-	if (item.attendanceStatus === 'confirmed') return { label: 'Confirmada', class: 'confirmed' };
-	if (item.attendanceStatus === 'declined') return { label: 'No asiste', class: 'declined' };
-	if (item.deliveryStatus === 'generated') return { label: 'Por enviar', class: 'unshared' };
-	if (isUnconfirmedSharedGuest(item))
-		return { label: 'Por confirmar', class: 'pending-confirmation' };
-	return { label: 'Enviada', class: 'sent' };
+	const stage = getGuestStage(item);
+	return { label: STAGE_LABELS[stage], class: stage };
 }
 
 export function formatGuestMessageCount(count: number): string {
@@ -71,16 +76,6 @@ export function formatGuestMessageCount(count: number): string {
 
 export function getGuestMessageCount(guestComment: string): number {
 	return parseGuestCommentHistory(guestComment).length;
-}
-
-export function formatGuestMetadataRow(
-	index: number,
-	attendeeCount: number,
-	maxAllowedAttendees: number,
-): string {
-	const parts = [`#${String(index).padStart(2, '0')}`];
-	parts.push(`${attendeeCount}/${maxAllowedAttendees} asistentes`);
-	return parts.join(' · ');
 }
 
 export type GuestPrimaryAction = {
@@ -105,11 +100,6 @@ export function getGuestPrimaryAction(
 	return { label: 'Enviar recordatorio', action: 'share' };
 }
 
-/** Expanded-panel detail labels */
-export function getDeliveryStateLabel(item: DashboardGuestItem): string {
-	return item.deliveryStatus === 'shared' ? 'Enviado' : 'Por enviar';
-}
-
 export function normalizeViewPercentage(value: number): number {
 	return Number.isFinite(value) ? Math.min(100, Math.max(0, Math.round(value))) : 0;
 }
@@ -124,15 +114,6 @@ export function getCompactGroupChips(
 	return { chips, overflow };
 }
 
-export interface GuestStatusCounts {
-	total: number;
-	toSend: number;
-	waiting: number;
-	confirmed: number;
-	declined: number;
-	confirmedPeople: number;
-}
-
 export type GuestStatusBucket = 'to-send' | 'waiting' | 'confirmed' | 'declined';
 
 /** One bucket per guest: RSVP answers win over delivery state. */
@@ -143,33 +124,169 @@ export function getGuestStatusBucket(item: DashboardGuestItem): GuestStatusBucke
 	return 'waiting';
 }
 
-export function computeGuestStatusCounts(items: DashboardGuestItem[]): GuestStatusCounts {
-	const counts: GuestStatusCounts = {
-		total: items.length,
-		toSend: 0,
-		waiting: 0,
-		confirmed: 0,
-		declined: 0,
-		confirmedPeople: 0,
+/** Invitation journey stage: "waiting" split by whether the guest opened the invitation. */
+export type GuestStage = 'to-send' | 'unopened' | 'opened' | 'confirmed' | 'declined';
+
+export function getGuestStage(item: DashboardGuestItem): GuestStage {
+	const bucket = getGuestStatusBucket(item);
+	if (bucket !== 'waiting') return bucket;
+	return item.isViewed || item.firstViewedAt ? 'opened' : 'unopened';
+}
+
+/** Unsent and unanswered: the only guests the "send invitations" queue should offer. */
+export function isGuestToSend(item: DashboardGuestItem): boolean {
+	return getGuestStage(item) === 'to-send';
+}
+
+function passesOf(item: DashboardGuestItem): number {
+	return Math.max(0, item.maxAllowedAttendees || 0);
+}
+
+/** Confirmed attendees, clamped to the passes the invitation actually has. */
+function attendingOf(item: DashboardGuestItem): number {
+	return Math.min(passesOf(item), Math.max(0, item.attendeeCount || 0));
+}
+
+export interface GuestStageCount {
+	invitations: number;
+	passes: number;
+}
+
+/**
+ * Event-wide overview. `people` splits every assigned pass into exactly one
+ * slice; `stages` splits every invitation into exactly one journey stage.
+ */
+export interface GuestSummary {
+	invitations: number;
+	people: {
+		assigned: number;
+		confirmed: number;
+		declined: number;
+		unused: number;
+		noAnswer: number;
+	};
+	stages: Record<GuestStage, GuestStageCount>;
+	/** Sent and still unanswered (unopened + opened). */
+	awaitingAnswer: GuestStageCount;
+	/** Invitations without any pass; counted as invitations only. */
+	withoutPasses: number;
+}
+
+export function computeGuestSummary(items: DashboardGuestItem[]): GuestSummary {
+	const emptyStage = (): GuestStageCount => ({ invitations: 0, passes: 0 });
+	const summary: GuestSummary = {
+		invitations: items.length,
+		people: { assigned: 0, confirmed: 0, declined: 0, unused: 0, noAnswer: 0 },
+		stages: {
+			'to-send': emptyStage(),
+			unopened: emptyStage(),
+			opened: emptyStage(),
+			confirmed: emptyStage(),
+			declined: emptyStage(),
+		},
+		awaitingAnswer: emptyStage(),
+		withoutPasses: 0,
 	};
 	for (const item of items) {
-		switch (getGuestStatusBucket(item)) {
-			case 'confirmed':
-				counts.confirmed++;
-				counts.confirmedPeople += item.attendeeCount;
+		const passes = passesOf(item);
+		const stage = getGuestStage(item);
+		summary.people.assigned += passes;
+		summary.stages[stage].invitations++;
+		summary.stages[stage].passes += passes;
+		if (passes === 0) summary.withoutPasses++;
+		switch (stage) {
+			case 'confirmed': {
+				const attending = attendingOf(item);
+				summary.people.confirmed += attending;
+				summary.people.unused += passes - attending;
 				break;
+			}
 			case 'declined':
-				counts.declined++;
+				summary.people.declined += passes;
 				break;
-			case 'to-send':
-				counts.toSend++;
-				break;
-			case 'waiting':
-				counts.waiting++;
-				break;
+			default:
+				summary.people.noAnswer += passes;
+				if (stage !== 'to-send') {
+					summary.awaitingAnswer.invitations++;
+					summary.awaitingAnswer.passes += passes;
+				}
 		}
 	}
-	return counts;
+	return summary;
+}
+
+function normalizeSearchText(value: string): string {
+	return value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+
+/** Name (accent- and case-insensitive) or phone digits, like the server-side search did. */
+export function matchesGuestSearch(item: DashboardGuestItem, query: string): boolean {
+	const term = normalizeSearchText(query);
+	if (!term) return true;
+	if (normalizeSearchText(item.fullName).includes(term)) return true;
+	const digits = query.replace(/\D/g, '');
+	if (!digits) return false;
+	const phoneTerm = digits.length > 10 ? digits.slice(-10) : digits;
+	return (item.phone ?? '').replace(/\D/g, '').includes(phoneTerm);
+}
+
+export interface GuestPeopleLabel {
+	primary: string;
+	secondary?: string;
+}
+
+function formatPasses(count: number): string {
+	return `${count} ${count === 1 ? 'pase' : 'pases'}`;
+}
+
+/** "Personas" cell: what the invitation means in people for its current stage. */
+export function getGuestPeopleLabel(item: DashboardGuestItem): GuestPeopleLabel {
+	const passes = passesOf(item);
+	if (passes === 0) return { primary: 'Sin pases asignados' };
+	switch (getGuestStage(item)) {
+		case 'confirmed': {
+			const attending = attendingOf(item);
+			const unused = passes - attending;
+			return {
+				primary: `${attending === 1 ? 'Viene' : 'Vienen'} ${attending} de ${passes}`,
+				secondary:
+					unused > 0
+						? `${unused} ${unused === 1 ? 'lugar no usado' : 'lugares no usados'}`
+						: undefined,
+			};
+		}
+		case 'declined':
+			return {
+				primary: 'No asistirán',
+				secondary: `${passes} ${passes === 1 ? 'pase liberado' : 'pases liberados'}`,
+			};
+		default:
+			return { primary: formatPasses(passes) };
+	}
+}
+
+/** Plain-text summary the host can paste into WhatsApp. */
+export function buildGuestSummaryShareText(
+	summary: GuestSummary,
+	eventTitle: string,
+	rsvpDeadline: string,
+): string {
+	const { people, stages, awaitingAnswer } = summary;
+	const lines = [
+		eventTitle ? `${eventTitle}: resumen de invitados` : 'Resumen de invitados',
+		`${people.confirmed} ${people.confirmed === 1 ? 'persona confirmada' : 'personas confirmadas'} de ${formatPasses(people.assigned)}.`,
+		`No asistirán: ${people.declined}. Sin respuesta: ${people.noAnswer}.`,
+	];
+	if (awaitingAnswer.invitations > 0) {
+		lines.push(
+			`${awaitingAnswer.invitations} ${awaitingAnswer.invitations === 1 ? 'invitación enviada sigue' : 'invitaciones enviadas siguen'} sin respuesta.`,
+		);
+	}
+	if (stages['to-send'].invitations > 0) {
+		lines.push(`${stages['to-send'].invitations} por enviar.`);
+	}
+	if (rsvpDeadline) lines.push(`Fecha límite para confirmar: ${rsvpDeadline}.`);
+	return lines.join('\n');
 }
 
 export interface GuestStatusSection {
@@ -205,10 +322,6 @@ export function groupGuestsByStatus(items: DashboardGuestItem[]): GuestStatusSec
 	}));
 }
 
-function formatPeople(count: number): string {
-	return `${count} ${count === 1 ? 'persona' : 'personas'}`;
-}
-
 function formatDaysAgo(iso: string | null | undefined, now: Date): string | null {
 	if (!iso) return null;
 	const sent = new Date(iso);
@@ -220,82 +333,21 @@ function formatDaysAgo(iso: string | null | undefined, now: Date): string | null
 	return `hace ${days} días`;
 }
 
-/** Second line of a compact guest row, phrased for the guest's current status. */
+/** Second line of a compact guest row, phrased in passes and people for the current stage. */
 export function getGuestListSubtitle(item: DashboardGuestItem, now: Date = new Date()): string {
-	switch (getGuestStatusBucket(item)) {
-		case 'confirmed':
-			return `${item.attendeeCount === 1 ? 'Viene' : 'Vienen'} ${item.attendeeCount} de ${item.maxAllowedAttendees}`;
-		case 'declined':
-			return 'Avisó que no podrá ir';
-		case 'to-send':
-			return `${formatPeople(item.maxAllowedAttendees)} · Sin enviar`;
-		case 'waiting': {
-			if (item.isViewed) return `${formatPeople(item.maxAllowedAttendees)} · Ya la abrió`;
-			const sentAgo = formatDaysAgo(item.firstSharedAt, now);
-			return `${formatPeople(item.maxAllowedAttendees)} · ${sentAgo ? `Enviada ${sentAgo}` : 'Enviada'}`;
-		}
+	const stage = getGuestStage(item);
+	if (stage === 'declined') return 'Avisó que no podrá ir';
+	if (stage === 'confirmed') {
+		const people = getGuestPeopleLabel(item);
+		return people.secondary ? `${people.primary} · ${people.secondary}` : people.primary;
 	}
-}
-
-export type GuestSummaryTone = 'empty' | 'pending' | 'waiting' | 'done';
-
-export interface GuestSummaryMessage {
-	/** Large leading number; null when the sentence carries no count. */
-	count: number | null;
-	title: string;
-	detail: string;
-	tone: GuestSummaryTone;
-}
-
-function plural(count: number, singular: string, pluralForm: string): string {
-	return count === 1 ? singular : pluralForm;
-}
-
-/** Plain-language status line for the host, written for non-technical readers. */
-export function getGuestSummaryMessage(counts: GuestStatusCounts): GuestSummaryMessage {
-	if (counts.total === 0) {
-		return {
-			count: null,
-			title: 'Todavía no tiene invitados',
-			detail: 'Agregue su primer invitado para empezar.',
-			tone: 'empty',
-		};
+	const passes = formatPasses(passesOf(item));
+	if (stage === 'to-send') {
+		return `${passes} · ${item.phone ? 'Sin enviar' : 'Sin teléfono'}`;
 	}
-	if (counts.toSend > 0) {
-		let detail = 'Todavía nadie ha respondido.';
-		if (counts.confirmed > 0) {
-			detail = `${counts.confirmed} ya ${plural(counts.confirmed, 'confirmó', 'confirmaron')}.`;
-		} else if (counts.waiting > 0) {
-			detail = `${counts.waiting} ${plural(counts.waiting, 'espera', 'esperan')} respuesta.`;
-		}
-		return {
-			count: counts.toSend,
-			title: plural(counts.toSend, 'invitación por enviar', 'invitaciones por enviar'),
-			detail,
-			tone: 'pending',
-		};
-	}
-	if (counts.waiting > 0) {
-		return {
-			count: counts.waiting,
-			title: plural(
-				counts.waiting,
-				'invitado no ha respondido',
-				'invitados no han respondido',
-			),
-			detail: 'Puede enviarles un recordatorio.',
-			tone: 'waiting',
-		};
-	}
-	return {
-		count: null,
-		title: 'Todos sus invitados ya respondieron',
-		detail:
-			counts.confirmedPeople === 1
-				? 'Viene 1 persona.'
-				: `Vienen ${counts.confirmedPeople} personas.`,
-		tone: 'done',
-	};
+	if (stage === 'opened') return `${passes} · Ya la abrió`;
+	const sentAgo = formatDaysAgo(item.firstSharedAt, now);
+	return `${passes} · ${sentAgo ? `Enviada ${sentAgo}` : 'Enviada'}`;
 }
 
 export type GuestProgressState = 'done' | 'current' | 'upcoming';
@@ -306,26 +358,68 @@ export interface GuestProgressStep {
 	note?: string;
 }
 
-/** Three-step invitation journey shown in the guest detail screen. */
+function formatStepDate(iso: string | null | undefined): string | undefined {
+	if (!iso) return undefined;
+	const date = new Date(iso);
+	if (isNaN(date.getTime())) return undefined;
+	return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+}
+
+/**
+ * Sent → opened → answered, derived from the guest stage so the detail screen
+ * never contradicts the list. An answer implies the invitation was sent and opened.
+ */
 export function getGuestProgressSteps(item: DashboardGuestItem): GuestProgressStep[] {
-	const bucket = getGuestStatusBucket(item);
-	const answered = bucket === 'confirmed' || bucket === 'declined';
-	const sent = hasBeenShared(item) || answered;
-	let answer: string | undefined;
-	if (bucket === 'confirmed') {
-		answer = `${item.attendeeCount === 1 ? 'Viene' : 'Vienen'} ${item.attendeeCount} de ${item.maxAllowedAttendees}`;
-	} else if (bucket === 'declined') {
-		answer = 'No podrán ir';
-	}
+	const stage = getGuestStage(item);
+	const answered = stage === 'confirmed' || stage === 'declined';
+	const sent = stage !== 'to-send';
+	const opened = answered || stage === 'opened';
+	let answer = 'Pendiente';
+	if (stage === 'confirmed') answer = getGuestPeopleLabel(item).primary;
+	else if (stage === 'declined') answer = 'No asistirán';
 	return [
-		{ label: 'Enviar la invitación', state: sent ? 'done' : 'current' },
 		{
-			label: 'Esperar su respuesta',
-			state: answered ? 'done' : sent ? 'current' : 'upcoming',
-			note: !answered && item.isViewed ? 'Ya la abrió' : undefined,
+			label: 'Enviada',
+			state: sent ? 'done' : 'current',
+			note: sent ? formatStepDate(item.firstSharedAt) : 'Pendiente',
 		},
-		{ label: 'Saber si vienen y cuántos', state: answered ? 'done' : 'upcoming', note: answer },
+		{
+			label: 'Abierta',
+			state: opened ? 'done' : sent ? 'current' : 'upcoming',
+			note: opened ? formatStepDate(item.firstViewedAt) : undefined,
+		},
+		{
+			label: 'Respuesta',
+			state: answered ? 'done' : opened ? 'current' : 'upcoming',
+			note: answer,
+		},
 	];
+}
+
+/** One plain sentence under the status pill: where the invitation stands right now. */
+export function getGuestStatusSentence(item: DashboardGuestItem, now: Date = new Date()): string {
+	switch (getGuestStage(item)) {
+		case 'to-send':
+			return item.phone
+				? 'Todavía no la envía.'
+				: 'Todavía no la envía. No tiene teléfono: copie el enlace para enviarlo.';
+		case 'unopened': {
+			const ago = formatDaysAgo(item.firstSharedAt, now);
+			return ago ? `La envió ${ago}; aún no la abre.` : 'La envió; aún no la abre.';
+		}
+		case 'opened': {
+			const ago = formatDaysAgo(item.firstViewedAt, now);
+			return ago ? `La abrió ${ago} y aún no responde.` : 'La abrió y aún no responde.';
+		}
+		case 'confirmed': {
+			const people = getGuestPeopleLabel(item);
+			return people.secondary
+				? `${people.primary} · ${people.secondary}.`
+				: `${people.primary}.`;
+		}
+		case 'declined':
+			return 'Avisó que no podrá ir.';
+	}
 }
 
 /** Guests a host-chosen batch can act on: unsent for invitations, sent and unanswered for reminders. */
@@ -344,22 +438,30 @@ export type GuestReviewFilterValue =
 	| 'all'
 	| 'reminder-pending'
 	| 'delivery-pending'
-	| 'rsvp-pending'
+	| 'unopened'
+	| 'opened'
+	| 'answered'
 	| 'confirmation-pending'
 	| 'confirmed'
+	| 'declined'
 	| 'with-message';
 
-/** Client-side review and group filtering applied on top of the server-filtered list. */
+/**
+ * Client-side review, group and search filtering of the full event list. The
+ * overview always counts the unfiltered list, so filters never change totals.
+ */
 export function filterGuestsForReview(
 	items: DashboardGuestItem[],
 	{
 		reviewFilter,
 		group,
 		reminderEligibleIds,
+		search = '',
 	}: {
 		reviewFilter: GuestReviewFilterValue;
 		group: string;
 		reminderEligibleIds: ReadonlySet<string>;
+		search?: string;
 	},
 ): DashboardGuestItem[] {
 	const matchesReview = (item: DashboardGuestItem): boolean => {
@@ -368,13 +470,21 @@ export function filterGuestsForReview(
 				return reminderEligibleIds.has(item.guestId);
 			case 'delivery-pending':
 				// Mirrors the overview count: an answered guest is never "por enviar".
-				return getGuestStatusBucket(item) === 'to-send';
+				return getGuestStage(item) === 'to-send';
+			case 'unopened':
+				return getGuestStage(item) === 'unopened';
+			case 'opened':
+				return getGuestStage(item) === 'opened';
+			case 'answered':
+				return (
+					item.attendanceStatus === 'confirmed' || item.attendanceStatus === 'declined'
+				);
 			case 'confirmation-pending':
 				return isUnconfirmedSharedGuest(item);
 			case 'confirmed':
 				return item.attendanceStatus === 'confirmed';
-			case 'rsvp-pending':
-				return item.attendanceStatus === 'pending';
+			case 'declined':
+				return item.attendanceStatus === 'declined';
 			case 'with-message':
 				return (item.guestComment ?? '').trim().length > 0;
 			default:
@@ -383,35 +493,75 @@ export function filterGuestsForReview(
 	};
 	return items.filter(
 		(item) =>
-			matchesReview(item) && (group === 'all' || getVisibleTags(item.tags).includes(group)),
+			matchesReview(item) &&
+			matchesGuestGroup(item, group) &&
+			matchesGuestSearch(item, search),
 	);
 }
 
-export interface GroupMetric {
-	tag: string;
-	total: number;
-	pending: number;
+/** Filter value for invitations without any visible group. */
+export const NO_GROUP_FILTER = '__no-group__';
+export const NO_GROUP_LABEL = 'Sin grupo';
+
+export function getGuestGroups(item: DashboardGuestItem): string[] {
+	return getVisibleTags(item.tags);
 }
 
-export function computeGroupMetrics(items: DashboardGuestItem[]): GroupMetric[] {
-	const tagCounts = new Map<string, { total: number; pending: number }>();
+export function matchesGuestGroup(item: DashboardGuestItem, group: string): boolean {
+	if (group === 'all') return true;
+	const groups = getGuestGroups(item);
+	return group === NO_GROUP_FILTER ? groups.length === 0 : groups.includes(group);
+}
 
+export interface GroupMetric {
+	/** Filter value: the tag itself, or NO_GROUP_FILTER. */
+	value: string;
+	label: string;
+	invitations: number;
+	passes: number;
+	confirmed: number;
+	declined: number;
+	noAnswer: number;
+	/** Sent and unanswered invitations: the ones a group reminder reaches. */
+	awaiting: number;
+}
+
+/**
+ * Per-group people totals. An invitation in several groups counts in each, so
+ * group rows are not meant to add up to the event total.
+ */
+export function computeGroupMetrics(items: DashboardGuestItem[]): GroupMetric[] {
+	const metrics = new Map<string, GroupMetric>();
 	for (const item of items) {
-		const visible = getVisibleTags(item.tags);
-		const tags = visible.length > 0 ? visible : ['Sin grupo'];
-		for (const tag of tags) {
-			const entry = tagCounts.get(tag) ?? { total: 0, pending: 0 };
-			entry.total++;
-			if (item.attendanceStatus === 'pending') {
-				entry.pending++;
-			}
-			tagCounts.set(tag, entry);
+		const groups = getGuestGroups(item);
+		const keys = groups.length > 0 ? groups : [NO_GROUP_FILTER];
+		const summary = computeGuestSummary([item]);
+		for (const key of keys) {
+			const entry = metrics.get(key) ?? {
+				value: key,
+				label: key === NO_GROUP_FILTER ? NO_GROUP_LABEL : key,
+				invitations: 0,
+				passes: 0,
+				confirmed: 0,
+				declined: 0,
+				noAnswer: 0,
+				awaiting: 0,
+			};
+			entry.invitations++;
+			entry.passes += summary.people.assigned;
+			entry.confirmed += summary.people.confirmed;
+			entry.declined += summary.people.declined;
+			entry.noAnswer += summary.people.noAnswer;
+			entry.awaiting += summary.awaitingAnswer.invitations;
+			metrics.set(key, entry);
 		}
 	}
-
-	return Array.from(tagCounts.entries())
-		.map(([tag, counts]) => ({ tag, ...counts }))
-		.sort((a, b) => b.total - a.total);
+	// Groups by size, "Sin grupo" always last.
+	return Array.from(metrics.values()).sort((a, b) => {
+		if (a.value === NO_GROUP_FILTER) return 1;
+		if (b.value === NO_GROUP_FILTER) return -1;
+		return b.invitations - a.invitations;
+	});
 }
 
 export function getGuestInviteUrl(item: DashboardGuestItem, inviteBaseUrl: string) {
@@ -448,4 +598,32 @@ export function getShareCtaLabel(item: DashboardGuestItem): {
 
 export function resolveShareFlowMode(guest: DashboardGuestItem): ShareFlowMode {
 	return hasBeenShared(guest) ? 'single-reminder' : 'single-invitation';
+}
+
+export interface GuestGroupScope {
+	label: string;
+	summary: GuestSummary;
+	reminderCount: number;
+	reminderIds: ReadonlySet<string>;
+	toSendIds: ReadonlySet<string>;
+}
+
+/** Next-step data for the active group filter; null when no group is selected. */
+export function buildGuestGroupScope(
+	items: DashboardGuestItem[],
+	group: string,
+	reminderEligibleIds: ReadonlySet<string>,
+): GuestGroupScope | null {
+	if (group === 'all') return null;
+	const groupItems = items.filter((item) => matchesGuestGroup(item, group));
+	const reminderIds = new Set(
+		groupItems.filter((item) => reminderEligibleIds.has(item.guestId)).map((i) => i.guestId),
+	);
+	return {
+		label: group === NO_GROUP_FILTER ? NO_GROUP_LABEL : group,
+		summary: computeGuestSummary(groupItems),
+		reminderCount: reminderIds.size,
+		reminderIds,
+		toSendIds: new Set(groupItems.filter(isGuestToSend).map((item) => item.guestId)),
+	};
 }

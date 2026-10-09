@@ -1,86 +1,55 @@
+/* Stage pill: label + its own icon, so stages differ by shape and not only by color */
 .status-pill {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.35rem;
-	padding: 0.2rem 0.6rem;
-	border-radius: 6px;
-	font-size: 0.65rem;
+	min-height: 26px;
+	padding: 0.15rem 0.6rem;
+	border: 1px solid transparent;
+	border-radius: 999px;
+	font-size: 0.8125rem;
 	font-weight: 600;
-	letter-spacing: 0.03em;
 	line-height: 1.3;
 	text-wrap: nowrap;
 
-	&__dot {
-		width: 5px;
-		height: 5px;
-		border-radius: 50%;
+	svg {
 		flex-shrink: 0;
 	}
 
-	/* Enviada — sent but not yet viewed, info/blue */
-	&--sent {
-		background: var(--color-state-info-bg);
-		border: 1px solid var(--color-state-info-border);
-		color: var(--color-state-info-text);
-
-		.status-pill__dot {
-			background: var(--color-state-info-bg);
-		}
+	&--to-send {
+		background: var(--color-state-warning-bg);
+		border-color: var(--color-state-warning-border);
+		color: var(--color-state-warning-text);
 	}
 
-	/* Confirmada — confirmed RSVP */
+	/* Sent, not opened: outline only, the quietest state */
+	&--unopened {
+		background: var(--color-surface-elevated);
+		border-color: var(--dashboard-stage-unopened-border, var(--color-border-control));
+		color: var(--color-text-secondary);
+	}
+
+	&--opened {
+		background: var(--color-state-info-bg);
+		border-color: var(--color-state-info-border);
+		color: var(--color-state-info-text);
+	}
+
 	&--confirmed {
 		background: var(--color-state-success-bg);
-		border: 1px solid var(--color-state-success-border);
+		border-color: var(--color-state-success-border);
 		color: var(--color-state-success-text);
-
-		.status-pill__dot {
-			background: var(--color-state-success-bg);
-		}
 	}
 
-	/* No asiste — declined RSVP */
+	/* Declining is an answer, not an error: neutral, not red */
 	&--declined {
-		background: var(--color-state-danger-bg);
-		border: 1px solid var(--color-state-danger-border);
-		color: var(--color-state-danger-text);
-
-		.status-pill__dot {
-			background: var(--color-state-danger-bg);
-		}
-	}
-
-	/* Por enviar — requires attention, warning/gold */
-	&--unshared {
-		background: var(--color-state-warning-bg);
-		border: 1px solid var(--color-state-warning-border);
-		color: var(--color-state-warning-text);
-
-		.status-pill__dot {
-			background: var(--color-state-warning-bg);
-		}
-	}
-
-	/* Por confirmar — shared but awaiting RSVP, info/blue like "Esperando" */
-	&--pending-confirmation {
-		background: var(--color-state-info-bg);
-		border: 1px solid var(--color-state-info-border);
-		color: var(--color-state-info-text);
-
-		.status-pill__dot {
-			background: var(--color-state-info-text);
-		}
-	}
-
-	/* Sin respuesta / Generado — gray-olive, no action needed */
-	&--neutral {
 		background: var(--color-state-neutral-bg);
-		border: 1px solid var(--color-state-neutral-border);
+		border-color: var(--color-state-neutral-border);
 		color: var(--color-state-neutral-text);
+	}
 
-		.status-pill__dot {
-			background: var(--color-state-neutral-bg);
-		}
+	@media (forced-colors: active) {
+		border-color: CanvasText;
 	}
 }
 
