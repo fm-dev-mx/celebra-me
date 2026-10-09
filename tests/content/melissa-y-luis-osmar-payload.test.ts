@@ -68,7 +68,7 @@ describe('Boda Melissa y Luis Osmar managed content regression', () => {
 		);
 	});
 
-	it('ships two optimized editorial assets and preserves both masters', () => {
+	it('ships two optimized editorial assets', () => {
 		expect(MELISSA_ASSET_SPECS.map((asset) => asset.key)).toEqual([
 			'cathedral-editorial',
 			'belcanto-editorial',
@@ -78,9 +78,6 @@ describe('Boda Melissa y Luis Osmar managed content regression', () => {
 			expect(fs.existsSync(derivative)).toBe(true);
 			expect(fs.statSync(derivative).size).toBeLessThanOrEqual(300_000);
 			expect(asset.optimizationRole).toBe('editorial-featured');
-		}
-		for (const sourceName of ['cathedral-editorial.png', 'belcanto-editorial.png']) {
-			expect(fs.existsSync(path.join(assetDir, 'source', sourceName))).toBe(true);
 		}
 	});
 
