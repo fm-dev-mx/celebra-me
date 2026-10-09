@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-08T18:36:03.304Z",
+    "generatedAt": "2026-10-09T00:25:29.671Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,8 +12,8 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
-        "cssSha256": "ab8c2a4cb84ebde28cde4d98e65e1fa02481202ef71e6c83cd81fedd339381d1",
-        "assetSha256": "4962272183b7a8ad3dc74d17c3c6cdbc478779b00474232391fb21db1555b082",
+        "cssSha256": "b69947816c21014a5a534fe71950e1de1575e7357e82c4a45f9bdba47a98aa0c",
+        "assetSha256": "d3d792128ade372f34b19126206ac6e011f0112f3ff1e78fa5eb88abb88f0cad",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
@@ -901,7 +901,7 @@
             "cssOwner": "src/styles/themes/sections/rsvp/_reply-card.scss",
             "fixtureIdentity": "synthetic:rsvp.reply-card",
             "file": "jewelry-box-mobile-rsvp-reply-card.png",
-            "sha256": "9fb38fac87b58a5a445b59b24814f9c425172b043c4292dc73ee256f200cd563",
+            "sha256": "557b2dfd33be1f7f2d18aa0e171b6dd82b3bc6355d72ec5ec7081f50808e2464",
             "contentHash": "67cbf2897aa17bab55c0e39d7ab30591034db11061d547b42d4dcc213c04d69e",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -2433,9 +2433,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "5732f7105ed5e082b2c047080ff2547a2fb78929",
+    "referenceSha": "b62eff9ca562e9e9d86c06011cba215f06e28b6f",
     "variantManifest": {
-        "generatedAt": "2026-10-08T18:36:03.304Z",
+        "generatedAt": "2026-10-09T00:25:29.671Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2448,8 +2448,8 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
-            "cssSha256": "ab8c2a4cb84ebde28cde4d98e65e1fa02481202ef71e6c83cd81fedd339381d1",
-            "assetSha256": "4962272183b7a8ad3dc74d17c3c6cdbc478779b00474232391fb21db1555b082",
+            "cssSha256": "b69947816c21014a5a534fe71950e1de1575e7357e82c4a45f9bdba47a98aa0c",
+            "assetSha256": "d3d792128ade372f34b19126206ac6e011f0112f3ff1e78fa5eb88abb88f0cad",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -3337,7 +3337,7 @@
                 "cssOwner": "src/styles/themes/sections/rsvp/_reply-card.scss",
                 "fixtureIdentity": "synthetic:rsvp.reply-card",
                 "file": "jewelry-box-mobile-rsvp-reply-card.png",
-                "sha256": "9fb38fac87b58a5a445b59b24814f9c425172b043c4292dc73ee256f200cd563",
+                "sha256": "557b2dfd33be1f7f2d18aa0e171b6dd82b3bc6355d72ec5ec7081f50808e2464",
                 "contentHash": "67cbf2897aa17bab55c0e39d7ab30591034db11061d547b42d4dcc213c04d69e",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -4197,10 +4197,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "5732f7105ed5e082b2c047080ff2547a2fb78929"
+        "referenceSha": "b62eff9ca562e9e9d86c06011cba215f06e28b6f"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-08T18:36:03.312Z",
+        "generatedAt": "2026-10-09T00:25:29.676Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4213,8 +4213,8 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
-            "cssSha256": "ab8c2a4cb84ebde28cde4d98e65e1fa02481202ef71e6c83cd81fedd339381d1",
-            "assetSha256": "4962272183b7a8ad3dc74d17c3c6cdbc478779b00474232391fb21db1555b082",
+            "cssSha256": "b69947816c21014a5a534fe71950e1de1575e7357e82c4a45f9bdba47a98aa0c",
+            "assetSha256": "d3d792128ade372f34b19126206ac6e011f0112f3ff1e78fa5eb88abb88f0cad",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4897,9 +4897,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "5732f7105ed5e082b2c047080ff2547a2fb78929"
+        "referenceSha": "b62eff9ca562e9e9d86c06011cba215f06e28b6f"
     },
-    "candidateManifestSha256": "5091c9045a97526b58e04fa086a4a6b9262ea3a71fc08232afb3208f52c05206",
-    "acceptedFromCommit": "5732f7105ed5e082b2c047080ff2547a2fb78929",
-    "acceptedAt": "2026-10-08T18:36:48.742Z"
+    "candidateManifestSha256": "3a44f4320e69c65e4fbff5b864ac7e681053d02b10f81becdea1e63bae8818cc",
+    "acceptedFromCommit": "b62eff9ca562e9e9d86c06011cba215f06e28b6f",
+    "acceptedAt": "2026-10-09T00:31:59.577Z"
 }
