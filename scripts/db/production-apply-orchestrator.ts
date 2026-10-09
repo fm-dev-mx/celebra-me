@@ -478,6 +478,13 @@ function throwInvitationApplyFailure(report: PromotionApplyReport): never {
 	});
 }
 
+/** Pre-apply checks the live objects only; the package comparison runs after the apply. */
+export const PRE_APPLY_MEDIA_VERIFICATION_FLAGS = [
+	'--provider-only',
+	'--allow-empty',
+	'--current-state',
+] as const;
+
 async function verifyMediaBeforeApply(
 	item: ProductionApplyPlanItem,
 	deps: ProductionApplyExecuteDeps,
@@ -498,8 +505,7 @@ async function verifyMediaBeforeApply(
 						'production',
 						'--slug',
 						slug,
-						'--provider-only',
-						'--allow-empty',
+						...PRE_APPLY_MEDIA_VERIFICATION_FLAGS,
 					]);
 				});
 	if (hasPreexisting && verify) {

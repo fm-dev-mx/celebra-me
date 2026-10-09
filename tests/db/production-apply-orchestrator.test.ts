@@ -8,8 +8,10 @@ import {
 	applyProductionApplyPlan,
 	buildProductionApplyPlan,
 	invitationItemsNeedingRevalidation,
+	PRE_APPLY_MEDIA_VERIFICATION_FLAGS,
 	type ProductionApplyExecuteDeps,
 } from '../../scripts/db/production-apply-orchestrator.ts';
+import { comparesToReleasePackage } from '../../scripts/invitation/verify-published-images.ts';
 import {
 	formatProductionApplyPlan,
 	toPublicProductionApplyPlan,
@@ -570,6 +572,12 @@ describe('production apply execution', () => {
 		});
 		expect(verifyInvitationMediaBefore).not.toHaveBeenCalled();
 		expect(result.wrote).toBe(true);
+	});
+
+	it('checks only the live objects before apply, never the incoming package', () => {
+		// A package that adds or replaces an image would otherwise fail its own precheck.
+		expect(comparesToReleasePackage(PRE_APPLY_MEDIA_VERIFICATION_FLAGS)).toBe(false);
+		expect(comparesToReleasePackage(['--target', 'production', '--slug', 'demo'])).toBe(true);
 	});
 
 	it('does not prompt when everything is already applied', async () => {
