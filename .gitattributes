@@ -1,5 +1,5 @@
+# Every text file is LF in the index and in every checkout, regardless of core.autocrlf: Prettier,
+# lint-staged and the Linux visual-parity runtime all expect LF, and content hashes (CSS fingerprint,
+# SQL digests) must not depend on the host.
+* text=auto eol=lf
 tests/e2e/visual-baselines/**/*.png filter=lfs diff=lfs merge=lfs -text
-.husky/pre-commit text eol=lf
-.husky/pre-push text eol=lf
-# SQL is applied and digested by content; keep every checkout LF regardless of core.autocrlf.
-*.sql text eol=lf

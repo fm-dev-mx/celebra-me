@@ -501,9 +501,10 @@ function accept(
 		acceptedAt: new Date().toISOString(),
 		candidateManifestSha256,
 	};
+	// Same indentation Prettier uses for JSON, so the committed file is what `accept` wrote.
 	writeFileSync(
 		join(stagingRoot, 'manifest.json'),
-		JSON.stringify(acceptedPayload, null, 2) + '\n',
+		JSON.stringify(acceptedPayload, null, 4) + '\n',
 		'utf8',
 	);
 	assertManifestIntegrity(acceptedPayload, stagingRoot);
