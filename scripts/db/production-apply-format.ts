@@ -131,11 +131,6 @@ export function formatProductionApplyPlan(plan: ProductionApplyPlan): string {
 		}
 	}
 	lines.push(...excludedDefinitionLines(plan));
-	if (plan.scope.allReady && visible.some((item) => item.readiness === 'READY_AFTER_DISCARD')) {
-		lines.push(
-			`${operatorSymbol('info')} --all-ready omitió invitaciones con borradores inéditos; revíselas por slug con --acknowledge-discard-unpublished-draft.`,
-		);
-	}
 	lines.push('');
 	lines.push(`${operatorSymbol('info')} ${productionApplyHandoff(plan)}`);
 	if (mutations.length > 0 && !plan.scope.inspectAll) {
