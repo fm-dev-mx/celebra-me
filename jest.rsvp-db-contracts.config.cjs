@@ -11,6 +11,7 @@ module.exports = {
 		(pattern) =>
 			!pattern.includes('public-guest-rsvp-db-boundary') &&
 			!pattern.includes('public-rsvp-http-wiring-db') &&
-			!pattern.includes('dashboard-guest-soft-delete-db'),
+			!pattern.includes('dashboard-guest-soft-delete-db') &&
+			!pattern.includes('invitation-event-date-db'),
 	),
 };

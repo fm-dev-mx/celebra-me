@@ -114,12 +114,13 @@ plan must be corrected.
   `:128-133`) reads `hero.date` only — inconsistent; switch it to `events.event_date` in G1/G5.
 - **Writing `event_date` on publish.** `publish_invitation_atomic` (11-arg, live definition in
   `20260717193000_publication_preflight_integrity.sql:54-190`) updates/inserts `events` at
-  `:162-172`. Decision: derive the date in SQL through a new immutable helper
-  `public.invitation_event_date(p_content jsonb) returns date` and call it from a body-only
-  `create or replace` of the same signature (no drop/create, no grant churn, expand-safe). A TS↔SQL
-  parity test over fixtures keeps the helper equal to `resolveInvitationSchedule`. Backfill: one
-  idempotent statement over `events` joined to current `published_invitation_content` (dry-run count
-  first, guarded workflow per target).
+  `:162-172`. Decision (revised in G1): derive the date in SQL through
+  `public.invitation_event_date(p_content jsonb) returns date` and keep it current with an AFTER
+  trigger on `published_invitation_content`, which covers every content writer (publication RPC,
+  scripts, manual patches) without redefining the large publication function. A shared fixture
+  (`tests/fixtures/engagement/invitation-event-date-cases.json`) is replayed against
+  `resolveInvitationSchedule` (unit) and the SQL helper (disposable DB) to keep them equal.
+  Backfill: one idempotent statement in the expand migration over the newest live published content.
 - **Design attributes.** Paths confirmed (see domain doc): `theme.preset`/`fontFamily`,
   `templateId`, `visualProfileId`, rendered `sectionOrder` keys, section `variant`s, `music`,
   `rsvp.accessMode`/`confirmationMode`. No dress-code field exists; not captured. Real invitation
@@ -172,21 +173,22 @@ Dashboard ──host token──▶ /api/dashboard/guests (+ engagement fields)
   `schema_version`, and per-event `properties` shape. Unique `(client_event_id)`. Indexes:
   `(guest_invitation_id, occurred_at desc)`, `(event_id, event_name, occurred_at)`.
 - RLS enabled + forced. `revoke all` from public, anon, authenticated, service_role; grant
-  service_role `select, insert` only (append-only ledger pattern). Host read access only through the
-  summary function / a select policy mirroring `guest_invitation_audit` owner/member/super_admin
-  rules — and grant `select` to authenticated explicitly (the audit table currently lacks it).
+  service_role `select, insert` only (append-only ledger pattern). No client read access: hosts read
+  aggregates through the summary function, which uses projections only.
 - Projection columns on `guest_invitations` (nullable/zero defaults, expand-safe):
   `open_count int not null default 0`, `first_opened_at`, `last_opened_at`, `last_previewed_at`,
-  `max_progress_milestone smallint not null default 0`, `rsvp_form_started_at`.
+  `max_progress_milestone smallint not null default 0`, `rsvp_form_viewed_at`,
+  `rsvp_form_started_at`.
 - Test guests (D5): `guest_invitations.is_test boolean not null default false`. The RPC forces
   `traffic_class = 'test'` for these guests; they are excluded from projections, host funnel, and
   snapshots. Dashboard: "Invitado de prueba" checkbox on create/edit; badge in the list.
-- Event date (D7): `events.event_date date null`, written by `publish_invitation_atomic` through
-  `invitation_event_date(p_content)` and backfilled once from current published content (see §5).
+- Event date (D7): `events.event_date date null`, written by the published-content trigger through
+  `invitation_event_date(content)` and backfilled once from current published content (see §5).
   Index `(event_date)`.
 - Raw events are anonymizable: `guest_invitation_id` is nullable, plus `anonymized_at timestamptz`.
   Check constraint: `guest_invitation_id is null` ⇔ `anonymized_at is not null`.
-- `record_guest_engagement_events_public(p_invite_id text, p_events jsonb)` — SECURITY DEFINER,
+- `record_guest_engagement_events_public(p_invite_id text, p_events jsonb, p_viewer_user_id uuid)` —
+  SECURITY DEFINER, classifies host (owner, active member, super admin) from the viewer id,
   `search_path = public`, execute granted to service_role only. Resolves invite by
   `invite_id = p_invite_id::uuid` (fixes the `invite_id::text` index bypass), rejects soft-deleted
   guests/events, inserts idempotently, updates projections only for `traffic_class = 'guest'`,
@@ -197,9 +199,11 @@ Dashboard ──host token──▶ /api/dashboard/guests (+ engagement fields)
   counts and median time-to-open for guests only.
 - Audit trigger: emit `viewed` only when `first_viewed_at` changes (first view), not on every
   `last_viewed_at` change. Stops the audit-row inflation; engagement detail lives in the new table.
-- Register in `supabase/migration-rollout-registry.json` (phase `expand`), extend
-  `scripts/db/schema-object-contract.ts` and `scripts/db/mutation-schema-contract-query.ts` with the
-  new RPCs and grant expectations.
+- Register in `supabase/migration-rollout-registry.json` (phase `expand`, capability
+  `guest_engagement_events`; app capability `guest_engagement_client`). Extending
+  `scripts/db/schema-object-contract.ts` / `mutation-schema-contract-query.ts` is deferred to G7:
+  adding the RPCs before every hosted target has the migration would make contract verification fail
+  on targets that are correctly behind.
 
 ### 6.2 Ingestion (server)
 

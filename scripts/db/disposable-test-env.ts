@@ -570,6 +570,7 @@ function cmdRunTests(): void {
 		'managed_identity_archive_cascade.test.sql',
 		...MEMORIES_PGTAP_FILES,
 		'guest_invitation_rls.test.sql',
+		'guest_engagement_events.test.sql',
 	]);
 }
 
@@ -740,6 +741,7 @@ async function cmdRunRsvpDbContracts(): Promise<void> {
 			'tests/db/public-guest-rsvp-db-boundary.test.ts',
 			'tests/db/public-rsvp-http-wiring-db.test.ts',
 			'tests/db/dashboard-guest-soft-delete-db.test.ts',
+			'tests/db/invitation-event-date-db.test.ts',
 		],
 		{
 			throwOnError: false,

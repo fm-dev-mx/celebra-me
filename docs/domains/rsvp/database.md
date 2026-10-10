@@ -72,8 +72,17 @@ The live tree does not expose `/admin/rsvp` or `/api/rsvp/*` as active operation
 - `guest_invitations.entry_source` distinguishes dashboard-created rows from public generic RSVP
   rows.
 - `guest_invitations.last_response_source` now records `link`, `admin`, or `generic_link`.
-- `guest_invitation_audit` stores lifecycle events such as `created`, `viewed`, `shared`, and RSVP
-  state changes.
+- `guest_invitation_audit` stores lifecycle events such as `created`, `viewed` (first view only),
+  `shared`, and RSVP state changes.
+- `guest_engagement_events` is the append-only guest engagement ledger. The service role has SELECT
+  and INSERT only; writes go through `record_guest_engagement_events_public`, which also maintains
+  the engagement projections on `guest_invitations` (`open_count`, `first_opened_at`,
+  `last_opened_at`, `last_previewed_at`, `max_progress_milestone`, `rsvp_form_viewed_at`,
+  `rsvp_form_started_at`). Hosts read aggregates through `get_event_engagement_summary` (security
+  invoker). `guest_invitations.is_test` excludes test guests. Taxonomy, metrics, and retention:
+  [`engagement-analytics.md`](./engagement-analytics.md).
+- `events.event_date` is derived from published content by `invitation_event_date()` and kept
+  current by a trigger on `published_invitation_content`.
 
 For hybrid public RSVP:
 

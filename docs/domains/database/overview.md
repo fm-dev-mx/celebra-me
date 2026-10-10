@@ -53,6 +53,7 @@ erDiagram
         text status "draft | published | archived"
         uuid invitation_project_id FK "nullable"
         int branding_removal_guest_limit "0 = add-on off"
+        date event_date "derived from published content"
         timestamptz published_at
         timestamptz deleted_at
         timestamptz created_at
@@ -83,11 +84,37 @@ erDiagram
         boolean is_viewed
         int view_percentage
         boolean hide_celebra_me_branding
+        timestamptz first_shared_at
+        timestamptz last_reminder_sent_at
+        boolean is_test
+        int open_count
+        timestamptz first_opened_at
+        timestamptz last_opened_at
+        timestamptz last_previewed_at
+        smallint max_progress_milestone "0 | 25 | 50 | 75 | 100"
+        timestamptz rsvp_form_viewed_at
+        timestamptz rsvp_form_started_at
         text legacy_guest_id
         text legacy_event_slug
         timestamptz deleted_at
         timestamptz created_at
         timestamptz updated_at
+    }
+
+    guest_invitations ||--o{ guest_engagement_events : guest_invitation_id
+    guest_engagement_events {
+        bigint id PK
+        uuid client_event_id UK
+        uuid guest_invitation_id FK "null once anonymized"
+        uuid event_id FK
+        text event_name
+        timestamptz occurred_at
+        timestamptz received_at
+        uuid page_view_id "nullable"
+        text traffic_class "guest | host | test | bot | non_production"
+        text device_class
+        jsonb properties
+        timestamptz anonymized_at
     }
 
     guest_invitation_audit {
