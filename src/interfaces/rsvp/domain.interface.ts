@@ -94,30 +94,3 @@ export interface GuestRSVPSubmitDTO {
 	attendeeCount: number;
 	guestComment?: string;
 }
-
-export type ClaimCodeStatus = 'active' | 'expired' | 'exhausted' | 'disabled';
-
-export interface ClaimCodeRecord {
-	id: string;
-	eventId: string;
-	active: boolean;
-	expiresAt: string | null;
-	maxUses: number;
-	usedCount: number;
-	createdBy: string | null;
-	createdAt: string;
-	updatedAt: string;
-}
-
-export interface ClaimCodeDTO {
-	id: string;
-	eventId: string;
-	active: boolean;
-	expiresAt: string | null;
-	maxUses: number;
-	usedCount: number;
-	createdBy: string | null;
-	createdAt: string;
-	updatedAt: string;
-	status: ClaimCodeStatus;
-}

@@ -1,6 +1,5 @@
 import type {
 	AttendanceStatus,
-	ClaimCodeRecord,
 	DeliveryFilter,
 	EntrySource,
 	EventRecord,
@@ -118,18 +117,6 @@ export type EventMembershipRow = {
 	updated_at: string;
 };
 
-export type ClaimCodeRow = {
-	id: string;
-	event_id: string;
-	active: boolean;
-	expires_at: string | null;
-	max_uses: number;
-	used_count: number;
-	created_by: string | null;
-	created_at: string;
-	updated_at: string;
-};
-
 const EVENT_COLUMN_LIST = [
 	'id',
 	'owner_user_id',
@@ -221,20 +208,6 @@ export function toMembershipRecord(row: EventMembershipRow): EventMembershipReco
 		eventId: row.event_id,
 		userId: row.user_id,
 		membershipRole: row.membership_role,
-		createdAt: row.created_at,
-		updatedAt: row.updated_at,
-	};
-}
-
-export function toClaimCodeRecord(row: ClaimCodeRow): ClaimCodeRecord {
-	return {
-		id: row.id,
-		eventId: row.event_id,
-		active: row.active,
-		expiresAt: row.expires_at,
-		maxUses: row.max_uses,
-		usedCount: row.used_count,
-		createdBy: row.created_by,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 	};

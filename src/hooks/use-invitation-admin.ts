@@ -3,11 +3,8 @@ import { adminApi } from '@/lib/dashboard/admin-api';
 import type {
 	InvitationDTO,
 	InvitationListItemDTO,
-	IntakeRequestDTO,
-	IntakeSubmissionDTO,
 	InvitationContentDraftDTO,
 	UpdateInvitationDTO,
-	CreateIntakeRequestDTO,
 	RsvpEventDTO,
 } from '@/lib/dashboard/dto/intake';
 
@@ -23,11 +20,8 @@ export function useInvitationAdmin({ autoLoad = false }: UseInvitationAdminOptio
 	const [saving, setSaving] = useState(false);
 
 	const [currentInvitation, setCurrentInvitation] = useState<InvitationDTO | null>(null);
-	const [currentRequest, setCurrentRequest] = useState<IntakeRequestDTO | null>(null);
-	const [currentSubmission, setCurrentSubmission] = useState<IntakeSubmissionDTO | null>(null);
 	const [currentRsvpEvent, setCurrentRsvpEvent] = useState<RsvpEventDTO | null>(null);
 	const [currentDraft, setCurrentDraft] = useState<InvitationContentDraftDTO | null>(null);
-	const [rawToken, setRawToken] = useState<string | null>(null);
 
 	const loadInvitations = useCallback(async () => {
 		setLoading(true);
@@ -80,8 +74,6 @@ export function useInvitationAdmin({ autoLoad = false }: UseInvitationAdminOptio
 		try {
 			const result = await adminApi.getInvitation(invitationId);
 			setCurrentInvitation(result.item);
-			setCurrentRequest(result.request);
-			setCurrentSubmission(result.submission);
 			setCurrentRsvpEvent(result.rsvpEvent ?? null);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Error al cargar la invitación.');
@@ -89,103 +81,6 @@ export function useInvitationAdmin({ autoLoad = false }: UseInvitationAdminOptio
 			setLoading(false);
 		}
 	}, []);
-
-	const createIntakeRequest = useCallback(
-		async (invitationId: string, payload: CreateIntakeRequestDTO) => {
-			try {
-				const result = await adminApi.createIntakeRequest(invitationId, payload);
-				setCurrentRequest(result.request);
-				setRawToken(result.rawToken);
-				await loadInvitationDetail(invitationId);
-				return result;
-			} catch (err) {
-				throw new Error(
-					err instanceof Error ? err.message : 'Error al crear la solicitud de intake.',
-					{ cause: err },
-				);
-			}
-		},
-		[loadInvitationDetail],
-	);
-
-	const regenerateToken = useCallback(async (invitationId: string) => {
-		try {
-			const result = await adminApi.regenerateIntakeToken(invitationId);
-			setCurrentRequest(result.request);
-			setRawToken(result.rawToken);
-			return result;
-		} catch (err) {
-			throw new Error(err instanceof Error ? err.message : 'Error al regenerar el token.', {
-				cause: err,
-			});
-		}
-	}, []);
-
-	const revokeToken = useCallback(async (invitationId: string) => {
-		try {
-			const result = await adminApi.revokeIntakeToken(invitationId);
-			setCurrentRequest(result.request);
-			setRawToken(null);
-			return result;
-		} catch (err) {
-			throw new Error(err instanceof Error ? err.message : 'Error al revocar el enlace.', {
-				cause: err,
-			});
-		}
-	}, []);
-
-	const loadSubmissionForReview = useCallback(async (invitationId: string) => {
-		setLoading(true);
-		setError('');
-		try {
-			const result = await adminApi.getSubmissionForReview(invitationId);
-			setCurrentInvitation(result.item);
-			setCurrentRequest(result.request);
-			setCurrentSubmission(result.submission);
-		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Error al cargar la captura.');
-		} finally {
-			setLoading(false);
-		}
-	}, []);
-
-	const reviewSubmission = useCallback(
-		async (
-			invitationId: string,
-			action: 'approve' | 'request_changes',
-			reviewNotes?: string,
-		) => {
-			try {
-				await adminApi.reviewSubmission(invitationId, { action, reviewNotes });
-				await loadSubmissionForReview(invitationId);
-			} catch (err) {
-				throw new Error(
-					err instanceof Error ? err.message : 'Error al revisar la captura.',
-					{ cause: err },
-				);
-			}
-		},
-		[loadSubmissionForReview],
-	);
-
-	const saveSubmissionCorrections = useCallback(
-		async (
-			invitationId: string,
-			payload: { blockData: Record<string, unknown>; clientComments: string },
-		) => {
-			try {
-				const result = await adminApi.updateSubmissionCorrections(invitationId, payload);
-				setCurrentSubmission(result.item);
-				return result.item;
-			} catch (err) {
-				throw new Error(
-					err instanceof Error ? err.message : 'Error al guardar las correcciones.',
-					{ cause: err },
-				);
-			}
-		},
-		[],
-	);
 
 	const loadDraft = useCallback(async (invitationId: string) => {
 		setLoading(true);
@@ -197,18 +92,6 @@ export function useInvitationAdmin({ autoLoad = false }: UseInvitationAdminOptio
 			setError(err instanceof Error ? err.message : 'Error al cargar el borrador.');
 		} finally {
 			setLoading(false);
-		}
-	}, []);
-
-	const generateDraftAction = useCallback(async (invitationId: string) => {
-		try {
-			const result = await adminApi.generateDraft(invitationId);
-			setCurrentDraft(result.draft);
-			return result.draft;
-		} catch (err) {
-			throw new Error(err instanceof Error ? err.message : 'Error al generar el borrador.', {
-				cause: err,
-			});
 		}
 	}, []);
 
@@ -307,22 +190,11 @@ export function useInvitationAdmin({ autoLoad = false }: UseInvitationAdminOptio
 		loading,
 		saving,
 		currentInvitation,
-		currentRequest,
-		currentSubmission,
 		currentRsvpEvent,
 		currentDraft,
-		rawToken,
-		setRawToken,
 		updateInvitation,
 		loadInvitationDetail,
-		createIntakeRequest,
-		regenerateToken,
-		revokeToken,
-		loadSubmissionForReview,
-		reviewSubmission,
-		saveSubmissionCorrections,
 		loadDraft,
-		generateDraft: generateDraftAction,
 		updateDraft,
 		publishDraft: publishDraftAction,
 		createDraftRevision,

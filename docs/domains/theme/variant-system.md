@@ -160,7 +160,8 @@ invitation profiles.
   clean envelope front (name, recipient, pearl wax `shell` seal), one instruction, a wave liner
   shown while the flap opens, and a deckle-edged card with a single shell over a hand-drawn
   shoreline. Keeps the shared card-rise lifecycle. Profiles tune it only through optional
-  `--seaside-*` tokens. Proven on the unlisted `demo-xv-seaside`.
+  `--seaside-*` tokens. Proven on a non-origin demo that has since been retired; `mia-pintor` is its
+  current consumer.
 - composition.ornaments seaside-lineart: one hand-drawn shoreline (a ribbon of variable weight) at
   four thresholds — quote opening, family close, location close and the closing signature, where a
   shell rests on it. Generic dividers and flourishes are hidden rather than replaced by icons. CSS

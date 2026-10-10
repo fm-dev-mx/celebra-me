@@ -2,7 +2,6 @@ import {
 	isValidEmail,
 	isValidLoginIdentifier,
 	validateLoginForm,
-	validateRegisterForm,
 } from '@/lib/client/auth/login-ui';
 
 describe('Authentication Validation Logic (Spanish UI)', () => {
@@ -57,31 +56,6 @@ describe('Authentication Validation Logic (Spanish UI)', () => {
 		test('should return Spanish error for missing password in password method', () => {
 			const result = validateLoginForm({ ...baseInput, password: '' });
 			expect(result).toBe('Ingresa tu contrasena para continuar con este metodo.');
-		});
-	});
-
-	describe('validateRegisterForm', () => {
-		const baseInput = {
-			method: 'password' as const,
-			email: 'newuser@test.com',
-			password: 'strongPassword123',
-			claimCode: 'CLAIM-2026',
-		};
-
-		test('should return null for valid registration data', () => {
-			expect(validateRegisterForm(baseInput)).toBeNull();
-		});
-
-		test('should require claimCode for registration', () => {
-			expect(validateRegisterForm({ ...baseInput, claimCode: '' })).toBe(
-				'Ingresa tu claimCode para continuar.',
-			);
-		});
-
-		test('should cascade errors from login validation', () => {
-			const result = validateRegisterForm({ ...baseInput, email: '' });
-			expect(result).toBeDefined();
-			expect(result).toContain('correo');
 		});
 	});
 });

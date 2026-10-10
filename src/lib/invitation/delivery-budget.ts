@@ -11,39 +11,52 @@ export interface DeliveryBenchmarkScenario {
 	path: string;
 	personalized: boolean;
 	architecture: string;
-	currentInvitation: string;
+}
+
+const INVITATION_ROUTE = /^\/[a-z]+(?:-[a-z]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** Normalize `eventType/slug` or `/eventType/slug` to a public invitation route. */
+export function toInvitationRoute(value: string): string {
+	const route = `/${value.trim().replace(/^\/+|\/+$/g, '')}`;
+	if (!INVITATION_ROUTE.test(route)) {
+		throw new Error(`Expected <eventType>/<slug>, received "${value}".`);
+	}
+	return route;
 }
 
 /**
- * Benchmark roles are architectural. Reassign `path` when the named invitation
- * no longer represents that architecture.
+ * Benchmark roles are architectural; the operator picks the invitations that represent them.
+ * The legacy Storage role is measured only when an invitation still serves mutable media.
  */
-export const DELIVERY_BENCHMARK_SCENARIOS: Record<
-	DeliveryBudgetScenario,
-	DeliveryBenchmarkScenario
-> = {
-	versionedAnonymous: {
-		id: 'versionedAnonymous',
-		path: '/xv/renata',
-		personalized: false,
-		architecture: 'Hashed Cloudinary public IDs; Storage is not the LCP media path',
-		currentInvitation: 'renata',
-	},
-	legacyStorageAnonymous: {
-		id: 'legacyStorageAnonymous',
-		path: '/xv/romina-rios-chaparro',
-		personalized: false,
-		architecture: 'Mutable in-place Supabase Storage media URLs',
-		currentInvitation: 'romina-rios-chaparro',
-	},
-	personalizedLookupMiss: {
+export function buildDeliveryBenchmarkScenarios(input: {
+	versionedSlug: string;
+	legacyStorageSlug?: string;
+}): DeliveryBenchmarkScenario[] {
+	const versionedRoute = toInvitationRoute(input.versionedSlug);
+	const scenarios: DeliveryBenchmarkScenario[] = [
+		{
+			id: 'versionedAnonymous',
+			path: versionedRoute,
+			personalized: false,
+			architecture: 'Hashed Cloudinary public IDs; Storage is not the LCP media path',
+		},
+	];
+	if (input.legacyStorageSlug) {
+		scenarios.push({
+			id: 'legacyStorageAnonymous',
+			path: toInvitationRoute(input.legacyStorageSlug),
+			personalized: false,
+			architecture: 'Mutable in-place Supabase Storage media URLs',
+		});
+	}
+	scenarios.push({
 		id: 'personalizedLookupMiss',
-		path: '/xv/renata?invite=fixture-not-a-guest',
+		path: `${versionedRoute}?invite=fixture-not-a-guest`,
 		personalized: true,
 		architecture: 'Same versioned document with a synthetic invite lookup miss',
-		currentInvitation: 'renata',
-	},
-};
+	});
+	return scenarios;
+}
 
 export interface DeliveryBudgetCeiling {
 	htmlBytes: number;

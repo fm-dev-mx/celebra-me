@@ -16,15 +16,15 @@ Cache **correctness** for public and private responses remains
 that policy.
 
 Numeric baselines below come from production `www.celebra-me.com` on 2026-08-16 via
-`pnpm invitation:delivery:baseline`. Canonical metric name: **HTML decoded size**. The recorded
-field `htmlBytes` is the decoded UTF-8 byte length of the HTML response body after HTTP
-decompression (`response.text()` → `Buffer.byteLength(html, "utf8")`). It is not compressed transfer
-size, not `Content-Length`, and not total page weight.
+`pnpm invitation:delivery:baseline --slug <eventType>/<slug>`. Canonical metric name: **HTML decoded
+size**. The recorded field `htmlBytes` is the decoded UTF-8 byte length of the HTML response body
+after HTTP decompression (`response.text()` → `Buffer.byteLength(html, "utf8")`). It is not
+compressed transfer size, not `Content-Length`, and not total page weight.
 
-Benchmark roles are architectural (`DELIVERY_BENCHMARK_SCENARIOS`). Current stand-ins: `renata`
-(versioned Cloudinary), `romina-rios-chaparro` (mutable Storage),
-`renata?invite=fixture-not-a-guest` (personalized miss). Reassign the path if an invitation leaves
-that architecture.
+Benchmark roles are architectural (`buildDeliveryBenchmarkScenarios`). The operator names the
+invitations: `--slug <eventType>/<slug>` (versioned Cloudinary, also used for the personalized miss)
+and, while an invitation still serves mutable Storage media, `--legacy-slug <eventType>/<slug>`. The
+2026 measurements below used `renata` and `romina-rios-chaparro`.
 
 A metric is canonical only if a meaningful change can trigger a concrete decision. Timing metrics
 are not CI gates.
@@ -83,7 +83,8 @@ Jest proof.
 | Runtime       | Real-user or environmentally variable metrics             | No                   |
 | Informational | Investigation aids that do not predict harm by themselves | No                   |
 
-**Budget** enforcement is `pnpm invitation:delivery:baseline --assert-budget`. It is not part of
+**Budget** enforcement is
+`pnpm invitation:delivery:baseline --slug <eventType>/<slug> --assert-budget`. It is not part of
 `pnpm test` or `pnpm run ci`. Do not add TTFB, LCP, CLS, or INP thresholds to those suites.
 
 ## Cost-per-operation model
@@ -186,7 +187,8 @@ token `s-maxage=0`. `x-vercel-cache` for the document must not be `HIT`.
 **Why it matters.** Hosts republish invitations; a shared TTL would show a stale published version.
 
 **Measurement.** `tests/unit/private-cache-contract.test.ts`,
-`tests/unit/delivery-contract.test.ts`, `pnpm invitation:delivery:baseline`.
+`tests/unit/delivery-contract.test.ts`,
+`pnpm invitation:delivery:baseline --slug <eventType>/<slug>`.
 
 **Enforcement.** Hard CI (helpers + page source). Baseline script also fails `--assert-budget` on a
 document HIT.
@@ -202,7 +204,7 @@ republish. `s-maxage=3600` would be approximately one hour.
 
 ### Personalized and private cache
 
-**Definition.** `?invite=`, short invite routes, dashboard, auth, and captura responses use
+**Definition.** `?invite=`, short invite routes, dashboard, and auth responses use
 `no-store, private` (see the cache policy doc for the full private surface).
 
 **Why it matters.** Guest names and RSVP state must not enter a shared cache.
@@ -379,8 +381,9 @@ transfer size, not `Content-Length`, and not total page weight.
 **Why it matters.** Smoke metric for structural document growth. It is not a primary product KPI and
 is a weak LCP proxy.
 
-**Measurement.** `pnpm invitation:delivery:baseline` (`htmlBytes`). Optional `--assert-budget`.
-Cross-check: `content-length` header and `content-encoding` on the same response.
+**Measurement.** `pnpm invitation:delivery:baseline --slug <eventType>/<slug>` (`htmlBytes`).
+Optional `--assert-budget`. Cross-check: `content-length` header and `content-encoding` on the same
+response.
 
 **Direct vs proxy.** Direct for decoded document size. Proxy for “page weight”.
 
@@ -682,7 +685,7 @@ These may fail automated validation immediately:
 
 - Anonymous HTML origin-revalidate helpers and `[slug].astro` source (no positive `s-maxage`, no
   SWR; `?invite=` forces `no-store, private`).
-- Private-path `no-store` for dashboard/auth/captura (`private-cache-path`).
+- Private-path `no-store` for dashboard/auth (`private-cache-path`).
 - `shouldOptimizeThroughVercelImage` false for mutable Storage; true for Cloudinary and hashed
   `/_astro`.
 - Cloudinary public ID changes when `sha256` changes.
@@ -692,8 +695,8 @@ These may fail automated validation immediately:
   call.
 - RSVP: one lookup + one mutation RPC at the service layer; no duplicate in-flight client submit.
   Functional HTTP+DB outcome is gated on disposable local DB, never Production guests.
-- Optional: `pnpm invitation:delivery:baseline --assert-budget` for HTML decoded size + live cache
-  headers + document not HIT.
+- Optional: `pnpm invitation:delivery:baseline --slug <eventType>/<slug> --assert-budget` for HTML
+  decoded size + live cache headers + document not HIT.
 
 These must **not** fail CI: TTFB, LCP, CLS, INP, page load time, hero bytes, unique HTML URL count,
 provider invoices.
@@ -702,8 +705,8 @@ provider invoices.
 
 - Policy SSOT: `docs/domains/invitations/performance-metrics.md`
 - Cache correctness SSOT: `docs/domains/invitations/public-response-cache-policy.md`
-- Measure documents: `pnpm invitation:delivery:baseline`
-- Assert HTML budget: `pnpm invitation:delivery:baseline --assert-budget`
+- Measure documents: `pnpm invitation:delivery:baseline --slug <eventType>/<slug>`
+- Assert HTML budget: `pnpm invitation:delivery:baseline --slug <eventType>/<slug> --assert-budget`
 - Hermetic contracts: `pnpm test -- tests/unit/delivery-contract.test.ts` (plus
   `vercel-image-policy`, `invitation-context-reads`)
 - Persistence reads: `tests/unit/invitation-context-reads.test.ts`

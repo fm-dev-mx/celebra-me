@@ -96,7 +96,6 @@ the hybrid TypeScript 7 CLI / TypeScript 6 tooling-API arrangement) lives in
 - Public invitation rendering lives under:
 - `src/pages/[eventType]/[slug].astro`
 - `src/pages/[eventType]/[slug]/i/[shortId].astro`
-- `src/pages/captura/[token].astro` for intake capture forms
 - Host dashboard pages live under `src/pages/dashboard/**`.
 - API routes live under `src/pages/api/**`.
 
@@ -363,7 +362,6 @@ Celebra-me includes a dedicated RSVP and guest-management module for:
 - `/dashboard/invitados`
 - `/dashboard/memories`
 - `/dashboard/admin/recuerdos`
-- `/dashboard/claimcodes`
 - `/dashboard/usuarios`
 - `/dashboard/admin`
 - `/dashboard/mfa-setup`
@@ -384,11 +382,6 @@ Celebra-me includes a dedicated RSVP and guest-management module for:
 - `POST /api/dashboard/guests/:guestId/toggle-branding`
 - `GET /api/dashboard/guests/export.csv?eventId=...`
 - `GET /api/dashboard/events`
-- `GET /api/dashboard/claimcodes`
-- `POST /api/dashboard/claimcodes`
-- `PATCH /api/dashboard/claimcodes/:claimCodeId`
-- `DELETE /api/dashboard/claimcodes/:claimCodeId`
-- `POST /api/dashboard/claimcodes/validate`
 - `GET /api/dashboard/admin/events`
 - `PATCH /api/dashboard/admin/events/:eventId`
 - `GET /api/dashboard/admin/users`
@@ -396,14 +389,6 @@ Celebra-me includes a dedicated RSVP and guest-management module for:
 - `GET /api/dashboard/intake`
 - `POST /api/dashboard/intake` (rejected for client creation; managed CLI only)
 - `GET /api/dashboard/intake/:id`
-- `POST /api/dashboard/intake/:id/request`
-- `POST /api/dashboard/intake/:id/request/regenerate-token`
-- `POST /api/dashboard/intake/:id/review`
-
-### Intake/Capture API
-
-- `GET /api/captura/[token]` — resolves intake request from raw token
-- `POST /api/captura/[token]` — submits intake data
 
 ### Local canonical status boundary
 

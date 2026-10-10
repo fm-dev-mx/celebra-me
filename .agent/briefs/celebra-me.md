@@ -32,13 +32,13 @@ The platform offers:
 
 ## Event Types Supported
 
-| Event                 | Routable demos                                                                             | Notes                       |
-| --------------------- | ------------------------------------------------------------------------------------------ | --------------------------- |
-| XV Años (Quinceañera) | `demo-xv-editorial`, `demo-xv-enchanted-rose`, `demo-xv-celestial-blue`, `demo-xv-seaside` | Most premium tier           |
-| Wedding (Boda)        | `demo-boda-jewelry-box-wedding`                                                            | Jewelry Box, editorial look |
-| Birthday (Cumpleaños) | `demo-cumple-luxury-hacienda`                                                              | Varies by age/segment       |
-| Baptism (Bautizo)     | `demo-bautismo-angelic-presence`                                                           | Included in platform        |
-| Primera Comunión      | `demo-primera-comunion-illustrated`                                                        | Illustrated, gentle         |
+| Event                 | Routable demos                                                          | Notes                       |
+| --------------------- | ----------------------------------------------------------------------- | --------------------------- |
+| XV Años (Quinceañera) | `demo-xv-editorial`, `demo-xv-enchanted-rose`, `demo-xv-celestial-blue` | Most premium tier           |
+| Wedding (Boda)        | `demo-boda-jewelry-box-wedding`                                         | Jewelry Box, editorial look |
+| Birthday (Cumpleaños) | `demo-cumple-luxury-hacienda`                                           | Varies by age/segment       |
+| Baptism (Bautizo)     | `demo-bautismo-angelic-presence`                                        | Included in platform        |
+| Primera Comunión      | `demo-primera-comunion-illustrated`                                     | Illustrated, gentle         |
 
 Baby shower is a supported event type without a routable demo. Demos hold fictitious showcase
 content only (`src/content/event-demos/`); real client invitations are never demo examples.

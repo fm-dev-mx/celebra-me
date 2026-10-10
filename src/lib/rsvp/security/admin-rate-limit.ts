@@ -36,12 +36,6 @@ const RATE_LIMITS = {
 	// Local-only canonical status dashboard (manual refresh, read-only probes).
 	'admin:estado': { maxHits: 6, windowSec: 60 },
 
-	// Claim code operations follow the same operational profile.
-	'claimcodes:list': { maxHits: 60, windowSec: 60 },
-	'claimcodes:create': { maxHits: 20, windowSec: 60 },
-	'claimcodes:update': { maxHits: 30, windowSec: 60 },
-	'claimcodes:delete': { maxHits: 10, windowSec: 60 },
-	'claimcodes:validate': { maxHits: 30, windowSec: 60 },
 	// Event memory spaces (guest photo/video QR) administration.
 	'memories:list': { maxHits: 60, windowSec: 60 },
 	'memories:create': { maxHits: 20, windowSec: 60 },
@@ -53,16 +47,12 @@ const RATE_LIMITS = {
 	'platform:usage': { maxHits: 30, windowSec: 60 },
 	'intake:list': { maxHits: 60, windowSec: 60 },
 	'intake:update': { maxHits: 30, windowSec: 60 },
-	'intake:edit': { maxHits: 30, windowSec: 60 },
 	'intake:assign-owner': { maxHits: 10, windowSec: 60 },
-	'intake:request': { maxHits: 10, windowSec: 60 },
 	'intake:regenerate': { maxHits: 5, windowSec: 60 },
 	'intake:revoke': { maxHits: 5, windowSec: 60 },
-	'intake:review': { maxHits: 20, windowSec: 60 },
 	'intake:draft': { maxHits: 10, windowSec: 60 },
 	'intake:publish': { maxHits: 5, windowSec: 60 },
 	'intake:delete': { maxHits: 10, windowSec: 60 }, // 10 req/min
-	'intake:captura': { maxHits: 30, windowSec: 60 },
 
 	// Commercial / Sales Workspace
 	'commercial:customers:create': { maxHits: 20, windowSec: 60 }, // 20 req/min

@@ -7,9 +7,6 @@ export type StatusBadgeVariant =
 	| 'published'
 	| 'archived'
 	| 'active'
-	| 'waiting'
-	| 'submitted'
-	| 'review'
 	| 'production'
 	| 'preview'
 	| 'approved'
@@ -104,9 +101,6 @@ export function hasInconsistency(invitation: InvitationDTO): boolean {
 
 const STATUS_DISPLAY: Record<string, { label: string; variant: StatusBadgeVariant }> = {
 	draft: { label: INVITATION_STATUS_LABELS.draft, variant: 'draft' },
-	waiting_for_client: { label: INVITATION_STATUS_LABELS.waiting_for_client, variant: 'waiting' },
-	client_submitted: { label: INVITATION_STATUS_LABELS.client_submitted, variant: 'submitted' },
-	in_review: { label: INVITATION_STATUS_LABELS.in_review, variant: 'review' },
 	in_production: { label: INVITATION_STATUS_LABELS.in_production, variant: 'production' },
 	preview_sent: { label: INVITATION_STATUS_LABELS.preview_sent, variant: 'preview' },
 	approved: { label: INVITATION_STATUS_LABELS.approved, variant: 'approved' },
@@ -149,15 +143,6 @@ export function resolvePrimaryAction(invitation: InvitationDTO): PrimaryAction |
 				text: 'Editar datos base',
 				href: invitation.internalEditUrl,
 			};
-		case 'waiting_for_client':
-			return { text: 'Esperando respuesta del cliente' };
-		case 'client_submitted':
-			return {
-				text: 'Revisar captura',
-				href: `/dashboard/invitaciones/${invitation.id}/review`,
-			};
-		case 'in_review':
-			return { text: 'En revisión' };
 		case 'in_production':
 			return {
 				text: 'Administrar invitación',

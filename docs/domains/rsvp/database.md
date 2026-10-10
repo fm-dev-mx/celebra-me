@@ -150,9 +150,8 @@ for backward compatibility and marked with `[DEPRECATED]` in their comments:
 ## Environment Variables
 
 Variable categories, sources, and the template/typing contract are owned by
-[`docs/env-workflow.md`](../../env-workflow.md). RSVP security inputs include
-`RSVP_CLAIM_CODE_PEPPER`, `TRUST_DEVICE_SECRET`, `TRUST_DEVICE_MAX_AGE_DAYS`, and
-`REQUIRE_FRESH_MFA_FOR_ADMIN`.
+[`docs/env-workflow.md`](../../env-workflow.md). RSVP security inputs include `TRUST_DEVICE_SECRET`,
+`TRUST_DEVICE_MAX_AGE_DAYS`, and `REQUIRE_FRESH_MFA_FOR_ADMIN`.
 
 ## Deferred Cleanup
 

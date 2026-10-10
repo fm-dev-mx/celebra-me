@@ -1,9 +1,7 @@
 import { prepareDashboardAdminPageData } from '../../src/lib/dashboard/admin-page-data';
-import { listClaimCodesAdmin } from '../../src/lib/rsvp/services/claim-code-admin.service';
 import { listAdminUsers } from '../../src/lib/rsvp/services/user-admin.service';
 import { listInvitations } from '../../src/lib/intake/repositories/invitation.repository';
 
-jest.mock('../../src/lib/rsvp/services/claim-code-admin.service');
 jest.mock('../../src/lib/rsvp/services/user-admin.service');
 jest.mock('../../src/lib/intake/repositories/invitation.repository');
 
@@ -13,17 +11,8 @@ describe('prepareDashboardAdminPageData', () => {
 	});
 
 	it('returns stats successfully when dependencies resolve', async () => {
-		(listInvitations as jest.Mock).mockResolvedValue([
-			{ id: '1' }, { id: '2' }
-		]);
-		(listAdminUsers as jest.Mock).mockResolvedValue([
-			{ id: '1' }, { id: '2' }, { id: '3' }
-		]);
-		(listClaimCodesAdmin as jest.Mock).mockResolvedValue([
-			{ id: '1', status: 'active' },
-			{ id: '2', status: 'inactive' },
-			{ id: '3', status: 'active' }
-		]);
+		(listInvitations as jest.Mock).mockResolvedValue([{ id: '1' }, { id: '2' }]);
+		(listAdminUsers as jest.Mock).mockResolvedValue([{ id: '1' }, { id: '2' }, { id: '3' }]);
 
 		const data = await prepareDashboardAdminPageData();
 
@@ -31,9 +20,7 @@ describe('prepareDashboardAdminPageData', () => {
 			stats: {
 				invitations: 2,
 				users: 3,
-				claimCodes: 3,
-				activeClaimCodes: 2
-			}
+			},
 		});
 	});
 

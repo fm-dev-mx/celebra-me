@@ -10,8 +10,9 @@ test.describe('Authentication UI Scenarios (Spanish)', () => {
 
 	test('Scenario: Verify Spanish Labels in Login Form', async ({ page }) => {
 		// Assert critical Spanish labels using identified selectors
-		await expect(page.locator('#tab-login')).toContainText('Ya tengo cuenta');
-		await expect(page.locator('#tab-register')).toContainText('Soy cliente nuevo');
+		await expect(page.locator('#auth-title')).toContainText('Acceda a su panel');
+		// Hosts are created by the owner: the page offers no self-registration.
+		await expect(page.locator('#tab-register')).toHaveCount(0);
 
 		// Check labels (accents might be missing in DOM as per inspection)
 		await expect(page.locator('label[for="login-email"]')).toContainText(
@@ -22,21 +23,7 @@ test.describe('Authentication UI Scenarios (Spanish)', () => {
 		await expect(page.locator('#login-submit')).toContainText('Continuar');
 	});
 
-	test('Scenario: Switch between Login and Register tabs', async ({ page }) => {
-		// Click on Register tab using ID
-		await page.click('#tab-register');
-
-		// Verify register specific fields appear
-		await expect(page.locator('label[for="register-claim-code"]')).toBeVisible();
-		await expect(page.locator('#register-submit')).toContainText('Crear cuenta');
-
-		// Switch back to Login
-		await page.click('#tab-login');
-		await expect(page.locator('#login-submit')).toContainText('Continuar');
-	});
-
 	test('Scenario: Trigger validation errors in Spanish', async ({ page }) => {
-		// Trigger error in login (default tab)
 		await page.click('#login-submit');
 
 		// Verify Spanish error message

@@ -15,7 +15,7 @@ import {
 } from '@/lib/invitation/delivery-contract';
 import {
 	assertDeliveryBudgets,
-	DELIVERY_BENCHMARK_SCENARIOS,
+	buildDeliveryBenchmarkScenarios,
 	DELIVERY_HTML_BUDGETS,
 	MEASURED_PRODUCTION_HTML,
 } from '@/lib/invitation/delivery-budget';
@@ -246,6 +246,25 @@ describe('invitation delivery HTML budgets', () => {
 
 	it('treats HTML budget bytes as decoded UTF-8 body length', () => {
 		expect(decodedHtmlUtf8ByteLength('á')).toBe(2);
-		expect(DELIVERY_BENCHMARK_SCENARIOS.versionedAnonymous.architecture).toMatch(/Cloudinary/);
+	});
+
+	it('builds benchmark routes from the invitations the operator names', () => {
+		expect(buildDeliveryBenchmarkScenarios({ versionedSlug: 'xv/sample' })).toEqual([
+			expect.objectContaining({ id: 'versionedAnonymous', path: '/xv/sample' }),
+			expect.objectContaining({
+				id: 'personalizedLookupMiss',
+				path: '/xv/sample?invite=fixture-not-a-guest',
+				personalized: true,
+			}),
+		]);
+		expect(
+			buildDeliveryBenchmarkScenarios({
+				versionedSlug: '/boda/a-b/',
+				legacyStorageSlug: 'cumple/legacy',
+			}).map((scenario) => scenario.path),
+		).toEqual(['/boda/a-b', '/cumple/legacy', '/boda/a-b?invite=fixture-not-a-guest']);
+		expect(() => buildDeliveryBenchmarkScenarios({ versionedSlug: 'renata' })).toThrow(
+			/<eventType>\/<slug>/,
+		);
 	});
 });

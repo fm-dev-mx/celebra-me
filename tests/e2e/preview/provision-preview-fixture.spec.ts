@@ -111,13 +111,12 @@ test('provisions or verifies the deterministic Preview-only publication fixture'
 	const detail = (await detailResponse.json()) as {
 		request: unknown;
 		submission: unknown;
-		rsvpEvent: null | { guestCount: number; claimCodeCount: number };
+		rsvpEvent: null | { guestCount: number };
 	};
 	expect(detail.request).toBeNull();
 	expect(detail.submission).toBeNull();
 	if (detail.rsvpEvent) {
 		expect(detail.rsvpEvent.guestCount).toBe(0);
-		expect(detail.rsvpEvent.claimCodeCount).toBe(0);
 	}
 
 	const reconciledInventory = await readInvitationList(page);

@@ -42,14 +42,10 @@ function makeItem(overrides: Record<string, unknown> = {}): InvitationDTO {
 		archivedAt: null,
 		createdAt: '2026-05-30T00:00:00Z',
 		updatedAt: '2026-05-30T00:00:00Z',
-		hasRequest: false,
-		hasSubmission: false,
 		published: false,
 		rsvpEventStatus: null,
 		rsvpEventId: null,
 		internalEditUrl: '/dashboard/invitaciones/proj-1/editar',
-		captureUrl: null,
-		captureLinkStatus: null,
 		...overrides,
 	} as InvitationDTO;
 }
