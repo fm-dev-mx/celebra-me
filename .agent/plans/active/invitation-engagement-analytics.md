@@ -338,6 +338,17 @@ Three storage tiers, each with its own retention:
      captured before the guest link is removed).
 - Metric definition changes bump `metrics_version`; old snapshots are not rewritten.
 
+### 6.8 G6 implementation notes
+
+- Migration `20261010130000_invitation_engagement_snapshots.sql`: snapshot table (service role
+  SELECT only), `list_engagement_snapshot_candidates`, `compute_invitation_engagement_snapshot`
+  (rolling upsert, final insert-once), `anonymize_guest_engagement_events` (batch, skip-locked,
+  refuses invitations whose snapshot predates their newest row). pgTAP:
+  `supabase/tests/invitation_engagement_snapshots.test.sql`.
+- App: `design-attributes.ts`, `engagement-maintenance.service.ts`, cron
+  `/api/cron/engagement-maintenance` (10:43 UTC, `CRON_SECRET`), privacy copy in
+  `src/pages/privacidad.astro` (needs owner/legal review before Production).
+
 ## 7. Work units
 
 | Goal | Unit                                                                                                                                                 | Files (boundary)                                                                                                                                                                                         | Verification                                                                                                                                                                                                  |

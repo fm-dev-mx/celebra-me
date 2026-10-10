@@ -52,3 +52,48 @@ export async function getEventEngagementSummary(
 			summary.medianSecondsToOpen === null ? null : Number(summary.medianSecondsToOpen),
 	};
 }
+
+export interface EngagementSnapshotCandidate {
+	event_id: string;
+	invitation_project_id: string | null;
+	snapshot_kind: 'rolling' | 'final';
+}
+
+export async function listEngagementSnapshotCandidatesRpc(): Promise<
+	EngagementSnapshotCandidate[]
+> {
+	return await supabaseRestRequest<EngagementSnapshotCandidate[]>({
+		pathWithQuery: 'rpc/list_engagement_snapshot_candidates',
+		method: 'POST',
+		useServiceRole: true,
+		body: {},
+	});
+}
+
+export async function computeInvitationEngagementSnapshotRpc(
+	eventId: string,
+	kind: 'rolling' | 'final',
+	design: Record<string, unknown> | null,
+	designSchemaVersion: number | null,
+): Promise<{ status: 'ok' | 'unchanged' | 'not_found' }> {
+	return await supabaseRestRequest<{ status: 'ok' | 'unchanged' | 'not_found' }>({
+		pathWithQuery: 'rpc/compute_invitation_engagement_snapshot',
+		method: 'POST',
+		useServiceRole: true,
+		body: {
+			p_event_id: eventId,
+			p_kind: kind,
+			p_design: design,
+			p_design_schema_version: designSchemaVersion,
+		},
+	});
+}
+
+export async function anonymizeGuestEngagementEventsRpc(batchSize: number): Promise<number> {
+	return await supabaseRestRequest<number>({
+		pathWithQuery: 'rpc/anonymize_guest_engagement_events',
+		method: 'POST',
+		useServiceRole: true,
+		body: { p_batch: batchSize },
+	});
+}

@@ -571,6 +571,7 @@ function cmdRunTests(): void {
 		...MEMORIES_PGTAP_FILES,
 		'guest_invitation_rls.test.sql',
 		'guest_engagement_events.test.sql',
+		'invitation_engagement_snapshots.test.sql',
 	]);
 }
 

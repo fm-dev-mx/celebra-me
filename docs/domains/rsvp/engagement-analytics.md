@@ -1,11 +1,12 @@
 # Guest Engagement Analytics
 
-> **Status: approved design, not yet implemented.** The live system still uses the legacy view
-> telemetry described in [`architecture.md`](./architecture.md)
-> (`POST /api/invitacion/:inviteId/view` and the `firstViewedAt` / `viewPercentage` columns). This
-> document is the SSOT for the event taxonomy, metric definitions, traffic classification, and
-> retention of the replacement. Rollout and work units live in
-> `.agent/plans/active/invitation-engagement-analytics.md`.
+> **Status: implemented on `feat/engagement-analytics`, pending rollout.** Ledger and projections:
+> `supabase/migrations/20261010120000_guest_engagement_events.sql`; snapshots and anonymization:
+> `20261010130000_invitation_engagement_snapshots.sql`; ingestion:
+> `/api/invitacion/:inviteId/events` (`src/lib/rsvp/engagement/`); browser:
+> `src/lib/invitation/invitation-analytics.ts`; maintenance: `GET /api/cron/engagement-maintenance`.
+> The legacy `/view` route and `track_guest_invitation_view_public` stay until the contract release.
+> Rollout: `.agent/plans/active/invitation-engagement-analytics.md`.
 
 ## Purpose and boundaries
 
