@@ -7,6 +7,8 @@ interface GuestListControlsProps {
 	selectionMode: boolean;
 	view: GuestListView;
 	onViewChange: (view: GuestListView) => void;
+	/** False under the message wall, where list and card views do not apply. */
+	showViewToggle?: boolean;
 	onStartSelection: () => void;
 	changeNotice: string | null;
 	onDismissNotice: () => void;
@@ -18,6 +20,7 @@ const GuestListControls: React.FC<GuestListControlsProps> = ({
 	selectionMode,
 	view,
 	onViewChange,
+	showViewToggle = true,
 	onStartSelection,
 	changeNotice,
 	onDismissNotice,
@@ -25,7 +28,7 @@ const GuestListControls: React.FC<GuestListControlsProps> = ({
 	<>
 		{hasGuests && !selectionMode && (
 			<div className="dashboard-guests__view-toggle">
-				<GuestViewToggle view={view} onChange={onViewChange} />
+				{showViewToggle && <GuestViewToggle view={view} onChange={onViewChange} />}
 				<button type="button" className="guest-select-toggle" onClick={onStartSelection}>
 					Seleccionar varios
 				</button>

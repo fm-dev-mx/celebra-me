@@ -10,8 +10,8 @@ import {
 } from '@/components/dashboard/guests/GuestGlyphs';
 import CopyLinkButton from '@/components/dashboard/guests/CopyLinkButton';
 import {
+	getGuestLatestMessage,
 	getGuestListSubtitle,
-	getGuestMessageCount,
 	getGuestStage,
 	type GuestStage,
 } from '@/components/dashboard/guests/guest-presenter';
@@ -48,7 +48,8 @@ const GuestListRow: React.FC<GuestListRowProps> = ({ item, inviteUrl, onOpen }) 
 	const bucket = stage === 'unopened' || stage === 'opened' ? 'waiting' : stage;
 	const Icon = STATUS_ICON[stage];
 	const subtitle = getGuestListSubtitle(item);
-	const hasMessage = getGuestMessageCount(item.guestComment) > 0;
+	const latestMessage = getGuestLatestMessage(item.guestComment);
+	const hasMessage = latestMessage.length > 0;
 
 	return (
 		<div className={`guest-row guest-row--${bucket}`}>
@@ -67,7 +68,7 @@ const GuestListRow: React.FC<GuestListRowProps> = ({ item, inviteUrl, onOpen }) 
 					{hasMessage && (
 						<span className="guest-row__message">
 							<MessageGlyph size={16} />
-							Dejó un mensaje
+							<span className="guest-row__message-text">«{latestMessage}»</span>
 						</span>
 					)}
 				</span>

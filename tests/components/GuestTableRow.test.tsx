@@ -148,15 +148,15 @@ describe('GuestTableRow — message toggle', () => {
 			respondedAt: '2026-03-22T12:30:00.000Z',
 		});
 		act(() => screen.getByRole('button', { name: /ver mensaje/i }).click());
-		expect(container.querySelector('.guest-message-history__title')).toHaveTextContent(
-			'Mensajes del invitado',
+		expect(container.querySelector('.guest-last-message__title')).toHaveTextContent(
+			'Mensaje del invitado',
 		);
-		expect(container.querySelector('.guest-message-history__text')).toHaveTextContent(
+		expect(container.querySelector('.guest-last-message__text')).toHaveTextContent(
 			'¡Nos vemos!',
 		);
-		const meta = container.querySelector('.guest-message-history__meta');
+		const meta = container.querySelector('.guest-last-message__meta');
 		expect(meta).toHaveTextContent('22 mar 2026');
-		expect(meta).not.toHaveTextContent('Mensaje inicial');
+		expect(meta).not.toHaveTextContent('Primer mensaje');
 	});
 
 	it('opens the details panel from the name and the chevron', () => {
