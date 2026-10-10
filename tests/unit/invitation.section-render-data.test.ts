@@ -244,6 +244,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 				eventSlug: 'demo-xv-jewelry-box',
 				eventType: 'xv',
 				eventTitle: 'Demo XV',
+				brandingRemovalEnabled: false,
 				guest: {
 					fullName: 'Invitada Test',
 					maxAllowedAttendees: 0,
@@ -288,6 +289,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 				eventSlug: 'luna-y-estrella',
 				eventType: 'primera-comunion',
 				eventTitle: 'Primera Comunión de Luna y Estrella',
+				brandingRemovalEnabled: false,
 				guest: {
 					fullName: 'Familia invitada',
 					maxAllowedAttendees: 4,

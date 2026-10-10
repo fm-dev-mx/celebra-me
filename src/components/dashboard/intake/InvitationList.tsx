@@ -20,9 +20,6 @@ type FilterTab =
 	| 'unknown'
 	| 'all'
 	| 'drafts'
-	| 'waiting_for_client'
-	| 'capture_received'
-	| 'in_review'
 	| 'published'
 	| 'archived'
 	| 'needs_attention';
@@ -62,24 +59,6 @@ const FILTER_TABS: Array<{
 		key: 'drafts',
 		label: 'Borradores',
 		match: (invitation) => invitation.status === 'draft' && !invitation.archivedAt,
-		isPrimary: true,
-	},
-	{
-		key: 'waiting_for_client',
-		label: 'Esperando cliente',
-		match: (invitation) => invitation.status === 'waiting_for_client' && !invitation.archivedAt,
-		isPrimary: true,
-	},
-	{
-		key: 'capture_received',
-		label: 'Captura recibida',
-		match: (invitation) => invitation.status === 'client_submitted' && !invitation.archivedAt,
-		isPrimary: true,
-	},
-	{
-		key: 'in_review',
-		label: 'En revisión',
-		match: (invitation) => invitation.status === 'in_review' && !invitation.archivedAt,
 		isPrimary: true,
 	},
 	{
@@ -147,12 +126,6 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 		}
 	}, [publishedUrl]);
 
-	const copyCaptureLink = useCallback(() => {
-		if (invitation.captureUrl) {
-			void navigator.clipboard.writeText(invitation.captureUrl);
-		}
-	}, [invitation.captureUrl]);
-
 	return (
 		<tr>
 			<td className="intake-list__cell-title">
@@ -212,13 +185,8 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 								onClick: copyPublicLink,
 							},
 							{
-								label: 'Copiar enlace de captura',
-								hidden: !invitation.captureUrl || !isActive,
-								onClick: copyCaptureLink,
-							},
-							{
-								label: 'Link cliente',
-								hidden: !isActive || Boolean(invitation.captureUrl),
+								label: 'Detalle',
+								hidden: !isActive,
 								onClick: () => {
 									window.location.href = `/dashboard/invitaciones/${invitation.id}`;
 								},
@@ -254,9 +222,6 @@ const EMPTY_STATE_MESSAGES: Record<FilterTab, string> = {
 	unknown: 'No hay fechas pendientes de verificar.',
 	all: 'No hay invitaciones activas. Las invitaciones de cliente se crean con el flujo administrado (pnpm invitation:release).',
 	drafts: 'No hay borradores.',
-	waiting_for_client: 'No hay invitaciones esperando respuesta del cliente.',
-	capture_received: 'No hay capturas recibidas pendientes de revisión.',
-	in_review: 'No hay invitaciones en revisión.',
 	published: 'No hay invitaciones publicadas.',
 	archived: 'No hay invitaciones archivadas.',
 	needs_attention: 'No hay invitaciones que requieran atención.',

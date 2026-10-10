@@ -44,16 +44,10 @@ export function createContext(
 
 // --- Plan ---
 export {
-	type TaskRequirement,
 	type CaptureTask,
 	type PlannedCaptureTask,
-	type CapturePlanResult,
-	type ResolveCapturePlanOptions,
-	getPlannedCaptureLabel,
-	isCaptureTaskRequired,
 	plannedTasksFromCapturePlan,
 	withTaskIdentity,
-	buildTaskFailureResult,
 	assertCapturePlanScopeOwnership,
 	probeFirstMatchingSelectors,
 	resolveCapturePlan,
@@ -62,11 +56,6 @@ export {
 // --- Composite ---
 export {
 	type SectionCompositeFragment,
-	type DocumentCompositePlacement,
-	type DocumentCompositeLayout,
-	type DocumentCaptureStrip,
-	type DocumentCaptureStripPlan,
-	type DocumentStripPhysicalPlacement,
 	listOrderedSectionCapturePaths,
 	parseSectionCaptureIdentity,
 	planDocumentCaptureStrips,
@@ -79,70 +68,31 @@ export {
 } from './composite.js';
 
 // --- Page preparation ---
-export {
-	waitForCustomElements,
-	waitForBackgroundImages,
-	waitForHeroReady,
-	waitForPageStability,
-	waitForFonts,
-	waitForImages,
-	scrollForLazyLoad,
-	waitForLayoutHeightStable,
-	disableAnimations,
-	prepareAuditPage,
-	prepareRawPage,
-} from './page-preparation.js';
+export { prepareAuditPage } from './page-preparation.js';
 
 // --- Navigation ---
 export {
-	type ScreenshotRevealState,
 	buildScreenshotUrl,
 	clearEnvelopeOpenedKeys,
 	isSameScreenshotNavigationUrl,
-	navigateTo,
 } from './navigation.js';
 
 // --- Reveal ---
 export {
-	type RevealOcclusionCache,
 	createRevealOcclusionCache,
 	shouldSkipInvitationOpenCapture,
-	assertInvitationContentReady,
 	evaluateRevealCompletedForContent,
 	normalizeInvitationRevealedForCapture,
-	ensureInvitationOpenForCapture,
-	findRevealSection,
-	findRevealLetter,
 	isRevealLetterLaidOut,
 	waitForRevealLetterLaidOut,
-	waitForRevealSectionLaidOut,
-	type RevealOpenDomProbe,
 	evaluateRevealIsOpen,
-	type RevealOcclusionDomProbe,
 	evaluateRevealDoesNotOcclude,
-	checkRevealIsOpen,
-	assertRevealDoesNotOccludeInvitation,
 } from './reveal.js';
 
 // --- Element capture ---
-export {
-	hideFixedOverlaysForCapture,
-	captureFullPage,
-	captureViewport,
-	resetScrollAndAssertAboveFold,
-	captureElement,
-	pathLabel,
-} from './element-capture.js';
-
-// --- Landing ---
-export { captureLandingStitchedFullPage } from './landing-capture.js';
+export { hideFixedOverlaysForCapture } from './element-capture.js';
 
 // --- Invitation ---
-export {
-	captureInvitationDocumentSpaceFullPage,
-	captureInvitationOpen,
-	validateDistinctReveal,
-} from './invitation-full-page.js';
 export { captureInvitationScreenshots } from './invitation-capture.js';
 
 // --- General ---

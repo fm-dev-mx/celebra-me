@@ -1,3 +1,4 @@
+import { InvalidEngineResultError } from './release-errors.ts';
 import type { InvitationUpdateTarget } from './invitation-update-options.ts';
 import type { TargetApplyResultData, TargetPlanData } from './invitation-update-presenter.ts';
 import type { MutationOutcomeStatus } from '../../src/lib/intake/mutations/outcome.ts';
@@ -135,11 +136,9 @@ function validateOutcome(
 		outcome.receiptPlanId !== plan.planId ||
 		outcome.result.planId !== plan.planId
 	) {
-		throw Object.assign(
-			new Error(
-				'INVALID_ENGINE_RESULT: El motor no devolvió ejecución, recibo y resultado ligados al plan confirmado.',
-			),
-			{ mutationStarted: true },
+		throw new InvalidEngineResultError(
+			'INVALID_ENGINE_RESULT: El motor no devolvió ejecución, recibo y resultado ligados al plan confirmado.',
+			true,
 		);
 	}
 	return outcome.result;

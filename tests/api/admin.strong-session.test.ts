@@ -3,13 +3,11 @@ import { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { GET as getEvents } from '@/pages/api/dashboard/admin/events';
 import { PATCH as updateEvent } from '@/pages/api/dashboard/admin/events/[eventId]';
 import { GET as getUsers, POST as createUser } from '@/pages/api/dashboard/admin/users';
-import { GET as getClaimCodes } from '@/pages/api/dashboard/claimcodes';
 import {
 	requireAdminMutationAccess,
 	requireAdminStrongSession,
 } from '@/lib/rsvp/auth/authorization';
 import { listAdminUsers, createAdminUser } from '@/lib/rsvp/services/user-admin.service';
-import { listClaimCodesAdmin } from '@/lib/rsvp/services/claim-code-admin.service';
 import { updateEventAdmin } from '@/lib/rsvp/services/event-admin.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
@@ -36,10 +34,6 @@ jest.mock('@/lib/rsvp/services/user-admin.service', () => ({
 	createAdminUser: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/services/claim-code-admin.service', () => ({
-	listClaimCodesAdmin: jest.fn(),
-}));
-
 jest.mock('@/lib/rsvp/services/event-admin.service', () => ({
 	updateEventAdmin: jest.fn(),
 }));
@@ -53,9 +47,6 @@ const requireAdminMutationAccessMock = requireAdminMutationAccess as jest.Mocked
 
 const listAdminUsersMock = listAdminUsers as jest.MockedFunction<typeof listAdminUsers>;
 const createAdminUserMock = createAdminUser as jest.MockedFunction<typeof createAdminUser>;
-const listClaimCodesAdminMock = listClaimCodesAdmin as jest.MockedFunction<
-	typeof listClaimCodesAdmin
->;
 const updateEventAdminMock = updateEventAdmin as jest.MockedFunction<typeof updateEventAdmin>;
 
 function createMockContext(options?: {
@@ -156,17 +147,6 @@ describe('Admin API Strong Session Guard', () => {
 			);
 			expect(response.status).toBe(403);
 		});
-
-		it('GET /api/dashboard/claimcodes returns 403', async () => {
-			requireAdminStrongSessionMock.mockRejectedValue(
-				new ApiError(403, 'forbidden', 'Se requiere autenticación fuerte'),
-			);
-
-			const response = await getClaimCodes(
-				createMockContext({ url: 'http://localhost/api/dashboard/claimcodes' }),
-			);
-			expect(response.status).toBe(403);
-		});
 	});
 
 	describe('super_admin with AAL2 (MFA enabled)', () => {
@@ -258,6 +238,7 @@ describe('Admin API Strong Session Guard', () => {
 				status: 'draft',
 				publishedAt: null,
 				invitationId: null,
+				brandingRemovalGuestLimit: 0,
 				createdAt: new Date().toISOString(),
 				updatedAt: new Date().toISOString(),
 			});
@@ -281,17 +262,6 @@ describe('Admin API Strong Session Guard', () => {
 			);
 
 			const response = await getEvents(createMockContext());
-			expect(response.status).toBe(403);
-		});
-
-		it('GET /api/dashboard/claimcodes returns 403', async () => {
-			requireAdminStrongSessionMock.mockRejectedValue(
-				new ApiError(403, 'forbidden', 'No autorizado'),
-			);
-
-			const response = await getClaimCodes(
-				createMockContext({ url: 'http://localhost/api/dashboard/claimcodes' }),
-			);
 			expect(response.status).toBe(403);
 		});
 	});
@@ -357,22 +327,6 @@ describe('Admin API Strong Session Guard', () => {
 
 			await getUsers(
 				createMockContext({ url: 'http://localhost/api/dashboard/admin/users' }),
-			);
-			expect(requireAdminStrongSessionMock).toHaveBeenCalled();
-		});
-
-		it('GET /api/dashboard/claimcodes calls requireAdminStrongSession', async () => {
-			requireAdminStrongSessionMock.mockResolvedValue({
-				userId: 'admin-1',
-				email: 'admin@test.com',
-				accessToken: 'token',
-				role: 'super_admin',
-				isSuperAdmin: true,
-			});
-			listClaimCodesAdminMock.mockResolvedValue([]);
-
-			await getClaimCodes(
-				createMockContext({ url: 'http://localhost/api/dashboard/claimcodes' }),
 			);
 			expect(requireAdminStrongSessionMock).toHaveBeenCalled();
 		});

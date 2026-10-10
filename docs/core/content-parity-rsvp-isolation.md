@@ -79,8 +79,8 @@ Canonical writers: authorized public RSVP APIs through service-role-only, scope-
 RPCs, plus authenticated dashboard operational services through host RLS. The service role has
 `SELECT` but no direct `INSERT`, `UPDATE`, or `DELETE` privilege on guest or guest-audit tables.
 Content promotion, mirroring, parity verification, and invitation tooling must not insert, update,
-or delete guests or claim codes. Invitation tooling may synchronize only an environment-local
-`events` shell and owner membership for non-demo client invitations.
+or delete guests. Invitation tooling may synchronize only an environment-local `events` shell and
+owner membership for non-demo client invitations.
 
 ### Explicit publication exception — host share messages
 
@@ -214,7 +214,7 @@ overlays, unreferenced leftover assets, and any RSVP/PII/operational tables list
 | Class                   | Fields / relations                                                                                                             |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | Synchronized projection | `slug`, `event_type`, `title` (from invitation), `invitation_project_id` link; required for published **non-demo** client RSVP |
-| Environment-local       | `id`, `owner_user_id`, status/timestamps, soft-delete, `event_memberships`, guests, claims, and all RSVP descendants           |
+| Environment-local       | `id`, `owner_user_id`, status/timestamps, soft-delete, `event_memberships`, guests, and all RSVP descendants                   |
 
 Static demos (`event-demos` / `is_demo`) remain content-only by default and must **not** receive
 persistent `events` rows unless a separate product contract explicitly requires one. Hybrid/public
@@ -228,10 +228,7 @@ personalized RSVP requires a published non-demo invitation **and** a linked envi
 By construction, content promote/mirror/parity tooling excludes:
 
 - `guest_invitations`, `guest_invitation_audit`
-- `event_claim_codes`
-- Legacy `rsvp_records`, `rsvp_audit_log`, `rsvp_channel_log`
 - Auth users, credentials, sessions, MFA factors
-- `intake_requests`, `intake_submissions`
 - `audit_logs`
 - `visitor_sessions`, commercial attribution/analytics, and related tracking/PII
 
@@ -244,12 +241,12 @@ Executable exclusion list for the Preview mirror: `EXCLUDED_TABLES` in
 
 `pnpm db:preview:sync-invitations` mirrors invitation-facing tables and Storage, remaps ownership to
 the dedicated Preview admin, rewrites Supabase Storage URLs, and does **not** copy Production
-guests, claims, Auth, intake, or commercial data. `--dry-run` performs zero writes (including
-role/profile and report files). `--apply` requires Preview authorization
+guests, Auth, or commercial data. `--dry-run` performs zero writes (including role/profile and
+report files). `--apply` requires Preview authorization
 (`CELEBRA_TASK_SCOPE=preview:content-mirror:sync-invitations` or interactive confirmation).
 
 It replaces Preview `events` with `TRUNCATE … CASCADE` then reinserts Production event shells. That
-**resets Preview RSVP children** (guests, claims, memberships) on those events. Stale Preview-only
+**resets Preview RSVP children** (guests, memberships) on those events. Stale Preview-only
 invitation candidates are reported only; they are not auto-pruned. Automatic pruning remains
 disabled.
 

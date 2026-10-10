@@ -37,7 +37,6 @@ import {
 	assertNotDisposableTarget,
 	resolvePreviewAdminUser,
 	updatePreviewAdminRole,
-	ensureHostProfile,
 	getPreviewSupabaseUrl,
 	getPreviewServiceRoleKey,
 	deriveSupabaseUrlFromDbUrl,
@@ -129,13 +128,12 @@ export function runPreviewAdminPhase(
 	const userId = resolvePreviewAdminUser(previewDbUrl);
 	if (options.dryRun) {
 		console.info(`   Preview admin user ID: ${userId}`);
-		console.info('   [dry-run] Would update role and host profile (skipped — zero writes)');
+		console.info('   [dry-run] Would update role (skipped — zero writes)');
 		return userId;
 	}
 	updatePreviewAdminRole(previewDbUrl, userId);
-	ensureHostProfile(previewDbUrl, userId);
 	console.info(`   Preview admin user ID: ${userId}`);
-	console.info(`   Role and profile updated (no Auth user created)`);
+	console.info(`   Role updated (no Auth user created)`);
 	return userId;
 }
 
@@ -381,7 +379,7 @@ function buildPhases(
 				const userFkColumns = columns.filter((c) =>
 					['created_by', 'owner_user_id', 'user_id'].includes(c),
 				);
-				// Nullify excluded-table foreign keys (submission_id references intake_submissions)
+				// Nullify legacy columns that must never cross environments (submission_id)
 				const nullifyFkColumns = columns.filter((c) => ['submission_id'].includes(c));
 				let transformedRows = prodRows.map((row) => {
 					const newRow = { ...row };

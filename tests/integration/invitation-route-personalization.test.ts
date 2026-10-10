@@ -60,6 +60,7 @@ describe('invitation route personalization', () => {
 			eventSlug: 'ximena-meza-trasvina',
 			eventType: 'xv',
 			eventTitle: 'XV Ximena',
+			brandingRemovalEnabled: false,
 			guest: {
 				fullName: 'Invitada Demo',
 				maxAllowedAttendees: 3,
@@ -194,6 +195,7 @@ describe('invitation route personalization', () => {
 			eventSlug: 'ximena-meza-trasvina',
 			eventType: 'xv',
 			eventTitle: 'XV Ximena',
+			brandingRemovalEnabled: false,
 			guest: {
 				fullName: 'Invitada Principal',
 				maxAllowedAttendees: 4,

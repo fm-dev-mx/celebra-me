@@ -39,7 +39,7 @@ try {
 	<section class="dashboard-card">
 		<h2>Administración global</h2>
 		<p>
-			Use la navegación lateral para gestionar códigos de acceso, eventos y usuarios.
+			Use la navegación lateral para gestionar eventos y usuarios.
 		</p>
 	</section>
 
@@ -58,12 +58,6 @@ try {
 				<h3>Usuarios</h3>
 				<p class="dashboard-stat-number">{pageData.stats.users}</p>
 				<a href="/dashboard/usuarios" class="dashboard-stat-link">Ver usuarios →</a>
-			</div>
-			<div class="dashboard-stat-card">
-				<h3>Códigos de acceso</h3>
-				<p class="dashboard-stat-number">{pageData.stats.claimCodes}</p>
-				<p class="dashboard-stat-subtext">{pageData.stats.activeClaimCodes} activos</p>
-				<a href="/dashboard/claimcodes" class="dashboard-stat-link">Gestionar →</a>
 			</div>
 		</div>
 	) : null}
@@ -104,11 +98,6 @@ try {
 			font-weight: 700;
 			margin: 0.5rem 0;
 			color: var(--color-action-primary);
-		}
-		.dashboard-stat-subtext {
-			font-size: 0.875rem;
-			color: var(--color-text-muted);
-			margin: 0.25rem 0 1rem;
 		}
 		.dashboard-stat-link {
 			display: inline-flex;

@@ -121,7 +121,7 @@ module.exports = {
 		'/tests/db/public-rsvp-http-wiring-db\\.test\\.ts$',
 		'/tests/db/dashboard-guest-soft-delete-db\\.test\\.ts$',
 		// Disposable managed rekey contracts — run via `pnpm test:db:managed-contracts`.
-		'/tests/provision/goal2-rekey-disposable-integration\\.test\\.ts$',
+		'/tests/provision/identity-rekey-disposable-integration\\.test\\.ts$',
 		'/tests/provision/image-namespace-disposable-integration\\.test\\.ts$',
 	],
 };

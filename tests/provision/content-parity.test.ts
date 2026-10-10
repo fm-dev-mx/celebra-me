@@ -46,16 +46,11 @@ describe('content parity excluded scope', () => {
 			expect.arrayContaining([
 				'guest_invitations',
 				'guest_invitation_audit',
-				'event_claim_codes',
-				'intake_requests',
-				'intake_submissions',
-				'rsvp_records',
 				'visitor_sessions',
-				'commercial_analytics',
 			]),
 		);
 		expect(isExcludedFromContentParity('guest_invitations')).toBe(true);
-		expect(isExcludedFromContentParity('event_claim_codes.used_count')).toBe(true);
+		expect(isExcludedFromContentParity('guest_invitations.attendance_status')).toBe(true);
 		expect(isExcludedFromContentParity('published_invitation_content')).toBe(false);
 	});
 
@@ -314,7 +309,11 @@ describe('semantic parity comparison', () => {
 		});
 		expect(
 			compareSemanticInvitationSnapshots('local', local, 'production', production),
-		).toEqual(expect.arrayContaining([expect.objectContaining({ entity: 'published_invitation_content' })]));
+		).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ entity: 'published_invitation_content' }),
+			]),
+		);
 	});
 
 	it('fails when itinerary variants are materially different', () => {

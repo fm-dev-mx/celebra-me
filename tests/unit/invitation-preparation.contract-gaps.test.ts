@@ -56,9 +56,11 @@ describe('invitation preparation — Goal 3 A3 hygiene rules', () => {
 		expect(findings.some((f) => f.rule === 'onedrive-path')).toBe(true);
 		expect(findings.some((f) => f.rule === 'clientes-folder')).toBe(true);
 		expect(findings.some((f) => f.rule === 'whatsapp-chat-title')).toBe(true);
-		expect(findings.some((f) => f.rule === 'credential-bearing-url' || f.rule === 'payroll-hr-portal')).toBe(
-			true,
-		);
+		expect(
+			findings.some(
+				(f) => f.rule === 'credential-bearing-url' || f.rule === 'payroll-hr-portal',
+			),
+		).toBe(true);
 		expect(findings.some((f) => f.rule === 'demo-assetslug-crossover')).toBe(true);
 	});
 });

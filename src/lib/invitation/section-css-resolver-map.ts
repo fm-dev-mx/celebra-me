@@ -91,8 +91,6 @@ export function buildSectionBundleUrlMap(modules: Record<string, CssModule>): Se
 	return sectionBundleUrlMap;
 }
 
-export const buildInvitationProfileUrlMap = buildSectionBundleUrlMap;
-
 export function resolveSectionBundleCssUrl(
 	sectionBundleUrlMap: SectionBundleUrlMap,
 	preset: string,

@@ -1,6 +1,5 @@
 import {
 	buildSectionBundleUrlMap,
-	buildInvitationProfileUrlMap,
 	buildSectionUrlMap,
 	resolveInvitationCssLoadPlan,
 	resolveSectionBundleCssUrl,
@@ -448,7 +447,7 @@ describe('section-css-resolver-map', () => {
 				default: '/_astro/editorial-magazine-bundle.css',
 			},
 		});
-		const profileUrlMap = buildInvitationProfileUrlMap({
+		const profileUrlMap = buildSectionBundleUrlMap({
 			'/src/styles/invitation-profiles/valentina-hernandez.scss': {
 				default: '/_astro/valentina-profile.css',
 			},
@@ -490,7 +489,7 @@ describe('section-css-resolver-map', () => {
 				default: '/_astro/hero-editorial-cover.css',
 			},
 		});
-		const profileUrlMap = buildInvitationProfileUrlMap({
+		const profileUrlMap = buildSectionBundleUrlMap({
 			'/src/styles/invitation-profiles/renata.scss': {
 				default: '/_astro/renata-profile.css',
 			},

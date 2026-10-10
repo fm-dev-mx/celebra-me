@@ -73,6 +73,7 @@ describe('Invitation API: public landing RSVP', () => {
 			status: 'published',
 			publishedAt: new Date().toISOString(),
 			invitationId: null,
+			brandingRemovalGuestLimit: 0,
 			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
 		});

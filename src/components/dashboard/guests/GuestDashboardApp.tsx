@@ -36,7 +36,6 @@ import {
 import { guestsApi } from '@/lib/dashboard/guests-api';
 import { useGuestDashboardActions } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
-import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
 import {
 	getReminderEligibleGuests,
 	shouldShowReminderCta,
@@ -93,9 +92,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	} = useGuestDashboardRealtime({ initialEventId });
 	const currentEvent = hostEvents.find((e) => e.id === eventId);
 	const currentEventTitle = currentEvent?.title ?? '';
-	const isBrandingRemovalEligible =
-		currentEvent &&
-		isEventEligibleForBrandingRemoval(currentEvent.eventType, currentEvent.slug);
+	const isBrandingRemovalEligible = Boolean(currentEvent?.brandingRemovalEnabled);
 	const { notice: changeNotice, dismissNotice } = useGuestChangeNotice(eventId, items);
 
 	const reminderEligibleGuests = useMemo(

@@ -4,7 +4,6 @@ import {
 	isValidEmail as isValidEmailUi,
 	isValidLoginIdentifier as isValidLoginIdentifierUi,
 	validateLoginForm as validateLoginFormUi,
-	validateRegisterForm as validateRegisterFormUi,
 } from '@/lib/client/auth/login-ui';
 
 describe('rsvp login UI helpers', () => {
@@ -43,17 +42,6 @@ describe('rsvp login UI helpers', () => {
 				password: 'ximenameza2026',
 			}),
 		).toBeNull();
-	});
-
-	it('requires claimCode for register form submissions', () => {
-		expect(
-			validateRegisterFormUi({
-				method: 'password',
-				email: 'host@test.com',
-				password: 'Pass123!',
-				claimCode: '',
-			}),
-		).toBe('Ingresa tu claimCode para continuar.');
 	});
 
 	it('returns clear helper text per auth method', () => {

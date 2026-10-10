@@ -56,9 +56,9 @@ section variants and profiles come from `src/lib/invitation/section-css-resolver
   celestial-blue and storybook-lilac.
 - **The Nautigal:** presets premiere-floral and storybook-lilac (honoree name and signature only).
 
-`DashboardLayout.astro` (every `/dashboard/*` route except `mfa-setup` and `cambiar-contrasena`),
-`/captura/[token]`, and the Open Graph shells under `/i/[shortId]` import no font package; their
-`--font-*` values resolve to the fallback families.
+`DashboardLayout.astro` (every `/dashboard/*` route except `mfa-setup` and `cambiar-contrasena`) and
+the Open Graph shells under `/i/[shortId]` import no font package; their `--font-*` values resolve
+to the fallback families.
 
 ## Core Roles
 

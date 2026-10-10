@@ -8,7 +8,6 @@ import {
 import {
 	str,
 	bool,
-	num,
 	trimmedStr,
 	normalizeDate,
 	isRecord,
@@ -33,195 +32,8 @@ import {
 	mapVenueDateTimeToDraft,
 } from '@/lib/intake/services/draft-section-mappers';
 
-export type {
-	DraftNormalizationIssue,
-	DraftNormalizationIssueReason,
-} from '@/lib/intake/services/draft-normalization-types';
+export type { DraftNormalizationIssue } from '@/lib/intake/services/draft-normalization-types';
 export { DraftNormalizationError } from '@/lib/intake/services/draft-normalization-types';
-
-function mapEventDetails(data: Record<string, unknown>): Partial<DraftContent> {
-	return {
-		title: str(data.eventTitle),
-		description: str(data.description),
-		hero: {
-			name: str(data.celebrantName),
-			secondaryName: str(data.secondaryName),
-			label: str(data.eventLabel),
-			nickname: str(data.nickname),
-			date: normalizeDate(data.eventDate),
-		},
-	};
-}
-
-function mapMainPeople(data: Record<string, unknown>): Partial<DraftContent> {
-	return {
-		family: {
-			fatherName: str(data.fatherName),
-			fatherDeceased: bool(data.fatherDeceased),
-			motherName: str(data.motherName),
-			motherDeceased: bool(data.motherDeceased),
-			spouseName: str(data.spouseName),
-			godparents: str(data.godparents),
-			children: str(data.children),
-			sectionMessage: str(data.sectionMessage),
-			sectionSubtitle: str(data.sectionSubtitle),
-			sectionTitle: str(data.sectionTitle),
-			parentsTitle: str(data.parentsTitle),
-			godparentsTitle: str(data.godparentsTitle),
-			spouseTitle: str(data.spouseTitle),
-			spouseRole: str(data.spouseRole),
-			childrenTitle: str(data.childrenTitle),
-			fatherRole: str(data.fatherRole),
-			motherRole: str(data.motherRole),
-		},
-	};
-}
-
-function mapDateLocations(data: Record<string, unknown>): Partial<DraftContent> {
-	const ceremony = data.ceremony as Record<string, unknown> | undefined;
-	const reception = data.reception as Record<string, unknown> | undefined;
-	const eventTiming = data.eventTiming as Record<string, unknown> | undefined;
-
-	const indications: Array<{ iconName: IconName; text: string }> = [];
-	const dressCodeText = str(data.dressCode);
-	if (dressCodeText) {
-		indications.push({ iconName: 'DressCode', text: dressCodeText });
-	}
-	const additionalText = str(data.additionalIndications);
-	if (additionalText) {
-		indications.push({ iconName: 'Calendar', text: additionalText });
-	}
-
-	const normalizedLocation = normalizeLegacyLocation({
-		ceremony: mapVenueToDraft(ceremony),
-		reception: mapVenueToDraft(reception),
-	}) as LocationRecord;
-	const venues = Array.isArray(normalizedLocation.venues)
-		? normalizedLocation.venues.map((venue, index) => ({
-				...venue,
-				id: `venue_legacy_${index}`,
-			}))
-		: [];
-
-	return {
-		location: {
-			introEyebrow: str(data.introEyebrow),
-			introHeading: str(data.introHeading),
-			introLede: str(data.introLede),
-			indicationsHeading: str(data.indicationsHeading),
-			venues,
-			indications: indications.length > 0 ? indications : undefined,
-		},
-		eventTiming: eventTiming
-			? {
-					localDateTime: str(eventTiming.localDateTime),
-					timeZone: str(eventTiming.timeZone),
-					startsAtUtc: str(eventTiming.startsAtUtc),
-				}
-			: undefined,
-	};
-}
-
-function mapPhotos(data: Record<string, unknown>): Partial<DraftContent> {
-	return {
-		photoNotes: {
-			whatsappSent: bool(data.whatsappSent),
-			heroPhoto: str(data.heroPhoto),
-			portraitPhoto: str(data.portraitPhoto),
-			galleryPhotos: str(data.galleryPhotos),
-			familyPhoto: str(data.familyPhoto),
-			specialPhoto: str(data.specialPhoto),
-			generalNotes: str(data.generalNotes),
-			photoOrder: str(data.photoOrder),
-			cropNotes: str(data.cropNotes),
-			priorityNotes: str(data.priorityNotes),
-		},
-	};
-}
-
-function mapRsvpConfig(data: Record<string, unknown>): Partial<DraftContent> {
-	return {
-		rsvp: {
-			title: str(data.title),
-			guestCap: num(data.guestCap),
-			confirmationMessage: str(data.confirmationMessage),
-			confirmationMode: str(data.confirmationMode),
-			whatsappPhone: str(data.whatsappPhone),
-			subcopy: str(data.subcopy),
-		},
-	};
-}
-
-function mapCountdown(data: Record<string, unknown>): Partial<DraftContent> {
-	return {
-		countdown: {
-			title: str(data.title),
-			footerText: str(data.footerText),
-		},
-	};
-}
-
-function mapMusic(data: Record<string, unknown>): Partial<DraftContent> {
-	return {
-		music: {
-			url: str(data.url),
-			title: str(data.title),
-		},
-	};
-}
-
-function mapGifts(data: Record<string, unknown>): Partial<DraftContent> {
-	return {
-		gifts: mapGiftsToDraft(data) as DraftContent['gifts'],
-	};
-}
-
-function mapSpecialMessages(data: Record<string, unknown>): Partial<DraftContent> {
-	return {
-		quote: {
-			text: str(data.quoteText),
-			author: str(data.quoteAuthor),
-		},
-		thankYou: {
-			message: str(data.thankYouMessage),
-			closingName: str(data.thankYouClosingName),
-		},
-	};
-}
-
-type BlockMapper = (data: Record<string, unknown>) => Partial<DraftContent>;
-
-const BLOCK_MAPPERS: Record<string, BlockMapper> = {
-	'event-details': mapEventDetails,
-	'main-people': mapMainPeople,
-	'date-locations': mapDateLocations,
-	countdown: mapCountdown,
-	photos: mapPhotos,
-	'rsvp-config': mapRsvpConfig,
-	music: mapMusic,
-	gifts: mapGifts,
-	'special-messages': mapSpecialMessages,
-};
-
-export function mapBlockDataToDraftContent(
-	blockData: Record<string, unknown>,
-	enabledBlocks: string[],
-): DraftContent {
-	const result: DraftContent = {};
-
-	for (const blockType of enabledBlocks) {
-		const data = blockData[blockType] as Record<string, unknown> | undefined;
-		if (!data) continue;
-
-		const mapper = BLOCK_MAPPERS[blockType];
-		if (!mapper) continue;
-
-		const mapped = mapper(data);
-		Object.assign(result, mapped);
-	}
-
-	return result;
-}
 
 function parseCoordinate(value: unknown, min: number, max: number): number | undefined {
 	if (value == null || value === '') return undefined;
@@ -242,24 +54,6 @@ function buildCoordinates(
 		return { lat, lng, ...(zoom !== undefined ? { zoom } : {}) };
 	}
 	return undefined;
-}
-
-function mapVenueToDraft(
-	venue: Record<string, unknown> | undefined,
-): Record<string, unknown> | undefined {
-	if (!isNonEmptyObject(venue)) return undefined;
-	const coordinates = buildCoordinates(venue);
-	return {
-		venueName: str(venue.venueName),
-		address: str(venue.address),
-		city: str(venue.city),
-		...mapVenueDateTimeToDraft(venue),
-		...Object.fromEntries(
-			VENUE_URL_FIELDS.map((f) => [f, str(venue[f])]).filter(([, v]) => v !== undefined),
-		),
-		...(venue.image !== undefined ? { image: venue.image } : {}),
-		...(coordinates !== undefined ? { coordinates } : {}),
-	};
 }
 
 // eslint-disable-next-line complexity -- Family field mapping covers many optional fields by design.

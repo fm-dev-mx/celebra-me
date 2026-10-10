@@ -2,12 +2,8 @@ import { getCommonAsset, getEventAsset, type ImageAsset } from '@/lib/assets/ass
 import { isCommonAssetKey, isEventAssetKey, isAssetRegistryKey } from '@/lib/assets/asset-keys';
 import type { AssetSource } from '@/lib/assets/asset-source';
 import { buildCanonicalNavigation } from '@/lib/invitation/canonical-navigation';
-import {
-	THEME_PRESETS,
-	type ItineraryVariant,
-	type ThemePreset,
-	themeSupportsPortrait,
-} from '@/lib/theme/theme-contract';
+import { THEME_PRESETS, type ThemePreset, themeSupportsPortrait } from '@/lib/theme/theme-contract';
+import type { ItineraryVariant } from '@/lib/invitation/section-variants';
 import { getContentEntrySlug, type EventContentEntry } from '@/lib/content/events';
 import type {
 	InvitationViewModel,

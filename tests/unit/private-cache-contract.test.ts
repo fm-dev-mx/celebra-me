@@ -8,15 +8,12 @@ import {
 import { jsonResponse, withPrivateCache } from '@/lib/rsvp/core/http';
 
 describe('private cache contract', () => {
-	it('marks identity-dependent dashboard, auth, and captura paths', () => {
+	it('marks identity-dependent dashboard and auth paths', () => {
 		expect(isPrivateNoStorePath('/dashboard')).toBe(true);
 		expect(isPrivateNoStorePath('/dashboard/invitados')).toBe(true);
 		expect(isPrivateNoStorePath('/api/dashboard/guests')).toBe(true);
 		expect(isPrivateNoStorePath('/api/auth/session')).toBe(true);
 		expect(isPrivateNoStorePath('/api/auth/login-host')).toBe(true);
-		expect(isPrivateNoStorePath('/captura')).toBe(true);
-		expect(isPrivateNoStorePath('/captura/token-1')).toBe(true);
-		expect(isPrivateNoStorePath('/api/captura/token-1')).toBe(true);
 	});
 
 	it('leaves public HTML and public JSON outside the private contract', () => {

@@ -10,7 +10,7 @@ import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 import {
 	requireDashboardRateLimit,
 	validateGuestPhoneInput,
-} from '@/pages/api/dashboard/guests/dashboard-guests-lib';
+} from '@/lib/rsvp/core/dashboard-guests-lib';
 
 function parseStatus(raw: string): AttendanceStatus | undefined {
 	if (raw === 'pending' || raw === 'confirmed' || raw === 'declined') return raw;

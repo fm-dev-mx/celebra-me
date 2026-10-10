@@ -36,7 +36,7 @@ Options:
   --expected <versions> Optional exact pending-set pin (comma-separated)
   --json                Emit MigrationPlan JSON on stdout (human logs on stderr)
   --interactive         Guided read-only TTY review for non-Production targets (Cancelar / Revisar / Mostrar comando)
-  --no-interactive      Disable guided prompts
+  --non-interactive     Disable guided prompts
   --help, -h            Show this help (no database access)
 
 Environment:
@@ -98,7 +98,7 @@ export function parseMigrateCliArgs(argv: string[]): MigrateCliArgs {
 
 	let interactiveForced: boolean | null = null;
 	if (args.includes('--interactive')) interactiveForced = true;
-	if (args.includes('--no-interactive')) interactiveForced = false;
+	if (args.includes('--non-interactive')) interactiveForced = false;
 
 	return {
 		help: false,

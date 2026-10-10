@@ -8,22 +8,11 @@
  */
 
 import type { TargetEnv } from './dbs-status.ts';
-import { flagValue as value } from '../lib/cli-args.ts';
+import { flagValue as value, parseEnvironmentList } from '../lib/cli-args.ts';
 import { runCrossDbInvitationReconciliation } from './cross-db-invitation-reconciliation.ts';
 
 function parseTargets(raw: string | undefined): TargetEnv[] | undefined {
-	if (!raw) return undefined;
-	const parts = raw
-		.split(',')
-		.map((part) => part.trim())
-		.filter(Boolean);
-	const allowed = new Set(['local', 'preview', 'production']);
-	for (const part of parts) {
-		if (!allowed.has(part)) {
-			throw new Error(`Unknown target "${part}". Expected local,preview,production.`);
-		}
-	}
-	return parts as TargetEnv[];
+	return raw ? parseEnvironmentList(raw) : undefined;
 }
 
 function printHelp(): void {

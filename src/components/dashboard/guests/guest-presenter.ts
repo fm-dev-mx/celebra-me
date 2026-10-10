@@ -5,7 +5,6 @@ import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
 import type { ShareMessageType } from '@/lib/rsvp/services/shared/invitation-helpers';
 import { formatMessageTimestamp, parseGuestCommentHistory } from '@/lib/rsvp/core/guest-message';
 
-export type { GuestMessageEntry } from '@/lib/rsvp/core/guest-message';
 export { parseGuestCommentHistory } from '@/lib/rsvp/core/guest-message';
 
 export function resolveLabel(

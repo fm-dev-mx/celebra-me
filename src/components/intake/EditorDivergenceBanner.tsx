@@ -2,11 +2,7 @@ import type { FC } from 'react';
 
 export interface EditorDivergenceBannerProps {
 	divergenceState?:
-		| 'CLEAN'
-		| 'DIVERGED'
-		| 'RECONCILIATION_REQUIRED'
-		| 'SOURCE_UPDATE_REQUIRED'
-		| 'DEFERRED';
+		'CLEAN' | 'DIVERGED' | 'RECONCILIATION_REQUIRED' | 'SOURCE_UPDATE_REQUIRED' | 'DEFERRED';
 	targetEnvironment?: string;
 	affectedFieldCount?: number;
 	affectedSectionCount?: number;
@@ -14,7 +10,7 @@ export interface EditorDivergenceBannerProps {
 	isReleaseBlocked?: boolean;
 }
 
-export const EditorDivergenceBanner: FC<EditorDivergenceBannerProps> = ({
+const EditorDivergenceBanner: FC<EditorDivergenceBannerProps> = ({
 	divergenceState = 'CLEAN',
 	targetEnvironment = 'local',
 	affectedFieldCount = 0,
@@ -26,8 +22,7 @@ export const EditorDivergenceBanner: FC<EditorDivergenceBannerProps> = ({
 		return null;
 	}
 
-	const sectionsSuffix =
-		affectedSections.length > 0 ? ` (${affectedSections.join(', ')})` : '';
+	const sectionsSuffix = affectedSections.length > 0 ? ` (${affectedSections.join(', ')})` : '';
 
 	return (
 		<div
@@ -44,15 +39,14 @@ export const EditorDivergenceBanner: FC<EditorDivergenceBannerProps> = ({
 			<p className="editor-divergence-banner__text">
 				Este ambiente contiene{' '}
 				<strong>
-					{affectedFieldCount} campo(s) modificados en {affectedSectionCount}{' '}
-					sección(es)
+					{affectedFieldCount} campo(s) modificados en {affectedSectionCount} sección(es)
 				</strong>{' '}
 				con respecto a la definición canónica{sectionsSuffix}.
 			</p>
 			{isReleaseBlocked ? (
 				<p className="editor-divergence-banner__blocker">
-					El lanzamiento está bloqueado hasta ejecutar la reconciliación guiada
-					(`pnpm invitation:reconcile`).
+					El lanzamiento está bloqueado hasta ejecutar la reconciliación guiada (`pnpm
+					invitation:reconcile`).
 				</p>
 			) : null}
 		</div>

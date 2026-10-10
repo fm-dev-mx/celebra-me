@@ -171,8 +171,8 @@ describe('Secret resolution', () => {
 describe('Excluded tables are defined', () => {
 	it('excludes guest and RSVP tables', () => {
 		expect(EXCLUDED_TABLES).toContain('guest_invitations');
-		expect(EXCLUDED_TABLES).toContain('rsvp_records');
-		expect(EXCLUDED_TABLES).toContain('intake_submissions');
+		expect(EXCLUDED_TABLES).toContain('guest_invitation_audit');
+		expect(EXCLUDED_TABLES).toContain('audit_logs');
 		expect(EXCLUDED_TABLES).toContain('visitor_sessions');
 		expect(EXCLUDED_TABLES).not.toContain('invitations');
 		expect(EXCLUDED_TABLES).not.toContain('events');

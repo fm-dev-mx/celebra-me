@@ -25,10 +25,6 @@ import {
 	getGuestAccessOrThrow,
 } from '@/lib/rsvp/services/shared/dashboard-guest-context';
 import { toGuestDto } from '@/lib/rsvp/services/shared/guest-dto';
-import {
-	isEventEligibleForBrandingRemoval,
-	getBrandingRemovalGuestLimit,
-} from '@/lib/constants/branding-removal-rules';
 import { getSharingConfigForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
 import { sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
 import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
@@ -601,7 +597,8 @@ export async function toggleGuestBrandingRemoval(input: {
 		throw new ApiError(404, 'not_found', 'Event not found.');
 	}
 
-	if (!isEventEligibleForBrandingRemoval(event.eventType, event.slug)) {
+	const limit = event.brandingRemovalGuestLimit;
+	if (limit <= 0) {
 		throw new ApiError(403, 'forbidden', 'Esta función no está disponible para este evento.');
 	}
 
@@ -614,13 +611,11 @@ export async function toggleGuestBrandingRemoval(input: {
 		const enabledCount = allEventGuests.filter(
 			(g) => g.hideCelebraMeBranding === true && g.id !== input.guestId,
 		).length;
-		const limit = getBrandingRemovalGuestLimit(event.eventType, event.slug);
-
 		if (enabledCount >= limit) {
 			throw new ApiError(
 				400,
 				'limit_reached',
-				'Límite alcanzado: esta invitación permite ocultar al creador en máximo 5 invitados.',
+				`Límite alcanzado: esta invitación permite ocultar al creador en máximo ${limit} invitados.`,
 			);
 		}
 	}

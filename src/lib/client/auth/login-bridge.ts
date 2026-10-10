@@ -1,11 +1,10 @@
-/** Client-side bridge for the login/register shell. */
+/** Client-side bridge for the host login shell. */
 import {
 	type AuthMethod,
 	getMethodHelpText,
 	isValidEmail,
 	isValidLoginIdentifier,
 	validateLoginForm,
-	validateRegisterForm,
 } from '@/lib/client/auth/login-ui';
 import { authBridgeApi } from '@/lib/client/auth/auth-bridge-api';
 
@@ -28,22 +27,13 @@ export function initLoginFlow() {
 	const statusEl = document.getElementById('auth-status');
 	const shellEl = document.querySelector('.auth-shell') as HTMLElement | null;
 	const nextPath = shellEl?.dataset.next || '';
-	const tabLogin = document.getElementById('tab-login');
-	const tabRegister = document.getElementById('tab-register');
-	const panelLogin = document.getElementById('panel-login');
-	const panelRegister = document.getElementById('panel-register');
 	const loginForm = document.getElementById('login-form') as HTMLFormElement | null;
-	const registerForm = document.getElementById('register-form') as HTMLFormElement | null;
 	const loginMethod = document.getElementById('login-method') as HTMLSelectElement | null;
-	const registerMethod = document.getElementById('register-method') as HTMLSelectElement | null;
 	const loginMethodHelp = document.getElementById('login-method-help');
-	const registerMethodHelp = document.getElementById('register-method-help');
 	const loginPasswordWrap = document.getElementById('login-password-wrap');
-	const registerPasswordWrap = document.getElementById('register-password-wrap');
 	const loginEmailInput = document.getElementById('login-email') as HTMLInputElement | null;
 	const loginPasswordInput = document.getElementById('login-password') as HTMLInputElement | null;
 	const loginSubmit = document.getElementById('login-submit');
-	const registerSubmit = document.getElementById('register-submit');
 
 	let isSubmitting = false;
 	const loginQueryPrefill =
@@ -75,58 +65,18 @@ export function initLoginFlow() {
 		inputEl.setAttribute('aria-invalid', 'true');
 	};
 
-	const updateMethodUI = (panel: 'login' | 'register') => {
-		const methodSelect = (
-			panel === 'login' ? loginMethod : registerMethod
-		) as HTMLSelectElement | null;
-		const methodHelp = panel === 'login' ? loginMethodHelp : registerMethodHelp;
-		const passwordWrap = panel === 'login' ? loginPasswordWrap : registerPasswordWrap;
-
-		if (!methodSelect || !methodHelp || !passwordWrap) return;
-
-		const method = methodSelect.value as 'password' | 'magic_link';
-		passwordWrap.style.display = method === 'password' ? 'grid' : 'none';
-		methodHelp.textContent = getMethodHelpText(method);
+	const updateMethodUI = () => {
+		if (!loginMethod || !loginMethodHelp || !loginPasswordWrap) return;
+		const method = loginMethod.value as 'password' | 'magic_link';
+		loginPasswordWrap.style.display = method === 'password' ? 'grid' : 'none';
+		loginMethodHelp.textContent = getMethodHelpText(method);
 	};
 
-	const setSubmitting = (value: boolean, panel: 'login' | 'register') => {
+	const setSubmitting = (value: boolean) => {
 		isSubmitting = value;
-		if (loginSubmit) (loginSubmit as HTMLButtonElement).disabled = value;
-		if (registerSubmit) (registerSubmit as HTMLButtonElement).disabled = value;
-
-		if (panel === 'login' && loginSubmit) {
-			loginSubmit.textContent = value ? 'Validando acceso...' : 'Continuar';
-		}
-		if (panel === 'register' && registerSubmit) {
-			registerSubmit.textContent = value
-				? 'Creando tu cuenta...'
-				: 'Crear cuenta y reclamar evento';
-		}
-	};
-
-	const focusFirstInput = (panel: 'login' | 'register') => {
-		if (panel === 'login') {
-			const emailEl = document.getElementById('login-email');
-			if (emailEl) emailEl.focus();
-		} else {
-			const emailEl = document.getElementById('register-email');
-			if (emailEl) emailEl.focus();
-		}
-	};
-
-	const switchTab = (panel: 'login' | 'register') => {
-		const isLogin = panel === 'login';
-		if (tabLogin) tabLogin.classList.toggle('is-active', isLogin);
-		if (tabRegister) tabRegister.classList.toggle('is-active', !isLogin);
-		if (tabLogin) tabLogin.setAttribute('aria-selected', isLogin ? 'true' : 'false');
-		if (tabRegister) tabRegister.setAttribute('aria-selected', isLogin ? 'false' : 'true');
-		if (panelLogin) panelLogin.classList.toggle('auth-panel--hidden', !isLogin);
-		if (panelRegister) panelRegister.classList.toggle('auth-panel--hidden', isLogin);
-		if (panelLogin) (panelLogin as HTMLElement).hidden = !isLogin;
-		if (panelRegister) (panelRegister as HTMLElement).hidden = isLogin;
-		clearFieldErrors();
-		setStatus('');
-		focusFirstInput(panel);
+		if (!loginSubmit) return;
+		(loginSubmit as HTMLButtonElement).disabled = value;
+		loginSubmit.textContent = value ? 'Validando acceso...' : 'Continuar';
 	};
 
 	const hydrateLoginFromQuery = () => {
@@ -173,25 +123,7 @@ export function initLoginFlow() {
 		return genericError;
 	};
 
-	const validateRegisterClient = (payload: import('./login-ui').RegisterFormState) => {
-		const error = validateRegisterForm(payload);
-		if (!error) return null;
-
-		if (error.includes('correo')) {
-			setFieldError('register-email', error);
-		} else if (error.includes('contrasena')) {
-			setFieldError('register-password', error);
-		} else if (error.includes('claimCode')) {
-			setFieldError('register-claim-code', error);
-		}
-
-		return error;
-	};
-
-	if (tabLogin) tabLogin.addEventListener('click', () => switchTab('login'));
-	if (tabRegister) tabRegister.addEventListener('click', () => switchTab('register'));
-	if (loginMethod) loginMethod.addEventListener('change', () => updateMethodUI('login'));
-	if (registerMethod) registerMethod.addEventListener('change', () => updateMethodUI('register'));
+	if (loginMethod) loginMethod.addEventListener('change', updateMethodUI);
 
 	if (loginForm) {
 		loginForm.addEventListener('submit', async (event) => {
@@ -210,7 +142,7 @@ export function initLoginFlow() {
 				return;
 			}
 
-			setSubmitting(true, 'login');
+			setSubmitting(true);
 			setStatus('Verificando tus datos, espera un momento...', 'info');
 			try {
 				const data = await authBridgeApi.login(payload);
@@ -232,66 +164,14 @@ export function initLoginFlow() {
 						: 'No pudimos iniciar sesion. Verifica tus datos e intenta de nuevo.';
 				setStatus(errorMessage, 'error', true);
 			} finally {
-				setSubmitting(false, 'login');
-			}
-		});
-	}
-
-	if (registerForm) {
-		registerForm.addEventListener('submit', async (event) => {
-			event.preventDefault();
-			if (isSubmitting) return;
-			clearFieldErrors();
-
-			const emailEl = document.getElementById('register-email') as HTMLInputElement | null;
-			const passwordEl = document.getElementById(
-				'register-password',
-			) as HTMLInputElement | null;
-			const claimCodeEl = document.getElementById(
-				'register-claim-code',
-			) as HTMLInputElement | null;
-
-			const payload = {
-				method: (registerMethod?.value as import('./login-ui').AuthMethod) || 'password',
-				email: emailEl?.value || '',
-				password: passwordEl?.value || '',
-				claimCode: claimCodeEl?.value || '',
-			};
-			const validationError = validateRegisterClient(payload);
-			if (validationError) {
-				setStatus(validationError, 'error', true);
-				return;
-			}
-
-			setSubmitting(true, 'register');
-			setStatus('Estamos creando tu cuenta y preparando tu acceso...', 'info');
-			try {
-				const data = await authBridgeApi.register(payload);
-				const message =
-					payload.method === 'magic_link'
-						? `${data.message || 'Cuenta creada.'} Te enviamos un enlace; revisa tambien spam o promociones.`
-						: data.message || 'Cuenta creada con exito. Te llevamos a tu panel...';
-				setStatus(message, 'success', true);
-				if (payload.method === 'password') {
-					window.location.href = nextPath || data.next || '/dashboard/invitados';
-				}
-			} catch (error) {
-				const errorMessage =
-					error instanceof Error
-						? error.message
-						: 'No pudimos completar el registro. Revisa los datos e intenta de nuevo.';
-				setStatus(errorMessage, 'error', true);
-			} finally {
-				setSubmitting(false, 'register');
+				setSubmitting(false);
 			}
 		});
 	}
 
 	// Initialize UI
 	hydrateLoginFromQuery();
-	updateMethodUI('login');
-	updateMethodUI('register');
-	switchTab('login');
+	updateMethodUI();
 	if (loginQueryPrefill?.hasPasswordParam) {
 		setStatus(
 			'Por seguridad ignoramos la contrasena enviada en la URL. Escríbela en el campo para continuar.',
@@ -303,6 +183,6 @@ export function initLoginFlow() {
 	} else {
 		setStatus('Elige como quieres entrar y continua cuando estes listo.', 'info');
 	}
-	// Enable submission only after both handlers and their initial UI are ready.
-	setSubmitting(false, 'login');
+	// Enable submission only after the handler and its initial UI are ready.
+	setSubmitting(false);
 }

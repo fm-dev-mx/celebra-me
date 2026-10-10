@@ -10,3 +10,23 @@ export function flagValue(args: readonly string[], flag: string): string | undef
 	const value = args[index + 1];
 	return value === undefined || value.startsWith('--') ? undefined : value;
 }
+
+export const ENVIRONMENT_TARGETS = ['local', 'preview', 'production'] as const;
+export type EnvironmentTarget = (typeof ENVIRONMENT_TARGETS)[number];
+
+/**
+ * Parse a comma- or space-separated environment list. Returns the known targets once each, in
+ * canonical order (local, preview, production); an unknown target throws.
+ */
+export function parseEnvironmentList(raw: string): EnvironmentTarget[] {
+	const values = raw
+		.split(/[,\s]+/)
+		.map((value) => value.trim())
+		.filter(Boolean);
+	for (const value of values) {
+		if (!(ENVIRONMENT_TARGETS as readonly string[]).includes(value)) {
+			throw new Error(`Unknown target "${value}". Expected local,preview,production.`);
+		}
+	}
+	return ENVIRONMENT_TARGETS.filter((target) => values.includes(target));
+}

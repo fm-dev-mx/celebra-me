@@ -8,24 +8,12 @@ import {
 	updateEventService,
 } from '@/lib/rsvp/repositories/event.repository';
 import { listMembershipsForHost } from '@/lib/rsvp/repositories/role-membership.repository';
-import type {
-	DashboardEventListDebug,
-	DashboardEventListItem,
-} from '@/interfaces/dashboard/admin.interface';
+import type { DashboardEventListDebug } from '@/interfaces/dashboard/admin.interface';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
 import { sanitize } from '@/lib/rsvp/core/utils';
-
-function toDashboardEventItem(event: EventRecord): DashboardEventListItem {
-	return {
-		id: event.id,
-		title: event.title,
-		slug: event.slug,
-		eventType: event.eventType,
-		status: event.status,
-	};
-}
+import { toDashboardEventItem } from '@/lib/rsvp/services/shared/dashboard-event-item';
 
 async function listAllEventsForSuperAdmin(input: {
 	hostUserId: string;

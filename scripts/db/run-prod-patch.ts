@@ -7,6 +7,7 @@ import {
 	validateAndNormalizeSupabaseUrl,
 	validateOwnerUserId,
 	assertSameSupabaseProject,
+	SupabaseProjectMismatchError,
 	patchSqlRequiresOwnerUserId,
 	type SqlManifest,
 } from './sql-safety.ts';
@@ -355,9 +356,10 @@ function validateProductionTargetEnv(
 		throw new OperatorError({
 			title: 'Falta la identidad API de Production',
 			cause: message,
-			code: message.includes('must reference the same')
-				? 'PRODUCTION_PROJECT_MISMATCH'
-				: 'PRODUCTION_API_IDENTITY_INVALID',
+			code:
+				error instanceof SupabaseProjectMismatchError
+					? 'PRODUCTION_PROJECT_MISMATCH'
+					: 'PRODUCTION_API_IDENTITY_INVALID',
 			remediation: [
 				'PROD_DB_URL debe apuntar al proyecto Production allowlisted.',
 				'Si define PROD_SUPABASE_URL, debe ser https://<ref>.supabase.co del mismo proyecto.',

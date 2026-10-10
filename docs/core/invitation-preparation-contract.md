@@ -97,19 +97,22 @@ Contract maturity:
 | ----------------- | ----------------------------------------------------------------- |
 | `evidence-backed` | Sufficient verified practice to evaluate preparation completeness |
 | `partial`         | Some fields evidenced; gaps documented                            |
-| `undefined`       | Only global identity minima; do not invent a full matrix          |
 
 Current posture:
 
 - `xv` — evidence-backed
-- `boda`, `cumple`, `baby-shower` — partial (evidenced field lists in `event-completeness.ts`)
-- `bautizo`, `primera-comunion` — undefined (minima only)
+- `boda`, `cumple`, `baby-shower`, `bautizo`, `primera-comunion` — partial (evidenced field lists in
+  `event-completeness-contracts.ts`; the two sacraments come from one invitation each)
 
-**Process for undefined / partial:** Evaluate only defined fields; record maturity gaps in Markdown;
+**Process for partial contracts:** Evaluate only defined fields; record maturity gaps in Markdown;
 apply client-specific constraints from chat as classified facts. Do not invent XV-scale matrices for
 under-evidenced event types.
 
 Live event-type identifiers use `cumple` (not `cumpleanos`).
+
+The structure side of the same event-type contract (required sections and verified theme presets)
+lives in `src/lib/invitation/event-type-contract.ts`. `defineInvitation` rejects a definition that
+breaks it, and `tests/content/event-type-contract.test.ts` checks every definition and demo.
 
 `evaluateEventCompleteness(eventType, facts)` answers deterministically whether available
 information is sufficient to prepare (no blocking unresolved required/conditional fields).

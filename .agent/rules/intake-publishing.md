@@ -4,13 +4,11 @@
 
 All status enums are defined in `src/lib/intake/types.ts`:
 
-| Constant                       | Values                                                                                                                               | Used by                           |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------- |
-| `InvitationStatus`             | `draft`, `waiting_for_client`, `client_submitted`, `in_review`, `in_production`, `preview_sent`, `approved`, `published`, `archived` | `invitations` table               |
-| `InvitationContentDraftStatus` | `draft`, `reviewed`, `approved`                                                                                                      | `invitation_content_drafts` table |
-| `ContentSource`                | `draft`, `published`, `empty`, `mixed`                                                                                               | Derived, not persisted            |
-| `IntakeRequestStatus`          | `draft`, `active`, `submitted`, `closed`, `expired`                                                                                  | `intake_requests` table           |
-| `IntakeSubmissionStatus`       | `in_progress`, `submitted`, `needs_changes`, `approved`                                                                              | `intake_submissions` table        |
+| Constant                       | Values                                                                        | Used by                           |
+| ------------------------------ | ----------------------------------------------------------------------------- | --------------------------------- |
+| `InvitationStatus`             | `draft`, `in_production`, `preview_sent`, `approved`, `published`, `archived` | `invitations` table               |
+| `InvitationContentDraftStatus` | `draft`, `reviewed`, `approved`                                               | `invitation_content_drafts` table |
+| `ContentSource`                | `draft`, `published`, `empty`, `mixed`                                        | Derived, not persisted            |
 
 See also `src/lib/intake/repositories/` for the repository layer and
 `src/lib/dashboard/dto/intake.ts` for DTO type annotations.

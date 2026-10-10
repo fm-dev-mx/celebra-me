@@ -87,7 +87,7 @@
         "invitation:local-corpus": "tsx scripts/provision/local-render-corpus/cli.ts",
         "invitation:delivery:baseline": "tsx scripts/invitation/measure-delivery-baseline.ts",
         "invitation:media:verify": "tsx scripts/invitation/verify-published-images.ts",
-        "db:disposable:phase3-concurrency": "tsx scripts/db/disposable-test-env.ts run-phase3-concurrency-test",
+        "db:disposable:system-concurrency": "tsx scripts/db/disposable-test-env.ts run-system-concurrency-test",
         "db:disposable:memories-concurrency": "tsx scripts/db/disposable-test-env.ts run-memories-concurrency-test",
         "lane:sync": "tsx scripts/agent/lane-sync.ts",
         "db:validate:pipeline": "tsx scripts/db/validate-pipeline.ts",

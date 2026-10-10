@@ -9,7 +9,6 @@ const srcRoot = path.join(projectRoot, 'src');
 const allowedHydratedComponents = new Set([
 	// Dashboard app shells own browser-only state, fetch calls, modals, or editor interactions.
 	'GuestDashboardApp',
-	'ClaimCodesApp',
 	'EventsAdminTable',
 	'UsersAdminTable',
 	'InvitationEditor',
@@ -46,8 +45,6 @@ const allowedHydratedComponents = new Set([
 	'InvitationList',
 	'InvitationDetail',
 	'DraftReview',
-	'IntakeForm',
-	'SubmissionReview',
 ]);
 
 const violations = [];

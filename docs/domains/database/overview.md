@@ -17,7 +17,6 @@ major data flows.
 
 ```mermaid
 erDiagram
-    invitations ||--o{ intake_requests : "invitation_project_id"
     invitations ||--o{ invitation_content_drafts : "invitation_project_id"
     invitations ||--o{ published_invitation_content : "invitation_project_id"
     invitations ||--o{ invitation_assets : "invitation_id"
@@ -44,7 +43,6 @@ erDiagram
     }
 
     events ||--o{ guest_invitations : event_id
-    events ||--o{ event_claim_codes : event_id
     events ||--o{ event_memberships : event_id
     events {
         uuid id PK
@@ -54,6 +52,7 @@ erDiagram
         text title
         text status "draft | published | archived"
         uuid invitation_project_id FK "nullable"
+        int branding_removal_guest_limit "0 = add-on off"
         timestamptz published_at
         timestamptz deleted_at
         timestamptz created_at
@@ -110,60 +109,9 @@ erDiagram
         timestamptz updated_at
     }
 
-    event_claim_codes {
-        uuid id PK
-        uuid event_id FK
-        text code_key UK
-        text code_hash
-        boolean active
-        timestamptz expires_at
-        int max_uses
-        int used_count
-        uuid created_by FK
-        timestamptz deleted_at
-        timestamptz created_at
-        timestamptz updated_at
-    }
-
     app_user_roles {
         uuid user_id PK, FK
         text role "super_admin | host_client"
-        timestamptz created_at
-        timestamptz updated_at
-    }
-
-    host_profiles {
-        uuid user_id PK, FK
-        text display_name
-        timestamptz created_at
-        timestamptz updated_at
-    }
-
-    intake_requests {
-        uuid id PK
-        uuid invitation_project_id FK
-        text token_hash UK
-        text token_ciphertext "nullable"
-        text origin "client | internal"
-        text status "draft | active | submitted | closed | expired"
-        jsonb enabled_blocks
-        timestamptz expires_at
-        timestamptz deleted_at
-        timestamptz created_at
-        timestamptz updated_at
-    }
-
-    intake_submissions {
-        uuid id PK
-        uuid intake_request_id FK
-        text status "in_progress | submitted | needs_changes | approved"
-        jsonb block_data
-        jsonb photo_notes
-        text client_comments
-        timestamptz submitted_at
-        timestamptz reviewed_at
-        text review_notes
-        timestamptz deleted_at
         timestamptz created_at
         timestamptz updated_at
     }
@@ -234,15 +182,9 @@ service copies a demo into a client record.
 
 ### Internal Admin Editing
 
-Admin opens `/dashboard/invitaciones/[id]/editar` → reads `invitations`, creates/reads
-`intake_requests(origin=internal)`, creates/reads `intake_submissions`. Data flows:
-`intake_submissions.block_data` → `invitation_content_drafts.content` via draft generation.
-
-### Optional Client Capture (Capture Link)
-
-Admin generates capture link → creates `intake_requests(origin=client)` with `token_hash` +
-encrypted `token_ciphertext` → client visits `/captura/[token]` → reads/writes `intake_submissions`
-→ admin reviews.
+Admin opens `/dashboard/invitaciones/[id]/editar` → the invitation editor reads `invitations`,
+`invitation_content_drafts` and `published_invitation_content` and saves section changes to the
+draft. There is no client capture form; content comes from managed definitions and the editor.
 
 ### Publishing
 
@@ -282,27 +224,27 @@ event per project.
 
 `event_memberships` links a host account to an event (one row per `event_id` + `user_id`, soft
 deleted). `membership_role` is `owner` (visible as "Anfitrión principal") or `manager`
-("Colaborador"). Both manage guests; only `owner` opens the guest memories organizer. Claim-code
-redemption creates `owner`. In `/dashboard/usuarios` the administrator picks the role when assigning
-an event (default `owner`) and can change it in place; assigning an event the user already holds
-updates the role and is audited as `change_event_membership_role` with the previous row. The
-membership API still defaults to `manager` when a caller omits the role.
+("Colaborador"). Both manage guests; only `owner` opens the guest memories organizer. The
+administrator creates every host and membership. In `/dashboard/usuarios` the administrator picks
+the role when assigning an event (default `owner`) and can change it in place; assigning an event
+the user already holds updates the role and is audited as `change_event_membership_role` with the
+previous row. The membership API still defaults to `manager` when a caller omits the role.
 
 ### Guest Memories
 
 Guest photo/video spaces live in `event_memory_settings` (one per event; window, retention, quotas,
 entitlement), `event_memory_sessions`, `event_memory_items`, and `event_memory_audit_events`
-(`supabase/migrations/*event_memor*`). The legacy `valentina_memory_*` tables remain until their
-separately authorized retirement migration. Behavior, Workers, and quotas are owned by
-[`docs/core/architecture.md`](../../core/architecture.md) (Event memories).
+(`supabase/migrations/*event_memor*`). The client-named `valentina_memory_*` catalog has no reader;
+its drop is a contract migration integrated after the deploy that stops naming it. Behavior,
+Workers, and quotas are owned by [`docs/core/architecture.md`](../../core/architecture.md) (Event
+memories).
 
 ### Archive / Restore
 
 Admin clicks "Archivar" → `archive_invitation()` RPC:
 
 - Sets `invitations.archived_at = now()`
-- Soft-deletes `published_invitation_content`, `invitation_content_drafts`, `intake_submissions`,
-  `intake_requests`, `events`
+- Soft-deletes `published_invitation_content`, `invitation_content_drafts` and `events`
 - Records `audit_logs` entry
 
 Admin clicks "Restaurar" → `restore_invitation()` RPC:
@@ -321,8 +263,6 @@ Admin clicks "Restaurar" → `restore_invitation()` RPC:
 | `events`                       | `idx_events_invitation_project_id`                    | FK lookup                                  |
 | `guest_invitations`            | `guest_invitations_event_country_phone_active_unique` | Unique (event, country, phone) active only |
 | `published_invitation_content` | `published_invitation_content_event_type_slug_key`    | UNIQUE constraint for route key            |
-| `intake_requests`              | `idx_intake_requests_token_hash`                      | Token lookup                               |
-| `intake_requests`              | `idx_intake_requests_project_origin_created`          | Dashboard listing                          |
 | `invitation_assets`            | `idx_invitation_assets_storage_path`                  | Immutable Storage object path uniqueness   |
 | `invitation_assets`            | `idx_invitation_assets_invitation`                    | Active assets per invitation               |
 
@@ -334,8 +274,6 @@ Admin clicks "Restaurar" → `restore_invitation()` RPC:
 - `events`: Partial UNIQUE INDEX `(invitation_project_id) WHERE invitation_project_id IS NOT NULL`
 - `invitations.slug`: UNIQUE (nullable — only set for published invitations)
 - `invitation_assets`: UNIQUE `(bucket, storage_path)` — Storage paths are never reused
-- `intake_submissions`: Partial UNIQUE INDEX `(intake_request_id)` — exactly one submission per
-  request
 
 ## Security Model
 

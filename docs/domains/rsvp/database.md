@@ -13,9 +13,8 @@ The backend persists data in Supabase and is implemented through repositories an
 
 The full table inventory, ERD, indexes, and constraints are owned by
 [`docs/domains/database/overview.md`](../database/overview.md). The RSVP-specific tables are
-`events`, `guest_invitations`, `guest_invitation_audit`, `event_memberships`, and
-`event_claim_codes`; the legacy `rsvp_records`, `rsvp_audit_log`, and `rsvp_channel_log` tables are
-no longer written.
+`events`, `guest_invitations`, `guest_invitation_audit`, and `event_memberships`. The application no
+longer reads claim codes or the RSVP v1 tables; contract migrations drop them after the deploy.
 
 ## Migration Baseline
 
@@ -35,17 +34,16 @@ production backups, and migration procedures.
 Invitation administration does not own guest confirmations. Its runtime service-role credential has
 SELECT only on `guest_invitations` and `guest_invitation_audit`; mutations are explicitly revoked.
 RSVP-specific authenticated RLS paths and RPCs remain authoritative. Invitation permanent deletion
-is service-owned and its RPC blocks events with guests, claim codes, or memberships; managed
-compensation also preflights guests and claim codes before removing an operation-created event. The
-editor RPCs touch only `invitations`, `invitation_content_drafts`, `published_invitation_content`
-(read/lock for restore), and append-only mutation receipts. They have service-role-only execute
-grants and no guest-table grants. Mutation receipts are an immutable idempotency ledger
-(`SELECT`+`INSERT` only); RPCs serialize on the invitation row and must not take
-`FOR SHARE`/`FOR UPDATE` locks on receipt rows.
+is service-owned and its RPC blocks events with guests or memberships; managed compensation also
+preflights guests before removing an operation-created event. The editor RPCs touch only
+`invitations`, `invitation_content_drafts`, `published_invitation_content` (read/lock for restore),
+and append-only mutation receipts. They have service-role-only execute grants and no guest-table
+grants. Mutation receipts are an immutable idempotency ledger (`SELECT`+`INSERT` only); RPCs
+serialize on the invitation row and must not take `FOR SHARE`/`FOR UPDATE` locks on receipt rows.
 
 The complete disposable recovery drill in `docs/database-workflow.md` fingerprints guest rows and
-audit history deterministically and verifies event/invitation/owner links, memberships, claim codes,
-confirmation and delivery state, attendee totals, response timestamps, soft deletes, uniqueness, and
+audit history deterministically and verifies event/invitation/owner links, memberships, confirmation
+and delivery state, attendee totals, response timestamps, soft deletes, uniqueness, and
 phone/country invariants after restore. Row counts alone are not accepted as RSVP recovery proof.
 The pgTAP contract also proves the invitation service role cannot insert, update, or delete guest
 confirmations or guest audit rows.
@@ -88,15 +86,6 @@ For hybrid public RSVP:
   - `entry_source = 'generic_public'`
   - `delivery_status = 'generated'`
   - `max_allowed_attendees` seeded from the content RSVP guest cap
-
-### Legacy Compatibility Tables
-
-`rsvp_records`, `rsvp_audit_log`, and `rsvp_channel_log` remain in the schema for compatibility and
-transition support but the application no longer writes to them. They are locked down with RLS
-policies that deny all access to anon and authenticated roles.
-
-**Deferred cleanup**: These tables should be dropped after verifying no external scripts, analytics
-pipelines, or data exports depend on them.
 
 ### Invitation domain tables
 
@@ -150,29 +139,25 @@ for backward compatibility and marked with `[DEPRECATED]` in their comments:
 ## Environment Variables
 
 Variable categories, sources, and the template/typing contract are owned by
-[`docs/env-workflow.md`](../../env-workflow.md). RSVP security inputs include
-`RSVP_CLAIM_CODE_PEPPER`, `TRUST_DEVICE_SECRET`, `TRUST_DEVICE_MAX_AGE_DAYS`, and
-`REQUIRE_FRESH_MFA_FOR_ADMIN`.
+[`docs/env-workflow.md`](../../env-workflow.md). RSVP security inputs include `TRUST_DEVICE_SECRET`,
+`TRUST_DEVICE_MAX_AGE_DAYS`, and `REQUIRE_FRESH_MFA_FOR_ADMIN`.
 
 ## Deferred Cleanup
 
 The following items require separate cleanup migrations but are not urgent. Do not mix with critical
 or invitation-domain changes.
 
-1. **Drop legacy RSVP tables**: `rsvp_records`, `rsvp_audit_log`, `rsvp_channel_log` after
-   confirming no external dependency.
-2. **Rename child FK columns**: `invitation_project_id` → `invitation_id` on `events`,
-   `published_invitation_content`, `intake_requests`, `invitation_content_drafts`. No rename is in
-   progress; it needs its own expand/contract migration pair.
-3. **Drop deprecated RPCs**: `soft_delete_event`, `restore_event`, `soft_delete_invitation_project`,
-   `restore_invitation_project`, `backfill_guest_invitations_from_legacy` after verifying no callers
-   remain.
-4. **Drop deprecated views**: `deleted_events` — done in
+1. **Rename child FK columns**: `invitation_project_id` → `invitation_id` on `events`,
+   `published_invitation_content`, `invitation_content_drafts`. No rename is in progress; it needs
+   its own expand/contract migration pair.
+2. **Drop `invitation_content_drafts.submission_id`**: always null since the capture form was
+   retired; the publication RPCs still name it, so it leaves with their next contract migration.
+3. **Drop deprecated views**: `deleted_events` — done in
    `20260726170000_drop_deleted_events_view.sql` (`deleted_invitation_projects` already dropped
    earlier).
-5. **Remove compatibility view**: `invitation_projects` view (created in
+4. **Remove compatibility view**: `invitation_projects` view (created in
    `20260601000001_invitations_domain.sql`) once no caller reads it.
-6. **Add NOT NULL to `short_id`**: After verifying all rows have a value.
+5. **Add NOT NULL to `short_id`**: After verifying all rows have a value.
 
 ## Suggested Verification
 

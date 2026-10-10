@@ -28,5 +28,3 @@ export const CalendarIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
 		<path d="M12 18h.01" />
 	</svg>
 );
-
-export default CalendarIcon;

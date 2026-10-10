@@ -1,6 +1,5 @@
 import type {
 	AttendanceStatus,
-	ClaimCodeRecord,
 	DeliveryFilter,
 	EntrySource,
 	EventRecord,
@@ -61,6 +60,7 @@ export type EventRow = {
 	status: EventRecord['status'];
 	published_at: string | null;
 	invitation_project_id: string | null;
+	branding_removal_guest_limit?: number | null;
 	created_at: string;
 	updated_at: string;
 };
@@ -118,18 +118,6 @@ export type EventMembershipRow = {
 	updated_at: string;
 };
 
-export type ClaimCodeRow = {
-	id: string;
-	event_id: string;
-	active: boolean;
-	expires_at: string | null;
-	max_uses: number;
-	used_count: number;
-	created_by: string | null;
-	created_at: string;
-	updated_at: string;
-};
-
 const EVENT_COLUMN_LIST = [
 	'id',
 	'owner_user_id',
@@ -139,6 +127,7 @@ const EVENT_COLUMN_LIST = [
 	'status',
 	'published_at',
 	'invitation_project_id',
+	'branding_removal_guest_limit',
 	'created_at',
 	'updated_at',
 ] as const;
@@ -160,6 +149,7 @@ export function toEventRecord(row: EventRow): EventRecord {
 		status: row.status,
 		publishedAt: row.published_at,
 		invitationId: row.invitation_project_id,
+		brandingRemovalGuestLimit: row.branding_removal_guest_limit ?? 0,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 	};
@@ -221,20 +211,6 @@ export function toMembershipRecord(row: EventMembershipRow): EventMembershipReco
 		eventId: row.event_id,
 		userId: row.user_id,
 		membershipRole: row.membership_role,
-		createdAt: row.created_at,
-		updatedAt: row.updated_at,
-	};
-}
-
-export function toClaimCodeRecord(row: ClaimCodeRow): ClaimCodeRecord {
-	return {
-		id: row.id,
-		eventId: row.event_id,
-		active: row.active,
-		expiresAt: row.expires_at,
-		maxUses: row.max_uses,
-		usedCount: row.used_count,
-		createdBy: row.created_by,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 	};

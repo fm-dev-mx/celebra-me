@@ -3,8 +3,8 @@
  */
 /* eslint-disable max-lines -- Target identity, planning, apply, and verification share one atomic safety boundary. */
 
+import { FinalTargetVerificationError, PreconditionFailedError } from './release-errors.ts';
 import { randomUUID, createHash } from 'node:crypto';
-import sharp from 'sharp';
 import { readFileSync, existsSync } from 'node:fs';
 import type { InvitationPackageData, InvitationPackageAsset } from './invitation-package.ts';
 import { computePackageHash, PACKAGE_SCHEMA_VERSION } from './invitation-package.ts';
@@ -20,6 +20,7 @@ import {
 	verifyCloudinaryAsset,
 	hydrateCloudinaryEnvFromFiles,
 } from './cloudinary-adapter.ts';
+import { verifyCloudinaryDelivery } from '../../src/lib/intake/services/cloudinary-assets.ts';
 import {
 	classifyDbTarget,
 	redactCredentials,
@@ -30,11 +31,7 @@ import {
 	type DbTarget,
 } from '../db/db-target-config.ts';
 import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
-import {
-	resolvePreviewAdminUser,
-	updatePreviewAdminRole,
-	ensureHostProfile,
-} from '../db/preview-sync-guards.ts';
+import { resolvePreviewAdminUser, updatePreviewAdminRole } from '../db/preview-sync-guards.ts';
 import { resolveAndEnsureInvitationHostOwner } from './invitation-host-owner.ts';
 import {
 	hashPublicMetadata,
@@ -645,20 +642,22 @@ async function uploadAndVerifyAssets(
 		pAsset.providerPublicId = result.publicId;
 		pAsset.secureUrl = result.secureUrl;
 
-		const verifyRes = await fetch(result.secureUrl, { signal: AbortSignal.timeout(10_000) });
-		if (!verifyRes.ok) {
-			throw new Error(
-				`Cloudinary read-back verification failed for "${pAsset.key}" (HTTP ${verifyRes.status}).`,
+		try {
+			await verifyCloudinaryDelivery(
+				{
+					publicId: result.publicId,
+					sha256: pAsset.sha256,
+					mimeType: pAsset.mimeType,
+					width: pAsset.width ?? undefined,
+					height: pAsset.height ?? undefined,
+				},
+				result.secureUrl,
 			);
+		} catch (error) {
+			throw new Error(`Cloudinary read-back verification failed for "${pAsset.key}".`, {
+				cause: error,
+			});
 		}
-		if (verifyRes.headers.get('content-type')?.split(';')[0] !== pAsset.mimeType)
-			throw new Error(`Cloudinary read-back MIME mismatch for "${pAsset.key}".`);
-		const readBack = Buffer.from(await verifyRes.arrayBuffer());
-		if (createHash('sha256').update(readBack).digest('hex') !== pAsset.sha256)
-			throw new Error(`Cloudinary read-back SHA-256 mismatch for "${pAsset.key}".`);
-		const dimensions = await sharp(readBack).metadata();
-		if (dimensions.width !== pAsset.width || dimensions.height !== pAsset.height)
-			throw new Error(`Cloudinary read-back dimensions mismatch for "${pAsset.key}".`);
 
 		verifiedAssetHashes[pAsset.storagePath] = pAsset.sha256;
 		if (result.action === 'UPLOAD') uploadedCount++;
@@ -1999,7 +1998,6 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	const hostOwnerPlan = await resolveAndEnsureInvitationHostOwner({
 		slug: pkg.invitation.slug,
 		hostLoginAlias,
-		displayName: pkg.invitation.clientName || pkg.invitation.title,
 		targetDbUrl,
 		supabaseUrl: targetSupabaseUrl,
 		serviceRoleKey: serviceRoleKeyForHost || undefined,
@@ -2283,7 +2281,8 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 
 	if (!dryRun) {
 		if (!options.plan) {
-			throw new Error(
+			throw new PreconditionFailedError(
+				'PLAN_CHANGED',
 				'PRECONDITION_FAILED: Apply requires the exact target plan produced by preflight.',
 			);
 		}
@@ -2297,12 +2296,20 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			existingPublishedVersion: drift.existingPub?.version as number | undefined,
 			assetStateHash,
 		});
-		if (!precheck.ok) throw new Error(precheck.reason);
+		if (!precheck.ok) {
+			throw new PreconditionFailedError(
+				precheck.failure ?? 'PLAN_CHANGED',
+				precheck.reason ?? 'PRECONDITION_FAILED: Target state changed after planning.',
+			);
+		}
 		if (options.plan.planId !== currentPlan.planId) {
 			const confirmedKeys = planIdentityChangeKeys(options.plan.functionalChanges).join('|');
 			const currentKeys = planIdentityChangeKeys(currentPlan.functionalChanges).join('|');
 			if (confirmedKeys !== currentKeys) {
-				throw new Error(formatPlanIdentityMismatch(options.plan, currentPlan));
+				throw new PreconditionFailedError(
+					'PLAN_CHANGED',
+					formatPlanIdentityMismatch(options.plan, currentPlan),
+				);
 			}
 		}
 	}
@@ -2362,20 +2369,12 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	);
 	const trackedResources: TrackedResource[] = [];
 	if (expectedTarget === 'preview') {
-		trackedResources.push(
-			{
-				type: 'preview_identity',
-				id: `app_user_roles:${ownerUserId}`,
-				isPreExisting: true,
-				wasOverwritten: false,
-			},
-			{
-				type: 'preview_identity',
-				id: `host_profiles:${ownerUserId}`,
-				isPreExisting: true,
-				wasOverwritten: false,
-			},
-		);
+		trackedResources.push({
+			type: 'preview_identity',
+			id: `app_user_roles:${ownerUserId}`,
+			isPreExisting: true,
+			wasOverwritten: false,
+		});
 	}
 	trackedResources.push({
 		type: 'managed_invitation_release_provenance',
@@ -2482,10 +2481,6 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 				executedMutations++;
 				completedDatabaseWrites.updates++;
 				markResourceOverwritten('preview_identity', `app_user_roles:${ownerUserId}`);
-				ensureHostProfile(targetDbUrl, ownerUserId);
-				executedMutations++;
-				completedDatabaseWrites.updates++;
-				markResourceOverwritten('preview_identity', `host_profiles:${ownerUserId}`);
 			}
 		}
 		const serviceRoleKey = serviceRoleKeyForHost;
@@ -2662,9 +2657,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			finalAssets.assetsToUpsertDbOnly.length > 0 ||
 			finalAssets.assetsToDelete.length > 0
 		) {
-			throw new Error(
-				'Final target verification failed; managed-release provenance was not recorded.',
-			);
+			throw new FinalTargetVerificationError();
 		}
 		// managed_invitation_release_provenance.projection_hash has a check constraint requiring
 		// 64-char SHA-256 hex. The package carries an MD5 projectionHash (32 chars) for the
