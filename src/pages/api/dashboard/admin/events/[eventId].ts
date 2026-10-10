@@ -24,6 +24,7 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
 			slug: parsed.slug,
 			eventType: parsed.eventType,
 			status: parsed.status,
+			expectedUpdatedAt: parsed._version,
 			actorUserId: session.userId,
 		});
 

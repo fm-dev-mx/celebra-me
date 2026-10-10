@@ -218,7 +218,10 @@ type, size, dimensions, secure URLs, and soft-delete state.
 When a client invitation is published, the atomic publication RPC (`publish_invitation_atomic()`)
 locks the `events` row linked by `invitation_project_id` or matching `slug`, then updates it or
 creates one. The partial unique index `idx_events_unique_invitation_project` enforces at most one
-event per project.
+event per project. A linked event in `archived` status (RSVP disabled from the invitation panel)
+keeps that status and its `published_at` through publication and managed releases; any other status
+becomes `published`. Reactivating RSVP is an explicit admin action
+(`PATCH /api/dashboard/admin/events/:eventId` with `status: 'published'`).
 
 ### Event Memberships
 

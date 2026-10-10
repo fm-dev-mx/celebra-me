@@ -125,7 +125,11 @@ const InvitationDetail: FC<Props> = ({ invitationId }) => {
 						</dl>
 					</section>
 
-					<InvitationRsvpPanel rsvpEvent={currentRsvpEvent} />
+					<InvitationRsvpPanel
+						rsvpEvent={currentRsvpEvent}
+						invitationPublished={currentInvitation.status === 'published'}
+						onStatusChanged={() => loadInvitationDetail(invitationId)}
+					/>
 				</>
 			)}
 

@@ -183,6 +183,10 @@
                 "valentina_memories_video_quota"
             ],
             "notes": "Drops the client-named Valentina memories catalog and its RPCs. Export the three tables and the referenced storage objects first; object deletion is a separate owner step."
+        },
+        "20261010180000": {
+            "phase": "neutral",
+            "notes": "Redefines publish_invitation_atomic so a publication keeps an archived (RSVP disabled) linked event archived instead of resetting it to published. Same signature, grants and receipts; the deployed application does not depend on the old reset."
         }
     },
     "appCapabilities": {
