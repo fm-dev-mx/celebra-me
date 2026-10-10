@@ -166,7 +166,7 @@
         "cloudinary": "^2.11.0",
         "date-fns-tz": "3.2.0",
         "framer-motion": "^13.4.6",
-        "nodemailer": "^10.0.14",
+        "nodemailer": "^10.0.16",
         "qrcode": "^1.5.4",
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
