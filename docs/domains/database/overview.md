@@ -21,6 +21,7 @@ erDiagram
     invitations ||--o{ published_invitation_content : "invitation_project_id"
     invitations ||--o{ invitation_assets : "invitation_id"
     invitations ||--o| events : "invitation_project_id"
+    invitations ||--|| invitation_access_controls : "invitation_id"
     invitations {
         uuid id PK
         text kind "demo | client"
@@ -40,6 +41,16 @@ erDiagram
         timestamptz archived_at
         timestamptz created_at
         timestamptz updated_at
+    }
+
+    invitation_access_controls {
+        uuid invitation_id PK "FK invitations, cascade"
+        text payment_status "unpaid | paid"
+        text public_access "enabled | disabled"
+        text internal_note "admin only, never rendered"
+        integer version "optimistic lock"
+        timestamptz updated_at
+        uuid updated_by FK
     }
 
     events ||--o{ guest_invitations : event_id
@@ -268,6 +279,18 @@ entitlement), `event_memory_sessions`, `event_memory_items`, and `event_memory_a
 `20261012200200_retire_valentina_memories.sql`. Behavior, Workers, and quotas are owned by
 [`docs/core/architecture.md`](../../core/architecture.md) (Event memories).
 
+### Commercial Access State
+
+`invitation_access_controls` (`20261013100000_invitation_access_controls.sql`) holds one row per
+invitation: `payment_status` (`unpaid` | `paid`) and `public_access` (`enabled` | `disabled`) are
+independent, so re-enabling an invitation restores its previous payment state. An `AFTER INSERT`
+trigger on `invitations` creates each row unpaid and enabled; the migration backfilled every
+invitation that existed before it as paid and enabled. The only write path is the service-role RPC
+`set_invitation_access_control()` (optimistic `version`, `audit_logs` row in the same transaction,
+client invitations that are not archived only). These are administrative decisions owned by each
+environment: publication, promotion and the Production → Preview mirror never copy them. Archiving
+keeps the row, so a restore returns the same state.
+
 ### Archive / Restore
 
 Admin clicks "Archivar" → `archive_invitation()` RPC:
@@ -317,7 +340,8 @@ Admin clicks "Restaurar" → `restore_invitation()` RPC:
   `useServiceRole: true` behind server-side auth checks.
 - **Public read access**: Only `published_invitation_content` has a public RLS select policy.
 - **Admin-only access**: `invitations`, `intake_*`, drafts are locked to `is_admin_user()`.
-- **Service-role only**: `audit_logs`, `deleted_*` views, archive/restore RPCs.
+- **Service-role only**: `audit_logs`, `deleted_*` views, archive/restore RPCs,
+  `invitation_access_controls` (read) and `set_invitation_access_control()` (the only write path).
 - **Asset metadata**: `invitation_assets` is managed by service-role API routes; binaries live in
   Supabase Storage locally and on Cloudinary in Preview/Production (see Asset Library above).
 
