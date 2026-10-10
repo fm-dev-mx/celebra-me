@@ -83,7 +83,11 @@ export const WaxMedallionSealIcon: FC<WaxMedallionSealProps> = ({
 				>
 					<feGaussianBlur in="SourceAlpha" stdDeviation="0.7" result="blur" />
 					<feOffset dx="0.6" dy="0.9" result="offsetBlur" />
-					<feFlood floodColor="var(--wax-seal-emboss-shadow, #5c322c)" floodOpacity="0.45" result="shadowColor" />
+					<feFlood
+						floodColor="var(--wax-seal-emboss-shadow, #5c322c)"
+						floodOpacity="0.45"
+						result="shadowColor"
+					/>
 					<feComposite in="shadowColor" in2="offsetBlur" operator="in" result="shadow" />
 					<feSpecularLighting
 						in="blur"
@@ -217,5 +221,3 @@ export const WaxMedallionSealIcon: FC<WaxMedallionSealProps> = ({
 		</svg>
 	);
 };
-
-export default WaxMedallionSealIcon;

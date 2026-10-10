@@ -35,14 +35,8 @@ import {
 	validateScreenshotConfig,
 } from './registry-validation.js';
 import { redactScreenshotPlan, redactScreenshotReport, redactScreenshotText } from './redaction.js';
+export { redactScreenshotPlan, redactScreenshotText, redactScreenshotUrl } from './redaction.js';
 export {
-	redactScreenshotPlan,
-	redactScreenshotReport,
-	redactScreenshotText,
-	redactScreenshotUrl,
-} from './redaction.js';
-export {
-	calculateImageHash,
 	getFileArtifactMeta,
 	invalidateStaleInvitationFullPage,
 	publishArtifactAtomically,
@@ -50,13 +44,6 @@ export {
 	validateBlankBottom,
 	verifyPhysicalPng,
 	verifySectionCropInclusion,
-} from './artifact-validation.js';
-export type {
-	LayoutEvidence,
-	PhysicalPngVerificationResult,
-	SectionCropVerificationResult,
-	VerifyPhysicalPngOptions,
-	VerifySectionCropOptions,
 } from './artifact-validation.js';
 
 // ---------------------------------------------------------------------------

@@ -13,7 +13,7 @@ import {
 	type InvitationMusicPlayerProps,
 } from '@/lib/invitation/local-preview-config';
 import { buildInvitationRenderPlan } from './render-plan';
-import type { InterludeRenderItem, InvitationRenderPlanItem } from './render-plan';
+import type { InvitationRenderPlanItem } from './render-plan';
 import {
 	applyLocationPolicy,
 	shouldRedactEnvelopeTeaser,
@@ -211,5 +211,5 @@ export function prepareInvitationPageContext(input: {
 	});
 }
 
-export type { InterludeRenderItem, InvitationRenderPlanItem };
+export type { InvitationRenderPlanItem };
 export { buildInvitationRenderPlan } from './render-plan';

@@ -2,7 +2,6 @@ import { RSVP_GUEST_CAP_TECHNICAL_MAX } from '@/lib/rsvp/guest-cap';
 
 export const MAX_TEXT_LEN = 500;
 export const MAX_GUEST_COMMENT_LEN = 1000;
-export const DEFAULT_COUNTRY_CODE = '+52';
 
 /**
  * Sanitizes a string by trimming and slicing to a maximum length.
@@ -60,7 +59,6 @@ export function toSafeAttendeeCount(raw: unknown, max = RSVP_GUEST_CAP_TECHNICAL
 }
 
 import { SUPPORTED_COUNTRY_CODES } from '@/lib/phone/country-codes';
-export type { SupportedCountryCode } from '@/lib/phone/country-codes';
 export { SUPPORTED_COUNTRY_CODES };
 
 const COUNTRY_CODE_NUMBERS: readonly string[] = SUPPORTED_COUNTRY_CODES.map((cc) => cc.slice(1));

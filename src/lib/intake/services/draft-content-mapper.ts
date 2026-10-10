@@ -33,10 +33,7 @@ import {
 	mapVenueDateTimeToDraft,
 } from '@/lib/intake/services/draft-section-mappers';
 
-export type {
-	DraftNormalizationIssue,
-	DraftNormalizationIssueReason,
-} from '@/lib/intake/services/draft-normalization-types';
+export type { DraftNormalizationIssue } from '@/lib/intake/services/draft-normalization-types';
 export { DraftNormalizationError } from '@/lib/intake/services/draft-normalization-types';
 
 function mapEventDetails(data: Record<string, unknown>): Partial<DraftContent> {

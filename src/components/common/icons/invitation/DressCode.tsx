@@ -26,5 +26,3 @@ export const DressCodeIcon: React.FC<IconProps> = ({ className, size = 24 }) => 
 		<path d="M10 17h4" />
 	</svg>
 );
-
-export default DressCodeIcon;

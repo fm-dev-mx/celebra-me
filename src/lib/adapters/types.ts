@@ -1,10 +1,8 @@
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type {
-	CountdownVariant,
 	IndicationStyleVariant,
 	InvitationRenderSectionKey,
 	EventType,
-	QuoteVariant,
 	ThemePreset,
 } from '@/lib/theme/theme-contract';
 import type { ParentsOrder } from '@/lib/invitation/family-contract';
@@ -42,6 +40,8 @@ import type {
 	ThankYouVariant,
 	ItineraryVariant,
 	MemoriesVariant,
+	CountdownVariant,
+	QuoteVariant,
 } from '@/lib/invitation/section-variants';
 import type { InvitationComposition } from '@/lib/invitation/composition-contract';
 

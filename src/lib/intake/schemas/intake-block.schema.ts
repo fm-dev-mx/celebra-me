@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 import { INTAKE_BLOCK_TYPES } from '@/lib/intake/types';
 import {
 	baseStoreGiftItemSchema,
@@ -178,5 +177,3 @@ export const intakeBlockSchemas = {
 	'special-messages': specialMessagesBlockSchema,
 } as const;
 export const IntakeBlockTypeSchema = z.enum(INTAKE_BLOCK_TYPES);
-
-export const EventTypeSchema = z.enum(EVENT_TYPES);

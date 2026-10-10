@@ -59,5 +59,10 @@
         "duplicates": "warn",
         "enumMembers": "warn"
     },
-    "playwright": false
+    "playwright": false,
+    "ignoreIssues": {
+        "src/components/common/icons/**": ["exports", "types"],
+        "workers/**/src/index.ts": ["exports"],
+        "workers/shared/replay-guard.ts": ["exports"]
+    }
 }

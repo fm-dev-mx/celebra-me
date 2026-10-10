@@ -141,8 +141,3 @@ export async function requireAdminRateLimit(
 		);
 	}
 }
-
-/**
- * Default export for route-level admin throttling.
- */
-export { requireAdminRateLimit as default };

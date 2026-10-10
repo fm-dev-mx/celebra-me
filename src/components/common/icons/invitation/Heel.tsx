@@ -34,5 +34,3 @@ export const HeelIcon: React.FC<IconProps> = ({ className, size = 24 }) => (
 		</g>
 	</svg>
 );
-
-export default HeelIcon;

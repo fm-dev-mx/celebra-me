@@ -44,7 +44,9 @@ export function buildEventContentData(
 		...(inputRecord.itinerary
 			? { itinerary: { variant: 'standard', ...inputRecord.itinerary } }
 			: {}),
-		...(inputRecord.gallery ? { gallery: { variant: 'uniform-grid', ...inputRecord.gallery } } : {}),
+		...(inputRecord.gallery
+			? { gallery: { variant: 'uniform-grid', ...inputRecord.gallery } }
+			: {}),
 		...(inputRecord.gifts ? { gifts: { variant: 'standard', ...inputRecord.gifts } } : {}),
 		...(inputRecord.countdown
 			? { countdown: { variant: 'standard', ...inputRecord.countdown } }
@@ -54,26 +56,15 @@ export function buildEventContentData(
 			: {}),
 		...(rsvp
 			? {
-				rsvp: {
-					variant: 'standard',
-					...rsvp,
-					personalizedAccess: {
+					rsvp: {
 						variant: 'standard',
-						...(rsvp.personalizedAccess as Record<string, unknown> | undefined),
+						...rsvp,
+						personalizedAccess: {
+							variant: 'standard',
+							...(rsvp.personalizedAccess as Record<string, unknown> | undefined),
+						},
 					},
-				},
-			}
+				}
 			: {}),
 	});
-}
-
-export function buildEventDemoEntry(
-	input: EventContentFixtureInput,
-	id = 'test/test-event.json',
-): CollectionEntry<'event-demos'> {
-	return {
-		id,
-		collection: 'event-demos',
-		data: buildEventContentData(input),
-	};
 }

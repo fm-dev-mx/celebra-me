@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod';
-import { RSVP_GUEST_CAP_TECHNICAL_MAX, rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
+import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 import { isCanonicalHostLoginAlias, normalizeHostLoginAlias } from '@/lib/auth/login-alias';
 
@@ -128,65 +128,6 @@ export const CreateUserSchema = z
 			message: 'Must be a valid email address or login alias',
 		},
 	);
-// =============================================================================
-// Guest Schemas
-// =============================================================================
-
-export const AttendanceStatusSchema = z.enum(['pending', 'confirmed', 'declined'], {
-	message: 'Invalid attendance status',
-});
-
-export const CreateGuestSchema = z.object({
-	eventId: UuidSchema,
-
-	displayName: z
-		.string()
-		.min(1, { message: 'Name is required' })
-		.max(200, { message: 'Name cannot exceed 200 characters' })
-		.trim(),
-
-	phone: z.string().max(20, { message: 'Invalid phone number' }).optional().default(''),
-
-	email: EmailSchema.optional().default(''),
-
-	notes: z
-		.string()
-		.max(1000, { message: 'Notes cannot exceed 1000 characters' })
-		.optional()
-		.default(''),
-});
-
-export const UpdateGuestSchema = z.object({
-	displayName: z
-		.string()
-		.min(1, { message: 'Name is required' })
-		.max(200, { message: 'Name cannot exceed 200 characters' })
-		.trim()
-		.optional(),
-
-	phone: z.string().max(20, { message: 'Invalid phone number' }).optional(),
-
-	email: EmailSchema.optional(),
-
-	attendanceStatus: AttendanceStatusSchema.optional(),
-
-	attendeeCount: z
-		.number()
-		.int()
-		.min(0, { message: 'Attendee count cannot be negative' })
-		.max(RSVP_GUEST_CAP_TECHNICAL_MAX, { message: 'Attendee count exceeds storage capacity' })
-		.optional()
-		.default(1),
-
-	notes: z.string().max(1000, { message: 'Notes cannot exceed 1000 characters' }).optional(),
-
-	// Optional optimistic locking token.
-	_version: TimestampSchema.optional(),
-});
-
-export type CreateGuestInput = z.infer<typeof CreateGuestSchema>;
-export type UpdateGuestInput = z.infer<typeof UpdateGuestSchema>;
-
 export const ChangePasswordSchema = z
 	.object({
 		currentPassword: z

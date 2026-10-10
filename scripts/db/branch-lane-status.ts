@@ -15,9 +15,6 @@ export const BRANCH_LANE_STATUSES = [
 
 export type BranchLaneStatus = (typeof BRANCH_LANE_STATUSES)[number];
 
-/** Bump when checkpoint/clearance/diagnosis contracts change in a resume-incompatible way. */
-export const AUDIT_CONTRACT_VERSION = '1.1.0';
-
 export type FindingSeverity = 'info' | 'warning' | 'error' | 'hard_block';
 
 export interface Finding {

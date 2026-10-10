@@ -26,7 +26,7 @@ import {
 	type ReceiptRow,
 } from './preview/preview-receipt-state-query.ts';
 
-export type { PreviewAssetRow, PreviewReceiptState, ReceiptRow };
+export type { PreviewReceiptState, ReceiptRow };
 
 export interface PreviewReceiptDiagnosis {
 	status: 'IN_SYNC' | 'RECOVERABLE' | 'BLOCKED';
