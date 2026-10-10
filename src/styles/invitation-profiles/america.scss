@@ -1,5 +1,73 @@
-// América: the storybook-lilac preset as shipped; only the envelope field is warmed toward the
-// lilac of her dress. Tokens only; structure stays with the variants.
+// América: the storybook-lilac preset as shipped, plus the night falling over the tower door on
+// the cover. The stone above the door darkens toward dusk and lantern lights kindle there, kept
+// above the face and away from the name. Tokens only; structure stays with the variants.
 .event--america.theme-preset--storybook-lilac {
-	--storybook-field: rgb(232 222 246);
+	--america-cover-night:
+		radial-gradient(
+			circle at 9% 6%,
+			rgb(var(--color-candle-cream-rgb) / 95%) 0 2.5px,
+			rgb(var(--color-candle-gold-rgb) / 38%) 5px,
+			transparent 10px
+		),
+		radial-gradient(
+			circle at 24% 13%,
+			rgb(var(--color-candle-cream-rgb) / 90%) 0 2px,
+			rgb(var(--color-candle-gold-rgb) / 34%) 4px,
+			transparent 8px
+		),
+		radial-gradient(
+			circle at 41% 4%,
+			rgb(var(--color-candle-cream-rgb) / 85%) 0 1.4px,
+			transparent 2.4px
+		),
+		radial-gradient(
+			circle at 63% 9%,
+			rgb(var(--color-candle-cream-rgb) / 90%) 0 1.8px,
+			rgb(var(--color-candle-gold-rgb) / 30%) 3.6px,
+			transparent 7px
+		),
+		radial-gradient(
+			circle at 80% 4%,
+			rgb(var(--color-candle-cream-rgb) / 95%) 0 2.6px,
+			rgb(var(--color-candle-gold-rgb) / 38%) 5.5px,
+			transparent 11px
+		),
+		radial-gradient(
+			circle at 92% 15%,
+			rgb(var(--color-candle-cream-rgb) / 90%) 0 2px,
+			rgb(var(--color-candle-gold-rgb) / 34%) 4px,
+			transparent 8px
+		),
+		radial-gradient(
+			circle at 52% 16%,
+			rgb(var(--color-candle-cream-rgb) / 75%) 0 1px,
+			transparent 1.8px
+		),
+		radial-gradient(
+			circle at 15% 22%,
+			rgb(var(--color-candle-cream-rgb) / 75%) 0 1px,
+			transparent 1.8px
+		),
+		radial-gradient(
+			circle at 4% 17%,
+			rgb(var(--color-candle-gold-rgb) / 26%) 0 24px,
+			rgb(var(--color-candle-gold-rgb) / 9%) 36px,
+			transparent 44px
+		),
+		radial-gradient(
+			circle at 97% 6%,
+			rgb(var(--color-candle-gold-rgb) / 24%) 0 30px,
+			rgb(var(--color-candle-gold-rgb) / 8%) 44px,
+			transparent 54px
+		),
+		linear-gradient(
+			180deg,
+			rgb(var(--color-violet-midnight-rgb) / 82%) 0%,
+			rgb(var(--color-violet-night-rgb) / 58%) 12%,
+			rgb(var(--color-violet-dusk-rgb) / 30%) 24%,
+			rgb(var(--color-violet-dusk-rgb) / 8%) 34%,
+			transparent 42%
+		);
+	--hero-bleed-photo-veil: var(--america-cover-night);
+	--hero-bleed-photo-veil-wide: var(--america-cover-night);
 }
