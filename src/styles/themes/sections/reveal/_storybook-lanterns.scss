@@ -243,7 +243,10 @@ $storybook-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 		}
 	}
 
+	// Optional art above the label; `--storybook-card-ornament-display: none` leaves the card to
+	// typography alone.
 	.invitation-reveal-card__ornament {
+		display: var(--storybook-card-ornament-display, block);
 		width: min(70%, 12.5rem);
 		height: auto;
 		margin-bottom: 0.4rem;

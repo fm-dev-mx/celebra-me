@@ -116,6 +116,153 @@
 		--rsvp-radio-label-color-selected: var(--color-violet-ink);
 	}
 
+	// The countdown is one centered line of light: a large thin numeral, the nights, and the promise
+	// of the lanterns. The date already lives on the envelope card and the cover.
+	.countdown-section {
+		--countdown-written-date-display: none;
+		--countdown-written-wide-columns: auto;
+		--countdown-written-rule-display: none;
+		--countdown-written-wide-align: center;
+		--countdown-written-wide-justify: center;
+		--countdown-written-footer-column: 1;
+		--countdown-written-footer-row: 4;
+		--countdown-written-footer-justify: center;
+		--countdown-written-numeral: clamp(7rem, 30vw, 11rem);
+	}
+
+	// The envelope is the night the story ends in: violet paper under a sky of distant lights, a
+	// gold-leaf hairline on the flap, the wax sun, and warm light spilling from inside as the flap
+	// turns. The card inside stays cream paper with day inks and no drawn art.
+	.envelope-wrapper[data-variant='storybook-lanterns'] {
+		--storybook-field:
+			radial-gradient(
+				circle at 12% 9%,
+				rgb(var(--color-candle-cream-rgb) / 90%) 0 1.2px,
+				transparent 2px
+			),
+			radial-gradient(
+				circle at 31% 18%,
+				rgb(var(--color-candle-cream-rgb) / 80%) 0 1px,
+				transparent 1.8px
+			),
+			radial-gradient(
+				circle at 58% 6%,
+				rgb(var(--color-candle-cream-rgb) / 90%) 0 1.4px,
+				transparent 2.2px
+			),
+			radial-gradient(
+				circle at 83% 13%,
+				rgb(var(--color-candle-cream-rgb) / 85%) 0 1.2px,
+				transparent 2px
+			),
+			radial-gradient(
+				circle at 93% 34%,
+				rgb(var(--color-candle-cream-rgb) / 75%) 0 1px,
+				transparent 1.8px
+			),
+			radial-gradient(
+				circle at 6% 44%,
+				rgb(var(--color-candle-cream-rgb) / 80%) 0 1.2px,
+				transparent 2px
+			),
+			radial-gradient(
+				circle at 9% 82%,
+				rgb(var(--color-candle-cream-rgb) / 75%) 0 1px,
+				transparent 1.8px
+			),
+			radial-gradient(
+				circle at 90% 88%,
+				rgb(var(--color-candle-cream-rgb) / 80%) 0 1.2px,
+				transparent 2px
+			),
+			radial-gradient(
+				circle at 21% 5%,
+				rgb(var(--color-candle-cream-rgb) / 95%) 0 2.6px,
+				rgb(var(--color-candle-gold-rgb) / 38%) 5.5px,
+				transparent 11px
+			),
+			radial-gradient(
+				circle at 74% 4%,
+				rgb(var(--color-candle-cream-rgb) / 95%) 0 3px,
+				rgb(var(--color-candle-gold-rgb) / 38%) 6px,
+				transparent 12px
+			),
+			radial-gradient(
+				circle at 46% 9%,
+				rgb(var(--color-candle-cream-rgb) / 90%) 0 2px,
+				rgb(var(--color-candle-gold-rgb) / 32%) 4px,
+				transparent 8px
+			),
+			radial-gradient(
+				circle at 16% 93%,
+				rgb(var(--color-candle-cream-rgb) / 90%) 0 2.4px,
+				rgb(var(--color-candle-gold-rgb) / 34%) 5px,
+				transparent 10px
+			),
+			radial-gradient(
+				circle at 82% 95%,
+				rgb(var(--color-candle-cream-rgb) / 95%) 0 2.8px,
+				rgb(var(--color-candle-gold-rgb) / 38%) 6px,
+				transparent 12px
+			),
+			radial-gradient(
+				circle at 4% 18%,
+				rgb(var(--color-candle-gold-rgb) / 24%) 0 22px,
+				transparent 36px
+			),
+			radial-gradient(
+				circle at 97% 70%,
+				rgb(var(--color-candle-gold-rgb) / 20%) 0 26px,
+				transparent 42px
+			),
+			radial-gradient(
+				ellipse 120% 70% at 50% 100%,
+				var(--color-violet-dusk) 0%,
+				var(--color-violet-night) 55%,
+				var(--color-violet-midnight) 100%
+			);
+		--storybook-envelope-paper: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--color-violet-dusk) 72%, var(--color-violet-night)),
+			var(--color-violet-night)
+		);
+		--storybook-paper-grain: var(--storybook-night-grain);
+		--storybook-ink: var(--color-candle-gold);
+		--storybook-liner-paper: radial-gradient(
+			ellipse 90% 80% at 50% 0%,
+			var(--color-candle-cream) 0%,
+			var(--color-candle-gold) 34%,
+			var(--color-violet-dusk) 100%
+		);
+		--storybook-instruction-ink: var(--color-night-lilac);
+		--storybook-seal-rim-shadow:
+			0 1px 0 rgb(var(--color-violet-midnight-rgb) / 60%),
+			0 10px 22px -6px rgb(var(--color-violet-midnight-rgb) / 80%),
+			inset 0 1px 0 rgb(255 255 255 / 55%);
+		--storybook-card-ornament-display: none;
+		--color-text-primary: var(--color-candle-cream);
+		--color-text-primary-rgb: var(--color-candle-cream-rgb);
+		--color-text-secondary: var(--color-night-lilac);
+		--color-text-secondary-rgb: var(--color-night-lilac-rgb);
+		--env-shadow-container:
+			0 0 0 1px rgb(var(--color-candle-gold-rgb) / 28%),
+			0 34px 64px -26px rgb(var(--color-violet-midnight-rgb) / 90%);
+		--env-shadow-seal:
+			0 1px 0 rgb(var(--color-violet-midnight-rgb) / 50%),
+			0 4px 10px rgb(var(--color-violet-midnight-rgb) / 55%),
+			inset 1px 1px 0 rgb(255 255 255 / 55%), inset -1px -2px 3px rgb(0 0 0 / 22%);
+		--reveal-card-text-primary: var(--color-violet-ink);
+		--reveal-card-text-secondary: var(--color-violet-ink-soft);
+		--reveal-card-shadow: 0 1px 2px rgb(var(--color-violet-midnight-rgb) / 40%);
+	}
+
+	.envelope-wrapper[data-variant='storybook-lanterns'] .invitation-reveal-card {
+		--color-text-primary: var(--color-violet-ink);
+		--color-text-primary-rgb: var(--color-violet-ink-rgb);
+		--color-text-secondary: var(--color-violet-ink-soft);
+		--color-text-secondary-rgb: var(--color-violet-ink-soft-rgb);
+	}
+
 	// An arch between two night sections has no color edge, so it is drawn as a gold door line,
 	// mirrored (crown right of center) so the closing answers the opening arch instead of copying it.
 	.invitation-section-wrapper[data-intersection='arch'][data-intersection-source='rsvp'] {
