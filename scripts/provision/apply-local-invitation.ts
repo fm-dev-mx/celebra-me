@@ -42,6 +42,7 @@ import type { UploadedAssetMap } from './invitations/invitation-definition.ts';
 import { cleanupLocalResources, type TrackedResource } from './managed-invitation-cleanup.ts';
 import { assertManagedMemoriesReference } from './managed-memories-reference.ts';
 import { resolveLocalEnv } from './local-provision-env.ts';
+import { describeApplyError, resolveLocalDraftMutation } from './local-draft-publication.ts';
 import { buildCloudinaryPublicId } from './cloudinary-adapter.ts';
 import {
 	canReuseExistingLocalAsset,
@@ -1035,6 +1036,11 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		existingDraft && canonicalize(existingDraft.content) === canonicalize(proposedContent);
 	const isPubContentIdentical =
 		existingPub && canonicalize(existingPub.content) === canonicalize(packagePublishedContent);
+	const draftMutation = resolveLocalDraftMutation({
+		existingDraft,
+		isDraftContentIdentical: Boolean(isDraftContentIdentical),
+		shouldPublish: !isPubContentIdentical || !existingPub,
+	});
 
 	const actions: Array<{ resource: string; name: string; action: string; detail: string }> = [
 		{
@@ -1051,12 +1057,20 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		{
 			resource: 'invitation_content_drafts',
 			name: `${slug}-draft`,
-			action: !existingDraft ? 'create' : isDraftContentIdentical ? 'reuse' : 'replace',
-			detail: !existingDraft
-				? 'Create content draft'
-				: isDraftContentIdentical
-					? 'Content draft up-to-date'
-					: 'Update content draft',
+			action:
+				draftMutation === 'insert'
+					? 'create'
+					: draftMutation === 'none'
+						? 'reuse'
+						: 'replace',
+			detail:
+				draftMutation === 'insert'
+					? 'Create content draft'
+					: draftMutation === 'replace_content'
+						? 'Update content draft'
+						: draftMutation === 'reset_status'
+							? `Reset draft status (${String(existingDraft?.status)}) to draft before publishing`
+							: 'Content draft up-to-date',
 		},
 		{
 			resource: 'events',
@@ -1137,7 +1151,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	const estUpdates =
 		(existingInv && !isInvitationIdentical ? 1 : 0) +
 		assetActions.filter((a) => a.action === 'replace').length +
-		(existingDraft && !isDraftContentIdentical ? 1 : 0) +
+		(draftMutation === 'replace_content' || draftMutation === 'reset_status' ? 1 : 0) +
 		(existingEvent && !isEventIdentical ? 1 : 0) +
 		(existingMembership && !isMembershipIdentical ? 1 : 0) +
 		(needsProvenanceRecord && existingProvenance ? 1 : 0);
@@ -1485,7 +1499,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			constructedPlan.targetPreconditions.existingDraftUpdatedAt ??
 			(existingDraft?.updated_at as string | undefined);
 
-		if (!isDraftContentIdentical || !existingDraft) {
+		// publish_invitation_atomic only accepts a draft in 'draft' status and leaves it
+		// 'approved', so a publication-only change still needs the status reset.
+		if (draftMutation !== 'none') {
 			if (existingDraft) {
 				if (!expectedDraftUpdatedAt) {
 					throw new Error(
@@ -1494,7 +1510,11 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				}
 				const { data, error } = await supabase
 					.from('invitation_content_drafts')
-					.update({ content: proposedContent, status: 'draft', submission_id: null })
+					.update(
+						draftMutation === 'reset_status'
+							? { status: 'draft' }
+							: { content: proposedContent, status: 'draft', submission_id: null },
+					)
 					.eq('id', existingDraft.id)
 					.eq('updated_at', expectedDraftUpdatedAt)
 					.select('id, updated_at')
@@ -1509,7 +1529,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				draftId = data.id as string;
 				draftUpdatedAt = data.updated_at as string;
 				mutationStarted = true;
-				completedSteps.push('content_applied');
+				completedSteps.push(
+					draftMutation === 'reset_status' ? 'draft_status_reset' : 'content_applied',
+				);
 			} else {
 				const newId = randomUUID();
 				const { data, error } = await supabase
@@ -1916,7 +1938,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				console.error('Unable to record partial managed operation receipt.');
 			}
 			const detailedError = new Error(
-				`[ERROR — ESTADO PARCIAL REANUDABLE] ${err instanceof Error ? err.message : String(err)}`,
+				`[ERROR — ESTADO PARCIAL REANUDABLE] ${describeApplyError(err)}`,
 				{ cause: err },
 			);
 			(detailedError as unknown as Record<string, unknown>).recoveryStatus =
@@ -1938,10 +1960,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			cleanupRes.status === 'CAMBIOS_REVERTIDOS'
 				? 'ERROR — CAMBIOS REVERTIDOS'
 				: 'ERROR — REQUIERE REVISIÓN';
-		const detailedError = new Error(
-			`[${recoveryStatus}] ${err instanceof Error ? err.message : String(err)}`,
-			{ cause: err },
-		);
+		const detailedError = new Error(`[${recoveryStatus}] ${describeApplyError(err)}`, {
+			cause: err,
+		});
 		(detailedError as unknown as Record<string, unknown>).recoveryStatus = recoveryStatus;
 		(detailedError as unknown as Record<string, unknown>).cleanupResult = cleanupRes;
 		(detailedError as unknown as Record<string, unknown>).mutationStarted =
