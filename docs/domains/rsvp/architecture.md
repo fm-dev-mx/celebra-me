@@ -154,6 +154,10 @@ must not be treated as active system entrypoints.
 
 ## Related
 
+Guest engagement analytics (event taxonomy, metric definitions, traffic classification, retention)
+that will replace the view telemetry above is specified in
+[`engagement-analytics.md`](./engagement-analytics.md).
+
 Operation counts per RSVP submit, duplicate-submit UI, and how RSVP reliability relates to
 invitation LCP/TTFB are documented in
 [`../invitations/performance-metrics.md`](../invitations/performance-metrics.md). This file remains
