@@ -265,9 +265,11 @@ $storybook-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	}
 
 	.invitation-reveal-card__date {
-		font-family: var(--font-body);
-		font-variant-numeric: oldstyle-nums;
-		letter-spacing: 0.08em;
+		font-family: var(--font-label, var(--font-body));
+		font-size: clamp(0.86rem, 3.4vw, 0.98rem);
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--color-text-secondary);
 	}
 
 	.invitation-reveal-card__tagline {
