@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { getSupabaseUserByAccessToken, resolveAccessTokenFromRequest } from '@/lib/rsvp/auth/auth';
 import {
 	recordGuestEngagementEventsRpc,
@@ -6,6 +6,7 @@ import {
 	type EngagementRecordResult,
 } from '@/lib/rsvp/repositories/engagement.repository';
 import { getEnv } from '@/lib/server/env';
+import { socialCrawlerFamily } from '@/lib/social/social-crawler';
 import type { ClientEngagementBatch } from './event-contract';
 import { ENGAGEMENT_SCHEMA_VERSION, type ServerEngagementEvent } from './taxonomy';
 import {
@@ -113,4 +114,35 @@ export async function recordServerEngagementEvent(
 			error: error instanceof Error ? error.message : String(error),
 		});
 	}
+}
+
+const PREVIEW_DEDUPE_WINDOW_MS = 10 * 60 * 1000;
+
+/** Stable UUID-shaped id from a seed, so retried server events stay idempotent. */
+export function deterministicEventId(seed: string): string {
+	const hex = createHash('sha256').update(seed).digest('hex');
+	const variant = ((parseInt(hex[16], 16) & 0x3) | 0x8).toString(16);
+	return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-5${hex.slice(13, 16)}-${variant}${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+}
+
+/**
+ * Link preview fetched by a chat crawler (short link). Bursts from the same crawler family within
+ * ten minutes collapse into one event.
+ */
+export async function recordLinkPreview(
+	inviteId: string,
+	request: Request,
+	now: Date = new Date(),
+): Promise<void> {
+	const crawlerFamily = socialCrawlerFamily(request.headers.get('user-agent') ?? '');
+	const bucket = Math.floor(now.getTime() / PREVIEW_DEDUPE_WINDOW_MS);
+	await recordServerEngagementEvent(
+		inviteId,
+		{ eventName: 'invitation_link_previewed', properties: { crawlerFamily } },
+		request,
+		{
+			clientEventId: deterministicEventId(`preview:${inviteId}:${crawlerFamily}:${bucket}`),
+			forceTrafficClass: 'bot',
+		},
+	);
 }

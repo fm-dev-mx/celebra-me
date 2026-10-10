@@ -262,6 +262,9 @@ Dashboard ──host token──▶ /api/dashboard/guests (+ engagement fields)
   `(guest, crawler_family, 10-minute bucket)` so preview bursts dedupe.
 - Fix crawler detection precision: replace bare `instagram` with explicit crawler UAs; add tests for
   Instagram/Facebook in-app browsers (must be classified as human).
+- Implemented (G4): `resolveShortIdPage` records the preview through `recordLinkPreview` (service)
+  only on the crawler branch; ids come from `deterministicEventId(preview:invite:family:bucket)`.
+  Crawler precision (no bare `instagram`) shipped with G2.
 
 ### 6.5 Dashboard
 

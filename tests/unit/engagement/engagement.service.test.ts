@@ -1,5 +1,7 @@
 import {
+	deterministicEventId,
 	ingestClientEngagementBatch,
+	recordLinkPreview,
 	recordServerEngagementEvent,
 } from '@/lib/rsvp/engagement/engagement.service';
 import { recordGuestEngagementEventsRpc } from '@/lib/rsvp/repositories/engagement.repository';
@@ -139,5 +141,28 @@ describe('guest engagement service', () => {
 			),
 		).resolves.toBeUndefined();
 		warn.mockRestore();
+	});
+
+	it('dedupes link preview bursts within ten minutes per crawler family', async () => {
+		const whatsapp = request({ 'user-agent': 'WhatsApp/2.24.20.80 A' });
+		await recordLinkPreview(INVITE, whatsapp, new Date('2026-10-10T18:01:00Z'));
+		await recordLinkPreview(INVITE, whatsapp, new Date('2026-10-10T18:08:00Z'));
+		await recordLinkPreview(INVITE, whatsapp, new Date('2026-10-10T18:12:00Z'));
+		const ids = rpcMock.mock.calls.map((call) => call[1][0].client_event_id);
+		expect(ids[0]).toBe(ids[1]);
+		expect(ids[2]).not.toBe(ids[0]);
+		expect(rpcMock.mock.calls[0][1][0]).toEqual(
+			expect.objectContaining({
+				event_name: 'invitation_link_previewed',
+				traffic_class: 'bot',
+				properties: { crawler_family: 'whatsapp' },
+			}),
+		);
+	});
+
+	it('derives UUID-shaped deterministic ids', () => {
+		const id = deterministicEventId('seed');
+		expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+		expect(deterministicEventId('seed')).toBe(id);
 	});
 });
