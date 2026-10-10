@@ -106,6 +106,16 @@
 		--color-ornament-gold: var(--color-candle-gold);
 	}
 
+	// Radio rings read as controls on the cream card (lilac deep, above 3:1), and the chosen answer
+	// is inked in gold. `.rsvp` declares these defaults itself, so they are set on it.
+	.rsvp {
+		--rsvp-radio-indicator-border: var(--color-lilac-deep);
+		--rsvp-radio-selected-border: var(--color-gold-ink);
+		--rsvp-radio-indicator-dot: var(--color-gold-ink);
+		--rsvp-radio-selected-bg: rgb(var(--color-candle-gold-rgb) / 14%);
+		--rsvp-radio-label-color-selected: var(--color-violet-ink);
+	}
+
 	// An arch between two night sections has no color edge, so it is drawn as a gold door line,
 	// mirrored (crown right of center) so the closing answers the opening arch instead of copying it.
 	.invitation-section-wrapper[data-intersection='arch'][data-intersection-source='rsvp'] {
@@ -133,13 +143,6 @@
 
 		// The two answers are ruled rows on the paper, not form boxes.
 		--reply-card-option-bg: transparent;
-
-		// Radio rings read as controls on cream (lilac deep ≥ 3:1); the chosen answer is inked in gold.
-		--rsvp-radio-indicator-border: var(--color-lilac-deep);
-		--rsvp-radio-selected-border: var(--color-gold-ink);
-		--rsvp-radio-indicator-dot: var(--color-gold-ink);
-		--rsvp-radio-selected-bg: rgb(var(--color-candle-gold-rgb) / 14%);
-		--rsvp-radio-label-color-selected: var(--color-violet-ink);
 
 		// The pass subtitle is a quiet line under the label, not a second heading.
 		--pa-subtitle-weight: 400;
