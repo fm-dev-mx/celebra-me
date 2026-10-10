@@ -202,7 +202,7 @@ republish. `s-maxage=3600` would be approximately one hour.
 
 ### Personalized and private cache
 
-**Definition.** `?invite=`, short invite routes, dashboard, auth, and captura responses use
+**Definition.** `?invite=`, short invite routes, dashboard, and auth responses use
 `no-store, private` (see the cache policy doc for the full private surface).
 
 **Why it matters.** Guest names and RSVP state must not enter a shared cache.
@@ -682,7 +682,7 @@ These may fail automated validation immediately:
 
 - Anonymous HTML origin-revalidate helpers and `[slug].astro` source (no positive `s-maxage`, no
   SWR; `?invite=` forces `no-store, private`).
-- Private-path `no-store` for dashboard/auth/captura (`private-cache-path`).
+- Private-path `no-store` for dashboard/auth (`private-cache-path`).
 - `shouldOptimizeThroughVercelImage` false for mutable Storage; true for Cloudinary and hashed
   `/_astro`.
 - Cloudinary public ID changes when `sha256` changes.

@@ -1,12 +1,8 @@
 import type { FC } from 'react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
-import BlockSelector from '@/components/dashboard/intake/BlockSelector';
-import IntakeLinkPanel from '@/components/dashboard/intake/IntakeLinkPanel';
 import DraftSection from '@/components/dashboard/intake/DraftSection';
-import SubmissionSection from '@/components/dashboard/intake/SubmissionSection';
 import InvitationRsvpPanel from '@/components/dashboard/intake/InvitationRsvpPanel';
-import { INTAKE_BLOCK_TYPES, type IntakeBlockType } from '@/lib/intake/types';
 import { INVITATION_STATUS_LABELS } from '@/lib/intake/labels';
 import { hasInconsistency, resolveRepairAction } from '@/lib/intake/display-status';
 
@@ -19,21 +15,12 @@ const InvitationDetail: FC<Props> = ({ invitationId }) => {
 		loading,
 		error,
 		currentInvitation,
-		currentRequest,
-		currentSubmission,
 		currentRsvpEvent,
 		loadInvitationDetail,
 		updateInvitation,
-		createIntakeRequest,
-		regenerateToken,
-		revokeToken,
 		loadDraft,
 	} = useInvitationAdmin();
 
-	const [selectedBlocks, setSelectedBlocks] = useState<IntakeBlockType[]>([]);
-	const [creatingRequest, setCreatingRequest] = useState(false);
-	const [regenerating, setRegenerating] = useState(false);
-	const [revoking, setRevoking] = useState(false);
 	const [actionError, setActionError] = useState('');
 	const [actionSuccess, setActionSuccess] = useState('');
 
@@ -41,70 +28,6 @@ const InvitationDetail: FC<Props> = ({ invitationId }) => {
 		void loadInvitationDetail(invitationId);
 		void loadDraft(invitationId);
 	}, [invitationId, loadInvitationDetail, loadDraft]);
-
-	useEffect(() => {
-		if (currentRequest?.enabledBlocks) {
-			setSelectedBlocks(currentRequest.enabledBlocks);
-		} else {
-			setSelectedBlocks([...INTAKE_BLOCK_TYPES]);
-		}
-	}, [currentRequest]);
-
-	const handleCreateRequest = async () => {
-		if (selectedBlocks.length === 0) {
-			setActionError('Seleccione al menos un bloque de captura.');
-			return;
-		}
-
-		setCreatingRequest(true);
-		setActionError('');
-		setActionSuccess('');
-
-		try {
-			await createIntakeRequest(invitationId, {
-				enabledBlocks: selectedBlocks,
-			});
-			setActionSuccess('Enlace para cliente generado exitosamente.');
-		} catch (err) {
-			setActionError(err instanceof Error ? err.message : 'Error al generar el enlace.');
-		} finally {
-			setCreatingRequest(false);
-		}
-	};
-
-	const handleRevoke = async () => {
-		if (!window.confirm('Esto invalidará el enlace para cliente. ¿Continuar?')) return;
-
-		setRevoking(true);
-		setActionError('');
-		setActionSuccess('');
-
-		try {
-			await revokeToken(invitationId);
-			setActionSuccess('Link para cliente revocado.');
-		} catch (err) {
-			setActionError(err instanceof Error ? err.message : 'Error al revocar el enlace.');
-		} finally {
-			setRevoking(false);
-		}
-	};
-
-	const handleRegenerate = async () => {
-		if (!window.confirm('Esto invalidará el enlace anterior. ¿Continuar?')) return;
-
-		setRegenerating(true);
-		setActionError('');
-		setActionSuccess('');
-
-		try {
-			await regenerateToken(invitationId);
-			setActionSuccess('Token regenerado. El enlace anterior ya no funciona.');
-		} catch (err) {
-			setActionError(err instanceof Error ? err.message : 'Error al regenerar el token.');
-		} finally {
-			setRegenerating(false);
-		}
-	};
 
 	const handleTogglePhotos = async () => {
 		if (!currentInvitation) return;
@@ -202,45 +125,8 @@ const InvitationDetail: FC<Props> = ({ invitationId }) => {
 						</dl>
 					</section>
 
-					<section className="intake-detail__section">
-						<h3 className="intake-detail__section-title">
-							Solicitud al cliente (opcional)
-						</h3>
-						<p className="intake-detail__submission-hint">
-							La edición interna está siempre disponible desde la lista de
-							invitaciones. Este enlace solo es necesario si deseas solicitar datos al
-							cliente.
-						</p>
-						<BlockSelector
-							selectedBlocks={selectedBlocks}
-							onChange={setSelectedBlocks}
-							disabled={Boolean(currentRequest)}
-						/>
-						{!currentRequest && (
-							<button
-								type="button"
-								className="intake-detail__generate-btn"
-								onClick={handleCreateRequest}
-								disabled={creatingRequest}
-							>
-								{creatingRequest ? 'Generando...' : 'Generar enlace para cliente'}
-							</button>
-						)}
-						<IntakeLinkPanel
-							request={currentRequest}
-							onRegenerate={handleRegenerate}
-							onRevoke={handleRevoke}
-							regenerating={regenerating}
-							revoking={revoking}
-						/>
-					</section>
-
 					<InvitationRsvpPanel rsvpEvent={currentRsvpEvent} />
 				</>
-			)}
-
-			{currentSubmission && (
-				<SubmissionSection invitationId={invitationId} submission={currentSubmission} />
 			)}
 
 			<DraftSection invitationId={invitationId} />

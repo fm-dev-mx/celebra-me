@@ -47,16 +47,12 @@ const RATE_LIMITS = {
 	'platform:usage': { maxHits: 30, windowSec: 60 },
 	'intake:list': { maxHits: 60, windowSec: 60 },
 	'intake:update': { maxHits: 30, windowSec: 60 },
-	'intake:edit': { maxHits: 30, windowSec: 60 },
 	'intake:assign-owner': { maxHits: 10, windowSec: 60 },
-	'intake:request': { maxHits: 10, windowSec: 60 },
 	'intake:regenerate': { maxHits: 5, windowSec: 60 },
 	'intake:revoke': { maxHits: 5, windowSec: 60 },
-	'intake:review': { maxHits: 20, windowSec: 60 },
 	'intake:draft': { maxHits: 10, windowSec: 60 },
 	'intake:publish': { maxHits: 5, windowSec: 60 },
 	'intake:delete': { maxHits: 10, windowSec: 60 }, // 10 req/min
-	'intake:captura': { maxHits: 30, windowSec: 60 },
 
 	// Commercial / Sales Workspace
 	'commercial:customers:create': { maxHits: 20, windowSec: 60 }, // 20 req/min

@@ -54,9 +54,9 @@ section variants and profiles come from `src/lib/invitation/section-css-resolver
 - **EB Garamond:** presets jewelry-box, jewelry-box-wedding, editorial, luxury-hacienda and
   celestial-blue.
 
-`DashboardLayout.astro` (every `/dashboard/*` route except `mfa-setup` and `cambiar-contrasena`),
-`/captura/[token]`, and the Open Graph shells under `/i/[shortId]` import no font package; their
-`--font-*` values resolve to the fallback families.
+`DashboardLayout.astro` (every `/dashboard/*` route except `mfa-setup` and `cambiar-contrasena`) and
+the Open Graph shells under `/i/[shortId]` import no font package; their `--font-*` values resolve
+to the fallback families.
 
 ## Core Roles
 

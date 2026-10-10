@@ -45,8 +45,6 @@ const allowedHydratedComponents = new Set([
 	'InvitationList',
 	'InvitationDetail',
 	'DraftReview',
-	'IntakeForm',
-	'SubmissionReview',
 ]);
 
 const violations = [];

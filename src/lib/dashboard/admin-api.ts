@@ -16,10 +16,6 @@ import type {
 	InvitationListResponse,
 	InvitationDetailResponse,
 	UpdateInvitationDTO,
-	IntakeRequestCreateResponse,
-	CreateIntakeRequestDTO,
-	IntakeRequestDTO,
-	IntakeSubmissionDTO,
 	DraftResponse,
 	AssignOwnerResponse,
 	InvitationEditorContextDTO,
@@ -180,82 +176,10 @@ export class AdminApi {
 		this.handleResponse(result);
 	}
 
-	async createIntakeRequest(
-		invitationId: string,
-		payload: CreateIntakeRequestDTO,
-	): Promise<IntakeRequestCreateResponse> {
-		const result = await dashboardApi.post<IntakeRequestCreateResponse>(
-			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/request`,
-			payload,
-		);
-		return this.handleResponse(result);
-	}
-
-	async getIntakeRequests(invitationId: string): Promise<{ items: IntakeRequestDTO[] }> {
-		const result = await dashboardApi.get<{ items: IntakeRequestDTO[] }>(
-			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/request`,
-		);
-		return this.handleResponse(result);
-	}
-
-	async regenerateIntakeToken(invitationId: string): Promise<IntakeRequestCreateResponse> {
-		const result = await dashboardApi.post<IntakeRequestCreateResponse>(
-			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/request/regenerate-token`,
-			{},
-		);
-		return this.handleResponse(result);
-	}
-
-	async revokeIntakeToken(invitationId: string): Promise<{ request: IntakeRequestDTO }> {
-		const result = await dashboardApi.post<{ request: IntakeRequestDTO }>(
-			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/request/revoke`,
-			{},
-		);
-		return this.handleResponse(result);
-	}
-
-	// Intake — Review
-	async getSubmissionForReview(invitationId: string): Promise<InvitationDetailResponse> {
-		const result = await dashboardApi.get<InvitationDetailResponse>(
-			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/review`,
-		);
-		return this.handleResponse(result);
-	}
-
-	async reviewSubmission(
-		invitationId: string,
-		payload: { action: 'approve' | 'request_changes'; reviewNotes?: string },
-	): Promise<{ item: unknown }> {
-		const result = await dashboardApi.post<{ item: unknown }>(
-			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/review`,
-			payload,
-		);
-		return this.handleResponse(result);
-	}
-
-	async updateSubmissionCorrections(
-		invitationId: string,
-		payload: { blockData: Record<string, unknown>; clientComments: string },
-	): Promise<{ item: IntakeSubmissionDTO }> {
-		const result = await dashboardApi.patch<{ item: IntakeSubmissionDTO }>(
-			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/review`,
-			payload,
-		);
-		return this.handleResponse(result);
-	}
-
 	// Intake — Draft
 	async getDraft(invitationId: string): Promise<DraftResponse> {
 		const result = await dashboardApi.get<DraftResponse>(
 			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/draft`,
-		);
-		return this.handleResponse(result);
-	}
-
-	async generateDraft(invitationId: string): Promise<DraftResponse> {
-		const result = await dashboardApi.post<DraftResponse>(
-			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/draft`,
-			{ action: 'generate' },
 		);
 		return this.handleResponse(result);
 	}

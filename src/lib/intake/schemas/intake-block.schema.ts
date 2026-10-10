@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { INTAKE_BLOCK_TYPES } from '@/lib/intake/types';
 import {
 	baseStoreGiftItemSchema,
 	bankGiftItemSchema,
@@ -7,7 +6,6 @@ import {
 	cashGiftItemSchema,
 	safeHttpUrlSchema,
 } from '@/lib/schemas/content/gifts.schema';
-import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 
 const pendingFieldMarker = z.literal('__pending__').optional();
 
@@ -41,36 +39,6 @@ const coordinatesSchema = z
 	})
 	.optional();
 
-export const eventDetailsBlockSchema = z.object({
-	celebrantName: z.string().min(1, 'El nombre del festejado es obligatorio.').max(200).trim(),
-	secondaryName: optionalString,
-	eventLabel: z.string().min(1, 'El título del evento es obligatorio.').max(200).trim(),
-	eventDate: z
-		.string()
-		.min(1, 'La fecha del evento es obligatoria.')
-		.refine(
-			(val) =>
-				/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})?)?$/.test(val),
-			'La fecha del evento no es válida.',
-		),
-	eventTitle: z.string().min(1, 'El título de la invitación es obligatorio.').max(200).trim(),
-	description: optionalString,
-	nickname: optionalString,
-	_pending: pendingFieldMarker,
-});
-
-export const mainPeopleBlockSchema = z.object({
-	fatherName: optionalString,
-	fatherDeceased: z.boolean().optional().default(false),
-	motherName: optionalString,
-	motherDeceased: z.boolean().optional().default(false),
-	spouseName: optionalString,
-	godparents: optionalString,
-	children: optionalString,
-	sectionMessage: optionalString,
-	_pending: pendingFieldMarker,
-});
-
 const venueFieldsSchema = z.object({
 	venueName: optionalString,
 	address: optionalString,
@@ -89,36 +57,6 @@ export const dateLocationsBlockSchema = z.object({
 	reception: venueFieldsSchema.optional(),
 	dressCode: optionalString,
 	additionalIndications: optionalString,
-	_pending: pendingFieldMarker,
-});
-
-export const photosBlockSchema = z.object({
-	whatsappSent: z.boolean().optional().default(false),
-	heroPhoto: optionalString,
-	portraitPhoto: optionalString,
-	galleryPhotos: optionalString,
-	familyPhoto: optionalString,
-	specialPhoto: optionalString,
-	generalNotes: optionalString,
-	photoOrder: optionalString,
-	cropNotes: optionalString,
-	priorityNotes: optionalString,
-	_pending: pendingFieldMarker,
-});
-
-export const rsvpConfigBlockSchema = z.object({
-	title: z.string().min(1, 'El título es obligatorio.').max(200).trim(),
-	guestCap: rsvpGuestCapSchema,
-	confirmationMessage: z.string().min(1, 'El mensaje es obligatorio.').max(1000).trim(),
-	confirmationMode: z.enum(['api', 'whatsapp', 'both']),
-	whatsappPhone: optionalString,
-	subcopy: optionalString,
-	_pending: pendingFieldMarker,
-});
-
-export const musicBlockSchema = z.object({
-	url: z.url('Debe ser una URL válida.'),
-	title: optionalString,
 	_pending: pendingFieldMarker,
 });
 
@@ -142,38 +80,3 @@ export const giftItemSchema = z.discriminatedUnion('type', [
 		text: z.string().max(500).optional(),
 	}),
 ]);
-
-export const giftsBlockSchema = z.object({
-	title: optionalString,
-	subtitle: optionalString,
-	items: z.array(giftItemSchema).optional().default([]),
-	_pending: pendingFieldMarker,
-});
-
-export const specialMessagesBlockSchema = z.object({
-	quoteText: z.string().min(1, 'La frase es obligatoria.').max(1000).trim(),
-	quoteAuthor: optionalString,
-	thankYouMessage: z
-		.string()
-		.min(1, 'El mensaje de agradecimiento es obligatorio.')
-		.max(2000)
-		.trim(),
-	thankYouClosingName: z
-		.string()
-		.min(1, 'El nombre de despedida es obligatorio.')
-		.max(200)
-		.trim(),
-	_pending: pendingFieldMarker,
-});
-
-export const intakeBlockSchemas = {
-	'event-details': eventDetailsBlockSchema,
-	'main-people': mainPeopleBlockSchema,
-	'date-locations': dateLocationsBlockSchema,
-	photos: photosBlockSchema,
-	'rsvp-config': rsvpConfigBlockSchema,
-	music: musicBlockSchema,
-	gifts: giftsBlockSchema,
-	'special-messages': specialMessagesBlockSchema,
-} as const;
-export const IntakeBlockTypeSchema = z.enum(INTAKE_BLOCK_TYPES);

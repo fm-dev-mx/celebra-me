@@ -87,7 +87,6 @@ interface ImportMetaEnv {
 	readonly VERCEL_GIT_COMMIT_REF: string;
 	readonly VERCEL_REGION: string;
 	readonly BASE_URL: string;
-	readonly INTAKE_TOKEN_ENCRYPTION_KEY: string;
 	readonly NODE_ENV: string;
 	readonly CONTACT_WHATSAPP: string;
 	readonly CLOUDINARY_CLOUD_NAME: string;
