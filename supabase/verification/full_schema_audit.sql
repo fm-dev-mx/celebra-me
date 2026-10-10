@@ -10,43 +10,39 @@ with expected_tables as (
     'guest_invitation_audit',
     'app_user_roles',
     'event_memberships',
+    'event_claim_codes',
     'audit_logs',
+    'host_profiles',
+    'intake_requests',
+    'intake_submissions',
     'invitation_content_drafts',
     'published_invitation_content'
   ]) as table_name
 ),
 
-retired_tables as (
+expected_legacy_tables as (
   select unnest(array[
-    'event_claim_codes',
-    'host_profiles',
-    'intake_requests',
-    'intake_submissions',
-    'managed_invitation_legacy_adoption_receipts',
     'rsvp_records',
     'rsvp_audit_log',
-    'rsvp_channel_log',
-    'valentina_memory_audit_events',
-    'valentina_memory_items',
-    'valentina_memory_sessions'
+    'rsvp_channel_log'
   ]) as table_name
 ),
 
-retired_rpcs as (
+expected_deprecated_rpcs as (
   select unnest(array[
     'soft_delete_event',
     'restore_event',
     'soft_delete_invitation_project',
     'restore_invitation_project',
-    'backfill_guest_invitations_from_legacy',
-    'redeem_claim_code',
-    'submit_intake_request_once'
+    'backfill_guest_invitations_from_legacy'
   ]) as rpc_name
 ),
 
 expected_sensitive_rpcs as (
   select *
   from (values
+    ('soft_delete_event', 'uuid, uuid'),
+    ('restore_event', 'uuid, uuid'),
     ('upsert_guests_v1', 'uuid, jsonb')
   ) as t(rpc_name, signature)
 ),
@@ -65,15 +61,15 @@ tables_exist as (
    and t.table_name = e.table_name
 ),
 
-retired_tables_absent as (
+legacy_tables_exist as (
   select
-    'retired_tables_absent' as check_name,
+    'legacy_tables_exist' as check_name,
     case
-      when count(t.table_name) = 0 then 'PASS'
+      when bool_and(t.table_name is not null) then 'PASS'
       else 'FAIL'
     end as status,
-    string_agg(e.table_name, ', ' order by e.table_name) filter (where t.table_name is not null) as details
-  from retired_tables e
+    string_agg(e.table_name, ', ' order by e.table_name) filter (where t.table_name is null) as details
+  from expected_legacy_tables e
   left join information_schema.tables t
     on t.table_schema = 'public'
    and t.table_name = e.table_name
@@ -151,17 +147,17 @@ events_invitation_project_index as (
     null::text as details
 ),
 
-retired_rpcs_absent as (
+deprecated_rpcs_exist as (
   select
-    'retired_rpcs_absent' as check_name,
+    'deprecated_rpcs_exist' as check_name,
     case
-      when count(p.oid) = 0 then 'PASS'
+      when bool_and(p.oid is not null) then 'PASS'
       else 'FAIL'
     end as status,
-    string_agg(retired.rpc_name, ', ' order by retired.rpc_name) filter (where p.oid is not null) as details
-  from retired_rpcs retired
+    string_agg(expected.rpc_name, ', ' order by expected.rpc_name) filter (where p.oid is null) as details
+  from expected_deprecated_rpcs expected
   left join pg_proc p
-    on p.proname = retired.rpc_name
+    on p.proname = expected.rpc_name
    and p.pronamespace = 'public'::regnamespace
 ),
 
@@ -293,12 +289,12 @@ event_slug_parity as (
 )
 
 select * from tables_exist
-union all select * from retired_tables_absent
+union all select * from legacy_tables_exist
 union all select * from rls_enabled
 union all select * from published_route_unique
 union all select * from guest_unique_index
 union all select * from events_invitation_project_index
-union all select * from retired_rpcs_absent
+union all select * from deprecated_rpcs_exist
 union all select * from sensitive_rpc_privileges
 union all select * from security_definer_search_path
 union all select * from upsert_function_conflict_target

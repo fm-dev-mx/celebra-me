@@ -234,9 +234,10 @@ previous row. The membership API still defaults to `manager` when a caller omits
 
 Guest photo/video spaces live in `event_memory_settings` (one per event; window, retention, quotas,
 entitlement), `event_memory_sessions`, `event_memory_items`, and `event_memory_audit_events`
-(`supabase/migrations/*event_memor*`). The client-named `valentina_memory_*` catalog is retired by
-`20261009230200_retire_valentina_memories.sql`. Behavior, Workers, and quotas are owned by
-[`docs/core/architecture.md`](../../core/architecture.md) (Event memories).
+(`supabase/migrations/*event_memor*`). The client-named `valentina_memory_*` catalog has no reader;
+its drop is a contract migration integrated after the deploy that stops naming it. Behavior,
+Workers, and quotas are owned by [`docs/core/architecture.md`](../../core/architecture.md) (Event
+memories).
 
 ### Archive / Restore
 
