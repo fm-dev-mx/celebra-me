@@ -13,8 +13,8 @@ The backend persists data in Supabase and is implemented through repositories an
 
 The full table inventory, ERD, indexes, and constraints are owned by
 [`docs/domains/database/overview.md`](../database/overview.md). The RSVP-specific tables are
-`events`, `guest_invitations`, `guest_invitation_audit`, and `event_memberships`. The application no
-longer reads claim codes or the RSVP v1 tables; contract migrations drop them after the deploy.
+`events`, `guest_invitations`, `guest_invitation_audit`, and `event_memberships`. Claim codes and
+the RSVP v1 tables are dropped by the 2026-10-09 retirement migrations.
 
 ## Migration Baseline
 
