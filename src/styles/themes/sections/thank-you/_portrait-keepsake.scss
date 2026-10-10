@@ -157,3 +157,13 @@
 		}
 	}
 }
+
+// The ambient layer in the markup is decoration that preset skins paint. Without one it must not
+// take a cell of the grid above (it pushed the photograph and the copy out of their columns).
+// Zero specificity, so a skin that positions or paints it keeps its own values.
+:where(.thank-you-section[data-variant='portrait-keepsake']) .thank-you-editorial__ambient {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+}

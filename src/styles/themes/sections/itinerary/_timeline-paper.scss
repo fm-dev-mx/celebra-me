@@ -16,7 +16,8 @@
 //   --itinerary-paper-rule / -rule-inset / -edge-highlight Inner hairline of the sheet
 //   --itinerary-paper-curl-display / -monogram-display / -corner-opacity / -flourish-display
 //                                     Curl shadow, watermark monogram, corner and header flourishes
-//   --itinerary-paper-title-style, --itinerary-paper-subtitle-{size,tracking,transform,weight,style,color}
+//   --itinerary-paper-title-style, --itinerary-paper-title-color (default --itinerary-ink-dark),
+//   --itinerary-paper-subtitle-{size,tracking,transform,weight,style,color}
 //   --itinerary-paper-row-rule / -row-padding, --itinerary-paper-num-{size,opacity}[-sm]
 //   --itinerary-paper-time-{font,size,weight,tracking,transform,opacity}[-sm]
 //   --itinerary-paper-title-{size,line-height}[-sm], --itinerary-paper-letterpress
@@ -50,7 +51,7 @@
 		font-style: var(--itinerary-paper-title-style, normal);
 		font-size: clamp(2.2rem, 4vw, 3rem);
 		margin-bottom: 0.65rem;
-		color: var(--itinerary-ink-dark);
+		color: var(--itinerary-paper-title-color, var(--itinerary-ink-dark));
 		filter: var(--itinerary-paper-ink-filter, url('#ink-bleed-filter'));
 	}
 
