@@ -1,10 +1,14 @@
 import type { FC } from 'react';
 import { useState } from 'react';
+import ConfirmModal from '@/components/dashboard/intake/ConfirmModal';
+import { adminApi } from '@/lib/dashboard/admin-api';
 import type { RsvpEventDTO } from '@/lib/dashboard/dto/intake';
 import { RSVP_EVENT_STATUS_LABELS } from '@/lib/intake/labels';
 
 interface Props {
 	rsvpEvent: RsvpEventDTO | null;
+	/** Called after the RSVP event is archived so the parent can reload its data. */
+	onDeactivated: () => void | Promise<void>;
 }
 
 const STATUS_CLASSES: Record<string, string> = {
@@ -13,7 +17,10 @@ const STATUS_CLASSES: Record<string, string> = {
 	draft: 'rsvp-panel__badge--draft',
 };
 
-const InvitationRsvpPanel: FC<Props> = ({ rsvpEvent }) => {
+const DEACTIVATE_ERROR = 'No se pudo desactivar el RSVP. Inténtelo de nuevo.';
+
+const InvitationRsvpPanel: FC<Props> = ({ rsvpEvent, onDeactivated }) => {
+	const [confirmOpen, setConfirmOpen] = useState(false);
 	const [deactivating, setDeactivating] = useState(false);
 	const [actionError, setActionError] = useState('');
 
@@ -27,30 +34,19 @@ const InvitationRsvpPanel: FC<Props> = ({ rsvpEvent }) => {
 	}
 
 	const handleDeactivate = async () => {
-		if (
-			!window.confirm(
-				'¿Desactivar RSVP? Los invitados ya no podrán confirmar asistencia. La invitación pública seguirá visible.',
-			)
-		)
-			return;
 		setDeactivating(true);
 		setActionError('');
 		try {
-			const res = await fetch(
-				`/api/dashboard/admin/events/${encodeURIComponent(rsvpEvent.id)}`,
-				{
-					method: 'PATCH',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ status: 'archived' }),
-				},
-			);
-			if (!res.ok) throw new Error('Error al desactivar RSVP.');
-			window.location.reload();
-		} catch (err) {
-			setActionError(err instanceof Error ? err.message : 'Error al desactivar RSVP.');
+			// Send only the status: omitted fields must keep their stored values.
+			await adminApi.updateEvent(rsvpEvent.id, { status: 'archived' });
+		} catch {
+			setActionError(DEACTIVATE_ERROR);
+			return;
 		} finally {
 			setDeactivating(false);
+			setConfirmOpen(false);
 		}
+		await onDeactivated();
 	};
 
 	const badgeClass = STATUS_CLASSES[rsvpEvent.status] ?? '';
@@ -100,7 +96,10 @@ const InvitationRsvpPanel: FC<Props> = ({ rsvpEvent }) => {
 						<button
 							type="button"
 							className="intake-detail__generate-btn intake-detail__generate-btn--danger"
-							onClick={handleDeactivate}
+							onClick={() => {
+								setActionError('');
+								setConfirmOpen(true);
+							}}
 							disabled={deactivating}
 						>
 							{deactivating ? 'Desactivando...' : 'Desactivar RSVP'}
@@ -113,6 +112,18 @@ const InvitationRsvpPanel: FC<Props> = ({ rsvpEvent }) => {
 
 				{actionError && <p className="intake-detail__error">{actionError}</p>}
 			</div>
+
+			{confirmOpen && (
+				<ConfirmModal
+					title="¿Desactivar RSVP?"
+					message="Los invitados ya no podrán confirmar asistencia. La invitación pública seguirá visible."
+					confirmLabel="Desactivar RSVP"
+					destructive
+					loading={deactivating}
+					onConfirm={() => void handleDeactivate()}
+					onCancel={() => setConfirmOpen(false)}
+				/>
+			)}
 		</section>
 	);
 };

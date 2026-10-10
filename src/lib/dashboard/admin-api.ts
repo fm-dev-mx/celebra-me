@@ -1,6 +1,7 @@
 import { dashboardApi, type ApiResult } from '@/lib/dashboard/api-client';
 import { ApiError, type ApiErrorCode } from '@/lib/rsvp/core/errors';
-import type { EventListItemDTO } from './dto/events';
+import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
+import type { EventListItemDTO, UpdateEventDTO } from './dto/events';
 import type {
 	UsersListResponse,
 	CreateUserDTO,
@@ -44,12 +45,20 @@ export class AdminApi {
 		return result.data;
 	}
 
-	// Events (read-only, for user-event membership)
+	// Events
 	async listEvents(page = 1, perPage = 50): Promise<{ items: EventListItemDTO[] }> {
 		const result = await dashboardApi.get<{ items: EventListItemDTO[] }>(
 			`/api/dashboard/admin/events?page=${page}&perPage=${perPage}`,
 		);
 		return this.handleResponse(result);
+	}
+
+	async updateEvent(eventId: string, payload: UpdateEventDTO): Promise<EventRecord> {
+		const result = await dashboardApi.patch<{ item: EventRecord }>(
+			`/api/dashboard/admin/events/${encodeURIComponent(eventId)}`,
+			payload,
+		);
+		return this.handleResponse(result).item;
 	}
 
 	// Users

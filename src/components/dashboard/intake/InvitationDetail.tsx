@@ -125,7 +125,10 @@ const InvitationDetail: FC<Props> = ({ invitationId }) => {
 						</dl>
 					</section>
 
-					<InvitationRsvpPanel rsvpEvent={currentRsvpEvent} />
+					<InvitationRsvpPanel
+						rsvpEvent={currentRsvpEvent}
+						onDeactivated={() => loadInvitationDetail(invitationId)}
+					/>
 				</>
 			)}
 
