@@ -24,7 +24,7 @@ describe('visual impact contract', () => {
 			visualImpactFiles([
 				'src\\styles\\app.scss',
 				'src/styles/app.scss',
-				'scripts/ops/ci-metrics.ts',
+				'scripts/ops/release-status.ts',
 			]),
 		).toEqual(['src/styles/app.scss']);
 	});

@@ -133,7 +133,8 @@ Each unit must state:
 
 - the target section, element, route, or selector;
 - current evidence and the desired visual delta;
-- the owning layer: copy/data, asset, token, section layout/variant, or scoped override;
+- the owning layer: copy/data, asset, preset or profile token, or section variant (profiles hold
+  custom properties only);
 - allowed files or zones and explicit non-goals;
 - behavior and content that must remain unchanged;
 - acceptance criteria, evidence source, viewports, pass rule, and verification owner;

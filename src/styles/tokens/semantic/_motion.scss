@@ -1,26 +1,6 @@
-@use '../../tools/functions' as tools;
 @use '../system/motion' as sys;
 
-// 1. Semantic SCSS Map
-$semantic-motion: (
-	ease: (
-		standard: sys.$sys-ease-in-out,
-		snappy: sys.$sys-ease-snappy,
-		premium: sys.$sys-ease-premium,
-		overshoot: sys.$sys-ease-overshoot,
-		bouncy: sys.$sys-ease-bouncy,
-	),
-	duration: (
-		fast: sys.$sys-duration-fast,
-		snappy: sys.$sys-duration-snappy,
-		standard: sys.$sys-duration-standard,
-		slower: sys.$sys-duration-slower,
-		premium: sys.$sys-duration-premium,
-		reveal: sys.$sys-duration-reveal,
-	),
-);
-
-// 2. CSS Variable Bridge (Semantic Layer)
+// CSS Variable Bridge (Semantic Layer)
 :root {
 	--duration-fast: #{sys.$sys-duration-fast};
 	--duration-snappy: #{sys.$sys-duration-snappy};
@@ -31,10 +11,7 @@ $semantic-motion: (
 	--duration-long: #{sys.$sys-duration-long};
 	--ease-out: #{sys.$sys-ease-out};
 	--ease-standard: #{sys.$sys-ease-in-out};
-	--ease-snappy: #{sys.$sys-ease-snappy};
 	--ease-premium: #{sys.$sys-ease-premium};
-	--ease-overshoot: #{sys.$sys-ease-overshoot};
-	--ease-bouncy: #{sys.$sys-ease-bouncy};
 	--transition-snappy:
 		opacity var(--duration-snappy) var(--ease-standard),
 		transform var(--duration-snappy) var(--ease-standard),
@@ -68,12 +45,4 @@ $semantic-motion: (
 	--motion-hero-details-delay: 0.3s;
 	--motion-hero-affordance-duration: 0.6s;
 	--motion-hero-affordance-delay: 0.7s;
-}
-
-@function ease($token) {
-	@return tools.token($semantic-motion, ease, $token);
-}
-
-@function duration($token) {
-	@return tools.token($semantic-motion, duration, $token);
 }

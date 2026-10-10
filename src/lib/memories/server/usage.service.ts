@@ -78,7 +78,10 @@ export async function summarizeMemorySpaceUsage(
 	return usage;
 }
 
-export type MemorySpaceWithEventDate = MemoriesSpaceRecord & { eventDate: string | null };
+export type MemorySpaceWithEventDate = MemoriesSpaceRecord & {
+	eventDate: string | null;
+	hasOwner: boolean;
+};
 
 export async function listMemorySpacesWithUsage(
 	spaces: readonly MemorySpaceWithEventDate[],

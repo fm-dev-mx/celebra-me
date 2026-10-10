@@ -432,6 +432,7 @@ describe('Admin Users API', () => {
 				eventId: '550e8400-e29b-41d4-a716-446655440099',
 				action: 'assign',
 				membershipRole: 'manager',
+				previousMembershipRole: null,
 				changedAt: '2026-04-01T00:00:00.000Z',
 			});
 
@@ -454,6 +455,7 @@ describe('Admin Users API', () => {
 				eventId: '550e8400-e29b-41d4-a716-446655440099',
 				action: 'assign',
 				membershipRole: 'manager',
+				previousMembershipRole: null,
 				changedAt: '2026-04-01T00:00:00.000Z',
 			});
 		});

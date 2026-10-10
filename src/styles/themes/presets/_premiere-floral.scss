@@ -34,7 +34,6 @@
 	--color-text-on-dark: #{sys.$sys-color-floral-50};
 	--color-border-subtle: #{color.change(sys.$sys-color-floral-300, $alpha: 0.18)};
 	--color-glass-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.1)};
-	--color-glass-bg-accent: #{color.change(sys.$sys-color-floral-300, $alpha: 0.1)};
 	--color-glass-border: #{color.change(sys.$sys-color-floral-300, $alpha: 0.3)};
 	--color-glass-shadow: #{color.change(sys.$sys-color-taupe-500, $alpha: 0.18)};
 	--glass-blur: 18px;
@@ -43,26 +42,12 @@
 	--font-label: 'Cinzel Variable', serif;
 	--font-body: 'Montserrat Variable', sans-serif;
 	--font-calligraphy: 'The Nautigal', cursive;
-	--font-label-tracking: 0.28em;
 	--shadow-premium:
 		0 24px 56px #{color.change(sys.$sys-color-taupe-500, $alpha: 0.14)},
 		0 14px 30px #{color.change(sys.$sys-color-floral-300, $alpha: 0.16)};
-	--rsvp-emoji-yes: '✨';
-	--rsvp-emoji-no: '😔';
-	--hero-card-bg: linear-gradient(
-		160deg,
-		#{color.change(sys.$sys-color-neutral-0, $alpha: 0.78)} 0%,
-		#{color.change(sys.$sys-color-floral-50, $alpha: 0.42)} 100%
-	);
-	--hero-card-border-hairline: #{color.change(sys.$sys-color-floral-300, $alpha: 0.32)};
-	--hero-card-shadow-ambient:
-		0 30px 80px #{color.change(sys.$sys-color-taupe-500, $alpha: 0.24)},
-		0 12px 32px #{color.change(sys.$sys-color-floral-300, $alpha: 0.12)};
 	--hero-title-color-start: #{sys.$sys-color-floral-50};
 	--hero-title-color-mid: #{sys.$sys-color-neutral-0};
 	--hero-title-color-end: #{sys.$sys-color-floral-300};
-	--hero-badge-bg: #{color.change(sys.$sys-color-neutral-0, $alpha: 0.42)};
-	--hero-badge-border: #{color.change(sys.$sys-color-floral-300, $alpha: 0.5)};
 	--hero-badge-text: #{sys.$sys-color-taupe-500};
 	--hero-label-color: #{sys.$sys-color-floral-300};
 	--hero-divider-color: #{color.change(sys.$sys-color-floral-300, $alpha: 0.7)};
@@ -298,7 +283,6 @@
 	--container-max-width-lg: 1280px;
 	--theme-image-filter-hero: none;
 	--theme-image-filter-portrait: none;
-	--theme-image-filter-gallery: none;
 
 	// Interlude Section
 	--interlude-bg: var(--color-surface-dark);
@@ -322,30 +306,7 @@
 	--rsvp-radio-selected-shadow:
 		0 0 0 2px rgb(var(--color-gold-500-rgb) / 30%),
 		0 8px 24px rgb(var(--color-gold-500-rgb) / 18%);
-	--rsvp-radio-indicator-selected: var(--color-gold-500);
 	--rsvp-radio-glow: 0 0 12px rgb(var(--color-gold-500-rgb) / 45%);
-	--rsvp-panel-top-line: linear-gradient(
-		90deg,
-		transparent 0%,
-		rgb(var(--color-gold-500-rgb) / 18%) 18%,
-		rgb(var(--color-action-accent-rgb) / 58%) 50%,
-		rgb(var(--color-gold-500-rgb) / 18%) 82%,
-		transparent 100%
-	);
-	--rsvp-panel-bottom-line: linear-gradient(
-		90deg,
-		transparent 0%,
-		rgb(var(--color-action-accent-rgb) / 14%) 22%,
-		rgb(var(--color-gold-500-rgb) / 42%) 50%,
-		rgb(var(--color-action-accent-rgb) / 14%) 78%,
-		transparent 100%
-	);
-	--rsvp-title-highlight: linear-gradient(
-		135deg,
-		rgb(var(--color-action-accent-rgb) / 72%) 0%,
-		rgb(var(--color-gold-500-rgb) / 92%) 45%,
-		rgb(var(--color-action-accent-rgb) / 74%) 100%
-	);
 
 	// Section Overrides: Gallery
 	--gallery-title-font: var(--font-display);

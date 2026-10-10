@@ -29,7 +29,6 @@ export default [
 			'*.tmp',
 			'*.min.js',
 			'*.min.css',
-			'astro/types.d.ts',
 			'workers/**/worker-configuration.d.ts',
 			// Lockfiles
 			'package-lock.json',
@@ -313,11 +312,7 @@ export default [
 	// Allow require/import flexibility in tooling scripts
 	// ------------------------------------------------------------
 	{
-		files: [
-			'scripts/**/*.{js,cjs,mjs,ts}',
-			'.agent/governance/bin/**/*.{js,cjs,mjs}',
-			'**/*.config.{js,cjs,mjs}',
-		],
+		files: ['scripts/**/*.{js,cjs,mjs,ts}', '**/*.config.{js,cjs,mjs}'],
 		languageOptions: {
 			globals: {
 				...globals.node,

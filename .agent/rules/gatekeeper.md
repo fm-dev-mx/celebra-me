@@ -9,7 +9,7 @@ The current Task Contract controls edits: audit/plan/validate are read-only; imp
 bounded by authorized scope and remediation by confirmed findings. Preserve user-owned work. No
 review grants Git, database, deployment, or provider authority.
 
-Read [review scope and limits](../../docs/core/validation-procedures.md) sections 1–4.5 for review,
+Read [review scope and limits](../../docs/core/validation-procedures.md) sections 1–4 for review,
 remediation, large-diff limits, repository hygiene, or release checkpoints. Existing large-change
 thresholds and restricted actions remain unchanged.
 

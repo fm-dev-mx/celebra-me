@@ -108,6 +108,35 @@ function unknownPublicationHandoff(
 	});
 }
 
+/** Blockers whose only canonical step is a read-only content-parity diagnosis. */
+const CONTENT_PARITY_DIAGNOSE_STEPS: Partial<Record<PromotionReasonCode, string[]>> = {
+	MANAGED_DIVERGENCE: ['Diagnose semantic content divergence', 'Do not promote'],
+	PRODUCTION_AHEAD_OF_PREVIEW: ['Diagnose content parity', 'Update Preview before Production'],
+};
+
+function contentParityCommand(slug: string, eventType?: string): string | null {
+	return eventType
+		? `pnpm invitation:content-parity -- --slug ${slug} --event-type ${eventType}`
+		: null;
+}
+
+/** Typically the leftover of an interrupted apply; the owner decides whether to discard it. */
+function unpublishedDraftHandoff(slug: string, eventType?: string): PromotionHandoff {
+	const discard = `pnpm prod:apply -- --slug ${slug} --acknowledge-discard-unpublished-draft`;
+	return {
+		dryRunCommand: discard,
+		dryRunStepType: 'Verify',
+		applyCommand: `${discard} --apply`,
+		applyStepType: 'Manual/HITL',
+		ownerApplyRequired: true,
+		optionalDiagnosticCommand: contentParityCommand(slug, eventType),
+		steps: [
+			'Revise el plan: el borrador inédito del destino se reemplazará por el paquete.',
+			'Aplique con el descarte reconocido solo si ese borrador no contiene trabajo que conservar.',
+		],
+	};
+}
+
 function blockedPromotionHandoff(
 	reasonCode: PromotionReasonCode,
 	slug: string,
@@ -135,26 +164,17 @@ function blockedPromotionHandoff(
 			steps: ['Diagnose identity conflict', 'Do not promote'],
 		});
 	}
-	if (reasonCode === 'MANAGED_DIVERGENCE') {
-		const dryRunCommand = eventType
-			? `pnpm invitation:content-parity -- --slug ${slug} --event-type ${eventType}`
-			: null;
+	const diagnoseSteps = CONTENT_PARITY_DIAGNOSE_STEPS[reasonCode];
+	if (diagnoseSteps) {
+		const dryRunCommand = contentParityCommand(slug, eventType);
 		return emptyHandoff({
 			dryRunCommand,
 			dryRunStepType: dryRunCommand ? 'Diagnose' : 'Manual/HITL',
-			steps: ['Diagnose semantic content divergence', 'Do not promote'],
+			steps: diagnoseSteps,
 		});
 	}
-	if (reasonCode === 'PRODUCTION_AHEAD_OF_PREVIEW') {
-		const dryRunCommand = eventType
-			? `pnpm invitation:content-parity -- --slug ${slug} --event-type ${eventType}`
-			: null;
-		return emptyHandoff({
-			dryRunCommand,
-			dryRunStepType: dryRunCommand ? 'Diagnose' : 'Manual/HITL',
-			steps: ['Diagnose content parity', 'Update Preview before Production'],
-		});
-	}
+	if (reasonCode === 'UNPUBLISHED_DRAFT_DIVERGENCE')
+		return unpublishedDraftHandoff(slug, eventType);
 	if (reasonCode === 'PREVIEW_APPROVAL_REQUIRED') {
 		const approveCommand =
 			hasPendingPreviewApproval && packageHash
@@ -278,6 +298,19 @@ export function formatTransitionLabel(
 	return `${sourceLabel} → ${destLabel}`;
 }
 
+/** Reasons whose explanation does not depend on the environment states. */
+const FIXED_REASON_TEXT: Partial<Record<PromotionReasonCode, string>> = {
+	IDENTITY_CONFLICT: 'Duplicate or identity-conflicting invitation rows.',
+	MANAGED_DIVERGENCE:
+		'Managed content in the target diverges from its baseline (manual or editor drift).',
+	UNPUBLISHED_DRAFT_DIVERGENCE:
+		'The target holds an unpublished draft that matches neither the package nor its last publication.',
+	CANONICAL_UNAVAILABLE: 'Canonical fingerprint could not be built from the registry definition.',
+	EVIDENCE_INCOMPLETE: 'Live promotional evidence is incomplete.',
+	PREVIEW_APPROVAL_REQUIRED:
+		'Production requires an exact, live-verified Preview approval for this package.',
+};
+
 export function formatPublicationReason(
 	environments: Record<TargetEnv, EnvironmentPromotionState>,
 	reasonCode: PromotionReasonCode,
@@ -302,21 +335,8 @@ export function formatPublicationReason(
 	) {
 		return `Local is ${local} relative to canonical.`;
 	}
-	if (reasonCode === 'IDENTITY_CONFLICT') {
-		return 'Duplicate or identity-conflicting invitation rows.';
-	}
-	if (reasonCode === 'MANAGED_DIVERGENCE') {
-		return 'Published content matches canonical but draft diverges, or managed content conflicts.';
-	}
-	if (reasonCode === 'CANONICAL_UNAVAILABLE') {
-		return 'Canonical fingerprint could not be built from the registry definition.';
-	}
-	if (reasonCode === 'EVIDENCE_INCOMPLETE') {
-		return 'Live promotional evidence is incomplete.';
-	}
-	if (reasonCode === 'PREVIEW_APPROVAL_REQUIRED') {
-		return 'Production requires an exact, live-verified Preview approval for this package.';
-	}
+	const fixed = FIXED_REASON_TEXT[reasonCode];
+	if (fixed) return fixed;
 	if (reasonCode === 'PRODUCTION_PREFLIGHT_BLOCKED') {
 		const code = details?.preflightBlockCode;
 		const detail = details?.preflightReason;

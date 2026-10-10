@@ -10,8 +10,10 @@ on:
             - 'vercel.deployment.ready'
             - 'vercel.deployment.promoted'
 
+# `ready` and `promoted` are different checks; a `ready` dispatch for the same ref must not cancel
+# the Production smoke that `promoted` started.
 concurrency:
-    group: post-deploy-smoke-${{ github.event.client_payload.environment }}-${{ github.event.client_payload.git.ref }}
+    group: post-deploy-smoke-${{ github.event.action }}-${{ github.event.client_payload.environment }}-${{ github.event.client_payload.git.ref }}
     cancel-in-progress: true
 
 jobs:
@@ -86,6 +88,17 @@ jobs:
                   pnpm --silent invitation:media:verify -- --target preview --all --json > "$MEDIA_VERIFY_REPORT"
                   status=$?
                   set -e
+                  # Package images the Preview DB has not received yet are a content backlog, not a
+                  # delivery failure: list them, do not fail. `pnpm dbs` owns the next command.
+                  if jq -e '(.summary.pendingPublish // 0) > 0' "$MEDIA_VERIFY_REPORT" > /dev/null 2>&1; then
+                      jq -r '
+                          "### Preview images pending publication: \(.summary.pendingPublish)",
+                          "",
+                          "| Route | Asset |",
+                          "| --- | --- |",
+                          (.rows[] | select(.classification == "PENDING_PUBLISH") | "| \(.route) | \(.assetKey) |")
+                      ' "$MEDIA_VERIFY_REPORT" | tee -a "$GITHUB_STEP_SUMMARY"
+                  fi
                   if [ "$status" -ne 0 ]; then
                       {
                           echo "### Preview media verification failed (exit $status)"
@@ -93,7 +106,7 @@ jobs:
                           if jq -e '.rows | type == "array"' "$MEDIA_VERIFY_REPORT" > /dev/null 2>&1; then
                               # Report rows carry only routes, asset keys, redacted URLs, and fixed reasons.
                               jq -r '
-                                  ([.rows[] | select(.classification != "HEALTHY")]) as $failed
+                                  ([.rows[] | select(.classification != "HEALTHY" and .classification != "PENDING_PUBLISH")]) as $failed
                                   | "Invitations: \(.summary.invitations), assets: \(.summary.assets), failures: \(.summary.failures)",
                                     "",
                                     "| Route | Asset | Classification | Reasons |",

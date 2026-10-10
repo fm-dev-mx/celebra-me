@@ -177,16 +177,6 @@ export const intakeBlockSchemas = {
 	gifts: giftsBlockSchema,
 	'special-messages': specialMessagesBlockSchema,
 } as const;
-
-export type EventDetailsBlockData = z.infer<typeof eventDetailsBlockSchema>;
-export type MainPeopleBlockData = z.infer<typeof mainPeopleBlockSchema>;
-export type DateLocationsBlockData = z.infer<typeof dateLocationsBlockSchema>;
-export type PhotosBlockData = z.infer<typeof photosBlockSchema>;
-export type RsvpConfigBlockData = z.infer<typeof rsvpConfigBlockSchema>;
-export type MusicBlockData = z.infer<typeof musicBlockSchema>;
-export type GiftsBlockData = z.infer<typeof giftsBlockSchema>;
-export type SpecialMessagesBlockData = z.infer<typeof specialMessagesBlockSchema>;
-
 export const IntakeBlockTypeSchema = z.enum(INTAKE_BLOCK_TYPES);
 
 export const EventTypeSchema = z.enum(EVENT_TYPES);

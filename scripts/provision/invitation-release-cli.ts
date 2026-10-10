@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /** The sole public managed-invitation release command (Local → Preview → approve → Production). */
-/* eslint-disable max-lines, no-useless-assignment -- Managed release CLI handles mode dispatch, per-target planning, and interactive wizard. */
+/* eslint-disable max-lines, no-useless-assignment -- Managed release CLI handles mode dispatch and per-target planning. */
 import { confirm, select } from '@inquirer/prompts';
+import { flagValue as value } from '../lib/cli-args.ts';
 import { type LocalApplyResult } from './apply-local-invitation.ts';
 import { exportInvitationPackage, type InvitationPackageData } from './invitation-package.ts';
 import { runImportEngine } from './invitation-import-engine.ts';
@@ -19,6 +20,7 @@ import {
 	executeTargetPlans,
 	type LifecycleExecutionError,
 } from './invitation-lifecycle-execution.ts';
+import { lifecycleReleaseBlockFor } from './invitations/lifecycle-gate.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
 import { getInvitationAssetSourceDir } from './invitations/invitation-definition.ts';
 import { parseAssetPolicy } from './asset-reconciliation.ts';
@@ -50,7 +52,7 @@ import {
 	translatePreviewNamespaceFailure,
 } from './invitation-operator-guidance.ts';
 import { LOCAL_DB_URL, redactCredentials } from '../db/db-target-config.ts';
-import { assertPreviewDbUrl, getPreviewDbUrl, getProdDbUrl } from '../db/db-workflow-lib.ts';
+import { getProdDbUrl, requirePreviewDbUrl } from '../db/db-workflow-lib.ts';
 import { approvePreviewArtifactFromLiveVerification } from './preview-approval-service.ts';
 import { getDefaultPreviewApprovalStore } from './preview-approval-store.ts';
 import {
@@ -89,7 +91,6 @@ import {
 	listDriftConflicts,
 	type ConflictResolutions,
 } from './semantic-delta.ts';
-import { runDestinationReleaseWizard } from './invitation-release-wizard.ts';
 import { formatPreviewReceiptDiagnosis, printStatusReport } from './invitation-release-status.ts';
 import { isInteractiveSession, isPromptExit, NonInteractiveError } from '../lib/cli-prompts.ts';
 import { runPromotionPreflight } from './invitation-promote.ts';
@@ -103,7 +104,7 @@ import {
 	renderOperatorError,
 	writeHuman,
 } from '../db/operator-cli-ux.ts';
-import { isTargetDivergenceConflictMessage } from './promotion-comparison.ts';
+import { isTargetDivergenceConflict } from './promotion-comparison.ts';
 
 function mergeConflictsFromError(error: unknown): TargetPlanData['mergeConflicts'] {
 	let current: unknown = error;
@@ -169,11 +170,6 @@ interface StageReport {
 	approvalState?: string;
 }
 
-function value(args: string[], flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	return index >= 0 ? args[index + 1] : undefined;
-}
-
 function assetCounts(actions: Array<{ resource: string; action: string }>): {
 	created: number;
 	replaced: number;
@@ -205,7 +201,6 @@ async function runProductionPreflightDispatch(input: {
 	definition: ReturnType<typeof getInvitationDefinition>;
 	ownerUserId?: string;
 	pruneAssets: boolean;
-	backupManifestPath?: string;
 	json: boolean;
 	verbose: boolean;
 	packageInput: Awaited<ReturnType<typeof resolveInvitationPackageInput>>;
@@ -222,7 +217,6 @@ async function runProductionPreflightDispatch(input: {
 		updateScope: input.updateScope,
 		conflictResolutions: input.conflictResolutions,
 		acknowledgeDiscardUnpublishedDraft: input.acknowledgeDiscardUnpublishedDraft,
-		backupManifestPath: input.backupManifestPath,
 		requireBackup: false,
 		getProductionDbUrl: getProdDbUrl,
 	});
@@ -266,7 +260,6 @@ async function runProductionReleaseDispatch(input: {
 	pruneAssets: boolean;
 	updateScope?: UpdateScope;
 	conflictResolutionsPath?: string;
-	backupManifestPath?: string;
 	acknowledgeDiscardUnpublishedDraft: boolean;
 	apply: boolean;
 	json: boolean;
@@ -360,7 +353,7 @@ export function printHelp(): void {
 invitation:release — Sole managed invitation release CLI
 
 Usage:
-  pnpm invitation:release                                             Interactive menu (terminal): Update Local | Prepare Preview | Approve | Production dry-run | Status | Tools
+  pnpm dbs                                                            Interactive menu: reads every environment and prints the exact next command
   pnpm invitation:release --status [--slug <slug>] [--targets <targets>] [--json]
   pnpm invitation:release --slug <slug> --targets local|preview|local,preview --dry-run|--apply [--non-interactive] [--source-dir <dir>|--package <path>]
   pnpm invitation:release --slug <slug> --targets production --dry-run
@@ -394,7 +387,6 @@ Options:
                                Discard unpublished target-draft edits that diverge from both the package and published content, then apply the package
   --conflict-resolutions <path> JSON { "resolutions": { "<path>": "package"|"target" } } (required when apply has merge conflicts)
   --field-selections <path>    JSON { "resolutions": { "<path>": "package"|"target" } } selective apply (deselected paths keep target)
-  --backup-manifest <path>     Optional critical backup manifest for Production promote
   --verbose                    Show full field values and plan IDs in terminal output
   --json                       Format output as JSON
   --owner-user-id <uuid>       Optional override/assertion; new invites default to a dedicated host ({hostLoginAlias}@clientes.celebra.invalid)
@@ -558,9 +550,7 @@ async function executePreviewTargetPlan(input: {
 	}
 	let dbUrl: string;
 	try {
-		const resolved = getPreviewDbUrl();
-		assertPreviewDbUrl(resolved.url);
-		dbUrl = resolved.url;
+		dbUrl = requirePreviewDbUrl().url;
 	} catch {
 		throw Object.assign(new Error('PREVIEW_DB_URL no configurada o perímetro inválido.'), {
 			mutationStarted: false,
@@ -634,7 +624,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	const nonInteractive = args.includes('--non-interactive');
 	const verbose = args.includes('--verbose');
 	const presenterOptions = { verbose };
-	const isTTY = Boolean(process.stdout.isTTY);
+	// Same gate as the other operator CLIs: all three streams on a terminal and never an agent.
+	const isTTY = isInteractiveSession();
 
 	if (args.includes('--help') || args.includes('-h')) {
 		printHelp();
@@ -714,12 +705,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 
 	const packageHash = value(args, '--package-hash');
 	const approve = args.includes('--approve');
-	if (packageHash || approve || args.includes('--artifact')) {
-		if (args.includes('--artifact')) {
-			throw new Error(
-				'--artifact was removed. Import legacy approvals once, then use --package-hash <hash> --approve.',
-			);
-		}
+	if (packageHash || approve) {
 		if (!packageHash || !approve || args.includes('--apply')) {
 			throw new Error('Direct Preview approval requires --package-hash <hash> --approve.');
 		}
@@ -829,7 +815,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	const sourceDir = value(args, '--source-dir');
 	const packagePath = value(args, '--package');
 
-	// Interactive destination wizard (no --status/--dry-run/--apply). Automation keeps flags.
+	// This CLI executes one explicit mode. `pnpm dbs` is the interactive entry point: it reads every
+	// environment and prints the exact next command, so no second menu lives here.
 	if (modeCount === 0) {
 		if (!interactive) {
 			throw new NonInteractiveError(
@@ -837,10 +824,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 				'--non-interactive with --status, --dry-run or --apply',
 			);
 		}
-
-		// Ignore leftover --targets from shell history; destination menu owns the outcome.
-		await runDestinationReleaseWizard({ slug, verbose });
-		return;
+		throw new Error(
+			'Indique un modo: --status, --dry-run o --apply. El menú interactivo es pnpm dbs; imprime el comando exacto para cada invitación y entorno.',
+		);
 	}
 
 	const parsedScope = parseCliUpdateScope(args);
@@ -931,7 +917,6 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			pruneAssets,
 			updateScope: parsedScope,
 			conflictResolutionsPath: value(args, '--conflict-resolutions'),
-			backupManifestPath: value(args, '--backup-manifest'),
 			acknowledgeDiscardUnpublishedDraft,
 			apply: Boolean(apply),
 			json,
@@ -945,6 +930,9 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 	// and a dry-run reports what a non-interactive apply would need.
 	let previewWriteScope: PreviewWriteScopeAssessment | undefined;
 	if (targets.includes('preview')) {
+		// Hosted targets only receive published definitions; Local stays open for authoring.
+		const lifecycleBlock = slug ? lifecycleReleaseBlockFor(slug, 'preview') : null;
+		if (lifecycleBlock) throw new Error(lifecycleBlock);
 		if (apply) {
 			verifyPreviewWriteAuthorization({
 				slug,
@@ -1172,9 +1160,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 			} else if (target === 'preview') {
 				let targetDbUrl: string | undefined;
 				try {
-					const resolved = getPreviewDbUrl();
-					assertPreviewDbUrl(resolved.url);
-					targetDbUrl = resolved.url;
+					targetDbUrl = requirePreviewDbUrl().url;
 				} catch {
 					targetDbUrl = undefined;
 				}
@@ -1262,9 +1248,10 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 							error instanceof Error ? error.message : String(error),
 						);
 						const namespaceReason = translatePreviewNamespaceFailure(errMsg);
+						const draftDivergence = isTargetDivergenceConflict(error);
 						const previewReason =
 							namespaceReason ??
-							(isTargetDivergenceConflictMessage(errMsg)
+							(draftDivergence
 								? errMsg
 								: 'No fue posible inspeccionar Preview de forma segura. Revise credenciales, identidad del proyecto, conectividad y estado remoto antes de volver a planificar.');
 						reports.push({
@@ -1273,13 +1260,13 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 							status: 'BLOCKED',
 							reasonCode: namespaceReason
 								? 'PREVIEW_ASSET_NAMESPACE_MISMATCH'
-								: isTargetDivergenceConflictMessage(errMsg)
+								: draftDivergence
 									? 'TARGET_DIVERGENCE_CONFLICT'
 									: 'PREVIEW_PLAN_BLOCKED',
 							reason: previewReason,
 							remainingAction:
 								namespaceReason ??
-								(isTargetDivergenceConflictMessage(errMsg)
+								(draftDivergence
 									? errMsg
 									: `Detalle técnico sanitizado: ${errMsg}`),
 						});

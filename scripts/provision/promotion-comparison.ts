@@ -416,8 +416,22 @@ export const TARGET_DIVERGENCE_ACKNOWLEDGE_HINT =
  *  Callers should match this constant rather than parsing the error message. */
 export const TARGET_DIVERGENCE_BLOCK_CODE = 'UNPUBLISHED_DRAFT_DIVERGENCE' as const;
 
-export function isTargetDivergenceConflictMessage(message: string): boolean {
-	return message.includes('Target divergence conflict for');
+/** The target holds an unpublished draft that matches neither the package nor its last publication. */
+export class TargetDivergenceConflictError extends Error {
+	readonly code = TARGET_DIVERGENCE_BLOCK_CODE;
+	constructor(message: string) {
+		super(message);
+		this.name = 'TargetDivergenceConflictError';
+	}
+}
+
+export function isTargetDivergenceConflict(error: unknown): error is TargetDivergenceConflictError {
+	return (
+		error instanceof TargetDivergenceConflictError ||
+		(typeof error === 'object' &&
+			error !== null &&
+			(error as { code?: unknown }).code === TARGET_DIVERGENCE_BLOCK_CODE)
+	);
 }
 
 export function checkTargetDivergenceConflict(
@@ -448,7 +462,7 @@ export function checkTargetDivergenceConflict(
 			existingPub && existingPub.version !== undefined && existingPub.version !== null
 				? String(existingPub.version)
 				: 'none';
-		throw new Error(
+		throw new TargetDivergenceConflictError(
 			`Target divergence conflict for "${slug}": target draft revision ${String(existingDraft.updated_at ?? existingDraft.id ?? 'unknown')}; target published version ${publishedVersion}; package content hash ${packageHash}; proposed merged-content hash ${proposedHash}; target draft hash ${targetDraftHash}; target published hash ${targetPubHash ?? 'none'}. ${TARGET_DIVERGENCE_ACKNOWLEDGE_HINT}`,
 		);
 	}

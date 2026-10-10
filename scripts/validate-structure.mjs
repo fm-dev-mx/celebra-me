@@ -15,7 +15,6 @@ const REQUIRED_SKILL_FIELDS = [
 	'related_skills',
 	'related_docs',
 ];
-const REQUIRED_WORKFLOW_FIELDS = ['description', 'lifecycle', 'domain', 'owner'];
 const REQUIRED_ROLE_FIELDS = [
 	'name',
 	'role',
@@ -194,9 +193,11 @@ function isSemver(value) {
 }
 
 function extractPreconditionPaths(value) {
-	return String(value ?? '')
-		.match(/(?:^|\s)(AGENTS\.md|(?:\.agent|docs|scripts|tests|src|workers)\/[^\s,;`)]+)/gu)
-		?.map((match) => match.trim()) ?? [];
+	return (
+		String(value ?? '')
+			.match(/(?:^|\s)(AGENTS\.md|(?:\.agent|docs|scripts|tests|src|workers)\/[^\s,;`)]+)/gu)
+			?.map((match) => match.trim()) ?? []
+	);
 }
 
 function collectIndexMarkdownPaths(content) {
@@ -287,7 +288,9 @@ function validateSkillReferences(root, relativeFile, frontmatter, relatedSkillRe
 	for (const precondition of frontmatter.preconditions ?? []) {
 		for (const reference of extractPreconditionPaths(precondition)) {
 			if (!existsSync(path.resolve(root, reference))) {
-				errors.push(`${relativeFile}: precondition path "${reference}" does not resolve on disk.`);
+				errors.push(
+					`${relativeFile}: precondition path "${reference}" does not resolve on disk.`,
+				);
 			}
 		}
 	}
@@ -311,34 +314,28 @@ function validateSkills(root) {
 		}
 		const directoryName = path.basename(path.dirname(skillFile));
 		errors.push(...validateSkillMetadata(relativeFile, frontmatter, directoryName));
-		errors.push(...validateSkillReferences(root, relativeFile, frontmatter, relatedSkillReferences));
+		errors.push(
+			...validateSkillReferences(root, relativeFile, frontmatter, relatedSkillReferences),
+		);
 		skillNames.add(directoryName);
 	}
 
 	for (const { source, reference } of relatedSkillReferences) {
 		if (!skillNames.has(reference)) {
-			errors.push(`${source}: related skill "${reference}" does not resolve under .agent/skills.`);
+			errors.push(
+				`${source}: related skill "${reference}" does not resolve under .agent/skills.`,
+			);
 		}
 	}
 	return { errors, skillNames };
 }
 
-function validateWorkflows(root) {
-	const errors = [];
-	for (const workflowFile of listWorkflowFiles(root)) {
-		const relativeFile = normalizePath(path.relative(root, workflowFile));
-		const frontmatter = parseFrontmatter(readFileSync(workflowFile, 'utf8'));
-		if (!frontmatter) {
-			errors.push(`${relativeFile}: missing YAML frontmatter.`);
-			continue;
-		}
-		for (const field of REQUIRED_WORKFLOW_FIELDS) {
-			if (!(field in frontmatter) || frontmatter[field] === undefined || !String(frontmatter[field]).trim()) {
-				errors.push(`${relativeFile}: missing required frontmatter field "${field}".`);
-			}
-		}
-	}
-	return errors;
+/** The .agent/workflows layer is retired: procedures live in rules, skills or docs. */
+function rejectRetiredWorkflows(root) {
+	return listWorkflowFiles(root).map(
+		(file) =>
+			`${normalizePath(path.relative(root, file))}: .agent/workflows is retired; move the procedure into a rule, skill or doc.`,
+	);
 }
 
 function validateRoles(root, skillNames) {
@@ -448,9 +445,7 @@ function validateArchivedPlans(root) {
 			!RECOGNIZED_PLAN_STATUSES.has(frontmatter.status) &&
 			frontmatter.status !== 'archived'
 		) {
-			errors.push(
-				`${relativeFile}: plan status "${frontmatter.status}" is not recognized.`,
-			);
+			errors.push(`${relativeFile}: plan status "${frontmatter.status}" is not recognized.`);
 		} else if (ACTIVE_DIRECTORY_PLAN_STATUSES.has(frontmatter.status)) {
 			errors.push(
 				`${relativeFile}: status "${frontmatter.status}" belongs under plans/active/, not archived/.`,
@@ -479,9 +474,7 @@ function validateCanonicalOwnership(root) {
 	for (const required of REQUIRED_OWNERSHIP) {
 		const owner = owners.get(required.aspect);
 		if (!owner) {
-			errors.push(
-				`.agent/ownership.yaml: missing required aspect "${required.aspect}".`,
-			);
+			errors.push(`.agent/ownership.yaml: missing required aspect "${required.aspect}".`);
 			continue;
 		}
 		if (normalizePath(owner) !== normalizePath(required.owner)) {
@@ -536,7 +529,9 @@ function validateProviderAdapters(root, trackedFiles) {
 		PROVIDER_ADAPTER_ROOTS.some((prefix) => tracked.startsWith(prefix)),
 	);
 	if (trackedProviderFiles.length > 0 && !adapters) {
-		errors.push('.agent/ownership.yaml: provider_adapters is required for tracked provider adapter files.');
+		errors.push(
+			'.agent/ownership.yaml: provider_adapters is required for tracked provider adapter files.',
+		);
 		return errors;
 	}
 	if (!adapters) return errors;
@@ -545,25 +540,33 @@ function validateProviderAdapters(root, trackedFiles) {
 	for (const adapter of adapters) {
 		const adapterPath = normalizePath(adapter.path);
 		if (!adapterPath || seen.has(adapterPath)) {
-			errors.push(`.agent/ownership.yaml: duplicate or empty provider adapter path "${adapterPath}".`);
+			errors.push(
+				`.agent/ownership.yaml: duplicate or empty provider adapter path "${adapterPath}".`,
+			);
 		}
 		seen.add(adapterPath);
 		if (!adapter.provider || !adapter.purpose || adapter.sharedOwners.length === 0) {
 			errors.push(`.agent/ownership.yaml: provider adapter "${adapterPath}" is incomplete.`);
 		}
 		if (!trackedFiles.includes(adapterPath)) {
-			errors.push(`.agent/ownership.yaml: provider adapter path "${adapterPath}" is not tracked.`);
+			errors.push(
+				`.agent/ownership.yaml: provider adapter path "${adapterPath}" is not tracked.`,
+			);
 		}
 		for (const owner of adapter.sharedOwners) {
 			if (!existsSync(path.resolve(root, owner))) {
-				errors.push(`.agent/ownership.yaml: adapter owner "${owner}" does not resolve on disk.`);
+				errors.push(
+					`.agent/ownership.yaml: adapter owner "${owner}" does not resolve on disk.`,
+				);
 			}
 		}
 	}
 	for (const tracked of trackedProviderFiles) {
 		const matches = adapters.filter((adapter) => normalizePath(adapter.path) === tracked);
 		if (matches.length !== 1) {
-			errors.push(`${tracked}: provider adapter must be registered exactly once in ownership.yaml.`);
+			errors.push(
+				`${tracked}: provider adapter must be registered exactly once in ownership.yaml.`,
+			);
 		}
 	}
 	return errors;
@@ -658,8 +661,8 @@ function validateCanonicalCiInvocation(root) {
 		...['AGENTS.md', 'README.md']
 			.map((file) => path.join(root, file))
 			.filter((file) => existsSync(file)),
-		...['.agent/rules', '.agent/workflows', '.agent/skills', 'docs/core', 'docs/domains'].flatMap(
-			(directory) => listMarkdownFilesRecursively(path.join(root, directory)),
+		...['.agent/rules', '.agent/skills', 'docs/core', 'docs/domains'].flatMap((directory) =>
+			listMarkdownFilesRecursively(path.join(root, directory)),
 		),
 	];
 	for (const file of files) {
@@ -723,10 +726,11 @@ function checkRoutingMatrixItem(root, section, item, skillNames) {
 		if (!skillNames.has(item)) {
 			return `.agent/routing-matrix.yaml: referenced skill "${item}" does not resolve under .agent/skills.`;
 		}
-	} else if (['workflows', 'docs', 'briefs'].includes(section)) {
+	} else if (section === 'workflows') {
+		return `.agent/routing-matrix.yaml: workflow "${item}" references the retired .agent/workflows layer.`;
+	} else if (['docs', 'briefs'].includes(section)) {
 		if (!existsSync(path.resolve(root, item))) {
-			const label = section === 'workflows' ? 'workflow' : section.slice(0, -1);
-			return `.agent/routing-matrix.yaml: referenced ${label} "${item}" does not exist.`;
+			return `.agent/routing-matrix.yaml: referenced ${section.slice(0, -1)} "${item}" does not exist.`;
 		}
 	}
 	return null;
@@ -760,7 +764,12 @@ function validateRoutingMatrixYaml(root, skillNames) {
 
 		const listMatch = trimmed.match(/^-\s*["']?([^"'\r\n]+)["']?$/);
 		if (listMatch && currentSection) {
-			const err = checkRoutingMatrixItem(root, currentSection, listMatch[1].trim(), skillNames);
+			const err = checkRoutingMatrixItem(
+				root,
+				currentSection,
+				listMatch[1].trim(),
+				skillNames,
+			);
 			if (err) errors.push(err);
 		}
 	}
@@ -775,8 +784,14 @@ function detectOrphanedGuidance(root, skillNames) {
 	const matrixContent = readFileSync(matrixFile, 'utf8');
 
 	for (const skillName of skillNames) {
-		if (!matrixContent.includes(`"${skillName}"`) && !matrixContent.includes(`'${skillName}'`) && !matrixContent.includes(`- ${skillName}`)) {
-			errors.push(`.agent/skills/${skillName}: skill is not referenced in .agent/routing-matrix.yaml.`);
+		if (
+			!matrixContent.includes(`"${skillName}"`) &&
+			!matrixContent.includes(`'${skillName}'`) &&
+			!matrixContent.includes(`- ${skillName}`)
+		) {
+			errors.push(
+				`.agent/skills/${skillName}: skill is not referenced in .agent/routing-matrix.yaml.`,
+			);
 		}
 	}
 
@@ -785,14 +800,6 @@ function detectOrphanedGuidance(root, skillNames) {
 		const relativeRule = normalizePath(path.relative(root, ruleFile));
 		if (!matrixContent.includes(relativeRule)) {
 			errors.push(`${relativeRule}: rule is not referenced in .agent/routing-matrix.yaml.`);
-		}
-	}
-
-	const workflowFiles = listFiles(path.join(root, '.agent', 'workflows'), (name) => name.endsWith('.md'));
-	for (const wfFile of workflowFiles) {
-		const relativeWf = normalizePath(path.relative(root, wfFile));
-		if (!matrixContent.includes(relativeWf)) {
-			errors.push(`${relativeWf}: workflow is not referenced in .agent/routing-matrix.yaml.`);
 		}
 	}
 
@@ -805,7 +812,7 @@ export function validateStructure({ root = process.cwd(), trackedFiles } = {}) {
 	return [
 		...skills.errors,
 		...validateRoles(root, skills.skillNames),
-		...validateWorkflows(root),
+		...rejectRetiredWorkflows(root),
 		...validateIndex(root),
 		...validateActivePlans(root),
 		...validateArchivedPlans(root),

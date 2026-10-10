@@ -213,6 +213,63 @@ export interface MemoriesReadiness {
 	unreachable: MemoriesWorkerKey[];
 }
 
+/**
+ * Why an upload did not end accepted, recorded in the audit as metadata `reason`
+ * (`upload_refused` before reserving, `validation_failed` after inspection).
+ * Codes name a cause and never carry guest data.
+ */
+export const MEMORIES_UPLOAD_FAILURE_REASONS = [
+	...MEMORIES_RESERVATION_REFUSALS,
+	'window_closed',
+	'file_policy',
+	'video_duration',
+	'object_missing',
+	'signature_invalid',
+	'size_mismatch',
+	'checksum_mismatch',
+] as const;
+export type MemoriesUploadFailureReason = (typeof MEMORIES_UPLOAD_FAILURE_REASONS)[number];
+
+export function isMemoriesUploadFailureReason(
+	value: unknown,
+): value is MemoriesUploadFailureReason {
+	return (
+		typeof value === 'string' &&
+		(MEMORIES_UPLOAD_FAILURE_REASONS as readonly string[]).includes(value)
+	);
+}
+
+/** One read-only reachability check of a space (guest page, API, upload Worker). */
+export interface MemoriesLiveCheck {
+	check: string;
+	status: 'PASS' | 'FAIL' | 'SKIPPED';
+	detail: string;
+}
+
+/**
+ * Super-admin health view of one space. Counts and dates only: no guest names,
+ * aliases, captions, object keys or media.
+ */
+export interface MemoriesSpaceDiagnostics {
+	eventId: string;
+	/** Every catalog row by status, including rows whose object was already cleaned up. */
+	statusCounts: Record<MemoriesMediaStatus, number>;
+	/** In-flight rows past the point where the cleanup would re-check them. */
+	stalled: { uploading: number; validating: number };
+	/** Refused or failed uploads by cause, from the audit trail. */
+	failures: Partial<Record<MemoriesUploadFailureReason, number>>;
+	/** Failures recorded before causes were kept (`validation_failed` without a reason). */
+	failuresWithoutReason: number;
+	/** Reservations released because the file never reached storage. */
+	abandoned: number;
+	/** True when the audit scan stopped at its row cap; counts are then a lower bound. */
+	auditTruncated: boolean;
+	lastAcceptedAt: string | null;
+	/** Present only when the live checks were requested. */
+	liveChecks: MemoriesLiveCheck[] | null;
+	generatedAt: string;
+}
+
 /** What a shared-gallery visitor sees of each file: no aliases, keys or status. */
 export type MemoriesGalleryItem = Pick<
 	MemoriesOrganizerItem,
@@ -308,6 +365,8 @@ export interface MemoriesAdminSpaceItem extends MemoriesSpaceRecord {
 	eventDate: string | null;
 	/** Latest file download by a host; proves a download happened, not that it was complete. */
 	lastHostDownloadAt: string | null;
+	/** True when an active `owner` membership exists; only owners see the organizer surface. */
+	hasOwner: boolean;
 }
 
 export interface MemoriesAdminTotals {

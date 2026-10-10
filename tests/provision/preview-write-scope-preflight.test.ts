@@ -120,3 +120,32 @@ describe('invitation:release Preview write scope preflight wiring', () => {
 		expect(help).toContain('Preview write scope: present | missing | invalid');
 	});
 });
+
+describe('invitation:draft-restore Preview write wiring', () => {
+	const source = readFileSync(
+		resolve(process.cwd(), 'scripts/provision/draft-restore-cli.ts'),
+		'utf8',
+	);
+	const applyBody = source.slice(source.indexOf('async function applyPlan('));
+
+	it('authorizes a Preview write before the first write', () => {
+		const gate = applyBody.indexOf('authorizePreviewWriteApply(');
+		expect(gate).toBeGreaterThan(0);
+		expect(applyBody.slice(applyBody.lastIndexOf('if (', gate), gate)).toContain(
+			"target === 'preview'",
+		);
+		expect(gate).toBeLessThan(applyBody.indexOf('applyRestoreSql({'));
+		expect(source).toContain("const PREVIEW_WRITE_OPERATION = 'draft-restore'");
+	});
+});
+
+describe('Preview DB URL resolution', () => {
+	it('every Preview URL read goes through the fail-closed helper', () => {
+		const persisted = readFileSync(
+			resolve(process.cwd(), 'scripts/provision/persisted-invitation-content.ts'),
+			'utf8',
+		);
+		expect(persisted).toContain("if (target === 'preview') return requirePreviewDbUrl().url;");
+		expect(persisted).not.toContain('getPreviewDbUrl');
+	});
+});

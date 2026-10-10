@@ -35,13 +35,14 @@ states.
 - Load actual public routes with `skipEnvelope=true&animations=off`, without the test variant
   harness or the layout-changing screenshot query mode.
 - Wait for fonts and decoded images, scroll to trigger deferred content, stop animations, and hide
-  operational fixed overlays (navigation, consent banner and music player) using the existing capture utility. Navigation/envelope interactions
-  are outside this section report.
+  operational fixed overlays (navigation, consent banner and music player) using the existing
+  capture utility. Navigation/envelope interactions are outside this section report.
 - Align the hero and section wrappers by `data-screenshot-section`; repeated interludes retain their
   ordinal identity. Detect duplicate identities, missing sections, changed order, invalid routes,
   and failed images explicitly.
-- Capture each section directly after measuring the public DOM, avoiding blank compositor regions in very tall full-page bitmaps. Reject incomplete captures. Pad unequal dimensions; never
-  resize images to make layouts appear equal.
+- Capture each section directly after measuring the public DOM, avoiding blank compositor regions in
+  very tall full-page bitmaps. Reject incomplete captures. Pad unequal dimensions; never resize
+  images to make layouts appear equal.
 - Flag RGB channel differences above 24; surface cases exceeding 0.1% of pixels or changing
   dimensions/order. Percentage is a diagnostic ranking, not severity or acceptance. Font, text,
   source and crop metadata aid investigation; different asset hosts alone cannot establish a visual
@@ -50,6 +51,12 @@ states.
   environment to itself. Reproducible cross-environment changes are DIFFERENT; changes between
   repeated captures are UNSTABLE. Missing sections are MISSING. Failed captures are ERROR, never
   MATCH. Missing route coverage or corrupted capture bytes fail closed.
+
+Measurement version 2 includes every visible text-owning HTML element, including labels and spans,
+and records font style and letter spacing. `--full-pages true` adds complete pages through the
+existing document-strip capture and crop-integrity checks. Visible Astro islands must hydrate before
+a capture is valid. Image evidence retains delivered bytes and, for supported optimizer URLs,
+separately verifies the original input; SVG identity normalizes only XML line endings.
 
 ## Review
 

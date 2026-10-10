@@ -19,6 +19,7 @@ jest.mock('@/lib/memories/client/api', () => {
 			list: jest.fn(),
 			create: jest.fn(),
 			update: jest.fn(),
+			diagnostics: jest.fn(),
 			qrUrl: (eventId: string) => `/api/dashboard/admin/memories/${eventId}/qr`,
 		},
 	};
@@ -90,13 +91,16 @@ const EMPTY_USAGE: MemoriesAdminSpaceItem['usage'] = {
 function adminItem(
 	space: MemoriesSpaceRecord,
 	usage: Partial<MemoriesAdminSpaceItem['usage']> = {},
-	extra: Partial<Pick<MemoriesAdminSpaceItem, 'eventDate' | 'lastHostDownloadAt'>> = {},
+	extra: Partial<
+		Pick<MemoriesAdminSpaceItem, 'eventDate' | 'lastHostDownloadAt' | 'hasOwner'>
+	> = {},
 ): MemoriesAdminSpaceItem {
 	return {
 		...space,
 		usage: { ...EMPTY_USAGE, ...usage },
 		eventDate: null,
 		lastHostDownloadAt: null,
+		hasOwner: true,
 		...extra,
 	};
 }
@@ -370,6 +374,91 @@ describe('MemoriesAdmin island', () => {
 			screen.getByText(/1 espacio se borra pronto y su anfitrión aún no descarga/),
 		).toBeInTheDocument();
 		expect(screen.getAllByRole('article')[0]).toHaveAccessibleName('Boda sin descargar');
+	});
+
+	it('warns when no main host can see a space', async () => {
+		adminApi.list.mockResolvedValue({
+			items: [
+				adminItem(
+					{ ...OPEN_SPACE, eventId: 'event-5', eventTitle: 'Boda sin anfitrión' },
+					{},
+					{ hasOwner: false },
+				),
+				adminItem({ ...OPEN_SPACE, eventId: 'event-6', eventTitle: 'Boda con anfitrión' }),
+			],
+			totals: NO_COMMITMENT,
+			candidates: [],
+		});
+
+		render(<MemoriesAdmin />);
+
+		const orphan = within(await screen.findByRole('article', { name: 'Boda sin anfitrión' }));
+		expect(orphan.getByRole('alert')).toHaveTextContent(
+			'Ningún anfitrión principal puede ver este espacio',
+		);
+		const owned = within(screen.getByRole('article', { name: 'Boda con anfitrión' }));
+		expect(owned.queryByRole('alert')).not.toBeInTheDocument();
+	});
+
+	it('loads the diagnostics of a space only when opened and runs live checks on demand', async () => {
+		adminApi.list.mockResolvedValue({
+			items: [adminItem(OPEN_SPACE)],
+			totals: NO_COMMITMENT,
+			candidates: [],
+		});
+		const base = {
+			eventId: OPEN_SPACE.eventId,
+			statusCounts: {
+				uploading: 1,
+				validating: 0,
+				accepted: 12,
+				rejected: 2,
+				deleted: 0,
+				duplicate: 0,
+			},
+			stalled: { uploading: 1, validating: 0 },
+			failures: { session_files: 3, size_mismatch: 1 },
+			failuresWithoutReason: 1,
+			abandoned: 0,
+			auditTruncated: false,
+			lastAcceptedAt: '2099-10-24T18:00:00.000Z',
+			liveChecks: null,
+			generatedAt: '2099-10-24T18:05:00.000Z',
+		};
+		adminApi.diagnostics.mockResolvedValueOnce(base).mockResolvedValueOnce({
+			...base,
+			liveChecks: [
+				{
+					check: 'guest_page',
+					status: 'PASS',
+					detail: 'status 200, cache-control no-store',
+				},
+				{ check: 'guest_api', status: 'FAIL', detail: 'status 500' },
+			],
+		});
+
+		render(<MemoriesAdmin />);
+		const card = within(await screen.findByRole('article', { name: OPEN_SPACE.eventTitle }));
+		expect(adminApi.diagnostics).not.toHaveBeenCalled();
+
+		const summary = card.getByText('Diagnóstico');
+		fireEvent.click(summary);
+		(summary.parentElement as HTMLDetailsElement).open = true;
+		fireEvent(summary.parentElement as HTMLElement, new Event('toggle'));
+
+		expect(await card.findByText('Límite de archivos por invitado')).toBeInTheDocument();
+		expect(adminApi.diagnostics).toHaveBeenCalledWith(OPEN_SPACE.eventId, false);
+		expect(card.getByText('Tamaño distinto al declarado')).toBeInTheDocument();
+		expect(card.getByText(/1 rechazo sin causa registrada/)).toBeInTheDocument();
+		expect(card.getByText(/1 subida sin confirmar/)).toBeInTheDocument();
+
+		fireEvent.click(card.getByRole('button', { name: 'Comprobar ahora' }));
+
+		expect(
+			await card.findByText('API de invitados conectada a la base de datos'),
+		).toBeInTheDocument();
+		expect(adminApi.diagnostics).toHaveBeenLastCalledWith(OPEN_SPACE.eventId, true);
+		expect(card.getByText('Falla')).toBeInTheDocument();
 	});
 
 	it('keeps the form open with the conflict message when activation returns 409', async () => {

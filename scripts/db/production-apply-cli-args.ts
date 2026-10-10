@@ -4,6 +4,7 @@
  */
 
 import { normalizeOperatorArgv } from '../lib/operator-argv.ts';
+import { flagValue } from '../lib/cli-args.ts';
 import { parseExpectedConstraint } from './migrate-expected.ts';
 
 const KNOWN_FLAGS = new Set([
@@ -91,14 +92,6 @@ draft repair, one-off resets, historical patches, and UNKNOWN/BLOCKED items.
 --apply reuses valid release-check evidence for the current HEAD or runs
 pnpm release-check once. Agents must stop after the read-only plan.
 `);
-}
-
-function flagValue(args: readonly string[], flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	if (index === -1) return undefined;
-	const value = args[index + 1];
-	if (!value || value.startsWith('--')) return undefined;
-	return value;
 }
 
 function collectRepeatable(args: readonly string[], flag: string): string[] {

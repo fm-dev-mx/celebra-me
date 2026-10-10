@@ -1,4 +1,3 @@
-
 @use '../../../global/mixins' as mixins;
 
 .gallery-section[data-variant='feature-mosaic'] {
@@ -55,9 +54,6 @@
 	--gallery-item-image-scale-rest: 1;
 	--gallery-item-image-scale-in-view: 1.018;
 	--gallery-item-image-scale-hover: 1.036;
-	--gallery-item-image-base-filter: var(--gallery-item-image-filter-rest);
-	--gallery-item-image-emphasis-filter: var(--gallery-item-image-filter-in-view);
-	--gallery-item-image-hover-filter: var(--gallery-item-image-filter-hover);
 	--gallery-item-image-base-blend: normal;
 	--gallery-item-image-emphasis-blend: normal;
 	--gallery-item-image-hover-blend: normal;
@@ -177,27 +173,45 @@
 
 		.gallery-grid__item[data-gallery-index='0'] img,
 		.gallery-grid__item[data-gallery-index='1'] img {
-			object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 36%));
+			object-position: var(
+				--gallery-item-focal-point-mobile,
+				var(--gallery-item-focal-point, center 36%)
+			);
 
 			@include mixins.respond-to(md) {
-				object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 36%));
+				object-position: var(
+					--gallery-item-focal-point-tablet,
+					var(--gallery-item-focal-point, center 36%)
+				);
 			}
 
 			@include mixins.respond-to(lg) {
-				object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 36%));
+				object-position: var(
+					--gallery-item-focal-point-desktop,
+					var(--gallery-item-focal-point, center 36%)
+				);
 			}
 		}
 
 		.gallery-grid__item[data-gallery-index='3'] img,
 		.gallery-grid__item[data-gallery-index='5'] img {
-			object-position: var(--gallery-item-focal-point-mobile, var(--gallery-item-focal-point, center 42%));
+			object-position: var(
+				--gallery-item-focal-point-mobile,
+				var(--gallery-item-focal-point, center 42%)
+			);
 
 			@include mixins.respond-to(md) {
-				object-position: var(--gallery-item-focal-point-tablet, var(--gallery-item-focal-point, center 42%));
+				object-position: var(
+					--gallery-item-focal-point-tablet,
+					var(--gallery-item-focal-point, center 42%)
+				);
 			}
 
 			@include mixins.respond-to(lg) {
-				object-position: var(--gallery-item-focal-point-desktop, var(--gallery-item-focal-point, center 42%));
+				object-position: var(
+					--gallery-item-focal-point-desktop,
+					var(--gallery-item-focal-point, center 42%)
+				);
 			}
 		}
 	}

@@ -3,14 +3,17 @@
  *
  * Dry-run by default. Content transformation always comes from
  * `src/lib/intake/services/draft-restore.service.ts`. Persistence for apply
- * writes that planned document with optimistic concurrency; Production also
- * requires backup + interactive owner confirmation.
+ * writes that planned document with optimistic concurrency. Preview requires the
+ * task-scoped Preview write authorization (YES on a TTY, otherwise
+ * CELEBRA_TASK_SCOPE=preview:<slug>:draft-restore); Production also requires
+ * backup + interactive owner confirmation.
  *
  * Usage:
  *   pnpm invitation:draft-restore --slug <slug> --section family [--target local|preview|production]
  *   pnpm invitation:draft-restore --slug <slug> --entire --target production --apply --backup-manifest <path>
  */
 import { createHash } from 'node:crypto';
+import { flagValue } from '../lib/cli-args.ts';
 
 import { InvitationEditorSectionKeySchema } from '../../src/lib/intake/schemas/invitation-editor.schema.ts';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
@@ -31,6 +34,9 @@ import {
 } from './persisted-invitation-content.ts';
 import { canonicalize } from './normalized-invitation-release.ts';
 import { evaluatePromotionBackupGate } from './invitation-promote.ts';
+import { authorizePreviewWriteApply } from './preview-write-auth.ts';
+
+const PREVIEW_WRITE_OPERATION = 'draft-restore';
 
 const args = process.argv.slice(2);
 const json = args.includes('--json');
@@ -38,8 +44,7 @@ const apply = args.includes('--apply');
 const entire = args.includes('--entire');
 
 function value(flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	return index >= 0 ? args[index + 1] : undefined;
+	return flagValue(args, flag);
 }
 
 function requireSlug(): string {
@@ -248,6 +253,14 @@ async function applyPlan(): Promise<void> {
 				['Draft after', fingerprints.after],
 				['Controles', 'TTY · agente bloqueado · backup · transacción'],
 			],
+		});
+	}
+
+	if (target === 'preview') {
+		await authorizePreviewWriteApply({
+			slug,
+			operation: PREVIEW_WRITE_OPERATION,
+			confirmPrompt: `Escriba YES para restaurar el borrador de ${slug} en Preview: `,
 		});
 	}
 

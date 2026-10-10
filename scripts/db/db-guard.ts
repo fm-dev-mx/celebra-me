@@ -391,20 +391,6 @@ function cliRedact(): void {
 	process.exit(0);
 }
 
-function cliVerifyLocal(): void {
-	const configPath = resolve(process.cwd(), 'supabase', 'config.toml');
-	const configContent = existsSync(configPath) ? readFileSync(configPath, 'utf8') : '';
-	const result = verifyLocalIdentity({
-		supabaseConfig: configContent,
-	});
-	if (!result.ok) {
-		for (const err of result.errors) console.error(`ERROR: ${err}`);
-		process.exit(1);
-	}
-	console.log(`Local identity verified: project=${PERSISTENT_LOCAL.projectId}`);
-	process.exit(0);
-}
-
 function cli(): void {
 	const command = process.argv[2];
 	switch (command) {
@@ -417,16 +403,12 @@ function cli(): void {
 		case 'redact':
 			cliRedact();
 			break;
-		case 'verify-local':
-			cliVerifyLocal();
-			break;
 		default: {
 			console.error(`
 Usage:
   tsx scripts/db/db-guard.ts classify --db-url <url>          Classify a DB URL
   tsx scripts/db/db-guard.ts check --target <t> [--op <op>]    Run guard checks
   tsx scripts/db/db-guard.ts redact --text "<str>"             Redact credentials
-  tsx scripts/db/db-guard.ts verify-local                      Verify local identity
 
 Targets: production, preview, persistent-local, disposable-test
 `);

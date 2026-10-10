@@ -2,21 +2,15 @@
 
 .event-theme-wrapper {
 	--section-bg: var(--color-surface-primary);
-	--section-text: var(--color-text-primary);
-	--section-accent: var(--color-action-accent);
 	--section-padding-block: clamp(4rem, 10vw, 8rem);
-	--section-gap: 4rem;
 	--section-title-font: var(--font-display);
 	--section-title-size: clamp(2.5rem, 7vw, 5rem);
-	--section-title-color: var(--color-text-primary);
 	--section-subtitle-font: var(--font-label);
 	--section-subtitle-size: 0.85rem;
-	--section-subtitle-color: var(--color-action-accent);
 	--section-card-bg: var(--color-surface-soft);
 	--section-card-radius: 4px;
 	--section-border-subtle: var(--color-border-subtle);
 	--section-card-border-alt: rgb(var(--color-action-accent-rgb) / 30%);
-	--section-eyebrow-color: var(--section-accent);
 }
 
 // Assumption: .event-theme-wrapper exists at initial render and is not dynamically
@@ -39,4 +33,3 @@
 		padding-top: 0 !important;
 	}
 }
-

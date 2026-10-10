@@ -73,17 +73,8 @@
 	--dashboard-button-secondary-text: #1f1d1a;
 
 	// Success
-	--dashboard-button-success-bg: #dfeee2;
-	--dashboard-button-success-bg-hover: #d0e6d5;
-	--dashboard-button-success-border: #9cc7a6;
-	--dashboard-button-success-text: #1e5c33;
 
 	// Danger
-	--dashboard-button-danger-bg: transparent;
-	--dashboard-button-danger-bg-hover: rgb(142 42 28 / 8%);
-	--dashboard-button-danger-border: rgb(142 42 28 / 45%);
-	--dashboard-button-danger-border-hover: #8e2a1c;
-	--dashboard-button-danger-text: #8e2a1c;
 	--dashboard-button-danger-cta-bg: #8e2a1c;
 	--dashboard-button-danger-cta-bg-hover: #{color.change(#8e2a1c, $blackness: 30%)};
 	--dashboard-button-danger-cta-text: #fffdf9;
@@ -127,11 +118,24 @@
 	--color-state-neutral-border: #cfc7b8;
 	--color-state-neutral-text: #4f4a40;
 
+	// --- Guest data (passes bar, group bars) ---
+	// Measured on --dashboard-data-track: confirmed 6.90:1, declined 5.06:1,
+	// unused 3.40:1. Neighbouring slices also differ by pattern, never hue alone.
+	--dashboard-data-track: #f3eee4;
+	--dashboard-data-confirmed: #1e5c33;
+	--dashboard-data-declined: #6b6458;
+	--dashboard-data-unused: #8c7f66;
+
+	// Hints and secondary help text: 7.18:1 on elevated surfaces (no opacity tricks).
+	--dashboard-text-hint: #5b564b;
+
+	// "Enviada, sin abrir": outline-only pill, 3.87:1 border on elevated surfaces.
+	--dashboard-stage-unopened-border: #8c7f66;
+
 	// --- Shadows ---
 	--shadow-subtle: 0 1px 2px rgb(30 26 18 / 6%), 0 4px 12px rgb(30 26 18 / 6%);
 	--shadow-emphasis: 0 12px 32px rgb(30 26 18 / 14%);
 	--shadow-warm: 0 1px 2px rgb(30 26 18 / 5%), 0 10px 28px rgb(30 26 18 / 7%);
-	--shadow-warm-emphasis: 0 16px 40px rgb(30 26 18 / 12%);
 
 	// --- Typography ---
 	--font-display-elegant: #{sys-type.$sys-font-display-elegant};

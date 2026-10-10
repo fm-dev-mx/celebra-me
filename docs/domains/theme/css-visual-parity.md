@@ -3,12 +3,16 @@
 **Status:** The accepted reference SHA, matrix hash and candidate-manifest hash are recorded in
 `tests/e2e/visual-baselines/manifest.json`; that manifest is the only source of approval identity.
 Acceptance does not replace comparison or final CI. **Related:**
-[`architecture.md`](architecture.md#invitation-css-ownership-normative)
+[`architecture.md`](architecture.md#invitation-css-ownership-normative) and
+[section visual diagnosis](section-visual-diagnosis.md) (`pnpm visual:parity:diagnose`, diagnostic
+only, never a gate).
 
 ## Rule
 
 Deleting or moving **LAYOUT** rules from `src/styles/invitation-profiles/**` is forbidden unless the
-CSS visual parity harness passes for that invitation (or demo profile).
+CSS visual parity harness passes for that invitation (or demo profile). New profiles are token-only;
+the older profiles that still hold LAYOUT are frozen by digest in
+`tests/unit/invitation-profile-boundary.test.ts`, so any such change is a reviewed exception.
 
 LAYOUT means direct geometry/paint on section element classes (padding, margin, grid, flex,
 `background` / `font-family` on section DOM, decorative pseudo-elements), not palette token remaps
@@ -75,12 +79,10 @@ its own record under `<output root>/records/`; the Playwright global teardown re
 `manifest.json` and `pages-manifest.json` from the records of the current run, asserts complete
 coverage, PNG geometry and a single runtime fingerprint, and fails the run on any missing capture or
 pixel difference. Global setup resets the records directory, so earlier runs never fill coverage
-gaps. Capture suites run serially without retries by default; `VISUAL_PARITY_PARALLEL=1` selects
-parallel capture only for the paired trials required by the release process, which a manual
-Repository CI dispatch starts through its `capture_execution` and `browser_workers` inputs. CI
-retains actual/diff PNGs and diagnostic JSON on failure for three days, without traces or credential
-artifacts. A stabilization timeout preserves the last two available frames and their capture times;
-it does not take replacement screenshots after the failure.
+gaps. Capture suites run serially without retries. CI retains actual/diff PNGs and diagnostic JSON
+on failure for three days, without traces or credential artifacts. A stabilization timeout preserves
+the last two available frames and their capture times; it does not take replacement screenshots
+after the failure.
 
 GitHub CI runs static/build, unit, browser, and disposable database checks independently. The
 required `Application Suite` status succeeds only when every application tier succeeds; cancelled,
@@ -161,7 +163,11 @@ and requires new coverage and acceptance; an older matrix cannot certify the add
 
 `pnpm visual:matrix:check` proves in seconds, without a browser, that the accepted references still
 cover the current matrix and match their PNG hashes. `validate:changed` runs it for visual-impact
-paths, and a unit test pins the committed `matrixHash`. A branch that publishes, retires or adds a
+paths, and a unit test pins the committed `matrixHash`. Both are branch gates, not commit gates: the
+accepted candidate can only be generated from the commit that changes the matrix, so the commit hook
+skips the pin (`CELEBRA_TEST_SCOPE=commit`) and the sequence is commit the lifecycle or variant
+change → `pnpm visual:parity:candidate:certified -- --sha <that commit>` → owner review →
+`pnpm visual:parity:accept` → commit the references. A branch that publishes, retires or adds a
 demo, invitation or variant must carry its approved candidate before integration; matrix drift must
 not reach a release.
 
@@ -213,12 +219,9 @@ changing tolerances, or downgrading compare mode.
 - Geometry cannot establish photographic contrast, ornamental glyph quality or aesthetic acceptance.
   Human review must inspect the complete pages and representative long-content fixtures.
 - Exceptions identify route, viewport, element, reason and owner approval; they cannot bypass other
-  checks. Valentina's complete surname is intentional and must remain readable; it does not exempt
-  her first name from containment checks.
-- The viewport-only candidate at `39d527de` is withdrawn and must not be accepted. After the owner
-  commits corrections, regenerate the complete candidate with the pinned runtime. Register
-  acceptance only after explicit approval of its exact SHA, matrix hash and candidate-manifest hash.
-  Then compare and run complete CI on the final revision.
+  checks.
+- Register acceptance only after explicit approval of the exact SHA, matrix hash and
+  candidate-manifest hash, then compare and run complete CI on the final revision.
 
 Venue previews use `StaticVenueMap`, an in-house illustration (street grid, blocks, park and pin)
 styled with theme tokens and the explicit map style. It uses no basemap provider, credential or
@@ -233,10 +236,7 @@ specs allow no external map origin.
 contract: they derive dimensions, MIME type, file size, normalized SHA-256, `assetManifestHash`, and
 `sourceHash` from each registered definition. Do not maintain a second asset manifest.
 
-- Ximena's `hero.webp` and `gallery-01.webp` were restored from their exact historical Git objects.
-  SHA-256: `1e960bdc490b3daed64aa95ad5f6f1984e0c55c88f5106cb533d4e921a3a51ee` and
-  `7c183313fb79f5116eb4ce06005bebc9af9e92860919c3b5b124db7b346a2274`.
-- Ayrin's declared local set is byte-identical to the repository-owned enchanted-rose source set.
+## Profile LAYOUT parity harness
 
 ```bash
 # 1. Capture baseline (before LAYOUT deletion)
@@ -296,10 +296,3 @@ Baselines under `.tmp/css-visual-parity/**` are **local gate artifacts**, not re
   `tests/e2e/invitation-visual-contracts.spec.ts`.
 - After P0 recovery fixes, new baselines may be captured only as an owner-approved gate for future
   LAYOUT deletes — still do not commit `.tmp/` PNGs.
-
-### Scoped presentation decision
-
-For `/xv/valentina-hernandez` at 390×844, 414×896 and 1440×900, retain the complete text in
-`.invitation-hero__last-name`, as explicitly requested by the owner in the current task. This
-permits the necessary surname wrapping; it does not permit clipping, ellipsis, overlap, or an
-unreadable first name. This content decision is not approval of a screenshot baseline.

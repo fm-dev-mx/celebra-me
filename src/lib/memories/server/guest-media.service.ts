@@ -11,6 +11,7 @@ import {
 	type MemoriesMediaItem,
 	type MemoriesMediaPublicItem,
 	type MemoriesReservationRefusal,
+	type MemoriesUploadFailureReason,
 	type MemoriesSpaceRecord,
 } from '@/lib/memories/contract/catalog';
 import {
@@ -69,6 +70,8 @@ const RESERVATION_ERRORS: Record<
 		message: string;
 		/** Sent to the browser so the guest copy can name the limit that was hit. */
 		reason?: MemoriesReservationRefusal;
+		/** Recorded for the admin diagnostics when it differs from `reason`. */
+		failureReason?: MemoriesUploadFailureReason;
 	}
 > = {
 	memories_session_file_quota: {
@@ -116,6 +119,7 @@ const RESERVATION_ERRORS: Record<
 		status: 403,
 		code: 'forbidden',
 		message: 'La ventana para subir recuerdos no está abierta.',
+		failureReason: 'window_closed',
 	},
 	memories_space_unavailable: {
 		status: 404,
@@ -129,19 +133,44 @@ const RESERVATION_ERRORS: Record<
 	},
 };
 
-function mapReservationError(error: unknown): never {
+/** Best effort: a lost diagnostics row must never change what the guest sees. */
+async function recordUploadRefusal(
+	eventId: string,
+	reason: MemoriesUploadFailureReason,
+): Promise<void> {
+	await appendMemoriesAudit({
+		eventId,
+		actorType: 'system',
+		action: 'upload_refused',
+		metadata: { reason },
+	}).catch(() => undefined);
+}
+
+async function refuseReservation(eventId: string, error: unknown): Promise<never> {
 	if (error instanceof SupabaseHttpError) {
 		for (const [token, mapped] of Object.entries(RESERVATION_ERRORS)) {
-			if (error.body.includes(token))
-				throw new ApiError(
-					mapped.status,
-					mapped.code,
-					mapped.message,
-					mapped.reason ? { reason: mapped.reason } : undefined,
-				);
+			if (!error.body.includes(token)) continue;
+			const failureReason = mapped.failureReason ?? mapped.reason;
+			if (failureReason) await recordUploadRefusal(eventId, failureReason);
+			throw new ApiError(
+				mapped.status,
+				mapped.code,
+				mapped.message,
+				mapped.reason ? { reason: mapped.reason } : undefined,
+			);
 		}
 	}
 	throw error;
+}
+
+/** A payload outside the upload policy; the cause stays on the server. */
+class UploadPolicyError extends ApiError {
+	constructor(
+		message: string,
+		readonly failureReason: MemoriesUploadFailureReason | null,
+	) {
+		super(400, 'bad_request', message);
+	}
 }
 
 function isConcurrencyQuotaError(error: unknown): boolean {
@@ -181,7 +210,7 @@ function validateRegisterPayload(input: {
 		sizeBytes > policy.maxBytes ||
 		!isValidSha256Hex(checksumSha256)
 	) {
-		throw new ApiError(400, 'bad_request', 'El archivo no cumple la política de carga.');
+		throw new UploadPolicyError('El archivo no cumple la política de carga.', 'file_policy');
 	}
 	if (
 		policy.category === 'video' &&
@@ -190,10 +219,10 @@ function validateRegisterPayload(input: {
 			durationSeconds <= 0 ||
 			durationSeconds > MEMORIES_MAX_VIDEO_DURATION_SECONDS)
 	) {
-		throw new ApiError(400, 'bad_request', 'La duración del video no es válida.');
+		throw new UploadPolicyError('La duración del video no es válida.', 'video_duration');
 	}
 	if (!isMemoriesUuid(input.clientRequestId)) {
-		throw new ApiError(400, 'bad_request', 'La solicitud de carga no es válida.');
+		throw new UploadPolicyError('La solicitud de carga no es válida.', null);
 	}
 	return {
 		mimeType,
@@ -215,8 +244,16 @@ export async function reserveGuestMemoryItem(input: {
 	durationSeconds?: unknown;
 	clientRequestId: unknown;
 }): Promise<{ item: MemoriesMediaPublicItem; upload: MemoriesUploadCapability | null }> {
+	let payload: ReturnType<typeof validateRegisterPayload>;
+	try {
+		payload = validateRegisterPayload(input);
+	} catch (error) {
+		if (error instanceof UploadPolicyError && error.failureReason)
+			await recordUploadRefusal(input.space.eventId, error.failureReason);
+		throw error;
+	}
 	const { mimeType, policy, sizeBytes, durationSeconds, checksumSha256, clientRequestId } =
-		validateRegisterPayload(input);
+		payload;
 	const reservation = {
 		eventId: input.space.eventId,
 		sessionId: input.session.id,
@@ -238,13 +275,13 @@ export async function reserveGuestMemoryItem(input: {
 	} catch (error) {
 		// The cleanup runs once a day: a session whose slots are held by uploads
 		// its browser abandoned settles them here and tries once more.
-		if (!isConcurrencyQuotaError(error)) mapReservationError(error);
+		if (!isConcurrencyQuotaError(error)) await refuseReservation(input.space.eventId, error);
 		const settled = await settleSessionInFlightItems(input.space, input.session).catch(() => 0);
-		if (settled === 0) mapReservationError(error);
+		if (settled === 0) await refuseReservation(input.space.eventId, error);
 		try {
 			row = await reserveMedia(reservation);
 		} catch (retryError) {
-			mapReservationError(retryError);
+			await refuseReservation(input.space.eventId, retryError);
 		}
 	}
 	if (!row) throw new ApiError(503, 'service_unavailable', 'No se pudo registrar el recuerdo.');
@@ -321,29 +358,45 @@ export async function listGuestMemoryItems(
 	};
 }
 
-function isInspectionSuccessful(
+/** Why stored bytes fail the reservation they claim to fulfil; null when they pass. */
+function findInspectionFailure(
 	item: MemoriesMediaItem,
 	inspection: MemoriesInspectionResult,
-): boolean {
-	if (!inspection.exists || !inspection.signatureValid || !inspection.checksumSha256)
-		return false;
+): MemoriesUploadFailureReason | null {
+	if (!inspection.exists) return 'object_missing';
+	if (!inspection.signatureValid) return 'signature_invalid';
+	if (!inspection.checksumSha256) return 'checksum_mismatch';
 	const policy = getMemoriesMimePolicy(item.mimeType);
-	if (!policy || inspection.sizeBytes !== item.sizeBytes) return false;
-	if (inspection.checksumSha256.toLowerCase() !== item.checksumSha256) return false;
+	if (!policy) return 'file_policy';
+	if (inspection.sizeBytes !== item.sizeBytes) return 'size_mismatch';
+	if (inspection.checksumSha256.toLowerCase() !== item.checksumSha256) return 'checksum_mismatch';
 	if (
 		policy.category === 'video' &&
 		(inspection.durationSeconds == null ||
 			inspection.durationSeconds <= 0 ||
 			inspection.durationSeconds > MEMORIES_MAX_VIDEO_DURATION_SECONDS)
 	) {
-		return false;
+		return 'video_duration';
 	}
-	return true;
+	return null;
+}
+
+/** Accepts or rejects an item from storage evidence, keeping the cause of a rejection. */
+async function finalizeFromInspection(
+	item: MemoriesMediaItem,
+	outcome: { kind: 'found'; inspection: MemoriesInspectionResult } | { kind: 'missing' },
+): Promise<MemoriesMediaPublicItem> {
+	const failure =
+		outcome.kind === 'missing'
+			? 'object_missing'
+			: findInspectionFailure(item, outcome.inspection);
+	return failure ? finalizeItem(item, 'rejected', failure) : finalizeItem(item, 'accepted');
 }
 
 async function finalizeItem(
 	item: MemoriesMediaItem,
 	outcome: 'accepted' | 'rejected',
+	failureReason?: MemoriesUploadFailureReason,
 ): Promise<MemoriesMediaPublicItem> {
 	const row =
 		(await finalizeMedia({
@@ -354,6 +407,7 @@ async function finalizeItem(
 		})) ?? (await findMediaById(item.eventId, item.id));
 	if (!row) throw new ApiError(404, 'not_found', 'Recuerdo no encontrado.');
 	const next = mapMediaRow(row);
+	const failed = next.status !== 'accepted' && next.status !== 'duplicate';
 	await appendMemoriesAudit({
 		eventId: item.eventId,
 		mediaItemId: item.id,
@@ -364,6 +418,7 @@ async function finalizeItem(
 				: next.status === 'duplicate'
 					? 'deduplicated'
 					: 'validation_failed',
+		...(failed && failureReason ? { metadata: { reason: failureReason } } : {}),
 	});
 	return toPublicItem(next);
 }
@@ -403,12 +458,7 @@ export async function completeGuestMemoryItem(input: {
 			'La validación sigue pendiente. Intente de nuevo.',
 		);
 	}
-	return finalizeItem(
-		item,
-		outcome.kind === 'found' && isInspectionSuccessful(item, outcome.inspection)
-			? 'accepted'
-			: 'rejected',
-	);
+	return finalizeFromInspection(item, outcome);
 }
 
 export type MemoriesSettleResult = 'validated' | 'rescued' | 'rejected' | 'released' | 'pending';
@@ -432,15 +482,8 @@ export async function settleStaleMemoryItem(
 			mimeType: item.mimeType,
 		});
 		if (outcome.kind === 'unavailable') return 'pending';
-		if (outcome.kind === 'missing') {
-			await finalizeItem(item, 'rejected');
-			return 'rejected';
-		}
-		await finalizeItem(
-			item,
-			isInspectionSuccessful(item, outcome.inspection) ? 'accepted' : 'rejected',
-		);
-		return 'validated';
+		await finalizeFromInspection(item, outcome);
+		return outcome.kind === 'missing' ? 'rejected' : 'validated';
 	}
 	if (item.status !== 'uploading') return 'pending';
 	const ageMs = nowMs - Date.parse(row.created_at);
@@ -459,10 +502,7 @@ export async function settleStaleMemoryItem(
 			actorType: 'system',
 			action: 'submitted_for_validation',
 		});
-		await finalizeItem(
-			item,
-			isInspectionSuccessful(item, outcome.inspection) ? 'accepted' : 'rejected',
-		);
+		await finalizeFromInspection(item, outcome);
 		return 'rescued';
 	}
 	if (ageMs < MEMORIES_UPLOAD_ABANDON_SECONDS * 1000) return 'pending';

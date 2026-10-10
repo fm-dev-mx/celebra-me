@@ -1,5 +1,4 @@
 .theme-preset--auth-dark {
-	--auth-bg: var(--color-surface-primary);
 	--auth-surface-card: linear-gradient(165deg, rgb(33 26 20) 0%, rgb(42 33 25) 100%);
 	--auth-border: rgb(233 206 170 / 19%);
 	--auth-shadow-card: 0 18px 44px rgb(4 3 2 / 60%), 0 2px 8px rgb(4 3 2 / 45%);
@@ -27,10 +26,4 @@
 	--auth-status-info-text: rgb(220 195 164);
 	--auth-status-info-bg: rgb(24 19 15);
 	--auth-status-info-border: rgb(225 197 158 / 24%);
-	--auth-status-success-text: rgb(6 95 70);
-	--auth-status-success-bg: rgb(236 253 245);
-	--auth-status-success-border: rgb(167 243 208);
-	--auth-status-error-text: rgb(153 27 27);
-	--auth-status-error-bg: rgb(254 242 242);
-	--auth-status-error-border: rgb(254 202 202);
 }

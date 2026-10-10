@@ -157,6 +157,47 @@ describe('published image verification', () => {
 		expect(JSON.stringify(rows)).not.toContain('token=secret');
 	});
 
+	it('reports package images the target has not received as pending, not missing', async () => {
+		const { bytes, sha256 } = await imageFixture();
+		const url =
+			'https://res.cloudinary.com/demo/image/upload/v1/production/xv/example/assets/hero.webp';
+		const download = jest.fn(async () => ({
+			ok: true,
+			status: 200,
+			url,
+			headers: new Headers({ 'content-type': 'image/webp' }),
+			arrayBuffer: async () => Uint8Array.from(bytes).buffer,
+		})) as unknown as typeof fetch;
+		const rows = await verifyPublishedInvitation(
+			{
+				eventType: 'xv',
+				slug: 'example',
+				content: { hero: { image: { type: 'uploaded', assetId: 'asset-1' } } },
+				assets: [
+					{
+						id: 'asset-1',
+						key: 'hero',
+						sha256,
+						mimeType: 'image/webp',
+						width: 3,
+						height: 2,
+						url,
+					},
+				],
+			},
+			[
+				// The target serves the hero correctly; the package carries a newer hero and a new asset.
+				{ key: 'hero', sha256: 'replaced', mimeType: 'image/webp', width: 3, height: 2 },
+				{ key: 'gifts', sha256: 'new', mimeType: 'image/webp', width: 3, height: 2 },
+			],
+			download,
+		);
+		expect(rows.map((row) => [row.assetKey, row.classification])).toEqual([
+			['gifts', 'PENDING_PUBLISH'],
+			['hero', 'PENDING_PUBLISH'],
+		]);
+	});
+
 	it('identifies a broken published reference without calling the active binary missing', async () => {
 		const { bytes, sha256 } = await imageFixture();
 		const activeUrl =

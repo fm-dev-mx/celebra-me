@@ -10,7 +10,6 @@
 	--editorial-magazine-red: #d71920;
 	--editorial-magazine-red-rgb: 215 25 32;
 	--editorial-magazine-muted: #6f737c;
-	--editorial-magazine-muted-rgb: 111 115 124;
 	--color-surface-primary: var(--editorial-magazine-paper);
 	--color-surface-primary-rgb: var(--editorial-magazine-paper-rgb);
 	--color-surface-secondary: var(--editorial-magazine-white);
@@ -31,8 +30,6 @@
 	--color-text-on-dark: var(--editorial-magazine-white);
 	--color-text-on-dark-rgb: var(--editorial-magazine-white-rgb);
 	--color-border-light: rgb(var(--editorial-magazine-ink-rgb) / 14%);
-	--color-border-medium: rgb(var(--editorial-magazine-ink-rgb) / 34%);
-	--color-border-strong: var(--editorial-magazine-ink);
 	--color-glass-bg: rgb(var(--editorial-magazine-white-rgb) / 72%);
 	--color-glass-border: rgb(var(--editorial-magazine-ink-rgb) / 24%);
 	--glass-blur: 10px;
@@ -47,7 +44,6 @@
 	--section-subtitle-size: clamp(0.72rem, 1.2vw, 0.88rem);
 	--section-padding-block: clamp(3.5rem, 6vw, 6.5rem);
 	--section-card-radius: 0;
-	--section-card-border: 1px solid rgb(var(--editorial-magazine-ink-rgb) / 88%);
 	--section-card-border-alt: 1px solid rgb(var(--editorial-magazine-red-rgb) / 88%);
 	--hero-overlay: linear-gradient(
 		90deg,
@@ -60,8 +56,6 @@
 	--hero-image-filter: var(--editorial-image-filter);
 	--hero-portrait-filter: var(--editorial-image-filter);
 	--hero-label-color: var(--editorial-magazine-red);
-	--hero-card-bg: rgb(var(--editorial-magazine-white-rgb) / 92%);
-	--hero-card-border-hairline: rgb(var(--editorial-magazine-ink-rgb) / 44%);
 	--quote-bg: var(--editorial-magazine-ink);
 	--quote-text-color: var(--editorial-magazine-white);
 	--quote-author-color: var(--editorial-magazine-red);

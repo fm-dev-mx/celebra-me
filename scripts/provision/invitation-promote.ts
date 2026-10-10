@@ -47,7 +47,16 @@ import {
 	runProductionPreflight,
 	type ProductionPreflightResult,
 } from './production-preflight.ts';
-import { type ConflictResolutions, type UpdateScope } from './semantic-delta.ts';
+import {
+	MergeConflictError,
+	type ConflictResolutions,
+	type UpdateScope,
+} from './semantic-delta.ts';
+import { ManagedBaselineError } from './managed-merge-baseline.ts';
+import {
+	isTargetDivergenceConflict,
+	TARGET_DIVERGENCE_BLOCK_CODE,
+} from './promotion-comparison.ts';
 import type { AssetPolicy } from './asset-reconciliation.ts';
 import type { OperationalPlan } from './invitation-update-plan.ts';
 import { ManagedMemoriesReferenceError } from './managed-memories-reference.ts';
@@ -65,6 +74,7 @@ export type PromotionTerminalStatus =
 	'PROMOTABLE' | 'PROMOTED' | 'IN_SYNC' | 'BLOCKED' | 'APPLIED_BUT_VERIFICATION_FAILED';
 
 export type PromotionBlockCode =
+	| typeof TARGET_DIVERGENCE_BLOCK_CODE
 	| 'MISSING_PREVIEW_APPROVAL'
 	| 'APPROVAL_IDENTITY_MISMATCH'
 	| 'PRODUCTION_CREDENTIALS_UNAVAILABLE'
@@ -249,7 +259,7 @@ export function evaluatePromotionBackupGate(input: {
 			acceptable: false,
 			canonicalCommand,
 			blockCode: 'BACKUP_REQUIRED',
-			detail: `BACKUP_REQUIRED: no verified critical Production backup manifest found. Run ${canonicalCommand} and pass --backup-manifest <path>.`,
+			detail: `BACKUP_REQUIRED: no verified critical Production backup manifest found. Run ${canonicalCommand} and retry.`,
 		};
 	}
 
@@ -539,11 +549,17 @@ export async function runPromotionPreflight(input: {
 						: 'PRODUCTION_PLAN_BLOCKED'
 				: 'PRODUCTION_PLAN_BLOCKED';
 		const message = error instanceof Error ? error.message : String(error);
-		const isDivergence = /divergence|managed divergence|merge_conflict|DRIFT/i.test(message);
+		// Typed causes, never message parsing: an unpublished target draft has an owner recovery
+		// path (discard), managed drift and merge conflicts do not.
+		const blockCode = isTargetDivergenceConflict(error)
+			? TARGET_DIVERGENCE_BLOCK_CODE
+			: error instanceof MergeConflictError || error instanceof ManagedBaselineError
+				? 'MANAGED_DIVERGENCE'
+				: code;
 		return {
 			...base,
 			status: 'BLOCKED',
-			blockCode: isDivergence ? 'MANAGED_DIVERGENCE' : code,
+			blockCode,
 			reason: message,
 			approval,
 			approvalFailure,

@@ -1,57 +1,73 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import GuestFilters from '@/components/dashboard/guests/GuestFilters';
+import {
+	computeGroupMetrics,
+	NO_GROUP_FILTER,
+} from '@/components/dashboard/guests/guest-presenter';
+import { makeGuest } from '@tests/helpers/guest-factory';
 
-describe('GuestFilters — group filter', () => {
+const groupMetrics = computeGroupMetrics([
+	makeGuest({ guestId: '1', tags: ['Familia'] }),
+	makeGuest({ guestId: '2', tags: ['Familia'] }),
+	makeGuest({ guestId: '3', tags: ['VIP'] }),
+	makeGuest({ guestId: '4', tags: [] }),
+]);
+
+describe('GuestFilters — group chips', () => {
 	const baseProps = {
 		search: '',
-		status: 'all' as const,
-		delivery: 'all' as const,
-		group: 'all' as const,
+		group: 'all',
+		groupMetrics,
+		totalInvitations: 4,
 		onSearchChange: jest.fn(),
-		onStatusChange: jest.fn(),
-		onDeliveryChange: jest.fn(),
 		onGroupChange: jest.fn(),
 	};
 
-	it('renders group select with all predefined options', () => {
+	it('shows one chip per group with counts, plus "Todos" and "Sin grupo"', () => {
 		render(<GuestFilters {...baseProps} />);
 
-		const select = screen.getByLabelText('Grupo');
-		expect(select).toBeInTheDocument();
-
-		const options = Array.from(select.querySelectorAll('option')).map((o) => o.textContent);
-		expect(options).toContain('Todos');
-		expect(options).toContain('Familia');
-		expect(options).toContain('Amigos');
-		expect(options).toContain('VIP');
-		expect(options).toContain('Trabajo');
+		const chips = within(screen.getByRole('group', { name: 'Grupo' })).getAllByRole('button');
+		expect(chips.map((chip) => chip.textContent)).toEqual([
+			'Todos4',
+			'Familia2',
+			'VIP1',
+			'Sin grupo1',
+		]);
+		expect(chips[0]).toHaveAttribute('aria-pressed', 'true');
 	});
 
-	it('calls onGroupChange when a group is selected', () => {
+	it('selects a group and toggles back to all', () => {
 		const onGroupChange = jest.fn();
-		render(<GuestFilters {...baseProps} onGroupChange={onGroupChange} />);
+		const { rerender } = render(<GuestFilters {...baseProps} onGroupChange={onGroupChange} />);
 
-		fireEvent.change(screen.getByLabelText('Grupo'), {
-			target: { value: 'VIP' },
-		});
-		expect(onGroupChange).toHaveBeenCalledWith('VIP');
+		fireEvent.click(screen.getByRole('button', { name: /^Sin grupo/ }));
+		expect(onGroupChange).toHaveBeenLastCalledWith(NO_GROUP_FILTER);
+
+		rerender(<GuestFilters {...baseProps} group="VIP" onGroupChange={onGroupChange} />);
+		fireEvent.click(screen.getByRole('button', { name: /^VIP/ }));
+		expect(onGroupChange).toHaveBeenLastCalledWith('all');
 	});
 
-	it('clears group filter when clear button is clicked', () => {
+	it('clears the search together with the group', () => {
+		const onSearchChange = jest.fn();
 		const onGroupChange = jest.fn();
-		render(<GuestFilters {...baseProps} group="Familia" onGroupChange={onGroupChange} />);
-
+		render(
+			<GuestFilters
+				{...baseProps}
+				search="Ana"
+				group="Familia"
+				onSearchChange={onSearchChange}
+				onGroupChange={onGroupChange}
+			/>,
+		);
 		fireEvent.click(screen.getByText('Limpiar filtros'));
+		expect(onSearchChange).toHaveBeenCalledWith('');
 		expect(onGroupChange).toHaveBeenCalledWith('all');
 	});
 
-	it('shows active indicator when a group filter is selected', () => {
-		render(<GuestFilters {...baseProps} group="Amigos" />);
-		expect(screen.getByLabelText('Filtros activos')).toBeInTheDocument();
-	});
-
-	it('shows advanced filters when a group filter is active', () => {
-		render(<GuestFilters {...baseProps} group="Trabajo" />);
-		expect(screen.getByDisplayValue('Trabajo')).toBeInTheDocument();
+	it('offers no status selects: stages live in the overview', () => {
+		render(<GuestFilters {...baseProps} />);
+		expect(screen.queryByLabelText('Filtro')).not.toBeInTheDocument();
+		expect(screen.queryByLabelText('Entrega')).not.toBeInTheDocument();
 	});
 });

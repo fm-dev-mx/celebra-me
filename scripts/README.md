@@ -12,22 +12,23 @@ owns the command inventory.
 
 ## Available Ops Commands
 
-| Command                     | Canonical Script               | Purpose                                                                 |
-| --------------------------- | ------------------------------ | ----------------------------------------------------------------------- |
-| `pnpm ops check-links`      | `scripts/check-links.mjs`      | validate relative links inside changed Markdown files                   |
-| `pnpm ops validate-schema`  | `scripts/validate-schema.mjs`  | compare theme-contract variants against modular section-theme selectors |
-| `pnpm ops validate-commits` | `scripts/validate-commits.mjs` | replay commitlint and commit-audit checks across a commit range         |
+| Command                     | Canonical Script                   | Purpose                                                                 |
+| --------------------------- | ---------------------------------- | ----------------------------------------------------------------------- |
+| `pnpm ops check-links`      | `scripts/check-links.mjs`          | validate relative links inside changed Markdown files                   |
+| `pnpm ops validate-schema`  | `scripts/validate-schema.mjs`      | compare theme-contract variants against modular section-theme selectors |
+| `pnpm ops validate-commits` | `scripts/validate-commits.mjs`     | replay commitlint and commit-audit checks across a commit range         |
+| `pnpm ops worktree-status`  | `scripts/agent/worktree-status.ts` | report every lane read-only                                             |
+| `pnpm ops worktree-doctor`  | `scripts/agent/worktree-doctor.ts` | detect worktree configuration problems read-only                        |
 
-Removed one-shot commands (`optimize-assets`, `new-invitation`, `adopt-legacy-events`, `ops dbs`)
-are no longer registered. Use `pnpm dbs` and `pnpm invitation:*` for invitation operations.
+Use `pnpm dbs` and `pnpm invitation:*` for invitation operations.
 
 ## Invitation Provisioning & Promotion Commands
 
 | Command                              | Audience      | Canonical Script                                              | Purpose                                                                              |
 | ------------------------------------ | ------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | `pnpm dbs`                           | Human / agent | `scripts/provision/dbs-cli.ts`                                | Canonical read-only matrix: schema, publication, readiness, Production authorization |
-| `pnpm dbs --compact`                 | Human / agent | `scripts/provision/managed-status.ts`                         | Connectivity CONTENT + SCHEMA only (not publication; Git-hook friendly)              |
-| `pnpm invitation:release`            | Human / agent | `scripts/provision/invitation-release-cli.ts`                 | Define, plan, apply, approve, and release managed invitations                        |
+| `pnpm dbs --compact`                 | Human / agent | `scripts/provision/dbs-cli.ts` (→ `managed-status.ts`)        | Connectivity CONTENT + SCHEMA only (not publication)                                 |
+| `pnpm invitation:release`            | Human / agent | `scripts/provision/invitation-release-cli.ts`                 | Status, dry-run or apply of managed invitations (Local/Preview; Production dry-run)  |
 | `pnpm invitation:hash-baseline`      | Human / agent | `scripts/provision/release-hash-baseline.ts`                  | Read-only packageHash guard for active invitations; `--update` after a release       |
 | `pnpm invitation:reconcile`          | Human / agent | `scripts/provision/invitation-reconcile-cli.ts`               | Guided Local/Preview managed divergence reconciliation                               |
 | `pnpm invitation:content-parity`     | Human / agent | `scripts/provision/content-parity-cli.ts`                     | Read-only semantic content parity (excludes RSVP/PII)                                |
@@ -43,18 +44,15 @@ Operator cards:
 
 The CLI resolves source/package input through `invitation-package-input.ts`, retains one immutable
 plan per target, and delegates mutation ordering/result synthesis to
-`invitation-lifecycle-execution.ts`. Preview apply uses `preview-apply.ts`. Production promotion
-uses `invitation-promote.ts` + `production-preflight.ts` + the managed import engine. Any blocked
-selected target aborts the complete mutation phase.
+`invitation-lifecycle-execution.ts`. Preview apply uses `preview-apply.ts`. Production is read-only
+here (`--targets production --dry-run` → `invitation-promote.ts` preflight); the owner applies with
+`pnpm prod:apply` (`scripts/db/production-apply-cli.ts`), which drives the same preflight plus the
+managed import engine. Any blocked selected target aborts the complete mutation phase.
 
 ## Validation Commands
 
-`pnpm validate:markdown-tables` checks active Markdown tables in the current changed range. Warnings
-are advisory; excessive cell prose is blocking. For explicit correction, use
-`pnpm format:markdown-tables -- --files <path...>` or `pnpm format:markdown-tables -- --all-active`.
-The pre-commit `lint-staged` pipeline applies the correction, runs Prettier, and performs a final
-check. In VS Code, install the recommended Markdownlint extension; an explicit save runs its fix
-action before the configured Prettier formatter.
+Markdown table limits and the `validate:markdown-tables` / `format:markdown-tables` commands are
+documented in [validation procedures](../docs/core/validation-procedures.md#markdown-tables).
 
 | Command                                  | Canonical Script                              | Purpose                                                        |
 | ---------------------------------------- | --------------------------------------------- | -------------------------------------------------------------- |

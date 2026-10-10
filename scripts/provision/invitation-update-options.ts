@@ -1,4 +1,5 @@
 import { domainUnverified } from '../db/schema-lifecycle-state.ts';
+import { flagValue } from '../lib/cli-args.ts';
 import type { AssetPolicy } from './asset-reconciliation.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
 import {
@@ -8,11 +9,6 @@ import {
 import type { UpdateScope } from './semantic-delta.ts';
 
 export type InvitationUpdateTarget = 'local' | 'preview' | 'production';
-
-function flagValue(args: string[], flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	return index >= 0 ? args[index + 1] : undefined;
-}
 
 function isUpdateScope(value: string | undefined): value is UpdateScope {
 	return value === 'content-only' || value === 'content-and-assets' || value === 'assets-only';
@@ -189,7 +185,6 @@ const VALID_FLAGS = new Set([
 	'--apply',
 	'--non-interactive',
 	'--json',
-	'--technical',
 	'--owner-user-id',
 	'--package',
 	'--allow-stale-package',
@@ -211,9 +206,6 @@ const VALID_FLAGS = new Set([
 	'--conflict-resolutions',
 	'--field-selections',
 	'--verbose',
-	'--backup-manifest',
-	'--interactive',
-	'--no-interactive',
 	'--help',
 	'-h',
 ]);
@@ -240,7 +232,6 @@ export function checkUnknownFlags(args: string[]): void {
 					'--update-scope',
 					'--conflict-resolutions',
 					'--field-selections',
-					'--backup-manifest',
 				].includes(arg)
 			) {
 				i++;

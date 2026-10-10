@@ -58,7 +58,7 @@ CREATE INDEX CONCURRENTLY idx_table_column ON table_name (column);
 Use partial indexes for filtered queries:
 
 ```sql
-CREATE INDEX idx_active_events ON events (start_date)
+CREATE INDEX idx_published_events ON events (published_at)
     WHERE status = 'published';
 ```
 

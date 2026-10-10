@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-09T01:25:59.639Z",
+    "generatedAt": "2026-10-09T21:41:08.380Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,9 +11,9 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
-        "cssSha256": "4d7c0712f7250a5e7eb70c74f53c1bf55b07b57194c346b9067b6ddcc6c285f3",
-        "assetSha256": "d3d792128ade372f34b19126206ac6e011f0112f3ff1e78fa5eb88abb88f0cad",
+        "lockfileSha256": "5d37b09dba737102029fb8a27aebf60c3a0a0e0e906cb00cd3edb60660dc4047",
+        "cssSha256": "0c0b37f99d3b68686d3d6243ddbf5e79a060addca43bfc1614ba92daddb666fc",
+        "assetSha256": "ad2452ba6050f6d98f15af71b545b00c73ce1e155d33b363e3c95b2ae1725ab3",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
@@ -2481,9 +2481,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "ae108a41e84dcd8f67f358c77594265915b75e98",
+    "referenceSha": "e3a3679c21ddd7d7c885dea31602bdc912cd640c",
     "variantManifest": {
-        "generatedAt": "2026-10-09T01:25:59.639Z",
+        "generatedAt": "2026-10-09T21:41:08.380Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2495,9 +2495,9 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
-            "cssSha256": "4d7c0712f7250a5e7eb70c74f53c1bf55b07b57194c346b9067b6ddcc6c285f3",
-            "assetSha256": "d3d792128ade372f34b19126206ac6e011f0112f3ff1e78fa5eb88abb88f0cad",
+            "lockfileSha256": "5d37b09dba737102029fb8a27aebf60c3a0a0e0e906cb00cd3edb60660dc4047",
+            "cssSha256": "0c0b37f99d3b68686d3d6243ddbf5e79a060addca43bfc1614ba92daddb666fc",
+            "assetSha256": "ad2452ba6050f6d98f15af71b545b00c73ce1e155d33b363e3c95b2ae1725ab3",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4245,10 +4245,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "ae108a41e84dcd8f67f358c77594265915b75e98"
+        "referenceSha": "e3a3679c21ddd7d7c885dea31602bdc912cd640c"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-09T01:25:59.645Z",
+        "generatedAt": "2026-10-09T21:41:08.386Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4260,9 +4260,9 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "79e8c8dd5ded0508d5277fe8370808b5446213a4d6b36859ea06113ff754b3c8",
-            "cssSha256": "4d7c0712f7250a5e7eb70c74f53c1bf55b07b57194c346b9067b6ddcc6c285f3",
-            "assetSha256": "d3d792128ade372f34b19126206ac6e011f0112f3ff1e78fa5eb88abb88f0cad",
+            "lockfileSha256": "5d37b09dba737102029fb8a27aebf60c3a0a0e0e906cb00cd3edb60660dc4047",
+            "cssSha256": "0c0b37f99d3b68686d3d6243ddbf5e79a060addca43bfc1614ba92daddb666fc",
+            "assetSha256": "ad2452ba6050f6d98f15af71b545b00c73ce1e155d33b363e3c95b2ae1725ab3",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4993,9 +4993,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "ae108a41e84dcd8f67f358c77594265915b75e98"
+        "referenceSha": "e3a3679c21ddd7d7c885dea31602bdc912cd640c"
     },
-    "candidateManifestSha256": "0b501db349f2155158aa7b5a731a913d33f4d63ae1145ae19bcf74a742e6b7a1",
-    "acceptedFromCommit": "ae108a41e84dcd8f67f358c77594265915b75e98",
-    "acceptedAt": "2026-10-09T03:38:55.364Z"
+    "candidateManifestSha256": "28ce5f6453fbba04c6ab01d62c11bc42805439f4908c7bb00f181c4d4cdec031",
+    "acceptedFromCommit": "e3a3679c21ddd7d7c885dea31602bdc912cd640c",
+    "acceptedAt": "2026-10-09T21:41:28.545Z"
 }

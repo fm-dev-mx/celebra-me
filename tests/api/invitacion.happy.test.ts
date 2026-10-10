@@ -1,17 +1,11 @@
-import { GET as getContext } from '@/pages/api/invitacion/[inviteId]/context';
 import { POST as rsvp } from '@/pages/api/invitacion/[inviteId]/rsvp';
 import { POST as trackView } from '@/pages/api/invitacion/[inviteId]/view';
-import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import {
 	submitGuestRsvpByInviteId,
 	trackInvitationView,
 } from '@/lib/rsvp/services/rsvp-submission.service';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { createMockRequest } from '../helpers/api-mocks';
-
-jest.mock('@/lib/rsvp/services/invitation-context.service', () => ({
-	getInvitationContextByInviteId: jest.fn(),
-}));
 
 jest.mock('@/lib/rsvp/services/rsvp-submission.service', () => ({
 	submitGuestRsvpByInviteId: jest.fn(),
@@ -22,9 +16,6 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn(),
 }));
 
-const getInvitationContextMock = getInvitationContextByInviteId as jest.MockedFunction<
-	typeof getInvitationContextByInviteId
->;
 const submitGuestRsvpMock = submitGuestRsvpByInviteId as jest.MockedFunction<
 	typeof submitGuestRsvpByInviteId
 >;
@@ -37,32 +28,6 @@ describe('Invitation API: Guest Engagement (Happy Path)', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		checkRateLimitMock.mockResolvedValue(true);
-	});
-
-	it('GET /context: returns personalized context', async () => {
-		getInvitationContextMock.mockResolvedValue({
-			inviteId: 'invite-1',
-			eventSlug: 'demo',
-			eventType: 'xv',
-			eventTitle: 'Evento Demo',
-			guest: {
-				fullName: 'Invitado Demo',
-				maxAllowedAttendees: 3,
-				attendanceStatus: 'pending',
-				attendeeCount: 0,
-				guestComment: '',
-				hideCelebraMeBranding: false,
-			},
-		});
-
-		const response = await getContext({
-			params: { inviteId: 'invite-1' },
-			request: createMockRequest(undefined, { 'x-real-ip': '127.0.0.1' }),
-		} as never);
-
-		expect(response.status).toBe(200);
-		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
-		expect(getInvitationContextMock).toHaveBeenCalledWith('invite-1');
 	});
 
 	it('POST /rsvp: accepts confirmed RSVP with valid attendee count', async () => {

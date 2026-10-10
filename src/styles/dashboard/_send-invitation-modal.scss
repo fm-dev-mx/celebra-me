@@ -41,7 +41,7 @@
 
 	/* Make the empty-phone hint a plain text line */
 	.guest-field-hint {
-		color: rgb(var(--color-text-muted-rgb) / 60%);
+		color: var(--dashboard-text-hint, var(--color-text-secondary));
 		font-size: 0.75rem;
 		line-height: 1.4;
 		margin-top: 0;
@@ -55,9 +55,9 @@
 
 .send-invitation__field label {
 	margin-bottom: 0.25rem;
-	font-size: 0.75rem;
-	font-weight: 500;
-	color: var(--color-text-emphasis);
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--color-text-primary);
 }
 
 .send-invitation__input {
@@ -92,11 +92,11 @@
 }
 
 .send-invitation__mode-label--editing {
-	color: var(--color-action-accent);
+	color: var(--color-text-emphasis);
 }
 
 .send-invitation__message-section {
-	margin-top: 0.5rem;
+	margin-top: 1rem;
 }
 
 .send-invitation__preview-card {
@@ -116,10 +116,80 @@
 .send-invitation__preview-text {
 	margin: 0;
 	white-space: pre-wrap;
-	font-size: 0.75rem;
-	line-height: 1.6;
+	font-size: 0.9375rem;
+	line-height: 1.5;
 	font-family: inherit;
-	color: rgb(var(--color-text-secondary-rgb) / 50%);
+	color: var(--color-text-secondary);
+	overflow-wrap: anywhere;
+
+	/* Long templates stay a few lines tall; "Ver mensaje completo" expands them */
+	&--clamped {
+		display: -webkit-box;
+		overflow: hidden;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 9;
+	}
+}
+
+/* Guest details summarized in one card; "Cambiar" opens the fields */
+.send-invitation__summary {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.75rem 0.5rem 0.75rem 1rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: 14px;
+	background: var(--color-surface-elevated);
+}
+
+.send-invitation__summary-text {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 0.125rem;
+	min-width: 0;
+}
+
+.send-invitation__summary-name {
+	color: var(--color-text-primary);
+	font-size: 1.0625rem;
+	font-weight: 700;
+	overflow-wrap: anywhere;
+}
+
+.send-invitation__summary-meta {
+	color: var(--color-text-secondary);
+	font-size: 0.9375rem;
+}
+
+.send-invitation__summary-edit {
+	flex-shrink: 0;
+	min-width: 44px;
+	min-height: 44px;
+	padding: 0 0.75rem;
+	border: 1px solid var(--color-border-control);
+	border-radius: 12px;
+	background: transparent;
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	font-size: 0.9375rem;
+	font-weight: 600;
+	cursor: pointer;
+
+	&:focus-visible {
+		@include mixins.focus-ring;
+	}
+}
+
+.send-invitation__details-done {
+	align-self: flex-end;
+}
+
+.send-invitation__hint {
+	margin: 0.5rem 0 0;
+	color: var(--color-text-secondary);
+	font-size: 0.8125rem;
+	line-height: 1.4;
 }
 
 .send-invitation__textarea {
@@ -236,7 +306,7 @@
 .send-invitation__preview-action {
 	@extend %send-invitation-text-action;
 
-	color: var(--color-action-accent);
+	color: var(--color-text-emphasis);
 	font-weight: 500;
 
 	&:hover {

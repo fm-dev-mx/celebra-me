@@ -64,9 +64,13 @@ Every managed digital invitation must define:
 - **Base Demo ID** (`baseDemoId`): Legacy, scheduled for removal. Provisioning still requires a demo
   catalog entry with the same `themeId` and writes `base_demo_id`/`snapshot`; nothing at publish,
   preview, or edit time reads them.
-- **Lifecycle** (`lifecycle`): `in_progress` while the definition is intentionally absent or not yet
-  aligned through Production; `published` once Production alignment is expected. This metadata is
-  explicit and is not inferred from timestamps or environment presence.
+- **Lifecycle** (`lifecycle`, required, no default): `in_progress` while the definition is
+  intentionally absent or not yet aligned through Production; `published` once Production alignment
+  is expected. This metadata is explicit and is not inferred from timestamps or environment
+  presence. Hosted targets enforce it: `invitation:release --targets preview` and `prod:apply`
+  reject an `in_progress` definition with `LIFECYCLE_NOT_PUBLISHED`, and `prod:apply --all-ready`
+  leaves authoring definitions out of discovery (counted apart, like archived ones). Local remains
+  open for authoring.
 - **Delivery Scope** (`deliveryScope`): `content-only`, `content-and-assets`, or `assets-only`.
   Three-way reconciliation must use this declared scope and report out-of-scope changes rather than
   applying or hiding them. `pnpm invitation:release` inherits this value unless the operator passes
@@ -172,51 +176,16 @@ projection. The corpus has no independent invitation category or source contract
 
 ## 4. Environment Observability & Identity Rekey Boundaries
 
-### Unified Status Command (`dbs`)
-
-The single canonical repository command for inspecting environment status and managed invitation
-state across Local, Preview, and Production is:
-
-```bash
-pnpm dbs                 # Canonical schema + publication + readiness
-pnpm dbs <slug>          # One registry invitation
-pnpm dbs --verbose       # Migration IDs, env states, reasonCode
-pnpm dbs --diagnostics   # Same decisions plus diagnostic enrichment
-pnpm dbs --compact       # Connectivity CONTENT + SCHEMA (not publication)
-pnpm dbs --compact <slug># Same connectivity CONTENT scoped to one slug
-```
-
-Compact output is connectivity plus `classifySchemaLifecycle` only. It is strictly read-only and
-never migrates, reconciles, updates, or promotes. Unavailable remotes degrade to `UNREACHABLE` /
-`CREDENTIALS_REQUIRED` / `UNVERIFIED` without noisy failure for expected gaps. Publication state
-comes from `pnpm dbs` / `pnpm dbs <slug>` via `classifyLiveInvitation` and `decidePromotionAction`,
-not from package-hash compact output.
-
-Git hooks do not query managed invitation status. Run `pnpm dbs` explicitly when status evidence is
-needed. `pnpm lane:sync` (see [`git-governance.md`](git-governance.md#task-lifecycle)) prints the
-same bounded read-only status after synchronization; opt out via `--skip-status` or
-`CELEBRA_SKIP_MANAGED_STATUS=1`.
-
-### PowerShell Helper
-
-Developers and operators can define a thin human helper in their PowerShell `$PROFILE`:
-
-```powershell
-function dbs {
-    param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Args)
-    pnpm dbs @Args
-}
-```
-
-The PowerShell helper delegates directly to `pnpm dbs` without containing DB or status business
-logic.
+`pnpm dbs` is the read-only status command for schema and managed invitation state across Local,
+Preview, and Production. Its flags live in the
+[status diagnostics cheatsheet](../domains/database/cheatsheets/status-diagnostics.md). Git hooks do
+not query it; `pnpm lane:sync` prints the same bounded status after synchronization (opt out with
+`--skip-status` or `CELEBRA_SKIP_MANAGED_STATUS=1`).
 
 ### Rekey Target Semantics
 
-- Identity rekeying (`--rekey-from <old-slug>`) is supported only on the **local** target
-  environment.
-- Any attempt to execute `--rekey-from` against Preview or Production targets fails closed
-  immediately with `IDENTITY_REKEY_UNSUPPORTED_TARGET`.
+- Identity rekeying (`--rekey-from <old-slug>`) is supported on Local and Preview only.
+- Production fails closed with `IDENTITY_REKEY_UNSUPPORTED_TARGET`.
 - Rekeying preserves the invitation UUID, event ownership, and RSVP records while updating the
   canonical slug and release provenance.
 
@@ -228,10 +197,11 @@ information, credits, scroll cues and music prompts must not overlap. Maintain t
 accessible label and minimum 44px touch target. Small informational text requires at least 4.5:1
 contrast.
 
-Reuse the canonical visual matrix and shared geometry checks at 390×844, 414×896 and 1440×900 for
-affected flows. Exercise representative long names and wrapped venue/date content in shared variant
-fixtures. Geometry regressions and approved screenshots provide complementary evidence; neither
-replaces human inspection of photographic contrast and ornamental lettering.
+Reuse the canonical visual matrix (390×844 and 1440×900, defined in
+`scripts/screenshot/visual-coverage-contract.ts`) and shared geometry checks for affected flows.
+Exercise representative long names and wrapped venue/date content in shared variant fixtures.
+Geometry regressions and approved screenshots provide complementary evidence; neither replaces human
+inspection of photographic contrast and ornamental lettering.
 
 Follow [CSS visual parity](../domains/theme/css-visual-parity.md) for complete-page capture, pinned
 runtime, scoped exceptions and exact-artifact human acceptance. A published invitation passing

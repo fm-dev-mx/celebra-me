@@ -5,35 +5,8 @@ import {
 	formatEvidenceSummary,
 	runProductionSmoke,
 	validateVercelDispatch,
-	requireReadyDeployment,
 	type PostDeployEvidence,
 } from '../../scripts/ops/post-deploy-smoke';
-
-describe('release deployment completion', () => {
-	const sha = 'a'.repeat(40);
-	const dispatch = validateVercelDispatch({
-		event: 'vercel.deployment.promoted',
-		environment: 'production',
-		projectId: 'prj_test',
-		expectedProjectId: 'prj_test',
-		deploymentId: 'dpl_test',
-		url: 'https://www.celebra-me.com',
-		commitSha: sha,
-		gitRef: 'main',
-	});
-	const expected = { sha, environment: 'production' as const, gitRef: 'main' };
-	it('accepts only a ready deployment of the intended environment/ref/SHA', () => {
-		expect(() => requireReadyDeployment(dispatch, 'READY', expected)).not.toThrow();
-		for (const state of ['', 'BUILDING', 'ERROR', 'CANCELED'])
-			expect(() => requireReadyDeployment(dispatch, state, expected)).toThrow();
-		for (const mismatch of [
-			{ ...expected, sha: 'b'.repeat(40) },
-			{ ...expected, environment: 'preview' as const },
-			{ ...expected, gitRef: 'develop' },
-		])
-			expect(() => requireReadyDeployment(dispatch, 'READY', mismatch)).toThrow();
-	});
-});
 
 function response(status: number, body = '', headers: Record<string, string> = {}): Response {
 	return {
@@ -335,6 +308,10 @@ describe('post-deploy smoke', () => {
 		expect(workflow).toContain("'vercel.deployment.promoted'");
 		expect(workflow).toContain('ref: ${{ github.event.client_payload.git.sha }}');
 		expect(workflow).toContain('cancel-in-progress: true');
+		// `ready` and `promoted` dispatches for the same ref must not cancel each other.
+		expect(workflow).toContain(
+			'group: post-deploy-smoke-${{ github.event.action }}-${{ github.event.client_payload.environment }}-${{ github.event.client_payload.git.ref }}',
+		);
 		expect(workflow).toContain('environment: Production');
 		expect(workflow).toContain('PROD_DB_URL: ${{ secrets.PROD_DB_URL }}');
 		expect(workflow).toContain(
@@ -376,6 +353,9 @@ describe('post-deploy smoke', () => {
 		);
 		expect(preview).toContain('tee -a "$GITHUB_STEP_SUMMARY"');
 		expect(preview).toContain('exit "$status"');
+		// Content not yet published to Preview is listed, never counted as a failure.
+		expect(preview).toContain('.classification == "PENDING_PUBLISH"');
+		expect(preview).toContain('.classification != "PENDING_PUBLISH"');
 		const upload = preview.slice(preview.indexOf('- name: Upload media verification report'));
 		expect(upload).toContain('if: always()');
 		expect(upload).toContain('uses: actions/upload-artifact@v7');

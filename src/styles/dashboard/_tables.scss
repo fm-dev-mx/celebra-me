@@ -98,6 +98,16 @@
 	color: var(--color-text-primary);
 }
 
+.dashboard-event-chip__role {
+	max-width: 11rem;
+	padding: 0.1rem 0.3rem;
+	border: 1px solid var(--dashboard-card-border);
+	border-radius: 999px;
+	font-size: 0.75rem;
+	background: transparent;
+	color: inherit;
+}
+
 .dashboard-event-chip__remove {
 	background: transparent;
 	border: none;

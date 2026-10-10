@@ -1,15 +1,5 @@
 import { z } from 'zod';
-import type { OperationalActionPlan } from './action-plan';
 import { CanonicalStatusViewSchema } from './schema';
-import type { CanonicalStatusView, TargetEnv } from './types';
-import type { MediaReferencesStatus } from './media-reference-types';
-
-export type DbsStatusJson = CanonicalStatusView & {
-	operationalPlan: OperationalActionPlan;
-	mediaReferences?: MediaReferencesStatus;
-	excludedTargets?: TargetEnv[];
-};
-
 const actionStep = z
 	.object({
 		type: z.enum(['Diagnose', 'Verify', 'Plan', 'Apply', 'Manual/HITL']),

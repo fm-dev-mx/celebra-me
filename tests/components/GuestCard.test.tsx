@@ -51,7 +51,7 @@ describe('GuestCard status labels', () => {
 		expect(screen.getAllByText('Por enviar').length).toBeGreaterThanOrEqual(1);
 	});
 
-	it('shows "Por confirmar" when shared but not viewed and not yet confirmed', () => {
+	it('shows "Enviada, sin abrir" when shared but not viewed and not yet confirmed', () => {
 		render(
 			<GuestCard
 				item={makeGuest({
@@ -62,10 +62,10 @@ describe('GuestCard status labels', () => {
 				{...baseProps}
 			/>,
 		);
-		expect(screen.getByText('Por confirmar')).toBeInTheDocument();
+		expect(screen.getByText('Enviada, sin abrir')).toBeInTheDocument();
 	});
 
-	it('shows "Por confirmar" when shared and viewed but not yet confirmed', () => {
+	it('shows "Abierta, sin responder" when shared and viewed but not yet confirmed', () => {
 		render(
 			<GuestCard
 				item={makeGuest({
@@ -76,7 +76,7 @@ describe('GuestCard status labels', () => {
 				{...baseProps}
 			/>,
 		);
-		expect(screen.getAllByText('Por confirmar').length).toBeGreaterThanOrEqual(1);
+		expect(screen.getAllByText('Abierta, sin responder').length).toBeGreaterThanOrEqual(1);
 	});
 
 	it('shows "Confirmada" when attendanceStatus is confirmed (overrides delivery status)', () => {
@@ -97,14 +97,14 @@ describe('GuestCard status labels', () => {
 		expect(screen.getAllByText('Por enviar').length).toBeGreaterThanOrEqual(1);
 	});
 
-	it('renders metadata row with attendance', () => {
+	it('renders metadata row with passes', () => {
 		render(
 			<GuestCard
 				item={makeGuest({ attendeeCount: 0, maxAllowedAttendees: 4 })}
 				{...baseProps}
 			/>,
 		);
-		expect(screen.getAllByText(/asistentes/).length).toBeGreaterThanOrEqual(1);
+		expect(screen.getByText(/#01 · 4 pases/)).toBeInTheDocument();
 	});
 
 	it('shows message tag when guest has a message', () => {
@@ -155,7 +155,13 @@ describe('GuestCard status labels', () => {
 			/>,
 		);
 		expect(screen.getByText('Recordar')).toBeInTheDocument();
-		expect(screen.queryByText('Copiar enlace')).not.toBeInTheDocument();
+		// The copy action stays available beside the reminder.
+		expect(screen.getByText('Copiar enlace')).toBeInTheDocument();
+	});
+
+	it('keeps "Copiar enlace" next to the share action for pending guests', () => {
+		render(<GuestCard item={makeGuest({ deliveryStatus: 'shared' })} {...baseProps} />);
+		expect(screen.getByText('Copiar enlace')).toBeInTheDocument();
 	});
 
 	it('opens reminder modal when "Recordar" is clicked', () => {

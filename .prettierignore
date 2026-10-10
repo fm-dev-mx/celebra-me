@@ -31,7 +31,8 @@ coverage/
 *.webp
 
 # Ignore generated files
-astro/types.d.ts
+# Written by `pnpm visual:parity:accept`; must stay byte-identical to what it wrote.
+tests/e2e/visual-baselines/manifest.json
 workers/**/worker-configuration.d.ts
 pnpm-lock.yaml
 

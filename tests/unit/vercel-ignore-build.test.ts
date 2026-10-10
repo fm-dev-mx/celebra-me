@@ -54,7 +54,7 @@ describe('Vercel ignored build step', () => {
 		const others = [
 			'docs/core/release-process.md',
 			'.github/workflows/commit-validation.yml',
-			'scripts/ops/ci-metrics.ts',
+			'scripts/ops/release-status.ts',
 			'tests/unit/example.test.ts',
 			'supabase/migrations/0001.sql',
 		];

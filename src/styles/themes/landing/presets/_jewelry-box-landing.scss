@@ -16,7 +16,6 @@
 	--color-ink: #110d09;
 	--color-ink-rgb: 17 13 9;
 	--color-espresso: #21130d;
-	--color-espresso-rgb: 33 19 13;
 	--color-ivory: #f7f0e4;
 	--color-ivory-rgb: 247 240 228;
 	--color-paper: #fbf6ec;
@@ -82,12 +81,9 @@
 
 	// Shared Dark Slate Surface (for FAQ, Footer, Pricing Exclusive)
 	--color-surface-dark-slate: var(--color-ink);
-	--color-surface-dark-slate-rgb: var(--color-ink-rgb);
 	--color-text-on-dark-slate: var(--color-text-light);
-	--color-text-on-dark-slate-rgb: var(--color-text-light-rgb);
 
 	// Light overlay for glassmorphism on dark surfaces
-	--color-overlay-light: var(--color-ivory);
 	--color-overlay-light-rgb: var(--color-ivory-rgb);
 
 	// FAQ background

@@ -234,8 +234,9 @@ El diff mezcla fix de RSVP y rename mecánico en el mismo archivo.
 **¿Cómo quiere proceder?**
 
 - **a)** `[Recomendado]` — **Autorizar al agente a ejecutar los commits según lo planeado**
-  - **Objetivo:** Permitir que el agente realice las acciones necesarias en git (stage/unstage de
-    los paths exactos y creación de los commits atómicos).
+  - **Objetivo:** Permitir que el agente realice las acciones necesarias en git (stage de los paths
+    exactos; unstage solamente si la operación y sus paths están incluidos expresamente en el plan y
+    creación de los commits atómicos).
   - **Pasos / Ej.:** El agente agrupa y ejecuta Commit 1, luego Commit 2 de forma segura.
 
 - **b)** **Ejecución manual paso a paso (el usuario stagea)**

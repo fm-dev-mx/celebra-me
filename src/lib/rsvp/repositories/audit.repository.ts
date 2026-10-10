@@ -1,27 +1,6 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { GuestInvitationAuditRecord } from '@/interfaces/rsvp/domain.interface';
 import { type GuestAuditRow, toGuestAuditRecord } from '@/lib/rsvp/repositories/shared/rows';
-
-export async function appendGuestAuditByHost(
-	guestId: string,
-	eventType: GuestAuditRow['event_type'],
-	payload: Record<string, unknown>,
-	hostAccessToken: string,
-): Promise<void> {
-	await supabaseRestRequest<GuestAuditRow[]>({
-		pathWithQuery: 'guest_invitation_audit',
-		method: 'POST',
-		authToken: hostAccessToken,
-		prefer: 'return=minimal',
-		body: {
-			guest_invitation_id: guestId,
-			actor_type: 'host',
-			event_type: eventType,
-			payload,
-		},
-	});
-}
-
 export async function appendGuestAuditPublic(
 	guestInvitationId: string,
 	eventType: GuestAuditRow['event_type'],

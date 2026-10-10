@@ -27,9 +27,9 @@ must be explicitly reported as an extra action.
 
 ---
 
-## 3) Allowed Actions
+## 2) Allowed Actions
 
-### 3.1 Auto-Fixes
+### 2.1 Auto-Fixes
 
 In `implement` or `remediate` mode, the agent may automatically fix:
 
@@ -43,7 +43,7 @@ In `implement` or `remediate` mode, the agent may automatically fix:
 
 ---
 
-### 3.2 Refactors (Bounded)
+### 2.2 Refactors (Bounded)
 
 In `implement` mode, the agent may perform **small to medium refactors** provided that they:
 
@@ -57,7 +57,7 @@ file boundaries and acceptance criteria; otherwise they are not allowed.
 
 ---
 
-## 4) Large Change Mode (Review/Remediation)
+## 3) Large Change Mode (Review/Remediation)
 
 The agent reviewing an existing diff must switch to **Large Change Mode** when any of the following
 apply:
@@ -81,20 +81,15 @@ review/remediation of a pre-existing broad diff to the actions below:
 
 ---
 
-## 4.5) Release and CHANGELOG Checkpoints
+## 4) Release and CHANGELOG Checkpoints
 
 When the reviewed work is a **release checkpoint** or a clearly product-visible milestone:
 
 - Require an explicit `CHANGELOG note:` verdict matching commit-planner: `update Unreleased` or
   `n/a — not a product milestone` (the latter is wrong for a release cut).
-- For a release cut / tag, confirm the pre-tag checklist in
-  [`docs/core/release-process.md`](release-process.md) (real Unreleased bullets, no invitation ops
-  dump, schema summarized only, promote + reset, version + tag alignment).
-- Confirm `CHANGELOG.md` `[Unreleased]` (or the versioned section being cut) matches the layered
-  policy in that same doc.
-- Do not demand a changelog bullet for every commit or every migration file.
-- Prefer invitation ops detail under `docs/invitations/` and schema history under
-  `supabase/migrations/`.
+- Check `CHANGELOG.md` against the layered policy and, for a release cut or tag, the pre-tag
+  checklist in [release process](release-process.md#layered-changelog-policy). Do not demand a
+  changelog bullet for every commit or migration file.
 
 ---
 
@@ -137,9 +132,8 @@ reviewed files that is not part of the workflow change. Blocking on that debt wo
 ESLint, Stylelint, and related Jest are hard gates. New or modified files in the workflow commit
 must still be formatted — advisory is not a license to commit unformatted code.
 
-Markdown table readability is validated in the same changed/staged scope. Excessive cell prose is a
-hard gate; column count and moderately long cells remain advisory so compact matrices and existing
-technical tables do not become false positives.
+Markdown table readability is validated in the same changed/staged scope (see
+[Markdown tables](#markdown-tables)).
 
 **B) Shared component, schema, adapter, render-data, routing, Supabase, or content-resolution
 changes — broader local feedback:**
@@ -161,6 +155,8 @@ contracts, type flow, schemas, adapters, render assembly, or routing. It is not 
 documentation, copy-only, asset-only, or SCSS-only changes. Prefer focused domain validation when it
 proves the changed contract more directly.
 
+**C) Release-relevant or repository-wide changes — full pipeline:**
+
 ```sh
 pnpm run ci                  # Canonical package.json script alias for full pipeline Tier C
 pnpm agent:git-safety:finish # Interactive session close — not part of CI
@@ -168,27 +164,47 @@ pnpm agent:git-safety:finish # Interactive session close — not part of CI
 
 `pnpm run ci` is the canonical full-pipeline equivalent of Tier C. It runs `pnpm type-check`,
 `pnpm validate:structure`, `pnpm validate:deployed-app-capabilities`, `pnpm lint`,
-`pnpm lint:styles` (both content-cached under `node_modules/.cache`), `pnpm validate:ui-governance`,
-`pnpm validate:event-parity`, `pnpm validate:no-pii`, `pnpm validate:invitation-preparation`,
-`pnpm test`, `pnpm test:e2e:ci`, and `pnpm build:app`. It does **not** invoke interactive Git Safety
-(that requires a same-session baseline). Use `pnpm validate:changed` for focused feedback; run
-`pnpm type-check` and `pnpm validate:structure` when required by the scope. Focused validation does
-not replace these repository-wide checks or the full release pipeline.
+`pnpm lint:dead-code`, `pnpm lint:styles` (lint caches live under `node_modules/.cache`),
+`pnpm validate:ui-governance`, `pnpm validate:dashboard-styles`, `pnpm validate:event-parity`,
+`pnpm validate:no-pii`, `pnpm validate:invitation-preparation`, `pnpm test`, `pnpm test:e2e:ci`, and
+`pnpm build:app`. It does **not** invoke interactive Git Safety (that requires a same-session
+baseline). Use `pnpm validate:changed` for focused feedback; run `pnpm type-check` and
+`pnpm validate:structure` when required by the scope. Focused validation does not replace these
+repository-wide checks or the full release pipeline.
+
+`pnpm lint:dead-code` runs knip (pinned version, `knip.json`). Unused files, dependencies, unlisted
+dependencies and binaries fail the check; unused exports, exported types and duplicate exports are
+reported as warnings. A file loaded only at runtime (spawned script, `import.meta.glob` target,
+Playwright setup) must be registered as a knip `entry` instead of being ignored.
+
+Opt-in browser suites outside `pnpm test:e2e:ci`: `pnpm test:e2e:extended` runs generic contracts
+(motion, progressive visibility, gallery rail, raster seal, managed countdown, location navigation,
+RSVP flow, login labels) and the authoring guards of invitations that are still active or in
+progress. Run it when a change touches those surfaces or before publishing one of those invitations,
+and delete a client guard when its invitation is archived. `pnpm test:e2e:ga4` covers the consent
+banner and `gtag` loader (see
+[commercial attribution](../domains/tracking/commercial-attribution.md#ga4-status)).
 
 Close the mutable agent session with `pnpm agent:git-safety:finish` after Tier C when a session was
 started. See `.agent/rules/git-safety.md`.
 
 The pre-push hook keeps commit-range validation and the Git LFS handoff; do not move tests,
-type-checks or visual certification into pre-push. Repository CI certifies visual parity on the
-`develop` push; `pnpm validate:prepush` is an optional local preview of that certification.
+type-checks or visual certification into pre-push (see
+[visual certification](#visual-certification-and-candidates)).
 
 #### Remote CI coverage and efficiency
 
-`pnpm run ci` does not include every check in `.github/workflows/commit-validation.yml`. The remote
-workflow additionally checks commit messages, documentation links, Markdown tables, and the
-disposable RSVP and managed database contracts. Browser CI uses canonical fixtures, accepted visual
-references and the pinned Linux image; a local diagnostic capture run is not equivalent to that
-comparison or to human reference acceptance.
+`pnpm run ci` does not include every check in `.github/workflows/commit-validation.yml`. Repository
+Policy additionally checks commit messages, documentation links, Markdown tables and invitation
+publication transitions, and runs the advisory `ops:classify-release`. The application tiers add the
+Memories Worker bundle dry-run and the disposable RSVP, managed and event-memories database
+contracts. Browser CI uses canonical fixtures, accepted visual references and the pinned Linux
+image; a local diagnostic capture run is not equivalent to that comparison or to human reference
+acceptance.
+
+Repository CI runs on pushes to `develop`, on pull requests into `develop` or `main`, and by manual
+dispatch. A push to a task branch alone runs nothing: run focused local checks while editing, then
+integrate the final range into `develop` and confirm its workflow run exists.
 
 Keep focused validation and pre-commit distinct: `validate:changed` already runs related Jest for
 working-tree sources; `test:changed` serves the staged-source pre-commit boundary. Do not rerun
@@ -199,21 +215,18 @@ JSON/configuration fallback. Baseline PNGs are not Jest inputs. This exception d
 visual references: provenance, integrity, coverage, complete comparison and human acceptance still
 apply. Other JSON/YAML inputs outside `docs/`, including other JSON files in the baseline directory,
 require full Jest; deleted non-E2E sources do too. Mixed changes retain the union of these
-requirements. Changed Jest tests are passed directly to related-test selection. SCSS still requires
-its style and applicable rendering checks even when the Jest selector returns no inputs.
+requirements. Changed Jest tests are passed directly to related-test selection. Contract tests that
+read inputs from disk instead of importing them (profile token rules for `src/styles/**.scss`,
+migration contracts for `supabase/migrations/**.sql`, component contracts for `*.astro`) are
+selected by input kind (`CONTRACT_TESTS_BY_INPUT` in `scripts/related-test-files.mjs`), since the
+import graph can never reach them. SCSS still requires its style and applicable rendering checks.
 
 Worker settings currently differ intentionally by execution entry point: Playwright's CI default is
 one worker, while the remote browser job explicitly selects two. This documents the existing
 behavior, not a measured optimum. Before changing it, compare the same code, cases, runtime image,
 fixtures and visual mode across repeated runs, including retries and server preparation. Do not
 infer remote savings from local diagnostic timings. Capture suites aggregate per-capture records
-after the run, so they no longer depend on one worker; they still run serially by default.
-`VISUAL_PARITY_PARALLEL=1` selects parallel capture only for the paired trials defined in the
-release process; parallel capture becomes the default only after those trials pass. Run a trial pair
-by dispatching Repository CI twice on the same SHA: once with the defaults and once with
-`capture_execution=parallel` and the `browser_workers` value under test. Push and pull request runs
-always use the defaults, which equal the locally certified command. Each `validation-metrics`
-artifact records `captureExecution` and `browserWorkers` for the comparison.
+after the run and run serially; every remote run uses the locally certified command.
 
 The aggregate application check requires policy, application and browser jobs to succeed; failed,
 cancelled or incomplete jobs must never become aggregate approval. One case skips the application
@@ -237,6 +250,50 @@ input run the tier. A run that skipped the tier records a `skipped` browser job,
 source for evidence reuse or for a later scope assessment; the release pull request then runs every
 tier.
 
+Evidence is reusable only for the same SHA, range, configuration, runtime and command. A new final
+integration SHA, changed inputs or an unresolved failure justifies revalidation; PR merge-SHA
+evidence never certifies a different final commit.
+
+#### Failure classification
+
+- Validation evidence reports one primary cause: `CODE`, `VISUAL_DIFF` or `INFRASTRUCTURE`.
+  `Application Suite` is an aggregator and never replaces the primary failing tier. Deployment and
+  smoke workflows report `DEPLOY` and `SMOKE`.
+- Browser comparison writes `.tmp/browser-outcome.json` with the visual evidence filenames. A failed
+  browser job after a successful browser test step is infrastructure-only; a snapshot diff is
+  `VISUAL_DIFF`; other browser failures are `CODE`.
+- Release classification marks conservative visual impact for application TypeScript/Astro, styles,
+  rendered invitation builders/content/assets, fonts, Playwright fixtures/specs, the lockfile and
+  screenshot infrastructure. This signal explains when hash-bound human review is additionally
+  required and never reduces coverage.
+
+#### Visual certification and candidates
+
+- Exact-SHA visual certification is owned by the `Application / browser` job of Repository CI on the
+  `develop` push. `pnpm test:e2e:ci` compares visual references and fails before browser work when
+  the certified Linux runtime, isolated fixtures, LFS references or coverage are unavailable.
+  Changed Playwright specs need browser evidence; Jest does not run them. Local Render Corpus is
+  Jest contract coverage, not visual certification.
+- `pnpm validate:prepush -- --sha <exact-sha> --base-sha <base-sha> --target-ref refs/heads/develop`
+  is an optional local preview of that certification: an isolated checkout of the exact commit in
+  the same digest-pinned Linux Playwright image, using the shared visual-impact classifier. It is a
+  no-op for other target refs. Native Windows captures are diagnostic only.
+- Its evidence is cached under the worktree's internal Git path and is reusable only while SHA,
+  visual matrix, accepted-manifest hash, lockfile hash, verified Node archive, Node/pnpm versions,
+  image digest, certified command and command schema all match. It is never committed. Failed
+  evidence is retained per attempt for local diagnosis and never changes accepted references.
+- `validate:changed` remains fast feedback. When it prints `VISUAL_IMPACT_DETECTED`, its success is
+  not visual certification.
+- Generate a review candidate with `pnpm visual:parity:candidate:certified -- --sha <exact-sha>`
+  (the SHA must equal the clean HEAD), or with the Repository CI manual input
+  `visual_mode=candidate` on a published ref and its `visual-candidate-<sha>` artifact. Review
+  `candidate/changes.html`, which lists only captures that fail the unchanged comparison plus new
+  captures; keep the sibling `candidate-references` and `candidate-diffs` directories. Candidate
+  mode never produces a passing `Application Suite`.
+- Acceptance (`pnpm visual:parity:accept`) binds the exact reference SHA, matrix hash and
+  candidate-manifest SHA-256, followed by a new passing compare. A regenerated manifest requires
+  renewed owner approval of that exact artifact; never transfer approval to a different hash.
+
 #### Documentation audit limits
 
 `pnpm ops check-links` checks relative inline link targets in changed Markdown. `--all` scans
@@ -245,11 +302,25 @@ Neither mode validates external URLs or section anchors; `--all` is not a comple
 every versioned document. Historical missing paths are dated evidence, not automatically active
 procedure failures.
 
-`pnpm validate:markdown-tables -- --all-active` uses the existing allowlist in
-`scripts/markdownlint/table-readability.mjs`; other versioned documentation, including
-`CONTRIBUTING.md` and `scripts/README.md`, still requires direct review. A passing link or table
-check does not establish semantic alignment. Compare procedures with `package.json`, hook/workflow
-code and dated effective remote configuration; report uncovered documents and unverifiable claims.
+A passing link or table check does not establish semantic alignment. Compare procedures with
+`package.json`, hook/workflow code and effective remote configuration; report uncovered documents
+and unverifiable claims.
+
+#### Markdown tables
+
+Use tables for compact, comparative data, not implementation narratives.
+`scripts/markdownlint/table-readability.mjs` applies to active Markdown documentation and reports a
+warning for more than four columns or a visible cell over 120 characters, and a blocking error for a
+cell over 240 characters. Move long explanations into paragraphs, lists or subsections.
+
+- `pnpm validate:markdown-tables` checks changed Markdown; `-- --all-active` checks every active
+  file through the same allowlist. Other versioned documentation, including `CONTRIBUTING.md` and
+  `scripts/README.md`, still requires direct review.
+- `pnpm format:markdown-tables -- --files <path...>` (or `-- --all-active`) converts over-long rows
+  into field/value records. The pre-commit `lint-staged` pipeline applies that correction, runs
+  Prettier and checks again; in VS Code the recommended `DavidAnson.vscode-markdownlint` extension
+  applies it on an explicit save before Prettier.
+- Historical, generated, temporary and fixture Markdown is outside this rule.
 
 ### 5.3 Visual evidence (screenshots and browser proof)
 
@@ -337,10 +408,10 @@ When expected work exceeds these defaults, briefly justify the additional scope 
 
 ### 5.4 Context-efficiency rules
 
-The audit identified the main high-consumption failure modes as repeated reads of unchanged files or
-already-established architecture, bulk ingestion of logs/manifests/diffs/images, repeated checks
-whose evidence was still valid, verbose duplicated progress summaries, and investigation continuing
-after acceptance was already demonstrated.
+The main high-consumption failure modes are repeated reads of unchanged files or already-established
+architecture, bulk ingestion of logs/manifests/diffs/images, repeated checks whose evidence was
+still valid, verbose duplicated progress summaries, and investigation continuing after acceptance
+was already demonstrated.
 
 - Use `rg` and focused line ranges first. Reopen an unchanged file only when a new question depends
   on it; carry forward concise summaries and current evidence.
@@ -374,7 +445,7 @@ Screenshot infrastructure guardrails:
 
 ---
 
-## 7) Non-Goals
+## 6) Non-Goals
 
 The Gatekeeper must not:
 

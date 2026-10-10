@@ -134,3 +134,17 @@ export function listActiveInvitationDefinitions(): InvitationDefinition[] {
 export function listArchivedInvitationDefinitions(): InvitationDefinition[] {
 	return listInvitationDefinitions().filter(isArchivedInvitation);
 }
+
+/** Active definitions that hosted targets may receive. */
+export function listPublishedInvitationDefinitions(): InvitationDefinition[] {
+	return listActiveInvitationDefinitions().filter(
+		(definition) => definition.lifecycle === 'published',
+	);
+}
+
+/** Active definitions still in authoring; Local only, reported apart from release planning. */
+export function listAuthoringInvitationDefinitions(): InvitationDefinition[] {
+	return listActiveInvitationDefinitions().filter(
+		(definition) => definition.lifecycle === 'in_progress',
+	);
+}

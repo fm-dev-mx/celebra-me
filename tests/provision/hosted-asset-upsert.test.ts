@@ -109,7 +109,7 @@ describe('assertHostedAssetUpsertApplied', () => {
 describe('upsertAssetRows wiring', () => {
 	const upsertFn = engineSource.slice(
 		engineSource.indexOf('function upsertAssetRows'),
-		engineSource.indexOf('function executePublicationRpcCall'),
+		engineSource.indexOf('function upsertDraftSql'),
 	);
 
 	it('reads command tags and rejects a no-op conflict update', () => {

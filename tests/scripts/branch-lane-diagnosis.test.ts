@@ -1,19 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync, existsSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { AUDIT_CONTRACT_VERSION, createFinding } from '../../scripts/db/branch-lane-status';
-import { fingerprintWorkingTree } from '../../scripts/db/branch-lane-clearance';
-import {
-	buildCheckpoint,
-	clearCheckpoint,
-	compareCheckpointFingerprint,
-	evaluateResumeCheckpoint,
-	mergeCheckpointProgress,
-	readCheckpoint,
-	writeCheckpoint,
-	type BranchLaneCheckpoint,
-} from '../../scripts/db/branch-lane-checkpoint';
+import { describe, it, expect } from '@jest/globals';
+import { createFinding } from '../../scripts/db/branch-lane-status';
 import {
 	buildConsolidatedAuthorizationPlan,
 	buildNineSectionReport,
@@ -31,12 +17,6 @@ import {
 	verifyDisposableRebuildTarget,
 } from '../../scripts/db/branch-lane-disposable-remediate';
 import { DISPOSABLE_DB_URL, LOCAL_DB_URL } from '../../scripts/db/db-target-config';
-import {
-	writeClearanceFingerprint,
-	buildClearanceFingerprint,
-	readClearanceFingerprint,
-} from '../../scripts/db/branch-lane-clearance';
-
 const MIGRATION_SQL = `
 begin;
 alter table public.managed_invitation_release_provenance
@@ -442,168 +422,6 @@ describe('authorization deferral until diagnosis stable', () => {
 		);
 	});
 });
-
-describe('checkpoint resume vs clearance', () => {
-	let root: string;
-	const repoId = 'test-repo-checkpoint-aaa';
-
-	beforeEach(() => {
-		root = mkdtempSync(join(tmpdir(), 'branch-lane-checkpoint-'));
-		mkdirSync(join(root, '.agent', 'tmp'), { recursive: true });
-	});
-
-	afterEach(() => {
-		rmSync(root, { recursive: true, force: true });
-	});
-
-	it('creates checkpoint after partial progress and reuses it', () => {
-		const cp = buildCheckpoint({
-			mode: 'promote-develop-to-main',
-			baseSha: 'aaa',
-			headSha: 'bbb',
-			workingTreeFingerprint: fingerprintWorkingTree(''),
-			sensitiveFiles: ['supabase/migrations/20260727180000_x.sql'],
-			repoIdentityFingerprint: repoId,
-			completedChecks: [
-				{ id: 'branch-parity', status: 'Pass', summary: 'identity pass; parity required' },
-				{ id: 'local-audit', status: 'Fail', summary: 'disposable missing columns' },
-			],
-			unresolvedFindings: [
-				createFinding({
-					id: 'local-disposable-stale',
-					status: 'Fail',
-					cause: 'disposable stale',
-					impact: 'blocked clearance',
-					owner: 'agent',
-					remediation: 'rebuild disposable',
-					nextStep: 'auto repair',
-				}),
-			],
-			diagnosis: { localDriftClassification: 'disposable_stale_or_incomplete' },
-		});
-		writeCheckpoint(cp, root);
-		const match = evaluateResumeCheckpoint({
-			mode: 'promote-develop-to-main',
-			baseSha: 'aaa',
-			headSha: 'bbb',
-			workingTreeFingerprint: fingerprintWorkingTree(''),
-			sensitiveFiles: ['supabase/migrations/20260727180000_x.sql'],
-			projectRoot: root,
-			repoIdentityFingerprint: repoId,
-		});
-		expect(match.valid).toBe(true);
-		expect(match.reusableCheckIds).toEqual(['branch-parity', 'local-audit']);
-		expect(readCheckpoint(root)?.kind).toBe('checkpoint');
-		expect(readCheckpoint(root)?.auditContractVersion).toBe(AUDIT_CONTRACT_VERSION);
-	});
-
-	it('invalidates checkpoint selectively when head SHA changes', () => {
-		const cp = buildCheckpoint({
-			mode: 'promote-develop-to-main',
-			baseSha: 'aaa',
-			headSha: 'bbb',
-			workingTreeFingerprint: fingerprintWorkingTree(''),
-			sensitiveFiles: [],
-			repoIdentityFingerprint: repoId,
-			completedChecks: [{ id: 'git-discovery', status: 'Pass', summary: 'ok' }],
-			unresolvedFindings: [],
-		});
-		writeCheckpoint(cp, root);
-		const match = evaluateResumeCheckpoint({
-			mode: 'promote-develop-to-main',
-			baseSha: 'aaa',
-			headSha: 'ccc',
-			workingTreeFingerprint: fingerprintWorkingTree(''),
-			sensitiveFiles: [],
-			projectRoot: root,
-			repoIdentityFingerprint: repoId,
-		});
-		expect(match.valid).toBe(false);
-		expect(match.reusableCheckIds).toEqual([]);
-		expect(match.reason).toContain('SHA');
-	});
-
-	it('merges progress into an existing checkpoint', () => {
-		const base = buildCheckpoint({
-			mode: 'promote-develop-to-main',
-			baseSha: 'a',
-			headSha: 'b',
-			workingTreeFingerprint: fingerprintWorkingTree(''),
-			sensitiveFiles: [],
-			repoIdentityFingerprint: repoId,
-			completedChecks: [{ id: 'branch-parity', status: 'Pass', summary: 'ok' }],
-			unresolvedFindings: [],
-		});
-		const merged = mergeCheckpointProgress(base, {
-			completedChecks: [
-				{
-					id: 'local-disposable-drift-diagnosis',
-					status: 'Pass',
-					summary: 'classified disposable_stale_or_incomplete',
-				},
-			],
-			diagnosis: { localDriftClassification: 'disposable_stale_or_incomplete' },
-		});
-		expect(merged.completedChecks.map((c) => c.id)).toEqual([
-			'branch-parity',
-			'local-disposable-drift-diagnosis',
-		]);
-		expect(merged.diagnosis?.localDriftClassification).toBe('disposable_stale_or_incomplete');
-	});
-
-	it('refuses secret-looking checkpoint payloads and clears safely', () => {
-		const cp = buildCheckpoint({
-			mode: 'promote-develop-to-main',
-			baseSha: 'a',
-			headSha: 'b',
-			workingTreeFingerprint: fingerprintWorkingTree(''),
-			sensitiveFiles: [],
-			repoIdentityFingerprint: repoId,
-			completedChecks: [],
-			unresolvedFindings: [],
-		});
-		const path = writeCheckpoint(cp, root);
-		expect(existsSync(path)).toBe(true);
-		const poisoned = {
-			...cp,
-			leak: 'postgresql://user:password@host/db',
-		} as BranchLaneCheckpoint;
-		expect(() => writeCheckpoint(poisoned, root)).toThrow(/secrets/i);
-		clearCheckpoint(root);
-		expect(readCheckpoint(root)).toBeNull();
-	});
-
-	it('fails closed on corrupt checkpoint files', () => {
-		const path = join(root, '.agent', 'tmp', 'branch-lane-checkpoint.json');
-		writeFileSync(path, '{not-json');
-		expect(readCheckpoint(root)).toBeNull();
-		writeFileSync(
-			path,
-			JSON.stringify({ kind: 'checkpoint', mode: 'promote-develop-to-main' }),
-		);
-		expect(readCheckpoint(root)).toBeNull();
-	});
-
-	it('compareCheckpointFingerprint rejects contract version drift', () => {
-		const base = buildCheckpoint({
-			mode: 'promote-develop-to-main',
-			baseSha: 'a',
-			headSha: 'b',
-			workingTreeFingerprint: fingerprintWorkingTree(''),
-			sensitiveFiles: ['x.sql'],
-			repoIdentityFingerprint: repoId,
-			completedChecks: [],
-			unresolvedFindings: [],
-		});
-		expect(
-			compareCheckpointFingerprint(base, {
-				...base,
-				auditContractVersion: '0.0.0',
-			}).valid,
-		).toBe(false);
-	});
-});
-
 describe('status vocabulary stability', () => {
 	it('listPendingReadOnlySteps omits completed ids', () => {
 		const pending = listPendingReadOnlySteps(['git-discovery', 'branch-parity']);
@@ -772,56 +590,6 @@ describe('verified disposable remediation target guards', () => {
 		expect(result.commandSummary).toContain('disposable-test-env.ts reset');
 	});
 });
-
-describe('checkpoint vs clearance separation', () => {
-	it('checkpoint does not imply clearance Pass', () => {
-		const root = mkdtempSync(join(tmpdir(), 'branch-lane-sep-'));
-		mkdirSync(join(root, '.agent', 'tmp'), { recursive: true });
-		try {
-			const cp = buildCheckpoint({
-				mode: 'promote-develop-to-main',
-				baseSha: 'a',
-				headSha: 'b',
-				workingTreeFingerprint: fingerprintWorkingTree(''),
-				sensitiveFiles: [],
-				repoIdentityFingerprint: 'sep-repo',
-				completedChecks: [
-					{ id: 'local-audit', status: 'Fail', summary: 'pending remediation' },
-				],
-				unresolvedFindings: [
-					createFinding({
-						id: 'local-disposable-stale',
-						status: 'Fail',
-						cause: 'stale',
-						impact: 'blocked',
-						owner: 'agent',
-						remediation: 'remediate disposable',
-						nextStep: 'rebuild',
-					}),
-				],
-			});
-			writeCheckpoint(cp, root);
-			expect(readCheckpoint(root)?.kind).toBe('checkpoint');
-			expect(readClearanceFingerprint(root)).toBeNull();
-
-			const clearance = buildClearanceFingerprint({
-				mode: 'promote-develop-to-main',
-				baseSha: 'a',
-				headSha: 'b',
-				workingTreeFingerprint: fingerprintWorkingTree(''),
-				sensitiveFiles: [],
-				clearanceStatus: 'Pass',
-				repoIdentityFingerprint: 'sep-repo',
-			});
-			writeClearanceFingerprint(clearance, root);
-			expect(readClearanceFingerprint(root)?.clearanceStatus).toBe('Pass');
-			expect(readCheckpoint(root)?.unresolvedFindings[0]?.status).toBe('Fail');
-		} finally {
-			rmSync(root, { recursive: true, force: true });
-		}
-	});
-});
-
 describe('missing credentials and nine-section report', () => {
 	it('maps missing credentials to Needs manual action with exact locations', () => {
 		const finding = createMissingCredentialsFinding({

@@ -23,4 +23,3 @@ export const UpdateInvitationCommandSchema = z.object({
 });
 
 export type UpdateInvitationInput = z.infer<typeof UpdateInvitationSchema>;
-export type UpdateInvitationCommandInput = z.infer<typeof UpdateInvitationCommandSchema>;

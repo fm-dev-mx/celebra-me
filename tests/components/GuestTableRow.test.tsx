@@ -9,12 +9,7 @@ jest.mock('@/components/dashboard/guests/ShareAction', () => ({
 	default: () => <div data-testid="share-action" />,
 }));
 
-jest.mock('@/components/dashboard/guests/GuestExpandedActions', () => ({
-	__esModule: true,
-	default: () => <div data-testid="expanded-actions" />,
-}));
-
-describe('GuestTableRow — % Vista column', () => {
+describe('GuestTableRow — status, people and actions', () => {
 	const baseProps = {
 		index: 0,
 		inviteUrl: 'https://example.com/invite/1',
@@ -25,8 +20,7 @@ describe('GuestTableRow — % Vista column', () => {
 			reminder:
 				'Hola {guestName}, te comparto nuevamente tu invitación a {eventTitle}:\n\n{inviteUrl}',
 		},
-		onEdit: jest.fn(),
-		onDelete: jest.fn().mockResolvedValue(undefined),
+		onOpenDetails: jest.fn(),
 		onMarkShared: jest.fn().mockResolvedValue(undefined),
 		shareDateContext: defaultShareDateContext(),
 	};
@@ -40,68 +34,41 @@ describe('GuestTableRow — % Vista column', () => {
 			</table>,
 		);
 
-	it('renders numeric percentage label for 0%', () => {
-		renderRow({ isViewed: true, viewPercentage: 0 });
-		expect(screen.getByText('0%')).toBeInTheDocument();
+	it.each([
+		[{ deliveryStatus: 'shared' as const, isViewed: false }, 'Enviada, sin abrir'],
+		[{ deliveryStatus: 'shared' as const, isViewed: true }, 'Abierta, sin responder'],
+		[{ deliveryStatus: 'generated' as const }, 'Por enviar'],
+	])('labels the stage of an unanswered invitation', (overrides, label) => {
+		renderRow(overrides);
+		expect(screen.getByText(label)).toBeInTheDocument();
 	});
 
-	it('renders numeric percentage label for 42%', () => {
-		renderRow({ isViewed: true, viewPercentage: 42 });
-		expect(screen.getByText('42%')).toBeInTheDocument();
+	it('describes people for a partial confirmation', () => {
+		renderRow({ attendanceStatus: 'confirmed', maxAllowedAttendees: 4, attendeeCount: 2 });
+		expect(screen.getByText('Vienen 2 de 4')).toBeInTheDocument();
+		expect(screen.getByText('2 lugares no usados')).toBeInTheDocument();
 	});
 
-	it('renders numeric percentage label for 100%', () => {
-		renderRow({ isViewed: true, viewPercentage: 100 });
-		expect(screen.getByText('100%')).toBeInTheDocument();
+	it.each(['pending', 'confirmed', 'declined'] as const)(
+		'always offers "Copiar enlace" (%s)',
+		(attendanceStatus) => {
+			renderRow({ attendanceStatus, deliveryStatus: 'shared' });
+			expect(screen.getByRole('button', { name: 'Copiar enlace' })).toBeInTheDocument();
+		},
+	);
+
+	it('offers sharing only while the invitation has no answer', () => {
+		const { unmount } = renderRow({ deliveryStatus: 'shared' });
+		expect(screen.getByTestId('share-action')).toBeInTheDocument();
+		unmount();
+
+		renderRow({ deliveryStatus: 'shared', attendanceStatus: 'confirmed' });
+		expect(screen.queryByTestId('share-action')).not.toBeInTheDocument();
 	});
 
-	it('assigns correct inline-size style to the progress fill', () => {
-		const { container } = renderRow({ isViewed: true, viewPercentage: 67 });
-		const fill = container.querySelector<HTMLElement>('.engagement-mini__progress');
-		expect(fill).toBeInTheDocument();
-		expect(fill!.style.getPropertyValue('--progress-width')).toBe('67%');
-	});
-
-	it('assigns inline-size 0% when percentage is 0', () => {
-		const { container } = renderRow({ isViewed: true, viewPercentage: 0 });
-		const fill = container.querySelector<HTMLElement>('.engagement-mini__progress');
-		expect(fill!.style.getPropertyValue('--progress-width')).toBe('0%');
-	});
-
-	it('assigns inline-size 100% when percentage is 100', () => {
-		const { container } = renderRow({ isViewed: true, viewPercentage: 100 });
-		const fill = container.querySelector<HTMLElement>('.engagement-mini__progress');
-		expect(fill).toBeInTheDocument();
-		expect(fill!.style.getPropertyValue('--progress-width')).toBe('100%');
-	});
-
-	it('clamps percentage above 100 to 100', () => {
-		const { container } = renderRow({ isViewed: true, viewPercentage: 150 });
-		expect(screen.getByText('100%')).toBeInTheDocument();
-		const fill = container.querySelector<HTMLElement>('.engagement-mini__progress');
-		expect(fill!.style.getPropertyValue('--progress-width')).toBe('100%');
-	});
-
-	it('clamps percentage below 0 to 0', () => {
-		const { container } = renderRow({ isViewed: true, viewPercentage: -10 });
-		expect(screen.getByText('0%')).toBeInTheDocument();
-		const fill = container.querySelector<HTMLElement>('.engagement-mini__progress');
-		expect(fill!.style.getPropertyValue('--progress-width')).toBe('0%');
-	});
-
-	it('handles non-finite percentage as 0', () => {
-		renderRow({ isViewed: true, viewPercentage: NaN });
-		expect(screen.getByText('0%')).toBeInTheDocument();
-	});
-
-	it('sets aria attributes on the progressbar wrapper', () => {
-		const { container } = renderRow({ isViewed: true, viewPercentage: 42 });
-		const wrapper = container.querySelector<HTMLElement>('.engagement-mini');
-		expect(wrapper).toHaveAttribute('role', 'progressbar');
-		expect(wrapper).toHaveAttribute('aria-valuenow', '42');
-		expect(wrapper).toHaveAttribute('aria-valuemin', '0');
-		expect(wrapper).toHaveAttribute('aria-valuemax', '100');
-		expect(wrapper).toHaveAttribute('aria-label', 'Visualización de la invitación: 42%');
+	it('flags guests without a phone', () => {
+		renderRow({ phone: '' });
+		expect(screen.getByText('Sin teléfono')).toBeInTheDocument();
 	});
 
 	it('shows 1 group tag chip in compact name cell', () => {
@@ -133,8 +100,7 @@ describe('GuestTableRow — message toggle', () => {
 			reminder:
 				'Hola {guestName}, te comparto nuevamente tu invitación a {eventTitle}:\n\n{inviteUrl}',
 		},
-		onEdit: jest.fn(),
-		onDelete: jest.fn().mockResolvedValue(undefined),
+		onOpenDetails: jest.fn(),
 		onMarkShared: jest.fn().mockResolvedValue(undefined),
 		shareDateContext: defaultShareDateContext(),
 	};
@@ -156,7 +122,6 @@ describe('GuestTableRow — message toggle', () => {
 	it('does not render message button when guestComment is empty', () => {
 		renderRow({ guestComment: '' });
 		expect(screen.queryByRole('button', { name: /mensaje/i })).not.toBeInTheDocument();
-		expect(screen.getByText('—')).toBeInTheDocument();
 	});
 
 	it('shows message row on button click', () => {
@@ -194,29 +159,20 @@ describe('GuestTableRow — message toggle', () => {
 		expect(meta).not.toHaveTextContent('Mensaje inicial');
 	});
 
-	it('closes message when row is expanded', () => {
-		const { container, rerender } = render(
+	it('opens the details panel from the name and the chevron', () => {
+		const onOpenDetails = jest.fn();
+		const item = makeGuest({ fullName: 'Tía Carmen' });
+		render(
 			<table>
 				<tbody>
-					<GuestTableRow item={makeGuest({ guestComment: 'Test' })} {...baseProps} />
+					<GuestTableRow item={item} {...baseProps} onOpenDetails={onOpenDetails} />
 				</tbody>
 			</table>,
 		);
-		act(() => screen.getByRole('button', { name: /ver mensaje/i }).click());
-		expect(container.querySelector('.guest-message-panel')).toBeInTheDocument();
-
-		rerender(
-			<table>
-				<tbody>
-					<GuestTableRow
-						item={makeGuest({ guestComment: 'Test' })}
-						isExpanded={true}
-						{...baseProps}
-					/>
-				</tbody>
-			</table>,
-		);
-		expect(container.querySelector('.guest-message-panel')).not.toBeInTheDocument();
+		act(() => screen.getByRole('button', { name: 'Tía Carmen' }).click());
+		act(() => screen.getByRole('button', { name: 'Ver detalles de Tía Carmen' }).click());
+		expect(onOpenDetails).toHaveBeenCalledTimes(2);
+		expect(onOpenDetails).toHaveBeenCalledWith(item);
 	});
 
 	it('sets aria-expanded and aria-controls on the button', () => {

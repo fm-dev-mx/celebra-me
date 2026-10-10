@@ -1,6 +1,6 @@
 # Database Overview
 
-**Last Updated:** 2026-10-08
+**Last Updated:** 2026-10-09
 
 **Owns:** current Supabase/Postgres schema overview, entity relationships, and major data flows.
 
@@ -229,7 +229,8 @@ Managed client invitations are created only through the definition registry +
 `pnpm invitation:release` (Local/Preview). Owner Production apply is
 `pnpm prod:apply -- --slug <slug> --apply`. The Dashboard has no create or duplicate endpoint, and
 it lists and edits only `kind = 'client'` rows. Demos are versioned content
-(`src/content/event-demos/**`) rendered from Git; they are not mirrored into the database.
+(`src/content/event-demos/**`) rendered from Git; they are not mirrored into the database, and no
+service copies a demo into a client record.
 
 ### Internal Admin Editing
 
@@ -277,6 +278,16 @@ locks the `events` row linked by `invitation_project_id` or matching `slug`, the
 creates one. The partial unique index `idx_events_unique_invitation_project` enforces at most one
 event per project.
 
+### Event Memberships
+
+`event_memberships` links a host account to an event (one row per `event_id` + `user_id`, soft
+deleted). `membership_role` is `owner` (visible as "Anfitrión principal") or `manager`
+("Colaborador"). Both manage guests; only `owner` opens the guest memories organizer. Claim-code
+redemption creates `owner`. In `/dashboard/usuarios` the administrator picks the role when assigning
+an event (default `owner`) and can change it in place; assigning an event the user already holds
+updates the role and is audited as `change_event_membership_role` with the previous row. The
+membership API still defaults to `manager` when a caller omits the role.
+
 ### Guest Memories
 
 Guest photo/video spaces live in `event_memory_settings` (one per event; window, retention, quotas,
@@ -299,19 +310,6 @@ Admin clicks "Restaurar" → `restore_invitation()` RPC:
 - Clears `archived_at`
 - Restores all soft-deleted children
 - Restores event status to 'published' if published content exists
-
-### Client creation and duplication (Dashboard)
-
-Dashboard HTTP create and duplicate are rejected. Client invitations are provisioned only through
-canonical/internal managed workflows (definition registry + provision CLIs), not Dashboard UI/API:
-
-| Surface                                         | Behavior                                                                               |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `POST /api/dashboard/invitation`                | 403 `canonical_creation_required` (`via: 'create'`)                                    |
-| `POST /api/dashboard/invitation/[id]/duplicate` | 403 `canonical_creation_required` (`via: 'duplicate'`)                                 |
-| Managed create / Preview E2E fixture            | Canonical scripts (`invitation:release`, `invitation:preview-fixture`, import engines) |
-
-No demo-duplication service remains; demos are never copied into client records.
 
 ## Index Strategy
 
@@ -342,7 +340,8 @@ No demo-duplication service remains; demos are never copied into client records.
 ## Security Model
 
 - **RLS enabled** on all application tables
-- **SECURITY DEFINER functions** hardened with `set search_path = 'public'` (migration 37)
+- **SECURITY DEFINER functions** hardened with `set search_path = 'public'`
+  (`20260601000002_corrective_security.sql`)
 - **Host-scoped RLS for dashboard RSVP**: dashboard guest and event reads and edits send the host's
   JWT and are authorized by RLS. Privileged guest writes (bulk import, public RSVP, soft delete) run
   through service-role-only RPCs after BFF authorization; direct service-role guest DML is revoked.
@@ -352,8 +351,8 @@ No demo-duplication service remains; demos are never copied into client records.
 - **Public read access**: Only `published_invitation_content` has a public RLS select policy.
 - **Admin-only access**: `invitations`, `intake_*`, drafts are locked to `is_admin_user()`.
 - **Service-role only**: `audit_logs`, `deleted_*` views, archive/restore RPCs.
-- **Asset metadata**: `invitation_assets` is managed by service-role API routes; uploaded files live
-  in Supabase Storage.
+- **Asset metadata**: `invitation_assets` is managed by service-role API routes; binaries live in
+  Supabase Storage locally and on Cloudinary in Preview/Production (see Asset Library above).
 
 ## Migration Strategy
 
@@ -376,9 +375,5 @@ and clean-HEAD release identity.
 corrective migrations. Migration history is append-only. Do not push local data dumps to production;
 use `pnpm prod:apply -- --schema --apply`. Hosted candidates require an explicit rollout registry
 phase.
-
-**Fresh bootstrap**: A `supabase/baseline.sql` schema dump can be generated via
-`supabase db dump --schema public > supabase/baseline.sql` for environments that should not replay
-the full migration history. Never freeze hosted applied/pending counts in docs — read live audits.
 
 For refreshes, backups, and production migration operations, see `docs/database-workflow.md`.

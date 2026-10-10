@@ -1,15 +1,13 @@
 #!/usr/bin/env tsx
 /** Read-only published invitation media verification for Preview and Production. */
 import { createHash } from 'node:crypto';
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { flagValue as option } from '../lib/cli-args.ts';
 import sharp from 'sharp';
 import { collectUploadedContentRefs } from '../../src/lib/invitation-preparation/uploaded-content-refs.ts';
 import {
-	assertPreviewDbUrl,
 	assertProductionDbUrl,
-	getPreviewDbUrl,
 	getProdDbUrl,
+	requirePreviewDbUrl,
 	runPsql,
 	sqlLiteral,
 } from '../db/db-workflow-lib.ts';
@@ -17,8 +15,18 @@ import { buildNormalizedInvitationRelease } from '../provision/normalized-invita
 import { listInvitationDefinitions } from '../provision/invitations/registry.ts';
 
 export type MediaVerificationTarget = 'preview' | 'production';
+/**
+ * `PENDING_PUBLISH`: the target serves its published objects correctly, but the release package
+ * being compared has images the target has not received yet. It is a content backlog, not a
+ * delivery failure, so it never fails a check unless `--strict` is passed.
+ */
 export type MediaVerificationClassification =
-	'HEALTHY' | 'MISSING' | 'HASH_MISMATCH' | 'METADATA_DRIFT' | 'REFERENCE_DRIFT';
+	| 'HEALTHY'
+	| 'PENDING_PUBLISH'
+	| 'MISSING'
+	| 'HASH_MISMATCH'
+	| 'METADATA_DRIFT'
+	| 'REFERENCE_DRIFT';
 
 export interface PublishedAsset {
 	id: string;
@@ -59,8 +67,6 @@ export interface MediaVerificationRow {
 	reasons: string[];
 }
 
-type RecoveryAction = 'NONE' | 'REPUBLISH_CONTENT_REFERENCE' | 'REUPLOAD_SAME_ID' | 'BLOCK';
-
 function redactedUrl(value: string | null): string | null {
 	if (!value) return null;
 	try {
@@ -71,17 +77,31 @@ function redactedUrl(value: string | null): string | null {
 	}
 }
 
+// Reasons produced by comparing the persisted row against the release package (not the delivery).
+const PACKAGE_REASON = /from package|package image/u;
+
 function classify(reasons: readonly string[]): MediaVerificationClassification {
 	const activeReasons = reasons.filter((reason) => !reason.startsWith('published content URL:'));
+	const deliveryReasons = activeReasons.filter((reason) => !PACKAGE_REASON.test(reason));
 	if (
-		activeReasons.some((reason) =>
+		deliveryReasons.some((reason) =>
 			/HTTP 404|missing|not referenced|no active asset/i.test(reason),
 		)
 	)
 		return 'MISSING';
-	if (activeReasons.some((reason) => /SHA-256|hash/i.test(reason))) return 'HASH_MISMATCH';
-	if (activeReasons.length > 0) return 'METADATA_DRIFT';
+	if (deliveryReasons.some((reason) => /SHA-256|hash/i.test(reason))) return 'HASH_MISMATCH';
+	if (deliveryReasons.length > 0) return 'METADATA_DRIFT';
+	if (activeReasons.length > 0) return 'PENDING_PUBLISH';
 	return reasons.length === 0 ? 'HEALTHY' : 'REFERENCE_DRIFT';
+}
+
+/** `--strict` makes a pending package image count as a failure (post-apply verification). */
+export function isMediaVerificationFailure(
+	row: Pick<MediaVerificationRow, 'classification'>,
+	args: readonly string[],
+): boolean {
+	if (row.classification === 'HEALTHY') return false;
+	return row.classification !== 'PENDING_PUBLISH' || args.includes('--strict');
 }
 
 function validCloudinaryUrl(value: string | null): URL | null {
@@ -240,7 +260,7 @@ export async function verifyPublishedInvitation(
 		rows.push({
 			route,
 			assetKey: image.key,
-			classification: 'MISSING',
+			classification: 'PENDING_PUBLISH',
 			status: null,
 			mimeType: null,
 			width: null,
@@ -258,9 +278,8 @@ function readPublishedInvitations(
 	target: MediaVerificationTarget,
 	slug?: string,
 ): PublishedInvitation[] {
-	const dbUrl = target === 'preview' ? getPreviewDbUrl().url : getProdDbUrl().url;
-	if (target === 'preview') assertPreviewDbUrl(dbUrl);
-	else assertProductionDbUrl(dbUrl);
+	const dbUrl = target === 'preview' ? requirePreviewDbUrl().url : getProdDbUrl().url;
+	if (target === 'production') assertProductionDbUrl(dbUrl);
 	const slugFilter = slug ? `and i.slug = ${sqlLiteral(slug)}` : '';
 	const sql = `select coalesce(json_agg(row_to_json(t) order by t."eventType", t.slug), '[]'::json)::text from (
 		select i.event_type as "eventType", i.slug, pub.content,
@@ -276,46 +295,6 @@ function readPublishedInvitations(
 	) t;`;
 	const result = runPsql(sql, dbUrl, { tuplesOnly: true, throwOnError: true });
 	return JSON.parse(result.stdout.trim()) as PublishedInvitation[];
-}
-
-function option(args: readonly string[], name: string): string | undefined {
-	const index = args.indexOf(name);
-	return index >= 0 ? args[index + 1] : undefined;
-}
-
-function recoveryAction(row: MediaVerificationRow): RecoveryAction {
-	if (row.classification === 'HEALTHY') return 'NONE';
-	if (
-		row.reasons.length > 0 &&
-		row.reasons.every((reason) => reason.startsWith('published content URL:'))
-	)
-		return 'REPUBLISH_CONTENT_REFERENCE';
-	if (row.classification === 'MISSING' && row.expectedHash) return 'REUPLOAD_SAME_ID';
-	return 'BLOCK';
-}
-
-function writeRecoveryManifests(
-	directory: string,
-	target: MediaVerificationTarget,
-	rows: readonly MediaVerificationRow[],
-): void {
-	const absolute = resolve(directory);
-	mkdirSync(absolute, { recursive: true });
-	const routes = [...new Set(rows.map((row) => row.route))].sort();
-	for (const route of routes) {
-		const assets = rows
-			.filter((row) => row.route === route)
-			.map((row) => ({ ...row, action: recoveryAction(row) }))
-			.sort((left, right) => left.assetKey.localeCompare(right.assetKey));
-		const identity = { schemaVersion: 1, target, route, assets };
-		const planId = createHash('sha256').update(JSON.stringify(identity)).digest('hex');
-		const slug = route.split('/').at(-1) ?? route.replaceAll('/', '-');
-		writeFileSync(
-			join(absolute, `${slug}.json`),
-			`${JSON.stringify({ ...identity, planId }, null, 2)}\n`,
-			{ flag: 'wx' },
-		);
-	}
 }
 
 async function verifyPublicRoute(
@@ -432,14 +411,12 @@ export async function runPublishedImageVerification(args: readonly string[]): Pr
 			if (routeFailure) rows.push(routeFailure);
 		}
 	}
-	const manifestDir = option(args, '--manifest-dir');
-	if (manifestDir) writeRecoveryManifests(manifestDir, target, rows);
 	return { target, rows };
 }
 
 export async function assertPublishedImageVerification(args: readonly string[]): Promise<void> {
 	const result = await runPublishedImageVerification(args);
-	const failures = result.rows.filter((row) => row.classification !== 'HEALTHY');
+	const failures = result.rows.filter((row) => isMediaVerificationFailure(row, args));
 	if (failures.length === 0) return;
 	throw new Error(
 		`PUBLISHED_IMAGE_VERIFICATION_FAILED:\n${failures.map((row) => `${row.route}/${row.assetKey}: ${row.reasons.join('; ')}`).join('\n')}`,
@@ -449,7 +426,7 @@ export async function assertPublishedImageVerification(args: readonly string[]):
 async function main(): Promise<void> {
 	const args = process.argv.slice(2);
 	const result = await runPublishedImageVerification(args);
-	const failures = result.rows.filter((row) => row.classification !== 'HEALTHY');
+	const failures = result.rows.filter((row) => isMediaVerificationFailure(row, args));
 	const report = {
 		generatedAt: new Date().toISOString(),
 		target: result.target,
@@ -457,6 +434,8 @@ async function main(): Promise<void> {
 			invitations: new Set(result.rows.map((row) => row.route)).size,
 			assets: result.rows.length,
 			failures: failures.length,
+			pendingPublish: result.rows.filter((row) => row.classification === 'PENDING_PUBLISH')
+				.length,
 		},
 		rows: result.rows,
 	};

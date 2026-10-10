@@ -96,7 +96,8 @@ Rules:
   structures rather than silently dropping `groups`, `children` or `godparentGroups`.
 - Discard an obsolete draft with
   `pnpm invitation:draft-restore --slug <slug> --entire --target <env>`. (read-only dry-run by
-  default; Production writes require a backup manifest and owner confirmation).
+  default; Preview writes need YES on a TTY or `CELEBRA_TASK_SCOPE=preview:<slug>:draft-restore`;
+  Production writes require a backup manifest and owner confirmation).
 - Detect non-canonical persisted drafts (read-only) with
   `pnpm invitation:draft-audit --slug <slug> --target <env>` or inventory all drafts with
   `pnpm invitation:draft-audit --all --target <env>`.
@@ -105,6 +106,43 @@ Rules:
   - `restoreEntireDraft` — replace the full draft (and public title/slug via the atomic RPC).
     Editor/API and `pnpm invitation:draft-restore` are facades over that planner; Published is never
     written by restore.
+
+## Editor Surface
+
+The dashboard editor under `/dashboard/invitaciones` edits existing managed invitations only; it has
+no create or duplicate endpoint (`src/pages/api/dashboard/intake/index.ts` exports `GET` only). The
+end-to-end operation lives in
+[`docs/domains/intake/production-flow.md`](../../docs/domains/intake/production-flow.md).
+
+- The editor consumes flat `DraftContent`, never raw published shapes.
+- Saving a section replaces that section object, so every editable field must exist in the editor
+  schema, draft schema, both mapping directions, preview, publication, adapter, and renderer.
+- Preview and publication merge the draft with the prior published snapshot and remap it through
+  `mapDraftToPublished` with `priorPublishedContent`. Published-only values that are not
+  dashboard-editable (`visualProfileId`, `composition`, `navigation`, managed `memories`,
+  `thankYou.date`, `thankYou.closingPhrase`) are carried from the prior revision on both paths.
+- Section restore ("Restaurar versión publicada") and full draft restore reuse `restoreDraftSection`
+  / `restoreEntireDraft`.
+- The public read path validates stored JSON against the canonical schema before adaptation. Invalid
+  stored content resolves to the invitation-unavailable state and is not publicly cached.
+- Host share-message edits from the guests dashboard are a narrow exception documented in
+  [`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md):
+  they patch published `sharing` only and increment `version` / `published_at`.
+
+## Administrative Work Status
+
+The dashboard list separates work status from publication and manual review. The `invitations` row
+owns these fields; `PATCH /api/dashboard/intake/[id]/workflow` writes them with optimistic locking
+(migration `20260910160000_invitation_workflow.sql`).
+
+- `in_progress` / `completed` are administrative decisions. Neither changes publication, content
+  parity, visual acceptance, RSVP, or release checks. New rows start in progress with no review.
+- Only the owner account may record or clear a manual review; agents must never invoke that action,
+  including through browser automation. Agents may change work status within an authorized task. The
+  recorded date is historical, not certification of the current deployment.
+- Client database roles cannot write these fields directly. Publication and environment
+  synchronization must not copy administrative decisions between environments.
+- An application rollback keeps the additive columns and recorded decisions.
 
 ## Draft → Editor → Publish Flow
 
@@ -157,17 +195,13 @@ error, and success, and keeps failures inside the dialog. Only the centralized t
 classification permits retry. Conflicts, validation failures, idempotency-input conflicts, and
 `publish_upgrade_required` require a new action instead.
 
-`guestCap` is the configurable maximum total attendees in one RSVP response, including the named
-guest. Any positive integer supported by the PostgreSQL `integer` column is valid. Editor, public
-RSVP, dashboard guest operations, and persistence share that contract and must not apply a smaller
-product-level clamp.
+The `guestCap` contract is owned by the
+[production runbook](../../docs/domains/intake/production-flow.md#7-publish).
 
-### Cache policy
+### Cache policy and preflight
 
-Anonymous invitations use `public, max-age=0, s-maxage=0, must-revalidate`. Personalized invitation
-and metadata routes, dashboard preview, intake-token capture, preflight/publication and RSVP APIs,
-all invitation errors, validation/conflict/auth failures, and redirects use `no-store, private`.
-Verify Vercel/CDN freshness only after deployment.
+Cache headers follow
+[`public-response-cache-policy.md`](../../docs/domains/invitations/public-response-cache-policy.md).
 
 The editor obtains an authorized, read-only canonical server preflight before confirmation. It
 compares the mapped effective draft against published content after normalizing empty values, object
@@ -233,14 +267,11 @@ The service layer relies on these implicit contracts from the repository layer:
 
 Repositories at `src/lib/intake/repositories/`.
 
-## Publication RPC rollout and receipts
+## Publication RPC and receipts
 
-`20260717193000_publication_preflight_integrity.sql` is phase one. It introduces the current RPC and
-keeps the historical seven-argument overload as a service-role-only, fail-closed
-`publish_upgrade_required` stub. Apply it first, deploy application and operational consumers of the
-new contract, monitor legacy stub calls until cached instances drain, then use a separately reviewed
-cleanup migration to remove the stub. The overlap intentionally provides publication-only
-maintenance.
+`20260717193000_publication_preflight_integrity.sql` introduced the current publication RPC;
+`20260911070000_remove_obsolete_publication_overload.sql` removed the retired seven-argument
+overload.
 
 The idempotency receipt binds invitation/draft revisions, expected published version and content
 fingerprint, public metadata baseline, projection, publication inputs, and exact JSON response. It

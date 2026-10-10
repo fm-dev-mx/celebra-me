@@ -8,10 +8,14 @@ import {
 	applyProductionApplyPlan,
 	buildProductionApplyPlan,
 	invitationItemsNeedingRevalidation,
+	POST_APPLY_MEDIA_VERIFICATION_FLAGS,
 	PRE_APPLY_MEDIA_VERIFICATION_FLAGS,
 	type ProductionApplyExecuteDeps,
 } from '../../scripts/db/production-apply-orchestrator.ts';
-import { comparesToReleasePackage } from '../../scripts/invitation/verify-published-images.ts';
+import {
+	comparesToReleasePackage,
+	isMediaVerificationFailure,
+} from '../../scripts/invitation/verify-published-images.ts';
 import {
 	formatProductionApplyPlan,
 	toPublicProductionApplyPlan,
@@ -135,6 +139,8 @@ function baseDeps(options?: {
 		preflightSchema: () => schemaPlan(options?.pending ?? ['20260807120000']),
 		listSlugs: () => Object.keys(preflights).sort((a, b) => a.localeCompare(b)),
 		listArchivedSlugs: () => [],
+		listAuthoringSlugs: () => [],
+		lifecycleReleaseBlock: () => null,
 		resolvePackage: async (slug) => pkg(slug),
 		runInvitationPreflight: async (packageData) => {
 			const slug = packageData.invitation.slug;
@@ -214,6 +220,39 @@ describe('production apply planning', () => {
 		expect(text).toContain(
 			'Archivadas por decisión del propietario (fuera del plan): past-event',
 		);
+	});
+
+	it('leaves authoring definitions out of --all-ready and counts them apart', async () => {
+		const runInvitationPreflight = jest.fn(async (packageData: InvitationPackageData) =>
+			invitationPreflight(packageData.invitation.slug),
+		);
+		const plan = await buildProductionApplyPlan(cli(['--all-ready']), {
+			...baseDeps({ preflights: { alpha: invitationPreflight('alpha') } }),
+			listAuthoringSlugs: () => ['draft-event'],
+			runInvitationPreflight,
+		});
+		expect(plan.items.map((item) => item.id)).not.toContain('draft-event');
+		expect(runInvitationPreflight).toHaveBeenCalledTimes(1);
+		expect(plan.excluded.authoringSlugs).toEqual(['draft-event']);
+		expect(toPublicProductionApplyPlan(plan).excluded.authoringSlugs).toEqual(['draft-event']);
+		const text = formatProductionApplyPlan(plan);
+		expect(text).toContain('1 en authoring (excluida)');
+		expect(text).toContain('En authoring (lifecycle in_progress, solo Local): draft-event');
+	});
+
+	it('blocks an explicit --slug whose definition is still in authoring', async () => {
+		const resolvePackage = jest.fn(async (slug: string) => pkg(slug));
+		const plan = await buildProductionApplyPlan(cli(['--slug', 'draft-event']), {
+			...baseDeps(),
+			resolvePackage,
+			lifecycleReleaseBlock: (slug, target) =>
+				`LIFECYCLE_NOT_PUBLISHED: ${slug} sigue en authoring para ${target}`,
+		});
+		const item = plan.items.find((candidate) => candidate.id === 'draft-event');
+		expect(item).toMatchObject({ readiness: 'BLOCKED', blockCode: 'LIFECYCLE_NOT_PUBLISHED' });
+		expect(item?.summary).toContain('para production');
+		// The gate runs before any package or remote work.
+		expect(resolvePackage).not.toHaveBeenCalled();
 	});
 
 	it('keeps an archived invitation addressable by explicit --slug', async () => {
@@ -578,6 +617,35 @@ describe('production apply execution', () => {
 		// A package that adds or replaces an image would otherwise fail its own precheck.
 		expect(comparesToReleasePackage(PRE_APPLY_MEDIA_VERIFICATION_FLAGS)).toBe(false);
 		expect(comparesToReleasePackage(['--target', 'production', '--slug', 'demo'])).toBe(true);
+	});
+
+	it('treats a package image still pending as a failure only after the apply', () => {
+		const pending = { classification: 'PENDING_PUBLISH' as const };
+		expect(isMediaVerificationFailure(pending, POST_APPLY_MEDIA_VERIFICATION_FLAGS)).toBe(true);
+		expect(isMediaVerificationFailure(pending, ['--target', 'production', '--all'])).toBe(
+			false,
+		);
+		expect(isMediaVerificationFailure({ classification: 'MISSING' }, [])).toBe(true);
+	});
+
+	it('refuses a Preview automation scope before the owner gate and before any write', async () => {
+		process.env.CELEBRA_TASK_SCOPE = 'preview:demo:apply';
+		const applySchema = jest.fn(async () => undefined);
+		const requireOwnerApply = jest.fn(async () => undefined);
+		try {
+			await expect(
+				applyProductionApplyPlan(cli(['--schema', '--apply']), {
+					...baseDeps(),
+					applySchema: applySchema as never,
+					requireOwnerApply,
+				}),
+			).rejects.toMatchObject({ code: 'CONFIRMATION_REQUIRED' });
+		} finally {
+			delete process.env.CELEBRA_TASK_SCOPE;
+		}
+		// Schema is applied before invitations; the refusal must come before both.
+		expect(applySchema).not.toHaveBeenCalled();
+		expect(requireOwnerApply).not.toHaveBeenCalled();
 	});
 
 	it('does not prompt when everything is already applied', async () => {
@@ -1148,7 +1216,8 @@ const DRAFT_DIVERGENCE_REASON =
 function blockedDraftDivergence(slug: string): PromotionPreflightReport {
 	return invitationPreflight(slug, {
 		status: 'BLOCKED',
-		blockCode: 'PRODUCTION_PLAN_BLOCKED',
+		// Typed by the preflight; the recovery path never parses the reason text.
+		blockCode: 'UNPUBLISHED_DRAFT_DIVERGENCE',
 		reason: DRAFT_DIVERGENCE_REASON,
 	});
 }

@@ -13,10 +13,9 @@ import {
 import { CloudinaryQuotaError } from '../provision/cloudinary-quota.ts';
 import { collectUploadedContentRefs } from '../../src/lib/invitation-preparation/uploaded-content-refs.ts';
 import {
-	assertPreviewDbUrl,
 	assertProductionDbUrl,
-	getPreviewDbUrl,
 	getProdDbUrl,
+	requirePreviewDbUrl,
 	runPsql,
 	sqlLiteral,
 } from '../db/db-workflow-lib.ts';
@@ -84,9 +83,8 @@ function computePlanId(
 }
 
 function targetUrl(target: Target): string {
-	const url = target === 'preview' ? getPreviewDbUrl().url : getProdDbUrl().url;
-	if (target === 'preview') assertPreviewDbUrl(url);
-	else assertProductionDbUrl(url);
+	const url = target === 'preview' ? requirePreviewDbUrl().url : getProdDbUrl().url;
+	if (target === 'production') assertProductionDbUrl(url);
 	return url;
 }
 

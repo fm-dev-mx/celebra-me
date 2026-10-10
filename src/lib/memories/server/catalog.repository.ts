@@ -469,6 +469,63 @@ export async function listResidentMediaUsage(
 	}
 }
 
+export type MediaStatusRow = Pick<
+	MediaRow,
+	'id' | 'status' | 'created_at' | 'updated_at' | 'accepted_at'
+>;
+
+/**
+ * Status and timestamps of every catalog row of one event, including rows whose
+ * object was already cleaned up. Bounded by the uploads the space ever received.
+ */
+export async function listMediaStatusRows(eventId: string): Promise<MediaStatusRow[]> {
+	const rows: MediaStatusRow[] = [];
+	let after: string | null = null;
+	for (;;) {
+		const page: MediaStatusRow[] = await supabaseRestRequest<MediaStatusRow[]>({
+			pathWithQuery:
+				`${ITEMS}?select=id,status,created_at,updated_at,accepted_at` +
+				`&event_id=eq.${encodeURIComponent(eventId)}` +
+				(after ? `&id=gt.${encodeURIComponent(after)}` : '') +
+				`&order=id.asc&limit=${USAGE_PAGE_SIZE}`,
+			useServiceRole: true,
+		});
+		rows.push(...page);
+		if (page.length < USAGE_PAGE_SIZE) return rows;
+		after = page[page.length - 1].id;
+	}
+}
+
+export type DiagnosticAuditRow = { id: number; action: string; metadata: unknown };
+
+/**
+ * Newest audit rows of one event for the given actions, up to `cap` rows.
+ * Callers report the scan as truncated when exactly `cap` rows come back.
+ */
+export async function listDiagnosticAuditRows(
+	eventId: string,
+	actions: readonly string[],
+	cap: number,
+): Promise<DiagnosticAuditRow[]> {
+	const rows: DiagnosticAuditRow[] = [];
+	let before: number | null = null;
+	while (rows.length < cap) {
+		const limit = Math.min(USAGE_PAGE_SIZE, cap - rows.length);
+		const page: DiagnosticAuditRow[] = await supabaseRestRequest<DiagnosticAuditRow[]>({
+			pathWithQuery:
+				`${AUDIT}?select=id,action,metadata&event_id=eq.${encodeURIComponent(eventId)}` +
+				`&action=in.(${actions.map((action) => encodeURIComponent(action)).join(',')})` +
+				(before === null ? '' : `&id=lt.${before}`) +
+				`&order=id.desc&limit=${limit}`,
+			useServiceRole: true,
+		});
+		rows.push(...page);
+		if (page.length < limit) break;
+		before = page[page.length - 1].id;
+	}
+	return rows;
+}
+
 /** Event id of every guest session, for registration counts. */
 export async function listSessionEventIds(eventIds: readonly string[]): Promise<string[]> {
 	if (eventIds.length === 0) return [];

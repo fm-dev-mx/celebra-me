@@ -3,7 +3,6 @@ import {
 	POST as postDashboardGuest,
 } from '@/pages/api/dashboard/guests';
 import { GET as getDashboardEvents } from '@/pages/api/dashboard/events';
-import { GET as getInvitationContext } from '@/pages/api/invitacion/[inviteId]/context';
 import { POST as postInvitationRsvp } from '@/pages/api/invitacion/[inviteId]/rsvp';
 import { createMockRequest } from '../helpers/api-mocks';
 
@@ -33,13 +32,6 @@ describe('RSVP v2 endpoint baseline', () => {
 		const request = createMockRequest();
 		const response = await getDashboardEvents({ request } as never);
 		expect(response.status).toBe(401);
-	});
-
-	it('returns bad request on invitation context when inviteId is missing', async () => {
-		const request = createMockRequest();
-		const response = await getInvitationContext({ params: {}, request } as never);
-		expect(response.status).toBe(400);
-		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 	});
 
 	it('returns bad request on invitation rsvp with invalid status', async () => {

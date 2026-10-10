@@ -2,7 +2,7 @@
 /** Read-only published client route manifest for post-deploy browser coverage. */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { assertPreviewDbUrl, getPreviewDbUrl, runPsql } from '../db/db-workflow-lib.ts';
+import { requirePreviewDbUrl, runPsql } from '../db/db-workflow-lib.ts';
 
 export interface PublishedClientRoute {
 	eventType: string;
@@ -35,8 +35,7 @@ export function validatePublishedRoutes(value: unknown): PublishedClientRoute[] 
 function main(): void {
 	const output = process.argv[2];
 	if (!output) throw new Error('Usage: preview-public-routes.ts <output.json>');
-	const dbUrl = getPreviewDbUrl().url;
-	assertPreviewDbUrl(dbUrl);
+	const dbUrl = requirePreviewDbUrl().url;
 	const result = runPsql(
 		`select coalesce(json_agg(row_to_json(t) order by t."eventType", t.slug), '[]'::json)::text
 		from (select distinct i.event_type as "eventType", i.slug

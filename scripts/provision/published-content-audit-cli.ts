@@ -11,6 +11,7 @@
  *   pnpm invitation:published-audit --usage [--slug <slug>] [--target local|preview|production] [--json]
  */
 import { auditPublishedContent } from '../../src/lib/intake/services/published-content-audit.service.ts';
+import { flagValue } from '../lib/cli-args.ts';
 import { summarizeContentUsage } from './content-usage-audit.ts';
 import {
 	listPersistedInvitationRows,
@@ -23,8 +24,7 @@ const args = process.argv.slice(2);
 const json = args.includes('--json');
 
 function value(flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	return index >= 0 ? args[index + 1] : undefined;
+	return flagValue(args, flag);
 }
 
 function requireSlug(): string {

@@ -109,6 +109,11 @@ Future options to enable `generate_lead`:
 - Dispatch `lead_created` client-side (requires adding it to the client tracking pipeline)
 - Implement server-side GA4 Measurement Protocol to forward from the API route directly
 
+Verification: `tests/unit/ga4-forwarder.test.ts` pins the `gtag` command shape (native `Arguments`,
+`send_page_view: false`, exactly one `page_view`) in jsdom. `pnpm test:e2e:ga4` repeats both consent
+scenarios in a real browser against a production-mode server on port 4330, through the consent
+banner and the `gtag` loader. Run it when `src/lib/tracking/**` or the consent banner changes.
+
 ## Exclusions
 
 The following are explicitly excluded from commercial attribution:
@@ -492,11 +497,12 @@ records found, not proof of no WhatsApp conversations. CTR uses measured demo se
 click count separately includes showroom activations. Period stage counts are not a cohort
 conversion rate.
 
-Migration `20260925182713_commercial_demo_followups.sql` is **authored, not applied**. It adds an
-append-only milestone ledger linked to existing leads and authenticated actors. It does not create a
-new CRM, alter order/payment state, or emit provider events. Service-role SELECT/INSERT only;
-anonymous and authenticated direct access is denied by privileges and RLS. The existing admin
-authentication, CSRF, runtime mutation guard and rate limiting protect the POST endpoint.
+Migration `20260925182713_commercial_demo_followups.sql` is merged to `main`; read its apply state
+per environment from `pnpm dbs`, not from this document. It adds an append-only milestone ledger
+linked to existing leads and authenticated actors. It does not create a new CRM, alter order/payment
+state, or emit provider events. Service-role SELECT/INSERT only; anonymous and authenticated direct
+access is denied by privileges and RLS. The existing admin authentication, CSRF, runtime mutation
+guard and rate limiting protect the POST endpoint.
 
 A lead code selects an existing opportunity; only sharing/contact milestones can create a missing
 opportunity, with no personal fields or marketing consent. Operators reuse the same code for the

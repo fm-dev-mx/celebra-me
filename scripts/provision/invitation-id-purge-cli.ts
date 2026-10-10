@@ -8,15 +8,8 @@
  */
 
 import type { InvitationIdPurgeAudit } from './invitation-id-purge.ts';
-import {
-	INVITATION_ID_PURGE_OPERATION,
-	runInvitationIdPurge,
-} from './invitation-id-purge.ts';
-
-function value(args: string[], flag: string): string | undefined {
-	const index = args.indexOf(flag);
-	return index >= 0 ? args[index + 1] : undefined;
-}
+import { flagValue as value } from '../lib/cli-args.ts';
+import { INVITATION_ID_PURGE_OPERATION, runInvitationIdPurge } from './invitation-id-purge.ts';
 
 function printHelp(): void {
 	console.log(`invitation:purge-by-id — Preview invitation purge by immutable UUID
@@ -91,7 +84,13 @@ async function main(argv = process.argv.slice(2)): Promise<void> {
 	const dryRun = argv.includes('--dry-run');
 	const jsonMode = argv.includes('--json');
 
-	if (!incorrectId || !canonicalId || !expectIncorrectSlug || !expectCanonicalSlug || apply === dryRun) {
+	if (
+		!incorrectId ||
+		!canonicalId ||
+		!expectIncorrectSlug ||
+		!expectCanonicalSlug ||
+		apply === dryRun
+	) {
 		throw new Error(
 			'Usage requires --incorrect-id, --canonical-id, --expect-incorrect-slug, --expect-canonical-slug, and exactly one of --dry-run or --apply.',
 		);

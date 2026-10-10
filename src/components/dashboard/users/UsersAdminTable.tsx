@@ -5,6 +5,14 @@ import { useUsersAdmin } from '@/hooks/use-users-admin';
 import CreateUserModal from '@/components/dashboard/users/CreateUserModal';
 import UserCredentialsModal from '@/components/dashboard/users/UserCredentialsModal';
 import type { UserListItemDTO } from '@/lib/dashboard/dto/users';
+import {
+	DEFAULT_ASSIGNED_MEMBERSHIP_ROLE,
+	EVENT_MEMBERSHIP_ROLE_HINT,
+	EVENT_MEMBERSHIP_ROLE_LABEL,
+	type EventMembershipRole,
+} from '@/lib/dashboard/membership-role';
+
+const MEMBERSHIP_ROLES = Object.keys(EVENT_MEMBERSHIP_ROLE_LABEL) as EventMembershipRole[];
 
 const UsersAdminTable: React.FC = () => {
 	const {
@@ -27,6 +35,9 @@ const UsersAdminTable: React.FC = () => {
 	} = useUsersAdmin();
 
 	const [credentialsUser, setCredentialsUser] = useState<UserListItemDTO | null>(null);
+	const [assignRoles, setAssignRoles] = useState<Record<string, EventMembershipRole>>({});
+	const assignRoleFor = (userId: string): EventMembershipRole =>
+		assignRoles[userId] ?? DEFAULT_ASSIGNED_MEMBERSHIP_ROLE;
 
 	const openCredentials = (user: UserListItemDTO) => {
 		clearError();
@@ -88,6 +99,26 @@ const UsersAdminTable: React.FC = () => {
 												className="dashboard-event-chip"
 											>
 												{event.title}
+												<select
+													className="dashboard-event-chip__role"
+													value={event.membershipRole}
+													onChange={(change) => {
+														void updateUserEventMembership(item.id, {
+															eventId: event.eventId,
+															action: 'assign',
+															membershipRole: change.target
+																.value as EventMembershipRole,
+														});
+													}}
+													disabled={loading || updatingUserId === item.id}
+													aria-label={`Rol de ${item.email} en ${event.title}`}
+												>
+													{MEMBERSHIP_ROLES.map((role) => (
+														<option key={role} value={role}>
+															{EVENT_MEMBERSHIP_ROLE_LABEL[role]}
+														</option>
+													))}
+												</select>
 												<button
 													type="button"
 													className="dashboard-event-chip__remove"
@@ -110,6 +141,24 @@ const UsersAdminTable: React.FC = () => {
 									</div>
 									<div className="dashboard-assign-event-row">
 										<select
+											value={assignRoleFor(item.id)}
+											onChange={(event) =>
+												setAssignRoles((current) => ({
+													...current,
+													[item.id]: event.target
+														.value as EventMembershipRole,
+												}))
+											}
+											disabled={loading || updatingUserId === item.id}
+											aria-label={`Rol para el próximo evento de ${item.email}`}
+										>
+											{MEMBERSHIP_ROLES.map((role) => (
+												<option key={role} value={role}>
+													{EVENT_MEMBERSHIP_ROLE_LABEL[role]}
+												</option>
+											))}
+										</select>
+										<select
 											defaultValue=""
 											disabled={loading || updatingUserId === item.id}
 											onChange={(event) => {
@@ -118,7 +167,7 @@ const UsersAdminTable: React.FC = () => {
 												void updateUserEventMembership(item.id, {
 													eventId,
 													action: 'assign',
-													membershipRole: 'manager',
+													membershipRole: assignRoleFor(item.id),
 												});
 												event.currentTarget.value = '';
 											}}
@@ -139,7 +188,7 @@ const UsersAdminTable: React.FC = () => {
 													</option>
 												))}
 										</select>
-										<small>Se asigna como acceso de tipo manager.</small>
+										<small>{EVENT_MEMBERSHIP_ROLE_HINT}</small>
 									</div>
 								</td>
 								<td>

@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { INTAKE_SUBMISSION_STATUSES } from '@/lib/intake/types';
 import {
 	intakeBlockSchemas,
 	IntakeBlockTypeSchema,
@@ -23,15 +22,7 @@ export const UpdateAdminSubmissionSchema = z.object({
 	blockData: z.record(z.string(), z.unknown()),
 	clientComments: z.string().max(5000).trim().optional().default(''),
 });
-
-export const IntakeSubmissionStatusSchema = z.enum(INTAKE_SUBMISSION_STATUSES);
-
 export function validateBlockData(blockType: keyof typeof intakeBlockSchemas, data: unknown) {
 	const schema = intakeBlockSchemas[blockType];
 	return schema.safeParse(data);
 }
-
-export type SaveIntakeStepInput = z.infer<typeof SaveIntakeStepSchema>;
-export type SubmitIntakeInput = z.infer<typeof SubmitIntakeSchema>;
-export type ReviewIntakeInput = z.infer<typeof ReviewIntakeSchema>;
-export type UpdateAdminSubmissionInput = z.infer<typeof UpdateAdminSubmissionSchema>;

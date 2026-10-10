@@ -1,21 +1,21 @@
-import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { ChevronDownIcon, MessageIcon } from '@/components/common/icons/ui';
-import GuestDetailGroups from '@/components/dashboard/guests/GuestDetailGroups';
-import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
+import React, { useId, useState } from 'react';
+import { MessageIcon } from '@/components/common/icons/ui';
+import CopyLinkButton from '@/components/dashboard/guests/CopyLinkButton';
+import { ChevronRightGlyph } from '@/components/dashboard/guests/GuestGlyphs';
 import GuestMessageHistory from '@/components/dashboard/guests/GuestMessageHistory';
 import { GUEST_TABLE_COL_COUNT } from '@/components/dashboard/guests/GuestTable';
 import SendInvitationModal from '@/components/dashboard/guests/SendInvitationModal';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
+import GuestStatusPill from '@/components/dashboard/guests/GuestStatusPill';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import {
-	getPrimaryStatus,
 	getCompactGroupChips,
 	getGuestMessageCount,
+	getGuestPeopleLabel,
 	getGuestPrimaryAction,
 	getGuestMessageFallbackTimestamp,
-	normalizeViewPercentage,
 	type GuestSaveCallback,
 } from '@/components/dashboard/guests/guest-presenter';
 
@@ -28,17 +28,13 @@ interface GuestTableRowProps {
 	shareDateContext: ShareMessageDateContext;
 	celebratingGuestId?: string | null;
 	highlightedGuestId?: string | null;
-	isExpanded?: boolean;
+	/** Row whose details are open in the side panel. */
+	isSelected?: boolean;
 	reminderMode?: boolean;
 	isReminderEligible?: boolean;
 	onReminderSent?: (guestId: string) => void;
-	onToggleExpanded?: () => void;
-	onEdit: (item: DashboardGuestItem) => void;
-	onDelete: (item: DashboardGuestItem) => Promise<void>;
+	onOpenDetails: (item: DashboardGuestItem) => void;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
-	onRevertShared?: (item: DashboardGuestItem) => Promise<void>;
-	isBrandingRemovalEligible?: boolean;
-	onToggleBrandingRemoval?: (guestId: string, hideCelebraMeBranding: boolean) => void;
 	onSaveGuest?: GuestSaveCallback;
 }
 
@@ -51,42 +47,23 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	shareDateContext,
 	celebratingGuestId,
 	highlightedGuestId,
-	isExpanded,
+	isSelected,
 	reminderMode,
 	isReminderEligible,
 	onReminderSent,
-	onToggleExpanded,
-	onEdit,
-	onDelete,
+	onOpenDetails,
 	onMarkShared,
-	onRevertShared,
-	isBrandingRemovalEligible,
-	onToggleBrandingRemoval,
 	onSaveGuest,
 }) => {
 	const msgId = useId();
 	const [msgOpen, setMsgOpen] = useState(false);
 	const [reminderModalOpen, setReminderModalOpen] = useState(false);
-	const viewPercentage = normalizeViewPercentage(item.viewPercentage);
-	const progressRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		if (isExpanded) setMsgOpen(false);
-	}, [isExpanded]);
-
-	useLayoutEffect(() => {
-		if (progressRef.current) {
-			progressRef.current.style.setProperty('--progress-width', `${viewPercentage}%`);
-		}
-	}, [viewPercentage]);
 
 	const { chips: compactChips, overflow: compactOverflow } = getCompactGroupChips(item, 1);
 	const hasCompactChips = compactChips.length > 0;
-	const status = getPrimaryStatus(item);
-	const expandId = `row-details-${item.guestId}`;
 	const hasMessages = getGuestMessageCount(item.guestComment) > 0;
-	const primaryActionIsCopy =
-		getGuestPrimaryAction(item, reminderMode, isReminderEligible).action === 'copy-link';
+	const primaryAction = getGuestPrimaryAction(item, reminderMode, isReminderEligible).action;
+	const people = getGuestPeopleLabel(item);
 
 	const msgPanel = hasMessages && msgOpen && (
 		<tr className="guest-message-row">
@@ -106,8 +83,9 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 		</tr>
 	);
 
+	// Answered guests get no send step; the copy action stays available for everyone.
 	const renderSendAction = () => {
-		if (reminderMode && isReminderEligible) {
+		if (primaryAction === 'send-reminder') {
 			return (
 				<>
 					<button
@@ -139,6 +117,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 				</>
 			);
 		}
+		if (primaryAction !== 'share') return null;
 		return (
 			<ShareAction
 				guest={item}
@@ -156,6 +135,7 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 		item.deliveryStatus === 'shared' ? 'row-shared' : '',
 		celebratingGuestId === item.guestId ? 'celebrate-success' : '',
 		highlightedGuestId === item.guestId ? 'celebrate-success' : '',
+		isSelected ? 'guest-row--selected-detail' : '',
 	]
 		.filter(Boolean)
 		.join(' ');
@@ -163,13 +143,19 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	return (
 		<>
 			<tr data-guest-id={item.guestId} className={rowClassName}>
-				<td data-label="Nombre / Teléfono">
+				<td data-label="Invitación">
 					<div className="guest-info">
 						<span className="guest-info__name">
 							<span className="invitation-number">
 								#{String(index + 1).padStart(2, '0')}
 							</span>
-							{item.fullName}
+							<button
+								type="button"
+								className="guest-info__open"
+								onClick={() => onOpenDetails(item)}
+							>
+								{item.fullName}
+							</button>
 							<span className="guest-info__chips">
 								{hasCompactChips &&
 									compactChips.map((chip) => (
@@ -184,115 +170,61 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 								)}
 							</span>
 						</span>
-						<span className="guest-info__phone">{item.phone}</span>
-					</div>
-				</td>
-				<td data-label="Nota">
-					{hasMessages ? (
-						<button
-							type="button"
-							className="btn-accent guest-nota-btn"
-							onClick={() => setMsgOpen((v) => !v)}
-							aria-expanded={msgOpen}
-							aria-controls={msgId}
+						<span
+							className={`guest-info__phone${item.phone ? '' : ' guest-info__phone--missing'}`}
 						>
-							<MessageIcon size={16} aria-hidden="true" />
-							<span>{msgOpen ? 'Ocultar' : 'Ver mensaje'}</span>
-						</button>
-					) : (
-						<span className="guest-tag guest-tag--subtle">—</span>
-					)}
+							{item.phone || 'Sin teléfono'}
+						</span>
+						{hasMessages && (
+							<button
+								type="button"
+								className="guest-nota-btn"
+								onClick={() => setMsgOpen((v) => !v)}
+								aria-expanded={msgOpen}
+								aria-controls={msgId}
+							>
+								<MessageIcon size={16} aria-hidden="true" />
+								<span>{msgOpen ? 'Ocultar mensaje' : 'Ver mensaje'}</span>
+							</button>
+						)}
+					</div>
 				</td>
 				<td data-label="Estado">
-					<div className={`status-pill status-pill--${status.class}`}>
-						<span className="status-pill__dot"></span>
-						{status.label}
+					<GuestStatusPill item={item} />
+				</td>
+				<td data-label="Personas">
+					<div className="guest-people">
+						<span className="guest-people__primary">{people.primary}</span>
+						{people.secondary && (
+							<span className="guest-people__secondary">{people.secondary}</span>
+						)}
 					</div>
 				</td>
-				<td data-label="Asistentes">
-					<div className="attendee-count">
-						<span className="attendee-count__current">{item.attendeeCount}</span>
-						<span className="attendee-count__separator">/</span>
-						<span className="attendee-count__max">{item.maxAllowedAttendees}</span>
+				<td data-label="Acciones">
+					<div className="guest-row__actions">
+						{renderSendAction()}
+						<CopyLinkButton
+							url={inviteUrl}
+							guestName={item.fullName}
+							className="btn-secondary btn--compact guest-row__copy-btn"
+						/>
 					</div>
 				</td>
-				<td data-label="% Vista">
-					<div
-						className="engagement-mini"
-						role="progressbar"
-						aria-valuenow={viewPercentage}
-						aria-valuemin={0}
-						aria-valuemax={100}
-						aria-label={`Visualización de la invitación: ${viewPercentage}%`}
-					>
-						<div className="engagement-mini__bar">
-							<div ref={progressRef} className="engagement-mini__progress" />
-						</div>
-						<span className="engagement-mini__label">{viewPercentage}%</span>
-					</div>
-				</td>
-				<td data-label="Enviar">{renderSendAction()}</td>
 				<td data-label="">
 					<button
 						type="button"
-						className={`btn-icon guest-row__menu-btn ${isExpanded ? 'guest-row__menu-btn--open' : ''}`}
-						title={isExpanded ? 'Ver menos detalles' : 'Ver más detalles'}
-						aria-label={
-							isExpanded
-								? `Ver menos detalles de ${item.fullName}`
-								: `Ver más detalles de ${item.fullName}`
-						}
-						aria-expanded={isExpanded}
-						aria-controls={expandId}
-						onClick={onToggleExpanded}
+						className="btn-icon guest-row__menu-btn"
+						title="Ver detalles"
+						aria-label={`Ver detalles de ${item.fullName}`}
+						aria-haspopup="dialog"
+						onClick={() => onOpenDetails(item)}
 					>
-						<ChevronDownIcon size={16} aria-hidden="true" />
+						<ChevronRightGlyph size={18} />
 					</button>
 				</td>
 			</tr>
 
 			{msgPanel}
-
-			{isExpanded && (
-				<tr
-					className="guest-row__expanded-row"
-					id={expandId}
-					role="region"
-					aria-label={`Detalles de ${item.fullName}`}
-				>
-					<td colSpan={GUEST_TABLE_COL_COUNT}>
-						<div className="guest-row__expanded-inner">
-							{hasMessages && (
-								<GuestMessageHistory
-									guestComment={item.guestComment}
-									fallbackTimestampIso={getGuestMessageFallbackTimestamp(item)}
-								/>
-							)}
-							<GuestDetailGroups item={item} />
-							<div className="guest-row__expanded-actions">
-								<GuestExpandedActions
-									guestName={item.fullName}
-									inviteUrl={inviteUrl}
-									isShared={item.deliveryStatus === 'shared'}
-									hideCopyLink={primaryActionIsCopy}
-									onEdit={() => onEdit(item)}
-									onDelete={() => onDelete(item)}
-									onMarkShared={async () => onMarkShared(item)}
-									onRevertShared={
-										onRevertShared
-											? async () => onRevertShared(item)
-											: undefined
-									}
-									guestId={item.guestId}
-									hideCelebraMeBranding={item.hideCelebraMeBranding ?? false}
-									isBrandingRemovalEligible={isBrandingRemovalEligible}
-									onToggleBrandingRemoval={onToggleBrandingRemoval}
-								/>
-							</div>
-						</div>
-					</td>
-				</tr>
-			)}
 		</>
 	);
 };

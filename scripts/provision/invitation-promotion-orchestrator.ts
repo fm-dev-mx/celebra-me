@@ -102,16 +102,6 @@ export async function orchestrateInvitationPromotion(
 	const revalidateVolatile = input.revalidateVolatile ?? revalidatePromotionVolatilePreconditions;
 	const retryCommand = 'pnpm prod:apply -- --slug <slug>';
 
-	if (process.env.CELEBRA_TASK_SCOPE) {
-		throw new OperatorError({
-			title: 'Autorización de Preview no válida en Production',
-			cause: 'CELEBRA_TASK_SCOPE autoriza automatización de Preview y no aprueba promoción a Production.',
-			code: 'CONFIRMATION_REQUIRED',
-			remediation: ['Quite CELEBRA_TASK_SCOPE y ejecute en una TTY del propietario.'],
-			retryCommand,
-		});
-	}
-
 	const updateScope = resolvePromotionUpdateScope({
 		updateScope: input.updateScope,
 		deliveryScope: input.deliveryScope,

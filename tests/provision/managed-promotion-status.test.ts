@@ -329,8 +329,88 @@ describe('pending Preview approval refinement', () => {
 		});
 	});
 
+	// The approval contract requires real hash shapes (SHA-256 / MD5 hex).
+	const APPROVED_HASHES = {
+		packageHash: '1'.repeat(64),
+		sourceHash: '2'.repeat(64),
+		metadataHash: '3'.repeat(64),
+		assetManifestHash: '4'.repeat(64),
+	};
+
+	/** The exact package the approved artifact was issued for. */
+	function approvedPackage(slug: string): InvitationPackageData {
+		return {
+			invitation: { slug, eventType: 'boda' },
+			...APPROVED_HASHES,
+			projectionHash: 'c'.repeat(32),
+		} as InvitationPackageData;
+	}
+
+	/** A fully verified approval: what `prod:apply` accepts offline. */
+	function approvedArtifact(slug: string): PreviewApprovalArtifact {
+		const reviewedAt = new Date().toISOString();
+		return {
+			...pendingArtifact(APPROVED_HASHES.packageHash, slug),
+			...APPROVED_HASHES,
+			approvalState: 'approved',
+			approvedAt: reviewedAt,
+			approvedBy: 'owner',
+			planId: 'p'.repeat(32),
+			intendedProductionProjectRef: 'production',
+			hostedValidation: {
+				route: `/boda/${slug}`,
+				planId: 'p'.repeat(32),
+				reviewedAt,
+				reviewedBy: 'owner',
+				packageHash: APPROVED_HASHES.packageHash,
+				projectionHash: 'd'.repeat(32),
+				checklistResults: {
+					route: true,
+					project: true,
+					storage: true,
+					projection: true,
+					provenance: true,
+					publication: true,
+				},
+				previewProjectRef: 'preview',
+				storageHashVerification: {},
+				intendedProductionProjectRef: 'production',
+			},
+		} as PreviewApprovalArtifact;
+	}
+
 	it('rewrites PROMOTE_PREVIEW to PROMOTE_PRODUCTION when Preview is already approved', async () => {
 		const renata = definition('renata');
+		setDefaultPreviewApprovalStoreForTests(
+			createMemoryPreviewApprovalStore([approvedArtifact('renata')]),
+		);
+		const result = await refineManagedPromotionsWithPendingPreviewApproval({
+			promotions: [
+				presentPromotionRow({
+					slug: renata.slug,
+					title: renata.title,
+					eventType: renata.eventType,
+					action: 'PROMOTE_PREVIEW',
+					reasonCode: 'PREVIEW_BEHIND_CANONICAL',
+					environments: { local: 'behind', preview: 'behind', production: 'behind' },
+					envEvidence,
+				}),
+			],
+			inSyncSlugs: [],
+			resolvePackage: async (slug) => approvedPackage(slug),
+		});
+		expect(result.promotions[0]).toMatchObject({
+			action: 'PROMOTE_PRODUCTION',
+			reasonCode: 'PREVIEW_ALIGNED_PRODUCTION_BEHIND',
+			handoff: {
+				applyCommand: 'pnpm prod:apply -- --slug renata --apply',
+			},
+		});
+	});
+
+	it('does not promote on the approved flag alone when the artifact fails the executor checks', async () => {
+		const renata = definition('renata');
+		// Approved state, but no hosted validation and the package projection changed since.
 		setDefaultPreviewApprovalStoreForTests(
 			createMemoryPreviewApprovalStore([
 				{ ...pendingArtifact('package-renata', 'renata'), approvalState: 'approved' },
@@ -349,16 +429,10 @@ describe('pending Preview approval refinement', () => {
 				}),
 			],
 			inSyncSlugs: [],
-			resolvePackage: async (slug) =>
-				({ invitation: { slug }, packageHash: 'package-renata' }) as InvitationPackageData,
+			resolvePackage: async (slug) => approvedPackage(slug),
 		});
-		expect(result.promotions[0]).toMatchObject({
-			action: 'PROMOTE_PRODUCTION',
-			reasonCode: 'PREVIEW_ALIGNED_PRODUCTION_BEHIND',
-			handoff: {
-				applyCommand: 'pnpm prod:apply -- --slug renata --apply',
-			},
-		});
+		// Same verdict prod:apply would give (MISSING_PREVIEW_APPROVAL): the row stays on Preview.
+		expect(result.promotions[0]).toMatchObject({ action: 'PROMOTE_PREVIEW' });
 	});
 
 	it('keeps PROMOTE_PREVIEW when the pending hash does not match the current package', async () => {
@@ -409,6 +483,7 @@ describe('canonical Production preflight refinement', () => {
 			definition('beta'),
 			definition('gamma'),
 			definition('delta'),
+			definition('epsilon'),
 		];
 		const environmentsBySlug = Object.fromEntries(
 			definitions.map((item) => [item.slug, { ...states }]),
@@ -429,6 +504,7 @@ describe('canonical Production preflight refinement', () => {
 			beta: productionReport('beta', 'BLOCKED', 'MISSING_PREVIEW_APPROVAL'),
 			gamma: productionReport('gamma', 'IN_SYNC'),
 			delta: productionReport('delta', 'BLOCKED', 'MANAGED_DIVERGENCE'),
+			epsilon: productionReport('epsilon', 'BLOCKED', 'UNPUBLISHED_DRAFT_DIVERGENCE'),
 		};
 
 		const result = await refineManagedPromotionsWithProductionPreflight({
@@ -463,6 +539,19 @@ describe('canonical Production preflight refinement', () => {
 			reasonCode: 'MANAGED_DIVERGENCE',
 			environments: { production: 'diverged' },
 			handoff: { applyCommand: null },
+		});
+		// An unpublished target draft is recoverable: dbs hands the owner the exact discard apply.
+		expect(result.promotions.find((row) => row.slug === 'epsilon')).toMatchObject({
+			action: 'BLOCKED',
+			reasonCode: 'UNPUBLISHED_DRAFT_DIVERGENCE',
+			environments: { production: 'diverged' },
+			handoff: {
+				dryRunCommand:
+					'pnpm prod:apply -- --slug epsilon --acknowledge-discard-unpublished-draft',
+				applyCommand:
+					'pnpm prod:apply -- --slug epsilon --acknowledge-discard-unpublished-draft --apply',
+				ownerApplyRequired: true,
+			},
 		});
 	});
 

@@ -55,7 +55,7 @@ describe('GuestFormModal — party size stepper', () => {
 		onSubmit: jest.fn().mockResolvedValue(undefined),
 	};
 
-	const peopleInput = () => screen.getByLabelText('¿Cuántas personas vienen?');
+	const peopleInput = () => screen.getByLabelText('¿Cuántas personas?');
 
 	function fillName(): void {
 		fireEvent.change(document.getElementById('fullName') as HTMLInputElement, {

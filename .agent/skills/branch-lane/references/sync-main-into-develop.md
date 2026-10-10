@@ -7,8 +7,8 @@ Orchestration and statuses live in the parent skill.
 ## Intent
 
 Bring commits that exist on `main` but not on `develop` back into `develop`. The normal case is the
-release PR merge commit, which fast-forwards. A true divergence (for example a hotfix committed on
-`main`) is recovery and uses a `--no-ff` merge.
+release PR merge commit, which fast-forwards. A true divergence (for example a commit that reached
+`main` outside the release pull request) is recovery and uses a `--no-ff` merge.
 
 Integration: **merge only** (not rebase, not reset-hard, not automatic `ours`/`theirs`). Run from
 Integration, which keeps `develop` checked out.
@@ -19,7 +19,7 @@ Integration, which keeps `develop` checked out.
 - Exclusive commits on `origin/main`. If none → `Pass` no-op (do not create an empty merge).
 - `pnpm db:branch:parity -- --base origin/develop --head origin/main --json` completed; route to
   `database-parity` when `requiresParityAudit` is true.
-- Clearance fingerprint valid before writes.
+- Parity and diagnosis ran for the exact SHAs before writes.
 - Merge/push authorized (`Needs authorization` until yes).
 
 ## Procedure

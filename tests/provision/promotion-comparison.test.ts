@@ -6,7 +6,7 @@ import { describe, expect, it } from '@jest/globals';
 import {
 	ACKNOWLEDGE_DISCARD_UNPUBLISHED_DRAFT_FLAG,
 	checkTargetDivergenceConflict,
-	isTargetDivergenceConflictMessage,
+	isTargetDivergenceConflict,
 	semanticInvitationContentEqual,
 	TARGET_DIVERGENCE_ACKNOWLEDGE_HINT,
 } from '../../scripts/provision/promotion-comparison.ts';
@@ -122,7 +122,8 @@ describe('checkTargetDivergenceConflict', () => {
 			throw new Error('Expected divergence conflict');
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			expect(isTargetDivergenceConflictMessage(message)).toBe(true);
+			expect(isTargetDivergenceConflict(error)).toBe(true);
+			expect((error as { code?: string }).code).toBe('UNPUBLISHED_DRAFT_DIVERGENCE');
 			expect(message).toContain(TARGET_DIVERGENCE_ACKNOWLEDGE_HINT);
 		}
 	});

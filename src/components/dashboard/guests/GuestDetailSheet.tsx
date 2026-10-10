@@ -1,19 +1,17 @@
 import React from 'react';
 import ModalShell from '@/components/dashboard/ModalShell';
-import GuestDetailGroups from '@/components/dashboard/guests/GuestDetailGroups';
-import GuestExpandedActions from '@/components/dashboard/guests/GuestExpandedActions';
-import { CheckGlyph } from '@/components/dashboard/guests/GuestGlyphs';
-import GuestMessageHistory from '@/components/dashboard/guests/GuestMessageHistory';
+import GuestDetailActions from '@/components/dashboard/guests/GuestDetailActions';
+import GuestDetailMore from '@/components/dashboard/guests/GuestDetailMore';
+import GuestLastMessage from '@/components/dashboard/guests/GuestLastMessage';
 import GuestPrimaryAction from '@/components/dashboard/guests/GuestPrimaryAction';
+import GuestStatusCard from '@/components/dashboard/guests/GuestStatusCard';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import {
 	formatPhoneDisplay,
-	getGuestMessageCount,
 	getGuestMessageFallbackTimestamp,
 	getGuestPrimaryAction,
-	getGuestProgressSteps,
 	type GuestSaveCallback,
 } from '@/components/dashboard/guests/guest-presenter';
 
@@ -31,18 +29,17 @@ interface GuestDetailSheetProps {
 	onDelete: (item: DashboardGuestItem) => Promise<void>;
 	onMarkShared: (item: DashboardGuestItem) => Promise<void>;
 	onRevertShared?: (item: DashboardGuestItem) => Promise<void>;
+	onUpdateGroups?: (guestId: string, groups: string[]) => Promise<void>;
 	isBrandingRemovalEligible?: boolean;
 	onToggleBrandingRemoval?: (guestId: string, hideCelebraMeBranding: boolean) => void;
 	onSaveGuest?: GuestSaveCallback;
 }
 
-const STEP_STATE_LABEL = {
-	done: 'Hecho',
-	current: 'Ahora',
-	upcoming: 'Pendiente',
-} as const;
-
-/** Full-screen guest detail for compact screens: progress, next step and all actions. */
+/**
+ * Guest detail: full screen on phones, a dialog on tablets and a side panel on
+ * desktop. Status and next step lead; secondary facts open on demand; the action
+ * bar sits in the fixed footer so it never needs scrolling.
+ */
 const GuestDetailSheet: React.FC<GuestDetailSheetProps> = ({
 	item,
 	inviteUrl,
@@ -57,16 +54,26 @@ const GuestDetailSheet: React.FC<GuestDetailSheetProps> = ({
 	onDelete,
 	onMarkShared,
 	onRevertShared,
+	onUpdateGroups,
 	isBrandingRemovalEligible,
 	onToggleBrandingRemoval,
 	onSaveGuest,
 }) => {
-	const steps = getGuestProgressSteps(item);
-	const messageCount = getGuestMessageCount(item.guestComment);
-	const primaryActionIsCopy =
-		getGuestPrimaryAction(item, reminderMode, isReminderEligible).action === 'copy-link';
-	const people = `${item.maxAllowedAttendees} ${item.maxAllowedAttendees === 1 ? 'persona invitada' : 'personas invitadas'}`;
-	const subtitle = item.phone ? `${people} · ${formatPhoneDisplay(item.phone)}` : people;
+	const hasNextStep =
+		getGuestPrimaryAction(item, reminderMode, isReminderEligible).action !== 'copy-link';
+	const passes = `${item.maxAllowedAttendees} ${item.maxAllowedAttendees === 1 ? 'pase' : 'pases'}`;
+	const subtitle = `${passes} · ${item.phone ? formatPhoneDisplay(item.phone) : 'Sin teléfono'}`;
+	const brandingToggle =
+		isBrandingRemovalEligible && onToggleBrandingRemoval
+			? {
+					hidden: item.hideCelebraMeBranding ?? false,
+					onToggle: () =>
+						onToggleBrandingRemoval(
+							item.guestId,
+							!(item.hideCelebraMeBranding ?? false),
+						),
+				}
+			: undefined;
 
 	return (
 		<ModalShell
@@ -75,80 +82,45 @@ const GuestDetailSheet: React.FC<GuestDetailSheetProps> = ({
 			className="guest-detail-sheet"
 			initialFocus="heading"
 			onClose={onClose}
+			footer={
+				<GuestDetailActions
+					guestName={item.fullName}
+					inviteUrl={inviteUrl}
+					isShared={item.deliveryStatus === 'shared'}
+					onEdit={() => onEdit(item)}
+					onDelete={() => onDelete(item)}
+					onMarkShared={async () => onMarkShared(item)}
+					onRevertShared={onRevertShared ? async () => onRevertShared(item) : undefined}
+					brandingToggle={brandingToggle}
+				/>
+			}
 		>
 			<div className="dashboard-modal__content guest-detail-sheet__body">
-				<section
-					className="guest-detail-sheet__progress"
-					aria-labelledby="guest-progress-title"
-				>
-					<h4 id="guest-progress-title" className="guest-detail-sheet__section-title">
-						En qué va su invitación
-					</h4>
-					<ol className="guest-progress">
-						{steps.map((step, index) => (
-							<li
-								key={step.label}
-								className={`guest-progress__step guest-progress__step--${step.state}`}
-							>
-								<span className="guest-progress__marker" aria-hidden="true">
-									{step.state === 'done' ? <CheckGlyph size={18} /> : index + 1}
-								</span>
-								<span className="guest-progress__text">
-									<span className="guest-progress__label">{step.label}</span>
-									{step.note && (
-										<span className="guest-progress__note">{step.note}</span>
-									)}
-								</span>
-								<span className="guest-progress__state">
-									{STEP_STATE_LABEL[step.state]}
-								</span>
-							</li>
-						))}
-					</ol>
-				</section>
+				<GuestStatusCard item={item} />
 
-				<div className="guest-detail-sheet__primary">
-					<GuestPrimaryAction
-						item={item}
-						inviteUrl={inviteUrl}
-						eventTitle={eventTitle}
-						shareTemplates={shareTemplates}
-						shareDateContext={shareDateContext}
-						reminderMode={reminderMode}
-						isReminderEligible={isReminderEligible}
-						onReminderSent={onReminderSent}
-						onMarkShared={onMarkShared}
-						onSaveGuest={onSaveGuest}
-					/>
-				</div>
-
-				{messageCount > 0 && (
-					<GuestMessageHistory
-						guestComment={item.guestComment}
-						fallbackTimestampIso={getGuestMessageFallbackTimestamp(item)}
-					/>
+				{hasNextStep && (
+					<div className="guest-detail-sheet__primary">
+						<GuestPrimaryAction
+							item={item}
+							inviteUrl={inviteUrl}
+							eventTitle={eventTitle}
+							shareTemplates={shareTemplates}
+							shareDateContext={shareDateContext}
+							reminderMode={reminderMode}
+							isReminderEligible={isReminderEligible}
+							onReminderSent={onReminderSent}
+							onMarkShared={onMarkShared}
+							onSaveGuest={onSaveGuest}
+						/>
+					</div>
 				)}
 
-				<GuestDetailGroups item={item} />
+				<GuestLastMessage
+					guestComment={item.guestComment}
+					fallbackTimestampIso={getGuestMessageFallbackTimestamp(item)}
+				/>
 
-				<div className="guest-detail-sheet__actions">
-					<GuestExpandedActions
-						guestName={item.fullName}
-						inviteUrl={inviteUrl}
-						isShared={item.deliveryStatus === 'shared'}
-						hideCopyLink={primaryActionIsCopy}
-						onEdit={() => onEdit(item)}
-						onDelete={() => onDelete(item)}
-						onMarkShared={async () => onMarkShared(item)}
-						onRevertShared={
-							onRevertShared ? async () => onRevertShared(item) : undefined
-						}
-						guestId={item.guestId}
-						hideCelebraMeBranding={item.hideCelebraMeBranding ?? false}
-						isBrandingRemovalEligible={isBrandingRemovalEligible}
-						onToggleBrandingRemoval={onToggleBrandingRemoval}
-					/>
-				</div>
+				<GuestDetailMore item={item} onUpdateGroups={onUpdateGroups} />
 			</div>
 		</ModalShell>
 	);

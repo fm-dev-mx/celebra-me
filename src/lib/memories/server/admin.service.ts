@@ -10,6 +10,7 @@ import {
 	findEventByIdService,
 	listAllEventsService,
 } from '@/lib/rsvp/repositories/event.repository';
+import { listEventMembershipsService } from '@/lib/rsvp/repositories/role-membership.repository';
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { resolveInvitationSchedule } from '@/lib/intake/invitation-validity';
 import { deriveStartsAtUtc, isValidIanaTimeZone } from '@/lib/time/event-time';
@@ -191,12 +192,22 @@ function mapPersistenceError(error: unknown): never {
 export async function listMemorySpacesAdmin(
 	now = new Date(),
 ): Promise<{ items: MemoriesAdminSpaceItem[]; totals: MemoriesAdminTotals }> {
-	const [spaces, events] = await Promise.all([listAllMemorySpaces(), listAllEventsService()]);
+	const [spaces, events, memberships] = await Promise.all([
+		listAllMemorySpaces(),
+		listAllEventsService(),
+		listEventMembershipsService(),
+	]);
 	const invitationByEvent = new Map(events.map((event) => [event.id, event.invitationId]));
+	const ownedEventIds = new Set(
+		memberships
+			.filter((membership) => membership.membershipRole === 'owner')
+			.map((membership) => membership.eventId),
+	);
 	const dated = await Promise.all(
 		spaces.map(async (space) => ({
 			...space,
 			eventDate: await resolveEventDate(invitationByEvent.get(space.eventId), now),
+			hasOwner: ownedEventIds.has(space.eventId),
 		})),
 	);
 	return listMemorySpacesWithUsage(dated, now);

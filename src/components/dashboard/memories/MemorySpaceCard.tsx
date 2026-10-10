@@ -20,6 +20,7 @@ import {
 	memoriesUsageRatio,
 } from '@/lib/memories/dashboard-copy';
 import { memoriesAdminApi } from '@/lib/memories/client/api';
+import MemorySpaceDiagnostics from '@/components/dashboard/memories/MemorySpaceDiagnostics';
 
 interface Props {
 	item: MemoriesAdminSpaceItem;
@@ -85,6 +86,12 @@ export default function MemorySpaceCard({
 					{MEMORIES_WINDOW_LABEL[state]}
 				</span>
 			</header>
+
+			{!item.hasOwner && !expired ? (
+				<p className="memories-space__alert" role="alert">
+					{copy.noOwner}
+				</p>
+			) : null}
 
 			{deletionDays !== null ? (
 				<p className="memories-space__alert" role="alert">
@@ -165,6 +172,12 @@ export default function MemorySpaceCard({
 					</>
 				)}
 			</p>
+
+			<MemorySpaceDiagnostics
+				eventId={item.eventId}
+				eventTitle={item.eventTitle}
+				timeZone={item.timeZone}
+			/>
 
 			{item.adminNote ? (
 				<p className="memories-space__note">

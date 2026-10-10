@@ -5,7 +5,6 @@ import type {
 	IntakeRequestOrigin,
 } from '@/lib/intake/types';
 import {
-	findIntakeRequestById,
 	findIntakeRequestByTokenHash,
 	findIntakeRequestsByInvitationId,
 	createIntakeRequest,
@@ -44,11 +43,6 @@ export interface CreateIntakeRequestResult {
 	request: IntakeRequest;
 	rawToken: string;
 }
-
-export async function getIntakeRequestById(id: string): Promise<IntakeRequest | null> {
-	return findIntakeRequestById(id);
-}
-
 export async function getIntakeRequestByToken(rawToken: string): Promise<IntakeRequest | null> {
 	const tokenHash = hashIntakeToken(rawToken);
 	return findIntakeRequestByTokenHash(tokenHash);

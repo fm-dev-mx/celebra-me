@@ -20,7 +20,8 @@ Local Supabase (`CELEBRA_RUNTIME_TARGET=local`).
 - Idle state: `develop` checked out (not detached), clean.
 - Integration may host one task when it is assigned there. Create a task branch first
   (`git switch -c <feat|fix|candidate>/<name> develop`); never author commits directly on `develop`
-  or `main`. `develop` only receives merge commits of task branches (and the release back-merge).
+  or `main`. `develop` receives task branches only through the Integrate step (single-commit tasks
+  fast-forward, multi-commit tasks merge) and the release back-merge.
 - Before integrating, return to `develop` with a clean tree (`git switch develop`), then follow the
   Integrate step in [Git governance](../git-governance.md#task-lifecycle) and delete the task
   branch.

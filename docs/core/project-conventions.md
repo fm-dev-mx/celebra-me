@@ -189,26 +189,10 @@ hooks or `PascalCase` types from inside the file.
 
 ### 9.1 Markdown table readability
 
-Use Markdown tables for compact, comparative data rather than paragraphs or implementation
-narratives. The repository validator applies to active Markdown documentation and reports:
+Use Markdown tables for compact, comparative data. Limits and correction commands live in
+[validation procedures](validation-procedures.md#markdown-tables).
 
-- a warning when a table has more than four columns;
-- a warning when a visible cell exceeds 120 characters;
-- a blocking error when a visible cell exceeds 240 characters.
-
-Move long explanations into paragraphs, lists, or subsections. Compact matrices may keep more than
-four columns when their cells remain short; the column rule is advisory because several active
-templates intentionally use wider matrices. Changed and staged Markdown files are checked through
-`pnpm validate:markdown-tables`; historical, generated, temporary, and fixture Markdown is outside
-this rule.
-
-For an explicit VS Code save, the recommended `DavidAnson.vscode-markdownlint` extension applies the
-structural correction first and Prettier formats the resulting Markdown afterward. A table with a
-cell over 120 visible characters is converted into ordered field/value records; a cell over 240
-characters remains a blocking validation error until it is reorganized. The workspace recommends the
-extension and keeps Prettier as the Markdown formatter. The command
-`pnpm format:markdown-tables -- --files <path...>` applies the same correction outside VS Code;
-`pnpm validate:markdown-tables -- --all-active` checks all active Markdown without editing it.
+### 9.2 Comments
 
 - Comments explain **why**, not **what**.
 - Keep comments concise and in English.
@@ -229,7 +213,7 @@ Not all situations fit the conventions. If a change requires deviating:
 - All transient logs and test output files (e.g., `test_output.txt`) MUST be placed in the `logs/`
   directory.
 - This directory is ignored by git to keep the repository clean.
-- When running tests or capturing output, use: `npm test > logs/test_output.txt 2>&1`.
+- When running tests or capturing output, use: `pnpm test > logs/test_output.txt 2>&1`.
 
 ### Invitation copy in automated tests
 
@@ -244,10 +228,11 @@ Assertions**.
 
 ## 12) Platform Version Policy
 
-`package.json` is the source of truth for installed versions. As of 2026-07-25:
+`package.json` is the source of truth for exact installed versions; this section records only the
+major lines and upgrade stance.
 
 - **Package:** Astro
-  - **Repo baseline:** 7.x (e.g. `7.1.3`) with `@astrojs/vercel` 11.x / `@astrojs/react` 6.x
+  - **Repo baseline:** 7.x with `@astrojs/vercel` 11.x / `@astrojs/react` 6.x
   - **Upgrade stance:** Patch/minor within Astro 7; majors need a dedicated window
 - **Package:** TypeScript
   - **Repo baseline:** **Hybrid:** CLI compiler **7.0.2** (`@typescript/native` → `tsc`);

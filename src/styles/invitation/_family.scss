@@ -51,8 +51,6 @@
 		margin: 0 auto clamp(1.8rem, 4vw, 2.8rem);
 		text-align: center;
 		filter: var(--family-header-filter, none);
-
-		--family-reveal-delay: 0s;
 	}
 
 	&__header-inner {
@@ -214,8 +212,6 @@
 	&__media {
 		position: relative;
 		margin: 0;
-
-		--family-reveal-delay: 0.08s;
 	}
 
 	&__media-frame {
@@ -286,8 +282,6 @@
 		border-left: var(--family-group-border-left, none);
 		text-align: var(--family-group-text-align, center);
 		filter: var(--family-group-filter, none);
-
-		--family-reveal-delay: 0.16s;
 	}
 
 	&__group + &__group::before {

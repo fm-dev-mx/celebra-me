@@ -46,6 +46,8 @@ export function buildMemoriesPrivateRequestPayload(input: {
  * resolveMemoriesPublicOrigin.
  */
 export const MEMORIES_PUBLIC_ORIGIN = 'https://celebra-me.com' as const;
+/** Canonical app origin: serves the guest page and is the only origin the Sign Worker allows in Production. */
+export const MEMORIES_CANONICAL_APP_ORIGIN = 'https://www.celebra-me.com' as const;
 export const MEMORIES_PUBLIC_ROUTE_PREFIX = '/r/' as const;
 export const MEMORIES_PUBLIC_SLUG_MAX_LENGTH = 64;
 export const MEMORIES_PUBLIC_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

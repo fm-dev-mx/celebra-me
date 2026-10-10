@@ -2,9 +2,20 @@
 
 **Status:** Active
 
-**Last Updated:** 2026-09-23
+This document owns release checkpoints, version tags and the layered CHANGELOG policy. Checkpoints
+use an annotated Git tag, a `package.json` version bump and a changelog entry — no release branches,
+release automation or semantic-release.
 
-## Overview
+Related owners:
+
+- Branches, task integration and the release pull request:
+  [Git governance](git-governance.md#production-promotion).
+- Validation tiers, CI coverage, evidence reuse and visual certification:
+  [validation procedures](validation-procedures.md#remote-ci-coverage-and-efficiency).
+- Code delivery to Preview or Production (`publish-preview` / `publish-production`):
+  [release execution](release-execution.md).
+- Agent preparation of a release candidate:
+  [`branch-lane`](../../.agent/skills/branch-lane/SKILL.md) mode `release-prepare`.
 
 ## Canonical operation map
 
@@ -22,9 +33,9 @@ Diagnosis never authorizes mutation. `CURRENT`, green CI, an accessible deployme
   owner-authorized deployment workflow. Require exact trusted checks, deployment/environment and
   smoke; schema evidence remains separate.
 - **Preview invitation update:** diagnose with
-  `pnpm invitation:release -- --slug <slug> --targets preview`; add `--apply` only with scoped
-  Preview authorization. Require canonical package, lifecycle, provenance, asset namespace,
-  three-way plan and hosted approval bound to current hashes.
+  `pnpm invitation:release -- --slug <slug> --targets preview --dry-run`; use `--apply` instead of
+  `--dry-run` only with scoped Preview authorization. Require canonical package, lifecycle,
+  provenance, asset namespace, three-way plan and hosted approval bound to current hashes.
 - **Production invitation publication:** use `pnpm prod:apply -- --slug <slug>` for preflight and
   the same owner-only entrypoint with `--apply`. Require `published`, current hash-bound approval,
   provenance/baseline, resolved conflicts, assets, backup and owner permit.
@@ -39,144 +50,18 @@ quota or evidence is `BLOCKED_UNTIL_INPUT`; repetition cannot change it. A backu
 while its target, fingerprint, integrity, encryption, recovery profile, migration history and
 15-minute RPO remain valid, and is revalidated immediately before the owner permit.
 
-### Inherited editorial debt
+## Release gates
 
-Allison Scarlett (`NOT_READY` / creative outcome pending) and Renata (historical local-only creative
-acceptance) remain non-blocking corpus warnings. Their lifecycle, facts, assets and acceptance
-require separate editorial authorization; this release workflow never rewrites them automatically.
-
-### Efficient validation and evidence
-
-#### CI and Vercel Git deployments
-
-For a single scoped execution, invoke repository skill `publish-preview` or `publish-production`.
-Their shared [execution procedure](release-execution.md) defines invocation authority, evidence
-reuse, recovery and verified deployment completion. Neither includes database or content writes.
-
-- `Repository CI` is the only remote validation authority. Direct pushes to `develop` run the
-  complete integration suite; the single release pull request from `develop` to `main` must pass
-  `Repository Policy` and `Application Suite` before merge.
-- `develop` is a Preview integration branch and may be temporarily red after a push. `main` remains
-  fail-closed: a failed integration cannot pass the independent release pull-request gate.
-- Vercel's Git integration owns deployments: pull requests and `develop` receive automatic Preview
-  deployments, while `main` receives the automatic Production deployment. GitHub Actions does not
-  build or deploy a second Preview.
-- Vercel builds with `pnpm build:app`; `astro check` and `tsc` belong to Repository CI
-  (`ci:static`), which gates `main` through the release pull request.
-  `scripts/ops/vercel-ignore-build.mjs` (`ignoreCommand`) skips a Preview build when no application
-  input (`src/`, `public/`, `scripts/shared/`, Astro/Vercel/package configuration) changed since the
-  previous deployed commit of that branch; Production always builds.
-- `Post-deploy Smoke` validates the correlated Production deployment, SHA, approved host and
-  critical HTTP behavior. The scheduled/manual `Production Image Audit` separately reports
-  published-media drift and never determines deployment health.
-- The `develop` ruleset allows direct pushes that only add commits, merge commits included, but
-  blocks deletion and non-fast-forward (history-rewriting) updates. The `main` ruleset requires a
-  pull request and the two canonical checks, and also blocks deletion and non-fast-forward updates.
-
-#### Failure classification and retry
-
-- Validation evidence reports one primary cause: `CODE`, `VISUAL_DIFF`, or `INFRASTRUCTURE`.
-  `Application Suite` is an aggregator and never replaces the primary failing tier. Deployment and
-  smoke workflows report `DEPLOY` and `SMOKE` respectively.
-- Browser comparison writes `.tmp/browser-outcome.json` with the visual evidence filenames. A failed
-  browser job after a successful browser test step is infrastructure-only; a snapshot diff is
-  `VISUAL_DIFF`; other browser failures are `CODE`.
-- `.github/workflows/retry-ci-infrastructure.yml` retries only failed jobs, only on the first
-  attempt and only when the GitHub job/step evidence proves that browser checks passed before the
-  evidence upload failed. It does not depend on the artifact whose finalization may have failed.
-  Visual differences, code failures, deployment failures, and smoke failures are never retried.
-- Release classification marks conservative visual impact for application TypeScript/Astro, styles,
-  rendered invitation builders/content/assets, fonts, Playwright fixtures/specs, the lockfile, and
-  screenshot infrastructure. The browser tier runs on every pull request and dispatch; a `develop`
-  push may skip it only when `Browser scope` (`scripts/ops/ci-browser-scope.ts`) proves its browser
-  inputs are byte-identical to an earlier `develop` push whose browser job passed. This signal
-  explains when hash-bound human review is additionally required and never reduces coverage.
-
-#### Visual certification and the optional local preview
-
-- Exact-SHA visual certification is owned by the `Application / browser` job of Repository CI on the
-  `develop` push; the pre-push hook replays commit validation and hands off to Git LFS only.
-- `pnpm validate:prepush -- --sha <exact-sha> --base-sha <base-sha> --target-ref refs/heads/develop`
-  is an optional local preview of that certification: an isolated checkout of the exact commit in
-  the same digest-pinned Linux Playwright image. It applies the shared conservative visual-impact
-  classifier to the range (accepted references, the visual matrix and capture infrastructure remain
-  visual-impact inputs) and is a no-op for other target refs. Native Windows captures are diagnostic
-  only and do not satisfy the gate.
-- Successful evidence is cached under the worktree's internal Git path and is reusable only while
-  SHA, visual matrix, accepted-manifest hash, lockfile hash, verified Node archive, Node/pnpm
-  versions, image digest, certified command, and command schema all match. It is never committed.
-  Cache identity uses committed manifest/lockfile bytes and is checked before Docker/LFS setup.
-  Failed evidence is retained per attempt under the internal Git path for local diagnosis and never
-  changes accepted references. `VISUAL_DIFF` is derived from failed captures in the structured
-  compare manifests; diagnostic `actual` images alone do not qualify.
-- `validate:changed` remains fast feedback. When it prints `VISUAL_IMPACT_DETECTED`, its success is
-  not visual certification; the `develop` push obtains that from Repository CI.
-- Candidate generation accepts `--sha` and fails when it does not equal the clean current HEAD.
-  `pnpm visual:parity:candidate:certified -- --sha <exact-sha>` creates that candidate in the same
-  checksum-verified Linux runtime and stores it in `visual-candidates/<sha>/attempt-*/candidate`
-  under the internal Git path, with sibling `candidate-references` for portable review. Subsequent
-  attempts never replace earlier evidence. Candidate success is review evidence only. Acceptance
-  still binds the exact reference SHA (the clean HEAD), the matrix hash and the candidate-manifest
-  SHA-256 recorded by the candidate, followed by a new passing compare.
-
-- `pnpm run ci` covers static/build, Jest and certified browser checks. The remote workflow also
-  requires Repository Policy and disposable DB contracts; local CI alone is not release readiness.
-- `validate:changed` already runs related Jest. Do not repeat `test:changed` at the same unchanged
-  local checkpoint. The commit hook independently verifies staged inputs.
-- Use the shared selection rules in
-  [validation procedures](validation-procedures.md#remote-ci-coverage-and-efficiency), including the
-  exact visual-manifest exception and mixed-change requirements. Changed Playwright specs need
-  browser evidence; Jest does not run them. Local Render Corpus is Jest contract coverage, not
-  visual certification.
-
-- Run focused local checks while editing. Integrate the final task range into `develop` and push it
-  for complete remote certification; confirm its workflow run exists. A push to a task branch alone
-  does not run Repository CI.
-- `pnpm test:e2e:ci` explicitly compares visual references and fails before browser work when the
-  certified Linux runtime, isolated fixtures, LFS references or coverage are unavailable. Diagnostic
-  runs and candidate generation are not release certification.
-- Generate candidates with the existing Repository CI manual input `visual_mode=candidate` on a
-  published task ref. The workflow owns the pinned image and fixtures. Download its
-  `visual-candidate-<sha>` artifact and review `candidate/changes.html` plus the complete matrix as
-  needed. It lists only captures that fail the unchanged comparison, plus new captures; gate-passing
-  byte changes keep their accepted bytes and are only counted. Keep the sibling
-  `candidate-references` and `candidate-diffs` directories: PNGs are linked lazily, not embedded in
-  HTML. Native candidate reruns archive the prior bundle under ignored
-  `.tmp/visual-parity/history/`. Coverage expansion accepts a smaller prior matrix as review input,
-  but comparison still requires the entire current matrix. Structured failure phases distinguish
-  preflight, coverage, manifest, browser and report errors; none changes the success criteria. This
-  mode does not produce a passing Application Suite. Any regenerated manifest requires renewed owner
-  approval of that exact artifact; never transfer approval to a different hash.
-- Preserve previously granted task authorization. Resolve routine paths and command arguments
-  without asking again. Request new decisions only for new scope or material visual approval.
+- `Repository CI` is the only remote validation authority. A push to `develop` runs the complete
+  integration suite; `develop` may be temporarily red after a push. `main` stays fail-closed: the
+  release pull request must pass `Repository Policy` and `Application Suite` before merge.
 - Before promotion, run `pnpm ops:release-checks <exact-sha>` to require Repository Policy,
   Application Suite and static capability evidence. Pending, cancelled, skipped, missing, untrusted
-  or different-SHA evidence blocks this check. For database contracts, follow
-  `expand → CI/Preview → Production deployment + smoke → contract`; the contract gate verifies the
-  prior Production SHA and its versioned application-capability manifest. It does not replace
-  database compatibility checks or owner deployment authorization. Recheck after final integration.
-- The main ruleset must still be inspected: this CLI is a fail-closed operator check, not proof that
-  provider-side Preview protection is configured. Never call a release ready from CI alone.
-- Avoid repeating successful complete suites for unchanged evidence. A final integration SHA,
-  changed inputs or an unresolved failure justifies revalidation. Do not reuse PR merge-SHA evidence
-  as if it certified a different final commit. The promotion pull request reuses the complete
-  `develop` run only when its merge candidate holds the identical tree; see
-  [validation procedures](validation-procedures.md#remote-ci-coverage-and-efficiency).
-- CI records `validation-metrics` artifacts with SHA, mode, capture execution, browser workers,
-  attempt, completed job durations, wall time and aggregate runner minutes. These exclude queue
-  time, billing multipliers and the metrics job; they do not estimate token usage. Compare
-  like-for-like runs before adopting sharding. Keep serial coverage until three paired trials meet
-  the agreed 30% wall-time saving and at most 50% runner-minute increase, with identical coverage
-  and passing results. Dispatch each pair through the Repository CI `capture_execution` and
-  `browser_workers` inputs.
-
-This document owns release checkpoints and the layered CHANGELOG policy for the Celebra-me
-repository. Checkpoints use Git tags, `package.json` version bumps, and a changelog entry — no
-release branches, no automation runners, no semantic-release.
-
-Agent procedure for preparing a release candidate (and related develop/main lane ops):
-[`.agent/skills/branch-lane/SKILL.md`](../../.agent/skills/branch-lane/SKILL.md) mode
-`release-prepare`. This document remains the policy SSOT.
+  or different-SHA evidence blocks this check. Recheck after final integration.
+- This CLI is a fail-closed operator check, not proof that branch rules or provider-side Preview
+  protection are configured; inspect the `main` ruleset. Never call a release ready from CI alone.
+- Database-dependent ranges follow [Database-dependent releases](#database-dependent-releases); the
+  contract gate does not replace database compatibility checks or owner deployment authorization.
 
 ## Layered CHANGELOG Policy
 
@@ -294,10 +179,10 @@ git add package.json CHANGELOG.md
 git commit -m "chore(release): publish vX.Y.Z checkpoint"
 ```
 
-Integrate the candidate into `develop` from Integration with a merge commit (see
-[`git-governance.md`](git-governance.md#task-lifecycle)), then push `develop`. Wait for
+Integrate the candidate into `develop` from Integration as the
+[task lifecycle](git-governance.md#task-lifecycle) defines, then push `develop`. Wait for
 `Repository Policy` and `Application Suite` on that exact SHA before opening the release pull
-request. Preserve preceding atomic commits when they remain meaningful.
+request.
 
 ### 5. Promote the validated commit to `main`
 
@@ -308,20 +193,19 @@ or a `published` lifecycle change that adds a route to the canonical matrix), ob
 release-time visual confirmation. The confirmation reviews the candidate produced with the pinned
 runtime and identifies the exact source SHA, matrix hash, and candidate-manifest SHA-256. Record
 that acceptance through `pnpm visual:parity:accept` before this step, land the accepted references
-on `develop` through the same merge integration as step 4, and wait for `Application Suite` on that
-resulting `develop` SHA. This is a human release decision, not an automatic action performed by CI
-or Vercel after a deployment begins.
+on `develop` through the same integration as step 4, and wait for `Application Suite` on that
+resulting `develop` SHA. The commit that changes the matrix (for example the `published` flip) is
+committed first with normal hooks; the matrix pin is a branch gate (`validate:changed`, CI), so the
+accepted references land in the following commit of the same task branch. This is a human release
+decision, not an automatic action performed by CI or Vercel after a deployment begins.
 
 If visual confirmation is missing or rejected, the candidate is not eligible for promotion or
 deployment. Do not reduce visual coverage, relax comparison, or treat a Preview build as approval.
 
-Open a pull request from `develop` to `main`, wait for `Repository Policy` and `Application Suite`,
-then merge through GitHub. Title the PR for its primary outcome (for example,
-`release: simplify validation and deployment`), not for the mechanical promotion. Keep the body to
-included PRs, material risks, visual/schema/content impact, separately authorized operations, and
-the expected CI and smoke evidence. Direct pushes to `main` are not part of the release path. After
-the merge, fast-forward `develop` to `origin/main` from Integration as described in
-[`git-governance.md`](git-governance.md#production-promotion).
+Then open the release pull request from `develop` to `main`, merge it once the required checks pass,
+and fast-forward `develop` back to `origin/main`, as
+[Git governance](git-governance.md#production-promotion) defines. Agents prepare the pull request
+with the [`production-pr`](../../.agent/skills/production-pr/SKILL.md) skill.
 
 ### 6. Verify the promoted deployment
 

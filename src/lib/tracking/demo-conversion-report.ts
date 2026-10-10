@@ -13,6 +13,13 @@ export interface DemoInventoryItem {
 	eventType: string;
 }
 
+/** A repository demo with its public route, for the dashboard demo catalog. */
+export interface DemoLinkItem extends DemoInventoryItem {
+	invitationTitle: string;
+	href: string;
+	inShowroom: boolean;
+}
+
 export interface DemoPayment {
 	lead_id?: string | null;
 	deposit_paid_at?: string | null;

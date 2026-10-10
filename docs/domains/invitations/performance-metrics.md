@@ -191,8 +191,6 @@ token `s-maxage=0`. `x-vercel-cache` for the document must not be `HIT`.
 **Enforcement.** Hard CI (helpers + page source). Baseline script also fails `--assert-budget` on a
 document HIT.
 
-**Baseline.** Production 2026-08-16: `public, max-age=0, must-revalidate`; document MISS/MISS.
-
 **Interpretation.** A positive shared TTL is a correctness defect, not a performance win.
 
 **Example.** `s-maxage=60` on `/xv/renata` would let CDNs serve an approximately 60-second-old
@@ -238,9 +236,6 @@ guard the code.
 
 **Enforcement.** Hard CI for code. Live `stale-vercel-storage` count in the baseline script is
 report-only until production matches the code.
-
-**Baseline.** Renata: 0 Storage-through-Vercel URLs. Romina production HTML on 2026-08-16: 4
-wrapping URLs (pre-deploy). Displayed mobile Romina hero was already raw Storage via `<picture>`.
 
 **Interpretation.** Re-enabling Storage through `/_vercel/image` is a freshness regression even if
 LCP looks better.
@@ -448,8 +443,7 @@ runtime source: Speed Insights **p75**, not one laptop sample.
 **Enforcement.** Runtime. Web Vitals “good” LCP (p75 ≤ 2.5 s) is contextual reference only — not a
 CI gate.
 
-**Baseline.** No stable lab LCP. Displayed mobile heroes on 2026-08-16: Renata Cloudinary
-`hero-mobile` 128 150 B; Romina Storage `hero.webp` 379 472 B.
+**Baseline.** No stable lab LCP.
 
 **Interpretation.** Sustained p75 degradation on invitation routes, not a single cold start.
 
@@ -552,7 +546,9 @@ high-priority `<img>`, which may be a `<picture>` fallback rather than `currentS
 sample.
 
 **Measurement.** Informational in `invitation:delivery:baseline` (`hero.deliveredBytes` is the HTML
-high-priority `<img>` GET). Displayed resource is `img.currentSrc` after layout. Opt-in:
+high-priority `<img>` GET) and is checked against the hero role in
+`src/lib/invitation-preparation/image-delivery-budget.ts` as an advisory `WARN image budget` line.
+Displayed resource is `img.currentSrc` after layout. Opt-in:
 `DELIVERY_DIAGNOSTICS_ORIGIN=… pnpm exec playwright test tests/e2e/invitation-delivery-media.diagnostic.spec.ts`.
 
 Distinguish: **markup `src`**, **responsive `currentSrc`**, **requested URL**. Do not label markup
@@ -562,17 +558,6 @@ bytes as LCP or “bytes before LCP”.
 
 **Enforcement.** Informational. No CI budget: Romina’s displayed hero is ~3× Renata by design of the
 legacy asset, and the HTML hero URL is not always the painted one.
-
-**Baseline.** Cursor browser, 390×844, 2026-08-16:
-
-- Versioned (`renata`): markup `src` is `/_vercel/image` of **hero-desktop**; `currentSrc` and the
-  matching resource URL are Cloudinary **hero-mobile** `…-0cc4c2f74a2b.webp`. Independent GET:
-  128 150 B, `max-age=2592000`. Browser `encodedBodySize` matched; `transferSize` was 0.
-- Legacy (`romina-rios-chaparro`): markup `src` is still `/_vercel/image` of Storage `hero.webp`
-  (live HTML can lag the bypass policy). Both `<source>` elements and `currentSrc` are the raw
-  Storage URL. Independent GET: 379 472 B, `Cache-Control: no-cache`. Browser
-  `encodedBodySize`/`transferSize` were 0 (no Timing-Allow-Origin). Do not invent a browser byte
-  value.
 
 **Interpretation.** 128 KB → 135 KB is noise. 128 KB → 380 KB on a **versioned** invitation is a
 media-pipeline issue. HTML high-priority `src` is not the painted file.
@@ -588,8 +573,7 @@ Storage.
 ### Critical requests and critical bytes
 
 **Definition.** Requests and bytes needed to reach first meaningful paint / LCP. This is **not** the
-count of unique URLs in the HTML (Renata 40, Romina 54), which includes lazy gallery, maps, and
-unused srcset candidates.
+count of unique URLs in the HTML, which includes lazy gallery images and unused srcset candidates.
 
 **Why it matters.** Extra **critical** CSS/JS/fonts/hero compete with LCP. Extra lazy gallery URLs
 usually do not.
@@ -600,10 +584,8 @@ the LCP source. Do not label HTML inventories or hero GETs as “bytes before LC
 
 **Enforcement.** Informational.
 
-**Baseline.** Eager imgs in HTML: 3 on both Renata and Romina. Lazy: 8 vs 29.
-
-**Interpretation.** Treating 54 Romina URLs as “54 critical requests” would mis-blame lazy gallery
-and map tiles.
+**Interpretation.** Treating every unique HTML URL as a critical request would mis-blame lazy
+gallery images.
 
 **Example.** An extra render-blocking CSS file in `<head>` is a critical-path issue; a 29th lazy
 gallery thumb is not.
@@ -875,20 +857,12 @@ monitoring farms, or a performance history database unless a confirmed operation
 Speed Insights, provider dashboards, logs, and these tests cannot cover.
 
 Do not implement, as part of this model, Romina Cloudinary migration, general font subsetting or
-rehosting, demo prerender, map-tile cuts, gallery redesign, preload strategy, or image-quality
-retuning. Those need evidence from the metrics above that the benefit justifies the work, and must
-preserve the cache freshness contract.
+rehosting, demo prerender, gallery redesign, preload strategy, or image-quality retuning. Those need
+evidence from the metrics above that the benefit justifies the work, and must preserve the cache
+freshness contract.
 
 Unnecessary global Parisienne injection on invitation routes is already removed; keep loading it
 only for profiles that actually use the family (currently Romina).
-
-### Prepared Romina media
-
-Romina uses preserved role-budgeted WebP derivatives for the mobile hero and the final gallery image
-(social asset key), with explicit original delivery dimensions. The preparation pipeline validates
-these bytes without re-encoding; source JPEGs remain intact. Regression:
-tests/unit/romina-prepared-media.test.ts. Deployment alone does not publish these new managed asset
-references; verify the guarded content release independently.
 
 ### Memories cleanup operation budget
 

@@ -1,67 +1,60 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import GuestGroupMetrics from '@/components/dashboard/guests/GuestGroupMetrics';
+import { computeGroupMetrics } from '@/components/dashboard/guests/guest-presenter';
 import { makeGuest } from '@tests/helpers/guest-factory';
 
+const metrics = computeGroupMetrics([
+	makeGuest({ guestId: '1', tags: ['Familia'], maxAllowedAttendees: 4 }),
+	makeGuest({
+		guestId: '2',
+		tags: ['Familia'],
+		attendanceStatus: 'confirmed',
+		maxAllowedAttendees: 2,
+		attendeeCount: 2,
+	}),
+	makeGuest({ guestId: '3', tags: [], attendanceStatus: 'confirmed', attendeeCount: 4 }),
+]);
+
 describe('GuestGroupMetrics', () => {
-	it('renders per-group totals and pending counts', () => {
-		const { container } = render(
-			<GuestGroupMetrics
-				items={[
-					makeGuest({ guestId: '1', tags: ['Familia'], attendanceStatus: 'pending' }),
-					makeGuest({ guestId: '2', tags: ['Familia'], attendanceStatus: 'confirmed' }),
-					makeGuest({ guestId: '3', tags: ['VIP'], attendanceStatus: 'pending' }),
-				]}
-			/>,
-		);
+	it('shows confirmed people of assigned passes per group, "Sin grupo" last', () => {
+		render(<GuestGroupMetrics metrics={metrics} activeGroup="all" onSelectGroup={jest.fn()} />);
 
-		expect(screen.getByText('Familia')).toBeInTheDocument();
-		expect(screen.getByText('VIP')).toBeInTheDocument();
-		const countEls = container.querySelectorAll('.guest-group-metrics__count');
-		expect(countEls[0]).toHaveTextContent('2 invitaciones');
-		expect(countEls[1]).toHaveTextContent('1 invitación');
-		expect(container.querySelector('.guest-group-metrics__pending')).toHaveTextContent(
-			'1 pendiente',
-		);
+		fireEvent.click(screen.getByRole('button', { name: /Por grupo/ }));
+		const rows = screen.getAllByRole('button', { pressed: false });
+		expect(rows[0]).toHaveTextContent('Familia2 de 6');
+		expect(rows[0]).toHaveTextContent('4 sin respuesta');
+		expect(rows[1]).toHaveTextContent('Sin grupo4 de 4');
+		expect(rows[1]).toHaveTextContent('Todos respondieron');
 	});
 
-	it('renders nothing when items list is empty', () => {
-		const { container } = render(<GuestGroupMetrics items={[]} />);
+	it('filters the list by tapping a group, and clears on a second tap', () => {
+		const onSelectGroup = jest.fn();
+		const { rerender } = render(
+			<GuestGroupMetrics metrics={metrics} activeGroup="all" onSelectGroup={onSelectGroup} />,
+		);
+		fireEvent.click(screen.getByRole('button', { name: /Por grupo/ }));
+		fireEvent.click(screen.getByRole('button', { name: /^Familia/ }));
+		expect(onSelectGroup).toHaveBeenLastCalledWith('Familia');
+
+		rerender(
+			<GuestGroupMetrics
+				metrics={metrics}
+				activeGroup="Familia"
+				onSelectGroup={onSelectGroup}
+			/>,
+		);
+		fireEvent.click(screen.getByRole('button', { name: /^Familia/ }));
+		expect(onSelectGroup).toHaveBeenLastCalledWith('all');
+	});
+
+	it('renders nothing when groups are not in use', () => {
+		const { container } = render(
+			<GuestGroupMetrics
+				metrics={computeGroupMetrics([makeGuest({ tags: [] })])}
+				activeGroup="all"
+				onSelectGroup={jest.fn()}
+			/>,
+		);
 		expect(container).toBeEmptyDOMElement();
-	});
-
-	it('includes "Sin grupo" for guests with no tags', () => {
-		const { container } = render(
-			<GuestGroupMetrics
-				items={[
-					makeGuest({ guestId: '1', tags: [] }),
-					makeGuest({ guestId: '2', tags: ['system:public'] }),
-				]}
-			/>,
-		);
-
-		expect(screen.getByText('Sin grupo')).toBeInTheDocument();
-		expect(container.querySelector('.guest-group-metrics__count')).toHaveTextContent(
-			'2 invitaciones',
-		);
-	});
-
-	it('does not show pending count when none are pending', () => {
-		const { container } = render(
-			<GuestGroupMetrics
-				items={[
-					makeGuest({
-						guestId: '1',
-						tags: ['VIP'],
-						attendanceStatus: 'confirmed',
-					}),
-				]}
-			/>,
-		);
-
-		expect(screen.getByText('VIP')).toBeInTheDocument();
-		expect(container.querySelector('.guest-group-metrics__count')).toHaveTextContent(
-			'1 invitación',
-		);
-		expect(container.querySelector('.guest-group-metrics__pending')).toBeNull();
 	});
 });

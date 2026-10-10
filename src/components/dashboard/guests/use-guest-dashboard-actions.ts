@@ -5,7 +5,8 @@ import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { UpdateGuestDTO } from '@/lib/dashboard/dto/guests';
 import { getReminderEligibleGuests } from '@/components/dashboard/guests/reminder-eligibility';
-import { getBatchCandidates } from '@/components/dashboard/guests/guest-presenter';
+import { isSystemTag } from '@/lib/guests/guest-tags';
+import { getBatchCandidates, isGuestToSend } from '@/components/dashboard/guests/guest-presenter';
 import type {
 	ReminderAudience,
 	ReminderSettings,
@@ -32,9 +33,7 @@ function findNextPendingGuest(
 			(item) => item.guestId !== currentGuestId,
 		);
 	}
-	return items.find(
-		(item) => item.deliveryStatus === 'generated' && item.guestId !== currentGuestId,
-	);
+	return items.find((item) => isGuestToSend(item) && item.guestId !== currentGuestId);
 }
 
 export interface GuestFormPayload {
@@ -99,7 +98,7 @@ export const useGuestDashboardActions = ({
 
 	const openNextGeneratedGuest = useCallback(() => {
 		const currentItems = itemsRef.current;
-		const next = currentItems.find((item) => item.deliveryStatus === 'generated');
+		const next = currentItems.find(isGuestToSend);
 		if (!next) return;
 		setQueueGuestIds(null);
 		setModalMode('send-pending');
@@ -374,12 +373,8 @@ export const useGuestDashboardActions = ({
 						(g) => g.guestId === savedItem!.guestId,
 					);
 					const nextGuest =
-						currentItems
-							.slice(currentIndex + 1)
-							.find((g) => g.deliveryStatus === 'generated') ||
-						currentItems
-							.slice(0, currentIndex)
-							.find((g) => g.deliveryStatus === 'generated');
+						currentItems.slice(currentIndex + 1).find(isGuestToSend) ||
+						currentItems.slice(0, currentIndex).find(isGuestToSend);
 
 					if (savedItem.waShareUrl) {
 						window.open(savedItem.waShareUrl, '_blank', 'noopener,noreferrer');
@@ -519,14 +514,34 @@ export const useGuestDashboardActions = ({
 		[setItems, setNotification],
 	);
 
+	// Groups are the visible tags; system tags (e.g. public RSVP) are kept untouched.
+	const handleUpdateGroups = useCallback(
+		async (guestId: string, groups: string[]) => {
+			const current = itemsRef.current.find((entry) => entry.guestId === guestId);
+			const systemTags = (current?.tags ?? []).filter(isSystemTag);
+			try {
+				const updated = await guestsApi.update(guestId, {
+					tags: [...systemTags, ...groups],
+				});
+				setItems((prev) =>
+					prev.map((entry) =>
+						entry.guestId === guestId ? { ...entry, ...updated } : entry,
+					),
+				);
+			} catch (error) {
+				const message =
+					error instanceof Error ? error.message : 'No se pudo cambiar el grupo.';
+				setNotification({ message, type: 'warning' });
+			}
+		},
+		[setItems, setNotification],
+	);
+
 	const editFirstGuestShortcut = useCallback(() => {
 		if (items.length > 0) openEditModal(items[0]);
 	}, [items, openEditModal]);
 
-	const pendingGuests = useMemo(
-		() => items.filter((item) => item.deliveryStatus === 'generated'),
-		[items],
-	);
+	const pendingGuests = useMemo(() => items.filter(isGuestToSend), [items]);
 
 	return {
 		batchFlowKind,
@@ -548,6 +563,7 @@ export const useGuestDashboardActions = ({
 		handleSaveInvitation,
 		handleSubmit,
 		handleToggleBrandingRemoval,
+		handleUpdateGroups,
 		importModalOpen,
 		isNextActionActive,
 		modalMode,

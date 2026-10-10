@@ -878,37 +878,6 @@ export function resolveHostedMutationFlags(input: {
 	};
 }
 
-/**
- * Reset draft status to 'draft' and return the revision used by publish_invitation_atomic.
- * Prior successful publishes leave status='approved', which the RPC rejects.
- */
-export function prepareDraftForPublication(
-	targetDbUrl: string,
-	invitationId: string,
-): { draftId: string; draftUpdatedAt: string } {
-	runPsql(
-		`update public.invitation_content_drafts set status = 'draft', updated_at = now() where invitation_project_id = '${invitationId}'::uuid and deleted_at is null;`,
-		targetDbUrl,
-	);
-	const selectDraftRes = runPsql(
-		`select id, updated_at::text from public.invitation_content_drafts where invitation_project_id = '${invitationId}'::uuid and deleted_at is null order by updated_at desc limit 1;`,
-		targetDbUrl,
-		{ tuplesOnly: true },
-	);
-	const draftParts = selectDraftRes.stdout
-		.trim()
-		.split('|')
-		.map((s) => s.trim());
-	const draftId = draftParts[0];
-	const draftUpdatedAt = draftParts[1]?.split('\n')[0]?.trim();
-	if (!draftId || !draftUpdatedAt) {
-		throw new Error(
-			`PUBLISH_DRAFT_MISSING: no invitation_content_drafts row for invitation ${invitationId}`,
-		);
-	}
-	return { draftId, draftUpdatedAt };
-}
-
 /** Revalidates the draft revision immediately before an apply phase can write. */
 export function assertDraftRevisionUnchanged(
 	targetDbUrl: string,
@@ -1014,11 +983,52 @@ function upsertAssetRows(
 	return count;
 }
 
-function executePublicationRpcCall(
+/**
+ * Draft upsert as one statement pair: revive/replace the existing row, or insert when the
+ * invitation has no draft row at all. Safe inside a transaction.
+ */
+function upsertDraftSql(
+	targetInvitationId: string,
+	targetDraftContent: Record<string, unknown>,
+	existingDraft: Record<string, unknown> | null,
+): string {
+	const content = `${sqlLiteral(JSON.stringify(targetDraftContent))}::jsonb`;
+	const draftId = existingDraft ? (existingDraft.id as string) : randomUUID();
+	return (
+		`update public.invitation_content_drafts set status = 'draft', content = ${content}, submission_id = null, updated_at = now(), deleted_at = null where invitation_project_id = '${targetInvitationId}'::uuid;\n` +
+		`insert into public.invitation_content_drafts (id, invitation_project_id, submission_id, content, status) select '${draftId}'::uuid, '${targetInvitationId}'::uuid, null, ${content}, 'draft' where not exists (select 1 from public.invitation_content_drafts where invitation_project_id = '${targetInvitationId}'::uuid);`
+	);
+}
+
+/**
+ * One psql transaction: optional draft upsert, the draft reset that publish_invitation_atomic
+ * requires, and the publish RPC bound to the revision produced inside the same transaction
+ * (`\gset`). Any failure rolls everything back, so the target never keeps a divergent draft.
+ */
+export function publishDraftAtomically(params: DatabaseUpsertParams, upsertDraft: boolean): void {
+	const { targetDbUrl, targetInvitationId, targetDraftContent, existingDraft } = params;
+	const rpcSql = buildPublicationRpcSql(params, ":'draft_id'", ":'draft_updated_at'");
+	const script = [
+		'begin;',
+		upsertDraft ? upsertDraftSql(targetInvitationId, targetDraftContent, existingDraft) : null,
+		`update public.invitation_content_drafts set status = 'draft', updated_at = now() where invitation_project_id = '${targetInvitationId}'::uuid and deleted_at is null returning id, updated_at::text as updated_at \\gset draft_`,
+		rpcSql,
+		'commit;',
+	]
+		.filter((line): line is string => line !== null)
+		.join('\n');
+	const result = runPsql(script, targetDbUrl, { tuplesOnly: true });
+	if (!result.stdout.includes('publish_invitation_atomic')) {
+		throw new Error('Publication RPC failed to return a result.');
+	}
+}
+
+/** Reads the live rows the RPC guards against and renders the call with the given draft bindings. */
+function buildPublicationRpcSql(
 	params: DatabaseUpsertParams,
-	finalDraftId: string,
-	finalDraftUpdatedAt: string,
-): void {
+	draftIdSql: string,
+	draftUpdatedAtSql: string,
+): string {
 	const { targetDbUrl, targetInvitationId, slug, eventType, targetPublishedContent } = params;
 	const liveInvRes = runPsql(
 		`select row_to_json(t) from (select id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, archived_at from public.invitations where id = '${targetInvitationId}'::uuid) t;`,
@@ -1048,10 +1058,7 @@ function executePublicationRpcCall(
 		},
 		livePub?.content as Record<string, unknown> | undefined,
 	);
-	const rpcSql = `select row_to_json(t) from (select publish_invitation_atomic(p_invitation_id => '${targetInvitationId}'::uuid, p_draft_id => '${finalDraftId}'::uuid, p_expected_draft_updated_at => '${finalDraftUpdatedAt}'::timestamptz, p_expected_published_version => ${expectedPublishedVersion ?? 'null'}, p_public_metadata_hash => ${sqlLiteral(publicMetadataHash)}, p_projection_hash => ${sqlLiteral(hashPublicationProjection(targetPublishedContent))}, p_idempotency_key => '${randomUUID()}'::uuid, p_slug => ${sqlLiteral(slug)}, p_event_type => ${sqlLiteral(eventType)}, p_is_demo => false, p_content => ${sqlLiteral(JSON.stringify(targetPublishedContent))}::jsonb)) t;`;
-	if (!runPsql(rpcSql, targetDbUrl, { tuplesOnly: true }).stdout.trim()) {
-		throw new Error('Publication RPC failed to return a result.');
-	}
+	return `select row_to_json(t) from (select publish_invitation_atomic(p_invitation_id => '${targetInvitationId}'::uuid, p_draft_id => ${draftIdSql}::uuid, p_expected_draft_updated_at => ${draftUpdatedAtSql}::timestamptz, p_expected_published_version => ${expectedPublishedVersion ?? 'null'}, p_public_metadata_hash => ${sqlLiteral(publicMetadataHash)}, p_projection_hash => ${sqlLiteral(hashPublicationProjection(targetPublishedContent))}, p_idempotency_key => '${randomUUID()}'::uuid, p_slug => ${sqlLiteral(slug)}, p_event_type => ${sqlLiteral(eventType)}, p_is_demo => false, p_content => ${sqlLiteral(JSON.stringify(targetPublishedContent))}::jsonb)) t;`;
 }
 
 // eslint-disable-next-line complexity -- Hosted adapter applies one verified plan across related DB resources while preserving target-owned fields.
@@ -1123,24 +1130,13 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 		);
 	}
 
-	if (shouldUpsertDraft) {
-		const draftId = existingDraft ? (existingDraft.id as string) : randomUUID();
-		const resetDraftSql = `update public.invitation_content_drafts set status = 'draft', content = ${sqlLiteral(JSON.stringify(targetDraftContent))}::jsonb, submission_id = null, updated_at = now(), deleted_at = null where invitation_project_id = '${targetInvitationId}'::uuid;`;
-		if (runPsql(resetDraftSql, targetDbUrl).stdout.includes('UPDATE 0') || !existingDraft) {
-			runPsql(
-				`insert into public.invitation_content_drafts (id, invitation_project_id, submission_id, content, status) values ('${draftId}'::uuid, '${targetInvitationId}'::uuid, null, ${sqlLiteral(JSON.stringify(targetDraftContent))}::jsonb, 'draft');`,
-				targetDbUrl,
-			);
-		}
-		count++;
-	}
-
 	if (shouldPublish) {
-		const { draftId, draftUpdatedAt } = prepareDraftForPublication(
-			targetDbUrl,
-			targetInvitationId,
-		);
-		executePublicationRpcCall(params, draftId, draftUpdatedAt);
+		// Draft upsert, draft reset and publish succeed or fail together: an interrupted apply must
+		// never leave a divergent unpublished draft behind.
+		publishDraftAtomically(params, shouldUpsertDraft);
+		count += shouldUpsertDraft ? 2 : 1;
+	} else if (shouldUpsertDraft) {
+		runPsql(upsertDraftSql(targetInvitationId, targetDraftContent, existingDraft), targetDbUrl);
 		count++;
 	}
 

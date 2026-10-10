@@ -2,12 +2,7 @@
 
 **Status:** Active
 
-**Last Updated:** 2026-10-06
-
-**Change Note:** Integration into `develop` uses merge commits (`--no-ff`), so each task stays a
-separate, revertible unit and published history is never rewritten. Rebase is optional and only for
-branches that were never pushed. Release pull request into `main` and fast-forward back-merge are
-unchanged.
+**Last Updated:** 2026-10-09
 
 ## Overview
 
@@ -21,7 +16,8 @@ release versioning and changelog policy are owned by [`release-process.md`](rele
 
 - `develop` is the trunk. It accepts direct pushes from Integration that only add commits (merge
   commits included); Repository CI runs on every push and is the integration gate. It blocks
-  deletion and non-fast-forward (history-rewriting) updates.
+  deletion and non-fast-forward (history-rewriting) updates. Pull requests into `develop`
+  (Dependabot updates) also run Repository CI before they are merged.
 - `main` is production. It changes only through the release pull request from `develop`, which
   requires `Repository Policy` and `Application Suite`. Direct commits and pushes are blocked.
 - Task branches (`feat/*`, `fix/*`, `candidate/*`) are ephemeral. Persistent lane branches are
@@ -69,15 +65,20 @@ mutation authorization.
 
    ```bash
    git pull --ff-only origin develop
-   git merge --no-ff <task-branch>
+   git merge --ff-only <task-branch>   # task with exactly one commit
+   git merge --no-ff <task-branch>     # task with two or more commits
    git push origin develop
    ```
 
-   Keep Git's default message (`Merge branch '<task-branch>' into develop`). Each merge commit is
-   one task: `git log --first-parent develop` lists tasks, and `git revert -m 1 <merge>` reverts one
-   as a unit. Resolve conflicts deliberately in the merge (never automatic `ours`/`theirs`), then
-   run the applicable checks before pushing. Pushing a task branch to `origin` is optional; CI does
-   not run on task branches.
+   A single-commit task lands as that commit (rebase the never-pushed task branch onto `develop`
+   first if `--ff-only` is refused); a merge commit around one commit only adds noise. A
+   multi-commit task keeps Git's default merge message
+   (`Merge branch '<task-branch>' into develop`). Either way `git log --first-parent develop` lists
+   one entry per task, reverted as a unit with `git revert <commit>` or `git revert -m 1 <merge>`.
+   Group a multi-step program into one task branch per phase with several commits rather than one
+   task per commit. Resolve conflicts deliberately in the merge (never automatic `ours`/`theirs`),
+   then run the applicable checks before pushing. Pushing a task branch to `origin` is optional; CI
+   does not run on task branches.
 
    History rules: never force-push or rewrite `develop`, `main` or any branch already on `origin`.
    Rebase is allowed only for a branch that was never pushed. Squash merges are not used, because
@@ -247,7 +248,7 @@ judgment.
    Exact-SHA visual certification belongs to Repository CI on the `develop` push;
    `pnpm validate:prepush` is an optional local preview.
 4. `Repository CI` (`.github/workflows/commit-validation.yml`) runs on pushes to `develop`, on pull
-   requests targeting `main`, and by manual dispatch. See the
+   requests targeting `develop` or `main`, and by manual dispatch. See the
    [validation procedure](validation-procedures.md#remote-ci-coverage-and-efficiency) for scope and
    the distinction from `pnpm run ci`.
 
@@ -270,8 +271,8 @@ git pull --ff-only origin develop
 git merge --ff-only origin/main
 git push origin develop
 
-# 3. Tag the deployed main SHA
-git tag -a vX.Y.Z -m "Release vX.Y.Z — summary"
+# 3. Tag the deployed main SHA (checkpoint policy: release-process.md)
+git tag -a vX.Y.Z -m "vX.Y.Z - Short description of checkpoint"
 git push origin vX.Y.Z
 ```
 

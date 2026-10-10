@@ -66,5 +66,7 @@ export interface UserEventMembershipChangeResponse {
 	eventId: string;
 	action: 'assign' | 'remove';
 	membershipRole: 'owner' | 'manager' | null;
+	/** Role held before this change; null when the user had no active membership. */
+	previousMembershipRole: 'owner' | 'manager' | null;
 	changedAt: string;
 }

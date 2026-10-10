@@ -1,113 +1,180 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import GuestStatusOverview from '@/components/dashboard/guests/GuestStatusOverview';
-import type { GuestStatusCounts } from '@/components/dashboard/guests/guest-presenter';
+import { computeGuestSummary } from '@/components/dashboard/guests/guest-presenter';
+import { makeGuest } from '@tests/helpers/guest-factory';
 
-const counts: GuestStatusCounts = {
-	total: 5,
-	toSend: 2,
-	waiting: 2,
-	confirmed: 1,
-	declined: 0,
-	confirmedPeople: 3,
-};
+const summary = computeGuestSummary([
+	makeGuest({ guestId: 'a', deliveryStatus: 'generated', maxAllowedAttendees: 2 }),
+	makeGuest({ guestId: 'b', deliveryStatus: 'shared', maxAllowedAttendees: 3 }),
+	makeGuest({ guestId: 'c', deliveryStatus: 'shared', isViewed: true, maxAllowedAttendees: 4 }),
+	makeGuest({
+		guestId: 'd',
+		deliveryStatus: 'shared',
+		attendanceStatus: 'confirmed',
+		maxAllowedAttendees: 4,
+		attendeeCount: 3,
+	}),
+	makeGuest({
+		guestId: 'e',
+		deliveryStatus: 'shared',
+		attendanceStatus: 'declined',
+		maxAllowedAttendees: 2,
+	}),
+]);
 
 describe('GuestStatusOverview', () => {
-	it('shows the plain-language summary and one segment per status', () => {
+	it('leads with confirmed people out of assigned passes', () => {
 		render(
-			<GuestStatusOverview counts={counts} activeFilter="all" onFilterChange={jest.fn()} />,
+			<GuestStatusOverview summary={summary} activeFilter="all" onFilterChange={jest.fn()} />,
 		);
 
-		expect(screen.getByText('invitaciones por enviar')).toBeInTheDocument();
-		expect(screen.getByText('1 ya confirmó.')).toBeInTheDocument();
-		const group = screen.getByRole('group', { name: 'Mostrar' });
-		expect(group.querySelectorAll('button')).toHaveLength(3);
-		expect(screen.queryByRole('button', { name: /Ver todos/ })).not.toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Personas confirmadas' })).toBeInTheDocument();
+		expect(screen.getByText('de 15 pases · 20 %')).toBeInTheDocument();
+		expect(
+			screen.getByRole('img', {
+				name: 'De 15 pases. Confirmadas: 3, No asistirán: 2, Lugares no usados: 1, Sin respuesta: 9',
+			}),
+		).toBeInTheDocument();
 	});
 
-	it('toggles a segment filter and offers a way back to all guests', () => {
+	it('shows four invitation stages that toggle the list filter', () => {
 		const onFilterChange = jest.fn();
 		const { rerender } = render(
 			<GuestStatusOverview
-				counts={counts}
+				summary={summary}
 				activeFilter="all"
 				onFilterChange={onFilterChange}
 			/>,
 		);
 
-		fireEvent.click(screen.getByRole('button', { name: /Esperando/ }));
-		expect(onFilterChange).toHaveBeenLastCalledWith('confirmation-pending');
+		const group = screen.getByRole('group', { name: 'Filtrar invitaciones por etapa' });
+		expect(group.querySelectorAll('button')).toHaveLength(4);
+		expect(screen.getByRole('button', { name: 'Respondidas, 2' })).toHaveTextContent(
+			'1 sí · 1 no',
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Abiertas, sin responder, 1' }));
+		expect(onFilterChange).toHaveBeenLastCalledWith('opened');
 
 		rerender(
 			<GuestStatusOverview
-				counts={counts}
-				activeFilter="confirmation-pending"
+				summary={summary}
+				activeFilter="opened"
 				onFilterChange={onFilterChange}
 			/>,
 		);
-		expect(screen.getByRole('button', { name: /Esperando/ })).toHaveAttribute(
-			'aria-pressed',
-			'true',
-		);
-
-		fireEvent.click(screen.getByRole('button', { name: /Esperando/ }));
-		expect(onFilterChange).toHaveBeenLastCalledWith('all');
-
-		fireEvent.click(screen.getByRole('button', { name: 'Ver todos los invitados (5)' }));
+		const opened = screen.getByRole('button', { name: 'Abiertas, sin responder, 1' });
+		expect(opened).toHaveAttribute('aria-pressed', 'true');
+		fireEvent.click(opened);
 		expect(onFilterChange).toHaveBeenLastCalledWith('all');
 	});
 
-	it('hides the segments when there are no guests yet', () => {
+	it('offers the reminder as the next step when reminders apply', () => {
+		const onRemind = jest.fn();
 		render(
 			<GuestStatusOverview
-				counts={{ ...counts, total: 0, toSend: 0, waiting: 0, confirmed: 0 }}
+				summary={summary}
 				activeFilter="all"
 				onFilterChange={jest.fn()}
-			/>,
-		);
-
-		expect(screen.getByText('Todavía no tiene invitados')).toBeInTheDocument();
-		expect(screen.queryByRole('group', { name: 'Mostrar' })).not.toBeInTheDocument();
-	});
-});
-
-describe('GuestStatusOverview — optional segments', () => {
-	it('adds reminder and message segments with the reminder hint when they apply', () => {
-		const onFilterChange = jest.fn();
-		render(
-			<GuestStatusOverview
-				counts={counts}
-				activeFilter="all"
-				onFilterChange={onFilterChange}
 				reminderCount={2}
-				withMessageCount={1}
 				reminderHint="Faltan 10 días · 2 invitados sin confirmar"
+				withMessageCount={1}
+				onRemind={onRemind}
 			/>,
 		);
 
-		const group = screen.getByRole('group', { name: 'Mostrar' });
-		expect(group.querySelectorAll('button')).toHaveLength(5);
+		expect(screen.getByText(/sin respuesta \(7 pases\)/)).toBeInTheDocument();
 		expect(screen.getByText('Faltan 10 días · 2 invitados sin confirmar')).toBeInTheDocument();
-
-		fireEvent.click(screen.getByRole('button', { name: 'Por recordar, 2' }));
-		expect(onFilterChange).toHaveBeenLastCalledWith('reminder-pending');
-
-		fireEvent.click(screen.getByRole('button', { name: 'Con mensaje, 1' }));
-		expect(onFilterChange).toHaveBeenLastCalledWith('with-message');
+		fireEvent.click(screen.getByRole('button', { name: 'Recordar por WhatsApp' }));
+		expect(onRemind).toHaveBeenCalled();
+		expect(screen.getByRole('button', { name: 'Por recordar, 2' })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Con mensaje, 1' })).toBeInTheDocument();
 	});
 
-	it('omits the optional segments and hint when their counts are zero', () => {
+	it('explains when the reminder reaches more invitations than the unanswered ones', () => {
 		render(
 			<GuestStatusOverview
-				counts={counts}
+				summary={summary}
 				activeFilter="all"
 				onFilterChange={jest.fn()}
-				reminderCount={0}
-				withMessageCount={0}
-				reminderHint="Faltan 10 días"
+				reminderCount={3}
+				onRemind={jest.fn()}
+			/>,
+		);
+
+		expect(
+			screen.getByText('El recordatorio llegará a 3 invitaciones según su configuración.'),
+		).toBeInTheDocument();
+	});
+
+	it('scopes the next step to the selected group', () => {
+		const groupSummary = computeGuestSummary([
+			makeGuest({ guestId: 'f1', deliveryStatus: 'shared', maxAllowedAttendees: 3 }),
+		]);
+		render(
+			<GuestStatusOverview
+				summary={summary}
+				activeFilter="all"
+				onFilterChange={jest.fn()}
+				reminderCount={2}
+				nextStepScope={{ label: 'Familia', summary: groupSummary, reminderCount: 1 }}
+				onRemind={jest.fn()}
+			/>,
+		);
+
+		expect(screen.getByText(/Familia: 1 invitación enviada sigue/)).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Recordar a 1 de Familia' })).toBeInTheDocument();
+	});
+
+	it('suggests sending pending invitations when no reminder applies', () => {
+		const onSendPending = jest.fn();
+		render(
+			<GuestStatusOverview
+				summary={summary}
+				activeFilter="all"
+				onFilterChange={jest.fn()}
+				onSendPending={onSendPending}
 			/>,
 		);
 
 		expect(screen.queryByRole('button', { name: /Por recordar/ })).not.toBeInTheDocument();
-		expect(screen.queryByText('Faltan 10 días')).not.toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Enviar invitaciones' }));
+		expect(onSendPending).toHaveBeenCalled();
+	});
+
+	it('shows the RSVP deadline and copies a shareable summary', async () => {
+		const writeText = jest.fn().mockResolvedValue(undefined);
+		Object.assign(navigator, { clipboard: { writeText } });
+		render(
+			<GuestStatusOverview
+				summary={summary}
+				activeFilter="all"
+				onFilterChange={jest.fn()}
+				rsvpDeadline="15 de noviembre"
+				eventTitle="Boda"
+			/>,
+		);
+
+		expect(screen.getByText('15 de noviembre')).toBeInTheDocument();
+		await act(async () => {
+			fireEvent.click(screen.getByRole('button', { name: 'Compartir resumen' }));
+		});
+		expect(writeText).toHaveBeenCalledWith(expect.stringContaining('3 personas confirmadas'));
+		expect(screen.getByText('Resumen copiado')).toBeInTheDocument();
+	});
+
+	it('guides the host when there are no invitations yet', () => {
+		render(
+			<GuestStatusOverview
+				summary={computeGuestSummary([])}
+				activeFilter="all"
+				onFilterChange={jest.fn()}
+			/>,
+		);
+
+		expect(screen.getByText('Todavía no tiene invitaciones')).toBeInTheDocument();
+		expect(
+			screen.queryByRole('group', { name: 'Filtrar invitaciones por etapa' }),
+		).not.toBeInTheDocument();
 	});
 });

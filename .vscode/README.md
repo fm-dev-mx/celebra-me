@@ -19,10 +19,13 @@ Colores ANSI**:
   - `Pruebas (test)` — Pruebas unitarias Jest (`beaker`, verde)
   - `Pruebas cambiadas (test:changed)` — Pruebas en archivos modificados (`beaker`, verde)
   - `Linter JS/TS (lint)` — Análisis con ESLint (`search`, amarillo)
-  - `Validar cambios (validate:changed)` — Validador incremental pre-commit (`verified`, azul)
+  - `Validar cambios (validate:changed)` — Validación de los archivos cambiados del árbol de trabajo
+    (`verified`, azul)
   - `Consola BD (dbs)` — CLI de bases de datos (`database`, cian)
-  - `Publicar invitación (release)` — Publicación de versiones (`rocket`, magenta)
-  - `Aplicar Producción (prod:apply)` — Parches SQL en producción (`shield`, rojo)
+  - `Publicar invitación (release)` — `invitation:release` en Local/Preview; requiere `--status`,
+    `--dry-run` o `--apply` (el menú guiado es `pnpm dbs`) (`rocket`, magenta)
+  - `Aplicar Producción (prod:apply)` — Plan/apply de Producción solo para el owner (`--schema`,
+    `--slug`, `--patch`) (`shield`, rojo)
   - `Migraciones BD (db:migrate)` — Migraciones de base de datos (`database`, cian)
 - **7 Tareas Especializadas Bajo Demanda:** Disponibles desde la paleta de tareas
   (`Ctrl + Shift + P` -> `Tasks: Run Task`).

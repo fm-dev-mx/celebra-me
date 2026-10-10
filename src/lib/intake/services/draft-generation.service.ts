@@ -7,8 +7,6 @@ import {
 	updateDraftStatus,
 	upsertDraft,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
-import { createIntakeRequest } from '@/lib/intake/repositories/intake-request.repository';
-import { createIntakeSubmission } from '@/lib/intake/repositories/intake-submission.repository';
 import { mapBlockDataToDraftContent } from '@/lib/intake/services/draft-content-mapper';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
@@ -69,45 +67,6 @@ export async function createDraftRevision(invitationId: string): Promise<Invitat
 	if (draft.status === 'draft') return draft;
 	return updateDraftStatus(draft.id, 'draft');
 }
-
-/**
- * Creates a draft from admin-provided content by persisting through a real
- * intake submission. The submission is left as `in_progress` (not `approved`)
- * to distinguish it from client-submitted data. Intended for dashboard direct
- * editing only — not exposed via any client API.
- */
-export async function createDraftFromAdmin(
-	invitationId: string,
-	content: Record<string, unknown>,
-): Promise<InvitationContentDraft> {
-	const invitation = await findInvitationById(invitationId);
-	if (!invitation) {
-		throw new ApiError(404, 'not_found', 'Invitation not found.');
-	}
-
-	// Persist content through a real intake chain so it has a durable source.
-	// tokenHash prefix identifies this as admin-created vs client intake.
-	const request = await createIntakeRequest({
-		invitationId: invitationId,
-		tokenHash: 'admin-created-' + invitationId.slice(0, 8),
-		tokenCiphertext: '',
-		origin: 'internal',
-		enabledBlocks: [],
-		expiresAt: null,
-	});
-
-	const submission = await createIntakeSubmission({
-		intakeRequestId: request.id,
-		blockData: content,
-	});
-
-	return upsertDraft({
-		invitationId: invitationId,
-		submissionId: submission.id,
-		content,
-	});
-}
-
 export async function getDraft(invitationId: string): Promise<InvitationContentDraft | null> {
 	return findDraftByInvitationId(invitationId);
 }

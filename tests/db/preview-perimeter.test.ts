@@ -24,7 +24,7 @@ describe('Preview perimeter helpers', () => {
 			resolve(process.cwd(), 'scripts/db/migrate-policy-preview.ts'),
 			'utf8',
 		);
-		expect(source).toMatch(/assertPreviewDbUrl/);
+		expect(source).toMatch(/requirePreviewDbUrl/);
 		expect(source).toMatch(/assertCleanGitWorktree/);
 		expect(source).toMatch(/targetReleaseShaOverride/);
 		expect(source).not.toMatch(/CELEBRA_TARGET_RELEASE_SHA/);

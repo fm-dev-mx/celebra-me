@@ -110,7 +110,7 @@
 }
 
 .guest-list-section__count {
-	color: var(--color-text-emphasis);
+	color: var(--color-text-primary);
 	font-variant-numeric: tabular-nums;
 }
 
@@ -148,6 +148,33 @@
 		outline: 2px solid var(--dashboard-focus-ring);
 		outline-offset: -2px;
 	}
+}
+
+/* List rows: the open button fills the row; copy sits beside it (no hover needed) */
+.guest-row__open {
+	display: flex;
+	flex: 1;
+	align-items: center;
+	gap: 0.75rem;
+	min-width: 0;
+	min-height: 48px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+
+	&:focus-visible {
+		outline: 2px solid var(--dashboard-focus-ring);
+		outline-offset: 2px;
+		border-radius: 8px;
+	}
+}
+
+.guest-row__copy {
+	flex-shrink: 0;
 }
 
 .guest-row__status {
@@ -213,7 +240,7 @@
 
 .guest-row__chevron {
 	flex-shrink: 0;
-	color: var(--color-text-emphasis);
+	color: var(--color-text-secondary);
 	transition: transform 0.2s ease;
 }
 

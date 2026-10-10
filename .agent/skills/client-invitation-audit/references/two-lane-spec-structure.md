@@ -27,16 +27,14 @@ A table per content section. For each, state current value, proposed value, and 
 
 - `theme.preset` change
 - `_assetSlug` (confirm or change; never equal demo `_assetSlug`)
-- `envelope.revealVariant` + required cover fields
-- `sectionStyles.*.variant` entries
-- `hero.variant`
+- `envelope.variant` or `envelope.revealVariant` + required cover fields
+- each section's `variant` (never `sectionStyles`, which canonical publication rejects)
+- typed `composition.intersections`
+- profile custom properties (palette and rhythm tokens only)
 
-### Lane A inheritance reset (required when overriding a shared preset)
-
-List preset/inherited properties the profile must explicitly reset so Lane A does not fight the
-base theme (examples: absolute/inset positioning, frosted/backdrop bands, café/sepia image filters,
-mix-blend, competing hero metadata stacks). Link face-safe hero guidance in `frontend-design` when
-hero crops/type are in scope.
+A profile never resets inherited layout, positioning, or filters. A preset behavior that does not
+fit is a Lane B item. Link face-safe hero guidance in `frontend-design` when hero crops/type are in
+scope.
 
 Then separate sections for:
 
@@ -67,8 +65,9 @@ For each candidate theme change, document:
 - Cost estimate (low / medium / high)
 - Priority (P1 if shared bug, P2 if polish, P3 if deferred)
 
-**Hard rule:** If a proposed change does not demonstrably improve BOTH the client route AND the
-matching demo, it belongs in Lane A as a client-scoped SCSS override, not Lane B.
+**Hard rule:** Lane B changes must be reusable and proven on a demo without the client's profile or
+assets. If a change is only a value, it is a Lane A profile token; if it needs selectors or
+geometry, it is a new registered variant, never profile SCSS.
 
 ## Files Changed
 
