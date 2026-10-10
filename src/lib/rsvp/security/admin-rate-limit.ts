@@ -36,12 +36,6 @@ const RATE_LIMITS = {
 	// Local-only canonical status dashboard (manual refresh, read-only probes).
 	'admin:estado': { maxHits: 6, windowSec: 60 },
 
-	// Claim code operations follow the same operational profile.
-	'claimcodes:list': { maxHits: 60, windowSec: 60 },
-	'claimcodes:create': { maxHits: 20, windowSec: 60 },
-	'claimcodes:update': { maxHits: 30, windowSec: 60 },
-	'claimcodes:delete': { maxHits: 10, windowSec: 60 },
-	'claimcodes:validate': { maxHits: 30, windowSec: 60 },
 	// Event memory spaces (guest photo/video QR) administration.
 	'memories:list': { maxHits: 60, windowSec: 60 },
 	'memories:create': { maxHits: 20, windowSec: 60 },

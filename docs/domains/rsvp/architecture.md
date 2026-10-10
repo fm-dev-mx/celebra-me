@@ -7,7 +7,8 @@ This document describes the current RSVP and host-dashboard architecture in the 
 The RSVP domain covers:
 
 - host authentication and elevated session handling
-- dashboard CRUD flows for guests, events, users, and claim codes
+- dashboard CRUD flows for guests, events, and users (the owner creates every host account; there is
+  no self-registration)
 - guest invitation context, RSVP submission, and invitation view telemetry
 - Supabase-backed repositories, services, and security helpers under `src/lib/rsvp/**`
 
@@ -18,7 +19,6 @@ The RSVP domain covers:
 - `/dashboard/invitados`
 - `/dashboard/admin`
 - `/dashboard/usuarios`
-- `/dashboard/claimcodes`
 - `/dashboard/mfa-setup`
 
 ### Guest-Facing Pages
@@ -36,7 +36,6 @@ short code is available and emits the short URL when `shortId` exists.
 ### Auth APIs
 
 - `POST /api/auth/login-host`
-- `POST /api/auth/register-host`
 - `GET /api/auth/session`
 - `POST /api/auth/logout`
 - `POST /api/auth/sync-session`
@@ -52,9 +51,6 @@ refresh endpoint.
 - `POST /api/dashboard/guests/bulk`
 - `GET /api/dashboard/guests/export.csv`
 - `GET /api/dashboard/events`
-- `GET|POST /api/dashboard/claimcodes`
-- `PATCH|DELETE /api/dashboard/claimcodes/:claimCodeId`
-- `POST /api/dashboard/claimcodes/validate`
 - `GET /api/dashboard/admin/events`
 - `PATCH|DELETE /api/dashboard/admin/events/:eventId`
 - `GET /api/dashboard/admin/users`
@@ -99,8 +95,7 @@ live tree.
 1. A host signs in through the auth APIs.
 2. Protected dashboard routes require a valid synced session.
 3. Dashboard islands call the dashboard APIs under `/api/dashboard/**`.
-4. Services and repositories resolve event ownership, claim-code access, guest CRUD, and audit
-   writes.
+4. Services and repositories resolve event ownership, guest CRUD, and audit writes.
 5. The guests dashboard refreshes through its active client/query behavior; there is no SSE route in
    the current API contract.
 

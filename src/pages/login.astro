@@ -37,29 +37,7 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 				<p>Gestione su evento en un solo lugar.</p>
 			</div>
 
-			<div class="auth-tabs" role="tablist" aria-label="Opciones de autenticación">
-				<button
-					id="tab-login"
-					class="is-active"
-					type="button"
-					role="tab"
-					aria-selected="true"
-					aria-controls="panel-login"
-				>
-					Ya tengo cuenta
-				</button>
-				<button
-					id="tab-register"
-					type="button"
-					role="tab"
-					aria-selected="false"
-					aria-controls="panel-register"
-				>
-					Soy cliente nuevo
-				</button>
-			</div>
-
-			<section id="panel-login" class="auth-panel" role="tabpanel" aria-labelledby="tab-login">
+			<section id="panel-login" class="auth-panel">
 				<form id="login-form" class="auth-form" method="post" novalidate>
 					<div class="auth-field">
 						<label for="login-method">¿Cómo desea ingresar?</label>
@@ -97,69 +75,9 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 				</form>
 			</section>
 
-			<section
-				id="panel-register"
-				class="auth-panel auth-panel--hidden"
-				role="tabpanel"
-				aria-labelledby="tab-register"
-				hidden
-			>
-				<form id="register-form" class="auth-form" method="post" novalidate>
-					<div class="auth-field">
-						<label for="register-method">¿Cómo desea ingresar?</label>
-						<select id="register-method" name="method">
-							<option value="password">Correo electrónico + contraseña</option>
-							<option value="magic_link">Magic Link</option>
-						</select>
-						<p id="register-method-help" class="auth-hint" aria-live="polite"></p>
-					</div>
-
-					<div class="auth-field">
-						<label for="register-email">Correo electrónico</label>
-						<input
-							id="register-email"
-							name="email"
-							type="email"
-							autocomplete="email"
-							placeholder="su-correo@ejemplo.com"
-						/>
-						<p id="register-email-error" class="field-error" aria-live="polite"></p>
-					</div>
-
-					<div id="register-password-wrap" class="auth-field">
-						<label for="register-password">Contraseña</label>
-						<input
-							id="register-password"
-							name="password"
-							type="password"
-							autocomplete="new-password"
-						/>
-						<p id="register-password-error" class="field-error" aria-live="polite"></p>
-					</div>
-
-					<div class="auth-field">
-						<label for="register-claim-code">Código de acceso</label>
-						<input
-							id="register-claim-code"
-							name="claimCode"
-							type="text"
-							placeholder="Ejemplo: CLAIM-2026"
-						/>
-						<p class="auth-hint">
-							Código compartido por el equipo de Celebra-me.
-						</p>
-						<p id="register-claim-code-error" class="field-error" aria-live="polite"></p>
-					</div>
-
-					<button id="register-submit" type="submit" class="auth-submit" disabled>
-						Crear cuenta y reclamar evento
-					</button>
-				</form>
-			</section>
-
 			<p id="auth-status" class="auth-status" role="status" aria-live="polite" tabindex="-1"></p>
 			<noscript>
-				<p>Para iniciar sesión o registrarse, active JavaScript en su navegador.</p>
+				<p>Para iniciar sesión, active JavaScript en su navegador.</p>
 			</noscript>
 		</article>
 	</section>

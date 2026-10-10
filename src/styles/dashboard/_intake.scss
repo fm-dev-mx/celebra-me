@@ -334,22 +334,6 @@
 	text-align: center;
 }
 
-.rsvp-panel__codes {
-	display: flex;
-	align-items: center;
-	gap: 0.375rem;
-	font-size: 0.875rem;
-}
-
-.rsvp-panel__codes-count {
-	font-weight: 700;
-	font-size: 1rem;
-}
-
-.rsvp-panel__codes-label {
-	color: var(--color-text-muted);
-}
-
 .rsvp-panel__actions {
 	display: flex;
 	flex-wrap: wrap;

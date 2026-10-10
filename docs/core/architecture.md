@@ -363,7 +363,6 @@ Celebra-me includes a dedicated RSVP and guest-management module for:
 - `/dashboard/invitados`
 - `/dashboard/memories`
 - `/dashboard/admin/recuerdos`
-- `/dashboard/claimcodes`
 - `/dashboard/usuarios`
 - `/dashboard/admin`
 - `/dashboard/mfa-setup`
@@ -384,11 +383,6 @@ Celebra-me includes a dedicated RSVP and guest-management module for:
 - `POST /api/dashboard/guests/:guestId/toggle-branding`
 - `GET /api/dashboard/guests/export.csv?eventId=...`
 - `GET /api/dashboard/events`
-- `GET /api/dashboard/claimcodes`
-- `POST /api/dashboard/claimcodes`
-- `PATCH /api/dashboard/claimcodes/:claimCodeId`
-- `DELETE /api/dashboard/claimcodes/:claimCodeId`
-- `POST /api/dashboard/claimcodes/validate`
 - `GET /api/dashboard/admin/events`
 - `PATCH /api/dashboard/admin/events/:eventId`
 - `GET /api/dashboard/admin/users`

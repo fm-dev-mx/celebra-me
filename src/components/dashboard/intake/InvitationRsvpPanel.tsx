@@ -89,13 +89,6 @@ const InvitationRsvpPanel: FC<Props> = ({ rsvpEvent }) => {
 					</div>
 				</div>
 
-				{rsvpEvent.claimCodeCount > 0 && (
-					<div className="rsvp-panel__codes">
-						<span className="rsvp-panel__codes-count">{rsvpEvent.claimCodeCount}</span>
-						<span className="rsvp-panel__codes-label">códigos de acceso</span>
-					</div>
-				)}
-
 				<div className="rsvp-panel__actions">
 					<a
 						href={`/dashboard/invitados?eventId=${rsvpEvent.id}`}

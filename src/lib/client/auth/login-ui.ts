@@ -7,10 +7,6 @@ export interface LoginFormState {
 	password: string;
 }
 
-export interface RegisterFormState extends LoginFormState {
-	claimCode: string;
-}
-
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function normalize(value: string): string {
@@ -54,22 +50,6 @@ export function validateLoginForm(input: LoginFormState): string | null {
 
 	if (input.method === 'password' && !normalize(input.password)) {
 		return 'Ingresa tu contrasena para continuar con este metodo.';
-	}
-
-	return null;
-}
-
-export function validateRegisterForm(input: RegisterFormState): string | null {
-	if (!normalize(input.email) || !isValidEmail(input.email)) {
-		return 'Escribe un correo valido para continuar.';
-	}
-
-	if (input.method === 'password' && !normalize(input.password)) {
-		return 'Ingresa tu contrasena para continuar con este metodo.';
-	}
-
-	if (!normalize(input.claimCode)) {
-		return 'Ingresa tu claimCode para continuar.';
 	}
 
 	return null;

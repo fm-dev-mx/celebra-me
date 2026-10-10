@@ -2,13 +2,9 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { sanitize } from '@/lib/rsvp/core/utils';
 import { getEnv } from '@/lib/server/env';
-import {
-	isCanonicalHostLoginAlias,
-	normalizeHostLoginAlias,
-} from '@/lib/auth/login-alias';
+import { isCanonicalHostLoginAlias, normalizeHostLoginAlias } from '@/lib/auth/login-alias';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const CLAIM_CODE_PATTERN = /^[A-Za-z0-9_-]{6,128}$/;
 
 export function normalizeEmail(value: unknown): string {
 	return sanitize(value, 320).toLowerCase();
@@ -25,10 +21,6 @@ export function sanitizePassword(value: unknown): string {
 
 export function sanitizeToken(value: unknown): string {
 	return sanitize(value, 4096);
-}
-
-export function sanitizeClaimCode(value: unknown): string {
-	return sanitize(value, 128);
 }
 
 export function assertValidEmail(email: string): void {
@@ -64,12 +56,6 @@ export function assertValidPassword(password: string): void {
 			'bad_request',
 			'La contraseña debe tener entre 8 y 200 caracteres.',
 		);
-	}
-}
-
-export function assertValidClaimCode(claimCode: string): void {
-	if (!claimCode || !CLAIM_CODE_PATTERN.test(claimCode)) {
-		throw new ApiError(400, 'bad_request', 'El código de invitación es inválido.');
 	}
 }
 

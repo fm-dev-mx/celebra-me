@@ -47,19 +47,12 @@ export const GET: APIRoute = async ({ request, params }) => {
 		let rsvpEvent = null;
 		if (event) {
 			const eventId = event.id;
-			const [guestRows, claimRows] = await Promise.all([
-				supabaseRestRequest<Array<{ attendance_status: string }>>({
-					pathWithQuery: `guest_invitations?select=attendance_status&event_id=eq.${encodeURIComponent(eventId)}&deleted_at=is.null`,
-					useServiceRole: true,
-				}),
-				supabaseRestRequest<Array<{ id: string }>>({
-					pathWithQuery: `event_claim_codes?select=id&event_id=eq.${encodeURIComponent(eventId)}&deleted_at=is.null`,
-					useServiceRole: true,
-				}),
-			]);
+			const guestRows = await supabaseRestRequest<Array<{ attendance_status: string }>>({
+				pathWithQuery: `guest_invitations?select=attendance_status&event_id=eq.${encodeURIComponent(eventId)}&deleted_at=is.null`,
+				useServiceRole: true,
+			});
 
 			const guests = Array.isArray(guestRows) ? guestRows : [];
-			const claimCodes = Array.isArray(claimRows) ? claimRows : [];
 
 			rsvpEvent = {
 				id: event.id,
@@ -71,7 +64,6 @@ export const GET: APIRoute = async ({ request, params }) => {
 				confirmedCount: guests.filter((g) => g.attendance_status === 'confirmed').length,
 				declinedCount: guests.filter((g) => g.attendance_status === 'declined').length,
 				pendingCount: guests.filter((g) => g.attendance_status === 'pending').length,
-				claimCodeCount: claimCodes.length,
 			};
 		}
 

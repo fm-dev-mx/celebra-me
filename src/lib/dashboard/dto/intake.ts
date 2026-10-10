@@ -103,7 +103,6 @@ export interface RsvpEventDTO {
 	confirmedCount: number;
 	declinedCount: number;
 	pendingCount: number;
-	claimCodeCount: number;
 }
 
 export interface InvitationDetailResponse {

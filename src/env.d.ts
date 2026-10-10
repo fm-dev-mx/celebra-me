@@ -69,7 +69,6 @@ interface ImportMetaEnv {
 	readonly META_TEST_EVENT_CODE: string;
 	readonly TRUST_DEVICE_SECRET: string;
 	readonly TRUST_DEVICE_MAX_AGE_DAYS: string;
-	readonly RSVP_CLAIM_CODE_PEPPER: string;
 	readonly UPSTASH_REDIS_REST_URL: string;
 	readonly UPSTASH_REDIS_REST_TOKEN: string;
 	readonly RSVP_V2_DISTRIBUTED_RATELIMIT: string;
