@@ -365,6 +365,24 @@ Three storage tiers, each with its own retention:
 Each goal is one task branch (`feat/engagement-*`), `pnpm validate:changed` → `pnpm type-check` →
 `pnpm run ci` before handoff.
 
+## 7.1 Current status (2026-10-10)
+
+- G0–G6 implemented on `feat/engagement-analytics` (one commit per goal, not pushed or integrated).
+- Verified: `pnpm validate:changed`, `pnpm type-check`, `pnpm db:disposable:test` (all pgTAP suites,
+  including `guest_engagement_events` and `invitation_engagement_snapshots`),
+  `pnpm test:db:rsvp-contracts`, `pnpm run ci` up to the Linux-only visual step, and
+  `pnpm validate:prepush` (Docker visual certification for d57a6be65, 334 e2e passed).
+- Not verified: dashboard rendering against a real database (Local lacks the migrations), cron in a
+  Vercel environment.
+- G7 remains: owner-authorized rollout (steps below) and, after a smoke-checked Production release,
+  the contract task (drop `/view` and `track_guest_invitation_view_public`, stop writing
+  `view_percentage` once unread, extend `scripts/db/schema-object-contract.ts` and
+  `mutation-schema-contract-query.ts`).
+- Local blocker: the persistent Local DB also has the unrelated pending contract migrations
+  `20261009230000`–`20261009230200`; `pnpm db:migrate` applies the whole pending set, so the
+  engagement migrations cannot reach Local until the owner applies or defers those.
+- Privacy copy (`src/pages/privacidad.astro`) needs owner/legal review before Production.
+
 ## 8. Rollout
 
 1. Disposable DB tests green → apply expand migration to persistent Local via guarded workflow.
