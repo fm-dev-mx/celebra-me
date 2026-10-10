@@ -1,11 +1,14 @@
 import type { APIRoute } from 'astro';
 import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { sanitize } from '@/lib/rsvp/core/utils';
-import { requireDashboardMutationAccess, requireDashboardSessionFromLocals } from '@/lib/rsvp/auth/authorization';
+import {
+	requireDashboardMutationAccess,
+	requireDashboardSessionFromLocals,
+} from '@/lib/rsvp/auth/authorization';
 import {
 	requireDashboardRateLimit,
 	validateGuestPhoneInput,
-} from '@/pages/api/dashboard/guests/dashboard-guests-lib';
+} from '@/lib/rsvp/core/dashboard-guests-lib';
 import {
 	createDashboardGuest,
 	listDashboardGuests,

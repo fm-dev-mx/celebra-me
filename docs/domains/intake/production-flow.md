@@ -170,7 +170,7 @@ before any write. The disposable pgTAP runner uses `ON_ERROR_STOP` and fails for
 or TAP assertion failures.
 
 For release evidence, reset the disposable database and run `run-tests`, `run-concurrency-test`,
-`run-stale-baseline-test`, `run-phase3-concurrency-test`, and `run-application-flow` through
+`run-stale-baseline-test`, `run-system-concurrency-test`, and `run-application-flow` through
 `scripts/db/disposable-test-env.ts`. The latter uses isolated PostgREST to exercise the service
 path; the database runners verify transaction contention, stale public-input rollback, overlapping
 Editor/managed/publication plans, and target-owned asset protection.

@@ -432,8 +432,6 @@ export const EXCLUDED_TABLES = [
 	'rsvp_audit_log',
 	'rsvp_channel_log',
 	'visitor_sessions',
-	'commercial_attribution_identity',
-	'commercial_analytics',
 ] as const;
 
 /**

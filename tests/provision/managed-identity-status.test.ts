@@ -1,5 +1,5 @@
 /**
- * goal2-identity-status.test.ts — Hermetic managed identity / option guards.
+ * managed-identity-status.test.ts — Hermetic managed identity / option guards.
  *
  * Pure decision helpers and update-option guards only. Disposable PostgreSQL
  * rekey wiring lives in `pnpm test:db:managed-contracts` (SQL + guard checks;
@@ -69,7 +69,10 @@ describe('Identity Rekey Contract & Target Guardrails (hermetic)', () => {
 		const decision = decideRekeyIdentity({
 			slug: 'alba-rosa-quinonez',
 			rekeyFrom: 'alba-rosa-quinonez',
-			sourceByOldSlug: { id: '11111111-2222-3333-4444-555555555555', slug: 'alba-rosa-quinonez' },
+			sourceByOldSlug: {
+				id: '11111111-2222-3333-4444-555555555555',
+				slug: 'alba-rosa-quinonez',
+			},
 			collisionByTargetSlug: null,
 		});
 		expect(decision.ok).toBe(false);

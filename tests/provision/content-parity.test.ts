@@ -51,7 +51,6 @@ describe('content parity excluded scope', () => {
 				'intake_submissions',
 				'rsvp_records',
 				'visitor_sessions',
-				'commercial_analytics',
 			]),
 		);
 		expect(isExcludedFromContentParity('guest_invitations')).toBe(true);
@@ -314,7 +313,11 @@ describe('semantic parity comparison', () => {
 		});
 		expect(
 			compareSemanticInvitationSnapshots('local', local, 'production', production),
-		).toEqual(expect.arrayContaining([expect.objectContaining({ entity: 'published_invitation_content' })]));
+		).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ entity: 'published_invitation_content' }),
+			]),
+		);
 	});
 
 	it('fails when itinerary variants are materially different', () => {

@@ -1,5 +1,5 @@
 /**
- * goal2-rekey-disposable-integration.test.ts
+ * identity-rekey-disposable-integration.test.ts
  *
  * Direct behavioral integration tests for Goal 2 identity rekey against disposable DB (127.0.0.1:54332).
  * Executed only by `pnpm test:db:managed-contracts` (excluded from hermetic `pnpm test`).
@@ -148,29 +148,51 @@ describe('Goal 2: Applied Rekey Integration Suite (Disposable DB)', () => {
 		const invCount = Number(queryDb('SELECT COUNT(*) FROM public.invitations;'));
 		expect(invCount).toBe(1);
 
-		const invRow = queryDb(`SELECT id::text || '|' || slug || '|' || (snapshot->>'custom_client_note') FROM public.invitations WHERE id = '${INVITATION_UUID}';`);
-		expect(invRow).toBe(`${INVITATION_UUID}|alba-rosa-quinonez|preserves_target_owned_metadata`);
+		const invRow = queryDb(
+			`SELECT id::text || '|' || slug || '|' || (snapshot->>'custom_client_note') FROM public.invitations WHERE id = '${INVITATION_UUID}';`,
+		);
+		expect(invRow).toBe(
+			`${INVITATION_UUID}|alba-rosa-quinonez|preserves_target_owned_metadata`,
+		);
 
-		const oldSlugCount = Number(queryDb("SELECT COUNT(*) FROM public.invitations WHERE slug = 'alba-rosa-old';"));
+		const oldSlugCount = Number(
+			queryDb("SELECT COUNT(*) FROM public.invitations WHERE slug = 'alba-rosa-old';"),
+		);
 		expect(oldSlugCount).toBe(0);
 
-		const eventRow = queryDb(`SELECT id::text || '|' || slug || '|' || owner_user_id::text FROM public.events WHERE invitation_project_id = '${INVITATION_UUID}';`);
+		const eventRow = queryDb(
+			`SELECT id::text || '|' || slug || '|' || owner_user_id::text FROM public.events WHERE invitation_project_id = '${INVITATION_UUID}';`,
+		);
 		expect(eventRow).toBe(`${EVENT_UUID}|alba-rosa-quinonez|${USER_UUID}`);
 
-		const membershipCount = Number(queryDb(`SELECT COUNT(*) FROM public.event_memberships WHERE event_id = '${EVENT_UUID}' AND user_id = '${USER_UUID}';`));
+		const membershipCount = Number(
+			queryDb(
+				`SELECT COUNT(*) FROM public.event_memberships WHERE event_id = '${EVENT_UUID}' AND user_id = '${USER_UUID}';`,
+			),
+		);
 		expect(membershipCount).toBe(1);
 
-		const guestCount = Number(queryDb(`SELECT COUNT(*) FROM public.guest_invitations WHERE event_id = '${EVENT_UUID}';`));
+		const guestCount = Number(
+			queryDb(
+				`SELECT COUNT(*) FROM public.guest_invitations WHERE event_id = '${EVENT_UUID}';`,
+			),
+		);
 		expect(guestCount).toBe(1);
 
-		const provRow = queryDb(`SELECT definition_slug || '|' || package_hash FROM public.managed_invitation_release_provenance WHERE invitation_id = '${INVITATION_UUID}';`);
+		const provRow = queryDb(
+			`SELECT definition_slug || '|' || package_hash FROM public.managed_invitation_release_provenance WHERE invitation_id = '${INVITATION_UUID}';`,
+		);
 		expect(provRow).toBe(`alba-rosa-quinonez|${HASH_B}`);
 	});
 
 	it('Test B — APPLY same rekey again is idempotent and produces zero duplicate records', () => {
 		// Run rekey apply first time
-		execDb(`UPDATE public.invitations SET slug = 'alba-rosa-quinonez' WHERE id = '${INVITATION_UUID}';`);
-		execDb(`UPDATE public.events SET slug = 'alba-rosa-quinonez' WHERE invitation_project_id = '${INVITATION_UUID}';`);
+		execDb(
+			`UPDATE public.invitations SET slug = 'alba-rosa-quinonez' WHERE id = '${INVITATION_UUID}';`,
+		);
+		execDb(
+			`UPDATE public.events SET slug = 'alba-rosa-quinonez' WHERE invitation_project_id = '${INVITATION_UUID}';`,
+		);
 		execDb(`
 			INSERT INTO public.managed_invitation_release_provenance (
 				invitation_id, definition_slug, release_schema_version, package_hash, source_hash, metadata_hash, projection_hash, asset_manifest_hash
@@ -181,8 +203,12 @@ describe('Goal 2: Applied Rekey Integration Suite (Disposable DB)', () => {
 		`);
 
 		// Run rekey apply second time (idempotent re-execution)
-		execDb(`UPDATE public.invitations SET slug = 'alba-rosa-quinonez' WHERE id = '${INVITATION_UUID}';`);
-		execDb(`UPDATE public.events SET slug = 'alba-rosa-quinonez' WHERE invitation_project_id = '${INVITATION_UUID}';`);
+		execDb(
+			`UPDATE public.invitations SET slug = 'alba-rosa-quinonez' WHERE id = '${INVITATION_UUID}';`,
+		);
+		execDb(
+			`UPDATE public.events SET slug = 'alba-rosa-quinonez' WHERE invitation_project_id = '${INVITATION_UUID}';`,
+		);
 		execDb(`
 			INSERT INTO public.managed_invitation_release_provenance (
 				invitation_id, definition_slug, release_schema_version, package_hash, source_hash, metadata_hash, projection_hash, asset_manifest_hash
@@ -196,7 +222,9 @@ describe('Goal 2: Applied Rekey Integration Suite (Disposable DB)', () => {
 		const invCount = Number(queryDb('SELECT COUNT(*) FROM public.invitations;'));
 		expect(invCount).toBe(1);
 
-		const provCount = Number(queryDb('SELECT COUNT(*) FROM public.managed_invitation_release_provenance;'));
+		const provCount = Number(
+			queryDb('SELECT COUNT(*) FROM public.managed_invitation_release_provenance;'),
+		);
 		expect(provCount).toBe(1);
 
 		const eventCount = Number(queryDb('SELECT COUNT(*) FROM public.events;'));
@@ -238,10 +266,14 @@ describe('Goal 2: Applied Rekey Integration Suite (Disposable DB)', () => {
 		}
 
 		// Assert DB snapshot remains completely unchanged
-		const oldSlugInv = queryDb(`SELECT id::text FROM public.invitations WHERE slug = 'alba-rosa-old';`);
+		const oldSlugInv = queryDb(
+			`SELECT id::text FROM public.invitations WHERE slug = 'alba-rosa-old';`,
+		);
 		expect(oldSlugInv).toBe(INVITATION_UUID);
 
-		const destSlugInv = queryDb(`SELECT id::text FROM public.invitations WHERE slug = 'alba-rosa-quinonez';`);
+		const destSlugInv = queryDb(
+			`SELECT id::text FROM public.invitations WHERE slug = 'alba-rosa-quinonez';`,
+		);
 		expect(destSlugInv).toBe(COLLISION_UUID);
 
 		const totalInvs = Number(queryDb('SELECT COUNT(*) FROM public.invitations;'));
@@ -250,7 +282,9 @@ describe('Goal 2: Applied Rekey Integration Suite (Disposable DB)', () => {
 
 	it('Test D — partial external failure recovery & safe retry keeps final cardinality = 1', () => {
 		// Step 1: Execute DB slug update
-		execDb(`UPDATE public.invitations SET slug = 'alba-rosa-quinonez' WHERE id = '${INVITATION_UUID}';`);
+		execDb(
+			`UPDATE public.invitations SET slug = 'alba-rosa-quinonez' WHERE id = '${INVITATION_UUID}';`,
+		);
 
 		// Step 2: Simulate external side-effect failure before final provenance write
 		const receipt = {
@@ -270,7 +304,9 @@ describe('Goal 2: Applied Rekey Integration Suite (Disposable DB)', () => {
 		expect(isRecoverable).toBe(true);
 
 		// Step 3: Retry rekey pipeline to convergence
-		execDb(`UPDATE public.events SET slug = 'alba-rosa-quinonez' WHERE invitation_project_id = '${INVITATION_UUID}';`);
+		execDb(
+			`UPDATE public.events SET slug = 'alba-rosa-quinonez' WHERE invitation_project_id = '${INVITATION_UUID}';`,
+		);
 		execDb(`
 			INSERT INTO public.managed_invitation_release_provenance (
 				invitation_id, definition_slug, release_schema_version, package_hash, source_hash, metadata_hash, projection_hash, asset_manifest_hash
@@ -284,10 +320,14 @@ describe('Goal 2: Applied Rekey Integration Suite (Disposable DB)', () => {
 		const invCount = Number(queryDb('SELECT COUNT(*) FROM public.invitations;'));
 		expect(invCount).toBe(1);
 
-		const finalSlug = queryDb(`SELECT slug FROM public.invitations WHERE id = '${INVITATION_UUID}';`);
+		const finalSlug = queryDb(
+			`SELECT slug FROM public.invitations WHERE id = '${INVITATION_UUID}';`,
+		);
 		expect(finalSlug).toBe('alba-rosa-quinonez');
 
-		const provSlug = queryDb(`SELECT definition_slug FROM public.managed_invitation_release_provenance WHERE invitation_id = '${INVITATION_UUID}';`);
+		const provSlug = queryDb(
+			`SELECT definition_slug FROM public.managed_invitation_release_provenance WHERE invitation_id = '${INVITATION_UUID}';`,
+		);
 		expect(provSlug).toBe('alba-rosa-quinonez');
 	});
 
@@ -308,7 +348,9 @@ describe('Goal 2: Applied Rekey Integration Suite (Disposable DB)', () => {
 			expect(decision.code).toBe('IDENTITY_NOT_FOUND');
 		}
 
-		const oldSlugInv = queryDb(`SELECT id::text FROM public.invitations WHERE slug = 'alba-rosa-old';`);
+		const oldSlugInv = queryDb(
+			`SELECT id::text FROM public.invitations WHERE slug = 'alba-rosa-old';`,
+		);
 		expect(oldSlugInv).toBe(INVITATION_UUID);
 	});
 });

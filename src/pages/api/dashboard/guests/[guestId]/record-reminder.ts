@@ -3,7 +3,7 @@ import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { sanitize } from '@/lib/rsvp/core/utils';
 import { requireDashboardMutationAccess } from '@/lib/rsvp/auth/authorization';
 import { recordGuestReminderSent } from '@/lib/rsvp/services/dashboard-guests.service';
-import { requireDashboardRateLimit } from '@/pages/api/dashboard/guests/dashboard-guests-lib';
+import { requireDashboardRateLimit } from '@/lib/rsvp/core/dashboard-guests-lib';
 
 export const POST: APIRoute = async ({ params, request, url, locals, cookies }) => {
 	try {
