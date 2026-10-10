@@ -1,0 +1,290 @@
+{
+    "eventType": "xv",
+    "isDemo": true,
+    "templateId": "xv-storybook-lilac",
+    "_assetSlug": "demo-xv-enchanted-rose",
+    "visualProfileId": "demo-xv-storybook-lilac",
+    "title": "XV Años — Isabela Montiel Ruiz (Storybook)",
+    "description": "Una invitación de cuento en papel lila y oro que se vuelve noche de linternas.",
+    "theme": {
+        "fontFamily": "serif",
+        "preset": "storybook-lilac"
+    },
+    "sectionOrder": [
+        "quote",
+        "family",
+        "countdown",
+        "location",
+        "itinerary",
+        "gallery",
+        "gifts",
+        "personalizedAccess",
+        "rsvp",
+        "thankYou"
+    ],
+    "hero": {
+        "presentation": {
+            "venueIndex": 0
+        },
+        "name": "Isabela",
+        "label": "Mis XV Años",
+        "date": "2027-03-20T12:00:00.000Z",
+        "backgroundImage": "gallery07",
+        "focalPoint": "50% 35%",
+        "focalPointMobile": "50% 35%",
+        "variant": "bleed-portrait"
+    },
+    "quote": {
+        "text": "Hay sueños que esperan quince años para encender su luz."
+    },
+    "family": {
+        "variant": "standard",
+        "presentation": "text-only",
+        "parents": {
+            "father": "Rodrigo Montiel Arce",
+            "mother": "Lucía Ruiz Salcedo"
+        },
+        "labels": {
+            "sectionTitle": "Con la bendición de Dios",
+            "sectionSubtitle": "",
+            "parentsTitle": "Mis padres",
+            "godparentsTitle": "Mis padrinos",
+            "sectionMessage": "Y el amor de mi familia, tengo el honor de invitarle a celebrar mis quince años."
+        },
+        "godparents": [
+            {
+                "name": "Andrés Salcedo Rivas",
+                "role": "Padrino"
+            },
+            {
+                "name": "Paola Rivas Ortega",
+                "role": "Madrina"
+            }
+        ]
+    },
+    "countdown": {
+        "variant": "written-days",
+        "title": "Faltan",
+        "footerText": "para ver las linternas",
+        "presentationOptions": {
+            "dayUnit": "nights"
+        }
+    },
+    "location": {
+        "accessPolicy": {
+            "visibility": "public"
+        },
+        "variant": "program-sheet",
+        "mapStyle": "minimal",
+        "introHeading": "Dónde y cuándo",
+        "introLede": "Ubicación ilustrativa de la demo",
+        "indicationsHeading": "Código de vestimenta",
+        "presentationOptions": {
+            "showCalendarLinks": true,
+            "indicationsLayout": "enclosure"
+        },
+        "indications": [
+            {
+                "iconName": "DressCode",
+                "styleVariant": "default",
+                "title": "Formal",
+                "text": "Caballeros, traje. Damas, vestido largo o de cóctel."
+            },
+            {
+                "iconName": "DressCode",
+                "styleVariant": "reserved",
+                "title": "Lila",
+                "text": "Reservado para la quinceañera; le agradecemos elegir otro tono."
+            },
+            {
+                "iconName": "Forbidden",
+                "styleVariant": "default",
+                "text": "Con mucho cariño, esta celebración es solo para adultos."
+            }
+        ],
+        "venues": [
+            {
+                "type": "ceremony",
+                "venueEvent": "Misa de acción de gracias",
+                "venueName": "Parroquia de San José",
+                "address": "Av. Juárez 210, Centro, Querétaro, Qro.",
+                "city": "Querétaro",
+                "date": "2027-03-20",
+                "time": "18:00",
+                "isVisible": true
+            },
+            {
+                "type": "reception",
+                "venueEvent": "Recepción",
+                "venueName": "Jardín Los Naranjos",
+                "address": "Carretera a San Miguel km 4, Querétaro, Qro.",
+                "city": "Querétaro",
+                "date": "2027-03-20",
+                "time": "20:00",
+                "isVisible": true
+            }
+        ]
+    },
+    "itinerary": {
+        "variant": "timeline-paper",
+        "title": "La noche",
+        "items": [
+            {
+                "iconName": "Church",
+                "label": "Misa",
+                "time": "18:00",
+                "description": "Acción de gracias en la parroquia."
+            },
+            {
+                "iconName": "Reception",
+                "label": "Recepción",
+                "time": "20:00",
+                "description": "Bienvenida en el jardín."
+            },
+            {
+                "iconName": "Waltz",
+                "label": "Vals",
+                "time": "21:00",
+                "description": "Bajo las linternas."
+            },
+            {
+                "iconName": "Dinner",
+                "label": "Cena",
+                "time": "21:45",
+                "description": "Cena en familia."
+            },
+            {
+                "iconName": "Party",
+                "label": "Baile",
+                "time": "23:00",
+                "description": "Hasta que se apague la última linterna."
+            }
+        ]
+    },
+    "gallery": {
+        "variant": "mirrored-mosaic",
+        "eyebrow": "",
+        "title": "Antes de la noche",
+        "subtitle": "Retratos de los días que esperaron esta fecha.",
+        "items": [
+            {
+                "image": "gallery02",
+                "alt": "Isabela con vestido rosa en un salón iluminado con velas.",
+                "focalPoint": "50% 25%"
+            },
+            {
+                "image": "gallery01",
+                "alt": "Isabela con vestido rosa entre flores, al anochecer."
+            },
+            {
+                "image": "gallery03",
+                "alt": "Isabela sentada en una escalinata con vestido rosa."
+            },
+            {
+                "image": "gallery09",
+                "alt": "Isabela sentada en un sillón con vestido rosa.",
+                "focalPoint": "50% 30%"
+            },
+            {
+                "image": "gallery04",
+                "alt": "Isabela sentada sobre los escalones, sonriendo."
+            },
+            {
+                "image": "gallery06",
+                "alt": "Isabela junto a una ventana con luz de velas."
+            }
+        ]
+    },
+    "gifts": {
+        "variant": "standard",
+        "title": "Regalos",
+        "presentation": "legend-only",
+        "subtitle": "Su presencia es nuestro mejor regalo. Si desea tener un detalle, habrá lluvia de sobres durante la recepción."
+    },
+    "rsvp": {
+        "variant": "reply-card",
+        "title": "Confirme su asistencia",
+        "subcopy": "Su respuesta nos ayuda a preparar cada detalle de esta noche.",
+        "guestCap": 2,
+        "accessMode": "hybrid",
+        "confirmationMode": "api",
+        "personalizedAccess": {
+            "variant": "reply-card",
+            "title": "Su lugar en el reino",
+            "subtitle": "Hemos reservado estos lugares en su honor.",
+            "footerText": "Confirme a continuación para reservar sus lugares"
+        },
+        "labels": {
+            "name": "Su nombre",
+            "notesPlaceholder": "Escriba un mensaje para Isabela…"
+        },
+        "confirmationMessage": "Gracias por confirmar. Nos vemos bajo las linternas."
+    },
+    "thankYou": {
+        "variant": "portrait-keepsake",
+        "image": "thankYouPortrait",
+        "focalPoint": "50% 30%",
+        "message": "Gracias por ser parte de mi historia. Nos vemos bajo las linternas.",
+        "closingName": "Isabela"
+    },
+    "interludes": [
+        {
+            "image": "heroDesktop",
+            "afterSection": "family",
+            "alt": "Isabela con vestido rosa en un salón de castillo iluminado con velas.",
+            "height": "medium",
+            "focalPoint": "50% 40%",
+            "focalPointDesktop": "50% 40%"
+        },
+        {
+            "image": "gallery05",
+            "afterSection": "countdown",
+            "alt": "Isabela sentada en una escalinata al anochecer.",
+            "height": "medium",
+            "presentation": "framed"
+        }
+    ],
+    "envelope": {
+        "sealStyle": "wax",
+        "sealIcon": "sunburst",
+        "sealInitials": "I",
+        "revealVariant": "storybook-lanterns",
+        "cardLabel": "Mis XV Años",
+        "cardName": "Isabela",
+        "cardTagline": "Érase una vez una noche de linternas",
+        "envelopeName": "Isabela",
+        "guestLabel": "Para",
+        "microcopy": "Toque el sello para abrir"
+    },
+    "sharing": {
+        "ogImage": "gallery07",
+        "shareMessages": {
+            "invitation": "Hola {name}, le comparto la invitación para {eventTitle}: {inviteUrl}",
+            "reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}"
+        }
+    },
+    "navigation": [
+        {
+            "label": "Confirmar",
+            "href": "#rsvp"
+        }
+    ],
+    "composition": {
+        "ornaments": "storybook-lanterns",
+        "intersections": {
+            "family": {
+                "family": "arch",
+                "source": "quote"
+            },
+            "countdown": {
+                "family": "atmospheric-blend",
+                "source": "interlude-after-family"
+            }
+        }
+    },
+    "eventTiming": {
+        "localDateTime": "2027-03-20T18:00",
+        "timeZone": "America/Mexico_City",
+        "startsAtUtc": "2027-03-21T00:00:00.000Z"
+    }
+}

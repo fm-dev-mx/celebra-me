@@ -1,0 +1,3 @@
+// Storybook lilac: atmosphere lives in preset tokens and structure in registered variants; the
+// theme shell adds only token blocks scoped to section kinds (night band, header, reply card).
+@use '../themes/sections/theme-shell/storybook-lilac' as theme-shell-storybook-lilac;

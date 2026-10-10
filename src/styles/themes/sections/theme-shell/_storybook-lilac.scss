@@ -1,0 +1,110 @@
+// Storybook lilac, theme-wide token blocks that need section DOM knowledge: the quote's own
+// component defaults, the header over the night, the night band itself (a remap of the semantic
+// color bridge per section kind, from the countdown on) and the reply card printed inside it.
+// Custom properties only; geometry stays with the section bases and registered variants.
+
+.theme-preset--storybook-lilac {
+	// The quote section declares its own component defaults, so its tokens are set on it.
+	.quote-section {
+		--quote-bg: var(--storybook-paper);
+		--quote-text-color: var(--color-violet-ink);
+		--quote-author-color: var(--color-gold-ink);
+		--quote-accent-color: var(--color-leaf-gold);
+		--quote-padding-block: clamp(4.5rem, 12vh, 7.5rem);
+		--quote-content-max-width: 34rem;
+		--quote-content-font: var(--font-display);
+		--quote-content-size: clamp(1.55rem, 4.4vw, 2.35rem);
+		--quote-content-line-height: 1.35;
+		--quote-content-letter-spacing: 0;
+		--quote-divider-display: none;
+		--quote-ornament-color: var(--color-leaf-gold);
+		--quote-ornament-opacity: 0.6;
+		--quote-texture-bg: none;
+		--quote-texture-opacity: 0;
+		--quote-content-style: italic;
+	}
+
+	// Header over the night: cream links, candle hover.
+	.header-base {
+		--header-bg-scrolled: rgb(var(--color-violet-night-rgb) / 92%);
+		--header-border-color: rgb(var(--color-candle-gold-rgb) / 18%);
+		--header-nav-title-color: var(--color-candle-cream);
+		--header-nav-color: var(--color-candle-cream);
+		--header-nav-color-transparent: var(--color-candle-cream);
+		--header-nav-hover-color: var(--color-candle-gold);
+		--header-nav-shadow-transparent: 0 1px 6px rgb(var(--color-violet-night-rgb) / 34%);
+		--header-nav-cta-bg: rgb(var(--color-candle-cream-rgb) / 10%);
+		--header-nav-cta-color: var(--color-candle-cream);
+		--header-nav-cta-border: rgb(var(--color-candle-gold-rgb) / 50%);
+		--header-nav-cta-hover-bg: rgb(var(--color-candle-gold-rgb) / 18%);
+		--header-nav-cta-hover-color: var(--color-candle-cream);
+		--header-nav-cta-hover-border: rgb(var(--color-candle-gold-rgb) / 70%);
+		--mobile-drawer-bg: rgb(var(--color-violet-night-rgb) / 97%);
+		--mobile-drawer-border: rgb(var(--color-candle-gold-rgb) / 18%);
+		--mobile-drawer-link-color: var(--color-candle-cream);
+		--mobile-drawer-link-hover: var(--color-candle-gold);
+		--mobile-drawer-cta-bg: var(--color-candle-gold);
+		--mobile-drawer-cta-color: var(--color-violet-night);
+		--hamburger-color: var(--color-candle-cream);
+		--hamburger-color-menu-open: var(--color-candle-cream);
+	}
+
+	// Night band: from the countdown on, every section kind (and every framed print) reads
+	// against the night. Arch joins paint the night color, so a day section above closes on the
+	// silhouette of a door.
+	.invitation-section-wrapper:is(
+		[data-section-kind='countdown'],
+		[data-section-kind='location'],
+		[data-section-kind='itinerary'],
+		[data-section-kind='gallery'],
+		[data-section-kind='gifts'],
+		[data-section-kind='personalized-access'],
+		[data-section-kind='rsvp'],
+		[data-section-kind='thankYou']
+	),
+	.invitation-interlude[data-presentation='framed'],
+	.invitation-footer {
+		--section-band-paper: var(--storybook-night);
+		--intersection-surface: var(--color-violet-night);
+		--intersection-surface-fill: var(--storybook-night);
+		--intersection-blend: radial-gradient(
+			ellipse 140% 100% at 50% 0%,
+			rgb(var(--color-candle-gold-rgb) / 14%) 0%,
+			transparent 72%
+		);
+		--color-surface-primary: var(--color-violet-night);
+		--color-surface-primary-rgb: var(--color-violet-night-rgb);
+		--color-surface-secondary: var(--color-violet-midnight);
+		--color-surface-secondary-rgb: var(--color-violet-midnight-rgb);
+		--color-surface-soft: var(--color-violet-dusk);
+		--color-action-accent: var(--color-candle-gold);
+		--color-action-accent-rgb: var(--color-candle-gold-rgb);
+		--color-text-primary: var(--color-candle-cream);
+		--color-text-primary-rgb: var(--color-candle-cream-rgb);
+		--color-text-secondary: var(--color-night-lilac);
+		--color-text-secondary-rgb: var(--color-night-lilac-rgb);
+		--color-text-emphasis: var(--color-candle-gold);
+		--color-text-muted: var(--color-night-lilac);
+		--color-border-subtle: rgb(var(--color-candle-gold-rgb) / 18%);
+		--color-border-premium: rgb(var(--color-candle-gold-rgb) / 54%);
+		--color-ornament-gold: var(--color-candle-gold);
+	}
+
+	// The reply card is printed paper inside the night: its sections return to the day inks.
+	.personalized-access,
+	.rsvp-section {
+		--color-action-accent: var(--color-gold-ink);
+		--color-action-accent-rgb: var(--color-gold-ink-rgb);
+		--color-text-primary: var(--color-violet-ink);
+		--color-text-primary-rgb: var(--color-violet-ink-rgb);
+		--color-text-secondary: var(--color-violet-ink-soft);
+		--color-text-secondary-rgb: var(--color-violet-ink-soft-rgb);
+		--color-text-muted: var(--color-violet-ink-soft);
+		--color-border-subtle: rgb(var(--color-leaf-gold-rgb) / 24%);
+		--color-border-premium: rgb(var(--color-leaf-gold-rgb) / 58%);
+		--reply-card-ink: var(--color-violet-ink);
+		--reply-card-muted: var(--color-violet-ink-soft);
+		--reply-card-rule: rgb(var(--color-leaf-gold-rgb) / 55%);
+		--reply-card-accent: var(--color-gold-ink);
+	}
+}

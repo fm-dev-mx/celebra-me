@@ -25,6 +25,7 @@ export type EnvelopeSealIcon =
 	| 'wax-medallion'
 	| 'flower'
 	| 'shell'
+	| 'sunburst'
 	| 'special-edition';
 
 export const SEAL_ICON_MAP: Record<EnvelopeSealIcon, IconName> = {
@@ -36,6 +37,7 @@ export const SEAL_ICON_MAP: Record<EnvelopeSealIcon, IconName> = {
 	'wax-medallion': 'WaxMonogramSeal',
 	flower: 'FlowerSeal',
 	shell: 'ShellSeal',
+	sunburst: 'SunburstSeal',
 	'special-edition': 'Diamond',
 };
 
@@ -71,7 +73,11 @@ export interface EnvelopeSealInput {
  * Reveal variants that own the whole envelope skin and therefore replace the preset-driven
  * `data-variant` (and its reveal stylesheet) instead of layering on top of it.
  */
-const STANDALONE_REVEAL_VARIANTS = ['satin-filigree', 'seaside-lineart'] as const;
+const STANDALONE_REVEAL_VARIANTS = [
+	'satin-filigree',
+	'seaside-lineart',
+	'storybook-lanterns',
+] as const;
 type StandaloneRevealVariant = (typeof STANDALONE_REVEAL_VARIANTS)[number];
 
 function isStandaloneRevealVariant(value: unknown): value is StandaloneRevealVariant {
@@ -119,7 +125,7 @@ export function resolveSealStructure(input: EnvelopeSealInput = {}): SealStructu
 
 	if (
 		input.sealIcon &&
-		['boot', 'heart', 'flower', 'shell', 'special-edition'].includes(input.sealIcon)
+		['boot', 'heart', 'flower', 'shell', 'sunburst', 'special-edition'].includes(input.sealIcon)
 	) {
 		return { renderer: 'vector-icon', icon: input.sealIcon, initials };
 	}

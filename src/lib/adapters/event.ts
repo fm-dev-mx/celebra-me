@@ -352,6 +352,7 @@ function buildCountdownSectionData(context: AdaptationContext) {
 		targetSource: target.source,
 		eventTimeZone: data.eventTiming?.timeZone,
 		visibleUnits: resolveCountdownVisibleUnits(data.countdown?.presentationOptions),
+		dayUnit: data.countdown?.presentationOptions?.dayUnit,
 		variant,
 		isDemo: data.isDemo,
 	};

@@ -217,6 +217,9 @@ Invitation presets are reusable atmosphere packs (catalog SKUs), not per-invitat
 - `src/styles/themes/presets/_sacred-keepsake.scss`
 - `src/styles/themes/presets/_angelic-presence.scss`
 - `src/styles/themes/presets/_editorial-magazine.scss`
+- `src/styles/themes/presets/_storybook-lilac.scss` (lilac paper that turns into a violet night from
+  the countdown on; the night band is a per-section-kind token remap in
+  `themes/sections/theme-shell/_storybook-lilac.scss`, painted through `--section-band-paper`)
 
 Non-invitation presets are separate:
 

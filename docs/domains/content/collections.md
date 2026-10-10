@@ -50,6 +50,7 @@ Theme presets come from `src/lib/theme/theme-contract.ts`:
 - `editorial`
 - `editorial-magazine`
 - `angelic-presence`
+- `storybook-lilac`
 
 Section variants come from `src/lib/invitation/section-variants.ts`. Do not duplicate preset or
 variant literals in content-specific code.

@@ -1,14 +1,15 @@
 ---
-import type { CountdownUnit } from '@/lib/invitation/countdown-presentation';
-import { COUNTDOWN_UNITS } from '@/lib/invitation/countdown-presentation';
+import type { CountdownDayUnit, CountdownUnit } from '@/lib/invitation/countdown-presentation';
+import { COUNTDOWN_UNITS, resolveCountdownDayLabel } from '@/lib/invitation/countdown-presentation';
 
 interface Props {
 	targetIso: string;
 	isDemo?: boolean;
 	visibleUnits?: CountdownUnit[];
+	dayUnit?: CountdownDayUnit;
 }
 
-const { targetIso, isDemo, visibleUnits } = Astro.props;
+const { targetIso, isDemo, visibleUnits, dayUnit } = Astro.props;
 
 const targetDate = new Date(targetIso);
 const difference = targetDate.getTime() - Date.now();
@@ -23,7 +24,7 @@ const initialTimeLeft =
 		: { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
 const ALL_SEGMENTS = [
-	{ key: 'days' as const, label: 'Días', value: initialTimeLeft.days },
+	{ key: 'days' as const, label: resolveCountdownDayLabel(dayUnit), value: initialTimeLeft.days },
 	{ key: 'hours' as const, label: 'Horas', value: initialTimeLeft.hours },
 	{ key: 'minutes' as const, label: 'Minutos', value: initialTimeLeft.minutes },
 	{ key: 'seconds' as const, label: 'Segundos', value: initialTimeLeft.seconds },

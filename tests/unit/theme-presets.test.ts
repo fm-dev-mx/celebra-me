@@ -547,3 +547,63 @@ describe('Luxury hacienda interlude contract', () => {
 		expect(luxuryContent).not.toContain('--theme-image-filter-interlude');
 	});
 });
+
+describe('Storybook lilac theme isolation', () => {
+	const otherPresets = THEME_PRESETS.filter((preset) => preset !== 'storybook-lilac');
+	const storybookContent = fs.readFileSync(
+		path.join(presetsDir, '_storybook-lilac.scss'),
+		'utf8',
+	);
+
+	it('defines the expected theme root scope only', () => {
+		expect(getTopLevelSelectors(storybookContent)).toEqual(['.theme-preset--storybook-lilac']);
+	});
+
+	it('does not reference other registered presets', () => {
+		for (const preset of otherPresets) {
+			expect(hasPresetReference(storybookContent, preset)).toBe(false);
+		}
+	});
+
+	it('does not contain !important or event-specific content', () => {
+		expect(storybookContent).not.toContain('!important');
+		expect(storybookContent).not.toMatch(/\bamerica\b/i);
+		expect(storybookContent).not.toMatch(/\bXV\b/);
+		expect(storybookContent).not.toMatch(/events[/-]/i);
+	});
+
+	it('styles interludes, family and location through the base contracts', () => {
+		expectInterludeContract(storybookContent);
+		expectFamilyContract(storybookContent);
+		expect(storybookContent).toContain('--location-bg');
+		expect(storybookContent).toContain('--location-indications-grid-template');
+	});
+
+	it('paints its night band through tokens on section kinds, never through geometry', () => {
+		const shell = fs.readFileSync(
+			path.join(projectRoot, 'src/styles/themes/sections/theme-shell/_storybook-lilac.scss'),
+			'utf8',
+		);
+		expect(shell).toContain("[data-section-kind='countdown']");
+		expect(shell).toContain('--section-band-paper');
+		const declarations = shell
+			.replace(/\/\/.*$/gm, '')
+			.split(/[;{}]/)
+			.map((part) => part.trim())
+			.filter((part) => /^[a-z-]+\s*:/.test(part));
+		expect(declarations.filter((part) => !part.startsWith('--'))).toEqual([]);
+	});
+
+	it('ships an entrypoint and a section bundle without preset-named section rules', () => {
+		const entry = fs.readFileSync(
+			path.join(projectRoot, 'src/styles/invitation-presets/storybook-lilac.scss'),
+			'utf8',
+		);
+		const bundle = fs.readFileSync(
+			path.join(projectRoot, 'src/styles/invitation-sections-by-preset/storybook-lilac.scss'),
+			'utf8',
+		);
+		expect(entry).toContain("@use '../themes/presets/storybook-lilac'");
+		expect(bundle).not.toContain('.theme-preset--storybook-lilac');
+	});
+});

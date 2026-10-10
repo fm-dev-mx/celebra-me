@@ -162,6 +162,12 @@ export const ICON_CATALOG = [
 		keywords: ['concha', 'sello', 'mar', 'playa'],
 	},
 	{
+		name: 'SunburstSeal',
+		label: 'Sello de sol',
+		category: 'decorative',
+		keywords: ['sol', 'sello', 'linterna', 'cuento'],
+	},
+	{
 		name: 'Sparkles',
 		label: 'Destacado',
 		category: 'decorative',

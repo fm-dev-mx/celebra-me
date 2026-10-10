@@ -3,6 +3,9 @@
 	background: var(--invitation-paper, none);
 }
 
+// Optional tonal-band ground behind one section (`--section-band-paper`, default none): a preset
+// paints a band (for example a night) across section kinds whose variants draw no background of
+// their own, without touching their geometry.
 .invitation-section-wrapper {
 	--intersection-depth: clamp(3rem, 7vw, 6.75rem);
 	--intersection-arch-height: clamp(2.75rem, 5vw, 5.5rem);
@@ -31,6 +34,8 @@
 		var(--intersection-band-ink);
 	--intersection-band-pattern: var(--intersection-band-checker);
 	--intersection-arch-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0 24V16.2C12.5 16.2 22.8 9.4 38 8.2C48.5 7.4 57 7.8 66.5 8.8C79 10.2 90.5 12.8 100 15.4V24Z'/%3E%3C/svg%3E");
+
+	background: var(--section-band-paper, none);
 }
 
 .invitation-section-wrapper[data-intersection='overlap'] {

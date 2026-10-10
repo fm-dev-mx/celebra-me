@@ -194,6 +194,11 @@ Shared capabilities must remain generic and configurable:
 - Promote profile behavior into shared theme architecture only after it proves reusable across
   invitations and can be expressed without client identity.
 
+Every section wrapper paints `--section-band-paper` (default `none`) behind its section. A preset
+uses it to carry one tonal band across section kinds whose variants draw no background, as
+`storybook-lilac` does for its night from the countdown on; arch joins into those sections take
+`--intersection-surface` and `--intersection-surface-fill` from the same band.
+
 ## Render-plan metadata contract
 
 Reusable mechanics are selected before rendering and copied onto stable wrapper attributes:

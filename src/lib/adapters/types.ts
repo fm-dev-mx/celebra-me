@@ -12,7 +12,7 @@ import type { IconName } from '@/lib/icons/icon-catalog';
 import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
 import type { RsvpResponseMessages } from '@/lib/invitation/rsvp-messages';
 import type { CountdownTargetSource } from '@/lib/time/event-time';
-import type { CountdownUnit } from '@/lib/invitation/countdown-presentation';
+import type { CountdownDayUnit, CountdownUnit } from '@/lib/invitation/countdown-presentation';
 import type { FamilyPresentation } from '@/lib/invitation/family-presentation';
 import type {
 	GalleryLayoutRole,
@@ -300,6 +300,7 @@ export interface InvitationViewModel {
 			footerText?: string;
 			ornament?: ImageAsset;
 			visibleUnits: CountdownUnit[];
+			dayUnit?: CountdownDayUnit;
 			variant: CountdownVariant;
 			/** Demo-only: if true, countdown uses a random target 30-60 days ahead */
 			isDemo?: boolean;

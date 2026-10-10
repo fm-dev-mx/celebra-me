@@ -165,6 +165,18 @@ invitation profiles.
   four thresholds — quote opening, family close, location close and the closing signature, where a
   shell rests on it. Generic dividers and flourishes are hidden rather than replaced by icons. CSS
   pseudo-elements only; static and never announced. Tuned through `--ornament-*`.
+- envelope.revealVariant storybook-lanterns: a letter from the tower. Lilac paper with a fine grain,
+  a gold hairline along the flap, a sparkle liner shown while the flap opens, a gold wax `sunburst`
+  seal with `sealInitials` pressed in, and a deckle-edged cream card with three rising paper
+  lanterns over a plait. Original line art, no characters. Profiles tune it only through optional
+  `--storybook-*` tokens. Proven on the unlisted `demo-xv-storybook-lilac`.
+- composition.ornaments storybook-lanterns: a plait with small flowers at the quote opening, family
+  close and location close; two fields of paper sky lanterns behind the countdown and one above the
+  closing print, drifting only without `prefers-reduced-motion`; a tower under the venues heading, a
+  flower sprig under the gallery heading, and the closing plait tied with a bow under the signature.
+  Ink follows `--color-ornament-gold`; tuned through `--ornament-*`.
+- countdown.presentationOptions.dayUnit nights: the day segment reads "noches" (same value) for
+  evening celebrations, e.g. "Faltan 43 noches".
 - interludes[].presentation framed: the whole photograph on paper inside a hairline double frame, so
   edge marks (watermarks, handwritten dates) are never cropped. Tuned through
   `--interlude-framed-*`.

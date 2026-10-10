@@ -4,7 +4,7 @@
 import '@/styles/invitation/_countdown.scss';
 import CountdownTimer from '@/components/invitation/CountdownTimer.astro';
 import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
-import type { CountdownUnit } from '@/lib/invitation/countdown-presentation';
+import type { CountdownDayUnit, CountdownUnit } from '@/lib/invitation/countdown-presentation';
 import type { CountdownVariant } from '@/lib/theme/theme-contract';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 
@@ -15,6 +15,7 @@ interface Props {
 	footerText?: string;
 	ornament?: ImageAsset;
 	visibleUnits?: CountdownUnit[];
+	dayUnit?: CountdownDayUnit;
 	variant: CountdownVariant;
 	isDemo?: boolean;
 }
@@ -26,6 +27,7 @@ const {
 	footerText,
 	ornament,
 	visibleUnits,
+	dayUnit,
 	variant,
 	isDemo = false,
 } = Astro.props;
@@ -70,7 +72,7 @@ const writtenDate = isWrittenDays ? formatWrittenDate(targetIso, eventTimeZone) 
 		<h2 class="countdown-title">{title}</h2>
 
 		<div class="countdown-timer-wrapper">
-			<CountdownTimer targetIso={targetIso} isDemo={isDemo} visibleUnits={timerUnits} />
+			<CountdownTimer targetIso={targetIso} isDemo={isDemo} visibleUnits={timerUnits} dayUnit={dayUnit} />
 		</div>
 
 		{isWrittenDays ? (

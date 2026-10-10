@@ -4,6 +4,7 @@ import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
 import SealIcon from '@/components/common/icons/invitation/SealIcon.astro';
 import CeremonialFiligree from './CeremonialFiligree.astro';
 import SeasideLineArt from './SeasideLineArt.astro';
+import StorybookLanternsArt from './StorybookLanternsArt.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import {
 	resolveEnvelopeDataVariant,
@@ -70,6 +71,7 @@ const sealPresentation = resolveSealPresentation({
 });
 
 const isSeaside = revealVariant === 'seaside-lineart';
+const isStorybook = revealVariant === 'storybook-lanterns';
 const isWaxRenderer = ['wax-organic', 'wax-medallion'].includes(sealPresentation.renderer);
 // Discrete seal-zone open cue (editorial, not a SaaS tooltip bubble).
 const sealHintText = tooltipText?.trim() || 'Toque el sello';
@@ -135,6 +137,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 							class="seal-icon"
 						/>
 						{revealVariant === 'satin-filigree' && <span class="envelope-crystal-initials" aria-hidden="true">{sealInitials}</span>}
+						{isStorybook && sealInitials && <span class="envelope-seal-monogram" aria-hidden="true">{sealInitials}</span>}
 						{
 							!isWaxRenderer && (
 								<div class="envelope-seal-button__pulse" aria-hidden="true"></div>
@@ -186,6 +189,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			showGuest={guestPlacement !== 'outside-envelope'}
 		>
 			{isSeaside && <SeasideLineArt slot="ornament" class="invitation-reveal-card__ornament" />}
+			{isStorybook && <StorybookLanternsArt slot="ornament" class="invitation-reveal-card__ornament" />}
 		</InvitationRevealCard>
 	</div>
 

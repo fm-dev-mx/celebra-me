@@ -5,7 +5,8 @@
 // Enabled per invitation through `composition.ornaments`, which adds
 // `.ornament-set--<name>` to the event wrapper. Everything here is pseudo-element or
 // existing decorative markup, so assistive tech never reads it and focus order is untouched.
-// Motifs are static (no motion), drawn as masks so they take the ink color token.
+// Motifs are drawn as masks so they take the ink color token. They are static, except the
+// storybook lanterns, which drift only when the visitor allows motion.
 // ---
 // seaside-lineart: one hand-drawn shoreline (a ribbon of variable weight) marks four
 // thresholds — the opening of the quote, the close of family, the close of location and the
@@ -17,6 +18,18 @@
 //   --ornament-hairline         Plain separator color kept where structure needs one
 //   --ornament-closing-inset-wide  Wide screens: closing shoreline inset (`0` keeps it under the
 //                                  signature column when the closing sets two columns)
+// ---
+// storybook-lanterns: a plait with small flowers ties the same thresholds (quote opening, family
+// close, location close); paper sky lanterns rise behind the countdown and the closing; a tower
+// stands under the venues heading, a flower sprig under the gallery heading, and the closing plait
+// is tied with a bow under the signature. Original line art, no characters.
+//   --ornament-ink                Line color (default --color-ornament-gold, then border premium)
+//   --ornament-braid-height       Plait height at the thresholds
+//   --ornament-braid-width        Plait length (side hairlines run to the section edges)
+//   --ornament-braid-inset        Distance from the section edge to the threshold
+//   --ornament-lanterns-display   Lantern fields (`block`; `none` hides them)
+//   --ornament-lanterns-ink       Lantern color (default the ornament ink)
+//   --ornament-lanterns-near / -far / -closing  Mask lists that place the lantern fields
 // ==========================================================================
 
 $shoreline: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 40' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0.0 24.7L7.1 25.3L14.3 25.4L21.4 25.2L28.6 24.6L35.7 23.8L42.9 23.0L50.0 22.3L57.1 21.9L64.3 21.8L71.4 22.0L78.6 22.2L85.7 22.5L92.9 22.7L100.0 22.5L107.1 21.9L114.3 20.8L121.4 19.3L128.6 17.5L135.7 15.5L142.9 13.6L150.0 12.0L157.1 10.8L164.3 10.2L171.4 10.1L178.6 10.6L185.7 11.5L192.9 12.7L200.0 13.9L207.1 15.1L214.3 16.0L221.4 16.7L228.6 17.1L235.7 17.3L242.9 17.4L250.0 17.6L257.1 18.0L264.3 18.8L271.4 19.9L278.6 21.4L285.7 23.0L292.9 24.8L300.0 26.3L307.1 27.6L314.3 28.3L321.4 28.5L328.6 28.0L335.7 26.9L342.9 25.3L350.0 23.5L357.1 21.5L364.3 19.7L371.4 18.2L378.6 17.0L385.7 16.2L392.9 15.7L400.0 15.3L407.1 15.1L414.3 14.7L421.4 14.1L428.6 13.3L435.7 12.3L442.9 11.1L450.0 9.9L457.1 8.8L464.3 8.2L471.4 8.0L478.6 8.5L485.7 9.6L492.9 11.2L500.0 13.3L507.1 15.6L514.3 17.9L521.4 20.0L528.6 21.7L535.7 23.0L542.9 23.8L550.0 24.1L557.1 24.1L564.3 24.0L571.4 23.9L578.6 23.8L585.7 24.0L592.9 24.4L600.0 24.9L607.1 25.4L614.3 25.8L621.4 25.9L628.6 25.5L635.7 24.6L642.9 23.2L650.0 21.4L657.1 19.2L664.3 16.9L671.4 14.7L678.6 12.8L685.7 11.3L692.9 10.4L700.0 10.1L707.1 10.3L714.3 10.9L721.4 11.7L728.6 12.5L735.7 13.3L742.9 13.8L750.0 14.1L757.1 14.2L764.3 14.2L771.4 14.2L778.6 14.3L785.7 14.8L792.9 15.7L800.0 17.0L807.1 18.7L814.3 20.6L821.4 22.6L828.6 24.4L835.7 25.9L842.9 26.8L850.0 27.2L857.1 27.0L864.3 26.3L871.4 25.2L878.6 23.9L885.7 22.6L892.9 21.5L900.0 20.6L907.1 20.1L914.3 20.0L921.4 20.0L928.6 20.1L935.7 20.2L942.9 20.1L950.0 19.7L957.1 18.9L964.3 17.8L971.4 16.5L978.6 15.2L985.7 14.0L992.9 13.1L1000.0 12.7L1000.0 13.2L992.9 13.8L985.7 14.8L978.6 16.1L971.4 17.5L964.3 18.9L957.1 20.1L950.0 20.9L942.9 21.5L935.7 21.7L928.6 21.7L921.4 21.6L914.3 21.6L907.1 21.9L900.0 22.5L892.9 23.4L885.7 24.6L878.6 26.0L871.4 27.3L864.3 28.5L857.1 29.3L850.0 29.5L842.9 29.2L835.7 28.3L828.6 26.9L821.4 25.1L814.3 23.2L807.1 21.4L800.0 19.7L792.9 18.5L785.7 17.6L778.6 17.2L771.4 17.1L764.3 17.1L757.1 17.2L750.0 17.2L742.9 16.9L735.7 16.4L728.6 15.7L721.4 14.9L714.3 14.2L707.1 13.6L700.0 13.5L692.9 13.8L685.7 14.8L678.6 16.3L671.4 18.2L664.3 20.5L657.1 22.8L650.0 25.0L642.9 26.9L635.7 28.3L628.6 29.2L621.4 29.6L614.3 29.5L607.1 29.1L600.0 28.6L592.9 28.1L585.7 27.8L578.6 27.6L571.4 27.7L564.3 27.9L557.1 28.0L550.0 28.0L542.9 27.6L535.7 26.9L528.6 25.6L521.4 23.9L514.3 21.8L507.1 19.5L500.0 17.2L492.9 15.1L485.7 13.5L478.6 12.4L471.4 11.9L464.3 12.1L457.1 12.7L450.0 13.7L442.9 14.9L435.7 16.1L428.6 17.1L421.4 17.9L414.3 18.5L407.1 18.8L400.0 19.1L392.9 19.4L385.7 19.9L378.6 20.7L371.4 21.9L364.3 23.4L357.1 25.2L350.0 27.1L342.9 28.9L335.7 30.4L328.6 31.5L321.4 31.9L314.3 31.8L307.1 31.0L300.0 29.7L292.9 28.1L285.7 26.3L278.6 24.6L271.4 23.1L264.3 22.0L257.1 21.2L250.0 20.7L242.9 20.4L235.7 20.3L228.6 20.0L221.4 19.6L214.3 18.9L207.1 17.9L200.0 16.7L192.9 15.3L185.7 14.1L178.6 13.2L171.4 12.6L164.3 12.6L157.1 13.2L150.0 14.3L142.9 15.9L135.7 17.7L128.6 19.6L121.4 21.4L114.3 22.8L107.1 23.8L100.0 24.3L92.9 24.4L85.7 24.2L78.6 23.8L71.4 23.5L64.3 23.3L57.1 23.3L50.0 23.6L42.9 24.2L35.7 24.9L28.6 25.5L21.4 26.1L14.3 26.2L7.1 26.0L0.0 25.2Z'/%3E%3C/svg%3E");
@@ -32,6 +45,13 @@ $shell: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
 $starfish: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke-width='1.8'%3E%3Cpath d='M26.1 24.9 C27.5 16.8 31 12 31.9 7 Q34 4.7 35.7 7.3 C36 12.3 37.9 17.3 37.6 25.3 C44.6 22.9 49.2 23.7 54.1 22.5 Q57.1 23.4 55.5 26 C51 28.4 48.5 32.8 42 36.2 C45.1 43.5 44.6 49.2 46.7 53.8 Q46.4 56.9 43.5 55.8 C40.4 51.8 36.1 49.2 32 42.8 C27.7 48.5 23.5 50.1 20.2 53.9 Q17.2 54.9 17.1 51.8 C19.4 47.3 18.6 42.6 21.7 36.3 C15.2 32.7 12.5 28.2 8.1 25.9 Q6.4 23.2 9.4 22.3 C14.3 23.5 19 22.6 26.1 24.9Z'/%3E%3C/g%3E%3Cg stroke-width='1.15'%3E%3Ccircle cx='32' cy='33' r='2.6'/%3E%3Cpath d='M32.7 22.6h.1M33.1 17.6h.1M33.4 13.2h.1M41.2 29.5h.1M45.6 27.8h.1M49.5 26.3h.1M37.3 41.8h.1M39.8 46h.1M42 49.7h.1M26.6 41h.1M24 44.8h.1M21.7 48.2h.1M22.6 29.4h.1M18.1 27.7h.1M14.2 26.2h.1'/%3E%3C/g%3E%3C/svg%3E");
 $alga: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke-width='1.8'%3E%3Cpath d='M30 60C27 53 31.5 47 28.5 40S27 29 23 23C21.5 20.5 20 18 21.2 16.8C23.5 17.8 25.2 21 27 24C30.8 30 31 35 32.4 41S30.5 53 32.6 60M33 60C34.5 52 30.8 45 33.6 37S37.5 23 35.4 14C34.9 11 35.2 7.6 37 7C38.8 8.6 38.6 12 38.6 15C38.8 24 36.2 31 36.8 38S36.2 52 35.2 60M35.6 60C38.5 55 42.5 52 42 46S44.8 36 48.8 33.4C50.4 32.4 52.2 32.6 52.4 34C51.8 36 49.4 37.4 47.8 39.2C45.2 42.2 45.6 47.4 44.4 51.2S40.2 57.8 38 60M26 60.5C30 59.6 35 59.6 41 60.5'/%3E%3C/g%3E%3Cg stroke-width='1.15'%3E%3Ccircle cx='17.5' cy='33' r='1.6'/%3E%3Ccircle cx='15' cy='25.5' r='1'/%3E%3Cpath d='M30.2 47C29.6 41 29.2 34 25.4 26.4M35.2 46C34.8 38 37 28 36.8 17M41 52.5C43 48 43.4 42 47.6 37'/%3E%3C/g%3E%3C/svg%3E");
 $wave-short: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke-width='1.8'%3E%3Cpath d='M3 47C12 46 19 41 24 33S35 17 45 16 57 21 55 28 47 33 44 28 47 23 50 25M55 28C56 35 59 41 62 45M14 51C24 49.5 33 50.5 42 49.5S56 49 61 50'/%3E%3C/g%3E%3Cg stroke-width='1.15'%3E%3Cpath d='M11 47.5C17 45.5 22 40 25.5 35M30 27C33 23 37 20.5 41 20M58 15h.1M61 19.5h.1M54.5 11.5h.1M60.5 25h.1'/%3E%3C/g%3E%3C/svg%3E");
+$storybook-braid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 28' fill='none'%3E%3Cg fill='%23000' fill-opacity='.2' stroke='%23000' stroke-width='1.25'%3E%3Cellipse cx='8' cy='14' rx='2.9' ry='1.4' transform='rotate%2832 8 14%29'/%3E%3Cellipse cx='13' cy='14' rx='3.1' ry='1.5' transform='rotate%28-32 13 14%29'/%3E%3Cellipse cx='18.4' cy='14' rx='3.4' ry='1.6' transform='rotate%2832 18.4 14%29'/%3E%3Cellipse cx='24' cy='14' rx='3.7' ry='1.7' transform='rotate%28-32 24 14%29'/%3E%3Cellipse cx='30' cy='14' rx='4' ry='1.9' transform='rotate%2832 30 14%29'/%3E%3Cellipse cx='36.3' cy='14' rx='4.3' ry='2' transform='rotate%28-32 36.3 14%29'/%3E%3Cellipse cx='43' cy='14' rx='4.6' ry='2.1' transform='rotate%2832 43 14%29'/%3E%3Cellipse cx='50.1' cy='14' rx='4.9' ry='2.3' transform='rotate%28-32 50.1 14%29'/%3E%3Cellipse cx='57.6' cy='14' rx='5.3' ry='2.5' transform='rotate%2832 57.6 14%29'/%3E%3Cellipse cx='65.5' cy='14' rx='5.7' ry='2.7' transform='rotate%28-32 65.5 14%29'/%3E%3Cellipse cx='73.9' cy='14' rx='6.1' ry='2.9' transform='rotate%2832 73.9 14%29'/%3E%3Cellipse cx='82.8' cy='14' rx='6.2' ry='2.9' transform='rotate%28-32 82.8 14%29'/%3E%3Cellipse cx='91.8' cy='14' rx='6.2' ry='2.9' transform='rotate%2832 91.8 14%29'/%3E%3Cellipse cx='100.8' cy='14' rx='6.2' ry='2.9' transform='rotate%28-32 100.8 14%29'/%3E%3Cellipse cx='109.8' cy='14' rx='6.2' ry='2.9' transform='rotate%2832 109.8 14%29'/%3E%3Cellipse cx='118.8' cy='14' rx='6.2' ry='2.9' transform='rotate%28-32 118.8 14%29'/%3E%3Cellipse cx='127.8' cy='14' rx='6.2' ry='2.9' transform='rotate%2832 127.8 14%29'/%3E%3Cellipse cx='136.8' cy='14' rx='6.2' ry='2.9' transform='rotate%28-32 136.8 14%29'/%3E%3Cellipse cx='145.8' cy='14' rx='6.2' ry='2.9' transform='rotate%2832 145.8 14%29'/%3E%3Cellipse cx='154.8' cy='14' rx='6.2' ry='2.9' transform='rotate%28-32 154.8 14%29'/%3E%3Cellipse cx='163.8' cy='14' rx='6.2' ry='2.9' transform='rotate%2832 163.8 14%29'/%3E%3Cellipse cx='172.8' cy='14' rx='5.8' ry='2.7' transform='rotate%28-32 172.8 14%29'/%3E%3Cellipse cx='181.3' cy='14' rx='5.4' ry='2.5' transform='rotate%2832 181.3 14%29'/%3E%3Cellipse cx='189.3' cy='14' rx='5' ry='2.3' transform='rotate%28-32 189.3 14%29'/%3E%3Cellipse cx='196.8' cy='14' rx='4.6' ry='2.2' transform='rotate%2832 196.8 14%29'/%3E%3Cellipse cx='203.9' cy='14' rx='4.3' ry='2' transform='rotate%28-32 203.9 14%29'/%3E%3Cellipse cx='210.6' cy='14' rx='3.9' ry='1.8' transform='rotate%2832 210.6 14%29'/%3E%3Cellipse cx='216.9' cy='14' rx='3.6' ry='1.7' transform='rotate%28-32 216.9 14%29'/%3E%3Cellipse cx='222.8' cy='14' rx='3.3' ry='1.6' transform='rotate%2832 222.8 14%29'/%3E%3Cellipse cx='228.4' cy='14' rx='3.1' ry='1.4' transform='rotate%28-32 228.4 14%29'/%3E%3C/g%3E%3Cg fill='%23000' fill-opacity='.28' stroke='%23000' stroke-width='.9'%3E%3Cellipse cx='70' cy='10.8' rx='2.1' ry='1.4' transform='rotate%28-90 70 10.8%29'/%3E%3Cellipse cx='73.1' cy='13' rx='2.1' ry='1.4' transform='rotate%28-18 73.1 13%29'/%3E%3Cellipse cx='71.9' cy='16.6' rx='2.1' ry='1.4' transform='rotate%2854 71.9 16.6%29'/%3E%3Cellipse cx='68.1' cy='16.6' rx='2.1' ry='1.4' transform='rotate%28126 68.1 16.6%29'/%3E%3Cellipse cx='66.9' cy='13' rx='2.1' ry='1.4' transform='rotate%28198 66.9 13%29'/%3E%3C/g%3E%3Ccircle cx='70' cy='14' r='1.4' fill='%23000'/%3E%3Cg fill='%23000' fill-opacity='.28' stroke='%23000' stroke-width='.9'%3E%3Cellipse cx='120' cy='9.4' rx='3' ry='2' transform='rotate%28-90 120 9.4%29'/%3E%3Cellipse cx='124.3' cy='12.6' rx='3' ry='2' transform='rotate%28-18 124.3 12.6%29'/%3E%3Cellipse cx='122.7' cy='17.7' rx='3' ry='2' transform='rotate%2854 122.7 17.7%29'/%3E%3Cellipse cx='117.3' cy='17.7' rx='3' ry='2' transform='rotate%28126 117.3 17.7%29'/%3E%3Cellipse cx='115.7' cy='12.6' rx='3' ry='2' transform='rotate%28198 115.7 12.6%29'/%3E%3C/g%3E%3Ccircle cx='120' cy='14' r='2' fill='%23000'/%3E%3Cg fill='%23000' fill-opacity='.28' stroke='%23000' stroke-width='.9'%3E%3Cellipse cx='170' cy='10.8' rx='2.1' ry='1.4' transform='rotate%28-90 170 10.8%29'/%3E%3Cellipse cx='173.1' cy='13' rx='2.1' ry='1.4' transform='rotate%28-18 173.1 13%29'/%3E%3Cellipse cx='171.9' cy='16.6' rx='2.1' ry='1.4' transform='rotate%2854 171.9 16.6%29'/%3E%3Cellipse cx='168.1' cy='16.6' rx='2.1' ry='1.4' transform='rotate%28126 168.1 16.6%29'/%3E%3Cellipse cx='166.9' cy='13' rx='2.1' ry='1.4' transform='rotate%28198 166.9 13%29'/%3E%3C/g%3E%3Ccircle cx='170' cy='14' r='1.4' fill='%23000'/%3E%3Cpath d='M1 14H6M234 14H239' stroke='%23000' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+$storybook-lantern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Cdefs%3E%3CradialGradient id='h'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='.2'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='24' cy='30' r='24' fill='url%28%23h%29' stroke='none'/%3E%3Cpath d='M11.5 16C11.5 7.2 36.5 7.2 36.5 16L34 45.5C33.6 48.6 14.4 48.6 14 45.5Z' fill='%23000' fill-opacity='.3' stroke-width='1.5'/%3E%3Cpath d='M18.2 9.6C17.6 22 17.8 34 18.8 47.2M29.8 9.6C30.4 22 30.2 34 29.2 47.2M24 8.6V48.2' stroke-width='.8' stroke-opacity='.5'/%3E%3Cpath d='M11.9 21C19 23.4 29 23.4 36.1 21M13 34C20 36.2 28 36.2 35 34' stroke-width='.8' stroke-opacity='.5'/%3E%3Cpath d='M18 49.2H30' stroke-width='1.4'/%3E%3Cpath d='M24 51.6C27.2 54.4 26.8 57.8 24 60 21.2 57.8 20.8 54.4 24 51.6Z' fill='%23000' stroke-width='.6'/%3E%3C/svg%3E");
+$storybook-tower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 88' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M26 2V7' stroke-width='1.3'/%3E%3Cpath d='M26 2.5L33 4.6 26 6.4' fill='%23000' fill-opacity='.4' stroke-width='.9'/%3E%3Cpath d='M26 7L10.5 28H41.5Z' fill='%23000' fill-opacity='.2' stroke-width='1.5'/%3E%3Cpath d='M15.5 21.2H36.5M19.6 15.6H32.4' stroke-width='.8' stroke-opacity='.55'/%3E%3Cpath d='M13.5 28V84H38.5V28' stroke-width='1.5'/%3E%3Cpath d='M10.5 84H41.5' stroke-width='1.5'/%3E%3Cpath d='M21.5 46V39.5C21.5 36.8 23.5 35 26 35S30.5 36.8 30.5 39.5V46Z' fill='%23000' fill-opacity='.55' stroke-width='1.2'/%3E%3Cpath d='M13.5 33H38.5M13.5 52H20M28 58H38.5M13.5 66H22M30 74H38.5' stroke-width='.8' stroke-opacity='.45'/%3E%3Cpath d='M29.2 46C31.6 51 29.4 55 32 60S30.4 69 33.2 74 31.8 81 34.4 86' stroke-width='1.7'/%3E%3Cpath d='M29.6 46.8C32.4 51.6 30.4 55.6 32.8 60.4S31.2 69.4 34 74.4' stroke-width='.8' stroke-opacity='.55'/%3E%3Cg fill='%23000' fill-opacity='.28' stroke='%23000' stroke-width='.9'%3E%3Cellipse cx='32.3' cy='58.5' rx='1.1' ry='0.8' transform='rotate%28-90 32.3 58.5%29'/%3E%3Cellipse cx='33.9' cy='59.7' rx='1.1' ry='0.8' transform='rotate%28-18 33.9 59.7%29'/%3E%3Cellipse cx='33.3' cy='61.6' rx='1.1' ry='0.8' transform='rotate%2854 33.3 61.6%29'/%3E%3Cellipse cx='31.3' cy='61.6' rx='1.1' ry='0.8' transform='rotate%28126 31.3 61.6%29'/%3E%3Cellipse cx='30.7' cy='59.7' rx='1.1' ry='0.8' transform='rotate%28198 30.7 59.7%29'/%3E%3C/g%3E%3Ccircle cx='32.3' cy='60.2' r='0.8' fill='%23000'/%3E%3Cg fill='%23000' fill-opacity='.28' stroke='%23000' stroke-width='.9'%3E%3Cellipse cx='33.6' cy='72.7' rx='1' ry='0.7' transform='rotate%28-90 33.6 72.7%29'/%3E%3Cellipse cx='35' cy='73.7' rx='1' ry='0.7' transform='rotate%28-18 35 73.7%29'/%3E%3Cellipse cx='34.5' cy='75.4' rx='1' ry='0.7' transform='rotate%2854 34.5 75.4%29'/%3E%3Cellipse cx='32.7' cy='75.4' rx='1' ry='0.7' transform='rotate%28126 32.7 75.4%29'/%3E%3Cellipse cx='32.2' cy='73.7' rx='1' ry='0.7' transform='rotate%28198 32.2 73.7%29'/%3E%3C/g%3E%3Ccircle cx='33.6' cy='74.2' r='0.7' fill='%23000'/%3E%3C/svg%3E");
+$storybook-sun: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23000' stroke-linecap='round'%3E%3Cpath d='M32 14.5L32 3.5M38.7 15.8L41 10.3M44.4 19.6L52.2 11.8M48.2 25.3L53.7 23M49.5 32L60.5 32M48.2 38.7L53.7 41M44.4 44.4L52.2 52.2M38.7 48.2L41 53.7M32 49.5L32 60.5M25.3 48.2L23 53.7M19.6 44.4L11.8 52.2M15.8 38.7L10.3 41M14.5 32L3.5 32M15.8 25.3L10.3 23M19.6 19.6L11.8 11.8M25.3 15.8L23 10.3' stroke-width='1.3'/%3E%3Ccircle cx='37.2' cy='6' r='.95' fill='%23000'/%3E%3Ccircle cx='46.7' cy='10' r='.95' fill='%23000'/%3E%3Ccircle cx='54' cy='17.3' r='.95' fill='%23000'/%3E%3Ccircle cx='58' cy='26.8' r='.95' fill='%23000'/%3E%3Ccircle cx='58' cy='37.2' r='.95' fill='%23000'/%3E%3Ccircle cx='54' cy='46.7' r='.95' fill='%23000'/%3E%3Ccircle cx='46.7' cy='54' r='.95' fill='%23000'/%3E%3Ccircle cx='37.2' cy='58' r='.95' fill='%23000'/%3E%3Ccircle cx='26.8' cy='58' r='.95' fill='%23000'/%3E%3Ccircle cx='17.3' cy='54' r='.95' fill='%23000'/%3E%3Ccircle cx='10' cy='46.7' r='.95' fill='%23000'/%3E%3Ccircle cx='6' cy='37.2' r='.95' fill='%23000'/%3E%3Ccircle cx='6' cy='26.8' r='.95' fill='%23000'/%3E%3Ccircle cx='10' cy='17.3' r='.95' fill='%23000'/%3E%3Ccircle cx='17.3' cy='10' r='.95' fill='%23000'/%3E%3Ccircle cx='26.8' cy='6' r='.95' fill='%23000'/%3E%3Ccircle cx='32' cy='32' r='13.5' fill='%23000' fill-opacity='.16' stroke-width='1.5'/%3E%3Ccircle cx='32' cy='32' r='10.6' stroke-width='.8' stroke-opacity='.6'/%3E%3C/svg%3E");
+$storybook-bow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 44' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M37 15C30 4 13 1 9 9S18 26 37 19' fill='%23000' fill-opacity='.22' stroke-width='1.5'/%3E%3Cpath d='M43 15C50 4 67 1 71 9S62 26 43 19' fill='%23000' fill-opacity='.22' stroke-width='1.5'/%3E%3Cpath d='M35 21C30 28 26 35 19 42M45 21C50 28 54 35 61 42' stroke-width='1.5'/%3E%3Cpath d='M19 42L23.5 39.4 24.2 43.4M61 42L56.5 39.4 55.8 43.4' stroke-width='1.1'/%3E%3Cpath d='M15.5 10.5C20 9 27 11.5 33 15.8M64.5 10.5C60 9 53 11.5 47 15.8' stroke-width='.8' stroke-opacity='.55'/%3E%3Crect x='35.5' y='13' width='9' height='9.5' rx='3.2' fill='%23000' fill-opacity='.45' stroke-width='1.3'/%3E%3C/svg%3E");
+$storybook-sprig: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M24 46C24 36 22 28 17 18M24 34C27 28 31 24 36 21M22 26C20 24 17 23 13 23.5' stroke-width='1.3'/%3E%3Cpath d='M24 40C20 37 16.5 37 14 38.5 17 41 20.5 41.4 24 40ZM25 37C28.5 34 32 33.8 34.4 35.2 31.6 37.8 28.2 38.4 25 37Z' fill='%23000' fill-opacity='.3' stroke-width='.9'/%3E%3Cg fill='%23000' fill-opacity='.28' stroke='%23000' stroke-width='.9'%3E%3Cellipse cx='16.6' cy='12.2' rx='2.1' ry='1.4' transform='rotate%28-90 16.6 12.2%29'/%3E%3Cellipse cx='19.7' cy='14.4' rx='2.1' ry='1.4' transform='rotate%28-18 19.7 14.4%29'/%3E%3Cellipse cx='18.5' cy='18' rx='2.1' ry='1.4' transform='rotate%2854 18.5 18%29'/%3E%3Cellipse cx='14.7' cy='18' rx='2.1' ry='1.4' transform='rotate%28126 14.7 18%29'/%3E%3Cellipse cx='13.5' cy='14.4' rx='2.1' ry='1.4' transform='rotate%28198 13.5 14.4%29'/%3E%3C/g%3E%3Ccircle cx='16.6' cy='15.4' r='1.4' fill='%23000'/%3E%3Cg fill='%23000' fill-opacity='.28' stroke='%23000' stroke-width='.9'%3E%3Cellipse cx='37' cy='17.1' rx='1.6' ry='1.1' transform='rotate%28-90 37 17.1%29'/%3E%3Cellipse cx='39.3' cy='18.8' rx='1.6' ry='1.1' transform='rotate%28-18 39.3 18.8%29'/%3E%3Cellipse cx='38.5' cy='21.6' rx='1.6' ry='1.1' transform='rotate%2854 38.5 21.6%29'/%3E%3Cellipse cx='35.5' cy='21.6' rx='1.6' ry='1.1' transform='rotate%28126 35.5 21.6%29'/%3E%3Cellipse cx='34.7' cy='18.8' rx='1.6' ry='1.1' transform='rotate%28198 34.7 18.8%29'/%3E%3C/g%3E%3Ccircle cx='37' cy='19.6' r='1.1' fill='%23000'/%3E%3Cg fill='%23000' fill-opacity='.28' stroke='%23000' stroke-width='.9'%3E%3Cellipse cx='12' cy='20.8' rx='1.3' ry='0.9' transform='rotate%28-90 12 20.8%29'/%3E%3Cellipse cx='13.9' cy='22.2' rx='1.3' ry='0.9' transform='rotate%28-18 13.9 22.2%29'/%3E%3Cellipse cx='13.2' cy='24.4' rx='1.3' ry='0.9' transform='rotate%2854 13.2 24.4%29'/%3E%3Cellipse cx='10.8' cy='24.4' rx='1.3' ry='0.9' transform='rotate%28126 10.8 24.4%29'/%3E%3Cellipse cx='10.1' cy='22.2' rx='1.3' ry='0.9' transform='rotate%28198 10.1 22.2%29'/%3E%3C/g%3E%3Ccircle cx='12' cy='22.8' r='0.9' fill='%23000'/%3E%3C/svg%3E");
+$storybook-sparkle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2C17 11 21 15 30 16 21 17 17 21 16 30 15 21 11 17 2 16 11 15 15 11 16 2Z' fill='%23000' fill-opacity='.3' stroke='%23000' stroke-width='1.1' stroke-linejoin='round'/%3E%3C/svg%3E");
 $gull: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke-width='1.8'%3E%3Cpath d='M3 33.5L4.6 31.8C10.5 28.8 16 25.2 19.8 23.4C24 21.4 27.8 23.6 29.8 25.8C31 27.4 31.6 29.4 32 31.2C32.4 29.4 33 27.4 34.2 25.8C36.2 23.6 40 21.4 44.2 23.4C48 25.2 53.5 28.8 59.4 31.8L61 33.5'/%3E%3C/g%3E%3Cg stroke-width='1.15'%3E%3Cpath transform='translate%2837 4%29 scale%28.36%29' stroke-width='3.2' d='M3 33.5L4.6 31.8C10.5 28.8 16 25.2 19.8 23.4C24 21.4 27.8 23.6 29.8 25.8C31 27.4 31.6 29.4 32 31.2C32.4 29.4 33 27.4 34.2 25.8C36.2 23.6 40 21.4 44.2 23.4C48 25.2 53.5 28.8 59.4 31.8L61 33.5'/%3E%3C/g%3E%3C/svg%3E");
 
 // One opt-in motif spot: off unless `--ornament-<name>-display` is set. A profile sizes the box
@@ -285,5 +305,169 @@ $gull: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox
 		@include mixins.respond-to(lg) {
 			inset-inline: var(--ornament-closing-inset-wide, calc((100% - 100vw) / 2));
 		}
+	}
+}
+
+// One threshold plait: the braid centered, a hairline fading out toward each edge.
+@mixin storybook-braid-threshold($edge) {
+	content: '';
+	position: absolute;
+	inset-inline: clamp(1rem, 5vw, 3rem);
+	#{$edge}: var(--ornament-braid-inset);
+	z-index: 1;
+	height: var(--ornament-braid-height);
+	background-color: var(--ornament-ink);
+	mask:
+		$storybook-braid center / var(--ornament-braid-width) 100% no-repeat,
+		linear-gradient(90deg, transparent, rgb(0 0 0 / 70%)) left center /
+			calc(50% - var(--ornament-braid-width) / 2 - 0.5rem) 1px no-repeat,
+		linear-gradient(90deg, rgb(0 0 0 / 70%), transparent) right center /
+			calc(50% - var(--ornament-braid-width) / 2 - 0.5rem) 1px no-repeat;
+	pointer-events: none;
+}
+
+// A field of sky lanterns behind a section's content; two fields drift at different paces.
+@mixin storybook-lantern-field($layers, $opacity, $duration) {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	display: var(--ornament-lanterns-display, block);
+	background-color: var(--ornament-lanterns-ink, var(--ornament-ink));
+	mask: $layers;
+	opacity: $opacity;
+	pointer-events: none;
+
+	@media (prefers-reduced-motion: no-preference) {
+		animation: storybook-lantern-rise $duration ease-in-out infinite alternate;
+	}
+}
+
+@keyframes storybook-lantern-rise {
+	from {
+		transform: translateY(0.4rem);
+	}
+
+	to {
+		transform: translateY(-0.9rem);
+	}
+}
+
+.ornament-set--storybook-lanterns {
+	--ornament-ink: var(--color-ornament-gold, var(--color-border-premium));
+	--ornament-braid-height: clamp(1rem, 2.4vw, 1.4rem);
+	--ornament-braid-width: min(15rem, 62%);
+	--ornament-braid-inset: clamp(1.5rem, 5vw, 2.75rem);
+	--ornament-motif-lantern: #{$storybook-lantern};
+	--ornament-motif-tower: #{$storybook-tower};
+	--ornament-motif-sun: #{$storybook-sun};
+	--ornament-motif-bow: #{$storybook-bow};
+	--ornament-motif-sprig: #{$storybook-sprig};
+	--ornament-motif-sparkle: #{$storybook-sparkle};
+
+	// Lanterns keep clear of the centered text: larger ones in the side margins, small ones far.
+	--ornament-lanterns-near:
+		#{$storybook-lantern} 6% 74% / 2.6rem 3.5rem no-repeat,
+		#{$storybook-lantern} 91% 26% / 3rem 4rem no-repeat,
+		#{$storybook-lantern} 15% 16% / 1.8rem 2.4rem no-repeat,
+		#{$storybook-lantern} 84% 86% / 2.1rem 2.8rem no-repeat;
+	--ornament-lanterns-far:
+		#{$storybook-lantern} 3% 42% / 0.95rem 1.3rem no-repeat,
+		#{$storybook-lantern} 97% 54% / 0.9rem 1.2rem no-repeat,
+		#{$storybook-lantern} 32% 5% / 1.1rem 1.5rem no-repeat,
+		#{$storybook-lantern} 64% 3% / 0.85rem 1.15rem no-repeat,
+		#{$storybook-lantern} 26% 95% / 0.95rem 1.3rem no-repeat,
+		#{$storybook-lantern} 70% 96% / 0.85rem 1.15rem no-repeat;
+	--ornament-lanterns-closing:
+		#{$storybook-lantern} 8% 6% / 1.3rem 1.75rem no-repeat,
+		#{$storybook-lantern} 90% 3% / 1.6rem 2.1rem no-repeat,
+		#{$storybook-lantern} 22% 1% / 0.85rem 1.15rem no-repeat,
+		#{$storybook-lantern} 78% 16% / 0.95rem 1.25rem no-repeat,
+		#{$storybook-lantern} 96% 24% / 0.8rem 1.05rem no-repeat;
+
+	// Thresholds: quote opening, family close and location close.
+	.quote-section::before {
+		@include storybook-braid-threshold(top);
+	}
+
+	.family::after {
+		@include storybook-braid-threshold(bottom);
+	}
+
+	.event-location::after {
+		@include storybook-braid-threshold(bottom);
+	}
+
+	// Generic dividers and flourishes give way to the plait.
+	.quote-divider-top,
+	.quote-divider-bottom,
+	.event-location__card-flourish,
+	.gifts-section__flourish {
+		display: none;
+	}
+
+	// Countdown: the lanterns rise behind the count.
+	.countdown-section::before {
+		@include storybook-lantern-field(var(--ornament-lanterns-near), 0.95, 9s);
+	}
+
+	.countdown-section::after {
+		@include storybook-lantern-field(var(--ornament-lanterns-far), 0.6, 13s);
+	}
+
+	// Venues: the tower under the heading.
+	.event-location__intro::after {
+		@include motif-spot(location-tower, $storybook-tower);
+
+		--ornament-location-tower-display: block;
+		--ornament-location-tower-width: 2.6rem;
+		--ornament-location-tower-height: 4.4rem;
+
+		margin: var(--ornament-location-tower-margin, 1.1rem auto 0);
+	}
+
+	// Gallery: a flower sprig closing the header.
+	.gallery-section__header::after {
+		@include motif-spot(gallery-sprig, $storybook-sprig);
+
+		--ornament-gallery-sprig-display: block;
+		--ornament-gallery-sprig-size: 2.4rem;
+
+		margin: var(--ornament-gallery-sprig-margin, 0.9rem auto 0);
+	}
+
+	// Pass: an opt-in sun above the reply card (off by default).
+	.personalized-access {
+		position: relative;
+	}
+
+	.personalized-access::after {
+		@include motif-spot-absolute(pass-sun, $storybook-sun);
+	}
+
+	// Closing: a few lanterns above the print, and the plait tied with a bow under the signature.
+	.thank-you-editorial {
+		position: relative;
+	}
+
+	.thank-you-editorial::before {
+		@include storybook-lantern-field(var(--ornament-lanterns-closing), 0.7, 12s);
+	}
+
+	.signature-block {
+		position: relative;
+	}
+
+	.signature-block::after {
+		content: '';
+		display: block;
+		width: min(17rem, 100%);
+		height: 2.6rem;
+		margin: 1.4rem auto 0;
+		background-color: var(--ornament-ink);
+		mask:
+			$storybook-bow center top / 2.6rem 1.45rem no-repeat,
+			$storybook-braid center bottom / 100% 0.95rem no-repeat;
+		pointer-events: none;
 	}
 }

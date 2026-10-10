@@ -1,0 +1,526 @@
+// Storybook lilac: a storybook printed on lilac paper in leaf-gold ink that turns into a violet
+// night lit with candle gold. Tonal band "3-band": the opening chapters (hero, quote, family) sit
+// on lilac paper; from the countdown on, every section shares one night ground, so the story
+// reaches the venues, the gallery, the reply card and the closing after dark. The night is a
+// remap of the semantic color bridge per section kind, so variants keep their own geometry and
+// read their inks from the same tokens.
+
+.theme-preset--storybook-lilac {
+	// Motion recipe: slow, soft rises; nothing snaps.
+	--motion-reveal-distance: 18px;
+	--motion-reveal-duration: var(--duration-slower);
+	--motion-reveal-blur: 4px;
+	--motion-ambient-scale-to: 1.03;
+	--motion-ambient-duration: 18s;
+	--intersection-depth: clamp(3rem, 7vw, 6rem);
+	--intersection-arch-height: clamp(2.5rem, 5vw, 5.25rem);
+	--intersection-surface: var(--color-surface-primary);
+	--intersection-blend: radial-gradient(
+		ellipse 140% 100% at 50% 0%,
+		rgb(var(--color-lilac-rgb) / 34%) 0%,
+		rgb(var(--color-candle-gold-rgb) / 8%) 38%,
+		transparent 74%
+	);
+
+	// ---------------------------------------------------------------------
+	// Base palette
+	// ---------------------------------------------------------------------
+	--color-lilac-paper: rgb(248 244 252);
+	--color-lilac-paper-rgb: 248 244 252;
+	--color-lilac-mist: rgb(239 232 248);
+	--color-lilac-mist-rgb: 239 232 248;
+	--color-lilac-veil: rgb(228 217 244);
+	--color-lilac-veil-rgb: 228 217 244;
+	--color-lilac: rgb(184 163 220);
+	--color-lilac-rgb: 184 163 220;
+	--color-lilac-deep: rgb(112 86 160);
+	--color-lilac-deep-rgb: 112 86 160;
+	--color-violet-ink: rgb(42 31 66);
+	--color-violet-ink-rgb: 42 31 66;
+	--color-violet-ink-soft: rgb(79 65 112);
+	--color-violet-ink-soft-rgb: 79 65 112;
+	--color-violet-dusk: rgb(64 49 108);
+	--color-violet-dusk-rgb: 64 49 108;
+	--color-violet-night: rgb(33 25 56);
+	--color-violet-night-rgb: 33 25 56;
+	--color-violet-midnight: rgb(23 17 40);
+	--color-violet-midnight-rgb: 23 17 40;
+	--color-leaf-gold: rgb(168 128 52);
+	--color-leaf-gold-rgb: 168 128 52;
+	--color-gold-ink: rgb(122 90 28);
+	--color-gold-ink-rgb: 122 90 28;
+	--color-candle-gold: rgb(228 200 126);
+	--color-candle-gold-rgb: 228 200 126;
+	--color-candle-cream: rgb(246 239 224);
+	--color-candle-cream-rgb: 246 239 224;
+	--color-night-lilac: rgb(205 189 234);
+	--color-night-lilac-rgb: 205 189 234;
+	--color-story-cream: rgb(255 251 244);
+	--color-story-cream-rgb: 255 251 244;
+	--color-blush: rgb(233 186 200);
+	--color-blush-rgb: 233 186 200;
+
+	// Paper and night grounds shared by every section of a band, so no seam shows between them.
+	--storybook-paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.29 0 0 0 0 0.22 0 0 0 0 0.4 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url%28%23n%29'/%3E%3C/svg%3E");
+	--storybook-night-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.93 0 0 0 0 0.86 0 0 0 0 0.66 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url%28%23n%29'/%3E%3C/svg%3E");
+	--storybook-paper: var(--storybook-paper-grain), var(--color-lilac-paper);
+	--storybook-paper-mist: var(--storybook-paper-grain), var(--color-lilac-mist);
+	--storybook-night: var(--storybook-night-grain), var(--color-violet-night);
+	--storybook-dusk:
+		var(--storybook-night-grain),
+		radial-gradient(
+			ellipse 90% 60% at 50% 100%,
+			rgb(var(--color-candle-gold-rgb) / 16%) 0%,
+			transparent 70%
+		),
+		linear-gradient(180deg, var(--color-violet-dusk) 0%, var(--color-violet-night) 100%);
+	--invitation-paper: var(--storybook-paper);
+	--page-scrollbar-color: rgb(var(--color-lilac-deep-rgb) / 55%) transparent;
+
+	// ---------------------------------------------------------------------
+	// Semantic color bridge (day band)
+	// ---------------------------------------------------------------------
+	--color-surface-primary: var(--color-lilac-paper);
+	--color-surface-primary-rgb: var(--color-lilac-paper-rgb);
+	--color-surface-secondary: var(--color-lilac-mist);
+	--color-surface-secondary-rgb: var(--color-lilac-mist-rgb);
+	--color-surface-soft: var(--color-lilac-veil);
+	--color-surface-elevated: var(--color-story-cream);
+	--color-surface-canvas: var(--color-violet-night);
+	--color-surface-dark: var(--color-violet-night);
+	--color-surface-dark-rgb: var(--color-violet-night-rgb);
+	--color-action-primary: var(--color-violet-ink);
+	--color-action-primary-rgb: var(--color-violet-ink-rgb);
+	--color-action-accent: var(--color-lilac-deep);
+	--color-action-accent-rgb: var(--color-lilac-deep-rgb);
+	--color-text-primary: var(--color-violet-ink);
+	--color-text-primary-rgb: var(--color-violet-ink-rgb);
+	--color-text-secondary: var(--color-violet-ink-soft);
+	--color-text-secondary-rgb: var(--color-violet-ink-soft-rgb);
+	--color-text-emphasis: var(--color-gold-ink);
+	--color-text-muted: var(--color-violet-ink-soft);
+	--color-text-on-dark: var(--color-candle-cream);
+	--color-text-on-dark-rgb: var(--color-candle-cream-rgb);
+	--color-text-on-light: var(--color-violet-ink);
+	--color-border-subtle: rgb(var(--color-lilac-deep-rgb) / 18%);
+	--color-border-premium: rgb(var(--color-leaf-gold-rgb) / 62%);
+	--color-envelope-paper-ivory: var(--color-story-cream);
+	--color-ornament-gold: var(--color-leaf-gold);
+
+	// ---------------------------------------------------------------------
+	// Typography: engraved capitals for labels, Cormorant for display, Garamond for reading, a
+	// long-swash script reserved for the honoree's name and signature.
+	// ---------------------------------------------------------------------
+	--font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+	--font-body: 'EB Garamond Variable', 'EB Garamond', georgia, serif;
+	--font-ui: 'Instrument Sans Variable', system-ui, sans-serif;
+	--font-label: 'Cinzel Variable', 'Cinzel', georgia, serif;
+	--font-calligraphy: 'The Nautigal', 'Pinyon Script', cursive;
+
+	// ---------------------------------------------------------------------
+	// Glass, shadows and shared effects
+	// ---------------------------------------------------------------------
+	--color-glass-bg: rgb(var(--color-story-cream-rgb) / 62%);
+	--color-glass-border: rgb(var(--color-leaf-gold-rgb) / 34%);
+	--color-glass-shadow: rgb(var(--color-violet-ink-rgb) / 8%);
+	--glass-blur: 6px;
+	--glass-saturate: 120%;
+	--shadow-premium:
+		0 22px 56px rgb(var(--color-violet-ink-rgb) / 12%),
+		0 1px 0 rgb(var(--color-story-cream-rgb) / 70%);
+	--shadow-editorial: 0 16px 40px rgb(var(--color-violet-ink-rgb) / 10%);
+	--border-image: 1px solid rgb(var(--color-leaf-gold-rgb) / 58%);
+	--color-frame-bg: linear-gradient(
+		135deg,
+		var(--color-story-cream) 0%,
+		rgb(var(--color-lilac-mist-rgb) / 90%) 100%
+	);
+
+	// ---------------------------------------------------------------------
+	// Quote: an opening line on the same paper, gold-ruled (tokens set on the section below).
+	// ---------------------------------------------------------------------
+
+	// ---------------------------------------------------------------------
+	// Gifts
+	// ---------------------------------------------------------------------
+	--gifts-bg: var(--storybook-night);
+	--gifts-text-color: var(--color-candle-cream);
+	--gifts-title-color: var(--color-candle-cream);
+	--gifts-subtitle-color: var(--color-night-lilac);
+	--gifts-card-bg: rgb(var(--color-story-cream-rgb) / 6%);
+	--gifts-card-border: 1px solid rgb(var(--color-candle-gold-rgb) / 38%);
+	--gifts-card-radius: 2px;
+	--gifts-card-title-color: var(--color-candle-cream);
+	--gifts-icon-color: var(--color-candle-gold);
+	--gifts-account-bg: rgb(var(--color-story-cream-rgb) / 8%);
+	--gifts-account-color: var(--color-candle-cream);
+
+	// ---------------------------------------------------------------------
+	// Countdown: dusk, where the lanterns rise.
+	// ---------------------------------------------------------------------
+	--countdown-section-background: var(--storybook-dusk);
+	--countdown-section-color: var(--color-candle-cream);
+	--countdown-section-padding-block: clamp(5rem, 10vw, 8rem);
+	--countdown-written-bg: var(--storybook-dusk);
+	--countdown-written-padding-block: clamp(5.5rem, 14vw, 8.5rem);
+	--countdown-value-size-mobile: clamp(2.25rem, 12vw, 3.2rem);
+	--countdown-value-size-desktop: clamp(2.8rem, 4.5vw, 4rem);
+	--countdown-label-letter-spacing: 0.2em;
+
+	// ---------------------------------------------------------------------
+	// Family: mist paper, names in Cormorant, no panels.
+	// ---------------------------------------------------------------------
+	--family-bg: var(--storybook-paper-mist);
+	--family-padding-block: clamp(5rem, 10vw, 8rem);
+	--family-texture-opacity: 0;
+	--family-texture-image: none;
+	--family-vignette-bg: none;
+	--family-noise-opacity: 0;
+	--family-panel-bg: transparent;
+	--family-panel-border: 0;
+	--family-panel-shadow: none;
+	--family-panel-radius: 0;
+	--family-panel-spacing: clamp(2rem, 5vw, 4rem) clamp(1.15rem, 4vw, 3rem);
+	--family-panel-max-width: min(100%, 40rem);
+	--family-panel-width: min(calc(100% - clamp(2rem, 8vw, 6rem)), var(--family-panel-max-width));
+	--family-panel-margin-top: clamp(2rem, 4vw, 3.5rem);
+	--family-panel-rotate: none;
+	--family-panel-shadow-extra-display: none;
+	--family-media-bg: var(--color-story-cream);
+	--family-media-radius: 2px;
+	--family-media-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 40%);
+	--family-media-shadow: 0 16px 36px rgb(var(--color-violet-ink-rgb) / 12%);
+	--family-media-inner-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 26%);
+	--family-media-filter: none;
+	--family-text-primary: var(--color-violet-ink);
+	--family-text-muted: var(--color-violet-ink-soft);
+	--family-accent: var(--color-leaf-gold);
+	--family-header-max-width: 46rem;
+	--family-header-filter: none;
+	--family-title-font: var(--font-display);
+	--family-title-style: italic;
+	--family-title-weight: 400;
+	--family-title-max-width: 18ch;
+	--family-title-size: clamp(2.1rem, 7vw, 3.4rem);
+	--family-title-line-height: 1.12;
+	--family-title-color: var(--color-violet-ink);
+	--family-title-text-shadow: none;
+	--family-eyebrow-color: var(--color-gold-ink);
+	--family-eyebrow-size: 0.78rem;
+	--family-eyebrow-letter-spacing: 0.22em;
+	--family-eyebrow-margin: clamp(0.8rem, 1.8vw, 1.1rem);
+	--family-divider: linear-gradient(
+		90deg,
+		transparent,
+		rgb(var(--color-leaf-gold-rgb) / 70%),
+		transparent
+	);
+	--family-divider-width: clamp(4rem, 14vw, 7rem);
+	--family-divider-margin: clamp(1.1rem, 2.4vw, 1.6rem) auto 0;
+	--family-message-font: var(--font-body);
+	--family-message-color: var(--color-violet-ink-soft);
+	--family-message-size: clamp(1.12rem, 1.9vw, 1.28rem);
+	--family-message-line-height: 1.65;
+	--family-message-max-width: 34ch;
+	--family-message-margin: clamp(1.2rem, 2.6vw, 1.8rem) auto 0;
+	--family-group-title-color: var(--color-gold-ink);
+	--family-group-title-size: 0.78rem;
+	--family-group-title-letter-spacing: 0.2em;
+	--family-group-title-margin: 0 0 clamp(1rem, 2.4vw, 1.6rem);
+	--family-name-font: var(--font-display);
+	--family-name-size: clamp(1.5rem, 3.4vw, 2.05rem);
+	--family-lead-name-size: clamp(1.9rem, 4.4vw, 2.6rem);
+	--family-name-color: var(--color-violet-ink);
+	--family-name-line-height: 1.12;
+	--family-name-text-shadow: none;
+	--family-name-letter-spacing: 0;
+	--family-meta-color: var(--color-violet-ink-soft);
+	--family-meta-size: 0.72rem;
+	--family-meta-letter-spacing: 0.16em;
+	--family-content-gap: clamp(2.2rem, 5vw, 3.6rem);
+	--family-group-filter: none;
+	--family-group-padding: 0;
+	--family-group-border-left: 0;
+	--family-panel-surface-bg: transparent;
+	--family-panel-surface-filter: none;
+	--family-panel-surface-inset: 0;
+	--family-panel-surface-opacity: 1;
+	--family-panel-edge-border: none;
+	--family-panel-edge-shadow: none;
+	--family-panel-surface-after-border: none;
+	--family-panel-surface-after-shadow: none;
+	--family-panel-surface-after-opacity: 0;
+	--family-panel-surface-after-bg: none;
+	--family-panel-watermark-color: transparent;
+	--family-panel-watermark-font: var(--font-display);
+	--family-panel-watermark-size: 0;
+	--family-panel-watermark-top: 0;
+	--family-panel-watermark-right: 0;
+	--family-panel-watermark-opacity: 0;
+	--family-godparents-list-columns: repeat(2, 1fr);
+
+	// ---------------------------------------------------------------------
+	// Hero: the photograph stays natural; the letter below it is lilac paper.
+	// ---------------------------------------------------------------------
+	--hero-section-background: var(--color-surface-primary);
+	--hero-section-color: var(--color-text-primary);
+	--hero-split-plane-bg: var(--color-surface-dark);
+	--hero-split-overlay-strong: rgb(var(--color-violet-night-rgb) / 92%);
+	--hero-split-overlay-mid: rgb(var(--color-violet-night-rgb) / 70%);
+	--hero-split-overlay-soft: rgb(var(--color-violet-night-rgb) / 18%);
+	--hero-title-color-start: var(--color-candle-cream);
+	--hero-title-color-mid: var(--color-candle-gold);
+	--hero-title-color-end: var(--color-night-lilac);
+	--hero-badge-text: var(--color-text-on-dark);
+	--hero-label-color: var(--color-gold-ink);
+	--hero-bleed-bg: transparent;
+	--hero-bleed-muted: var(--color-violet-ink-soft);
+	--hero-bleed-rule: rgb(var(--color-leaf-gold-rgb) / 60%);
+	--hero-name-font-family: var(--font-calligraphy);
+	--hero-name-font-weight: 400;
+	--hero-name-letter-spacing: 0;
+	--hero-name-line-height: 1.05;
+	--hero-occasion-color: var(--color-gold-ink);
+
+	// Bleed-portrait letter: the occasion in engraved capitals between two gold rules, the script
+	// name close under it, the date in Cormorant italic over a short gold rule, the hour in text
+	// italic and the venue in small capitals; the rules draw out and a short segment runs down the
+	// scroll line after the entrance.
+	--hero-occasion-font: 400 0.9rem / 1.4 var(--font-label);
+	--hero-bleed-occasion-display: inline-flex;
+	--hero-bleed-occasion-rule: 2rem;
+	--hero-bleed-occasion-size-wide: 1rem;
+	--hero-bleed-name-margin: 0.15rem 0 0;
+	--hero-bleed-title-size-desktop: clamp(6.5rem, 9vw, 9rem);
+	--hero-bleed-facts-margin: 0.4rem 0 0;
+	--hero-bleed-facts-padding-top: 0;
+	--hero-bleed-facts-rule-width: 0;
+	--hero-bleed-facts-gap: 1.75rem;
+	--hero-bleed-facts-divider-display: block;
+	--hero-bleed-facts-divider-width: 3.25rem;
+	--hero-bleed-facts-divider-gap: 0.65rem;
+	--hero-bleed-facts-row-gap: 0.45rem;
+	--hero-bleed-when-font-family: var(--font-display);
+	--hero-bleed-when-size: clamp(1.35rem, 5.4vw, 1.7rem);
+	--hero-bleed-when-style: italic;
+	--hero-bleed-when-color: var(--color-violet-ink);
+	--hero-bleed-time-display: block;
+	--hero-bleed-time-margin: 0;
+	--hero-bleed-time-font-family: var(--font-body);
+	--hero-bleed-time-size: clamp(1rem, 1.2vw, 1.12rem);
+	--hero-bleed-time-style: italic;
+	--hero-bleed-time-tracking: 0.01em;
+	--hero-bleed-time-color: var(--color-violet-ink-soft);
+	--hero-bleed-where-font-family: var(--font-label);
+	--hero-bleed-where-size: clamp(0.8rem, 1vw, 0.92rem);
+	--hero-bleed-where-tracking: 0.12em;
+	--hero-bleed-where-color: var(--color-violet-ink-soft);
+	--hero-bleed-rule-entrance: hero-bleed-rule-draw;
+	--hero-bleed-scroll-cue: hero-bleed-scroll-cue;
+	--hero-bleed-scroll-cue-duration: 1.8s;
+	--hero-bleed-scroll-cue-delay: 1.4s;
+	--hero-bleed-scroll-cue-iterations: 3;
+	--hero-bleed-scroll-cue-ink: var(--color-leaf-gold);
+	--hero-bleed-scroll-line: 3.5rem;
+	--hero-bleed-scroll-line-stack: 2rem;
+	--hero-bleed-scroll-line-margin: 0.75rem auto 0;
+
+	// ---------------------------------------------------------------------
+	// Gallery (night ground; photographs keep a thin candle rule)
+	// ---------------------------------------------------------------------
+	--gallery-section-bg: var(--storybook-night);
+	--gallery-item-bg: var(--color-violet-midnight);
+	--gallery-title-font: var(--font-display);
+	--gallery-title-color: var(--color-candle-cream);
+	--gallery-subtitle-color: var(--color-night-lilac);
+	--gallery-caption-bg: rgb(var(--color-violet-night-rgb) / 86%);
+	--gallery-caption-color: var(--color-candle-cream);
+	--gallery-caption-font: var(--font-body);
+	--gallery-caption-size: 0.86rem;
+	--gallery-caption-letter-spacing: 0.01em;
+
+	// ---------------------------------------------------------------------
+	// Thank you (night)
+	// ---------------------------------------------------------------------
+	--thank-you-section-background: var(--storybook-night);
+	--thank-you-section-color: var(--color-candle-cream);
+	--thank-you-section-padding: clamp(6.5rem, 16svh, 9rem) clamp(1.15rem, 5vw, 4.5rem)
+		clamp(6rem, 13svh, 8.5rem);
+	--thank-you-frame-size-mobile: 220px;
+	--thank-you-frame-size-desktop: 280px;
+	--thank-you-image-fit: cover;
+	--thank-you-image-position: center;
+	--thank-you-ambient-display: none;
+	--thank-you-floor-fog-display: none;
+	--thank-you-print-sheen-display: none;
+	--thank-you-print-inner-rule-display: none;
+	--thank-you-photo-filter: none;
+	--thank-you-photo-filter-hover: none;
+	--thank-you-drop-cap-shadow: none;
+	--thank-you-closing-gradient: linear-gradient(
+		90deg,
+		var(--color-candle-gold),
+		var(--color-candle-gold)
+	);
+
+	// ---------------------------------------------------------------------
+	// Music player: a night button with a candle ring.
+	// ---------------------------------------------------------------------
+	--music-player-prompt-bg: rgb(var(--color-story-cream-rgb) / 82%);
+	--music-player-prompt-color: var(--color-violet-ink-soft);
+	--music-player-prompt-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 34%);
+	--music-player-prompt-accent: var(--color-leaf-gold);
+	--music-player-button-bg:
+		radial-gradient(
+			circle at 32% 26%,
+			rgb(var(--color-candle-gold-rgb) / 22%) 0%,
+			transparent 52%
+		),
+		rgb(var(--color-violet-night-rgb) / 86%);
+	--music-player-button-color: var(--color-candle-cream);
+	--music-player-button-border: 1px solid rgb(var(--color-candle-gold-rgb) / 40%);
+	--music-player-ring-color: rgb(var(--color-candle-gold-rgb) / 52%);
+
+	// ---------------------------------------------------------------------
+	// Interludes: bleed photographs on the night; framed prints on a night mat.
+	// ---------------------------------------------------------------------
+	--interlude-bg: var(--color-violet-night);
+	--interlude-image-filter: none;
+	--interlude-overlay-opacity: 0.12;
+	--interlude-overlay: radial-gradient(
+		ellipse at center,
+		transparent 52%,
+		rgb(var(--color-violet-night-rgb) / var(--interlude-overlay-opacity)) 100%
+	);
+	--interlude-framed-bg: var(--storybook-night);
+	--interlude-framed-mat-bg: var(--color-story-cream);
+
+	// ---------------------------------------------------------------------
+	// Texture and light
+	// ---------------------------------------------------------------------
+	--texture-silk: linear-gradient(
+		115deg,
+		rgb(var(--color-story-cream-rgb) / 72%) 0%,
+		rgb(var(--color-lilac-veil-rgb) / 42%) 50%,
+		rgb(var(--color-candle-gold-rgb) / 20%) 100%
+	);
+	--satin-sheen: linear-gradient(
+		120deg,
+		transparent 0%,
+		rgb(var(--color-candle-gold-rgb) / 26%) 48%,
+		transparent 100%
+	);
+	--container-max-width-lg: 1280px;
+
+	// ---------------------------------------------------------------------
+	// Itinerary (night)
+	// ---------------------------------------------------------------------
+	--itinerary-paper-white: var(--color-story-cream);
+	--itinerary-cream: var(--color-lilac-mist);
+	--itinerary-ink-dark: var(--color-violet-ink);
+	--itinerary-ink-dark-rgb: var(--color-violet-ink-rgb);
+	--itinerary-slate: var(--color-violet-ink-soft);
+	--itinerary-slate-rgb: var(--color-violet-ink-soft-rgb);
+	--itinerary-paper-section-bg: var(--storybook-night);
+	--itinerary-paper-title-color: var(--color-candle-cream);
+	--itinerary-paper-subtitle-color: var(--color-night-lilac);
+	--itinerary-paper-surface-bg: var(--storybook-paper-grain), var(--color-story-cream);
+	--itinerary-paper-rule: rgb(var(--color-leaf-gold-rgb) / 40%);
+	--itinerary-paper-row-rule: rgb(var(--color-leaf-gold-rgb) / 22%);
+	--itinerary-paper-desc-color: var(--color-violet-ink-soft);
+
+	// ---------------------------------------------------------------------
+	// Location (night): the program sheet reads in candle cream with gold rules.
+	// ---------------------------------------------------------------------
+	--location-bg: var(--storybook-night);
+	--location-text-color: var(--color-candle-cream);
+	--location-enclosure-swatch: var(--color-lilac);
+	--location-enclosure-ink: var(--color-violet-ink);
+	--location-enclosure-muted: var(--color-violet-ink-soft);
+	--location-enclosure-rule: rgb(var(--color-leaf-gold-rgb) / 50%);
+	--location-padding-block: clamp(3.5rem, 8vw, 6rem) clamp(4rem, 8vh, 6rem);
+	--location-padding-inline: clamp(1rem, 4vw, 1.5rem);
+	--location-card-bg: rgb(var(--color-story-cream-rgb) / 5%);
+	--location-card-border: 1px solid rgb(var(--color-candle-gold-rgb) / 30%);
+	--location-card-radius: 2px;
+	--location-card-shadow: none;
+	--location-image-aspect-ratio: 4 / 3.35;
+	--location-title-color: var(--color-night-lilac);
+	--location-title-font-family: var(--font-label);
+	--location-place-color: var(--color-candle-cream);
+	--location-place-font-family: var(--font-display);
+	--location-date-color: var(--color-candle-gold);
+	--location-hour-color: var(--color-night-lilac);
+	--location-address-color: var(--color-night-lilac);
+	--location-address-border-top: 1px solid rgb(var(--color-candle-gold-rgb) / 24%);
+	--location-flourish-color: var(--color-candle-gold);
+	--location-divider-display: none;
+	--location-copy-button-color: var(--color-candle-gold);
+	--location-copy-button-border: 1px solid rgb(var(--color-candle-gold-rgb) / 42%);
+	--location-nav-bg: transparent;
+	--location-nav-color: var(--color-candle-cream);
+	--location-nav-border: 1px solid rgb(var(--color-candle-gold-rgb) / 46%);
+	--location-nav-hover-bg: var(--color-candle-gold);
+	--location-nav-hover-color: var(--color-violet-night);
+	--location-nav-hover-border-color: var(--color-candle-gold);
+	--location-indications-grid-template: repeat(2, minmax(0, 1fr));
+	--location-indications-heading-color: var(--color-night-lilac);
+	--location-indication-item-bg: rgb(var(--color-story-cream-rgb) / 5%);
+	--location-indication-item-border: 1px solid rgb(var(--color-candle-gold-rgb) / 26%);
+	--location-indication-item-radius: 2px;
+	--location-indication-item-reserved-border-color: rgb(var(--color-lilac-rgb) / 70%);
+	--location-indication-icon-bg: transparent;
+	--location-indication-icon-color: var(--color-candle-gold);
+	--location-indication-text-color: var(--color-candle-cream);
+	--location-indication-strong-color: var(--color-candle-gold);
+
+	// ---------------------------------------------------------------------
+	// Personalized access and reply card: a cream card printed for the night.
+	// ---------------------------------------------------------------------
+	--pa-section-background: var(--storybook-night);
+	--rsvp-section-background: var(--storybook-night);
+	--rsvp-section-color: var(--color-candle-cream);
+	--rsvp-section-border: 0;
+	--pa-card-bg-color: var(--color-story-cream);
+	--pa-card-bg-image: var(--storybook-paper-grain);
+	--pa-card-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 40%);
+	--pa-card-border-radius: 2px;
+	--pa-card-shadow: 0 24px 60px -30px rgb(0 0 0 / 55%);
+	--pa-card-inset: 0.7rem;
+	--pa-card-inner-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 30%);
+	--pa-card-inner-radius: 0;
+	--pa-card-glow: none;
+	--pa-corner-opacity: 0%;
+	--pa-eyebrow-color: var(--color-gold-ink);
+	--pa-title-font: var(--font-display);
+	--pa-title-color: var(--color-violet-ink);
+	--pa-subtitle-font: var(--font-body);
+	--pa-subtitle-color: var(--color-violet-ink-soft);
+	--pa-guest-font: var(--font-display);
+	--pa-guest-color: var(--color-violet-ink);
+	--pa-divider-gradient: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(--color-leaf-gold-rgb) / 62%) 50%,
+		transparent 100%
+	);
+	--pa-divider-diamond-bg: var(--color-story-cream);
+	--pa-divider-diamond-border-color: rgb(var(--color-leaf-gold-rgb) / 60%);
+	--pa-count-color: var(--color-gold-ink);
+	--pa-footer-text-color: var(--color-violet-ink-soft);
+	--pa-label-color: var(--color-violet-ink-soft);
+
+	// Formal chapter tokens (formal-pass / formal-register)
+	--formal-chapter-band: var(--color-violet-night);
+	--formal-chapter-band-rgb: var(--color-violet-night-rgb);
+	--formal-chapter-cream: var(--color-story-cream);
+	--formal-chapter-cream-rgb: var(--color-story-cream-rgb);
+	--formal-chapter-sand-rgb: var(--color-lilac-mist-rgb);
+	--formal-chapter-metal: var(--color-leaf-gold);
+	--formal-chapter-metal-rgb: var(--color-leaf-gold-rgb);
+	--formal-chapter-ink: var(--color-violet-ink);
+	--formal-chapter-ink-rgb: var(--color-violet-ink-rgb);
+	--formal-chapter-title: var(--color-violet-ink);
+	--formal-chapter-muted: var(--color-violet-ink-soft);
+	--formal-chapter-meta: var(--color-gold-ink);
+}

@@ -1,0 +1,299 @@
+@use '../../../global/mixins' as mixins;
+
+// Storybook lanterns reveal: a letter from the tower. Lilac paper with a fine grain on a soft
+// field, a gold hairline along the flap, a liner of small gold sparkles revealed as the flap
+// turns, a gold wax sun seal with the honoree's monogram pressed in, and a deckle-edged cream card
+// carrying three rising lanterns over a plait. Colors resolve through semantic tokens; profiles
+// may override the optional `--storybook-*` hooks, which this skin consumes with fallbacks and
+// never declares.
+
+$storybook-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.29 0 0 0 0 0.22 0 0 0 0 0.4 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url%28%23n%29'/%3E%3C/svg%3E");
+$storybook-liner: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M9 4c.4 3.2 1.8 4.6 5 5-3.2.4-4.6 1.8-5 5-.4-3.2-1.8-4.6-5-5 3.2-.4 4.6-1.8 5-5ZM27 22c.3 2.2 1.2 3.1 3.4 3.4-2.2.3-3.1 1.2-3.4 3.4-.3-2.2-1.2-3.1-3.4-3.4 2.2-.3 3.1-1.2 3.4-3.4Z' fill='%23b0883a' fill-opacity='.55'/%3E%3C/svg%3E");
+$storybook-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpath d='M0 3L14 1L31 4L52 2L70 5L93 1L118 3L140 0L163 4L188 2L210 5L236 1L259 3L281 0L305 4L330 2L352 5L377 1L401 3L423 0L448 4L472 2L494 5L519 1L543 3L565 0L590 4L614 2L637 5L661 1L686 3L708 0L733 4L757 2L779 5L804 1L828 3L851 0L875 4L899 2L922 5L946 1L970 3L997 0L999 22L996 47L1000 71L997 96L999 120L995 145L998 169L1000 194L996 218L999 243L997 268L1000 292L995 317L998 341L1000 366L996 390L999 415L997 440L1000 464L995 489L998 513L1000 538L996 562L999 587L997 612L1000 636L995 661L998 685L1000 710L996 734L999 759L997 784L1000 808L995 833L998 857L1000 882L996 906L999 931L997 956L1000 998L976 996L951 1000L928 997L903 999L879 995L855 998L830 1000L806 996L782 999L757 997L733 1000L709 995L684 998L660 1000L636 996L611 999L587 997L563 1000L538 995L514 998L490 1000L465 996L441 999L417 997L392 1000L368 995L344 998L319 1000L295 996L271 999L246 997L222 1000L198 995L173 998L149 1000L125 996L100 999L76 997L52 1000L27 995L3 999L1 975L4 951L0 926L3 902L1 878L5 853L2 829L0 805L4 780L1 756L3 732L0 707L5 683L2 659L0 634L4 610L1 586L3 561L0 537L5 513L2 488L0 464L4 440L1 415L3 391L0 367L5 342L2 318L0 294L4 269L1 245L3 221L0 196L5 172L2 148L0 123L4 99L1 75L3 50L0 26Z'/%3E%3C/svg%3E");
+
+.envelope-wrapper[data-variant='storybook-lanterns'] {
+	--storybook-gold: var(--storybook-ink, var(--color-ornament-gold, var(--color-border-premium)));
+	--env-bg:
+		#{$storybook-grain},
+		radial-gradient(
+			ellipse 80% 55% at 50% 100%,
+			color-mix(in srgb, var(--storybook-gold) 14%, transparent) 0%,
+			transparent 70%
+		),
+		var(--storybook-field, var(--color-surface-soft));
+	--env-paper-bg:
+		var(--storybook-paper-grain, #{$storybook-grain}),
+		var(--storybook-envelope-paper, var(--color-surface-secondary));
+	--env-paper-border: color-mix(in srgb, var(--storybook-gold) 55%, transparent);
+	--env-text-primary: var(--color-text-primary);
+	--env-text-secondary: var(--color-text-secondary);
+	--env-accent: var(--storybook-gold);
+	--env-seal-accent: var(--storybook-gold);
+	--env-seal-bg: radial-gradient(
+		circle at 36% 30%,
+		var(--storybook-wax-light, color-mix(in srgb, var(--storybook-gold) 45%, white)) 0%,
+		var(--storybook-wax, var(--storybook-gold)) 52%,
+		var(--storybook-wax-deep, color-mix(in srgb, var(--storybook-gold) 70%, black)) 100%
+	);
+	--env-seal-icon: var(
+		--storybook-wax-press,
+		color-mix(in srgb, var(--storybook-gold) 55%, black)
+	);
+	--env-shadow-seal:
+		0 1px 0 color-mix(in srgb, var(--color-text-primary) 26%, transparent),
+		0 4px 8px color-mix(in srgb, var(--color-text-primary) 18%, transparent),
+		inset 1px 1px 0 color-mix(in srgb, white 55%, transparent),
+		inset -1px -2px 3px color-mix(in srgb, black 22%, transparent);
+	--env-shadow-container:
+		0 1px 2px color-mix(in srgb, var(--color-text-primary) 14%, transparent),
+		0 26px 52px -28px color-mix(in srgb, var(--color-text-primary) 32%, transparent);
+	--env-container-radius: 2px;
+	--env-container-width: min(86vw, 40rem);
+	--env-container-ratio: 1.18;
+	--env-container-max-height: 60svh;
+	--env-grid: 36% 24% 40%;
+	--env-seal-size-min: 72px;
+	--env-seal-size-max: 100px;
+	--env-seal-size-ratio: 16;
+	--env-seal-hint-display: none;
+	--env-title-size: clamp(2.6rem, 11cqw, 3.9rem);
+	--env-font-display: var(--font-calligraphy), cursive;
+	--env-identity-padding: 1.25rem;
+	--reveal-card-bg:
+		var(--storybook-paper-grain, #{$storybook-grain}),
+		var(--storybook-card-bg, var(--color-surface-elevated));
+	--reveal-card-text-primary: var(--color-text-primary);
+	--reveal-card-text-secondary: var(--color-text-secondary);
+	--reveal-card-border: transparent;
+	--reveal-card-accent: var(--storybook-gold);
+	--reveal-card-font-display: var(--font-calligraphy), cursive;
+	--reveal-card-radius: 0;
+	--reveal-card-shadow: 0 1px 2px color-mix(in srgb, var(--color-text-primary) 16%, transparent);
+	--reveal-card-grain-opacity: 0;
+	--reveal-card-width: var(--storybook-card-width, min(86vw, 27rem));
+
+	.envelope-flap {
+		height: 54%;
+		clip-path: polygon(0 0, 100% 0, 50% 100%);
+		transition: background var(--duration-reveal, 900ms) var(--ease-premium);
+	}
+
+	// Gold hairline along both flap diagonals.
+	.envelope-flap::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		height: auto;
+		background:
+			linear-gradient(
+					to top right,
+					transparent calc(50% - 0.75px),
+					var(--storybook-gold) 50%,
+					transparent calc(50% + 0.75px)
+				)
+				left / 50% 100% no-repeat,
+			linear-gradient(
+					to top left,
+					transparent calc(50% - 0.75px),
+					var(--storybook-gold) 50%,
+					transparent calc(50% + 0.75px)
+				)
+				right / 50% 100% no-repeat;
+	}
+
+	// The sparkle liner is the inside of the flap: it shows only while the flap turns open.
+	&.is-opening .envelope-flap {
+		background: $storybook-liner, var(--storybook-liner-paper, var(--color-surface-elevated));
+	}
+
+	.envelope-pocket {
+		clip-path: polygon(0 28%, 50% 58%, 100% 28%, 100% 100%, 0 100%);
+	}
+
+	.envelope-tease {
+		padding-bottom: calc(1.25rem + 6cqw);
+	}
+
+	// Gold wax: an irregular spill under the stamp, the sun pressed in, the monogram on top.
+	.envelope-seal-button__visual {
+		position: relative;
+		isolation: isolate;
+		border: 0;
+		border-radius: 50%;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: var(--storybook-seal-rim-spread, -10%);
+			z-index: -1;
+			border-radius: var(--storybook-seal-rim-shape, 43% 57% 48% 52% / 57% 42% 58% 43%);
+			background: var(--storybook-seal-rim-bg, var(--env-seal-bg));
+			box-shadow: var(
+				--storybook-seal-rim-shadow,
+				0 1px 0 color-mix(in srgb, var(--color-text-primary) 24%, transparent),
+				0 8px 16px -6px color-mix(in srgb, var(--color-text-primary) 30%, transparent),
+				inset 0 1px 0 color-mix(in srgb, white 60%, transparent)
+			);
+			transform: rotate(var(--storybook-seal-rim-rotate, 12deg));
+		}
+	}
+
+	.envelope-seal-button__visual .seal-icon {
+		width: var(--storybook-seal-icon-size, 84%);
+		height: var(--storybook-seal-icon-size, 84%);
+		filter: var(
+			--storybook-seal-icon-filter,
+			drop-shadow(0.6px 0.8px 0 color-mix(in srgb, white 55%, transparent))
+				drop-shadow(-0.4px -0.5px 0 color-mix(in srgb, black 30%, transparent))
+		);
+	}
+
+	.envelope-seal-monogram {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		padding-top: 0.08em;
+		font-family: var(--font-calligraphy), cursive;
+		font-size: calc(var(--env-seal-size, 88px) * 0.36);
+		line-height: 1;
+		color: var(--env-seal-icon);
+		text-shadow:
+			0.6px 0.8px 0 color-mix(in srgb, white 55%, transparent),
+			-0.4px -0.5px 0 color-mix(in srgb, black 30%, transparent);
+		pointer-events: none;
+	}
+
+	.envelope-seal-button__pulse {
+		display: none;
+	}
+
+	.envelope-name {
+		font-family: var(--font-calligraphy), cursive;
+		font-weight: 400;
+		text-shadow: none;
+	}
+
+	.envelope-details,
+	.tease-divider {
+		display: none;
+	}
+
+	.personalized-label {
+		font-family: var(--font-label, var(--font-body));
+		font-size: 0.78rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--env-text-secondary);
+	}
+
+	.personalized-name {
+		font-family: var(--font-display);
+		font-size: clamp(1.45rem, 6.5cqw, 1.95rem);
+		font-style: italic;
+		font-weight: 500;
+		letter-spacing: 0;
+		text-transform: none;
+		color: var(--env-text-primary);
+	}
+
+	.envelope-external-instruction__button {
+		min-height: 44px;
+		font-family: var(--font-label, var(--font-body));
+		font-size: var(--env-open-label-size, 0.86rem);
+		letter-spacing: var(--storybook-instruction-tracking, 0.18em);
+		text-transform: uppercase;
+		color: var(--storybook-instruction-ink, var(--env-text-secondary));
+		opacity: 100%;
+	}
+
+	.instruction-line {
+		display: none;
+	}
+
+	// Card: cream paper with a deckle edge and an inner gold hairline. The mask clips the card's
+	// own shadow, so a contact shadow on the stage follows the deckle instead.
+	.envelope-reveal-stage {
+		filter: var(
+			--storybook-card-edge-shadow,
+			drop-shadow(0 1px 1px color-mix(in srgb, var(--color-text-primary) 22%, transparent))
+				drop-shadow(
+					0 8px 14px color-mix(in srgb, var(--color-text-primary) 10%, transparent)
+				)
+		);
+	}
+
+	.invitation-reveal-card {
+		mask: $storybook-deckle center / 100% 100% no-repeat;
+		border: 0;
+	}
+
+	.invitation-reveal-card__inner {
+		position: relative;
+		gap: 0.25rem;
+		padding-top: clamp(1.5rem, 5vw, 2.1rem);
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: clamp(0.65rem, 2.6vw, 0.9rem);
+			border: 1px solid color-mix(in srgb, var(--storybook-gold) 70%, transparent);
+			pointer-events: none;
+		}
+	}
+
+	.invitation-reveal-card__ornament {
+		width: min(70%, 12.5rem);
+		height: auto;
+		margin-bottom: 0.4rem;
+		color: var(--storybook-gold);
+	}
+
+	.invitation-reveal-card__label {
+		font-family: var(--font-label, var(--font-body));
+		font-size: 0.82rem;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: var(--color-text-secondary);
+	}
+
+	.invitation-reveal-card__name {
+		font-size: clamp(4.2rem, 22vw, 5.9rem);
+		font-weight: 400;
+		line-height: 1.12;
+	}
+
+	.invitation-reveal-card__date {
+		font-family: var(--font-body);
+		font-variant-numeric: oldstyle-nums;
+		letter-spacing: 0.08em;
+	}
+
+	.invitation-reveal-card__tagline {
+		font-family: var(--font-display);
+		font-style: italic;
+		font-size: clamp(1.05rem, 4vw, 1.25rem);
+		color: var(--color-text-secondary);
+	}
+
+	.invitation-reveal-card__divider {
+		display: none;
+	}
+
+	@include mixins.respond-below(sm) {
+		--env-container-width: min(88vw, 344px);
+		--env-container-ratio: 0.74;
+		--env-container-max-height: min(74svh, 560px);
+		--env-grid: 38% 22% 40%;
+		--env-title-size: clamp(2.6rem, 14cqw, 3.2rem);
+
+		.envelope-flap {
+			height: 46%;
+		}
+
+		.envelope-pocket {
+			clip-path: polygon(0 24%, 50% 50%, 100% 24%, 100% 100%, 0 100%);
+		}
+	}
+}
