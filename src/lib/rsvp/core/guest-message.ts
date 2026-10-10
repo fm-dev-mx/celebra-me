@@ -1,4 +1,10 @@
-const TIMESTAMP_RE = /^\[([^\]]+)\]\s+(.+)$/;
+/** Longest message a guest can send in one RSVP; shared by the form and the server. */
+export const MAX_GUEST_COMMENT_LEN = 1000;
+
+const TIMESTAMP_RE = /^\[([^\]\n]+)\]\s+([\s\S]+)$/;
+// Entries are joined by a blank line followed by an appended timestamp such as
+// "[12 jun 2026, 11:03]"; blank lines inside a message never start a new entry.
+const ENTRY_SEPARATOR_RE = /\n\n+(?=[ \t]*\[[^\]\n]*\d{4}[^\]\n]*\d{1,2}:\d{2}\]\s)/;
 
 export type GuestMessageEntry = {
 	id: string;
@@ -10,7 +16,7 @@ export type GuestMessageEntry = {
 export function parseGuestCommentHistory(guestComment: string): GuestMessageEntry[] {
 	if (!guestComment?.trim()) return [];
 
-	const raw = guestComment.split(/\n\n+/);
+	const raw = guestComment.split(ENTRY_SEPARATOR_RE);
 	const entries: GuestMessageEntry[] = [];
 
 	for (const block of raw) {

@@ -403,6 +403,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					selectionMode={batchSelection.selectionMode}
 					view={listView}
 					onViewChange={setListView}
+					showViewToggle={reviewFilter !== 'with-message'}
 					onStartSelection={batchSelection.startSelection}
 					changeNotice={changeNotice}
 					onDismissNotice={dismissNotice}
@@ -431,6 +432,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					view={listView}
 					onOpenDetails={(item) => setDetailGuestId(item.guestId)}
 					selection={batchSelection.tableSelection}
+					messageWall={reviewFilter === 'with-message'}
 				/>
 
 				{detailGuest && (

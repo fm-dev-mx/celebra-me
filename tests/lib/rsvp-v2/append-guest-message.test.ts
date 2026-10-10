@@ -83,3 +83,11 @@ describe('appendGuestMessage', () => {
 		expect(step3).toBe('Hola\n\n[12 jun 2026, 10:01] A\n\n[12 jun 2026, 10:02] B');
 	});
 });
+
+describe('resubmitting the prefilled latest message', () => {
+	it('does not append a latest message that has paragraphs', () => {
+		const history = 'Hola\n\n[12 jun 2026, 10:34] Ahí estaremos.\n\nCon cariño, Ana.';
+		expect(getLatestMessage(history)).toBe('Ahí estaremos.\n\nCon cariño, Ana.');
+		expect(appendGuestMessage(history, getLatestMessage(history), FIXED_DATE)).toBe(history);
+	});
+});

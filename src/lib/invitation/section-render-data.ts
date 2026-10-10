@@ -5,6 +5,7 @@ import type { InvitationRevealRecipe, SectionIntersectionFamily } from '@/lib/th
 import type { PersonalizedAccessVariant } from '@/lib/invitation/section-variants';
 import type { PersonalizedAccessPassStyle } from '@/lib/invitation/personalized-access-presentation';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
+import { getLatestMessage } from '@/lib/rsvp/core/guest-message';
 
 type Sections = InvitationPageContext['viewModel']['sections'];
 type SectionData<K extends keyof Sections> = NonNullable<Sections[K]>;
@@ -229,7 +230,8 @@ function renderRsvpSection(pageContext: InvitationPageContext): DescriptorData |
 						inviteId: guestContext.inviteId,
 						attendanceStatus: guestContext.guest.attendanceStatus,
 						attendeeCount: guestContext.guest.attendeeCount,
-						guestComment: guestContext.guest.guestComment,
+						// Only the latest message: resubmitting it unchanged must not append history.
+						guestComment: getLatestMessage(guestContext.guest.guestComment),
 					}
 				: undefined,
 			isDemoPreview: pageContext.isDemoPreview ?? false,

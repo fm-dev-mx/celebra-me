@@ -2,7 +2,7 @@ import React, { useId, useState } from 'react';
 import { MessageIcon } from '@/components/common/icons/ui';
 import CopyLinkButton from '@/components/dashboard/guests/CopyLinkButton';
 import { ChevronRightGlyph } from '@/components/dashboard/guests/GuestGlyphs';
-import GuestMessageHistory from '@/components/dashboard/guests/GuestMessageHistory';
+import GuestLastMessage from '@/components/dashboard/guests/GuestLastMessage';
 import { GUEST_TABLE_COL_COUNT } from '@/components/dashboard/guests/GuestTable';
 import SendInvitationModal from '@/components/dashboard/guests/SendInvitationModal';
 import ShareAction from '@/components/dashboard/guests/ShareAction';
@@ -68,13 +68,8 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	const msgPanel = hasMessages && msgOpen && (
 		<tr className="guest-message-row">
 			<td colSpan={GUEST_TABLE_COL_COUNT}>
-				<div
-					className="guest-message-panel"
-					id={msgId}
-					role="region"
-					aria-label="Mensajes del invitado"
-				>
-					<GuestMessageHistory
+				<div className="guest-message-panel" id={msgId}>
+					<GuestLastMessage
 						guestComment={item.guestComment}
 						fallbackTimestampIso={getGuestMessageFallbackTimestamp(item)}
 					/>

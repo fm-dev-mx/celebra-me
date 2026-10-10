@@ -1,6 +1,7 @@
 import React from 'react';
 import GuestCard from '@/components/dashboard/guests/GuestCard';
 import GuestListRow from '@/components/dashboard/guests/GuestListRow';
+import GuestMessageWall from '@/components/dashboard/guests/GuestMessageWall';
 import GuestSelectRow from '@/components/dashboard/guests/GuestSelectRow';
 import type { GuestListView } from '@/components/dashboard/guests/use-guest-list-view';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
@@ -38,6 +39,8 @@ interface GuestTableProps {
 		selectedIds: ReadonlySet<string>;
 		onToggle: (guestId: string) => void;
 	};
+	/** "Con mensaje" filter: every message in full instead of rows; selection keeps the rows. */
+	messageWall?: boolean;
 }
 
 export const GUEST_TABLE_COL_COUNT = 5;
@@ -62,6 +65,7 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	view = 'cards',
 	onOpenDetails,
 	selection,
+	messageWall = false,
 }) => {
 	// null until hydrated: both layouts render and CSS picks one. Afterwards only
 	// the visible layout mounts, which halves the DOM for long guest lists.
@@ -70,6 +74,9 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	const showTable = isDesktop !== false;
 
 	if (items.length === 0) return null;
+	if (messageWall && !selection) {
+		return <GuestMessageWall items={items} onOpenDetails={onOpenDetails} />;
+	}
 
 	const renderCard = (item: DashboardGuestItem, index: number) => (
 		<GuestCard

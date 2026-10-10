@@ -72,6 +72,20 @@
 	}
 }
 
+/* Two-line preview; the full message lives in the detail sheet. */
+.guest-card__message {
+	display: -webkit-box;
+	margin: 0;
+	overflow: hidden;
+	color: var(--color-text-primary);
+	font-family: var(--font-body-narrative);
+	font-size: 1rem;
+	line-height: 1.45;
+	overflow-wrap: anywhere;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+
 /* ───── Footer actions ───── */
 .guest-card__actions {
 	display: flex;
