@@ -293,7 +293,8 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 					maxAllowedAttendees: 4,
 					attendanceStatus: 'confirmed',
 					attendeeCount: 2,
-					guestComment: 'Con gusto asistimos',
+					// Stored history; the form receives only the latest message.
+					guestComment: 'Hola\n\n[12 jun 2026, 11:03] Con gusto asistimos',
 					hideCelebraMeBranding: false,
 				},
 			},

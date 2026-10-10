@@ -1,7 +1,8 @@
 import { RSVP_GUEST_CAP_TECHNICAL_MAX } from '@/lib/rsvp/guest-cap';
+import { MAX_GUEST_COMMENT_LEN } from '@/lib/rsvp/core/guest-message';
 
 export const MAX_TEXT_LEN = 500;
-export const MAX_GUEST_COMMENT_LEN = 1000;
+export { MAX_GUEST_COMMENT_LEN };
 export const DEFAULT_COUNTRY_CODE = '+52';
 
 /**
