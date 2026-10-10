@@ -416,7 +416,7 @@ function applyDisposableMigrations(options: { isBaseline: boolean; maxVersion?: 
 		'--target',
 		'disposable-test',
 		'--apply',
-		'--no-interactive',
+		'--non-interactive',
 	];
 	if (options.isBaseline) {
 		applyArgs.push('--max-version', BASELINE_CUTOFF_VERSION);

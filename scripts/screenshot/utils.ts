@@ -59,7 +59,7 @@ export function parseCliArgs(argv: string[]): CliOptions {
 	const args = argv.slice(2); // skip node and script path
 	const booleanFlags = new Set([
 		'--interactive',
-		'--no-interactive',
+		'--non-interactive',
 		'--include-layout',
 		'--corpus',
 		'--clean',
@@ -71,7 +71,7 @@ export function parseCliArgs(argv: string[]): CliOptions {
 		const arg = args[i];
 
 		// --no-* flags
-		if (arg === '--no-interactive') {
+		if (arg === '--non-interactive') {
 			options.interactive = false;
 			continue;
 		}

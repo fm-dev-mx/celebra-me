@@ -1,5 +1,5 @@
 import { domainUnverified } from '../db/schema-lifecycle-state.ts';
-import { flagValue } from '../lib/cli-args.ts';
+import { ENVIRONMENT_TARGETS, flagValue, parseEnvironmentList } from '../lib/cli-args.ts';
 import type { AssetPolicy } from './asset-reconciliation.ts';
 import { listInvitationDefinitions } from './invitations/registry.ts';
 import {
@@ -82,23 +82,9 @@ export function assertContentOnlyAllowsNoAssetMutations(input: {
 
 export function parseTargets(raw: string | undefined): InvitationUpdateTarget[] {
 	if (!raw) return [];
-	const values =
-		raw === 'all'
-			? ['local', 'preview', 'production']
-			: raw
-					.split(/[\s,]+/)
-					.map((s) => s.trim())
-					.filter(Boolean);
-	for (const target of values)
-		if (!['local', 'preview', 'production'].includes(target))
-			throw new Error(`Unknown target "${target}".`);
-	if (values.includes('production')) {
-		return ['local', 'preview', 'production'];
-	}
-	const selected = new Set(values);
-	return (['local', 'preview', 'production'] as InvitationUpdateTarget[]).filter((target) =>
-		selected.has(target),
-	);
+	const targets = raw === 'all' ? [...ENVIRONMENT_TARGETS] : parseEnvironmentList(raw);
+	// Production is only reachable through Local and Preview.
+	return targets.includes('production') ? [...ENVIRONMENT_TARGETS] : targets;
 }
 
 export function parseMutationTargets(raw: string | undefined): InvitationUpdateTarget[] {

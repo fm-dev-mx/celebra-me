@@ -5,7 +5,6 @@
 
 import { FinalTargetVerificationError, PreconditionFailedError } from './release-errors.ts';
 import { randomUUID, createHash } from 'node:crypto';
-import sharp from 'sharp';
 import { readFileSync, existsSync } from 'node:fs';
 import type { InvitationPackageData, InvitationPackageAsset } from './invitation-package.ts';
 import { computePackageHash, PACKAGE_SCHEMA_VERSION } from './invitation-package.ts';
@@ -21,6 +20,7 @@ import {
 	verifyCloudinaryAsset,
 	hydrateCloudinaryEnvFromFiles,
 } from './cloudinary-adapter.ts';
+import { verifyCloudinaryDelivery } from '../../src/lib/intake/services/cloudinary-assets.ts';
 import {
 	classifyDbTarget,
 	redactCredentials,
@@ -646,20 +646,22 @@ async function uploadAndVerifyAssets(
 		pAsset.providerPublicId = result.publicId;
 		pAsset.secureUrl = result.secureUrl;
 
-		const verifyRes = await fetch(result.secureUrl, { signal: AbortSignal.timeout(10_000) });
-		if (!verifyRes.ok) {
-			throw new Error(
-				`Cloudinary read-back verification failed for "${pAsset.key}" (HTTP ${verifyRes.status}).`,
+		try {
+			await verifyCloudinaryDelivery(
+				{
+					publicId: result.publicId,
+					sha256: pAsset.sha256,
+					mimeType: pAsset.mimeType,
+					width: pAsset.width ?? undefined,
+					height: pAsset.height ?? undefined,
+				},
+				result.secureUrl,
 			);
+		} catch (error) {
+			throw new Error(`Cloudinary read-back verification failed for "${pAsset.key}".`, {
+				cause: error,
+			});
 		}
-		if (verifyRes.headers.get('content-type')?.split(';')[0] !== pAsset.mimeType)
-			throw new Error(`Cloudinary read-back MIME mismatch for "${pAsset.key}".`);
-		const readBack = Buffer.from(await verifyRes.arrayBuffer());
-		if (createHash('sha256').update(readBack).digest('hex') !== pAsset.sha256)
-			throw new Error(`Cloudinary read-back SHA-256 mismatch for "${pAsset.key}".`);
-		const dimensions = await sharp(readBack).metadata();
-		if (dimensions.width !== pAsset.width || dimensions.height !== pAsset.height)
-			throw new Error(`Cloudinary read-back dimensions mismatch for "${pAsset.key}".`);
 
 		verifiedAssetHashes[pAsset.storagePath] = pAsset.sha256;
 		if (result.action === 'UPLOAD') uploadedCount++;
