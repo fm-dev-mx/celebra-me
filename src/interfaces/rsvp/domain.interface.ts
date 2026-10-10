@@ -47,6 +47,12 @@ export interface GuestInvitationRecord {
 	shortId?: string;
 	hideCelebraMeBranding?: boolean;
 	lastReminderSentAt?: string | null;
+	isTest?: boolean;
+	openCount?: number;
+	firstOpenedAt?: string | null;
+	lastOpenedAt?: string | null;
+	lastPreviewedAt?: string | null;
+	maxProgressMilestone?: number;
 }
 
 export interface GuestInvitationAuditRecord {
@@ -83,6 +89,12 @@ export interface GuestInvitationDTO {
 	shortId?: string;
 	hideCelebraMeBranding?: boolean;
 	lastReminderSentAt?: string | null;
+	isTest?: boolean;
+	openCount?: number;
+	firstOpenedAt?: string | null;
+	lastOpenedAt?: string | null;
+	lastPreviewedAt?: string | null;
+	maxProgressMilestone?: number;
 }
 
 export interface DashboardGuestMutationResponse {

@@ -56,14 +56,17 @@ const GuestListRow: React.FC<GuestListRowProps> = ({ item, inviteUrl, onOpen }) 
 			<button
 				type="button"
 				className="guest-row__open"
-				aria-label={`${item.fullName}. ${STATUS_LABEL[stage]}. ${subtitle}${hasMessage ? '. Dejó un mensaje' : ''}`}
+				aria-label={`${item.fullName}${item.isTest ? ' (invitado de prueba)' : ''}. ${STATUS_LABEL[stage]}. ${subtitle}${hasMessage ? '. Dejó un mensaje' : ''}`}
 				onClick={() => onOpen(item)}
 			>
 				<span className="guest-row__status" aria-hidden="true">
 					<Icon size={20} />
 				</span>
 				<span className="guest-row__text" aria-hidden="true">
-					<span className="guest-row__name">{item.fullName}</span>
+					<span className="guest-row__name">
+						{item.fullName}
+						{item.isTest && <span className="guest-tag guest-tag--test">Prueba</span>}
+					</span>
 					<span className="guest-row__subtitle">{subtitle}</span>
 					{hasMessage && (
 						<span className="guest-row__message">

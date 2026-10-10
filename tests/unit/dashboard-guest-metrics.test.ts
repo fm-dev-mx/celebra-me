@@ -193,4 +193,27 @@ describe('buildDashboardTotals — guest metrics', () => {
 			expect(totals.confirmedPeople).toBe(3);
 		});
 	});
+
+	describe('Test guests', () => {
+		it('never count toward any total', () => {
+			const totals = buildDashboardTotals([
+				guest({
+					deliveryStatus: 'shared',
+					attendanceStatus: 'confirmed',
+					attendeeCount: 2,
+				}),
+				guest({
+					deliveryStatus: 'shared',
+					attendanceStatus: 'confirmed',
+					attendeeCount: 3,
+					isTest: true,
+					firstViewedAt: '2026-10-10T00:00:00Z',
+				}),
+			]);
+			expect(totals.totalInvitations).toBe(1);
+			expect(totals.confirmedPeople).toBe(2);
+			expect(totals.sharedInvitations).toBe(1);
+			expect(totals.viewed).toBe(0);
+		});
+	});
 });

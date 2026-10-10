@@ -65,6 +65,7 @@ export const PATCH: APIRoute = async ({ params, request, url, locals, cookies })
 				body.deliveryStatus === 'generated' || body.deliveryStatus === 'shared'
 					? body.deliveryStatus
 					: undefined,
+			isTest: typeof body.isTest === 'boolean' ? body.isTest : undefined,
 		});
 
 		return jsonResponse(result);

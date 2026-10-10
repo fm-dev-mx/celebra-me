@@ -7,6 +7,7 @@ import { isEventType, parsePublicGuestRsvpRequest } from '@/lib/rsvp/core/rsvp-r
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { submitGuestRsvpByPublicEvent } from '@/lib/rsvp/services/rsvp-submission.service';
 import { sanitize } from '@/lib/rsvp/core/utils';
+import { recordServerEngagementEvent } from '@/lib/rsvp/engagement/engagement.service';
 
 function getIp(request: Request): string {
 	const raw =
@@ -71,6 +72,16 @@ export const POST: APIRoute = async ({ params, request }) => {
 			maxAllowedAttendees: rsvpSection.guestCap ?? 1,
 			payload: parsedRequest.payload,
 		});
+		if (result.attendanceStatus !== 'pending') {
+			await recordServerEngagementEvent(
+				result.inviteId,
+				{
+					eventName: 'rsvp_submitted',
+					properties: { attendanceStatus: result.attendanceStatus },
+				},
+				request,
+			);
+		}
 
 		return withPrivateCache(successResponse({ message: 'RSVP saved.', ...result }));
 	} catch (error) {

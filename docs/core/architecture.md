@@ -417,14 +417,18 @@ The active guest-facing patterns are:
 - `/{eventType}/{slug}/i/{shortId}` for short-link resolution
 - `/api/invitacion/:inviteId/location`
 - `/api/invitacion/:inviteId/rsvp`
-- `/api/invitacion/:inviteId/view`
+- `/api/invitacion/:inviteId/events` — guest engagement batches
+- `/api/invitacion/:inviteId/view` — legacy view telemetry, kept until the contract release
+- `GET /api/cron/engagement-maintenance` — daily engagement snapshots and ledger anonymization
+  (Vercel cron at 10:43 UTC; bearer `CRON_SECRET`)
 
 Historical note:
 
 - Older documents may reference `/invitation/{inviteId}` or `/api/invitation/*`. Those patterns are
   no longer the current public contract.
 
-Detailed RSVP design and constraints are documented in `docs/domains/rsvp/architecture.md`.
+Detailed RSVP design and constraints are documented in `docs/domains/rsvp/architecture.md`; guest
+engagement analytics in `docs/domains/rsvp/engagement-analytics.md`.
 
 ### Event memories (guest photo/video QR)
 

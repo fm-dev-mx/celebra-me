@@ -183,6 +183,16 @@
                 "valentina_memories_video_quota"
             ],
             "notes": "Drops the client-named Valentina memories catalog and its RPCs. Export the three tables and the referenced storage objects first; object deletion is a separate owner step."
+        },
+        "20261010120000": {
+            "phase": "expand",
+            "provides": ["guest_engagement_events"],
+            "notes": "Adds the append-only guest_engagement_events ledger, per-guest engagement projections and is_test on guest_invitations, events.event_date with its publish trigger and backfill, the service-role ingestion RPC, the host summary RPC, and narrows the guest audit trigger to the first view. Revokes only initialize privileges of the new table and functions. Apply before deploying the application that records engagement events."
+        },
+        "20261010130000": {
+            "phase": "expand",
+            "provides": ["invitation_engagement_snapshots"],
+            "notes": "Adds the permanent invitation_engagement_snapshots table and the service-role snapshot candidate, snapshot compute and ledger anonymization functions. Revokes only initialize privileges of the new table and functions. Apply before deploying the application whose maintenance cron calls them."
         }
     },
     "appCapabilities": {
@@ -212,6 +222,9 @@
         },
         "event_branding_removal_client": {
             "requiresDbCapabilities": ["event_branding_removal_settings"]
+        },
+        "guest_engagement_client": {
+            "requiresDbCapabilities": ["guest_engagement_events", "invitation_engagement_snapshots"]
         }
     }
 }

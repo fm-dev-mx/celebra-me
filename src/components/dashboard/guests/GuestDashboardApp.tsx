@@ -77,6 +77,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const {
 		error,
 		eventId,
+		engagement,
 		hostEvents,
 		inviteBaseUrl,
 		items,
@@ -133,7 +134,9 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	);
 
 	// Always the whole event: search and filters only narrow the list below.
-	const summary = useMemo(() => computeGuestSummary(items), [items]);
+	// Test guests stay in the list but never count toward the event overview.
+	const countedItems = useMemo(() => items.filter((item) => !item.isTest), [items]);
+	const summary = useMemo(() => computeGuestSummary(countedItems), [countedItems]);
 	const withMessageCount = useMemo(
 		() => items.filter((item) => (item.guestComment ?? '').trim().length > 0).length,
 		[items],
@@ -161,7 +164,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		isFiltered,
 		clearFilters,
 	} = useGuestListFilters(items, eligibleGuestIds);
-	const groupMetrics = useMemo(() => computeGroupMetrics(items), [items]);
+	const groupMetrics = useMemo(() => computeGroupMetrics(countedItems), [countedItems]);
 	// With a group selected, the next step speaks for that group only.
 	const groupScope = useMemo(() => {
 		const scope = buildGuestGroupScope(items, group, eligibleGuestIds);
@@ -356,6 +359,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						withMessageCount={withMessageCount}
 						rsvpDeadline={shareDateContext.rsvpDeadline}
 						eventTitle={currentEventTitle}
+						engagement={engagement}
 						nextStepScope={groupScope ?? undefined}
 						onRemind={() =>
 							batchSelection.requestBatch('reminder', groupScope?.reminderIds ?? null)

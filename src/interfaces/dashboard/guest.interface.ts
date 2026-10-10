@@ -38,6 +38,28 @@ export interface DashboardGuestItem {
 	shortId?: string;
 	hideCelebraMeBranding?: boolean;
 	lastReminderSentAt?: string | null;
+	/** Test guest: excluded from totals, funnel, and engagement snapshots. */
+	isTest?: boolean;
+	/** Guest engagement projections (docs/domains/rsvp/engagement-analytics.md). */
+	openCount?: number;
+	firstOpenedAt?: string | null;
+	lastOpenedAt?: string | null;
+	lastPreviewedAt?: string | null;
+	maxProgressMilestone?: number;
+}
+
+/** Host funnel from get_event_engagement_summary; guests only, test guests excluded. */
+export interface DashboardEngagementSummary {
+	guests: number;
+	shared: number;
+	previewed: number;
+	opened: number;
+	formViewed: number;
+	formStarted: number;
+	responded: number;
+	openedNotResponded: number;
+	medianSecondsToOpen: number | null;
+	trackingStartedAt: string | null;
 }
 
 export interface DashboardGuestListResponse {
@@ -60,5 +82,7 @@ export interface DashboardGuestListResponse {
 		unconfirmedShared: number;
 		viewed: number;
 	};
+	/** Absent or null when the summary could not be loaded; the dashboard hides the funnel. */
+	engagement?: DashboardEngagementSummary | null;
 	updatedAt: string;
 }

@@ -151,6 +151,9 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 							>
 								{item.fullName}
 							</button>
+							{item.isTest && (
+								<span className="guest-tag guest-tag--test">Prueba</span>
+							)}
 							<span className="guest-info__chips">
 								{hasCompactChips &&
 									compactChips.map((chip) => (

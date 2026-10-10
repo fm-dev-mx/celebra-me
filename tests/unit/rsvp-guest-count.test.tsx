@@ -281,3 +281,37 @@ describe('RSVP phone country code preservation', () => {
 		expect(getHook()!.countryCode).toBe('+1');
 	});
 });
+
+describe('RSVP guest engagement steps', () => {
+	function capture() {
+		const names: string[] = [];
+		const listener = (event: Event) =>
+			names.push((event as CustomEvent<{ eventName: string }>).detail.eventName);
+		window.addEventListener('celebra:invitation-engagement', listener);
+		return {
+			names,
+			stop: () => window.removeEventListener('celebra:invitation-engagement', listener),
+		};
+	}
+
+	it('emits form viewed on mount and form started on the first change', () => {
+		const events = capture();
+		const { getHook, unmount } = createTestHarness({
+			initialGuestData: { fullName: 'Ana', inviteId: 'invite-1', maxAllowedAttendees: 2 },
+		});
+		expect(events.names).toEqual(['rsvp_form_viewed']);
+		act(() => getHook()?.setAttendanceStatus('confirmed'));
+		act(() => getHook()?.setAttendanceStatus('declined'));
+		expect(events.names).toEqual(['rsvp_form_viewed', 'rsvp_form_started']);
+		unmount();
+		events.stop();
+	});
+
+	it('emits nothing for demos or public RSVP without an invite', () => {
+		const events = capture();
+		createTestHarness({ isDemoPreview: true }).unmount();
+		createTestHarness({ accessMode: 'hybrid' }).unmount();
+		expect(events.names).toEqual([]);
+		events.stop();
+	});
+});

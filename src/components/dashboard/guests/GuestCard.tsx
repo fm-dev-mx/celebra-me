@@ -61,7 +61,10 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	return (
 		<article className={articleClass} data-guest-id={item.guestId}>
 			<header className="guest-card__header">
-				<span className="guest-card__name">{item.fullName}</span>
+				<span className="guest-card__name">
+					{item.fullName}
+					{item.isTest && <span className="guest-tag guest-tag--test">Prueba</span>}
+				</span>
 				<GuestStatusPill item={item} />
 			</header>
 

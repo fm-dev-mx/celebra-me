@@ -74,27 +74,6 @@ class RsvpApi {
 		const data = this.handleResponse(result);
 		return 'data' in data ? data.data : data;
 	}
-
-	async markViewed(inviteId: string): Promise<void> {
-		const result = await fetchJSON<void>(
-			`/api/invitacion/${encodeURIComponent(inviteId)}/view`,
-			{
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({}),
-			},
-		);
-		this.handleResponse(result);
-	}
-
-	async trackAction(rsvpId: string, action: string, channel: string = 'whatsapp'): Promise<void> {
-		const result = await fetchJSON<void>('/api/rsvp/channel', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ rsvpId, channel, action }),
-		});
-		this.handleResponse(result);
-	}
 }
 
 export const rsvpApi = new RsvpApi();

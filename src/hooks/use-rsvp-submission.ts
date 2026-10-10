@@ -19,6 +19,7 @@ import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
 import { DEMO_GUEST_NAME } from '@/lib/invitation/section-render-data';
 import { getSmartScrollBlock } from '@/lib/dom/viewport';
 import { resolveGuestCap } from '@/lib/rsvp/guest-cap';
+import { emitInvitationEngagement } from '@/lib/invitation/invitation-analytics';
 
 interface InitialGuestData {
 	fullName?: string;
@@ -91,7 +92,6 @@ export function useRsvpSubmission({
 		guestComment: initialGuestComment,
 	});
 	const nameLocked = isDemoPreview || Boolean(initialData?.fullName);
-	const rsvpTrackingRef = useRef('');
 	const [responseInviteId, setResponseInviteId] = useState(initialData?.inviteId ?? '');
 	const [submitStatus, setSubmitStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
 		initialAttendanceStatus ? 'success' : 'idle',
@@ -101,14 +101,25 @@ export function useRsvpSubmission({
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-	// Track initial data viewed status - only once per mount
-	const hasMarkedViewed = useRef(false);
+	// Guest engagement: the island mounts when the RSVP section becomes visible.
+	const tracksEngagement = Boolean(initialData?.inviteId) && !isDemoPreview;
 	useEffect(() => {
-		if (initialData?.inviteId && !hasMarkedViewed.current && !isDemoPreview) {
-			hasMarkedViewed.current = true;
-			void rsvpApi.markViewed(initialData.inviteId).catch(() => {});
+		if (tracksEngagement)
+			emitInvitationEngagement({ eventName: 'rsvp_form_viewed', properties: {} });
+	}, [tracksEngagement]);
+	const hasStartedForm = useRef(false);
+	useEffect(() => {
+		if (!tracksEngagement || hasStartedForm.current) return;
+		const saved = savedResponseRef.current;
+		if (
+			attendanceStatus !== saved.attendanceStatus ||
+			notes !== saved.guestComment ||
+			String(attendeeCount) !== String(saved.attendeeCount)
+		) {
+			hasStartedForm.current = true;
+			emitInvitationEngagement({ eventName: 'rsvp_form_started', properties: {} });
 		}
-	}, [initialData?.inviteId, isDemoPreview]);
+	}, [tracksEngagement, attendanceStatus, attendeeCount, notes]);
 
 	const nameRef = useRef<HTMLInputElement>(null);
 	const phoneRef = useRef<HTMLInputElement>(null);
@@ -261,7 +272,6 @@ export function useRsvpSubmission({
 					} as import('@/lib/client/rsvp-api').PublicRsvpPayload);
 
 					const publicInviteId = publicResult.inviteId;
-					rsvpTrackingRef.current = publicInviteId ?? '';
 					setResponseInviteId(publicInviteId ?? responseInviteId);
 					savedResponseRef.current = {
 						attendanceStatus,
@@ -275,12 +285,11 @@ export function useRsvpSubmission({
 					return;
 				}
 
-				const data = await rsvpApi.submitRsvp(initialData.inviteId, {
+				await rsvpApi.submitRsvp(initialData.inviteId, {
 					attendanceStatus: attendanceStatus as 'confirmed' | 'declined',
 					attendeeCount: normalizedCount,
 					guestComment: notes.trim(),
 				});
-				rsvpTrackingRef.current = data.rsvpId ?? '';
 				setResponseInviteId(initialData.inviteId);
 				savedResponseRef.current = {
 					attendanceStatus,
@@ -319,17 +328,6 @@ export function useRsvpSubmission({
 		],
 	);
 
-	const handleWhatsAppClick = useCallback(async () => {
-		const trackingId = rsvpTrackingRef.current;
-		if (!trackingId) return;
-
-		try {
-			await rsvpApi.trackAction(trackingId, 'clicked', 'whatsapp');
-		} catch {
-			// Telemetry failure should not block the user journey.
-		}
-	}, []);
-
 	return {
 		name,
 		phone,
@@ -360,7 +358,6 @@ export function useRsvpSubmission({
 		setNotes,
 		handleBlur,
 		handleSubmit,
-		handleWhatsAppClick,
 		startEditingResponse,
 		restoreInitialResponse,
 		responseInviteId,

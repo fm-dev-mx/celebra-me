@@ -119,3 +119,35 @@ describe('GuestFormModal — party size stepper', () => {
 		expect(peopleInput()).toHaveValue(10);
 	});
 });
+
+describe('GuestFormModal — test guest flag', () => {
+	it('submits the test guest flag and preloads it when editing', async () => {
+		const onSubmit = jest.fn().mockResolvedValue(undefined);
+		const { unmount } = render(
+			<GuestFormModal
+				open
+				mode="create"
+				initialGuest={null}
+				onClose={jest.fn()}
+				onSubmit={onSubmit}
+			/>,
+		);
+		fireEvent.change(screen.getByLabelText(/nombre/i), { target: { value: 'Prueba interna' } });
+		fireEvent.click(screen.getByLabelText('Invitado de prueba'));
+		submitForm();
+		await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+		expect(onSubmit.mock.calls[0][0]).toMatchObject({ isTest: true });
+		unmount();
+
+		render(
+			<GuestFormModal
+				open
+				mode="edit"
+				initialGuest={makeGuest({ isTest: true })}
+				onClose={jest.fn()}
+				onSubmit={jest.fn()}
+			/>,
+		);
+		expect(screen.getByLabelText('Invitado de prueba')).toBeChecked();
+	});
+});

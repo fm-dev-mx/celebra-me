@@ -7,6 +7,10 @@ import {
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { createMockRequest } from '../helpers/api-mocks';
 
+jest.mock('@/lib/rsvp/engagement/engagement.service', () => ({
+	recordServerEngagementEvent: jest.fn(),
+}));
+
 jest.mock('@/lib/rsvp/services/rsvp-submission.service', () => ({
 	submitGuestRsvpByInviteId: jest.fn(),
 	trackInvitationView: jest.fn(),
@@ -74,5 +78,35 @@ describe('Invitation API: Guest Engagement (Happy Path)', () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 		expect(trackInvitationViewMock).toHaveBeenCalledWith('invite-1', undefined);
+	});
+});
+
+describe('Invitation API: RSVP engagement event', () => {
+	it('records rsvp_submitted after a successful personalized RSVP', async () => {
+		const { recordServerEngagementEvent } = jest.requireMock(
+			'@/lib/rsvp/engagement/engagement.service',
+		) as { recordServerEngagementEvent: jest.Mock };
+		recordServerEngagementEvent.mockClear();
+		checkRateLimitMock.mockResolvedValue(true);
+		submitGuestRsvpMock.mockResolvedValue({
+			attendanceStatus: 'declined',
+			attendeeCount: 0,
+			respondedAt: new Date().toISOString(),
+			inviteId: 'invite-1',
+			guestId: 'guest-1',
+			entrySource: 'dashboard',
+		});
+
+		const response = await rsvp({
+			params: { inviteId: 'invite-1' },
+			request: createMockRequest({ attendanceStatus: 'declined', attendeeCount: 0 }),
+		} as never);
+
+		expect(response.status).toBe(200);
+		expect(recordServerEngagementEvent).toHaveBeenCalledWith(
+			'invite-1',
+			{ eventName: 'rsvp_submitted', properties: { attendanceStatus: 'declined' } },
+			expect.anything(),
+		);
 	});
 });

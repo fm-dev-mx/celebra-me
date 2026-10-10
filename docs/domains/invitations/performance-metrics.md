@@ -324,8 +324,9 @@ Renata and Romina.
 **Enforcement.** Hard CI.
 
 **Baseline.** Constants `PERSONALIZED_GUEST_CONTEXT_READS_ON_MISS = 1`,
-`PERSONALIZED_GUEST_CONTEXT_READS_ON_HIT = 2`, `PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT = 1`.
-Production miss HTML was only +31 B vs anonymous Renata.
+`PERSONALIZED_GUEST_CONTEXT_READS_ON_HIT = 2`, `PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT = 0` (opens
+are recorded by the browser once the page is visible, not during SSR). Production miss HTML was only
++31 B vs anonymous Renata.
 
 **Interpretation.** Extra lookups without a guest payload are wasted origin time.
 

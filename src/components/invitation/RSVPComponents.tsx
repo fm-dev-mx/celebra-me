@@ -205,7 +205,7 @@ export const SubmittedState = forwardRef<
 		celebrantName?: string;
 		showWhatsAppCta: boolean;
 		whatsAppUrl: string;
-		onWhatsAppClick: () => void;
+		onWhatsAppClick?: () => void;
 		responseMessages?: RsvpResponseMessages;
 		revealedLocation?: RevealedLocation;
 		locationError?: string;
