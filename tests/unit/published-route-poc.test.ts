@@ -3,7 +3,7 @@ jest.mock('@/lib/content/events', () => ({
 }));
 
 jest.mock('@/lib/intake/repositories/published-invitation-content.repository', () => ({
-	findPublishedBySlugAndEventType: jest.fn(),
+	findPublishedWithAccessBySlugAndEventType: jest.fn(),
 }));
 
 jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
@@ -72,7 +72,7 @@ import {
 	type ContentResolution,
 } from '@/lib/invitation/content-resolver';
 import { getRoutableEventEntry } from '@/lib/content/events';
-import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
+import { findPublishedWithAccessBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import validPublishedContentJson from '../fixtures/content/xv-jewelry-box.json';
@@ -83,9 +83,10 @@ const validPublishedContent = {
 };
 
 const mockGetRoutable = getRoutableEventEntry as jest.MockedFunction<typeof getRoutableEventEntry>;
-const mockFindPublishedBySlugAndEventType = findPublishedBySlugAndEventType as jest.MockedFunction<
-	typeof findPublishedBySlugAndEventType
->;
+const mockFindPublishedWithAccess =
+	findPublishedWithAccessBySlugAndEventType as jest.MockedFunction<
+		typeof findPublishedWithAccessBySlugAndEventType
+	>;
 const mockAdaptDbEvent = adaptDbEvent as jest.Mock;
 const mockIsInvitationArchivedBySlug = isInvitationArchivedBySlug as jest.MockedFunction<
 	typeof isInvitationArchivedBySlug
@@ -99,7 +100,7 @@ beforeEach(() => {
 describe('published route POC', () => {
 	it('resolver uses published content when available and static missing', async () => {
 		mockGetRoutable.mockResolvedValue(null);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+		mockFindPublishedWithAccess.mockResolvedValue({
 			slug: 'my-invitation',
 			eventType: 'xv',
 			isDemo: false,
@@ -117,7 +118,7 @@ describe('published route POC', () => {
 	});
 
 	it('resolver uses DB content even when static content exists', async () => {
-		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+		mockFindPublishedWithAccess.mockResolvedValue({
 			slug: 'ana-sofia',
 			eventType: 'xv',
 			isDemo: false,
@@ -133,7 +134,7 @@ describe('published route POC', () => {
 	});
 
 	it('resolver uses static content only for demos when DB is empty', async () => {
-		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockFindPublishedWithAccess.mockResolvedValue(null);
 		mockGetRoutable.mockResolvedValue({
 			id: 'event-demos/demo-xv',
 			data: { isDemo: true },
@@ -147,7 +148,7 @@ describe('published route POC', () => {
 
 	it('published content produces complete InvitationViewModel', async () => {
 		mockGetRoutable.mockResolvedValue(null);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+		mockFindPublishedWithAccess.mockResolvedValue({
 			slug: 'my-invitation',
 			eventType: 'xv',
 			isDemo: false,
@@ -166,7 +167,7 @@ describe('published route POC', () => {
 
 	it('resolver returns null when neither source has content', async () => {
 		mockGetRoutable.mockResolvedValue(null);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockFindPublishedWithAccess.mockResolvedValue(null);
 
 		const result = await resolveInvitationContent('non-existent', 'xv');
 
@@ -175,7 +176,7 @@ describe('published route POC', () => {
 
 	it('unpublished draft content is never accessible via resolver', async () => {
 		mockGetRoutable.mockResolvedValue(null);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockFindPublishedWithAccess.mockResolvedValue(null);
 
 		const result = await resolveInvitationContent('draft-only-slug', 'xv');
 
@@ -187,7 +188,7 @@ describe('published route POC', () => {
 			id: 'event-demos/xv/demo-xv',
 			data: { isDemo: true },
 		} as any);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockFindPublishedWithAccess.mockResolvedValue(null);
 
 		const result = await resolveInvitationContent('demo-xv', 'xv');
 
@@ -200,7 +201,7 @@ describe('published route POC', () => {
 			id: 'event-demos/xv/demo-xv',
 			data: { isDemo: true },
 		} as any);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockFindPublishedWithAccess.mockResolvedValue(null);
 		mockIsInvitationArchivedBySlug.mockResolvedValue(true);
 
 		const result = await resolveInvitationContent('demo-xv', 'xv');
@@ -213,7 +214,7 @@ describe('published route POC', () => {
 			id: 'event-demos/xv/demo-xv',
 			data: { isDemo: true },
 		} as any);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockFindPublishedWithAccess.mockResolvedValue(null);
 		mockIsInvitationArchivedBySlug.mockRejectedValue(
 			new Error("Could not find the table 'public.invitations' in the schema cache"),
 		);
@@ -225,7 +226,7 @@ describe('published route POC', () => {
 
 	it('resolver does not expose admin fields in the published view model', async () => {
 		mockGetRoutable.mockResolvedValue(null);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+		mockFindPublishedWithAccess.mockResolvedValue({
 			slug: 'my-invitation',
 			eventType: 'xv',
 			isDemo: false,

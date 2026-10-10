@@ -6,6 +6,7 @@ import {
 	type MemoriesWindowState,
 } from '@/lib/memories/contract/catalog';
 import { isMemoriesPublicSlug } from '@/lib/memories/contract/private-request';
+import { isEventInvitationDisabled } from '@/lib/invitation/access/invitation-access.repository';
 import { findMemorySpaceByEventId, findMemorySpaceByPublicSlug } from './settings.repository';
 
 export function toMemorySpaceSummary(
@@ -26,13 +27,16 @@ export function toMemorySpaceSummary(
 /**
  * Landing-page resolution for a printed QR: unknown and malformed slugs are
  * indistinguishable (null → 404), while expired spaces still resolve so the
- * page can show a closure message instead of an error.
+ * page can show a closure message instead of an error. A space whose invitation
+ * the administrator disabled is indistinguishable from an unknown one.
  */
 export async function findPublicMemorySpace(
 	publicSlug: unknown,
 ): Promise<MemoriesSpaceRecord | null> {
 	if (!isMemoriesPublicSlug(publicSlug)) return null;
-	return findMemorySpaceByPublicSlug(publicSlug);
+	const space = await findMemorySpaceByPublicSlug(publicSlug);
+	if (!space || (await isEventInvitationDisabled(space.eventId))) return null;
+	return space;
 }
 
 /** API resolution: unknown, malformed and expired slugs are indistinguishable (404). */

@@ -239,9 +239,12 @@ Admin clicks "Publicar" → `publishDraft()` service:
 
 Visitor → `/{eventType}/{slug}` → `resolveInvitationContent()`:
 
-1. Tries `published_invitation_content` lookup via `(event_type, slug)`
-2. Falls back to static Astro content collection for demo entries
-3. Non-demo static entries are explicitly blocked (must come from DB)
+1. Tries `published_invitation_content` lookup via `(event_type, slug)`, embedding the linked
+   invitation's `invitation_access_controls` row in the same read
+2. A disabled client invitation resolves as unavailable (neutral page, `403`); an unpaid one renders
+   as the preview; a missing access row is treated as unpaid
+3. Falls back to static Astro content collection for demo entries
+4. Non-demo static entries are explicitly blocked (must come from DB)
 
 ### Asset Library
 

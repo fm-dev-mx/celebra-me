@@ -23,6 +23,10 @@ import { resolveGuestCap } from '@/lib/rsvp/guest-cap';
 import { appendGuestMessage } from '@/lib/rsvp/core/guest-message';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
+import {
+	invitationUnavailableError,
+	isEventInvitationDisabled,
+} from '@/lib/invitation/access/invitation-access.repository';
 
 type InviteRsvpIdentity = {
 	inviteId: string;
@@ -67,6 +71,9 @@ export async function resolveRsvpTarget(identity: RsvpIdentity): Promise<Resolve
 		if (isInviteIdentity(identity)) {
 			const invitation = await findGuestByInviteIdPublic(sanitize(identity.inviteId, 64));
 			if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');
+			if (await isEventInvitationDisabled(invitation.eventId)) {
+				throw invitationUnavailableError();
+			}
 			return {
 				event: null,
 				invitation,

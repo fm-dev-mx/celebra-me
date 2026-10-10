@@ -14,6 +14,7 @@ import {
 	CANONICAL_MEMORIES_SLUG,
 	buildCanonicalMemorySpaceRow,
 } from './canonical-memories-fixture.ts';
+import { CANONICAL_ACCESS_FIXTURE_SLUGS } from './canonical-access-fixture.ts';
 
 if (process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES !== 'true') {
 	throw new Error('Canonical fixtures require explicit PLAYWRIGHT_USE_CANONICAL_FIXTURES=true.');
@@ -22,6 +23,11 @@ if (process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES !== 'true') {
 const origin = 'http://127.0.0.1:54321';
 const assets = new Map<string, { bytes: Uint8Array; mimeType: string }>();
 const publications: Record<string, unknown>[] = [];
+
+/** Embedded access state, as PostgREST returns it for `invitation:invitations(access:...)`. */
+function accessEmbed(paymentStatus: 'paid' | 'unpaid', publicAccess: 'enabled' | 'disabled') {
+	return { access: { payment_status: paymentStatus, public_access: publicAccess } };
+}
 for (const definition of listInvitationDefinitions().filter(
 	(item) => item.lifecycle === 'published',
 )) {
@@ -50,7 +56,24 @@ for (const definition of listInvitationDefinitions().filter(
 		published_at: definition.createdAt,
 		created_at: definition.createdAt,
 		updated_at: definition.createdAt,
+		invitation: accessEmbed('paid', 'enabled'),
 	});
+}
+// Canonical invitations are paid; these clones exercise the unpaid preview and the disabled page.
+const accessSource = publications[0];
+if (accessSource) {
+	publications.push(
+		{
+			...accessSource,
+			slug: CANONICAL_ACCESS_FIXTURE_SLUGS.unpaid,
+			invitation: accessEmbed('unpaid', 'enabled'),
+		},
+		{
+			...accessSource,
+			slug: CANONICAL_ACCESS_FIXTURE_SLUGS.disabled,
+			invitation: accessEmbed('paid', 'disabled'),
+		},
+	);
 }
 
 const server = createServer((request, response) => {
@@ -80,6 +103,9 @@ const server = createServer((request, response) => {
 		url.pathname === '/rest/v1/invitations' &&
 		url.searchParams.get('select') === 'archived_at'
 	) {
+		result = [];
+	} else if (url.pathname === '/rest/v1/events') {
+		// No canonical RSVP event links an invitation: memories and RSVP see no access row.
 		result = [];
 	} else if (url.pathname === '/rest/v1/event_memory_settings') {
 		const slug = url.searchParams.get('public_slug')?.replace(/^eq\./, '');

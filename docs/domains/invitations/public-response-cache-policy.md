@@ -27,7 +27,26 @@ Cache-Control: no-store, private
 
 That includes personalized invitation URLs, metadata/context/view/RSVP APIs, dashboard preview,
 preflight and publication APIs, authentication and authorization errors, invalid event types,
-missing invitation routes, render failures, and canonical redirects.
+missing invitation routes, disabled invitations, render failures, and canonical redirects.
+
+## Access state and indexing
+
+The public route reads the invitation's access state (`invitation_access_controls`) in the same
+single published-content read, on every request; there is no cache to invalidate when the
+administrator changes it.
+
+| Invitation state                   | Status | Body                     | `Cache-Control`                                  | `X-Robots-Tag`                               |
+| ---------------------------------- | ------ | ------------------------ | ------------------------------------------------ | -------------------------------------------- |
+| Client invitation (paid or unpaid) | 200    | Invitation               | `public, max-age=0, s-maxage=0, must-revalidate` | `noindex, nofollow, noarchive, noimageindex` |
+| Disabled by the administrator      | 403    | Neutral unavailable page | `no-store, private`                              | `noindex, nofollow, noarchive`               |
+| Archived or nonexistent            | 404    | Same neutral page        | `no-store, private`                              | `noindex, nofollow, noarchive`               |
+| Static demo                        | 200    | Demo                     | `public, max-age=0, s-maxage=0, must-revalidate` | none (indexable)                             |
+
+The neutral page carries no event data and no canonical or social URL (the path usually contains
+names). Short links of a disabled invitation answer crawlers with an empty `403` (no metadata) and
+still redirect guests to the route, which renders the neutral page. Public APIs (location, generic
+and personalized RSVP) answer `403 invitation_unavailable`; the memories space of a disabled
+invitation resolves as unknown (`404`).
 
 ## Verification
 
@@ -39,6 +58,7 @@ Local browser coverage verifies the effective headers for:
 | Personalized invitation                | `no-store, private`                              |
 | Invalid invitation-like route          | `no-store, private`                              |
 | Canonical personalized redirect        | `no-store, private`                              |
+| Disabled invitation (403)              | `no-store, private`                              |
 | Preview and publication/preflight APIs | `no-store, private`                              |
 
 The route must set a private policy on every early return. The middleware also protects
@@ -59,6 +79,5 @@ Canonical delivery metrics, HTML budgets, and runtime monitoring live in
 [`performance-metrics.md`](performance-metrics.md). This file remains the cache-header correctness
 SSOT; do not duplicate budget numbers here.
 
-Section-contract work lives in [`../theme/architecture.md`](../theme/architecture.md).
-Plan governance and Task Contract semantics live in `.agent/plans/README.md`.
-
+Section-contract work lives in [`../theme/architecture.md`](../theme/architecture.md). Plan
+governance and Task Contract semantics live in `.agent/plans/README.md`.

@@ -5,7 +5,11 @@ import InvitationSections from '@/components/invitation/InvitationSections.astro
 import DemoConversion from '@/components/invitation/DemoConversion.astro';
 import { hasDemoConversion } from '@/lib/invitation/demo-conversion';
 import { getRoutableEventEntry } from '@/lib/content/events';
-import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
+import { resolvePublicInvitation } from '@/lib/invitation/content-resolver';
+import {
+	CLIENT_INVITATION_ROBOTS,
+	UNAVAILABLE_INVITATION_ROBOTS,
+} from '@/lib/invitation/access/invitation-access';
 import { buildPageContextFromViewModel, prepareInvitationPageContext } from '@/lib/invitation/page-data';
 import { resolveRoutePersonalization } from '@/lib/invitation/route-personalization';
 import Layout from '@/layouts/Layout.astro';
@@ -23,6 +27,7 @@ import { resolveInvitationCssLoadPlan } from '@/lib/invitation/section-css-resol
 import { buildInvitationCssResolverInput } from '@/lib/invitation/invitation-css-input';
 import { buildInvitationStylesheetHeadLinks } from '@/lib/invitation/invitation-css-head-links';
 import InvitationError from '@/components/invitation/InvitationError.astro';
+import InvitationUnavailable from '@/components/invitation/InvitationUnavailable.astro';
 import InvitationDeferredCssPromotion from '@/components/invitation/InvitationDeferredCssPromotion.astro';
 import { isEventType } from '@/lib/theme/theme-contract';
 
@@ -66,13 +71,17 @@ let contentVersion: number | null = null;
 
 try {
 	const resolveContentStart = performance.now();
-	const resolution = await resolveInvitationContent(slug, eventType);
-	contentSource = resolution?.source ?? null;
+	const resolution = await resolvePublicInvitation(slug, eventType);
+	contentSource = resolution && resolution.source !== 'unavailable' ? resolution.source : null;
 	contentVersion = resolution?.source === 'published' ? resolution.version : null;
 	resolveContentDur = performance.now() - resolveContentStart;
 
 	if (!resolution) {
 		Astro.response.status = 404;
+		Astro.response.headers.set('Cache-Control', 'no-store, private');
+	} else if (resolution.source === 'unavailable') {
+		// Disabled by the administrator: neutral page, no personalization lookup.
+		Astro.response.status = 403;
 		Astro.response.headers.set('Cache-Control', 'no-store, private');
 	} else {
 		viewModel = resolution.viewModel;
@@ -157,6 +166,17 @@ const cacheControl =
 		: 'no-store, private';
 Astro.response.headers.set('Cache-Control', cacheControl);
 
+// Client invitations carry private event data: never indexed. The neutral page
+// (disabled, archived, nonexistent) is not indexed either. Demos stay indexable.
+const isClientInvitation = contentSource === 'published' && Boolean(page && viewModel);
+const isUnavailablePage = !renderError && !(page && viewModel);
+const robotsPolicy = isUnavailablePage
+	? UNAVAILABLE_INVITATION_ROBOTS
+	: isClientInvitation
+		? CLIENT_INVITATION_ROBOTS
+		: undefined;
+if (robotsPolicy) Astro.response.headers.set('X-Robots-Tag', robotsPolicy);
+
 // Render-Timing — always set a simple baseline to confirm header survives Vercel
 Astro.response.headers.set('X-Render-Timing', 'active');
 
@@ -223,6 +243,7 @@ const isDemoConversion = Boolean(
 			title={page.layout.title}
 			description={page.layout.description}
 			image={page.layout.image}
+			robots={isClientInvitation ? CLIENT_INVITATION_ROBOTS : undefined}
 			hideHeader={true}
 			className={page.layout.className}
 			isDemo={page.viewModel.isDemo}
@@ -461,6 +482,6 @@ const isDemoConversion = Boolean(
 					</div>
 		</Layout>
 	) : (
-		<InvitationError />
+		<InvitationUnavailable />
 	)
 }

@@ -2,7 +2,10 @@
 export const prerender = false;
 
 import { resolvePublicSiteOrigin } from '@/lib/invitation/social-metadata';
-import { resolveShortIdPage } from '@/lib/invitation/short-id-resolver';
+import {
+  applyUnavailableShortIdResponse,
+  resolveShortIdPage,
+} from '@/lib/invitation/short-id-resolver';
 import InvitationOGShell from '@/lib/invitation/InvitationOGShell.astro';
 
 const SITE_ORIGIN = resolvePublicSiteOrigin();
@@ -23,12 +26,21 @@ if (result.kind === 'redirect') {
 // Personalized metadata must never enter a shared cache.
 Astro.response.headers.set('Cache-Control', 'no-store, private');
 Astro.response.headers.set('Vary', 'User-Agent');
+
+if (result.kind === 'unavailable') {
+  // Disabled invitation: crawlers get an empty 403, no metadata.
+  applyUnavailableShortIdResponse(Astro.response);
+}
 ---
 
-<InvitationOGShell
-  ogTitle={result.ogData.ogTitle}
-  ogDescription={result.ogData.ogDescription}
-  ogImage={result.ogData.ogImage}
-  canonicalUrl={result.canonicalUrl}
-  redirectTarget={result.redirectTarget}
-/>
+{
+  result.kind === 'render' && (
+    <InvitationOGShell
+      ogTitle={result.ogData.ogTitle}
+      ogDescription={result.ogData.ogDescription}
+      ogImage={result.ogData.ogImage}
+      canonicalUrl={result.canonicalUrl}
+      redirectTarget={result.redirectTarget}
+    />
+  )
+}

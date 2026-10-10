@@ -27,6 +27,8 @@ interface Props {
 	image?: string | ImageMetadata;
 	imageAlt?: string;
 	robots?: string;
+	/** Leave out canonical and social URLs (pages whose path must not be echoed back). */
+	omitCanonical?: boolean;
 	hideHeader?: boolean;
 	className?: string;
 	isDemo?: boolean;
@@ -49,6 +51,7 @@ const {
 	image = '/images/og/og-home.jpg',
 	imageAlt,
 	robots,
+	omitCanonical = false,
 	hideHeader = false,
 	className,
 	isDemo = false,
@@ -94,7 +97,7 @@ const speedInsightsConfig = resolveSpeedInsightsConfig(Astro.url, {
 
 		<!-- Open Graph -->
 		<meta property="og:type" content="website" />
-		<meta property="og:url" content={canonicalUrl} />
+		{!omitCanonical && <meta property="og:url" content={canonicalUrl} />}
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:image" content={ogImage} />
@@ -103,13 +106,13 @@ const speedInsightsConfig = resolveSpeedInsightsConfig(Astro.url, {
 		<meta property="og:image:height" content={String(socialImage.height)} />
 		<meta property="og:image:type" content={socialImage.type} />
 		<meta property="og:image:alt" content={imageAlt ?? title} />
-		<link rel="canonical" href={canonicalUrl} />
+		{!omitCanonical && <link rel="canonical" href={canonicalUrl} />}
 		<meta property="og:locale" content="es_MX" />
 		<meta property="og:site_name" content="Celebra-me" />
 
 		<!-- Twitter -->
 		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:url" content={canonicalUrl} />
+		{!omitCanonical && <meta name="twitter:url" content={canonicalUrl} />}
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImage} />

@@ -237,6 +237,9 @@
         },
         "guest_engagement_only_client": {
             "requiresDbCapabilities": ["guest_engagement_events", "invitation_engagement_snapshots"]
+        },
+        "invitation_access_controls_client": {
+            "requiresDbCapabilities": ["invitation_access_controls"]
         }
     }
 }

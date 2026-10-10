@@ -6,6 +6,7 @@
         "retired_legacy_tables_client",
         "event_branding_removal_client",
         "guest_engagement_client",
-        "guest_engagement_only_client"
+        "guest_engagement_only_client",
+        "invitation_access_controls_client"
     ]
 }

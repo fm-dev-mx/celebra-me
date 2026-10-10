@@ -1,0 +1,49 @@
+---
+/**
+ * Neutral page for an invitation the visitor cannot see: disabled by the administrator
+ * (403), archived or nonexistent (404). It never receives event data, and it leaves out
+ * the canonical URL because the requested path itself usually carries names.
+ */
+import Layout from '@/layouts/Layout.astro';
+import Logo from '@/components/ui/Logo.astro';
+import { UNAVAILABLE_INVITATION_ROBOTS } from '@/lib/invitation/access/invitation-access';
+import { getContactPhone, getWhatsAppLink, isPlaceholderContactPhone } from '@/utils/whatsapp';
+import '@/styles/invitation/_unavailable-page.scss';
+
+const whatsappLink = getWhatsAppLink(
+	'Hola, intento abrir una invitación de Celebra-me y aparece como no disponible.',
+);
+const showContact = !isPlaceholderContactPhone(getContactPhone());
+---
+
+<Layout
+	title="Invitación no disponible · Celebra-me"
+	robots={UNAVAILABLE_INVITATION_ROBOTS}
+	omitCanonical={true}
+	hideHeader={true}
+	themeMode="light"
+>
+	<section class="invitation-unavailable" data-invitation-unavailable>
+		<div class="invitation-unavailable__card">
+			<Logo altText="Celebra-me" class="invitation-unavailable__logo" />
+			<h1 class="invitation-unavailable__title">
+				Esta invitación no está disponible por el momento.
+			</h1>
+			{
+				showContact && (
+					<>
+						<p class="invitation-unavailable__text">Si necesita ayuda, escríbanos.</p>
+						<a
+							class="invitation-unavailable__contact"
+							href={whatsappLink}
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							Contactar a Celebra-me por WhatsApp
+						</a>
+					</>
+				)
+			}
+		</div>
+	</section>
+</Layout>

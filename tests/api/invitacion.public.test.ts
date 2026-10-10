@@ -9,7 +9,7 @@ jest.mock('@/lib/rsvp/engagement/engagement.service', () => ({
 }));
 
 jest.mock('@/lib/invitation/content-resolver', () => ({
-	resolveInvitationContent: jest.fn(),
+	resolvePublicInvitation: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
@@ -24,10 +24,10 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn(),
 }));
 
-import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
+import { resolvePublicInvitation } from '@/lib/invitation/content-resolver';
 
-const resolveInvitationContentMock = resolveInvitationContent as jest.MockedFunction<
-	typeof resolveInvitationContent
+const resolvePublicInvitationMock = resolvePublicInvitation as jest.MockedFunction<
+	typeof resolvePublicInvitation
 >;
 const findEventBySlugServiceMock = findEventBySlugService as jest.MockedFunction<
 	typeof findEventBySlugService
@@ -67,7 +67,7 @@ describe('Invitation API: public landing RSVP', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		checkRateLimitMock.mockResolvedValue(true);
-		resolveInvitationContentMock.mockResolvedValue(mockContentResolution() as any);
+		resolvePublicInvitationMock.mockResolvedValue(mockContentResolution() as any);
 		findEventBySlugServiceMock.mockResolvedValue({
 			id: 'evt-1',
 			ownerUserId: 'host-1',
@@ -206,7 +206,7 @@ describe('Invitation API: public landing RSVP', () => {
 	});
 
 	it('rejects events that do not opt into hybrid RSVP', async () => {
-		resolveInvitationContentMock.mockResolvedValueOnce(
+		resolvePublicInvitationMock.mockResolvedValueOnce(
 			mockContentResolution({ accessMode: 'personalized-only' }) as any,
 		);
 
@@ -222,6 +222,29 @@ describe('Invitation API: public landing RSVP', () => {
 		} as never);
 
 		expect(response.status).toBe(403);
+	});
+
+	it('rejects submissions for a disabled invitation without touching the event', async () => {
+		resolvePublicInvitationMock.mockResolvedValueOnce({ source: 'unavailable' });
+
+		const response = await publicRsvp({
+			params: { eventType: 'xv', slug: 'demo' },
+			request: createMockRequest({
+				fullName: 'Mariana Soto',
+				phone: '6680000000',
+				countryCode: '+52',
+				attendanceStatus: 'confirmed',
+				attendeeCount: 1,
+			}),
+		} as never);
+
+		expect(response.status).toBe(403);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+		await expect(response.json()).resolves.toMatchObject({
+			error: { code: 'invitation_unavailable' },
+		});
+		expect(findEventBySlugServiceMock).not.toHaveBeenCalled();
+		expect(submitGuestRsvpByPublicEventMock).not.toHaveBeenCalled();
 	});
 
 	it('rejects public phone submissions without countryCode', async () => {
