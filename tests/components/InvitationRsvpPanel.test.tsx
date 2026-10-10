@@ -57,7 +57,13 @@ describe('InvitationRsvpPanel', () => {
 		const confirmSpy = jest.spyOn(window, 'confirm');
 		const fetchMock = mockFetchResponse(200, { item: { ...RSVP_EVENT, status: 'archived' } });
 		const onDeactivated = jest.fn();
-		render(<InvitationRsvpPanel rsvpEvent={RSVP_EVENT} onDeactivated={onDeactivated} />);
+		render(
+			<InvitationRsvpPanel
+				rsvpEvent={RSVP_EVENT}
+				invitationPublished
+				onStatusChanged={onDeactivated}
+			/>,
+		);
 
 		await confirmDeactivation();
 
@@ -75,7 +81,13 @@ describe('InvitationRsvpPanel', () => {
 	it('shows an error and keeps the panel when the request is rejected', async () => {
 		mockFetchResponse(403, { error: { code: 'forbidden', message: 'CSRF inválido' } });
 		const onDeactivated = jest.fn();
-		render(<InvitationRsvpPanel rsvpEvent={RSVP_EVENT} onDeactivated={onDeactivated} />);
+		render(
+			<InvitationRsvpPanel
+				rsvpEvent={RSVP_EVENT}
+				invitationPublished
+				onStatusChanged={onDeactivated}
+			/>,
+		);
 
 		await confirmDeactivation();
 
@@ -89,7 +101,13 @@ describe('InvitationRsvpPanel', () => {
 	it('sends nothing when the confirmation is cancelled', async () => {
 		const fetchMock = mockFetchResponse(200, {});
 		const user = userEvent.setup();
-		render(<InvitationRsvpPanel rsvpEvent={RSVP_EVENT} onDeactivated={jest.fn()} />);
+		render(
+			<InvitationRsvpPanel
+				rsvpEvent={RSVP_EVENT}
+				invitationPublished
+				onStatusChanged={jest.fn()}
+			/>,
+		);
 
 		await user.click(screen.getByRole('button', { name: 'Desactivar RSVP' }));
 		await user.click(
@@ -98,5 +116,46 @@ describe('InvitationRsvpPanel', () => {
 
 		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it('reactivates an archived RSVP with the CSRF header and a status-only body', async () => {
+		const fetchMock = mockFetchResponse(200, { item: { ...RSVP_EVENT, status: 'published' } });
+		const onStatusChanged = jest.fn();
+		const user = userEvent.setup();
+		render(
+			<InvitationRsvpPanel
+				rsvpEvent={{ ...RSVP_EVENT, status: 'archived' }}
+				invitationPublished
+				onStatusChanged={onStatusChanged}
+			/>,
+		);
+
+		expect(screen.queryByRole('button', { name: 'Desactivar RSVP' })).not.toBeInTheDocument();
+		await user.click(screen.getByRole('button', { name: 'Reactivar RSVP' }));
+		await user.click(
+			within(screen.getByRole('dialog')).getByRole('button', { name: 'Reactivar RSVP' }),
+		);
+
+		await waitFor(() => expect(onStatusChanged).toHaveBeenCalledTimes(1));
+		const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+		expect(url).toBe(`/api/dashboard/admin/events/${RSVP_EVENT.id}`);
+		expect(init.method).toBe('PATCH');
+		expect(init.headers).toMatchObject({ 'X-CSRF-Token': CSRF_TOKEN });
+		expect(JSON.parse(init.body as string)).toEqual({ status: 'published' });
+	});
+
+	it('offers no reactivation while the invitation is not published', () => {
+		render(
+			<InvitationRsvpPanel
+				rsvpEvent={{ ...RSVP_EVENT, status: 'archived' }}
+				invitationPublished={false}
+				onStatusChanged={jest.fn()}
+			/>,
+		);
+
+		expect(screen.queryByRole('button', { name: 'Reactivar RSVP' })).not.toBeInTheDocument();
+		expect(
+			screen.getByText('Publique la invitación para poder reactivar el RSVP.'),
+		).toBeInTheDocument();
 	});
 });

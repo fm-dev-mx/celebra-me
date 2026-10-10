@@ -1153,8 +1153,9 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 			?.trim();
 		let cleanEventId = linkedEventId;
 		if (linkedEventId) {
+			// An archived event has RSVP disabled by an administrator; a release must not reopen it.
 			runPsql(
-				`update public.events set slug = ${sqlLiteral(slug)}, event_type = ${sqlLiteral(eventType)}, title = ${sqlLiteral(eventTitle)}, status = 'published', deleted_at = null, updated_at = now() where id = '${linkedEventId}'::uuid;`,
+				`update public.events set slug = ${sqlLiteral(slug)}, event_type = ${sqlLiteral(eventType)}, title = ${sqlLiteral(eventTitle)}, status = case when status = 'archived' then 'archived' else 'published' end, deleted_at = null, updated_at = now() where id = '${linkedEventId}'::uuid;`,
 				targetDbUrl,
 			);
 		} else {
