@@ -119,7 +119,7 @@ describe('invitation delivery query budgets', () => {
 			PERSONALIZED_GUEST_CONTEXT_READS_ON_MISS,
 			'personalized-miss',
 		);
-		assertObservedOperationCount(1, PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT, 'view-track');
+		assertObservedOperationCount(0, PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT, 'view-track');
 	});
 });
 

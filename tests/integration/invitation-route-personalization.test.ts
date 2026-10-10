@@ -226,6 +226,6 @@ describe('invitation route personalization', () => {
 			PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT,
 			'view-track',
 		);
-		expect(trackInvitationViewMock).toHaveBeenCalledWith('invite-1');
+		expect(trackInvitationViewMock).not.toHaveBeenCalled();
 	});
 });

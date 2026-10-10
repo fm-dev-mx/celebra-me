@@ -176,7 +176,6 @@ const RSVP: React.FC<RSVPProps> = ({
 		setNotes,
 		handleBlur,
 		handleSubmit,
-		handleWhatsAppClick,
 		startEditingResponse,
 		restoreInitialResponse,
 		responseInviteId,
@@ -340,9 +339,6 @@ const RSVP: React.FC<RSVPProps> = ({
 									name,
 									title,
 								})}
-								onWhatsAppClick={() => {
-									void handleWhatsAppClick();
-								}}
 								eventStartsAt={eventStartsAt}
 								eventTimeZone={eventTimeZone}
 								eventSlug={eventSlug}

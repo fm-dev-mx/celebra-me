@@ -9,7 +9,7 @@ The RSVP domain covers:
 - host authentication and elevated session handling
 - dashboard CRUD flows for guests, events, and users (the owner creates every host account; there is
   no self-registration)
-- guest invitation context, RSVP submission, and invitation view telemetry
+- guest invitation context, RSVP submission, and guest engagement analytics
 - Supabase-backed repositories, services, and security helpers under `src/lib/rsvp/**`
 
 ## Active Route Surface
@@ -59,7 +59,9 @@ refresh endpoint.
 
 - `GET /api/invitacion/:inviteId/location`
 - `POST /api/invitacion/:inviteId/rsvp`
-- `POST /api/invitacion/:inviteId/view`
+- `POST /api/invitacion/:inviteId/events` (guest engagement batches)
+- `POST /api/invitacion/:inviteId/view` (legacy view telemetry for pages cached before engagement
+  analytics; removed in the contract release)
 - `POST /api/invitacion/public/:eventType/:slug/rsvp`
 
 ### Invitation Admin APIs
@@ -99,7 +101,9 @@ live tree.
 2. The route resolves invitation context server-side. An unknown or deleted `inviteId` redirects
    (`302`) to the same route without `invite`; transient lookup failures render the public page
    without redirect.
-3. View telemetry posts to `/api/invitacion/:inviteId/view`.
+3. Once the page has been visible for one second, `src/lib/invitation/invitation-analytics.ts`
+   batches engagement events (open, depth milestones, RSVP form steps) to
+   `/api/invitacion/:inviteId/events`. The server never records a view during SSR.
 4. RSVP submissions post to `/api/invitacion/:inviteId/rsvp`.
 
 ### Hybrid Public RSVP Flow
@@ -155,8 +159,7 @@ must not be treated as active system entrypoints.
 ## Related
 
 Guest engagement analytics (event taxonomy, metric definitions, traffic classification, retention)
-that will replace the view telemetry above is specified in
-[`engagement-analytics.md`](./engagement-analytics.md).
+is specified in [`engagement-analytics.md`](./engagement-analytics.md).
 
 Operation counts per RSVP submit, duplicate-submit UI, and how RSVP reliability relates to
 invitation LCP/TTFB are documented in

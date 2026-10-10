@@ -247,6 +247,13 @@ Dashboard ──host token──▶ /api/dashboard/guests (+ engagement fields)
 - Remove SSR writer A (`route-personalization.ts:81`) once the client path is live (it is the main
   source of bot/prefetch inflation).
 - Client bundle stays free of server-only imports (Server/Client boundary invariant).
+- Implemented (G3): opens use `PerformanceNavigationTiming.redirectCount` to tell short-link entries
+  from direct ones; RSVP form steps travel as a `celebra:invitation-engagement` DOM event with a
+  window buffer so an island that hydrates first is not lost; automation (`navigator.webdriver`) and
+  `?screenshot` captures are skipped. `PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT` is now 0. Browser
+  check on Local: two batches (open; milestones + form steps) passed edge validation, no `/view`
+  calls; the Local DB lacks the migration (blocked behind unrelated pending contract migrations), so
+  the RPC answered 503 and the page was unaffected.
 
 ### 6.4 Link preview capture
 
