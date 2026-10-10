@@ -3,6 +3,7 @@
  */
 /* eslint-disable max-lines -- Target identity, planning, apply, and verification share one atomic safety boundary. */
 
+import { FinalTargetVerificationError, PreconditionFailedError } from './release-errors.ts';
 import { randomUUID, createHash } from 'node:crypto';
 import sharp from 'sharp';
 import { readFileSync, existsSync } from 'node:fs';
@@ -2283,7 +2284,8 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 
 	if (!dryRun) {
 		if (!options.plan) {
-			throw new Error(
+			throw new PreconditionFailedError(
+				'PLAN_CHANGED',
 				'PRECONDITION_FAILED: Apply requires the exact target plan produced by preflight.',
 			);
 		}
@@ -2297,12 +2299,20 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			existingPublishedVersion: drift.existingPub?.version as number | undefined,
 			assetStateHash,
 		});
-		if (!precheck.ok) throw new Error(precheck.reason);
+		if (!precheck.ok) {
+			throw new PreconditionFailedError(
+				precheck.failure ?? 'PLAN_CHANGED',
+				precheck.reason ?? 'PRECONDITION_FAILED: Target state changed after planning.',
+			);
+		}
 		if (options.plan.planId !== currentPlan.planId) {
 			const confirmedKeys = planIdentityChangeKeys(options.plan.functionalChanges).join('|');
 			const currentKeys = planIdentityChangeKeys(currentPlan.functionalChanges).join('|');
 			if (confirmedKeys !== currentKeys) {
-				throw new Error(formatPlanIdentityMismatch(options.plan, currentPlan));
+				throw new PreconditionFailedError(
+					'PLAN_CHANGED',
+					formatPlanIdentityMismatch(options.plan, currentPlan),
+				);
 			}
 		}
 	}
@@ -2662,9 +2672,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			finalAssets.assetsToUpsertDbOnly.length > 0 ||
 			finalAssets.assetsToDelete.length > 0
 		) {
-			throw new Error(
-				'Final target verification failed; managed-release provenance was not recorded.',
-			);
+			throw new FinalTargetVerificationError();
 		}
 		// managed_invitation_release_provenance.projection_hash has a check constraint requiring
 		// 64-char SHA-256 hex. The package carries an MD5 projectionHash (32 chars) for the

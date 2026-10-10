@@ -68,20 +68,17 @@ describe('managed lifecycle executable contracts', () => {
 
 	describe('complete precondition drift protection', () => {
 		it.each([
-			['sourceHash', 'd'.repeat(64), /package source changed/i],
-			['packageHash', 'e'.repeat(64), /resolved package changed/i],
-			['verifiedProjectRef', 'wrongproject', /target project changed/i],
-			['targetInvitationId', 'invitation-2', /invitation ID changed/i],
-			[
-				'existingDraftUpdatedAt',
-				'2026-07-23T11:00:00.000Z',
-				/draft updated timestamp changed/i,
-			],
-			['existingPublishedVersion', 4, /published version changed/i],
-		] as const)('blocks %s drift before mutation', (field, value, message) => {
+			['sourceHash', 'd'.repeat(64), 'PACKAGE_SOURCE_CHANGED'],
+			['packageHash', 'e'.repeat(64), 'PACKAGE_CHANGED'],
+			['verifiedProjectRef', 'wrongproject', 'PROJECT_CHANGED'],
+			['targetInvitationId', 'invitation-2', 'INVITATION_ID_CHANGED'],
+			['existingDraftUpdatedAt', '2026-07-23T11:00:00.000Z', 'DRAFT_CHANGED'],
+			['existingPublishedVersion', 4, 'PUBLISHED_VERSION_CHANGED'],
+		] as const)('blocks %s drift before mutation', (field, value, failure) => {
 			const result = verifyPlanPreconditions(plan(), { ...unchangedState, [field]: value });
 			expect(result.ok).toBe(false);
-			expect(result.reason).toMatch(message);
+			expect(result.failure).toBe(failure);
+			expect(result.reason).toMatch(/^PRECONDITION_FAILED: /);
 		});
 
 		it('accepts assetStateHash drift since CDN probes are non-deterministic between planning and apply', () => {

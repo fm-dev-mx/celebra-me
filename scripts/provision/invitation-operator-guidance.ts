@@ -2,6 +2,7 @@
  * Brief operator guidance for invitation:release mistakes.
  * Presentation only — does not accept malformed argv or authorize writes.
  */
+import { PreconditionFailedError } from './release-errors.ts';
 import { formatOperatorFailure, type OperatorFailureInput } from '../db/operator-cli-ux.ts';
 
 /** Match only the bounded provider diagnostic; never echo arbitrary provider error details. */
@@ -21,27 +22,22 @@ function taskPromptRetry(slug: string, targets: string): string {
 }
 
 /** Operator-visible PRECONDITION_FAILED class. Does not echo hashes, paths, or credentials. */
-export function translatePreconditionFailure(message: string): string | null {
-	if (!message.includes('PRECONDITION_FAILED')) return null;
-	if (message.includes('package source changed')) {
-		return 'El origen del paquete cambió después de confirmar el plan. Genere y confirme un plan nuevo.';
+export function translatePreconditionFailure(error: unknown): string | null {
+	if (!(error instanceof PreconditionFailedError)) return null;
+	switch (error.failure) {
+		case 'PACKAGE_SOURCE_CHANGED':
+			return 'El origen del paquete cambió después de confirmar el plan. Genere y confirme un plan nuevo.';
+		case 'PACKAGE_CHANGED':
+			return 'El paquete resuelto cambió después de confirmar el plan. Genere y confirme un plan nuevo.';
+		case 'DRAFT_CHANGED':
+			return 'El borrador del destino cambió después de confirmar el plan. Genere y confirme un plan nuevo.';
+		case 'PUBLISHED_VERSION_CHANGED':
+			return 'La versión publicada del destino cambió después de confirmar el plan. Genere y confirme un plan nuevo.';
+		case 'PLAN_CHANGED':
+			return 'El identificador del plan cambió después de confirmarlo. Genere y confirme un plan nuevo.';
+		default:
+			return 'El origen, el paquete o el estado del destino cambió después de confirmar el plan. Genere y confirme un plan nuevo.';
 	}
-	if (message.includes('resolved package changed')) {
-		return 'El paquete resuelto cambió después de confirmar el plan. Genere y confirme un plan nuevo.';
-	}
-	if (message.includes('draft updated timestamp changed')) {
-		return 'El borrador del destino cambió después de confirmar el plan. Genere y confirme un plan nuevo.';
-	}
-	if (message.includes('published version changed')) {
-		return 'La versión publicada del destino cambió después de confirmar el plan. Genere y confirme un plan nuevo.';
-	}
-	if (
-		message.includes('operation set changed') ||
-		message.includes('exact target plan produced by preflight')
-	) {
-		return 'El identificador del plan cambió después de confirmarlo. Genere y confirme un plan nuevo.';
-	}
-	return 'El origen, el paquete o el estado del destino cambió después de confirmar el plan. Genere y confirme un plan nuevo.';
 }
 
 export function invitationFailureGuidance(

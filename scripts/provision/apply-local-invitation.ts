@@ -13,6 +13,7 @@
  */
 /* eslint-disable max-lines -- Application engine sequences checks, dry-run plan, asset processing, draft upsert, and RPC publish. */
 
+import { PreconditionFailedError } from './release-errors.ts';
 import { classifyStorageDownloadFailure } from '../db/storage-object-archive.ts';
 import { createHash, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
@@ -1235,7 +1236,8 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			assetStateHash,
 		});
 		if (!precheck.ok) {
-			throw new Error(
+			throw new PreconditionFailedError(
+				precheck.failure ?? 'PLAN_CHANGED',
 				precheck.reason ?? 'PRECONDITION_FAILED: Target state changed after planning.',
 			);
 		}
@@ -1243,7 +1245,10 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			const confirmedKeys = planIdentityChangeKeys(options.plan.functionalChanges).join('|');
 			const currentKeys = planIdentityChangeKeys(currentPlan.functionalChanges).join('|');
 			if (confirmedKeys !== currentKeys) {
-				throw new Error(formatPlanIdentityMismatch(options.plan, currentPlan));
+				throw new PreconditionFailedError(
+					'PLAN_CHANGED',
+					formatPlanIdentityMismatch(options.plan, currentPlan),
+				);
 			}
 		}
 	}
