@@ -142,6 +142,11 @@
             "provides": ["event_memories_gallery_share"],
             "notes": "Adds nullable hidden_at, thumbnail_object_key and thumbnail_bytes to event_memory_items and share_version (default 0) plus share_enabled_at to event_memory_settings. No RPC, grant or RLS change. Must be applied before the application that selects these columns."
         },
+        "20261009220000": {
+            "phase": "expand",
+            "provides": ["event_branding_removal_settings"],
+            "notes": "Adds events.branding_removal_guest_limit (default 0) and backfills the one event sold with the add-on. Apply before deploying the application that selects the column."
+        },
         "20261009230000": {
             "phase": "contract",
             "requiresDeployedAppCapabilities": ["retired_legacy_tables_client"],
@@ -178,11 +183,6 @@
                 "valentina_memories_video_quota"
             ],
             "notes": "Drops the client-named Valentina memories catalog and its RPCs. Export the three tables and the referenced storage objects first; object deletion is a separate owner step."
-        },
-        "20261009230300": {
-            "phase": "expand",
-            "provides": ["event_branding_removal_settings"],
-            "notes": "Adds events.branding_removal_guest_limit (default 0) and backfills the one event sold with the add-on. Apply before deploying the application that selects the column."
         }
     },
     "appCapabilities": {
