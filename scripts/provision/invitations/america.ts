@@ -40,10 +40,14 @@ const content: CanonicalEventContentInput = {
 	composition: {
 		ornaments: 'storybook-lanterns',
 		intersections: {
-			// The family band rises into the quote paper under an arch; the lantern night rises out
-			// of the photograph. Everything after the countdown shares the night ground (neutral).
-			family: { family: 'arch', source: 'quote' },
+			// Two doors bound the story: the paper rises into the tower door under an arch, and the
+			// closing returns to the door under the mirrored arch, drawn in gold over the night.
+			// Between them, two light handoffs: nightfall out of the door photograph, and the reply
+			// card opening out of the contact sheet. Every other boundary stays neutral.
+			quote: { family: 'arch', source: 'hero' },
 			countdown: { family: 'atmospheric-blend', source: 'interlude-after-family' },
+			'personalized-access': { family: 'atmospheric-blend', source: 'gallery' },
+			thankYou: { family: 'arch', source: 'rsvp' },
 		},
 	},
 	interludes: [
@@ -106,12 +110,11 @@ const content: CanonicalEventContentInput = {
 			{ name: 'Brianda Galdámez', role: 'Madrina' },
 		],
 		labels: {
-			sectionTitle: 'Con la bendición de Dios',
+			sectionTitle: 'Con la bendición de Dios y el amor de mi familia',
 			sectionSubtitle: '',
 			parentsTitle: 'Mis padres',
 			godparentsTitle: 'Mis padrinos',
-			sectionMessage:
-				'Y el amor de mi familia, tengo el honor de invitarle a celebrar mis quince años.',
+			sectionMessage: 'Tengo el honor de invitarle a celebrar mis quince años.',
 		},
 	},
 	countdown: {
