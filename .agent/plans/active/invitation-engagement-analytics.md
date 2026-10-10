@@ -213,10 +213,10 @@ Dashboard ──host token──▶ /api/dashboard/guests (+ engagement fields)
 - Module layout (follow existing `src/lib/rsvp/{services,repositories}` conventions):
   - `src/lib/rsvp/engagement/event-contract.ts` — zod schemas, enums, `schema_version`.
   - `src/lib/rsvp/engagement/traffic-classifier.ts` — pure function: `non_production` if
-    `VERCEL_ENV !== 'production'` (Local dev configurable); `bot` if UA matches crawler/bot list;
-    `host` if a valid session cookie belongs to the event owner/member or super_admin (auth lookup
-    only when an auth cookie is present, so guests pay no extra latency); `test` if the guest has
-    `is_test = true` (resolved in the RPC); else `guest`.
+    `VERCEL_ENV !== 'production'`; `bot` if UA matches crawler/bot list; `host` if a valid session
+    cookie belongs to the event owner/member or super_admin (auth lookup only when an auth cookie is
+    present, so guests pay no extra latency); `test` if the guest has `is_test = true` (resolved in
+    the RPC); else `guest`.
   - `src/lib/rsvp/engagement/device-class.ts` — UA → coarse class; UA discarded after.
   - `src/lib/rsvp/engagement/engagement.service.ts` + repository calling the RPC.
 - Rate limit: reuse `rate-limit-provider` (namespace `engagement`), plus per-request cap of 20
@@ -224,6 +224,12 @@ Dashboard ──host token──▶ /api/dashboard/guests (+ engagement fields)
 - Responses: `202` with `{accepted, duplicates}`; `400` invalid; `404` unknown invite (constant
   timing not required — inviteId is a bearer uuid already); `429`. `no-store`.
 - Structured log line per rejection reason (no inviteId, no PII) for observability.
+- Implemented (G2):
+  `src/lib/rsvp/engagement/{taxonomy,event-contract,traffic-classifier,engagement.service}.ts`,
+  `src/lib/rsvp/repositories/engagement.repository.ts`; `rsvp_submitted` is emitted by both RSVP
+  routes after a successful submission; only Vercel Production counts as production (Local and
+  Preview are `non_production`; projection math is covered by the disposable pgTAP suite). The
+  crawler precision fix of G4 landed here because the classifier depends on it.
 
 ### 6.3 Client instrumentation
 
@@ -337,8 +343,8 @@ Each goal is one task branch (`feat/engagement-*`), `pnpm validate:changed` → 
 
 1. Disposable DB tests green → apply expand migration to persistent Local via guarded workflow.
 2. Preview: migrate, deploy app, smoke on a Preview test guest (expect
-   `traffic_class = non_production`, no projection change; verify with a forced-production test flag
-   only on Local).
+   `traffic_class = non_production`, no projection change; projection math is proven by the
+   disposable pgTAP suite).
 3. Production: apply expand migration via `pnpm prod:apply`/guarded flow **before** the app deploy
    (migration is backward compatible with the current app).
 4. Deploy app (dual-write: legacy columns keep working). Verify on a real test guest: one open per

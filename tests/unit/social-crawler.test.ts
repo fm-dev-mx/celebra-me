@@ -1,4 +1,4 @@
-import { isSocialCrawler } from '@/lib/social/social-crawler';
+import { isSocialCrawler, socialCrawlerFamily } from '@/lib/social/social-crawler';
 
 describe('isSocialCrawler', () => {
 	it('returns true for WhatsApp user agent', () => {
@@ -59,5 +59,30 @@ describe('isSocialCrawler', () => {
 		expect(isSocialCrawler('whatsapp')).toBe(true);
 		expect(isSocialCrawler('WHATSAPP')).toBe(true);
 		expect(isSocialCrawler('WhatsApp')).toBe(true);
+	});
+});
+
+describe('social crawler precision', () => {
+	it('treats the Instagram in-app browser as a human', () => {
+		expect(
+			isSocialCrawler(
+				'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 350.0.0.0 (iPhone15,2; iOS 18_0; es_MX; es; scale=3.00; 1179x2556)',
+			),
+		).toBe(false);
+	});
+
+	it('treats the Facebook in-app browser as a human', () => {
+		expect(
+			isSocialCrawler(
+				'Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/AP2A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/129.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/480.0.0.0;]',
+			),
+		).toBe(false);
+	});
+
+	it('maps crawlers to a family', () => {
+		expect(socialCrawlerFamily('WhatsApp/2.24.10.81 A')).toBe('whatsapp');
+		expect(socialCrawlerFamily('facebookexternalhit/1.1')).toBe('facebook');
+		expect(socialCrawlerFamily('TelegramBot (like TwitterBot)')).toBe('telegram');
+		expect(socialCrawlerFamily('Slackbot-LinkExpanding 1.0')).toBe('other');
 	});
 });
