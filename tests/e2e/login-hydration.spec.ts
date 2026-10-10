@@ -35,11 +35,9 @@ test.describe('Authentication before hydration', () => {
 	test('keeps credentials out of navigation before the handlers are ready', async ({ page }) => {
 		await page.goto('/login');
 		await expect(page.locator('#login-submit')).toBeDisabled();
-		await expect(page.locator('#register-submit')).toBeDisabled();
 		await expect(page.locator('#login-form')).toHaveAttribute('method', 'post');
-		await expect(page.locator('#register-form')).toHaveAttribute('method', 'post');
 		expect(await page.locator('noscript').textContent()).toContain(
-			'Para iniciar sesión o registrarse, active JavaScript en su navegador.',
+			'Para iniciar sesión, active JavaScript en su navegador.',
 		);
 		await page.locator('#login-email').fill('synthetic@example.test');
 		await page.locator('#login-password').fill('not-a-real-password');
