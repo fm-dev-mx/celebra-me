@@ -532,54 +532,133 @@ const BODA_PARTIAL_FIELDS: readonly CompletenessFieldDefinition[] = [
 	},
 ] as const;
 
-function undefinedContract(eventType: EventType): EventTypeCompletenessContract {
-	return {
-		eventType,
-		maturity: 'undefined',
-		summary:
-			'Preparation completeness fields are not yet evidence-backed for this event type. Do not invent requirements; collect global identity fields and escalate gaps.',
-		gaps: [
-			'No verified multi-invitation practice sample was used to define a full field matrix.',
-			'Use global creation-contract identity fields only until this contract is authored.',
-		],
-		fields: [
-			{
-				id: 'slug',
-				label: 'Canonical invitation slug',
-				requirement: 'required',
-				blockingWhenUnresolved: true,
-				allowsPlaceholder: false,
-			},
-			{
-				id: 'celebrantName',
-				label: 'Primary celebrant / host name',
-				requirement: 'required',
-				blockingWhenUnresolved: true,
-				allowsPlaceholder: false,
-			},
-			{
-				id: 'eventDate',
-				label: 'Event date',
-				requirement: 'required',
-				blockingWhenUnresolved: true,
-				allowsPlaceholder: false,
-			},
-			{
-				id: 'baseDemoId',
-				label: 'Base demo / editor preset selection',
-				requirement: 'required',
-				blockingWhenUnresolved: true,
-				allowsPlaceholder: false,
-			},
-			{
-				id: 'sourceAssetPath',
-				label: 'Filesystem/repository path for source photographs',
-				requirement: 'required',
-				blockingWhenUnresolved: true,
-				allowsPlaceholder: false,
-			},
-		],
-	};
+/**
+ * Sacrament invitations (bautizo, primera comunión). Evidenced from César Ramses (bautizo) and
+ * Luna y Estrella (primera comunión): celebrant(s), parents, one reception venue, API RSVP with a
+ * guest cap. Godparents appear on the bautizo; the church ceremony is optional in both.
+ */
+function sacramentFields(
+	eventType: 'bautizo' | 'primera-comunion',
+): readonly CompletenessFieldDefinition[] {
+	return [
+		{
+			id: 'slug',
+			label: 'Canonical invitation slug',
+			requirement: 'required',
+			blockingWhenUnresolved: true,
+			allowsPlaceholder: false,
+		},
+		{
+			id: 'celebrantName',
+			label: 'Celebrant full name',
+			requirement: 'required',
+			blockingWhenUnresolved: true,
+			allowsPlaceholder: false,
+			evidenceNotes:
+				eventType === 'primera-comunion'
+					? 'Luna y Estrella pairs two celebrants; record the second as secondaryName.'
+					: 'César Ramses.',
+		},
+		{
+			id: 'eventDate',
+			label: 'Event date',
+			requirement: 'required',
+			blockingWhenUnresolved: true,
+			allowsPlaceholder: false,
+		},
+		{
+			id: 'eventTime',
+			label: 'Primary event start time',
+			requirement: 'required',
+			blockingWhenUnresolved: true,
+			allowsPlaceholder: false,
+		},
+		{
+			id: 'timeZone',
+			label: 'IANA time zone',
+			requirement: 'required',
+			blockingWhenUnresolved: true,
+			allowsPlaceholder: false,
+		},
+		{
+			id: 'baseDemoId',
+			label: 'Base demo / editor preset selection',
+			requirement: 'required',
+			blockingWhenUnresolved: true,
+			allowsPlaceholder: false,
+		},
+		{
+			id: 'sourceAssetPath',
+			label: 'Filesystem/repository path for source photographs',
+			requirement: 'required',
+			blockingWhenUnresolved: true,
+			allowsPlaceholder: false,
+		},
+		{
+			id: 'sectionOrder',
+			label: 'Included sections and order',
+			requirement: 'required',
+			blockingWhenUnresolved: true,
+			allowsPlaceholder: false,
+		},
+		{
+			id: 'fatherName',
+			label: 'Father name',
+			requirement: 'required',
+			blockingWhenUnresolved: true,
+			allowsPlaceholder: false,
+			evidenceNotes: 'Both sacrament invitations name both parents in the family section.',
+		},
+		{
+			id: 'motherName',
+			label: 'Mother name',
+			requirement: 'required',
+			blockingWhenUnresolved: true,
+			allowsPlaceholder: false,
+		},
+		{
+			id: 'godparents',
+			label: 'Godparents',
+			requirement: eventType === 'bautizo' ? 'required' : 'recommended',
+			blockingWhenUnresolved: eventType === 'bautizo',
+			allowsPlaceholder: eventType !== 'bautizo',
+		},
+		{
+			id: 'primaryVenueName',
+			label: 'Reception venue name',
+			requirement: 'required',
+			blockingWhenUnresolved: true,
+			allowsPlaceholder: false,
+		},
+		{
+			id: 'primaryVenueAddress',
+			label: 'Reception venue address',
+			requirement: 'required',
+			blockingWhenUnresolved: true,
+			allowsPlaceholder: false,
+		},
+		{
+			id: 'rsvpConfirmationMode',
+			label: 'RSVP confirmation mode',
+			requirement: 'required',
+			blockingWhenUnresolved: true,
+			allowsPlaceholder: false,
+		},
+		{
+			id: 'rsvpGuestCap',
+			label: 'RSVP guest cap',
+			requirement: 'required',
+			blockingWhenUnresolved: true,
+			allowsPlaceholder: false,
+		},
+		{
+			id: 'gifts',
+			label: 'Gift / registry information',
+			requirement: 'optional',
+			blockingWhenUnresolved: false,
+			allowsPlaceholder: true,
+		},
+	];
 }
 
 const CONTRACTS: Record<EventType, EventTypeCompletenessContract> = {
@@ -602,7 +681,14 @@ const CONTRACTS: Record<EventType, EventTypeCompletenessContract> = {
 		],
 		fields: BODA_PARTIAL_FIELDS,
 	},
-	bautizo: undefinedContract('bautizo'),
+	bautizo: {
+		eventType: 'bautizo',
+		maturity: 'partial',
+		summary:
+			'Partial contract from the César Ramses bautizo. Expand only with additional verified bautizo invitations.',
+		gaps: ['Church ceremony venue and time are not yet standardized as completeness fields.'],
+		fields: sacramentFields('bautizo'),
+	},
 	cumple: {
 		eventType: 'cumple',
 		maturity: 'partial',
@@ -625,7 +711,16 @@ const CONTRACTS: Record<EventType, EventTypeCompletenessContract> = {
 		],
 		fields: BABY_SHOWER_PARTIAL_FIELDS,
 	},
-	'primera-comunion': undefinedContract('primera-comunion'),
+	'primera-comunion': {
+		eventType: 'primera-comunion',
+		maturity: 'partial',
+		summary:
+			'Partial contract from the Luna y Estrella primera comunión. Expand only with additional verified invitations.',
+		gaps: [
+			'Location may be revealed inside RSVP through its access policy; the venue is still required.',
+		],
+		fields: sacramentFields('primera-comunion'),
+	},
 };
 
 export function getEventCompletenessContract(eventType: EventType): EventTypeCompletenessContract {

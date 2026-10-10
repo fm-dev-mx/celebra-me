@@ -57,7 +57,9 @@ Every managed digital invitation must define:
     remapped. Remapping an existing Auth host is a separate Admin update; updates preserve
     `created_by` and do not auto-rekey email.
 - **Event Type** (`eventType`): Supported event type from live `EVENT_TYPES` (e.g. `xv`, `boda`,
-  `cumple`, `baby-shower`, `bautizo`, `primera-comunion`).
+  `cumple`, `baby-shower`, `bautizo`, `primera-comunion`). Each type has a structure contract in
+  `src/lib/invitation/event-type-contract.ts`: the sections `sectionOrder` must include and the
+  theme presets verified for that type. Section variants stay type-agnostic.
 - **Theme Preset** (`themeId`): A valid theme preset from `THEME_PRESETS` (e.g. `enchanted-rose`,
   `editorial-magazine`, `jewelry-box`).
 - **Visual Profile ID** (`visualProfileId`): Compatible visual profile.
