@@ -69,6 +69,7 @@ const totals = {
 function setupDashboard() {
 	mockedUseGuestDashboardRealtime.mockReturnValue({
 		error: '',
+		engagement: null,
 		eventId: 'event-1',
 		hostEvents: [
 			{

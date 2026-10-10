@@ -29,6 +29,7 @@ export interface CreateGuestInput {
 	tags?: string[];
 	shortId?: string;
 	entrySource?: EntrySource;
+	isTest?: boolean;
 }
 
 export interface UpdateGuestInput {
@@ -49,6 +50,7 @@ export interface UpdateGuestInput {
 	tags?: string[];
 	hideCelebraMeBranding?: boolean;
 	lastReminderSentAt?: string | null;
+	isTest?: boolean;
 }
 
 export type EventRow = {
@@ -91,6 +93,12 @@ export type GuestRow = {
 	short_id?: string;
 	hide_celebra_me_branding: boolean;
 	last_reminder_sent_at: string | null;
+	is_test: boolean;
+	open_count: number;
+	first_opened_at: string | null;
+	last_opened_at: string | null;
+	last_previewed_at: string | null;
+	max_progress_milestone: number;
 };
 
 export type GuestAuditRow = {
@@ -137,7 +145,7 @@ export const EVENT_MUTATION_COLUMNS = EVENT_COLUMN_LIST.filter(
 	(column) => column !== 'published_at',
 ).join(',');
 export const GUEST_COLUMNS =
-	'id,invite_id,event_id,full_name,phone,country_code,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_shared_at,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id,hide_celebra_me_branding,last_reminder_sent_at';
+	'id,invite_id,event_id,full_name,phone,country_code,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_shared_at,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id,hide_celebra_me_branding,last_reminder_sent_at,is_test,open_count,first_opened_at,last_opened_at,last_previewed_at,max_progress_milestone';
 
 export function toEventRecord(row: EventRow): EventRecord {
 	return {
@@ -182,6 +190,12 @@ export function toGuestRecord(row: GuestRow): GuestInvitationRecord {
 		shortId: row.short_id,
 		hideCelebraMeBranding: row.hide_celebra_me_branding,
 		lastReminderSentAt: row.last_reminder_sent_at,
+		isTest: row.is_test ?? false,
+		openCount: row.open_count ?? 0,
+		firstOpenedAt: row.first_opened_at ?? null,
+		lastOpenedAt: row.last_opened_at ?? null,
+		lastPreviewedAt: row.last_previewed_at ?? null,
+		maxProgressMilestone: row.max_progress_milestone ?? 0,
 	};
 }
 

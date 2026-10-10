@@ -106,6 +106,16 @@
 	color: var(--color-text-primary);
 }
 
+.guest-tag--test {
+	margin-inline-start: 0.375rem;
+	background: rgb(var(--color-state-warning-rgb) / 10%);
+	border-color: rgb(var(--color-state-warning-rgb) / 28%);
+	color: var(--color-state-warning-text);
+	font-size: 0.75rem;
+	font-weight: 600;
+	vertical-align: middle;
+}
+
 .guest-tag--message {
 	background: rgb(var(--color-state-info-rgb) / 10%);
 	border-color: rgb(var(--color-state-info-rgb) / 24%);

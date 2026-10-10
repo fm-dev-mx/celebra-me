@@ -41,6 +41,9 @@ function buildGuestInsertBody(input: CreateGuestInput) {
 		body.short_id = input.shortId;
 	}
 	body.entry_source = input.entrySource ?? 'dashboard';
+	if (input.isTest) {
+		body.is_test = true;
+	}
 	return body;
 }
 
@@ -74,6 +77,7 @@ const GUEST_COLUMN_MAP: Record<string, keyof UpdateGuestInput> = {
 	tags: 'tags',
 	hide_celebra_me_branding: 'hideCelebraMeBranding',
 	last_reminder_sent_at: 'lastReminderSentAt',
+	is_test: 'isTest',
 };
 
 function buildGuestUpdateBody(input: UpdateGuestInput) {

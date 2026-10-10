@@ -154,7 +154,12 @@ must not be treated as active system entrypoints.
 | Por enviar              | `generatedInvitations` | Count of invitations with `deliveryStatus === 'generated'`          |
 | Total invited capacity  | `totalPeople`          | Sum of `maxAllowedAttendees` for all invitations (denominator only) |
 
-`totalPeople` is total invited capacity, not a confirmed attendee count.
+`totalPeople` is total invited capacity, not a confirmed attendee count. Test guests (`isTest`) are
+listed with a «Prueba» badge but excluded from every total, the overview, group metrics, and the
+engagement funnel. The funnel («Interacción de sus invitados») comes from
+`get_event_engagement_summary` and follows the metrics dictionary in
+[`engagement-analytics.md`](./engagement-analytics.md); when it cannot load, the list still renders
+without it.
 
 ## Related
 

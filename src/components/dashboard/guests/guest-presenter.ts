@@ -54,6 +54,31 @@ export function formatGuestDateShort(value: string | null): string {
 	return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+/**
+ * Opens for the guest detail: count and last open since engagement tracking started, falling back
+ * to the legacy first-view date for invitations opened before.
+ */
+export function formatGuestOpens(item: DashboardGuestItem): string | null {
+	const opens = item.openCount ?? 0;
+	if (opens > 0) {
+		const times = opens === 1 ? '1 vez' : `${opens} veces`;
+		return item.lastOpenedAt
+			? `${times} · última el ${formatGuestDateShort(item.lastOpenedAt)}`
+			: times;
+	}
+	return item.firstViewedAt ? formatGuestDateShort(item.firstViewedAt) : null;
+}
+
+/** Human duration for the engagement funnel ("3 h", "2 días"). */
+export function formatEngagementDuration(seconds: number): string {
+	const minutes = Math.round(seconds / 60);
+	if (minutes < 60) return `${Math.max(1, minutes)} min`;
+	const hours = Math.round(minutes / 60);
+	if (hours < 48) return `${hours} h`;
+	const days = Math.round(hours / 24);
+	return `${days} días`;
+}
+
 export type PrimaryStatus = {
 	label: string;
 	class: GuestStage;
@@ -178,7 +203,7 @@ export type GuestStage = 'to-send' | 'unopened' | 'opened' | 'confirmed' | 'decl
 export function getGuestStage(item: DashboardGuestItem): GuestStage {
 	const bucket = getGuestStatusBucket(item);
 	if (bucket !== 'waiting') return bucket;
-	return item.isViewed || item.firstViewedAt ? 'opened' : 'unopened';
+	return (item.openCount ?? 0) > 0 || item.isViewed || item.firstViewedAt ? 'opened' : 'unopened';
 }
 
 /** Unsent and unanswered: the only guests the "send invitations" queue should offer. */

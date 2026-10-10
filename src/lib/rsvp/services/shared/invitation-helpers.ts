@@ -13,6 +13,7 @@ import {
 } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { buildShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
+import { resolveInvitationSchedule } from '@/lib/intake/invitation-validity';
 
 export type ShareMessageType = 'invitation' | 'reminder';
 
@@ -125,11 +126,14 @@ export interface SharingConfig {
 	ogDescription?: string;
 }
 
+/** Event-local date (YYYY-MM-DD) with the same precedence as events.event_date. */
 function extractEventDate(data: Record<string, unknown> | undefined): string | null {
 	if (!data) return null;
 	const hero = data.hero as Record<string, unknown> | undefined;
-	if (!hero || typeof hero.date !== 'string' || !hero.date) return null;
-	return hero.date;
+	return resolveInvitationSchedule('client', {
+		eventTiming: data.eventTiming,
+		heroDate: hero?.date,
+	}).eventDate;
 }
 
 function extractRsvpDeadline(data: Record<string, unknown> | undefined): string | null {

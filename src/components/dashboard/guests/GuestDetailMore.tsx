@@ -4,6 +4,7 @@ import GuestTagChips from '@/components/dashboard/guests/GuestTagChips';
 import {
 	formatGuestDateShort,
 	formatGuestEntrySource,
+	formatGuestOpens,
 	getGuestGroups,
 } from '@/components/dashboard/guests/guest-presenter';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -57,7 +58,12 @@ const GuestDetailMore: React.FC<GuestDetailMoreProps> = ({ item, onUpdateGroups 
 
 	const rows: Array<[string, string | null]> = [
 		['Enviada', item.firstSharedAt ? formatGuestDateShort(item.firstSharedAt) : null],
-		['Abierta', item.firstViewedAt ? formatGuestDateShort(item.firstViewedAt) : null],
+		['Vista previa', item.lastPreviewedAt ? 'Sí, en el chat' : null],
+		['Abierta', formatGuestOpens(item)],
+		[
+			'Recorrido',
+			(item.maxProgressMilestone ?? 0) > 0 ? `${item.maxProgressMilestone} %` : null,
+		],
 		['Respondió', item.respondedAt ? formatGuestDateShort(item.respondedAt) : null],
 		['Origen', formatGuestEntrySource(item)],
 		['Correo', item.email ?? null],

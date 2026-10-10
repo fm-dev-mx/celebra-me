@@ -3,6 +3,7 @@ import { guestsApi } from '@/lib/dashboard/guests-api';
 import type {
 	DashboardGuestItem,
 	DashboardGuestListResponse,
+	DashboardEngagementSummary,
 } from '@/interfaces/dashboard/guest.interface';
 import type { DashboardEventListDebug } from '@/interfaces/dashboard/admin.interface';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
@@ -73,6 +74,7 @@ export const useGuestDashboardRealtime = ({ initialEventId }: UseGuestDashboardR
 	const [hostEvents, setHostEvents] = useState<HostEventItem[]>([]);
 	const [items, setItems] = useState<DashboardGuestItem[]>([]);
 	const [totals, setTotals] = useState(DEFAULT_TOTALS);
+	const [engagement, setEngagement] = useState<DashboardEngagementSummary | null>(null);
 	const [shareTemplates, setShareTemplates] =
 		useState<ShareMessagesConfig>(resolveShareTemplates());
 	const [reminderSettings, setReminderSettings] = useState<ReminderSettings>(
@@ -131,6 +133,7 @@ export const useGuestDashboardRealtime = ({ initialEventId }: UseGuestDashboardR
 			const data = await guestsApi.list({ eventId });
 			setItems(data.items);
 			setTotals(data.totals);
+			setEngagement(data.engagement ?? null);
 			if (data.shareTemplates) {
 				setShareTemplates(data.shareTemplates);
 			}
@@ -198,6 +201,7 @@ export const useGuestDashboardRealtime = ({ initialEventId }: UseGuestDashboardR
 
 	return {
 		error: eventsError || guestsError,
+		engagement,
 		eventId,
 		hostEvents,
 		inviteBaseUrl,

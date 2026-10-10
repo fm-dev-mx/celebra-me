@@ -16,7 +16,10 @@ import type {
 	GuestInvitationDTO,
 	GuestInvitationRecord,
 } from '@/interfaces/rsvp/domain.interface';
-import type { DashboardGuestListResponse } from '@/interfaces/dashboard/guest.interface';
+import type {
+	DashboardEngagementSummary,
+	DashboardGuestListResponse,
+} from '@/interfaces/dashboard/guest.interface';
 import { ApiError, isApiError } from '@/lib/rsvp/core/errors';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
@@ -46,6 +49,7 @@ import {
 	type ShareMessageDateContext,
 } from '@/lib/rsvp/services/shared/share-message-date';
 import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
+import { getEventEngagementSummary } from '@/lib/rsvp/repositories/engagement.repository';
 
 export function buildDashboardTotals(items: DashboardGuestListResponse['items']) {
 	let totalInvitations = 0;
@@ -62,6 +66,8 @@ export function buildDashboardTotals(items: DashboardGuestListResponse['items'])
 	let viewed = 0;
 
 	for (const item of items) {
+		// Test guests never count toward event totals.
+		if (item.isTest) continue;
 		totalInvitations++;
 		totalPeople += item.maxAllowedAttendees ?? 0;
 
@@ -193,6 +199,21 @@ async function resolvePhoneUpdate(input: {
 	return { phone: nextPhone, countryCode: input.countryCode };
 }
 
+/** The funnel is secondary: a failure hides it instead of failing the guest list. */
+async function loadEngagementSummary(
+	eventId: string,
+	hostAccessToken: string,
+): Promise<DashboardEngagementSummary | null> {
+	try {
+		return await getEventEngagementSummary(eventId, hostAccessToken);
+	} catch (error) {
+		console.warn('[dashboard] Engagement summary unavailable:', {
+			error: error instanceof Error ? error.message : String(error),
+		});
+		return null;
+	}
+}
+
 export async function listDashboardGuests(input: {
 	eventId: string;
 	userId: string;
@@ -233,6 +254,7 @@ export async function listDashboardGuests(input: {
 			reminderSettings: sharingContext.reminderSettings,
 			shareDateContext: sharingContext.shareDateContext,
 			totals: buildDashboardTotals(items),
+			engagement: await loadEngagementSummary(event.id, input.hostAccessToken),
 			updatedAt: new Date().toISOString(),
 		};
 	}
@@ -255,6 +277,7 @@ export async function listDashboardGuests(input: {
 			reminderSettings: resolveReminderSettings(null),
 			shareDateContext: buildShareMessageDateContext(null, null, '', new Date()),
 			totals: buildDashboardTotals(items),
+			engagement: await loadEngagementSummary(membership.eventId, input.hostAccessToken),
 			updatedAt: new Date().toISOString(),
 		};
 	}
@@ -277,6 +300,7 @@ export async function createDashboardGuest(input: {
 	actorUserId?: string;
 	isSuperAdmin?: boolean;
 	tags?: string[];
+	isTest?: boolean;
 }): Promise<DashboardGuestMutationResponse> {
 	const event = await getEventAccessOrThrow(input.eventId, input.hostAccessToken);
 
@@ -322,6 +346,7 @@ export async function createDashboardGuest(input: {
 				maxAllowedAttendees,
 				tags: input.tags,
 				shortId: generateShortId(8),
+				isTest: input.isTest === true,
 			},
 			input.hostAccessToken,
 		);
@@ -372,6 +397,7 @@ export async function updateDashboardGuest(input: {
 	attendeeCount?: number;
 	tags?: string[];
 	deliveryStatus?: DeliveryStatus;
+	isTest?: boolean;
 }): Promise<DashboardGuestMutationResponse> {
 	const existing = await getGuestAccessOrThrow(input.guestId, input.hostAccessToken);
 
@@ -424,6 +450,7 @@ export async function updateDashboardGuest(input: {
 				respondedAt: nextStatus === 'pending' ? null : new Date().toISOString(),
 				tags: input.tags,
 				deliveryStatus: input.deliveryStatus,
+				isTest: input.isTest,
 			},
 			input.hostAccessToken,
 		);

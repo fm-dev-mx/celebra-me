@@ -33,6 +33,7 @@ export interface CreateGuestDTO {
 	email?: string | null;
 	tags?: string[];
 	maxAllowedAttendees?: number;
+	isTest?: boolean;
 }
 
 export interface UpdateGuestDTO {
@@ -44,4 +45,5 @@ export interface UpdateGuestDTO {
 	maxAllowedAttendees?: number;
 	deliveryStatus?: DeliveryStatus;
 	lastReminderSentAt?: string | null;
+	isTest?: boolean;
 }

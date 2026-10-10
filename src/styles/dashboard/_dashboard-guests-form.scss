@@ -357,3 +357,22 @@
 		font-size: 0.875rem;
 	}
 }
+
+.guest-form__test {
+	display: grid;
+	gap: 0.25rem;
+}
+
+.guest-form__test-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	color: var(--color-text-primary);
+	font-weight: 600;
+
+	input {
+		width: 1.125rem;
+		height: 1.125rem;
+		accent-color: var(--color-action-accent, currentColor);
+	}
+}

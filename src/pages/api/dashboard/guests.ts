@@ -91,6 +91,7 @@ export const POST: APIRoute = async ({ request, url, locals, cookies }) => {
 			tags: Array.isArray(body.tags)
 				? body.tags.filter((tag): tag is string => typeof tag === 'string')
 				: undefined,
+			isTest: body.isTest === true,
 		});
 
 		return jsonResponse(result, 201);

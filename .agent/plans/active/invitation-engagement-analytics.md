@@ -277,6 +277,11 @@ Dashboard ──host token──▶ /api/dashboard/guests (+ engagement fields)
   previa en WhatsApp: sí/no". Spanish, "usted" register, SCSS only.
 - `getGuestStage` keeps its contract; switch its "opened" signal to `openCount > 0` with fallback to
   legacy `firstViewedAt` during dual-run.
+- Implemented (G5): the funnel is part of the guest list response (`engagement`, nullable, loaded
+  with the host token and degraded to null on failure); test guests are excluded from totals,
+  overview, and group metrics; `getSharingConfigForSlug` now derives the event date with
+  `resolveInvitationSchedule` (same precedence as `events.event_date`). Visual check pending: the
+  Local DB lacks the migration, so the dashboard cannot load there yet.
 
 ### 6.6 Privacy and retention
 

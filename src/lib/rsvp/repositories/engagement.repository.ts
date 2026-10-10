@@ -1,4 +1,5 @@
 import { supabaseRestRequest } from './supabase';
+import type { DashboardEngagementSummary } from '@/interfaces/dashboard/guest.interface';
 import type { DeviceClass, ServerTrafficClass } from '@/lib/rsvp/engagement/taxonomy';
 
 /** One event in the snake_case shape record_guest_engagement_events_public expects. */
@@ -32,4 +33,22 @@ export async function recordGuestEngagementEventsRpc(
 			p_viewer_user_id: viewerUserId,
 		},
 	});
+}
+
+/** Host funnel under RLS (security invoker): the host token decides which guests count. */
+export async function getEventEngagementSummary(
+	eventId: string,
+	hostAccessToken: string,
+): Promise<DashboardEngagementSummary> {
+	const summary = await supabaseRestRequest<DashboardEngagementSummary>({
+		pathWithQuery: 'rpc/get_event_engagement_summary',
+		method: 'POST',
+		authToken: hostAccessToken,
+		body: { p_event_id: eventId },
+	});
+	return {
+		...summary,
+		medianSecondsToOpen:
+			summary.medianSecondsToOpen === null ? null : Number(summary.medianSecondsToOpen),
+	};
 }
