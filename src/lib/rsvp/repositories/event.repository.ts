@@ -1,5 +1,6 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
+import { ApiError } from '@/lib/rsvp/core/errors';
 import {
 	EVENT_COLUMNS,
 	EVENT_MUTATION_COLUMNS,
@@ -122,6 +123,8 @@ export async function updateEventService(input: {
 	eventType?: EventRecord['eventType'];
 	status?: EventRecord['status'];
 	invitationId?: string | null;
+	/** Optimistic lock: only update while `updated_at` still equals this value. */
+	expectedUpdatedAt?: string;
 }): Promise<EventRecord> {
 	const body: Record<string, unknown> = {};
 	if (input.title !== undefined) body.title = input.title;
@@ -130,14 +133,27 @@ export async function updateEventService(input: {
 	if (input.status !== undefined) body.status = input.status;
 	if (input.invitationId !== undefined) body.invitation_project_id = input.invitationId;
 
+	const versionFilter =
+		input.expectedUpdatedAt !== undefined
+			? `&updated_at=eq.${encodeURIComponent(input.expectedUpdatedAt)}`
+			: '';
 	const rows = await supabaseRestRequest<EventRow[]>({
-		pathWithQuery: `events?id=eq.${encodeURIComponent(input.eventId)}&select=*&${ACTIVE_EVENT_FILTER}`,
+		pathWithQuery: `events?id=eq.${encodeURIComponent(input.eventId)}${versionFilter}&select=*&${ACTIVE_EVENT_FILTER}`,
 		method: 'PATCH',
 		useServiceRole: true,
 		prefer: 'return=representation',
 		body,
 	});
-	if (!rows[0]) throw new Error('Event not found.');
+	if (!rows[0]) {
+		if (input.expectedUpdatedAt !== undefined) {
+			throw new ApiError(
+				409,
+				'conflict',
+				'El evento cambió desde que se cargó. Recargue la página e inténtelo de nuevo.',
+			);
+		}
+		throw new Error('Event not found.');
+	}
 	return toEventRecord(rows[0]);
 }
 

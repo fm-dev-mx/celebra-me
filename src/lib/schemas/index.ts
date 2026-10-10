@@ -94,8 +94,11 @@ export const UpdateEventSchema = z
 		slug: EventSlugSchema.optional(),
 		eventType: EventTypeSchema.optional(),
 		status: EventStatusSchema.optional(),
-		// Accepted for client compatibility; optimistic locking is not enforced on this route yet.
-		_version: TimestampSchema.optional(),
+		// Optional optimistic-locking token: the event's `updatedAt` exactly as last read
+		// (PostgREST returns `+00:00` offsets). A stale value makes the update return 409.
+		_version: z.iso
+			.datetime({ offset: true, message: 'Must be a valid ISO 8601 timestamp' })
+			.optional(),
 	})
 	.refine(
 		(value) =>

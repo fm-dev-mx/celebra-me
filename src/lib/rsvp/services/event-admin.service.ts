@@ -8,12 +8,15 @@ import {
 	updateEventService,
 } from '@/lib/rsvp/repositories/event.repository';
 import { listMembershipsForHost } from '@/lib/rsvp/repositories/role-membership.repository';
+import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import type { DashboardEventListDebug } from '@/interfaces/dashboard/admin.interface';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
 import { sanitize } from '@/lib/rsvp/core/utils';
 import { toDashboardEventItem } from '@/lib/rsvp/services/shared/dashboard-event-item';
+
+const UNIQUE_VIOLATION = '23505';
 
 async function listAllEventsForSuperAdmin(input: {
 	hostUserId: string;
@@ -59,6 +62,7 @@ export async function updateEventAdmin(input: {
 	slug?: string;
 	eventType?: EventRecord['eventType'];
 	status?: EventRecord['status'];
+	expectedUpdatedAt?: string;
 	actorUserId: string;
 }): Promise<EventRecord> {
 	const eventId = sanitize(input.eventId, 120);
@@ -67,13 +71,37 @@ export async function updateEventAdmin(input: {
 	const existing = await findEventByIdService(eventId);
 	if (!existing) throw new ApiError(404, 'not_found', 'Event not found.');
 
-	const event = await updateEventService({
-		eventId,
-		title: input.title !== undefined ? sanitize(input.title, 140) : undefined,
-		slug: input.slug !== undefined ? sanitize(input.slug, 120) : undefined,
-		eventType: input.eventType,
-		status: input.status,
-	});
+	const slug = input.slug !== undefined ? sanitize(input.slug, 120) : undefined;
+	// A linked event must keep the invitation's slug and type: the public RSVP resolves the event
+	// by `/{eventType}/{slug}` and publication rejects a type mismatch.
+	if (
+		existing.invitationId &&
+		((slug !== undefined && slug !== existing.slug) ||
+			(input.eventType !== undefined && input.eventType !== existing.eventType))
+	) {
+		throw new ApiError(
+			409,
+			'conflict',
+			'El slug y el tipo de un evento vinculado a una invitación se cambian desde la invitación.',
+		);
+	}
+
+	let event: EventRecord;
+	try {
+		event = await updateEventService({
+			eventId,
+			title: input.title !== undefined ? sanitize(input.title, 140) : undefined,
+			slug,
+			eventType: input.eventType,
+			status: input.status,
+			expectedUpdatedAt: input.expectedUpdatedAt,
+		});
+	} catch (error) {
+		if (error instanceof SupabaseHttpError && error.code === UNIQUE_VIOLATION) {
+			throw new ApiError(409, 'conflict', 'Ya existe otro evento con ese slug.');
+		}
+		throw error;
+	}
 
 	await logAdminAction({
 		actorId: input.actorUserId,

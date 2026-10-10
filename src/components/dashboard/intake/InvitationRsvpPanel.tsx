@@ -116,7 +116,7 @@ const InvitationRsvpPanel: FC<Props> = ({ rsvpEvent, onDeactivated }) => {
 			{confirmOpen && (
 				<ConfirmModal
 					title="¿Desactivar RSVP?"
-					message="Los invitados ya no podrán confirmar asistencia. La invitación pública seguirá visible."
+					message="Los invitados ya no podrán confirmar asistencia. La invitación pública seguirá visible. Si vuelve a publicar la invitación, el RSVP se reactivará."
 					confirmLabel="Desactivar RSVP"
 					destructive
 					loading={deactivating}
