@@ -6,11 +6,15 @@
  * Does not mutate data, providers, or cache architecture.
  *
  * Usage:
- *   pnpm invitation:delivery:baseline
- *   pnpm invitation:delivery:baseline --origin https://www.celebra-me.com --samples 5
- *   pnpm invitation:delivery:baseline --assert-budget
+ *   pnpm invitation:delivery:baseline --slug <eventType>/<slug>
+ *   pnpm invitation:delivery:baseline --slug <eventType>/<slug> --legacy-slug <eventType>/<slug>
+ *   pnpm invitation:delivery:baseline --slug <eventType>/<slug> --origin <url> --samples 5 --assert-budget
+ *
+ * --slug names an invitation with versioned (Cloudinary) media; --legacy-slug, when given, names one
+ * that still serves mutable Storage media.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { flagValue } from '../lib/cli-args.ts';
 import { dirname, resolve } from 'node:path';
 import {
 	decodedHtmlUtf8ByteLength,
@@ -24,7 +28,7 @@ import { isMutableInPlaceMediaUrl } from '../../src/lib/assets/vercel-image-poli
 import { evaluateImageDeliveryBudget } from '../../src/lib/invitation-preparation/image-delivery-budget.ts';
 import {
 	assertDeliveryBudgets,
-	DELIVERY_BENCHMARK_SCENARIOS,
+	buildDeliveryBenchmarkScenarios,
 	type DeliveryBudgetScenario,
 } from '../../src/lib/invitation/delivery-budget.ts';
 
@@ -32,6 +36,8 @@ interface CliOptions {
 	origin: string;
 	samples: number;
 	assertBudget: boolean;
+	versionedSlug: string;
+	legacyStorageSlug?: string;
 }
 
 interface DocumentSample {
@@ -99,7 +105,13 @@ function parseArgs(argv: string[]): CliOptions {
 	const originIndex = argv.indexOf('--origin');
 	const samplesIndex = argv.indexOf('--samples');
 	const origin = originIndex >= 0 ? argv[originIndex + 1] : process.env.BASE_URL;
+	const versionedSlug = flagValue(argv, '--slug');
+	if (!versionedSlug) {
+		throw new Error('Use --slug <eventType>/<slug> to choose the invitation to measure.');
+	}
 	return {
+		versionedSlug,
+		legacyStorageSlug: flagValue(argv, '--legacy-slug'),
 		origin: (origin || 'https://www.celebra-me.com').replace(/\/$/, ''),
 		samples: Math.max(
 			1,
@@ -336,7 +348,7 @@ async function main(): Promise<void> {
 	const options = parseArgs(process.argv.slice(2));
 	const startedAt = new Date().toISOString();
 	const reports = [];
-	for (const scenario of Object.values(DELIVERY_BENCHMARK_SCENARIOS)) {
+	for (const scenario of buildDeliveryBenchmarkScenarios(options)) {
 		reports.push(
 			await measureScenario(
 				options.origin,
