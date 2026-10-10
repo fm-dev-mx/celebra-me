@@ -424,13 +424,7 @@ export function extractSupabaseProjectRef(dbUrl: string): string {
 export const EXCLUDED_TABLES = [
 	'guest_invitations',
 	'guest_invitation_audit',
-	'event_claim_codes',
-	'intake_requests',
-	'intake_submissions',
 	'audit_logs',
-	'rsvp_records',
-	'rsvp_audit_log',
-	'rsvp_channel_log',
 	'visitor_sessions',
 ] as const;
 

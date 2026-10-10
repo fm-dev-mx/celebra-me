@@ -6,7 +6,6 @@ import type { RevealCardData } from '@/lib/invitation/reveal-card';
 import type { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import { resolveShareDescription } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';
-import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
 import {
 	resolveInvitationMusicPlayer,
 	shouldShowLocalPersonalizedAccessPreview,
@@ -121,7 +120,7 @@ export function buildPageContextFromViewModel(input: {
 	eventType: string;
 	screenshotMode?: boolean;
 }): InvitationPageContext {
-	const { viewModel, slug, guestContext, eventType, screenshotMode = false } = input;
+	const { viewModel, guestContext, screenshotMode = false } = input;
 	const renderViewModel = applyLocationPolicy({
 		viewModel,
 		isConfirmedGuest: guestContext?.guest.attendanceStatus === 'confirmed',
@@ -130,7 +129,7 @@ export function buildPageContextFromViewModel(input: {
 	renderViewModel.brandingVisibility = resolveBrandingVisibility({
 		isDemo: renderViewModel.isDemo,
 		guest: guestContext?.guest ?? null,
-		isEventEligibleForGuestBrandingRemoval: isEventEligibleForBrandingRemoval(eventType, slug),
+		isEventEligibleForGuestBrandingRemoval: guestContext?.brandingRemovalEnabled ?? false,
 	});
 
 	const { theme, envelope, sections } = renderViewModel;

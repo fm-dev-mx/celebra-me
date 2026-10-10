@@ -99,6 +99,7 @@ describe('rsvp service branches', () => {
 		status: 'published' as const,
 		publishedAt: null,
 		invitationId: null,
+		brandingRemovalGuestLimit: 0,
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	};

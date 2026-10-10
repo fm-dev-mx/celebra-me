@@ -60,6 +60,7 @@ export type EventRow = {
 	status: EventRecord['status'];
 	published_at: string | null;
 	invitation_project_id: string | null;
+	branding_removal_guest_limit?: number | null;
 	created_at: string;
 	updated_at: string;
 };
@@ -126,6 +127,7 @@ const EVENT_COLUMN_LIST = [
 	'status',
 	'published_at',
 	'invitation_project_id',
+	'branding_removal_guest_limit',
 	'created_at',
 	'updated_at',
 ] as const;
@@ -147,6 +149,7 @@ export function toEventRecord(row: EventRow): EventRecord {
 		status: row.status,
 		publishedAt: row.published_at,
 		invitationId: row.invitation_project_id,
+		brandingRemovalGuestLimit: row.branding_removal_guest_limit ?? 0,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 	};

@@ -120,7 +120,7 @@ targets are explicit; an arbitrary cloud project is `unknown`, never inferred as
 
 Invitation tooling has read-only service-role access to guest confirmation and guest-audit tables.
 RSVP changes remain behind RSVP services/RPCs. Permanent deletion uses the protected lifecycle RPC,
-and managed compensation refuses to delete events containing guests or claim codes.
+and managed compensation refuses to delete events containing guests.
 
 Managed reconciliation uses explicit add/replace/remove operations. A package-only deletion may
 remove baseline-owned content; target-only changes are preserved; divergent additions, changes, or

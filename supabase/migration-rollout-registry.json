@@ -141,6 +141,48 @@
             "phase": "expand",
             "provides": ["event_memories_gallery_share"],
             "notes": "Adds nullable hidden_at, thumbnail_object_key and thumbnail_bytes to event_memory_items and share_version (default 0) plus share_enabled_at to event_memory_settings. No RPC, grant or RLS change. Must be applied before the application that selects these columns."
+        },
+        "20261009230000": {
+            "phase": "contract",
+            "requiresDeployedAppCapabilities": ["retired_legacy_tables_client"],
+            "revokes": [
+                "event_claim_codes",
+                "redeem_claim_code_rpc",
+                "intake_requests",
+                "intake_submissions",
+                "intake_capture_statuses"
+            ],
+            "notes": "Drops claim codes, the client capture tables and their unused event/project helpers, redefines the archive/delete/restore helpers without them and narrows invitations.status. Apply only after the application without self-registration or capture is deployed; export the three tables first."
+        },
+        "20261009230100": {
+            "phase": "contract",
+            "requiresDeployedAppCapabilities": ["retired_legacy_tables_client"],
+            "revokes": [
+                "rsvp_records",
+                "rsvp_audit_log",
+                "rsvp_channel_log",
+                "managed_invitation_legacy_adoption_receipts",
+                "host_profiles"
+            ],
+            "notes": "Drops the RSVP v1 store, the legacy adoption receipts and host_profiles, none of which the application reads. Apply after the application that no longer writes host_profiles is deployed; export the five tables first."
+        },
+        "20261009230200": {
+            "phase": "contract",
+            "requiresDeployedAppCapabilities": [
+                "retired_legacy_tables_client",
+                "event_memories_client"
+            ],
+            "revokes": [
+                "valentina_memories_catalog",
+                "valentina_memories_private_lifecycle",
+                "valentina_memories_video_quota"
+            ],
+            "notes": "Drops the client-named Valentina memories catalog and its RPCs. Export the three tables and the referenced storage objects first; object deletion is a separate owner step."
+        },
+        "20261009230300": {
+            "phase": "expand",
+            "provides": ["event_branding_removal_settings"],
+            "notes": "Adds events.branding_removal_guest_limit (default 0) and backfills the one event sold with the add-on. Apply before deploying the application that selects the column."
         }
     },
     "appCapabilities": {
@@ -164,6 +206,12 @@
         },
         "event_memories_client": {
             "requiresDbCapabilities": ["event_memories_catalog"]
+        },
+        "retired_legacy_tables_client": {
+            "requiresDbCapabilities": []
+        },
+        "event_branding_removal_client": {
+            "requiresDbCapabilities": ["event_branding_removal_settings"]
         }
     }
 }

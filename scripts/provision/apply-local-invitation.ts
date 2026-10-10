@@ -184,7 +184,6 @@ async function resolveLocalOwner(options: {
 	const hostPlan = await resolveAndEnsureInvitationHostOwner({
 		slug: options.slug,
 		hostLoginAlias: options.hostLoginAlias,
-		displayName: options.displayName,
 		targetDbUrl: options.dbUrl,
 		supabaseUrl: options.apiUrl,
 		serviceRoleKey: options.serviceRoleKey,

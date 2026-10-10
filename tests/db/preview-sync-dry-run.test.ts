@@ -7,7 +7,6 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
 
 const mockResolvePreviewAdminUser = jest.fn(() => 'admin-user-id');
 const mockUpdatePreviewAdminRole = jest.fn(() => undefined);
-const mockEnsureHostProfile = jest.fn(() => undefined);
 const mockWriteReportFile = jest.fn(() => undefined);
 const mockUpsertFromJson = jest.fn(() => ({ created: 0 }));
 const mockTruncateTable = jest.fn(() => undefined);
@@ -26,7 +25,6 @@ jest.mock('../../scripts/db/preview-sync-guards', () => ({
 	assertNotDisposableTarget: jest.fn(),
 	resolvePreviewAdminUser: mockResolvePreviewAdminUser,
 	updatePreviewAdminRole: mockUpdatePreviewAdminRole,
-	ensureHostProfile: mockEnsureHostProfile,
 	getPreviewSupabaseUrl: () => 'https://iwipdvisoyerfdytuhwi.supabase.co',
 	getPreviewServiceRoleKey: () => 'preview-service-role',
 	deriveSupabaseUrlFromDbUrl: (url: string) => {
@@ -124,7 +122,6 @@ describe('preview-sync dry-run zero writes', () => {
 
 		expect(mockResolvePreviewAdminUser).toHaveBeenCalled();
 		expect(mockUpdatePreviewAdminRole).not.toHaveBeenCalled();
-		expect(mockEnsureHostProfile).not.toHaveBeenCalled();
 		expect(mockUpsertFromJson).not.toHaveBeenCalled();
 		expect(mockTruncateTable).not.toHaveBeenCalled();
 		expect(mockSyncAsset).not.toHaveBeenCalled();
@@ -132,10 +129,9 @@ describe('preview-sync dry-run zero writes', () => {
 		expect(mockAuthorizePreviewWriteApply).not.toHaveBeenCalled();
 	});
 
-	it('applies role/profile writes only when not dry-run', async () => {
+	it('applies the role write only when not dry-run', async () => {
 		const mod = await import('../../scripts/db/preview-sync-invitations.ts');
 		mod.runPreviewAdminPhase('postgresql://preview', { dryRun: false });
 		expect(mockUpdatePreviewAdminRole).toHaveBeenCalledTimes(1);
-		expect(mockEnsureHostProfile).toHaveBeenCalledTimes(1);
 	});
 });

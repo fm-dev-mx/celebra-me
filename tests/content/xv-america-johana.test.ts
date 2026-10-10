@@ -154,6 +154,7 @@ describe('XV America Johana client invitation preparation', () => {
 			eventSlug: 'america-johana',
 			eventType: 'xv' as const,
 			eventTitle: 'XV América Johana',
+			brandingRemovalEnabled: false,
 			guest: {
 				fullName: 'María Fernanda Solís',
 				maxAllowedAttendees: 4,

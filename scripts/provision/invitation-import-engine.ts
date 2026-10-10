@@ -31,11 +31,7 @@ import {
 	type DbTarget,
 } from '../db/db-target-config.ts';
 import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
-import {
-	resolvePreviewAdminUser,
-	updatePreviewAdminRole,
-	ensureHostProfile,
-} from '../db/preview-sync-guards.ts';
+import { resolvePreviewAdminUser, updatePreviewAdminRole } from '../db/preview-sync-guards.ts';
 import { resolveAndEnsureInvitationHostOwner } from './invitation-host-owner.ts';
 import {
 	hashPublicMetadata,
@@ -2002,7 +1998,6 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	const hostOwnerPlan = await resolveAndEnsureInvitationHostOwner({
 		slug: pkg.invitation.slug,
 		hostLoginAlias,
-		displayName: pkg.invitation.clientName || pkg.invitation.title,
 		targetDbUrl,
 		supabaseUrl: targetSupabaseUrl,
 		serviceRoleKey: serviceRoleKeyForHost || undefined,
@@ -2374,20 +2369,12 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 	);
 	const trackedResources: TrackedResource[] = [];
 	if (expectedTarget === 'preview') {
-		trackedResources.push(
-			{
-				type: 'preview_identity',
-				id: `app_user_roles:${ownerUserId}`,
-				isPreExisting: true,
-				wasOverwritten: false,
-			},
-			{
-				type: 'preview_identity',
-				id: `host_profiles:${ownerUserId}`,
-				isPreExisting: true,
-				wasOverwritten: false,
-			},
-		);
+		trackedResources.push({
+			type: 'preview_identity',
+			id: `app_user_roles:${ownerUserId}`,
+			isPreExisting: true,
+			wasOverwritten: false,
+		});
 	}
 	trackedResources.push({
 		type: 'managed_invitation_release_provenance',
@@ -2494,10 +2481,6 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 				executedMutations++;
 				completedDatabaseWrites.updates++;
 				markResourceOverwritten('preview_identity', `app_user_roles:${ownerUserId}`);
-				ensureHostProfile(targetDbUrl, ownerUserId);
-				executedMutations++;
-				completedDatabaseWrites.updates++;
-				markResourceOverwritten('preview_identity', `host_profiles:${ownerUserId}`);
 			}
 		}
 		const serviceRoleKey = serviceRoleKeyForHost;

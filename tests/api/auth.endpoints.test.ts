@@ -171,6 +171,7 @@ describe('auth endpoints', () => {
 			status: 'published',
 			publishedAt: null,
 			invitationId: null,
+			brandingRemovalGuestLimit: 0,
 			createdAt: '2026-01-01',
 			updatedAt: '2026-01-01',
 		});

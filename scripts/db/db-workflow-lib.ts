@@ -31,11 +31,8 @@ export const REFRESH_PARITY_TABLES = [
 	'published_invitation_content',
 	'guest_invitations',
 	'invitation_content_drafts',
-	'intake_requests',
-	'intake_submissions',
 	'app_user_roles',
 	'event_memberships',
-	'event_claim_codes',
 ] as const;
 
 export interface CommandResult {

@@ -206,20 +206,6 @@ export function ensureHostClientRole(dbUrl: string, userId: string): void {
 	);
 }
 
-export function ensureInvitationHostProfile(
-	dbUrl: string,
-	userId: string,
-	displayName: string,
-): void {
-	const name = displayName.trim() || 'Host';
-	runPsql(
-		`insert into public.host_profiles (user_id, display_name)
-		 values (${sqlLiteral(userId)}::uuid, ${sqlLiteral(name)})
-		 on conflict (user_id) do update set display_name = excluded.display_name;`,
-		dbUrl,
-	);
-}
-
 function buildTemporaryHostPassword(): string {
 	return randomBytes(24).toString('base64url');
 }
@@ -272,7 +258,6 @@ export async function createInvitationHostAuthUser(input: {
 export async function resolveAndEnsureInvitationHostOwner(input: {
 	slug: string;
 	hostLoginAlias: string;
-	displayName: string;
 	targetDbUrl: string;
 	supabaseUrl: string;
 	serviceRoleKey: string | undefined;
@@ -329,11 +314,9 @@ export async function resolveAndEnsureInvitationHostOwner(input: {
 			});
 		}
 		ensureHostClientRole(input.targetDbUrl, ownerUserId);
-		ensureInvitationHostProfile(input.targetDbUrl, ownerUserId, input.displayName);
 	} else if (plan.action === 'OWNER_REUSE' && !input.dryRun) {
 		// Dedicated host reuse only — never rewrite roles for explicit operator overrides.
 		ensureHostClientRole(input.targetDbUrl, ownerUserId);
-		ensureInvitationHostProfile(input.targetDbUrl, ownerUserId, input.displayName);
 	}
 
 	return { ...plan, ownerUserId };

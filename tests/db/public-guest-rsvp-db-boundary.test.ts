@@ -171,17 +171,11 @@ describe('public guest rsvp postgresql security boundary (real DB)', () => {
 		}
 	});
 
-	it('denies direct client-role DML on BFF-owned invitation and intake tables', () => {
+	it('denies direct client-role DML on BFF-owned invitation tables', () => {
 		const statements = [
 			'insert into public.invitations default values;',
 			'update public.invitations set updated_at = updated_at;',
 			'delete from public.invitations;',
-			'insert into public.intake_requests default values;',
-			'update public.intake_requests set updated_at = updated_at;',
-			'delete from public.intake_requests;',
-			'insert into public.intake_submissions default values;',
-			'update public.intake_submissions set updated_at = updated_at;',
-			'delete from public.intake_submissions;',
 			'insert into public.invitation_content_drafts default values;',
 			'update public.invitation_content_drafts set updated_at = updated_at;',
 			'delete from public.invitation_content_drafts;',

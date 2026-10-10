@@ -19,6 +19,8 @@ function toInvitationContext(
 	eventSlug: string;
 	eventType: EventRecord['eventType'];
 	eventTitle: string;
+	/** The event sells the per-guest branding removal add-on. */
+	brandingRemovalEnabled: boolean;
 	guest: {
 		fullName: string;
 		maxAllowedAttendees: number;
@@ -32,6 +34,7 @@ function toInvitationContext(
 		inviteId: invitation.inviteId,
 		eventSlug: event.slug,
 		eventType: event.eventType,
+		brandingRemovalEnabled: event.brandingRemovalGuestLimit > 0,
 		eventTitle: event.title,
 		guest: {
 			fullName: invitation.fullName,
@@ -49,6 +52,8 @@ export async function getInvitationContextByInviteId(inviteId: string): Promise<
 	eventSlug: string;
 	eventType: EventRecord['eventType'];
 	eventTitle: string;
+	/** The event sells the per-guest branding removal add-on. */
+	brandingRemovalEnabled: boolean;
 	guest: {
 		fullName: string;
 		maxAllowedAttendees: number;
@@ -75,6 +80,8 @@ export async function getInvitationContextByShortId(shortId: string): Promise<{
 	eventSlug: string;
 	eventType: EventRecord['eventType'];
 	eventTitle: string;
+	/** The event sells the per-guest branding removal add-on. */
+	brandingRemovalEnabled: boolean;
 	guest: {
 		fullName: string;
 		maxAllowedAttendees: number;

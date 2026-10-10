@@ -238,6 +238,7 @@ describe('Admin API Strong Session Guard', () => {
 				status: 'draft',
 				publishedAt: null,
 				invitationId: null,
+				brandingRemovalGuestLimit: 0,
 				createdAt: new Date().toISOString(),
 				updatedAt: new Date().toISOString(),
 			});

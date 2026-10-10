@@ -466,11 +466,8 @@ describe('REFRESH_PARITY_TABLES', () => {
 		expect(REFRESH_PARITY_TABLES).toContain('published_invitation_content');
 		expect(REFRESH_PARITY_TABLES).toContain('guest_invitations');
 		expect(REFRESH_PARITY_TABLES).toContain('invitation_content_drafts');
-		expect(REFRESH_PARITY_TABLES).toContain('intake_requests');
-		expect(REFRESH_PARITY_TABLES).toContain('intake_submissions');
 		expect(REFRESH_PARITY_TABLES).toContain('app_user_roles');
 		expect(REFRESH_PARITY_TABLES).toContain('event_memberships');
-		expect(REFRESH_PARITY_TABLES).toContain('event_claim_codes');
 	});
 });
 
@@ -513,7 +510,7 @@ describe('ensureTablesExist', () => {
 	it('passes when all tables exist in the target schema', () => {
 		spawnSync.mockReturnValue({
 			status: 0,
-			stdout: 'invitations\nevents\npublished_invitation_content\nguest_invitations\ninvitation_content_drafts\nintake_requests\nintake_submissions\napp_user_roles\nevent_memberships\nevent_claim_codes\n',
+			stdout: 'invitations\nevents\npublished_invitation_content\nguest_invitations\ninvitation_content_drafts\napp_user_roles\nevent_memberships\n',
 			stderr: '',
 			error: undefined,
 		});

@@ -54,6 +54,7 @@ function makeEvent(): EventRecord {
 		status: 'published',
 		publishedAt: new Date().toISOString(),
 		invitationId: 'inv-1',
+		brandingRemovalGuestLimit: 0,
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	};

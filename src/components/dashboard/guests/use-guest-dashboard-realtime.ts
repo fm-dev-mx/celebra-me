@@ -26,6 +26,7 @@ interface HostEventItem {
 	title: string;
 	slug: string;
 	eventType: EventRecord['eventType'];
+	brandingRemovalEnabled?: boolean;
 }
 
 export type RealtimeState = 'connected' | 'fallback';

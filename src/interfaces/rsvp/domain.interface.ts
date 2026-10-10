@@ -15,6 +15,8 @@ export interface EventRecord {
 	status: 'draft' | 'published' | 'archived';
 	publishedAt: string | null;
 	invitationId: string | null;
+	/** Guests that may hide Celebra-me branding; 0 means the add-on is off for the event. */
+	brandingRemovalGuestLimit: number;
 	createdAt: string;
 	updatedAt: string;
 }

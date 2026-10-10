@@ -9,12 +9,8 @@ export const CRITICAL_RECOVERY_TABLES = [
 	{ schema: 'public', table: 'invitations', orderBy: 't.id' },
 	{ schema: 'public', table: 'events', orderBy: 't.id' },
 	{ schema: 'public', table: 'event_memberships', orderBy: 't.id' },
-	{ schema: 'public', table: 'event_claim_codes', orderBy: 't.id' },
 	{ schema: 'public', table: 'guest_invitations', orderBy: 't.id' },
 	{ schema: 'public', table: 'guest_invitation_audit', orderBy: 't.id' },
-	{ schema: 'public', table: 'rsvp_records', orderBy: 't.store_key' },
-	{ schema: 'public', table: 'rsvp_audit_log', orderBy: 't.audit_id' },
-	{ schema: 'public', table: 'rsvp_channel_log', orderBy: 't.channel_event_id' },
 	{ schema: 'public', table: 'invitation_content_drafts', orderBy: 't.id' },
 	{ schema: 'public', table: 'published_invitation_content', orderBy: 't.id' },
 	{ schema: 'public', table: 'invitation_publication_idempotency', orderBy: 't.idempotency_key' },
@@ -189,7 +185,6 @@ select json_build_object(
   'orphanGuestAudit', (select count(*) from public.guest_invitation_audit a left join public.guest_invitations g on g.id = a.guest_invitation_id where g.id is null),
   'orphanMembershipEvents', (select count(*) from public.event_memberships m left join public.events e on e.id = m.event_id where e.id is null),
   'orphanMembershipUsers', (select count(*) from public.event_memberships m left join auth.users u on u.id = m.user_id where u.id is null),
-  'orphanClaimCodes', (select count(*) from public.event_claim_codes c left join public.events e on e.id = c.event_id where e.id is null),
   'orphanInvitationEventLinks', (select count(*) from public.events e left join public.invitations i on i.id = e.invitation_project_id where e.invitation_project_id is not null and i.id is null),
   'orphanEventOwners', (select count(*) from public.events e left join auth.users u on u.id = e.owner_user_id where u.id is null),
   'orphanPublishedInvitations', (select count(*) from public.published_invitation_content p left join public.invitations i on i.id = p.invitation_project_id where p.invitation_project_id is not null and i.id is null),
@@ -199,8 +194,7 @@ select json_build_object(
   'invalidPhone', (select count(*) from public.guest_invitations where phone is not null and phone !~ '^[0-9]{10}$'),
   'invalidCountryCode', (select count(*) from public.guest_invitations where country_code is not null and country_code !~ '^\\+[0-9]{1,4}$'),
   'duplicateInviteIds', (select count(*) from (select invite_id from public.guest_invitations group by invite_id having count(*) > 1) duplicates),
-  'duplicateMemberships', (select count(*) from (select event_id, user_id from public.event_memberships group by event_id, user_id having count(*) > 1) duplicates),
-  'duplicateClaimKeys', (select count(*) from (select event_id, code_key from public.event_claim_codes where deleted_at is null group by event_id, code_key having count(*) > 1) duplicates)
+  'duplicateMemberships', (select count(*) from (select event_id, user_id from public.event_memberships group by event_id, user_id having count(*) > 1) duplicates)
 )::text`;
 
 function businessStateSql(profile: RecoveryIntegrityProfile): string {
@@ -217,7 +211,6 @@ select json_build_object(
   'guestSoftDeleted', (select count(*) from public.guest_invitations where deleted_at is not null),
   'eventSoftDeleted', (select count(*) from public.events where deleted_at is not null),
   'membershipSoftDeleted', (select count(*) from public.event_memberships where deleted_at is not null),
-  'claimCodeSoftDeleted', (select count(*) from public.event_claim_codes where deleted_at is not null),
   'publishedVersions', (select coalesce(json_object_agg(event_type || '/' || slug, version), '{}'::json) from public.published_invitation_content)${receiptState}
 )::text`;
 }

@@ -330,7 +330,7 @@ PROVISIONED & HOSTED-VALIDATED
   data. Production customer data must NEVER be copied into Preview.
 - **Invitation Content Exception**: Preview MAY mirror invitation-facing production content (names,
   dates, locations, photographs) required for regression testing. Guest, RSVP, Auth, intake, audit,
-  commercial/tracking, and claim-code data stay prohibited; the list is owned by
+  and commercial/tracking data stay prohibited; the list is owned by
   [`content-parity-rsvp-isolation.md`](core/content-parity-rsvp-isolation.md#strict-isolation-never-promote-or-mirror)
   (executable: `EXCLUDED_TABLES` in `scripts/db/db-target-config.ts`).
 - **Ownership Remapping**: Copied invitations and events are owned by `preview@preview.com` (the

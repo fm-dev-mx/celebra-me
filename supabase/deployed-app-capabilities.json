@@ -1,4 +1,9 @@
 {
     "version": 1,
-    "capabilities": ["current_atomic_publication_client", "event_memories_client"]
+    "capabilities": [
+        "current_atomic_publication_client",
+        "event_memories_client",
+        "retired_legacy_tables_client",
+        "event_branding_removal_client"
+    ]
 }
