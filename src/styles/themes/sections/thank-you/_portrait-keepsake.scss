@@ -169,4 +169,16 @@
 	z-index: -1;
 	background: var(--thank-you-keepsake-ambient, none);
 	pointer-events: none;
+
+	// With `--thank-you-keepsake-ambient-drift` the painted ground moves slower than the keepsake.
+	@supports (animation-timeline: view()) {
+		@media (prefers-reduced-motion: no-preference) {
+			--art-drift-from: calc(var(--thank-you-keepsake-ambient-drift, 0rem) * -1);
+			--art-drift-to: var(--thank-you-keepsake-ambient-drift, 0);
+
+			animation: invitation-art-drift linear both;
+			animation-timeline: view();
+			animation-range: cover;
+		}
+	}
 }

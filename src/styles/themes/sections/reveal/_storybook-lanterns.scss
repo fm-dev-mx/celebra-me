@@ -142,11 +142,30 @@ $storybook-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	.envelope-seal-button__visual .seal-icon {
 		width: var(--storybook-seal-icon-size, 84%);
 		height: var(--storybook-seal-icon-size, 84%);
+		opacity: var(--storybook-seal-icon-opacity, 100%);
 		filter: var(
 			--storybook-seal-icon-filter,
 			drop-shadow(0.6px 0.8px 0 color-mix(in srgb, white 55%, transparent))
 				drop-shadow(-0.4px -0.5px 0 color-mix(in srgb, black 30%, transparent))
 		);
+	}
+
+	// An invitation may press its own motif into the wax: `--storybook-seal-art` is a mask image
+	// painted in the seal ink (shown with `--storybook-seal-art-display: block`, usually with the
+	// vector icon faded out through `--storybook-seal-icon-opacity: 0`).
+	.envelope-seal-button__visual::after {
+		content: '';
+		position: absolute;
+		inset: var(--storybook-seal-art-inset, 6%);
+		display: var(--storybook-seal-art-display, none);
+		background: var(--env-seal-icon);
+		mask: var(--storybook-seal-art, none) center / contain no-repeat;
+		filter: var(
+			--storybook-seal-icon-filter,
+			drop-shadow(0.6px 0.8px 0 color-mix(in srgb, white 55%, transparent))
+				drop-shadow(-0.4px -0.5px 0 color-mix(in srgb, black 30%, transparent))
+		);
+		pointer-events: none;
 	}
 
 	.envelope-seal-monogram {

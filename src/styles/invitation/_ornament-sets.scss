@@ -604,9 +604,15 @@ $gull: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox
 		}
 	}
 
+	// `--ornament-lights-closing` lets an invitation fill the last sky with more lanterns than the
+	// countdown, so the lights grow along the story (off by default).
 	.thank-you-editorial::before {
 		@include storybook-light-field(
-			(var(--ornament-lights-far), var(--ornament-lights-mid)),
+			(
+				var(--ornament-lights-closing, none),
+				var(--ornament-lights-far),
+				var(--ornament-lights-mid)
+			),
 			40s
 		);
 	}
