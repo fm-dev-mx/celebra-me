@@ -141,15 +141,28 @@ second consumer. This supersedes, for this preset only, the 2026-10-08 "no new d
 | omitted                | itinerary, gifts, music (until supplied)                                                       |
 | unresolved             | —                                                                                              |
 
-Guest-facing copy proposals ("usted" register, pending client approval):
+Guest-facing copy (owner-approved 2026-10-10, pending client approval). Voice: América in the first
+person, warm and playful, "usted" register. Lanterns stay visual only: the copy does not promise
+lanterns at the venue until the client confirms them. Details come from the photographs (the dated
+newspaper, four looks, heart-shaped glasses).
 
-- Envelope card: «Érase una vez… · América · Mis XV Años · sábado 21 de noviembre de 2026».
-- Quote: «Durante quince años soñé con esta noche. Hoy se encienden las linternas y quiero que usted
-  esté aquí para verlas conmigo.»
-- Countdown: «Faltan N noches para ver las linternas».
-- Indications: «Formal» · «El color lila está reservado para la quinceañera» · «Con mucho cariño,
-  esta celebración es solo para adultos».
-- Closing: «Gracias por ser parte de mi historia. Nos vemos bajo las linternas.»
+- Envelope card: «Tengo una noticia que darle».
+- Quote: «Quince años, un vestido lila y una lista de personas que no pueden faltar. Usted está en
+  ella.»
+- Family: «Mi gente favorita» · «Mis papás» · «Mis padrinos» · «Con la bendición de Dios y de la
+  mano de ellos, le invito a celebrar mis quince años.»
+- Countdown: «Faltan N noches (sí, las estoy contando)».
+- Location: «Apunte la fecha» · «Primero la misa, después la fiesta en el jardín.»
+- Indications: «Formal» · «El lila es mi color esa noche; ¿me ayuda a que siga siendo solo mío?» ·
+  «Esta vez la fiesta es solo para adultos. Gracias por entenderlo.»
+- Gallery: «Mis cuatro looks» · «Rosa, lila, amarillo… y unos lentes de corazón.»
+- Pass: «Su lugar ya está apartado» · «Lo guardé con su nombre, así que nadie más lo puede ocupar.»
+- RSVP: «¿Me acompaña?» · «Avíseme pronto, que quiero tener todo listo para recibirle.» · confirmed
+  «¡Qué emoción, {nombre}!» · declined «Le voy a extrañar, {nombre}.»
+- Closing: «Gracias por llegar hasta el final. Lo demás se lo cuento el 21 de noviembre… en
+  persona.»
+- Share: own invitation and reminder text; the reminder is status-neutral because a custom reminder
+  is sent verbatim to every guest.
 
 Exact `sectionOrder`: quote, family, countdown, location, gallery, personalizedAccess, rsvp,
 thankYou. Envelope and hero precede it; gifts and itinerary join only when the client supplies them.
@@ -188,17 +201,21 @@ vine with small flowers ties the chapter thresholds.
 | Vertical rhythm and density                              | One idea per chapter; countdown as one written line counting nights         | applied |
 | Surface hierarchy (open flow vs cards/containers)        | Open paper and night grounds; printed pieces: envelope card, details, reply | applied |
 | Photographic treatment (role, crop, focal point, filter) | Natural color, no filters; door bookend (hero 08756, closing 08763 oval)    | applied |
-| Section-intersection intent and narrative cadence        | Arch into family; atmospheric blend from the door photo to dusk; rest flat  | applied |
-| Local exceptions to the selected preset                  | Profile sets one token (`--storybook-field`)                                | none    |
+| Section-intersection intent and narrative cadence        | Two arches (quote, thankYou), three folios, two atmospheric blends          | applied |
+| Local exceptions to the selected preset                  | Profile sets scene art, deckle cards, folio tokens, and surface gradients   | applied |
 
 Tonal band: **3-band** (lilac paper → dusk countdown → violet night). Cadence map, non-neutral
 boundaries only (`composition.intersections` is the executable record):
 
 ```text
-// quote                  → family    : climax  arch (the mist family band rises into the paper)
-// interlude-after-family → countdown : bridge  atmospheric-blend (photo hands over to dusk)
-// Neutral: hero→quote, family→interlude, countdown→framed print, print→location,
-// location→gallery, gallery→pass, pass→rsvp, rsvp→thankYou (shared night ground).
+// hero                      → quote                     : climax  arch (paper rises into the tower door)
+// quote                     → family                    : bridge  folio (left corner turns over the quote paper)
+// interlude-after-family    → countdown                 : bridge  atmospheric-blend (door photo hands over to dusk)
+// countdown                 → interlude-after-countdown : bridge  folio (right corner turns over the countdown sky)
+// location                  → gallery                   : bridge  folio (left corner turns over the castle night)
+// gallery                   → personalized-access       : bridge  atmospheric-blend (contact sheet opens to the reply card)
+// rsvp                      → thankYou                  : climax  arch (mirrored gold arch returns to the door)
+// Neutral: family→interlude, framed print→location, pass→rsvp.
 ```
 
 ### Creative acceptance record

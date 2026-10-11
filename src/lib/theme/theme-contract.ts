@@ -107,6 +107,7 @@ export const SECTION_INTERSECTION_FAMILIES = [
 	'overlap',
 	'atmospheric-blend',
 	'pattern-band',
+	'folio',
 ] as const;
 
 export type SectionIntersectionFamily = (typeof SECTION_INTERSECTION_FAMILIES)[number];

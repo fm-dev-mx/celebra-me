@@ -259,6 +259,20 @@
 		outline: var(--interlude-framed-outline, 1px solid var(--color-border-subtle));
 		outline-offset: var(--interlude-framed-outline-offset, 0.45rem);
 		box-shadow: var(--interlude-framed-shadow, none);
+
+		// Optional 3D settle (`--interlude-framed-settle: invitation-settle-3d`, default none): the
+		// print arrives tilted by `--interlude-framed-settle-tilt` / `-turn`, lifted by `-rise`, and
+		// lies flat in view. The reveal recipe runs it after the media reveal.
+		@supports (animation-timeline: view()) {
+			@media (prefers-reduced-motion: no-preference) {
+				--interlude-media-settle: var(--interlude-framed-settle, none);
+				--settle-tilt: var(--interlude-framed-settle-tilt, 12deg);
+				--settle-turn: var(--interlude-framed-settle-turn, 0deg);
+				--settle-rise: var(--interlude-framed-settle-rise, 1.5rem);
+
+				transform-origin: 50% 100%;
+			}
+		}
 	}
 
 	.invitation-interlude__image {

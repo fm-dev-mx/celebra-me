@@ -54,7 +54,18 @@
 	#invitation-sections-container
 		> .invitation-section-wrapper[data-reveal='media-scale'].has-motion.is-visible
 		.invitation-interlude__media {
-		animation: invitation-reveal-media var(--reveal-duration) var(--reveal-ease) backwards;
+		// A presentation may add a scroll-linked settle after the reveal (`--interlude-media-settle`,
+		// an animation name, default none); it only runs where scroll timelines exist.
+		animation:
+			invitation-reveal-media var(--reveal-duration) var(--reveal-ease) backwards,
+			var(--interlude-media-settle, none) linear both;
+
+		@supports (animation-timeline: view()) {
+			animation-timeline: auto, view();
+			animation-range:
+				normal,
+				entry 0% cover 45%;
+		}
 	}
 
 	#invitation-sections-container
@@ -219,5 +230,22 @@
 
 	to {
 		translate: 0 var(--art-drift-to, 0);
+	}
+}
+
+// Scroll-linked 3D settle for a print or card: it arrives tilted back on its lower edge
+// (`--settle-tilt`, rotateX) and turned a little (`--settle-turn`, rotateY), lifted by
+// `--settle-rise`, and lies flat once it is in view. Only `transform` changes. Consumers opt in
+// per element through a token that names this animation (default `none`) and attach it inside
+// `@supports (animation-timeline: view())` and `prefers-reduced-motion: no-preference`.
+@keyframes invitation-settle-3d {
+	from {
+		transform: perspective(var(--settle-perspective, 70rem)) translateY(var(--settle-rise, 0))
+			rotateX(var(--settle-tilt, 0deg)) rotateY(var(--settle-turn, 0deg));
+	}
+
+	to {
+		transform: perspective(var(--settle-perspective, 70rem)) translateY(0) rotateX(0deg)
+			rotateY(0deg);
 	}
 }
