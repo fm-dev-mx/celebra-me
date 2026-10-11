@@ -4,13 +4,15 @@
 // Custom properties only; geometry stays with the section bases and registered variants.
 
 .theme-preset--storybook-lilac {
-	// The quote section declares its own component defaults, so its tokens are set on it.
+	// The quote section declares its own component defaults, so its tokens are set on it. An
+	// invitation may lay drawn art over the paper (`--storybook-quote-art`, background layers) and
+	// open room for it (`--storybook-quote-padding-block`); both default to the plain page.
 	.quote-section {
-		--quote-bg: var(--storybook-paper);
+		--quote-bg: var(--storybook-quote-art, none), var(--storybook-paper);
 		--quote-text-color: var(--color-violet-ink);
 		--quote-author-color: var(--color-gold-ink);
 		--quote-accent-color: var(--color-leaf-gold);
-		--quote-padding-block: clamp(4.5rem, 12vh, 7.5rem);
+		--quote-padding-block: var(--storybook-quote-padding-block, clamp(4.5rem, 12vh, 7.5rem));
 
 		// 30rem keeps the closing words of a two-sentence quote together on desktop.
 		--quote-content-max-width: 30rem;
