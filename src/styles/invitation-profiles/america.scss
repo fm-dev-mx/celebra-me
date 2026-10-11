@@ -85,17 +85,40 @@
 	--hero-bleed-entrance: hero-bleed-rise;
 	--hero-bleed-entrance-wait: 600ms;
 
-	// Rhythm, day to night: the family band sits on a deeper lilac than the quote paper so the two
-	// read as separate pages, and the bleed interlude enters from that lilac and leaves into the
-	// dusk where the countdown begins.
-	--family-bg: var(--storybook-paper-grain), var(--color-lilac-veil);
+	// One sky, day to night. Every section meets its neighbour on the same color (paper, mist, veil,
+	// dusk, then the grained night), so no edge reads as a cut; the light of each section lives
+	// inside it, off-center and never touching an edge, so the pages keep their depth without
+	// seams. The quote paper settles into mist, the family band rises from that mist into the
+	// deeper veil, the bleed interlude enters from the veil and leaves into the dusk where the
+	// countdown begins, and the countdown's dusk has fully become night by its last line.
+	--family-bg:
+		var(--storybook-paper-grain),
+		radial-gradient(
+			26rem 15rem at 20% 17rem,
+			rgb(var(--color-story-cream-rgb) / 60%) 0%,
+			rgb(var(--color-story-cream-rgb) / 18%) 55%,
+			transparent 100%
+		),
+		radial-gradient(
+			24rem 13rem at 88% calc(100% - 16rem),
+			rgb(var(--color-lilac-rgb) / 24%) 0%,
+			transparent 100%
+		),
+		linear-gradient(
+			180deg,
+			var(--color-lilac-mist) 0%,
+			var(--color-lilac-veil) min(14rem, 30%),
+			var(--color-lilac-veil) 100%
+		);
 	--interlude-overlay:
 		linear-gradient(
 			180deg,
-			rgb(var(--color-lilac-veil-rgb) / 85%) 0%,
-			transparent 14%,
-			transparent 80%,
-			rgb(var(--color-violet-dusk-rgb) / 70%) 93%,
+			var(--color-lilac-veil) 0%,
+			rgb(var(--color-lilac-veil-rgb) / 70%) 5%,
+			rgb(var(--color-lilac-veil-rgb) / 20%) 12%,
+			transparent 18%,
+			transparent 78%,
+			rgb(var(--color-violet-dusk-rgb) / 70%) 92%,
 			var(--color-violet-dusk) 100%
 		),
 		radial-gradient(
@@ -103,6 +126,282 @@
 			transparent 52%,
 			rgb(var(--color-violet-night-rgb) / 12%) 100%
 		);
+
+	// The countdown is the last of the dusk: the lantern horizon glows behind the numeral, a moon
+	// haze sits high on the right, and the sky is full night by the bottom edge.
+	--countdown-written-bg:
+		var(--storybook-night-grain),
+		radial-gradient(
+			min(36rem, 92vw) 8.5rem at 46% 58%,
+			rgb(var(--color-candle-gold-rgb) / 15%) 0%,
+			rgb(var(--color-lantern-amber-rgb) / 5%) 50%,
+			transparent 100%
+		),
+		radial-gradient(
+			13rem 7rem at 84% 24%,
+			rgb(var(--color-night-lilac-rgb) / 11%) 0%,
+			transparent 100%
+		),
+		linear-gradient(
+			180deg,
+			var(--color-violet-dusk) 0%,
+			color-mix(in srgb, var(--color-violet-dusk) 55%, var(--color-violet-night)) 45%,
+			var(--color-violet-night) 100%
+		);
+
+	// Depth in motion, all scroll-linked and off under reduced motion: the save-the-date print is
+	// laid down on the night like a photograph on a table, turned slightly toward the corner its page
+	// turns from, and the closing portrait settles the other way, so the two prints answer each other.
+	--interlude-framed-settle: invitation-settle-3d;
+	--interlude-framed-settle-tilt: 18deg;
+	--interlude-framed-settle-turn: -7deg;
+	--interlude-framed-settle-rise: 2rem;
+	--thank-you-keepsake-settle: invitation-settle-3d;
+
+	// The location and closing sections clip without becoming scroll containers, so the castle and
+	// tower drift and the portrait settle follow the page scroll.
+	--location-section-overflow: clip;
+	--thank-you-section-overflow: clip;
+	--thank-you-keepsake-settle-tilt: 14deg;
+	--thank-you-keepsake-settle-turn: 8deg;
+
+	// Three storybook pages turn between the doors, alternating sides. Each page is cut from the
+	// paper it opens on (mist for the blessing, grained night after), edged in gold leaf, and its
+	// turned corner shows the back of the paper: cream on the day page, lilac on the night pages,
+	// as if the night were printed on the same book. The corner settles onto the page as it scrolls
+	// in. The blessing turns from the left so the quote's lower floral corner stays clear.
+	.invitation-section-wrapper[data-intersection='folio'] {
+		--intersection-folio-rise: clamp(2.75rem, 9vw, 5.5rem);
+		--intersection-folio-fold: clamp(2.5rem, 8vw, 4.75rem);
+		--intersection-folio-lift: 62deg;
+		--intersection-folio-ink: rgb(var(--color-candle-gold-rgb) / 55%);
+		--intersection-folio-back: var(--color-lilac-veil);
+		--intersection-folio-back-shade: color-mix(
+			in srgb,
+			var(--color-lilac) 70%,
+			var(--color-lilac-deep)
+		);
+		--intersection-folio-shadow: 0 0.4rem 0.6rem rgb(var(--color-violet-midnight-rgb) / 55%);
+		--intersection-surface: var(--color-violet-night);
+		--intersection-surface-fill: var(--storybook-night);
+	}
+
+	.invitation-section-wrapper[data-intersection='folio'][data-intersection-source='quote'] {
+		--intersection-folio-flip: -1;
+		--intersection-folio-ink: rgb(var(--color-leaf-gold-rgb) / 60%);
+		--intersection-folio-back: var(--color-story-cream);
+		--intersection-folio-back-shade: var(--color-lilac-veil);
+		--intersection-folio-shadow: 0 0.35rem 0.55rem rgb(var(--color-lilac-deep-rgb) / 22%);
+		--intersection-surface: var(--color-lilac-mist);
+		--intersection-surface-fill: var(--storybook-paper-grain), var(--color-lilac-mist);
+	}
+
+	.invitation-section-wrapper[data-intersection='folio'][data-intersection-source='itinerary'] {
+		--intersection-folio-flip: -1;
+	}
+
+	// The closing arch is cut from the same grained night as the sections it joins, so its lower
+	// edge leaves no flat band against the grain.
+	.invitation-section-wrapper[data-intersection='arch'][data-intersection-source='rsvp'] {
+		--intersection-surface: var(--storybook-night);
+	}
+
+	// The lantern sky keeps clear of the copy as before and also fades out before the top and bottom
+	// edges, so no light is cut in half where the dusk hands over to the next page.
+	.countdown-section {
+		--ornament-lights-clear: radial-gradient(
+			ellipse 62% 50% at 50% 48%,
+			transparent 56%,
+			rgb(0 0 0) 72%,
+			rgb(0 0 0) 86%,
+			transparent 100%
+		);
+	}
+
+	// Night pages keep a moonlit hollow around what they hold, opening toward the left, and a
+	// lantern warmth low on the opposite side.
+	--interlude-framed-bg:
+		var(--storybook-night-grain),
+		radial-gradient(
+			min(34rem, 96vw) 40% at 44% 48%,
+			rgb(var(--color-lilac-deep-rgb) / 30%) 0%,
+			rgb(var(--color-lilac-deep-rgb) / 8%) 60%,
+			transparent 100%
+		),
+		radial-gradient(
+			16rem 9rem at 86% 82%,
+			rgb(var(--color-lantern-amber-rgb) / 7%) 0%,
+			transparent 100%
+		),
+		var(--color-violet-night);
+
+	// Arrival light: the glow that greets a section after a blend sits inside its first rows, never
+	// on the edge it shares with the section above.
+	.invitation-section-wrapper[data-intersection='atmospheric-blend'] {
+		--intersection-depth: clamp(8rem, 22vw, 12rem);
+		--intersection-blend: radial-gradient(
+			min(40rem, 94vw) 46% at 56% 58%,
+			rgb(var(--color-candle-gold-rgb) / 10%) 0%,
+			rgb(var(--color-candle-gold-rgb) / 3%) 55%,
+			transparent 100%
+		);
+	}
+
+	// The contact sheet hangs in a cool, deepening night: lilac on the upper left, a last ember on
+	// the lower right, and the plain night at both edges.
+	.gallery-section {
+		--gallery-section-bg:
+			var(--storybook-night-grain),
+			radial-gradient(
+				min(38rem, 100vw) 30% at 16% 34%,
+				rgb(var(--color-lilac-deep-rgb) / 22%) 0%,
+				transparent 100%
+			),
+			radial-gradient(
+				22rem 20% at 88% 72%,
+				rgb(var(--color-lantern-amber-rgb) / 6%) 0%,
+				transparent 100%
+			),
+			var(--color-violet-night);
+	}
+
+	// The reply card is read by candlelight: one warm pool spans the pass and the answer, peaking on
+	// the edge they share. Both halves use the same width, so the light is continuous across it.
+	.invitation-section-wrapper[data-section-kind='personalized-access'] {
+		--section-band-paper:
+			var(--storybook-night-grain),
+			radial-gradient(
+				min(44rem, 120vw) 88% at 50% 100%,
+				rgb(var(--color-candle-gold-rgb) / 10%) 0%,
+				rgb(var(--color-candle-gold-rgb) / 3%) 55%,
+				transparent 100%
+			),
+			var(--color-violet-night);
+	}
+
+	.invitation-section-wrapper[data-section-kind='rsvp'] {
+		--section-band-paper:
+			var(--storybook-night-grain),
+			radial-gradient(
+				min(44rem, 120vw) 88% at 50% 0%,
+				rgb(var(--color-candle-gold-rgb) / 10%) 0%,
+				rgb(var(--color-candle-gold-rgb) / 3%) 55%,
+				transparent 100%
+			),
+			var(--color-violet-night);
+	}
+
+	// The printed pieces inside the night (the program, the dress-code enclosure and the reply
+	// card) are cotton paper, not interface cards: the paper grain, a soft deckle that wanders a few
+	// thousandths of the edge, a violet contact shadow that follows it, and the faint candle halo
+	// a pale sheet catches at night. America's hand writes only the moments of her night and the
+	// color she reserves; everything else stays in type.
+	--america-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpath d='M0 5L16 4L42 2L63 3L75 1L95 2L110 3L126 1L151 1L171 3L192 1L209 2L218 1L240 2L264 1L277 3L301 1L313 1L339 2L352 2L369 1L392 1L416 3L427 1L438 0L448 1L469 2L484 2L498 2L508 1L532 2L550 3L560 4L574 2L584 1L595 1L621 3L646 3L668 2L688 4L701 3L722 2L736 4L759 2L784 3L808 2L817 4L839 3L856 4L874 2L895 5L905 3L919 4L932 2L951 2L965 3L986 3L997 0L996 13L996 27L997 43L996 64L996 80L997 98L996 108L996 130L997 147L997 170L996 188L996 209L998 231L997 251L997 271L996 286L997 297L996 318L996 337L997 362L997 376L999 399L999 422L999 433L996 455L999 472L997 484L997 496L998 515L1000 530L997 546L999 557L998 567L997 584L998 602L999 620L999 633L998 647L1000 669L999 681L998 703L998 717L998 741L999 750L999 762L998 787L996 808L997 819L997 834L997 846L998 856L998 879L997 892L997 901L996 911L997 928L995 948L995 964L996 980L996 994L1000 998L987 997L964 1000L952 999L932 999L914 998L905 1000L881 997L865 999L853 998L840 999L818 997L794 998L774 997L752 998L738 996L714 996L696 997L676 996L664 998L653 997L637 996L626 995L613 997L594 997L578 997L564 997L549 998L539 998L513 996L500 995L485 997L464 996L439 998L423 997L411 996L401 998L389 999L373 997L358 996L343 998L333 997L311 999L295 998L275 999L249 999L228 1000L209 998L192 998L173 998L148 998L129 997L107 998L97 999L71 997L62 998L38 999L28 999L9 997L1 1000L3 975L1 966L3 956L0 936L3 923L3 905L2 889L2 880L3 871L2 847L2 822L0 800L1 779L2 762L1 740L2 723L2 712L1 691L2 670L3 652L1 640L2 619L2 600L3 577L2 565L2 544L2 530L4 520L3 498L2 476L4 467L4 451L2 436L5 421L3 408L3 396L2 378L4 355L3 342L4 330L3 313L4 297L3 283L4 269L2 254L4 228L2 213L2 195L1 179L2 168L3 144L3 119L2 107L2 90L3 79L3 67L3 41L1 23L2 13Z'/%3E%3C/svg%3E");
+	--america-card-paper: var(--storybook-paper-grain), var(--color-story-cream);
+	--america-card-edge-shadow: drop-shadow(0 1px 1px rgb(var(--color-violet-midnight-rgb) / 70%))
+		drop-shadow(0 14px 18px rgb(var(--color-violet-midnight-rgb) / 45%))
+		drop-shadow(0 0 2.25rem rgb(var(--color-candle-gold-rgb) / 9%));
+	--location-enclosure-bg: var(--america-card-paper);
+	--location-enclosure-mask: var(--america-deckle);
+	--location-enclosure-shadow: none;
+	--location-enclosure-edge-shadow: var(--america-card-edge-shadow);
+	--location-enclosure-reserved-title-font: var(--font-calligraphy);
+	--location-enclosure-reserved-title-size: clamp(2.4rem, 9vw, 2.9rem);
+	--location-enclosure-reserved-title-caps: normal;
+	--location-enclosure-reserved-title-line-height: 1;
+	--location-enclosure-reserved-title-tracking: 0;
+	--location-enclosure-reserved-title-color: var(--color-lilac-deep);
+	--location-enclosure-reserved-title-tilt: -4deg;
+	--reply-card-bg: var(--america-card-paper);
+	--reply-card-mask-upper: var(--america-deckle);
+	--reply-card-mask-lower: var(--america-deckle);
+	--reply-card-mask-locked-size: 100% 100%;
+	--reply-card-shadow-upper: none;
+	--reply-card-shadow-lower: none;
+	--reply-card-edge-shadow: var(--america-card-edge-shadow);
+
+	// The program is the same sheet: flat, crisp ink (no ink-bleed filter, tilt or displacement
+	// edge), no watermark, curl or corner marks. Each moment is a small gold lantern on a thread of
+	// leaf gold, the hour sits above it in small capitals, and the moment is written by hand.
+	--america-itin-pad: 1.15rem;
+	--america-itin-marker: 1.5rem;
+	--america-itin-column: 2.4rem;
+	--itinerary-paper-tilt: 0deg;
+	--itinerary-paper-ink-filter: none;
+	--itinerary-paper-ink-will-change: auto;
+	--itinerary-paper-edge-filter: none;
+	--itinerary-paper-edge-will-change: auto;
+	--itinerary-paper-surface-bg: var(--america-card-paper);
+	--itinerary-paper-mask: var(--america-deckle);
+	--itinerary-paper-panel-filter: var(--america-card-edge-shadow);
+	--itinerary-paper-radius: 0;
+	--itinerary-paper-radius-sm: 0;
+	--itinerary-paper-shadow: none;
+	--itinerary-paper-texture-display: none;
+	--itinerary-paper-rule: rgb(var(--color-leaf-gold-rgb) / 50%);
+	--itinerary-paper-rule-inset: clamp(0.6rem, 2.4vw, 0.85rem);
+	--itinerary-paper-edge-highlight: none;
+	--itinerary-paper-curl-display: none;
+	--itinerary-paper-monogram-display: none;
+	--itinerary-paper-corner-opacity: 0;
+	--itinerary-paper-flourish-display: none;
+	--itinerary-paper-title-style: italic;
+	--itinerary-paper-letterpress: none;
+	--itinerary-paper-row-rule: transparent;
+	--itinerary-paper-row-padding: var(--america-itin-pad);
+	--itinerary-paper-row-padding-sm: var(--america-itin-pad);
+	--itinerary-paper-row-columns: var(--america-itin-column) 7rem minmax(0, 1fr);
+	--itinerary-paper-row-columns-xl: var(--america-itin-column) 7rem minmax(0, 1fr);
+	--itinerary-paper-row-columns-sm: var(--america-itin-column) minmax(0, 1fr);
+	--itinerary-paper-row-areas-sm: 'num time' 'num content';
+	--itinerary-paper-row-gap-sm: 0.15rem 0.85rem;
+	--itinerary-paper-num-size: 0;
+	--itinerary-paper-num-size-sm: 0;
+	--itinerary-paper-num-opacity: 100%;
+	--itinerary-paper-num-opacity-sm: 100%;
+	--itinerary-paper-num-box: var(--america-itin-marker);
+	--itinerary-paper-num-align: start;
+	--itinerary-paper-num-margin: 0.05rem auto 0;
+	--itinerary-paper-num-mask: var(--ornament-motif-lantern);
+	--itinerary-paper-num-ink: var(--color-leaf-gold);
+	--itinerary-paper-rail-display: block;
+	--itinerary-paper-rail-ink: rgb(var(--color-leaf-gold-rgb) / 45%);
+	--itinerary-paper-rail-width: 1px;
+	--itinerary-paper-rail-left: calc(var(--america-itin-column) / 2 - 0.5px);
+	--itinerary-paper-rail-top: calc(
+		var(--america-itin-pad) + var(--america-itin-marker) + 0.45rem
+	);
+	--itinerary-paper-rail-bottom: calc(0.45rem - var(--america-itin-pad));
+	--itinerary-paper-time-font: var(--font-label);
+	--itinerary-paper-time-weight: 400;
+	--itinerary-paper-time-transform: none;
+	--itinerary-paper-time-caps: all-small-caps;
+	--itinerary-paper-time-tracking: 0.16em;
+	--itinerary-paper-time-size: 1.1rem;
+	--itinerary-paper-time-size-sm: 1rem;
+	--itinerary-paper-time-opacity: 100%;
+	--itinerary-paper-time-opacity-sm: 100%;
+	--itinerary-paper-time-align-sm: start;
+	--itinerary-paper-title-margin-top: 0.1rem;
+	--itinerary-paper-title-line-height: 1.05;
+	--itinerary-paper-title-line-height-sm: 1.05;
+	--itinerary-paper-title-size: clamp(2.4rem, 4.4vw, 2.9rem);
+	--itinerary-paper-title-size-sm: clamp(2.2rem, 9vw, 2.5rem);
+	--itinerary-paper-desc-size: clamp(1.05rem, 1.5vw, 1.15rem);
+	--itinerary-paper-desc-size-sm: 1.05rem;
+	--itinerary-paper-desc-color: var(--color-violet-ink-soft);
+	--itinerary-paper-desc-color-sm: var(--color-violet-ink-soft);
+
+	// The program and gifts titles join the other chapter titles: display italic at one scale,
+	// without the base tracking or capitals.
+	--gifts-title-style: italic;
+	--gifts-title-transform: none;
+	--gifts-title-letter-spacing: 0;
+	--gifts-title-size: var(--location-intro-heading-size);
+
+	.itinerary__title {
+		--itinerary-title-tracking: 0;
+	}
 
 	// Storybook art from the tower tale, one hand-painted style throughout (gouache and watercolor
 	// on lilac paper, gold leaf): floral corners and the client's sun open the quote on day paper, the
@@ -113,6 +412,10 @@
 	--storybook-seal-art: url('../../assets/invitations/america/sun-corona-mark.svg');
 	--storybook-seal-art-display: block;
 	--storybook-seal-icon-opacity: 0%;
+
+	// The letter carries the same sun as the seal, so the wax and the card read as one hand.
+	--storybook-card-crest: url('../../assets/invitations/america/sun-corona.svg');
+	--storybook-card-crest-display: block;
 	--america-corner-size: clamp(9rem, 26vw, 22rem);
 	--america-quote-padding: clamp(7.5rem, 30vw, 11rem);
 	--storybook-quote-padding-block: var(--america-quote-padding);
@@ -122,7 +425,14 @@
 		url('../../assets/invitations/america/corner-floral-tl.webp') left top /
 			var(--america-corner-size) no-repeat,
 		url('../../assets/invitations/america/corner-floral-br.webp') right bottom /
-			var(--america-corner-size) no-repeat;
+			var(--america-corner-size) no-repeat,
+		radial-gradient(
+			16rem 5.5rem at 50% calc(var(--america-quote-padding) - 2.9rem),
+			rgb(var(--color-candle-gold-rgb) / 16%) 0%,
+			rgb(var(--color-candle-gold-rgb) / 5%) 50%,
+			transparent 100%
+		),
+		linear-gradient(180deg, transparent 0%, transparent 45%, var(--color-lilac-mist) 100%);
 	--quote-container-max-width: min(100%, 26rem);
 
 	// The heading reads on open sky, the castle stands whole beneath it, and the program begins on
@@ -139,7 +449,29 @@
 	--location-program-art-display: block;
 	--location-program-art-overflow: clip;
 	--location-program-art-drift: 2rem;
+
+	// The painting begins inside the night instead of at its own edge: the top of the sky is the
+	// night itself, opening over the first rows, and the same grain as the night lies over it.
 	--location-program-art:
+		var(--storybook-night-grain),
+		linear-gradient(
+			180deg,
+			var(--color-violet-night) 0,
+			var(--color-violet-night) calc(var(--location-program-art-drift) * 2),
+			rgb(var(--color-violet-night-rgb) / 72%)
+				calc(var(--location-program-art-drift) * 2 + var(--america-castle-height) * 0.08),
+			rgb(var(--color-violet-night-rgb) / 15%)
+				calc(var(--location-program-art-drift) * 2 + var(--america-castle-height) * 0.22),
+			transparent
+				calc(var(--location-program-art-drift) * 2 + var(--america-castle-height) * 0.32)
+		),
+		radial-gradient(
+			ellipse 30rem calc(var(--america-castle-height) * 0.62) at 50%
+				calc(var(--america-castle-height) * 0.42),
+			transparent 62%,
+			rgb(var(--color-violet-night-rgb) / 60%) 86%,
+			var(--color-violet-night) 100%
+		),
 		linear-gradient(
 			180deg,
 			rgb(var(--color-violet-night-rgb) / 15%) 0,
@@ -166,7 +498,8 @@
 
 	// The tower at dusk grounds the closing section; a light veil keeps the keepsake portrait the
 	// single focal point. The ambient layer reaches past the keepsake to the clipped section edges,
-	// and the art fades into night at the sides on wide screens.
+	// the art fades into night at the sides on wide screens, and its sky rises out of the night under
+	// the closing arch instead of starting at the painting's edge.
 	--thank-you-keepsake-ambient-inset: -10rem -100vw;
 	--thank-you-keepsake-ambient-drift: 2.5rem;
 
@@ -257,6 +590,13 @@
 			transparent 100%
 		);
 	--thank-you-keepsake-ambient:
+		var(--storybook-night-grain),
+		linear-gradient(
+			180deg,
+			var(--color-violet-night) 0,
+			rgb(var(--color-violet-night-rgb) / 55%) calc(8rem * 0.36),
+			transparent 8rem
+		),
 		linear-gradient(
 			180deg,
 			rgb(var(--color-violet-night-rgb) / 30%) 0%,
@@ -276,5 +616,36 @@
 				url('../../assets/invitations/america/thank-you-tower.webp') type('image/webp')
 			)
 			center top / auto 100% no-repeat,
+		var(--color-violet-night);
+
+	// Stacked, the portrait would hide the tower's head. The art is sized to a fixed width and
+	// lifted 15rem above the keepsake so the roof and the lit window stand over the photograph, the
+	// section opens that much sky above it (the padding applies only to the stacked layout), and the
+	// night closes in by the copy below.
+	--thank-you-keepsake-padding: clamp(14rem, 29svh, 15rem) clamp(1.15rem, 5vw, 4.5rem)
+		clamp(6.25rem, 13svh, 9rem);
+	--thank-you-keepsake-ambient-inset-stacked: -15rem -100vw -10rem;
+	--thank-you-keepsake-ambient-drift-stacked: 1rem;
+	--thank-you-keepsake-ambient-stacked:
+		var(--storybook-night-grain),
+		linear-gradient(
+			180deg,
+			var(--color-violet-night) 0,
+			rgb(var(--color-violet-night-rgb) / 55%) calc(9rem * 0.4),
+			transparent 9rem
+		),
+		linear-gradient(
+			180deg,
+			rgb(var(--color-violet-night-rgb) / 10%) 0%,
+			rgb(var(--color-violet-night-rgb) / 18%) 22%,
+			rgb(var(--color-violet-night-rgb) / 50%) 40%,
+			rgb(var(--color-violet-night-rgb) / 92%) 58%,
+			var(--color-violet-night) 64%
+		),
+		image-set(
+				url('../../assets/invitations/america/thank-you-tower.avif') type('image/avif'),
+				url('../../assets/invitations/america/thank-you-tower.webp') type('image/webp')
+			)
+			center top / 30rem auto no-repeat,
 		var(--color-violet-night);
 }

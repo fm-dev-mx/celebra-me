@@ -35,42 +35,43 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 
 ## Fact Register
 
-| field                 | value                                                        | classification | source        | notes                                                    |
-| --------------------- | ------------------------------------------------------------ | -------------- | ------------- | -------------------------------------------------------- |
-| slug                  | america                                                      | verified       | owner-session | Owner choice (D1)                                        |
-| celebrantName         | América Abigail Solís Mendoza                                | verified       | wa-export     | Accents by owner decision (D6); client wrote none        |
-| eventLabel            | Mis XV Años                                                  | inferred       | wa-export     | XV event; client gave no title                           |
-| eventDate             | 2026-11-21                                                   | verified       | wa-export     | Saturday; year from the "21-NOV-2026" prop in DSC08921   |
-| eventTime             | 18:00                                                        | verified       | wa-export     | Misa                                                     |
-| receptionTime         | 20:00                                                        | verified       | wa-export     | Recepción                                                |
-| timeZone              | America/Mazatlan                                             | inferred       | wa-export     | Los Mochis, Sinaloa (UTC−7, no DST)                      |
-| eventCity             | Los Mochis, Sinaloa                                          | inferred       | web-check     | Parish and Mochis–Topolobampo highway; client to confirm |
-| baseDemoId            | demo-xv-storybook-lilac                                      | verified       | owner-session | New unlisted demo, second consumer of the preset (D2)    |
-| sourceAssetPath       | source:hr-photos                                             | verified       | owner-session | Opaque label only                                        |
-| sectionOrder          | quote, family, countdown, location, gallery, pass, rsvp, end | verified       | owner-session | pass = personalizedAccess, end = thankYou; see Sections  |
-| primaryVenueName      | Parroquia Cristo Rey                                         | verified       | wa-export     | Client wrote "Cristo Rey"; "Parroquia" prefix inferred   |
-| primaryVenueAddress   | San Francisco esquina con Oaxaca, colonia Estrella           | verified       | wa-export     | City inferred (Los Mochis)                               |
-| distinctVenues        | true                                                         | verified       | wa-export     | Church and garden                                        |
-| receptionVenueName    | Jardín Los Mangos                                            | verified       | wa-export     | Not indexed online                                       |
-| receptionVenueAddress | Carretera Mochis-Topo, entronque carretera al 9 de Diciembre | verified       | wa-export     | Map link is an address search until the client pins it   |
-| ceremonyMapUrl        | Google Maps search by address                                | inferred       | owner-session | Generated search links; replace with client pins         |
-| fatherName            | Cruz Abiel Solís Araux                                       | verified       | wa-export     | Accent by owner decision (D6)                            |
-| motherName            | Jenniffer Abigail Mendoza Orduño                             | verified       | wa-export     | "Jenniffer" kept as written                              |
-| godparents            | Wilton Galdámez, Brianda Galdámez                            | verified       | wa-export     | Accent by owner decision (D6)                            |
-| dressCode             | Formal                                                       | verified       | wa-export     |                                                          |
-| reservedColor         | Lila reservado para la quinceañera                           | verified       | wa-export     |                                                          |
-| adultsOnly            | No niños                                                     | verified       | wa-export     | Client kept it after the owner asked                     |
-| clientColors          | Lila, dorado; temática Rapunzel                              | verified       | wa-export     | Original motifs only, no characters (D5)                 |
-| dressColor            | Lila                                                         | verified       | wa-export     | The gown is not in the photo set                         |
-| rsvpConfirmationMode  | api                                                          | verified       | owner-session | Personalized passes with fixed seats (D4)                |
-| rsvpGuestCap          | 2                                                            | inferred       | owner-session | Fallback only; per-guest passes govern seats             |
-| rsvpWhatsappPhone     | —                                                            | not_applicable | owner-session | No WhatsApp confirmation flow                            |
-| rsvpDeadline          | —                                                            | missing        | wa-export     | Optional; omitted until supplied                         |
-| gifts                 | —                                                            | missing        | wa-export     | Optional; section omitted until supplied                 |
-| musicUrl              | —                                                            | missing        | wa-export     | Optional; player omitted until the client picks a song   |
-| itinerary             | —                                                            | missing        | wa-export     | Optional; omitted until supplied                         |
-| specialMessages       | Copy proposed by agent                                       | inferred       | owner-session | Pending client approval                                  |
-| clientReferences      | mia-pintor, naydelin-paredes                                 | verified       | owner-session | The two samples the client approved (D3)                 |
+| field                 | value                                                                        | classification | source        | notes                                                    |
+| --------------------- | ---------------------------------------------------------------------------- | -------------- | ------------- | -------------------------------------------------------- |
+| slug                  | america                                                                      | verified       | owner-session | Owner choice (D1)                                        |
+| celebrantName         | América Abigail Solís Mendoza                                                | verified       | wa-export     | Accents by owner decision (D6); client wrote none        |
+| eventLabel            | Mis XV Años                                                                  | inferred       | wa-export     | XV event; client gave no title                           |
+| eventDate             | 2026-11-21                                                                   | verified       | wa-export     | Saturday; year from the "21-NOV-2026" prop in DSC08921   |
+| eventTime             | 18:00                                                                        | verified       | wa-export     | Misa                                                     |
+| receptionTime         | 20:00                                                                        | verified       | wa-export     | Recepción                                                |
+| timeZone              | America/Mazatlan                                                             | inferred       | wa-export     | Los Mochis, Sinaloa (UTC−7, no DST)                      |
+| eventCity             | Los Mochis, Sinaloa                                                          | inferred       | web-check     | Parish and Mochis–Topolobampo highway; client to confirm |
+| baseDemoId            | demo-xv-storybook-lilac                                                      | verified       | owner-session | New unlisted demo, second consumer of the preset (D2)    |
+| sourceAssetPath       | source:hr-photos                                                             | verified       | owner-session | Opaque label only                                        |
+| sectionOrder          | quote, family, countdown, location, program, gallery, gifts, pass, rsvp, end | verified       | owner-session | program = itinerary; see Sections                        |
+| primaryVenueName      | Parroquia Cristo Rey                                                         | verified       | wa-export     | Client wrote "Cristo Rey"; "Parroquia" prefix inferred   |
+| primaryVenueAddress   | San Francisco esquina con Oaxaca, colonia Estrella                           | verified       | wa-export     | City inferred (Los Mochis)                               |
+| distinctVenues        | true                                                                         | verified       | wa-export     | Church and garden                                        |
+| receptionVenueName    | Jardín Los Mangos                                                            | verified       | wa-export     | Not indexed online                                       |
+| receptionVenueAddress | Carretera Mochis-Topo, entronque carretera al 9 de Diciembre                 | verified       | wa-export     | Map link is an address search until the client pins it   |
+| ceremonyMapUrl        | Google Maps search by address                                                | inferred       | owner-session | Generated search links; replace with client pins         |
+| fatherName            | Cruz Abiel Solís Araux                                                       | verified       | wa-export     | Accent by owner decision (D6)                            |
+| motherName            | Jenniffer Abigail Mendoza Orduño                                             | verified       | wa-export     | "Jenniffer" kept as written                              |
+| godparents            | Wilton Galdámez, Brianda Galdámez                                            | verified       | wa-export     | Accent by owner decision (D6)                            |
+| dressCode             | Formal                                                                       | verified       | wa-export     |                                                          |
+| reservedColor         | Lila reservado para la quinceañera                                           | verified       | wa-export     |                                                          |
+| adultsOnly            | No niños                                                                     | verified       | wa-export     | Client kept it after the owner asked                     |
+| clientColors          | Lila, dorado; temática Rapunzel                                              | verified       | wa-export     | Original motifs only, no characters (D5)                 |
+| dressColor            | Lila                                                                         | verified       | wa-export     | The gown is not in the photo set                         |
+| rsvpConfirmationMode  | api                                                                          | verified       | owner-session | Personalized passes with fixed seats (D4)                |
+| rsvpGuestCap          | 2                                                                            | inferred       | owner-session | Fallback only; per-guest passes govern seats             |
+| rsvpWhatsappPhone     | —                                                                            | not_applicable | owner-session | No WhatsApp confirmation flow                            |
+| rsvpDeadline          | 2026-11-06 (viernes 6 de noviembre)                                          | inferred       | owner-session | 15 days before the event (D9); in RSVP copy and reminder |
+| gifts                 | Lluvia de sobres                                                             | inferred       | owner-session | Owner decision D10; client to confirm                    |
+| musicUrl              | —                                                                            | missing        | wa-export     | Pending (D11); player omitted until the client picks one |
+| itinerary             | Misa 18:00, Recepción 20:00, Vals 21:30, Cena 22:30, Cierre 01:00            | inferred       | owner-session | Most common XV program (D8); owner adjusts later         |
+| memories              | QR de recuerdos (add-on)                                                     | verified       | owner-session | D12; needs a memory space first, see Owner Decisions     |
+| specialMessages       | Copy proposed by agent                                                       | inferred       | owner-session | Pending client approval                                  |
+| clientReferences      | mia-pintor, naydelin-paredes                                                 | verified       | owner-session | The two samples the client approved (D3)                 |
 
 ---
 
@@ -86,7 +87,9 @@ inferred; optional gaps are omitted from the payload rather than represented by 
 ### Non-blocking gaps
 
 - Map pins for both venues (address-search links until the client sends them).
-- Song, gifts, RSVP deadline, itinerary (optional; omitted until supplied).
+- Song (pending, D11). Program hours, the envelope shower and the RSVP deadline are owner
+  placeholders (D8–D10) until the client confirms them.
+- Memories section (D12) waits for its memory space; see Owner Decisions.
 - City and time zone are inferred from the addresses; confirm with the client.
 
 Deterministic question: **Is the available information sufficient to prepare this invitation?**
@@ -111,6 +114,25 @@ No placeholder tokens are used; optional content is omitted until supplied.
 | D5  | demo-design-decisions | Rapunzel motif source       | wa-export | Original / owner-supplied character art | Original motifs, no characters               |
 | D6  | ambiguous-data        | Accents in display names    | wa-export | With accents / as written               | With accents                                 |
 | D7  | demo-design-decisions | Proof for the new art       | catalog   | Unlisted demo / tests + this invitation | Tests + this invitation; demo carries preset |
+| D8  | missing-client-facts  | Program                     | catalog   | Omit / most common XV program           | Most common program; owner adjusts later     |
+| D9  | missing-client-facts  | RSVP deadline               | owner     | Omit / fixed date                       | 15 days before: 2026-11-06                   |
+| D10 | missing-client-facts  | Gifts                       | owner     | Omit / envelope shower / registry       | Envelope shower (legend-only note)           |
+| D11 | missing-client-facts  | Song                        | wa-export | Suggest / wait for the client           | Pending                                      |
+| D12 | missing-client-facts  | Memories QR add-on          | owner     | Without / with memories                 | With memories (after its memory space)       |
+
+Program (D8, 2026-10-10): the moments and hours most common across the XV definitions in
+`scripts/provision/invitations/` with a 20:00 reception (america-johana, ana-sofia-cota-guillen,
+ayrin-samantha-lerma-castro, ximena-meza-trasvina, plus mia-pintor, naydelin-paredes and
+xareni-iyarit by offset): vals about 1 h 30 after the reception, dinner an hour after the vals and
+closing at 01:00. Brindis, pastel and baile sorpresa appear in fewer than half and are left out.
+
+Memories (D12): the release gate reads the memory space named by `memories.publicSlug` before any
+write, and blocks when the space is missing or belongs to another event. A space needs the event,
+and the event is created by the first publication, so the block joins in a later release: (1)
+publish without memories, (2) create the space in `/dashboard/admin/recuerdos` (public slug, window,
+retention, quota), (3) add `memories` (variant `card`, the space's `publicSlug`) to `america.ts`
+between `rsvp` and `thankYou`, (4) release again. Local follows the same order: its event exists,
+but it has no space yet.
 
 The theme architecture allows a new preset only when two invitations or demos share it, so the owner
 chose an unlisted demo (`demo-xv-storybook-lilac`, model photographs from existing demos) as the
@@ -138,8 +160,9 @@ second consumer. This supersedes, for this preset only, the 2026-10-08 "no new d
 | ---------------------- | ---------------------------------------------------------------------------------------------- |
 | requested              | location (two venues), family (parents, godparents), dress code + reserved color + adults only |
 | inferred / recommended | envelope, hero, quote, countdown, gallery, personalizedAccess, rsvp, thankYou, interludes      |
-| omitted                | itinerary, gifts, music (until supplied)                                                       |
-| unresolved             | —                                                                                              |
+| owner placeholders     | itinerary (D8), gifts: envelope shower (D10)                                                   |
+| omitted                | music (pending, D11)                                                                           |
+| unresolved             | memories (D12): joins after its memory space exists                                            |
 
 Guest-facing copy (owner-approved 2026-10-10, pending client approval). Voice: América in the first
 person, warm and playful, "usted" register. Lanterns stay visual only: the copy does not promise
@@ -155,17 +178,24 @@ newspaper, four looks, heart-shaped glasses).
 - Location: «Apunte la fecha» · «Primero la misa, después la fiesta en el jardín.»
 - Indications: «Formal» · «El lila es mi color esa noche; ¿me ayuda a que siga siendo solo mío?» ·
   «Esta vez la fiesta es solo para adultos. Gracias por entenderlo.»
+- Program: «Así será mi noche» · Misa «Primero, dar gracias en la Parroquia Cristo Rey.» · Recepción
+  «Le espero en el Jardín Los Mangos.» · Vals «Mi vals de quince años. Prometo no llorar… mucho.» ·
+  Cena «A la mesa, que la noche todavía es larga.» · Cierre «La última canción la bailamos juntos.»
 - Gallery: «Mis cuatro looks» · «Rosa, lila, amarillo… y unos lentes de corazón.»
+- Gifts: «Regalos» · «Su presencia es mi mejor regalo. Si desea tener un detalle conmigo, habrá
+  lluvia de sobres en la recepción.»
 - Pass: «Su lugar ya está apartado» · «Lo guardé con su nombre, así que nadie más lo puede ocupar.»
-- RSVP: «¿Me acompaña?» · «Avíseme pronto, que quiero tener todo listo para recibirle.» · confirmed
-  «¡Qué emoción, {nombre}!» · declined «Le voy a extrañar, {nombre}.»
+- RSVP: «¿Me acompaña?» · «Avíseme antes del viernes 6 de noviembre, que quiero tener todo listo
+  para recibirle.» · confirmed «¡Qué emoción, {nombre}!» · declined «Le voy a extrañar, {nombre}.»
 - Closing: «Gracias por llegar hasta el final. Lo demás se lo cuento el 21 de noviembre… en
   persona.»
 - Share: own invitation and reminder text; the reminder is status-neutral because a custom reminder
-  is sent verbatim to every guest.
+  is sent verbatim to every guest, and it carries the RSVP deadline.
 
-Exact `sectionOrder`: quote, family, countdown, location, gallery, personalizedAccess, rsvp,
-thankYou. Envelope and hero precede it; gifts and itinerary join only when the client supplies them.
+Exact `sectionOrder`: quote, family, countdown, location, itinerary, gallery, gifts,
+personalizedAccess, rsvp, thankYou. Envelope and hero precede it; memories joins between rsvp and
+thankYou once its memory space exists (D12). The canonical RSVP block has no deadline field, so the
+date lives in the RSVP copy and the reminder.
 
 ---
 
@@ -212,10 +242,10 @@ boundaries only (`composition.intersections` is the executable record):
 // quote                     → family                    : bridge  folio (left corner turns over the quote paper)
 // interlude-after-family    → countdown                 : bridge  atmospheric-blend (door photo hands over to dusk)
 // countdown                 → interlude-after-countdown : bridge  folio (right corner turns over the countdown sky)
-// location                  → gallery                   : bridge  folio (left corner turns over the castle night)
-// gallery                   → personalized-access       : bridge  atmospheric-blend (contact sheet opens to the reply card)
+// itinerary                 → gallery                   : bridge  folio (left corner turns over the program night)
+// gifts                     → personalized-access       : bridge  atmospheric-blend (gifts note opens to the reply card)
 // rsvp                      → thankYou                  : climax  arch (mirrored gold arch returns to the door)
-// Neutral: family→interlude, framed print→location, pass→rsvp.
+// Neutral: family→interlude, framed print→location, location→itinerary, gallery→gifts, pass→rsvp.
 ```
 
 ### Creative acceptance record
