@@ -738,7 +738,7 @@ describe('InvitationEditor', () => {
 		await waitFor(() => {
 			expect(
 				screen.getByText(
-					'Los datos cambiaron desde que abriste esta vista. Recarga para continuar.',
+					'Los datos cambiaron desde que abrió esta vista. Recargue para continuar.',
 				),
 			).toBeInTheDocument();
 			expect(screen.getByRole('button', { name: 'Recargar datos' })).toBeInTheDocument();

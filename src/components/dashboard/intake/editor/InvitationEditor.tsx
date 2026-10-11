@@ -261,7 +261,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 				setErrors((current) => ({
 					...current,
 					metadata:
-						'Los datos cambiaron desde que abriste esta vista. Recarga para continuar.',
+						'Los datos cambiaron desde que abrió esta vista. Recargue para continuar.',
 				}));
 			} else {
 				setErrors((current) => ({
@@ -525,7 +525,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 	const publishWarning = useMemo(() => {
 		if (!editor.context.invitation.createdBy) {
-			return 'No se puede publicar sin un propietario asignado a la invitación. Asigna un propietario antes de publicar.';
+			return 'No se puede publicar sin un propietario asignado a la invitación. Asigne un propietario antes de publicar.';
 		}
 		if (editor.context.contentSource === 'empty') return 'No hay contenido para publicar.';
 		if (emptySectionsDetail.critical.length > 0) {
@@ -1412,7 +1412,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 						editor.operation.type === 'preflighting'
 							? 'Estamos revisando los cambios guardados antes de publicar.'
 							: editor.operation.type === 'publishing'
-								? 'Estamos publicando la revisión confirmada. No cierres esta ventana.'
+								? 'Estamos publicando la revisión confirmada. No cierre esta ventana.'
 								: 'El borrador guardado reemplazará la versión pública actual. Revise la vista previa antes de continuar.'
 					}
 					confirmLabel={
