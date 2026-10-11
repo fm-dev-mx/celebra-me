@@ -48,6 +48,29 @@ still redirect guests to the route, which renders the neutral page. Public APIs 
 and personalized RSVP) answer `403 invitation_unavailable`; the memories space of a disabled
 invitation resolves as unknown (`404`).
 
+## Watermarked preview media (shared cache decision)
+
+An unpaid client invitation never references its original photos: the resolver replaces every
+photograph with `/vista-previa/<token>.webp` (and the social card with `<token>.jpg`, 1200×630). The
+token is an AES-256-GCM seal of the invitation id, source URL and variant; it is deterministic per
+photo, so the URL is content-addressed. This is the one deliberate shared cache on public invitation
+media:
+
+```http
+Cache-Control: public, max-age=86400, s-maxage=2592000
+X-Robots-Tag: noindex, noimageindex, nofollow
+```
+
+- No invalidation is needed: marking the invitation paid switches its HTML to the original photo
+  URLs, so cached watermarked copies are simply no longer referenced.
+- A cached copy stays reachable at its opaque URL for up to 30 days at the CDN (owner decision);
+  deleting a source photo does not purge it sooner.
+- The endpoint serves only while the invitation is unpaid and enabled (otherwise `404`, `no-store`),
+  refuses any query string (`400`) so variants cannot bust the cache, and fetches only same-origin,
+  managed Storage or Cloudinary sources.
+- Link previews already cached by WhatsApp cannot be purged; personalized short links get a fresh
+  preview, and re-sharing the canonical URL with a new query string forces one.
+
 ## Verification
 
 Local browser coverage verifies the effective headers for:

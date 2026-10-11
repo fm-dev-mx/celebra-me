@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import {
 	CANONICAL_ACCESS_FIXTURE_SLUGS,
 	resolveCanonicalAccessFixtureEventType,
+	resolveCanonicalAccessFixtureSource,
 } from '../../scripts/playwright/canonical-access-fixture';
 
 const eventType = resolveCanonicalAccessFixtureEventType();
@@ -63,6 +64,37 @@ test.describe('Invitation access states', () => {
 			'content',
 			'noindex, nofollow, noarchive, noimageindex',
 		);
+	});
+
+	test('an unpaid invitation shows the preview marks and only watermarked photos', async ({
+		page,
+		request,
+	}) => {
+		await page.goto(`/${eventType}/${CANONICAL_ACCESS_FIXTURE_SLUGS.unpaid}?skipEnvelope=true`);
+
+		await expect(page.locator('[data-preview-banner]')).toHaveText('Vista previa · Celebra-me');
+		await expect(page.locator('[data-preview-stamp]').first()).toBeAttached();
+		const ogImage = await page.locator('meta[property="og:image"]').getAttribute('content');
+		expect(ogImage).toMatch(/\/vista-previa\/[A-Za-z0-9_-]+\.jpg$/);
+
+		const sources = await page
+			.locator('img')
+			.evaluateAll((images) => images.map((image) => image.getAttribute('src') ?? ''));
+		const previewSources = sources.filter((src) => src.startsWith('/vista-previa/'));
+		expect(previewSources.length).toBeGreaterThan(0);
+
+		const photo = await request.get(previewSources[0]);
+		expect(photo.status()).toBe(200);
+		expect(photo.headers()['content-type']).toBe('image/webp');
+		expect(photo.headers()['x-robots-tag']).toContain('noindex');
+	});
+
+	test('a paid client invitation shows no preview marks', async ({ page }) => {
+		const paid = resolveCanonicalAccessFixtureSource();
+		const response = await page.goto(`/${paid.eventType}/${paid.slug}?skipEnvelope=true`);
+		expect(response?.status()).toBe(200);
+		await expect(page.locator('[data-preview-banner]')).toHaveCount(0);
+		await expect(page.locator('[data-preview-stamp]')).toHaveCount(0);
 	});
 
 	test('static demos stay indexable', async ({ page }) => {

@@ -9,7 +9,11 @@ import { resolvePublicInvitation } from '@/lib/invitation/content-resolver';
 import {
 	CLIENT_INVITATION_ROBOTS,
 	UNAVAILABLE_INVITATION_ROBOTS,
+	resolvePublicInvitationMode,
+	type PublicInvitationMode,
 } from '@/lib/invitation/access/invitation-access';
+import PreviewBanner from '@/components/invitation/PreviewBanner.astro';
+import PreviewStamp from '@/components/invitation/PreviewStamp.astro';
 import { buildPageContextFromViewModel, prepareInvitationPageContext } from '@/lib/invitation/page-data';
 import { resolveRoutePersonalization } from '@/lib/invitation/route-personalization';
 import Layout from '@/layouts/Layout.astro';
@@ -68,12 +72,15 @@ let renderError: string | null = null;
 let viewModel: InvitationViewModel | null = null;
 let contentSource: 'static' | 'published' | null = null;
 let contentVersion: number | null = null;
+let accessMode: PublicInvitationMode | null = null;
 
 try {
 	const resolveContentStart = performance.now();
 	const resolution = await resolvePublicInvitation(slug, eventType);
 	contentSource = resolution && resolution.source !== 'unavailable' ? resolution.source : null;
 	contentVersion = resolution?.source === 'published' ? resolution.version : null;
+	accessMode =
+		resolution?.source === 'published' ? resolvePublicInvitationMode(resolution.access) : null;
 	resolveContentDur = performance.now() - resolveContentStart;
 
 	if (!resolution) {
@@ -226,12 +233,16 @@ const wrapperDataAttributes = page
 			...(contentSource === 'published' && contentVersion !== null
 				? { 'data-content-version': String(contentVersion) }
 				: {}),
+			...(accessMode ? { 'data-access-mode': accessMode } : {}),
 		}
 	: {};
 
 const isDemoConversion = Boolean(
 	page && hasDemoConversion(page.viewModel.id, page.viewModel.isDemo),
 );
+
+// Unpaid client invitation: watermarked photos (resolver), banner, seals, copy friction.
+const previewMode = accessMode === 'preview' && Boolean(page);
 
 ---
 
@@ -270,6 +281,23 @@ const isDemoConversion = Boolean(
 				)
 			}
 			<div class={page.wrapper.className} {...wrapperDataAttributes} data-screenshot="invitation-root">
+				{previewMode && <PreviewBanner />}
+				{previewMode && <PreviewStamp placement="envelope" />}
+				{
+					previewMode && (
+						<script is:inline>
+							// Unpaid preview: no right-click save or drag of photos (keyboard, text and zoom untouched).
+							(function() {
+								const block = (event) => {
+									const target = event.target;
+									if (target instanceof Element && target.closest('img, picture')) event.preventDefault();
+								};
+								document.addEventListener('contextmenu', block);
+								document.addEventListener('dragstart', block);
+							})();
+						</script>
+					)
+				}
 				<script is:inline>
 					// Overscroll and rubber-band areas show the document canvas: paint it with the
 					// invitation paper instead of the site default.
@@ -428,7 +456,11 @@ const isDemoConversion = Boolean(
 							/>
 						</div>
 
-						<div data-screenshot="invitation-open-content">
+						<div
+							data-screenshot="invitation-open-content"
+							class:list={[{ 'preview-stamp-host': previewMode }]}
+						>
+							{previewMode && <PreviewStamp placement="cover" />}
 							<Hero
 								{...page.viewModel.hero}
 								venueName={page.heroVenueName}
@@ -436,7 +468,11 @@ const isDemoConversion = Boolean(
 								highPriority={skipEnvelope || !page.wrapper.showEnvelope}
 							/>
 
-							<InvitationSections pageContext={page} showDemoConversion={isDemoConversion} />
+							<InvitationSections
+								pageContext={page}
+								showDemoConversion={isDemoConversion}
+								previewMode={previewMode}
+							/>
 
 							{
 								guestContext && (
@@ -456,6 +492,7 @@ const isDemoConversion = Boolean(
 								)
 							}
 
+							{previewMode && <PreviewStamp placement="closing" />}
 							<Footer
 								class={isDemoConversion ? 'demo-conversion-farewell' : undefined}
 								eventSlug={page.viewModel.id}

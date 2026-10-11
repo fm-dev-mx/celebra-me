@@ -423,6 +423,49 @@ describe('resolvePublicInvitation access state', () => {
 		consoleWarn.mockRestore();
 	});
 
+	it('serves watermarked photos for an unpaid invitation and originals once paid', async () => {
+		const original = process.env.PREVIEW_MEDIA_SECRET;
+		process.env.PREVIEW_MEDIA_SECRET = 'test-preview-secret';
+		const heroSrc =
+			'https://abc.supabase.co/storage/v1/object/public/invitation-assets/x/hero.webp';
+		const heroViewModel = {
+			id: 'my-invitation',
+			isDemo: false,
+			title: 'Published Event',
+			theme: { preset: 'jewelry-box', themeClass: 'theme-preset--jewelry-box' },
+			hero: {
+				name: 'Ana',
+				label: 'XV',
+				date: '2027-11-20',
+				backgroundImage: { src: heroSrc, alt: '' },
+			},
+			envelope: { enabled: false },
+			brandingVisibility: { showFooterBranding: true, showContactCta: true },
+			sections: {},
+		};
+		mockAdaptDbEvent.mockReturnValueOnce(heroViewModel).mockReturnValueOnce(heroViewModel);
+
+		mockFindPublishedWithAccess.mockResolvedValue(
+			publishedEntry({ paymentStatus: 'unpaid', publicAccess: 'enabled' }),
+		);
+		const unpaid = await resolvePublicInvitation('my-invitation', 'xv');
+		const unpaidVm = unpaid?.source === 'published' ? unpaid.viewModel : null;
+		expect(unpaidVm?.hero.backgroundImage.src).toMatch(
+			/^\/vista-previa\/[A-Za-z0-9_-]+\.webp$/,
+		);
+		expect(unpaidVm?.sharing?.ogImage?.src).toMatch(/\.jpg$/);
+		expect(JSON.stringify(unpaidVm)).not.toContain(heroSrc);
+
+		mockFindPublishedWithAccess.mockResolvedValue(
+			publishedEntry({ paymentStatus: 'paid', publicAccess: 'enabled' }),
+		);
+		const paid = await resolvePublicInvitation('my-invitation', 'xv');
+		expect(paid?.source === 'published' && paid.viewModel.hero.backgroundImage.src).toBe(
+			heroSrc,
+		);
+		process.env.PREVIEW_MEDIA_SECRET = original;
+	});
+
 	it('never applies access state to static demos', async () => {
 		mockFindPublishedWithAccess.mockResolvedValue(null);
 		mockGetRoutable.mockResolvedValue({

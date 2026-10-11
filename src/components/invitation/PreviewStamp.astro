@@ -1,0 +1,20 @@
+---
+/**
+ * Decorative «Vista previa · Celebra-me» seal on an unpaid invitation, drawn with the
+ * preset's own tokens (label and display fonts, accent and surface colors). The banner
+ * carries the accessible notice, so the seal is hidden from assistive technology.
+ */
+import '@/styles/invitation/_public-preview.scss';
+
+interface Props {
+	/** `envelope` shows only while the envelope or editorial cover is closed. */
+	placement: 'envelope' | 'cover' | 'section' | 'closing';
+}
+
+const { placement } = Astro.props;
+---
+
+<span class={`preview-stamp preview-stamp--${placement}`} aria-hidden="true" data-preview-stamp>
+	<span class="preview-stamp__line">Vista previa</span>
+	<span class="preview-stamp__brand">Celebra-me</span>
+</span>
