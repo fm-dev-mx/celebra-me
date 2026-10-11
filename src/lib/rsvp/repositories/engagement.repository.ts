@@ -1,4 +1,5 @@
 import { supabaseRestRequest } from './supabase';
+import { ApiError, isSchemaDriftError } from '@/lib/rsvp/core/errors';
 import type { DashboardEngagementSummary } from '@/interfaces/dashboard/guest.interface';
 import type { DeviceClass, ServerTrafficClass } from '@/lib/rsvp/engagement/taxonomy';
 
@@ -18,21 +19,45 @@ export type EngagementRecordResult =
 	| { status: 'ok'; accepted: number; duplicates: number; rejected: number }
 	| { status: 'not_found' };
 
+/**
+ * Expand-phase guard: while the database lacks the ledger RPC (migration 20261010120000 queued),
+ * skip the round trip for a few minutes instead of failing every page view against it.
+ * Remove in the contract release.
+ */
+const LEDGER_RECHECK_INTERVAL_MS = 5 * 60 * 1000;
+let ledgerUnavailableUntil = 0;
+
 export async function recordGuestEngagementEventsRpc(
 	inviteId: string,
 	events: EngagementEventRow[],
 	viewerUserId: string | null,
+	now: () => number = Date.now,
 ): Promise<EngagementRecordResult> {
-	return await supabaseRestRequest<EngagementRecordResult>({
-		pathWithQuery: 'rpc/record_guest_engagement_events_public',
-		method: 'POST',
-		useServiceRole: true,
-		body: {
-			p_invite_id: inviteId,
-			p_events: events,
-			p_viewer_user_id: viewerUserId,
-		},
-	});
+	if (now() < ledgerUnavailableUntil) {
+		throw new ApiError(503, 'service_unavailable', 'Guest engagement is not available yet.');
+	}
+	try {
+		return await supabaseRestRequest<EngagementRecordResult>({
+			pathWithQuery: 'rpc/record_guest_engagement_events_public',
+			method: 'POST',
+			useServiceRole: true,
+			body: {
+				p_invite_id: inviteId,
+				p_events: events,
+				p_viewer_user_id: viewerUserId,
+			},
+		});
+	} catch (error) {
+		if (isSchemaDriftError(error)) {
+			ledgerUnavailableUntil = now() + LEDGER_RECHECK_INTERVAL_MS;
+		}
+		throw error;
+	}
+}
+
+/** Test hook: forget a cached unavailable ledger. */
+export function resetEngagementLedgerGuardForTests(): void {
+	ledgerUnavailableUntil = 0;
 }
 
 /** Host funnel under RLS (security invoker): the host token decides which guests count. */

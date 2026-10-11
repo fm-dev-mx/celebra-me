@@ -6,7 +6,6 @@ import type {
 import {
 	type CreateGuestInput,
 	type GuestFilters,
-	GUEST_COLUMNS,
 	type UpdateGuestInput,
 	toGuestRecord,
 } from '@/lib/rsvp/repositories/shared/rows';
@@ -18,6 +17,10 @@ import {
 } from '@/lib/rsvp/repositories/shared/operations';
 import { normalizeOptionalPhonePair } from '@/lib/rsvp/core/utils';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import {
+	stripEngagementWriteFields,
+	withGuestColumns,
+} from '@/lib/rsvp/repositories/shared/guest-schema-compat';
 
 const TABLE = 'guest_invitations';
 const ACTIVE_GUEST_FILTER = 'deleted_at=is.null';
@@ -52,13 +55,15 @@ async function updateGuestRecord(
 	body: Record<string, unknown>,
 	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord> {
-	return updateSingle(
-		TABLE,
-		GUEST_COLUMNS,
-		filter,
-		body,
-		toGuestRecord,
-		hostAccessToken ? { authToken: hostAccessToken } : { useServiceRole: true },
+	return withGuestColumns((set) =>
+		updateSingle(
+			TABLE,
+			set.columns,
+			filter,
+			stripEngagementWriteFields(body, set),
+			toGuestRecord,
+			hostAccessToken ? { authToken: hostAccessToken } : { useServiceRole: true },
+		),
 	);
 }
 
@@ -145,21 +150,26 @@ export async function createGuestInvitation(
 	input: CreateGuestInput,
 	hostAccessToken: string,
 ): Promise<GuestInvitationRecord> {
-	return insertSingle(TABLE, GUEST_COLUMNS, buildGuestInsertBody(input), toGuestRecord, {
-		authToken: hostAccessToken,
-	});
+	const body = buildGuestInsertBody(input);
+	return withGuestColumns((set) =>
+		insertSingle(TABLE, set.columns, stripEngagementWriteFields(body, set), toGuestRecord, {
+			authToken: hostAccessToken,
+		}),
+	);
 }
 
 export async function findGuestById(
 	guestId: string,
 	hostAccessToken?: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findSingle(
-		TABLE,
-		`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`,
-		GUEST_COLUMNS,
-		toGuestRecord,
-		hostAccessToken ? { authToken: hostAccessToken } : { useServiceRole: true },
+	return withGuestColumns((set) =>
+		findSingle(
+			TABLE,
+			`id=eq.${encodeURIComponent(guestId)}&${ACTIVE_GUEST_FILTER}`,
+			set.columns,
+			toGuestRecord,
+			hostAccessToken ? { authToken: hostAccessToken } : { useServiceRole: true },
+		),
 	);
 }
 
@@ -193,24 +203,28 @@ export async function softDeleteGuestById(guestId: string, actorUserId: string):
 export async function findGuestByInviteIdPublic(
 	inviteId: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findSingle(
-		TABLE,
-		`invite_id=eq.${encodeURIComponent(inviteId)}&${ACTIVE_GUEST_FILTER}`,
-		GUEST_COLUMNS,
-		toGuestRecord,
-		{ useServiceRole: true },
+	return withGuestColumns((set) =>
+		findSingle(
+			TABLE,
+			`invite_id=eq.${encodeURIComponent(inviteId)}&${ACTIVE_GUEST_FILTER}`,
+			set.columns,
+			toGuestRecord,
+			{ useServiceRole: true },
+		),
 	);
 }
 
 export async function findGuestByShortIdPublic(
 	shortId: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findSingle(
-		TABLE,
-		`short_id=eq.${encodeURIComponent(shortId)}&${ACTIVE_GUEST_FILTER}`,
-		GUEST_COLUMNS,
-		toGuestRecord,
-		{ useServiceRole: true },
+	return withGuestColumns((set) =>
+		findSingle(
+			TABLE,
+			`short_id=eq.${encodeURIComponent(shortId)}&${ACTIVE_GUEST_FILTER}`,
+			set.columns,
+			toGuestRecord,
+			{ useServiceRole: true },
+		),
 	);
 }
 export async function findGuestByPhoneAuth(
@@ -219,12 +233,14 @@ export async function findGuestByPhoneAuth(
 	phone: string,
 	hostAccessToken: string,
 ): Promise<GuestInvitationRecord | null> {
-	return findSingle(
-		TABLE,
-		`event_id=eq.${encodeURIComponent(eventId)}&country_code=eq.${encodeURIComponent(countryCode)}&phone=eq.${encodeURIComponent(phone)}&${ACTIVE_GUEST_FILTER}`,
-		GUEST_COLUMNS,
-		toGuestRecord,
-		{ authToken: hostAccessToken },
+	return withGuestColumns((set) =>
+		findSingle(
+			TABLE,
+			`event_id=eq.${encodeURIComponent(eventId)}&country_code=eq.${encodeURIComponent(countryCode)}&phone=eq.${encodeURIComponent(phone)}&${ACTIVE_GUEST_FILTER}`,
+			set.columns,
+			toGuestRecord,
+			{ authToken: hostAccessToken },
+		),
 	);
 }
 

@@ -382,6 +382,11 @@ Each goal is one task branch (`feat/engagement-*`), `pnpm validate:changed` → 
   `20261009230000`–`20261009230200`; `pnpm db:migrate` applies the whole pending set, so the
   engagement migrations cannot reach Local until the owner applies or defers those.
 - Privacy copy (`src/pages/privacidad.astro`) needs owner/legal review before Production.
+- Expand-phase compatibility (integrated after the merge): guest reads and writes fall back to the
+  base columns when the engagement columns are missing
+  (`src/lib/rsvp/repositories/shared/guest-schema-compat.ts`), and the ledger RPC is skipped for
+  five minutes after the database reports it missing. Preview keeps working until the migrations
+  land; the contract task removes both guards.
 
 ## 8. Rollout
 

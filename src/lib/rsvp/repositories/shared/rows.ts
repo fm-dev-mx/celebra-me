@@ -144,8 +144,21 @@ export const EVENT_COLUMNS = EVENT_COLUMN_LIST.join(',');
 export const EVENT_MUTATION_COLUMNS = EVENT_COLUMN_LIST.filter(
 	(column) => column !== 'published_at',
 ).join(',');
-export const GUEST_COLUMNS =
-	'id,invite_id,event_id,full_name,phone,country_code,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_shared_at,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id,hide_celebra_me_branding,last_reminder_sent_at,is_test,open_count,first_opened_at,last_opened_at,last_previewed_at,max_progress_milestone';
+/** Columns added by migration 20261010120000 (guest engagement analytics). */
+export const GUEST_ENGAGEMENT_COLUMN_LIST = [
+	'is_test',
+	'open_count',
+	'first_opened_at',
+	'last_opened_at',
+	'last_previewed_at',
+	'max_progress_milestone',
+] as const;
+
+/** Guest columns every supported schema has, before engagement analytics. */
+export const GUEST_BASE_COLUMNS =
+	'id,invite_id,event_id,full_name,phone,country_code,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_shared_at,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id,hide_celebra_me_branding,last_reminder_sent_at';
+
+export const GUEST_COLUMNS = `${GUEST_BASE_COLUMNS},${GUEST_ENGAGEMENT_COLUMN_LIST.join(',')}`;
 
 export function toEventRecord(row: EventRow): EventRecord {
 	return {
