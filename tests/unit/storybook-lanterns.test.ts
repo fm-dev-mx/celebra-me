@@ -92,7 +92,7 @@ describe('storybook presentation contracts', () => {
 			path.join(projectRoot, 'src/styles/invitation/_ornament-sets.scss'),
 			'utf8',
 		);
-		const fieldMixin = ornaments.slice(ornaments.indexOf('@mixin storybook-lantern-field'));
+		const fieldMixin = ornaments.slice(ornaments.indexOf('@mixin storybook-light-field'));
 		expect(fieldMixin.slice(0, fieldMixin.indexOf('@keyframes'))).toContain(
 			'@media (prefers-reduced-motion: no-preference)',
 		);

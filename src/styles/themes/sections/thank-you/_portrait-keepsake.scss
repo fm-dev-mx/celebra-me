@@ -161,10 +161,24 @@
 
 // The ambient layer in the markup is decoration that preset skins paint. Without one it must not
 // take a cell of the grid above (it pushed the photograph and the copy out of their columns).
-// Zero specificity, so a skin that positions or paints it keeps its own values.
+// Zero specificity, so a skin that positions or paints it keeps its own values. An invitation may
+// paint it with tokens: art layers and an outset that reaches the section edges (the section clips).
 :where(.thank-you-section[data-variant='portrait-keepsake']) .thank-you-editorial__ambient {
 	position: absolute;
-	inset: 0;
+	inset: var(--thank-you-keepsake-ambient-inset, 0);
 	z-index: -1;
+	background: var(--thank-you-keepsake-ambient, none);
 	pointer-events: none;
+
+	// With `--thank-you-keepsake-ambient-drift` the painted ground moves slower than the keepsake.
+	@supports (animation-timeline: view()) {
+		@media (prefers-reduced-motion: no-preference) {
+			--art-drift-from: calc(var(--thank-you-keepsake-ambient-drift, 0rem) * -1);
+			--art-drift-to: var(--thank-you-keepsake-ambient-drift, 0);
+
+			animation: invitation-art-drift linear both;
+			animation-timeline: view();
+			animation-range: cover;
+		}
+	}
 }

@@ -1,5 +1,280 @@
-// América: the storybook-lilac preset as shipped; only the envelope field is warmed toward the
-// lilac of her dress. Tokens only; structure stays with the variants.
+// América: the storybook-lilac preset as shipped, plus the night falling over the tower door on
+// the cover. The stone above the door darkens toward dusk and lantern lights kindle there, kept
+// above the face and away from the name. Layout stays with the variants; the profile only adds
+// art layers (frame, castle, tower) and ornaments.
 .event--america.theme-preset--storybook-lilac {
-	--storybook-field: rgb(232 222 246);
+	--america-cover-night:
+		radial-gradient(
+			circle at 9% 6%,
+			rgb(var(--color-candle-cream-rgb) / 95%) 0 2.5px,
+			rgb(var(--color-candle-gold-rgb) / 38%) 5px,
+			transparent 10px
+		),
+		radial-gradient(
+			circle at 24% 13%,
+			rgb(var(--color-candle-cream-rgb) / 90%) 0 2px,
+			rgb(var(--color-candle-gold-rgb) / 34%) 4px,
+			transparent 8px
+		),
+		radial-gradient(
+			circle at 41% 4%,
+			rgb(var(--color-candle-cream-rgb) / 85%) 0 1.4px,
+			transparent 2.4px
+		),
+		radial-gradient(
+			circle at 63% 9%,
+			rgb(var(--color-candle-cream-rgb) / 90%) 0 1.8px,
+			rgb(var(--color-candle-gold-rgb) / 30%) 3.6px,
+			transparent 7px
+		),
+		radial-gradient(
+			circle at 80% 4%,
+			rgb(var(--color-candle-cream-rgb) / 95%) 0 2.6px,
+			rgb(var(--color-candle-gold-rgb) / 38%) 5.5px,
+			transparent 11px
+		),
+		radial-gradient(
+			circle at 92% 15%,
+			rgb(var(--color-candle-cream-rgb) / 90%) 0 2px,
+			rgb(var(--color-candle-gold-rgb) / 34%) 4px,
+			transparent 8px
+		),
+		radial-gradient(
+			circle at 52% 16%,
+			rgb(var(--color-candle-cream-rgb) / 75%) 0 1px,
+			transparent 1.8px
+		),
+		radial-gradient(
+			circle at 15% 22%,
+			rgb(var(--color-candle-cream-rgb) / 75%) 0 1px,
+			transparent 1.8px
+		),
+		radial-gradient(
+			circle at 4% 17%,
+			rgb(var(--color-candle-gold-rgb) / 26%) 0 24px,
+			rgb(var(--color-candle-gold-rgb) / 9%) 36px,
+			transparent 44px
+		),
+		radial-gradient(
+			circle at 97% 6%,
+			rgb(var(--color-candle-gold-rgb) / 24%) 0 30px,
+			rgb(var(--color-candle-gold-rgb) / 8%) 44px,
+			transparent 54px
+		),
+		linear-gradient(
+			180deg,
+			rgb(var(--color-violet-midnight-rgb) / 82%) 0%,
+			rgb(var(--color-violet-night-rgb) / 58%) 12%,
+			rgb(var(--color-violet-dusk-rgb) / 30%) 24%,
+			rgb(var(--color-violet-dusk-rgb) / 8%) 34%,
+			transparent 42%
+		);
+
+	// The stacked cover hands the photograph over to the paper below instead of cutting to it.
+	--hero-bleed-photo-veil:
+		linear-gradient(
+			180deg,
+			transparent 86%,
+			rgb(var(--color-lilac-paper-rgb) / 70%) 96%,
+			var(--color-lilac-paper) 100%
+		),
+		var(--america-cover-night);
+	--hero-bleed-photo-veil-wide: var(--america-cover-night);
+
+	// The cover letter rises in after its rules are drawn; behind the envelope it waits for the fade.
+	--hero-bleed-entrance: hero-bleed-rise;
+	--hero-bleed-entrance-wait: 600ms;
+
+	// Rhythm, day to night: the family band sits on a deeper lilac than the quote paper so the two
+	// read as separate pages, and the bleed interlude enters from that lilac and leaves into the
+	// dusk where the countdown begins.
+	--family-bg: var(--storybook-paper-grain), var(--color-lilac-veil);
+	--interlude-overlay:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-lilac-veil-rgb) / 85%) 0%,
+			transparent 14%,
+			transparent 80%,
+			rgb(var(--color-violet-dusk-rgb) / 70%) 93%,
+			var(--color-violet-dusk) 100%
+		),
+		radial-gradient(
+			ellipse at center,
+			transparent 52%,
+			rgb(var(--color-violet-night-rgb) / 12%) 100%
+		);
+
+	// Storybook art from the tower tale, one hand-painted style throughout (gouache and watercolor
+	// on lilac paper, gold leaf): floral corners and the client's sun open the quote on day paper, the
+	// lantern-lit castle sets the place under the night band, and the tower at dusk closes the story.
+	// Night scrims stay only where copy reads over painting. The sun is traced from the client's
+	// artwork; its seal mark keeps the cuts legible at wax size and leaves the disc open for the
+	// monogram.
+	--storybook-seal-art: url('../../assets/invitations/america/sun-corona-mark.svg');
+	--storybook-seal-art-display: block;
+	--storybook-seal-icon-opacity: 0%;
+	--america-corner-size: clamp(9rem, 26vw, 22rem);
+	--america-quote-padding: clamp(7.5rem, 30vw, 11rem);
+	--storybook-quote-padding-block: var(--america-quote-padding);
+	--storybook-quote-art:
+		url('../../assets/invitations/america/sun-corona.svg') center
+			calc(var(--america-quote-padding) - 4.5rem) / 3.25rem no-repeat,
+		url('../../assets/invitations/america/corner-floral-tl.webp') left top /
+			var(--america-corner-size) no-repeat,
+		url('../../assets/invitations/america/corner-floral-br.webp') right bottom /
+			var(--america-corner-size) no-repeat;
+	--quote-container-max-width: min(100%, 26rem);
+
+	// The heading reads on open sky, the castle stands whole beneath it, and the program begins on
+	// the lake, darkened to flat night. Stops follow the drawn height of the art (1088 x 1456).
+	--america-castle-height: calc(min(100vw, 46rem) * 1456 / 1088);
+	--location-program-margin-top: calc(var(--america-castle-height) * 0.58);
+
+	// Section titles share one scale and voice (Cormorant italic, as the family and gallery titles).
+	--location-intro-heading-style: italic;
+	--location-intro-heading-size: clamp(2.1rem, 7vw, 3.4rem);
+
+	// The scene is its own layer and drifts a little slower than the program as the page scrolls.
+	--location-bg: var(--storybook-night);
+	--location-program-art-display: block;
+	--location-program-art-overflow: clip;
+	--location-program-art-drift: 2rem;
+	--location-program-art:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-violet-night-rgb) / 15%) 0,
+			transparent calc(var(--america-castle-height) * 0.35),
+			transparent calc(var(--america-castle-height) * 0.6),
+			rgb(var(--color-violet-night-rgb) / 85%) calc(var(--america-castle-height) * 0.8),
+			var(--color-violet-night) calc(var(--america-castle-height) * 0.92)
+		),
+		linear-gradient(
+			90deg,
+			var(--color-violet-night) calc(50% - 23rem),
+			transparent calc(50% - 17rem),
+			transparent calc(50% + 17rem),
+			var(--color-violet-night) calc(50% + 23rem)
+		),
+		image-set(
+				url('../../assets/invitations/america/location-castle-lanterns.avif')
+					type('image/avif'),
+				url('../../assets/invitations/america/location-castle-lanterns.webp')
+					type('image/webp')
+			)
+			center top / min(100%, 46rem) auto no-repeat,
+		var(--color-violet-night);
+
+	// The tower at dusk grounds the closing section; a light veil keeps the keepsake portrait the
+	// single focal point. The ambient layer reaches past the keepsake to the clipped section edges,
+	// and the art fades into night at the sides on wide screens.
+	--thank-you-keepsake-ambient-inset: -10rem -100vw;
+	--thank-you-keepsake-ambient-drift: 2.5rem;
+
+	// The last sky holds the most lanterns of the story (the countdown keeps only the shared few).
+	--ornament-lights-closing:
+		radial-gradient(
+			12.1px 16.5px at 12% 8%,
+			rgb(var(--color-candle-cream-rgb) / 90%) 0 35%,
+			rgb(var(--color-lantern-amber-rgb) / 50%) 60%,
+			transparent 100%
+		),
+		radial-gradient(
+			7.7px 10.5px at 27% 15%,
+			rgb(var(--color-candle-cream-rgb) / 80%) 0 35%,
+			rgb(var(--color-lantern-amber-rgb) / 44%) 60%,
+			transparent 100%
+		),
+		radial-gradient(
+			9.9px 13.5px at 44% 5%,
+			rgb(var(--color-candle-cream-rgb) / 85%) 0 35%,
+			rgb(var(--color-lantern-amber-rgb) / 47%) 60%,
+			transparent 100%
+		),
+		radial-gradient(
+			6.6px 9px at 63% 12%,
+			rgb(var(--color-candle-cream-rgb) / 75%) 0 35%,
+			rgb(var(--color-lantern-amber-rgb) / 41%) 60%,
+			transparent 100%
+		),
+		radial-gradient(
+			13.2px 18px at 81% 6%,
+			rgb(var(--color-candle-cream-rgb) / 90%) 0 35%,
+			rgb(var(--color-lantern-amber-rgb) / 50%) 60%,
+			transparent 100%
+		),
+		radial-gradient(
+			7.15px 9.75px at 90% 20%,
+			rgb(var(--color-candle-cream-rgb) / 70%) 0 35%,
+			rgb(var(--color-lantern-amber-rgb) / 39%) 60%,
+			transparent 100%
+		),
+		radial-gradient(
+			5.5px 7.5px at 18% 26%,
+			rgb(var(--color-candle-cream-rgb) / 65%) 0 35%,
+			rgb(var(--color-lantern-amber-rgb) / 36%) 60%,
+			transparent 100%
+		),
+		radial-gradient(
+			8.8px 12px at 72% 28%,
+			rgb(var(--color-candle-cream-rgb) / 78%) 0 35%,
+			rgb(var(--color-lantern-amber-rgb) / 43%) 60%,
+			transparent 100%
+		),
+		radial-gradient(
+			4.95px 6.75px at 36% 22%,
+			rgb(var(--color-candle-cream-rgb) / 60%) 0 35%,
+			rgb(var(--color-lantern-amber-rgb) / 33%) 60%,
+			transparent 100%
+		),
+		radial-gradient(
+			6.1px 8.25px at 56% 30%,
+			rgb(var(--color-candle-cream-rgb) / 62%) 0 35%,
+			rgb(var(--color-lantern-amber-rgb) / 34%) 60%,
+			transparent 100%
+		),
+		radial-gradient(
+			8.25px 11.25px at 6% 38%,
+			rgb(var(--color-candle-cream-rgb) / 72%) 0 35%,
+			rgb(var(--color-lantern-amber-rgb) / 40%) 60%,
+			transparent 100%
+		),
+		radial-gradient(
+			5.5px 7.5px at 94% 40%,
+			rgb(var(--color-candle-cream-rgb) / 60%) 0 35%,
+			rgb(var(--color-lantern-amber-rgb) / 33%) 60%,
+			transparent 100%
+		),
+		radial-gradient(
+			4.4px 6px at 30% 40%,
+			rgb(var(--color-candle-cream-rgb) / 55%) 0 35%,
+			rgb(var(--color-lantern-amber-rgb) / 30%) 60%,
+			transparent 100%
+		),
+		radial-gradient(
+			6.6px 9px at 84% 48%,
+			rgb(var(--color-candle-cream-rgb) / 64%) 0 35%,
+			rgb(var(--color-lantern-amber-rgb) / 35%) 60%,
+			transparent 100%
+		);
+	--thank-you-keepsake-ambient:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-violet-night-rgb) / 30%) 0%,
+			rgb(var(--color-violet-night-rgb) / 45%) 45%,
+			rgb(var(--color-violet-night-rgb) / 88%) 72%,
+			var(--color-violet-night) 100%
+		),
+		linear-gradient(
+			90deg,
+			var(--color-violet-night) calc(50% - 24rem),
+			transparent calc(50% - 16rem),
+			transparent calc(50% + 16rem),
+			var(--color-violet-night) calc(50% + 24rem)
+		),
+		image-set(
+				url('../../assets/invitations/america/thank-you-tower.avif') type('image/avif'),
+				url('../../assets/invitations/america/thank-you-tower.webp') type('image/webp')
+			)
+			center top / auto 100% no-repeat,
+		var(--color-violet-night);
 }

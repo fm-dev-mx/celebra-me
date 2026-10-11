@@ -14,6 +14,12 @@
 //   --countdown-written-columns  Column gap around the desktop divider
 //   --countdown-written-date-row Desktop grid row of the date (span 2 to sit on the numeral)
 //   --countdown-written-date-baseline Lift of the desktop date onto the numeral baseline
+//   --countdown-written-date-display   `none` drops the written date (default `block`)
+//   --countdown-written-wide-columns  Wide grid columns (default `auto 1px auto`; `auto` keeps one
+//                                     centered column, with the rule, align and footer tokens)
+//   --countdown-written-rule-display  Wide divider (`block`; `none` hides it)
+//   --countdown-written-wide-align / -wide-justify  Wide text-align and title placement
+//   --countdown-written-footer-column / -footer-row / -footer-justify  Wide footer placement
 // ==========================================================================
 
 // The section id keeps this layout above preset skins that style the default tiles.
@@ -126,6 +132,7 @@
 	}
 
 	.countdown-written-date {
+		display: var(--countdown-written-date-display, block);
 		margin: 0.6rem 0 0;
 		font-family: var(--font-body);
 		font-size: clamp(1.15rem, 2.2vw, 1.5rem);
@@ -155,18 +162,18 @@
 
 	@include mixins.respond-to(lg) {
 		.countdown-container {
-			grid-template-columns: auto 1px auto;
+			grid-template-columns: var(--countdown-written-wide-columns, auto 1px auto);
 			grid-template-rows: auto auto auto;
 			gap: 1.5rem var(--countdown-written-columns, clamp(3rem, 6vw, 5rem));
 			align-items: end;
 			justify-content: center;
-			text-align: left;
+			text-align: var(--countdown-written-wide-align, left);
 		}
 
 		.countdown-title {
 			grid-column: 1;
 			grid-row: 1;
-			justify-self: start;
+			justify-self: var(--countdown-written-wide-justify, start);
 		}
 
 		.countdown-timer-wrapper {
@@ -176,6 +183,7 @@
 
 		.countdown-container::after {
 			content: '';
+			display: var(--countdown-written-rule-display, block);
 			grid-column: 2;
 			grid-row: 1 / span 3;
 			align-self: stretch;
@@ -183,21 +191,17 @@
 			background: var(--countdown-written-rule);
 		}
 
-		.countdown-written-date,
-		.countdown-footer {
-			grid-column: 3;
-			justify-self: start;
-		}
-
 		.countdown-written-date {
+			grid-column: 3;
 			grid-row: var(--countdown-written-date-row, 2);
-			align-self: end;
+			place-self: end start;
 			margin: 0 0 var(--countdown-written-date-baseline, 0);
 		}
 
 		.countdown-footer {
-			grid-row: 3;
-			align-self: start;
+			grid-column: var(--countdown-written-footer-column, 3);
+			grid-row: var(--countdown-written-footer-row, 3);
+			place-self: start var(--countdown-written-footer-justify, start);
 			margin: 0.35rem 0 1.4rem;
 		}
 	}
