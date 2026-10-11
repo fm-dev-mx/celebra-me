@@ -132,97 +132,21 @@
 		--countdown-written-numeral: clamp(7rem, 30vw, 11rem);
 	}
 
-	// The envelope is the night the story ends in: violet paper under a sky of distant lights, a
-	// gold-leaf hairline on the flap, the wax sun, and warm light spilling from inside as the flap
-	// turns. The card inside stays cream paper with day inks and no drawn art.
+	// The envelope is the night the story ends in: violet paper under a sky of distant lights and
+	// rising lanterns, a gold-leaf hairline on the flap, the wax sun, and warm light spilling from
+	// inside as the flap turns. The card inside stays cream paper with day inks and no drawn art.
 	.envelope-wrapper[data-variant='storybook-lanterns'] {
-		--storybook-field:
-			radial-gradient(
-				circle at 12% 9%,
-				rgb(var(--color-candle-cream-rgb) / 90%) 0 1.2px,
-				transparent 2px
-			),
-			radial-gradient(
-				circle at 31% 18%,
-				rgb(var(--color-candle-cream-rgb) / 80%) 0 1px,
-				transparent 1.8px
-			),
-			radial-gradient(
-				circle at 58% 6%,
-				rgb(var(--color-candle-cream-rgb) / 90%) 0 1.4px,
-				transparent 2.2px
-			),
-			radial-gradient(
-				circle at 83% 13%,
-				rgb(var(--color-candle-cream-rgb) / 85%) 0 1.2px,
-				transparent 2px
-			),
-			radial-gradient(
-				circle at 93% 34%,
-				rgb(var(--color-candle-cream-rgb) / 75%) 0 1px,
-				transparent 1.8px
-			),
-			radial-gradient(
-				circle at 6% 44%,
-				rgb(var(--color-candle-cream-rgb) / 80%) 0 1.2px,
-				transparent 2px
-			),
-			radial-gradient(
-				circle at 9% 82%,
-				rgb(var(--color-candle-cream-rgb) / 75%) 0 1px,
-				transparent 1.8px
-			),
-			radial-gradient(
-				circle at 90% 88%,
-				rgb(var(--color-candle-cream-rgb) / 80%) 0 1.2px,
-				transparent 2px
-			),
-			radial-gradient(
-				circle at 21% 5%,
-				rgb(var(--color-candle-cream-rgb) / 95%) 0 2.6px,
-				rgb(var(--color-candle-gold-rgb) / 38%) 5.5px,
-				transparent 11px
-			),
-			radial-gradient(
-				circle at 74% 4%,
-				rgb(var(--color-candle-cream-rgb) / 95%) 0 3px,
-				rgb(var(--color-candle-gold-rgb) / 38%) 6px,
-				transparent 12px
-			),
-			radial-gradient(
-				circle at 46% 9%,
-				rgb(var(--color-candle-cream-rgb) / 90%) 0 2px,
-				rgb(var(--color-candle-gold-rgb) / 32%) 4px,
-				transparent 8px
-			),
-			radial-gradient(
-				circle at 16% 93%,
-				rgb(var(--color-candle-cream-rgb) / 90%) 0 2.4px,
-				rgb(var(--color-candle-gold-rgb) / 34%) 5px,
-				transparent 10px
-			),
-			radial-gradient(
-				circle at 82% 95%,
-				rgb(var(--color-candle-cream-rgb) / 95%) 0 2.8px,
-				rgb(var(--color-candle-gold-rgb) / 38%) 6px,
-				transparent 12px
-			),
-			radial-gradient(
-				circle at 4% 18%,
-				rgb(var(--color-candle-gold-rgb) / 24%) 0 22px,
-				transparent 36px
-			),
-			radial-gradient(
-				circle at 97% 70%,
-				rgb(var(--color-candle-gold-rgb) / 20%) 0 26px,
-				transparent 42px
-			),
-			radial-gradient(
-				ellipse 120% 70% at 50% 100%,
-				var(--color-violet-dusk) 0%,
-				var(--color-violet-night) 55%,
-				var(--color-violet-midnight) 100%
-			);
+		// The lights live on the depth sky (see the reveal skin); the field is the night alone.
+		--storybook-sky-display: block;
+		--storybook-sky-light: var(--color-candle-cream);
+		--storybook-sky-glow: var(--color-candle-gold);
+		--storybook-sky-lantern: var(--color-lantern-amber);
+		--storybook-field: radial-gradient(
+			ellipse 120% 70% at 50% 100%,
+			var(--color-violet-dusk) 0%,
+			var(--color-violet-night) 55%,
+			var(--color-violet-midnight) 100%
+		);
 		--storybook-envelope-paper: linear-gradient(
 			180deg,
 			color-mix(in srgb, var(--color-violet-dusk) 72%, var(--color-violet-night)),
