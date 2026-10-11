@@ -74,10 +74,8 @@ above, unless the owner sets another date.
 - Repository: implementation merged. Migrations `20260930180000_event_memories_catalog`,
   `20261002012428_event_memory_settings_planning`, and `20261006120000_event_memories_gallery_share`
   reached `main` through PR #219 and PR #228. The app deploy must not precede `20261002012428`.
-- Legacy retirement: `20261009230200_retire_valentina_memories.sql` (contract), held on branch
-  `feat/retire-legacy-tables-contracts` with the other two legacy contracts so pending expand
-  migrations can reach hosted targets first. Hosted apply waits for the export and the post-wedding
-  window above.
+- Legacy retirement: `20261009230200_retire_valentina_memories.sql` (contract). Hosted apply waits
+  for the export and the post-wedding window above.
 - Owner gates: Production apply, per-event activation, Worker deploys, canary, and phone proof
   remain `OWNER_ACTION_REQUIRED`; every live proof is `UNVERIFIED` until the owner records it in
   `workers/celebra-memories-sign/OWNER.md`.
