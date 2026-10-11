@@ -118,9 +118,10 @@
 		--rsvp-radio-label-color-selected: var(--color-violet-ink);
 	}
 
-	// The countdown is one centered line of light: a large thin numeral, the nights, and the promise
-	// of the lanterns. The date already lives on the envelope card and the cover.
-	.countdown-section {
+	// América (visualProfileId 'america') only: the countdown is one centered line of light, a
+	// large thin numeral, the nights, and the promise of the lanterns. The date already lives on the
+	// envelope card and the cover. Other storybook-lilac invitations keep the written layout.
+	&.event--america .countdown-section {
 		--countdown-written-date-display: none;
 		--countdown-written-wide-columns: auto;
 		--countdown-written-rule-display: none;
@@ -132,10 +133,10 @@
 		--countdown-written-numeral: clamp(7rem, 30vw, 11rem);
 	}
 
-	// The envelope is the night the story ends in: violet paper under a sky of distant lights, a
-	// gold-leaf hairline on the flap, the wax sun, and warm light spilling from inside as the flap
-	// turns. The card inside stays cream paper with day inks and no drawn art.
-	.envelope-wrapper[data-variant='storybook-lanterns'] {
+	// América only: the envelope is the night the story ends in, violet paper under a sky of distant
+	// lights, a gold-leaf hairline on the flap, the wax sun, and warm light spilling from inside as
+	// the flap turns. The card inside stays cream paper with day inks and no drawn art.
+	&.event--america .envelope-wrapper[data-variant='storybook-lanterns'] {
 		--storybook-field:
 			radial-gradient(
 				circle at 12% 9%,
@@ -258,7 +259,7 @@
 		--reveal-card-shadow: 0 1px 2px rgb(var(--color-violet-midnight-rgb) / 40%);
 	}
 
-	.envelope-wrapper[data-variant='storybook-lanterns'] .invitation-reveal-card {
+	&.event--america .envelope-wrapper[data-variant='storybook-lanterns'] .invitation-reveal-card {
 		--color-text-primary: var(--color-violet-ink);
 		--color-text-primary-rgb: var(--color-violet-ink-rgb);
 		--color-text-secondary: var(--color-violet-ink-soft);
