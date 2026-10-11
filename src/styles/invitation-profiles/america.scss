@@ -1,6 +1,7 @@
 // América: the storybook-lilac preset as shipped, plus the night falling over the tower door on
 // the cover. The stone above the door darkens toward dusk and lantern lights kindle there, kept
-// above the face and away from the name. Tokens only; structure stays with the variants.
+// above the face and away from the name. Layout stays with the variants; the profile only adds
+// art layers (frame, castle, tower) and ornaments.
 .event--america.theme-preset--storybook-lilac {
 	--america-cover-night:
 		radial-gradient(
@@ -70,4 +71,75 @@
 		);
 	--hero-bleed-photo-veil: var(--america-cover-night);
 	--hero-bleed-photo-veil-wide: var(--america-cover-night);
+
+	// Storybook art from the tower tale, one hand-painted style throughout (gouache and watercolor
+	// on lilac paper, gold leaf): floral corners and the gilded sun open the quote on day paper, the
+	// lantern-lit castle sets the place under the night band, and the tower at dusk closes the story.
+	// Night scrims stay only where copy reads over painting.
+	--america-corner-size: min(44vw, 15rem);
+	--america-quote-padding: clamp(7.5rem, 30vw, 10rem);
+	--storybook-quote-padding-block: var(--america-quote-padding);
+	--storybook-quote-art:
+		url('../../assets/invitations/america/sun-gilded.webp') center
+			calc(var(--america-quote-padding) - 4.25rem) / 3rem no-repeat,
+		url('../../assets/invitations/america/corner-floral-tl.webp') left top /
+			var(--america-corner-size) no-repeat,
+		url('../../assets/invitations/america/corner-floral-br.webp') right bottom /
+			var(--america-corner-size) no-repeat;
+	--quote-container-max-width: min(100%, 26rem);
+
+	// The heading reads on open sky, the castle stands whole beneath it, and the program begins on
+	// the lake, darkened to flat night. Stops follow the drawn height of the art (1088 x 1456).
+	--america-castle-height: calc(min(100vw, 46rem) * 1456 / 1088);
+	--location-program-margin-top: calc(var(--america-castle-height) * 0.58);
+	--location-bg:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-violet-night-rgb) / 15%) 0,
+			transparent calc(var(--america-castle-height) * 0.35),
+			transparent calc(var(--america-castle-height) * 0.6),
+			rgb(var(--color-violet-night-rgb) / 85%) calc(var(--america-castle-height) * 0.8),
+			var(--color-violet-night) calc(var(--america-castle-height) * 0.92)
+		),
+		linear-gradient(
+			90deg,
+			var(--color-violet-night) calc(50% - 23rem),
+			transparent calc(50% - 17rem),
+			transparent calc(50% + 17rem),
+			var(--color-violet-night) calc(50% + 23rem)
+		),
+		image-set(
+				url('../../assets/invitations/america/location-castle-lanterns.avif')
+					type('image/avif'),
+				url('../../assets/invitations/america/location-castle-lanterns.webp')
+					type('image/webp')
+			)
+			center top / min(100%, 46rem) auto no-repeat,
+		var(--color-violet-night);
+
+	// The tower at dusk grounds the closing section; a light veil keeps the keepsake portrait the
+	// single focal point. The ambient layer reaches past the keepsake to the clipped section edges,
+	// and the art fades into night at the sides on wide screens.
+	--thank-you-keepsake-ambient-inset: -10rem -100vw;
+	--thank-you-keepsake-ambient:
+		linear-gradient(
+			180deg,
+			rgb(var(--color-violet-night-rgb) / 30%) 0%,
+			rgb(var(--color-violet-night-rgb) / 45%) 45%,
+			rgb(var(--color-violet-night-rgb) / 88%) 72%,
+			var(--color-violet-night) 100%
+		),
+		linear-gradient(
+			90deg,
+			var(--color-violet-night) calc(50% - 24rem),
+			transparent calc(50% - 16rem),
+			transparent calc(50% + 16rem),
+			var(--color-violet-night) calc(50% + 24rem)
+		),
+		image-set(
+				url('../../assets/invitations/america/thank-you-tower.avif') type('image/avif'),
+				url('../../assets/invitations/america/thank-you-tower.webp') type('image/webp')
+			)
+			center top / auto 100% no-repeat,
+		var(--color-violet-night);
 }
