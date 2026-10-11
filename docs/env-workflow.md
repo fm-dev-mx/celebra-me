@@ -95,13 +95,15 @@ execution:
 - **Server-only app/runtime:** Read at runtime from `process.env`, normally through
   `src/lib/server/env.ts`. Includes credentials, API keys, deployment metadata, and internal URLs.
 - **Preview-only app/runtime:** `PREVIEW_MFA_BYPASS` and `PREVIEW_ADMIN_EMAILS` support the guarded
-  Preview MFA bypass on Vercel Preview deployments. Never enable them in Production. Local Preview
-  runtime (`CELEBRA_RUNTIME_TARGET=preview`) uses `DEV_MFA_BYPASS` instead—it now activates when
-  `DEV_MFA_BYPASS=true` + `NODE_ENV=development` + `CELEBRA_RUNTIME_TARGET=preview` + remote
-  Supabase URL, provided the process is not on Vercel.
+  Preview MFA bypass on hosted Preview deployments (`CELEBRA_DEPLOY_ENV=preview`, built from
+  `develop`). Never enable them in Production. Local Preview runtime
+  (`CELEBRA_RUNTIME_TARGET=preview`) uses `DEV_MFA_BYPASS` instead: it activates only on the Astro
+  dev server (`import.meta.env.DEV`) with `DEV_MFA_BYPASS=true`, no declared deploy identity, and
+  either Local Supabase or `CELEBRA_RUNTIME_TARGET=preview` with the Preview project URL. A built
+  bundle never qualifies, because edge runtimes do not report `NODE_ENV`.
 - **Lane runtime target:** `CELEBRA_RUNTIME_TARGET` is `local` or `preview` for local Astro
   processes. Lane detection sets it automatically; shell override is allowed for intentional tests.
-  It never forges Vercel identity and is not mutation authorization.
+  It never forges hosted identity and is not mutation authorization.
 - **Canonical-status cache path:** `CELEBRA_STATUS_CACHE_PATH` optionally overrides the durable
   status cache file used by the app/runtime status server. Default is
   `.cache/canonical-status.json`.
@@ -113,9 +115,13 @@ execution:
   intentionally omitted from `ImportMetaEnv`. `pnpm invitation:release` treats Preview and
   Production URLs/credentials as script-only values; packages and invitation definitions must
   contain semantic asset references, never those values.
-- **Platform-provided app/runtime:** Vercel supplies `VERCEL`, `VERCEL_DEPLOYMENT_ID`, `VERCEL_ENV`,
-  `VERCEL_GIT_COMMIT_SHA`, `VERCEL_GIT_COMMIT_REF`, and `VERCEL_REGION`. They are typed for
-  app/runtime use but omitted from the local template.
+- **Deploy-provided app/runtime:** `CELEBRA_DEPLOY_ENV` (`production` | `preview`) is declared by
+  each hosted environment and is the only deploy identity; `src/lib/server/deploy-identity.ts` is
+  its single reader (enforced by `validate:structure`). Local processes leave it unset and are
+  recognized positively (Astro dev server, or a built bundle on Local Supabase); any other
+  combination fails closed. `CELEBRA_BUILD_SHA` and `CELEBRA_BUILD_REF` are baked in at build time
+  by `vite.define` and reported by `/api/health`. All three are typed for app/runtime use but
+  omitted from the local template.
 - **Production-only shell variables:** `PROD_DB_URL` is a Postgres connection string only;
   `PROD_SUPABASE_URL` and `PROD_SUPABASE_SERVICE_ROLE_KEY` are the independently verified API and
   Storage inputs for the complete critical backup. They come only from the operator shell or
@@ -145,7 +151,7 @@ with app/runtime typing:
 | Contract category           | Variables                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Relationship                                          |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
 | `operational-script-only`   | `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `RSVP_ADMIN_USER`, `SUPER_ADMIN_EMAILS`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`, `PLAYWRIGHT_PREVIEW_SUPABASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS` | Present in `.env.example`; omitted from typing.       |
-| `platform-provided-runtime` | `VERCEL`, `VERCEL_DEPLOYMENT_ID`, `VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA`, `VERCEL_GIT_COMMIT_REF`, `VERCEL_REGION`                                                                                                                                                                                                                                                                                                                                                | Present in app/runtime typing; omitted from template. |
+| `platform-provided-runtime` | `CELEBRA_DEPLOY_ENV`, `CELEBRA_BUILD_SHA`, `CELEBRA_BUILD_REF`                                                                                                                                                                                                                                                                                                                                                                                                   | Present in app/runtime typing; omitted from template. |
 
 `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` are server-only runtime
 secrets for invitation image upload (Astro API + `invitation:release` CLI). The platform usage

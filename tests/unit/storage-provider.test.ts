@@ -21,6 +21,14 @@ import {
 	resolveEffectiveTarget,
 } from '@/lib/intake/services/storage-provider';
 
+import { isDevEnvironment } from '@/lib/environment';
+
+// This suite models a local Astro process, whose storage target follows the local
+// deploy identity (a built bundle without CELEBRA_DEPLOY_ENV would fail closed).
+const mockIsDevEnvironment = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
+beforeEach(() => mockIsDevEnvironment.mockReturnValue(true));
+afterEach(() => mockIsDevEnvironment.mockReturnValue(false));
+
 describe('StorageProvider Abstraction', () => {
 	const originalEnv = process.env;
 
@@ -161,18 +169,26 @@ describe('StorageProvider Abstraction', () => {
 			expect(getStorageProvider('production').providerName).toBe('cloudinary');
 		});
 
-		it('infers provider from VERCEL_ENV when present', () => {
-			process.env.VERCEL_ENV = 'production';
+		it('infers provider from the declared deploy identity', () => {
+			process.env.CELEBRA_DEPLOY_ENV = 'production';
 			expect(resolveEffectiveTarget()).toBe('production');
 			expect(getStorageProvider().providerName).toBe('cloudinary');
 
-			process.env.VERCEL_ENV = 'preview';
+			process.env.CELEBRA_DEPLOY_ENV = 'preview';
 			expect(resolveEffectiveTarget()).toBe('preview');
 			expect(getStorageProvider().providerName).toBe('cloudinary');
 		});
 
+		it('fails closed for a built bundle without a deploy identity', () => {
+			delete process.env.CELEBRA_DEPLOY_ENV;
+			delete process.env.CELEBRA_RUNTIME_TARGET;
+			mockIsDevEnvironment.mockReturnValue(false);
+			process.env.SUPABASE_URL = 'https://example-project.supabase.co';
+			expect(() => resolveEffectiveTarget()).toThrow(/must declare CELEBRA_DEPLOY_ENV/);
+		});
+
 		it('infers provider from CELEBRA_RUNTIME_TARGET when set', () => {
-			delete process.env.VERCEL_ENV;
+			delete process.env.CELEBRA_DEPLOY_ENV;
 			process.env.CELEBRA_RUNTIME_TARGET = 'preview';
 			expect(resolveEffectiveTarget()).toBe('preview');
 			expect(getStorageProvider().providerName).toBe('cloudinary');

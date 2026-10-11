@@ -2,7 +2,7 @@
  * Runtime mutation environment guard.
  *
  * Distinguishes Local runtime, local Preview runtime (CELEBRA_RUNTIME_TARGET),
- * Vercel Preview, and Production. Worktree path alone is never authorization.
+ * hosted Preview, and hosted Production. Worktree path alone is never authorization.
  */
 
 import {
@@ -13,6 +13,7 @@ import {
 	type InvitationMutationEnvironment,
 	type MutationEnvironmentIdentity,
 } from '@/lib/intake/mutations/environment-identity';
+import { resolveDeployEnvironment } from '@/lib/server/deploy-identity';
 import { getEnv } from '@/lib/server/env';
 import { getSupabaseServiceRoleKey, getSupabaseUrl } from '@/lib/server/supabase-credentials';
 
@@ -20,9 +21,8 @@ let cachedVerification: Promise<MutationEnvironmentIdentity> | null = null;
 let cachedFingerprint = '';
 
 function inferRuntimeEnvironment(apiUrl: string): InvitationMutationEnvironment {
-	const vercelEnvironment = getEnv('VERCEL_ENV').trim().toLowerCase();
-	if (vercelEnvironment === 'production') return 'production';
-	if (vercelEnvironment === 'preview') return 'preview';
+	const deployEnvironment = resolveDeployEnvironment({ supabaseUrl: apiUrl });
+	if (deployEnvironment !== 'local') return deployEnvironment;
 
 	const apiRef = extractApiProjectRef(apiUrl);
 	const celebraTarget = getEnv('CELEBRA_RUNTIME_TARGET').trim().toLowerCase();
@@ -43,10 +43,10 @@ function inferRuntimeEnvironment(apiUrl: string): InvitationMutationEnvironment 
 		return 'local';
 	}
 
-	if (apiRef === SUPABASE_PROJECT_REFS.local && !vercelEnvironment) return 'local';
+	if (apiRef === SUPABASE_PROJECT_REFS.local) return 'local';
 
 	throw new Error(
-		'Runtime mutation environment is ambiguous. Local execution must use Local Supabase with CELEBRA_RUNTIME_TARGET=local (or omit it), Preview runtime must set CELEBRA_RUNTIME_TARGET=preview against the Preview project, and deployed execution must declare VERCEL_ENV.',
+		'Runtime mutation environment is ambiguous. Local execution must use Local Supabase with CELEBRA_RUNTIME_TARGET=local (or omit it), Preview runtime must set CELEBRA_RUNTIME_TARGET=preview against the Preview project, and deployed execution must declare CELEBRA_DEPLOY_ENV.',
 	);
 }
 

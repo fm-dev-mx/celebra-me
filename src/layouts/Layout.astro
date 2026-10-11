@@ -11,6 +11,7 @@ import {
 	buildSocialImageMetadata,
 	resolvePublicSiteOrigin,
 } from '@/lib/invitation/social-metadata';
+import { readHostedDeployEnvironment } from '@/lib/server/deploy-identity';
 import {
 	classifyTrackingRoute,
 	resolveSpeedInsightsConfig,
@@ -57,9 +58,9 @@ const {
 	headLinks = [],
 } = Astro.props as Props;
 
-const vercelEnvironment = process.env.VERCEL_ENV;
-const isVercelProduction = vercelEnvironment === 'production';
-const isMetaDeliveryBlocked = Boolean(vercelEnvironment && vercelEnvironment !== 'production');
+const deployEnvironment = readHostedDeployEnvironment();
+const isProductionRuntime = deployEnvironment === 'production';
+const isMetaDeliveryBlocked = deployEnvironment === 'preview';
 
 const resolvedImageSrc = typeof image === 'string' ? image : image.src;
 
@@ -74,10 +75,10 @@ const socialImage = buildSocialImageMetadata(resolvedImageSrc, { origin: canonic
 const ogImage = socialImage.url;
 
 const routePolicy = classifyTrackingRoute(Astro.url);
-const loadCommercialTracking = isVercelProduction && routePolicy.internalAllowed;
+const loadCommercialTracking = isProductionRuntime && routePolicy.internalAllowed;
 
 const speedInsightsConfig = resolveSpeedInsightsConfig(Astro.url, {
-	vercelEnv: vercelEnvironment,
+	deployEnvironment,
 });
 ---
 <!doctype html>

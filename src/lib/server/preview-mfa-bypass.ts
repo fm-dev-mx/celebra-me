@@ -2,26 +2,32 @@
  * preview-mfa-bypass.ts — Strictly Guarded MFA Bypass for Preview Environment
  *
  * Provides a separate, more restrictive MFA bypass for the dedicated Preview
- * deployment on Vercel. Does NOT change DEV_MFA_BYPASS behavior.
+ * deployment. Does NOT change DEV_MFA_BYPASS behavior.
  *
  * All conditions must be true for the bypass to activate:
  *   1. PREVIEW_MFA_BYPASS === 'true'
- *   2. VERCEL_ENV === 'preview'
- *   3. VERCEL_GIT_COMMIT_REF === 'develop'
+ *   2. The deploy identity is hosted Preview (CELEBRA_DEPLOY_ENV=preview)
+ *   3. The build came from the develop branch (build-time git ref)
  *   4. SUPABASE_URL matches the dedicated Preview Supabase project
  *   5. The authenticated user's role is 'super_admin'
  *   6. The authenticated email is allowlisted in PREVIEW_ADMIN_EMAILS
  *
- * Production (VERCEL_ENV=production) is always fail-closed even if every
+ * Production (CELEBRA_DEPLOY_ENV=production) is always fail-closed even if every
  * Preview bypass variable is accidentally configured there.
  */
 
+import { readBuildIdentity } from '@/lib/environment';
+import {
+	isProductionDeployment,
+	readHostedDeployEnvironment,
+	type HostedDeployEnvironment,
+} from '@/lib/server/deploy-identity';
 import { getEnv } from '@/lib/server/env';
 
 export interface PreviewMfaBypassInput {
 	previewMfaBypass: string | undefined;
-	vercelEnv: string | undefined;
-	vercelGitCommitRef: string | undefined;
+	deployEnvironment: HostedDeployEnvironment | null;
+	buildRef: string | null;
 	supabaseUrl: string | undefined;
 	adminEmails: string | undefined;
 	userEmail: string;
@@ -62,8 +68,8 @@ function isAllowlistedAdmin(email: string, adminEmails: string | undefined): boo
 function readDefaultInput(userEmail?: string, userRole?: string): PreviewMfaBypassInput {
 	return {
 		previewMfaBypass: getEnv('PREVIEW_MFA_BYPASS'),
-		vercelEnv: getEnv('VERCEL_ENV'),
-		vercelGitCommitRef: getEnv('VERCEL_GIT_COMMIT_REF'),
+		deployEnvironment: readHostedDeployEnvironment(),
+		buildRef: readBuildIdentity().gitRef,
 		supabaseUrl: getEnv('SUPABASE_URL'),
 		adminEmails: getEnv('PREVIEW_ADMIN_EMAILS'),
 		userEmail: userEmail ?? '',
@@ -79,11 +85,11 @@ export function isPreviewMfaBypassEnabled(
 	// 1. Flag must be explicitly 'true'
 	if (env.previewMfaBypass !== 'true') return false;
 
-	// 2. Must be a Vercel Preview deployment
-	if (env.vercelEnv !== 'preview') return false;
+	// 2. Must be a hosted Preview deployment
+	if (env.deployEnvironment !== 'preview') return false;
 
-	// 3. Must be from the develop branch
-	if (env.vercelGitCommitRef !== 'develop') return false;
+	// 3. Must be built from the develop branch
+	if (env.buildRef !== 'develop') return false;
 
 	// 4. SUPABASE_URL must match the dedicated Preview project
 	if (!isPreviewSupabaseUrl(env.supabaseUrl)) return false;
@@ -102,12 +108,11 @@ export function isPreviewMfaBypassEnabled(
  * variables set (fail-closed verification).
  */
 export function isProductionWithPreviewBypassVarsSet(): boolean {
-	const vercelEnv = getEnv('VERCEL_ENV');
-	if (vercelEnv !== 'production') return false;
+	if (!isProductionDeployment()) return false;
 
 	// Production must remain fail-closed even if someone sets these vars
 	const bypass = getEnv('PREVIEW_MFA_BYPASS');
-	const branch = getEnv('VERCEL_GIT_COMMIT_REF');
+	const branch = readBuildIdentity().gitRef;
 	const emails = getEnv('PREVIEW_ADMIN_EMAILS');
 	const supabaseUrl = getEnv('SUPABASE_URL');
 

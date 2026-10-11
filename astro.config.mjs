@@ -10,7 +10,12 @@ import { bootstrapCelebraRuntimeEnv } from './scripts/shared/celebra-runtime-env
 import { getWorktreeDevServerPort } from './scripts/shared/worktree-lane.ts';
 
 const isBuildCommand = process.argv.includes('build');
-const isVercel = process.env.VERCEL === '1' || Boolean(process.env.VERCEL_ENV);
+// Hosted builds declare their deploy identity; local processes never do.
+const isHostedBuild = Boolean(process.env.CELEBRA_DEPLOY_ENV?.trim());
+// Build identity reported by /api/health. GitHub Actions exposes GITHUB_SHA; the
+// Vercel build fallbacks leave together with the Vercel build.
+const buildCommitSha = process.env.GITHUB_SHA || process.env.VERCEL_GIT_COMMIT_SHA || '';
+const buildGitRef = process.env.GITHUB_REF_NAME || process.env.VERCEL_GIT_COMMIT_REF || '';
 const configuredBaseUrl = process.env.BASE_URL;
 const publicSiteUrl =
 	configuredBaseUrl &&
@@ -20,9 +25,9 @@ const publicSiteUrl =
 
 // Lane-aware env bootstrap: Local lanes use .env/.env.local; Preview lane overlays
 // .env.preview.local and sets CELEBRA_RUNTIME_TARGET. Validation is fail-closed for
-// local development processes; Vercel platform env remains authoritative on deploy.
+// local development processes; the hosting platform env remains authoritative on deploy.
 const runtimeBootstrap = bootstrapCelebraRuntimeEnv({
-	validate: !isVercel && !isBuildCommand,
+	validate: !isHostedBuild && !isBuildCommand,
 });
 
 // ASTRO_PORT is the supported Celebra-level override; PORT is reserved for the
@@ -130,7 +135,7 @@ function supabaseDevPreflightIntegration() {
 export default defineConfig({
 	// The base URL for the site.
 	site:
-		!isVercel && !isBuildCommand && process.env.NODE_ENV === 'development'
+		!isHostedBuild && !isBuildCommand && process.env.NODE_ENV === 'development'
 			? `http://127.0.0.1:${devServerPort}`
 			: publicSiteUrl,
 
@@ -236,6 +241,8 @@ export default defineConfig({
 				: undefined,
 		},
 		define: {
+			'import.meta.env.CELEBRA_BUILD_SHA': JSON.stringify(buildCommitSha),
+			'import.meta.env.CELEBRA_BUILD_REF': JSON.stringify(buildGitRef),
 			'import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID': JSON.stringify(
 				process.env.PUBLIC_GOOGLE_ANALYTICS_ID ?? '',
 			),

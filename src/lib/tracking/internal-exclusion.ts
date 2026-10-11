@@ -6,7 +6,7 @@ export interface InternalExclusionInput {
 	cookieHeader?: string | null;
 	isDashboardAuthenticated?: boolean;
 	routeClass?: TrackingRouteClass;
-	vercelEnv?: string;
+	deployEnvironment?: string | null;
 }
 
 export interface InternalExclusionResult {
@@ -38,7 +38,7 @@ export function shouldExcludeInternalTraffic(
 		return { exclude: true, reason: 'device_opt_out' };
 	}
 
-	if (input.vercelEnv !== 'production') {
+	if (input.deployEnvironment !== 'production') {
 		return { exclude: true, reason: 'excluded_environment' };
 	}
 

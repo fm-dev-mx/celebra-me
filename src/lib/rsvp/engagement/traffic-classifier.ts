@@ -12,12 +12,12 @@ export function isAutomatedUserAgent(userAgent: string): boolean {
 }
 
 export interface TrafficEnvironment {
-	vercelEnv: string;
+	deployEnvironment: string | null;
 }
 
-/** Only Vercel Production counts; Local and Preview traffic is labeled non_production. */
+/** Only hosted Production counts; Local and Preview traffic is labeled non_production. */
 export function isProductionEngagementEnvironment(env: TrafficEnvironment): boolean {
-	return env.vercelEnv.trim().toLowerCase() === 'production';
+	return env.deployEnvironment === 'production';
 }
 
 /**

@@ -5,8 +5,7 @@ import {
 } from '@/lib/observability/runtime-gate';
 
 const localBase: ObservabilityRuntimeEnv = {
-	vercel: undefined,
-	vercelEnv: undefined,
+	deployEnv: '',
 	nodeEnv: 'development',
 	supabaseUrl: 'http://127.0.0.1:54321',
 	celebraRuntimeTarget: 'local',
@@ -24,10 +23,10 @@ describe('isLocalObservabilityRuntime', () => {
 		).toBe(true);
 	});
 
-	it('rejects Vercel hosted environments', () => {
-		expect(isLocalObservabilityRuntime({ ...localBase, vercel: '1' })).toBe(false);
-		expect(isLocalObservabilityRuntime({ ...localBase, vercelEnv: 'preview' })).toBe(false);
-		expect(isLocalObservabilityRuntime({ ...localBase, vercelEnv: 'production' })).toBe(false);
+	it('rejects hosted, invalid or missing deploy identity', () => {
+		expect(isLocalObservabilityRuntime({ ...localBase, deployEnv: 'preview' })).toBe(false);
+		expect(isLocalObservabilityRuntime({ ...localBase, deployEnv: 'production' })).toBe(false);
+		expect(isLocalObservabilityRuntime({ ...localBase, deployEnv: 'staging' })).toBe(false);
 	});
 
 	it('rejects Preview runtime target', () => {

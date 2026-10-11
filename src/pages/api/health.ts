@@ -1,14 +1,22 @@
 import type { APIRoute } from 'astro';
+import { readBuildIdentity } from '@/lib/environment';
 import { jsonResponse } from '@/lib/rsvp/core/http';
-import { getEnv } from '@/lib/server/env';
+import { readHostedDeployEnvironment } from '@/lib/server/deploy-identity';
 
-/** Public build identity lets release tooling correlate a serving URL with its deployment. */
-const readBuildIdentity = () => ({
-	commitSha: getEnv('VERCEL_GIT_COMMIT_SHA') || null,
-	gitRef: getEnv('VERCEL_GIT_COMMIT_REF') || null,
-	deploymentId: getEnv('VERCEL_DEPLOYMENT_ID') || null,
-	environment: getEnv('VERCEL_ENV') || null,
-});
+/**
+ * Public build identity lets release tooling correlate a serving URL with its build.
+ * `environment` is null when the deploy identity is local, missing or invalid, which
+ * release checks treat as a mismatch for any hosted target.
+ */
+const readPublicBuildIdentity = () => {
+	const { commitSha, gitRef } = readBuildIdentity();
+	return {
+		commitSha,
+		gitRef,
+		deploymentId: null,
+		environment: readHostedDeployEnvironment(),
+	};
+};
 
 export const GET: APIRoute = async () => {
 	return jsonResponse(
@@ -16,7 +24,7 @@ export const GET: APIRoute = async () => {
 			status: 'healthy',
 			timestamp: new Date().toISOString(),
 			version: '1.0.0',
-			build: readBuildIdentity(),
+			build: readPublicBuildIdentity(),
 			checks: {
 				runtime: { status: 'ok' },
 			},

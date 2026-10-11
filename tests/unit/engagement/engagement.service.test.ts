@@ -52,8 +52,7 @@ describe('guest engagement service', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		process.env.VERCEL = '1';
-		process.env.VERCEL_ENV = 'production';
+		process.env.CELEBRA_DEPLOY_ENV = 'production';
 		rpcMock.mockResolvedValue({ status: 'ok', accepted: 1, duplicates: 0, rejected: 0 });
 	});
 
@@ -103,7 +102,7 @@ describe('guest engagement service', () => {
 	});
 
 	it('labels Preview traffic as non_production', async () => {
-		process.env.VERCEL_ENV = 'preview';
+		process.env.CELEBRA_DEPLOY_ENV = 'preview';
 		await ingestClientEngagementBatch(INVITE, batch, request());
 		expect(rpcMock.mock.calls[0][1][0].traffic_class).toBe('non_production');
 	});

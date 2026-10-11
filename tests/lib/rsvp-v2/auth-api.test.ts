@@ -402,7 +402,6 @@ describe('rsvp authApi', () => {
 					outcome: 'success',
 					status: 200,
 					errorKind: null,
-					vercelRegion: 'unknown',
 				}),
 				expect.objectContaining({
 					event: 'auth_upstream_request',

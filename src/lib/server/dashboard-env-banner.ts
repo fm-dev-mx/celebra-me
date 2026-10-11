@@ -2,14 +2,16 @@
  * Dashboard environment banner resolution.
  *
  * Distinguishes Local Supabase, local Astro against Preview BD
- * (`CELEBRA_RUNTIME_TARGET=preview`), and hosted Vercel Preview.
+ * (`CELEBRA_RUNTIME_TARGET=preview`), and hosted Preview.
  * Worktree path alone is never authorization.
  */
 
 import { SUPABASE_PROJECT_REFS } from '@/lib/intake/mutations/environment-identity';
+import type { DeployEnvironment } from '@/lib/server/deploy-identity';
 
 export interface DashboardEnvBannerInput {
-	vercelEnv: string | undefined;
+	/** Resolved deploy identity; null when it is missing or invalid. */
+	deployEnvironment: DeployEnvironment | null;
 	celebraRuntimeTarget: string | undefined;
 	supabaseUrl: string | undefined;
 	previewMfaBypass: string | undefined;
@@ -18,7 +20,7 @@ export interface DashboardEnvBannerInput {
 type DashboardEnvBanner =
 	| { kind: 'local'; label: string; className: string }
 	| { kind: 'preview-db'; label: string; className: string }
-	| { kind: 'vercel-preview'; label: string; className: string };
+	| { kind: 'hosted-preview'; label: string; className: string };
 
 function isPreviewSupabaseUrl(urlString: string | undefined): boolean {
 	if (!urlString) return false;
@@ -33,31 +35,23 @@ function isPreviewSupabaseUrl(urlString: string | undefined): boolean {
 	}
 }
 
-function isLocalProcess(vercelEnv: string): boolean {
-	return vercelEnv === '' || vercelEnv === 'development';
-}
-
 /**
  * Pure resolver for the non-production dashboard environment banner.
- * Returns null on Production or unknown deployed environments.
+ * Returns null on Production and when the deploy identity is missing or invalid.
  */
 export function resolveDashboardEnvBanner(
 	input: DashboardEnvBannerInput,
 ): DashboardEnvBanner | null {
-	const vercelEnv = (input.vercelEnv ?? '').trim().toLowerCase();
-
-	if (vercelEnv === 'production') return null;
-
-	if (vercelEnv === 'preview') {
+	if (input.deployEnvironment === 'preview') {
 		const mfaOff = (input.previewMfaBypass ?? '').trim() === 'true';
 		return {
-			kind: 'vercel-preview',
+			kind: 'hosted-preview',
 			className: 'dashboard-env-banner--preview',
 			label: mfaOff ? '⚠️ ENTORNO PREVIEW — MFA desactivado' : '⚠️ ENTORNO PREVIEW',
 		};
 	}
 
-	if (!isLocalProcess(vercelEnv)) return null;
+	if (input.deployEnvironment !== 'local') return null;
 
 	const target = (input.celebraRuntimeTarget ?? '').trim().toLowerCase();
 	if (target === 'preview' && isPreviewSupabaseUrl(input.supabaseUrl)) {

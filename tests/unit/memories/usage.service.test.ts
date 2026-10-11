@@ -171,14 +171,14 @@ describe('getMemorySpaceHostSummary', () => {
 	});
 
 	describe('QR link origin', () => {
-		const savedVercelEnv = process.env.VERCEL_ENV;
+		const savedVercelEnv = process.env.CELEBRA_DEPLOY_ENV;
 		afterEach(() => {
-			if (savedVercelEnv === undefined) delete process.env.VERCEL_ENV;
-			else process.env.VERCEL_ENV = savedVercelEnv;
+			if (savedVercelEnv === undefined) delete process.env.CELEBRA_DEPLOY_ENV;
+			else process.env.CELEBRA_DEPLOY_ENV = savedVercelEnv;
 		});
 
 		it('keeps the printed canonical domain in Production', async () => {
-			process.env.VERCEL_ENV = 'production';
+			process.env.CELEBRA_DEPLOY_ENV = 'production';
 			const summary = await getMemorySpaceHostSummary(
 				buildSpace(),
 				NOW,
@@ -188,7 +188,7 @@ describe('getMemorySpaceHostSummary', () => {
 		});
 
 		it('points Preview and local QR links at the serving environment', async () => {
-			process.env.VERCEL_ENV = 'preview';
+			process.env.CELEBRA_DEPLOY_ENV = 'preview';
 			const preview = await getMemorySpaceHostSummary(
 				buildSpace(),
 				NOW,
@@ -197,7 +197,7 @@ describe('getMemorySpaceHostSummary', () => {
 			expect(preview.publicUrl).toBe(
 				'https://celebra-me-git-develop.vercel.app/r/victoria-y-roberto',
 			);
-			delete process.env.VERCEL_ENV;
+			delete process.env.CELEBRA_DEPLOY_ENV;
 			const local = await getMemorySpaceHostSummary(
 				buildSpace(),
 				NOW,

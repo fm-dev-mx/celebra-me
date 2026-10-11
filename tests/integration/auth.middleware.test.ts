@@ -1,4 +1,5 @@
 import type { APIContext } from 'astro';
+import { isDevEnvironment } from '@/lib/environment';
 import { onRequest as middleware } from '../../src/middleware';
 import { resolveAfterMicrotasks } from '../helpers/api-mocks';
 
@@ -749,24 +750,24 @@ describe('Middleware: Authentication & Authorization', () => {
 	});
 
 	describe('MFA bypass (DEV_MFA_BYPASS)', () => {
+		const mockIsDevEnvironment = isDevEnvironment as jest.MockedFunction<
+			typeof isDevEnvironment
+		>;
 		let originalDevMfaBypass: string | undefined;
-		let originalNodeEnv: string | undefined;
 
 		beforeEach(() => {
 			originalDevMfaBypass = process.env.DEV_MFA_BYPASS;
-			originalNodeEnv = process.env.NODE_ENV;
-			delete process.env.VERCEL;
-			delete process.env.VERCEL_ENV;
+			delete process.env.CELEBRA_DEPLOY_ENV;
 		});
 
 		afterEach(() => {
 			process.env.DEV_MFA_BYPASS = originalDevMfaBypass;
-			process.env.NODE_ENV = originalNodeEnv;
+			mockIsDevEnvironment.mockReturnValue(false);
 		});
 
 		it('skips MFA redirect for superadmin aal1 with bypass active', async () => {
 			process.env.DEV_MFA_BYPASS = 'true';
-			process.env.NODE_ENV = 'development';
+			mockIsDevEnvironment.mockReturnValue(true);
 
 			const context = createContext('/dashboard/invitados');
 			mockCookies.get.mockReturnValue({ value: 'admin-token' });
@@ -784,7 +785,7 @@ describe('Middleware: Authentication & Authorization', () => {
 
 		it('redirects superadmin from /dashboard/mfa-setup to /dashboard/admin with bypass', async () => {
 			process.env.DEV_MFA_BYPASS = 'true';
-			process.env.NODE_ENV = 'development';
+			mockIsDevEnvironment.mockReturnValue(true);
 
 			const context = createContext('/dashboard/mfa-setup');
 			mockCookies.get.mockImplementation((name: string) => {
@@ -803,9 +804,26 @@ describe('Middleware: Authentication & Authorization', () => {
 			expect(mockNext).not.toHaveBeenCalled();
 		});
 
+		it('still redirects to MFA setup when the bypass flag is set in a built bundle', async () => {
+			process.env.DEV_MFA_BYPASS = 'true';
+			mockIsDevEnvironment.mockReturnValue(false);
+
+			const context = createContext('/dashboard/invitados');
+			mockCookies.get.mockReturnValue({ value: 'admin-token' });
+			mockSupabaseResponse({
+				id: 'admin-1',
+				app_metadata: { role: 'super_admin' },
+				amr: [{ method: 'password' }],
+			});
+
+			await middleware(context as unknown as APIContext, mockNext);
+			expect(mockRedirect).toHaveBeenCalledWith('/dashboard/mfa-setup');
+			expect(mockNext).not.toHaveBeenCalled();
+		});
+
 		it('still redirects to MFA setup when bypass active but Supabase is remote', async () => {
 			process.env.DEV_MFA_BYPASS = 'true';
-			process.env.NODE_ENV = 'development';
+			mockIsDevEnvironment.mockReturnValue(true);
 			process.env.SUPABASE_URL = 'https://project.supabase.co';
 
 			const context = createContext('/dashboard/invitados');
@@ -823,7 +841,7 @@ describe('Middleware: Authentication & Authorization', () => {
 
 		it('still redirects host_client on admin-only paths even with bypass active', async () => {
 			process.env.DEV_MFA_BYPASS = 'true';
-			process.env.NODE_ENV = 'development';
+			mockIsDevEnvironment.mockReturnValue(true);
 
 			const context = createContext('/dashboard/usuarios');
 			mockCookies.get.mockReturnValue({ value: 'host-token' });
@@ -839,7 +857,7 @@ describe('Middleware: Authentication & Authorization', () => {
 
 		it('still redirects unauthenticated user to /login even with bypass active', async () => {
 			process.env.DEV_MFA_BYPASS = 'true';
-			process.env.NODE_ENV = 'development';
+			mockIsDevEnvironment.mockReturnValue(true);
 
 			const context = createContext('/dashboard/invitados');
 			mockCookies.get.mockReturnValue(null);

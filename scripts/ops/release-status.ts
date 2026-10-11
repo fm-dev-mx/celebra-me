@@ -121,7 +121,10 @@ export interface HealthEvidence {
 	commitSha: string | null;
 	deploymentId: string | null;
 	environment: string | null;
-	/** `unreported` means the serving build predates build identity in `/api/health`. */
+	/**
+	 * `unreported` means the serving build predates build identity in `/api/health`;
+	 * `mismatch` also covers a matching SHA served under the wrong deploy identity.
+	 */
 	result: 'match' | 'mismatch' | 'unreported' | 'unreachable';
 }
 
@@ -138,6 +141,7 @@ export async function probeHealth(
 	sha: string,
 	fetchImpl: FetchLike,
 	headers?: Record<string, string>,
+	expectedEnvironment?: ReleaseTarget,
 ): Promise<HealthEvidence> {
 	const url = `${origin.replace(/\/$/, '')}/api/health`;
 	try {
@@ -149,18 +153,21 @@ export async function probeHealth(
 		const read = (key: string) =>
 			typeof body.build?.[key] === 'string' ? (body.build[key] as string) : null;
 		const commitSha = read('commitSha');
+		const environment = read('environment');
 		const healthy = response.status === 200 && body.status === 'healthy';
+		const environmentMatches =
+			expectedEnvironment === undefined || environment === expectedEnvironment;
 		return {
 			url,
 			status: response.status,
 			commitSha,
 			deploymentId: read('deploymentId'),
-			environment: read('environment'),
+			environment,
 			result: !healthy
 				? 'unreachable'
 				: commitSha === null
 					? 'unreported'
-					: commitSha.toLowerCase() === sha
+					: commitSha.toLowerCase() === sha && environmentMatches
 						? 'match'
 						: 'mismatch',
 		};
@@ -367,10 +374,18 @@ export async function collectReleaseStatus(
 	const health: HealthEvidence[] = [];
 	if (deployment?.progress === 'passed' && deployment.url) {
 		health.push(
-			await probeHealth(deployment.url, sha, fetchImpl, dependencies.protectionHeaders),
+			await probeHealth(
+				deployment.url,
+				sha,
+				fetchImpl,
+				dependencies.protectionHeaders,
+				target,
+			),
 		);
 		if (target === 'production')
-			health.push(await probeHealth(PRODUCTION_ALIAS_URL, sha, fetchImpl));
+			health.push(
+				await probeHealth(PRODUCTION_ALIAS_URL, sha, fetchImpl, undefined, 'production'),
+			);
 	}
 
 	const ignoredBuild =

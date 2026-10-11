@@ -10,9 +10,8 @@ const productionSupabase = `https://${SUPABASE_PROJECT_REFS.production}.supabase
 function makeInput(overrides: Partial<DevMfaBypassInput> = {}): DevMfaBypassInput {
 	return {
 		devMfaBypass: 'true',
-		nodeEnv: 'development',
-		vercel: undefined,
-		vercelEnv: undefined,
+		deployEnv: '',
+		isDevServer: true,
 		supabaseUrl: localSupabase,
 		celebraRuntimeTarget: undefined,
 		...overrides,
@@ -35,8 +34,8 @@ describe('isDevMfaBypassEnabled', () => {
 			isDevMfaBypassEnabled(
 				makeInput({
 					devMfaBypass: undefined,
-					nodeEnv: 'production',
-					vercel: '1',
+					isDevServer: false,
+					deployEnv: 'production',
 					supabaseUrl: 'https://project.supabase.co',
 				}),
 			),
@@ -53,27 +52,31 @@ describe('isDevMfaBypassEnabled', () => {
 		});
 	});
 
-	describe('NODE_ENV', () => {
-		it.each([
-			{ desc: 'production', nodeEnv: 'production' },
-			{ desc: 'test', nodeEnv: 'test' },
-			{ desc: 'undefined', nodeEnv: undefined },
-		])('returns false when nodeEnv is $desc', ({ nodeEnv }) => {
-			expect(isDevMfaBypassEnabled(makeInput({ nodeEnv }))).toBe(false);
+	describe('Astro dev server', () => {
+		it('returns false for any built bundle, even on Local Supabase', () => {
+			expect(isDevMfaBypassEnabled(makeInput({ isDevServer: false }))).toBe(false);
+		});
+
+		it('returns false for a built bundle against Preview (edge runtimes report no NODE_ENV)', () => {
+			expect(
+				isDevMfaBypassEnabled(
+					makeInput({
+						isDevServer: false,
+						supabaseUrl: previewSupabase,
+						celebraRuntimeTarget: 'preview',
+					}),
+				),
+			).toBe(false);
 		});
 	});
 
-	describe('Vercel environment', () => {
+	describe('Declared deploy identity', () => {
 		it.each([
-			{ desc: 'VERCEL=1', vercel: '1' },
-			{ desc: 'VERCEL_ENV=production', vercelEnv: 'production' },
-			{ desc: 'VERCEL_ENV=preview', vercelEnv: 'preview' },
-		])('returns false when $desc', ({ vercel, vercelEnv }) => {
-			expect(isDevMfaBypassEnabled(makeInput({ vercel, vercelEnv }))).toBe(false);
-		});
-
-		it('returns true when VERCEL_ENV=development (Vercel dev)', () => {
-			expect(isDevMfaBypassEnabled(makeInput({ vercelEnv: 'development' }))).toBe(true);
+			{ desc: 'production', deployEnv: 'production' },
+			{ desc: 'preview', deployEnv: 'preview' },
+			{ desc: 'an invalid value', deployEnv: 'staging' },
+		])('returns false when CELEBRA_DEPLOY_ENV is $desc', ({ deployEnv }) => {
+			expect(isDevMfaBypassEnabled(makeInput({ deployEnv }))).toBe(false);
 		});
 	});
 
@@ -127,7 +130,10 @@ describe('isDevMfaBypassEnabled', () => {
 		it('returns false for non-Supabase remote URLs', () => {
 			expect(
 				isDevMfaBypassEnabled(
-					makeInput({ supabaseUrl: 'https://example.com/api', celebraRuntimeTarget: 'preview' }),
+					makeInput({
+						supabaseUrl: 'https://example.com/api',
+						celebraRuntimeTarget: 'preview',
+					}),
 				),
 			).toBe(false);
 		});
@@ -165,13 +171,13 @@ describe('isDevMfaBypassEnabled', () => {
 			).toBe(false);
 		});
 
-		it('blocks when Vercel vars are set even with preview target', () => {
+		it('blocks when a hosted deploy identity is declared even with preview target', () => {
 			expect(
 				isDevMfaBypassEnabled(
 					makeInput({
 						supabaseUrl: previewSupabase,
 						celebraRuntimeTarget: 'preview',
-						vercelEnv: 'preview',
+						deployEnv: 'preview',
 					}),
 				),
 			).toBe(false);

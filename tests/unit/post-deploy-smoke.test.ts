@@ -377,7 +377,7 @@ describe('post-deploy smoke', () => {
 
 	it('keeps generated sitemap URLs on the public origin during builds', () => {
 		const config = readFileSync(resolve('astro.config.mjs'), 'utf8');
-		expect(config).toContain('!isVercel && !isBuildCommand');
+		expect(config).toContain('!isHostedBuild && !isBuildCommand');
 		expect(config).toContain('publicSiteUrl');
 		expect(config).toContain("'https://www.celebra-me.com'");
 		expect(config).toMatch(/127\\\.0\\\.0\\\.1\|localhost/);

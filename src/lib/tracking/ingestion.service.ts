@@ -12,7 +12,7 @@ import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 
 export interface IngestTrackingEventInput {
 	request: Request;
-	vercelEnv?: string;
+	deployEnvironment?: string | null;
 	payload: unknown;
 }
 
@@ -48,7 +48,7 @@ export async function ingestTrackingEvent(
 	const exclusion = shouldExcludeInternalTraffic({
 		cookieHeader: input.request.headers.get('cookie'),
 		routeClass: routePolicy.routeClass,
-		vercelEnv: input.vercelEnv,
+		deployEnvironment: input.deployEnvironment,
 	});
 	if (exclusion.exclude) {
 		return { accepted: false, reason: exclusion.reason ?? 'internal_traffic' };
