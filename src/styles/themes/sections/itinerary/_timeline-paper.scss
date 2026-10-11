@@ -12,6 +12,7 @@
 //                                     Compositing hints for text and sheet (default `filter`)
 //   --itinerary-paper-edge-filter / -mask / -radius / -radius-sm / -shadow / -surface-bg
 //                                     Sheet edge, shape and surface
+//   --itinerary-paper-panel-filter    Filter on the whole sheet (a drop-shadow that follows a mask)
 //   --itinerary-paper-texture-display / -texture-opacity   Fibrous texture layer
 //   --itinerary-paper-rule / -rule-inset / -edge-highlight Inner hairline of the sheet
 //   --itinerary-paper-curl-display / -monogram-display / -corner-opacity / -flourish-display
@@ -91,6 +92,10 @@
 		padding: clamp(4rem, 10vw, 7rem) clamp(2.8rem, 7vw, 5.5rem);
 		position: relative;
 		transform: rotate(var(--itinerary-paper-tilt, -0.5deg));
+
+		// A masked (deckle) sheet clips its own shadow; `panel-filter` takes a drop-shadow that
+		// follows the deckle instead.
+		filter: var(--itinerary-paper-panel-filter, none);
 
 		// 1. Paper Surface (Organic warping + physical cues)
 		.itinerary__program-paper-surface {

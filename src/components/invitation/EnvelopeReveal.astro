@@ -5,6 +5,7 @@ import SealIcon from '@/components/common/icons/invitation/SealIcon.astro';
 import CeremonialFiligree from './CeremonialFiligree.astro';
 import SeasideLineArt from './SeasideLineArt.astro';
 import StorybookLanternsArt from './StorybookLanternsArt.astro';
+import StorybookLanternSky from './StorybookLanternSky.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import {
 	resolveEnvelopeDataVariant,
@@ -72,6 +73,8 @@ const sealPresentation = resolveSealPresentation({
 
 const isSeaside = revealVariant === 'seaside-lineart';
 const isStorybook = revealVariant === 'storybook-lanterns';
+// Storybook letters sit inside the envelope, behind the pocket front, and rise out of it.
+const letterInPocket = isStorybook;
 const isWaxRenderer = ['wax-organic', 'wax-medallion'].includes(sealPresentation.renderer);
 // Discrete seal-zone open cue (editorial, not a SaaS tooltip bubble).
 const sealHintText = tooltipText?.trim() || 'Toque el sello';
@@ -96,10 +99,21 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	data-audio-url={audioUrl || ''}
 	data-dev-skip={String(import.meta.env.DEV)}
 	data-preview-state={previewState}
+	data-open-chime={isStorybook ? 'true' : undefined}
 >
 	{backdropImage && <img class="envelope-ambient" src={plainImgSrc(backdropImage.src)} alt="" width="960" height="1440" decoding="async" />}
+	{isStorybook && <StorybookLanternSky />}
 	<div class="envelope-container">
 		<div class="envelope-base"></div>
+		{
+			letterInPocket && (
+				<div class="envelope-reveal-stage" data-envelope-card aria-hidden="true">
+					<InvitationRevealCard card={card} showGuest={guestPlacement !== 'outside-envelope'}>
+						<StorybookLanternsArt slot="ornament" class="invitation-reveal-card__ornament" />
+					</InvitationRevealCard>
+				</div>
+			)
+		}
 		<div class="envelope-pocket"></div>
 
 		<div class="envelope-flap" data-envelope-flap>
@@ -183,15 +197,18 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 		</div>
 	</div>
 
-	<div class="envelope-reveal-stage" data-envelope-card aria-hidden="true">
-		<InvitationRevealCard
-			card={card}
-			showGuest={guestPlacement !== 'outside-envelope'}
-		>
-			{isSeaside && <SeasideLineArt slot="ornament" class="invitation-reveal-card__ornament" />}
-			{isStorybook && <StorybookLanternsArt slot="ornament" class="invitation-reveal-card__ornament" />}
-		</InvitationRevealCard>
-	</div>
+	{
+		!letterInPocket && (
+			<div class="envelope-reveal-stage" data-envelope-card aria-hidden="true">
+				<InvitationRevealCard
+					card={card}
+					showGuest={guestPlacement !== 'outside-envelope'}
+				>
+					{isSeaside && <SeasideLineArt slot="ornament" class="invitation-reveal-card__ornament" />}
+				</InvitationRevealCard>
+			</div>
+		)
+	}
 
 	{
 		guestPlacement === 'outside-envelope' && card.guestName && (
@@ -225,10 +242,21 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 
 <script>
 	import { RevealManager, getMotionPreference } from '@/lib/invitation/reveal-manager';
+	import { playEnvelopeOpenChime } from '@/lib/invitation/envelope-chime';
 
 	const EXIT_ANIMATION_MS = 2200;
 	const CARD_RISE_FALLBACK_MARGIN_MS = 1200;
 	const CARD_RISE_FALLBACK_FLOOR_MS = 4000;
+	const SKY_TILT_MAX_DEG = 3;
+
+	/** Longest time in a comma-separated CSS time list (`1.2s, 300ms`), in milliseconds. */
+	const readLongestMs = (value: string) =>
+		value.split(',').reduce((longest, part) => {
+			const trimmed = part.trim();
+			const parsed = Number.parseFloat(trimmed);
+			if (!Number.isFinite(parsed)) return longest;
+			return Math.max(longest, trimmed.endsWith('ms') ? parsed : parsed * 1000);
+		}, 0);
 
 	/**
 	 * Longest plausible `envCardRise` runtime for the active theme, read from computed style so
@@ -237,20 +265,19 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	 * non-animatable card), the reveal must still complete instead of stranding `sealed`.
 	 */
 	const resolveCardRiseFallbackMs = (card: HTMLElement) => {
-		const readLongestMs = (value: string) =>
-			value.split(',').reduce((longest, part) => {
-				const trimmed = part.trim();
-				const parsed = Number.parseFloat(trimmed);
-				if (!Number.isFinite(parsed)) return longest;
-				return Math.max(longest, trimmed.endsWith('ms') ? parsed : parsed * 1000);
-			}, 0);
-
 		const styles = getComputedStyle(card);
 		const animated =
 			readLongestMs(styles.animationDelay) + readLongestMs(styles.animationDuration);
 
 		return Math.max(CARD_RISE_FALLBACK_FLOOR_MS, animated + CARD_RISE_FALLBACK_MARGIN_MS);
 	};
+
+	/**
+	 * Reading pause on the risen letter before the invitation takes over. Themes opt in through
+	 * `--env-letter-hold` (unset → 0, the letter hands over as soon as it lands).
+	 */
+	const resolveLetterHoldMs = (host: HTMLElement) =>
+		readLongestMs(getComputedStyle(host).getPropertyValue('--env-letter-hold'));
 
 	class DsEnvelopeReveal extends HTMLElement {
 		connectedCallback() {
@@ -346,10 +373,13 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				return;
 			}
 
+			let stopSkyTilt = () => {};
+
 			const completeReveal = () => {
 				if (hasRevealed) return;
 				hasRevealed = true;
 				setControlsDisabled(true);
+				stopSkyTilt();
 
 				document.documentElement.classList.remove('envelope-open');
 				showCardToAccessibility();
@@ -428,6 +458,27 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 
 			document.documentElement.classList.add('envelope-open');
 
+			// The lantern sky leans a few degrees toward a fine pointer; touch keeps its own drift.
+			const sky = this.querySelector<HTMLElement>('.storybook-sky');
+			if (sky && window.matchMedia('(pointer: fine)').matches && !getMotionPreference()) {
+				let tiltFrame = 0;
+				const onPointerMove = (event: PointerEvent) => {
+					if (tiltFrame) return;
+					tiltFrame = window.requestAnimationFrame(() => {
+						tiltFrame = 0;
+						const x = event.clientX / window.innerWidth - 0.5;
+						const y = event.clientY / window.innerHeight - 0.5;
+						sky.style.setProperty('--sky-tilt-x', `${(x * 2 * SKY_TILT_MAX_DEG).toFixed(2)}deg`);
+						sky.style.setProperty('--sky-tilt-y', `${(-y * 2 * SKY_TILT_MAX_DEG).toFixed(2)}deg`);
+					});
+				};
+				this.addEventListener('pointermove', onPointerMove);
+				stopSkyTilt = () => {
+					this.removeEventListener('pointermove', onPointerMove);
+					window.cancelAnimationFrame(tiltFrame);
+				};
+			}
+
 			const requestOpen = () => {
 				if (hasRevealed) return;
 				if (isOpening) return;
@@ -453,6 +504,11 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					return;
 				}
 
+				// Still inside the tap, so the synthesized cue keeps the user activation.
+				if (this.dataset.openChime === 'true') {
+					playEnvelopeOpenChime();
+				}
+
 				this.classList.add('is-opening');
 				if (this.dataset.variant === 'satin-filigree') {
 					// One short flap gesture; no intermediate date card.
@@ -463,7 +519,24 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				const showLetter = () => {
 					if (hasRevealed) return;
 					showCardToAccessibility();
-					completeReveal();
+
+					const holdMs = resolveLetterHoldMs(this);
+					if (holdMs <= 0) {
+						completeReveal();
+						return;
+					}
+
+					// The letter rests for a reading beat; any tap or key hands over sooner.
+					let holdTimer = 0;
+					const handOver = () => {
+						window.clearTimeout(holdTimer);
+						this.removeEventListener('pointerdown', handOver);
+						document.removeEventListener('keydown', handOver);
+						completeReveal();
+					};
+					holdTimer = window.setTimeout(handOver, holdMs);
+					this.addEventListener('pointerdown', handOver);
+					document.addEventListener('keydown', handOver);
 				};
 
 				if (revealCard instanceof HTMLElement) {
