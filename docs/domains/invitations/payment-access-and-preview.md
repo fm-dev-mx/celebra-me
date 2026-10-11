@@ -90,5 +90,6 @@ before an invitation was marked unpaid remain wherever they were saved.
   AI crawler controls do not apply.
 - **Unpaid existing invitations:** mark them from the panel when the client is informed (the
   backfill left all existing invitations paid).
-- **Terms:** the intellectual-property clause for previews needs owner approval before `/terminos`
-  changes.
+- **Terms:** `/terminos` §4 (owner-approved 2026-10-10) states that an unpaid preview grants no
+  license, that Celebra-me may disable it, and that copying, AI training and automated recreation of
+  the designs are prohibited; client photos and texts remain the client's.
