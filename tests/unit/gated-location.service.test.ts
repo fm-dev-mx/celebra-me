@@ -60,6 +60,7 @@ beforeEach(() => {
 		source: 'published',
 		version: 1,
 		access: { paymentStatus: 'paid', publicAccess: 'enabled' },
+		invitationId: 'invitation-1',
 		rawContent: { location: protectedLocation },
 		viewModel: {
 			id: 'gated-location-test-event',
@@ -97,6 +98,7 @@ describe('resolveGatedLocationPayload', () => {
 			source: 'published',
 			version: 1,
 			access: { paymentStatus: 'paid', publicAccess: 'enabled' },
+			invitationId: 'invitation-1',
 			rawContent: {
 				_assetSlug: 'luna-y-estrella-primera-comunion',
 				location: protectedLocation,

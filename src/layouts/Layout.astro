@@ -67,6 +67,7 @@ const isMetaDeliveryBlocked = Boolean(vercelEnvironment && vercelEnvironment !==
 const resolvedImageSrc = typeof image === 'string' ? image : image.src;
 
 const canonicalOrigin = resolvePublicSiteOrigin();
+const copyrightNotice = `© ${new Date().getFullYear()} Celebra-me. Todos los derechos reservados.`;
 
 let canonicalUrl = new URL(Astro.url.pathname, canonicalOrigin);
 if (canonicalUrl.pathname !== '/' && canonicalUrl.pathname.endsWith('/')) {
@@ -90,6 +91,9 @@ const speedInsightsConfig = resolveSpeedInsightsConfig(Astro.url, {
 		<meta name="description" content={description} />
 		<meta name="viewport" content="width=device-width" />
 		{robots && <meta name="robots" content={robots} />}
+		<meta name="author" content="Celebra-me" />
+		<meta name="copyright" content={copyrightNotice} />
+		<link rel="license" href="/terminos#propiedad-intelectual" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />

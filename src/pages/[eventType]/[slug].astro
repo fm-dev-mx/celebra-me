@@ -13,6 +13,7 @@ import {
 	type PublicInvitationMode,
 } from '@/lib/invitation/access/invitation-access';
 import PreviewBanner from '@/components/invitation/PreviewBanner.astro';
+import { invitationProvenanceReference } from '@/lib/invitation/preview/provenance';
 import PreviewStamp from '@/components/invitation/PreviewStamp.astro';
 import { buildPageContextFromViewModel, prepareInvitationPageContext } from '@/lib/invitation/page-data';
 import { resolveRoutePersonalization } from '@/lib/invitation/route-personalization';
@@ -73,6 +74,7 @@ let viewModel: InvitationViewModel | null = null;
 let contentSource: 'static' | 'published' | null = null;
 let contentVersion: number | null = null;
 let accessMode: PublicInvitationMode | null = null;
+let provenanceReference: string | null = null;
 
 try {
 	const resolveContentStart = performance.now();
@@ -81,6 +83,10 @@ try {
 	contentVersion = resolution?.source === 'published' ? resolution.version : null;
 	accessMode =
 		resolution?.source === 'published' ? resolvePublicInvitationMode(resolution.access) : null;
+	provenanceReference =
+		resolution?.source === 'published'
+			? invitationProvenanceReference(resolution.invitationId)
+			: null;
 	resolveContentDur = performance.now() - resolveContentStart;
 
 	if (!resolution) {
@@ -234,6 +240,8 @@ const wrapperDataAttributes = page
 				? { 'data-content-version': String(contentVersion) }
 				: {}),
 			...(accessMode ? { 'data-access-mode': accessMode } : {}),
+			// Opaque per-invitation fingerprint: survives copies of the markup, never the id.
+			...(provenanceReference ? { 'data-cm-ref': provenanceReference } : {}),
 		}
 	: {};
 

@@ -18,6 +18,7 @@ export type ContentResolution =
 	| { source: 'static'; viewModel: InvitationViewModel }
 	| {
 			source: 'published';
+			invitationId: string;
 			viewModel: InvitationViewModel;
 			rawContent: Record<string, unknown>;
 			version: number;
@@ -178,6 +179,7 @@ export async function resolvePublicInvitation(
 						: adaptedViewModel;
 				return {
 					source: 'published',
+					invitationId: publishedEntry.invitationId,
 					viewModel,
 					rawContent,
 					version: publishedEntry.version,

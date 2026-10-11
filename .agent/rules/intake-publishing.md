@@ -157,6 +157,8 @@ them.
 - Publication, promotion (`invitation:release`, `prod:apply`) and the Production → Preview mirror
   never copy these decisions; each environment owns its own.
 - Agents must not change Production access state; Local/Preview changes stay within the task.
+- Guest-facing behavior (preview, neutral page, crawlers, limits):
+  [`docs/domains/invitations/payment-access-and-preview.md`](../../docs/domains/invitations/payment-access-and-preview.md).
 
 ## Draft → Editor → Publish Flow
 

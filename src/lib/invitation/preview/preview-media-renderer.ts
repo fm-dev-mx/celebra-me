@@ -6,8 +6,8 @@
  * the size and format link previews expect. Both carry provenance metadata (EXIF and
  * XMP) with an opaque reference to the invitation, never its id or the client's name.
  */
-import { createHash } from 'node:crypto';
 import { buildPreviewMarkSvg } from './preview-mark-svg';
+import { invitationProvenanceReference } from './provenance';
 import type { PreviewMediaVariant } from './preview-media-token';
 
 /** Lazy-load so importers do not require native sharp at module evaluation. */
@@ -28,12 +28,7 @@ export interface RenderedPreviewMedia {
 }
 
 /** Short, non-reversible reference that ties a leaked preview back to its invitation. */
-export function previewProvenanceReference(invitationId: string): string {
-	return createHash('sha256')
-		.update(`celebra-me:preview:${invitationId}`)
-		.digest('hex')
-		.slice(0, 12);
-}
+export const previewProvenanceReference = invitationProvenanceReference;
 
 function escapeXml(value: string): string {
 	return value.replace(/[<>&'"]/g, (char) => `&#${char.charCodeAt(0)};`);

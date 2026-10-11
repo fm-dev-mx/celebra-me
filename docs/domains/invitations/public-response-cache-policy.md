@@ -102,5 +102,8 @@ Canonical delivery metrics, HTML budgets, and runtime monitoring live in
 [`performance-metrics.md`](performance-metrics.md). This file remains the cache-header correctness
 SSOT; do not duplicate budget numbers here.
 
-Section-contract work lives in [`../theme/architecture.md`](../theme/architecture.md). Plan
-governance and Task Contract semantics live in `.agent/plans/README.md`.
+Section-contract work lives in [`../theme/architecture.md`](../theme/architecture.md).
+
+Payment status, public access and the unpaid preview are owned by
+[`payment-access-and-preview.md`](payment-access-and-preview.md). Plan governance and Task Contract
+semantics live in `.agent/plans/README.md`.
