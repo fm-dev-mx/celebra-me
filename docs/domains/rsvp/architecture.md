@@ -51,7 +51,9 @@ refresh endpoint.
 - `GET /api/dashboard/guests/export.csv`
 - `GET /api/dashboard/events`
 - `GET /api/dashboard/admin/events`
-- `PATCH|DELETE /api/dashboard/admin/events/:eventId`
+- `PATCH /api/dashboard/admin/events/:eventId` (partial update: omitted fields keep their stored
+  values; optional `_version` = last read `updatedAt`, stale → 409; slug/type of an
+  invitation-linked event are rejected with 409)
 - `GET /api/dashboard/admin/users`
 - `PATCH /api/dashboard/admin/users/:userId/role`
 

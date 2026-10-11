@@ -40,21 +40,26 @@ export const EventStatusSchema = z.enum(['draft', 'published', 'archived'], {
 	message: 'Invalid event status',
 });
 
-export const CreateEventSchema = z.object({
-	title: z
-		.string()
-		.min(1, { message: 'Title is required' })
-		.max(140, { message: 'Title cannot exceed 140 characters' })
-		.trim(),
+// Trim before length checks so whitespace-only values cannot pass `min(1)` and persist as ''.
+const EventTitleSchema = z
+	.string()
+	.trim()
+	.min(1, { message: 'Title is required' })
+	.max(140, { message: 'Title cannot exceed 140 characters' });
 
-	slug: z
-		.string()
-		.min(1, { message: 'Slug is required' })
-		.max(120, { message: 'Slug cannot exceed 120 characters' })
-		.regex(/^[a-z0-9-]+$/, {
-			message: 'Slug may contain only lowercase letters, numbers, and hyphens',
-		})
-		.trim(),
+const EventSlugSchema = z
+	.string()
+	.trim()
+	.min(1, { message: 'Slug is required' })
+	.max(120, { message: 'Slug cannot exceed 120 characters' })
+	.regex(/^[a-z0-9-]+$/, {
+		message: 'Slug may contain only lowercase letters, numbers, and hyphens',
+	});
+
+export const CreateEventSchema = z.object({
+	title: EventTitleSchema,
+
+	slug: EventSlugSchema,
 
 	eventType: EventTypeSchema,
 
@@ -77,10 +82,32 @@ export const CreateEventSchema = z.object({
 	status: EventStatusSchema.optional().default('draft'),
 });
 
-export const UpdateEventSchema = CreateEventSchema.partial().extend({
-	// _version remains optional to support optimistic locking.
-	_version: TimestampSchema.optional(),
-});
+/**
+ * PATCH contract for admin event updates. Deliberately not derived from
+ * `CreateEventSchema.partial()`: zod keeps inner `.default()` values under `.partial()`,
+ * so omitted fields would be filled (e.g. `status` → 'draft') and written over stored data.
+ * Every field is optional without defaults; omitted keys stay undefined and are not persisted.
+ */
+export const UpdateEventSchema = z
+	.strictObject({
+		title: EventTitleSchema.optional(),
+		slug: EventSlugSchema.optional(),
+		eventType: EventTypeSchema.optional(),
+		status: EventStatusSchema.optional(),
+		// Optional optimistic-locking token: the event's `updatedAt` exactly as last read
+		// (PostgREST returns `+00:00` offsets). A stale value makes the update return 409.
+		_version: z.iso
+			.datetime({ offset: true, message: 'Must be a valid ISO 8601 timestamp' })
+			.optional(),
+	})
+	.refine(
+		(value) =>
+			value.title !== undefined ||
+			value.slug !== undefined ||
+			value.eventType !== undefined ||
+			value.status !== undefined,
+		{ message: 'At least one updatable field is required' },
+	);
 // =============================================================================
 // User/Role Schemas
 // =============================================================================

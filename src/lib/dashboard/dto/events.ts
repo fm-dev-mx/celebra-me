@@ -10,3 +10,11 @@ export interface EventListItemDTO {
 	createdAt: string;
 	updatedAt: string;
 }
+
+/** Partial update body for PATCH /api/dashboard/admin/events/{eventId}; omitted fields are kept. */
+export interface UpdateEventDTO {
+	title?: string;
+	slug?: string;
+	eventType?: EventRecord['eventType'];
+	status?: EventRecord['status'];
+}
