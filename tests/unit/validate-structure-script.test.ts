@@ -339,4 +339,43 @@ describe('validate-structure script', () => {
 			rmSync(fixtureRoot, { recursive: true, force: true });
 		}
 	});
+	it('rejects hosting-platform identity and stray deploy identity reads in src', () => {
+		const fixtureRoot = createFixture();
+		try {
+			writeFixtureFile(
+				fixtureRoot,
+				'src/lib/server/deploy-identity.ts',
+				"export const read = () => getEnv('CELEBRA_DEPLOY_ENV');\n",
+			);
+			writeFixtureFile(
+				fixtureRoot,
+				'src/lib/leaky.ts',
+				[
+					"const a = getEnv('VERCEL_ENV');",
+					'const b = process.env.VERCEL_GIT_COMMIT_SHA;',
+					"const c = request.headers.get('x-vercel-id');",
+					"const d = getEnv('CELEBRA_DEPLOY_ENV');",
+					"const e = getEnv('NODE_ENV');",
+					"const f = getEnv('VERCEL_API_TOKEN');",
+					"const g = 'message that names CELEBRA_DEPLOY_ENV';",
+				].join('\n'),
+			);
+
+			const output = validateFixture(fixtureRoot, [
+				'src/lib/server/deploy-identity.ts',
+				'src/lib/leaky.ts',
+			]).join('\n');
+
+			expect(output).toContain('src/lib/leaky.ts:1: reads hosting-platform identity');
+			expect(output).toContain('src/lib/leaky.ts:2: reads hosting-platform identity');
+			expect(output).toContain('src/lib/leaky.ts:3: reads a hosting-platform request id');
+			expect(output).toContain('src/lib/leaky.ts:4: reads CELEBRA_DEPLOY_ENV outside');
+			expect(output).toContain('src/lib/leaky.ts:5: reads NODE_ENV dynamically');
+			expect(output).not.toContain('src/lib/leaky.ts:6:');
+			expect(output).not.toContain('src/lib/leaky.ts:7:');
+			expect(output).not.toContain('src/lib/server/deploy-identity.ts:');
+		} finally {
+			rmSync(fixtureRoot, { recursive: true, force: true });
+		}
+	});
 });

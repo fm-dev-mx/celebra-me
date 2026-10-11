@@ -290,19 +290,38 @@ dependencies go down.
 
 ## 12. Current state and handoff
 
-- **Current state (2026-10-10):** F0a ran in the `cloudflare` worktree on
-  `candidate/cloudflare-workers-spike`, cut from local `develop` `1715d3d6e`.
-  - The spike changes are uncommitted and must never reach `develop`: the adapter swap,
-    `wrangler.jsonc`, `src/pages/api/spike-probe.ts`, and the `package.json`, lockfile and
-    `pnpm-workspace.yaml` changes.
-  - `pnpm type-check` passes on the spike (0 errors).
-  - No database, remote service, other worktree or shared port was touched. The preview ran on port
-    4399 and its processes were stopped.
+- **Current state (2026-10-10):**
+  - **F0a done.** The spike is kept outside Git as a patch in the `cloudflare` worktree
+    (`.agent/tmp/handoffs/cloudflare-spike/`, base `1715d3d6e`). It could not be committed: the
+    pre-commit `test:changed` hook fails on the suites that assert the Vercel config, by design.
+  - **F1 implemented, uncommitted,** on `feat/deploy-identity` (cut from `origin/develop`
+    `6cb7587c1`; the plan is commit `229e84579`; nothing pushed). What it changes:
+    - `src/lib/server/deploy-identity.ts` is the single reader of `CELEBRA_DEPLOY_ENV`. It accepts
+      exact values only, recognizes local processes positively (dev server, or a built bundle on
+      Local Supabase), and throws or returns null otherwise.
+    - `CELEBRA_BUILD_SHA` and `CELEBRA_BUILD_REF` come from `vite.define` and are read through
+      `readBuildIdentity()` in `src/lib/environment.ts`.
+    - 20 consumers migrated.
+    - The dev MFA bypass now requires the Astro dev server (`import.meta.env.DEV`) and a local
+      identity.
+    - Storage has no local fallback for built bundles.
+    - The editor classifies its database by project ref.
+    - `/api/health` reports the build SHA and the hosted environment, and `ops:release-status`
+      treats an environment mismatch as a mismatch.
+    - `validate:structure` rejects platform identity reads, stray `CELEBRA_DEPLOY_ENV` reads and
+      dynamic `getEnv('NODE_ENV')` in `src/` (`scripts/validate-deploy-identity-reads.mjs`).
+  - **Design note: literal `process.env.NODE_ENV` reads stay.** These are cookie `Secure`, debug
+    payloads and log noise. Vite inlines them at build time (`production` in every built bundle, as
+    F0a showed on workerd), so they are build constants, not runtime identity. Only the dynamic read
+    was a fail-open, and the validator now bans it.
 - **Next responsibility:**
-  - Agent: F1 on its own branch cut from `develop`. Commit this plan file there, not on the spike.
+  - Owner: review the F1 diff and authorize its commits.
+  - Owner, before integrating F1: create `CELEBRA_DEPLOY_ENV` in Vercel (`preview` for Preview,
+    `production` for Production). Without it, F1 fails closed: no writes, and health reports
+    `environment: null`.
   - Owner: D1 before 2026-10-15 (F0b needs Workers Paid); the remaining decisions as convenient.
-  - Owner, in parallel: close the pending chain (push `develop`, Preview and Production migrations,
-    PR fm-dev-mx/celebra-me#233) before F4.
+  - Owner, in parallel: close the pending chain (Preview and Production migrations, PR
+    fm-dev-mx/celebra-me#233) before F4.
 
 ### 12.1 F0a results
 
