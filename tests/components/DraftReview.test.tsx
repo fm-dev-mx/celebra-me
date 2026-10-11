@@ -1,7 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import DraftReview from '@/components/dashboard/intake/DraftReview';
 
 const mockLoadDraft = jest.fn();
+const mockPublishDraft = jest.fn();
 let mockCurrentDraft: Record<string, unknown> | null = null;
 
 let mockLoading = false;
@@ -11,7 +13,7 @@ jest.mock('@/hooks/use-invitation-admin', () => ({
 		currentDraft: mockCurrentDraft,
 		loading: mockLoading,
 		loadDraft: mockLoadDraft,
-		publishDraft: jest.fn(),
+		publishDraft: mockPublishDraft,
 	}),
 }));
 
@@ -314,5 +316,55 @@ describe('DraftReview', () => {
 			'_blank',
 		);
 		expect(screen.getByRole('button', { name: 'Crear nueva revisión' })).toBeInTheDocument();
+	});
+
+	it('publishes the draft only after confirming in the modal', async () => {
+		const confirmSpy = jest.spyOn(window, 'confirm');
+		mockPublishDraft.mockResolvedValue(undefined);
+		mockCurrentDraft = makeDraftContent();
+		const user = userEvent.setup();
+		render(<DraftReview invitationId="proj-1" />);
+
+		await user.click(screen.getByRole('button', { name: 'Publicar borrador' }));
+		expect(mockPublishDraft).not.toHaveBeenCalled();
+		await user.click(
+			within(screen.getByRole('dialog')).getByRole('button', { name: 'Publicar borrador' }),
+		);
+
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+		expect(mockPublishDraft).toHaveBeenCalledTimes(1);
+		expect(mockPublishDraft).toHaveBeenCalledWith('proj-1');
+		expect(mockLoadDraft).toHaveBeenCalledTimes(2);
+		expect(confirmSpy).not.toHaveBeenCalled();
+		confirmSpy.mockRestore();
+	});
+
+	it('shows the publish error and closes the modal when publishing fails', async () => {
+		mockPublishDraft.mockRejectedValue(new Error('No se pudo publicar el borrador.'));
+		mockCurrentDraft = makeDraftContent();
+		const user = userEvent.setup();
+		render(<DraftReview invitationId="proj-1" />);
+
+		await user.click(screen.getByRole('button', { name: 'Publicar borrador' }));
+		await user.click(
+			within(screen.getByRole('dialog')).getByRole('button', { name: 'Publicar borrador' }),
+		);
+
+		expect(await screen.findByText('No se pudo publicar el borrador.')).toBeInTheDocument();
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+	});
+
+	it('publishes nothing when the confirmation is cancelled', async () => {
+		mockCurrentDraft = makeDraftContent();
+		const user = userEvent.setup();
+		render(<DraftReview invitationId="proj-1" />);
+
+		await user.click(screen.getByRole('button', { name: 'Publicar borrador' }));
+		await user.click(
+			within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancelar' }),
+		);
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(mockPublishDraft).not.toHaveBeenCalled();
 	});
 });

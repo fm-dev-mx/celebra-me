@@ -196,7 +196,7 @@ function resolvePublicationConfiguration(invitation: Invitation) {
 		throw new ApiError(
 			422,
 			'bad_request',
-			'No se puede publicar sin un propietario asignado a la invitación. Asigna un propietario antes de publicar.',
+			'No se puede publicar sin un propietario asignado a la invitación. Asigne un propietario antes de publicar.',
 		);
 	}
 	return { publishSlug: getPublicSlug(invitation), themePreset };
