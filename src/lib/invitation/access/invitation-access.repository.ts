@@ -6,9 +6,12 @@
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import {
+	isInvitationPaymentStatus,
+	isInvitationPublicAccess,
 	parseInvitationAccessRow,
 	type InvitationAccessState,
 } from '@/lib/invitation/access/invitation-access';
+import type { InvitationAccessRecord } from '@/lib/invitation/access/invitation-access-command';
 
 const ACCESS_EMBED = 'access:invitation_access_controls(payment_status,public_access)';
 
@@ -47,4 +50,62 @@ export async function isEventInvitationDisabled(eventId: string): Promise<boolea
 /** Public API error for a disabled invitation; never names the reason to guests. */
 export function invitationUnavailableError(): ApiError {
 	return new ApiError(403, 'invitation_unavailable', 'Esta invitación no está disponible.');
+}
+
+const RECORD_COLUMNS =
+	'invitation_id,payment_status,public_access,internal_note,version,updated_at,updated_by';
+
+export interface InvitationAccessRow {
+	invitation_id: string;
+	payment_status: string;
+	public_access: string;
+	internal_note: string | null;
+	version: number;
+	updated_at: string;
+	updated_by: string | null;
+}
+
+export function toInvitationAccessRecord(row: InvitationAccessRow): InvitationAccessRecord | null {
+	if (
+		!isInvitationPaymentStatus(row.payment_status) ||
+		!isInvitationPublicAccess(row.public_access)
+	) {
+		return null;
+	}
+	return {
+		invitationId: row.invitation_id,
+		paymentStatus: row.payment_status,
+		publicAccess: row.public_access,
+		internalNote: row.internal_note,
+		version: row.version,
+		updatedAt: row.updated_at,
+		updatedBy: row.updated_by,
+	};
+}
+
+/** Administrator view of several invitations, keyed by invitation id (one read). */
+export async function listInvitationAccessRecords(
+	invitationIds: readonly string[],
+): Promise<Map<string, InvitationAccessRecord>> {
+	const records = new Map<string, InvitationAccessRecord>();
+	if (invitationIds.length === 0) return records;
+	const rows = await supabaseRestRequest<InvitationAccessRow[]>({
+		pathWithQuery: `invitation_access_controls?select=${RECORD_COLUMNS}&invitation_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
+		useServiceRole: true,
+	});
+	for (const row of rows ?? []) {
+		const record = toInvitationAccessRecord(row);
+		if (record) records.set(record.invitationId, record);
+	}
+	return records;
+}
+
+export async function findInvitationAccessRecord(
+	invitationId: string,
+): Promise<InvitationAccessRecord | null> {
+	const rows = await supabaseRestRequest<InvitationAccessRow[]>({
+		pathWithQuery: `invitation_access_controls?select=${RECORD_COLUMNS}&invitation_id=eq.${encodeURIComponent(invitationId)}&limit=1`,
+		useServiceRole: true,
+	});
+	return rows?.[0] ? toInvitationAccessRecord(rows[0]) : null;
 }

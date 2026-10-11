@@ -142,6 +142,22 @@ owns these fields; `PATCH /api/dashboard/intake/[id]/workflow` writes them with 
   synchronization must not copy administrative decisions between environments.
 - An application rollback keeps the additive columns and recorded decisions.
 
+## Payment Status and Public Access
+
+`invitation_access_controls` (one row per invitation) holds two independent administrative
+decisions: `payment_status` (`unpaid` | `paid`) and `public_access` (`enabled` | `disabled`). Only
+`super_admin` changes them, from `/dashboard/invitaciones` (row menu) or the invitation detail,
+through `PATCH /api/dashboard/intake/[id]/access` → RPC `set_invitation_access_control` (optimistic
+`version`, `audit_logs` row in the same transaction). Hosts have no route, grant or RLS path to
+them.
+
+- New invitations start unpaid; an unpaid client invitation renders as the preview (watermarked), a
+  disabled one renders the neutral unavailable page. Demos never carry access state.
+- Changing either value does not touch `invitations.updated_at`, so an open editor keeps its token.
+- Publication, promotion (`invitation:release`, `prod:apply`) and the Production → Preview mirror
+  never copy these decisions; each environment owns its own.
+- Agents must not change Production access state; Local/Preview changes stay within the task.
+
 ## Draft → Editor → Publish Flow
 
 ### Editor context (`getInvitationEditorContext`)

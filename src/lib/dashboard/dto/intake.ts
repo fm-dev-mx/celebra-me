@@ -2,6 +2,7 @@ import type { InvitationStatus } from '@/lib/intake/types';
 import type { InvitationValidity } from '@/lib/intake/invitation-validity';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
+import type { InvitationAccessRecord } from '@/lib/invitation/access/invitation-access-command';
 
 export interface InvitationDTO {
 	workflow?: import('@/lib/intake/workflow').InvitationWorkflow;
@@ -33,6 +34,8 @@ export interface InvitationListItemDTO extends InvitationDTO {
 	eventDate: string | null;
 	eventTimeZone: string;
 	validity: InvitationValidity;
+	/** Payment status and public access; null for demos or a missing row. */
+	access: InvitationAccessRecord | null;
 }
 
 export interface InvitationListResponse {

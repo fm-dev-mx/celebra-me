@@ -26,6 +26,10 @@ import type {
 import type { InvitationEditorSectionKey } from '@/lib/intake/schemas/invitation-editor.schema';
 import type { MutationOutcome } from '@/lib/intake/mutations/outcome';
 import type { WorkflowCommand } from '@/lib/intake/workflow';
+import type {
+	InvitationAccessCommand,
+	InvitationAccessRecord,
+} from '@/lib/invitation/access/invitation-access-command';
 
 export class AdminApi {
 	private readonly passwordMutationRoots = new Map<string, string>();
@@ -183,6 +187,25 @@ export class AdminApi {
 			command,
 		);
 		this.handleResponse(result);
+	}
+
+	// Intake — Payment status and public access
+	async getInvitationAccess(invitationId: string): Promise<InvitationAccessRecord> {
+		const result = await dashboardApi.get<{ item: InvitationAccessRecord }>(
+			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/access`,
+		);
+		return this.handleResponse(result).item;
+	}
+
+	async setInvitationAccess(
+		invitationId: string,
+		command: InvitationAccessCommand,
+	): Promise<InvitationAccessRecord> {
+		const result = await dashboardApi.patch<{ item: InvitationAccessRecord }>(
+			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/access`,
+			command,
+		);
+		return this.handleResponse(result).item;
 	}
 
 	// Intake — Draft
