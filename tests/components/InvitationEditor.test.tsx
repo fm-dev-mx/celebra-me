@@ -11,6 +11,7 @@ const publish = jest.fn();
 const preflightPublication = jest.fn();
 const reconcileRsvp = jest.fn();
 const restorePublished = jest.fn();
+const assignOwner = jest.fn();
 
 function createContext(
 	overrides?: Partial<InvitationEditorContextDTO>,
@@ -127,7 +128,7 @@ jest.mock('@/hooks/use-invitation-editor', () => ({
 		preflightPublication,
 		reconcileRsvp,
 		restorePublished,
-		assignOwner: jest.fn(),
+		assignOwner,
 	}),
 }));
 
@@ -834,6 +835,86 @@ describe('InvitationEditor', () => {
 		render(<InvitationEditor initialContext={mockContext} />);
 
 		expect(screen.getByRole('button', { name: 'Publicar cambios' })).toBeDisabled();
+	});
+
+	it('assigns the owner only after confirming in the modal', async () => {
+		const confirmSpy = jest.spyOn(window, 'confirm');
+		const unowned = { ...createContext().invitation, createdBy: null };
+		mockContext = createContext({ invitation: unowned });
+		assignOwner.mockResolvedValue({ invitation: { ...unowned, createdBy: 'user-2' } });
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		const nav = screen.getByRole('navigation', { name: 'Secciones del editor' });
+		fireEvent.click(within(nav).getByRole('button', { name: 'Datos de la invitación' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Asignarme' }));
+		expect(assignOwner).not.toHaveBeenCalled();
+
+		const dialog = screen.getByRole('dialog');
+		expect(
+			within(dialog).getByRole('heading', {
+				name: '¿Asignarse como propietario de esta invitación?',
+			}),
+		).toBeInTheDocument();
+		fireEvent.click(within(dialog).getByRole('button', { name: 'Asignarme' }));
+
+		expect(await screen.findByText('Propietario asignado correctamente.')).toBeInTheDocument();
+		expect(assignOwner).toHaveBeenCalledTimes(1);
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(confirmSpy).not.toHaveBeenCalled();
+	});
+
+	it('assigns no owner when the confirmation is cancelled', () => {
+		mockContext = createContext({
+			invitation: { ...createContext().invitation, createdBy: null },
+		});
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		const nav = screen.getByRole('navigation', { name: 'Secciones del editor' });
+		fireEvent.click(within(nav).getByRole('button', { name: 'Datos de la invitación' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Asignarme' }));
+		fireEvent.click(
+			within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancelar' }),
+		);
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(assignOwner).not.toHaveBeenCalled();
+	});
+
+	it('discards unsaved changes only after confirming in the modal', () => {
+		const confirmSpy = jest.spyOn(window, 'confirm');
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		fireEvent.change(screen.getByLabelText('Título público'), {
+			target: { value: 'XV Ana Samantha' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Descartar cambios' }));
+		expect(screen.getByLabelText('Título público')).toHaveValue('XV Ana Samantha');
+
+		fireEvent.click(
+			within(screen.getByRole('dialog')).getByRole('button', { name: 'Descartar cambios' }),
+		);
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(screen.getByLabelText('Título público')).toHaveValue('XV Ana');
+		expect(screen.queryByRole('button', { name: 'Descartar cambios' })).not.toBeInTheDocument();
+		expect(confirmSpy).not.toHaveBeenCalled();
+		expect(saveSection).not.toHaveBeenCalled();
+	});
+
+	it('keeps unsaved changes when the discard confirmation is cancelled', () => {
+		render(<InvitationEditor initialContext={mockContext} />);
+
+		fireEvent.change(screen.getByLabelText('Título público'), {
+			target: { value: 'XV Ana Samantha' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: 'Descartar cambios' }));
+		fireEvent.click(
+			within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancelar' }),
+		);
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(screen.getByLabelText('Título público')).toHaveValue('XV Ana Samantha');
+		expect(screen.getByRole('button', { name: 'Descartar cambios' })).toBeInTheDocument();
 	});
 
 	it('does not show owner-required warning when owner is set', () => {

@@ -276,6 +276,8 @@ export default function InvitationEditor({ initialContext }: Props) {
 	const [confirmation, setConfirmation] = useState<
 		| 'publish'
 		| 'restore'
+		| 'assign-owner'
+		| 'discard'
 		| { type: 'restore-section'; section: InvitationEditorSectionKey; label: string }
 		| null
 	>(null);
@@ -290,8 +292,9 @@ export default function InvitationEditor({ initialContext }: Props) {
 	>(null);
 	const [pickerField, setPickerField] = useState<PickerField | null>(null);
 
-	const handleAssignOwner = useCallback(async () => {
-		if (!window.confirm('¿Asignarte como propietario de esta invitación?')) return;
+	const requestAssignOwner = useCallback(() => setConfirmation('assign-owner'), []);
+
+	const assignOwner = useCallback(async () => {
 		try {
 			const result = await editor.assignOwner();
 			const nextMetadata = metadataFromContext({
@@ -309,6 +312,8 @@ export default function InvitationEditor({ initialContext }: Props) {
 				...current,
 				metadata: toErrorMessage(error, 'No se pudo asignar el propietario.'),
 			}));
+		} finally {
+			setConfirmation(null);
 		}
 	}, [editor.assignOwner, editor.context]);
 
@@ -553,9 +558,13 @@ export default function InvitationEditor({ initialContext }: Props) {
 
 	const [savingAll, setSavingAll] = useState(false);
 
-	const discardChanges = () => {
+	const requestDiscardChanges = () => {
 		if (dirty.size === 0) return;
-		if (!window.confirm('¿Descartar todos los cambios sin guardar?')) return;
+		setConfirmation('discard');
+	};
+
+	const discardChanges = () => {
+		setConfirmation(null);
 		setContent(contentBaseline);
 		setMetadata(metadataBaseline);
 		setDirty(new Set());
@@ -766,7 +775,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 				publishWarning={publishWarning}
 				publishDisabled={publishDisabled}
 				onSaveAll={saveAllDirty}
-				onDiscard={discardChanges}
+				onDiscard={requestDiscardChanges}
 				onPublish={() => void requestPublicationConfirmation()}
 				editUrl={backUrl}
 				onPreviewRequest={requestPreview}
@@ -906,7 +915,7 @@ export default function InvitationEditor({ initialContext }: Props) {
 								setMetadata(value);
 								markDirty('metadata');
 							}}
-							onAssignOwner={handleAssignOwner}
+							onAssignOwner={requestAssignOwner}
 						/>
 					</SectionCard>
 
@@ -1352,6 +1361,26 @@ export default function InvitationEditor({ initialContext }: Props) {
 					onReload={refreshSavedPreview}
 				/>
 			</div>
+			{confirmation === 'assign-owner' && (
+				<ConfirmModal
+					title="¿Asignarse como propietario de esta invitación?"
+					message="La invitación quedará asignada a su cuenta. Se requiere un propietario para publicar."
+					confirmLabel="Asignarme"
+					loading={editor.operation.type === 'assigning-owner'}
+					onCancel={() => setConfirmation(null)}
+					onConfirm={() => void assignOwner()}
+				/>
+			)}
+			{confirmation === 'discard' && (
+				<ConfirmModal
+					title="¿Descartar todos los cambios sin guardar?"
+					message="Se perderán los cambios que no ha guardado. El borrador guardado y la versión pública no se modifican."
+					confirmLabel="Descartar cambios"
+					destructive
+					onCancel={() => setConfirmation(null)}
+					onConfirm={discardChanges}
+				/>
+			)}
 			{confirmation === 'restore' && (
 				<ConfirmModal
 					title="Restaurar todo el borrador"
