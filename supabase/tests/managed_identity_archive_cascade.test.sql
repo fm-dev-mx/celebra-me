@@ -1,7 +1,7 @@
--- pgTAP: managed identity uniqueness + archive cascade (incl. intake_submissions)
+-- pgTAP: managed identity uniqueness + archive cascade
 
 begin;
-select plan(9);
+select plan(7);
 
 select has_column('public', 'invitations', 'managed_identity_id',
   'invitations.managed_identity_id exists');
@@ -37,24 +37,6 @@ insert into public.events (
   'aaaaaaaa-bbbb-4ccc-8ddd-000000000001'
 );
 
-insert into public.intake_requests (
-  id, invitation_project_id, token_hash, status
-) values (
-  'aaaaaaaa-bbbb-4ccc-8ddd-000000000003',
-  'aaaaaaaa-bbbb-4ccc-8ddd-000000000001',
-  'cascade-fixture-token-hash',
-  'active'
-);
-
-insert into public.intake_submissions (
-  id, intake_request_id, status, block_data
-) values (
-  'aaaaaaaa-bbbb-4ccc-8ddd-000000000004',
-  'aaaaaaaa-bbbb-4ccc-8ddd-000000000003',
-  'submitted',
-  '{}'::jsonb
-);
-
 select public.archive_invitation('aaaaaaaa-bbbb-4ccc-8ddd-000000000001'::uuid);
 
 select ok(
@@ -70,28 +52,12 @@ select is(
   'archive cascade deactivates linked events'
 );
 
-select is(
-  (select count(*)::int from public.intake_submissions
-    where intake_request_id = 'aaaaaaaa-bbbb-4ccc-8ddd-000000000003'
-      and deleted_at is null),
-  0,
-  'archive cascade deactivates intake_submissions'
-);
-
 select throws_like(
   $$update public.events
     set deleted_at = null, status = 'draft'
     where id = 'aaaaaaaa-bbbb-4ccc-8ddd-000000000002'$$,
   '%ARCHIVED_PARENT_ACTIVE_CHILD%',
   'cannot reactivate event child of archived invitation'
-);
-
-select throws_like(
-  $$update public.intake_submissions
-    set deleted_at = null
-    where id = 'aaaaaaaa-bbbb-4ccc-8ddd-000000000004'$$,
-  '%ARCHIVED_PARENT_ACTIVE_CHILD%',
-  'cannot reactivate intake_submission of archived invitation'
 );
 
 select throws_like(

@@ -260,6 +260,7 @@ describe('Luna y Estrella Primera Comunión published content', () => {
 				eventType: 'primera-comunion',
 				eventSlug: 'luna-y-estrella',
 				eventTitle: 'Primera Comunión de Luna y Estrella',
+				brandingRemovalEnabled: false,
 				guest: {
 					fullName: 'María Solís',
 					maxAllowedAttendees: 4,

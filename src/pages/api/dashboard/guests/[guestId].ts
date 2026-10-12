@@ -10,7 +10,7 @@ import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 import {
 	requireDashboardRateLimit,
 	validateGuestPhoneInput,
-} from '@/pages/api/dashboard/guests/dashboard-guests-lib';
+} from '@/lib/rsvp/core/dashboard-guests-lib';
 
 function parseStatus(raw: string): AttendanceStatus | undefined {
 	if (raw === 'pending' || raw === 'confirmed' || raw === 'declined') return raw;
@@ -65,6 +65,7 @@ export const PATCH: APIRoute = async ({ params, request, url, locals, cookies })
 				body.deliveryStatus === 'generated' || body.deliveryStatus === 'shared'
 					? body.deliveryStatus
 					: undefined,
+			isTest: typeof body.isTest === 'boolean' ? body.isTest : undefined,
 		});
 
 		return jsonResponse(result);

@@ -30,7 +30,6 @@ const DEFAULT_ROUTES = [
 	'/dashboard/admin/recuerdos',
 	'/dashboard/admin/plataforma',
 	'/dashboard/estado',
-	'/dashboard/claimcodes',
 	'/dashboard/invitaciones',
 	'/dashboard/commercial',
 	'/dashboard/usuarios',

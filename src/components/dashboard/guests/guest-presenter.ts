@@ -3,9 +3,12 @@ import { generateInvitationLink } from '@/utils/invitation-link';
 import { getVisibleTags } from '@/lib/guests/guest-tags';
 import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
 import type { ShareMessageType } from '@/lib/rsvp/services/shared/invitation-helpers';
-import { formatMessageTimestamp, parseGuestCommentHistory } from '@/lib/rsvp/core/guest-message';
+import {
+	formatMessageTimestamp,
+	parseGuestCommentHistory,
+	type GuestMessageEntry,
+} from '@/lib/rsvp/core/guest-message';
 
-export type { GuestMessageEntry } from '@/lib/rsvp/core/guest-message';
 export { parseGuestCommentHistory } from '@/lib/rsvp/core/guest-message';
 
 export function resolveLabel(
@@ -51,6 +54,31 @@ export function formatGuestDateShort(value: string | null): string {
 	return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+/**
+ * Opens for the guest detail: count and last open since engagement tracking started, falling back
+ * to the legacy first-view date for invitations opened before.
+ */
+export function formatGuestOpens(item: DashboardGuestItem): string | null {
+	const opens = item.openCount ?? 0;
+	if (opens > 0) {
+		const times = opens === 1 ? '1 vez' : `${opens} veces`;
+		return item.lastOpenedAt
+			? `${times} · última el ${formatGuestDateShort(item.lastOpenedAt)}`
+			: times;
+	}
+	return item.firstViewedAt ? formatGuestDateShort(item.firstViewedAt) : null;
+}
+
+/** Human duration for the engagement funnel ("3 h", "2 días"). */
+export function formatEngagementDuration(seconds: number): string {
+	const minutes = Math.round(seconds / 60);
+	if (minutes < 60) return `${Math.max(1, minutes)} min`;
+	const hours = Math.round(minutes / 60);
+	if (hours < 48) return `${hours} h`;
+	const days = Math.round(hours / 24);
+	return `${days} días`;
+}
+
 export type PrimaryStatus = {
 	label: string;
 	class: GuestStage;
@@ -76,6 +104,51 @@ export function formatGuestMessageCount(count: number): string {
 
 export function getGuestMessageCount(guestComment: string): number {
 	return parseGuestCommentHistory(guestComment).length;
+}
+
+/**
+ * Date for one history entry. The first message carries no timestamp; the answer
+ * date only describes it when it is the guest's sole message.
+ */
+export function getGuestMessageDateLabel(
+	entry: GuestMessageEntry,
+	totalEntries: number,
+	fallbackIso: string | undefined,
+): string {
+	if (!entry.timestampLabel && totalEntries > 1) return 'Primer mensaje';
+	return resolveLabel(entry.timestampLabel, fallbackIso);
+}
+
+export function getGuestLatestMessage(guestComment: string): string {
+	return parseGuestCommentHistory(guestComment)[0]?.message ?? '';
+}
+
+export type GuestMessageWallEntry = {
+	item: DashboardGuestItem;
+	latest: string;
+	timestampLabel: string;
+	count: number;
+};
+
+/** Guests with a message, newest answer first, each with its latest message in full. */
+export function buildGuestMessageWall(items: DashboardGuestItem[]): GuestMessageWallEntry[] {
+	const entries: (GuestMessageWallEntry & { sortKey: number })[] = [];
+	for (const item of items) {
+		const history = parseGuestCommentHistory(item.guestComment);
+		if (history.length === 0) continue;
+		const fallbackIso = getGuestMessageFallbackTimestamp(item);
+		const sortKey = Date.parse(fallbackIso);
+		entries.push({
+			item,
+			latest: history[0].message,
+			timestampLabel: getGuestMessageDateLabel(history[0], history.length, fallbackIso),
+			count: history.length,
+			sortKey: Number.isNaN(sortKey) ? 0 : sortKey,
+		});
+	}
+	return entries
+		.sort((a, b) => b.sortKey - a.sortKey)
+		.map(({ sortKey: _sortKey, ...entry }) => entry);
 }
 
 export type GuestPrimaryAction = {
@@ -130,7 +203,7 @@ export type GuestStage = 'to-send' | 'unopened' | 'opened' | 'confirmed' | 'decl
 export function getGuestStage(item: DashboardGuestItem): GuestStage {
 	const bucket = getGuestStatusBucket(item);
 	if (bucket !== 'waiting') return bucket;
-	return item.isViewed || item.firstViewedAt ? 'opened' : 'unopened';
+	return (item.openCount ?? 0) > 0 || item.isViewed || item.firstViewedAt ? 'opened' : 'unopened';
 }
 
 /** Unsent and unanswered: the only guests the "send invitations" queue should offer. */

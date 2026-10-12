@@ -1,8 +1,40 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import type { ComponentProps } from 'react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
-import OutboxLogList from '@/components/dashboard/commercial/OutboxLogList';
+import OutboxLogList, {
+	type ConversionEvent,
+} from '@/components/dashboard/commercial/OutboxLogList';
+
+const FAILED_CONVERSION: ConversionEvent = {
+	id: 'failed-row',
+	event_name: 'Purchase',
+	event_id: 'purchase:order:deposit_paid',
+	value: 899,
+	currency: 'MXN',
+	status: 'failed',
+	attempt_count: 2,
+	created_at: '2026-07-11T12:00:00.000Z',
+};
+
+function renderFailedConversion(
+	onRequeueEvent: ComponentProps<typeof OutboxLogList>['onRequeueEvent'],
+) {
+	render(
+		<OutboxLogList
+			deliveryDisabled={false}
+			processingConversions={false}
+			onProcessConversions={jest.fn()}
+			onRequeueEvent={onRequeueEvent}
+			conversions={[FAILED_CONVERSION]}
+		/>,
+	);
+}
 
 describe('OutboxLogList', () => {
+	afterEach(() => {
+		jest.restoreAllMocks();
+	});
+
 	it('makes disabled CAPI explicit and removes delivery actions', () => {
 		render(
 			<OutboxLogList
@@ -38,33 +70,72 @@ describe('OutboxLogList', () => {
 		expect(screen.getByText(/technical-event-id/)).not.toBeVisible();
 	});
 
-	it('requires reason and confirmation before requesting recovery', () => {
-		const onRecover = jest.fn();
+	it('requires reason and modal confirmation before requesting recovery', async () => {
+		const onRecover = jest.fn().mockResolvedValue(undefined);
 		jest.spyOn(window, 'prompt').mockReturnValue('Revisión aprobada por operación');
-		jest.spyOn(window, 'confirm').mockReturnValue(true);
-		render(
-			<OutboxLogList
-				deliveryDisabled={false}
-				processingConversions={false}
-				onProcessConversions={jest.fn()}
-				onRequeueEvent={onRecover}
-				conversions={[
-					{
-						id: 'failed-row',
-						event_name: 'Purchase',
-						event_id: 'purchase:order:deposit_paid',
-						value: 899,
-						currency: 'MXN',
-						status: 'failed',
-						attempt_count: 2,
-						created_at: '2026-07-11T12:00:00.000Z',
-					},
-				]}
-			/>,
-		);
+		const confirmSpy = jest.spyOn(window, 'confirm');
+		renderFailedConversion(onRecover);
 
 		fireEvent.click(screen.getByRole('button', { name: 'Recuperar evento' }));
+		expect(onRecover).not.toHaveBeenCalled();
+
+		const dialog = screen.getByRole('dialog');
+		expect(within(dialog).getByText(/Revisión aprobada por operación/)).toBeInTheDocument();
+		fireEvent.click(within(dialog).getByRole('button', { name: 'Recuperar evento' }));
+
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+		expect(onRecover).toHaveBeenCalledTimes(1);
 		expect(onRecover).toHaveBeenCalledWith('failed-row', 'Revisión aprobada por operación');
+		expect(confirmSpy).not.toHaveBeenCalled();
+	});
+
+	it('keeps the modal busy until the recovery request settles', async () => {
+		let resolveRecovery: () => void = () => undefined;
+		const onRecover = jest.fn(
+			() =>
+				new Promise<void>((resolve) => {
+					resolveRecovery = resolve;
+				}),
+		);
+		jest.spyOn(window, 'prompt').mockReturnValue('Reintento autorizado');
+		renderFailedConversion(onRecover);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Recuperar evento' }));
+		fireEvent.click(
+			within(screen.getByRole('dialog')).getByRole('button', { name: 'Recuperar evento' }),
+		);
+
+		const dialog = screen.getByRole('dialog');
+		expect(within(dialog).getByRole('button', { name: 'Procesando...' })).toBeDisabled();
+		expect(within(dialog).getByRole('button', { name: 'Cancelar' })).toBeDisabled();
+
+		resolveRecovery();
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+	});
+
+	it('requests nothing when the recovery is cancelled', () => {
+		const onRecover = jest.fn();
+		jest.spyOn(window, 'prompt').mockReturnValue('Revisión aprobada por operación');
+		renderFailedConversion(onRecover);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Recuperar evento' }));
+		fireEvent.click(
+			within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancelar' }),
+		);
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(onRecover).not.toHaveBeenCalled();
+	});
+
+	it('opens no confirmation when the reason is empty', () => {
+		const onRecover = jest.fn();
+		jest.spyOn(window, 'prompt').mockReturnValue('   ');
+		renderFailedConversion(onRecover);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Recuperar evento' }));
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(onRecover).not.toHaveBeenCalled();
 	});
 
 	it('never exposes recovery for sent events', () => {

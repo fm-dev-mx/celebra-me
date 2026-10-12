@@ -2,7 +2,7 @@
  * Portability and incompatibility contract for typed presentation options:
  * - location.presentationOptions.indicationsStyle ('list' | 'numbered-board')
  * - gallery.variantOptions.arrangement ('stacked' | 'overlap', paired-portraits only)
- * - the 'pattern-band' section intersection family
+ * - the 'pattern-band' and 'folio' section intersection families
  * - hero.presentation.designCredit (editorial-cover credit line, on by default)
  * - location.ornament and thankYou.ornament (decorative cutouts, absent by default)
  * - envelope.coverEditionLabel (collector rail label, "NÚM." by default)
@@ -214,6 +214,37 @@ describe('pattern-band intersection family', () => {
 		expect(styles).toContain("[data-intersection='pattern-band']");
 		expect(styles).toContain('padding-top: var(--intersection-band-height)');
 		expect(styles).not.toMatch(/event--|aithan/);
+	});
+});
+
+describe('folio intersection family', () => {
+	it('is part of the closed intersection family set and copied into the render plan', () => {
+		expect(SECTION_INTERSECTION_FAMILIES).toContain('folio');
+		const view = adapt(
+			synthetic('location', 'standard', (data) => {
+				data.sectionOrder = ['countdown', 'location'];
+				data.composition = {
+					intersections: { location: { family: 'folio', source: 'countdown' } },
+				};
+			}),
+		);
+		expect(buildInvitationRenderPlan(view)).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					type: 'section',
+					section: 'location',
+					intersection: { family: 'folio', source: 'countdown' },
+				}),
+			]),
+		);
+	});
+
+	it('reserves no space, keeps its turn motion opt-in and stays generic', () => {
+		const styles = readSource('src/styles/invitation/_section-intersections.scss');
+		expect(styles).toContain("[data-intersection='folio']");
+		expect(styles).toContain('var(--intersection-folio-lift, 0deg)');
+		expect(styles).toContain('prefers-reduced-motion: no-preference');
+		expect(styles).not.toMatch(/event--|america/);
 	});
 });
 

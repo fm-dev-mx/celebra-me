@@ -1,4 +1,3 @@
-import { claimEventForUserByClaimCode } from '@/lib/rsvp/services/auth-access.service';
 import {
 	createDashboardGuest,
 	deleteDashboardGuest,
@@ -16,15 +15,15 @@ import {
 import * as eventRepo from '@/lib/rsvp/repositories/event.repository';
 import * as guestRepo from '@/lib/rsvp/repositories/guest.repository';
 import * as membershipRepo from '@/lib/rsvp/repositories/role-membership.repository';
-import * as claimRepo from '@/lib/rsvp/repositories/claim-code.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
+import * as engagementRepo from '@/lib/rsvp/repositories/engagement.repository';
 
 jest.mock('@/lib/rsvp/repositories/event.repository');
 jest.mock('@/lib/rsvp/repositories/guest.repository');
 jest.mock('@/lib/rsvp/repositories/role-membership.repository');
-jest.mock('@/lib/rsvp/repositories/claim-code.repository');
+jest.mock('@/lib/rsvp/repositories/engagement.repository');
 jest.mock('@/lib/rsvp/services/audit-logger.service', () => ({
 	logAdminAction: jest.fn().mockResolvedValue(undefined),
 }));
@@ -85,9 +84,6 @@ describe('rsvp service branches', () => {
 		eventRepo.findEventByInvitationPublic as jest.MockedFunction<
 			typeof eventRepo.findEventByInvitationPublic
 		>;
-	const redeemClaimCodeRpcMock = claimRepo.redeemClaimCodeRpc as jest.MockedFunction<
-		typeof claimRepo.redeemClaimCodeRpc
-	>;
 	const findMembershipByEventForHostMock =
 		membershipRepo.findMembershipByEventForHost as jest.MockedFunction<
 			typeof membershipRepo.findMembershipByEventForHost
@@ -105,6 +101,7 @@ describe('rsvp service branches', () => {
 		status: 'published' as const,
 		publishedAt: null,
 		invitationId: null,
+		brandingRemovalGuestLimit: 0,
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	};
@@ -141,6 +138,48 @@ describe('rsvp service branches', () => {
 		findEventBySlugServiceMock.mockResolvedValue(baseEvent);
 		findGuestsByEventMock.mockResolvedValue([baseGuest]);
 		listMembershipsForHostMock.mockResolvedValue([]);
+	});
+
+	it('listDashboardGuests includes the engagement summary for the host', async () => {
+		const engagement = {
+			guests: 1,
+			shared: 1,
+			previewed: 0,
+			opened: 1,
+			formViewed: 0,
+			formStarted: 0,
+			responded: 0,
+			openedNotResponded: 1,
+			medianSecondsToOpen: 120,
+			trackingStartedAt: '2026-10-10T00:00:00Z',
+		};
+		findEventByIdMock.mockResolvedValueOnce(baseEvent);
+		(engagementRepo.getEventEngagementSummary as jest.Mock).mockResolvedValueOnce(engagement);
+		const result = await listDashboardGuests({
+			eventId: 'evt-1',
+			userId: 'user-1',
+			hostAccessToken: 'token',
+			origin: 'http://localhost',
+		});
+		expect(engagementRepo.getEventEngagementSummary).toHaveBeenCalledWith('evt-1', 'token');
+		expect(result.engagement).toEqual(engagement);
+	});
+
+	it('listDashboardGuests hides the funnel when the summary fails', async () => {
+		const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+		findEventByIdMock.mockResolvedValueOnce(baseEvent);
+		(engagementRepo.getEventEngagementSummary as jest.Mock).mockRejectedValueOnce(
+			new Error('schema behind'),
+		);
+		const result = await listDashboardGuests({
+			eventId: 'evt-1',
+			userId: 'user-1',
+			hostAccessToken: 'token',
+			origin: 'http://localhost',
+		});
+		expect(result.engagement).toBeNull();
+		expect(result.items).toHaveLength(1);
+		warn.mockRestore();
 	});
 
 	it('listDashboardGuests throws forbidden when service role finds event but host token does not', async () => {
@@ -516,29 +555,6 @@ describe('rsvp service branches', () => {
 		trackGuestInvitationViewPublicRpcMock.mockRejectedValue(new Error('rpc failed'));
 		await expect(trackInvitationView('missing')).resolves.toBeUndefined();
 		expect(trackGuestInvitationViewPublicRpcMock).toHaveBeenCalledWith('missing', undefined);
-	});
-
-	it('claimEventForUser validates claim states via atomic RPC', async () => {
-		redeemClaimCodeRpcMock.mockResolvedValue({
-			success: true,
-			eventId: 'evt-1',
-			membershipRole: 'owner',
-			errorCode: null,
-		});
-
-		const result = await claimEventForUserByClaimCode({
-			userId: 'host-1',
-			claimCode: 'abc123',
-		});
-
-		expect(redeemClaimCodeRpcMock).toHaveBeenCalledWith({
-			userId: 'host-1',
-			codeKey: expect.any(String),
-		});
-		expect(result).toEqual({
-			eventId: 'evt-1',
-			membershipRole: 'owner',
-		});
 	});
 
 	it('listHostEvents merges owner, visible, and membership-backed events without duplicates', async () => {

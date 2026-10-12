@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /** The sole public managed-invitation release command (Local → Preview → approve → Production). */
 /* eslint-disable max-lines, no-useless-assignment -- Managed release CLI handles mode dispatch and per-target planning. */
+import { FinalTargetVerificationError, InvalidEngineResultError } from './release-errors.ts';
 import { confirm, select } from '@inquirer/prompts';
 import { flagValue as value } from '../lib/cli-args.ts';
 import { type LocalApplyResult } from './apply-local-invitation.ts';
@@ -183,12 +184,13 @@ function assetCounts(actions: Array<{ resource: string; action: string }>): {
 	};
 }
 
-function sanitizeMessage(message: string): string {
+function sanitizeMessage(error: unknown): string {
+	const message = error instanceof Error ? error.message : String(error);
 	const translated =
-		translatePreconditionFailure(message) ??
-		(message.includes('INVALID_ENGINE_RESULT')
+		translatePreconditionFailure(error) ??
+		(error instanceof InvalidEngineResultError
 			? 'El motor no devolvió el plan y recibo confirmados. No se puede acreditar la ejecución; revise el resultado antes de reintentar.'
-			: message.includes('Final target verification failed')
+			: error instanceof FinalTargetVerificationError
 				? 'La verificación final del destino no coincidió con el plan. Revise el estado antes de reintentar.'
 				: message);
 	return redactCredentials(translated)
@@ -974,11 +976,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						'No fue posible resolver un paquete válido. Corrija el origen y vuelva a ejecutar el preflight.',
 						error,
 					);
-		const technicalDetail = sanitizeMessage(
-			inputError.technicalCause instanceof Error
-				? inputError.technicalCause.message
-				: String(inputError.technicalCause ?? inputError.code),
-		);
+		const technicalDetail = sanitizeMessage(inputError.technicalCause ?? inputError.code);
 		const blockedPlans: TargetPlanData[] = targets.map((target) => ({
 			target,
 			status: 'BLOQUEADO',
@@ -1131,9 +1129,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 						publishedVersion: localResult.publishedVersion,
 					});
 				} catch (error) {
-					const errMsg = sanitizeMessage(
-						error instanceof Error ? error.message : String(error),
-					);
+					const errMsg = sanitizeMessage(error);
 					targetPlans.push({
 						target: 'local',
 						status: 'BLOQUEADO',
@@ -1244,9 +1240,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 							publishedVersion: result.publishedVersion,
 						});
 					} catch (error) {
-						const errMsg = sanitizeMessage(
-							error instanceof Error ? error.message : String(error),
-						);
+						const errMsg = sanitizeMessage(error);
 						const namespaceReason = translatePreviewNamespaceFailure(errMsg);
 						const draftDivergence = isTargetDivergenceConflict(error);
 						const previewReason =
@@ -1578,8 +1572,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 		const executionSummary = await executeTargetPlans({
 			targets,
 			targetPlans,
-			sanitizeError: (error) =>
-				sanitizeMessage(error instanceof Error ? error.message : String(error)),
+			sanitizeError: (error) => sanitizeMessage(error),
 			executeTarget: async (target) => {
 				if (target === 'local') {
 					return executeLocalTargetPlan({
@@ -1693,7 +1686,7 @@ if (
 			process.exitCode = 130;
 			return;
 		}
-		const message = sanitizeMessage(error instanceof Error ? error.message : String(error));
+		const message = sanitizeMessage(error);
 		const reasonCode =
 			error instanceof PreviewProvenanceRecoveryError
 				? error.code

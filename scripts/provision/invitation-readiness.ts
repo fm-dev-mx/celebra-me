@@ -10,6 +10,7 @@
  *   BLOCKED (2) — Required condition could not be verified due to missing credentials/services.
  */
 
+import { flagValue } from '../lib/cli-args.ts';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getInvitationDefinition, listInvitationDefinitions } from './invitations/registry.ts';
 import type { InvitationDefinition } from './invitations/invitation-definition.ts';
@@ -218,11 +219,11 @@ function verifyPublishedContent(
 	}
 }
 
-export async function evaluateInvitationReadiness(options?: {
-	slug?: string;
+export async function evaluateInvitationReadiness(options: {
+	slug: string;
 	projectRoot?: string;
 }): Promise<ReadinessCheckResult> {
-	const slug = options?.slug ?? 'romina-rios-chaparro';
+	const { slug } = options;
 	const reasons: string[] = [];
 
 	const details: Details = {
@@ -305,7 +306,12 @@ export async function evaluateInvitationReadiness(options?: {
 }
 
 if (process.argv[1]?.endsWith('invitation-readiness.ts')) {
-	evaluateInvitationReadiness()
+	const slug = flagValue(process.argv.slice(2), '--slug');
+	if (!slug) {
+		console.error('Usage: tsx scripts/provision/invitation-readiness.ts --slug <slug>');
+		process.exit(2);
+	}
+	evaluateInvitationReadiness({ slug })
 		.then((result) => {
 			console.log(JSON.stringify(result, null, 2));
 			process.exitCode = result.exitCode;

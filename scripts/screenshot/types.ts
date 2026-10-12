@@ -606,12 +606,6 @@ export const KNOWN_SECTIONS: KnownSection[] = [
 // Defaults
 // ---------------------------------------------------------------------------
 
-/**
- * Fallback base URL for Integration / `dev-local` (port 4321).
- * Prefer {@link resolveScreenshotBaseUrl} so `dev-extra` / `dev-preview` lanes
- * bind to their stable ports (4322 / 4323).
- */
-export const DEFAULT_BASE_URL = 'http://localhost:4321';
 export const DEFAULT_STORAGE_STATE_PATH = 'playwright/.auth/user.json';
 export const DEFAULT_NAVIGATION_TIMEOUT = 15_000;
 export const DEFAULT_NETWORK_IDLE_TIMEOUT = 5_000;

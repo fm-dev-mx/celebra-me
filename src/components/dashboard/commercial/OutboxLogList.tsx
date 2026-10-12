@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import ConfirmModal from '@/components/dashboard/intake/ConfirmModal';
 
 export interface ConversionEvent {
 	id: string;
@@ -43,7 +44,7 @@ interface OutboxLogListProps {
 	deliveryDisabled: boolean;
 	processingConversions: boolean;
 	onProcessConversions: () => void;
-	onRequeueEvent: (eventId: string, reason: string) => void;
+	onRequeueEvent: (eventId: string, reason: string) => void | Promise<void>;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -68,6 +69,21 @@ const OutboxLogList: React.FC<OutboxLogListProps> = ({
 	onProcessConversions,
 	onRequeueEvent,
 }) => {
+	const [pendingRecovery, setPendingRecovery] = useState<{ id: string; reason: string } | null>(
+		null,
+	);
+	const [recovering, setRecovering] = useState(false);
+
+	const confirmRecovery = async (id: string, reason: string) => {
+		setRecovering(true);
+		try {
+			await onRequeueEvent(id, reason);
+		} finally {
+			setRecovering(false);
+			setPendingRecovery(null);
+		}
+	};
+
 	return (
 		<div className="outbox-console">
 			<div className="outbox-header">
@@ -222,17 +238,11 @@ const OutboxLogList: React.FC<OutboxLogListProps> = ({
 													onClick={() => {
 														const reason = window
 															.prompt(
-																'Explica por qué debe recuperarse este evento:',
+																'Explique por qué debe recuperarse este evento:',
 															)
 															?.trim();
 														if (!reason) return;
-														if (
-															!window.confirm(
-																'¿Confirmas la recuperación técnica de este evento?',
-															)
-														)
-															return;
-														onRequeueEvent(conv.id, reason);
+														setPendingRecovery({ id: conv.id, reason });
 													}}
 												>
 													Recuperar evento
@@ -245,6 +255,18 @@ const OutboxLogList: React.FC<OutboxLogListProps> = ({
 					)
 				)}
 			</div>
+			{pendingRecovery && (
+				<ConfirmModal
+					title="¿Recuperar este evento?"
+					message={`El evento volverá a la cola de envío con el motivo registrado: «${pendingRecovery.reason}».`}
+					confirmLabel="Recuperar evento"
+					loading={recovering}
+					onConfirm={() =>
+						void confirmRecovery(pendingRecovery.id, pendingRecovery.reason)
+					}
+					onCancel={() => setPendingRecovery(null)}
+				/>
+			)}
 		</div>
 	);
 };

@@ -3,22 +3,7 @@ import {
 	listMembershipsForHost,
 	upsertUserRoleService,
 } from '@/lib/rsvp/repositories/role-membership.repository';
-import { redeemClaimCodeRpc } from '@/lib/rsvp/repositories/claim-code.repository';
-import { ApiError } from '@/lib/rsvp/core/errors';
-import { createHash } from 'node:crypto';
-import { getEnv } from '@/lib/server/env';
 import { sanitize } from '@/lib/rsvp/core/utils';
-
-function hashClaimCode(rawCode: string): string {
-	const pepper = getEnv('RSVP_CLAIM_CODE_PEPPER') || 'default-pepper';
-	return createHash('sha256')
-		.update(`${pepper}:${normalizeClaimCode(rawCode)}`)
-		.digest('hex');
-}
-
-export function normalizeClaimCode(rawCode: string): string {
-	return sanitize(rawCode, 256).toLowerCase();
-}
 
 export async function ensureUserRole(input: {
 	userId: string;
@@ -37,39 +22,6 @@ export async function ensureUserRole(input: {
 		role: nextRole,
 	});
 	return upserted.role;
-}
-
-export async function claimEventForUserByClaimCode(input: {
-	userId: string;
-	claimCode: string;
-}): Promise<{ eventId: string; membershipRole: 'owner' | 'manager' }> {
-	const result = await redeemClaimCodeRpc({
-		userId: input.userId,
-		codeKey: hashClaimCode(input.claimCode),
-	});
-
-	if (!result.success) {
-		const errorMessages: Record<string, string> = {
-			invalid_code: 'Claim code is invalid.',
-			inactive: 'Claim code is inactive.',
-			expired: 'Claim code has expired.',
-			exhausted: 'Claim code has been exhausted.',
-		};
-		throw new ApiError(
-			403,
-			'forbidden',
-			errorMessages[result.errorCode || ''] || 'Failed to redeem the claim code.',
-		);
-	}
-
-	if (!result.eventId) {
-		throw new ApiError(500, 'internal_error', 'Unexpected error: event_id was not returned.');
-	}
-
-	return {
-		eventId: result.eventId,
-		membershipRole: result.membershipRole || 'owner',
-	};
 }
 
 export async function buildAuthSessionDto(input: {

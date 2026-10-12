@@ -77,18 +77,6 @@ function isAuthTokenResponse(value: unknown): value is AuthTokenResponse {
 	);
 }
 
-function isSignUpResponse(value: unknown): value is {
-	id?: string;
-	access_token?: string;
-	refresh_token?: string;
-	user?: { id?: string; email?: string };
-} {
-	if (!isRecord(value)) return false;
-	if (value.access_token !== undefined && typeof value.access_token !== 'string') return false;
-	if (value.refresh_token !== undefined && typeof value.refresh_token !== 'string') return false;
-	return hasStringId(value) || hasStringId(value.user);
-}
-
 function isMagicLinkResponse(value: unknown): value is { message_id?: string } {
 	return (
 		isRecord(value) && (value.message_id === undefined || typeof value.message_id === 'string')
@@ -262,20 +250,6 @@ export async function refreshAccessToken(input: {
 	});
 }
 
-export async function signUpWithPassword(input: { email: string; password: string }): Promise<{
-	id?: string;
-	access_token?: string;
-	refresh_token?: string;
-	user?: { id?: string; email?: string };
-}> {
-	return authRequest({
-		operation: 'sign_up',
-		path: 'signup',
-		body: { email: input.email, password: input.password },
-		validate: isSignUpResponse,
-	});
-}
-
 export async function sendMagicLink(input: {
 	email: string;
 	redirectTo?: string;
@@ -285,7 +259,7 @@ export async function sendMagicLink(input: {
 		path: 'otp',
 		body: {
 			email: input.email,
-			create_user: true,
+			create_user: false,
 			email_redirect_to: input.redirectTo,
 		},
 		validate: isMagicLinkResponse,

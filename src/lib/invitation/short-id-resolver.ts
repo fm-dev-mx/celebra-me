@@ -8,6 +8,7 @@ import {
 	type SocialImageMetadata,
 } from '@/lib/invitation/social-metadata';
 import { resolveShareDescription } from '@/lib/rsvp/services/shared/share-message-defaults';
+import { recordLinkPreview } from '@/lib/rsvp/engagement/engagement.service';
 
 export interface ShortIdOGData {
 	ogTitle: string;
@@ -17,7 +18,13 @@ export interface ShortIdOGData {
 
 export type ShortIdResolution =
 	| { kind: 'redirect'; redirectTarget: string; canonicalUrl: string }
-	| { kind: 'crawler'; ogData: ShortIdOGData; canonicalUrl: string; redirectTarget: string }
+	| {
+			kind: 'crawler';
+			ogData: ShortIdOGData;
+			canonicalUrl: string;
+			redirectTarget: string;
+			inviteId: string;
+	  }
 	| { kind: 'error' };
 
 /**
@@ -45,6 +52,7 @@ export async function resolveShortIdPage(
 	if (resolution.kind === 'redirect') {
 		return { kind: 'redirect', target: resolution.redirectTarget };
 	}
+	await recordLinkPreview(resolution.inviteId, request);
 	return {
 		kind: 'render',
 		ogData: resolution.ogData,
@@ -113,5 +121,6 @@ export async function resolveShortIdRequest(
 		ogData: { ogTitle, ogDescription, ogImage },
 		redirectTarget,
 		canonicalUrl,
+		inviteId: context.inviteId,
 	};
 }

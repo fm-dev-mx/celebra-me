@@ -1,13 +1,8 @@
 import type { InvitationContentDraft } from '@/lib/intake/types';
-import { findInvitationById } from '@/lib/intake/repositories/invitation.repository';
-import { getIntakeRequestsByInvitationId } from '@/lib/intake/services/intake-request.service';
-import { getSubmissionByRequestId } from '@/lib/intake/services/intake-submission.service';
 import {
 	findDraftByInvitationId,
 	updateDraftStatus,
-	upsertDraft,
 } from '@/lib/intake/repositories/invitation-content-draft.repository';
-import { mapBlockDataToDraftContent } from '@/lib/intake/services/draft-content-mapper';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
 	applyDraftMutation,
@@ -15,49 +10,6 @@ import {
 } from '@/lib/intake/services/draft-mutation.service';
 import type { InvitationMutationCommandContext } from '@/lib/intake/mutations/command-context';
 import { recordInvitationMutationOutcome } from '@/lib/intake/services/mutation-operation.service';
-
-export async function generateDraft(invitationId: string): Promise<InvitationContentDraft> {
-	const invitation = await findInvitationById(invitationId);
-	if (!invitation) {
-		throw new ApiError(404, 'not_found', 'Invitation not found.');
-	}
-
-	// Must have an approved intake submission to generate a draft
-	const requests = await getIntakeRequestsByInvitationId(invitationId);
-	if (requests.length === 0) {
-		throw new ApiError(
-			422,
-			'no_approved_submission',
-			'No se encontró una captura de cliente. El cliente debe enviar su información antes de generar un borrador.',
-		);
-	}
-
-	const findByOrigin = async (origin: string) => {
-		const req = requests.find((r) => r.origin === origin);
-		if (!req) return null;
-		const sub = await getSubmissionByRequestId(req.id);
-		return sub?.status === 'approved' ? { request: req, submission: sub } : null;
-	};
-	const result = (await findByOrigin('internal')) ?? (await findByOrigin('client'));
-	if (!result) {
-		throw new ApiError(
-			422,
-			'no_approved_submission',
-			'La captura del cliente debe estar aprobada antes de generar un borrador. Revisa la captura en la página de revisión.',
-		);
-	}
-
-	const content = mapBlockDataToDraftContent(
-		result.submission.blockData,
-		result.request.enabledBlocks,
-	) as Record<string, unknown>;
-
-	return upsertDraft({
-		invitationId: invitationId,
-		submissionId: result.submission.id,
-		content,
-	});
-}
 
 export async function createDraftRevision(invitationId: string): Promise<InvitationContentDraft> {
 	const draft = await findDraftByInvitationId(invitationId);

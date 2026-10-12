@@ -23,6 +23,7 @@ const confirmedContext = {
 	eventSlug: 'gated-location-test-event',
 	eventType: 'primera-comunion' as const,
 	eventTitle: 'Gated Location Test Event',
+	brandingRemovalEnabled: false,
 	guest: {
 		fullName: 'Familia invitada',
 		maxAllowedAttendees: 4,

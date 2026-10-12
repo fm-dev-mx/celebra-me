@@ -1,7 +1,7 @@
 import { ImageDeliverySchema } from '@/lib/assets/image-delivery';
 import { z } from 'zod';
 import { ALL_ASSET_KEYS } from '@/lib/assets/asset-keys';
-import { COUNTDOWN_UNITS } from '@/lib/invitation/presentation-options';
+import { COUNTDOWN_DAY_UNITS, COUNTDOWN_UNITS } from '@/lib/invitation/presentation-options';
 import {
 	EVENT_TYPES,
 	INVITATION_RENDER_SECTION_KEYS,
@@ -173,6 +173,7 @@ export const countdownSchema = z
 		presentationOptions: z
 			.object({
 				visibleUnits: z.array(z.enum(COUNTDOWN_UNITS)).min(1).max(4).optional(),
+				dayUnit: z.enum(COUNTDOWN_DAY_UNITS).optional(),
 			})
 			.strict()
 			.optional(),

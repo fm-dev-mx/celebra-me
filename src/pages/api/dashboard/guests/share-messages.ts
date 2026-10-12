@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { badRequest, errorResponse, jsonResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import { requireDashboardMutationAccess } from '@/lib/rsvp/auth/authorization';
 import { updateShareMessages } from '@/lib/rsvp/services/dashboard-guests.service';
-import { requireDashboardRateLimit } from '@/pages/api/dashboard/guests/dashboard-guests-lib';
+import { requireDashboardRateLimit } from '@/lib/rsvp/core/dashboard-guests-lib';
 import { reminderSettingsSchema } from '@/lib/schemas/content/shared.schema';
 import type { ReminderSettings } from '@/lib/rsvp/services/shared/share-message-defaults';
 

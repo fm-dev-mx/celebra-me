@@ -205,6 +205,31 @@ describe('regression: shared guest CTA and status', () => {
 });
 
 describe('parseGuestCommentHistory', () => {
+	it('keeps blank lines inside a message instead of splitting it', () => {
+		const input =
+			'Primer párrafo.\n\nSegundo párrafo.\n\n[12 jun 2026, 11:03] Otra línea\n\ncon párrafo.';
+		const result = parseGuestCommentHistory(input);
+		expect(result).toHaveLength(2);
+		expect(result[0]).toMatchObject({
+			message: 'Otra línea\n\ncon párrafo.',
+			timestampLabel: '12 jun 2026, 11:03',
+		});
+		expect(result[1]).toMatchObject({
+			message: 'Primer párrafo.\n\nSegundo párrafo.',
+			isInitial: true,
+		});
+	});
+
+	it('reads a timestamped message that spans several lines', () => {
+		const result = parseGuestCommentHistory(
+			'Hola\n\n[12 jun 2026, 11:03] Línea uno\nLínea dos',
+		);
+		expect(result[0]).toMatchObject({
+			message: 'Línea uno\nLínea dos',
+			timestampLabel: '12 jun 2026, 11:03',
+		});
+	});
+
 	it('returns empty array for blank input', () => {
 		expect(parseGuestCommentHistory('')).toEqual([]);
 		expect(parseGuestCommentHistory('   ')).toEqual([]);
@@ -254,7 +279,7 @@ describe('parseGuestCommentHistory', () => {
 	});
 
 	it('has stable ids based on order', () => {
-		const result = parseGuestCommentHistory('A\n\nB');
+		const result = parseGuestCommentHistory('A\n\n[12 jun 2026, 10:00] B');
 		expect(result[0].id).toBe('msg-1');
 		expect(result[1].id).toBe('msg-0');
 	});

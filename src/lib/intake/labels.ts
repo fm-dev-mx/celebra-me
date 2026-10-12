@@ -3,12 +3,7 @@ import {
 	PUBLIC_SECTION_DEFINITIONS,
 	CONFIG_SECTION_DEFINITIONS,
 } from '@/lib/intake/invitation-section-registry';
-import type {
-	InvitationStatus,
-	IntakeSubmissionStatus,
-	IntakeRequestStatus,
-	IntakeBlockType,
-} from '@/lib/intake/types';
+import type { InvitationStatus } from '@/lib/intake/types';
 import type { EnvelopeSealColor } from '@/lib/invitation/reveal-card';
 
 export const ENVELOPE_SEAL_COLOR_LABELS: Record<EnvelopeSealColor, string> = {
@@ -42,17 +37,6 @@ export const SECTION_LABELS: Record<string, string> = {
 	thankYou: PUBLIC_SECTION_DEFINITIONS.thankYou.label,
 	memories: PUBLIC_SECTION_DEFINITIONS.memories.label,
 	photoNotes: 'Notas de fotografías',
-};
-
-export const BLOCK_LABELS: Record<IntakeBlockType, string> = {
-	'event-details': 'Detalles del evento',
-	'main-people': 'Personas principales',
-	'date-locations': 'Fecha y ubicaciones',
-	photos: 'Fotografías',
-	'rsvp-config': 'Confirmación de asistencia',
-	music: 'Música de fondo',
-	gifts: 'Mesa de regalos',
-	'special-messages': 'Mensajes especiales',
 };
 
 export const PHOTO_LABELS: Record<string, string> = {
@@ -135,37 +119,11 @@ export const VENUE_LABELS: Record<string, string> = {
 
 export const INVITATION_STATUS_LABELS: Record<InvitationStatus, string> = {
 	draft: 'Borrador',
-	waiting_for_client: 'Esperando cliente',
-	client_submitted: 'Captura recibida',
-	in_review: 'En revisión',
 	in_production: 'En producción',
 	preview_sent: 'Vista previa enviada',
 	approved: 'Aprobada',
 	published: 'Publicada',
 	archived: 'Archivada',
-};
-
-export const SUBMISSION_STATUS_LABELS: Record<IntakeSubmissionStatus, string> = {
-	in_progress: 'En progreso',
-	submitted: 'Enviada',
-	needs_changes: 'Requiere cambios',
-	approved: 'Aprobada',
-};
-
-export const REQUEST_STATUS_LABELS: Record<IntakeRequestStatus, string> = {
-	draft: 'Borrador',
-	active: 'Activo',
-	submitted: 'Enviado',
-	closed: 'Cerrado',
-	expired: 'Expirado',
-};
-
-export const CAPTURE_LINK_STATUS_LABELS: Record<string, string> = {
-	active: 'Activo',
-	expired: 'Expirado',
-	missing: 'Sin enlace',
-	revoked: 'Revocado',
-	unavailable: 'No recuperable',
 };
 
 export const EVENT_TYPE_LABELS: Record<EventType, string> = {

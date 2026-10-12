@@ -1,26 +1,23 @@
 import { expect, test, type Page } from '@playwright/test';
+import { buildDeliveryBenchmarkScenarios } from '../../src/lib/invitation/delivery-budget';
 
 /**
  * Opt-in diagnostic: observes markup src vs browser-selected currentSrc.
- * Paths must stay aligned with DELIVERY_BENCHMARK_SCENARIOS.
+ * Routes come from the same scenario builder as `pnpm invitation:delivery:baseline`.
  * Not part of `pnpm test:e2e:ci`. Does not mutate data.
  *
- *   DELIVERY_DIAGNOSTICS_ORIGIN=https://www.celebra-me.com pnpm exec playwright test tests/e2e/invitation-delivery-media.diagnostic.spec.ts
+ *   DELIVERY_DIAGNOSTICS_ORIGIN=https://www.celebra-me.com DELIVERY_DIAGNOSTICS_SLUG=<eventType>/<slug> \
+ *     [DELIVERY_DIAGNOSTICS_LEGACY_SLUG=<eventType>/<slug>] pnpm exec playwright test tests/e2e/invitation-delivery-media.diagnostic.spec.ts
  */
 const origin = process.env.DELIVERY_DIAGNOSTICS_ORIGIN?.replace(/\/$/, '');
+const versionedSlug = process.env.DELIVERY_DIAGNOSTICS_SLUG;
 
-const scenarios = [
-	{
-		id: 'versionedAnonymous',
-		path: '/xv/renata',
-		architecture: 'hashed-cloudinary',
-	},
-	{
-		id: 'legacyStorageAnonymous',
-		path: '/xv/romina-rios-chaparro',
-		architecture: 'mutable-storage',
-	},
-] as const;
+const scenarios = versionedSlug
+	? buildDeliveryBenchmarkScenarios({
+			versionedSlug,
+			legacyStorageSlug: process.env.DELIVERY_DIAGNOSTICS_LEGACY_SLUG,
+		}).filter((scenario) => !scenario.personalized)
+	: [];
 
 async function paintedHero(page: Page) {
 	return page.evaluate(() => {

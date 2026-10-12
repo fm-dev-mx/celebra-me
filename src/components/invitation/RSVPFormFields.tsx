@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import type { RefObject } from 'react';
 import type { AttendanceStatus } from '@/components/invitation/rsvp-logic';
 import { COUNTRY_OPTIONS } from '@/lib/phone/country-codes';
+import { MAX_GUEST_COMMENT_LEN } from '@/lib/rsvp/core/guest-message';
 
 const FIELD_ANIMATION_BASE_DELAY = 0.05;
 const FIELD_ANIMATION_STEP = 0.05;
@@ -365,6 +366,7 @@ export function ConfirmedFields(props: {
 						id="notes"
 						placeholder={notesPlaceholder}
 						rows={3}
+						maxLength={MAX_GUEST_COMMENT_LEN}
 						value={notes}
 						onChange={(e) => onNotesChange(e.target.value)}
 						disabled={!isExpanded}

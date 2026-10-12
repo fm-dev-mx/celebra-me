@@ -44,6 +44,7 @@ export interface InvitationCssLoadItem {
 const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'satin-filigree': 'satin-filigree',
 	'seaside-lineart': 'seaside-lineart',
+	'storybook-lanterns': 'storybook-lanterns',
 	'premiere-floral': 'premiere-floral',
 	'luxury-hacienda': 'luxury-hacienda',
 	'jewelry-box': 'shared-light',
@@ -89,8 +90,6 @@ export function buildSectionBundleUrlMap(modules: Record<string, CssModule>): Se
 
 	return sectionBundleUrlMap;
 }
-
-export const buildInvitationProfileUrlMap = buildSectionBundleUrlMap;
 
 export function resolveSectionBundleCssUrl(
 	sectionBundleUrlMap: SectionBundleUrlMap,

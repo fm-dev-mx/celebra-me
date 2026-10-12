@@ -44,6 +44,7 @@ export interface GuestFormPayload {
 	attendanceStatus?: AttendanceStatus;
 	attendeeCount?: number;
 	tags?: string[];
+	isTest?: boolean;
 }
 
 interface NotificationPayload {

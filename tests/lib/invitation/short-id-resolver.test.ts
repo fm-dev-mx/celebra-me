@@ -9,6 +9,10 @@ jest.mock('@/lib/social/social-crawler', () => ({
 	isSocialCrawler: jest.fn(),
 }));
 
+jest.mock('@/lib/rsvp/engagement/engagement.service', () => ({
+	recordLinkPreview: jest.fn(),
+}));
+
 jest.mock('@/lib/invitation/content-resolver', () => ({
 	resolveInvitationContent: jest.fn(),
 }));
@@ -26,7 +30,8 @@ jest.mock('@/lib/invitation/social-metadata', () => ({
 	})),
 }));
 
-import { resolveShortIdRequest } from '@/lib/invitation/short-id-resolver';
+import { resolveShortIdPage, resolveShortIdRequest } from '@/lib/invitation/short-id-resolver';
+import { recordLinkPreview } from '@/lib/rsvp/engagement/engagement.service';
 import { getInvitationContextByShortId } from '@/lib/rsvp/services/invitation-context.service';
 import { isSocialCrawler } from '@/lib/social/social-crawler';
 import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
@@ -255,15 +260,40 @@ describe('resolveShortIdRequest', () => {
 			assertIsRedirect(result);
 		});
 
-		it('treats user-agent with Instagram as crawler', async () => {
+		it('follows the crawler detector for the user agent', async () => {
 			jest.spyOn(console, 'error').mockImplementation(() => {});
-			mockedIsCrawler.mockImplementation((ua: string) => /whatsapp|instagram/i.test(ua));
+			mockedIsCrawler.mockImplementation((ua: string) => /whatsapp/i.test(ua));
 			const result = await resolveShortIdRequest(
 				'ABC123',
-				'Mozilla/5.0 Instagram 123',
+				'WhatsApp/2.24.10.81 A',
 				SITE_ORIGIN,
 			);
 			assertIsCrawler(result);
+			expect(result.inviteId).toBe('invite-abc-123');
+		});
+	});
+
+	describe('link preview engagement', () => {
+		it('records a link preview when a crawler fetches the short link page', async () => {
+			jest.spyOn(console, 'error').mockImplementation(() => {});
+			mockedGetContext.mockResolvedValue(validContext);
+			mockedIsCrawler.mockReturnValue(true);
+			const request = new Request('https://www.celebra-me.com/i/ABC123', {
+				headers: { 'user-agent': 'WhatsApp/2.24.10.81 A' },
+			});
+			const result = await resolveShortIdPage('ABC123', request, SITE_ORIGIN);
+			expect(result.kind).toBe('render');
+			expect(recordLinkPreview).toHaveBeenCalledWith('invite-abc-123', request);
+		});
+
+		it('does not record a preview for a guest redirect', async () => {
+			(recordLinkPreview as jest.Mock).mockClear();
+			mockedGetContext.mockResolvedValue(validContext);
+			mockedIsCrawler.mockReturnValue(false);
+			const request = new Request('https://www.celebra-me.com/i/ABC123');
+			const result = await resolveShortIdPage('ABC123', request, SITE_ORIGIN);
+			expect(result.kind).toBe('redirect');
+			expect(recordLinkPreview).not.toHaveBeenCalled();
 		});
 	});
 });

@@ -1,0 +1,241 @@
+// Storybook lilac, theme-wide token blocks that need section DOM knowledge: the quote's own
+// component defaults, the header over the night, the night band itself (a remap of the semantic
+// color bridge per section kind, from the countdown on) and the reply card printed inside it.
+// Custom properties only; geometry stays with the section bases and registered variants.
+
+.theme-preset--storybook-lilac {
+	// The quote section declares its own component defaults, so its tokens are set on it. An
+	// invitation may lay drawn art over the paper (`--storybook-quote-art`, background layers) and
+	// open room for it (`--storybook-quote-padding-block`); both default to the plain page.
+	.quote-section {
+		--quote-bg: var(--storybook-quote-art, none), var(--storybook-paper);
+		--quote-text-color: var(--color-violet-ink);
+		--quote-author-color: var(--color-gold-ink);
+		--quote-accent-color: var(--color-leaf-gold);
+		--quote-padding-block: var(--storybook-quote-padding-block, clamp(4.5rem, 12vh, 7.5rem));
+
+		// 30rem keeps the closing words of a two-sentence quote together on desktop.
+		--quote-content-max-width: 30rem;
+		--quote-content-font: var(--font-display);
+		--quote-content-size: clamp(1.55rem, 4.4vw, 2.35rem);
+		--quote-content-line-height: 1.35;
+		--quote-content-letter-spacing: 0;
+		--quote-divider-display: none;
+		--quote-ornament-color: var(--color-leaf-gold);
+		--quote-ornament-opacity: 0.6;
+		--quote-texture-bg: none;
+		--quote-texture-opacity: 0;
+		--quote-content-style: italic;
+	}
+
+	// Full names (two given names, two surnames) stay on one line wherever the column allows it.
+	.family {
+		--family-name-max-width: 30ch;
+	}
+
+	// The gallery section declares its own title defaults (tracked capitals), so the chapter
+	// title is set here, in the display italic of the other chapters.
+	.gallery-section {
+		--gallery-title-transform: none;
+		--gallery-title-letter-spacing: 0;
+		--gallery-title-style: italic;
+		--gallery-title-size: clamp(2.1rem, 5vw, 3.2rem);
+	}
+
+	// Header over the night: cream links, candle hover.
+	.header-base {
+		--header-bg-scrolled: rgb(var(--color-violet-night-rgb) / 92%);
+		--header-border-color: rgb(var(--color-candle-gold-rgb) / 18%);
+		--header-nav-title-color: var(--color-candle-cream);
+		--header-nav-color: var(--color-candle-cream);
+		--header-nav-color-transparent: var(--color-candle-cream);
+		--header-nav-hover-color: var(--color-candle-gold);
+		--header-nav-shadow-transparent: 0 1px 6px rgb(var(--color-violet-night-rgb) / 34%);
+		--header-nav-cta-bg: rgb(var(--color-candle-cream-rgb) / 10%);
+		--header-nav-cta-color: var(--color-candle-cream);
+		--header-nav-cta-border: rgb(var(--color-candle-gold-rgb) / 50%);
+		--header-nav-cta-hover-bg: rgb(var(--color-candle-gold-rgb) / 18%);
+		--header-nav-cta-hover-color: var(--color-candle-cream);
+		--header-nav-cta-hover-border: rgb(var(--color-candle-gold-rgb) / 70%);
+		--mobile-drawer-bg: rgb(var(--color-violet-night-rgb) / 97%);
+		--mobile-drawer-border: rgb(var(--color-candle-gold-rgb) / 18%);
+		--mobile-drawer-link-color: var(--color-candle-cream);
+		--mobile-drawer-link-hover: var(--color-candle-gold);
+		--mobile-drawer-cta-bg: var(--color-candle-gold);
+		--mobile-drawer-cta-color: var(--color-violet-night);
+		--hamburger-color: var(--color-candle-cream);
+		--hamburger-color-menu-open: var(--color-candle-cream);
+	}
+
+	// Night band: from the countdown on, every section kind (and every framed print) reads
+	// against the night. Arch joins paint the night color, so a day section above closes on the
+	// silhouette of a door.
+	.invitation-section-wrapper:is(
+		[data-section-kind='countdown'],
+		[data-section-kind='location'],
+		[data-section-kind='itinerary'],
+		[data-section-kind='gallery'],
+		[data-section-kind='gifts'],
+		[data-section-kind='personalized-access'],
+		[data-section-kind='rsvp'],
+		[data-section-kind='thankYou']
+	),
+	.invitation-interlude[data-presentation='framed'],
+	.invitation-footer {
+		--section-band-paper: var(--storybook-night);
+		--intersection-surface: var(--color-violet-night);
+		--intersection-surface-fill: var(--storybook-night);
+		--intersection-blend: radial-gradient(
+			ellipse 140% 100% at 50% 0%,
+			rgb(var(--color-candle-gold-rgb) / 14%) 0%,
+			transparent 72%
+		);
+		--color-surface-primary: var(--color-violet-night);
+		--color-surface-primary-rgb: var(--color-violet-night-rgb);
+		--color-surface-secondary: var(--color-violet-midnight);
+		--color-surface-secondary-rgb: var(--color-violet-midnight-rgb);
+		--color-surface-soft: var(--color-violet-dusk);
+		--color-action-accent: var(--color-candle-gold);
+		--color-action-accent-rgb: var(--color-candle-gold-rgb);
+		--color-text-primary: var(--color-candle-cream);
+		--color-text-primary-rgb: var(--color-candle-cream-rgb);
+		--color-text-secondary: var(--color-night-lilac);
+		--color-text-secondary-rgb: var(--color-night-lilac-rgb);
+		--color-text-emphasis: var(--color-candle-gold);
+		--color-text-muted: var(--color-night-lilac);
+		--color-border-subtle: rgb(var(--color-candle-gold-rgb) / 18%);
+		--color-border-premium: rgb(var(--color-candle-gold-rgb) / 54%);
+		--color-ornament-gold: var(--color-candle-gold);
+	}
+
+	// Radio rings read as controls on the cream card (lilac deep, above 3:1), and the chosen answer
+	// is inked in gold. `.rsvp` declares these defaults itself, so they are set on it.
+	.rsvp {
+		--rsvp-radio-indicator-border: var(--color-lilac-deep);
+		--rsvp-radio-selected-border: var(--color-gold-ink);
+		--rsvp-radio-indicator-dot: var(--color-gold-ink);
+		--rsvp-radio-selected-bg: rgb(var(--color-candle-gold-rgb) / 14%);
+		--rsvp-radio-label-color-selected: var(--color-violet-ink);
+	}
+
+	// América (visualProfileId 'america') only: the countdown is one centered line of light, a
+	// large thin numeral, the nights, and the promise of the lanterns. The date already lives on the
+	// envelope card and the cover. Other storybook-lilac invitations keep the written layout.
+	&.event--america .countdown-section {
+		--countdown-written-date-display: none;
+		--countdown-written-wide-columns: auto;
+		--countdown-written-rule-display: none;
+		--countdown-written-wide-align: center;
+		--countdown-written-wide-justify: center;
+		--countdown-written-footer-column: 1;
+		--countdown-written-footer-row: 4;
+		--countdown-written-footer-justify: center;
+		--countdown-written-numeral: clamp(7rem, 30vw, 11rem);
+	}
+
+	// América only: the envelope is the night the story ends in, violet paper under a sky of distant
+	// lights and rising lanterns, a gold-leaf hairline on the flap, the wax sun, and warm light
+	// spilling from inside as the flap turns. The card inside stays cream paper with day inks and no
+	// drawn art.
+	&.event--america .envelope-wrapper[data-variant='storybook-lanterns'] {
+		// The lights live on the depth sky (see the reveal skin); the field is the night alone.
+		--storybook-sky-display: block;
+		--storybook-sky-light: var(--color-candle-cream);
+		--storybook-sky-glow: var(--color-candle-gold);
+		--storybook-sky-lantern: var(--color-lantern-amber);
+		--storybook-field: radial-gradient(
+			ellipse 120% 70% at 50% 100%,
+			var(--color-violet-dusk) 0%,
+			var(--color-violet-night) 55%,
+			var(--color-violet-midnight) 100%
+		);
+		--storybook-envelope-paper: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--color-violet-dusk) 72%, var(--color-violet-night)),
+			var(--color-violet-night)
+		);
+		--storybook-paper-grain: var(--storybook-night-grain);
+		--storybook-ink: var(--color-candle-gold);
+		--storybook-liner-paper: radial-gradient(
+			ellipse 90% 80% at 50% 0%,
+			var(--color-candle-cream) 0%,
+			var(--color-candle-gold) 34%,
+			var(--color-violet-dusk) 100%
+		);
+		--storybook-instruction-ink: var(--color-night-lilac);
+		--storybook-seal-rim-shadow:
+			0 1px 0 rgb(var(--color-violet-midnight-rgb) / 60%),
+			0 10px 22px -6px rgb(var(--color-violet-midnight-rgb) / 80%),
+			inset 0 1px 0 rgb(255 255 255 / 55%);
+		--storybook-card-ornament-display: none;
+		--color-text-primary: var(--color-candle-cream);
+		--color-text-primary-rgb: var(--color-candle-cream-rgb);
+		--color-text-secondary: var(--color-night-lilac);
+		--color-text-secondary-rgb: var(--color-night-lilac-rgb);
+		--env-shadow-container:
+			0 0 0 1px rgb(var(--color-candle-gold-rgb) / 28%),
+			0 34px 64px -26px rgb(var(--color-violet-midnight-rgb) / 90%);
+		--env-shadow-seal:
+			0 1px 0 rgb(var(--color-violet-midnight-rgb) / 50%),
+			0 4px 10px rgb(var(--color-violet-midnight-rgb) / 55%),
+			inset 1px 1px 0 rgb(255 255 255 / 55%), inset -1px -2px 3px rgb(0 0 0 / 22%);
+		--reveal-card-text-primary: var(--color-violet-ink);
+		--reveal-card-text-secondary: var(--color-violet-ink-soft);
+		--reveal-card-shadow: 0 1px 2px rgb(var(--color-violet-midnight-rgb) / 40%);
+	}
+
+	&.event--america .envelope-wrapper[data-variant='storybook-lanterns'] .invitation-reveal-card {
+		--color-text-primary: var(--color-violet-ink);
+		--color-text-primary-rgb: var(--color-violet-ink-rgb);
+		--color-text-secondary: var(--color-violet-ink-soft);
+		--color-text-secondary-rgb: var(--color-violet-ink-soft-rgb);
+	}
+
+	// An arch between two night sections has no color edge, so it is drawn as a gold door line,
+	// mirrored (crown right of center) so the closing answers the opening arch instead of copying it.
+	.invitation-section-wrapper[data-intersection='arch'][data-intersection-source='rsvp'] {
+		--intersection-arch-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M100 24V16.2C87.5 16.2 77.2 9.4 62 8.2C51.5 7.4 43 7.8 33.5 8.8C21 10.2 9.5 12.8 0 15.4V24Z'/%3E%3C/svg%3E");
+		--intersection-arch-ink: rgb(var(--color-candle-gold-rgb) / 62%);
+		--intersection-arch-ink-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='1.25' vector-effect='non-scaling-stroke' d='M100 16.2C87.5 16.2 77.2 9.4 62 8.2C51.5 7.4 43 7.8 33.5 8.8C21 10.2 9.5 12.8 0 15.4'/%3E%3C/svg%3E");
+	}
+
+	// The reply card is printed paper inside the night: its sections return to the day inks.
+	.personalized-access,
+	.rsvp-section {
+		--color-action-accent: var(--color-gold-ink);
+		--color-action-accent-rgb: var(--color-gold-ink-rgb);
+		--color-text-primary: var(--color-violet-ink);
+		--color-text-primary-rgb: var(--color-violet-ink-rgb);
+		--color-text-secondary: var(--color-violet-ink-soft);
+		--color-text-secondary-rgb: var(--color-violet-ink-soft-rgb);
+		--color-text-muted: var(--color-violet-ink-soft);
+		--color-border-subtle: rgb(var(--color-leaf-gold-rgb) / 24%);
+		--color-border-premium: rgb(var(--color-leaf-gold-rgb) / 58%);
+		--reply-card-ink: var(--color-violet-ink);
+		--reply-card-muted: var(--color-violet-ink-soft);
+		--reply-card-rule: rgb(var(--color-leaf-gold-rgb) / 55%);
+		--reply-card-accent: var(--color-gold-ink);
+
+		// The two answers are ruled rows on the paper, not form boxes.
+		--reply-card-option-bg: transparent;
+
+		// The pass subtitle is a quiet line under the label, not a second heading.
+		--pa-subtitle-weight: 400;
+	}
+
+	// The signature gradient runs from candle gold into cream, never into the night behind it.
+	// The closing copy shares the axis of the bow and plait under the signature, and the message
+	// opens without a drop cap, so no initial detaches from its word.
+	.thank-you-section {
+		--color-action-primary: var(--color-candle-cream);
+		--color-action-primary-rgb: var(--color-candle-cream-rgb);
+		--thank-you-keepsake-copy-align: center;
+		--thank-you-keepsake-text-align: center;
+		--thank-you-drop-cap-float: none;
+		--thank-you-drop-cap-margin: 0;
+		--thank-you-drop-cap-size: 1em;
+		--thank-you-drop-cap-size-desktop: 1em;
+		--thank-you-drop-cap-weight: inherit;
+		--thank-you-drop-cap-line-height: inherit;
+	}
+}

@@ -1,0 +1,162 @@
+@use '../global/mixins' as mixins;
+
+/* ==========================================================================
+   Message wall — every guest message in full, read like signed notes, shown
+   under "Con mensaje". One column on phones, two from tablets up.
+   ========================================================================== */
+
+.guest-message-wall {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.guest-message-wall__header {
+	display: flex;
+	flex-direction: column;
+	gap: 0.125rem;
+}
+
+.guest-message-wall__title {
+	margin: 0;
+	color: var(--color-text-primary);
+	font-family: var(--font-display-elegant);
+	font-size: 1.375rem;
+	font-weight: 700;
+	line-height: 1.25;
+}
+
+.guest-message-wall__hint {
+	margin: 0;
+	color: var(--color-text-secondary);
+	font-size: 0.875rem;
+}
+
+.guest-message-wall__list {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 0.75rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	@include mixins.respond-to(md) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-items: start;
+	}
+}
+
+/* The open button stretches over the card, so the whole note is one target. */
+.guest-message-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 0.625rem;
+	padding: 0.875rem 1rem 0.75rem;
+	border: 1px solid var(--color-border-subtle);
+	border-left: 4px solid var(--color-border-emphasis, var(--color-action-accent));
+	border-radius: 16px;
+	background: var(--color-surface-elevated);
+	transition:
+		border-color 0.15s ease,
+		box-shadow 0.15s ease;
+
+	&:hover {
+		border-color: var(--color-border-control);
+		box-shadow: 0 2px 10px rgb(var(--color-text-primary-rgb) / 8%);
+	}
+
+	&:has(.guest-message-card__open:focus-visible) {
+		@include mixins.focus-ring;
+	}
+}
+
+.guest-message-card__top {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.375rem 0.75rem;
+}
+
+.guest-message-card__meta {
+	margin: 0;
+	color: var(--color-text-muted);
+	font-size: 0.8125rem;
+}
+
+.guest-message-card__figure {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin: 0;
+}
+
+.guest-message-card__quote {
+	position: relative;
+	margin: 0;
+	padding: 0 0 0 1.5rem;
+	border: 0;
+
+	/* Decorative opening mark; empty alt text keeps it out of the accessibility tree. */
+	&::before {
+		content: '\201C' / '';
+		position: absolute;
+		top: -0.375rem;
+		left: -0.125rem;
+		color: var(--color-action-accent);
+		font-family: var(--font-display-elegant);
+		font-size: 2.5rem;
+		line-height: 1;
+	}
+}
+
+.guest-message-card__text {
+	margin: 0;
+	color: var(--color-text-primary);
+	font-family: var(--font-body-narrative);
+	font-size: 1.125rem;
+	line-height: 1.55;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+.guest-message-card__signature {
+	align-self: flex-end;
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	font-size: 0.9375rem;
+	font-weight: 700;
+	text-align: right;
+	overflow-wrap: anywhere;
+
+	&::before {
+		content: '— ' / '';
+	}
+}
+
+.guest-message-card__open {
+	align-self: flex-start;
+	min-height: 44px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	font-size: 0.875rem;
+	font-weight: 700;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	cursor: pointer;
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+	}
+
+	&:focus-visible {
+		outline: none;
+	}
+}

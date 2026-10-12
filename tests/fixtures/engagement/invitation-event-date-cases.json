@@ -1,0 +1,93 @@
+[
+    {
+        "name": "localDateTime wins over startsAtUtc and hero.date",
+        "content": {
+            "eventTiming": {
+                "localDateTime": "2026-12-05T19:30",
+                "timeZone": "America/Mexico_City",
+                "startsAtUtc": "2026-12-06T01:30:00.000Z"
+            },
+            "hero": { "date": "2026-01-01T00:00:00Z" }
+        },
+        "expected": "2026-12-05"
+    },
+    {
+        "name": "localDateTime is trimmed",
+        "content": { "eventTiming": { "localDateTime": " 2026-12-05T19:30 " } },
+        "expected": "2026-12-05"
+    },
+    {
+        "name": "impossible localDateTime is not masked by hero.date",
+        "content": {
+            "eventTiming": { "localDateTime": "2026-02-30T10:00" },
+            "hero": { "date": "2026-03-01T00:00:00Z" }
+        },
+        "expected": null
+    },
+    {
+        "name": "localDateTime hour 24 is invalid",
+        "content": { "eventTiming": { "localDateTime": "2026-12-05T24:00" } },
+        "expected": null
+    },
+    {
+        "name": "null localDateTime falls back to startsAtUtc",
+        "content": {
+            "eventTiming": {
+                "localDateTime": null,
+                "startsAtUtc": "2026-12-06T03:00:00.000Z",
+                "timeZone": "America/Chihuahua"
+            }
+        },
+        "expected": "2026-12-05"
+    },
+    {
+        "name": "startsAtUtc uses the default zone",
+        "content": { "eventTiming": { "startsAtUtc": "2026-12-06T05:59:00.000Z" } },
+        "expected": "2026-12-05"
+    },
+    {
+        "name": "startsAtUtc without milliseconds is invalid",
+        "content": { "eventTiming": { "startsAtUtc": "2026-12-06T03:00:00Z" } },
+        "expected": null
+    },
+    {
+        "name": "legacy hero.date with Z is a floating local date",
+        "content": { "hero": { "date": "2026-11-14T00:00:00Z" } },
+        "expected": "2026-11-14"
+    },
+    {
+        "name": "legacy hero.date as a plain date",
+        "content": { "hero": { "date": "2026-11-14" } },
+        "expected": "2026-11-14"
+    },
+    {
+        "name": "legacy hero.date with an impossible hour",
+        "content": { "hero": { "date": "2026-11-14T25:00:00Z" } },
+        "expected": null
+    },
+    {
+        "name": "empty zone keeps the legacy date",
+        "content": { "eventTiming": { "timeZone": "" }, "hero": { "date": "2026-11-14" } },
+        "expected": "2026-11-14"
+    },
+    {
+        "name": "unknown zone invalidates the date",
+        "content": { "eventTiming": { "timeZone": "Mars/Base" }, "hero": { "date": "2026-11-14" } },
+        "expected": null
+    },
+    {
+        "name": "zone without a slash is invalid",
+        "content": { "eventTiming": { "localDateTime": "2026-12-05T19:30", "timeZone": "UTC" } },
+        "expected": null
+    },
+    {
+        "name": "non-string zone is invalid",
+        "content": { "eventTiming": { "localDateTime": "2026-12-05T19:30", "timeZone": 5 } },
+        "expected": null
+    },
+    {
+        "name": "no timing data",
+        "content": { "title": "Sin fecha" },
+        "expected": null
+    }
+]

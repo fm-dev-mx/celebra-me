@@ -49,12 +49,12 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 				createdAt: '2026-07-20T00:00:00.000Z',
 				lifecycle: 'in_progress',
 				deliveryScope: 'content-and-assets',
-				eventType: 'xv',
+				eventType: 'cumple',
 				title: 'Test Title',
 				clientName: 'Client Name',
 				hostLoginAlias: 'client_name',
-				baseDemoId: 'demo-xv-premiere-floral',
-				themeId: 'premiere-floral',
+				baseDemoId: 'demo-cumple-luxury-hacienda',
+				themeId: 'luxury-hacienda',
 				visualProfileId: 'test-invitation',
 				eventTiming: {
 					localDateTime: '2026-08-14T17:00',
@@ -65,11 +65,31 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 					{ key: 'hero', relativePath: 'hero.jpg', displayName: 'Hero', alt: 'Alt' },
 				],
 				buildPublishedContent: (assets) => ({
-					eventType: 'xv',
+					eventType: 'cumple',
 					title: 'Test Title',
-					theme: { preset: 'premiere-floral' },
-					sectionOrder: ['rsvp'],
+					theme: { preset: 'luxury-hacienda' },
+					sectionOrder: ['location', 'countdown', 'rsvp', 'thankYou'],
 					composition: { intersections: {} },
+					location: {
+						variant: 'standard',
+						venues: [
+							{
+								type: 'reception',
+								venueEvent: 'Recepción',
+								date: '14 de agosto de 2026',
+								time: '5:00 p. m.',
+								venueName: 'Salón de prueba',
+								address: 'Calle 1',
+								city: 'Culiacán, Sinaloa',
+							},
+						],
+					},
+					countdown: { variant: 'standard' },
+					thankYou: {
+						variant: 'standard',
+						message: 'Gracias',
+						closingName: 'Test Title',
+					},
 					hero: {
 						name: 'Test Title',
 						date: '2026-08-14T23:00:00.000Z',
@@ -83,7 +103,7 @@ describe('Single-File Invitation Definition Contract & Registry', () => {
 			expect(def.slug).toBe('test-invitation');
 			expect(def.managedIdentityId).toBe(TEST_MANAGED_IDENTITY_ID);
 			expect(def.hostLoginAlias).toBe('client_name');
-			expect(def.eventType).toBe('xv');
+			expect(def.eventType).toBe('cumple');
 			expect(def.assets).toHaveLength(1);
 		});
 

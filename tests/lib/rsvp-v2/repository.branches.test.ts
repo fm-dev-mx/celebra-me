@@ -9,7 +9,6 @@ import {
 	findMembershipByEventForHost,
 	listMembershipsForHost,
 } from '@/lib/rsvp/repositories/role-membership.repository';
-import { incrementClaimCodeUsageService } from '@/lib/rsvp/repositories/claim-code.repository';
 import {
 	createGuestInvitation,
 	findGuestById,
@@ -164,19 +163,6 @@ describe('rsvp repository branches', () => {
 		);
 		expect(supabaseRestRequestMock.mock.calls[6]?.[0]?.pathWithQuery).toContain(
 			'deleted_at=is.null',
-		);
-	});
-
-	it('increments claim usage with provided count', async () => {
-		supabaseRestRequestMock.mockResolvedValue([] as never);
-		await incrementClaimCodeUsageService('claim-1', 5);
-		expect(supabaseRestRequestMock).toHaveBeenCalledWith(
-			expect.objectContaining({
-				method: 'PATCH',
-				body: expect.objectContaining({
-					used_count: 5,
-				}),
-			}),
 		);
 	});
 });

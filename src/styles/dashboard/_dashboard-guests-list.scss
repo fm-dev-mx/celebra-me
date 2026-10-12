@@ -230,12 +230,26 @@
 }
 
 .guest-row__message {
-	display: inline-flex;
+	display: flex;
 	align-items: center;
 	gap: 0.3rem;
+	min-width: 0;
 	color: var(--color-state-info-text);
 	font-size: 0.9375rem;
 	font-weight: 600;
+
+	svg {
+		flex-shrink: 0;
+	}
+}
+
+/* One-line preview; the full message lives in the detail sheet. */
+.guest-row__message-text {
+	min-width: 0;
+	overflow: hidden;
+	font-style: italic;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .guest-row__chevron {

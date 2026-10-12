@@ -175,27 +175,13 @@ export function runManagedIdentityDiagnostics(dbUrl: string): ManagedIdentityDia
                i.managed_identity_id::text as managed_identity_id,
                (select count(*)::int from public.events e where e.invitation_project_id = i.id and e.deleted_at is null) as active_events,
                (select count(*)::int from public.published_invitation_content p where p.invitation_project_id = i.id and p.deleted_at is null) as active_published,
-               (select count(*)::int from public.invitation_content_drafts d where d.invitation_project_id = i.id and d.deleted_at is null) as active_drafts,
-               (select count(*)::int from public.intake_requests r where r.invitation_project_id = i.id and r.deleted_at is null) as active_intake,
-               (select count(*)::int from public.intake_submissions s
-                 where s.deleted_at is null
-                   and s.intake_request_id in (
-                     select r.id from public.intake_requests r where r.invitation_project_id = i.id
-                   )) as active_submissions
+               (select count(*)::int from public.invitation_content_drafts d where d.invitation_project_id = i.id and d.deleted_at is null) as active_drafts
         from public.invitations i
         where i.archived_at is not null
           and (
             exists (select 1 from public.events e where e.invitation_project_id = i.id and e.deleted_at is null)
             or exists (select 1 from public.published_invitation_content p where p.invitation_project_id = i.id and p.deleted_at is null)
             or exists (select 1 from public.invitation_content_drafts d where d.invitation_project_id = i.id and d.deleted_at is null)
-            or exists (select 1 from public.intake_requests r where r.invitation_project_id = i.id and r.deleted_at is null)
-            or exists (
-              select 1 from public.intake_submissions s
-              where s.deleted_at is null
-                and s.intake_request_id in (
-                  select r.id from public.intake_requests r where r.invitation_project_id = i.id
-                )
-            )
           )
       ) t;`,
 		'Archived-parent active-child probe',
@@ -208,11 +194,13 @@ export function runManagedIdentityDiagnostics(dbUrl: string): ManagedIdentityDia
 			slug: String(row.slug ?? ''),
 			managedIdentityId: row.managed_identity_id ? String(row.managed_identity_id) : null,
 			invitationId: row.invitation_id ? String(row.invitation_id) : null,
-			detail: `Archived invitation has active children (events=${row.active_events}, published=${row.active_published}, drafts=${row.active_drafts}, intake=${row.active_intake}, submissions=${row.active_submissions}).`,
+			detail: `Archived invitation has active children (events=${row.active_events}, published=${row.active_published}, drafts=${row.active_drafts}).`,
 		});
 	}
 
-	const probeErrors = findings.filter((finding) => finding.code === 'DIAGNOSTIC_PROBE_FAILED').length;
+	const probeErrors = findings.filter(
+		(finding) => finding.code === 'DIAGNOSTIC_PROBE_FAILED',
+	).length;
 	return {
 		ok: findings.every((finding) => finding.severity !== 'error'),
 		findings,

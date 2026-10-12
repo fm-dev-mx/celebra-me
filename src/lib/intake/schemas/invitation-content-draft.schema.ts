@@ -39,7 +39,6 @@ import { familyDraftSchema } from '@/lib/intake/schemas/family-draft.schema';
 import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 
 export const DraftActionSchema = z.discriminatedUnion('action', [
-	z.object({ action: z.literal('generate') }),
 	z.object({ action: z.literal('publish') }),
 	z.object({ action: z.literal('revise') }),
 ]);

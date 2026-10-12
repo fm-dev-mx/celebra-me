@@ -8,7 +8,6 @@ import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
-	generateDraft,
 	getDraft,
 	createDraftRevision,
 	updateDraftContentByInvitation,
@@ -52,23 +51,25 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		if (parsed.action === 'publish') {
 			const preflight = await getPublicationPreflight(id);
 			const idempotencyKey = crypto.randomUUID();
-			const result = await publishDraft(id, {
-				...preflight,
-				idempotencyKey,
-			}, await createRuntimeMutationCommandContext(session, 'legacy_dashboard', idempotencyKey));
+			const result = await publishDraft(
+				id,
+				{
+					...preflight,
+					idempotencyKey,
+				},
+				await createRuntimeMutationCommandContext(
+					session,
+					'legacy_dashboard',
+					idempotencyKey,
+				),
+			);
 			return jsonResponse({
 				draft: toInvitationContentDraftDTO(result.draft),
 				publishedContent: result.publishedContent,
 				outcome: result.outcome,
 			});
 		}
-		if (parsed.action === 'revise') {
-			const draft = await createDraftRevision(id);
-			return jsonResponse({ draft: toInvitationContentDraftDTO(draft) });
-		}
-
-		const draft = await generateDraft(id);
-
+		const draft = await createDraftRevision(id);
 		return jsonResponse({ draft: toInvitationContentDraftDTO(draft) });
 	} catch (error) {
 		return errorResponse(error);

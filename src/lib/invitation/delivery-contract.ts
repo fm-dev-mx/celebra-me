@@ -37,7 +37,8 @@ export interface InvitationHtmlInventory {
 export const ANONYMOUS_PUBLISHED_CONTENT_READS = 1;
 export const PERSONALIZED_GUEST_CONTEXT_READS_ON_HIT = 2;
 export const PERSONALIZED_GUEST_CONTEXT_READS_ON_MISS = 1;
-export const PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT = 1;
+/** Opens are recorded by the browser after the page is visible, never during SSR. */
+export const PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT = 0;
 export const PERSONALIZED_CONTEXT_SERVICE_CALLS_ON_LOOKUP = 1;
 
 export function assertObservedOperationCount(

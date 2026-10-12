@@ -1,7 +1,6 @@
 import type { ContentSectionKey, EventType, ThemePreset } from '@/lib/theme/theme-contract';
 import type { EventAssetKey } from '@/lib/assets/asset-keys';
 
-export type CaptureLinkStatus = 'active' | 'expired' | 'missing' | 'revoked' | 'unavailable';
 export type InvitationKind = 'demo' | 'client';
 
 export const INTAKE_BLOCK_TYPES = [
@@ -19,9 +18,6 @@ export type IntakeBlockType = (typeof INTAKE_BLOCK_TYPES)[number];
 
 export const INVITATION_STATUSES = [
 	'draft',
-	'waiting_for_client',
-	'client_submitted',
-	'in_review',
 	'in_production',
 	'preview_sent',
 	'approved',
@@ -30,36 +26,6 @@ export const INVITATION_STATUSES = [
 ] as const;
 
 export type InvitationStatus = (typeof INVITATION_STATUSES)[number];
-
-/** Statuses considered "locked" — no further intake edits allowed. */
-export const LOCKED_INVITATION_STATUSES: InvitationStatus[] = [
-	'in_review',
-	'in_production',
-	'preview_sent',
-	'approved',
-	'published',
-	'archived',
-];
-
-export const INTAKE_REQUEST_STATUSES = [
-	'draft',
-	'active',
-	'submitted',
-	'closed',
-	'expired',
-] as const;
-
-export type IntakeRequestStatus = (typeof INTAKE_REQUEST_STATUSES)[number];
-export type IntakeRequestOrigin = 'client' | 'internal';
-
-export const INTAKE_SUBMISSION_STATUSES = [
-	'in_progress',
-	'submitted',
-	'needs_changes',
-	'approved',
-] as const;
-
-export type IntakeSubmissionStatus = (typeof INTAKE_SUBMISSION_STATUSES)[number];
 
 export interface DemoPreset {
 	id: string;
@@ -93,50 +59,6 @@ export interface Invitation {
 	archivedAt: string | null;
 	createdAt: string;
 	updatedAt: string;
-}
-
-export interface IntakeRequest {
-	id: string;
-	invitationId: string;
-	tokenHash: string;
-	tokenCiphertext: string | null;
-	origin: IntakeRequestOrigin;
-	status: IntakeRequestStatus;
-	enabledBlocks: IntakeBlockType[];
-	expiresAt: string | null;
-	createdAt: string;
-	updatedAt: string;
-}
-
-export interface IntakeSubmission {
-	id: string;
-	intakeRequestId: string;
-	status: IntakeSubmissionStatus;
-	blockData: Record<string, unknown>;
-	photoNotes: Record<string, unknown>;
-	clientComments: string;
-	submittedAt: string | null;
-	reviewedAt: string | null;
-	reviewNotes: string;
-	createdAt: string;
-	updatedAt: string;
-}
-
-export interface IntakeBlockFieldDefinition {
-	name: string;
-	label: string;
-	type: 'text' | 'textarea' | 'date' | 'url' | 'number' | 'checkbox' | 'select';
-	required: boolean;
-	placeholder?: string;
-	options?: Array<{ value: string; label: string }>;
-	supportedEventTypes?: EventType[];
-}
-
-export interface IntakeBlockDefinition {
-	type: IntakeBlockType;
-	displayName: string;
-	description: string;
-	fields: IntakeBlockFieldDefinition[];
 }
 
 export const INVITATION_CONTENT_DRAFT_STATUSES = ['draft', 'reviewed', 'approved'] as const;

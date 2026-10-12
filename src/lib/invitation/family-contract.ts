@@ -5,7 +5,7 @@ export type ParentsOrder = 'father-first' | 'mother-first';
 export const DEFAULT_PARENTS_ORDER: ParentsOrder = 'mother-first';
 
 /** Re-export from the Draft schema SSOT — do not maintain a parallel list here. */
-export { FAMILY_LABEL_KEYS, type FamilyLabelKey } from '@/lib/intake/schemas/family-draft.schema';
+export { FAMILY_LABEL_KEYS } from '@/lib/intake/schemas/family-draft.schema';
 
 function text(value: unknown): string | undefined {
 	return typeof value === 'string' && value.trim() ? value.trim() : undefined;

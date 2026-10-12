@@ -13,8 +13,6 @@ export const OPERATOR_TASK_SCRIPTS = [
 	'dbs',
 ] as const;
 
-export type OperatorTaskScript = (typeof OPERATOR_TASK_SCRIPTS)[number];
-
 export const PASTED_COMMAND_TOKENS = new Set<string>(['pnpm', ...OPERATOR_TASK_SCRIPTS]);
 
 export function normalizeTaskPrompt(input: string): string {

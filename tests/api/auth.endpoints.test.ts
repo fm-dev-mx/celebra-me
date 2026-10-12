@@ -1,14 +1,10 @@
 import { POST as loginHost } from '@/pages/api/auth/login-host';
-import { POST as registerHost } from '@/pages/api/auth/register-host';
 import { GET as authSession } from '@/pages/api/auth/session';
 import { POST as logout } from '@/pages/api/auth/logout';
 import * as authApi from '@/lib/rsvp/auth/auth-api';
 import * as authIdentifierService from '@/lib/rsvp/services/auth-identifier.service';
 import { buildAuthSessionDto } from '@/lib/rsvp/services/auth-access.service';
-import {
-	claimEventForUserByClaimCode,
-	ensureUserRole,
-} from '@/lib/rsvp/services/auth-access.service';
+import {} from '@/lib/rsvp/services/auth-access.service';
 import {
 	getHostSessionFromRequest,
 	getSessionDebugSnapshotFromRequest,
@@ -19,13 +15,11 @@ import { createMockRequest } from '../helpers/api-mocks';
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	getAuthUserAdminById: jest.fn(),
 	signInWithPassword: jest.fn(),
-	signUpWithPassword: jest.fn(),
 	sendMagicLink: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/services/auth-access.service', () => ({
 	buildAuthSessionDto: jest.fn(),
-	claimEventForUserByClaimCode: jest.fn(),
 	ensureUserRole: jest.fn(),
 }));
 
@@ -44,15 +38,11 @@ jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
 
 jest.mock('@/lib/rsvp/services/auth-identifier.service', () => ({
 	resolvePasswordAuthEmail: jest.fn(),
-	findExistingAuthUserByEmail: jest.fn(),
 }));
 
 describe('auth endpoints', () => {
 	const signInWithPasswordMock = authApi.signInWithPassword as jest.MockedFunction<
 		typeof authApi.signInWithPassword
-	>;
-	const signUpWithPasswordMock = authApi.signUpWithPassword as jest.MockedFunction<
-		typeof authApi.signUpWithPassword
 	>;
 	const sendMagicLinkMock = authApi.sendMagicLink as jest.MockedFunction<
 		typeof authApi.sendMagicLink
@@ -61,10 +51,6 @@ describe('auth endpoints', () => {
 		authIdentifierService.resolvePasswordAuthEmail as jest.MockedFunction<
 			typeof authIdentifierService.resolvePasswordAuthEmail
 		>;
-	const claimEventForUserByClaimCodeMock = claimEventForUserByClaimCode as jest.MockedFunction<
-		typeof claimEventForUserByClaimCode
-	>;
-	const ensureUserRoleMock = ensureUserRole as jest.MockedFunction<typeof ensureUserRole>;
 	const getHostSessionFromRequestMock = getHostSessionFromRequest as jest.MockedFunction<
 		typeof getHostSessionFromRequest
 	>;
@@ -116,42 +102,6 @@ describe('auth endpoints', () => {
 			url: new URL('http://localhost/api/auth/login-host'),
 		} as never);
 		expect(magicResp.status).toBe(200);
-	});
-
-	it('register-host claims event and can set session cookie', async () => {
-		signUpWithPasswordMock.mockResolvedValue({
-			access_token: 'token-xyz',
-			user: { id: 'u-register', email: 'client@test.com' },
-		});
-		claimEventForUserByClaimCodeMock.mockResolvedValue({
-			eventId: 'evt-1',
-			membershipRole: 'owner',
-		});
-		ensureUserRoleMock.mockResolvedValue('host_client');
-
-		const response = await registerHost({
-			request: createMockRequest({
-				method: 'password',
-				email: 'client@test.com',
-				password: 'Pass123!',
-				claimCode: 'CLAIM123',
-			}),
-			url: new URL('http://localhost/api/auth/register-host'),
-		} as never);
-		expect(response.status).toBe(200);
-	});
-
-	it('register-host returns bad_request when claimCode is missing', async () => {
-		const response = await registerHost({
-			request: createMockRequest({
-				method: 'password',
-				email: 'missing@test.com',
-				password: 'Pass123!',
-			}),
-			url: new URL('http://localhost/api/auth/register-host'),
-		} as never);
-
-		expect(response.status).toBe(400);
 	});
 
 	it('session endpoint returns unauthorized when session is missing', async () => {
@@ -221,6 +171,7 @@ describe('auth endpoints', () => {
 			status: 'published',
 			publishedAt: null,
 			invitationId: null,
+			brandingRemovalGuestLimit: 0,
 			createdAt: '2026-01-01',
 			updatedAt: '2026-01-01',
 		});

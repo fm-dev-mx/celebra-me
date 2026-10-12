@@ -2,6 +2,18 @@ export const COUNTDOWN_UNITS = ['days', 'hours', 'minutes', 'seconds'] as const;
 
 export type CountdownUnit = (typeof COUNTDOWN_UNITS)[number];
 
+/**
+ * What the day segment counts: calendar days (default) or nights, for evening celebrations that
+ * read as "Faltan 43 noches". Only the label changes; the value is the same day difference.
+ */
+export const COUNTDOWN_DAY_UNITS = ['days', 'nights'] as const;
+
+export type CountdownDayUnit = (typeof COUNTDOWN_DAY_UNITS)[number];
+
+export function resolveCountdownDayLabel(dayUnit: CountdownDayUnit | undefined): string {
+	return dayUnit === 'nights' ? 'Noches' : 'Días';
+}
+
 export interface CountdownPresentationOptions {
 	/** Subset of countdown units to render. Absent/undefined → all four units. */
 	visibleUnits?: CountdownUnit[];

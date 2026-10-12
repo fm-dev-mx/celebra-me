@@ -64,14 +64,10 @@ const BUSINESS_TABLES = [
 	'audit_logs',
 	'commercial_record_classifications',
 	'customers',
-	'event_claim_codes',
 	'event_memberships',
 	'events',
 	'guest_invitation_audit',
 	'guest_invitations',
-	'host_profiles',
-	'intake_requests',
-	'intake_submissions',
 	'invitation_assets',
 	'invitation_content_drafts',
 	'invitations',
@@ -80,9 +76,6 @@ const BUSINESS_TABLES = [
 	'meta_conversion_events',
 	'meta_conversion_recoveries',
 	'published_invitation_content',
-	'rsvp_audit_log',
-	'rsvp_channel_log',
-	'rsvp_records',
 	'sales_orders',
 	'tracking_events',
 	'visitor_sessions',
@@ -92,10 +85,6 @@ const BUSINESS_TABLES = [
 // The restore merge SQL joins on this column to detect existing rows.
 const PRIMARY_KEY_OVERRIDES: Record<string, string> = {
 	app_user_roles: 'user_id',
-	host_profiles: 'user_id',
-	rsvp_audit_log: 'audit_id',
-	rsvp_channel_log: 'channel_event_id',
-	rsvp_records: 'store_key',
 };
 
 // ---------------------------------------------------------------------------
@@ -294,8 +283,6 @@ from (
   union all
   select 'guest_invitations' from ${STAGING_SCHEMA}.guest_invitations
   union all
-  select 'rsvp_records' from ${STAGING_SCHEMA}.rsvp_records
-  union all
   select 'leads' from ${STAGING_SCHEMA}.leads
   union all
   select 'customers' from ${STAGING_SCHEMA}.customers
@@ -464,7 +451,6 @@ function phase7PostRestore(): void {
 		'events',
 		'published_invitation_content',
 		'guest_invitations',
-		'rsvp_records',
 		'leads',
 		'customers',
 		'sales_orders',

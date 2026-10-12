@@ -9,7 +9,6 @@ import {
 	refreshAccessToken,
 	sendMagicLink,
 	signInWithPassword,
-	signUpWithPassword,
 } from '@/lib/rsvp/auth/auth-api';
 import { AuthRequestError } from '@/lib/rsvp/core/errors';
 
@@ -30,35 +29,22 @@ describe('rsvp authApi', () => {
 		jest.restoreAllMocks();
 	});
 
-	it('signs in and signs up with expected auth payloads', async () => {
-		global.fetch = jest
-			.fn()
-			.mockResolvedValueOnce({
-				ok: true,
-				json: async () => ({
-					access_token: 'token',
-					refresh_token: 'refresh',
-					user: { id: 'u1', email: 'a@b.com' },
-				}),
-			})
-			.mockResolvedValueOnce({
-				ok: true,
-				json: async () => ({
-					user: { id: 'u2', email: 'c@d.com' },
-				}),
-			}) as unknown as typeof fetch;
+	it('signs in with the expected auth payload', async () => {
+		global.fetch = jest.fn().mockResolvedValueOnce({
+			ok: true,
+			json: async () => ({
+				access_token: 'token',
+				refresh_token: 'refresh',
+				user: { id: 'u1', email: 'a@b.com' },
+			}),
+		}) as unknown as typeof fetch;
 
 		const login = await signInWithPassword({
 			email: 'a@b.com',
 			password: 'Pass123!',
 		});
-		const signup = await signUpWithPassword({
-			email: 'c@d.com',
-			password: 'Pass456!',
-		});
 
 		expect(login.user.id).toBe('u1');
-		expect(signup.user?.id).toBe('u2');
 	});
 
 	it('sends magic link and finds auth users by email or login alias', async () => {
@@ -105,6 +91,8 @@ describe('rsvp authApi', () => {
 		});
 
 		expect(magic.message_id).toBe('msg-1');
+		const magicRequest = (global.fetch as jest.Mock).mock.calls[0]?.[1] as RequestInit;
+		expect(JSON.parse(String(magicRequest.body))).toMatchObject({ create_user: false });
 		expect(user?.id).toBe('u-admin');
 		expect(userByAlias?.login_alias).toBe('admin');
 	});

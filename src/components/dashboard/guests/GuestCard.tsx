@@ -6,6 +6,7 @@ import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface'
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import {
+	getGuestLatestMessage,
 	getGuestMessageCount,
 	getGuestPeopleLabel,
 	formatGuestMessageCount,
@@ -47,6 +48,7 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	onOpenDetails,
 }) => {
 	const messageCount = getGuestMessageCount(item.guestComment);
+	const latestMessage = getGuestLatestMessage(item.guestComment);
 	const people = getGuestPeopleLabel(item);
 	const articleClass = [
 		'guest-card',
@@ -59,7 +61,10 @@ const GuestCard: React.FC<GuestCardProps> = ({
 	return (
 		<article className={articleClass} data-guest-id={item.guestId}>
 			<header className="guest-card__header">
-				<span className="guest-card__name">{item.fullName}</span>
+				<span className="guest-card__name">
+					{item.fullName}
+					{item.isTest && <span className="guest-tag guest-tag--test">Prueba</span>}
+				</span>
 				<GuestStatusPill item={item} />
 			</header>
 
@@ -75,6 +80,8 @@ const GuestCard: React.FC<GuestCardProps> = ({
 					</span>
 				)}
 			</div>
+
+			{latestMessage && <p className="guest-card__message">«{latestMessage}»</p>}
 
 			<footer className="guest-card__actions">
 				<GuestPrimaryAction

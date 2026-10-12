@@ -44,6 +44,7 @@ Gates: `pnpm validate:invitation-preparation` (prepReadiness alignment and hygie
 | [aithan-darell](aithan-darell.md)                           | `/cumple/aithan-darell`          | active    |
 | [alba-rosa-quinonez](alba-rosa-quinonez.md)                 | `/cumple/alba-rosa-quinonez`     | delivered |
 | [allison-scarlett](allison-scarlett.md)                     | `/xv/allison-scarlett`           | active    |
+| [america](america.md)                                       | `/xv/america`                    | active    |
 | [daniela-y-martin](daniela-y-martin.md)                     | `/boda/daniela-y-martin`         | active    |
 | [destenid-sofia](destenid-sofia.md)                         | `/xv/destenid-sofia`             | active    |
 | [leslie-perez](leslie-perez.md)                             | `/xv/leslie-perez`               | delivered |

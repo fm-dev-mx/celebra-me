@@ -7,33 +7,10 @@ interface Props {
 }
 
 const DraftSection: FC<Props> = ({ invitationId }) => {
-	const { currentDraft, generateDraft, createDraftRevision } = useInvitationAdmin();
-	const [generating, setGenerating] = useState(false);
+	const { currentDraft, createDraftRevision } = useInvitationAdmin();
 	const [revising, setRevising] = useState(false);
 	const [actionError, setActionError] = useState('');
 	const [actionSuccess, setActionSuccess] = useState('');
-
-	const handleGenerateDraft = async () => {
-		if (
-			currentDraft &&
-			!window.confirm(
-				'Esto reemplazará el contenido editable con los datos base actuales. ¿Continuar?',
-			)
-		)
-			return;
-		setGenerating(true);
-		setActionError('');
-		setActionSuccess('');
-
-		try {
-			await generateDraft(invitationId);
-			setActionSuccess('Borrador de invitación generado exitosamente.');
-		} catch (err) {
-			setActionError(err instanceof Error ? err.message : 'Error al generar el borrador.');
-		} finally {
-			setGenerating(false);
-		}
-	};
 
 	const handleCreateRevision = async () => {
 		setRevising(true);
@@ -73,18 +50,7 @@ const DraftSection: FC<Props> = ({ invitationId }) => {
 						>
 							Vista previa
 						</a>
-						{currentDraft.status === 'draft' ? (
-							<button
-								type="button"
-								className="intake-detail__generate-btn"
-								onClick={handleGenerateDraft}
-								disabled={generating}
-							>
-								{generating
-									? 'Reemplazando...'
-									: 'Reemplazar contenido con datos base'}
-							</button>
-						) : (
+						{currentDraft.status !== 'draft' && (
 							<button
 								type="button"
 								className="intake-detail__generate-btn"
@@ -97,14 +63,10 @@ const DraftSection: FC<Props> = ({ invitationId }) => {
 					</div>
 				</div>
 			) : (
-				<button
-					type="button"
-					className="intake-detail__generate-btn"
-					onClick={handleGenerateDraft}
-					disabled={generating}
-				>
-					{generating ? 'Generando...' : 'Crear contenido desde datos base'}
-				</button>
+				<p className="intake-detail__submission-hint">
+					Esta invitación aún no tiene contenido. El contenido se crea con el flujo
+					administrado de la invitación.
+				</p>
 			)}
 			{actionError && <p className="intake-detail__error">{actionError}</p>}
 			{actionSuccess && <p className="intake-detail__success">{actionSuccess}</p>}

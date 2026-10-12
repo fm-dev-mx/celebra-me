@@ -13,6 +13,7 @@ export interface DashboardEventListItem {
 	slug: string;
 	eventType: EventRecord['eventType'];
 	status: EventRecord['status'];
+	brandingRemovalEnabled: boolean;
 }
 
 export interface DashboardEventSessionDebug {

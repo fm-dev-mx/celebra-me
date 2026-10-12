@@ -86,10 +86,6 @@ insert into public.event_memberships (id, event_id, user_id, membership_role, cr
 values ('81000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000002', 'owner', '2026-07-29T12:00:00Z', '2026-07-29T12:00:00Z')
 on conflict (event_id, user_id) do nothing;
 
-insert into public.event_claim_codes (id, event_id, code_hash, active, expires_at, max_uses, used_count, created_by, created_at, updated_at, code_key)
-values ('82000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002', repeat('c', 64), true, '2027-07-29T12:00:00Z', 10, 2, 'a0000000-0000-0000-0000-000000000002', '2026-07-29T12:00:00Z', '2026-07-29T12:00:00Z', 'fixture-key')
-on conflict do nothing;
-
 insert into public.guest_invitations (id, invite_id, event_id, full_name, phone, country_code, max_allowed_attendees, attendance_status, attendee_count, guest_comment, delivery_status, responded_at, deleted_at, short_id, entry_source, view_percentage, is_viewed, hide_celebra_me_branding)
 values ('90000000-0000-0000-0000-000000000003', '70000000-0000-0000-0000-000000000003', 'e0000000-0000-0000-0000-000000000002', 'Invitado eliminado', '6681167479', '+52', 1, 'declined', 0, '', 'generated', '2026-07-27T12:00:00Z', '2026-07-28T12:00:00Z', 'DELETED1', 'dashboard', 100, true, false)
 on conflict (id) do nothing;
@@ -97,18 +93,6 @@ on conflict (id) do nothing;
 insert into public.guest_invitation_audit (id, guest_invitation_id, actor_type, event_type, payload, created_at)
 values ('91000000-0000-0000-0000-000000000003', '90000000-0000-0000-0000-000000000003', 'system', 'status_changed', '{"attendance_status":"declined","attendee_count":0}'::jsonb, '2026-07-27T12:00:00Z')
 on conflict (id) do nothing;
-
-insert into public.rsvp_records (store_key, rsvp_id, event_slug, guest_id, guest_name_entered, attendance_status, attendee_count, notes, dietary, source, created_at, last_updated_at, normalized_guest_name, is_potential_duplicate)
-values ('fixture:rsvp:1', 'fixture-rsvp-1', 'test-client-wedding', '90000000-0000-0000-0000-000000000001', 'Invitado sintético', 'confirmed', 3, 'Nota', 'Ninguna', 'personalized_link', '2026-07-29T12:00:00Z', '2026-07-29T12:06:00Z', 'invitado sintetico', false)
-on conflict (store_key) do nothing;
-
-insert into public.rsvp_audit_log (audit_id, rsvp_id, previous_status, new_status, previous_attendee_count, new_attendee_count, changed_by, changed_at)
-values ('fixture-audit-1', 'fixture-rsvp-1', 'pending', 'confirmed', 0, 3, 'guest', '2026-07-29T12:06:00Z')
-on conflict (audit_id) do nothing;
-
-insert into public.rsvp_channel_log (channel_event_id, rsvp_id, channel, action, occurred_at)
-values ('fixture-channel-1', 'fixture-rsvp-1', 'whatsapp', 'clicked', '2026-07-29T12:07:00Z')
-on conflict (channel_event_id) do nothing;
 
 ${phase3ReceiptFixtureSql}
 ${provenanceFixtureSql}

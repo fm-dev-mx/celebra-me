@@ -609,3 +609,94 @@
 		}
 	}
 }
+
+/* ==========================================================================
+   Guest engagement funnel — share of sent invitations per step.
+   ========================================================================== */
+
+.guest-engagement {
+	display: grid;
+	gap: 0.5rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--color-border-subtle, var(--color-surface-soft));
+}
+
+.guest-engagement__heading {
+	margin: 0;
+	color: var(--color-text-secondary);
+	font-family: var(--font-ui);
+	font-size: 0.9375rem;
+	font-weight: 700;
+}
+
+.guest-engagement__steps {
+	display: grid;
+	gap: 0.375rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.guest-engagement__step {
+	display: grid;
+	grid-template-columns: minmax(9rem, 1fr) 2fr auto;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 0.875rem;
+
+	@media (width < 480px) {
+		grid-template-columns: 1fr auto;
+
+		.guest-engagement__bar {
+			grid-column: 1 / -1;
+			grid-row: 2;
+		}
+	}
+}
+
+.guest-engagement__label {
+	color: var(--color-text-primary);
+}
+
+.guest-engagement__bar {
+	position: relative;
+	height: 0.5rem;
+	overflow: hidden;
+	border-radius: 999px;
+	background: var(--dashboard-data-track, var(--color-surface-soft));
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0 auto 0 0;
+		width: var(--engagement-share, 0%);
+		border-radius: inherit;
+		background: var(--dashboard-data-confirmed, var(--color-state-success-text));
+	}
+}
+
+.guest-engagement__value {
+	color: var(--color-text-secondary);
+	white-space: nowrap;
+
+	strong {
+		color: var(--color-text-primary);
+	}
+}
+
+.guest-engagement__note,
+.guest-engagement__since {
+	margin: 0;
+	color: var(--color-text-secondary);
+	font-size: 0.8125rem;
+}
+
+@media (forced-colors: active) {
+	.guest-engagement__bar {
+		border: 1px solid CanvasText;
+
+		&::after {
+			background: CanvasText;
+		}
+	}
+}

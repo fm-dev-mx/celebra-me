@@ -3,7 +3,7 @@
  * This intentionally examines executable publication paths only; migrations and test fixtures
  * retain historical overload coverage and are not application capability evidence.
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parseDeployedApplicationCapabilities } from './deployed-app-attestation.ts';
 import { loadMigrationRolloutRegistry } from './migration-deployment-compatibility.ts';
@@ -103,6 +103,52 @@ function validateEventMemoriesClient(root: string): string[] {
 	return errors;
 }
 
+const RETIRED_TABLES_CAPABILITY = 'retired_legacy_tables_client';
+/** Tables dropped by contract migrations; no executable module may name them. */
+export const RETIRED_TABLES = [
+	'event_claim_codes',
+	'intake_requests',
+	'intake_submissions',
+	'rsvp_records',
+	'rsvp_audit_log',
+	'rsvp_channel_log',
+	'managed_invitation_legacy_adoption_receipts',
+	'host_profiles',
+] as const;
+const EXECUTABLE_ROOTS = ['src', 'scripts', 'workers'] as const;
+const EXECUTABLE_EXTENSION = /\.(?:ts|tsx|astro|mjs|cjs|js)$/;
+
+function listExecutableFiles(root: string): string[] {
+	const files: string[] = [];
+	const walk = (relative: string) => {
+		const absolute = resolve(root, relative);
+		if (!existsSync(absolute)) return;
+		for (const entry of readdirSync(absolute, { withFileTypes: true })) {
+			const child = `${relative}/${entry.name}`;
+			if (entry.isDirectory()) {
+				if (entry.name !== 'node_modules') walk(child);
+			} else if (EXECUTABLE_EXTENSION.test(entry.name)) {
+				files.push(child);
+			}
+		}
+	};
+	for (const directory of EXECUTABLE_ROOTS) walk(directory);
+	return files;
+}
+
+/** The application and operator scripts never name a retired table or its legacy memories peers. */
+function validateRetiredTablesClient(root: string): string[] {
+	const errors: string[] = [];
+	const pattern = new RegExp(`\\b(?:${RETIRED_TABLES.join('|')})\\b|valentina_memor`);
+	for (const path of listExecutableFiles(root)) {
+		if (path === 'scripts/db/validate-deployed-app-capabilities.ts') continue;
+		const source = readFileSync(resolve(root, path), 'utf8');
+		const match = source.match(pattern);
+		if (match) errors.push(`Retired table ${match[0]} is still referenced by ${path}.`);
+	}
+	return errors;
+}
+
 export function validateDeployedAppCapabilities(root = process.cwd()): string[] {
 	const errors: string[] = [];
 	const manifestPath = resolve(root, 'supabase/deployed-app-capabilities.json');
@@ -125,6 +171,9 @@ export function validateDeployedAppCapabilities(root = process.cwd()): string[] 
 	}
 	if (capabilities.includes(EVENT_MEMORIES_CAPABILITY)) {
 		errors.push(...validateEventMemoriesClient(root));
+	}
+	if (capabilities.includes(RETIRED_TABLES_CAPABILITY)) {
+		errors.push(...validateRetiredTablesClient(root));
 	}
 	return errors;
 }

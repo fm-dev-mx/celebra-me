@@ -109,49 +109,8 @@
 	max-width: 40ch;
 }
 
-.auth-tabs {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 0.35rem;
-	padding: 0.35rem;
-	border: 1px solid var(--auth-tabs-border, var(--color-border-subtle));
-	background: var(--auth-tabs-bg, rgb(255 255 255 / 72%));
-	border-radius: 0.9rem;
-}
-
-.auth-tabs button {
-	border: none;
-	background: transparent;
-	padding: 0.68rem 0.7rem;
-	border-radius: 0.62rem;
-	font-family: var(--font-ui);
-	font-size: 0.9rem;
-	font-weight: 700;
-	color: var(--auth-tab-text, var(--color-text-secondary));
-	cursor: pointer;
-	transition:
-		background-color 0.2s ease,
-		color 0.2s ease,
-		box-shadow 0.2s ease,
-		transform 0.2s ease;
-}
-
-.auth-tabs button.is-active {
-	background: var(--auth-tab-active-bg, var(--color-action-primary));
-	color: var(--auth-tab-active-text, var(--color-text-on-dark));
-	box-shadow: var(--auth-tab-active-shadow, none);
-}
-
-.auth-tabs button:hover:not(.is-active) {
-	transform: translateY(-1px);
-}
-
 .auth-panel {
 	display: block;
-}
-
-.auth-panel--hidden {
-	display: none;
 }
 
 .auth-form {
@@ -307,7 +266,6 @@
 
 .auth-back-link:focus-visible,
 .auth-brand:focus-visible,
-.auth-tabs button:focus-visible,
 .auth-field input:focus-visible,
 .auth-field select:focus-visible,
 .auth-submit:focus-visible,
@@ -336,10 +294,6 @@
 		padding: 1.9rem;
 		gap: 1.35rem;
 	}
-
-	.auth-tabs button {
-		font-size: 0.94rem;
-	}
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -353,7 +307,6 @@
 		animation: none;
 	}
 
-	.auth-tabs button,
 	.auth-submit,
 	.auth-secondary {
 		transition: none;

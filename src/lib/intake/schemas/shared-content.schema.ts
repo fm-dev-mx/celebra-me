@@ -10,6 +10,7 @@ import { safeHttpUrlSchema } from '@/lib/schemas/content/gifts.schema';
 import { THEME_PRESETS, INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { ENVELOPE_SEAL_COLORS } from '@/lib/invitation/reveal-card';
 import {
+	COUNTDOWN_DAY_UNITS,
 	COUNTDOWN_UNITS,
 	GALLERY_LAYOUT_ROLES,
 	GALLERY_MOBILE_BROWSE_MODES,
@@ -227,6 +228,7 @@ export const countdownEditorSchema = z
 		presentationOptions: z
 			.object({
 				visibleUnits: z.array(z.enum(COUNTDOWN_UNITS)).min(1).max(4).optional(),
+				dayUnit: z.enum(COUNTDOWN_DAY_UNITS).optional(),
 			})
 			.strict()
 			.optional(),
@@ -282,6 +284,7 @@ export const envelopeSchema = z
 				'wax-medallion',
 				'flower',
 				'shell',
+				'sunburst',
 				'special-edition',
 			])
 			.optional(),
@@ -298,7 +301,13 @@ export const envelopeSchema = z
 		teaserDetails: z.string().trim().max(500).optional(),
 		variant: z.enum(THEME_PRESETS).optional(),
 		revealVariant: z
-			.enum(['celestial-blue', 'editorial-cover', 'satin-filigree', 'seaside-lineart'])
+			.enum([
+				'celestial-blue',
+				'editorial-cover',
+				'satin-filigree',
+				'seaside-lineart',
+				'storybook-lanterns',
+			])
 			.optional(),
 		coverEdition: z.string().trim().max(80).optional(),
 		coverEditionLabel: z.string().trim().max(16).optional(),

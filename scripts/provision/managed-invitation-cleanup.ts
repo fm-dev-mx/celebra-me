@@ -57,7 +57,7 @@ export interface CleanupResult {
 	status: 'CAMBIOS_REVERTIDOS' | 'REQUIERE_REVISION';
 }
 
-const RSVP_CHILD_TABLES = ['guest_invitations', 'event_claim_codes'] as const;
+const RSVP_CHILD_TABLES = ['guest_invitations'] as const;
 
 async function assertLocalEventHasNoRsvpState(
 	supabase: SupabaseClient,
@@ -280,8 +280,7 @@ export async function cleanupHostedPsqlResources(
 				execPsql(`
 do $$
 begin
-  if exists (select 1 from public.guest_invitations where event_id = '${res.id}'::uuid)
-     or exists (select 1 from public.event_claim_codes where event_id = '${res.id}'::uuid) then
+  if exists (select 1 from public.guest_invitations where event_id = '${res.id}'::uuid) then
     raise exception 'RSVP_PROTECTED_EVENT: event contains durable RSVP state';
   end if;
   delete from public.events where id = '${res.id}'::uuid;

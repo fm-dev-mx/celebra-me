@@ -60,6 +60,7 @@ describe('invitation route personalization', () => {
 			eventSlug: 'ximena-meza-trasvina',
 			eventType: 'xv',
 			eventTitle: 'XV Ximena',
+			brandingRemovalEnabled: false,
 			guest: {
 				fullName: 'Invitada Demo',
 				maxAllowedAttendees: 3,
@@ -194,6 +195,7 @@ describe('invitation route personalization', () => {
 			eventSlug: 'ximena-meza-trasvina',
 			eventType: 'xv',
 			eventTitle: 'XV Ximena',
+			brandingRemovalEnabled: false,
 			guest: {
 				fullName: 'Invitada Principal',
 				maxAllowedAttendees: 4,
@@ -224,6 +226,6 @@ describe('invitation route personalization', () => {
 			PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT,
 			'view-track',
 		);
-		expect(trackInvitationViewMock).toHaveBeenCalledWith('invite-1');
+		expect(trackInvitationViewMock).not.toHaveBeenCalled();
 	});
 });

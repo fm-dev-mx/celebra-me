@@ -13,6 +13,7 @@ import { ImageDeliverySchema, type ImageDelivery } from '../../../src/lib/assets
 import { isCanonicalHostLoginAlias } from '../../../src/lib/auth/login-alias.ts';
 import type { ImageOptimizationRole } from '../../../src/lib/invitation-preparation/image-optimization.ts';
 import { eventContentSchema } from '../../../src/lib/schemas/content/base-event.schema.ts';
+import { findEventTypeStructureViolations } from '../../../src/lib/invitation/event-type-contract.ts';
 
 export interface InvitationAssetSpec {
 	delivery?: ImageDelivery;
@@ -350,6 +351,12 @@ export function defineInvitation<K extends string = string>(
 			.join('; ');
 		throw new Error(
 			`Invitation definition does not satisfy the canonical content contract: ${issues}`,
+		);
+	}
+	const structureViolations = findEventTypeStructureViolations(parsed.data);
+	if (structureViolations.length > 0) {
+		throw new Error(
+			`Invitation definition "${definition.slug}" breaks the ${parsed.data.eventType} structure contract: ${structureViolations.join('; ')}`,
 		);
 	}
 	return resolvedDefinition;

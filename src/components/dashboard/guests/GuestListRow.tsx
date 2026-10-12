@@ -10,8 +10,8 @@ import {
 } from '@/components/dashboard/guests/GuestGlyphs';
 import CopyLinkButton from '@/components/dashboard/guests/CopyLinkButton';
 import {
+	getGuestLatestMessage,
 	getGuestListSubtitle,
-	getGuestMessageCount,
 	getGuestStage,
 	type GuestStage,
 } from '@/components/dashboard/guests/guest-presenter';
@@ -48,26 +48,30 @@ const GuestListRow: React.FC<GuestListRowProps> = ({ item, inviteUrl, onOpen }) 
 	const bucket = stage === 'unopened' || stage === 'opened' ? 'waiting' : stage;
 	const Icon = STATUS_ICON[stage];
 	const subtitle = getGuestListSubtitle(item);
-	const hasMessage = getGuestMessageCount(item.guestComment) > 0;
+	const latestMessage = getGuestLatestMessage(item.guestComment);
+	const hasMessage = latestMessage.length > 0;
 
 	return (
 		<div className={`guest-row guest-row--${bucket}`}>
 			<button
 				type="button"
 				className="guest-row__open"
-				aria-label={`${item.fullName}. ${STATUS_LABEL[stage]}. ${subtitle}${hasMessage ? '. Dejó un mensaje' : ''}`}
+				aria-label={`${item.fullName}${item.isTest ? ' (invitado de prueba)' : ''}. ${STATUS_LABEL[stage]}. ${subtitle}${hasMessage ? '. Dejó un mensaje' : ''}`}
 				onClick={() => onOpen(item)}
 			>
 				<span className="guest-row__status" aria-hidden="true">
 					<Icon size={20} />
 				</span>
 				<span className="guest-row__text" aria-hidden="true">
-					<span className="guest-row__name">{item.fullName}</span>
+					<span className="guest-row__name">
+						{item.fullName}
+						{item.isTest && <span className="guest-tag guest-tag--test">Prueba</span>}
+					</span>
 					<span className="guest-row__subtitle">{subtitle}</span>
 					{hasMessage && (
 						<span className="guest-row__message">
 							<MessageGlyph size={16} />
-							Dejó un mensaje
+							<span className="guest-row__message-text">«{latestMessage}»</span>
 						</span>
 					)}
 				</span>

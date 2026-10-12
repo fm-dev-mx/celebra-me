@@ -31,7 +31,6 @@ jest.mock('@/lib/assets/asset-keys', () => ({
 jest.mock('@/lib/intake/storage', () => ({
 	getPublicUrl: jest.fn().mockReturnValue('https://cdn.test/asset.webp'),
 	uploadToStorage: jest.fn().mockResolvedValue('https://cdn.test/asset.webp'),
-	deleteFromStorage: jest.fn().mockResolvedValue(undefined),
 	DEFAULT_BUCKET: 'invitation-assets',
 }));
 

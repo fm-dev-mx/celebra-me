@@ -2,6 +2,7 @@
  * invitation-update-plan.ts — Deterministic Semantic Plan Engine for Managed Invitations
  */
 
+import type { PreconditionFailure } from './release-errors.ts';
 import { createHash } from 'node:crypto';
 import type { AssetPolicy } from './asset-reconciliation.ts';
 
@@ -193,7 +194,7 @@ export function verifyPlanPreconditions(
 		assetStateHash?: string;
 		assetManifestHash?: string;
 	},
-): { ok: boolean; reason?: string } {
+): { ok: boolean; reason?: string; failure?: PreconditionFailure } {
 	const { targetPreconditions } = plan;
 	const hasPrecondition = (key: keyof TargetPreconditions): boolean =>
 		Object.prototype.hasOwnProperty.call(targetPreconditions, key);
@@ -203,6 +204,7 @@ export function verifyPlanPreconditions(
 	if (mismatch('sourceHash') || plan.sourceHash !== currentState.sourceHash) {
 		return {
 			ok: false,
+			failure: 'PACKAGE_SOURCE_CHANGED',
 			reason: 'PRECONDITION_FAILED: The package source changed after planning.',
 		};
 	}
@@ -210,6 +212,7 @@ export function verifyPlanPreconditions(
 	if (mismatch('packageHash') || plan.packageHash !== currentState.packageHash) {
 		return {
 			ok: false,
+			failure: 'PACKAGE_CHANGED',
 			reason: 'PRECONDITION_FAILED: The resolved package changed after planning.',
 		};
 	}
@@ -217,6 +220,7 @@ export function verifyPlanPreconditions(
 	if (mismatch('assetManifestHash')) {
 		return {
 			ok: false,
+			failure: 'ASSET_MANIFEST_CHANGED',
 			reason: 'PRECONDITION_FAILED: The canonical asset manifest changed after planning.',
 		};
 	}
@@ -227,6 +231,7 @@ export function verifyPlanPreconditions(
 	) {
 		return {
 			ok: false,
+			failure: 'PROJECT_CHANGED',
 			reason: 'PRECONDITION_FAILED: The verified target project changed after planning.',
 		};
 	}
@@ -234,6 +239,7 @@ export function verifyPlanPreconditions(
 	if (mismatch('targetInvitationId')) {
 		return {
 			ok: false,
+			failure: 'INVITATION_ID_CHANGED',
 			reason: `PRECONDITION_FAILED: Precondition failed: target invitation ID changed (expected ${targetPreconditions.targetInvitationId}, got ${currentState.targetInvitationId}).`,
 		};
 	}
@@ -241,6 +247,7 @@ export function verifyPlanPreconditions(
 	if (mismatch('targetOwnerUserId')) {
 		return {
 			ok: false,
+			failure: 'OWNER_CHANGED',
 			reason: `PRECONDITION_FAILED: Precondition failed: target owner user ID changed (expected ${targetPreconditions.targetOwnerUserId}, got ${currentState.targetOwnerUserId}).`,
 		};
 	}
@@ -252,6 +259,7 @@ export function verifyPlanPreconditions(
 	) {
 		return {
 			ok: false,
+			failure: 'DRAFT_CHANGED',
 			reason: `PRECONDITION_FAILED: Precondition failed: target draft updated timestamp changed after planning (expected ${targetPreconditions.existingDraftUpdatedAt}, got ${currentState.existingDraftUpdatedAt}).`,
 		};
 	}
@@ -259,6 +267,7 @@ export function verifyPlanPreconditions(
 	if (mismatch('existingPublishedVersion')) {
 		return {
 			ok: false,
+			failure: 'PUBLISHED_VERSION_CHANGED',
 			reason: `PRECONDITION_FAILED: Precondition failed: target published version changed after planning (expected ${targetPreconditions.existingPublishedVersion}, got ${currentState.existingPublishedVersion}).`,
 		};
 	}

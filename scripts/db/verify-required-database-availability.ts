@@ -1,5 +1,6 @@
 /** Fail-closed, read-only availability preflight for database-dependent operator tasks. */
 import { classifyDbTarget } from './db-guard.ts';
+import { parseEnvironmentList } from '../lib/cli-args.ts';
 import { runPsqlAsync } from '../status-core/probe-runner.ts';
 import { resolveDbUrlForEnv, type TargetEnv } from '../provision/dbs-status.ts';
 
@@ -89,14 +90,16 @@ export function parseTargets(argv: readonly string[]): TargetEnv[] {
 	const targetIndex = argv.indexOf('--targets');
 	const raw = targetIndex >= 0 ? argv[targetIndex + 1] : undefined;
 	if (!raw) return [...ALL_TARGETS];
-	const targets = [...new Set(raw.split(/[,\s]+/).map((item) => item.trim()))].filter(Boolean);
-	if (
-		targets.length === 0 ||
-		targets.some((target) => !ALL_TARGETS.includes(target as TargetEnv))
-	) {
+	let targets: TargetEnv[];
+	try {
+		targets = parseEnvironmentList(raw);
+	} catch {
+		targets = [];
+	}
+	if (targets.length === 0) {
 		throw new Error('Use --targets local,preview,production with one or more known targets.');
 	}
-	return targets as TargetEnv[];
+	return targets;
 }
 
 export async function main(argv: readonly string[] = process.argv.slice(2)): Promise<void> {

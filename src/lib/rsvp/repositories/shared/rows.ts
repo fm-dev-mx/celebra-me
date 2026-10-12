@@ -1,6 +1,5 @@
 import type {
 	AttendanceStatus,
-	ClaimCodeRecord,
 	DeliveryFilter,
 	EntrySource,
 	EventRecord,
@@ -30,6 +29,7 @@ export interface CreateGuestInput {
 	tags?: string[];
 	shortId?: string;
 	entrySource?: EntrySource;
+	isTest?: boolean;
 }
 
 export interface UpdateGuestInput {
@@ -50,6 +50,7 @@ export interface UpdateGuestInput {
 	tags?: string[];
 	hideCelebraMeBranding?: boolean;
 	lastReminderSentAt?: string | null;
+	isTest?: boolean;
 }
 
 export type EventRow = {
@@ -61,6 +62,7 @@ export type EventRow = {
 	status: EventRecord['status'];
 	published_at: string | null;
 	invitation_project_id: string | null;
+	branding_removal_guest_limit?: number | null;
 	created_at: string;
 	updated_at: string;
 };
@@ -91,6 +93,12 @@ export type GuestRow = {
 	short_id?: string;
 	hide_celebra_me_branding: boolean;
 	last_reminder_sent_at: string | null;
+	is_test: boolean;
+	open_count: number;
+	first_opened_at: string | null;
+	last_opened_at: string | null;
+	last_previewed_at: string | null;
+	max_progress_milestone: number;
 };
 
 export type GuestAuditRow = {
@@ -118,18 +126,6 @@ export type EventMembershipRow = {
 	updated_at: string;
 };
 
-export type ClaimCodeRow = {
-	id: string;
-	event_id: string;
-	active: boolean;
-	expires_at: string | null;
-	max_uses: number;
-	used_count: number;
-	created_by: string | null;
-	created_at: string;
-	updated_at: string;
-};
-
 const EVENT_COLUMN_LIST = [
 	'id',
 	'owner_user_id',
@@ -139,6 +135,7 @@ const EVENT_COLUMN_LIST = [
 	'status',
 	'published_at',
 	'invitation_project_id',
+	'branding_removal_guest_limit',
 	'created_at',
 	'updated_at',
 ] as const;
@@ -147,8 +144,21 @@ export const EVENT_COLUMNS = EVENT_COLUMN_LIST.join(',');
 export const EVENT_MUTATION_COLUMNS = EVENT_COLUMN_LIST.filter(
 	(column) => column !== 'published_at',
 ).join(',');
-export const GUEST_COLUMNS =
+/** Columns added by migration 20261010120000 (guest engagement analytics). */
+export const GUEST_ENGAGEMENT_COLUMN_LIST = [
+	'is_test',
+	'open_count',
+	'first_opened_at',
+	'last_opened_at',
+	'last_previewed_at',
+	'max_progress_milestone',
+] as const;
+
+/** Guest columns every supported schema has, before engagement analytics. */
+export const GUEST_BASE_COLUMNS =
 	'id,invite_id,event_id,full_name,phone,country_code,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_shared_at,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id,hide_celebra_me_branding,last_reminder_sent_at';
+
+export const GUEST_COLUMNS = `${GUEST_BASE_COLUMNS},${GUEST_ENGAGEMENT_COLUMN_LIST.join(',')}`;
 
 export function toEventRecord(row: EventRow): EventRecord {
 	return {
@@ -160,6 +170,7 @@ export function toEventRecord(row: EventRow): EventRecord {
 		status: row.status,
 		publishedAt: row.published_at,
 		invitationId: row.invitation_project_id,
+		brandingRemovalGuestLimit: row.branding_removal_guest_limit ?? 0,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 	};
@@ -192,6 +203,12 @@ export function toGuestRecord(row: GuestRow): GuestInvitationRecord {
 		shortId: row.short_id,
 		hideCelebraMeBranding: row.hide_celebra_me_branding,
 		lastReminderSentAt: row.last_reminder_sent_at,
+		isTest: row.is_test ?? false,
+		openCount: row.open_count ?? 0,
+		firstOpenedAt: row.first_opened_at ?? null,
+		lastOpenedAt: row.last_opened_at ?? null,
+		lastPreviewedAt: row.last_previewed_at ?? null,
+		maxProgressMilestone: row.max_progress_milestone ?? 0,
 	};
 }
 
@@ -221,20 +238,6 @@ export function toMembershipRecord(row: EventMembershipRow): EventMembershipReco
 		eventId: row.event_id,
 		userId: row.user_id,
 		membershipRole: row.membership_role,
-		createdAt: row.created_at,
-		updatedAt: row.updated_at,
-	};
-}
-
-export function toClaimCodeRecord(row: ClaimCodeRow): ClaimCodeRecord {
-	return {
-		id: row.id,
-		eventId: row.event_id,
-		active: row.active,
-		expiresAt: row.expires_at,
-		maxUses: row.max_uses,
-		usedCount: row.used_count,
-		createdBy: row.created_by,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 	};

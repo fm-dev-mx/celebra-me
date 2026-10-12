@@ -8,6 +8,7 @@ export * from './WaxOrganicSeal';
 export * from './WaxMedallionSeal';
 export * from './FlowerSeal';
 export * from './ShellSeal';
+export * from './SunburstSeal';
 export * from './Seashell';
 export * from './Starfish';
 export * from './Wave';

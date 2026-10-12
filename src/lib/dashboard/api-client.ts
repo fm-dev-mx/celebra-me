@@ -1,13 +1,7 @@
-import {
-	fetchJSON,
-	type ApiResult,
-	type ApiResponse,
-	type ApiErrorResponse,
-	type FetchJSONInit,
-} from '@/lib/api-client-shared';
+import { fetchJSON, type ApiResult, type FetchJSONInit } from '@/lib/api-client-shared';
 import { getCsrfToken } from '@/lib/csrf';
 
-export { type ApiResult, type ApiResponse, type ApiErrorResponse };
+export { type ApiResult };
 
 export class DashboardApiClient {
 	private baseUrl: string;

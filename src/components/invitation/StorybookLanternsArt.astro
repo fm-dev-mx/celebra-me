@@ -1,0 +1,88 @@
+---
+/**
+ * Decorative line art for the `storybook-lanterns` envelope card: three paper sky lanterns
+ * rising at different heights above a short plait. Original drawing, no characters; strokes
+ * inherit `currentColor`, the lantern bodies glow with a low-opacity fill and an offset copy of
+ * the outlines reads as gold foil. Static and never announced.
+ */
+interface Props {
+	class?: string;
+}
+
+const { class: className } = Astro.props;
+
+// One lantern on a 48 × 64 grid, placed three times.
+const body = 'M11.5 16C11.5 7.2 36.5 7.2 36.5 16L34 45.5C33.6 48.6 14.4 48.6 14 45.5Z';
+const ribs = 'M18.2 9.6C17.6 22 17.8 34 18.8 47.2M29.8 9.6C30.4 22 30.2 34 29.2 47.2M24 8.6V48.2';
+const bands = 'M11.9 21C19 23.4 29 23.4 36.1 21M13 34C20 36.2 28 36.2 35 34';
+const ring = 'M18 49.2H30';
+const flame = 'M24 51.6C27.2 54.4 26.8 57.8 24 60 21.2 57.8 20.8 54.4 24 51.6Z';
+
+const lanterns = [
+	{ x: 38, y: 30, scale: 0.62 },
+	{ x: 77, y: 2, scale: 0.98 },
+	{ x: 128, y: 22, scale: 0.74 },
+];
+
+const plait = [
+	[48, 2.7, 1.2, 32],
+	[52.5, 3, 1.4, -32],
+	[57.4, 3.4, 1.6, 32],
+	[62.7, 3.8, 1.8, -32],
+	[68.6, 4.3, 2, 32],
+	[75, 4.8, 2.2, -32],
+	[82, 5.2, 2.4, 32],
+	[89.5, 5.2, 2.4, -32],
+	[97, 5.2, 2.4, 32],
+	[104.5, 5.2, 2.4, -32],
+	[112, 5.2, 2.4, 32],
+	[119.5, 5.2, 2.4, -32],
+	[127, 4.6, 2.1, 32],
+	[133.9, 4.1, 1.9, -32],
+	[140, 3.6, 1.7, 32],
+	[145.6, 3.2, 1.5, -32],
+	[150.7, 2.8, 1.3, 32],
+] as const;
+---
+
+<svg
+	class:list={['storybook-lanterns-art', className]}
+	viewBox="0 0 200 96"
+	fill="none"
+	aria-hidden="true"
+	focusable="false"
+	xmlns="http://www.w3.org/2000/svg"
+>
+	{
+		lanterns.map(({ x, y, scale }) => (
+			<g transform={`translate(${x} ${y}) scale(${scale})`} stroke-linecap="round" stroke-linejoin="round">
+				<g class="storybook-lanterns-art__foil" stroke-width="1.6" transform="translate(0.7 0.7)">
+					<path d={body} />
+				</g>
+				<g stroke="currentColor">
+					<path d={body} fill="currentColor" fill-opacity="0.18" stroke-width="1.5" />
+					<path d={ribs} stroke-width="0.8" stroke-opacity="0.55" />
+					<path d={bands} stroke-width="0.8" stroke-opacity="0.55" />
+					<path d={ring} stroke-width="1.3" />
+					<path d={flame} fill="currentColor" stroke-width="0.6" />
+				</g>
+			</g>
+		))
+	}
+	<g class="storybook-lanterns-art__plait" fill="currentColor" fill-opacity="0.16" stroke="currentColor" stroke-width="1">
+		{
+			plait.map(([cx, rx, ry, tilt]) => (
+				<ellipse cx={cx} cy="86" rx={rx} ry={ry} transform={`rotate(${tilt} ${cx} 86)`} />
+			))
+		}
+	</g>
+	<g stroke="currentColor" stroke-width="1" stroke-linecap="round">
+		<path d="M38 86H44M156 86H162" />
+	</g>
+</svg>
+
+<style>
+	.storybook-lanterns-art__foil {
+		stroke: var(--storybook-foil, rgb(255 255 255 / 80%));
+	}
+</style>

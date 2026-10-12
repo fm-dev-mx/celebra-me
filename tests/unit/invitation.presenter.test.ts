@@ -34,6 +34,7 @@ describe('prepareInvitationPageContext', () => {
 				eventSlug: 'demo-xv-jewelry-box',
 				eventType: 'xv',
 				eventTitle: 'XV Años - Demo',
+				brandingRemovalEnabled: false,
 				guest: {
 					fullName: 'Mariana Soto',
 					maxAllowedAttendees: 4,
@@ -636,6 +637,7 @@ describe('buildPageContextFromViewModel', () => {
 				eventSlug: 'luna-y-estrella',
 				eventType: 'primera-comunion',
 				eventTitle: 'Primera Comunión de Luna y Estrella',
+				brandingRemovalEnabled: false,
 				guest: {
 					fullName: 'Familia invitada',
 					maxAllowedAttendees: 4,
@@ -686,6 +688,7 @@ describe('buildPageContextFromViewModel', () => {
 				eventSlug: 'luna-y-estrella',
 				eventType: 'primera-comunion',
 				eventTitle: 'Primera Comunión de Luna y Estrella',
+				brandingRemovalEnabled: false,
 				guest: {
 					fullName: 'Familia invitada',
 					maxAllowedAttendees: 4,
@@ -736,6 +739,7 @@ describe('buildPageContextFromViewModel', () => {
 				eventSlug: 'luna-y-estrella',
 				eventType: 'primera-comunion',
 				eventTitle: 'Primera Comunión de Luna y Estrella',
+				brandingRemovalEnabled: false,
 				guest: {
 					fullName: 'Familia invitada',
 					maxAllowedAttendees: 4,
@@ -857,6 +861,7 @@ describe('buildPageContextFromViewModel', () => {
 				eventSlug: 'regression-after-rsvp-test',
 				eventType: 'primera-comunion',
 				eventTitle: 'Regression After-RSVP Test',
+				brandingRemovalEnabled: false,
 				guest: {
 					fullName: 'Familia invitada',
 					maxAllowedAttendees: 4,

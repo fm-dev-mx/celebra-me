@@ -38,21 +38,14 @@ export interface PublishedUploadedAssetSource {
 
 /**
  * Union of all asset source types that may appear in editable/draft content.
- * Published content uses the resolved `PublishedAssetSource` union.
+ * Published content resolves uploaded refs to `PublishedUploadedAssetSource`.
  */
 export type EditableAssetSource =
 	InternalAssetSource | ExternalAssetSource | DraftUploadedAssetSource;
 
 /**
- * Union of all asset source types that may appear in published content.
- * Uploaded refs always carry a frozen `src`.
- */
-export type PublishedAssetSource =
-	InternalAssetSource | ExternalAssetSource | PublishedUploadedAssetSource;
-
-/**
  * General-purpose asset source union (covers both editable and published forms).
- * Use `EditableAssetSource` or `PublishedAssetSource` for narrower contracts.
+ * Use `EditableAssetSource` for the narrower draft contract.
  */
 export type AssetSource =
 	| InternalAssetSource

@@ -35,14 +35,8 @@ import {
 	validateScreenshotConfig,
 } from './registry-validation.js';
 import { redactScreenshotPlan, redactScreenshotReport, redactScreenshotText } from './redaction.js';
+export { redactScreenshotPlan, redactScreenshotText, redactScreenshotUrl } from './redaction.js';
 export {
-	redactScreenshotPlan,
-	redactScreenshotReport,
-	redactScreenshotText,
-	redactScreenshotUrl,
-} from './redaction.js';
-export {
-	calculateImageHash,
 	getFileArtifactMeta,
 	invalidateStaleInvitationFullPage,
 	publishArtifactAtomically,
@@ -50,13 +44,6 @@ export {
 	validateBlankBottom,
 	verifyPhysicalPng,
 	verifySectionCropInclusion,
-} from './artifact-validation.js';
-export type {
-	LayoutEvidence,
-	PhysicalPngVerificationResult,
-	SectionCropVerificationResult,
-	VerifyPhysicalPngOptions,
-	VerifySectionCropOptions,
 } from './artifact-validation.js';
 
 // ---------------------------------------------------------------------------
@@ -72,7 +59,7 @@ export function parseCliArgs(argv: string[]): CliOptions {
 	const args = argv.slice(2); // skip node and script path
 	const booleanFlags = new Set([
 		'--interactive',
-		'--no-interactive',
+		'--non-interactive',
 		'--include-layout',
 		'--corpus',
 		'--clean',
@@ -84,7 +71,7 @@ export function parseCliArgs(argv: string[]): CliOptions {
 		const arg = args[i];
 
 		// --no-* flags
-		if (arg === '--no-interactive') {
+		if (arg === '--non-interactive') {
 			options.interactive = false;
 			continue;
 		}

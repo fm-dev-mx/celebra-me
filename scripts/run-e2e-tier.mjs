@@ -6,8 +6,6 @@ import { loadEnv } from 'vite';
 const TIERS = {
 	infra: ['tests/e2e/social-preview.audit.spec.ts', 'tests/e2e/layout-verify-fix.spec.ts'],
 	visual: [
-		'tests/e2e/valentina-face-audit.spec.ts',
-		'tests/e2e/ximena-premiere.audit.spec.ts',
 		'tests/e2e/xv-demo-premium-audit.spec.ts',
 		'tests/e2e/structural-variant-portability.spec.ts',
 		'tests/e2e/canonical-invitation-page-parity.spec.ts',

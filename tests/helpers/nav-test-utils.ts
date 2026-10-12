@@ -7,10 +7,6 @@ export function setupNavigatorShare(value = jest.fn().mockResolvedValue(undefine
 	return value;
 }
 
-export function removeNavigatorShare() {
-	delete (navigator as unknown as Record<string, unknown>).share;
-}
-
 export function setupNavigatorClipboard() {
 	Object.defineProperty(navigator, 'clipboard', {
 		value: { writeText: jest.fn().mockResolvedValue(undefined) },

@@ -24,6 +24,21 @@
 		height: auto;
 		margin: 0;
 
+		// Optional 3D settle (`--thank-you-keepsake-settle: invitation-settle-3d`, default none):
+		// the portrait arrives tilted by `--thank-you-keepsake-settle-tilt` / `-turn`.
+		@supports (animation-timeline: view()) {
+			@media (prefers-reduced-motion: no-preference) {
+				--settle-tilt: var(--thank-you-keepsake-settle-tilt, 10deg);
+				--settle-turn: var(--thank-you-keepsake-settle-turn, 0deg);
+				--settle-rise: var(--thank-you-keepsake-settle-rise, 1rem);
+
+				transform-origin: 50% 100%;
+				animation: var(--thank-you-keepsake-settle, none) linear both;
+				animation-timeline: view();
+				animation-range: entry 0% cover 40%;
+			}
+		}
+
 		&.photo-frame {
 			aspect-ratio: auto;
 			border: 0;
@@ -37,7 +52,7 @@
 
 	.thank-you-editorial__image-shell {
 		overflow: hidden;
-		border-radius: var(--thank-you-image-radius, 0.75rem);
+		border-radius: var(--thank-you-keepsake-image-radius, var(--thank-you-image-radius, 50%));
 		position: relative;
 		width: 100%;
 		height: 100%;
@@ -48,6 +63,7 @@
 			height: 100%;
 			object-fit: cover;
 			object-position: var(--thank-you-focal-point, var(--thank-you-image-position, center));
+			border-radius: inherit;
 		}
 	}
 
@@ -154,6 +170,51 @@
 
 		.closing-name {
 			font-size: clamp(3.25rem, 7vw, 6.4rem);
+		}
+	}
+}
+
+// The ambient layer in the markup is decoration that preset skins paint. Without one it must not
+// take a cell of the grid above (it pushed the photograph and the copy out of their columns).
+// Zero specificity, so a skin that positions or paints it keeps its own values. An invitation may
+// paint it with tokens: art layers and an outset that reaches the section edges (the section clips).
+// Below the two-column layout the `-stacked` tokens, when set, replace the ambient, its outset and
+// its drift, since art framed beside the keepsake usually needs re-placing above it.
+:where(.thank-you-section[data-variant='portrait-keepsake']) .thank-you-editorial__ambient {
+	--keepsake-ambient: var(
+		--thank-you-keepsake-ambient-stacked,
+		var(--thank-you-keepsake-ambient, none)
+	);
+	--keepsake-ambient-inset: var(
+		--thank-you-keepsake-ambient-inset-stacked,
+		var(--thank-you-keepsake-ambient-inset, 0)
+	);
+	--keepsake-ambient-drift: var(
+		--thank-you-keepsake-ambient-drift-stacked,
+		var(--thank-you-keepsake-ambient-drift)
+	);
+
+	position: absolute;
+	inset: var(--keepsake-ambient-inset);
+	z-index: -1;
+	background: var(--keepsake-ambient);
+	pointer-events: none;
+
+	@include mixins.respond-to(lg) {
+		--keepsake-ambient: var(--thank-you-keepsake-ambient, none);
+		--keepsake-ambient-inset: var(--thank-you-keepsake-ambient-inset, 0);
+		--keepsake-ambient-drift: var(--thank-you-keepsake-ambient-drift);
+	}
+
+	// With `--thank-you-keepsake-ambient-drift` the painted ground moves slower than the keepsake.
+	@supports (animation-timeline: view()) {
+		@media (prefers-reduced-motion: no-preference) {
+			--art-drift-from: calc(var(--keepsake-ambient-drift, 0rem) * -1);
+			--art-drift-to: var(--keepsake-ambient-drift, 0);
+
+			animation: invitation-art-drift linear both;
+			animation-timeline: view();
+			animation-range: cover;
 		}
 	}
 }

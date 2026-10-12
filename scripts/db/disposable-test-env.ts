@@ -16,7 +16,7 @@
  *   tsx scripts/db/disposable-test-env.ts run-tests
  *   tsx scripts/db/disposable-test-env.ts run-application-flow
  *   tsx scripts/db/disposable-test-env.ts run-concurrency-test
- *   tsx scripts/db/disposable-test-env.ts run-phase3-concurrency-test
+ *   tsx scripts/db/disposable-test-env.ts run-system-concurrency-test
  *   tsx scripts/db/disposable-test-env.ts run-stale-baseline-test
  *   tsx scripts/db/disposable-test-env.ts stop
  *   tsx scripts/db/disposable-test-env.ts cleanup
@@ -109,7 +109,7 @@ Usage:
   tsx scripts/db/disposable-test-env.ts run-managed-db-contracts  Reset disposable DB, run managed rekey Jest contracts
   tsx scripts/db/disposable-test-env.ts run-application-flow  Run the real service retry flow through PostgREST
   tsx scripts/db/disposable-test-env.ts run-concurrency-test  Prove same-key publication contention publishes once
-  tsx scripts/db/disposable-test-env.ts run-phase3-concurrency-test  Exercise Editor/managed/publication/asset contention
+  tsx scripts/db/disposable-test-env.ts run-system-concurrency-test  Exercise Editor/managed/publication/asset contention
   tsx scripts/db/disposable-test-env.ts run-memories-concurrency-test  Exercise event memories transaction races
   tsx scripts/db/disposable-test-env.ts run-memories-db-contracts  Reset disposable DB, run event memories pgTAP files and races
   tsx scripts/db/disposable-test-env.ts run-stale-baseline-test  Exercise public and contact-only baselines
@@ -416,7 +416,7 @@ function applyDisposableMigrations(options: { isBaseline: boolean; maxVersion?: 
 		'--target',
 		'disposable-test',
 		'--apply',
-		'--no-interactive',
+		'--non-interactive',
 	];
 	if (options.isBaseline) {
 		applyArgs.push('--max-version', BASELINE_CUTOFF_VERSION);
@@ -566,10 +566,13 @@ function cmdRunTests(): void {
 		'account_role_sync.test.sql',
 		'invitation_workflow.test.sql',
 		'atomic_invitation_publication.test.sql',
+		'publication_archived_rsvp.test.sql',
 		'invitation_original_image_delivery.test.sql',
 		'managed_identity_archive_cascade.test.sql',
 		...MEMORIES_PGTAP_FILES,
 		'guest_invitation_rls.test.sql',
+		'guest_engagement_events.test.sql',
+		'invitation_engagement_snapshots.test.sql',
 	]);
 }
 
@@ -740,6 +743,7 @@ async function cmdRunRsvpDbContracts(): Promise<void> {
 			'tests/db/public-guest-rsvp-db-boundary.test.ts',
 			'tests/db/public-rsvp-http-wiring-db.test.ts',
 			'tests/db/dashboard-guest-soft-delete-db.test.ts',
+			'tests/db/invitation-event-date-db.test.ts',
 		],
 		{
 			throwOnError: false,
@@ -786,7 +790,7 @@ function cmdRunManagedDbContracts(): void {
 			'--runInBand',
 			'--config',
 			'jest.managed-db-contracts.config.cjs',
-			'tests/provision/goal2-rekey-disposable-integration.test.ts',
+			'tests/provision/identity-rekey-disposable-integration.test.ts',
 			'tests/provision/image-namespace-disposable-integration.test.ts',
 		],
 		{
@@ -827,7 +831,7 @@ function cmdRunConcurrencyTest(): void {
 
 function cmdRunPhase3ConcurrencyTest(): void {
 	console.info('=== Disposable Test Environment: Phase 3 System Concurrency ===\n');
-	const result = runCommand('npx', ['-y', 'tsx', 'scripts/db/phase3-system-concurrency-test.ts']);
+	const result = runCommand('npx', ['-y', 'tsx', 'scripts/db/system-concurrency-test.ts']);
 	console.info(result.stdout || '');
 	if (result.status !== 0) {
 		const cleanStderr = redactCredentials(result.stderr);
@@ -940,7 +944,7 @@ async function main(): Promise<void> {
 		case 'run-concurrency-test':
 			cmdRunConcurrencyTest();
 			break;
-		case 'run-phase3-concurrency-test':
+		case 'run-system-concurrency-test':
 			cmdRunPhase3ConcurrencyTest();
 			break;
 		case 'run-memories-concurrency-test':

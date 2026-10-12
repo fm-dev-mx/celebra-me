@@ -15,13 +15,7 @@ import {
 	writeTextFile,
 } from './db-workflow-lib.ts';
 
-const WIP_TABLES = [
-	'invitations',
-	'intake_requests',
-	'intake_submissions',
-	'invitation_content_drafts',
-	'invitation_assets',
-] as const;
+const WIP_TABLES = ['invitations', 'invitation_content_drafts', 'invitation_assets'] as const;
 
 function getExistingWipTables(): { existing: string[]; missing: string[] } {
 	const tableList = WIP_TABLES.map((table) => sqlLiteral(table)).join(', ');

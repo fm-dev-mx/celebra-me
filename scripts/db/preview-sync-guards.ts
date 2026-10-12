@@ -153,15 +153,6 @@ export function updatePreviewAdminRole(dbUrl: string, userId: string): void {
 	);
 }
 
-export function ensureHostProfile(dbUrl: string, userId: string): void {
-	runPsql(
-		`insert into public.host_profiles (user_id, display_name)
-		 values (${sqlLiteral(userId)}::uuid, 'Preview Administrator')
-		 on conflict (user_id) do update set display_name = 'Preview Administrator';`,
-		dbUrl,
-	);
-}
-
 // ---------------------------------------------------------------------------
 // URL Resolution
 // ---------------------------------------------------------------------------

@@ -2,6 +2,7 @@
  * promotion-comparison.ts — Semantic comparison and divergence
  * helpers extracted from invitation-import-engine.ts
  */
+import { FinalTargetVerificationError } from './release-errors.ts';
 import type { InvitationPackageData } from './invitation-package.ts';
 import { STORAGE_URL_PLACEHOLDER } from './invitation-package.ts';
 import type { ResourcePlanAction } from './invitation-import-engine.ts';
@@ -375,7 +376,7 @@ export function assertAppliedHostedTargetIdentity(input: AppliedHostedTargetIden
 		!identity.isPubIdentical ||
 		!identity.isEventAndMemberIdentical
 	) {
-		throw new Error(APPLIED_HOSTED_TARGET_IDENTITY_FAILURE);
+		throw new FinalTargetVerificationError(APPLIED_HOSTED_TARGET_IDENTITY_FAILURE);
 	}
 }
 

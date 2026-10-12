@@ -14,13 +14,14 @@ preserving clear section boundaries. They are hierarchy tools, not a requirement
 transition.
 
 This system distills approved visual directions into reusable guidance. The reusable closed set
-contains a neutral default and four primary patterns:
+contains a neutral default and five primary patterns:
 
 1. Neutral
 2. Editorial arch
 3. Layered overlap
 4. Atmospheric blend
 5. Pattern band
+6. Folio
 
 A discontinuous champagne or golden thread may appear as a secondary detail. It must never become a
 continuous divider running through the full invitation.
@@ -101,6 +102,28 @@ markings, a picnic gingham) that marks a narrative stop without a geometric clim
 - Profiles select a pattern per boundary against stable attributes (`data-intersection-source`),
   never against client identity.
 - Count it as a geometric treatment: use it at one or two meaningful boundaries at most.
+
+### Folio
+
+Use a folio when the invitation reads as a book and a section should arrive like the next page,
+without a change of surface.
+
+- The incoming wrapper paints its own top edge as a page cut on a diagonal, low on one side and
+  rising toward the other, where the corner is turned down over the page (`::before` page, `::after`
+  corner). The page rises `--intersection-folio-rise` into the outgoing section's bottom padding;
+  nothing is reserved and nothing shifts.
+- The page takes `--intersection-surface-fill` (else `--intersection-surface`), which must equal the
+  incoming section's top so the cut reads only as an edge. Draw the edge and the fold with
+  `--intersection-folio-ink`; the turned corner shows `--intersection-folio-back`, shaded toward the
+  fold by `--intersection-folio-back-shade`, and casts `--intersection-folio-shadow`.
+- `--intersection-folio-flip: -1` mirrors it (corner on the left). Alternate sides between
+  consecutive folios so the asymmetry never repeats identically.
+- With `--intersection-folio-lift` (an angle) the corner starts lifted and turns down in 3D while
+  the boundary scrolls in (scroll-driven, `transform` only). Reduced motion and browsers without
+  scroll timelines keep it folded flat.
+- Weight: on matching surfaces only the hairline edge and the corner show, so it counts as a bridge,
+  not a climax. Keep it to a few boundaries, never on one carrying photography at its top edge, and
+  check that the rise clears the outgoing section's last line at every proof viewport.
 
 ## Secondary Golden Thread
 
@@ -194,11 +217,17 @@ Shared capabilities must remain generic and configurable:
 - Promote profile behavior into shared theme architecture only after it proves reusable across
   invitations and can be expressed without client identity.
 
+Every section wrapper paints `--section-band-paper` (default `none`) behind its section. A preset
+uses it to carry one tonal band across section kinds whose variants draw no background, as
+`storybook-lilac` does for its night from the countdown on; arch joins into those sections take
+`--intersection-surface` and `--intersection-surface-fill` from the same band.
+
 ## Render-plan metadata contract
 
 Reusable mechanics are selected before rendering and copied onto stable wrapper attributes:
 
-- `data-intersection`: `neutral`, `arch`, `overlap`, `atmospheric-blend`, or `pattern-band`;
+- `data-intersection`: `neutral`, `arch`, `overlap`, `atmospheric-blend`, `pattern-band`, or
+  `folio`;
 - `data-intersection-source`: explicit source identity from the selected composition profile;
 - `data-section-kind`: stable incoming section kind.
 

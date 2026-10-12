@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-09T21:41:08.380Z",
+    "generatedAt": "2026-10-10T04:31:49.591Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,16 +11,16 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "5d37b09dba737102029fb8a27aebf60c3a0a0e0e906cb00cd3edb60660dc4047",
-        "cssSha256": "0c0b37f99d3b68686d3d6243ddbf5e79a060addca43bfc1614ba92daddb666fc",
-        "assetSha256": "ad2452ba6050f6d98f15af71b545b00c73ce1e155d33b363e3c95b2ae1725ab3",
+        "lockfileSha256": "2981884c66deb52673ad77fbe5d15510f961ca67c714e09c662a3f94ed0f8a2e",
+        "cssSha256": "6f899986391f50eeae722e0ecf769c10bcf414bed1068c6f29b53960eae07bb4",
+        "assetSha256": "34064761c76e6aef63113892bbbdcd0f8fd3e21acda53ede4b5e7dd27b4df1a6",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
     "totalCaptures": 184,
-    "matrixHash": "f796398a7688ff3820fae041f67e1772a6e8ba9f291e0940250467a818f669de",
+    "matrixHash": "3692aabe17bccc7382d4c1a51ad2ed86cdaa1a4065c349e4d68471aa45d41ae9",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -1181,7 +1181,7 @@
             "cssOwner": "src/styles/themes/sections/thank-you/_portrait-keepsake.scss",
             "fixtureIdentity": "synthetic:thankYou.portrait-keepsake",
             "file": "jewelry-box-mobile-thankYou-portrait-keepsake.png",
-            "sha256": "7964ba4361024f84860acfc582fe1b9646d8df6c3a5faaa4e5947489bf607f60",
+            "sha256": "c0aa81fb0c59316e9d51eda4c3f6293b3bc2f42be71e4290074570e6faf70fa3",
             "contentHash": "9972ee1034a86de3c6e394f7c8b028726bf99ac2931531c25fccb345c9e5b860",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -1195,7 +1195,7 @@
             "cssOwner": "src/styles/themes/sections/thank-you/_portrait-keepsake.scss",
             "fixtureIdentity": "synthetic:thankYou.portrait-keepsake",
             "file": "jewelry-box-desktop-thankYou-portrait-keepsake.png",
-            "sha256": "23feddceeb7c57b53d4e7aa79f9949d85619d5b0b0bbf7895aead3d9f6572506",
+            "sha256": "5eebc975efb494edf8723b02e0d2f23ece2b9e6e721f807d4070c66103ae0812",
             "contentHash": "9972ee1034a86de3c6e394f7c8b028726bf99ac2931531c25fccb345c9e5b860",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -2031,7 +2031,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/invitation-xv-america-johana-mobile.png",
-            "sha256": "14a89c6256da5e08d011dda6e2f779a0b503bb8a7bdc9b24da495502e967240b",
+            "sha256": "9edff16cbcec08077e3e6a1e6c81c845c59259b1a7d9e29cfaef222f35a5760c",
             "contentHash": "c0e712c8bc932ec0e71585fb166c3a68432a088a2f53f62db21ee8639ad04186",
             "assetHash": "a4ec26854049e556cc12ba9902b3fece10065d59d5bb590056e37eb4e47cd2ef",
             "comparisonResult": "ACCEPTED"
@@ -2055,7 +2055,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/invitation-xv-ana-sofia-cota-guillen-mobile.png",
-            "sha256": "46a990e740542e37d8e2dfe9aeba66e5918a48da57946d7bd10b65010c52af53",
+            "sha256": "8d017b2c77756ff1668f8c11e4b76d5586b06a2b27ae24d6a66fac6f8621f29d",
             "contentHash": "2474f1379d8f01ba2448797c921e96c580f827a72aeda527b21dc18263d0e2a2",
             "assetHash": "fb483d576ea64e6767001de4309f5438973f188caa4592482e332a0acf4fc9bd",
             "comparisonResult": "ACCEPTED"
@@ -2151,7 +2151,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/invitation-baby-shower-leah-lexa-mobile.png",
-            "sha256": "b05253f8d43f02afbf602cf2210fe064be7c62d0c790e8ce47e48d0608c11cdf",
+            "sha256": "b23aef5ff1d9f40aca08ee7eae6f8eb2499c0aeccea5e6c6b430abc254dd8fbc",
             "contentHash": "0e8216d3991782fda03e171aa727f89b7dfbfdd500306d7ce989f48a264da874",
             "assetHash": "105735670692d2e869dc8572bbb0993c0bf0f6c85ba7e798470ebf130c47fb76",
             "comparisonResult": "ACCEPTED"
@@ -2199,7 +2199,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/invitation-xv-xareni-iyarit-mobile.png",
-            "sha256": "8bc1dfa16d04ca30f8da023e2214894ae508eb1fbf4f0133cbdefb0d73fff3f1",
+            "sha256": "499f9cb1a022ee79748fe71775199d5c9d529209c059b12dd6693e57889af9cb",
             "contentHash": "681e70e6bb14a67d36679c31d2bf4adc7f16b67dcc419404a60677633f4d9e28",
             "assetHash": "86673c42feb861764c0c3e650a3617f2b29ea7664019151493f8080754444d9b",
             "comparisonResult": "ACCEPTED"
@@ -2391,7 +2391,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
-            "sha256": "2d580784b3075f7f65d271066c91523d3b178e1e7e33b1a225b2a47d7478f72d",
+            "sha256": "7611134964840030916e08c6b46df650b1003b05a93bfb9d146f2e018792a193",
             "contentHash": "50cd0ec40853695fd14cd77397e929e553197a94c7ddb84835de876d3f1cfea6",
             "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
             "comparisonResult": "ACCEPTED"
@@ -2403,7 +2403,7 @@
             "preset": "celestial-blue",
             "viewport": "desktop",
             "file": "pages/demo-xv-demo-xv-celestial-blue-desktop.png",
-            "sha256": "f37d7aff0a33c49bebb8cfdc81dab54f6eb09aa9e78490a8a216ccc43e07fbcc",
+            "sha256": "86d195bb0e06848a94a80d7e5f2063cf407ca65ec4e48d769de47d7a19f8b3b3",
             "contentHash": "50cd0ec40853695fd14cd77397e929e553197a94c7ddb84835de876d3f1cfea6",
             "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
             "comparisonResult": "ACCEPTED"
@@ -2458,32 +2458,32 @@
         },
         {
             "kind": "demo",
-            "slug": "demo-xv-seaside",
+            "slug": "demo-xv-storybook-lilac",
             "eventType": "xv",
-            "preset": "celestial-blue",
+            "preset": "storybook-lilac",
             "viewport": "mobile",
-            "file": "pages/demo-xv-demo-xv-seaside-mobile.png",
-            "sha256": "617b9250676a40ce14cf71793abbe930fc26d89547a08b22f3b3cd896975bbbf",
-            "contentHash": "b978a449a4a46063fe8abcada0a5f405192c8d3c3a9e4de272f894a568771a2b",
-            "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
+            "file": "pages/demo-xv-demo-xv-storybook-lilac-mobile.png",
+            "sha256": "02c43c8e82f64622a24005facfe4d29cb1f14e8631934c6c4b27a2935d6cfde4",
+            "contentHash": "521dbbf96befc2f30fb8fdabe91bab67cb2e58200582693032644557b0ef8b4a",
+            "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
             "comparisonResult": "ACCEPTED"
         },
         {
             "kind": "demo",
-            "slug": "demo-xv-seaside",
+            "slug": "demo-xv-storybook-lilac",
             "eventType": "xv",
-            "preset": "celestial-blue",
+            "preset": "storybook-lilac",
             "viewport": "desktop",
-            "file": "pages/demo-xv-demo-xv-seaside-desktop.png",
-            "sha256": "dba2d463833a7de17756b298402aeff2c4a70443475fa8a7f264449a2801fed1",
-            "contentHash": "b978a449a4a46063fe8abcada0a5f405192c8d3c3a9e4de272f894a568771a2b",
-            "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
+            "file": "pages/demo-xv-demo-xv-storybook-lilac-desktop.png",
+            "sha256": "f92221de0d6840cf2443804964f7ff0161b0c7655c9b0ed225034beebfe60da8",
+            "contentHash": "521dbbf96befc2f30fb8fdabe91bab67cb2e58200582693032644557b0ef8b4a",
+            "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "e3a3679c21ddd7d7c885dea31602bdc912cd640c",
+    "referenceSha": "3104c845467bd5c94e0dc04d9727135d1e0e1677",
     "variantManifest": {
-        "generatedAt": "2026-10-09T21:41:08.380Z",
+        "generatedAt": "2026-10-10T04:31:49.591Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2495,9 +2495,9 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "5d37b09dba737102029fb8a27aebf60c3a0a0e0e906cb00cd3edb60660dc4047",
-            "cssSha256": "0c0b37f99d3b68686d3d6243ddbf5e79a060addca43bfc1614ba92daddb666fc",
-            "assetSha256": "ad2452ba6050f6d98f15af71b545b00c73ce1e155d33b363e3c95b2ae1725ab3",
+            "lockfileSha256": "2981884c66deb52673ad77fbe5d15510f961ca67c714e09c662a3f94ed0f8a2e",
+            "cssSha256": "6f899986391f50eeae722e0ecf769c10bcf414bed1068c6f29b53960eae07bb4",
+            "assetSha256": "34064761c76e6aef63113892bbbdcd0f8fd3e21acda53ede4b5e7dd27b4df1a6",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -3665,7 +3665,7 @@
                 "cssOwner": "src/styles/themes/sections/thank-you/_portrait-keepsake.scss",
                 "fixtureIdentity": "synthetic:thankYou.portrait-keepsake",
                 "file": "jewelry-box-mobile-thankYou-portrait-keepsake.png",
-                "sha256": "7964ba4361024f84860acfc582fe1b9646d8df6c3a5faaa4e5947489bf607f60",
+                "sha256": "c0aa81fb0c59316e9d51eda4c3f6293b3bc2f42be71e4290074570e6faf70fa3",
                 "contentHash": "9972ee1034a86de3c6e394f7c8b028726bf99ac2931531c25fccb345c9e5b860",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -3679,7 +3679,7 @@
                 "cssOwner": "src/styles/themes/sections/thank-you/_portrait-keepsake.scss",
                 "fixtureIdentity": "synthetic:thankYou.portrait-keepsake",
                 "file": "jewelry-box-desktop-thankYou-portrait-keepsake.png",
-                "sha256": "23feddceeb7c57b53d4e7aa79f9949d85619d5b0b0bbf7895aead3d9f6572506",
+                "sha256": "5eebc975efb494edf8723b02e0d2f23ece2b9e6e721f807d4070c66103ae0812",
                 "contentHash": "9972ee1034a86de3c6e394f7c8b028726bf99ac2931531c25fccb345c9e5b860",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -4245,10 +4245,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "e3a3679c21ddd7d7c885dea31602bdc912cd640c"
+        "referenceSha": "3104c845467bd5c94e0dc04d9727135d1e0e1677"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-09T21:41:08.386Z",
+        "generatedAt": "2026-10-10T04:31:49.598Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4260,16 +4260,16 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "5d37b09dba737102029fb8a27aebf60c3a0a0e0e906cb00cd3edb60660dc4047",
-            "cssSha256": "0c0b37f99d3b68686d3d6243ddbf5e79a060addca43bfc1614ba92daddb666fc",
-            "assetSha256": "ad2452ba6050f6d98f15af71b545b00c73ce1e155d33b363e3c95b2ae1725ab3",
+            "lockfileSha256": "2981884c66deb52673ad77fbe5d15510f961ca67c714e09c662a3f94ed0f8a2e",
+            "cssSha256": "6f899986391f50eeae722e0ecf769c10bcf414bed1068c6f29b53960eae07bb4",
+            "assetSha256": "34064761c76e6aef63113892bbbdcd0f8fd3e21acda53ede4b5e7dd27b4df1a6",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
         "totalCaptures": 60,
-        "matrixHash": "849692cf483a8748fed8046699f0d40d503b3ec59e3d6f756cd5ce0b907a60bc",
+        "matrixHash": "a6d16c71a99d0f09d23f8ba1e1b96026ec91dfe59cf34846a7980526296a6e67",
         "cases": 30,
         "captures": [
             {
@@ -4543,7 +4543,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-america-johana-mobile.png",
-                "sha256": "14a89c6256da5e08d011dda6e2f779a0b503bb8a7bdc9b24da495502e967240b",
+                "sha256": "9edff16cbcec08077e3e6a1e6c81c845c59259b1a7d9e29cfaef222f35a5760c",
                 "contentHash": "c0e712c8bc932ec0e71585fb166c3a68432a088a2f53f62db21ee8639ad04186",
                 "assetHash": "a4ec26854049e556cc12ba9902b3fece10065d59d5bb590056e37eb4e47cd2ef",
                 "comparisonResult": "CANDIDATE"
@@ -4567,7 +4567,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-ana-sofia-cota-guillen-mobile.png",
-                "sha256": "46a990e740542e37d8e2dfe9aeba66e5918a48da57946d7bd10b65010c52af53",
+                "sha256": "8d017b2c77756ff1668f8c11e4b76d5586b06a2b27ae24d6a66fac6f8621f29d",
                 "contentHash": "2474f1379d8f01ba2448797c921e96c580f827a72aeda527b21dc18263d0e2a2",
                 "assetHash": "fb483d576ea64e6767001de4309f5438973f188caa4592482e332a0acf4fc9bd",
                 "comparisonResult": "CANDIDATE"
@@ -4663,7 +4663,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/invitation-baby-shower-leah-lexa-mobile.png",
-                "sha256": "b05253f8d43f02afbf602cf2210fe064be7c62d0c790e8ce47e48d0608c11cdf",
+                "sha256": "b23aef5ff1d9f40aca08ee7eae6f8eb2499c0aeccea5e6c6b430abc254dd8fbc",
                 "contentHash": "0e8216d3991782fda03e171aa727f89b7dfbfdd500306d7ce989f48a264da874",
                 "assetHash": "105735670692d2e869dc8572bbb0993c0bf0f6c85ba7e798470ebf130c47fb76",
                 "comparisonResult": "CANDIDATE"
@@ -4711,7 +4711,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-xareni-iyarit-mobile.png",
-                "sha256": "8bc1dfa16d04ca30f8da023e2214894ae508eb1fbf4f0133cbdefb0d73fff3f1",
+                "sha256": "499f9cb1a022ee79748fe71775199d5c9d529209c059b12dd6693e57889af9cb",
                 "contentHash": "681e70e6bb14a67d36679c31d2bf4adc7f16b67dcc419404a60677633f4d9e28",
                 "assetHash": "86673c42feb861764c0c3e650a3617f2b29ea7664019151493f8080754444d9b",
                 "comparisonResult": "CANDIDATE"
@@ -4903,7 +4903,7 @@
                 "preset": "celestial-blue",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
-                "sha256": "2d580784b3075f7f65d271066c91523d3b178e1e7e33b1a225b2a47d7478f72d",
+                "sha256": "7611134964840030916e08c6b46df650b1003b05a93bfb9d146f2e018792a193",
                 "contentHash": "50cd0ec40853695fd14cd77397e929e553197a94c7ddb84835de876d3f1cfea6",
                 "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
                 "comparisonResult": "CANDIDATE"
@@ -4915,7 +4915,7 @@
                 "preset": "celestial-blue",
                 "viewport": "desktop",
                 "file": "pages/demo-xv-demo-xv-celestial-blue-desktop.png",
-                "sha256": "f37d7aff0a33c49bebb8cfdc81dab54f6eb09aa9e78490a8a216ccc43e07fbcc",
+                "sha256": "86d195bb0e06848a94a80d7e5f2063cf407ca65ec4e48d769de47d7a19f8b3b3",
                 "contentHash": "50cd0ec40853695fd14cd77397e929e553197a94c7ddb84835de876d3f1cfea6",
                 "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
                 "comparisonResult": "CANDIDATE"
@@ -4970,32 +4970,32 @@
             },
             {
                 "kind": "demo",
-                "slug": "demo-xv-seaside",
+                "slug": "demo-xv-storybook-lilac",
                 "eventType": "xv",
-                "preset": "celestial-blue",
+                "preset": "storybook-lilac",
                 "viewport": "mobile",
-                "file": "pages/demo-xv-demo-xv-seaside-mobile.png",
-                "sha256": "617b9250676a40ce14cf71793abbe930fc26d89547a08b22f3b3cd896975bbbf",
-                "contentHash": "b978a449a4a46063fe8abcada0a5f405192c8d3c3a9e4de272f894a568771a2b",
-                "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
+                "file": "pages/demo-xv-demo-xv-storybook-lilac-mobile.png",
+                "sha256": "02c43c8e82f64622a24005facfe4d29cb1f14e8631934c6c4b27a2935d6cfde4",
+                "contentHash": "521dbbf96befc2f30fb8fdabe91bab67cb2e58200582693032644557b0ef8b4a",
+                "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
                 "comparisonResult": "CANDIDATE"
             },
             {
                 "kind": "demo",
-                "slug": "demo-xv-seaside",
+                "slug": "demo-xv-storybook-lilac",
                 "eventType": "xv",
-                "preset": "celestial-blue",
+                "preset": "storybook-lilac",
                 "viewport": "desktop",
-                "file": "pages/demo-xv-demo-xv-seaside-desktop.png",
-                "sha256": "dba2d463833a7de17756b298402aeff2c4a70443475fa8a7f264449a2801fed1",
-                "contentHash": "b978a449a4a46063fe8abcada0a5f405192c8d3c3a9e4de272f894a568771a2b",
-                "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
+                "file": "pages/demo-xv-demo-xv-storybook-lilac-desktop.png",
+                "sha256": "f92221de0d6840cf2443804964f7ff0161b0c7655c9b0ed225034beebfe60da8",
+                "contentHash": "521dbbf96befc2f30fb8fdabe91bab67cb2e58200582693032644557b0ef8b4a",
+                "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "e3a3679c21ddd7d7c885dea31602bdc912cd640c"
+        "referenceSha": "3104c845467bd5c94e0dc04d9727135d1e0e1677"
     },
-    "candidateManifestSha256": "28ce5f6453fbba04c6ab01d62c11bc42805439f4908c7bb00f181c4d4cdec031",
-    "acceptedFromCommit": "e3a3679c21ddd7d7c885dea31602bdc912cd640c",
-    "acceptedAt": "2026-10-09T21:41:28.545Z"
+    "candidateManifestSha256": "057383866ca3d1fe071436acd2e58b5a1b0dc4309e3e6b67441946023dd475a7",
+    "acceptedFromCommit": "3104c845467bd5c94e0dc04d9727135d1e0e1677",
+    "acceptedAt": "2026-10-10T18:33:38.173Z"
 }

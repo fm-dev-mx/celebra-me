@@ -112,12 +112,8 @@ select coalesce((
         'provenance', (select count(*)::int from public.managed_invitation_release_provenance p where p.invitation_id = ${sqlLiteral(incorrectId)}::uuid),
         'publicationIdempotency', (select count(*)::int from public.invitation_publication_idempotency i where i.invitation_id = ${sqlLiteral(incorrectId)}::uuid),
         'mutationReceipts', (select count(*)::int from public.invitation_mutation_operation_receipts r where r.invitation_id = ${sqlLiteral(incorrectId)}::uuid),
-        'legacyAdoption', (select count(*)::int from public.managed_invitation_legacy_adoption_receipts r where r.invitation_id = ${sqlLiteral(incorrectId)}::uuid),
-        'intakeRequests', (select count(*)::int from public.intake_requests ir where ir.invitation_project_id = ${sqlLiteral(incorrectId)}::uuid),
-        'intakeSubmissions', (select count(*)::int from public.intake_submissions s where s.intake_request_id in (select ir.id from public.intake_requests ir where ir.invitation_project_id = ${sqlLiteral(incorrectId)}::uuid)),
         'sourcedInvitations', (select count(*)::int from public.invitations i where i.source_invitation_id = ${sqlLiteral(incorrectId)}::uuid),
         'guests', (select count(*)::int from public.guest_invitations g join public.events e on e.id = g.event_id where e.invitation_project_id = ${sqlLiteral(incorrectId)}::uuid),
-        'claimCodes', (select count(*)::int from public.event_claim_codes c join public.events e on e.id = c.event_id where e.invitation_project_id = ${sqlLiteral(incorrectId)}::uuid),
         'memberships', (select count(*)::int from public.event_memberships m join public.events e on e.id = m.event_id where e.invitation_project_id = ${sqlLiteral(incorrectId)}::uuid),
         'guestAudit', (select count(*)::int from public.guest_invitation_audit a join public.guest_invitations g on g.id = a.guest_invitation_id join public.events e on e.id = g.event_id where e.invitation_project_id = ${sqlLiteral(incorrectId)}::uuid)
       )
@@ -132,12 +128,8 @@ select coalesce((
         'provenance', (select count(*)::int from public.managed_invitation_release_provenance p where p.invitation_id = ${sqlLiteral(canonicalId)}::uuid),
         'publicationIdempotency', (select count(*)::int from public.invitation_publication_idempotency i where i.invitation_id = ${sqlLiteral(canonicalId)}::uuid),
         'mutationReceipts', (select count(*)::int from public.invitation_mutation_operation_receipts r where r.invitation_id = ${sqlLiteral(canonicalId)}::uuid),
-        'legacyAdoption', (select count(*)::int from public.managed_invitation_legacy_adoption_receipts r where r.invitation_id = ${sqlLiteral(canonicalId)}::uuid),
-        'intakeRequests', (select count(*)::int from public.intake_requests ir where ir.invitation_project_id = ${sqlLiteral(canonicalId)}::uuid),
-        'intakeSubmissions', (select count(*)::int from public.intake_submissions s where s.intake_request_id in (select ir.id from public.intake_requests ir where ir.invitation_project_id = ${sqlLiteral(canonicalId)}::uuid)),
         'sourcedInvitations', (select count(*)::int from public.invitations i where i.source_invitation_id = ${sqlLiteral(canonicalId)}::uuid),
         'guests', (select count(*)::int from public.guest_invitations g join public.events e on e.id = g.event_id where e.invitation_project_id = ${sqlLiteral(canonicalId)}::uuid),
-        'claimCodes', (select count(*)::int from public.event_claim_codes c join public.events e on e.id = c.event_id where e.invitation_project_id = ${sqlLiteral(canonicalId)}::uuid),
         'memberships', (select count(*)::int from public.event_memberships m join public.events e on e.id = m.event_id where e.invitation_project_id = ${sqlLiteral(canonicalId)}::uuid),
         'guestAudit', (select count(*)::int from public.guest_invitation_audit a join public.guest_invitations g on g.id = a.guest_invitation_id join public.events e on e.id = g.event_id where e.invitation_project_id = ${sqlLiteral(canonicalId)}::uuid)
       )
@@ -196,9 +188,6 @@ export function assessMigration(
 	const reviewGuests = guestCandidates.filter(
 		(g) => g.classification === 'requires_migration_review',
 	);
-	if (deps.claimCodes > 0) {
-		notes.push('Exclusive access/claim codes exist on the incorrect invitation.');
-	}
 	if (reviewGuests.length > 0) {
 		notes.push('Non-synthetic guest rows require explicit migration review before delete.');
 	}
@@ -212,7 +201,7 @@ export function assessMigration(
 			'Exclusive event memberships will be removed with the incorrect event (canonical host already exists).',
 		);
 	}
-	const required = reviewGuests.length > 0 || deps.claimCodes > 0;
+	const required = reviewGuests.length > 0;
 	return {
 		required,
 		blockReason: required
@@ -236,12 +225,6 @@ export function buildDeletePlan(
 				reason: 'ON DELETE RESTRICT — must remove before invitation/draft hard delete',
 			},
 			{
-				table: 'managed_invitation_legacy_adoption_receipts',
-				action: 'delete',
-				count: deps.legacyAdoption,
-				reason: 'ON DELETE RESTRICT — exclusive receipt rows if present',
-			},
-			{
 				table: 'published_invitation_content',
 				action: 'delete',
 				count: deps.published,
@@ -251,13 +234,13 @@ export function buildDeletePlan(
 				table: 'events',
 				action: 'delete',
 				count: deps.events,
-				reason: 'Cascades guests, memberships, claim codes, guest audit',
+				reason: 'Cascades guests, memberships, guest audit',
 			},
 			{
 				table: 'invitations',
 				action: 'delete',
 				count: 1,
-				reason: 'Cascades drafts, assets, provenance, intake requests',
+				reason: 'Cascades drafts, assets, provenance',
 			},
 		],
 		storageAssetPaths,
@@ -403,14 +386,6 @@ begin
 
   if exists (
     select 1
-    from public.event_claim_codes c
-    join public.events e on e.id = c.event_id
-    where e.invitation_project_id = ${sqlLiteral(incorrectId)}::uuid
-  ) then
-    raise exception 'CLAIM_CODES_PRESENT';
-  end if;
-  if exists (
-    select 1
     from public.guest_invitations g
     join public.events e on e.id = g.event_id
     where e.invitation_project_id = ${sqlLiteral(incorrectId)}::uuid
@@ -425,9 +400,6 @@ begin
 end $$;
 
 delete from public.invitation_publication_idempotency
-where invitation_id = ${sqlLiteral(incorrectId)}::uuid;
-
-delete from public.managed_invitation_legacy_adoption_receipts
 where invitation_id = ${sqlLiteral(incorrectId)}::uuid;
 
 delete from public.published_invitation_content
@@ -581,11 +553,6 @@ export function collectPurgeBlockReasons(
 	if (!input.allowArchivedInconsistentSource) {
 		blockReasons.push(
 			'ARCHIVED_INCONSISTENT_ACK_REQUIRED: Pass --allow-archived-inconsistent-source to purge an archived inconsistent source.',
-		);
-	}
-	if (loaded.incorrectDependencies.claimCodes > 0) {
-		blockReasons.push(
-			`UNRESOLVED_CLAIM_CODES: ${loaded.incorrectDependencies.claimCodes} claim code(s) remain; migrate or disposition before purge.`,
 		);
 	}
 	if (migration.required && migration.blockReason) {

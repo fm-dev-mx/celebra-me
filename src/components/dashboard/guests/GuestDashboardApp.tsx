@@ -36,7 +36,6 @@ import {
 import { guestsApi } from '@/lib/dashboard/guests-api';
 import { useGuestDashboardActions } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
-import { isEventEligibleForBrandingRemoval } from '@/lib/constants/branding-removal-rules';
 import {
 	getReminderEligibleGuests,
 	shouldShowReminderCta,
@@ -78,6 +77,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	const {
 		error,
 		eventId,
+		engagement,
 		hostEvents,
 		inviteBaseUrl,
 		items,
@@ -93,9 +93,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	} = useGuestDashboardRealtime({ initialEventId });
 	const currentEvent = hostEvents.find((e) => e.id === eventId);
 	const currentEventTitle = currentEvent?.title ?? '';
-	const isBrandingRemovalEligible =
-		currentEvent &&
-		isEventEligibleForBrandingRemoval(currentEvent.eventType, currentEvent.slug);
+	const isBrandingRemovalEligible = Boolean(currentEvent?.brandingRemovalEnabled);
 	const { notice: changeNotice, dismissNotice } = useGuestChangeNotice(eventId, items);
 
 	const reminderEligibleGuests = useMemo(
@@ -136,7 +134,9 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	);
 
 	// Always the whole event: search and filters only narrow the list below.
-	const summary = useMemo(() => computeGuestSummary(items), [items]);
+	// Test guests stay in the list but never count toward the event overview.
+	const countedItems = useMemo(() => items.filter((item) => !item.isTest), [items]);
+	const summary = useMemo(() => computeGuestSummary(countedItems), [countedItems]);
 	const withMessageCount = useMemo(
 		() => items.filter((item) => (item.guestComment ?? '').trim().length > 0).length,
 		[items],
@@ -164,7 +164,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		isFiltered,
 		clearFilters,
 	} = useGuestListFilters(items, eligibleGuestIds);
-	const groupMetrics = useMemo(() => computeGroupMetrics(items), [items]);
+	const groupMetrics = useMemo(() => computeGroupMetrics(countedItems), [countedItems]);
 	// With a group selected, the next step speaks for that group only.
 	const groupScope = useMemo(() => {
 		const scope = buildGuestGroupScope(items, group, eligibleGuestIds);
@@ -359,6 +359,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						withMessageCount={withMessageCount}
 						rsvpDeadline={shareDateContext.rsvpDeadline}
 						eventTitle={currentEventTitle}
+						engagement={engagement}
 						nextStepScope={groupScope ?? undefined}
 						onRemind={() =>
 							batchSelection.requestBatch('reminder', groupScope?.reminderIds ?? null)
@@ -406,6 +407,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					selectionMode={batchSelection.selectionMode}
 					view={listView}
 					onViewChange={setListView}
+					showViewToggle={reviewFilter !== 'with-message'}
 					onStartSelection={batchSelection.startSelection}
 					changeNotice={changeNotice}
 					onDismissNotice={dismissNotice}
@@ -434,6 +436,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					view={listView}
 					onOpenDetails={(item) => setDetailGuestId(item.guestId)}
 					selection={batchSelection.tableSelection}
+					messageWall={reviewFilter === 'with-message'}
 				/>
 
 				{detailGuest && (

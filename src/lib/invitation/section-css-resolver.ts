@@ -2,7 +2,6 @@ import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 import {
 	buildSectionUrlMap,
 	buildSectionBundleUrlMap,
-	buildInvitationProfileUrlMap,
 	resolveInvitationCssLoadPlan as resolveInvitationCssLoadPlanFromMaps,
 	type InvitationCssLoadItem,
 	type InvitationCssResolverInput,
@@ -25,7 +24,7 @@ const invitationProfileModules = import.meta.glob('/src/styles/invitation-profil
 
 const sectionVariantUrlMap = buildSectionUrlMap(sectionVariantModules);
 const sectionBundleUrlMap = buildSectionBundleUrlMap(sectionBundleModules);
-const invitationProfileUrlMap = buildInvitationProfileUrlMap(invitationProfileModules);
+const invitationProfileUrlMap = buildSectionBundleUrlMap(invitationProfileModules);
 
 if (import.meta.env.DEV) {
 	const map = new Map(Object.entries(sectionBundleUrlMap));

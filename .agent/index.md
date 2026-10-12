@@ -87,6 +87,8 @@ routes matching the touched surfaces.
   section variant inventory
 - [`docs/domains/rsvp/architecture.md`](../docs/domains/rsvp/architecture.md) — RSVP and host
   dashboard architecture
+- [`docs/domains/rsvp/engagement-analytics.md`](../docs/domains/rsvp/engagement-analytics.md) —
+  Guest engagement taxonomy, metrics, and retention
 - [`docs/domains/tracking/commercial-attribution.md`](../docs/domains/tracking/commercial-attribution.md)
   — First-party attribution and consent
 

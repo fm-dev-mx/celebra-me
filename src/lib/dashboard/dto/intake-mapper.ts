@@ -1,16 +1,5 @@
-import type {
-	Invitation,
-	IntakeRequest,
-	IntakeSubmission,
-	InvitationContentDraft,
-} from '@/lib/intake/types';
-import type {
-	InvitationDTO,
-	IntakeRequestDTO,
-	IntakeSubmissionDTO,
-	InvitationContentDraftDTO,
-} from '@/lib/dashboard/dto/intake';
-import { resolveCaptureLink } from '@/lib/intake/services/intake-request.service';
+import type { Invitation, InvitationContentDraft } from '@/lib/intake/types';
+import type { InvitationDTO, InvitationContentDraftDTO } from '@/lib/dashboard/dto/intake';
 
 export function toInvitationDTO(invitation: Invitation): InvitationDTO {
 	return {
@@ -32,46 +21,11 @@ export function toInvitationDTO(invitation: Invitation): InvitationDTO {
 		archivedAt: invitation.archivedAt,
 		createdAt: invitation.createdAt,
 		updatedAt: invitation.updatedAt,
-		hasRequest: false,
-		hasSubmission: false,
 		published: false,
 		rsvpEventStatus: null,
 		rsvpEventId: null,
 		rsvpSectionHasContent: false,
 		internalEditUrl: `/dashboard/invitaciones/${invitation.id}/editar`,
-		captureUrl: null,
-		captureLinkStatus: null,
-	};
-}
-
-export function toIntakeRequestDTO(request: IntakeRequest): IntakeRequestDTO {
-	const captureLink = resolveCaptureLink(request);
-	return {
-		id: request.id,
-		invitationId: request.invitationId,
-		status: request.status,
-		origin: request.origin,
-		enabledBlocks: request.enabledBlocks,
-		expiresAt: request.expiresAt,
-		createdAt: request.createdAt,
-		updatedAt: request.updatedAt,
-		...captureLink,
-	};
-}
-
-export function toIntakeSubmissionDTO(submission: IntakeSubmission): IntakeSubmissionDTO {
-	return {
-		id: submission.id,
-		intakeRequestId: submission.intakeRequestId,
-		status: submission.status,
-		blockData: submission.blockData,
-		photoNotes: submission.photoNotes,
-		clientComments: submission.clientComments,
-		submittedAt: submission.submittedAt,
-		reviewedAt: submission.reviewedAt,
-		reviewNotes: submission.reviewNotes,
-		createdAt: submission.createdAt,
-		updatedAt: submission.updatedAt,
 	};
 }
 

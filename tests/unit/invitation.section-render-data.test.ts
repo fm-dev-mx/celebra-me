@@ -244,6 +244,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 				eventSlug: 'demo-xv-jewelry-box',
 				eventType: 'xv',
 				eventTitle: 'Demo XV',
+				brandingRemovalEnabled: false,
 				guest: {
 					fullName: 'Invitada Test',
 					maxAllowedAttendees: 0,
@@ -288,12 +289,14 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 				eventSlug: 'luna-y-estrella',
 				eventType: 'primera-comunion',
 				eventTitle: 'Primera Comunión de Luna y Estrella',
+				brandingRemovalEnabled: false,
 				guest: {
 					fullName: 'Familia invitada',
 					maxAllowedAttendees: 4,
 					attendanceStatus: 'confirmed',
 					attendeeCount: 2,
-					guestComment: 'Con gusto asistimos',
+					// Stored history; the form receives only the latest message.
+					guestComment: 'Hola\n\n[12 jun 2026, 11:03] Con gusto asistimos',
 					hideCelebraMeBranding: false,
 				},
 			},

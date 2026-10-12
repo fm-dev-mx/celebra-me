@@ -45,6 +45,7 @@ export const THEME_PRESETS = [
 	'enchanted-rose',
 	'sacred-keepsake',
 	'angelic-presence',
+	'storybook-lilac',
 ] as const;
 
 /**
@@ -106,6 +107,7 @@ export const SECTION_INTERSECTION_FAMILIES = [
 	'overlap',
 	'atmospheric-blend',
 	'pattern-band',
+	'folio',
 ] as const;
 
 export type SectionIntersectionFamily = (typeof SECTION_INTERSECTION_FAMILIES)[number];
@@ -114,13 +116,4 @@ export type SectionIntersectionFamily = (typeof SECTION_INTERSECTION_FAMILIES)[n
  * Decorative line-art sets that sections pick up at fixed positions (heading emblems, rule
  * separators, closing horizon). Purely presentational: CSS pseudo-elements, aria-hidden by nature.
  */
-export const SECTION_ORNAMENT_SETS = ['seaside-lineart'] as const;
-export type { LocationVariant, ItineraryVariant } from '@/lib/invitation/section-variants';
-export { ITINERARY_VARIANTS } from '@/lib/invitation/section-variants';
-
-export type {
-	CountdownVariant,
-	QuoteVariant,
-	SharedSectionVariant,
-} from '@/lib/invitation/section-variants';
-export { COUNTDOWN_VARIANTS, STANDARD_SECTION_VARIANTS } from '@/lib/invitation/section-variants';
+export const SECTION_ORNAMENT_SETS = ['seaside-lineart', 'storybook-lanterns'] as const;

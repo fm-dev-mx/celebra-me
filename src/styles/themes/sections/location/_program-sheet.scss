@@ -36,6 +36,33 @@
 	);
 	padding-inline: clamp(1.5rem, 6vw, 4rem);
 	background: var(--location-bg, var(--color-surface-primary));
+	isolation: isolate;
+	overflow: var(--location-program-art-overflow, visible);
+
+	// Optional painted scene behind the sheet (`--location-program-art`, background layers, shown
+	// with `--location-program-art-display: block`). It is its own layer so it can drift against the
+	// scroll by `--location-program-art-drift`; the section then clips it
+	// (`--location-program-art-overflow: clip`).
+	&::before {
+		--art-drift-from: calc(var(--location-program-art-drift, 0rem) * -1);
+		--art-drift-to: var(--location-program-art-drift, 0);
+
+		content: '';
+		position: absolute;
+		inset: calc(var(--location-program-art-drift, 0rem) * -1) 0;
+		z-index: -1;
+		display: var(--location-program-art-display, none);
+		background: var(--location-program-art, none);
+		pointer-events: none;
+
+		@supports (animation-timeline: view()) {
+			@media (prefers-reduced-motion: no-preference) {
+				animation: invitation-art-drift linear both;
+				animation-timeline: view();
+				animation-range: cover;
+			}
+		}
+	}
 
 	.event-location__intro {
 		text-align: center;

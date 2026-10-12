@@ -51,7 +51,6 @@ export type AuthOperation =
 	| 'validate_access_token'
 	| 'password_sign_in'
 	| 'refresh_session'
-	| 'sign_up'
 	| 'send_magic_link'
 	| 'list_users'
 	| 'create_user_admin'

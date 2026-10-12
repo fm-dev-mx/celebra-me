@@ -572,6 +572,16 @@ export function validateOwnerUserId(raw: string | undefined): string {
  *   - SUPABASE_URL: hostname (<ref>.supabase.co)
  *   - PROD_DB_URL:  hostname OR username depending on format
  */
+/** SUPABASE_URL and the Production database URL point at different projects. */
+export class SupabaseProjectMismatchError extends Error {
+	readonly code = 'PRODUCTION_PROJECT_MISMATCH';
+
+	constructor(message: string) {
+		super(message);
+		this.name = 'SupabaseProjectMismatchError';
+	}
+}
+
 export function assertSameSupabaseProject(supabaseUrl: string, prodDbUrl: string): void {
 	try {
 		const supParsed = new URL(supabaseUrl);
@@ -610,18 +620,12 @@ export function assertSameSupabaseProject(supabaseUrl: string, prodDbUrl: string
 		}
 
 		if (supRef.toLowerCase() !== dbRef.toLowerCase()) {
-			throw new Error(
+			throw new SupabaseProjectMismatchError(
 				`SUPABASE_URL (project "${supRef}") and PROD_DB_URL (project "${dbRef}") must reference the same Supabase project.`,
 			);
 		}
 	} catch (error: unknown) {
-		if (error instanceof Error && error.message.includes('SUPABASE_URL')) {
-			throw error;
-		}
-		if (
-			error instanceof TypeError ||
-			(error instanceof Error && /invalid url/i.test(error.message))
-		) {
+		if (error instanceof TypeError) {
 			throw new Error('PROD_DB_URL is not a valid URL. Cannot verify project consistency.', {
 				cause: error,
 			});

@@ -1,6 +1,6 @@
 /**
  * Client-side API abstraction for authentication endpoints.
- * Centralizes login, register, and logout fetch calls so that
+ * Centralizes login and logout fetch calls so that
  * UI bridges never call fetch() directly.
  */
 
@@ -8,13 +8,6 @@ export interface AuthLoginPayload {
 	method: 'password' | 'magic_link';
 	email: string;
 	password: string;
-}
-
-export interface AuthRegisterPayload {
-	method: 'password' | 'magic_link';
-	email: string;
-	password: string;
-	claimCode: string;
 }
 
 export interface AuthChangePasswordPayload {
@@ -66,22 +59,6 @@ class AuthBridgeApi {
 
 		if (!response.ok) {
 			throw new Error(getErrorMessage(data, 'Unable to sign in.'));
-		}
-
-		return data;
-	}
-
-	async register(payload: AuthRegisterPayload): Promise<AuthResponse> {
-		const response = await fetch('/api/auth/register-host', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(payload),
-		});
-
-		const data = await parseJsonSafe(response);
-
-		if (!response.ok) {
-			throw new Error(getErrorMessage(data, 'Unable to register.'));
 		}
 
 		return data;

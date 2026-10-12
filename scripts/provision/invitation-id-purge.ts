@@ -33,8 +33,7 @@ import {
 
 export const INVITATION_ID_PURGE_OPERATION = 'id-purge';
 
-const UUID_RE =
-	/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export interface InvitationIdPurgeInput {
 	incorrectInvitationId: string;
@@ -82,12 +81,8 @@ export interface DependencyCounts {
 	provenance: number;
 	publicationIdempotency: number;
 	mutationReceipts: number;
-	legacyAdoption: number;
-	intakeRequests: number;
-	intakeSubmissions: number;
 	sourcedInvitations: number;
 	guests: number;
-	claimCodes: number;
 	memberships: number;
 	guestAudit: number;
 }
@@ -176,7 +171,9 @@ export function resolvePreviewPurgeDbUrl(env: NodeJS.ProcessEnv = process.env): 
 	}
 	const classification = classifyDbTarget(dbUrl);
 	if (classification.target === 'production') {
-		throw new Error('INVITATION_ID_PURGE_PRODUCTION_REJECTED: Production targets are never allowed.');
+		throw new Error(
+			'INVITATION_ID_PURGE_PRODUCTION_REJECTED: Production targets are never allowed.',
+		);
 	}
 	if (classification.target !== 'preview') {
 		throw new Error(
@@ -196,12 +193,8 @@ function emptyDependencyCounts(): DependencyCounts {
 		provenance: 0,
 		publicationIdempotency: 0,
 		mutationReceipts: 0,
-		legacyAdoption: 0,
-		intakeRequests: 0,
-		intakeSubmissions: 0,
 		sourcedInvitations: 0,
 		guests: 0,
-		claimCodes: 0,
 		memberships: 0,
 		guestAudit: 0,
 	};
@@ -246,7 +239,9 @@ async function handleAbsentIncorrectPurge(
 		{ tuplesOnly: true, throwOnError: true },
 	).stdout.trim();
 	if (!canonicalOnly) {
-		throw new Error('CANONICAL_NOT_FOUND: Canonical invitation is required for idempotent purge replay.');
+		throw new Error(
+			'CANONICAL_NOT_FOUND: Canonical invitation is required for idempotent purge replay.',
+		);
 	}
 	const canonical = {
 		...(JSON.parse(canonicalOnly) as Omit<InvitationRecordSummary, 'environment'>),
@@ -322,7 +317,9 @@ async function handleAbsentIncorrectPurge(
 				}
 			}
 		} else {
-			audit.completedSteps.push(`db_absent_storage_manual_if_needed:${residualStoragePrefix}`);
+			audit.completedSteps.push(
+				`db_absent_storage_manual_if_needed:${residualStoragePrefix}`,
+			);
 		}
 		try {
 			audit.operationReceiptId = insertPurgeReceipt(dbUrl, canonicalId, incorrectId, {
@@ -358,7 +355,13 @@ async function executePurgeApplySteps(
 		return;
 	}
 
-	const tx = executeDeleteTransaction(dbUrl, incorrectId, canonicalId, incorrectSlug, canonicalSlug);
+	const tx = executeDeleteTransaction(
+		dbUrl,
+		incorrectId,
+		canonicalId,
+		incorrectSlug,
+		canonicalSlug,
+	);
 	if (!tx.ok) {
 		audit.deletionResult = 'rolled_back';
 		audit.blocked = true;

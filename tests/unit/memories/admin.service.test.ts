@@ -85,6 +85,7 @@ function buildEvent(overrides: Partial<EventRecord> = {}): EventRecord {
 		status: 'published',
 		publishedAt: '2026-09-01T00:00:00.000Z',
 		invitationId: INVITATION_ID,
+		brandingRemovalGuestLimit: 0,
 		createdAt: '2026-08-01T00:00:00.000Z',
 		updatedAt: '2026-09-01T00:00:00.000Z',
 		...overrides,
@@ -297,6 +298,7 @@ describe('listMemorySpaceCandidatesAdmin', () => {
 				id: EVENT_WITHOUT_INVITATION,
 				slug: 'sin-invitacion',
 				invitationId: null,
+				brandingRemovalGuestLimit: 0,
 			}),
 		]);
 		mockListSpaces.mockResolvedValue([buildSpace({ eventId: EVENT_WITH_SPACE })]);

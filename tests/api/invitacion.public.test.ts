@@ -4,6 +4,10 @@ import { submitGuestRsvpByPublicEvent } from '@/lib/rsvp/services/rsvp-submissio
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { createMockRequest } from '../helpers/api-mocks';
 
+jest.mock('@/lib/rsvp/engagement/engagement.service', () => ({
+	recordServerEngagementEvent: jest.fn(),
+}));
+
 jest.mock('@/lib/invitation/content-resolver', () => ({
 	resolveInvitationContent: jest.fn(),
 }));
@@ -73,6 +77,7 @@ describe('Invitation API: public landing RSVP', () => {
 			status: 'published',
 			publishedAt: new Date().toISOString(),
 			invitationId: null,
+			brandingRemovalGuestLimit: 0,
 			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
 		});

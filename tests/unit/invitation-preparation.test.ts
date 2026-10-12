@@ -229,12 +229,13 @@ describe('invitation preparation — classification', () => {
 });
 
 describe('invitation preparation — event completeness', () => {
-	it('marks xv as evidence-backed and cumple/baby-shower as partial', () => {
+	it('marks xv as evidence-backed and every other event type as partial', () => {
 		expect(getEventCompletenessContract('xv').maturity).toBe('evidence-backed');
 		expect(getEventCompletenessContract('boda').maturity).toBe('partial');
 		expect(getEventCompletenessContract('cumple').maturity).toBe('partial');
 		expect(getEventCompletenessContract('baby-shower').maturity).toBe('partial');
-		expect(getEventCompletenessContract('bautizo').maturity).toBe('undefined');
+		expect(getEventCompletenessContract('bautizo').maturity).toBe('partial');
+		expect(getEventCompletenessContract('primera-comunion').maturity).toBe('partial');
 		expect(listEventCompletenessContracts()).toHaveLength(6);
 	});
 

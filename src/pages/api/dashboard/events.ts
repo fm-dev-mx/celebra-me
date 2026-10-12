@@ -3,6 +3,7 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { getSessionDebugSnapshotFromRequest } from '@/lib/rsvp/auth/auth';
 import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { listHostEvents, listHostEventsWithDebug } from '@/lib/rsvp/services/event-admin.service';
+import { toDashboardEventItem } from '@/lib/rsvp/services/shared/dashboard-event-item';
 import type { DashboardEventListResponse } from '@/interfaces/dashboard/admin.interface';
 
 export const GET: APIRoute = async ({ request }) => {
@@ -60,13 +61,7 @@ export const GET: APIRoute = async ({ request }) => {
 				items: result.events.map((event) => event.id),
 			});
 			payload = {
-				items: result.events.map((event) => ({
-					id: event.id,
-					title: event.title,
-					slug: event.slug,
-					eventType: event.eventType,
-					status: event.status,
-				})),
+				items: result.events.map(toDashboardEventItem),
 				debug,
 			};
 		} else {
@@ -76,13 +71,7 @@ export const GET: APIRoute = async ({ request }) => {
 				isSuperAdmin: sessionSnapshot.context.isSuperAdmin,
 			});
 			payload = {
-				items: events.map((event) => ({
-					id: event.id,
-					title: event.title,
-					slug: event.slug,
-					eventType: event.eventType,
-					status: event.status,
-				})),
+				items: events.map(toDashboardEventItem),
 			};
 		}
 		return jsonResponse(payload);

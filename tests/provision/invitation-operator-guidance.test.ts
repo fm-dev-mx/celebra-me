@@ -1,3 +1,4 @@
+import { PreconditionFailedError } from '../../scripts/provision/release-errors.ts';
 import { describe, expect, it } from '@jest/globals';
 import { normalizeOperatorArgv } from '../../scripts/lib/operator-argv.ts';
 import {
@@ -70,40 +71,70 @@ describe('invitation operator guidance', () => {
 	it('names the PRECONDITION_FAILED mismatch class without hashes or paths', () => {
 		expect(
 			translatePreconditionFailure(
-				'PRECONDITION_FAILED: The package source changed after planning.',
+				new PreconditionFailedError(
+					'PACKAGE_SOURCE_CHANGED',
+					'PRECONDITION_FAILED: The package source changed after planning.',
+				),
 			),
 		).toContain('origen del paquete');
 		expect(
 			translatePreconditionFailure(
-				'PRECONDITION_FAILED: The resolved package changed after planning.',
+				new PreconditionFailedError(
+					'PACKAGE_CHANGED',
+					'PRECONDITION_FAILED: The resolved package changed after planning.',
+				),
 			),
 		).toContain('paquete resuelto');
 		expect(
 			translatePreconditionFailure(
-				'PRECONDITION_FAILED: Precondition failed: target draft updated timestamp changed after planning (expected 2026-01-01, got 2026-01-02).',
+				new PreconditionFailedError(
+					'DRAFT_CHANGED',
+					'PRECONDITION_FAILED: Precondition failed: target draft updated timestamp changed after planning (expected 2026-01-01, got 2026-01-02).',
+				),
 			),
 		).toContain('borrador del destino');
 		expect(
 			translatePreconditionFailure(
-				'PRECONDITION_FAILED: Precondition failed: target published version changed after planning (expected 2, got 3).',
+				new PreconditionFailedError(
+					'PUBLISHED_VERSION_CHANGED',
+					'PRECONDITION_FAILED: Precondition failed: target published version changed after planning (expected 2, got 3).',
+				),
 			),
 		).toContain('versión publicada');
 		expect(
 			translatePreconditionFailure(
-				'PRECONDITION_FAILED: The planned functional or technical operation set changed before execution.',
+				new PreconditionFailedError(
+					'PLAN_CHANGED',
+					'PRECONDITION_FAILED: The planned functional or technical operation set changed before execution.',
+				),
 			),
 		).toContain('identificador del plan');
 		expect(
 			translatePreconditionFailure(
-				'PRECONDITION_FAILED: Apply requires the exact target plan produced by preflight.',
+				new PreconditionFailedError(
+					'PLAN_CHANGED',
+					'PRECONDITION_FAILED: Apply requires the exact target plan produced by preflight.',
+				),
 			),
 		).toContain('identificador del plan');
 		const fallback = translatePreconditionFailure(
-			'PRECONDITION_FAILED: The verified target project changed after planning.',
+			new PreconditionFailedError(
+				'PROJECT_CHANGED',
+				'PRECONDITION_FAILED: The verified target project changed after planning.',
+			),
 		);
 		expect(fallback).toContain('origen, el paquete o el estado del destino');
 		expect(fallback).not.toMatch(/[A-Za-z]:\\/);
 		expect(fallback).not.toMatch(/\b[a-f0-9]{64}\b/);
+	});
+
+	it('ignores message text that is not a typed precondition failure', () => {
+		expect(
+			translatePreconditionFailure(
+				new Error('PRECONDITION_FAILED: The package source changed after planning.'),
+			),
+		).toBeNull();
+		expect(translatePreconditionFailure('PRECONDITION_FAILED')).toBeNull();
 	});
 
 	it('hides planned diffs on an unwritten Preview auth failure', () => {

@@ -20,7 +20,7 @@ describe('CI hermetic vs disposable test tier classification', () => {
 		const jestConfig = requireConfig(path.join(root, 'jest.config.cjs')) as JestConfigShape;
 		expect(jestConfig.testPathIgnorePatterns).toEqual(
 			expect.arrayContaining([
-				'/tests/provision/goal2-rekey-disposable-integration\\.test\\.ts$',
+				'/tests/provision/identity-rekey-disposable-integration\\.test\\.ts$',
 			]),
 		);
 	});

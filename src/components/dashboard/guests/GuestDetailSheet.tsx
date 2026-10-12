@@ -37,7 +37,8 @@ interface GuestDetailSheetProps {
 
 /**
  * Guest detail: full screen on phones, a dialog on tablets and a side panel on
- * desktop. Status and next step lead; secondary facts open on demand; the action
+ * desktop. Status and the guest's message lead, then the next step; secondary
+ * facts open on demand; the action
  * bar sits in the fixed footer so it never needs scrolling.
  */
 const GuestDetailSheet: React.FC<GuestDetailSheetProps> = ({
@@ -98,6 +99,11 @@ const GuestDetailSheet: React.FC<GuestDetailSheetProps> = ({
 			<div className="dashboard-modal__content guest-detail-sheet__body">
 				<GuestStatusCard item={item} />
 
+				<GuestLastMessage
+					guestComment={item.guestComment}
+					fallbackTimestampIso={getGuestMessageFallbackTimestamp(item)}
+				/>
+
 				{hasNextStep && (
 					<div className="guest-detail-sheet__primary">
 						<GuestPrimaryAction
@@ -114,11 +120,6 @@ const GuestDetailSheet: React.FC<GuestDetailSheetProps> = ({
 						/>
 					</div>
 				)}
-
-				<GuestLastMessage
-					guestComment={item.guestComment}
-					fallbackTimestampIso={getGuestMessageFallbackTimestamp(item)}
-				/>
 
 				<GuestDetailMore item={item} onUpdateGroups={onUpdateGroups} />
 			</div>

@@ -87,7 +87,7 @@
         "invitation:local-corpus": "tsx scripts/provision/local-render-corpus/cli.ts",
         "invitation:delivery:baseline": "tsx scripts/invitation/measure-delivery-baseline.ts",
         "invitation:media:verify": "tsx scripts/invitation/verify-published-images.ts",
-        "db:disposable:phase3-concurrency": "tsx scripts/db/disposable-test-env.ts run-phase3-concurrency-test",
+        "db:disposable:system-concurrency": "tsx scripts/db/disposable-test-env.ts run-system-concurrency-test",
         "db:disposable:memories-concurrency": "tsx scripts/db/disposable-test-env.ts run-memories-concurrency-test",
         "lane:sync": "tsx scripts/agent/lane-sync.ts",
         "db:validate:pipeline": "tsx scripts/db/validate-pipeline.ts",
@@ -165,14 +165,14 @@
         "@zip.js/zip.js": "^2.18.2",
         "cloudinary": "^2.11.0",
         "date-fns-tz": "3.2.0",
-        "framer-motion": "^13.2.0",
-        "nodemailer": "^10.0.9",
+        "framer-motion": "^13.5.1",
+        "nodemailer": "^10.0.16",
         "qrcode": "^1.5.4",
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
         "sanitize-html": "^2.17.7",
-        "sharp": "^0.35.4",
-        "zod": "^4.6.2"
+        "sharp": "^0.35.5",
+        "zod": "^4.6.5"
     },
     "devDependencies": {
         "@astrojs/check": "^0.9.10",
@@ -217,7 +217,7 @@
         "stylelint": "17.15.0",
         "stylelint-config-standard-scss": "^17.0.0",
         "supabase": "2.118.0",
-        "ts-jest": "^29.4.12",
+        "ts-jest": "^29.4.14",
         "tsx": "^4.23.15",
         "typescript": "npm:@typescript/typescript6@6.0.2",
         "typescript-eslint": "^8.70.1"

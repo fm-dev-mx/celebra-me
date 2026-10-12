@@ -1,15 +1,16 @@
 import { POST } from '@/pages/api/dashboard/guests/share-messages';
 import { requireDashboardSessionFromLocals } from '@/lib/rsvp/auth/authorization';
 import { updateShareMessages } from '@/lib/rsvp/services/dashboard-guests.service';
-import { requireDashboardRateLimit } from '@/pages/api/dashboard/guests/dashboard-guests-lib';
+import { requireDashboardRateLimit } from '@/lib/rsvp/core/dashboard-guests-lib';
 import { createMockRequest } from '../helpers/api-mocks';
 
 jest.mock('@/lib/rsvp/auth/authorization', () => {
 	const resolveSession = jest.fn();
 	return {
 		requireDashboardSessionFromLocals: resolveSession,
-		requireDashboardMutationAccess: jest.fn((_request: Request, _cookies: unknown, locals: unknown) =>
-			Promise.resolve(resolveSession(locals)),
+		requireDashboardMutationAccess: jest.fn(
+			(_request: Request, _cookies: unknown, locals: unknown) =>
+				Promise.resolve(resolveSession(locals)),
 		),
 	};
 });
@@ -18,7 +19,7 @@ jest.mock('@/lib/rsvp/services/dashboard-guests.service', () => ({
 	updateShareMessages: jest.fn(),
 }));
 
-jest.mock('@/pages/api/dashboard/guests/dashboard-guests-lib', () => ({
+jest.mock('@/lib/rsvp/core/dashboard-guests-lib', () => ({
 	requireDashboardRateLimit: jest.fn().mockResolvedValue(undefined),
 }));
 

@@ -134,7 +134,7 @@ function main(): void {
 	runDisposableTestCommand('run-stale-baseline-test');
 
 	console.info('   - Running Phase 3 Editor/managed/publication/asset concurrency test...');
-	runDisposableTestCommand('run-phase3-concurrency-test');
+	runDisposableTestCommand('run-system-concurrency-test');
 
 	console.info('✅ Application DB flow tests passed.\n');
 

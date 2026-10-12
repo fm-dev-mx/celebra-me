@@ -69,7 +69,6 @@ interface ImportMetaEnv {
 	readonly META_TEST_EVENT_CODE: string;
 	readonly TRUST_DEVICE_SECRET: string;
 	readonly TRUST_DEVICE_MAX_AGE_DAYS: string;
-	readonly RSVP_CLAIM_CODE_PEPPER: string;
 	readonly UPSTASH_REDIS_REST_URL: string;
 	readonly UPSTASH_REDIS_REST_TOKEN: string;
 	readonly RSVP_V2_DISTRIBUTED_RATELIMIT: string;
@@ -88,7 +87,6 @@ interface ImportMetaEnv {
 	readonly VERCEL_GIT_COMMIT_REF: string;
 	readonly VERCEL_REGION: string;
 	readonly BASE_URL: string;
-	readonly INTAKE_TOKEN_ENCRYPTION_KEY: string;
 	readonly NODE_ENV: string;
 	readonly CONTACT_WHATSAPP: string;
 	readonly CLOUDINARY_CLOUD_NAME: string;

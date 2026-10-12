@@ -22,15 +22,11 @@ function makeProject(overrides: Partial<InvitationDTO>): InvitationDTO {
 		createdBy: 'user-1',
 		createdAt: '2025-01-01T00:00:00Z',
 		updatedAt: '2025-01-01T00:00:00Z',
-		hasRequest: false,
-		hasSubmission: false,
 		published: false,
 		rsvpEventStatus: null,
 		rsvpEventId: null,
 		rsvpSectionHasContent: false,
 		internalEditUrl: '/dashboard/invitaciones/test-id/editar',
-		captureUrl: null,
-		captureLinkStatus: null,
 		...overrides,
 	};
 }
@@ -60,17 +56,6 @@ describe('resolveDisplayInfo', () => {
 			expectedVariant: string;
 		}> = [
 			{ status: 'draft', expectedLabel: 'Borrador', expectedVariant: 'draft' },
-			{
-				status: 'waiting_for_client',
-				expectedLabel: 'Esperando cliente',
-				expectedVariant: 'waiting',
-			},
-			{
-				status: 'client_submitted',
-				expectedLabel: 'Captura recibida',
-				expectedVariant: 'submitted',
-			},
-			{ status: 'in_review', expectedLabel: 'En revisión', expectedVariant: 'review' },
 			{
 				status: 'in_production',
 				expectedLabel: 'En producción',
@@ -192,27 +177,6 @@ describe('resolvePrimaryAction', () => {
 				text: 'Editar datos base',
 				href: invitation.internalEditUrl,
 			});
-		});
-
-		it('returns waiting text for waiting_for_client', () => {
-			const invitation = makeProject({ status: 'waiting_for_client' });
-			const action = resolvePrimaryAction(invitation);
-			expect(action).toEqual({ text: 'Esperando respuesta del cliente' });
-		});
-
-		it('returns review link for client_submitted', () => {
-			const invitation = makeProject({ status: 'client_submitted' });
-			const action = resolvePrimaryAction(invitation);
-			expect(action).toEqual({
-				text: 'Revisar captura',
-				href: `/dashboard/invitaciones/${invitation.id}/review`,
-			});
-		});
-
-		it('returns muted text for in_review', () => {
-			const invitation = makeProject({ status: 'in_review' });
-			const action = resolvePrimaryAction(invitation);
-			expect(action).toEqual({ text: 'En revisión' });
 		});
 
 		it('returns continue production for in_production', () => {

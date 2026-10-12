@@ -43,7 +43,7 @@ const CONTRACT_TESTS_BY_INPUT = [
 			'tests/unit/invitations-domain-migration.test.ts',
 			'tests/unit/migration-safety.test.ts',
 			'tests/unit/mutation-receipt-lock-serialization-migration.test.ts',
-			'tests/unit/phase2-resumable-mutations-migration.test.ts',
+			'tests/unit/resumable-mutations-migration.test.ts',
 			'tests/unit/public-guest-rsvp-boundary-migration.test.ts',
 			'tests/unit/rsvp-attendee-limit-migration.test.ts',
 		],

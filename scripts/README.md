@@ -95,7 +95,7 @@ documented in [validation procedures](../docs/core/validation-procedures.md#mark
 | `pnpm test:db:managed-contracts`                | CI                   | `scripts/db/`  | disposable managed rekey contracts                                      |
 | `pnpm test:db:memories-contracts`               | CI                   | `scripts/db/`  | disposable event memories pgTAP files + transaction races               |
 | `pnpm preflight:memories`                       | Owner/agent          | `scripts/ops/` | read-only Production check of one memory space (GET/OPTIONS only)       |
-| `pnpm db:disposable:phase3-concurrency`         | Human                | `scripts/db/`  | concurrency/stale-plan scenarios                                        |
+| `pnpm db:disposable:system-concurrency`         | Human                | `scripts/db/`  | concurrency/stale-plan scenarios                                        |
 | `pnpm db:validate:pipeline`                     | Human/agent          | `scripts/db/`  | full database validation pipeline                                       |
 | `pnpm db:local:restore-from-dump`               | Human                | `scripts/db/`  | import production dump into persistent local (PII)                      |
 | `pnpm db:prod:export-auth`                      | Owner                | `scripts/db/`  | read-only Auth user export                                              |

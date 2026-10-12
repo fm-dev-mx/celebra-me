@@ -303,5 +303,3 @@ export const WaxOrganicSealIcon: FC<WaxSealProps> = ({
 		</svg>
 	);
 };
-
-export default WaxOrganicSealIcon;

@@ -26,6 +26,7 @@ interface GuestFormModalProps {
 			attendanceStatus?: AttendanceStatus;
 			attendeeCount?: number;
 			tags?: string[];
+			isTest?: boolean;
 		},
 		stayOpen?: boolean,
 	) => Promise<void>;
@@ -47,6 +48,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>('pending');
 	const [attendeeCount, setAttendeeCount] = useState(0);
 	const [tags, setTags] = useState<string[]>([]);
+	const [isTest, setIsTest] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 	const [localError, setLocalError] = useState('');
@@ -63,6 +65,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setAttendanceStatus('pending');
 		setAttendeeCount(0);
 		setTags([]);
+		setIsTest(false);
 		setFieldErrors({});
 		setLocalError('');
 		if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
@@ -89,6 +92,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setAttendanceStatus(initialGuest.attendanceStatus);
 		setAttendeeCount(initialGuest.attendeeCount);
 		setTags(initialGuest.tags || []);
+		setIsTest(initialGuest.isTest === true);
 	}, [initialGuest, open]);
 
 	if (!open) return null;
@@ -151,6 +155,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 					attendanceStatus: mode === 'edit' ? attendanceStatus : undefined,
 					attendeeCount: mode === 'edit' ? attendeeCount : undefined,
 					tags,
+					isTest,
 				},
 				stayOpen,
 			);
@@ -275,6 +280,21 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							label="Grupo"
 						/>
 					</fieldset>
+
+					<div className="guest-form__test">
+						<label className="guest-form__test-toggle">
+							<input
+								type="checkbox"
+								checked={isTest}
+								onChange={(event) => setIsTest(event.target.checked)}
+							/>
+							Invitado de prueba
+						</label>
+						<span className="guest-field-hint">
+							Úselo para revisar la invitación. Sus visitas y respuestas no cuentan en
+							las estadísticas.
+						</span>
+					</div>
 
 					{mode === 'edit' && (
 						<GuestResponseFields

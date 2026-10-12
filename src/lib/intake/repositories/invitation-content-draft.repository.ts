@@ -37,24 +37,6 @@ export async function findDraftByInvitationId(
 	return rows[0] ? toDraft(rows[0]) : null;
 }
 
-export async function updateDraftContent(
-	draftId: string,
-	content: Record<string, unknown>,
-): Promise<InvitationContentDraft> {
-	const rows = await supabaseRestRequest<InvitationContentDraftRow[]>({
-		pathWithQuery: `invitation_content_drafts?id=eq.${encodeURIComponent(draftId)}&select=${SELECT_COLUMNS}`,
-		method: 'PATCH',
-		useServiceRole: true,
-		prefer: 'return=representation',
-		body: {
-			content,
-		},
-	});
-
-	if (!rows[0]) throw new Error('Invitation content draft not found.');
-	return toDraft(rows[0]);
-}
-
 export async function updateDraftContentConditionally(
 	draftId: string,
 	expectedUpdatedAt: string,

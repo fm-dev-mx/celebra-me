@@ -31,11 +31,8 @@ export const REFRESH_PARITY_TABLES = [
 	'published_invitation_content',
 	'guest_invitations',
 	'invitation_content_drafts',
-	'intake_requests',
-	'intake_submissions',
 	'app_user_roles',
 	'event_memberships',
-	'event_claim_codes',
 ] as const;
 
 export interface CommandResult {
@@ -230,15 +227,6 @@ export function assertProductionDbUrl(rawUrl: string): URL {
 		);
 	}
 	return new URL(rawUrl);
-}
-
-export function isLocalSupabaseUrl(url: string): boolean {
-	try {
-		const host = new URL(url).hostname.toLowerCase();
-		return ['localhost', '127.0.0.1', '::1'].includes(host);
-	} catch {
-		return false;
-	}
 }
 
 export function assertAppEnvIsLocal(appEnv = loadAppEnv()): void {
@@ -583,14 +571,6 @@ export function runPsql(
 		input: inputStr,
 		redact: [targetUrl, ...(runOpts.redact ?? [])],
 	});
-}
-
-export function runPsqlFile(
-	filePath: string,
-	dbUrl: string = LOCAL_DB_URL,
-	options: RunOptions = {},
-): CommandResult {
-	return runPsql(filePath, dbUrl, { ...options, isFile: true });
 }
 
 export function createProdBackup(

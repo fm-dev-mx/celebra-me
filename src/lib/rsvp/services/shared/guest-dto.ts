@@ -72,5 +72,11 @@ export function toGuestDto(
 		eventSlug: options.eventSlug,
 		shortId: guest.shortId,
 		lastReminderSentAt: guest.lastReminderSentAt,
+		isTest: guest.isTest ?? false,
+		openCount: guest.openCount ?? 0,
+		firstOpenedAt: guest.firstOpenedAt ?? null,
+		lastOpenedAt: guest.lastOpenedAt ?? null,
+		lastPreviewedAt: guest.lastPreviewedAt ?? null,
+		maxProgressMilestone: guest.maxProgressMilestone ?? 0,
 	};
 }

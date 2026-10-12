@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useState, useEffect } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
+import ConfirmModal from '@/components/dashboard/intake/ConfirmModal';
 import DraftEditor from '@/components/dashboard/intake/DraftEditor';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
 import { FieldRow } from '@/components/intake/shared/FieldRow';
@@ -46,6 +47,7 @@ const DraftReview: FC<Props> = ({ invitationId }) => {
 		useInvitationAdmin();
 	const [editing, setEditing] = useState(false);
 	const [publishing, setPublishing] = useState(false);
+	const [confirmPublishOpen, setConfirmPublishOpen] = useState(false);
 	const [publishError, setPublishError] = useState('');
 	const [revising, setRevising] = useState(false);
 
@@ -93,6 +95,20 @@ const DraftReview: FC<Props> = ({ invitationId }) => {
 	const thankYou = content.thankYou as Record<string, unknown> | undefined;
 	const photoNotes = content.photoNotes as Record<string, unknown> | undefined;
 
+	const publish = async () => {
+		setPublishing(true);
+		setPublishError('');
+		try {
+			await publishDraft(invitationId);
+			void loadDraft(invitationId);
+		} catch (err) {
+			setPublishError(err instanceof Error ? err.message : 'Error al publicar.');
+		} finally {
+			setPublishing(false);
+			setConfirmPublishOpen(false);
+		}
+	};
+
 	if (editing) {
 		return (
 			<DraftEditor
@@ -139,25 +155,9 @@ const DraftReview: FC<Props> = ({ invitationId }) => {
 						<button
 							type="button"
 							className="intake-review__btn intake-review__btn--approve"
-							onClick={async () => {
-								if (
-									!window.confirm(
-										'¿Publicar este borrador como invitación final?',
-									)
-								)
-									return;
-								setPublishing(true);
+							onClick={() => {
 								setPublishError('');
-								try {
-									await publishDraft(invitationId);
-									void loadDraft(invitationId);
-								} catch (err) {
-									setPublishError(
-										err instanceof Error ? err.message : 'Error al publicar.',
-									);
-								} finally {
-									setPublishing(false);
-								}
+								setConfirmPublishOpen(true);
 							}}
 							disabled={publishing}
 						>
@@ -298,6 +298,17 @@ const DraftReview: FC<Props> = ({ invitationId }) => {
 						))}
 					</dl>
 				</section>
+			)}
+
+			{confirmPublishOpen && (
+				<ConfirmModal
+					title="¿Publicar este borrador?"
+					message="El borrador se publicará como la invitación final."
+					confirmLabel="Publicar borrador"
+					loading={publishing}
+					onConfirm={() => void publish()}
+					onCancel={() => setConfirmPublishOpen(false)}
+				/>
 			)}
 		</div>
 	);

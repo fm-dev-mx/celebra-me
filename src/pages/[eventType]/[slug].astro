@@ -420,7 +420,7 @@ const isDemoConversion = Boolean(
 							{
 								guestContext && (
 									<script>
-										import { initEngagementTracking } from '@/lib/invitation/engagement';
+										import { initInvitationAnalytics } from '@/lib/invitation/invitation-analytics';
 
 										const container = document.getElementById('invitation-sections-container');
 										if (container) {
@@ -428,11 +428,7 @@ const isDemoConversion = Boolean(
 											const totalSections = parseInt(container.getAttribute('data-total-sections') || '0');
 
 											if (inviteId && totalSections > 0) {
-												initEngagementTracking({
-													inviteId,
-													totalSections,
-													throttleMs: 10000
-												});
+												initInvitationAnalytics({ inviteId, totalSections, sectionsRoot: container });
 											}
 										}
 									</script>

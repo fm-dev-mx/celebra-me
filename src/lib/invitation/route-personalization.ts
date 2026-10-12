@@ -1,7 +1,6 @@
 import { buildInvitationPath } from '@/utils/invitation-link';
 import type { InvitationGuestContext } from '@/lib/invitation/page-data';
 import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
-import { trackInvitationView } from '@/lib/rsvp/services/rsvp-submission.service';
 import { isApiError } from '@/lib/rsvp/core/errors';
 
 function stripInviteParam(pathWithQuery: string): string {
@@ -78,7 +77,6 @@ export async function resolveRoutePersonalization(input: {
 			};
 		}
 
-		void trackInvitationView(inviteContext.inviteId);
 		return {
 			guestContext: inviteContext,
 			redirectPath: null,

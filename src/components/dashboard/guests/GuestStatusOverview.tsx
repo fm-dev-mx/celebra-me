@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import GuestEngagementFunnel from '@/components/dashboard/guests/GuestEngagementFunnel';
 import GuestPassesBar from '@/components/dashboard/guests/GuestPassesBar';
+import type { DashboardEngagementSummary } from '@/interfaces/dashboard/guest.interface';
 import { writeClipboardText } from '@/hooks/use-clipboard';
 import {
 	buildGuestSummaryShareText,
@@ -24,6 +26,8 @@ interface GuestStatusOverviewProps {
 	onSendPending?: () => void;
 	/** Active group filter: the next step then speaks for that group only. */
 	nextStepScope?: { label: string; summary: GuestSummary; reminderCount: number };
+	/** Guest engagement funnel; hidden when unavailable. */
+	engagement?: DashboardEngagementSummary | null;
 }
 
 interface StageButton {
@@ -145,6 +149,7 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 	onRemind,
 	onSendPending,
 	nextStepScope,
+	engagement,
 }) => {
 	const [shareState, setShareState] = useState<ShareState>('idle');
 	const { people, stages } = summary;
@@ -371,6 +376,7 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 							})}
 						</div>
 					)}
+					<GuestEngagementFunnel summary={engagement} />
 					<GuestNextStep
 						summary={nextStepScope?.summary ?? summary}
 						reminderCount={nextStepScope?.reminderCount ?? reminderCount}

@@ -5,8 +5,6 @@ import {
 	preparePublicationProjection,
 } from '@/lib/intake/services/publication-canonicalize';
 
-export { canonicalizePublicationValue } from '@/lib/intake/services/publication-canonicalize';
-
 /**
  * Generates a 32-character MD5 hex digest for publication optimistic concurrency control.
  *

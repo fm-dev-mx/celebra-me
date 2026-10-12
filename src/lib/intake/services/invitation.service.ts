@@ -1,4 +1,4 @@
-import type { Invitation, IntakeRequest } from '@/lib/intake/types';
+import type { Invitation } from '@/lib/intake/types';
 import {
 	listInvitations,
 	findInvitationById,
@@ -12,7 +12,6 @@ import {
 	type InvitationTimingProjection,
 } from '@/lib/intake/invitation-validity';
 import type { InvitationListItemDTO, InvitationDTO } from '@/lib/dashboard/dto/intake';
-import { resolveCaptureLink } from '@/lib/intake/services/intake-request.service';
 import { toInvitationDTO } from '@/lib/dashboard/dto/intake-mapper';
 import { hasRsvpContent } from '@/lib/intake/utils';
 import { ApiError } from '@/lib/rsvp/core/errors';
@@ -23,8 +22,6 @@ import { recordInvitationMutationOutcome } from '@/lib/intake/services/mutation-
 export function toEnrichedInvitationDTO(
 	invitation: Invitation,
 	input: {
-		request?: Pick<IntakeRequest, 'status' | 'expiresAt' | 'tokenCiphertext'> | null;
-		hasSubmission?: boolean;
 		published?: boolean;
 		rsvpEvent?: { id: string; status: string } | null;
 		rsvpSectionHasContent?: boolean;
@@ -32,13 +29,10 @@ export function toEnrichedInvitationDTO(
 ): InvitationDTO {
 	return {
 		...toInvitationDTO(invitation),
-		hasRequest: Boolean(input.request),
-		hasSubmission: input.hasSubmission ?? false,
 		published: input.published ?? false,
 		rsvpEventStatus: input.rsvpEvent?.status ?? null,
 		rsvpEventId: input.rsvpEvent?.id ?? null,
 		rsvpSectionHasContent: input.rsvpSectionHasContent ?? false,
-		...resolveCaptureLink(input.request ?? null),
 	};
 }
 
@@ -49,21 +43,7 @@ export async function getEnrichedInvitationList(
 	const invitationIds = invitations.map((p) => p.id);
 	if (invitationIds.length === 0) return [];
 
-	const [requestRows, eventRows, pubRows, submissionRows, draftRows] = await Promise.all([
-		supabaseRestRequest<
-			Array<{
-				id: string;
-				invitation_project_id: string;
-				token_ciphertext: string | null;
-				origin: string;
-				status: string;
-				expires_at: string | null;
-				enabled_blocks: unknown;
-			}>
-		>({
-			pathWithQuery: `intake_requests?select=id,invitation_project_id,token_ciphertext,origin,status,expires_at,enabled_blocks&origin=eq.client&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
-			useServiceRole: true,
-		}),
+	const [eventRows, pubRows, draftRows] = await Promise.all([
 		supabaseRestRequest<Array<{ id: string; invitation_project_id: string; status: string }>>({
 			pathWithQuery: `events?select=id,invitation_project_id,status&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})&deleted_at=is.null`,
 			useServiceRole: true,
@@ -80,10 +60,6 @@ export async function getEnrichedInvitationList(
 			pathWithQuery: `published_invitation_content?select=id,invitation_project_id,rsvp:content->rsvp,eventTiming:content->eventTiming,heroDate:content->hero->>date&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
 			useServiceRole: true,
 		}),
-		supabaseRestRequest<Array<{ id: string; intake_request_id: string }>>({
-			pathWithQuery: `intake_submissions?select=id,intake_request_id,intake_requests!inner(invitation_project_id)&intake_requests.invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
-			useServiceRole: true,
-		}),
 		supabaseRestRequest<
 			Array<{
 				invitation_project_id: string;
@@ -97,16 +73,8 @@ export async function getEnrichedInvitationList(
 		}),
 	]);
 
-	const requestIdToInvitation = new Map(
-		requestRows.map((r) => [r.id, r.invitation_project_id] as const),
-	);
 	const eventsByInvitation = new Map(eventRows.map((e) => [e.invitation_project_id, e] as const));
 	const publishedSet = new Set(pubRows.map((p) => p.invitation_project_id));
-	const submissionInvitationIds = new Set<string>();
-	for (const row of submissionRows) {
-		const pid = requestIdToInvitation.get(row.intake_request_id);
-		if (pid) submissionInvitationIds.add(pid);
-	}
 
 	const rsvpContentInvitations = new Set<string>();
 	for (const row of pubRows) {
@@ -124,21 +92,11 @@ export async function getEnrichedInvitationList(
 	const draftsByInvitation = new Map(draftRows.map((row) => [row.invitation_project_id, row]));
 	const now = new Date();
 	return invitations.map((invitation) => {
-		const rawRequest =
-			requestRows.find((r) => r.invitation_project_id === invitation.id) ?? null;
 		const event = eventsByInvitation.get(invitation.id);
 		const content: InvitationTimingProjection | undefined =
 			publishedByInvitation.get(invitation.id) ?? draftsByInvitation.get(invitation.id);
 		return {
 			...toEnrichedInvitationDTO(invitation, {
-				request: rawRequest
-					? {
-							status: rawRequest.status as IntakeRequest['status'],
-							expiresAt: rawRequest.expires_at,
-							tokenCiphertext: rawRequest.token_ciphertext,
-						}
-					: null,
-				hasSubmission: submissionInvitationIds.has(invitation.id),
 				published: publishedSet.has(invitation.id),
 				rsvpEvent: event ?? null,
 				rsvpSectionHasContent: rsvpContentInvitations.has(invitation.id),

@@ -74,5 +74,3 @@ export const MonogramSealIcon: React.FC<MonogramSealProps> = ({
 		</svg>
 	);
 };
-
-export default MonogramSealIcon;

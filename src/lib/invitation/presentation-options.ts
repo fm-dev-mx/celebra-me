@@ -7,13 +7,7 @@ export * from './countdown-presentation';
 export * from './gallery-presentation';
 export * from './gifts-presentation';
 export * from './personalized-access-presentation';
-export {
-	LOCATION_PRESENTATIONS,
-	resolveLocationMediaMode,
-	type LocationMediaMode,
-	type LocationPresentation,
-} from './location-presentation';
-export type { LocationPresentationOptions } from './location-presentation';
+export { LOCATION_PRESENTATIONS, resolveLocationMediaMode } from './location-presentation';
 export {
 	detectShowFlourishesConflict,
 	foldLocationPresentationOptions,
@@ -21,4 +15,4 @@ export {
 	resolveLocationShowNavigationButtons,
 } from './location-presentation-compatibility';
 
-export { ENVELOPE_SEAL_COLOR_LABELS, supportsEnvelopeSealColorOptions } from '@/lib/intake/labels';
+export { supportsEnvelopeSealColorOptions } from '@/lib/intake/labels';
