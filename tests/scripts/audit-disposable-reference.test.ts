@@ -3,6 +3,7 @@ import {
 	buildSchemaAuditVerdict,
 	compareTargetToCanonicalReference,
 	extractDroppedPoliciesFromSql,
+	extractDroppedRelationsFromSql,
 	parseSchemaAuditVerdictFromOutput,
 	runCanonicalObjectAudit,
 	type SchemaMetadata,
@@ -159,9 +160,7 @@ describe('evaluateDisposableReference', () => {
 		expect(verdict.ok).toBe(false);
 		expect(verdict.cause).toBe('incoherent_history_and_schema');
 		expect(verdict.missingTables).toEqual(
-			CANONICAL_REFERENCE_TABLES.filter(
-				(tableName) => !incompleteTables.includes(tableName),
-			),
+			CANONICAL_REFERENCE_TABLES.filter((tableName) => !incompleteTables.includes(tableName)),
 		);
 	});
 
@@ -334,6 +333,55 @@ describe('runCanonicalObjectAudit', () => {
 		);
 	});
 
+	it('treats tables dropped in pending migrations, and their policies, as info when BEHIND', () => {
+		const referenceSchema = emptySchema(CANONICAL_REFERENCE_TABLES);
+		const targetWithLegacyTable: SchemaMetadata = {
+			...emptySchema([...CANONICAL_REFERENCE_TABLES, 'rsvp_records']),
+			policies: [
+				{
+					tableName: 'rsvp_records',
+					policyName: 'rsvp_records_no_access_anon',
+					roles: '{anon}',
+					cmd: 'ALL',
+					qual: 'false',
+					withCheck: null,
+				},
+			],
+		};
+		const result = runCanonicalObjectAudit({
+			target: 'production',
+			historyLifecycle: 'BEHIND',
+			extraRemoteCount: 0,
+			reference: validReferenceInput(),
+			targetSchema: targetWithLegacyTable,
+			referenceSchema,
+			allowedDroppedRelations: new Set(['rsvp_records']),
+		});
+		expect(result.comparison?.errors).toEqual([]);
+		expect(result.comparison?.infos).toEqual(
+			expect.arrayContaining([
+				'Table "rsvp_records" is target-only (expected drop in pending migrations).',
+				'RLS Policy "rsvp_records_no_access_anon" on "rsvp_records" is target-only (expected drop in pending migrations).',
+			]),
+		);
+		expect(result.errorCount).toBe(0);
+	});
+
+	it('still reports a target-only table that no pending migration drops', () => {
+		const result = runCanonicalObjectAudit({
+			target: 'production',
+			historyLifecycle: 'BEHIND',
+			extraRemoteCount: 0,
+			reference: validReferenceInput(),
+			targetSchema: emptySchema([...CANONICAL_REFERENCE_TABLES, 'rsvp_records']),
+			referenceSchema: emptySchema(CANONICAL_REFERENCE_TABLES),
+			allowedDroppedRelations: new Set(['host_profiles']),
+		});
+		expect(result.comparison?.errors).toEqual([
+			'Table "rsvp_records" exists in target but is missing locally!',
+		]);
+	});
+
 	it('fails closed when reference creation/start does not produce a reachable database', () => {
 		const result = runCanonicalObjectAudit({
 			target: 'production',
@@ -409,3 +457,26 @@ describe('extractDroppedPoliciesFromSql', () => {
 	});
 });
 
+describe('extractDroppedRelationsFromSql', () => {
+	it('extracts tables and views with and without the public prefix', () => {
+		const sql = `
+			drop view if exists public.archived_invitations;
+			DROP TABLE IF EXISTS "public"."rsvp_records";
+			drop table if exists host_profiles cascade;
+			drop table if exists public.a, public.b;
+		`;
+		expect(extractDroppedRelationsFromSql(sql)).toEqual(
+			new Set(['archived_invitations', 'rsvp_records', 'host_profiles', 'a', 'b']),
+		);
+	});
+
+	it('ignores commented-out statements and other drops', () => {
+		const sql = `
+			-- drop table if exists public.kept;
+			/* drop view public.also_kept; */
+			drop function if exists public.some_fn();
+			drop policy if exists p on public.t;
+		`;
+		expect(extractDroppedRelationsFromSql(sql)).toEqual(new Set());
+	});
+});
