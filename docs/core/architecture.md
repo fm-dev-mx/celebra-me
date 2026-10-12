@@ -418,7 +418,6 @@ The active guest-facing patterns are:
 - `/api/invitacion/:inviteId/location`
 - `/api/invitacion/:inviteId/rsvp`
 - `/api/invitacion/:inviteId/events` — guest engagement batches
-- `/api/invitacion/:inviteId/view` — legacy view telemetry, kept until the contract release
 - `GET /api/cron/engagement-maintenance` — daily engagement snapshots and ledger anonymization
   (Vercel cron at 10:43 UTC; bearer `CRON_SECRET`)
 

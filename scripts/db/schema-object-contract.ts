@@ -6,10 +6,7 @@
 export type StructuralObjectType = 'index' | 'constraint' | 'routine';
 
 export type StructuralFindingKind =
-	| 'missing_expected'
-	| 'unexpected'
-	| 'noncanonical_name'
-	| 'incompatible_definition';
+	'missing_expected' | 'unexpected' | 'noncanonical_name' | 'incompatible_definition';
 
 export interface StructuralFinding {
 	kind: StructuralFindingKind;
@@ -45,24 +42,28 @@ const CONTRACT_ROUTINE_NAMES = new Set([
 	'save_invitation_metadata_atomic',
 	'restore_invitation_from_published_atomic',
 	'submit_guest_rsvp_public',
-	'track_guest_invitation_view_public',
+	'record_guest_engagement_events_public',
+	'get_event_engagement_summary',
 ]);
 
-export function toContractRoutines(
-	routines: readonly NamedRoutine[],
-): NamedRoutine[] {
+export function toContractRoutines(routines: readonly NamedRoutine[]): NamedRoutine[] {
 	return routines.filter((item) => CONTRACT_ROUTINE_NAMES.has(item.routineName));
 }
 
 export function normalizeDef(def: string, name: string): string {
-	return def
-		.replace(new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), 'NAME_PLACEHOLDER')
-		// Hosted FKs qualify auth.users; disposable often resolves users via search_path.
-		.replace(/\bauth\./g, '')
-		.replace(/\s+/g, ' ')
-		.replace(/::text/g, '')
-		.replace(/["'()]/g, '')
-		.trim();
+	return (
+		def
+			.replace(
+				new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+				'NAME_PLACEHOLDER',
+			)
+			// Hosted FKs qualify auth.users; disposable often resolves users via search_path.
+			.replace(/\bauth\./g, '')
+			.replace(/\s+/g, ' ')
+			.replace(/::text/g, '')
+			.replace(/["'()]/g, '')
+			.trim()
+	);
 }
 
 interface NamedShape {
