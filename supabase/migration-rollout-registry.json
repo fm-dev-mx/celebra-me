@@ -160,6 +160,43 @@
         "20261010180000": {
             "phase": "neutral",
             "notes": "Redefines publish_invitation_atomic so a publication keeps an archived (RSVP disabled) linked event archived instead of resetting it to published. Same signature, grants and receipts; the deployed application does not depend on the old reset."
+        },
+        "20261012200000": {
+            "phase": "contract",
+            "requiresDeployedAppCapabilities": ["retired_legacy_tables_client"],
+            "revokes": [
+                "event_claim_codes",
+                "redeem_claim_code_rpc",
+                "intake_requests",
+                "intake_submissions",
+                "intake_capture_statuses"
+            ],
+            "notes": "Drops claim codes, the client capture tables and their unused event/project helpers, redefines the archive/delete/restore helpers without them and narrows invitations.status. Apply only after the application without self-registration or capture is deployed; export the three tables first."
+        },
+        "20261012200100": {
+            "phase": "contract",
+            "requiresDeployedAppCapabilities": ["retired_legacy_tables_client"],
+            "revokes": [
+                "rsvp_records",
+                "rsvp_audit_log",
+                "rsvp_channel_log",
+                "managed_invitation_legacy_adoption_receipts",
+                "host_profiles"
+            ],
+            "notes": "Drops the RSVP v1 store, the legacy adoption receipts and host_profiles, none of which the application reads. Apply after the application that no longer writes host_profiles is deployed; export the five tables first."
+        },
+        "20261012200200": {
+            "phase": "contract",
+            "requiresDeployedAppCapabilities": [
+                "retired_legacy_tables_client",
+                "event_memories_client"
+            ],
+            "revokes": [
+                "valentina_memories_catalog",
+                "valentina_memories_private_lifecycle",
+                "valentina_memories_video_quota"
+            ],
+            "notes": "Drops the client-named Valentina memories catalog and its RPCs. Export the three tables and the referenced storage objects first; object deletion is a separate owner step."
         }
     },
     "appCapabilities": {
