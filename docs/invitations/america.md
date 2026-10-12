@@ -223,7 +223,7 @@ stone door of DSC08756, and turns to a violet night with gold lanterns by the ti
 venues, because the misa starts after sunset and the reception is a night garden. One gold braid
 vine with small flowers ties the chapter thresholds.
 
-**Human creative outcome:** `PENDING`
+**Human creative outcome:** `ACCEPTED`
 
 | concern                                                  | decision / evidence                                                         | status  |
 | -------------------------------------------------------- | --------------------------------------------------------------------------- | ------- |
@@ -250,14 +250,14 @@ boundaries only (`composition.intersections` is the executable record):
 
 ### Creative acceptance record
 
-| field                                       | value                                                                    |
-| ------------------------------------------- | ------------------------------------------------------------------------ |
-| Mechanical render/capture result            | pass — Local v1, all-sections at mobile-standard and desktop, 2026-10-09 |
-| Whole-invitation responsive inspection      | Agent review at 390 and 1440 px (envelope, card, every section)          |
-| Section boundaries and narrative continuity | pass (agent); human review pending                                       |
-| Human creative outcome                      | `PENDING`                                                                |
-| Reviewer and date                           |                                                                          |
-| Blocking reason or owner follow-up          | Client copy approval, map pins, song, gifts                              |
+| field                                       | value                                                                      |
+| ------------------------------------------- | -------------------------------------------------------------------------- |
+| Mechanical render/capture result            | pass — Local v1, all-sections at mobile-standard and desktop, 2026-10-09   |
+| Whole-invitation responsive inspection      | Agent review at 390 and 1440 px (envelope, card, every section)            |
+| Section boundaries and narrative continuity | pass (agent); human review accepted 2026-10-12                             |
+| Human creative outcome                      | `ACCEPTED`                                                                 |
+| Reviewer and date                           | Francisco Mendoza (owner), 2026-10-12, whole invitation on Local 4324      |
+| Blocking reason or owner follow-up          | None blocking; client copy, map pins, song and gifts stay owner follow-ups |
 
 ---
 
