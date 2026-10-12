@@ -137,6 +137,14 @@ describe('public guest rsvp postgresql security boundary (real DB)', () => {
 		expect(updateRes.stderr).toMatch(/permission denied|42501/i);
 	});
 
+	it('retires the legacy view RPC', () => {
+		const legacy = runSql(
+			"select to_regprocedure('public.track_guest_invitation_view_public(text,integer)') is null;",
+		);
+		expect(legacy.status).toBe(0);
+		expect(legacy.stdout.trim()).toBe('t');
+	});
+
 	it('denies authenticated and anon execution on submit and track public RPCs', () => {
 		const anonSubmit = runSqlAsRole(
 			'anon',
