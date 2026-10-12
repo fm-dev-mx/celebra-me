@@ -310,10 +310,13 @@ dependencies go down.
       treats an environment mismatch as a mismatch.
     - `validate:structure` rejects platform identity reads, stray `CELEBRA_DEPLOY_ENV` reads and
       dynamic `getEnv('NODE_ENV')` in `src/` (`scripts/validate-deploy-identity-reads.mjs`).
-  - **Design note: literal `process.env.NODE_ENV` reads stay.** These are cookie `Secure`, debug
-    payloads and log noise. Vite inlines them at build time (`production` in every built bundle, as
-    F0a showed on workerd), so they are build constants, not runtime identity. Only the dynamic read
-    was a fail-open, and the validator now bans it.
+  - **Correction (2026-10-11): no application decision reads `NODE_ENV`.** Vercel injects
+    `NODE_ENV=development` at runtime (project env, all environments), so Production was serving
+    `?debug=1` diagnostics on `/api/auth/session` and setting session and CSRF cookies without
+    `Secure` (HSTS mitigated it). Cookies now use `requiresSecureCookies()` (Secure unless the
+    process is positively local), debug payloads require `isLocalProcess()`, and retry logs are
+    silenced by `isProductionDeployment()`. `validate:structure` rejects any
+    `NODE_ENV === 'production'` decision in `src/`.
 - **Next responsibility:**
   - Owner: review the F1 diff and authorize its commits.
   - Owner, before integrating F1: create `CELEBRA_DEPLOY_ENV` in Vercel (`preview` for Preview,

@@ -358,6 +358,8 @@ describe('validate-structure script', () => {
 					"const e = getEnv('NODE_ENV');",
 					"const f = getEnv('VERCEL_API_TOKEN');",
 					"const g = 'message that names CELEBRA_DEPLOY_ENV';",
+					"const h = process.env.NODE_ENV === 'production';",
+					"const i = process.env.NODE_ENV === 'test';",
 				].join('\n'),
 			);
 
@@ -373,6 +375,8 @@ describe('validate-structure script', () => {
 			expect(output).toContain('src/lib/leaky.ts:5: reads NODE_ENV dynamically');
 			expect(output).not.toContain('src/lib/leaky.ts:6:');
 			expect(output).not.toContain('src/lib/leaky.ts:7:');
+			expect(output).toContain('src/lib/leaky.ts:8: decides behavior from NODE_ENV');
+			expect(output).not.toContain('src/lib/leaky.ts:9:');
 			expect(output).not.toContain('src/lib/server/deploy-identity.ts:');
 		} finally {
 			rmSync(fixtureRoot, { recursive: true, force: true });

@@ -87,3 +87,12 @@ export function isProductionDeployment(input?: DeployIdentityInput): boolean {
 export function isLocalProcess(input?: DeployIdentityInput): boolean {
 	return readDeployEnvironment(input) === 'local';
 }
+
+/**
+ * Cookies carry `Secure` everywhere except a positively local process served over plain
+ * http. Hosted and ambiguous runtimes always get it: the hosting platform may inject any
+ * NODE_ENV at runtime, so NODE_ENV never decides transport security.
+ */
+export function requiresSecureCookies(input?: DeployIdentityInput): boolean {
+	return !isLocalProcess(input);
+}

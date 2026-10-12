@@ -4,6 +4,7 @@ import {
 	isProductionDeployment,
 	readDeployEnvironment,
 	readHostedDeployEnvironment,
+	requiresSecureCookies,
 	resolveDeployEnvironment,
 } from '@/lib/server/deploy-identity';
 
@@ -81,6 +82,27 @@ describe('resolveDeployEnvironment', () => {
 			process.env.CELEBRA_DEPLOY_ENV = 'preview';
 			expect(resolveDeployEnvironment({ isDevServer: false })).toBe('preview');
 		});
+	});
+});
+
+describe('requiresSecureCookies', () => {
+	it('drops Secure only for a positively local process', () => {
+		expect(
+			requiresSecureCookies({
+				deployEnv: '',
+				isDevServer: true,
+				supabaseUrl: LOCAL_SUPABASE,
+			}),
+		).toBe(false);
+		for (const deployEnv of ['production', 'preview', 'staging', '']) {
+			expect(
+				requiresSecureCookies({
+					deployEnv,
+					isDevServer: false,
+					supabaseUrl: HOSTED_SUPABASE,
+				}),
+			).toBe(true);
+		}
 	});
 });
 

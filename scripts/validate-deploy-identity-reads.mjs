@@ -5,8 +5,9 @@ function normalizePath(file) {
 	return file.replaceAll('\\', '/').replace(/^\.\//u, '');
 }
 
-// Deploy identity is read in exactly one module; hosting-platform identity and the
-// dynamic NODE_ENV (empty on edge runtimes) are never consulted by application code.
+// Deploy identity is read in exactly one module. Application code never consults
+// hosting-platform identity or NODE_ENV: edge runtimes report no NODE_ENV, and hosting
+// platforms may inject any value at runtime (Vercel serves NODE_ENV=development).
 const DEPLOY_IDENTITY_MODULE = 'src/lib/server/deploy-identity.ts';
 const DEPLOY_IDENTITY_RULES = [
 	{
@@ -27,6 +28,10 @@ const DEPLOY_IDENTITY_RULES = [
 	{
 		pattern: /getEnv\(\s*['"]NODE_ENV/,
 		message: 'reads NODE_ENV dynamically; it is empty on edge runtimes',
+	},
+	{
+		pattern: /NODE_ENV\s*[!=]==?\s*['"]production['"]/,
+		message: 'decides behavior from NODE_ENV; use src/lib/server/deploy-identity.ts',
 	},
 ];
 

@@ -5,12 +5,13 @@ import { errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
 import { listHostEvents, listHostEventsWithDebug } from '@/lib/rsvp/services/event-admin.service';
 import { toDashboardEventItem } from '@/lib/rsvp/services/shared/dashboard-event-item';
 import type { DashboardEventListResponse } from '@/interfaces/dashboard/admin.interface';
+import { isLocalProcess } from '@/lib/server/deploy-identity';
 
 export const GET: APIRoute = async ({ request }) => {
 	try {
 		const url = new URL(request.url);
-		const debugEnabled =
-			process.env.NODE_ENV !== 'production' && url.searchParams.get('debug') === '1';
+		// Diagnostics never leave a local process, whatever NODE_ENV the platform injects.
+		const debugEnabled = isLocalProcess() && url.searchParams.get('debug') === '1';
 		const requestedSlug = url.searchParams.get('slug') || '';
 		const sessionSnapshot = await getSessionDebugSnapshotFromRequest(request);
 		if (!sessionSnapshot.context) {
