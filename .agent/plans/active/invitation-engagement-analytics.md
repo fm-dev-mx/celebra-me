@@ -379,8 +379,10 @@ Each goal is one task branch (`feat/engagement-*`), `pnpm validate:changed` → 
   `view_percentage` once unread, extend `scripts/db/schema-object-contract.ts` and
   `mutation-schema-contract-query.ts`).
 - Local blocker: the persistent Local DB also has the unrelated pending contract migrations
-  `20261009230000`–`20261009230200`; `pnpm db:migrate` applies the whole pending set, so the
-  engagement migrations cannot reach Local until the owner applies or defers those.
+  `20261009230000`–`20261009230200` (renumbered to `20261012200000`–`20261012200200` on
+  `feat/retire-legacy-tables-contracts`, because `supabase db push` refuses versions older than the
+  last applied `20261010180000`); `pnpm db:migrate` applies the whole pending set, so the engagement
+  migrations cannot reach Local until the owner applies or defers those.
 - Privacy copy (`src/pages/privacidad.astro`) needs owner/legal review before Production.
 - Expand-phase compatibility (integrated after the merge): guest reads and writes fall back to the
   base columns when the engagement columns are missing
