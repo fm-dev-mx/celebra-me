@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-10T04:31:49.591Z",
+    "generatedAt": "2026-10-13T00:09:08.821Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,16 +11,16 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "2981884c66deb52673ad77fbe5d15510f961ca67c714e09c662a3f94ed0f8a2e",
-        "cssSha256": "6f899986391f50eeae722e0ecf769c10bcf414bed1068c6f29b53960eae07bb4",
-        "assetSha256": "34064761c76e6aef63113892bbbdcd0f8fd3e21acda53ede4b5e7dd27b4df1a6",
+        "lockfileSha256": "51c34a62463fc5e0ebb5819148390edc3e55686a7a0b75c692e66d5c0f7b264a",
+        "cssSha256": "5f401450afe637cd203928dcce8423d8d94396d4ef2f872234986203732316e5",
+        "assetSha256": "0c2c21c61fff4e865be0c8772d1bdd842c8ec67ea01703a4cfcb6061fe1255bc",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 184,
-    "matrixHash": "3692aabe17bccc7382d4c1a51ad2ed86cdaa1a4065c349e4d68471aa45d41ae9",
+    "totalCaptures": 186,
+    "matrixHash": "9d3cfac9e63c13abe5e3dff682374a0eaec798ef9e444b3c2b348cd904498ab0",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2289,6 +2289,30 @@
             "comparisonResult": "ACCEPTED"
         },
         {
+            "kind": "invitation",
+            "slug": "america",
+            "eventType": "xv",
+            "preset": "storybook-lilac",
+            "viewport": "mobile",
+            "file": "pages/invitation-xv-america-mobile.png",
+            "sha256": "f85ab96d19bd983b7fcdf1a3293350100b97ac0ba4a37b487920f717ec1d68f8",
+            "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
+            "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "america",
+            "eventType": "xv",
+            "preset": "storybook-lilac",
+            "viewport": "desktop",
+            "file": "pages/invitation-xv-america-desktop.png",
+            "sha256": "a1c20ccc7d33ec7ba1536b731c55f6e08cb66572ce2fa0c0292dd60bd524255b",
+            "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
+            "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
             "kind": "demo",
             "slug": "demo-bautismo-angelic-presence",
             "eventType": "bautizo",
@@ -2481,9 +2505,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "3104c845467bd5c94e0dc04d9727135d1e0e1677",
+    "referenceSha": "52c22e47fdf5f923c6a2e8127a8ac89b84f88a30",
     "variantManifest": {
-        "generatedAt": "2026-10-10T04:31:49.591Z",
+        "generatedAt": "2026-10-13T00:09:08.821Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2495,9 +2519,9 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "2981884c66deb52673ad77fbe5d15510f961ca67c714e09c662a3f94ed0f8a2e",
-            "cssSha256": "6f899986391f50eeae722e0ecf769c10bcf414bed1068c6f29b53960eae07bb4",
-            "assetSha256": "34064761c76e6aef63113892bbbdcd0f8fd3e21acda53ede4b5e7dd27b4df1a6",
+            "lockfileSha256": "51c34a62463fc5e0ebb5819148390edc3e55686a7a0b75c692e66d5c0f7b264a",
+            "cssSha256": "5f401450afe637cd203928dcce8423d8d94396d4ef2f872234986203732316e5",
+            "assetSha256": "0c2c21c61fff4e865be0c8772d1bdd842c8ec67ea01703a4cfcb6061fe1255bc",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4245,10 +4269,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "3104c845467bd5c94e0dc04d9727135d1e0e1677"
+        "referenceSha": "52c22e47fdf5f923c6a2e8127a8ac89b84f88a30"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-10T04:31:49.598Z",
+        "generatedAt": "2026-10-13T00:09:08.827Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4260,17 +4284,17 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "2981884c66deb52673ad77fbe5d15510f961ca67c714e09c662a3f94ed0f8a2e",
-            "cssSha256": "6f899986391f50eeae722e0ecf769c10bcf414bed1068c6f29b53960eae07bb4",
-            "assetSha256": "34064761c76e6aef63113892bbbdcd0f8fd3e21acda53ede4b5e7dd27b4df1a6",
+            "lockfileSha256": "51c34a62463fc5e0ebb5819148390edc3e55686a7a0b75c692e66d5c0f7b264a",
+            "cssSha256": "5f401450afe637cd203928dcce8423d8d94396d4ef2f872234986203732316e5",
+            "assetSha256": "0c2c21c61fff4e865be0c8772d1bdd842c8ec67ea01703a4cfcb6061fe1255bc",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 60,
-        "matrixHash": "a6d16c71a99d0f09d23f8ba1e1b96026ec91dfe59cf34846a7980526296a6e67",
-        "cases": 30,
+        "totalCaptures": 62,
+        "matrixHash": "862185bb6fc2ece52eb239368e41eaaed3521b591c3eea53c9a8a113d7f6ff0a",
+        "cases": 31,
         "captures": [
             {
                 "kind": "invitation",
@@ -4801,6 +4825,30 @@
                 "comparisonResult": "CANDIDATE"
             },
             {
+                "kind": "invitation",
+                "slug": "america",
+                "eventType": "xv",
+                "preset": "storybook-lilac",
+                "viewport": "mobile",
+                "file": "pages/invitation-xv-america-mobile.png",
+                "sha256": "f85ab96d19bd983b7fcdf1a3293350100b97ac0ba4a37b487920f717ec1d68f8",
+                "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
+                "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "america",
+                "eventType": "xv",
+                "preset": "storybook-lilac",
+                "viewport": "desktop",
+                "file": "pages/invitation-xv-america-desktop.png",
+                "sha256": "a1c20ccc7d33ec7ba1536b731c55f6e08cb66572ce2fa0c0292dd60bd524255b",
+                "contentHash": "7350031264c74bdb165baf25d25a07981dabeecc45cac08bba21498494639762",
+                "assetHash": "c13cea7520673c99352646326078fb0a927de24d694839953dea963d8dc97c00",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
                 "kind": "demo",
                 "slug": "demo-bautismo-angelic-presence",
                 "eventType": "bautizo",
@@ -4993,9 +5041,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "3104c845467bd5c94e0dc04d9727135d1e0e1677"
+        "referenceSha": "52c22e47fdf5f923c6a2e8127a8ac89b84f88a30"
     },
-    "candidateManifestSha256": "057383866ca3d1fe071436acd2e58b5a1b0dc4309e3e6b67441946023dd475a7",
-    "acceptedFromCommit": "3104c845467bd5c94e0dc04d9727135d1e0e1677",
-    "acceptedAt": "2026-10-10T18:33:38.173Z"
+    "candidateManifestSha256": "c3bc83139a9700d8fc3132ffb92f75c43d8ca76af9595f31220a0661b4e77295",
+    "acceptedFromCommit": "52c22e47fdf5f923c6a2e8127a8ac89b84f88a30",
+    "acceptedAt": "2026-10-13T00:16:13.707Z"
 }
