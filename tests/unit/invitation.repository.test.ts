@@ -107,7 +107,7 @@ describe('invitation repository', () => {
 				slug: 'updated-slug',
 				title: 'Updated Title',
 				event_type: 'xv',
-				status: 'waiting_for_client',
+				status: 'in_production',
 				base_demo_id: 'demo-xv-jewelry-box',
 				theme_id: 'jewelry-box',
 				snapshot: {},
@@ -125,7 +125,7 @@ describe('invitation repository', () => {
 			const result = await updateInvitation('proj-123', {
 				title: 'Updated Title',
 				slug: 'updated-slug',
-				status: 'waiting_for_client',
+				status: 'in_production',
 				clientName: 'Updated Name',
 				clientEmail: 'updated@example.com',
 				clientWhatsapp: '+521111111111',
@@ -134,7 +134,7 @@ describe('invitation repository', () => {
 
 			expect(result.title).toBe('Updated Title');
 			expect(result.slug).toBe('updated-slug');
-			expect(result.status).toBe('waiting_for_client');
+			expect(result.status).toBe('in_production');
 			expect(result.clientName).toBe('Updated Name');
 			expect(result.clientWhatsapp).toBe('+521111111111');
 			expect(result.photosReceived).toBe(true);
@@ -147,7 +147,7 @@ describe('invitation repository', () => {
 				body: {
 					title: 'Updated Title',
 					slug: 'updated-slug',
-					status: 'waiting_for_client',
+					status: 'in_production',
 					client_name: 'Updated Name',
 					client_email: 'updated@example.com',
 					client_whatsapp: '+521111111111',
