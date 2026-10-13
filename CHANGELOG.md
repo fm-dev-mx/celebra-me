@@ -12,6 +12,45 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 _Sin cambios pendientes._
 
+## [0.22.0-beta.1] - 2026-10-13
+
+Release checkpoint that adds per-invitation payment and public access controls, the design-rights
+footer line, and the contract migration that retires the legacy guest view RPC.
+
+### Added
+
+- **Invitation access controls**: `invitation_access_controls` (payment status and public access per
+  invitation, migration `20261013100000`, backfilled as paid and enabled), an administrator panel to
+  set them, unpaid previews served with a banner, themed seals on the photo sections, watermarked
+  photos and copy friction, and a neutral 403 page for disabled invitations.
+- **Design rights**: `© {year} Celebra-me · Diseño protegido · Términos` in the invitation footer,
+  `author`/`copyright` metadata and a license link on every page, AI crawlers refused on client
+  invitations, and the preview license and copy restrictions stated in `/terminos`.
+
+### Changed
+
+- Client invitations are never indexed (`X-Robots-Tag` and `robots` meta); demos stay indexable.
+- The editorial-magazine preset declares `--countdown-footer-style: italic`, so the magazine-folio
+  countdown footer renders as accepted regardless of stylesheet order.
+- Contract migration `20261013110000` drops `track_guest_invitation_view_public`; its rollout entry
+  requires the deployed `guest_engagement_only_client` capability (live since v0.21.0-beta.1).
+
+### Verification
+
+| Check                   | Result                                                                     |
+| :---------------------- | :------------------------------------------------------------------------- |
+| Repository Policy       | Passed on `e72801de7` (develop); release PR certifies the final tree       |
+| Application Suite       | Passed on `e72801de7` (unit, database, static, browser)                    |
+| Visual certification    | 56 pages change only by the footer rights line (186 captures, `a670a3b2e`) |
+| Preview smoke           | `VERIFIED` for `e72801de7` after applying `20261013100000`                 |
+| Production schema audit | `CURRENT` at `20261013100000`; `20261013110000` applied after this deploy  |
+
+### Known issues
+
+- `20261013110000` is a contract: Preview and Production receive it from this checkpoint with the
+  deployed-application evidence of v0.21.0-beta.1; Local history carries the superseded
+  `20261012210000` row until it is renamed.
+
 ## [0.21.0-beta.1] - 2026-10-12
 
 Release checkpoint that publishes the America XV invitation definition and finishes the legacy
