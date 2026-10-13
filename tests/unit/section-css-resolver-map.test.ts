@@ -451,8 +451,8 @@ describe('section-css-resolver-map', () => {
 			'/src/styles/invitation-profiles/valentina-hernandez.scss': {
 				default: '/_astro/valentina-profile.css',
 			},
-			'/src/styles/invitation-profiles/xareni-iyarit.scss': {
-				default: '/_astro/xareni-profile.css',
+			'/src/styles/invitation-profiles/paula-fixture.scss': {
+				default: '/_astro/paula-profile.css',
 			},
 		});
 

@@ -1,4 +1,3 @@
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptEvent } from '@/lib/adapters/event';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
@@ -42,17 +41,10 @@ describe('Boda Victoria y Roberto provision contract', () => {
 		const definition = getInvitationDefinition('victoria-y-roberto');
 		expect(definition.slug).toBe('victoria-y-roberto');
 		expect(definition.hostLoginAlias).toBe('victoria_armenta');
-		expect(definition.baseDemoId).toBe('demo-boda-jewelry-box-wedding');
 		expect(definition.themeId).toBe('jewelry-box-wedding');
 		expect(definition.visualProfileId).toBe('victoria-y-roberto');
 		expect(definition.eventTiming.timeZone).toBe('America/Mazatlan');
 
-		const preset = findDemoPreset(VICTORIA_EVENT.baseDemoId);
-		expect(preset).toMatchObject({
-			id: 'demo-boda-jewelry-box-wedding',
-			eventType: 'boda',
-			themeId: 'jewelry-box-wedding',
-		});
 		expect(resolveInvitationTheme({ themeId: VICTORIA_EVENT.themeId })).toBe(
 			VICTORIA_EVENT.themeId,
 		);

@@ -780,7 +780,7 @@ describe('adaptEvent', () => {
 
 		it('keeps a canonical snapshot without intro fields free of injected theme copy', () => {
 			const event = {
-				id: 'events/ayrin-samantha-lerma-castro',
+				id: 'events/valeria-fixture',
 				data: {
 					eventType: 'xv',
 					title: 'XV Años',

@@ -34,7 +34,6 @@ export const LESLIE_EVENT = {
 	eventType: 'xv',
 	slug: 'leslie-perez',
 	assetSlug: 'leslie-perez',
-	baseDemoId: 'demo-xv-celestial-blue',
 	themeId: 'celestial-blue',
 	visualProfileId: 'leslie-perez',
 	title: 'XV años de Leslie',
@@ -515,7 +514,6 @@ export const leslieInvitation: InvitationDefinition<LeslieAssetKey> = defineInvi
 	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,
-	baseDemoId: LESLIE_EVENT.baseDemoId,
 	themeId: LESLIE_EVENT.themeId,
 	visualProfileId: LESLIE_EVENT.visualProfileId,
 	eventTiming: {

@@ -250,58 +250,6 @@ test('Non-editorial: scrolling to #rsvp positions section at top at 375x667', as
 });
 
 /* ------------------------------------------------------------------ */
-/*  Regression: cesar-ramses desktop — no oscillation after decline    */
-/* ------------------------------------------------------------------ */
-test('cesar-ramses desktop no oscillation after selecting No podré', async ({ page }) => {
-	await page.setViewportSize({ width: 1280, height: 800 });
-	await page.goto('/bautizo/cesar-ramses#!/rsvp', { waitUntil: 'networkidle' });
-	await openInvitation(page);
-	await page.waitForSelector('.rsvp-section', { timeout: 5000 });
-
-	const declineRadio = page.locator('.rsvp__radio-card', { hasText: 'No podré' });
-	await declineRadio.click();
-
-	// Poll over consecutive animation frames — assert no class toggling and stable height
-	await expect(async () => {
-		const samples = await page.evaluate(() => {
-			const card = document.querySelector('.rsvp');
-			if (!card) return null;
-
-			const classes: string[] = [];
-			const heights: number[] = [];
-
-			return new Promise<{ classes: string[]; heights: number[] }>((resolve) => {
-				let frames = 0;
-				const maxFrames = 30;
-
-				const sample = () => {
-					frames++;
-					classes.push(card.className);
-					heights.push(Math.round(card.getBoundingClientRect().height));
-
-					if (frames >= maxFrames) {
-						resolve({ classes, heights });
-						return;
-					}
-					requestAnimationFrame(sample);
-				};
-				requestAnimationFrame(sample);
-			});
-		});
-
-		expect(samples).not.toBeNull();
-		// Class list should have at most 1 unique value (stable)
-		const uniqueClasses = new Set(samples!.classes);
-		expect(uniqueClasses.size).toBeLessThanOrEqual(1);
-
-		// Height should not oscillate beyond 2px after settling
-		const minH = Math.min(...samples!.heights);
-		const maxH = Math.max(...samples!.heights);
-		expect(maxH - minH).toBeLessThanOrEqual(2);
-	}).toPass({ timeout: 5000 });
-});
-
-/* ------------------------------------------------------------------ */
 /*  Cross-invitation RSVP viewport integrity                            */
 /*  Verifies that the RSVP card fits the visible viewport budget after  */
 /*  CTA/hash positioning and fixed UI clearance.                        */
@@ -320,20 +268,6 @@ const RSVP_EVENT_SLUGS = [
 		slug: '/xv/demo-xv-enchanted-rose',
 		width: 375,
 		height: 667,
-	},
-	{ name: 'cesar-ramses 375x667', slug: '/bautizo/cesar-ramses', width: 375, height: 667 },
-	{ name: 'cesar-ramses desktop', slug: '/bautizo/cesar-ramses', width: 1365, height: 768 },
-	{
-		name: 'ana-sofia-cota-guillen 375x667',
-		slug: '/xv/ana-sofia-cota-guillen',
-		width: 375,
-		height: 667,
-	},
-	{
-		name: 'ana-sofia-cota-guillen desktop',
-		slug: '/xv/ana-sofia-cota-guillen',
-		width: 1365,
-		height: 768,
 	},
 ];
 

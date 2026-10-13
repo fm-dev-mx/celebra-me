@@ -60,7 +60,7 @@ const XV_FIELDS: readonly CompletenessFieldDefinition[] = [
 		blockingWhenUnresolved: true,
 		allowsPlaceholder: false,
 		evidenceNotes:
-			'Creation contract + DEMO_PRESET_CATALOG. If client did not select, classification must be requires_owner_decision.',
+			'Creation contract. If client did not select, classification must be requires_owner_decision.',
 	},
 	{
 		id: 'sourceAssetPath',
@@ -341,7 +341,7 @@ const CUMPLE_PARTIAL_FIELDS: readonly CompletenessFieldDefinition[] = [
 	},
 ] as const;
 
-/** Evidenced from Leah Lexa baby-shower practice — partial minima only. */
+/** Evidenced from baby-shower practice — partial minima only. */
 const BABY_SHOWER_PARTIAL_FIELDS: readonly CompletenessFieldDefinition[] = [
 	{
 		id: 'slug',
@@ -349,7 +349,7 @@ const BABY_SHOWER_PARTIAL_FIELDS: readonly CompletenessFieldDefinition[] = [
 		requirement: 'required',
 		blockingWhenUnresolved: true,
 		allowsPlaceholder: false,
-		evidenceNotes: 'Leah route slug leah-lexa distinct from _assetSlug.',
+		evidenceNotes: 'Route slug distinct from _assetSlug.',
 	},
 	{
 		id: 'celebrantName',
@@ -371,7 +371,6 @@ const BABY_SHOWER_PARTIAL_FIELDS: readonly CompletenessFieldDefinition[] = [
 		requirement: 'required',
 		blockingWhenUnresolved: true,
 		allowsPlaceholder: false,
-		evidenceNotes: 'Leah base_demo_id demo-baby-shower-celestial.',
 	},
 	{
 		id: 'sourceAssetPath',
@@ -533,9 +532,8 @@ const BODA_PARTIAL_FIELDS: readonly CompletenessFieldDefinition[] = [
 ] as const;
 
 /**
- * Sacrament invitations (bautizo, primera comunión). Evidenced from César Ramses (bautizo) and
- * Luna y Estrella (primera comunión): celebrant(s), parents, one reception venue, API RSVP with a
- * guest cap. Godparents appear on the bautizo; the church ceremony is optional in both.
+ * Sacrament invitations (bautizo, primera comunión). Evidenced from verified bautizo and primera
+ * comunión practice: celebrant(s), parents, one reception venue, API RSVP with a guest cap. Godparents appear on the bautizo; the church ceremony is optional in both.
  */
 function sacramentFields(
 	eventType: 'bautizo' | 'primera-comunion',
@@ -554,10 +552,12 @@ function sacramentFields(
 			requirement: 'required',
 			blockingWhenUnresolved: true,
 			allowsPlaceholder: false,
-			evidenceNotes:
-				eventType === 'primera-comunion'
-					? 'Luna y Estrella pairs two celebrants; record the second as secondaryName.'
-					: 'César Ramses.',
+			...(eventType === 'primera-comunion'
+				? {
+						evidenceNotes:
+							'Two celebrants may share one invitation; record the second as secondaryName.',
+					}
+				: {}),
 		},
 		{
 			id: 'eventDate',
@@ -666,7 +666,7 @@ const CONTRACTS: Record<EventType, EventTypeCompletenessContract> = {
 		eventType: 'xv',
 		maturity: 'evidence-backed',
 		summary:
-			'Evidence-backed from intake blocks, creation contract, and recent XV invitations (Valentina, Xareni, América, Romina, Abril).',
+			'Evidence-backed from intake blocks, creation contract, and recent XV invitations (Valentina, América, Romina, Abril).',
 		fields: XV_FIELDS,
 	},
 	boda: {
@@ -685,7 +685,7 @@ const CONTRACTS: Record<EventType, EventTypeCompletenessContract> = {
 		eventType: 'bautizo',
 		maturity: 'partial',
 		summary:
-			'Partial contract from the César Ramses bautizo. Expand only with additional verified bautizo invitations.',
+			'Partial contract from one verified bautizo invitation. Expand only with additional verified bautizo invitations.',
 		gaps: ['Church ceremony venue and time are not yet standardized as completeness fields.'],
 		fields: sacramentFields('bautizo'),
 	},
@@ -704,7 +704,7 @@ const CONTRACTS: Record<EventType, EventTypeCompletenessContract> = {
 		eventType: 'baby-shower',
 		maturity: 'partial',
 		summary:
-			'Partial contract from Leah Lexa baby-shower practice (route vs _assetSlug vs base demo). Expand only with additional verified baby-shower invitations.',
+			'Partial contract from baby-shower practice (route vs _assetSlug vs base demo). Expand only with additional verified baby-shower invitations.',
 		gaps: [
 			'Venue and RSVP requirement levels vary by client; treated as recommended until more samples exist.',
 			'Gallery/interlude asset patterns are editorial, not completeness-blocking.',
@@ -715,7 +715,7 @@ const CONTRACTS: Record<EventType, EventTypeCompletenessContract> = {
 		eventType: 'primera-comunion',
 		maturity: 'partial',
 		summary:
-			'Partial contract from the Luna y Estrella primera comunión. Expand only with additional verified invitations.',
+			'Partial contract from one verified primera comunión invitation. Expand only with additional verified invitations.',
 		gaps: [
 			'Location may be revealed inside RSVP through its access policy; the venue is still required.',
 		],

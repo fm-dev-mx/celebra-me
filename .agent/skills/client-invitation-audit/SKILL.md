@@ -73,8 +73,8 @@ canonical section contracts and variant registry, and its media from its own `_a
 (`.agent/rules/invitation-preset-source-of-truth.md`). `isDemo` is `false` on real content, and a
 demo never points at a real asset directory.
 
-Route slug, `_assetSlug`, and `baseDemoId` are distinct concepts — do not collapse them.
-`baseDemoId` is legacy, scheduled for removal; provisioning still requires it.
+Route slug and `_assetSlug` are distinct concepts — do not collapse them. Definitions carry no
+`baseDemoId`; the legacy `base_demo_id` column is no longer written by provisioning.
 
 ## Info-hygiene (prep)
 

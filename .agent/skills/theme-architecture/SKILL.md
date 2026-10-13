@@ -112,9 +112,7 @@ new ones (`docs/domains/theme/architecture.md`, Transitional ownership exception
 
 1. `THEME_PRESETS` in `src/lib/theme/theme-contract.ts` (publish guard)
 2. Preset SCSS + entrypoint + section bundle
-3. Legacy, scheduled for removal: managed provisioning still requires a `DEMO_PRESET_CATALOG` entry
-   with the same `themeId` (`src/lib/intake/demo-preset-catalog.ts`)
-4. Optional showcase demo JSON under `src/content/event-demos/` and its asset registry
+3. Optional showcase demo JSON under `src/content/event-demos/` and its asset registry
 
 Never skip the theme-contract registration step.
 

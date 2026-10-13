@@ -17,13 +17,10 @@ const FROZEN_PROFILE_SHA256: Record<string, string> = {
 		'0d9b1d89193c3ac696604d98b7300ffe0c4785a87c66e3036d47a24f70ba8fdc',
 	'alba-rosa-quinonez': '3ac7a0b5bc7bb3ea4d2f4b53c8f3db4478f38be7561fb009988e02aa73d61bcc',
 	'allison-scarlett': '6d7212a2b87605534c3b11d5901f000f1c1492998edec25d6fdcebd236beda9a',
-	'america-johana': '996031dc4049d002ba8d3957111f1a67cccb4bab215e1df85bd08f4cd5e297e5',
 	'daniela-y-martin': 'f7981960de0bc93da6458c6938ea809598dda9ead3cd7a9d3aa6118b6b5f7adb',
 	'demo-xv-celestial-blue': 'a559289d9e6fffaaa36bea5fe794bdaaa635ca4709b59948473e466122d921b7',
 	'destenid-sofia': 'd5b267b22f03db0b7e8fbd20110c5623bb919b60e32e910479a6cfeda8284237',
-	'leah-lexa': '111de6c9850ae7bad10045e42cdbf6e17faa42864f22e2f28765fae0e3080ffb',
 	'leslie-perez': 'e61995a014b5d74edc09f57c2ade061823e1eacc67a09474a43e717dfcb61afe',
-	'luna-y-estrella': 'b20b5b032d972f15c07427a1d8d4746d2e3ffce3b27433e121ddd061e13799a4',
 	'melissa-y-luis-osmar': '26facacb79e20a14fc7c8b06577b556ea8a1df3b2a5e7baf9fd6a968df36e7b3',
 	'naydelin-paredes': '0ec34ca3c58f968fc4ade0374ae66c3f21eb4f2d2cfa8d95fa9bc228a51ff446',
 	'norma-hernandez': '53b57ed8ffbc94cd334d7a0118fb7fdb143c8c557687b3fa18a9e2ef4623dc19',
@@ -31,7 +28,6 @@ const FROZEN_PROFILE_SHA256: Record<string, string> = {
 	'romina-rios-chaparro': '017e52614e9ca5f4111ef13d018e1466a2cff33258a61dded61d20c62a9d290f',
 	'valentina-hernandez': '22d31e5071b86a5ecddeac75073d98ffbd0c0c768285d956d3597f1a6f4763bc',
 	'victoria-y-roberto': 'c136bf2a53fe6e50871f8f4a0a6a269c362cff10c09f4c8dc72c14f8e43d1364',
-	'xareni-iyarit': 'af48b689a3d9a0a488fe12c08a3908980264e8ed2052ad1087a27159387341c5',
 };
 
 function profileIds(): string[] {
@@ -65,19 +61,6 @@ function demoProfileIds(): Set<string> {
 }
 
 const FONTS_DIR = path.join(process.cwd(), 'src/styles/fonts');
-
-/**
- * Definitions that declare a `visualProfileId` with no profile file. The runtime resolves such an
- * id to no stylesheet without failing, so each entry is a known gap, not an allowed pattern. These
- * definitions are removed by the legacy-removal program; never add an entry.
- */
-const KNOWN_PROFILELESS_DEFINITIONS = new Set([
-	'ana-sofia-cota-guillen',
-	'ayrin-samantha-lerma-castro',
-	'cesar-ramses',
-	'gerardo-sesenta',
-	'ximena-meza-trasvina',
-]);
 
 /** Wrapping at-rules a token-only profile may use; they scope tokens and emit no rules of their own. */
 const ALLOWED_WRAPPING_AT_RULES = new Set(['media', 'supports', 'container']);
@@ -213,9 +196,7 @@ describe('invitation profile boundary', () => {
 	it('gives every declared visual profile a stylesheet', () => {
 		const dangling = [...managedProfiles].filter((id) => !ids.includes(id)).sort();
 
-		expect(dangling.filter((id) => !KNOWN_PROFILELESS_DEFINITIONS.has(id))).toEqual([]);
-		// A resolved gap must leave the allowlist so the list only shrinks.
-		expect([...KNOWN_PROFILELESS_DEFINITIONS].sort()).toEqual(dangling);
+		expect(dangling).toEqual([]);
 		for (const id of demoProfiles) {
 			expect({ id, exists: ids.includes(id) }).toEqual({ id, exists: true });
 		}

@@ -11,7 +11,7 @@ function plan(overrides: Partial<ProductionApplyPlan> = {}): ProductionApplyPlan
 		planId: 'abcdef0123456789deadbeef',
 		scope: {
 			schema: true,
-			slugs: ['america-johana'],
+			slugs: ['camila-fixture'],
 			allReady: false,
 			inspectAll: false,
 		},
@@ -26,7 +26,7 @@ function plan(overrides: Partial<ProductionApplyPlan> = {}): ProductionApplyPlan
 			},
 			{
 				domain: 'invitation',
-				id: 'america-johana',
+				id: 'camila-fixture',
 				readiness: 'IN_SYNC',
 				summary: 'Production already matches',
 				packageHash: 'pkghash0123456789',
@@ -54,7 +54,7 @@ describe('production apply presentation', () => {
 		expect(rendered).toMatch(/En sync/);
 		expect(rendered).toMatch(/Bloqueado/);
 		expect(rendered).toMatch(/prod:apply/);
-		expect(rendered).toContain('--schema --slug america-johana --apply');
+		expect(rendered).toContain('--schema --slug camila-fixture --apply');
 		expect(rendered).not.toMatch(/postgres(ql)?:\/\//i);
 		expect(rendered).not.toContain('super-secret');
 	});
@@ -64,7 +64,7 @@ describe('production apply presentation', () => {
 			plan: plan(),
 			outcomes: [
 				{ id: 'schema', outcome: 'APPLIED_AND_VERIFIED', detail: '20260812210000' },
-				{ id: 'america-johana', outcome: 'already_applied' },
+				{ id: 'camila-fixture', outcome: 'already_applied' },
 			],
 		});
 		expect(rendered).toContain('schema: APPLIED_AND_VERIFIED');
@@ -100,7 +100,7 @@ describe('production apply presentation', () => {
 
 	it('strips preflight from the public plan', () => {
 		const publicPlan = toPublicProductionApplyPlan(plan());
-		expect(publicPlan.items.find((item) => item.id === 'america-johana')).not.toHaveProperty(
+		expect(publicPlan.items.find((item) => item.id === 'camila-fixture')).not.toHaveProperty(
 			'preflight',
 		);
 		expect(JSON.stringify(publicPlan)).not.toContain('super-secret');

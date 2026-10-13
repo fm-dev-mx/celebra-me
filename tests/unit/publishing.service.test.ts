@@ -50,7 +50,7 @@ jest.mock('@/lib/intake/services/mutation-operation.service', () => ({
 
 jest.mock('@/lib/assets/asset-registry', () => {
 	const actual = jest.requireActual('@/lib/assets/asset-registry');
-	const eventSlugs = new Set(['ana-sofia-cota-guillen', 'test-project-xv']);
+	const eventSlugs = new Set(['lucia-fixture', 'test-project-xv']);
 	return {
 		...actual,
 		isValidEvent: jest.fn((event: string) => eventSlugs.has(event)),
@@ -112,7 +112,7 @@ const VALID_UUID_2 = '550e8400-e29b-41d4-a716-446655440002';
 const MISSING_UUID = '550e8400-e29b-41d4-a716-446655449999';
 /** The invitation's own registry asset namespace, recorded in its published content. */
 const PRIOR_ASSET_SLUG = 'test-project-xv';
-const KNOWN_EVENT_SLUGS = new Set(['ana-sofia-cota-guillen', PRIOR_ASSET_SLUG]);
+const KNOWN_EVENT_SLUGS = new Set(['lucia-fixture', PRIOR_ASSET_SLUG]);
 const COMMAND_CONTEXT = {
 	operationId: VALID_UUID_1,
 	environment: 'local' as const,
@@ -1265,7 +1265,7 @@ describe('publishDraft', () => {
 	});
 
 	it('sets _assetSlug to public slug for client invitations with a matching asset directory', async () => {
-		const projectWithSlug = { ...baseProject, slug: 'ana-sofia-cota-guillen' };
+		const projectWithSlug = { ...baseProject, slug: 'lucia-fixture' };
 		mockGetProject.mockResolvedValue(projectWithSlug as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
 		mockFindPublishedByInvitationId.mockResolvedValue({
@@ -1280,14 +1280,14 @@ describe('publishDraft', () => {
 		expect(mockCommitAtomic).toHaveBeenCalledWith(
 			expect.objectContaining({
 				content: expect.objectContaining({
-					_assetSlug: 'ana-sofia-cota-guillen',
+					_assetSlug: 'lucia-fixture',
 				}),
 			}),
 		);
 	});
 
 	it('keeps the asset namespace recorded by the prior publication over the public slug', async () => {
-		const projectWithSlug = { ...baseProject, slug: 'ana-sofia-cota-guillen' };
+		const projectWithSlug = { ...baseProject, slug: 'lucia-fixture' };
 		mockGetProject.mockResolvedValue(projectWithSlug as any);
 		mockFindDraft.mockResolvedValue(validDraft as any);
 		mockUpdateDraftStatus.mockResolvedValue(approvedDraft as any);
@@ -1385,7 +1385,6 @@ describe('publishDraft', () => {
 			...baseProject,
 			slug: ROMINA_EVENT.slug,
 			title: ROMINA_EVENT.title,
-			baseDemoId: ROMINA_EVENT.baseDemoId,
 			themeId: ROMINA_EVENT.themeId,
 		};
 		const rominaStoredAssets = ROMINA_ASSET_SPECS.map((asset) => ({

@@ -1,5 +1,4 @@
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import {
 	AITHAN_EVENT,
@@ -54,14 +53,7 @@ describe('Aithan Darell managed definition', () => {
 		expect(aithanInvitation.managedIdentityProvenance).toBe('persisted');
 	});
 
-	it('uses the cumple editorial-magazine catalog entry that matches its theme', () => {
-		const preset = findDemoPreset(AITHAN_EVENT.baseDemoId);
-		expect(preset).toMatchObject({
-			id: 'demo-cumple-editorial-magazine',
-			eventType: 'cumple',
-			themeId: 'editorial-magazine',
-		});
-		expect(preset?.themeId).toBe(aithanInvitation.themeId);
+	it('uses the cumple editorial-magazine theme', () => {
 		expect(resolveInvitationTheme({ themeId: AITHAN_EVENT.themeId })).toBe(
 			AITHAN_EVENT.themeId,
 		);

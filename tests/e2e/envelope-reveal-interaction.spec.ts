@@ -5,7 +5,6 @@ const representativeRoutes = [
 	'/boda/demo-boda-jewelry-box-wedding',
 	'/xv/demo-xv-celestial-blue',
 	'/bautizo/demo-bautismo-angelic-presence',
-	'/baby-shower/leah-lexa',
 ] as const;
 
 const sealSizingRoutes = [
@@ -13,7 +12,6 @@ const sealSizingRoutes = [
 	'/boda/demo-boda-jewelry-box-wedding',
 	'/boda/daniela-y-martin',
 	'/cumple/alba-rosa-quinonez',
-	'/baby-shower/leah-lexa',
 ] as const;
 
 async function expectRevealed(page: Page) {

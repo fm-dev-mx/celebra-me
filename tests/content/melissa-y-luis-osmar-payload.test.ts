@@ -1,4 +1,3 @@
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptEvent } from '@/lib/adapters/event';
 import { buildInvitationRenderPlan } from '@/lib/invitation/render-plan';
@@ -41,7 +40,6 @@ describe('Boda Melissa y Luis Osmar managed content regression', () => {
 			slug: 'melissa-y-luis-osmar',
 			eventType: 'boda',
 			hostLoginAlias: 'melissa_landell',
-			baseDemoId: 'demo-boda-jewelry-box-wedding',
 			themeId: 'jewelry-box-wedding',
 			visualProfileId: 'melissa-y-luis-osmar',
 			lifecycle: 'published',
@@ -51,11 +49,6 @@ describe('Boda Melissa y Luis Osmar managed content regression', () => {
 		expect(definition.clientName).toBe('Melissa Landell Osuna');
 		expect(definition.title).toContain('Luis Osmar Muñoz Rodríguez');
 
-		expect(findDemoPreset(MELISSA_EVENT.baseDemoId)).toMatchObject({
-			id: 'demo-boda-jewelry-box-wedding',
-			eventType: 'boda',
-			themeId: 'jewelry-box-wedding',
-		});
 		expect(resolveInvitationTheme({ themeId: MELISSA_EVENT.themeId })).toBe(
 			MELISSA_EVENT.themeId,
 		);

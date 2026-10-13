@@ -292,7 +292,6 @@ describe('publish path atomicity contract', () => {
 				slug: 'demo',
 				eventType: 'xv',
 				pkg: { sourceSlug: 'demo' } as never,
-				targetSnapshot: {},
 				targetDraftContent: { hero: { title: 'Demo' } },
 				targetPublishedContent: { hero: { title: 'Demo' } },
 				existingInv: { id: 'inv' },

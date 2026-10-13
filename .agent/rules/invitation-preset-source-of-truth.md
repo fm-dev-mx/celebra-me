@@ -5,11 +5,11 @@ theme, structure, and assets come from its own records, never from a demo or a c
 
 ## Canonical Fields
 
-| Field                                               | Role                       | Authority                                                                                 |
-| --------------------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------- |
-| `invitations.theme_id`                              | **Canonical active theme** | Authoritative for publish and preview. Must be a valid `ThemePreset`.                     |
-| `published_invitation_content.content.theme.preset` | Baked artifact             | Written from `theme_id` at publish time.                                                  |
-| `invitations.base_demo_id`, `invitations.snapshot`  | Legacy columns             | Not read by publish, preview, or the editor. Scheduled for removal; do not add new reads. |
+| Field                                               | Role                       | Authority                                                                                                              |
+| --------------------------------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `invitations.theme_id`                              | **Canonical active theme** | Authoritative for publish and preview. Must be a valid `ThemePreset`.                                                  |
+| `published_invitation_content.content.theme.preset` | Baked artifact             | Written from `theme_id` at publish time.                                                                               |
+| `invitations.base_demo_id`, `invitations.snapshot`  | Legacy columns             | Not read by publish, preview, or the editor; not written by provisioning. Scheduled for removal; do not add new reads. |
 
 ## Resolution
 

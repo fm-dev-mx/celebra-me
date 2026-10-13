@@ -43,7 +43,6 @@ export const THEME_PRESETS = [
 	'premiere-floral',
 	'celestial-blue',
 	'enchanted-rose',
-	'sacred-keepsake',
 	'angelic-presence',
 	'storybook-lilac',
 ] as const;
@@ -67,7 +66,6 @@ export const PORTRAIT_SUPPORTED_THEMES: ReadonlySet<ThemePreset> = new Set([
 	'editorial',
 	'editorial-magazine',
 	'premiere-floral',
-	'sacred-keepsake',
 	'angelic-presence',
 ]);
 

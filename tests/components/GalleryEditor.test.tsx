@@ -49,7 +49,7 @@ describe('GalleryEditor', () => {
 		const onChange = jest.fn();
 		const value = {
 			eyebrow: 'Galería',
-			title: 'Instantes de Ayrin',
+			title: 'Instantes de Valeria',
 			items: [{ image: 'gallery01', caption: 'Primera' }],
 		};
 

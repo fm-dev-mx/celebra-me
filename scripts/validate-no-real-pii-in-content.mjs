@@ -94,12 +94,7 @@ const CLIENT_ASSET_ROOTS = [
 	EVENT_ASSET_ROOT,
 	path.join(PROJECT_ROOT, 'src', 'assets', 'invitations'),
 ];
-const APPROVED_SHARED_CLIENT_FOLDERS = new Set([
-	'cesar-ramses',
-	'luna-y-estrella-primera-comunion',
-	'xv-ayrin-samantha-lerma-castro',
-	'ximena-meza-trasvina',
-]);
+const APPROVED_SHARED_CLIENT_FOLDERS = new Set();
 const IMAGE_EXTENSIONS = new Set(['.webp', '.jpg', '.jpeg', '.png', '.avif']);
 
 function listImages(dirPath) {

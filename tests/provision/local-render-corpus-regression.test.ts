@@ -53,8 +53,8 @@ describe('local render corpus regression sweep', () => {
 	const corpus = listLocalRenderCorpus();
 
 	it.each([
-		['ximena-meza-trasvina', '2026-04-11', '2026-04-12T03:00:00.000Z'],
-		['ana-sofia-cota-guillen', '2026-05-23', '2026-05-24T03:00:00.000Z'],
+		['renata', '2026-09-05', '2026-09-06T02:00:00.000Z'],
+		['alba-rosa-quinonez', '2026-09-12', '2026-09-13T02:00:00.000Z'],
 	])(
 		'preserves the Production calendar date for %s without changing the actual event instant',
 		(slug, day, instant) => {

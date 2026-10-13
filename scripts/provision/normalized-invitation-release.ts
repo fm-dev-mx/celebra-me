@@ -14,7 +14,6 @@ import {
 	getWeightTargetBytes,
 } from '../../src/lib/invitation-preparation/image-optimization.ts';
 import { collectUploadedContentRefs } from '../../src/lib/invitation-preparation/uploaded-content-refs.ts';
-import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
 import { InvitationContentDraftContentSchema } from '../../src/lib/intake/schemas/invitation-content-draft.schema.ts';
@@ -69,7 +68,6 @@ export interface NormalizedInvitationRelease {
 		previousSlugs: string[];
 		title: string;
 		eventType: string;
-		baseDemoId: string;
 		themeId: string;
 		visualProfileId: string;
 		clientName: string;
@@ -77,7 +75,6 @@ export interface NormalizedInvitationRelease {
 		clientEmail: string;
 		clientWhatsapp: string;
 		photosReceived: boolean;
-		snapshot: Record<string, unknown>;
 	};
 	draftContent: Record<string, unknown>;
 	publishedProjection: Record<string, unknown>;
@@ -436,15 +433,11 @@ export async function buildNormalizedInvitationRelease(options: {
 	}
 
 	assets.sort((a, b) => a.key.localeCompare(b.key));
-	const snapshot = findDemoPreset(definition.baseDemoId);
-	if (!snapshot || snapshot.themeId !== definition.themeId)
-		throw new Error(`Definition has invalid preset/theme pairing: ${definition.baseDemoId}.`);
 	const metadata = {
 		managedIdentityId: definition.managedIdentityId,
 		previousSlugs: [...(definition.previousSlugs ?? [])].sort(),
 		title: definition.title,
 		eventType: definition.eventType,
-		baseDemoId: definition.baseDemoId,
 		themeId: definition.themeId,
 		visualProfileId: definition.visualProfileId,
 		clientName: definition.clientName,
@@ -452,7 +445,6 @@ export async function buildNormalizedInvitationRelease(options: {
 		clientEmail: definition.clientEmail ?? '',
 		clientWhatsapp: definition.clientWhatsapp ?? '',
 		photosReceived: definition.photosReceived ?? true,
-		snapshot: snapshot as unknown as Record<string, unknown>,
 	};
 	const publishedProjection = definition.buildPublishedContent(buildSemanticAssetMap(definition));
 

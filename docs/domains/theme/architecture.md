@@ -214,7 +214,6 @@ Invitation presets are reusable atmosphere packs (catalog SKUs), not per-invitat
 - `src/styles/themes/presets/_premiere-floral.scss`
 - `src/styles/themes/presets/_celestial-blue.scss`
 - `src/styles/themes/presets/_enchanted-rose.scss`
-- `src/styles/themes/presets/_sacred-keepsake.scss`
 - `src/styles/themes/presets/_angelic-presence.scss`
 - `src/styles/themes/presets/_editorial-magazine.scss`
 - `src/styles/themes/presets/_storybook-lilac.scss` (lilac paper that turns into a violet night from
@@ -356,9 +355,9 @@ invitation stylesheet).
 **Correct profile usage** — client palette remap only:
 
 ```scss
-.event--america-johana.theme-preset--celestial-blue {
-  --america-red: rgb(132 21 30);
-  --color-action-accent: var(--america-red);
+.event--client-slug.theme-preset--celestial-blue {
+  --client-red: rgb(132 21 30);
+  --color-action-accent: var(--client-red);
 }
 ```
 

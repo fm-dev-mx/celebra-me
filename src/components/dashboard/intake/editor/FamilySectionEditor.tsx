@@ -219,10 +219,10 @@ const GODPARENT_GROUP_FIELDS: RepeatingField<GodparentGroupDraft>[] = [
 	{
 		name: 'honoreeName',
 		label: 'Nombre de festejada',
-		placeholder: 'Luna Yamileth',
+		placeholder: 'María',
 		type: 'field',
 	},
-	{ name: 'label', label: 'Etiqueta del grupo', placeholder: 'De Luna', type: 'field' },
+	{ name: 'label', label: 'Etiqueta del grupo', placeholder: 'De María', type: 'field' },
 	{ name: 'names', label: 'Padrinos', type: 'textarea' },
 ];
 

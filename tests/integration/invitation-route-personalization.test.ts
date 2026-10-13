@@ -35,20 +35,20 @@ describe('invitation route personalization', () => {
 			inviteContext: {
 				inviteId: 'invite-1',
 				eventType: 'xv',
-				eventSlug: 'ximena-meza-trasvina',
+				eventSlug: 'elena-fixture',
 			},
 		});
 
 		expect(decision).toEqual({
 			allowGuestContext: false,
-			redirectPath: '/xv/ximena-meza-trasvina?invite=invite-1',
+			redirectPath: '/xv/elena-fixture?invite=invite-1',
 		});
 	});
 
 	it('redirects demo routes away from live invite personalization', async () => {
 		getInvitationContextByInviteIdMock.mockResolvedValue({
 			inviteId: 'invite-1',
-			eventSlug: 'ximena-meza-trasvina',
+			eventSlug: 'elena-fixture',
 			eventType: 'xv',
 			eventTitle: 'XV Ximena',
 			brandingRemovalEnabled: false,
@@ -72,7 +72,7 @@ describe('invitation route personalization', () => {
 
 		expect(result).toEqual({
 			guestContext: null,
-			redirectPath: '/xv/ximena-meza-trasvina?invite=invite-1',
+			redirectPath: '/xv/elena-fixture?invite=invite-1',
 		});
 	});
 
@@ -83,15 +83,15 @@ describe('invitation route personalization', () => {
 
 		const result = await resolveRoutePersonalization({
 			inviteId: 'missing',
-			currentPathWithQuery: '/xv/ximena-meza-trasvina?invite=missing',
+			currentPathWithQuery: '/xv/elena-fixture?invite=missing',
 			routeEventType: 'xv',
-			routeSlug: 'ximena-meza-trasvina',
+			routeSlug: 'elena-fixture',
 			routeIsDemo: false,
 		});
 
 		expect(result).toEqual({
 			guestContext: null,
-			redirectPath: '/xv/ximena-meza-trasvina',
+			redirectPath: '/xv/elena-fixture',
 		});
 		assertObservedOperationCount(
 			getInvitationContextByInviteIdMock.mock.calls.length,
@@ -107,15 +107,15 @@ describe('invitation route personalization', () => {
 
 		const result = await resolveRoutePersonalization({
 			inviteId: 'bad',
-			currentPathWithQuery: '/xv/ximena-meza-trasvina?invite=bad&skipEnvelope=true',
+			currentPathWithQuery: '/xv/elena-fixture?invite=bad&skipEnvelope=true',
 			routeEventType: 'xv',
-			routeSlug: 'ximena-meza-trasvina',
+			routeSlug: 'elena-fixture',
 			routeIsDemo: false,
 		});
 
 		expect(result).toEqual({
 			guestContext: null,
-			redirectPath: '/xv/ximena-meza-trasvina?skipEnvelope=true',
+			redirectPath: '/xv/elena-fixture?skipEnvelope=true',
 		});
 	});
 
@@ -126,9 +126,9 @@ describe('invitation route personalization', () => {
 
 		const result = await resolveRoutePersonalization({
 			inviteId: 'missing',
-			currentPathWithQuery: '/xv/ximena-meza-trasvina',
+			currentPathWithQuery: '/xv/elena-fixture',
 			routeEventType: 'xv',
-			routeSlug: 'ximena-meza-trasvina',
+			routeSlug: 'elena-fixture',
 			routeIsDemo: false,
 		});
 
@@ -145,9 +145,9 @@ describe('invitation route personalization', () => {
 		try {
 			const result = await resolveRoutePersonalization({
 				inviteId: 'invite-1',
-				currentPathWithQuery: '/xv/ximena-meza-trasvina?invite=invite-1',
+				currentPathWithQuery: '/xv/elena-fixture?invite=invite-1',
 				routeEventType: 'xv',
-				routeSlug: 'ximena-meza-trasvina',
+				routeSlug: 'elena-fixture',
 				routeIsDemo: false,
 			});
 
@@ -177,7 +177,7 @@ describe('invitation route personalization', () => {
 	it('looks up guest context once for a live invite and does not retry on success', async () => {
 		getInvitationContextByInviteIdMock.mockResolvedValue({
 			inviteId: 'invite-1',
-			eventSlug: 'ximena-meza-trasvina',
+			eventSlug: 'elena-fixture',
 			eventType: 'xv',
 			eventTitle: 'XV Ximena',
 			brandingRemovalEnabled: false,
@@ -193,9 +193,9 @@ describe('invitation route personalization', () => {
 
 		const result = await resolveRoutePersonalization({
 			inviteId: 'invite-1',
-			currentPathWithQuery: '/xv/ximena-meza-trasvina?invite=invite-1',
+			currentPathWithQuery: '/xv/elena-fixture?invite=invite-1',
 			routeEventType: 'xv',
-			routeSlug: 'ximena-meza-trasvina',
+			routeSlug: 'elena-fixture',
 			routeIsDemo: false,
 		});
 

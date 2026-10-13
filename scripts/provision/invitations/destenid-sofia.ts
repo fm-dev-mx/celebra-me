@@ -31,7 +31,6 @@ export const DESTENID_EVENT = {
 	eventType: 'xv',
 	slug: 'destenid-sofia',
 	assetSlug: 'destenid-sofia',
-	baseDemoId: 'demo-xv-editorial-magazine',
 	themeId: 'editorial-magazine',
 	visualProfileId: 'destenid-sofia',
 	title: 'XV Años — Destenid Sofía',
@@ -472,7 +471,6 @@ export const destenidInvitation: InvitationDefinition<DestenidAssetKey> = define
 	clientEmail: '',
 	clientWhatsapp: RSVP_WHATSAPP,
 	photosReceived: true,
-	baseDemoId: DESTENID_EVENT.baseDemoId,
 	themeId: DESTENID_EVENT.themeId,
 	visualProfileId: DESTENID_EVENT.visualProfileId,
 	eventTiming: {
