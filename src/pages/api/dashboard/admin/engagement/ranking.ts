@@ -7,17 +7,24 @@ import { getEngagementRanking } from '@/lib/rsvp/engagement/engagement-ranking.s
 export const prerender = false;
 
 /**
- * Administrator ranking over permanent engagement snapshots. Admin strong session only; the
+ * Administrator ranking over every published client invitation. Admin strong session only; the
  * report carries aggregates per invitation and design, never guest data.
  */
 export const GET: APIRoute = async ({ request, url }) => {
 	try {
 		await requireAdminRateLimit(request, 'engagement:ranking');
 		await requireAdminStrongSession(request);
+		const params = url.searchParams;
 		const ranking = await getEngagementRanking({
-			eventType: url.searchParams.get('eventType') ?? '',
-			groupKey: url.searchParams.get('groupBy') ?? undefined,
-			metric: url.searchParams.get('metric') ?? undefined,
+			eventType: params.get('eventType'),
+			groupKey: params.get('groupBy'),
+			metric: params.get('metric'),
+			eventStatus: params.get('eventStatus'),
+			activity: params.get('activity'),
+			fontFamily: params.get('font'),
+			music: params.get('music'),
+			confirmationMode: params.get('confirmation'),
+			includeDisabled: params.get('includeDisabled'),
 		});
 		return withPrivateCache(jsonResponse({ ranking }));
 	} catch (error) {

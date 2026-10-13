@@ -241,6 +241,15 @@ within each event type. Grouping keys offered: theme preset, personalized access
 access mode. Font, music, confirmation mode, event status, activity and public access are filters
 whose values come from the rows, so new designs classify themselves.
 
+Ranking rules applied by the application:
+
+- An invitation ranks within its event type when its sample is eligible (≥ 20 shared guests), it is
+  enabled, and the metric is measurable for it. The five-invitation threshold applies to
+  design-group comparisons only.
+- Response rate and conversion ignore invitations that confirm over WhatsApp (`whatsapp` or `both`):
+  those replies never reach the database, so both rates are understated.
+- Without any measured open the conversion upper bound is trivially 100 % and is not shown.
+
 ### Demo engagement (phase 2.1)
 
 Demos have no guests and never produce snapshots. Their design retention comes from anonymous

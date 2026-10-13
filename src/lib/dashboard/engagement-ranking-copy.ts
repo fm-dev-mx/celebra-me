@@ -4,6 +4,8 @@
  */
 
 import type {
+	RankingActivityState,
+	RankingEventStatus,
 	RankingGroupKey,
 	RankingMetric,
 	RankingThresholds,
@@ -19,76 +21,132 @@ const EVENT_TYPE_LABELS: Record<EventType, string> = {
 	'primera-comunion': 'Primera comunión',
 };
 
+export const ALL_EVENT_TYPES_OPTION = { value: 'all', label: 'Todos' } as const;
+
+export const EVENT_TYPE_OPTIONS = [
+	ALL_EVENT_TYPES_OPTION,
+	...EVENT_TYPES.map((value) => ({ value, label: EVENT_TYPE_LABELS[value] })),
+];
+
+export function eventTypeLabel(value: string): string {
+	return (EVENT_TYPE_LABELS as Record<string, string>)[value] ?? value;
+}
+
 export const GROUP_KEY_LABELS: Record<RankingGroupKey, string> = {
 	themePreset: 'Preset de tema',
-	templateId: 'Plantilla',
-	fontFamily: 'Tipografía',
-	visualProfileId: 'Perfil visual',
 	personalizedAccessVariant: 'Acceso personalizado',
-	rsvpConfirmationMode: 'Modo de confirmación',
 	rsvpAccessMode: 'Modo de acceso al RSVP',
-	musicEnabled: 'Música',
 };
 
 export const METRIC_LABELS: Record<RankingMetric, string> = {
-	rsvpConversion: 'Conversión a respuesta',
-	openRate: 'Tasa de apertura',
+	responseRate: 'Tasa de respuesta',
+	openRate: 'Apertura',
 	completionRate: 'Lectura completa',
+	conversionUpper: 'Conversión (cota superior)',
 	medianSecondsToRespond: 'Tiempo hasta responder',
 };
 
-export const EVENT_TYPE_OPTIONS = EVENT_TYPES.map((value) => ({
-	value,
-	label: EVENT_TYPE_LABELS[value],
-}));
+export const EVENT_STATUS_LABELS: Record<RankingEventStatus, string> = {
+	upcoming: 'Próximas',
+	past: 'Pasadas',
+	unknown: 'Sin fecha',
+};
+
+export const ACTIVITY_LABELS: Record<RankingActivityState, string> = {
+	measured: 'Con datos medidos',
+	none: 'Sin actividad',
+};
+
+export const CONFIRMATION_LABELS: Record<string, string> = {
+	api: 'Formulario',
+	whatsapp: 'WhatsApp',
+	both: 'Formulario y WhatsApp',
+};
+
+export const RSVP_ACCESS_LABELS: Record<string, string> = {
+	'personalized-only': 'Solo enlace personalizado',
+	hybrid: 'Híbrido',
+};
+
+/** Human label for a facet or group value of the given key. */
+export function valueLabel(key: string, value: string | null): string {
+	if (value === null) return 'Sin dato';
+	if (key === 'confirmationMode') return CONFIRMATION_LABELS[value] ?? value;
+	if (key === 'rsvpAccessMode') return RSVP_ACCESS_LABELS[value] ?? value;
+	return value;
+}
+
+/** Confidence level shown next to each column, so no figure mixes levels. */
+export const LEVEL_LABELS = {
+	exact: 'Exacto',
+	measured: 'Medido',
+	inferred: 'Inferido',
+	bound: 'Cota',
+} as const;
+export type LevelKey = keyof typeof LEVEL_LABELS;
 
 export const rankingCopy = {
 	title: 'Ranking de diseños',
-	intro: 'Compara invitaciones y diseños con las métricas permanentes de engagement. Los datos existen desde {since}; las tasas son hipótesis, no veredictos.',
+	intro: 'Las cifras exactas salen de las respuestas de los invitados; las medidas, del registro de aperturas que existe desde el {since}; las inferidas suponen que quien respondió abrió la invitación. Las tasas son hipótesis, no veredictos.',
 	filters: {
 		eventType: 'Tipo de evento',
 		groupBy: 'Agrupar por',
 		metric: 'Ordenar por',
+		open: 'Filtros',
+		eventStatus: 'Estado del evento',
+		activity: 'Actividad',
+		fontFamily: 'Tipografía',
+		music: 'Música',
+		musicWith: 'Con música',
+		musicWithout: 'Sin música',
+		confirmationMode: 'Modo de confirmación',
+		includeDisabled: 'Incluir invitaciones deshabilitadas',
+		any: 'Todas',
+		clear: 'Limpiar filtros',
+		remove: 'Quitar filtro',
+		showing: (listed: number, total: number) => `Mostrando ${listed} de ${total}`,
 	},
 	loading: 'Cargando ranking…',
 	error: 'No fue posible cargar el ranking. Intente de nuevo más tarde.',
 	unavailable: 'El ranking todavía no está disponible en este entorno.',
-	empty: 'Aún no hay invitaciones de este tipo con datos de engagement.',
+	empty: 'Ninguna invitación coincide con los filtros.',
 	designsTitle: 'Diseños',
 	invitationsTitle: 'Invitaciones',
 	insufficient: (thresholds: RankingThresholds) =>
 		`Muestra insuficiente: menos de ${thresholds.sharedGuests} invitados con invitación enviada.`,
 	groupTooSmall: (thresholds: RankingThresholds) =>
-		`Grupo sin ranking: menos de ${thresholds.groupInvitations} invitaciones con muestra suficiente.`,
-	noDesign: 'Sin datos de diseño',
-	deletedEvent: 'Evento eliminado',
+		`Grupo sin ranking: menos de ${thresholds.groupInvitations} invitaciones comparables.`,
+	noActivity: (since: string) => `Sin actividad desde el ${since}`,
+	disabled: 'Deshabilitada',
+	conversionNone: 'No medible (WhatsApp)',
+	conversionPartial: 'Parcial',
 	rules: (thresholds: RankingThresholds) => [
-		'Solo se comparan invitaciones del mismo tipo de evento.',
+		'Solo se comparan invitaciones del mismo tipo de evento; con «Todos» el ranking se calcula dentro de cada tipo.',
 		`Una invitación entra en la comparación con al menos ${thresholds.sharedGuests} invitados con invitación enviada; un grupo de diseño se ordena con al menos ${thresholds.groupInvitations} invitaciones comparables.`,
-		'Se ordena por tasas, nunca por totales, y la razón de reaperturas no ordena.',
-		'La anticipación del envío y la cobertura de recordatorios se muestran junto a cada tasa porque influyen en el resultado.',
+		'La conversión es una cota superior: las aperturas anteriores al registro se infieren de las respuestas. Las invitaciones que confirman total o parcialmente por WhatsApp no entran en los órdenes por respuesta, porque esas respuestas no llegan a la base de datos.',
+		'Las invitaciones deshabilitadas nunca se ordenan. La anticipación del envío y la cobertura de recordatorios influyen en el resultado.',
 	],
 	columns: {
 		rank: '#',
+		type: 'Tipo',
 		group: 'Grupo',
 		invitations: 'Invitaciones',
-		eligible: 'Comparables',
+		comparable: 'Comparables',
 		invitation: 'Invitación',
 		eventDate: 'Fecha',
-		snapshot: 'Snapshot',
 		shared: 'Enviadas',
-		opened: 'Abiertas',
 		responded: 'Respondieron',
+		respondedSelf: 'Por el invitado',
+		responseRate: 'Tasa de respuesta',
+		opened: 'Abiertas',
+		openedInferred: 'Abiertas (incl. inferidas)',
+		conversion: 'Conversión',
 		openRate: 'Apertura',
 		completionRate: 'Lectura completa',
-		rsvpConversion: 'Conversión',
-		reopenRatio: 'Reaperturas',
 		timeToRespond: 'Tiempo a responder',
-		mobileShare: 'Móvil',
 		shareLeadDays: 'Anticipación',
 		reminderCoverage: 'Recordatorios',
 	},
-	snapshotKind: { rolling: 'En curso', final: 'Final' } as const,
 } as const;
 
 /** Rates arrive as fractions; null denominators render as a dash, never as 0 %. */
@@ -97,9 +155,9 @@ export function formatRate(value: number | null): string {
 	return `${(value * 100).toLocaleString('es-MX', { maximumFractionDigits: 1 })} %`;
 }
 
-export function formatRatio(value: number | null): string {
-	if (value === null) return '—';
-	return `${value.toLocaleString('es-MX', { maximumFractionDigits: 1 })}×`;
+/** Upper bounds read as «≤ 98 %» so they are never taken for a point value. */
+export function formatUpperBound(value: number | null): string {
+	return value === null ? '—' : `≤ ${formatRate(value)}`;
 }
 
 /** Durations in the units a person reads: minutes under an hour, hours under two days, else days. */
