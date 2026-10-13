@@ -121,10 +121,11 @@ plan. This plan replaces it.
   ranking skips `whatsapp` and `both`; ranges for opened/conversion (inferred lower, estimate upper
   when the historical level is loaded).
 - Demos: `demo-engagement.service.ts` reads `tracking_events` (service role, `route_class = 'demo'`,
-  `is_internal = false`, period 30/60/90/all) and aggregates per `demo_slug`: sessions, reach
-  50/75/100 % (sessions reaching each `depth_bucket`), largest drop between buckets, contacts per
-  100 sessions (`cta_clicked` + `whatsapp_contact_clicked` sessions); preset and type from the demo
-  inventory; 100-session threshold. Reuses the commercial pagination/period helpers.
+  `is_internal = false`, period 30/60 days, the Comercial helper) and aggregates per `demo_slug`:
+  sessions, bounce (left before 25 %), reach 50/75/100 % (deepest `depth_bucket` per session),
+  largest drop after 25 %, contacts per 100 sessions (`cta_clicked` + `whatsapp_contact_clicked`
+  sessions); preset and type from the demo inventory; 100-session threshold. Reuses the commercial
+  pagination/period helpers.
 - API: `GET /api/dashboard/admin/engagement/ranking` gains `level` and filter params (zod, unknown
   values → 400); new `GET /api/dashboard/admin/engagement/demos?period=&eventType=`. Same perimeter:
   rate limit, admin strong session, private cache.

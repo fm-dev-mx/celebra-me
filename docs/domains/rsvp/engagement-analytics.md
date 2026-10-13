@@ -253,10 +253,20 @@ Ranking rules applied by the application:
 ### Demo engagement (phase 2.1)
 
 Demos have no guests and never produce snapshots. Their design retention comes from anonymous
-`tracking_events` (`route_class = 'demo'`, `is_internal = false`) per `demo_slug`: sessions, share
-of sessions reaching the 50, 75 and 100 % depth buckets, the largest drop between buckets, and
-contacts per 100 sessions (sessions with `cta_clicked` or `whatsapp_contact_clicked`). A demo enters
-the ranking with at least 100 sessions in the period. Demo and client figures are never shown in the
+`tracking_events` (`route_class = 'demo'`, `is_internal = false`) over the last 30 or 60 days (the
+Comercial period helper). Sessions are the `demo_viewed` sessions of each `demo_slug`; scroll depth
+and contacts carry no slug and are attributed through those sessions. Per demo:
+
+- **Rebote**: share of sessions that never reached the 25 % depth bucket;
+- **Llega al 50 / 75 / 100 %**: share of sessions whose deepest bucket reached each level (buckets
+  25, 50, 75, 90, 100);
+- **Mayor abandono**: the bucket transition after 25 % that loses the largest share of sessions
+  (bounce is reported apart because it would hide every later drop);
+- **Contactos / 100**: sessions with `cta_clicked` or `whatsapp_contact_clicked` per 100 sessions.
+
+A demo ranks within its event type with at least 100 sessions in the period. Demos that left the
+repository but still have sessions are listed as retired. Short pages reach the end more easily, so
+demos are compared against demos of similar length. Demo and client figures are never shown in the
 same table; the sales funnel stays in the Comercial demo report.
 
 ## Privacy notice requirements

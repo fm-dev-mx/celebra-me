@@ -110,6 +110,37 @@
 	}
 
 	// Phase 2.1: filters popover, removable chips and confidence-level badges.
+	&__tabs {
+		display: flex;
+		gap: 0.25rem;
+		margin-block-end: 1rem;
+		border-block-end: 1px solid var(--dashboard-card-border);
+	}
+
+	&__tab {
+		font: inherit;
+		font-size: 0.9rem;
+		cursor: pointer;
+		padding: 0.5rem 1rem;
+		border: 0;
+		border-block-end: 2px solid transparent;
+		background: none;
+		color: var(--color-text-secondary);
+
+		&[aria-selected='true'] {
+			border-block-end-color: var(--color-action-primary);
+			color: var(--color-text-primary);
+			font-weight: 600;
+		}
+	}
+
+	&__link {
+		align-self: end;
+		padding-block: 0.45rem;
+		font-size: 0.85rem;
+		color: var(--color-text-emphasis);
+	}
+
 	&__toolbar {
 		display: grid;
 		gap: 0.6rem;

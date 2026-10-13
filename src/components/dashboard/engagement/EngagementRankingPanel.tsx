@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
+import DemoEngagementPanel from '@/components/dashboard/engagement/DemoEngagementPanel';
 import RankingToolbar from '@/components/dashboard/engagement/RankingToolbar';
 import { DesignsTable, InvitationsTable } from '@/components/dashboard/engagement/RankingTables';
 import type { EngagementRankingReport } from '@/interfaces/dashboard/engagement-ranking.interface';
@@ -120,10 +121,55 @@ function RankingContent() {
 	);
 }
 
+type RankingTab = 'invitations' | 'demos';
+
+function initialTab(): RankingTab {
+	if (typeof window === 'undefined') return 'invitations';
+	return new URLSearchParams(window.location.search).get('tab') === 'demos'
+		? 'demos'
+		: 'invitations';
+}
+
+const TABS: ReadonlyArray<{ id: RankingTab; label: string }> = [
+	{ id: 'invitations', label: rankingCopy.invitationsTitle },
+	{ id: 'demos', label: 'Demos' },
+];
+
 export default function EngagementRankingPanel() {
+	const [tab, setTab] = useState<RankingTab>(initialTab);
+	const select = (next: RankingTab) => {
+		setTab(next);
+		if (typeof window !== 'undefined') {
+			window.history.replaceState(
+				null,
+				'',
+				next === 'demos'
+					? `${window.location.pathname}?tab=demos`
+					: window.location.pathname,
+			);
+		}
+	};
 	return (
 		<ErrorBoundary>
-			<RankingContent />
+			<div className="engagement-ranking__tabs" role="tablist" aria-label={rankingCopy.title}>
+				{TABS.map((item) => (
+					<button
+						key={item.id}
+						type="button"
+						role="tab"
+						id={`ranking-tab-${item.id}`}
+						aria-selected={tab === item.id}
+						aria-controls={`ranking-panel-${item.id}`}
+						className="engagement-ranking__tab"
+						onClick={() => select(item.id)}
+					>
+						{item.label}
+					</button>
+				))}
+			</div>
+			<div role="tabpanel" id={`ranking-panel-${tab}`} aria-labelledby={`ranking-tab-${tab}`}>
+				{tab === 'demos' ? <DemoEngagementPanel /> : <RankingContent />}
+			</div>
 		</ErrorBoundary>
 	);
 }
