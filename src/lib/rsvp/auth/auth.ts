@@ -66,7 +66,7 @@ export function resolveAccessTokenFromRequest(request: Request): string {
 	return getTokenFromCookieMap(parseCookieHeader(request.headers.get('cookie')));
 }
 
-export function resolveAccessTokenSourceFromRequest(
+function resolveAccessTokenSourceFromRequest(
 	request: Request,
 ): 'authorization' | 'cookie' | 'none' {
 	if (hasBearerAuthorizationHeader(request.headers.get('authorization'))) {

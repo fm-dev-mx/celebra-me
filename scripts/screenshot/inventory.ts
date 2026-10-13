@@ -2,9 +2,9 @@
 // CELEBRA-ME | Screenshot Tool — Section Inventory Service
 // =============================================================================
 
-import type { Page } from 'playwright';
+import type { Page } from '@playwright/test';
 
-export interface SectionInventoryItem {
+interface SectionInventoryItem {
 	/** Stable section identity, e.g. "hero", "quote", "family" */
 	id: string;
 	/** Human-readable label for reporting */
@@ -154,7 +154,11 @@ export async function deriveSectionInventory(page: Page): Promise<SectionInvento
 
 	try {
 		const result = await page.evaluate(script);
-		if (result && typeof result === 'object' && Array.isArray((result as SectionInventoryReport).sections)) {
+		if (
+			result &&
+			typeof result === 'object' &&
+			Array.isArray((result as SectionInventoryReport).sections)
+		) {
 			return result as SectionInventoryReport;
 		}
 		return {

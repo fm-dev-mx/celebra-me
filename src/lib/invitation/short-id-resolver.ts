@@ -11,7 +11,7 @@ import { resolveShareDescription } from '@/lib/rsvp/services/shared/share-messag
 import { recordLinkPreview } from '@/lib/rsvp/engagement/engagement.service';
 import { UNAVAILABLE_INVITATION_ROBOTS } from '@/lib/invitation/access/invitation-access';
 
-export interface ShortIdOGData {
+interface ShortIdOGData {
 	ogTitle: string;
 	ogDescription: string;
 	ogImage: SocialImageMetadata;

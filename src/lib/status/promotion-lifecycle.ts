@@ -14,7 +14,7 @@ export function releasePromotions<T extends { lifecycle: InvitationLifecycle }>(
 	return promotions.filter((row) => !isAuthoringPromotion(row));
 }
 
-export function authoringPromotions<T extends { lifecycle: InvitationLifecycle }>(
+function authoringPromotions<T extends { lifecycle: InvitationLifecycle }>(
 	promotions: readonly T[],
 ): T[] {
 	return promotions.filter(isAuthoringPromotion);

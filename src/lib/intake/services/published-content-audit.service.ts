@@ -15,7 +15,7 @@ import {
 } from '@/lib/invitation/venue-datetime';
 import { isRecord, trimmedStr } from '@/lib/shared/data-utils';
 
-export type PublishedAuditFindingKind =
+type PublishedAuditFindingKind =
 	| 'legacy_date_prose'
 	| 'legacy_time_prose'
 	| 'unparseable_date'
@@ -24,7 +24,7 @@ export type PublishedAuditFindingKind =
 	| 'show_flourishes_conflict'
 	| 'canonical_datetime';
 
-export interface PublishedAuditFinding {
+interface PublishedAuditFinding {
 	kind: PublishedAuditFindingKind;
 	path: string;
 	detail: string;

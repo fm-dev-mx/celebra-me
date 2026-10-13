@@ -6,9 +6,10 @@ import {
 	overlayAnchorSchema,
 	overlaySafeAreaSchema,
 	closingNameLeadWordsSchema,
+	rsvpResponseMessagesSchema,
 } from '@/lib/schemas/content/shared.schema';
 import { interludesSchema } from '@/lib/schemas/content/interludes.schema';
-import { LOCATION_PRESENTATIONS } from '@/lib/invitation/presentation-options';
+import { LOCATION_PRESENTATIONS } from '@/lib/invitation/location-presentation';
 import {
 	LOCATION_INDICATIONS_LAYOUTS,
 	LOCATION_INDICATIONS_STYLES,
@@ -32,7 +33,6 @@ import {
 	countdownEditorSchema,
 	eventTimingEditorSchema,
 	draftIndicationSchema,
-	rsvpResponseMessagesSchema,
 	envelopeSchema,
 } from '@/lib/intake/schemas/shared-content.schema';
 import { familyDraftSchema } from '@/lib/intake/schemas/family-draft.schema';

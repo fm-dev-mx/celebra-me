@@ -53,7 +53,7 @@ export interface PreviewWriteAuthResult {
 }
 
 /** Set by the VS Code invitation:release task. Not a credential. */
-export const INVITATION_RELEASE_OPERATOR_TASK = 'invitation:release';
+const INVITATION_RELEASE_OPERATOR_TASK = 'invitation:release';
 
 export function resolvePreviewWriteAuthToken(input: {
 	slug: string;
@@ -189,7 +189,7 @@ export function formatPreviewWriteScope(assessment: PreviewWriteScopeAssessment)
  * Shared interactive YES confirmation for Preview mutators.
  * Injectable input seam for tests; TTY readline is the default.
  */
-export async function confirmPreviewWriteYes(input: {
+async function confirmPreviewWriteYes(input: {
 	confirmPrompt: string;
 	readConfirmationLine?: () => string | Promise<string>;
 	isInteractive?: boolean;

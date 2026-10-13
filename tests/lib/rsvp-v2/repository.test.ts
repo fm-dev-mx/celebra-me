@@ -1,4 +1,3 @@
-import { appendGuestAuditPublic } from '@/lib/rsvp/repositories/audit.repository';
 import {
 	findEventById,
 	findEventsByOwner,
@@ -11,7 +10,6 @@ import {
 	findGuestByPhoneAuth,
 	findGuestsByEvent,
 	softDeleteGuestById,
-	updateGuestByInviteIdPublic,
 } from '@/lib/rsvp/repositories/guest.repository';
 import type { AttendanceStatus, DeliveryFilter } from '@/interfaces/rsvp/domain.interface';
 import type { GuestFilters } from '@/lib/rsvp/repositories/shared/rows';
@@ -93,7 +91,7 @@ describe('rsvp repository', () => {
 		);
 	});
 
-	it('creates and updates guests through expected repository contracts', async () => {
+	it('creates guests through expected repository contracts', async () => {
 		supabaseRestRequestMock.mockResolvedValueOnce([makeGuestRow()]);
 		const created = await createGuestInvitation(
 			{
@@ -105,31 +103,9 @@ describe('rsvp repository', () => {
 			'token',
 		);
 		expect(created.id).toBe('guest-1');
-
-		supabaseRestRequestMock.mockResolvedValueOnce([
-			makeGuestRow({
-				attendance_status: 'confirmed',
-				attendee_count: 2,
-				guest_comment: 'ok',
-				delivery_status: 'shared',
-			}),
-		]);
-		supabaseRestRequestMock.mockResolvedValueOnce([
-			makeGuestRow({
-				attendance_status: 'confirmed',
-				attendee_count: 2,
-				guest_comment: 'ok',
-				delivery_status: 'shared',
-			}),
-		]);
-		const updated = await updateGuestByInviteIdPublic('invite-1', {
-			attendance_status: 'confirmed',
-		});
-		expect(updated.attendanceStatus).toBe('confirmed');
-		expect(updated.deliveryStatus).toBe('shared');
 	});
 
-	it('finds guest by ids and appends public audit', async () => {
+	it('finds guest by ids', async () => {
 		supabaseRestRequestMock.mockResolvedValueOnce([makeGuestRow()]);
 		const byInvite = await findGuestByInviteIdPublic('invite-1');
 		expect(byInvite?.id).toBe('guest-1');
@@ -143,19 +119,6 @@ describe('rsvp repository', () => {
 		expect(supabaseRestRequestMock.mock.calls[1]?.[0]?.pathWithQuery).toContain(
 			'deleted_at=is.null',
 		);
-
-		supabaseRestRequestMock.mockResolvedValueOnce([
-			{
-				id: 'audit-1',
-				guest_invitation_id: 'guest-1',
-				actor_type: 'guest',
-				event_type: 'viewed',
-				payload: { source: 'test' },
-				created_at: '2026-01-01T00:00:00.000Z',
-			},
-		] as Record<string, unknown>[]);
-		const audit = await appendGuestAuditPublic('guest-1', 'viewed', { source: 'test' });
-		expect(audit.eventType).toBe('viewed');
 	});
 
 	it('filters soft-deleted guests in phone lookups and soft deletes via RPC', async () => {

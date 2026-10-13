@@ -87,7 +87,7 @@ export interface HeroViewModel {
 
 export type LocationVisibility = 'public' | 'after-rsvp';
 
-export interface Coordinate {
+interface Coordinate {
 	lat: number;
 	lng: number;
 }
@@ -126,16 +126,17 @@ export interface Indication {
 	iconName: IconName;
 	styleVariant: IndicationStyleVariant;
 	text: string;
+	title?: string;
 }
 
-export interface Parents {
+interface Parents {
 	father?: string;
 	mother?: string;
 	fatherDeceased?: boolean;
 	motherDeceased?: boolean;
 }
 
-export interface FamilyLabels {
+interface FamilyLabels {
 	sectionTitle?: string;
 	sectionSubtitle?: string;
 	spouseTitle?: string;
@@ -146,19 +147,19 @@ export interface FamilyLabels {
 	sectionMessage?: string;
 }
 
-export interface FamilyMember {
+interface FamilyMember {
 	name: string;
 	role?: string;
 	deceased?: boolean;
 }
 
-export interface GodparentGroup {
+interface GodparentGroup {
 	honoreeName: string;
 	label?: string;
 	godparents: FamilyMember[];
 }
 
-export interface FamilyGroup {
+interface FamilyGroup {
 	title: string;
 	items: FamilyMember[];
 }
@@ -170,7 +171,7 @@ export interface WhatsAppConfig {
 	omitTitle?: boolean;
 }
 
-export type GiftItem = z.infer<typeof giftItemSchema>;
+type GiftItem = z.infer<typeof giftItemSchema>;
 
 export interface EnvelopeViewModel {
 	enabled: boolean;
@@ -232,7 +233,7 @@ export interface Interlude {
 	overlayOpacity?: string;
 }
 
-export interface InvitationViewModelBrandingVisibility {
+interface InvitationViewModelBrandingVisibility {
 	showFooterBranding: boolean;
 	showContactCta: boolean;
 }

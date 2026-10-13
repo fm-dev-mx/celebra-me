@@ -1,7 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 import {
 	IMAGE_DELIVERY_BUDGETS,
-	classifyImageSectionRole,
 	evaluateAggregateImageBudgets,
 } from '@/lib/invitation-preparation/image-delivery-budget';
 
@@ -13,18 +12,6 @@ describe('invitation image delivery budgets', () => {
 		});
 		expect(IMAGE_DELIVERY_BUDGETS['gallery-visible'].loading).toBe('lazy');
 		expect(IMAGE_DELIVERY_BUDGETS.hero.loading).toBe('eager');
-	});
-
-	it.each([
-		['hero.backgroundImage', 'hero'],
-		['family.featuredImage', 'portrait-family'],
-		['gallery.items[0].image', 'gallery-visible'],
-		['interludes[0].image', 'interlude'],
-		['location.reception.image', 'venue'],
-		['mapCeremony', 'raster-map'],
-		['thankYou.image', 'closing'],
-	] as const)('classifies %s as %s', (path, role) => {
-		expect(classifyImageSectionRole(path)).toBe(role);
 	});
 
 	it('deduplicates a hero reused by Open Graph', () => {

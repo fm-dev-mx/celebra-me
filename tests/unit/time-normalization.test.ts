@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals';
 import { parseTime, normalizeTime, isValidTime } from '@/lib/time/time-format';
-import { toEditorDate, datesSemanticallyEqual } from '@/lib/shared/data-utils';
+import { toEditorDate } from '@/lib/shared/data-utils';
 import {
 	buildPublishedEventTiming,
 	deriveStartsAtUtc,
@@ -162,8 +162,8 @@ describe('toEditorDate', () => {
 	});
 
 	it('treats Spanish prose and ISO calendar days as semantically equal', () => {
-		expect(datesSemanticallyEqual('14 de agosto de 2026', '2026-08-14')).toBe(true);
-		expect(datesSemanticallyEqual('14 de agosto de 2026', '2026-08-15')).toBe(false);
+		expect(toEditorDate('14 de agosto de 2026')).toBe(toEditorDate('2026-08-14'));
+		expect(toEditorDate('14 de agosto de 2026')).not.toBe(toEditorDate('2026-08-15'));
 	});
 });
 

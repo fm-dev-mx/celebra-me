@@ -13,7 +13,7 @@
  *   pnpm invitation:draft-restore --slug <slug> --entire --target production --apply --backup-manifest <path>
  */
 import { createHash } from 'node:crypto';
-import { flagValue } from '../lib/cli-args.ts';
+import { flagValue, requireSlug, requireEnvironmentTarget } from '../lib/cli-args.ts';
 
 import { InvitationEditorSectionKeySchema } from '../../src/lib/intake/schemas/invitation-editor.schema.ts';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
@@ -43,28 +43,9 @@ const json = args.includes('--json');
 const apply = args.includes('--apply');
 const entire = args.includes('--entire');
 
-function value(flag: string): string | undefined {
-	return flagValue(args, flag);
-}
-
-function requireSlug(): string {
-	const slug = value('--slug');
-	if (!slug || slug.startsWith('--'))
-		throw new Error('SLUG_REQUIRED: pass --slug <invitation-slug>.');
-	return slug;
-}
-
-function requireTarget(): 'local' | 'preview' | 'production' {
-	const target = value('--target') ?? 'local';
-	if (target !== 'local' && target !== 'preview' && target !== 'production') {
-		throw new Error('TARGET_INVALID: --target must be local, preview or production.');
-	}
-	return target;
-}
-
 function requireScope(): DraftRestoreScope {
 	if (entire) return { kind: 'entire' };
-	const section = value('--section');
+	const section = flagValue(args, '--section');
 	if (!section) {
 		throw new Error('SCOPE_REQUIRED: pass --section <editor-section-key> or --entire.');
 	}
@@ -86,8 +67,8 @@ function sqlJson(value: unknown): string {
 }
 
 function loadPlan() {
-	const slug = requireSlug();
-	const target = requireTarget();
+	const slug = requireSlug(args);
+	const target = requireEnvironmentTarget(args);
 	const scope = requireScope();
 	const dbUrl = resolveTargetDbUrl(target);
 	const state = readPersistedInvitationContent(slug, dbUrl);
@@ -215,7 +196,7 @@ async function applyPlan(): Promise<void> {
 	const publishedContent = state.published.content;
 
 	if (target === 'production') {
-		const backupManifestPath = value('--backup-manifest');
+		const backupManifestPath = flagValue(args, '--backup-manifest');
 		if (!backupManifestPath) {
 			throw new Error(
 				'BACKUP_REQUIRED: pass --backup-manifest from a fresh pnpm db:prod:backup:critical run.',

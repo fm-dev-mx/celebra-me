@@ -52,7 +52,9 @@ describe('Section Inventory Service', () => {
 			},
 		};
 
-		const report = await deriveSectionInventory(mockPage as unknown as import('playwright').Page);
+		const report = await deriveSectionInventory(
+			mockPage as unknown as import('@playwright/test').Page,
+		);
 		expect(report.expected).toBe(4);
 		expect(report.sections.length).toBe(4);
 		expect(report.sections[0].id).toBe('hero');

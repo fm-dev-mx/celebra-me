@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
-import type { Page } from 'playwright';
+import type { Page } from '@playwright/test';
 import { captureInvitationDocumentSpaceFullPage } from '../../../scripts/screenshot/invitation-full-page';
 
 test('concurrent full-page captures do not share temporary strips', async () => {

@@ -78,32 +78,3 @@ export function createIntersectionObserver(
 	failOpenTimer = window.setTimeout(failOpen, failOpenAfterMs);
 	return observer;
 }
-
-export function initSectionReveal(
-	selector: string,
-	callbacks?: { onReveal?: (target: Element) => void },
-	options?: ObserverOptions,
-): void {
-	const sections = Array.from(document.querySelectorAll(selector));
-	const reveal = (target: Element) => {
-		target.classList.add('is-visible');
-		callbacks?.onReveal?.(target);
-	};
-
-	if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-		sections.forEach(reveal);
-		return;
-	}
-
-	createIntersectionObserver(selector, reveal, {
-		...options,
-		onObserved: (target) => {
-			target.classList.add('has-motion');
-			options?.onObserved?.(target);
-		},
-		onFallback: (target) => {
-			target.classList.remove('has-motion');
-			options?.onFallback?.(target);
-		},
-	});
-}

@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useRef } from 'react';
 
-export type PassesSlice = 'confirmed' | 'declined' | 'unused';
+type PassesSlice = 'confirmed' | 'declined' | 'unused';
 
 interface PassesBarProps {
 	total: number;

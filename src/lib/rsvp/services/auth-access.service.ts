@@ -5,7 +5,7 @@ import {
 } from '@/lib/rsvp/repositories/role-membership.repository';
 import { sanitize } from '@/lib/rsvp/core/utils';
 
-export async function ensureUserRole(input: {
+async function ensureUserRole(input: {
 	userId: string;
 	email: string;
 	defaultRole?: 'host_client';

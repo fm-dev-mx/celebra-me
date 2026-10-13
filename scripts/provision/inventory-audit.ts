@@ -20,7 +20,7 @@ import { discoverStaticDemos } from '../screenshot/discovery.ts';
 export type InventoryCategory =
 	'canonical_published' | 'canonical_in_progress' | 'demo' | 'preview_e2e_fixture' | 'unmanaged';
 
-export interface DatabaseRowState {
+interface DatabaseRowState {
 	present: boolean;
 	kind: string | null;
 	eventType: string | null;
@@ -31,7 +31,7 @@ export interface DatabaseRowState {
 	packageHash: string | null;
 }
 
-export interface InventoryAuditRow {
+interface InventoryAuditRow {
 	slug: string;
 	category: InventoryCategory;
 	repoLifecycle: 'published' | 'in_progress' | 'unmanaged';
@@ -42,7 +42,7 @@ export interface InventoryAuditRow {
 	notes: string;
 }
 
-export interface EnvironmentInventorySummary {
+interface EnvironmentInventorySummary {
 	environment: TargetEnv;
 	configured: boolean;
 	reachable: boolean;

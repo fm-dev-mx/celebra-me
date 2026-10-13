@@ -6,14 +6,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { getChangedFiles } from './shared-changed-files.mjs';
-import { isActiveMarkdownPath } from './markdownlint/table-readability.mjs';
+import { isActiveMarkdownPath, normalizePath } from './markdownlint/table-readability.mjs';
 
 const MARKDOWNLINT_BIN = path.resolve('node_modules/markdownlint-cli2/markdownlint-cli2-bin.mjs');
-
-function normalizePath(file) {
-	const candidate = path.isAbsolute(file) ? path.relative(process.cwd(), file) : file;
-	return candidate.replaceAll('\\', '/').replace(/^\.\//u, '');
-}
 
 function getActiveMarkdownFiles(files) {
 	return [

@@ -1,18 +1,3 @@
-// Compatibility surface for existing schema, editor, adapter, and integration imports.
-// Section implementations live in their owning modules; legacy Location handling is kept
-// in the compatibility boundary below.
-export * from './family-presentation';
-export * from './hero-presentation';
-export * from './countdown-presentation';
-export * from './gallery-presentation';
-export * from './gifts-presentation';
-export * from './personalized-access-presentation';
-export { LOCATION_PRESENTATIONS, resolveLocationMediaMode } from './location-presentation';
-export {
-	detectShowFlourishesConflict,
-	foldLocationPresentationOptions,
-	resolveLocationShowFlourishes,
-	resolveLocationShowNavigationButtons,
-} from './location-presentation-compatibility';
-
-export { supportsEnvelopeSealColorOptions } from '@/lib/intake/labels';
+// Retained only for tests/content/daniela-y-martin-payload.test.ts; every other consumer imports
+// the owning section module directly. Delete once that test imports location-presentation.
+export { resolveLocationShowNavigationButtons } from './location-presentation';

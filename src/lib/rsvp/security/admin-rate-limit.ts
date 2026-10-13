@@ -71,9 +71,6 @@ const RATE_LIMITS = {
 
 export type AdminRateLimitOperation = keyof typeof RATE_LIMITS;
 
-/** Canonical registered admin rate-limit operation keys (for contract tests). */
-export const ADMIN_RATE_LIMIT_OPERATIONS = Object.keys(RATE_LIMITS) as AdminRateLimitOperation[];
-
 /**
  * Extracts the request IP while accounting for proxy headers.
  */

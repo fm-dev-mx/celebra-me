@@ -3,7 +3,7 @@
  * Client statements, agent inference, and owner decisions must remain distinguishable.
  */
 
-export const INFO_CLASSIFICATIONS = [
+const INFO_CLASSIFICATIONS = [
 	'verified',
 	'inferred',
 	'ambiguous',
@@ -19,7 +19,7 @@ export function isInfoClassification(value: string): value is InfoClassification
 }
 
 /** Classifications that count as a resolved value for completeness checks. */
-export const RESOLVED_CLASSIFICATIONS: readonly InfoClassification[] = [
+const RESOLVED_CLASSIFICATIONS: readonly InfoClassification[] = [
 	'verified',
 	'inferred',
 	'not_applicable',

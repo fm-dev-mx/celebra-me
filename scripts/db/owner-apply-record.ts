@@ -7,8 +7,9 @@
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
+import { isRecord } from '../../src/lib/shared/data-utils.ts';
 
-export const OWNER_APPLY_RECORD_SCHEMA_VERSION = 1 as const;
+const OWNER_APPLY_RECORD_SCHEMA_VERSION = 1 as const;
 export const OWNER_APPLY_LEDGER_GRANDFATHER_THROUGH = '20260806120000';
 
 export interface OwnerApplyRecord {
@@ -28,12 +29,8 @@ export interface OwnerApplyRecord {
 
 const VERSION_RE = /^\d{14}$/;
 
-export function defaultOwnerApplyLedgerDir(cwd: string = process.cwd()): string {
+function defaultOwnerApplyLedgerDir(cwd: string = process.cwd()): string {
 	return resolve(cwd, '.backups', 'prod', 'owner-apply');
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
 export function parseOwnerApplyRecord(value: unknown): OwnerApplyRecord | null {

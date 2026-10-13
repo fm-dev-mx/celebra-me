@@ -40,7 +40,7 @@ export function translatePreconditionFailure(error: unknown): string | null {
 	}
 }
 
-export function invitationFailureGuidance(
+function invitationFailureGuidance(
 	reason: string,
 	invitation?: string,
 	environment?: string,

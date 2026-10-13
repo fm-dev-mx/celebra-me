@@ -8,9 +8,9 @@ import { isRecord } from '@/lib/shared/data-utils';
 import { PRIVATE_CACHE_CONTROL, withPrivateNoStore } from '@/lib/http/private-cache-path';
 import { sanitize } from '@/lib/rsvp/core/utils';
 
-export const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
+const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
-export const DEFAULT_JSON_BODY_MAX_BYTES = 256 * 1024;
+const DEFAULT_JSON_BODY_MAX_BYTES = 256 * 1024;
 
 function assertContentLengthWithinLimit(request: Request, maxBytes: number): void {
 	const contentLength = request.headers.get('content-length');

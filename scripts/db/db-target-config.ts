@@ -10,6 +10,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
+import { LOCAL_HOSTS, LOCAL_SUPABASE_URL } from '../shared/celebra-runtime-env.ts';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -111,12 +112,12 @@ export const PROD_SECRET_FILES = ['.env.production.local'] as const;
 /** Persistent Local Supabase (used by `pnpm dev` & local Docker). */
 export const PERSISTENT_LOCAL = {
 	projectId: 'celebra-me-rsvp',
-	apiUrl: 'http://127.0.0.1:54321',
+	apiUrl: LOCAL_SUPABASE_URL,
 	dbPort: 54322,
 	dbUser: 'postgres',
 	dbPassword: 'postgres',
 	dbName: 'postgres',
-	dbHosts: ['127.0.0.1', 'localhost', '::1'] as readonly string[],
+	dbHosts: LOCAL_HOSTS,
 	studioPort: 54323,
 	shadowPort: 54320,
 } as const;
@@ -133,7 +134,7 @@ export const DISPOSABLE_TEST = {
 	dbUser: 'supabase_admin',
 	dbPassword: 'postgres',
 	dbName: 'postgres',
-	dbHosts: ['127.0.0.1', 'localhost', '::1'] as readonly string[],
+	dbHosts: LOCAL_HOSTS,
 } as const;
 
 /** Canonical Connection Strings */
@@ -187,6 +188,22 @@ export function resolveDbUrl(target: string, dbUrl?: string): string {
 		return DISPOSABLE_DB_URL;
 	}
 	return '';
+}
+
+const TARGET_DB_URL_ENV: Partial<Record<DbTarget, string>> = {
+	production: 'PROD_DB_URL',
+	preview: 'PREVIEW_DB_URL',
+	'persistent-local': 'LOCAL_DB_URL',
+};
+
+/**
+ * Resolve a target's connection URL: the target's env variable in `env` wins, then the
+ * canonical secret file or static local URL. Returns '' when nothing is configured.
+ * Callers keep their own guards (e.g. `requirePreviewDbUrl`, `assertProductionDbUrl`).
+ */
+export function resolveTargetDbUrl(target: DbTarget, env: NodeJS.ProcessEnv = process.env): string {
+	const envVar = TARGET_DB_URL_ENV[target];
+	return resolveDbUrl(target, envVar ? env[envVar] : undefined).trim();
 }
 
 // ---------------------------------------------------------------------------

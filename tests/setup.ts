@@ -120,7 +120,6 @@ Object.defineProperty(global, 'import', {
 				EMAIL_TO: 'test@example.com',
 				EMAIL_FROM: 'noreply@test.com',
 				PUBLIC_GA_MEASUREMENT_ID: process.env.PUBLIC_GA_MEASUREMENT_ID || 'G-TEST',
-				PUBLIC_GOOGLE_ANALYTICS_ID: '',
 				...process.env,
 			},
 		},
@@ -139,29 +138,32 @@ globalThis.ResizeObserver = class ResizeObserver {
 	disconnect() {}
 };
 
-// Mock window.matchMedia for responsive component tests
-Object.defineProperty(window, 'matchMedia', {
-	writable: true,
-	value: jest.fn().mockImplementation((query: string) => ({
-		matches: false,
-		media: query,
-		onchange: null,
-		addListener: jest.fn(), // Deprecated but still used by some libs
-		removeListener: jest.fn(),
-		addEventListener: jest.fn(),
-		removeEventListener: jest.fn(),
-		dispatchEvent: jest.fn(),
-	})),
-});
+// Browser-only mocks; node-environment suites (native fetch globals) skip them.
+if (typeof window !== 'undefined') {
+	// Mock window.matchMedia for responsive component tests
+	Object.defineProperty(window, 'matchMedia', {
+		writable: true,
+		value: jest.fn().mockImplementation((query: string) => ({
+			matches: false,
+			media: query,
+			onchange: null,
+			addListener: jest.fn(), // Deprecated but still used by some libs
+			removeListener: jest.fn(),
+			addEventListener: jest.fn(),
+			removeEventListener: jest.fn(),
+			dispatchEvent: jest.fn(),
+		})),
+	});
 
-// Mock window.scrollTo for JSDOM compatibility (not implemented by jsdom)
-window.scrollTo = jest.fn();
+	// Mock window.scrollTo for JSDOM compatibility (not implemented by jsdom)
+	window.scrollTo = jest.fn();
 
-// Mock HTMLAudioElement for MusicPlayer tests (guarded)
-if (window.HTMLAudioElement?.prototype) {
-	window.HTMLAudioElement.prototype.play = jest.fn().mockResolvedValue(undefined);
-	window.HTMLAudioElement.prototype.pause = jest.fn();
-	window.HTMLAudioElement.prototype.load = jest.fn();
+	// Mock HTMLAudioElement for MusicPlayer tests (guarded)
+	if (window.HTMLAudioElement?.prototype) {
+		window.HTMLAudioElement.prototype.play = jest.fn().mockResolvedValue(undefined);
+		window.HTMLAudioElement.prototype.pause = jest.fn();
+		window.HTMLAudioElement.prototype.load = jest.fn();
+	}
 }
 
 /**
@@ -304,3 +306,15 @@ jest.mock('@/lib/environment', () => ({
 	isDevEnvironment: jest.fn(() => false),
 	readBuildIdentity: jest.fn(() => ({ commitSha: null, gitRef: null })),
 }));
+
+// Deploy identity baseline: a built bundle with no declared hosted identity. Tests opt in
+// through `tests/helpers/deploy-identity.ts`; suites that replace the environment mock with
+// plain functions keep their own. The load-time delete keeps env snapshots taken while
+// suites are collected free of a shell-level declaration.
+delete process.env.CELEBRA_DEPLOY_ENV;
+beforeEach(() => {
+	delete process.env.CELEBRA_DEPLOY_ENV;
+	const { isDevEnvironment } =
+		jest.requireMock<typeof import('@/lib/environment')>('@/lib/environment');
+	if (jest.isMockFunction(isDevEnvironment)) isDevEnvironment.mockReturnValue(false);
+});

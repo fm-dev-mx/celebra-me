@@ -3,7 +3,7 @@ import { SearchIcon } from '@/components/common/icons/ui';
 import { CheckGlyph } from '@/components/dashboard/guests/GuestGlyphs';
 import type { GroupMetric } from '@/components/dashboard/guests/guest-presenter';
 
-export type GroupFilter = string;
+type GroupFilter = string;
 
 interface GuestFiltersProps {
 	search: string;

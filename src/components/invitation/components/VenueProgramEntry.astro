@@ -6,22 +6,12 @@
   text links (map, calendar, copy address) with 44 px targets. The calendar keeps the native
   <details> so it works without JavaScript.
 */
-import { resolveVenueMapPreviewUrl } from '@/lib/invitation/location-helper';
+import { resolveVenueMapPreviewUrl, type GroupedVenue } from '@/lib/invitation/location-helper';
 import { formatVenueTimeInWords } from '@/lib/invitation/venue-datetime';
 import type { VenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
 
 interface Props {
-	venue: {
-		venueEvent: string;
-		venueName: string;
-		address: string;
-		time: string;
-		mapUrl?: string;
-		googleMapsUrl?: string;
-		appleMapsUrl?: string;
-		wazeUrl?: string;
-		events?: { name: string; time: string }[];
-	};
+	venue: GroupedVenue;
 	type: 'ceremony' | 'reception' | 'custom' | 'grouped';
 	calendar?: VenueCalendarLinks | null;
 }

@@ -4,9 +4,9 @@
  * This module must stay free of imports so Wrangler can bundle it by relative path.
  */
 
-export type MemoriesSpaceReferenceStatus = 'ok' | 'warn' | 'block';
+type MemoriesSpaceReferenceStatus = 'ok' | 'warn' | 'block';
 
-export type MemoriesSpaceReferenceCode =
+type MemoriesSpaceReferenceCode =
 	| 'ok'
 	| 'event-missing'
 	| 'space-missing'
@@ -24,7 +24,7 @@ export interface MemoriesSpaceObservation {
 	eventDeleted?: boolean;
 }
 
-export interface MemoriesSpaceReferenceFinding {
+interface MemoriesSpaceReferenceFinding {
 	code: MemoriesSpaceReferenceCode;
 	status: MemoriesSpaceReferenceStatus;
 	message: string;

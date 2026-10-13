@@ -23,6 +23,10 @@ const closureMigration = readFileSync(
 	resolve(process.cwd(), 'supabase/migrations/20260905000000_codex_security_closure.sql'),
 	'utf8',
 );
+const viewRetirementMigration = readFileSync(
+	resolve(process.cwd(), 'supabase/migrations/20261013110000_retire_guest_view_rpc.sql'),
+	'utf8',
+);
 const isolationMigration = readFileSync(
 	resolve(
 		process.cwd(),
@@ -32,29 +36,29 @@ const isolationMigration = readFileSync(
 );
 
 describe('public guest RSVP mutation boundary migration', () => {
-	it.each(['track_guest_invitation_view_public', 'submit_guest_rsvp_public'])(
-		'defines hardened service-role-only RPC %s',
-		(rpc) => {
-			expect(rpcMigration).toMatch(
-				new RegExp(
-					`create or replace function public\\.${rpc}[\\s\\S]*?security definer[\\s\\S]*?set search_path = 'public'`,
-					'i',
-				),
-			);
-			expect(rpcMigration).toMatch(
-				new RegExp(
-					`revoke all on function public\\.${rpc}[\\s\\S]*?from public, anon, authenticated, service_role`,
-					'i',
-				),
-			);
-			expect(rpcMigration).toMatch(
-				new RegExp(
-					`grant execute on function public\\.${rpc}[\\s\\S]*?to service_role`,
-					'i',
-				),
-			);
-		},
-	);
+	it.each(['submit_guest_rsvp_public'])('defines hardened service-role-only RPC %s', (rpc) => {
+		expect(rpcMigration).toMatch(
+			new RegExp(
+				`create or replace function public\\.${rpc}[\\s\\S]*?security definer[\\s\\S]*?set search_path = 'public'`,
+				'i',
+			),
+		);
+		expect(rpcMigration).toMatch(
+			new RegExp(
+				`revoke all on function public\\.${rpc}[\\s\\S]*?from public, anon, authenticated, service_role`,
+				'i',
+			),
+		);
+		expect(rpcMigration).toMatch(
+			new RegExp(`grant execute on function public\\.${rpc}[\\s\\S]*?to service_role`, 'i'),
+		);
+	});
+
+	it('retires the legacy guest view RPC', () => {
+		expect(viewRetirementMigration).toMatch(
+			/drop function if exists public\.track_guest_invitation_view_public\(text, integer\)/i,
+		);
+	});
 
 	it('keeps service-role direct guest and audit writes revoked', () => {
 		expect(isolationMigration).toMatch(

@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { redactCredentials } from '../../scripts/db/db-workflow-lib.ts';
 import {
 	buildPostgrestDockerArgs,
 	classifyImagePullFailure,
@@ -11,6 +10,7 @@ import {
 	DISPOSABLE_START_COMMAND,
 	ensureDisposableDbAvailable,
 } from '../../scripts/db/disposable-availability.ts';
+import { redactCredentials } from '../../scripts/db/db-target-config.ts';
 
 // ---------------------------------------------------------------------------
 // Cross-platform CI fixes: curl.exe removal, Linux Docker --add-host,
@@ -227,7 +227,7 @@ describe('disposable-test-env — cross-platform fixes', () => {
 				'utf8',
 			);
 			const importLine = source.match(
-				/import\s*\{[^}]+\}\s*from\s*['"]\.\/db-workflow-lib/,
+				/import\s*\{[^}]+\}\s*from\s*['"]\.\/db-target-config/,
 			)?.[0];
 			expect(importLine).toContain('redactCredentials');
 		});

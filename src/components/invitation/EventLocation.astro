@@ -7,7 +7,7 @@ import '@/styles/invitation/_event-location.scss';
 import VenueCard from '@/components/invitation/components/VenueCard.astro';
 import VenueProgramEntry from '@/components/invitation/components/VenueProgramEntry.astro';
 import { formatVenueDateForDisplay } from '@/lib/invitation/venue-datetime';
-import { groupVenues, type GroupedVenue, type VenueEntry } from '@/lib/invitation/location-helper';
+import { groupVenues, type GroupedVenue } from '@/lib/invitation/location-helper';
 import Icon from '@/components/common/icons/Icon.astro';
 import SectionNavButton from '@/components/invitation/components/SectionNavButton.astro';
 import { sanitizeIndicationHtml } from '@/lib/invitation/indication-html';
@@ -15,8 +15,7 @@ import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
 import { buildVenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
 
 import type { ImageAsset } from '@/lib/assets/asset-registry';
-import type { IconName } from '@/lib/icons/icon-catalog';
-import type { IndicationStyleVariant } from '@/lib/theme/theme-contract';
+import type { Indication, VenueEntry } from '@/lib/adapters/types';
 import type {
 	LocationIndicationsLayout,
 	LocationIndicationsStyle,
@@ -24,13 +23,6 @@ import type {
 	LocationPresentation,
 } from '@/lib/invitation/location-presentation';
 import type { LocationVariant } from '@/lib/invitation/section-variants';
-
-interface Indication {
-	iconName: IconName;
-	styleVariant: IndicationStyleVariant;
-	text: string;
-	title?: string;
-}
 
 interface Props {
 	isLocked?: boolean;

@@ -2,7 +2,7 @@ import { findDraftByInvitationId } from '@/lib/intake/repositories/invitation-co
 import { findPublishedByInvitationId } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { UUID_PATTERN } from '@/lib/intake/constants';
 
-export interface AssetUsageEntry {
+interface AssetUsageEntry {
 	section: string;
 	path: string;
 }

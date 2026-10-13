@@ -13,7 +13,8 @@
 import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { assertProductionDbUrl, getProdDbUrl, redactDbUrl } from './db-workflow-lib.ts';
+import { assertProductionDbUrl, getProdDbUrl } from './db-workflow-lib.ts';
+import { redactDbUrl } from './db-target-config.ts';
 
 const DEFAULT_OUT = resolve(process.cwd(), '.backups', 'prod', 'storage-metadata.sql');
 
@@ -32,16 +33,23 @@ function main(): void {
 
 	mkdirSync(dirname(outPath), { recursive: true });
 
-	const result = spawnSync('pg_dump', [
-		'--data-only',
-		'--inserts',
-		'--no-owner',
-		'--no-privileges',
-		'--table', 'storage.buckets',
-		'--table', 'storage.objects',
-		'--file', outPath,
-		prodDbUrl,
-	], { encoding: 'utf8', stdio: 'pipe' });
+	const result = spawnSync(
+		'pg_dump',
+		[
+			'--data-only',
+			'--inserts',
+			'--no-owner',
+			'--no-privileges',
+			'--table',
+			'storage.buckets',
+			'--table',
+			'storage.objects',
+			'--file',
+			outPath,
+			prodDbUrl,
+		],
+		{ encoding: 'utf8', stdio: 'pipe' },
+	);
 
 	if (result.status !== 0) {
 		console.error(`pg_dump failed: ${result.stderr}`);

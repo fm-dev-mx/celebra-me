@@ -30,14 +30,8 @@ import { isEventType, type EventType } from '@/lib/theme/theme-contract';
 
 const READINESS_LINE =
 	/\*\*Preparation Readiness(?:\s*\(prepReadiness\))?:\*\*\s*`?(NOT_READY|READY_WITH_PLACEHOLDERS|READY_FOR_IMPLEMENTATION)`?/i;
-
-export const CREATIVE_ACCEPTANCE_OUTCOMES = [
-	'PENDING',
-	'ACCEPTED',
-	'ACCEPTED_WITH_BLOCKERS',
-	'REJECTED',
-] as const;
-export type CreativeAcceptanceOutcome = (typeof CREATIVE_ACCEPTANCE_OUTCOMES)[number];
+export type CreativeAcceptanceOutcome =
+	'PENDING' | 'ACCEPTED' | 'ACCEPTED_WITH_BLOCKERS' | 'REJECTED';
 
 const CREATIVE_ACCEPTANCE_PATTERNS = [
 	/\*\*Human creative outcome:\*\*\s*`?(PENDING|ACCEPTED_WITH_BLOCKERS|ACCEPTED|REJECTED)`?(?![A-Z_])/iu,

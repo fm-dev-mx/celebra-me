@@ -22,14 +22,7 @@
 import { readdirSync, existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
-import {
-	DISPOSABLE_DB_URL,
-	redactDbUrl,
-	runPsql,
-	PROJECT_ROOT,
-	resolveDbUrl,
-	classifyDbTarget,
-} from './db-workflow-lib.ts';
+import { PROJECT_ROOT, queryJsonArray } from './db-workflow-lib.ts';
 import { fetchRemoteMigrationVersions } from '../status-core/migration-history-reader.ts';
 import { ensureDisposableDbAvailable } from './disposable-availability.ts';
 import { assertCurrentDisposableMigrationProof } from './disposable-migration-proof.ts';
@@ -56,6 +49,12 @@ import {
 	type NamedRoutine,
 	type StructuralFinding,
 } from './schema-object-contract.ts';
+import {
+	DISPOSABLE_DB_URL,
+	redactDbUrl,
+	resolveDbUrl,
+	classifyDbTarget,
+} from './db-target-config.ts';
 
 const MIGRATIONS_DIR = resolve(PROJECT_ROOT, 'supabase', 'migrations');
 
@@ -66,16 +65,7 @@ export {
 } from './audit-object-compare.ts';
 
 function queryJson<T>(sql: string, dbUrl: string): T[] {
-	const jsonSql = `select coalesce(json_agg(sub), '[]'::json)::text from (${sql}) sub;`;
-	const result = runPsql(jsonSql, dbUrl);
-	try {
-		return JSON.parse(result.stdout.trim()) as T[];
-	} catch (err) {
-		console.error(
-			`Failed to parse JSON result from query:\n${sql}\nOutput received:\n${result.stdout}`,
-		);
-		throw err;
-	}
+	return queryJsonArray(sql, dbUrl) as T[];
 }
 
 // ---------------------------------------------------------------------------

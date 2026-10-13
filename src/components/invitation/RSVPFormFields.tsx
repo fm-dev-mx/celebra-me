@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import type { RefObject } from 'react';
-import type { AttendanceStatus } from '@/components/invitation/rsvp-logic';
+import type { RsvpAttendanceChoice } from '@/components/invitation/rsvp-logic';
 import { COUNTRY_OPTIONS } from '@/lib/phone/country-codes';
 import { MAX_GUEST_COMMENT_LEN } from '@/lib/rsvp/core/guest-message';
 
@@ -219,10 +219,10 @@ export function AttendanceField(props: {
 	touched: Record<string, boolean>;
 	errors: Record<string, string>;
 	attendanceLabel: string;
-	attendanceStatus: AttendanceStatus;
+	attendanceStatus: RsvpAttendanceChoice;
 	attendanceRef: RefObject<HTMLDivElement | null>;
 	prefersReducedMotion: boolean;
-	onAttendanceChange: (status: Exclude<AttendanceStatus, null>) => void;
+	onAttendanceChange: (status: Exclude<RsvpAttendanceChoice, null>) => void;
 	onBlur: (field: string) => void;
 	confirmLabel?: string;
 	declineLabel?: string;
@@ -291,7 +291,7 @@ export function AttendanceField(props: {
 }
 
 export function ConfirmedFields(props: {
-	attendanceStatus: AttendanceStatus;
+	attendanceStatus: RsvpAttendanceChoice;
 	prefersReducedMotion: boolean;
 	supportsPlusOnes: boolean;
 	touched: Record<string, boolean>;

@@ -4,18 +4,17 @@
 import { describe, expect, it, jest, beforeEach } from '@jest/globals';
 
 jest.mock('../../scripts/db/db-workflow-lib.ts', () => ({
-	getSecretFromEnvOrFiles: jest.fn(() => ''),
-	PREVIEW_SECRET_FILES: [],
 	runPsql: jest.fn(),
 	sqlLiteral: (value: string) => `'${value.replaceAll("'", "''")}'`,
-	validateEnvironmentUrlsPreflight: (
-		jest.requireActual(
-			'../../scripts/db/db-target-config.ts',
-		) as typeof import('../../scripts/db/db-target-config.ts')
-	).validateEnvironmentUrlsPreflight,
 }));
 
-jest.mock('../../scripts/db/db-guard.ts', () => ({
+jest.mock('../../scripts/db/db-target-config.ts', () => ({
+	...jest.requireActual<typeof import('../../scripts/db/db-target-config.ts')>(
+		'../../scripts/db/db-target-config.ts',
+	),
+	// Never fall back to a real gitignored secret file under test.
+	resolveTargetDbUrl: (_target: string, env: NodeJS.ProcessEnv = process.env) =>
+		env.PREVIEW_DB_URL?.trim() ?? '',
 	classifyDbTarget: jest.fn(),
 	redactDbUrl: (url: string) => url.replace(/\/\/.*@/, '//***@'),
 }));
@@ -32,7 +31,6 @@ jest.mock('../../scripts/provision/preview-write-auth.ts', () => ({
 	})),
 }));
 
-import { classifyDbTarget } from '../../scripts/db/db-guard.ts';
 import { runPsql } from '../../scripts/db/db-workflow-lib.ts';
 import { verifyPreviewWriteAuthorization } from '../../scripts/provision/preview-write-auth.ts';
 import {
@@ -44,6 +42,7 @@ import {
 	PREVIEW_FIXTURE_SLUG,
 	PREVIEW_FIXTURE_TITLE,
 } from '../../scripts/playwright/preview-environment.ts';
+import { classifyDbTarget } from '../../scripts/db/db-target-config.ts';
 
 const mockedClassify = classifyDbTarget as jest.MockedFunction<typeof classifyDbTarget>;
 const mockedPsql = runPsql as jest.MockedFunction<typeof runPsql>;

@@ -66,7 +66,7 @@ export function formatMemoriesEventDate(eventDate: string): string {
 	);
 }
 
-export function pluralize(count: number, singular: string, plural: string): string {
+function pluralize(count: number, singular: string, plural: string): string {
 	return `${count.toLocaleString('es-MX')} ${count === 1 ? singular : plural}`;
 }
 

@@ -8,9 +8,9 @@ import {
 	readSharedVar,
 	resolvePanelEnvironments,
 } from '@/lib/platform/server/env-profiles';
+import { asHostedDeploy } from '@tests/helpers/deploy-identity';
 
 const ENV_NAMES = [
-	'CELEBRA_DEPLOY_ENV',
 	'SUPABASE_URL',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW',
@@ -43,11 +43,11 @@ describe('panel scoping', () => {
 		expect(resolvePanelEnvironments()).toEqual(['preview', 'production']);
 		expect(isLocalPanel()).toBe(true);
 
-		process.env.CELEBRA_DEPLOY_ENV = 'preview';
+		asHostedDeploy('preview');
 		expect(resolvePanelEnvironments()).toEqual(['preview']);
 		expect(isLocalPanel()).toBe(false);
 
-		process.env.CELEBRA_DEPLOY_ENV = 'production';
+		asHostedDeploy('production');
 		expect(resolvePanelEnvironments()).toEqual(['production']);
 	});
 
@@ -97,7 +97,7 @@ describe('readProfileVar', () => {
 		expect(local.value).toBeNull();
 		expect(local.missing?.name).toBe('MEMORIES_R2_BUCKET_NAME_PREVIEW');
 
-		process.env.CELEBRA_DEPLOY_ENV = 'production';
+		asHostedDeploy('production');
 		const deployment = readProfileVar('r2BucketName', 'production', {
 			allowPlainFallback: false,
 		});

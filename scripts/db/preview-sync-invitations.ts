@@ -26,9 +26,14 @@
  * Contract: docs/core/content-parity-rsvp-isolation.md
  */
 
-import { fail, redactDbUrl, getProdDbUrl, runPsql } from './db-workflow-lib.ts';
-import { PREVIEW_SECRET_FILES, getSecretFromEnvOrFiles as getPreviewSecret } from './db-guard.ts';
-import { CONTENT_MIRROR_TABLES, EXCLUDED_TABLES } from './db-target-config.ts';
+import { fail, getProdDbUrl, runPsql } from './db-workflow-lib.ts';
+import {
+	CONTENT_MIRROR_TABLES,
+	EXCLUDED_TABLES,
+	redactDbUrl,
+	PREVIEW_SECRET_FILES,
+	getSecretFromEnvOrFiles as getPreviewSecret,
+} from './db-target-config.ts';
 import {
 	assertProductionIsProd,
 	assertPreviewIsPreview,

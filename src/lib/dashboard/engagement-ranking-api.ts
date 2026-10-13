@@ -10,7 +10,7 @@ import type {
 	RankingMetric,
 } from '@/interfaces/dashboard/engagement-ranking.interface';
 
-export const ENGAGEMENT_RANKING_API_PATH = '/api/dashboard/admin/engagement/ranking';
+const ENGAGEMENT_RANKING_API_PATH = '/api/dashboard/admin/engagement/ranking';
 
 export class EngagementRankingRequestError extends Error {
 	readonly status: number | null;

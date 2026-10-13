@@ -14,13 +14,11 @@ import {
 	validateEnvironmentUrlsPreflight,
 } from './db-target-config.ts';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
+import { LOCAL_HOSTS, LOCAL_SUPABASE_URL, parseEnvContent } from '../shared/celebra-runtime-env.ts';
 import { resolveSpawnProductionBoundary } from './production-write-permit.ts';
-
-export * from './db-target-config.ts';
 
 export const PROJECT_ROOT = process.cwd();
 export const BASELINE_CUTOFF_VERSION = '20260715210600';
-export const LOCAL_SUPABASE_URL = 'http://127.0.0.1:54321';
 export const PSQL_REQUIRED_MESSAGE =
 	'psql is required for local DB workflow scripts. Install PostgreSQL client tools and make sure `psql` is available on PATH. Verify with `psql --version`.';
 
@@ -86,28 +84,6 @@ export function ensureDir(path: string): void {
 
 export function timestamp(): string {
 	return new Date().toISOString().replace(/[:.]/g, '-');
-}
-
-export function parseEnvContent(content: string): Record<string, string> {
-	const parsed: Record<string, string> = {};
-	for (const rawLine of content.split(/\r?\n/)) {
-		const line = rawLine.trim();
-		if (!line || line.startsWith('#')) continue;
-		const separator = line.indexOf('=');
-		if (separator <= 0) continue;
-		const key = line.slice(0, separator).trim();
-		let value = line.slice(separator + 1).trim();
-		if (
-			(value.startsWith('"') && value.endsWith('"')) ||
-			(value.startsWith("'") && value.endsWith("'"))
-		) {
-			value = value.slice(1, -1);
-		}
-		const inlineComment = value.match(/^(.*?)(\s+#.*)$/);
-		if (inlineComment) value = inlineComment[1]?.trim() ?? value;
-		parsed[key] = value;
-	}
-	return parsed;
 }
 
 export function loadAppEnv(): Record<string, string> {
@@ -183,7 +159,7 @@ export function requirePreviewDbUrl(): { url: string; source: string } {
 	return resolved;
 }
 
-export function isSupabaseProductionHostname(hostname: string): boolean {
+function isSupabaseProductionHostname(hostname: string): boolean {
 	const host = hostname.toLowerCase();
 	return (
 		host === 'supabase.co' ||
@@ -199,7 +175,7 @@ export function assertProductionDbUrl(rawUrl: string): URL {
 		fail('PROD_DB_URL is not a valid postgres/postgresql URL.');
 	}
 	const host = parsed.hostname;
-	const isLocal = ['localhost', '127.0.0.1', '::1'].includes(host);
+	const isLocal = LOCAL_HOSTS.includes(host);
 
 	if (isLocal || !isSupabaseProductionHostname(host)) {
 		fail(
@@ -531,13 +507,50 @@ export function tryRunCommand(
 	return runCommand(command, args, { ...options, throwOnError: false });
 }
 
+interface PsqlOptions extends RunOptions {
+	isFile?: boolean;
+	tuplesOnly?: boolean;
+	/** Send SQL via `--command` (one implicit transaction) instead of stdin. */
+	asCommand?: boolean;
+	/** Skip the operator's ~/.psqlrc. */
+	noPsqlrc?: boolean;
+}
+
+function buildPsqlJob(sqlOrFile: string, targetUrl: string, runOpts: PsqlOptions): CommandJob {
+	const args = ['--set', 'ON_ERROR_STOP=1'];
+	if (runOpts.noPsqlrc) args.push('--no-psqlrc');
+	if (runOpts.tuplesOnly !== false) {
+		args.push('--tuples-only', '--no-align');
+	}
+	args.push('--dbname', targetUrl);
+	let inputStr: string | undefined;
+
+	if (runOpts.isFile) {
+		args.push('--file', sqlOrFile);
+	} else if (runOpts.asCommand) {
+		args.push('--command', sqlOrFile);
+	} else {
+		inputStr = sqlOrFile;
+	}
+
+	return {
+		command: 'psql',
+		args,
+		options: {
+			...runOpts,
+			input: inputStr,
+			redact: [targetUrl, ...(runOpts.redact ?? [])],
+		},
+	};
+}
+
 export function runPsql(
 	sqlOrFile: string,
-	dbUrl?: string | (RunOptions & { isFile?: boolean; tuplesOnly?: boolean }),
-	options?: (RunOptions & { isFile?: boolean; tuplesOnly?: boolean }) | string[],
+	dbUrl?: string | PsqlOptions,
+	options?: PsqlOptions | string[],
 ): CommandResult {
 	let targetUrl = LOCAL_DB_URL;
-	let runOpts: RunOptions & { isFile?: boolean; tuplesOnly?: boolean } = {};
+	let runOpts: PsqlOptions = {};
 
 	if (typeof dbUrl === 'string') {
 		targetUrl = dbUrl;
@@ -550,24 +563,55 @@ export function runPsql(
 		runOpts = dbUrl;
 	}
 
-	const args = ['--set', 'ON_ERROR_STOP=1'];
-	if (runOpts.tuplesOnly !== false) {
-		args.push('--tuples-only', '--no-align');
-	}
-	args.push('--dbname', targetUrl);
-	let inputStr: string | undefined;
+	const job = buildPsqlJob(sqlOrFile, targetUrl, runOpts);
+	return runCommand(job.command, job.args, job.options);
+}
 
-	if (runOpts.isFile) {
-		args.push('--file', sqlOrFile);
-	} else {
-		inputStr = sqlOrFile;
-	}
+/** Non-blocking `runPsql` for scripts that race concurrent sessions. */
+export function runPsqlAsync(
+	sql: string,
+	dbUrl: string,
+	options: PsqlOptions = {},
+): Promise<CommandResult> {
+	const job = buildPsqlJob(sql, dbUrl, options);
+	return runCommandAsync(job.command, job.args, job.options);
+}
 
-	return runCommand('psql', args, {
-		...runOpts,
-		input: inputStr,
-		redact: [targetUrl, ...(runOpts.redact ?? [])],
-	});
+/**
+ * Parse the JSON value psql printed. Command tags (e.g. `SET`) may surround the payload,
+ * so the outermost object/array is sliced out. Empty output yields null.
+ */
+export function parsePsqlJson(stdout: string): unknown {
+	const text = stdout.trim();
+	if (!text) return null;
+	const objectStart = text.indexOf('{');
+	const arrayStart = text.indexOf('[');
+	if (objectStart >= 0 && (arrayStart < 0 || objectStart < arrayStart)) {
+		const end = text.lastIndexOf('}');
+		if (end > objectStart) return JSON.parse(text.slice(objectStart, end + 1)) as unknown;
+	}
+	if (arrayStart >= 0) {
+		const end = text.lastIndexOf(']');
+		if (end > arrayStart) return JSON.parse(text.slice(arrayStart, end + 1)) as unknown;
+	}
+	return JSON.parse(text) as unknown;
+}
+
+/** Like `parsePsqlJson`, but anything other than a JSON array yields []. */
+export function parsePsqlJsonArray(stdout: string): unknown[] {
+	const parsed = parsePsqlJson(stdout);
+	return Array.isArray(parsed) ? parsed : [];
+}
+
+/** Run a query whose single output value is JSON and parse it (null when empty). */
+export function queryJson(sql: string, dbUrl: string, options: PsqlOptions = {}): unknown {
+	return parsePsqlJson(runPsql(sql, dbUrl, { tuplesOnly: true, ...options }).stdout);
+}
+
+/** Run a row-returning query and return its rows as JSON objects (json_agg). */
+export function queryJsonArray(sql: string, dbUrl: string, options: PsqlOptions = {}): unknown[] {
+	const aggregated = `select coalesce(json_agg(t), '[]'::json)::text from (${sql}) t;`;
+	return parsePsqlJsonArray(runPsql(aggregated, dbUrl, { tuplesOnly: true, ...options }).stdout);
 }
 
 export function createProdBackup(

@@ -15,42 +15,16 @@ import {
 	formatVenueTimeForDisplay,
 } from '@/lib/invitation/venue-datetime';
 
-import type { ImageMetadata } from 'astro';
 import type { VenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
-import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type { GroupedVenue } from '@/lib/invitation/location-helper';
 import {
 	resolveLocationMediaMode,
 	type LocationMapStyle,
 	type LocationPresentation,
 } from '@/lib/invitation/location-presentation';
 
-interface VenueEventItem {
-	name: string;
-	time: string;
-}
-
-interface VenueData {
-	venueEvent: string;
-	venueName: string;
-	address: string;
-	date: string;
-	time: string;
-	mapUrl?: string;
-	appleMapsUrl?: string;
-	googleMapsUrl?: string;
-	wazeUrl?: string;
-	image?: string | ImageMetadata | ImageAsset;
-	focalPoint?: string;
-	coordinates?: {
-		lat: number;
-		lng: number;
-		zoom?: number;
-	};
-	events?: VenueEventItem[];
-}
-
 interface Props {
-	venue: VenueData;
+	venue: GroupedVenue;
 	type: 'ceremony' | 'reception' | 'custom' | 'grouped';
 	mapStyle: LocationMapStyle;
 	presentation?: LocationPresentation;
@@ -109,7 +83,7 @@ const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
 		{mediaMode !== 'none' && !useMapPreviewLink && (
 			<div class="event-location__card-image-outer-frame">
 				<div class="event-location__card-image-inner-frame">
-					<div class="event-location__card-image-container" data-focal-point={venue.focalPoint}>
+					<div class="event-location__card-image-container">
 						{mediaMode === 'map' && venue.coordinates && (
 							<StaticVenueMap
 								lat={venue.coordinates.lat}

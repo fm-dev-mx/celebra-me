@@ -5,7 +5,6 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { parseEnvContent } from '../db/db-workflow-lib.ts';
 import {
 	uploadOrReconcileCloudinaryAsset as uploadOrReconcileFromEnv,
 	verifyCloudinaryAsset as verifyCloudinaryAssetFromEnv,
@@ -18,6 +17,7 @@ import {
 	type CloudinaryAssetResult,
 } from '../../src/lib/intake/services/cloudinary-assets.ts';
 import { CloudinaryQuota } from './cloudinary-quota.ts';
+import { parseEnvContent } from '../shared/celebra-runtime-env.ts';
 
 /** Canonical migration session: quota and fresh binary evidence live only in this operation. */
 export function createCloudinaryMigrationSession() {

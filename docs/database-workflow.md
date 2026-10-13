@@ -750,9 +750,9 @@ tsx scripts/db/disposable-test-env.ts stop        # Stop the test environment
 tsx scripts/db/disposable-test-env.ts cleanup     # Full cleanup (stop + remove config/data)
 ```
 
-Configuration: `supabase/test/config.toml` (project ID `celebra-me-test`; ports API 54331, DB 54332,
-Studio 54333, Shadow 54330), seed data `supabase/test/seed-test-data.sql`, migrations copied from
-`supabase/migrations/` on first start.
+Configuration: `DISPOSABLE_TEST` in `scripts/db/db-target-config.ts` (project ID `celebra-me-test`;
+ports API 54331, DB 54332, Studio 54333, Shadow 54330), seed data
+`supabase/test/seed-test-data.sql`, migrations copied from `supabase/migrations/` on first start.
 
 ### Disposable migration proof
 

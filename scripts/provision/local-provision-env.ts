@@ -1,7 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { classifyDbTarget, verifyLocalIdentity } from '../db/db-guard.ts';
+import { verifyLocalIdentity } from '../db/db-guard.ts';
+import { classifyDbTarget } from '../db/db-target-config.ts';
 
 export interface LocalEnv {
 	apiUrl: string;
@@ -30,7 +31,11 @@ export function resolveLocalEnv(projectRoot?: string): LocalEnv {
 	const dbUrl = status.DB_URL as string;
 	const serviceRoleKey = status.SERVICE_ROLE_KEY as string;
 
-	if (typeof apiUrl !== 'string' || typeof dbUrl !== 'string' || typeof serviceRoleKey !== 'string') {
+	if (
+		typeof apiUrl !== 'string' ||
+		typeof dbUrl !== 'string' ||
+		typeof serviceRoleKey !== 'string'
+	) {
 		throw new Error('Local Supabase status is incomplete. Refusing to run.');
 	}
 

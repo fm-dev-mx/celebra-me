@@ -6,20 +6,17 @@
  * Does NOT create or copy Auth users.
  */
 
-import {
-	fail,
-	redactDbUrl,
-	runPsql,
-	sqlLiteral,
-	assertProductionDbUrl,
-} from './db-workflow-lib.ts';
+import { fail, runPsql, sqlLiteral, assertProductionDbUrl } from './db-workflow-lib.ts';
 import {
 	classifyDbTarget,
 	parseDbUrl as parseUrl,
 	extractSupabaseProjectRef,
+	DISPOSABLE_TEST,
+	redactDbUrl,
+	getSecretFromEnvOrFiles as getPreviewSecret,
+	PREVIEW_SECRET_FILES,
 } from './db-target-config.ts';
-import { getSecretFromEnvOrFiles as getPreviewSecret } from './db-guard.ts';
-import { PREVIEW_SECRET_FILES } from './db-guard.ts';
+import { LOCAL_HOSTS } from '../shared/celebra-runtime-env.ts';
 
 export const PREVIEW_ADMIN_EMAIL = 'preview@preview.com';
 
@@ -83,8 +80,7 @@ export function assertNotSameProject(prodUrl: string, previewUrl: string): void 
 export function assertNotLocalTarget(url: string): void {
 	const parsed = parseUrl(url);
 	if (!parsed) fail(`Cannot parse URL: ${redactDbUrl(url)}`);
-	const localHosts = ['127.0.0.1', 'localhost', '::1'];
-	if (localHosts.includes(parsed.hostname)) {
+	if (LOCAL_HOSTS.includes(parsed.hostname)) {
 		fail(
 			`Refusing to use local database (${parsed.hostname}:${parsed.port}) as a sync target. ` +
 				`This workflow requires a hosted Preview project.`,
@@ -95,9 +91,12 @@ export function assertNotLocalTarget(url: string): void {
 export function assertNotDisposableTarget(url: string): void {
 	const parsed = parseUrl(url);
 	if (!parsed) return;
-	if (parsed.hostname === '127.0.0.1' && parsed.port === 54332) {
+	if (
+		DISPOSABLE_TEST.dbHosts.includes(parsed.hostname) &&
+		parsed.port === DISPOSABLE_TEST.dbPort
+	) {
 		fail(
-			`Refusing to use disposable test database (port 54332) as a sync target. ` +
+			`Refusing to use disposable test database (port ${DISPOSABLE_TEST.dbPort}) as a sync target. ` +
 				`This workflow requires a hosted Preview project.`,
 		);
 	}

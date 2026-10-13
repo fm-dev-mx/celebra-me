@@ -96,14 +96,16 @@ describe('release status classification', () => {
 	});
 
 	it('correlates the serving build with the release SHA', async () => {
-		expect((await probeHealth(previewUrl, sha, healthy(sha))).result).toBe('match');
-		expect((await probeHealth(previewUrl, sha, healthy('b'.repeat(40)))).result).toBe(
-			'mismatch',
-		);
-		expect((await probeHealth(previewUrl, sha, healthy(null))).result).toBe('unreported');
 		expect(
 			(await probeHealth(previewUrl, sha, healthy(sha), undefined, 'preview')).result,
 		).toBe('match');
+		expect(
+			(await probeHealth(previewUrl, sha, healthy('b'.repeat(40)), undefined, 'preview'))
+				.result,
+		).toBe('mismatch');
+		expect(
+			(await probeHealth(previewUrl, sha, healthy(null), undefined, 'preview')).result,
+		).toBe('unreported');
 		expect(
 			(await probeHealth(previewUrl, sha, healthy(sha, null), undefined, 'preview')).result,
 		).toBe('mismatch');
@@ -112,9 +114,15 @@ describe('release status classification', () => {
 		).toBe('mismatch');
 		expect(
 			(
-				await probeHealth(previewUrl, sha, async () => {
-					throw new Error('offline');
-				})
+				await probeHealth(
+					previewUrl,
+					sha,
+					async () => {
+						throw new Error('offline');
+					},
+					undefined,
+					'preview',
+				)
 			).result,
 		).toBe('unreachable');
 	});

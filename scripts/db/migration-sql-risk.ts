@@ -16,7 +16,7 @@ import type {
 	MigrationRolloutRegistry,
 } from './migration-deployment-compatibility.ts';
 
-export type MigrationSqlRiskKind =
+type MigrationSqlRiskKind =
 	| 'ordinary'
 	| 'destructive_drop'
 	| 'destructive_revoke'
@@ -197,7 +197,7 @@ function excludeNewTablePermissionInitialization(sql: string, scanned: string): 
  * editors materialize them as CRLF, LF or mixed per worktree, and a leading BOM is equally
  * insignificant. Digests must identify the committed content, not one checkout's bytes.
  */
-export function normalizeSqlForDigest(sql: string): string {
+function normalizeSqlForDigest(sql: string): string {
 	return sql.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
 }
 
@@ -205,14 +205,14 @@ export function contentDigestOf(sql: string): string {
 	return createHash('sha256').update(normalizeSqlForDigest(sql)).digest('hex');
 }
 
-export function resolveMigrationSqlPath(version: string): string | null {
+function resolveMigrationSqlPath(version: string): string | null {
 	if (!/^\d{14}$/.test(version)) return null;
 	if (!existsSync(MIGRATIONS_DIR)) return null;
 	const match = readdirSync(MIGRATIONS_DIR).find((entry) => entry.startsWith(`${version}_`));
 	return match ? resolve(MIGRATIONS_DIR, match) : null;
 }
 
-export function classifyMigrationFile(version: string, sqlPath?: string): MigrationSqlRiskResult {
+function classifyMigrationFile(version: string, sqlPath?: string): MigrationSqlRiskResult {
 	const path = sqlPath ?? resolveMigrationSqlPath(version);
 	if (!path) {
 		throw new Error(`Migration file not found for version ${version}`);

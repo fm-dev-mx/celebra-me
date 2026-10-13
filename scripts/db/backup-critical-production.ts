@@ -17,6 +17,7 @@ import {
 	extractSupabaseProjectRef,
 	getSecretFromEnvOrFiles,
 	PROD_SECRET_FILES,
+	redactDbUrl,
 } from './db-target-config.ts';
 import {
 	captureRecoveryIntegrity,
@@ -42,7 +43,6 @@ import {
 import {
 	assertProductionDbUrl,
 	getProdDbUrl,
-	redactDbUrl,
 	runCommandAsync,
 	timestamp,
 } from './db-workflow-lib.ts';

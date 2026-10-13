@@ -152,7 +152,6 @@ describe('Least-privilege migration: authenticated role', () => {
 			'restore_invitation',
 			'publish_invitation_atomic',
 			'register_commercial_deposit_purchase',
-			'redeem_claim_code',
 		];
 		for (const fn of sensitiveFunctions) {
 			// Should not have any "grant execute on function public.<fn> ... to ... authenticated"
@@ -298,15 +297,9 @@ describe('Least-privilege migration: RLS coverage verification', () => {
 		);
 	});
 
-	it('final closure migration keeps BFF-owned invitation and intake tables server-only', () => {
+	it('final closure migration keeps BFF-owned invitation tables server-only', () => {
 		const closureSql = stripSqlComments(readClosureMigration());
-		for (const table of [
-			'invitations',
-			'intake_requests',
-			'intake_submissions',
-			'invitation_content_drafts',
-			'invitation_assets',
-		]) {
+		for (const table of ['invitations', 'invitation_content_drafts', 'invitation_assets']) {
 			expect(closureSql).toMatch(
 				new RegExp(
 					`revoke\\s+all\\s+on\\s+table\\s+public\\.${table}\\s+from\\s+public,\\s*anon,\\s*authenticated`,

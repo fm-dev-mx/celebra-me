@@ -19,15 +19,11 @@ import {
 	applyProductionApplyPlan,
 	buildProductionApplyPlan,
 } from './production-apply-orchestrator.ts';
-import { renderOperatorError, writeHuman } from './operator-cli-ux.ts';
+import { renderOperatorError, writeHuman, writeJson } from './operator-cli-ux.ts';
 import { productionApplyHandoff } from './production-apply-plan.ts';
 import { runProductionImageNamespaceApply } from './production-image-namespace-apply.ts';
 import { isInteractiveSession } from '../lib/cli-prompts.ts';
 import { shouldOpenProductionApplyMenu } from './production-apply-menu-model.ts';
-
-function writeJson(value: unknown): void {
-	process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
-}
 
 async function main(): Promise<void> {
 	// Terminal without flags: interactive read-only plan menu. Agents and pipes keep the

@@ -268,8 +268,8 @@ export function runMutationContractVerify(
 	productionPermit?: RunOptions['productionPermit'],
 ): void {
 	const result = runCommand(
-		'npx',
-		['tsx', 'scripts/db/verify-mutation-schema-contract.ts', '--target', target],
+		'pnpm',
+		['exec', 'tsx', 'scripts/db/verify-mutation-schema-contract.ts', '--target', target],
 		{
 			throwOnError: false,
 			timeoutMs: MUTATION_CONTRACT_VERIFY_TIMEOUT_MS,

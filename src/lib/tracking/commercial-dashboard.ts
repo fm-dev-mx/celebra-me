@@ -84,7 +84,7 @@ export interface CountItem {
 	count: number;
 }
 
-export interface DataContextSummary {
+interface DataContextSummary {
 	periodLabel: string;
 	scopeLabel: string;
 	limitNotice: string;
@@ -93,7 +93,7 @@ export interface DataContextSummary {
 	lastCommercialUpdateAt: string | null;
 }
 
-export interface KeyTrackingEventCounts {
+interface KeyTrackingEventCounts {
 	pageViewed: number;
 	demoViewed: number;
 	ctaClicked: number;

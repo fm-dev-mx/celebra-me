@@ -129,13 +129,11 @@ export interface ProductionApplyExecuteDeps extends ProductionApplyAssemblerDeps
 	verifiedReleaseSha?: string;
 }
 
-export type { ReleaseReadiness } from './production-release-readiness.ts';
-
 function defaultAssertReleaseReadiness(options: { remote: boolean }): ReleaseReadiness {
 	return assertReleaseReadinessFailFast(options);
 }
 
-export interface ProductionApplyOutcomeRow {
+interface ProductionApplyOutcomeRow {
 	id: string;
 	outcome: ProductionApplyItemOutcome;
 	detail?: string;

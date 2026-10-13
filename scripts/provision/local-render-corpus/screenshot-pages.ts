@@ -9,7 +9,7 @@ import {
 	type LocalRenderCorpusEntry,
 } from './registry.ts';
 
-export function buildCorpusScreenshotPages(
+function buildCorpusScreenshotPages(
 	entries: readonly LocalRenderCorpusEntry[] = listLocalRenderCorpus(),
 ): ScreenshotConfigPage[] {
 	return entries.map((entry) => ({

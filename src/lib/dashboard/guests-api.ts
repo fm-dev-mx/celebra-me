@@ -30,7 +30,7 @@ class DashboardApiError extends Error {
 
 const DASHBOARD_DEBUG = isDebugMode();
 
-export class GuestsApi {
+class GuestsApi {
 	private handleResponse<T>(result: ApiResult<T>, context: string): T {
 		if (!result.ok) {
 			if (DASHBOARD_DEBUG) {

@@ -27,6 +27,7 @@ import {
 	matchProductionWritePermit,
 } from '../../scripts/db/production-write-permit.ts';
 import type { InvitationPackageData } from '../../scripts/provision/invitation-package.ts';
+import { invitationPackageFixture as pkg } from '../helpers/invitation-package-fixture.ts';
 import type {
 	PromotionApplyReport,
 	PromotionPreflightReport,
@@ -58,39 +59,6 @@ function schemaPlan(pending: string[] = ['20260807120000']): MigrationPlan {
 		verificationRequirement: 'history_and_mutation_contract',
 		releaseEvidenceSha: null,
 	});
-}
-
-function pkg(slug: string, hash = `hash-${slug}`): InvitationPackageData {
-	return {
-		schemaVersion: '1',
-		packageHash: hash,
-		sourceHash: `src-${slug}`,
-		metadataHash: 'meta',
-		projectionHash: 'proj',
-		assetManifestHash: 'assets',
-		definitionCreatedAt: '2026-08-12T00:00:00.000Z',
-		sourceSlug: slug,
-		invitation: {
-			slug,
-			managedIdentityId: `identity-${slug}`,
-			previousSlugs: [],
-			title: slug,
-			eventType: 'boda',
-			baseDemoId: 'demo',
-			themeId: 'theme',
-			kind: 'client',
-			clientName: 'Test Client',
-			hostLoginAlias: 'test-client',
-			clientEmail: 'test@example.com',
-			clientWhatsapp: '0000000000',
-			photosReceived: false,
-			snapshot: {},
-		},
-		draft: { status: 'draft', content: {} },
-		publishedContent: { content: {} },
-		event: { title: slug, eventType: 'boda', status: 'published' },
-		assets: [],
-	};
 }
 
 function invitationPreflight(

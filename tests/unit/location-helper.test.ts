@@ -1,8 +1,5 @@
-import {
-	groupVenues,
-	resolveVenueMapPreviewUrl,
-	type VenueEntry,
-} from '@/lib/invitation/location-helper';
+import type { VenueEntry } from '@/lib/adapters/types';
+import { groupVenues, resolveVenueMapPreviewUrl } from '@/lib/invitation/location-helper';
 
 describe('resolveVenueMapPreviewUrl', () => {
 	it('prefers the approved Google Maps URL for a public preview', () => {

@@ -22,13 +22,8 @@ export type InvitationMusicPlayerProps = {
 	variant?: string;
 };
 
-function isHostedInvitationRuntime(): boolean {
-	return readHostedDeployEnvironment() !== null;
-}
-
 function canUseLocalInvitationPreview(): boolean {
-	if (isHostedInvitationRuntime()) return false;
-	return isDevEnvironment();
+	return readHostedDeployEnvironment() === null && isDevEnvironment();
 }
 
 export function hasPlayableMusicUrl(url: string | undefined | null): boolean {

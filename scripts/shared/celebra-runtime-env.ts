@@ -7,19 +7,33 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
+import type { HostedDeployEnvironment } from '../../src/lib/server/deploy-identity.ts';
 import { detectWorktreeLane, type WorktreeLaneDefinition } from './worktree-lane';
 
 export const PREVIEW_PROJECT_REF = SUPABASE_PROJECT_REFS.preview;
 export const PRODUCTION_PROJECT_REF = SUPABASE_PROJECT_REFS.production;
 export const LOCAL_SUPABASE_URL = 'http://127.0.0.1:54321';
+/** Loopback host names that identify a Local Supabase API or database. */
+export const LOCAL_HOSTS: readonly string[] = ['127.0.0.1', 'localhost', '::1'];
 
 export type SupabaseUrlClass =
 	'local' | 'preview' | 'production' | 'other-remote' | 'invalid' | 'missing';
 
 export type RuntimeTarget = 'local' | 'preview' | 'production';
 
+/**
+ * Exact `CELEBRA_DEPLOY_ENV` parser for build and tooling; mirrors
+ * `src/lib/server/deploy-identity.ts`. Unset or empty means a local process; a padded or
+ * differently cased value is a misconfiguration and throws instead of passing as an alias.
+ */
+export function parseDeployEnvironment(value: string | undefined): HostedDeployEnvironment | null {
+	if (value === undefined || value === '') return null;
+	if (value === 'production' || value === 'preview') return value;
+	throw new Error('CELEBRA_DEPLOY_ENV must be exactly "production" or "preview" when set.');
+}
+
 /** Keys that local/Preview env files may override during NODE_ENV=development. */
-export const RUNTIME_OVERRIDE_KEYS = new Set([
+const RUNTIME_OVERRIDE_KEYS = new Set([
 	'SUPABASE_URL',
 	'SUPABASE_ANON_KEY',
 	'SUPABASE_SERVICE_ROLE_KEY',
@@ -33,7 +47,6 @@ export const RUNTIME_OVERRIDE_KEYS = new Set([
 	'UPSTASH_REDIS_REST_TOKEN',
 	'RSVP_V2_DISTRIBUTED_RATELIMIT',
 	'SUPER_ADMIN_EMAILS',
-	'RSVP_ADMIN_USER',
 	'RSVP_ADMIN_PASSWORD',
 	'LOCAL_SUPER_ADMIN_PASSWORD',
 	'REQUIRE_FRESH_MFA_FOR_ADMIN',
@@ -45,7 +58,6 @@ export const RUNTIME_OVERRIDE_KEYS = new Set([
 	'GMAIL_PASS',
 	'CONTACT_FORM_RECIPIENT_EMAIL',
 	'CONTACT_WHATSAPP',
-	'PUBLIC_GOOGLE_ANALYTICS_ID',
 	'PUBLIC_GA_MEASUREMENT_ID',
 	'PUBLIC_META_PIXEL_ID',
 	'PUBLIC_META_PIXEL_ENABLED',
@@ -59,7 +71,7 @@ export const RUNTIME_OVERRIDE_KEYS = new Set([
 ]);
 
 /** Runtime Supabase keys that Preview lane must source from `.env.preview.local`. */
-export const PREVIEW_RUNTIME_SUPABASE_KEYS = [
+const PREVIEW_RUNTIME_SUPABASE_KEYS = [
 	'SUPABASE_URL',
 	'PUBLIC_SUPABASE_URL',
 	'SUPABASE_ANON_KEY',
@@ -71,7 +83,7 @@ export const PREVIEW_RUNTIME_SUPABASE_KEYS = [
  * Vite-compatible env file merge (no vite import — keeps Jest/Node consumers light).
  * Order: `.env` → `.env.local` → `.env.[mode]` → `.env.[mode].local` (later wins).
  */
-export function loadModeEnvFiles(mode: string, cwd: string): Record<string, string> {
+function loadModeEnvFiles(mode: string, cwd: string): Record<string, string> {
 	const merged: Record<string, string> = {};
 	for (const fileName of ['.env', '.env.local', `.env.${mode}`, `.env.${mode}.local`]) {
 		const file = readEnvFile(cwd, fileName);
@@ -103,7 +115,7 @@ export function parseEnvContent(content: string): Record<string, string> {
 	return parsed;
 }
 
-export function readEnvFile(
+function readEnvFile(
 	root: string,
 	fileName: string,
 ): { path: string; values: Record<string, string> } | null {
@@ -116,7 +128,7 @@ export function classifySupabaseUrl(urlString: string | undefined): SupabaseUrlC
 	if (!urlString?.trim()) return 'missing';
 	try {
 		const url = new URL(urlString.trim());
-		if (url.protocol === 'http:' && ['127.0.0.1', 'localhost', '::1'].includes(url.hostname)) {
+		if (url.protocol === 'http:' && LOCAL_HOSTS.includes(url.hostname)) {
 			if (url.port === '54321') return 'local';
 			return 'invalid';
 		}
@@ -195,11 +207,8 @@ export function resolveRuntimeTarget(
 	const env = options.env ?? process.env;
 	const cwd = options.cwd ?? process.cwd();
 	const lane = detectWorktreeLane(cwd);
-	const deployEnv = (env.CELEBRA_DEPLOY_ENV ?? '').trim().toLowerCase();
-
-	if (deployEnv === 'production' || deployEnv === 'preview') {
-		return { target: deployEnv, lane, source: 'CELEBRA_DEPLOY_ENV' };
-	}
+	const deployEnv = parseDeployEnvironment(env.CELEBRA_DEPLOY_ENV);
+	if (deployEnv) return { target: deployEnv, lane, source: 'CELEBRA_DEPLOY_ENV' };
 
 	const override = (env.CELEBRA_RUNTIME_TARGET ?? '').trim().toLowerCase();
 	if (override === 'local' || override === 'preview') {
@@ -270,7 +279,7 @@ export function bootstrapCelebraRuntimeEnv(
 	const validate = options.validate !== false;
 	const loadEnvFn = options.loadEnvFn ?? loadModeEnvFiles;
 	const isLocalDev = (process.env.NODE_ENV ?? mode) === 'development';
-	const isHosted = Boolean(process.env.CELEBRA_DEPLOY_ENV?.trim());
+	const isHosted = parseDeployEnvironment(process.env.CELEBRA_DEPLOY_ENV) !== null;
 
 	const resolved = resolveRuntimeTarget({ cwd, env: process.env });
 	const merged: Record<string, string> = { ...loadEnvFn(mode, cwd) };

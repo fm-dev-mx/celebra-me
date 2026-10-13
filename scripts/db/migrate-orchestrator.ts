@@ -23,10 +23,7 @@ import { localMigratePolicy } from './migrate-policy-local.ts';
 import { previewMigratePolicy } from './migrate-policy-preview.ts';
 import { productionMigratePolicy } from './migrate-policy-production.ts';
 import { disposableMigratePolicy } from './migrate-policy-disposable.ts';
-import { formatPlanReview, formatPlanReviewCompact } from './migrate-plan-format.ts';
 import { labelTarget, operatorSymbol, writeHuman, OperatorError } from './operator-cli-ux.ts';
-
-export { formatPlanReview, formatPlanReviewCompact };
 
 const POLICIES: Record<MigrateTarget, MigrateEnvironmentPolicy> = {
 	local: localMigratePolicy,

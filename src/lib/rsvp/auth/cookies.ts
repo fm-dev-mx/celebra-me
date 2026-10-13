@@ -1,116 +1,99 @@
-import { requiresSecureCookies } from '@/lib/server/deploy-identity';
+import { isLocalProcess } from '@/lib/server/deploy-identity';
 
 const ACCESS_TOKEN_MAX_AGE_SECONDS = 60 * 60; // 1 hour
 const REFRESH_TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const IDLE_TIMEOUT_SECONDS = 60 * 30; // 30 minutes
-const MFA_TEMP_MAX_AGE_SECONDS = 60 * 5; // 5 minutes
 const TRUST_DEVICE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
+/**
+ * Cookies carry `Secure` everywhere except a positively local process served over plain
+ * http. Hosted and ambiguous runtimes always get it: the hosting platform may inject any
+ * NODE_ENV at runtime, so NODE_ENV never decides transport security.
+ */
+function serializeCookie(parts: string[]): string {
+	if (!isLocalProcess()) parts.push('Secure');
+	return parts.join('; ');
+}
+
 export function buildSessionCookie(accessToken: string): string {
-	const parts = [
+	return serializeCookie([
 		`sb-access-token=${encodeURIComponent(accessToken)}`,
 		'Path=/',
 		'HttpOnly',
 		'SameSite=Lax',
 		`Max-Age=${ACCESS_TOKEN_MAX_AGE_SECONDS}`,
-	];
-	if (requiresSecureCookies()) parts.push('Secure');
-	return parts.join('; ');
+	]);
 }
 
 export function buildRefreshTokenCookie(refreshToken: string): string {
-	const parts = [
+	return serializeCookie([
 		`sb-refresh-token=${encodeURIComponent(refreshToken)}`,
 		'Path=/',
 		'HttpOnly',
 		'SameSite=Lax',
 		`Max-Age=${REFRESH_TOKEN_MAX_AGE_SECONDS}`,
-	];
-	if (requiresSecureCookies()) parts.push('Secure');
-	return parts.join('; ');
-}
-
-export function buildMfaSessionCookie(accessToken: string): string {
-	const parts = [
-		`sb-mfa-session=${encodeURIComponent(accessToken)}`,
-		'Path=/dashboard/mfa-setup',
-		'SameSite=Strict',
-		`Max-Age=${MFA_TEMP_MAX_AGE_SECONDS}`,
-	];
-	if (requiresSecureCookies()) parts.push('Secure');
-	return parts.join('; ');
-}
-
-export function buildMfaRefreshCookie(refreshToken: string): string {
-	const parts = [
-		`sb-mfa-refresh=${encodeURIComponent(refreshToken)}`,
-		'Path=/dashboard/mfa-setup',
-		'SameSite=Strict',
-		`Max-Age=${MFA_TEMP_MAX_AGE_SECONDS}`,
-	];
-	if (requiresSecureCookies()) parts.push('Secure');
-	return parts.join('; ');
+	]);
 }
 
 export function buildIdleActivityCookie(unixSeconds: number): string {
-	const parts = [
+	return serializeCookie([
 		`sb-idle-seen=${encodeURIComponent(String(unixSeconds))}`,
 		'Path=/',
 		'HttpOnly',
 		'SameSite=Lax',
 		`Max-Age=${IDLE_TIMEOUT_SECONDS}`,
-	];
-	if (requiresSecureCookies()) parts.push('Secure');
-	return parts.join('; ');
+	]);
 }
 
 export function buildTrustedDeviceCookie(
 	token: string,
 	maxAge = TRUST_DEVICE_MAX_AGE_SECONDS,
 ): string {
-	const parts = [
+	return serializeCookie([
 		`sb-trust-device=${encodeURIComponent(token)}`,
 		'Path=/',
 		'HttpOnly',
 		'SameSite=Lax',
 		`Max-Age=${Math.max(60, Math.trunc(maxAge))}`,
-	];
-	if (requiresSecureCookies()) parts.push('Secure');
-	return parts.join('; ');
+	]);
 }
 
 export function clearSessionCookie(): string {
-	const parts = ['sb-access-token=', 'Path=/', 'Max-Age=0', 'HttpOnly', 'SameSite=Lax'];
-	if (requiresSecureCookies()) parts.push('Secure');
-	return parts.join('; ');
+	return serializeCookie(['sb-access-token=', 'Path=/', 'Max-Age=0', 'HttpOnly', 'SameSite=Lax']);
 }
 
 export function clearRefreshTokenCookie(): string {
-	const parts = ['sb-refresh-token=', 'Path=/', 'Max-Age=0', 'HttpOnly', 'SameSite=Lax'];
-	if (requiresSecureCookies()) parts.push('Secure');
-	return parts.join('; ');
+	return serializeCookie([
+		'sb-refresh-token=',
+		'Path=/',
+		'Max-Age=0',
+		'HttpOnly',
+		'SameSite=Lax',
+	]);
 }
 
 export function clearMfaSessionCookie(): string {
-	const parts = ['sb-mfa-session=', 'Path=/dashboard/mfa-setup', 'Max-Age=0', 'SameSite=Strict'];
-	if (requiresSecureCookies()) parts.push('Secure');
-	return parts.join('; ');
+	return serializeCookie([
+		'sb-mfa-session=',
+		'Path=/dashboard/mfa-setup',
+		'Max-Age=0',
+		'SameSite=Strict',
+	]);
 }
 
 export function clearMfaRefreshCookie(): string {
-	const parts = ['sb-mfa-refresh=', 'Path=/dashboard/mfa-setup', 'Max-Age=0', 'SameSite=Strict'];
-	if (requiresSecureCookies()) parts.push('Secure');
-	return parts.join('; ');
+	return serializeCookie([
+		'sb-mfa-refresh=',
+		'Path=/dashboard/mfa-setup',
+		'Max-Age=0',
+		'SameSite=Strict',
+	]);
 }
 
 export function clearIdleActivityCookie(): string {
-	const parts = ['sb-idle-seen=', 'Path=/', 'Max-Age=0', 'HttpOnly', 'SameSite=Lax'];
-	if (requiresSecureCookies()) parts.push('Secure');
-	return parts.join('; ');
+	return serializeCookie(['sb-idle-seen=', 'Path=/', 'Max-Age=0', 'HttpOnly', 'SameSite=Lax']);
 }
 
 export function clearTrustedDeviceCookie(): string {
-	const parts = ['sb-trust-device=', 'Path=/', 'Max-Age=0', 'HttpOnly', 'SameSite=Lax'];
-	if (requiresSecureCookies()) parts.push('Secure');
-	return parts.join('; ');
+	return serializeCookie(['sb-trust-device=', 'Path=/', 'Max-Age=0', 'HttpOnly', 'SameSite=Lax']);
 }

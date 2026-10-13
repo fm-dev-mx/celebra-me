@@ -18,7 +18,7 @@ export interface TextPreset {
 	text: string;
 }
 
-export const TEXT_PRESETS: TextPreset[] = [
+const TEXT_PRESETS: TextPreset[] = [
 	// Quotes
 	{
 		id: 'quote-xv-1',

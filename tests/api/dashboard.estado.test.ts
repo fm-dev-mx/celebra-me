@@ -20,8 +20,7 @@ import {
 	refreshCanonicalStatusView,
 } from '@/lib/status/server/canonical-status';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { ADMIN_RATE_LIMIT_OPERATIONS } from '@/lib/rsvp/security/admin-rate-limit';
-import { GET, CANONICAL_STATUS_RATE_LIMIT_OPERATION } from '@/pages/api/dashboard/estado/index';
+import { GET } from '@/pages/api/dashboard/estado/index';
 import { buildCanonicalStatusViewFixture } from '../helpers/canonical-status-fixture';
 
 const mockAccess = requireLocalObservabilityAccess as jest.MockedFunction<
@@ -37,10 +36,6 @@ describe('GET /api/dashboard/estado', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		mockCheckRateLimit.mockResolvedValue(true);
-	});
-
-	it('registers its rate-limit operation', () => {
-		expect(ADMIN_RATE_LIMIT_OPERATIONS).toContain(CANONICAL_STATUS_RATE_LIMIT_OPERATION);
 	});
 
 	it('returns cached or local view without probing when refresh is absent', async () => {

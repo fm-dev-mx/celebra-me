@@ -15,6 +15,7 @@ import {
 	listMemorySpacesWithUsage,
 	summarizeMemorySpaceUsage,
 } from '@/lib/memories/server/usage.service';
+import { asHostedDeploy, asLocalDevServer } from '@tests/helpers/deploy-identity';
 import { EVENT_ID, NOW, OTHER_SESSION_ID, SESSION_ID, buildSpace } from './fixtures';
 
 const mockResident = listResidentMediaUsage as jest.MockedFunction<typeof listResidentMediaUsage>;
@@ -171,14 +172,8 @@ describe('getMemorySpaceHostSummary', () => {
 	});
 
 	describe('QR link origin', () => {
-		const savedVercelEnv = process.env.CELEBRA_DEPLOY_ENV;
-		afterEach(() => {
-			if (savedVercelEnv === undefined) delete process.env.CELEBRA_DEPLOY_ENV;
-			else process.env.CELEBRA_DEPLOY_ENV = savedVercelEnv;
-		});
-
 		it('keeps the printed canonical domain in Production', async () => {
-			process.env.CELEBRA_DEPLOY_ENV = 'production';
+			asHostedDeploy('production');
 			const summary = await getMemorySpaceHostSummary(
 				buildSpace(),
 				NOW,
@@ -188,7 +183,7 @@ describe('getMemorySpaceHostSummary', () => {
 		});
 
 		it('points Preview and local QR links at the serving environment', async () => {
-			process.env.CELEBRA_DEPLOY_ENV = 'preview';
+			asHostedDeploy('preview');
 			const preview = await getMemorySpaceHostSummary(
 				buildSpace(),
 				NOW,
@@ -197,7 +192,7 @@ describe('getMemorySpaceHostSummary', () => {
 			expect(preview.publicUrl).toBe(
 				'https://celebra-me-git-develop.vercel.app/r/victoria-y-roberto',
 			);
-			delete process.env.CELEBRA_DEPLOY_ENV;
+			asLocalDevServer();
 			const local = await getMemorySpaceHostSummary(
 				buildSpace(),
 				NOW,

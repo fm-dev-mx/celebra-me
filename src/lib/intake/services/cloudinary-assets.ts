@@ -9,7 +9,7 @@ import sharp from 'sharp';
 
 import { v2 as cloudinary, type UploadApiResponse } from 'cloudinary';
 
-export interface CloudinaryConfig {
+interface CloudinaryConfig {
 	cloudName: string;
 	apiKey: string;
 	apiSecret: string;
@@ -166,7 +166,7 @@ export async function verifyCloudinaryDelivery(
 
 let configuredSignature = '';
 
-export function resolveCloudinaryConfigFromEnv(): CloudinaryConfig {
+function resolveCloudinaryConfigFromEnv(): CloudinaryConfig {
 	return {
 		cloudName: process.env.CLOUDINARY_CLOUD_NAME?.trim() || '',
 		apiKey: process.env.CLOUDINARY_API_KEY?.trim() || '',
@@ -184,7 +184,7 @@ function isUsableCredential(value: string): boolean {
 	return Boolean(value) && !PLACEHOLDER_CREDENTIALS.has(value);
 }
 
-export function assertCloudinaryCredentials(config: CloudinaryConfig): void {
+function assertCloudinaryCredentials(config: CloudinaryConfig): void {
 	if (
 		!isUsableCredential(config.apiKey) ||
 		!isUsableCredential(config.apiSecret) ||

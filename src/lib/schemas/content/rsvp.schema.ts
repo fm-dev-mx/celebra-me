@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { rsvpResponseMessagesSchema } from '@/lib/intake/schemas/shared-content.schema';
+import { rsvpResponseMessagesSchema } from '@/lib/schemas/content/shared.schema';
 import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 import { PERSONALIZED_ACCESS_VARIANTS, RSVP_VARIANTS } from '@/lib/invitation/section-variants';
 import {
@@ -7,7 +7,7 @@ import {
 	PERSONALIZED_ACCESS_PASS_STYLES,
 } from '@/lib/invitation/personalized-access-presentation';
 
-export const rsvpLabelsSchema = z
+const rsvpLabelsSchema = z
 	.object({
 		name: z.string().optional(),
 		guestCount: z.string().optional(),

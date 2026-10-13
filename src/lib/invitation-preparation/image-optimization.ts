@@ -16,7 +16,7 @@ export type ImageOptimizationRole = keyof typeof IMAGE_ROLE_WEIGHT_TARGETS;
  * Dimension candidates are tried from largest to smallest before lowering quality.
  * Final aspect-specific minimums remain enforced by the publication validator.
  */
-export const IMAGE_ROLE_MAX_DIMENSION_STEPS: Record<ImageOptimizationRole, readonly number[]> = {
+const IMAGE_ROLE_MAX_DIMENSION_STEPS: Record<ImageOptimizationRole, readonly number[]> = {
 	'hero-desktop': [2560, 2304, 2048, 1792, 1536, 1280],
 	'hero-mobile': [1920, 1600, 1440, 1280],
 	'editorial-featured': [2200, 1920, 1600, 1280, 1024, 960],
@@ -29,7 +29,7 @@ export const IMAGE_ROLE_MAX_DIMENSION_STEPS: Record<ImageOptimizationRole, reado
 /** Quality floor for role-aware delivery. The generic legacy ladder remains unchanged. */
 export const IMAGE_ENCODING_QUALITIES = [84, 80, 76, 72] as const;
 
-export const IMAGE_QUALITY_STATES = [
+const IMAGE_QUALITY_STATES = [
 	'production-ready',
 	'provisional-whatsapp',
 	'temporary-placeholder',
@@ -55,7 +55,7 @@ export function isProductionAuthoritativeImage(state: ImageQualityState): boolea
 	return state === 'production-ready';
 }
 
-export function getWeightTargetKb(role: ImageOptimizationRole): { minKb: number; maxKb: number } {
+function getWeightTargetKb(role: ImageOptimizationRole): { minKb: number; maxKb: number } {
 	return IMAGE_ROLE_WEIGHT_TARGETS[role];
 }
 
@@ -85,7 +85,7 @@ export function getImageOptimizationRoleForPath(path: string): ImageOptimization
 	return 'standard-section';
 }
 
-export function evaluateWeightAgainstTarget(
+function evaluateWeightAgainstTarget(
 	fileSizeBytes: number,
 	role: ImageOptimizationRole,
 ): 'below-target' | 'within-target' | 'above-target' {

@@ -1,14 +1,21 @@
+/**
+ * @jest-environment node
+ */
 jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn().mockResolvedValue(true),
 }));
 
 jest.mock('@/lib/rsvp/auth/authorization', () => {
-	const { ApiError } = jest.requireActual('@/lib/rsvp/core/errors') as typeof import('@/lib/rsvp/core/errors');
+	const { ApiError } = jest.requireActual(
+		'@/lib/rsvp/core/errors',
+	) as typeof import('@/lib/rsvp/core/errors');
 	return {
-		requireDashboardMutationAccess: jest.fn(async (_request: Request, _cookies: unknown, locals: { session?: unknown }) => {
-			if (!locals?.session) throw new ApiError(401, 'unauthorized', 'No autorizado.');
-			return locals.session;
-		}),
+		requireDashboardMutationAccess: jest.fn(
+			async (_request: Request, _cookies: unknown, locals: { session?: unknown }) => {
+				if (!locals?.session) throw new ApiError(401, 'unauthorized', 'No autorizado.');
+				return locals.session;
+			},
+		),
 	};
 });
 
@@ -16,17 +23,9 @@ jest.mock('@/lib/rsvp/services/dashboard-guests.service', () => ({
 	toggleGuestBrandingRemoval: jest.fn(),
 }));
 
-import { Request as NodeRequest } from 'undici';
 import { toggleGuestBrandingRemoval } from '@/lib/rsvp/services/dashboard-guests.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { POST } from '@/pages/api/dashboard/guests/[guestId]/toggle-branding';
-
-function nodeRequest(
-	input: string,
-	init?: ConstructorParameters<typeof NodeRequest>[1],
-): Request {
-	return new NodeRequest(input, init) as unknown as Request;
-}
 
 function createMockRequest({
 	method = 'POST',
@@ -37,7 +36,7 @@ function createMockRequest({
 	body?: Record<string, unknown>;
 	guestId?: string;
 }): [Request, Record<string, string>, URL] {
-	const request = nodeRequest(
+	const request = new Request(
 		`http://localhost/api/dashboard/guests/${guestId}/toggle-branding`,
 		{
 			method,

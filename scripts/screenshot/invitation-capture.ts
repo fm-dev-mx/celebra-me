@@ -2,7 +2,7 @@
 // CELEBRA-ME | Screenshot Tool — Invitation Screenshot Orchestration
 // =============================================================================
 
-import type { Page } from 'playwright';
+import type { Page } from '@playwright/test';
 import {
 	type ScreenshotJob,
 	type CaptureResult,

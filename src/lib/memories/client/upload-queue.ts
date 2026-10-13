@@ -27,7 +27,7 @@ import {
 	type MemoriesUploadPhase,
 } from '@/lib/memories/client/upload-pipeline';
 
-export type MemoriesQueueStatus =
+type MemoriesQueueStatus =
 	'ready' | 'invalid' | 'waiting' | MemoriesUploadPhase | 'done' | 'failed';
 
 export interface MemoriesQueueEntry {

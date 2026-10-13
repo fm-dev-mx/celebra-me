@@ -1,6 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
+import baseConfig from './playwright.config';
 
 /**
+ * GA4 browser regression against a production-mode dev server.
+ * Extends `playwright.config.ts` but owns its web server: it never reuses an existing one.
+ *
  * Dedicated port for the GA4 production-build regression server. It must not collide with a
  * worktree lane's dev server (4321 Integration/dev-local, 4322 dev-extra, 4323 dev-preview,
  * 4399 unknown; see `scripts/shared/worktree-lane.ts`) or the 4324 fallback Astro picks when a
@@ -10,11 +14,10 @@ const GA4_DEV_SERVER_PORT = 4330;
 const GA4_BASE_URL = `http://127.0.0.1:${GA4_DEV_SERVER_PORT}`;
 
 export default defineConfig({
-	testDir: './tests/e2e',
+	...baseConfig,
+	globalSetup: undefined,
+	globalTeardown: undefined,
 	testMatch: '**/ga4-browser-regression.spec.ts',
-	fullyParallel: false,
-	forbidOnly: !!process.env.CI,
-	retries: process.env.CI ? 2 : 0,
 	workers: 1,
 	reporter: 'list',
 	use: {
@@ -36,7 +39,6 @@ export default defineConfig({
 		env: {
 			VERCEL_ENV: 'production',
 			PUBLIC_GA_MEASUREMENT_ID: 'G-TEST',
-			PUBLIC_GOOGLE_ANALYTICS_ID: '',
 		},
 	},
 });

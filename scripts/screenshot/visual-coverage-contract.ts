@@ -40,7 +40,7 @@ export const CROSS_PRESET_REPRESENTATIVE_VARIANTS: readonly {
 	},
 ] as const;
 
-export type VisualViewport = (typeof VISUAL_VIEWPORTS)[number];
+type VisualViewport = (typeof VISUAL_VIEWPORTS)[number];
 
 export interface VisualVariantCase {
 	[key: string]: unknown;

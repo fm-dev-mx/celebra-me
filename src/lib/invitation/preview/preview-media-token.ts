@@ -31,7 +31,7 @@ const VARIANT_EXTENSIONS: Record<PreviewMediaVariant, 'webp' | 'jpg'> = {
 	og: 'jpg',
 };
 
-export const PREVIEW_MEDIA_PATH_PREFIX = '/vista-previa/';
+const PREVIEW_MEDIA_PATH_PREFIX = '/vista-previa/';
 
 interface PreviewMediaKeys {
 	encryption: Buffer;

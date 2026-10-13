@@ -7,6 +7,7 @@
 import { isAssetRegistryKey } from '../../src/lib/assets/asset-keys.ts';
 import { UUID_PATTERN } from '../../src/lib/intake/constants.ts';
 import { eventContentSchema } from '../../src/lib/schemas/content/base-event.schema.ts';
+import { isRecord } from '../../src/lib/shared/data-utils.ts';
 
 type JsonRecord = Record<string, unknown>;
 
@@ -56,7 +57,7 @@ function isAssetShorthand(value: string): boolean {
 	);
 }
 
-export interface ContentAssetUsage {
+interface ContentAssetUsage {
 	internal: number;
 	external: number;
 	uploaded: number;
@@ -81,10 +82,6 @@ export interface ContentUsageSummary {
 	facts: Record<string, string | number | boolean>;
 	/** Canonical schema result with no compatibility normalizer applied. */
 	strictParse: { ok: boolean; issues: string[] };
-}
-
-function isRecord(value: unknown): value is JsonRecord {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function text(value: unknown): string | null {

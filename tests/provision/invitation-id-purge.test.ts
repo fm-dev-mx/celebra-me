@@ -1,18 +1,21 @@
 import { describe, expect, it, jest, beforeEach } from '@jest/globals';
 
 jest.mock('../../scripts/db/db-workflow-lib.ts', () => ({
-	getSecretFromEnvOrFiles: jest.fn(() => ''),
-	PREVIEW_SECRET_FILES: ['.env.preview.local'],
 	PROJECT_ROOT: process.cwd(),
 	runPsql: jest.fn(),
 	sqlLiteral: (value: string) => `'${value.replaceAll("'", "''")}'`,
+}));
+
+jest.mock('../../scripts/db/db-target-config.ts', () => ({
+	...jest.requireActual<typeof import('../../scripts/db/db-target-config.ts')>(
+		'../../scripts/db/db-target-config.ts',
+	),
+	getSecretFromEnvOrFiles: jest.fn(() => ''),
+	// Never fall back to a real gitignored secret file under test.
+	resolveTargetDbUrl: (_target: string, env: NodeJS.ProcessEnv = process.env) =>
+		env.PREVIEW_DB_URL?.trim() ?? '',
 	redactDbUrl: (url: string) => url.replace(/\/\/.*@/, '//***@'),
 	classifyDbTarget: jest.fn(),
-	validateEnvironmentUrlsPreflight: (
-		jest.requireActual(
-			'../../scripts/db/db-target-config.ts',
-		) as typeof import('../../scripts/db/db-target-config.ts')
-	).validateEnvironmentUrlsPreflight,
 }));
 
 jest.mock('../../scripts/provision/preview-write-auth.ts', () => ({
@@ -22,12 +25,13 @@ jest.mock('../../scripts/provision/preview-write-auth.ts', () => ({
 	})),
 }));
 
-import { classifyDbTarget, runPsql } from '../../scripts/db/db-workflow-lib.ts';
+import { runPsql } from '../../scripts/db/db-workflow-lib.ts';
 import { verifyPreviewWriteAuthorization } from '../../scripts/provision/preview-write-auth.ts';
 import {
 	resolvePreviewPurgeDbUrl,
 	runInvitationIdPurge,
 } from '../../scripts/provision/invitation-id-purge.ts';
+import { classifyDbTarget } from '../../scripts/db/db-target-config.ts';
 
 const mockedClassify = classifyDbTarget as jest.MockedFunction<typeof classifyDbTarget>;
 const mockedPsql = runPsql as jest.MockedFunction<typeof runPsql>;
@@ -49,12 +53,8 @@ function deps(overrides: Record<string, number> = {}) {
 		provenance: 1,
 		publicationIdempotency: 4,
 		mutationReceipts: 3,
-		legacyAdoption: 0,
-		intakeRequests: 0,
-		intakeSubmissions: 0,
 		sourcedInvitations: 0,
 		guests: 1,
-		claimCodes: 0,
 		memberships: 1,
 		guestAudit: 13,
 		...overrides,

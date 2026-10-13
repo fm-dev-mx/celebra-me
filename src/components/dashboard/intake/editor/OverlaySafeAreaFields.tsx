@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Field from '@/components/dashboard/intake/editor/Field';
 import { overlaySafeAreaSchema } from '@/lib/schemas/content/shared.schema';
 
-export type OverlaySafeAreaValue = {
+type OverlaySafeAreaValue = {
 	x: number;
 	y: number;
 	width: number;
@@ -85,8 +85,8 @@ export default function OverlaySafeAreaFields({ value, onChange }: Props) {
 	return (
 		<div className="invitation-editor__stack">
 			<p className="invitation-editor__hint">
-				Coordenadas normalizadas de 0 a 1 sobre la imagen. Debe completar las cuatro
-				medidas con un área válida (ancho y alto ≥ 0.01; x+ancho y y+alto ≤ 1).
+				Coordenadas normalizadas de 0 a 1 sobre la imagen. Debe completar las cuatro medidas
+				con un área válida (ancho y alto ≥ 0.01; x+ancho y y+alto ≤ 1).
 			</p>
 			<div className="invitation-editor__field-grid">
 				<Field

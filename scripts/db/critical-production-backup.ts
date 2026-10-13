@@ -71,12 +71,16 @@ function captureOnce(input: EnsureCriticalProductionBackupInput): CommandResult 
 	if (input.pendingVersions?.length) {
 		env.CELEBRA_CRITICAL_BACKUP_PENDING = input.pendingVersions.join(',');
 	}
-	return (input.run ?? runCommand)('npx', ['tsx', 'scripts/db/backup-critical-production.ts'], {
-		env,
-		redact: [input.prodDbUrl],
-		throwOnError: false,
-		inheritStderr: true,
-	});
+	return (input.run ?? runCommand)(
+		'pnpm',
+		['exec', 'tsx', 'scripts/db/backup-critical-production.ts'],
+		{
+			env,
+			redact: [input.prodDbUrl],
+			throwOnError: false,
+			inheritStderr: true,
+		},
+	);
 }
 
 function captureFailure(

@@ -1,23 +1,25 @@
 import { gallerySchema } from '@/lib/intake/schemas/shared-content.schema';
-import { resolveLocationShowFlourishes as resolveCanonicalLocationShowFlourishes } from '@/lib/invitation/location-presentation';
-import { ITINERARY_VARIANTS } from '@/lib/invitation/section-variants';
 import {
-	assertSupportedGalleryPresentation,
 	resolveLocationShowFlourishes,
 	resolveLocationShowNavigationButtons,
-	resolvePortraitEnabled,
-} from '@/lib/invitation/presentation-options';
+} from '@/lib/invitation/location-presentation';
+import { ITINERARY_VARIANTS } from '@/lib/invitation/section-variants';
+import { assertSupportedGalleryPresentation } from '@/lib/invitation/gallery-presentation';
+import { resolvePortraitEnabled } from '@/lib/invitation/hero-presentation';
 
 describe('invitation presentation contract', () => {
 	it('resolves the structural presentation couplings from section content', () => {
 		expect(resolveLocationShowFlourishes({ showFlourishes: false })).toBe(false);
-		expect(resolveCanonicalLocationShowFlourishes(undefined, 'split-map')).toBe(false);
-		expect(resolveCanonicalLocationShowFlourishes(undefined, 'standard')).toBe(true);
-		expect(resolveLocationShowNavigationButtons({ showNavigationButtons: false }, true)).toBe(
-			false,
-		);
-		expect(resolveLocationShowNavigationButtons(undefined, false)).toBe(false);
-		expect(ITINERARY_VARIANTS).toEqual(['standard', 'timeline-paper', 'editorial-ledger', 'editorial-program']);
+		expect(resolveLocationShowFlourishes(undefined, 'split-map')).toBe(false);
+		expect(resolveLocationShowFlourishes(undefined, 'standard')).toBe(true);
+		expect(resolveLocationShowNavigationButtons({ showNavigationButtons: false })).toBe(false);
+		expect(resolveLocationShowNavigationButtons(undefined)).toBe(true);
+		expect(ITINERARY_VARIANTS).toEqual([
+			'standard',
+			'timeline-paper',
+			'editorial-ledger',
+			'editorial-program',
+		]);
 		expect(resolvePortraitEnabled({ portraitEnabled: true }, false)).toBe(true);
 		expect(resolvePortraitEnabled(undefined, true)).toBe(true);
 		expect(() =>

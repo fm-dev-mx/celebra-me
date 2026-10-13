@@ -2,7 +2,6 @@ import {
 	buildManagedHostEmail,
 	isCanonicalHostLoginAlias,
 	isManagedHostEmail,
-	isValidHostLoginAliasInput,
 	normalizeHostLoginAlias,
 	parseHostLoginAlias,
 } from '@/lib/auth/login-alias';
@@ -23,9 +22,7 @@ describe('canonical managed host alias', () => {
 		expect(isCanonicalHostLoginAlias('Abril-Becerra')).toBe(false);
 	});
 
-	it('accepts normalizeable alias input but rejects real emails', () => {
-		expect(isValidHostLoginAliasInput('Abril Becerra')).toBe(true);
-		expect(isValidHostLoginAliasInput('abril@example.com')).toBe(false);
+	it('rejects aliases shorter than the minimum', () => {
 		expect(() => parseHostLoginAlias('ab')).toThrow('Invalid managed host login alias');
 	});
 

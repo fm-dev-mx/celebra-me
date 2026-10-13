@@ -121,9 +121,9 @@ function runPsql(sqlOrFile: string, isFile = false): void {
 }
 
 mkdirSync(outputDir, { recursive: true });
-const resetArgs = ['-y', 'tsx', 'scripts/db/disposable-test-env.ts', 'reset'];
+const resetArgs = ['exec', 'tsx', 'scripts/db/disposable-test-env.ts', 'reset'];
 if (integrityProfile === 'pre-phase3') resetArgs.push('--max-version=20260727180000');
-runCommand('npx', resetArgs);
+runCommand('pnpm', resetArgs);
 runPsql(fixtureSql);
 
 const databasePath = resolve(outputDir, 'database.sql');

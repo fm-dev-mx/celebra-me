@@ -8,10 +8,10 @@
  */
 
 import { classifyDbTarget } from '@/../scripts/db/db-target-config';
-import { getSecretFromEnvOrFiles, PREVIEW_SECRET_FILES } from '@/../scripts/db/db-guard';
 import { extractSupabaseProjectRef } from '@/../scripts/db/db-target-config';
 import { CONTENT_MIRROR_TABLES, EXCLUDED_TABLES } from '@/../scripts/db/db-target-config';
 import { rewriteStorageUrl } from '@/../scripts/db/preview-sync-guards';
+import { getSecretFromEnvOrFiles, PREVIEW_SECRET_FILES } from '../../scripts/db/db-target-config';
 
 // Mock psql-dependent modules
 jest.mock('@/../scripts/db/db-workflow-lib', () => ({

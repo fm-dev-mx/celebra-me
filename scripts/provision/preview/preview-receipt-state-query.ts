@@ -83,15 +83,15 @@ export function record(value: unknown): Record<string, unknown> | null {
 		: null;
 }
 
-export function stringOrNull(value: unknown): string | null {
+function stringOrNull(value: unknown): string | null {
 	return typeof value === 'string' && value.length > 0 ? value : null;
 }
 
-export function numberOrNull(value: unknown): number | null {
+function numberOrNull(value: unknown): number | null {
 	return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
-export function parseReceipt(value: unknown): ReceiptRow | null {
+function parseReceipt(value: unknown): ReceiptRow | null {
 	const row = record(value);
 	const operationId = stringOrNull(row?.operation_id);
 	const status = stringOrNull(row?.status) as ReceiptStatus | null;
@@ -118,7 +118,7 @@ export function parseReceipt(value: unknown): ReceiptRow | null {
 	};
 }
 
-export function parseAsset(value: unknown): PreviewAssetRow | null {
+function parseAsset(value: unknown): PreviewAssetRow | null {
 	const row = record(value);
 	if (
 		!row ||
@@ -153,7 +153,7 @@ export function parseAsset(value: unknown): PreviewAssetRow | null {
 }
 
 // eslint-disable-next-line complexity -- Parse each bounded nullable database component fail-closed.
-export function parsePreviewReceiptState(value: Record<string, unknown>): PreviewReceiptState {
+function parsePreviewReceiptState(value: Record<string, unknown>): PreviewReceiptState {
 	const invitation = record(value.invitation);
 	if (value.invitationCount !== 1)
 		throw new Error(
@@ -224,7 +224,7 @@ export function parsePreviewReceiptState(value: Record<string, unknown>): Previe
 	};
 }
 
-export function buildReadOnlyQuery(slug: string): string {
+function buildReadOnlyQuery(slug: string): string {
 	const safeSlug = sqlLiteral(slug);
 	return `
 select json_build_object(

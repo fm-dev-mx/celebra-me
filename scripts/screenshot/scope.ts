@@ -42,7 +42,7 @@ import {
 } from './registry-validation.js';
 
 export type ScopeSource = 'direct' | 'config' | 'interactive' | 'corpus';
-export type ScopePreset = 'all-sections' | 'critical-qa';
+type ScopePreset = 'all-sections' | 'critical-qa';
 
 export interface RouteIdentity {
 	pathname: string;
@@ -50,13 +50,13 @@ export interface RouteIdentity {
 	key: string;
 }
 
-export interface ResolvedSectionSelection {
+interface ResolvedSectionSelection {
 	kind: 'ids' | 'preset';
 	ids: string[];
 	preset?: ScopePreset;
 }
 
-export interface ResolvedScopeTask {
+interface ResolvedScopeTask {
 	id: string;
 	label: string;
 	viewportName: string;

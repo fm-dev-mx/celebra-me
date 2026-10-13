@@ -4,7 +4,7 @@ export type ProductionPatchPreviewState = 'NOT_NEEDED' | 'PENDING' | 'BLOCKED';
 export type ProductionPatchPreviewReason =
 	'ZERO_ROWS' | 'ROWS_WITHIN_RANGE' | 'ROWS_OUTSIDE_RANGE' | 'STORE_DISAGREEMENT';
 
-export interface ProductionPatchPreviewRow {
+interface ProductionPatchPreviewRow {
 	store: string;
 	key: string;
 	/** The selected dry-run row, when the paired preview query returns it. */

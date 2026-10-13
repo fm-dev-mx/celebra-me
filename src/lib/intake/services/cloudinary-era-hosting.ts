@@ -39,14 +39,6 @@ export function isSupabaseStorageUrl(value: string): boolean {
 	);
 }
 
-export function findCloudinaryEraHostingViolations(
-	assets?: readonly CloudinaryHostedAssetInput[] | null,
-): string[] {
-	return (assets ?? [])
-		.filter((asset) => !isCloudinaryHostedAsset(asset))
-		.map((asset) => asset.key?.trim() || asset.id?.trim() || 'imagen');
-}
-
 export function findSupabaseStorageUrls(value: unknown, found: string[] = []): string[] {
 	if (typeof value === 'string') {
 		if (isSupabaseStorageUrl(value)) found.push(value);

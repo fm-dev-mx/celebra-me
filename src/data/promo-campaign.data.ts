@@ -60,7 +60,7 @@ export interface PromoCampaign {
 	readonly extras: readonly PromoExtra[];
 }
 
-export type PromoPhase = 'upcoming' | 'active' | 'expired';
+type PromoPhase = 'upcoming' | 'active' | 'expired';
 
 export interface PromoStatus {
 	readonly phase: PromoPhase;
@@ -120,7 +120,7 @@ export function getPromoCode(pkg: PromoPackage): string {
 }
 
 /** The entry package drives the general "desde" price, code and message. */
-export function getStartingPackage(): PromoPackage {
+function getStartingPackage(): PromoPackage {
 	return PROMO_CAMPAIGN.packages.reduce((lowest, pkg) =>
 		pkg.promoPrice < lowest.promoPrice ? pkg : lowest,
 	);

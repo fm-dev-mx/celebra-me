@@ -1,9 +1,7 @@
-import { isDevEnvironment } from '@/lib/environment';
 import { adaptEvent } from '@/lib/adapters/event';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
 import type { InvitationViewModel } from '@/lib/adapters/types';
-
-const isDev = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
+import { asHostedDeploy } from '@tests/helpers/deploy-identity';
 
 const PLAYABLE_URL = 'https://res.cloudinary.com/example/video/upload/song.mp3';
 
@@ -61,22 +59,6 @@ function buildPage(viewModel: InvitationViewModel) {
 }
 
 describe('invitation music player visibility', () => {
-	const originalDeployEnv = process.env.CELEBRA_DEPLOY_ENV;
-
-	beforeEach(() => {
-		isDev.mockReturnValue(false);
-		delete process.env.CELEBRA_DEPLOY_ENV;
-	});
-
-	afterEach(() => {
-		isDev.mockReturnValue(false);
-		if (originalDeployEnv === undefined) {
-			delete process.env.CELEBRA_DEPLOY_ENV;
-		} else {
-			process.env.CELEBRA_DEPLOY_ENV = originalDeployEnv;
-		}
-	});
-
 	describe('adaptEvent', () => {
 		it('keeps playable music for the page resolver', () => {
 			const viewModel = adaptEvent(
@@ -158,8 +140,7 @@ describe('invitation music player visibility', () => {
 		});
 
 		it('does not leak the local empty-player placeholder on a hosted runtime when DEV is true', () => {
-			isDev.mockReturnValue(true);
-			process.env.CELEBRA_DEPLOY_ENV = 'production';
+			asHostedDeploy('production', { isDevServer: true });
 
 			const fromOmittedMusic = buildPage(baseViewModel);
 			const fromBlankMusic = buildPage({
@@ -177,16 +158,14 @@ describe('invitation music player visibility', () => {
 		});
 
 		it('does not leak the placeholder on hosted Preview', () => {
-			isDev.mockReturnValue(true);
-			process.env.CELEBRA_DEPLOY_ENV = 'preview';
+			asHostedDeploy('preview', { isDevServer: true });
 			expect(buildPage(baseViewModel).musicPlayer).toBeUndefined();
 		});
 	});
 
 	describe('published content without music', () => {
 		it('keeps the player hidden through adaptEvent + page assembly on a hosted runtime', () => {
-			isDev.mockReturnValue(true);
-			process.env.CELEBRA_DEPLOY_ENV = 'production';
+			asHostedDeploy('production', { isDevServer: true });
 
 			const viewModel = adaptEvent(makeMinimalEvent());
 			const page = buildPage(viewModel);

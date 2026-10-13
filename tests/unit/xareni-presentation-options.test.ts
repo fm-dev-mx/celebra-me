@@ -1,8 +1,6 @@
-import {
-	resolveLocationMediaMode,
-	shouldRenderFamilyMedia,
-	supportsEnvelopeSealColorOptions,
-} from '@/lib/invitation/presentation-options';
+import { resolveLocationMediaMode } from '@/lib/invitation/location-presentation';
+import { shouldRenderFamilyMedia } from '@/lib/invitation/family-presentation';
+import { supportsEnvelopeSealColorOptions } from '@/lib/intake/labels';
 import { ENVELOPE_SEAL_COLORS, isEnvelopeSealColor } from '@/lib/invitation/reveal-card';
 import { ENVELOPE_SEAL_COLOR_LABELS } from '@/lib/intake/labels';
 import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';

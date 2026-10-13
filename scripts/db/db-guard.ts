@@ -24,7 +24,8 @@
  *   tsx scripts/db/db-guard.ts redact --text "...url..."
  *
  * Usage (library):
- *   import { classifyDbTarget, guardPersistentLocal, ... } from './db-guard.ts';
+ *   import { guardPersistentLocal, ... } from './db-guard.ts';
+ *   Target symbols (classifyDbTarget, LOCAL_DB_URL, ...) come from './db-target-config.ts'.
  */
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -36,19 +37,6 @@ import {
 	redactDbUrl,
 	redactCredentials,
 	resolveDbUrl,
-} from './db-target-config.ts';
-
-export type { DbTarget, ClassificationResult, GuardResult } from './db-target-config.ts';
-export {
-	PREVIEW_SECRET_FILES,
-	PERSISTENT_LOCAL,
-	LOCAL_DB_URL,
-	DISPOSABLE_DB_URL,
-	getSecretFromEnvOrFiles,
-	redactDbUrl,
-	redactCredentials,
-	isLocalDbUrl,
-	classifyDbTarget,
 } from './db-target-config.ts';
 
 // ---------------------------------------------------------------------------

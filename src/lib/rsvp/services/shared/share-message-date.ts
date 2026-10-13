@@ -26,7 +26,7 @@ function formatSpanishDate(raw: string): string {
 	return `${day} de ${month} de ${year}`;
 }
 
-export function resolveDaysUntilEvent(dateStr: string | null, today: Date): number | null {
+function resolveDaysUntilEvent(dateStr: string | null, today: Date): number | null {
 	if (!dateStr || !isIsoDateish(dateStr)) return null;
 	const d = new Date(dateStr);
 	if (isNaN(d.getTime())) return null;

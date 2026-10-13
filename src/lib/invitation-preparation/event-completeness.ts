@@ -4,8 +4,6 @@ import {
 } from '@/lib/invitation-preparation/classification';
 import type { EventType } from '@/lib/theme/theme-contract';
 
-export { type FieldRequirement, type ContractMaturity } from './event-completeness-types';
-
 export {
 	getEventCompletenessContract,
 	listEventCompletenessContracts,

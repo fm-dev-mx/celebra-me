@@ -4,10 +4,7 @@
 
 import type { ScreenshotRunReport } from './types.js';
 import type { ResolvedScreenshotPlan } from './scope.js';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+import { isRecord } from '../../src/lib/shared/data-utils.ts';
 
 const SENSITIVE_ASSIGNMENT =
 	/(\b(?:authorization|cookie|set-cookie|token|secret|password|signature|sig|access_token|refresh_token|api[_-]?key)\b\s*[:=]\s*)([^\s,;]+)/gi;

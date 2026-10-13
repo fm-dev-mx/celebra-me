@@ -11,7 +11,7 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import type { AstroCookies } from 'astro';
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { requiresSecureCookies } from '@/lib/server/deploy-identity';
+import { isLocalProcess } from '@/lib/server/deploy-identity';
 
 const CSRF_COOKIE_NAME = 'csrf-token';
 const CSRF_HEADER_NAME = 'x-csrf-token';
@@ -35,7 +35,7 @@ interface CsrfTokenCookieStore {
 /**
  * Generates a cryptographically secure CSRF token.
  */
-export function generateCsrfToken(): string {
+function generateCsrfToken(): string {
 	return randomBytes(TOKEN_LENGTH).toString('base64url');
 }
 
@@ -51,7 +51,8 @@ export function setCsrfToken(cookies: CsrfTokenCookieStore): string {
 
 	cookies.set(CSRF_COOKIE_NAME, token, {
 		httpOnly: true,
-		secure: requiresSecureCookies(),
+		// Secure everywhere but a positively local process (see `rsvp/auth/cookies.ts`).
+		secure: !isLocalProcess(),
 		sameSite: 'strict',
 		path: '/',
 		maxAge: 60 * 60 * 24, // 24 hours
@@ -63,16 +64,14 @@ export function setCsrfToken(cookies: CsrfTokenCookieStore): string {
 /**
  * Reads the raw CSRF token from the HttpOnly cookie.
  */
-export function getCsrfTokenFromCookies(
-	cookies: Pick<CsrfTokenCookieStore, 'get'>,
-): string | undefined {
+function getCsrfTokenFromCookies(cookies: Pick<CsrfTokenCookieStore, 'get'>): string | undefined {
 	return cookies.get(CSRF_COOKIE_NAME)?.value;
 }
 
 /**
  * Reads the raw CSRF token from the request header.
  */
-export function getCsrfTokenFromHeader(request: Request): string | undefined {
+function getCsrfTokenFromHeader(request: Request): string | undefined {
 	return request.headers.get(CSRF_HEADER_NAME)?.trim() || undefined;
 }
 
@@ -116,13 +115,6 @@ export function validateCsrfToken(request: Request, cookies: AstroCookies): void
 			'Token CSRF inválido. Por favor recarga la página e intenta de nuevo.',
 		);
 	}
-}
-
-/**
- * Removes the CSRF token cookie.
- */
-export function clearCsrfToken(cookies: AstroCookies): void {
-	cookies.delete(CSRF_COOKIE_NAME, { path: '/' });
 }
 
 /**

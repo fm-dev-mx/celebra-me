@@ -1,18 +1,11 @@
 ---
 // src/components/invitation/TimelineList.astro
 import Icon from '@/components/common/icons/Icon.astro';
-import type { IconName } from '@/lib/icons/icon-catalog';
+import type { ItineraryItem } from '@/lib/adapters/types';
 import { formatTime12h, isValidTime } from '@/lib/time/time-format';
 
-type TimelineItemData = {
-	iconName: IconName;
-	label: string;
-	description?: string;
-	time: string;
-};
-
 interface Props {
-	items: TimelineItemData[];
+	items: ItineraryItem[];
 }
 
 const { items } = Astro.props;

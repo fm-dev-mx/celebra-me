@@ -148,20 +148,20 @@ export async function uploadAsset(
 	});
 }
 
-export interface AssetUsageInfo {
+interface AssetUsageInfo {
 	usedInDraft: boolean;
 	usedInPublished: boolean;
 	draftSectionRefs: string[];
 	publishedSectionRefs: string[];
 }
 
-export interface AssetWithUsage extends InvitationAsset {
+interface AssetWithUsage extends InvitationAsset {
 	src: string;
 	isBundled?: false;
 	usage: AssetUsageInfo;
 }
 
-export interface BundledAssetWithUsage {
+interface BundledAssetWithUsage {
 	id: string;
 	invitationId?: string;
 	displayName: string;

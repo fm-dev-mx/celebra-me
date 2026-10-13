@@ -3,13 +3,13 @@
  * Canonical mode is the lightweight projection. Diagnostics mode is the same
  * query with managed-projection payload included. Never run both in one cycle.
  */
-import { sqlLiteral } from '../db/db-workflow-lib.ts';
+import { parsePsqlJson, sqlLiteral } from '../db/db-workflow-lib.ts';
 import type { ManagedBaselineReceiptEvidence } from '../provision/managed-merge-baseline.ts';
 import type { StatusProbeSession } from './probe-runner.ts';
 
-export const DIAGNOSTIC_DETAIL_BUDGET_BYTES = 256 * 1024;
+const DIAGNOSTIC_DETAIL_BUDGET_BYTES = 256 * 1024;
 
-export interface LiveAssetEvidenceRow {
+interface LiveAssetEvidenceRow {
 	id: string | null;
 	managedSourceKey: string | null;
 	managedSha256: string | null;
@@ -48,11 +48,7 @@ export interface LiveInvitationEvidenceRow {
 	detailBudgetExceeded: boolean;
 }
 
-export type PromotionalEvidenceFailure =
-	| 'credentials'
-	| 'unreachable'
-	| 'query_failed'
-	| 'timeout';
+type PromotionalEvidenceFailure = 'credentials' | 'unreachable' | 'query_failed' | 'timeout';
 
 export interface GroupedPromotionalEvidence {
 	ok: boolean;
@@ -65,20 +61,6 @@ export interface GroupedPromotionalEvidence {
 export interface PromotionalEvidenceOptions {
 	/** When true, include managed_projection JSON (same SQL family, heavier payload). */
 	diagnostics?: boolean;
-}
-
-function parseJsonValue(stdout: string): unknown {
-	const objectStart = stdout.indexOf('{');
-	const arrayStart = stdout.indexOf('[');
-	if (objectStart >= 0 && (arrayStart < 0 || objectStart < arrayStart)) {
-		const end = stdout.lastIndexOf('}');
-		if (end > objectStart) return JSON.parse(stdout.slice(objectStart, end + 1));
-	}
-	if (arrayStart >= 0) {
-		const end = stdout.lastIndexOf(']');
-		if (end > arrayStart) return JSON.parse(stdout.slice(arrayStart, end + 1));
-	}
-	return JSON.parse(stdout.trim());
 }
 
 function stringOrNull(value: unknown): string | null {
@@ -112,7 +94,9 @@ function receipt(value: unknown): ManagedBaselineReceiptEvidence | null {
 			? row.completedSteps.filter((item): item is string => typeof item === 'string')
 			: [],
 		inputHashes:
-			row.inputHashes && typeof row.inputHashes === 'object' && !Array.isArray(row.inputHashes)
+			row.inputHashes &&
+			typeof row.inputHashes === 'object' &&
+			!Array.isArray(row.inputHashes)
 				? (row.inputHashes as Record<string, unknown>)
 				: undefined,
 	};
@@ -310,7 +294,7 @@ export async function readGroupedPromotionalEvidence(
 		};
 	}
 	try {
-		const parsed = parseJsonValue(result.stdout);
+		const parsed = parsePsqlJson(result.stdout);
 		if (Array.isArray(parsed)) {
 			return {
 				ok: true,

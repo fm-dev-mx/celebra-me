@@ -86,7 +86,7 @@ function resolveStore(options?: PreviewApprovalServiceOptions): PreviewApprovalS
 	return options?.store ?? getDefaultPreviewApprovalStore();
 }
 
-export function isCurrentContract(artifact: PreviewApprovalArtifact): boolean {
+function isCurrentContract(artifact: PreviewApprovalArtifact): boolean {
 	return (
 		artifact.schemaVersion === PREVIEW_APPROVAL_SCHEMA_VERSION &&
 		SHA256.test(artifact.packageHash) &&
@@ -338,7 +338,7 @@ export class PreviewApprovalError extends Error {
 	}
 }
 
-export const PREVIEW_APPROVAL_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const PREVIEW_APPROVAL_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 /** Verify an exact approved Preview release from the shared store (Preview DB at runtime). */
 export function verifyPreviewApprovalArtifact(

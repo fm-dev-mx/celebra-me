@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { GIFTS_PRESENTATIONS } from '@/lib/invitation/presentation-options';
+import { GIFTS_PRESENTATIONS } from '@/lib/invitation/gifts-presentation';
 import { GIFTS_VARIANTS } from '@/lib/invitation/section-variants';
 import { AssetSchema } from '@/lib/schemas/content/shared.schema';
 
@@ -31,7 +31,7 @@ export const baseStoreGiftItemSchema = z.object({
 	tableNumber: z.string().optional(),
 });
 
-export const storeGiftItemSchema = baseStoreGiftItemSchema.superRefine((value, ctx) => {
+const storeGiftItemSchema = baseStoreGiftItemSchema.superRefine((value, ctx) => {
 	const hasLegacyUrl = typeof value.url === 'string' && value.url.length > 0;
 	const hasLinks = Array.isArray(value.links) && value.links.length > 0;
 

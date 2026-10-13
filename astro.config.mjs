@@ -6,13 +6,17 @@ import robotsTxt from 'astro-robots-txt'; // Automatic robots.txt generation for
 import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
 import { fileURLToPath } from 'url';
-import { bootstrapCelebraRuntimeEnv } from './scripts/shared/celebra-runtime-env.ts';
+import {
+	bootstrapCelebraRuntimeEnv,
+	parseDeployEnvironment,
+} from './scripts/shared/celebra-runtime-env.ts';
 import { getWorktreeDevServerPort } from './scripts/shared/worktree-lane.ts';
 import { buildRobotsPolicy } from './src/lib/seo/robots-policy.ts';
 
 const isBuildCommand = process.argv.includes('build');
-// Hosted builds declare their deploy identity; local processes never do.
-const isHostedBuild = Boolean(process.env.CELEBRA_DEPLOY_ENV?.trim());
+// Hosted builds declare their deploy identity; local processes never do. An invalid
+// declaration fails the build instead of producing a bundle that throws at runtime.
+const isHostedBuild = parseDeployEnvironment(process.env.CELEBRA_DEPLOY_ENV) !== null;
 // Build identity reported by /api/health. GitHub Actions exposes GITHUB_SHA; the
 // Vercel build fallbacks leave together with the Vercel build.
 const buildCommitSha = process.env.GITHUB_SHA || process.env.VERCEL_GIT_COMMIT_SHA || '';
@@ -237,9 +241,6 @@ export default defineConfig({
 		define: {
 			'import.meta.env.CELEBRA_BUILD_SHA': JSON.stringify(buildCommitSha),
 			'import.meta.env.CELEBRA_BUILD_REF': JSON.stringify(buildGitRef),
-			'import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID': JSON.stringify(
-				process.env.PUBLIC_GOOGLE_ANALYTICS_ID ?? '',
-			),
 		},
 		optimizeDeps: {
 			include: ['framer-motion'],
@@ -249,19 +250,9 @@ export default defineConfig({
 				// Base Src Alias
 				'@': fileURLToPath(new URL('./src', import.meta.url)),
 
-				// Core Domain Aliases
-				'@api': fileURLToPath(new URL('./src/pages/api', import.meta.url)),
-				'@assets': fileURLToPath(new URL('./src/assets', import.meta.url)),
-				'@components': fileURLToPath(new URL('./src/components', import.meta.url)),
-				'@content': fileURLToPath(new URL('./src/content', import.meta.url)),
-				'@data': fileURLToPath(new URL('./src/data', import.meta.url)),
-				'@hooks': fileURLToPath(new URL('./src/hooks', import.meta.url)),
+				// Asset Aliases
 				'@images': fileURLToPath(new URL('./src/assets/images', import.meta.url)),
-				'@interfaces': fileURLToPath(new URL('./src/interfaces', import.meta.url)),
-				'@layouts': fileURLToPath(new URL('./src/layouts', import.meta.url)),
-				'@lib': fileURLToPath(new URL('./src/lib', import.meta.url)),
 				'@styles': fileURLToPath(new URL('./src/styles', import.meta.url)),
-				'@utils': fileURLToPath(new URL('./src/utils', import.meta.url)),
 			},
 		},
 	},

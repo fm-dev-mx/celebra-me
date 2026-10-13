@@ -26,7 +26,7 @@ export type ContentResolution =
 	  };
 
 /** A client invitation the administrator disabled: no content, no event data. */
-export interface UnavailableInvitationResolution {
+interface UnavailableInvitationResolution {
 	source: 'unavailable';
 }
 

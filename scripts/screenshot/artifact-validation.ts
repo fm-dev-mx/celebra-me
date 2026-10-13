@@ -112,7 +112,7 @@ export async function validateBlankBottom(
 	}
 }
 
-export async function calculateImageHash(filePath: string): Promise<string> {
+async function calculateImageHash(filePath: string): Promise<string> {
 	const buf = await fs.readFile(filePath);
 	return crypto.createHash('md5').update(buf).digest('hex');
 }

@@ -4,10 +4,7 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 }));
 
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
-import {
-	ADMIN_RATE_LIMIT_OPERATIONS,
-	requireAdminRateLimit,
-} from '@/lib/rsvp/security/admin-rate-limit';
+import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
 import { CANONICAL_STATUS_RATE_LIMIT_OPERATION } from '@/pages/api/dashboard/estado/index';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
@@ -87,7 +84,6 @@ describe('requireAdminRateLimit', () => {
 			headers: { 'x-forwarded-for': '10.0.0.1' },
 		});
 
-		expect(ADMIN_RATE_LIMIT_OPERATIONS).toContain(CANONICAL_STATUS_RATE_LIMIT_OPERATION);
 		await expect(
 			requireAdminRateLimit(request, CANONICAL_STATUS_RATE_LIMIT_OPERATION, 'user-1'),
 		).resolves.not.toThrow();

@@ -26,7 +26,7 @@ export function contentMigrateCommandForTarget(target: ContentApplyTarget): stri
 	return `pnpm db:migrate -- --target ${target}`;
 }
 
-export function readContentTargetSchemaLifecycle(dbUrl: string): SchemaLifecycleState {
+function readContentTargetSchemaLifecycle(dbUrl: string): SchemaLifecycleState {
 	try {
 		const remote = fetchRemoteMigrationVersions(dbUrl);
 		const expected = getValidatedMigrationFiles().map((file) => file.version);

@@ -1,6 +1,5 @@
--- Application schema audit: PASS/FAIL checks for critical tables, constraints, indexes, RLS and selected RPCs
+-- Application schema audit: PASS/FAIL checks for critical tables, constraints, indexes, RLS, selected RPCs and retired objects
 -- Run in Supabase SQL Editor after migrations
--- Replaces: supabase/snippets/Untitled\ query\ 636.sql (ad-hoc snippet)
 
 with expected_tables as (
   select unnest(array[
@@ -40,8 +39,26 @@ retired_rpcs as (
     'restore_invitation_project',
     'backfill_guest_invitations_from_legacy',
     'redeem_claim_code',
-    'submit_intake_request_once'
+    'submit_intake_request_once',
+    'reject_active_intake_submission_of_archived_invitation',
+    'sync_event_claim_code_key',
+    'anonymize_valentina_memory_session',
+    'claim_valentina_memory_cleanup',
+    'claim_valentina_memory_validation',
+    'expire_valentina_memory_reservations',
+    'finalize_valentina_memory_item',
+    'purge_valentina_memory_audit',
+    'release_valentina_memory_reservation',
+    'reserve_valentina_memory_item'
   ]) as rpc_name
+),
+
+retired_views as (
+  select unnest(array[
+    'archived_invitations',
+    'deleted_events',
+    'deleted_invitation_projects'
+  ]) as view_name
 ),
 
 expected_sensitive_rpcs as (
@@ -163,6 +180,20 @@ retired_rpcs_absent as (
   left join pg_proc p
     on p.proname = retired.rpc_name
    and p.pronamespace = 'public'::regnamespace
+),
+
+retired_views_absent as (
+  select
+    'retired_views_absent' as check_name,
+    case
+      when count(v.table_name) = 0 then 'PASS'
+      else 'FAIL'
+    end as status,
+    string_agg(retired.view_name, ', ' order by retired.view_name) filter (where v.table_name is not null) as details
+  from retired_views retired
+  left join information_schema.views v
+    on v.table_schema = 'public'
+   and v.table_name = retired.view_name
 ),
 
 sensitive_rpc_status as (
@@ -299,6 +330,7 @@ union all select * from published_route_unique
 union all select * from guest_unique_index
 union all select * from events_invitation_project_index
 union all select * from retired_rpcs_absent
+union all select * from retired_views_absent
 union all select * from sensitive_rpc_privileges
 union all select * from security_definer_search_path
 union all select * from upsert_function_conflict_target

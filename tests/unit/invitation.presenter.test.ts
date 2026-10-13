@@ -1,20 +1,13 @@
-import fs from 'node:fs';
-import path from 'node:path';
-
 import {
 	type InvitationRenderPlanItem,
 	buildPageContextFromViewModel,
 	prepareInvitationPageContext,
 } from '@/lib/invitation/page-data';
 import { isEventAssetKey } from '@/lib/assets/asset-keys';
+import { loadFixture } from '../helpers/json-fixture';
 
 function describeRenderPlan(items: InvitationRenderPlanItem[]): string[] {
 	return items.map((item) => (item.type === 'section' ? item.section : item.type));
-}
-
-function loadFixture(relativePath: string) {
-	const filePath = path.resolve(process.cwd(), relativePath);
-	return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
 describe('prepareInvitationPageContext', () => {

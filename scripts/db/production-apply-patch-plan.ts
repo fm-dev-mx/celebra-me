@@ -1,8 +1,4 @@
-import {
-	extractSupabaseProjectRef,
-	getSecretFromEnvOrFiles,
-	PROD_SECRET_FILES,
-} from './db-target-config.ts';
+import { extractSupabaseProjectRef, resolveTargetDbUrl } from './db-target-config.ts';
 import { OperatorError } from './operator-cli-ux.ts';
 import {
 	inspectProductionPatchPreview,
@@ -19,7 +15,7 @@ export interface ProductionApplyPatchPlanDeps {
 }
 
 function resolveReadOnlyProductionDbUrl(): { url: string } {
-	const url = getSecretFromEnvOrFiles('PROD_DB_URL', PROD_SECRET_FILES);
+	const url = resolveTargetDbUrl('production');
 	if (!url) {
 		throw new OperatorError({
 			title: 'Credenciales de Production no verificables',

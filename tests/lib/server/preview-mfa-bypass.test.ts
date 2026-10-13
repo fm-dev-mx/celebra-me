@@ -1,7 +1,4 @@
-import {
-	isPreviewMfaBypassEnabled,
-	isProductionWithPreviewBypassVarsSet,
-} from '@/lib/server/preview-mfa-bypass';
+import { isPreviewMfaBypassEnabled } from '@/lib/server/preview-mfa-bypass';
 import type { PreviewMfaBypassInput } from '@/lib/server/preview-mfa-bypass';
 
 const PREVIEW_SUPABASE = 'https://iwipdvisoyerfdytuhwi.supabase.co';
@@ -148,47 +145,5 @@ describe('isPreviewMfaBypassEnabled', () => {
 				),
 			).toBe(false);
 		});
-	});
-});
-
-describe('isProductionWithPreviewBypassVarsSet', () => {
-	let originalEnv: NodeJS.ProcessEnv;
-
-	beforeEach(() => {
-		originalEnv = { ...process.env };
-		delete process.env.CELEBRA_DEPLOY_ENV;
-		delete process.env.PREVIEW_MFA_BYPASS;
-		delete process.env.PREVIEW_ADMIN_EMAILS;
-	});
-
-	afterEach(() => {
-		process.env = originalEnv;
-	});
-
-	it('returns false on production without bypass vars', () => {
-		process.env.CELEBRA_DEPLOY_ENV = 'production';
-		expect(isProductionWithPreviewBypassVarsSet()).toBe(false);
-	});
-
-	it('returns true on production with PREVIEW_MFA_BYPASS set', () => {
-		process.env.CELEBRA_DEPLOY_ENV = 'production';
-		process.env.PREVIEW_MFA_BYPASS = 'true';
-		expect(isProductionWithPreviewBypassVarsSet()).toBe(true);
-	});
-
-	it('returns true on production with PREVIEW_ADMIN_EMAILS set', () => {
-		process.env.CELEBRA_DEPLOY_ENV = 'production';
-		process.env.PREVIEW_ADMIN_EMAILS = 'preview@preview.com';
-		expect(isProductionWithPreviewBypassVarsSet()).toBe(true);
-	});
-
-	it('returns false when not on production', () => {
-		process.env.CELEBRA_DEPLOY_ENV = 'preview';
-		process.env.PREVIEW_MFA_BYPASS = 'true';
-		expect(isProductionWithPreviewBypassVarsSet()).toBe(false);
-	});
-
-	it('returns false when no deploy identity is declared', () => {
-		expect(isProductionWithPreviewBypassVarsSet()).toBe(false);
 	});
 });

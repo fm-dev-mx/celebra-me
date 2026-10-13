@@ -2,7 +2,7 @@ import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { MetaAttribution } from '@/lib/tracking/meta-attribution';
 
 export type LeadChannel = 'contact_form' | 'whatsapp' | 'manual';
-export type LeadStatus =
+type LeadStatus =
 	| 'new'
 	| 'contacted'
 	| 'quoted'

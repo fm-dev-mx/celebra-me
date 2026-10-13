@@ -68,7 +68,7 @@ function fallbackCatalogEntry(file: string, sql: string): ActiveManualPatchCatal
 	};
 }
 
-export function discoverActiveManualPatches(
+function discoverActiveManualPatches(
 	rootDir: string = process.cwd(),
 ): ActiveManualPatchCatalogEntry[] {
 	const directory = resolve(rootDir, MANUAL_PATCH_DIRECTORY);

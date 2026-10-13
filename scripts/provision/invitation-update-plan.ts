@@ -6,7 +6,7 @@ import type { PreconditionFailure } from './release-errors.ts';
 import { createHash } from 'node:crypto';
 import type { AssetPolicy } from './asset-reconciliation.ts';
 
-export type FunctionalOperation =
+type FunctionalOperation =
 	| 'insert'
 	| 'update'
 	| 'delete'
@@ -31,13 +31,13 @@ export interface FunctionalChange {
 	targetPreviousValues?: Record<string, unknown>;
 }
 
-export interface DatabaseOpsSummary {
+interface DatabaseOpsSummary {
 	inserts: number;
 	updates: number;
 	deletes: number;
 }
 
-export interface StorageOpsSummary {
+interface StorageOpsSummary {
 	uploads: number;
 	overwrites: number;
 	moves: number;
@@ -74,10 +74,10 @@ export function stableTargetPreconditions(
 	return stable;
 }
 
-export type PlanExecutionStatus =
+type PlanExecutionStatus =
 	'PLANNED' | 'EXECUTED' | 'IN_SYNC' | 'REVERTED' | 'FAILED_NEEDS_REVIEW' | 'STALE';
 
-export interface ExecutionReceipt {
+interface ExecutionReceipt {
 	planId: string;
 	executedAt: string;
 	status: PlanExecutionStatus;
@@ -119,11 +119,11 @@ export function isPlanIdentityAction(action: { resource: string }): boolean {
 }
 
 /** Storage-scope diffs inherit probe volatility; keep them out of planId. */
-export function isPlanIdentityChange(change: FunctionalChange): boolean {
+function isPlanIdentityChange(change: FunctionalChange): boolean {
 	return change.scope !== 'storage';
 }
 
-export function planIdentityChangeKey(change: FunctionalChange): string {
+function planIdentityChangeKey(change: FunctionalChange): string {
 	return `${change.scope}:${change.operation}:${change.field ?? change.entity}`;
 }
 

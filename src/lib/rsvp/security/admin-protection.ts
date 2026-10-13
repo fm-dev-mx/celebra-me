@@ -36,27 +36,9 @@ export async function canChangeUserRole(
 	if (superAdminCount <= 1) {
 		return {
 			allowed: false,
-			reason:
-				'The final super_admin cannot be removed. Assign another super_admin first.',
+			reason: 'The final super_admin cannot be removed. Assign another super_admin first.',
 		};
 	}
 
 	return { allowed: true };
-}
-
-/**
- * Returns true when the system currently has more than one super admin.
- */
-export async function hasMultipleSuperAdmins(): Promise<boolean> {
-	const allRoles = await listUserRolesService();
-	const superAdminCount = allRoles.filter((r) => r.role === 'super_admin').length;
-	return superAdminCount > 1;
-}
-
-/**
- * Returns the current number of super admins.
- */
-export async function getSuperAdminCount(): Promise<number> {
-	const allRoles = await listUserRolesService();
-	return allRoles.filter((r) => r.role === 'super_admin').length;
 }

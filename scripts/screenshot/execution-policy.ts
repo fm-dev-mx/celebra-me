@@ -5,9 +5,9 @@
 import type { ResolvedScreenshotPlan } from './scope.js';
 import { KNOWN_SECTIONS } from './types.js';
 
-export const NORMAL_TARGETED_PAGE_LIMIT = 1;
-export const NORMAL_TARGETED_VIEWPORT_LIMIT = 5;
-export const NORMAL_TARGETED_ARTIFACT_LIMIT = 30;
+const NORMAL_TARGETED_PAGE_LIMIT = 1;
+const NORMAL_TARGETED_VIEWPORT_LIMIT = 5;
+const NORMAL_TARGETED_ARTIFACT_LIMIT = 30;
 
 export interface ScreenshotExecutionSummary {
 	pages: number;

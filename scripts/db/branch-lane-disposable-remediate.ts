@@ -229,8 +229,8 @@ export function executeVerifiedDisposableRebuild(input?: {
 	}
 
 	const run = input?.run ?? defaultCommandRunner;
-	const commandSummary = 'npx tsx scripts/db/disposable-test-env.ts reset';
-	const result = run('npx', ['tsx', 'scripts/db/disposable-test-env.ts', 'reset']);
+	const commandSummary = 'pnpm exec tsx scripts/db/disposable-test-env.ts reset';
+	const result = run('pnpm', ['exec', 'tsx', 'scripts/db/disposable-test-env.ts', 'reset']);
 	if (result.status !== 0) {
 		const detail = result.errorMessage
 			? `exit ${result.status}; ${result.errorMessage}`

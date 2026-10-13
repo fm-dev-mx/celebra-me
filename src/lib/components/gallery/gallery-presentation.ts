@@ -1,6 +1,8 @@
 import { getLayoutClass } from '@/lib/components/gallery/getLayoutClass';
+import type { GalleryLayoutRole } from '@/lib/invitation/gallery-presentation';
 
-export type GalleryPreviewRole = 'feature' | 'wide' | 'standard';
+/** Rendered gallery item role; the same vocabulary as the content `layoutRole`. */
+export type GalleryPreviewRole = GalleryLayoutRole;
 export type GalleryPreviewViewport = 'mobile' | 'tablet' | 'desktop';
 
 export const GALLERY_ROLE_LABELS: Record<GalleryPreviewRole, string> = {

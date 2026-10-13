@@ -579,8 +579,8 @@ describe('verified disposable remediation target guards', () => {
 				requireContainerNameMatch: true,
 			},
 			run: (command, args) => {
-				expect(command).toBe('npx');
-				expect(args).toEqual(['tsx', 'scripts/db/disposable-test-env.ts', 'reset']);
+				expect(command).toBe('pnpm');
+				expect(args).toEqual(['exec', 'tsx', 'scripts/db/disposable-test-env.ts', 'reset']);
 				return { status: 0, stdout: 'ok', stderr: '' };
 			},
 		});

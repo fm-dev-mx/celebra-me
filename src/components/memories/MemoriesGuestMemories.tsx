@@ -14,7 +14,7 @@ type Props = {
 	onDelete: (item: Item) => Promise<boolean>;
 };
 
-export function memoriesGuestStatusLabel(item: Item): string {
+function memoriesGuestStatusLabel(item: Item): string {
 	if (item.status === 'accepted') return copy.accepted;
 	if (item.status === 'duplicate') return copy.duplicate;
 	if (item.status === 'rejected') return copy.rejected;

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { getEnv } from '@/lib/server/env';
 
-export const WORK_STATUSES = ['in_progress', 'completed'] as const;
+const WORK_STATUSES = ['in_progress', 'completed'] as const;
 export type WorkStatus = (typeof WORK_STATUSES)[number];
 
 export interface InvitationWorkflow {

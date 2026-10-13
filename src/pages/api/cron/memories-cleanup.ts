@@ -42,9 +42,7 @@ export const GET: APIRoute = async ({ request }) => {
 		environment,
 		runId: randomUUID(),
 		startedAt: new Date().toISOString(),
-		invocationId: null,
 		commitSha: readBuildIdentity().commitSha,
-		deploymentId: null,
 	};
 	console.info(
 		serializeOperationalEvidenceEvent(

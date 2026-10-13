@@ -1,4 +1,5 @@
 import { ApiError } from '@/lib/rsvp/core/errors';
+import type { HostedDeployEnvironment } from '@/lib/server/deploy-identity';
 import {
 	hasUnsafeEventProperties,
 	PublicTrackingEventSchema,
@@ -12,7 +13,7 @@ import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 
 export interface IngestTrackingEventInput {
 	request: Request;
-	deployEnvironment?: string | null;
+	deployEnvironment?: HostedDeployEnvironment | null;
 	payload: unknown;
 }
 

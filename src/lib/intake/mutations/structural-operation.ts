@@ -1,3 +1,5 @@
+import { isRecord } from '@/lib/shared/data-utils';
+
 export type StructuralPathToken = string | number;
 
 export type StructuralOperation =
@@ -22,10 +24,6 @@ function cloneJsonValue<T>(value: T): T {
 	return value === undefined ? value : (structuredClone(value) as T);
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-}
-
 function equalJson(left: unknown, right: unknown): boolean {
 	return JSON.stringify(left) === JSON.stringify(right);
 }
@@ -38,7 +36,10 @@ function buildArrayContractionOperations(
 	const keptPreviousIndices: number[] = [];
 	let currentIndex = 0;
 	for (let previousIndex = 0; previousIndex < previous.length; previousIndex += 1) {
-		if (currentIndex < current.length && equalJson(previous[previousIndex], current[currentIndex])) {
+		if (
+			currentIndex < current.length &&
+			equalJson(previous[previousIndex], current[currentIndex])
+		) {
 			keptPreviousIndices.push(previousIndex);
 			currentIndex += 1;
 		}

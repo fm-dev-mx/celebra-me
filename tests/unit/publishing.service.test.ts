@@ -24,7 +24,6 @@ jest.mock('@/lib/intake/storage', () => ({
 jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
 	findEventBySlugService: jest.fn(),
 	findEventByInvitationIdService: jest.fn(),
-	createEventService: jest.fn(),
 	updateEventService: jest.fn(),
 }));
 
@@ -77,7 +76,6 @@ import {
 import {
 	findEventBySlugService,
 	findEventByInvitationIdService,
-	createEventService,
 	updateEventService,
 } from '@/lib/rsvp/repositories/event.repository';
 import { getPublicationPreflight, publishDraft } from '@/lib/intake/services/publishing.service';
@@ -184,7 +182,8 @@ const mockFindEventBySlug = findEventBySlugService as jest.MockedFunction<
 const mockFindEventByProjectId = findEventByInvitationIdService as jest.MockedFunction<
 	typeof findEventByInvitationIdService
 >;
-const mockCreateEvent = createEventService as jest.MockedFunction<typeof createEventService>;
+// Stands in for the event row the publish RPC creates inside the atomic commit.
+const mockCreateEvent = jest.fn();
 const mockUpdateEvent = updateEventService as jest.MockedFunction<typeof updateEventService>;
 const mockCommitAtomic = commitAtomicPublication as jest.MockedFunction<
 	typeof commitAtomicPublication
@@ -377,13 +376,11 @@ beforeEach(() => {
 	});
 });
 
-import { isDevEnvironment } from '@/lib/environment';
+import { asLocalDevServer } from '@tests/helpers/deploy-identity';
 
 // This suite models a local Astro process, whose storage target follows the local
 // deploy identity (a built bundle without CELEBRA_DEPLOY_ENV would fail closed).
-const mockIsDevEnvironment = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
-beforeEach(() => mockIsDevEnvironment.mockReturnValue(true));
-afterEach(() => mockIsDevEnvironment.mockReturnValue(false));
+beforeEach(asLocalDevServer);
 
 describe('publishDraft', () => {
 	it('reports partial when publication commits but provenance invalidation fails', async () => {

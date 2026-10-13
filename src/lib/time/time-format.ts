@@ -77,10 +77,3 @@ export function formatTimeSpanish(value: string): string {
 
 	return `${displayHours}:${displayMinutes} ${period}`;
 }
-
-/** True when both values resolve to the same HH:mm instant. */
-export function timesSemanticallyEqual(left: unknown, right: unknown): boolean {
-	const a = normalizeTime(left);
-	const b = normalizeTime(right);
-	return a !== undefined && a === b;
-}
