@@ -196,6 +196,57 @@ Ranks and medians are computed by the application
 `group_eligible >= 5`, and insufficient rows are shown, never hidden. The routine never reads
 `guest_engagement_events` or `guest_invitations`.
 
+### Confidence levels (phase 2.1)
+
+Engagement started on 2026-10-12, but older signals exist. The ranking keeps three levels apart and
+labels every figure with its level; a figure never mixes levels.
+
+| Level               | Source                                                                                                 | Meaning             |
+| ------------------- | ------------------------------------------------------------------------------------------------------ | ------------------- |
+| Measured            | Ledger since 2026-10-12, guest traffic only                                                            | Observed            |
+| Inferred            | A guest who responded through the invitation opened it (`last_response_source <> 'admin'`)             | Exact lower bound   |
+| Historical estimate | Legacy `first_viewed_at`, `view_percentage` and `viewed` audit rows before 2026-10-12, cleaned (below) | Upper bound, frozen |
+
+Definitions (snapshot `metrics_version = 2`):
+
+- **Responded by guest**: `attendance_status <> 'pending'` and `last_response_source <> 'admin'`
+  (host-entered responses never count as guest behavior).
+- **Opened (inferred)**: opened (measured) or responded by guest.
+- **Conversion (v2)**: responded by guest ÷ opened (inferred). It is null when
+  `rsvp.confirmationMode = 'whatsapp'` (replies never reach the database) and flagged partial for
+  `both`; neither enters a conversion ranking.
+- **Historical estimate cleaning**: a legacy view counts only when it is not before
+  `first_shared_at` (host review or QA) and not within 2 minutes after it (chat link preview);
+  visits are `viewed` audit rows sessionized per guest with the 30-minute rule. Estimates are
+  computed once into `invitation_engagement_historical_estimates` with a `method_version` and are
+  shown in their own view, never ranked against measured figures.
+
+Where both bounds exist the view shows a range (inferred lower, estimate upper). Version 1 values of
+`final` snapshots are never rewritten; the version 2 columns are filled once.
+
+### Ranking query v2 (phase 2.1)
+
+`list_invitation_engagement_ranking_v2(p_event_type text default null)` (`security definer`,
+`service_role` only) starts from every published client invitation (`kind = 'client'`, not archived)
+and left-joins its chosen snapshot (final over rolling), so invitations without activity are listed.
+Per row it returns identity, event type and date, event status (`upcoming`, `past`, `unknown`;
+event-local date in `America/Chihuahua`), activity state (`measured` or `none`), public access,
+design (snapshot design, or the latest published content when there is no snapshot — never
+repository definitions), confirmation mode, measured and inferred counts and rates, and
+`sample_state`. A null event type returns all types; the application ranks within each event type.
+Grouping keys offered: theme preset, personalized access variant, RSVP access mode. Font, music,
+confirmation mode, event status, activity and public access are filters whose values come from the
+rows, so new designs classify themselves.
+
+### Demo engagement (phase 2.1)
+
+Demos have no guests and never produce snapshots. Their design retention comes from anonymous
+`tracking_events` (`route_class = 'demo'`, `is_internal = false`) per `demo_slug`: sessions, share
+of sessions reaching the 50, 75 and 100 % depth buckets, the largest drop between buckets, and
+contacts per 100 sessions (sessions with `cta_clicked` or `whatsapp_contact_clicked`). A demo enters
+the ranking with at least 100 sessions in the period. Demo and client figures are never shown in the
+same table; the sales funnel stays in the Comercial demo report.
+
 ## Privacy notice requirements
 
 The privacy policy (`src/pages/privacidad.astro`) must state, in Spanish ("usted"):
