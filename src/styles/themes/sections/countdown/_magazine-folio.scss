@@ -57,7 +57,7 @@
 	}
 
 	.countdown-invitation-text {
-		font-style: var(--countdown-footer-style);
+		font-style: var(--countdown-footer-style, italic);
 	}
 
 	// Decorative cutout (countdown.ornament): contained in a fixed box between the date and the
