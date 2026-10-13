@@ -3,6 +3,7 @@ import {
 	getSupabaseAnonKey,
 	getSupabaseServiceRoleKey,
 } from '@/lib/server/supabase-credentials';
+import { isProductionDeployment } from '@/lib/server/deploy-identity';
 
 type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
@@ -114,7 +115,7 @@ function logJwtRetryDiagnostics(params: {
 	pathWithQuery: string;
 	code: string;
 }): void {
-	if (process.env.NODE_ENV === 'production') return;
+	if (isProductionDeployment()) return;
 	const endpoint = endpointCategory(params.pathWithQuery);
 	console.warn(
 		`[supabase] retry=${params.attempt} method=${params.method} endpoint=${endpoint} code=${params.code}`,

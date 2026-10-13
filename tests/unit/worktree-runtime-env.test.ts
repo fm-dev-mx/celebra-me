@@ -93,8 +93,7 @@ describe('celebra runtime env bootstrap', () => {
 
 	beforeEach(() => {
 		process.env = { ...originalEnv, NODE_ENV: 'development' };
-		delete process.env.VERCEL;
-		delete process.env.VERCEL_ENV;
+		delete process.env.CELEBRA_DEPLOY_ENV;
 		delete process.env.CELEBRA_RUNTIME_TARGET;
 		delete process.env.SUPABASE_URL;
 		delete process.env.PUBLIC_SUPABASE_URL;
@@ -125,7 +124,7 @@ describe('celebra runtime env bootstrap', () => {
 		);
 	});
 
-	it('resolves Preview runtime from the dev-preview worktree without VERCEL_ENV', () => {
+	it('resolves Preview runtime from the dev-preview worktree without a deploy identity', () => {
 		const cwd = writeLane('dev-preview');
 		expect(resolveRuntimeTarget({ cwd }).target).toBe('preview');
 	});

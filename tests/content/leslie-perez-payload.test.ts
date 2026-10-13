@@ -230,12 +230,10 @@ describe('Leslie Perez provision contract', () => {
 			data: content,
 		} as Parameters<typeof adaptEvent>[0]);
 		const isDev = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
-		const originalVercel = process.env.VERCEL;
-		const originalVercelEnv = process.env.VERCEL_ENV;
+		const originalDeployEnv = process.env.CELEBRA_DEPLOY_ENV;
 
 		isDev.mockReturnValue(true);
-		process.env.VERCEL = '1';
-		process.env.VERCEL_ENV = 'production';
+		process.env.CELEBRA_DEPLOY_ENV = 'production';
 
 		try {
 			const page = buildPageContextFromViewModel({
@@ -258,15 +256,10 @@ describe('Leslie Perez provision contract', () => {
 			});
 		} finally {
 			isDev.mockReturnValue(false);
-			if (originalVercel === undefined) {
-				delete process.env.VERCEL;
+			if (originalDeployEnv === undefined) {
+				delete process.env.CELEBRA_DEPLOY_ENV;
 			} else {
-				process.env.VERCEL = originalVercel;
-			}
-			if (originalVercelEnv === undefined) {
-				delete process.env.VERCEL_ENV;
-			} else {
-				process.env.VERCEL_ENV = originalVercelEnv;
+				process.env.CELEBRA_DEPLOY_ENV = originalDeployEnv;
 			}
 		}
 	});
@@ -278,12 +271,10 @@ describe('Leslie Perez provision contract', () => {
 			data: unpublished,
 		} as Parameters<typeof adaptEvent>[0]);
 		const isDev = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
-		const originalVercel = process.env.VERCEL;
-		const originalVercelEnv = process.env.VERCEL_ENV;
+		const originalDeployEnv = process.env.CELEBRA_DEPLOY_ENV;
 
 		isDev.mockReturnValue(true);
-		process.env.VERCEL = '1';
-		process.env.VERCEL_ENV = 'production';
+		process.env.CELEBRA_DEPLOY_ENV = 'production';
 
 		try {
 			const page = buildPageContextFromViewModel({
@@ -295,15 +286,10 @@ describe('Leslie Perez provision contract', () => {
 			expect(page.musicPlayer).toBeUndefined();
 		} finally {
 			isDev.mockReturnValue(false);
-			if (originalVercel === undefined) {
-				delete process.env.VERCEL;
+			if (originalDeployEnv === undefined) {
+				delete process.env.CELEBRA_DEPLOY_ENV;
 			} else {
-				process.env.VERCEL = originalVercel;
-			}
-			if (originalVercelEnv === undefined) {
-				delete process.env.VERCEL_ENV;
-			} else {
-				process.env.VERCEL_ENV = originalVercelEnv;
+				process.env.CELEBRA_DEPLOY_ENV = originalDeployEnv;
 			}
 		}
 	});

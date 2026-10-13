@@ -110,7 +110,6 @@ function emitAuthEvent(input: {
 			status: input.status ?? null,
 			errorKind: input.errorKind ?? null,
 			durationMs: input.durationMs,
-			vercelRegion: process.env.VERCEL_REGION || 'unknown',
 		}),
 	);
 }

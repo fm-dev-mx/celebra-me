@@ -17,7 +17,7 @@ import {
 	MEMORIES_RESERVATION_TTL_SECONDS,
 	MEMORIES_VALIDATION_RETRY_DELAY_SECONDS,
 } from '@/lib/memories/contract/limits';
-import { getEnv } from '@/lib/server/env';
+import { isProductionDeployment } from '@/lib/server/deploy-identity';
 import {
 	MEMORIES_CANONICAL_APP_ORIGIN,
 	MEMORIES_PUBLIC_ORIGIN,
@@ -96,7 +96,7 @@ export function resolveLiveCheckOrigins(requestOrigin: string): {
 	appOrigin: string;
 	qrOrigin: string | null;
 } {
-	if (getEnv('VERCEL_ENV').trim().toLowerCase() === 'production') {
+	if (isProductionDeployment()) {
 		return { appOrigin: MEMORIES_CANONICAL_APP_ORIGIN, qrOrigin: MEMORIES_PUBLIC_ORIGIN };
 	}
 	return { appOrigin: new URL(requestOrigin).origin, qrOrigin: null };

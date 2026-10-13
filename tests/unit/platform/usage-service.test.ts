@@ -32,16 +32,16 @@ function metric(scope: PlatformMetric['scope'], id = 'cfR2StorageBucket'): Platf
 }
 
 describe('getPlatformUsageReport', () => {
-	const originalVercelEnv = process.env.VERCEL_ENV;
+	const originalDeployEnv = process.env.CELEBRA_DEPLOY_ENV;
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		delete process.env.VERCEL_ENV;
+		delete process.env.CELEBRA_DEPLOY_ENV;
 	});
 
 	afterAll(() => {
-		if (originalVercelEnv === undefined) delete process.env.VERCEL_ENV;
-		else process.env.VERCEL_ENV = originalVercelEnv;
+		if (originalDeployEnv === undefined) delete process.env.CELEBRA_DEPLOY_ENV;
+		else process.env.CELEBRA_DEPLOY_ENV = originalDeployEnv;
 	});
 
 	it('assembles one section per environment plus the shared quotas', async () => {
@@ -117,7 +117,7 @@ describe('getPlatformUsageReport', () => {
 	});
 
 	it('scopes a deployment panel to its own environment only', async () => {
-		process.env.VERCEL_ENV = 'production';
+		process.env.CELEBRA_DEPLOY_ENV = 'production';
 		(getCloudflarePlatformUsage as jest.Mock).mockResolvedValue({
 			kind: 'unavailable',
 			fetchedAt: null,

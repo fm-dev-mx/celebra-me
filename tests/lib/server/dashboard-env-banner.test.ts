@@ -10,7 +10,7 @@ const productionSupabase = `https://${SUPABASE_PROJECT_REFS.production}.supabase
 
 function makeInput(overrides: Partial<DashboardEnvBannerInput> = {}): DashboardEnvBannerInput {
 	return {
-		vercelEnv: undefined,
+		deployEnvironment: 'local',
 		celebraRuntimeTarget: undefined,
 		supabaseUrl: localSupabase,
 		previewMfaBypass: undefined,
@@ -19,7 +19,7 @@ function makeInput(overrides: Partial<DashboardEnvBannerInput> = {}): DashboardE
 }
 
 describe('resolveDashboardEnvBanner', () => {
-	it('returns local banner for Local Supabase without VERCEL_ENV', () => {
+	it('returns local banner for a local process on Local Supabase', () => {
 		expect(resolveDashboardEnvBanner(makeInput())).toEqual({
 			kind: 'local',
 			className: 'dashboard-env-banner--local',
@@ -27,10 +27,8 @@ describe('resolveDashboardEnvBanner', () => {
 		});
 	});
 
-	it('returns local banner when VERCEL_ENV=development', () => {
-		expect(resolveDashboardEnvBanner(makeInput({ vercelEnv: 'development' }))).toMatchObject({
-			kind: 'local',
-		});
+	it('returns no banner when the deploy identity is missing or invalid', () => {
+		expect(resolveDashboardEnvBanner(makeInput({ deployEnvironment: null }))).toBeNull();
 	});
 
 	it('returns BD PREVIEW when local process targets Preview project', () => {
@@ -59,32 +57,32 @@ describe('resolveDashboardEnvBanner', () => {
 		).toMatchObject({ kind: 'local' });
 	});
 
-	it('returns Vercel Preview banner without MFA note by default', () => {
+	it('returns the hosted Preview banner without MFA note by default', () => {
 		expect(
 			resolveDashboardEnvBanner(
 				makeInput({
-					vercelEnv: 'preview',
+					deployEnvironment: 'preview',
 					supabaseUrl: previewSupabase,
 				}),
 			),
 		).toEqual({
-			kind: 'vercel-preview',
+			kind: 'hosted-preview',
 			className: 'dashboard-env-banner--preview',
 			label: '⚠️ ENTORNO PREVIEW',
 		});
 	});
 
-	it('appends MFA note when PREVIEW_MFA_BYPASS is active on Vercel Preview', () => {
+	it('appends MFA note when PREVIEW_MFA_BYPASS is active on hosted Preview', () => {
 		expect(
 			resolveDashboardEnvBanner(
 				makeInput({
-					vercelEnv: 'preview',
+					deployEnvironment: 'preview',
 					previewMfaBypass: 'true',
 					supabaseUrl: previewSupabase,
 				}),
 			),
 		).toEqual({
-			kind: 'vercel-preview',
+			kind: 'hosted-preview',
 			className: 'dashboard-env-banner--preview',
 			label: '⚠️ ENTORNO PREVIEW — MFA desactivado',
 		});
@@ -94,22 +92,22 @@ describe('resolveDashboardEnvBanner', () => {
 		expect(
 			resolveDashboardEnvBanner(
 				makeInput({
-					vercelEnv: 'production',
+					deployEnvironment: 'production',
 					supabaseUrl: productionSupabase,
 				}),
 			),
 		).toBeNull();
 	});
 
-	it('does not treat CELEBRA_RUNTIME_TARGET as Preview when already on Vercel Preview', () => {
+	it('does not treat CELEBRA_RUNTIME_TARGET as Preview when already on hosted Preview', () => {
 		expect(
 			resolveDashboardEnvBanner(
 				makeInput({
-					vercelEnv: 'preview',
+					deployEnvironment: 'preview',
 					celebraRuntimeTarget: 'preview',
 					supabaseUrl: previewSupabase,
 				}),
 			),
-		).toMatchObject({ kind: 'vercel-preview' });
+		).toMatchObject({ kind: 'hosted-preview' });
 	});
 });

@@ -1,3 +1,4 @@
+import { isDevEnvironment } from '@/lib/environment';
 import { GET } from '@/pages/api/dashboard/events';
 import { getSessionDebugSnapshotFromRequest } from '@/lib/rsvp/auth/auth';
 import { listHostEvents, listHostEventsWithDebug } from '@/lib/rsvp/services/event-admin.service';
@@ -20,6 +21,13 @@ const listHostEventsMock = listHostEvents as jest.MockedFunction<typeof listHost
 const listHostEventsWithDebugMock = listHostEventsWithDebug as jest.MockedFunction<
 	typeof listHostEventsWithDebug
 >;
+
+// Debug payloads exist only in a positively local process (the Astro dev server here).
+const mockIsDevEnvironment = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
+afterEach(() => {
+	mockIsDevEnvironment.mockReturnValue(false);
+	delete process.env.CELEBRA_DEPLOY_ENV;
+});
 
 describe('GET /api/dashboard/events', () => {
 	afterEach(() => {
@@ -103,6 +111,7 @@ describe('GET /api/dashboard/events', () => {
 	});
 
 	it('returns debug payload when debug mode is enabled', async () => {
+		mockIsDevEnvironment.mockReturnValue(true);
 		getSessionDebugSnapshotFromRequestMock.mockResolvedValue({
 			hasAccessToken: true,
 			tokenSource: 'cookie',

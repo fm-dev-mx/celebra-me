@@ -11,6 +11,7 @@ import type {
 	PlatformMissingVar,
 	PlatformScope,
 } from '@/lib/platform/contract/types';
+import { readHostedDeployEnvironment } from '@/lib/server/deploy-identity';
 import { getEnv } from '@/lib/server/env';
 import { PLATFORM_ENV, PLATFORM_ENV_BY_ENVIRONMENT } from './config';
 
@@ -25,16 +26,13 @@ export interface ResolvedProfileVar {
 }
 
 export function isLocalPanel(): boolean {
-	const vercelEnv = getEnv(PLATFORM_ENV.vercelEnv).trim();
-	return vercelEnv !== 'preview' && vercelEnv !== 'production';
+	return readHostedDeployEnvironment() === null;
 }
 
 /** Environments this panel is scoped to; Local shows both. */
 export function resolvePanelEnvironments(): PlatformEnvironmentId[] {
-	const vercelEnv = getEnv(PLATFORM_ENV.vercelEnv).trim();
-	if (vercelEnv === 'production') return ['production'];
-	if (vercelEnv === 'preview') return ['preview'];
-	return ['preview', 'production'];
+	const hosted = readHostedDeployEnvironment();
+	return hosted ? [hosted] : ['preview', 'production'];
 }
 
 function evaluate(

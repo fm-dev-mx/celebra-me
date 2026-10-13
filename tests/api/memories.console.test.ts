@@ -247,14 +247,14 @@ describe('GET /api/dashboard/memories/[eventId]/qr', () => {
 	});
 
 	describe('printed origin', () => {
-		const savedVercelEnv = process.env.VERCEL_ENV;
+		const savedVercelEnv = process.env.CELEBRA_DEPLOY_ENV;
 		afterEach(() => {
-			if (savedVercelEnv === undefined) delete process.env.VERCEL_ENV;
-			else process.env.VERCEL_ENV = savedVercelEnv;
+			if (savedVercelEnv === undefined) delete process.env.CELEBRA_DEPLOY_ENV;
+			else process.env.CELEBRA_DEPLOY_ENV = savedVercelEnv;
 		});
 
 		it('prints the identical canonical SVG in Production whatever host serves the panel', async () => {
-			process.env.VERCEL_ENV = 'production';
+			process.env.CELEBRA_DEPLOY_ENV = 'production';
 			const response = await getHostQr(
 				context(`https://www.celebra-me.com/api/dashboard/memories/${EVENT_ID}/qr`, {
 					eventId: EVENT_ID,
@@ -266,7 +266,7 @@ describe('GET /api/dashboard/memories/[eventId]/qr', () => {
 		});
 
 		it('encodes the Preview deployment in a Preview QR', async () => {
-			process.env.VERCEL_ENV = 'preview';
+			process.env.CELEBRA_DEPLOY_ENV = 'preview';
 			const previewOrigin = 'https://celebra-me-git-develop.vercel.app';
 			const response = await getAdminQr(
 				context(`${previewOrigin}/api/dashboard/admin/memories/${EVENT_ID}/qr`, {

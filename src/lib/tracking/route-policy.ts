@@ -17,7 +17,7 @@ export interface TrackingRoutePolicy {
 }
 
 export interface AnalyticsEnvironment {
-	vercelEnv?: string;
+	deployEnvironment?: string | null;
 	gaId?: string;
 }
 
@@ -167,7 +167,7 @@ export function classifyTrackingRoute(input: string | URL): TrackingRoutePolicy 
 }
 
 export function isProductionAnalyticsEnvironment(env: AnalyticsEnvironment): boolean {
-	return env.vercelEnv === 'production';
+	return env.deployEnvironment === 'production';
 }
 
 export function shouldLoadGoogleAnalytics(input: string | URL, env: AnalyticsEnvironment): boolean {

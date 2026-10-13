@@ -17,7 +17,7 @@ describe('internal traffic exclusion', () => {
 			shouldExcludeInternalTraffic({
 				isDashboardAuthenticated: true,
 				routeClass: 'commercial',
-				vercelEnv: 'production',
+				deployEnvironment: 'production',
 			}).exclude,
 		).toBe(true);
 
@@ -25,18 +25,20 @@ describe('internal traffic exclusion', () => {
 			shouldExcludeInternalTraffic({
 				cookieHeader: `${COOKIE_NAME_IGNORE_TRACKING}=true`,
 				routeClass: 'commercial',
-				vercelEnv: 'production',
+				deployEnvironment: 'production',
 			}).exclude,
 		).toBe(true);
 
 		expect(
-			shouldExcludeInternalTraffic({ routeClass: 'commercial', vercelEnv: 'preview' })
+			shouldExcludeInternalTraffic({ routeClass: 'commercial', deployEnvironment: 'preview' })
 				.exclude,
 		).toBe(true);
 
 		expect(
-			shouldExcludeInternalTraffic({ routeClass: 'commercial', vercelEnv: 'production' })
-				.exclude,
+			shouldExcludeInternalTraffic({
+				routeClass: 'commercial',
+				deployEnvironment: 'production',
+			}).exclude,
 		).toBe(false);
 	});
 });
@@ -107,19 +109,22 @@ describe('tracking event contract', () => {
 		expect(result.success).toBe(true);
 	});
 
-	it.each(INTERNAL_TRACKING_EVENT_NAMES)("rejects the server-owned %s event from the public contract", (eventName) => {
-	const result = PublicTrackingEventSchema.safeParse({
-		sessionId: '11111111-1111-4111-8111-111111111111',
-			visitorId: 'visitor_123456',
-			eventName,
-			routePath: '/',
-			routeClass: 'commercial',
-			eventProperties: {},
-			consentSnapshot: { necessary: true, analytics: true, marketing: false },
+	it.each(INTERNAL_TRACKING_EVENT_NAMES)(
+		'rejects the server-owned %s event from the public contract',
+		(eventName) => {
+			const result = PublicTrackingEventSchema.safeParse({
+				sessionId: '11111111-1111-4111-8111-111111111111',
+				visitorId: 'visitor_123456',
+				eventName,
+				routePath: '/',
+				routeClass: 'commercial',
+				eventProperties: {},
+				consentSnapshot: { necessary: true, analytics: true, marketing: false },
 			});
 
-		expect(result.success).toBe(false);
-		});
+			expect(result.success).toBe(false);
+		},
+	);
 
 	it('keeps server-owned lifecycle events available to trusted contracts', () => {
 		const result = TrackingEventSchema.safeParse({

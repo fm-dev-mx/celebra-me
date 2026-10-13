@@ -37,12 +37,15 @@ describe('tracking route policy', () => {
 		['preview', false],
 		['production', true],
 		[undefined, false],
-	] as const)('resolves production analytics environment for %s', (vercelEnv, expected) => {
-		expect(isProductionAnalyticsEnvironment({ vercelEnv })).toBe(expected);
-	});
+	] as const)(
+		'resolves production analytics environment for %s',
+		(deployEnvironment, expected) => {
+			expect(isProductionAnalyticsEnvironment({ deployEnvironment })).toBe(expected);
+		},
+	);
 
 	it('allows GA only for commercial or demo routes in production with an id', () => {
-		const env = { vercelEnv: 'production', gaId: 'G-TEST' };
+		const env = { deployEnvironment: 'production', gaId: 'G-TEST' };
 
 		expect(shouldLoadGoogleAnalytics('/', env)).toBe(true);
 		expect(shouldLoadGoogleAnalytics('/demos/cumpleanos', env)).toBe(true);
@@ -65,18 +68,20 @@ describe('tracking route policy', () => {
 	});
 
 	it('does not allow GA in preview, local development, or without a measurement id', () => {
-		expect(shouldLoadGoogleAnalytics('/', { vercelEnv: 'preview', gaId: 'G-TEST' })).toBe(
+		expect(
+			shouldLoadGoogleAnalytics('/', { deployEnvironment: 'preview', gaId: 'G-TEST' }),
+		).toBe(false);
+		expect(
+			shouldLoadGoogleAnalytics('/', { deployEnvironment: 'development', gaId: 'G-TEST' }),
+		).toBe(false);
+		expect(shouldLoadGoogleAnalytics('/', { deployEnvironment: 'production', gaId: '' })).toBe(
 			false,
 		);
-		expect(shouldLoadGoogleAnalytics('/', { vercelEnv: 'development', gaId: 'G-TEST' })).toBe(
-			false,
-		);
-		expect(shouldLoadGoogleAnalytics('/', { vercelEnv: 'production', gaId: '' })).toBe(false);
 	});
 
 	describe('resolveSpeedInsightsConfig', () => {
 		it('enables Speed Insights only on approved commercial and demo routes in production', () => {
-			const env = { vercelEnv: 'production' };
+			const env = { deployEnvironment: 'production' };
 
 			expect(resolveSpeedInsightsConfig('/', env)).toEqual({
 				enabled: true,
@@ -97,7 +102,7 @@ describe('tracking route policy', () => {
 		});
 
 		it('disables Speed Insights on dashboard, auth, and API routes', () => {
-			const env = { vercelEnv: 'production' };
+			const env = { deployEnvironment: 'production' };
 
 			expect(resolveSpeedInsightsConfig('/login', env)).toEqual({
 				enabled: false,
@@ -126,11 +131,11 @@ describe('tracking route policy', () => {
 		});
 
 		it('disables Speed Insights in non-production environments', () => {
-			expect(resolveSpeedInsightsConfig('/', { vercelEnv: 'preview' })).toEqual({
+			expect(resolveSpeedInsightsConfig('/', { deployEnvironment: 'preview' })).toEqual({
 				enabled: false,
 				sampleRate: 0,
 			});
-			expect(resolveSpeedInsightsConfig('/', { vercelEnv: 'development' })).toEqual({
+			expect(resolveSpeedInsightsConfig('/', { deployEnvironment: 'development' })).toEqual({
 				enabled: false,
 				sampleRate: 0,
 			});

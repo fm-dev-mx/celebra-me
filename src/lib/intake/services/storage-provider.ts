@@ -6,14 +6,9 @@
  * - Preview / Production: Cloudinary (https://res.cloudinary.com/...)
  */
 
-import {
-	DEFAULT_BUCKET,
-	getPublicUrl,
-	uploadToStorage,
-} from '@/lib/intake/storage';
-import {
-	uploadOrReconcileCloudinaryAsset,
-} from '@/lib/intake/services/cloudinary-assets';
+import { DEFAULT_BUCKET, getPublicUrl, uploadToStorage } from '@/lib/intake/storage';
+import { uploadOrReconcileCloudinaryAsset } from '@/lib/intake/services/cloudinary-assets';
+import { resolveDeployEnvironment } from '@/lib/server/deploy-identity';
 import { getEnv } from '@/lib/server/env';
 
 export interface StorageUploadInput {
@@ -102,7 +97,6 @@ export class SupabaseLocalStorageProvider implements StorageProvider {
 			deliveryUrl,
 		};
 	}
-
 }
 
 async function extractBytes(blob: Blob): Promise<Uint8Array> {
@@ -169,7 +163,6 @@ export class CloudinaryStorageProvider implements StorageProvider {
 			deliveryUrl: uploaded.secureUrl,
 		};
 	}
-
 }
 
 export function resolveEffectiveTarget(targetEnv?: string): 'local' | 'preview' | 'production' {
@@ -177,9 +170,10 @@ export function resolveEffectiveTarget(targetEnv?: string): 'local' | 'preview' 
 		return targetEnv;
 	}
 
-	const vercelEnv = getEnv('VERCEL_ENV').trim().toLowerCase();
-	if (vercelEnv === 'production') return 'production';
-	if (vercelEnv === 'preview') return 'preview';
+	// Hosted bundles answer their declared identity; an ambiguous bundle throws instead
+	// of silently writing to local storage.
+	const deployEnvironment = resolveDeployEnvironment();
+	if (deployEnvironment !== 'local') return deployEnvironment;
 
 	const celebraTarget = getEnv('CELEBRA_RUNTIME_TARGET').trim().toLowerCase();
 	if (celebraTarget === 'preview') return 'preview';

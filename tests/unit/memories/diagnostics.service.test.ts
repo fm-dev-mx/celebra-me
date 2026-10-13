@@ -217,7 +217,7 @@ describe('buildMemorySpaceDiagnostics', () => {
 
 describe('resolveLiveCheckOrigins', () => {
 	it('checks the printed apex QR and the canonical app in Production', () => {
-		env({ VERCEL_ENV: 'production' });
+		env({ CELEBRA_DEPLOY_ENV: 'production' });
 		expect(resolveLiveCheckOrigins('https://celebra-me-abc.vercel.app')).toEqual({
 			appOrigin: 'https://www.celebra-me.com',
 			qrOrigin: 'https://celebra-me.com',
@@ -225,7 +225,7 @@ describe('resolveLiveCheckOrigins', () => {
 	});
 
 	it('checks only the serving origin elsewhere', () => {
-		env({ VERCEL_ENV: 'preview' });
+		env({ CELEBRA_DEPLOY_ENV: 'preview' });
 		expect(resolveLiveCheckOrigins('https://preview.example.test/path')).toEqual({
 			appOrigin: 'https://preview.example.test',
 			qrOrigin: null,

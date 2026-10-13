@@ -11,6 +11,7 @@ import {
 	withPrivateCache,
 } from '@/lib/rsvp/core/http';
 import { buildAuthSessionDto } from '@/lib/rsvp/services/auth-access.service';
+import { isLocalProcess } from '@/lib/server/deploy-identity';
 import { findEventBySlugService } from '@/lib/rsvp/repositories/event.repository';
 
 async function buildDebugPayload(
@@ -46,8 +47,8 @@ async function buildDebugPayload(
 export const GET: APIRoute = async ({ request }) => {
 	try {
 		const url = new URL(request.url);
-		const debugEnabled =
-			process.env.NODE_ENV !== 'production' && url.searchParams.get('debug') === '1';
+		// Diagnostics never leave a local process, whatever NODE_ENV the platform injects.
+		const debugEnabled = isLocalProcess() && url.searchParams.get('debug') === '1';
 		const requestedSlug = url.searchParams.get('slug') || '';
 		const sessionSnapshot = debugEnabled
 			? await getSessionDebugSnapshotFromRequest(request)

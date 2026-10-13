@@ -58,10 +58,15 @@ function responses(states: Record<string, string>, deploymentState = 'success') 
 }
 
 const allPassed = Object.fromEntries(REQUIRED_RELEASE_CHECKS.map((name) => [name, 'success']));
-const healthy = (commitSha: string | null) => async () => ({
-	status: 200,
-	json: async () => ({ status: 'healthy', build: commitSha ? { commitSha } : undefined }),
-});
+const healthy =
+	(commitSha: string | null, environment: string | null = 'preview') =>
+	async () => ({
+		status: 200,
+		json: async () => ({
+			status: 'healthy',
+			build: commitSha ? { commitSha, environment } : undefined,
+		}),
+	});
 
 describe('release status classification', () => {
 	it('separates pending, passed and failed checks', () => {
@@ -96,6 +101,15 @@ describe('release status classification', () => {
 			'mismatch',
 		);
 		expect((await probeHealth(previewUrl, sha, healthy(null))).result).toBe('unreported');
+		expect(
+			(await probeHealth(previewUrl, sha, healthy(sha), undefined, 'preview')).result,
+		).toBe('match');
+		expect(
+			(await probeHealth(previewUrl, sha, healthy(sha, null), undefined, 'preview')).result,
+		).toBe('mismatch');
+		expect(
+			(await probeHealth(previewUrl, sha, healthy(sha), undefined, 'production')).result,
+		).toBe('mismatch');
 		expect(
 			(
 				await probeHealth(previewUrl, sha, async () => {
@@ -242,7 +256,7 @@ describe('collectReleaseStatus', () => {
 			protectionHeaders,
 			fetchImpl: async (url, init) => {
 				probes.push({ url, headers: init?.headers });
-				return healthy(sha)();
+				return healthy(sha, 'production')();
 			},
 		});
 		expect(status.state).toBe('VERIFIED');

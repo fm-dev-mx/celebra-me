@@ -29,7 +29,7 @@ interface ImportMetaEnv {
 	readonly MEMORIES_PRIVATE_RETRIEVAL_ORIGIN: string;
 	/** Server-only HMAC key for shared memories gallery links. */
 	readonly MEMORIES_SHARE_SECRET: string;
-	/** Server-only bearer secret injected by Vercel Cron. */
+	/** Server-only bearer secret that authorizes scheduled cleanup calls. */
 	readonly CRON_SECRET: string;
 	/** Server-only Cloudflare account id for the platform usage console (optional). */
 	readonly MEMORIES_CLOUDFLARE_ACCOUNT_ID: string;
@@ -77,16 +77,16 @@ interface ImportMetaEnv {
 	readonly DEV_MFA_BYPASS: string;
 	readonly PREVIEW_MFA_BYPASS: string;
 	readonly PREVIEW_ADMIN_EMAILS: string;
-	/** Local-process runtime target: `local` | `preview`. Never forges Vercel identity. */
+	/** Hosted deploy identity: `production` | `preview`. Unset in local processes. */
+	readonly CELEBRA_DEPLOY_ENV: string;
+	/** Build-time commit SHA baked in by `vite.define` (empty in local dev). */
+	readonly CELEBRA_BUILD_SHA: string;
+	/** Build-time git ref baked in by `vite.define` (empty in local dev). */
+	readonly CELEBRA_BUILD_REF: string;
+	/** Local-process runtime target: `local` | `preview`. Never forges hosted identity. */
 	readonly CELEBRA_RUNTIME_TARGET: string;
 	/** Optional override for the durable canonical-status cache file. */
 	readonly CELEBRA_STATUS_CACHE_PATH: string;
-	readonly VERCEL: string;
-	readonly VERCEL_DEPLOYMENT_ID: string;
-	readonly VERCEL_ENV: string;
-	readonly VERCEL_GIT_COMMIT_SHA: string;
-	readonly VERCEL_GIT_COMMIT_REF: string;
-	readonly VERCEL_REGION: string;
 	readonly BASE_URL: string;
 	readonly NODE_ENV: string;
 	readonly CONTACT_WHATSAPP: string;
