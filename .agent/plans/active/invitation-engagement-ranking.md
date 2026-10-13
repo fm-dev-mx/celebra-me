@@ -84,26 +84,23 @@ plan. This plan replaces it.
 
 ## 5. Architecture
 
-### 5.1 Database — expand migration A (`<ts>_engagement_ranking_coverage.sql`)
+### 5.1 Database — expand migration A (`20261013150000_engagement_ranking_coverage.sql`)
 
-- `invitation_engagement_snapshots`: add nullable `guests_responded_self integer`,
-  `guests_opened_inferred integer`, `rsvp_conversion_inferred numeric(5,4)`,
-  `confirmation_mode text`; bump new and recomputed rows to `metrics_version = 2`. Existing columns
-  keep their meaning, so the immutability of `final` rows holds: their v1 values are not rewritten;
-  only the new nullable columns are filled once by `backfill_engagement_snapshot_v2()` (documented
-  exception, idempotent).
-- `compute_invitation_engagement_snapshot` writes the v2 columns (responses by source from
-  `guest_invitations.last_response_source`, confirmation mode from `p_design` or published content).
-- `list_invitation_engagement_ranking_v2(p_event_type text default null, p_level text default 'measured')`
-  (`security definer`, `service_role` only) starts from published client invitations
-  (`kind = 'client'`, not archived), left-joins the chosen snapshot (final over rolling), and
-  returns for every row: identity, event type/date, event status, activity state, public access,
-  design (snapshot design or latest published content), confirmation mode, measured and inferred
-  columns, `sample_state`. `p_event_type null` means all types. The v1 routine stays until the v2
-  client is deployed (contract later, §7).
-- Rollout registry: `expand`, `provides: ["engagement_ranking_coverage"]`.
-- pgTAP: invitations without snapshot listed; archived excluded; inferred counts by actor; WhatsApp
-  conversion null; final v1 values unchanged after backfill; grants.
+- `list_invitation_engagement_ranking_v2(p_event_type text default null)` (`security definer`,
+  `service_role` only) starts from published client invitations (`kind = 'client'`, not archived)
+  and returns, per invitation: identity, event type/date, event status, activity state, public
+  access, confirmation mode, design (chosen snapshot design, else latest published content), live
+  guest aggregates (shared, responded, responded by guest, opened measured, opened inferred,
+  response rate, conversion upper bound, reminder coverage, share lead days) and the ledger metrics
+  of the chosen snapshot (final over rolling). Snapshots are **not** altered: inferred figures are
+  exact live counts, so the earlier idea of v2 snapshot columns and a final-row backfill is dropped
+  (no immutability exception needed).
+- Rollout registry: `expand`, `provides: ["engagement_ranking_coverage"]`. The v1 routine stays
+  until the v2 client is deployed.
+- pgTAP `invitation_engagement_ranking_v2.test.sql` (14): grants, coverage (archived, demo and
+  unpublished excluded), event filter, final over rolling, activity/status, responses by source,
+  inferred opens, response rate and conversion bound, sample state, access, confirmation mode,
+  design fallback.
 
 ### 5.2 Database — expand migration B (`<ts>_engagement_historical_estimates.sql`, after G5 validation)
 
@@ -120,8 +117,9 @@ plan. This plan replaces it.
 - `engagement-ranking.service.ts` v2: query `{ eventType | 'all', groupBy, sort, level, filters }`;
   filters applied in the service over routine rows (small N); facets (`fonts`, `confirmationModes`,
   `presets`, …) returned from the rows so menus classify new invitations automatically; ranks and
-  medians per event type; conversion ranking skips `whatsapp` and `both`; ranges for
-  opened/conversion (inferred lower, estimate upper when the historical level is loaded).
+  medians per event type; default sort is response rate; conversion is an upper bound and its
+  ranking skips `whatsapp` and `both`; ranges for opened/conversion (inferred lower, estimate upper
+  when the historical level is loaded).
 - Demos: `demo-engagement.service.ts` reads `tracking_events` (service role, `route_class = 'demo'`,
   `is_internal = false`, period 30/60/90/all) and aggregates per `demo_slug`: sessions, reach
   50/75/100 % (sessions reaching each `depth_bucket`), largest drop between buckets, contacts per

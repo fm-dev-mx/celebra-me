@@ -207,36 +207,39 @@ labels every figure with its level; a figure never mixes levels.
 | Inferred            | A guest who responded through the invitation opened it (`last_response_source <> 'admin'`)             | Exact lower bound   |
 | Historical estimate | Legacy `first_viewed_at`, `view_percentage` and `viewed` audit rows before 2026-10-12, cleaned (below) | Upper bound, frozen |
 
-Definitions (snapshot `metrics_version = 2`):
+Definitions (computed live from guest projections; snapshots are unchanged):
 
 - **Responded by guest**: `attendance_status <> 'pending'` and `last_response_source <> 'admin'`
   (host-entered responses never count as guest behavior).
 - **Opened (inferred)**: opened (measured) or responded by guest.
-- **Conversion (v2)**: responded by guest ÷ opened (inferred). It is null when
-  `rsvp.confirmationMode = 'whatsapp'` (replies never reach the database) and flagged partial for
-  `both`; neither enters a conversion ranking.
+- **Response rate**: responded by guest ÷ shared guests. Exact for every invitation, independent of
+  open tracking, and the default ranking metric.
+- **Conversion (upper bound)**: responded by guest ÷ opened (inferred). Opens inferred from
+  responses make it tautologically high when few opens were measured, so it is shown as an upper
+  bound («≤») and only narrowed into a range by the historical estimate. It is not measurable when
+  `rsvp.confirmationMode = 'whatsapp'` (replies never reach the database) and partial for `both`;
+  neither enters a conversion ranking.
 - **Historical estimate cleaning**: a legacy view counts only when it is not before
   `first_shared_at` (host review or QA) and not within 2 minutes after it (chat link preview);
   visits are `viewed` audit rows sessionized per guest with the 30-minute rule. Estimates are
   computed once into `invitation_engagement_historical_estimates` with a `method_version` and are
   shown in their own view, never ranked against measured figures.
 
-Where both bounds exist the view shows a range (inferred lower, estimate upper). Version 1 values of
-`final` snapshots are never rewritten; the version 2 columns are filled once.
+Where both bounds exist the view shows a range (estimate lower, inferred upper for conversion).
 
 ### Ranking query v2 (phase 2.1)
 
-`list_invitation_engagement_ranking_v2(p_event_type text default null)` (`security definer`,
-`service_role` only) starts from every published client invitation (`kind = 'client'`, not archived)
-and left-joins its chosen snapshot (final over rolling), so invitations without activity are listed.
-Per row it returns identity, event type and date, event status (`upcoming`, `past`, `unknown`;
-event-local date in `America/Chihuahua`), activity state (`measured` or `none`), public access,
-design (snapshot design, or the latest published content when there is no snapshot — never
-repository definitions), confirmation mode, measured and inferred counts and rates, and
-`sample_state`. A null event type returns all types; the application ranks within each event type.
-Grouping keys offered: theme preset, personalized access variant, RSVP access mode. Font, music,
-confirmation mode, event status, activity and public access are filters whose values come from the
-rows, so new designs classify themselves.
+`list_invitation_engagement_ranking_v2(p_event_type text default null)` (`20261013150000`,
+`security definer`, `service_role` only) starts from every published client invitation
+(`kind = 'client'`, not archived) and left-joins its chosen snapshot (final over rolling), so
+invitations without activity are listed. Per row it returns identity, event type and date, event
+status (`upcoming`, `past`, `unknown`; event-local date in `America/Chihuahua`), activity state
+(`measured` or `none`), public access, design (snapshot design, or the latest published content when
+there is no snapshot — never repository definitions), confirmation mode, measured and inferred
+counts and rates, and `sample_state`. A null event type returns all types; the application ranks
+within each event type. Grouping keys offered: theme preset, personalized access variant, RSVP
+access mode. Font, music, confirmation mode, event status, activity and public access are filters
+whose values come from the rows, so new designs classify themselves.
 
 ### Demo engagement (phase 2.1)
 

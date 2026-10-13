@@ -563,6 +563,7 @@ const PGTAP_FILES = [
 	'guest_engagement_events.test.sql',
 	'invitation_engagement_snapshots.test.sql',
 	'invitation_engagement_ranking.test.sql',
+	'invitation_engagement_ranking_v2.test.sql',
 	'invitation_access_controls.test.sql',
 ];
 
