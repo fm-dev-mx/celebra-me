@@ -15,6 +15,7 @@ import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
 import { listInvitationEngagementRankingRpc } from '@/lib/rsvp/repositories/engagement.repository';
+import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import { GET as getRanking } from '@/pages/api/dashboard/admin/engagement/ranking';
 import { createMockRequest } from '../helpers/api-mocks';
 
@@ -98,6 +99,12 @@ describe('GET /api/dashboard/admin/engagement/ranking', () => {
 			expect(response.status).toBe(400);
 		}
 		expect(mockRpc).not.toHaveBeenCalled();
+	});
+
+	it('answers 503 while the ranking routine is missing in the database', async () => {
+		mockRpc.mockRejectedValue(new SupabaseHttpError(404, '{"code":"PGRST202"}', 'PGRST202'));
+		const response = await getRanking(context(`${BASE}?eventType=boda`));
+		expect(response.status).toBe(503);
 	});
 
 	it('answers a host or weak session with 403 without reading snapshots', async () => {

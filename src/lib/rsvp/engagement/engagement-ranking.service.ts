@@ -12,6 +12,7 @@ import {
 	listInvitationEngagementRankingRpc,
 	type EngagementRankingRow,
 } from '@/lib/rsvp/repositories/engagement.repository';
+import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import { EVENT_TYPES, type EventType } from '@/lib/theme/theme-contract';
 import {
 	RANKING_GROUP_KEYS,
@@ -230,6 +231,22 @@ export async function getEngagementRanking(
 	if (!isRankingMetric(metric)) {
 		throw new ApiError(400, 'bad_request', 'Métrica inválida.');
 	}
-	const rows = await listInvitationEngagementRankingRpc(eventType, groupKey);
+	let rows: EngagementRankingRow[];
+	try {
+		rows = await listInvitationEngagementRankingRpc(eventType, groupKey);
+	} catch (error) {
+		// Additive migration not applied yet in this environment: the routine is simply absent.
+		if (
+			error instanceof SupabaseHttpError &&
+			(error.code === 'PGRST202' || error.status === 404)
+		) {
+			throw new ApiError(
+				503,
+				'service_unavailable',
+				'El ranking todavía no está disponible.',
+			);
+		}
+		throw error;
+	}
 	return buildEngagementRankingReport(rows, { eventType, groupKey, metric });
 }
