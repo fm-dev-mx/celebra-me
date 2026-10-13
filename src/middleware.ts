@@ -71,8 +71,13 @@ function appendVaryHeader(response: Response, value: string) {
 	response.headers.set('Vary', Array.from(values).join(', '));
 }
 
+/** 404 (missing) and 403 (disabled by the administrator) invitation responses stay private. */
+function isUnavailableInvitationStatus(status: number): boolean {
+	return status === 404 || status === 403;
+}
+
 function applyShortId404Headers(pathname: string, response: Response): Response {
-	if (!isShortIdRoute(pathname) || response.status !== 404) {
+	if (!isShortIdRoute(pathname) || !isUnavailableInvitationStatus(response.status)) {
 		return response;
 	}
 
@@ -92,7 +97,7 @@ function privateRedirect(redirect: (path: string) => Response, path: string): Re
 }
 
 function applyInvitationRoute404Headers(pathname: string, response: Response): Response {
-	if (!/^\/[^/]+\/[^/]+\/?$/.test(pathname) || response.status !== 404) {
+	if (!/^\/[^/]+\/[^/]+\/?$/.test(pathname) || !isUnavailableInvitationStatus(response.status)) {
 		return response;
 	}
 

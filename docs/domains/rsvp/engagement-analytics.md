@@ -6,7 +6,7 @@
 > `/api/invitacion/:inviteId/events` (`src/lib/rsvp/engagement/`); browser:
 > `src/lib/invitation/invitation-analytics.ts`; maintenance: `GET /api/cron/engagement-maintenance`.
 > The legacy `/view` route is gone and `track_guest_invitation_view_public` is dropped by the
-> contract migration `20261012210000`.
+> contract migration `20261013110000`.
 
 ## Purpose and boundaries
 

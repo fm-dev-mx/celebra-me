@@ -50,6 +50,13 @@
 	--dashboard-badge-border: var(--color-state-warning-border);
 }
 
+// Pending administrator attention that guests may notice (e.g. an unpaid preview).
+.dashboard-badge--pending {
+	--dashboard-badge-bg: var(--color-state-warning-bg);
+	--dashboard-badge-text: var(--color-state-warning-text);
+	--dashboard-badge-border: var(--color-state-warning-border);
+}
+
 .dashboard-badge--draft {
 	--dashboard-badge-bg: var(--color-state-info-bg);
 	--dashboard-badge-text: var(--color-state-info-text);

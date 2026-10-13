@@ -1,5 +1,10 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { ACTIVE_FILTER } from '@/lib/intake/repositories/_constants';
+import {
+	PUBLISHED_ACCESS_EMBED,
+	readEmbeddedInvitationAccess,
+} from '@/lib/invitation/access/invitation-access.repository';
+import type { InvitationAccessState } from '@/lib/invitation/access/invitation-access';
 
 export interface PublishedInvitationContentRow {
 	id: string;
@@ -64,6 +69,29 @@ export async function findPublishedBySlugAndEventType(
 		useServiceRole: true,
 	});
 	return rows[0] ? toRow(rows[0]) : null;
+}
+
+export interface PublicPublishedInvitationContent extends PublishedInvitationContent {
+	/** Commercial access state of the linked invitation; null when no row could be read. */
+	access: InvitationAccessState | null;
+}
+
+/**
+ * Public route lookup: the published row plus its invitation's access state in a
+ * single read (anonymous delivery budget: one published-content read).
+ */
+export async function findPublishedWithAccessBySlugAndEventType(
+	slug: string,
+	eventType: string,
+): Promise<PublicPublishedInvitationContent | null> {
+	const rows = await supabaseRestRequest<
+		(PublishedInvitationContentRow & { invitation?: unknown })[]
+	>({
+		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS},${PUBLISHED_ACCESS_EMBED}&slug=eq.${encodeURIComponent(slug)}&event_type=eq.${encodeURIComponent(eventType)}&${ACTIVE_FILTER}&limit=1`,
+		useServiceRole: true,
+	});
+	const row = rows[0];
+	return row ? { ...toRow(row), access: readEmbeddedInvitationAccess(row) } : null;
 }
 
 export async function listPublishedByEventTypes(

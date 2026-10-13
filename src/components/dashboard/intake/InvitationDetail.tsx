@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import DraftSection from '@/components/dashboard/intake/DraftSection';
 import InvitationRsvpPanel from '@/components/dashboard/intake/InvitationRsvpPanel';
+import InvitationAccessPanel from '@/components/dashboard/intake/InvitationAccessPanel';
 import { INVITATION_STATUS_LABELS } from '@/lib/intake/labels';
 import { hasInconsistency, resolveRepairAction } from '@/lib/intake/display-status';
 
@@ -124,6 +125,11 @@ const InvitationDetail: FC<Props> = ({ invitationId }) => {
 							</div>
 						</dl>
 					</section>
+
+					<InvitationAccessPanel
+						invitationId={invitationId}
+						archived={Boolean(currentInvitation.archivedAt)}
+					/>
 
 					<InvitationRsvpPanel
 						rsvpEvent={currentRsvpEvent}

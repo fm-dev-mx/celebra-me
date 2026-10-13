@@ -13,9 +13,9 @@ describe('Dynamic Routing Early Rejection Contracts', () => {
 		expect(source).toContain('return new Response(null, { status: 404, headers:');
 		expect(source).toContain("'Cache-Control': 'no-store, private'");
 
-		// Assert that this check happens BEFORE resolveInvitationContent is invoked
+		// Assert that this check happens BEFORE resolvePublicInvitation is invoked
 		const isEventTypeIdx = source.indexOf('if (!isEventType(eventType))');
-		const resolveContentIdx = source.indexOf('resolveInvitationContent(');
+		const resolveContentIdx = source.indexOf('resolvePublicInvitation(');
 
 		expect(isEventTypeIdx).toBeGreaterThan(-1);
 		expect(resolveContentIdx).toBeGreaterThan(-1);

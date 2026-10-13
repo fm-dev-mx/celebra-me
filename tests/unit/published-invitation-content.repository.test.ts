@@ -1,6 +1,7 @@
 import {
 	findPublishedByInvitationId,
 	findPublishedBySlugAndEventType,
+	findPublishedWithAccessBySlugAndEventType,
 	listPublishedByEventTypes,
 	updatePublishedContentSnapshot,
 } from '@/lib/intake/repositories/published-invitation-content.repository';
@@ -35,6 +36,7 @@ describe('published invitation content repository', () => {
 	it('uses service_role for every published-content read and write', async () => {
 		await findPublishedByInvitationId('invitation-123');
 		await findPublishedBySlugAndEventType('maria-y-jose', 'boda');
+		await findPublishedWithAccessBySlugAndEventType('maria-y-jose', 'boda');
 		await listPublishedByEventTypes(['boda']);
 		await updatePublishedContentSnapshot({
 			id: 'published-123',
@@ -47,5 +49,53 @@ describe('published invitation content repository', () => {
 		expect(
 			mockSupabaseRequest.mock.calls.every(([request]) => request.useServiceRole === true),
 		).toBe(true);
+	});
+});
+
+describe('findPublishedWithAccessBySlugAndEventType', () => {
+	beforeEach(() => jest.clearAllMocks());
+
+	it('embeds the invitation access state in the single public read', async () => {
+		mockSupabaseRequest.mockResolvedValue([
+			{
+				...publishedRow,
+				invitation: { access: { payment_status: 'unpaid', public_access: 'enabled' } },
+			},
+		]);
+
+		const result = await findPublishedWithAccessBySlugAndEventType('maria-y-jose', 'boda');
+
+		expect(mockSupabaseRequest).toHaveBeenCalledTimes(1);
+		const [request] = mockSupabaseRequest.mock.calls[0];
+		expect(request.pathWithQuery).toContain(
+			'invitation:invitations(access:invitation_access_controls(payment_status,public_access))',
+		);
+		expect(request.pathWithQuery).toContain('slug=eq.maria-y-jose');
+		expect(request.pathWithQuery).toContain('event_type=eq.boda');
+		expect(request.pathWithQuery).toContain('deleted_at=is.null');
+		expect(result).toEqual(
+			expect.objectContaining({
+				invitationId: 'invitation-123',
+				version: 3,
+				access: { paymentStatus: 'unpaid', publicAccess: 'enabled' },
+			}),
+		);
+		expect(result).not.toHaveProperty('invitation');
+	});
+
+	it('reports a missing access row as null', async () => {
+		mockSupabaseRequest.mockResolvedValue([{ ...publishedRow, invitation: { access: null } }]);
+
+		const result = await findPublishedWithAccessBySlugAndEventType('maria-y-jose', 'boda');
+
+		expect(result?.access).toBeNull();
+	});
+
+	it('returns null when nothing is published', async () => {
+		mockSupabaseRequest.mockResolvedValue([]);
+
+		await expect(
+			findPublishedWithAccessBySlugAndEventType('maria-y-jose', 'boda'),
+		).resolves.toBeNull();
 	});
 });

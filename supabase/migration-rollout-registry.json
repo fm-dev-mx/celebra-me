@@ -197,6 +197,17 @@
                 "valentina_memories_video_quota"
             ],
             "notes": "Drops the client-named Valentina memories catalog and its RPCs. Export the three tables and the referenced storage objects first; object deletion is a separate owner step."
+        },
+        "20261013100000": {
+            "phase": "expand",
+            "provides": ["invitation_access_controls"],
+            "notes": "Adds the service-role-only invitation_access_controls table (payment status and public access per invitation), the insert trigger on invitations that creates each row unpaid and enabled, and the set_invitation_access_control RPC that writes audit_logs. Backfills every existing invitation as paid and enabled, so nothing visible changes. Revokes only initialize privileges of the new table and functions. Apply before deploying the application that reads it."
+        },
+        "20261013110000": {
+            "phase": "contract",
+            "requiresDeployedAppCapabilities": ["guest_engagement_only_client"],
+            "revokes": ["track_guest_invitation_view_public"],
+            "notes": "Drops track_guest_invitation_view_public, the legacy view telemetry RPC. The application records guest engagement through record_guest_engagement_events_public and no longer serves /api/invitacion/:inviteId/view. Apply only after the Production deployment that provides guest_engagement_only_client passed smoke."
         }
     },
     "appCapabilities": {
@@ -232,6 +243,9 @@
         },
         "guest_engagement_only_client": {
             "requiresDbCapabilities": ["guest_engagement_events", "invitation_engagement_snapshots"]
+        },
+        "invitation_access_controls_client": {
+            "requiresDbCapabilities": ["invitation_access_controls"]
         }
     }
 }

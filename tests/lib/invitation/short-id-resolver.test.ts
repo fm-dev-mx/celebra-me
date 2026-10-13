@@ -14,7 +14,7 @@ jest.mock('@/lib/rsvp/engagement/engagement.service', () => ({
 }));
 
 jest.mock('@/lib/invitation/content-resolver', () => ({
-	resolveInvitationContent: jest.fn(),
+	resolvePublicInvitation: jest.fn(),
 }));
 
 jest.mock('@/lib/invitation/page-data', () => ({
@@ -30,16 +30,20 @@ jest.mock('@/lib/invitation/social-metadata', () => ({
 	})),
 }));
 
-import { resolveShortIdPage, resolveShortIdRequest } from '@/lib/invitation/short-id-resolver';
+import {
+	applyUnavailableShortIdResponse,
+	resolveShortIdPage,
+	resolveShortIdRequest,
+} from '@/lib/invitation/short-id-resolver';
 import { recordLinkPreview } from '@/lib/rsvp/engagement/engagement.service';
 import { getInvitationContextByShortId } from '@/lib/rsvp/services/invitation-context.service';
 import { isSocialCrawler } from '@/lib/social/social-crawler';
-import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
+import { resolvePublicInvitation } from '@/lib/invitation/content-resolver';
 import { buildLayoutData } from '@/lib/invitation/page-data';
 
 const mockedGetContext = getInvitationContextByShortId as jest.Mock;
 const mockedIsCrawler = isSocialCrawler as jest.Mock;
-const mockedResolveContent = resolveInvitationContent as jest.Mock;
+const mockedResolveContent = resolvePublicInvitation as jest.Mock;
 const mockedBuildLayout = buildLayoutData as jest.Mock;
 
 const SITE_ORIGIN = 'https://www.celebra-me.com';
@@ -163,7 +167,7 @@ describe('resolveShortIdRequest', () => {
 			expect(result.canonicalUrl).toContain('/i/ABC123');
 		});
 
-		it('does NOT call resolveInvitationContent for browser requests (no OG needed)', async () => {
+		it('does NOT call resolvePublicInvitation for browser requests (no OG needed)', async () => {
 			await resolveShortIdRequest('ABC123', 'Mozilla/5.0 Chrome/120', SITE_ORIGIN);
 			expect(mockedResolveContent).not.toHaveBeenCalled();
 		});
@@ -184,6 +188,17 @@ describe('resolveShortIdRequest', () => {
 			);
 			assertIsCrawler(result);
 			expect(result.ogData.ogTitle).toBe('XV Años de Ayrin Samantha');
+		});
+
+		it('returns no metadata for a disabled invitation', async () => {
+			mockedResolveContent.mockResolvedValue({ source: 'unavailable' });
+			const result = await resolveShortIdRequest(
+				'ABC123',
+				'WhatsApp/2.24.10.81',
+				SITE_ORIGIN,
+			);
+			expect(result).toEqual({ kind: 'unavailable' });
+			expect(mockedBuildLayout).not.toHaveBeenCalled();
 		});
 
 		it('includes redirectTarget in crawler response (for JS fallback)', async () => {
@@ -233,7 +248,7 @@ describe('resolveShortIdRequest', () => {
 			expect(result.ogData.ogDescription).toBe('Descripción enriquecida');
 		});
 
-		it('falls back to basic OG data when resolveInvitationContent throws', async () => {
+		it('falls back to basic OG data when resolvePublicInvitation throws', async () => {
 			jest.spyOn(console, 'error').mockImplementation(() => {});
 			mockedResolveContent.mockRejectedValue(new Error('Content not found'));
 			const result = await resolveShortIdRequest(
@@ -286,6 +301,19 @@ describe('resolveShortIdRequest', () => {
 			expect(recordLinkPreview).toHaveBeenCalledWith('invite-abc-123', request);
 		});
 
+		it('does not record a preview for a disabled invitation', async () => {
+			(recordLinkPreview as jest.Mock).mockClear();
+			mockedGetContext.mockResolvedValue(validContext);
+			mockedIsCrawler.mockReturnValue(true);
+			mockedResolveContent.mockResolvedValue({ source: 'unavailable' });
+			const request = new Request('https://www.celebra-me.com/i/ABC123', {
+				headers: { 'user-agent': 'WhatsApp/2.24.10.81 A' },
+			});
+			const result = await resolveShortIdPage('ABC123', request, SITE_ORIGIN);
+			expect(result).toEqual({ kind: 'unavailable' });
+			expect(recordLinkPreview).not.toHaveBeenCalled();
+		});
+
 		it('does not record a preview for a guest redirect', async () => {
 			(recordLinkPreview as jest.Mock).mockClear();
 			mockedGetContext.mockResolvedValue(validContext);
@@ -295,5 +323,16 @@ describe('resolveShortIdRequest', () => {
 			expect(result.kind).toBe('redirect');
 			expect(recordLinkPreview).not.toHaveBeenCalled();
 		});
+	});
+});
+
+describe('applyUnavailableShortIdResponse', () => {
+	it('marks the response as a private, unindexed 403', () => {
+		const response = { status: 200, headers: new Headers() };
+		applyUnavailableShortIdResponse(response);
+		expect(response.status).toBe(403);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+		expect(response.headers.get('Vary')).toBe('User-Agent');
+		expect(response.headers.get('X-Robots-Tag')).toBe('noindex, nofollow, noarchive');
 	});
 });

@@ -47,6 +47,8 @@ const RATE_LIMITS = {
 	'platform:usage': { maxHits: 30, windowSec: 60 },
 	'intake:list': { maxHits: 60, windowSec: 60 },
 	'intake:update': { maxHits: 30, windowSec: 60 },
+	// Payment status and public access: deliberate, low-frequency administrator decisions.
+	'intake:access': { maxHits: 20, windowSec: 60 },
 	'intake:assign-owner': { maxHits: 10, windowSec: 60 },
 	'intake:regenerate': { maxHits: 5, windowSec: 60 },
 	'intake:revoke': { maxHits: 5, windowSec: 60 },

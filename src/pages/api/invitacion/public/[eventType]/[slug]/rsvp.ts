@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
-import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
+import { resolvePublicInvitation } from '@/lib/invitation/content-resolver';
+import { invitationUnavailableError } from '@/lib/invitation/access/invitation-access.repository';
 import { findEventBySlugService } from '@/lib/rsvp/repositories/event.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { badRequest, errorResponse, successResponse, withPrivateCache } from '@/lib/rsvp/core/http';
@@ -28,7 +29,8 @@ export const POST: APIRoute = async ({ params, request }) => {
 		const parsedRequest = await parsePublicGuestRsvpRequest(request);
 		if (parsedRequest instanceof Response) return withPrivateCache(parsedRequest);
 
-		const resolution = await resolveInvitationContent(slug, eventType);
+		const resolution = await resolvePublicInvitation(slug, eventType);
+		if (resolution?.source === 'unavailable') throw invitationUnavailableError();
 		if (!resolution || (resolution.source === 'static' && resolution.viewModel.isDemo)) {
 			throw new ApiError(404, 'not_found', 'Public RSVP is not available for this event.');
 		}

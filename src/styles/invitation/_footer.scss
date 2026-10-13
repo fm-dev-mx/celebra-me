@@ -97,6 +97,20 @@
 	}
 }
 
+.footer__rights {
+	margin: 0;
+	font-size: 0.62rem;
+	letter-spacing: 0.08em;
+	text-align: center;
+	opacity: var(--footer-powered-opacity, 55%);
+
+	a {
+		color: inherit;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+}
+
 .footer__actions {
 	display: flex;
 	align-items: center;

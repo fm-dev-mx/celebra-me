@@ -1,6 +1,6 @@
 import { getInvitationContextByShortId } from '@/lib/rsvp/services/invitation-context.service';
 import { buildInvitationPath } from '@/utils/invitation-link';
-import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
+import { resolvePublicInvitation } from '@/lib/invitation/content-resolver';
 import { buildLayoutData } from '@/lib/invitation/page-data';
 import { isSocialCrawler } from '@/lib/social/social-crawler';
 import {
@@ -9,6 +9,7 @@ import {
 } from '@/lib/invitation/social-metadata';
 import { resolveShareDescription } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { recordLinkPreview } from '@/lib/rsvp/engagement/engagement.service';
+import { UNAVAILABLE_INVITATION_ROBOTS } from '@/lib/invitation/access/invitation-access';
 
 export interface ShortIdOGData {
 	ogTitle: string;
@@ -25,6 +26,8 @@ export type ShortIdResolution =
 			redirectTarget: string;
 			inviteId: string;
 	  }
+	/** Crawler asking for a disabled invitation: no metadata at all. */
+	| { kind: 'unavailable' }
 	| { kind: 'error' };
 
 /**
@@ -35,8 +38,22 @@ export type ShortIdResolution =
  */
 export type ShortIdPageResult =
 	| { kind: 'error' }
+	| { kind: 'unavailable' }
 	| { kind: 'redirect'; target: string }
 	| { kind: 'render'; ogData: ShortIdOGData; canonicalUrl: string; redirectTarget: string };
+
+/**
+ * Private 403 for a crawler asking for a disabled invitation. The page renders no
+ * metadata at all (no names, date or image).
+ */
+export function applyUnavailableShortIdResponse(
+	response: ResponseInit & { readonly headers: Headers },
+): void {
+	response.status = 403;
+	response.headers.set('Cache-Control', 'no-store, private');
+	response.headers.set('Vary', 'User-Agent');
+	response.headers.set('X-Robots-Tag', UNAVAILABLE_INVITATION_ROBOTS);
+}
 
 export async function resolveShortIdPage(
 	shortId: string | undefined,
@@ -46,8 +63,8 @@ export async function resolveShortIdPage(
 	const userAgent = request.headers.get('user-agent') || '';
 	const resolution = await resolveShortIdRequest(shortId, userAgent, siteOrigin);
 
-	if (resolution.kind === 'error') {
-		return { kind: 'error' };
+	if (resolution.kind === 'error' || resolution.kind === 'unavailable') {
+		return { kind: resolution.kind };
 	}
 	if (resolution.kind === 'redirect') {
 		return { kind: 'redirect', target: resolution.redirectTarget };
@@ -102,7 +119,10 @@ export async function resolveShortIdRequest(
 	let ogImage = buildSocialImageMetadata('/images/og-image.webp', { origin: siteOrigin });
 
 	try {
-		const resolution = await resolveInvitationContent(context.eventSlug, context.eventType);
+		const resolution = await resolvePublicInvitation(context.eventSlug, context.eventType);
+		if (resolution?.source === 'unavailable') {
+			return { kind: 'unavailable' };
+		}
 		if (resolution) {
 			const viewModel = resolution.viewModel;
 			const layoutData = buildLayoutData(viewModel, context.guest?.fullName);

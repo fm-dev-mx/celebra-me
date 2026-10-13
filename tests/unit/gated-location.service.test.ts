@@ -1,18 +1,18 @@
 jest.mock('@/lib/invitation/content-resolver', () => ({
-	resolveInvitationContent: jest.fn(),
+	resolvePublicInvitation: jest.fn(),
 }));
 
 jest.mock('@/lib/rsvp/services/invitation-context.service', () => ({
 	getInvitationContextByInviteId: jest.fn(),
 }));
 
-import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
+import { resolvePublicInvitation } from '@/lib/invitation/content-resolver';
 import { resolveGatedLocationPayload } from '@/lib/invitation/gated-location';
 import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 
-const mockResolveInvitationContent = resolveInvitationContent as jest.MockedFunction<
-	typeof resolveInvitationContent
+const mockResolvePublicInvitation = resolvePublicInvitation as jest.MockedFunction<
+	typeof resolvePublicInvitation
 >;
 const mockGetInvitationContextByInviteId = getInvitationContextByInviteId as jest.MockedFunction<
 	typeof getInvitationContextByInviteId
@@ -56,9 +56,11 @@ const protectedLocation = {
 beforeEach(() => {
 	jest.clearAllMocks();
 	mockGetInvitationContextByInviteId.mockResolvedValue(confirmedContext);
-	mockResolveInvitationContent.mockResolvedValue({
+	mockResolvePublicInvitation.mockResolvedValue({
 		source: 'published',
 		version: 1,
+		access: { paymentStatus: 'paid', publicAccess: 'enabled' },
+		invitationId: 'invitation-1',
 		rawContent: { location: protectedLocation },
 		viewModel: {
 			id: 'gated-location-test-event',
@@ -82,7 +84,7 @@ beforeEach(() => {
 			composition: { intersections: {} },
 			interludes: [],
 		},
-	} as Awaited<ReturnType<typeof resolveInvitationContent>>);
+	} as Awaited<ReturnType<typeof resolvePublicInvitation>>);
 });
 
 describe('resolveGatedLocationPayload', () => {
@@ -92,9 +94,11 @@ describe('resolveGatedLocationPayload', () => {
 			eventSlug: 'luna-y-estrella',
 			eventType: 'primera-comunion',
 		});
-		mockResolveInvitationContent.mockResolvedValue({
+		mockResolvePublicInvitation.mockResolvedValue({
 			source: 'published',
 			version: 1,
+			access: { paymentStatus: 'paid', publicAccess: 'enabled' },
+			invitationId: 'invitation-1',
 			rawContent: {
 				_assetSlug: 'luna-y-estrella-primera-comunion',
 				location: protectedLocation,
@@ -121,13 +125,13 @@ describe('resolveGatedLocationPayload', () => {
 				composition: { intersections: {} },
 				interludes: [],
 			},
-		} as Awaited<ReturnType<typeof resolveInvitationContent>>);
+		} as Awaited<ReturnType<typeof resolvePublicInvitation>>);
 
 		const payload = await resolveGatedLocationPayload({
 			inviteId: '11111111-1111-4111-1111-111111111111',
 		});
 
-		expect(mockResolveInvitationContent).toHaveBeenCalledWith(
+		expect(mockResolvePublicInvitation).toHaveBeenCalledWith(
 			'luna-y-estrella',
 			'primera-comunion',
 		);
@@ -176,6 +180,21 @@ describe('resolveGatedLocationPayload', () => {
 		});
 	});
 
+	it('rejects a disabled invitation without revealing its location', async () => {
+		mockResolvePublicInvitation.mockResolvedValue({ source: 'unavailable' });
+
+		await expect(
+			resolveGatedLocationPayload({
+				inviteId: '11111111-1111-4111-1111-111111111111',
+				eventType: 'primera-comunion',
+				slug: 'gated-location-test-event',
+			}),
+		).rejects.toMatchObject({
+			status: 403,
+			code: 'invitation_unavailable',
+		});
+	});
+
 	it('rejects route identity mismatches before returning location details', async () => {
 		await expect(
 			resolveGatedLocationPayload({
@@ -188,7 +207,7 @@ describe('resolveGatedLocationPayload', () => {
 			code: 'forbidden',
 		});
 
-		expect(mockResolveInvitationContent).not.toHaveBeenCalled();
+		expect(mockResolvePublicInvitation).not.toHaveBeenCalled();
 	});
 
 	it('rejects valid invites when requested route params do not match resolved context', async () => {
@@ -203,7 +222,7 @@ describe('resolveGatedLocationPayload', () => {
 			code: 'forbidden',
 		});
 
-		expect(mockResolveInvitationContent).not.toHaveBeenCalled();
+		expect(mockResolvePublicInvitation).not.toHaveBeenCalled();
 	});
 
 	it('rejects invalid UUID format with 400 before any DB call', async () => {
