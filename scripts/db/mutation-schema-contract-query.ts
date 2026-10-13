@@ -1,6 +1,7 @@
 /** The read-only schema/privilege contract query used by post-mutation verification. */
 export function buildMutationSchemaContractQuery(): string {
-	return `select json_build_object(
+	return `-- Two objects merged: json_build_object accepts at most 100 arguments (50 pairs).
+	select (jsonb_build_object(
 	  'receiptTable', to_regclass('public.invitation_mutation_operation_receipts') is not null,
 	  'phase2Columns', (
 	    select count(*) = 8 from information_schema.columns
@@ -46,7 +47,8 @@ export function buildMutationSchemaContractQuery(): string {
 	  ),
 	  'submitRsvpRpc', to_regprocedure('public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)') is not null,
 	  'recordEngagementRpc', to_regprocedure('public.record_guest_engagement_events_public(text,jsonb,uuid)') is not null,
-	  'engagementSummaryRpc', to_regprocedure('public.get_event_engagement_summary(uuid)') is not null,
+	  'engagementSummaryRpc', to_regprocedure('public.get_event_engagement_summary(uuid)') is not null
+	) || jsonb_build_object(
 	  'rankingRpc', to_regprocedure('public.list_invitation_engagement_ranking(text,text)') is not null,
 	  'serviceRoleRankingExecute', coalesce(has_function_privilege('service_role', to_regprocedure('public.list_invitation_engagement_ranking(text,text)'), 'EXECUTE'), false),
 	  'anonRankingExecute', coalesce(has_function_privilege('anon', to_regprocedure('public.list_invitation_engagement_ranking(text,text)'), 'EXECUTE'), false),
@@ -79,5 +81,5 @@ export function buildMutationSchemaContractQuery(): string {
 	  'phase1Migration', exists(select 1 from supabase_migrations.schema_migrations where version = '20260729140514'),
 	  'phase2Migration', exists(select 1 from supabase_migrations.schema_migrations where version = '20260729152113'),
 	  'receiptLockMigration', exists(select 1 from supabase_migrations.schema_migrations where version = '20260730101500')
-	)::text;`;
+	))::text;`;
 }
