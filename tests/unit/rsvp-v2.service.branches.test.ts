@@ -21,6 +21,10 @@ import * as engagementRepo from '@/lib/rsvp/repositories/engagement.repository';
 
 jest.mock('@/lib/rsvp/repositories/event.repository');
 jest.mock('@/lib/rsvp/repositories/guest.repository');
+jest.mock('@/lib/invitation/access/invitation-access.repository', () => ({
+	...jest.requireActual('@/lib/invitation/access/invitation-access.repository'),
+	isEventInvitationDisabled: jest.fn().mockResolvedValue(false),
+}));
 jest.mock('@/lib/rsvp/repositories/role-membership.repository');
 jest.mock('@/lib/rsvp/repositories/engagement.repository');
 jest.mock('@/lib/rsvp/services/audit-logger.service', () => ({

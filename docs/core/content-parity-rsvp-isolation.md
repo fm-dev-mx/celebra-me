@@ -231,6 +231,8 @@ By construction, content promote/mirror/parity tooling excludes:
 - Auth users, credentials, sessions, MFA factors
 - `audit_logs`
 - `visitor_sessions`, commercial attribution/analytics, and related tracking/PII
+- `invitation_access_controls` (payment status and public access): environment-owned administrative
+  decisions; promotion inserts new invitations unpaid and never touches existing rows
 
 Executable exclusion list for the Preview mirror: `EXCLUDED_TABLES` in
 `scripts/db/db-target-config.ts`.
@@ -244,6 +246,11 @@ the dedicated Preview admin, rewrites Supabase Storage URLs, and does **not** co
 guests, Auth, or commercial data. `--dry-run` performs zero writes (including role/profile and
 report files). `--apply` requires Preview authorization
 (`CELEBRA_TASK_SCOPE=preview:content-mirror:sync-invitations` or interactive confirmation).
+
+After the invitation tables, every mirrored invitation's access state is reset to paid and enabled
+in Preview (`scripts/db/preview-sync-access.ts`): Production's commercial decisions are never
+copied, and Preview stays a clean baseline for smoke and visual checks. Unpaid and disabled states
+are covered by synthetic fixtures.
 
 It replaces Preview `events` with `TRUNCATE … CASCADE` then reinserts Production event shells. That
 **resets Preview RSVP children** (guests, memberships) on those events. Stale Preview-only

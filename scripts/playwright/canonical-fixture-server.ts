@@ -14,6 +14,11 @@ import {
 	CANONICAL_MEMORIES_SLUG,
 	buildCanonicalMemorySpaceRow,
 } from './canonical-memories-fixture.ts';
+import {
+	CANONICAL_ACCESS_FIXTURE_IDS,
+	CANONICAL_ACCESS_FIXTURE_SLUGS,
+	canonicalAccessStateFor,
+} from './canonical-access-fixture.ts';
 
 if (process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES !== 'true') {
 	throw new Error('Canonical fixtures require explicit PLAYWRIGHT_USE_CANONICAL_FIXTURES=true.');
@@ -22,6 +27,11 @@ if (process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES !== 'true') {
 const origin = 'http://127.0.0.1:54321';
 const assets = new Map<string, { bytes: Uint8Array; mimeType: string }>();
 const publications: Record<string, unknown>[] = [];
+
+/** Embedded access state, as PostgREST returns it for `invitation:invitations(access:...)`. */
+function accessEmbed(paymentStatus: 'paid' | 'unpaid', publicAccess: 'enabled' | 'disabled') {
+	return { access: { payment_status: paymentStatus, public_access: publicAccess } };
+}
 for (const definition of listInvitationDefinitions().filter(
 	(item) => item.lifecycle === 'published',
 )) {
@@ -50,7 +60,71 @@ for (const definition of listInvitationDefinitions().filter(
 		published_at: definition.createdAt,
 		created_at: definition.createdAt,
 		updated_at: definition.createdAt,
+		invitation: accessEmbed('paid', 'enabled'),
 	});
+}
+// Canonical invitations are paid; these clones exercise the unpaid preview and the disabled page.
+const accessSource = publications[0];
+if (accessSource) {
+	publications.push(
+		{
+			...accessSource,
+			id: CANONICAL_ACCESS_FIXTURE_IDS.unpaid,
+			invitation_project_id: CANONICAL_ACCESS_FIXTURE_IDS.unpaid,
+			slug: CANONICAL_ACCESS_FIXTURE_SLUGS.unpaid,
+			invitation: accessEmbed('unpaid', 'enabled'),
+		},
+		{
+			...accessSource,
+			id: CANONICAL_ACCESS_FIXTURE_IDS.disabled,
+			invitation_project_id: CANONICAL_ACCESS_FIXTURE_IDS.disabled,
+			slug: CANONICAL_ACCESS_FIXTURE_SLUGS.disabled,
+			invitation: accessEmbed('paid', 'disabled'),
+		},
+	);
+}
+
+const UNSUPPORTED = Symbol('unsupported');
+const eqParam = (url: URL, name: string) => url.searchParams.get(name)?.replace(/^eq\./, '');
+
+/** Watermarked previews check the access row before serving a photo. */
+function accessRowFor(invitationId: string): Record<string, unknown> {
+	const state = canonicalAccessStateFor(invitationId);
+	return {
+		invitation_id: invitationId,
+		payment_status: state.paymentStatus,
+		public_access: state.publicAccess,
+		internal_note: null,
+		version: 1,
+		updated_at: '2026-10-10T00:00:00Z',
+		updated_by: null,
+	};
+}
+
+function resolveFixtureResult(url: URL): unknown {
+	switch (url.pathname) {
+		case '/health':
+		case '/auth/v1/health':
+			return { fixture: true, publications: publications.length };
+		case '/rest/v1/published_invitation_content': {
+			const slug = eqParam(url, 'slug');
+			const eventType = eqParam(url, 'event_type');
+			return publications.filter((row) => row.slug === slug && row.event_type === eventType);
+		}
+		case '/rest/v1/invitations':
+			return url.searchParams.get('select') === 'archived_at' ? [] : UNSUPPORTED;
+		case '/rest/v1/invitation_access_controls':
+			return [accessRowFor(eqParam(url, 'invitation_id') ?? '')];
+		case '/rest/v1/events':
+			// No canonical RSVP event links an invitation: memories and RSVP see no access row.
+			return [];
+		case '/rest/v1/event_memory_settings':
+			return eqParam(url, 'public_slug') === CANONICAL_MEMORIES_SLUG
+				? [buildCanonicalMemorySpaceRow()]
+				: [];
+		default:
+			return UNSUPPORTED;
+	}
 }
 
 const server = createServer((request, response) => {
@@ -69,22 +143,8 @@ const server = createServer((request, response) => {
 		response.end(request.method === 'HEAD' ? undefined : asset.bytes);
 		return;
 	}
-	let result: unknown;
-	if (url.pathname === '/health' || url.pathname === '/auth/v1/health') {
-		result = { fixture: true, publications: publications.length };
-	} else if (url.pathname === '/rest/v1/published_invitation_content') {
-		const slug = url.searchParams.get('slug')?.replace(/^eq\./, '');
-		const eventType = url.searchParams.get('event_type')?.replace(/^eq\./, '');
-		result = publications.filter((row) => row.slug === slug && row.event_type === eventType);
-	} else if (
-		url.pathname === '/rest/v1/invitations' &&
-		url.searchParams.get('select') === 'archived_at'
-	) {
-		result = [];
-	} else if (url.pathname === '/rest/v1/event_memory_settings') {
-		const slug = url.searchParams.get('public_slug')?.replace(/^eq\./, '');
-		result = slug === CANONICAL_MEMORIES_SLUG ? [buildCanonicalMemorySpaceRow()] : [];
-	} else {
+	const result = resolveFixtureResult(url);
+	if (result === UNSUPPORTED) {
 		response.writeHead(404).end('Unsupported fixture request.');
 		return;
 	}

@@ -3,7 +3,7 @@ jest.mock('@/lib/content/events', () => ({
 }));
 
 jest.mock('@/lib/intake/repositories/published-invitation-content.repository', () => ({
-	findPublishedBySlugAndEventType: jest.fn(),
+	findPublishedWithAccessBySlugAndEventType: jest.fn(),
 }));
 
 jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
@@ -46,9 +46,12 @@ jest.mock('@/lib/environment', () => ({
 	isDevEnvironment: () => false,
 }));
 
-import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
+import {
+	resolveInvitationContent,
+	resolvePublicInvitation,
+} from '@/lib/invitation/content-resolver';
 import { getRoutableEventEntry } from '@/lib/content/events';
-import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
+import { findPublishedWithAccessBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
@@ -61,9 +64,10 @@ import {
 const validPublishedContent = validPublishedContentJson as unknown as Record<string, unknown>;
 
 const mockGetRoutable = getRoutableEventEntry as jest.MockedFunction<typeof getRoutableEventEntry>;
-const mockFindPublishedBySlugAndEventType = findPublishedBySlugAndEventType as jest.MockedFunction<
-	typeof findPublishedBySlugAndEventType
->;
+const mockFindPublishedWithAccess =
+	findPublishedWithAccessBySlugAndEventType as jest.MockedFunction<
+		typeof findPublishedWithAccessBySlugAndEventType
+	>;
 const mockAdaptEvent = adaptEvent as jest.Mock;
 const mockAdaptDbEvent = adaptDbEvent as jest.Mock;
 const mockIsInvitationArchivedBySlug = isInvitationArchivedBySlug as jest.MockedFunction<
@@ -77,7 +81,7 @@ beforeEach(() => {
 
 describe('resolveInvitationContent', () => {
 	it('prefers DB-published content over static', async () => {
-		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+		mockFindPublishedWithAccess.mockResolvedValue({
 			slug: 'my-invitation',
 			eventType: 'xv',
 			isDemo: false,
@@ -96,7 +100,7 @@ describe('resolveInvitationContent', () => {
 		expect(mockAdaptEvent).not.toHaveBeenCalled();
 		expect(mockGetRoutable).not.toHaveBeenCalled();
 		assertObservedOperationCount(
-			mockFindPublishedBySlugAndEventType.mock.calls.length,
+			mockFindPublishedWithAccess.mock.calls.length,
 			ANONYMOUS_PUBLISHED_CONTENT_READS,
 			'published-content',
 		);
@@ -104,7 +108,7 @@ describe('resolveInvitationContent', () => {
 	});
 
 	it('resolves static demo when Supabase credentials are missing', async () => {
-		mockFindPublishedBySlugAndEventType.mockRejectedValue(
+		mockFindPublishedWithAccess.mockRejectedValue(
 			new Error('SUPABASE_SERVICE_ROLE_KEY no configurada.'),
 		);
 		mockGetRoutable.mockResolvedValue({
@@ -121,7 +125,7 @@ describe('resolveInvitationContent', () => {
 
 	it('resolves static demo when all Supabase calls fail with credential errors', async () => {
 		const credError = new Error('SUPABASE_SERVICE_ROLE_KEY no configurada.');
-		mockFindPublishedBySlugAndEventType.mockRejectedValue(credError);
+		mockFindPublishedWithAccess.mockRejectedValue(credError);
 		mockIsInvitationArchivedBySlug.mockRejectedValue(credError);
 		mockGetRoutable.mockResolvedValue({
 			id: 'event-demos/xv/demo-xv',
@@ -135,7 +139,7 @@ describe('resolveInvitationContent', () => {
 	});
 
 	it('returns null when credentials are missing and no static fallback exists', async () => {
-		mockFindPublishedBySlugAndEventType.mockRejectedValue(
+		mockFindPublishedWithAccess.mockRejectedValue(
 			new Error('SUPABASE_SERVICE_ROLE_KEY no configurada.'),
 		);
 		mockGetRoutable.mockResolvedValue(null);
@@ -146,7 +150,7 @@ describe('resolveInvitationContent', () => {
 	});
 
 	it('still throws on non-credential DB errors', async () => {
-		mockFindPublishedBySlugAndEventType.mockRejectedValue(new Error('connection refused'));
+		mockFindPublishedWithAccess.mockRejectedValue(new Error('connection refused'));
 
 		await expect(resolveInvitationContent('my-invitation', 'xv')).rejects.toThrow(
 			'connection refused',
@@ -154,7 +158,7 @@ describe('resolveInvitationContent', () => {
 	});
 
 	it('resolves static demo content when no DB content exists', async () => {
-		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockFindPublishedWithAccess.mockResolvedValue(null);
 		mockGetRoutable.mockResolvedValue({
 			id: 'event-demos/xv/demo-xv',
 			data: { isDemo: true },
@@ -167,7 +171,7 @@ describe('resolveInvitationContent', () => {
 	});
 
 	it('blocks non-demo static entries', async () => {
-		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockFindPublishedWithAccess.mockResolvedValue(null);
 		mockGetRoutable.mockResolvedValue({
 			id: 'events/some-event',
 			data: { isDemo: false },
@@ -180,7 +184,7 @@ describe('resolveInvitationContent', () => {
 
 	it('falls back to published content when static is null', async () => {
 		mockGetRoutable.mockResolvedValue(null);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+		mockFindPublishedWithAccess.mockResolvedValue({
 			slug: 'my-invitation',
 			eventType: 'xv',
 			isDemo: false,
@@ -202,22 +206,22 @@ describe('resolveInvitationContent', () => {
 		const result = await resolveInvitationContent('my-invitation');
 
 		expect(result).toBeNull();
-		expect(mockFindPublishedBySlugAndEventType).not.toHaveBeenCalled();
+		expect(mockFindPublishedWithAccess).not.toHaveBeenCalled();
 	});
 
 	it('does not cross-resolve when slug exists for different eventType', async () => {
 		mockGetRoutable.mockResolvedValue(null);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockFindPublishedWithAccess.mockResolvedValue(null);
 
 		const result = await resolveInvitationContent('shared-slug', 'boda');
 
 		expect(result).toBeNull();
-		expect(mockFindPublishedBySlugAndEventType).toHaveBeenCalledWith('shared-slug', 'boda');
+		expect(mockFindPublishedWithAccess).toHaveBeenCalledWith('shared-slug', 'boda');
 	});
 
 	it('resolves published content only when both slug and eventType match', async () => {
 		mockGetRoutable.mockResolvedValue(null);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+		mockFindPublishedWithAccess.mockResolvedValue({
 			slug: 'my-invitation',
 			eventType: 'xv',
 			isDemo: false,
@@ -228,14 +232,14 @@ describe('resolveInvitationContent', () => {
 		expect(resultXv).not.toBeNull();
 		expect(resultXv!.source).toBe('published');
 
-		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockFindPublishedWithAccess.mockResolvedValue(null);
 		const resultBoda = await resolveInvitationContent('my-invitation', 'boda');
 		expect(resultBoda).toBeNull();
 	});
 
 	it('returns null when neither static nor published content exists', async () => {
 		mockGetRoutable.mockResolvedValue(null);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockFindPublishedWithAccess.mockResolvedValue(null);
 
 		const result = await resolveInvitationContent('non-existent', 'xv');
 
@@ -244,16 +248,16 @@ describe('resolveInvitationContent', () => {
 
 	it('published lookup filters by both slug and eventType', async () => {
 		mockGetRoutable.mockResolvedValue(null);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue(null);
+		mockFindPublishedWithAccess.mockResolvedValue(null);
 
 		await resolveInvitationContent('some-slug', 'bautizo');
 
-		expect(mockFindPublishedBySlugAndEventType).toHaveBeenCalledWith('some-slug', 'bautizo');
+		expect(mockFindPublishedWithAccess).toHaveBeenCalledWith('some-slug', 'bautizo');
 	});
 
 	it('no admin fields exposed in published resolution', async () => {
 		mockGetRoutable.mockResolvedValue(null);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+		mockFindPublishedWithAccess.mockResolvedValue({
 			slug: 'safe',
 			eventType: 'xv',
 			isDemo: false,
@@ -269,7 +273,7 @@ describe('resolveInvitationContent', () => {
 
 	it('does not propagate _assetSlug from rawContent to viewModel', async () => {
 		mockGetRoutable.mockResolvedValue(null);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+		mockFindPublishedWithAccess.mockResolvedValue({
 			slug: 'my-invitation',
 			eventType: 'xv',
 			isDemo: false,
@@ -287,7 +291,7 @@ describe('resolveInvitationContent', () => {
 
 	it('rejects malformed published content before adaptation and logs identifiers only', async () => {
 		const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
-		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+		mockFindPublishedWithAccess.mockResolvedValue({
 			id: 'published-1',
 			invitationId: 'invitation-1',
 			slug: 'broken-invitation',
@@ -319,7 +323,7 @@ describe('resolveInvitationContent', () => {
 	});
 
 	it('keeps schema-compatible legacy published snapshots renderable', async () => {
-		mockFindPublishedBySlugAndEventType.mockResolvedValue({
+		mockFindPublishedWithAccess.mockResolvedValue({
 			slug: 'legacy-invitation',
 			eventType: 'xv',
 			isDemo: false,
@@ -338,5 +342,140 @@ describe('resolveInvitationContent', () => {
 				}),
 			}),
 		);
+	});
+});
+
+describe('resolvePublicInvitation access state', () => {
+	const publishedEntry = (access: unknown) =>
+		({
+			id: 'published-1',
+			invitationId: 'invitation-1',
+			slug: 'my-invitation',
+			eventType: 'xv',
+			isDemo: false,
+			content: validPublishedContent,
+			version: 3,
+			access,
+		}) as any;
+
+	it('attaches the paid access state to a published client invitation', async () => {
+		mockFindPublishedWithAccess.mockResolvedValue(
+			publishedEntry({ paymentStatus: 'paid', publicAccess: 'enabled' }),
+		);
+
+		const result = await resolvePublicInvitation('my-invitation', 'xv');
+
+		expect(result).toEqual(
+			expect.objectContaining({
+				source: 'published',
+				version: 3,
+				access: { paymentStatus: 'paid', publicAccess: 'enabled' },
+			}),
+		);
+	});
+
+	it('keeps an unpaid invitation reachable with its access state', async () => {
+		mockFindPublishedWithAccess.mockResolvedValue(
+			publishedEntry({ paymentStatus: 'unpaid', publicAccess: 'enabled' }),
+		);
+
+		const result = await resolveInvitationContent('my-invitation', 'xv');
+
+		expect(result?.source).toBe('published');
+		expect(result?.source === 'published' && result.access.paymentStatus).toBe('unpaid');
+	});
+
+	it('resolves a disabled invitation as unavailable without adapting its content', async () => {
+		mockFindPublishedWithAccess.mockResolvedValue(
+			publishedEntry({ paymentStatus: 'paid', publicAccess: 'disabled' }),
+		);
+
+		const result = await resolvePublicInvitation('my-invitation', 'xv');
+
+		expect(result).toEqual({ source: 'unavailable' });
+		expect(mockAdaptDbEvent).not.toHaveBeenCalled();
+		expect(mockGetRoutable).not.toHaveBeenCalled();
+		expect(mockIsInvitationArchivedBySlug).not.toHaveBeenCalled();
+	});
+
+	it('hides a disabled invitation from content-only callers', async () => {
+		mockFindPublishedWithAccess.mockResolvedValue(
+			publishedEntry({ paymentStatus: 'unpaid', publicAccess: 'disabled' }),
+		);
+
+		await expect(resolveInvitationContent('my-invitation', 'xv')).resolves.toBeNull();
+	});
+
+	it('serves the unpaid preview when the access row is missing', async () => {
+		const consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+		mockFindPublishedWithAccess.mockResolvedValue(publishedEntry(null));
+
+		const result = await resolvePublicInvitation('my-invitation', 'xv');
+
+		expect(result?.source === 'published' && result.access).toEqual({
+			paymentStatus: 'unpaid',
+			publicAccess: 'enabled',
+		});
+		expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('Missing access state'), {
+			publishedContentId: 'published-1',
+			invitationId: 'invitation-1',
+		});
+		consoleWarn.mockRestore();
+	});
+
+	it('serves watermarked photos for an unpaid invitation and originals once paid', async () => {
+		const original = process.env.PREVIEW_MEDIA_SECRET;
+		process.env.PREVIEW_MEDIA_SECRET = 'test-preview-secret';
+		const heroSrc =
+			'https://abc.supabase.co/storage/v1/object/public/invitation-assets/x/hero.webp';
+		const heroViewModel = {
+			id: 'my-invitation',
+			isDemo: false,
+			title: 'Published Event',
+			theme: { preset: 'jewelry-box', themeClass: 'theme-preset--jewelry-box' },
+			hero: {
+				name: 'Ana',
+				label: 'XV',
+				date: '2027-11-20',
+				backgroundImage: { src: heroSrc, alt: '' },
+			},
+			envelope: { enabled: false },
+			brandingVisibility: { showFooterBranding: true, showContactCta: true },
+			sections: {},
+		};
+		mockAdaptDbEvent.mockReturnValueOnce(heroViewModel).mockReturnValueOnce(heroViewModel);
+
+		mockFindPublishedWithAccess.mockResolvedValue(
+			publishedEntry({ paymentStatus: 'unpaid', publicAccess: 'enabled' }),
+		);
+		const unpaid = await resolvePublicInvitation('my-invitation', 'xv');
+		const unpaidVm = unpaid?.source === 'published' ? unpaid.viewModel : null;
+		expect(unpaidVm?.hero.backgroundImage.src).toMatch(
+			/^\/vista-previa\/[A-Za-z0-9_-]+\.webp$/,
+		);
+		expect(unpaidVm?.sharing?.ogImage?.src).toMatch(/\.jpg$/);
+		expect(JSON.stringify(unpaidVm)).not.toContain(heroSrc);
+
+		mockFindPublishedWithAccess.mockResolvedValue(
+			publishedEntry({ paymentStatus: 'paid', publicAccess: 'enabled' }),
+		);
+		const paid = await resolvePublicInvitation('my-invitation', 'xv');
+		expect(paid?.source === 'published' && paid.viewModel.hero.backgroundImage.src).toBe(
+			heroSrc,
+		);
+		process.env.PREVIEW_MEDIA_SECRET = original;
+	});
+
+	it('never applies access state to static demos', async () => {
+		mockFindPublishedWithAccess.mockResolvedValue(null);
+		mockGetRoutable.mockResolvedValue({
+			id: 'event-demos/xv/demo-xv',
+			data: { isDemo: true },
+		} as any);
+
+		const result = await resolvePublicInvitation('demo-xv', 'xv');
+
+		expect(result?.source).toBe('static');
+		expect(result).not.toHaveProperty('access');
 	});
 });

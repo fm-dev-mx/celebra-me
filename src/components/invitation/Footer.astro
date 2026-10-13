@@ -30,6 +30,7 @@ const hasReplay = Boolean(showEnvelope && eventSlug);
 const whatsappMessage = 'Hola, estoy interesado en crear una invitación digital.';
 const whatsappLink = getWhatsAppLink(whatsappMessage);
 const shouldShowContactCta = showContactCta && !isPlaceholderContactPhone(getContactPhone());
+const rightsYear = new Date().getFullYear();
 ---
 
 <footer
@@ -73,6 +74,13 @@ const shouldShowContactCta = showContactCta && !isPlaceholderContactPhone(getCon
 			)}
 		</div>
 		) : null}
+
+		{showFooterBranding && (
+			<p class="footer__rights">
+				© {rightsYear} Celebra-me · Diseño protegido ·{' '}
+				<a href="/terminos#propiedad-intelectual">Términos</a>
+			</p>
+		)}
 
 		{hasReplay && (
 			<button

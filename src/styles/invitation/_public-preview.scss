@@ -1,0 +1,110 @@
+// Unpaid invitation preview: public banner, themed seals and image copy friction.
+// Seals read the active preset's tokens, so each theme draws them in its own voice.
+
+// Doubled class: outranks the dashboard preview banner's height rule whatever the order.
+html:has(.preview-banner.preview-banner--public) {
+	--preview-banner-height: 2.25rem;
+}
+
+html:has(.preview-banner.preview-banner--public) .header-base {
+	top: var(--preview-banner-height);
+}
+
+.preview-banner--public {
+	min-height: var(--preview-banner-height);
+	padding: env(safe-area-inset-top, 0) 1rem 0;
+	gap: 0.5rem;
+	font-family: var(--font-label, system-ui, sans-serif);
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	pointer-events: none;
+	user-select: none;
+}
+
+.preview-stamp-host {
+	position: relative;
+}
+
+.preview-stamp {
+	position: absolute;
+	z-index: 5;
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.15rem;
+	padding: 0.45rem 0.85rem 0.5rem;
+	border: 1px solid var(--color-action-accent, currentcolor);
+	border-radius: 4px;
+	outline: 1px solid color-mix(in srgb, var(--color-action-accent, currentcolor) 45%, transparent);
+	outline-offset: 2px;
+	background: color-mix(in srgb, var(--color-surface-primary) 80%, transparent);
+	color: var(--color-text-primary);
+	box-shadow: 0 6px 18px rgb(0 0 0 / 12%);
+	transform: rotate(-6deg);
+	pointer-events: none;
+	user-select: none;
+	line-height: 1.1;
+	text-align: center;
+}
+
+.preview-stamp__line {
+	font-family: var(--font-label, system-ui, sans-serif);
+	font-size: 0.6rem;
+	font-weight: 600;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+
+.preview-stamp__brand {
+	font-family: var(--font-display, serif);
+	font-size: 0.9rem;
+	letter-spacing: 0.04em;
+}
+
+// Over the closed envelope or editorial cover (both set `html.envelope-open`).
+.preview-stamp--envelope {
+	display: none;
+}
+
+html.envelope-open .preview-stamp--envelope {
+	position: fixed;
+	right: 1rem;
+	bottom: 5rem;
+	z-index: 10000;
+	display: inline-flex;
+}
+
+.preview-stamp--cover {
+	top: calc(var(--preview-banner-height, 0px) + var(--nav-height, 4rem) + 1rem);
+	right: 1rem;
+}
+
+// Section intersections reposition every direct child; the host classes outrank them.
+.invitation-section-wrapper.preview-stamp-host > .preview-stamp.preview-stamp--section {
+	position: absolute;
+	top: 1rem;
+	right: 1rem;
+	z-index: 5;
+}
+
+.preview-stamp--closing {
+	position: relative;
+	display: flex;
+	width: fit-content;
+	margin: 2rem auto 0;
+	transform: rotate(-3deg);
+}
+
+.event-theme-wrapper[data-access-mode='preview'] img {
+	-webkit-touch-callout: none;
+	-webkit-user-drag: none;
+	user-select: none;
+}
+
+@media print {
+	.preview-banner--public {
+		position: static;
+	}
+}

@@ -85,6 +85,9 @@
 	--countdown-value-size-mobile: clamp(3rem, 16vw, 4.5rem);
 	--countdown-value-size-desktop: clamp(2.8rem, 4.5vw, 4.2rem);
 	--countdown-label-letter-spacing: 0.22em;
+
+	// Magazine-folio footer line: italic as accepted; profiles may set normal (Aithan Darell).
+	--countdown-footer-style: italic;
 	--location-bg: var(--editorial-magazine-paper);
 	--location-text-color: var(--editorial-magazine-ink);
 	--location-card-bg: var(--editorial-magazine-white);
