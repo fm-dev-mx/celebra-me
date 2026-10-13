@@ -31,6 +31,8 @@ interface ImportMetaEnv {
 	readonly MEMORIES_SHARE_SECRET: string;
 	/** Server-only bearer secret that authorizes scheduled cleanup calls. */
 	readonly CRON_SECRET: string;
+	/** Server-only comma-separated super admin emails; the first entry is the project owner. */
+	readonly SUPER_ADMIN_EMAILS: string;
 	/** Server-only Cloudflare account id for the platform usage console (optional). */
 	readonly MEMORIES_CLOUDFLARE_ACCOUNT_ID: string;
 	/** Server-only read-only token (Account Analytics: Read) for the usage console (optional). */
