@@ -41,6 +41,8 @@ export interface PublishedAsset {
 export interface PublishedInvitation {
 	eventType?: string;
 	slug?: string;
+	/** Administrator decision; a disabled invitation must answer the neutral 403 page. */
+	publicAccess?: 'enabled' | 'disabled' | null;
 	content: Record<string, unknown>;
 	assets: PublishedAsset[];
 }
@@ -283,6 +285,8 @@ function readPublishedInvitations(
 	const slugFilter = slug ? `and i.slug = ${sqlLiteral(slug)}` : '';
 	const sql = `select coalesce(json_agg(row_to_json(t) order by t."eventType", t.slug), '[]'::json)::text from (
 		select i.event_type as "eventType", i.slug, pub.content,
+		(select ac.public_access from public.invitation_access_controls ac
+			where ac.invitation_id = i.id) as "publicAccess",
 		coalesce((select json_agg(json_build_object(
 			'id', a.id::text, 'key', a.managed_source_key, 'sha256', a.sha256,
 			'mimeType', a.mime_type, 'width', a.width, 'height', a.height, 'url', a.secure_url)
@@ -297,7 +301,7 @@ function readPublishedInvitations(
 	return JSON.parse(result.stdout.trim()) as PublishedInvitation[];
 }
 
-async function verifyPublicRoute(
+export async function verifyPublicRoute(
 	originValue: string,
 	published: PublishedInvitation,
 ): Promise<MediaVerificationRow | null> {
@@ -316,7 +320,13 @@ async function verifyPublicRoute(
 		);
 		const html = await response.text();
 		const reasons: string[] = [];
-		if (!response.ok) reasons.push(`public route HTTP ${response.status}`);
+		if (published.publicAccess === 'disabled') {
+			// Disabled by the administrator: the neutral unavailable page is the expected answer.
+			if (response.status !== 403)
+				reasons.push(`disabled invitation answered HTTP ${response.status}, expected 403`);
+		} else if (!response.ok) {
+			reasons.push(`public route HTTP ${response.status}`);
+		}
 		if (!html.includes('<html')) reasons.push('public route did not return an HTML document');
 		if (reasons.length === 0) return null;
 		return {
