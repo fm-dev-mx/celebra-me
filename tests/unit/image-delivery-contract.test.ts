@@ -1,6 +1,6 @@
 import { observeVersionedLocalAsset } from '../../scripts/provision/apply-local-invitation';
 import { createHash } from 'node:crypto';
-import { cesarInvitation } from '../../scripts/provision/invitations/cesar-ramses';
+import { rominaInvitation } from '../../scripts/provision/invitations/romina-rios-chaparro';
 import { buildCloudinaryDeliveryUrl } from '@/lib/intake/services/cloudinary-assets';
 import { ImageDeliverySchema } from '@/lib/assets/image-delivery';
 import { AssetSchema } from '@/lib/schemas/content/shared.schema';
@@ -116,7 +116,7 @@ test('keeps original JPEG paths format-correct and content-addressed', () => {
 
 test('canonical publication applies delivery to concrete environment references', () => {
 	const assets = Object.fromEntries(
-		cesarInvitation.assets.map((asset) => [
+		rominaInvitation.assets.map((asset) => [
 			asset.key,
 			{
 				type: 'uploaded' as const,
@@ -124,13 +124,12 @@ test('canonical publication applies delivery to concrete environment references'
 				src: `https://example.com/${asset.key}`,
 			},
 		]),
-	);
-	const content = cesarInvitation.buildPublishedContent(assets);
+	) as Parameters<typeof rominaInvitation.buildPublishedContent>[0];
+	const content = rominaInvitation.buildPublishedContent(assets);
 	expect(content.hero).toMatchObject({
-		backgroundImage: { delivery: { mode: 'original', width: 2400, height: 1350 } },
-		backgroundImageMobile: { delivery: { mode: 'original', width: 1234, height: 1280 } },
+		backgroundImageMobile: { delivery: { mode: 'original', width: 1280, height: 1920 } },
 	});
-	expect(assets.hero).not.toHaveProperty('delivery');
+	expect(assets['hero-mobile']).not.toHaveProperty('delivery');
 });
 test('hosted delivery preserves the original format instead of requesting an implicit WebP conversion', () => {
 	expect(buildCloudinaryDeliveryUrl('demo', 'hero', 'image/jpeg')).toBe(

@@ -44,12 +44,12 @@ describe('CreateUserModal', () => {
 		);
 
 		fireEvent.change(screen.getByLabelText('Correo electrónico o usuario (opcional)'), {
-			target: { value: 'ximena_meza' },
+			target: { value: 'nombre_apellido' },
 		});
 		fireEvent.click(screen.getByRole('button', { name: 'Crear usuario' }));
 
 		expect(onSubmit).toHaveBeenCalledWith({
-			email: 'ximena_meza',
+			email: 'nombre_apellido',
 			role: 'host_client',
 		});
 	});
@@ -60,9 +60,9 @@ describe('CreateUserModal', () => {
 				busy={false}
 				error=""
 				createdUser={{
-					email: 'ximena_meza',
+					email: 'nombre_apellido',
 					role: 'host_client',
-					temporaryPassword: 'ximenameza2026',
+					temporaryPassword: 'nombreapellido2026',
 				}}
 				onClose={jest.fn()}
 				onSubmit={jest.fn()}
@@ -70,8 +70,8 @@ describe('CreateUserModal', () => {
 		);
 
 		expect(screen.getByText('Credenciales generadas')).toBeInTheDocument();
-		expect(screen.getByDisplayValue('ximena_meza')).toBeInTheDocument();
-		expect(screen.getByLabelText('Contraseña temporal')).toHaveValue('ximenameza2026');
+		expect(screen.getByDisplayValue('nombre_apellido')).toBeInTheDocument();
+		expect(screen.getByLabelText('Contraseña temporal')).toHaveValue('nombreapellido2026');
 		expect(
 			screen.getByText(/No se volverá a mostrar después de cerrar este modal/),
 		).toBeInTheDocument();

@@ -282,11 +282,11 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			},
 		};
 		const pageContext = buildPageContextFromViewModel({
-			slug: 'luna-y-estrella',
+			slug: 'gemelas-fixture',
 			eventType: 'primera-comunion',
 			guestContext: {
 				inviteId: 'invite-confirmed',
-				eventSlug: 'luna-y-estrella',
+				eventSlug: 'gemelas-fixture',
 				eventType: 'primera-comunion',
 				eventTitle: 'Primera Comunión de Luna y Estrella',
 				brandingRemovalEnabled: false,
@@ -301,7 +301,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 				},
 			},
 			viewModel: {
-				id: 'luna-y-estrella',
+				id: 'gemelas-fixture',
 				isDemo: false,
 				title: 'Primera Comunión de Luna y Estrella',
 				theme: {
@@ -328,7 +328,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 						personalizedAccess: { variant: 'standard' },
 						title: 'Confirma tu asistencia',
 						accessMode: 'hybrid',
-						eventSlug: 'luna-y-estrella',
+						eventSlug: 'gemelas-fixture',
 						eventType: 'primera-comunion',
 						confirmationMessage: 'Gracias por confirmar.',
 					},
@@ -380,7 +380,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		]);
 	});
 
-	it('includes interludes in ana-sofia-cota-guillen descriptors', () => {
+	it('includes interludes in lucia-fixture descriptors', () => {
 		const eventEntry = {
 			id: 'event-demos/xv/demo-xv-enchanted-rose',
 			data: loadFixture('src/content/event-demos/xv/demo-xv-enchanted-rose.json'),

@@ -271,7 +271,6 @@ export const naydelinInvitation = defineCanonicalInvitation({
 	eventType: 'xv',
 	title: `Mis XV años — ${CELEBRANT_NAME}`,
 	clientName: 'Mary Cota',
-	baseDemoId: 'demo-xv-jewelry-box',
 	themeId: 'jewelry-box',
 	visualProfileId: 'naydelin-paredes',
 	eventTiming: NAYDELIN_TIMING,

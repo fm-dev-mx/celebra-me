@@ -8,9 +8,7 @@ export type InvitationOwnershipMode =
 
 export const INVITATION_FIELD_OWNERSHIP = {
 	eventType: 'definition_managed',
-	baseDemoId: 'definition_managed',
 	themeId: 'definition_managed',
-	snapshot: 'definition_managed',
 	kind: 'definition_managed',
 	title: 'definition_seed_target_owned',
 	slug: 'definition_seed_target_owned',
@@ -35,9 +33,7 @@ export interface ManagedInvitationMetadataIntent {
 	title: string;
 	slug: string;
 	eventType: string;
-	baseDemoId: string;
 	themeId: string;
-	snapshot: Record<string, unknown>;
 	clientName: string;
 	clientEmail: string;
 	clientWhatsapp: string;

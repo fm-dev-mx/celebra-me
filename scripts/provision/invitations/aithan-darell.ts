@@ -37,7 +37,6 @@ if (!derivedStartsAtUtc) {
 export const AITHAN_EVENT = {
 	eventType: 'cumple',
 	slug: 'aithan-darell',
-	baseDemoId: 'demo-cumple-editorial-magazine',
 	themeId: 'editorial-magazine',
 	visualProfileId: 'aithan-darell',
 	title: 'Mis 3 años — Aithan Darell',
@@ -334,7 +333,6 @@ export const aithanInvitation = defineCanonicalInvitation({
 	eventType: AITHAN_EVENT.eventType,
 	title: AITHAN_EVENT.title,
 	clientName: 'Alin Salgado',
-	baseDemoId: AITHAN_EVENT.baseDemoId,
 	themeId: AITHAN_EVENT.themeId,
 	visualProfileId: AITHAN_EVENT.visualProfileId,
 	eventTiming: {

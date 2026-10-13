@@ -25,9 +25,7 @@ export interface LiveInvitationEvidenceRow {
 	slug: string;
 	eventType: string | null;
 	kind: string | null;
-	baseDemoId: string | null;
 	themeId: string | null;
-	snapshot: unknown;
 	managedIdentityId: string | null;
 	definitionSlug: string | null;
 	clientName: string | null;
@@ -48,11 +46,7 @@ export interface LiveInvitationEvidenceRow {
 	detailBudgetExceeded: boolean;
 }
 
-export type PromotionalEvidenceFailure =
-	| 'credentials'
-	| 'unreachable'
-	| 'query_failed'
-	| 'timeout';
+export type PromotionalEvidenceFailure = 'credentials' | 'unreachable' | 'query_failed' | 'timeout';
 
 export interface GroupedPromotionalEvidence {
 	ok: boolean;
@@ -112,7 +106,9 @@ function receipt(value: unknown): ManagedBaselineReceiptEvidence | null {
 			? row.completedSteps.filter((item): item is string => typeof item === 'string')
 			: [],
 		inputHashes:
-			row.inputHashes && typeof row.inputHashes === 'object' && !Array.isArray(row.inputHashes)
+			row.inputHashes &&
+			typeof row.inputHashes === 'object' &&
+			!Array.isArray(row.inputHashes)
 				? (row.inputHashes as Record<string, unknown>)
 				: undefined,
 	};
@@ -149,9 +145,7 @@ function parseRow(value: unknown): LiveInvitationEvidenceRow | null {
 		slug,
 		eventType: stringOrNull(row.eventType),
 		kind: stringOrNull(row.kind),
-		baseDemoId: stringOrNull(row.baseDemoId),
 		themeId: stringOrNull(row.themeId),
-		snapshot: row.snapshot ?? null,
 		managedIdentityId: stringOrNull(row.managedIdentityId),
 		definitionSlug: stringOrNull(row.definitionSlug),
 		clientName: stringOrNull(row.clientName),
@@ -206,9 +200,7 @@ FROM (
     i.slug,
     i.event_type AS "eventType",
     i.kind,
-    i.base_demo_id AS "baseDemoId",
     i.theme_id AS "themeId",
-    i.snapshot,
     i.managed_identity_id AS "managedIdentityId",
     i.client_name AS "clientName",
     p.definition_slug AS "definitionSlug",

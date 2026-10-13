@@ -52,7 +52,7 @@ const ENVELOPE_FIELDS = [
 	{
 		key: 'stampText',
 		label: 'Texto del sello postal',
-		placeholder: 'Ejemplo: Luna y Estrella',
+		placeholder: 'Ejemplo: Mis XV años',
 		maxLength: 60,
 	},
 	{ key: 'stampYear', label: 'Año del sello', placeholder: 'Ejemplo: 2026', maxLength: 10 },

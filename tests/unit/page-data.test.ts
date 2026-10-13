@@ -54,12 +54,12 @@ describe('buildLayoutData', () => {
 		const viewModel: InvitationViewModel = {
 			...baseViewModel,
 			sharing: {
-				ogDescription: 'Acompáñanos a celebrar los XV años de Ayrin Samantha.',
+				ogDescription: 'Acompáñanos a celebrar los XV años de Valeria Ruiz.',
 			},
 		};
 		const result = buildLayoutData(viewModel, undefined);
 
-		expect(result.description).toBe('Acompáñanos a celebrar los XV años de Ayrin Samantha.');
+		expect(result.description).toBe('Acompáñanos a celebrar los XV años de Valeria Ruiz.');
 	});
 
 	it('falls back to viewModel.description when sharing.ogDescription is missing', () => {
@@ -239,10 +239,10 @@ describe('canonical URL generation (main invitation routes)', () => {
 	});
 
 	it('uses per-route canonical for real invitation route, not root', () => {
-		const pathname = '/xv/xareni-iyarit';
+		const pathname = '/xv/paula-fixture';
 		const canonicalUrl = new URL(pathname, CANONICAL_ORIGIN).href;
 
-		expect(canonicalUrl).toBe('https://www.celebra-me.com/xv/xareni-iyarit');
+		expect(canonicalUrl).toBe('https://www.celebra-me.com/xv/paula-fixture');
 		expect(canonicalUrl).not.toBe('https://www.celebra-me.com/');
 	});
 
@@ -255,12 +255,12 @@ describe('canonical URL generation (main invitation routes)', () => {
 	});
 
 	it('strips trailing slash from non-root paths', () => {
-		const canonicalUrl = new URL('/xv/xareni-iyarit/', CANONICAL_ORIGIN);
+		const canonicalUrl = new URL('/xv/paula-fixture/', CANONICAL_ORIGIN);
 		if (canonicalUrl.pathname !== '/' && canonicalUrl.pathname.endsWith('/')) {
 			canonicalUrl.pathname = canonicalUrl.pathname.replace(/\/+$/, '');
 		}
 
-		expect(canonicalUrl.href).toBe('https://www.celebra-me.com/xv/xareni-iyarit');
+		expect(canonicalUrl.href).toBe('https://www.celebra-me.com/xv/paula-fixture');
 	});
 
 	it('preserves trailing slash on root path', () => {

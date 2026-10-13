@@ -180,8 +180,8 @@ describe('resolveShareDescription', () => {
 	});
 
 	it('generates fallback when ogDescription is empty string', () => {
-		const result = resolveShareDescription('', 'XV Años de Ayrin');
-		expect(result).toContain('XV Años de Ayrin');
+		const result = resolveShareDescription('', 'XV Años de Valeria');
+		expect(result).toContain('XV Años de Valeria');
 		expect(result).toContain('detalles');
 	});
 

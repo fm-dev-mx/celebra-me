@@ -101,13 +101,13 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
 									type="text"
 									value={email}
 									onChange={(event) => setEmail(event.target.value)}
-									placeholder="cliente@ejemplo.com o ximena_meza"
+									placeholder="cliente@ejemplo.com o nombre_apellido"
 									autoComplete="username"
 									disabled={busy}
 								/>
 								<p className="dashboard-form-help">
 									Puede capturar un correo real, un alias simple como{' '}
-									<code>ximena_meza</code>, o dejarlo vacío. Si no incluye
+									<code>nombre_apellido</code>, o dejarlo vacío. Si no incluye
 									<code>@</code>, ese valor se usará como usuario de acceso; si lo
 									deja vacío, generaremos uno por usted.
 								</p>

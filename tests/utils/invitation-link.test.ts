@@ -9,10 +9,10 @@ describe('buildInvitationPath', () => {
 		expect(
 			buildInvitationPath({
 				eventType: 'xv',
-				eventSlug: 'ximena-meza-trasvina',
+				eventSlug: 'elena-fixture',
 				inviteId: 'invite-123',
 			}),
-		).toBe('/xv/ximena-meza-trasvina?invite=invite-123');
+		).toBe('/xv/elena-fixture?invite=invite-123');
 	});
 });
 
@@ -32,10 +32,10 @@ describe('generateInvitationLink', () => {
 			generateInvitationLink({
 				origin: 'https://celebra.test/',
 				eventType: 'xv',
-				eventSlug: 'ximena-meza-trasvina',
+				eventSlug: 'elena-fixture',
 				inviteId: 'invite-123',
 			}),
-		).toBe('https://celebra.test/xv/ximena-meza-trasvina?invite=invite-123');
+		).toBe('https://celebra.test/xv/elena-fixture?invite=invite-123');
 	});
 
 	it('generates minimal /i/{shortId} link when shortId is provided', () => {
@@ -43,7 +43,7 @@ describe('generateInvitationLink', () => {
 			generateInvitationLink({
 				origin: 'https://celebra.test/',
 				eventType: 'xv',
-				eventSlug: 'ximena-meza-trasvina',
+				eventSlug: 'elena-fixture',
 				inviteId: 'invite-123',
 				shortId: 'abc123',
 			}),

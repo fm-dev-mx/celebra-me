@@ -1,10 +1,6 @@
 import { test, expect } from '@playwright/test';
 const routes = [
-	'/xv/xareni-iyarit',
-	'/xv/ayrin-samantha-lerma-castro',
-	'/xv/ana-sofia-cota-guillen',
 	'/xv/abril-michelle-becerra-rea',
-	'/xv/america-johana',
 	'/xv/romina-rios-chaparro',
 	'/xv/demo-xv-celestial-blue',
 ];

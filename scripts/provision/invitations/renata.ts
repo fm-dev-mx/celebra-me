@@ -25,7 +25,6 @@ export const RENATA_EVENT = {
 	eventType: 'xv',
 	slug: 'renata',
 	assetSlug: 'renata',
-	baseDemoId: 'demo-xv-editorial',
 	themeId: 'editorial',
 	visualProfileId: 'renata',
 	title: 'XV años de Renata',
@@ -475,7 +474,6 @@ export const renataInvitation: InvitationDefinition<RenataAssetKey> = defineInvi
 	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,
-	baseDemoId: RENATA_EVENT.baseDemoId,
 	themeId: RENATA_EVENT.themeId,
 	visualProfileId: RENATA_EVENT.visualProfileId,
 	eventTiming: {

@@ -213,8 +213,8 @@ describe('Theme Delivery Integration', () => {
 		});
 
 		const pageContext = prepareInvitationPageContext({
-			eventEntry: makeEventEntry(celestialBlueData, 'events/ana-sofia-cota-guillen'),
-			slug: 'ana-sofia-cota-guillen',
+			eventEntry: makeEventEntry(celestialBlueData, 'events/lucia-fixture'),
+			slug: 'lucia-fixture',
 		});
 
 		expect(pageContext.wrapper.dataAttributes['data-theme-preset']).toBe('celestial-blue');

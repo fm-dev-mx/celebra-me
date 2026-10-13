@@ -7,9 +7,9 @@
 - `src/lib/content/events.ts` owns collection lookup; `src/lib/invitation/content-resolver.ts` owns
   static eligibility; `src/data/demo-showroom.data.ts` owns showroom approval. These sets are
   intentionally distinct.
-- `src/lib/intake/demo-preset-catalog.ts` is legacy, scheduled for removal. The editor no longer
-  reads it; only managed provisioning still validates `baseDemoId` against it and writes
-  `base_demo_id`/`snapshot` (see the
+- No demo catalog exists. Managed provisioning no longer reads or writes demo data: new rows get an
+  empty `base_demo_id` and the column-default `snapshot`, and existing rows keep theirs until the
+  columns are dropped (see the
   [preset source of truth](../../../.agent/rules/invitation-preset-source-of-truth.md)).
 
 Static content is not a temporary database fallback. A real invitation is self-sufficient: it

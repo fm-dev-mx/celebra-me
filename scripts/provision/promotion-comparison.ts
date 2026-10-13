@@ -232,7 +232,6 @@ export function semanticInvitationContentEqual(
 export function checkInvitationMetadataIdentical(
 	pkgInv: InvitationPackageData['invitation'],
 	existingInv: Record<string, unknown> | null,
-	targetStorageUrl: string,
 ): boolean {
 	if (!existingInv) return false;
 	const existingManagedIdentity =
@@ -245,10 +244,8 @@ export function checkInvitationMetadataIdentical(
 	}
 	return (
 		existingInv.event_type === pkgInv.eventType &&
-		existingInv.base_demo_id === pkgInv.baseDemoId &&
 		existingInv.theme_id === pkgInv.themeId &&
-		existingInv.kind === pkgInv.kind &&
-		isSemanticallyEqual(pkgInv.snapshot, existingInv.snapshot, targetStorageUrl)
+		existingInv.kind === pkgInv.kind
 	);
 }
 
@@ -343,7 +340,6 @@ export function evaluateAppliedHostedTargetIdentity(
 	const isInvMetadataIdentical = checkInvitationMetadataIdentical(
 		input.pkg.invitation,
 		input.existingInv,
-		input.targetStorageUrl,
 	);
 	return {
 		isInvMetadataIdentical,
@@ -378,28 +374,6 @@ export function assertAppliedHostedTargetIdentity(input: AppliedHostedTargetIden
 	) {
 		throw new FinalTargetVerificationError(APPLIED_HOSTED_TARGET_IDENTITY_FAILURE);
 	}
-}
-
-// ---------------------------------------------------------------------------
-// Storage URL rewriting
-// ---------------------------------------------------------------------------
-
-export function rewritePackageStorageUrls(val: unknown, targetStorageUrl: string): unknown {
-	if (typeof val === 'string')
-		return val.replaceAll(`${STORAGE_URL_PLACEHOLDER}/`, `${targetStorageUrl}/`);
-	if (Array.isArray(val))
-		return val.map((item) => rewritePackageStorageUrls(item, targetStorageUrl));
-	if (val !== null && typeof val === 'object') {
-		const result: Record<string, unknown> = {};
-		for (const key of Object.keys(val as Record<string, unknown>)) {
-			result[key] = rewritePackageStorageUrls(
-				(val as Record<string, unknown>)[key],
-				targetStorageUrl,
-			);
-		}
-		return result;
-	}
-	return val;
 }
 
 // ---------------------------------------------------------------------------

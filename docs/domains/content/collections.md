@@ -45,7 +45,6 @@ Theme presets come from `src/lib/theme/theme-contract.ts`:
 - `luxury-hacienda`
 - `celestial-blue`
 - `enchanted-rose`
-- `sacred-keepsake`
 - `premiere-floral`
 - `editorial`
 - `editorial-magazine`
@@ -77,10 +76,8 @@ When a route depends on local event assets, keep the asset exports in
 `src/assets/images/events/<asset-slug>/index.ts` so the discovery/registry helpers can consume them
 consistently.
 
-A demo namespace must never hold client-provided media. The legacy
-`src/lib/intake/demo-preset-catalog.ts` is read only by managed provisioning (`baseDemoId`); see
-[event governance](event-governance.md#source-roles). It may hold catalog-only ids with no routable
-demo JSON.
+A demo namespace must never hold client-provided media. Invitations do not depend on demos; see
+[event governance](event-governance.md#source-roles).
 
 ## Validation
 

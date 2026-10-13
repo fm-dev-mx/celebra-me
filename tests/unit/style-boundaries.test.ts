@@ -62,7 +62,6 @@ const PA_PRESET_NAMES = [
 	'enchanted-rose',
 	'luxury-hacienda',
 	'angelic-presence',
-	'sacred-keepsake',
 ];
 
 const PA_REQUIRED_VARS = [
@@ -190,20 +189,10 @@ describe('Style boundary governance', () => {
 			.join('\n');
 
 		expect(invitationScss).toContain("@use 'themes/sections'");
-		for (const profile of [
-			'leah-lexa-rhythm',
-			'luna-y-estrella',
-			'xv-xareni-iyarit',
-			'xv-america-johana',
-			'xv-valentina-hernandez',
-		]) {
-			expect(sectionIndex).not.toContain(profile);
-		}
+		expect(sectionIndex).not.toContain('xv-valentina-hernandez');
 		expect(sharedBase).not.toContain('.theme-preset--');
 		expect(sharedBase).not.toContain('.event--');
-		expect(sharedSectionStyles).not.toMatch(
-			/\.event--(?:luna-y-estrella|leah-lexa|america-johana|xareni-iyarit|valentina-hernandez)\b/,
-		);
+		expect(sharedSectionStyles).not.toMatch(/\.event--valentina-hernandez\b/);
 	});
 
 	it('preset section bundles import canonical modules without passthrough entrypoints', () => {
@@ -567,7 +556,6 @@ describe('Style boundary governance', () => {
 		const thankYou = read('src/styles/themes/sections/thank-you/_celestial-blue.scss');
 		const hero = read('src/styles/themes/sections/hero/_celestial-blue.scss');
 		const preset = read('src/styles/themes/presets/_celestial-blue.scss');
-		const xareni = read('src/styles/invitation-profiles/xareni-iyarit.scss');
 
 		expect(thankYou).toContain('var(--thank-you-section-background)');
 		expect(thankYou).toContain('var(--thank-you-section-color');
@@ -580,12 +568,6 @@ describe('Style boundary governance', () => {
 		expect(preset).toContain('--thank-you-section-color');
 		expect(preset).toContain('--hero-section-background');
 		expect(preset).toContain('--hero-section-color');
-
-		// Xareni remaps celestial palette; must not force a dark thank-you surface
-		// (pre-ownership `.thank-you` rules were dead and never painted Production).
-		expect(xareni).not.toContain('--thank-you-section-background:');
-		expect(xareni).not.toContain('--thank-you-message-color:');
-		expect(xareni).toContain('--color-deep-blue-graphite: var(--xareni-plum)');
 	});
 
 	it('luxury heading chrome does not force thank-you accent color', () => {

@@ -18,7 +18,6 @@ export const VICTORIA_EVENT = {
 	eventType: 'boda',
 	slug: 'victoria-y-roberto',
 	assetSlug: 'victoria-y-roberto',
-	baseDemoId: 'demo-boda-jewelry-box-wedding',
 	themeId: 'jewelry-box-wedding',
 	visualProfileId: 'victoria-y-roberto',
 	title: 'Boda de Victoria y Roberto',
@@ -493,7 +492,6 @@ export const victoriaInvitation: InvitationDefinition<VictoriaAssetKey> = define
 	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,
-	baseDemoId: VICTORIA_EVENT.baseDemoId,
 	themeId: VICTORIA_EVENT.themeId,
 	visualProfileId: VICTORIA_EVENT.visualProfileId,
 	eventTiming: {

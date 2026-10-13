@@ -1,4 +1,3 @@
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
@@ -24,13 +23,7 @@ function buildTestAssets(): RominaAssetMap {
 }
 
 describe('Romina local invitation content', () => {
-	it('uses an internally consistent Premiere Floral catalog entry', () => {
-		const preset = findDemoPreset(ROMINA_EVENT.baseDemoId);
-		expect(preset).toMatchObject({
-			id: 'demo-xv-premiere-floral',
-			eventType: 'xv',
-			themeId: 'premiere-floral',
-		});
+	it('uses an internally consistent Premiere Floral theme', () => {
 		expect(resolveInvitationTheme({ themeId: ROMINA_EVENT.themeId })).toBe(
 			ROMINA_EVENT.themeId,
 		);

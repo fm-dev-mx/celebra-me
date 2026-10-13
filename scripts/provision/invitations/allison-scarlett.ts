@@ -181,7 +181,6 @@ export const allisonInvitation = defineCanonicalInvitation({
 	eventType: 'xv',
 	title: 'Mis XV años — Allison Scarlett',
 	clientName: 'Erika Mejia',
-	baseDemoId: 'demo-xv-celestial-blue',
 	themeId: 'celestial-blue',
 	visualProfileId: 'allison-scarlett',
 	eventTiming: ALLISON_TIMING,

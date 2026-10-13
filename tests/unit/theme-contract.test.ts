@@ -20,10 +20,9 @@ describe('themeSupportsPortrait', () => {
 		}
 	});
 
-	it('returns true for themes that render portrait in CSS (editorial, premiere-floral, sacred-keepsake, angelic-presence)', () => {
+	it('returns true for themes that render portrait in CSS (editorial, premiere-floral, angelic-presence)', () => {
 		expect(themeSupportsPortrait('editorial')).toBe(true);
 		expect(themeSupportsPortrait('premiere-floral')).toBe(true);
-		expect(themeSupportsPortrait('sacred-keepsake')).toBe(true);
 		expect(themeSupportsPortrait('angelic-presence')).toBe(true);
 	});
 

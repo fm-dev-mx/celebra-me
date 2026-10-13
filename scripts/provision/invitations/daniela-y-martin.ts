@@ -18,7 +18,6 @@ export const DANIELA_EVENT = {
 	eventType: 'boda',
 	slug: 'daniela-y-martin',
 	assetSlug: 'daniela-y-martin',
-	baseDemoId: 'demo-boda-jewelry-box-wedding',
 	themeId: 'jewelry-box-wedding',
 	visualProfileId: 'daniela-y-martin',
 	title: 'Boda de Daniela y Martín',
@@ -402,7 +401,6 @@ export const danielaInvitation: InvitationDefinition<DanielaAssetKey> = defineIn
 	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,
-	baseDemoId: DANIELA_EVENT.baseDemoId,
 	themeId: DANIELA_EVENT.themeId,
 	visualProfileId: DANIELA_EVENT.visualProfileId,
 	eventTiming: {

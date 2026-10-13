@@ -17,7 +17,6 @@ import { PreconditionFailedError } from './release-errors.ts';
 import { classifyStorageDownloadFailure } from '../db/storage-object-archive.ts';
 import { createHash, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
-import { findDemoPreset } from '../../src/lib/intake/demo-preset-catalog.ts';
 import {
 	hashPublicMetadata,
 	hashPublicationProjection,
@@ -315,15 +314,11 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 	});
 
 	const definition = getInvitationDefinition(slug);
-	const preset = findDemoPreset(definition.baseDemoId);
-	if (!preset || preset.themeId !== definition.themeId) {
-		throw new Error(`Demo preset "${definition.baseDemoId}" is invalid or theme mismatch.`);
-	}
 	// Check existing invitation — never infer identity from title/client_name.
 	let existingInv: Record<string, unknown> | null;
 	const rekeyFrom = options.rekeyFrom?.trim();
 	const invitationSelect =
-		'id, slug, title, event_type, status, base_demo_id, theme_id, kind, snapshot, client_name, client_email, client_whatsapp, photos_received, created_by, managed_identity_id';
+		'id, slug, title, event_type, status, theme_id, kind, client_name, client_email, client_whatsapp, photos_received, created_by, managed_identity_id';
 
 	if (rekeyFrom) {
 		const { data: invByOldSlug } = await supabase
@@ -510,9 +505,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			title: definition.title,
 			slug: definition.slug,
 			eventType: definition.eventType,
-			baseDemoId: definition.baseDemoId,
 			themeId: definition.themeId,
-			snapshot: preset as unknown as Record<string, unknown>,
 			clientName: definition.clientName,
 			clientEmail: definition.clientEmail ?? '',
 			clientWhatsapp: definition.clientWhatsapp ?? '',
@@ -524,9 +517,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					title: String(existingInv.title),
 					slug: String(existingInv.slug),
 					eventType: String(existingInv.event_type),
-					baseDemoId: String(existingInv.base_demo_id),
 					themeId: String(existingInv.theme_id),
-					snapshot: existingInv.snapshot as Record<string, unknown>,
 					clientName: String(existingInv.client_name ?? ''),
 					clientEmail: String(existingInv.client_email ?? ''),
 					clientWhatsapp: String(existingInv.client_whatsapp ?? ''),
@@ -993,9 +984,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		existingInv.slug === targetSlug &&
 		existingInv.managed_identity_id === definition.managedIdentityId &&
 		existingInv.event_type === definition.eventType &&
-		existingInv.base_demo_id === definition.baseDemoId &&
 		existingInv.theme_id === definition.themeId &&
-		canonicalize(existingInv.snapshot) === canonicalize(preset) &&
 		existingInv.kind === 'client',
 	);
 	const isEventIdentical = Boolean(
@@ -1369,9 +1358,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			title: targetMetadata.title,
 			event_type: definition.eventType,
 			status: targetMetadata.status,
-			base_demo_id: definition.baseDemoId,
 			theme_id: definition.themeId,
-			snapshot: preset,
 			client_name: targetMetadata.clientName,
 			client_email: targetMetadata.clientEmail,
 			client_whatsapp: targetMetadata.clientWhatsapp,
@@ -1393,7 +1380,9 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		} else if (!existingInv) {
 			const { error } = await supabase
 				.from('invitations')
-				.insert({ id: invitationId, ...invMetadata });
+				// base_demo_id is NOT NULL until its contract migration drops it; snapshot keeps
+				// its column default.
+				.insert({ id: invitationId, base_demo_id: '', ...invMetadata });
 			if (error) throw error;
 			trackedResources.push({ type: 'invitation', id: invitationId, isPreExisting: false });
 		}
@@ -1734,7 +1723,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			supabase
 				.from('invitations')
 				.select(
-					'title, event_type, base_demo_id, theme_id, kind, client_name, client_email, client_whatsapp, photos_received, created_by',
+					'title, event_type, theme_id, kind, client_name, client_email, client_whatsapp, photos_received, created_by',
 				)
 				.eq('id', invitationId)
 				.single(),
@@ -1806,7 +1795,6 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 				finalInvitationRow &&
 				finalInvitationRow.title === targetMetadata.title &&
 				finalInvitationRow.event_type === definition.eventType &&
-				finalInvitationRow.base_demo_id === definition.baseDemoId &&
 				finalInvitationRow.theme_id === definition.themeId &&
 				finalInvitationRow.kind === 'client' &&
 				finalInvitationRow.client_name === targetMetadata.clientName &&

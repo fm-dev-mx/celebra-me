@@ -18,7 +18,6 @@ export const ABRIL_EVENT = {
 	eventType: 'xv',
 	slug: 'abril-michelle-becerra-rea',
 	assetSlug: 'abril-michelle-becerra-rea',
-	baseDemoId: 'demo-xv-premiere-floral',
 	themeId: 'premiere-floral',
 	visualProfileId: 'abril-michelle-becerra-rea',
 	title: 'XV años de Abril Michelle Becerra Rea',
@@ -484,7 +483,6 @@ export const abrilInvitation: InvitationDefinition<AbrilAssetKey> = defineInvita
 	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,
-	baseDemoId: ABRIL_EVENT.baseDemoId,
 	themeId: ABRIL_EVENT.themeId,
 	visualProfileId: ABRIL_EVENT.visualProfileId,
 	eventTiming: {

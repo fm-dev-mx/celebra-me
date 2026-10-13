@@ -471,7 +471,7 @@ describe('buildPageContextFromViewModel', () => {
 	it('omits location from render plan when absent (Luna y Estrella scenario)', () => {
 		const viewModel = {
 			...baseViewModel,
-			id: 'luna-y-estrella',
+			id: 'gemelas-fixture',
 			title: 'Primera Comunión de Luna y Estrella',
 			sectionOrder: ['countdown', 'quote', 'rsvp', 'thankYou'],
 			sections: {
@@ -480,7 +480,7 @@ describe('buildPageContextFromViewModel', () => {
 				rsvp: {
 					title: 'Confirma tu asistencia',
 					accessMode: 'hybrid' as const,
-					eventSlug: 'luna-y-estrella',
+					eventSlug: 'gemelas-fixture',
 					eventType: 'primera-comunion',
 				},
 				thankYou: { message: 'Gracias.' },
@@ -489,7 +489,7 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'luna-y-estrella',
+			slug: 'gemelas-fixture',
 			eventType: 'primera-comunion',
 		});
 
@@ -507,7 +507,7 @@ describe('buildPageContextFromViewModel', () => {
 	it('keeps Luna y Estrella protected location out of anonymous page data', () => {
 		const viewModel = {
 			...baseViewModel,
-			id: 'luna-y-estrella',
+			id: 'gemelas-fixture',
 			title: 'Primera Comunión de Luna y Estrella',
 			sectionOrder: [
 				'quote',
@@ -552,7 +552,7 @@ describe('buildPageContextFromViewModel', () => {
 				rsvp: {
 					title: 'Confirma tu asistencia',
 					accessMode: 'hybrid' as const,
-					eventSlug: 'luna-y-estrella',
+					eventSlug: 'gemelas-fixture',
 					eventType: 'primera-comunion',
 				},
 				thankYou: { message: 'Gracias.' },
@@ -566,7 +566,7 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'luna-y-estrella',
+			slug: 'gemelas-fixture',
 			eventType: 'primera-comunion',
 		});
 
@@ -602,7 +602,7 @@ describe('buildPageContextFromViewModel', () => {
 		};
 		const viewModel = {
 			...baseViewModel,
-			id: 'luna-y-estrella',
+			id: 'gemelas-fixture',
 			title: 'Primera Comunión de Luna y Estrella',
 			sectionOrder: [
 				'quote',
@@ -617,7 +617,7 @@ describe('buildPageContextFromViewModel', () => {
 				rsvp: {
 					title: 'Confirma tu asistencia',
 					accessMode: 'hybrid' as const,
-					eventSlug: 'luna-y-estrella',
+					eventSlug: 'gemelas-fixture',
 					eventType: 'primera-comunion',
 				},
 			},
@@ -630,11 +630,11 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'luna-y-estrella',
+			slug: 'gemelas-fixture',
 			eventType: 'primera-comunion',
 			guestContext: {
 				inviteId: 'invite-confirmed',
-				eventSlug: 'luna-y-estrella',
+				eventSlug: 'gemelas-fixture',
 				eventType: 'primera-comunion',
 				eventTitle: 'Primera Comunión de Luna y Estrella',
 				brandingRemovalEnabled: false,
@@ -667,13 +667,13 @@ describe('buildPageContextFromViewModel', () => {
 	it('keeps Luna y Estrella response editing enabled even before protected location data is patched', () => {
 		const viewModel = {
 			...baseViewModel,
-			id: 'luna-y-estrella',
+			id: 'gemelas-fixture',
 			sectionOrder: ['rsvp'],
 			sections: {
 				rsvp: {
 					title: 'Confirma tu asistencia',
 					accessMode: 'hybrid' as const,
-					eventSlug: 'luna-y-estrella',
+					eventSlug: 'gemelas-fixture',
 					eventType: 'primera-comunion',
 				},
 			},
@@ -681,11 +681,11 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'luna-y-estrella',
+			slug: 'gemelas-fixture',
 			eventType: 'primera-comunion',
 			guestContext: {
 				inviteId: 'invite-confirmed',
-				eventSlug: 'luna-y-estrella',
+				eventSlug: 'gemelas-fixture',
 				eventType: 'primera-comunion',
 				eventTitle: 'Primera Comunión de Luna y Estrella',
 				brandingRemovalEnabled: false,
@@ -707,7 +707,7 @@ describe('buildPageContextFromViewModel', () => {
 	it('keeps Luna y Estrella protected location hidden for declined guests', () => {
 		const viewModel = {
 			...baseViewModel,
-			id: 'luna-y-estrella',
+			id: 'gemelas-fixture',
 			sections: {
 				location: {
 					variant: 'standard',
@@ -724,7 +724,7 @@ describe('buildPageContextFromViewModel', () => {
 				rsvp: {
 					title: 'Confirma tu asistencia',
 					accessMode: 'hybrid' as const,
-					eventSlug: 'luna-y-estrella',
+					eventSlug: 'gemelas-fixture',
 					eventType: 'primera-comunion',
 				},
 			},
@@ -732,11 +732,11 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'luna-y-estrella',
+			slug: 'gemelas-fixture',
 			eventType: 'primera-comunion',
 			guestContext: {
 				inviteId: 'invite-declined',
-				eventSlug: 'luna-y-estrella',
+				eventSlug: 'gemelas-fixture',
 				eventType: 'primera-comunion',
 				eventTitle: 'Primera Comunión de Luna y Estrella',
 				brandingRemovalEnabled: false,

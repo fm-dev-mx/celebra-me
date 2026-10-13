@@ -98,7 +98,6 @@ export interface InvitationDefinition<K extends string = string> {
 	clientEmail?: string;
 	clientWhatsapp?: string;
 	photosReceived?: boolean;
-	baseDemoId: string;
 	themeId: string;
 	visualProfileId: string;
 	eventTiming: InvitationEventTiming;

@@ -49,9 +49,9 @@ section variants and profiles come from `src/lib/invitation/section-css-resolver
   and editorial-magazine; itinerary variant editorial-program.
 - **Cinzel:** presets editorial, premiere-floral and storybook-lilac (labels); profile
   melissa-y-luis-osmar.
-- **Cormorant Garamond:** presets luxury-hacienda, celestial-blue, sacred-keepsake, enchanted-rose,
-  angelic-presence and storybook-lilac; variants formal-register, formal-pass and
-  ceremonial-portrait; invitation profiles that `@use` it.
+- **Cormorant Garamond:** presets luxury-hacienda, celestial-blue, enchanted-rose, angelic-presence
+  and storybook-lilac; variants formal-register, formal-pass and ceremonial-portrait; invitation
+  profiles that `@use` it.
 - **EB Garamond:** presets jewelry-box, jewelry-box-wedding, editorial, luxury-hacienda,
   celestial-blue and storybook-lilac.
 - **The Nautigal:** presets premiere-floral and storybook-lilac (honoree name and signature only).

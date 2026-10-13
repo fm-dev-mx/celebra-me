@@ -11,7 +11,6 @@ export interface CanonicalInvitationOptions {
 	slug: string;
 	eventType: string;
 	title: string;
-	baseDemoId: string;
 	themeId: string;
 	visualProfileId: string;
 	eventTiming: { localDateTime: string; timeZone: string; startsAtUtc: string };
@@ -108,7 +107,6 @@ export function defineCanonicalInvitation(
 		clientEmail: '',
 		clientWhatsapp: '',
 		photosReceived: true,
-		baseDemoId: options.baseDemoId,
 		themeId: options.themeId,
 		visualProfileId: options.visualProfileId,
 		eventTiming: options.eventTiming,
@@ -125,6 +123,9 @@ export function defineCanonicalInvitation(
 			) as Record<string, unknown>;
 			if (options.visualProfileId && !published.visualProfileId) {
 				published.visualProfileId = options.visualProfileId;
+			}
+			if (!published.templateId) {
+				published.templateId = `${options.eventType}-${options.content.theme.preset}`;
 			}
 			return published;
 		},
