@@ -10,68 +10,172 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+_Sin cambios pendientes._
+
+## [0.22.0-beta.1] - 2026-10-13
+
+Release checkpoint that adds per-invitation payment and public access controls, the design-rights
+footer line, and the contract migration that retires the legacy guest view RPC.
+
 ### Added
 
-- **CI-gated Preview delivery**: Preview deployments now start only after the exact `develop` SHA
-  passes Repository CI, deploy one prebuilt Vercel artifact, and complete the canonical Preview
-  smoke. CI evidence distinguishes code, visual, and infrastructure failures and permits only one
-  automatic retry for a confirmed infrastructure-only failure.
-- **Exact-SHA visual certification tooling**: `pnpm validate:prepush` certifies an isolated checkout
-  of the exact commit in the digest-pinned Linux Playwright runtime, with hash-keyed reusable
-  evidence and fail-closed invalidation. Changed-file validation shares the same visual-impact
-  classifier and names the visual inputs. Node archives are checksum-verified, runtime identity
-  includes the complete command contract, and structured manifests enumerate actual visual
-  differences without confusing diagnostic images with snapshot failures.
-
-- **Invitation work tracking**: The existing dashboard separates work completion from the owner's
-  manual review, with an in-progress filter and protected, concurrent updates. Publication and
-  technical acceptance remain independent. Requires the administrative workflow schema migration.
-
-- **Event memories (guest photo/video QR)**: The single-event pilot became a canonical per-event
-  feature. A super admin activates a private memory space per published event
-  (`/dashboard/admin/recuerdos`) with its own public slug, upload window, retention, quotas and
-  commercial entitlement; guests upload from `/r/<slug>` through an opaque, single-use capability
-  into private R2 under `events/<event uuid>/`; owners moderate and download from
-  `/dashboard/memories`. The Cloudflare Workers no longer know about events, so adding an event
-  never requires a deployment. Requires the `event_memories_catalog` migration; the legacy
-  `valentina_*` objects stay until the separately authorized retirement migration.
+- **Invitation access controls**: `invitation_access_controls` (payment status and public access per
+  invitation, migration `20261013100000`, backfilled as paid and enabled), an administrator panel to
+  set them, unpaid previews served with a banner, themed seals on the photo sections, watermarked
+  photos and copy friction, and a neutral 403 page for disabled invitations.
+- **Design rights**: `© {year} Celebra-me · Diseño protegido · Términos` in the invitation footer,
+  `author`/`copyright` metadata and a license link on every page, AI crawlers refused on client
+  invitations, and the preview license and copy restrictions stated in `/terminos`.
 
 ### Changed
 
-- **Visual certification moved to Repository CI**: the pre-push hook now replays commit validation
-  and hands off to Git LFS only; the exact-SHA browser comparison runs in the
-  `Application / browser` job on every `develop` push. `pnpm validate:prepush` remains an optional
-  local preview of that certification, and `validate:changed` reports visual inputs as
-  `VISUAL_IMPACT_DETECTED`.
-- **Browser scope for `develop` pushes**: a new `Browser scope` job skips the browser tier only when
-  every browser input is byte-identical to an earlier `develop` push whose browser job passed; such
-  a run records a skipped browser job and never serves as evidence for promotion.
-- **Single-process commit-range validation**: `scripts/validate-commits.mjs` lints the whole range
-  with one commitlint invocation instead of one process per commit.
-- **Vercel builds without the repeated type-check**: `buildCommand` is `pnpm build:app`, and
-  `scripts/ops/vercel-ignore-build.mjs` skips Preview builds whose application inputs did not change
-  since the previous deployed commit; Production always builds.
+- Client invitations are never indexed (`X-Robots-Tag` and `robots` meta); demos stay indexable.
+- The editorial-magazine preset declares `--countdown-footer-style: italic`, so the magazine-folio
+  countdown footer renders as accepted regardless of stylesheet order.
+- Contract migration `20261013110000` drops `track_guest_invitation_view_public`; its rollout entry
+  requires the deployed `guest_engagement_only_client` capability (live since v0.21.0-beta.1).
+
+### Verification
+
+| Check                   | Result                                                                     |
+| :---------------------- | :------------------------------------------------------------------------- |
+| Repository Policy       | Passed on `e72801de7` (develop); release PR certifies the final tree       |
+| Application Suite       | Passed on `e72801de7` (unit, database, static, browser)                    |
+| Visual certification    | 56 pages change only by the footer rights line (186 captures, `a670a3b2e`) |
+| Preview smoke           | `VERIFIED` for `e72801de7` after applying `20261013100000`                 |
+| Production schema audit | `CURRENT` at `20261013100000`; `20261013110000` applied after this deploy  |
+
+### Known issues
+
+- `20261013110000` is a contract: Preview and Production receive it from this checkpoint with the
+  deployed-application evidence of v0.21.0-beta.1; Local history carries the superseded
+  `20261012210000` row until it is renamed.
+
+## [0.21.0-beta.1] - 2026-10-12
+
+Release checkpoint that publishes the America XV invitation definition and finishes the legacy
+retirement on the application side after the contract migrations reached every hosted database.
+
+### Added
+
+- **America XV** managed definition published (`/xv/america`, `storybook-lilac`) with its creative
+  acceptance recorded in `docs/invitations/america.md` and accepted mobile and desktop visual
+  baselines (186 captures).
+
+### Changed
+
+- **Legacy table contracts** (`20261012200000`–`20261012200200`) renumbered after the previous
+  checkpoint and applied to Local, Preview and Production; the schema audit reports relations that a
+  pending migration drops as informational instead of blocking.
+- **Guest view telemetry retired**: `/api/invitacion/:inviteId/view` and the
+  `track_guest_invitation_view_public` client are removed; guest reads and dashboard queries assume
+  the engagement columns exist (the expand-phase compatibility guards are gone). The contract
+  migration that drops the RPC ships in the next checkpoint: it requires smoke-tested Production
+  evidence of this deployment, which in turn requires the America content to be live.
+- Engagement event ingestion accepts any UUID-shaped invitation id rather than RFC-variant UUIDs
+  only.
+
+### Verification
+
+| Check                   | Result                                                                   |
+| :---------------------- | :----------------------------------------------------------------------- |
+| Repository Policy       | Passed on `7b943e1d9` (develop); release PR certifies the final tree     |
+| Application Suite       | unit, database and static tiers passed on `7b943e1d9`; browser on the PR |
+| Visual certification    | 2 changes (new America pages) across 186 captures for `52c22e47f`        |
+| Preview smoke           | Deployment and health passed for `7b943e1d9`                             |
+| Production schema audit | `CURRENT` at `20261012200200`                                            |
+
+### Known issues
+
+- `feat/invitation-access-controls` remains pending: it needs a rebase on `develop`, visual
+  regression fixes and its migration renumbered after `20261012200200`.
+- The America content must be applied to Preview and Production before their smoke runs pass,
+  because the public-content smoke covers every published definition.
+- `track_guest_invitation_view_public` still exists in hosted databases until the deferred contract
+  migration (`feat/retire-guest-view-rpc-contract`) lands.
+
+## [0.20.0-beta.1] - 2026-10-12
+
+Release checkpoint for Production `1fc90b4c8` (PR #234) consolidating guest engagement analytics,
+the America XV storybook invitation, the event memories redesign, invitation operations tooling and
+the application side of the legacy table retirement since v0.19.0-beta.1.
+
+### Added
+
+- **Guest engagement analytics**: an append-only `guest_engagement_events` ledger with a closed
+  event taxonomy (link preview, open, depth milestones, RSVP form steps, RSVP submitted),
+  `POST /api/invitacion/:inviteId/events` ingestion with server-side traffic classification (guest,
+  host, test, bot, non-production), browser instrumentation that records an open only after the page
+  is visible, chat link-preview capture on short links, a host funnel and test-guest flag in the
+  dashboard, permanent anonymous per-invitation snapshots, and daily anonymization of guest rows 180
+  days after the event (`/api/cron/engagement-maintenance`). Spec:
+  `docs/domains/rsvp/engagement-analytics.md`. Requires migrations `20261010120000` and
+  `20261010130000`.
+- **America XV storybook invitation** with the new `storybook-lilac` preset, lantern reveal,
+  ornament sets, folio intersections and America-only art scoped to its visual profile.
+- **Managed invitations** published or refined: Aithan Darell, Mía Pintor, Naydelin Paredes, Melissa
+  y Luis Osmar, Allison Scarlett, Celestial Blue demo; demo catalog with copyable public links;
+  venue maps.
+- **Event memories (guest photo/video QR)** as a canonical per-event feature with its own public
+  slug, upload window, retention, quotas, commercial entitlement, share section, organizer
+  moderation and diagnostics; platform usage console.
+- **Branding removal per event** (`events.branding_removal_guest_limit`, migration `20261009220000`)
+  and event memberships.
+- **Operator tooling**: interactive CLI menus for `dbs`, `release` and `prod:apply`, release
+  classification with exact operational evidence, Vercel build-skip for unchanged Preview trees,
+  CI-gated Preview delivery and exact-SHA visual certification (`pnpm validate:prepush`).
+- **Invitation work tracking** in the dashboard with protected concurrent updates.
+
+### Changed
+
+- **Legacy retirement, application side**: the app no longer reads claim codes, intake capture, RSVP
+  v1, host profiles or the Valentina memories tables; host self-registration is retired. The
+  contract migrations that drop those tables land in a later checkpoint.
+- **Publication flow hardening** and codebase reduction (dead exports, generated worker types,
+  phase-labelled files, redundant develop validation).
+- **Visual certification moved to Repository CI**; the pre-push hook replays commit validation and
+  hands off to Git LFS; a `Browser scope` job skips byte-identical browser inputs.
+- **Share messages** derive the event date with the same precedence as `events.event_date`
+  (`eventTiming` before the legacy hero date).
+- Dependency maintenance (zod 4.6.5, sharp 0.35.5, nodemailer 10.0.16, framer-motion 13.5.1, ts-jest
+  29.4.14).
 
 ### Fixed
 
-- Memory spaces now expire their catalog rows together with the objects when retention ends, so
-  guest sessions are anonymized instead of lingering behind objects R2 already removed.
-- Organizer moderation requests carry the CSRF token through the dashboard API client.
-- Upload capabilities are sealed (AES-GCM) instead of signed in clear text, so the browser cannot
-  read object keys or session identifiers; branch-specific preview origins left the source tree.
-- Make Memories session anonymization atomic and idempotent, including audit writes and concurrent
-  upload reservations.
+- Admin event updates keep omitted fields on partial PATCH, guard the event version, and keep a
+  disabled RSVP closed when publishing (migration `20261010180000`).
+- Native confirm dialogs in the dashboard replaced with `ConfirmModal`; editor notices use the
+  formal register.
+- Guest reads tolerate a database that has not received the engagement columns yet, so Preview and
+  Production keep serving invitations while migrations are queued.
+- Social crawler detection no longer treats the Instagram in-app browser as a crawler.
+- `prod:apply` lifecycle noise and pre-apply image checks verify live objects only.
+- Memory spaces expire catalog rows with their objects; moderation requests carry the CSRF token;
+  upload capabilities are sealed; session anonymization is atomic and idempotent.
+- Public invitation reads limit the static fallback archive check to its required field;
+  index-choreography galleries and the portrait-letter thank-you composition render as published.
 
-- **Visual coverage & media intake**: Exclude in-progress invitations from public visual
-  certification, retain draft denial coverage, and prepare budgeted Romina mobile/gallery media
-  without runtime re-encoding.
+### Verification
 
-- **Public invitation reads**: Limit the static fallback archive check to its required field,
-  avoiding unnecessary client snapshot and contact-data retrieval.
+| Check                   | Result                                                |
+| :---------------------- | :---------------------------------------------------- |
+| Repository Policy       | Passed on `22deb888c` (develop) and PR #234           |
+| Application Suite       | Passed (7,633 Jest tests; database and browser tiers) |
+| Visual certification    | 0 changes across 184 captures for `22deb888c`         |
+| Preview smoke           | Passed (`VERIFIED`)                                   |
+| Production smoke        | Passed on redeploy `dpl_ApvR6voPkH7ZP5EG6jHfsjvHpc4t` |
+| Production schema audit | `CURRENT` at `20261010180000`                         |
 
-- **Invitation presentation**: Restore unobstructed index-choreography galleries, add the explicit
-  portrait-letter thank-you composition, and reconcile invitation/demo section sequences with their
-  published Production reference.
+### Known issues
+
+- The first Production deployment of `1fc90b4c8` was never reported to GitHub by Vercel; a redeploy
+  of the same commit produced the recorded deployment and smoke.
+- `ops:release-status --target production` reports `PENDING` for this checkpoint because the
+  redeploy status carries no `environment_url`; health correlation was verified manually.
+- Legacy table contract migrations (`feat/retire-legacy-tables-contracts`) and invitation access
+  controls (`feat/invitation-access-controls`) are pending and must be renumbered after
+  `20261010180000` before they can reach hosted databases.
+- The storybook-lanterns envelope chime plays for every invitation on that preset, demo included.
 
 ## [0.19.0-beta.1] - 2026-08-24
 

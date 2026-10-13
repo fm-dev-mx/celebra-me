@@ -3,11 +3,9 @@ import {
 	resolveRoutePersonalization,
 } from '@/lib/invitation/route-personalization';
 import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
-import { trackInvitationView } from '@/lib/rsvp/services/rsvp-submission.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import {
 	PERSONALIZED_CONTEXT_SERVICE_CALLS_ON_LOOKUP,
-	PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT,
 	assertObservedOperationCount,
 } from '@/lib/invitation/delivery-contract';
 
@@ -15,15 +13,8 @@ jest.mock('@/lib/rsvp/services/invitation-context.service', () => ({
 	getInvitationContextByInviteId: jest.fn(),
 }));
 
-jest.mock('@/lib/rsvp/services/rsvp-submission.service', () => ({
-	trackInvitationView: jest.fn(),
-}));
-
 const getInvitationContextByInviteIdMock = getInvitationContextByInviteId as jest.MockedFunction<
 	typeof getInvitationContextByInviteId
->;
-const trackInvitationViewMock = trackInvitationView as jest.MockedFunction<
-	typeof trackInvitationView
 >;
 
 describe('invitation route personalization', () => {
@@ -83,7 +74,6 @@ describe('invitation route personalization', () => {
 			guestContext: null,
 			redirectPath: '/xv/ximena-meza-trasvina?invite=invite-1',
 		});
-		expect(trackInvitationViewMock).not.toHaveBeenCalled();
 	});
 
 	it('redirects unknown or deleted invites to the public route without telemetry', async () => {
@@ -108,7 +98,6 @@ describe('invitation route personalization', () => {
 			PERSONALIZED_CONTEXT_SERVICE_CALLS_ON_LOOKUP,
 			'personalized-context-service',
 		);
-		expect(trackInvitationViewMock).not.toHaveBeenCalled();
 	});
 
 	it('keeps other query params when dropping an unusable invite', async () => {
@@ -128,7 +117,6 @@ describe('invitation route personalization', () => {
 			guestContext: null,
 			redirectPath: '/xv/ximena-meza-trasvina?skipEnvelope=true',
 		});
-		expect(trackInvitationViewMock).not.toHaveBeenCalled();
 	});
 
 	it('avoids self-redirect when the current path does not contain an invite query param', async () => {
@@ -148,7 +136,6 @@ describe('invitation route personalization', () => {
 			guestContext: null,
 			redirectPath: null,
 		});
-		expect(trackInvitationViewMock).not.toHaveBeenCalled();
 	});
 
 	it('keeps the public fallback without redirect on transient lookup failures', async () => {
@@ -165,7 +152,6 @@ describe('invitation route personalization', () => {
 			});
 
 			expect(result).toEqual({ guestContext: null, redirectPath: null });
-			expect(trackInvitationViewMock).not.toHaveBeenCalled();
 			expect(warnSpy).toHaveBeenCalledWith(
 				'[invitation][route-personalization] Unable to resolve invite context.',
 				expect.any(Error),
@@ -186,7 +172,6 @@ describe('invitation route personalization', () => {
 
 		expect(result).toEqual({ guestContext: null, redirectPath: null });
 		expect(getInvitationContextByInviteIdMock).not.toHaveBeenCalled();
-		expect(trackInvitationViewMock).not.toHaveBeenCalled();
 	});
 
 	it('looks up guest context once for a live invite and does not retry on success', async () => {
@@ -221,11 +206,5 @@ describe('invitation route personalization', () => {
 			PERSONALIZED_CONTEXT_SERVICE_CALLS_ON_LOOKUP,
 			'personalized-context-service',
 		);
-		assertObservedOperationCount(
-			trackInvitationViewMock.mock.calls.length,
-			PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT,
-			'view-track',
-		);
-		expect(trackInvitationViewMock).not.toHaveBeenCalled();
 	});
 });

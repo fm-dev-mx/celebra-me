@@ -8,6 +8,7 @@ import vercel from '@astrojs/vercel';
 import { fileURLToPath } from 'url';
 import { bootstrapCelebraRuntimeEnv } from './scripts/shared/celebra-runtime-env.ts';
 import { getWorktreeDevServerPort } from './scripts/shared/worktree-lane.ts';
+import { buildRobotsPolicy } from './src/lib/seo/robots-policy.ts';
 
 const isBuildCommand = process.argv.includes('build');
 // Hosted builds declare their deploy identity; local processes never do.
@@ -155,15 +156,8 @@ export default defineConfig({
 				);
 			},
 		}),
-		robotsTxt({
-			policy: [
-				{
-					userAgent: '*',
-					allow: '/',
-					disallow: ['/dashboard/', '/api/', '/r/', '/captura/'],
-				},
-			],
-		}),
+		// Open site, private paths closed, AI training refused, AI assistants kept off invitations.
+		robotsTxt({ policy: buildRobotsPolicy() }),
 		testVariantHarnessIntegration(),
 		supabaseDevPreflightIntegration(),
 	],

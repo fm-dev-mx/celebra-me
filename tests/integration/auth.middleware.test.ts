@@ -126,6 +126,29 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 	});
 
+	it('keeps disabled invitation responses (403) private', async () => {
+		const context = createContext('/xv/disabled-invitation');
+		mockNext.mockReturnValue(new Response(null, { status: 403 }));
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected a response.');
+		expect(response.status).toBe(403);
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+	});
+
+	it('keeps disabled short-link responses (403) private and varied by user agent', async () => {
+		const context = createContext('/i/ABC123');
+		mockNext.mockReturnValue(new Response(null, { status: 403 }));
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+
+		if (!(response instanceof Response)) throw new Error('Expected a response.');
+		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
+		expect(response.headers.get('Vary')).toContain('User-Agent');
+	});
+
 	it('redirects private routes without session', async () => {
 		const context = createContext('/dashboard/invitados');
 		mockCookies.get.mockReturnValue(null);

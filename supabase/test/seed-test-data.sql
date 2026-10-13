@@ -24,6 +24,11 @@ VALUES
   ('f0000000-0000-0000-0000-000000000002', 'test-client-wedding', 'Test Client Wedding', 'boda', 'draft', 'demo-wedding-classic', 'classic', '{}'::jsonb, 'a0000000-0000-0000-0000-000000000002', 'client')
 ON CONFLICT (id) DO NOTHING;
 
+-- 3b. Seeded invitations behave as existing ones: paid and enabled (new invitations start unpaid)
+UPDATE public.invitation_access_controls
+SET payment_status = 'paid'
+WHERE invitation_id IN ('f0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000002');
+
 -- 4. Create corresponding events linked to the invitations
 INSERT INTO public.events (id, slug, title, event_type, owner_user_id, status, invitation_project_id)
 VALUES

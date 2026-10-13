@@ -160,6 +160,54 @@
         "20261010180000": {
             "phase": "neutral",
             "notes": "Redefines publish_invitation_atomic so a publication keeps an archived (RSVP disabled) linked event archived instead of resetting it to published. Same signature, grants and receipts; the deployed application does not depend on the old reset."
+        },
+        "20261012200000": {
+            "phase": "contract",
+            "requiresDeployedAppCapabilities": ["retired_legacy_tables_client"],
+            "revokes": [
+                "event_claim_codes",
+                "redeem_claim_code_rpc",
+                "intake_requests",
+                "intake_submissions",
+                "intake_capture_statuses"
+            ],
+            "notes": "Drops claim codes, the client capture tables and their unused event/project helpers, redefines the archive/delete/restore helpers without them and narrows invitations.status. Apply only after the application without self-registration or capture is deployed; export the three tables first."
+        },
+        "20261012200100": {
+            "phase": "contract",
+            "requiresDeployedAppCapabilities": ["retired_legacy_tables_client"],
+            "revokes": [
+                "rsvp_records",
+                "rsvp_audit_log",
+                "rsvp_channel_log",
+                "managed_invitation_legacy_adoption_receipts",
+                "host_profiles"
+            ],
+            "notes": "Drops the RSVP v1 store, the legacy adoption receipts and host_profiles, none of which the application reads. Apply after the application that no longer writes host_profiles is deployed; export the five tables first."
+        },
+        "20261012200200": {
+            "phase": "contract",
+            "requiresDeployedAppCapabilities": [
+                "retired_legacy_tables_client",
+                "event_memories_client"
+            ],
+            "revokes": [
+                "valentina_memories_catalog",
+                "valentina_memories_private_lifecycle",
+                "valentina_memories_video_quota"
+            ],
+            "notes": "Drops the client-named Valentina memories catalog and its RPCs. Export the three tables and the referenced storage objects first; object deletion is a separate owner step."
+        },
+        "20261013100000": {
+            "phase": "expand",
+            "provides": ["invitation_access_controls"],
+            "notes": "Adds the service-role-only invitation_access_controls table (payment status and public access per invitation), the insert trigger on invitations that creates each row unpaid and enabled, and the set_invitation_access_control RPC that writes audit_logs. Backfills every existing invitation as paid and enabled, so nothing visible changes. Revokes only initialize privileges of the new table and functions. Apply before deploying the application that reads it."
+        },
+        "20261013110000": {
+            "phase": "contract",
+            "requiresDeployedAppCapabilities": ["guest_engagement_only_client"],
+            "revokes": ["track_guest_invitation_view_public"],
+            "notes": "Drops track_guest_invitation_view_public, the legacy view telemetry RPC. The application records guest engagement through record_guest_engagement_events_public and no longer serves /api/invitacion/:inviteId/view. Apply only after the Production deployment that provides guest_engagement_only_client passed smoke."
         }
     },
     "appCapabilities": {
@@ -192,6 +240,12 @@
         },
         "guest_engagement_client": {
             "requiresDbCapabilities": ["guest_engagement_events", "invitation_engagement_snapshots"]
+        },
+        "guest_engagement_only_client": {
+            "requiresDbCapabilities": ["guest_engagement_events", "invitation_engagement_snapshots"]
+        },
+        "invitation_access_controls_client": {
+            "requiresDbCapabilities": ["invitation_access_controls"]
         }
     }
 }

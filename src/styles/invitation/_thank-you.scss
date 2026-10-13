@@ -16,7 +16,10 @@
 		var(--color-surface-primary) 0%,
 		rgb(var(--color-action-accent-rgb) / 10%) 100%
 	);
-	overflow: hidden;
+
+	// `clip` (opt-in) clips the same way without making the section a scroll container, so
+	// scroll-linked (`view()`) animations inside it follow the page instead of standing still.
+	overflow: var(--thank-you-section-overflow, hidden);
 
 	// Subtle decorative overlay
 	&::before {

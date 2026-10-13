@@ -160,6 +160,11 @@ pair instead and falls back to the upload keys. Never create `PUBLIC_CLOUDINARY_
 place real Cloudinary values in tracked files. Missing values fail closed: invitation image uploads
 do not fall back to Supabase Storage.
 
+`PREVIEW_MEDIA_SECRET` is an optional server-only secret that seals the watermarked photo URLs of
+unpaid invitation previews (`/vista-previa/<token>`). When it is absent, the keys are derived from
+`SUPABASE_SERVICE_ROLE_KEY`, so no deployment needs it; setting or rotating it only changes preview
+URLs. Never expose it with a `PUBLIC_` prefix.
+
 Event memories have no browser-facing environment variable. The browser calls same-origin APIs; the
 backend uses server-only Worker origins and repository-owned route paths. Missing or invalid values
 fail closed.

@@ -316,7 +316,10 @@
 	padding-inline: var(--location-padding-inline);
 	position: relative;
 	text-align: center;
-	overflow: hidden;
+
+	// `clip` (opt-in) clips the same way without making the section a scroll container, so
+	// scroll-linked (`view()`) art inside it follows the page instead of standing still.
+	overflow: var(--location-section-overflow, hidden);
 	background: var(--location-bg);
 	color: var(--location-text-color);
 
@@ -1423,7 +1426,8 @@
 // The details card of a stationery suite: one small cotton card with an inner hairline, the
 // heading and short notes, no icons and no numbering. A `reserved` note shows a single color
 // swatch (the color it reserves).
-// Tokens: --location-enclosure-{bg,rule,shadow,max-width,ink,muted,swatch,mask,edge-shadow}
+// Tokens: --location-enclosure-{bg,rule,shadow,max-width,ink,muted,swatch,mask,edge-shadow},
+// --location-enclosure-reserved-title-{font,size,caps,line-height,tracking,color,tilt}
 // A masked (deckle) card clips its own shadow; `edge-shadow` is a drop-shadow filter on the
 // container that follows the deckle instead.
 // ==========================================================================
@@ -1525,5 +1529,23 @@
 
 	.event-location__enclosure-note--reserved .event-location__enclosure-text {
 		font-style: italic;
+	}
+
+	// The reserved color may be written by hand instead of set as a label: an invitation opts in
+	// with `--location-enclosure-reserved-title-font` (and size, caps, tracking, color, tilt).
+	.event-location__enclosure-note--reserved .event-location__enclosure-title {
+		font-family: var(
+			--location-enclosure-reserved-title-font,
+			var(--font-label, var(--font-body))
+		);
+		font-size: var(--location-enclosure-reserved-title-size, 1rem);
+		font-variant-caps: var(--location-enclosure-reserved-title-caps, all-small-caps);
+		line-height: var(--location-enclosure-reserved-title-line-height, normal);
+		letter-spacing: var(--location-enclosure-reserved-title-tracking, 0.16em);
+		color: var(
+			--location-enclosure-reserved-title-color,
+			var(--location-enclosure-muted, var(--color-text-secondary))
+		);
+		rotate: var(--location-enclosure-reserved-title-tilt, 0deg);
 	}
 }

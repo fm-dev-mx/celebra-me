@@ -12,6 +12,14 @@ import type { InvitationListItemDTO as InvitationDTO } from '@/lib/dashboard/dto
 import { resolveDisplayInfo, hasInconsistency } from '@/lib/intake/display-status';
 import { getPublicSlug } from '@/lib/intake/slug';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
+import { adminApi } from '@/lib/dashboard/admin-api';
+import InvitationAccessBadges from '@/components/dashboard/intake/InvitationAccessBadges';
+import {
+	INVITATION_ACCESS_ACTION_COPY,
+	availableAccessActions,
+	buildAccessCommand,
+	type InvitationAccessAction,
+} from '@/components/dashboard/intake/invitation-access-actions';
 
 type FilterTab =
 	| 'work_in_progress'
@@ -22,7 +30,9 @@ type FilterTab =
 	| 'drafts'
 	| 'published'
 	| 'archived'
-	| 'needs_attention';
+	| 'needs_attention'
+	| 'unpaid'
+	| 'disabled';
 
 const FILTER_TABS: Array<{
 	key: FilterTab;
@@ -79,6 +89,20 @@ const FILTER_TABS: Array<{
 		match: (invitation) => hasInconsistency(invitation) && !invitation.archivedAt,
 		isPrimary: false,
 	},
+	{
+		key: 'unpaid',
+		label: 'Pago pendiente',
+		match: (invitation) =>
+			!invitation.archivedAt && invitation.access?.paymentStatus === 'unpaid',
+		isPrimary: false,
+	},
+	{
+		key: 'disabled',
+		label: 'Deshabilitadas',
+		match: (invitation) =>
+			!invitation.archivedAt && invitation.access?.publicAccess === 'disabled',
+		isPrimary: false,
+	},
 ];
 
 function publicUrl(invitation: InvitationDTO): string | null {
@@ -106,6 +130,7 @@ interface InvitationTableRowProps {
 	onArchive: (invitation: InvitationDTO) => void;
 	onRestore: (invitation: InvitationDTO) => void;
 	onPermanentDelete: (invitation: InvitationDTO) => void;
+	onAccessAction: (invitation: InvitationDTO, action: InvitationAccessAction) => void;
 }
 
 const InvitationTableRow: FC<InvitationTableRowProps> = ({
@@ -115,10 +140,15 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 	onArchive,
 	onRestore,
 	onPermanentDelete,
+	onAccessAction,
 }) => {
 	const displayInfo = resolveDisplayInfo(invitation);
 	const publishedUrl = publicUrl(invitation);
 	const isActive = !invitation.archivedAt;
+	const accessActions =
+		isActive && invitation.kind === 'client' && invitation.access
+			? availableAccessActions(invitation.access)
+			: [];
 
 	const copyPublicLink = useCallback(() => {
 		if (publishedUrl) {
@@ -152,6 +182,7 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 							⚠
 						</span>
 					)}
+					{invitation.access && <InvitationAccessBadges access={invitation.access} />}
 				</div>
 			</td>
 			<td
@@ -191,6 +222,11 @@ const InvitationTableRow: FC<InvitationTableRowProps> = ({
 									window.location.href = `/dashboard/invitaciones/${invitation.id}`;
 								},
 							},
+							...accessActions.map((action) => ({
+								label: INVITATION_ACCESS_ACTION_COPY[action].menuLabel,
+								destructive: INVITATION_ACCESS_ACTION_COPY[action].destructive,
+								onClick: () => onAccessAction(invitation, action),
+							})),
 							{
 								label: 'Archivar',
 								hidden: !isActive,
@@ -225,6 +261,8 @@ const EMPTY_STATE_MESSAGES: Record<FilterTab, string> = {
 	published: 'No hay invitaciones publicadas.',
 	archived: 'No hay invitaciones archivadas.',
 	needs_attention: 'No hay invitaciones que requieran atención.',
+	unpaid: 'No hay invitaciones con pago pendiente.',
+	disabled: 'No hay invitaciones deshabilitadas.',
 };
 
 const InvitationList: FC = () => {
@@ -280,6 +318,11 @@ const InvitationList: FC = () => {
 		type: 'archive' | 'restore' | 'delete';
 		invitation: InvitationDTO;
 	} | null>(null);
+	const [accessConfirm, setAccessConfirm] = useState<{
+		action: InvitationAccessAction;
+		invitation: InvitationDTO;
+	} | null>(null);
+	const [accessSaving, setAccessSaving] = useState(false);
 
 	const tabFiltered = useMemo(() => {
 		const tab = FILTER_TABS.find((item) => item.key === activeTab);
@@ -333,6 +376,27 @@ const InvitationList: FC = () => {
 
 	const handlePermanentDelete = (invitation: InvitationDTO) => {
 		setConfirmState({ type: 'delete', invitation });
+	};
+
+	const handleAccessAction = (invitation: InvitationDTO, action: InvitationAccessAction) => {
+		setAccessConfirm({ invitation, action });
+	};
+
+	const executeAccessConfirm = async () => {
+		const access = accessConfirm?.invitation.access;
+		if (!accessConfirm || !access) return;
+		const { invitation, action } = accessConfirm;
+		const expectedVersion = access.version;
+		setAccessSaving(true);
+		await runAction(async () => {
+			await adminApi.setInvitationAccess(
+				invitation.id,
+				buildAccessCommand(action, expectedVersion),
+			);
+			await reloadInvitations();
+		}, 'No se pudo cambiar el estado de pago o la visibilidad.');
+		setAccessSaving(false);
+		setAccessConfirm(null);
 	};
 
 	const executeConfirm = async () => {
@@ -465,11 +529,24 @@ const InvitationList: FC = () => {
 									onArchive={handleArchive}
 									onRestore={handleRestore}
 									onPermanentDelete={handlePermanentDelete}
+									onAccessAction={handleAccessAction}
 								/>
 							))}
 						</tbody>
 					</table>
 				</div>
+			)}
+
+			{accessConfirm && (
+				<ConfirmModal
+					title={`${INVITATION_ACCESS_ACTION_COPY[accessConfirm.action].title}: ${accessConfirm.invitation.title}`}
+					message={INVITATION_ACCESS_ACTION_COPY[accessConfirm.action].message}
+					confirmLabel={INVITATION_ACCESS_ACTION_COPY[accessConfirm.action].confirmLabel}
+					destructive={INVITATION_ACCESS_ACTION_COPY[accessConfirm.action].destructive}
+					loading={accessSaving}
+					onConfirm={() => void executeAccessConfirm()}
+					onCancel={() => setAccessConfirm(null)}
+				/>
 			)}
 
 			{confirmState &&

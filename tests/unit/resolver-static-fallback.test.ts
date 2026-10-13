@@ -1,6 +1,6 @@
 import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
 import { getCollection } from 'astro:content';
-import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
+import { findPublishedWithAccessBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation.repository';
 
 // Mock environment to prevent Jest import.meta issues
@@ -15,7 +15,7 @@ jest.mock('astro:content', () => ({
 
 // We mock repositories
 jest.mock('@/lib/intake/repositories/published-invitation-content.repository', () => ({
-	findPublishedBySlugAndEventType: jest.fn(),
+	findPublishedWithAccessBySlugAndEventType: jest.fn(),
 }));
 
 jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
@@ -28,7 +28,7 @@ describe('resolveInvitationContent Integration Fallback tests', () => {
 	});
 
 	it('missing invitation returns null', async () => {
-		const mockFindPublished = findPublishedBySlugAndEventType as jest.Mock;
+		const mockFindPublished = findPublishedWithAccessBySlugAndEventType as jest.Mock;
 		const mockFindInv = isInvitationArchivedBySlug as jest.Mock;
 		const mockGetCollection = getCollection as jest.Mock;
 
@@ -43,7 +43,7 @@ describe('resolveInvitationContent Integration Fallback tests', () => {
 	});
 
 	it('Supabase credentials missing falls back to static demos and returns null if not found', async () => {
-		const mockFindPublished = findPublishedBySlugAndEventType as jest.Mock;
+		const mockFindPublished = findPublishedWithAccessBySlugAndEventType as jest.Mock;
 		const mockFindInv = isInvitationArchivedBySlug as jest.Mock;
 		const mockGetCollection = getCollection as jest.Mock;
 
@@ -58,7 +58,7 @@ describe('resolveInvitationContent Integration Fallback tests', () => {
 	});
 
 	it('valid static demo entry resolves correctly when Supabase credentials are missing', async () => {
-		const mockFindPublished = findPublishedBySlugAndEventType as jest.Mock;
+		const mockFindPublished = findPublishedWithAccessBySlugAndEventType as jest.Mock;
 		const mockFindInv = isInvitationArchivedBySlug as jest.Mock;
 		const mockGetCollection = getCollection as jest.Mock;
 

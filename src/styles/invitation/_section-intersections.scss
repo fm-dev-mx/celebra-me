@@ -123,3 +123,101 @@
 		pointer-events: none;
 	}
 }
+
+// Folio: the incoming section's top edge is a page cut on a diagonal, low on one side and rising
+// toward the other, where its corner is turned down over the page. The page rises
+// `--intersection-folio-rise` above the boundary into the outgoing section's bottom padding, so
+// nothing is reserved and nothing shifts. Where the corner was, the outgoing section shows
+// through; the turned corner lays the back of the paper (`--intersection-folio-back`, shaded toward
+// the fold by `--intersection-folio-back-shade`) over the page and casts
+// `--intersection-folio-shadow`. `--intersection-folio-ink` draws the cut edge and the fold (default
+// none), and `--intersection-folio-flip: -1` mirrors the page (corner on the left), so one
+// invitation can alternate sides. The page takes `--intersection-surface-fill` (else
+// `--intersection-surface`), which must match the incoming section's top. With
+// `--intersection-folio-lift` (an angle) the corner starts lifted off the page and turns down in 3D
+// while the boundary scrolls in; reduced motion and browsers without scroll timelines keep it flat.
+.invitation-section-wrapper[data-intersection='folio'] {
+	--folio-flip: var(--intersection-folio-flip, 1);
+	--folio-rise: var(--intersection-folio-rise, clamp(2.5rem, 7vw, 5.5rem));
+	--folio-fold: min(
+		var(--intersection-folio-fold, clamp(2.25rem, 6vw, 4.5rem)),
+		var(--folio-rise)
+	);
+	--folio-ink: var(--intersection-folio-ink, transparent);
+
+	position: relative;
+	z-index: var(--intersection-z, auto);
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset-inline: 0;
+		top: calc(0px - var(--folio-rise));
+		z-index: 1;
+		height: calc(var(--folio-rise) + 1px);
+		background:
+			linear-gradient(
+					to bottom right,
+					transparent 50%,
+					var(--folio-ink) 50%,
+					var(--folio-ink) calc(50% + 1.25px),
+					transparent calc(50% + 1.25px)
+				)
+				0 0 / calc(100% - var(--folio-fold)) var(--folio-rise) no-repeat,
+			var(--intersection-surface-fill, var(--intersection-surface));
+		clip-path: polygon(
+			0 100%,
+			calc(100% - var(--folio-fold)) 0,
+			100% var(--folio-fold),
+			100% 100%
+		);
+		transform: scaleX(var(--folio-flip));
+		pointer-events: none;
+	}
+
+	&::after {
+		content: '';
+		position: absolute;
+		top: calc(0px - var(--folio-rise));
+		left: calc((1 + var(--folio-flip)) / 2 * (100% - var(--folio-fold)));
+		z-index: 2;
+		width: var(--folio-fold);
+		height: var(--folio-fold);
+		background: linear-gradient(
+			to top right,
+			var(--intersection-folio-back, var(--color-surface-elevated)) 0%,
+			var(
+					--intersection-folio-back-shade,
+					var(--intersection-folio-back, var(--color-surface-elevated))
+				)
+				48%,
+			var(--folio-ink) 49%,
+			var(--folio-ink) 50%,
+			transparent 50%
+		);
+		filter: drop-shadow(var(--intersection-folio-shadow, 0 0 0 transparent));
+		transform: scaleX(var(--folio-flip));
+		pointer-events: none;
+
+		@supports (animation-timeline: view()) {
+			@media (prefers-reduced-motion: no-preference) {
+				animation: intersection-folio-turn linear both;
+				animation-timeline: view();
+				animation-range: entry 0% cover 35%;
+			}
+		}
+	}
+}
+
+// The corner turns about its fold (the diagonal of its own box) from `--intersection-folio-lift`
+// down to the page. The flip is applied first, so a mirrored corner turns the same way.
+@keyframes intersection-folio-turn {
+	from {
+		transform: perspective(28rem) scaleX(var(--folio-flip))
+			rotate3d(1, 1, 0, var(--intersection-folio-lift, 0deg));
+	}
+
+	to {
+		transform: perspective(28rem) scaleX(var(--folio-flip)) rotate3d(1, 1, 0, 0deg);
+	}
+}

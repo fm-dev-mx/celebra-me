@@ -167,13 +167,13 @@ Never infer hosted migration status from documentation. Obtain live pending sets
 - **Receipt-lock serialization**: atomic metadata/restore RPCs serialize on the invitation row and
   must not row-lock append-only receipts. Never grant receipt `UPDATE` via the dashboard to silence
   `42501`.
-- **Public guest RSVP RPCs**: public submission, guest auto-creation, and view telemetry use the
-  `SECURITY DEFINER` RPCs `submit_guest_rsvp_public` and `track_guest_invitation_view_public`.
-  Hybrid create qualifies `extensions.gen_random_bytes` under `search_path=public`.
-  `p_guest_comment` is an absolute SET when provided; `status_changed` audit is owned by
-  `trg_guest_invitations_emit_audit`. Direct `INSERT`, `UPDATE`, and `DELETE` on protected guest
-  tables stay revoked from `service_role`. Telemetry failures degrade gracefully and never break the
-  public invitation.
+- **Public guest RSVP RPCs**: public submission and guest auto-creation use the `SECURITY DEFINER`
+  RPC `submit_guest_rsvp_public`; guest engagement uses `record_guest_engagement_events_public` (the
+  legacy `track_guest_invitation_view_public` was retired by `20261013110000`). Hybrid create
+  qualifies `extensions.gen_random_bytes` under `search_path=public`. `p_guest_comment` is an
+  absolute SET when provided; `status_changed` audit is owned by `trg_guest_invitations_emit_audit`.
+  Direct `INSERT`, `UPDATE`, and `DELETE` on protected guest tables stay revoked from
+  `service_role`. Telemetry failures degrade gracefully and never break the public invitation.
 - **Migration ownership**: every schema change is a versioned migration in `supabase/migrations/`,
   promoted Local → Preview → Production with migration-before-code ordering and verified recovery
   points. Direct Production SQL and manual dashboard privilege repairs are prohibited as a normal

@@ -5,6 +5,7 @@ export type ApiErrorCode =
 	| 'validation_error'
 	| 'forbidden'
 	| 'not_found'
+	| 'invitation_unavailable'
 	| 'conflict'
 	| 'rate_limited'
 	| 'limit_reached'

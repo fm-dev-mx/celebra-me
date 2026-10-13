@@ -1,20 +1,36 @@
 import { getRoutableEventEntry } from '@/lib/content/events';
-import { findPublishedBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
+import { findPublishedWithAccessBySlugAndEventType } from '@/lib/intake/repositories/published-invitation-content.repository';
 import { isInvitationArchivedBySlug } from '@/lib/intake/repositories/invitation.repository';
 import { adaptEvent } from '@/lib/adapters/event';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import type { InvitationViewModel } from '@/lib/adapters/types';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { normalizeLegacyLocationInContent } from '@/lib/invitation/location-normalizer';
+import {
+	MISSING_INVITATION_ACCESS,
+	isInvitationPubliclyDisabled,
+	resolvePublicInvitationMode,
+	type InvitationAccessState,
+} from '@/lib/invitation/access/invitation-access';
+import { applyPreviewMediaPolicy } from '@/lib/invitation/preview/preview-media-policy';
 
 export type ContentResolution =
 	| { source: 'static'; viewModel: InvitationViewModel }
 	| {
 			source: 'published';
+			invitationId: string;
 			viewModel: InvitationViewModel;
 			rawContent: Record<string, unknown>;
 			version: number;
+			access: InvitationAccessState;
 	  };
+
+/** A client invitation the administrator disabled: no content, no event data. */
+export interface UnavailableInvitationResolution {
+	source: 'unavailable';
+}
+
+export type PublicInvitationResolution = ContentResolution | UnavailableInvitationResolution;
 
 function isStaticDemoEntry(
 	entry: Awaited<ReturnType<typeof getRoutableEventEntry>> | null,
@@ -88,17 +104,51 @@ function logInvalidPublishedContent(input: {
 	});
 }
 
+/**
+ * Content for callers that only need renderable content. A disabled invitation
+ * resolves to null, so every consumer (location, RSVP, memories identity, social
+ * metadata) treats it as missing unless it opts into `resolvePublicInvitation`.
+ */
 export async function resolveInvitationContent(
 	slug: string,
 	eventType?: string,
 ): Promise<ContentResolution | null> {
+	const resolution = await resolvePublicInvitation(slug, eventType);
+	return resolution && resolution.source !== 'unavailable' ? resolution : null;
+}
+
+function resolvePublishedAccess(entry: {
+	id: string;
+	invitationId: string;
+	access: InvitationAccessState | null;
+}): InvitationAccessState {
+	if (entry.access) return entry.access;
+	console.warn('[invitation-content] Missing access state; serving the unpaid preview', {
+		publishedContentId: entry.id,
+		invitationId: entry.invitationId,
+	});
+	return MISSING_INVITATION_ACCESS;
+}
+
+/**
+ * Public route resolution, including the administrator's access decision for
+ * DB-published client invitations. Static demos are always reachable.
+ */
+export async function resolvePublicInvitation(
+	slug: string,
+	eventType?: string,
+): Promise<PublicInvitationResolution | null> {
 	// DB-published content first — this is the source of truth for real invitations.
 	// If Supabase credentials are not configured (CI, local without .env), skip DB
 	// and fall through to the static fallback so demos still render.
 	if (eventType) {
 		try {
-			const publishedEntry = await findPublishedBySlugAndEventType(slug, eventType);
+			const publishedEntry = await findPublishedWithAccessBySlugAndEventType(slug, eventType);
 			if (publishedEntry && publishedEntry.isDemo !== true) {
+				const access = resolvePublishedAccess(publishedEntry);
+				if (isInvitationPubliclyDisabled(access)) {
+					return { source: 'unavailable' };
+				}
 				const normalizedContent = normalizeLegacyLocationInContent(publishedEntry.content);
 				const parsedContent = eventContentSchema.safeParse(normalizedContent);
 				if (!parsedContent.success) {
@@ -114,17 +164,26 @@ export async function resolveInvitationContent(
 				}
 
 				const rawContent = parsedContent.data;
-				const viewModel = adaptDbEvent({
+				const adaptedViewModel = adaptDbEvent({
 					slug,
 					eventType: publishedEntry.eventType,
 					isDemo: publishedEntry.isDemo,
 					content: rawContent,
 				});
+				// Unpaid: every consumer (page, social card, memories identity) gets watermarked photos.
+				const viewModel =
+					resolvePublicInvitationMode(access) === 'preview'
+						? applyPreviewMediaPolicy(adaptedViewModel, {
+								invitationId: publishedEntry.invitationId,
+							})
+						: adaptedViewModel;
 				return {
 					source: 'published',
+					invitationId: publishedEntry.invitationId,
 					viewModel,
 					rawContent,
 					version: publishedEntry.version,
+					access,
 				};
 			}
 		} catch (error) {

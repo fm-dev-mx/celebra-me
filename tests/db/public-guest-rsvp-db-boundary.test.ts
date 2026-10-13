@@ -115,19 +115,34 @@ describe('public guest rsvp postgresql security boundary (real DB)', () => {
 		expect(parseInt(auditAfter.stdout.trim(), 10)).toBe(auditBeforeCount + 1);
 	});
 
-	it('allows service_role to execute track_guest_invitation_view_public', () => {
-		const viewRes = runSqlAsRole(
+	it('allows service_role to record guest engagement and keeps the ledger append-only', () => {
+		const recordRes = runSqlAsRole(
 			'service_role',
-			"select public.track_guest_invitation_view_public('33333333-3333-3333-3333-333333333333', 85);",
+			'select public.record_guest_engagement_events_public(\'33333333-3333-3333-3333-333333333333\', \'[{"client_event_id":"5a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d","schema_version":1,"event_name":"invitation_opened","occurred_at":"2026-10-12T12:00:00Z","page_view_id":"6a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d","traffic_class":"guest","device_class":"mobile","properties":{"entry":"direct","is_reload":false}}]\'::jsonb, null)::text;',
 		);
-		expect(viewRes.status).toBe(0);
-		expect(viewRes.stdout).toContain('t');
+		expect(recordRes.status).toBe(0);
+		expect(recordRes.stdout).toContain('"accepted": 1');
 
 		const guestCheck = runSql(
-			"select is_viewed, view_percentage from public.guest_invitations where invite_id = '33333333-3333-3333-3333-333333333333';",
+			"select open_count, is_viewed from public.guest_invitations where invite_id = '33333333-3333-3333-3333-333333333333';",
 		);
 		expect(guestCheck.status).toBe(0);
-		expect(guestCheck.stdout).toContain('t|85');
+		expect(guestCheck.stdout).toContain('1|t');
+
+		const updateRes = runSqlAsRole(
+			'service_role',
+			"update public.guest_engagement_events set traffic_class = 'bot' where client_event_id = '5a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d';",
+		);
+		expect(updateRes.status).not.toBe(0);
+		expect(updateRes.stderr).toMatch(/permission denied|42501/i);
+	});
+
+	it('retires the legacy view RPC', () => {
+		const legacy = runSql(
+			"select to_regprocedure('public.track_guest_invitation_view_public(text,integer)') is null;",
+		);
+		expect(legacy.status).toBe(0);
+		expect(legacy.stdout.trim()).toBe('t');
 	});
 
 	it('denies authenticated and anon execution on submit and track public RPCs', () => {
@@ -145,19 +160,19 @@ describe('public guest rsvp postgresql security boundary (real DB)', () => {
 		expect(authSubmit.status).not.toBe(0);
 		expect(authSubmit.stderr).toMatch(/permission denied|42501/i);
 
-		const anonTrack = runSqlAsRole(
+		const anonRecord = runSqlAsRole(
 			'anon',
-			"select public.track_guest_invitation_view_public('33333333-3333-3333-3333-333333333333', 10);",
+			"select public.record_guest_engagement_events_public('33333333-3333-3333-3333-333333333333', '[]'::jsonb, null);",
 		);
-		expect(anonTrack.status).not.toBe(0);
-		expect(anonTrack.stderr).toMatch(/permission denied|42501/i);
+		expect(anonRecord.status).not.toBe(0);
+		expect(anonRecord.stderr).toMatch(/permission denied|42501/i);
 
-		const authTrack = runSqlAsRole(
+		const authRecord = runSqlAsRole(
 			'authenticated',
-			"select public.track_guest_invitation_view_public('33333333-3333-3333-3333-333333333333', 10);",
+			"select public.record_guest_engagement_events_public('33333333-3333-3333-3333-333333333333', '[]'::jsonb, null);",
 		);
-		expect(authTrack.status).not.toBe(0);
-		expect(authTrack.stderr).toMatch(/permission denied|42501/i);
+		expect(authRecord.status).not.toBe(0);
+		expect(authRecord.stderr).toMatch(/permission denied|42501/i);
 	});
 
 	it('denies direct client-role reads of published invitation content', () => {

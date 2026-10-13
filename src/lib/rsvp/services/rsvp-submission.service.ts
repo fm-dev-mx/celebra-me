@@ -1,7 +1,6 @@
 import {
 	findGuestByInviteIdPublic,
 	submitGuestRsvpPublicRpc,
-	trackGuestInvitationViewPublicRpc,
 } from '@/lib/rsvp/repositories/guest.repository';
 import { generateShortId } from '@/lib/server/ids';
 import type {
@@ -24,6 +23,10 @@ import { resolveGuestCap } from '@/lib/rsvp/guest-cap';
 import { appendGuestMessage } from '@/lib/rsvp/core/guest-message';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
+import {
+	invitationUnavailableError,
+	isEventInvitationDisabled,
+} from '@/lib/invitation/access/invitation-access.repository';
 
 type InviteRsvpIdentity = {
 	inviteId: string;
@@ -68,6 +71,9 @@ export async function resolveRsvpTarget(identity: RsvpIdentity): Promise<Resolve
 		if (isInviteIdentity(identity)) {
 			const invitation = await findGuestByInviteIdPublic(sanitize(identity.inviteId, 64));
 			if (!invitation) throw new ApiError(404, 'not_found', 'Invitation not found.');
+			if (await isEventInvitationDisabled(invitation.eventId)) {
+				throw invitationUnavailableError();
+			}
 			return {
 				event: null,
 				invitation,
@@ -248,21 +254,4 @@ export async function submitGuestRsvpByPublicEvent(input: {
 		maxAllowedAttendees: input.maxAllowedAttendees,
 	});
 	return persistRsvpResponse(target, input.payload, 'generic_link');
-}
-
-export async function trackInvitationView(
-	inviteId: string,
-	viewPercentage?: number,
-): Promise<void> {
-	const cleanInviteId = sanitize(inviteId, 64);
-	if (!cleanInviteId) return;
-
-	try {
-		await trackGuestInvitationViewPublicRpc(cleanInviteId, viewPercentage);
-	} catch (error) {
-		console.warn('[telemetry] Non-critical view tracking failed:', {
-			inviteId: cleanInviteId,
-			error: error instanceof Error ? error.message : String(error),
-		});
-	}
 }

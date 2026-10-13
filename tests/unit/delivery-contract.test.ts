@@ -2,7 +2,6 @@ import {
 	ANONYMOUS_PUBLISHED_CONTENT_READS,
 	PERSONALIZED_GUEST_CONTEXT_READS_ON_HIT,
 	PERSONALIZED_GUEST_CONTEXT_READS_ON_MISS,
-	PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT,
 	assertObservedOperationCount,
 	classifyDeliveryUrl,
 	decodedHtmlUtf8ByteLength,
@@ -119,7 +118,6 @@ describe('invitation delivery query budgets', () => {
 			PERSONALIZED_GUEST_CONTEXT_READS_ON_MISS,
 			'personalized-miss',
 		);
-		assertObservedOperationCount(0, PERSONALIZED_VIEW_TRACK_WRITES_ON_HIT, 'view-track');
 	});
 });
 

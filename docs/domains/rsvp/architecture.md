@@ -62,8 +62,6 @@ refresh endpoint.
 - `GET /api/invitacion/:inviteId/location`
 - `POST /api/invitacion/:inviteId/rsvp`
 - `POST /api/invitacion/:inviteId/events` (guest engagement batches)
-- `POST /api/invitacion/:inviteId/view` (legacy view telemetry for pages cached before engagement
-  analytics; removed in the contract release)
 - `POST /api/invitacion/public/:eventType/:slug/rsvp`
 
 ### Invitation Admin APIs

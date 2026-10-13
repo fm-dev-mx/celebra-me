@@ -1,11 +1,15 @@
 jest.mock('@/hooks/use-invitation-admin', () => ({
 	useInvitationAdmin: jest.fn(),
 }));
+jest.mock('@/lib/dashboard/admin-api', () => ({
+	adminApi: { setInvitationAccess: jest.fn(), setInvitationWorkflow: jest.fn() },
+}));
 
 import { act, render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import InvitationList from '@/components/dashboard/intake/InvitationList';
 import { useInvitationAdmin } from '@/hooks/use-invitation-admin';
 import type { InvitationListItemDTO as InvitationDTO } from '@/lib/dashboard/dto/intake';
+import { adminApi } from '@/lib/dashboard/admin-api';
 
 const mockUseInvitationAdmin = useInvitationAdmin as jest.Mock;
 
@@ -336,4 +340,111 @@ describe('invitation validity filters', () => {
 			expect(admin.archiveInvitation).not.toHaveBeenCalled();
 		},
 	);
+});
+
+describe('InvitationList access controls', () => {
+	const unpaidAccess = {
+		invitationId: 'proj-1',
+		paymentStatus: 'unpaid' as const,
+		publicAccess: 'enabled' as const,
+		internalNote: null,
+		version: 4,
+		updatedAt: '2026-10-10T12:00:00Z',
+		updatedBy: null,
+	};
+
+	beforeEach(() => jest.clearAllMocks());
+
+	it('flags unpaid and disabled invitations and filters them by tab', () => {
+		mockUseInvitationAdmin.mockReturnValue(
+			makeMockAdmin({
+				items: [
+					makeItem({ id: 'proj-1', title: 'Sin pago', access: unpaidAccess }),
+					makeItem({
+						id: 'proj-2',
+						title: 'Oculta',
+						access: {
+							...unpaidAccess,
+							invitationId: 'proj-2',
+							paymentStatus: 'paid',
+							publicAccess: 'disabled',
+						},
+					}),
+					makeItem({
+						id: 'proj-3',
+						title: 'Al corriente',
+						access: { ...unpaidAccess, invitationId: 'proj-3', paymentStatus: 'paid' },
+					}),
+				],
+			}),
+		);
+
+		render(<InvitationList />);
+
+		expect(
+			screen.getByText('Pago pendiente', { selector: '.dashboard-badge' }),
+		).toBeInTheDocument();
+		expect(
+			screen.getByText('Deshabilitada', { selector: '.dashboard-badge' }),
+		).toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole('button', { name: /Pago pendiente/ }));
+		expect(screen.getByText('Sin pago')).toBeInTheDocument();
+		expect(screen.queryByText('Al corriente')).not.toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole('button', { name: /Deshabilitadas/ }));
+		expect(screen.getByText('Oculta')).toBeInTheDocument();
+		expect(screen.queryByText('Sin pago')).not.toBeInTheDocument();
+	});
+
+	it('marks an invitation as paid after confirmation with its current version', async () => {
+		const reloadInvitations = jest.fn().mockResolvedValue(undefined);
+		(adminApi.setInvitationAccess as jest.Mock).mockResolvedValue({
+			...unpaidAccess,
+			paymentStatus: 'paid',
+			version: 5,
+		});
+		mockUseInvitationAdmin.mockReturnValue(
+			makeMockAdmin({
+				reloadInvitations,
+				items: [makeItem({ id: 'proj-1', title: 'Sin pago', access: unpaidAccess })],
+			}),
+		);
+
+		render(<InvitationList />);
+		fireEvent.click(screen.getByRole('button', { name: /Todas/ }));
+		fireEvent.click(screen.getByLabelText('Más acciones'));
+		fireEvent.click(screen.getByRole('menuitem', { name: 'Marcar como pagada' }));
+
+		const dialog = screen.getByRole('dialog');
+		expect(within(dialog).getByText(/La marca de vista previa desaparece/)).toBeInTheDocument();
+		fireEvent.click(within(dialog).getByRole('button', { name: 'Marcar como pagada' }));
+
+		await waitFor(() =>
+			expect(adminApi.setInvitationAccess).toHaveBeenCalledWith('proj-1', {
+				action: 'set_payment_status',
+				paymentStatus: 'paid',
+				expectedVersion: 4,
+			}),
+		);
+		await waitFor(() => expect(reloadInvitations).toHaveBeenCalled());
+	});
+
+	it('offers no access actions for demos or archived invitations', () => {
+		mockUseInvitationAdmin.mockReturnValue(
+			makeMockAdmin({
+				items: [makeItem({ id: 'proj-1', title: 'Demo', kind: 'demo', access: null })],
+			}),
+		);
+
+		render(<InvitationList />);
+		fireEvent.click(screen.getByRole('button', { name: /Todas/ }));
+		fireEvent.click(screen.getByLabelText('Más acciones'));
+		expect(
+			screen.queryByRole('menuitem', { name: 'Marcar como pagada' }),
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole('menuitem', { name: 'Deshabilitar invitación' }),
+		).not.toBeInTheDocument();
+	});
 });

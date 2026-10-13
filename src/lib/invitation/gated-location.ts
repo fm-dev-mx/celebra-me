@@ -1,4 +1,5 @@
-import { resolveInvitationContent } from '@/lib/invitation/content-resolver';
+import { resolvePublicInvitation } from '@/lib/invitation/content-resolver';
+import { invitationUnavailableError } from '@/lib/invitation/access/invitation-access.repository';
 import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-context.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { sanitize } from '@/lib/rsvp/core/utils';
@@ -41,10 +42,11 @@ export async function resolveGatedLocationPayload(
 		throw new ApiError(403, 'forbidden', 'Location is available after confirmed RSVP.');
 	}
 
-	const resolution = await resolveInvitationContent(
+	const resolution = await resolvePublicInvitation(
 		guestContext.eventSlug,
 		guestContext.eventType,
 	);
+	if (resolution?.source === 'unavailable') throw invitationUnavailableError();
 	const location = resolution?.viewModel.sections.location;
 	if (!location) {
 		throw new ApiError(404, 'not_found', 'Location is not available for this invitation.');

@@ -10,7 +10,7 @@ import type { Invitation } from '@/lib/intake/types';
 
 describe('list schedule projection', () => {
 	beforeEach(() => jest.clearAllMocks());
-	it('uses three bulk reads and published precedence', async () => {
+	it('uses four bulk reads and published precedence', async () => {
 		jest.mocked(listInvitations).mockResolvedValue([
 			{ id: 'published', kind: 'client' },
 			{ id: 'draft', kind: 'client' },
@@ -23,11 +23,27 @@ describe('list schedule projection', () => {
 			.mockResolvedValueOnce([
 				{ invitation_project_id: 'published', heroDate: '2099-01-01' },
 				{ invitation_project_id: 'draft', heroDate: '2099-02-01' },
+			])
+			.mockResolvedValueOnce([
+				{
+					invitation_id: 'published',
+					payment_status: 'unpaid',
+					public_access: 'enabled',
+					internal_note: null,
+					version: 1,
+					updated_at: '2026-10-10T00:00:00Z',
+					updated_by: null,
+				},
 			]);
 		const items = await getEnrichedInvitationList('all');
 		expect(items[0]).toMatchObject({ eventDate: null, validity: 'unknown' });
 		expect(items[1]).toMatchObject({ eventDate: '2099-02-01', validity: 'upcoming' });
-		expect(supabaseRestRequest).toHaveBeenCalledTimes(3);
+		expect(items[0].access).toMatchObject({ paymentStatus: 'unpaid', publicAccess: 'enabled' });
+		expect(items[1].access).toBeNull();
+		expect(supabaseRestRequest).toHaveBeenCalledTimes(4);
+		expect(jest.mocked(supabaseRestRequest).mock.calls[3][0].pathWithQuery).toContain(
+			'invitation_access_controls?select=',
+		);
 		for (const [query] of jest.mocked(supabaseRestRequest).mock.calls) {
 			expect(query.pathWithQuery).not.toMatch(/select=\*|[,=]content(?:,|&)/);
 		}
@@ -36,5 +52,23 @@ describe('list schedule projection', () => {
 		);
 		expect(items[0]).not.toHaveProperty('content');
 		expect(items[0]).not.toHaveProperty('eventTiming');
+	});
+
+	it('reads access state only for client invitations', async () => {
+		jest.mocked(listInvitations).mockResolvedValue([
+			{ id: 'client-1', kind: 'client' },
+			{ id: 'demo-1', kind: 'demo' },
+		] as Invitation[]);
+		jest.mocked(supabaseRestRequest).mockResolvedValue([]);
+
+		const items = await getEnrichedInvitationList('active');
+
+		const accessCall = jest
+			.mocked(supabaseRestRequest)
+			.mock.calls.find(([query]) =>
+				query.pathWithQuery.startsWith('invitation_access_controls'),
+			);
+		expect(accessCall?.[0].pathWithQuery).toContain('invitation_id=in.(client-1)');
+		expect(items.find((item) => item.id === 'demo-1')?.access).toBeNull();
 	});
 });

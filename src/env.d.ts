@@ -68,6 +68,7 @@ interface ImportMetaEnv {
 	readonly META_PIXEL_ID: string;
 	readonly META_TEST_EVENT_CODE: string;
 	readonly TRUST_DEVICE_SECRET: string;
+	readonly PREVIEW_MEDIA_SECRET?: string;
 	readonly TRUST_DEVICE_MAX_AGE_DAYS: string;
 	readonly UPSTASH_REDIS_REST_URL: string;
 	readonly UPSTASH_REDIS_REST_TOKEN: string;

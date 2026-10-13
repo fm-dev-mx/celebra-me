@@ -7,6 +7,7 @@ import {
 	assignInvitationOwner,
 } from '@/lib/intake/repositories/invitation.repository';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import { listInvitationAccessRecords } from '@/lib/invitation/access/invitation-access.repository';
 import {
 	resolveInvitationSchedule,
 	type InvitationTimingProjection,
@@ -43,7 +44,7 @@ export async function getEnrichedInvitationList(
 	const invitationIds = invitations.map((p) => p.id);
 	if (invitationIds.length === 0) return [];
 
-	const [eventRows, pubRows, draftRows] = await Promise.all([
+	const [eventRows, pubRows, draftRows, accessRecords] = await Promise.all([
 		supabaseRestRequest<Array<{ id: string; invitation_project_id: string; status: string }>>({
 			pathWithQuery: `events?select=id,invitation_project_id,status&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})&deleted_at=is.null`,
 			useServiceRole: true,
@@ -71,6 +72,9 @@ export async function getEnrichedInvitationList(
 			pathWithQuery: `invitation_content_drafts?select=invitation_project_id,rsvp:content->rsvp,eventTiming:content->eventTiming,heroDate:content->hero->>date&invitation_project_id=in.(${invitationIds.map(encodeURIComponent).join(',')})`,
 			useServiceRole: true,
 		}),
+		listInvitationAccessRecords(
+			invitations.filter((invitation) => invitation.kind === 'client').map((p) => p.id),
+		),
 	]);
 
 	const eventsByInvitation = new Map(eventRows.map((e) => [e.invitation_project_id, e] as const));
@@ -102,6 +106,7 @@ export async function getEnrichedInvitationList(
 				rsvpSectionHasContent: rsvpContentInvitations.has(invitation.id),
 			}),
 			...resolveInvitationSchedule(invitation.kind, content, now),
+			access: accessRecords.get(invitation.id) ?? null,
 		};
 	});
 }

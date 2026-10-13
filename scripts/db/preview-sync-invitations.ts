@@ -54,6 +54,7 @@ import {
 	truncateTable,
 } from './preview-sync-db.ts';
 import { syncAsset } from './preview-sync-storage.ts';
+import { resetPreviewInvitationAccess } from './preview-sync-access.ts';
 import {
 	createReport,
 	printReport,
@@ -439,6 +440,23 @@ function buildPhases(
 				}
 			},
 		})),
+
+		// Phase 3b: Access state is environment-owned; mirrored invitations start paid in Preview.
+		{
+			name: 'Reset invitation access state',
+			action: () => {
+				console.info('\n📋 Phase 3b: Resetting invitation access state (paid, enabled)');
+				const ids = queryTableJson(prodCtx.dbUrl, 'invitations').map((row) =>
+					String(row.id),
+				);
+				const result = resetPreviewInvitationAccess({
+					previewDbUrl: previewCtx.dbUrl,
+					invitationIds: ids,
+					dryRun: options.dryRun,
+				});
+				console.info(`   ${result.status}: ${result.invitations} invitation(s)`);
+			},
+		},
 
 		// Phase 4: Remap event ownership
 		{

@@ -9,7 +9,89 @@
 
 $storybook-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.29 0 0 0 0 0.22 0 0 0 0 0.4 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url%28%23n%29'/%3E%3C/svg%3E");
 $storybook-liner: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M9 4c.4 3.2 1.8 4.6 5 5-3.2.4-4.6 1.8-5 5-.4-3.2-1.8-4.6-5-5 3.2-.4 4.6-1.8 5-5ZM27 22c.3 2.2 1.2 3.1 3.4 3.4-2.2.3-3.1 1.2-3.4 3.4-.3-2.2-1.2-3.1-3.4-3.4 2.2-.3 3.1-1.2 3.4-3.4Z' fill='%23b0883a' fill-opacity='.55'/%3E%3C/svg%3E");
+$storybook-sparkle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 0c.7 5.6 3.4 8.3 10 10-6.6 1.7-9.3 4.4-10 10-.7-5.6-3.4-8.3-10-10 6.6-1.7 9.3-4.4 10-10Z'/%3E%3C/svg%3E");
 $storybook-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpath d='M0 3L14 1L31 4L52 2L70 5L93 1L118 3L140 0L163 4L188 2L210 5L236 1L259 3L281 0L305 4L330 2L352 5L377 1L401 3L423 0L448 4L472 2L494 5L519 1L543 3L565 0L590 4L614 2L637 5L661 1L686 3L708 0L733 4L757 2L779 5L804 1L828 3L851 0L875 4L899 2L922 5L946 1L970 3L997 0L999 22L996 47L1000 71L997 96L999 120L995 145L998 169L1000 194L996 218L999 243L997 268L1000 292L995 317L998 341L1000 366L996 390L999 415L997 440L1000 464L995 489L998 513L1000 538L996 562L999 587L997 612L1000 636L995 661L998 685L1000 710L996 734L999 759L997 784L1000 808L995 833L998 857L1000 882L996 906L999 931L997 956L1000 998L976 996L951 1000L928 997L903 999L879 995L855 998L830 1000L806 996L782 999L757 997L733 1000L709 995L684 998L660 1000L636 996L611 999L587 997L563 1000L538 995L514 998L490 1000L465 996L441 999L417 997L392 1000L368 995L344 998L319 1000L295 996L271 999L246 997L222 1000L198 995L173 998L149 1000L125 996L100 999L76 997L52 1000L27 995L3 999L1 975L4 951L0 926L3 902L1 878L5 853L2 829L0 805L4 780L1 756L3 732L0 707L5 683L2 659L0 634L4 610L1 586L3 561L0 537L5 513L2 488L0 464L4 440L1 415L3 391L0 367L5 342L2 318L0 294L4 269L1 245L3 221L0 196L5 172L2 148L0 123L4 99L1 75L3 50L0 26Z'/%3E%3C/svg%3E");
+
+// ---------------------------------------------------------------------------------------------
+// Lantern sky: three depth planes behind the envelope (far stars, mid glows, near lanterns). It is
+// opt-in (`--storybook-sky-display: block`) and colored through `--storybook-sky-light`,
+// `--storybook-sky-glow` and `--storybook-sky-lantern`. Only transform and opacity move.
+// ---------------------------------------------------------------------------------------------
+
+@function sky-star($x, $y, $core, $alpha: 85%) {
+	@return radial-gradient(
+		circle at $x $y,
+		color-mix(in srgb, var(--sky-light) $alpha, transparent) 0 $core,
+		transparent $core * 1.8
+	);
+}
+
+@function sky-glow($x, $y, $core, $halo) {
+	@return radial-gradient(
+		circle at $x $y,
+		color-mix(in srgb, var(--sky-light) 92%, transparent) 0 $core,
+		color-mix(in srgb, var(--sky-glow) 36%, transparent) $core * 2.2,
+		transparent $halo
+	);
+}
+
+$sky-stars-a: (
+	sky-star(12%, 9%, 1.2px),
+	sky-star(58%, 6%, 1.4px, 90%),
+	sky-star(93%, 34%, 1px, 75%),
+	sky-star(9%, 82%, 1px, 75%),
+	sky-star(40%, 28%, 0.9px, 70%),
+	sky-star(78%, 55%, 1px, 70%),
+	sky-star(35%, 74%, 0.9px, 65%),
+	sky-star(66%, 92%, 1.1px, 75%)
+);
+$sky-stars-b: (
+	sky-star(31%, 18%, 1px, 80%),
+	sky-star(83%, 13%, 1.2px),
+	sky-star(6%, 44%, 1.2px, 80%),
+	sky-star(90%, 88%, 1.2px, 80%),
+	sky-star(68%, 24%, 0.9px, 70%),
+	sky-star(22%, 60%, 1px, 70%),
+	sky-star(52%, 86%, 0.9px, 65%),
+	sky-star(96%, 64%, 0.9px, 70%)
+);
+$sky-glows: (
+	sky-glow(21%, 7%, 2.6px, 11px),
+	sky-glow(74%, 6%, 3px, 12px),
+	sky-glow(46%, 11%, 2px, 8px),
+	sky-glow(16%, 91%, 2.4px, 10px),
+	sky-glow(82%, 93%, 2.8px, 12px),
+	radial-gradient(
+		circle at 5% 20%,
+		color-mix(in srgb, var(--sky-glow) 24%, transparent) 0 22px,
+		transparent 36px
+	),
+	radial-gradient(
+		circle at 96% 70%,
+		color-mix(in srgb, var(--sky-glow) 20%, transparent) 0 26px,
+		transparent 42px
+	)
+);
+
+// ---------------------------------------------------------------------------------------------
+// Opening choreography. The envelope parts share one 3D context (`.envelope-container` preserves
+// 3D), so a few pixels of depth order them: base 0, letter 1px, pocket 2px, flap 3px, tease 4px.
+// The flap drops well behind the letter at its edge-on instant, so the swap never shows, and the
+// letter only tilts while it moves forward, keeping its top edge in front of the base and flap.
+// Timeline:
+//   0–650ms     the seal is pressed and lifts away
+//   200–1150ms  the flap turns, showing its sparkle liner past 90°
+//   450–1100ms  warm light spills from inside
+//   750–2250ms  the letter rises out of the pocket, then comes forward and settles
+//   950ms→      the letter's lines arrive one by one as it rises
+//   900–1550ms  the envelope drops away beneath it, clearing the pocket before the letter
+//               comes forward, and fades out
+//   2100ms→     a gold sheen crosses the paper
+// ---------------------------------------------------------------------------------------------
+
+$sb-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+$sb-ease-in: cubic-bezier(0.55, 0, 0.85, 0.3);
+$sb-sink-ease: cubic-bezier(0.5, 0, 0.75, 0);
 
 .envelope-wrapper[data-variant='storybook-lanterns'] {
 	--storybook-gold: var(--storybook-ink, var(--color-ornament-gold, var(--color-border-premium)));
@@ -61,6 +143,11 @@ $storybook-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	--env-identity-padding: 1.25rem;
 	--reveal-card-bg:
 		var(--storybook-paper-grain, #{$storybook-grain}),
+		radial-gradient(
+			ellipse 85% 75% at 50% 42%,
+			transparent 55%,
+			color-mix(in srgb, var(--storybook-gold) 11%, transparent) 100%
+		),
 		var(--storybook-card-bg, var(--color-surface-elevated));
 	--reveal-card-text-primary: var(--color-text-primary);
 	--reveal-card-text-secondary: var(--color-text-secondary);
@@ -102,17 +189,14 @@ $storybook-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 				right / 50% 100% no-repeat;
 	}
 
-	// The sparkle liner is the inside of the flap: it shows only while the flap turns open.
-	&.is-opening .envelope-flap {
-		background: $storybook-liner, var(--storybook-liner-paper, var(--color-surface-elevated));
-	}
-
 	.envelope-pocket {
 		clip-path: polygon(0 28%, 50% 58%, 100% 28%, 100% 100%, 0 100%);
+		transform: translateZ(2px);
 	}
 
 	.envelope-tease {
 		padding-bottom: calc(1.25rem + 6cqw);
+		transform: translateZ(4px);
 	}
 
 	// Gold wax: an irregular spill under the stamp, the sun pressed in, the monogram on top.
@@ -168,15 +252,25 @@ $storybook-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 		pointer-events: none;
 	}
 
+	// The monogram is struck in the wax-seal serif, not the envelope calligraphy: hairline script
+	// breaks up at seal size and its swashes spill past the sun's disc. Trimmed to the cap height
+	// it sits on the disc's optical center.
 	.envelope-seal-monogram {
 		position: absolute;
 		inset: 0;
 		display: grid;
 		place-items: center;
-		padding-top: 0.08em;
-		font-family: var(--font-calligraphy), cursive;
-		font-size: calc(var(--env-seal-size, 88px) * 0.36);
+		padding-top: 0.1em;
+		font-family: var(--storybook-seal-monogram-font, var(--wax-seal-font-family));
+		font-size: calc(var(--env-seal-size, 88px) * 0.3);
+		font-weight: 540;
 		line-height: 1;
+
+		@supports (text-box: trim-both cap alphabetic) {
+			padding-top: 0;
+			text-box: trim-both cap alphabetic;
+		}
+
 		color: var(--env-seal-icon);
 		text-shadow:
 			0.6px 0.8px 0 color-mix(in srgb, white 55%, transparent),
@@ -241,6 +335,9 @@ $storybook-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 					0 8px 14px color-mix(in srgb, var(--color-text-primary) 10%, transparent)
 				)
 		);
+		padding: 0;
+		transform: translate3d(0, 8%, 1px) scale(0.9);
+		transform-origin: center;
 	}
 
 	.invitation-reveal-card {
@@ -253,12 +350,37 @@ $storybook-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 		gap: 0.25rem;
 		padding-top: clamp(1.5rem, 5vw, 2.1rem);
 
-		&::before {
+		&::before,
+		&::after {
 			content: '';
 			position: absolute;
-			inset: clamp(0.65rem, 2.6vw, 0.9rem);
-			border: 1px solid color-mix(in srgb, var(--storybook-gold) 70%, transparent);
 			pointer-events: none;
+		}
+
+		// Double rule: the inner hairline and a fainter outer one, a hair apart.
+		&::before {
+			inset: var(--storybook-card-rule-inset, clamp(0.65rem, 2.6vw, 0.9rem));
+			border: 1px solid color-mix(in srgb, var(--storybook-gold) 70%, transparent);
+			outline: 1px solid color-mix(in srgb, var(--storybook-gold) 32%, transparent);
+			outline-offset: 3px;
+		}
+
+		// A gold sparkle pinned on each corner of the rule.
+		&::after {
+			--storybook-corner: 0.8rem;
+
+			inset: calc(
+				var(--storybook-card-rule-inset, clamp(0.65rem, 2.6vw, 0.9rem)) - var(
+						--storybook-corner
+					) /
+					2 + 2px
+			);
+			background: var(--storybook-gold);
+			mask:
+				#{$storybook-sparkle} left top / var(--storybook-corner) no-repeat,
+				#{$storybook-sparkle} right top / var(--storybook-corner) no-repeat,
+				#{$storybook-sparkle} left bottom / var(--storybook-corner) no-repeat,
+				#{$storybook-sparkle} right bottom / var(--storybook-corner) no-repeat;
 		}
 	}
 
@@ -270,6 +392,18 @@ $storybook-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 		height: auto;
 		margin-bottom: 0.4rem;
 		color: var(--storybook-gold);
+	}
+
+	// An invitation may crown the card with its own mark (`--storybook-card-crest`, a mask image
+	// painted in the gold ink, shown with `--storybook-card-crest-display: block`).
+	.invitation-reveal-card__label::before {
+		content: '';
+		display: var(--storybook-card-crest-display, none);
+		width: var(--storybook-card-crest-size, 2.75rem);
+		aspect-ratio: 1;
+		margin: 0 auto 0.65rem;
+		background: var(--storybook-gold);
+		mask: var(--storybook-card-crest, none) center / contain no-repeat;
 	}
 
 	.invitation-reveal-card__label {
@@ -284,6 +418,30 @@ $storybook-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 		font-size: clamp(4.2rem, 22vw, 5.9rem);
 		font-weight: 400;
 		line-height: 1.12;
+	}
+
+	// A gold rule with a sparkle at its center parts the name from the date.
+	.invitation-reveal-card__date::before {
+		content: '';
+		display: block;
+		width: min(7.5rem, 46%);
+		height: 0.7rem;
+		margin: 0.15rem auto 0.6rem;
+		background: color-mix(in srgb, var(--storybook-gold) 85%, transparent);
+		mask:
+			#{$storybook-sparkle} center / 0.7rem no-repeat,
+			linear-gradient(
+					to right,
+					transparent,
+					black 30%,
+					black 40%,
+					transparent 43%,
+					transparent 57%,
+					black 60%,
+					black 70%,
+					transparent
+				)
+				center / 100% 1px no-repeat;
 	}
 
 	.invitation-reveal-card__date {
@@ -318,6 +476,537 @@ $storybook-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 
 		.envelope-pocket {
 			clip-path: polygon(0 24%, 50% 50%, 100% 24%, 100% 100%, 0 100%);
+		}
+	}
+
+	--sky-light: var(--storybook-sky-light, var(--color-surface-elevated));
+	--sky-glow: var(--storybook-sky-glow, var(--storybook-gold));
+	--sky-lantern: var(--storybook-sky-lantern, var(--storybook-gold));
+
+	// The letter rests a beat before the invitation takes over (read by EnvelopeReveal).
+	--env-letter-hold: var(--storybook-letter-hold, 1200ms);
+
+	// A closer eye than the shared 2000px, so the flap and the letter read in depth.
+	perspective: var(--storybook-perspective, 1100px);
+	perspective-origin: 50% 42%;
+
+	.storybook-sky {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		display: var(--storybook-sky-display, none);
+		overflow: hidden;
+		pointer-events: none;
+		perspective: 900px;
+		perspective-origin: 50% 40%;
+	}
+
+	.storybook-sky__rig {
+		position: absolute;
+		inset: -6%;
+		transform: rotateX(var(--sky-tilt-y, 0deg)) rotateY(var(--sky-tilt-x, 0deg));
+		transform-style: preserve-3d;
+		transition: transform 900ms var(--ease-premium);
+	}
+
+	.storybook-sky__plane {
+		position: absolute;
+		inset: 0;
+		transition: transform 1800ms var(--ease-premium) 250ms;
+	}
+
+	// Scale cancels the perspective shrink so each plane still covers the viewport.
+	.storybook-sky__plane--far {
+		transform: translateZ(-260px) scale(1.29);
+
+		&::before,
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			animation: storybook-sky-twinkle 3.4s ease-in-out infinite alternate;
+		}
+
+		&::before {
+			background: $sky-stars-a;
+		}
+
+		&::after {
+			background: $sky-stars-b;
+			animation-duration: 4.6s;
+			animation-delay: -2.1s;
+		}
+	}
+
+	.storybook-sky__plane--mid {
+		transform: translateZ(-110px) scale(1.12);
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: $sky-glows;
+			animation: storybook-sky-drift 16s ease-in-out infinite alternate;
+		}
+	}
+
+	.storybook-sky__plane--near {
+		transform: translateZ(0);
+	}
+
+	// x / y in % of the sky, size, rise duration and phase; kept clear of the envelope.
+	@each $index, $x, $y, $size, $rise, $phase in (1, 9%, 70%, 30px, 26s, -4s),
+		(2, 86%, 78%, 36px, 31s, -17s), (3, 18%, 96%, 22px, 22s, -12s),
+		(4, 74%, 98%, 18px, 19s, -6s), (5, 52%, 104%, 14px, 24s, -20s)
+	{
+		.storybook-sky__lantern:nth-child(#{$index}) {
+			--x: #{$x};
+			--y: #{$y};
+			--size: #{$size};
+			--rise: #{$rise};
+			--phase: #{$phase};
+		}
+	}
+
+	.storybook-sky__lantern {
+		position: absolute;
+		top: var(--y);
+		left: var(--x);
+		width: var(--size);
+		aspect-ratio: 48 / 64;
+		opacity: 0%;
+		animation: storybook-lantern-rise var(--rise) linear var(--phase) infinite;
+
+		// Warm bloom drawn as a gradient, cheaper than a blur filter.
+		&::before {
+			content: '';
+			position: absolute;
+			inset: -70% -90%;
+			background: radial-gradient(
+				closest-side,
+				color-mix(in srgb, var(--sky-lantern) 45%, transparent),
+				transparent
+			);
+			animation: storybook-lantern-flicker 2.3s ease-in-out infinite alternate;
+		}
+
+		svg {
+			position: relative;
+			display: block;
+			width: 100%;
+			height: 100%;
+			animation: storybook-lantern-sway 5.5s ease-in-out var(--phase) infinite alternate;
+		}
+	}
+
+	.storybook-sky__lantern-body {
+		fill: color-mix(in srgb, var(--sky-lantern) 82%, var(--sky-light));
+	}
+
+	.storybook-sky__lantern-bands {
+		stroke: color-mix(in srgb, var(--sky-lantern) 60%, black);
+		stroke-opacity: 35%;
+		stroke-width: 1;
+	}
+
+	.storybook-sky__lantern-flame {
+		fill: var(--sky-light);
+	}
+
+	// Opening moves the eye toward the envelope: the near lanterns pass by, the stars barely move.
+
+	.envelope-base {
+		transform: translateZ(0);
+
+		// Warm light inside the envelope, seen once the flap is up.
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: radial-gradient(
+				ellipse 70% 55% at 50% 0%,
+				color-mix(in srgb, var(--sky-glow) 55%, transparent),
+				transparent 75%
+			);
+			opacity: 0%;
+		}
+	}
+
+	&:not(.is-opening) .envelope-flap {
+		transform: translateZ(3px) rotateX(0deg);
+	}
+
+	// The inside of the flap: the sparkle liner, hidden until the flap passes edge-on.
+	.envelope-flap-shadow {
+		z-index: 3;
+		background: $storybook-liner, var(--storybook-liner-paper, var(--color-surface-elevated));
+		filter: none;
+		opacity: 0%;
+		transform: none;
+	}
+
+	.envelope-seal-button {
+		perspective: 420px;
+	}
+
+	// At rest the wax sways a few degrees, a coin catching the light.
+	&:not(.is-opening) .envelope-seal-button__visual {
+		animation: storybook-seal-idle 5.5s ease-in-out infinite alternate;
+	}
+
+	&.is-opening {
+		.envelope-tease {
+			transition: opacity 420ms var(--ease-standard) 180ms;
+		}
+
+		.envelope-seal-button__visual {
+			animation: storybook-seal-lift 650ms $sb-ease-out forwards;
+		}
+
+		.envelope-flap {
+			animation:
+				storybook-flap-turn 950ms linear 200ms forwards,
+				storybook-envelope-sink 650ms $sb-sink-ease 900ms forwards;
+		}
+
+		.envelope-flap-shadow {
+			animation: storybook-flap-liner 950ms linear 200ms forwards;
+		}
+
+		.envelope-flap::after {
+			animation: storybook-flap-hairline 950ms linear 200ms forwards;
+		}
+
+		.envelope-base::after {
+			animation: storybook-light-spill 650ms $sb-ease-out 450ms forwards;
+		}
+
+		.envelope-base,
+		.envelope-pocket {
+			animation: storybook-envelope-sink 650ms $sb-sink-ease 900ms forwards;
+		}
+
+		.envelope-container::after {
+			animation: storybook-envelope-shadow-out 650ms $sb-sink-ease 900ms forwards;
+		}
+
+		// Keeps the `envCardRise` prefix: EnvelopeReveal completes on that animationend.
+		.envelope-reveal-stage {
+			animation: envCardRiseStorybook 1500ms linear 750ms both;
+		}
+
+		.invitation-reveal-card__label,
+		.invitation-reveal-card__name,
+		.invitation-reveal-card__date,
+		.invitation-reveal-card__tagline,
+		.invitation-reveal-card__guest {
+			animation: storybook-sheet-line 520ms $sb-ease-out both;
+		}
+
+		.invitation-reveal-card__label {
+			animation-delay: 950ms;
+		}
+
+		.invitation-reveal-card__name {
+			animation-delay: 1040ms;
+		}
+
+		.invitation-reveal-card__date {
+			animation-delay: 1130ms;
+		}
+
+		.invitation-reveal-card__tagline {
+			animation-delay: 1220ms;
+		}
+
+		.invitation-reveal-card__guest {
+			animation-delay: 1310ms;
+		}
+
+		.invitation-reveal-card::after {
+			animation: storybook-sheet-sheen 1100ms $sb-ease-out 2100ms both;
+		}
+
+		.storybook-sky__plane--far {
+			transform: translateZ(-210px) scale(1.29);
+		}
+
+		.storybook-sky__plane--mid {
+			transform: translateZ(-30px) scale(1.12);
+		}
+
+		.storybook-sky__plane--near {
+			transform: translateZ(150px);
+		}
+	}
+
+	&.is-preview-opened,
+	&.is-letter-held {
+		.envelope-base,
+		.envelope-container::after {
+			opacity: 0%;
+			pointer-events: none;
+		}
+
+		.envelope-reveal-stage {
+			pointer-events: auto;
+			opacity: 100%;
+			transform: translate3d(0, var(--reveal-card-rest-y), 36px) scale(0.97);
+		}
+	}
+
+	// One pass of light across the paper once the letter lands.
+	.invitation-reveal-card::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		background: linear-gradient(
+			105deg,
+			transparent 30%,
+			color-mix(in srgb, white 42%, transparent) 48%,
+			color-mix(in srgb, var(--storybook-gold) 18%, transparent) 54%,
+			transparent 68%
+		);
+		opacity: 0%;
+		transform: translateX(-110%);
+		pointer-events: none;
+	}
+}
+
+@keyframes storybook-sky-twinkle {
+	from {
+		opacity: 100%;
+	}
+
+	to {
+		opacity: 35%;
+	}
+}
+
+@keyframes storybook-sky-drift {
+	from {
+		transform: translate3d(0, 0, 0);
+	}
+
+	to {
+		transform: translate3d(1.5%, -2.5%, 0);
+	}
+}
+
+@keyframes storybook-lantern-rise {
+	0% {
+		opacity: 0%;
+		transform: translate3d(0, 0, 0);
+	}
+
+	10% {
+		opacity: 100%;
+	}
+
+	80% {
+		opacity: 85%;
+	}
+
+	100% {
+		opacity: 0%;
+		transform: translate3d(0, -115vh, 0);
+	}
+}
+
+@keyframes storybook-lantern-sway {
+	from {
+		transform: translateX(-14%) rotate(-4deg);
+	}
+
+	to {
+		transform: translateX(14%) rotate(4deg);
+	}
+}
+
+@keyframes storybook-lantern-flicker {
+	from {
+		opacity: 100%;
+	}
+
+	to {
+		opacity: 65%;
+	}
+}
+
+@keyframes storybook-seal-idle {
+	from {
+		transform: rotateX(5deg) rotateY(-6deg);
+	}
+
+	to {
+		transform: rotateX(-4deg) rotateY(6deg);
+	}
+}
+
+@keyframes storybook-seal-lift {
+	0% {
+		transform: none;
+	}
+
+	25% {
+		transform: scale(0.92);
+	}
+
+	100% {
+		opacity: 0%;
+		transform: translate3d(0, -18px, 60px) rotateY(32deg) scale(1.08);
+	}
+}
+
+@keyframes storybook-flap-turn {
+	0% {
+		transform: translateZ(3px) rotateX(0deg);
+		animation-timing-function: $sb-ease-out;
+	}
+
+	14% {
+		transform: translateZ(3px) rotateX(-5deg);
+		animation-timing-function: $sb-ease-in;
+	}
+
+	50% {
+		transform: translateZ(3px) rotateX(90deg);
+		animation-timing-function: step-end;
+	}
+
+	50.5% {
+		transform: translateZ(-8px) rotateX(91deg);
+		animation-timing-function: $sb-ease-out;
+	}
+
+	100% {
+		transform: translateZ(-8px) rotateX(180deg);
+	}
+}
+
+@keyframes storybook-flap-liner {
+	0%,
+	50% {
+		opacity: 0%;
+	}
+
+	50.5%,
+	100% {
+		opacity: 100%;
+	}
+}
+
+@keyframes storybook-flap-hairline {
+	0%,
+	50% {
+		opacity: 100%;
+	}
+
+	50.5%,
+	100% {
+		opacity: 0%;
+	}
+}
+
+@keyframes storybook-light-spill {
+	to {
+		opacity: 100%;
+	}
+}
+
+@keyframes storybook-envelope-sink {
+	55% {
+		opacity: 100%;
+	}
+
+	100% {
+		opacity: 0%;
+		translate: 0 9rem;
+	}
+}
+
+@keyframes storybook-envelope-shadow-out {
+	to {
+		opacity: 0%;
+	}
+}
+
+@keyframes envCardRiseStorybook {
+	0% {
+		opacity: 0%;
+		transform: translate3d(0, 8%, 1px) scale(0.9);
+		animation-timing-function: $sb-ease-out;
+	}
+
+	6% {
+		opacity: 100%;
+	}
+
+	40% {
+		transform: translate3d(0, -34%, 1px) scale(0.9);
+		animation-timing-function: ease-in-out;
+	}
+
+	56% {
+		transform: translate3d(0, -30%, 24px) scale(0.91) rotateX(7deg);
+		animation-timing-function: $sb-ease-out;
+	}
+
+	84% {
+		transform: translate3d(0, calc(var(--reveal-card-rest-y) - 5px), 46px) scale(0.985)
+			rotateX(-1.5deg);
+		animation-timing-function: ease-in-out;
+	}
+
+	100% {
+		opacity: 100%;
+		transform: translate3d(0, var(--reveal-card-rest-y), 36px) scale(0.97) rotateX(0deg);
+	}
+}
+
+@keyframes storybook-sheet-line {
+	from {
+		opacity: 0%;
+		transform: translateY(6px);
+	}
+
+	to {
+		opacity: 100%;
+		transform: none;
+	}
+}
+
+@keyframes storybook-sheet-sheen {
+	0% {
+		opacity: 100%;
+		transform: translateX(-110%);
+	}
+
+	100% {
+		opacity: 100%;
+		transform: translateX(110%);
+	}
+}
+
+@include mixins.reduced-motion {
+	.envelope-wrapper[data-variant='storybook-lanterns'] {
+		.storybook-sky *,
+		.storybook-sky *::before,
+		.storybook-sky *::after,
+		.envelope-seal-button__visual {
+			/* stylelint-disable-next-line declaration-no-important */
+			animation: none !important;
+			/* stylelint-disable-next-line declaration-no-important */
+			transition: none !important;
+		}
+
+		.storybook-sky__lantern {
+			opacity: 100%;
+		}
+
+		&:not(.is-preview-opened, .is-letter-held) .envelope-reveal-stage {
+			opacity: 0%;
 		}
 	}
 }

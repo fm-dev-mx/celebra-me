@@ -204,6 +204,10 @@
 .rsvp[data-variant='reply-card'][data-state='locked'] {
 	text-align: center;
 
+	// A deckle may close all four edges here (`--reply-card-mask-locked-size: 100% 100%`); by
+	// default the card keeps the lower half of the shared mask.
+	mask-size: var(--reply-card-mask-locked-size, 100% 200%);
+
 	&::before {
 		inset: clamp(0.6rem, 2.4vw, 0.85rem);
 		border-top: 1px solid var(--reply-card-rule, rgb(16 24 32 / 18%));

@@ -10,7 +10,6 @@ import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-c
 import {
 	submitGuestRsvpByInviteId,
 	submitGuestRsvpByPublicEvent,
-	trackInvitationView,
 } from '@/lib/rsvp/services/rsvp-submission.service';
 import * as eventRepo from '@/lib/rsvp/repositories/event.repository';
 import * as guestRepo from '@/lib/rsvp/repositories/guest.repository';
@@ -22,6 +21,10 @@ import * as engagementRepo from '@/lib/rsvp/repositories/engagement.repository';
 
 jest.mock('@/lib/rsvp/repositories/event.repository');
 jest.mock('@/lib/rsvp/repositories/guest.repository');
+jest.mock('@/lib/invitation/access/invitation-access.repository', () => ({
+	...jest.requireActual('@/lib/invitation/access/invitation-access.repository'),
+	isEventInvitationDisabled: jest.fn().mockResolvedValue(false),
+}));
 jest.mock('@/lib/rsvp/repositories/role-membership.repository');
 jest.mock('@/lib/rsvp/repositories/engagement.repository');
 jest.mock('@/lib/rsvp/services/audit-logger.service', () => ({
@@ -73,10 +76,6 @@ describe('rsvp service branches', () => {
 	const submitGuestRsvpPublicRpcMock = guestRepo.submitGuestRsvpPublicRpc as jest.MockedFunction<
 		typeof guestRepo.submitGuestRsvpPublicRpc
 	>;
-	const trackGuestInvitationViewPublicRpcMock =
-		guestRepo.trackGuestInvitationViewPublicRpc as jest.MockedFunction<
-			typeof guestRepo.trackGuestInvitationViewPublicRpc
-		>;
 	const softDeleteGuestByIdMock = guestRepo.softDeleteGuestById as jest.MockedFunction<
 		typeof guestRepo.softDeleteGuestById
 	>;
@@ -549,12 +548,6 @@ describe('rsvp service branches', () => {
 			}),
 		);
 		expect(result.entrySource).toBe('generic_public');
-	});
-
-	it('trackInvitationView degrades gracefully when track RPC fails', async () => {
-		trackGuestInvitationViewPublicRpcMock.mockRejectedValue(new Error('rpc failed'));
-		await expect(trackInvitationView('missing')).resolves.toBeUndefined();
-		expect(trackGuestInvitationViewPublicRpcMock).toHaveBeenCalledWith('missing', undefined);
 	});
 
 	it('listHostEvents merges owner, visible, and membership-backed events without duplicates', async () => {

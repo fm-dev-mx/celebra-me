@@ -1,0 +1,51 @@
+// Payment status and public access of a client invitation (admin list and detail).
+
+.invitation-access-badges {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: var(--spacing-xs, 0.25rem);
+}
+
+.invitation-access__explanation {
+	margin: 0.75rem 0 0;
+	color: var(--color-text-secondary);
+	font-size: 0.875rem;
+	line-height: 1.5;
+}
+
+.invitation-access__note {
+	margin: 0.25rem 0 0;
+	color: var(--color-text-secondary);
+	font-size: 0.8125rem;
+	white-space: pre-wrap;
+}
+
+.invitation-access__meta {
+	margin: 0.5rem 0 0;
+	color: var(--color-text-muted);
+	font-size: 0.8125rem;
+}
+
+.invitation-access__note-field {
+	margin-top: 1rem;
+}
+
+.invitation-access__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+
+.invitation-access__feedback {
+	margin: 0.75rem 0 0;
+	font-size: 0.875rem;
+
+	&--success {
+		color: var(--color-state-success-text);
+	}
+
+	&--error {
+		color: var(--color-state-danger-text);
+	}
+}

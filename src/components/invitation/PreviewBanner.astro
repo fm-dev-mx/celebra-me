@@ -1,0 +1,12 @@
+---
+/**
+ * Fixed notice on an unpaid invitation. Server-rendered with the page (no script), above
+ * the envelope and the navigation, which it pushes down by `--preview-banner-height`.
+ */
+import '@/styles/invitation/_preview-banner.scss';
+import '@/styles/invitation/_public-preview.scss';
+---
+
+<aside class="preview-banner preview-banner--public" aria-label="Aviso de vista previa" data-preview-banner>
+	<span class="preview-banner__text">Vista previa · Celebra-me</span>
+</aside>

@@ -1,5 +1,4 @@
 import { defineCanonicalInvitation } from './canonical-definition.ts';
-import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import type { CanonicalEventContentInput } from '../../../src/lib/schemas/content/base-event.schema.ts';
 
 /**
@@ -7,8 +6,10 @@ import type { CanonicalEventContentInput } from '../../../src/lib/schemas/conten
  * tower door (hero, quote, family) and a violet night with rising lanterns from the countdown on,
  * because the misa starts after sunset and the reception is a night garden. Original
  * storybook-lanterns envelope and ornaments, no characters. Map links are address searches until
- * the client sends pins; song, gifts and itinerary are omitted until supplied. Adults only, with
- * personalized passes of fixed seats.
+ * the client sends pins; the song is omitted until supplied. The program uses the moments and
+ * hours most common across our XV invitations (owner-approved placeholder until the client
+ * confirms them), gifts are an envelope shower, and replies close 15 days before the event.
+ * Adults only, with personalized passes of fixed seats.
  */
 export const AMERICA_TIMING = {
 	localDateTime: '2026-11-21T18:00',
@@ -24,7 +25,7 @@ const content: CanonicalEventContentInput = {
 	isDemo: false,
 	templateId: 'xv-storybook-lilac',
 	title: `Mis XV años — ${CELEBRANT_NAME}`,
-	description: `Con cariño le invitamos a celebrar los XV años de ${CELEBRANT_NAME} el ${EVENT_DATE_LABEL}.`,
+	description: `${CELEBRANT_NAME} cumple 15 y ya está contando las noches. Sábado ${EVENT_DATE_LABEL}, Los Mochis.`,
 	theme: { preset: 'storybook-lilac', fontFamily: 'serif' },
 	eventTiming: AMERICA_TIMING,
 	sectionOrder: [
@@ -32,7 +33,9 @@ const content: CanonicalEventContentInput = {
 		'family',
 		'countdown',
 		'location',
+		'itinerary',
 		'gallery',
+		'gifts',
 		'personalizedAccess',
 		'rsvp',
 		'thankYou',
@@ -43,10 +46,17 @@ const content: CanonicalEventContentInput = {
 			// Two doors bound the story: the paper rises into the tower door under an arch, and the
 			// closing returns to the door under the mirrored arch, drawn in gold over the night.
 			// Between them, two light handoffs: nightfall out of the door photograph, and the reply
-			// card opening out of the contact sheet. Every other boundary stays neutral.
+			// card opening out of the gifts note. Three pages of the storybook turn between them,
+			// alternating sides: the blessing over the quote paper, the save-the-date print out of
+			// the countdown sky, and the contact sheet out of the program night. The castle and the
+			// program, and the contact sheet and the gifts note, share one night and meet without a
+			// boundary.
 			quote: { family: 'arch', source: 'hero' },
+			family: { family: 'folio', source: 'quote' },
 			countdown: { family: 'atmospheric-blend', source: 'interlude-after-family' },
-			'personalized-access': { family: 'atmospheric-blend', source: 'gallery' },
+			'interlude-after-countdown': { family: 'folio', source: 'countdown' },
+			gallery: { family: 'folio', source: 'itinerary' },
+			'personalized-access': { family: 'atmospheric-blend', source: 'gifts' },
 			thankYou: { family: 'arch', source: 'rsvp' },
 		},
 	},
@@ -90,12 +100,12 @@ const content: CanonicalEventContentInput = {
 		envelopeName: CELEBRANT_NAME,
 		cardName: CELEBRANT_NAME,
 		cardLabel: 'Mis XV años',
-		cardTagline: 'Érase una vez una noche de linternas',
+		cardTagline: 'Tengo una noticia que darle',
 		guestLabel: 'Para',
 		microcopy: 'Toque el sello para abrir',
 	},
 	quote: {
-		text: 'Durante quince años soñé con esta noche. Hoy se encienden las linternas y quiero que usted esté aquí para verlas conmigo.',
+		text: 'Quince años, un vestido lila y una lista de personas que no pueden faltar. Usted está en ella.',
 	},
 	family: {
 		variant: 'standard',
@@ -110,18 +120,20 @@ const content: CanonicalEventContentInput = {
 			{ name: 'Brianda Galdámez', role: 'Madrina' },
 		],
 		labels: {
-			sectionTitle: 'Con la bendición de Dios y el amor de mi familia',
+			sectionTitle: 'Mi gente favorita',
 			sectionSubtitle: '',
-			parentsTitle: 'Mis padres',
+			parentsTitle: 'Mis papás',
 			godparentsTitle: 'Mis padrinos',
-			sectionMessage: 'Tengo el honor de invitarle a celebrar mis quince años.',
+			// Rendered after the names, so "ellos" points back to parents and godparents.
+			sectionMessage:
+				'Con la bendición de Dios y de la mano de ellos, le invito a celebrar mis quince años.',
 		},
 	},
 	countdown: {
-		// One written line that counts nights: "Faltan 43 noches para ver las linternas".
+		// One written line that counts nights: "Faltan 43 noches (sí, las estoy contando)".
 		variant: 'written-days',
 		title: 'Faltan',
-		footerText: 'para ver las linternas',
+		footerText: '(sí, las estoy contando)',
 		presentationOptions: { dayUnit: 'nights' },
 	},
 	location: {
@@ -132,7 +144,8 @@ const content: CanonicalEventContentInput = {
 			showCalendarLinks: true,
 			indicationsLayout: 'enclosure',
 		},
-		introHeading: 'Dónde y cuándo',
+		introHeading: 'Apunte la fecha',
+		introLede: 'Primero la misa, después la fiesta en el jardín.',
 		indicationsHeading: 'Código de vestimenta',
 		indications: [
 			{
@@ -145,12 +158,12 @@ const content: CanonicalEventContentInput = {
 				iconName: 'DressCode',
 				styleVariant: 'reserved',
 				title: 'Lila',
-				text: 'Reservado para la quinceañera; le agradecemos elegir otro tono.',
+				text: 'El lila es mi color esa noche; ¿me ayuda a que siga siendo solo mío?',
 			},
 			{
 				iconName: 'Forbidden',
 				styleVariant: 'default',
-				text: 'Con mucho cariño, esta celebración es solo para adultos.',
+				text: 'Esta vez la fiesta es solo para adultos. Gracias por entenderlo.',
 			},
 		],
 		venues: [
@@ -183,12 +196,50 @@ const content: CanonicalEventContentInput = {
 			},
 		],
 	},
+	itinerary: {
+		// The moments and hours most common across our XV programs (vals 1h30 after the reception,
+		// dinner an hour later, closing at 01:00), until the client confirms her own.
+		variant: 'timeline-paper',
+		title: 'Así será mi noche',
+		items: [
+			{
+				time: '18:00',
+				iconName: 'Church',
+				label: 'Misa',
+				description: 'Primero, dar gracias en la Parroquia Cristo Rey.',
+			},
+			{
+				time: '20:00',
+				iconName: 'Reception',
+				label: 'Recepción',
+				description: 'Le espero en el Jardín Los Mangos.',
+			},
+			{
+				time: '21:30',
+				iconName: 'Waltz',
+				label: 'Vals',
+				description: 'Mi vals de quince años. Prometo no llorar… mucho.',
+			},
+			{
+				time: '22:30',
+				iconName: 'Dinner',
+				label: 'Cena',
+				description: 'A la mesa, que la noche todavía es larga.',
+			},
+			{
+				time: '01:00',
+				iconName: 'Party',
+				label: 'Cierre',
+				description: 'La última canción la bailamos juntos.',
+			},
+		],
+	},
 	gallery: {
 		// Contact sheet of the four looks; the tower door stays for the hero and the closing.
 		variant: 'mirrored-mosaic',
 		eyebrow: '',
-		title: 'Antes de la noche',
-		subtitle: 'Retratos de los días que esperaron esta fecha.',
+		title: 'Mis cuatro looks',
+		subtitle: 'Rosa, lila, amarillo… y unos lentes de corazón.',
 		items: [
 			{
 				image: 'gallery01',
@@ -222,32 +273,56 @@ const content: CanonicalEventContentInput = {
 			},
 		],
 	},
+	gifts: {
+		// A two-line note, as on printed stationery: no catalog card for a single suggestion.
+		variant: 'standard',
+		title: 'Regalos',
+		presentation: 'legend-only',
+		subtitle:
+			'Su presencia es mi mejor regalo. Si desea tener un detalle conmigo, habrá lluvia de sobres en la recepción.',
+	},
 	rsvp: {
 		// Pass and confirmation read as one printed reply card; seats are fixed per guest.
 		variant: 'reply-card',
-		title: 'Confirme su asistencia',
-		subcopy: 'Su respuesta nos ayuda a preparar cada detalle de esta noche.',
+		title: '¿Me acompaña?',
+		// Replies close 15 days before the event (owner decision); the canonical RSVP block has no
+		// deadline field, so the date lives in the copy and the reminder.
+		subcopy:
+			'Avíseme antes del viernes 6 de noviembre, que quiero tener todo listo para recibirle.',
 		guestCap: 2,
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',
 		personalizedAccess: {
 			variant: 'reply-card',
-			title: 'Su lugar en el reino',
-			subtitle: 'Hemos reservado estos lugares en su honor.',
-			footerText: 'Confirme a continuación para reservar sus lugares',
+			title: 'Su lugar ya está apartado',
+			subtitle: 'Lo guardé con su nombre, así que nadie más lo puede ocupar.',
+			footerText: 'Confírmelo abajo para que siga siendo suyo.',
 		},
 		labels: {
 			name: 'Su nombre',
-			notesPlaceholder: 'Escriba un mensaje para América…',
+			notesLabel: 'Déjeme un mensaje',
+			notesPlaceholder: 'Lo voy a leer, prometido…',
 		},
-		confirmationMessage: 'Gracias por confirmar. Nos vemos bajo las linternas.',
+		// The confirmed card reads title, confirmationMessage, then subtitle.
+		confirmationMessage: 'Ya está: ese lugar es suyo. Nos vemos el sábado 21 de noviembre.',
+		responseMessages: {
+			confirmed: {
+				title: '¡Qué emoción, {guestName}!',
+				subtitle: 'Si algo cambia, puede modificar su respuesta aquí mismo.',
+			},
+			declined: {
+				title: 'Le voy a extrañar, {guestName}.',
+				subtitle: 'Gracias por avisarme.',
+			},
+		},
 	},
 	thankYou: {
 		// Back at the same door, closer and smiling: the story ends where it began.
 		variant: 'portrait-keepsake',
 		image: 'thankYouPortrait',
 		focalPoint: '50% 30%',
-		message: 'Gracias por ser parte de mi historia. Nos vemos bajo las linternas.',
+		message:
+			'Gracias por llegar hasta el final. Lo demás se lo cuento el 21 de noviembre… en persona.',
 		closingName: CELEBRANT_NAME,
 		closingPhrase: 'América · XV años · Los Mochis · MMXXVI',
 	},
@@ -255,10 +330,14 @@ const content: CanonicalEventContentInput = {
 	navigation: [{ label: 'Confirmar', href: '#rsvp' }],
 	sharing: {
 		ogImage: 'ogShare',
-		ogDescription: `Le invitamos a celebrar los XV años de América el sábado ${EVENT_DATE_LABEL} en Los Mochis, Sinaloa.`,
-		shareMessages: createShareMessages(
-			'Hola {{invitado}}: con mucho cariño le compartimos la invitación a los XV años de América.\n\n{{enlace}}\n\nEn ella encontrará los detalles y podrá confirmar su asistencia.',
-		),
+		ogDescription: `Sábado ${EVENT_DATE_LABEL} · Los Mochis, Sinaloa. Misa a las 18:00 y recepción a las 20:00.`,
+		// A custom reminder is sent verbatim to every status, so it never assumes a pending reply.
+		shareMessages: {
+			invitation:
+				'Hola, {{invitado}}: ¡cumplo quince años y quiero que usted esté ahí! Aquí va mi invitación, con su pase y la opción para confirmar:\n\n{{enlace}}',
+			reminder:
+				'Hola, {{invitado}}: {{hora_evento}} Yo ya estoy contando las noches.\n\nSi aún no confirma, tiene hasta el viernes 6 de noviembre:\n{{enlace}}',
+		},
 	},
 };
 
@@ -273,8 +352,8 @@ export const americaSolisInvitation = defineCanonicalInvitation({
 	eventTiming: AMERICA_TIMING,
 	content,
 	managedIdentityId: 'dfb7f4e9-0c68-4c5c-8d2f-9fe01f742fd4',
-	managedIdentityProvenance: 'owner-approved',
-	lifecycle: 'in_progress',
+	managedIdentityProvenance: 'persisted',
+	lifecycle: 'published',
 	hostLoginAlias: 'america_solis',
 	assetDir: 'src/assets/invitations/america',
 	// One role per photograph; the og crop is a separate derivative of the bleed interlude.
