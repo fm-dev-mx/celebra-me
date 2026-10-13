@@ -197,12 +197,6 @@
                 "valentina_memories_video_quota"
             ],
             "notes": "Drops the client-named Valentina memories catalog and its RPCs. Export the three tables and the referenced storage objects first; object deletion is a separate owner step."
-        },
-        "20261012210000": {
-            "phase": "contract",
-            "requiresDeployedAppCapabilities": ["guest_engagement_only_client"],
-            "revokes": ["track_guest_invitation_view_public"],
-            "notes": "Drops track_guest_invitation_view_public, the legacy view telemetry RPC. The application records guest engagement through record_guest_engagement_events_public and no longer serves /api/invitacion/:inviteId/view. Apply only after the Production deployment that provides guest_engagement_only_client passed smoke."
         }
     },
     "appCapabilities": {
