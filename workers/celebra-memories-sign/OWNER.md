@@ -336,12 +336,12 @@ pnpm worker:memories:dry-run
 git diff --check
 ```
 
-`pnpm test:db:memories-contracts` resets the disposable database, then runs the catalog and
-lifecycle pgTAP files and the transaction races. `pnpm test:e2e:memories` runs the guest flow on
-desktop, Android and iOS engines with every guest API mocked; it needs a memory space to render the
-page (`PLAYWRIGHT_USE_CANONICAL_FIXTURES=true`, which requires port 54321 to be free, or
-`MEMORIES_E2E_SLUG` naming an activated space with an open window) and the Playwright WebKit browser
-for the iOS projects. Without a space the flow is skipped, which is not a pass.
+`pnpm test:db:memories-contracts` resets the disposable database, then runs every pgTAP file
+(including the catalog and lifecycle files) and the transaction races. `pnpm test:e2e:memories` runs
+the guest flow on desktop, Android and iOS engines with every guest API mocked; it needs a memory
+space to render the page (`PLAYWRIGHT_USE_CANONICAL_FIXTURES=true`, which requires port 54321 to be
+free, or `MEMORIES_E2E_SLUG` naming an activated space with an open window) and the Playwright
+WebKit browser for the iOS projects. Without a space the flow is skipped, which is not a pass.
 
 A successful repository handoff may be `REPOSITORY_READY`; only owner-operated Staging proof may be
 `STAGING_VERIFIED`. Production requires independent P-256 pairs and capability secret, explicit

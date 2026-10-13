@@ -93,7 +93,7 @@ documented in [validation procedures](../docs/core/validation-procedures.md#mark
 | `pnpm db:disposable:test`                       | Human                | `scripts/db/`  | pgTAP + migration tests (also embedded in validate pipeline)            |
 | `pnpm test:db:rsvp-contracts`                   | CI                   | `scripts/db/`  | disposable RSVP DB/HTTP contracts                                       |
 | `pnpm test:db:managed-contracts`                | CI                   | `scripts/db/`  | disposable managed rekey contracts                                      |
-| `pnpm test:db:memories-contracts`               | CI                   | `scripts/db/`  | disposable event memories pgTAP files + transaction races               |
+| `pnpm test:db:memories-contracts`               | CI                   | `scripts/db/`  | every disposable pgTAP file + memories transaction races                |
 | `pnpm preflight:memories`                       | Owner/agent          | `scripts/ops/` | read-only Production check of one memory space (GET/OPTIONS only)       |
 | `pnpm db:disposable:system-concurrency`         | Human                | `scripts/db/`  | concurrency/stale-plan scenarios                                        |
 | `pnpm db:validate:pipeline`                     | Human/agent          | `scripts/db/`  | full database validation pipeline                                       |
