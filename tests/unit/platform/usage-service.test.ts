@@ -33,15 +33,19 @@ function metric(scope: PlatformMetric['scope'], id = 'cfR2StorageBucket'): Platf
 
 describe('getPlatformUsageReport', () => {
 	const originalDeployEnv = process.env.CELEBRA_DEPLOY_ENV;
+	const originalSupabaseUrl = process.env.SUPABASE_URL;
 
 	beforeEach(() => {
 		jest.clearAllMocks();
 		delete process.env.CELEBRA_DEPLOY_ENV;
+		process.env.SUPABASE_URL = 'http://127.0.0.1:54321';
 	});
 
 	afterAll(() => {
 		if (originalDeployEnv === undefined) delete process.env.CELEBRA_DEPLOY_ENV;
 		else process.env.CELEBRA_DEPLOY_ENV = originalDeployEnv;
+		if (originalSupabaseUrl === undefined) delete process.env.SUPABASE_URL;
+		else process.env.SUPABASE_URL = originalSupabaseUrl;
 	});
 
 	it('assembles one section per environment plus the shared quotas', async () => {

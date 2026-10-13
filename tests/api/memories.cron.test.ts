@@ -223,11 +223,18 @@ describe('GET /api/cron/memories-cleanup', () => {
 		]);
 
 		infoSpy.mockClear();
-		resetEnv({ CELEBRA_DEPLOY_ENV: '' });
+		resetEnv({ CELEBRA_DEPLOY_ENV: '', SUPABASE_URL: 'http://127.0.0.1:54321' });
 		await GET(context(`Bearer ${CRON_SECRET}`));
 		expect(evidenceLines(infoSpy).map((line) => line.evidence.environment)).toEqual([
 			'local',
 			'local',
 		]);
+	});
+
+	it('refuses to run when the deploy identity is not declared', async () => {
+		resetEnv({ CELEBRA_DEPLOY_ENV: '' });
+		const response = await GET(context(`Bearer ${CRON_SECRET}`));
+		expect(response.status).toBe(503);
+		expect(mockRunCleanup).not.toHaveBeenCalled();
 	});
 });

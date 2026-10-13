@@ -3,7 +3,6 @@ import {
 	createMemoriesCleanupCompletedEvidence,
 	createMemoriesCleanupFailedEvidence,
 	createMemoriesCleanupStartedEvidence,
-	resolveMemoriesRuntimeEnvironment,
 	type MemoriesCleanupContext,
 } from '@/lib/memories/server/cleanup-evidence';
 import type { MemoriesCleanupResult } from '@/lib/memories/server/cleanup.service';
@@ -39,17 +38,6 @@ const completed: MemoriesCleanupResult = {
 	anonymized: 2,
 	auditPurged: 5,
 };
-
-describe('resolveMemoriesRuntimeEnvironment', () => {
-	it('maps hosted deploy environments and treats everything else as local', () => {
-		expect(resolveMemoriesRuntimeEnvironment('production')).toBe('production');
-		expect(resolveMemoriesRuntimeEnvironment('preview')).toBe('preview');
-		expect(resolveMemoriesRuntimeEnvironment('development')).toBe('local');
-		expect(resolveMemoriesRuntimeEnvironment('')).toBe('local');
-		expect(resolveMemoriesRuntimeEnvironment(undefined)).toBe('local');
-		expect(resolveMemoriesRuntimeEnvironment(null)).toBe('local');
-	});
-});
 
 describe('completed cleanup evidence', () => {
 	it('is VERIFIED when counts are consistent and nothing failed', () => {

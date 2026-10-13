@@ -48,14 +48,6 @@ export interface MemoriesCleanupContext {
 const REVIEW_ACTION =
 	'Abra la invocación exacta en los registros del hosting y revise el resumen; no invoque manualmente la limpieza.';
 
-export function resolveMemoriesRuntimeEnvironment(
-	deployEnvironment: string | null | undefined,
-): OperationalEvidenceEnvironment {
-	if (deployEnvironment === 'production') return 'production';
-	if (deployEnvironment === 'preview') return 'preview';
-	return 'local';
-}
-
 const EMPTY_PAYLOAD: MemoriesCleanupMetrics = {
 	validation_settled: null,
 	validation_rejected: null,

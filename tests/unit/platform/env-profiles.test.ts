@@ -11,6 +11,7 @@ import {
 
 const ENV_NAMES = [
 	'CELEBRA_DEPLOY_ENV',
+	'SUPABASE_URL',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION',
@@ -34,6 +35,7 @@ afterAll(() => {
 
 beforeEach(() => {
 	for (const name of ENV_NAMES) delete process.env[name];
+	process.env.SUPABASE_URL = 'http://127.0.0.1:54321';
 });
 
 describe('panel scoping', () => {
@@ -47,6 +49,12 @@ describe('panel scoping', () => {
 
 		process.env.CELEBRA_DEPLOY_ENV = 'production';
 		expect(resolvePanelEnvironments()).toEqual(['production']);
+	});
+
+	it('shows no environment when a deployment does not declare its identity', () => {
+		delete process.env.SUPABASE_URL;
+		expect(resolvePanelEnvironments()).toEqual([]);
+		expect(isLocalPanel()).toBe(false);
 	});
 });
 
