@@ -8,6 +8,11 @@ jest.mock('../../scripts/db/db-workflow-lib.ts', () => ({
 	PREVIEW_SECRET_FILES: [],
 	runPsql: jest.fn(),
 	sqlLiteral: (value: string) => `'${value.replaceAll("'", "''")}'`,
+	validateEnvironmentUrlsPreflight: (
+		jest.requireActual(
+			'../../scripts/db/db-target-config.ts',
+		) as typeof import('../../scripts/db/db-target-config.ts')
+	).validateEnvironmentUrlsPreflight,
 }));
 
 jest.mock('../../scripts/db/db-guard.ts', () => ({
@@ -73,6 +78,16 @@ describe('preview-e2e-fixture', () => {
 		expect(() => resolvePreviewFixtureDbUrl({ PREVIEW_DB_URL: PREVIEW_URL })).toThrow(
 			/PREVIEW_E2E_FIXTURE_TARGET_REJECTED/,
 		);
+	});
+
+	it('rejects a Preview-classified URL outside the canonical Preview project', () => {
+		mockedClassify.mockReturnValue({ target: 'preview', reason: 'self-match' } as never);
+		expect(() =>
+			resolvePreviewFixtureDbUrl({
+				PREVIEW_DB_URL:
+					'postgresql://user:pass@db.abcdefghijklmnopqrst.supabase.co:5432/postgres',
+			}),
+		).toThrow(/PREVIEW_E2E_FIXTURE_TARGET_REJECTED/);
 	});
 
 	it('allows Preview target resolution', () => {
