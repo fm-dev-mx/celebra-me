@@ -12,6 +12,48 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 _Sin cambios pendientes._
 
+## [0.21.0-beta.1] - 2026-10-12
+
+Release checkpoint that publishes the America XV invitation definition and finishes the legacy
+retirement on the application side after the contract migrations reached every hosted database.
+
+### Added
+
+- **America XV** managed definition published (`/xv/america`, `storybook-lilac`) with its creative
+  acceptance recorded in `docs/invitations/america.md` and accepted mobile and desktop visual
+  baselines (186 captures).
+
+### Changed
+
+- **Legacy table contracts** (`20261012200000`–`20261012200200`) renumbered after the previous
+  checkpoint and applied to Local, Preview and Production; the schema audit reports relations that a
+  pending migration drops as informational instead of blocking.
+- **Guest view telemetry retired**: `/api/invitacion/:inviteId/view` and the
+  `track_guest_invitation_view_public` client are removed; guest reads and dashboard queries assume
+  the engagement columns exist (the expand-phase compatibility guards are gone). Contract migration
+  `20261012210000` drops the RPC; its rollout entry requires the `guest_engagement_only_client`
+  capability, so it is applied only after this checkpoint is deployed and smoke-tested.
+- Engagement event ingestion accepts any UUID-shaped invitation id rather than RFC-variant UUIDs
+  only.
+
+### Verification
+
+| Check                   | Result                                                                   |
+| :---------------------- | :----------------------------------------------------------------------- |
+| Repository Policy       | Passed on `7b943e1d9` (develop); release PR certifies the final tree     |
+| Application Suite       | unit, database and static tiers passed on `7b943e1d9`; browser on the PR |
+| Visual certification    | 2 changes (new America pages) across 186 captures for `52c22e47f`        |
+| Preview smoke           | Deployment and health passed for `7b943e1d9`                             |
+| Production schema audit | `CURRENT` at `20261012200200`; `20261012210000` pending by design        |
+
+### Known issues
+
+- `feat/invitation-access-controls` remains pending: it needs a rebase on `develop`, visual
+  regression fixes and its migration renumbered after `20261012200200`.
+- Invitation content releases (`invitation:release`, `prod:apply --slug`) refuse to run while
+  `20261012210000` is pending on the target, so the America content publication follows the
+  migration apply on each environment.
+
 ## [0.20.0-beta.1] - 2026-10-12
 
 Release checkpoint for Production `1fc90b4c8` (PR #234) consolidating guest engagement analytics,
