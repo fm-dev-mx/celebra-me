@@ -94,7 +94,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			});
 
 			const response = await buildRequest([
-				{ full_name: 'Ana López', phone: '6691234567', country_code: '+52' },
+				{ full_name: 'Ana López', phone: '1000000001', country_code: '+52' },
 			]);
 			const body = await response.json();
 
@@ -131,7 +131,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			});
 
 			const response = await buildRequest([
-				{ full_name: 'Ana Duplicada', phone: '6691234567', country_code: '+52' },
+				{ full_name: 'Ana Duplicada', phone: '1000000001', country_code: '+52' },
 			]);
 			const body = await response.json();
 
@@ -156,7 +156,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			});
 
 			const response = await buildRequest([
-				{ full_name: 'John Smith', phone: '5551234567', country_code: '+1' },
+				{ full_name: 'John Smith', phone: '1000000002', country_code: '+1' },
 			]);
 
 			expect(response.status).toBe(200);
@@ -171,7 +171,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			});
 
 			const response = await buildRequest([
-				{ full_name: 'John Smith', phone: '555-123-4567', country_code: '+1' },
+				{ full_name: 'John Smith', phone: '100-000-0002', country_code: '+1' },
 			]);
 
 			expect(response.status).toBe(200);
@@ -200,14 +200,14 @@ describe('POST /api/dashboard/guests/bulk', () => {
 		it('rejects international phone without country code column (use country_code instead)', async () => {
 			mockEventAccess();
 
-			const response = await buildRequest([{ full_name: 'Carlos', phone: '+526691234567' }]);
+			const response = await buildRequest([{ full_name: 'Carlos', phone: '+521000000001' }]);
 			expect(response.status).toBe(400);
 		});
 
 		it('rejects local phone without country_code', async () => {
 			mockEventAccess();
 
-			const response = await buildRequest([{ full_name: 'Ana López', phone: '6691234567' }]);
+			const response = await buildRequest([{ full_name: 'Ana López', phone: '1000000001' }]);
 
 			expect(response.status).toBe(400);
 			expect(supabaseRestRequestMock).not.toHaveBeenCalled();
@@ -217,7 +217,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			mockEventAccess();
 
 			const response = await buildRequest([
-				{ full_name: 'John Smith', phone: '555-123-4567' },
+				{ full_name: 'John Smith', phone: '100-000-0002' },
 			]);
 
 			expect(response.status).toBe(400);
@@ -228,7 +228,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			mockEventAccess();
 
 			const response = await buildRequest([
-				{ full_name: 'Carlos', phone: '+526691234567', country_code: '+52' },
+				{ full_name: 'Carlos', phone: '+521000000001', country_code: '+52' },
 			]);
 			expect(response.status).toBe(400);
 		});
@@ -243,7 +243,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 
 		it('rejects empty name', async () => {
 			const response = await buildRequest([
-				{ full_name: '', phone: '6691234567', country_code: '+52' },
+				{ full_name: '', phone: '1000000001', country_code: '+52' },
 			]);
 			expect(response.status).toBe(400);
 		});
@@ -261,7 +261,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			const response = await buildRequest([
 				{
 					full_name: 'tist',
-					phone: '6563769461',
+					phone: '1000000003',
 					country_code: '+52',
 					email: null,
 					tags: [],
@@ -269,7 +269,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 				{ full_name: 'tist1', email: null, tags: [] },
 				{
 					full_name: 'tist2',
-					phone: '6681167477',
+					phone: '1000000009',
 					country_code: '+52',
 					email: null,
 					tags: [],
@@ -292,7 +292,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			});
 
 			const response = await buildRequest([
-				{ full_name: 'Ana', phone: '6691234567', country_code: '+52' },
+				{ full_name: 'Ana', phone: '1000000001', country_code: '+52' },
 				{ full_name: 'Luis', email: null },
 			]);
 
@@ -308,7 +308,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			});
 
 			const response = await buildRequest([
-				{ full_name: 'Admin Test', phone: '5551234567', country_code: '+1' },
+				{ full_name: 'Admin Test', phone: '1000000002', country_code: '+1' },
 				{ full_name: 'No Phone Guest' },
 			]);
 
@@ -342,7 +342,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			await buildRequest([
 				{
 					full_name: 'Ana López',
-					phone: '6691234567',
+					phone: '1000000001',
 					country_code: '+52',
 					email: 'ana@test.com',
 					tags: ['vip'],
@@ -363,7 +363,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			});
 
 			await buildRequest([
-				{ full_name: 'Ana López', phone: '6691234567', country_code: '+52' },
+				{ full_name: 'Ana López', phone: '1000000001', country_code: '+52' },
 			]);
 
 			const body = getRpcBody();
@@ -396,7 +396,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			await buildRequest([
 				{
 					full_name: 'tist',
-					phone: '6563769461',
+					phone: '1000000003',
 					country_code: '+52',
 					email: null,
 					tags: [],
@@ -404,7 +404,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 				{ full_name: 'tist1', email: null, tags: [] },
 				{
 					full_name: 'tist2',
-					phone: '6681167477',
+					phone: '1000000009',
 					country_code: '+52',
 					email: null,
 					tags: [],
@@ -434,13 +434,13 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			});
 
 			const response = await buildRequest([
-				{ full_name: 'Ana López', phone: '6691234567', country_code: '+52' },
+				{ full_name: 'Ana López', phone: '1000000001', country_code: '+52' },
 			]);
 
 			expect(response.status).toBe(200);
 
 			const body = getRpcBody();
-			expect(body.p_guests[0].phone).toBe('6691234567');
+			expect(body.p_guests[0].phone).toBe('1000000001');
 			expect(body.p_guests[0].country_code).toBe('+52');
 		});
 
@@ -469,7 +469,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			});
 
 			const response = await buildRequest([
-				{ full_name: 'Ana López', phone: '6691234567', country_code: '+52' },
+				{ full_name: 'Ana López', phone: '1000000001', country_code: '+52' },
 			]);
 
 			expect(response.status).toBe(200);
@@ -484,7 +484,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			});
 
 			const response = await buildRequest([
-				{ full_name: 'Ana López', phone: '6691234567', country_code: '+52' },
+				{ full_name: 'Ana López', phone: '1000000001', country_code: '+52' },
 			]);
 
 			expect(response.status).toBe(200);
@@ -499,7 +499,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			});
 
 			const response = await buildRequest([
-				{ full_name: 'Ana López', phone: '6691234567', country_code: '+52' },
+				{ full_name: 'Ana López', phone: '1000000001', country_code: '+52' },
 			]);
 
 			expect(response.status).toBe(200);
@@ -509,7 +509,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			mockUnauthorizedAccess();
 
 			const response = await buildRequest([
-				{ full_name: 'Ana López', phone: '6691234567', country_code: '+52' },
+				{ full_name: 'Ana López', phone: '1000000001', country_code: '+52' },
 			]);
 
 			expect(response.status).toBe(403);
@@ -521,7 +521,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			mockNoEvent();
 
 			const response = await buildRequest([
-				{ full_name: 'Ana López', phone: '6691234567', country_code: '+52' },
+				{ full_name: 'Ana López', phone: '1000000001', country_code: '+52' },
 			]);
 
 			expect(response.status).toBe(404);
@@ -537,7 +537,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 				status: 'success',
 			});
 
-			await buildRequest([{ full_name: 'Ana', phone: '6691234567', country_code: '+52' }]);
+			await buildRequest([{ full_name: 'Ana', phone: '1000000001', country_code: '+52' }]);
 
 			expect(findEventByIdMock).toHaveBeenCalledWith(TEST_EVENT_ID, 'token');
 		});
@@ -550,7 +550,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 				status: 'success',
 			});
 
-			await buildRequest([{ full_name: 'Ana', phone: '6691234567', country_code: '+52' }]);
+			await buildRequest([{ full_name: 'Ana', phone: '1000000001', country_code: '+52' }]);
 
 			expect(findEventByIdServiceMock).not.toHaveBeenCalled();
 		});
@@ -565,7 +565,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			supabaseRestRequestMock.mockRejectedValueOnce(supabaseError);
 
 			const response = await buildRequest([
-				{ full_name: 'Ana', phone: '6691234567', country_code: '+52' },
+				{ full_name: 'Ana', phone: '1000000001', country_code: '+52' },
 			]);
 
 			expect(response.status).toBe(400);
@@ -582,7 +582,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			supabaseRestRequestMock.mockRejectedValueOnce(supabaseError);
 
 			const response = await buildRequest([
-				{ full_name: 'Ana', phone: '6691234567', country_code: '+52' },
+				{ full_name: 'Ana', phone: '1000000001', country_code: '+52' },
 			]);
 
 			expect(response.status).toBe(500);
@@ -593,7 +593,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			supabaseRestRequestMock.mockRejectedValueOnce(new Error('Network failure'));
 
 			const response = await buildRequest([
-				{ full_name: 'Ana', phone: '6691234567', country_code: '+52' },
+				{ full_name: 'Ana', phone: '1000000001', country_code: '+52' },
 			]);
 
 			expect(response.status).toBe(500);

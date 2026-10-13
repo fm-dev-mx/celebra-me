@@ -19,7 +19,7 @@ describe('RSVP v2 endpoint baseline', () => {
 		const request = createMockRequest({
 			eventId: 'evt-1',
 			fullName: 'Invitado Demo',
-			phone: '6680000000',
+			phone: '1000000004',
 			maxAllowedAttendees: 2,
 		});
 		const url = new URL('http://localhost/api/dashboard/guests');

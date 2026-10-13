@@ -37,7 +37,7 @@ describe('delete rows', () => {
 	});
 
 	it('deletes a row from preview', () => {
-		importCsv('full_name,phone,country_code\nAna,+526691234567,\nLuis,+525551234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,\nLuis,+521000000002,');
 		const deleteButtons = document.querySelectorAll('.import-magic__delete-btn');
 		expect(deleteButtons.length).toBe(2);
 		fireEvent.click(deleteButtons[0]);
@@ -45,7 +45,7 @@ describe('delete rows', () => {
 	});
 
 	it('deleting a row updates import count', () => {
-		importCsv('full_name,phone,country_code\nAna,+526691234567,\nLuis,+525551234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,\nLuis,+521000000002,');
 		const deleteButtons = document.querySelectorAll('.import-magic__delete-btn');
 		fireEvent.click(deleteButtons[0]);
 		expect(getImportButton().disabled).toBe(false);
@@ -53,7 +53,7 @@ describe('delete rows', () => {
 	});
 
 	it('deleting all rows disables import and shows an empty state', () => {
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		const deleteButtons = document.querySelectorAll('.import-magic__delete-btn');
 		fireEvent.click(deleteButtons[0]);
 		expect(getImportButton().disabled).toBe(true);
@@ -77,7 +77,7 @@ describe('API error handling', () => {
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		fireEvent.click(getImportButton());
 		expect(await screen.findByText(/No pudimos importar/i)).toBeInTheDocument();
 	});
@@ -98,7 +98,7 @@ describe('API error handling', () => {
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		fireEvent.click(getImportButton());
 		expect(await screen.findByText(/error de prueba/i)).toBeInTheDocument();
 	});
@@ -126,7 +126,7 @@ describe('import result summary', () => {
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\nAna,6691234567,+52');
+		importCsv('full_name,phone,country_code\nAna,1000000001,+52');
 		fireEvent.click(getImportButton());
 
 		expect(await screen.findByText('2')).toBeInTheDocument();
@@ -155,7 +155,7 @@ describe('import result summary', () => {
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\nAna,6691234567,+52');
+		importCsv('full_name,phone,country_code\nAna,1000000001,+52');
 		fireEvent.click(getImportButton());
 
 		expect(await screen.findByText('conflicto')).toBeInTheDocument();
@@ -185,7 +185,7 @@ describe('fatal event/access error', () => {
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		fireEvent.click(getImportButton());
 		await screen.findByText(/Los datos son válidos/i);
 
@@ -207,7 +207,7 @@ describe('fatal event/access error', () => {
 			/>,
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		expect(screen.getByText('Crear')).toBeInTheDocument();
 		expect(getImportButton()).not.toBeDisabled();
 		fireEvent.click(getImportButton());
@@ -231,7 +231,7 @@ describe('fatal event/access error', () => {
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		fireEvent.click(getImportButton());
 
 		const fatalEl = await screen.findByText(/Los datos son válidos/i);
@@ -254,10 +254,10 @@ describe('fatal event/access error', () => {
 			/>,
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		fireEvent.click(getImportButton());
 		await screen.findByText(/Los datos son válidos/i);
-		importCsv('full_name,phone,country_code\nLuis,+525551234567,');
+		importCsv('full_name,phone,country_code\nLuis,+521000000002,');
 		expect(screen.queryByText(/Los datos son válidos/i)).toBeNull();
 	});
 
@@ -276,12 +276,12 @@ describe('fatal event/access error', () => {
 			/>,
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		fireEvent.click(getImportButton());
 		await screen.findByText(/Los datos son válidos/i);
 		const textarea = screen.getByPlaceholderText(/Ejemplo:/i) as HTMLTextAreaElement;
 		fireEvent.paste(textarea, {
-			clipboardData: { getData: () => 'full_name,phone,country_code\nLuis,+525551234567,' },
+			clipboardData: { getData: () => 'full_name,phone,country_code\nLuis,+521000000002,' },
 		});
 		expect(screen.queryByText(/Los datos son válidos/i)).toBeNull();
 	});
@@ -303,7 +303,7 @@ describe('retryable error', () => {
 			/>,
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		fireEvent.click(getImportButton());
 		const fallbackEl = await screen.findByText(/No pudimos importar/i);
 		expect(fallbackEl).toBeInTheDocument();
@@ -316,7 +316,7 @@ describe('event id context', () => {
 		renderModal('');
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		expect(getImportButton().disabled).toBe(true);
 	});
 });
@@ -328,7 +328,7 @@ describe('source textarea collapse', () => {
 
 		const textarea = screen.getByPlaceholderText(/Ejemplo:/i) as HTMLTextAreaElement;
 		fireEvent.paste(textarea, {
-			clipboardData: { getData: () => 'full_name,phone,country_code\nAna,+526691234567,' },
+			clipboardData: { getData: () => 'full_name,phone,country_code\nAna,+521000000001,' },
 		});
 
 		expect(textarea.rows).toBe(2);
@@ -340,7 +340,7 @@ describe('source textarea collapse', () => {
 
 		const textarea = screen.getByPlaceholderText(/Ejemplo:/i) as HTMLTextAreaElement;
 		fireEvent.paste(textarea, {
-			clipboardData: { getData: () => 'full_name,phone,country_code\nAna,+526691234567,' },
+			clipboardData: { getData: () => 'full_name,phone,country_code\nAna,+521000000001,' },
 		});
 
 		expect(screen.getByText(/Editar datos pegados/i)).toBeInTheDocument();
@@ -352,7 +352,7 @@ describe('source textarea collapse', () => {
 
 		const textarea = screen.getByPlaceholderText(/Ejemplo:/i) as HTMLTextAreaElement;
 		fireEvent.paste(textarea, {
-			clipboardData: { getData: () => 'full_name,phone,country_code\nAna,+526691234567,' },
+			clipboardData: { getData: () => 'full_name,phone,country_code\nAna,+521000000001,' },
 		});
 
 		fireEvent.click(screen.getByText(/Editar datos pegados/i));
@@ -367,26 +367,26 @@ describe('summary chips and button states', () => {
 	});
 
 	it('renders Crear chip for valid new rows', () => {
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		expect(screen.getByText('Crear')).toBeInTheDocument();
 		expect(screen.getByText('1')).toBeInTheDocument();
 	});
 
 	it('shows enabled primary button with import count when actionable rows exist', () => {
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		const btn = getImportButton();
 		expect(btn.disabled).toBe(false);
 		expect(btn.textContent).toContain('Importar 1 cambio');
 	});
 
 	it('shows hidden hint when review rows are hidden', () => {
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		// No review rows → no hint
 		expect(screen.queryByText(/ocultos?/i)).toBeNull();
 	});
 
 	it('shows neutral disabled button with error message when only error rows exist', () => {
-		importCsv('full_name,phone,country_code\n,6691234567,');
+		importCsv('full_name,phone,country_code\n,1000000001,');
 		const btn = getImportButton();
 		expect(btn.disabled).toBe(true);
 		expect(btn.textContent).toBe('No se puede importar');
@@ -400,7 +400,7 @@ describe('all duplicates', () => {
 				guestId: 'dup-1',
 				inviteId: 'inv-1',
 				fullName: 'Ana',
-				phone: '+526691234567',
+				phone: '+521000000001',
 				countryCode: undefined,
 				email: null,
 				tags: [],
@@ -421,7 +421,7 @@ describe('all duplicates', () => {
 			},
 		];
 		renderModal('550e8400-e29b-41d4-a716-446655440000', existing);
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		const btn = getImportButton();
 		expect(btn.disabled).toBe(true);
 		expect(btn.textContent).toBe('No hay cambios para importar');
@@ -433,7 +433,7 @@ describe('all duplicates', () => {
 				guestId: 'ex-1',
 				inviteId: 'inv-1',
 				fullName: 'Ana López',
-				phone: '+526691234567',
+				phone: '+521000000001',
 				countryCode: undefined,
 				email: null,
 				tags: [],
@@ -454,7 +454,7 @@ describe('all duplicates', () => {
 			},
 		];
 		renderModal('550e8400-e29b-41d4-a716-446655440000', existing);
-		importCsv('full_name,phone\nAna López,\nLuis,+525551234567,');
+		importCsv('full_name,phone\nAna López,\nLuis,+521000000002,');
 		expect(screen.getByText(/duplicado oculto/i)).toBeInTheDocument();
 	});
 });

@@ -82,14 +82,14 @@ describe('SendInvitationModal', () => {
 		renderModal(makeGuest());
 
 		expect(screen.getByText('Guest One')).toBeInTheDocument();
-		expect(screen.getByText('4 personas · +52 669 123 4567')).toBeInTheDocument();
+		expect(screen.getByText('4 personas · +52 100 000 0001')).toBeInTheDocument();
 		expect(screen.queryByLabelText('¿Cuántas personas vienen?')).not.toBeInTheDocument();
 
 		openGuestDetails();
 
 		expect(screen.getByDisplayValue('Guest One')).toBeInTheDocument();
 		expect(screen.getByLabelText('¿Cuántas personas vienen?')).toHaveValue(4);
-		expect(screen.getByDisplayValue('6691234567')).toBeInTheDocument();
+		expect(screen.getByDisplayValue('1000000001')).toBeInTheDocument();
 
 		fireEvent.click(screen.getByRole('button', { name: 'Listo' }));
 		expect(screen.queryByLabelText('¿Cuántas personas vienen?')).not.toBeInTheDocument();
@@ -109,13 +109,13 @@ describe('SendInvitationModal', () => {
 	});
 
 	it('shows Compartir button as primary CTA', () => {
-		renderModal(makeGuest({ phone: '6691234567' }));
+		renderModal(makeGuest({ phone: '1000000001' }));
 
 		expect(screen.getByRole('button', { name: /compartir/i })).toBeInTheDocument();
 	});
 
 	it('shows WhatsApp icon with Compartir when phone is available', () => {
-		renderModal(makeGuest({ phone: '6691234567' }));
+		renderModal(makeGuest({ phone: '1000000001' }));
 
 		const btn = screen.getByRole('button', { name: /compartir/i });
 
@@ -182,7 +182,7 @@ describe('SendInvitationModal', () => {
 	});
 
 	it('blocks empty message on edit and shows error', async () => {
-		const { props } = renderModal(makeGuest({ phone: '6691234567' }));
+		const { props } = renderModal(makeGuest({ phone: '1000000001' }));
 		props.onSave.mockResolvedValue(makeGuest());
 
 		fireEvent.click(screen.getByText('Editar'));
@@ -198,7 +198,7 @@ describe('SendInvitationModal', () => {
 	});
 
 	it('reset from template restores template content in textarea', async () => {
-		const { props } = renderModal(makeGuest({ phone: '6691234567' }));
+		const { props } = renderModal(makeGuest({ phone: '1000000001' }));
 		props.onSave.mockResolvedValue(makeGuest());
 
 		fireEvent.click(screen.getByText('Editar'));
@@ -252,7 +252,7 @@ describe('SendInvitationModal', () => {
 
 		await waitFor(() =>
 			expect(window.open).toHaveBeenCalledWith(
-				expect.stringContaining('wa.me/526691234567'),
+				expect.stringContaining('wa.me/521000000001'),
 				'_blank',
 				'noopener,noreferrer',
 			),
@@ -269,8 +269,8 @@ describe('SendInvitationModal', () => {
 	it('WhatsApp popup blocked shows fallback without advancing', async () => {
 		window.open = jest.fn().mockReturnValue(null);
 		clearNavigatorAPIs();
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1', phone: '6691234567' }));
-		props.onSave.mockResolvedValue(makeGuest({ phone: '6691234567' }));
+		const { props } = renderModal(makeGuest({ guestId: 'guest-1', phone: '1000000001' }));
+		props.onSave.mockResolvedValue(makeGuest({ phone: '1000000001' }));
 		props.onMarkShared.mockResolvedValue(undefined);
 
 		fireEvent.click(screen.getByRole('button', { name: /compartir/i }));
@@ -335,7 +335,7 @@ describe('SendInvitationModal', () => {
 			expect(props.onSave).toHaveBeenCalledWith('guest-1', {
 				fullName: 'Edited Name',
 				maxAllowedAttendees: 4,
-				phone: '6691234567',
+				phone: '1000000001',
 				countryCode: '+52',
 			}),
 		);
@@ -432,9 +432,9 @@ describe('SendInvitationModal', () => {
 	});
 
 	it('saves with phone payload when phone is valid and data changed', async () => {
-		const guest = makeGuest({ guestId: 'guest-1', phone: '6691234567', fullName: 'Original' });
+		const guest = makeGuest({ guestId: 'guest-1', phone: '1000000001', fullName: 'Original' });
 		const { props } = renderModal(guest);
-		props.onSave.mockResolvedValue(makeGuest({ phone: '6691234567' }));
+		props.onSave.mockResolvedValue(makeGuest({ phone: '1000000001' }));
 
 		openGuestDetails();
 		const nameInput = screen.getByDisplayValue('Original');
@@ -446,14 +446,14 @@ describe('SendInvitationModal', () => {
 			expect(props.onSave).toHaveBeenCalledWith('guest-1', {
 				fullName: 'Edited',
 				maxAllowedAttendees: 4,
-				phone: '6691234567',
+				phone: '1000000001',
 				countryCode: '+52',
 			});
 		});
 	});
 
 	it('saves with null phone when phone field is cleared', async () => {
-		const guest = makeGuest({ guestId: 'guest-1', phone: '6691234567', fullName: 'Original' });
+		const guest = makeGuest({ guestId: 'guest-1', phone: '1000000001', fullName: 'Original' });
 		const { props } = renderModal(guest);
 		props.onSave.mockResolvedValue(makeGuest({ phone: '' }));
 
@@ -477,8 +477,8 @@ describe('SendInvitationModal', () => {
 
 	it('advances to next pending guest after sending current one', async () => {
 		const props = createProps();
-		const GuestA = makeGuest({ guestId: 'g-a', fullName: 'Ana López', phone: '6691111111' });
-		const GuestB = makeGuest({ guestId: 'g-b', fullName: 'María García', phone: '6692222222' });
+		const GuestA = makeGuest({ guestId: 'g-a', fullName: 'Ana López', phone: '1000000019' });
+		const GuestB = makeGuest({ guestId: 'g-b', fullName: 'María García', phone: '1000000027' });
 
 		const Wrapper = () => {
 			const [guest, setGuest] = useState<ReturnType<typeof makeGuest> | null>(GuestA);
@@ -521,7 +521,7 @@ describe('SendInvitationModal', () => {
 		const onlyGuest = makeGuest({
 			guestId: 'g-only',
 			fullName: 'Solo Invitado',
-			phone: '6691111111',
+			phone: '1000000019',
 		});
 
 		const Wrapper = () => {
@@ -584,7 +584,7 @@ describe('SendInvitationModal', () => {
 	});
 
 	it('shows no hint text when phone field has a value', () => {
-		renderModal(makeGuest({ phone: '6691234567' }));
+		renderModal(makeGuest({ phone: '1000000001' }));
 
 		expect(
 			screen.queryByText('Sin teléfono: WhatsApp le pedirá elegir el contacto.'),
@@ -607,14 +607,14 @@ describe('SendInvitationModal', () => {
 	});
 
 	it('WhatsApp URL uses wa.me/{phone} when phone is valid', async () => {
-		const { props } = renderModal(makeGuest({ guestId: 'guest-1', phone: '6691234567' }));
+		const { props } = renderModal(makeGuest({ guestId: 'guest-1', phone: '1000000001' }));
 		props.onMarkShared.mockResolvedValue(undefined);
 
 		fireEvent.click(screen.getByRole('button', { name: /compartir/i }));
 
 		await waitFor(() => {
 			expect(window.open).toHaveBeenCalledWith(
-				expect.stringMatching(/^https:\/\/wa\.me\/526691234567\?text=/),
+				expect.stringMatching(/^https:\/\/wa\.me\/521000000001\?text=/),
 				'_blank',
 				'noopener,noreferrer',
 			);
@@ -634,7 +634,7 @@ describe('SendInvitationModal', () => {
 
 		await waitFor(() =>
 			expect(window.open).toHaveBeenCalledWith(
-				expect.stringContaining('wa.me/526691234567'),
+				expect.stringContaining('wa.me/521000000001'),
 				'_blank',
 				'noopener,noreferrer',
 			),

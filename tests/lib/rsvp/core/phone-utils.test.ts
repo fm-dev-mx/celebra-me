@@ -206,24 +206,24 @@ describe('normalizeImportedPhone', () => {
 		});
 
 		// Acceptance criteria: front-end normalizes phone+countryCode before submission
-		it('local 10-digit MX phone +52 => +526563769461', () => {
-			expect(normalizeImportedPhone('6563769461', '+52')).toBe('+526563769461');
+		it('local 10-digit MX phone +52 => +521000000101', () => {
+			expect(normalizeImportedPhone('1000000101', '+52')).toBe('+521000000101');
 		});
 
-		it('local 10-digit MX phone +52 (no + prefix on cc) => +526563769461', () => {
-			expect(normalizeImportedPhone('6563769461', '52')).toBe('+526563769461');
+		it('local 10-digit MX phone +52 (no + prefix on cc) => +521000000101', () => {
+			expect(normalizeImportedPhone('1000000101', '52')).toBe('+521000000101');
 		});
 
 		it('international phone + empty country is valid (already E.164)', () => {
-			expect(normalizeImportedPhone('+526563769461', '')).toBe('+526563769461');
+			expect(normalizeImportedPhone('+521000000101', '')).toBe('+521000000101');
 		});
 
 		it('international phone + undefined country is valid', () => {
-			expect(normalizeImportedPhone('+526563769461')).toBe('+526563769461');
+			expect(normalizeImportedPhone('+521000000101')).toBe('+521000000101');
 		});
 
 		it('local phone + empty country is invalid (throws)', () => {
-			expect(() => normalizeImportedPhone('6563769461', '')).toThrow(
+			expect(() => normalizeImportedPhone('1000000101', '')).toThrow(
 				'no tiene código de país',
 			);
 		});

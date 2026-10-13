@@ -104,7 +104,7 @@ function xvFacts(overrides: PreparationFact[] = []): PreparationFact[] {
 		},
 		{
 			fieldId: 'rsvpWhatsappPhone',
-			value: '5215512345678',
+			value: '5211000000011',
 			classification: 'verified',
 			source: 'whatsapp',
 		},

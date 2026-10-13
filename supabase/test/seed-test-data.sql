@@ -59,6 +59,6 @@ ON CONFLICT (id) DO NOTHING;
 -- 8. Add guest invitations (personalized RSVP, configurable attendee limits, unique tokens)
 INSERT INTO public.guest_invitations (id, invite_id, event_id, full_name, phone, country_code, max_allowed_attendees, attendance_status, attendee_count, guest_comment, delivery_status, short_id, hide_celebra_me_branding)
 VALUES
-  ('90000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002', 'Familia Martínez', '6681167477', '+52', 5, 'confirmed', 3, '¡Muchas gracias por invitarnos!', 'shared', 'MARTINEZ', false),
-  ('90000000-0000-0000-0000-000000000002', '70000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000002', 'Sr. Juan Pérez', '6681167478', '+52', 2, 'declined', 0, 'Lamentamos no poder asistir.', 'shared', 'PEREZ', true)
+  ('90000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000002', 'Familia Martínez', '1000000009', '+52', 5, 'confirmed', 3, '¡Muchas gracias por invitarnos!', 'shared', 'MARTINEZ', false),
+  ('90000000-0000-0000-0000-000000000002', '70000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000002', 'Sr. Juan Pérez', '1000000025', '+52', 2, 'declined', 0, 'Lamentamos no poder asistir.', 'shared', 'PEREZ', true)
 ON CONFLICT (id) DO NOTHING;

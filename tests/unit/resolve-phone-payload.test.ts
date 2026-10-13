@@ -4,22 +4,22 @@ describe('resolvePhonePayload', () => {
 	describe('dropdown country code priority', () => {
 		it('uses dropdown +1 when phone is plain national digits and countryCode is +1', () => {
 			const result = resolvePhonePayload({
-				phone: '9150011122',
+				phone: '2025550123',
 				countryCode: '+1',
 				mode: 'edit',
-				initialPhone: '9150011122',
+				initialPhone: '2025550123',
 			});
-			expect(result).toEqual({ ok: true, phone: '9150011122', countryCode: '+1' });
+			expect(result).toEqual({ ok: true, phone: '2025550123', countryCode: '+1' });
 		});
 
 		it('does NOT default to +52 when dropdown says +1', () => {
 			const result = resolvePhonePayload({
-				phone: '9150011122',
+				phone: '2025550123',
 				countryCode: '+1',
 				mode: 'edit',
-				initialPhone: '9150011122',
+				initialPhone: '2025550123',
 			});
-			expect(result).not.toEqual({ ok: true, phone: '9150011122', countryCode: '+52' });
+			expect(result).not.toEqual({ ok: true, phone: '2025550123', countryCode: '+52' });
 		});
 
 		it('uses dropdown +52 when phone is plain national digits and countryCode is +52', () => {
@@ -36,12 +36,12 @@ describe('resolvePhonePayload', () => {
 	describe('explicit + prefix overrides dropdown', () => {
 		it('uses parsed +1 country code when input starts with +1', () => {
 			const result = resolvePhonePayload({
-				phone: '+1 915 001 1122',
+				phone: '+1 202 555 0123',
 				countryCode: '+52',
 				mode: 'edit',
-				initialPhone: '9150011122',
+				initialPhone: '2025550123',
 			});
-			expect(result).toEqual({ ok: true, phone: '9150011122', countryCode: '+1' });
+			expect(result).toEqual({ ok: true, phone: '2025550123', countryCode: '+1' });
 		});
 
 		it('uses parsed +52 country code when input starts with +52', () => {

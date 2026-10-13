@@ -69,7 +69,7 @@ describe('dashboard guests duplicate phone handling', () => {
 			request: createMockRequest({
 				eventId: 'evt-1',
 				fullName: 'Guest Duplicate',
-				phone: '6680000000',
+				phone: '1000000004',
 				countryCode: '+52',
 				maxAllowedAttendees: 2,
 			}),
@@ -101,7 +101,7 @@ describe('dashboard guests duplicate phone handling', () => {
 		const response = await PATCH({
 			params: { guestId: 'guest-1' },
 			request: createMockRequest({
-				phone: '6680000001',
+				phone: '1000000014',
 				countryCode: '+52',
 				fullName: 'Updated Guest',
 			}),
@@ -132,7 +132,7 @@ describe('dashboard guests duplicate phone handling', () => {
 			request: createMockRequest({
 				eventId: 'evt-1',
 				fullName: 'Guest',
-				phone: '6680000000',
+				phone: '1000000004',
 				countryCode: '+52',
 				maxAllowedAttendees: 2,
 			}),
@@ -156,7 +156,7 @@ describe('dashboard guests duplicate phone handling', () => {
 			request: createMockRequest({
 				eventId: 'evt-1',
 				fullName: 'Guest',
-				phone: '6680000000',
+				phone: '1000000004',
 				countryCode: '+52',
 				maxAllowedAttendees: 2,
 			}),
@@ -179,7 +179,7 @@ describe('dashboard guests duplicate phone handling', () => {
 			request: createMockRequest({
 				eventId: 'evt-1',
 				fullName: 'Guest',
-				phone: '6680000000',
+				phone: '1000000004',
 				countryCode: '+52',
 				maxAllowedAttendees: 2,
 			}),

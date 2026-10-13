@@ -9,9 +9,9 @@ import type { InvitationViewModel } from '@/lib/adapters/types';
 const PRODUCTION_ORIGIN = 'https://www.celebra-me.com';
 
 const baseViewModel: InvitationViewModel = {
-	id: 'ayrin-samantha-lerma-castro',
+	id: 'fixture-event',
 	isDemo: false,
-	title: 'XV Años de Ayrin Samantha',
+	title: 'XV Años de Valeria Ruiz',
 	description:
 		'Una invitación de palacio con rosas rojas, luz de velas y una atmósfera cálida de gala para celebrar XV años.',
 	theme: {
@@ -19,14 +19,14 @@ const baseViewModel: InvitationViewModel = {
 		themeClass: 'theme-preset--enchanted-rose',
 	},
 	hero: {
-		name: 'Ayrin Samantha Lerma Castro',
+		name: 'Valeria Ruiz',
 		secondaryName: '',
 		label: 'Mis XV años',
 		date: '2026-08-01T18:00:00Z',
 		variant: 'standard',
 		backgroundImage: {
 			src: '/_astro/portrait.CWMjVgq3.webp',
-			alt: 'Retrato de Ayrin Samantha',
+			alt: 'Retrato de Valeria Ruiz',
 		},
 	},
 	envelope: { enabled: false },
@@ -89,28 +89,24 @@ describe('shortId route metadata (social crawler path)', () => {
 	it('renders production-safe URLs even when local origin is 127.0.0.1', () => {
 		const metadata = simulateShortIdMetadata({
 			viewModel: baseViewModel,
-			shortId: 'GBOER6UK',
+			shortId: 'FXTR7K2M',
 			eventType: 'xv',
-			eventSlug: 'ayrin-samantha-lerma-castro',
+			eventSlug: 'fixture-event',
 			localOrigin: 'http://127.0.0.1:4321',
 		});
 
 		assertNoLocalhost(metadata);
-		expect(metadata.ogUrl).toBe(
-			`${PRODUCTION_ORIGIN}/xv/ayrin-samantha-lerma-castro/i/GBOER6UK`,
-		);
-		expect(metadata.canonical).toBe(
-			`${PRODUCTION_ORIGIN}/xv/ayrin-samantha-lerma-castro/i/GBOER6UK`,
-		);
+		expect(metadata.ogUrl).toBe(`${PRODUCTION_ORIGIN}/xv/fixture-event/i/FXTR7K2M`);
+		expect(metadata.canonical).toBe(`${PRODUCTION_ORIGIN}/xv/fixture-event/i/FXTR7K2M`);
 		expect(metadata.ogImage).toContain(PRODUCTION_ORIGIN);
 	});
 
 	it('renders production-safe URLs even when local origin is localhost', () => {
 		const metadata = simulateShortIdMetadata({
 			viewModel: baseViewModel,
-			shortId: 'GBOER6UK',
+			shortId: 'FXTR7K2M',
 			eventType: 'xv',
-			eventSlug: 'ayrin-samantha-lerma-castro',
+			eventSlug: 'fixture-event',
 			localOrigin: 'http://localhost:4321',
 		});
 
@@ -123,35 +119,35 @@ describe('shortId route metadata (social crawler path)', () => {
 			...baseViewModel,
 			sharing: {
 				ogDescription:
-					'Celebra con nosotros una noche especial por los XV años de Ayrin Samantha.',
+					'Celebra con nosotros una noche especial por los XV años de Valeria Ruiz.',
 			},
 		};
 
 		const metadata = simulateShortIdMetadata({
 			viewModel: viewModelWithOgDescription,
-			shortId: 'GBOER6UK',
+			shortId: 'FXTR7K2M',
 			eventType: 'xv',
-			eventSlug: 'ayrin-samantha-lerma-castro',
+			eventSlug: 'fixture-event',
 			localOrigin: 'http://127.0.0.1:4321',
 		});
 
 		expect(metadata.ogDescription).toBe(
-			'Celebra con nosotros una noche especial por los XV años de Ayrin Samantha.',
+			'Celebra con nosotros una noche especial por los XV años de Valeria Ruiz.',
 		);
 		expect(metadata.twitterDescription).toBe(
-			'Celebra con nosotros una noche especial por los XV años de Ayrin Samantha.',
+			'Celebra con nosotros una noche especial por los XV años de Valeria Ruiz.',
 		);
 		expect(metadata.description).toBe(
-			'Celebra con nosotros una noche especial por los XV años de Ayrin Samantha.',
+			'Celebra con nosotros una noche especial por los XV años de Valeria Ruiz.',
 		);
 	});
 
 	it('falls back to viewModel.description when sharing.ogDescription is absent', () => {
 		const metadata = simulateShortIdMetadata({
 			viewModel: baseViewModel,
-			shortId: 'GBOER6UK',
+			shortId: 'FXTR7K2M',
 			eventType: 'xv',
-			eventSlug: 'ayrin-samantha-lerma-castro',
+			eventSlug: 'fixture-event',
 			localOrigin: 'http://127.0.0.1:4321',
 		});
 
@@ -162,15 +158,15 @@ describe('shortId route metadata (social crawler path)', () => {
 		const viewModelWithOgDescription: InvitationViewModel = {
 			...baseViewModel,
 			sharing: {
-				ogDescription: 'Acompáñanos a celebrar los XV años de Ayrin Samantha.',
+				ogDescription: 'Acompáñanos a celebrar los XV años de Valeria Ruiz.',
 			},
 		};
 
 		const metadata = simulateShortIdMetadata({
 			viewModel: viewModelWithOgDescription,
-			shortId: 'GBOER6UK',
+			shortId: 'FXTR7K2M',
 			eventType: 'xv',
-			eventSlug: 'ayrin-samantha-lerma-castro',
+			eventSlug: 'fixture-event',
 			localOrigin: 'http://127.0.0.1:4321',
 		});
 
@@ -183,9 +179,9 @@ describe('shortId route metadata (social crawler path)', () => {
 	it('produces absolute HTTPS image URLs', () => {
 		const metadata = simulateShortIdMetadata({
 			viewModel: baseViewModel,
-			shortId: 'GBOER6UK',
+			shortId: 'FXTR7K2M',
 			eventType: 'xv',
-			eventSlug: 'ayrin-samantha-lerma-castro',
+			eventSlug: 'fixture-event',
 			localOrigin: 'http://127.0.0.1:4321',
 		});
 
@@ -196,9 +192,9 @@ describe('shortId route metadata (social crawler path)', () => {
 	it('uses guest name in og:title when guest is present', () => {
 		const metadata = simulateShortIdMetadata({
 			viewModel: baseViewModel,
-			shortId: 'GBOER6UK',
+			shortId: 'FXTR7K2M',
 			eventType: 'xv',
-			eventSlug: 'ayrin-samantha-lerma-castro',
+			eventSlug: 'fixture-event',
 			guestName: 'Francisco Prueba',
 			localOrigin: 'http://127.0.0.1:4321',
 		});
@@ -221,7 +217,7 @@ describe('shortId route metadata (social crawler path)', () => {
 
 			const metadata = simulateShortIdMetadata({
 				viewModel: cloudinaryViewModel,
-				shortId: 'JBZT9UE9',
+				shortId: 'FXTR8N4P',
 				eventType: 'xv',
 				eventSlug: 'xv-renata',
 			});

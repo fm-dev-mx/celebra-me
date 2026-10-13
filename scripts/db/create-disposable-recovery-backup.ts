@@ -87,7 +87,7 @@ values ('81000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-0000000
 on conflict (event_id, user_id) do nothing;
 
 insert into public.guest_invitations (id, invite_id, event_id, full_name, phone, country_code, max_allowed_attendees, attendance_status, attendee_count, guest_comment, delivery_status, responded_at, deleted_at, short_id, entry_source, view_percentage, is_viewed, hide_celebra_me_branding)
-values ('90000000-0000-0000-0000-000000000003', '70000000-0000-0000-0000-000000000003', 'e0000000-0000-0000-0000-000000000002', 'Invitado eliminado', '6681167479', '+52', 1, 'declined', 0, '', 'generated', '2026-07-27T12:00:00Z', '2026-07-28T12:00:00Z', 'DELETED1', 'dashboard', 100, true, false)
+values ('90000000-0000-0000-0000-000000000003', '70000000-0000-0000-0000-000000000003', 'e0000000-0000-0000-0000-000000000002', 'Invitado eliminado', '1000000026', '+52', 1, 'declined', 0, '', 'generated', '2026-07-27T12:00:00Z', '2026-07-28T12:00:00Z', 'DELETED1', 'dashboard', 100, true, false)
 on conflict (id) do nothing;
 
 insert into public.guest_invitation_audit (id, guest_invitation_id, actor_type, event_type, payload, created_at)

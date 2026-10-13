@@ -54,7 +54,7 @@ describe('createLeadFromContactSubmission', () => {
 		const result = await createLeadFromContactSubmission({
 			name: 'Valentina Hernandez',
 			email: 'client@example.com',
-			phone: '+52 614 123 4567',
+			phone: '+52 100 000 0005',
 			eventType: 'xv',
 			packageInterest: 'premium',
 			message: 'Quiero una invitacion para septiembre con musica.',
@@ -103,7 +103,7 @@ describe('createLeadFromContactSubmission', () => {
 		await createLeadFromContactSubmission({
 			name: 'Valentina Hernandez',
 			email: 'client@example.com',
-			phone: '+52 614 123 4567',
+			phone: '+52 100 000 0005',
 			leadCode: 'CM-ABC123',
 			sessionId: '11111111-1111-4111-8111-111111111111',
 			visitorId: 'visitor_00000000-0000-4000-8000-000000000000',
@@ -168,7 +168,7 @@ describe('createLeadFromTrackingEvent', () => {
 		);
 	});
 
-		it('does not create a lead or emit lead_created for duplicate lead_code', async () => {
+	it('does not create a lead or emit lead_created for duplicate lead_code', async () => {
 		// Simulate an existing lead for this code
 		mockFindLeadByCode.mockResolvedValue({
 			id: 'existing-lead-id',

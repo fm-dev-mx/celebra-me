@@ -631,15 +631,15 @@ describe('formatPhoneDisplay', () => {
 	});
 
 	it('formats 10-digit Mexican number with spaces', () => {
-		expect(formatPhoneDisplay('6681167477')).toBe('668 116 7477');
+		expect(formatPhoneDisplay('1000000009')).toBe('100 000 0009');
 	});
 
 	it('trims whitespace before formatting', () => {
-		expect(formatPhoneDisplay('  6681167477  ')).toBe('668 116 7477');
+		expect(formatPhoneDisplay('  1000000009  ')).toBe('100 000 0009');
 	});
 
 	it('strips existing dashes before formatting', () => {
-		expect(formatPhoneDisplay('668-116-7477')).toBe('668 116 7477');
+		expect(formatPhoneDisplay('100-000-0009')).toBe('100 000 0009');
 	});
 
 	it('returns trimmed original for non-10-digit value', () => {

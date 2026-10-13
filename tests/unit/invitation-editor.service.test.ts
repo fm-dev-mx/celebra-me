@@ -125,7 +125,7 @@ const published = {
 			title: 'Confirma P',
 			guestCap: 4,
 			confirmationMode: 'api',
-			whatsappConfig: { phone: '5215550000' },
+			whatsappConfig: { phone: '1000000022' },
 		},
 		music: { url: 'https://example.com/song.mp3', title: 'Canción P' },
 		gifts: { title: 'Regalos P', items: [{ type: 'cash', title: 'Sobres' }] },

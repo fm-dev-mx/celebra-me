@@ -98,7 +98,7 @@ describe('Invitation API: public landing RSVP', () => {
 			request: createMockRequest(
 				{
 					fullName: 'Mariana Soto',
-					phone: '668 000 0000',
+					phone: '100 000 0004',
 					countryCode: '+52',
 					attendanceStatus: 'confirmed',
 					attendeeCount: 2,
@@ -112,7 +112,7 @@ describe('Invitation API: public landing RSVP', () => {
 		expect(submitGuestRsvpByPublicEventMock).toHaveBeenCalledWith(
 			expect.objectContaining({
 				fullName: 'Mariana Soto',
-				phone: '6680000000',
+				phone: '1000000004',
 				countryCode: '+52',
 				maxAllowedAttendees: 3,
 			}),
@@ -134,7 +134,7 @@ describe('Invitation API: public landing RSVP', () => {
 			request: createMockRequest(
 				{
 					fullName: 'John Smith',
-					phone: '5551234567',
+					phone: '1000000002',
 					countryCode: '+1',
 					attendanceStatus: 'confirmed',
 					attendeeCount: 1,
@@ -214,7 +214,7 @@ describe('Invitation API: public landing RSVP', () => {
 			params: { eventType: 'xv', slug: 'demo' },
 			request: createMockRequest({
 				fullName: 'Mariana Soto',
-				phone: '6680000000',
+				phone: '1000000004',
 				countryCode: '+52',
 				attendanceStatus: 'confirmed',
 				attendeeCount: 1,
@@ -231,7 +231,7 @@ describe('Invitation API: public landing RSVP', () => {
 			params: { eventType: 'xv', slug: 'demo' },
 			request: createMockRequest({
 				fullName: 'Mariana Soto',
-				phone: '6680000000',
+				phone: '1000000004',
 				countryCode: '+52',
 				attendanceStatus: 'confirmed',
 				attendeeCount: 1,
@@ -253,7 +253,7 @@ describe('Invitation API: public landing RSVP', () => {
 			request: createMockRequest(
 				{
 					fullName: 'Mariana Soto',
-					phone: '6680000000',
+					phone: '1000000004',
 					attendanceStatus: 'confirmed',
 					attendeeCount: 1,
 				},

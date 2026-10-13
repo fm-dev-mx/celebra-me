@@ -10,13 +10,13 @@ import {
 const baseInput = {
 	origin: 'https://www.celebra-me.com',
 	inviteId: 'invite-uuid-123',
-	phone: '5512345678',
+	phone: '1000000011',
 	countryCode: '+52',
 	fullName: 'Francisco Prueba',
-	eventTitle: 'XV Años de Ayrin Samantha',
+	eventTitle: 'XV Años de Valeria Ruiz',
 	eventType: 'xv' as const,
-	eventSlug: 'ayrin-samantha-lerma-castro',
-	shortId: 'GBOER6UK',
+	eventSlug: 'fixture-event',
+	shortId: 'FXTR7K2M',
 };
 
 describe('buildShareMessage', () => {
@@ -31,7 +31,7 @@ describe('buildShareMessage', () => {
 			includeLink: true,
 		});
 		expect(result).toContain('Custom: Francisco Prueba');
-		expect(result).toContain('XV Años de Ayrin Samantha');
+		expect(result).toContain('XV Años de Valeria Ruiz');
 		expect(result).toContain('celebra-me.com');
 	});
 
@@ -58,7 +58,7 @@ describe('buildShareMessage', () => {
 		});
 		expect(result).toContain('Hola Francisco Prueba');
 		expect(result).toContain('mis XV años');
-		expect(result).toContain('https://www.celebra-me.com/i/GBOER6UK');
+		expect(result).toContain('https://www.celebra-me.com/i/FXTR7K2M');
 	});
 
 	it('falls back to hardcoded default invitation when neither shareMessages nor template provided', () => {
@@ -68,7 +68,7 @@ describe('buildShareMessage', () => {
 		});
 		expect(result).toContain('Francisco Prueba');
 		expect(result).toContain('mis XV años');
-		expect(result).toContain('https://www.celebra-me.com/i/GBOER6UK');
+		expect(result).toContain('https://www.celebra-me.com/i/FXTR7K2M');
 	});
 
 	it('uses default reminder when messageType is reminder and no shareMessages provided', () => {
@@ -129,8 +129,8 @@ describe('buildShareMessage', () => {
 			messageType: 'reminder',
 			includeLink: true,
 		});
-		expect(invitation).toContain('https://www.celebra-me.com/i/GBOER6UK');
-		expect(reminder).toContain('https://www.celebra-me.com/i/GBOER6UK');
+		expect(invitation).toContain('https://www.celebra-me.com/i/FXTR7K2M');
+		expect(reminder).toContain('https://www.celebra-me.com/i/FXTR7K2M');
 	});
 
 	it('generates long invite URL when no shortId is provided', () => {
@@ -323,7 +323,7 @@ describe('buildWhatsAppShareUrl', () => {
 		expect(result).toContain('?text=');
 		const decoded = decodeURIComponent(result.split('?text=')[1]);
 		expect(decoded).toContain('Francisco Prueba');
-		expect(decoded).toContain('https://www.celebra-me.com/i/GBOER6UK');
+		expect(decoded).toContain('https://www.celebra-me.com/i/FXTR7K2M');
 	});
 
 	it('encodes accents and newlines in message', () => {
@@ -333,7 +333,7 @@ describe('buildWhatsAppShareUrl', () => {
 
 	it('includes phone number with country code in URL', () => {
 		const result = buildWhatsAppShareUrl(baseInput);
-		expect(result).toMatch(/wa\.me\/525512345678/);
+		expect(result).toMatch(/wa\.me\/521000000011/);
 	});
 
 	it('uses shareMessages.invitation template in URL', () => {

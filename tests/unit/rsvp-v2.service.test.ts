@@ -30,7 +30,7 @@ function makeGuestRecord(overrides: Partial<GuestInvitationRecord> = {}): GuestI
 		inviteId: 'invite-1',
 		eventId: 'evt-1',
 		fullName: 'Invitado',
-		phone: '6680000000',
+		phone: '1000000004',
 		maxAllowedAttendees: 4,
 		attendanceStatus: 'pending',
 		attendeeCount: 0,
