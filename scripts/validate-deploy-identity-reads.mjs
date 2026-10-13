@@ -21,7 +21,7 @@ const DEPLOY_IDENTITY_RULES = [
 	},
 	{
 		pattern:
-			/(?:getEnv\(\s*['"]CELEBRA_DEPLOY_ENV|process\.env(?:\.|\[\s*['"])CELEBRA_DEPLOY_ENV)/,
+			/(?:getEnv\(\s*['"]CELEBRA_DEPLOY_ENV|(?:process|import\.meta)\.env(?:\.|\[\s*['"])CELEBRA_DEPLOY_ENV|\{[^}]*\bCELEBRA_DEPLOY_ENV\b[^}]*\}\s*=\s*(?:process|import\.meta)\.env)/,
 		message: 'reads CELEBRA_DEPLOY_ENV outside src/lib/server/deploy-identity.ts',
 		allow: (file) => file === DEPLOY_IDENTITY_MODULE,
 	},
@@ -30,7 +30,8 @@ const DEPLOY_IDENTITY_RULES = [
 		message: 'reads NODE_ENV dynamically; it is empty on edge runtimes',
 	},
 	{
-		pattern: /NODE_ENV\s*[!=]==?\s*['"]production['"]/,
+		pattern:
+			/NODE_ENV['"]?\]?\s*[!=]==?\s*['"]production['"]|['"]production['"]\s*[!=]==?\s*process\.env/,
 		message: 'decides behavior from NODE_ENV; use src/lib/server/deploy-identity.ts',
 	},
 ];

@@ -360,6 +360,10 @@ describe('validate-structure script', () => {
 					"const g = 'message that names CELEBRA_DEPLOY_ENV';",
 					"const h = process.env.NODE_ENV === 'production';",
 					"const i = process.env.NODE_ENV === 'test';",
+					'const j = import.meta.env.CELEBRA_DEPLOY_ENV;',
+					'const { CELEBRA_DEPLOY_ENV: k } = process.env;',
+					"const l = 'production' === process.env.NODE_ENV;",
+					"const m = process.env['NODE_ENV'] !== 'production';",
 				].join('\n'),
 			);
 
@@ -377,6 +381,10 @@ describe('validate-structure script', () => {
 			expect(output).not.toContain('src/lib/leaky.ts:7:');
 			expect(output).toContain('src/lib/leaky.ts:8: decides behavior from NODE_ENV');
 			expect(output).not.toContain('src/lib/leaky.ts:9:');
+			expect(output).toContain('src/lib/leaky.ts:10: reads CELEBRA_DEPLOY_ENV outside');
+			expect(output).toContain('src/lib/leaky.ts:11: reads CELEBRA_DEPLOY_ENV outside');
+			expect(output).toContain('src/lib/leaky.ts:12: decides behavior from NODE_ENV');
+			expect(output).toContain('src/lib/leaky.ts:13: decides behavior from NODE_ENV');
 			expect(output).not.toContain('src/lib/server/deploy-identity.ts:');
 		} finally {
 			rmSync(fixtureRoot, { recursive: true, force: true });
