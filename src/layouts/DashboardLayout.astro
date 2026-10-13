@@ -4,6 +4,7 @@ import DashboardSidebar from '@/components/dashboard/shell/DashboardSidebar.astr
 import { toDisplayRole } from '@/lib/rsvp/auth/roles';
 import type { DashboardNavItem } from '@/interfaces/dashboard/admin.interface';
 import { resolveDashboardEnvBanner } from '@/lib/server/dashboard-env-banner';
+import { readDeployEnvironment } from '@/lib/server/deploy-identity';
 import { isNavItemActive } from '@/utils/dashboard';
 import {
 	isLocalObservabilityRuntime,
@@ -19,7 +20,7 @@ interface Props {
 const { title } = Astro.props as Props;
 
 const envBanner = resolveDashboardEnvBanner({
-	vercelEnv: process.env.VERCEL_ENV,
+	deployEnvironment: readDeployEnvironment(),
 	celebraRuntimeTarget: process.env.CELEBRA_RUNTIME_TARGET,
 	supabaseUrl: process.env.SUPABASE_URL ?? process.env.PUBLIC_SUPABASE_URL,
 	previewMfaBypass: process.env.PREVIEW_MFA_BYPASS,

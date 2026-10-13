@@ -82,8 +82,10 @@ describe('resolveMemoriesShareUrl', () => {
 });
 
 describe('guest link origin', () => {
-	function runIn(vercelEnv: string) {
-		mockEnv.mockImplementation((name: string) => (name === 'VERCEL_ENV' ? vercelEnv : SECRET));
+	function runIn(deployEnvironment: string) {
+		mockEnv.mockImplementation((name: string) =>
+			name === 'CELEBRA_DEPLOY_ENV' ? deployEnvironment : SECRET,
+		);
 	}
 
 	it('keeps the canonical domain in Production whatever host served the request', () => {

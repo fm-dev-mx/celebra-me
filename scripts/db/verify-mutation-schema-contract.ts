@@ -51,6 +51,8 @@ const expectedTrue = [
 	'submitRsvpRpc',
 	'recordEngagementRpc',
 	'engagementSummaryRpc',
+	'rankingRpc',
+	'serviceRoleRankingExecute',
 	'serviceRoleMetadataExecute',
 	'serviceRoleRestoreExecute',
 	'serviceRoleSubmitRsvpExecute',
@@ -90,6 +92,8 @@ const expectedFalse = [
 	'anonRecordEngagementExecute',
 	'authenticatedRecordEngagementExecute',
 	'anonEngagementSummaryExecute',
+	'anonRankingExecute',
+	'authenticatedRankingExecute',
 	'serviceRoleEngagementLedgerUpdate',
 	'serviceRoleEngagementLedgerDelete',
 ];

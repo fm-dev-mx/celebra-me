@@ -80,7 +80,9 @@ The live tree does not expose `/admin/rsvp` or `/api/rsvp/*` as active operation
   `last_opened_at`, `last_previewed_at`, `max_progress_milestone`, `rsvp_form_viewed_at`,
   `rsvp_form_started_at`). Hosts read aggregates through `get_event_engagement_summary` (security
   invoker). `guest_invitations.is_test` excludes test guests. Taxonomy, metrics, and retention:
-  [`engagement-analytics.md`](./engagement-analytics.md).
+  [`engagement-analytics.md`](./engagement-analytics.md). Administrators compare invitations and
+  designs through `list_invitation_engagement_ranking` (security definer, `service_role` only),
+  which reads `invitation_engagement_snapshots` and `events` labels and never the ledger.
 - `events.event_date` is derived from published content by `invitation_event_date()` and kept
   current by a trigger on `published_invitation_content`.
 

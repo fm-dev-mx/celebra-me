@@ -5,7 +5,7 @@ import {
 	type EngagementEventRow,
 	type EngagementRecordResult,
 } from '@/lib/rsvp/repositories/engagement.repository';
-import { getEnv } from '@/lib/server/env';
+import { readHostedDeployEnvironment } from '@/lib/server/deploy-identity';
 import { socialCrawlerFamily } from '@/lib/social/social-crawler';
 import type { ClientEngagementBatch } from './event-contract';
 import { ENGAGEMENT_SCHEMA_VERSION, type ServerEngagementEvent } from './taxonomy';
@@ -16,7 +16,7 @@ import {
 } from './traffic-classifier';
 
 function trafficEnvironment(): TrafficEnvironment {
-	return { vercelEnv: getEnv('VERCEL_ENV') };
+	return { deployEnvironment: readHostedDeployEnvironment() };
 }
 
 function toSnakeProperties(properties: Record<string, unknown>): Record<string, unknown> {

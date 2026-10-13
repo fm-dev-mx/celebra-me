@@ -208,6 +208,11 @@
             "requiresDeployedAppCapabilities": ["guest_engagement_only_client"],
             "revokes": ["track_guest_invitation_view_public"],
             "notes": "Drops track_guest_invitation_view_public, the legacy view telemetry RPC. The application records guest engagement through record_guest_engagement_events_public and no longer serves /api/invitacion/:inviteId/view. Apply only after the Production deployment that provides guest_engagement_only_client passed smoke."
+        },
+        "20261013120000": {
+            "phase": "expand",
+            "provides": ["invitation_engagement_ranking"],
+            "notes": "Adds list_invitation_engagement_ranking, a service-role-only read routine over invitation_engagement_snapshots that applies the engagement comparison rules (same event type, final over rolling, 20-guest sample threshold, design group sizes). Additive: the admin ranking API tolerates its absence. Revokes only initialize privileges of the new function."
         }
     },
     "appCapabilities": {

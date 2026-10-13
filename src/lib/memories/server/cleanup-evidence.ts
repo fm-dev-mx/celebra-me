@@ -46,14 +46,13 @@ export interface MemoriesCleanupContext {
 }
 
 const REVIEW_ACTION =
-	'Abra la invocación exacta en Vercel y revise el resumen; no invoque manualmente la limpieza.';
+	'Abra la invocación exacta en los registros del hosting y revise el resumen; no invoque manualmente la limpieza.';
 
 export function resolveMemoriesRuntimeEnvironment(
-	vercelEnv: string | undefined,
+	deployEnvironment: string | null | undefined,
 ): OperationalEvidenceEnvironment {
-	const normalized = (vercelEnv ?? '').trim().toLowerCase();
-	if (normalized === 'production') return 'production';
-	if (normalized === 'preview') return 'preview';
+	if (deployEnvironment === 'production') return 'production';
+	if (deployEnvironment === 'preview') return 'preview';
 	return 'local';
 }
 
@@ -97,7 +96,7 @@ function build(
 		observedAt: context.completedAt ?? context.startedAt,
 		status,
 		reasonCode,
-		source: 'vercel_cron',
+		source: 'scheduled_cron',
 		ownerAction,
 		...(deploymentId ? { deploymentId } : {}),
 		...(commitSha && /^[0-9a-f]{40}$/i.test(commitSha) ? { commitSha } : {}),

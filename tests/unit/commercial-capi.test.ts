@@ -1,6 +1,6 @@
 let mockDeliveryMode = 'test';
 let mockTestEventCode = 'TEST12345';
-let mockVercelEnvironment: string | undefined = '';
+let mockDeployEnvironment: string | undefined = '';
 
 jest.mock('@/lib/rsvp/repositories/supabase', () => ({
 	supabaseRestRequest: jest.fn(),
@@ -28,7 +28,7 @@ jest.mock('@/lib/server/env', () => ({
 	getEnv: (key: string) => {
 		if (key === 'META_CAPI_DELIVERY_MODE') return mockDeliveryMode;
 		if (key === 'META_TEST_EVENT_CODE') return mockTestEventCode;
-		if (key === 'VERCEL_ENV') return mockVercelEnvironment;
+		if (key === 'CELEBRA_DEPLOY_ENV') return mockDeployEnvironment;
 		const mockEnv: Record<string, string> = {
 			META_CAPI_ACCESS_TOKEN: 'mock-access-token',
 			META_PIXEL_ID: 'mock-pixel-id',
@@ -44,7 +44,7 @@ beforeEach(() => {
 	global.fetch = mockFetch;
 	mockDeliveryMode = 'test'; // Reset default
 	mockTestEventCode = 'TEST12345';
-	mockVercelEnvironment = '';
+	mockDeployEnvironment = '';
 });
 
 afterEach(() => {
@@ -105,9 +105,9 @@ describe('Meta CAPI service helpers', () => {
 });
 
 describe('deliverMetaConversionEvent', () => {
-	it('allows production mode only when VERCEL_ENV is production', async () => {
+	it('allows production mode only when CELEBRA_DEPLOY_ENV is production', async () => {
 		mockDeliveryMode = 'production';
-		mockVercelEnvironment = 'production';
+		mockDeployEnvironment = 'production';
 		enqueueDeliverableEvent();
 		mockFetch.mockResolvedValueOnce({
 			ok: true,
@@ -128,14 +128,14 @@ describe('deliverMetaConversionEvent', () => {
 		['uppercase production', 'PRODUCTION'],
 		['production with leading whitespace', ' production'],
 		['production with trailing whitespace', 'production '],
-		['an empty VERCEL_ENV', ''],
-		['a missing VERCEL_ENV', undefined],
+		['an empty CELEBRA_DEPLOY_ENV', ''],
+		['a missing CELEBRA_DEPLOY_ENV', undefined],
 		['an arbitrary environment', 'staging'],
 	] as Array<[string, string | undefined]>)(
 		'blocks production mode in %s',
-		async (_label, vercelEnvironment) => {
+		async (_label, deployEnvironment) => {
 			mockDeliveryMode = 'production';
-			mockVercelEnvironment = vercelEnvironment;
+			mockDeployEnvironment = deployEnvironment;
 			mockRestRequest
 				.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
 				.mockResolvedValueOnce([{ id: 'outbox-id' }]);

@@ -1,11 +1,14 @@
+import { isDevEnvironment } from '@/lib/environment';
 import { SUPABASE_PROJECT_REFS } from '@/lib/intake/mutations/environment-identity';
+import { isLocalProcess } from '@/lib/server/deploy-identity';
 import { getEnv } from '@/lib/server/env';
 
 export interface DevMfaBypassInput {
 	devMfaBypass: string | undefined;
-	nodeEnv: string | undefined;
-	vercel: string | undefined;
-	vercelEnv: string | undefined;
+	/** Declared hosted identity (tests only); any value disables the bypass. */
+	deployEnv?: string;
+	/** Build-time `import.meta.env.DEV`: only the Astro dev server qualifies. */
+	isDevServer: boolean;
 	supabaseUrl: string | undefined;
 	celebraRuntimeTarget: string | undefined;
 }
@@ -42,16 +45,10 @@ function isPreviewSupabaseUrl(urlString: string | undefined): boolean {
 	}
 }
 
-function isVercel(vercel: string | undefined, vercelEnv: string | undefined): boolean {
-	return vercel === '1' || vercelEnv === 'production' || vercelEnv === 'preview';
-}
-
 function readDefaultInput(): DevMfaBypassInput {
 	return {
 		devMfaBypass: getEnv('DEV_MFA_BYPASS'),
-		nodeEnv: getEnv('NODE_ENV') || 'development',
-		vercel: getEnv('VERCEL'),
-		vercelEnv: getEnv('VERCEL_ENV'),
+		isDevServer: isDevEnvironment(),
 		supabaseUrl: getEnv('SUPABASE_URL'),
 		celebraRuntimeTarget: getEnv('CELEBRA_RUNTIME_TARGET'),
 	};
@@ -61,8 +58,16 @@ export function isDevMfaBypassEnabled(input?: DevMfaBypassInput): boolean {
 	const env = input ?? readDefaultInput();
 
 	if (env.devMfaBypass !== 'true') return false;
-	if (env.nodeEnv !== 'development') return false;
-	if (isVercel(env.vercel, env.vercelEnv)) return false;
+	if (!env.isDevServer) return false;
+	if (
+		!isLocalProcess({
+			deployEnv: env.deployEnv,
+			supabaseUrl: env.supabaseUrl ?? '',
+			isDevServer: env.isDevServer,
+		})
+	) {
+		return false;
+	}
 
 	// Local Supabase (integration / dev-local) or Preview project + target=preview
 	if (isLocalSupabaseUrl(env.supabaseUrl)) return true;

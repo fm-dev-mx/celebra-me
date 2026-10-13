@@ -10,7 +10,7 @@ import {
 } from '@/lib/platform/server/env-profiles';
 
 const ENV_NAMES = [
-	'VERCEL_ENV',
+	'CELEBRA_DEPLOY_ENV',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PREVIEW',
 	'MEMORIES_CLOUDFLARE_ANALYTICS_TOKEN_PRODUCTION',
@@ -41,11 +41,11 @@ describe('panel scoping', () => {
 		expect(resolvePanelEnvironments()).toEqual(['preview', 'production']);
 		expect(isLocalPanel()).toBe(true);
 
-		process.env.VERCEL_ENV = 'preview';
+		process.env.CELEBRA_DEPLOY_ENV = 'preview';
 		expect(resolvePanelEnvironments()).toEqual(['preview']);
 		expect(isLocalPanel()).toBe(false);
 
-		process.env.VERCEL_ENV = 'production';
+		process.env.CELEBRA_DEPLOY_ENV = 'production';
 		expect(resolvePanelEnvironments()).toEqual(['production']);
 	});
 });
@@ -89,7 +89,7 @@ describe('readProfileVar', () => {
 		expect(local.value).toBeNull();
 		expect(local.missing?.name).toBe('MEMORIES_R2_BUCKET_NAME_PREVIEW');
 
-		process.env.VERCEL_ENV = 'production';
+		process.env.CELEBRA_DEPLOY_ENV = 'production';
 		const deployment = readProfileVar('r2BucketName', 'production', {
 			allowPlainFallback: false,
 		});

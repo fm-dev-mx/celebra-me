@@ -1,5 +1,5 @@
 import { isDevEnvironment } from '@/lib/environment';
-import { getEnv } from '@/lib/server/env';
+import { readHostedDeployEnvironment } from '@/lib/server/deploy-identity';
 
 /**
  * Local `astro dev` invitation preview switches.
@@ -23,9 +23,7 @@ export type InvitationMusicPlayerProps = {
 };
 
 function isHostedInvitationRuntime(): boolean {
-	const vercel = getEnv('VERCEL');
-	const vercelEnv = getEnv('VERCEL_ENV').toLowerCase();
-	return vercel === '1' || vercelEnv === 'production' || vercelEnv === 'preview';
+	return readHostedDeployEnvironment() !== null;
 }
 
 function canUseLocalInvitationPreview(): boolean {

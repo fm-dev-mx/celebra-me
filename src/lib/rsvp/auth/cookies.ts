@@ -1,6 +1,4 @@
-function isProduction(): boolean {
-	return process.env.NODE_ENV === 'production';
-}
+import { requiresSecureCookies } from '@/lib/server/deploy-identity';
 
 const ACCESS_TOKEN_MAX_AGE_SECONDS = 60 * 60; // 1 hour
 const REFRESH_TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
@@ -16,7 +14,7 @@ export function buildSessionCookie(accessToken: string): string {
 		'SameSite=Lax',
 		`Max-Age=${ACCESS_TOKEN_MAX_AGE_SECONDS}`,
 	];
-	if (isProduction()) parts.push('Secure');
+	if (requiresSecureCookies()) parts.push('Secure');
 	return parts.join('; ');
 }
 
@@ -28,7 +26,7 @@ export function buildRefreshTokenCookie(refreshToken: string): string {
 		'SameSite=Lax',
 		`Max-Age=${REFRESH_TOKEN_MAX_AGE_SECONDS}`,
 	];
-	if (isProduction()) parts.push('Secure');
+	if (requiresSecureCookies()) parts.push('Secure');
 	return parts.join('; ');
 }
 
@@ -39,7 +37,7 @@ export function buildMfaSessionCookie(accessToken: string): string {
 		'SameSite=Strict',
 		`Max-Age=${MFA_TEMP_MAX_AGE_SECONDS}`,
 	];
-	if (isProduction()) parts.push('Secure');
+	if (requiresSecureCookies()) parts.push('Secure');
 	return parts.join('; ');
 }
 
@@ -50,7 +48,7 @@ export function buildMfaRefreshCookie(refreshToken: string): string {
 		'SameSite=Strict',
 		`Max-Age=${MFA_TEMP_MAX_AGE_SECONDS}`,
 	];
-	if (isProduction()) parts.push('Secure');
+	if (requiresSecureCookies()) parts.push('Secure');
 	return parts.join('; ');
 }
 
@@ -62,7 +60,7 @@ export function buildIdleActivityCookie(unixSeconds: number): string {
 		'SameSite=Lax',
 		`Max-Age=${IDLE_TIMEOUT_SECONDS}`,
 	];
-	if (isProduction()) parts.push('Secure');
+	if (requiresSecureCookies()) parts.push('Secure');
 	return parts.join('; ');
 }
 
@@ -77,42 +75,42 @@ export function buildTrustedDeviceCookie(
 		'SameSite=Lax',
 		`Max-Age=${Math.max(60, Math.trunc(maxAge))}`,
 	];
-	if (isProduction()) parts.push('Secure');
+	if (requiresSecureCookies()) parts.push('Secure');
 	return parts.join('; ');
 }
 
 export function clearSessionCookie(): string {
 	const parts = ['sb-access-token=', 'Path=/', 'Max-Age=0', 'HttpOnly', 'SameSite=Lax'];
-	if (isProduction()) parts.push('Secure');
+	if (requiresSecureCookies()) parts.push('Secure');
 	return parts.join('; ');
 }
 
 export function clearRefreshTokenCookie(): string {
 	const parts = ['sb-refresh-token=', 'Path=/', 'Max-Age=0', 'HttpOnly', 'SameSite=Lax'];
-	if (isProduction()) parts.push('Secure');
+	if (requiresSecureCookies()) parts.push('Secure');
 	return parts.join('; ');
 }
 
 export function clearMfaSessionCookie(): string {
 	const parts = ['sb-mfa-session=', 'Path=/dashboard/mfa-setup', 'Max-Age=0', 'SameSite=Strict'];
-	if (isProduction()) parts.push('Secure');
+	if (requiresSecureCookies()) parts.push('Secure');
 	return parts.join('; ');
 }
 
 export function clearMfaRefreshCookie(): string {
 	const parts = ['sb-mfa-refresh=', 'Path=/dashboard/mfa-setup', 'Max-Age=0', 'SameSite=Strict'];
-	if (isProduction()) parts.push('Secure');
+	if (requiresSecureCookies()) parts.push('Secure');
 	return parts.join('; ');
 }
 
 export function clearIdleActivityCookie(): string {
 	const parts = ['sb-idle-seen=', 'Path=/', 'Max-Age=0', 'HttpOnly', 'SameSite=Lax'];
-	if (isProduction()) parts.push('Secure');
+	if (requiresSecureCookies()) parts.push('Secure');
 	return parts.join('; ');
 }
 
 export function clearTrustedDeviceCookie(): string {
 	const parts = ['sb-trust-device=', 'Path=/', 'Max-Age=0', 'HttpOnly', 'SameSite=Lax'];
-	if (isProduction()) parts.push('Secure');
+	if (requiresSecureCookies()) parts.push('Secure');
 	return parts.join('; ');
 }

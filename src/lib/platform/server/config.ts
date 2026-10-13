@@ -1,6 +1,6 @@
 /**
  * Server-only environment variable names for the platform usage console.
- * Values are owned by Vercel (see docs/env-workflow.md); this module never
+ * Values are owned by the hosting platform (see docs/env-workflow.md); this module never
  * reads secrets itself. Deliberately not named `CLOUDFLARE_*`: Wrangler would
  * pick those up as deploy credentials.
  */
@@ -20,8 +20,6 @@ export const PLATFORM_ENV = {
 	cloudinaryApiKey: 'CLOUDINARY_API_KEY',
 	cloudinaryApiSecret: 'CLOUDINARY_API_SECRET',
 	cloudinaryCloudName: 'CLOUDINARY_CLOUD_NAME',
-	/** Platform-injected (Vercel): `production` | `preview` | `development`. */
-	vercelEnv: 'VERCEL_ENV',
 } as const;
 
 /**

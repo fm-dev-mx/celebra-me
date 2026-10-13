@@ -11,6 +11,7 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import type { AstroCookies } from 'astro';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { requiresSecureCookies } from '@/lib/server/deploy-identity';
 
 const CSRF_COOKIE_NAME = 'csrf-token';
 const CSRF_HEADER_NAME = 'x-csrf-token';
@@ -48,12 +49,9 @@ export function setCsrfToken(cookies: CsrfTokenCookieStore): string {
 
 	const token = generateCsrfToken();
 
-	// Restrict cookie transport in production.
-	const isProduction = process.env.NODE_ENV === 'production';
-
 	cookies.set(CSRF_COOKIE_NAME, token, {
 		httpOnly: true,
-		secure: isProduction,
+		secure: requiresSecureCookies(),
 		sameSite: 'strict',
 		path: '/',
 		maxAge: 60 * 60 * 24, // 24 hours
@@ -65,7 +63,9 @@ export function setCsrfToken(cookies: CsrfTokenCookieStore): string {
 /**
  * Reads the raw CSRF token from the HttpOnly cookie.
  */
-export function getCsrfTokenFromCookies(cookies: Pick<CsrfTokenCookieStore, 'get'>): string | undefined {
+export function getCsrfTokenFromCookies(
+	cookies: Pick<CsrfTokenCookieStore, 'get'>,
+): string | undefined {
 	return cookies.get(CSRF_COOKIE_NAME)?.value;
 }
 

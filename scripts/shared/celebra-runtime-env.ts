@@ -195,13 +195,10 @@ export function resolveRuntimeTarget(
 	const env = options.env ?? process.env;
 	const cwd = options.cwd ?? process.cwd();
 	const lane = detectWorktreeLane(cwd);
-	const vercelEnv = (env.VERCEL_ENV ?? '').trim().toLowerCase();
+	const deployEnv = (env.CELEBRA_DEPLOY_ENV ?? '').trim().toLowerCase();
 
-	if (vercelEnv === 'production') {
-		return { target: 'production', lane, source: 'vercel' };
-	}
-	if (vercelEnv === 'preview') {
-		return { target: 'preview', lane, source: 'vercel-preview' };
+	if (deployEnv === 'production' || deployEnv === 'preview') {
+		return { target: deployEnv, lane, source: 'CELEBRA_DEPLOY_ENV' };
 	}
 
 	const override = (env.CELEBRA_RUNTIME_TARGET ?? '').trim().toLowerCase();
@@ -235,10 +232,10 @@ function overlayPreviewRuntimeFile(
 
 function applyMergedEnvToProcess(
 	merged: Record<string, string>,
-	options: { isLocalDev: boolean; isVercel: boolean },
+	options: { isLocalDev: boolean; isHosted: boolean },
 ): void {
 	for (const [key, value] of Object.entries(merged)) {
-		if (options.isLocalDev && !options.isVercel && RUNTIME_OVERRIDE_KEYS.has(key)) {
+		if (options.isLocalDev && !options.isHosted && RUNTIME_OVERRIDE_KEYS.has(key)) {
 			process.env[key] = value;
 			continue;
 		}
@@ -273,27 +270,27 @@ export function bootstrapCelebraRuntimeEnv(
 	const validate = options.validate !== false;
 	const loadEnvFn = options.loadEnvFn ?? loadModeEnvFiles;
 	const isLocalDev = (process.env.NODE_ENV ?? mode) === 'development';
-	const isVercel = process.env.VERCEL === '1' || Boolean(process.env.VERCEL_ENV);
+	const isHosted = Boolean(process.env.CELEBRA_DEPLOY_ENV?.trim());
 
 	const resolved = resolveRuntimeTarget({ cwd, env: process.env });
 	const merged: Record<string, string> = { ...loadEnvFn(mode, cwd) };
 
-	if (!isVercel && resolved.target === 'preview') {
+	if (!isHosted && resolved.target === 'preview') {
 		overlayPreviewRuntimeFile(cwd, merged, validate);
 	}
 
 	const laneDefault: 'local' | 'preview' = resolved.target === 'preview' ? 'preview' : 'local';
-	if (!process.env.CELEBRA_RUNTIME_TARGET?.trim() && !isVercel) {
+	if (!process.env.CELEBRA_RUNTIME_TARGET?.trim() && !isHosted) {
 		merged.CELEBRA_RUNTIME_TARGET = laneDefault;
 	}
 
-	applyMergedEnvToProcess(merged, { isLocalDev, isVercel });
+	applyMergedEnvToProcess(merged, { isLocalDev, isHosted });
 
-	const effectiveTarget = isVercel ? resolved.target : ensureLocalRuntimeTarget(laneDefault);
+	const effectiveTarget = isHosted ? resolved.target : ensureLocalRuntimeTarget(laneDefault);
 
 	if (
 		validate &&
-		!isVercel &&
+		!isHosted &&
 		isLocalDev &&
 		(effectiveTarget === 'local' || effectiveTarget === 'preview')
 	) {

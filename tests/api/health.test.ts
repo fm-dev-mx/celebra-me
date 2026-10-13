@@ -1,21 +1,16 @@
 import type { APIContext } from 'astro';
+import { readBuildIdentity } from '@/lib/environment';
 import { GET } from '@/pages/api/health';
 
-const BUILD_KEYS = [
-	'VERCEL_GIT_COMMIT_SHA',
-	'VERCEL_GIT_COMMIT_REF',
-	'VERCEL_DEPLOYMENT_ID',
-	'VERCEL_ENV',
-] as const;
+const mockReadBuildIdentity = readBuildIdentity as jest.MockedFunction<typeof readBuildIdentity>;
 
 describe('GET /api/health', () => {
-	const original = Object.fromEntries(BUILD_KEYS.map((key) => [key, process.env[key]]));
+	const originalDeployEnv = process.env.CELEBRA_DEPLOY_ENV;
 
 	afterEach(() => {
-		for (const key of BUILD_KEYS) {
-			if (original[key] === undefined) delete process.env[key];
-			else process.env[key] = original[key];
-		}
+		if (originalDeployEnv === undefined) delete process.env.CELEBRA_DEPLOY_ENV;
+		else process.env.CELEBRA_DEPLOY_ENV = originalDeployEnv;
+		mockReadBuildIdentity.mockReturnValue({ commitSha: null, gitRef: null });
 	});
 
 	it('returns unprivileged app health without env details', async () => {
@@ -29,11 +24,9 @@ describe('GET /api/health', () => {
 		expect(body).not.toHaveProperty('SUPABASE_URL');
 	});
 
-	it('exposes the deployment build identity', async () => {
-		process.env.VERCEL_GIT_COMMIT_SHA = 'a'.repeat(40);
-		process.env.VERCEL_GIT_COMMIT_REF = 'develop';
-		process.env.VERCEL_DEPLOYMENT_ID = 'dpl_test';
-		process.env.VERCEL_ENV = 'preview';
+	it('exposes the build identity and the declared deploy environment', async () => {
+		mockReadBuildIdentity.mockReturnValue({ commitSha: 'a'.repeat(40), gitRef: 'develop' });
+		process.env.CELEBRA_DEPLOY_ENV = 'preview';
 
 		const body = (await (await GET({} as unknown as APIContext)).json()) as Record<
 			string,
@@ -43,24 +36,27 @@ describe('GET /api/health', () => {
 		expect(body.build).toEqual({
 			commitSha: 'a'.repeat(40),
 			gitRef: 'develop',
-			deploymentId: 'dpl_test',
+			deploymentId: null,
 			environment: 'preview',
 		});
 	});
 
-	it('reports null build identity outside Vercel', async () => {
-		for (const key of BUILD_KEYS) delete process.env[key];
+	it('reports a null environment when the deploy identity is missing or invalid', async () => {
+		for (const value of [undefined, 'staging']) {
+			if (value === undefined) delete process.env.CELEBRA_DEPLOY_ENV;
+			else process.env.CELEBRA_DEPLOY_ENV = value;
 
-		const body = (await (await GET({} as unknown as APIContext)).json()) as Record<
-			string,
-			unknown
-		>;
+			const body = (await (await GET({} as unknown as APIContext)).json()) as Record<
+				string,
+				unknown
+			>;
 
-		expect(body.build).toEqual({
-			commitSha: null,
-			gitRef: null,
-			deploymentId: null,
-			environment: null,
-		});
+			expect(body.build).toEqual({
+				commitSha: null,
+				gitRef: null,
+				deploymentId: null,
+				environment: null,
+			});
+		}
 	});
 });

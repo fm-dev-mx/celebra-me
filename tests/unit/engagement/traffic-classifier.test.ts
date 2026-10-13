@@ -18,7 +18,7 @@ const INSTAGRAM_IN_APP =
 const FACEBOOK_IN_APP =
 	'Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/AP2A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/129.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/480.0.0.0;]';
 
-const PRODUCTION = { vercelEnv: 'production' };
+const PRODUCTION = { deployEnvironment: 'production' };
 
 describe('guest engagement traffic classifier', () => {
 	it.each([
@@ -44,17 +44,17 @@ describe('guest engagement traffic classifier', () => {
 	});
 
 	it('classifies non-production first, then bots, then guests', () => {
-		expect(classifyServerTraffic(IPHONE_SAFARI, { vercelEnv: 'preview' })).toBe(
+		expect(classifyServerTraffic(IPHONE_SAFARI, { deployEnvironment: 'preview' })).toBe(
 			'non_production',
 		);
 		expect(classifyServerTraffic('WhatsApp/2.24.20.80 A', PRODUCTION)).toBe('bot');
 		expect(classifyServerTraffic(IPHONE_SAFARI, PRODUCTION)).toBe('guest');
 	});
 
-	it('counts only Vercel Production as production', () => {
-		expect(isProductionEngagementEnvironment({ vercelEnv: 'production' })).toBe(true);
-		expect(isProductionEngagementEnvironment({ vercelEnv: 'preview' })).toBe(false);
-		expect(isProductionEngagementEnvironment({ vercelEnv: '' })).toBe(false);
+	it('counts only hosted Production as production', () => {
+		expect(isProductionEngagementEnvironment({ deployEnvironment: 'production' })).toBe(true);
+		expect(isProductionEngagementEnvironment({ deployEnvironment: 'preview' })).toBe(false);
+		expect(isProductionEngagementEnvironment({ deployEnvironment: null })).toBe(false);
 	});
 
 	it('derives a coarse device class', () => {

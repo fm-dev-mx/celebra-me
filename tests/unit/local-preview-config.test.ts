@@ -16,25 +16,18 @@ const isDev = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
 const PLAYABLE_URL = 'https://cdn.example/song.mp3';
 
 describe('local invitation preview config', () => {
-	const originalVercel = process.env.VERCEL;
-	const originalVercelEnv = process.env.VERCEL_ENV;
+	const originalDeployEnv = process.env.CELEBRA_DEPLOY_ENV;
 
 	beforeEach(() => {
 		isDev.mockReturnValue(false);
-		delete process.env.VERCEL;
-		delete process.env.VERCEL_ENV;
+		delete process.env.CELEBRA_DEPLOY_ENV;
 	});
 
 	afterEach(() => {
-		if (originalVercel === undefined) {
-			delete process.env.VERCEL;
+		if (originalDeployEnv === undefined) {
+			delete process.env.CELEBRA_DEPLOY_ENV;
 		} else {
-			process.env.VERCEL = originalVercel;
-		}
-		if (originalVercelEnv === undefined) {
-			delete process.env.VERCEL_ENV;
-		} else {
-			process.env.VERCEL_ENV = originalVercelEnv;
+			process.env.CELEBRA_DEPLOY_ENV = originalDeployEnv;
 		}
 	});
 
@@ -102,8 +95,7 @@ describe('local invitation preview config', () => {
 
 		it('still shows a playable URL on hosted Preview and Production', () => {
 			isDev.mockReturnValue(true);
-			process.env.VERCEL = '1';
-			process.env.VERCEL_ENV = 'production';
+			process.env.CELEBRA_DEPLOY_ENV = 'production';
 			expect(shouldShowMusicPlayer(PLAYABLE_URL)).toBe(true);
 			expect(
 				resolveInvitationMusicPlayer({
@@ -155,18 +147,11 @@ describe('local invitation preview config', () => {
 			).toBeUndefined();
 		});
 
-		it.each([
-			['VERCEL=1', { VERCEL: '1' }],
-			['VERCEL_ENV=production', { VERCEL_ENV: 'production' }],
-			['VERCEL_ENV=preview', { VERCEL_ENV: 'preview' }],
-			['VERCEL=1 and production', { VERCEL: '1', VERCEL_ENV: 'production' }],
-			['VERCEL=1 and preview', { VERCEL: '1', VERCEL_ENV: 'preview' }],
-		])(
-			'ignores local preview switches when hosted via %s even if DEV is true',
-			(_label, env) => {
+		it.each([['production'], ['preview']])(
+			'ignores local preview switches when hosted as %s even if DEV is true',
+			(deployEnvironment) => {
 				isDev.mockReturnValue(true);
-				if ('VERCEL' in env) process.env.VERCEL = env.VERCEL;
-				if ('VERCEL_ENV' in env) process.env.VERCEL_ENV = env.VERCEL_ENV;
+				process.env.CELEBRA_DEPLOY_ENV = deployEnvironment;
 
 				expect(shouldShowMusicPlayer('')).toBe(false);
 				expect(shouldShowMusicPlayer('   ')).toBe(false);
@@ -187,9 +172,9 @@ describe('local invitation preview config', () => {
 		);
 	});
 
-	it('never enables local previews in a Vercel runtime', () => {
+	it('never enables local previews in a hosted runtime', () => {
 		isDev.mockReturnValue(true);
-		process.env.VERCEL_ENV = 'production';
+		process.env.CELEBRA_DEPLOY_ENV = 'production';
 
 		expect(shouldShowMusicPlayer('')).toBe(false);
 		expect(shouldShowLocalPersonalizedAccessPreview()).toBe(false);

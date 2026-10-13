@@ -1,4 +1,5 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import { isProductionDeployment } from '@/lib/server/deploy-identity';
 import { getEnv } from '@/lib/server/env';
 import { createHash, randomUUID } from 'node:crypto';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
@@ -292,8 +293,7 @@ function resolveDeliveryConfiguration(): MetaDeliveryConfiguration {
 	const mode = getEnv('META_CAPI_DELIVERY_MODE')?.trim().toLowerCase();
 	if (mode === 'test') return { mode: 'test', productionBlocked: false };
 	if (mode === 'production') {
-		const vercelEnvironment = getEnv('VERCEL_ENV');
-		return vercelEnvironment === 'production'
+		return isProductionDeployment()
 			? { mode: 'production', productionBlocked: false }
 			: { mode: 'disabled', productionBlocked: true };
 	}
@@ -334,7 +334,7 @@ export async function deliverMetaConversionEvent(
 	if (deliveryMode === 'disabled') {
 		const errorCode = 'DELIVERY_DISABLED';
 		const errorMessage = deliveryConfiguration.productionBlocked
-			? 'Meta CAPI production delivery requires VERCEL_ENV=production.'
+			? 'Meta CAPI production delivery requires CELEBRA_DEPLOY_ENV=production.'
 			: 'La entrega CAPI está desactivada en la configuración del entorno (META_CAPI_DELIVERY_MODE).';
 		return finalizeClaim(
 			outboxId,

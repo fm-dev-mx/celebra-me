@@ -1,3 +1,4 @@
+import { isDevEnvironment } from '@/lib/environment';
 import { POST as loginHost } from '@/pages/api/auth/login-host';
 import { GET as authSession } from '@/pages/api/auth/session';
 import { POST as logout } from '@/pages/api/auth/logout';
@@ -39,6 +40,13 @@ jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
 jest.mock('@/lib/rsvp/services/auth-identifier.service', () => ({
 	resolvePasswordAuthEmail: jest.fn(),
 }));
+
+// Debug payloads exist only in a positively local process (the Astro dev server here).
+const mockIsDevEnvironment = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
+afterEach(() => {
+	mockIsDevEnvironment.mockReturnValue(false);
+	delete process.env.CELEBRA_DEPLOY_ENV;
+});
 
 describe('auth endpoints', () => {
 	const signInWithPasswordMock = authApi.signInWithPassword as jest.MockedFunction<
@@ -133,7 +141,22 @@ describe('auth endpoints', () => {
 		expect(response.headers.get('Cache-Control')).toBe('no-store, private');
 	});
 
+	it('session endpoint never returns debug details in a hosted runtime', async () => {
+		process.env.CELEBRA_DEPLOY_ENV = 'production';
+		(getHostSessionFromRequest as jest.Mock).mockResolvedValue(null);
+
+		const response = await authSession({
+			request: createMockRequest('http://localhost/api/auth/session?debug=1'),
+		} as never);
+		const body = await response.json();
+
+		expect(response.status).toBe(401);
+		expect(getSessionDebugSnapshotFromRequest).not.toHaveBeenCalled();
+		expect(JSON.stringify(body)).not.toContain('debug');
+	});
+
 	it('session endpoint returns debug payload when debug mode is enabled', async () => {
+		mockIsDevEnvironment.mockReturnValue(true);
 		getSessionDebugSnapshotFromRequestMock.mockResolvedValue({
 			hasAccessToken: true,
 			tokenSource: 'cookie',

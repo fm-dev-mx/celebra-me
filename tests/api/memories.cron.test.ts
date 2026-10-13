@@ -9,6 +9,11 @@ jest.mock('@/lib/server/env', () => ({
 	getEnv: (key: string) => mockEnv[key] ?? '',
 }));
 
+jest.mock('@/lib/environment', () => ({
+	isDevEnvironment: () => false,
+	readBuildIdentity: () => ({ commitSha: 'b'.repeat(40), gitRef: 'main' }),
+}));
+
 import type { MemoriesCleanupResult } from '@/lib/memories/server/cleanup.service';
 import { GET } from '@/pages/api/cron/memories-cleanup';
 
@@ -46,7 +51,7 @@ interface EvidenceLine {
 }
 
 function context(authorization?: string) {
-	const headers: Record<string, string> = { 'x-vercel-id': 'sfo1::abc-123' };
+	const headers: Record<string, string> = {};
 	if (authorization !== undefined) headers.authorization = authorization;
 	return { request: new Request(ROUTE_URL, { headers }) } as Parameters<typeof GET>[0];
 }
@@ -57,9 +62,7 @@ function resetEnv(overrides: Record<string, string> = {}) {
 		mockEnv,
 		{
 			CRON_SECRET,
-			VERCEL_ENV: 'preview',
-			VERCEL_GIT_COMMIT_SHA: 'b'.repeat(40),
-			VERCEL_DEPLOYMENT_ID: 'dpl_1234567890',
+			CELEBRA_DEPLOY_ENV: 'preview',
 		},
 		overrides,
 	);
@@ -128,7 +131,7 @@ describe('GET /api/cron/memories-cleanup', () => {
 				reasonCode: 'cleanup_started',
 				environment: 'preview',
 				completedAt: null,
-				payload: { invocation_id: 'sfo1::abc-123', claimed: null },
+				payload: { invocation_id: null, claimed: null },
 			},
 		});
 		expect(completed).toMatchObject({
@@ -139,9 +142,8 @@ describe('GET /api/cron/memories-cleanup', () => {
 				reasonCode: 'cleanup_completed',
 				environment: 'preview',
 				commitSha: 'b'.repeat(40),
-				deploymentId: 'dpl_1234567890',
 				payload: {
-					invocation_id: 'sfo1::abc-123',
+					invocation_id: null,
 					claimed: 3,
 					deleted: 3,
 					failed: 0,
@@ -210,10 +212,10 @@ describe('GET /api/cron/memories-cleanup', () => {
 		expect(failedLine).not.toContain('token=secret');
 	});
 
-	it('derives the evidence environment from VERCEL_ENV', async () => {
+	it('derives the evidence environment from the deploy identity', async () => {
 		mockRunCleanup.mockResolvedValue(healthyResult);
 
-		resetEnv({ VERCEL_ENV: 'production' });
+		resetEnv({ CELEBRA_DEPLOY_ENV: 'production' });
 		await GET(context(`Bearer ${CRON_SECRET}`));
 		expect(evidenceLines(infoSpy).map((line) => line.evidence.environment)).toEqual([
 			'production',
@@ -221,7 +223,7 @@ describe('GET /api/cron/memories-cleanup', () => {
 		]);
 
 		infoSpy.mockClear();
-		resetEnv({ VERCEL_ENV: '' });
+		resetEnv({ CELEBRA_DEPLOY_ENV: '' });
 		await GET(context(`Bearer ${CRON_SECRET}`));
 		expect(evidenceLines(infoSpy).map((line) => line.evidence.environment)).toEqual([
 			'local',

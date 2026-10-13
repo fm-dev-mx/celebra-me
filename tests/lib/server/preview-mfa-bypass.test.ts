@@ -9,8 +9,8 @@ const PREVIEW_SUPABASE = 'https://iwipdvisoyerfdytuhwi.supabase.co';
 function makeInput(overrides: Partial<PreviewMfaBypassInput> = {}): PreviewMfaBypassInput {
 	return {
 		previewMfaBypass: 'true',
-		vercelEnv: 'preview',
-		vercelGitCommitRef: 'develop',
+		deployEnvironment: 'preview',
+		buildRef: 'develop',
 		supabaseUrl: PREVIEW_SUPABASE,
 		adminEmails: 'preview@preview.com',
 		userEmail: 'preview@preview.com',
@@ -42,7 +42,7 @@ describe('isPreviewMfaBypassEnabled', () => {
 			isPreviewMfaBypassEnabled(
 				makeInput({
 					previewMfaBypass: undefined,
-					vercelEnv: 'production',
+					deployEnvironment: 'production',
 					supabaseUrl: 'https://production.supabase.co',
 					userEmail: 'other@example.com',
 				}),
@@ -60,23 +60,22 @@ describe('isPreviewMfaBypassEnabled', () => {
 		});
 	});
 
-	describe('VERCEL_ENV', () => {
+	describe('Deploy identity', () => {
 		it.each([
-			{ desc: 'production', vercelEnv: 'production' },
-			{ desc: 'undefined', vercelEnv: undefined },
-			{ desc: 'empty', vercelEnv: '' },
-		])('returns false when VERCEL_ENV is $desc', ({ vercelEnv }) => {
-			expect(isPreviewMfaBypassEnabled(makeInput({ vercelEnv }))).toBe(false);
+			{ desc: 'production', deployEnvironment: 'production' as const },
+			{ desc: 'local, missing or invalid', deployEnvironment: null },
+		])('returns false when the deploy identity is $desc', ({ deployEnvironment }) => {
+			expect(isPreviewMfaBypassEnabled(makeInput({ deployEnvironment }))).toBe(false);
 		});
 	});
 
-	describe('VERCEL_GIT_COMMIT_REF', () => {
+	describe('Build git ref', () => {
 		it.each([
-			{ desc: 'main branch', vercelGitCommitRef: 'main' },
-			{ desc: 'feature branch', vercelGitCommitRef: 'feature/new-thing' },
-			{ desc: 'undefined', vercelGitCommitRef: undefined },
-		])('returns false when branch is $desc', ({ vercelGitCommitRef }) => {
-			expect(isPreviewMfaBypassEnabled(makeInput({ vercelGitCommitRef }))).toBe(false);
+			{ desc: 'main branch', buildRef: 'main' },
+			{ desc: 'feature branch', buildRef: 'feature/new-thing' },
+			{ desc: 'unknown', buildRef: null },
+		])('returns false when branch is $desc', ({ buildRef }) => {
+			expect(isPreviewMfaBypassEnabled(makeInput({ buildRef }))).toBe(false);
 		});
 	});
 
@@ -144,7 +143,7 @@ describe('isPreviewMfaBypassEnabled', () => {
 			expect(
 				isPreviewMfaBypassEnabled(
 					makeInput({
-						vercelEnv: 'production',
+						deployEnvironment: 'production',
 					}),
 				),
 			).toBe(false);
@@ -157,9 +156,8 @@ describe('isProductionWithPreviewBypassVarsSet', () => {
 
 	beforeEach(() => {
 		originalEnv = { ...process.env };
-		delete process.env.VERCEL_ENV;
+		delete process.env.CELEBRA_DEPLOY_ENV;
 		delete process.env.PREVIEW_MFA_BYPASS;
-		delete process.env.VERCEL_GIT_COMMIT_REF;
 		delete process.env.PREVIEW_ADMIN_EMAILS;
 	});
 
@@ -168,29 +166,29 @@ describe('isProductionWithPreviewBypassVarsSet', () => {
 	});
 
 	it('returns false on production without bypass vars', () => {
-		process.env.VERCEL_ENV = 'production';
+		process.env.CELEBRA_DEPLOY_ENV = 'production';
 		expect(isProductionWithPreviewBypassVarsSet()).toBe(false);
 	});
 
 	it('returns true on production with PREVIEW_MFA_BYPASS set', () => {
-		process.env.VERCEL_ENV = 'production';
+		process.env.CELEBRA_DEPLOY_ENV = 'production';
 		process.env.PREVIEW_MFA_BYPASS = 'true';
 		expect(isProductionWithPreviewBypassVarsSet()).toBe(true);
 	});
 
 	it('returns true on production with PREVIEW_ADMIN_EMAILS set', () => {
-		process.env.VERCEL_ENV = 'production';
+		process.env.CELEBRA_DEPLOY_ENV = 'production';
 		process.env.PREVIEW_ADMIN_EMAILS = 'preview@preview.com';
 		expect(isProductionWithPreviewBypassVarsSet()).toBe(true);
 	});
 
 	it('returns false when not on production', () => {
-		process.env.VERCEL_ENV = 'preview';
+		process.env.CELEBRA_DEPLOY_ENV = 'preview';
 		process.env.PREVIEW_MFA_BYPASS = 'true';
 		expect(isProductionWithPreviewBypassVarsSet()).toBe(false);
 	});
 
-	it('returns false when no VERCEL_ENV', () => {
+	it('returns false when no deploy identity is declared', () => {
 		expect(isProductionWithPreviewBypassVarsSet()).toBe(false);
 	});
 });

@@ -15,6 +15,7 @@ import {
 	withPrivateNoStore,
 } from '@/lib/http/private-cache-path';
 import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
+import { requiresSecureCookies } from '@/lib/server/deploy-identity';
 import { isPreviewMfaBypassEnabled } from '@/lib/server/preview-mfa-bypass';
 
 interface CookieStore {
@@ -128,7 +129,7 @@ function buildCookieOptions(maxAge: number) {
 		httpOnly: true,
 		sameSite: 'lax' as const,
 		maxAge,
-		secure: process.env.NODE_ENV === 'production',
+		secure: requiresSecureCookies(),
 	};
 }
 
@@ -180,7 +181,7 @@ function applyMfaSetupCookies(cookies: CookieStore, accessToken: string, refresh
 		httpOnly: false,
 		sameSite: 'strict',
 		maxAge: MFA_TEMP_MAX_AGE_SECONDS,
-		secure: process.env.NODE_ENV === 'production',
+		secure: requiresSecureCookies(),
 	});
 
 	if (refreshToken) {
@@ -189,7 +190,7 @@ function applyMfaSetupCookies(cookies: CookieStore, accessToken: string, refresh
 			httpOnly: false,
 			sameSite: 'strict',
 			maxAge: MFA_TEMP_MAX_AGE_SECONDS,
-			secure: process.env.NODE_ENV === 'production',
+			secure: requiresSecureCookies(),
 		});
 	}
 }

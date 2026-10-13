@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { errorResponse, getIp, parseJsonBody, successResponse } from '@/lib/rsvp/core/http';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
+import { readHostedDeployEnvironment } from '@/lib/server/deploy-identity';
 import { ingestTrackingEvent } from '@/lib/tracking/ingestion.service';
 
 export const POST: APIRoute = async ({ request }) => {
@@ -23,7 +24,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 		const result = await ingestTrackingEvent({
 			request,
-			vercelEnv: process.env.VERCEL_ENV,
+			deployEnvironment: readHostedDeployEnvironment(),
 			payload,
 		});
 

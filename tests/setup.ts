@@ -302,4 +302,5 @@ jest.mock('@/utils/whatsapp', () => ({
 // Mock @/lib/environment to prevent import.meta syntax errors in Jest CJS runtime
 jest.mock('@/lib/environment', () => ({
 	isDevEnvironment: jest.fn(() => false),
+	readBuildIdentity: jest.fn(() => ({ commitSha: null, gitRef: null })),
 }));

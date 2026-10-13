@@ -9,16 +9,16 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import {
+	SUPABASE_PROJECT_REFS,
+	extractApiProjectRef,
+} from '@/lib/intake/mutations/environment-identity';
 import { isManagedInvitationPath } from '@/lib/intake/mutations/ownership';
 
 export type EditorManagedEnvironment = 'local' | 'preview' | 'production';
 
 export type EditorDivergenceState =
-	| 'CLEAN'
-	| 'DIVERGED'
-	| 'RECONCILIATION_REQUIRED'
-	| 'SOURCE_UPDATE_REQUIRED'
-	| 'DEFERRED';
+	'CLEAN' | 'DIVERGED' | 'RECONCILIATION_REQUIRED' | 'SOURCE_UPDATE_REQUIRED' | 'DEFERRED';
 
 export interface EditorDivergenceDTO {
 	state: EditorDivergenceState;
@@ -38,14 +38,13 @@ export class EditorEnvironmentMismatchError extends Error {
 
 function classifySupabaseUrl(url: string | undefined): EditorManagedEnvironment | 'unverified' {
 	if (!url) return 'unverified';
+	// Classify by the project ref the URL encodes, never by hostname wording or by
+	// the hosting platform: a Preview project host does not contain "preview".
 	try {
-		const parsed = new URL(url);
-		const host = parsed.hostname.toLowerCase();
-		if (host === '127.0.0.1' || host === 'localhost') return 'local';
-		if (host.includes('preview') || host.startsWith('preview.')) return 'preview';
-		if (process.env.VERCEL_ENV === 'preview') return 'preview';
-		if (process.env.VERCEL_ENV === 'production') return 'production';
-		if (host.endsWith('supabase.co')) return 'production';
+		const ref = extractApiProjectRef(url);
+		if (ref === SUPABASE_PROJECT_REFS.local) return 'local';
+		if (ref === SUPABASE_PROJECT_REFS.preview) return 'preview';
+		if (ref === SUPABASE_PROJECT_REFS.production) return 'production';
 		return 'unverified';
 	} catch {
 		return 'unverified';
@@ -56,10 +55,7 @@ export function resolveEditorManagedEnvironment(input?: {
 	supabaseUrl?: string;
 	expected?: EditorManagedEnvironment;
 }): EditorManagedEnvironment {
-	const url =
-		input?.supabaseUrl ??
-		process.env.PUBLIC_SUPABASE_URL ??
-		process.env.SUPABASE_URL;
+	const url = input?.supabaseUrl ?? process.env.PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
 	const resolved = classifySupabaseUrl(url);
 	if (resolved === 'unverified') {
 		// Jest unit suites often omit Supabase URL; default local only under test.
@@ -172,8 +168,8 @@ export function resolveEditorDivergence(input: {
 		const artifact = readRuntimeArtifact(input.slug, targetEnvironment, input.projectRoot);
 		if (artifact) {
 			const paths = artifact.changedSemanticPaths ?? artifact.unresolvedPaths ?? [];
-			const stateHint = (artifact.reconciliationState ??
-				artifact.state) as EditorDivergenceState | undefined;
+			const stateHint = (artifact.reconciliationState ?? artifact.state) as
+				EditorDivergenceState | undefined;
 			return computeEditorDivergenceFromPaths({
 				targetEnvironment,
 				changedPaths: paths,

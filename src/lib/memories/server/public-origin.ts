@@ -6,11 +6,11 @@
  * canonical link would point at a space or token Production does not know.
  */
 
-import { getEnv } from '@/lib/server/env';
+import { isProductionDeployment } from '@/lib/server/deploy-identity';
 import { MEMORIES_PUBLIC_ORIGIN } from '@/lib/memories/contract/private-request';
 
 export function resolveMemoriesPublicOrigin(requestOrigin?: string): string {
-	if (getEnv('VERCEL_ENV').trim().toLowerCase() === 'production' || !requestOrigin) {
+	if (isProductionDeployment() || !requestOrigin) {
 		return MEMORIES_PUBLIC_ORIGIN;
 	}
 	try {

@@ -6,9 +6,11 @@
  * backups, receipts, or SQL execution.
  */
 import { getProdDbUrl } from './db-workflow-lib.ts';
-import { OperatorError, operatorSymbol, writeHuman } from './operator-cli-ux.ts';
-import { ensureValidReleaseCheckEvidence } from './release-check.ts';
-import { loadRemoteChecks, requireReleaseChecks } from '../ops/release-readiness.ts';
+import { OperatorError } from './operator-cli-ux.ts';
+import {
+	assertReleaseReadinessFailFast,
+	type ReleaseReadiness,
+} from './production-release-readiness.ts';
 import {
 	MigrateApplyError,
 	orchestrateMigrate,
@@ -127,22 +129,10 @@ export interface ProductionApplyExecuteDeps extends ProductionApplyAssemblerDeps
 	verifiedReleaseSha?: string;
 }
 
-export interface ReleaseReadiness {
-	sha: string;
-}
+export type { ReleaseReadiness } from './production-release-readiness.ts';
 
-/**
- * Fail before a backup or the owner prompt when the release is not provably ready: local
- * release-check evidence for the clean HEAD, plus trusted CI checks on that exact SHA for schema.
- * The owner gate and the schema policy still verify the same evidence; they now reuse it.
- */
 function defaultAssertReleaseReadiness(options: { remote: boolean }): ReleaseReadiness {
-	writeHuman(`${operatorSymbol('info')} Release: verificando evidencia antes del respaldo…`);
-	const evidence = ensureValidReleaseCheckEvidence();
-	if (options.remote) {
-		requireReleaseChecks(evidence.sha, loadRemoteChecks(evidence.sha));
-	}
-	return { sha: evidence.sha };
+	return assertReleaseReadinessFailFast(options);
 }
 
 export interface ProductionApplyOutcomeRow {

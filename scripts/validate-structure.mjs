@@ -4,6 +4,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { validateDeployIdentityReads } from './validate-deploy-identity-reads.mjs';
 
 const REQUIRED_SKILL_FIELDS = [
 	'name',
@@ -824,6 +825,7 @@ export function validateStructure({ root = process.cwd(), trackedFiles } = {}) {
 		...detectOrphanedGuidance(root, skills.skillNames),
 		...validateProviderEntryPoints(root, tracked),
 		...validatePortablePaths(root, tracked),
+		...validateDeployIdentityReads(root, tracked),
 		...validateTrackedFiles(root, tracked),
 	].sort();
 }

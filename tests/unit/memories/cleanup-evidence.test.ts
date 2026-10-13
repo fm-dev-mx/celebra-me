@@ -41,13 +41,13 @@ const completed: MemoriesCleanupResult = {
 };
 
 describe('resolveMemoriesRuntimeEnvironment', () => {
-	it('maps Vercel environments and treats everything else as local', () => {
+	it('maps hosted deploy environments and treats everything else as local', () => {
 		expect(resolveMemoriesRuntimeEnvironment('production')).toBe('production');
-		expect(resolveMemoriesRuntimeEnvironment(' Production ')).toBe('production');
 		expect(resolveMemoriesRuntimeEnvironment('preview')).toBe('preview');
 		expect(resolveMemoriesRuntimeEnvironment('development')).toBe('local');
 		expect(resolveMemoriesRuntimeEnvironment('')).toBe('local');
 		expect(resolveMemoriesRuntimeEnvironment(undefined)).toBe('local');
+		expect(resolveMemoriesRuntimeEnvironment(null)).toBe('local');
 	});
 });
 
@@ -114,7 +114,7 @@ describe('completed cleanup evidence', () => {
 		const evidence = createMemoriesCleanupCompletedEvidence(context, completed);
 		expect(evidence.environment).toBe('preview');
 		expect(evidence.check).toBe('memories_cleanup');
-		expect(evidence.source).toBe('vercel_cron');
+		expect(evidence.source).toBe('scheduled_cron');
 		expect(evidence.runId).toBe(context.runId);
 		expect(evidence.commitSha).toBe('a'.repeat(40));
 		expect(evidence.deploymentId).toBe('dpl_1234567890');

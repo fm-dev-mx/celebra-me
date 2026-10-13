@@ -33,6 +33,32 @@ describe('release check evidence', () => {
 			expect(() => requireReleaseChecks(sha, checks)).toThrow('Application Suite');
 		},
 	);
+	it('tells a still-running CI apart from a failed one', () => {
+		const running = passing();
+		running[1].state = 'in_progress';
+		expect(() => requireReleaseChecks(sha, running)).toThrow(
+			/Release checks pending for aaaaaaaaa: Application Suite \(in_progress\)/,
+		);
+		expect(() =>
+			requireReleaseChecks(
+				sha,
+				passing().filter((check) => check.name !== 'Application Suite'),
+			),
+		).toThrow(/pending .*Application Suite \(not reported\)/);
+
+		const failed = passing();
+		failed[1].state = 'failure';
+		failed[0].state = 'in_progress';
+		// Any failure makes the whole result blocked, never "wait and retry".
+		expect(() => requireReleaseChecks(sha, failed)).toThrow(
+			/^Release checks blocked: Repository Policy \(in_progress\), Application Suite \(failure\)$/,
+		);
+		const untrusted = passing();
+		untrusted[1].trusted = false;
+		expect(() => requireReleaseChecks(sha, untrusted)).toThrow(
+			/blocked: Application Suite \(success, untrusted\)/,
+		);
+	});
 	it('blocks missing application evidence, stale SHAs and untrusted results', () => {
 		expect(() =>
 			requireReleaseChecks(

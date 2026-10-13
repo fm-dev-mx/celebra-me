@@ -377,6 +377,14 @@ beforeEach(() => {
 	});
 });
 
+import { isDevEnvironment } from '@/lib/environment';
+
+// This suite models a local Astro process, whose storage target follows the local
+// deploy identity (a built bundle without CELEBRA_DEPLOY_ENV would fail closed).
+const mockIsDevEnvironment = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
+beforeEach(() => mockIsDevEnvironment.mockReturnValue(true));
+afterEach(() => mockIsDevEnvironment.mockReturnValue(false));
+
 describe('publishDraft', () => {
 	it('reports partial when publication commits but provenance invalidation fails', async () => {
 		mockGetProject.mockResolvedValue(baseProject as never);

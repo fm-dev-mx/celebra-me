@@ -47,7 +47,7 @@ describe('ingestTrackingEvent', () => {
 	it('persists approved commercial events with sanitized properties', async () => {
 		const result = await ingestTrackingEvent({
 			request: makeRequest(),
-			vercelEnv: 'production',
+			deployEnvironment: 'production',
 			payload: {
 				sessionId: '11111111-1111-4111-8111-111111111111',
 				visitorId: 'visitor_123456',
@@ -84,7 +84,7 @@ describe('ingestTrackingEvent', () => {
 	it('persists Meta attribution on commercial sessions without copying it into event properties', async () => {
 		const result = await ingestTrackingEvent({
 			request: makeRequest(),
-			vercelEnv: 'production',
+			deployEnvironment: 'production',
 			payload: {
 				sessionId: '77777777-7777-4777-8777-777777777777',
 				visitorId: 'visitor_meta_user',
@@ -122,7 +122,7 @@ describe('ingestTrackingEvent', () => {
 	it('ignores events on excluded real invitation routes', async () => {
 		const result = await ingestTrackingEvent({
 			request: makeRequest(),
-			vercelEnv: 'production',
+			deployEnvironment: 'production',
 			payload: {
 				sessionId: '11111111-1111-4111-8111-111111111111',
 				visitorId: 'visitor_123456',
@@ -144,7 +144,7 @@ describe('ingestTrackingEvent', () => {
 		await expect(
 			ingestTrackingEvent({
 				request: makeRequest(),
-				vercelEnv: 'production',
+				deployEnvironment: 'production',
 				payload: {
 					sessionId: '11111111-1111-4111-8111-111111111111',
 					visitorId: 'visitor_123456',
@@ -166,7 +166,7 @@ describe('ingestTrackingEvent', () => {
 			await expect(
 				ingestTrackingEvent({
 					request: makeRequest(),
-					vercelEnv: 'production',
+					deployEnvironment: 'production',
 					payload: {
 						sessionId: '11111111-1111-4111-8111-111111111111',
 						visitorId: 'visitor_123456',
@@ -193,7 +193,7 @@ describe('ingestTrackingEvent', () => {
 
 			const result = await ingestTrackingEvent({
 				request: makeRequest(),
-				vercelEnv: 'production',
+				deployEnvironment: 'production',
 				payload: {
 					sessionId: '44444444-4444-4444-8444-444444444444',
 					visitorId: 'visitor_wa_user',
@@ -229,7 +229,7 @@ describe('ingestTrackingEvent', () => {
 		it('does not auto-create a lead for non-WhatsApp events even with lead_code', async () => {
 			await ingestTrackingEvent({
 				request: makeRequest(),
-				vercelEnv: 'production',
+				deployEnvironment: 'production',
 				payload: {
 					sessionId: '55555555-5555-4555-8555-555555555555',
 					visitorId: 'visitor_cta_user',
@@ -255,7 +255,7 @@ describe('ingestTrackingEvent', () => {
 
 			await ingestTrackingEvent({
 				request: makeRequest(),
-				vercelEnv: 'production',
+				deployEnvironment: 'production',
 				payload: {
 					sessionId: '66666666-6666-4666-8666-666666666666',
 					visitorId: 'visitor_wa_no_code',
@@ -280,7 +280,7 @@ describe('ingestTrackingEvent', () => {
 
 			await ingestTrackingEvent({
 				request: makeRequest(),
-				vercelEnv: 'production',
+				deployEnvironment: 'production',
 				payload: {
 					sessionId: '99999999-9999-4999-8999-999999999999',
 					visitorId: 'visitor_wa_meta_user',
@@ -341,8 +341,10 @@ describe('Attribution referrer from payload, not request Referer header [T3, T4b
 
 	it('[T3] referrer from payload is passed to upsertVisitorSession', async () => {
 		await ingestTrackingEvent({
-			request: makeRequestWithReferer('https://api-call-self-ref.celebra-me.com/api/tracking/events'),
-			vercelEnv: 'production',
+			request: makeRequestWithReferer(
+				'https://api-call-self-ref.celebra-me.com/api/tracking/events',
+			),
+			deployEnvironment: 'production',
 			payload: {
 				sessionId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
 				visitorId: 'visitor_ref_test',
@@ -367,7 +369,7 @@ describe('Attribution referrer from payload, not request Referer header [T3, T4b
 		await ingestTrackingEvent({
 			// The HTTP Referer on the POST is typically the page itself, not the external source.
 			request: makeRequestWithReferer('https://www.celebra-me.com/'),
-			vercelEnv: 'production',
+			deployEnvironment: 'production',
 			payload: {
 				sessionId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
 				visitorId: 'visitor_noref_test',
@@ -392,7 +394,7 @@ describe('Attribution referrer from payload, not request Referer header [T3, T4b
 	it('[T3b] utmContent and utmTerm from payload are forwarded to upsertVisitorSession', async () => {
 		await ingestTrackingEvent({
 			request: makeRequestWithReferer(''),
-			vercelEnv: 'production',
+			deployEnvironment: 'production',
 			payload: {
 				sessionId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
 				visitorId: 'visitor_utm_ext',

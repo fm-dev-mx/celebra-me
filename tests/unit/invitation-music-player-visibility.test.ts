@@ -34,17 +34,17 @@ const baseViewModel = {
 function makeMinimalEvent(music?: Record<string, unknown>) {
 	return {
 		id: 'events/leslie-perez',
-			data: {
-				eventType: 'xv',
-				title: 'XV años de Leslie',
-				sectionOrder: ['rsvp'],
-				composition: { intersections: {} },
-				hero: {
-					name: 'Leslie',
-					date: '2026-09-26',
-					backgroundImage: { type: 'external', src: '/images/test-bg.jpg' },
-					variant: 'standard',
-				},
+		data: {
+			eventType: 'xv',
+			title: 'XV años de Leslie',
+			sectionOrder: ['rsvp'],
+			composition: { intersections: {} },
+			hero: {
+				name: 'Leslie',
+				date: '2026-09-26',
+				backgroundImage: { type: 'external', src: '/images/test-bg.jpg' },
+				variant: 'standard',
+			},
 			theme: { preset: 'celestial-blue' },
 			envelope: { enabled: true },
 			...(music ? { music } : {}),
@@ -61,26 +61,19 @@ function buildPage(viewModel: InvitationViewModel) {
 }
 
 describe('invitation music player visibility', () => {
-	const originalVercel = process.env.VERCEL;
-	const originalVercelEnv = process.env.VERCEL_ENV;
+	const originalDeployEnv = process.env.CELEBRA_DEPLOY_ENV;
 
 	beforeEach(() => {
 		isDev.mockReturnValue(false);
-		delete process.env.VERCEL;
-		delete process.env.VERCEL_ENV;
+		delete process.env.CELEBRA_DEPLOY_ENV;
 	});
 
 	afterEach(() => {
 		isDev.mockReturnValue(false);
-		if (originalVercel === undefined) {
-			delete process.env.VERCEL;
+		if (originalDeployEnv === undefined) {
+			delete process.env.CELEBRA_DEPLOY_ENV;
 		} else {
-			process.env.VERCEL = originalVercel;
-		}
-		if (originalVercelEnv === undefined) {
-			delete process.env.VERCEL_ENV;
-		} else {
-			process.env.VERCEL_ENV = originalVercelEnv;
+			process.env.CELEBRA_DEPLOY_ENV = originalDeployEnv;
 		}
 	});
 
@@ -164,15 +157,19 @@ describe('invitation music player visibility', () => {
 			expect(page.musicPlayer).toBeUndefined();
 		});
 
-		it('does not leak the local empty-player placeholder on hosted Vercel when DEV is true', () => {
+		it('does not leak the local empty-player placeholder on a hosted runtime when DEV is true', () => {
 			isDev.mockReturnValue(true);
-			process.env.VERCEL = '1';
-			process.env.VERCEL_ENV = 'production';
+			process.env.CELEBRA_DEPLOY_ENV = 'production';
 
 			const fromOmittedMusic = buildPage(baseViewModel);
 			const fromBlankMusic = buildPage({
 				...baseViewModel,
-				music: { url: '', autoPlay: false, title: 'Música de fondo', revealMode: 'envelope' },
+				music: {
+					url: '',
+					autoPlay: false,
+					title: 'Música de fondo',
+					revealMode: 'envelope',
+				},
 			});
 
 			expect(fromOmittedMusic.musicPlayer).toBeUndefined();
@@ -181,7 +178,7 @@ describe('invitation music player visibility', () => {
 
 		it('does not leak the placeholder on hosted Preview', () => {
 			isDev.mockReturnValue(true);
-			process.env.VERCEL_ENV = 'preview';
+			process.env.CELEBRA_DEPLOY_ENV = 'preview';
 			expect(buildPage(baseViewModel).musicPlayer).toBeUndefined();
 		});
 	});
@@ -189,8 +186,7 @@ describe('invitation music player visibility', () => {
 	describe('published content without music', () => {
 		it('keeps the player hidden through adaptEvent + page assembly on a hosted runtime', () => {
 			isDev.mockReturnValue(true);
-			process.env.VERCEL = '1';
-			process.env.VERCEL_ENV = 'production';
+			process.env.CELEBRA_DEPLOY_ENV = 'production';
 
 			const viewModel = adaptEvent(makeMinimalEvent());
 			const page = buildPage(viewModel);

@@ -3,6 +3,8 @@ import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { errorResponse, jsonResponse, withPrivateCache } from '@/lib/rsvp/core/http';
 import { serializeOperationalEvidenceEvent } from '@/lib/operations/operational-evidence';
+import { readBuildIdentity } from '@/lib/environment';
+import { readHostedDeployEnvironment } from '@/lib/server/deploy-identity';
 import { getEnv } from '@/lib/server/env';
 import { MEMORIES_ENV } from '@/lib/memories/server/config';
 import { runMemoriesCleanup } from '@/lib/memories/server/cleanup.service';
@@ -31,12 +33,12 @@ export const GET: APIRoute = async ({ request }) => {
 		return errorResponse(new ApiError(401, 'unauthorized', 'Unauthorized.'));
 	}
 	const context = {
-		environment: resolveMemoriesRuntimeEnvironment(getEnv('VERCEL_ENV')),
+		environment: resolveMemoriesRuntimeEnvironment(readHostedDeployEnvironment()),
 		runId: randomUUID(),
 		startedAt: new Date().toISOString(),
-		invocationId: request.headers.get('x-vercel-id'),
-		commitSha: getEnv('VERCEL_GIT_COMMIT_SHA'),
-		deploymentId: getEnv('VERCEL_DEPLOYMENT_ID'),
+		invocationId: null,
+		commitSha: readBuildIdentity().commitSha,
+		deploymentId: null,
 	};
 	console.info(
 		serializeOperationalEvidenceEvent(
