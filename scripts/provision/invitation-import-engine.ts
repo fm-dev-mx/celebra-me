@@ -1835,7 +1835,7 @@ function resolveTargetAssetRefs(
 	);
 }
 
-export function computeTargetAssetFingerprint(targetDbUrl: string, invitationId: string): string {
+function computeTargetAssetFingerprint(targetDbUrl: string, invitationId: string): string {
 	const dbRows = runPsql(
 		`select id::text, display_name, storage_path, mime_type, file_size from public.invitation_assets where invitation_id = '${invitationId}'::uuid and deleted_at is null order by display_name;`,
 		targetDbUrl,

@@ -31,7 +31,7 @@ export interface VisualCaptureRecord {
 	recapturedDifference?: string;
 }
 
-export const DEFAULT_VISUAL_OUTPUT_ROOT = 'output/screenshots/variant-portability';
+const DEFAULT_VISUAL_OUTPUT_ROOT = 'output/screenshots/variant-portability';
 
 export function resolveVisualOutputRoot(): string {
 	return path.resolve(
@@ -40,7 +40,7 @@ export function resolveVisualOutputRoot(): string {
 	);
 }
 
-export function visualRecordsRoot(outputRoot: string): string {
+function visualRecordsRoot(outputRoot: string): string {
 	return path.join(outputRoot, 'records');
 }
 
@@ -52,7 +52,7 @@ export function beginVisualRecordRun(outputRoot = resolveVisualOutputRoot()): st
 	return runId;
 }
 
-export function currentVisualRunId(): string {
+function currentVisualRunId(): string {
 	const runId = process.env.VISUAL_PARITY_RUN_ID;
 	if (!runId) throw new Error('Visual capture records require VISUAL_PARITY_RUN_ID from setup.');
 	return runId;

@@ -11,7 +11,7 @@ import type { CanonicalEventContentInput } from '../../../src/lib/schemas/conten
  * confirms them), gifts are an envelope shower, and replies close 15 days before the event.
  * Adults only, with personalized passes of fixed seats.
  */
-export const AMERICA_TIMING = {
+const AMERICA_TIMING = {
 	localDateTime: '2026-11-21T18:00',
 	timeZone: 'America/Mazatlan',
 	startsAtUtc: '2026-11-22T01:00:00.000Z',

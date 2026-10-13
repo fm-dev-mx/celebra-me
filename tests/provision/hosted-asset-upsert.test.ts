@@ -269,7 +269,7 @@ describe('selectHostedAssetIdentityRow', () => {
 describe('resolveTargetAssetRefs wiring', () => {
 	const resolveFn = engineSource.slice(
 		engineSource.indexOf('function resolveTargetAssetRefs'),
-		engineSource.indexOf('export function computeTargetAssetFingerprint'),
+		engineSource.indexOf('function computeTargetAssetFingerprint('),
 	);
 
 	it('loads soft-deleted rows so prune-then-reimport can reuse id', () => {
