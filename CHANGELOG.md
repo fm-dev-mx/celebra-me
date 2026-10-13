@@ -12,6 +12,25 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 _Sin cambios pendientes._
 
+## [0.23.1-beta.1] - 2026-10-13
+
+Patch checkpoint for the Production smoke of v0.23.0-beta.1, which failed because an invitation the
+administrator disabled (`xv/mia-pintor`) correctly answers the neutral 403 page.
+
+### Fixed
+
+- The published-media verifier used by the Production smoke reads each invitation's `public_access`:
+  a disabled invitation passes when its route answers 403 and fails when it is still publicly
+  reachable, instead of being reported as a broken route.
+
+### Verification
+
+| Check                   | Result                                                        |
+| :---------------------- | :------------------------------------------------------------ |
+| Repository Policy       | Release PR certifies the final tree                           |
+| Application Suite       | Verifier route tests (enabled 200, disabled 403, both faults) |
+| Production schema audit | `CURRENT` at `20261013120000` (no schema change)              |
+
 ## [0.23.0-beta.1] - 2026-10-13
 
 Release checkpoint that adds the administrator design ranking over engagement snapshots, resolves
