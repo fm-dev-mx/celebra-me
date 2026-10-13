@@ -24,11 +24,6 @@ function doBoxesIntersect(r1: Rect, r2: Rect): boolean {
 
 const INVENTORIED_ROUTES = [
 	{
-		route: '/baby-shower/leah-lexa?forceEnvelope=true',
-		name: 'Leah Lexa (Real)',
-		renderer: 'raster',
-	},
-	{
 		route: '/xv/demo-xv-enchanted-rose?forceEnvelope=true',
 		name: 'Enchanted Rose (Demo)',
 		renderer: 'wax-organic',
@@ -163,7 +158,6 @@ test.describe('Seal Sizing, Tier Selection & Layout Contract Regression', () => 
 
 	// Expanded Responsive Viewport Matrix on representative consumer routes
 	const REPRESENTATIVE_ROUTES = [
-		{ route: '/baby-shower/leah-lexa?forceEnvelope=true', name: 'Leah Lexa (Raster)' },
 		{
 			route: '/xv/demo-xv-enchanted-rose?forceEnvelope=true',
 			name: 'Enchanted Rose (Wax Organic)',

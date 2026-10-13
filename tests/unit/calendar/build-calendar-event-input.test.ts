@@ -38,8 +38,8 @@ describe('buildCalendarEventInput', () => {
 	});
 
 	it('includes fileName when provided', () => {
-		const result = buildCalendarEventInput({ title, startsAt, fileName: 'luna-y-estrella' });
-		expect(result!.fileName).toBe('luna-y-estrella');
+		const result = buildCalendarEventInput({ title, startsAt, fileName: 'gemelas-fixture' });
+		expect(result!.fileName).toBe('gemelas-fixture');
 	});
 
 	it('omits location when revealedLocation is absent', () => {

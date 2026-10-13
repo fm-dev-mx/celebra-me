@@ -48,7 +48,6 @@ export interface InvitationPackageData {
 		previousSlugs: string[];
 		title: string;
 		eventType: string;
-		baseDemoId: string;
 		themeId: string;
 		visualProfileId?: string;
 		kind: string;
@@ -57,7 +56,6 @@ export interface InvitationPackageData {
 		clientEmail: string;
 		clientWhatsapp: string;
 		photosReceived: boolean;
-		snapshot: Record<string, unknown>;
 	};
 	draft: { status: string; content: Record<string, unknown> };
 	publishedContent: { content: Record<string, unknown> };
@@ -118,7 +116,6 @@ export function serializeInvitationPackage(
 			previousSlugs: [...release.metadata.previousSlugs],
 			title: release.metadata.title,
 			eventType: release.metadata.eventType,
-			baseDemoId: release.metadata.baseDemoId,
 			themeId: release.metadata.themeId,
 			visualProfileId: release.metadata.visualProfileId,
 			kind: 'client',
@@ -127,7 +124,6 @@ export function serializeInvitationPackage(
 			clientEmail: release.metadata.clientEmail,
 			clientWhatsapp: release.metadata.clientWhatsapp,
 			photosReceived: release.metadata.photosReceived,
-			snapshot: release.metadata.snapshot,
 		},
 		draft: { status: 'draft', content: release.draftContent },
 		publishedContent: { content: release.publishedProjection },

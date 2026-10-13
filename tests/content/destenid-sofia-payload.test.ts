@@ -1,5 +1,4 @@
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import {
 	DESTENID_ASSET_SPECS,
@@ -54,13 +53,7 @@ describe('Destenid Sofía managed definition', () => {
 		expect(destenidInvitation.deliveryScope).toBe('content-and-assets');
 	});
 
-	it('uses a consistent editorial-magazine catalog entry', () => {
-		const preset = findDemoPreset(DESTENID_EVENT.baseDemoId);
-		expect(preset).toMatchObject({
-			id: 'demo-xv-editorial-magazine',
-			eventType: 'xv',
-			themeId: 'editorial-magazine',
-		});
+	it('uses a consistent editorial-magazine theme', () => {
 		expect(resolveInvitationTheme({ themeId: DESTENID_EVENT.themeId })).toBe(
 			DESTENID_EVENT.themeId,
 		);

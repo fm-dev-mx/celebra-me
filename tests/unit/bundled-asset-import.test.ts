@@ -256,11 +256,11 @@ describe('importBundledAsset', () => {
 			mockFindInvitation.mockResolvedValue({
 				id: INVITATION_ID,
 				kind: 'client',
-				slug: 'luna-y-estrella',
+				slug: 'gemelas-fixture',
 				eventType: 'primera-comunion',
 				snapshot: { previewSlug: 'demo-xv-jewelry-box' },
 			});
-			mockResolveAssetSlug.mockReturnValue('luna-y-estrella-primera-comunion');
+			mockResolveAssetSlug.mockReturnValue('gemelas-fixture-primera-comunion');
 			mockGetEventAsset.mockReturnValue({
 				src: '/assets/interlude-02.webp',
 				width: 1080,
@@ -276,7 +276,7 @@ describe('importBundledAsset', () => {
 			expect(result.asset.id).toBe('new-asset-id');
 			expect(mockResolveAssetSlug).toHaveBeenCalled();
 			expect(mockGetEventAsset).toHaveBeenCalledWith(
-				'luna-y-estrella-primera-comunion',
+				'gemelas-fixture-primera-comunion',
 				'interlude02',
 			);
 			expect(mockFindPublishedContent).toHaveBeenCalledWith(INVITATION_ID);

@@ -9,7 +9,6 @@ export const NORMA_EVENT = {
 	slug: 'norma-hernandez',
 	eventType: 'cumple',
 	title: '65 años de Norma Hernandez',
-	baseDemoId: 'demo-cumple-luxury-hacienda',
 	themeId: 'luxury-hacienda',
 	localDateTime: '2026-11-14T17:00',
 	timeZone: 'America/Mazatlan',
@@ -290,7 +289,6 @@ export const normaInvitation = defineInvitation<NormaAssetKey>({
 	clientName: 'Norma Hernandez',
 	hostLoginAlias: 'norma_hernandez',
 	photosReceived: true,
-	baseDemoId: NORMA_EVENT.baseDemoId,
 	themeId: NORMA_EVENT.themeId,
 	visualProfileId: NORMA_EVENT.slug,
 	eventTiming: {

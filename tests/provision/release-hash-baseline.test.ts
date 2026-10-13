@@ -13,12 +13,12 @@ const A = 'a'.repeat(64);
 const B = 'b'.repeat(64);
 
 describe('release hash baseline', () => {
-	const definitions = [{ slug: 'renata' }, { slug: 'leah-lexa' }, { slug: 'nueva' }];
+	const definitions = [{ slug: 'renata' }, { slug: 'norma-hernandez' }, { slug: 'nueva' }];
 
 	it('flags hashes moved by a global change as collateral', () => {
 		const report = diffReleaseHashes({
-			baseline: { packageHashes: { renata: A, 'leah-lexa': A, retirada: A } },
-			current: { renata: B, 'leah-lexa': A, nueva: A },
+			baseline: { packageHashes: { renata: A, 'norma-hernandez': A, retirada: A } },
+			current: { renata: B, 'norma-hernandez': A, nueva: A },
 			definitions,
 			changedFiles: ['scripts/provision/invitation-package.ts'],
 		});
@@ -34,16 +34,16 @@ describe('release hash baseline', () => {
 
 	it('treats a move with the invitation own definition or assets as expected', () => {
 		const report = diffReleaseHashes({
-			baseline: { packageHashes: { renata: A, 'leah-lexa': A } },
-			current: { renata: B, 'leah-lexa': B },
+			baseline: { packageHashes: { renata: A, 'norma-hernandez': A } },
+			current: { renata: B, 'norma-hernandez': B },
 			definitions,
 			changedFiles: [
 				'scripts\\provision\\invitations\\renata.ts',
-				'src/assets/invitations/leah-lexa/hero.webp',
+				'src/assets/invitations/norma-hernandez/hero.webp',
 			],
 		});
 		expect(report.collateral).toEqual([]);
-		expect(report.expected.map((move) => move.slug)).toEqual(['leah-lexa', 'renata']);
+		expect(report.expected.map((move) => move.slug)).toEqual(['norma-hernandez', 'renata']);
 	});
 
 	it('honours a custom asset directory', () => {

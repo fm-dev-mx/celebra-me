@@ -1,5 +1,4 @@
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import {
 	VALENTINA_ASSET_SPECS,
@@ -54,13 +53,7 @@ describe('Valentina Hernández managed definition', () => {
 		expect(valentinaInvitation.deliveryScope).toBe('content-and-assets');
 	});
 
-	it('uses a consistent editorial-magazine catalog entry', () => {
-		const preset = findDemoPreset(VALENTINA_EVENT.baseDemoId);
-		expect(preset).toMatchObject({
-			id: 'demo-xv-editorial-magazine',
-			eventType: 'xv',
-			themeId: 'editorial-magazine',
-		});
+	it('uses a consistent editorial-magazine theme', () => {
 		expect(resolveInvitationTheme({ themeId: VALENTINA_EVENT.themeId })).toBe(
 			VALENTINA_EVENT.themeId,
 		);

@@ -319,7 +319,6 @@ export const miaInvitation = defineCanonicalInvitation({
 	eventType: 'xv',
 	title: `Mis XV años — ${CELEBRANT_NAME}`,
 	clientName: 'Martha Paz Quintero',
-	baseDemoId: 'demo-xv-celestial-blue',
 	themeId: 'celestial-blue',
 	visualProfileId: 'mia-pintor',
 	eventTiming: MIA_TIMING,

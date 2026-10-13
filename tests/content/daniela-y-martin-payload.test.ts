@@ -1,4 +1,3 @@
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptEvent } from '@/lib/adapters/event';
 import { resolveLocationShowNavigationButtons } from '@/lib/invitation/presentation-options';
@@ -35,13 +34,7 @@ function buildTestAssets(): DanielaAssetMap {
 }
 
 describe('Boda Daniela y Martín provision contract', () => {
-	it('uses jewelry-box-wedding catalog entry', () => {
-		const preset = findDemoPreset(DANIELA_EVENT.baseDemoId);
-		expect(preset).toMatchObject({
-			id: 'demo-boda-jewelry-box-wedding',
-			eventType: 'boda',
-			themeId: 'jewelry-box-wedding',
-		});
+	it('uses jewelry-box-wedding theme', () => {
 		expect(resolveInvitationTheme({ themeId: DANIELA_EVENT.themeId })).toBe(
 			DANIELA_EVENT.themeId,
 		);

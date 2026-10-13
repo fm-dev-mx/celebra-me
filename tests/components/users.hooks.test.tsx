@@ -116,7 +116,7 @@ describe('users admin hook', () => {
 							{
 								eventId: 'evt-1',
 								title: 'XV años de Ximena',
-								slug: 'ximena-meza-trasvina',
+								slug: 'elena-fixture',
 								membershipRole: 'manager',
 							},
 						],

@@ -3,7 +3,7 @@
  * Neutral module: no runtime build-time registry dependency.
  */
 
-/** Asset namespace for the Xareni client media registry (not a presentation authority). */
+/** Asset namespace for the client media registry (not a presentation authority). */
 
 export const EVENT_KEYS = [
 	'hero',

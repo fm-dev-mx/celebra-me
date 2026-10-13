@@ -42,16 +42,11 @@ Real client data must never appear in:
 ## Photographs shared with demos
 
 Demos use fictitious or owner-approved images. `pnpm validate:no-pii` rejects a demo image that is a
-byte copy of a client photograph unless the client folder is approved below; the executable list is
-`APPROVED_SHARED_CLIENT_FOLDERS` in `scripts/validate-no-real-pii-in-content.mjs`. Remove a row and
-its entry together when the client folder leaves the repository.
+byte copy of a client photograph unless the client folder is approved; the executable list is
+`APPROVED_SHARED_CLIENT_FOLDERS` in `scripts/validate-no-real-pii-in-content.mjs`. An approval needs
+an owner decision recorded here, and leaves together with the client folder.
 
-| Client folder                      | Shared with                                                                              | Owner decision (2026-10-13)                                  |
-| ---------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `luna-y-estrella-primera-comunion` | `demo-primera-comunion-illustrated`, `demo-bautismo-angelic-presence` (`reception.webp`) | Images owned by Celebra-me                                   |
-| `cesar-ramses`                     | `demo-bautismo-angelic-presence` (`ceremony.webp`)                                       | Image owned by Celebra-me                                    |
-| `xv-ayrin-samantha-lerma-castro`   | `demo-xv-enchanted-rose` (and `demo-xv-storybook-lilac`, which reuses its assets)        | Temporary permission from the client; review when it expires |
-| `ximena-meza-trasvina`             | `demo-xv-jewelry-box` fixture (`hero.webp`)                                              | AI-generated images owned by Celebra-me                      |
+No client folder is approved at present: every demo image must differ from client photographs.
 
 ## Before committing
 

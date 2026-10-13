@@ -346,7 +346,6 @@ export const americaSolisInvitation = defineCanonicalInvitation({
 	eventType: 'xv',
 	title: `Mis XV años — ${CELEBRANT_NAME}`,
 	clientName: 'Jenniffer Abigail Mendoza Orduño',
-	baseDemoId: 'demo-xv-storybook-lilac',
 	themeId: 'storybook-lilac',
 	visualProfileId: 'america',
 	eventTiming: AMERICA_TIMING,

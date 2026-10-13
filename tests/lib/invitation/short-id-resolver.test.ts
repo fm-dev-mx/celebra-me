@@ -50,9 +50,9 @@ const SITE_ORIGIN = 'https://www.celebra-me.com';
 
 const validContext = {
 	inviteId: 'invite-abc-123',
-	eventSlug: 'ayrin-samantha-lerma-castro',
+	eventSlug: 'valeria-fixture',
 	eventType: 'xv',
-	eventTitle: 'XV Años de Ayrin Samantha',
+	eventTitle: 'XV Años de Valeria Ruiz',
 	guest: {
 		fullName: 'Francisco Prueba',
 		maxAllowedAttendees: 4,
@@ -64,13 +64,13 @@ const validContext = {
 };
 
 const baseViewModel: InvitationViewModel = {
-	id: 'ayrin-samantha-lerma-castro',
+	id: 'valeria-fixture',
 	isDemo: false,
-	title: 'XV Años de Ayrin Samantha',
+	title: 'XV Años de Valeria Ruiz',
 	description: 'Una descripción.',
 	theme: { preset: 'enchanted-rose', themeClass: 'theme-preset--enchanted-rose' },
 	hero: {
-		name: 'Ayrin Samantha Lerma Castro',
+		name: 'Valeria Ruiz Soto',
 		secondaryName: '',
 		label: 'Mis XV años',
 		date: '2026-08-01T18:00:00Z',
@@ -152,9 +152,7 @@ describe('resolveShortIdRequest', () => {
 				SITE_ORIGIN,
 			);
 			assertIsRedirect(result);
-			expect(result.redirectTarget).toBe(
-				'/xv/ayrin-samantha-lerma-castro?invite=invite-abc-123',
-			);
+			expect(result.redirectTarget).toBe('/xv/valeria-fixture?invite=invite-abc-123');
 		});
 
 		it('returns redirect with canonicalUrl', async () => {
@@ -187,7 +185,7 @@ describe('resolveShortIdRequest', () => {
 				SITE_ORIGIN,
 			);
 			assertIsCrawler(result);
-			expect(result.ogData.ogTitle).toBe('XV Años de Ayrin Samantha');
+			expect(result.ogData.ogTitle).toBe('XV Años de Valeria Ruiz');
 		});
 
 		it('returns no metadata for a disabled invitation', async () => {
@@ -209,9 +207,7 @@ describe('resolveShortIdRequest', () => {
 				SITE_ORIGIN,
 			);
 			assertIsCrawler(result);
-			expect(result.redirectTarget).toBe(
-				'/xv/ayrin-samantha-lerma-castro?invite=invite-abc-123',
-			);
+			expect(result.redirectTarget).toBe('/xv/valeria-fixture?invite=invite-abc-123');
 		});
 
 		it('includes canonicalUrl in crawler response', async () => {
@@ -257,9 +253,9 @@ describe('resolveShortIdRequest', () => {
 				SITE_ORIGIN,
 			);
 			assertIsCrawler(result);
-			expect(result.ogData.ogTitle).toBe('XV Años de Ayrin Samantha');
+			expect(result.ogData.ogTitle).toBe('XV Años de Valeria Ruiz');
 			expect(result.ogData.ogDescription).toBe(
-				'Consulta los detalles de XV Años de Ayrin Samantha y confirma tu asistencia.',
+				'Consulta los detalles de XV Años de Valeria Ruiz y confirma tu asistencia.',
 			);
 		});
 	});

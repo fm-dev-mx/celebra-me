@@ -18,7 +18,6 @@ export const MELISSA_EVENT = {
 	eventType: 'boda',
 	slug: 'melissa-y-luis-osmar',
 	assetSlug: 'melissa-y-luis-osmar',
-	baseDemoId: 'demo-boda-jewelry-box-wedding',
 	themeId: 'jewelry-box-wedding',
 	visualProfileId: 'melissa-y-luis-osmar',
 	title: 'Boda de Melissa Landell Osuna y Luis Osmar Muñoz Rodríguez',
@@ -365,7 +364,6 @@ export const melissaInvitation: InvitationDefinition<MelissaAssetKey> = defineIn
 	clientName: 'Melissa Landell Osuna',
 	hostLoginAlias: 'melissa_landell',
 	photosReceived: true,
-	baseDemoId: MELISSA_EVENT.baseDemoId,
 	themeId: MELISSA_EVENT.themeId,
 	visualProfileId: MELISSA_EVENT.visualProfileId,
 	eventTiming: {

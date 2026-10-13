@@ -17,7 +17,6 @@ export const ALBA_EVENT = {
 	eventType: 'cumple',
 	slug: 'alba-rosa-quinonez',
 	assetSlug: 'alba-rosa-quinonez',
-	baseDemoId: 'demo-cumple-luxury-hacienda',
 	themeId: 'luxury-hacienda',
 	visualProfileId: 'alba-rosa-quinonez',
 	title: '70 años de Alba Rosa Quiñónez López',
@@ -365,7 +364,6 @@ export const albaInvitation: InvitationDefinition<AlbaAssetKey> = defineInvitati
 	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,
-	baseDemoId: ALBA_EVENT.baseDemoId,
 	themeId: ALBA_EVENT.themeId,
 	visualProfileId: ALBA_EVENT.visualProfileId,
 	eventTiming: {

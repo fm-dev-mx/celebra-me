@@ -44,10 +44,8 @@ function fingerprintInput(overrides?: {
 }) {
 	return {
 		eventType: overrides?.eventType ?? 'boda',
-		baseDemoId: 'demo-boda-jewelry-box-wedding',
 		themeId: 'jewelry-box-wedding',
 		kind: 'client',
-		snapshot: { themeId: 'jewelry-box-wedding' },
 		content: overrides?.content ?? canonicalContent(),
 		assets: [{ key: 'hero', sha256: overrides?.sha256 ?? HERO_SHA }],
 	};
@@ -58,9 +56,7 @@ function liveRow(overrides?: Partial<LiveInvitationRow>): LiveInvitationRow {
 		slug: 'demo-slug',
 		eventType: 'boda',
 		kind: 'client',
-		baseDemoId: 'demo-boda-jewelry-box-wedding',
 		themeId: 'jewelry-box-wedding',
-		snapshot: { themeId: 'jewelry-box-wedding' },
 		managedIdentityId: '00000000-0000-4000-8000-000000000001',
 		definitionSlug: 'demo-slug',
 		draftContent: liveContent(ASSET_UUID),
@@ -355,10 +351,8 @@ describe('promotional fingerprint', () => {
 		expect(live.fingerprint).toBe(
 			computePromotionalFingerprint({
 				eventType: 'boda',
-				baseDemoId: 'demo-boda-jewelry-box-wedding',
 				themeId: 'jewelry-box-wedding',
 				kind: 'client',
-				snapshot: { themeId: 'jewelry-box-wedding' },
 				content: tree,
 				assets: [
 					{ key: 'family', sha256: OTHER_SHA },

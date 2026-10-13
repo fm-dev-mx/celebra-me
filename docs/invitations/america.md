@@ -8,12 +8,12 @@
 
 ## Identity
 
-| Parameter              | Value                                                                 |
-| ---------------------- | --------------------------------------------------------------------- |
-| **Slug**               | `america` (owner choice; distinct from the existing `america-johana`) |
-| **Host Login Alias**   | `america_solis` (no account created during preparation)               |
-| **Event Type**         | `xv`                                                                  |
-| **Preparation Status** | `READY_FOR_IMPLEMENTATION`                                            |
+| Parameter              | Value                                                   |
+| ---------------------- | ------------------------------------------------------- |
+| **Slug**               | `america` (owner choice)                                |
+| **Host Login Alias**   | `america_solis` (no account created during preparation) |
+| **Event Type**         | `xv`                                                    |
+| **Preparation Status** | `READY_FOR_IMPLEMENTATION`                              |
 
 **Preparation Readiness (prepReadiness):** `READY_FOR_IMPLEMENTATION`
 
@@ -29,7 +29,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | WhatsApp / conversation       | `source:wa-export` (opaque label)   | Intake answers from the client (mother), 2026-10-08/09     |
 | High-res photos / assets root | `source:hr-photos` (opaque label)   | Photographer delivery, 15 JPEG files, received 2026-10-09  |
 | Public web check              | `source:web-check` (2026-10-09)     | Cristo Rey parish exists in Los Mochis; garden not indexed |
-| Owner decisions               | `source:owner-session` (2026-10-09) | D1–D7 resolved; new preset proven by an unlisted demo      |
+| Owner decisions               | `source:owner-session` (2026-10-09) | D1–D7 resolved; new preset proven by this invitation       |
 
 ---
 
@@ -45,7 +45,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | receptionTime         | 20:00                                                                        | verified       | wa-export     | Recepción                                                |
 | timeZone              | America/Mazatlan                                                             | inferred       | wa-export     | Los Mochis, Sinaloa (UTC−7, no DST)                      |
 | eventCity             | Los Mochis, Sinaloa                                                          | inferred       | web-check     | Parish and Mochis–Topolobampo highway; client to confirm |
-| baseDemoId            | demo-xv-storybook-lilac                                                      | verified       | owner-session | New unlisted demo, second consumer of the preset (D2)    |
+| baseDemoId            | none                                                                         | verified       | owner-session | Invitations do not depend on demos (2026-10-13)          |
 | sourceAssetPath       | source:hr-photos                                                             | verified       | owner-session | Opaque label only                                        |
 | sectionOrder          | quote, family, countdown, location, program, gallery, gifts, pass, rsvp, end | verified       | owner-session | program = itinerary; see Sections                        |
 | primaryVenueName      | Parroquia Cristo Rey                                                         | verified       | wa-export     | Client wrote "Cristo Rey"; "Parroquia" prefix inferred   |
@@ -105,26 +105,25 @@ No placeholder tokens are used; optional content is omitted until supplied.
 
 ## Owner Decisions
 
-| id  | category              | issue                       | evidence  | options                                 | outcome (2026-10-09)                         |
-| --- | --------------------- | --------------------------- | --------- | --------------------------------------- | -------------------------------------------- |
-| D1  | missing-client-facts  | Slug                        | wa-export | `america-solis` / `america`             | `america`                                    |
-| D2  | demo-design-decisions | Base preset                 | catalog   | celestial-blue profile / new preset     | New preset `storybook-lilac` + unlisted demo |
-| D3  | demo-design-decisions | Samples the client approved | wa-export | Owner reads the quoted replies          | mia-pintor, naydelin-paredes (references)    |
-| D4  | missing-client-facts  | RSVP mode                   | wa-export | api passes / WhatsApp / both            | Personalized passes with fixed seats         |
-| D5  | demo-design-decisions | Rapunzel motif source       | wa-export | Original / owner-supplied character art | Original motifs, no characters               |
-| D6  | ambiguous-data        | Accents in display names    | wa-export | With accents / as written               | With accents                                 |
-| D7  | demo-design-decisions | Proof for the new art       | catalog   | Unlisted demo / tests + this invitation | Tests + this invitation; demo carries preset |
-| D8  | missing-client-facts  | Program                     | catalog   | Omit / most common XV program           | Most common program; owner adjusts later     |
-| D9  | missing-client-facts  | RSVP deadline               | owner     | Omit / fixed date                       | 15 days before: 2026-11-06                   |
-| D10 | missing-client-facts  | Gifts                       | owner     | Omit / envelope shower / registry       | Envelope shower (legend-only note)           |
-| D11 | missing-client-facts  | Song                        | wa-export | Suggest / wait for the client           | Pending                                      |
-| D12 | missing-client-facts  | Memories QR add-on          | owner     | Without / with memories                 | With memories (after its memory space)       |
+| id  | category              | issue                       | evidence  | options                                 | outcome (2026-10-09)                       |
+| --- | --------------------- | --------------------------- | --------- | --------------------------------------- | ------------------------------------------ |
+| D1  | missing-client-facts  | Slug                        | wa-export | `america-solis` / `america`             | `america`                                  |
+| D2  | demo-design-decisions | Base preset                 | catalog   | celestial-blue profile / new preset     | New preset `storybook-lilac`; no base demo |
+| D3  | demo-design-decisions | Samples the client approved | wa-export | Owner reads the quoted replies          | mia-pintor, naydelin-paredes (references)  |
+| D4  | missing-client-facts  | RSVP mode                   | wa-export | api passes / WhatsApp / both            | Personalized passes with fixed seats       |
+| D5  | demo-design-decisions | Rapunzel motif source       | wa-export | Original / owner-supplied character art | Original motifs, no characters             |
+| D6  | ambiguous-data        | Accents in display names    | wa-export | With accents / as written               | With accents                               |
+| D7  | demo-design-decisions | Proof for the new art       | catalog   | Unlisted demo / tests + this invitation | Tests + this invitation                    |
+| D8  | missing-client-facts  | Program                     | catalog   | Omit / most common XV program           | Most common program; owner adjusts later   |
+| D9  | missing-client-facts  | RSVP deadline               | owner     | Omit / fixed date                       | 15 days before: 2026-11-06                 |
+| D10 | missing-client-facts  | Gifts                       | owner     | Omit / envelope shower / registry       | Envelope shower (legend-only note)         |
+| D11 | missing-client-facts  | Song                        | wa-export | Suggest / wait for the client           | Pending                                    |
+| D12 | missing-client-facts  | Memories QR add-on          | owner     | Without / with memories                 | With memories (after its memory space)     |
 
-Program (D8, 2026-10-10): the moments and hours most common across the XV definitions in
-`scripts/provision/invitations/` with a 20:00 reception (america-johana, ana-sofia-cota-guillen,
-ayrin-samantha-lerma-castro, ximena-meza-trasvina, plus mia-pintor, naydelin-paredes and
-xareni-iyarit by offset): vals about 1 h 30 after the reception, dinner an hour after the vals and
-closing at 01:00. Brindis, pastel and baile sorpresa appear in fewer than half and are left out.
+Program (D8, 2026-10-10): the moments and hours most common across the seven XV definitions then in
+`scripts/provision/invitations/` with a 20:00 reception (mia-pintor and naydelin-paredes among them,
+by offset): vals about 1 h 30 after the reception, dinner an hour after the vals and closing at
+01:00. Brindis, pastel and baile sorpresa appear in fewer than half and are left out.
 
 Memories (D12): the release gate reads the memory space named by `memories.publicSlug` before any
 write, and blocks when the space is missing or belongs to another event. A space needs the event,
@@ -134,9 +133,9 @@ retention, quota), (3) add `memories` (variant `card`, the space's `publicSlug`)
 between `rsvp` and `thankYou`, (4) release again. Local follows the same order: its event exists,
 but it has no space yet.
 
-The theme architecture allows a new preset only when two invitations or demos share it, so the owner
-chose an unlisted demo (`demo-xv-storybook-lilac`, model photographs from existing demos) as the
-second consumer. This supersedes, for this preset only, the 2026-10-08 "no new demos" note.
+The owner first chose an unlisted demo as the preset's second consumer, then retired it on
+2026-10-13 when invitations stopped depending on demos. America has no base demo: this invitation is
+the only consumer of `storybook-lilac`, and unit tests cover the generic preset parts.
 
 ---
 
@@ -203,7 +202,7 @@ date lives in the RSVP copy and the reminder.
 
 | decision                          | value                                                               | classification      |
 | --------------------------------- | ------------------------------------------------------------------- | ------------------- |
-| Owner-selected base demo          | demo-xv-storybook-lilac                                             | verified            |
+| Owner-selected base demo          | none (invitations do not depend on demos)                           | verified            |
 | Recommended demo alternatives     | —                                                                   | recommendation only |
 | Selected variant / visual profile | preset `storybook-lilac`; envelope + ornaments `storybook-lanterns` | verified (owner D2) |
 | Client color requirements         | Lila, dorado; temática Rapunzel                                     | verified            |
@@ -309,8 +308,7 @@ release re-encodes for delivery (Local hero 361 KB, within the 500 KB hero-deskt
   `src/styles/invitation-profiles/america.scss`, assets under `src/assets/invitations/america/`.
 - Lane B (generic, no client identity): preset `storybook-lilac`, ornament set and reveal variant
   `storybook-lanterns`, seal icon `sunburst`, a countdown unit label for nights; proven by unit
-  tests, the unlisted demo `demo-xv-storybook-lilac` and this invitation. No Disney characters,
-  logos, lettering or lyrics.
+  tests and this invitation. No Disney characters, logos, lettering or lyrics.
 - Adults-only and reserved color use the existing indication pattern (`Forbidden` icon, `reserved`
   swatch colored by a token).
 - Lanterns animate only without `prefers-reduced-motion`; the resting frame is complete.

@@ -49,7 +49,7 @@ describe('getSharingConfigForSlug', () => {
 				buildPublished({
 					id: 'pub-1',
 					invitationId: 'inv-1',
-					slug: 'ayrin-samantha-lerma-castro',
+					slug: 'valeria-fixture',
 					isDemo: false,
 					content: {
 						sharing: {
@@ -64,7 +64,7 @@ describe('getSharingConfigForSlug', () => {
 				}),
 			);
 
-			const result = await getSharingConfigForSlug('ayrin-samantha-lerma-castro', 'xv');
+			const result = await getSharingConfigForSlug('valeria-fixture', 'xv');
 
 			expect(result.shareMessages).toEqual({
 				invitation: 'Hola {guestName}, te invitamos a {eventTitle}: {inviteUrl}',

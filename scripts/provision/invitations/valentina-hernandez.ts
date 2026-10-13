@@ -20,7 +20,6 @@ export const VALENTINA_EVENT = {
 	eventType: 'xv',
 	slug: 'valentina-hernandez',
 	assetSlug: 'xv-valentina-hernandez',
-	baseDemoId: 'demo-xv-editorial-magazine',
 	themeId: 'editorial-magazine',
 	visualProfileId: 'valentina-hernandez',
 	title: 'XV Años — Valentina Hernández Almaguer',
@@ -473,7 +472,6 @@ export const valentinaInvitation: InvitationDefinition<ValentinaAssetKey> = defi
 	clientEmail: '',
 	clientWhatsapp: '525518323934',
 	photosReceived: true,
-	baseDemoId: VALENTINA_EVENT.baseDemoId,
 	themeId: VALENTINA_EVENT.themeId,
 	visualProfileId: VALENTINA_EVENT.visualProfileId,
 	eventTiming: {

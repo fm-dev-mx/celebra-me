@@ -12,7 +12,7 @@ jest.mock('@/lib/intake/repositories/invitation.repository', () => ({
 
 jest.mock('@/lib/adapters/event', () => ({
 	adaptEvent: jest.fn(() => ({
-		id: 'ana-sofia-cota-guillen',
+		id: 'lucia-fixture',
 		isDemo: false,
 		title: 'XV Anos — Ana Sofia',
 		theme: { preset: 'jewelry-box', themeClass: 'theme-preset--jewelry-box' },

@@ -49,9 +49,7 @@ function emptyRow(slug: string): LiveInvitationEvidenceRow {
 		slug,
 		eventType: 'xv',
 		kind: 'client',
-		baseDemoId: null,
 		themeId: 'premiere-floral',
-		snapshot: null,
 		managedIdentityId: null,
 		definitionSlug: null,
 		clientName: 'Fixture Client',
@@ -143,10 +141,12 @@ describe('Inventory Audit & Parity Engine (scripts/provision/inventory-audit.ts)
 		});
 
 		it('does not create a second category for corpus entries', () => {
-			expect(classifySlugCategory('america-johana', false, undefined, true)).toBe(
+			expect(classifySlugCategory('corpus-only-xv', false, undefined, true)).toBe(
 				'unmanaged',
 			);
-			expect(classifySlugCategory('leah-lexa', false, undefined, true)).toBe('unmanaged');
+			expect(classifySlugCategory('corpus-only-baby-shower', false, undefined, true)).toBe(
+				'unmanaged',
+			);
 		});
 
 		it('classifies preview E2E test fixture', () => {

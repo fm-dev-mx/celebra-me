@@ -69,7 +69,7 @@ test('gift registry event identifier geometry stays fixed during the first compl
 	test.setTimeout(60_000);
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await initializeVisualCapture(page);
-	await page.goto('/xv/america-johana?skipEnvelope=true&screenshot=true&animations=off');
+	await page.goto('/xv/valentina-hernandez?skipEnvelope=true&screenshot=true&animations=off');
 	await prepareCompletePage(page);
 	const number = page.locator('.gift-card__table-number-code').first();
 	await expect(number).toBeVisible();

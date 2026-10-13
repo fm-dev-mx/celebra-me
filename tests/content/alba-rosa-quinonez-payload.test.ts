@@ -1,4 +1,3 @@
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { adaptDbEvent } from '@/lib/adapters/db-event-adapter';
 import { buildPageContextFromViewModel } from '@/lib/invitation/page-data';
@@ -44,13 +43,7 @@ function asRecord(value: unknown): Record<string, unknown> {
  * Exact Spanish fidelity belongs only in an explicitly named content-golden suite.
  */
 describe('Alba Rosa Quiñónez provision contract', () => {
-	it('uses a consistent luxury-hacienda catalog entry', () => {
-		const preset = findDemoPreset(ALBA_EVENT.baseDemoId);
-		expect(preset).toMatchObject({
-			id: 'demo-cumple-luxury-hacienda',
-			eventType: 'cumple',
-			themeId: 'luxury-hacienda',
-		});
+	it('uses a consistent luxury-hacienda theme', () => {
 		expect(resolveInvitationTheme({ themeId: ALBA_EVENT.themeId })).toBe(ALBA_EVENT.themeId);
 	});
 

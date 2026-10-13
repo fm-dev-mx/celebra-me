@@ -1,4 +1,3 @@
-import { findDemoPreset } from '@/lib/intake/demo-preset-catalog';
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { deriveStartsAtUtc } from '@/lib/time/event-time';
@@ -42,7 +41,6 @@ describe('XV Renata provision contract', () => {
 		const definition = getInvitationDefinition('renata');
 		expect(definition.slug).toBe('renata');
 		expect(definition.hostLoginAlias).toBe('renata');
-		expect(definition.baseDemoId).toBe('demo-xv-editorial');
 		expect(definition.themeId).toBe('editorial');
 		expect(definition.visualProfileId).toBe('renata');
 		expect(definition.lifecycle).toBe('published');
@@ -51,12 +49,6 @@ describe('XV Renata provision contract', () => {
 			deriveStartsAtUtc('2026-09-05T19:00', 'America/Mazatlan'),
 		);
 
-		const preset = findDemoPreset(RENATA_EVENT.baseDemoId);
-		expect(preset).toMatchObject({
-			id: 'demo-xv-editorial',
-			eventType: 'xv',
-			themeId: 'editorial',
-		});
 		expect(resolveInvitationTheme({ themeId: RENATA_EVENT.themeId })).toBe(
 			RENATA_EVENT.themeId,
 		);
