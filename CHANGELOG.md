@@ -10,7 +10,14 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
-_Sin cambios pendientes._
+### Added
+
+- **Ranking de diseños** (`/dashboard/admin/ranking`, administrador): comparación interna de
+  invitaciones y diseños sobre los snapshots permanentes de engagement, con las reglas de la
+  especificación aplicadas en la base de datos (`list_invitation_engagement_ranking`, migración
+  `20261013120000`, `service_role`): mismo tipo de evento, snapshot final sobre el rolling, muestra
+  mínima de 20 invitados por invitación y 5 invitaciones comparables por grupo de diseño. Las filas
+  con muestra insuficiente se muestran en gris con el motivo; los datos existen desde 2026-10-12.
 
 ## [0.22.0-beta.1] - 2026-10-13
 

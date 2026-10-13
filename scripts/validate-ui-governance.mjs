@@ -18,6 +18,10 @@ const allowedHydratedComponents = new Set([
 	// (browser-safe @/lib/dashboard/api-client). No mutations, no server-only
 	// modules in the island: provider tokens stay on the server.
 	'PlatformUsagePanel',
+	// Administrator engagement ranking — read-only fetch via
+	// @/lib/dashboard/engagement-ranking-api (browser-safe api-client). Aggregates only,
+	// no mutations, no guest data, no server-only modules in the island.
+	'EngagementRankingPanel',
 	// Local-only canonical status dashboard — read-only fetch via
 	// @/lib/dashboard/api-client. No mutations, no server-only modules in the island.
 	'CanonicalStatusPanel',

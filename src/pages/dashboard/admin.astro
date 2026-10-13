@@ -59,6 +59,11 @@ try {
 				<p class="dashboard-stat-number">{pageData.stats.users}</p>
 				<a href="/dashboard/usuarios" class="dashboard-stat-link">Ver usuarios →</a>
 			</div>
+			<div class="dashboard-stat-card">
+				<h3>Ranking de diseños</h3>
+				<p class="dashboard-stat-text">Comparación interna de invitaciones y diseños.</p>
+				<a href="/dashboard/admin/ranking" class="dashboard-stat-link">Ver ranking →</a>
+			</div>
 		</div>
 	) : null}
 
@@ -98,6 +103,10 @@ try {
 			font-weight: 700;
 			margin: 0.5rem 0;
 			color: var(--color-action-primary);
+		}
+		.dashboard-stat-text {
+			margin: 0.5rem 0 1rem;
+			color: var(--color-text-muted);
 		}
 		.dashboard-stat-link {
 			display: inline-flex;

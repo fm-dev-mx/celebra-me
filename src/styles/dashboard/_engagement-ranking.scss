@@ -1,0 +1,110 @@
+// Administrator engagement ranking: filters, two comparison tables and the rules aside.
+
+.engagement-ranking {
+	display: grid;
+	gap: 1.25rem;
+
+	&__intro {
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--color-text-muted);
+	}
+
+	&__filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem 1rem;
+	}
+
+	&__filter {
+		display: grid;
+		gap: 0.25rem;
+		min-inline-size: 12rem;
+		font-size: 0.85rem;
+		color: var(--color-text-secondary);
+
+		select {
+			font: inherit;
+			color: var(--color-text-primary);
+			background: var(--dashboard-panel-bg);
+			border: 1px solid var(--dashboard-card-border);
+			border-radius: 0.5rem;
+			padding: 0.45rem 0.6rem;
+		}
+	}
+
+	&__section {
+		display: grid;
+		gap: 0.6rem;
+	}
+
+	&__section-title {
+		margin: 0;
+		font-size: 1rem;
+		color: var(--color-text-secondary);
+	}
+
+	// Wide tables scroll inside the card instead of breaking the page on phones.
+	&__table-wrap {
+		overflow-x: auto;
+		border: 1px solid var(--dashboard-card-border);
+		border-radius: 0.75rem;
+		background: var(--dashboard-panel-bg);
+	}
+
+	&__table {
+		inline-size: 100%;
+		border-collapse: collapse;
+		font-size: 0.85rem;
+		white-space: nowrap;
+
+		th,
+		td {
+			padding: 0.55rem 0.75rem;
+			text-align: start;
+			border-block-end: 1px solid var(--dashboard-card-border);
+		}
+
+		thead th {
+			font-weight: 600;
+			color: var(--color-text-secondary);
+			background: var(--dashboard-card-bg-soft);
+		}
+
+		tbody th {
+			font-weight: 500;
+		}
+
+		tbody tr:last-child th,
+		tbody tr:last-child td {
+			border-block-end: 0;
+		}
+	}
+
+	&__row--muted {
+		color: var(--color-text-muted);
+
+		th {
+			font-weight: 400;
+		}
+	}
+
+	&__slug,
+	&__deleted {
+		display: block;
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	&__rules {
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+
+		ul {
+			margin: 0;
+			padding-inline-start: 1.1rem;
+			display: grid;
+			gap: 0.25rem;
+		}
+	}
+}

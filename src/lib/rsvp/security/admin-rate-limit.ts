@@ -45,6 +45,7 @@ const RATE_LIMITS = {
 	'memories:diagnostics': { maxHits: 12, windowSec: 60 },
 	// Platform usage console: one aggregate read per provider card refresh.
 	'platform:usage': { maxHits: 30, windowSec: 60 },
+	'engagement:ranking': { maxHits: 30, windowSec: 60 },
 	'intake:list': { maxHits: 60, windowSec: 60 },
 	'intake:update': { maxHits: 30, windowSec: 60 },
 	// Payment status and public access: deliberate, low-frequency administrator decisions.

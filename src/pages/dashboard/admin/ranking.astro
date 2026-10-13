@@ -1,0 +1,17 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
+import EngagementRankingPanel from '@/components/dashboard/engagement/EngagementRankingPanel';
+
+if (!Astro.locals.session?.isSuperAdmin) {
+	return Astro.redirect('/dashboard/invitados');
+}
+---
+
+<DashboardLayout title="Ranking de diseños">
+	<DashboardPageHeader
+		title="Ranking de diseños"
+		subtitle="Comparación interna de invitaciones y diseños sobre las métricas permanentes de engagement: aperturas, lectura completa y respuestas."
+	/>
+	<EngagementRankingPanel client:load />
+</DashboardLayout>
