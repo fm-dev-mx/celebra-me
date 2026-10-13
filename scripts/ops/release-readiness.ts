@@ -216,6 +216,27 @@ export function loadLatestProductionDeployment(
 		throw new RemoteEvidenceError('invalid', 'Latest Production deployment did not succeed.');
 	return { id, sha };
 }
+/** GitHub check-run statuses and commit-status states that mean "not finished yet". */
+const PENDING_CHECK_STATES: ReadonlySet<string> = new Set([
+	'queued',
+	'in_progress',
+	'waiting',
+	'requested',
+	'pending',
+	'expected',
+]);
+
+function describeCheck(sha: string, checks: ReleaseCheck[], name: string): string {
+	const record = checks.find((check) => check.name === name && check.sha.toLowerCase() === sha);
+	if (!record) return 'not reported';
+	return record.trusted ? record.state : `${record.state}, untrusted`;
+}
+
+function isPendingCheck(sha: string, checks: ReleaseCheck[], name: string): boolean {
+	const record = checks.find((check) => check.name === name && check.sha.toLowerCase() === sha);
+	return !record || (record.trusted && PENDING_CHECK_STATES.has(record.state));
+}
+
 /** Callers must provide the newest result per check, including pending reruns. */
 export function requireReleaseChecks(sha: string, checks: ReleaseCheck[]): void {
 	if (!/^[a-f0-9]{40}$/.test(sha))
@@ -229,8 +250,19 @@ export function requireReleaseChecks(sha: string, checks: ReleaseCheck[]): void 
 				missingAction: `Collect trusted ${name} evidence for the exact SHA.`,
 			}).status !== 'VERIFIED',
 	);
-	if (blocked.length)
-		throw new RemoteEvidenceError('invalid', `Release checks blocked: ${blocked.join(', ')}`);
+	if (!blocked.length) return;
+	const detail = blocked
+		.map((name) => `${name} (${describeCheck(sha, checks, name)})`)
+		.join(', ');
+	// Separate "wait and retry" from "something failed": the operator acts differently.
+	if (blocked.every((name) => isPendingCheck(sha, checks, name))) {
+		throw new RemoteEvidenceError(
+			'invalid',
+			`Release checks pending for ${sha.slice(0, 9)}: ${detail}. Repository CI has not finished ` +
+				'for this commit (push it if it is not on origin); retry when it completes.',
+		);
+	}
+	throw new RemoteEvidenceError('invalid', `Release checks blocked: ${detail}`);
 }
 
 function main(): void {
