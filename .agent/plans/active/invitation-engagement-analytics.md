@@ -1,10 +1,12 @@
 ---
 title: Invitation engagement analytics — phase 1 (opens, previews, RSVP funnel, permanent snapshots)
-status: active
+status: superseded
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-13
 type: implementation
 autonomy: 2
+superseded_by:
+  - invitation-engagement-ranking.md
 related_docs:
   - docs/domains/rsvp/engagement-analytics.md
   - docs/domains/rsvp/architecture.md
@@ -365,30 +367,17 @@ Three storage tiers, each with its own retention:
 Each goal is one task branch (`feat/engagement-*`), `pnpm validate:changed` → `pnpm type-check` →
 `pnpm run ci` before handoff.
 
-## 7.1 Current status (2026-10-10)
+## 7.1 Current status (2026-10-13)
 
-- G0–G6 implemented on `feat/engagement-analytics` (one commit per goal, not pushed or integrated).
-- Verified: `pnpm validate:changed`, `pnpm type-check`, `pnpm db:disposable:test` (all pgTAP suites,
-  including `guest_engagement_events` and `invitation_engagement_snapshots`),
-  `pnpm test:db:rsvp-contracts`, `pnpm run ci` up to the Linux-only visual step, and
-  `pnpm validate:prepush` (Docker visual certification for d57a6be65, 334 e2e passed).
-- Not verified: dashboard rendering against a real database (Local lacks the migrations), cron in a
-  Vercel environment.
-- G7 remains: owner-authorized rollout (steps below) and, after a smoke-checked Production release,
-  the contract task (drop `/view` and `track_guest_invitation_view_public`, stop writing
-  `view_percentage` once unread, extend `scripts/db/schema-object-contract.ts` and
-  `mutation-schema-contract-query.ts`).
-- Local blocker: the persistent Local DB also has the unrelated pending contract migrations
-  `20261009230000`–`20261009230200` (renumbered to `20261012200000`–`20261012200200` on
-  `feat/retire-legacy-tables-contracts`, because `supabase db push` refuses versions older than the
-  last applied `20261010180000`); `pnpm db:migrate` applies the whole pending set, so the engagement
-  migrations cannot reach Local until the owner applies or defers those.
-- Privacy copy (`src/pages/privacidad.astro`) needs owner/legal review before Production.
-- Expand-phase compatibility (integrated after the merge): guest reads and writes fall back to the
-  base columns when the engagement columns are missing
-  (`src/lib/rsvp/repositories/shared/guest-schema-compat.ts`), and the ledger RPC is skipped for
-  five minutes after the database reports it missing. Preview keeps working until the migrations
-  land; the contract task removes both guards.
+- G0–G7 complete and in Production: analytics app side in v0.20.0-beta.1 / v0.21.0-beta.1, expand
+  migrations `20261010120000` and `20261010130000`, the legacy view route and compatibility guards
+  removed in v0.21.0-beta.1, and the contract migration `20261013110000` (drop of
+  `track_guest_invitation_view_public`) applied to Local, Preview and Production with
+  v0.22.0-beta.1.
+- Open operational checks (no code): confirm the first successful run of
+  `/api/cron/engagement-maintenance` in Vercel and that the Production dashboard funnel shows real
+  data.
+- Phase 2 (internal ranking over snapshots) continues in `invitation-engagement-ranking.md`.
 
 ## 8. Rollout
 
