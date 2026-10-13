@@ -169,7 +169,7 @@ Never infer hosted migration status from documentation. Obtain live pending sets
   `42501`.
 - **Public guest RSVP RPCs**: public submission and guest auto-creation use the `SECURITY DEFINER`
   RPC `submit_guest_rsvp_public`; guest engagement uses `record_guest_engagement_events_public` (the
-  legacy `track_guest_invitation_view_public` was retired by `20261012210000`). Hybrid create
+  legacy `track_guest_invitation_view_public` was retired by `20261013110000`). Hybrid create
   qualifies `extensions.gen_random_bytes` under `search_path=public`. `p_guest_comment` is an
   absolute SET when provided; `status_changed` audit is owned by `trg_guest_invitations_emit_audit`.
   Direct `INSERT`, `UPDATE`, and `DELETE` on protected guest tables stay revoked from
