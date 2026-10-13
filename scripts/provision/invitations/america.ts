@@ -352,8 +352,8 @@ export const americaSolisInvitation = defineCanonicalInvitation({
 	eventTiming: AMERICA_TIMING,
 	content,
 	managedIdentityId: 'dfb7f4e9-0c68-4c5c-8d2f-9fe01f742fd4',
-	managedIdentityProvenance: 'owner-approved',
-	lifecycle: 'in_progress',
+	managedIdentityProvenance: 'persisted',
+	lifecycle: 'published',
 	hostLoginAlias: 'america_solis',
 	assetDir: 'src/assets/invitations/america',
 	// One role per photograph; the og crop is a separate derivative of the bleed interlude.

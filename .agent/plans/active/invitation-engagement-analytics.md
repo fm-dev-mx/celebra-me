@@ -360,7 +360,7 @@ Three storage tiers, each with its own retention:
 | G4   | Preview capture + crawler precision                                                                                                                  | `short-id-resolver.ts`, `social-crawler.ts`, tests                                                                                                                                                       | Unit tests incl. in-app browser UAs; Local curl with WhatsApp UA records one preview per bucket                                                                                                               |
 | G5   | Dashboard DTO + funnel + guest detail + test-guest checkbox/badge                                                                                    | `src/interfaces/dashboard/guest.interface.ts`, dashboard service/repository, `GuestStatusOverview.tsx`, guest detail components, SCSS                                                                    | Unit tests for totals/funnel monotonicity; visual check desktop + mobile                                                                                                                                      |
 | G6   | Privacy copy + snapshot/retention cron                                                                                                               | `src/pages/privacidad.astro`, `src/pages/api/cron/engagement-maintenance.ts`, `vercel.json`, snapshot table + compute/anonymize functions migration, `src/lib/rsvp/engagement/design-attributes.ts`      | Unit tests for design extraction and batch anonymization; disposable DB tests: snapshot math on fixture event, final row immutable, anonymization blocked while snapshot is stale, anonymized rows unlinkable |
-| G7   | Rollout + contract                                                                                                                                   | registry, removal of `/view` route and legacy RPC (separate contract migration after ≥ 1 release)                                                                                                        | See §8                                                                                                                                                                                                        |
+| G7   | ✅ Rollout + contract (migration `20261012210000`; expand guards removed)                                                                            | registry, removal of `/view` route and legacy RPC (separate contract migration after ≥ 1 release)                                                                                                        | See §8                                                                                                                                                                                                        |
 
 Each goal is one task branch (`feat/engagement-*`), `pnpm validate:changed` → `pnpm type-check` →
 `pnpm run ci` before handoff.
@@ -379,8 +379,10 @@ Each goal is one task branch (`feat/engagement-*`), `pnpm validate:changed` → 
   `view_percentage` once unread, extend `scripts/db/schema-object-contract.ts` and
   `mutation-schema-contract-query.ts`).
 - Local blocker: the persistent Local DB also has the unrelated pending contract migrations
-  `20261009230000`–`20261009230200`; `pnpm db:migrate` applies the whole pending set, so the
-  engagement migrations cannot reach Local until the owner applies or defers those.
+  `20261009230000`–`20261009230200` (renumbered to `20261012200000`–`20261012200200` on
+  `feat/retire-legacy-tables-contracts`, because `supabase db push` refuses versions older than the
+  last applied `20261010180000`); `pnpm db:migrate` applies the whole pending set, so the engagement
+  migrations cannot reach Local until the owner applies or defers those.
 - Privacy copy (`src/pages/privacidad.astro`) needs owner/legal review before Production.
 - Expand-phase compatibility (integrated after the merge): guest reads and writes fall back to the
   base columns when the engagement columns are missing

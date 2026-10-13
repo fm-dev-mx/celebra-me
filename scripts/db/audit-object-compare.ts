@@ -83,12 +83,19 @@ function collectTableFindings(
 	prodTableNames: Set<string>,
 	localTableNames: Set<string>,
 	target: string,
+	allowedDroppedRelations?: ReadonlySet<string>,
 ): { errors: string[]; infos: string[] } {
 	const errors: string[] = [];
 	const infos: string[] = [];
 	for (const t of prodTables) {
 		if (!localTableNames.has(t.tableName)) {
-			errors.push(`Table "${t.tableName}" exists in target but is missing locally!`);
+			if (allowedDroppedRelations?.has(t.tableName)) {
+				infos.push(
+					`Table "${t.tableName}" is target-only (expected drop in pending migrations).`,
+				);
+			} else {
+				errors.push(`Table "${t.tableName}" exists in target but is missing locally!`);
+			}
 		}
 	}
 	for (const t of localTables) {
@@ -157,6 +164,7 @@ function collectPolicyFindings(
 	prodPolicies: PolicyMetadata[],
 	localPolicies: PolicyMetadata[],
 	allowedDroppedPolicies?: ReadonlySet<string>,
+	allowedDroppedRelations?: ReadonlySet<string>,
 ): { errors: string[]; infos: string[] } {
 	const errors: string[] = [];
 	const infos: string[] = [];
@@ -166,7 +174,8 @@ function collectPolicyFindings(
 		);
 		if (!match) {
 			const key = `${p.tableName}:${p.policyName}`;
-			if (allowedDroppedPolicies?.has(key)) {
+			// A policy goes away with its table; the migration does not name it.
+			if (allowedDroppedPolicies?.has(key) || allowedDroppedRelations?.has(p.tableName)) {
 				infos.push(
 					`RLS Policy "${p.policyName}" on "${p.tableName}" is target-only (expected drop in pending migrations).`,
 				);
@@ -211,6 +220,7 @@ export function compareTargetToCanonicalReference(
 	historyLifecycle: string,
 	options?: {
 		allowedDroppedPolicies?: ReadonlySet<string>;
+		allowedDroppedRelations?: ReadonlySet<string>;
 	},
 ): SchemaComparisonResult {
 	const prodTableNames = new Set(actual.tables.map((t) => t.tableName));
@@ -221,6 +231,7 @@ export function compareTargetToCanonicalReference(
 		prodTableNames,
 		localTableNames,
 		target,
+		options?.allowedDroppedRelations,
 	);
 	const columns = collectColumnFindings(
 		actual.columns,
@@ -233,6 +244,7 @@ export function compareTargetToCanonicalReference(
 		actual.policies,
 		expected.policies,
 		options?.allowedDroppedPolicies,
+		options?.allowedDroppedRelations,
 	);
 	const structuralFindings = collectStructuralFindings(expected, actual);
 	const blockingStructural =
@@ -253,6 +265,7 @@ export interface CanonicalObjectAuditInput {
 	targetSchema: SchemaMetadata;
 	referenceSchema: SchemaMetadata | null;
 	allowedDroppedPolicies?: ReadonlySet<string>;
+	allowedDroppedRelations?: ReadonlySet<string>;
 }
 
 export interface CanonicalObjectAuditResult {
@@ -300,7 +313,10 @@ export function runCanonicalObjectAudit(
 		input.targetSchema,
 		input.referenceSchema,
 		input.historyLifecycle,
-		{ allowedDroppedPolicies: input.allowedDroppedPolicies },
+		{
+			allowedDroppedPolicies: input.allowedDroppedPolicies,
+			allowedDroppedRelations: input.allowedDroppedRelations,
+		},
 	);
 	return {
 		lifecycle: input.historyLifecycle,

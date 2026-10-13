@@ -548,8 +548,37 @@ export function extractDroppedPoliciesFromSql(sql: string): Set<string> {
 	return dropped;
 }
 
-export function loadPendingDroppedPolicies(pendingVersions: readonly string[]): Set<string> {
+/**
+ * Relations (tables and views, public schema) that a migration drops. A pending contract
+ * migration explains why the target still has them while the disposable reference does not.
+ */
+export function extractDroppedRelationsFromSql(sql: string): Set<string> {
 	const dropped = new Set<string>();
+	const sanitizedSql = sql.replace(/--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+	const regex =
+		/drop\s+(?:table|view|materialized\s+view)\s+(?:if\s+exists\s+)?([^;]+?)\s*(?:cascade|restrict)?\s*;/gi;
+	let match: RegExpExecArray | null;
+	while ((match = regex.exec(sanitizedSql)) !== null) {
+		for (const item of match[1]!.split(',')) {
+			const name = item
+				.trim()
+				.replace(/^(?:"?public"?)\./i, '')
+				.replace(/^"([^"]+)"$/, '$1');
+			if (name) dropped.add(name);
+		}
+	}
+	return dropped;
+}
+
+export interface PendingDroppedObjects {
+	policies: Set<string>;
+	relations: Set<string>;
+}
+
+export function loadPendingDroppedObjects(
+	pendingVersions: readonly string[],
+): PendingDroppedObjects {
+	const dropped: PendingDroppedObjects = { policies: new Set(), relations: new Set() };
 	if (pendingVersions.length === 0) return dropped;
 	const pendingSet = new Set(pendingVersions);
 	const files = readdirSync(MIGRATIONS_DIR).filter((f) => {
@@ -559,14 +588,17 @@ export function loadPendingDroppedPolicies(pendingVersions: readonly string[]): 
 	for (const file of files) {
 		try {
 			const content = readFileSync(resolve(MIGRATIONS_DIR, file), 'utf8');
-			for (const key of extractDroppedPoliciesFromSql(content)) {
-				dropped.add(key);
-			}
+			for (const key of extractDroppedPoliciesFromSql(content)) dropped.policies.add(key);
+			for (const name of extractDroppedRelationsFromSql(content)) dropped.relations.add(name);
 		} catch {
 			// ignore read errors
 		}
 	}
 	return dropped;
+}
+
+export function loadPendingDroppedPolicies(pendingVersions: readonly string[]): Set<string> {
+	return loadPendingDroppedObjects(pendingVersions).policies;
 }
 
 function runSchemaAudit(
@@ -587,9 +619,9 @@ function runSchemaAudit(
 	console.log(`Target Schema Fingerprint: ${targetFingerprint}`);
 
 	const evidence = loadDisposableReferenceEvidence(expectedVersions);
-	const allowedDroppedPolicies =
+	const pendingDrops =
 		historyLifecycle === 'BEHIND' && pendingVersions && pendingVersions.length > 0
-			? loadPendingDroppedPolicies(pendingVersions)
+			? loadPendingDroppedObjects(pendingVersions)
 			: undefined;
 
 	const audit = runCanonicalObjectAudit({
@@ -608,7 +640,8 @@ function runSchemaAudit(
 		},
 		targetSchema: prod,
 		referenceSchema: evidence.referenceSchema,
-		allowedDroppedPolicies,
+		allowedDroppedPolicies: pendingDrops?.policies,
+		allowedDroppedRelations: pendingDrops?.relations,
 	});
 
 	if (!audit.reference.ok || !audit.comparison) {

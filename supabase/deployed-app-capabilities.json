@@ -5,6 +5,7 @@
         "event_memories_client",
         "retired_legacy_tables_client",
         "event_branding_removal_client",
-        "guest_engagement_client"
+        "guest_engagement_client",
+        "guest_engagement_only_client"
     ]
 }

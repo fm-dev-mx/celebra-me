@@ -1,12 +1,12 @@
 # Guest Engagement Analytics
 
-> **Status: implemented on `feat/engagement-analytics`, pending rollout.** Ledger and projections:
+> **Status: live in Production since 2026-10-12 (v0.20.0-beta.1).** Ledger and projections:
 > `supabase/migrations/20261010120000_guest_engagement_events.sql`; snapshots and anonymization:
 > `20261010130000_invitation_engagement_snapshots.sql`; ingestion:
 > `/api/invitacion/:inviteId/events` (`src/lib/rsvp/engagement/`); browser:
 > `src/lib/invitation/invitation-analytics.ts`; maintenance: `GET /api/cron/engagement-maintenance`.
-> The legacy `/view` route and `track_guest_invitation_view_public` stay until the contract release.
-> Rollout: `.agent/plans/active/invitation-engagement-analytics.md`.
+> The legacy `/view` route is gone and `track_guest_invitation_view_public` is dropped by the
+> contract migration `20261012210000`.
 
 ## Purpose and boundaries
 

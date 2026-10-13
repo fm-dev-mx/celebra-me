@@ -265,8 +265,7 @@ previous row. The membership API still defaults to `manager` when a caller omits
 Guest photo/video spaces live in `event_memory_settings` (one per event; window, retention, quotas,
 entitlement), `event_memory_sessions`, `event_memory_items`, and `event_memory_audit_events`
 (`supabase/migrations/*event_memor*`). The client-named `valentina_memory_*` catalog is retired by
-`20261009230200_retire_valentina_memories.sql`, held on branch `feat/retire-legacy-tables-contracts`
-until a Production deploy that no longer reads it. Behavior, Workers, and quotas are owned by
+`20261012200200_retire_valentina_memories.sql`. Behavior, Workers, and quotas are owned by
 [`docs/core/architecture.md`](../../core/architecture.md) (Event memories).
 
 ### Archive / Restore

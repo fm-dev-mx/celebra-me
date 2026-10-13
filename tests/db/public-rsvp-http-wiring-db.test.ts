@@ -23,12 +23,12 @@ process.env.SUPABASE_SERVICE_ROLE_KEY =
 	'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
 
 import { POST as rsvpPost } from '../../src/pages/api/invitacion/[inviteId]/rsvp.ts';
-import { POST as viewPost } from '../../src/pages/api/invitacion/[inviteId]/view.ts';
+import { POST as eventsPost } from '../../src/pages/api/invitacion/[inviteId]/events.ts';
 
 const dbUrl = resolveDbUrl('disposable-test');
 const harnessEnabled = process.env.CELEBRA_RSVP_DB_CONTRACTS === '1';
 
-describe('public rsvp & view HTTP API wiring (real DB)', () => {
+describe('public rsvp & engagement HTTP API wiring (real DB)', () => {
 	if (!harnessEnabled) {
 		it('must run through the disposable RSVP DB contract harness', () => {
 			throw new Error(
@@ -120,28 +120,44 @@ describe('public rsvp & view HTTP API wiring (real DB)', () => {
 		expect(parseInt(auditCheck.stdout.trim(), 10)).toBeGreaterThanOrEqual(1);
 	});
 
-	it('tracks invitation view via HTTP API route and updates DB telemetry', async () => {
-		const request = nodeRequest(`http://localhost/api/invitacion/${testInviteId}/view`, {
+	it('records guest engagement via HTTP API route into the ledger', async () => {
+		const clientEventId = '7b1c2d3e-4f5a-4b6c-8d7e-9f0a1b2c3d4e';
+		const request = nodeRequest(`http://localhost/api/invitacion/${testInviteId}/events`, {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+			headers: {
+				'Content-Type': 'application/json',
+				'user-agent':
+					'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+			},
 			body: JSON.stringify({
-				viewPercentage: 95,
+				events: [
+					{
+						clientEventId,
+						schemaVersion: 1,
+						occurredAt: new Date().toISOString(),
+						pageViewId: '8b1c2d3e-4f5a-4b6c-8d7e-9f0a1b2c3d4e',
+						eventName: 'invitation_opened',
+						properties: { entry: 'direct', isReload: false },
+					},
+				],
 			}),
 		});
 
-		const response = await viewPost({
+		const response = await eventsPost({
 			params: { inviteId: testInviteId },
 			request,
 		} as any);
 
-		expect(response.status).toBe(200);
+		expect(response.status).toBe(202);
 		const json = await response.json();
-		expect(json.message).toBe('View recorded.');
+		expect(json).toEqual({ accepted: 1, duplicates: 0, rejected: 0 });
 
+		// Outside Vercel Production the request is classified non_production and must not
+		// move the guest projections.
 		const dbCheck = runSql(
-			`select is_viewed, view_percentage from public.guest_invitations where invite_id = '${testInviteId}';`,
+			`select l.traffic_class, l.device_class, g.open_count from public.guest_engagement_events l join public.guest_invitations g on g.id = l.guest_invitation_id where l.client_event_id = '${clientEventId}';`,
 		);
 		expect(dbCheck.status).toBe(0);
-		expect(dbCheck.stdout).toContain('t|95');
+		expect(dbCheck.stdout).toContain('non_production|mobile|0');
 	});
 });

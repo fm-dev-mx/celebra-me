@@ -1,7 +1,6 @@
 import {
 	findGuestByInviteIdPublic,
 	submitGuestRsvpPublicRpc,
-	trackGuestInvitationViewPublicRpc,
 } from '@/lib/rsvp/repositories/guest.repository';
 import { generateShortId } from '@/lib/server/ids';
 import type {
@@ -248,21 +247,4 @@ export async function submitGuestRsvpByPublicEvent(input: {
 		maxAllowedAttendees: input.maxAllowedAttendees,
 	});
 	return persistRsvpResponse(target, input.payload, 'generic_link');
-}
-
-export async function trackInvitationView(
-	inviteId: string,
-	viewPercentage?: number,
-): Promise<void> {
-	const cleanInviteId = sanitize(inviteId, 64);
-	if (!cleanInviteId) return;
-
-	try {
-		await trackGuestInvitationViewPublicRpc(cleanInviteId, viewPercentage);
-	} catch (error) {
-		console.warn('[telemetry] Non-critical view tracking failed:', {
-			inviteId: cleanInviteId,
-			error: error instanceof Error ? error.message : String(error),
-		});
-	}
 }

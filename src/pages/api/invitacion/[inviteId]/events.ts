@@ -14,7 +14,10 @@ import { ingestClientEngagementBatch } from '@/lib/rsvp/engagement/engagement.se
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 
 const MAX_BODY_BYTES = 16 * 1024;
-const inviteIdSchema = z.uuid();
+// Invite ids are database uuids; existence is decided by the ledger RPC, not by the RFC variant.
+const inviteIdSchema = z
+	.string()
+	.regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
 
 /** Guest engagement ingestion. Spec: docs/domains/rsvp/engagement-analytics.md */
 export const POST: APIRoute = async ({ params, request }) => {
