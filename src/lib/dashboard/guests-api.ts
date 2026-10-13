@@ -1,4 +1,5 @@
 import { dashboardApi, type ApiResult } from '@/lib/dashboard/api-client';
+import { isDebugMode } from '@/utils/debug';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { DashboardEventListResponse } from '@/interfaces/dashboard/admin.interface';
 import type {
@@ -27,10 +28,7 @@ class DashboardApiError extends Error {
 	}
 }
 
-const DASHBOARD_DEBUG = (() => {
-	if (typeof window === 'undefined') return false;
-	return new URLSearchParams(window.location.search).get('debug') === '1';
-})();
+const DASHBOARD_DEBUG = isDebugMode();
 
 export class GuestsApi {
 	private handleResponse<T>(result: ApiResult<T>, context: string): T {

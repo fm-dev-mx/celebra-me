@@ -8,6 +8,11 @@ jest.mock('../../scripts/db/db-workflow-lib.ts', () => ({
 	sqlLiteral: (value: string) => `'${value.replaceAll("'", "''")}'`,
 	redactDbUrl: (url: string) => url.replace(/\/\/.*@/, '//***@'),
 	classifyDbTarget: jest.fn(),
+	validateEnvironmentUrlsPreflight: (
+		jest.requireActual(
+			'../../scripts/db/db-target-config.ts',
+		) as typeof import('../../scripts/db/db-target-config.ts')
+	).validateEnvironmentUrlsPreflight,
 }));
 
 jest.mock('../../scripts/provision/preview-write-auth.ts', () => ({
@@ -30,7 +35,7 @@ const mockedAuth = verifyPreviewWriteAuthorization as jest.MockedFunction<
 	typeof verifyPreviewWriteAuthorization
 >;
 
-const PREVIEW_URL = 'postgresql://user:pass@db.example.supabase.co:5432/postgres';
+const PREVIEW_URL = 'postgresql://user:pass@db.iwipdvisoyerfdytuhwi.supabase.co:5432/postgres';
 const INCORRECT_ID = '07327188-51d8-4b6e-8739-f2b835272386';
 const CANONICAL_ID = '03c6a1fc-f663-4551-8fd9-8495eda9cdb2';
 
@@ -130,6 +135,16 @@ describe('invitation-id-purge', () => {
 		mockedClassify.mockReturnValue({ target: 'preview', reason: 'preview host' } as never);
 	});
 
+	it('rejects a Preview-classified URL outside the canonical Preview project', () => {
+		mockedClassify.mockReturnValue({ target: 'preview', reason: 'self-match' } as never);
+		expect(() =>
+			resolvePreviewPurgeDbUrl({
+				PREVIEW_DB_URL:
+					'postgresql://user:pass@db.abcdefghijklmnopqrst.supabase.co:5432/postgres',
+			}),
+		).toThrow(/INVITATION_ID_PURGE_TARGET_REJECTED/);
+	});
+
 	it('rejects production targets', () => {
 		mockedClassify.mockReturnValue({ target: 'production', reason: 'prod' } as never);
 		expect(() => resolvePreviewPurgeDbUrl({ PREVIEW_DB_URL: 'postgresql://x' })).toThrow(
@@ -201,7 +216,9 @@ describe('invitation-id-purge', () => {
 		});
 		expect(audit.blocked).toBe(true);
 		expect(
-			audit.blockReasons.some((reason) => reason.includes('ARCHIVED_INCONSISTENT_ACK_REQUIRED')),
+			audit.blockReasons.some((reason) =>
+				reason.includes('ARCHIVED_INCONSISTENT_ACK_REQUIRED'),
+			),
 		).toBe(true);
 	});
 
@@ -213,9 +230,9 @@ describe('invitation-id-purge', () => {
 		);
 		const audit = await runInvitationIdPurge(baseInput);
 		expect(audit.blocked).toBe(true);
-		expect(audit.blockReasons.some((reason) => reason.includes('STORAGE_OWNERSHIP_VIOLATION'))).toBe(
-			true,
-		);
+		expect(
+			audit.blockReasons.some((reason) => reason.includes('STORAGE_OWNERSHIP_VIOLATION')),
+		).toBe(true);
 	});
 
 	it('blocks exclusive non-synthetic guests', async () => {

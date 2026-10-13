@@ -2,6 +2,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
+	ENGAGEMENT_RECORDER_PATH,
 	EXECUTABLE_MEMORIES_PATHS,
 	validateDeployedAppCapabilities,
 } from '../../scripts/db/validate-deployed-app-capabilities.ts';
@@ -16,6 +17,7 @@ function fixtureRoot(): string {
 		'scripts/provision/invitation-import-engine.ts',
 		'scripts/invitation/image-namespace-remap.ts',
 		...EXECUTABLE_MEMORIES_PATHS,
+		ENGAGEMENT_RECORDER_PATH,
 	]) {
 		const source = join(process.cwd(), path);
 		const target = join(root, path);
@@ -100,6 +102,36 @@ describe('deployed application capability validation', () => {
 				`${readFileSync(path, 'utf8')}\npublish_invitation_atomic('inv-123', 'draft-456');`,
 			);
 			expect(validateDeployedAppCapabilities(root).join('\n')).toMatch(/Revoked positional/);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects the engagement-only client proof when the retired view RPC is referenced', () => {
+		const root = fixtureRoot();
+		try {
+			const path = join(root, ENGAGEMENT_RECORDER_PATH);
+			writeFileSync(
+				path,
+				`${readFileSync(path, 'utf8')}\n// rpc/track_guest_invitation_view_public`,
+			);
+			expect(validateDeployedAppCapabilities(root).join('\n')).toMatch(
+				/Retired guest view RPC is still referenced/,
+			);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
+
+	it('rejects the engagement-only client proof when the legacy view route exists', () => {
+		const root = fixtureRoot();
+		try {
+			const route = join(root, 'src/pages/api/invitacion/[inviteId]/view.ts');
+			mkdirSync(dirname(route), { recursive: true });
+			writeFileSync(route, 'export const POST = () => new Response(null);');
+			expect(validateDeployedAppCapabilities(root).join('\n')).toMatch(
+				/Retired guest view route still exists/,
+			);
 		} finally {
 			rmSync(root, { recursive: true, force: true });
 		}

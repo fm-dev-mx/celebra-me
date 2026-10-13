@@ -8,12 +8,12 @@ import {
 describe('renderShareMessage', () => {
 	const baseContext = {
 		guestName: 'María García',
-		eventTitle: 'XV Años de Ayrin Samantha',
-		inviteUrl: 'https://www.celebra-me.com/xv/ayrin-samantha/i/GBOER6UK',
+		eventTitle: 'XV Años de Valeria Ruiz',
+		inviteUrl: 'https://www.celebra-me.com/xv/fixture-event/i/FXTR7K2M',
 	};
 
 	const timingContext = {
-		eventTimingText: 'Te recordamos que faltan 51 días para XV Años de Ayrin Samantha.',
+		eventTimingText: 'Te recordamos que faltan 51 días para XV Años de Valeria Ruiz.',
 		rsvpDeadlineText: 'Confirma tu asistencia antes del 10 de junio de 2026.',
 		eventDate: '31 de julio de 2026',
 		daysUntilEvent: '51',
@@ -24,14 +24,14 @@ describe('renderShareMessage', () => {
 		const template = 'Hola {guestName}, te invitamos a {eventTitle}: {inviteUrl}';
 		const result = renderShareMessage(template, baseContext);
 		expect(result).toBe(
-			'Hola María García, te invitamos a XV Años de Ayrin Samantha: https://www.celebra-me.com/xv/ayrin-samantha/i/GBOER6UK',
+			'Hola María García, te invitamos a XV Años de Valeria Ruiz: https://www.celebra-me.com/xv/fixture-event/i/FXTR7K2M',
 		);
 	});
 
 	it('replaces all occurrences of the same placeholder', () => {
 		const template = '{guestName} - {guestName} - {eventTitle}';
 		const result = renderShareMessage(template, baseContext);
-		expect(result).toBe('María García - María García - XV Años de Ayrin Samantha');
+		expect(result).toBe('María García - María García - XV Años de Valeria Ruiz');
 	});
 
 	it('supports legacy {name} placeholder', () => {
@@ -112,7 +112,7 @@ describe('renderShareMessage', () => {
 			inviteUrl: 'https://celebra-me.com/i/abc123',
 		});
 		expect(result).toMatch(/^Hola María García/);
-		expect(result).toContain('XV Años de Ayrin Samantha');
+		expect(result).toContain('XV Años de Valeria Ruiz');
 		expect(result).toContain('Ábrela para ver los detalles');
 		expect(result).toContain('https://celebra-me.com/i/abc123');
 	});
@@ -149,7 +149,7 @@ describe('renderShareMessage', () => {
 	it('renders DEFAULT_REMINDER_MESSAGE with custom rsvpDeadlineText', () => {
 		const result = renderShareMessage(DEFAULT_REMINDER_MESSAGE, {
 			...baseContext,
-			eventTimingText: 'Te recordamos que faltan 51 días para XV Años de Ayrin Samantha.',
+			eventTimingText: 'Te recordamos que faltan 51 días para XV Años de Valeria Ruiz.',
 			rsvpDeadlineText: 'Confirma tu asistencia lo antes posible.',
 			rsvpDeadline: '',
 			eventDate: '31 de julio de 2026',
@@ -170,7 +170,7 @@ describe('renderShareMessage', () => {
 		const template = 'Hola {{invitado}}, te invitamos a {{evento}}: {{enlace}}';
 		const result = renderShareMessage(template, baseContext);
 		expect(result).toBe(
-			'Hola María García, te invitamos a XV Años de Ayrin Samantha: https://www.celebra-me.com/xv/ayrin-samantha/i/GBOER6UK',
+			'Hola María García, te invitamos a XV Años de Valeria Ruiz: https://www.celebra-me.com/xv/fixture-event/i/FXTR7K2M',
 		);
 	});
 

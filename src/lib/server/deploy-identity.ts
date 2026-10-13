@@ -14,7 +14,7 @@ import { getEnv } from '@/lib/server/env';
 export type DeployEnvironment = 'production' | 'preview' | 'local';
 export type HostedDeployEnvironment = Exclude<DeployEnvironment, 'local'>;
 
-export const DEPLOY_ENVIRONMENT_VARIABLE = 'CELEBRA_DEPLOY_ENV';
+const DEPLOY_ENVIRONMENT_VARIABLE = 'CELEBRA_DEPLOY_ENV';
 
 export class DeployIdentityError extends Error {
 	constructor(message: string) {

@@ -20,11 +20,16 @@ function invoke(body: unknown) {
 }
 
 describe('workflow mutations', () => {
+	const originalOwners = process.env.SUPER_ADMIN_EMAILS;
+	afterAll(() => {
+		process.env.SUPER_ADMIN_EMAILS = originalOwners;
+	});
 	beforeEach(() => {
 		jest.resetAllMocks();
+		process.env.SUPER_ADMIN_EMAILS = 'owner@example.com, admin@example.com';
 		auth.mockResolvedValue({
 			userId: id,
-			email: 'celebra.me.com@gmail.com',
+			email: 'owner@example.com',
 			isSuperAdmin: true,
 		} as Awaited<ReturnType<typeof requireAdminMutationAccess>>);
 		db.mockResolvedValue([{ id }]);
@@ -70,7 +75,7 @@ describe('workflow mutations', () => {
 	it('attributes review to the authenticated owner on the server', async () => {
 		auth.mockResolvedValue({
 			userId: id,
-			email: ' CELEBRA.ME.COM@gmail.com ',
+			email: ' OWNER@example.com ',
 			isSuperAdmin: true,
 		} as Awaited<ReturnType<typeof requireAdminMutationAccess>>);
 		expect((await invoke({ action: 'confirm_review', expectedUpdatedAt })).status).toBe(200);
@@ -79,6 +84,11 @@ describe('workflow mutations', () => {
 				body: { owner_reviewed_by: id, owner_reviewed_at: expect.any(String) },
 			}),
 		);
+	});
+	it('rejects owner review when no owner is configured', async () => {
+		delete process.env.SUPER_ADMIN_EMAILS;
+		expect((await invoke({ action: 'confirm_review', expectedUpdatedAt })).status).toBe(403);
+		expect(db).not.toHaveBeenCalled();
 	});
 	it('does not silently succeed when the row has changed', async () => {
 		db.mockResolvedValue([]);

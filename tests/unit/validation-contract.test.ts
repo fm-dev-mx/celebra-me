@@ -80,8 +80,9 @@ describe('canonical validation contract', () => {
 
 		expect(scripts.test).toBe('jest');
 		expect(scripts['test:coverage']).toBe('jest --coverage');
-		expect(scripts['test:e2e:infra']).toBe('node scripts/run-e2e-tier.mjs infra');
-		expect(scripts['test:e2e:visual']).toBe('node scripts/run-e2e-tier.mjs visual');
+		expect(scripts['test:e2e:extended']).toBe('node scripts/run-e2e-tier.mjs extended');
+		expect(scripts['test:e2e:infra']).toBeUndefined();
+		expect(scripts['test:e2e:visual']).toBeUndefined();
 		expect(scripts['screenshot:page']).toBeUndefined();
 	});
 
@@ -94,7 +95,7 @@ describe('canonical validation contract', () => {
 
 		try {
 			const result = fs.realpathSync(path.resolve(process.cwd(), 'scripts/run-e2e-tier.mjs'));
-			const execution = spawnSync(process.execPath, [result, 'infra'], {
+			const execution = spawnSync(process.execPath, [result, 'extended'], {
 				cwd: fixtureRoot,
 				encoding: 'utf8',
 				env,

@@ -246,7 +246,7 @@ const baseProject = {
 	},
 	clientName: 'Test Client',
 	clientEmail: '',
-	clientWhatsapp: '5214421234567',
+	clientWhatsapp: '5211000000021',
 	photosReceived: false,
 	createdBy: 'user-1',
 	archivedAt: null,

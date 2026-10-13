@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { getEnv } from '@/lib/server/env';
 
 export const WORK_STATUSES = ['in_progress', 'completed'] as const;
 export type WorkStatus = (typeof WORK_STATUSES)[number];
@@ -9,9 +10,10 @@ export interface InvitationWorkflow {
 	ownerReviewedBy: string | null;
 }
 
-// This identity is explicitly authorized by the project owner.
+/** The owner is the first SUPER_ADMIN_EMAILS entry; without it nobody can record owner review. */
 export function canRecordOwnerReview(email: string | null | undefined): boolean {
-	return email?.trim().toLowerCase() === 'celebra.me.com@gmail.com';
+	const owner = getEnv('SUPER_ADMIN_EMAILS').split(',')[0]?.trim().toLowerCase();
+	return Boolean(owner) && email?.trim().toLowerCase() === owner;
 }
 
 export const WorkflowCommandSchema = z.discriminatedUnion('action', [

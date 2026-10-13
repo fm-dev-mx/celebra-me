@@ -110,7 +110,7 @@ describe('rsvp service branches', () => {
 		inviteId: 'invite-1',
 		eventId: 'evt-1',
 		fullName: 'Guest',
-		phone: '6680000000',
+		phone: '1000000004',
 		countryCode: '+52',
 		maxAllowedAttendees: 2,
 		attendanceStatus: 'pending' as const,
@@ -201,7 +201,7 @@ describe('rsvp service branches', () => {
 			createDashboardGuest({
 				eventId: 'evt-1',
 				fullName: '',
-				phone: '6680000000',
+				phone: '1000000004',
 				maxAllowedAttendees: 2,
 				hostAccessToken: 'token',
 				origin: 'http://localhost',
@@ -225,7 +225,7 @@ describe('rsvp service branches', () => {
 			createDashboardGuest({
 				eventId: 'evt-1',
 				fullName: 'Guest',
-				phone: '6680000000',
+				phone: '1000000004',
 				countryCode: '+52',
 				maxAllowedAttendees: 2,
 				hostAccessToken: 'token',
@@ -246,7 +246,7 @@ describe('rsvp service branches', () => {
 		const result = await createDashboardGuest({
 			eventId: 'evt-1',
 			fullName: 'Guest',
-			phone: '6680000000',
+			phone: '1000000004',
 			countryCode: '+52',
 			maxAllowedAttendees: 250,
 			hostAccessToken: 'token',
@@ -287,7 +287,7 @@ describe('rsvp service branches', () => {
 		findGuestByPhoneAuthMock.mockResolvedValue({
 			...baseGuest,
 			id: 'guest-2',
-			phone: '6680000001',
+			phone: '1000000014',
 			countryCode: '+52',
 		});
 		updateGuestByIdMock.mockRejectedValue(
@@ -300,7 +300,7 @@ describe('rsvp service branches', () => {
 				hostAccessToken: 'token',
 				origin: 'http://localhost',
 				fullName: 'Guest',
-				phone: '6680000001',
+				phone: '1000000014',
 				countryCode: '+52',
 				maxAllowedAttendees: 2,
 			}),
@@ -312,7 +312,7 @@ describe('rsvp service branches', () => {
 		expect(findGuestByPhoneAuthMock).toHaveBeenCalledWith(
 			'evt-1',
 			'+52',
-			'6680000001',
+			'1000000014',
 			'token',
 		);
 	});
@@ -480,7 +480,7 @@ describe('rsvp service branches', () => {
 			submitGuestRsvpByPublicEvent({
 				event: baseEvent,
 				fullName: 'Guest',
-				phone: '6680000000',
+				phone: '1000000004',
 				countryCode: '+52',
 				maxAllowedAttendees: 3,
 				payload: {
@@ -499,7 +499,7 @@ describe('rsvp service branches', () => {
 			expect.objectContaining({
 				eventId: 'evt-1',
 				fullName: 'Guest',
-				phone: '6680000000',
+				phone: '1000000004',
 				responseSource: 'generic_link',
 			}),
 		);
@@ -511,7 +511,7 @@ describe('rsvp service branches', () => {
 			id: 'guest-2',
 			inviteId: 'invite-2',
 			fullName: 'Mariana Soto',
-			phone: '6681112233',
+			phone: '1000000016',
 			maxAllowedAttendees: 3,
 			attendanceStatus: 'confirmed',
 			attendeeCount: 3,
@@ -523,7 +523,7 @@ describe('rsvp service branches', () => {
 		const result = await submitGuestRsvpByPublicEvent({
 			event: baseEvent,
 			fullName: 'Mariana Soto',
-			phone: '(668) 111-2233',
+			phone: '(100) 000-0016',
 			countryCode: '+52',
 			maxAllowedAttendees: 3,
 			payload: {
@@ -538,7 +538,7 @@ describe('rsvp service branches', () => {
 			expect.objectContaining({
 				eventId: 'evt-1',
 				fullName: 'Mariana Soto',
-				phone: '6681112233',
+				phone: '1000000016',
 				countryCode: '+52',
 				maxAllowedAttendees: 3,
 				attendanceStatus: 'confirmed',

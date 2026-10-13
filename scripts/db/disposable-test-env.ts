@@ -111,7 +111,7 @@ Usage:
   tsx scripts/db/disposable-test-env.ts run-concurrency-test  Prove same-key publication contention publishes once
   tsx scripts/db/disposable-test-env.ts run-system-concurrency-test  Exercise Editor/managed/publication/asset contention
   tsx scripts/db/disposable-test-env.ts run-memories-concurrency-test  Exercise event memories transaction races
-  tsx scripts/db/disposable-test-env.ts run-memories-db-contracts  Reset disposable DB, run event memories pgTAP files and races
+  tsx scripts/db/disposable-test-env.ts run-memories-db-contracts  Reset disposable DB, run every pgTAP file and the memories races
   tsx scripts/db/disposable-test-env.ts run-stale-baseline-test  Exercise public and contact-only baselines
   tsx scripts/db/disposable-test-env.ts stop        Stop the disposable container
   tsx scripts/db/disposable-test-env.ts cleanup     Full cleanup (stop + remove container)
@@ -555,27 +555,26 @@ as $fn$ select extensions.gen_random_bytes($1) $fn$;
 	}
 }
 
-const MEMORIES_PGTAP_FILES = [
+/** Every pgTAP file; each one runs inside its own transaction and rolls back. */
+const PGTAP_FILES = [
+	'account_role_sync.test.sql',
+	'invitation_workflow.test.sql',
+	'atomic_invitation_publication.test.sql',
+	'publication_archived_rsvp.test.sql',
+	'invitation_original_image_delivery.test.sql',
+	'managed_identity_archive_cascade.test.sql',
 	'event_memories_catalog.test.sql',
 	'event_memories_lifecycle.test.sql',
+	'guest_invitation_rls.test.sql',
+	'guest_engagement_events.test.sql',
+	'invitation_engagement_snapshots.test.sql',
+	'invitation_engagement_ranking.test.sql',
+	'invitation_access_controls.test.sql',
 ];
 
 function cmdRunTests(): void {
 	console.info('=== Disposable Test Environment: Run Tests ===\n');
-	runPgTapFiles([
-		'account_role_sync.test.sql',
-		'invitation_workflow.test.sql',
-		'atomic_invitation_publication.test.sql',
-		'publication_archived_rsvp.test.sql',
-		'invitation_original_image_delivery.test.sql',
-		'managed_identity_archive_cascade.test.sql',
-		...MEMORIES_PGTAP_FILES,
-		'guest_invitation_rls.test.sql',
-		'guest_engagement_events.test.sql',
-		'invitation_engagement_snapshots.test.sql',
-		'invitation_engagement_ranking.test.sql',
-		'invitation_access_controls.test.sql',
-	]);
+	runPgTapFiles(PGTAP_FILES);
 }
 
 function runPgTapFiles(testFiles: string[]): void {
@@ -860,15 +859,15 @@ function cmdRunMemoriesConcurrencyTest(): void {
 }
 
 /**
- * Reset the disposable database and run every event memories database contract:
- * the pgTAP catalog and lifecycle files, then the transaction races.
+ * Reset the disposable database once, run every pgTAP file (CI has no other pgTAP step), then
+ * the event memories transaction races.
  */
 function cmdRunMemoriesDbContracts(): void {
-	console.info('=== Disposable Test Environment: Event Memories DB Contracts ===\n');
+	console.info('=== Disposable Test Environment: pgTAP and Event Memories DB Contracts ===\n');
 	ensureDisposableReset(
 		'Event memories DB contracts require a reachable disposable database on port 54332.',
 	);
-	runPgTapFiles(MEMORIES_PGTAP_FILES);
+	runPgTapFiles(PGTAP_FILES);
 	cmdRunMemoriesConcurrencyTest();
 }
 

@@ -406,7 +406,11 @@ describe('RSVP Component', () => {
 		});
 
 		it('all variants use "Confirmar asistencia" for submit button', async () => {
-			for (const variant of ['standard', 'editorial-press-pass', 'formal-register'] as const) {
+			for (const variant of [
+				'standard',
+				'editorial-press-pass',
+				'formal-register',
+			] as const) {
 				const user = userEvent.setup();
 				const { unmount } = render(<RSVP {...defaultProps} variant={variant} />);
 				await user.click(screen.getByLabelText(/Sí, asistiré/i));
@@ -852,14 +856,14 @@ describe('RSVP Component', () => {
 
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
 			await user.type(screen.getByLabelText(/Tu nombre/i), 'María Solís');
-			await user.type(screen.getByLabelText(/Teléfono de contacto/i), '6680000000');
+			await user.type(screen.getByLabelText(/Teléfono de contacto/i), '1000000004');
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
 				const fetchCall = findRsvpSubmitCall(PUBLIC_RSVP_URL);
 				expect(fetchCall).toBeDefined();
 				const body = JSON.parse(fetchCall[1].body);
-				expect(body).toHaveProperty('phone', '6680000000');
+				expect(body).toHaveProperty('phone', '1000000004');
 				expect(body).toHaveProperty('countryCode', '+52');
 			});
 		});

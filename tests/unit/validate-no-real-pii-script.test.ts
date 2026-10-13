@@ -136,4 +136,33 @@ describe('validate-no-real-pii-in-content script', () => {
 			);
 		});
 	});
+
+	describe('demo photographs', () => {
+		const demoJson = { 'src/content/event-demos/xv/demo-xv-one.json': demoEntry() };
+
+		it('rejects a demo image that is a byte copy of a client photograph', () => {
+			const root = createFixture({
+				...demoJson,
+				'src/assets/images/events/demo-xv-one/hero.webp': 'same-bytes',
+				'src/assets/invitations/some-client/hero.webp': 'same-bytes',
+			});
+
+			const result = runGuard(root);
+
+			expect(result.status).toBe(1);
+			expect(result.output).toContain(
+				'[PII] src/assets/images/events/demo-xv-one/hero.webp is a byte copy of client photograph src/assets/invitations/some-client/hero.webp',
+			);
+		});
+
+		it('accepts distinct demo and client images', () => {
+			const root = createFixture({
+				...demoJson,
+				'src/assets/images/events/demo-xv-one/hero.webp': 'demo-bytes',
+				'src/assets/invitations/some-client/hero.webp': 'client-bytes',
+			});
+
+			expect(runGuard(root).status).toBe(0);
+		});
+	});
 });

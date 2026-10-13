@@ -52,11 +52,11 @@ describe('rsvp login UI helpers', () => {
 	it('hydrates only safe login params from the query string', () => {
 		expect(
 			getLoginQueryPrefill(
-				'?method=password&email=celebra.me.com%40gmail.com&password=Testtest00%21',
+				'?method=password&email=owner%40example.com&password=Testtest00%21',
 			),
 		).toEqual({
 			method: 'password',
-			email: 'celebra.me.com@gmail.com',
+			email: 'owner@example.com',
 			hasPasswordParam: true,
 		});
 	});

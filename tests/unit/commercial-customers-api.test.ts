@@ -12,16 +12,16 @@ jest.mock('@/lib/commercial/customer.repository', () => ({
 }));
 
 import { Request as NodeRequest } from 'undici';
-import { requireAdminMutationAccess, requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
+import {
+	requireAdminMutationAccess,
+	requireAdminStrongSession,
+} from '@/lib/rsvp/auth/authorization';
 import { createCommercialCustomer } from '@/lib/commercial/customer.service';
 import { findCommercialCustomerById } from '@/lib/commercial/customer.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { GET, POST } from '@/pages/api/dashboard/commercial/customers';
 
-function nodeRequest(
-	input: string,
-	init?: ConstructorParameters<typeof NodeRequest>[1],
-): Request {
+function nodeRequest(input: string, init?: ConstructorParameters<typeof NodeRequest>[1]): Request {
 	return new NodeRequest(input, init) as unknown as Request;
 }
 
@@ -83,7 +83,7 @@ describe('/api/dashboard/commercial/customers', () => {
 				body: JSON.stringify({
 					displayName: 'Valentina Hernandez',
 					email: 'Client@Example.COM',
-					phone: '+52 614 123 4567',
+					phone: '+52 100 000 0005',
 					createdFromLeadId: 'lead-id',
 				}),
 			},
@@ -101,7 +101,7 @@ describe('/api/dashboard/commercial/customers', () => {
 		expect(mockCreateCustomer).toHaveBeenCalledWith({
 			displayName: 'Valentina Hernandez',
 			email: 'Client@Example.COM',
-			phone: '+52 614 123 4567',
+			phone: '+52 100 000 0005',
 			createdFromLeadId: 'lead-id',
 		});
 		expect(body.data).toEqual(
@@ -229,7 +229,7 @@ describe('/api/dashboard/commercial/customers', () => {
 				id: 'admin-verified-customer',
 				displayName: 'Admin Verified',
 				email: 'admin@verified.com',
-				phoneE164: '+529876543210',
+				phoneE164: '+521000000029',
 			});
 
 			const request = new Request(

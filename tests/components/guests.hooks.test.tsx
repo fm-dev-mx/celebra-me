@@ -37,7 +37,7 @@ const mockedGuestsApi = guestsApi as jest.Mocked<typeof guestsApi>;
 const sampleGuest: DashboardGuestItem = makeGuest({
 	guestId: 'guest-123',
 	fullName: 'Test Guest',
-	phone: '5551234567',
+	phone: '1000000002',
 	waShareUrl: 'https://wa.me/123',
 });
 
@@ -400,7 +400,7 @@ describe('active guest dashboard hooks', () => {
 			...guestA,
 			fullName: 'New Name',
 			maxAllowedAttendees: 2,
-			phone: '6691234567',
+			phone: '1000000001',
 			countryCode: '+52',
 		});
 
@@ -410,7 +410,7 @@ describe('active guest dashboard hooks', () => {
 			return result.current.handleSaveInvitation('guest-a', {
 				fullName: 'New Name',
 				maxAllowedAttendees: 2,
-				phone: '6691234567',
+				phone: '1000000001',
 				countryCode: '+52',
 			});
 		});
@@ -418,11 +418,11 @@ describe('active guest dashboard hooks', () => {
 		expect(mockedGuestsApi.update).toHaveBeenCalledWith('guest-a', {
 			fullName: 'New Name',
 			maxAllowedAttendees: 2,
-			phone: '6691234567',
+			phone: '1000000001',
 			countryCode: '+52',
 		});
 		expect(mockedGuestsApi.markShared).not.toHaveBeenCalled();
-		expect(updated.phone).toBe('6691234567');
+		expect(updated.phone).toBe('1000000001');
 	});
 
 	it('handleSaveInvitation calls update even when no fields changed', async () => {
@@ -431,7 +431,7 @@ describe('active guest dashboard hooks', () => {
 		const guestA = makeGuest({
 			guestId: 'guest-a',
 			fullName: 'Test Guest',
-			phone: '5551234567',
+			phone: '1000000002',
 			countryCode: '+52',
 			deliveryStatus: 'generated',
 		});
@@ -441,7 +441,7 @@ describe('active guest dashboard hooks', () => {
 			await result.current.handleSaveInvitation('guest-a', {
 				fullName: 'Test Guest',
 				maxAllowedAttendees: 4,
-				phone: '5551234567',
+				phone: '1000000002',
 				countryCode: '+52',
 			});
 		});
@@ -449,7 +449,7 @@ describe('active guest dashboard hooks', () => {
 		expect(mockedGuestsApi.update).toHaveBeenCalledWith('guest-a', {
 			fullName: 'Test Guest',
 			maxAllowedAttendees: 4,
-			phone: '5551234567',
+			phone: '1000000002',
 			countryCode: '+52',
 		});
 	});

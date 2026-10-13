@@ -21,7 +21,6 @@ export * from './db-target-config.ts';
 export const PROJECT_ROOT = process.cwd();
 export const BASELINE_CUTOFF_VERSION = '20260715210600';
 export const LOCAL_SUPABASE_URL = 'http://127.0.0.1:54321';
-export const REQUIRED_LOCAL_SUPER_ADMIN_EMAIL = 'celebra.me.com@gmail.com';
 export const PSQL_REQUIRED_MESSAGE =
 	'psql is required for local DB workflow scripts. Install PostgreSQL client tools and make sure `psql` is available on PATH. Verify with `psql --version`.';
 
@@ -283,10 +282,8 @@ export function requireLocalSuperAdminConfig(appEnv = loadAppEnv()): {
 	password: string;
 } {
 	const email = getFirstSuperAdminEmail(appEnv);
-	if (email !== REQUIRED_LOCAL_SUPER_ADMIN_EMAIL) {
-		fail(
-			`Local admin bootstrap requires the first SUPER_ADMIN_EMAILS entry to be ${REQUIRED_LOCAL_SUPER_ADMIN_EMAIL}; got ${email || '<unset>'}.`,
-		);
+	if (!email) {
+		fail('Local admin bootstrap requires SUPER_ADMIN_EMAILS to be configured.');
 	}
 
 	const password = getLocalSuperAdminPassword(appEnv);

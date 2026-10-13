@@ -53,7 +53,7 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 					guestId: 'guest-1',
 					inviteId: 'invite-1',
 					fullName: 'Ana, "Mendoza"',
-					phone: '+526680000000',
+					phone: '+521000000004',
 					maxAllowedAttendees: 2,
 					attendanceStatus: 'confirmed',
 					attendeeCount: 2,
@@ -113,7 +113,7 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 		// Country code split: +52 extracted (with tab prefix for CSV injection safety),
 		// local phone shown
 		expect(body).toContain('"\t+52"');
-		expect(body).toContain('"6680000000"');
+		expect(body).toContain('"1000000004"');
 
 		// Escaping
 		expect(body).toContain('"Ana, ""Mendoza"""');
@@ -128,7 +128,7 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 					guestId: 'guest-2',
 					inviteId: 'invite-2',
 					fullName: 'Juan Perez',
-					phone: '6681234567',
+					phone: '1000000013',
 					maxAllowedAttendees: 2,
 					attendanceStatus: 'pending',
 					attendeeCount: 0,
@@ -175,7 +175,7 @@ describe('GET /api/dashboard/guests/export.csv', () => {
 		const body = await response.text();
 
 		// Legacy phone preserved as-is, country_code empty
-		expect(body).toContain('"6681234567"');
+		expect(body).toContain('"1000000013"');
 		expect(body).toContain('""'); // empty country_code
 	});
 });

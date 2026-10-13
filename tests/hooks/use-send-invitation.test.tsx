@@ -67,14 +67,14 @@ describe('useSendInvitation', () => {
 		const guest = makeGuest({
 			guestId: 'g-1',
 			fullName: 'Ana López',
-			phone: '6691234567',
+			phone: '1000000001',
 			countryCode: '+52',
 			maxAllowedAttendees: 4,
 		});
 		const { result } = setupHook(guest, [guest]);
 
 		expect(result.current.editName).toBe('Ana López');
-		expect(result.current.editPhone).toBe('6691234567');
+		expect(result.current.editPhone).toBe('1000000001');
 		expect(result.current.editCountryCode).toBe('+52');
 		expect(result.current.editMaxAttendees).toBe(4);
 		expect(result.current.shareStatus).toBe('idle');
@@ -202,7 +202,7 @@ describe('useSendInvitation', () => {
 	});
 
 	it('rapid double-click on handleSaveAndShare opens WhatsApp only once', async () => {
-		const guest = makeGuest({ guestId: 'g-1', phone: '6691234567' });
+		const guest = makeGuest({ guestId: 'g-1', phone: '1000000001' });
 		const { result, callbacks } = setupHook(guest, [guest]);
 		callbacks.onSave.mockResolvedValue(guest);
 		callbacks.onMarkShared.mockResolvedValue(undefined);
@@ -219,7 +219,7 @@ describe('useSendInvitation', () => {
 	});
 
 	it('pre-share calls onMarkShared before window.open', async () => {
-		const guest = makeGuest({ guestId: 'g-1', phone: '6691234567' });
+		const guest = makeGuest({ guestId: 'g-1', phone: '1000000001' });
 		const { result, callbacks } = setupHook(guest, [guest]);
 		callbacks.onSave.mockResolvedValue(guest);
 		callbacks.onMarkShared.mockResolvedValue(undefined);
@@ -236,7 +236,7 @@ describe('useSendInvitation', () => {
 	it('calls onMarkShared even when window.open returns null (popup blocked)', async () => {
 		stubWindowOpen(null);
 
-		const guest = makeGuest({ guestId: 'g-1', phone: '6691234567' });
+		const guest = makeGuest({ guestId: 'g-1', phone: '1000000001' });
 		const { result, callbacks } = setupHook(guest, [guest]);
 		callbacks.onSave.mockResolvedValue(guest);
 		callbacks.onMarkShared.mockResolvedValue(undefined);
@@ -253,7 +253,7 @@ describe('useSendInvitation', () => {
 		const closedWindow = createMockWindow({ closed: true });
 		stubWindowOpen(closedWindow as unknown as Window);
 
-		const guest = makeGuest({ guestId: 'g-1', phone: '6691234567' });
+		const guest = makeGuest({ guestId: 'g-1', phone: '1000000001' });
 		const { result, callbacks } = setupHook(guest, [guest]);
 		callbacks.onSave.mockResolvedValue(guest);
 		callbacks.onMarkShared.mockResolvedValue(undefined);
@@ -269,7 +269,7 @@ describe('useSendInvitation', () => {
 	it('retries onMarkShared on pre-share failure before advancing', async () => {
 		stubWindowOpen(null);
 
-		const guest = makeGuest({ guestId: 'g-1', phone: '6691234567' });
+		const guest = makeGuest({ guestId: 'g-1', phone: '1000000001' });
 		const { result, callbacks } = setupHook(guest, [guest]);
 		callbacks.onSave.mockResolvedValue(guest);
 		callbacks.onMarkShared

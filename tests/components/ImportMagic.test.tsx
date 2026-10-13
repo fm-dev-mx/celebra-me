@@ -168,11 +168,11 @@ describe('isHeaderRow', () => {
 	});
 
 	it('returns false when a cell looks like a phone number', () => {
-		expect(isHeaderRow(['tist', '6563769461'])).toBe(false);
+		expect(isHeaderRow(['tist', '1000000003'])).toBe(false);
 	});
 
 	it('returns false when a cell starts with +', () => {
-		expect(isHeaderRow(['foo', '+526691234567'])).toBe(false);
+		expect(isHeaderRow(['foo', '+521000000001'])).toBe(false);
 	});
 
 	it('returns false when a cell contains @', () => {
@@ -187,11 +187,11 @@ describe('parseLine with column mapping', () => {
 
 	it('parses exported CSV row correctly', () => {
 		const result = parseLine(
-			['Ana López', '6691234567', '+52', 'confirmed', '2', '2', 'shared', '', ''],
+			['Ana López', '1000000001', '+52', 'confirmed', '2', '2', 'shared', '', ''],
 			exportMapping,
 		);
 		expect(result.fullName).toBe('Ana López');
-		expect(result.phone).toBe('6691234567');
+		expect(result.phone).toBe('1000000001');
 		expect(result.phoneCountryCode).toBe('+52');
 	});
 
@@ -199,7 +199,7 @@ describe('parseLine with column mapping', () => {
 		const result = parseLine(
 			[
 				'Ana López',
-				'6691234567',
+				'1000000001',
 				'+52',
 				'confirmed',
 				'2',
@@ -227,28 +227,28 @@ describe('parseLine with column mapping', () => {
 
 	it('validates local phone without country code', () => {
 		const result = parseLine(
-			['Ana López', '6691234567', '', 'pending', '0', '2', 'generated', '', ''],
+			['Ana López', '1000000001', '', 'pending', '0', '2', 'generated', '', ''],
 			exportMapping,
 		);
 		expect(result.fullName).toBe('Ana López');
-		expect(result.phone).toBe('6691234567');
+		expect(result.phone).toBe('1000000001');
 		expect(result.error).toContain('clave país');
 	});
 
 	it('accepts international phone without country code', () => {
 		const result = parseLine(
-			['Carlos', '+526691234567', '', 'pending', '0', '2', 'generated', '', ''],
+			['Carlos', '+521000000001', '', 'pending', '0', '2', 'generated', '', ''],
 			exportMapping,
 		);
 		expect(result.fullName).toBe('Carlos');
-		expect(result.phone).toBe('+526691234567');
+		expect(result.phone).toBe('+521000000001');
 		expect(result.phoneCountryCode).toBe('');
 		expect(result.error).toBeUndefined();
 	});
 
 	it('accepts international phone with matching country code', () => {
 		const result = parseLine(
-			['Carlos', '+526691234567', '+52', 'pending', '0', '2', 'generated', '', ''],
+			['Carlos', '+521000000001', '+52', 'pending', '0', '2', 'generated', '', ''],
 			exportMapping,
 		);
 		expect(result.error).toBeUndefined();
@@ -257,38 +257,38 @@ describe('parseLine with column mapping', () => {
 
 describe('parseLine without column mapping (positional fallback)', () => {
 	it('parses 4-column data [name, phone, country_code, email]', () => {
-		const result = parseLine(['Ana López', '6691234567', '+52', 'ana@test.com'], null);
+		const result = parseLine(['Ana López', '1000000001', '+52', 'ana@test.com'], null);
 		expect(result.fullName).toBe('Ana López');
-		expect(result.phone).toBe('6691234567');
+		expect(result.phone).toBe('1000000001');
 		expect(result.phoneCountryCode).toBe('+52');
 		expect(result.email).toBe('ana@test.com');
 	});
 
 	it('parses 3-column legacy data [name, phone, email]', () => {
-		const result = parseLine(['Ana López', '6691234567', 'ana@test.com'], null);
+		const result = parseLine(['Ana López', '1000000001', 'ana@test.com'], null);
 		expect(result.fullName).toBe('Ana López');
-		expect(result.phone).toBe('6691234567');
+		expect(result.phone).toBe('1000000001');
 		expect(result.phoneCountryCode).toBe('');
 		expect(result.email).toBe('ana@test.com');
 	});
 
 	it('parses 3-column data [name, phone, country_code] when third starts with +', () => {
-		const result = parseLine(['Ana López', '6691234567', '+52'], null);
+		const result = parseLine(['Ana López', '1000000001', '+52'], null);
 		expect(result.fullName).toBe('Ana López');
-		expect(result.phone).toBe('6691234567');
+		expect(result.phone).toBe('1000000001');
 		expect(result.phoneCountryCode).toBe('+52');
 		expect(result.email).toBeNull();
 	});
 
 	it('parses 2-column data [name, phone]', () => {
-		const result = parseLine(['Ana López', '+526691234567'], null);
+		const result = parseLine(['Ana López', '+521000000001'], null);
 		expect(result.fullName).toBe('Ana López');
-		expect(result.phone).toBe('+526691234567');
+		expect(result.phone).toBe('+521000000001');
 		expect(result.phoneCountryCode).toBe('');
 	});
 
 	it('validates local phone without country code', () => {
-		const result = parseLine(['Ana López', '6691234567'], null);
+		const result = parseLine(['Ana López', '1000000001'], null);
 		expect(result.error).toContain('clave país');
 	});
 });
@@ -297,19 +297,19 @@ describe('round-trip scenario', () => {
 	const testCases = [
 		{
 			name: 'Mexican phone',
-			original: '+526691234567',
-			exportPhone: '6691234567',
+			original: '+521000000001',
+			exportPhone: '1000000001',
 			exportCc: '+52',
 		},
 		{
 			name: 'US phone',
-			original: '+15551234567',
-			exportPhone: '5551234567',
+			original: '+11000000002',
+			exportPhone: '1000000002',
 			exportCc: '+1',
 		},
 		{
 			name: 'Spanish phone',
-			original: '+34612345678',
+			original: '+31000000010',
 			exportPhone: '612345678',
 			exportCc: '+34',
 		},
@@ -350,7 +350,7 @@ describe('validateGuestRow', () => {
 	it('local phone + empty country code is invalid', () => {
 		const guest: ParsedGuest = {
 			fullName: 'Ana',
-			phone: '6691234567',
+			phone: '1000000001',
 			phoneCountryCode: '',
 			email: null,
 		};
@@ -362,7 +362,7 @@ describe('validateGuestRow', () => {
 	it('phone starting with + + empty country code is valid', () => {
 		const guest: ParsedGuest = {
 			fullName: 'Ana',
-			phone: '+526691234567',
+			phone: '+521000000001',
 			phoneCountryCode: '',
 			email: null,
 		};
@@ -374,7 +374,7 @@ describe('validateGuestRow', () => {
 	it('phone starting with + + matching country code is valid', () => {
 		const guest: ParsedGuest = {
 			fullName: 'Ana',
-			phone: '+526691234567',
+			phone: '+521000000001',
 			phoneCountryCode: '+52',
 			email: null,
 		};
@@ -385,7 +385,7 @@ describe('validateGuestRow', () => {
 	it('local phone + country code is valid', () => {
 		const guest: ParsedGuest = {
 			fullName: 'Ana',
-			phone: '6691234567',
+			phone: '1000000001',
 			phoneCountryCode: '+52',
 			email: null,
 		};
@@ -396,7 +396,7 @@ describe('validateGuestRow', () => {
 	it('phone starting with + + conflicting country code is invalid', () => {
 		const guest: ParsedGuest = {
 			fullName: 'Ana',
-			phone: '+526691234567',
+			phone: '+521000000001',
 			phoneCountryCode: '+1',
 			email: null,
 		};
@@ -460,13 +460,13 @@ describe('column mapping', () => {
 	});
 
 	it('known export headers do not trigger manual mapping', () => {
-		importCsv('full_name,phone,country_code\nAna,6691234567,+52');
+		importCsv('full_name,phone,country_code\nAna,1000000001,+52');
 		expect(screen.queryByText(/No pudimos identificar/i)).toBeNull();
 		expect(getImportButton()).not.toBeNull();
 	});
 
 	it('unknown headers trigger the mapping UI', () => {
-		importCsv('foo,bar,baz\nAna,6691234567,+52');
+		importCsv('foo,bar,baz\nAna,1000000001,+52');
 		expect(screen.getByText(/No pudimos identificar/i)).toBeInTheDocument();
 	});
 
@@ -481,12 +481,12 @@ describe('column mapping', () => {
 	});
 
 	it('custom headers like Cliente,Celular,Lada trigger mapping UI', () => {
-		importCsv('Cliente,Celular,Lada\nAna,6691234567,52');
+		importCsv('Cliente,Celular,Lada\nAna,1000000001,52');
 		expect(screen.getByText(/No pudimos identificar/i)).toBeInTheDocument();
 	});
 
-	it('headerless data (tist,6563769461) preserves first row as guest data', () => {
-		importCsv('tist,6563769461');
+	it('headerless data (tist,1000000003) preserves first row as guest data', () => {
+		importCsv('tist,1000000003');
 		expect(screen.getByText(/No pudimos identificar/i)).toBeInTheDocument();
 		const selects = screen.getAllByRole('combobox');
 		// Generic labels
@@ -499,7 +499,7 @@ describe('column mapping', () => {
 	});
 
 	it('mapping a source column to Nombre allows preview to continue', () => {
-		importCsv('foo,bar\nJuan,6691234567');
+		importCsv('foo,bar\nJuan,1000000001');
 		const selects = screen.getAllByRole('combobox');
 		fireEvent.change(selects[0], { target: { value: 'fullName' } });
 		const confirmBtn = getConfirmMappingButton();
@@ -510,7 +510,7 @@ describe('column mapping', () => {
 	});
 
 	it('missing Nombre mapping blocks confirm', () => {
-		importCsv('foo,bar\nJuan,6691234567');
+		importCsv('foo,bar\nJuan,1000000001');
 		const confirmBtn = getConfirmMappingButton();
 		expect(confirmBtn).not.toBeNull();
 		expect(confirmBtn!.disabled).toBe(true);
@@ -526,7 +526,7 @@ describe('column mapping', () => {
 	});
 
 	it('changing mapping rebuilds preview and recalculates errors', () => {
-		importCsv('name,phone\nAna,6691234567');
+		importCsv('name,phone\nAna,1000000001');
 		expect(screen.queryByText(/No pudimos identificar/i)).toBeNull();
 		// Error row appears in editable table with cell-level error message
 		expect(screen.getByText(/clave país es obligatoria/i)).toBeInTheDocument();
@@ -540,19 +540,19 @@ describe('editable preview', () => {
 	});
 
 	it('error row appears in editable table with status badge and cell-level error', () => {
-		importCsv('full_name,phone,country_code\nAna,6691234567,');
+		importCsv('full_name,phone,country_code\nAna,1000000001,');
 		expect(screen.getByText(/clave país es obligatoria/i)).toBeInTheDocument();
 		expect(screen.getByText('Con errores')).toBeInTheDocument();
 	});
 
 	it('valid row appears in editable table with Nuevo badge', () => {
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		expect(screen.getByDisplayValue('Ana')).toBeInTheDocument();
 		expect(screen.getByText('Nuevo')).toBeInTheDocument();
 	});
 
 	it('error row is editable and fixable inline', () => {
-		importCsv('full_name,phone,country_code\nAna,6691234567,');
+		importCsv('full_name,phone,country_code\nAna,1000000001,');
 		// Country code input should be empty and show error
 		const inputs = screen.getAllByRole('textbox');
 		expect(inputs[1]).toHaveValue('Ana');
@@ -564,24 +564,24 @@ describe('editable preview', () => {
 	});
 
 	it('import is disabled when only error rows exist', () => {
-		importCsv('full_name,phone,country_code\nAna,6691234567,');
+		importCsv('full_name,phone,country_code\nAna,1000000001,');
 		expect(getImportButton().disabled).toBe(true);
 	});
 
 	it('import is enabled when all rows are valid', () => {
-		importCsv('full_name,phone,country_code\nAna,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
 		expect(getImportButton().disabled).toBe(false);
 	});
 
 	it('mixed valid and invalid rows: import enabled when valid rows exist', async () => {
-		importCsv('full_name,phone,country_code\nAna,+526691234567,\nLuis,6691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,\nLuis,1000000001,');
 		expect(screen.getAllByText('Nuevo')).toHaveLength(1);
 		expect(getImportButton().disabled).toBe(false);
 		expect(getImportButton().textContent).toContain('Importar 1 cambio');
 	});
 
 	it('fixing error row enables import button', () => {
-		importCsv('full_name,phone,country_code\nAna,+526691234567,\nLuis,6691234567,');
+		importCsv('full_name,phone,country_code\nAna,+521000000001,\nLuis,1000000001,');
 		const inputs = screen.getAllByRole('textbox');
 		fireEvent.change(inputs[7], { target: { value: '+52' } });
 		expect(getImportButton().disabled).toBe(false);
@@ -592,7 +592,7 @@ describe('import payload', () => {
 	it('editing country code changes the normalized phone sent to onImport', async () => {
 		const { onImport } = renderModal();
 		await screen.findByPlaceholderText(/Ejemplo:/i);
-		importCsv('full_name,phone,country_code\nLuis,6691234567,');
+		importCsv('full_name,phone,country_code\nLuis,1000000001,');
 		const inputs = screen.getAllByRole('textbox');
 		fireEvent.change(inputs[3], { target: { value: '+52' } });
 		fireEvent.click(getImportButton());
@@ -601,7 +601,7 @@ describe('import payload', () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					fullName: 'Luis',
-					phone: '6691234567',
+					phone: '1000000001',
 					countryCode: '+52',
 				}),
 			]),
@@ -611,14 +611,14 @@ describe('import payload', () => {
 	it('submits normalized phone for valid guest with phone+country_code', async () => {
 		const { onImport } = renderModal();
 		await screen.findByPlaceholderText(/Ejemplo:/i);
-		importCsv('full_name,phone,country_code\nAna,6563769461,+52');
+		importCsv('full_name,phone,country_code\nAna,1000000003,+52');
 		fireEvent.click(getImportButton());
 		await screen.findByText(/Resultado de la importación/i);
 		expect(onImport).toHaveBeenCalledWith(
 			expect.arrayContaining([
 				expect.objectContaining({
 					fullName: 'Ana',
-					phone: '6563769461',
+					phone: '1000000003',
 					countryCode: '+52',
 				}),
 			]),
@@ -643,7 +643,7 @@ describe('import payload', () => {
 		const { onImport } = renderModal();
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 		importCsv(
-			'full_name,phone,country_code\ntist,6563769461,+52\ntist1,,\ntist2,6681167477,+52',
+			'full_name,phone,country_code\ntist,1000000003,+52\ntist1,,\ntist2,1000000009,+52',
 		);
 		fireEvent.click(getImportButton());
 		await screen.findByText(/Resultado de la importación/i);
@@ -651,13 +651,13 @@ describe('import payload', () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					fullName: 'tist',
-					phone: '6563769461',
+					phone: '1000000003',
 					countryCode: '+52',
 				}),
 				expect.objectContaining({ fullName: 'tist1' }),
 				expect.objectContaining({
 					fullName: 'tist2',
-					phone: '6681167477',
+					phone: '1000000009',
 					countryCode: '+52',
 				}),
 			]),
@@ -672,7 +672,7 @@ describe('action-aware duplicate review', () => {
 			guestId: 'guest-ana',
 			inviteId: 'invite-ana',
 			fullName: 'Ana López',
-			phone: '+526691234567',
+			phone: '+521000000001',
 			countryCode: '+52',
 		});
 
@@ -680,7 +680,7 @@ describe('action-aware duplicate review', () => {
 		renderModal('550e8400-e29b-41d4-a716-446655440000', existingAna());
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\nAna López,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna López,+521000000001,');
 		expect(screen.queryByDisplayValue('Ana López')).toBeNull();
 
 		fireEvent.click(screen.getByLabelText(/Mostrar posibles duplicados/i));
@@ -692,13 +692,13 @@ describe('action-aware duplicate review', () => {
 		renderModal('550e8400-e29b-41d4-a716-446655440000', existingAna());
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\nAna López,+526691234567,');
+		importCsv('full_name,phone,country_code\nAna López,+521000000001,');
 		fireEvent.click(screen.getByLabelText(/Mostrar posibles duplicados/i));
 		fireEvent.change(screen.getByDisplayValue('Ana López'), {
 			target: { value: 'Luis Pérez' },
 		});
-		fireEvent.change(screen.getByDisplayValue('+526691234567'), {
-			target: { value: '+525551234567' },
+		fireEvent.change(screen.getByDisplayValue('+521000000001'), {
+			target: { value: '+521000000002' },
 		});
 
 		expect(screen.getByText('Nuevo')).toBeInTheDocument();
@@ -709,7 +709,7 @@ describe('action-aware duplicate review', () => {
 		renderModal('550e8400-e29b-41d4-a716-446655440000', existingAna());
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\nAna Lopez,+525551234567,');
+		importCsv('full_name,phone,country_code\nAna Lopez,+521000000002,');
 
 		// Row is hidden by default (possible_duplicate)
 		expect(screen.queryByDisplayValue('Ana Lopez')).toBeNull();
@@ -729,7 +729,7 @@ describe('action-aware duplicate review', () => {
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\nAna Familia,+526691234567,\nNuevo,+525551234567,');
+		importCsv('full_name,phone,country_code\nAna Familia,+521000000001,\nNuevo,+521000000002,');
 		// Ana Familia matches existing Ana López by phone → phone_conflict (default skip)
 		// User must explicitly choose update
 		const selects = screen.getAllByRole('combobox');
@@ -741,7 +741,7 @@ describe('action-aware duplicate review', () => {
 			'guest-ana',
 			expect.objectContaining({
 				fullName: 'Ana Familia',
-				phone: '6691234567',
+				phone: '1000000001',
 				countryCode: '+52',
 			}),
 		);
@@ -749,7 +749,7 @@ describe('action-aware duplicate review', () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					fullName: 'Nuevo',
-					phone: '5551234567',
+					phone: '1000000002',
 					countryCode: '+52',
 				}),
 			]),
@@ -763,7 +763,7 @@ describe('action-aware duplicate review', () => {
 		const { onImport } = renderModal('550e8400-e29b-41d4-a716-446655440000', existingAna());
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\nAna Lopez,+525551234567,');
+		importCsv('full_name,phone,country_code\nAna Lopez,+521000000002,');
 
 		// Reveal the hidden possible_duplicate row first
 		fireEvent.click(screen.getByLabelText(/Mostrar posibles duplicados/i));
@@ -780,14 +780,14 @@ describe('action-aware duplicate review', () => {
 				guestId: 'guest-tist',
 				inviteId: 'invite-tist',
 				fullName: 'tist',
-				phone: '+526563769461',
+				phone: '+521000000003',
 				countryCode: '+52',
 			}),
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
 		// CSV row: same name, local phone, no country code -> error + name match
-		importCsv('full_name,phone,country_code\ntist,6563769461,');
+		importCsv('full_name,phone,country_code\ntist,1000000003,');
 
 		// Row is hidden by default (possible_duplicate)
 		expect(screen.queryByDisplayValue('tist')).toBeNull();
@@ -812,13 +812,13 @@ describe('action-aware duplicate review', () => {
 				guestId: 'guest-tist',
 				inviteId: 'invite-tist',
 				fullName: 'tist',
-				phone: '+526563769461',
+				phone: '+521000000003',
 				countryCode: '+52',
 			}),
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\ntist,6563769461,');
+		importCsv('full_name,phone,country_code\ntist,1000000003,');
 
 		// Reveal row
 		fireEvent.click(screen.getByLabelText(/Mostrar posibles duplicados/i));
@@ -838,13 +838,13 @@ describe('action-aware duplicate review', () => {
 				guestId: 'guest-tist',
 				inviteId: 'invite-tist',
 				fullName: 'tist',
-				phone: '+526563769461',
+				phone: '+521000000003',
 				countryCode: '+52',
 			}),
 		);
 		await screen.findByPlaceholderText(/Ejemplo:/i);
 
-		importCsv('full_name,phone,country_code\ntist,6563769461,');
+		importCsv('full_name,phone,country_code\ntist,1000000003,');
 
 		// Reveal row
 		fireEvent.click(screen.getByLabelText(/Mostrar posibles duplicados/i));
@@ -868,7 +868,7 @@ describe('action-aware duplicate review', () => {
 				guestId: 'guest-rt',
 				inviteId: 'invite-rt',
 				fullName: 'Ana López',
-				phone: '+526691234567',
+				phone: '+521000000001',
 				countryCode: '+52',
 				attendanceStatus: 'confirmed',
 				attendeeCount: 2,
@@ -879,7 +879,7 @@ describe('action-aware duplicate review', () => {
 
 		// CSV content mirroring the export format: full_name,phone,country_code
 		// Phone is split: local number + country code
-		importCsv('full_name,phone,country_code\nAna López,6691234567,+52');
+		importCsv('full_name,phone,country_code\nAna López,1000000001,+52');
 		// The row should be recognized as duplicate and hidden
 		expect(screen.queryByDisplayValue('Ana López')).toBeNull();
 		// Only "Mostrar posibles duplicados" checkbox reveals it

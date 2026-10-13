@@ -4,7 +4,7 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { errorResponse, jsonResponse, withPrivateCache } from '@/lib/rsvp/core/http';
 import { serializeOperationalEvidenceEvent } from '@/lib/operations/operational-evidence';
 import { readBuildIdentity } from '@/lib/environment';
-import { readHostedDeployEnvironment } from '@/lib/server/deploy-identity';
+import { readDeployEnvironment } from '@/lib/server/deploy-identity';
 import { getEnv } from '@/lib/server/env';
 import { MEMORIES_ENV } from '@/lib/memories/server/config';
 import { runMemoriesCleanup } from '@/lib/memories/server/cleanup.service';
@@ -13,7 +13,6 @@ import {
 	createMemoriesCleanupCompletedEvidence,
 	createMemoriesCleanupFailedEvidence,
 	createMemoriesCleanupStartedEvidence,
-	resolveMemoriesRuntimeEnvironment,
 } from '@/lib/memories/server/cleanup-evidence';
 
 export const prerender = false;
@@ -32,8 +31,15 @@ export const GET: APIRoute = async ({ request }) => {
 	if (!isAuthorizedCronRequest(request, getEnv(MEMORIES_ENV.cronSecret).trim())) {
 		return errorResponse(new ApiError(401, 'unauthorized', 'Unauthorized.'));
 	}
+	// Cleanup mutates data, so an unverified deploy identity never runs it.
+	const environment = readDeployEnvironment();
+	if (!environment) {
+		return errorResponse(
+			new ApiError(503, 'service_unavailable', 'Deploy identity is not declared.'),
+		);
+	}
 	const context = {
-		environment: resolveMemoriesRuntimeEnvironment(readHostedDeployEnvironment()),
+		environment,
 		runId: randomUUID(),
 		startedAt: new Date().toISOString(),
 		invocationId: null,

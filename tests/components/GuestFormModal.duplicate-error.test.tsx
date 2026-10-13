@@ -35,7 +35,7 @@ describe('GuestFormModal duplicate error UI', () => {
 			target: { value: 'Test Guest' },
 		});
 		fireEvent.change(screen.getByLabelText('Teléfono (WhatsApp)'), {
-			target: { value: '6691234567' },
+			target: { value: '1000000001' },
 		});
 		fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
 	}

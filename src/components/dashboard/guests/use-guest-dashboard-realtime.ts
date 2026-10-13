@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { guestsApi } from '@/lib/dashboard/guests-api';
+import { isDebugMode } from '@/utils/debug';
 import type {
 	DashboardGuestItem,
 	DashboardGuestListResponse,
@@ -60,11 +61,6 @@ function resolvePreferredEventId(initialEventId: string, hostEvents: HostEventIt
 	return candidates.find((candidate) => hostEvents.some((event) => event.id === candidate));
 }
 
-function shouldLogDashboardDebug(): boolean {
-	if (typeof window === 'undefined') return false;
-	return new URLSearchParams(window.location.search).get('debug') === '1';
-}
-
 /**
  * Loads the event's full guest list. Search and filters run on the client so the
  * overview totals always describe the whole event and typing never refetches.
@@ -103,7 +99,7 @@ export const useGuestDashboardRealtime = ({ initialEventId }: UseGuestDashboardR
 				data.debug || null,
 			);
 			setEventsError(eventsError);
-			if (shouldLogDashboardDebug()) {
+			if (isDebugMode()) {
 				console.info('[dashboard][client][loadEvents]', {
 					initialEventId,
 					hostEvents: data.items,
@@ -116,7 +112,7 @@ export const useGuestDashboardRealtime = ({ initialEventId }: UseGuestDashboardR
 				setEventId(nextEventId);
 			}
 		} catch (error) {
-			if (shouldLogDashboardDebug()) {
+			if (isDebugMode()) {
 				console.info('[dashboard][client][loadEvents:error]', error);
 			}
 			setEventsError(getEventLoadFailureMessage(error, 'No se pudieron cargar eventos.'));
@@ -143,7 +139,7 @@ export const useGuestDashboardRealtime = ({ initialEventId }: UseGuestDashboardR
 			setShareDateContext(data.shareDateContext);
 			setUpdatedAt(data.updatedAt);
 		} catch (error) {
-			if (shouldLogDashboardDebug()) {
+			if (isDebugMode()) {
 				console.info('[dashboard][client][loadGuests:error]', {
 					eventId,
 					error,

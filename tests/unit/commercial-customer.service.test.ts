@@ -34,7 +34,7 @@ const existingCustomer = {
 	id: 'existing-customer-id',
 	displayName: 'Valentina Hernandez',
 	email: 'client@example.com',
-	phoneE164: '+526141234567',
+	phoneE164: '+521000000005',
 };
 
 const newCustomer = {
@@ -59,7 +59,7 @@ describe('createCommercialCustomer', () => {
 		const result = await createCommercialCustomer({
 			displayName: 'Valentina Hernandez',
 			email: 'Client@Example.COM',
-			phone: '+52 614 123 4567',
+			phone: '+52 100 000 0005',
 			createdFromLeadId: 'lead-id',
 		});
 
@@ -80,7 +80,7 @@ describe('createCommercialCustomer', () => {
 		const result = await createCommercialCustomer({
 			displayName: 'Nuevo Nombre', // Different name
 			email: 'other@example.com',
-			phone: '+52 614 123 4567',
+			phone: '+52 100 000 0005',
 			createdFromLeadId: 'lead-id',
 		});
 
@@ -96,20 +96,20 @@ describe('createCommercialCustomer', () => {
 		const result = await createCommercialCustomer({
 			displayName: ' Valentina Hernandez ',
 			email: ' Client@Example.COM ',
-			phone: '+52 614 123 4567',
+			phone: '+52 100 000 0005',
 			createdFromLeadId: 'lead-id',
 		});
 
 		expect(result).toEqual({ outcome: 'created', customer: newCustomer });
 		expect(mockFindByEmail).toHaveBeenCalledWith('client@example.com');
-		expect(mockFindByPhone).toHaveBeenCalledWith('+526141234567');
+		expect(mockFindByPhone).toHaveBeenCalledWith('+521000000005');
 		expect(mockUpsertCustomer).toHaveBeenCalledWith({
 			displayName: 'Valentina Hernandez',
 			email: 'client@example.com',
 			normalizedEmail: 'client@example.com',
 			phoneCountryCode: '+52',
-			phoneNational: '6141234567',
-			phoneE164: '+526141234567',
+			phoneNational: '1000000005',
+			phoneE164: '+521000000005',
 			createdFromLeadId: 'lead-id',
 		});
 		expect(mockLinkLeadToCustomer).toHaveBeenCalledWith({
@@ -146,7 +146,7 @@ describe('createCommercialCustomer', () => {
 		const result = await createCommercialCustomer({
 			displayName: 'Valentina Hernandez',
 			email: 'client@example.com',
-			phone: '+52 614 123 4567',
+			phone: '+52 100 000 0005',
 		});
 
 		expect(result).toEqual({ outcome: 'conflict', matches: [existingCustomer, phoneCustomer] });

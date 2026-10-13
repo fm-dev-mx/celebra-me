@@ -50,11 +50,11 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'Ana López',
-				phone: '+526691234567',
+				phone: '+521000000001',
 			}),
 		];
 		const result = classifyImportedRows(
-			[mkGuest({ fullName: 'ana lopez', phone: '+526691234567' })],
+			[mkGuest({ fullName: 'ana lopez', phone: '+521000000001' })],
 			existing,
 		);
 		expect(result[0]._status).toBe('exact_duplicate');
@@ -78,11 +78,11 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'Ana López',
-				phone: '+526691234567',
+				phone: '+521000000001',
 			}),
 		];
 		const result = classifyImportedRows(
-			[mkGuest({ fullName: 'Ana Familia', phone: '+526691234567' })],
+			[mkGuest({ fullName: 'Ana Familia', phone: '+521000000001' })],
 			existing,
 		);
 		expect(result[0]._status).toBe('phone_conflict');
@@ -96,11 +96,11 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'Ana López',
-				phone: '+526691234567',
+				phone: '+521000000001',
 			}),
 		];
 		const result = classifyImportedRows(
-			[mkGuest({ fullName: 'ana lopez', phone: '+525551234567' })],
+			[mkGuest({ fullName: 'ana lopez', phone: '+521000000002' })],
 			existing,
 		);
 		expect(result[0]._status).toBe('possible_duplicate');
@@ -114,7 +114,7 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'Ana López',
-				phone: '+526691234567',
+				phone: '+521000000001',
 			}),
 		];
 		const result = classifyImportedRows([mkGuest({ fullName: 'ana lopez' })], existing);
@@ -129,12 +129,12 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'Ana López',
-				phone: '+526691234567',
+				phone: '+521000000001',
 			}),
 			makeDashboardGuestItem({
 				guestId: 'ex-2',
 				fullName: 'ana lopez',
-				phone: '+525551234567',
+				phone: '+521000000002',
 			}),
 		];
 		const result = classifyImportedRows(
@@ -150,8 +150,8 @@ describe('classifyImportedRows', () => {
 	it('marks imported duplicates as internal duplicates', () => {
 		const result = classifyImportedRows(
 			[
-				mkGuest({ fullName: 'Ana', phone: '+526691234567' }),
-				mkGuest({ fullName: 'Ana Copy', phone: '+526691234567' }),
+				mkGuest({ fullName: 'Ana', phone: '+521000000001' }),
+				mkGuest({ fullName: 'Ana Copy', phone: '+521000000001' }),
 			],
 			[],
 		);
@@ -166,17 +166,17 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'Ana López',
-				phone: '+526691234567',
+				phone: '+521000000001',
 			}),
 		];
 		const rows = classifyImportedRows(
-			[mkGuest({ fullName: 'Ana López', phone: '+526691234567' })],
+			[mkGuest({ fullName: 'Ana López', phone: '+521000000001' })],
 			existing,
 		);
 		const edited = reclassifyEditedRow(
 			rows,
 			0,
-			{ ...rows[0], fullName: 'Luis Pérez', phone: '+525551234567' },
+			{ ...rows[0], fullName: 'Luis Pérez', phone: '+521000000002' },
 			existing,
 		);
 		expect(edited[0]._status).toBe('new');
@@ -188,11 +188,11 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'Ana López',
-				phone: '+526691234567',
+				phone: '+521000000001',
 			}),
 		];
 		const rows = classifyImportedRows(
-			[mkGuest({ fullName: 'Ana Familia', phone: '+526691234567' })],
+			[mkGuest({ fullName: 'Ana Familia', phone: '+521000000001' })],
 			existing,
 		);
 		expect(rows[0]._status).toBe('phone_conflict');
@@ -223,11 +223,11 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-tist',
 				fullName: 'tist',
-				phone: '+526561112244',
+				phone: '+521000000018',
 			}),
 		];
 		const result = classifyImportedRows(
-			[mkGuest({ fullName: 'tist', phone: '6563769461', phoneCountryCode: '+52' })],
+			[mkGuest({ fullName: 'tist', phone: '1000000003', phoneCountryCode: '+52' })],
 			existing,
 		);
 		expect(result[0]._status).toBe('possible_duplicate');
@@ -241,7 +241,7 @@ describe('classifyImportedRows', () => {
 		// This test checks two different CSV rows independently against the same existing guest.
 		// Use non-conflicting phones so each row is evaluated separately.
 		const existing = [
-			makeDashboardGuestItem({ guestId: 'ex-1', fullName: 'tist', phone: '+526561112244' }),
+			makeDashboardGuestItem({ guestId: 'ex-1', fullName: 'tist', phone: '+521000000018' }),
 		];
 		const result = classifyImportedRows(
 			[
@@ -264,7 +264,7 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'Rosita Lopez',
-				phone: '+526691234567',
+				phone: '+521000000001',
 			}),
 		];
 		const result = classifyImportedRows([mkGuest({ fullName: 'Rosita Lopez' })], existing);
@@ -280,11 +280,11 @@ describe('classifyImportedRows', () => {
 
 	it('same canonical phone + same name → exact_duplicate, hidden, skip', () => {
 		const existing = [
-			makeDashboardGuestItem({ guestId: 'ex-1', fullName: 'tist', phone: '+526563769461' }),
+			makeDashboardGuestItem({ guestId: 'ex-1', fullName: 'tist', phone: '+521000000003' }),
 		];
 		// CSV: phone split across columns
 		const result = classifyImportedRows(
-			[mkGuest({ fullName: 'tist', phone: '6563769461', phoneCountryCode: '+52' })],
+			[mkGuest({ fullName: 'tist', phone: '1000000003', phoneCountryCode: '+52' })],
 			existing,
 		);
 		expect(result[0]._status).toBe('exact_duplicate');
@@ -298,7 +298,7 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'tist',
-				phone: '6563769461',
+				phone: '1000000003',
 				countryCode: '+52',
 			}),
 		];
@@ -307,7 +307,7 @@ describe('classifyImportedRows', () => {
 			[
 				mkGuest({
 					fullName: 'tist',
-					phone: '6563769461',
+					phone: '1000000003',
 					phoneCountryCode: '',
 					error: 'Agrega el código de país',
 				}),
@@ -325,7 +325,7 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'tist',
-				phone: '6563769461',
+				phone: '1000000003',
 				countryCode: '+52',
 			}),
 		];
@@ -334,7 +334,7 @@ describe('classifyImportedRows', () => {
 				{
 					...mkGuest({
 						fullName: 'tist',
-						phone: '6563769461',
+						phone: '1000000003',
 						phoneCountryCode: '',
 						error: 'Agrega el código de país',
 					}),
@@ -351,7 +351,7 @@ describe('classifyImportedRows', () => {
 
 	it('normalized name match with accents/whitespace → possible_duplicate, hidden', () => {
 		const existing = [
-			makeDashboardGuestItem({ guestId: 'ex-1', fullName: 'Tíst  ', phone: '+526563769461' }),
+			makeDashboardGuestItem({ guestId: 'ex-1', fullName: 'Tíst  ', phone: '+521000000003' }),
 		];
 		const result = classifyImportedRows(
 			[mkGuest({ fullName: 'tist', phone: '+521111111111' })],
@@ -367,11 +367,11 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'Another Person',
-				phone: '+526563769461',
+				phone: '+521000000003',
 			}),
 		];
 		const result = classifyImportedRows(
-			[mkGuest({ fullName: 'tist', phone: '6563769461', phoneCountryCode: '+52' })],
+			[mkGuest({ fullName: 'tist', phone: '1000000003', phoneCountryCode: '+52' })],
 			existing,
 		);
 		expect(result[0]._status).toBe('phone_conflict');
@@ -386,12 +386,12 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'US Guest',
-				phone: '5551234567',
+				phone: '1000000002',
 				countryCode: '+1',
 			}),
 		];
 		const result = classifyImportedRows(
-			[mkGuest({ fullName: 'MX Guest', phone: '5551234567', phoneCountryCode: '+52' })],
+			[mkGuest({ fullName: 'MX Guest', phone: '1000000002', phoneCountryCode: '+52' })],
 			existing,
 		);
 
@@ -405,12 +405,12 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'Existing Guest',
-				phone: '5551234567',
+				phone: '1000000002',
 				countryCode: '+52',
 			}),
 		];
 		const result = classifyImportedRows(
-			[mkGuest({ fullName: 'New Guest', phone: '5551234567', phoneCountryCode: '+52' })],
+			[mkGuest({ fullName: 'New Guest', phone: '1000000002', phoneCountryCode: '+52' })],
 			existing,
 		);
 
@@ -423,13 +423,13 @@ describe('classifyImportedRows', () => {
 		// or action=update AND !error. A skip row is never submitted regardless.
 		// This test verifies the classify side respects that contract.
 		const existing = [
-			makeDashboardGuestItem({ guestId: 'ex-1', fullName: 'tist', phone: '+526563769461' }),
+			makeDashboardGuestItem({ guestId: 'ex-1', fullName: 'tist', phone: '+521000000003' }),
 		];
 		const result = classifyImportedRows(
 			[
 				mkGuest({
 					fullName: 'tist',
-					phone: '6563769461',
+					phone: '1000000003',
 					phoneCountryCode: '',
 					error: 'Agrega el código de país',
 				}),
@@ -448,13 +448,13 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'Ana López',
-				phone: '+526691234567',
+				phone: '+521000000001',
 			}),
 		];
 		// The export writes country_code + local phone (split by splitPhoneForExport)
 		// Re-import: parse that CSV row back
 		const result = classifyImportedRows(
-			[mkGuest({ fullName: 'Ana López', phone: '6691234567', phoneCountryCode: '+52' })],
+			[mkGuest({ fullName: 'Ana López', phone: '1000000001', phoneCountryCode: '+52' })],
 			existing,
 		);
 		expect(result[0]._status).toBe('exact_duplicate');
@@ -468,12 +468,12 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'Juan Perez',
-				phone: '6681234567',
+				phone: '1000000013',
 			}),
 		];
 		// Export writes phone as-is, country_code empty
 		const result = classifyImportedRows(
-			[mkGuest({ fullName: 'Juan Perez', phone: '6681234567', phoneCountryCode: '' })],
+			[mkGuest({ fullName: 'Juan Perez', phone: '1000000013', phoneCountryCode: '' })],
 			existing,
 		);
 		expect(result[0]._status).toBe('probable_duplicate');
@@ -486,16 +486,16 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'tist',
-				phone: '6563769461',
+				phone: '1000000003',
 				countryCode: '+52',
 			}),
 		];
 		// Various formatting of the same number
 		const result = classifyImportedRows(
 			[
-				mkGuest({ fullName: 'tist', phone: '6563769461', phoneCountryCode: '+52' }),
-				mkGuest({ fullName: 'tist', phone: '+526563769461', phoneCountryCode: '' }),
-				mkGuest({ fullName: 'tist', phone: '+52 656 376 9461', phoneCountryCode: '' }),
+				mkGuest({ fullName: 'tist', phone: '1000000003', phoneCountryCode: '+52' }),
+				mkGuest({ fullName: 'tist', phone: '+521000000003', phoneCountryCode: '' }),
+				mkGuest({ fullName: 'tist', phone: '+52 100 000 0003', phoneCountryCode: '' }),
 			],
 			existing,
 		);
@@ -516,14 +516,14 @@ describe('classifyImportedRows', () => {
 			makeDashboardGuestItem({
 				guestId: 'ex-1',
 				fullName: 'tist',
-				phone: '6563769461',
+				phone: '1000000003',
 				countryCode: '+52',
 			}),
 		];
 		const row: ParsedGuest = {
 			...mkGuest({
 				fullName: 'tist',
-				phone: '6563769461',
+				phone: '1000000003',
 				phoneCountryCode: '',
 				error: 'Agrega el código de país',
 			}),
@@ -542,16 +542,16 @@ describe('classifyImportedRows', () => {
 describe('parseCsvLikeContent', () => {
 	it('parses exported CSV without treating guest_id as name', () => {
 		const result = parseCsvLikeContent(
-			'guest_id,invite_id,full_name,phone,country_code,attendance_status,attendee_count,delivery_status,guest_comment\nabc,inv,Ana López,6691234567,+52,confirmed,2,shared,"Gracias"',
+			'guest_id,invite_id,full_name,phone,country_code,attendance_status,attendee_count,delivery_status,guest_comment\nabc,inv,Ana López,1000000001,+52,confirmed,2,shared,"Gracias"',
 		);
 		expect(result.rows[0].fullName).toBe('Ana López');
-		expect(result.rows[0].phone).toBe('6691234567');
+		expect(result.rows[0].phone).toBe('1000000001');
 		expect(result.rows[0].phoneCountryCode).toBe('+52');
 	});
 
 	it('supports quoted CSV values', () => {
 		const result = parseCsvLikeContent(
-			'full_name,phone,email\n"López, Ana","+526691234567","ana@test.com"',
+			'full_name,phone,email\n"López, Ana","+521000000001","ana@test.com"',
 		);
 		expect(result.rows[0].fullName).toBe('López, Ana');
 		expect(result.rows[0].email).toBe('ana@test.com');
@@ -670,31 +670,31 @@ describe('computeDisplayCategories', () => {
 
 describe('normalizeImportPhone', () => {
 	it('rejects +66 international phone with +66 countryCode', () => {
-		expect(normalizeImportPhone('+6681167471', '+66')).toMatchObject({
+		expect(normalizeImportPhone('+1000000024', '+66')).toMatchObject({
 			ok: false,
 			field: 'phoneCountryCode',
 		});
 	});
 
 	it('rejects 10-digit national phone with +66 countryCode', () => {
-		expect(normalizeImportPhone('8116747100', '+66')).toMatchObject({
+		expect(normalizeImportPhone('1000000028', '+66')).toMatchObject({
 			ok: false,
 			field: 'phoneCountryCode',
 		});
 	});
 
 	it('accepts +52 international phone with +52 countryCode', () => {
-		expect(normalizeImportPhone('+526811234567', '+52')).toMatchObject({
+		expect(normalizeImportPhone('+521000000020', '+52')).toMatchObject({
 			ok: true,
-			phone: '6811234567',
+			phone: '1000000020',
 			countryCode: '+52',
 		});
 	});
 
 	it('accepts 10-digit national phone with +52 countryCode', () => {
-		expect(normalizeImportPhone('8112345678', '+52')).toMatchObject({
+		expect(normalizeImportPhone('1000000008', '+52')).toMatchObject({
 			ok: true,
-			phone: '8112345678',
+			phone: '1000000008',
 			countryCode: '+52',
 		});
 	});
@@ -710,20 +710,20 @@ describe('normalizeImportPhone', () => {
 	// --- P0: International phone normalization ---
 
 	it.each([
-		{ phone: '+15551234567', countryCode: '', desc: 'auto-detect' },
-		{ phone: '+15551234567', countryCode: '+1', desc: 'matching countryCode' },
-		{ phone: '5551234567', countryCode: '+1', desc: 'local phone' },
+		{ phone: '+11000000002', countryCode: '', desc: 'auto-detect' },
+		{ phone: '+11000000002', countryCode: '+1', desc: 'matching countryCode' },
+		{ phone: '1000000002', countryCode: '+1', desc: 'local phone' },
 	])('accepts $desc (+1 US/Canada)', ({ phone, countryCode }) => {
 		expect(normalizeImportPhone(phone, countryCode)).toMatchObject({
 			ok: true,
-			phone: '5551234567',
+			phone: '1000000002',
 			countryCode: '+1',
 		});
 	});
 
 	it.each([
-		{ phone: '+34612345678', countryCode: '+34', expected: { ok: false, field: 'phone' } },
-		{ phone: '+34612345678', countryCode: '+52', expected: { ok: false } },
+		{ phone: '+31000000010', countryCode: '+34', expected: { ok: false, field: 'phone' } },
+		{ phone: '+31000000010', countryCode: '+52', expected: { ok: false } },
 	])(
 		'$expected.ok === false for +34 phone with countryCode $countryCode',
 		({ phone, countryCode, expected }) => {
@@ -732,18 +732,18 @@ describe('normalizeImportPhone', () => {
 	);
 
 	it.each([
-		{ phone: '+52 669 123 4567', desc: 'spaces' },
-		{ phone: '+52 (669) 123-4567', desc: 'parentheses and hyphens' },
+		{ phone: '+52 100 000 0001', desc: 'spaces' },
+		{ phone: '+52 (100) 000-0001', desc: 'parentheses and hyphens' },
 	])('accepts +52 MX number with $desc', ({ phone }) => {
 		expect(normalizeImportPhone(phone, '+52')).toMatchObject({
 			ok: true,
-			phone: '6691234567',
+			phone: '1000000001',
 			countryCode: '+52',
 		});
 	});
 
 	it.each([
-		{ phone: '6123456789', desc: 'local phone' },
+		{ phone: '1000000015', desc: 'local phone' },
 		{ phone: '+447123456789', desc: 'international phone' },
 	])('rejects $desc with unsupported countryCode +44', ({ phone }) => {
 		expect(normalizeImportPhone(phone, '+44')).toMatchObject({

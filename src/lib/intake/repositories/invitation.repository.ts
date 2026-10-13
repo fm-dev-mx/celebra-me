@@ -1,5 +1,5 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-import type { Invitation, DemoPreset } from '@/lib/intake/types';
+import type { Invitation, DemoPreset, InvitationStatus } from '@/lib/intake/types';
 import type { WorkStatus } from '@/lib/intake/workflow';
 
 interface InvitationRow {
@@ -107,7 +107,7 @@ export async function findInvitationBySlug(
 function buildUpdateBody(input: {
 	title?: string;
 	slug?: string | null;
-	status?: string;
+	status?: InvitationStatus;
 	clientName?: string;
 	clientEmail?: string;
 	clientWhatsapp?: string;

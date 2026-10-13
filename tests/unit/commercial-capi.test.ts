@@ -80,7 +80,7 @@ describe('Meta CAPI service helpers', () => {
 
 	it('sanitizes provider errors deterministically without tokens, URLs, or raw identity', () => {
 		const sanitized = sanitizeProviderError(
-			'https://graph.facebook.com/events?access_token=secret Client@Example.com +52 614 123 4567',
+			'https://graph.facebook.com/events?access_token=secret Client@Example.com +52 100 000 0005',
 		);
 		expect(sanitized).not.toContain('secret');
 		expect(sanitized).not.toContain('Client@Example.com');
@@ -97,9 +97,9 @@ describe('Meta CAPI service helpers', () => {
 	});
 
 	it('normalizes and hashes phone numbers to digits-only E.164 without the plus sign', () => {
-		const expected = hashSha256('526141234567');
-		expect(normalizeAndHashPhone('+52 614 123 4567')).toBe(expected);
-		expect(normalizeAndHashPhone('  52-614-123-4567 ')).toBe(expected);
+		const expected = hashSha256('521000000005');
+		expect(normalizeAndHashPhone('+52 100 000 0005')).toBe(expected);
+		expect(normalizeAndHashPhone('  52-100-000-0005 ')).toBe(expected);
 		expect(normalizeAndHashPhone('')).toBeUndefined();
 	});
 });
@@ -193,7 +193,7 @@ describe('deliverMetaConversionEvent', () => {
 						event_id: 'purchase:order-id:deposit_paid',
 						value: 899,
 						currency: 'MXN',
-						customers: { email: 'client@example.com', phone_e164: '+526141234567' },
+						customers: { email: 'client@example.com', phone_e164: '+521000000005' },
 						sales_orders: null,
 						leads:
 							consentMarketing === null
@@ -268,7 +268,7 @@ describe('deliverMetaConversionEvent', () => {
 					event_id: 'purchase:order-id:deposit_paid',
 					value: 899,
 					currency: 'MXN',
-					customers: { email: 'client@example.com', phone_e164: '+526141234567' },
+					customers: { email: 'client@example.com', phone_e164: '+521000000005' },
 					sales_orders: {
 						session_id: 'session-id',
 						deposit_paid_at: '2026-07-08T12:00:00.000Z',
@@ -311,7 +311,7 @@ describe('deliverMetaConversionEvent', () => {
 
 		// Check matching keys are correctly hashed
 		expect(body.data[0].user_data.em).toEqual([hashSha256('client@example.com')]);
-		expect(body.data[0].user_data.ph).toEqual([hashSha256('526141234567')]);
+		expect(body.data[0].user_data.ph).toEqual([hashSha256('521000000005')]);
 		expect(body.data[0].user_data.fbp).toBe('fb.1.12345');
 		expect(body.data[0].user_data.fbc).toBe('fb.1.67890');
 		expect(mockRestRequest).toHaveBeenCalledWith(

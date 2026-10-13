@@ -235,8 +235,8 @@ describe('rsvp repository', () => {
 		});
 
 		it('searches by exact national phone', () => {
-			const query = getQuery('6681023442');
-			expect(query).toContain('or=(full_name.ilike.*6681023442*,phone.ilike.*6681023442*)');
+			const query = getQuery('1000000103');
+			expect(query).toContain('or=(full_name.ilike.*1000000103*,phone.ilike.*1000000103*)');
 		});
 
 		it('searches by partial phone', () => {
@@ -245,16 +245,16 @@ describe('rsvp repository', () => {
 		});
 
 		it('strips formatting from phone input', () => {
-			const query = getQuery('668 102 3442');
+			const query = getQuery('100 000 0103');
 			expect(query).toContain(
-				'or=(full_name.ilike.*668%20102%203442*,phone.ilike.*6681023442*)',
+				'or=(full_name.ilike.*100%20000%200103*,phone.ilike.*1000000103*)',
 			);
 		});
 
 		it('extracts last 10 digits from international formatted input', () => {
-			const query = getQuery('+52 6681023442');
+			const query = getQuery('+52 1000000103');
 			expect(query).toContain(
-				'or=(full_name.ilike.*%2B52%206681023442*,phone.ilike.*6681023442*)',
+				'or=(full_name.ilike.*%2B52%201000000103*,phone.ilike.*1000000103*)',
 			);
 		});
 
@@ -306,7 +306,7 @@ describe('rsvp repository', () => {
 		it('deleted row remains hidden from dashboard search/list', async () => {
 			supabaseRestRequestMock.mockResolvedValue([]);
 			const results = await findGuestsByEvent(
-				{ eventId: 'evt-1', search: '6681023442' },
+				{ eventId: 'evt-1', search: '1000000103' },
 				'token',
 			);
 			expect(results).toEqual([]);

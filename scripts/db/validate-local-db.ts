@@ -10,7 +10,6 @@ import {
 	getLocalSuperAdminPassword,
 	loadAppEnv,
 	parseTsv,
-	REQUIRED_LOCAL_SUPER_ADMIN_EMAIL,
 	runPsql,
 	sqlLiteral,
 	tryRunCommand,
@@ -187,11 +186,8 @@ where id = 'invitation-assets'
 	const superAdminEmail = getFirstSuperAdminEmail(appEnv);
 	checks.push({
 		name: 'Configured local super admin email',
-		ok: superAdminEmail === REQUIRED_LOCAL_SUPER_ADMIN_EMAIL,
-		detail:
-			superAdminEmail === REQUIRED_LOCAL_SUPER_ADMIN_EMAIL
-				? undefined
-				: `expected ${REQUIRED_LOCAL_SUPER_ADMIN_EMAIL}, got ${superAdminEmail || '<unset>'}`,
+		ok: Boolean(superAdminEmail),
+		detail: superAdminEmail ? undefined : 'SUPER_ADMIN_EMAILS is not configured',
 	});
 
 	if (superAdminEmail) {

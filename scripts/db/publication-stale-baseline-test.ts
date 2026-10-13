@@ -83,7 +83,7 @@ const scenarios: Scenario[] = [
 	{
 		name: 'contact-only metadata',
 		mutation: (id) =>
-			`update public.invitations set client_email = 'contact-only@example.test', client_whatsapp = '5551234567' where id = '${id}';`,
+			`update public.invitations set client_email = 'contact-only@example.test', client_whatsapp = '1000000002' where id = '${id}';`,
 		shouldPublish: true,
 	},
 ];

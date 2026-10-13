@@ -14,6 +14,7 @@ import {
 	redactDbUrl,
 	runPsql,
 	sqlLiteral,
+	validateEnvironmentUrlsPreflight,
 } from '../db/db-workflow-lib.ts';
 import { verifyPreviewWriteAuthorization } from './preview-write-auth.ts';
 import {
@@ -178,6 +179,15 @@ export function resolvePreviewPurgeDbUrl(env: NodeJS.ProcessEnv = process.env): 
 	if (classification.target !== 'preview') {
 		throw new Error(
 			`INVITATION_ID_PURGE_TARGET_REJECTED: Expected preview, got ${classification.target}.`,
+		);
+	}
+	// classifyDbTarget trusts PREVIEW_DB_URL itself; also require the canonical Preview project.
+	try {
+		validateEnvironmentUrlsPreflight({ target: 'preview', targetDbUrl: dbUrl });
+	} catch (error: unknown) {
+		throw new Error(
+			`INVITATION_ID_PURGE_TARGET_REJECTED: ${error instanceof Error ? error.message : String(error)}`,
+			{ cause: error },
 		);
 	}
 	return dbUrl;

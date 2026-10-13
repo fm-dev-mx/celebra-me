@@ -96,6 +96,7 @@ const expectedFalse = [
 	'authenticatedRankingExecute',
 	'serviceRoleEngagementLedgerUpdate',
 	'serviceRoleEngagementLedgerDelete',
+	'legacyTrackViewRpc',
 ];
 const failures = [
 	...expectedTrue.filter((key) => evidence[key] !== true).map((key) => `${key}=false`),

@@ -183,9 +183,9 @@ describe('local admin bootstrap helpers', () => {
 	it('reads the first SUPER_ADMIN_EMAILS entry lowercased and trimmed', () => {
 		expect(
 			getFirstSuperAdminEmail({
-				SUPER_ADMIN_EMAILS: '  Celebra.Me.Com@gmail.com , second@example.com ',
+				SUPER_ADMIN_EMAILS: '  Owner@Example.com , second@example.com ',
 			}),
-		).toBe('celebra.me.com@gmail.com');
+		).toBe('owner@example.com');
 	});
 
 	it('prefers LOCAL_SUPER_ADMIN_PASSWORD over RSVP_ADMIN_PASSWORD', () => {
@@ -210,7 +210,7 @@ describe('local admin bootstrap helpers', () => {
 		}) as never);
 
 		expect(() =>
-			requireLocalSuperAdminConfig({ SUPER_ADMIN_EMAILS: 'celebra.me.com@gmail.com' }),
+			requireLocalSuperAdminConfig({ SUPER_ADMIN_EMAILS: 'owner@example.com' }),
 		).toThrow('process.exit:1');
 		expect(errorSpy).toHaveBeenCalledWith(
 			'ERROR: Local admin bootstrap requires LOCAL_SUPER_ADMIN_PASSWORD or RSVP_ADMIN_PASSWORD to be configured.',
