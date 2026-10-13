@@ -3,8 +3,8 @@ import path from 'node:path';
 import {
 	buildInvitationSectionRenderDescriptors,
 	type InvitationSectionRenderDescriptor,
-	DEMO_GUEST_NAME,
 } from '@/lib/invitation/section-render-data';
+import { DEMO_GUEST_NAME } from '@/components/invitation/rsvp-logic';
 import {
 	buildPageContextFromViewModel,
 	prepareInvitationPageContext,
@@ -562,7 +562,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		it('overrides phone number with business phone when isDemo is true and business phone is real', () => {
 			const mockGetContactPhone = jest.mocked(getContactPhone);
 			const mockIsPlaceholderContactPhone = jest.mocked(isPlaceholderContactPhone);
-			mockGetContactPhone.mockReturnValue('5218112345678');
+			mockGetContactPhone.mockReturnValue('5211000000008');
 			mockIsPlaceholderContactPhone.mockReturnValue(false);
 
 			const pageContext = buildTestContext(true);
@@ -570,7 +570,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			const rsvpDescriptor = descriptors.find(isRsvpDescriptor);
 
 			expect(rsvpDescriptor).toBeDefined();
-			expect(rsvpDescriptor?.props.whatsappConfig?.phone).toBe('5218112345678');
+			expect(rsvpDescriptor?.props.whatsappConfig?.phone).toBe('5211000000008');
 			expect(rsvpDescriptor?.props.confirmationMode).toBe('both');
 		});
 

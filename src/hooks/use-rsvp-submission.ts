@@ -9,6 +9,7 @@ import {
 import { rsvpApi } from '@/lib/client/rsvp-api';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import {
+	DEMO_GUEST_NAME,
 	normalizeGuestCount,
 	normalizePhoneInput,
 	parseRsvpPhoneInput,
@@ -16,7 +17,6 @@ import {
 	validateRsvpForm,
 } from '@/components/invitation/rsvp-logic';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
-import { DEMO_GUEST_NAME } from '@/lib/invitation/section-render-data';
 import { getSmartScrollBlock } from '@/lib/dom/viewport';
 import { resolveGuestCap } from '@/lib/rsvp/guest-cap';
 import { emitInvitationEngagement } from '@/lib/invitation/invitation-analytics';

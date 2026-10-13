@@ -6,6 +6,7 @@ import type { PersonalizedAccessVariant } from '@/lib/invitation/section-variant
 import type { PersonalizedAccessPassStyle } from '@/lib/invitation/personalized-access-presentation';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 import { getLatestMessage } from '@/lib/rsvp/core/guest-message';
+import { DEMO_GUEST_NAME } from '@/components/invitation/rsvp-logic';
 
 type Sections = InvitationPageContext['viewModel']['sections'];
 type SectionData<K extends keyof Sections> = NonNullable<Sections[K]>;
@@ -37,7 +38,6 @@ type PersonalizedAccessProps = {
 	passStyle?: PersonalizedAccessPassStyle;
 };
 
-export const DEMO_GUEST_NAME = 'María Fernanda Solís';
 const DEFAULT_DEMO_GUEST_CAP = 2;
 
 const SECTION_NAV_TARGETS: Partial<Record<ContentSectionKey, { href: string; label: string }>> = {

@@ -8,6 +8,9 @@ export type { RsvpResponseMessages } from '@/lib/invitation/rsvp-messages';
  * per-invitation opt-in is required. Individual routes may still override
  * this by passing `allowResponseEditing={false}` to the RSVP component.
  */
+/** Fictitious guest shown in demo previews. Lives here so the RSVP island stays free of SSR code. */
+export const DEMO_GUEST_NAME = 'María Fernanda Solís';
+
 export const ALLOW_RESPONSE_EDITING_BY_DEFAULT = true;
 
 // Shared RSVP state types.
