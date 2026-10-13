@@ -37,7 +37,7 @@ export type OperationalActionDomain =
 	| 'disposable'
 	| 'media';
 
-export type OperationalHealth = 'GREEN' | 'ACTION_REQUIRED' | 'UNVERIFIED';
+type OperationalHealth = 'GREEN' | 'ACTION_REQUIRED' | 'UNVERIFIED';
 
 export interface OperationalAction {
 	id: string;

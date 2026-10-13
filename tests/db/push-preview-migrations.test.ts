@@ -58,7 +58,10 @@ jest.mock('../../scripts/db/db-workflow-lib', () => ({
 	}),
 }));
 
-jest.mock('../../scripts/db/db-guard', () => ({
+jest.mock('../../scripts/db/db-target-config', () => ({
+	...jest.requireActual<typeof import('../../scripts/db/db-target-config')>(
+		'../../scripts/db/db-target-config',
+	),
 	PREVIEW_SECRET_FILES: ['.env.preview.local'],
 	getSecretFromEnvOrFiles: (...args: unknown[]) => mockGetSecret(...args),
 }));

@@ -66,7 +66,7 @@ function isInviteIdentity(identity: RsvpIdentity): identity is InviteRsvpIdentit
 	return 'inviteId' in identity;
 }
 
-export async function resolveRsvpTarget(identity: RsvpIdentity): Promise<ResolvedRsvpTarget> {
+async function resolveRsvpTarget(identity: RsvpIdentity): Promise<ResolvedRsvpTarget> {
 	try {
 		if (isInviteIdentity(identity)) {
 			const invitation = await findGuestByInviteIdPublic(sanitize(identity.inviteId, 64));
@@ -142,7 +142,7 @@ function validateRsvpPayload(
 	return { attendanceStatus, attendeeCount };
 }
 
-export async function persistRsvpResponse(
+async function persistRsvpResponse(
 	target: ResolvedRsvpTarget,
 	payload: GuestRSVPSubmitDTO,
 	responseSource: ResponseSource,

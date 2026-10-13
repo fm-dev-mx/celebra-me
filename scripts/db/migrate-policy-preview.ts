@@ -4,7 +4,7 @@
  * no Production backups.
  */
 
-import { fail, redactDbUrl, requirePreviewDbUrl } from './db-workflow-lib.ts';
+import { fail, requirePreviewDbUrl } from './db-workflow-lib.ts';
 import { requireCurrentDisposableMigrationProof } from './disposable-migration-proof.ts';
 import {
 	assertHostedCompatibilityOrFail,
@@ -27,6 +27,7 @@ import { assertCleanGitWorktree, readGitWorktreeState } from './release-check.ts
 import { resolveContractDeploymentEvidence } from './contract-deployment-evidence.ts';
 import { loadMigrationRolloutRegistry } from './migration-deployment-compatibility.ts';
 import { operatorSymbol, writeHuman } from './operator-cli-ux.ts';
+import { redactDbUrl } from './db-target-config.ts';
 
 const PREVIEW_MIGRATE_AUTH_SLUG = 'schema';
 const PREVIEW_MIGRATE_AUTH_OPERATION = 'migrate';

@@ -41,7 +41,7 @@ export interface SectionCompositeFragment {
 	sectionId?: string;
 }
 
-export interface DocumentCompositePlacement {
+interface DocumentCompositePlacement {
 	file: string;
 	/** Offset from composite origin (CSS px). */
 	cssTop: number;

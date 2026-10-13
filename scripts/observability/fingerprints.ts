@@ -60,7 +60,7 @@ function hashPathInput(relPath: string): string {
 }
 
 /** Stable fingerprint of the Local Render Corpus registry membership + strategies. */
-export function computeCorpusFingerprint(): string {
+function computeCorpusFingerprint(): string {
 	const corpus = listLocalRenderCorpus();
 	const lines = [
 		`size:${EXPECTED_LOCAL_RENDER_CORPUS_SIZE}`,
@@ -82,7 +82,7 @@ export function computeCorpusFingerprint(): string {
 }
 
 /** Hash of code + fixture inputs that affect regression / screenshot evidence. */
-export function computeInputFingerprint(): string {
+function computeInputFingerprint(): string {
 	const parts = INPUT_PATHS.map((p) => hashPathInput(p));
 	return sha256Hex(parts.join('\n'));
 }

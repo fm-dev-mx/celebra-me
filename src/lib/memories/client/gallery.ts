@@ -4,7 +4,7 @@
  */
 
 /** Remaining share at or below which the host is advised to download. */
-export const MEMORIES_NEAR_FULL_REMAINING_PERCENT = 20;
+const MEMORIES_NEAR_FULL_REMAINING_PERCENT = 20;
 
 export type MemoriesCapacityLevel = 'normal' | 'near-full' | 'full';
 

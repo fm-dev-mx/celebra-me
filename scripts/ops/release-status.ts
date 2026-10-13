@@ -119,7 +119,6 @@ export interface HealthEvidence {
 	url: string;
 	status: number | null;
 	commitSha: string | null;
-	deploymentId: string | null;
 	environment: string | null;
 	/**
 	 * `unreported` means the serving build predates build identity in `/api/health`;
@@ -140,8 +139,8 @@ export async function probeHealth(
 	origin: string,
 	sha: string,
 	fetchImpl: FetchLike,
-	headers?: Record<string, string>,
-	expectedEnvironment?: ReleaseTarget,
+	headers: Record<string, string> | undefined,
+	expectedEnvironment: ReleaseTarget,
 ): Promise<HealthEvidence> {
 	const url = `${origin.replace(/\/$/, '')}/api/health`;
 	try {
@@ -155,19 +154,16 @@ export async function probeHealth(
 		const commitSha = read('commitSha');
 		const environment = read('environment');
 		const healthy = response.status === 200 && body.status === 'healthy';
-		const environmentMatches =
-			expectedEnvironment === undefined || environment === expectedEnvironment;
 		return {
 			url,
 			status: response.status,
 			commitSha,
-			deploymentId: read('deploymentId'),
 			environment,
 			result: !healthy
 				? 'unreachable'
 				: commitSha === null
 					? 'unreported'
-					: commitSha.toLowerCase() === sha && environmentMatches
+					: commitSha.toLowerCase() === sha && environment === expectedEnvironment
 						? 'match'
 						: 'mismatch',
 		};
@@ -176,7 +172,6 @@ export async function probeHealth(
 			url,
 			status: null,
 			commitSha: null,
-			deploymentId: null,
 			environment: null,
 			result: 'unreachable',
 		};

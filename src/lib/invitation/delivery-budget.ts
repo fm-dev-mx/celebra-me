@@ -16,7 +16,7 @@ export interface DeliveryBenchmarkScenario {
 const INVITATION_ROUTE = /^\/[a-z]+(?:-[a-z]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** Normalize `eventType/slug` or `/eventType/slug` to a public invitation route. */
-export function toInvitationRoute(value: string): string {
+function toInvitationRoute(value: string): string {
 	const route = `/${value.trim().replace(/^\/+|\/+$/g, '')}`;
 	if (!INVITATION_ROUTE.test(route)) {
 		throw new Error(`Expected <eventType>/<slug>, received "${value}".`);

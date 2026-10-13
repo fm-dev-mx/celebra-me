@@ -13,7 +13,6 @@ const readPublicBuildIdentity = () => {
 	return {
 		commitSha,
 		gitRef,
-		deploymentId: null,
 		environment: readHostedDeployEnvironment(),
 	};
 };

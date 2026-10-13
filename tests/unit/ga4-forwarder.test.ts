@@ -18,7 +18,6 @@ jest.mock('@/lib/tracking/route-policy', () => {
 
 jest.mock('@/lib/tracking/ga4-env', () => ({
 	getGaMeasurementId: () => 'G-TEST',
-	getLegacyAnalyticsId: () => '',
 }));
 
 describe('ga4-forwarder real implementation tests', () => {

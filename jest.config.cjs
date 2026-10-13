@@ -53,18 +53,9 @@ module.exports = {
 		'^@/(.*)$': '<rootDir>/src/$1',
 		'^@tests/(.*)$': '<rootDir>/tests/$1',
 
-		// Components & Layouts
-		'^@components/(.*)$': '<rootDir>/src/components/$1',
-		'^@layouts/(.*)$': '<rootDir>/src/layouts/$1',
-
 		// Assets & Styles
 		'^@styles/(.*)$': '<rootDir>/src/styles/$1',
 		'^@images/(.*)$': '<rootDir>/src/assets/images/$1',
-		'^@content/(.*)$': '<rootDir>/src/content/$1',
-
-		// Utils & Helpers
-		'^@utils/(.*)$': '<rootDir>/src/utils/$1',
-		'^@interfaces/(.*)$': '<rootDir>/src/interfaces/$1',
 
 		// Astro virtual modules (tests)
 		'^astro:content$': '<rootDir>/tests/mocks/astro-content.ts',

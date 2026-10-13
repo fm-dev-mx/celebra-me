@@ -37,7 +37,7 @@ function workerOrigin(key: MemoriesWorkerKey): URL | null {
 }
 
 /** Settings that are absent or unusable as configured. */
-export function findMissingMemoriesConfig(): MemoriesConfigKey[] {
+function findMissingMemoriesConfig(): MemoriesConfigKey[] {
 	const checks: Record<MemoriesConfigKey, () => boolean> = {
 		uploadOrigin: () => workerOrigin('uploadOrigin') !== null,
 		retrievalOrigin: () => workerOrigin('retrievalOrigin') !== null,

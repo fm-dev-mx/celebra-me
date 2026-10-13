@@ -1,12 +1,12 @@
 /** Exercises event memories transaction and race invariants on disposable-test only. */
 import { randomUUID } from 'node:crypto';
-import { spawn, spawnSync } from 'node:child_process';
 import {
 	MEMORIES_LIMIT_PROFILES,
 	MEMORIES_SESSION_MAX_IN_FLIGHT,
 } from '../../src/lib/memories/contract/limits.ts';
 import { buildMemoriesObjectKey } from '../../src/lib/memories/contract/object-key.ts';
-import { DISPOSABLE_DB_URL } from './db-workflow-lib.ts';
+import { DISPOSABLE_DB_URL } from './db-target-config.ts';
+import { runPsql as psql, runPsqlAsync } from './db-workflow-lib.ts';
 
 /** Seed event from supabase/test/seed-test-data.sql. */
 const SEED_EVENT_ID = 'e0000000-0000-0000-0000-000000000002';
@@ -14,43 +14,23 @@ const LIMITS = MEMORIES_LIMIT_PROFILES.standard;
 
 type PsqlResult = { status: number; stdout: string; stderr: string; elapsedMs: number };
 
-function psqlArgs(sql: string): string[] {
-	return [
-		'--set',
-		'ON_ERROR_STOP=1',
-		'--tuples-only',
-		'--no-align',
-		'--dbname',
-		DISPOSABLE_DB_URL,
-		'--command',
-		sql,
-	];
-}
+const PSQL_OPTIONS = { asCommand: true, throwOnError: false } as const;
 
 function runPsql(sql: string): string {
-	const result = spawnSync('psql', psqlArgs(sql), { encoding: 'utf8' });
+	const result = psql(sql, DISPOSABLE_DB_URL, PSQL_OPTIONS);
 	if (result.status !== 0) throw new Error(result.stderr || result.stdout);
 	return result.stdout.trim();
 }
 
-function runConcurrentPsql(sql: string): Promise<PsqlResult> {
-	return new Promise((resolve, reject) => {
-		const startedAt = performance.now();
-		const child = spawn('psql', psqlArgs(sql), { stdio: ['ignore', 'pipe', 'pipe'] });
-		let stdout = '';
-		let stderr = '';
-		child.stdout.on('data', (chunk: Buffer) => (stdout += chunk.toString()));
-		child.stderr.on('data', (chunk: Buffer) => (stderr += chunk.toString()));
-		child.on('error', reject);
-		child.on('close', (code) =>
-			resolve({
-				status: code ?? 1,
-				stdout: stdout.trim(),
-				stderr: stderr.trim(),
-				elapsedMs: performance.now() - startedAt,
-			}),
-		);
-	});
+async function runConcurrentPsql(sql: string): Promise<PsqlResult> {
+	const startedAt = performance.now();
+	const result = await runPsqlAsync(sql, DISPOSABLE_DB_URL, PSQL_OPTIONS);
+	return {
+		status: result.status ?? 1,
+		stdout: result.stdout.trim(),
+		stderr: result.stderr.trim(),
+		elapsedMs: performance.now() - startedAt,
+	};
 }
 
 function reservationSql(input: {

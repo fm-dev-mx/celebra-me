@@ -3,7 +3,7 @@ export interface InvitationProfileIdentity {
 }
 
 /** Resolve only the explicitly declared visual profile; slug is never an implicit profile. */
-export function resolveInvitationProfileId(input: InvitationProfileIdentity): string | undefined {
+function resolveInvitationProfileId(input: InvitationProfileIdentity): string | undefined {
 	return input.visualProfileId;
 }
 

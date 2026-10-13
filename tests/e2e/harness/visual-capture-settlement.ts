@@ -29,7 +29,7 @@ export type { VisualCaptureSettlement } from './visual-recapture-policy';
  * to aggregation. When candidate snapshots and output share a root, `toMatchSnapshot` keeps the
  * existing bytes for gate-passing captures, so the stored PNG is read back instead of rewritten.
  */
-export function settleVisualCapture(options: {
+function settleVisualCapture(options: {
 	testInfo: TestInfo;
 	mode: VisualParityMode;
 	file: string;

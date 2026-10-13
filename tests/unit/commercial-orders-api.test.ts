@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminMutationAccess: jest.fn(),
 	requireAdminStrongSession: jest.fn(),
@@ -16,7 +19,6 @@ jest.mock('@/lib/commercial/orders.repository', () => ({
 	findSalesOrdersByCustomerId: jest.fn(),
 }));
 
-import { Request as NodeRequest } from 'undici';
 import {
 	requireAdminMutationAccess,
 	requireAdminStrongSession,
@@ -29,13 +31,7 @@ import { findSalesOrdersByCustomerId } from '@/lib/commercial/orders.repository'
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { POST as createOrder, GET as listOrders } from '@/pages/api/dashboard/commercial/orders';
 import { POST as markDepositPaid } from '@/pages/api/dashboard/commercial/orders/[orderId]/deposit-paid';
-
-function nodeRequest(
-	input: string,
-	init?: ConstructorParameters<typeof NodeRequest>[1],
-): Request {
-	return new NodeRequest(input, init) as unknown as Request;
-}
+import { createApiContext } from '../helpers/api-mocks';
 
 const mockRequireAdminMutationAccess = requireAdminMutationAccess as jest.MockedFunction<
 	typeof requireAdminMutationAccess
@@ -52,22 +48,6 @@ const mockMarkCommercialOrderDepositPaid = markCommercialOrderDepositPaid as jes
 const mockFindSalesOrdersByCustomerId = findSalesOrdersByCustomerId as jest.MockedFunction<
 	typeof findSalesOrdersByCustomerId
 >;
-
-function createContext(request: { url: string }, params: Record<string, string | undefined> = {}) {
-	return {
-		request,
-		url: new URL(request.url),
-		params,
-		props: {},
-		locals: {},
-		cookies: {} as never,
-		redirect: jest.fn() as never,
-		rewrite: jest.fn() as never,
-		site: undefined,
-		generator: 'Astro',
-		clientAddress: '127.0.0.1',
-	};
-}
 
 beforeEach(() => {
 	jest.clearAllMocks();
@@ -124,7 +104,7 @@ describe('/api/dashboard/commercial/orders', () => {
 	});
 
 	it('creates a commercial sales order as an admin mutation', async () => {
-		const request = nodeRequest('https://www.celebra-me.com/api/dashboard/commercial/orders', {
+		const request = new Request('https://www.celebra-me.com/api/dashboard/commercial/orders', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify({
@@ -138,7 +118,7 @@ describe('/api/dashboard/commercial/orders', () => {
 			}),
 		});
 
-		const response = await createOrder(createContext(request) as never);
+		const response = await createOrder(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(201);
@@ -162,7 +142,7 @@ describe('/api/dashboard/commercial/orders', () => {
 	});
 
 	it('rejects order creation when customerId is missing', async () => {
-		const request = nodeRequest('https://www.celebra-me.com/api/dashboard/commercial/orders', {
+		const request = new Request('https://www.celebra-me.com/api/dashboard/commercial/orders', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify({
@@ -171,7 +151,7 @@ describe('/api/dashboard/commercial/orders', () => {
 			}),
 		});
 
-		const response = await createOrder(createContext(request) as never);
+		const response = await createOrder(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(400);
@@ -214,7 +194,7 @@ describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
 	});
 
 	it('marks the first deposit as paid and returns the pending Purchase outbox event', async () => {
-		const request = nodeRequest(
+		const request = new Request(
 			'https://www.celebra-me.com/api/dashboard/commercial/orders/order-id/deposit-paid',
 			{
 				method: 'POST',
@@ -228,7 +208,7 @@ describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
 		);
 
 		const response = await markDepositPaid(
-			createContext(request, { orderId: 'order-id' }) as never,
+			createApiContext(request, { orderId: 'order-id' }) as never,
 		);
 		const body = await response.json();
 
@@ -258,7 +238,7 @@ describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
 			),
 		);
 
-		const request = nodeRequest(
+		const request = new Request(
 			'https://www.celebra-me.com/api/dashboard/commercial/orders/order-id/deposit-paid',
 			{
 				method: 'POST',
@@ -272,7 +252,7 @@ describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
 		);
 
 		const response = await markDepositPaid(
-			createContext(request, { orderId: 'order-id' }) as never,
+			createApiContext(request, { orderId: 'order-id' }) as never,
 		);
 		const body = await response.json();
 
@@ -291,7 +271,7 @@ describe('/api/dashboard/commercial/orders — GET', () => {
 			{ method: 'GET' },
 		);
 
-		const response = await listOrders(createContext(request) as never);
+		const response = await listOrders(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(200);
@@ -311,7 +291,7 @@ describe('/api/dashboard/commercial/orders — GET', () => {
 			method: 'GET',
 		});
 
-		const response = await listOrders(createContext(request) as never);
+		const response = await listOrders(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(400);
@@ -327,7 +307,7 @@ describe('/api/dashboard/commercial/orders — GET', () => {
 			{ method: 'GET' },
 		);
 
-		const response = await listOrders(createContext(request) as never);
+		const response = await listOrders(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(200);

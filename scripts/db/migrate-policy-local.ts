@@ -5,7 +5,7 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { classifyDbTarget, verifyLocalIdentity, LOCAL_DB_URL } from './db-guard.ts';
+import { verifyLocalIdentity } from './db-guard.ts';
 import { getValidatedMigrationFiles, PROJECT_ROOT } from './apply-migrations.ts';
 import { requireCurrentDisposableMigrationProof } from './disposable-migration-proof.ts';
 import {
@@ -22,8 +22,9 @@ import {
 import type { MigrateEnvironmentPolicy } from './migrate-policy.ts';
 import { buildMigrationPlan } from './migration-plan.ts';
 import { comparePendingSetToExpected } from './migration-pending-set.ts';
-import { fail, redactDbUrl } from './db-workflow-lib.ts';
+import { fail } from './db-workflow-lib.ts';
 import { readGitWorktreeState } from './release-check.ts';
+import { classifyDbTarget, LOCAL_DB_URL, redactDbUrl } from './db-target-config.ts';
 
 export function verifyPersistentLocalTarget(dbUrl = LOCAL_DB_URL): void {
 	const classification = classifyDbTarget(dbUrl);

@@ -2,7 +2,7 @@
 // CELEBRA-ME | Screenshot Tool — Reveal Detection & Open-State Validation
 // =============================================================================
 
-import type { Page } from 'playwright';
+import type { Page } from '@playwright/test';
 import type { ScreenshotJob } from './types.js';
 import { buildScreenshotUrl, navigateTo } from './navigation.js';
 import type { ExpectedInvitationIdentity } from './navigation.js';
@@ -50,7 +50,7 @@ export function shouldSkipInvitationOpenCapture(
 /**
  * True when open invitation content is laid out (at least one section or open-content root).
  */
-export async function assertInvitationContentReady(page: Page): Promise<boolean> {
+async function assertInvitationContentReady(page: Page): Promise<boolean> {
 	try {
 		return await page.evaluate(() => {
 			const isLaidOut = (el: Element | null): boolean => {
@@ -159,7 +159,7 @@ export async function normalizeInvitationRevealedForCapture(
 }
 
 /** Gather completed-state probes after normalization. */
-export async function checkRevealCompletedForContent(page: Page): Promise<boolean> {
+async function checkRevealCompletedForContent(page: Page): Promise<boolean> {
 	try {
 		const probe = await page.evaluate((): RevealCompletedDomProbe => {
 			const wrapper = document.querySelector('.event-theme-wrapper[data-event-slug]');
@@ -451,7 +451,7 @@ export function evaluateRevealDoesNotOcclude(probe: RevealOcclusionDomProbe): bo
  * Check if the reveal section appears to be in an "open" state.
  * Looks for data-preview-state, data-reveal-state, CSS classes, and wrapper state.
  */
-export async function checkRevealIsOpen(page: Page): Promise<boolean> {
+async function checkRevealIsOpen(page: Page): Promise<boolean> {
 	try {
 		const probe = await page.evaluate((): RevealOpenDomProbe => {
 			const isLaidOut = (el: Element | null): boolean => {
@@ -508,7 +508,7 @@ export async function checkRevealIsOpen(page: Page): Promise<boolean> {
 /**
  * After audit normalization, verify the reveal no longer covers the invitation.
  */
-export async function assertRevealDoesNotOccludeInvitation(page: Page): Promise<boolean> {
+async function assertRevealDoesNotOccludeInvitation(page: Page): Promise<boolean> {
 	try {
 		const probe = await page.evaluate((): RevealOcclusionDomProbe => {
 			const reveal = document.querySelector(

@@ -1,5 +1,5 @@
-export type OperationalEvidenceStatus = 'VERIFIED' | 'BLOCKED' | 'UNVERIFIED' | 'STALE';
-export type OperationalEvidenceReasonCode =
+type OperationalEvidenceStatus = 'VERIFIED' | 'BLOCKED' | 'UNVERIFIED' | 'STALE';
+type OperationalEvidenceReasonCode =
 	| 'EXACT_EVIDENCE_VERIFIED'
 	| 'EXACT_SHA_REQUIRED'
 	| 'EVIDENCE_MISSING'

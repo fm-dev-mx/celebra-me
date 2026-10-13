@@ -1,7 +1,7 @@
 /** Database-only media reference evidence; no remote image delivery is implied. */
 export type MediaReferenceEnvironment = 'preview' | 'production';
-export type MediaReferenceState = 'MATCH' | 'REFERENCE_DRIFT' | 'MISSING_ASSET' | 'UNVERIFIED';
-export type MediaReferenceIssue = 'REFERENCE_DRIFT' | 'MISSING_ASSET';
+type MediaReferenceState = 'MATCH' | 'REFERENCE_DRIFT' | 'MISSING_ASSET' | 'UNVERIFIED';
+type MediaReferenceIssue = 'REFERENCE_DRIFT' | 'MISSING_ASSET';
 
 export interface MediaReferenceFinding {
 	route: string;

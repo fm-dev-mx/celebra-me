@@ -2,7 +2,6 @@ import {
 	findPublishedByInvitationId,
 	findPublishedBySlugAndEventType,
 	findPublishedWithAccessBySlugAndEventType,
-	listPublishedByEventTypes,
 	updatePublishedContentSnapshot,
 } from '@/lib/intake/repositories/published-invitation-content.repository';
 
@@ -37,7 +36,6 @@ describe('published invitation content repository', () => {
 		await findPublishedByInvitationId('invitation-123');
 		await findPublishedBySlugAndEventType('maria-y-jose', 'boda');
 		await findPublishedWithAccessBySlugAndEventType('maria-y-jose', 'boda');
-		await listPublishedByEventTypes(['boda']);
 		await updatePublishedContentSnapshot({
 			id: 'published-123',
 			content: { title: 'Maria y Jose' },

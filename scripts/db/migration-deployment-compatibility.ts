@@ -26,7 +26,7 @@ export interface MigrationRolloutEntry {
 	notes?: string;
 }
 
-export interface AppCapabilityRequirement {
+interface AppCapabilityRequirement {
 	requiresDbCapabilities?: string[];
 }
 
@@ -96,7 +96,7 @@ export function listMigrationVersionsAtGitSha(sha: string): string[] {
 	return [...versions].sort();
 }
 
-export function deriveDbCapabilities(
+function deriveDbCapabilities(
 	appliedVersions: readonly string[],
 	registry: MigrationRolloutRegistry,
 ): string[] {

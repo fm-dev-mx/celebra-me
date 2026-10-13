@@ -11,7 +11,7 @@ const envelopeBase = {
 
 const emptyProperties = z.object({}).strict();
 
-export const clientEngagementEnvelopeSchema = z.discriminatedUnion('eventName', [
+const clientEngagementEnvelopeSchema = z.discriminatedUnion('eventName', [
 	z
 		.object({
 			...envelopeBase,
@@ -53,7 +53,7 @@ export const clientEngagementEnvelopeSchema = z.discriminatedUnion('eventName', 
 		.strict(),
 ]);
 
-export const clientEngagementBatchSchema = z
+const clientEngagementBatchSchema = z
 	.object({
 		events: z.array(clientEngagementEnvelopeSchema).min(1).max(MAX_ENGAGEMENT_BATCH),
 	})

@@ -3,7 +3,7 @@ export const OPERATIONAL_EVIDENCE_SCHEMA_VERSION = 1 as const;
 export type OperationalEvidenceEnvironment = 'local' | 'preview' | 'production';
 export type OperationalEvidenceStatus = 'VERIFIED' | 'WARNING' | 'FAILED' | 'UNVERIFIED';
 export type OperationalEvidencePhase = 'started' | 'completed';
-export type OperationalAggregateValue = string | number | boolean | null;
+type OperationalAggregateValue = string | number | boolean | null;
 export type OperationalAggregatePayloadValue =
 	| OperationalAggregateValue
 	| readonly OperationalAggregatePayloadValue[]

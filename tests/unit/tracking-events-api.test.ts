@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 jest.mock('@/lib/tracking/ingestion.service', () => ({
 	ingestTrackingEvent: jest.fn(),
 }));
@@ -6,18 +9,11 @@ jest.mock('@/lib/rsvp/security/rate-limit-provider', () => ({
 	checkRateLimit: jest.fn(),
 }));
 
-import { Request as NodeRequest } from 'undici';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { ingestTrackingEvent } from '@/lib/tracking/ingestion.service';
 import { POST } from '@/pages/api/tracking/events';
 import { ApiError } from '@/lib/rsvp/core/errors';
-
-function nodeRequest(
-	input: string,
-	init?: ConstructorParameters<typeof NodeRequest>[1],
-): Request {
-	return new NodeRequest(input, init) as unknown as Request;
-}
+import { createApiContext } from '../helpers/api-mocks';
 
 const mockCheckRateLimit = checkRateLimit as jest.MockedFunction<typeof checkRateLimit>;
 const mockIngestTrackingEvent = ingestTrackingEvent as jest.MockedFunction<
@@ -34,22 +30,6 @@ const payload = {
 	consentSnapshot: { necessary: true, analytics: true, marketing: false },
 };
 
-function createContext(request: { url: string }) {
-	return {
-		request,
-		url: new URL(request.url),
-		params: {},
-		props: {},
-		locals: {},
-		cookies: {} as never,
-		redirect: jest.fn() as never,
-		rewrite: jest.fn() as never,
-		site: undefined,
-		generator: 'Astro',
-		clientAddress: '127.0.0.1',
-	};
-}
-
 beforeEach(() => {
 	jest.clearAllMocks();
 	mockCheckRateLimit.mockResolvedValue(true);
@@ -58,13 +38,13 @@ beforeEach(() => {
 
 describe('/api/tracking/events', () => {
 	it('ingests a valid tracking event', async () => {
-		const request = nodeRequest('https://www.celebra-me.com/api/tracking/events', {
+		const request = new Request('https://www.celebra-me.com/api/tracking/events', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify(payload),
 		});
 
-		const response = await POST(createContext(request) as never);
+		const response = await POST(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(201);
@@ -90,13 +70,13 @@ describe('/api/tracking/events', () => {
 
 	it('returns accepted false events without persisting route-forbidden details as errors', async () => {
 		mockIngestTrackingEvent.mockResolvedValue({ accepted: false, reason: 'route_not_allowed' });
-		const request = nodeRequest('https://www.celebra-me.com/api/tracking/events', {
+		const request = new Request('https://www.celebra-me.com/api/tracking/events', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify(payload),
 		});
 
-		const response = await POST(createContext(request) as never);
+		const response = await POST(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(202);
@@ -105,13 +85,13 @@ describe('/api/tracking/events', () => {
 
 	it('rate limits noisy clients', async () => {
 		mockCheckRateLimit.mockResolvedValue(false);
-		const request = nodeRequest('https://www.celebra-me.com/api/tracking/events', {
+		const request = new Request('https://www.celebra-me.com/api/tracking/events', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify(payload),
 		});
 
-		const response = await POST(createContext(request) as never);
+		const response = await POST(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(429);
@@ -123,13 +103,13 @@ describe('/api/tracking/events', () => {
 		mockIngestTrackingEvent.mockRejectedValue(
 			new ApiError(400, 'bad_request', 'Tracking event payload is invalid.'),
 		);
-		const request = nodeRequest('https://www.celebra-me.com/api/tracking/events', {
+		const request = new Request('https://www.celebra-me.com/api/tracking/events', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify({ ...payload, eventName: 'order_created' }),
 		});
 
-		const response = await POST(createContext(request) as never);
+		const response = await POST(createApiContext(request) as never);
 
 		expect(response.status).toBe(400);
 		expect(response.headers.get('content-type')).toContain('application/json');

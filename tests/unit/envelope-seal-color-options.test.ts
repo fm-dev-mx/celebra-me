@@ -1,4 +1,4 @@
-import { supportsEnvelopeSealColorOptions } from '@/lib/invitation/presentation-options';
+import { supportsEnvelopeSealColorOptions } from '@/lib/intake/labels';
 import { ENVELOPE_SEAL_COLORS, isEnvelopeSealColor } from '@/lib/invitation/reveal-card';
 import { ENVELOPE_SEAL_COLOR_LABELS } from '@/lib/intake/labels';
 import { generateThemeScopedStyles } from '@/lib/invitation/theme-styles.utils';

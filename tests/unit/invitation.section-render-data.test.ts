@@ -1,5 +1,3 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import {
 	buildInvitationSectionRenderDescriptors,
 	type InvitationSectionRenderDescriptor,
@@ -10,6 +8,7 @@ import {
 	prepareInvitationPageContext,
 } from '@/lib/invitation/page-data';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
+import { loadFixture } from '../helpers/json-fixture';
 
 jest.mock('@/lib/assets/asset-registry', () => {
 	const actual = jest.requireActual('@/lib/assets/asset-registry');
@@ -40,11 +39,6 @@ function isPersonalizedAccessDescriptor(
 	descriptor: InvitationSectionRenderDescriptor,
 ): descriptor is PersonalizedAccessDescriptor {
 	return descriptor.component === 'personalized-access';
-}
-
-function loadFixture(relativePath: string) {
-	const filePath = path.resolve(process.cwd(), relativePath);
-	return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
 const JEWELRY_BOX_SLUG = 'demo-xv-jewelry-box';

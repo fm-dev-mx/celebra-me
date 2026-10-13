@@ -94,6 +94,11 @@ export function operatorSymbol(
 	}
 }
 
+/** Machine-readable `--json` output on stdout. */
+export function writeJson(value: unknown): void {
+	process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
+}
+
 export function writeHuman(message = '', env: NodeJS.ProcessEnv = process.env): void {
 	void env;
 	process.stderr.write(`${message}\n`);

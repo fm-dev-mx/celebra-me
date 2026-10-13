@@ -1,13 +1,13 @@
 import type { ImageDelivery } from '@/lib/assets/image-delivery';
 import type { AssetRegistryKey } from '@/lib/assets/asset-keys';
 
-export interface InternalAssetSource {
+interface InternalAssetSource {
 	delivery?: ImageDelivery;
 	type: 'internal';
 	key: AssetRegistryKey;
 }
 
-export interface ExternalAssetSource {
+interface ExternalAssetSource {
 	delivery?: ImageDelivery;
 	type: 'external';
 	src: string;
@@ -18,7 +18,7 @@ export interface ExternalAssetSource {
  * `assetId` references invitation_assets.id.
  * `src` is NOT present — must be resolved at preview/publish time.
  */
-export interface DraftUploadedAssetSource {
+interface DraftUploadedAssetSource {
 	delivery?: ImageDelivery;
 	type: 'uploaded';
 	assetId: string;
@@ -29,7 +29,7 @@ export interface DraftUploadedAssetSource {
  * `assetId` preserved for audit/re-resolution.
  * `src` is the resolved public Storage URL at publish time.
  */
-export interface PublishedUploadedAssetSource {
+interface PublishedUploadedAssetSource {
 	delivery?: ImageDelivery;
 	type: 'uploaded';
 	assetId: string;

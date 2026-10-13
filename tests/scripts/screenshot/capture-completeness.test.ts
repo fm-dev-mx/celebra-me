@@ -42,7 +42,7 @@ describe('Screenshot Completeness & Section Inventory Validation', () => {
 		};
 
 		const inventory = await deriveSectionInventory(
-			mockPage as unknown as import('playwright').Page,
+			mockPage as unknown as import('@playwright/test').Page,
 		);
 		expect(inventory.expected).toBe(3);
 		expect(inventory.topY).toBe(0);
@@ -82,7 +82,7 @@ describe('Screenshot Completeness & Section Inventory Validation', () => {
 		};
 
 		const inventory = await deriveSectionInventory(
-			mockPageWithDuplicates as unknown as import('playwright').Page,
+			mockPageWithDuplicates as unknown as import('@playwright/test').Page,
 		);
 		expect(inventory.duplicates).toContain('gallery');
 		expect(inventory.sections.length).toBe(2);
@@ -156,7 +156,7 @@ describe('Screenshot Completeness & Section Inventory Validation', () => {
 		};
 
 		const tasks = await resolveCapturePlan(
-			mockPage as unknown as import('playwright').Page,
+			mockPage as unknown as import('@playwright/test').Page,
 			job,
 		);
 		const sectionTasks = tasks.filter((t) => t.type === 'section');

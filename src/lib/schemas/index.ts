@@ -3,7 +3,6 @@
  */
 
 import { z } from 'zod';
-import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 import { EVENT_TYPES } from '@/lib/theme/theme-contract';
 import { isCanonicalHostLoginAlias, normalizeHostLoginAlias } from '@/lib/auth/login-alias';
 
@@ -20,11 +19,11 @@ export const PaginationSchema = z.object({
 	perPage: z.coerce.number().int().min(1).max(100).default(20),
 });
 
-export const EmailSchema = z.email({
+const EmailSchema = z.email({
 	message: 'Must be a valid email address',
 });
 
-export const TimestampSchema = z.iso.datetime({
+const TimestampSchema = z.iso.datetime({
 	message: 'Must be a valid ISO 8601 timestamp',
 });
 
@@ -32,11 +31,11 @@ export const TimestampSchema = z.iso.datetime({
 // Event Schemas
 // =============================================================================
 
-export const EventTypeSchema = z.enum(EVENT_TYPES, {
+const EventTypeSchema = z.enum(EVENT_TYPES, {
 	message: 'Invalid event type',
 });
 
-export const EventStatusSchema = z.enum(['draft', 'published', 'archived'], {
+const EventStatusSchema = z.enum(['draft', 'published', 'archived'], {
 	message: 'Invalid event status',
 });
 
@@ -56,36 +55,10 @@ const EventSlugSchema = z
 		message: 'Slug may contain only lowercase letters, numbers, and hyphens',
 	});
 
-export const CreateEventSchema = z.object({
-	title: EventTitleSchema,
-
-	slug: EventSlugSchema,
-
-	eventType: EventTypeSchema,
-
-	date: TimestampSchema.optional(),
-
-	location: z
-		.string()
-		.max(500, { message: 'Location cannot exceed 500 characters' })
-		.optional()
-		.default(''),
-
-	description: z
-		.string()
-		.max(2000, { message: 'Description cannot exceed 2000 characters' })
-		.optional()
-		.default(''),
-
-	maxAllowedAttendees: rsvpGuestCapSchema.optional(),
-
-	status: EventStatusSchema.optional().default('draft'),
-});
-
 /**
- * PATCH contract for admin event updates. Deliberately not derived from
- * `CreateEventSchema.partial()`: zod keeps inner `.default()` values under `.partial()`,
- * so omitted fields would be filled (e.g. `status` → 'draft') and written over stored data.
+ * PATCH contract for admin event updates. Deliberately not derived from a create schema with
+ * `.partial()`: zod keeps inner `.default()` values under `.partial()`, so omitted fields would
+ * be filled (e.g. `status` → 'draft') and written over stored data.
  * Every field is optional without defaults; omitted keys stay undefined and are not persisted.
  */
 export const UpdateEventSchema = z
@@ -112,7 +85,7 @@ export const UpdateEventSchema = z
 // User/Role Schemas
 // =============================================================================
 
-export const AppUserRoleSchema = z.enum(['super_admin', 'host_client'], {
+const AppUserRoleSchema = z.enum(['super_admin', 'host_client'], {
 	message: 'Invalid user role',
 });
 
@@ -122,7 +95,7 @@ export const UpdateUserRoleSchema = z.object({
 	_version: TimestampSchema.optional(),
 });
 
-export const EventMembershipRoleSchema = z.enum(['owner', 'manager'], {
+const EventMembershipRoleSchema = z.enum(['owner', 'manager'], {
 	message: 'Invalid membership role',
 });
 

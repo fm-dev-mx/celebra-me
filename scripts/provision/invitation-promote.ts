@@ -68,12 +68,11 @@ import {
 } from './promotion-divergence.ts';
 
 export { classifyPromotionDifferences } from './promotion-divergence.ts';
-export { describeApprovalFailure, type PromotionApprovalFailure };
 
-export type PromotionTerminalStatus =
+type PromotionTerminalStatus =
 	'PROMOTABLE' | 'PROMOTED' | 'IN_SYNC' | 'BLOCKED' | 'APPLIED_BUT_VERIFICATION_FAILED';
 
-export type PromotionBlockCode =
+type PromotionBlockCode =
 	| typeof TARGET_DIVERGENCE_BLOCK_CODE
 	| 'MISSING_PREVIEW_APPROVAL'
 	| 'APPROVAL_IDENTITY_MISMATCH'
@@ -144,7 +143,7 @@ const DEFAULT_BACKUP_ROOT = resolve(PROJECT_ROOT, '.backups', 'prod');
 /** Planned Production mutations share the critical migrate RPO (15 minutes). */
 const CANONICAL_BACKUP_COMMAND = 'pnpm db:prod:backup:critical';
 
-export function listExpectedMigrationVersions(migrationsDir: string = MIGRATIONS_DIR): string[] {
+function listExpectedMigrationVersions(migrationsDir: string = MIGRATIONS_DIR): string[] {
 	if (!existsSync(migrationsDir)) return [];
 	return readdirSync(migrationsDir)
 		.filter((f) => f.endsWith('.sql'))
@@ -216,7 +215,7 @@ export function evaluatePromotionSchemaGate(input: {
 	}
 }
 
-export function findLatestCriticalBackupManifest(
+function findLatestCriticalBackupManifest(
 	backupRoot: string = DEFAULT_BACKUP_ROOT,
 ): string | undefined {
 	if (!existsSync(backupRoot)) return undefined;
@@ -795,7 +794,7 @@ export async function runPromotionApply(input: {
 	};
 }
 
-export async function verifyPromotionOutcome(input: {
+async function verifyPromotionOutcome(input: {
 	packageData: InvitationPackageData;
 	targetDbUrl: string;
 	ownerUserId?: string;

@@ -1,6 +1,5 @@
 import {
 	cloudinaryEraHostingMessage,
-	findCloudinaryEraHostingViolations,
 	findSupabaseStorageUrls,
 	isCloudinaryEraInvitation,
 	isCloudinaryHostedAsset,
@@ -31,21 +30,7 @@ describe('cloudinary-era hosting', () => {
 		expect(isCloudinaryHostedAsset({ provider: 'cloudinary', secureUrl: '' })).toBe(false);
 	});
 
-	it('lists referenced assets that are still on Supabase', () => {
-		expect(
-			findCloudinaryEraHostingViolations([
-				{
-					key: 'hero-desktop',
-					provider: 'supabase',
-					secureUrl: null,
-				},
-				{
-					key: 'family',
-					provider: 'cloudinary',
-					secureUrl: 'https://res.cloudinary.com/demo/image/upload/v1/family.webp',
-				},
-			]),
-		).toEqual(['hero-desktop']);
+	it('detects Supabase storage URLs', () => {
 		expect(
 			findSupabaseStorageUrls({
 				src: 'https://ineitkdkyrxqyressllp.supabase.co/storage/v1/object/public/x',

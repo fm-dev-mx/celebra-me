@@ -15,7 +15,7 @@ export function fitsViewport(element: HTMLElement, factor = DEFAULT_VIEWPORT_FIT
 	return element.getBoundingClientRect().height <= getViewportHeight() * factor;
 }
 
-export function isKeyboardOpen(): boolean {
+function isKeyboardOpen(): boolean {
 	if (typeof window === 'undefined' || !window.visualViewport) return false;
 	return window.visualViewport.height < window.innerHeight * 0.8;
 }

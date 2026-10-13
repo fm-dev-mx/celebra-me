@@ -1,6 +1,6 @@
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
 import { readFileSync } from 'node:fs';
-import { classifyDbTarget, guardProduction } from '../../scripts/db/db-guard';
+import { guardProduction } from '../../scripts/db/db-guard';
 import { enforceDisposableTargetOnly } from '../../scripts/db/apply-migrations';
 import { evaluateMigrationHistoryParity } from '../../scripts/db/audit-db';
 import { fetchRemoteMigrationVersions } from '../../scripts/status-core/migration-history-reader';
@@ -15,6 +15,7 @@ import {
 	redactCredentials,
 	redactDbUrl,
 	resolveDbUrl,
+	classifyDbTarget,
 } from '../../scripts/db/db-target-config';
 
 describe('Database Pipeline Safety & Hardening Regression Tests', () => {

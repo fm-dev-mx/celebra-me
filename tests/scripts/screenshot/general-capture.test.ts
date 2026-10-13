@@ -18,7 +18,7 @@ import { captureGeneralPageScreenshots } from '../../../scripts/screenshot/gener
 import { captureFullPage } from '../../../scripts/screenshot/element-capture';
 import { resolveCapturePlan } from '../../../scripts/screenshot/capture-plan';
 import type { ScreenshotJob } from '../../../scripts/screenshot/types';
-import type { Page } from 'playwright';
+import type { Page } from '@playwright/test';
 
 describe('general full-page capture identity', () => {
 	const job = {

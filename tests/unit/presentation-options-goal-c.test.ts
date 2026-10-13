@@ -2,13 +2,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { adaptEvent } from '@/lib/adapters/event';
+import { resolveCountdownVisibleUnits } from '@/lib/invitation/countdown-presentation';
+import { resolveGalleryMobileBrowse } from '@/lib/invitation/gallery-presentation';
+import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import {
-	resolveCountdownVisibleUnits,
-	resolveGalleryMobileBrowse,
-	resolveGiftsPresentation,
 	resolveLocationMediaMode,
 	resolveLocationShowNavigationButtons,
-} from '@/lib/invitation/presentation-options';
+} from '@/lib/invitation/location-presentation';
 import { countdownSchema } from '@/lib/schemas/content/shared.schema';
 import { giftsSchema } from '@/lib/schemas/content/gifts.schema';
 import { gallerySchema } from '@/lib/schemas/content/gallery.schema';
@@ -50,17 +50,17 @@ describe('Goal C — presentation options', () => {
 
 		it('accepts a non-empty subset and rejects empty arrays at schema boundary', () => {
 			expect(resolveCountdownVisibleUnits({ visibleUnits: ['days'] })).toEqual(['days']);
-				expect(
-					countdownSchema.safeParse({
-						variant: 'standard',
-						title: 'FALTAN',
+			expect(
+				countdownSchema.safeParse({
+					variant: 'standard',
+					title: 'FALTAN',
 					presentationOptions: { visibleUnits: ['days'] },
 				}).success,
 			).toBe(true);
-				expect(
-					countdownSchema.safeParse({
-						variant: 'standard',
-						title: 'FALTAN',
+			expect(
+				countdownSchema.safeParse({
+					variant: 'standard',
+					title: 'FALTAN',
 					presentationOptions: { visibleUnits: [] },
 				}).success,
 			).toBe(false);

@@ -6,7 +6,7 @@
  */
 import { mutationItemsOf, type ProductionApplyPlan } from './production-apply-plan.ts';
 
-export type ProductionApplyScopeKind =
+type ProductionApplyScopeKind =
 	'inspect_all' | 'schema' | 'invitations' | 'all_ready' | 'patch' | 'image_namespace';
 
 export interface ProductionApplySelection {

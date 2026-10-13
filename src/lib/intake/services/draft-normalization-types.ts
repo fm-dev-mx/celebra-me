@@ -1,4 +1,4 @@
-export type DraftNormalizationIssueReason =
+type DraftNormalizationIssueReason =
 	'conflicting_values' | 'unsupported_shape' | 'unrepresentable_field';
 
 export interface DraftNormalizationIssue {

@@ -203,7 +203,7 @@ function joinHonoreeNames(primaryName: string, secondaryName: string | undefined
 	return secondary ? `${primary} y ${secondary}` : primary;
 }
 
-export function formatCardDate(date: string): string {
+function formatCardDate(date: string): string {
 	const rawFormatted = new Intl.DateTimeFormat('es-MX', {
 		day: 'numeric',
 		month: 'short',

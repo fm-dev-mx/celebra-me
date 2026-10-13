@@ -8,7 +8,7 @@ export const DEFAULT_BRANDING_VISIBILITY: BrandingVisibility = {
 	showContactCta: true,
 };
 
-export const BRANDING_HIDDEN_VISIBILITY: BrandingVisibility = {
+const BRANDING_HIDDEN_VISIBILITY: BrandingVisibility = {
 	showFooterBranding: false,
 	showContactCta: false,
 };

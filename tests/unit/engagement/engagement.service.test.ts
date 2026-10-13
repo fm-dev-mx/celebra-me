@@ -6,6 +6,7 @@ import {
 } from '@/lib/rsvp/engagement/engagement.service';
 import { recordGuestEngagementEventsRpc } from '@/lib/rsvp/repositories/engagement.repository';
 import { getSupabaseUserByAccessToken } from '@/lib/rsvp/auth/auth';
+import { asHostedDeploy } from '@tests/helpers/deploy-identity';
 
 jest.mock('@/lib/rsvp/repositories/engagement.repository', () => ({
 	recordGuestEngagementEventsRpc: jest.fn(),
@@ -52,7 +53,7 @@ describe('guest engagement service', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		process.env.CELEBRA_DEPLOY_ENV = 'production';
+		asHostedDeploy('production');
 		rpcMock.mockResolvedValue({ status: 'ok', accepted: 1, duplicates: 0, rejected: 0 });
 	});
 
@@ -102,7 +103,7 @@ describe('guest engagement service', () => {
 	});
 
 	it('labels Preview traffic as non_production', async () => {
-		process.env.CELEBRA_DEPLOY_ENV = 'preview';
+		asHostedDeploy('preview');
 		await ingestClientEngagementBatch(INVITE, batch, request());
 		expect(rpcMock.mock.calls[0][1][0].traffic_class).toBe('non_production');
 	});

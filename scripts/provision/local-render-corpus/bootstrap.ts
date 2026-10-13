@@ -4,7 +4,6 @@
  * The corpus is derived from managed invitation definitions. Every entry uses
  * the same guarded invitation release pipeline; there is no fixture-only path.
  */
-import { classifyDbTarget } from '../../db/db-guard.ts';
 import { applyLocalInvitation } from '../apply-local-invitation.ts';
 import { resolveLocalEnv } from '../local-provision-env.ts';
 import {
@@ -12,10 +11,11 @@ import {
 	listLocalRenderCorpus,
 	type LocalRenderCorpusEntry,
 } from './registry.ts';
+import { classifyDbTarget } from '../../db/db-target-config.ts';
 
 export type CorpusBootstrapMode = 'dry-run' | 'apply';
 
-export interface CorpusBootstrapEntryResult {
+interface CorpusBootstrapEntryResult {
 	slug: string;
 	classification: LocalRenderCorpusEntry['classification'];
 	action: 'planned' | 'applied' | 'unchanged';

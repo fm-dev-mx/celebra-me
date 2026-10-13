@@ -6,13 +6,13 @@ import { planAndApplyLocalContent } from './invitation-content-apply.ts';
 import { resolveInvitationPackageInput } from './invitation-package-input.ts';
 import { runImportEngine } from './invitation-import-engine.ts';
 import { runPreviewApply } from './preview-apply.ts';
-import { getSecretFromEnvOrFiles, PREVIEW_SECRET_FILES } from '../db/db-workflow-lib.ts';
 import { parseMutationTargets } from './invitation-update-options.ts';
 import { verifyPreviewWriteAuthorization } from './preview-write-auth.ts';
 import { runGuidedReconciliation } from './reconciliation-cli.ts';
 import { buildReconciliationManagedApplyPlan } from './reconciliation-persist.ts';
 import type { ReconciliationDecisionOutcome } from './reconciliation-state.ts';
 import type { SemanticDelta } from './semantic-delta.ts';
+import { resolveTargetDbUrl } from '../db/db-target-config.ts';
 
 interface DecisionsFile {
 	decisions: Record<string, ReconciliationDecisionOutcome>;
@@ -113,7 +113,7 @@ Preview apply requires CELEBRA_TASK_SCOPE=preview:<slug>:apply.
 			isInteractive,
 			operation: 'apply',
 		});
-		const targetDbUrl = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
+		const targetDbUrl = resolveTargetDbUrl('preview');
 		const planned = await runImportEngine({
 			packageData: packageInput.packageData,
 			target: 'preview',

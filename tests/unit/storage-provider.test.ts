@@ -21,13 +21,15 @@ import {
 	resolveEffectiveTarget,
 } from '@/lib/intake/services/storage-provider';
 
-import { isDevEnvironment } from '@/lib/environment';
+import {
+	asHostedDeploy,
+	asLocalDevServer,
+	asUndeclaredBuiltBundle,
+} from '@tests/helpers/deploy-identity';
 
 // This suite models a local Astro process, whose storage target follows the local
 // deploy identity (a built bundle without CELEBRA_DEPLOY_ENV would fail closed).
-const mockIsDevEnvironment = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
-beforeEach(() => mockIsDevEnvironment.mockReturnValue(true));
-afterEach(() => mockIsDevEnvironment.mockReturnValue(false));
+beforeEach(asLocalDevServer);
 
 describe('StorageProvider Abstraction', () => {
 	const originalEnv = process.env;
@@ -170,25 +172,23 @@ describe('StorageProvider Abstraction', () => {
 		});
 
 		it('infers provider from the declared deploy identity', () => {
-			process.env.CELEBRA_DEPLOY_ENV = 'production';
+			asHostedDeploy('production');
 			expect(resolveEffectiveTarget()).toBe('production');
 			expect(getStorageProvider().providerName).toBe('cloudinary');
 
-			process.env.CELEBRA_DEPLOY_ENV = 'preview';
+			asHostedDeploy('preview');
 			expect(resolveEffectiveTarget()).toBe('preview');
 			expect(getStorageProvider().providerName).toBe('cloudinary');
 		});
 
 		it('fails closed for a built bundle without a deploy identity', () => {
-			delete process.env.CELEBRA_DEPLOY_ENV;
+			asUndeclaredBuiltBundle();
 			delete process.env.CELEBRA_RUNTIME_TARGET;
-			mockIsDevEnvironment.mockReturnValue(false);
 			process.env.SUPABASE_URL = 'https://example-project.supabase.co';
 			expect(() => resolveEffectiveTarget()).toThrow(/must declare CELEBRA_DEPLOY_ENV/);
 		});
 
 		it('infers provider from CELEBRA_RUNTIME_TARGET when set', () => {
-			delete process.env.CELEBRA_DEPLOY_ENV;
 			process.env.CELEBRA_RUNTIME_TARGET = 'preview';
 			expect(resolveEffectiveTarget()).toBe('preview');
 			expect(getStorageProvider().providerName).toBe('cloudinary');
@@ -196,6 +196,11 @@ describe('StorageProvider Abstraction', () => {
 			process.env.CELEBRA_RUNTIME_TARGET = 'local';
 			expect(resolveEffectiveTarget()).toBe('local');
 			expect(getStorageProvider().providerName).toBe('supabase');
+		});
+
+		it('never resolves Production storage from CELEBRA_RUNTIME_TARGET', () => {
+			process.env.CELEBRA_RUNTIME_TARGET = 'production';
+			expect(resolveEffectiveTarget()).toBe('local');
 		});
 	});
 });

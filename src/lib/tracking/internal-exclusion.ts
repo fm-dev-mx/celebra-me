@@ -1,3 +1,4 @@
+import type { HostedDeployEnvironment } from '@/lib/server/deploy-identity';
 import type { TrackingRouteClass } from '@/lib/tracking/route-policy';
 
 export const COOKIE_NAME_IGNORE_TRACKING = 'cm_ignore_tracking';
@@ -6,7 +7,7 @@ export interface InternalExclusionInput {
 	cookieHeader?: string | null;
 	isDashboardAuthenticated?: boolean;
 	routeClass?: TrackingRouteClass;
-	deployEnvironment?: string | null;
+	deployEnvironment?: HostedDeployEnvironment | null;
 }
 
 export interface InternalExclusionResult {

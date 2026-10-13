@@ -1,10 +1,10 @@
-export interface ApiResponse<T> {
+interface ApiResponse<T> {
 	data: T;
 	ok: true;
 	status: number;
 }
 
-export interface ApiErrorResponse {
+interface ApiErrorResponse {
 	ok: false;
 	status: number;
 	code: string;
@@ -14,7 +14,7 @@ export interface ApiErrorResponse {
 
 export type ApiResult<T> = ApiResponse<T> | ApiErrorResponse;
 
-export function isApiErrorResponse(value: unknown): value is ApiErrorResponse {
+function isApiErrorResponse(value: unknown): value is ApiErrorResponse {
 	return (
 		typeof value === 'object' &&
 		value !== null &&
@@ -25,7 +25,7 @@ export function isApiErrorResponse(value: unknown): value is ApiErrorResponse {
 	);
 }
 
-export function buildApiErrorResponse(error: unknown): ApiErrorResponse {
+function buildApiErrorResponse(error: unknown): ApiErrorResponse {
 	if (typeof error === 'object' && error !== null && 'status' in error && 'code' in error) {
 		const apiError = error as {
 			status: number;

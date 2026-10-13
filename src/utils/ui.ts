@@ -5,7 +5,7 @@
 /**
  * Detects if the current device is running iOS.
  */
-export function isIOS(): boolean {
+function isIOS(): boolean {
 	if (typeof window === 'undefined') return false;
 	const ua = navigator.userAgent;
 	const touchCapableNavigator = navigator as Navigator & { maxTouchPoints?: number };
@@ -18,7 +18,7 @@ export function isIOS(): boolean {
 /**
  * Copies a string to the clipboard with visual feedback for the trigger button.
  */
-export async function copyToClipboard(text: string, button: HTMLElement): Promise<void> {
+async function copyWithButtonFeedback(text: string, button: HTMLElement): Promise<void> {
 	try {
 		await navigator.clipboard.writeText(text);
 
@@ -65,7 +65,7 @@ export function initCopyButtons(
 		button.addEventListener('click', async () => {
 			const text = button.getAttribute(dataAttr);
 			if (text) {
-				await copyToClipboard(text, button as HTMLElement);
+				await copyWithButtonFeedback(text, button as HTMLElement);
 			}
 		});
 	});

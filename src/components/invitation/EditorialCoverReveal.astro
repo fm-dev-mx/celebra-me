@@ -433,6 +433,7 @@ const shouldRenderHidden =
 <script>
 	import { setupCollectorReveal } from './editorial-cover/collector-reveal';
 	import { isVisualCaptureMode } from '@/lib/invitation/visual-capture-mode';
+	import { buildRevealStorageKey, shouldRespectStoredReveal } from '@/lib/invitation/reveal-manager';
 
 	const EXIT_ANIMATION_MS = 1600;
 	const EXIT_COMPLETION_FALLBACK_MS = EXIT_ANIMATION_MS + 600;
@@ -533,10 +534,10 @@ const shouldRenderHidden =
 			const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 			// Capture tooling must not meet a timer-scheduled idle cue mid-animation.
 			const collectorReducedMotion = motionPreference || isVisualCaptureMode();
-			const storageKey = 'envelope-opened-' + eventSlug;
-			const stored = (() => {
+			const storageKey = buildRevealStorageKey(eventSlug);
+			const storedOpened = (() => {
 				try {
-					return !isDemoInvitation && localStorage.getItem(storageKey) === 'true';
+					return localStorage.getItem(storageKey) === 'true';
 				} catch {
 					return false;
 				}
@@ -551,7 +552,7 @@ const shouldRenderHidden =
 				return;
 			}
 
-			if (stored && !forceEnvelope) {
+			if (shouldRespectStoredReveal({ isDemo: isDemoInvitation, forceEnvelope, storedOpened })) {
 				completeReveal();
 				this.hidden = true;
 				return;

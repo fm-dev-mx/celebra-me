@@ -1,8 +1,8 @@
 /** Fail-closed, read-only availability preflight for database-dependent operator tasks. */
-import { classifyDbTarget } from './db-guard.ts';
 import { parseEnvironmentList } from '../lib/cli-args.ts';
 import { runPsqlAsync } from '../status-core/probe-runner.ts';
 import { resolveDbUrlForEnv, type TargetEnv } from '../provision/dbs-status.ts';
+import { classifyDbTarget } from './db-target-config.ts';
 
 const ALL_TARGETS: readonly TargetEnv[] = ['local', 'preview', 'production'];
 const EXPECTED_CLASSIFICATION: Record<TargetEnv, string> = {

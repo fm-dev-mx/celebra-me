@@ -1,6 +1,7 @@
 import { SUPABASE_PROJECT_REFS } from '@/lib/intake/mutations/environment-identity';
 import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
 import type { DevMfaBypassInput } from '@/lib/server/dev-mfa-bypass';
+import { asHostedDeploy } from '@tests/helpers/deploy-identity';
 
 const localSupabase = 'http://127.0.0.1:54321';
 const previewSupabase = `https://${SUPABASE_PROJECT_REFS.preview}.supabase.co`;
@@ -10,7 +11,6 @@ const productionSupabase = `https://${SUPABASE_PROJECT_REFS.production}.supabase
 function makeInput(overrides: Partial<DevMfaBypassInput> = {}): DevMfaBypassInput {
 	return {
 		devMfaBypass: 'true',
-		deployEnv: '',
 		isDevServer: true,
 		supabaseUrl: localSupabase,
 		celebraRuntimeTarget: undefined,
@@ -30,12 +30,12 @@ describe('isDevMfaBypassEnabled', () => {
 	});
 
 	it('returns false when multiple conditions are wrong', () => {
+		asHostedDeploy('production');
 		expect(
 			isDevMfaBypassEnabled(
 				makeInput({
 					devMfaBypass: undefined,
 					isDevServer: false,
-					deployEnv: 'production',
 					supabaseUrl: 'https://project.supabase.co',
 				}),
 			),
@@ -76,7 +76,8 @@ describe('isDevMfaBypassEnabled', () => {
 			{ desc: 'preview', deployEnv: 'preview' },
 			{ desc: 'an invalid value', deployEnv: 'staging' },
 		])('returns false when CELEBRA_DEPLOY_ENV is $desc', ({ deployEnv }) => {
-			expect(isDevMfaBypassEnabled(makeInput({ deployEnv }))).toBe(false);
+			asHostedDeploy(deployEnv);
+			expect(isDevMfaBypassEnabled(makeInput())).toBe(false);
 		});
 	});
 
@@ -172,12 +173,12 @@ describe('isDevMfaBypassEnabled', () => {
 		});
 
 		it('blocks when a hosted deploy identity is declared even with preview target', () => {
+			asHostedDeploy('preview');
 			expect(
 				isDevMfaBypassEnabled(
 					makeInput({
 						supabaseUrl: previewSupabase,
 						celebraRuntimeTarget: 'preview',
-						deployEnv: 'preview',
 					}),
 				),
 			).toBe(false);

@@ -17,7 +17,7 @@ export function buildInvitationSharePayload(params: {
 	};
 }
 
-export function canUseNativeShare(payload?: InvitationSharePayload): boolean {
+function canUseNativeShare(payload?: InvitationSharePayload): boolean {
 	if (typeof navigator === 'undefined' || typeof navigator.share !== 'function') return false;
 	if (payload && typeof navigator.canShare === 'function') {
 		try {
@@ -29,7 +29,7 @@ export function canUseNativeShare(payload?: InvitationSharePayload): boolean {
 	return true;
 }
 
-export function isShareAbortError(error: unknown): boolean {
+function isShareAbortError(error: unknown): boolean {
 	return error instanceof Error && error.name === 'AbortError';
 }
 

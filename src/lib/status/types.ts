@@ -115,7 +115,7 @@ export type DisposableProofStatus = 'valid' | 'missing' | 'stale';
 /** Presentation category for operator UI/CLI. Not a classifier. */
 export type StatusSemantic = 'verified' | 'unverified' | 'blocked' | 'neutral';
 
-export type NextStepType = 'Diagnose' | 'Verify' | 'Apply' | 'Manual/HITL';
+type NextStepType = 'Diagnose' | 'Verify' | 'Apply' | 'Manual/HITL';
 
 export interface PromotionHandoff {
 	dryRunCommand: string | null;

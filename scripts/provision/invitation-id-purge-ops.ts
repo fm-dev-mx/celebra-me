@@ -4,12 +4,7 @@
 
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import {
-	getSecretFromEnvOrFiles,
-	PREVIEW_SECRET_FILES,
-	runPsql,
-	sqlLiteral,
-} from '../db/db-workflow-lib.ts';
+import { runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
 import type {
 	DependencyCounts,
 	GuestMigrationCandidate,
@@ -18,6 +13,7 @@ import type {
 	InvitationRecordSummary,
 	MigrationAssessment,
 } from './invitation-id-purge.ts';
+import { getSecretFromEnvOrFiles, PREVIEW_SECRET_FILES } from '../db/db-target-config.ts';
 
 function parseJsonObject<T>(raw: string, label: string): T {
 	const text = raw.trim();

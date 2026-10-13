@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, within } from '@testing-library/react';
-import ImportMagic, {
+import { screen, fireEvent, within } from '@testing-library/react';
+import {
 	splitLine,
 	detectHeaders,
 	parseLine,
@@ -11,6 +11,7 @@ import {
 } from '@/components/dashboard/guests/ImportMagic.utils';
 import type { ParsedGuest } from '@/components/dashboard/guests/ImportMagic.utils';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import { getImportButton, importCsv, renderModal } from '@tests/helpers/import-magic';
 
 const BASE_EXISTING: DashboardGuestItem = {
 	guestId: '',
@@ -417,34 +418,6 @@ describe('validateGuestRow', () => {
 		expect(result.fieldErrors?.fullName).toBeDefined();
 	});
 });
-
-function renderModal(
-	eventId = '550e8400-e29b-41d4-a716-446655440000',
-	existingGuests: DashboardGuestItem[] = [],
-) {
-	const onImport = jest.fn().mockResolvedValue({ created: 1, updated: 0, status: 'success' });
-	const onUpdate = jest.fn().mockResolvedValue(undefined);
-	const onClose = jest.fn();
-	render(
-		<ImportMagic
-			onImport={onImport}
-			onUpdate={onUpdate}
-			onClose={onClose}
-			eventId={eventId}
-			existingGuests={existingGuests}
-		/>,
-	);
-	return { onImport, onUpdate, onClose };
-}
-
-function importCsv(content: string) {
-	const textarea = screen.getByPlaceholderText(/Ejemplo:/i) as HTMLTextAreaElement;
-	fireEvent.change(textarea, { target: { value: content } });
-}
-
-function getImportButton(): HTMLButtonElement {
-	return screen.getByRole('button', { name: /importar/i }) as HTMLButtonElement;
-}
 
 function getConfirmMappingButton(): HTMLButtonElement | null {
 	const buttons = screen.queryAllByRole('button');

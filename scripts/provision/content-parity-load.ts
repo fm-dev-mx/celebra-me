@@ -1,12 +1,12 @@
-import { getProdDbUrl, runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
-import { PREVIEW_SECRET_FILES, getSecretFromEnvOrFiles, LOCAL_DB_URL } from '../db/db-guard.ts';
+import { queryJson, queryJsonArray, sqlLiteral } from '../db/db-workflow-lib.ts';
+import { resolveTargetDbUrl } from '../db/db-target-config.ts';
 import {
 	buildSemanticInvitationSnapshot,
 	type ContentParityEnvironment,
 	type SemanticInvitationSnapshot,
 } from './content-parity.ts';
 
-export interface AssetInventoryRow {
+interface AssetInventoryRow {
 	id: string;
 	managedSourceKey: string | null;
 	displayName: string | null;
@@ -22,43 +22,15 @@ export interface LoadedSnapshot {
 	referencedAssetPaths: ReadonlyMap<string, string[]>;
 }
 
-export function resolveDbUrl(env: ContentParityEnvironment): string | null {
-	if (env === 'local') {
-		return process.env.LOCAL_DB_URL?.trim() || LOCAL_DB_URL;
-	}
-	if (env === 'preview') {
-		const url = getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES);
-		return url.trim() || null;
-	}
-	try {
-		return getProdDbUrl().url;
-	} catch {
-		return process.env.PROD_DB_URL?.trim() || null;
-	}
+function resolveDbUrl(env: ContentParityEnvironment): string | null {
+	return resolveTargetDbUrl(env === 'local' ? 'persistent-local' : env) || null;
 }
 
-function queryJson(dbUrl: string, sql: string): unknown {
-	const result = runPsql(`select row_to_json(t) from (${sql}) t;`, dbUrl, {
-		tuplesOnly: true,
-		throwOnError: false,
-	});
-	const text = result.stdout.trim();
-	if (!text) return null;
-	return JSON.parse(text) as unknown;
+function queryRow(dbUrl: string, sql: string): unknown {
+	return queryJson(`select row_to_json(t) from (${sql}) t;`, dbUrl, { throwOnError: false });
 }
 
-function queryJsonArray(dbUrl: string, sql: string): unknown[] {
-	const result = runPsql(`select coalesce(json_agg(t), '[]'::json) from (${sql}) t;`, dbUrl, {
-		tuplesOnly: true,
-		throwOnError: false,
-	});
-	const text = result.stdout.trim();
-	if (!text) return [];
-	const parsed = JSON.parse(text) as unknown;
-	return Array.isArray(parsed) ? parsed : [];
-}
-
-export function collectAssetReferencePaths(...values: unknown[]): ReadonlyMap<string, string[]> {
+function collectAssetReferencePaths(...values: unknown[]): ReadonlyMap<string, string[]> {
 	const references = new Map<string, string[]>();
 	const walk = (current: unknown, currentPath: string): void => {
 		if (Array.isArray(current)) {
@@ -104,12 +76,13 @@ export function loadSemanticParitySnapshot(
 	}
 
 	const matchingRows = queryJsonArray(
-		dbUrl,
 		`select id, slug, event_type, kind, base_demo_id, theme_id, snapshot
 		 from public.invitations
 		 where slug = ${sqlLiteral(slug)}
 		   and event_type = ${sqlLiteral(eventType)}
 		   and archived_at is null`,
+		dbUrl,
+		{ throwOnError: false },
 	) as Array<{
 		id: string;
 		slug: string;
@@ -158,7 +131,7 @@ export function loadSemanticParitySnapshot(
 
 	const invitationIdSql = `${sqlLiteral(invitation.id)}::uuid`;
 
-	const draft = queryJson(
+	const draft = queryRow(
 		dbUrl,
 		`select content
 		 from public.invitation_content_drafts
@@ -168,7 +141,7 @@ export function loadSemanticParitySnapshot(
 		 limit 1`,
 	) as { content?: unknown } | null;
 
-	const published = queryJson(
+	const published = queryRow(
 		dbUrl,
 		`select content, is_demo
 		 from public.published_invitation_content
@@ -182,11 +155,12 @@ export function loadSemanticParitySnapshot(
 	} | null;
 
 	const assets = queryJsonArray(
-		dbUrl,
 		`select id, managed_source_key, display_name, sha256, mime_type, width, height, file_size
 		 from public.invitation_assets
 		 where invitation_id = ${invitationIdSql}
 		   and deleted_at is null`,
+		dbUrl,
+		{ throwOnError: false },
 	) as Array<{
 		id: string;
 		managed_source_key?: string | null;
@@ -198,7 +172,7 @@ export function loadSemanticParitySnapshot(
 		file_size?: number | null;
 	}>;
 
-	const event = queryJson(
+	const event = queryRow(
 		dbUrl,
 		`select slug, event_type
 		 from public.events

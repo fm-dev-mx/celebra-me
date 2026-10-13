@@ -29,7 +29,7 @@ export const VICTORIA_EVENT = {
 } as const;
 
 /** Confirmed preparation details for navigation map URLs and itinerary times. */
-export const VICTORIA_SCHEDULE_DETAILS = {
+const VICTORIA_SCHEDULE_DETAILS = {
 	ceremonyMapUrl: 'https://maps.app.goo.gl/Ahdb29SrPRNwXzpQ9',
 	receptionMapUrl: 'https://maps.app.goo.gl/dV5r1BrBvC3t5C1o6',
 	ceremonyTime: '19:00',
@@ -49,7 +49,7 @@ const EVENT_DATE_LONG = '30 de octubre de 2026';
 const EVENT_DATE_HEADING = 'Viernes, 30 de octubre de 2026';
 
 /** Confirmed Production music; keep the existing Cloudinary delivery URL. */
-export const VICTORIA_MUSIC = {
+const VICTORIA_MUSIC = {
 	url: 'https://res.cloudinary.com/dusxvauvj/video/upload/v1786656962/Stephen_Sanchez_-_Until_I_Found_You_ixnss9.mp3',
 	title: 'Stephen Sanchez — Until I Found You',
 	autoPlay: true,

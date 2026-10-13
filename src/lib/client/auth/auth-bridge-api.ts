@@ -4,19 +4,19 @@
  * UI bridges never call fetch() directly.
  */
 
-export interface AuthLoginPayload {
+interface AuthLoginPayload {
 	method: 'password' | 'magic_link';
 	email: string;
 	password: string;
 }
 
-export interface AuthChangePasswordPayload {
+interface AuthChangePasswordPayload {
 	currentPassword: string;
 	newPassword: string;
 	confirmPassword: string;
 }
 
-export interface AuthResponse {
+interface AuthResponse {
 	ok?: boolean;
 	message?: string;
 	error?: {

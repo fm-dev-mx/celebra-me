@@ -6,7 +6,6 @@ import {
 	authorizationRemediation,
 	authorizationSemantic,
 	disposableRemediation,
-	invitationAttentionRemediation,
 	publicationQueueRemediation,
 	publicationRemediation,
 	readinessRemediation,
@@ -132,23 +131,6 @@ describe('status semantics', () => {
 		expect(queue.semantic).toBe('unverified');
 		expect(commandOf(queue)).toBe('pnpm dbs');
 		expect(queue.meaning).not.toMatch(/no hay invitaciones/i);
-	});
-
-	it('returns command null for aggregate invitation attention > 0 without fake remediation command', () => {
-		const row = {
-			...buildCanonicalStatusViewFixture().environments.preview,
-			evidence: 'LIVE' as const,
-			invitationAttentionCount: 2,
-		};
-		const remediation = invitationAttentionRemediation(row);
-		expect(remediation.semantic).toBe('neutral');
-		expect(
-			remediation.steps.filter((step) => !step.optional).find((step) => step.command)
-				?.command ?? null,
-		).toBeNull();
-		expect(remediation.noCanonicalRemediation).toBe(true);
-		expect(remediation.nextAction).toContain('cola de publicación');
-		expect(remediation.steps).toHaveLength(1);
 	});
 
 	it('surfaces disposable proof as a confirmed gap with the existing migrate command', () => {

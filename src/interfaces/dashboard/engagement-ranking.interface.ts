@@ -25,7 +25,7 @@ export const RANKING_METRICS = [
 ] as const;
 export type RankingMetric = (typeof RANKING_METRICS)[number];
 
-export type RankingSampleState = 'eligible' | 'insufficient';
+type RankingSampleState = 'eligible' | 'insufficient';
 
 export interface RankingThresholds {
 	/** Shared guests an invitation needs before its rates are compared. */

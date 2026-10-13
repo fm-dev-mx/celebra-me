@@ -2,7 +2,7 @@
 // CELEBRA-ME | Screenshot Tool — Capture Plan Resolution
 // =============================================================================
 
-import type { Page } from 'playwright';
+import type { Page } from '@playwright/test';
 import { type ScreenshotJob, type CaptureResult, KNOWN_SECTIONS } from './types.js';
 import {
 	deriveSectionInventory,
@@ -12,7 +12,7 @@ import {
 import { getResolvedSectionIds } from './scope.js';
 import { isSafeScreenshotArtifactSegment } from './registry-validation.js';
 
-export type TaskRequirement = 'required' | 'optional' | 'unsupported';
+type TaskRequirement = 'required' | 'optional' | 'unsupported';
 
 export interface CaptureTask {
 	id: string;
@@ -52,7 +52,7 @@ export function getPlannedCaptureLabel(id: string): string {
 }
 
 /** Required unless explicitly optional or unsupported. */
-export function isCaptureTaskRequired(task: Pick<CaptureTask, 'requirement'>): boolean {
+function isCaptureTaskRequired(task: Pick<CaptureTask, 'requirement'>): boolean {
 	return task.requirement !== 'optional' && task.requirement !== 'unsupported';
 }
 

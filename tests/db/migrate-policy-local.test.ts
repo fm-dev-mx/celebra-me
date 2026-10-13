@@ -1,6 +1,6 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { verifyPersistentLocalTarget } from '../../scripts/db/migrate-policy-local.ts';
-import { classifyDbTarget } from '../../scripts/db/db-guard.ts';
+import { classifyDbTarget } from '../../scripts/db/db-target-config.ts';
 
 describe('persistent-local migrate safety guards', () => {
 	it('rejects remote, Preview, Production, or pooler URLs', () => {

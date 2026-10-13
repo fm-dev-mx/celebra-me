@@ -6,7 +6,6 @@ import {
 	getSessionContextFromRequest,
 	getSessionDebugSnapshotFromRequest,
 } from '@/lib/rsvp/auth/auth';
-import { buildHostLoginRedirect } from '@/lib/rsvp/auth/login';
 import { createMockRequest } from '../helpers/api-mocks';
 
 jest.mock('@/lib/rsvp/auth/auth', () => ({
@@ -63,11 +62,5 @@ describe('dashboard auth flow', () => {
 		};
 		expect(eventsBody.error.code).toBe('unauthorized');
 		expect(guestsBody.error.code).toBe('unauthorized');
-	});
-
-	it('builds login redirect preserving next dashboard path', () => {
-		expect(buildHostLoginRedirect('/dashboard/invitados')).toBe(
-			'/login?next=%2Fdashboard%2Finvitados',
-		);
 	});
 });

@@ -4,7 +4,7 @@
 import sharp from 'sharp';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import type { Page, Request } from 'playwright';
+import type { Page, Request } from '@playwright/test';
 import {
 	type ScreenshotJob,
 	type CaptureResult,
@@ -112,7 +112,7 @@ async function materializePresetCleanupTargets(plan: ResolvedScreenshotPlan): Pr
  * Capture a single viewport: create a page context, run captures, build report.
  */
 async function captureSingleViewport(
-	browser: import('playwright').Browser,
+	browser: import('@playwright/test').Browser,
 	job: ScreenshotJob,
 	outputDir: string,
 	viewport: ScreenshotJob['viewports'][number],

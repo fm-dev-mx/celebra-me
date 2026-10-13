@@ -7,13 +7,14 @@
 
 import { listInvitationDefinitions } from './invitations/registry.ts';
 import { resolveDbUrlForEnv, type TargetEnv } from './dbs-status.ts';
-import { classifyDbTarget, redactDbUrl, runPsql } from '../db/db-workflow-lib.ts';
+import { parsePsqlJsonArray, runPsql } from '../db/db-workflow-lib.ts';
+import { classifyDbTarget, redactDbUrl } from '../db/db-target-config.ts';
 
 const ENVIRONMENTS: readonly TargetEnv[] = ['local', 'preview', 'production'];
 // `invitations.status` never holds `in_progress`; that is the repo lifecycle, filtered separately.
 const EXCLUDED_STATUSES = new Set(['draft']);
 
-export interface CrossDbInvitationRow {
+interface CrossDbInvitationRow {
 	canonicalKey: string;
 	slug: string;
 	title: string;
@@ -37,7 +38,7 @@ export interface EnvironmentSnapshot {
 	error?: string;
 }
 
-export type DivergenceKind = 'missing' | 'extra' | 'divergent' | 'aligned';
+type DivergenceKind = 'missing' | 'extra' | 'divergent' | 'aligned';
 
 export interface CrossDbInvitationFinding {
 	canonicalKey: string;
@@ -74,13 +75,6 @@ interface RawDbRow {
 	createdAt: string;
 }
 
-function parseJsonArray<T>(raw: string): T[] {
-	const text = raw.trim();
-	if (!text) return [];
-	const parsed: unknown = JSON.parse(text);
-	return Array.isArray(parsed) ? (parsed as T[]) : [];
-}
-
 function loadEnvironmentRows(dbUrl: string): {
 	rows: CrossDbInvitationRow[];
 	excludedCount: number;
@@ -107,7 +101,7 @@ select coalesce((
 	if (result.status !== 0) {
 		throw new Error(result.stderr.trim() || 'psql failed');
 	}
-	const all = parseJsonArray<RawDbRow>(result.stdout);
+	const all = parsePsqlJsonArray(result.stdout) as RawDbRow[];
 	const excludedCount = all.filter((row) => EXCLUDED_STATUSES.has(row.status)).length;
 	const rows = all
 		.filter((row) => !EXCLUDED_STATUSES.has(row.status))

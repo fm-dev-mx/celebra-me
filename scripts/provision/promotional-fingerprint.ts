@@ -36,7 +36,7 @@ export interface PromotionalAssetDigest {
 	sha256: string;
 }
 
-export interface LiveAssetEvidence {
+interface LiveAssetEvidence {
 	id: string | null;
 	managedSourceKey: string | null;
 	managedSha256: string | null;
@@ -127,7 +127,7 @@ export function computePromotionalFingerprint(input: {
  * Only rewrites strings that sit where the canonical tree already has an uploaded
  * ref (so section names like `family` are not mistaken for asset keys).
  */
-export function alignExternalAssetsToCanonical(live: unknown, canonical: unknown): unknown {
+function alignExternalAssetsToCanonical(live: unknown, canonical: unknown): unknown {
 	if (isSemanticUploadedAssetRef(canonical)) {
 		const key = canonical.assetId.slice(ASSET_KEY_PREFIX.length);
 		if (typeof live === 'string' && areEquivalentAssetRepresentations(canonical, live)) {

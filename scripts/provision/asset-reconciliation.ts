@@ -1,6 +1,6 @@
 import type { InvitationPackageAsset } from './invitation-package.ts';
 
-export type AssetClassification =
+type AssetClassification =
 	| 'MATCH'
 	| 'BINARY_MATCH_METADATA_DRIFT'
 	| 'MISSING'
@@ -11,7 +11,7 @@ export type AssetClassification =
 	| 'STILL_REFERENCED'
 	| 'STALE_METADATA';
 
-export type PlannedAssetAction =
+type PlannedAssetAction =
 	| 'REUSE'
 	| 'REPAIR_METADATA'
 	| 'UPLOAD'
@@ -55,7 +55,7 @@ export interface ObservedStorageState {
 	httpStatus?: number;
 }
 
-export interface ReconciledAsset {
+interface ReconciledAsset {
 	key: string;
 	displayName: string;
 	canonicalHash: string;
@@ -71,7 +71,7 @@ export interface ReconciledAsset {
 	observedSize: number | null;
 }
 
-export interface AssetReconciliationSummary {
+interface AssetReconciliationSummary {
 	totalCanonical: number;
 	match: number;
 	metadataDrift: number;
@@ -790,8 +790,8 @@ export function reconcileAssets(options: AssetReconciliationOptions): AssetRecon
 			record.managedByDefinitionSlug === options.definitionSlug ||
 			Boolean(
 				options.verifiedRekeyFrom &&
-					record.managedByDefinitionSlug === options.verifiedRekeyFrom &&
-					(!options.targetInvitationId || record.invitationId === options.targetInvitationId),
+				record.managedByDefinitionSlug === options.verifiedRekeyFrom &&
+				(!options.targetInvitationId || record.invitationId === options.targetInvitationId),
 			);
 		if (record.managedSourceKey && isManagedMatch) {
 			const byManagedKey = targetDbByManagedKey.get(record.managedSourceKey) ?? [];

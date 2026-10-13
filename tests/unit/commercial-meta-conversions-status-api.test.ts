@@ -10,6 +10,7 @@ import { requireAdminStrongSession } from '@/lib/rsvp/auth/authorization';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { GET } from '@/pages/api/dashboard/commercial/meta-conversions/status';
+import { createApiContext } from '../helpers/api-mocks';
 
 const mockRequireAdminStrongSession = requireAdminStrongSession as jest.MockedFunction<
 	typeof requireAdminStrongSession
@@ -18,22 +19,6 @@ const mockSupabaseRestRequest = supabaseRestRequest as jest.MockedFunction<
 	typeof supabaseRestRequest
 >;
 
-function createContext(request: Request) {
-	return {
-		request,
-		url: new URL(request.url),
-		params: {},
-		props: {},
-		locals: {},
-		cookies: {} as never,
-		redirect: jest.fn() as never,
-		rewrite: jest.fn() as never,
-		site: undefined,
-		generator: 'Astro',
-		clientAddress: '127.0.0.1',
-	};
-}
-
 beforeEach(() => {
 	jest.clearAllMocks();
 	mockRequireAdminStrongSession.mockResolvedValue({ isSuperAdmin: true } as never);
@@ -41,15 +26,13 @@ beforeEach(() => {
 
 describe('/api/dashboard/commercial/meta-conversions/status', () => {
 	it('returns status for valid conversion event', async () => {
-		mockSupabaseRestRequest.mockResolvedValueOnce([
-			{ id: 'conv-1', status: 'sent' },
-		]);
+		mockSupabaseRestRequest.mockResolvedValueOnce([{ id: 'conv-1', status: 'sent' }]);
 
 		const request = new Request(
 			'https://www.celebra-me.com/api/dashboard/commercial/meta-conversions/status?id=conv-1',
 		);
 
-		const response = await GET(createContext(request) as never);
+		const response = await GET(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(200);
@@ -68,7 +51,7 @@ describe('/api/dashboard/commercial/meta-conversions/status', () => {
 			'https://www.celebra-me.com/api/dashboard/commercial/meta-conversions/status?id=nonexistent',
 		);
 
-		const response = await GET(createContext(request) as never);
+		const response = await GET(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(404);
@@ -80,7 +63,7 @@ describe('/api/dashboard/commercial/meta-conversions/status', () => {
 			'https://www.celebra-me.com/api/dashboard/commercial/meta-conversions/status',
 		);
 
-		const response = await GET(createContext(request) as never);
+		const response = await GET(createApiContext(request) as never);
 
 		expect(response.status).toBe(400);
 		expect(mockSupabaseRestRequest).not.toHaveBeenCalled();
@@ -96,7 +79,7 @@ describe('/api/dashboard/commercial/meta-conversions/status', () => {
 			{ method: 'GET' },
 		);
 
-		const response = await GET(createContext(request) as never);
+		const response = await GET(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBeGreaterThanOrEqual(401);
@@ -115,7 +98,7 @@ describe('/api/dashboard/commercial/meta-conversions/status', () => {
 			{ method: 'GET' },
 		);
 
-		const response = await GET(createContext(request) as never);
+		const response = await GET(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(403);
@@ -124,15 +107,13 @@ describe('/api/dashboard/commercial/meta-conversions/status', () => {
 	});
 
 	it('authorization: valid *** → 200', async () => {
-		mockSupabaseRestRequest.mockResolvedValueOnce([
-			{ id: 'conv-1', status: 'pending' },
-		]);
+		mockSupabaseRestRequest.mockResolvedValueOnce([{ id: 'conv-1', status: 'pending' }]);
 
 		const request = new Request(
 			'https://www.celebra-me.com/api/dashboard/commercial/meta-conversions/status?id=conv-1',
 		);
 
-		const response = await GET(createContext(request) as never);
+		const response = await GET(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(200);

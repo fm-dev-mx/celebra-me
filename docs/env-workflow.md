@@ -103,7 +103,8 @@ execution:
   bundle never qualifies, because edge runtimes do not report `NODE_ENV`.
 - **Lane runtime target:** `CELEBRA_RUNTIME_TARGET` is `local` or `preview` for local Astro
   processes. Lane detection sets it automatically; shell override is allowed for intentional tests.
-  It never forges hosted identity and is not mutation authorization.
+  It never forges hosted identity and is not mutation authorization. Its `preview` names the Preview
+  database a local process talks to; `CELEBRA_DEPLOY_ENV=preview` names a hosted Preview deployment.
 - **Canonical-status cache path:** `CELEBRA_STATUS_CACHE_PATH` optionally overrides the durable
   status cache file used by the app/runtime status server. Default is
   `.cache/canonical-status.json`.
@@ -148,10 +149,10 @@ execution:
 The deterministic env contract test uses these explicit lists to reconcile the secret-free template
 with app/runtime typing:
 
-| Contract category           | Variables                                                                                                                                                                                                                                                                                                                                                                                                                                  | Relationship                                          |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| `operational-script-only`   | `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `RSVP_ADMIN_USER`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`, `PLAYWRIGHT_PREVIEW_SUPABASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS` | Present in `.env.example`; omitted from typing.       |
-| `platform-provided-runtime` | `CELEBRA_DEPLOY_ENV`, `CELEBRA_BUILD_SHA`, `CELEBRA_BUILD_REF`                                                                                                                                                                                                                                                                                                                                                                             | Present in app/runtime typing; omitted from template. |
+| Contract category         | Variables                                                                                                                                                                                                                                                                                                                                                                                                               | Relationship                                          |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `operational-script-only` | `LOCAL_SUPER_ADMIN_PASSWORD`, `RSVP_ADMIN_PASSWORD`, `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_APPROVED_PREVIEW_DEPLOYMENT_HOST`, `PLAYWRIGHT_PREVIEW_SUPABASE_URL`, `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD`, `VERCEL_AUTOMATION_BYPASS_SECRET`, `PLAYWRIGHT_PREVIEW_INVITATION_ID`, `PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION`, `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING`, `PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS` | Present in `.env.example`; omitted from typing.       |
+| `deploy-provided-runtime` | `CELEBRA_DEPLOY_ENV`, `CELEBRA_BUILD_SHA`, `CELEBRA_BUILD_REF`                                                                                                                                                                                                                                                                                                                                                          | Present in app/runtime typing; omitted from template. |
 
 `SUPER_ADMIN_EMAILS` is a server-only runtime list. Its first entry is the project owner: the only
 account that may confirm or clear owner review in the invitation workflow, and the local super admin
@@ -373,7 +374,5 @@ isolated behavior and must not depend on a previously running server.
 
 ## Cleanup Notes
 
-- `RSVP_ADMIN_USER` stays in `.env.example` and the runtime env allowlist, but no code reads it; it
-  is a retirement candidate.
 - When adding or retiring variables, reconcile the template, app/runtime typing, and category lists
   according to their roles. Script-only variables do not belong in `src/env.d.ts`.

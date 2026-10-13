@@ -1,5 +1,6 @@
 import { parsePhoneInput, stripAllNonDigits } from '@/lib/phone/validation';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
+import type { WhatsAppConfig } from '@/lib/adapters/types';
 export type { RsvpResponseMessages } from '@/lib/invitation/rsvp-messages';
 
 /**
@@ -15,14 +16,7 @@ export const ALLOW_RESPONSE_EDITING_BY_DEFAULT = true;
 
 // Shared RSVP state types.
 
-export type AttendanceStatus = 'confirmed' | 'declined' | null;
-
-export interface WhatsAppConfig {
-	phone: string;
-	confirmedTemplate?: string;
-	declinedTemplate?: string;
-	omitTitle?: boolean;
-}
+export type RsvpAttendanceChoice = 'confirmed' | 'declined' | null;
 
 export interface ResolvedLabels {
 	nameLabel: string;
@@ -39,7 +33,7 @@ export interface ValidationContext {
 	phone: string;
 	phoneRequired: boolean;
 	nameLocked: boolean;
-	attendanceStatus: AttendanceStatus;
+	attendanceStatus: RsvpAttendanceChoice;
 	attendeeCount: number | string;
 	supportsPlusOnes: boolean;
 	effectiveGuestCap: number;
@@ -145,7 +139,7 @@ export function resolveLabels(
 	};
 }
 
-export function parseAttendeeCount(attendeeCount: number | string): number {
+function parseAttendeeCount(attendeeCount: number | string): number {
 	const n = typeof attendeeCount === 'string' ? parseInt(attendeeCount, 10) : attendeeCount;
 	return Number.isNaN(n) ? 0 : n;
 }
@@ -175,7 +169,7 @@ export function parseRsvpPhoneInput(input: string): { phone: string; countryCode
 
 export function buildWhatsAppUrl(params: {
 	whatsappConfig?: WhatsAppConfig;
-	attendanceStatus: AttendanceStatus;
+	attendanceStatus: RsvpAttendanceChoice;
 	attendeeCount: number | string;
 	name: string;
 	title: string;
@@ -250,7 +244,7 @@ export function validateRsvpForm({
 }
 
 export function normalizeGuestCount(
-	attendanceStatus: AttendanceStatus,
+	attendanceStatus: RsvpAttendanceChoice,
 	attendeeCount: number | string,
 	supportsPlusOnes: boolean,
 	effectiveGuestCap?: number,

@@ -6,7 +6,7 @@ import {
 	getDefaultResponseMessages,
 	interpolateRsvpMessage,
 	ALLOW_RESPONSE_EDITING_BY_DEFAULT,
-	type AttendanceStatus,
+	type RsvpAttendanceChoice,
 	type RsvpResponseMessages,
 } from '@/components/invitation/rsvp-logic';
 import {
@@ -20,7 +20,7 @@ import { HeartbreakIcon } from '@/components/common/icons/invitation/Heartbreak'
 import type { LocationSection } from '@/lib/adapters/types';
 import AddToCalendarButton from '@/components/invitation/AddToCalendarButton';
 import { buildCalendarEventInput } from '@/lib/calendar/build-calendar-event-input';
-import { isNavigableVenueMapUrl } from '@/lib/invitation/location-helper';
+import { resolveVenueMapPreviewUrl } from '@/lib/invitation/location-helper';
 import { formatVenueTimeForDisplay } from '@/lib/invitation/venue-datetime';
 import type { RsvpVariant } from '@/lib/invitation/section-variants';
 
@@ -113,7 +113,7 @@ function SubmitButtonText({
 SubmitButtonText.displayName = 'SubmitButtonText';
 
 function resolveGreetingMessages(
-	attendanceStatus: AttendanceStatus,
+	attendanceStatus: RsvpAttendanceChoice,
 	responseMessages: RsvpResponseMessages | undefined,
 	name: string,
 	celebrantName?: string,
@@ -150,12 +150,7 @@ function RevealedLocationBlock({ location }: { location: RevealedLocation }) {
 				<h3 className="rsvp__revealed-location-title">{location.introHeading}</h3>
 			)}
 			{venues.map((venue, index) => {
-				const href = [
-					venue.googleMapsUrl,
-					venue.mapUrl,
-					venue.appleMapsUrl,
-					venue.wazeUrl,
-				].find(isNavigableVenueMapUrl);
+				const href = resolveVenueMapPreviewUrl(venue);
 				const mapLabel =
 					href === venue.googleMapsUrl
 						? 'Ver ubicación en Google Maps'
@@ -200,7 +195,7 @@ export const SubmittedState = forwardRef<
 		variant?: RsvpVariant;
 		onFocusCapture?: React.FocusEventHandler<HTMLElement>;
 		name: string;
-		attendanceStatus: AttendanceStatus;
+		attendanceStatus: RsvpAttendanceChoice;
 		confirmationMessage: string;
 		celebrantName?: string;
 		showWhatsAppCta: boolean;
@@ -367,7 +362,7 @@ interface RsvpFormViewProps {
 	showIdentityFields: boolean;
 	touched: Record<string, boolean>;
 	errors: Record<string, string>;
-	attendanceStatus: AttendanceStatus;
+	attendanceStatus: RsvpAttendanceChoice;
 	supportsPlusOnes: boolean;
 	effectiveGuestCap: number;
 	attendeeCount: number | string;
@@ -385,7 +380,7 @@ interface RsvpFormViewProps {
 	onNameChange: (value: string) => void;
 	onPhoneChange: (value: string) => void;
 	onCountryCodeChange: (value: string) => void;
-	onAttendanceChange: (status: Exclude<AttendanceStatus, null>) => void;
+	onAttendanceChange: (status: Exclude<RsvpAttendanceChoice, null>) => void;
 	onGuestCountChange: (value: string) => void;
 	onNotesChange: (value: string) => void;
 	onBlur: (field: string) => void;
@@ -443,7 +438,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 	const declineLabel = variant === 'reply-card' ? 'Lamento no poder asistir' : 'No podré asistir';
 	const [attendanceCollapsed, setAttendanceCollapsed] = useState(false);
 
-	const handleAttendanceCollapse = (status: Exclude<AttendanceStatus, null>) => {
+	const handleAttendanceCollapse = (status: Exclude<RsvpAttendanceChoice, null>) => {
 		onAttendanceChange(status);
 		setAttendanceCollapsed(true);
 	};

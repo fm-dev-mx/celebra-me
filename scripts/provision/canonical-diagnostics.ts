@@ -26,6 +26,7 @@ import {
 import { apply3WaySemanticPatch } from './semantic-delta.ts';
 import type { InvitationDefinition } from './invitations/invitation-definition.ts';
 import type { LiveInvitationEvidenceRow } from '../status-core/promotional-evidence.ts';
+import { isRecord } from '../../src/lib/shared/data-utils.ts';
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
 const MAX_SEMANTIC_PATHS = 50;
@@ -52,10 +53,6 @@ function diagnostic(input: {
 		...(input.slug ? { slug: input.slug } : {}),
 		...(input.environment ? { environment: input.environment } : {}),
 	};
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
 function assetDiagnostics(

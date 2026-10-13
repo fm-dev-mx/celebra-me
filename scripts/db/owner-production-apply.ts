@@ -57,7 +57,10 @@ export function sanitizeOwnerConfirmationInput(raw: string): string {
 
 /** First 8 hex characters of a binding fingerprint (planId, packageHash, etc.). */
 export function shortBindingHex(bindingHex: string): string {
-	const cleaned = bindingHex.trim().toLowerCase().replace(/[^0-9a-f]/g, '');
+	const cleaned = bindingHex
+		.trim()
+		.toLowerCase()
+		.replace(/[^0-9a-f]/g, '');
 	if (cleaned.length < 8) {
 		failGate({
 			title: 'Enlace de confirmación inválido',
@@ -89,7 +92,7 @@ export function buildOwnerConfirmationCode(operationVerb: string, bindingHex: st
 	return `${verb} ${shortBindingHex(bindingHex)}`;
 }
 
-export type OwnerIntent = 'proceed' | 'cancel' | 'review';
+type OwnerIntent = 'proceed' | 'cancel' | 'review';
 
 export interface OwnerProductionApplyInput {
 	/** Must be true when the CLI received an explicit `--apply` flag. */
@@ -173,9 +176,7 @@ export function assertExactProductionProjectRef(dbUrl: string): string {
 	return projectRef;
 }
 
-export function agentSelfAuthorizationBlocked(
-	env: NodeJS.ProcessEnv = process.env,
-): boolean {
+function agentSelfAuthorizationBlocked(env: NodeJS.ProcessEnv = process.env): boolean {
 	return isAgentContext(env);
 }
 
@@ -187,9 +188,9 @@ export function agentSelfAuthorizationBlocked(
  * skipped CR and waited for LF forever, so the operator appeared stuck and the
  * eventual buffer (often with control bytes) failed the exact match.
  */
-function inquirerContext(io: OwnerPromptIo | null):
-	| { input: NodeJS.ReadableStream; output: NodeJS.WritableStream }
-	| undefined {
+function inquirerContext(
+	io: OwnerPromptIo | null,
+): { input: NodeJS.ReadableStream; output: NodeJS.WritableStream } | undefined {
 	if (!io) return undefined;
 	return { input: io.input, output: io.output };
 }
@@ -258,10 +259,7 @@ function defaultTechnicalReview(input: {
 }
 
 function writeCompactSummary(input: OwnerProductionApplyInput): void {
-	const rows: Array<readonly [string, string]> = [
-		['Entorno', 'Production'],
-		...input.summary,
-	];
+	const rows: Array<readonly [string, string]> = [['Entorno', 'Production'], ...input.summary];
 	writeHuman(
 		formatKeyValueBlock(input.summaryTitle ?? 'Escritura en Production', rows, {
 			env: input.env,
@@ -277,9 +275,7 @@ function writeTechnicalReviewCard(
 	rows: ReadonlyArray<readonly [string, string]>,
 	env?: NodeJS.ProcessEnv,
 ): void {
-	writeHuman(
-		formatKeyValueBlock('Revisión técnica — impacto y controles', rows, { env }),
-	);
+	writeHuman(formatKeyValueBlock('Revisión técnica — impacto y controles', rows, { env }));
 	writeHuman();
 }
 
@@ -287,9 +283,7 @@ function writeTechnicalReviewCard(
  * Final owner gate immediately before the first Production write.
  * Callers must invoke this only after all read-only preflight and backup steps.
  */
-export async function requireOwnerProductionApply(
-	input: OwnerProductionApplyInput,
-): Promise<void> {
+export async function requireOwnerProductionApply(input: OwnerProductionApplyInput): Promise<void> {
 	const env = input.env ?? process.env;
 
 	if (!input.apply) {

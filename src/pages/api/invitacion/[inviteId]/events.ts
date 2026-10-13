@@ -12,12 +12,11 @@ import {
 import { parseClientEngagementBatch } from '@/lib/rsvp/engagement/event-contract';
 import { ingestClientEngagementBatch } from '@/lib/rsvp/engagement/engagement.service';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
+import { UUID_PATTERN } from '@/lib/intake/constants';
 
 const MAX_BODY_BYTES = 16 * 1024;
 // Invite ids are database uuids; existence is decided by the ledger RPC, not by the RFC variant.
-const inviteIdSchema = z
-	.string()
-	.regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+const inviteIdSchema = z.string().regex(UUID_PATTERN);
 
 /** Guest engagement ingestion. Spec: docs/domains/rsvp/engagement-analytics.md */
 export const POST: APIRoute = async ({ params, request }) => {

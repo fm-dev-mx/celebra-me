@@ -1,20 +1,18 @@
+import type { InvitationWorkflow } from '@/lib/intake/workflow';
 import type { ContentSectionKey, EventType, ThemePreset } from '@/lib/theme/theme-contract';
 import type { EventAssetKey } from '@/lib/assets/asset-keys';
 
-export type InvitationKind = 'demo' | 'client';
+type InvitationKind = 'demo' | 'client';
 
-export const INTAKE_BLOCK_TYPES = [
-	'event-details',
-	'main-people',
-	'date-locations',
-	'photos',
-	'rsvp-config',
-	'music',
-	'gifts',
-	'special-messages',
-] as const;
-
-export type IntakeBlockType = (typeof INTAKE_BLOCK_TYPES)[number];
+type IntakeBlockType =
+	| 'event-details'
+	| 'main-people'
+	| 'date-locations'
+	| 'photos'
+	| 'rsvp-config'
+	| 'music'
+	| 'gifts'
+	| 'special-messages';
 
 export const INVITATION_STATUSES = [
 	'draft',
@@ -40,7 +38,7 @@ export interface DemoPreset {
 }
 
 export interface Invitation {
-	workflow?: import('@/lib/intake/workflow').InvitationWorkflow;
+	workflow?: InvitationWorkflow;
 	id: string;
 	kind: InvitationKind;
 	sourceInvitationId: string | null;
@@ -61,9 +59,7 @@ export interface Invitation {
 	updatedAt: string;
 }
 
-export const INVITATION_CONTENT_DRAFT_STATUSES = ['draft', 'reviewed', 'approved'] as const;
-
-export type InvitationContentDraftStatus = (typeof INVITATION_CONTENT_DRAFT_STATUSES)[number];
+export type InvitationContentDraftStatus = 'draft' | 'reviewed' | 'approved';
 
 export type ContentSource = 'draft' | 'published' | 'empty' | 'mixed';
 

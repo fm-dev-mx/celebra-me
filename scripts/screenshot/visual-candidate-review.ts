@@ -11,7 +11,7 @@ import { compareWithVisualGate } from './visual-gate-comparator.ts';
 
 type ReviewCapture = CaptureManifest['captures'][number] & Record<string, unknown>;
 
-export interface CandidateReviewItem {
+interface CandidateReviewItem {
 	file: string;
 	label: string;
 	kind: 'variant' | 'page';
@@ -188,7 +188,7 @@ for(const c of[q,k,v])c.addEventListener('input',apply);
 document.addEventListener('click',e=>{const b=e.target.closest('button[data-show]');if(!b)return;const a=b.closest('article');for(const x of a.querySelectorAll('[data-view]'))x.hidden=x.dataset.view!==b.dataset.show;for(const x of a.querySelectorAll('button[data-show]'))x.setAttribute('aria-pressed',String(x===b));});
 document.addEventListener('input',e=>{if(!e.target.matches('.slider input'))return;e.target.closest('.slider').querySelector('.top').style.clipPath='inset(0 '+(100-e.target.value)+'% 0 0)';});`;
 
-export function renderCandidateReviewHtml(review: CandidateReview): string {
+function renderCandidateReviewHtml(review: CandidateReview): string {
 	const changed = review.items.filter((item) => item.status === 'changed').length;
 	const added = review.items.length - changed;
 	const viewports = [...new Set(review.items.map((item) => item.viewport))].sort();

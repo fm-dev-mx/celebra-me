@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 jest.mock('@/lib/rsvp/auth/authorization', () => ({
 	requireAdminMutationAccess: jest.fn(),
 	requireAdminStrongSession: jest.fn(),
@@ -11,7 +14,6 @@ jest.mock('@/lib/commercial/customer.repository', () => ({
 	findCommercialCustomerById: jest.fn(),
 }));
 
-import { Request as NodeRequest } from 'undici';
 import {
 	requireAdminMutationAccess,
 	requireAdminStrongSession,
@@ -20,10 +22,7 @@ import { createCommercialCustomer } from '@/lib/commercial/customer.service';
 import { findCommercialCustomerById } from '@/lib/commercial/customer.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { GET, POST } from '@/pages/api/dashboard/commercial/customers';
-
-function nodeRequest(input: string, init?: ConstructorParameters<typeof NodeRequest>[1]): Request {
-	return new NodeRequest(input, init) as unknown as Request;
-}
+import { createApiContext } from '../helpers/api-mocks';
 
 const mockRequireAdminMutationAccess = requireAdminMutationAccess as jest.MockedFunction<
 	typeof requireAdminMutationAccess
@@ -37,22 +36,6 @@ const mockCreateCustomer = createCommercialCustomer as jest.MockedFunction<
 const mockFindCommercialCustomerById = findCommercialCustomerById as jest.MockedFunction<
 	typeof findCommercialCustomerById
 >;
-
-function createContext(request: { url: string }) {
-	return {
-		request,
-		url: new URL(request.url),
-		params: {},
-		props: {},
-		locals: {},
-		cookies: {} as never,
-		redirect: jest.fn() as never,
-		rewrite: jest.fn() as never,
-		site: undefined,
-		generator: 'Astro',
-		clientAddress: '127.0.0.1',
-	};
-}
 
 beforeEach(() => {
 	jest.clearAllMocks();
@@ -75,7 +58,7 @@ beforeEach(() => {
 
 describe('/api/dashboard/commercial/customers', () => {
 	it('creates a commercial customer and links the selected lead as an admin mutation', async () => {
-		const request = nodeRequest(
+		const request = new Request(
 			'https://www.celebra-me.com/api/dashboard/commercial/customers',
 			{
 				method: 'POST',
@@ -89,7 +72,7 @@ describe('/api/dashboard/commercial/customers', () => {
 			},
 		);
 
-		const response = await POST(createContext(request) as never);
+		const response = await POST(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(201);
@@ -119,7 +102,7 @@ describe('/api/dashboard/commercial/customers', () => {
 			),
 		);
 
-		const request = nodeRequest(
+		const request = new Request(
 			'https://www.celebra-me.com/api/dashboard/commercial/customers',
 			{
 				method: 'POST',
@@ -131,7 +114,7 @@ describe('/api/dashboard/commercial/customers', () => {
 			},
 		);
 
-		const response = await POST(createContext(request) as never);
+		const response = await POST(createApiContext(request) as never);
 		const body = await response.json();
 
 		expect(response.status).toBe(409);
@@ -149,11 +132,11 @@ describe('/api/dashboard/commercial/customers', () => {
 				phoneE164: '+521234567890',
 			});
 
-			const request = nodeRequest(
+			const request = new Request(
 				'https://www.celebra-me.com/api/dashboard/commercial/customers?id=cust-123',
 			);
 
-			const response = await GET(createContext(request) as never);
+			const response = await GET(createApiContext(request) as never);
 			const body = await response.json();
 
 			expect(response.status).toBe(200);
@@ -164,11 +147,11 @@ describe('/api/dashboard/commercial/customers', () => {
 		it('returns 404 when customer not found', async () => {
 			mockFindCommercialCustomerById.mockResolvedValue(null);
 
-			const request = nodeRequest(
+			const request = new Request(
 				'https://www.celebra-me.com/api/dashboard/commercial/customers?id=nonexistent',
 			);
 
-			const response = await GET(createContext(request) as never);
+			const response = await GET(createApiContext(request) as never);
 			const body = await response.json();
 
 			expect(response.status).toBe(404);
@@ -177,11 +160,11 @@ describe('/api/dashboard/commercial/customers', () => {
 		});
 
 		it('rejects without id param', async () => {
-			const request = nodeRequest(
+			const request = new Request(
 				'https://www.celebra-me.com/api/dashboard/commercial/customers',
 			);
 
-			const response = await GET(createContext(request) as never);
+			const response = await GET(createApiContext(request) as never);
 
 			expect(response.status).toBe(400);
 			expect(mockFindCommercialCustomerById).not.toHaveBeenCalled();
@@ -197,7 +180,7 @@ describe('/api/dashboard/commercial/customers', () => {
 				{ method: 'GET' },
 			);
 
-			const response = await GET(createContext(request) as never);
+			const response = await GET(createApiContext(request) as never);
 			const body = await response.json();
 
 			expect(response.status).toBeGreaterThanOrEqual(401);
@@ -216,7 +199,7 @@ describe('/api/dashboard/commercial/customers', () => {
 				{ method: 'GET' },
 			);
 
-			const response = await GET(createContext(request) as never);
+			const response = await GET(createApiContext(request) as never);
 			const body = await response.json();
 
 			expect(response.status).toBe(403);
@@ -236,7 +219,7 @@ describe('/api/dashboard/commercial/customers', () => {
 				'https://www.celebra-me.com/api/dashboard/commercial/customers?id=admin-verified-customer',
 			);
 
-			const response = await GET(createContext(request) as never);
+			const response = await GET(createApiContext(request) as never);
 			const body = await response.json();
 
 			expect(response.status).toBe(200);

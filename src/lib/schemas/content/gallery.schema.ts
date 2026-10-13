@@ -6,7 +6,7 @@ import {
 	GALLERY_PAIRED_ARRANGEMENTS,
 	GALLERY_PRESENTATIONS,
 	assertSupportedGalleryPresentation,
-} from '@/lib/invitation/presentation-options';
+} from '@/lib/invitation/gallery-presentation';
 import { GALLERY_VARIANTS } from '@/lib/invitation/section-variants';
 
 interface GalleryItemRefinement {

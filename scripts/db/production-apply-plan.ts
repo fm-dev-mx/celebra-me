@@ -19,7 +19,7 @@ export type ProductionApplyReadiness =
 	| 'UNKNOWN'
 	| 'NOT_APPLICABLE';
 
-export type ProductionApplyDomain = 'schema' | 'invitation' | 'patch';
+type ProductionApplyDomain = 'schema' | 'invitation' | 'patch';
 
 export type ProductionApplyItemOutcome =
 	| 'pending'
@@ -57,7 +57,7 @@ export interface ProductionApplyPlanItem {
 	preflight?: PromotionPreflightReport;
 }
 
-export interface ProductionApplyPatchPreview {
+interface ProductionApplyPatchPreview {
 	state: ProductionPatchPreviewState;
 	reason: ProductionPatchPreviewReason;
 	total: number;

@@ -8,7 +8,7 @@
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 
 export const PRODUCTION_PROJECT_REF = SUPABASE_PROJECT_REFS.production;
-export const AGENT_CONTEXT_ENV = 'CELEBRA_AGENT_CONTEXT';
+const AGENT_CONTEXT_ENV = 'CELEBRA_AGENT_CONTEXT';
 
 export type BoundaryPermission = 'allow' | 'deny';
 
@@ -184,7 +184,7 @@ function consumeSqlComment(sql: string, index: number): { text: string; nextInde
 	return null;
 }
 
-export function stripSqlComments(sql: string): string {
+function stripSqlComments(sql: string): string {
 	let output = '';
 	for (let i = 0; i < sql.length;) {
 		const ch = sql[i]!;
@@ -356,7 +356,7 @@ export function isReadOnlySql(sql: string): boolean {
 	});
 }
 
-export function commandTargetsProduction(command: string): boolean {
+function commandTargetsProduction(command: string): boolean {
 	return (
 		command.includes(PRODUCTION_PROJECT_REF) ||
 		/\bPROD_DB_URL\b/.test(command) ||
@@ -391,7 +391,7 @@ function extractPsqlSql(args: readonly string[], input?: string): string | undef
 	return undefined;
 }
 
-export function isSupabaseMutatingPush(args: readonly string[]): boolean {
+function isSupabaseMutatingPush(args: readonly string[]): boolean {
 	const joined = args.join(' ');
 	if (!/\bdb\s+push\b/.test(joined) && !(args.includes('db') && args.includes('push'))) {
 		return false;
@@ -399,21 +399,21 @@ export function isSupabaseMutatingPush(args: readonly string[]): boolean {
 	return !args.includes('--dry-run');
 }
 
-export function isSupabaseHistoryMutation(args: readonly string[]): boolean {
+function isSupabaseHistoryMutation(args: readonly string[]): boolean {
 	if (isSupabaseMutatingPush(args)) return true;
 	if (args.includes('migration') && args.includes('up')) return true;
 	if (args.includes('db') && args.includes('reset')) return true;
 	return false;
 }
 
-export interface SpawnInspection {
+interface SpawnInspection {
 	kind: 'none' | 'supabase-mutation' | 'psql';
 	dbUrl?: string;
 	sql?: string;
 	linked?: boolean;
 }
 
-export function inspectSpawn(
+function inspectSpawn(
 	command: string,
 	args: readonly string[],
 	options?: { input?: string },
@@ -574,7 +574,7 @@ function stringField(record: Record<string, unknown> | null, keys: readonly stri
 	return '';
 }
 
-export function extractMcpInvocation(payload: unknown): {
+function extractMcpInvocation(payload: unknown): {
 	toolName: string;
 	projectId: string;
 	sql: string;

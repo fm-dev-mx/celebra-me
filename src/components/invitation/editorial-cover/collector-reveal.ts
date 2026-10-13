@@ -33,7 +33,7 @@ export interface FoldGeometry {
 /** Progress past which a released drag completes the turn instead of falling back. */
 export const RELEASE_THRESHOLD = 0.42;
 /** Leftward speed (px/ms) that completes the turn regardless of progress. */
-export const FLICK_VELOCITY = 0.5;
+const FLICK_VELOCITY = 0.5;
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 

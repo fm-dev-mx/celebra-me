@@ -6,7 +6,7 @@ import {
 } from '@/lib/invitation/access/invitation-access.repository';
 import type { InvitationAccessState } from '@/lib/invitation/access/invitation-access';
 
-export interface PublishedInvitationContentRow {
+interface PublishedInvitationContentRow {
 	id: string;
 	invitation_project_id: string;
 	slug: string;
@@ -92,18 +92,6 @@ export async function findPublishedWithAccessBySlugAndEventType(
 	});
 	const row = rows[0];
 	return row ? { ...toRow(row), access: readEmbeddedInvitationAccess(row) } : null;
-}
-
-export async function listPublishedByEventTypes(
-	eventTypes: readonly string[],
-): Promise<PublishedInvitationContent[]> {
-	if (eventTypes.length === 0) return [];
-	const encoded = eventTypes.map((eventType) => encodeURIComponent(eventType)).join(',');
-	const rows = await supabaseRestRequest<PublishedInvitationContentRow[]>({
-		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS}&event_type=in.(${encoded})&${ACTIVE_FILTER}`,
-		useServiceRole: true,
-	});
-	return rows.map(toRow);
 }
 
 export async function updatePublishedContentSnapshot(input: {

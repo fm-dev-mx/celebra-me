@@ -15,7 +15,6 @@ interface ImportMetaEnv {
 	readonly CONTACT_FORM_RECIPIENT_EMAIL: string;
 	readonly PUBLIC_SUPABASE_URL: string;
 	readonly PUBLIC_SUPABASE_ANON_KEY: string;
-	readonly PUBLIC_GOOGLE_ANALYTICS_ID: string;
 	readonly PUBLIC_GA_MEASUREMENT_ID: string;
 	readonly PUBLIC_META_PIXEL_ID: string;
 	readonly PUBLIC_META_PIXEL_ENABLED: string;

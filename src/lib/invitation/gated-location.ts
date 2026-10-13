@@ -4,8 +4,7 @@ import { getInvitationContextByInviteId } from '@/lib/rsvp/services/invitation-c
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { sanitize } from '@/lib/rsvp/core/utils';
 import type { LocationSection } from '@/lib/adapters/types';
-
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+import { UUID_PATTERN } from '@/lib/intake/constants';
 
 export interface GatedLocationRequest {
 	inviteId: string;
@@ -26,7 +25,7 @@ export async function resolveGatedLocationPayload(
 		throw new ApiError(400, 'bad_request', 'inviteId is required.');
 	}
 
-	if (!UUID_REGEX.test(inviteId)) {
+	if (!UUID_PATTERN.test(inviteId)) {
 		throw new ApiError(400, 'bad_request', 'Invalid invite ID format.');
 	}
 

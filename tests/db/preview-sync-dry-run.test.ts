@@ -74,7 +74,6 @@ jest.mock('../../scripts/db/db-workflow-lib', () => ({
 	fail: (message: string) => {
 		throw new Error(message);
 	},
-	redactDbUrl: (url: string) => url,
 	getProdDbUrl: () => ({
 		url: 'postgresql://postgres:secret@db.ineitkdkyrxqyressllp.supabase.co:5432/postgres',
 		source: 'test',
@@ -82,7 +81,11 @@ jest.mock('../../scripts/db/db-workflow-lib', () => ({
 	runPsql: mockRunPsql,
 }));
 
-jest.mock('../../scripts/db/db-guard', () => ({
+jest.mock('../../scripts/db/db-target-config', () => ({
+	...jest.requireActual<typeof import('../../scripts/db/db-target-config')>(
+		'../../scripts/db/db-target-config',
+	),
+	redactDbUrl: (url: string) => url,
 	PREVIEW_SECRET_FILES: ['.env.preview.local'],
 	getSecretFromEnvOrFiles: () =>
 		'postgresql://postgres:secret@db.iwipdvisoyerfdytuhwi.supabase.co:5432/postgres',

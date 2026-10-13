@@ -33,7 +33,7 @@ import {
 import { createGa4EventQueue } from '@/lib/tracking/ga4-queue';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 
-import { getGaMeasurementId, getLegacyAnalyticsId } from '@/lib/tracking/ga4-env';
+import { getGaMeasurementId } from '@/lib/tracking/ga4-env';
 
 let gaLoaded = false;
 let gaLoading = false;
@@ -41,17 +41,6 @@ let measurementId = '';
 
 const MAX_PENDING_EVENTS = 30;
 const queue = createGa4EventQueue(MAX_PENDING_EVENTS);
-
-/**
- * Resolve the GA4 measurement ID, preferring PUBLIC_GA_MEASUREMENT_ID
- * with fallback to PUBLIC_GOOGLE_ANALYTICS_ID.
- */
-function resolveMeasurementId(): string {
-	const ga4Id = getGaMeasurementId().trim();
-	if (ga4Id) return ga4Id;
-	const legacyId = getLegacyAnalyticsId().trim();
-	return legacyId || '';
-}
 
 function routeAllowsGA(): boolean {
 	return classifyTrackingRoute(window.location.pathname).gaAllowed;
@@ -159,7 +148,7 @@ function flushPendingEvents(): void {
  * Initialize GA4: check gates, load script, and subscribe to consent changes.
  */
 export function initGA4(): void {
-	measurementId = resolveMeasurementId();
+	measurementId = getGaMeasurementId().trim();
 	if (!measurementId) return;
 	if (!shouldLoad()) return;
 

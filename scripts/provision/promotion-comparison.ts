@@ -13,6 +13,7 @@ import {
 } from '../../src/lib/intake/services/publication-canonicalize.ts';
 import { ASSET_KEY_PREFIX, semanticAssetRef } from './normalized-invitation-release.ts';
 import { collectUploadedContentRefs } from '../../src/lib/invitation-preparation/uploaded-content-refs.ts';
+import { isRecord } from '../../src/lib/shared/data-utils.ts';
 
 // ---------------------------------------------------------------------------
 // Canonical publication projection
@@ -50,10 +51,6 @@ export function isSemanticallyEqual(a: unknown, b: unknown, targetStorageUrl?: s
 	);
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-}
-
 /** Uploaded ref rewritten to a managed semantic key (src may already be stripped). */
 export function isSemanticUploadedAssetRef(
 	value: unknown,
@@ -69,7 +66,7 @@ export function isSemanticUploadedAssetRef(
 /**
  * Hosted external asset URL string (Cloudinary, Storage host, or storage placeholder).
  */
-export function isExternalHostedAssetString(value: unknown): value is string {
+function isExternalHostedAssetString(value: unknown): value is string {
 	if (typeof value !== 'string' || value.length === 0) return false;
 	if (value.includes(STORAGE_URL_PLACEHOLDER)) return true;
 	return /^https?:\/\//i.test(value);
@@ -229,7 +226,7 @@ export function semanticInvitationContentEqual(
 // Individual check functions
 // ---------------------------------------------------------------------------
 
-export function checkInvitationMetadataIdentical(
+function checkInvitationMetadataIdentical(
 	pkgInv: InvitationPackageData['invitation'],
 	existingInv: Record<string, unknown> | null,
 ): boolean {
@@ -249,7 +246,7 @@ export function checkInvitationMetadataIdentical(
 	);
 }
 
-export function checkDraftContentIdentical(
+function checkDraftContentIdentical(
 	pkgDraftContent: Record<string, unknown>,
 	existingDraft: Record<string, unknown> | null,
 	targetStorageUrl: string,
@@ -274,7 +271,7 @@ function hasIdenticalUploadedDeliveryRefs(expected: unknown, actual: unknown): b
 	return JSON.stringify(identity(expected)) === JSON.stringify(identity(actual));
 }
 
-export function checkPublishedContentIdentical(
+function checkPublishedContentIdentical(
 	pkgPublishedContent: Record<string, unknown>,
 	existingPub: Record<string, unknown> | null,
 	targetStorageUrl: string,
@@ -287,7 +284,7 @@ export function checkPublishedContentIdentical(
 	);
 }
 
-export function checkEventAndMembershipIdentical(
+function checkEventAndMembershipIdentical(
 	pkg: InvitationPackageData,
 	ownerUserId: string,
 	targetInvitationId: string,

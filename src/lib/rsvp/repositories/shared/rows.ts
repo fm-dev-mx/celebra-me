@@ -3,7 +3,6 @@ import type {
 	DeliveryFilter,
 	EntrySource,
 	EventRecord,
-	GuestInvitationAuditRecord,
 	GuestInvitationRecord,
 	ResponseSource,
 } from '@/interfaces/rsvp/domain.interface';
@@ -101,15 +100,6 @@ export type GuestRow = {
 	max_progress_milestone: number;
 };
 
-export type GuestAuditRow = {
-	id: string;
-	guest_invitation_id: string;
-	actor_type: 'guest' | 'host' | 'system';
-	event_type: 'created' | 'viewed' | 'status_changed' | 'message_updated' | 'shared_whatsapp';
-	payload: Record<string, unknown>;
-	created_at: string;
-};
-
 export type UserRoleRow = {
 	user_id: string;
 	role: AppUserRole;
@@ -141,9 +131,6 @@ const EVENT_COLUMN_LIST = [
 ] as const;
 
 export const EVENT_COLUMNS = EVENT_COLUMN_LIST.join(',');
-export const EVENT_MUTATION_COLUMNS = EVENT_COLUMN_LIST.filter(
-	(column) => column !== 'published_at',
-).join(',');
 export const GUEST_COLUMNS =
 	'id,invite_id,event_id,full_name,phone,country_code,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_shared_at,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id,hide_celebra_me_branding,last_reminder_sent_at,is_test,open_count,first_opened_at,last_opened_at,last_previewed_at,max_progress_milestone';
 
@@ -196,17 +183,6 @@ export function toGuestRecord(row: GuestRow): GuestInvitationRecord {
 		lastOpenedAt: row.last_opened_at ?? null,
 		lastPreviewedAt: row.last_previewed_at ?? null,
 		maxProgressMilestone: row.max_progress_milestone ?? 0,
-	};
-}
-
-export function toGuestAuditRecord(row: GuestAuditRow): GuestInvitationAuditRecord {
-	return {
-		id: row.id,
-		guestInvitationId: row.guest_invitation_id,
-		actorType: row.actor_type,
-		eventType: row.event_type,
-		payload: row.payload ?? {},
-		createdAt: row.created_at,
 	};
 }
 

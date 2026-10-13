@@ -1,17 +1,18 @@
-import { describe, expect, it } from '@jest/globals';
+import { beforeEach, describe, expect, it } from '@jest/globals';
 import {
 	isLocalObservabilityRuntime,
 	type ObservabilityRuntimeEnv,
 } from '@/lib/observability/runtime-gate';
+import { asHostedDeploy, asLocalDevServer } from '@tests/helpers/deploy-identity';
 
 const localBase: ObservabilityRuntimeEnv = {
-	deployEnv: '',
-	nodeEnv: 'development',
 	supabaseUrl: 'http://127.0.0.1:54321',
 	celebraRuntimeTarget: 'local',
 };
 
 describe('isLocalObservabilityRuntime', () => {
+	beforeEach(asLocalDevServer);
+
 	it('allows persistent-Local runtime', () => {
 		expect(isLocalObservabilityRuntime(localBase)).toBe(true);
 		expect(
@@ -23,10 +24,18 @@ describe('isLocalObservabilityRuntime', () => {
 		).toBe(true);
 	});
 
-	it('rejects hosted, invalid or missing deploy identity', () => {
-		expect(isLocalObservabilityRuntime({ ...localBase, deployEnv: 'preview' })).toBe(false);
-		expect(isLocalObservabilityRuntime({ ...localBase, deployEnv: 'production' })).toBe(false);
-		expect(isLocalObservabilityRuntime({ ...localBase, deployEnv: 'staging' })).toBe(false);
+	it.each(['preview', 'production', 'staging'])(
+		'rejects a declared deploy identity (%s)',
+		(environment) => {
+			asHostedDeploy(environment);
+			expect(isLocalObservabilityRuntime(localBase)).toBe(false);
+		},
+	);
+
+	it('rejects https on the Local Supabase port', () => {
+		expect(
+			isLocalObservabilityRuntime({ ...localBase, supabaseUrl: 'https://127.0.0.1:54321' }),
+		).toBe(false);
 	});
 
 	it('rejects Preview runtime target', () => {

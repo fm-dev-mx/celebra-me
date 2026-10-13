@@ -260,7 +260,7 @@ export function classifyR2Operations(rows: Record<string, unknown>[] | null): {
 }
 
 /** Bytes per bucket from the dimensioned query; null rows stay null. */
-export function storageBytesByBucket(
+function storageBytesByBucket(
 	rows: Record<string, unknown>[] | null,
 	fallbackBucket: string,
 ): Map<string, number> | null {

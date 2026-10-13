@@ -6,14 +6,14 @@ import {
 	type RefObject,
 	type SyntheticEvent,
 } from 'react';
-import { rsvpApi } from '@/lib/client/rsvp-api';
+import { rsvpApi, type PublicRsvpPayload } from '@/lib/client/rsvp-api';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import {
 	DEMO_GUEST_NAME,
 	normalizeGuestCount,
 	normalizePhoneInput,
 	parseRsvpPhoneInput,
-	type AttendanceStatus,
+	type RsvpAttendanceChoice,
 	validateRsvpForm,
 } from '@/components/invitation/rsvp-logic';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
@@ -60,7 +60,7 @@ export function useRsvpSubmission({
 	isDemoPreview,
 }: UseRsvpSubmissionOptions) {
 	const initialName = isDemoPreview ? DEMO_GUEST_NAME : initialData?.fullName || '';
-	const initialAttendanceStatus: AttendanceStatus =
+	const initialAttendanceStatus: RsvpAttendanceChoice =
 		initialData?.attendanceStatus === 'confirmed' ||
 		initialData?.attendanceStatus === 'declined'
 			? initialData.attendanceStatus
@@ -70,7 +70,7 @@ export function useRsvpSubmission({
 	const [phone, setPhone] = useState('');
 	const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE);
 	const [attendanceStatus, setAttendanceStatus] =
-		useState<AttendanceStatus>(initialAttendanceStatus);
+		useState<RsvpAttendanceChoice>(initialAttendanceStatus);
 	const configuredGuestCap = isDemoPreview
 		? guestCap
 		: (initialData?.maxAllowedAttendees ?? guestCap);
@@ -83,7 +83,7 @@ export function useRsvpSubmission({
 	const [attendeeCount, setAttendeeCount] = useState<number | string>(initialAttendeeCount);
 	const [notes, setNotes] = useState(initialGuestComment);
 	const savedResponseRef = useRef<{
-		attendanceStatus: AttendanceStatus;
+		attendanceStatus: RsvpAttendanceChoice;
 		attendeeCount: number;
 		guestComment: string;
 	}>({
@@ -269,7 +269,7 @@ export function useRsvpSubmission({
 						attendeeCount: normalizedCount,
 						guestComment: trimmedNotes,
 						...(normalizedPhone ? { phone: normalizedPhone, countryCode } : {}),
-					} as import('@/lib/client/rsvp-api').PublicRsvpPayload);
+					} as PublicRsvpPayload);
 
 					const publicInviteId = publicResult.inviteId;
 					setResponseInviteId(publicInviteId ?? responseInviteId);

@@ -1,37 +1,8 @@
-import type { ImageMetadata } from 'astro';
-import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type { VenueBase, VenueEntry } from '@/lib/adapters/types';
 
-export interface VenueEventItem {
+interface VenueEventItem {
 	name: string;
 	time: string;
-}
-
-export interface VenueData {
-	venueEvent: string;
-	venueName: string;
-	address: string;
-	city?: string;
-	date: string;
-	time: string;
-	mapUrl?: string;
-	appleMapsUrl?: string;
-	googleMapsUrl?: string;
-	wazeUrl?: string;
-	image?: string | ImageMetadata | ImageAsset;
-	focalPoint?: string;
-	coordinates?: {
-		lat: number;
-		lng: number;
-		zoom?: number;
-	};
-}
-
-export interface VenueEntry extends VenueData {
-	id?: string;
-	type?: string;
-	label?: string;
-	isVisible?: boolean;
-	sortOrder?: number;
 }
 
 export interface GroupedVenue extends VenueEntry {
@@ -56,7 +27,7 @@ export function isNavigableVenueMapUrl(url: string | undefined): url is string {
  * Unresolved preparation placeholders never become clickable map actions.
  */
 export function resolveVenueMapPreviewUrl(
-	venue: Pick<VenueData, 'googleMapsUrl' | 'mapUrl' | 'appleMapsUrl' | 'wazeUrl'>,
+	venue: Pick<VenueBase, 'googleMapsUrl' | 'mapUrl' | 'appleMapsUrl' | 'wazeUrl'>,
 ): string | undefined {
 	const candidates = [venue.googleMapsUrl, venue.mapUrl, venue.appleMapsUrl, venue.wazeUrl];
 	return candidates.find(isNavigableVenueMapUrl);

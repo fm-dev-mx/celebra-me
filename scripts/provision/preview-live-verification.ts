@@ -3,13 +3,13 @@ import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environmen
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
 import {
 	assertPreviewDbUrl,
-	extractSupabaseProjectRef,
 	getPreviewDbUrl,
 	runPsql,
 	sqlLiteral,
 	type CommandResult,
 } from '../db/db-workflow-lib.ts';
 import type { PreviewApprovalArtifact } from './preview-approval-service.ts';
+import { extractSupabaseProjectRef } from '../db/db-target-config.ts';
 
 export const PREVIEW_LIVE_CHECKLIST_KEYS = [
 	'project',
@@ -20,9 +20,9 @@ export const PREVIEW_LIVE_CHECKLIST_KEYS = [
 	'storage',
 ] as const;
 
-export type PreviewLiveChecklistKey = (typeof PREVIEW_LIVE_CHECKLIST_KEYS)[number];
+type PreviewLiveChecklistKey = (typeof PREVIEW_LIVE_CHECKLIST_KEYS)[number];
 
-export interface PreviewLiveVerificationDetails {
+interface PreviewLiveVerificationDetails {
 	packageHash: string;
 	slug: string;
 	route: string;
@@ -91,7 +91,7 @@ function parseRows(stdout: string): PreviewLiveRow[] {
 	return Array.isArray(parsed) ? (parsed as PreviewLiveRow[]) : [];
 }
 
-export function requiredPreviewApprovalAssetKeys(
+function requiredPreviewApprovalAssetKeys(
 	liveAssets: readonly PreviewLiveAssetRow[],
 	expectedAssetHashes: Record<string, string>,
 ): { required: string[]; missingFromPreview: string[] } {

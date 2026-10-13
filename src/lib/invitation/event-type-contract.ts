@@ -68,7 +68,7 @@ const EVENT_TYPE_CONTRACTS: Record<EventType, EventTypeStructureContract> = {
 	},
 };
 
-export function getEventTypeStructureContract(eventType: EventType): EventTypeStructureContract {
+function getEventTypeStructureContract(eventType: EventType): EventTypeStructureContract {
 	return EVENT_TYPE_CONTRACTS[eventType];
 }
 

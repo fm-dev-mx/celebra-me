@@ -396,69 +396,6 @@ export function evidenceRemediation(row: CanonicalEnvSummary): OperatorRemediati
 	);
 }
 
-export function invitationAttentionRemediation(row: CanonicalEnvSummary): OperatorRemediation {
-	const environmentLabel = ENV_LABELS[row.environment];
-	if (row.evidence === 'UNVERIFIED') {
-		return unverifiedRefresh(
-			'La publicación de este entorno no está verificada.',
-			'Un conteo 0 sin sonda en vivo no significa que el registro esté en sync.',
-			environmentLabel,
-			'Conteo de atención clasificado con evidencia LIVE o en caché vigente.',
-		);
-	}
-	if (row.identityConflictsCount > 0) {
-		const command = identityDiagnoseCommand(row.environment);
-		return {
-			semantic: 'blocked',
-			meaning: 'Hay conflictos de identidad en filas activas.',
-			why: `${row.identityConflictsCount} conflicto(s) de identidad.`,
-			environmentLabel,
-			nextAction: command
-				? 'Diagnostique identidad en este entorno. No promocione.'
-				: 'El diagnóstico de identidad rechaza Production. No hay un comando canónico contra Production.',
-			steps: [
-				step(
-					command ? 'Diagnose' : 'Manual/HITL',
-					command,
-					'No promocione hasta resolver el conflicto de identidad.',
-					false,
-					false,
-					command ? 'Diagnosticar identidad' : 'Revisión manual',
-				),
-			],
-			verifyWhen:
-				'identityConflictsCount = 0 y classifyLiveInvitation deja de devolver conflict.',
-			noCanonicalRemediation: command == null,
-		};
-	}
-	if (row.invitationAttentionCount === 0) {
-		return noneNeeded(
-			'Las invitaciones del registro coinciden con el canónico en este entorno.',
-			environmentLabel,
-		);
-	}
-	return {
-		semantic: 'neutral',
-		meaning: `${row.invitationAttentionCount} invitación(es) del registro no están en match.`,
-		why: 'El conteo incluye behind, absent, diverged, conflict u unknown. La cola de publicación decide la acción.',
-		environmentLabel,
-		nextAction:
-			'Inspeccione las tarjetas de la cola de publicación. Este conteo no es una operación.',
-		steps: [
-			step(
-				'Manual/HITL',
-				null,
-				'La cola de publicación define la acción; este conteo no es una operación.',
-				false,
-				false,
-				'Revisar cola',
-			),
-		],
-		verifyWhen: 'invitationAttentionCount = 0 con evidencia suficiente.',
-		noCanonicalRemediation: true,
-	};
-}
-
 export function disposableRemediation(proof: CanonicalDisposableProof): OperatorRemediation {
 	if (proof.status === 'valid') {
 		return noneNeeded('La prueba disposable-test está vigente.', 'disposable-test');

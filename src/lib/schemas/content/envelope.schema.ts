@@ -13,7 +13,7 @@ export const envelopeRevealVariantSchema = z.enum([
 export type EnvelopeRevealVariant = z.infer<typeof envelopeRevealVariantSchema>;
 
 /** Editorial cover experience: 'collector' adds the drag-to-open bending magazine. */
-export const editorialCoverExperienceSchema = z.enum(['standard', 'collector']);
+const editorialCoverExperienceSchema = z.enum(['standard', 'collector']);
 export type EditorialCoverExperience = z.infer<typeof editorialCoverExperienceSchema>;
 
 export const envelopeSchema = z

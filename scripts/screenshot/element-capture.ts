@@ -5,7 +5,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import sharp from 'sharp';
-import type { Page, Locator } from 'playwright';
+import type { Page, Locator } from '@playwright/test';
 import {
 	type OutputFormat,
 	type CaptureResult,

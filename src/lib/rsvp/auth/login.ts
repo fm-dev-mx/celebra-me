@@ -17,7 +17,3 @@ export function resolveNextPath(rawNext: string | null | undefined, fallbackPath
 	if (next === '/') return next;
 	return fallbackPath;
 }
-
-export function buildHostLoginRedirect(nextPath = '/dashboard/invitados'): string {
-	return `/login?next=${encodeURIComponent(nextPath)}`;
-}

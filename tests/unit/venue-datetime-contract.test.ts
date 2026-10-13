@@ -20,8 +20,8 @@ import { getSectionValue } from '@/lib/intake/services/section-content-mapper';
 import {
 	detectShowFlourishesConflict,
 	foldLocationPresentationOptions,
-	resolveLocationShowFlourishes,
-} from '@/lib/invitation/presentation-options';
+} from '@/lib/invitation/location-presentation-compatibility';
+import { resolveLocationShowFlourishes } from '@/lib/invitation/location-presentation';
 import {
 	formatVenueDateForDisplay,
 	formatVenueTimeForDisplay,
@@ -32,8 +32,8 @@ import {
 } from '@/lib/invitation/venue-datetime';
 import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
-import { datesSemanticallyEqual } from '@/lib/shared/data-utils';
-import { timesSemanticallyEqual } from '@/lib/time/time-format';
+import { toEditorDate } from '@/lib/shared/data-utils';
+import { normalizeTime } from '@/lib/time/time-format';
 
 const rominaAssets = Object.fromEntries(
 	ROMINA_ASSET_SPECS.map((asset, index) => [
@@ -97,8 +97,8 @@ describe('canonical venue date/time contract', () => {
 	});
 
 	it('treats legacy and canonical representations as semantically equal', () => {
-		expect(datesSemanticallyEqual('28 de noviembre de 2026', '2026-11-28')).toBe(true);
-		expect(timesSemanticallyEqual('5:30 p. m.', '17:30')).toBe(true);
+		expect(toEditorDate('28 de noviembre de 2026')).toBe('2026-11-28');
+		expect(normalizeTime('5:30 p. m.')).toBe('17:30');
 	});
 
 	it('hydrates Romina ceremony/reception into editor machine forms', () => {
@@ -153,8 +153,8 @@ describe('public venue rendering formats', () => {
 
 describe('showFlourishes ownership', () => {
 	it('uses presentationOptions as the canonical owner', () => {
-		expect(resolveLocationShowFlourishes({ showFlourishes: false }, true)).toBe(false);
-		expect(resolveLocationShowFlourishes(undefined, false)).toBe(false);
+		expect(resolveLocationShowFlourishes({ showFlourishes: false }, 'standard')).toBe(false);
+		expect(resolveLocationShowFlourishes({ showFlourishes: true }, 'split-map')).toBe(true);
 		expect(resolveLocationShowFlourishes(undefined, undefined)).toBe(true);
 	});
 

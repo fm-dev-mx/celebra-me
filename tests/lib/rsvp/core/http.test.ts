@@ -1,17 +1,17 @@
+/**
+ * @jest-environment node
+ */
 import { errorResponse, parseJsonBody, readBoundedRequestBytes } from '@/lib/rsvp/core/http';
 import { ApiError, isApiError } from '@/lib/rsvp/core/errors';
 import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
-import { Request as NodeRequest } from 'undici';
-
-type NodeRequestInit = ConstructorParameters<typeof NodeRequest>[1];
 
 describe('errorResponse — stack trace / secret exposure regression (CodeQL: Information exposure)', () => {
-	it('never leaks error.message for a non-ApiError Error instance containing a stack trace', () => {
+	it('never leaks error.message for a non-ApiError Error instance containing a stack trace', async () => {
 		const error = new Error(
 			'ReferenceError: X is not defined\n    at Object.<anonymous> (/app/src/something.ts:42:5)',
 		);
 		const response = errorResponse(error);
-		const body = JSON.parse(response.body as unknown as string);
+		const body = await response.json();
 
 		expect(body.success).toBe(false);
 		expect(body.error.code).toBe('internal_error');
@@ -21,12 +21,12 @@ describe('errorResponse — stack trace / secret exposure regression (CodeQL: In
 		expect(body.error.message).not.toContain('/app/src/');
 	});
 
-	it('never leaks error.message for an Error instance with a DB URL in its message', () => {
+	it('never leaks error.message for an Error instance with a DB URL in its message', async () => {
 		const error = new Error(
 			'Connection refused: postgresql://postgres:secret@db.internal.supabase.co:5432/postgres',
 		);
 		const response = errorResponse(error);
-		const body = JSON.parse(response.body as unknown as string);
+		const body = await response.json();
 
 		expect(body.success).toBe(false);
 		expect(body.error.message).toBe('Internal server error.');
@@ -35,12 +35,12 @@ describe('errorResponse — stack trace / secret exposure regression (CodeQL: In
 		expect(body.error.message).not.toContain('secret');
 	});
 
-	it('never leaks error.message for an Error instance with a SQL query in its message', () => {
+	it('never leaks error.message for an Error instance with a SQL query in its message', async () => {
 		const error = new Error(
 			'ERROR: 42P01 relation "secrets.private_keys" does not exist\n  at Parser.parseError',
 		);
 		const response = errorResponse(error);
-		const body = JSON.parse(response.body as unknown as string);
+		const body = await response.json();
 
 		expect(body.success).toBe(false);
 		expect(body.error.message).toBe('Internal server error.');
@@ -48,27 +48,27 @@ describe('errorResponse — stack trace / secret exposure regression (CodeQL: In
 		expect(body.error.message).not.toContain('secrets');
 	});
 
-	it('still returns ApiError code and message unchanged', () => {
+	it('still returns ApiError code and message unchanged', async () => {
 		const response = errorResponse(new ApiError(404, 'not_found', 'Invitación no encontrada.'));
-		const body = JSON.parse(response.body as unknown as string);
+		const body = await response.json();
 
 		expect(body.success).toBe(false);
 		expect(body.error.code).toBe('not_found');
 		expect(body.error.message).toBe('Invitación no encontrada.');
 	});
 
-	it('returns 400 with generic message for plain string errors', () => {
+	it('returns 400 with generic message for plain string errors', async () => {
 		const response = errorResponse('Something went wrong');
-		const body = JSON.parse(response.body as unknown as string);
+		const body = await response.json();
 
 		expect(body.success).toBe(false);
 		expect(body.error.code).toBe('internal_error');
 		expect(body.error.message).toBe('Internal server error.');
 	});
 
-	it('returns 400 with generic message for empty objects', () => {
+	it('returns 400 with generic message for empty objects', async () => {
 		const response = errorResponse({});
-		const body = JSON.parse(response.body as unknown as string);
+		const body = await response.json();
 
 		expect(body.success).toBe(false);
 		expect(body.error.code).toBe('bad_request');
@@ -165,8 +165,8 @@ describe('bounded request body readers', () => {
 			headers,
 			body: stream,
 			duplex: 'half',
-		} as unknown as NodeRequestInit;
-		return new NodeRequest('http://localhost/api/test', init) as unknown as Request;
+		} as unknown as RequestInit;
+		return new Request('http://localhost/api/test', init) as unknown as Request;
 	}
 
 	it('rejects a misleadingly small Content-Length after reading actual bytes', async () => {
@@ -230,11 +230,11 @@ describe('bounded request body readers', () => {
 
 	it('maps oversized JSON to a 413 response through the shared parser', async () => {
 		const result = await parseJsonBody(
-			new NodeRequest('http://localhost/api/test', {
+			new Request('http://localhost/api/test', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ value: '123456' }),
-			} as unknown as NodeRequestInit) as unknown as Request,
+			} as unknown as RequestInit) as unknown as Request,
 			5,
 		);
 
@@ -248,11 +248,11 @@ describe('bounded request body readers', () => {
 
 describe('parseJsonBody', () => {
 	const jsonRequest = (body: string) =>
-		new NodeRequest('http://localhost/api/test', {
+		new Request('http://localhost/api/test', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body,
-		} as unknown as NodeRequestInit) as unknown as Request;
+		} as unknown as RequestInit) as unknown as Request;
 
 	it.each([
 		['an array', '[]'],

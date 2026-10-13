@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { ITINERARY_VARIANTS } from '@/lib/invitation/section-variants';
 
-export const itineraryItemSchema = z.object({
+const itineraryItemSchema = z.object({
 	iconName: z.enum(ICON_NAMES_TUPLE),
 	label: z.string(),
 	description: z.string().optional(),

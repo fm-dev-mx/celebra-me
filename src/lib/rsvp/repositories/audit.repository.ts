@@ -1,28 +1,4 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-import type { GuestInvitationAuditRecord } from '@/interfaces/rsvp/domain.interface';
-import { type GuestAuditRow, toGuestAuditRecord } from '@/lib/rsvp/repositories/shared/rows';
-export async function appendGuestAuditPublic(
-	guestInvitationId: string,
-	eventType: GuestAuditRow['event_type'],
-	payload: Record<string, unknown>,
-	actorType: GuestAuditRow['actor_type'] = 'guest',
-): Promise<GuestInvitationAuditRecord> {
-	const rows = await supabaseRestRequest<GuestAuditRow[]>({
-		pathWithQuery:
-			'guest_invitation_audit?select=id,guest_invitation_id,actor_type,event_type,payload,created_at',
-		method: 'POST',
-		useServiceRole: true,
-		prefer: 'return=representation',
-		body: {
-			guest_invitation_id: guestInvitationId,
-			actor_type: actorType,
-			event_type: eventType,
-			payload,
-		},
-	});
-	if (!rows[0]) throw new Error('No se pudo registrar auditoría.');
-	return toGuestAuditRecord(rows[0]);
-}
 
 export async function createAuditLog(input: {
 	actorId: string | null;

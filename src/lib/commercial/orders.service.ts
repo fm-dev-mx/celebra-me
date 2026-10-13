@@ -67,7 +67,7 @@ function assertMxnCurrency(currency: string | undefined): void {
 	}
 }
 
-export function createOrderNumber(input: { now?: Date; randomSuffix?: string } = {}): string {
+function createOrderNumber(input: { now?: Date; randomSuffix?: string } = {}): string {
 	const now = input.now ?? new Date();
 	const stamp = now.toISOString().slice(0, 10).replace(/-/g, '');
 	const suffix =

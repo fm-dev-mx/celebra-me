@@ -2,7 +2,7 @@
 title: Vercel to Cloudflare Workers migration (zero Vercel, Cloudinary retired)
 status: active
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-13
 type: production rollout
 autonomy: 2
 related_skills:
@@ -135,7 +135,7 @@ Success means all of the following:
 | D15 | `CHANGELOG.md` in the zero-Vercel sweep                              | Exclude it as history                                                                                                             | pending                |
 | D16 | Registrar                                                            | Stay on Namecheap                                                                                                                 | pending                |
 | D17 | Apex redirect status                                                 | Keep 307                                                                                                                          | pending                |
-| D18 | Secret hygiene                                                       | Add `PREVIEW_MEDIA_SECRET`; delete the 6 unused names                                                                             | pending                |
+| D18 | Secret hygiene                                                       | Add `PREVIEW_MEDIA_SECRET`; delete the 6 unused names and the Vercel project variable `NODE_ENV=development`                      | pending                |
 | D19 | `X-Render-Timing` headers                                            | Delete them                                                                                                                       | pending                |
 
 ## 7. Phases
@@ -148,7 +148,7 @@ ends with its smoke. One task branch per phase, cut from `develop`.
 | --------------------------------------- | -------------- | --------------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ------------- |
 | **F0a** Local spike                     | 10-12 → 10-14  | `candidate/cloudflare-workers-spike`, workerd local | none                                                                          | Adapter swap, minimal `wrangler.jsonc`, build. Exercise SSR pages, auth middleware against the Preview DB, `qrcode`, `sanitize-html`, memories ECDSA against the staging Workers, and `astro dev` with lane env                                                                                                                                                                                                                                                                                                                                                                                     | Written works/fails list                                                                                                         | Delete the branch                          | 2 d / M       |
 | **F0b** Deployed spike                  | 10-15 → 10-16  | Test Worker on workers.dev behind Access            | **Paid required from here**: on Free, any SSR request over 10 ms of CPU fails | CPU p50/p95 per route, bundle size, Images binding with the watermark                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Go/no-go with measured CPU                                                                                                       | Delete the test Worker                     | 1 d / M       |
-| **F1** Deploy identity                  | 10-14 → 10-21  | `feat/deploy-identity`, Vercel                      | none                                                                          | `src/lib/server/deploy-identity.ts` becomes the only reader of `CELEBRA_DEPLOY_ENV`. `BUILD_SHA`/`BUILD_REF` come from Vite `define`. Migrate 20 consumers. Remove the `NODE_ENV \|\| 'development'` default. Cookie `Secure` and debug key off the deploy env. No storage fallback. Health reports `BUILD_SHA`. Validator rule bans direct reads                                                                                                                                                                                                                                                   | Fail-closed test matrix per gate; Preview VERIFIED                                                                               | Revert the merge                           | 3 d / H       |
+| **F1** Deploy identity                  | 10-14 → 10-21  | `feat/deploy-identity`, Vercel                      | none                                                                          | `src/lib/server/deploy-identity.ts` becomes the only reader of `CELEBRA_DEPLOY_ENV`. `CELEBRA_BUILD_SHA`/`CELEBRA_BUILD_REF` come from Vite `define`. Migrate 20 consumers. Remove the `NODE_ENV \|\| 'development'` default. Cookie `Secure` and debug key off the deploy env. No storage fallback. Health reports `CELEBRA_BUILD_SHA`. Validator rule bans direct reads                                                                                                                                                                                                                           | Fail-closed test matrix per gate; Preview VERIFIED                                                                               | Revert the merge                           | 3 d / H       |
 | **F2** Neutral preparation              | 10-16 → 11-04  | one branch per slice, Vercel                        | none                                                                          | Headers and redirect in middleware (+ `public/_headers` parity test). `getClientIp()` (`CF-Connecting-IP` on Cloudflare). `runAfterResponse()`. Cloudinary SDK → REST. Drop the static sharp import. Crons as invocable services. Delete Upstash, `vercel-usage`, `/dashboard/estado` (D11) and `perf_hooks`. Rename `vercel-image-policy`. Cloudflare Web Analytics snippet (D5). Delete the unused Vercel env names. Neutral smoke status names (live once on `main`). Memories ECDSA signing passes the PEM string (or WebCrypto) instead of a `KeyObject` (F0a). `editor-divergence` local-only | Full suite; Preview VERIFIED; visual diff 0                                                                                      | Revert per branch                          | 7 d / M       |
 | **F3** Images                           | 10-26 → 11-04  | migration branch, Preview Worker                    | Paid                                                                          | `ImageTransformer` interface: `sharp` implementation for the Vercel build, Images binding implementation for the Cloudflare build (temporary dual, pruned in F7). `imageService` (D7). Delivery contract and tests. Visual re-baseline                                                                                                                                                                                                                                                                                                                                                              | Watermark parity captures; upload tests; certified candidate + `visual:parity:accept`                                            | No Production impact                       | 6 d / H       |
 | **F4** Cloudflare Preview + pipeline    | 10-26 → 11-06  | Cloudflare Preview alongside Vercel Preview         | Paid                                                                          | Temporary dual build target (`CELEBRA_BUILD_TARGET` selects the adapter; pruned in F7). `wrangler.jsonc` with `env.preview`, sessions disabled. `src/worker.ts` exporting `fetch` + `scheduled`. Secrets. `deploy.yml` (versions upload with SHA tag → smoke → versions deploy → GitHub Deployment + status). `release-status`, `release-readiness` and the attestation. Access + service token. `ratelimits` bindings (D8). Crons in Preview. Staging Sign Worker allow-list moves to the new Preview host                                                                                         | Cloudflare Preview VERIFIED (SHA, health, public and authenticated smoke); crons ran in Preview; the gate reads the new evidence | Disable the workflow; Vercel Preview stays | 7 d / H       |
@@ -208,7 +208,7 @@ legacy.
 - The zone has been active for at least 72 hours. The edge certificate covers the apex and `www`.
   SSL mode is Full (strict).
 - Production secrets are verified by name. `CELEBRA_DEPLOY_ENV=production`, and health returns the
-  candidate `BUILD_SHA`.
+  candidate `CELEBRA_BUILD_SHA`.
 - Production Cron Triggers are **disabled** on the Worker; crons keep running on Vercel until F7.
 - The cutover time avoids 10:43 and 15:17 UTC. No merges to `main` during the window.
 
@@ -256,7 +256,7 @@ legacy.
       image or storage implementations, no temporary flags.
 - [ ] **Release pipeline.** Two consecutive Production releases VERIFIED through the new pipeline,
       one of them with a schema `prod:apply`.
-- [ ] **Crons.** Production crons ran 3 days in a row with `source: 'scheduled'` evidence.
+- [ ] **Crons.** Production crons ran 3 days in a row with `source: 'scheduled_cron'` evidence.
 - [ ] **Functional parity.** The memories canary and the real-phone checklist pass in Production.
       The contact email is delivered. Meta CAPI is delivered. The watermark is verified on an unpaid
       invitation.
@@ -290,12 +290,12 @@ dependencies go down.
 
 ## 12. Current state and handoff
 
-- **Current state (2026-10-10):**
+- **Current state (2026-10-13):**
   - **F0a done.** The spike is kept outside Git as a patch in the `cloudflare` worktree
     (`.agent/tmp/handoffs/cloudflare-spike/`, base `1715d3d6e`). It could not be committed: the
     pre-commit `test:changed` hook fails on the suites that assert the Vercel config, by design.
-  - **F1 implemented, uncommitted,** on `feat/deploy-identity` (cut from `origin/develop`
-    `6cb7587c1`; the plan is commit `229e84579`; nothing pushed). What it changes:
+  - **F1 integrated** (`feat/deploy-identity` merged into `develop` as `2626d9a50` and released to
+    `main`). What it changes:
     - `src/lib/server/deploy-identity.ts` is the single reader of `CELEBRA_DEPLOY_ENV`. It accepts
       exact values only, recognizes local processes positively (dev server, or a built bundle on
       Local Supabase), and throws or returns null otherwise.
@@ -313,13 +313,11 @@ dependencies go down.
   - **Correction (2026-10-11): no application decision reads `NODE_ENV`.** Vercel injects
     `NODE_ENV=development` at runtime (project env, all environments), so Production was serving
     `?debug=1` diagnostics on `/api/auth/session` and setting session and CSRF cookies without
-    `Secure` (HSTS mitigated it). Cookies now use `requiresSecureCookies()` (Secure unless the
-    process is positively local), debug payloads require `isLocalProcess()`, and retry logs are
-    silenced by `isProductionDeployment()`. `validate:structure` rejects any
-    `NODE_ENV === 'production'` decision in `src/`.
+    `Secure` (HSTS mitigated it). Cookies now carry `Secure` unless `isLocalProcess()` holds, debug
+    payloads require `isLocalProcess()`, and retry logs are silenced by `isProductionDeployment()`.
+    `validate:structure` rejects any `NODE_ENV === 'production'` decision in `src/`.
 - **Next responsibility:**
-  - Owner: review the F1 diff and authorize its commits.
-  - Owner, before integrating F1: create `CELEBRA_DEPLOY_ENV` in Vercel (`preview` for Preview,
+  - `CELEBRA_DEPLOY_ENV` must stay declared in every hosted environment (`preview` for Preview,
     `production` for Production). Without it, F1 fails closed: no writes, and health reports
     `environment: null`.
   - Owner: D1 before 2026-10-15 (F0b needs Workers Paid); the remaining decisions as convenient.
@@ -454,7 +452,8 @@ earlier.
 | **Temporary dual build target**: `CELEBRA_BUILD_TARGET=vercel\|cloudflare` selects the adapter in `astro.config.mjs`                                                                              | `develop` deploys to Vercel and to Cloudflare Preview at the same time | F7                   | Vercel paused                                                         | `astro.config.mjs` imports only `@astrojs/cloudflare`                 |
 | **Temporary dual image implementation**: `sharp` for Vercel, Images binding for Cloudflare, behind one `ImageTransformer` interface                                                               | Same reason                                                            | F7                   | Vercel paused                                                         | no `sharp` in `dependencies` (it stays in `devDependencies` for CLIs) |
 | `vite.ssr.external` / `noExternal` workaround in `astro.config.mjs`                                                                                                                               | Only the Vercel build needs it                                         | F7                   | Dual build removed                                                    | config diff                                                           |
-| `BUILD_SHA` fallback to `VERCEL_GIT_COMMIT_SHA` in the build `define`                                                                                                                             | Vercel builds lack `GITHUB_SHA`                                        | F7                   | Vercel paused                                                         | Vercel sweep                                                          |
+| `CELEBRA_BUILD_SHA` / `CELEBRA_BUILD_REF` fallbacks to `VERCEL_GIT_COMMIT_SHA` / `VERCEL_GIT_COMMIT_REF` in the build `define`                                                                    | Vercel builds lack `GITHUB_SHA` / `GITHUB_REF_NAME`                    | F7                   | Vercel paused                                                         | Vercel sweep                                                          |
+| Vercel identity rules (`VERCEL*`, `x-vercel-id`) in `scripts/validate-deploy-identity-reads.mjs` and their fixture cases                                                                          | Guard against reading platform identity while Vercel serves            | F7                   | Vercel paused                                                         | Vercel sweep passes without excluding the guard                       |
 | `vercel.json` (crons, redirect, headers, region, ignore command), `.vercelignore`                                                                                                                 | Vercel config                                                          | F7                   | Headers and redirect in middleware since F2; Cloudflare crons enabled | file absent                                                           |
 | `scripts/ops/vercel-ignore-build.mjs` + test, `tests/unit/vercel-runtime-region.test.ts`                                                                                                          | Vercel build control                                                   | F7                   | Vercel paused                                                         | files absent                                                          |
 | Cron HTTP routes + `CRON_SECRET` + Bearer check                                                                                                                                                   | Vercel cron calls them                                                 | F7                   | `scheduled()` active in Production (D10)                              | routes 404                                                            |

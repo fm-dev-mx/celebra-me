@@ -1,21 +1,9 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
 export type SalesOrderStatus =
-	| 'draft'
-	| 'quoted'
-	| 'confirmed'
-	| 'deposit_paid'
-	| 'paid'
-	| 'cancelled'
-	| 'lost';
+	'draft' | 'quoted' | 'confirmed' | 'deposit_paid' | 'paid' | 'cancelled' | 'lost';
 
-export type MetaConversionStatus =
-	| 'pending'
-	| 'sending'
-	| 'sent'
-	| 'failed'
-	| 'skipped'
-	| 'ambiguous';
+type MetaConversionStatus = 'pending' | 'sending' | 'sent' | 'failed' | 'skipped' | 'ambiguous';
 type MetaConversionEventName = 'Purchase';
 
 export interface SalesOrderInput {
@@ -239,4 +227,3 @@ export async function registerSalesOrderDepositPurchase(input: {
 		idempotent: result.idempotent,
 	};
 }
-

@@ -2,7 +2,7 @@ import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
 /** The exact `toMatchSnapshot` options used by both canonical capture suites. */
-export const VISUAL_GATE_OPTIONS = { maxDiffPixelRatio: 0.001 } as const;
+const VISUAL_GATE_OPTIONS = { maxDiffPixelRatio: 0.001 } as const;
 
 type PlaywrightComparator = (
 	actual: Buffer,

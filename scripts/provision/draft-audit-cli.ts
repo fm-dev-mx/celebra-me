@@ -1,6 +1,6 @@
 /** Read-only audit of persisted draft documents. */
 import { auditDraftContract } from '../../src/lib/intake/services/draft-contract-audit.service.ts';
-import { flagValue } from '../lib/cli-args.ts';
+import { flagValue, requireEnvironmentTarget } from '../lib/cli-args.ts';
 import {
 	listDraftInvitationSlugs,
 	readPersistedInvitationContent,
@@ -10,18 +10,6 @@ import {
 
 const args = process.argv.slice(2);
 const json = args.includes('--json');
-
-function value(flag: string): string | undefined {
-	return flagValue(args, flag);
-}
-
-function requireTarget(): PersistedContentTarget {
-	const target = value('--target') ?? 'local';
-	if (target !== 'local' && target !== 'preview' && target !== 'production') {
-		throw new Error('TARGET_INVALID: --target must be local, preview or production.');
-	}
-	return target;
-}
 
 function auditSlug(slug: string, target: PersistedContentTarget, dbUrl: string) {
 	const state = readPersistedInvitationContent(slug, dbUrl);
@@ -36,9 +24,9 @@ function auditSlug(slug: string, target: PersistedContentTarget, dbUrl: string) 
 	};
 }
 
-const target = requireTarget();
+const target = requireEnvironmentTarget(args);
 const dbUrl = resolveTargetDbUrl(target);
-const slug = value('--slug');
+const slug = flagValue(args, '--slug');
 
 if (args.includes('--all')) {
 	const rows = listDraftInvitationSlugs(dbUrl)

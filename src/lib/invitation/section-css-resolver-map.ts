@@ -1,5 +1,5 @@
 import { resolveInvitationProfileCssUrl } from './invitation-profile-css';
-import { CANONICAL_VARIANT_REGISTRY } from './section-variants';
+import { CANONICAL_VARIANT_REGISTRY, type CanonicalVariantSection } from './section-variants';
 
 type CssModule = { default: string };
 
@@ -12,24 +12,12 @@ export type InvitationProfileUrlMap = Record<string, string>;
 
 export type InvitationCssResolverInput = {
 	themePreset: string;
-	sectionVariants?: {
-		hero?: string;
-		thankYou?: string;
-		gifts?: string;
-		rsvp?: string;
-		personalizedAccess?: string;
-		family?: string;
-		location?: string;
-		itinerary?: string;
-		gallery?: string;
-		countdown?: string;
-		memories?: string;
-	};
+	sectionVariants?: Partial<Record<CanonicalVariantSection, string>>;
 	envelopeVariant?: string;
 	visualProfileId?: string;
 };
 
-export type InvitationCssOwner =
+type InvitationCssOwner =
 	'section-bundle' | 'envelope-reveal' | 'section-variant' | 'visual-profile';
 
 export interface InvitationCssLoadItem {

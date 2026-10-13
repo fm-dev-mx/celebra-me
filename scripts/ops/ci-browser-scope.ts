@@ -2,6 +2,7 @@ import { appendFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { basename } from 'node:path';
 import { isVisualImpactPath, normalizeVisualPath } from './visual-impact.ts';
+import { githubApi } from '../lib/github-api.ts';
 
 /**
  * Decides whether the Repository CI browser tier must execute for a `develop` push.
@@ -82,19 +83,6 @@ export function assessBrowserScope(input: {
 }
 
 const EXACT_SHA = /^[a-f0-9]{40}$/u;
-
-async function githubApi(suffix: string, repository: string, token: string): Promise<unknown> {
-	const apiUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
-	const response = await fetch(`${apiUrl}/repos/${repository}/${suffix}`, {
-		headers: {
-			Authorization: `Bearer ${token}`,
-			Accept: 'application/vnd.github+json',
-			'X-GitHub-Api-Version': '2022-11-28',
-		},
-	});
-	if (!response.ok) throw new Error(`Cannot read ${suffix}: HTTP ${response.status}.`);
-	return response.json();
-}
 
 /** Most recent successful `develop` push run whose browser job itself concluded `success`. */
 async function findProvenRun(

@@ -4,7 +4,6 @@ import {
 	isProductionDeployment,
 	readDeployEnvironment,
 	readHostedDeployEnvironment,
-	requiresSecureCookies,
 	resolveDeployEnvironment,
 } from '@/lib/server/deploy-identity';
 
@@ -70,39 +69,9 @@ describe('resolveDeployEnvironment', () => {
 		).toThrow(/must declare CELEBRA_DEPLOY_ENV/);
 	});
 
-	describe('process environment', () => {
-		const original = process.env.CELEBRA_DEPLOY_ENV;
-
-		afterEach(() => {
-			if (original === undefined) delete process.env.CELEBRA_DEPLOY_ENV;
-			else process.env.CELEBRA_DEPLOY_ENV = original;
-		});
-
-		it('reads CELEBRA_DEPLOY_ENV when no declaration is injected', () => {
-			process.env.CELEBRA_DEPLOY_ENV = 'preview';
-			expect(resolveDeployEnvironment({ isDevServer: false })).toBe('preview');
-		});
-	});
-});
-
-describe('requiresSecureCookies', () => {
-	it('drops Secure only for a positively local process', () => {
-		expect(
-			requiresSecureCookies({
-				deployEnv: '',
-				isDevServer: true,
-				supabaseUrl: LOCAL_SUPABASE,
-			}),
-		).toBe(false);
-		for (const deployEnv of ['production', 'preview', 'staging', '']) {
-			expect(
-				requiresSecureCookies({
-					deployEnv,
-					isDevServer: false,
-					supabaseUrl: HOSTED_SUPABASE,
-				}),
-			).toBe(true);
-		}
+	it('reads CELEBRA_DEPLOY_ENV when no declaration is injected', () => {
+		process.env.CELEBRA_DEPLOY_ENV = 'preview';
+		expect(resolveDeployEnvironment({ isDevServer: false })).toBe('preview');
 	});
 });
 

@@ -6,7 +6,7 @@ import {
 	SECTION_ORNAMENT_SETS,
 } from '@/lib/theme/theme-contract';
 
-export const RENDER_PLAN_TARGETS = [
+const RENDER_PLAN_TARGETS = [
 	...CONTENT_SECTION_KEYS,
 	'personalized-access',
 	...INVITATION_RENDER_SECTION_KEYS.map((section) => `interlude-after-${section}` as const),
@@ -14,9 +14,9 @@ export const RENDER_PLAN_TARGETS = [
 
 export type RenderPlanTarget = (typeof RENDER_PLAN_TARGETS)[number];
 
-export const RENDER_PLAN_INTERSECTION_SOURCES = ['hero', ...RENDER_PLAN_TARGETS] as const;
+const RENDER_PLAN_INTERSECTION_SOURCES = ['hero', ...RENDER_PLAN_TARGETS] as const;
 
-export const renderPlanIntersectionSchema = z
+const renderPlanIntersectionSchema = z
 	.object({
 		family: z.enum(SECTION_INTERSECTION_FAMILIES),
 		source: z.enum(RENDER_PLAN_INTERSECTION_SOURCES),

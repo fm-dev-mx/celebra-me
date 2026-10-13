@@ -27,7 +27,7 @@ export const CRITICAL_RECOVERY_TABLES = [
 	{ schema: 'storage', table: 'objects', orderBy: 't.id' },
 ] as const;
 
-export interface RecoveryTableFingerprint {
+interface RecoveryTableFingerprint {
 	rowCount: number;
 	sha256: string;
 }

@@ -10,7 +10,7 @@ import type {
 } from '@/interfaces/dashboard/engagement-ranking.interface';
 import { EVENT_TYPES, type EventType } from '@/lib/theme/theme-contract';
 
-export const EVENT_TYPE_LABELS: Record<EventType, string> = {
+const EVENT_TYPE_LABELS: Record<EventType, string> = {
 	xv: 'XV años',
 	boda: 'Boda',
 	bautizo: 'Bautizo',

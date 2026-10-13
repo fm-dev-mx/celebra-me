@@ -1,7 +1,6 @@
 import {
 	OPERATIONAL_EVIDENCE_SCHEMA_VERSION,
 	assertOperationalEvidenceSafe,
-	sanitizeOperationalCorrelationId,
 	type OperationalEvidenceEnvironment,
 	type OperationalEvidenceStatus,
 	type OperationalEvidenceV1,
@@ -27,9 +26,8 @@ interface MemoriesCleanupMetrics {
 	count_invariant_valid: boolean | null;
 }
 
-export interface MemoriesCleanupPayload
+interface MemoriesCleanupPayload
 	extends MemoriesCleanupMetrics, Record<string, string | number | boolean | null> {
-	invocation_id: string | null;
 	duration_ms: number;
 }
 
@@ -40,13 +38,11 @@ export interface MemoriesCleanupContext {
 	runId: string;
 	startedAt: string;
 	completedAt: string | null;
-	invocationId?: string | null;
 	commitSha?: string | null;
-	deploymentId?: string | null;
 }
 
 const REVIEW_ACTION =
-	'Abra la invocación exacta en los registros del hosting y revise el resumen; no invoque manualmente la limpieza.';
+	'Busque el runId de esta ejecución en los registros del hosting y revise el resumen; no invoque manualmente la limpieza.';
 
 const EMPTY_PAYLOAD: MemoriesCleanupMetrics = {
 	validation_settled: null,
@@ -76,7 +72,6 @@ function build(
 	ownerAction: string,
 	metrics: MemoriesCleanupMetrics,
 ): MemoriesCleanupEvidence {
-	const deploymentId = sanitizeOperationalCorrelationId(context.deploymentId);
 	const commitSha = context.commitSha?.trim();
 	const evidence: MemoriesCleanupEvidence = {
 		schemaVersion: OPERATIONAL_EVIDENCE_SCHEMA_VERSION,
@@ -90,10 +85,8 @@ function build(
 		reasonCode,
 		source: 'scheduled_cron',
 		ownerAction,
-		...(deploymentId ? { deploymentId } : {}),
 		...(commitSha && /^[0-9a-f]{40}$/i.test(commitSha) ? { commitSha } : {}),
 		payload: {
-			invocation_id: sanitizeOperationalCorrelationId(context.invocationId),
 			duration_ms: durationMs(context.startedAt, context.completedAt),
 			...metrics,
 		},
@@ -138,7 +131,7 @@ export function createMemoriesCleanupCompletedEvidence(
 					? 'cleanup_in_flight_backlog'
 					: 'cleanup_completed',
 		status === 'VERIFIED'
-			? 'No se requiere acción; conserve la invocación como evidencia.'
+			? 'No se requiere acción; conserve el runId como evidencia.'
 			: REVIEW_ACTION,
 		{
 			validation_settled: result.validationSettled,

@@ -40,23 +40,23 @@ export interface UploadedAssetRef {
 
 export type UploadedAssetMap<K extends string = string> = Record<K, UploadedAssetRef>;
 
-export interface InvitationEventTiming {
+interface InvitationEventTiming {
 	localDateTime: string;
 	timeZone: string;
 	startsAtUtc: string;
 }
 
-export type InvitationLifecycle = 'in_progress' | 'published';
+type InvitationLifecycle = 'in_progress' | 'published';
 
 /** Owner decision that retires a past invitation from release planning. */
-export interface InvitationArchiveRecord {
+interface InvitationArchiveRecord {
 	/** Date of the owner decision (YYYY-MM-DD). */
 	decidedOn: string;
 	/** Short owner-facing reason, e.g. the demo that replaced it. */
 	reason: string;
 }
 export type InvitationDeliveryScope = 'content-only' | 'content-and-assets' | 'assets-only';
-export type ManagedIdentityProvenance = 'persisted' | 'owner-approved';
+type ManagedIdentityProvenance = 'persisted' | 'owner-approved';
 
 const MANAGED_IDENTITY_UUID_RE =
 	/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

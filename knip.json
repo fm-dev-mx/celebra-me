@@ -33,19 +33,8 @@
         ".cursor/hooks/*.{ts,mjs}",
         "*.{ts,mjs,cjs,js}"
     ],
-    "ignoreExportsUsedInFile": true,
-    "ignoreDependencies": [
-        "@fontsource/*",
-        "markdownlint-cli2",
-        "playwright",
-        "esbuild",
-        "vite",
-        "markdownlint",
-        "@jest/globals",
-        "jest-mock",
-        "undici",
-        "sass"
-    ],
+    "ignoreExportsUsedInFile": false,
+    "ignoreDependencies": ["markdownlint-cli2", "markdownlint"],
     "ignoreBinaries": ["psql", "pg_dump", "where.exe"],
     "rules": {
         "files": "error",

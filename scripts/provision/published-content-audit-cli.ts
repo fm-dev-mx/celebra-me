@@ -11,7 +11,7 @@
  *   pnpm invitation:published-audit --usage [--slug <slug>] [--target local|preview|production] [--json]
  */
 import { auditPublishedContent } from '../../src/lib/intake/services/published-content-audit.service.ts';
-import { flagValue } from '../lib/cli-args.ts';
+import { flagValue, requireSlug, requireEnvironmentTarget } from '../lib/cli-args.ts';
 import { summarizeContentUsage } from './content-usage-audit.ts';
 import {
 	listPersistedInvitationRows,
@@ -23,27 +23,8 @@ import {
 const args = process.argv.slice(2);
 const json = args.includes('--json');
 
-function value(flag: string): string | undefined {
-	return flagValue(args, flag);
-}
-
-function requireSlug(): string {
-	const slug = value('--slug');
-	if (!slug || slug.startsWith('--'))
-		throw new Error('SLUG_REQUIRED: pass --slug <invitation-slug>.');
-	return slug;
-}
-
-function requireTarget(): PersistedContentTarget {
-	const target = value('--target') ?? 'local';
-	if (target !== 'local' && target !== 'preview' && target !== 'production') {
-		throw new Error('TARGET_INVALID: --target must be local, preview or production.');
-	}
-	return target;
-}
-
 function runMigrationAudit(target: PersistedContentTarget, dbUrl: string): void {
-	const slug = requireSlug();
+	const slug = requireSlug(args);
 	const state = readPersistedInvitationContent(slug, dbUrl);
 	if (!state?.published.content) {
 		console.error(`PUBLISHED_NOT_FOUND: no published content for ${slug} in ${target}.`);
@@ -81,7 +62,7 @@ function runMigrationAudit(target: PersistedContentTarget, dbUrl: string): void 
 }
 
 function runUsageReport(target: PersistedContentTarget, dbUrl: string): void {
-	const onlySlug = value('--slug');
+	const onlySlug = flagValue(args, '--slug');
 	const rows = listPersistedInvitationRows(dbUrl)
 		.filter((row) => !onlySlug || row.slug === onlySlug)
 		.map((row) => {
@@ -124,7 +105,7 @@ function runUsageReport(target: PersistedContentTarget, dbUrl: string): void {
 	}
 }
 
-const target = requireTarget();
+const target = requireEnvironmentTarget(args);
 const dbUrl = resolveTargetDbUrl(target);
 if (args.includes('--usage')) runUsageReport(target, dbUrl);
 else runMigrationAudit(target, dbUrl);

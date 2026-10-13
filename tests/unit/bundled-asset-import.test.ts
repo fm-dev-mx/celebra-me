@@ -99,13 +99,11 @@ afterEach(() => {
 	globalThis.fetch = originalFetch;
 });
 
-import { isDevEnvironment } from '@/lib/environment';
+import { asLocalDevServer } from '@tests/helpers/deploy-identity';
 
 // This suite models a local Astro process, whose storage target follows the local
 // deploy identity (a built bundle without CELEBRA_DEPLOY_ENV would fail closed).
-const mockIsDevEnvironment = isDevEnvironment as jest.MockedFunction<typeof isDevEnvironment>;
-beforeEach(() => mockIsDevEnvironment.mockReturnValue(true));
-afterEach(() => mockIsDevEnvironment.mockReturnValue(false));
+beforeEach(asLocalDevServer);
 
 describe('importBundledAsset', () => {
 	it('rejects invalid bundledKey', async () => {

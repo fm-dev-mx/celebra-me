@@ -32,13 +32,13 @@ export function resolvePublicSiteOrigin(options?: {
 const CLOUDINARY_UPLOAD_PATTERN =
 	/^(https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.*)$/i;
 const CLOUDINARY_VERSIONED_ASSET = /(?:^|\/)(v\d+\/.*)$/;
-export const CLOUDINARY_SOCIAL_TRANSFORMATION = 'c_fill,w_1200,h_630,g_auto,q_auto:good,f_jpg';
+const CLOUDINARY_SOCIAL_TRANSFORMATION = 'c_fill,w_1200,h_630,g_auto,q_auto:good,f_jpg';
 
 function toJpgDeliveryPath(path: string): string {
 	return path.replace(/\.(webp|png|jpeg|jpg|gif)$/i, '.jpg');
 }
 
-export function toOptimizedSocialImageUrl(url: string): string {
+function toOptimizedSocialImageUrl(url: string): string {
 	const match = url.match(CLOUDINARY_UPLOAD_PATTERN);
 	if (!match) return url;
 

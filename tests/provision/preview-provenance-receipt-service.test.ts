@@ -1,10 +1,8 @@
 import { describe, expect, it } from '@jest/globals';
 import { hashPublicationProjection } from '../../src/lib/intake/services/publication-diff.service.ts';
 import { provenanceProjectionHash } from '../../scripts/provision/normalized-invitation-release.ts';
-import {
-	evaluatePreviewReceiptState,
-	type PreviewReceiptState,
-} from '../../scripts/provision/preview-provenance-receipt-service.ts';
+import { evaluatePreviewReceiptState } from '../../scripts/provision/preview-provenance-receipt-service.ts';
+import type { PreviewReceiptState } from '../../scripts/provision/preview/preview-receipt-state-query.ts';
 import type { InvitationPackageData } from '../../scripts/provision/invitation-package.ts';
 
 const invitationId = '11111111-1111-4111-8111-111111111111';

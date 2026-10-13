@@ -32,7 +32,8 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { assertProductionDbUrl, getProdDbUrl, redactDbUrl } from './db-workflow-lib.ts';
+import { assertProductionDbUrl, getProdDbUrl } from './db-workflow-lib.ts';
+import { redactDbUrl } from './db-target-config.ts';
 
 const DEFAULT_OUT = resolve(process.cwd(), '.backups', 'prod', 'auth-minimal.sql');
 

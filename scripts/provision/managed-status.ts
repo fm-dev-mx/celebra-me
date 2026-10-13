@@ -33,15 +33,16 @@ import {
 	type StatusEvidenceDomain,
 } from '../db/schema-lifecycle-state.ts';
 import type { StatusProbeDebugCounters } from '../status-core/index.ts';
+import { environmentName } from '../lib/cli-theme.ts';
 
 /** Default remote probe budget for routine CLI use (ms). */
 export const MANAGED_STATUS_DEFAULT_TIMEOUT_MS = 8_000;
 /** Per-psql spawnSync budget inside a compact probe (ms). */
-export const MANAGED_STATUS_PER_QUERY_TIMEOUT_MS = 2_000;
+const MANAGED_STATUS_PER_QUERY_TIMEOUT_MS = 2_000;
 
 const ENVS: TargetEnv[] = ['local', 'preview', 'production'];
 
-export interface CompactEnvContentStatus {
+interface CompactEnvContentStatus {
 	environment: TargetEnv;
 	status: StatusVocabulary;
 	/** Present when status is UNVERIFIED. */
@@ -52,7 +53,7 @@ export interface CompactEnvContentStatus {
 	durationMs?: number;
 }
 
-export interface CompactEnvSchemaStatus {
+interface CompactEnvSchemaStatus {
 	environment: TargetEnv;
 	status: SchemaLifecycleState;
 	/** Present when status is UNVERIFIED. */
@@ -257,12 +258,6 @@ function padLabel(label: string, width = 12): string {
 	return label.padEnd(width, ' ');
 }
 
-function envLabel(env: TargetEnv): string {
-	if (env === 'local') return 'Local';
-	if (env === 'preview') return 'Preview';
-	return 'Production';
-}
-
 /** Formatter-only operator label for structured UNVERIFIED results. */
 function formatUnverifiedOperatorLabel(domain: StatusEvidenceDomain): string {
 	return `${domain.toUpperCase()}_UNVERIFIED`;
@@ -303,12 +298,12 @@ export function formatCompactManagedStatus(status: CompactManagedStatus): string
 	}
 	for (const env of status.selectedTargets ?? ENVS) {
 		const content = status.content[env];
-		lines.push(`${padLabel(envLabel(env))}${formatContentLabel(content)}`);
+		lines.push(`${padLabel(environmentName(env))}${formatContentLabel(content)}`);
 	}
 	lines.push('', 'SCHEMA');
 	for (const env of status.selectedTargets ?? ENVS) {
 		const schema = status.schema[env];
-		lines.push(`${padLabel(envLabel(env))}${formatSchemaLabel(schema)}`);
+		lines.push(`${padLabel(environmentName(env))}${formatSchemaLabel(schema)}`);
 	}
 	return `${lines.join('\n')}\n`;
 }

@@ -48,7 +48,7 @@ export function buildMemoriesSpaceLookupSql(publicSlug: string): string {
 	].join('\n');
 }
 
-export function parseMemoriesSpaceRow(stdout: string): MemoriesSpaceObservation | null {
+function parseMemoriesSpaceRow(stdout: string): MemoriesSpaceObservation | null {
 	const line = stdout
 		.split(/\r?\n/)
 		.map((candidate) => candidate.trim())

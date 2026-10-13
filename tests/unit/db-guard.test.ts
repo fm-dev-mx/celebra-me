@@ -12,19 +12,21 @@
  */
 
 import {
-	classifyDbTarget,
-	redactDbUrl,
-	redactCredentials,
 	verifyLocalIdentity,
 	guardProduction,
 	guardPersistentLocal,
 	guardUnknown,
-	isLocalDbUrl,
 	validateDumpIntegrity,
-	PERSISTENT_LOCAL,
 } from '../../scripts/db/db-guard.ts';
-
-import type { ClassificationResult, GuardResult } from '../../scripts/db/db-guard.ts';
+import {
+	classifyDbTarget,
+	redactDbUrl,
+	redactCredentials,
+	isLocalDbUrl,
+	PERSISTENT_LOCAL,
+	type ClassificationResult,
+	type GuardResult,
+} from '../../scripts/db/db-target-config.ts';
 
 // ---------------------------------------------------------------------------
 // Test helpers

@@ -350,6 +350,7 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 	</div>
 </section>
 <script>
+	import { copyToClipboard } from '@/utils/clipboard';
 
 	document.querySelectorAll('.copy-icon-button').forEach((button) => {
 		button.addEventListener('click', async () => {
@@ -360,7 +361,9 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 
 			const normalizedText = textToCopy.replace(/\s+/g, '').trim();
 			try {
-				await navigator.clipboard.writeText(normalizedText);
+				if (!(await copyToClipboard(normalizedText))) {
+					throw new Error('Clipboard API unavailable');
+				}
 				button.classList.add('copy-success', 'copy-button--success');
 				window.setTimeout(() => {
 					button.classList.remove('copy-success', 'copy-button--success');

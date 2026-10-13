@@ -37,7 +37,7 @@ export interface CriticalBackupManifest {
 	stateDigest?: string;
 }
 
-export function hashFile(path: string): string {
+function hashFile(path: string): string {
 	return createHash('sha256').update(readFileSync(path)).digest('hex');
 }
 

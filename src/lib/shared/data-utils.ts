@@ -108,13 +108,6 @@ export function toEditorDate(value: unknown): string | undefined {
 	return undefined;
 }
 
-/** True when both values resolve to the same calendar day. */
-export function datesSemanticallyEqual(left: unknown, right: unknown): boolean {
-	const a = toEditorDate(left);
-	const b = toEditorDate(right);
-	return a !== undefined && a === b;
-}
-
 export function trimmedStr(value: unknown): string | undefined {
 	if (typeof value === 'string' && value.trim().length > 0) return value.trim();
 	return undefined;

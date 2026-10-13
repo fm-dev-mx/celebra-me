@@ -25,7 +25,7 @@ interface Props {
 	onToggle: (item: MemoriesOrganizerItem) => void;
 }
 
-export function describeMemoriesItem(item: MemoriesOrganizerItem, timeZone: string): string {
+function describeMemoriesItem(item: MemoriesOrganizerItem, timeZone: string): string {
 	const kind = isMemoriesVideoMime(item.mimeType) ? 'Video' : 'Foto';
 	const parts = [
 		`${kind} de ${item.uploader.displayName}`,

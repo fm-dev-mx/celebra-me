@@ -124,7 +124,7 @@ export async function inspectSchema(
  * Retry an unpublished-draft divergence only after an explicit CLI acknowledgement.
  * Managed-baseline drift is never eligible for this recovery path.
  */
-export async function resolveWithDiscardIfDraftDivergence(
+async function resolveWithDiscardIfDraftDivergence(
 	first: PromotionPreflightReport,
 	runPreflight: (
 		data: InvitationPackageData,

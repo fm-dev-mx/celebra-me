@@ -3,7 +3,6 @@ import {
 	PUBLIC_SECTION_DEFINITIONS,
 	getConfigEditorSections,
 	getEditorSectionById,
-	getPreviewAnchorForSection,
 	getPublicSectionDefinitions,
 	deriveOrderedPublicSections,
 	getSectionVisibilityStatus,
@@ -103,11 +102,11 @@ describe('invitation-section-registry', () => {
 
 	describe('preview anchors', () => {
 		it('resolves anchors from the registry', () => {
-			expect(getPreviewAnchorForSection('hero')).toBe('#hero');
-			expect(getPreviewAnchorForSection('quote')).toBe('#quote-section');
-			expect(getPreviewAnchorForSection('gallery')).toBe('#galeria');
-			expect(getPreviewAnchorForSection('thankYou')).toBe('#thank-you-section');
-			expect(getPreviewAnchorForSection('music')).toBe('');
+			expect(getEditorSectionById('hero')?.previewAnchor).toBe('#hero');
+			expect(getEditorSectionById('quote')?.previewAnchor).toBe('#quote-section');
+			expect(getEditorSectionById('gallery')?.previewAnchor).toBe('#galeria');
+			expect(getEditorSectionById('thankYou')?.previewAnchor).toBe('#thank-you-section');
+			expect(getEditorSectionById('music')?.previewAnchor).toBeFalsy();
 		});
 	});
 

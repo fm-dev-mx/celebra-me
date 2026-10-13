@@ -9,9 +9,10 @@
  */
 
 import { isDevEnvironment } from '@/lib/environment';
+import type { InvitationMutationEnvironment } from '@/lib/intake/mutations/environment-identity';
 import { getEnv } from '@/lib/server/env';
 
-export type DeployEnvironment = 'production' | 'preview' | 'local';
+export type DeployEnvironment = InvitationMutationEnvironment;
 export type HostedDeployEnvironment = Exclude<DeployEnvironment, 'local'>;
 
 const DEPLOY_ENVIRONMENT_VARIABLE = 'CELEBRA_DEPLOY_ENV';
@@ -29,7 +30,13 @@ export interface DeployIdentityInput {
 	isDevServer?: boolean;
 }
 
-function isLocalSupabaseUrl(value: string): boolean {
+/**
+ * Local Supabase API (`http://127.0.0.1|localhost:54321`) without embedded credentials.
+ * Self-contained on purpose: this module is reachable from client bundles, so it must not
+ * import the Node-only `intake/mutations/environment-identity` helpers.
+ */
+export function isLocalSupabaseUrl(value: string | undefined): boolean {
+	if (!value) return false;
 	try {
 		const url = new URL(value);
 		return (
@@ -86,13 +93,4 @@ export function isProductionDeployment(input?: DeployIdentityInput): boolean {
 /** True only for a positively recognized local process. Never throws. */
 export function isLocalProcess(input?: DeployIdentityInput): boolean {
 	return readDeployEnvironment(input) === 'local';
-}
-
-/**
- * Cookies carry `Secure` everywhere except a positively local process served over plain
- * http. Hosted and ambiguous runtimes always get it: the hosting platform may inject any
- * NODE_ENV at runtime, so NODE_ENV never decides transport security.
- */
-export function requiresSecureCookies(input?: DeployIdentityInput): boolean {
-	return !isLocalProcess(input);
 }

@@ -1,7 +1,7 @@
 import { ImageDeliverySchema } from '@/lib/assets/image-delivery';
 import { z } from 'zod';
 import { ALL_ASSET_KEYS } from '@/lib/assets/asset-keys';
-import { COUNTDOWN_DAY_UNITS, COUNTDOWN_UNITS } from '@/lib/invitation/presentation-options';
+import { COUNTDOWN_DAY_UNITS, COUNTDOWN_UNITS } from '@/lib/invitation/countdown-presentation';
 import {
 	EVENT_TYPES,
 	INVITATION_RENDER_SECTION_KEYS,
@@ -102,10 +102,10 @@ export const ColorTokenSchema = z
 	})
 	.describe('A semantic color role such as "surfacePrimary" or "actionAccent".');
 
-export const themeSchema = z
+const themeSchema = z
 	.object({
 		fontFamily: z.enum(['serif', 'sans']).default('serif'),
-		preset: z.enum(THEME_PRESETS).optional(),
+		preset: z.enum(THEME_PRESETS),
 	})
 	.strict();
 
@@ -181,7 +181,7 @@ export const countdownSchema = z
 	.strict()
 	.optional();
 
-export const eventTimingSchema = z
+const eventTimingSchema = z
 	.object({
 		localDateTime: z
 			.string()
@@ -196,6 +196,23 @@ export const eventTimingSchema = z
 	.strict()
 	.optional();
 
+const rsvpResponseMessageSchema = z
+	.object({
+		title: z.string().trim().max(500).optional(),
+		subtitle: z.string().trim().max(500).optional(),
+	})
+	.strict()
+	.optional();
+
+/** Host-authored RSVP confirmation copy, shared by the published schema and the draft editor. */
+export const rsvpResponseMessagesSchema = z
+	.object({
+		confirmed: rsvpResponseMessageSchema,
+		declined: rsvpResponseMessageSchema,
+	})
+	.strict()
+	.optional();
+
 export const navigationSchema = z
 	.array(
 		z.object({
@@ -205,7 +222,7 @@ export const navigationSchema = z
 	)
 	.optional();
 
-export const shareMessagesSchema = z
+const shareMessagesSchema = z
 	.object({
 		invitation: z.string().min(1).max(500),
 		reminder: z.string().min(1).max(500),

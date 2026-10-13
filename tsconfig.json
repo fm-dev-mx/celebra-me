@@ -4,19 +4,9 @@
         "types": ["node"],
         "paths": {
             "@/*": ["./src/*"],
-            "@api/*": ["./src/pages/api/*"],
-            "@assets/*": ["./src/assets/*"],
-            "@components/*": ["./src/components/*"],
-            "@content/*": ["./src/content/*"],
-            "@data/*": ["./src/data/*"],
-            "@hooks/*": ["./src/hooks/*"],
             "@images/*": ["./src/assets/images/*"],
-            "@interfaces/*": ["./src/interfaces/*"],
-            "@layouts/*": ["./src/layouts/*"],
-            "@lib/*": ["./src/lib/*"],
             "@styles/*": ["./src/styles/*"],
-            "@tests/*": ["./tests/*"],
-            "@utils/*": ["./src/utils/*"]
+            "@tests/*": ["./tests/*"]
         },
         "jsx": "react-jsx",
         "jsxImportSource": "react",

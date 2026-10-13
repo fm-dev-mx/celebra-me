@@ -1,13 +1,19 @@
-import { createIntersectionObserver, initSectionReveal } from '@/utils/animations';
+import { createIntersectionObserver } from '@/utils/animations';
 
-function setReducedMotion(matches: boolean): void {
-	window.matchMedia = jest.fn().mockReturnValue({ matches }) as never;
+function observeTargets() {
+	const callback = jest.fn();
+	const onObserved = jest.fn();
+	const onFallback = jest.fn();
+	const observer = createIntersectionObserver('.reveal-target', callback, {
+		onObserved,
+		onFallback,
+	});
+	return { observer, callback, onObserved, onFallback };
 }
 
 describe('progressive invitation visibility', () => {
 	beforeEach(() => {
 		document.body.innerHTML = '<section class="reveal-target">Contenido</section>';
-		setReducedMotion(false);
 		jest.useFakeTimers();
 	});
 
@@ -18,11 +24,13 @@ describe('progressive invitation visibility', () => {
 	});
 
 	it('fails open immediately when IntersectionObserver is unavailable', () => {
-		initSectionReveal('.reveal-target');
+		const { observer, callback, onObserved, onFallback } = observeTargets();
 
 		const target = document.querySelector('.reveal-target')!;
-		expect(target.classList.contains('is-visible')).toBe(true);
-		expect(target.classList.contains('has-motion')).toBe(false);
+		expect(observer).toBeNull();
+		expect(callback).toHaveBeenCalledWith(target);
+		expect(onFallback).toHaveBeenCalledWith(target);
+		expect(onObserved).not.toHaveBeenCalled();
 	});
 
 	it('fails open when observer construction throws', () => {
@@ -30,14 +38,16 @@ describe('progressive invitation visibility', () => {
 			throw new Error('observer unavailable');
 		}) as never;
 
-		initSectionReveal('.reveal-target');
+		const { observer, callback, onObserved, onFallback } = observeTargets();
 
 		const target = document.querySelector('.reveal-target')!;
-		expect(target.classList.contains('is-visible')).toBe(true);
-		expect(target.classList.contains('has-motion')).toBe(false);
+		expect(observer).toBeNull();
+		expect(callback).toHaveBeenCalledWith(target);
+		expect(onFallback).toHaveBeenCalledWith(target);
+		expect(onObserved).not.toHaveBeenCalled();
 	});
 
-	it('adds the motion marker only after observation succeeds', () => {
+	it('marks targets as observed only after observation succeeds', () => {
 		let notify: IntersectionObserverCallback = () => undefined;
 		const observe = jest.fn();
 		const unobserve = jest.fn();
@@ -54,18 +64,19 @@ describe('progressive invitation visibility', () => {
 			};
 		}) as never;
 
-		initSectionReveal('.reveal-target');
+		const { callback, onObserved, onFallback } = observeTargets();
 		const target = document.querySelector('.reveal-target')!;
 		expect(observe).toHaveBeenCalledWith(target);
-		expect(target.classList.contains('has-motion')).toBe(true);
-		expect(target.classList.contains('is-visible')).toBe(false);
+		expect(onObserved).toHaveBeenCalledWith(target);
+		expect(callback).not.toHaveBeenCalled();
 
 		notify(
 			[{ target, isIntersecting: true } as IntersectionObserverEntry],
 			{} as IntersectionObserver,
 		);
-		expect(target.classList.contains('is-visible')).toBe(true);
+		expect(callback).toHaveBeenCalledWith(target);
 		expect(unobserve).toHaveBeenCalledWith(target);
+		expect(onFallback).not.toHaveBeenCalled();
 	});
 
 	it('uses the bounded timeout as a final fail-open path', () => {
@@ -84,14 +95,5 @@ describe('progressive invitation visibility', () => {
 		jest.advanceTimersByTime(25);
 
 		expect(callback).toHaveBeenCalledWith(document.querySelector('.reveal-target'));
-	});
-
-	it('keeps reduced-motion content visible without motion markers', () => {
-		setReducedMotion(true);
-		initSectionReveal('.reveal-target');
-
-		const target = document.querySelector('.reveal-target')!;
-		expect(target.classList.contains('is-visible')).toBe(true);
-		expect(target.classList.contains('has-motion')).toBe(false);
 	});
 });

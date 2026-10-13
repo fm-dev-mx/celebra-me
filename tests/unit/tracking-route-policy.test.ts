@@ -1,9 +1,7 @@
 import {
 	DEFAULT_SPEED_INSIGHTS_SAMPLE_RATE,
 	classifyTrackingRoute,
-	isProductionAnalyticsEnvironment,
 	resolveSpeedInsightsConfig,
-	shouldLoadGoogleAnalytics,
 } from '@/lib/tracking/route-policy';
 
 describe('tracking route policy', () => {
@@ -20,7 +18,7 @@ describe('tracking route policy', () => {
 		['/xv/valentina-hernandez?invite=abc', 'personalized_invitation'],
 		['/i/abc123', 'personalized_invitation'],
 		['/xv/valentina-hernandez/i/abc123', 'personalized_invitation'],
-		['/api/invitacion/abc/view', 'rsvp_guest_api'],
+		['/api/invitacion/abc/events', 'rsvp_guest_api'],
 		['/api/invitacion/abc/rsvp', 'rsvp_guest_api'],
 		['/dashboard', 'dashboard_admin_auth'],
 		['/dashboard/invitaciones', 'dashboard_admin_auth'],
@@ -30,30 +28,6 @@ describe('tracking route policy', () => {
 		['/desconocido', 'unknown'],
 	] as const)('classifies %s as %s', (input, expected) => {
 		expect(classifyTrackingRoute(input).routeClass).toBe(expected);
-	});
-
-	it.each([
-		['development', false],
-		['preview', false],
-		['production', true],
-		[undefined, false],
-	] as const)(
-		'resolves production analytics environment for %s',
-		(deployEnvironment, expected) => {
-			expect(isProductionAnalyticsEnvironment({ deployEnvironment })).toBe(expected);
-		},
-	);
-
-	it('allows GA only for commercial or demo routes in production with an id', () => {
-		const env = { deployEnvironment: 'production', gaId: 'G-TEST' };
-
-		expect(shouldLoadGoogleAnalytics('/', env)).toBe(true);
-		expect(shouldLoadGoogleAnalytics('/demos/cumpleanos', env)).toBe(true);
-		expect(shouldLoadGoogleAnalytics('/xv/demo-xv-editorial', env)).toBe(true);
-		expect(shouldLoadGoogleAnalytics('/xv/valentina-hernandez', env)).toBe(false);
-		expect(shouldLoadGoogleAnalytics('/xv/valentina-hernandez?invite=abc', env)).toBe(false);
-		expect(shouldLoadGoogleAnalytics('/dashboard/invitaciones', env)).toBe(false);
-		expect(shouldLoadGoogleAnalytics('/api/contact', env)).toBe(false);
 	});
 
 	it('allows Meta attribution capture only on commercial acquisition routes', () => {
@@ -67,21 +41,19 @@ describe('tracking route policy', () => {
 		expect(classifyTrackingRoute('/api/contact').metaAllowed).toBe(false);
 	});
 
-	it('does not allow GA in preview, local development, or without a measurement id', () => {
-		expect(
-			shouldLoadGoogleAnalytics('/', { deployEnvironment: 'preview', gaId: 'G-TEST' }),
-		).toBe(false);
-		expect(
-			shouldLoadGoogleAnalytics('/', { deployEnvironment: 'development', gaId: 'G-TEST' }),
-		).toBe(false);
-		expect(shouldLoadGoogleAnalytics('/', { deployEnvironment: 'production', gaId: '' })).toBe(
-			false,
-		);
+	it('allows GA only on commercial and demo routes', () => {
+		expect(classifyTrackingRoute('/').gaAllowed).toBe(true);
+		expect(classifyTrackingRoute('/demos/cumpleanos').gaAllowed).toBe(true);
+		expect(classifyTrackingRoute('/xv/demo-xv-editorial').gaAllowed).toBe(true);
+		expect(classifyTrackingRoute('/xv/valentina-hernandez').gaAllowed).toBe(false);
+		expect(classifyTrackingRoute('/xv/valentina-hernandez?invite=abc').gaAllowed).toBe(false);
+		expect(classifyTrackingRoute('/dashboard/invitaciones').gaAllowed).toBe(false);
+		expect(classifyTrackingRoute('/api/contact').gaAllowed).toBe(false);
 	});
 
 	describe('resolveSpeedInsightsConfig', () => {
 		it('enables Speed Insights only on approved commercial and demo routes in production', () => {
-			const env = { deployEnvironment: 'production' };
+			const env = { deployEnvironment: 'production' } as const;
 
 			expect(resolveSpeedInsightsConfig('/', env)).toEqual({
 				enabled: true,
@@ -102,7 +74,7 @@ describe('tracking route policy', () => {
 		});
 
 		it('disables Speed Insights on dashboard, auth, and API routes', () => {
-			const env = { deployEnvironment: 'production' };
+			const env = { deployEnvironment: 'production' } as const;
 
 			expect(resolveSpeedInsightsConfig('/login', env)).toEqual({
 				enabled: false,
@@ -135,11 +107,7 @@ describe('tracking route policy', () => {
 				enabled: false,
 				sampleRate: 0,
 			});
-			expect(resolveSpeedInsightsConfig('/', { deployEnvironment: 'development' })).toEqual({
-				enabled: false,
-				sampleRate: 0,
-			});
-			expect(resolveSpeedInsightsConfig('/', {})).toEqual({
+			expect(resolveSpeedInsightsConfig('/', { deployEnvironment: null })).toEqual({
 				enabled: false,
 				sampleRate: 0,
 			});

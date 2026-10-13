@@ -9,7 +9,7 @@
 
 export type ThemeEnvironment = 'local' | 'preview' | 'production' | 'disposable-test';
 
-export type SymbolKind =
+type SymbolKind =
 	| 'ok'
 	| 'warn'
 	| 'fail'
@@ -72,6 +72,11 @@ const ENVIRONMENT_NAMES: Record<ThemeEnvironment, string> = {
 	production: 'Production',
 	'disposable-test': 'Disposable-test',
 };
+
+/** Plain (uncolored) operator name of an environment, e.g. `Production`. */
+export function environmentName(environment: ThemeEnvironment): string {
+	return ENVIRONMENT_NAMES[environment];
+}
 
 /**
  * Color is on when FORCE_COLOR asks for it, off under NO_COLOR, and otherwise only when

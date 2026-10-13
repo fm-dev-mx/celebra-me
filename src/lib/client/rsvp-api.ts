@@ -2,7 +2,7 @@ import { fetchJSON, type ApiResult } from '@/lib/api-client-shared';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import type { LocationSection } from '@/lib/adapters/types';
 
-export interface RsvpPayload {
+interface RsvpPayload {
 	attendanceStatus: 'confirmed' | 'declined';
 	attendeeCount: number;
 	guestComment?: string;
@@ -14,7 +14,7 @@ export interface PublicRsvpPayload extends RsvpPayload {
 	countryCode?: string;
 }
 
-export interface RevealedLocationPayload {
+interface RevealedLocationPayload {
 	location: LocationSection;
 }
 

@@ -1,8 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { normalizeVisualPath, visualImpactFiles } from './visual-impact.ts';
 
-export type ReleaseCategory =
-	'tooling-only' | 'application' | 'schema-dependent' | 'invitation-content';
+type ReleaseCategory = 'tooling-only' | 'application' | 'schema-dependent' | 'invitation-content';
 export interface ReleaseClassification {
 	baseSha: string;
 	headSha: string;

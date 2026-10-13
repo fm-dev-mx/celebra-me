@@ -9,7 +9,7 @@ import {
 	validatePlaceholderRecords,
 } from '@/lib/invitation-preparation/placeholders';
 
-export const PREPARATION_READINESS_STATES = [
+const PREPARATION_READINESS_STATES = [
 	'NOT_READY',
 	'READY_WITH_PLACEHOLDERS',
 	'READY_FOR_IMPLEMENTATION',

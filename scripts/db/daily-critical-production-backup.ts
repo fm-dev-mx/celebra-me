@@ -124,8 +124,8 @@ let workflowError: unknown = null;
 try {
 	mkdirSync(backupRoot, { recursive: true });
 	prepareEncryptedLocalDirectory(backupRoot);
-	const backupArgs = ['tsx', 'scripts/db/backup-critical-production.ts'];
-	const result = runCommand('npx', backupArgs, { throwOnError: false });
+	const backupArgs = ['exec', 'tsx', 'scripts/db/backup-critical-production.ts'];
+	const result = runCommand('pnpm', backupArgs, { throwOnError: false });
 	if (result.status !== 0) {
 		const detail = [result.stderr, result.stdout].filter(Boolean).join('\n').trim();
 		throw new Error(

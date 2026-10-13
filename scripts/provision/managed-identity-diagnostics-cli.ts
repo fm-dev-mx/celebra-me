@@ -7,26 +7,17 @@
  */
 
 import { flagValue as value } from '../lib/cli-args.ts';
-import {
-	classifyDbTarget,
-	getSecretFromEnvOrFiles,
-	LOCAL_DB_URL,
-	PREVIEW_SECRET_FILES,
-} from '../db/db-workflow-lib.ts';
 import { runManagedIdentityDiagnostics } from './managed-identity-diagnostics.ts';
+import { classifyDbTarget, resolveTargetDbUrl } from '../db/db-target-config.ts';
 
 function resolveDbUrl(argv: string[]): string {
 	const explicit = value(argv, '--db-url');
 	if (explicit) return explicit;
 	const target = value(argv, '--target') ?? 'local';
-	if (target === 'local') return LOCAL_DB_URL;
-	if (target === 'disposable-test')
-		return 'postgresql://postgres:postgres@127.0.0.1:54332/postgres';
+	if (target === 'local') return resolveTargetDbUrl('persistent-local');
+	if (target === 'disposable-test') return resolveTargetDbUrl('disposable-test');
 	if (target === 'preview') {
-		const previewUrl = (
-			process.env.PREVIEW_DB_URL?.trim() ||
-			getSecretFromEnvOrFiles('PREVIEW_DB_URL', PREVIEW_SECRET_FILES)
-		).trim();
+		const previewUrl = resolveTargetDbUrl('preview');
 		if (!previewUrl) {
 			throw new Error('PREVIEW_DB_URL_REQUIRED for --target preview.');
 		}

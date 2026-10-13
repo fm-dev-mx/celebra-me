@@ -88,7 +88,7 @@ describe('environment contract', () => {
 	);
 	const runtimeNames = collectRuntimeEnvNames();
 	const operationalOnlyNames = readDocumentedCategory('operational-script-only');
-	const platformRuntimeNames = readDocumentedCategory('platform-provided-runtime');
+	const deployRuntimeNames = readDocumentedCategory('deploy-provided-runtime');
 
 	it('types every active app/runtime variable and no script-only variables', () => {
 		expect(sorted(typedRuntimeNames)).toEqual(sorted(runtimeNames));
@@ -99,13 +99,13 @@ describe('environment contract', () => {
 		expect(
 			sorted(difference(operationalOnlyNames, difference(templateNames, typedRuntimeNames))),
 		).toEqual([]);
-		expect(sorted(difference(platformRuntimeNames, typedRuntimeNames))).toEqual([]);
+		expect(sorted(difference(deployRuntimeNames, typedRuntimeNames))).toEqual([]);
 		expect(
-			sorted(difference(platformRuntimeNames, difference(typedRuntimeNames, templateNames))),
+			sorted(difference(deployRuntimeNames, difference(typedRuntimeNames, templateNames))),
 		).toEqual([]);
 
 		expect(sorted(difference(templateNames, operationalOnlyNames))).toEqual(
-			sorted(difference(typedRuntimeNames, platformRuntimeNames)),
+			sorted(difference(typedRuntimeNames, deployRuntimeNames)),
 		);
 	});
 

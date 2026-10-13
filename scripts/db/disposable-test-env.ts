@@ -24,15 +24,9 @@
 
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import {
-	BASELINE_CUTOFF_VERSION,
-	DISPOSABLE_DB_URL,
-	DISPOSABLE_TEST,
-	fail,
-	redactCredentials,
-	runCommand,
-} from './db-workflow-lib.ts';
+import { BASELINE_CUTOFF_VERSION, fail, runCommand } from './db-workflow-lib.ts';
 import { invalidateDisposableMigrationProof } from './disposable-migration-proof.ts';
+import { DISPOSABLE_DB_URL, DISPOSABLE_TEST, redactCredentials } from './db-target-config.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -410,7 +404,7 @@ function printReady(): void {
 function applyDisposableMigrations(options: { isBaseline: boolean; maxVersion?: string }): void {
 	// Full and cutoff applies share the disposable migrate policy/executor.
 	const applyArgs = [
-		'-y',
+		'exec',
 		'tsx',
 		'scripts/db/migrate-cli.ts',
 		'--target',
@@ -423,7 +417,7 @@ function applyDisposableMigrations(options: { isBaseline: boolean; maxVersion?: 
 	} else if (options.maxVersion) {
 		applyArgs.push('--max-version', options.maxVersion);
 	}
-	const applyResult = runCommand('npx', applyArgs);
+	const applyResult = runCommand('pnpm', applyArgs);
 	if (applyResult.status !== 0) {
 		fail(`Migration failure: ${applyResult.stderr || applyResult.stdout}`);
 	}
@@ -817,7 +811,11 @@ function cmdRunManagedDbContracts(): void {
 
 function cmdRunConcurrencyTest(): void {
 	console.info('=== Disposable Test Environment: Concurrent Publication ===\n');
-	const result = runCommand('npx', ['-y', 'tsx', 'scripts/db/publication-concurrency-test.ts']);
+	const result = runCommand('pnpm', [
+		'exec',
+		'tsx',
+		'scripts/db/publication-concurrency-test.ts',
+	]);
 	console.info(result.stdout || '');
 	if (result.status !== 0) {
 		const cleanStderr = redactCredentials(result.stderr);
@@ -832,7 +830,7 @@ function cmdRunConcurrencyTest(): void {
 
 function cmdRunPhase3ConcurrencyTest(): void {
 	console.info('=== Disposable Test Environment: Phase 3 System Concurrency ===\n');
-	const result = runCommand('npx', ['-y', 'tsx', 'scripts/db/system-concurrency-test.ts']);
+	const result = runCommand('pnpm', ['exec', 'tsx', 'scripts/db/system-concurrency-test.ts']);
 	console.info(result.stdout || '');
 	if (result.status !== 0) {
 		const cleanStderr = redactCredentials(result.stderr);
@@ -847,7 +845,7 @@ function cmdRunPhase3ConcurrencyTest(): void {
 
 function cmdRunMemoriesConcurrencyTest(): void {
 	console.info('=== Disposable Test Environment: Event Memories Concurrency ===\n');
-	const result = runCommand('npx', ['-y', 'tsx', 'scripts/db/memories-concurrency-test.ts']);
+	const result = runCommand('pnpm', ['exec', 'tsx', 'scripts/db/memories-concurrency-test.ts']);
 	console.info(result.stdout || '');
 	if (result.status !== 0) {
 		const cleanStderr = redactCredentials(result.stderr);
@@ -873,8 +871,8 @@ function cmdRunMemoriesDbContracts(): void {
 
 function cmdRunStaleBaselineTest(): void {
 	console.info('=== Disposable Test Environment: Publication Stale Baselines ===\n');
-	const result = runCommand('npx', [
-		'-y',
+	const result = runCommand('pnpm', [
+		'exec',
 		'tsx',
 		'scripts/db/publication-stale-baseline-test.ts',
 	]);

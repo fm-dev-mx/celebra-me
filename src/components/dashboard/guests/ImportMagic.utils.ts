@@ -83,7 +83,7 @@ export const IGNORED_EXPORT_HEADERS = new Set([
 	'guest_comment',
 ]);
 
-export interface NormalizedPhone {
+interface NormalizedPhone {
 	phone: string | undefined;
 	countryCode: string | undefined;
 }
@@ -196,7 +196,7 @@ function normalizeNationalPhone(phone: string, countryCode: string): PhoneNormRe
 	return { ok: true, phone: digits, countryCode: cc };
 }
 
-export function normalizePhoneForComparison(
+function normalizePhoneForComparison(
 	phone: string | null | undefined,
 	countryCode?: string | null,
 ): string {
@@ -300,7 +300,7 @@ function ensurePrefix(cc: string): string {
 	return cc && !cc.startsWith('+') ? '+' + cc : cc;
 }
 
-export function parsePositional(parts: string[]): ParsedGuest {
+function parsePositional(parts: string[]): ParsedGuest {
 	const result: ParsedGuest = {
 		fullName: parts[0]?.trim() ?? '',
 		phone: parts[1]?.trim() ?? '',
@@ -372,7 +372,7 @@ export function validateGuestRow(guest: ParsedGuest): {
 	};
 }
 
-export function applyValidation(guest: ParsedGuest): ParsedGuest {
+function applyValidation(guest: ParsedGuest): ParsedGuest {
 	const validation = validateGuestRow(guest);
 	return {
 		...guest,
@@ -381,7 +381,7 @@ export function applyValidation(guest: ParsedGuest): ParsedGuest {
 	};
 }
 
-export function detectHeaderMapping(parts: string[]): Map<string, keyof ParsedGuest> | null {
+function detectHeaderMapping(parts: string[]): Map<string, keyof ParsedGuest> | null {
 	const headers = parts.map((part) =>
 		part
 			.trim()
@@ -408,7 +408,7 @@ export function looksLikeDataValue(value: string): boolean {
 	return false;
 }
 
-export function isProbablyHeaderRow(parts: string[]): boolean {
+function isProbablyHeaderRow(parts: string[]): boolean {
 	const headers = parts.map((part) =>
 		part
 			.trim()

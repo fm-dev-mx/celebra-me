@@ -13,7 +13,7 @@ export type ManagedBaselineClassification =
 	| 'manual_or_unmanaged_drift';
 
 export type ManagedBaselineDiagnosticClassification = ManagedBaselineClassification | 'unknown';
-export type ManagedBaselineDiagnosticDisposition = 'verified' | 'adoptable' | 'blocked';
+type ManagedBaselineDiagnosticDisposition = 'verified' | 'adoptable' | 'blocked';
 
 export interface ManagedBaselineDiagnostic {
 	classification: ManagedBaselineDiagnosticClassification;

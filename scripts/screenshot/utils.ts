@@ -121,7 +121,7 @@ export function parseCliArgs(argv: string[]): CliOptions {
 	return options;
 }
 
-export class ScreenshotCliError extends Error {
+class ScreenshotCliError extends Error {
 	constructor(message: string) {
 		super(message);
 		this.name = 'ScreenshotCliError';
@@ -464,7 +464,7 @@ export function getDefaultProfile(pageType: PageType): 'invitation' | 'site' {
 /**
  * Resolve a viewport profile to its list of viewport configurations.
  */
-export function getViewportsForProfile(profile: ViewportProfileType): Viewport[] {
+function getViewportsForProfile(profile: ViewportProfileType): Viewport[] {
 	const entry = VIEWPORT_PROFILES[profile];
 	if (entry) return [...entry.viewports];
 	// Fallback: return site profile
@@ -642,7 +642,7 @@ export function getDefaultHideSelectors(): string[] {
 	];
 }
 
-export async function getDocumentHeight(page: import('playwright').Page): Promise<number> {
+export async function getDocumentHeight(page: import('@playwright/test').Page): Promise<number> {
 	try {
 		return await page.evaluate(() =>
 			Math.max(document.body.scrollHeight, document.documentElement.scrollHeight),
@@ -889,7 +889,7 @@ export async function writeScreenshotPreflight(
 /**
  * Format a timestamp for folder naming: YYYY-MM-DD-HHmm
  */
-export function formatTimestamp(date: Date = new Date()): string {
+function formatTimestamp(date: Date = new Date()): string {
 	const y = date.getFullYear();
 	const m = String(date.getMonth() + 1).padStart(2, '0');
 	const d = String(date.getDate()).padStart(2, '0');

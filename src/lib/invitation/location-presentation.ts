@@ -7,9 +7,7 @@ export const LOCATION_MAP_STYLES = ['dark', 'colorful', 'minimal', 'satellite', 
 
 export type LocationMapStyle = (typeof LOCATION_MAP_STYLES)[number];
 
-export const LOCATION_REVEAL_SURFACES = ['section', 'rsvp'] as const;
-
-export type LocationRevealSurface = (typeof LOCATION_REVEAL_SURFACES)[number];
+type LocationRevealSurface = 'section' | 'rsvp';
 
 /**
  * How the indications list is laid out:

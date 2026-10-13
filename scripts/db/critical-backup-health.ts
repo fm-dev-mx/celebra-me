@@ -12,7 +12,7 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { DEFAULT_CRITICAL_BACKUP_ROOT } from './critical-backup-reuse.ts';
 import { listCriticalBackups } from './local-backup-operations.ts';
 
-export const DAILY_BACKUP_RPO_MS = 24 * 60 * 60 * 1000;
+const DAILY_BACKUP_RPO_MS = 24 * 60 * 60 * 1000;
 
 export interface CriticalBackupHealth {
 	newestManifestPath: string | null;

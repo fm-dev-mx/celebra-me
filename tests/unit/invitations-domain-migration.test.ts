@@ -25,7 +25,6 @@ describe('invitations domain migration', () => {
 	it('blocks permanent deletion when RSVP history exists', () => {
 		expect(migration).toContain("return 'blocked_rsvp_history'");
 		expect(migration).toContain('public.guest_invitations');
-		expect(migration).toContain('public.event_claim_codes');
 		expect(migration).toContain('public.event_memberships');
 	});
 });

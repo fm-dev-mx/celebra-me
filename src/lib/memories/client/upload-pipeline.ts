@@ -48,7 +48,7 @@ export function readMemoriesUploadIssue(error: unknown): MemoriesCaptureIssue {
 	return mapRequestIssue(error, 'sign_failed');
 }
 
-export type MemoriesSignedUpload = NonNullable<MemoriesReservation['upload']>;
+type MemoriesSignedUpload = NonNullable<MemoriesReservation['upload']>;
 
 /** Sends the original bytes; resolves with the HTTP status. Rejects on a transport failure. */
 export type MemoriesPutTransport = (
@@ -88,7 +88,7 @@ export const xhrPutTransport: MemoriesPutTransport = (upload, file, onProgress) 
 		request.send(file);
 	});
 
-export const defaultPutTransport: MemoriesPutTransport =
+const defaultPutTransport: MemoriesPutTransport =
 	typeof XMLHttpRequest === 'undefined' ? fetchPutTransport : xhrPutTransport;
 
 export type MemoriesUploadPhase = 'optimizing' | 'preparing' | 'uploading' | 'confirming';

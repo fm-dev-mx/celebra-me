@@ -26,7 +26,7 @@ import {
 } from '@/interfaces/dashboard/engagement-ranking.interface';
 
 /** Engagement collection started with v0.20.0-beta.1; nothing exists before this date. */
-export const ENGAGEMENT_COLLECTION_SINCE = '2026-10-12';
+const ENGAGEMENT_COLLECTION_SINCE = '2026-10-12';
 
 /** Mirrors the routine (guests) and the spec (groups); the app only withholds ranks. */
 export const RANKING_THRESHOLDS: RankingThresholds = { sharedGuests: 20, groupInvitations: 5 };
@@ -37,11 +37,11 @@ export interface EngagementRankingQuery {
 	metric?: string;
 }
 
-export function isRankingGroupKey(value: string): value is RankingGroupKey {
+function isRankingGroupKey(value: string): value is RankingGroupKey {
 	return (RANKING_GROUP_KEYS as readonly string[]).includes(value);
 }
 
-export function isRankingMetric(value: string): value is RankingMetric {
+function isRankingMetric(value: string): value is RankingMetric {
 	return (RANKING_METRICS as readonly string[]).includes(value);
 }
 

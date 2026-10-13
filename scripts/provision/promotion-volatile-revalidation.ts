@@ -19,7 +19,7 @@ import { verifyPlanPreconditions } from './invitation-update-plan.ts';
 
 const RETRY_COMMAND = 'pnpm prod:apply -- --slug <slug>';
 
-export interface PromotionVolatileTargetState {
+interface PromotionVolatileTargetState {
 	targetInvitationId: string;
 	targetOwnerUserId: string;
 	existingDraftUpdatedAt?: string;

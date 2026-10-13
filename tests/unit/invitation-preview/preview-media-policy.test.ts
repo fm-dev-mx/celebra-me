@@ -6,7 +6,6 @@ import {
 	PREVIEW_DESIGN_PATHS,
 	PREVIEW_PHOTO_PATHS,
 	applyPreviewMediaPolicy,
-	collectImageAssetPaths,
 } from '@/lib/invitation/preview/preview-media-policy';
 import { parsePreviewMediaAsset } from '@/lib/invitation/preview/preview-media-token';
 
@@ -14,6 +13,37 @@ const INVITATION_ID = '11111111-1111-4111-8111-111111111111';
 const storage = (name: string) =>
 	`https://abc.supabase.co/storage/v1/object/public/invitation-assets/x/${name}.webp`;
 const image = (name: string) => ({ src: storage(name), alt: name });
+
+function isImageLike(value: unknown): boolean {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+	const src = (value as { src?: unknown }).src;
+	return (
+		typeof src === 'string' ||
+		(Boolean(src) &&
+			typeof src === 'object' &&
+			typeof (src as { src?: unknown }).src === 'string')
+	);
+}
+
+/** Paths (array indexes as `*`) of every image-shaped value in a view model. */
+function collectImageAssetPaths(viewModel: unknown): string[] {
+	const found = new Set<string>();
+	const walk = (value: unknown, segments: string[]) => {
+		if (isImageLike(value)) {
+			found.add(segments.join('.'));
+			return;
+		}
+		if (Array.isArray(value)) {
+			for (const item of value) walk(item, [...segments, '*']);
+			return;
+		}
+		if (value && typeof value === 'object') {
+			for (const [key, child] of Object.entries(value)) walk(child, [...segments, key]);
+		}
+	};
+	walk(viewModel, []);
+	return [...found].sort();
+}
 
 function listJsonFiles(dir: string): string[] {
 	return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

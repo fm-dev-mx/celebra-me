@@ -17,7 +17,7 @@ import type { InvitationDefinition } from './invitations/invitation-definition.t
 import { resolveLocalEnv } from './local-provision-env.ts';
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from '../../src/lib/intake/constants.ts';
 
-export type ReadinessVerdict = 'READY' | 'NO-GO' | 'BLOCKED';
+type ReadinessVerdict = 'READY' | 'NO-GO' | 'BLOCKED';
 
 export interface ReadinessCheckResult {
 	slug: string;

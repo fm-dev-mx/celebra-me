@@ -56,7 +56,7 @@ export interface PlatformMetric {
 export type PlatformProjection =
 	{ kind: 'exhaustsAt'; at: string } | { kind: 'safe' } | { kind: 'unknown' };
 
-export interface PlatformProviderUsageOk {
+interface PlatformProviderUsageOk {
 	kind: 'ok';
 	fetchedAt: string;
 	metrics: PlatformMetric[];

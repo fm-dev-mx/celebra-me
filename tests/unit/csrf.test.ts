@@ -1,5 +1,6 @@
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { clearCsrfToken, setCsrfToken, validateCsrfToken } from '@/lib/rsvp/security/csrf';
+import { setCsrfToken, validateCsrfToken } from '@/lib/rsvp/security/csrf';
+import { asHostedDeploy } from '@tests/helpers/deploy-identity';
 
 function createCookies(initialToken?: string) {
 	let token = initialToken;
@@ -65,27 +66,18 @@ describe('CSRF token lifecycle', () => {
 			),
 		).not.toThrow();
 	});
-
-	it('clears the token on logout/session cleanup', () => {
-		const { cookies, getToken } = createCookies('valid-token');
-		clearCsrfToken(cookies as never);
-		expect(getToken()).toBeUndefined();
-	});
 });
 
 describe('csrf cookie transport security', () => {
-	const originalDeployEnv = process.env.CELEBRA_DEPLOY_ENV;
 	const originalSupabaseUrl = process.env.SUPABASE_URL;
 
 	afterEach(() => {
-		if (originalDeployEnv === undefined) delete process.env.CELEBRA_DEPLOY_ENV;
-		else process.env.CELEBRA_DEPLOY_ENV = originalDeployEnv;
 		if (originalSupabaseUrl === undefined) delete process.env.SUPABASE_URL;
 		else process.env.SUPABASE_URL = originalSupabaseUrl;
 	});
 
 	it('sets a Secure token cookie on a hosted deployment', () => {
-		process.env.CELEBRA_DEPLOY_ENV = 'production';
+		asHostedDeploy('production');
 		const { cookies } = createCookies();
 		setCsrfToken(cookies as never);
 		expect(cookies.set).toHaveBeenCalledWith(
@@ -96,7 +88,6 @@ describe('csrf cookie transport security', () => {
 	});
 
 	it('omits Secure only for a positively local process', () => {
-		delete process.env.CELEBRA_DEPLOY_ENV;
 		process.env.SUPABASE_URL = 'http://127.0.0.1:54321';
 		const { cookies } = createCookies();
 		setCsrfToken(cookies as never);

@@ -17,7 +17,7 @@ import {
 	type ProgressMilestone,
 } from '@/lib/rsvp/engagement/taxonomy';
 
-export const INVITATION_ENGAGEMENT_EVENT = 'celebra:invitation-engagement';
+const INVITATION_ENGAGEMENT_EVENT = 'celebra:invitation-engagement';
 const ENGAGEMENT_BUFFER_KEY = '__celebraEngagementBuffer';
 
 type FormStepEvent = Extract<

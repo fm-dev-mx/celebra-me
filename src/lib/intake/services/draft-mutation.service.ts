@@ -24,7 +24,7 @@ import type { InvitationContentDraft } from '@/lib/intake/types';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { mergeOverlay } from '@/lib/shared/data-utils';
 
-export type DraftMutationActor = 'editor' | 'cli' | 'agent';
+type DraftMutationActor = 'editor' | 'cli' | 'agent';
 
 export class DraftRevisionConflictError extends Error {
 	readonly code = 'draft_revision_conflict';
@@ -120,7 +120,7 @@ function validateResultingContent(content: Record<string, unknown>): Record<stri
 	return content;
 }
 
-export type DraftMutationPatch =
+type DraftMutationPatch =
 	| { kind: 'section'; section: InvitationEditorSectionKey; value: unknown }
 	| { kind: 'fields'; fields: Array<{ path: string; value: unknown }> }
 	| { kind: 'overlay'; content: Record<string, unknown> }

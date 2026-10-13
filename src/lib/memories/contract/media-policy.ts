@@ -16,7 +16,7 @@ export const MEMORIES_VIDEO_DURATION_DECIMALS = 3;
 export const MEMORIES_IMAGE_OPTIMIZATION_MAX_DIMENSION_PX = 2560;
 export const MEMORIES_IMAGE_OPTIMIZATION_QUALITY = 0.85;
 
-export type MemoriesMimeCategory = 'image' | 'video';
+type MemoriesMimeCategory = 'image' | 'video';
 
 export type MemoriesAllowedMimeType =
 	| 'image/jpeg'

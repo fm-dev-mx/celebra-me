@@ -17,7 +17,7 @@ async function loadSharp() {
 }
 
 const MAX_INPUT_PIXELS = 50_000_000;
-export const PREVIEW_PHOTO_QUALITY = 84;
+const PREVIEW_PHOTO_QUALITY = 84;
 const SOCIAL_SIZE = { width: 1200, height: 630 } as const;
 
 export interface RenderedPreviewMedia {

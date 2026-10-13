@@ -31,7 +31,7 @@ export interface ReconciliationArtifactData {
 	isReleaseBlocked: boolean;
 }
 
-export function getReconciliationArtifactPath(
+function getReconciliationArtifactPath(
 	slug: string,
 	target: 'local' | 'preview' | 'production',
 	projectRoot?: string,

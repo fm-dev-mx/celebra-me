@@ -8,10 +8,11 @@ import type {
 	MediaReferenceFinding,
 	MediaReferencesStatus,
 } from '../../src/lib/status/media-reference-types.ts';
-import { sqlLiteral, validateEnvironmentUrlsPreflight } from '../db/db-workflow-lib.ts';
+import { sqlLiteral } from '../db/db-workflow-lib.ts';
 import { runPsqlAsync } from '../status-core/probe-runner.ts';
 import { useCliColor } from '../db/operator-cli-ux.ts';
 import { resolveDbUrlForEnv, type TargetEnv } from './dbs-status.ts';
+import { validateEnvironmentUrlsPreflight } from '../db/db-target-config.ts';
 
 export interface PublishedMediaInventoryRow {
 	eventType: string;
@@ -157,7 +158,7 @@ export async function readMediaReferencesStatus(
 	return status;
 }
 
-export function mediaReferenceCommands(target: MediaReferenceEnvironment, slug: string): string[] {
+function mediaReferenceCommands(target: MediaReferenceEnvironment, slug: string): string[] {
 	if (!SAFE_SLUG.test(slug)) return [];
 	const diagnose = `pnpm invitation:media:verify -- --target ${target} --slug ${slug} --json`;
 	const plan =

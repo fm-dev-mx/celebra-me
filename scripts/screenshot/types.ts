@@ -21,7 +21,7 @@ export type GeneralSet = 'basic' | 'full-qa';
 export type RevealHandling = 'auto' | 'force-open' | 'closed-only' | 'open-only' | 'skip';
 
 /** How to handle CSS animations */
-export type AnimationHandling = 'disable' | 'wait' | 'query-param' | 'custom';
+type AnimationHandling = 'disable' | 'wait' | 'query-param' | 'custom';
 
 /** Whether and how to capture individual sections */
 export type SectionCapture = 'none' | 'auto' | 'known' | 'custom' | 'single';
@@ -216,9 +216,9 @@ export interface CaptureResult {
 
 export type ValidationStatus = 'passed' | 'warning' | 'partial' | 'failed';
 
-export type RequestFailureSeverity = 'critical' | 'warning';
+type RequestFailureSeverity = 'critical' | 'warning';
 
-export interface ScreenshotOutputFileReport {
+interface ScreenshotOutputFileReport {
 	path: string;
 	label: string;
 	width?: number;

@@ -1,10 +1,12 @@
+/**
+ * @jest-environment node
+ */
 import { POST as uploadPost } from '@/pages/api/dashboard/intake/[id]/assets/upload';
 import { POST as importDemoPost } from '@/pages/api/dashboard/intake/[id]/assets/import-bundled';
 import { requireEditorMutationAccess } from '@/lib/intake/editor-api';
 import { uploadAsset, importBundledAsset } from '@/lib/intake/services/asset.service';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { MAX_MULTIPART_BODY_BYTES } from '@/lib/intake/constants';
-import { FormData as NodeFormData, Request as NodeRequest } from 'undici';
 
 jest.mock('@/lib/intake/editor-api', () => ({
 	requireEditorMutationAccess: jest.fn(),
@@ -16,20 +18,12 @@ jest.mock('@/lib/intake/services/asset.service', () => ({
 	importBundledAsset: jest.fn(),
 }));
 
-function createFormDataRequest(formData: NodeFormData): Request {
-	return new NodeRequest('http://localhost/api/dashboard/intake/inv-1/assets/upload', {
+function createFormDataRequest(formData: FormData): Request {
+	return new Request('http://localhost/api/dashboard/intake/inv-1/assets/upload', {
 		method: 'POST',
 		body: formData,
-	}) as unknown as Request;
+	});
 }
-
-const previousRequest = globalThis.Request;
-beforeAll(() => {
-	globalThis.Request = NodeRequest as unknown as typeof Request;
-});
-afterAll(() => {
-	globalThis.Request = previousRequest;
-});
 
 describe('/api/dashboard/intake/[id]/assets API routes', () => {
 	beforeEach(() => {
@@ -51,7 +45,7 @@ describe('/api/dashboard/intake/[id]/assets API routes', () => {
 				src: 'http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/test.webp',
 			});
 
-			const formData = new NodeFormData();
+			const formData = new FormData();
 			const file = new Blob(['dummy-content'], { type: 'image/webp' });
 			formData.append('file', file, 'upload.webp');
 			formData.append('displayName', 'Foto Portada');
@@ -72,7 +66,7 @@ describe('/api/dashboard/intake/[id]/assets API routes', () => {
 		});
 
 		it('returns 400 when file is missing from formData', async () => {
-			const formData = new NodeFormData();
+			const formData = new FormData();
 			formData.append('displayName', 'Sin archivo');
 
 			const response = await uploadPost({
@@ -87,7 +81,7 @@ describe('/api/dashboard/intake/[id]/assets API routes', () => {
 		});
 
 		it('returns 400 when uploaded file is not an image', async () => {
-			const formData = new NodeFormData();
+			const formData = new FormData();
 			const file = new Blob(['text-content'], { type: 'application/pdf' });
 			formData.append('file', file, 'upload.pdf');
 
@@ -103,9 +97,9 @@ describe('/api/dashboard/intake/[id]/assets API routes', () => {
 		});
 
 		it('rejects an oversized multipart body before parsing formData', async () => {
-			const formData = new NodeFormData();
+			const formData = new FormData();
 			formData.append('file', new Blob(['small'], { type: 'image/webp' }), 'upload.webp');
-			const request = new NodeRequest(
+			const request = new Request(
 				'http://localhost/api/dashboard/intake/inv-1/assets/upload',
 				{
 					method: 'POST',
@@ -129,7 +123,7 @@ describe('/api/dashboard/intake/[id]/assets API routes', () => {
 				new ApiError(401, 'unauthorized', 'No autorizado.'),
 			);
 
-			const formData = new NodeFormData();
+			const formData = new FormData();
 			const file = new Blob(['dummy'], { type: 'image/webp' });
 			formData.append('file', file, 'upload.webp');
 
@@ -151,7 +145,7 @@ describe('/api/dashboard/intake/[id]/assets API routes', () => {
 				),
 			);
 
-			const formData = new NodeFormData();
+			const formData = new FormData();
 			const file = new Blob(['dummy'], { type: 'image/webp' });
 			formData.append('file', file, 'upload.webp');
 

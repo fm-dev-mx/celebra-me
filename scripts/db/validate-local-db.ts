@@ -1,5 +1,4 @@
 import {
-	LOCAL_SUPABASE_URL,
 	REFRESH_PARITY_TABLES,
 	assertAppEnvIsLocal,
 	assertLocalApiReachable,
@@ -15,6 +14,7 @@ import {
 	tryRunCommand,
 } from './db-workflow-lib.ts';
 import { spawnSync } from 'node:child_process';
+import { LOCAL_SUPABASE_URL } from '../shared/celebra-runtime-env.ts';
 
 function getSupabaseServiceRoleKeyFromStatus(): string | null {
 	const result = spawnSync('supabase', ['status', '-o', 'json'], {

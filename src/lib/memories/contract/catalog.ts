@@ -31,7 +31,7 @@ const MEMORIES_MEDIA_TRANSITIONS: Record<MemoriesMediaStatus, readonly MemoriesM
 	deleted: [],
 };
 
-export const MEMORIES_TERMINAL_STATUSES: readonly MemoriesMediaStatus[] = [
+const MEMORIES_TERMINAL_STATUSES: readonly MemoriesMediaStatus[] = [
 	'accepted',
 	'duplicate',
 	'rejected',
@@ -44,7 +44,7 @@ export type MemoriesMediaActor = 'guest' | 'organizer' | 'admin' | 'system';
  * Why a reservation was refused, sent as `error.details.reason`. Several causes
  * share one HTTP code; the guest copy needs the cause to say what to do next.
  */
-export const MEMORIES_RESERVATION_REFUSALS = [
+const MEMORIES_RESERVATION_REFUSALS = [
 	'session_files',
 	'session_videos',
 	'session_bytes',
@@ -293,7 +293,7 @@ export interface MemoriesGuestProfile {
 	expiresAt: string;
 }
 
-export interface MemoriesQuotaCounter {
+interface MemoriesQuotaCounter {
 	used: number;
 	remaining: number;
 	limit: number;

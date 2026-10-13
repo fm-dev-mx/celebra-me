@@ -1,9 +1,9 @@
 ---
-import HeaderBase from '@components/common/HeaderBase.astro';
-import NavBarMobile from '@components/ui/header/NavBarMobile.astro';
+import HeaderBase from '@/components/common/HeaderBase.astro';
+import NavBarMobile from '@/components/ui/header/NavBarMobile.astro';
 import '@styles/invitation/_event-header.scss';
 
-export interface Props {
+interface Props {
 	links: {
 		label: string;
 		href: string;

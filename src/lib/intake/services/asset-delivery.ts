@@ -5,7 +5,7 @@
 
 import { getPublicUrl } from '@/lib/intake/storage';
 
-export type AssetDeliveryProvider = 'supabase' | 'cloudinary';
+type AssetDeliveryProvider = 'supabase' | 'cloudinary';
 
 export interface AssetDeliverySource {
 	id?: string;
@@ -16,7 +16,7 @@ export interface AssetDeliverySource {
 	secureUrl?: string | null;
 }
 
-export class AssetDeliveryResolutionError extends Error {
+class AssetDeliveryResolutionError extends Error {
 	readonly code = 'asset_delivery_unresolved';
 
 	constructor(

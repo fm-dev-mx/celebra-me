@@ -31,7 +31,8 @@ import { canonicalizePublicationValue } from '@/lib/intake/services/publication-
 import { ApiError } from '@/lib/rsvp/core/errors';
 import type { InvitationContentDraft } from '@/lib/intake/types';
 
-export type DraftRestoreScope = { kind: 'section'; section: InvitationEditorSectionKey } | { kind: 'entire' };
+export type DraftRestoreScope =
+	{ kind: 'section'; section: InvitationEditorSectionKey } | { kind: 'entire' };
 
 export interface DraftRestorePlan {
 	scope: DraftRestoreScope;
@@ -69,17 +70,13 @@ function changedPaths(before: unknown, after: unknown, path = ''): string[] {
 		const right = after as Record<string, unknown>;
 		return [...new Set([...Object.keys(left), ...Object.keys(right)])]
 			.sort()
-			.flatMap((key) =>
-				changedPaths(left[key], right[key], path ? `${path}.${key}` : key),
-			);
+			.flatMap((key) => changedPaths(left[key], right[key], path ? `${path}.${key}` : key));
 	}
 	return [path || '$'];
 }
 
 /** Published nested → canonical flat Draft used as the restore source of truth. */
-export function publishedToCanonicalDraft(
-	publishedContent: Record<string, unknown>,
-): DraftContent {
+function publishedToCanonicalDraft(publishedContent: Record<string, unknown>): DraftContent {
 	return normalizeDraftContent(mapNestedToDraftContent(publishedContent));
 }
 

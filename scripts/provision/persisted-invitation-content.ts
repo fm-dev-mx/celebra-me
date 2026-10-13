@@ -1,11 +1,14 @@
 /** Read-only access to the current draft and published invitation documents. */
 import {
 	getProdDbUrl,
-	LOCAL_DB_URL,
 	requirePreviewDbUrl,
+	parsePsqlJson,
+	parsePsqlJsonArray,
 	runPsql,
 	sqlLiteral,
 } from '../db/db-workflow-lib.ts';
+import { LOCAL_DB_URL } from '../db/db-target-config.ts';
+import { isRecord } from '../../src/lib/shared/data-utils.ts';
 
 export type PersistedContentTarget = 'local' | 'preview' | 'production';
 type JsonRecord = Record<string, unknown>;
@@ -19,17 +22,6 @@ export function resolveTargetDbUrl(target: PersistedContentTarget): string {
 	if (target === 'production') return getProdDbUrl().url;
 	if (target === 'preview') return requirePreviewDbUrl().url;
 	return LOCAL_DB_URL;
-}
-
-function isRecord(value: unknown): value is JsonRecord {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function parsePsqlJson(stdout: string): unknown {
-	const text = stdout.trim();
-	const start = text.indexOf('{');
-	const end = text.lastIndexOf('}');
-	return start < 0 || end < start ? null : (JSON.parse(text.slice(start, end + 1)) as unknown);
 }
 
 function buildStateSql(slug: string): string {
@@ -69,14 +61,8 @@ FROM (
 			`DRAFT_SLUG_LIST_FAILED: ${result.stderr?.trim() || result.stdout?.trim() || 'psql failed'}`,
 		);
 	}
-	const text = result.stdout.trim();
-	const start = text.indexOf('[');
-	const end = text.lastIndexOf(']');
-	if (start < 0 || end < start) return [];
-	const parsed = JSON.parse(text.slice(start, end + 1)) as unknown;
-	return Array.isArray(parsed)
-		? parsed.filter((value): value is string => typeof value === 'string')
-		: [];
+	const parsed = parsePsqlJsonArray(result.stdout);
+	return parsed.filter((value): value is string => typeof value === 'string');
 }
 
 export interface PersistedInvitationRow {
@@ -116,12 +102,7 @@ FROM (
 			`INVITATION_ROW_LIST_FAILED: ${result.stderr?.trim() || result.stdout?.trim() || 'psql failed'}`,
 		);
 	}
-	const text = result.stdout.trim();
-	const start = text.indexOf('[');
-	const end = text.lastIndexOf(']');
-	if (start < 0 || end < start) return [];
-	const parsed = JSON.parse(text.slice(start, end + 1)) as unknown;
-	if (!Array.isArray(parsed)) return [];
+	const parsed = parsePsqlJsonArray(result.stdout);
 	return parsed.filter(isRecord).map((row) => ({
 		slug: String(row.slug),
 		kind: typeof row.kind === 'string' ? row.kind : null,

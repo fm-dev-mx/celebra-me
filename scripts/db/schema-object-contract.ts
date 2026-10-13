@@ -3,9 +3,9 @@
  * Not a general schema comparator: indexes, constraints, and routines only.
  */
 
-export type StructuralObjectType = 'index' | 'constraint' | 'routine';
+type StructuralObjectType = 'index' | 'constraint' | 'routine';
 
-export type StructuralFindingKind =
+type StructuralFindingKind =
 	'missing_expected' | 'unexpected' | 'noncanonical_name' | 'incompatible_definition';
 
 export interface StructuralFinding {

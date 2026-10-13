@@ -9,7 +9,7 @@
 
 import { closeSync, createReadStream, createWriteStream, openSync } from 'node:fs';
 
-export type OwnerPromptIoSource = 'tty' | 'win32-console';
+type OwnerPromptIoSource = 'tty' | 'win32-console';
 
 export type OwnerPromptIo = {
 	input: NodeJS.ReadableStream;
@@ -32,7 +32,7 @@ export type ResolveOwnerPromptIoInput = {
 const WIN32_CONIN = '\\\\.\\CONIN$';
 const WIN32_CONOUT = '\\\\.\\CONOUT$';
 
-export function openWindowsOwnerConsole(): WindowsOwnerConsole | null {
+function openWindowsOwnerConsole(): WindowsOwnerConsole | null {
 	let inFd = -1;
 	let outFd = -1;
 	try {
@@ -61,9 +61,7 @@ export function openWindowsOwnerConsole(): WindowsOwnerConsole | null {
 	}
 }
 
-export function resolveOwnerPromptIo(
-	input: ResolveOwnerPromptIoInput = {},
-): OwnerPromptIo | null {
+export function resolveOwnerPromptIo(input: ResolveOwnerPromptIoInput = {}): OwnerPromptIo | null {
 	const stdin = input.stdin ?? process.stdin;
 	const stderr = input.stderr ?? process.stderr;
 	const platform = input.platform ?? process.platform;

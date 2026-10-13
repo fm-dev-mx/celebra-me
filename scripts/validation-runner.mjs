@@ -66,6 +66,7 @@ function runCommand(name, command, args) {
 	return result.status ?? 1;
 }
 
+/** @public Imported by tests through a child process. */
 export function releaseHashGuardArgs(files) {
 	const normalized = files.map((file) => file.replaceAll('\\', '/'));
 	if (!normalized.some((file) => RELEASE_HASH_SURFACES.some((pattern) => pattern.test(file)))) {
@@ -79,6 +80,7 @@ function uniqueRelevantFiles(files) {
 	return [...new Set(files)].filter((file) => !IGNORE_FILES.test(file));
 }
 
+/** @public Imported by tests through a child process. */
 export function requiresManagedInvitationRegression(files) {
 	return files
 		.map((file) => file.replaceAll('\\', '/'))
@@ -87,6 +89,7 @@ export function requiresManagedInvitationRegression(files) {
 		);
 }
 
+/** @public Imported by tests through a child process. */
 export function buildValidationPlan(files, pathExists = existsSync) {
 	const relevantFiles = uniqueRelevantFiles(files);
 	const filter = (pattern) =>

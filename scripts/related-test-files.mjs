@@ -73,6 +73,7 @@ const CONTRACT_TESTS_BY_INPUT = [
 ];
 
 /** Contract tests selected by the kind of changed input (missing test files are skipped). */
+/** @public Imported by tests through a child process. */
 export function getContractTestsForInputs(changedFiles, pathExists = existsSync) {
 	const selected = new Set();
 	for (const file of changedFiles) {

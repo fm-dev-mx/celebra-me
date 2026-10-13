@@ -19,9 +19,7 @@ const context: MemoriesCleanupContext & { completedAt: string } = {
 	runId: '018f7b77-80f8-7bd1-8f87-70d0b5312e2f',
 	startedAt: '2026-10-25T07:00:00.000Z',
 	completedAt: '2026-10-25T07:00:03.000Z',
-	invocationId: 'sfo1::abc-123',
 	commitSha: 'a'.repeat(40),
-	deploymentId: 'dpl_1234567890',
 };
 
 const completed: MemoriesCleanupResult = {
@@ -58,7 +56,6 @@ describe('completed cleanup evidence', () => {
 			anonymized: 2,
 			audit_purged: 5,
 			count_invariant_valid: true,
-			invocation_id: 'sfo1::abc-123',
 			duration_ms: 3000,
 		});
 	});
@@ -98,14 +95,13 @@ describe('completed cleanup evidence', () => {
 		expect(evidence.payload.count_invariant_valid).toBe(false);
 	});
 
-	it('carries the environment and correlation ids from the context', () => {
+	it('carries the environment and run identity from the context', () => {
 		const evidence = createMemoriesCleanupCompletedEvidence(context, completed);
 		expect(evidence.environment).toBe('preview');
 		expect(evidence.check).toBe('memories_cleanup');
 		expect(evidence.source).toBe('scheduled_cron');
 		expect(evidence.runId).toBe(context.runId);
 		expect(evidence.commitSha).toBe('a'.repeat(40));
-		expect(evidence.deploymentId).toBe('dpl_1234567890');
 		expect(
 			createMemoriesCleanupCompletedEvidence(
 				{ ...context, environment: 'production' },
@@ -114,13 +110,12 @@ describe('completed cleanup evidence', () => {
 		).toBe('production');
 	});
 
-	it('drops malformed commit and deployment identifiers instead of failing', () => {
+	it('drops a malformed commit identifier instead of failing', () => {
 		const evidence = createMemoriesCleanupCompletedEvidence(
-			{ ...context, commitSha: 'not-a-sha', deploymentId: 'dpl with spaces' },
+			{ ...context, commitSha: 'not-a-sha' },
 			completed,
 		);
 		expect(evidence).not.toHaveProperty('commitSha');
-		expect(evidence).not.toHaveProperty('deploymentId');
 	});
 
 	it('uses only approved payload keys and passes the safety guard', () => {

@@ -7,7 +7,7 @@ import {
 } from '@/lib/tracking/meta-attribution';
 import type { TrackingRouteClass } from '@/lib/tracking/route-policy';
 
-export const PUBLIC_TRACKING_EVENT_NAMES = [
+const PUBLIC_TRACKING_EVENT_NAMES = [
 	'page_viewed',
 	'section_seen',
 	'scroll_depth_reached',
@@ -36,7 +36,7 @@ export const INTERNAL_TRACKING_EVENT_NAMES = [
 	'lost',
 ] as const;
 
-export const TRACKING_EVENT_NAMES = [
+const TRACKING_EVENT_NAMES = [
 	...PUBLIC_TRACKING_EVENT_NAMES,
 	...INTERNAL_TRACKING_EVENT_NAMES,
 ] as const;

@@ -1,5 +1,4 @@
 import { InvitationEditorSectionSchemas } from '@/lib/intake/schemas/invitation-editor.schema';
-import { dateLocationsBlockSchema } from '@/lib/intake/schemas/intake-block.schema';
 
 const DESKTOP_ASSET_ID = '550e8400-e29b-41d4-a716-446655440001';
 const MOBILE_ASSET_ID = '550e8400-e29b-41d4-a716-446655440002';
@@ -529,77 +528,6 @@ describe('InvitationEditorSectionSchemas.location (venue + indication parity)', 
 			);
 			expect(result.data.venues?.[0]?.coordinates).toEqual({ lat: 19.4326, lng: -99.1332 });
 		}
-	});
-});
-
-describe('dateLocationsBlockSchema (intake block) coordinate validation', () => {
-	const BASE_INTAKE = {
-		ceremony: { venueName: 'Iglesia', address: 'Calle 1' },
-	};
-
-	it('accepts valid coordinates object', () => {
-		const value = {
-			...BASE_INTAKE,
-			ceremony: {
-				...BASE_INTAKE.ceremony,
-				coordinates: { lat: '19.4326', lng: '-99.1332' },
-			},
-		};
-		const result = dateLocationsBlockSchema.safeParse(value);
-		expect(result.success).toBe(true);
-	});
-
-	it('accepts empty coordinate strings', () => {
-		const value = {
-			...BASE_INTAKE,
-			ceremony: {
-				...BASE_INTAKE.ceremony,
-				coordinates: { lat: '', lng: '' },
-			},
-		};
-		const result = dateLocationsBlockSchema.safeParse(value);
-		expect(result.success).toBe(true);
-	});
-
-	it('accepts missing coordinates', () => {
-		const result = dateLocationsBlockSchema.safeParse(BASE_INTAKE);
-		expect(result.success).toBe(true);
-	});
-
-	it('rejects latitude out of range', () => {
-		const value = {
-			...BASE_INTAKE,
-			ceremony: {
-				...BASE_INTAKE.ceremony,
-				coordinates: { lat: '100', lng: '0' },
-			},
-		};
-		const result = dateLocationsBlockSchema.safeParse(value);
-		expect(result.success).toBe(false);
-	});
-
-	it('rejects longitude out of range', () => {
-		const value = {
-			...BASE_INTAKE,
-			ceremony: {
-				...BASE_INTAKE.ceremony,
-				coordinates: { lat: '0', lng: '200' },
-			},
-		};
-		const result = dateLocationsBlockSchema.safeParse(value);
-		expect(result.success).toBe(false);
-	});
-
-	it('rejects non-numeric latitude string', () => {
-		const value = {
-			...BASE_INTAKE,
-			ceremony: {
-				...BASE_INTAKE.ceremony,
-				coordinates: { lat: 'abc', lng: '0' },
-			},
-		};
-		const result = dateLocationsBlockSchema.safeParse(value);
-		expect(result.success).toBe(false);
 	});
 });
 

@@ -11,7 +11,7 @@ import {
 	materializeStorageObjectArchive,
 	readStorageObjectArchive,
 } from './storage-object-archive.ts';
-import { runCommand } from './db-workflow-lib.ts';
+import { queryJson, runCommand } from './db-workflow-lib.ts';
 
 interface RestoreReport {
 	version: 1;
@@ -115,23 +115,7 @@ truncate table storage.objects, storage.buckets cascade;
 }
 
 function parseJsonRows<T>(sql: string): T[] {
-	const result = runCommand(
-		'psql',
-		[
-			'--set',
-			'ON_ERROR_STOP=1',
-			'--no-psqlrc',
-			'--tuples-only',
-			'--no-align',
-			'--dbname',
-			targetDbUrl,
-			'--command',
-			sql,
-		],
-		{ redact: [targetDbUrl] },
-	);
-	const value = result.stdout.trim();
-	return value ? (JSON.parse(value) as T[]) : [];
+	return (queryJson(sql, targetDbUrl, { asCommand: true, noPsqlrc: true }) ?? []) as T[];
 }
 
 const restoreStartedAtMs = Date.now();
@@ -143,8 +127,8 @@ const sourceLatestMigration =
 if (!sourceLatestMigration) {
 	throw new Error('Recovery integrity snapshot has no source migration version.');
 }
-runCommand('npx', [
-	'-y',
+runCommand('pnpm', [
+	'exec',
 	'tsx',
 	'scripts/db/disposable-test-env.ts',
 	'reset',

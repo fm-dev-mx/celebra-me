@@ -220,7 +220,7 @@ export const ICON_CATALOG = [
 export type IconName = (typeof ICON_CATALOG)[number]['name'];
 export type IconCategory = (typeof ICON_CATALOG)[number]['category'];
 
-export const ICON_NAMES: readonly IconName[] = ICON_CATALOG.map((entry) => entry.name);
+const ICON_NAMES: readonly IconName[] = ICON_CATALOG.map((entry) => entry.name);
 export const DEFAULT_ICON: IconName = ICON_CATALOG[0].name;
 export const ICON_NAMES_TUPLE = iconNamesTuple();
 
@@ -228,7 +228,7 @@ export function isIconName(value: unknown): value is IconName {
 	return typeof value === 'string' && (ICON_NAMES as readonly string[]).includes(value);
 }
 
-export function iconNamesTuple(): [IconName, ...IconName[]] {
+function iconNamesTuple(): [IconName, ...IconName[]] {
 	if (ICON_NAMES.length === 0) {
 		throw new Error('ICON_CATALOG is empty — cannot create enum');
 	}

@@ -55,14 +55,6 @@ export interface GuestInvitationRecord {
 	maxProgressMilestone?: number;
 }
 
-export interface GuestInvitationAuditRecord {
-	id: string;
-	guestInvitationId: string;
-	actorType: 'guest' | 'host' | 'system';
-	eventType: 'created' | 'viewed' | 'status_changed' | 'message_updated' | 'shared_whatsapp';
-	payload: Record<string, unknown>;
-	createdAt: string;
-}
 export interface GuestInvitationDTO {
 	guestId: string;
 	inviteId: string;
