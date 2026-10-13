@@ -6,6 +6,7 @@
  * `src/content/**`. The guard fails closed: a required content root that is missing or holds no
  * JSON files is an error, so a moved or restructured collection cannot turn it into a no-op.
  */
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -83,6 +84,65 @@ for (const file of files ?? []) {
 				`delivered artifact and must not style a demo; use a demo-owned profile ` +
 				`("${DEMO_PROFILE_PREFIX}*").`,
 		);
+	}
+}
+
+// Demo photographs must not be byte copies of client photographs. Owner-approved reuse is listed
+// by client asset folder; see "Photographs shared with demos" in docs/core/sensitive-data-guide.md.
+const EVENT_ASSET_ROOT = path.join(PROJECT_ROOT, 'src', 'assets', 'images', 'events');
+const CLIENT_ASSET_ROOTS = [
+	EVENT_ASSET_ROOT,
+	path.join(PROJECT_ROOT, 'src', 'assets', 'invitations'),
+];
+const APPROVED_SHARED_CLIENT_FOLDERS = new Set([
+	'cesar-ramses',
+	'luna-y-estrella-primera-comunion',
+	'xv-ayrin-samantha-lerma-castro',
+	'ximena-meza-trasvina',
+]);
+const IMAGE_EXTENSIONS = new Set(['.webp', '.jpg', '.jpeg', '.png', '.avif']);
+
+function listImages(dirPath) {
+	if (!fs.existsSync(dirPath)) return [];
+	return fs.readdirSync(dirPath, { withFileTypes: true }).flatMap((entry) => {
+		const target = path.join(dirPath, entry.name);
+		if (entry.isDirectory()) return listImages(target);
+		return IMAGE_EXTENSIONS.has(path.extname(entry.name).toLowerCase()) ? [target] : [];
+	});
+}
+
+function listFolders(dirPath) {
+	if (!fs.existsSync(dirPath)) return [];
+	return fs
+		.readdirSync(dirPath, { withFileTypes: true })
+		.filter((entry) => entry.isDirectory())
+		.map((entry) => entry.name);
+}
+
+const digest = (file) => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+const demoImagesByDigest = new Map();
+for (const folder of listFolders(EVENT_ASSET_ROOT).filter((name) =>
+	name.startsWith(DEMO_PROFILE_PREFIX),
+)) {
+	for (const image of listImages(path.join(EVENT_ASSET_ROOT, folder))) {
+		demoImagesByDigest.set(digest(image), toRepoPath(image));
+	}
+}
+
+for (const root of CLIENT_ASSET_ROOTS) {
+	for (const folder of listFolders(root).filter(
+		(name) => !name.startsWith(DEMO_PROFILE_PREFIX),
+	)) {
+		if (APPROVED_SHARED_CLIENT_FOLDERS.has(folder)) continue;
+		for (const image of listImages(path.join(root, folder))) {
+			const demoImage = demoImagesByDigest.get(digest(image));
+			if (demoImage) {
+				errors.push(
+					`${demoImage} is a byte copy of client photograph ${toRepoPath(image)}. ` +
+						`Demos use fictitious or owner-approved images only.`,
+				);
+			}
+		}
 	}
 }
 
