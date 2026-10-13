@@ -10,6 +10,14 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+_Sin cambios pendientes._
+
+## [0.23.0-beta.1] - 2026-10-13
+
+Release checkpoint that adds the administrator design ranking over engagement snapshots, resolves
+the deploy identity from a provider-neutral module, and makes `prod:apply` stop early while
+Repository CI is still running.
+
 ### Added
 
 - **Ranking de diseños** (`/dashboard/admin/ranking`, administrador): comparación interna de
@@ -18,6 +26,37 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
   `20261013120000`, `service_role`): mismo tipo de evento, snapshot final sobre el rolling, muestra
   mínima de 20 invitados por invitación y 5 invitaciones comparables por grupo de diseño. Las filas
   con muestra insuficiente se muestran en gris con el motivo; los datos existen desde 2026-10-12.
+
+### Changed
+
+- **Deploy identity**: hosted environments declare `CELEBRA_DEPLOY_ENV` (`production` or `preview`,
+  set in Vercel for both) and `src/lib/server/deploy-identity.ts` is its only reader; a local
+  process is recognized positively and any other combination fails closed. `validate:structure`
+  rejects hosting-platform identity reads and `NODE_ENV` decisions in `src/`.
+- **`prod:apply` readiness**: trusted CI checks for the clean HEAD are read before the local
+  release-check, and the error separates "Release checks pending" (CI still running, retry) from
+  "Release checks blocked" (a check failed), with each check's state.
+
+### Fixed
+
+- Session and CSRF cookies always carry `Secure` outside a local process, and debug payloads on the
+  session and dashboard events endpoints require a local process (the platform injects
+  `NODE_ENV=development` at runtime, which made the old production checks false).
+- The mutation contract evidence query stays under the 100-argument limit of `json_build_object`.
+
+### Verification
+
+| Check                   | Result                                                               |
+| :---------------------- | :------------------------------------------------------------------- |
+| Repository Policy       | Passed on `bd0d13d40` (develop); release PR certifies the final tree |
+| Application Suite       | Passed on `bd0d13d40` (unit, database, static, browser)              |
+| Preview smoke           | `VERIFIED` for `fc45cfe8f` with `20261013120000` applied             |
+| Production schema audit | `CURRENT` at `20261013120000`                                        |
+
+### Known issues
+
+- The ranking reads snapshots collected since 2026-10-12; most invitations show an insufficient
+  sample until they reach 20 shared guests.
 
 ## [0.22.0-beta.1] - 2026-10-13
 
