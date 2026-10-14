@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { shouldHideRoleVisually } from '@/lib/invitation/family-helper';
 
 describe('shouldHideRoleVisually', () => {
@@ -28,5 +30,19 @@ describe('shouldHideRoleVisually', () => {
 		expect(shouldHideRoleVisually('Padrinos', 'Padre')).toBe(false);
 		expect(shouldHideRoleVisually('Mis padres', 'Padrino')).toBe(false);
 		expect(shouldHideRoleVisually('Tíos', 'Tío')).toBe(false);
+	});
+});
+
+describe('Family.astro role visibility', () => {
+	it('passes the group title and the role to shouldHideRoleVisually', () => {
+		const source = fs.readFileSync(
+			path.join(process.cwd(), 'src/components/invitation/Family.astro'),
+			'utf8',
+		);
+		const calls = source.match(/shouldHideRoleVisually\([^)]*\)/g) ?? [];
+		expect(calls.length).toBeGreaterThan(0);
+		for (const call of calls) {
+			expect(call).toMatch(/^shouldHideRoleVisually\(block\.title, \w+\.role\)$/);
+		}
 	});
 });

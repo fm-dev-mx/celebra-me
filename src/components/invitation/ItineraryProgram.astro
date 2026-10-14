@@ -1,7 +1,7 @@
 ---
 // src/components/invitation/ItineraryProgram.astro
 import type { ItineraryItem } from '@/lib/adapters/types';
-import { formatTime12h } from '@/lib/time/time-format';
+import { formatTime12h, isValidTime } from '@/lib/time/time-format';
 
 interface Props {
 	items: ItineraryItem[];
@@ -22,10 +22,25 @@ const { items, monogram } = Astro.props;
 		<ol class="itinerary__program-list">
 			{items.map((item, index) => {
 				const num = String(index + 1).padStart(2, '0');
+				const timeValid = isValidTime(item.time);
 				return (
-					<li class="itinerary__program-row" data-itinerary-item data-reveal-item>
+					<li
+						class="itinerary__program-row"
+						data-itinerary-item
+						data-time-status={timeValid ? 'confirmed' : 'pending'}
+						data-reveal-item
+					>
 						<span class="itinerary__program-row-num" aria-hidden="true">{num}</span>
-						<time class="itinerary__program-row-time">{formatTime12h(item.time)}</time>
+						{timeValid ? (
+							<time class="itinerary__program-row-time">{formatTime12h(item.time)}</time>
+						) : (
+							<span
+								class="itinerary__program-row-time itinerary__program-row-time--pending"
+								data-itinerary-time-pending
+							>
+								Por confirmar
+							</span>
+						)}
 						<div class="itinerary__program-row-content">
 							<h4 class="itinerary__program-row-title">{item.label}</h4>
 							{item.description && (

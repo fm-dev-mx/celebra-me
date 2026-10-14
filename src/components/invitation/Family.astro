@@ -303,7 +303,7 @@ if (!hasContent) return;
 															</>
 														)}
 													</span>
-													{member.role && !shouldHideRoleVisually(member.role) && (
+													{member.role && !shouldHideRoleVisually(block.title, member.role) && (
 														<span class:list={['family__member-role', 'family__meta']}>{member.role}</span>
 													)}
 												</li>
@@ -332,7 +332,7 @@ if (!hasContent) return;
 												</>
 											)}
 										</span>
-										{entry.role && !shouldHideRoleVisually(entry.role) && (
+										{entry.role && !shouldHideRoleVisually(block.title, entry.role) && (
 											<span class:list={['family__member-role', 'family__meta']}>{entry.role}</span>
 										)}
 									</li>
