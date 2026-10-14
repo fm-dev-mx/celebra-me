@@ -62,6 +62,13 @@ hooks or `PascalCase` types from inside the file.
 - For client invitations, use the primary public name `{primer_nombre}-{primer_apellido}` by default
   unless disambiguation is strictly required.
 
+### 2.5 Content Keys vs Render Identifiers
+
+Invitation content keys are camelCase (`thankYou`, `personalizedAccess`, `sectionOrder` entries);
+render-only identifiers (stylesheet paths, `cssOwner`, anchor ids, render targets) are kebab-case
+(`thank-you`, `personalized-access`). Both forms are intentional and no renames are planned. The
+equivalence table lives in [content schema § Key Naming](./content-schema.md#key-naming).
+
 ---
 
 ## 3) Utilities and Helpers
@@ -301,16 +308,16 @@ framework upgrades should not mix with invitation production work.
 Real/client invitations are DB-published content. Use `docs/domains/content/event-governance.md` as
 the source of truth for real invitation governance.
 
-When a real invitation uses local routed media:
+For a new managed invitation:
 
-1. **Create event assets** in `src/assets/images/events/{asset-slug}/`.
-2. **Export event assets** from `src/assets/images/events/{asset-slug}/index.ts` so discovery and
-   registry helpers can consume them consistently.
-3. **Set `_assetSlug`** in the DB-published content per the
-   [invitation production rules](../../.agent/rules/invitation-production.md).
-4. **Verify the content and theme contract** with the narrow relevant commands from
+1. **Place source binaries** in `src/assets/invitations/<slug>/` (the default `assetDir`). No
+   `index.ts` is needed: the managed definition maps semantic asset keys to these files and the
+   release pipeline uploads them.
+2. **Do not set `_assetSlug`.** It remains only on demos and on legacy definitions (see the
+   [creation contract](./invitation-creation-contract.md#documented-exceptions)).
+3. **Verify the content and theme contract** with the narrow relevant commands from
    `docs/domains/content/event-governance.md`.
 
-Demos remain under `src/content/event-demos`.
+Demos remain under `src/content/event-demos`, with their assets under `src/assets/images/events/`.
 
 Conventions are agreements to reduce friction, not obstacles to progress.

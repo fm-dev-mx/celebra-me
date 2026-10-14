@@ -67,14 +67,14 @@ Public invitation routes resolve as:
 
 ## Asset Expectations
 
-Event-specific source assets live under `src/assets/images/events/<asset-slug>/`.
+Demo source assets live under `src/assets/images/events/<asset-slug>/`, exported from that folder's
+`index.ts` so the discovery/registry helpers can consume them consistently. Managed invitation
+source binaries live under `src/assets/invitations/<slug>/` (the definition's `assetDir`) and are
+uploaded by the release pipeline; they need no `index.ts`. `xv-valentina-hernandez` is the one
+legacy invitation whose `assetDir` still points into `src/assets/images/events/`.
 
 Static routable slugs must remain globally unique across `event-demos`. Real/client route slugs live
 in DB publication rows and must stay distinct from demo slugs.
-
-When a route depends on local event assets, keep the asset exports in
-`src/assets/images/events/<asset-slug>/index.ts` so the discovery/registry helpers can consume them
-consistently.
 
 A demo namespace must never hold client-provided media. Invitations do not depend on demos; see
 [event governance](event-governance.md#source-roles).

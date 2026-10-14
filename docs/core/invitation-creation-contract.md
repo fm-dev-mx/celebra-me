@@ -44,8 +44,11 @@ Every managed digital invitation must define:
     `norma-margarita-hernandez-zabalsa`). Slugs drive filesystem paths, asset folders, stylesheets,
     and URL links; compound surnames or middle names are permitted only when strictly necessary to
     disambiguate a collision or when explicitly requested by the celebrant for their public URL.
-  - `assetSlug` and `visualProfileId` should match the canonical slug unless a documented exception
-    exists.
+  - `visualProfileId` should match the canonical slug unless a documented exception exists.
+  - New definitions do not declare `_assetSlug`: their binaries live in
+    `src/assets/invitations/<slug>/` (the default `assetDir`) and are referenced by semantic asset
+    keys. `_assetSlug` remains only on demos and on the legacy definitions listed under
+    [Documented exceptions](#documented-exceptions).
 - **Host Login Alias** (`hostLoginAlias`): Short unique Auth login for the dedicated host. Technical
   email is `{hostLoginAlias}@clientes.celebra.invalid`. Alias is independent of slug.
   - **Preferred form:** `{primer_nombre}_{primer_apellido}` from the celebrant/honoree (not the
@@ -60,11 +63,21 @@ Every managed digital invitation must define:
   `cumple`, `baby-shower`, `bautizo`, `primera-comunion`). Each type has a structure contract in
   `src/lib/invitation/event-type-contract.ts`: the sections `sectionOrder` must include and the
   theme presets verified for that type. Section variants stay type-agnostic.
-- **Theme Preset** (`themeId`): A valid theme preset from `THEME_PRESETS` (e.g. `enchanted-rose`,
-  `editorial-magazine`, `jewelry-box`).
+- **Theme Preset** (`themeId` and `content.theme.preset`, required, no default): a value of
+  `THEME_PRESETS` (e.g. `editorial-magazine`, `jewelry-box`). The content schema rejects a missing
+  preset and the adapter throws on an unknown one; nothing falls back to a default preset. Keep
+  `themeId` equal to `theme.preset` (`defineCanonicalInvitation` does not cross-check them).
 - **Visual Profile ID** (`visualProfileId`): Compatible visual profile.
 - **Template ID** (`content.templateId`, optional): reporting dimension `{eventType}-{themePreset}`.
-  `defineCanonicalInvitation` derives it when the content omits it. Invitations have no base demo.
+  `defineCanonicalInvitation` derives it when the content omits it. Invitations have no base demo
+  and definitions carry no `baseDemoId`; the legacy `base_demo_id`/`snapshot` columns leave with
+  their contract migration.
+- **Envelope reveal** (`envelope`, optional): `revealVariant: editorial-cover` replaces the envelope
+  with the editorial cover reveal. A standalone reveal skin (`satin-filigree`, `seaside-lineart`,
+  `storybook-lanterns`) replaces the preset-driven `data-variant` and its stylesheet. Otherwise
+  `envelope.variant` (a theme preset name) selects the skin, falling back to `theme.preset` when
+  omitted; `revealVariant: celestial-blue` layers on top of it
+  (`src/lib/invitation/reveal-card.ts`).
 - **Lifecycle** (`lifecycle`, required, no default): `in_progress` while the definition is
   intentionally absent or not yet aligned through Production; `published` once Production alignment
   is expected. This metadata is explicit and is not inferred from timestamps or environment
@@ -76,7 +89,15 @@ Every managed digital invitation must define:
   Three-way reconciliation must use this declared scope and report out-of-scope changes rather than
   applying or hiding them. `pnpm invitation:release` inherits this value unless the operator passes
   `--update-scope` or `--content-only`.
-- **Client Details**: Client name, client email, client WhatsApp number, and photo reception status.
+- **Client Details**: client name, the WhatsApp RSVP destination when the invitation publishes one,
+  and photo reception status. Definitions carry no client email
+  ([sensitive data guide](./sensitive-data-guide.md)); provisioning writes the empty value that the
+  NOT NULL `invitations.client_email` column defaults to, from one constant
+  (`DEFINITION_CLIENT_EMAIL`), and existing rows keep theirs.
+- **Creation timestamp** (`createdAt`): canonical UTC. It is part of the release `sourceHash`, so
+  changing it on a published definition forces a re-release. `defineCanonicalInvitation` stamps
+  `2026-08-29T00:00:00.000Z` (and `photosReceived: true`) on every canonical definition; this is
+  intentionally left as is, and only release metadata reads it.
 - **Owner Policy**:
   - **All targets**: Preserve the existing invitation owner on updates.
   - **New creates**: Ensure a dedicated Auth host from `hostLoginAlias`
@@ -93,7 +114,11 @@ Every managed digital invitation must define:
 - **Section Order**: Array of section keys defining exact publication sequence.
 - **Asset Requirements**: Stable semantic keys (`hero`, `portrait`, `gallery1`, etc.) mapped to
   verified source binaries (JPEG, PNG, WebP). Declared keys are operationally required.
-- **Storage Conventions**: Storage path `managed/<slug>/<key>.webp` in bucket `invitation-assets`.
+- **Storage Conventions**: Local stores managed binaries in Supabase Storage bucket
+  `invitation-assets` at `managed/<slug>/<key>.webp`. Preview and Production host them on Cloudinary
+  under the immutable public id `<environment>/<eventType>/<slug>/assets/<key>-<sha12>`
+  (`src/lib/intake/services/storage-provider.ts`, `cloudinary-assets.ts`). In both cases
+  `invitation_assets` rows record the provider, path and delivery URL.
 
 When a new invitation uses custom section-to-section composition, select and verify it against the
 canonical [Invitation Section Intersection System](../domains/theme/section-intersections.md). That
@@ -207,3 +232,70 @@ inspection of photographic contrast and ornamental lettering.
 Follow [CSS visual parity](../domains/theme/css-visual-parity.md) for complete-page capture, pinned
 runtime, scoped exceptions and exact-artifact human acceptance. A published invitation passing
 schema or route tests alone is not visually accepted.
+
+---
+
+## Documented exceptions
+
+The single register of accepted deviations from this contract. Each entry was verified against the
+code on 2026-10-13; lists only shrink, and an entry leaves when its exit condition is met.
+
+### Legacy definitions without `defineCanonicalInvitation`
+
+These definitions build their own `buildPublishedContent` and still declare `_assetSlug`. Migrating
+them moves their `sourceHash` and forces a re-release, so the owner decided to document them rather
+than migrate them. Each leaves together with its definition, assets and profile when it is archived.
+
+- Active: `daniela-y-martin`, `melissa-y-luis-osmar`, `norma-hernandez`, `victoria-y-roberto`, and
+  `destenid-sofia` (`in_progress`).
+- Past events kept until the owner archives them: `abril-michelle-becerra-rea`,
+  `alba-rosa-quinonez`, `leslie-perez`, `renata`, `romina-rios-chaparro`, `valentina-hernandez` (its
+  assets still live under `src/assets/images/events/xv-valentina-hernandez/`).
+
+New invitations always use `defineCanonicalInvitation`.
+
+### Frozen profiles of `in_progress` invitations
+
+`tests/unit/invitation-profile-boundary.test.ts` freezes legacy profiles by digest. Two of them
+belong to `in_progress` definitions (`destenid-sofia`, `naydelin-paredes`), and one to a demo
+(`demo-xv-celestial-blue`). A frozen profile may not change until it is rewritten token-only; the
+digest list only shrinks, and an entry leaves with its invitation or with that rewrite.
+
+### Presets and their consumers
+
+A new preset needs two consumers (invitations or demos) when it is created; otherwise use a section
+variant or a visual profile. An existing preset may remain while at least one live invitation or
+demo uses it, and leaves with its last consumer. Single-consumer presets today: `jewelry-box`
+(`naydelin-paredes`), `storybook-lilac` (`america`) and `enchanted-rose` (its demo). This wording
+supersedes the "≥2 consumers" existence rule in the
+[theme architecture](../domains/theme/architecture.md) for presets that already exist.
+
+### Tooling modules under `src/lib`
+
+Some `src/lib` modules have no runtime importer and are used only by scripts and tests: all of
+`src/lib/invitation-preparation/` except what `asset-policy.ts`, `publishing.service.ts` and
+`event-type-contract.ts` import, `intake/mutations/structural-operation.ts`,
+`intake/services/{draft-contract-audit,published-content-audit}.service.ts`,
+`invitation/{delivery-budget,delivery-contract,event-type-contract}.ts`,
+`memories/contract/space-reference.ts` and `status/{dbs-json,media-reference-types}.ts`. They stay
+in `src/lib` on purpose: they encode domain contracts next to the runtime code they validate, and
+`ci:static` runs them through `validate:invitation-preparation` and the content tests.
+
+### Operator surfaces without a screen
+
+- `/api/dashboard/commercial/classifications` has no dashboard caller. It is the documented owner
+  procedure for marking commercial records (leads, customers, orders, Meta conversion events) as
+  test/QA data or revoking that mark: `GET` lists marks and `POST` classifies or revokes, both
+  behind a strong administrator session, and `tests/unit/commercial-classifications-api.test.ts`
+  covers it.
+- `src/lib/rsvp/rsvp-operation-contract.ts` declares the RSVP submit lookup and RPC budget owned by
+  `docs/domains/invitations/performance-metrics.md`. Only `tests/unit/rsvp-v2.service.test.ts`
+  imports it: it is the executable form of that budget, not dead code.
+
+### `?debug=1` diagnostics
+
+Debug output is server-side only in a local process: `/api/auth/session` and `/api/dashboard/events`
+honor `?debug=1` only when `isLocalProcess()` is true (`src/lib/server/deploy-identity.ts`), and
+`src/utils/debug.ts` limits the client flag to console diagnostics. Hosted environments never return
+debug payloads; diagnose them through server logs, correlated by the hosting platform's per-request
+id (the application does not mint its own request id yet).
