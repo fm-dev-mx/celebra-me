@@ -5,6 +5,7 @@ const representativeRoutes = [
 	'/boda/demo-boda-jewelry-box-wedding',
 	'/xv/demo-xv-celestial-blue',
 	'/bautizo/demo-bautismo-angelic-presence',
+	'/xv/allison-scarlett',
 ] as const;
 
 const sealSizingRoutes = [
