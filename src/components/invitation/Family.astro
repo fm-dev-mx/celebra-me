@@ -6,7 +6,6 @@ import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { FamilyVariant } from '@/lib/invitation/section-variants';
 import { DEFAULT_PARENTS_ORDER, type ParentsOrder } from '@/lib/invitation/family-contract';
-import { shouldHideRoleVisually } from '@/lib/invitation/family-helper';
 import { shouldRenderFamilyMedia, type FamilyPresentation } from '@/lib/invitation/family-presentation';
 
 interface Props {
@@ -303,7 +302,7 @@ if (!hasContent) return;
 															</>
 														)}
 													</span>
-													{member.role && !shouldHideRoleVisually(block.title, member.role) && (
+													{member.role && (
 														<span class:list={['family__member-role', 'family__meta']}>{member.role}</span>
 													)}
 												</li>
@@ -332,7 +331,7 @@ if (!hasContent) return;
 												</>
 											)}
 										</span>
-										{entry.role && !shouldHideRoleVisually(block.title, entry.role) && (
+										{entry.role && (
 											<span class:list={['family__member-role', 'family__meta']}>{entry.role}</span>
 										)}
 									</li>
