@@ -144,6 +144,26 @@ execution:
 - **Retired:** `DATABASE_URL` and `RSVP_TOKEN_SECRET` are read nowhere. Keep them out of templates
   unless a workflow reintroduces them intentionally.
 
+### Two meanings of `preview`
+
+The word `preview` appears in two variables that answer different questions. Never treat one as a
+substitute for the other.
+
+| Variable                 | Question it answers                         | Who sets it                            | `preview` means                                                      |
+| ------------------------ | ------------------------------------------- | -------------------------------------- | -------------------------------------------------------------------- |
+| `CELEBRA_DEPLOY_ENV`     | Which hosted deployment is this?            | Each hosted environment (Vercel)       | A hosted Preview deployment built from `develop`                     |
+| `CELEBRA_RUNTIME_TARGET` | Which database does a local process target? | Lane bootstrap or an intentional shell | A local Astro process (`dev-preview`) talking to the Preview project |
+
+- A hosted deployment is identified only by `CELEBRA_DEPLOY_ENV`, read only by
+  `src/lib/server/deploy-identity.ts`. `CELEBRA_RUNTIME_TARGET` never forges hosted identity, so a
+  local process with `CELEBRA_RUNTIME_TARGET=preview` is still a local process (`isLocalProcess()`
+  rules, `DEV_MFA_BYPASS`), not a Preview deployment (`PREVIEW_MFA_BYPASS`).
+- `resolveRuntimeTarget()` in `scripts/shared/celebra-runtime-env.ts` folds both into one
+  `RuntimeTarget` value for database selection: a declared `CELEBRA_DEPLOY_ENV` wins, then
+  `CELEBRA_RUNTIME_TARGET`, then the lane default. Its `source` field records which input decided.
+- Neither variable authorizes Preview or Production mutations (see the Worktree Authorization
+  Invariant above).
+
 ### Contract Category Inventories
 
 The deterministic env contract test uses these explicit lists to reconcile the secret-free template
@@ -371,6 +391,108 @@ process on Windows instead of observing an early wrapper exit and leaving a deta
 port 4321. `reuseExistingServer` is false unless the operator deliberately sets
 `PLAYWRIGHT_REUSE_EXISTING_SERVER=true`. Canonical CI and release validation must use the default
 isolated behavior and must not depend on a previously running server.
+
+## Tooling and CI variables read by code
+
+Names that code reads but that the sections above do not cover. This is a name inventory only:
+values, defaults, and hosts stay in the owning file, `.env.example`, or the operator shell. All are
+optional unless marked **required**. Paths are relative to the repository root.
+
+### App/runtime names typed in `src/env.d.ts`
+
+These are present in `.env.example` and the lane bootstrap allowlist
+(`scripts/shared/celebra-runtime-env.ts`); they follow the server-only or `PUBLIC_*` rules above.
+
+| Area            | Names                                                                                        | Read by                                                      |
+| --------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Supabase keys   | `SUPABASE_ANON_KEY`, `PUBLIC_SUPABASE_ANON_KEY`                                              | `src/lib/server/supabase-credentials.ts`, dashboard MFA page |
+| Base URL        | `BASE_URL`                                                                                   | `astro.config.mjs`, `src/lib/rsvp/security/auth-security.ts` |
+| Contact         | `CONTACT_FORM_RECIPIENT_EMAIL`, `CONTACT_WHATSAPP`, `GMAIL_USER`, `GMAIL_PASS`               | `src/lib/server/email.ts`, `src/utils/whatsapp.ts`           |
+| Admin security  | `REQUIRE_FRESH_MFA_FOR_ADMIN`, `TRUST_DEVICE_SECRET`, `TRUST_DEVICE_MAX_AGE_DAYS`            | `src/lib/rsvp/auth/`, `src/lib/rsvp/security/`               |
+| RSVP rate limit | `RSVP_V2_DISTRIBUTED_RATELIMIT`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`        | `src/lib/rsvp/security/rate-limit-provider.ts`               |
+| Meta CAPI       | `META_PIXEL_ID`, `META_CAPI_ACCESS_TOKEN`, `META_CAPI_DELIVERY_MODE`, `META_TEST_EVENT_CODE` | `src/lib/commercial/meta-capi/service.ts`                    |
+| Browser tags    | `PUBLIC_GA_MEASUREMENT_ID`, `PUBLIC_META_PIXEL_ENABLED`, `PUBLIC_META_PIXEL_ID`              | `src/lib/tracking/`                                          |
+
+### Build and local server
+
+| Name                          | Read by                                   | Notes                                                 |
+| ----------------------------- | ----------------------------------------- | ----------------------------------------------------- |
+| `ASTRO_PORT`                  | `astro.config.mjs`, `scripts/screenshot/` | Port override; lanes set their own port               |
+| `PROD_SUPABASE_HOST`          | `astro.config.mjs`                        | Image `remotePatterns` host override                  |
+| `CELEBRA_ENV_BOOTSTRAP_LOG`   | `astro.config.mjs`                        | `1` logs lane bootstrap decisions (names only)        |
+| `ENABLE_TEST_VARIANT_HARNESS` | `astro.config.mjs`                        | `1` enables the visual variant harness in `astro dev` |
+
+### Local DB tooling and disposable test environment
+
+| Name                                                                                            | Read by                               | Notes                                          |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------- | ---------------------------------------------- |
+| `LOCAL_DB_URL`                                                                                  | `scripts/db/db-target-config.ts`      | Overrides the persistent Local DB URL          |
+| `DISPOSABLE_API_PORT`, `DISPOSABLE_DB_PORT`, `DISPOSABLE_STUDIO_PORT`, `DISPOSABLE_SHADOW_PORT` | `scripts/db/db-target-config.ts`      | Ports of the `disposable-test` stack           |
+| `LOCAL_ADMIN_EMAIL`, `LOCAL_ADMIN_PASSWORD`                                                     | `scripts/db/_check-admin-login.mjs`   | Set by the local admin bootstrap and validator |
+| `EXPECTED_MIGRATIONS`                                                                           | `scripts/db/migrate-expected.ts`      | Rejected when set; use `--expected`            |
+| `CELEBRA_MANAGED_STATUS_DEBUG`                                                                  | `scripts/provision/managed-status.ts` | Debug output for managed status                |
+| `CELEBRA_SKIP_MANAGED_STATUS`                                                                   | `scripts/agent/lane-sync.ts`          | `1` skips the remote status probe              |
+
+### Release, backup, and invitation operations
+
+| Name                                                                                                    | Read by                                            | Notes                                             |
+| ------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------- |
+| `CELEBRA_TARGET_RELEASE_SHA`                                                                            | `scripts/db/migration-deployment-compatibility.ts` | Target release for contract checks                |
+| `CELEBRA_CRITICAL_BACKUP_PURPOSE`, `CELEBRA_CRITICAL_BACKUP_PLAN_ID`, `CELEBRA_CRITICAL_BACKUP_PENDING` | `scripts/db/backup-critical-production.ts`         | Set by `scripts/db/critical-production-backup.ts` |
+| `CELEBRA_OPERATOR_TASK`                                                                                 | `scripts/provision/preview-write-auth.ts`          | Set by the VS Code `invitation:release` task      |
+| `CELEBRA_PURGE_RESUME_STORAGE_PATHS`                                                                    | `scripts/provision/invitation-id-purge.ts`         | Only with `--resume-storage-cleanup`              |
+| `CELEBRA_GIT_SAFETY_ROOT`, `CELEBRA_GIT_SAFETY_SESSION`                                                 | `scripts/agent/git-safety.mjs`                     | Defaults for `--root` / `--session`               |
+| `CELEBRA_CLI_ASCII`                                                                                     | `scripts/lib/cli-theme.ts`                         | `1` forces ASCII glyphs                           |
+
+### Post-deploy smoke (Vercel `repository_dispatch`)
+
+Set by `.github/workflows/post-deploy-smoke.yml` from the dispatch payload and read by
+`scripts/ops/post-deploy-smoke.ts`; **required** inside that workflow, never configured by hand:
+
+- `VERCEL_DISPATCH_EVENT`, `VERCEL_DISPATCH_URL`, `VERCEL_DISPATCH_ENVIRONMENT`,
+  `VERCEL_DISPATCH_GIT_REF`, `VERCEL_DISPATCH_COMMIT_SHA`, `VERCEL_DISPATCH_DEPLOYMENT_ID`,
+  `VERCEL_DISPATCH_PROJECT_ID`, `VERCEL_DISPATCH_EXPECTED_PROJECT_ID` (dispatch inputs).
+- `POST_DEPLOY_BASE_URL`, `POST_DEPLOY_APPROVED_HOST`, `POST_DEPLOY_ENVIRONMENT`,
+  `POST_DEPLOY_COMMIT_SHA`, `POST_DEPLOY_DEPLOYMENT_ID`, `POST_DEPLOY_RUN_ID`,
+  `POST_DEPLOY_STARTED_AT` (validated outputs exported through `GITHUB_ENV`).
+- `VERCEL_PROJECT_ID` is a repository variable (`vars.*`) consumed by the same workflow.
+
+### CI validation (`.github/workflows/commit-validation.yml`)
+
+| Name                                               | Read by                                                               | Notes                             |
+| -------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------- |
+| `VALIDATION_BASE_SHA`, `VALIDATION_HEAD_SHA`       | `scripts/shared-changed-files.mjs`, `scripts/ops/classify-release.ts` | Range set by the workflow         |
+| `PR_HEAD_SHA`, `PR_HEAD_REF`, `PR_HEAD_REPOSITORY` | `scripts/ops/ci-evidence-reuse.ts`                                    | Pull request head identity        |
+| `GH_TOKEN`                                         | `scripts/ops/ci-browser-scope.ts`, `scripts/ops/ci-evidence-reuse.ts` | Workflow token for the GitHub API |
+| `BROWSER_STEP_OUTCOME`                             | `scripts/ops/browser-outcome.ts`                                      | Outcome of the browser step       |
+
+### Playwright and visual parity
+
+| Name                                                       | Read by                                       | Notes                                    |
+| ---------------------------------------------------------- | --------------------------------------------- | ---------------------------------------- |
+| `PLAYWRIGHT_USE_CANONICAL_FIXTURES`                        | `playwright.config.ts`, `astro.config.mjs`    | Serves synthetic canonical fixtures      |
+| `PLAYWRIGHT_WEB_SERVER_COMMAND`                            | `playwright.config.ts`                        | Overrides the canonical web server       |
+| `PLAYWRIGHT_WEB_SERVER_URL`                                | `scripts/playwright/preview-environment.ts`   | Local server URL for Preview configs     |
+| `PLAYWRIGHT_PREVIEW_EXECUTION_MODE`                        | `playwright.preview*.config.ts`               | Set by each Preview config; not an input |
+| `PLAYWRIGHT_REQUIRE_VISUAL_PREFLIGHT`                      | `scripts/screenshot/visual-parity-cli.ts`     | `true` in CI and visual certification    |
+| `VISUAL_PARITY_MODE`                                       | `playwright.config.ts`, `scripts/screenshot/` | Compare or diagnostic mode               |
+| `VISUAL_PARITY_OUTPUT_ROOT`, `VISUAL_PARITY_SNAPSHOT_ROOT` | `scripts/screenshot/visual-parity-cli.ts`     | Output and baseline roots                |
+
+### Event memories Worker bindings
+
+`NONCE_GUARD` (Durable Object) and `SIGN_RATE_LIMITER` (rate limit) are Wrangler bindings in
+`workers/celebra-memories-sign/` and `workers/celebra-memories-retrieve/`, like `MEMORIES_BUCKET`:
+declared in each `wrangler.json`, never variables or secrets.
+
+### Platform-provided (no configuration)
+
+Read as provided by the platform or terminal; never set them in env files: `CI`, `NODE_ENV`, `DEV`
+(`import.meta.env`), `GITHUB_SHA`, `GITHUB_REF_NAME`, `GITHUB_REPOSITORY`, `GITHUB_RUN_ID`,
+`GITHUB_EVENT_NAME`, `GITHUB_OUTPUT`, `GITHUB_ENV`, `GITHUB_STEP_SUMMARY`, `GITHUB_API_URL`,
+`VERCEL_ENV`, `VERCEL_GIT_COMMIT_SHA`, `VERCEL_GIT_COMMIT_REF`, `VERCEL_GIT_PREVIOUS_SHA` (build
+fallbacks and `scripts/ops/vercel-ignore-build.mjs` only), `PGOPTIONS`, `PGCONNECT_TIMEOUT` (libpq,
+set by scripts), `USER`, `USERNAME`, `TERM`, `TERM_PROGRAM`, `TERMINAL_EMULATOR`, `WT_SESSION`,
+`MSYSTEM`, `NO_COLOR`, `FORCE_COLOR` (terminal detection in `scripts/lib/cli-theme.ts`).
 
 ## Cleanup Notes
 
