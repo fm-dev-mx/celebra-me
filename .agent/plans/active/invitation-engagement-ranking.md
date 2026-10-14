@@ -1,5 +1,5 @@
 ---
-title: Invitation engagement ranking — phase 2 (admin comparison over permanent snapshots)
+title: Invitation engagement ranking — phase 2.1 (full coverage, confidence levels, filters, demos)
 status: active
 created: 2026-10-13
 updated: 2026-10-13
@@ -9,215 +9,190 @@ related_docs:
   - docs/domains/rsvp/engagement-analytics.md
   - docs/domains/rsvp/architecture.md
   - docs/domains/rsvp/database.md
+  - docs/domains/tracking/commercial-attribution.md
   - docs/database-workflow.md
   - .agent/rules/database.md
-supersedes:
-  - invitation-engagement-analytics.md
 ---
 
-# Invitation engagement ranking — phase 2
+# Invitation engagement ranking — phase 2.1
 
 ## 1. Objective
 
-Give the administrator one internal view that compares invitations and designs on the permanent,
-anonymous engagement snapshots collected since phase 1 (`invitation_engagement_snapshots`), so the
-business can see which designs and sections get opened, read to the end and answered, and feed that
-back into the catalog. Hosts never see this view. Phase 1 (plan
-`invitation-engagement-analytics.md`, G0–G7) is complete and in Production since v0.22.0-beta.1; it
-only collects.
+Make the administrator ranking (`/dashboard/admin/ranking`, released in v0.23.1-beta.1) useful on
+today's data: list every published client invitation, stop showing misleading rates, add the history
+that existed before 2026-10-12 as clearly labelled inferences and estimates, give the toolbar a
+stable shape that classifies new invitations automatically, and add a separate Demos tab that
+measures design retention on prospects.
 
-## 2. Known evidence (established 2026-10-13, do not re-audit without cause)
+Phase 2 (G0–G4, routine `20261013120000`, admin API, page) is in Production; Git history keeps its
+plan. This plan replaces it.
 
-- Snapshot storage: `public.invitation_engagement_snapshots` (migration `20261010130000`), one row
-  per `(event_id, snapshot_kind)` with `snapshot_kind in ('rolling','final')`, `event_type`, guest
-  counts (`guests_total/shared/opened/responded`, `opens_total`), rates (`open_rate`,
-  `completion_rate`, `rsvp_conversion`, `reopen_ratio`, `mobile_share`), medians
-  (`median_seconds_to_open`, `median_seconds_to_respond`), host covariates (`share_lead_days`,
-  `reminder_coverage`), and `design jsonb` + `design_schema_version`.
-- Design attributes (`src/lib/rsvp/engagement/design-attributes.ts`, schema v1): `themePreset`,
-  `fontFamily`, `templateId`, `visualProfileId`, `sections[]`, `sectionVariants{}`,
-  `personalizedAccessVariant`, `music{enabled,autoPlay}`, `rsvp{accessMode,confirmationMode}`.
-- Refresh: the daily cron `/api/cron/engagement-maintenance` (10:43 UTC) recomputes `rolling`
-  snapshots for events with newer activity and freezes one `final` snapshot 7 days after
-  `events.event_date` (`list_engagement_snapshot_candidates`). Events deleted keep their snapshot
-  with `event_id = null` (no label, still rankable by design).
-- Access: RLS forced; `select` granted to `service_role` only. No read RPC exists for the app yet.
-  Admin APIs follow `src/pages/api/dashboard/admin/platform/usage.ts`: `requireAdminRateLimit` →
-  `requireAdminStrongSession` → service → `withPrivateCache(jsonResponse)`.
-- Admin pages: `src/pages/dashboard/admin/*.astro` with `DashboardLayout`, `DashboardPageHeader` and
-  a `client:load` React panel (`src/components/dashboard/platform/PlatformUsagePanel.tsx` is the
-  reference). Styles: SCSS modules under `src/styles/dashboard/` imported from `dashboard.scss`.
-- Comparison rules are already specified in `docs/domains/rsvp/engagement-analytics.md` ("Per
-  invitation" + "Comparison rules"): same event type only; ≥ 20 shared guests per invitation and ≥ 5
-  invitations per design group; rank on rates, never raw totals; show host covariates next to every
-  comparison; results are hypotheses.
-- Labels: snapshots carry no title. `events` provides `title`, `slug`, `event_type`, `event_date`,
-  `invitation_project_id` (service-role read).
-- Data volume today is small (snapshots exist only for events with engagement since 2026-10-12);
-  most rows will be below the sample thresholds for months. The view must be honest about that.
+## 2. Known evidence (Production, read-only, 2026-10-13 — do not re-audit without cause)
 
-## 3. Design principles
+- **Coverage.** 25 published client invitations; only 9 have an engagement snapshot. Snapshots are
+  produced only for events with ledger activity since 2026-10-12, so 16 invitations (mostly past
+  events) never appear. America has 0 guests, Allison 1.
+- **Misleading conversion.** `rsvp_conversion = opened∧responded / opened`. Almost every response
+  predates the ledger (Xareni 44/44, Daniela y Martín 120/122), so one tracked open plus an older
+  response reads as 100 %.
+- **Legacy telemetry (pre-2026-10-12) is still stored** on every guest: `first_viewed_at`,
+  `last_viewed_at`, `is_viewed`, `view_percentage` (2 395 guests; 1 418 at 100 %, 556 below 25 %),
+  and `guest_invitation_audit` `viewed` rows (60 000+, one per request; sessionized with the 30-min
+  visit rule they give e.g. Xareni ≈ 585 visits, 8.5 per viewer). Contamination signals: 496 guests
+  "viewed" before `first_shared_at` (host/QA), 323 within 2 min after sharing (chat link preview
+  crawler).
+- **Responses by source.** Every non-pending guest carries `last_response_source` (`link` 1 226,
+  `generic_link` 4, `admin` 55 — host-entered). The audit trigger derives its actor from this
+  column; 38 older audit rows disagree, so the column, not the audit, is the signal.
+- **Confirmation mode.** `rsvp.confirmationMode ∈ {api, whatsapp, both}`. With `whatsapp` the reply
+  is a chat message and never reaches the database; `both` is partial (Destenid).
+- **Grouping value.** Over the 9 snapshots, only theme preset (5 values), personalized access
+  variant (5) and RSVP access mode (2) separate anything; visual profile equals the slug, template
+  equals preset + type, font/confirmation/music are nearly constant.
+- **Presets.** 11 presets are used by published client invitations (sacred-keepsake's repository
+  files were retired by `43000fc7e`, its published row remains). Design for invitations without a
+  snapshot must therefore come from the database (latest `published_invitation_content`), never from
+  repository definitions.
+- **Demos.** `tracking_events` (`route_class = 'demo'`, `is_internal = false`) since 2026-06-29:
+  `demo_viewed` with `demo_slug` (2 120 views / 1 858 sessions), `scroll_depth_reached` with
+  `depth_bucket` (7 079), `section_seen` since 2026-09-29 (68), `cta_clicked` (4),
+  `whatsapp_contact_clicked` (1). The Comercial demo conversion report already shows views,
+  sessions, WhatsApp CTR and the sales funnel per demo; it does not show depth.
 
-1. **Read-only over snapshots.** The ranking reads `invitation_engagement_snapshots` + `events`
-   labels; it never touches raw events or guest projections, so it cannot leak guest data and works
-   after anonymization.
-2. **Rules in the database, presentation in the app.** Thresholds and grouping live in one
-   `security definer` RPC so every consumer (page, future CSV, future cron report) applies the same
-   comparison rules. The app only formats.
-3. **Insufficient sample is a first-class state**, not a hidden row: rows below thresholds are
-   returned with `sample: 'insufficient'` and rendered greyed with the reason; groups with fewer
-   than 5 invitations show their size but no rank.
-4. **One snapshot per event in a ranking**: `final` when it exists, else `rolling`; never both.
-5. **Admin-only, strong session**, same perimeter as platform usage; private cache; rate limited.
-6. No new client-side analytics, no GA/Meta, no per-guest data on screen.
+## 3. Owner decisions (2026-10-13)
 
-## 4. Scope
+| ID  | Decision                                                                                                                                                                                                                                                                                                                                                                                                      |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | List every published client invitation; those without activity read «Sin actividad desde el 12 oct».                                                                                                                                                                                                                                                                                                          |
+| D2  | Three confidence levels: **measured** (ledger), **inferred** (guest-submitted response ⇒ opened), **historical estimate** (legacy telemetry, cleaned). Never mixed in one figure; ranges where uncertain; ranking on measured + inferred; estimate in its own view, frozen with a method version; estimate ships after validation.                                                                            |
+| D3  | Toolbar: event type (with «Todos», ranks per type), group by (preset, personalized access, RSVP access mode), sort, data level. «Filtros» panel: event status (upcoming/past/all, default all), activity, font, music, confirmation mode, include disabled (off). Facet values derived from data. Filters in the URL. WhatsApp conversion «No medible», `both` «Parcial», both out of the conversion ranking. |
+| D5  | Separate «Demos» tab focused on design retention (sessions, reach 50/75/100 %, drop-off, contacts per 100 sessions), 100-session threshold, default sort by reach 100 %, link to the Comercial funnel. The «Por preset» cross view is deferred.                                                                                                                                                               |
 
-### In scope
+## 4. Definitions
 
-- Read RPC `list_invitation_engagement_ranking(p_event_type text, p_group_key text)` (service role).
-- Admin API `GET /api/dashboard/admin/engagement/ranking?eventType=&groupBy=`.
-- Admin page `/dashboard/admin/ranking` with:
-  - filter: event type (required, default the type with most snapshots), group by design key
-    (`themePreset` default; `templateId`, `fontFamily`, `personalizedAccessVariant`,
-    `rsvp.confirmationMode`, `music.enabled`), metric to sort by (`open_rate`, `completion_rate`,
-    `rsvp_conversion`, `median_seconds_to_respond`);
-  - **Designs table**: group, invitations in group, eligible invitations, median of each rate,
-    covariates (median `share_lead_days`, median `reminder_coverage`), rank only when eligible;
-  - **Invitations table**: title/slug (or «Evento eliminado»), event date, snapshot kind and date,
-    shared/opened/responded, rates, medians, covariates, sample state;
-  - a visible caveat block with the comparison rules and the «desde 2026-10-12» note.
-- Link from `/dashboard/admin` stats grid («Ranking de diseños →»).
-- Tests: pgTAP for the RPC (grants, thresholds, final-over-rolling, group sizes), unit tests for the
-  service/presenter (ordering, null rates, insufficient sample), component test for the panel,
-  schema contract entries for the new routine, admin API test (401/403/200, cache headers).
-- Docs: §"Phase 2 ranking" in `docs/domains/rsvp/engagement-analytics.md` (query contract, UI
-  states), `docs/domains/rsvp/database.md` routine list.
+| Term               | Definition                                                                                                     |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Opened (measured)  | `open_count > 0` (ledger, guest traffic only).                                                                 |
+| Responded by guest | `attendance_status <> 'pending'` and `last_response_source <> 'admin'`.                                        |
+| Opened (inferred)  | Opened (measured) **or** responded by guest. A lower bound: the RSVP form only exists inside the invitation.   |
+| Conversion (v2)    | Responded by guest ÷ opened (inferred). Null when confirmation mode is `whatsapp`; flagged partial for `both`. |
+| Opened (estimate)  | `first_viewed_at` present, not before `first_shared_at`, not within 2 min after it. An upper bound.            |
+| Visits (estimate)  | `viewed` audit rows before 2026-10-12, sessionized per guest with the 30-min rule.                             |
+| Depth (estimate)   | `view_percentage`, only if G5 validation passes.                                                               |
+| Event status       | Upcoming when `events.event_date >= today` in `America/Chihuahua`; past otherwise; unknown without a date.     |
+| Activity state     | `measured` (has a snapshot), `none` (published, no snapshot).                                                  |
 
-### Non-goals
+## 5. Architecture
 
-- Changing snapshot math, taxonomy or retention (phase 1 contract).
-- Host-facing comparisons or any guest-level drill-down.
-- CSV export, scheduled e-mail reports, charts beyond tables (candidates for phase 3).
-- Section-variant ranking per section type (needs more data; the RPC returns `design` so a later
-  phase can add it without a migration).
-- Statistical significance testing; the view shows medians, counts and thresholds only.
+### 5.1 Database — expand migration A (`20261013150000_engagement_ranking_coverage.sql`)
 
-## 5. Owner decisions (accepted 2026-10-13: D1–D5 as recommended)
+- `list_invitation_engagement_ranking_v2(p_event_type text default null)` (`security definer`,
+  `service_role` only) starts from published client invitations (`kind = 'client'`, not archived)
+  and returns, per invitation: identity, event type/date, event status, activity state, public
+  access, confirmation mode, design (chosen snapshot design, else latest published content), live
+  guest aggregates (shared, responded, responded by guest, opened measured, opened inferred,
+  response rate, conversion upper bound, reminder coverage, share lead days) and the ledger metrics
+  of the chosen snapshot (final over rolling). Snapshots are **not** altered: inferred figures are
+  exact live counts, so the earlier idea of v2 snapshot columns and a final-row backfill is dropped
+  (no immutability exception needed).
+- Rollout registry: `expand`, `provides: ["engagement_ranking_coverage"]`. The v1 routine stays
+  until the v2 client is deployed.
+- pgTAP `invitation_engagement_ranking_v2.test.sql` (14): grants, coverage (archived, demo and
+  unpublished excluded), event filter, final over rolling, activity/status, responses by source,
+  inferred opens, response rate and conversion bound, sample state, access, confirmation mode,
+  design fallback.
 
-| ID  | Question                                                                        | Recommendation                                                                           |
-| --- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| D1  | Where does the view live?                                                       | `/dashboard/admin/ranking`, admin strong session, link from the admin home               |
-| D2  | Keep the spec thresholds (≥ 20 shared guests, ≥ 5 invitations per group)?       | Yes; show below-threshold rows greyed as «muestra insuficiente» instead of hiding them   |
-| D3  | Default design grouping key                                                     | `themePreset`; other keys selectable                                                     |
-| D4  | Should deleted events (snapshot with `event_id = null`) count in design groups? | Yes for groups (design is intact), listed as «Evento eliminado» in the invitations table |
-| D5  | Primary sort metric                                                             | `rsvp_conversion` (closest to business value), `open_rate` second                        |
+### 5.2 Database — expand migration B (`<ts>_engagement_historical_estimates.sql`, after G5 validation)
 
-## 6. Architecture
+- `invitation_engagement_historical_estimates` (one row per event, `method_version`, computed_at;
+  RLS forced, `service_role` select only): shared, opened estimate (upper bound), opened inferred
+  (lower bound), visits estimate, visits per viewer, depth estimate (if validated), responded by
+  guest, conversion range, the cleaning counters (views before share, views within 2 min).
+- `compute_engagement_historical_estimates(p_method_version smallint)` computes all rows once from
+  legacy columns and audit rows before 2026-10-12; re-running with the same version is a no-op.
+- The ranking routine accepts `p_level = 'historical'` and reads this table.
 
-### 6.1 Database (expand migration `<ts>_invitation_engagement_ranking.sql`)
+### 5.3 Server
 
-- `public.list_invitation_engagement_ranking(p_event_type text, p_group_key text default 'themePreset') returns table (...)`
-  — `security definer`, `set search_path = public`, execute to `service_role` only, `revoke` from
-  `public, anon, authenticated`.
-  - Picks one snapshot per `event_id` (`final` preferred, else `rolling`); rows with `event_id` null
-    are included (group only).
-  - Joins `events` for `title`, `slug`, `event_date`, `invitation_project_id` (left join).
-  - Computes `group_value` from `design` by key (`design->>'themePreset'`, `design->>'templateId'`,
-    `design->>'fontFamily'`, `design->>'personalizedAccessVariant'`,
-    `design#>>'{rsvp,confirmationMode}'`, `(design#>>'{music,enabled}')`); unknown key → error.
-  - Emits per row: `sample_state` (`eligible` when `guests_shared >= 20`, else `insufficient`),
-    `group_size`, `group_eligible`, `group_rank` (dense rank by the requested metric among eligible
-    rows of groups with `group_eligible >= 5`, else null). Metric ranking is computed in the app
-    (one query, many sorts) — the RPC returns the raw columns; only `sample_state`, group sizes and
-    the chosen snapshot are decided in SQL.
-  - Only `metrics_version = 1` rows; a future version bump adds a parameter, not a new RPC.
-- Rollout registry entry: phase `expand`, `provides: ["invitation_engagement_ranking"]`.
-- Schema contract: add the routine to `scripts/db/schema-object-contract.ts`; mutation contract:
-  anon/authenticated execute = false, service_role execute = true.
-- pgTAP `supabase/tests/invitation_engagement_ranking.test.sql`: grants; final beats rolling;
-  deleted event kept; thresholds; unknown key raises.
+- `engagement-ranking.service.ts` v2: query `{ eventType | 'all', groupBy, sort, level, filters }`;
+  filters applied in the service over routine rows (small N); facets (`fonts`, `confirmationModes`,
+  `presets`, …) returned from the rows so menus classify new invitations automatically; ranks and
+  medians per event type; default sort is response rate; conversion is an upper bound and its
+  ranking skips `whatsapp` and `both`; ranges for opened/conversion (inferred lower, estimate upper
+  when the historical level is loaded).
+- Demos: `demo-engagement.service.ts` reads `tracking_events` (service role, `route_class = 'demo'`,
+  `is_internal = false`, period 30/60 days, the Comercial helper) and aggregates per `demo_slug`:
+  sessions, bounce (left before 25 %), reach 50/75/100 % (deepest `depth_bucket` per session),
+  largest drop after 25 %, contacts per 100 sessions (`cta_clicked` + `whatsapp_contact_clicked`
+  sessions); preset and type from the demo inventory; 100-session threshold. Reuses the commercial
+  pagination/period helpers.
+- API: `GET /api/dashboard/admin/engagement/ranking` gains `level` and filter params (zod, unknown
+  values → 400); new `GET /api/dashboard/admin/engagement/demos?period=&eventType=`. Same perimeter:
+  rate limit, admin strong session, private cache.
 
-### 6.2 Server
+### 5.4 Dashboard
 
-- `src/lib/rsvp/repositories/engagement.repository.ts`:
-  `listInvitationEngagementRankingRpc(eventType, groupKey)` (service role client, same error mapping
-  as the other RPC wrappers).
-- `src/lib/rsvp/engagement/engagement-ranking.service.ts`: validates inputs against `EVENT_TYPES`
-  and `RANKING_GROUP_KEYS`, calls the RPC, builds `designs[]` (median per metric, counts, covariate
-  medians, rank when `groupEligible >= 5`) and `invitations[]` (sorted by the requested metric,
-  nulls last), returns
-  `{ eventType, groupKey, metric, since: '2026-10-12', thresholds: { sharedGuests: 20, groupInvitations: 5 }, designs, invitations }`.
-- `src/pages/api/dashboard/admin/engagement/ranking.ts`: GET;
-  `requireAdminRateLimit(request, 'engagement:ranking')`, `requireAdminStrongSession`, zod query
-  schema, `withPrivateCache`.
-- Interfaces in `src/interfaces/dashboard/engagement-ranking.interface.ts` (shared by API and
-  panel).
+- Tabs «Invitaciones» / «Demos».
+- Toolbar per D3; «Filtros» popover with chips, «Limpiar» and «Mostrando X de Y»; state in the URL.
+- Invitations table: «Tipo» column with «Todos»; level badge per figure (Medido / Inferido /
+  Estimado); ranges as «72–86 %»; «Respondieron (total)» and «Respondieron por el invitado»;
+  conversion «No medible (WhatsApp)» / «Parcial»; disabled rows labelled when included; rows without
+  activity greyed with «Sin actividad desde el 12 oct».
+- «Histórico (estimado)» level: own table, method version and cleaning rules shown, never ranked
+  against measured.
+- Demos table per D5 with «Ver embudo comercial» linking to `/dashboard/commercial`.
+- Remove the duplicated intro paragraph (header subtitle stays; the since-date moves to the caveat).
 
-### 6.3 Dashboard
+## 6. Work units
 
-- `src/pages/dashboard/admin/ranking.astro` (`DashboardLayout` + `DashboardPageHeader` +
-  `<EngagementRankingPanel client:load />`).
-- `src/components/dashboard/engagement/EngagementRankingPanel.tsx`: filters (event type, group key,
-  metric), two tables, caveat block, loading/error/empty states (`empty-state` pattern). Copy in
-  Spanish, «usted». Rates as percentages with one decimal; medians as «2 h 15 min» / «3 d»;
-  insufficient rows greyed with `title` tooltip «Menos de 20 invitados con invitación enviada».
-- `src/styles/dashboard/_engagement-ranking.scss` imported from `dashboard.scss`; mobile: tables
-  scroll horizontally inside the card (no column hiding in this phase).
-- Admin home: one stat card «Ranking de diseños» linking to the page.
+| Goal | Scope                                                                                                                                                                                                   | Verification                                                                                                 |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| G0   | Spec: confidence levels, definitions (§4), ranking v2 query contract, demos metrics                                                                                                                     | Owner review                                                                                                 |
+| G1   | Migration A: snapshot v2 columns + compute + backfill, ranking routine v2, registry, contracts, pgTAP                                                                                                   | Disposable pgTAP (all files), `test:db:rsvp-contracts`, mutation contract on disposable                      |
+| G2   | Service + API v2: filters, facets, per-type ranks, levels, WhatsApp handling, ranges                                                                                                                    | Unit (filters, facets, per-type ranks, ranges, WhatsApp exclusion), API (400s, perimeter)                    |
+| G3   | UI: tabs shell, toolbar, filters popover, chips, URL state, level badges, table changes, copy fix                                                                                                       | Component tests; Local render with a seeded admin session if available, otherwise Preview check by the owner |
+| G4   | Demos tab: service, API, table                                                                                                                                                                          | Unit (aggregation, threshold, drop-off), API tests, component test                                           |
+| G5   | Historical estimate: validation report (sample of guests: view_percentage vs measured depth where both exist; crawler/host filter vs ledger previews), owner review, then migration B + historical view | Validation report accepted by the owner before migration B; pgTAP; unit                                      |
+| G6   | Docs, CHANGELOG, rollout (Local → Preview me; Production owner), checkpoint                                                                                                                             | `validate:changed` → `type-check` → `pnpm run ci`; `release-status` Preview/Production                       |
 
-### 6.4 Presenter rules
+One task branch per goal group (`feat/ranking-coverage` for G0–G3, `feat/ranking-demos` for G4,
+`feat/ranking-historical` for G5), each from `origin/develop`, merged with `--no-ff`.
 
-- Rates null → «—»; never 0 % from a zero denominator.
-- `reopen_ratio` is shown but never used as a sort metric (spec: ambiguous).
-- Covariates always visible next to rates (spec).
-- Ranks: dense rank among eligible invitations of eligible groups; ties share rank.
+## 7. Rollout
 
-## 7. Work units
+- G1–G4 ship together (one checkpoint): migration A first (expand; the v2 API answers 503 until the
+  routine exists, the v1 page keeps working), then the app.
+- G5 ships in a later checkpoint after the owner accepts the validation report.
+- Contract (later checkpoint, after the v2 client passed Production smoke): drop the v1 ranking
+  routine, `requiresDeployedAppCapabilities: ["engagement_ranking_v2_client"]`.
+- No published invitation rides with these releases (content↔smoke↔migration cycle of 2026-10-13).
 
-| Goal | Scope                                                                                      | Files                                                                                                                                                                                                                            | Verification                                                                                                             |
-| ---- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| G0   | Owner decisions D1–D5 closed; spec §"Phase 2 ranking" drafted                              | `docs/domains/rsvp/engagement-analytics.md`                                                                                                                                                                                      | Owner review                                                                                                             |
-| G1   | Ranking RPC (expand migration), registry entry, schema/mutation contract, pgTAP            | `supabase/migrations/<ts>_invitation_engagement_ranking.sql`, `supabase/migration-rollout-registry.json`, `scripts/db/*contract*`, `supabase/tests/invitation_engagement_ranking.test.sql`                                       | `pnpm db:disposable:reset` + `pnpm db:migrate -- --target disposable-test --apply`, pgTAP, `pnpm test:db:rsvp-contracts` |
-| G2   | Repository wrapper, ranking service + presenter, interfaces, admin API                     | `src/lib/rsvp/repositories/engagement.repository.ts`, `src/lib/rsvp/engagement/engagement-ranking.service.ts`, `src/interfaces/dashboard/engagement-ranking.interface.ts`, `src/pages/api/dashboard/admin/engagement/ranking.ts` | Unit tests (median/rank/null handling, group sizes), API tests (401/403/400/200, private cache)                          |
-| G3   | Admin page, panel, SCSS, admin home link                                                   | `src/pages/dashboard/admin/ranking.astro`, `src/components/dashboard/engagement/EngagementRankingPanel.tsx`, `src/styles/dashboard/_engagement-ranking.scss`, `src/pages/dashboard/admin.astro`                                  | Component test (filters, insufficient state, empty state); Local check desktop + mobile                                  |
-| G4   | Docs + rollout: Local apply, Preview apply + smoke, PR, owner Production apply, checkpoint | docs above, `CHANGELOG.md`                                                                                                                                                                                                       | `pnpm validate:changed` → `pnpm type-check` → `pnpm run ci`; `release-status` Preview/Production                         |
+## 8. Acceptance criteria
 
-One commit per goal; task branch `feat/engagement-ranking` from `origin/develop`; integrate with
-`merge --no-ff`.
+- «XV años» lists all 15 published XV client invitations (archived excluded); «Todos» lists all 25
+  with a type column and per-type ranks.
+- Xareni shows measured opens, inferred opens (≥ 44) and conversion v2 from guest-submitted
+  responses; no 100 % from a single open.
+- WhatsApp-only invitations show «No medible» and are absent from the conversion ranking.
+- Facets list every font, preset and confirmation mode present, including ones added after release
+  (verified by a fixture with a new preset).
+- Demos tab shows sessions, reach and contacts per demo for the selected period, greys demos under
+  100 sessions and links to the Comercial funnel.
+- No guest identifiers anywhere in the responses; all endpoints admin strong session.
 
-## 8. Rollout
+## 9. Stop conditions
 
-- Expand-only: the RPC is additive; the app may deploy before or after the migration (the API
-  returns a clear 503 «Ranking no disponible todavía» if the routine is missing, so order is free;
-  preferred order remains migration first: Local → Preview (me, `preview:schema:migrate`) →
-  Production (owner: `db:migrate` plan, `prod:apply --schema --apply`, `db:prod:audit`).
-- No contract phase, no capability requirement, nothing to revoke.
-- No new published invitation rides with this release (avoids the content↔smoke↔migration cycle seen
-  on 2026-10-13).
+- (Checked 2026-10-13, not triggered) responses whose source cannot be attributed: none.
+- G5 validation shows legacy depth or opens uncorrelated with measured data → ship G5 without that
+  metric and report.
+- Any metric would need guest-level data in the response → stop (privacy contract).
 
-## 9. Acceptance criteria
+## 10. Risks
 
-- Admin (strong session) opens `/dashboard/admin/ranking`, picks an event type, sees designs and
-  invitations with rates, covariates and sample states; non-admins get 403 on the API and no page.
-- Every rate shown equals the snapshot value; no guest-level data reachable from the view.
-- Rows under thresholds are visible, greyed, unranked, with the reason.
-- `final` snapshots take precedence over `rolling` for the same event.
-- pgTAP, unit, component and API tests green; `pnpm run ci` green locally (browser tier in CI).
-- Spec updated; CHANGELOG entry in the next checkpoint.
-
-## 10. Stop conditions
-
-- The owner wants host-facing comparisons → stop; that changes the privacy contract (phase 1 D6).
-- A metric needs raw events (e.g. per-section dwell) → stop; it is a snapshot-math change (new
-  `metrics_version`), out of scope.
-- The admin strong-session perimeter cannot be reused for a new route → stop and report.
-
-## 11. Risks
-
-| Risk                                                       | Mitigation                                                                                    |
-| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Months of «muestra insuficiente» make the view look broken | Explicit sample states and the «desde 2026-10-12» note; design groups still show sizes        |
-| Rates misread as verdicts                                  | Caveat block + covariates on every row (spec rule)                                            |
-| Design key missing on old snapshots (`design` null)        | Group «Sin datos de diseño»; still listed in the invitations table                            |
-| Snapshot schema version bump later                         | RPC filters `metrics_version = 1`; service passes the version explicitly in the next revision |
+| Risk                                         | Mitigation                                                                           |
+| -------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Readers treat estimates as measurements      | Level badge on every figure, ranges, own view, method version visible                |
+| Final snapshot immutability                  | v1 columns never rewritten; v2 columns filled once by an idempotent, tested backfill |
+| Facets explode as designs grow               | Only the three grouping keys plus four filters; values sorted by frequency           |
+| Demo contacts too sparse to rank             | Default sort on reach 100 %; contacts shown with their counts                        |
+| Repository definitions retired (`43000fc7e`) | Design always read from the database                                                 |

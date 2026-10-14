@@ -207,6 +207,11 @@
             "phase": "expand",
             "provides": ["invitation_engagement_ranking"],
             "notes": "Adds list_invitation_engagement_ranking, a service-role-only read routine over invitation_engagement_snapshots that applies the engagement comparison rules (same event type, final over rolling, 20-guest sample threshold, design group sizes). Additive: the admin ranking API tolerates its absence. Revokes only initialize privileges of the new function."
+        },
+        "20261013150000": {
+            "phase": "expand",
+            "provides": ["engagement_ranking_coverage"],
+            "notes": "Adds list_invitation_engagement_ranking_v2, a service-role-only read routine over every published client invitation: live guest aggregates (responses by source, inferred opens, response rate) joined to the chosen engagement snapshot, event status, activity state, public access, confirmation mode and design. Additive: the v1 routine stays until the v2 client is deployed. Revokes only initialize privileges of the new function."
         }
     },
     "appCapabilities": {
