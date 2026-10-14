@@ -255,7 +255,7 @@ test('Non-editorial: scrolling to #rsvp positions section at top at 375x667', as
 /* ------------------------------------------------------------------ */
 test('bautizo demo desktop no oscillation after selecting No podré', async ({ page }) => {
 	await page.setViewportSize({ width: 1280, height: 800 });
-	await page.goto('/bautizo/demo-bautismo-angelic-presence#!/rsvp', {
+	await page.goto('/bautizo/demo-bautizo-angelic-presence#!/rsvp', {
 		waitUntil: 'networkidle',
 	});
 	await openInvitation(page);
@@ -326,25 +326,25 @@ const RSVP_EVENT_SLUGS = [
 	},
 	{
 		name: 'bautizo-angelic-presence 375x667',
-		slug: '/bautizo/demo-bautismo-angelic-presence',
+		slug: '/bautizo/demo-bautizo-angelic-presence',
 		width: 375,
 		height: 667,
 	},
 	{
 		name: 'bautizo-angelic-presence desktop',
-		slug: '/bautizo/demo-bautismo-angelic-presence',
+		slug: '/bautizo/demo-bautizo-angelic-presence',
 		width: 1365,
 		height: 768,
 	},
 	{
-		name: 'primera-comunion-illustrated 375x667',
-		slug: '/primera-comunion/demo-primera-comunion-illustrated',
+		name: 'primera-comunion-angelic-presence 375x667',
+		slug: '/primera-comunion/demo-primera-comunion-angelic-presence',
 		width: 375,
 		height: 667,
 	},
 	{
-		name: 'primera-comunion-illustrated desktop',
-		slug: '/primera-comunion/demo-primera-comunion-illustrated',
+		name: 'primera-comunion-angelic-presence desktop',
+		slug: '/primera-comunion/demo-primera-comunion-angelic-presence',
 		width: 1365,
 		height: 768,
 	},

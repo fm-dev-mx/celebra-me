@@ -180,8 +180,6 @@ export async function resolvePublicInvitation(
 				const rawContent = parsedContent.data;
 				const adaptedViewModel = adaptDbEvent({
 					slug,
-					eventType: publishedEntry.eventType,
-					isDemo: publishedEntry.isDemo,
 					content: rawContent,
 				});
 				// Unpaid: every consumer (page, social card, memories identity) gets watermarked photos.

@@ -87,14 +87,11 @@ describe('Romina local invitation content', () => {
 		const content = buildRominaPublishedContent(buildTestAssets(ROMINA_ASSET_SPECS));
 		const viewModel = adaptDbEvent({
 			slug: ROMINA_EVENT.slug,
-			eventType: ROMINA_EVENT.eventType,
-			isDemo: false,
 			content,
 			assetSlug: ROMINA_EVENT.assetSlug,
 		});
 		const page = buildPageContextFromViewModel({
 			viewModel,
-			slug: ROMINA_EVENT.slug,
 			eventType: ROMINA_EVENT.eventType,
 		});
 

@@ -53,7 +53,6 @@ function makeMinimalEvent(music?: Record<string, unknown>) {
 function buildPage(viewModel: InvitationViewModel) {
 	return buildPageContextFromViewModel({
 		viewModel,
-		slug: 'leslie-perez',
 		eventType: 'xv',
 	});
 }

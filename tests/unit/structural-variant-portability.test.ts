@@ -154,7 +154,6 @@ describe('registry-driven canonical variant portability', () => {
 				eventEntry: event as Parameters<
 					typeof prepareInvitationPageContext
 				>[0]['eventEntry'],
-				slug: 'demo-xv-jewelry-box',
 			});
 			const renderPlan = buildInvitationRenderPlan(viewModel);
 			const expectedView =
@@ -470,7 +469,6 @@ describe('registry-driven canonical variant portability', () => {
 		});
 		const pageContext = prepareInvitationPageContext({
 			eventEntry: event as Parameters<typeof prepareInvitationPageContext>[0]['eventEntry'],
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		expect(pageContext.viewModel.hero.variant).toBe('split-cover');

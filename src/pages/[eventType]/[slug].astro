@@ -143,7 +143,6 @@ try {
 				const prepareStart = performance.now();
 				page = prepareInvitationPageContext({
 					eventEntry: eventEntry!,
-					slug,
 					guestContext,
 				});
 				pagePrepareDur = performance.now() - prepareStart;
@@ -151,7 +150,6 @@ try {
 				const prepareStart = performance.now();
 				page = buildPageContextFromViewModel({
 					viewModel,
-					slug,
 					guestContext,
 					eventType: routeEventType,
 					screenshotMode,

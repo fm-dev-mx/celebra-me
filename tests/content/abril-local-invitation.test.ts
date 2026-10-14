@@ -207,14 +207,11 @@ describe('Abril Michelle local invitation content', () => {
 		const content = buildAbrilPublishedContent(buildTestAssets(ABRIL_ASSET_SPECS));
 		const viewModel = adaptDbEvent({
 			slug: ABRIL_EVENT.slug,
-			eventType: ABRIL_EVENT.eventType,
-			isDemo: false,
 			content,
 			assetSlug: ABRIL_EVENT.assetSlug,
 		});
 		const page = buildPageContextFromViewModel({
 			viewModel,
-			slug: ABRIL_EVENT.slug,
 			eventType: ABRIL_EVENT.eventType,
 		});
 

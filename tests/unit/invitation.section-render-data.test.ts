@@ -55,7 +55,6 @@ function setupDemoPageContext(fixtureSlug = 'demo-xv-editorial') {
 
 	return prepareInvitationPageContext({
 		eventEntry,
-		slug: fixtureSlug,
 		guestContext: null,
 	});
 }
@@ -118,7 +117,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
@@ -157,7 +155,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
@@ -198,7 +195,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
@@ -232,7 +228,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry,
-			slug: 'demo-xv-jewelry-box',
 			guestContext: {
 				inviteId: 'invite-zero',
 				eventSlug: 'demo-xv-jewelry-box',
@@ -276,7 +271,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			},
 		};
 		const pageContext = buildPageContextFromViewModel({
-			slug: 'gemelas-fixture',
 			eventType: 'primera-comunion',
 			guestContext: {
 				inviteId: 'invite-confirmed',
@@ -382,7 +376,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry,
-			slug: 'demo-xv-enchanted-rose',
 		});
 
 		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
@@ -401,10 +394,10 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 	it('passes thank-you overlay composition metadata to the render descriptor', () => {
 		const fixture = loadFixture(
-			'src/content/event-demos/bautizo/demo-bautismo-angelic-presence.json',
+			'src/content/event-demos/bautizo/demo-bautizo-angelic-presence.json',
 		);
 		const eventEntry = {
-			id: 'event-demos/bautizo/demo-bautismo-angelic-presence',
+			id: 'event-demos/bautizo/demo-bautizo-angelic-presence',
 			data: {
 				...fixture,
 				thankYou: {
@@ -422,7 +415,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry,
-			slug: 'demo-bautismo-angelic-presence',
 		});
 
 		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
@@ -488,7 +480,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const pageContext = prepareInvitationPageContext({
 			eventEntry,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		const descriptors = buildInvitationSectionRenderDescriptors(pageContext);
@@ -513,7 +504,6 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		const buildTestContext = (isDemo: boolean) => {
 			return buildPageContextFromViewModel({
-				slug: 'test-event',
 				eventType: 'xv',
 				viewModel: {
 					id: 'test-event',

@@ -58,7 +58,7 @@ function demoViewModels(): Array<[string, InvitationViewModel]> {
 	return listJsonFiles(root).map((file) => {
 		const content = JSON.parse(fs.readFileSync(file, 'utf8'));
 		const slug = path.basename(file, '.json');
-		return [slug, adaptDbEvent({ slug, eventType: content.eventType, isDemo: true, content })];
+		return [slug, adaptDbEvent({ slug, content })];
 	});
 }
 

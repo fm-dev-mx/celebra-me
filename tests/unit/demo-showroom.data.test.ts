@@ -59,7 +59,7 @@ describe('demo showroom public metadata', () => {
 		expect(featuredItems.every((item) => item.visibility === 'featured')).toBe(true);
 		expect(featuredItems.every((item) => item.reviewStatus === 'approved')).toBe(true);
 		expect(featuredItems.map((item) => item.slug)).not.toContain(
-			'demo-primera-comunion-illustrated',
+			'demo-primera-comunion-angelic-presence',
 		);
 	});
 

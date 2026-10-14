@@ -180,8 +180,6 @@ describe('buildDraftPreviewPageContext', () => {
 		expect(mockAdaptDbEvent).toHaveBeenCalledTimes(1);
 		const callArgs = mockAdaptDbEvent.mock.calls[0][0];
 		expect(callArgs.slug).toBe('valeria-fixture');
-		expect(callArgs.eventType).toBe('xv');
-		expect(callArgs.isDemo).toBe(false);
 		expect(callArgs.assetSlug).toBe('valeria-fixture');
 		expect(callArgs.content).toMatchObject({
 			isDemo: false,
@@ -199,7 +197,6 @@ describe('buildDraftPreviewPageContext', () => {
 		const callArgs = mockBuildPageContext.mock.calls[0][0];
 		expect(callArgs.viewModel).toBe(mockViewModel);
 		expect(callArgs.eventType).toBe('xv');
-		expect(callArgs.slug).toBe('valeria-fixture');
 	});
 
 	it('returns RENDER_FAILED when adaptDbEvent throws', async () => {

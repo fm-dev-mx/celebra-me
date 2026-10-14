@@ -51,8 +51,6 @@ describe('Envelope seal color options', () => {
 		it('preserves sealColor for profile CSS without injecting profile tokens into scoped styles', () => {
 			const viewModel = adaptDbEvent({
 				slug: 'client-slug',
-				eventType: 'xv',
-				isDemo: false,
 				assetSlug: 'demo-xv-celestial-blue',
 				content: {
 					eventType: 'xv',
@@ -85,7 +83,6 @@ describe('Envelope seal color options', () => {
 
 			const pageContext = buildPageContextFromViewModel({
 				viewModel,
-				slug: 'client-slug',
 				eventType: 'xv',
 			});
 

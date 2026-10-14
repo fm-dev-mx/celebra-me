@@ -89,7 +89,7 @@ describe('Canonical Envelope Route Inventory Audit', () => {
 		const slugs = inventory.map((i) => i.slug);
 		expect(slugs).toContain('demo-xv-enchanted-rose');
 		expect(slugs).toContain('demo-xv-celestial-blue');
-		expect(slugs).toContain('demo-bautismo-angelic-presence');
+		expect(slugs).toContain('demo-bautizo-angelic-presence');
 	});
 
 	it('assigns every inventoried route a valid renderer type', () => {

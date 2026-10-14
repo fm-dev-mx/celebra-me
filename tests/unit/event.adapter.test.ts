@@ -213,15 +213,15 @@ describe('adaptEvent', () => {
 
 	it('resolves the Primera Comunión catalog demo through its explicit asset slug', () => {
 		const event = {
-			id: 'event-demos/primera-comunion/demo-primera-comunion-illustrated',
+			id: 'event-demos/primera-comunion/demo-primera-comunion-angelic-presence',
 			data: loadFixture(
-				'src/content/event-demos/primera-comunion/demo-primera-comunion-illustrated.json',
+				'src/content/event-demos/primera-comunion/demo-primera-comunion-angelic-presence.json',
 			),
 		} as Parameters<typeof adaptEvent>[0];
 
 		const viewModel = adaptEvent(event);
 
-		expect(viewModel.id).toBe('demo-primera-comunion-illustrated');
+		expect(viewModel.id).toBe('demo-primera-comunion-angelic-presence');
 		expect(viewModel.theme.preset).toBe('angelic-presence');
 		expect(viewModel.hero.backgroundImage.src).toEqual(expect.any(String));
 		expect(
@@ -275,10 +275,10 @@ describe('adaptEvent', () => {
 
 	it('preserves thank-you overlay composition metadata', () => {
 		const fixture = loadFixture(
-			'src/content/event-demos/bautizo/demo-bautismo-angelic-presence.json',
+			'src/content/event-demos/bautizo/demo-bautizo-angelic-presence.json',
 		);
 		const event = {
-			id: 'event-demos/bautizo/demo-bautismo-angelic-presence',
+			id: 'event-demos/bautizo/demo-bautizo-angelic-presence',
 			data: {
 				...fixture,
 				thankYou: {

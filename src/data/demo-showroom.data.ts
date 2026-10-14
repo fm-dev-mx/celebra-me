@@ -202,8 +202,8 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 	{
 		eventType: 'bautizo',
 		publicSlug: 'bautizo',
-		slug: 'demo-bautismo-angelic-presence',
-		href: '/bautizo/demo-bautismo-angelic-presence',
+		slug: 'demo-bautizo-angelic-presence',
+		href: '/bautizo/demo-bautizo-angelic-presence',
 		title: 'Bautizo estilo Angelical',
 		description: 'Delicada, familiar y luminosa.',
 		styleTags: ['delicada', 'familiar'],
@@ -214,7 +214,7 @@ export const DEMO_SHOWROOM_ITEMS: readonly DemoShowroomItem[] = [
 		ctaMessage:
 			'Hola, me gustaría una invitación digital para bautizo similar al demo Angelic Presence.',
 		thumbnail: {
-			assetSlug: 'demo-bautismo-angelic-presence',
+			assetSlug: 'demo-bautizo-angelic-presence',
 			key: 'hero',
 			alt: 'Vista principal del demo de bautizo estilo Angelic Presence',
 		},
