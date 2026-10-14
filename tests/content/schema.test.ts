@@ -8,11 +8,11 @@ import { eventContentSchema as eventSchema } from '@/lib/schemas/content/base-ev
 const contentRoots = ['src/content/event-demos'];
 const primeraComunionDemoPath = path.resolve(
 	process.cwd(),
-	'src/content/event-demos/primera-comunion/demo-primera-comunion-illustrated.json',
+	'src/content/event-demos/primera-comunion/demo-primera-comunion-angelic-presence.json',
 );
 const primeraComunionAssetIndexPath = path.resolve(
 	process.cwd(),
-	'src/assets/images/events/demo-primera-comunion-illustrated/index.ts',
+	'src/assets/images/events/demo-primera-comunion-angelic-presence/index.ts',
 );
 
 function getJsonContentFiles(root: string): string[] {
@@ -245,7 +245,7 @@ describe('Event content schema (real contract)', () => {
 
 	it('resolves Primera Comunión demo assets through its explicit asset slug', () => {
 		const content = JSON.parse(fs.readFileSync(primeraComunionDemoPath, 'utf8'));
-		expect(content._assetSlug).toBe('demo-primera-comunion-illustrated');
+		expect(content._assetSlug).toBe('demo-primera-comunion-angelic-presence');
 		expect(fs.existsSync(primeraComunionAssetIndexPath)).toBe(true);
 
 		const referencedAssetKeys = [

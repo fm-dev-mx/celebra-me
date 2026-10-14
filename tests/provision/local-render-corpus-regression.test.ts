@@ -116,14 +116,11 @@ describe('local render corpus regression sweep', () => {
 
 			const viewModel = adaptDbEvent({
 				slug: entry.slug,
-				eventType: entry.eventType,
-				isDemo: false,
 				content,
 				assetSlug: typeof content._assetSlug === 'string' ? content._assetSlug : entry.slug,
 			});
 			const page = buildPageContextFromViewModel({
 				viewModel,
-				slug: entry.slug,
 				eventType: entry.eventType,
 			});
 			const descriptors = buildInvitationSectionRenderDescriptors(page);

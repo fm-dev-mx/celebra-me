@@ -149,14 +149,11 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 		const content = publishedContent();
 		const viewModel = adaptDbEvent({
 			slug: ALBA_EVENT.slug,
-			eventType: ALBA_EVENT.eventType,
-			isDemo: false,
 			content,
 			assetSlug: ALBA_EVENT.assetSlug,
 		});
 		const page = buildPageContextFromViewModel({
 			viewModel,
-			slug: ALBA_EVENT.slug,
 			eventType: ALBA_EVENT.eventType,
 		});
 

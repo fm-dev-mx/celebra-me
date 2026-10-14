@@ -228,9 +228,9 @@ describe('importBundledAsset', () => {
 				kind: 'demo',
 				slug: null,
 				eventType: 'bautizo',
-				snapshot: { previewSlug: 'demo-bautismo-angelic-presence' },
+				snapshot: { previewSlug: 'demo-bautizo-angelic-presence' },
 			});
-			mockResolveAssetSlug.mockReturnValue('demo-bautismo-angelic-presence');
+			mockResolveAssetSlug.mockReturnValue('demo-bautizo-angelic-presence');
 			mockGetEventAsset.mockReturnValue({
 				src: '/assets/interlude-02.webp',
 				width: 1080,
@@ -247,7 +247,7 @@ describe('importBundledAsset', () => {
 			expect(mockFindPublishedContent).toHaveBeenCalledWith(INVITATION_ID);
 			expect(mockResolveAssetSlug).toHaveBeenCalled();
 			expect(mockGetEventAsset).toHaveBeenCalledWith(
-				'demo-bautismo-angelic-presence',
+				'demo-bautizo-angelic-presence',
 				'interlude02',
 			);
 		});

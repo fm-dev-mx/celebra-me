@@ -21,7 +21,6 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv-jewelry-box',
 			guestContext: {
 				inviteId: 'invite-123',
 				eventSlug: 'demo-xv-jewelry-box',
@@ -67,7 +66,6 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		expect(context.layout.title).toBe(fixture.title);
@@ -116,7 +114,6 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv-enchanted-rose',
 		});
 
 		expect(context.viewModel.sectionOrder).toBeDefined();
@@ -158,7 +155,6 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		expect(context.envelope?.name).toBe('Luna Yamileth y Estrella Abigail');
@@ -178,7 +174,6 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv-enchanted-rose',
 		});
 
 		expect(context.viewModel.hero.focalPointMobile).toBe('50% 32%');
@@ -219,7 +214,6 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		expect(context.guestContext).toBeUndefined();
@@ -245,7 +239,6 @@ describe('prepareInvitationPageContext', () => {
 
 		const context = prepareInvitationPageContext({
 			eventEntry: event,
-			slug: 'demo-xv-jewelry-box',
 		});
 
 		expect(context.viewModel.sections.location?.indicationsHeading).toBe('Indicaciones');
@@ -293,7 +286,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'my-invitation',
 			eventType: 'xv',
 		});
 
@@ -316,7 +308,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'ordered-invitation',
 			eventType: 'xv',
 		});
 
@@ -340,7 +331,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'default-invitation',
 			eventType: 'boda',
 		});
 
@@ -358,7 +348,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'reveal-sealed',
 			eventType: 'xv',
 		});
 
@@ -387,7 +376,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'venues-hero-test',
 			eventType: 'baby-shower',
 		});
 
@@ -409,8 +397,7 @@ describe('buildPageContextFromViewModel', () => {
 				},
 			},
 		} as any;
-		const build = () =>
-			buildPageContextFromViewModel({ viewModel, slug: 'venue-selection', eventType: 'xv' });
+		const build = () => buildPageContextFromViewModel({ viewModel, eventType: 'xv' });
 		expect(build()).toMatchObject({ heroVenueName: 'Recepción', heroTime: '17:00' });
 		expect(viewModel.sections.location.venues[0].venueName).toBe('Ceremonia');
 		viewModel.sections.location.venues[1].isVisible = false;
@@ -435,7 +422,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'legacy-hero-test',
 			eventType: 'xv',
 		});
 
@@ -453,7 +439,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'no-location-test',
 			eventType: 'xv',
 		});
 
@@ -482,7 +467,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'gemelas-fixture',
 			eventType: 'primera-comunion',
 		});
 
@@ -559,7 +543,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'gemelas-fixture',
 			eventType: 'primera-comunion',
 		});
 
@@ -623,7 +606,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'gemelas-fixture',
 			eventType: 'primera-comunion',
 			guestContext: {
 				inviteId: 'invite-confirmed',
@@ -674,7 +656,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'gemelas-fixture',
 			eventType: 'primera-comunion',
 			guestContext: {
 				inviteId: 'invite-confirmed',
@@ -725,7 +706,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'gemelas-fixture',
 			eventType: 'primera-comunion',
 			guestContext: {
 				inviteId: 'invite-declined',
@@ -797,7 +777,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'regression-after-rsvp-test',
 			eventType: 'primera-comunion',
 		});
 
@@ -847,7 +826,6 @@ describe('buildPageContextFromViewModel', () => {
 
 		const context = buildPageContextFromViewModel({
 			viewModel,
-			slug: 'regression-after-rsvp-test',
 			eventType: 'primera-comunion',
 			guestContext: {
 				inviteId: 'invite-confirmed',

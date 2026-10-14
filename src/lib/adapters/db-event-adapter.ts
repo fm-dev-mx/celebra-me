@@ -4,8 +4,6 @@ import type { InvitationViewModel } from '@/lib/adapters/types';
 
 export interface DbEventSource {
 	slug: string;
-	eventType: string;
-	isDemo: boolean;
 	content: Record<string, unknown>;
 	assetSlug?: string;
 }

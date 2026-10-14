@@ -40,7 +40,7 @@ const INVENTORIED_ROUTES = [
 		renderer: 'wax-medallion',
 	},
 	{
-		route: '/bautizo/demo-bautismo-angelic-presence?forceEnvelope=true',
+		route: '/bautizo/demo-bautizo-angelic-presence?forceEnvelope=true',
 		name: 'Angelic Presence (Demo)',
 		renderer: 'monogram',
 	},
@@ -55,7 +55,7 @@ const INVENTORIED_ROUTES = [
 		renderer: 'wax-organic',
 	},
 	{
-		route: '/primera-comunion/demo-primera-comunion-illustrated?forceEnvelope=true',
+		route: '/primera-comunion/demo-primera-comunion-angelic-presence?forceEnvelope=true',
 		name: 'Illustrated Communion (Demo)',
 		renderer: 'wax-organic',
 	},

@@ -212,7 +212,6 @@ describe('Leslie Perez provision contract', () => {
 
 		const page = buildPageContextFromViewModel({
 			viewModel,
-			slug: LESLIE_EVENT.slug,
 			eventType: LESLIE_EVENT.eventType,
 		});
 		expect(viewModel.music).toEqual({
@@ -240,7 +239,6 @@ describe('Leslie Perez provision contract', () => {
 
 		const page = buildPageContextFromViewModel({
 			viewModel,
-			slug: LESLIE_EVENT.slug,
 			eventType: LESLIE_EVENT.eventType,
 		});
 		expect(viewModel.music).toBeUndefined();

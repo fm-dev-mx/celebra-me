@@ -118,7 +118,6 @@ function pickHeroValue(
 
 export function buildPageContextFromViewModel(input: {
 	viewModel: InvitationViewModel;
-	slug: string;
 	guestContext?: InvitationGuestContext | null;
 	eventType: string;
 	screenshotMode?: boolean;
@@ -202,14 +201,12 @@ export function buildPageContextFromViewModel(input: {
 
 export function prepareInvitationPageContext(input: {
 	eventEntry: EventContentEntry;
-	slug: string;
 	guestContext?: InvitationGuestContext | null;
 }): InvitationPageContext {
 	const viewModel = adaptEvent(input.eventEntry);
 
 	return buildPageContextFromViewModel({
 		viewModel,
-		slug: input.slug,
 		guestContext: input.guestContext,
 		eventType: input.eventEntry.data.eventType,
 	});

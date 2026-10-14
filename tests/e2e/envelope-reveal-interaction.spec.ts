@@ -4,7 +4,7 @@ const representativeRoutes = [
 	'/cumple/demo-cumple-luxury-hacienda',
 	'/boda/demo-boda-jewelry-box-wedding',
 	'/xv/demo-xv-celestial-blue',
-	'/bautizo/demo-bautismo-angelic-presence',
+	'/bautizo/demo-bautizo-angelic-presence',
 	'/xv/allison-scarlett',
 ] as const;
 

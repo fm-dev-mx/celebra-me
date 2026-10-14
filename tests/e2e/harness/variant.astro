@@ -104,7 +104,6 @@ if (fullPage) {
 			: undefined;
 	const builtPage = prepareInvitationPageContext({
 		eventEntry,
-		slug,
 		guestContext: syntheticGuestContext,
 	});
 	if (syntheticGuestContext) builtPage.isDemoPreview = true;
@@ -129,7 +128,6 @@ const eventEntry = {
 } as unknown as EventContentEntry;
 page = prepareInvitationPageContext({
 	eventEntry,
-	slug: 'test-synthetic-variant',
 });
 headLinks = buildInvitationHeadLinks({ page, forceBlocking: true });
 }

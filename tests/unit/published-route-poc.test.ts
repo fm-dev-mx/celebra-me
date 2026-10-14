@@ -268,8 +268,6 @@ describe('published route POC', () => {
 	it('adaptDbEvent produces view model matching rendering shape', () => {
 		const dbResult = adaptDbEvent({
 			slug: 'my-invitation',
-			eventType: 'xv',
-			isDemo: false,
 			content: {
 				eventType: 'xv',
 				title: 'Published',
