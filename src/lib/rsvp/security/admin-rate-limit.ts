@@ -4,6 +4,7 @@
 
 import { checkRateLimit, hashIp } from '@/lib/rsvp/security/rate-limit-provider';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { getClientIp } from '@/lib/server/platform-request';
 
 interface RateLimitConfig {
 	maxHits: number;
@@ -73,25 +74,6 @@ const RATE_LIMITS = {
 export type AdminRateLimitOperation = keyof typeof RATE_LIMITS;
 
 /**
- * Extracts the request IP while accounting for proxy headers.
- */
-function extractClientIp(request: Request): string {
-	// Vercel forwards the original IP through x-forwarded-for.
-	const forwarded = request.headers.get('x-forwarded-for');
-	if (forwarded) {
-		return forwarded.split(',')[0]!.trim();
-	}
-
-	const realIp = request.headers.get('x-real-ip');
-	if (realIp) {
-		return realIp;
-	}
-
-	// Fallback when no trusted IP header is present.
-	return 'unknown';
-}
-
-/**
  * Applies rate limiting to an administrative operation.
  */
 export async function requireAdminRateLimit(
@@ -109,7 +91,8 @@ export async function requireAdminRateLimit(
 		);
 	}
 
-	const ip = extractClientIp(request);
+	// Fallback bucket when no trusted IP header is present (dev server).
+	const ip = getClientIp(request) ?? 'unknown';
 
 	// Prefer user-level throttling when a user id is available.
 	const entityId = `${operation}:${userId || hashIp(ip)}`;
