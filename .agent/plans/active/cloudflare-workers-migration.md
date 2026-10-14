@@ -305,6 +305,9 @@ dependencies go down.
   - **F0a done.** The spike is kept outside Git as a patch in the `cloudflare` worktree
     (`.agent/tmp/handoffs/cloudflare-spike/`, base `1715d3d6e`). It could not be committed: the
     pre-commit `test:changed` hook fails on the suites that assert the Vercel config, by design.
+  - **F0b done (2026-10-14).** Deployed spike measured and torn down; results and the go verdict in
+    §12.2. The spike is now a commit on `candidate/cloudflare-workers-spike` (`d199bea1d`,
+    `--no-verify`, never integrated); the patch folder under `.agent/tmp/handoffs/` is deleted.
   - **F1 integrated** (`feat/deploy-identity` merged into `develop` as `2626d9a50` and released to
     `main`). What it changes:
     - `src/lib/server/deploy-identity.ts` is the single reader of `CELEBRA_DEPLOY_ENV`. It accepts
@@ -343,7 +346,12 @@ dependencies go down.
     `production` for Production). Without it, F1 fails closed: no writes, and health reports
     `environment: null`.
   - All owner decisions D1–D19 are decided (D9 on 2026-10-10, the rest on 2026-10-14): Workers Paid
-    contracted before 2026-10-15; F0b runs on 10-15/10-16.
+    contracted on 2026-10-14; F0b ran on 10-14 (§12.2): **go**.
+  - The API token `celebra-me-spike-f0b` (spike only) expires by itself on 2026-10-17; the owner
+    chose not to revoke it early. The Zero Trust team `bitter-shadow-b8c4` created for Access stays
+    (free; F4 reuses it for the Preview Worker).
+  - F2: add `.dev.vars` to `.gitignore` on `develop` before any wrangler work; today it only exists
+    on the spike branch, so the secrets file shows as untracked on every other branch.
   - Owner: close the Dependabot `astro-platform` PR without merging (§14).
   - Owner, in parallel: close the pending chain (Preview and Production migrations, PR
     fm-dev-mx/celebra-me#233) before F4.
@@ -371,6 +379,102 @@ Setup:
 | `sharp`                                                                                                                             | **FAIL**: module missing                                                                                                                              | Every route that imports `storage-provider` (asset upload, import, list; editor publish, preflight, draft) answers **500 before auth**. F2 removes the static import; F3 replaces the runtime uses |
 | `process.env`                                                                                                                       | Wrangler `vars` populate it. Literal `process.env.NODE_ENV` is fixed at build to `production`; the dynamic read via `getEnv('NODE_ENV')` is **empty** | Confirms the fail-open: `dev-mfa-bypass.ts:52` would treat Production as development. F1 is mandatory before any deployed Worker                                                                   |
 | Database connectivity                                                                                                               | Not exercised. The worktree has no env files, and no database was touched on purpose                                                                  | F0b/F4 test it against Preview with a guarded `.dev.vars` and secrets                                                                                                                              |
+
+### 12.2 F0b results (deployed spike, 2026-10-14)
+
+Setup:
+
+- Branch `candidate/cloudflare-workers-spike` cut from `develop` (`6bd548c7c`); the F0a patch no
+  longer applied (119 commits of drift) and was re-applied by hand. `@astrojs/cloudflare@14.3.4` now
+  pulls `@cloudflare/vite-plugin@1.63.2`, which requires `wrangler ^4.150.0` (`4.151.0` used). Astro
+  7 removed `Astro.locals.runtime.env`: bindings are read with
+  `import { env } from 'cloudflare:workers'`. Sessions are disabled at the Astro level
+  (`session: false`; the adapter has no such option).
+- Worker `celebra-me-spike` on `celebra-me-spike.celebra-me-com.workers.dev`, built with
+  `CELEBRA_DEPLOY_ENV=preview` against the Preview Supabase project (3 secrets uploaded with
+  `wrangler secret bulk .dev.vars`; no persistent local or Production database touched).
+  `nodejs_compat`, Workers Logs with invocation logs at 100 % sampling, `IMAGES` binding.
+- Cloudflare Access as a self-hosted application for that hostname (not the account-wide "Cloudflare
+  Access" toggle on the Workers page, which would also lock the memories Workers that are called
+  server-to-server) with two policies: a service token and the owner's email. An anonymous request
+  answers 302 to the Access login; the service token answers 200.
+- Load: 30 sequential requests per route from Los Mochis (colo DFW). CPU per invocation comes from
+  Workers Logs (`$workers.cpuTimeMs`, integer milliseconds, filtered by request path); the GraphQL
+  dataset `workersInvocationsAdaptive` was queried on the same windows as a cross-check (its p50
+  agrees within 1 ms; it has no per-route dimension). Logs delivered 19–28 of the 30 invocations per
+  window (ingestion lag), so p95 rests on 19–28 samples.
+
+Placement off (version `8ffba6f5`, warm isolates). Wall = Worker wall time from the logs; client =
+round trip seen from the load generator. Subrequests per request from GraphQL.
+
+| Route                                                      | Status | CPU p50 ms | CPU p95 ms | CPU max ms | Wall p50 ms | Wall p95 ms | Client p50 ms | Client p95 ms | Subrequests/request |
+| ---------------------------------------------------------- | ------ | ---------- | ---------- | ---------- | ----------- | ----------- | ------------- | ------------- | ------------------- |
+| `/` (prerendered)                                          | 200    | 0          | 0          | 0          | –           | –           | 66            | 311           | 0                   |
+| `/privacidad/` (prerendered)                               | 200    | 0          | 0          | 0          | –           | –           | 61            | 288           | 0                   |
+| `/login`                                                   | 200    | 2          | 4          | 4          | 2           | 4           | 68            | 148           | 0                   |
+| `/api/health`                                              | 200    | 0          | 1          | 1          | 1           | 2           | 50            | 83            | 0                   |
+| `/xv/demo-xv-editorial` (demo SSR)                         | 200    | 18         | 51         | 62         | 206         | 234         | 292           | 361           | 2                   |
+| `/dashboard/invitaciones` without session                  | 302    | 0          | 1          | 1          | 1           | 1           | 53            | 95            | 0                   |
+| `/api/spike-images` (1600×1200 WebP + watermark)           | 200    | 7          | 15         | 18         | 258         | 302         | 361           | 443           | 3                   |
+| `/api/spike-images?variant=og&format=jpeg` (1200×630 crop) | 200    | 8          | 17         | 43         | 154         | 185         | 231           | 296           | 3                   |
+
+Readings:
+
+- Prerendered pages never invoke the Worker: Workers Assets serves them (0 invocations, 0 CPU).
+  Every static page moved to `prerender` is free of CPU on Workers.
+- The heaviest SSR route (demo) costs 18 ms CPU p50 / 51 ms p95 warm: above the Free limit of 10 ms
+  (Paid is required, as D1 assumed) and three orders of magnitude under the Paid limit of 30 s. Its
+  wall time (206 ms) is dominated by the two Supabase subrequests, not by CPU.
+- Smart Placement on (version `52743a42`, same 30×8 load two minutes after the deploy): every
+  dynamic response carried `cf-placement: local-DFW`, i.e. no relocation. Smart Placement needs
+  traffic history before it moves a Worker, and that run also contained cold isolates (demo CPU p95
+  81 ms, max 115 ms; `/login` p95 9 ms), so it is not a placement comparison. Decision: keep
+  placement **off**; re-run the comparison in F4 on the Preview Worker after at least 24 h of
+  traffic, judging by the wall p95 of the demo and of a dashboard page with a session.
+- Bundle: upload 6,888 KiB raw / 1,579 KiB gzip (Paid limit 10 MiB gzip: 15 % used); startup 27–28
+  ms. `dist/server` 7.06 MB in 302 files (largest chunks: `entrypoints` 955 KB, `storage-provider`
+  875 KB with the Cloudinary SDK, `sequence` 411 KB, `indication-html` 399 KB, `contact` 396 KB,
+  `zip.js` 319 KB); `dist/client` 24.9 MB in 524 files on Workers Assets, `_headers` with
+  `/_astro/*` immutable.
+- Images binding: works on Cloudflare (the local emulator returns the photo without the overlay and
+  no error, so only the deployed check counts).
+  `images.input(photo).draw(images.input(markPng), { top: 0, left: 0 }).output({ format })` renders
+  the «VISTA PREVIA · CELEBRA-ME» tile (rasterized from `buildPreviewMarkSvg` with sharp at build
+  time, 1600×1200 PNG) over the photo. CPU 7–8 ms p50 whatever the output size, because the pixel
+  work runs in the Images service and is billed as subrequests (2 `ASSETS` fetches + 1 Images call
+  per request); wall 150–260 ms. Output: WebP q84 251 KB, JPEG q80 120 KB. D6 parity notes for F3:
+  the mark must be rasterized per output size (the OG variant draws the 1600×1200 tile on a 1200×630
+  canvas, so the crop changes the tile density compared with the sharp SVG composite), and `draw`
+  has no SVG input.
+- Subrequests on the heaviest routes (§13.3.8, static trace by the auditor, nothing executed):
+  editor publish `POST /api/dashboard/intake/[id]/editor/publish` = 14 fixed (2 Auth lookups, 8 in
+  `publishing.service.ts`, 4 context reads), 0 per asset and 0 per guest; with the optional adders
+  (Upstash rate limit, opaque-key probe, token refresh, JWT retries) 14–19. Bulk guest import
+  `POST /api/dashboard/guests/bulk` = 4 fixed (2 Auth lookups, 1 event GET, 1 `upsert_guests_v1` RPC
+  with every row), 0 per row; 4–8 with adders. No post-response work (`waitUntil`) on either. Both
+  sit under 2 % of the Paid default of 1,000. Side findings for F2: `publish.ts` uses the
+  `intake:draft` rate-limit key instead of `intake:publish`, and the Auth user lookup runs twice per
+  request (middleware and route guard), uncached.
+
+**Verdict: go.** No stop condition of §11 is met: SSR is viable on Workers Paid with a wide CPU
+margin, the bundle uses 15 % of its limit, the watermark renders with the Images binding, and
+subrequests are two orders of magnitude under the limit.
+
+Remaining risks:
+
+- Wall time, not CPU, is the latency budget: each Supabase round trip from a US colo costs about 100
+  ms. Dashboard pages with sequential queries will feel slower than on Vercel `sfo1` if the Supabase
+  project sits in `us-west`; §13.3.7 still asks the owner to confirm the region, and F4 measures a
+  dashboard page with a session.
+- Smart Placement is unmeasured (no relocation within the spike window).
+- Short-window Workers Logs lose 10–35 % of invocations; F4 should take p-quantiles from GraphQL and
+  use the logs only for per-route attribution.
+- Cold isolates add 30–60 ms of CPU on the first requests after a deploy (expected; no action).
+
+Cleanup done on 2026-10-14: Worker `celebra-me-spike` deleted (`wrangler delete`), Access
+application and service token deleted through the API, `.agent/tmp/handoffs/cloudflare-spike/`
+deleted. The API token `celebra-me-spike-f0b` expires on 2026-10-17 (owner decision: no early
+revoke).
 
 ## 13. Database strategy
 
@@ -419,9 +523,9 @@ The platform move changes **where the app runs**, not **where the data lives**.
    - Pages with sequential queries (publish, dashboard) may get slower than on Vercel `sfo1`.
    - F0b/F4 measure p50/p95 per route with Smart Placement off and on; enable placement only if it
      helps. The Supabase project region is unconfirmed: check it in the dashboard.
-8. **Subrequests.** Workers Paid allows 10,000 per request by default (Free allows 50). In F4, count
-   the Supabase and Cloudinary calls on the heaviest routes (publish, bulk import) to confirm the
-   margin.
+8. **Subrequests.** Workers Paid allows 1,000 per request by default (Free allows 50; the figure of
+   10,000 written here before F0b was wrong). In F4, count the Supabase and Cloudinary calls on the
+   heaviest routes (publish, bulk import) to confirm the margin.
 9. **Applied migrations are immutable.**
    - Three applied migrations mention Vercel in comments, and one introduces the `cloudinary`
      provider.
