@@ -21,6 +21,7 @@ import {
 	buildAbrilPublishedContent,
 } from '../../scripts/provision/invitations/abril-michelle-becerra-rea.ts';
 import { buildSemanticAssetMap } from '../../scripts/provision/normalized-invitation-release.ts';
+import { readImageDimensions } from '../../scripts/provision/image-dimensions.ts';
 
 /** Admin API JSON reply the REST client parses. */
 function adminResponse(body: unknown, status = 200): Response {
@@ -440,13 +441,16 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 			});
 			try {
 				await expect(
-					verifyCloudinaryAsset({
-						publicId,
-						sha256,
-						mimeType: 'image/webp',
-						width: 2,
-						height: 2,
-					}),
+					verifyCloudinaryAsset(
+						{
+							publicId,
+							sha256,
+							mimeType: 'image/webp',
+							width: 2,
+							height: 2,
+						},
+						readImageDimensions,
+					),
 				).resolves.toMatchObject({ publicId, sha256 });
 				fetchSpy.mockRestore();
 				mockCloudinaryFetch({
@@ -454,13 +458,16 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 					delivery: () => delivered(Uint8Array.from([1, 2, 3])),
 				});
 				await expect(
-					verifyCloudinaryAsset({
-						publicId,
-						sha256,
-						mimeType: 'image/webp',
-						width: 2,
-						height: 2,
-					}),
+					verifyCloudinaryAsset(
+						{
+							publicId,
+							sha256,
+							mimeType: 'image/webp',
+							width: 2,
+							height: 2,
+						},
+						readImageDimensions,
+					),
 				).rejects.toThrow('delivered binary SHA-256');
 			} finally {
 				jest.restoreAllMocks();
@@ -488,13 +495,16 @@ describe('Cloudinary Adapter & Managed Asset Provider', () => {
 
 			try {
 				await expect(
-					verifyCloudinaryAsset({
-						publicId: 'xv/valentina-hernandez/assets/hero-test',
-						sha256,
-						mimeType: 'image/webp',
-						width: 1000,
-						height: 1200,
-					}),
+					verifyCloudinaryAsset(
+						{
+							publicId: 'xv/valentina-hernandez/assets/hero-test',
+							sha256,
+							mimeType: 'image/webp',
+							width: 1000,
+							height: 1200,
+						},
+						readImageDimensions,
+					),
 				).rejects.toThrow('delivery failed (HTTP 404)');
 			} finally {
 				fetchSpy.mockRestore();

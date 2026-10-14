@@ -1,6 +1,5 @@
 import { imageExtension } from './asset-policy';
 import { createHash } from 'node:crypto';
-import sharp from 'sharp';
 
 /**
  * Server-only Cloudinary upload/reconcile for invitation images.
@@ -139,10 +138,20 @@ async function readResource(
 	}
 }
 
+/**
+ * Decodes the pixel size of an image. Supplied by the caller because the only decoder the
+ * repository has today (`sharp`) is native and Node-only; this module must stay loadable on
+ * edge runtimes, where it is imported by every asset route.
+ */
+export type ImageDimensionReader = (
+	bytes: Uint8Array,
+) => Promise<{ width?: number; height?: number }>;
+
 /** Verify delivered bytes independently of the Admin API or upload response. */
 export async function verifyCloudinaryDelivery(
 	input: CloudinaryAssetVerificationInput,
 	secureUrl: string,
+	readDimensions: ImageDimensionReader,
 ): Promise<Uint8Array> {
 	const config = resolveCloudinaryConfigFromEnv();
 	const canonicalUrl = buildCloudinaryDeliveryUrl(
@@ -159,7 +168,7 @@ export async function verifyCloudinaryDelivery(
 	const bytes = Buffer.from(await response.arrayBuffer());
 	if (createHash('sha256').update(bytes).digest('hex') !== input.sha256)
 		throw new Error('Cloudinary delivered binary SHA-256 does not match the canonical asset.');
-	const metadata = await sharp(bytes).metadata();
+	const metadata = await readDimensions(bytes);
 	if (metadata.width !== input.width || metadata.height !== input.height)
 		throw new Error('Cloudinary delivered dimensions do not match the resource metadata.');
 	return bytes;
@@ -355,12 +364,14 @@ function assertCloudinaryResourceMatches(
  */
 export async function verifyCloudinaryAsset(
 	input: CloudinaryAssetVerificationInput,
+	readDimensions: ImageDimensionReader,
 ): Promise<CloudinaryAssetResult> {
-	return (await readVerifiedCloudinaryAsset(input)).asset;
+	return (await readVerifiedCloudinaryAsset(input, readDimensions)).asset;
 }
 
 export async function readVerifiedCloudinaryAsset(
 	input: CloudinaryAssetVerificationInput,
+	readDimensions: ImageDimensionReader,
 	observer?: CloudinaryAdminObserver,
 ): Promise<{ asset: CloudinaryAssetResult; bytes: Uint8Array }> {
 	const config = resolveCloudinaryConfigFromEnv();
@@ -385,6 +396,7 @@ export async function readVerifiedCloudinaryAsset(
 		const bytes = await verifyCloudinaryDelivery(
 			{ ...input, width: resource.width, height: resource.height },
 			canonicalSecureUrl,
+			readDimensions,
 		);
 		const asset = buildAssetResult(resource, input, secureUrl, 'REUSE');
 		return { asset, bytes };

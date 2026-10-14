@@ -5,6 +5,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { validateDeployIdentityReads } from './validate-deploy-identity-reads.mjs';
+import { validateStaticSharpImports } from './validate-static-sharp-imports.mjs';
 
 const REQUIRED_SKILL_FIELDS = [
 	'name',
@@ -826,6 +827,7 @@ export function validateStructure({ root = process.cwd(), trackedFiles } = {}) {
 		...validateProviderEntryPoints(root, tracked),
 		...validatePortablePaths(root, tracked),
 		...validateDeployIdentityReads(root, tracked),
+		...validateStaticSharpImports(root, tracked),
 		...validateTrackedFiles(root, tracked),
 	].sort();
 }
