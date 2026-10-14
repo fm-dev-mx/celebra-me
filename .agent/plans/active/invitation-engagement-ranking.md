@@ -163,8 +163,9 @@ One task branch per goal group (`feat/ranking-coverage` for G0–G3, `feat/ranki
 - G1–G4 ship together (one checkpoint): migration A first (expand; the v2 API answers 503 until the
   routine exists, the v1 page keeps working), then the app.
 - G5 ships in a later checkpoint after the owner accepts the validation report.
-- Contract (later checkpoint, after the v2 client passed Production smoke): drop the v1 ranking
-  routine, `requiresDeployedAppCapabilities: ["engagement_ranking_v2_client"]`.
+- Contract `20261014120000` (after the v2 client passed Production smoke in v0.24.0-beta.1): drops
+  the v1 ranking routine with the `invitation_projects` view, registered with `revokes` only — the
+  deployed v0.24.0-beta.1 manifest declares no `engagement_ranking_v2_client` capability.
 - No published invitation rides with these releases (content↔smoke↔migration cycle of 2026-10-13).
 
 ## 8. Acceptance criteria

@@ -81,8 +81,8 @@ The live tree does not expose `/admin/rsvp` or `/api/rsvp/*` as active operation
   `rsvp_form_started_at`). Hosts read aggregates through `get_event_engagement_summary` (security
   invoker). `guest_invitations.is_test` excludes test guests. Taxonomy, metrics, and retention:
   [`engagement-analytics.md`](./engagement-analytics.md). Administrators compare invitations and
-  designs through `list_invitation_engagement_ranking` (security definer, `service_role` only),
-  which reads `invitation_engagement_snapshots` and `events` labels and never the ledger.
+  designs through `list_invitation_engagement_ranking_v2` (security definer, `service_role` only);
+  the v1 routine was retired by `20261014120000`.
 - `events.event_date` is derived from published content by `invitation_event_date()` and kept
   current by a trigger on `published_invitation_content`.
 
@@ -163,10 +163,13 @@ or invitation-domain changes.
    its own expand/contract migration pair.
 2. **Drop `invitation_content_drafts.submission_id`**: always null since the capture form was
    retired; the publication RPCs still name it, so it leaves with their next contract migration.
-3. **Remove compatibility view**: `invitation_projects` view (created in
-   `20260601000001_invitations_domain.sql`). No code in `src/`, `scripts/` or `workers/` reads it;
-   drop it in the next contract migration after confirming no external reader remains.
+3. **Drop `invitations.base_demo_id` and `invitations.snapshot`**: no runtime path uses them, but
+   the deployed application still selects them and both enter the publication metadata hash that
+   `publish_invitation_atomic` compares. Release an application that stops reading them and accepts
+   both hash forms first, then contract the columns together with item 2.
 4. **Add NOT NULL to `short_id`**: After verifying all rows have a value.
+
+The `invitation_projects` compatibility view was dropped by `20261014120000`.
 
 ## Suggested Verification
 

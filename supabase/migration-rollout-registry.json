@@ -212,6 +212,11 @@
             "phase": "expand",
             "provides": ["engagement_ranking_coverage"],
             "notes": "Adds list_invitation_engagement_ranking_v2, a service-role-only read routine over every published client invitation: live guest aggregates (responses by source, inferred opens, response rate) joined to the chosen engagement snapshot, event status, activity state, public access, confirmation mode and design. Additive: the v1 routine stays until the v2 client is deployed. Revokes only initialize privileges of the new function."
+        },
+        "20261014120000": {
+            "phase": "contract",
+            "revokes": ["list_invitation_engagement_ranking", "invitation_projects"],
+            "notes": "Drops list_invitation_engagement_ranking (v1) and the invitation_projects compatibility view. The admin ranking reads list_invitation_engagement_ranking_v2 and no application path reads the view. Apply only after the Production deployment that serves the v2 ranking client passed smoke."
         }
     },
     "appCapabilities": {
