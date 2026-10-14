@@ -3,6 +3,7 @@
   VenueCard Component
   Extracted from EventLocation.astro to avoid duplication.
 */
+import CalendarOptions from './CalendarOptions.astro';
 import OptimizedImage from '@/components/common/OptimizedImage.astro';
 import StaticVenueMap from './StaticVenueMap.astro';
 import Icon from '@/components/common/icons/Icon.astro';
@@ -248,23 +249,7 @@ const MapPreviewContainer = useMapPreviewLink ? 'a' : 'div';
 						<Icon name="Calendar" size={18} />
 						<span>Agendar en el calendario</span>
 					</summary>
-					<ul class="event-location__calendar-options">
-						<li>
-							<a href={calendar.googleUrl} target="_blank" rel="noopener noreferrer">
-								Google Calendar
-							</a>
-						</li>
-						<li>
-							<a href={calendar.icsHref} download={calendar.icsFileName}>
-								Apple Calendar (.ics)
-							</a>
-						</li>
-						<li>
-							<a href={calendar.outlookUrl} target="_blank" rel="noopener noreferrer">
-								Outlook
-							</a>
-						</li>
-					</ul>
+					<CalendarOptions calendar={calendar} />
 				</details>
 			)}
 

@@ -1,14 +1,11 @@
 ---
 // Section-owned renderer for the semantic `editorial-cover` Hero variant.
-import { resolveExplicitImageDelivery } from '@/lib/assets/image-delivery.server';
 import type { ImageDelivery } from '@/lib/assets/image-delivery';
-import { getImage } from 'astro:assets';
 import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
+import { plainImgSrc } from '@/lib/assets/vercel-image-policy';
+import { formatSpanishLongDate } from '@/lib/invitation/venue-datetime';
+import type { HeroImageSources } from '@/lib/invitation/hero-image-sources';
 import type { ImageMetadata } from 'astro';
-import {
-	plainImgSrc,
-	shouldOptimizeThroughVercelImage,
-} from '@/lib/assets/vercel-image-policy';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import type { HeroVariant } from '@/lib/invitation/section-variants';
 
@@ -35,25 +32,28 @@ interface Props {
 	focalPointDesktop?: string;
 	tagline?: string;
 	photoCredit?: string;
-	/** Watermark behind the cover and the page rail label; XV editorial defaults. */
+	/** Short edition mark of the event type; the watermark default. */
+	editionMark?: string;
+	/** Watermark behind the cover and the page rail label; edition mark and XV page defaults. */
 	coverMark?: string;
 	coverPage?: string;
 	/** Shows the "DISEÑO / CELEBRA ME" credit line; on by default. */
 	designCredit?: boolean;
 	highPriority?: boolean;
+	/** Image sources resolved once by Hero.astro. */
+	imageSources: HeroImageSources;
+	/** Folio label resolved by Hero.astro. */
+	displayLabel?: string;
 }
 
 const {
 	name,
 	secondaryName,
-	label,
 	nickname,
 	date,
 	time,
 	venueName,
 	backgroundImage,
-	backgroundImageDesktop,
-	backgroundImageMobile,
 	portrait,
 	ornament,
 	accentOrnament,
@@ -64,66 +64,19 @@ const {
 	focalPointDesktop,
 	tagline,
 	photoCredit,
-	coverMark = 'XV',
+	editionMark = 'XV',
+	coverMark = editionMark,
 	coverPage = 'PÁG. 15',
 	designCredit = true,
 	highPriority = true,
+	imageSources,
+	displayLabel,
 } = Astro.props;
 
-const displayLabel = label && (label.toLowerCase().trim() === 'xv edition' || label.toLowerCase().trim() === 'xv edición')
-	? 'CAPÍTULO XV'
-	: label;
-
-const resolveImage = (image: ImageMetadata | ImageAsset): ImageMetadata | string =>
-	'src' in image ? image.src : image;
-
-const bgSrc = resolveImage(backgroundImage);
-const resolvedMobileBg = backgroundImageMobile ? resolveImage(backgroundImageMobile) : null;
-const remoteMobileBgSrc =
-	backgroundImageMobile &&
-	'src' in backgroundImageMobile &&
-	typeof backgroundImageMobile.src === 'string'
-		? backgroundImageMobile.src
-		: null;
-const mobileDelivery =
-	backgroundImageMobile && 'delivery' in backgroundImageMobile
-		? backgroundImageMobile.delivery
-		: undefined;
-let mobileBgSrc = resolvedMobileBg && !mobileDelivery
-	? remoteMobileBgSrc
-		? remoteMobileBgSrc
-		: shouldOptimizeThroughVercelImage(resolvedMobileBg)
-			? (
-					await getImage({
-						src: resolvedMobileBg,
-						width:
-							typeof resolvedMobileBg === 'object' && 'width' in resolvedMobileBg
-								? Math.min(1080, resolvedMobileBg.width)
-								: 1080,
-						format: 'webp',
-						quality: 84,
-					})
-				).src
-			: plainImgSrc(resolvedMobileBg)
-	: null;
-
-if (mobileDelivery && resolvedMobileBg) {
-	mobileBgSrc = await resolveExplicitImageDelivery(resolvedMobileBg, mobileDelivery, { width: 1080, quality: 84, format: 'webp' });
-}
-let desktopBgSrc = backgroundImageDesktop?.src ?? null;
-if (backgroundImageDesktop?.delivery) {
-	desktopBgSrc = await resolveExplicitImageDelivery(backgroundImageDesktop.src, backgroundImageDesktop.delivery, { width: 1920, quality: 84, format: 'webp' });
-}
-
-const portraitSrc = portrait ? resolveImage(portrait) : null;
+const { bgSrc, mobileBgSrc, desktopBgSrc, portraitSrc } = imageSources;
 
 // Dates formatting
-const formattedDate = new Date(date).toLocaleDateString('es-MX', {
-	day: 'numeric',
-	month: 'long',
-	year: 'numeric',
-	timeZone: 'UTC',
-});
+const formattedDate = formatSpanishLongDate(date);
 
 // Name parser for aggressive editorial composition
 const names = name.trim().split(/\s+/);

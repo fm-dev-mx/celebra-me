@@ -7,6 +7,8 @@ interface Props {
 	maxAllowedAttendees: number;
 	guestName: string;
 	eventYear?: string;
+	/** Short edition mark of the event type for the pass serial. */
+	editionMark?: string;
 	isDemoPreview?: boolean;
 	variant: PersonalizedAccessVariant;
 	title?: string;
@@ -21,6 +23,7 @@ const {
 	maxAllowedAttendees,
 	guestName,
 	eventYear,
+	editionMark = 'XV',
 	isDemoPreview,
 	variant,
 	title = 'Pase de acceso',
@@ -165,7 +168,7 @@ const writtenSeats =
 				<div class="access-card__barcode-wrapper" aria-hidden="true">
 					<div class="access-card__barcode"></div>
 					<span class="access-card__serial">
-						ED-XV · {guestName ? guestName.toUpperCase().split(/\s+/)[0] : 'INVITADO'} · {eventYear ?? 'XV'}
+						ED-{editionMark} · {guestName ? guestName.toUpperCase().split(/\s+/)[0] : 'INVITADO'} · {eventYear ?? editionMark}
 					</span>
 				</div>
 			)}

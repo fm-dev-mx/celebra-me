@@ -1,16 +1,16 @@
 ---
 import { SOCIAL_CRAWLER_PATTERN } from '@/lib/social/social-crawler';
-import type { SocialImageMetadata } from '@/lib/invitation/social-metadata';
+import type { ShortIdPageResult } from '@/lib/invitation/short-id-resolver';
 
 interface Props {
-	ogTitle: string;
-	ogDescription: string;
-	ogImage: SocialImageMetadata;
-	canonicalUrl: string;
-	redirectTarget?: string;
+	/** Short-link resolution; only a `render` result produces markup. */
+	result: ShortIdPageResult;
 }
 
-const { ogTitle, ogDescription, ogImage, canonicalUrl, redirectTarget } = Astro.props;
+const { result } = Astro.props;
+if (result.kind !== 'render') return;
+const { ogData, canonicalUrl, redirectTarget } = result;
+const { ogTitle, ogDescription, ogImage } = ogData;
 
 const FALLBACK_REDIRECT_SCRIPT = `(function(){var el=document.getElementById('__cm_fallback');if(!el)return;var t=el.getAttribute('data-target');if(!t)return;var ua=navigator.userAgent.toLowerCase();if(new RegExp("${SOCIAL_CRAWLER_PATTERN.source}","i").test(ua))return;window.location.replace(t);})();`;
 ---

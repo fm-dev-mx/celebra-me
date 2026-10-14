@@ -1,0 +1,22 @@
+---
+// Calendar destinations listed under a venue's "Agendar" disclosure (card and program layouts).
+import type { VenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
+
+interface Props {
+	calendar: VenueCalendarLinks;
+}
+
+const { calendar } = Astro.props;
+---
+
+<ul class="event-location__calendar-options">
+	<li>
+		<a href={calendar.googleUrl} target="_blank" rel="noopener noreferrer">Google Calendar</a>
+	</li>
+	<li>
+		<a href={calendar.icsHref} download={calendar.icsFileName}>Apple Calendar (.ics)</a>
+	</li>
+	<li>
+		<a href={calendar.outlookUrl} target="_blank" rel="noopener noreferrer">Outlook</a>
+	</li>
+</ul>

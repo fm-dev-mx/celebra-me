@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { forwardRef, useState } from 'react';
 import type { FocusEventHandler, ReactNode, RefObject, SyntheticEvent } from 'react';
 import { useRsvpContext } from '@/components/invitation/rsvp-context';
+import { resolveEventEdition } from '@/lib/invitation/event-type-contract';
 import {
 	getDefaultResponseMessages,
 	interpolateRsvpMessage,
@@ -67,6 +68,7 @@ function RsvpVisibleHeader({
 	const isEditorialPressPass = variant === 'editorial-press-pass';
 	// The reply card is titled by its own heading; system eyebrows do not belong on it.
 	const isReplyCard = variant === 'reply-card';
+	const edition = resolveEventEdition(useRsvpContext().eventType);
 
 	return (
 		<>
@@ -83,7 +85,7 @@ function RsvpVisibleHeader({
 			)}
 			<h2 className="rsvp__title">{title}</h2>
 			{isEditorialPressPass && (
-				<p className="rsvp__edition-label">ACCESO PRIVADO · EDICIÓN XV</p>
+				<p className="rsvp__edition-label">ACCESO PRIVADO · {edition.label}</p>
 			)}
 			{subcopy !== undefined && <p className="rsvp__subcopy">{subcopy}</p>}
 		</>
@@ -433,6 +435,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 		onBlur,
 	} = props;
 	const isEditorialPressPass = variant === 'editorial-press-pass';
+	const edition = resolveEventEdition(useRsvpContext().eventType);
 	// Printed reply cards use the stationery formula for both answers.
 	const confirmLabel = variant === 'reply-card' ? 'Con gusto asistiré' : 'Sí, asistiré';
 	const declineLabel = variant === 'reply-card' ? 'Lamento no poder asistir' : 'No podré asistir';
@@ -469,7 +472,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 				{isEditorialPressPass && (
 					<div className="rsvp__response-heading" id="rsvp-response-heading">
 						<span>SELECCIONE SU RESPUESTA</span>
-						<span>EDICIÓN XV</span>
+						<span>{edition.label}</span>
 					</div>
 				)}
 				{attendanceStatus !== null && attendanceCollapsed ? (

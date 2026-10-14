@@ -3,44 +3,16 @@ export const prerender = false;
 
 import { resolvePublicSiteOrigin } from '@/lib/invitation/social-metadata';
 import {
-  applyUnavailableShortIdResponse,
+  buildShortIdEarlyResponse,
   resolveShortIdPage,
 } from '@/lib/invitation/short-id-resolver';
-import InvitationOGShell from '@/lib/invitation/InvitationOGShell.astro';
+import InvitationOGShell from '@/layouts/InvitationOGShell.astro';
 
-const SITE_ORIGIN = resolvePublicSiteOrigin();
 const { shortId } = Astro.params;
 
-const result = await resolveShortIdPage(shortId, Astro.request, SITE_ORIGIN);
-
-if (result.kind === 'error') {
-  return new Response(null, { status: 404, headers: { 'Cache-Control': 'no-store, private', Vary: 'User-Agent' } });
-}
-
-if (result.kind === 'redirect') {
-  Astro.response.headers.set('Cache-Control', 'no-store, private');
-  Astro.response.headers.set('Vary', 'User-Agent');
-  return Astro.redirect(result.target);
-}
-
-// Personalized metadata must never enter a shared cache.
-Astro.response.headers.set('Cache-Control', 'no-store, private');
-Astro.response.headers.set('Vary', 'User-Agent');
-
-if (result.kind === 'unavailable') {
-  // Disabled invitation: crawlers get an empty 403, no metadata.
-  applyUnavailableShortIdResponse(Astro.response);
-}
+const result = await resolveShortIdPage(shortId, Astro.request, resolvePublicSiteOrigin());
+const earlyResponse = buildShortIdEarlyResponse(result, Astro.response);
+if (earlyResponse) return earlyResponse;
 ---
 
-{
-  result.kind === 'render' && (
-    <InvitationOGShell
-      ogTitle={result.ogData.ogTitle}
-      ogDescription={result.ogData.ogDescription}
-      ogImage={result.ogData.ogImage}
-      canonicalUrl={result.canonicalUrl}
-      redirectTarget={result.redirectTarget}
-    />
-  )
-}
+<InvitationOGShell result={result} />

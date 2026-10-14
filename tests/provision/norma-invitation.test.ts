@@ -3,7 +3,7 @@ import {
 	NORMA_COPY,
 	type NormaAssetKey,
 } from '../../scripts/provision/invitations/norma-hernandez';
-import { canonicalEventContentSchema } from '@/lib/schemas/content/base-event.schema';
+import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 import { gallerySchema } from '@/lib/schemas/content/gallery.schema';
 import { listInvitationDefinitions } from '../../scripts/provision/invitations/registry';
 import type { UploadedAssetMap } from '../../scripts/provision/invitations/invitation-definition';
@@ -22,9 +22,7 @@ const assets = Object.fromEntries(
 
 describe('Norma invitation publication contract', () => {
 	it('preserves the approved narrative, timing and personalized access without demo restrictions', () => {
-		const content = canonicalEventContentSchema.parse(
-			normaInvitation.buildPublishedContent(assets),
-		);
+		const content = eventContentSchema.parse(normaInvitation.buildPublishedContent(assets));
 		expect(content.hero.variant).toBe('framed-portrait');
 		expect(content.envelope).toMatchObject({
 			cardLabel: '65 años',
