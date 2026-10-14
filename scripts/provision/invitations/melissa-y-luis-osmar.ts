@@ -8,11 +8,7 @@
 
 import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineInvitation } from './invitation-definition.ts';
-import type {
-	InvitationDefinition,
-	UploadedAssetMap,
-	UploadedAssetRef,
-} from './invitation-definition.ts';
+import type { InvitationDefinition, UploadedAssetMap } from './invitation-definition.ts';
 
 export const MELISSA_EVENT = {
 	eventType: 'boda',
@@ -75,7 +71,6 @@ export const MELISSA_ASSET_SPECS = [
 ] as const;
 
 export type MelissaAssetKey = (typeof MELISSA_ASSET_SPECS)[number]['key'];
-export type MelissaAssetMap = Record<MelissaAssetKey, UploadedAssetRef>;
 
 export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAssetKey>) {
 	return {

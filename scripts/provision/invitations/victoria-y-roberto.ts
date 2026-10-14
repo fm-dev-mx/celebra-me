@@ -8,11 +8,7 @@
 
 import { createShareMessages } from '../../../src/lib/rsvp/services/shared/share-message-defaults.ts';
 import { defineInvitation } from './invitation-definition.ts';
-import type {
-	InvitationDefinition,
-	UploadedAssetMap,
-	UploadedAssetRef,
-} from './invitation-definition.ts';
+import type { InvitationDefinition, UploadedAssetMap } from './invitation-definition.ts';
 
 export const VICTORIA_EVENT = {
 	eventType: 'boda',
@@ -131,7 +127,6 @@ export const VICTORIA_ASSET_SPECS = [
 ] as const;
 
 export type VictoriaAssetKey = (typeof VICTORIA_ASSET_SPECS)[number]['key'];
-export type VictoriaAssetMap = Record<VictoriaAssetKey, UploadedAssetRef>;
 
 export function buildVictoriaPublishedContent(
 	assets: UploadedAssetMap<VictoriaAssetKey>,
@@ -489,7 +484,6 @@ export const victoriaInvitation: InvitationDefinition<VictoriaAssetKey> = define
 	title: VICTORIA_EVENT.title,
 	clientName: 'Victoria Armenta',
 	hostLoginAlias: 'victoria_armenta',
-	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,
 	themeId: VICTORIA_EVENT.themeId,
