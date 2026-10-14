@@ -8,11 +8,7 @@
 
 import { deriveStartsAtUtc } from '../../../src/lib/time/event-time.ts';
 import { defineInvitation } from './invitation-definition.ts';
-import type {
-	InvitationDefinition,
-	UploadedAssetMap,
-	UploadedAssetRef,
-} from './invitation-definition.ts';
+import type { InvitationDefinition, UploadedAssetMap } from './invitation-definition.ts';
 
 const TIME_ZONE = 'America/Mazatlan';
 const RECEPTION_LOCAL = '2026-09-05T19:00';
@@ -156,7 +152,6 @@ export const RENATA_ASSET_SPECS = [
 ] as const;
 
 export type RenataAssetKey = (typeof RENATA_ASSET_SPECS)[number]['key'];
-export type RenataAssetMap = Record<RenataAssetKey, UploadedAssetRef>;
 
 export function buildRenataPublishedContent(
 	assets: UploadedAssetMap<RenataAssetKey>,
@@ -471,7 +466,6 @@ export const renataInvitation: InvitationDefinition<RenataAssetKey> = defineInvi
 	title: RENATA_EVENT.title,
 	clientName: 'Renata',
 	hostLoginAlias: 'renata',
-	clientEmail: '',
 	clientWhatsapp: '',
 	photosReceived: true,
 	themeId: RENATA_EVENT.themeId,

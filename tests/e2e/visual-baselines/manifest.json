@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-13T14:16:04.438Z",
+    "generatedAt": "2026-10-14T01:16:04.568Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,9 +11,9 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "51c34a62463fc5e0ebb5819148390edc3e55686a7a0b75c692e66d5c0f7b264a",
-        "cssSha256": "01a4d992902865b49a6f1f606ad5bb9452a1b796e5497607eb42e1a378b131a4",
-        "assetSha256": "0c2c21c61fff4e865be0c8772d1bdd842c8ec67ea01703a4cfcb6061fe1255bc",
+        "lockfileSha256": "5208d811e3f4ac2970a496cdaa28325ad6eb573646ca97a03e32aac631ed9cf5",
+        "cssSha256": "15c47ad95f50f114c9d5a2f7afbc1a08b1ed8a6584ff77329c11c75aebdbf52e",
+        "assetSha256": "9051a06e9929f16a4162ca7e700771331f3754fd9dc06d177dbe5c63a6462f77",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
@@ -2127,8 +2127,8 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-mobile.png",
-            "sha256": "4820ac3ba774d73fdd26a6c4d1405ad47f2a1dd64cca194176b23dc93ef75f75",
-            "contentHash": "b7acf187588901fe448a8244ae4bdef0280ff4ff1166bf4f0bfb5635fc106630",
+            "sha256": "428284eeed7ed390ec05f723a54fd7e00b0287b1522f90ddbeb8d20feb2c3d59",
+            "contentHash": "d3640373e5237af8e157c3f27f072a138a55cb901002e99e2fc311d02a57c0c9",
             "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
             "comparisonResult": "ACCEPTED"
         },
@@ -2139,8 +2139,8 @@
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
             "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-desktop.png",
-            "sha256": "4044327df349bd40ec31c45b5666550b49dae021fdca8cc327415c6664875b85",
-            "contentHash": "b7acf187588901fe448a8244ae4bdef0280ff4ff1166bf4f0bfb5635fc106630",
+            "sha256": "9d53eb95f473e8429b0b6df9d851954ebc8310f5f8ee92180c52a131638af218",
+            "contentHash": "d3640373e5237af8e157c3f27f072a138a55cb901002e99e2fc311d02a57c0c9",
             "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
             "comparisonResult": "ACCEPTED"
         },
@@ -2152,7 +2152,7 @@
             "viewport": "mobile",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
             "sha256": "1bad3df27cf554fb28498f1c16a906172ab99821429adff2a009f105b2afb8bc",
-            "contentHash": "1398546ab70e59365d619d83c40ad5e66370792f914d7966b625b30030a4719c",
+            "contentHash": "f9eda9348dd18f9f6b75916b006e4dfc1419b3b0fb7a042ba79941b655700a96",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
         },
@@ -2164,7 +2164,7 @@
             "viewport": "desktop",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
             "sha256": "84964f74f31b4e8ea1e666c0bfd21ecb08ef689ff34ee86440db37c82468b80c",
-            "contentHash": "1398546ab70e59365d619d83c40ad5e66370792f914d7966b625b30030a4719c",
+            "contentHash": "f9eda9348dd18f9f6b75916b006e4dfc1419b3b0fb7a042ba79941b655700a96",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
         },
@@ -2265,9 +2265,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "a670a3b2e2a251deecb45f1e6fa3abe2e9db9bb0",
+    "referenceSha": "6da0b01a3df8c69883bd7d19f891207fa01c54cf",
     "variantManifest": {
-        "generatedAt": "2026-10-13T14:16:04.438Z",
+        "generatedAt": "2026-10-14T01:16:04.568Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2279,9 +2279,9 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "51c34a62463fc5e0ebb5819148390edc3e55686a7a0b75c692e66d5c0f7b264a",
-            "cssSha256": "01a4d992902865b49a6f1f606ad5bb9452a1b796e5497607eb42e1a378b131a4",
-            "assetSha256": "0c2c21c61fff4e865be0c8772d1bdd842c8ec67ea01703a4cfcb6061fe1255bc",
+            "lockfileSha256": "5208d811e3f4ac2970a496cdaa28325ad6eb573646ca97a03e32aac631ed9cf5",
+            "cssSha256": "15c47ad95f50f114c9d5a2f7afbc1a08b1ed8a6584ff77329c11c75aebdbf52e",
+            "assetSha256": "9051a06e9929f16a4162ca7e700771331f3754fd9dc06d177dbe5c63a6462f77",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4029,10 +4029,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "a670a3b2e2a251deecb45f1e6fa3abe2e9db9bb0"
+        "referenceSha": "6da0b01a3df8c69883bd7d19f891207fa01c54cf"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-13T14:16:04.445Z",
+        "generatedAt": "2026-10-14T01:16:04.572Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4044,9 +4044,9 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "51c34a62463fc5e0ebb5819148390edc3e55686a7a0b75c692e66d5c0f7b264a",
-            "cssSha256": "01a4d992902865b49a6f1f606ad5bb9452a1b796e5497607eb42e1a378b131a4",
-            "assetSha256": "0c2c21c61fff4e865be0c8772d1bdd842c8ec67ea01703a4cfcb6061fe1255bc",
+            "lockfileSha256": "5208d811e3f4ac2970a496cdaa28325ad6eb573646ca97a03e32aac631ed9cf5",
+            "cssSha256": "15c47ad95f50f114c9d5a2f7afbc1a08b1ed8a6584ff77329c11c75aebdbf52e",
+            "assetSha256": "9051a06e9929f16a4162ca7e700771331f3754fd9dc06d177dbe5c63a6462f77",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
@@ -4423,8 +4423,8 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
                 "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-mobile.png",
-                "sha256": "4820ac3ba774d73fdd26a6c4d1405ad47f2a1dd64cca194176b23dc93ef75f75",
-                "contentHash": "b7acf187588901fe448a8244ae4bdef0280ff4ff1166bf4f0bfb5635fc106630",
+                "sha256": "428284eeed7ed390ec05f723a54fd7e00b0287b1522f90ddbeb8d20feb2c3d59",
+                "contentHash": "d3640373e5237af8e157c3f27f072a138a55cb901002e99e2fc311d02a57c0c9",
                 "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4435,8 +4435,8 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "desktop",
                 "file": "pages/demo-boda-demo-boda-jewelry-box-wedding-desktop.png",
-                "sha256": "4044327df349bd40ec31c45b5666550b49dae021fdca8cc327415c6664875b85",
-                "contentHash": "b7acf187588901fe448a8244ae4bdef0280ff4ff1166bf4f0bfb5635fc106630",
+                "sha256": "9d53eb95f473e8429b0b6df9d851954ebc8310f5f8ee92180c52a131638af218",
+                "contentHash": "d3640373e5237af8e157c3f27f072a138a55cb901002e99e2fc311d02a57c0c9",
                 "assetHash": "0f592bbe6554dbef4ddeb5c594f33c00b1b8aa85747b992fbddfe4e9d9579138",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4448,7 +4448,7 @@
                 "viewport": "mobile",
                 "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
                 "sha256": "1bad3df27cf554fb28498f1c16a906172ab99821429adff2a009f105b2afb8bc",
-                "contentHash": "1398546ab70e59365d619d83c40ad5e66370792f914d7966b625b30030a4719c",
+                "contentHash": "f9eda9348dd18f9f6b75916b006e4dfc1419b3b0fb7a042ba79941b655700a96",
                 "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4460,7 +4460,7 @@
                 "viewport": "desktop",
                 "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
                 "sha256": "84964f74f31b4e8ea1e666c0bfd21ecb08ef689ff34ee86440db37c82468b80c",
-                "contentHash": "1398546ab70e59365d619d83c40ad5e66370792f914d7966b625b30030a4719c",
+                "contentHash": "f9eda9348dd18f9f6b75916b006e4dfc1419b3b0fb7a042ba79941b655700a96",
                 "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4561,9 +4561,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "a670a3b2e2a251deecb45f1e6fa3abe2e9db9bb0"
+        "referenceSha": "6da0b01a3df8c69883bd7d19f891207fa01c54cf"
     },
-    "candidateManifestSha256": "13192ce94cd22d6523738265238b0cccfd268485c2fbbe3a4931a6d91949f105",
-    "acceptedFromCommit": "a670a3b2e2a251deecb45f1e6fa3abe2e9db9bb0",
-    "acceptedAt": "2026-10-13T14:32:03.862Z"
+    "candidateManifestSha256": "07bbe6796e3d7c1322411ae6cde384b2a17eab2ea7aa0411c2f9a2e574603ee4",
+    "acceptedFromCommit": "6da0b01a3df8c69883bd7d19f891207fa01c54cf",
+    "acceptedAt": "2026-10-14T01:16:27.201Z"
 }

@@ -37,7 +37,7 @@ type DecisionInput = {
 function categorizeBlockingGap(gap: FieldCompletenessResult): OwnerDecisionCategory {
 	if (gap.status === 'ambiguous') return 'ambiguous-data';
 	if (gap.status === 'requires-owner-decision') {
-		if (gap.fieldId === 'baseDemoId' || gap.fieldId === 'clientColors') {
+		if (gap.fieldId === 'clientColors') {
 			return 'demo-design-decisions';
 		}
 		return 'other-blocking';

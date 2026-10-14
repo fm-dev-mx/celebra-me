@@ -45,7 +45,6 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | receptionTime         | 20:00                                                                        | verified       | wa-export     | Recepción                                                |
 | timeZone              | America/Mazatlan                                                             | inferred       | wa-export     | Los Mochis, Sinaloa (UTC−7, no DST)                      |
 | eventCity             | Los Mochis, Sinaloa                                                          | inferred       | web-check     | Parish and Mochis–Topolobampo highway; client to confirm |
-| baseDemoId            | none                                                                         | verified       | owner-session | Invitations do not depend on demos (2026-10-13)          |
 | sourceAssetPath       | source:hr-photos                                                             | verified       | owner-session | Opaque label only                                        |
 | sectionOrder          | quote, family, countdown, location, program, gallery, gifts, pass, rsvp, end | verified       | owner-session | program = itinerary; see Sections                        |
 | primaryVenueName      | Parroquia Cristo Rey                                                         | verified       | wa-export     | Client wrote "Cristo Rey"; "Parroquia" prefix inferred   |
@@ -202,8 +201,8 @@ date lives in the RSVP copy and the reminder.
 
 | decision                          | value                                                               | classification      |
 | --------------------------------- | ------------------------------------------------------------------- | ------------------- |
-| Owner-selected base demo          | none (invitations do not depend on demos)                           | verified            |
-| Recommended demo alternatives     | —                                                                   | recommendation only |
+| Selected theme preset             | `storybook-lilac` (new preset; no base demo)                        | verified            |
+| Recommended preset alternatives   | —                                                                   | recommendation only |
 | Selected variant / visual profile | preset `storybook-lilac`; envelope + ornaments `storybook-lanterns` | verified (owner D2) |
 | Client color requirements         | Lila, dorado; temática Rapunzel                                     | verified            |
 | Recommended palette               | Lilac paper, violet night, leaf gold, cream, blush accent           | recommendation only |
@@ -303,8 +302,8 @@ release re-encodes for delivery (Local hero 361 KB, within the 500 KB hero-deskt
 
 ## Implementation Constraints
 
-- Lane A: definition `scripts/provision/invitations/america.ts` (`lifecycle: in_progress`,
-  `managedIdentityProvenance: owner-approved`), token-only profile
+- Lane A: definition `scripts/provision/invitations/america.ts` (`lifecycle: published`,
+  `managedIdentityProvenance: persisted` since `52c22e47f`, 2026-10-12), token-only profile
   `src/styles/invitation-profiles/america.scss`, assets under `src/assets/invitations/america/`.
 - Lane B (generic, no client identity): preset `storybook-lilac`, ornament set and reveal variant
   `storybook-lanterns`, seal icon `sunburst`, a countdown unit label for nights; proven by unit

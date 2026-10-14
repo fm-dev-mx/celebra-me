@@ -22,6 +22,10 @@ export interface EventTypeStructureContract {
 	requiredSections: readonly InvitationRenderSectionKey[];
 	/** Theme presets with a published invitation or demo of this type. */
 	presets: readonly ThemePreset[];
+	/** Edition wording printed by editorial variants (folios, press pass, catalog). */
+	editionLabel: string;
+	/** Short edition mark for serial codes and cover watermarks. */
+	editionMark: string;
 }
 
 const CORE_SECTIONS = ['countdown', 'rsvp', 'thankYou'] as const;
@@ -39,37 +43,64 @@ const EVENT_TYPE_CONTRACTS: Record<EventType, EventTypeStructureContract> = {
 			'premiere-floral',
 			'storybook-lilac',
 		],
+		editionLabel: 'EDICIÓN XV',
+		editionMark: 'XV',
 	},
 	boda: {
 		eventType: 'boda',
 		requiredSections: ['family', 'location', ...CORE_SECTIONS],
 		presets: ['jewelry-box-wedding'],
+		editionLabel: 'EDICIÓN BODA',
+		editionMark: 'BODA',
 	},
 	cumple: {
 		eventType: 'cumple',
 		requiredSections: ['location', ...CORE_SECTIONS],
 		presets: ['editorial-magazine', 'luxury-hacienda'],
+		editionLabel: 'EDICIÓN CUMPLEAÑOS',
+		editionMark: 'CUMPLE',
 	},
 	bautizo: {
 		eventType: 'bautizo',
 		requiredSections: ['family', 'location', ...CORE_SECTIONS],
 		presets: ['angelic-presence'],
+		editionLabel: 'EDICIÓN BAUTIZO',
+		editionMark: 'BAUTIZO',
 	},
 	'baby-shower': {
 		eventType: 'baby-shower',
 		requiredSections: ['location', ...CORE_SECTIONS],
 		presets: ['celestial-blue'],
+		editionLabel: 'EDICIÓN BABY SHOWER',
+		editionMark: 'BABY SHOWER',
 	},
 	'primera-comunion': {
 		eventType: 'primera-comunion',
 		// Location may be revealed inside RSVP through its access policy instead of its own fold.
 		requiredSections: ['family', ...CORE_SECTIONS],
 		presets: ['angelic-presence'],
+		editionLabel: 'EDICIÓN PRIMERA COMUNIÓN',
+		editionMark: 'COMUNIÓN',
 	},
 };
 
 function getEventTypeStructureContract(eventType: EventType): EventTypeStructureContract {
 	return EVENT_TYPE_CONTRACTS[eventType];
+}
+
+/**
+ * Edition wording of an event type for editorial variants. An unknown or missing type keeps the
+ * XV edition, the editorial family's original issue.
+ */
+export function resolveEventEdition(eventType: string | undefined): {
+	label: string;
+	mark: string;
+} {
+	const contract =
+		eventType && eventType in EVENT_TYPE_CONTRACTS
+			? EVENT_TYPE_CONTRACTS[eventType as EventType]
+			: EVENT_TYPE_CONTRACTS.xv;
+	return { label: contract.editionLabel, mark: contract.editionMark };
 }
 
 export function listEventTypeStructureContracts(): EventTypeStructureContract[] {

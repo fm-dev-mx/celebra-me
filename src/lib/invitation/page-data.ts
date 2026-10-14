@@ -12,6 +12,7 @@ import {
 	type InvitationMusicPlayerProps,
 } from '@/lib/invitation/local-preview-config';
 import { buildInvitationRenderPlan } from './render-plan';
+import { resolveEventEdition } from './event-type-contract';
 import type { InvitationRenderPlanItem } from './render-plan';
 import {
 	applyLocationPolicy,
@@ -52,6 +53,8 @@ export interface InvitationPageContext {
 		| undefined;
 	/** Footer closing phrase; defaults to product phrase. */
 	footerClosingPhrase: string;
+	/** Edition wording of the event type for editorial variants (absent keeps the XV edition). */
+	edition?: { label: string; mark: string };
 	musicPlayer?: InvitationMusicPlayerProps;
 }
 
@@ -179,9 +182,11 @@ export function buildPageContextFromViewModel(input: {
 		wrapper: {
 			className: wrapperClassName,
 			showEnvelope: styles.showEnvelope,
-			dataAttributes: styles.dataAttributes,
+			// The event type lets shared CSS print the edition wording (`_edition-labels.scss`).
+			dataAttributes: { ...styles.dataAttributes, 'data-event-type': input.eventType },
 			scopedStyles: styles.scopedStyles,
 		},
+		edition: resolveEventEdition(input.eventType),
 		guestName,
 		heroTime,
 		heroVenueName,

@@ -1,6 +1,6 @@
 # Theme And Token Architecture
 
-**Last Updated:** 2026-10-09
+**Last Updated:** 2026-10-13
 
 Celebra-me uses a strict three-level styling architecture. The post-migration structural,
 presentation, skin, fallback, and profile inventory is maintained in
@@ -43,9 +43,24 @@ Three homes. Exclusive ownership. Do not collapse looks into one SCSS file per i
 - **Must not:** Declare any non-custom property; re-declare section layout; style one section
   relative to another; render client text through `content:`; select by position or by data such as
   an image key; duplicate active variant or preset rules.
+- **Selectors:** A profile may select the wrapper's data attributes (`data-intersection`,
+  `data-intersection-source`, `data-section-kind`) and section root classes (`.countdown-section`,
+  `.gallery-section`, `.rsvp`, …) where a section declares its component-local token defaults. It
+  never selects section-internal elements (`__element` classes such as `.itinerary__title`): a token
+  read through `var()` without a local default is set on the wrapper instead. When one item or one
+  section needs a different value, the owner exposes an indexed token (for example
+  `--itinerary-paper-num-mask-<n>` / `-last` on `timeline-paper`, and `--interlude-focal-point-<n>`,
+  `--interlude-pull-up-<n>`, `--interlude-top-ink[-display|-height|-mask]-<n>` on interludes); the
+  profile sets the token, never `:nth-*`, `:first-/last-/only-*` or a `+`/`~` combinator.
+- **Client artwork:** Artwork that belongs to one client (illustrations, seals, corner art under
+  `src/assets/invitations/<slug>/`) is referenced only from that client's profile, through tokens
+  the owner consumes. Shared styles never name an invitation: no `.event--<slug>` selector exists
+  outside `src/styles/invitation-profiles/`, and a look shared by two invitations becomes a variant,
+  an ornament set or preset tokens.
 - **Demos:** A demo is styled only by a demo-owned profile (`demo-*`). A client profile never styles
   a demo, and `pnpm validate:no-pii` rejects it.
-- **Enforcement:** `tests/unit/invitation-profile-boundary.test.ts`.
+- **Enforcement:** `tests/unit/invitation-profile-boundary.test.ts` (token-only declarations,
+  positional selectors, and `.event--*` selectors outside the profile directory).
 
 ### Frozen delivered profiles
 
@@ -66,6 +81,31 @@ specific structural selector may be added, and an existing rule may be removed o
 the CSS visual-parity gate. The exception ends when every rule is owned by a section base, a
 registered semantic variant, or preset tokens. Frozen delivered profiles follow their own rule
 above.
+
+### Commercial demo exception
+
+`src/components/invitation/DemoConversion.astro` (with `src/lib/invitation/demo-conversion.ts`) is
+the one component bound to a named demo: the showroom's conversion blocks appear only on
+`demo-xv-celestial-blue` (`hasDemoConversion`) and its closing block reuses that demo's
+`interlude04` asset. This is a commercial composition owned by the public page, not a section
+variant: no canonical renderer selects it, and no client invitation can opt in. Moving the
+conversion to another demo changes both modules together.
+
+### Edition wording
+
+Editorial variants print the edition of the event type, never a fixed `XV`:
+`editionLabel`/`editionMark` live in `src/lib/invitation/event-type-contract.ts`
+(`resolveEventEdition()`), the page context carries them (`page.edition`), and the invitation
+wrapper carries `data-event-type` so `src/styles/invitation/_edition-labels.scss` sets
+`--invitation-edition-label` for CSS folios (`tests/unit/edition-labels.test.ts` keeps the SCSS map
+equal to the contract). Profiles relabel a folio with its `--editorial-folio-*` token.
+
+### Ornament set `storybook-lanterns`
+
+The set tells the tale with light: a gold-leaf thread at the thresholds and lantern-light fields
+behind the countdown and the closing (`src/styles/invitation/_ornament-sets.scss`). The earlier
+drawn rendering (plait and paper lanterns) was removed with its last consumer; a drawn look returns
+as its own registered ornament set, never as a branch on an invitation class.
 
 ### Optional stationery treatments
 
@@ -158,12 +198,14 @@ their positioning and stacking order.
 ### Gifts flatten
 
 Gifts section styling is the flattened section-level variable contract in
-`src/styles/invitation/_gifts.scss`. Theme-section Gifts partials under
-`src/styles/themes/sections/gifts/` are not used. Other sections that retain real structural,
-layout, content, or behavior variants must not be flattened through the Gifts pattern without
-explicit parity evidence. `--gifts-card-description-color` falls back to
-`var(--color-text-secondary)`; dark-section profiles can provide a readable description color
-without changing invitation-wide text semantics.
+`src/styles/invitation/_gifts.scss`. The theme-section Gifts partials under
+`src/styles/themes/sections/gifts/` (`_elegant`, `_editorial-premium`, `_luxury-hacienda`,
+`_enchanted-rose`) are still imported by the preset section bundles in
+`src/styles/invitation-sections-by-preset/`; they follow the transitional ownership exception above
+and may only shrink. Other sections that retain real structural, layout, content, or behavior
+variants must not be flattened through the Gifts pattern without explicit parity evidence.
+`--gifts-card-description-color` falls back to `var(--color-text-secondary)`; dark-section profiles
+can provide a readable description color without changing invitation-wide text semantics.
 
 ### Explicit non-goals
 
@@ -431,17 +473,27 @@ Bounded controls retain their canonical section owner:
   compose multiple canonical modules when a variant depends on both. Over time these bundles must
   shrink to atmosphere/component-token modules; layout/skin must move to semantic variant
   entrypoints.
-- `src/lib/invitation/section-css-resolver.ts` emits one active section bundle plus requested
-  canonical Gallery/structural partials, envelope reveal CSS, and the active visual profile (load
-  owners in `section-css-resolver-map.ts`). A missing bundle is omitted, never replaced by a default
-  preset. Canonical section partials are not exposed through a general per-section passthrough
-  directory.
-- Invitation routes keep preset, envelope-reveal, and visual-profile stylesheets render-blocking for
-  the sealed-envelope first paint. Section bundles, gallery overrides, and structural partials start
-  as `media="not all"` and are promoted after first paint, when `envelope:opened` fires, after a
+- `src/lib/invitation/section-css-resolver.ts` emits, in this document order (load owners in
+  `section-css-resolver-map.ts`; head links built once by `buildInvitationHeadLinks()` in
+  `src/lib/invitation/invitation-head-links.ts` for the public, preview and harness routes):
+  1. the preset entrypoint (`invitation-presets/{preset}.scss`) — render-blocking;
+  2. the active section bundle (`invitation-sections-by-preset/{preset}.scss`) — deferred;
+  3. the envelope reveal sheet for the envelope's `data-variant`
+     (`themes/sections/reveal/_{entrypoint}.scss`) — render-blocking;
+  4. each requested canonical section variant partial — render-blocking for the hero, deferred for
+     the other sections;
+  5. the active visual profile (`invitation-profiles/{visualProfileId}.scss`) — render-blocking.
+
+  A missing bundle is omitted, never replaced by a default preset. Canonical section partials are
+  not exposed through a general per-section passthrough directory. Section bundles never `@use` a
+  reveal partial: the reveal sheet is emitted once, by step 3.
+
+- Render-blocking sheets carry the sealed-envelope first paint. Deferred sheets start as
+  `media="not all"` and are promoted after first paint, when `envelope:opened` fires, after a
   bounded paint-observer fallback, or immediately when the envelope is skipped (`skipEnvelope`,
-  returning `envelope-opened-{slug}`, or no envelope). Document order is unchanged so profile CSS
-  still wins the cascade.
+  returning `envelope-opened-{slug}`, or no envelope); screenshot mode loads every sheet blocking,
+  and so does the dashboard preview unless it shows the closed envelope. Document order is unchanged
+  by promotion, so profile CSS still wins the cascade.
 
 Gallery CSS starts with the theme-preset bundle. When an explicit semantic `gallery.variant` differs
 from the active theme, the section CSS resolver emits the matching layout partial independently.

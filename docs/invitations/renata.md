@@ -27,8 +27,7 @@ delivered RSVP is a presentation shell without `confirmationMode`, `accessMode`,
 
 ## Preset and variants
 
-- Theme preset `editorial`; visual profile `renata` (frozen by digest); legacy `baseDemoId`
-  `demo-xv-editorial`.
+- Theme preset `editorial`; visual profile `renata` (frozen by digest).
 - Envelope `variant: premiere-floral` with a monogram seal.
 - Variants: hero `standard`, family `asymmetric-groups`, countdown `standard`, location
   `stacked-venue-plates` (canonical `venues[]`, navigation buttons hidden), itinerary

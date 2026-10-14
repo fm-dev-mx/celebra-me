@@ -79,7 +79,7 @@
 	width: min(100%, 40rem);
 	max-width: 40rem;
 	margin: 0;
-	padding: 0;
+	padding: 0 0 var(--formal-chapter-padding-end, 0);
 	overflow: visible;
 	background: transparent;
 	border: 0;
@@ -456,6 +456,7 @@
 	}
 
 	.rsvp__demo-footer {
+		margin-bottom: var(--formal-chapter-footer-margin-end, 1em);
 		color: rgb(var(--formal-chapter-cream-rgb) / 55%);
 	}
 

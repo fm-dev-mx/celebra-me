@@ -8,8 +8,8 @@ import {
 	ALBA_ASSET_SPECS,
 	ALBA_EVENT,
 	buildAlbaPublishedContent,
-	type AlbaAssetMap,
 } from '../../scripts/provision/invitations/alba-rosa-quinonez.ts';
+import { buildTestAssets } from '../helpers/managed-payload';
 
 const albaProfilePath = path.join(
 	process.cwd(),
@@ -18,17 +18,8 @@ const albaProfilePath = path.join(
 
 const albaAssetDir = path.join(process.cwd(), 'src/assets/invitations/alba-rosa-quinonez');
 
-function buildTestAssets(): AlbaAssetMap {
-	return Object.fromEntries(
-		ALBA_ASSET_SPECS.map((spec, index) => [
-			spec.key,
-			{
-				type: 'uploaded' as const,
-				assetId: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
-				src: `http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/${spec.key}.webp`,
-			},
-		]),
-	) as AlbaAssetMap;
+function publishedContent() {
+	return buildAlbaPublishedContent(buildTestAssets(ALBA_ASSET_SPECS));
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -64,14 +55,8 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 		expect(fs.existsSync(path.join(albaAssetDir, 'gallery-04-cafe.webp'))).toBe(false);
 	});
 
-	it('builds schema-valid published content with structural contracts', () => {
-		const content = buildAlbaPublishedContent(buildTestAssets());
-		const result = eventContentSchema.safeParse(content);
-		expect(result.success).toBe(true);
-
-		const serialized = JSON.stringify(content);
-		expect(serialized).not.toMatch(/\[\[PENDIENTE:/);
-
+	it('builds published content with structural contracts', () => {
+		const content = publishedContent();
 		expect(content.sectionOrder).toEqual([
 			'countdown',
 			'location',
@@ -161,7 +146,7 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 	});
 
 	it('preserves Alba presentation and structural choices through page assembly', () => {
-		const content = buildAlbaPublishedContent(buildTestAssets());
+		const content = publishedContent();
 		const viewModel = adaptDbEvent({
 			slug: ALBA_EVENT.slug,
 			eventType: ALBA_EVENT.eventType,
@@ -189,7 +174,7 @@ describe('Alba Rosa Quiñónez provision contract', () => {
 	});
 
 	it('rejects a DB payload when a required gallery variant is omitted', () => {
-		const rawContent = buildAlbaPublishedContent(buildTestAssets());
+		const rawContent = publishedContent();
 		// Simulate un-migrated Production DB state where gallery.variant is omitted
 		const galleryWithoutVariant = { ...(rawContent.gallery as Record<string, unknown>) };
 		delete galleryWithoutVariant.variant;

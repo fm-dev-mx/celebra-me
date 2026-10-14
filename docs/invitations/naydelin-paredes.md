@@ -22,7 +22,7 @@ row, or publication exists.
     definitive photo selection; not agent instructions
 - **Source:** Owner decisions
   - **Reference:** `source:owner-session`
-  - **Use:** Slug, Jewelry Box base demo, local RSVP default, section order, and bounded Local-only
+  - **Use:** Slug, Jewelry Box preset, local RSVP default, section order, and bounded Local-only
     draft
 - **Source:** Venue map references
   - **Reference:** `source:venue-maps`
@@ -53,7 +53,6 @@ Classification: `verified` | `inferred` | `ambiguous` | `missing` | `not_applica
 | eventTime             | 19:00                                                                                                                 | verified       | wa-export       | Ceremony start; display as 7:00 p. m.                                                                        |
 | receptionTime         | 21:00                                                                                                                 | verified       | wa-export       | Reception start; display as 9:00 p. m.                                                                       |
 | timeZone              | America/Mazatlan                                                                                                      | verified       | owner-session   | Confirmed IANA zone for Los Mochis                                                                           |
-| baseDemoId            | demo-xv-jewelry-box                                                                                                   | verified       | owner-session   | Owner-selected base; no sample demo copy is retained                                                         |
 | sourceAssetPath       | `source:wa-export`                                                                                                    | verified       | wa-export       | Evidence-only source label for the definitive local selection; no authoritative HR asset source was supplied |
 | sectionOrder          | quote, personalizedAccess, family, gallery, countdown, location, itinerary, rsvp, gifts, thankYou                     | verified       | owner-session   | Requested Jewelry Box order; the current candidate omits the unconfirmed quote visually                      |
 | primaryVenueName      | Parroquia El Señor San José                                                                                           | verified       | venue-maps      | Ceremony                                                                                                     |
@@ -82,9 +81,8 @@ Classification: `verified` | `inferred` | `ambiguous` | `missing` | `not_applica
 XV contract maturity: `evidence-backed`.
 
 - **requirement:** required
-  - **fields:** slug, celebrantName, eventLabel, eventDate, eventTime, timeZone, baseDemoId,
-    sourceAssetPath, sectionOrder, primaryVenueName, primaryVenueAddress, rsvpConfirmationMode,
-    rsvpGuestCap
+  - **fields:** slug, celebrantName, eventLabel, eventDate, eventTime, timeZone, sourceAssetPath,
+    sectionOrder, primaryVenueName, primaryVenueAddress, rsvpConfirmationMode, rsvpGuestCap
   - **status:** satisfied
 - **requirement:** conditional
   - **fields:** receptionVenueName, receptionVenueAddress (distinct venues); rsvpWhatsappPhone (API
@@ -125,7 +123,7 @@ No unresolved blocking owner decisions for this Local draft.
 | ---------------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | palette                | Ivory and pearl surfaces, soft gold, restrained rose-gold accents, and a dark finale          | Confirmed gold invitation preference and current optimization direction | Applied to current Local candidate; creative acceptance pending      |
 | photography            | Use photo 6 as the opening image; follow it with photos 1–5 and 7–10 in original order        | Owner-confirmed final selection and supplied photo sequence             | Accepted; final selection                                            |
-| typography and spacing | Cormorant Garamond display with Montserrat body text; open spacing and readable venue details | Selected base demo and optimization direction                           | Applied to current Local candidate; final browser validation pending |
+| typography and spacing | Cormorant Garamond display with Montserrat body text; open spacing and readable venue details | Selected preset and optimization direction                              | Applied to current Local candidate; final browser validation pending |
 
 ## Sections
 
@@ -148,7 +146,7 @@ target delivery date of Thursday, 1 October 2026 is internal and does not appear
 
 | decision                    | selected source / value                                | classification |
 | --------------------------- | ------------------------------------------------------ | -------------- |
-| Owner-selected base demo    | `demo-xv-jewelry-box`                                  | verified       |
+| Selected theme preset       | `jewelry-box` (owner-selected)                         | verified       |
 | Theme preset                | `jewelry-box`                                          | verified       |
 | Visual profile              | `naydelin-paredes` profile                             | verified       |
 | Client reference            | Ana Sofía Cota Guillén functional parity               | verified       |

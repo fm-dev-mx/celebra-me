@@ -15,8 +15,7 @@ reference role; earlier notes live in Git history.
 
 ## Preset and variants
 
-- Theme preset `premiere-floral`; visual profile `romina-rios-chaparro` (frozen by digest); legacy
-  `baseDemoId` `demo-xv-premiere-floral` (catalog-only).
+- Theme preset `premiere-floral`; visual profile `romina-rios-chaparro` (frozen by digest).
 - Variants: hero `split-cover`, family `standard`, countdown `standard`, location `standard`,
   itinerary `standard`, gallery `editorial-mosaic`, RSVP `standard` with personalized access
   `ornamented`, thank-you `standard`. `composition.intersections` is explicit.

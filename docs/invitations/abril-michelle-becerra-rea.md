@@ -15,8 +15,7 @@ changelog, two-lane spec, and QA snapshots live in Git history.
 
 ## Preset and variants
 
-- Theme preset `premiere-floral`; visual profile `abril-michelle-becerra-rea` (frozen by digest);
-  legacy `baseDemoId` `demo-xv-premiere-floral` (catalog-only).
+- Theme preset `premiere-floral`; visual profile `abril-michelle-becerra-rea` (frozen by digest).
 - Variants: hero `standard`, family `standard`, countdown `standard`, location `standard`, itinerary
   `timeline-paper`, gallery `paired-feature-band`, RSVP `standard` with personalized access
   `ornamented`, thank-you `standard`.

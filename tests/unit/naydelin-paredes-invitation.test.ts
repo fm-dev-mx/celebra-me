@@ -2,10 +2,10 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { naydelinInvitation } from '../../scripts/provision/invitations/naydelin-paredes';
 import { getInvitationAssetSourceDir } from '../../scripts/provision/invitations/invitation-definition';
-import { canonicalEventContentSchema } from '@/lib/schemas/content/base-event.schema';
+import { eventContentSchema } from '@/lib/schemas/content/base-event.schema';
 
 function buildContent() {
-	return canonicalEventContentSchema.parse(
+	return eventContentSchema.parse(
 		naydelinInvitation.buildPublishedContent(
 			Object.fromEntries(
 				naydelinInvitation.assets.map((asset) => [

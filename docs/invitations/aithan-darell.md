@@ -17,8 +17,8 @@
 
 **Preparation Readiness (prepReadiness):** `READY_WITH_PLACEHOLDERS`
 
-Helper outcome: every required `cumple` field is resolved, the base demo is owner-selected, and the
-music track is hosted ("Life Is a Highway"). All published photographs are messaging-app JPEGs,
+Helper outcome: every required `cumple` field is resolved, the theme preset is owner-selected, and
+the music track is hosted ("Life Is a Highway"). All published photographs are messaging-app JPEGs,
 which the owner accepted as the definitive set and remain labelled `provisional-whatsapp`; the
 original motif assets are `production-ready`, but `summarizeAssetQuality` keeps the provisional
 ceiling while any assignable image is non-production (contract §9.1, hygiene A4), so readiness stays
@@ -39,7 +39,7 @@ host alias keeps the contract form `{primer_nombre}_{primer_apellido}`.
 | ----------------------- | ----------------------- | -------------------------------------------------------------------------------------- |
 | WhatsApp / conversation | `source:wa-export`      | Evidence only; client facts, the four photographs, and the song request                |
 | Photographs             | `source:client-photos`  | Four messaging-app JPEGs from the chat, accepted as definitive by the owner            |
-| Owner session           | `source:owner-session`  | Slug, base demo, photo acceptance, section omissions, guest cap (2026-10-07)           |
+| Owner session           | `source:owner-session`  | Slug, theme preset, photo acceptance, section omissions, guest cap (2026-10-07)        |
 | Owner design session    | `source:owner-design`   | Display face, Cars motifs, photo roles delegated to the agent (2026-10-07)             |
 | Owner design review 3   | `source:owner-design-3` | Third iteration: approved photo plan B, type option 2, motif routes D1–D7 (2026-10-07) |
 
@@ -56,7 +56,6 @@ host alias keeps the contract form `{primer_nombre}_{primer_apellido}`.
 | eventDate            | 2026-10-24                                                                                                 | verified       | wa-export | "24 de octubre", stated twice; Saturday 24 October 2026                                                             |
 | eventTime            | 17:30                                                                                                      | verified       | wa-export | First "4:30", corrected to "Hora 5:30"; 5:30 p. m. confirmed by the client (2026-10-07)                             |
 | timeZone             | America/Mexico_City                                                                                        | inferred       | geography | Atizapán de Zaragoza, Estado de México; not client-stated                                                           |
-| baseDemoId           | demo-cumple-editorial-magazine                                                                             | verified       | owner     | Owner-selected catalog entry (new); no children's demo existed                                                      |
 | sourceAssetPath      | source:client-photos                                                                                       | verified       | owner     | Repo asset dir `src/assets/invitations/aithan-darell`; originals from the chat                                      |
 | sectionOrder         | quote, countdown, location, gifts, gallery, personalizedAccess, rsvp, thankYou                             | inferred       | owner     | Family and itinerary omitted (client: "esto no va", 2026-10-08); gifts added as a legend                            |
 | primaryVenueName     | Jardín de Teresita                                                                                         | verified       | wa-export | —                                                                                                                   |
@@ -183,8 +182,8 @@ Contract gaps: family-name and itinerary requirement levels are under-evidenced,
 lockups are not standardized. No fields were invented beyond the contract.
 
 - **requirement:** required
-  - **fields:** slug, celebrantName, eventDate, eventTime, baseDemoId, sourceAssetPath,
-    sectionOrder, primaryVenueName, primaryVenueAddress, rsvpConfirmationMode
+  - **fields:** slug, celebrantName, eventDate, eventTime, sourceAssetPath, sectionOrder,
+    primaryVenueName, primaryVenueAddress, rsvpConfirmationMode
   - **status:** resolved
 - **requirement:** recommended
   - **fields:** eventLabel, timeZone
@@ -382,16 +381,15 @@ No placeholders remain. The music track is hosted and published (`https://res.cl
 
 ## Design Direction
 
-| decision                          | value                                                       | classification      |
-| --------------------------------- | ----------------------------------------------------------- | ------------------- |
-| Client-selected demo              | none (no children's demo to choose from)                    | not_applicable      |
-| Owner-selected base demo          | demo-cumple-editorial-magazine                              | verified            |
-| Reference invitation              | xv/destenid-sofia (structure and techniques only)           | verified            |
-| Recommended demo alternatives     | luxury-hacienda remap (rejected by owner)                   | recommendation only |
-| Selected variant / visual profile | visualProfileId `aithan-darell`; theme `editorial-magazine` | verified            |
-| Client color requirements         | red, black, white                                           | verified            |
-| Recommended palette               | asphalt #111, paper #f7f5f0, red #d71e28, yellow #ffc529    | verified            |
-| Unresolved visual decisions       | none open; human creative acceptance pending                | pending             |
+| decision                          | value                                                            | classification      |
+| --------------------------------- | ---------------------------------------------------------------- | ------------------- |
+| Selected theme preset             | `editorial-magazine` (owner-selected; no children's demo exists) | verified            |
+| Reference invitation              | xv/destenid-sofia (structure and techniques only)                | verified            |
+| Recommended preset alternatives   | luxury-hacienda remap (rejected by owner)                        | recommendation only |
+| Selected variant / visual profile | visualProfileId `aithan-darell`; theme `editorial-magazine`      | verified            |
+| Client color requirements         | red, black, white                                                | verified            |
+| Recommended palette               | asphalt #111, paper #f7f5f0, red #d71e28, yellow #ffc529         | verified            |
+| Unresolved visual decisions       | none open; human creative acceptance pending                     | pending             |
 
 Techniques taken from the reference, all through data and tokens (no layout in the profile):
 collector cover with its own image (`envelope.backdropImage`) and the hero canvas handed to the hero

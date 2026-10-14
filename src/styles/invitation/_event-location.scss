@@ -601,6 +601,7 @@
 	&__card-image-container {
 		aspect-ratio: var(--location-image-aspect-ratio);
 		width: 100%;
+		border-bottom: var(--location-image-border-bottom, none);
 		overflow: hidden;
 		position: relative;
 		isolation: isolate;

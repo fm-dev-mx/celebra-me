@@ -25,24 +25,30 @@ describe('editorial cover reveal transition contract', () => {
 		expect(componentSource).toContain('openButton.setAttribute');
 	});
 
+	// Both pages render the opening through one shared component.
+	const revealEntrySource = readSource('src/components/invitation/InvitationRevealEntry.astro');
+
+	it('renders the opening of both pages through the shared reveal entry', () => {
+		expect(readSource('src/pages/[eventType]/[slug].astro')).toContain(
+			'<InvitationRevealEntry',
+		);
+		expect(readSource('src/pages/dashboard/invitaciones/[id]/preview.astro')).toContain(
+			'<InvitationRevealEntry',
+		);
+	});
+
 	it('prefers a dedicated cover photograph over the hero images', () => {
-		const pageSource = readSource('src/pages/[eventType]/[slug].astro');
-		const previewSource = readSource('src/pages/dashboard/invitaciones/[id]/preview.astro');
 		expect(componentSource).toContain(
 			'[dedicatedCoverImage, backgroundImage, portrait].find(hasImageSource)',
 		);
-		expect(pageSource).toContain('coverImage={page.envelope.backdropImage}');
-		expect(previewSource).toContain('coverImage={pageCtx.envelope.backdropImage}');
+		expect(revealEntrySource).toContain('coverImage={envelope.backdropImage}');
 	});
 
 	it('keeps the collector edition opt-in and wired through both pages', () => {
-		const pageSource = readSource('src/pages/[eventType]/[slug].astro');
-		const previewSource = readSource('src/pages/dashboard/invitaciones/[id]/preview.astro');
 		expect(componentSource).toContain("coverExperience = 'standard'");
 		expect(componentSource).toContain("this.dataset.coverExperience === 'collector'");
 		expect(componentSource).toContain('setupCollectorReveal');
-		expect(pageSource).toContain('coverExperience={page.envelope.coverExperience}');
-		expect(previewSource).toContain('coverExperience={pageCtx.envelope.coverExperience}');
+		expect(revealEntrySource).toContain('coverExperience={envelope.coverExperience}');
 	});
 
 	it('uses the approved editorial CTA copy', () => {

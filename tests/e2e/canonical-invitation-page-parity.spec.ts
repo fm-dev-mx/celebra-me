@@ -285,3 +285,37 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 		}
 	}
 });
+
+test.describe('Portrait keepsake production spacing regression', () => {
+	// mia-pintor is the remaining published celestial-blue consumer of the portrait-keepsake
+	// thank-you variant (the original guard pointed at a retired invitation).
+	for (const viewport of [
+		{ width: 390, height: 844, top: 112, bottom: 112 },
+		{ width: 414, height: 896, top: 112, bottom: 112 },
+		{ width: 1440, height: 900, top: 144, bottom: 144 },
+	]) {
+		test(`mia-pintor keeps the published spacing at ${viewport.width}px`, async ({ page }) => {
+			await page.setViewportSize(viewport);
+			const response = await page.goto('/xv/mia-pintor?skipEnvelope=true&animations=off', {
+				waitUntil: 'load',
+			});
+			expect(response?.status()).toBe(200);
+			const section = page.locator('#thank-you-section');
+			await section.scrollIntoViewIfNeeded();
+			await expect(section).toHaveAttribute('data-variant', 'portrait-keepsake');
+			await expect(page.locator('.event-theme-wrapper')).toHaveAttribute(
+				'data-content-source',
+				'published',
+			);
+			const padding = await section.evaluate((node) => {
+				const style = getComputedStyle(node);
+				return {
+					top: parseFloat(style.paddingTop),
+					bottom: parseFloat(style.paddingBottom),
+				};
+			});
+			expect(padding.top).toBeCloseTo(viewport.top, 1);
+			expect(padding.bottom).toBeCloseTo(viewport.bottom, 1);
+		});
+	}
+});

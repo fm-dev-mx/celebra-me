@@ -18,7 +18,8 @@ import {
 	sharingSchema,
 	thankYouSchema,
 } from '@/lib/schemas/content/shared.schema';
-export const canonicalEventContentSchema = baseEventFieldsSchema
+/** Canonical content is parsed exactly once; legacy aliases are rejected. */
+export const eventContentSchema = baseEventFieldsSchema
 	.extend({
 		hero: heroSchema,
 		location: locationSchema.optional(),
@@ -57,8 +58,5 @@ export const canonicalEventContentSchema = baseEventFieldsSchema
 		}
 	});
 
-export type CanonicalEventContent = z.infer<typeof canonicalEventContentSchema>;
-export type CanonicalEventContentInput = z.input<typeof canonicalEventContentSchema>;
-
-/** Canonical content is parsed exactly once; legacy aliases are rejected. */
-export const eventContentSchema: z.ZodType<CanonicalEventContent> = canonicalEventContentSchema;
+export type CanonicalEventContent = z.infer<typeof eventContentSchema>;
+export type CanonicalEventContentInput = z.input<typeof eventContentSchema>;

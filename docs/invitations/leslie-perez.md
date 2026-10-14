@@ -15,8 +15,7 @@ handoffs, and review criteria live in Git history.
 
 ## Preset and variants
 
-- Theme preset `celestial-blue`; visual profile `leslie-perez` (frozen by digest); legacy
-  `baseDemoId` `demo-xv-celestial-blue`.
+- Theme preset `celestial-blue`; visual profile `leslie-perez` (frozen by digest).
 - Variants: hero `split-cover`, family `asymmetric-groups`, countdown `editorial-folio`, location
   `split-map`, itinerary `standard`, gallery `index-choreography`, gifts `standard`, RSVP
   `formal-register` with personalized access `formal-pass`, thank-you `full-bleed-photo`.

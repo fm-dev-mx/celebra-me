@@ -68,8 +68,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | groomParents          | Madre: María de Jesús Felipe Redondo (solo mamá)                                                     | verified       | owner 2026-08-04  | No father row                                                             |
 | photoSetConstraint    | Use only the two provided HR files (D2.jpg, D4.jpg)                                                  | verified       | owner 2026-07-31  | OD4 confirmed                                                             |
 | sourceAssetPath       | source:hr-photos                                                                                     | verified       | owner             | Opaque label; session holds real path                                     |
-| baseDemoId            | demo-boda-jewelry-box-wedding                                                                        | verified       | owner OD1         | Sole catalog `boda` preset; Lane A olive/beige/gold                       |
-| themePreset           | jewelry-box-wedding                                                                                  | verified       | owner OD1         | From baseDemoId                                                           |
+| themePreset           | jewelry-box-wedding                                                                                  | verified       | owner OD1         | Owner OD1                                                                 |
 | sectionOrder          | hero, quote, countdown, location, family, gallery, gifts, personalizedAccess, rsvp, thankYou         | verified       | owner 2026-08-04  | Gifts added; interludes after countdown + gifts                           |
 | rsvpConfirmationMode  | api                                                                                                  | verified       | owner OD3         | Access mode hybrid                                                        |
 | rsvpAccessMode        | hybrid                                                                                               | verified       | owner OD3         |                                                                           |
@@ -88,7 +87,7 @@ Contract maturity for this event type: `partial` (`getEventCompletenessContract(
 | requirement | fields                                                                                                | status              |
 | ----------- | ----------------------------------------------------------------------------------------------------- | ------------------- |
 | required    | slug, celebrantName, secondaryName, eventDate, sourceAssetPath, primaryVenueName, primaryVenueAddress | satisfied           |
-| required    | baseDemoId, sectionOrder, rsvpConfirmationMode                                                        | satisfied (OD1–OD3) |
+| required    | sectionOrder, rsvpConfirmationMode                                                                    | satisfied (OD1–OD3) |
 | recommended | reception*, itinerary times, colors, dress, gifts                                                     | verified            |
 | optional    | godparents                                                                                            | N/A — omit          |
 
@@ -162,14 +161,14 @@ Interludes: after `countdown`, after `gifts`.
 
 ## Design Direction
 
-| decision                          | value                                                                   | classification |
-| --------------------------------- | ----------------------------------------------------------------------- | -------------- |
-| Client-selected demo              | `demo-boda-jewelry-box-wedding` (owner OD1; WA had shown XV by mistake) | verified       |
-| Recommended demo alternatives     | —                                                                       | not_applicable |
-| Selected variant / visual profile | `jewelry-box-wedding` / `daniela-y-martin`                              | verified       |
-| Client color requirements         | Verde oliva + beige / toques dorados                                    | verified       |
-| Recommended palette               | Olive–beige–gold Lane A                                                 | verified       |
-| Unresolved visual decisions       | Aesthetic polish deferred                                               | accepted gap   |
+| decision                          | value                                                         | classification |
+| --------------------------------- | ------------------------------------------------------------- | -------------- |
+| Selected theme preset             | `jewelry-box-wedding` (owner OD1; WA had shown XV by mistake) | verified       |
+| Recommended preset alternatives   | —                                                             | not_applicable |
+| Selected variant / visual profile | `jewelry-box-wedding` / `daniela-y-martin`                    | verified       |
+| Client color requirements         | Verde oliva + beige / toques dorados                          | verified       |
+| Recommended palette               | Olive–beige–gold Lane A                                       | verified       |
+| Unresolved visual decisions       | Aesthetic polish deferred                                     | accepted gap   |
 
 ---
 

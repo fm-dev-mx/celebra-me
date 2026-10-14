@@ -163,12 +163,10 @@ or invitation-domain changes.
    its own expand/contract migration pair.
 2. **Drop `invitation_content_drafts.submission_id`**: always null since the capture form was
    retired; the publication RPCs still name it, so it leaves with their next contract migration.
-3. **Drop deprecated views**: `deleted_events` — done in
-   `20260726170000_drop_deleted_events_view.sql` (`deleted_invitation_projects` already dropped
-   earlier).
-4. **Remove compatibility view**: `invitation_projects` view (created in
-   `20260601000001_invitations_domain.sql`) once no caller reads it.
-5. **Add NOT NULL to `short_id`**: After verifying all rows have a value.
+3. **Remove compatibility view**: `invitation_projects` view (created in
+   `20260601000001_invitations_domain.sql`). No code in `src/`, `scripts/` or `workers/` reads it;
+   drop it in the next contract migration after confirming no external reader remains.
+4. **Add NOT NULL to `short_id`**: After verifying all rows have a value.
 
 ## Suggested Verification
 

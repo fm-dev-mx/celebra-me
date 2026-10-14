@@ -21,6 +21,7 @@ import { mapNestedToDraftContent } from '../../src/lib/intake/services/draft-con
 import { buildCloudinaryOgImageUrl } from './cloudinary-adapter.ts';
 import { getInvitationDefinition } from './invitations/registry.ts';
 import {
+	DEFINITION_CLIENT_EMAIL,
 	getInvitationAssetSourceDir,
 	type InvitationDefinition,
 	type UploadedAssetMap,
@@ -442,7 +443,7 @@ export async function buildNormalizedInvitationRelease(options: {
 		visualProfileId: definition.visualProfileId,
 		clientName: definition.clientName,
 		hostLoginAlias: definition.hostLoginAlias,
-		clientEmail: definition.clientEmail ?? '',
+		clientEmail: DEFINITION_CLIENT_EMAIL,
 		clientWhatsapp: definition.clientWhatsapp ?? '',
 		photosReceived: definition.photosReceived ?? true,
 	};

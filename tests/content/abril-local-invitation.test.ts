@@ -8,27 +8,14 @@ import {
 	buildAbrilPublishedContent,
 	ABRIL_ASSET_SPECS,
 	ABRIL_EVENT,
-	type AbrilAssetMap,
 } from '../../scripts/provision/invitations/abril-michelle-becerra-rea.ts';
+import { buildTestAssets } from '../helpers/managed-payload';
 
 const abrilProfilePath = path.join(
 	process.cwd(),
 	'src/styles/invitation-profiles/abril-michelle-becerra-rea.scss',
 );
 const galleryContractPath = path.join(process.cwd(), 'docs/domains/theme/variant-system.md');
-
-function buildTestAssets(): AbrilAssetMap {
-	return Object.fromEntries(
-		ABRIL_ASSET_SPECS.map((spec, index) => [
-			spec.key,
-			{
-				type: 'uploaded' as const,
-				assetId: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
-				src: `http://127.0.0.1:54321/storage/v1/object/public/invitation-assets/${spec.key}.webp`,
-			},
-		]),
-	) as AbrilAssetMap;
-}
 
 describe('Abril Michelle local invitation content', () => {
 	it('uses an internally consistent Premiere Floral theme', () => {
@@ -70,7 +57,7 @@ describe('Abril Michelle local invitation content', () => {
 	});
 
 	it('builds schema-valid published content without visible pending placeholders', () => {
-		const content = buildAbrilPublishedContent(buildTestAssets());
+		const content = buildAbrilPublishedContent(buildTestAssets(ABRIL_ASSET_SPECS));
 		const result = eventContentSchema.safeParse(content);
 		expect(result.success).toBe(true);
 		expect(JSON.stringify(content)).not.toMatch(/PENDING_|PROVISIONAL_/);
@@ -166,7 +153,7 @@ describe('Abril Michelle local invitation content', () => {
 			zoom: 16,
 		});
 
-		const assets = buildTestAssets();
+		const assets = buildTestAssets(ABRIL_ASSET_SPECS);
 		expect(result.data!.gallery!.variant).toBe('paired-feature-band');
 		expect(result.data!.gallery!.items).toHaveLength(5);
 		const galleryIds = result.data!.gallery!.items.map((item) =>
@@ -217,7 +204,7 @@ describe('Abril Michelle local invitation content', () => {
 	});
 
 	it('builds a public page context from uploaded images without errors', () => {
-		const content = buildAbrilPublishedContent(buildTestAssets());
+		const content = buildAbrilPublishedContent(buildTestAssets(ABRIL_ASSET_SPECS));
 		const viewModel = adaptDbEvent({
 			slug: ABRIL_EVENT.slug,
 			eventType: ABRIL_EVENT.eventType,

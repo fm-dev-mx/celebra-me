@@ -48,12 +48,11 @@ Keep this a Markdown table with every cell at most 120 visible characters; move 
 prose below it. The preparation parser reads only table rows, so the table lint blocks longer cells
 instead of converting the table to a list.
 
-| field           | value | classification          | source | notes                                               |
-| --------------- | ----- | ----------------------- | ------ | --------------------------------------------------- |
-| celebrantName   |       | missing                 |        | Orthography must be verified before identity freeze |
-| eventDate       |       | missing                 |        |                                                     |
-| baseDemoId      |       | requires_owner_decision |        | Recommendation lives under Agent Recommendations    |
-| sourceAssetPath |       | missing                 |        | Opaque label only in this file                      |
+| field           | value | classification | source | notes                                               |
+| --------------- | ----- | -------------- | ------ | --------------------------------------------------- |
+| celebrantName   |       | missing        |        | Orthography must be verified before identity freeze |
+| eventDate       |       | missing        |        |                                                     |
+| sourceAssetPath |       | missing        |        | Opaque label only in this file                      |
 
 Rules:
 
@@ -123,7 +122,7 @@ client requirements without explicit approval.
 
 | topic   | recommendation | basis                       | status                 |
 | ------- | -------------- | --------------------------- | ---------------------- |
-| demo    |                | catalog + sections + assets | pending owner decision |
+| preset  |                | catalog + sections + assets | pending owner decision |
 | palette |                | photos / theme              | pending owner decision |
 
 ---
@@ -143,14 +142,15 @@ client requirements without explicit approval.
 
 | decision                          | value | classification          |
 | --------------------------------- | ----- | ----------------------- |
-| Client-selected demo              |       | verified / missing      |
-| Recommended demo alternatives     |       | recommendation only     |
+| Selected theme preset             |       | verified / missing      |
+| Recommended preset alternatives   |       | recommendation only     |
 | Selected variant / visual profile |       |                         |
 | Client color requirements         |       | verified / missing      |
 | Recommended palette               |       | recommendation only     |
 | Unresolved visual decisions       |       | requires_owner_decision |
 
-If the client did not select a demo, final selection remains `requires_owner_decision`.
+If the client did not select a preset, final selection remains `requires_owner_decision`. Demos are
+visual references only; invitations carry no base demo.
 
 ---
 

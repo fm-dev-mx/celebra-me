@@ -104,7 +104,6 @@ export function defineCanonicalInvitation(
 		title: options.title,
 		clientName: options.clientName ?? options.title,
 		hostLoginAlias: options.hostLoginAlias,
-		clientEmail: '',
 		clientWhatsapp: '',
 		photosReceived: true,
 		themeId: options.themeId,

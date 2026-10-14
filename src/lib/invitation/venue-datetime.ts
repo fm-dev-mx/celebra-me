@@ -62,7 +62,13 @@ export function formatVenueDateForDisplay(value: unknown): string | null {
 	if (!canonical) return null;
 	const d = new Date(`${canonical}T00:00:00.000Z`);
 	if (isNaN(d.getTime())) return null;
-	return d.toLocaleDateString('es-MX', {
+	return formatSpanishLongDate(d);
+}
+
+/** Spanish long date in UTC (`14 de agosto de 2026`) for hero and cover dates. */
+export function formatSpanishLongDate(value: string | Date): string {
+	const date = value instanceof Date ? value : new Date(value);
+	return date.toLocaleDateString('es-MX', {
 		day: 'numeric',
 		month: 'long',
 		year: 'numeric',

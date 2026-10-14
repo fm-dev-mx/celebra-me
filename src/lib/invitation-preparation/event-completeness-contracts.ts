@@ -54,15 +54,6 @@ const XV_FIELDS: readonly CompletenessFieldDefinition[] = [
 		evidenceNotes: 'Creation contract; typically America/Mexico_City in practice.',
 	},
 	{
-		id: 'baseDemoId',
-		label: 'Base demo / editor preset selection',
-		requirement: 'required',
-		blockingWhenUnresolved: true,
-		allowsPlaceholder: false,
-		evidenceNotes:
-			'Creation contract. If client did not select, classification must be requires_owner_decision.',
-	},
-	{
 		id: 'sourceAssetPath',
 		label: 'Filesystem/repository path for source photographs',
 		requirement: 'required',
@@ -252,14 +243,6 @@ const CUMPLE_PARTIAL_FIELDS: readonly CompletenessFieldDefinition[] = [
 		evidenceNotes: 'Alba WA + location logistics.',
 	},
 	{
-		id: 'baseDemoId',
-		label: 'Base demo / editor preset selection',
-		requirement: 'required',
-		blockingWhenUnresolved: true,
-		allowsPlaceholder: false,
-		evidenceNotes: 'Alba client-selected demo-cumple-luxury-hacienda.',
-	},
-	{
 		id: 'sourceAssetPath',
 		label: 'Photograph / HR asset source path or opaque label',
 		requirement: 'required',
@@ -366,13 +349,6 @@ const BABY_SHOWER_PARTIAL_FIELDS: readonly CompletenessFieldDefinition[] = [
 		allowsPlaceholder: false,
 	},
 	{
-		id: 'baseDemoId',
-		label: 'Base demo / editor preset selection',
-		requirement: 'required',
-		blockingWhenUnresolved: true,
-		allowsPlaceholder: false,
-	},
-	{
 		id: 'sourceAssetPath',
 		label: 'Photograph / HR asset source path or opaque label',
 		requirement: 'required',
@@ -463,13 +439,6 @@ const BODA_PARTIAL_FIELDS: readonly CompletenessFieldDefinition[] = [
 	{
 		id: 'eventDate',
 		label: 'Event date',
-		requirement: 'required',
-		blockingWhenUnresolved: true,
-		allowsPlaceholder: false,
-	},
-	{
-		id: 'baseDemoId',
-		label: 'Base demo / editor preset selection',
 		requirement: 'required',
 		blockingWhenUnresolved: true,
 		allowsPlaceholder: false,
@@ -576,13 +545,6 @@ function sacramentFields(
 		{
 			id: 'timeZone',
 			label: 'IANA time zone',
-			requirement: 'required',
-			blockingWhenUnresolved: true,
-			allowsPlaceholder: false,
-		},
-		{
-			id: 'baseDemoId',
-			label: 'Base demo / editor preset selection',
 			requirement: 'required',
 			blockingWhenUnresolved: true,
 			allowsPlaceholder: false,
@@ -704,7 +666,7 @@ const CONTRACTS: Record<EventType, EventTypeCompletenessContract> = {
 		eventType: 'baby-shower',
 		maturity: 'partial',
 		summary:
-			'Partial contract from baby-shower practice (route vs _assetSlug vs base demo). Expand only with additional verified baby-shower invitations.',
+			'Partial contract from baby-shower practice (route slug vs _assetSlug). Expand only with additional verified baby-shower invitations.',
 		gaps: [
 			'Venue and RSVP requirement levels vary by client; treated as recommended until more samples exist.',
 			'Gallery/interlude asset patterns are editorial, not completeness-blocking.',

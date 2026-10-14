@@ -11,6 +11,11 @@ import { resolveShareDescription } from '@/lib/rsvp/services/shared/share-messag
 import { recordLinkPreview } from '@/lib/rsvp/engagement/engagement.service';
 import { UNAVAILABLE_INVITATION_ROBOTS } from '@/lib/invitation/access/invitation-access';
 
+const SHORT_ID_PRIVATE_HEADERS = {
+	'Cache-Control': 'no-store, private',
+	Vary: 'User-Agent',
+} as const;
+
 interface ShortIdOGData {
 	ogTitle: string;
 	ogDescription: string;
@@ -53,6 +58,34 @@ export function applyUnavailableShortIdResponse(
 	response.headers.set('Cache-Control', 'no-store, private');
 	response.headers.set('Vary', 'User-Agent');
 	response.headers.set('X-Robots-Tag', UNAVAILABLE_INVITATION_ROBOTS);
+}
+
+/**
+ * Response handling shared by the two short-link pages: a Response the page returns as is
+ * (unknown link or human redirect), or `null` when the page renders `InvitationOGShell`.
+ * Personalized metadata never enters a shared cache.
+ */
+export function buildShortIdEarlyResponse(
+	result: ShortIdPageResult,
+	response: ResponseInit & { readonly headers: Headers },
+): Response | null {
+	if (result.kind === 'error') {
+		return new Response(null, { status: 404, headers: SHORT_ID_PRIVATE_HEADERS });
+	}
+	if (result.kind === 'redirect') {
+		return new Response(null, {
+			status: 302,
+			headers: { ...SHORT_ID_PRIVATE_HEADERS, Location: result.target },
+		});
+	}
+	for (const [name, value] of Object.entries(SHORT_ID_PRIVATE_HEADERS)) {
+		response.headers.set(name, value);
+	}
+	if (result.kind === 'unavailable') {
+		// Disabled invitation: crawlers get an empty 403, no metadata.
+		applyUnavailableShortIdResponse(response);
+	}
+	return null;
 }
 
 export async function resolveShortIdPage(

@@ -1,4 +1,3 @@
-import { resolveInvitationProfileCssUrl } from './invitation-profile-css';
 import { CANONICAL_VARIANT_REGISTRY, type CanonicalVariantSection } from './section-variants';
 
 type CssModule = { default: string };
@@ -97,6 +96,14 @@ export function resolveSectionCssUrl(
 	return sectionUrlMap[section]?.[entrypoint];
 }
 
+/** Only an explicitly declared visual profile loads; the slug is never an implicit profile. */
+function resolveVisualProfileCssUrl(
+	profileUrlMap: InvitationProfileUrlMap,
+	input: InvitationCssResolverInput,
+): string | undefined {
+	return input.visualProfileId ? profileUrlMap[input.visualProfileId] : undefined;
+}
+
 function resolveSectionVariantLoadItems(
 	sectionUrlMap: SectionUrlMap,
 	input: InvitationCssResolverInput,
@@ -156,7 +163,7 @@ export function resolveInvitationCssLoadPlan(
 		push(item);
 	}
 
-	const profileUrl = resolveInvitationProfileCssUrl(profileUrlMap, input);
+	const profileUrl = resolveVisualProfileCssUrl(profileUrlMap, input);
 	push(profileUrl ? { href: profileUrl, owner: 'visual-profile', blocking: true } : undefined);
 
 	return items;

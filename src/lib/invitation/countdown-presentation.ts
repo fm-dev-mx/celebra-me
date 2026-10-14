@@ -39,3 +39,17 @@ export function resolveCountdownVisibleUnits(
 	];
 	return unique.length > 0 ? unique : [...COUNTDOWN_UNITS];
 }
+
+export type CountdownTimeLeft = Record<CountdownUnit, number>;
+
+/** Whole days, hours, minutes and seconds left until `targetMs`; all zero once it has passed. */
+export function computeTimeLeft(targetMs: number, nowMs: number): CountdownTimeLeft {
+	const difference = targetMs - nowMs;
+	if (difference <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+	return {
+		days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+		hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+		minutes: Math.floor((difference / 1000 / 60) % 60),
+		seconds: Math.floor((difference / 1000) % 60),
+	};
+}

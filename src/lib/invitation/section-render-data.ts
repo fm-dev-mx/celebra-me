@@ -22,6 +22,7 @@ type LocationProps = SectionData<'location'> & {
 
 type GiftsProps = Omit<SectionData<'gifts'>, 'items'> & {
 	gifts: SectionData<'gifts'>['items'];
+	editionLabel?: string;
 };
 
 type PersonalizedAccessProps = {
@@ -29,6 +30,7 @@ type PersonalizedAccessProps = {
 	guestName: string;
 	maxAllowedAttendees: number;
 	eventYear?: string;
+	editionMark?: string;
 	isDemoPreview?: boolean;
 	variant: PersonalizedAccessVariant;
 	title?: string;
@@ -181,6 +183,7 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 				rsvpSection?.guestCap ??
 				DEFAULT_DEMO_GUEST_CAP,
 			eventYear,
+			editionMark: pageContext.edition?.mark,
 			isDemoPreview,
 			variant,
 			title: access?.title,
@@ -239,7 +242,10 @@ function renderRsvpSection(pageContext: InvitationPageContext): DescriptorData |
 	};
 }
 
-function renderGiftsSection(sections: Sections): DescriptorData | null {
+function renderGiftsSection(
+	sections: Sections,
+	edition: InvitationPageContext['edition'],
+): DescriptorData | null {
 	if (!sections.gifts) return null;
 
 	const { items: gifts, ...rest } = sections.gifts;
@@ -249,6 +255,7 @@ function renderGiftsSection(sections: Sections): DescriptorData | null {
 		props: {
 			...rest,
 			gifts,
+			editionLabel: edition?.label,
 		},
 	};
 }
@@ -334,7 +341,7 @@ function renderSection(
 			return renderRsvpSection(pageContext);
 
 		case 'gifts':
-			return renderGiftsSection(sections);
+			return renderGiftsSection(sections, pageContext.edition);
 
 		case 'thankYou':
 			if (!sections.thankYou) return null;

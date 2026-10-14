@@ -14,6 +14,7 @@ export interface InvitationDTO {
 	title: string;
 	eventType: string;
 	status: InvitationStatus;
+	/** Mirrors the legacy DB column `base_demo_id`; leaves with its contract migration. */
 	baseDemoId: string;
 	themeId: string;
 	clientName: string;
