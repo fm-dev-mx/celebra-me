@@ -52,7 +52,6 @@ given names by explicit owner decision (no surname supplied or requested for pub
 | eventTime            | 19:00                                                                                             | verified       | owner (client)    | Client program relayed by the owner: Recepción 7 pm                                                    |
 | itinerary            | 19:00 Recepción; 20:00 Presentación; 20:30 Cena; 22:00 Vals; 02:00 Cierre                         | verified       | owner (client)    | Client wrote "Cierre 2,pm"; read as 2:00 a.m. after the 10 p.m. waltz — confirm in client review       |
 | timeZone             | America/Mexico_City                                                                               | inferred       | geography         | Cuautitlán Izcalli, Estado de México; not client-stated                                                |
-| baseDemoId           | demo-xv-editorial-magazine                                                                        | verified       | wa-export         | Client selected the valentina-hernandez invitation as the reference style                              |
 | sourceAssetPath      | source:hr-photos                                                                                  | verified       | owner             | Opaque label only                                                                                      |
 | sectionOrder         | quote, family, countdown, itinerary, location, gallery, gifts, personalizedAccess, rsvp, thankYou | inferred       | owner             | Mirrors the reference invitation; family carries the prayer instead of parents                         |
 | primaryVenueName     | Jardín Quinta Paraíso                                                                             | verified       | wa-export         | Reception only                                                                                         |
@@ -85,9 +84,8 @@ Rules:
 Contract maturity for this event type: `evidence-backed` (`xv`).
 
 - **requirement:** required
-  - **fields:** slug, celebrantName, eventLabel, eventDate, eventTime, timeZone, baseDemoId,
-    sourceAssetPath, sectionOrder, primaryVenueName, primaryVenueAddress, rsvpConfirmationMode,
-    rsvpGuestCap
+  - **fields:** slug, celebrantName, eventLabel, eventDate, eventTime, timeZone, sourceAssetPath,
+    sectionOrder, primaryVenueName, primaryVenueAddress, rsvpConfirmationMode, rsvpGuestCap
   - **status:** resolved
 - **requirement:** conditional
   - **fields:** receptionVenueName, receptionVenueAddress
@@ -164,14 +162,14 @@ their data exists.
 
 ## Design Direction
 
-| decision                          | value                                                              | classification      |
-| --------------------------------- | ------------------------------------------------------------------ | ------------------- |
-| Client-selected demo              | demo-xv-editorial-magazine (via the valentina-hernandez reference) | verified            |
-| Recommended demo alternatives     | none                                                               | recommendation only |
-| Selected variant / visual profile | visualProfileId `destenid-sofia`; theme `editorial-magazine`       | verified            |
-| Client color requirements         | beige, gold, black                                                 | verified            |
-| Recommended palette               | black / beige / antique gold token remap                           | verified            |
-| Unresolved visual decisions       | none                                                               | —                   |
+| decision                          | value                                                        | classification      |
+| --------------------------------- | ------------------------------------------------------------ | ------------------- |
+| Selected theme preset             | `editorial-magazine` (via the valentina-hernandez reference) | verified            |
+| Recommended preset alternatives   | none                                                         | recommendation only |
+| Selected variant / visual profile | visualProfileId `destenid-sofia`; theme `editorial-magazine` | verified            |
+| Client color requirements         | beige, gold, black                                           | verified            |
+| Recommended palette               | black / beige / antique gold token remap                     | verified            |
+| Unresolved visual decisions       | none                                                         | —                   |
 
 The token-only remap rendered noticeably plainer than the client's reference, whose look lives in
 its own profile SCSS. By owner decision (2026-09-29) the valentina-hernandez section overrides were

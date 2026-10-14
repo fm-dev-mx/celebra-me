@@ -44,7 +44,6 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | eventTime             | 17:00                                                                                             | verified       | wa-export     | Religious ceremony                                                   |
 | receptionTime         | 18:30                                                                                             | verified       | wa-export     | Reception at Salón Sole Mio (corrected from initial 19:00 estimate)  |
 | timeZone              | America/Monterrey                                                                                 | inferred       | wa-export     | Tampico / Cd. Madero, Tamaulipas                                     |
-| baseDemoId            | demo-xv-celestial-blue                                                                            | inferred       | owner-session | Technical base (preset provenance); client asked for blue            |
 | sourceAssetPath       | source:hr-photos                                                                                  | verified       | owner-session | Opaque label only                                                    |
 | sectionOrder          | quote, family, countdown, location, itinerary, gallery, gifts, personalizedAccess, rsvp, thankYou | verified       | wa-export     | Opening and hero precede these sections; timeline-paper itinerary    |
 | primaryVenueName      | Parroquia Nuestra Señora de Lourdes                                                               | verified       | wa-export     | Religious ceremony                                                   |
@@ -134,8 +133,8 @@ No placeholder tokens are used; optional content is omitted until supplied.
 
 | decision                          | value                                                                    | classification      |
 | --------------------------------- | ------------------------------------------------------------------------ | ------------------- |
-| Owner-selected base demo          | demo-xv-celestial-blue                                                   | verified            |
-| Recommended demo alternatives     | —                                                                        | recommendation only |
+| Selected theme preset             | `celestial-blue` (owner-selected; client asked for blue)                 | verified            |
+| Recommended preset alternatives   | —                                                                        | recommendation only |
 | Selected variant / visual profile | envelope `seaside-lineart` + seal `shell`; profile `mia-pintor` (tokens) | verified (owner D2) |
 | Client color requirements         | Azul cielo muy tenue, plata, motivos marinos                             | verified            |
 | Recommended palette               | Pale sky-blue paper, silver ink, deep blue-graphite text                 | recommendation only |

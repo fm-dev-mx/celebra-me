@@ -60,7 +60,9 @@ describe('invitation preparation — sofia-demo-prep scenario', () => {
 
 		const facts = parseFactRegisterFromMarkdown(markdown);
 		expect(facts.find((fact) => fact.fieldId === 'celebrantName')?.value).toContain('Sofía');
-		expect(facts.find((fact) => fact.fieldId === 'baseDemoId')?.classification).toBe('verified');
+		expect(facts.find((fact) => fact.fieldId === 'themePreset')?.classification).toBe(
+			'verified',
+		);
 		expect(findPlaceholderTokens(markdown)).toContain('[[PENDIENTE:DRESS_CODE]]');
 
 		const inventory = readFixture('asset-inventory.md');
@@ -110,7 +112,7 @@ describe('invitation preparation — sofia-demo-prep scenario', () => {
 				blockingIssues: [],
 			},
 			design: {
-				demoClassification: 'verified',
+				presetClassification: 'verified',
 				blockingUnresolvedDecisions: [],
 			},
 		});
@@ -121,22 +123,15 @@ describe('invitation preparation — sofia-demo-prep scenario', () => {
 
 		const initialPack = buildOwnerDecisionPack({
 			slug: 'sofia-demo-prep',
-			blockingGaps: evaluateEventCompleteness('xv', [
-				...facts.filter((fact) => fact.fieldId !== 'baseDemoId'),
-				{
-					fieldId: 'baseDemoId',
-					value: 'demo-xv-jewelry-box',
-					classification: 'requires_owner_decision',
-				},
-			]).blockingGaps,
+			blockingGaps: evaluateEventCompleteness('xv', facts).blockingGaps,
 			designDecisions: [
 				{
-					id: 'baseDemoId',
+					id: 'themePreset',
 					classification: 'requires_owner_decision',
-					issue: 'Client did not select a demo',
+					issue: 'Client did not select a theme preset',
 					evidence: ['WhatsApp: Todavía no'],
-					recommendation: 'demo-xv-jewelry-box',
-					options: ['demo-xv-jewelry-box', 'demo-xv-editorial', 'demo-xv-enchanted-rose'],
+					recommendation: 'jewelry-box',
+					options: ['jewelry-box', 'editorial', 'enchanted-rose'],
 				},
 			],
 			photographIssues: [
@@ -144,7 +139,8 @@ describe('invitation preparation — sofia-demo-prep scenario', () => {
 					id: 'provisional-assets',
 					issue: 'Only provisional WhatsApp photographs are available',
 					evidence: ['asset-inventory.md'],
-					recommendation: 'Accept provisional for Local; require studio originals for Production',
+					recommendation:
+						'Accept provisional for Local; require studio originals for Production',
 				},
 			],
 		});
@@ -153,6 +149,6 @@ describe('invitation preparation — sofia-demo-prep scenario', () => {
 		const packMarkdown = formatOwnerDecisionPackMarkdown(initialPack);
 		expect(packMarkdown).toContain('demo-design-decisions');
 		expect(packMarkdown).toContain('photograph-acceptance');
-		expect(packMarkdown).toContain('demo-xv-jewelry-box');
+		expect(packMarkdown).toContain('jewelry-box');
 	});
 });

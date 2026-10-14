@@ -15,8 +15,7 @@ notes, photo-role audits, and refinement records live in Git history.
 
 ## Preset and variants
 
-- Theme preset `luxury-hacienda`; visual profile `alba-rosa-quinonez` (frozen by digest); legacy
-  `baseDemoId` `demo-cumple-luxury-hacienda`.
+- Theme preset `luxury-hacienda`; visual profile `alba-rosa-quinonez` (frozen by digest).
 - Variants: hero `standard`, location `split-map`, countdown `standard`, gallery `feature-stack`,
   gifts `standard` (legend only), RSVP `standard` with personalized access `ornamented`, family
   `standard`, thank-you `standard`.

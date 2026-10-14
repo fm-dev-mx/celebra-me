@@ -43,7 +43,6 @@ Classification is one of: `verified` | `inferred` | `ambiguous` | `missing` | `n
 | eventDate             | 2026-12-16                                                                               | verified       | source:client-reference-sheet | Wednesday, 16 December 2026                                   |
 | eventTime             | 12:00                                                                                    | verified       | source:client-reference-sheet | Religious ceremony start                                      |
 | timeZone              | America/Mazatlan                                                                         | inferred       | venue city + IANA zone        | Must be reconfirmed before publication                        |
-| baseDemoId            | demo-boda-jewelry-box-wedding                                                            | verified       | source:wa-export              | Client selected the shared wedding demo direction             |
 | sourceAssetPath       | src/assets/invitations/melissa-y-luis-osmar                                              | verified       | source:generated-venue-art    | Repository-relative root; no client filesystem path persisted |
 | sectionOrder          | quote, countdown, family, location, itinerary, gifts, personalizedAccess, rsvp, thankYou | verified       | owner implementation plan     | Interludes are auxiliary narrative inserts                    |
 | primaryVenueName      | Catedral Basílica de la Inmaculada Concepción                                            | verified       | source:client-reference-sheet | Ceremony venue                                                |
@@ -78,8 +77,8 @@ Classification is one of: `verified` | `inferred` | `ambiguous` | `missing` | `n
 Contract maturity for `boda`: `partial`.
 
 - **requirement:** required
-  - **fields:** slug, celebrantName, secondaryName, eventDate, baseDemoId, sourceAssetPath,
-    sectionOrder, primaryVenueName, primaryVenueAddress, rsvpConfirmationMode
+  - **fields:** slug, celebrantName, secondaryName, eventDate, sourceAssetPath, sectionOrder,
+    primaryVenueName, primaryVenueAddress, rsvpConfirmationMode
   - **status:** resolved
 - **requirement:** conditional
   - **fields:** receptionVenueName, receptionVenueAddress
@@ -140,8 +139,8 @@ rendered as plausible navigation links.
 
 | decision                          | value                                                            | classification      |
 | --------------------------------- | ---------------------------------------------------------------- | ------------------- |
-| Client-selected demo              | `demo-boda-jewelry-box-wedding`                                  | verified            |
-| Recommended demo alternatives     | —                                                                | not_applicable      |
+| Selected theme preset             | `jewelry-box-wedding` (client chose its wedding demo)            | verified            |
+| Recommended preset alternatives   | —                                                                | not_applicable      |
 | Selected variant / visual profile | `jewelry-box-wedding` / `melissa-y-luis-osmar`                   | verified            |
 | Client color requirements         | neutral palette                                                  | verified            |
 | Recommended palette               | `#F7F3ED`, `#FFFDF9`, `#302925`, `#75675E`, `#3A312C`, `#A9825A` | owner-approved plan |
