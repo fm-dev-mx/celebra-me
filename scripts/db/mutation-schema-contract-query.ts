@@ -49,14 +49,12 @@ export function buildMutationSchemaContractQuery(): string {
 	  'recordEngagementRpc', to_regprocedure('public.record_guest_engagement_events_public(text,jsonb,uuid)') is not null,
 	  'engagementSummaryRpc', to_regprocedure('public.get_event_engagement_summary(uuid)') is not null
 	) || jsonb_build_object(
-	  'rankingRpc', to_regprocedure('public.list_invitation_engagement_ranking(text,text)') is not null,
-	  'serviceRoleRankingExecute', coalesce(has_function_privilege('service_role', to_regprocedure('public.list_invitation_engagement_ranking(text,text)'), 'EXECUTE'), false),
-	  'anonRankingExecute', coalesce(has_function_privilege('anon', to_regprocedure('public.list_invitation_engagement_ranking(text,text)'), 'EXECUTE'), false),
+	  'legacyRankingRpc', to_regprocedure('public.list_invitation_engagement_ranking(text,text)') is not null,
+	  'legacyProjectsView', to_regclass('public.invitation_projects') is not null,
 	  'rankingV2Rpc', to_regprocedure('public.list_invitation_engagement_ranking_v2(text)') is not null,
 	  'serviceRoleRankingV2Execute', coalesce(has_function_privilege('service_role', to_regprocedure('public.list_invitation_engagement_ranking_v2(text)'), 'EXECUTE'), false),
 	  'anonRankingV2Execute', coalesce(has_function_privilege('anon', to_regprocedure('public.list_invitation_engagement_ranking_v2(text)'), 'EXECUTE'), false),
 	  'authenticatedRankingV2Execute', coalesce(has_function_privilege('authenticated', to_regprocedure('public.list_invitation_engagement_ranking_v2(text)'), 'EXECUTE'), false),
-	  'authenticatedRankingExecute', coalesce(has_function_privilege('authenticated', to_regprocedure('public.list_invitation_engagement_ranking(text,text)'), 'EXECUTE'), false),
 	  'serviceRoleSubmitRsvpExecute', coalesce(has_function_privilege('service_role', to_regprocedure('public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)'), 'EXECUTE'), false),
 	  'serviceRoleRecordEngagementExecute', coalesce(has_function_privilege('service_role', to_regprocedure('public.record_guest_engagement_events_public(text,jsonb,uuid)'), 'EXECUTE'), false),
 	  'authenticatedEngagementSummaryExecute', coalesce(has_function_privilege('authenticated', to_regprocedure('public.get_event_engagement_summary(uuid)'), 'EXECUTE'), false),

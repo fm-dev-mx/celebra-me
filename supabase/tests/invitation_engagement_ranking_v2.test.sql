@@ -1,6 +1,6 @@
 -- Engagement ranking v2: coverage of every published client invitation and confidence levels.
 begin;
-select plan(14);
+select plan(16);
 
 create schema ranking_v2_test;
 
@@ -140,6 +140,10 @@ select is(ranking_v2_test.row_value('v2-measured', 'public_access'), 'disabled',
 select is(ranking_v2_test.row_value('v2-quiet', 'confirmation_mode'), 'whatsapp', 'confirmation mode comes from published content');
 select is(ranking_v2_test.as_role('service_role', $$select design->>'themePreset' || '|' || (design#>>'{music,enabled}') || '|' || (design#>>'{rsvp,accessMode}') from public.list_invitation_engagement_ranking_v2() where slug = 'v2-quiet'$$),
   'jewelry-box-wedding|true|hybrid', 'design is derived from published content when there is no snapshot');
+
+-- Contract 20261014120000 retires the v1 routine and the invitations rename view.
+select hasnt_function('public', 'list_invitation_engagement_ranking', array['text', 'text'], 'the v1 ranking routine is retired');
+select hasnt_view('public', 'invitation_projects', 'the invitation_projects compatibility view is retired');
 
 select * from finish();
 rollback;

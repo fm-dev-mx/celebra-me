@@ -176,11 +176,12 @@ Snapshots capture the published content's design at compute time, with a `design
 
 Snapshots never contain guest identifiers, names, phone numbers, or free text.
 
-### Ranking query (phase 2)
+### Ranking query v1 (phase 2, retired)
 
+Retired by contract `20261014120000` once the v2 client was deployed; kept here as history.
 `list_invitation_engagement_ranking(p_event_type text, p_group_key text default 'themePreset')`
-(`20261013120000`, `security definer`, execute granted to `service_role` only) returns the rows the
-administrator's ranking view compares. It applies the comparison rules in the database:
+(`20261013120000`, `security definer`, execute granted to `service_role` only) returned the rows the
+administrator's ranking view compared. It applies the comparison rules in the database:
 
 - same event type only; `metrics_version = 1` rows;
 - one snapshot per event: `final` when it exists, else `rolling`; snapshots whose event was deleted

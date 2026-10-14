@@ -44,7 +44,6 @@ const CONTRACT_ROUTINE_NAMES = new Set([
 	'submit_guest_rsvp_public',
 	'record_guest_engagement_events_public',
 	'get_event_engagement_summary',
-	'list_invitation_engagement_ranking',
 	'list_invitation_engagement_ranking_v2',
 ]);
 
