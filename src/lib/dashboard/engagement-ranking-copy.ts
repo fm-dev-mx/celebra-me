@@ -21,7 +21,7 @@ const EVENT_TYPE_LABELS: Record<EventType, string> = {
 	'primera-comunion': 'Primera comunión',
 };
 
-export const ALL_EVENT_TYPES_OPTION = { value: 'all', label: 'Todos' } as const;
+const ALL_EVENT_TYPES_OPTION = { value: 'all', label: 'Todos' } as const;
 
 export const EVENT_TYPE_OPTIONS = [
 	ALL_EVENT_TYPES_OPTION,
@@ -57,13 +57,13 @@ export const ACTIVITY_LABELS: Record<RankingActivityState, string> = {
 	none: 'Sin actividad',
 };
 
-export const CONFIRMATION_LABELS: Record<string, string> = {
+const CONFIRMATION_LABELS: Record<string, string> = {
 	api: 'Formulario',
 	whatsapp: 'WhatsApp',
 	both: 'Formulario y WhatsApp',
 };
 
-export const RSVP_ACCESS_LABELS: Record<string, string> = {
+const RSVP_ACCESS_LABELS: Record<string, string> = {
 	'personalized-only': 'Solo enlace personalizado',
 	hybrid: 'Híbrido',
 };

@@ -16,7 +16,7 @@ import {
 	rankingCopy,
 } from '@/lib/dashboard/engagement-ranking-copy';
 
-export const DEMO_ENGAGEMENT_API_PATH = '/api/dashboard/admin/engagement/demos';
+const DEMO_ENGAGEMENT_API_PATH = '/api/dashboard/admin/engagement/demos';
 
 const copy = {
 	intro: 'Retención del diseño en las demos: cuántas sesiones llegan a cada parte de la página y cuántas terminan en un contacto. Son prospectos, no invitados, por eso nunca se mezclan con las invitaciones. Las páginas cortas llegan al final con más facilidad: compare demos de extensión parecida. Datos desde el {since}.',

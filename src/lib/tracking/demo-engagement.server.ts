@@ -20,7 +20,7 @@ import {
 } from './demo-engagement';
 
 /** Commercial tracking of demo routes starts on this date. */
-export const DEMO_TRACKING_SINCE = '2026-06-29';
+const DEMO_TRACKING_SINCE = '2026-06-29';
 
 async function loadDemoCatalog(): Promise<DemoCatalogItem[]> {
 	return (await getCollection('event-demos')).map((entry) => {
@@ -42,7 +42,7 @@ export interface DemoEngagementQuery {
 	sort?: string | null;
 }
 
-export function parseDemoEngagementQuery(query: DemoEngagementQuery) {
+function parseDemoEngagementQuery(query: DemoEngagementQuery) {
 	const period = Number(query.period?.trim() || 30);
 	if (!(DEMO_PERIODS as readonly number[]).includes(period)) {
 		throw new ApiError(400, 'bad_request', 'Periodo inválido.');

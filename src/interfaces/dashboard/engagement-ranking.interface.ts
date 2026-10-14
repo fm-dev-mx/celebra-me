@@ -32,12 +32,12 @@ export const RANKING_ACTIVITY_STATES = ['measured', 'none'] as const;
 export type RankingActivityState = (typeof RANKING_ACTIVITY_STATES)[number];
 
 export const RANKING_CONFIRMATION_MODES = ['api', 'whatsapp', 'both'] as const;
-export type RankingConfirmationMode = (typeof RANKING_CONFIRMATION_MODES)[number];
+type RankingConfirmationMode = (typeof RANKING_CONFIRMATION_MODES)[number];
 
 /** Whether guest responses reach the database, so conversion can be measured. */
 export type ConversionMeasurability = 'full' | 'partial' | 'none';
 
-export type RankingSampleState = 'eligible' | 'insufficient';
+type RankingSampleState = 'eligible' | 'insufficient';
 
 /** Population filters; every field is optional and filters combine (AND). */
 export interface RankingFilters {

@@ -33,12 +33,12 @@ import {
 } from '@/interfaces/dashboard/engagement-ranking.interface';
 
 /** Ledger collection start (v0.20.0-beta.1); measured figures do not exist before it. */
-export const ENGAGEMENT_COLLECTION_SINCE = '2026-10-12';
+const ENGAGEMENT_COLLECTION_SINCE = '2026-10-12';
 
 /** Mirrors the routine (guests) and the spec (groups); the app only withholds ranks. */
 export const RANKING_THRESHOLDS: RankingThresholds = { sharedGuests: 20, groupInvitations: 5 };
 
-export const ALL_EVENT_TYPES = 'all';
+const ALL_EVENT_TYPES = 'all';
 
 export interface EngagementRankingQuery {
 	eventType?: string | null;
