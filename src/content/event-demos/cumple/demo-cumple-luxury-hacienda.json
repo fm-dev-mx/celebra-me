@@ -109,7 +109,7 @@
         "confirmationMessage": "Será un honor contar con su presencia.",
         "confirmationMode": "both",
         "whatsappConfig": {
-            "phone": "5213312345678",
+            "phone": "5210000000002",
             "confirmedTemplate": "¡Hola Don Alberto! Soy {name}. Confirmo con gusto mi asistencia a sus 60 años. ¡Ahí estaremos! (Asistentes: {guestCount})",
             "declinedTemplate": "Estimado Don Alberto, soy {name}. Lamento no poder acompañarlo en esta ocasión, pero le envío un fuerte abrazo y mis mejores deseos.",
             "omitTitle": true

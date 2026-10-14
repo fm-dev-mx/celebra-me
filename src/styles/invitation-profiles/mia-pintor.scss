@@ -408,35 +408,15 @@
 	--itinerary-paper-rail-top: calc(var(--mia-itin-pad) + var(--mia-itin-marker) + 0.55rem);
 	--itinerary-paper-rail-bottom: calc(0.45rem - var(--mia-itin-pad));
 
-	.itinerary__program-row:nth-child(4n + 1) {
-		--itinerary-paper-num-mask: var(--ornament-motif-shell);
-	}
-
-	.itinerary__program-row:nth-child(4n + 2) {
-		--itinerary-paper-num-mask: var(--ornament-motif-starfish);
-	}
-
-	.itinerary__program-row:nth-child(4n + 3) {
-		--itinerary-paper-num-mask: var(--ornament-motif-alga);
-	}
-
-	.itinerary__program-row:nth-child(4n) {
-		--itinerary-paper-num-mask: var(--ornament-motif-wave);
-	}
-
 	// Seven moments read shell · starfish · alga · wave · starfish · alga · shell: no piece
 	// twice in a row, and the last moment closes on a shell, like the closing shoreline.
-	.itinerary__program-row:nth-child(5) {
-		--itinerary-paper-num-mask: var(--ornament-motif-starfish);
-	}
-
-	.itinerary__program-row:nth-child(6) {
-		--itinerary-paper-num-mask: var(--ornament-motif-alga);
-	}
-
-	.itinerary__program-row:last-child {
-		--itinerary-paper-num-mask: var(--ornament-motif-shell);
-	}
+	--itinerary-paper-num-mask-1: var(--ornament-motif-shell);
+	--itinerary-paper-num-mask-2: var(--ornament-motif-starfish);
+	--itinerary-paper-num-mask-3: var(--ornament-motif-alga);
+	--itinerary-paper-num-mask-4: var(--ornament-motif-wave);
+	--itinerary-paper-num-mask-5: var(--ornament-motif-starfish);
+	--itinerary-paper-num-mask-6: var(--ornament-motif-alga);
+	--itinerary-paper-num-mask-last: var(--ornament-motif-shell);
 
 	// Rail centered under each marker (half the marker column, minus half the rail).
 	.itinerary__program-list {
@@ -447,9 +427,7 @@
 		}
 	}
 
-	.itinerary__title {
-		--itinerary-title-tracking: 0;
-	}
+	--itinerary-title-tracking: 0;
 
 	// Footer: the colophon leads in ink; controls follow smaller, in the text face.
 	--footer-closing-color: var(--color-text-primary);
@@ -672,11 +650,8 @@
 	// Hut interlude: on phones the band takes the photograph's own 3:2 ratio, so nothing is
 	// cropped (figure and photographer mark both stay); wider screens anchor the crop to the
 	// bottom-right corner, where the mark sits, even before the focal observer runs.
-	.invitation-interlude[data-interlude-index='1'] {
-		--interlude-min-height-1-sm: calc(100vw * 2 / 3);
-		--interlude-focal-x: 100%;
-		--interlude-focal-y: 100%;
-	}
+	--interlude-min-height-1-sm: calc(100vw * 2 / 3);
+	--interlude-focal-point-1: 100% 100%;
 
 	// Envelope: flap 700 ms, the card rises from 450 ms (700 ms), a short hold to read it, then
 	// the envelope fades 700 ms (≈ 2.4 s in all, was ≈ 5.3 s). The flap shadow keeps a fixed blur
@@ -795,14 +770,12 @@
 				no-repeat;
 	}
 
-	.invitation-section-wrapper[data-section-kind='family']
-		+ .invitation-section-wrapper[data-section-kind='interlude'] {
-		--interlude-pull-up: calc(-1 * var(--mia-shoreline-height));
-		--interlude-top-ink-display: block;
-		--interlude-top-ink-height: var(--mia-shoreline-height);
-		--interlude-top-ink: var(--ornament-ink);
-		--interlude-top-ink-mask: var(--ornament-shoreline-mask);
-	}
+	// The hut interlude (the first, after the family) rises under the family's shoreline.
+	--interlude-pull-up-1: calc(-1 * var(--mia-shoreline-height));
+	--interlude-top-ink-display-1: block;
+	--interlude-top-ink-height-1: var(--mia-shoreline-height);
+	--interlude-top-ink-1: var(--ornament-ink);
+	--interlude-top-ink-mask-1: var(--ornament-shoreline-mask);
 
 	// Marine motifs (ornament-set spots, off by default elsewhere): five hairline pieces in the
 	// shoreline's hand, composed in small groups so the marine thread is felt from the quote to

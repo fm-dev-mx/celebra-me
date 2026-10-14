@@ -110,11 +110,14 @@
 
 	// Paper / vellum: matte fiber wash, no frosted plastic sheen.
 	background:
-		linear-gradient(
-			168deg,
-			color-mix(in srgb, var(--color-surface-elevated) 6%, transparent) 0%,
-			transparent 38%,
-			color-mix(in srgb, var(--color-surface-dark) 3.5%, transparent) 100%
+		var(
+			--env-paper-sheen,
+			linear-gradient(
+				168deg,
+				color-mix(in srgb, var(--color-surface-elevated) 6%, transparent) 0%,
+				transparent 38%,
+				color-mix(in srgb, var(--color-surface-dark) 3.5%, transparent) 100%
+			)
 		),
 		var(--env-paper-bg);
 	border: 1px solid var(--env-paper-border);
@@ -125,7 +128,8 @@
 		position: absolute;
 		inset: 0;
 		z-index: 1;
-		background:
+		background: var(
+			--env-paper-grain,
 			radial-gradient(
 				ellipse at 50% 8%,
 				color-mix(in srgb, var(--color-surface-elevated) 7%, transparent),
@@ -137,8 +141,9 @@
 				transparent 2px,
 				color-mix(in srgb, var(--color-surface-dark) 1.4%, transparent) 2px,
 				transparent 3px
-			);
-		opacity: 55%;
+			)
+		);
+		opacity: var(--env-paper-grain-opacity, 55%);
 		pointer-events: none;
 	}
 }
@@ -150,7 +155,10 @@
 .envelope-pocket {
 	z-index: 4;
 	clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
-	box-shadow: inset 0 10px 18px color-mix(in srgb, var(--color-surface-dark) 12%, transparent);
+	box-shadow: var(
+		--env-pocket-shadow,
+		inset 0 10px 18px color-mix(in srgb, var(--color-surface-dark) 12%, transparent)
+	);
 
 	&::after {
 		content: '';
@@ -217,7 +225,7 @@
 
 .personalized-label,
 .envelope-details {
-	font-family: var(--font-body);
+	font-family: var(--env-meta-font, var(--font-body));
 	text-transform: uppercase;
 	color: var(--env-text-secondary);
 }
@@ -235,12 +243,13 @@
 	max-width: 90cqw;
 	margin: 0;
 	font-size: 0.72rem;
+	font-weight: var(--env-details-font-weight, inherit);
 	opacity: 62%;
 	text-align: center;
-	letter-spacing: 0.02em;
+	letter-spacing: var(--env-details-tracking, 0.02em);
 
 	@include mixins.respond-to(md) {
-		letter-spacing: 0.22em;
+		letter-spacing: var(--env-details-tracking, 0.22em);
 	}
 }
 
@@ -322,10 +331,14 @@
 	max-width: 90cqw;
 	margin: 0.25rem 0;
 	font-size: var(--env-title-size);
-	font-weight: 400;
-	letter-spacing: 0.01em;
+	font-weight: var(--env-name-font-weight, 400);
+	letter-spacing: var(--env-name-tracking, 0.01em);
 	text-align: center;
-	color: color-mix(in srgb, var(--env-text-primary) 82%, var(--env-text-secondary));
+	color: var(
+		--env-name-color,
+		color-mix(in srgb, var(--env-text-primary) 82%, var(--env-text-secondary))
+	);
+	text-shadow: var(--env-name-text-shadow, inherit);
 }
 
 .envelope-stamp {
@@ -476,6 +489,7 @@
 	border: 1px solid color-mix(in srgb, var(--color-surface-elevated) 18%, transparent);
 	border-radius: 50%;
 	box-shadow: var(--env-shadow-seal);
+	filter: var(--env-seal-visual-filter, none);
 
 	.seal-icon {
 		width: 72%;
@@ -496,8 +510,11 @@
 	max-width: min(14rem, 70cqw);
 	margin: var(--spacing-2) 0 0;
 	padding: 0;
-	color: color-mix(in srgb, var(--env-text-secondary) 78%, var(--env-accent));
-	font-family: var(--font-body);
+	color: var(
+		--env-seal-hint-color,
+		color-mix(in srgb, var(--env-text-secondary) 78%, var(--env-accent))
+	);
+	font-family: var(--env-meta-font, var(--font-body));
 	font-size: var(--env-seal-hint-size, 0.56rem);
 	font-weight: 500;
 	letter-spacing: var(--env-open-label-spacing, 0.32em);
@@ -669,7 +686,7 @@
 	.envelope-seal-hint {
 		display: var(--env-seal-hint-display, block);
 		font-size: var(--env-seal-hint-size, 0.52rem);
-		letter-spacing: 0.26em;
+		letter-spacing: var(--env-open-label-spacing-compact, 0.26em);
 	}
 }
 

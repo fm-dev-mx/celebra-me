@@ -14,6 +14,9 @@
 //   --interlude-min-height-medium-sm  Medium variant mobile min-height
 //   --interlude-min-height-1/-2       Optional per-index coverage overrides
 //   --interlude-min-height-1-sm/-2-sm Optional per-index mobile coverage
+//   --interlude-focal-point-1/-2     Optional per-index focal point before the observer runs
+//   --interlude-pull-up-1/-2, --interlude-top-ink[-display|-height|-mask]-1/-2
+//                                    Optional per-index top edge
 //   --interlude-frame-inset          ::after inset (decorative border layouts)
 //   --interlude-frame-inset-sm       ::after mobile inset
 //   --interlude-frame-border         ::after border
@@ -31,7 +34,7 @@
 	--interlude-focal-y: 14%;
 	--interlude-focal-point: var(
 		--interlude-focal-point-content,
-		var(--interlude-focal-x) var(--interlude-focal-y)
+		var(--interlude-indexed-focal-point, var(--interlude-focal-x) var(--interlude-focal-y))
 	);
 
 	// ---- contract variable defaults ----
@@ -48,19 +51,20 @@
 		var(--invitation-header-offset, calc(70px + 1.5rem)) + var(--preview-banner-height, 0px)
 	);
 	position: relative;
-	margin-top: var(--interlude-pull-up, 0);
+	margin-top: var(--interlude-indexed-pull-up, var(--interlude-pull-up, 0));
 
 	// Optional ink line along the top edge (e.g. a shoreline the previous section ends on).
 	&::before {
 		content: '';
-		display: var(--interlude-top-ink-display, none);
+		display: var(--interlude-indexed-top-ink-display, var(--interlude-top-ink-display, none));
 		position: absolute;
 		inset-inline: 0;
 		top: 0;
 		z-index: 3;
-		height: var(--interlude-top-ink-height, 0);
-		background-color: var(--interlude-top-ink, transparent);
-		mask: var(--interlude-top-ink-mask, none) center / 100% 100% no-repeat;
+		height: var(--interlude-indexed-top-ink-height, var(--interlude-top-ink-height, 0));
+		background-color: var(--interlude-indexed-top-ink, var(--interlude-top-ink, transparent));
+		mask: var(--interlude-indexed-top-ink-mask, var(--interlude-top-ink-mask, none)) center /
+			100% 100% no-repeat;
 		pointer-events: none;
 	}
 
@@ -79,12 +83,20 @@
 		--interlude-min-height-resolved: var(--interlude-min-height-medium);
 	}
 
-	&[data-interlude-index='1'] {
-		min-height: var(--interlude-min-height-1, var(--interlude-min-height-resolved));
-	}
+	// Per-index overrides: a profile sets `--interlude-<token>-<n>` on the wrapper to treat the nth
+	// interlude alone (focal point before the observer runs, top edge), never by selecting it. An
+	// unset index token leaves the shared token in charge.
+	@each $index in (1, 2) {
+		&[data-interlude-index='#{$index}'] {
+			--interlude-indexed-focal-point: var(--interlude-focal-point-#{$index});
+			--interlude-indexed-pull-up: var(--interlude-pull-up-#{$index});
+			--interlude-indexed-top-ink-display: var(--interlude-top-ink-display-#{$index});
+			--interlude-indexed-top-ink-height: var(--interlude-top-ink-height-#{$index});
+			--interlude-indexed-top-ink: var(--interlude-top-ink-#{$index});
+			--interlude-indexed-top-ink-mask: var(--interlude-top-ink-mask-#{$index});
 
-	&[data-interlude-index='2'] {
-		min-height: var(--interlude-min-height-2, var(--interlude-min-height-resolved));
+			min-height: var(--interlude-min-height-#{$index}, var(--interlude-min-height-resolved));
+		}
 	}
 
 	&__media {

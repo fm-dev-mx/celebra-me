@@ -158,7 +158,7 @@
 	--location-divider-display: none;
 
 	.event-location__intro {
-		max-width: min(37rem, 92vw);
+		max-width: var(--location-plates-intro-max-width, min(37rem, 92vw));
 		margin-inline: auto;
 		margin-block-end: clamp(1.75rem, 4vw, 2.75rem);
 	}
@@ -179,8 +179,8 @@
 		font-style: var(--location-intro-heading-style, inherit);
 		font-synthesis: var(--location-intro-heading-font-synthesis, weight style);
 		line-height: 1.12;
-		color: var(--color-text-emphasis);
-		-webkit-text-fill-color: var(--color-text-emphasis);
+		color: var(--location-intro-heading-color, var(--color-text-emphasis));
+		-webkit-text-fill-color: var(--location-intro-heading-color, var(--color-text-emphasis));
 		max-width: 18ch;
 		margin-inline: auto;
 		margin-bottom: 0.85rem;
@@ -229,7 +229,7 @@
 
 	.event-location__card-content {
 		border-bottom: none;
-		text-align: center;
+		text-align: var(--location-plates-content-align, center);
 	}
 
 	.event-location__card-content-place {
@@ -403,12 +403,16 @@
 	}
 
 	.event-location__indications-container {
-		max-width: 42rem;
+		max-width: var(--location-plates-notes-max-width, 42rem);
 		margin-inline: auto;
 		padding: clamp(1.35rem, 3.5vw, 2rem) clamp(1rem, 3vw, 1.5rem);
 		border: var(
 			--location-plates-notes-border,
 			1px solid rgb(var(--color-action-accent-rgb) / 20%)
+		);
+		border-inline: var(
+			--location-plates-notes-border-inline,
+			var(--location-plates-notes-border, 1px solid rgb(var(--color-action-accent-rgb) / 20%))
 		);
 		background: var(--location-plates-notes-bg, var(--color-surface-soft));
 	}

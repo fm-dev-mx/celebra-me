@@ -18,7 +18,6 @@ const FROZEN_PROFILE_SHA256: Record<string, string> = {
 	'alba-rosa-quinonez': '3ac7a0b5bc7bb3ea4d2f4b53c8f3db4478f38be7561fb009988e02aa73d61bcc',
 	'allison-scarlett': '6d7212a2b87605534c3b11d5901f000f1c1492998edec25d6fdcebd236beda9a',
 	'daniela-y-martin': 'f7981960de0bc93da6458c6938ea809598dda9ead3cd7a9d3aa6118b6b5f7adb',
-	'demo-xv-celestial-blue': 'a559289d9e6fffaaa36bea5fe794bdaaa635ca4709b59948473e466122d921b7',
 	'destenid-sofia': 'd5b267b22f03db0b7e8fbd20110c5623bb919b60e32e910479a6cfeda8284237',
 	'leslie-perez': 'e61995a014b5d74edc09f57c2ade061823e1eacc67a09474a43e717dfcb61afe',
 	'melissa-y-luis-osmar': '26facacb79e20a14fc7c8b06577b556ea8a1df3b2a5e7baf9fd6a968df36e7b3',
@@ -123,6 +122,48 @@ function nonTokenDeclarations(source: string): string[] {
 	return findings;
 }
 
+/**
+ * Positional selection in a profile: structural pseudo-classes and sibling combinators. A profile
+ * that needs one item or one section treated apart sets an indexed token the owner exposes
+ * (e.g. `--itinerary-paper-num-mask-<n>`, `--interlude-focal-point-<n>`) instead.
+ */
+function positionalSelectors(source: string): string[] {
+	const stripped = sanitize(source);
+	const findings: string[] = [];
+	const pseudo = /:(nth-[a-z-]+|(?:first|last|only)-(?:child|of-type))\b/gu;
+	for (const match of stripped.matchAll(pseudo)) {
+		findings.push(`:${match[1]}`);
+	}
+	// Selector preludes: the text between a statement boundary and an opening brace.
+	for (const match of stripped.matchAll(/(?<=^|[;{}])([^;{}]*)\{/gu)) {
+		let selector = match[1];
+		// `+`/`~` inside parentheses (`calc()`, `:not()`, media queries) are not combinators.
+		for (let previous = ''; previous !== selector;) {
+			previous = selector;
+			selector = selector.replace(/\([^()]*\)/gu, '');
+		}
+		if (/(?:^|[^\s])\s*[+~]\s*[.#[:a-z*]/iu.test(selector)) {
+			findings.push(`sibling combinator in ${match[1].trim()}`);
+		}
+	}
+	return findings;
+}
+
+const STYLES_DIR = path.join(process.cwd(), 'src/styles');
+
+function scssFilesOutsideProfiles(dir: string): string[] {
+	const files: string[] = [];
+	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+		const full = path.join(dir, entry.name);
+		if (entry.isDirectory()) {
+			if (full !== PROFILES_DIR) files.push(...scssFilesOutsideProfiles(full));
+		} else if (entry.name.endsWith('.scss')) {
+			files.push(full);
+		}
+	}
+	return files;
+}
+
 describe('invitation profile boundary', () => {
 	const ids = profileIds();
 	const managedProfiles = new Set(
@@ -176,6 +217,49 @@ describe('invitation profile boundary', () => {
 			),
 		].join('\n');
 		expect(nonTokenDeclarations(allowed)).toEqual([]);
+	});
+
+	it('keeps positional selectors out of every non-frozen profile', () => {
+		for (const id of ids.filter((candidate) => !(candidate in FROZEN_PROFILE_SHA256))) {
+			expect({ id, positional: positionalSelectors(readProfile(id)) }).toEqual({
+				id,
+				positional: [],
+			});
+		}
+	});
+
+	it('rejects positional constructs in the positional detector', () => {
+		const wrap = (body: string) => `.event--x.theme-preset--y {\n${body}\n}\n`;
+		const cases = [
+			'\t.row:nth-child(2) { --a: 1; }',
+			'\t.row:nth-of-type(odd) { --a: 1; }',
+			'\t.row:last-child { --a: 1; }',
+			"\t.wrapper[data-kind='a'] + .wrapper[data-kind='b'] { --a: 1; }",
+			"\t.wrapper[data-kind='a']\n\t\t~ .wrapper { --a: 1; }",
+		];
+		for (const body of cases) {
+			expect({ body, rejected: positionalSelectors(wrap(body)).length > 0 }).toEqual({
+				body,
+				rejected: true,
+			});
+		}
+		expect(
+			positionalSelectors(
+				wrap(
+					"\t--a: calc(1rem + 2px);\n\t.wrapper[data-intersection-source='quote'] { --b: calc(100% - 1rem); }\n\t@media (width >= 40rem) { --c: calc(var(--d) + 1px); }",
+				),
+			),
+		).toEqual([]);
+	});
+
+	it('keeps invitation identity selectors inside invitation profiles', () => {
+		const offenders = scssFilesOutsideProfiles(STYLES_DIR).flatMap((file) =>
+			[...sanitize(fs.readFileSync(file, 'utf8')).matchAll(/\.event--[a-z0-9-]+/gu)].map(
+				(match) =>
+					`${path.relative(process.cwd(), file).split(path.sep).join('/')}: ${match[0]}`,
+			),
+		);
+		expect(offenders).toEqual([]);
 	});
 
 	it('restricts profile-directory partials to frozen or token-only content', () => {

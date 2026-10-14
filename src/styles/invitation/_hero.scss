@@ -8,10 +8,10 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;
-	align-items: center;
+	align-items: var(--hero-align, center);
 	overflow: hidden;
 	color: var(--hero-badge-text, white);
-	text-align: center;
+	text-align: var(--hero-text-align, center);
 
 	// Responsive focal point — CSS custom property fallback chain.
 	// Theme SCSS sets --hero-focal-point-mobile/tablet/desktop via selectors.
@@ -66,17 +66,23 @@
 			var(--hero-overlay-gradient, transparent);
 	}
 
+	// Optional content placement and layering hooks; defaults keep the in-flow centered block.
 	&__content {
+		z-index: var(--hero-content-z-index, auto);
+		width: var(--hero-content-width, auto);
+		margin: var(--hero-content-margin, 0);
+		text-shadow: var(--hero-copy-shadow, inherit);
 		animation: invitation-hero-content-reveal var(--motion-hero-title-duration)
 			var(--ease-premium) 0s forwards;
 	}
 
 	&__label {
 		display: block;
-		font-family: var(--font-display, serif);
-		font-size: 1.1rem;
+		font-family: var(--hero-eyebrow-font, var(--font-display, serif));
+		font-size: var(--hero-eyebrow-size, 1.1rem);
+		font-weight: var(--hero-eyebrow-weight, inherit);
 		text-transform: uppercase;
-		letter-spacing: 0.3em;
+		letter-spacing: var(--hero-eyebrow-tracking, 0.3em);
 		margin-bottom: 0.5rem;
 		opacity: 0%;
 		animation: motion-fade-in-up var(--motion-hero-eyebrow-duration) var(--ease-out)
@@ -86,20 +92,23 @@
 
 	&__title {
 		font-family: var(--font-display, serif);
-		font-size: clamp(2.2rem, 8vw, 4rem);
-		font-weight: 300;
+		font-size: var(--hero-heading-size, clamp(2.2rem, 8vw, 4rem));
+		font-weight: var(--hero-heading-weight, 300);
 		margin: 0.5rem 0;
-		line-height: 1.1;
+		line-height: var(--hero-heading-line-height, 1.1);
 		opacity: 0%;
-		background: linear-gradient(
-			110deg,
-			var(--color-action-accent) 35%,
-			var(--color-text-on-dark) 50%,
-			var(--color-action-accent) 65%
+		background: var(
+			--hero-heading-paint,
+			linear-gradient(
+				110deg,
+				var(--color-action-accent) 35%,
+				var(--color-text-on-dark) 50%,
+				var(--color-action-accent) 65%
+			)
 		);
 		background-size: 250% auto;
 		background-clip: text;
-		-webkit-text-fill-color: transparent;
+		-webkit-text-fill-color: var(--hero-heading-fill, transparent);
 		animation:
 			motion-fade-in-up var(--motion-hero-title-duration) var(--ease-out)
 				var(--motion-hero-title-delay) forwards,
@@ -126,10 +135,11 @@
 	}
 
 	&__divider {
+		display: var(--hero-divider-display, block);
 		width: 60px;
 		height: 1px;
-		background: var(--color-action-accent);
-		margin: 1.5rem auto;
+		background: var(--hero-divider-fill, var(--color-action-accent));
+		margin: var(--hero-divider-margin, 1.5rem auto);
 		opacity: 0%;
 		transform: scaleX(0);
 		animation: invitation-grow-line var(--motion-hero-details-duration) var(--ease-premium)
@@ -139,6 +149,7 @@
 	&__details {
 		display: flex;
 		flex-direction: column;
+		align-items: var(--hero-details-align, normal);
 		gap: 0.5rem;
 		opacity: 0%;
 		animation: motion-fade-in-up var(--motion-hero-details-duration) var(--ease-out)
@@ -146,9 +157,11 @@
 	}
 
 	&__date {
-		font-size: 1.1rem;
-		letter-spacing: 0.1em;
-		font-weight: 500;
+		font-family: var(--hero-date-font, inherit);
+		font-size: var(--hero-date-size, 1.1rem);
+		letter-spacing: var(--hero-date-tracking, 0.1em);
+		font-weight: var(--hero-date-weight, 500);
+		text-transform: var(--hero-date-transform, inherit);
 	}
 
 	&__time {
@@ -170,6 +183,7 @@
 		margin: 0 auto;
 		width: max-content;
 		bottom: 2rem;
+		z-index: var(--hero-scroll-z-index, auto);
 
 		@include mixins.respond-below(md) {
 			left: 1rem;
@@ -381,7 +395,7 @@
 	@include mixins.respond-below(md) {
 		.invitation-hero__content {
 			// Reserve the bottom rail when a skin does not provide its own content margin.
-			margin-bottom: 5rem;
+			margin-bottom: var(--hero-content-rail, 5rem);
 		}
 	}
 
