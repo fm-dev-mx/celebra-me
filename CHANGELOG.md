@@ -12,6 +12,76 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 _Sin cambios pendientes._
 
+## [0.24.0-beta.1] - 2026-10-14
+
+Release checkpoint that extends the design ranking to every published client invitation with
+confidence levels and a Demos tab, closes public invitations one year after their event, retires
+past catalog-only invitations and decouples definitions from demos, and consolidates tooling, CSS
+profiles and contracts.
+
+### Added
+
+- **Ranking de diseños v2**: la pestaña Invitaciones lista todas las invitaciones de cliente
+  publicadas (`list_invitation_engagement_ranking_v2`, migración `20261013150000`, expand,
+  `service_role`) con niveles de confianza (exacto, medido, inferido), filtros y facetas derivados
+  de los datos y estado en la URL. La tasa de respuesta es la métrica por defecto; la conversión es
+  una cota superior y las invitaciones con confirmación por WhatsApp quedan fuera de los órdenes por
+  respuesta.
+- **Pestaña Demos** (`GET /api/dashboard/admin/engagement/demos`): retención del diseño por demo
+  sobre tráfico externo de 30 o 60 días (rebote, alcance 50/75/100 % y contactos por cada 100
+  sesiones).
+- **Ventana de vigencia**: una invitación pública cierra al final del día de su aniversario (evento
+  - 1 año, zona horaria del evento). Vencida responde igual que deshabilitada: página neutral, RSVP,
+    enlaces cortos, ubicación, recuerdos y medios de vista previa. Las demos y las invitaciones sin
+    fecha no vencen; la planeación de releases y `prod:apply` omiten las definiciones vencidas.
+
+### Changed
+
+- Nine past catalog-only definitions leave the repository with their assets, baselines and tests.
+  Their published content is untouched; `sacred-keepsake` and the `america-johana`, `leah-lexa`,
+  `luna-y-estrella` and `xareni-iyarit` profiles stay, with removal dates after their validity
+  window.
+- Definitions no longer depend on demos: `baseDemoId`, the demo preset catalog and the manual
+  `archive` field leave the definition contract, the design gate reads the theme preset, and
+  provisioning never derives `base_demo_id` or `snapshot` (existing rows are not overwritten).
+- The angelic-presence demos are named after their event and preset; the old URLs answer a permanent
+  redirect (`/bautizo/demo-bautismo-angelic-presence`,
+  `/primera-comunion/demo-primera-comunion-illustrated`).
+- Client and demo rules live in token-only profiles, reveal sheets are emitted once, and tests
+  reject client selectors outside profiles.
+- Tooling shares one target URL resolver, psql runners and CLI helpers; unused aliases, overrides
+  and exports are removed and GA4 reads only `PUBLIC_GA_MEASUREMENT_ID`.
+- The owner allowed to record owner review is the first `SUPER_ADMIN_EMAILS` entry, now a typed
+  server variable that Preview and Production must declare.
+- Dependencies: `@astrojs/vercel` 11.0.14 and `astro` 7.3.8, `handlebars` 4.7.10 through a workspace
+  override (two critical advisories), plus the grouped tooling updates.
+
+### Fixed
+
+- A deployment without a declared identity fails closed: the platform panel shows no environment and
+  the memories cleanup cron answers 503.
+- Preview purge and fixture scripts reject any project other than the canonical Preview one.
+- The RSVP island no longer bundles the server WhatsApp helper.
+- Family group titles hide a role they already name, pending itinerary times read "Por confirmar",
+  and the locked reply-card RSVP drops the eyebrow and separator.
+- `@astrojs/vercel` 11.0.13 crashed Preview functions on a static import; 11.0.14 fixes it.
+
+### Verification
+
+| Check                   | Result                                                                   |
+| :---------------------- | :----------------------------------------------------------------------- |
+| Repository CI           | Passed on `6bd548c7c` (develop); release PR certifies the final tree     |
+| Visual certification    | 310 browser tests passed in the pinned Linux runtime for `e6513b812`     |
+| Preview smoke           | Green for `9f35f84f2` with `20261013150000` applied                      |
+| Preview checks          | Redirects, restored profiles equal Production, disabled 403 / memory 404 |
+| Production schema audit | Pending: `20261013150000` is applied before the deploy                   |
+
+### Known issues
+
+- The ranking keeps the v1 routine and the `base_demo_id`/`snapshot` columns until the contract
+  release that retires them.
+- `destenid-sofia` and `naydelin-paredes` are still in authoring and are not published.
+
 ## [0.23.1-beta.1] - 2026-10-13
 
 Patch checkpoint for the Production smoke of v0.23.0-beta.1, which failed because an invitation the
